@@ -1,7 +1,0 @@
-#ifdef COMPILATION_INSTRUCTIONS
-c++ -O3 -fconcepts -std=c++2a -Wall -fmax-errors=2 `#-Wfatal-errors` -I${HOME}/prj $0 -o $0x.x && time $0.x $@ && rm -f $0.x $0; exit
-#endif
-
-#include<iostream>
-int main(){}
-
