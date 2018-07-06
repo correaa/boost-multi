@@ -39,6 +39,7 @@ public:
 		reference operator*() const{return current_;}
 		const_iterator& operator+=(std::ptrdiff_t s){current_ += s; return *this;}
 		const_iterator& operator++(){++current_; return *this;}
+		auto operator+(std::ptrdiff_t d) const{return const_iterator{*this}+=d;}
 		friend constexpr bool operator==(const_iterator const& it1, const_iterator const& it2) noexcept{
 			return it1.current_ == it2.current_;
 		}
@@ -76,9 +77,13 @@ public:
 	}
 };
 
-auto find(index_range::const_iterator first, index_range::const_iterator last, index value){
-	first += *first - value;
-	if(*first > *last) first = last;
+auto find(
+	index_range::const_iterator first, 
+	index_range::const_iterator last, 
+	index value
+){
+	if(value > *last or value < *first) return last;
+	first += value - *first;
 	return first;
 }
 
@@ -104,22 +109,24 @@ class index_extension : public index_range{
 #include<iostream>
 #include<vector>
 
-namespace bm = boost::multi;
-auto index_ = boost::spirit::karma::int_generator<bm::index>{};
+namespace multi = boost::multi;
+auto index_ = boost::spirit::karma::int_generator<multi::index>{};
 
 using std::cout;
+using std::cerr;
 
 int main(){
 
 	{
-		bm::index_range ir{5, 10};
+		multi::index_range ir{5, 10};
 		cout << ir << " = {" << format(index_ % ", ", ir) << "}\n";
-		std::vector<bm::index_range::value_type> v(5);
+		std::vector<multi::index_range::value_type> v(5);
 		copy(begin(ir), end(ir), begin(v));
 		assert(v[0] == 5);
 		for(auto& i : ir) cout << i << ' ';
 		cout << '\n';
-		auto f = find(ir.begin(), ir.end(), 6);
+		auto f = find(begin(ir), end(ir), 6);
+		cerr << "*f " << *f << '\n';
 		assert(*f == 6);
 		auto f2 = find(ir.begin(), ir.end(), 12);
 		assert(f2 == ir.end());
@@ -127,26 +134,25 @@ int main(){
 		assert(f3 == ir.end());
 	}
 	{
-		bm::index_range ir(5);
+		multi::index_range ir(5);
 		cout << ir << " = {" << format(index_ % ", ", ir) << "}\n";
 		assert(*begin(ir) == 5);
 		assert(ir.front() == 5);
 		assert(ir.back() == 5);
 	}
 	{
-		bm::index_range ir; // partially formed
-		ir = bm::index_range{8, 8};
+		multi::index_range ir; // partially formed
+		ir = multi::index_range{8, 8};
 		assert(ir.empty());
 	}
 	{
-		bm::index_range ir = {};
+		multi::index_range ir = {};
 		assert(ir.empty());
 	}
 	{
-		bm::index_extension ie(5);
+		multi::index_extension ie(5);
 		cout << ie << " = {" << format(index_ % ", ", ie) << "}";
 	}
-
 }
 
 #endif

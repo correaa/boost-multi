@@ -9,25 +9,29 @@
 namespace boost{
 namespace multi{
 
+
 template<class T, dimensionality_type D, class Allocator>
 class array : 
 	public array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>
 {
+	using extensions_type = std::array<index_extension, D>;
 public:
 	using allocator_type = Allocator;
 	allocator_type allocator_;
 private:
 	using alloc_traits = std::allocator_traits<allocator_type>;
 public:
-	constexpr array(
-		std::array<index_extension, D> const& e,
-		Allocator alloc = Allocator{}
-	) noexcept : 
-		array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>(nullptr, e),
+	array(extensions_type e, Allocator alloc = Allocator{}) : 
+		array_ref<T, D, typename array::element_ptr>(nullptr, e),
 		allocator_(std::move(alloc))
 	{
 		this->data_ = alloc_traits::allocate(allocator_, array::num_elements());
 		uninitialized_construct();
+	}
+	void swap(array& other){
+		using std::swap;
+		swap(this->data_, other.data_);
+		swap(this->layout_, other.layout_);
 	}
 	//! Destructs the array
 	~array(){
@@ -51,6 +55,9 @@ private:
 	}
 };
 
+template<class Array1, class Array2>
+void swap(Array1& a1, Array2& a2){a1.swap(a2);}
+
 }}
 
 
@@ -65,7 +72,10 @@ namespace multi = boost::multi;
 
 int main(){
 
-	multi::array<double, 2> MA({4, 5});
+	multi::array<double, 2> MAswap({4, 5});
+	multi::array<double, 2> MA({3, 2});
+	using std::swap;
+	swap(MA, MAswap);
 	assert(MA[2][2] == 0.);
 	MA[1][3] = 7.1;
 	assert(MA[1][3] == 7.1);
@@ -83,6 +93,7 @@ int main(){
 		{15, 16, 17, 18, 19}
 	};
 	multi::array_cref<double, 2> d2D_cref{&d2D[0][0], {4, 5}};
+//	multi::array<double, 2> MA2 = d2D_cref;
 
 }
 #endif

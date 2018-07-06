@@ -26,27 +26,16 @@ struct strides_t{
 	strides_t(std::ptrdiff_t v, strides_t const& n) : val(v), next(n){}
 };
 
-/*
-template<typename T, dimensionality_type D, typename ElementPtr = T const*>//, class Storage = c_ordering<D>>
-class array_ref{
-	using element_ptr = ElementPtr;
-	element_ptr data_;
-public:
-	template<class I, class... Is>
-	constexpr array_ref(element_ptr p, I, Is...)// extensions_type<D> const& e) 
-	noexcept : data_{p}{}
-};*/
-
 template<typename T, std::size_t N>
-auto tail(std::array<T, N> a){
+auto tail(std::array<T, N> const& a){
 	std::array<T, N-1> ret;
-	std::copy(a.begin() + 1, a.end(), ret.begin());
+	std::copy(begin(a) + 1, end(a), begin(ret));
 	return ret;
 }
 
 template<dimensionality_type D, dimensionality_type DM = D>
 struct layout_t{
-	layout_t<D-1, DM-1> sub;
+	layout_t<D-1> sub;
 	index stride_;
 	index offset_;
 	index nelems_;
