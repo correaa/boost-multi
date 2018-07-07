@@ -6,6 +6,7 @@
 
 #include "../multi/array_ref.hpp"
 #include<iostream> // cerr
+#include<algorithm>
 
 namespace boost{
 namespace multi{
@@ -63,7 +64,16 @@ public:
 		allocator_.deallocate(this->data(), this->num_elements());
 	}
 private:
-	void destroy(){destroy(this->data() + this->num_elements());}
+	void destroy(){
+	//	destroy(this->data() + this->num_elements());
+	//	for(auto cur = this->data(); cur != last; ++cur)
+	///		alloc_traits::destroy(allocator_, std::addressof(*cur));
+		using std::for_each;
+		for_each(
+			this->data(), this->data() + this->num_elements(), 
+			[&](auto&& e){alloc_traits::destroy(allocator_, std::addressof(e));}
+		);
+	}
 	void destroy(typename array::element_ptr last){
 		for(auto cur = this->data(); cur != last; ++cur)
 			alloc_traits::destroy(allocator_, std::addressof(*cur));
@@ -72,9 +82,19 @@ private:
 	auto uninitialized_construct(Args&&... args){
 		typename array::element_ptr cur = this->data();
 		try{
-			for(size_type n = this->num_elements(); n > 0; --n, ++cur)
-				alloc_traits::construct(allocator_, std::addressof(*cur), std::forward<Args>(args)...);
-			return cur;
+			using std::for_each;
+			for_each(
+				this->data(), this->data() + this->num_elements(), 
+				[&](auto&& e){
+					alloc_traits::construct(
+						allocator_, std::addressof(e), 
+						std::forward<Args>(args)...
+					);
+				}
+			);
+		//	for(size_type n = this->num_elements(); n > 0; --n, ++cur)
+		//		alloc_traits::construct(allocator_, std::addressof(*cur), std::forward<Args>(args)...);
+		//	return cur;
 		}catch(...){destroy(cur); throw;}
 	}
 };
