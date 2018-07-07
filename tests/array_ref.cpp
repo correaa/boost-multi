@@ -5,31 +5,52 @@ clang++ -O3 -std=c++17 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $
 #include "../array_ref.hpp"
 #include "../array.hpp"
 
-#include<algorithm>
-#include<cassert>
-#include<iostream>
-#include<cmath>
-#include<vector>
-#include<list>
-#include<numeric> //iota
+#include<algorithm> // for sort
+#include<iostream> // for print
 
-using std::cout; using std::cerr;
 namespace multi = boost::multi;
-using multi::index;
+using std::cout; using std::cerr;
 
 int main(){
 
 //	std::pointer_traits<double const*>::rebind<double const> p = 0;//::rebind<double const>::type p;
 //	(void)p;
 
-	double d2D[4][5] {
-		{ 0,  1,  2,  3,  4}, 
-		{ 5,  6,  7,  8,  9}, 
-		{10, 11, 12, 13, 14}, 
-		{15, 16, 17, 18, 19}
+	double d2D[4][5] = {
+		{150, 16, 17, 18, 19},
+		{ 30,  1,  2,  3,  4}, 
+		{100, 11, 12, 13, 14}, 
+		{ 50,  6,  7,  8,  9} 
 	};
-
 	multi::array_ref<double, 2> d2D_ref{&d2D[0][0], {4, 5}};
+
+	for(auto i : d2D_ref.extensions()[0]){
+		for(auto j : d2D_ref.extensions()[1])
+			cout << d2D_ref[i][j] << ' ';
+		cout << '\n';
+	}
+
+//	using std::stable_sort;
+	std::stable_sort( d2D_ref.begin(0), d2D_ref.end(0) );
+
+	cout << "--\n";	
+	for(auto i : d2D_ref.extensions()[0]){
+		for(auto j : d2D_ref.extensions()[1])
+			cout << d2D_ref[i][j] << ' ';
+		cout << '\n';
+	}
+
+	std::stable_sort( d2D_ref.begin(1), d2D_ref.end(1) );
+
+	cout << "--\n";	
+	for(auto i : d2D_ref.extensions()[0]){
+		for(auto j : d2D_ref.extensions()[1])
+			cout << d2D_ref[i][j] << ' ';
+		cout << '\n';
+	}
+
+	return 0;
+
 	multi::array_ref<double, 1> d1D_ref{&d2D[0][0], {5}};
 
 	assert( d2D_ref.cdata() == cdata(d2D_ref) );
