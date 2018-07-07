@@ -90,5 +90,3 @@ Which will transform the matrix into.
 
 In other words, a matrix of dimension `D` can be viewed simultaneously as `D` different ranges by passing an interger value to `begin` and `end` indicating the preferred dimension.
 `begin(0)` is equivalent to `begin()`.
-
-
