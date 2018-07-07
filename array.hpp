@@ -5,10 +5,12 @@
 #define BOOST_MULTI_ARRAY_HPP
 
 #include "../multi/array_ref.hpp"
+#include<iostream> // cerr
 
 namespace boost{
 namespace multi{
 
+using std::cerr;
 
 template<class T, dimensionality_type D, class Allocator>
 class array : 
@@ -21,18 +23,40 @@ public:
 private:
 	using alloc_traits = std::allocator_traits<allocator_type>;
 public:
-	array(extensions_type e, Allocator alloc = Allocator{}) : 
+	template<class Array, typename = decltype(std::declval<Array>().extensions())>
+	array(Array&& other) : array(other.extensions()){
+		array::operator=(std::forward<Array>(other));
+	}
+	array(extensions_type e = {}, Allocator alloc = Allocator{}) : 
 		array_ref<T, D, typename array::element_ptr>(nullptr, e),
 		allocator_(std::move(alloc))
 	{
 		this->data_ = alloc_traits::allocate(allocator_, array::num_elements());
 		uninitialized_construct();
 	}
-	void swap(array& other){
+	array& operator=(array const& other){
+		array tmp(other.extensions());
+		for(auto i : tmp.extension()) tmp[i] = other[i];
+		swap(tmp);
+		return *this;
+	}
+	template<class Array>
+	array& operator=(Array const& a){
+		array tmp(a.extensions());
+		tmp.array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator=(a);
+		swap(tmp);
+		return *this;
+	}
+	void swap(array& other) noexcept{
 		using std::swap;
 		swap(this->data_, other.data_);
-		swap(this->layout_, other.layout_);
+		using layout_t = std::decay_t<decltype(this->layout())>;
+		swap(
+			static_cast<layout_t&>(*this), 
+			static_cast<layout_t&>(other)
+		);
 	}
+	friend void swap(array& self, array& other){self.swap(other);}
 	//! Destructs the array
 	~array(){
 		destroy();
@@ -55,8 +79,8 @@ private:
 	}
 };
 
-template<class Array1, class Array2>
-void swap(Array1& a1, Array2& a2){a1.swap(a2);}
+//template<class Array1, class Array2>
+//void swap(Array1& a1, Array2& a2){a1.swap(a2);}
 
 }}
 
@@ -72,8 +96,23 @@ namespace multi = boost::multi;
 
 int main(){
 
+	multi::array<double, 2> MA({2, 3});
+	MA[1][1] = 11.;
+	assert( MA[1][1] == 11.);
+	multi::array<double, 2> MA2({4, 5});
+	using std::swap;
+	swap(MA, MA2);
+	assert( MA.size() == 4 );
+	assert( MA2.size() == 2 );
+	cout << MA2[1][1] << std::endl;
+	assert( MA2[1][1] == 11. );
+	multi::array<double, 2> MA3 = MA2;//({2, 3});
+//	MA3 = MA2;
+	cout << MA3[1][1] << std::endl;
+	assert(MA3[1][1] == 11.);
+#if 0
 	multi::array<double, 2> MAswap({4, 5});
-	multi::array<double, 2> MA({3, 2});
+	multi::array<double, 1> MA1({3});
 	using std::swap;
 	swap(MA, MAswap);
 	assert(MA[2][2] == 0.);
@@ -82,19 +121,26 @@ int main(){
 	cout << MA.stride() << '\n';	
 	cout << MA.strides()[0] << '\n';
 	cout << MA.strides()[1] << '\n';
+	cout << "s = " << MA.size() << std::endl;
 	assert( MA.size() == 4 );
 	assert( MA.size(0) == 4 );
 	assert( MA.size(1) == 5 );
 
-	double const d2D[4][5] {
+	double d2D[4][5] {
 		{ 0,  1,  2,  3,  4}, 
 		{ 5,  6,  7,  8,  9}, 
 		{10, 11, 12, 13, 14}, 
 		{15, 16, 17, 18, 19}
 	};
-	multi::array_cref<double, 2> d2D_cref{&d2D[0][0], {4, 5}};
-//	multi::array<double, 2> MA2 = d2D_cref;
-
+	multi::array_ref<double, 2> d2D_ref{&d2D[0][0], {4, 5}};
+	d2D_ref[1][1] = 8.1;
+	multi::array<double, 2> MA2;
+	MA2 = d2D_ref;
+	d2D_ref[1][1] = 8.2;
+	assert(MA2.extensions() == d2D_ref.extensions());
+	cout << MA2[1][1] << std::endl;
+	assert(MA2[1][1] == 8.2);
+#endif
 }
 #endif
 #endif

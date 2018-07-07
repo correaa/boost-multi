@@ -3,6 +3,7 @@ clang++ -O3 -std=c++17 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $
 #endif
 
 #include "../array_ref.hpp"
+#include "../array.hpp"
 
 #include<algorithm>
 #include<cassert>
@@ -29,6 +30,7 @@ int main(){
 	};
 
 	multi::array_ref<double, 2> d2D_ref{&d2D[0][0], {4, 5}};
+	multi::array_ref<double, 1> d1D_ref{&d2D[0][0], {5}};
 
 	assert( d2D_ref.cdata() == cdata(d2D_ref) );
 	assert( d2D_ref.data() == data(d2D_ref) );
@@ -79,13 +81,13 @@ int main(){
 	using std::swap;
 	swap( d2D_ref[2], d2D_ref[3] );
 
-	using std::stable_sort;
-	stable_sort( begin(d2D_ref), end(d2D_ref) );
-
+//	using std::stable_sort;
+	std::stable_sort( begin(d2D_ref), end(d2D_ref) );
+//	swap( d2D_ref[0], d2D_ref[1] );
+	
 	for(auto i : d2D_ref.extension(0)){
-		for(auto j : d2D_ref.extension(1)){
+		for(auto j : d2D_ref.extension(1))
 			cout << d2D_ref[i][j] << ' ';
-		}
 		cout << '\n';
 	}
 

@@ -14,7 +14,6 @@ clang++ -O3 -std=c++17 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $
 
 using std::cout; using std::cerr;
 namespace multi = boost::multi;
-using multi::index;
 
 int main(){
 
