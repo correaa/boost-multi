@@ -17,7 +17,7 @@ Some features:
 
 ## First Example
 
-We create a static C-array of ``double`s, and refer to it via a bidimensional array `multi::array_ref<double, 2>`.
+We create a static C-array of `double`s, and refer to it via a bidimensional array `multi::array_ref<double, 2>`.
 
 
 	#include "../array_ref.hpp"
@@ -75,7 +75,7 @@ Since the sorted array is a reference to the original data, the original array h
 
 		assert( d2D[1][1] == 6 );
 
-Needless to say that ``std::*sort` cannot be applied directly to a multidimensional C-array or to Boost.MultiArray types.
+Needless to say that `std::*sort` cannot be applied directly to a multidimensional C-array or to Boost.MultiArray types.
 
 If we want to order the matrix in a per-column basis we need to "view" the matrix as range of columns. This is done in the bidimensional case, by accessing the matrix as a range of columns:
 
@@ -88,4 +88,7 @@ Which will transform the matrix into.
 > 11 12 13 14 100  
 > 16 17 18 19 150 
 
-In other words, a matrix of dimension `D` can be viewed simultaneously as `D` different ranges by passing an interger value to `begin` and `end` indicating the preferred dimension. `bgi`
+In other words, a matrix of dimension `D` can be viewed simultaneously as `D` different ranges by passing an interger value to `begin` and `end` indicating the preferred dimension.
+`begin(0)` is equivalent to `begin()`.
+
+
