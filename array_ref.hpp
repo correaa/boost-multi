@@ -84,6 +84,8 @@ struct layout_t{
 		return d?sub.stride(d-1):stride_;
 	}
 	constexpr index offset() const{return offset_;}
+	decltype(auto) shape() const{return sizes();}
+	friend decltype(auto) shape(layout_t const& self){return self.shape();}
 	auto sizes() const{
 		std::array<size_type, D> ret;
 		sizes_aux(ret.begin());

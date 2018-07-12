@@ -44,12 +44,14 @@ int main(){
 	assert( d2D_cref.sizes()[1] == d2D_cref.size(1) );
 	assert( sizes(d2D_cref) == d2D_cref.sizes() );
 
+	assert( d2D_cref.shape() == d2D_cref.sizes() );
+
 	assert( d2D_cref.stride() == d2D_cref.stride(0) );
 	assert( d2D_cref.stride() == 5 );
 	assert( d2D_cref.stride(1) == 1 );
 	assert( strides(d2D_cref) == d2D_cref.strides() );
 	assert( strides(d2D_cref)[1] == 1 );
-
+	
 	for(auto i = 0; i != d2D_cref.size<0>() ||!endl(cout); ++i)
 		for(auto j = 0; j != d2D_cref.size<1>() ||!endl(cout); ++j)
 			cout << d2D_cref[i][j] << ' ';
@@ -65,6 +67,10 @@ int main(){
 	assert( d2D_cref.extension(1) == d2D_cref.extension<1>() );
 	assert( d2D_cref.extensions()[1] == d2D_cref.extension(1) );
 	assert( extensions(d2D_cref)[1] == d2D_cref.extension(1) );
+	assert( d2D_cref.shape()[0] == d2D_cref.extensions()[0].size() );
+	assert( d2D_cref.shape()[1] == d2D_cref.extensions()[1].size() );
+	assert( shape(d2D_cref)[1] == size(extensions(d2D_cref)[1]) );
+	assert( shape(d2D_cref)[1] == sizes(d2D_cref)[1] );
 
 	for(auto i : d2D_cref.extension<0>()){
 		for(auto j : d2D_cref.extension<1>()) cout << d2D_cref[i][j] << ' ';
