@@ -1,8 +1,9 @@
 #ifdef COMPILATION_INSTRUCTIONS
-clang++ -O3 -std=c++17 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $0 -o $0.x && time $0.x $@ && rm -f $0.x; exit
+time clang++ -O3 -std=c++17 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $0 -o $0.x && time $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include "../array_ref.hpp"
+#include "../array.hpp"
 
 #include<algorithm>
 #include<cassert>
@@ -90,7 +91,10 @@ int main(){
 	}
 	cout << '\n';
 
-	multi::array_cref<double, 2> d2D_crefref{d2D_cref.data(), extensions(d2D_cref)};
+	multi::array_cref<double, 2> d2D_crefref{
+		data(d2D_cref), 
+		extensions(d2D_cref)
+	};
 
 	assert( d2D_cref.data() == data(d2D_cref) );
 	assert( d2D_cref.data()[2] == d2D_cref[0][2] );
@@ -121,6 +125,21 @@ int main(){
 			cout << ' ' << element;
 		})("\n"s);
 	})("\n"s);
+
+	cout <<"---\n";
+	for(auto& r: d2D_cref){for(auto& e: r) cout << e <<' '; cout <<'\n';}
+	for(decltype(d2D_cref)::reference r: d2D_cref){
+		for(decltype(d2D_cref)::element e: r) cout << e <<' '; cout <<'\n';
+	}
+	for(decltype(d2D_cref)::value_type r: d2D_cref){
+		for(decltype(d2D_cref)::element e: r) cout << e <<' '; cout <<'\n';
+	}
+
+	d2D_cref[0].extensions();
+//	multi::array<double, 1> vv = d2D_cref[0];
+	decltype(d2D_cref)::value_type vv = d2D_cref[0];
+
+	cout <<"---\n";
 
 	using std::is_sorted;
 	assert( is_sorted(begin(d2D_cref), end(d2D_cref)) ); 
@@ -199,23 +218,21 @@ int main(){
 	std::list<double>::iterator lit{nullptr};
 	assert( std::addressof(*vit) == nullptr );
 
-	std::ptrdiff_t NX = 2;
-	std::ptrdiff_t NY = 2;
-	std::ptrdiff_t NZ = 2;
+	auto NX = 2, NY = 2, NZ = 2;
 	std::vector<double> v(NX*NY*NZ);
 	iota(begin(v), end(v), 0.);
 
-	multi::array_cref<double, 3> v3D_cref{v.data(), {NX, NY, NZ}};
+	multi::array_cref<double, 3> v3D_cref{data(v), {NX, NY, NZ}};
 
 	assert( v3D_cref.num_elements() == multi::size_type(v.size()) );
 	for(auto i : v3D_cref.extension(0))
 		for(auto j : v3D_cref.extension(1))
 			for(auto k : v3D_cref.extension(2))
-				cout << i << ' ' << j << ' ' << k << ' ' 
-					<< v3D_cref[i][j][k] << '\n';
+				cout << i <<' '<< j <<' '<< k <<' '<< v3D_cref[i][j][k] <<'\n';
 
 	cout << v3D_cref[9][9][9] << "\n\n";
-	cout << *(v3D_cref.begin()->begin()->begin()) << "\n\n";
+	cout << *v3D_cref.begin()->begin()->begin() << "\n\n";
+	cout << v3D_cref.begin()->begin()->begin()[0] << "\n\n";
 
 	assert(d2D_cref.begin() == d2D_cref.begin(0));
 	assert(d2D_cref.begin() != d2D_cref.begin(1));

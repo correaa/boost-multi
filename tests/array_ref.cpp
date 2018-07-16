@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-clang++ -O3 -std=c++17 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $0 -o $0.x && time $0.x $@ && rm -f $0.x; exit
+time clang++ -O3 -std=c++17 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $0 -o $0.x && time $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include "../array_ref.hpp"
@@ -23,6 +23,15 @@ int main(){
 		{ 50,  6,  7,  8,  9} 
 	};
 	multi::array_ref<double, 2> d2D_ref{&d2D[0][0], {4, 5}};
+
+	multi::array_ref<double, 2> d2D_ref2{&d2D[0][0], {4, 5}};
+	d2D_ref = d2D_ref2;
+
+	for(auto& r: d2D_ref) for(auto& e: r) e = -e;
+
+	for(auto i : d2D_ref.extensions()[0])
+		for(auto j : d2D_ref.extensions()[1])
+			d2D_ref[i][j] = -d2D_ref[i][j];
 
 	for(auto i : d2D_ref.extensions()[0]){
 		for(auto j : d2D_ref.extensions()[1])
