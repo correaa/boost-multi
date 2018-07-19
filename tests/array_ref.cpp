@@ -70,15 +70,16 @@ int main(){
 			cout << d2D_ref[i][j] << ' ';
 		cout << '\n';
 	}
-	swap(*begin(d2D_ref), *(begin(d2D_ref) + 3));
-	swap(*(begin(d2D_ref) + 1), *(begin(d2D_ref) + 2));
+//	swap(*begin(d2D_ref), *(begin(d2D_ref) + 3));
+//	swap(*(begin(d2D_ref) + 1), *(begin(d2D_ref) + 2));
 //	std::reverse(d2D_ref.begin(), d2D_ref.end());
-/*	{auto first = d2D_ref.begin(); auto last = d2D_ref.end();
+	{auto first = d2D_ref.begin(); auto last = d2D_ref.end();
 		while ((first != last) && (first != --last)) {
-		//    std::iter_swap(first++, last);
-			std::swap(*(first++), *last);
+		    std::iter_swap(first, last);
+		//	swap(*first, *last);
+			first++;
 		}
-	}*/
+	}
 	cout << "--\n";	
 	for(auto i : d2D_ref.extensions()[0]){
 		for(auto j : d2D_ref.extensions()[1])

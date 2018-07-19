@@ -283,9 +283,9 @@ public:
 			if(stride_ < 0) return other.data_ - this->data_ < 0;
 			return this->data_ - other.data_ < 0;
 		}
-	//	friend void iter_swap(iterator const& i1, iterator const& i2){
-	//		return swap(*i1, *i2);
-	//	}
+		friend void iter_swap(iterator const& i1, iterator const& i2){
+			return swap(*i1, *i2);
+		}
 	};
 	friend size_type size(basic_array const& self){return self.size();}
 	friend auto sizes(basic_array const& self){return self.sizes();}
