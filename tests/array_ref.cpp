@@ -7,6 +7,7 @@ time clang++ -O3 -std=c++17 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/
 
 #include<algorithm> // for sort
 #include<iostream> // for print
+#include<vector>
 
 namespace multi = boost::multi;
 using std::cout; using std::cerr;
@@ -39,8 +40,8 @@ int main(){
 		cout << '\n';
 	}
 
-//	using std::stable_sort;
-	std::stable_sort( d2D_ref.begin(0), d2D_ref.end(0) );
+	using std::stable_sort;
+	stable_sort( d2D_ref.begin(0), d2D_ref.end(0) );
 
 	cout << "--\n";	
 	for(auto i : d2D_ref.extensions()[0]){
@@ -49,8 +50,35 @@ int main(){
 		cout << '\n';
 	}
 
-	std::stable_sort( d2D_ref.begin(1), d2D_ref.end(1) );
+	stable_sort( d2D_ref.begin(1), d2D_ref.end(1) );
 
+//	decltype(d2D_ref)::const_iterator cb = d2D_ref.begin();
+	std::vector<double>::const_iterator ci = std::vector<double>::iterator{};
+
+	cout << "--\n";	
+	for(auto i : d2D_ref.extensions()[0]){
+		for(auto j : d2D_ref.extensions()[1])
+			cout << d2D_ref[i][j] << ' ';
+		cout << '\n';
+	}
+	swap(*begin(d2D_ref), *(begin(d2D_ref) + 1));
+//	swap(*d2D_ref.begin(), *(d2D_ref.begin() + 1));
+
+	cout << "--\n";	
+	for(auto i : d2D_ref.extensions()[0]){
+		for(auto j : d2D_ref.extensions()[1])
+			cout << d2D_ref[i][j] << ' ';
+		cout << '\n';
+	}
+	swap(*begin(d2D_ref), *(begin(d2D_ref) + 3));
+	swap(*(begin(d2D_ref) + 1), *(begin(d2D_ref) + 2));
+//	std::reverse(d2D_ref.begin(), d2D_ref.end());
+/*	{auto first = d2D_ref.begin(); auto last = d2D_ref.end();
+		while ((first != last) && (first != --last)) {
+		//    std::iter_swap(first++, last);
+			std::swap(*(first++), *last);
+		}
+	}*/
 	cout << "--\n";	
 	for(auto i : d2D_ref.extensions()[0]){
 		for(auto j : d2D_ref.extensions()[1])
@@ -65,7 +93,7 @@ int main(){
 	assert( d2D_ref.cdata() == cdata(d2D_ref) );
 	assert( d2D_ref.data() == data(d2D_ref) );
 	assert( data(d2D_ref) == &d2D[0][0] );
-	*data(d2D_ref) = 1;
+//	*data(d2D_ref) = 1;
 	assert(d2D[0][0] == 1);
 	for(auto i : d2D_ref.extension(0))
 		for(auto j : d2D_ref.extension(1)) 
@@ -120,6 +148,8 @@ int main(){
 			cout << d2D_ref[i][j] << ' ';
 		cout << '\n';
 	}
+
+	
 
 /*	using std::for_each;
     using namespace std::string_literals; //""s

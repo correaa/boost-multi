@@ -24,7 +24,7 @@ int main(){
 		{10, 11, 12, 13, 14}, 
 		{15, 16, 17, 18, 19}
 	};
-	static_assert( std::is_same<multi::array_cref<double, 2>, multi::const_array_ref<double, 2>>{} );
+	static_assert( std::is_same<multi::array_cref<double, 2>, multi::const_array_ref<double, 2>>{}, "check");
 
 	multi::array_cref<double, 2> d2D_cref{&d2D[0][0], {4, 5}};
 
@@ -222,7 +222,7 @@ int main(){
 	std::vector<double> v(NX*NY*NZ);
 	iota(begin(v), end(v), 0.);
 
-	multi::array_cref<double, 3> v3D_cref{data(v), {NX, NY, NZ}};
+	multi::array_cref<double, 3> v3D_cref{v.data(), {NX, NY, NZ}};
 
 	assert( v3D_cref.num_elements() == multi::size_type(v.size()) );
 	for(auto i : v3D_cref.extension(0))
