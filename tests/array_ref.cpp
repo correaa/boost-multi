@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-time clang++ -O3 -std=c++17 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $0 -o $0.x && time $0.x $@ && rm -f $0.x; exit
+time clang++ -O2 -std=c++17 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $0 -ggdb3 -o $0.x && time $0.x $@ && rm -f .$0.x; exit
 #endif
 
 #include "../array_ref.hpp"
@@ -11,6 +11,15 @@ time clang++ -O3 -std=c++17 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/
 
 namespace multi = boost::multi;
 using std::cout; using std::cerr;
+
+#include<numeric>
+#include<vector>
+
+auto f(){
+	std::vector<std::vector<double>> v(10, std::vector<double>(3));
+	iota(v[5].begin(), v[5].end(), 1);
+	return v;
+}
 
 int main(){
 
@@ -25,25 +34,37 @@ int main(){
 	};
 	multi::array_ref<double, 2> d2D_ref{&d2D[0][0], {4, 5}};
 
+	cout << "--\n";
+	for(auto i : d2D_ref.extension(0)){
+		for(auto j : d2D_ref.extension(1)) 
+			cout << d2D_ref[i][j] << ' ';
+		cout << '\n';
+	}
+	cout << '\n';
+
 	multi::array_ref<double, 2>::const_reference crow1 = d2D_ref[1];
 	assert( crow1[3] == 3 );
-	multi::array_ref<double, 2>::iterator it = d2D_ref.begin();
-	multi::array_ref<double, 2>::const_iterator cit = it;
+	multi::array_ref<double, 2>::iterator it = begin(d2D_ref);
+	multi::array_ref<double, 2>::const_iterator cit = begin(d2D_ref);
+	assert(it == cit);
 
 	multi::array_ref<double, 2> d2D_ref2{&d2D[0][0], {4, 5}};
 	d2D_ref = d2D_ref2;
 
 	for(auto& r: d2D_ref) for(auto& e: r) e = -e;
-
-	for(auto i : d2D_ref.extensions()[0])
-		for(auto j : d2D_ref.extensions()[1])
+	
+	for(auto i : d2D_ref.extension(0))
+		for(auto j : d2D_ref.extension(1))
 			d2D_ref[i][j] = -d2D_ref[i][j];
+
+	return 0;
 
 	for(auto i : d2D_ref.extensions()[0]){
 		for(auto j : d2D_ref.extensions()[1])
 			cout << d2D_ref[i][j] << ' ';
 		cout << '\n';
 	}
+	return 0;
 
 	using std::stable_sort;
 	stable_sort( d2D_ref.begin(0), d2D_ref.end(0) );

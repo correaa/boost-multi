@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && c++ -O3 `#-fconcepts` -std=c++17 -Wall -Wextra `#-fmax-errors=2` `#-Wfatal-errors` -lboost_timer -I${HOME}/prj -D_TEST_BOOST_MULTI_ARRAY_REF -rdynamic -ldl $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
+(echo "#include\""$0"\"" > $0x.cpp) && clang++ -O3 `#-fconcepts` -std=c++17 -Wall -Wextra `#-fmax-errors=2` `#-Wfatal-errors` -lboost_timer -I${HOME}/prj -D_TEST_BOOST_MULTI_ARRAY_REF -rdynamic -ldl $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
 #endif
 #ifndef BOOST_MULTI_ARRAY_REF_HPP
 #define BOOST_MULTI_ARRAY_REF_HPP
@@ -119,7 +119,8 @@ struct layout_t{
 	}
 	void extensions_aux(index_extension* it) const{
 		*it = extension();
-		sub.extensions_aux(++it);
+		++it;
+		sub.extensions_aux(it);
 	}
 };
 
@@ -179,9 +180,11 @@ private:
 public:
 	basic_array(element_ptr data, Layout layout) : Layout(layout), data_(data){}
 	const_reference operator[](index i) const{
+		assert( i < this->extension().last() and i >= this->extension().first() );
 		return const_reference{data_ + Layout::operator()(i), Layout::sub};
 	}
 	reference operator[](index i){
+		assert( i < this->extension().last() and i >= this->extension().first() );
 		return reference{data_ + Layout::operator()(i), Layout::sub};
 	}
 	auto range(index_range const& ir) const{
@@ -255,10 +258,12 @@ public:
 		iterator(std::nullptr_t = nullptr) : basic_array<T, D-1, ElementPtr>{}{}
 		using iterator_category = std::random_access_iterator_tag;
 		iterator& operator=(iterator const& other) = default;
-		bool operator==(iterator const& other) const{
+		template<class It>
+		bool operator==(It const& other) const{
 			return this->data_ == other.data_ and this->stride_ == other.stride_;
 		}
-		bool operator!=(iterator const& other) const{return not((*this)==other);}
+		template<class It>
+		bool operator!=(It const& other) const{return not((*this)==other);}
 		reference& operator*() const{return *const_cast<iterator*>(this);}
 		reference* operator->(){return static_cast<reference*>(this);}
 		iterator& operator++(){this->data_ += stride_; return *this;}
@@ -322,12 +327,19 @@ public:
 			new_layout.stride_
 		};
 	}
-	const_iterator begin()  const{return {operator[](0), Layout::stride_};}
-	const_iterator end()    const{return {operator[](Layout::size()), Layout::stride_};}
-	const_iterator cbegin()  const{return begin();}
+	const_iterator begin()  const{return {const_reference{data_ + Layout::operator()(this->extension().first()), Layout::sub}, Layout::stride_};}
+	const_iterator end()    const{return {const_reference{data_ + Layout::operator()(this->extension().last()), Layout::sub}, Layout::stride_};}
+	const_iterator cbegin()  const{
+		iterator r = begin();
+		const_iterator cr = r;
+		return r;
+	}
 	const_iterator cend()    const{return end();}
-	iterator begin(){return {operator[](0), Layout::stride_};}
-	iterator end()  {return {operator[](Layout::size()), Layout::stride_};}
+//	iterator begin(){return {operator[](0), Layout::stride_};}
+	iterator begin(){return {reference{data_ + Layout::operator()(this->extension().first()), Layout::sub}, Layout::stride_};}
+//	iterator end()  {return {operator[](Layout::size()), Layout::stride_};}
+	iterator end()  {return {reference{data_ + Layout::operator()(this->extension().last()), Layout::sub}, Layout::stride_};}
+
 	friend const_iterator begin(basic_array const& self){return self.begin();}
 	friend const_iterator end(basic_array const& self){return self.end();}
 	friend iterator begin(basic_array& self){return self.begin();}
@@ -364,16 +376,26 @@ public:
 		using std::swap_ranges; using std::begin; using std::end;
 		swap_ranges(this->begin(), this->end(), begin(other)); // for(auto i : self.extension()) swap(self[i], other[i]);		
 	}
+	template<class Array> 
+	bool operator==(Array const& other) const{
+		if(this->extension() != other.extension()) return false;
+		using std::equal;
+		return equal(this->begin(), this->end(), other.begin());
+	}
+	template<class Array> bool operator!=(Array const& other) const{
+		return not((*this) == other);
+	}
 };
 
+/*
 template<class Array1, class Array2, typename = std::enable_if_t<Array1::dimensionality == Array2::dimensionality> >
 bool operator==(Array1 const& self, Array2 const& other){
 	if(self.extension() != other.extension()) return false;
 	using std::equal;
 	return equal(begin(self), end(self), begin(other));
-}
-template<class Arr1, class Arr2>
-bool operator!=(Arr1 const& self, Arr2 const& other){return not(self == other);}
+}*/
+//template<class Arr1, class Arr2>
+//bool operator!=(Arr1 const& self, Arr2 const& other){return not(self == other);}
 
 template<class T, std::size_t N> 
 index_range extension(T(&)[N]){return {0, N};}
@@ -392,13 +414,20 @@ protected:
 	element_ptr data_;
 	basic_array() = default;
 	basic_array(element_ptr data, layout_t layout) : Layout{layout}, data_{data}{}
-	friend struct basic_array<T, dimensionality_type{2}, ElementPtr>;
+	friend struct basic_array<T, dimensionality_type{2}, element_ptr>;
+	friend struct basic_array<T, dimensionality_type{2}, typename std::pointer_traits<element_ptr>::template rebind<element>>;
 	friend struct basic_array<T, dimensionality_type{1}, element_const_ptr>;
 	basic_array& operator=(basic_array const& other) = default;
 public:
 	basic_array(basic_array<element, 1, typename std::pointer_traits<element_ptr>::template rebind<element>> const& other) : Layout(static_cast<Layout const&>(other)), data_(other.data_){}
-	const_reference operator[](index i) const{return data_[Layout::operator()(i)];}
-	reference operator[](index i){return data_[Layout::operator()(i)];}
+	const_reference operator[](index i) const{
+		assert( i < this->extension().last() and i >= this->extension().first() );
+		return data_[Layout::operator()(i)];
+	}
+	reference operator[](index i){
+		assert( i < this->extension().last() and i >= this->extension().first() );
+		return data_[Layout::operator()(i)];
+	}
 	class const_iterator{
 		friend struct basic_array;
 		const_iterator(element_ptr data, index stride) : data_(data), stride_(stride){}
@@ -454,12 +483,19 @@ public:
 		assert(this->extension() == other.extension());
 		for(auto i : this->extension()) operator[](i) = std::forward<Array>(other)[i];
 	}
-	template<class Array>
+/*	template<class Array>
 	friend bool operator==(basic_array const& self, Array const& other){
 		using multi::extension;
 		if(self.extension() != extension(other)) return false;
 		using std::equal; using std::begin; using std::end;
 		return equal(begin(self), end(self), begin(other));
+	}*/
+	template<class Array>
+	bool operator==(Array const& other) const{
+		using multi::extension;
+		if(this->extension() != extension(other)) return false;
+		using std::equal; using std::begin; // using std::end;
+		return equal(this->begin(), this->end(), begin(other));
 	}
 	template<class Array>
 	bool operator!=(Array const& other) const{return not((*this)==other);}
@@ -484,13 +520,22 @@ public:
 		using std::swap_ranges; using std::begin; using std::end;
 		swap_ranges(this->begin(), this->end(), begin(other)); // for(auto i : self.extension()) swap(self[i], other[i]);		
 	}
-	template<class Arr1, class Arr2>
+/*	template<class Arr1, class Arr2>
 	friend void swap(Arr1&& self, Arr2&& other){
 		assert(extension(self) == extension(other));
 		using std::swap_ranges; using std::begin; using std::end;
 		swap_ranges(begin(self), end(self), begin(other)); // for(auto i : self.extension()) swap(self[i], other[i]);
-	}
+	}*/
 };
+
+template<class A1, class A2, typename = decltype(extension(std::declval<A1>()) == extension(std::declval<A2>()))>
+void swap(A1&& self, A2&& other){
+	assert(extension(self) == extension(other));
+	using std::swap;
+	using std::swap_ranges; using std::begin; using std::end;
+//	swap_ranges(begin(self), end(self), begin(other)); 
+	for(auto i : self.extension()) swap(self[i], other[i]);	
+}
 
 template<typename T, dimensionality_type D, typename ElementPtr = T const*>
 struct const_array_ref : basic_array<T, D, ElementPtr>{
@@ -515,6 +560,10 @@ struct const_array_ref : basic_array<T, D, ElementPtr>{
 
 template<typename T, dimensionality_type D, typename ElementPtr = T const*>
 using array_cref = const_array_ref<T, D, ElementPtr>;
+
+template<typename T, dimensionality_type D, typename ElementPtr = T const*>
+using carray_cref = array_cref<T, D, ElementPtr>;
+
 
 }}
 
@@ -575,7 +624,6 @@ int main(){
 		assert( acrd2D.size<1>() == 5);
 		assert( acrd2D.num_elements() == 20 );
 
-		multi::array_cref<double, 2> acrd2Dprime{acrd2D};
 		assert( &acrd2D[2][3] == &dc2D[2][3] );
 	
 		assert( acrd2D.begin() == begin(acrd2D) );

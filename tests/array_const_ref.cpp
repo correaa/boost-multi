@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-time clang++ -O3 -std=c++17 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $0 -o $0.x && time $0.x $@ && rm -f $0.x; exit
+time c++ -O3 -std=c++14 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $0 -o $0.x && time $0.x $@ && rm -f .$0.x; exit
 #endif
 
 #include "../array_ref.hpp"
@@ -87,9 +87,11 @@ int main(){
 
 	for(auto i : extensions(d2D_cref)[0]){
 		for(auto j : extensions(d2D_cref)[1]) cout << d2D_cref[i][j] << ' ';
-		cout << '\n';
+		cout <<'\n';
 	}
-	cout << '\n';
+	cout <<'\n';
+
+
 
 	multi::array_cref<double, 2> d2D_crefref{
 		data(d2D_cref), 
@@ -100,13 +102,24 @@ int main(){
 	assert( d2D_cref.data()[2] == d2D_cref[0][2] );
 	assert( d2D_cref.data()[6] == d2D_cref[1][1] );
 
+
+
 	assert( d2D_cref.begin() == begin(d2D_cref) );
+
+
 	assert( d2D_cref.end() == end(d2D_cref) );
+
+
 	assert( begin(d2D_cref) != end(d2D_cref) );
+
+
 	assert( begin(d2D_cref) + size(d2D_cref) == end(d2D_cref) );
 	assert( end(d2D_cref) - begin(d2D_cref) == size(d2D_cref) );
 	using std::distance;
 	assert( distance(begin(d2D_cref), end(d2D_cref)) == size(d2D_cref));
+
+	return 0;
+
 
 	assert( d2D_cref.sizes() == sizes(d2D_cref) );
 	assert( d2D_cref.sizes()[1] == d2D_cref.size<1>() );
@@ -118,21 +131,24 @@ int main(){
 	assert( size(d2D_cref[0]) == 5 );
 //	assert( d2D_cref[0].num_elements() == 5 );
 
+
 	using std::for_each;
     using namespace std::string_literals; //""s
 	for_each(begin(d2D_cref), end(d2D_cref), [](auto&& row){
 		for_each(begin(row), end(row), [](auto&& element){
-			cout << ' ' << element;
+			cout <<' '<< element;
 		})("\n"s);
 	})("\n"s);
 
 	cout <<"---\n";
 	for(auto& r: d2D_cref){for(auto& e: r) cout << e <<' '; cout <<'\n';}
 	for(decltype(d2D_cref)::reference r: d2D_cref){
-		for(decltype(d2D_cref)::element e: r) cout << e <<' '; cout <<'\n';
+		for(decltype(d2D_cref)::element e: r) cout << e <<' '; 
+		cout <<'\n';
 	}
 	for(decltype(d2D_cref)::value_type r: d2D_cref){
-		for(decltype(d2D_cref)::element e: r) cout << e <<' '; cout <<'\n';
+		for(decltype(d2D_cref)::element e: r) cout << e <<' '; 
+		cout <<'\n';
 	}
 
 	d2D_cref[0].extensions();
@@ -182,21 +198,25 @@ int main(){
 	
 	using std::find;
 	auto f = find(begin(d2D_cref), end(d2D_cref), d2D_cref[2]);
-	assert( f != end(d2D_cref) );
-	assert( (*f)[3] == d2D_cref[2][3] );
+	assert( f == begin(d2D_cref) + 2 );
+	assert( *f == *(begin(d2D_cref) + 2) );
+	assert( & (*f)[3] == &d2D_cref[2][3] );
 
 	using std::find_if;
 	auto fif1 = find_if(begin(d2D_cref), end(d2D_cref), [](auto&& e){return e[3] == 8.111;});
 	assert( fif1 == end(d2D_cref) );
+
 
 	using std::find_if;
 	auto fif2 = find_if(begin(d2D_cref), end(d2D_cref), [](auto&& e){return e[3] == 8.;});
 	assert( fif2 != end(d2D_cref) );
 	assert( fif2->operator[](4) == 9. );
 
+	std::cout << "HERE" << std::endl;
+
 	using std::count;
 	assert( count(begin(d2D_cref), end(d2D_cref), d2D_prime_cref[3]) == 1 );
-	assert( count(begin(d2D_cref), end(d2D_cref), d2D_prime[3]     ) == 1 );
+//	assert( count(begin(d2D_cref), end(d2D_cref), d2D_prime[3]     ) == 1 );
 
 	using std::min_element;
 	using std::max_element;
@@ -230,10 +250,14 @@ int main(){
 			for(auto k : v3D_cref.extension(2))
 				cout << i <<' '<< j <<' '<< k <<' '<< v3D_cref[i][j][k] <<'\n';
 
-	cout << v3D_cref[9][9][9] << "\n\n";
+	cout << "here" << std::endl;
+
+	cout << v3D_cref[1][1][1] << "\n\n";
 	cout << *v3D_cref.begin()->begin()->begin() << "\n\n";
 	cout << v3D_cref.begin()->begin()->begin()[0] << "\n\n";
 
+	cout << "here" << std::endl;
+	return 0;
 	assert(d2D_cref.begin() == d2D_cref.begin(0));
 	assert(d2D_cref.begin() != d2D_cref.begin(1));
 	for(auto it1 = d2D_cref.begin(1); it1 != d2D_cref.end(1)||!endl(cout); ++it1)
