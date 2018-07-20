@@ -25,6 +25,11 @@ int main(){
 	};
 	multi::array_ref<double, 2> d2D_ref{&d2D[0][0], {4, 5}};
 
+	multi::array_ref<double, 2>::const_reference crow1 = d2D_ref[1];
+	assert( crow1[3] == 3 );
+	multi::array_ref<double, 2>::iterator it = d2D_ref.begin();
+	multi::array_ref<double, 2>::const_iterator cit = it;
+
 	multi::array_ref<double, 2> d2D_ref2{&d2D[0][0], {4, 5}};
 	d2D_ref = d2D_ref2;
 
@@ -52,9 +57,6 @@ int main(){
 
 	stable_sort( d2D_ref.begin(1), d2D_ref.end(1) );
 
-//	decltype(d2D_ref)::const_iterator cb = d2D_ref.begin();
-	std::vector<double>::const_iterator ci = std::vector<double>::iterator{};
-
 	cout << "--\n";	
 	for(auto i : d2D_ref.extensions()[0]){
 		for(auto j : d2D_ref.extensions()[1])
@@ -72,14 +74,14 @@ int main(){
 	}
 //	swap(*begin(d2D_ref), *(begin(d2D_ref) + 3));
 //	swap(*(begin(d2D_ref) + 1), *(begin(d2D_ref) + 2));
-//	std::reverse(d2D_ref.begin(), d2D_ref.end());
-	{auto first = d2D_ref.begin(); auto last = d2D_ref.end();
+	std::reverse(begin(d2D_ref), end(d2D_ref));
+/*	{auto first = d2D_ref.begin(); auto last = d2D_ref.end();
 		while ((first != last) && (first != --last)) {
-		    std::iter_swap(first, last);
+			std::iter_swap(first, last);
 		//	swap(*first, *last);
 			first++;
 		}
-	}
+	}*/
 	cout << "--\n";	
 	for(auto i : d2D_ref.extensions()[0]){
 		for(auto j : d2D_ref.extensions()[1])

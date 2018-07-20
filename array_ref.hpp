@@ -206,20 +206,14 @@ public:
 		friend struct basic_array;
 		explicit operator bool() const{return this->data_;}
 	public:
-		using difference_type = typename basic_array<T, D, ElementPtr>::difference_type;
+		using difference_type = basic_array::difference_type;
 		using value_type = typename basic_array<T, D, ElementPtr>::value_type;
 		using pointer = void*;
 		using reference = const_reference;
 		using iterator_category = std::random_access_iterator_tag;
 		const_iterator(std::nullptr_t = nullptr) : const_reference{}{}
 		const_iterator(const_iterator const&) = default;
-		const_iterator& operator=(const_iterator const& other) = default;/*{
-			this->data_ = other.data_;
-			this->stride_ = other.stride_;
-			using layout_t = std::decay_t<decltype(this->layout())>;
-			static_cast<layout_t&>(*this)= static_cast<layout_t const&>(other);
-			return *this;
-		}*/
+		const_iterator& operator=(const_iterator const& other) = default;
 		const_reference const& operator*() const{assert(operator bool()); return *this;}
 		const_reference const* operator->() const{return static_cast<const_reference const*>(this);}
 		const_reference operator[](index i) const{return {this->data_ + i*stride_, Layout::sub};}
@@ -251,6 +245,9 @@ public:
 		friend struct basic_array;
 		explicit operator bool() const{return this->data_;}
 	public:
+		operator const_iterator() const{
+			return const_iterator{static_cast<reference const&>(*this), stride_};
+		}
 		using difference_type = typename basic_array<T, D, ElementPtr>::difference_type;
 		using value_type = typename basic_array<T, D, ElementPtr>::value_type;
 		using pointer = void*;
@@ -284,7 +281,8 @@ public:
 			return this->data_ - other.data_ < 0;
 		}
 		friend void iter_swap(iterator const& i1, iterator const& i2){
-			return swap(*i1, *i2);
+			i1->swap(*i2);
+//			return swap(*i1, *i2);
 		}
 	};
 	friend size_type size(basic_array const& self){return self.size();}
@@ -351,8 +349,7 @@ public:
 	template<class Array>
 	bool operator<(Array const& other) const{
 		using std::lexicographical_compare;
-		using std::begin;
-		using std::end;
+		using std::begin; using std::end;
 		return lexicographical_compare(this->begin(), this->end(), begin(other), end(other)); // needs assignable iterator
 	}
 	template<class Array>
@@ -361,6 +358,12 @@ public:
 	bool operator>(Array const& other) const{return not ((*this)<=other);}
 	template<class Array>
 	bool operator>=(Array const& other) const{return not ((*this)<other);}
+	template<class Array>
+	void swap(Array&& other){
+		assert(this->extension() == extension(other));
+		using std::swap_ranges; using std::begin; using std::end;
+		swap_ranges(this->begin(), this->end(), begin(other)); // for(auto i : self.extension()) swap(self[i], other[i]);		
+	}
 };
 
 template<class Array1, class Array2, typename = std::enable_if_t<Array1::dimensionality == Array2::dimensionality> >
@@ -390,8 +393,10 @@ protected:
 	basic_array() = default;
 	basic_array(element_ptr data, layout_t layout) : Layout{layout}, data_{data}{}
 	friend struct basic_array<T, dimensionality_type{2}, ElementPtr>;
-	basic_array& operator=(basic_array const& other) = default;\
+	friend struct basic_array<T, dimensionality_type{1}, element_const_ptr>;
+	basic_array& operator=(basic_array const& other) = default;
 public:
+	basic_array(basic_array<element, 1, typename std::pointer_traits<element_ptr>::template rebind<element>> const& other) : Layout(static_cast<Layout const&>(other)), data_(other.data_){}
 	const_reference operator[](index i) const{return data_[Layout::operator()(i)];}
 	reference operator[](index i){return data_[Layout::operator()(i)];}
 	class const_iterator{
@@ -473,6 +478,12 @@ public:
 	bool operator>(Array const& other) const{return not ((*this)<=other);}
 	template<class Array>
 	bool operator>=(Array const& other) const{return not ((*this)<other);}
+	template<class Array>
+	void swap(Array&& other){
+		assert(this->extension() == extension(other));
+		using std::swap_ranges; using std::begin; using std::end;
+		swap_ranges(this->begin(), this->end(), begin(other)); // for(auto i : self.extension()) swap(self[i], other[i]);		
+	}
 	template<class Arr1, class Arr2>
 	friend void swap(Arr1&& self, Arr2&& other){
 		assert(extension(self) == extension(other));
@@ -521,12 +532,16 @@ struct array_ref : const_array_ref<T, D, ElementPtr>{
 	}
 	array_ref& operator=(array_ref const& o){return operator=<array_ref const&>(o);}
 	typename array_ref::element_ptr  data() const{return this->data_;}
-//	friend auto cdata(array_ref const& self){return self.cdata();}
 };
 
 template<typename... A> using carray_ref = array_ref<A...>;
 
 }}
+
+namespace std{
+template<class It, typename = decltype(It{}.stride_)>
+void iter_swap(It it1, It it2){it1->swap(*it2);}
+}
 
 #if _TEST_BOOST_MULTI_ARRAY_REF
 
@@ -538,14 +553,6 @@ using std::cout;
 namespace multi = boost::multi;
 
 int main(){
-
-/*	std::string s = "hola";
-	std::string_view sv = s;
-	std::string s1 = "chau";
-	sv = s1;
-	std::cout << s;
-	std::cout << sv;
-*/
 
 #if 0
 	{
