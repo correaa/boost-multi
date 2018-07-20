@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-time c++ -O2 -std=c++17 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $0 -ggdb3 -o $0.x && time $0.x $@ && rm -f .$0.x; exit
+time clang++ -O2 -std=c++17 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $0 -ggdb3 -o $0.x && time $0.x $@ && rm -f .$0.x; exit
 #endif
 
 #include "../array_ref.hpp"
@@ -8,6 +8,7 @@ time c++ -O2 -std=c++17 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj 
 #include<algorithm> // for sort
 #include<iostream> // for print
 #include<vector>
+#include<cmath>
 
 namespace multi = boost::multi;
 using std::cout; using std::cerr;
@@ -68,15 +69,12 @@ int main(){
 	using std::stable_sort;
 	stable_sort( d2D_ref.begin(0), d2D_ref.end(0) );
 
-	return 0;
-
 	cout << "--\n";	
-	for(auto i : d2D_ref.extensions()[0]){
-		for(auto j : d2D_ref.extensions()[1])
+	for(auto i : d2D_ref.extension(0)){
+		for(auto j : d2D_ref.extension(1))
 			cout << d2D_ref[i][j] << ' ';
 		cout << '\n';
 	}
-
 	stable_sort( d2D_ref.begin(1), d2D_ref.end(1) );
 
 	cout << "--\n";	
@@ -89,48 +87,39 @@ int main(){
 //	swap(*d2D_ref.begin(), *(d2D_ref.begin() + 1));
 
 	cout << "--\n";	
-	for(auto i : d2D_ref.extensions()[0]){
-		for(auto j : d2D_ref.extensions()[1])
+	for(auto i : d2D_ref.extension(0)){
+		for(auto j : d2D_ref.extension(1))
 			cout << d2D_ref[i][j] << ' ';
 		cout << '\n';
 	}
-//	swap(*begin(d2D_ref), *(begin(d2D_ref) + 3));
-//	swap(*(begin(d2D_ref) + 1), *(begin(d2D_ref) + 2));
-	std::reverse(begin(d2D_ref), end(d2D_ref));
-/*	{auto first = d2D_ref.begin(); auto last = d2D_ref.end();
-		while ((first != last) && (first != --last)) {
-			std::iter_swap(first, last);
-		//	swap(*first, *last);
-			first++;
-		}
-	}*/
+	std::reverse(d2D_ref.begin(), d2D_ref.end());
 	cout << "--\n";	
-	for(auto i : d2D_ref.extensions()[0]){
-		for(auto j : d2D_ref.extensions()[1])
+	for(auto i : d2D_ref.extension(0)){
+		for(auto j : d2D_ref.extension(1))
 			cout << d2D_ref[i][j] << ' ';
 		cout << '\n';
 	}
-
-	return 0;
 
 	multi::array_ref<double, 1> d1D_ref{&d2D[0][0], {5}};
 
 	assert( d2D_ref.cdata() == cdata(d2D_ref) );
 	assert( d2D_ref.data() == data(d2D_ref) );
 	assert( data(d2D_ref) == &d2D[0][0] );
-//	*data(d2D_ref) = 1;
+	*data(d2D_ref) = 1;
 	assert(d2D[0][0] == 1);
 	for(auto i : d2D_ref.extension(0))
 		for(auto j : d2D_ref.extension(1)) 
 			d2D_ref[i][j] = 10.*i + j;
 
 	for(auto i : d2D_ref.extension(0)){
-		for(auto j : d2D_ref.extension(1)){
+		for(auto j : d2D_ref.extension(1))
 			cout << d2D_ref[i][j] << ' ';
-		}
 		cout << '\n';
 	}
-	multi::array_ref<double, 2> d2D_refref{d2D_ref.data(), extensions(d2D_ref)};
+	cout << '\n';
+	multi::array_ref<double, 2> d2D_refref{data(d2D_ref), extensions(d2D_ref)};
+
+	return 0;
 
 	for(auto it1 = begin(d2D_ref); it1 != end(d2D_ref) ||!endl(cout); ++it1)
 		for(auto it2 = it1->begin()   ; it2 != it1->end()    ||!endl(cout); ++it2)

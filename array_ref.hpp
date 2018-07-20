@@ -372,6 +372,10 @@ public:
 		using std::swap_ranges; using std::begin; using std::end;
 		swap_ranges(this->begin(), this->end(), begin(other)); // for(auto i : self.extension()) swap(self[i], other[i]);		
 	}
+	friend void swap(basic_array& a1, basic_array& a2){return a1.swap(a2);}
+	friend void swap(basic_array& a1, basic_array&& a2){return a1.swap(a2);}
+	friend void swap(basic_array&& a1, basic_array& a2){return a1.swap(a2);}
+	friend void swap(basic_array&& a1, basic_array&& a2){return a1.swap(a2);}
 	template<class Array> 
 	bool operator==(Array const& other) const{
 		if(this->extension() != other.extension()) return false;
@@ -504,16 +508,21 @@ public:
 		using std::swap_ranges; using std::begin; //using std::end;
 		swap_ranges(this->begin(), this->end(), begin(other)); // for(auto i : self.extension()) swap(self[i], other[i]);		
 	}
+	friend void swap(basic_array& a1, basic_array& a2){return a1.swap(a2);}
+	friend void swap(basic_array& a1, basic_array&& a2){return a1.swap(a2);}
+	friend void swap(basic_array&& a1, basic_array& a2){return a1.swap(a2);}
+	friend void swap(basic_array&& a1, basic_array&& a2){return a1.swap(a2);}
 };
-
-template<class A1, class A2, typename = decltype(extension(std::declval<A1>()) == extension(std::declval<A2>()))>
-void swap(A1&& self, A2&& other){
-	assert(extension(self) == extension(other));
-	using std::swap;
-	using std::swap_ranges; using std::begin; using std::end;
-//	swap_ranges(begin(self), end(self), begin(other)); 
-	for(auto i : self.extension()) swap(self[i], other[i]);	
-}
+/*
+template<class T, dimensionality_type N, class Ptr>
+void swap(basic_array<T, N, Ptr>&& a1, basic_array<T, N, Ptr>&& a2){a1.swap(a2);}
+template<class T, dimensionality_type N, class Ptr>
+void swap(basic_array<T, N, Ptr>& a1, basic_array<T, N, Ptr>& a2){a1.swap(a2);}
+template<class T, dimensionality_type N, class Ptr>
+void swap(basic_array<T, N, Ptr>& a1, basic_array<T, N, Ptr>&& a2){a1.swap(a2);}
+template<class T, dimensionality_type N, class Ptr>
+void swap(basic_array<T, N, Ptr>&& a1, basic_array<T, N, Ptr>& a2){a1.swap(a2);}
+*/
 
 template<typename T, dimensionality_type D, typename ElementPtr = T const*>
 struct const_array_ref : basic_array<T, D, ElementPtr>{
@@ -558,7 +567,9 @@ struct array_ref : const_array_ref<T, D, ElementPtr>{
 		return *this;
 	}
 	array_ref& operator=(array_ref const& o){return operator=<array_ref const&>(o);}
-	typename array_ref::element_ptr  data() const{return this->data_;}
+//	typename array_ref::element_ptr 
+	ElementPtr const& data(){return this->data_;}
+	friend decltype(auto) data(array_ref& self){return self.data();}
 };
 
 template<typename... A> using carray_ref = array_ref<A...>;

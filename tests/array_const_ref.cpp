@@ -28,6 +28,11 @@ int main(){
 
 	multi::array_cref<double, 2> d2D_cref{&d2D[0][0], {4, 5}};
 
+	std::vector<double> d2Dv(20); iota(d2Dv.begin(), d2Dv.end(), 0);
+	multi::array_cref<double, 2, std::vector<double>::const_iterator> d2Dv_cref{begin(d2Dv), {4, 5}};
+	std::cout << d2Dv_cref[1][1] << std::endl;
+	assert(d2Dv_cref[1][1] == 6);
+
 	assert( d2D_cref.cdata() == cdata(d2D_cref) );
 	assert( d2D_cref.data() == data(d2D_cref) );
 	assert( data(d2D_cref) == &d2D[0][0] );
