@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-time c++ -O3 -std=c++14 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $0 -o $0.x && time $0.x $@ && rm -f .$0.x; exit
+time clang++ -O3 -std=c++17 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $0 -o $0.x && time $0.x $@ && rm -f .$0.x; exit
 #endif
 
 #include "../array_ref.hpp"
@@ -126,6 +126,7 @@ int main(){
 	assert( d2D_cref.size(1) == size(*begin(d2D_cref)) );
 	assert( size(*begin(d2D_cref)) == 5 );
 	assert( distance(begin(d2D_cref)->begin(), begin(d2D_cref)->end()) == begin(d2D_cref)->size() );
+	auto bd2D = *begin(d2D_cref);
 	assert( distance(begin(*begin(d2D_cref)), end(*begin(d2D_cref))) == size(*begin(d2D_cref)) );
 
 	assert( size(d2D_cref[0]) == 5 );

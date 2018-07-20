@@ -8,6 +8,7 @@
 #include "../multi/ordering.hpp"
 #include "../multi/index_range.hpp"
 
+#include<algorithm> // transform
 #include<cassert>
 #include<iostream> // cerr
 #include<memory>
@@ -166,27 +167,22 @@ struct basic_array : Layout{
 	using difference_type = index;
 	using const_reference = basic_array<element, D-1, element_const_ptr>; 
 	using reference       = basic_array<element, D-1, element_ptr>;
+	friend struct basic_array<element, D+1, element_ptr>;
 // for at least up to 3D, ...layout const> is faster than ...layout const&>
 protected:
 	element_ptr data_;
 	basic_array() = delete;
 	Layout const& layout() const{return *this;}
-private:
-	basic_array& operator=(basic_array const& other){
-		data_ = other.data_;
-		Layout::operator=(other);
-		return *this;
-	}// = default;
-public:
 	basic_array(element_ptr data, Layout layout) : Layout(layout), data_(data){}
-	const_reference operator[](index i) const{
+private:
+	basic_array& operator=(basic_array const& other) = default;
+	reference operator_sbracket(index i) const{
 		assert( i < this->extension().last() and i >= this->extension().first() );
-		return const_reference{data_ + Layout::operator()(i), Layout::sub};
+		return {data_ + Layout::operator()(i), Layout::sub};
 	}
-	reference operator[](index i){
-		assert( i < this->extension().last() and i >= this->extension().first() );
-		return reference{data_ + Layout::operator()(i), Layout::sub};
-	}
+public:
+	const_reference operator[](index i) const{return operator_sbracket(i);}
+	reference operator[](index i){return operator_sbracket(i);}
 	auto range(index_range const& ir) const{
 		layout_t new_layout = *this; 
 		(new_layout.nelems_/=Layout::size())*=ir.size();
@@ -200,7 +196,7 @@ public:
 		return basic_array<T, D, ElementPtr>{data_, new_layout};
 	}
 	decltype(auto) front(){return *begin();}
-	decltype(auto) back(){return *(begin() + Layout::size() - 1);}
+	decltype(auto) back(){return *(begin() + (Layout::size() - 1));}
 	class const_iterator : private const_reference{
 		index stride_;
 		const_iterator(const_reference const& cr, index stride) : 
@@ -387,16 +383,6 @@ public:
 	}
 };
 
-/*
-template<class Array1, class Array2, typename = std::enable_if_t<Array1::dimensionality == Array2::dimensionality> >
-bool operator==(Array1 const& self, Array2 const& other){
-	if(self.extension() != other.extension()) return false;
-	using std::equal;
-	return equal(begin(self), end(self), begin(other));
-}*/
-//template<class Arr1, class Arr2>
-//bool operator!=(Arr1 const& self, Arr2 const& other){return not(self == other);}
-
 template<class T, std::size_t N> 
 index_range extension(T(&)[N]){return {0, N};}
 
@@ -472,24 +458,25 @@ public:
 	friend auto size(basic_array const& self){return self.size();}
 //	index_range extension() const{return layout_.extension();}
 	friend index_range extension(basic_array const& self){return self.extension();}
-	const_iterator begin()  const{return const_iterator{data_ + Layout::operator()(0     ), Layout::stride_};}
-	const_iterator end()    const{return const_iterator{data_ + Layout::operator()(this->size()), Layout::stride_};}
-	iterator begin(){return iterator{data_ + Layout::operator()(0)     , Layout::stride_};}
-	iterator end()  {return iterator{data_ + Layout::operator()(this->size()), Layout::stride_};}
-	friend const_iterator begin(basic_array const& self){return self.begin();}
-	friend const_iterator end(basic_array const& self){return self.end();}
+private:
+	iterator _begin() const{return {data_ + Layout::operator()(this->extension().first()), Layout::stride_};}
+	iterator _end()   const{return {data_ + Layout::operator()(this->extension().last()), Layout::stride_};}
+public:
+	const_iterator begin() const{return _begin();}
+	const_iterator end()   const{return _end();}
+	iterator begin(){return _begin();}
+	iterator end()  {return _end();}
+	friend auto begin(basic_array const& self){return self.begin();}
+	friend auto end(basic_array const& self){return self.end();}
+//	friend auto begin(basic_array& self){return self.begin();}
+//	friend auto end(basic_array& self){return self.end();}
 	template<class Array, typename = decltype(std::declval<basic_array>()[0] = std::declval<Array>()[0])>
-	void operator=(Array&& other){
+	basic_array& operator=(Array&& other){
 		assert(this->extension() == other.extension());
-		for(auto i : this->extension()) operator[](i) = std::forward<Array>(other)[i];
+		using std::transform; using std::begin; using std::end;
+		transform(begin(std::forward<Array>(other)), end(std::forward<Array>(other)), this->begin(), [](auto&& e){return e;});
+		return *this;
 	}
-/*	template<class Array>
-	friend bool operator==(basic_array const& self, Array const& other){
-		using multi::extension;
-		if(self.extension() != extension(other)) return false;
-		using std::equal; using std::begin; using std::end;
-		return equal(begin(self), end(self), begin(other));
-	}*/
 	template<class Array>
 	bool operator==(Array const& other) const{
 		using multi::extension;
@@ -510,22 +497,13 @@ public:
 	}
 	template<class Array>
 	bool operator<=(Array const& other) const{return (*this)==other or (*this)<other;}
-	template<class Array>
-	bool operator>(Array const& other) const{return not ((*this)<=other);}
-	template<class Array>
-	bool operator>=(Array const& other) const{return not ((*this)<other);}
-	template<class Array>
-	void swap(Array&& other){
+	template<class A> bool operator>(A const& other) const{return not((*this)<=other);}
+	template<class A> bool operator>=(A const& other) const{return not((*this)<other);}
+	template<class Array> void swap(Array&& other){
 		assert(this->extension() == extension(other));
-		using std::swap_ranges; using std::begin; using std::end;
+		using std::swap_ranges; using std::begin; //using std::end;
 		swap_ranges(this->begin(), this->end(), begin(other)); // for(auto i : self.extension()) swap(self[i], other[i]);		
 	}
-/*	template<class Arr1, class Arr2>
-	friend void swap(Arr1&& self, Arr2&& other){
-		assert(extension(self) == extension(other));
-		using std::swap_ranges; using std::begin; using std::end;
-		swap_ranges(begin(self), end(self), begin(other)); // for(auto i : self.extension()) swap(self[i], other[i]);
-	}*/
 };
 
 template<class A1, class A2, typename = decltype(extension(std::declval<A1>()) == extension(std::declval<A2>()))>

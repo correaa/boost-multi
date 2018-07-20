@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-time clang++ -O2 -std=c++17 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $0 -ggdb3 -o $0.x && time $0.x $@ && rm -f .$0.x; exit
+time c++ -O2 -std=c++17 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $0 -ggdb3 -o $0.x && time $0.x $@ && rm -f .$0.x; exit
 #endif
 
 #include "../array_ref.hpp"
@@ -34,6 +34,8 @@ int main(){
 	};
 	multi::array_ref<double, 2> d2D_ref{&d2D[0][0], {4, 5}};
 
+	swap(d2D_ref[0], d2D_ref[3]);
+
 	cout << "--\n";
 	for(auto i : d2D_ref.extension(0)){
 		for(auto j : d2D_ref.extension(1)) 
@@ -57,17 +59,16 @@ int main(){
 		for(auto j : d2D_ref.extension(1))
 			d2D_ref[i][j] = -d2D_ref[i][j];
 
-	return 0;
-
-	for(auto i : d2D_ref.extensions()[0]){
-		for(auto j : d2D_ref.extensions()[1])
-			cout << d2D_ref[i][j] << ' ';
-		cout << '\n';
+	for(auto i : d2D_ref.extension()){
+		for(auto j : d2D_ref.extension())
+			cout << d2D_ref[i][j] <<' ';
+		cout <<'\n';
 	}
-	return 0;
 
 	using std::stable_sort;
 	stable_sort( d2D_ref.begin(0), d2D_ref.end(0) );
+
+	return 0;
 
 	cout << "--\n";	
 	for(auto i : d2D_ref.extensions()[0]){
