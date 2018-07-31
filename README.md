@@ -7,12 +7,15 @@ It shares the goals of Boost.MultiArray, although the code is completely indepen
 Boost.Multi and Boost.MultiArray types can be used interchangeably for the most part, they differ in the semantics of reference and value types. 
 
 Boost.Multi aims to simplify the semantics of Boost.MultiArray and make it more compatible with the Standard (STL) Algorithms and special memory.
+It requires C++14. The code was developed on `clang` and `gcc` compilers.
+
+Before testing speed, please make sure that you are compiling in release mode (`-DNDEBUG`) and with optimizations (`-O3`), if your test involves mathematical operations add arithmetic optimizations (`-Ofast`).
 
 Some features:
 
 * Arbitrary pointer types
-* Simplified implementation (~500 lines)
-* Faster access of subarray (view) types
+* Simplified implementation (~600 lines)
+* Fast access of subarray (view) types
 * Better semantics of subarray (view) types
 
 ## Usage
@@ -90,3 +93,38 @@ Which will transform the matrix into.
 
 In other words, a matrix of dimension `D` can be viewed simultaneously as `D` different ranges of different "transpositions" by passing an interger value to `begin` and `end` indicating the preferred dimension.
 `begin(0)` is equivalent to `begin()`.
+
+## Index Accessing
+
+Many algorithms on arrays are oriented to linear algebra, which are ubiquitously implemented in terms of multidimensional index access. 
+
+Index access is almost equivalent to those of C-fixed sizes arrays, for example a 3-dimensional array will access to an element by `m[1][2][3]`, which can be used for write and read operations. 
+Partial index arguments `m[1][2]` generate a view 1-dimensional object.
+Transpositions are also multi-dimensional arrays in which the index are logically rearranged, for example `m.rotated(1)[2][3][1] == m[1][2][3]`.
+
+This example implements Gauss Jordan Elimination without pivoting:
+
+```
+template<class Matrix, class Vector>
+void solve(Matrix& m, Vector& y){
+	std::ptrdiff_t msize = size(m); 
+	for(auto r = 0; r != msize; ++r){
+		auto mr = m[r];
+		auto mrr = mr[r];
+		for(auto c = r + 1; c != msize; ++c) mr[c] /= mrr;
+		auto yr = (y[r] /= mrr);
+		for(auto r2 = r + 1; r2 != msize; ++r2){
+			auto mr2 = m[r2];
+			auto const& mr2r = mr2[r];
+			auto const& mr = m[r];
+			for(auto c = r + 1; c != msize; ++c) mr2[c] -= mr2r*mr[c];
+			y[r2] -= mr2r*yr;
+		}
+	}
+	for(auto r = msize - 1; r > 0; --r){
+		auto const& yr = y[r];
+		for(auto r2 = r-1; r2 >=0; --r2)
+			y[r2] -= yr*m[r2][r];
+	}
+}
+```

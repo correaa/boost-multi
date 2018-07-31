@@ -138,10 +138,10 @@ using std::cout;
 namespace multi = boost::multi;
 
 
-#if 0
+#if 1
 template<class Matrix, class Vector>
 void solve(Matrix& m, Vector& y){
-	using std::size; // assert(size(m) == std::ptrdiff_t(size(y)));
+//	using std::size; // assert(size(m) == std::ptrdiff_t(size(y)));
 	std::ptrdiff_t msize = size(m); 
 	for(auto r = 0; r != msize; ++r){ //	auto mr = m[r]; //  auto const mrr = mr[r];// assert( mrr != 0 ); // m[r][r] = 1;
 		auto mr = m[r];
@@ -210,7 +210,7 @@ int main(){
 		{20., 21., 22.}
 	};
 	std::vector<double> VV00 = {1.,2.,3.};
-//	solve(MA00, VV00);
+	solve(MA00, VV00);
 
 	for(int i = 0; i != int(VV00.size()); ++i){//VV0.extension(0)){
 	//	for(auto j : MA0.extension(1))
@@ -228,10 +228,10 @@ int main(){
 		{
 			auto MA2 = MA;
 			auto V2 = V;
-	//		solve(MA2, V2);
+			solve(MA2, V2);
 			boost::timer::cpu_timer timer;
 	//		boost::timer::auto_cpu_timer t;
-	//		solve(MA, V);
+			solve(MA, V);
 			cout << n <<'\t' << timer.elapsed().user << std::endl;
 		}
 //		cout << "some " << V[13] << std::endl;
