@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-c++ -O3 -std=c++17 -DNDEBUG -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $0 -o $0.x -lboost_timer && time $0.x $@ && rm -f $0.x; exit
+c++ -O3 -std=c++14 -DNDEBUG -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $0 -o $0.x -lboost_timer && time $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include "../array_ref.hpp"
@@ -20,7 +20,7 @@ int main(){
 	std::vector<double> data(NX*NY);
 	std::iota(begin(data), end(data), 0.);
 
-	multi::array_cref<double, 2> data2D_cref{data.data(), NX, NY};
+	multi::array_cref<double, 2> data2D_cref{data.data(), {NX, NY}};
 
 	{
 		double sum = 0.;
@@ -61,7 +61,7 @@ int main(){
 		std::ptrdiff_t NZ = 500;
 		std::vector<double> v(NX*NY*NZ);
 		iota(begin(v), end(v), 0.);
-		multi::array_cref<double, 3> v3D_cref{v.data(), NX, NY, NZ};
+		multi::array_cref<double, 3> v3D_cref{v.data(), {NX, NY, NZ}};
 		assert( v3D_cref.num_elements() == std::ptrdiff_t(v.size()) );
 //		cout << "size " << v.size()*sizeof(double)/1e6 << "MB\n";
 
@@ -117,7 +117,7 @@ int main(){
 		std::ptrdiff_t NA = 100;
 		std::vector<double> v(NX*NY*NZ*NA);
 		iota(begin(v), end(v), 0.1);
-		multi::array_cref<double, 4> v4D_cref{v.data(), NX, NY, NZ, NA};
+		multi::array_cref<double, 4> v4D_cref{v.data(), {NX, NY, NZ, NA}};
 		assert( v4D_cref.num_elements() == std::ptrdiff_t(v.size()) );
 		cout << "size " << v.size()*sizeof(double)/1e6 << "MB\n";
 		{

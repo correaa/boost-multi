@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-time clang++ -O2 -std=c++17 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $0 -ggdb3 -o $0.x && time $0.x $@ && rm -f .$0.x; exit
+time clang++ -O2 -std=c++14 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $0 -ggdb3 -o $0.x && time $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include "../array_ref.hpp"
@@ -92,14 +92,14 @@ int main(){
 			cout << d2D_ref[i][j] << ' ';
 		cout << '\n';
 	}
-	std::reverse(d2D_ref.begin(), d2D_ref.end());
+	std::reverse(d2D_ref.begin(1), d2D_ref.end(1));
 	cout << "--\n";	
 	for(auto i : d2D_ref.extension(0)){
 		for(auto j : d2D_ref.extension(1))
 			cout << d2D_ref[i][j] << ' ';
 		cout << '\n';
 	}
-
+	return 0;
 	multi::array_ref<double, 1> d1D_ref{&d2D[0][0], {5}};
 
 	assert( d2D_ref.cdata() == cdata(d2D_ref) );
@@ -118,8 +118,6 @@ int main(){
 	}
 	cout << '\n';
 	multi::array_ref<double, 2> d2D_refref{data(d2D_ref), extensions(d2D_ref)};
-
-	return 0;
 
 	for(auto it1 = begin(d2D_ref); it1 != end(d2D_ref) ||!endl(cout); ++it1)
 		for(auto it2 = it1->begin()   ; it2 != it1->end()    ||!endl(cout); ++it2)

@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-time clang++ -O3 -std=c++17 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $0 -o $0.x && time $0.x $@ && rm -f .$0.x; exit
+time clang++ -O3 -std=c++17 -Wall `#-fmax-errors=2` -Wfatal-errors -I${HOME}/prj $0 -o $0.x && time $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include "../array_ref.hpp"
@@ -40,12 +40,12 @@ int main(){
 	assert( num_elements(d2D_cref) == 4*5 );
 	assert( d2D_cref.size() == size(d2D_cref) );
 	assert( d2D_cref.size() == 4 );
-	assert( d2D_cref.size<0>() == size(d2D_cref) );
-	assert( d2D_cref.size<0>() == 4);
-	assert( d2D_cref.size<1>() == 5 );
+	assert( d2D_cref.size(0) == size(d2D_cref) );
+	assert( d2D_cref.size(0) == 4 );
+	assert( d2D_cref.size(1) == 5 );
 
-	assert( d2D_cref.size<0>() == d2D_cref.size(0) );
-	assert( d2D_cref.size<1>() == d2D_cref.size(1) );
+	assert( d2D_cref.size(0) == d2D_cref.size(0) );
+	assert( d2D_cref.size(1) == d2D_cref.size(1) );
 	assert( d2D_cref.sizes()[0] == d2D_cref.size(0) );
 	assert( d2D_cref.sizes()[1] == d2D_cref.size(1) );
 	assert( sizes(d2D_cref) == d2D_cref.sizes() );
@@ -58,10 +58,6 @@ int main(){
 	assert( strides(d2D_cref) == d2D_cref.strides() );
 	assert( strides(d2D_cref)[1] == 1 );
 	
-	for(auto i = 0; i != d2D_cref.size<0>() ||!endl(cout); ++i)
-		for(auto j = 0; j != d2D_cref.size<1>() ||!endl(cout); ++j)
-			cout << d2D_cref[i][j] << ' ';
-
 	for(auto i = 0; i != d2D_cref.size(0) ||!endl(cout); ++i)
 		for(auto j = 0; j != d2D_cref.size(1) ||!endl(cout); ++j)
 			cout << d2D_cref[i][j] << ' ';
@@ -127,11 +123,10 @@ int main(){
 
 
 	assert( d2D_cref.sizes() == sizes(d2D_cref) );
-	assert( d2D_cref.sizes()[1] == d2D_cref.size<1>() );
+	assert( d2D_cref.sizes()[1] == d2D_cref.size(1) );
 	assert( d2D_cref.size(1) == size(*begin(d2D_cref)) );
 	assert( size(*begin(d2D_cref)) == 5 );
 	assert( distance(begin(d2D_cref)->begin(), begin(d2D_cref)->end()) == begin(d2D_cref)->size() );
-	auto bd2D = *begin(d2D_cref);
 	assert( distance(begin(*begin(d2D_cref)), end(*begin(d2D_cref))) == size(*begin(d2D_cref)) );
 
 	assert( size(d2D_cref[0]) == 5 );
