@@ -15,7 +15,7 @@ Some features:
 * Faster access of subarray (view) types
 * Better semantics of subarray (view) types
 
-## First Example
+## Usage
 
 We create a static C-array of `double`s, and refer to it via a bidimensional array `multi::array_ref<double, 2>`.
 
@@ -44,10 +44,10 @@ Note that the syntax of creating a reference array involves passing the pointer 
 
 Next we print the elements in a way that corresponds to the logical arrangement:
 
-		for(auto i : d2D_ref.extensions()[0]){
-			for(auto j : d2D_ref.extensions()[1])
-				cout << d2D_ref[i][j] << ' ';
-			cout << '\n';
+		for(auto i : d2D_ref.extension(0)){
+			for(auto j : d2D_ref.extension(1))
+				cout << d2D_ref[i][j] <<' ';
+			cout <<'\n';
 		}
 	
 This will output:
@@ -88,5 +88,5 @@ Which will transform the matrix into.
 > 11 12 13 14 100  
 > 16 17 18 19 150 
 
-In other words, a matrix of dimension `D` can be viewed simultaneously as `D` different ranges by passing an interger value to `begin` and `end` indicating the preferred dimension.
+In other words, a matrix of dimension `D` can be viewed simultaneously as `D` different ranges of different "transpositions" by passing an interger value to `begin` and `end` indicating the preferred dimension.
 `begin(0)` is equivalent to `begin()`.
