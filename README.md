@@ -18,6 +18,15 @@ Some features:
 * Fast access of subarray (view) types
 * Better semantics of subarray (view) types
 
+## Types
+
+* `multi::array<T, D, A>`: Array of dimension `D`, it has value semantics if `T` has value semantics. Memory is requested by allocator of type `A`, should support stateful allocators.
+* `multi::array_ref<T, D, P = T*>`: Array interpretation of a contiguos range, usually a memory block. Thanks to inheritance an `array` is-a `array_ref`.
+* `multi::array_ref<T, D>::(const_)iterator`: Iterator to subarrays of dimension `D-1`. For `D==1` this is an iterator to elements.
+* `multi::array_ref<T, D>::(const_)reference`: Reference to subarrays of dimension `D-1`. For `D>1` this are not true C++-references but types mimic them (with reference semantics). For `D==1` this is a true C++ reference to an elements.
+* other derived unspecified types fulfil (a still loosely defined) `ArrayConcept`, for example by taking partial indices or rotations (transpositions).
+
+
 ## Usage
 
 We create a static C-array of `double`s, and refer to it via a bidimensional array `multi::array_ref<double, 2>`.
