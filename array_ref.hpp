@@ -449,10 +449,16 @@ protected:
 			++self_first;
 		}
 	}
+	template<class M>
+	void intersection_assign_(M&& other){
+		for(
+			auto i = std::max(basic_array::extension(0).first(), other.extension(0).first()); 
+			i != std::min(basic_array::extension(0).last(), other.extension(0).last()); ++i
+		) operator[](i).intersection_assign_(other[i]);
+	}
 public:
 	template<class Array>
 	void operator=(Array const& other){
-		assert(0);
 		assert(this->extension() == other.extension());
 		for(auto i : this->extension()) operator[](i) = other[i];
 	}
@@ -513,6 +519,12 @@ protected:
 			++first;
 			++self_first;
 		}
+	}
+	template<class M>
+	void intersection_assign_(M&& other){
+		for(auto i = std::max(basic_array::extension(0).first(), other.extension(0).first()); 
+			i != std::min(basic_array::extension(0).last(), other.extension(0).last()); ++i
+		) operator[](i) = other[i];
 	}
 	Layout const& layout() const{return *this;}
 	element_ptr data_;

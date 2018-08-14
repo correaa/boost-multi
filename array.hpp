@@ -77,6 +77,12 @@ public:
 		swap(tmp);
 		return *this;
 	}
+	void reextent(extensions_type const& e){
+		array tmp(e);
+		tmp.intersection_assign_(*this);
+		swap(tmp);
+	}
+	friend void reextent(array& self, extensions_type const& e){self.reextent(e);}
 	void swap(array& other) noexcept{
 		using std::swap;
 		swap(this->data_, other.data_);
@@ -194,6 +200,19 @@ int main(){
 		{20., 21., 22.}
 	};
 	multi::array<double, 1> VV0 = {1.,2.,3.};
+
+	for(auto i : MA0.extension(0)){
+		for(auto j : MA0.extension(1)) 
+			cout << MA0[i][j] << ' ';
+		cout << '\n';
+	}
+	MA0.reextent({2,3});
+
+	for(auto i : MA0.extension(0)){
+		for(auto j : MA0.extension(1)) 
+			cout << MA0[i][j] << ' ';
+		cout << '\n';
+	}
 
 	return 0;
 /*	for(auto i : MA0.extension(0)){

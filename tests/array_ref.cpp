@@ -60,8 +60,8 @@ int main(){
 		for(auto j : d2D_ref.extension(1))
 			d2D_ref[i][j] = -d2D_ref[i][j];
 
-	for(auto i : d2D_ref.extension()){
-		for(auto j : d2D_ref.extension())
+	for(auto i : d2D_ref.extension(0)){
+		for(auto j : d2D_ref.extension(1))
 			cout << d2D_ref[i][j] <<' ';
 		cout <<'\n';
 	}
