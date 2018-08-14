@@ -1,10 +1,11 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && clang++ -Ofast `#-DNDEBUG` `#-fconcepts` -std=c++14 -Wall -Wextra -Wfatal-errors -lboost_timer -I${HOME}/prj -D_TEST_BOOST_MULTI_ARRAY $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
+(echo "#include\""$0"\"" > $0x.cpp) && clang++ -Ofast `#-DNDEBUG` -std=c++14 -Wall -Wextra -Wfatal-errors -lboost_timer -I${HOME}/prj -D_TEST_BOOST_MULTI_ARRAY $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
 #endif
 #ifndef BOOST_MULTI_ARRAY_HPP
 #define BOOST_MULTI_ARRAY_HPP
 
 #include "../multi/array_ref.hpp"
+
 #include<iostream> // cerr
 #include<algorithm>
 #include<numeric>
@@ -35,8 +36,8 @@ class array :
 	using extensions_type = std::array<index_extension, D>;
 public:
 	using allocator_type = Allocator;
-	allocator_type allocator_;
 private:
+	allocator_type allocator_;
 	using alloc_traits = std::allocator_traits<allocator_type>;
 public:
 	template<class Array, typename = decltype(std::declval<Array>().extensions())>
@@ -57,6 +58,9 @@ public:
 		this->data_ = alloc_traits::allocate(allocator_, array::num_elements());
 		uninitialized_construct(el);
 	}
+/*	array(std::initializer_list<typename array::value_type> il, Allocator alloc = Allocator{}) : array(list_extensions<typename array::element>(il), alloc){
+		this->recursive_assign_(il.begin(), il.end());
+	}*/
 	array(typename array::initializer_list il, Allocator alloc = Allocator{}) : array(list_extensions<typename array::element>(il), alloc){
 		this->recursive_assign_(il.begin(), il.end());
 	}
