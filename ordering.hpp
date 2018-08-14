@@ -12,17 +12,17 @@ namespace multi{
 
 using dimensionality_type = std::ptrdiff_t;
 
-template<dimensionality_type D>
-using fortran_ordering = std::make_index_sequence<D>;
+//template<dimensionality_type D>
+//using fortran_ordering = std::make_index_sequence<D>;
 
 template<std::size_t C, std::size_t N, std::size_t... Is>
 struct c_ordering_aux : c_ordering_aux<C - 1, N, N - C, Is...>{};
 
-template<std::size_t N, std::size_t... Is>
-struct c_ordering_aux<0, N, Is...>{using type = std::index_sequence<N, Is...>;};
+//template<std::size_t N, std::size_t... Is>
+//struct c_ordering_aux<0, N, Is...>{using type = std::index_sequence<N, Is...>;};
 
-template<dimensionality_type D>
-using c_ordering = typename c_ordering_aux<D-1, D-1>::type;
+//template<dimensionality_type D>
+//using c_ordering = typename c_ordering_aux<D-1, D-1>::type;
 
 }}
 

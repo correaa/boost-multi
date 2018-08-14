@@ -4,7 +4,6 @@
 #ifndef BOOST_MULTI_ARRAY_REF_HPP
 #define BOOST_MULTI_ARRAY_REF_HPP
 
-
 #include "../multi/ordering.hpp"
 #include "../multi/index_range.hpp"
 
@@ -28,9 +27,9 @@ struct strides_t{
 };
 
 template<typename T, std::size_t N>
-auto tail(std::array<T, N> const& a){
+std::array<T, N-1> tail(std::array<T, N> const& a){
 	std::array<T, N-1> ret;
-	std::copy(begin(a) + 1, end(a), begin(ret));
+	std::copy(a.begin() + 1, a.end(), ret.begin());
 	return ret;
 }
 
@@ -44,8 +43,8 @@ namespace detail{
 	->decltype(std::get<0>(t)){
 		return std::get<0>(t);}
 
-	template < std::size_t... Ns , typename... Ts >
-	auto tail_impl(std::index_sequence<Ns...> , std::tuple<Ts...> t){
+	template<typename Tuple, std::size_t... Ns>//, typename... Ts>
+	auto tail_impl(std::index_sequence<Ns...> , Tuple t){
 		return std::make_tuple(std::get<Ns+1u>(t)...);
 	}
 	template<typename... Ts>
@@ -62,6 +61,7 @@ struct layout_t{
 	index nelems_;
 	using extensions_type = std::array<index_extension, D>;
 	auto operator()(index i) const{return i*stride_ - offset_;}
+	auto origin() const{return -offset_ + sub.origin();}
 	layout_t() : sub{}{}
 //	template<typename ExtList, typename = std::enable_if_t<!std::is_base_of<layout_t, std::decay_t<ExtList>>{}>>
 	constexpr layout_t(extensions_type e) : 
@@ -84,13 +84,11 @@ struct layout_t{
 		return nelems_/stride_;
 	}
 	layout_t& rotate(){
-//		if constexpr(D != 1){
 		using std::swap;
 		swap(stride_, sub.stride_);
 		swap(offset_, sub.offset_);
 		swap(nelems_, sub.nelems_);
 		sub.rotate();
-//		}
 		return *this;
 	}
 	layout_t& rotate(dimensionality_type r){
@@ -180,6 +178,7 @@ struct layout_t<1>{
 	constexpr extensions_type extensions() const{return {extension()};}
 	void extensions_aux(index_extension* it) const{*it = extension();}
 	constexpr auto operator()(index i) const{return i*stride_ - offset_;}
+	constexpr auto origin() const{return -offset_;}
 	bool operator==(layout_t const& other) const{
 		return stride_==other.stride_ and offset_==other.offset_ and nelems_==other.nelems_;
 	} bool operator!=(layout_t const& other) const{return not(*this==other);}
@@ -207,7 +206,7 @@ struct layout_t<0>{
 	bool operator==(layout_t const&) const{return true;}
 	bool operator!=(layout_t const&) const{return false;}
 	size_type size(dimensionality_type) const{return -1;} // assert(d == -1);
-	index_extension extension(dimensionality_type) const{return {};} // assert(d == -1);
+	index_extension extension(dimensionality_type) const{return index_extension{};} // assert(d == -1);
 };
 
 template<typename T, dimensionality_type D, class Alloc = std::allocator<T>>
@@ -255,8 +254,14 @@ private:
 		return {data_ + Layout::operator()(i), Layout::sub};
 	}
 public:
+	element_ptr origin() &{return data_ + Layout::origin();}
+	element_ptr origin() &&{return data_ + Layout::origin();}
+	element_const_ptr origin() const&{return data_ + Layout::origin();}
+	element_const_ptr corigin() const{return data_ + Layout::origin();}
 	const_reference operator[](index i) const{return operator_sbracket(i);}
 	reference operator[](index i){return operator_sbracket(i);}
+//	auto at(index i){return operator[](i);}
+//	auto at(index i, dimensionality_type n){return rotated(n)[i].rotated(-n);}
 	auto range(index_range const& ir) const{
 		layout_t new_layout = *this; 
 		(new_layout.nelems_/=Layout::size())*=ir.size();
@@ -264,6 +269,20 @@ public:
 			data_ + Layout::operator()(ir.front()), new_layout
 		};
 	}
+	auto range(index_range const& ir, dimensionality_type n) const{
+		return rotated(n).range(ir).rotated(-n);
+	}
+	auto operator()(index_range const& ir){return range(ir);}
+	auto operator()(index i){return operator[](i);}
+/*
+	template<class T, class... Ts>
+	auto paren_aux(dimensionality_type n, T t, Ts&&... ts) const{
+		return rotated(n)(ts...).rotated(-n);
+	}
+	template<class T, class... Ts>
+	auto operator()(T const& t, Ts&&... ts) const{
+		return operator()(t).paren_aux(1, ts...);
+	}*/
 	auto rotated(dimensionality_type i) const{
 		layout_t new_layout = *this; 
 		new_layout.rotate(i);
@@ -405,9 +424,7 @@ public:
 		return r;
 	}
 	const_iterator cend()    const{return end();}
-//	iterator begin(){return {operator[](0), Layout::stride_};}
 	iterator begin(){return {reference{data_ + Layout::operator()(this->extension().first()), Layout::sub}, Layout::stride_};}
-//	iterator end()  {return {operator[](Layout::size()), Layout::stride_};}
 	iterator end()  {return {reference{data_ + Layout::operator()(this->extension().last()), Layout::sub}, Layout::stride_};}
 
 	friend const_iterator begin(basic_array const& self){return self.begin();}
@@ -515,6 +532,11 @@ public:
 		assert( i < this->extension().last() and i >= this->extension().first() );
 		return data_[Layout::operator()(i)];
 	}
+	element_const_ptr origin() const{return data_ + Layout::origin();}
+	element_ptr origin(){return data_ + Layout::origin();}
+	friend decltype(auto) origin(basic_array const& self){return self.origin();}
+	friend decltype(auto) corigin(basic_array const& self){return self.origin();}
+	element_const_ptr corigin() const{return origin();}
 	class const_iterator{
 		friend struct basic_array;
 		const_iterator(element_ptr data, index stride) : data_(data), stride_(stride){}
@@ -655,7 +677,6 @@ using array_cref = const_array_ref<T, D, ElementPtr>;
 
 template<typename T, dimensionality_type D, typename ElementPtr = T const*>
 using carray_cref = array_cref<T, D, ElementPtr>;
-
 
 }}
 

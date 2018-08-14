@@ -99,6 +99,19 @@ int main(){
 			cout << d2D_ref[i][j] << ' ';
 		cout << '\n';
 	}
+
+	cout << "--\n";
+	auto const& d2D_ref_sv = d2D_ref.range({1, 3});
+	for(auto i : d2D_ref_sv.extension(0)){
+		for(auto j : d2D_ref_sv.extension(1))
+			cout << d2D_ref_sv[i][j] << ' ';
+		cout << '\n';
+	}
+	assert( d2D_ref.range({1,3}).origin() == &d2D_ref_sv[0][0] );
+	assert( d2D_ref_sv.origin() == &d2D_ref_sv[0][0] );
+	assert( *d2D_ref_sv.origin() == d2D_ref_sv[0][0] );
+	assert( d2D_ref.range({1,3}).rotated(1).range({2, 5}).rotated(-1).origin() == &d2D_ref[1][2] );
+
 	return 0;
 	multi::array_ref<double, 1> d1D_ref{&d2D[0][0], {5}};
 
@@ -160,8 +173,6 @@ int main(){
 			cout << d2D_ref[i][j] << ' ';
 		cout << '\n';
 	}
-
-	
 
 /*	using std::for_each;
     using namespace std::string_literals; //""s

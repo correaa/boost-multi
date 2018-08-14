@@ -24,7 +24,7 @@ public:
 	index_range() = default; // partially formed
 	constexpr index_range(index firstlast) noexcept : first_(firstlast), last_(firstlast + 1){}
 	constexpr index_range(index first, index last) : first_(first), last_(last){
-		assert(first_ <= last_);
+	//	assert(first_ <= last_);
 	}
 	class const_iterator{// : std::iterator<std::random_access_iterator_tag, const_iterator>{
 		index current_;
@@ -39,7 +39,7 @@ public:
 		reference operator*() const{return current_;}
 		const_iterator& operator+=(std::ptrdiff_t s){current_ += s; return *this;}
 		const_iterator& operator++(){++current_; return *this;}
-		auto operator+(std::ptrdiff_t d) const{return const_iterator{*this}+=d;}
+		const_iterator operator+(std::ptrdiff_t d) const{return const_iterator{*this}+=d;}
 		friend constexpr bool operator==(const_iterator const& it1, const_iterator const& it2) noexcept{
 			return it1.current_ == it2.current_;
 		}
@@ -65,7 +65,7 @@ public:
 	}
 	friend const_iterator begin(index_range const& self){return self.begin();}
 	friend const_iterator end(index_range const& self){return self.end();}
-	friend auto size(index_range const& self){return self.size();}
+	friend index size(index_range const& self){return self.size();}
 	friend bool operator==(index_range const& ir1, index_range const& ir2){
 		return 
 			(ir1.empty() and ir2.empty()) or 
@@ -77,7 +77,7 @@ public:
 	}
 };
 
-auto find(
+index_range::const_iterator find(
 	index_range::const_iterator first, 
 	index_range::const_iterator last, 
 	index value
@@ -90,6 +90,7 @@ auto find(
 class index_extension : public index_range{
 	using index_range::index_range;
 	public:
+	constexpr index_extension() noexcept : index_range(0, 0){}
 	constexpr index_extension(index zerobased) noexcept : index_range(0, zerobased){}
 	friend std::ostream& operator<<(std::ostream& os, index_extension const& self){
 		if(self.empty()) return os << "[)";
