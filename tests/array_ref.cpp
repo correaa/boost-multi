@@ -1,6 +1,8 @@
 #ifdef COMPILATION_INSTRUCTIONS
-time clang++ -O2 -std=c++14 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $0 -ggdb3 -o $0.x && time $0.x $@ && rm -f $0.x; exit
+time c++ -O2 -std=c++14 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $0 -ggdb3 -o $0.x && time $0.x $@ && rm -f $0.x; exit
 #endif
+
+#include<iostream>
 
 #include "../array_ref.hpp"
 #include "../array.hpp"
@@ -22,8 +24,31 @@ auto f(){
 	return v;
 }
 
+
+template<class M>
+void some_assign(M&& m){m[2][3] = 3.1;}
+
+#include<string>
+
 int main(){
 
+	using boost::multi::index_extension;
+	multi::array<double, 2> A(multi::array<double, 2>::extensions_type{{{0, 4}, {0, 3}}});
+//	assert(A.size(0) == 4 and A.size(1) == 3);
+	
+//	multi::array<double, 2> A(multi::array<double, 2>::extensions_type{{{0, 4}, {5, 8}}}); assert(A.shape()[0] == 4 and A.shape()[1] == 3);
+//	multi::array<double, 2> B(multi::layout_t<2>::extensions_type{{{0, 4}, {5, 8}}});
+//	assert(B.size(0) == 4 and B.size(1) == 3);
+
+	multi::array<double, 2> C({ {{0, 4}, {5, 8}} }); // C({0,4})
+// 	assert(C.size(0) == 4 and C.size(1) == 3);
+
+	multi::array<double, 2> C1( {4, A.extension(1)} ); assert(C1.size(0)==4 and C1.size(1)==3);
+	multi::array<double, 2> C2( {4, 3} ); assert(C2.size(0)==4 and C2.size(1)==3);
+
+//	multi::array<double, 2> D = {{0., 4.}, {5., 8.}}; 
+//	assert(B[1][1] == 8 and B.shape()[0] == 2 and B.shape()[1] == 2);
+	return 0;
 //	std::pointer_traits<double const*>::rebind<double const> p = 0;//::rebind<double const>::type p;
 //	(void)p;
 
@@ -116,6 +141,10 @@ int main(){
 		for(auto i : d1D_take.extension(0))
 			cout << d1D_take[i] << ' '; 
 		cout << '\n';
+		assert( d1D_take.shape()[0] == 3 );
+		assert( d1D_take.sizes()[0] == 3 );
+		assert( d1D_take.size(0) == 3 );
+		assert( d1D_take.size() == 3 );
 	}
 	{
 		cout << "--\n";
