@@ -69,7 +69,7 @@ int main(){
 	using std::stable_sort;
 	stable_sort( d2D_ref.begin(0), d2D_ref.end(0) );
 
-	cout << "--\n";	
+	cout << "--\n";
 	for(auto i : d2D_ref.extension(0)){
 		for(auto j : d2D_ref.extension(1))
 			cout << d2D_ref[i][j] << ' ';
@@ -99,6 +99,37 @@ int main(){
 			cout << d2D_ref[i][j] << ' ';
 		cout << '\n';
 	}
+	{
+		cout << "--\n";
+		auto d2D_take = d2D_ref({1, 3}, {1, 2});
+		assert(d2D_take.dimensionality == 2);
+		for(auto i : d2D_take.extension(0)){
+			for(auto j : d2D_take.extension(1))
+				cout << d2D_take[i][j] << ' ';
+			cout << '\n';
+		}
+	}
+	{
+		cout << "--\n";
+		auto d1D_take = d2D_ref(2, {1, 4});
+		assert(d1D_take.dimensionality == 1);
+		for(auto i : d1D_take.extension(0))
+			cout << d1D_take[i] << ' '; 
+		cout << '\n';
+	}
+	{
+		cout << "--\n";
+		auto d1D_take = d2D_ref({1, 4}, 3);
+		assert(d1D_take.dimensionality == 1);
+		for(auto i : d1D_take.extension(0))
+			cout << d1D_take[i] << ' ';
+	}
+	{
+		cout << "--\n";
+	//	auto d1D_take = d2D_ref(2, 3);
+	}
+
+	return 0;
 
 	cout << "--\n";
 	auto const& d2D_ref_sv = d2D_ref.range({1, 3});
@@ -131,6 +162,7 @@ int main(){
 	}
 	cout << '\n';
 	multi::array_ref<double, 2> d2D_refref{data(d2D_ref), extensions(d2D_ref)};
+	multi::array_ref<double, 2> d2D_refref2{d2D_ref}; (void)d2D_refref2;
 
 	for(auto it1 = begin(d2D_ref); it1 != end(d2D_ref) ||!endl(cout); ++it1)
 		for(auto it2 = it1->begin()   ; it2 != it1->end()    ||!endl(cout); ++it2)

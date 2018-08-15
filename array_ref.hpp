@@ -165,6 +165,11 @@ struct layout_t<1>{
 		assert(d == 0 and stride_ != 0 and nelems_%stride_ == 0);
 		return nelems_/stride_;
 	}
+	auto sizes() const{
+		std::array<size_type, 1> ret;
+		sizes_aux(ret.begin());
+		return ret;
+	}
 	void sizes_aux(size_type* it) const{*it = size();}
 	constexpr index stride(dimensionality_type d = 0) const{assert(d == 0); return stride_;}
 	void strides_aux(size_type* it) const{*it = stride();}
@@ -183,6 +188,7 @@ struct layout_t<1>{
 		return stride_==other.stride_ and offset_==other.offset_ and nelems_==other.nelems_;
 	} bool operator!=(layout_t const& other) const{return not(*this==other);}
 	layout_t& rotate(){return *this;}
+	decltype(auto) shape() const{return sizes();}
 };
 #endif
 
