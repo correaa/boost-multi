@@ -542,6 +542,11 @@ protected:
 	friend struct basic_array<T, dimensionality_type{1}, element_const_ptr>;
 	basic_array& operator=(basic_array const& other) = default;
 public:
+	template<class Array>
+	void operator=(Array const& other){
+		assert(this->extension() == other.extension());
+		for(auto i : this->extension()) operator[](i) = other[i];
+	}
 	basic_array(basic_array<element, 1, typename std::pointer_traits<element_ptr>::template rebind<element>> const& other) : Layout(static_cast<Layout const&>(other)), data_(other.data_){}
 	const_reference operator[](index i) const{
 		assert( i < this->extension().last() and i >= this->extension().first() );
