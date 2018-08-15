@@ -40,12 +40,12 @@ private:
 	allocator_type allocator_;
 	using alloc_traits = std::allocator_traits<allocator_type>;
 public:
-//	explicit array(array const&){}
+	array(array const&){}
 	template<class Array, typename = decltype(std::declval<Array>().extensions())>
 	array(Array&& other) : array(other.extensions()){
 		array::operator=(std::forward<Array>(other));
 	}
-	explicit array(extensions_type e) : 
+	array(extensions_type e) : 
 		array_ref<T, D, typename array::element_ptr>(nullptr, e), allocator_{}
 	{
 		this->data_ = alloc_traits::allocate(allocator_, array::num_elements());
@@ -75,11 +75,11 @@ public:
 		this->recursive_assign_(il.begin(), il.end());
 	}
 #endif
-	array(std::initializer_list<std::initializer_list<typename array::element>> il, Allocator alloc = Allocator{}) : 
+/*	array(std::initializer_list<std::initializer_list<typename array::element>> il, Allocator alloc = Allocator{}) : 
 		array(list_extensions<typename array::element>(il), alloc)
 	{
 		this->recursive_assign_(il.begin(), il.end());
-	}
+	}*/
 	array& operator=(array const& other){
 		array tmp(other.extensions());
 		for(auto i : tmp.extension()) tmp[i] = other[i];
