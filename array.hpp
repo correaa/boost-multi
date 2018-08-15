@@ -206,8 +206,8 @@ int main(){
 			cout << MA0[i][j] << ' ';
 		cout << '\n';
 	}
-	MA0.reextent({2,3});
-
+	MA0.reextent({10,10});
+	
 	for(auto i : MA0.extension(0)){
 		for(auto j : MA0.extension(1)) 
 			cout << MA0[i][j] << ' ';

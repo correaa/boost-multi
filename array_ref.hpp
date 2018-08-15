@@ -260,8 +260,6 @@ public:
 	element_const_ptr corigin() const{return data_ + Layout::origin();}
 	const_reference operator[](index i) const{return operator_sbracket(i);}
 	reference operator[](index i){return operator_sbracket(i);}
-//	auto at(index i){return operator[](i);}
-//	auto at(index i, dimensionality_type n){return rotated(n)[i].rotated(-n);}
 	auto range(index_range const& ir) const{
 		layout_t new_layout = *this; 
 		(new_layout.nelems_/=Layout::size())*=ir.size();
@@ -272,17 +270,20 @@ public:
 	auto range(index_range const& ir, dimensionality_type n) const{
 		return rotated(n).range(ir).rotated(-n);
 	}
-	auto operator()(index_range const& ir){return range(ir);}
-	auto operator()(index i){return operator[](i);}
-/*
-	template<class T, class... Ts>
-	auto paren_aux(dimensionality_type n, T t, Ts&&... ts) const{
-		return rotated(n)(ts...).rotated(-n);
-	}
-	template<class T, class... Ts>
-	auto operator()(T const& t, Ts&&... ts) const{
-		return operator()(t).paren_aux(1, ts...);
-	}*/
+	auto operator()(index_range a) const{return range(a);}
+	auto operator()(index i) const{return operator[](i);}
+	decltype(auto) paren_aux() const{return *this;}
+	template<class... As>
+	auto paren_aux(index_range a, As&&... as) const{return operator()(a).rotated(1).paren_aux(as...);}
+	template<class... As>
+	auto paren_aux(index i, As&&... as) const{return operator[](i).rotated(1).paren_aux(as...);}
+	template<class... As>
+	auto operator()(index_range a, As&&... as) const{return paren_aux(a, as...).rotated(-(1 + sizeof...(As)));}
+	template<class... As>
+	auto operator()(index i, As&&... as) const{return operator[](i).rotated(1)(as...).rotated(-(1 + sizeof...(As)));}
+	auto operator()(index_range const& a, index_range const& ir1) const{return paren_aux(a, ir1).rotated(-2);}
+	auto operator()(index_range const& a, index       const& i1) const{return paren_aux(a, i1).rotated(-2);}
+	auto operator()(index const& a, index_range const& ir1) const{return operator[](a).rotated(1)(ir1).rotated(-2);}
 	auto rotated(dimensionality_type i) const{
 		layout_t new_layout = *this; 
 		new_layout.rotate(i);
@@ -544,6 +545,21 @@ public:
 		assert( i < this->extension().last() and i >= this->extension().first() );
 		return data_[Layout::operator()(i)];
 	}
+	auto range(index_range const& ir) const{
+		layout_t new_layout = *this; 
+		(new_layout.nelems_/=Layout::size())*=ir.size();
+		return basic_array<T, 1, ElementPtr, multi::layout_t<1>>{
+			data_ + Layout::operator()(ir.front()), new_layout
+		};
+	}
+	decltype(auto) paren_aux() const{return *this;}
+	template<class... As>
+	auto paren_aux(index_range a, As&&... as) const{return operator()(a).rotated(1).paren_aux(as...);}
+	template<class... As>
+	auto paren_aux(index i, As&&... as) const{return operator[](i).rotated(1).paren_aux(as...);}
+	auto operator()(index_range const& ir) const{return range(ir);}
+	auto operator()(index i) const{return operator[](i);}
+	decltype(auto) rotated(dimensionality_type) const{return *this;}
 	element_const_ptr origin() const{return data_ + Layout::origin();}
 	element_ptr origin(){return data_ + Layout::origin();}
 	friend decltype(auto) origin(basic_array const& self){return self.origin();}
