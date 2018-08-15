@@ -61,9 +61,11 @@ public:
 /*	array(std::initializer_list<typename array::value_type> il, Allocator alloc = Allocator{}) : array(list_extensions<typename array::element>(il), alloc){
 		this->recursive_assign_(il.begin(), il.end());
 	}*/
+#if 0
 	array(typename array::initializer_list il, Allocator alloc = Allocator{}) : array(list_extensions<typename array::element>(il), alloc){
 		this->recursive_assign_(il.begin(), il.end());
 	}
+#endif
 	array& operator=(array const& other){
 		array tmp(other.extensions());
 		for(auto i : tmp.extension()) tmp[i] = other[i];
