@@ -121,7 +121,7 @@ struct layout_t{
 	}
 	auto strides() const{
 		std::array<index, D> ret;
-		strides_aux(begin(ret));
+		strides_aux(ret.begin());
 		return ret;
 	}
 	void strides_aux(size_type* it) const{
@@ -172,6 +172,11 @@ struct layout_t<1>{
 	}
 	void sizes_aux(size_type* it) const{*it = size();}
 	constexpr index stride(dimensionality_type d = 0) const{assert(d == 0); return stride_;}
+	auto strides() const{
+		std::array<index, 1> ret;
+		strides_aux(ret.begin());
+		return ret;
+	}
 	void strides_aux(size_type* it) const{*it = stride();}
 	constexpr size_type num_elements() const{return nelems_;}
 	constexpr index_extension extension(dimensionality_type d = 0) const{
