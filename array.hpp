@@ -44,14 +44,14 @@ public:
 	array(Array&& other) : array(other.extensions()){
 		array::operator=(std::forward<Array>(other));
 	}
-	array(extensions_type e = {}, Allocator alloc = Allocator{}) : 
+	explicit array(extensions_type e = {}, Allocator alloc = Allocator{}) : 
 		array_ref<T, D, typename array::element_ptr>(nullptr, e),
 		allocator_(std::move(alloc))
 	{
 		this->data_ = alloc_traits::allocate(allocator_, array::num_elements());
 		uninitialized_construct();
 	}
-	array(extensions_type e, typename array::element const& el, Allocator alloc = Allocator{}) : 
+	explicit array(extensions_type e, typename array::element const& el, Allocator alloc = Allocator{}) : 
 		array_ref<T, D, typename array::element_ptr>(nullptr, e),
 		allocator_(std::move(alloc))
 	{
