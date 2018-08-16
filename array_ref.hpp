@@ -259,7 +259,6 @@ protected:
 	Layout const& layout() const{return *this;}
 	basic_array(element_ptr data, Layout layout) : Layout(layout), data_(data){}
 private:
-	basic_array& operator=(basic_array const& other) = default;
 	reference operator_sbracket(index i) const{
 		assert( i < this->extension().last() and i >= this->extension().first() );
 		return {data_ + Layout::operator()(i), Layout::sub};
@@ -469,6 +468,11 @@ protected:
 		) operator[](i).intersection_assign_(other[i]);
 	}
 public:
+	basic_array& operator=(basic_array const& other){
+		assert(this->extension() == other.extension());
+		for(auto i : this->extension()) operator[](i) = other[i];
+		return *this;
+	}
 	template<class Array>
 	void operator=(Array const& other){
 		assert(this->extension() == other.extension());
@@ -545,8 +549,12 @@ protected:
 	friend struct basic_array<T, dimensionality_type{2}, element_ptr>;
 	friend struct basic_array<T, dimensionality_type{2}, typename std::pointer_traits<element_ptr>::template rebind<element>>;
 	friend struct basic_array<T, dimensionality_type{1}, element_const_ptr>;
-	basic_array& operator=(basic_array const& other) = default;
 public:
+	basic_array& operator=(basic_array const& other){
+		assert(this->extension() == other.extension());
+		for(auto i : this->extension()) operator[](i) = other[i];
+		return *this;
+	}
 	template<class Array>
 	void operator=(Array const& other){
 		assert(this->extension() == other.extension());

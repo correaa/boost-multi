@@ -33,10 +33,38 @@ void some_assign1(M&& m, double d){m[1] = d;}
 
 void some_assignref21(boost::multi::array_ref<double, 2>& m, double d){m[2][1] = d;}
 
+
+template<class T>
+struct vect{
+	T* data_;
+	T& operator[](std::size_t idx){return *(data_ + idx);}
+//	T const& operator[](std::size_t idx) const{assert(0); return *(data_ + idx);}
+//	T&& operator[](std::size_t idx)&&{return std::move(*(data_ + idx));}
+	vect() : data_(new T[10]){}
+	~vect(){delete[] data_;}
+};
+
+
+template<class M1, class M2>
+void assign4(M1&& m1, M2 const& m2){m1 = m2;}
+
 int main(){
 
-	multi::array<double, 2> C3( {4, 3} ); 
+	multi::array<double, 2> C3( {4, 3} );
+	multi::array<double, 2> C6( {4, 3} );
+
 	assert(C3.size(0)==4 and C3.size(1)==3);
+
+	C6[1][1] = 99.;
+	assign4(C3({0,4},{0,3}), C6({0,4},{0,3}));
+	assert(C3[1][1] == 99.);
+	C3[1][1] = 88.;
+	assert(C6[1][1]==99.);
+
+	C3({0,4},{0,3}) = C6({0,4},{0,3});
+	C3({0,4}, 1) = C6({0,4}, 2);
+	C3({0,4}, 0) = C6({0,4}, 1);
+
 
 	some_assign21(C3, 4.1); assert(C3[2][1]==4.1);
 	some_assign21(C3({0,4},{0,3}), 4.2); assert(C3[2][1]==4.2);
@@ -46,8 +74,9 @@ int main(){
 	multi::array<double, 2> const C4( {4, 3} ); 
 	// C4[2][1] = 5.; error C4 is const
 
-	multi::array<double, 2> C5( {4, 3} ); 
-	some_assignref21(C5, 3.); 
+	multi::array<double, 2> C5( {4, 3}, 1. ); 
+	some_assignref21(C5, 3.);
+
 
 	using boost::multi::index_extension;
 	multi::array<double, 2> A(multi::array<double, 2>::extensions_type{{{0, 4}, {0, 3}}});
