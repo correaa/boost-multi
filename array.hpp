@@ -34,6 +34,8 @@ class array :
 	public array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>
 {
 public:
+	using add_lvalue_reference = typename array_ref<T, D+1, typename std::allocator_traits<Allocator>::pointer>::reference;
+//	using add_lv
 	using typename array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::extensions_type;
 	using allocator_type = Allocator;
 private:
@@ -45,7 +47,7 @@ public:
 	array(Array&& other) : array(other.extensions()){
 		array::operator=(std::forward<Array>(other));
 	}
-	explicit array(extensions_type e) : 
+	explicit array(extensions_type e = {}) : 
 		array_ref<T, D, typename array::element_ptr>(nullptr, e), allocator_{}
 	{
 		this->data_ = alloc_traits::allocate(allocator_, array::num_elements());
@@ -80,6 +82,12 @@ public:
 	{
 		this->recursive_assign_(il.begin(), il.end());
 	}*/
+/*	typename array_ref::reference operator[](index i){
+		return array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator[](i);
+	}
+	typename array_ref::const_reference operator[](index i) const{
+		return array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator[](i);
+	}*/
 	array& operator=(array const& other){
 		array tmp(other.extensions());
 		for(auto i : tmp.extension()) tmp[i] = other[i];
@@ -92,6 +100,10 @@ public:
 		tmp.array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator=(a);
 		swap(tmp);
 		return *this;
+	}
+	void operator=(typename array::initializer_list il){
+	//	reextent(list_extensions<typename array::element>(il));
+		this->recursive_assign_(il.begin(), il.end());
 	}
 	void reextent(extensions_type const& e){
 		array tmp(e);
@@ -210,12 +222,14 @@ int main(){
 
 //	assert( MA0[1][2] == 12. );
 
-	multi::array<double, 2> MA0 = {
+	multi::array<double, 2> MA0({3,3});
+	MA0 = {
 		{0.1, 01., 02.},
 		{10., 11., 12.},
 		{20., 21., 22.}
 	};
-	multi::array<double, 1> VV0 = {1.,2.,3.};
+	multi::array<double, 1> VV0({3}); assert(VV0.size() == 3); 
+	VV0 = {1.,2.,3.};
 
 	for(auto i : MA0.extension(0)){
 		for(auto j : MA0.extension(1)) 
@@ -243,7 +257,7 @@ int main(){
 		{10., 11., 12.},
 		{20., 21., 22.}
 	};*/
-	multi::array<double, 2> MA00 = {
+	multi::array<double, 2> MA00({3,3}); MA00 = {
 		{0.1, 01., 02.},
 		{10., 11., 12.},
 		{20., 21., 22.}

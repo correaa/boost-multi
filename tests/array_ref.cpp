@@ -24,13 +24,30 @@ auto f(){
 	return v;
 }
 
-
-template<class M>
-void some_assign(M&& m){m[2][3] = 3.1;}
-
 #include<string>
 
+template<class M>
+void some_assign21(M&& m, double d){m[2][1] = d;}
+template<class M>
+void some_assign1(M&& m, double d){m[1] = d;}
+
+void some_assignref21(boost::multi::array_ref<double, 2>& m, double d){m[2][1] = d;}
+
 int main(){
+
+	multi::array<double, 2> C3( {4, 3} ); 
+	assert(C3.size(0)==4 and C3.size(1)==3);
+
+	some_assign21(C3, 4.1); assert(C3[2][1]==4.1);
+	some_assign21(C3({0,4},{0,3}), 4.2); assert(C3[2][1]==4.2);
+	some_assign1(C3[2], 4.); assert(C3[2][1]==4.);
+	some_assign1(C3({0,4},2), 4.2); assert(C3[1][2]==4.2);
+
+	multi::array<double, 2> const C4( {4, 3} ); 
+	// C4[2][1] = 5.; error C4 is const
+
+	multi::array<double, 2> C5( {4, 3} ); 
+	some_assignref21(C5, 3.); 
 
 	using boost::multi::index_extension;
 	multi::array<double, 2> A(multi::array<double, 2>::extensions_type{{{0, 4}, {0, 3}}});
@@ -43,8 +60,9 @@ int main(){
 	multi::array<double, 2> C({ {{0, 4}, {5, 8}} }); // C({0,4})
 // 	assert(C.size(0) == 4 and C.size(1) == 3);
 
+	multi::array<double, 2> C0( A.extensions() ); assert(C0.size(0)==A.size(0) and C0.size(1)==A.size(1));
 	multi::array<double, 2> C1( {4, A.extension(1)} ); assert(C1.size(0)==4 and C1.size(1)==3);
-	multi::array<double, 2> C2( {4, 3} ); assert(C2.size(0)==4 and C2.size(1)==3);
+	multi::array<double, 2> C2( {4, {0, 3}} ); assert(C2.size(0)==4 and C2.size(1)==3);
 
 //	multi::array<double, 2> D = {{0., 4.}, {5., 8.}}; 
 //	assert(B[1][1] == 8 and B.shape()[0] == 2 and B.shape()[1] == 2);

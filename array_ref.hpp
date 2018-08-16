@@ -269,8 +269,8 @@ public:
 	element_ptr origin() &&{return data_ + Layout::origin();}
 	element_const_ptr origin() const&{return data_ + Layout::origin();}
 	element_const_ptr corigin() const{return data_ + Layout::origin();}
-	const_reference operator[](index i) const{return operator_sbracket(i);}
-	reference operator[](index i){return operator_sbracket(i);}
+//	const_
+	reference operator[](index i) const{return operator_sbracket(i);}
 	auto range(index_range const& ir) const{
 		layout_t new_layout = *this; 
 		(new_layout.nelems_/=Layout::size())*=ir.size();
@@ -740,6 +740,12 @@ struct array_ref : const_array_ref<T, D, ElementPtr>{
 //	typename array_ref::element_ptr 
 	ElementPtr const& data(){return this->data_;}
 	friend decltype(auto) data(array_ref& self){return self.data();}
+	typename array_ref::reference operator[](index i){
+		return const_array_ref<T, D, ElementPtr>::operator[](i);
+	}
+	typename array_ref::const_reference operator[](index i) const{
+		return const_array_ref<T, D, ElementPtr>::operator[](i);
+	}
 };
 
 template<typename... A> using carray_ref = array_ref<A...>;
