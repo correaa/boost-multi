@@ -264,10 +264,12 @@ private:
 		return {data_ + Layout::operator()(i), Layout::sub};
 	}
 public:
-	element_ptr origin() &{return data_ + Layout::origin();}
-	element_ptr origin() &&{return data_ + Layout::origin();}
-	element_const_ptr origin() const&{return data_ + Layout::origin();}
+	element_ptr origin() const{return data_ + Layout::origin();}
+	friend decltype(auto) origin(basic_array const& self){return self.origin();}
+//	element_ptr origin() &&{return data_ + Layout::origin();}
+//	element_const_ptr origin() const&{return data_ + Layout::origin();}
 	element_const_ptr corigin() const{return data_ + Layout::origin();}
+	friend decltype(auto) corigin(basic_array const& self){return self.corigin();}
 //	const_
 	reference operator[](index i) const{return operator_sbracket(i);}
 	auto range(index_range const& ir) const{
@@ -567,7 +569,7 @@ public:
 	}
 	reference operator[](index i){
 		assert( i < this->extension().last() and i >= this->extension().first() );
-		return data_[Layout::operator()(i)];
+		return data_[Layout::operator()(i)]; // *(data_ + Layout::operator()(i))
 	}
 	auto range(index_range const& ir) const{
 		layout_t new_layout = *this; 
@@ -584,10 +586,10 @@ public:
 	auto operator()(index_range const& ir) const{return range(ir);}
 	auto operator()(index i) const{return operator[](i);}
 	decltype(auto) rotated(dimensionality_type) const{return *this;}
-	element_const_ptr origin() const{return data_ + Layout::origin();}
-	element_ptr origin(){return data_ + Layout::origin();}
+	element_ptr origin() const{return data_ + Layout::origin();}
+//	element_ptr origin(){return data_ + Layout::origin();}
 	friend decltype(auto) origin(basic_array const& self){return self.origin();}
-	friend decltype(auto) corigin(basic_array const& self){return self.origin();}
+//	friend decltype(auto) corigin(basic_array const& self){return self.origin();}
 	element_const_ptr corigin() const{return origin();}
 	class const_iterator{
 		friend struct basic_array;
@@ -746,7 +748,8 @@ struct array_ref : const_array_ref<T, D, ElementPtr>{
 	}
 	array_ref& operator=(array_ref const& o){return operator=<array_ref const&>(o);}
 //	typename array_ref::element_ptr 
-	ElementPtr const& data(){return this->data_;}
+	typename array_ref::element_ptr const& data(){return this->data_;}
+	typename array_ref::element_ptr origin(){return this->data_ + typename array_ref::layout_t::origin();}
 	friend decltype(auto) data(array_ref& self){return self.data();}
 	typename array_ref::reference operator[](index i){
 		return const_array_ref<T, D, ElementPtr>::operator[](i);

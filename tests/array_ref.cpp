@@ -48,7 +48,25 @@ struct vect{
 template<class M1, class M2>
 void assign4(M1&& m1, M2 const& m2){m1 = m2;}
 
+template<class T>
+struct ptr{
+	T* impl_;
+	T& operator*() const{return *impl_;}
+	auto operator+(std::ptrdiff_t n) const{return ptr{impl_ + n};}
+	T& operator[](std::ptrdiff_t n) const{return impl_[n];}
+};
+
 int main(){
+
+	double* buffer = new double[100];
+
+	multi::array_ref<double, 2, ptr<double> > CC(ptr<double>{buffer}, {10, 10} );
+	CC[2];
+	CC[1][1];
+	CC[1][1] = 9;
+	assert(CC[1][1] == 9);
+
+	return 0;
 
 	multi::array<double, 2> C3( {4, 3} );
 	multi::array<double, 2> C6( {4, 3} );
@@ -64,7 +82,6 @@ int main(){
 	C3({0,4},{0,3}) = C6({0,4},{0,3});
 	C3({0,4}, 1) = C6({0,4}, 2);
 	C3({0,4}, 0) = C6({0,4}, 1);
-
 
 	some_assign21(C3, 4.1); assert(C3[2][1]==4.1);
 	some_assign21(C3({0,4},{0,3}), 4.2); assert(C3[2][1]==4.2);
