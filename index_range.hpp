@@ -77,7 +77,8 @@ public:
 	}
 };
 
-index_range::const_iterator find(
+
+inline index_range::const_iterator find(
 	index_range::const_iterator first, 
 	index_range::const_iterator last, 
 	index value
