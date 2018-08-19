@@ -44,7 +44,6 @@ struct vect{
 	~vect(){delete[] data_;}
 };
 
-
 template<class M1, class M2>
 void assign4(M1&& m1, M2 const& m2){m1 = m2;}
 
@@ -56,7 +55,20 @@ struct ptr{
 	T& operator[](std::ptrdiff_t n) const{return impl_[n];}
 };
 
+int f(int a){return a + 5;}
+
+struct single{
+    int const& m1_;
+	int const& m2_;
+};
+
 int main(){
+
+	single s{f(2), f(3)};
+	assert(s.m1_ == 7);
+
+	std::unique_ptr<double[]> ubuf(new double[100]);
+	multi::array_ref<double, 2> mbuf(ubuf.get(), {10,10});
 
 	double* buffer = new double[100];
 
@@ -93,7 +105,6 @@ int main(){
 
 	multi::array<double, 2> C5( {4, 3}, 1. ); 
 	some_assignref21(C5, 3.);
-
 
 	using boost::multi::index_extension;
 	multi::array<double, 2> A(multi::array<double, 2>::extensions_type{{{0, 4}, {0, 3}}});

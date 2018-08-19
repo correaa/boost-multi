@@ -123,6 +123,13 @@ public:
 		destroy();
 		allocator_.deallocate(this->data(), this->num_elements());
 	}
+	typename array::reference operator[](index i){
+		return array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator[](i);
+	}
+	using array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator[];
+	typename array::const_reference operator[](index i) const{
+		return array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator[](i);
+	}
 private:
 	void destroy(){
 	//	destroy(this->data() + this->num_elements());
@@ -202,7 +209,19 @@ void solve(Matrix& m, Vector& y){
 }
 #endif
 
+void f(boost::multi::array<double, 4> const& A){
+	A[1][2];
+	auto a = A[1][2]; // careful, a is a reference here, don't use auto, 
+	auto const& b = A[1][2]; // use auto const& if possible
+//	A[1][2][3][4] = 5; // fail, element is read-only
+}
+
 int main(){
+
+
+	boost::multi::array<double, 4> A({10,10,10,10});
+	f(A);
+	return 0;
 	
 	assert(( boost::multi::list_extensions({1.,2.,3.})[0] == boost::multi::index_range{0, 3} ));
 	assert(( boost::multi::list_extensions(

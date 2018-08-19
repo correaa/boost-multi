@@ -237,7 +237,7 @@ using recursive_ilist_t = typename recursive_ilist<T, N>::type;
 template<
 	typename T, 
 	dimensionality_type D, 
-	typename ElementPtr = T const* const, 
+	typename ElementPtr = T const*, 
 	class Layout = layout_t<D>
 > 
 struct basic_array : Layout{
@@ -248,22 +248,32 @@ struct basic_array : Layout{
 	using element_const_ptr = typename std::pointer_traits<element_ptr>::template rebind<element const>;
 	using value_type      = multi::array<element, D-1>;
 	using difference_type = index;
+	using sub_element_ptr = decltype(std::declval<element_ptr>() + std::declval<Layout>().operator()(0));
 	using const_reference = basic_array<element, D-1, element_const_ptr>; 
 	using reference       = basic_array<element, D-1, element_ptr>;
 	friend struct basic_array<element, D+1, element_ptr>;
+//	friend struct basic_array<element, D, element_const_ptr>;
+//	friend struct basic_array<element, D, element_ptr>;
+	friend struct basic_array<element, D, typename std::pointer_traits<element_ptr>::template rebind<element>>;
+//	template<class Ptr>
+//	friend struct basic_array<element, D+1, Ptr>;
 // for at least up to 3D, ...layout const> is faster than ...layout const&>
 protected:
 	using initializer_list = std::initializer_list<typename basic_array<T, D-1, ElementPtr>::initializer_list>;
 	element_ptr data_;
 	basic_array() = delete;
 	Layout const& layout() const{return *this;}
-	basic_array(element_ptr data, Layout layout) : Layout(layout), data_(data){}
+protected:	basic_array(element_ptr data, Layout layout) : Layout(layout), data_(data){}
 private:
 	reference operator_sbracket(index i) const{
 		assert( i < this->extension().last() and i >= this->extension().first() );
 		return {data_ + Layout::operator()(i), Layout::sub};
 	}
 public:
+	operator basic_array<element, D, element_const_ptr>() const{
+		return basic_array<element, D, element_const_ptr>(data_, layout());
+	}
+//	basic_array(multi::basic_array<element, D, element_const_ptr> const& other){}// : Layout(other.layout()), data_(other.data_){}
 	element_ptr origin() const{return data_ + Layout::origin();}
 	friend decltype(auto) origin(basic_array const& self){return self.origin();}
 //	element_ptr origin() &&{return data_ + Layout::origin();}
@@ -375,8 +385,8 @@ public:
            return ret;      
 		}
 		iterator& operator--(){this->data_ -= stride_; return *this;}
-		iterator operator+(index d){iterator ret = *this; return ret += d;}
-		iterator operator-(index d){iterator ret = *this; return ret -= d;}
+		iterator  operator+(index d){iterator ret = *this; return ret += d;}
+		iterator  operator-(index d){iterator ret = *this; return ret -= d;}
 		iterator& operator+=(index d){this->data_ += stride_*d; return *this;}
 		iterator& operator-=(index d){this->data_ -= stride_*d; return *this;}
 		ptrdiff_t operator-(iterator const& other) const{
@@ -751,12 +761,6 @@ struct array_ref : const_array_ref<T, D, ElementPtr>{
 	typename array_ref::element_ptr const& data(){return this->data_;}
 	typename array_ref::element_ptr origin(){return this->data_ + typename array_ref::layout_t::origin();}
 	friend decltype(auto) data(array_ref& self){return self.data();}
-	typename array_ref::reference operator[](index i){
-		return const_array_ref<T, D, ElementPtr>::operator[](i);
-	}
-	typename array_ref::const_reference operator[](index i) const{
-		return const_array_ref<T, D, ElementPtr>::operator[](i);
-	}
 };
 
 template<typename... A> using carray_ref = array_ref<A...>;
