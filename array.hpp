@@ -6,14 +6,15 @@
 
 #include "../multi/array_ref.hpp"
 
-#include<iostream> // cerr
 #include<algorithm>
+#include<array>
+//#include<iostream> // cerr
 #include<numeric>
 
 namespace boost{
 namespace multi{
 
-using std::cerr;
+//using std::cerr;
 
 template<class TT> auto list_extensions(std::initializer_list<TT> const& il){
 	return std::array<index_extension, 1>{index_extension{0, size_type(il.size())}};

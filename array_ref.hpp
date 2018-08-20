@@ -8,14 +8,15 @@
 #include "../multi/index_range.hpp"
 
 #include<algorithm> // transform
+#include<array>
 #include<cassert>
-#include<iostream> // cerr
+//#include<iostream> // cerr
 #include<memory>
 
 namespace boost{
 namespace multi{
 
-using std::cerr;
+//using std::cerr;
 
 using index = std::ptrdiff_t;
 using size_type = std::ptrdiff_t;
