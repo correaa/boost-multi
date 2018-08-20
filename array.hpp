@@ -127,10 +127,14 @@ public:
 	typename array::reference operator[](index i){
 		return array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator[](i);
 	}
-	using array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator[];
 	typename array::const_reference operator[](index i) const{
 		return array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator[](i);
 	}
+	typename array::element_ptr data(){return array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::data();}
+	typename array::element_const_ptr data() const{return array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::data();}
+
+	typename array::element_ptr origin(){return array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::origin();}
+	typename array::element_const_ptr origin() const{return array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::origin();}
 private:
 	void destroy(){
 	//	destroy(this->data() + this->num_elements());

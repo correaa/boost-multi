@@ -764,9 +764,9 @@ struct array_ref : const_array_ref<T, D, ElementPtr>{
 	}
 	array_ref& operator=(array_ref const& o){return operator=<array_ref const&>(o);}
 //	typename array_ref::element_ptr 
-	typename array_ref::element_ptr const& data(){return this->data_;}
-	typename array_ref::element_ptr origin(){return this->data_ + typename array_ref::layout_t::origin();}
-	friend decltype(auto) data(array_ref& self){return self.data();}
+	typename array_ref::element_ptr const& data() const{return this->data_;}
+	typename array_ref::element_ptr origin() const{return this->data_ + array_ref::layout_t::origin();}
+	friend decltype(auto) data(array_ref const& self){return self.data();}
 };
 
 template<typename... A> using carray_ref = array_ref<A...>;
