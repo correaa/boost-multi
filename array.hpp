@@ -115,8 +115,10 @@ public:
 	void swap(array& other) noexcept{
 		using std::swap;
 		swap(this->data_, other.data_);
-		using layout_t = std::decay_t<decltype(this->layout())>;
-		swap(static_cast<layout_t&>(*this), static_cast<layout_t&>(other));
+		swap(
+			static_cast<typename array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::layout_t&>(*this), 
+			static_cast<typename array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::layout_t&>(other)
+		);
 	}
 	friend void swap(array& self, array& other){self.swap(other);}
 	//! Destructs the array
