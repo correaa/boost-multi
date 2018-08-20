@@ -575,11 +575,13 @@ public:
 	basic_array(basic_array<element, 1, typename std::pointer_traits<element_ptr>::template rebind<element>> const& other) : Layout(static_cast<Layout const&>(other)), data_(other.data_){}
 	const_reference operator[](index i) const{
 		assert( i < this->extension().last() and i >= this->extension().first() );
-		return data_[Layout::operator()(i)];
+		return *(data_ + Layout::operator()(i));
+	//	return data_[Layout::operator()(i)];
 	}
 	reference operator[](index i){
 		assert( i < this->extension().last() and i >= this->extension().first() );
-		return data_[Layout::operator()(i)]; // *(data_ + Layout::operator()(i))
+		return *(data_ + Layout::operator()(i));
+	//	return data_[Layout::operator()(i)]; // 
 	}
 	auto range(index_range const& ir) const{
 		layout_t new_layout = *this; 
@@ -615,7 +617,10 @@ public:
 		using iterator_category = std::random_access_iterator_tag;
 		const_reference operator*() const{return *data_;}
 		element_ptr const* operator->() const{return data_;}
-		const_reference operator[](index i) const{return data_[i*stride_];}
+		const_reference operator[](index i) const{
+			return *(data_ + i*stride_);
+		//	return data_[i*stride_];
+		}
 		const_iterator& operator++(){data_ += stride_; return *this;}
 		const_iterator& operator--(){data_ += stride_; return *this;}
 		const_iterator& operator+=(ptrdiff_t d){this->data_ += stride_*d; return *this;}
