@@ -535,10 +535,10 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout> : Layout{
 	using element_ptr = ElementPtr;
 	using element_const_ptr = typename std::pointer_traits<element_ptr>::template rebind<element const>;
 	using layout_t = Layout;
-	using const_reference = T const&;
-	using reference = decltype(*ElementPtr{});
+	using const_reference = decltype(*std::declval<element_const_ptr>()); //T const&;
+	using reference = decltype(*std::declval<element_ptr>()); // decltype(*ElementPtr{});
 protected:
-//	using initializer_list = recursive_ilist_t<T, dimensionality>;
+//	using initializer_list = recursive_ilist_t<T, di                                                                                                                               m mensionality>;
 	using initializer_list = std::initializer_list<T>;
 	template<class It>
 	void recursive_assign_(It first, It last){
