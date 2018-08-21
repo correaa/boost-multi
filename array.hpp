@@ -107,7 +107,7 @@ public:
 		this->recursive_assign_(il.begin(), il.end());
 	}
 	void reextent(extensions_type const& e){
-		array tmp(e);
+		array tmp(e, allocator_);
 		tmp.intersection_assign_(*this);
 		swap(tmp);
 	}
@@ -115,6 +115,7 @@ public:
 	void swap(array& other) noexcept{
 		using std::swap;
 		swap(this->data_, other.data_);
+		swap(this->allocator_, other.allocator_);
 		swap(
 			static_cast<typename array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::layout_t&>(*this), 
 			static_cast<typename array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::layout_t&>(other)
