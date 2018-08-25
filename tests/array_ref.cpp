@@ -2,8 +2,6 @@
 time clang++ -O3 -DNDEBUG -std=c++14 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $0 -o $0.x -lboost_timer && time $0.x $@ && rm -f $0.x; exit
 #endif
 
-#include<iostream>
-
 #include "../array_ref.hpp"
 #include "../array.hpp"
 
