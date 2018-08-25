@@ -89,7 +89,12 @@ int main(){
 	//	assert( mbuf2[123][456] == mbuf[123][456] );
 		multi::array<double, 2> Mbuf = mbuf2;
 	}
+	std::vector<double> v(100);
+	auto v2b{new double[100]};
+	multi::array_ref<double, 1> v2(v2b, {100});
+	v2 = v;
 	return 0;
+
 	double* buffer = new double[100];
 
 	multi::array_ref<double, 2, ptr<double> > CC(ptr<double>{buffer}, {10, 10} );

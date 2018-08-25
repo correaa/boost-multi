@@ -743,6 +743,9 @@ struct const_array_ref : basic_array<T, D, ElementPtr>{
 		typename const_array_ref::element_ptr p, Extensions e		
 	) noexcept : basic_array<T, D, ElementPtr>{p, typename const_array_ref::layout_t{e}}
 	{}
+	protected:
+	using basic_array<T, D, ElementPtr>::operator=;
+	public:
 	void operator=(const_array_ref const&) = delete;
 	element_const_ptr cdata() const{return const_array_ref::data_;}
 	element_const_ptr data() const{return cdata();}
@@ -764,13 +767,18 @@ namespace multi{
 template<typename T, dimensionality_type D, typename ElementPtr = T*>
 struct array_ref : const_array_ref<T, D, ElementPtr>{
 	using const_array_ref<T, D, ElementPtr>::const_array_ref;
+	using const_array_ref<T, D, ElementPtr>::operator=;
+	template<class Array, typename = std::enable_if_t<not std::is_base_of<const_array_ref<T, D, ElementPtr>, std::decay_t<Array>>{}> > array_ref& operator=(Array const& other){
+		const_array_ref<T, D, ElementPtr>::operator=(other);
+		return *this;
+	}
 /*	template<class Array>
 	array_ref& operator=(Array&& other){
 		assert(this->extension() == other.extension());
 		for(auto i : this->extension()) this->operator[](i) = std::forward<Array>(other)[i];
 		return *this;
 	}*/
-	array_ref const& operator=(const_array_ref<T, D, ElementPtr> const& other) const{
+	array_ref const& operator=(const_array_ref<T, D, ElementPtr> const& other){
 		assert(extensions() == other.extensions());
 		using std::copy_n;
 		copy_n(other.data(), other.num_elements(), data());
