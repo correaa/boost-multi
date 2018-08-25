@@ -97,8 +97,10 @@ public:
 	}
 	template<class Array>
 	array& operator=(Array const& a){
+		assert(0);
+	//	array tmp(extensions(a));
 		array tmp(a.extensions());
-		tmp.array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator=(a);
+	//	tmp.array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator=(a);
 		swap(tmp);
 		return *this;
 	}
@@ -219,8 +221,8 @@ void solve(Matrix& m, Vector& y){
 
 void f(boost::multi::array<double, 4> const& A){
 	A[1][2];
-	auto a = A[1][2]; // careful, a is a reference here, don't use auto, 
-	auto const& b = A[1][2]; // use auto const& if possible
+	auto a = A[1][2]; (void)a; // careful, a is a reference here, don't use auto, 
+	auto const& b = A[1][2]; (void)b; // use auto const& if possible
 //	A[1][2][3][4] = 5; // fail, element is read-only
 }
 

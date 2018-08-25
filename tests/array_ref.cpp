@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-time c++ -O2 -std=c++14 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $0 -ggdb3 -o $0.x && time $0.x $@ && rm -f $0.x; exit
+time c++ -O3 -std=c++14 -Wall `#-fmax-errors=2` -Wfatal-errors -I${HOME}/prj $0 -o $0.x -lboost_timer && time $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include<iostream>
@@ -57,19 +57,29 @@ struct ptr{
 
 int f(int a){return a + 5;}
 
-struct single{
-    int const& m1_;
-	int const& m2_;
-};
+#include <boost/timer/timer.hpp>
 
 int main(){
 
-	single s{f(2), f(3)};
-	assert(s.m1_ == 7);
+	{
+		std::unique_ptr<double[]> ubuf(new double[10000]);
+		multi::array_ref<double, 2> const mbuf(ubuf.get(), {100, 100});
+		mbuf = mbuf;
+	}
 
-	std::unique_ptr<double[]> ubuf(new double[100]);
-	multi::array_ref<double, 2> mbuf(ubuf.get(), {10,10});
+	std::unique_ptr<double[]> ubuf(new double[400000000]);
+	std::fill_n(ubuf.get(), 400000000, 99.);
+	multi::array_ref<double, 2> mbuf(ubuf.get(), {20000,20000});
 
+	{
+		std::unique_ptr<double[]> ubuf2(new double[400000000]);
+		multi::array_ref<double, 2> mbuf2(ubuf2.get(), {20000,20000});
+		{
+			boost::timer::auto_cpu_timer t;
+			mbuf2 = mbuf;
+		}
+		assert( mbuf2[123][456] == 99. );
+	}
 	double* buffer = new double[100];
 
 	multi::array_ref<double, 2, ptr<double> > CC(ptr<double>{buffer}, {10, 10} );
@@ -78,7 +88,6 @@ int main(){
 	CC[1][1] = 9;
 	assert(CC[1][1] == 9);
 
-	return 0;
 
 	multi::array<double, 2> C3( {4, 3} );
 	multi::array<double, 2> C6( {4, 3} );
@@ -94,6 +103,8 @@ int main(){
 	C3({0,4},{0,3}) = C6({0,4},{0,3});
 	C3({0,4}, 1) = C6({0,4}, 2);
 	C3({0,4}, 0) = C6({0,4}, 1);
+
+#if 0
 
 	some_assign21(C3, 4.1); assert(C3[2][1]==4.1);
 	some_assign21(C3({0,4},{0,3}), 4.2); assert(C3[2][1]==4.2);
@@ -416,6 +427,7 @@ int main(){
 	for(auto it1 = d2D_cref.begin(1); it1 != d2D_cref.end(1)||!endl(cout); ++it1)
 		for(auto it2 = it1->begin()   ; it2 != it1->end()   ||!endl(cout); ++it2)
 			cout << *it2 << ' ';
+#endif
 #endif
 }
 
