@@ -10,9 +10,15 @@
 #include<array>
 //#include<iostream> // cerr
 #include<numeric>
+#include<vector>
 
 namespace boost{
 namespace multi{
+
+template<class T>
+std::array<index_extension, 1> extensions(std::vector<T> const& v){
+	return {index_extension{0, long(v.size())}};
+}
 
 //using std::cerr;
 
