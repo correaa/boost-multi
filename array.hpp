@@ -44,8 +44,9 @@ private:
 	using alloc_traits = std::allocator_traits<allocator_type>;
 public:
 //	explicit array(array const&){}
-	template<class Array, typename = decltype(std::declval<Array>().extensions())>
-	array(Array&& other) : array(other.extensions()){
+	template<class Array, typename = decltype(extensions(std::declval<Array>()), allocator(std::declval<Array>()))>
+	array(Array&& other) : array(extensions(other), other.get_allocator()){
+		// TODO use copy?
 		array::operator=(std::forward<Array>(other));
 	}
 	explicit array(extensions_type e = {}) : 
@@ -69,18 +70,21 @@ public:
 		uninitialized_construct(el);
 	}
 	allocator_type get_allocator() const{return allocator_;}
+	friend allocator_type allocator(array const& s){return s.get_allocator();}
 	array& operator=(array const& other){
-		array tmp(other.extensions());
-		for(auto i : tmp.extension()) tmp[i] = other[i];
+		array tmp(extensions(other), allocator(other));//other.extensions(), allocator_);
+		tmp.array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator=(other);
 		swap(tmp);
 		return *this;
 	}
+	array& operator=(array&& other){
+		swap(other);
+		other.clear();
+	}
 	template<class Array>
 	array& operator=(Array const& a){
-	//	assert(0);
-	//	array tmp(extensions(a));
-		array tmp(a.extensions());
-	//	tmp.array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator=(a);
+		array tmp(extensions(a));
+		tmp.array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator=(a);
 		swap(tmp);
 		return *this;
 	}
@@ -104,11 +108,13 @@ public:
 		);
 	}
 	friend void swap(array& self, array& other){self.swap(other);}
-	//! Destructs the array
-	~array(){
+	~array(){clear();}
+	void clear(){
 		destroy();
 		allocator_.deallocate(this->data(), this->num_elements());
+		this->data_ = 0;
 	}
+	friend void clear(array& self){self.clear();}
 	typename array::reference operator[](index i){
 		return array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator[](i);
 	}
