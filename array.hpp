@@ -68,27 +68,7 @@ public:
 		this->data_ = alloc_traits::allocate(allocator_, array::num_elements());
 		uninitialized_construct(el);
 	}
-//	array(std::initializer_list<typename array::value_type> il, Allocator alloc = Allocator{}) : array(list_extensions<typename array::element>(il), alloc){
-//		this->recursive_assign_(il.begin(), il.end());
-//	}
-#if 0
-	array(typename array::initializer_list il, Allocator alloc = Allocator{}) : 
-		array(list_extensions<typename array::element>(il), alloc)
-	{
-		this->recursive_assign_(il.begin(), il.end());
-	}
-#endif
-/*	array(std::initializer_list<std::initializer_list<typename array::element>> il, Allocator alloc = Allocator{}) : 
-		array(list_extensions<typename array::element>(il), alloc)
-	{
-		this->recursive_assign_(il.begin(), il.end());
-	}*/
-/*	typename array_ref::reference operator[](index i){
-		return array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator[](i);
-	}
-	typename array_ref::const_reference operator[](index i) const{
-		return array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator[](i);
-	}*/
+	allocator_type get_allocator() const{return allocator_;}
 	array& operator=(array const& other){
 		array tmp(other.extensions());
 		for(auto i : tmp.extension()) tmp[i] = other[i];
@@ -97,7 +77,7 @@ public:
 	}
 	template<class Array>
 	array& operator=(Array const& a){
-		assert(0);
+	//	assert(0);
 	//	array tmp(extensions(a));
 		array tmp(a.extensions());
 	//	tmp.array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator=(a);
