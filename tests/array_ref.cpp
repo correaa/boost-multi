@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-time c++ -O3 -std=c++14 -Wall `#-fmax-errors=2` -Wfatal-errors -I${HOME}/prj $0 -o $0.x -lboost_timer && time $0.x $@ && rm -f $0.x; exit
+time clang++ -O3 -DNDEBUG -std=c++14 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $0 -o $0.x -lboost_timer && time $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include<iostream>
@@ -62,24 +62,34 @@ int f(int a){return a + 5;}
 int main(){
 
 	{
-		std::unique_ptr<double[]> ubuf(new double[10000]);
+		std::unique_ptr<double[]> ubuf{new double[10000]};
 		multi::array_ref<double, 2> const mbuf(ubuf.get(), {100, 100});
 		mbuf = mbuf;
 	}
 
-	std::unique_ptr<double[]> ubuf(new double[400000000]);
-	std::fill_n(ubuf.get(), 400000000, 99.);
-	multi::array_ref<double, 2> mbuf(ubuf.get(), {20000,20000});
-
+//	std::unique_ptr<double[]> 
+	auto ubuf{new double[400000000]};
+//	std::fill_n(ubuf.get(), 400000000, 99.);
+//	std::iota(ubuf.get(), 
+	multi::array_ref<double, 2> mbuf(ubuf, {20000,20000});
+	std::iota(mbuf.data(), mbuf.data() + mbuf.num_elements(), 0.);
 	{
-		std::unique_ptr<double[]> ubuf2(new double[400000000]);
-		multi::array_ref<double, 2> mbuf2(ubuf2.get(), {20000,20000});
+	//	std::unique_ptr<double[]> 
+		auto ubuf2{new double[400000000]};
+		multi::array_ref<double, 2> mbuf2(ubuf2, {20000,20000});
+	//	std::iota(mbuf2.data(), mbuf2.data() + mbuf2.num_elements(), 0.);
+		std::iota(mbuf2.data(), mbuf2.data() + mbuf2.num_elements(), 122223.);
+	//	std::copy_n(mbuf.data(), mbuf.num_elements(), mbuf2.data());
 		{
 			boost::timer::auto_cpu_timer t;
+		//	std::copy_n(mbuf.data(), mbuf.num_elements(), mbuf2.data());
 			mbuf2 = mbuf;
 		}
-		assert( mbuf2[123][456] == 99. );
+		if(mbuf2[123][456] != mbuf[123][456]) throw 0;
+	//	assert( mbuf2[123][456] == mbuf[123][456] );
+		multi::array<double, 2> Mbuf = mbuf2;
 	}
+	return 0;
 	double* buffer = new double[100];
 
 	multi::array_ref<double, 2, ptr<double> > CC(ptr<double>{buffer}, {10, 10} );

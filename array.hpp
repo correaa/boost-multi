@@ -33,6 +33,7 @@ template<class TT> auto list_extensions(std::initializer_list<std::initializer_l
 template<class T, dimensionality_type D, class Allocator>
 class array : 
 	public array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>
+//	, private Allocator
 {
 public:
 	using add_lvalue_reference = typename array_ref<T, D+1, typename std::allocator_traits<Allocator>::pointer>::reference;
@@ -44,10 +45,17 @@ private:
 	using alloc_traits = std::allocator_traits<allocator_type>;
 public:
 //	explicit array(array const&){}
-	template<class Array, typename = decltype(extensions(std::declval<Array>()), allocator(std::declval<Array>()))>
-	array(Array&& other) : array(extensions(other), other.get_allocator()){
+	array(array const& other) : array(other.extensions(), other.get_allocator()){//, allocator(other)){
 		// TODO use copy?
-		array::operator=(std::forward<Array>(other));
+		array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator=(other);
+	//	array::operator=(std::forward<Array>(other));
+	}
+	template<class Array>//, typename = decltype(extensions(std::declval<Array>()), allocator(std::declval<Array>()))>
+	array(Array const& other) : array(extensions(other)){//, allocator(other)){
+		// TODO use copy?
+	//	array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator=(std::forward<Array>(other));
+	//	array::operator=(std::forward<Array>(other));
+		array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator=(other);
 	}
 	explicit array(extensions_type e = {}) : 
 		array_ref<T, D, typename array::element_ptr>(nullptr, e), allocator_{}
@@ -70,11 +78,15 @@ public:
 		uninitialized_construct(el);
 	}
 	allocator_type get_allocator() const{return allocator_;}
-	friend allocator_type allocator(array const& s){return s.get_allocator();}
+	friend allocator_type const& allocator(array const& s){return s.allocator_;}
 	array& operator=(array const& other){
-		array tmp(extensions(other), allocator(other));//other.extensions(), allocator_);
-		tmp.array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator=(other);
-		swap(tmp);
+		if(other.extensions() == this->extensions() and allocator(other) == allocator(*this)){
+			array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator=(other);
+		}else{
+			array tmp(extensions(other), allocator(other));//other.extensions(), allocator_);
+			tmp.array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator=(other);
+			swap(tmp);
+		}
 		return *this;
 	}
 	array& operator=(array&& other){

@@ -261,7 +261,7 @@ struct basic_array : Layout{
 // for at least up to 3D, ...layout const> is faster than ...layout const&>
 protected:
 	using initializer_list = std::initializer_list<typename basic_array<T, D-1, ElementPtr>::initializer_list>;
-	element_ptr data_;
+	element_ptr data_; // TODO call it base_ ?
 	basic_array() = delete;
 	Layout const& layout() const{return *this;}
 protected:	basic_array(element_ptr data, Layout layout) : Layout(layout), data_(data){}
@@ -744,10 +744,6 @@ struct const_array_ref : basic_array<T, D, ElementPtr>{
 	) noexcept : basic_array<T, D, ElementPtr>{p, typename const_array_ref::layout_t{e}}
 	{}
 	void operator=(const_array_ref const&) = delete;
-	void operator=(const_array_ref const& other) const{
-		return basic_array<T, D, ElementPtr>::operator=(other);
-	}
-//	const_array_ref& operator=(const_array_ref const&){assert(0);}// = delete;
 	element_const_ptr cdata() const{return const_array_ref::data_;}
 	element_const_ptr data() const{return cdata();}
 	friend decltype(auto) data(const_array_ref const& self){return self. data();}
@@ -774,13 +770,14 @@ struct array_ref : const_array_ref<T, D, ElementPtr>{
 		for(auto i : this->extension()) this->operator[](i) = std::forward<Array>(other)[i];
 		return *this;
 	}*/
-//	array_ref& operator=(array_ref const& o){return operator=<array_ref const&>(o);}
-/*	array_ref& operator=(array_ref const&) const{
-		assert(0);
-	}*/
-//	typename array_ref::element_ptr 
-	void operator=(array_ref const& other) const{
-		return const_array_ref<T, D, ElementPtr>::operator=(other);
+	array_ref const& operator=(const_array_ref<T, D, ElementPtr> const& other) const{
+		assert(extensions() == other.extensions());
+		using std::copy_n;
+		copy_n(other.data(), other.num_elements(), data());
+		return *this;
+	}
+	array_ref const& operator=(array_ref const& other){
+		return operator=(static_cast<const_array_ref<T, D, ElementPtr> const&>(other));
 	}
 	typename array_ref::element_ptr const& data() const{return this->data_;}
 	typename array_ref::element_ptr origin() const{return this->data_ + array_ref::layout_t::origin();}
