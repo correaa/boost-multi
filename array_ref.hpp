@@ -236,7 +236,7 @@ public:
 		return basic_array<element, D, element_const_ptr>(data_, layout());
 	}
 	element_ptr origin() const{return data_ + Layout::origin();}
-	element_const_ptr corigin() const{return data_ + Layout::origin();}
+	element_const_ptr corigin() const{return origin();}//data_ + Layout::origin();}
 	friend decltype(auto) origin(basic_array const& self){return self.origin();}
 	friend decltype(auto) corigin(basic_array const& self){return self.corigin();}
 	reference operator[](index i) const{
@@ -659,30 +659,25 @@ public:
 template<typename T, dimensionality_type D, typename ElementPtr = T const*>
 struct const_array_ref : basic_array<T, D, ElementPtr>{
 	using element_const_ptr = typename const_array_ref::element_const_ptr;
+	using element_ptr = typename const_array_ref::element_ptr;
 	const_array_ref() = delete; // references must be initialized (bound)
 	const_array_ref(const_array_ref const&) = default;
 	constexpr const_array_ref(
-		ElementPtr p, 
-	//	typename const_array_ref::element_ptr p, 
+		ElementPtr p, // typename const_array_ref::element_ptr p, 
 		typename const_array_ref::extensions_type e
-	) noexcept : 
-		basic_array<T, D, ElementPtr>{
-			p, 
-			typename const_array_ref::layout_t{e}
-		}
+	) noexcept 
+	: basic_array<T, D, ElementPtr>{p, typename const_array_ref::layout_t{e}}
 	{}
 	template<class Extensions>
-	constexpr const_array_ref(
-	//	typename const_array_ref::element_ptr 
-		ElementPtr p, Extensions e		
-	) noexcept : basic_array<T, D, ElementPtr>{p, typename const_array_ref::layout_t{e}}
+	constexpr const_array_ref(ElementPtr p, Extensions e) noexcept 
+	: basic_array<T, D, ElementPtr>{p, typename const_array_ref::layout_t{e}}
 	{}
 	protected:
 	using basic_array<T, D, ElementPtr>::operator=;
 	public:
 	void operator=(const_array_ref const&) = delete;
-	element_const_ptr cdata() const{return const_array_ref::data_;}
-	element_const_ptr data() const{return cdata();}
+	element_ptr data() const{return const_array_ref::data_;}
+	element_const_ptr cdata() const{return data();}
 	friend decltype(auto) data(const_array_ref const& self){return self. data();}
 	friend decltype(auto) cdata(const_array_ref const& self){return self.cdata();}
 };
@@ -709,15 +704,15 @@ struct array_ref : const_array_ref<T, D, ElementPtr>{
 	array_ref const& operator=(const_array_ref<T, D, ElementPtr> const& other){
 		assert(this->extensions() == other.extensions());
 		using std::copy_n;
-		copy_n(other.data(), other.num_elements(), data());
+		copy_n(other.data(), other.num_elements(), array_ref::data());
 		return *this;
 	}
 	array_ref const& operator=(array_ref const& other){
 		return operator=(static_cast<const_array_ref<T, D, ElementPtr> const&>(other));
 	}
-	typename array_ref::element_ptr const& data() const{return this->data_;}
-	typename array_ref::element_ptr origin() const{return this->data_ + array_ref::layout_t::origin();}
-	friend decltype(auto) data(array_ref const& self){return self.data();}
+//	typename array_ref::element_ptr data() const{return this->data_;}
+//	typename array_ref::element_ptr origin() const{return this->data_ + array_ref::layout_t::origin();}
+//	friend decltype(auto) data(array_ref const& self){return self.data();}
 };
 
 template<typename... A> using carray_ref = array_ref<A...>;
