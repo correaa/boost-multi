@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-time clang++ -O3 -DNDEBUG -std=c++14 -Wall `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $0 -o $0.x -lboost_timer && time $0.x $@ && rm -f $0.x; exit
+time c++ -O3 `#-DNDEBUG` -std=c++14 -Wall -Wextra `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $0 -o $0.x -lboost_timer && time $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include "../array_ref.hpp"
@@ -58,13 +58,25 @@ int f(int a){return a + 5;}
 #include <boost/timer/timer.hpp>
 
 int main(){
-
 	{
 		std::unique_ptr<double[]> ubuf{new double[10000]};
 		multi::array_ref<double, 2> const mbuf(ubuf.get(), {100, 100});
-		mbuf = mbuf;
-	}
 
+		double* Pbuf = new double[10000]; std::fill_n(Pbuf, 10000, 3.);
+
+		multi::array_ref<double, 1, double*&> mbuf2{Pbuf, {{{10000}}}};
+
+		assert(mbuf2.size() == 10000);
+
+		assert( mbuf2[10] == 3. );
+
+		Pbuf = new double[10000]; 
+		std::fill_n(Pbuf, 10000, 4.);
+		cout << mbuf2[10] << std::endl;
+		assert( mbuf2[10] == 4. );
+
+	}
+#if 1
 //	std::unique_ptr<double[]> 
 	auto ubuf{new double[400000000]};
 //	std::fill_n(ubuf.get(), 400000000, 99.);
@@ -441,6 +453,7 @@ int main(){
 	for(auto it1 = d2D_cref.begin(1); it1 != d2D_cref.end(1)||!endl(cout); ++it1)
 		for(auto it2 = it1->begin()   ; it2 != it1->end()   ||!endl(cout); ++it2)
 			cout << *it2 << ' ';
+#endif
 #endif
 #endif
 }

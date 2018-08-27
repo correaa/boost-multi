@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && clang++ -Ofast `#-DNDEBUG` -std=c++14 -Wall -Wextra -Wfatal-errors -lboost_timer -I${HOME}/prj -D_TEST_BOOST_MULTI_ARRAY $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
+(echo "#include\""$0"\"" > $0x.cpp) && c++ -Ofast `#-DNDEBUG` -std=c++14 -Wall -Wextra `#-Wfatal-errors` -lboost_timer -I${HOME}/prj -D_TEST_BOOST_MULTI_ARRAY $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
 #endif
 #ifndef BOOST_MULTI_ARRAY_HPP
 #define BOOST_MULTI_ARRAY_HPP
@@ -50,12 +50,6 @@ private:
 	allocator_type allocator_;
 	using alloc_traits = std::allocator_traits<allocator_type>;
 public:
-//	explicit array(array const&){}
-/*	array(array const& other) : array(other.extensions(), other.get_allocator()){//, allocator(other)){
-		// TODO use copy?
-		array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator=(other);
-	//	array::operator=(std::forward<Array>(other));
-	}*/
 	array(array const& other) : array(other.extensions(), other.get_allocator()){
 		using std::copy_n;
 		copy_n(other.data(), other.num_elements(), data());
@@ -67,7 +61,7 @@ public:
 	//	array::operator=(std::forward<Array>(other));
 		array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator=(other);
 	}
-	explicit array(extensions_type e = {}) : 
+	array(extensions_type e = {}) : 
 		array_ref<T, D, typename array::element_ptr>(nullptr, e), allocator_{}
 	{
 		this->data_ = alloc_traits::allocate(allocator_, array::num_elements());
@@ -259,13 +253,14 @@ int main(){
 
 //	assert( MA0[1][2] == 12. );
 
-	multi::array<double, 2> MA0({3,3});
+	multi::array<double, 2> MA0({3,3}); 
+	assert(size(MA0) == 3 and size(MA0[0])==3);
 	MA0 = {
 		{0.1, 01., 02.},
 		{10., 11., 12.},
 		{20., 21., 22.}
 	};
-	multi::array<double, 1> VV0({3}); assert(VV0.size() == 3); 
+	multi::array<double, 1> VV0({{{0, 3}}}); assert(size(VV0) == 3); 
 	VV0 = {1.,2.,3.};
 
 	for(auto i : MA0.extension(0)){
