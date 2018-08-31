@@ -36,6 +36,19 @@ template<class TT> auto list_extensions(std::initializer_list<std::initializer_l
 	};
 }
 
+namespace detail{
+
+template<class T> void destroy_at(T* p){p->~T();}
+
+template<class ForwardIt, class Size>
+ForwardIt destroy_n(ForwardIt first, Size n){
+	for(; n > 0; (void) ++first, --n)
+		destroy_at(std::addressof(*first));
+	return first;
+}
+
+}
+
 template<class T, dimensionality_type D, class Allocator>
 class array : 
 	public array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>
@@ -147,34 +160,25 @@ private:
 	//	destroy(this->data() + this->num_elements());
 	//	for(auto cur = this->data(); cur != last; ++cur)
 	///		alloc_traits::destroy(allocator_, std::addressof(*cur));
-		using std::for_each;
+	/*	using std::for_each;
 		for_each(
 			this->data(), this->data() + this->num_elements(), 
 			[&](auto&& e){alloc_traits::destroy(allocator_, std::addressof(e));}
-		);
-	}
-	void destroy(typename array::element_ptr last){
-		for(auto cur = this->data(); cur != last; ++cur)
-			alloc_traits::destroy(allocator_, std::addressof(*cur));
+		);*/
+	//C++17 way:
+	//	using std::destroy_n;
+	//	destroy_n(this->data(), this->num_elements());
+	//C++11 way:
+		using boost::multi::detail::destroy_n;
+		destroy_n(this->data(), this->num_elements());
 	}
 	template<class... Args>
 	auto uninitialized_construct(Args&&... args){
-		typename array::element_ptr cur = this->data();
-		try{
-			using std::for_each;
-			for_each(
-				this->data(), this->data() + this->num_elements(), 
-				[&](auto&& e){
-					alloc_traits::construct(
-						allocator_, std::addressof(e), 
-						std::forward<Args>(args)...
-					);
-				}
-			);
-		//	for(size_type n = this->num_elements(); n > 0; --n, ++cur)
-		//		alloc_traits::construct(allocator_, std::addressof(*cur), std::forward<Args>(args)...);
-		//	return cur;
-		}catch(...){destroy(cur); throw;}
+		using std::uninitialized_fill_n;
+		return uninitialized_fill_n(
+			this->data_, this->num_elements(), 
+			typename array::element(std::forward<Args>(args)...)
+		);
 	}
 };
 
@@ -223,7 +227,7 @@ void solve(Matrix& m, Vector& y){
 
 void f(boost::multi::array<double, 4> const& A){
 	A[1][2];
-	auto a = A[1][2]; (void)a; // careful, a is a reference here, don't use auto, 
+	auto&& a = A[1][2]; (void)a; // careful, a is a reference here, don't use auto, 
 	auto const& b = A[1][2]; (void)b; // use auto const& if possible
 //	A[1][2][3][4] = 5; // fail, element is read-only
 }

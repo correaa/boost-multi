@@ -227,11 +227,12 @@ protected:
 	ElementPtr data_; // TODO call it base_ ?
 //	basic_array() = delete;
 	basic_array(basic_array const& other) : Layout{other}, data_{other.data_}{}
-	basic_array(basic_array&& other) : Layout{other}, data_{other.data_}{}
+//	basic_array(basic_array&& other) : Layout{other}, data_{other.data_}{}
 	Layout const& layout() const{return *this;}
 protected:	
 	basic_array(ElementPtr data, Layout layout) : Layout{layout}, data_{data}{}
 public:
+	basic_array(basic_array&&) = default;
 	operator basic_array<element, D, element_const_ptr>() const{
 		return basic_array<element, D, element_const_ptr>(data_, layout());
 	}
