@@ -206,7 +206,7 @@ template<
 	typename T, 
 	dimensionality_type D, 
 	typename ElementPtr,// = T const*, 
-	class Layout = layout_t<D>
+	class Layout = layout_t<D>//, class Allocator = std::allocator<T>
 > 
 struct basic_array : Layout{
 	static constexpr dimensionality_type dimensionality = D;
@@ -216,8 +216,9 @@ struct basic_array : Layout{
 	using element_const_ptr = typename std::pointer_traits<element_ptr>::template rebind<element const>;
 	using value_type      = multi::array<element, D-1>;
 	using difference_type = index;
+//	using allocator_type = Allocator;
 	using sub_element_ptr = decltype(std::declval<element_ptr>() + std::declval<Layout>().operator()(0));
-	using const_reference = basic_array<element, D-1, element_const_ptr>; 
+	using const_reference = basic_array<element, D-1, element_const_ptr>;
 	using reference       = basic_array<element, D-1, element_ptr>;
 	friend struct basic_array<element, D+1, element_ptr>;
 	friend struct basic_array<element, D+1, element_ptr&>;
@@ -225,31 +226,25 @@ struct basic_array : Layout{
 protected:
 	using initializer_list = std::initializer_list<typename basic_array<T, D-1, ElementPtr>::initializer_list>;
 	ElementPtr data_; // TODO call it base_ ?
-//	basic_array() = delete;
-	basic_array(basic_array const& other) : Layout{other}, data_{other.data_}{}
-//	basic_array(basic_array&& other) : Layout{other}, data_{other.data_}{}
-	Layout const& layout() const{return *this;}
-protected:	
+	basic_array(basic_array const&) = default;
 	basic_array(ElementPtr data, Layout layout) : Layout{layout}, data_{data}{}
 public:
+	Layout const& layout() const{return *this;}
 	basic_array(basic_array&&) = default;
 	operator basic_array<element, D, element_const_ptr>() const{
 		return basic_array<element, D, element_const_ptr>(data_, layout());
 	}
 	element_ptr origin() const{return data_ + Layout::origin();}
-	element_const_ptr corigin() const{return origin();}//data_ + Layout::origin();}
+	element_const_ptr corigin() const{return origin();}
 	friend decltype(auto) origin(basic_array const& self){return self.origin();}
 	friend decltype(auto) corigin(basic_array const& self){return self.corigin();}
-	reference operator[](index i) const{
-		assert( i < this->extension().last() and i >= this->extension().first() );
-		return reference(data_ + Layout::operator()(i), Layout::sub);//{data_ + Layout::operator()(i), Layout::sub};
+	reference operator[](index i) const{ assert(i<this->extension().last() and i>=this->extension().first());
+		return reference{data_ + Layout::operator()(i), Layout::sub};
 	}
 	auto range(index_range const& ir) const{
 		layout_t new_layout = *this; 
 		(new_layout.nelems_/=Layout::size())*=ir.size();
-		return basic_array<T, D, element_ptr, layout_t>{
-			data_ + Layout::operator()(ir.front()), new_layout
-		};
+		return basic_array{data_ + Layout::operator()(ir.front()), new_layout};
 	}
 	auto range(index_range const& ir, dimensionality_type n) const{
 		return rotated(n).range(ir).rotated(-n);
@@ -283,9 +278,8 @@ public:
 		friend struct basic_array;
 		explicit operator bool() const{return this->data_;}
 	public:
-		using difference_type = basic_array::difference_type;
-		using value_type = typename basic_array<T, D, ElementPtr>::value_type;
-		using pointer = void*;
+		using difference_type = basic_array::difference_type; //	using value_type = typename basic_array<T, D, ElementPtr>::value_type;
+		using pointer = void;
 		using reference = const_reference;
 		using iterator_category = std::random_access_iterator_tag;
 		const_iterator(std::nullptr_t = nullptr) : const_reference{}{}
@@ -306,12 +300,12 @@ public:
 			return (this->data_ - other.data_)/stride_;
 		}
 		bool operator==(const_iterator const& other) const{
-			return this->data_ == other.data_ and this->stride_ == other.stride_;
+			return this->data_==other.data_ and this->stride_==other.stride_;
 		}
 		bool operator!=(const_iterator const& other) const{return not((*this)==other);}
 		bool operator<(const_iterator const& other) const{
 			if(stride_ < 0) return other.data_ - this->data_ < 0;
-			return this->data_ - other.data_ < 0;
+			return this->data_ - other.data_ > 0;
 		}
 	};
 	struct iterator : private reference{

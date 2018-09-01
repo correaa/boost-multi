@@ -49,45 +49,44 @@ ForwardIt destroy_n(ForwardIt first, Size n){
 
 }
 
-template<class T, dimensionality_type D, class Allocator>
-class array : 
-	public array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>
-//	, private Allocator
-{
-public:
-	using add_lvalue_reference = typename array_ref<T, D+1, typename std::allocator_traits<Allocator>::pointer>::reference;
-//	using add_lv
-	using typename array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::extensions_type;
-	using allocator_type = Allocator;
+template<class T, dimensionality_type D, class Alloc>
+struct array : array_ref<T, D, typename std::allocator_traits<Alloc>::pointer>{
+	using Allocator = Alloc;
+	using allocator_type = Alloc;
+	using add_lvalue_reference = array_ref<T, D, typename std::allocator_traits<Alloc>::pointer&>;
+//	using add_lvalue_reference = typename array_ref<T, D+1, typename std::allocator_traits<Allocator>::pointer>::reference;
 private:
 	allocator_type allocator_;
 	using alloc_traits = std::allocator_traits<allocator_type>;
 public:
-	array(array const& other) : array(other.extensions(), other.get_allocator()){
+	array(array const& other) : array(extensions(other), other.get_allocator()){
 		using std::copy_n;
 		copy_n(other.data(), other.num_elements(), data());
 	}
-	template<class Array>//, typename = decltype(extensions(std::declval<Array>()), allocator(std::declval<Array>()))>
-	array(Array const& other) : array(extensions(other)){//, allocator(other)){
+	template<class Array, typename = decltype(data(std::declval<Array>()), extension(std::declval<Array>()))>
+	array(Array const& other, allocator_type const& a = {}) : array(extension(other), a){
+		using std::copy_n;
+		copy_n(data(other), num_elements(other), data());		
+	}
+	template<class Array>
+	array(Array const& other) : array(extensions(other)){
 		// TODO use copy?
-	//	array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator=(std::forward<Array>(other));
-	//	array::operator=(std::forward<Array>(other));
 		array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator=(other);
 	}
-	array(extensions_type e = {}) : 
+	array(typename array::extensions_type e = {}) : 
 		array_ref<T, D, typename array::element_ptr>(nullptr, e), allocator_{}
 	{
 		this->data_ = alloc_traits::allocate(allocator_, array::num_elements());
 		uninitialized_construct();
 	}
-	array(extensions_type e, Allocator alloc) : 
+	array(typename array::extensions_type e, Allocator alloc) : 
 		array_ref<T, D, typename array::element_ptr>(nullptr, e),
 		allocator_(std::move(alloc))
 	{
 		this->data_ = alloc_traits::allocate(allocator_, array::num_elements());
 		uninitialized_construct();
 	}
-	array(extensions_type e, typename array::element const& el, Allocator alloc = Allocator{}) : 
+	array(typename array::extensions_type e, typename array::element const& el, Allocator alloc = Allocator{}) : 
 		array_ref<T, D, typename array::element_ptr>(nullptr, e),
 		allocator_(std::move(alloc))
 	{
@@ -121,12 +120,12 @@ public:
 	//	reextent(list_extensions<typename array::element>(il));
 		this->recursive_assign_(il.begin(), il.end());
 	}
-	void reextent(extensions_type const& e){
+	void reextent(typename array::extensions_type const& e){
 		array tmp(e, allocator_);
 		tmp.intersection_assign_(*this);
 		swap(tmp);
 	}
-	friend void reextent(array& self, extensions_type const& e){self.reextent(e);}
+	friend void reextent(array& self, typename array::extensions_type const& e){self.reextent(e);}
 	void swap(array& other) noexcept{
 		using std::swap;
 		swap(this->data_, other.data_);
