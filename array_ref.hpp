@@ -62,8 +62,8 @@ struct layout_t{
 	using extensions_type = std::array<index_extension, D>;
 	auto operator()(index i) const{return i*stride_ - offset_;}
 	auto origin() const{return -offset_ + sub.origin();}
-	layout_t() : sub{}{}
-	constexpr layout_t(extensions_type e) : 
+//	layout_t() : sub{}{}
+	constexpr layout_t(extensions_type e = {}) : 
 		sub{tail(e)}, 
 		stride_{sub.size()*sub.stride()}, 
 		offset_{0}, 
@@ -89,8 +89,12 @@ struct layout_t{
 	}
 	constexpr size_type num_elements() const{return nelems_;}
 	friend size_type num_elements(layout_t const& s){return s.num_elements();}
+	constexpr bool empty() const{return not nelems_;}
+	friend bool empty(layout_t const& s){return s.empty();}
 	constexpr size_type size() const{
-		assert(stride_ != 0 and nelems_%stride_ == 0);
+		if(nelems_ == 0) return 0;
+	//	assert(stride_ != 0 and nelems_%stride_ == 0);
+		assert(stride_ != 0 and nelems_%stride_ == 0 );
 		return nelems_/stride_;
 	}
 	layout_t& rotate(){
@@ -182,6 +186,8 @@ struct layout_t<1>{
 	void strides_aux(size_type* it) const{*it = stride();}
 	constexpr size_type num_elements() const{return nelems_;}
 	friend size_type num_elements(layout_t const& s){return s.num_elements();}
+	constexpr bool empty() const{return not nelems_;}
+	friend bool empty(layout_t const& s){return s.empty();}
 	constexpr index_extension extension(dimensionality_type d = 0) const{
 		(void)d;
 		assert(d == 0);

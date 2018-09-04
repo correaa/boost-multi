@@ -108,6 +108,7 @@ public:
 	array& operator=(array&& other){
 		swap(other);
 		other.clear();
+		return *this;
 	}
 	template<class Array>
 	array& operator=(Array const& a){
@@ -141,6 +142,7 @@ public:
 		destroy();
 		allocator_.deallocate(this->data(), this->num_elements());
 		this->data_ = 0;
+		layout_t<D>::operator=({});
 	}
 	friend void clear(array& self){self.clear();}
 	typename array::reference operator[](index i){
@@ -231,11 +233,18 @@ void f(boost::multi::array<double, 4> const& A){
 //	A[1][2][3][4] = 5; // fail, element is read-only
 }
 
+namespace multi = boost::multi;
+
 int main(){
 
+	multi::array<double, 4> A({10,10,10,10}); assert( not empty(A) );
+	A[1][2][3][4] = 3.14;
+	multi::array<double, 4> B; assert( empty(B) );
+	B = std::move(A);
+	assert( not empty(B) );
+	assert( empty(A) );
+	assert( B[1][2][3][4] == 3.14 );
 
-	boost::multi::array<double, 4> A({10,10,10,10});
-	f(A);
 	return 0;
 	
 	assert(( boost::multi::list_extensions({1.,2.,3.})[0] == boost::multi::index_range{0, 3} ));
