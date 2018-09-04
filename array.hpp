@@ -63,20 +63,26 @@ public:
 		using std::copy_n;
 		copy_n(other.data(), other.num_elements(), data());
 	}
-	array(array&& other) : array(){
-		swap(other);
-		other.clear();
+	array(array&& other) : 
+		array_ref<T, D, typename array::element_ptr>{
+			std::move(other.data_), 
+			extensions(other)
+		}, 
+		allocator_{std::move(other.allocator_)}
+	{
+		other.data_ = 0;
+		other.layout_t<D>::operator=({});
 	}
 	template<class Array, typename = decltype(data(std::declval<Array>()), extension(std::declval<Array>()))>
 	array(Array const& other, allocator_type const& a = {}) : array(extension(other), a){
 		using std::copy_n;
 		copy_n(data(other), num_elements(other), data());		
 	}
-	template<class Array>
-	array(Array const& other) : array(extensions(other)){
+//	template<class Array>
+//	array(Array const& other) : array(extensions(other)){
 		// TODO use copy?
-		array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator=(other);
-	}
+//		array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator=(other);
+//	}
 	array(typename array::extensions_type e = {}) : 
 		array_ref<T, D, typename array::element_ptr>(nullptr, e), allocator_{}
 	{
@@ -110,8 +116,11 @@ public:
 		return *this;
 	}
 	array& operator=(array&& other){
-		swap(other);
-		other.clear();
+		this->data_ = std::move(other.data_);
+		allocator_ = std::move(other.allocator_);
+		layout_t<D>::operator=(std::move(other));
+		other.data_ = 0;
+		other.layout_t<D>::operator=({});
 		return *this;
 	}
 	template<class Array>
@@ -244,8 +253,7 @@ int main(){
 	multi::array<double, 4> A({10,10,10,10}); assert( not empty(A) );
 	A[1][2][3][4] = 3.14;
 	multi::array<double, 4> B = std::move(A);
-	assert( not empty(B) );
-	assert( empty(A) );
+	assert( not empty(B) and empty(A) );
 	assert( B[1][2][3][4] == 3.14 );
 
 	return 0;
