@@ -63,6 +63,10 @@ public:
 		using std::copy_n;
 		copy_n(other.data(), other.num_elements(), data());
 	}
+	array(array&& other) : array(){
+		swap(other);
+		other.clear();
+	}
 	template<class Array, typename = decltype(data(std::declval<Array>()), extension(std::declval<Array>()))>
 	array(Array const& other, allocator_type const& a = {}) : array(extension(other), a){
 		using std::copy_n;
@@ -239,8 +243,7 @@ int main(){
 
 	multi::array<double, 4> A({10,10,10,10}); assert( not empty(A) );
 	A[1][2][3][4] = 3.14;
-	multi::array<double, 4> B; assert( empty(B) );
-	B = std::move(A);
+	multi::array<double, 4> B = std::move(A);
 	assert( not empty(B) );
 	assert( empty(A) );
 	assert( B[1][2][3][4] == 3.14 );
