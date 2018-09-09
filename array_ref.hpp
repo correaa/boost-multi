@@ -247,14 +247,28 @@ public:
 	reference operator[](index i) const{ assert(i<this->extension().last() and i>=this->extension().first());
 		return reference{data_ + Layout::operator()(i), Layout::sub};
 	}
+	basic_array sliced(index first, index last) const{
+		layout_t new_layout = *this;
+		(new_layout.nelems_/=Layout::size())*=(last - first);
+		return {data_ + Layout::operator()(first), new_layout};
+	}
 	auto range(index_range const& ir) const{
-		layout_t new_layout = *this; 
-		(new_layout.nelems_/=Layout::size())*=ir.size();
-		return basic_array{data_ + Layout::operator()(ir.front()), new_layout};
+		return sliced(ir.front(), ir.front() + ir.size());
 	}
 	auto range(index_range const& ir, dimensionality_type n) const{
 		return rotated(n).range(ir).rotated(-n);
 	}
+/*	auto strided(index s) const{
+		layout_t new_layout = *this;
+		(new_layout.nelems_/=Layout::size())*=ir.size();
+		(new_layout.stride_*=s);
+		return basic_array{data_ + Layout::operator()(ir.front()), new_layout};		
+	}*/
+//	auto range(strided_index_range const& ir) const{
+//		layout_t new_layout = *this;
+//		(new_layout.nelems_/=Layout::size())*=(ir.size()/ir.stride());
+//		return basic_array{data_ + Layout::operator()(ir.front()), new_layout};
+//	}
 	auto operator()(index_range a) const{return range(a);}
 	auto operator()(index i) const{return operator[](i);}
 	decltype(auto) paren_aux() const{return *this;}
@@ -548,11 +562,13 @@ public:
 		assert( i < this->extension().last() and i >= this->extension().first() );
 		return *(data_ + Layout::operator()(i));//data_[Layout::operator()(i)];
 	}
-	basic_array<T, dimensionality_type{1}, element_ptr, Layout>
-	range(index_range const& ir) const{
+	basic_array sliced(index first, index last) const{
 		layout_t new_layout = *this; 
-		(new_layout.nelems_/=Layout::size())*=ir.size();
-		return {data_ + Layout::operator()(ir.front()), new_layout};
+		(new_layout.nelems_/=Layout::size())*=(last - first);
+		return {data_ + Layout::operator()(first), new_layout};		
+	}
+	auto range(index_range const& ir) const{
+		return sliced(ir.front(), ir.back() - 1);
 	}
 	decltype(auto) paren_aux() const{return *this;}
 	template<class... As>

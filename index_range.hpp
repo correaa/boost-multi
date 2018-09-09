@@ -17,6 +17,7 @@ using index = std::ptrdiff_t;
 using size_type = index;
 
 class index_range{
+protected:
 	index first_;
 	index last_;
 public:
@@ -75,18 +76,32 @@ public:
 	friend bool operator!=(index_range const& ir1, index_range const& ir2){
 		return not (ir1 == ir2);
 	}
+	index_range::const_iterator find(index value) const{
+		auto first = begin();
+		if(value >= last_ or value < first_) return end();
+		first += value - *first;
+		return first;		
+	}
 };
 
-
-inline index_range::const_iterator find(
-	index_range::const_iterator first, 
-	index_range::const_iterator last, 
-	index value
-){
-	if(value > *last or value < *first) return last;
-	first += value - *first;
-	return first;
-}
+/*
+class strided_index_range : index_range{
+	
+	index stride_;
+	
+public:
+	strided_index_range(index first, index last, index stride = 1) : index_range{first, last}, stride_{stride}{}
+//	explicit operator index_range() const{return *this;}
+	index stride() const{return stride_;}
+	using index_range::front;
+	index back() const{return front() + size()*stride();}
+	size_type size() const{return (this->last_ - first_) / stride_;}
+	friend std::ostream& operator<<(std::ostream& os, strided_index_range const& self){
+		if(empty() 
+		if(self.first_ == self.last_) return os << "[)" << '\n';
+		return os << '[' << self.first_ << ", " << self.last_ << ')';
+	}
+};*/
 
 class index_extension : public index_range{
 	using index_range::index_range;
@@ -127,14 +142,25 @@ int main(){
 		assert(v[0] == 5);
 		for(auto& i : ir) cout << i << ' ';
 		cout << '\n';
-		auto f = find(begin(ir), end(ir), 6);
+		auto f = ir.find(6);
 		cerr << "*f " << *f << '\n';
 		assert(*f == 6);
+		using std::find;
 		auto f2 = find(ir.begin(), ir.end(), 12);
 		assert(f2 == ir.end());
 		auto f3 = find(ir.begin(), ir.end(), 2);
 		assert(f3 == ir.end());
 	}
+/*	{
+		multi::strided_index_range ir{6, 12, 2};
+		cout << ir << " = {" << format(index_ % ", ", ir) << "}\n";
+		std::vector<multi::index_range::value_type> v(5);
+		copy(begin(ir), end(ir), begin(v));
+		assert( v[0] == 6 );
+		assert( v[1] == 8 );
+		for(auto& i : ir) cout << i <<' ';
+		cout <<'\n';
+	}*/
 	{
 		multi::index_range ir(5);
 		cout << ir << " = {" << format(index_ % ", ", ir) << "}\n";
