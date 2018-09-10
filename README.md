@@ -127,6 +127,8 @@ In other words, a matrix of dimension `D` can be viewed simultaneously as `D` di
 
 Many algorithms on arrays are oriented to linear algebra, which are ubiquitously implemented in terms of multidimensional index access. 
 
+### Element access and partial access
+
 Index access is almost equivalent to those of C-fixed sizes arrays, for example a 3-dimensional array will access to an element by `m[1][2][3]`, which can be used for write and read operations. 
 Partial index arguments `m[1][2]` generate a view 1-dimensional object.
 Transpositions are also multi-dimensional arrays in which the index are logically rearranged, for example `m.rotated(1)[2][3][1] == m[1][2][3]`.
@@ -157,3 +159,44 @@ void solve(Matrix& m, Vector& y){
 	}
 }
 ```
+
+### Slices and strides
+
+Given an array, a slice in the first dimension can be taken with the `sliced` function. `sliced` takes two arguments, the first index of the slice and the last index (not included) of the slice. For example,
+
+```
+multi::array_cref<double, 2> d2D{{4, 5}};
+assert( d2D.size(0) == 4 and d2D.size(1) == 5 );
+
+auto&& d2D_sliced = d2D.sliced(1, 3); // {{d2D[1], d2D[2]}}
+assert( d2D_sliced.size(0) == 2 and d2D_sliced.size(1) == 5 );
+```
+
+The number of row in the sliced matrix is 2 because we took only two rows, row #1 and row #2 (row #3 is excluded).
+
+In the same way a strided view of the original array can be taken with the `strided` function.
+
+```
+auto&& d2D_strided = d2D.stride(2); // {{ d2D[0], d2D[1] }};
+assert( d2D_strided.size(0) == 2 and d2D_strided.size(1) == 5 );
+```
+
+In this case the number of rows is 2 because, out of the 4 original rows we took one every two.
+
+Operations can be combined in a single line:
+
+```
+auto&& d2D_slicedstrided = d2D.sliced(1, 3).stride(2); // {{ d2D[1] }};
+assert( d2D_slicedstrided.size(0) == 1 and d2D_slicedstrided.size(1) == 5 );
+```
+
+For convenience, `A.sliced(a, b, c)` is the same as `A.sliced(a, b).strided(c)`.
+
+By combining `rotated`, `sliced` and `strided` one can take sub arrays at any dimension. For example in a two dimensional array one can take a subset of columns by defining.
+
+```
+auto&& subA = A.rotated(1).strided(1, 3).sliced(2).rotated(-1);
+```
+
+Other notations are available, but when in doubt the `rotated/strided/sliced/rotated provides the most control over the subview operations.
+ 
