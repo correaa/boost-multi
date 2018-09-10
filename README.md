@@ -2,6 +2,8 @@
 
 (not an official Boost library)
 
+Alfredo Correa, 2018
+
 Boost.Multi provides multidimensional array access to contiguous or regularly contiguous memory (or ranges).
 It shares the goals of Boost.MultiArray, although the code is completely independent and the syntax has slight differences.
 Boost.Multi and Boost.MultiArray types can be used interchangeably for the most part, they differ slightly in the semantics of reference and value types. 
@@ -111,7 +113,7 @@ Needless to say that `std::*sort` cannot be applied directly to a multidimension
 
 If we want to order the matrix in a per-column basis we need to "view" the matrix as range of columns. This is done in the bidimensional case, by accessing the matrix as a range of columns:
 
-	std::stable_sort( d2D_ref.begin(1), d2D_ref.end(1) );
+	    std::stable_sort( d2D_ref.begin(1), d2D_ref.end(1) );
 
 Which will transform the matrix into. 
 
@@ -165,14 +167,14 @@ void solve(Matrix& m, Vector& y){
 Given an array, a slice in the first dimension can be taken with the `sliced` function. `sliced` takes two arguments, the first index of the slice and the last index (not included) of the slice. For example,
 
 ```
-multi::array_cref<double, 2> d2D{{4, 5}};
+multi::array<double, 2> d2D({4, 5});
 assert( d2D.size(0) == 4 and d2D.size(1) == 5 );
 
 auto&& d2D_sliced = d2D.sliced(1, 3); // {{d2D[1], d2D[2]}}
 assert( d2D_sliced.size(0) == 2 and d2D_sliced.size(1) == 5 );
 ```
 
-The number of row in the sliced matrix is 2 because we took only two rows, row #1 and row #2 (row #3 is excluded).
+The number of rows in the sliced matrix is 2 because we took only two rows, row 1 and row 2 (row 3 is excluded).
 
 In the same way a strided view of the original array can be taken with the `strided` function.
 
@@ -186,7 +188,7 @@ In this case the number of rows is 2 because, out of the 4 original rows we took
 Operations can be combined in a single line:
 
 ```
-auto&& d2D_slicedstrided = d2D.sliced(1, 3).stride(2); // {{ d2D[1] }};
+auto&& d2D_slicedstrided = d2D.sliced(1, 3).strided(2); // {{ d2D[1] }};
 assert( d2D_slicedstrided.size(0) == 1 and d2D_slicedstrided.size(1) == 5 );
 ```
 
@@ -199,4 +201,4 @@ auto&& subA = A.rotated(1).strided(1, 3).sliced(2).rotated(-1);
 ```
 
 Other notations are available, but when in doubt the `rotated/strided/sliced/rotated provides the most control over the subview operations.
- 
+At the moment the `strided` argument has to divide the total size of the slice (or matrix), otherwise the behavior is undefined.
