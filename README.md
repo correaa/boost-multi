@@ -200,5 +200,5 @@ By combining `rotated`, `sliced` and `strided` one can take sub arrays at any di
 auto&& subA = A.rotated(1).strided(1, 3).sliced(2).rotated(-1);
 ```
 
-Other notations are available, but when in doubt the `rotated/strided/sliced/rotated provides the most control over the subview operations.
+Other notations are available, but when in doubt the `rotated/strided/sliced/rotated` idiom provides the most control over the subview operations.
 At the moment the `strided` argument has to divide the total size of the slice (or matrix), otherwise the behavior is undefined.
