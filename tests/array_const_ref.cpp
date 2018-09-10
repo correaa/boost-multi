@@ -29,7 +29,7 @@ int main(){
 	multi::array_cref<double, 2> d2D_cref{&d2D[0][0], {4, 5}};
 
 	std::vector<double> d2Dv(20); iota(d2Dv.begin(), d2Dv.end(), 0);
-	multi::array_cref<double, 2, std::vector<double>::const_iterator> d2Dv_cref{begin(d2Dv), {4, 5}};
+	multi::array_cref<double, 2> d2Dv_cref{d2Dv.data(), {4, 5}};
 	std::cout << d2Dv_cref[1][1] << std::endl;
 	assert(d2Dv_cref[1][1] == 6);
 
@@ -57,10 +57,23 @@ int main(){
 	assert( d2D_cref.stride(1) == 1 );
 	assert( strides(d2D_cref) == d2D_cref.strides() );
 	assert( strides(d2D_cref)[1] == 1 );
-	
+
 	for(auto i = 0; i != d2D_cref.size(0) ||!endl(cout); ++i)
 		for(auto j = 0; j != d2D_cref.size(1) ||!endl(cout); ++j)
 			cout << d2D_cref[i][j] << ' ';
+
+	auto&& d2D_cref_strided = d2D_cref.sliced(1, 3).strided(2);
+	cout << d2D_cref_strided.size(0) <<" "<< d2D_cref.size(0) << std::endl;
+//	assert( d2D_cref_strided.num_elements() == d2D_cref.num_elements() );
+//	assert( d2D_cref_strided.size(1) == d2D_cref.size(1) );
+//	assert( d2D_cref_strided.size(0) == d2D_cref.size(0)/2 );
+
+	cout << d2D_cref_strided.size(0) << " " << d2D_cref_strided.size(1) << " " << d2D_cref_strided.num_elements() << std::endl;
+	for(auto i = 0; i != d2D_cref_strided.size(0) ||!endl(cout); ++i)
+		for(auto j = 0; j != d2D_cref_strided.size(1) ||!endl(cout); ++j)
+			cout << d2D_cref_strided[i][j] << ' ';
+
+	return 0;
 
 	for(auto i = 0; i != d2D_cref.sizes()[0] ||!endl(cout); ++i)
 		for(auto j = 0; j != d2D_cref.sizes()[1] ||!endl(cout); ++j)
@@ -147,6 +160,7 @@ int main(){
 		for(decltype(d2D_cref)::element e: r) cout << e <<' '; 
 		cout <<'\n';
 	}
+#if 0
 	for(decltype(d2D_cref)::value_type r: d2D_cref){
 		for(decltype(d2D_cref)::element e: r) cout << e <<' '; 
 		cout <<'\n';
@@ -276,5 +290,6 @@ int main(){
 	print(d2D_cref.range({0, 2}));
 	cout << "--\n";
 	print(d2D_cref.rotated(1).range({0, 2}).rotated(1));
+#endif
 }
 

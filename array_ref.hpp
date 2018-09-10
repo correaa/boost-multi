@@ -62,7 +62,6 @@ struct layout_t{
 	using extensions_type = std::array<index_extension, D>;
 	auto operator()(index i) const{return i*stride_ - offset_;}
 	auto origin() const{return -offset_ + sub.origin();}
-//	layout_t() : sub{}{}
 	constexpr layout_t(extensions_type e = {}) : 
 		sub{tail(e)}, 
 		stride_{sub.size()*sub.stride()}, 
@@ -76,18 +75,11 @@ struct layout_t{
 		offset_{0}, 
 		nelems_{std::get<0>(e).size()*sub.num_elements()}
 	{}
-	bool operator==(layout_t const& other) const{
-		return 
-			sub==other.sub and 
-			stride_==other.stride_ and 
-			offset_==other.offset_ && nelems_==other.nelems_
-		;
+	bool operator==(layout_t const& o) const{ // = default
+		return sub==o.sub and stride_==o.stride_ and offset_==o.offset_ and nelems_==o.nelems_;
 	}
 	bool operator!=(layout_t const& other) const{return not(*this==other);}
-	friend bool operator!=(layout_t const& self, layout_t const& other){
-		return not(self==other);
-	}
-	constexpr size_type num_elements() const{return nelems_;}
+	constexpr size_type num_elements() const{return size()*sub.size();}//nelems_;}
 	friend size_type num_elements(layout_t const& s){return s.num_elements();}
 	constexpr bool empty() const{return not nelems_;}
 	friend bool empty(layout_t const& s){return s.empty();}
@@ -206,7 +198,7 @@ struct layout_t<1>{
 };
 
 template<typename T, dimensionality_type D, class Alloc = std::allocator<T>>
-class array;
+struct array;
 
 template<
 	typename T, 
@@ -252,23 +244,21 @@ public:
 		(new_layout.nelems_/=Layout::size())*=(last - first);
 		return {data_ + Layout::operator()(first), new_layout};
 	}
+	basic_array sliced(index first, index last, index stride) const{
+		return sliced(first, last).strided(stride);
+	}
 	auto range(index_range const& ir) const{
 		return sliced(ir.front(), ir.front() + ir.size());
 	}
 	auto range(index_range const& ir, dimensionality_type n) const{
 		return rotated(n).range(ir).rotated(-n);
 	}
-/*	auto strided(index s) const{
+	auto strided(index s) const{
 		layout_t new_layout = *this;
-		(new_layout.nelems_/=Layout::size())*=ir.size();
-		(new_layout.stride_*=s);
-		return basic_array{data_ + Layout::operator()(ir.front()), new_layout};		
-	}*/
-//	auto range(strided_index_range const& ir) const{
-//		layout_t new_layout = *this;
-//		(new_layout.nelems_/=Layout::size())*=(ir.size()/ir.stride());
-//		return basic_array{data_ + Layout::operator()(ir.front()), new_layout};
-//	}
+	//	new_layout.nelems_/=s;
+		new_layout.stride_*=s;
+		return basic_array{data_ + Layout::operator()(this->extension().front()), new_layout};		
+	}
 	auto operator()(index_range a) const{return range(a);}
 	auto operator()(index i) const{return operator[](i);}
 	decltype(auto) paren_aux() const{return *this;}
@@ -566,6 +556,15 @@ public:
 		layout_t new_layout = *this; 
 		(new_layout.nelems_/=Layout::size())*=(last - first);
 		return {data_ + Layout::operator()(first), new_layout};		
+	}
+	basic_array sliced(index first, index last, index stride) const{
+		return sliced(first, last).strided(stride);
+	}
+	auto strided(index s) const{
+		layout_t new_layout = *this;
+	//	new_layout.nelems_/=s;
+		new_layout.stride_*=s;
+		return basic_array{data_ + Layout::operator()(this->extension().front()), new_layout};		
 	}
 	auto range(index_range const& ir) const{
 		return sliced(ir.front(), ir.back() - 1);
