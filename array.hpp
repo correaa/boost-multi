@@ -107,10 +107,14 @@ public:
 	friend allocator_type const& allocator(array const& s){return s.allocator_;}
 	array& operator=(array const& other){
 		if(other.extensions() == this->extensions() and allocator(other) == allocator(*this)){
-			array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator=(other);
+			array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator=(
+				static_cast<const_array_ref<T, D, typename std::allocator_traits<Allocator>::pointer> const&>(other)
+			);
 		}else{
 			array tmp(extensions(other), allocator(other));//other.extensions(), allocator_);
-			tmp.array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator=(other);
+			tmp.array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator=(
+				static_cast<const_array_ref<T, D, typename std::allocator_traits<Allocator>::pointer> const&>(other)
+			);
 			swap(tmp);
 		}
 		return *this;
