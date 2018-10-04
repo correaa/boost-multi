@@ -120,11 +120,8 @@ public:
 		return *this;
 	}
 	array& operator=(array&& other){
-		clear();
-		allocator_ = other.allocator_;
-		layout_t<D>::operator=(other);
-		other.layout_t<D>::operator=({});
-		this->data_ = std::exchange(other.data_, nullptr);
+		swap(other);
+		other.clear();
 		return *this;
 	}
 	template<class Array>
