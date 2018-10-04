@@ -65,11 +65,12 @@ public:
 	}
 	array(array&& other) : 
 		array_ref<T, D, typename array::element_ptr>{
-			std::exchange(other.data_, 0), 
+			std::exchange(other.data_, nullptr), 
 			extensions(other)
 		}, 
-		allocator_{std::move(other.allocator_)}
+		allocator_{other.allocator_}
 	{
+	//	other.data_ = 0;
 		other.layout_t<D>::operator=({});
 	}
 	template<class Array, typename = decltype(data(std::declval<Array>()), extension(std::declval<Array>()))>
@@ -123,7 +124,7 @@ public:
 		allocator_ = other.allocator_;
 		layout_t<D>::operator=(other);
 		other.layout_t<D>::operator=({});
-		this->data_ = std::exchange(other.data_, 0);
+		this->data_ = std::exchange(other.data_, nullptr);
 		return *this;
 	}
 	template<class Array>
