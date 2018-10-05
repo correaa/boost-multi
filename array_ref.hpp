@@ -79,7 +79,7 @@ struct layout_t{
 		return sub==o.sub and stride_==o.stride_ and offset_==o.offset_ and nelems_==o.nelems_;
 	}
 	bool operator!=(layout_t const& other) const{return not(*this==other);}
-	constexpr size_type num_elements() const{return size()*sub.size();}//nelems_;}
+	constexpr size_type num_elements() const{return size()*sub.num_elements();}//nelems_;}
 	friend size_type num_elements(layout_t const& s){return s.num_elements();}
 	constexpr bool empty() const{return not nelems_;}
 	friend bool empty(layout_t const& s){return s.empty();}
@@ -176,7 +176,7 @@ struct layout_t<1>{
 		return ret;
 	}
 	void strides_aux(size_type* it) const{*it = stride();}
-	constexpr size_type num_elements() const{return nelems_;}
+	constexpr size_type num_elements() const{return size();}
 	friend size_type num_elements(layout_t const& s){return s.num_elements();}
 	constexpr bool empty() const{return not nelems_;}
 	friend bool empty(layout_t const& s){return s.empty();}

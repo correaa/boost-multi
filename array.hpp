@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && c++ -Ofast `#-DNDEBUG` -std=c++14 -Wall -Wextra `#-Wfatal-errors` -lboost_timer -I${HOME}/prj -D_TEST_BOOST_MULTI_ARRAY $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
+(echo "#include\""$0"\"" > $0x.cpp) && c++ `#-DNDEBUG` -std=c++14 -Wall -Wextra `#-Wfatal-errors` -lboost_timer -I${HOME}/prj -D_TEST_BOOST_MULTI_ARRAY $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
 #endif
 #ifndef BOOST_MULTI_ARRAY_HPP
 #define BOOST_MULTI_ARRAY_HPP
@@ -247,16 +247,36 @@ void f(boost::multi::array<double, 4> const& A){
 //	A[1][2][3][4] = 5; // fail, element is read-only
 }
 
+template<class C>
+void set_99(C&& c){
+	for(auto j : c.extension(0))
+		for(auto k : c.extension(1))
+				c[j][k] = 99.;
+}
+
 namespace multi = boost::multi;
 
 int main(){
 
-	multi::array<double, 4> A({10,10,10,10}); assert( not empty(A) );
+	multi::array<double, 3> A({30,40,50});
+
+	for(auto i : A.extension(0))
+		for(auto j : A.extension(1))
+			for(auto k : A.extension(2))
+					A[i][j][k] = 5.1;
+
+	set_99(A[1]);
+	for(auto j : A.extension(1))
+		for(auto k : A.extension(2))
+				A[1][j][k] = 99.;
+	
+	
+/*	multi::array<double, 4> A({10,10,10,10}); assert( not empty(A) );
 	A[1][2][3][4] = 3.14;
 	multi::array<double, 4> B = std::move(A);
 	assert( not empty(B) and empty(A) );
 	assert( B[1][2][3][4] == 3.14 );
-
+*/
 	return 0;
 	
 	assert(( boost::multi::list_extensions({1.,2.,3.})[0] == boost::multi::index_range{0, 3} ));
