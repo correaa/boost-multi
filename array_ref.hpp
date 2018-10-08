@@ -68,6 +68,8 @@ struct layout_t{
 		offset_{0}, 
 		nelems_{std::get<0>(e).size()*sub.num_elements()} 
 	{}
+	constexpr auto nelems() const{return nelems_;}
+	friend constexpr auto nelems(layout_t const& self){return self.nelems();}
 	template<class Extensions, typename = decltype(std::get<0>(Extensions{}))>
 	constexpr layout_t(Extensions e) : 
 		sub{detail::tail(e)}, 
@@ -75,20 +77,20 @@ struct layout_t{
 		offset_{0}, 
 		nelems_{std::get<0>(e).size()*sub.num_elements()}
 	{}
-	bool operator==(layout_t const& o) const{ // = default
+	constexpr bool operator==(layout_t const& o) const{
 		return sub==o.sub and stride_==o.stride_ and offset_==o.offset_ and nelems_==o.nelems_;
 	}
-	bool operator!=(layout_t const& other) const{return not(*this==other);}
-	constexpr size_type num_elements() const{return size()*sub.num_elements();}//nelems_;}
+	constexpr bool operator!=(layout_t const& o) const{return not(*this==o);}
+	constexpr size_type num_elements() const{return size()*sub.num_elements();}
 	friend size_type num_elements(layout_t const& s){return s.num_elements();}
 	constexpr bool empty() const{return not nelems_;}
 	friend bool empty(layout_t const& s){return s.empty();}
 	constexpr size_type size() const{
 		if(nelems_ == 0) return 0;
-	//	assert(stride_ != 0 and nelems_%stride_ == 0);
 		assert(stride_ != 0 and nelems_%stride_ == 0 );
 		return nelems_/stride_;
 	}
+	friend constexpr size_type size(layout_t const& l){return l.size();}
 	layout_t& rotate(){
 		using std::swap;
 		swap(stride_, sub.stride_);
@@ -106,7 +108,21 @@ struct layout_t{
 	index stride(dimensionality_type d = 0) const{
 		return d?sub.stride(d-1):stride_;
 	}
+	friend constexpr index stride(layout_t const& self){return self.stride();}
+	void offsets_aux(index* it) const{
+		*it = offset();
+		sub.offsets_aux(++it);
+	}
+	auto offsets() const{
+		std::array<index, D> ret;
+		offsets_aux(ret.begin());
+		return ret;
+	}
 	constexpr index offset() const{return offset_;}
+	constexpr index offset(dimensionality_type d) const{
+		return d?sub.offset(d-1):offset_;
+	}
+	friend constexpr index offset(layout_t const& self){return self.offset();}
 	decltype(auto) shape() const{return sizes();}
 	friend decltype(auto) shape(layout_t const& self){return self.shape();}
 	auto sizes() const{
@@ -114,6 +130,7 @@ struct layout_t{
 		sizes_aux(ret.begin());
 		return ret;
 	}
+	friend constexpr auto sizes(layout_t const& self){return self.sizes();}
 	void sizes_aux(size_type* it) const{
 		*it = size(); 
 		sub.sizes_aux(++it);
@@ -123,23 +140,28 @@ struct layout_t{
 		strides_aux(ret.begin());
 		return ret;
 	}
+	friend constexpr auto strides(layout_t const& self){return self.strides();}
 	void strides_aux(size_type* it) const{
 		*it = stride();
 		sub.strides_aux(++it);
+	}
+	constexpr index_extension extension() const{
+		return {offset_/stride_, (offset_ + nelems_)/stride_};
 	}
 	constexpr index_extension extension_aux() const{
 		assert(stride_ != 0 and nelems_%stride_ == 0);
 		return {offset_/stride_, (offset_ + nelems_)/stride_};
 	}
 	template<dimensionality_type DD = 0>
-	constexpr index_extension extension(dimensionality_type d = DD) const{
-		return d?sub.extension(d-1):extension_aux();
+	constexpr index_extension extension(dimensionality_type d) const{
+		return d?sub.extension(d-1):extension();
 	}
-	auto extensions() const{
+	constexpr auto extensions() const{
 		extensions_type ret;
 		extensions_aux(ret.begin());
 		return ret;
 	}
+	friend constexpr auto extensions(layout_t const& self){return self.extensions();}
 	void extensions_aux(index_extension* it) const{
 		*it = extension();
 		++it;
@@ -148,7 +170,7 @@ struct layout_t{
 };
 
 template<>
-struct layout_t<1>{
+struct layout_t<1u>{
 	using extensions_type = std::array<index_extension, 1>;
 	index stride_;
 	index offset_;
@@ -158,11 +180,19 @@ struct layout_t<1>{
 	constexpr layout_t(Extensions e) : 
 		stride_{1*1}, offset_{0}, nelems_{std::get<0>(e).size()*1}
 	{}
+	constexpr auto offset() const{return offset_;}
+	constexpr auto offset(dimensionality_type d) const{
+		assert(d==0);
+		return offset_;
+	}
+	constexpr auto nelems() const{return nelems_;}
+	friend constexpr auto nelems(layout_t const& self){return self.nelems();}
 	constexpr size_type size(dimensionality_type d = 0) const{
 		(void)d;
 		assert(d == 0 and stride_ != 0 and nelems_%stride_ == 0);
 		return nelems_/stride_;
 	}
+	friend constexpr size_type size(layout_t const& self){return self.size();}
 	auto sizes() const{
 		std::array<size_type, 1> ret;
 		sizes_aux(ret.begin());
@@ -170,11 +200,14 @@ struct layout_t<1>{
 	}
 	void sizes_aux(size_type* it) const{*it = size();}
 	constexpr index stride(dimensionality_type d = 0) const{assert(d == 0); return stride_;}
+	friend constexpr index stride(layout_t const& self){return self.stride();}
 	auto strides() const{
 		std::array<index, 1> ret;
 		strides_aux(ret.begin());
 		return ret;
 	}
+	constexpr auto offsets() const{return std::array<index, 1>{{offset()}};}
+	void offsets_aux(index* it) const{*it = offset();}
 	void strides_aux(size_type* it) const{*it = stride();}
 	constexpr size_type num_elements() const{return size();}
 	friend size_type num_elements(layout_t const& s){return s.num_elements();}
@@ -187,12 +220,14 @@ struct layout_t<1>{
 		return {offset_/stride_, (offset_ + nelems_)/stride_};
 	}
 	constexpr extensions_type extensions() const{return {extension()};}
+	friend constexpr auto extensions(layout_t const& self){return self.extensions();}
 	void extensions_aux(index_extension* it) const{*it = extension();}
 	constexpr auto operator()(index i) const{return i*stride_ - offset_;}
 	constexpr auto origin() const{return -offset_;}
-	bool operator==(layout_t const& other) const{
+	constexpr bool operator==(layout_t const& other) const{
 		return stride_==other.stride_ and offset_==other.offset_ and nelems_==other.nelems_;
-	} bool operator!=(layout_t const& other) const{return not(*this==other);}
+	} 
+	constexpr bool operator!=(layout_t const& other) const{return not(*this==other);}
 	layout_t& rotate(){return *this;}
 	decltype(auto) shape() const{return sizes();}
 };

@@ -270,7 +270,6 @@ int main(){
 		for(auto k : A.extension(2))
 				A[1][j][k] = 99.;
 	
-	
 /*	multi::array<double, 4> A({10,10,10,10}); assert( not empty(A) );
 	A[1][2][3][4] = 3.14;
 	multi::array<double, 4> B = std::move(A);
