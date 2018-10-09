@@ -4,14 +4,22 @@ time clang++ -O3 -std=c++17 -Wall -Wfatal-errors -I$HOME/prj $0 -o $0.x && time 
 //  (C) Copyright Alfredo A. Correa 2018.
 #include "../array_ref.hpp"
 #include "../array.hpp"
-
+#include<boost/multi_array.hpp>
 #include<iostream>
 
 using std::cout; using std::cerr;
 namespace multi = boost::multi;
 
 int main(){
-
+	{
+		multi::layout_t<2> l({10, 20});
+		multi::layout_t<2> l2 = boost::extents[10][20];
+		assert( l.size() == 10 );
+		assert( l.size(0) == 10 );
+		assert( l.size(1) == 20 );
+	}
+	return 0;
+	
 	multi::layout_t<2> l({4,5});
 	assert(l.size() == 4);
 	assert(l.size(0) == 4);

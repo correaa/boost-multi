@@ -258,6 +258,27 @@ namespace multi = boost::multi;
 
 int main(){
 
+	{
+		multi::array<double, 2> A
+			//	(extents[10][20]); // Boost.MultiArray only syntax
+			({10, 20});            // current syntax
+		auto const& B = 
+		//	A[indices[range(2,8)][range(4,16)]];                // Boost.MultiArray only syntax
+		//	A.sliced(2,8).rotated(1).sliced(4, 16).rotated(-1); // advanced interface
+			A({2,8}, {4, 16});                                  // simple interface
+		auto const& C = 
+		//	A[indices[range()][range(4,16)]];      // Boost.MultiArray only syntax
+		//	A.rotated(1).sliced(4, 16).rotated(-1) // advanced interface
+			A( A.extension(0), {4, 16} )           // simple interface
+		;	
+		assert(A.size(0) == 10 and A.size(1) == 20);
+		assert(B.size(0) == 6 and B.size(1) == 12);
+		assert(C.size(0) == 10 and B.size(1) == 12);
+		assert(&B[0][0] == &A[2][4] and &B[5][11] == &A[7][15]);
+		assert(&C[0][0] == &A[0][4] and &C[9][11] == &A[9][15]);
+	}
+	return 0;
+	
 	multi::array<double, 3> A({30,40,50});
 
 	for(auto i : A.extension(0))

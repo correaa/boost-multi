@@ -9,6 +9,7 @@
 
 #include<cassert>
 #include<iterator> // std::random_iterator_tag
+#include<limits>
 
 namespace boost{
 namespace multi{
@@ -23,17 +24,15 @@ protected:
 public:
 	using value_type = index;
 	index_range() = default; // partially formed
-	constexpr index_range(index firstlast) noexcept : first_(firstlast), last_(firstlast + 1){}
-	constexpr index_range(index first, index last) : first_(first), last_(last){
-	//	assert(first_ <= last_);
-	}
-	class const_iterator{// : std::iterator<std::random_access_iterator_tag, const_iterator>{
-		index current_;
+	constexpr index_range(index fl) noexcept : first_(fl), last_(fl + 1){}
+	constexpr index_range(index f, index l) : first_(f), last_(l){assert(first_ <= last_);}
+	class const_iterator{// TODO use iterator_facade?
+		index_range::value_type current_;
 		friend class index_range;
 		constexpr const_iterator(index current) : current_(current){}
 	public:
 		using iterator_category = std::random_access_iterator_tag;
-		using value_type = index;
+		using value_type = index_range::value_type;
 		using difference_type = index;
 		using pointer = void;
 		using reference = index const&;
@@ -41,13 +40,16 @@ public:
 		const_iterator& operator+=(std::ptrdiff_t s){current_ += s; return *this;}
 		const_iterator& operator++(){++current_; return *this;}
 		const_iterator operator+(std::ptrdiff_t d) const{return const_iterator{*this}+=d;}
-		friend constexpr bool operator==(const_iterator const& it1, const_iterator const& it2) noexcept{
+		friend constexpr 
+		bool operator==(const_iterator const& it1, const_iterator const& it2) noexcept{
 			return it1.current_ == it2.current_;
 		}
-		friend constexpr bool operator!=(const_iterator const& it1, const_iterator const& it2) noexcept{
+		friend constexpr 
+		bool operator!=(const_iterator const& it1, const_iterator const& it2) noexcept{
 			return not (it1 == it2);
 		}
-		friend constexpr difference_type operator-(const_iterator const& it1, const_iterator const& it2) noexcept{
+		friend constexpr 
+		difference_type operator-(const_iterator const& it1, const_iterator const& it2) noexcept{
 			return it1.current_ - it2.current_;
 		}
 	};
@@ -59,21 +61,24 @@ public:
 	constexpr index first() const noexcept{return first_;}
 	constexpr index last() const noexcept{return last_;}
 	constexpr bool empty() const noexcept{return first_ == last_;}
+	friend constexpr bool empty(index_range const& s){return s.empty();}
 	constexpr size_type size() const noexcept{return last_ - first_;}
+	friend constexpr size_type size(index_range const& s){return s.size();}
 	friend std::ostream& operator<<(std::ostream& os, index_range const& self){
-		if(self.first_ == self.last_) return os << "[)" << '\n';
-		return os << '[' << self.first_ << ", " << self.last_ << ')';
+		if(self.empty()) return os <<"[)\n";
+		return os <<'['<< self.first_ <<", "<< self.last_ <<')';
 	}
 	friend const_iterator begin(index_range const& self){return self.begin();}
 	friend const_iterator end(index_range const& self){return self.end();}
-	friend index size(index_range const& self){return self.size();}
-	friend bool operator==(index_range const& ir1, index_range const& ir2){
+	friend constexpr 
+	bool operator==(index_range const& ir1, index_range const& ir2){
 		return 
 			(ir1.empty() and ir2.empty()) or 
 			(ir1.first_ == ir2.first_ and ir1.last_ == ir2.last_)
 		;
 	}
-	friend bool operator!=(index_range const& ir1, index_range const& ir2){
+	friend constexpr 
+	bool operator!=(index_range const& ir1, index_range const& ir2){
 		return not (ir1 == ir2);
 	}
 	index_range::const_iterator find(index value) const{

@@ -7,6 +7,7 @@
 #include "../multi/index_range.hpp"
 #include "../multi/ordering.hpp"
 
+#include<iostream>
 #include<algorithm> // transform
 #include<array>
 #include<cassert>
@@ -62,21 +63,42 @@ struct layout_t{
 	using extensions_type = std::array<index_extension, D>;
 	auto operator()(index i) const{return i*stride_ - offset_;}
 	auto origin() const{return -offset_ + sub.origin();}
+//	layout_t(layout_t&&) = delete;
+//	explicit layout_t(layout_t const&) = default;
 	constexpr layout_t(extensions_type e = {}) : 
 		sub{tail(e)}, 
 		stride_{sub.size()*sub.stride()}, 
 		offset_{0}, 
 		nelems_{std::get<0>(e).size()*sub.num_elements()} 
-	{}
-	constexpr auto nelems() const{return nelems_;}
-	friend constexpr auto nelems(layout_t const& self){return self.nelems();}
-	template<class Extensions, typename = decltype(std::get<0>(Extensions{}))>
+	{
+		std::cerr <<"here\n";
+	}
+	private:
+	template<class Extensions>
+	static extensions_type convert(Extensions const& e){
+		extensions_type ret;
+		auto it2 = ret.begin();
+		for(auto it = e.ranges_.begin(); it != e.ranges_.end(); ++it){
+			*it2 = index_extension{it->start(), it->finish()};
+			++it2;
+		}
+		return ret;
+	}
+	public:
+	template<class Extensions>
+	constexpr layout_t(Extensions const& e) : layout_t(convert(e)){}
+/*	template<class Extensions, typename = decltype(std::get<0>(Extensions{}))>
 	constexpr layout_t(Extensions e) : 
 		sub{detail::tail(e)}, 
 		stride_{sub.size()*sub.stride_}, 
 		offset_{0}, 
 		nelems_{std::get<0>(e).size()*sub.num_elements()}
-	{}
+	{
+		std::cerr << "there\n";
+	}*/
+	
+	constexpr auto nelems() const{return nelems_;}
+	friend constexpr auto nelems(layout_t const& self){return self.nelems();}
 	constexpr bool operator==(layout_t const& o) const{
 		return sub==o.sub and stride_==o.stride_ and offset_==o.offset_ and nelems_==o.nelems_;
 	}
@@ -302,12 +324,22 @@ public:
 	template<class... As>
 	auto paren_aux(index i, As&&... as) const{return operator[](i).rotated(1).paren_aux(as...);}
 	template<class... As>
-	auto operator()(index_range a, As&&... as) const{return paren_aux(a, as...).rotated(-(1 + sizeof...(As)));}
+	auto operator()(index_range a, As&&... as) const{
+		return paren_aux(a, as...).rotated(-(1 + sizeof...(As)));
+	}
 	template<class... As>
-	auto operator()(index i, As&&... as) const{return operator[](i).rotated(1)(as...).rotated(-(1 + sizeof...(As)));}
-	auto operator()(index_range const& a, index_range const& ir1) const{return paren_aux(a, ir1).rotated(-2);}
-	auto operator()(index_range const& a, index       const& i1) const{return paren_aux(a, i1).rotated(-2);}
-	auto operator()(index const& a, index_range const& ir1) const{return operator[](a).rotated(1)(ir1).rotated(-2);}
+	auto operator()(index i, As&&... as) const{
+		return operator[](i).rotated(1)(as...).rotated(-(1 + sizeof...(As)));
+	}
+	auto operator()(index_range const& a, index_range const& ir1) const{
+		return paren_aux(a, ir1).rotated(-2);
+	}
+	auto operator()(index_range const& a, index       const& i1) const{
+		return paren_aux(a, i1).rotated(-2);
+	}
+	auto operator()(index const& a, index_range const& ir1) const{
+		return operator[](a).rotated(1)(ir1).rotated(-2);
+	}
 	auto rotated(dimensionality_type i) const{
 		layout_t new_layout = *this; 
 		new_layout.rotate(i);
