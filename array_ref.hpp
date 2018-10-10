@@ -71,7 +71,7 @@ struct layout_t{
 		offset_{0}, 
 		nelems_{std::get<0>(e).size()*sub.num_elements()} 
 	{
-		std::cerr <<"here\n";
+//		std::cerr <<"here\n";
 	}
 	private:
 	template<class Extensions>
@@ -85,7 +85,7 @@ struct layout_t{
 		return ret;
 	}
 	public:
-	template<class Extensions>
+	template<class Extensions, typename = decltype(convert(Extensions{}))>
 	constexpr layout_t(Extensions const& e) : layout_t(convert(e)){}
 /*	template<class Extensions, typename = decltype(std::get<0>(Extensions{}))>
 	constexpr layout_t(Extensions e) : 
@@ -340,6 +340,26 @@ public:
 	auto operator()(index const& a, index_range const& ir1) const{
 		return operator[](a).rotated(1)(ir1).rotated(-2);
 	}
+#if 0 // TODO implement A[indices[range(2,8)][range(4,16)]] syntax
+	template<class Indices, typename = decltype(Indices{}.ranges_)>//boost::indices
+	auto operator[](Indices const& is) const{
+	//	extensions_type ret;
+	//	auto it2 = ret.begin();
+		auto ret = *this;
+		int n  = 0;
+		for(auto it = is.ranges_.begin(); it != is.ranges_.end(); ++it){
+			ret = ret.rotated(n).sliced(it->start(), it->finish()).rotated(-n);
+		//	if(it->degenerate_){
+				
+		//	}else{
+				
+		//	}
+		//	*it2 = index_extension{it->start(), it->finish()};
+		//	++it2;
+		}
+		return ret;
+	}
+#endif
 	auto rotated(dimensionality_type i) const{
 		layout_t new_layout = *this; 
 		new_layout.rotate(i);

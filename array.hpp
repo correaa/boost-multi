@@ -51,10 +51,10 @@ ForwardIt destroy_n(ForwardIt first, Size n){
 
 template<class T, dimensionality_type D, class Alloc>
 struct array : array_ref<T, D, typename std::allocator_traits<Alloc>::pointer>{
+//	using array_ref<T, D, typename std::allocator_traits<Alloc>::pointer>::operator[]; //this is needed if operator[] is ever templated
 	using Allocator = Alloc;
 	using allocator_type = Alloc;
 	using add_lvalue_reference = array_ref<T, D, typename std::allocator_traits<Alloc>::pointer&>;
-//	using add_lvalue_reference = typename array_ref<T, D+1, typename std::allocator_traits<Allocator>::pointer>::reference;
 private:
 	allocator_type allocator_;
 	using alloc_traits = std::allocator_traits<allocator_type>;
@@ -262,10 +262,17 @@ int main(){
 		multi::array<double, 2> A
 			//	(extents[10][20]); // Boost.MultiArray only syntax
 			({10, 20});            // current syntax
-		auto const& B = 
+	//	auto const& B = 
 		//	A[indices[range(2,8)][range(4,16)]];                // Boost.MultiArray only syntax
 		//	A.sliced(2,8).rotated(1).sliced(4, 16).rotated(-1); // advanced interface
+	//		A({2,8}, {4, 16});                                  // simple interface
+	//	typedef boost::multi_array_types::index_range range;
+		auto const& B = 
+		//	A[boost::indices[range(2,8)][range(4,16)]];                // Boost.MultiArray only syntax
+		//	A.sliced(2,8).rotated(1).sliced(4, 16).rotated(-1); // advanced interface
 			A({2,8}, {4, 16});                                  // simple interface
+	
+	
 		auto const& C = 
 		//	A[indices[range()][range(4,16)]];      // Boost.MultiArray only syntax
 		//	A.rotated(1).sliced(4, 16).rotated(-1) // advanced interface
