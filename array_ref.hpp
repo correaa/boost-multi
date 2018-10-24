@@ -82,7 +82,7 @@ struct extents_t<1u>{
 	}
 };
 //template<>
-extents_t<1u> extents_t<0u>::operator[](index_extension ie) const{return {*this, ie};}
+inline extents_t<1u> extents_t<0u>::operator[](index_extension ie) const{return {*this, ie};}
 
 static constexpr extents_t<0u> extents;
 
