@@ -23,7 +23,11 @@ stages:
 Test:
     stage: test
     script:
-      - cd tests
+      - cd ..
+      - pwd
+      - ls
+      - mv boost-multi multi
+      - cd multi/tests
       - pwd
       - ls
       - sh ./array_ref.cpp
