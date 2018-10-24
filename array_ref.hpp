@@ -4,8 +4,11 @@
 #ifndef BOOST_MULTI_ARRAY_REF_HPP
 #define BOOST_MULTI_ARRAY_REF_HPP
 
-#include "../multi/index_range.hpp"
-#include "../multi/ordering.hpp"
+//#include "../multi/index_range.hpp"
+//#include "../multi/ordering.hpp"
+
+#include "./index_range.hpp"
+#include "./ordering.hpp"
 
 #include<iostream>
 #include<algorithm> // transform

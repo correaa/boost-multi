@@ -4,7 +4,8 @@
 #ifndef BOOST_MULTI_ARRAY_HPP
 #define BOOST_MULTI_ARRAY_HPP
 
-#include "../multi/array_ref.hpp"
+//#include "../multi/array_ref.hpp"
+#include "./array_ref.hpp"
 
 #include<algorithm>
 #include<array>
