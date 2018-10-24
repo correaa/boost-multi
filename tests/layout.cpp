@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-time clang++ -O3 -std=c++17 -Wall -Wfatal-errors -I$HOME/prj $0 -o $0.x && time $0.x $@ && rm -f $0.x; exit
+time clang++ -O3 -std=c++14 -Wall -Wfatal-errors -I$HOME/prj $0 -o $0.x && time $0.x $@ && rm -f $0.x; exit
 #endif
 //  (C) Copyright Alfredo A. Correa 2018.
 #include "../array_ref.hpp"
@@ -12,8 +12,14 @@ namespace multi = boost::multi;
 
 int main(){
 	{
-		multi::layout_t<2> l({10, 20});
-		multi::layout_t<2> l2 = boost::extents[10][20];
+	//	multi::layout_t<2> l({10, 20});
+		auto e = multi::extents[10][20];
+		cout << e.extent_ << std::endl;
+		cout << e.sub.extent_ << std::endl;
+		cout << head(e) << std::endl;
+		cout << head(e.sub) << std::endl;
+		multi::layout_t<2> l(multi::extents[10][20]);
+		cout << l.size() << std::endl;
 		assert( l.size() == 10 );
 		assert( l.size(0) == 10 );
 		assert( l.size(1) == 20 );

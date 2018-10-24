@@ -55,6 +55,35 @@ namespace detail{
 }
 
 template<dimensionality_type D>
+struct extents_t{
+	extents_t<D-1> sub;
+	index_range extent_;
+	extents_t<D+1> operator[](index_extension ie) const{
+		return extents_t<D+1>{*this, ie};
+	}
+	friend index_range const& head(extents_t const& self){return head(self.sub);}
+	friend extents_t<D-1> const& tail(extents_t const& self){return self.sub;}
+};
+template<>
+struct extents_t<0u>{
+	extents_t<1u> operator[](index_extension ie) const;//{return {*this, ie};}
+};
+template<>
+struct extents_t<1u>{
+	extents_t<0u> sub;
+	index_range extent_;
+	friend index_range const& head(extents_t const& self){return self.extent_;}
+	friend extents_t<0u> const& tail(extents_t const& self){return self.sub;}
+	extents_t<2u> operator[](index_extension ie) const{
+		return {*this, ie};
+	}
+};
+//template<>
+extents_t<1u> extents_t<0u>::operator[](index_extension ie) const{return {*this, ie};}
+
+static constexpr extents_t<0u> extents;
+
+template<dimensionality_type D>
 struct layout_t{
 	layout_t<D-1> sub;
 	index stride_;
@@ -65,14 +94,24 @@ struct layout_t{
 	auto origin() const{return -offset_ + sub.origin();}
 //	layout_t(layout_t&&) = delete;
 //	explicit layout_t(layout_t const&) = default;
+	constexpr layout_t(index_extension ie, layout_t<D-1> const& s) : 
+		sub{s},
+		stride_{ie.size()*sub.num_elements()!=0?sub.size()*sub.stride():1}, 
+		offset_{0}, 
+		nelems_{ie.size()*sub.num_elements()}
+	{}
 	constexpr layout_t(extensions_type e = {}) : 
 		sub{tail(e)}, 
-		stride_{sub.size()*sub.stride()}, 
+		stride_{std::get<0>(e).size()*sub.num_elements()!=0?sub.size()*sub.stride():1}, 
 		offset_{0}, 
 		nelems_{std::get<0>(e).size()*sub.num_elements()} 
-	{
-//		std::cerr <<"here\n";
-	}
+	{}
+	constexpr layout_t(extents_t<D> e) :
+		stride_{head(e).size()*sub.num_elements()!=0?sub.size()*sub.stride():1}, 
+		offset_{0}, 
+		nelems_{head(e).size()*sub.num_elements()}
+	{}
+#if 0
 	private:
 	template<class Extensions>
 	static extensions_type convert(Extensions const& e){
@@ -87,6 +126,7 @@ struct layout_t{
 	public:
 	template<class Extensions, typename = decltype(convert(Extensions{}))>
 	constexpr layout_t(Extensions const& e) : layout_t(convert(e)){}
+#endif
 /*	template<class Extensions, typename = decltype(std::get<0>(Extensions{}))>
 	constexpr layout_t(Extensions e) : 
 		sub{detail::tail(e)}, 
@@ -192,12 +232,20 @@ struct layout_t{
 };
 
 template<>
+struct layout_t<0u>{};
+
+template<>
 struct layout_t<1u>{
 	using extensions_type = std::array<index_extension, 1>;
 	index stride_;
 	index offset_;
 	index nelems_;
 	layout_t() = default;
+	constexpr layout_t(index_extension ie, layout_t<0> const&) : 
+		stride_{1}, 
+		offset_{0}, 
+		nelems_{ie.size()}
+	{}
 	template<class Extensions, typename = decltype(std::get<0>(Extensions{}))>
 	constexpr layout_t(Extensions e) : 
 		stride_{1*1}, offset_{0}, nelems_{std::get<0>(e).size()*1}
@@ -285,6 +333,7 @@ protected:
 	basic_array(ElementPtr data, Layout layout) : Layout{layout}, data_{data}{}
 public:
 	Layout const& layout() const{return *this;}
+	friend Layout const& layout(basic_array const& self){return self.layout();}
 	basic_array(basic_array&&) = default;
 	operator basic_array<element, D, element_const_ptr>() const{
 		return basic_array<element, D, element_const_ptr>(data_, layout());
@@ -379,6 +428,7 @@ public:
 		using pointer = void;
 		using reference = const_reference;
 		using iterator_category = std::random_access_iterator_tag;
+		using value_type = multi::array<element, D-1>;
 		const_iterator(std::nullptr_t = nullptr) : const_reference{}{}
 		const_iterator(const_iterator const&) = default;
 		const_iterator& operator=(const_iterator const& other) = default;
@@ -602,7 +652,6 @@ protected:
 			i != std::min(basic_array::extension(0).last(), other.extension(0).last()); ++i
 		) operator[](i) = other[i];
 	}
-	Layout const& layout() const{return *this;}
 //	element_ptr data_;
 	ElementPtr data_;
 	basic_array() = delete;
@@ -612,6 +661,8 @@ protected:
 	friend struct basic_array<T, dimensionality_type{2}, typename std::pointer_traits<element_ptr>::template rebind<element>>;
 	friend struct basic_array<T, dimensionality_type{1}, element_const_ptr>;
 public:
+	Layout const& layout() const{return *this;}
+	friend Layout const& layout(basic_array const& self){return self.layout();}
 	template<class Array>
 	basic_array const& operator=(Array const& other) const{
 		assert(this->extension() == adl::extension(other));
@@ -765,6 +816,7 @@ struct const_array_ref : basic_array<T, D, ElementPtr>{
 	using element_ptr = typename const_array_ref::element_ptr;
 	const_array_ref() = delete; // references must be initialized (bound)
 	const_array_ref(const_array_ref const&) = default;
+	const_array_ref(const_array_ref&&) = default;
 	constexpr const_array_ref(
 		ElementPtr p, // typename const_array_ref::element_ptr p, 
 		typename const_array_ref::extensions_type e
@@ -774,6 +826,10 @@ struct const_array_ref : basic_array<T, D, ElementPtr>{
 	template<class Extensions>
 	constexpr const_array_ref(ElementPtr p, Extensions e) noexcept 
 	: basic_array<T, D, ElementPtr>{p, typename const_array_ref::layout_t{e}}
+	{}
+	template<class Extensions>
+	constexpr const_array_ref(ElementPtr p, layout_t<D> const& lo)
+	: basic_array<T, D, ElementPtr>{p, lo}
 	{}
 	protected:
 	using basic_array<T, D, ElementPtr>::operator=;
@@ -800,6 +856,8 @@ template<typename T, dimensionality_type D, typename ElementPtr = T*>
 struct array_ref : const_array_ref<T, D, ElementPtr>{
 	using const_array_ref<T, D, ElementPtr>::const_array_ref;
 	using const_array_ref<T, D, ElementPtr>::operator=;
+	array_ref(array_ref const&) = default;
+	array_ref(array_ref&&) = default;
 	template<class Array, typename = std::enable_if_t<not std::is_base_of<const_array_ref<T, D, ElementPtr>, std::decay_t<Array>>{}> > array_ref& operator=(Array const& other){
 		const_array_ref<T, D, ElementPtr>::operator=(other);
 		return *this;

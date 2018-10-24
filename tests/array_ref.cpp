@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-time c++ -O3 `#-DNDEBUG` -std=c++14 -Wall -Wextra `#-fmax-errors=2` `#-Wfatal-errors` -I${HOME}/prj $0 -o $0.x -lboost_timer && time $0.x $@ && rm -f $0.x; exit
+time clang++ -O3 `#-DNDEBUG` -std=c++14 -Wall -Wextra `#-Wfatal-errors` -I$HOME/prj $0 -o $0.x && time $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include "../array_ref.hpp"
@@ -55,7 +55,7 @@ struct ptr{
 
 int f(int a){return a + 5;}
 
-#include <boost/timer/timer.hpp>
+//#include <boost/timer/timer.hpp>
 
 int main(){
 	{
@@ -76,6 +76,7 @@ int main(){
 		assert( mbuf2[10] == 4. );
 
 	}
+	return 0;
 #if 1
 //	std::unique_ptr<double[]> 
 	auto ubuf{new double[400000000]};
@@ -90,20 +91,21 @@ int main(){
 	//	std::iota(mbuf2.data(), mbuf2.data() + mbuf2.num_elements(), 0.);
 		std::iota(mbuf2.data(), mbuf2.data() + mbuf2.num_elements(), 122223.);
 	//	std::copy_n(mbuf.data(), mbuf.num_elements(), mbuf2.data());
-		{
-			boost::timer::auto_cpu_timer t;
+	//	{
+	//		boost::timer::auto_cpu_timer t;
 		//	std::copy_n(mbuf.data(), mbuf.num_elements(), mbuf2.data());
-			mbuf2 = mbuf;
-		}
-		if(mbuf2[123][456] != mbuf[123][456]) throw 0;
+	//		mbuf2 = mbuf;
+	//	}
+		assert(mbuf2[123][456] == mbuf[123][456]);
 	//	assert( mbuf2[123][456] == mbuf[123][456] );
 		multi::array<double, 2> Mbuf = mbuf2;
 	}
 	std::vector<double> v(100);
-	auto v2b{new double[100]};
+//	auto v2b{new double[100]};
 //	multi::array_ref<double, 1> v2(v2b, {100});
 //	v2 = v;
-	multi::array<double, 1> v2{v};
+	multi::array<double, 1> v2({multi::index_extension{0, (int)v.size()}});
+	copy(begin(v), end(v), begin(v2));
 	return 0;
 
 	double* buffer = new double[100];
@@ -130,6 +132,7 @@ int main(){
 	C3({0,4}, 1) = C6({0,4}, 2);
 	C3({0,4}, 0) = C6({0,4}, 1);
 
+	return 0;
 #if 0
 
 	some_assign21(C3, 4.1); assert(C3[2][1]==4.1);
