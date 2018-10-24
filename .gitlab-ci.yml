@@ -24,4 +24,7 @@ Test:
     stage: test
     script:
       - cd tests
+      - pwd
+      - ls
       - sh ./array_ref.cpp
+
