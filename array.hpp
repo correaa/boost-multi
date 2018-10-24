@@ -17,7 +17,7 @@ namespace boost{
 namespace multi{
 
 template<class T>
-std::array<index_extension, 1> extensions(std::vector<T> const& v){
+inline std::array<index_extension, 1> extensions(std::vector<T> const& v){
 	return {index_extension{0, long(v.size())}};
 }
 
@@ -54,7 +54,7 @@ template<class T>
 auto extensions(T& t)
 ->decltype(t.extensions()){
 	return t.extensions();}
-std::array<index_extension, 0> 
+inline std::array<index_extension, 0> 
 extensions(...){return {};};
 
 template<class T, typename = decltype(std::declval<T const&>().layout())>
