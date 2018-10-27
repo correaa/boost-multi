@@ -388,6 +388,21 @@ public:
 	decltype(auto) paren_aux() const{return *this;}
 	template<class... As>
 	auto paren_aux(index_range a, As&&... as) const{return operator()(a).rotated().paren_aux(as...);}
+	auto rotated() const{
+		layout_t new_layout = *this; 
+		new_layout.rotate();
+		return basic_array<T, D, ElementPtr>{data_, new_layout};
+	}
+	auto unrotated() const{
+		layout_t new_layout = *this; 
+		new_layout.unrotate();
+		return basic_array<T, D, ElementPtr>{data_, new_layout};
+	}
+	auto rotated(dimensionality_type i) const{
+		layout_t new_layout = *this; 
+		new_layout.rotate(i);
+		return basic_array<T, D, ElementPtr>{data_, new_layout};
+	}
 	template<class... As>
 	auto paren_aux(index i, As&&... as) const{return operator[](i).rotated().paren_aux(as...);}
 	template<class... As>
@@ -427,21 +442,6 @@ public:
 		return ret;
 	}
 #endif
-	auto rotated() const{
-		layout_t new_layout = *this; 
-		new_layout.rotate();
-		return basic_array<T, D, ElementPtr>{data_, new_layout};
-	}
-	auto unrotated() const{
-		layout_t new_layout = *this; 
-		new_layout.unrotate();
-		return basic_array<T, D, ElementPtr>{data_, new_layout};
-	}
-	auto rotated(dimensionality_type i) const{
-		layout_t new_layout = *this; 
-		new_layout.rotate(i);
-		return basic_array<T, D, ElementPtr>{data_, new_layout};
-	}
 	decltype(auto) front(){return *begin();}
 	decltype(auto) back(){return *(begin() + (Layout::size() - 1));}
 	class const_iterator : private const_reference{
@@ -742,6 +742,8 @@ public:
 	auto paren_aux(index i, As&&... as) const{return operator[](i).rotated().paren_aux(as...);}
 	auto operator()(index_range const& ir) const{return range(ir);}
 	auto operator()(index i) const{return operator[](i);}
+	decltype(auto) rotated() const{return *this;}
+	decltype(auto) unrotated() const{return *this;}	
 	decltype(auto) rotated(dimensionality_type) const{return *this;}
 	element_ptr origin() const{return data_ + Layout::origin();}
 	friend element_ptr origin(basic_array const& self){return self.origin();}
