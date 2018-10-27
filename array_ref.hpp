@@ -151,7 +151,7 @@ struct layout_t{
 	constexpr bool empty() const{return not nelems_;}
 	friend bool empty(layout_t const& s){return s.empty();}
 	constexpr size_type size() const{
-		if(nelems_ == 0) return 0;
+	//	if(nelems_ == 0) return 0;
 		assert(stride_ != 0 and nelems_%stride_ == 0 );
 		return nelems_/stride_;
 	}
@@ -162,6 +162,14 @@ struct layout_t{
 		swap(offset_, sub.offset_);
 		swap(nelems_, sub.nelems_);
 		sub.rotate();
+		return *this;
+	}
+	layout_t& unrotate(){
+		sub.unrotate();
+		using std::swap;
+		swap(stride_, sub.stride_);
+		swap(offset_, sub.offset_);
+		swap(nelems_, sub.nelems_);
 		return *this;
 	}
 	layout_t& rotate(dimensionality_type r){
@@ -255,12 +263,17 @@ struct layout_t<1u>{
 	{}
 	constexpr auto offset() const{return offset_;}
 	constexpr auto offset(dimensionality_type d) const{
+		(void)d;
 		assert(d==0);
 		return offset_;
 	}
 	constexpr auto nelems() const{return nelems_;}
 	friend constexpr auto nelems(layout_t const& self){return self.nelems();}
-	constexpr size_type size(dimensionality_type d = 0) const{
+	constexpr size_type size() const{
+		assert(stride_ != 0 and nelems_%stride_ == 0);
+		return nelems_/stride_;
+	}
+	constexpr size_type size(dimensionality_type d) const{
 		(void)d;
 		assert(d == 0 and stride_ != 0 and nelems_%stride_ == 0);
 		return nelems_/stride_;
@@ -272,7 +285,7 @@ struct layout_t<1u>{
 		return ret;
 	}
 	void sizes_aux(size_type* it) const{*it = size();}
-	constexpr index stride(dimensionality_type d = 0) const{assert(d == 0); return stride_;}
+	constexpr index stride(dimensionality_type d = 0) const{(void)d; assert(d == 0); return stride_;}
 	friend constexpr index stride(layout_t const& self){return self.stride();}
 	auto strides() const{
 		std::array<index, 1> ret;
@@ -302,6 +315,7 @@ struct layout_t<1u>{
 	} 
 	constexpr bool operator!=(layout_t const& other) const{return not(*this==other);}
 	layout_t& rotate(){return *this;}
+	layout_t& unrotate(){return *this;}
 	decltype(auto) shape() const{return sizes();}
 };
 
@@ -317,6 +331,7 @@ template<
 struct basic_array : Layout{
 	static constexpr dimensionality_type dimensionality = D;
 	using layout_t = Layout;
+	using index = boost::multi::index;
 	using element = T;
 	using element_ptr = typename std::decay<ElementPtr>::type;
 	using element_const_ptr = typename std::pointer_traits<element_ptr>::template rebind<element const>;
@@ -368,20 +383,20 @@ public:
 		new_layout.stride_*=s;
 		return basic_array{data_ + Layout::operator()(this->extension().front()), new_layout};		
 	}
-	auto operator()(index_range a) const{return range(a);}
+	auto operator()(index_range const& a) const{return range(a);}
 	auto operator()(index i) const{return operator[](i);}
 	decltype(auto) paren_aux() const{return *this;}
 	template<class... As>
-	auto paren_aux(index_range a, As&&... as) const{return operator()(a).rotated(1).paren_aux(as...);}
+	auto paren_aux(index_range a, As&&... as) const{return operator()(a).rotated().paren_aux(as...);}
 	template<class... As>
-	auto paren_aux(index i, As&&... as) const{return operator[](i).rotated(1).paren_aux(as...);}
+	auto paren_aux(index i, As&&... as) const{return operator[](i).rotated().paren_aux(as...);}
 	template<class... As>
 	auto operator()(index_range a, As&&... as) const{
 		return paren_aux(a, as...).rotated(-(1 + sizeof...(As)));
 	}
 	template<class... As>
 	auto operator()(index i, As&&... as) const{
-		return operator[](i).rotated(1)(as...).rotated(-(1 + sizeof...(As)));
+		return operator[](i).rotated()(as...).rotated(-(1 + sizeof...(As)));
 	}
 	auto operator()(index_range const& a, index_range const& ir1) const{
 		return paren_aux(a, ir1).rotated(-2);
@@ -390,7 +405,7 @@ public:
 		return paren_aux(a, i1).rotated(-2);
 	}
 	auto operator()(index const& a, index_range const& ir1) const{
-		return operator[](a).rotated(1)(ir1).rotated(-2);
+		return operator[](a).rotated()(ir1).rotated(-2);
 	}
 #if 0 // TODO implement A[indices[range(2,8)][range(4,16)]] syntax
 	template<class Indices, typename = decltype(Indices{}.ranges_)>//boost::indices
@@ -412,6 +427,16 @@ public:
 		return ret;
 	}
 #endif
+	auto rotated() const{
+		layout_t new_layout = *this; 
+		new_layout.rotate();
+		return basic_array<T, D, ElementPtr>{data_, new_layout};
+	}
+	auto unrotated() const{
+		layout_t new_layout = *this; 
+		new_layout.unrotate();
+		return basic_array<T, D, ElementPtr>{data_, new_layout};
+	}
 	auto rotated(dimensionality_type i) const{
 		layout_t new_layout = *this; 
 		new_layout.rotate(i);
@@ -712,9 +737,9 @@ public:
 	}
 	decltype(auto) paren_aux() const{return *this;}
 	template<class... As>
-	auto paren_aux(index_range a, As&&... as) const{return operator()(a).rotated(1).paren_aux(as...);}
+	auto paren_aux(index_range a, As&&... as) const{return operator()(a).rotated().paren_aux(as...);}
 	template<class... As>
-	auto paren_aux(index i, As&&... as) const{return operator[](i).rotated(1).paren_aux(as...);}
+	auto paren_aux(index i, As&&... as) const{return operator[](i).rotated().paren_aux(as...);}
 	auto operator()(index_range const& ir) const{return range(ir);}
 	auto operator()(index i) const{return operator[](i);}
 	decltype(auto) rotated(dimensionality_type) const{return *this;}
