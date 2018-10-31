@@ -57,6 +57,21 @@ auto extensions(T& t)
 inline std::array<index_extension, 0> 
 extensions(...){return {};};
 
+template<dimensionality_type D, class T>
+auto extensions(T& t){
+	if constexpr(D != 0)
+		return std::tuple_cat(std::make_tuple(t.extension()), extensions<D-1>(t));
+	else
+		return std::make_tuple();
+}
+
+template<class T1, class T2> auto extensions(T2 const& t2){
+	if constexpr(std::is_same<T1, T2>{})
+		return std::make_tuple();
+	else
+		return std::tuple_cat(std::make_tuple(t2.extension()), extensions<T1>(*begin(t2)));
+}
+
 template<class T, typename = decltype(std::declval<T const&>().layout())>
 std::true_type has_layout_member_aux(T const&);
 std::false_type has_layout_member_aux(...);
@@ -116,7 +131,10 @@ public:
 	}
 	explicit array(allocator_type const& alloc) : array(typename array::extensions_type{}, alloc)
 	{}
-	
+	array() : 
+		array_ref<T, D, typename array::element_ptr>{nullptr, {}}, 
+		allocator_{} // TODO, make allocator a base?
+	{}
 	array(typename array::extensions_type const& e, allocator_type const& alloc = {}) : 
 		array_ref<T, D, typename array::element_ptr>{nullptr, e}, 
 		allocator_{alloc} // TODO, make allocator a base
@@ -140,23 +158,28 @@ public:
 	array(std::initializer_list<typename array_ref<T, D, typename std::allocator_traits<Alloc>::pointer>::value_type> il, allocator_type const& a = {})
 	: 
 		array_ref<T, D, typename array::element_ptr>{
-			nullptr, layout_t<D>({0, index(il.size())}, layout(*il.begin()))
+			nullptr, layout_t<D>(std::tuple_cat(std::make_tuple(index_extension{0, index(il.size())}), extensions<T>(*il.begin())))
 		},
 		allocator_{a}
 	{
+	//	std::cerr <<"il.size() "<< il.size() <<" allocating "<< array::num_elements() <<"\n";
 		this->data_ = alloc_traits::allocate(allocator_, array::num_elements());
-		using std::copy;
-		copy(il.begin(), il.end(), this->begin());
+	//	std::cerr <<"copying" << std::endl;
+	//	using std::copy;
+	//	copy(il.begin(), il.end(), this->begin());
+		using std::uninitialized_copy;
+		uninitialized_copy(il.begin(), il.end(), this->begin());
+	//	std::cerr <<"copyed" << std::endl;		
 	}
 	allocator_type get_allocator() const{return allocator_;}
 //	friend allocator_type const& allocator(array const& s){return s.allocator_;}
 	array& operator=(array const& other){
-		if(other.extensions() == this->extensions() and allocator(other) == allocator(*this)){
+		if(other.extensions() == this->extensions() and other.get_allocator() == get_allocator()){
 			array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator=(
 				static_cast<const_array_ref<T, D, typename std::allocator_traits<Allocator>::pointer> const&>(other)
 			);
 		}else{
-			array tmp(extensions(other), allocator(other));//other.extensions(), allocator_);
+			array tmp(extensions(other), other.get_allocator());//other.extensions(), allocator_);
 			tmp.array_ref<T, D, typename std::allocator_traits<Allocator>::pointer>::operator=(
 				static_cast<const_array_ref<T, D, typename std::allocator_traits<Allocator>::pointer> const&>(other)
 			);

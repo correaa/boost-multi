@@ -48,11 +48,11 @@ namespace detail{
 	template<class Tuple>
 	auto head(Tuple t)->decltype(std::get<0>(t)){return std::get<0>(t);}
 	template<typename Tuple, std::size_t... Ns>
-	auto tail_impl(std::index_sequence<Ns...> , Tuple t){
-		return std::make_tuple(std::get<Ns+1u>(t)...);
+	auto tail_impl(std::index_sequence<Ns...> , Tuple&& t){
+		return std::make_tuple(std::get<Ns+1u>(std::forward<Tuple>(t))...);
 	}
 	template<typename... Ts>
-	auto tail(std::tuple<Ts...> t){
+	auto tail(std::tuple<Ts...> const& t){
 		return tail_impl( std::make_index_sequence<sizeof...(Ts) - 1u>() , t );
 	}
 }
@@ -88,6 +88,7 @@ static constexpr extents_t<0u> extents;
 
 template<dimensionality_type D>
 struct layout_t{
+	static constexpr dimensionality_type dimensionality = D;
 	layout_t<D-1> sub;
 	index stride_;
 	index offset_;
@@ -108,6 +109,13 @@ struct layout_t{
 		stride_{std::get<0>(e).size()*sub.num_elements()!=0?sub.size()*sub.stride():1}, 
 		offset_{0}, 
 		nelems_{std::get<0>(e).size()*sub.num_elements()} 
+	{}
+	template<class Extensions, typename = std::enable_if_t<not std::is_base_of<layout_t, std::decay_t<Extensions>>{}> >
+	constexpr layout_t(Extensions&& e) :
+		sub{detail::tail(std::forward<Extensions>(e))},
+		stride_{index_extension(std::get<0>(std::forward<Extensions>(e))).size()*sub.num_elements()!=0?sub.size()*sub.stride():1},
+		offset_{0},
+		nelems_{index_extension(std::get<0>(std::forward<Extensions>(e))).size()*sub.num_elements()}
 	{}
 	constexpr layout_t(extents_t<D> e) :
 		stride_{head(e).size()*sub.num_elements()!=0?sub.size()*sub.stride():1}, 
@@ -151,7 +159,7 @@ struct layout_t{
 	constexpr bool empty() const{return not nelems_;}
 	friend bool empty(layout_t const& s){return s.empty();}
 	constexpr size_type size() const{
-	//	if(nelems_ == 0) return 0;
+		if(nelems_ == 0) return 0;
 		assert(stride_ != 0 and nelems_%stride_ == 0 );
 		return nelems_/stride_;
 	}
@@ -243,10 +251,13 @@ struct layout_t{
 };
 
 template<>
-struct layout_t<0u>{};
+struct layout_t<0u>{
+	static constexpr dimensionality_type dimensionality = 0u;
+};
 
 template<>
 struct layout_t<1u>{
+	static constexpr dimensionality_type dimensionality = 1u;
 	using extensions_type = std::array<index_extension, 1>;
 	index stride_;
 	index offset_;
@@ -329,7 +340,6 @@ template<
 	class Layout = layout_t<D>//, class Allocator = std::allocator<T>
 > 
 struct basic_array : Layout{
-	static constexpr dimensionality_type dimensionality = D;
 	using layout_t = Layout;
 	using index = boost::multi::index;
 	using element = T;
@@ -347,12 +357,12 @@ struct basic_array : Layout{
 protected:
 	using initializer_list = std::initializer_list<typename basic_array<T, D-1, ElementPtr>::initializer_list>;
 	ElementPtr data_; // TODO call it base_ ?
-	basic_array(basic_array const&) = default;
 	basic_array(ElementPtr data, Layout layout) : Layout{layout}, data_{data}{}
 public:
 	Layout const& layout() const{return *this;}
 	friend Layout const& layout(basic_array const& self){return self.layout();}
-	basic_array(basic_array&&) = default;
+	basic_array(basic_array const& other) : Layout{other.layout()}, data_{other.data_}{}
+	basic_array(basic_array&& other) : Layout{other.layout()}, data_{other.data_}{}
 	operator basic_array<element, D, element_const_ptr>() const{
 		return basic_array<element, D, element_const_ptr>(data_, layout());
 	}
@@ -383,7 +393,7 @@ public:
 		new_layout.stride_*=s;
 		return basic_array{data_ + Layout::operator()(this->extension().front()), new_layout};		
 	}
-	auto operator()(index_range const& a) const{return range(a);}
+	auto operator()(index_range const& a) const{assert(0); return range(a);}
 	auto operator()(index i) const{return operator[](i);}
 	decltype(auto) paren_aux() const{return *this;}
 	template<class... As>
@@ -411,7 +421,7 @@ public:
 	}
 	template<class... As>
 	auto operator()(index i, As&&... as) const{
-		return operator[](i).rotated()(as...).rotated(-(1 + sizeof...(As)));
+		return operator[](i)(as...);//.rotated(-(1 + sizeof...(As)));
 	}
 	auto operator()(index_range const& a, index_range const& ir1) const{
 		return paren_aux(a, ir1).rotated(-2);
@@ -420,7 +430,7 @@ public:
 		return paren_aux(a, i1).rotated(-2);
 	}
 	auto operator()(index const& a, index_range const& ir1) const{
-		return operator[](a).rotated()(ir1).rotated(-2);
+		return operator[](a).sliced(ir1.first(), ir1.last());
 	}
 #if 0 // TODO implement A[indices[range(2,8)][range(4,16)]] syntax
 	template<class Indices, typename = decltype(Indices{}.ranges_)>//boost::indices
@@ -841,6 +851,26 @@ public:
 };
 
 template<typename T, dimensionality_type D, typename ElementPtr = T const*>
+struct array_cref : basic_array<T, D, ElementPtr>{
+	array_cref() = delete;
+	array_cref(array_cref const&) = default;
+	array_cref(array_cref&&) = default;
+	constexpr array_cref(ElementPtr p, typename array_cref::extensions_type e) noexcept
+		: basic_array<T, D, ElementPtr>{p, typename array_cref::layout_t{e}}{}
+	template<class Extensions> constexpr
+	array_cref(ElementPtr p, Extensions e) noexcept 
+		: basic_array<T, D, ElementPtr>{p, typename array_cref::layout_t{e}}{}
+	protected:
+	using basic_array<T, D, ElementPtr>::operator=;
+	public:
+	void operator=(array_cref const&) = delete;
+	typename array_cref::element_ptr        data() const{return array_cref::data_;}
+	typename array_cref::element_const_ptr cdata() const{return data();}
+	friend decltype(auto)  data(array_cref const& self){return self. data();}
+	friend decltype(auto) cdata(array_cref const& self){return self.cdata();}
+};
+
+template<typename T, dimensionality_type D, typename ElementPtr = T const*>
 struct const_array_ref : basic_array<T, D, ElementPtr>{
 	using element_const_ptr = typename const_array_ref::element_const_ptr;
 	using element_ptr = typename const_array_ref::element_ptr;
@@ -871,11 +901,11 @@ struct const_array_ref : basic_array<T, D, ElementPtr>{
 	friend decltype(auto) cdata(const_array_ref const& self){return self.cdata();}
 };
 
-template<typename T, dimensionality_type D, typename ElementPtr = T const*>
-using array_cref = const_array_ref<T, D, ElementPtr>;
+//template<typename T, dimensionality_type D, typename ElementPtr = T const*>
+//using array_cref = const_array_ref<T, D, ElementPtr>;
 
-template<typename T, dimensionality_type D, typename ElementPtr = T const*>
-using carray_cref = array_cref<T, D, ElementPtr>;
+//template<typename T, dimensionality_type D, typename ElementPtr = T const*>
+//using carray_cref = array_cref<T, D, ElementPtr>;
 
 }}
 
