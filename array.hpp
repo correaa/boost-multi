@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && clang++ `#-DNDEBUG` -std=c++17 -Wall -Wextra `#-Wfatal-errors` -lboost_timer -I${HOME}/prj -D_TEST_BOOST_MULTI_ARRAY $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
+(echo "#include\""$0"\"" > $0x.cpp) && clang++ `#-DNDEBUG` -std=c++14 -Wall -Wextra `#-Wfatal-errors` -lboost_timer -I${HOME}/prj -D_TEST_BOOST_MULTI_ARRAY $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
 #endif
 #ifndef BOOST_MULTI_ARRAY_HPP
 #define BOOST_MULTI_ARRAY_HPP
@@ -46,9 +46,12 @@ ForwardIt destroy_n(ForwardIt first, Size n){
 	return first;
 }
 
+template<dimensionality_type N> struct uninitialized_copy_aux;
+
 template<dimensionality_type N, class InputIt, class ForwardIt>
 ForwardIt uninitialized_copy(InputIt first, InputIt last, ForwardIt dest){
-	if constexpr(N != 1){
+	return uninitialized_copy_aux<N>::call(first, last, dest);
+/*	if constexpr(N != 1){
 		while(first != last){
 			uninitialized_copy<N-1>(first->begin(), first->end(), dest->begin());
 			++first;
@@ -56,11 +59,41 @@ ForwardIt uninitialized_copy(InputIt first, InputIt last, ForwardIt dest){
 		}
 		return dest;
 	}else{
-
 		using std::uninitialized_copy;	
 		return uninitialized_copy(first, last, dest);
-	}
+	}*/
 }
+
+template<dimensionality_type N>
+struct uninitialized_copy_aux{
+	template<class InputIt, class ForwardIt>
+	static auto call(InputIt first, InputIt last, ForwardIt dest){
+		while(first != last){
+			uninitialized_copy<N-1>(first->begin(), first->end(), dest->begin());
+			++first;
+			++dest;
+		}
+		return dest;		
+	}
+};
+
+
+template<>
+struct uninitialized_copy_aux<1u>{
+	template<class InputIt, class ForwardIt>
+	static auto call(InputIt first, InputIt last, ForwardIt dest){
+	//	using std::uninitialized_copy;
+	//	return uninitialized_copy(first, last, dest);
+		while(first != last){
+			construct(std::addressof(*dest), *first);
+		//	using T = typename std::iterator_traits<ForwardIt>::value_type;
+		//	::new(static_cast<void*>(std::addressof(*dest))) T(*first);
+		    ++first;
+		    ++dest;
+		}
+		return dest;
+	}
+};
 
 }
 
@@ -71,20 +104,49 @@ auto extensions(T const& t)
 inline std::array<index_extension, 0> 
 extensions(...){return {};};
 
+template<dimensionality_type> struct extension_aux;
+
+template<dimensionality_type D, class T>
+auto extensions(T const& t);
+
+template<dimensionality_type D>
+struct extensions_aux{
+	template<class T>
+	static auto call(T const& t){
+		return std::tuple_cat(std::make_tuple(t.extension()), extensions<D-1>(t));
+	}
+};
+
+template<> struct extensions_aux<0>{
+	template<class T> static auto call(T const& ){return std::make_tuple();}
+};
+
 template<dimensionality_type D, class T>
 auto extensions(T const& t){
-	if constexpr(D != 0)
-		return std::tuple_cat(std::make_tuple(t.extension()), extensions<D-1>(t));
-	else
-		return std::make_tuple();
+	return extensions_aux<D>::call(t);
+//	if constexpr(D != 0)
+//		return std::tuple_cat(std::make_tuple(t.extension()), extensions<D-1>(t));
+//	else
+//		return std::make_tuple();
 }
 
-template<class T1, class T2> auto extensions(T2 const& t2){
+template<class T1> struct extensions_t_aux;
+
+template<class T1, class T2> auto extensions_t(T2 const& t2){
+	return extensions_t_aux<T1>::call(t2);
+}
+/*template<class T1, class T2> auto extensions(T2 const& t2){
 	if constexpr(std::is_same<T1, T2>{})
 		return std::make_tuple();
 	else
 		return std::tuple_cat(std::make_tuple(t2.extension()), extensions<T1>(*begin(t2)));
-}
+}*/
+
+template<class T1> struct extension_t_aux{
+	static auto call(T1 const&){return std::make_tuple();}
+	template<class T2>
+	static auto call(T2 const& t2){return std::tuple_cat(std::make_tuple(t2.extension()), extensions_t<T1>(*begin(t2)));}
+};
 
 template<class T, typename = decltype(std::declval<T const&>().layout())>
 std::true_type has_layout_member_aux(T const&);

@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-time clang++ -O3 -std=c++17 -Wall `#-fmax-errors=2` -Wfatal-errors -I${HOME}/prj $0 -o $0.x && time $0.x $@ && rm -f $0.x; exit
+time clang++ -O3 -std=c++14 -Wall `#-fmax-errors=2` -Wfatal-errors -I${HOME}/prj $0 -o $0.x && time $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include "../array_ref.hpp"

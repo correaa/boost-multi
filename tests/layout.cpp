@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-time clang++ -O3 -std=c++17 -Wall -Wfatal-errors -I$HOME/prj $0 -o $0.x && time $0.x $@ && rm -f $0.x; exit
+time clang++ -O3 -std=c++14 -Wall -Wfatal-errors -I$HOME/prj $0 -o $0.x && time $0.x $@ && rm -f $0.x; exit
 #endif
 //  (C) Copyright Alfredo A. Correa 2018.
 #include "../array_ref.hpp"
@@ -7,8 +7,6 @@ time clang++ -O3 -std=c++17 -Wall -Wfatal-errors -I$HOME/prj $0 -o $0.x && time 
 #include<boost/multi_array.hpp>
 #include<iostream>
 #include<tuple>
-
-#include <boost/stacktrace.hpp>
 
 using std::cout; using std::cerr;
 namespace multi = boost::multi;
@@ -35,8 +33,6 @@ int main(){
 		{{1., 2., 3.}, 
 		 {4., 5., 6.}, 
 		 {7., 8., 9.}};
-
-	
 #if 1
 	multi::array<int, 2> A(
 		{multi::index_extension{0, 4}, multi::index_extension{0, 4}}

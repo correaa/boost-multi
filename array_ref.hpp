@@ -34,6 +34,13 @@ boost::multi::index_range extension(std::vector<T> const& v){return boost::multi
 namespace boost{
 namespace multi{
 
+namespace detail{
+	template<typename _T1, typename... _Args>
+	inline void construct(_T1* __p, _Args&&... __args){
+		::new(static_cast<void*>(__p)) _T1(std::forward<_Args>(__args)...);
+	}
+}
+
 template<class T, std::size_t N> 
 index_range extension(T(&)[N]){return {0, N};}
 
@@ -358,10 +365,12 @@ protected:
 	using initializer_list = std::initializer_list<typename basic_array<T, D-1, ElementPtr>::initializer_list>;
 	ElementPtr data_; // TODO call it base_ ?
 	basic_array(ElementPtr data, Layout layout) : Layout{layout}, data_{data}{}
+	// note here that I am protecting the cctor and making the inplace new a friend, this seems to be a way to allow initializer_list for a move-only  
+	basic_array(basic_array const& other) : Layout{other.layout()}, data_{other.data_}{}
+	template<class TT, class...As> friend void detail::construct(TT*, As&&...);
 public:
 	Layout const& layout() const{return *this;}
 	friend Layout const& layout(basic_array const& self){return self.layout();}
-	basic_array(basic_array const& other) : Layout{other.layout()}, data_{other.data_}{}
 	basic_array(basic_array&& other) : Layout{other.layout()}, data_{other.data_}{}
 	operator basic_array<element, D, element_const_ptr>() const{
 		return basic_array<element, D, element_const_ptr>(data_, layout());
