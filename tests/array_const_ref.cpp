@@ -24,7 +24,7 @@ int main(){
 		{10, 11, 12, 13, 14}, 
 		{15, 16, 17, 18, 19}
 	};
-	static_assert( std::is_same<multi::array_cref<double, 2>, multi::const_array_ref<double, 2>>{}, "check");
+//	static_assert( std::is_same<multi::array_cref<double, 2>, multi::const_array_ref<double, 2>>{}, "check");
 
 	multi::array_cref<double, 2> d2D_cref{&d2D[0][0], {4, 5}};
 
@@ -79,7 +79,7 @@ int main(){
 		for(auto j = 0; j != d2D_cref.sizes()[1] ||!endl(cout); ++j)
 			cout << d2D_cref[i][j] << ' ';
 
-	assert( d2D_cref.extension(1) == d2D_cref.extension<1>() );
+//	assert( d2D_cref.extension(1) == d2D_cref.extension<1>() );
 	assert( d2D_cref.extensions()[1] == d2D_cref.extension(1) );
 	assert( extensions(d2D_cref)[1] == d2D_cref.extension(1) );
 	assert( d2D_cref.shape()[0] == d2D_cref.extensions()[0].size() );
@@ -87,8 +87,8 @@ int main(){
 	assert( shape(d2D_cref)[1] == size(extensions(d2D_cref)[1]) );
 	assert( shape(d2D_cref)[1] == sizes(d2D_cref)[1] );
 
-	for(auto i : d2D_cref.extension<0>()){
-		for(auto j : d2D_cref.extension<1>()) cout << d2D_cref[i][j] << ' ';
+	for(auto i : d2D_cref.extension()){
+		for(auto j : d2D_cref.extension(1)) cout << d2D_cref[i][j] << ' ';
 		cout << '\n';
 	}
 	cout << '\n';

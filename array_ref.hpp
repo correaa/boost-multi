@@ -1,4 +1,4 @@
-#ifdef COMPILATION_INSTRUCTIONS
+#if COMPILATION_INSTRUCTIONS
 (echo "#include\""$0"\"" > $0x.cpp) && clang++ -O3 `#-fconcepts` -std=c++14 -Wall -Wextra `#-fmax-errors=2` -Wfatal-errors -lboost_timer -I${HOME}/prj -D_TEST_BOOST_MULTI_ARRAY_REF $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
 #endif
 #ifndef BOOST_MULTI_ARRAY_REF_HPP
@@ -393,7 +393,9 @@ public:
 		new_layout.stride_*=s;
 		return basic_array{data_ + Layout::operator()(this->extension().front()), new_layout};		
 	}
-	auto operator()(index_range const& a) const{assert(0); return range(a);}
+	auto operator()(index_range const& a) const{
+		return range(a);
+	}
 	auto operator()(index i) const{return operator[](i);}
 	decltype(auto) paren_aux() const{return *this;}
 	template<class... As>
@@ -742,9 +744,7 @@ public:
 		new_layout.stride_*=s;
 		return basic_array{data_ + Layout::operator()(this->extension().front()), new_layout};		
 	}
-	auto range(index_range const& ir) const{
-		return sliced(ir.front(), ir.back() - 1);
-	}
+	auto range(index_range const& ir) const{return sliced(ir.front(), ir.last());}
 	decltype(auto) paren_aux() const{return *this;}
 	template<class... As>
 	auto paren_aux(index_range a, As&&... as) const{return operator()(a).rotated().paren_aux(as...);}

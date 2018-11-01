@@ -46,19 +46,33 @@ ForwardIt destroy_n(ForwardIt first, Size n){
 	return first;
 }
 
+template<dimensionality_type N, class InputIt, class ForwardIt>
+ForwardIt uninitialized_copy(InputIt first, InputIt last, ForwardIt dest){
+	if constexpr(N != 1){
+		while(first != last){
+			uninitialized_copy<N-1>(first->begin(), first->end(), dest->begin());
+			++first;
+			++dest;
+		}
+		return dest;
+	}else{
+
+		using std::uninitialized_copy;	
+		return uninitialized_copy(first, last, dest);
+	}
 }
 
-
+}
 
 template<class T>
-auto extensions(T& t)
+auto extensions(T const& t)
 ->decltype(t.extensions()){
 	return t.extensions();}
 inline std::array<index_extension, 0> 
 extensions(...){return {};};
 
 template<dimensionality_type D, class T>
-auto extensions(T& t){
+auto extensions(T const& t){
 	if constexpr(D != 0)
 		return std::tuple_cat(std::make_tuple(t.extension()), extensions<D-1>(t));
 	else
@@ -158,17 +172,20 @@ public:
 	array(std::initializer_list<typename array_ref<T, D, typename std::allocator_traits<Alloc>::pointer>::value_type> il, allocator_type const& a = {})
 	: 
 		array_ref<T, D, typename array::element_ptr>{
-			nullptr, layout_t<D>(std::tuple_cat(std::make_tuple(index_extension{0, index(il.size())}), extensions<T>(*il.begin())))
+			nullptr, 
+			layout_t<D>(std::tuple_cat(std::make_tuple(index_extension{0, index(il.size())}), extensions<D-1>(*il.begin())))
 		},
 		allocator_{a}
 	{
+	//	std::cout << "il.size() " << il.size() << std::endl;
+	//	std::cout <<"extensions<D-1>(...)[0] "<< std::get<0>(extensions<D-1>(*il.begin())) <<"\n";
 	//	std::cerr <<"il.size() "<< il.size() <<" allocating "<< array::num_elements() <<"\n";
 		this->data_ = alloc_traits::allocate(allocator_, array::num_elements());
 	//	std::cerr <<"copying" << std::endl;
 	//	using std::copy;
 	//	copy(il.begin(), il.end(), this->begin());
-		using std::uninitialized_copy;
-		uninitialized_copy(il.begin(), il.end(), this->begin());
+		using detail::uninitialized_copy;
+		uninitialized_copy<D>(il.begin(), il.end(), this->begin());
 	//	std::cerr <<"copyed" << std::endl;		
 	}
 	allocator_type get_allocator() const{return allocator_;}
