@@ -12,6 +12,7 @@ using std::cout; using std::cerr;
 namespace multi = boost::multi;
 
 int main(){
+
 	multi::array<double, 3> AAAA({50, 50, 50});
 	assert( AAAA.size() == 50 );
 	assert( AAAA[0].size() == 50 );
@@ -25,7 +26,7 @@ int main(){
 	assert( size(B) == 50 );
 	assert( B[0].sliced(10, 20).size() == 10 );
 	assert( B(0, {10, 20}).dimensionality == 1 );
-	assert( B(0, {10, 20}).size() == 10 );
+	assert( size(B(0, {10, 20})) == 10 );
 
 //	assert( B(0, {10, 20}).size() == 10 );
 	}
@@ -34,32 +35,38 @@ int main(){
 		 {4., 5., 6.}, 
 		 {7., 8., 9.}};
 #if 1
-	multi::array<int, 2> A(
-		{multi::index_extension{0, 4}, multi::index_extension{0, 4}}
-	);
+	multi::array<int, 2> A({multi::iextension{4}, {4}});
+	assert( size(A) == 4 );
 	A[3][3] = 99.;
-	cout << "done\n";
-//	A.sliced(0,2).rotated().sliced(0,2).unrotate();
-//	A({0,2}, {0,2});
-	multi::array< std::decay_t<decltype(A({0,2}, {0,2}))>, 2 > Ab =
-//	multi::array< std::decay_t<decltype(A({0,2}, {0,2}))>, 1 > Ab = 
+	
+	decltype(A({0,2}, {0,2}))::decay_type Acopy = A({0,2}, {0,2});
+
+	multi::array<decltype(A({0,0}, {0,0})), 2> Ab =
 		{{A({0,2}, {0,2}), A({0, 2}, {2, 4})},
 		 {A({2,4}, {0,2}), A({2, 4}, {2, 4})}};
-		 
-		 
+//	assert( &Ab[1][1][1][1] == &A[3][3] );
+//	assert( Ab.dimensionality == 2 );
+//	assert( Ab[1].dimensionality == 1 );
+//	assert( Ab[1][1].dimensionality == 2 );
+//	assert(Ab.size() == 2);
+//	cout << Ab[0].size() << std::endl;
+//	assert(Ab[0].size() == 2);
+
+	decltype(A({0,2}, {0,2})) Abb[2][2] = 
+		{{A({0,2}, {0,2}), A({0, 2}, {2, 4})},
+		 {A({2,4}, {0,2}), A({2, 4}, {2, 4})}};
+	assert( &Abb[1][1][1][1] == &A[3][3] );
+
 	return 0;
 
-	assert(Ab.size() == 2);
-	cout << Ab[0].size() << std::endl;
-	assert(Ab[0].size() == 2);
 
-	multi::array<std::decay_t<decltype(A({0,2}, {0,2}))>, 2> Ab2 = 
-		{{A({0,2}, {0,2}), A({0, 2}, {2, 4})},
-		 {A({2,4}, {0,2}), A({2, 4}, {2, 4})}};
-	assert( Ab2.size() == 2 );
-	std::cout << Ab2[1][1].size() << std::endl;
+//	multi::array<std::decay_t<decltype(A({0,2}, {0,2}))>, 2> Ab2 = 
+//		{{A({0,2}, {0,2}), A({0, 2}, {2, 4})},
+//		 {A({2,4}, {0,2}), A({2, 4}, {2, 4})}};
+//	assert( Ab2.size() == 2 );
+//	std::cout << Ab2[1][1].size() << std::endl;
 
-	assert( Ab2[1][1].size() == 2 );
+//	assert( Ab2[1][1].size() == 2 );
 //	assert( Ab2[1][1][1][1] == 99. );
 
 

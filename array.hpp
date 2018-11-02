@@ -46,30 +46,21 @@ ForwardIt destroy_n(ForwardIt first, Size n){
 	return first;
 }
 
-template<dimensionality_type N> struct uninitialized_copy_aux;
+template<dimensionality_type N> struct uninitialized_copy_from_initializer_list_aux;
 
 template<dimensionality_type N, class InputIt, class ForwardIt>
-ForwardIt uninitialized_copy(InputIt first, InputIt last, ForwardIt dest){
-	return uninitialized_copy_aux<N>::call(first, last, dest);
-/*	if constexpr(N != 1){
-		while(first != last){
-			uninitialized_copy<N-1>(first->begin(), first->end(), dest->begin());
-			++first;
-			++dest;
-		}
-		return dest;
-	}else{
-		using std::uninitialized_copy;	
-		return uninitialized_copy(first, last, dest);
-	}*/
+ForwardIt uninitialized_copy_from_initializer_list(InputIt first, InputIt last, ForwardIt dest){
+	return uninitialized_copy_from_initializer_list_aux<N>::call(first, last, dest);
 }
 
 template<dimensionality_type N>
-struct uninitialized_copy_aux{
+struct uninitialized_copy_from_initializer_list_aux{
 	template<class InputIt, class ForwardIt>
 	static auto call(InputIt first, InputIt last, ForwardIt dest){
 		while(first != last){
-			uninitialized_copy<N-1>(first->begin(), first->end(), dest->begin());
+			uninitialized_copy_from_initializer_list<N-1>(
+				first->begin(), first->end(), dest->begin()
+			);
 			++first;
 			++dest;
 		}
@@ -77,15 +68,12 @@ struct uninitialized_copy_aux{
 	}
 };
 
-
 template<>
-struct uninitialized_copy_aux<1u>{
+struct uninitialized_copy_from_initializer_list_aux<1u>{
 	template<class InputIt, class ForwardIt>
 	static auto call(InputIt first, InputIt last, ForwardIt dest){
-	//	using std::uninitialized_copy;
-	//	return uninitialized_copy(first, last, dest);
 		while(first != last){
-			construct(std::addressof(*dest), *first);
+			construct_from_initializer_list(std::addressof(*dest), *first);
 		//	using T = typename std::iterator_traits<ForwardIt>::value_type;
 		//	::new(static_cast<void*>(std::addressof(*dest))) T(*first);
 		    ++first;
@@ -205,6 +193,10 @@ public:
 		using std::copy_n;
 		copy_n(data(o), num_elements(o), this->data());		
 	}
+	template<class TT, dimensionality_type DD, class... Args>
+	array(basic_array<TT, DD, Args...> const& o) : array{extensions(o), default_allocator_of(o.base())} {
+		array_ref<T, D, typename std::allocator_traits<Alloc>::pointer>::operator=(o);
+	}
 	explicit array(allocator_type const& alloc) : array(typename array::extensions_type{}, alloc)
 	{}
 	array() : 
@@ -239,16 +231,8 @@ public:
 		},
 		allocator_{a}
 	{
-	//	std::cout << "il.size() " << il.size() << std::endl;
-	//	std::cout <<"extensions<D-1>(...)[0] "<< std::get<0>(extensions<D-1>(*il.begin())) <<"\n";
-	//	std::cerr <<"il.size() "<< il.size() <<" allocating "<< array::num_elements() <<"\n";
 		this->data_ = alloc_traits::allocate(allocator_, array::num_elements());
-	//	std::cerr <<"copying" << std::endl;
-	//	using std::copy;
-	//	copy(il.begin(), il.end(), this->begin());
-		using detail::uninitialized_copy;
-		uninitialized_copy<D>(il.begin(), il.end(), this->begin());
-	//	std::cerr <<"copyed" << std::endl;		
+		detail::uninitialized_copy_from_initializer_list<D>(il.begin(), il.end(), this->begin());
 	}
 	allocator_type get_allocator() const{return allocator_;}
 //	friend allocator_type const& allocator(array const& s){return s.allocator_;}
