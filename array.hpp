@@ -83,6 +83,37 @@ struct uninitialized_copy_from_initializer_list_aux<1u>{
 	}
 };
 
+template<dimensionality_type N> struct uninitialized_copy_aux;
+
+template<dimensionality_type N, class InputIt, class ForwardIt>
+ForwardIt uninitialized_copy(InputIt first, InputIt last, ForwardIt dest){
+	return uninitialized_copy_aux<N>::call(first, last, dest);
+}
+
+template<dimensionality_type N>
+struct uninitialized_copy_aux{
+	template<class InputIt, class ForwardIt>
+	static auto call(InputIt first, InputIt last, ForwardIt dest){
+		while(first != last){
+			uninitialized_copy<N-1>(
+				first->begin(), first->end(), dest->begin()
+			);
+			++first;
+			++dest;
+		}
+		return dest;		
+	}
+};
+
+template<>
+struct uninitialized_copy_aux<1u>{
+	template<class InputIt, class ForwardIt>
+	static auto call(InputIt first, InputIt last, ForwardIt dest){
+		using std::uninitialized_copy;
+		return uninitialized_copy(first, last, dest);
+	}
+};
+
 }
 
 template<class T>
@@ -169,11 +200,10 @@ public:
 		using std::copy_n;
 		copy_n(other.data(), other.num_elements(), this->data()); // TODO use uninitialized_fill_n
 	}
-	array(array const& other, allocator_type const& a) : array(extensions(other), a){
+	array(array const& o, allocator_type const& a) : array(extensions(o), a){
 		using std::copy_n;
-		copy_n(other.data(), other.num_elements(), this->data()); // TODO use uninitialized_fill_n
+		copy_n(o.data(), o.num_elements(), this->data()); // TODO use uninitialized_fill_n
 	}
-
 	array(array&& other) : 
 		array_ref<T, D, typename std::allocator_traits<Alloc>::pointer>{
 			std::exchange(other.data_, nullptr), 
@@ -194,8 +224,14 @@ public:
 		copy_n(data(o), num_elements(o), this->data());		
 	}
 	template<class TT, dimensionality_type DD, class... Args>
-	array(basic_array<TT, DD, Args...> const& o) : array{extensions(o), default_allocator_of(o.base())} {
+	array(basic_array<TT, DD, Args...> const& o) 
+	: //array{extensions(o), 
+		array_ref<T, D, typename array::element_ptr>{nullptr, extensions(o)}, 
+		allocator_{pointer_traits<typename array::element_ptr>::allocator_of(o.base())}
+	{
+		this->data_ = alloc_traits::allocate(allocator_, array::num_elements());
 		array_ref<T, D, typename std::allocator_traits<Alloc>::pointer>::operator=(o);
+		detail::uninitialized_copy<D>(o.begin(), o.end(), this->begin());
 	}
 	explicit array(allocator_type const& alloc) : array(typename array::extensions_type{}, alloc)
 	{}

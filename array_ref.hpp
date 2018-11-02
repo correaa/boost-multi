@@ -334,6 +334,15 @@ struct pointer_traits : std::pointer_traits<Pointer>{
 	;
 };*/
 
+
+template<class Pointer>
+struct pointer_traits : std::pointer_traits<Pointer>{
+//	using default_allocator_type = 
+//		decltype(default_allocator_of(std::declval<Pointer const&>()));
+	using allocator_type = std::allocator<std::decay_t<typename pointer_traits::element_type>>;
+	static allocator_type allocator_of(Pointer){return {};}
+};
+
 template<class T>
 auto default_allocator_of(T*){
 	return std::allocator<std::decay_t<typename std::pointer_traits<T*>::element_type>>{};
@@ -344,14 +353,14 @@ auto default_allocator_of(Ptr){
 	return std::allocator<std::decay_t<typename std::pointer_traits<Ptr>::element_type>>{};
 }
 
-
+/*
 template<class Pointer>
 struct pointer_traits : std::pointer_traits<Pointer>{
 	using default_allocator_type = 
 		decltype(default_allocator_of(std::declval<Pointer>()))
 //		std::allocator<typename std::pointer_traits<Pointer>::element_type>
 	;
-};
+};*/
 
 
 template<
@@ -367,7 +376,8 @@ struct basic_array : Layout{
 	using element_ptr = typename std::decay<ElementPtr>::type;
 	using element_const_ptr = typename std::pointer_traits<element_ptr>::template rebind<element const>;
 	using value_type      = multi::array<element, D-1>;
-	using decay_type = multi::array<element, D, typename multi::pointer_traits<element_ptr>::default_allocator_type>;
+	using decay_type = multi::array<element, D, typename pointer_traits<element_ptr>::allocator_type>;
+// multi::array<element, D, typename multi::pointer_traits<element_ptr>::default_allocator_type>;
 	using difference_type = index;
 //	using allocator_type = Allocator;
 	using sub_element_ptr = decltype(std::declval<element_ptr>() + std::declval<Layout>().operator()(0));
