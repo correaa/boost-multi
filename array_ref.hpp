@@ -319,22 +319,40 @@ struct layout_t<1u>{
 template<typename T, dimensionality_type D, class Alloc = std::allocator<T>>
 struct array;
 
-template<class Pointer>
+/*
+template<class Ptr>
+auto default_allocator_of(Ptr const&)
+->decltype(typename pointer_traits<Ptr>::default_allocator_type{}){return {};}
+
+template<class Pointer, 
+	typename = decltype(default_allocator_of(std::declval<Pointer const&>()))
+>
 struct pointer_traits : std::pointer_traits<Pointer>{
 	using default_allocator_type = 
 		decltype(default_allocator_of(std::declval<Pointer const&>()))
 //		std::allocator<typename std::pointer_traits<Pointer>::element_type>
 	;
-};
+};*/
 
 template<class T>
-struct pointer_traits<T*> : std::pointer_traits<T*>{
-	using default_allocator_type = std::allocator<typename std::pointer_traits<T*>::element_type>;
-};
+auto default_allocator_of(T*){
+	return std::allocator<std::decay_t<typename std::pointer_traits<T*>::element_type>>{};
+}
 
 template<class Ptr>
-auto default_allocator_of(Ptr const&)
-->decltype(typename pointer_traits<Ptr>::default_allocator_type{}){return {};}
+auto default_allocator_of(Ptr){
+	return std::allocator<std::decay_t<typename std::pointer_traits<Ptr>::element_type>>{};
+}
+
+
+template<class Pointer>
+struct pointer_traits : std::pointer_traits<Pointer>{
+	using default_allocator_type = 
+		decltype(default_allocator_of(std::declval<Pointer>()))
+//		std::allocator<typename std::pointer_traits<Pointer>::element_type>
+	;
+};
+
 
 template<
 	typename T, 
