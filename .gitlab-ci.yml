@@ -24,5 +24,12 @@ Test:
     stage: test
     script:
       - cd tests
+      - sh ./array_ptr.cpp
       - sh ./array_ref.cpp
+      - sh ./array_ref_transform.cpp
+      - sh ./array_ref_sort.cpp
+      - sh ./comparisons.cpp
+      - sh ./constructors.cpp
+	  - sh ./initializer_list.cpp
+	  - sh ./layout.cpp
 
