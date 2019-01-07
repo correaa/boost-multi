@@ -31,5 +31,5 @@ Test:
       - sh ./comparisons.cpp
       - sh ./constructors.cpp
 	  - sh ./initializer_list.cpp
-	  - sh ./layout.cpp
+      - sh ./layout.cpp
 
