@@ -1,6 +1,7 @@
 #ifdef COMPILATION_INSTRUCTIONS
 (echo "#include\""$0"\"" > $0x.cpp) && clang++ `#-DNDEBUG` -O3 -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS -DADD_ $0x.cpp -o $0x.x -lblas && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
 #endif
+// Alfredo A. Correa 2019 ©
 
 #ifndef MULTI_ADAPTORS_BLAS_HPP
 #define MULTI_ADAPTORS_BLAS_HPP
@@ -82,6 +83,15 @@ xGER(s); xGER(d);
 xGERU(c); xGERU(z);
 xGERC(c); xGERC(z);
 
+#define TRANSA const char& transa
+#define TRANSB const char& transb
+#define NK const int& nk
+#define LDB const int& ldb
+#define LDC const int& ldc
+
+#define xGEMM(T) void BLAS(T##gemm)(TRANSA, TRANSB, NR, NC, NK, T const& a, T const* A, LDA, T const* B, LDB, T const& b, T* CC, LDC)
+xGEMM(s); xGEMM(d); xGEMM(c); xGEMM(z);
+
 #undef xROTG
 #undef xROTMG
 #undef xROT
@@ -101,6 +111,7 @@ xGERC(c); xGERC(z);
 #undef xGER
 #undef xGERU
 #undef xGERC
+#undef xGEMM
 
 #undef s
 #undef d
@@ -113,6 +124,11 @@ xGERC(c); xGERC(z);
 #undef N
 #undef INCX
 #undef INCY
+#undef TRANSA
+#undef TRANSB
+#undef LDA
+#undef LDB
+#undef LDC
 }
 #endif
 
@@ -211,6 +227,12 @@ xger(s)   xger(d)
 #undef xger
 #undef xgeru
 #undef xgerc
+
+///////////////////////////////////////////////////////////////////////////////
+// LEVEL 3
+#define xgemm(T) template<class C, class S> v gemm(C transA, C transB, S m, S n, S k, T const& a, T const* A, S lda, T const* B, S ldb, T const& beta, T* CC, S ldc){BLAS(T##gemm)(transA, transB, m, n, k, a, A, lda, B, ldb, beta, CC, ldc);}
+xgemm(s) xgemm(d) xgemm(c) xgemm(z)
+
 }}}
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -733,6 +755,35 @@ auto geru(X1D const& x, Y1D const& y)
 ->decltype(geru(1., x, y)){
 	return geru(1., x, y);}
 
+template<class ALPHA, class BETA, class It1, class It2, class Out>
+void gemm(ALPHA const& a, It1 first1, It1 last1, It2 first2, It2 last2, BETA const& b, Out d_first){
+//	using blas::gemm
+	assert( first1->stride() == 1 );
+	assert( first2->stride() == 1 );
+	assert( d_first->stride() == 1 );
+	gemm(
+		'N', 'N', 
+		first1->size(), std::distance(first2, last2), std::distance(first1, last1), a, 
+		base(first1), stride(first1), 
+		base(first2), stride(first2), b, 
+		base(d_first), stride(d_first)
+	);
+}
+
+template<class ALPHA, class BETA, class A2D, class B2D, class C2D>
+C2D&& gemm(ALPHA const& a, A2D const& A, B2D const& B, BETA const& b, C2D&& C){
+	assert( size(A) == std::get<0>(sizes(B)) and size(C) == size(B) and std::get<1>(sizes(C)) == std::get<1>(sizes(A)) );
+	gemm(a, begin(A), end(A), begin(B), end(B), b, begin(C));
+	return std::forward<C2D>(C);
+}
+template<class A2D, class B2D, class C2D>
+C2D&& gemm(A2D const& A, B2D const& B, C2D&& C){
+	return gemm(1., A, B, 0., std::forward<C2D>(C));
+}
+template<class A2D, class B2D>
+auto gemm(A2D const& A, B2D const& B){
+	return gemm(A, B, multi::array<typename A2D::element, 2>({size(B), std::get<1>(sizes(A))}));
+}
 
 }}
 
