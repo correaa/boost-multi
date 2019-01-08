@@ -13,9 +13,14 @@
 //#include<memory> // pointer_traits
 
 //#include<boost/iterator/iterator_facade.hpp>
-#include<boost/operators.hpp>
+//#include<boost/operators.hpp>
 
 namespace boost{
+namespace multi{
+
+struct empty_base{};
+
+template<class T, class V, class B = empty_base> struct equality_comparable2;
 
 template <class T, class B>
 struct equality_comparable2<T, void, B> : B{
@@ -26,6 +31,9 @@ struct equality_comparable2<T, void, B> : B{
 	template<class U>
 	friend bool operator!=(const T& y, const U& x){return not (y == x);}
 };
+
+template<class T, class V, class B = boost::operators_detail::empty_base<T>> struct partially_ordered2;
+
 template <class T, class B>
 struct partially_ordered2<T, void, B> : B{
 	template<class U>
@@ -41,7 +49,8 @@ struct partially_ordered2<T, void, B> : B{
 	template<class U, typename = std::enable_if_t<not std::is_same<U, T>{}> >
 	friend bool operator>=(const U& x, const T& y){return (y < x) or (y == x);}
 };
-template<class T, class B = operators_detail::empty_base<T>>
+
+template<class T, class B = boost::operators_detail::empty_base<T>>
 struct random_iterable : B{
 	auto cbegin() const{return typename T::const_iterator{static_cast<T const&>(*this).begin()};}
 	auto cend()   const{return typename T::const_iterator{static_cast<T const*>(this)->end()};}
@@ -74,7 +83,7 @@ struct random_iterable : B{
 	friend auto size(T const& self){return self.size();}
 };
 
-}
+}}
 
 #if _TEST_BOOST_MULTI_DETAIL_OPERATORS
 

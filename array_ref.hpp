@@ -28,7 +28,6 @@ struct array_types : Layout{ //	template<class... As> array_types(As&&... as) : 
 	using element = T;
 	constexpr static dimensionality_type dimensionality = D;
 	using element_ptr = ElementPtr;
-//	using element_const_ptr = typename std::pointer_traits<element_ptr>::template rebind<element const>;
 	using layout_t = Layout;
 	using value_type = std::conditional_t<
 		dimensionality!=1, 
@@ -121,8 +120,8 @@ private:
 // TODO remove the T parameter
 template<typename T, dimensionality_type D, typename ElementPtr, class Layout>
 struct basic_array : 
-	boost::partially_ordered2<basic_array<T, D, ElementPtr, Layout>, void>,
-	boost::random_iterable<basic_array<T, D, ElementPtr, Layout>>,
+	boost::multi::partially_ordered2<basic_array<T, D, ElementPtr, Layout>, void>,
+	boost::multi::random_iterable<basic_array<T, D, ElementPtr, Layout>>,
 	array_types<T, D, ElementPtr, Layout>
 {
 	using types = array_types<T, D, ElementPtr, Layout>;
@@ -308,8 +307,8 @@ public:
 
 template<typename T, typename ElementPtr, class Layout>
 struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout> : 
-	boost::partially_ordered2<basic_array<T, dimensionality_type{1}, ElementPtr, Layout>, void>,
-	boost::random_iterable<basic_array<T, dimensionality_type{1}, ElementPtr, Layout>>,
+	boost::multi::partially_ordered2<basic_array<T, dimensionality_type{1}, ElementPtr, Layout>, void>,
+	boost::multi::random_iterable<basic_array<T, dimensionality_type{1}, ElementPtr, Layout>>,
 	array_types<T, dimensionality_type{1}, ElementPtr, Layout>
 {
 	using types = array_types<T, dimensionality_type{1}, ElementPtr, Layout>;
@@ -456,7 +455,7 @@ public:
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*>
 struct array_ref : 
-	boost::partially_ordered2<array_ref<T, D, ElementPtr>, void>,
+	boost::multi::partially_ordered2<array_ref<T, D, ElementPtr>, void>,
 	basic_array<T, D, ElementPtr>
 {	
 	array_ref(array_ref const&) = default;

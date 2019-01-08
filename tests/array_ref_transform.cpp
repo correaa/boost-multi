@@ -1,18 +1,11 @@
 #ifdef COMPILATION_INSTRUCTIONS
-c++ -O3 -std=c++17 -Wall `#-fmax-errors=2` -ftemplate-backtrace-limit=0 -Wfatal-errors -I${HOME}/prj $0 -o $0.x && time $0.x $@ && rm -f $0.x; exit
+c++ -O3 -std=c++14 -Wall -Wfatal-errors $0 -o $0.x && time $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include "../array_ref.hpp"
 #include "../array.hpp"
 
-//#include<algorithm>
-//#include<cassert>
 #include<iostream>
-//#include<cmath>
-//#include<vector>
-//#include<list>
-//#include<numeric> //iota
-
 #include<boost/iterator/transform_iterator.hpp>
 
 using std::cout; using std::cerr;

@@ -38,7 +38,7 @@ template<class T, dimensionality_type D, class Alloc>
 struct array : 
 	private Alloc, 
 	array_ref<T, D, typename std::allocator_traits<Alloc>::pointer>, 
-	boost::random_iterable<array<T, D, Alloc>>
+	boost::multi::random_iterable<array<T, D, Alloc>>
 {
 	using allocator_type = Alloc;
 	using ref = array_ref<T, D, typename std::allocator_traits<Alloc>::pointer>;
