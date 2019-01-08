@@ -6,15 +6,6 @@
 
 #include "layout.hpp"
 
-//#include<algorithm> // copy_n // transform
-//#include<array>
-//#include<cassert>
-//#include<tuple>
-//#include<memory> // pointer_traits
-
-//#include<boost/iterator/iterator_facade.hpp>
-//#include<boost/operators.hpp>
-
 namespace boost{
 namespace multi{
 
@@ -32,7 +23,7 @@ struct equality_comparable2<T, void, B> : B{
 	friend bool operator!=(const T& y, const U& x){return not (y == x);}
 };
 
-template<class T, class V, class B = boost::operators_detail::empty_base<T>> struct partially_ordered2;
+template<class T, class V, class B = empty_base> struct partially_ordered2;
 
 template <class T, class B>
 struct partially_ordered2<T, void, B> : B{
@@ -50,7 +41,7 @@ struct partially_ordered2<T, void, B> : B{
 	friend bool operator>=(const U& x, const T& y){return (y < x) or (y == x);}
 };
 
-template<class T, class B = boost::operators_detail::empty_base<T>>
+template<class T, class B = empty_base>
 struct random_iterable : B{
 	auto cbegin() const{return typename T::const_iterator{static_cast<T const&>(*this).begin()};}
 	auto cend()   const{return typename T::const_iterator{static_cast<T const*>(this)->end()};}
