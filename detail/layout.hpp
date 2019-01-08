@@ -170,76 +170,31 @@ struct layout_t
 	}
 	friend constexpr size_type size(layout_t const& l){return l.size();}
 	size_type size(dimensionality_type d) const{return d?sub.size(d-1):size();}
+
 	constexpr index stride() const{return stride_;}
 	index stride(dimensionality_type d) const{return d?sub.stride(d-1):stride();}
 	friend constexpr index stride(layout_t const& self){return self.stride();}
+	constexpr auto strides() const{return tuple_cat(std::make_tuple(stride()), sub.strides());}
+	friend constexpr decltype(auto) strides(layout_t const& self){return self.strides();}
+
+
 	void offsets_aux(index* it) const{
 		*it = offset();
 		sub.offsets_aux(++it);
 	}
-	constexpr auto offsets() const{return tuple_cat(std::make_tuple(offset()), sub.offsets());}
 	constexpr index offset() const{return offset_;}
 	constexpr index offset(dimensionality_type d) const{return d?sub.offset(d-1):offset_;}
 	friend constexpr index offset(layout_t const& self){return self.offset();}
+	constexpr auto offsets() const{return tuple_cat(std::make_tuple(offset()), sub.offsets());}
+
 	decltype(auto) shape() const{return sizes();}
 	friend decltype(auto) shape(layout_t const& self){return self.shape();}
-/*	auto sizes() const{
-		std::array<size_type, D> ret;
-		sizes_aux(ret.begin());
-		return ret;
-	}*/
-//	friend constexpr auto sizes(layout_t const& self){return self.sizes();}
-private:
-#if 0
-	struct strides_t{
-		layout_t const& l_;
-		constexpr strides_t(strides_t const&) = delete;
-		constexpr strides_t(strides_t&&) = default;
-		constexpr dimensionality_type size() const{return dimensionality;}
-		constexpr auto operator[](dimensionality_type d) const
-		->decltype(d==0?l_.stride():l_.sub.strides()[d-1]){
-			return d==0?l_.stride():l_.sub.strides()[d-1];}
-		bool operator==(strides_t const& other) const{
-			for(dimensionality_type i = 0; i != dimensionality; ++i)
-				if(operator[](i) != other[i]) return false;
-			return true;
-		}
-	};
-	struct sizes_t{
-		layout_t const& l_;
-		constexpr sizes_t(sizes_t const&) = delete;
-		constexpr sizes_t(sizes_t&&) = default;
-		constexpr dimensionality_type size() const{return dimensionality;}
-		constexpr auto operator[](dimensionality_type d) const
-		->decltype(d==0?l_.size():l_.sub.sizes()[d-1]){
-			return d==0?l_.size():l_.sub.sizes()[d-1];}
-		bool operator==(sizes_t const& other) const{
-			for(dimensionality_type i = 0; i != dimensionality; ++i)
-				if(operator[](i) != other[i]) return false;
-			return true;
-		}
-	};
-#endif
-public:
+
 	constexpr auto sizes() const{return tuple_cat(std::make_tuple(size()), sub.sizes());}
 	friend constexpr auto sizes(layout_t const& self){return self.sizes();}
-	constexpr auto strides() const{return tuple_cat(std::make_tuple(stride()), sub.strides());}
-/*	auto strides() const{
-		std::array<index, D> ret;
-		strides_aux(ret.begin());
-		return ret;
-	}*/
-	friend constexpr decltype(auto) strides(layout_t const& self){return self.strides();}
+
 private:
 	friend struct layout_t<D+1>; // void layout_t<D+1>::strides_aux(size_type*) const;
-//	void strides_aux(size_type* it) const{
-//		*it = stride();
-//		sub.strides_aux(++it);
-//	}
-//	void sizes_aux(size_type* it) const{
-//		*it = size(); 
-//		sub.sizes_aux(++it);
-//	}
 public:
 	constexpr index_extension extension() const{
 		return {offset_/stride_, (offset_ + nelems_)/stride_};
