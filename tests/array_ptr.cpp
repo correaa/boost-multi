@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-clang++ -O3 -std=c++14 `#-DNDEBUG` -Wall -Wextra $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
+c++ -O3 -std=c++14 `#-DNDEBUG` -Wall -Wextra $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include<iostream>
