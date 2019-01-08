@@ -51,9 +51,9 @@ struct array :
 private:
 //	allocator_type allocator_;
 	using alloc_traits = std::allocator_traits<allocator_type>;
-	using typename ref::value_type;
 	using typename ref::reference;
 public:
+	using typename ref::value_type;
 	using ref::operator<;
 	array() noexcept(noexcept(Alloc())) : Alloc{}, ref{{}, nullptr}{}           //1a
 	explicit array(Alloc const& a) : Alloc{a}, ref{{}, nullptr}{}               //1b

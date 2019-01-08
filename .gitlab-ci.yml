@@ -30,6 +30,6 @@ Test:
       - sh ./array_ref_sort.cpp
       - sh ./comparisons.cpp
       - sh ./constructors.cpp
-	  - sh ./initializer_list.cpp
+      - sh ./initializer_list.cpp
       - sh ./layout.cpp
 

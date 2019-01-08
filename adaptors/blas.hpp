@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && c++ `#-DNDEBUG` -std=c++14 -Wall -Wextra  -I$HOME/prj -D_TEST_MULTI_ADAPTORS_BLAS -DADD_ $0x.cpp -o $0x.x -lblas && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
+(echo "#include\""$0"\"" > $0x.cpp) && clang++ `#-DNDEBUG` -O3 -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS -DADD_ $0x.cpp -o $0x.x -lblas && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
 #endif
 
 #ifndef MULTI_ADAPTORS_BLAS_HPP
@@ -11,7 +11,7 @@
 #include<cassert>
 #include<complex>
 #include "../utility.hpp"
-#include "../array_ref.hpp"
+#include "../array.hpp" // allocating multi::arrays for output
 #include<numeric> // inner_product
 //#include<algorithm>
 #include<iostream>
@@ -21,6 +21,7 @@
 #else
 #define BLAS(NamE) NamE##_
 extern "C"{
+
 #define s float
 #define d double
 #define c std::complex<s>
@@ -33,6 +34,7 @@ extern "C"{
 #define N INTEGER n
 #define INCX INTEGER incx
 #define INCY INTEGER incy
+
 #define xROTG(T1, T2)     v BLAS(   T1##rotg)(T1 const*, T1 const*, T2*, T1*)
 #define xROTMG(T)         v BLAS(   T##rotmg)(T*, T*, T*, T const&, T(&param)[5])
 #define xROT(TT, T, S)    v BLAS(  TT##rot  )(N,              T       *x, INCX, T       *y, INCY, S const&, S const&)
@@ -48,15 +50,16 @@ extern "C"{
 #define xNRM2(R, TT, T)   R BLAS(  TT##nrm2 )(N,              T const *x, INCX                  )   
 #define xASUM(R, TT, T)   R BLAS(  TT##asum )(N,              T const *x, INCX                  )
 #define IxAMAX(T)       INT BLAS(i##T##amax )(N,              T const* x, INCX                  )
-xROTG(s, s); xROTG(d,d);// MKL extension xROTG(c, s); xROTG(z, d);
-xROTMG(s); xROTMG(d);
-xROT(s, s, s); xROT(d, d, d); xROT(cs, c, s); xROT(zd, z, d);
-xROTM(s); xROTM(d);
-xSWAP(s); xSWAP(d); xSWAP(c); xSWAP(z);
-xSCAL(s, s, s); xSCAL( d, d, d); xSCAL( c, c, c); xSCAL(zd, d, z); xSCAL(cs, s, c);
-xCOPY(s); xCOPY(d); xCOPY(c); xCOPY(z);
-xAXPY(s); xAXPY(d); xAXPY(c); xAXPY(z);
-xDOT(s, s, s); xDOT(d, d, d); xDOT(d, sd, s);
+
+xROTG(s, s)   ; xROTG(d,d)    ;// MKL extension xROTG(c, s); xROTG(z, d);
+xROTMG(s)     ; xROTMG(d)     ;
+xROT(s, s, s) ; xROT(d, d, d) ;                 xROT(cs, c, s); xROT(zd, z, d);
+xROTM(s)      ; xROTM(d)      ;
+xSWAP(s)      ; xSWAP(d)      ; xSWAP(c)      ; xSWAP(z);
+xSCAL(s, s, s); xSCAL(d, d, d); xSCAL(c, c, c); xSCAL(z, z, z); xSCAL(zd, d, z); xSCAL(cs, s, c);
+xCOPY(s)      ; xCOPY(d)      ; xCOPY(c)      ; xCOPY(z)      ;
+xAXPY(s)      ; xAXPY(d)      ; xAXPY(c)      ; xAXPY(z)      ;
+xDOT(s, s, s); xDOT(d, d, d);                                   xDOT(d, ds, s);
 xDOTU(C, c); xDOTU(Z, z); 
 xDOTC(C, c); xDOTC(Z, z); 
 xxDOT(sds, s);
@@ -68,8 +71,17 @@ IxAMAX(s); IxAMAX(d); IxAMAX(c); IxAMAX(z);
 #define NR const int& nr
 #define NC const int& nc
 #define LDA const int& lda
-#define xGEMV(T) void BLAS(T##gemv)(TRANS, NR, NC, T const& a, T const* A, LDA, T const* X, INCX, T const& beta, T* Y, INCY);
+
+#define xGEMV(T) void BLAS(T##gemv)(TRANS, NR, NC, T const& a, T const* A, LDA, T const* X, INCX, T const& beta, T*       Y, INCY)
+#define xGER(T)  void BLAS(T##ger )(       NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA)
+#define xGERU(T) void BLAS(T##geru)(       NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA)
+#define xGERC(T) void BLAS(T##gerc)(       NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA)
+
 xGEMV(s); xGEMV(d); xGEMV(c); xGEMV(z);
+xGER(s); xGER(d);
+xGERU(c); xGERU(z);
+xGERC(c); xGERC(z);
+
 #undef xROTG
 #undef xROTMG
 #undef xROT
@@ -84,7 +96,12 @@ xGEMV(s); xGEMV(d); xGEMV(c); xGEMV(z);
 #undef xxDOT
 #undef xNRM2
 #undef xASUM
-#undef IxAMAX 
+#undef IxAMAX
+#undef xGEMV
+#undef xGER
+#undef xGERU
+#undef xGERC
+
 #undef s
 #undef d
 #undef c
@@ -117,16 +134,27 @@ using v = void;
 #define xscal(XX, TA, TX) template<class S> TX* scal (S n, TA a, TX      *x, S incx                    ){       BLAS(XX##scal)(n, a, x, incx         ); return x+n*incx;}
 #define xcopy(T)          template<class S> v   copy (S n,       T const *x, S incx, T       *y, S incy){       BLAS( T##copy)(n,    x, incx, y, incy);} 
 #define xaxpy(T)          template<class S> T*  axpy (S n, T  a, T const *x, S incx, T       *y, S incy){       BLAS( T##axpy)(n, a, x, incx, y, incy); return y+n*incy;}
-#define xdot(R, TT, T)    template<class S> R   dot  (S n,       T const *x, S incx, T const *y, S incy){return BLAS(TT##dot )(n,    x, incx, y, incy);                 }
-xrotg(s, s); xrotg(d, d); //MKL extension xrotg(c, s); xrotg(z, d);
-xrotmg(s); xrotmg(d);
-xrot(s, s, s); xrot(d, d, d); xrot(c, cs, s); xrot(z, zd, d);
-xrotm(s); xrotm(d);
-xswap(s); xswap(d); xswap(c); xswap(z);
-xscal(s, s, s); xscal(d, d, d); xscal(c, c, c); xscal(z, z, z); xscal(zd, d, z); xscal(cs, s, c);
-xcopy(s); xcopy(d); xcopy(c); xcopy(z);
-xaxpy(s); xaxpy(d); xaxpy(c); xaxpy(z);
-xdot(s, s, s); xdot(d, d, d); xdot(d, sd, s);
+#define xdot(R, TT, T)    template<class S> void dot(S n,       T const *x, S incx, T const *y, S incy, R& r){r = BLAS(TT##dot)(n,    x, incx, y, incy);                  }
+
+xrotg(s, s)    xrotg(d, d) //MKL extension xrotg(c, s); xrotg(z, d);
+xrotmg(s)      xrotmg(d)
+xrot(s, s, s)  xrot(d, d, d)  xrot(c, cs, s) xrot(z, zd, d)
+xrotm(s)       xrotm(d)
+xswap(s)       xswap(d)       xswap(c)       xswap(z)
+xscal(s, s, s) xscal(d, d, d) xscal(c, c, c) xscal(z, z, z)                xscal(zd, d, z) xscal(cs, s, c)
+xcopy(s)       xcopy(d)       xcopy(c)       xcopy(z)
+xaxpy(s)       xaxpy(d)       xaxpy(c)       xaxpy(z)
+xdot(s, s, s)  xdot(d, d, d)                                xdot(d, ds, s)
+
+template<class R, class S, class T> R dot(S n, T const* x, S incx, T const* y, S incy){
+	R ret;
+	dot(n, x, incx, y, incy, ret);
+	return ret;
+}
+template<class S, class T> T dot(S n, T const* x, S incx, T const* y, S incy){
+	return dot<T, S, T>(n, x, incx, y, incy);
+}
+
 #undef xrotg
 #undef xrot
 #undef xswap
@@ -138,36 +166,51 @@ xdot(s, s, s); xdot(d, d, d); xdot(d, sd, s);
 #ifndef CBLAS_H
 #define xdotu(T) template<class S> T dotu(S n, T const* x, S incx, T const* y, S incy){return BLAS(T##dotu)(n, x, incx, y, incy);}
 #define xdotc(T) template<class S> T dotc(S n, T const* x, S incx, T const* y, S incy){return BLAS(T##dotc)(n, x, incx, y, incy);}
-xdotu(c); xdotu(z);
-xdotc(c); xdotc(z);
+xdotu(c) xdotu(z)
+xdotc(c) xdotc(z)
+
+                 template<class S> z dot(S n,  c const *x, S incx, c const *y, S incy){return dotc(n, x, incx, y, incy);}
+                 template<class S> z dot(S n,  z const *x, S incx, z const *y, S incy){return dotc(n, x, incx, y, incy);}
+
 #undef xdotu
 #undef xdotc
 #else
 #define xdotu(T) template<class S> T dotu(S n, T const* x, S incx, T const* y, S incy){T ret; BLAS(T##dotu_sub)(n, x, incx, y, incy, &ret); return ret;}
 #define xdotc(T) template<class S> T dotc(S n, T const* x, S incx, T const* y, S incy){T ret; BLAS(T##dotc_sub)(n, x, incx, y, incy, &ret); return ret;}
-xdotu(c); xdotu(z);
-xdotc(c); xdotc(z);
+xdotu(c) xdotu(z)
+xdotc(c) xdotc(z)
 #undef xdotu
 #undef xdotc
 #endif
 
-template<class S> s apdot(S n, s const& a, s const* x, S incx, s const* y, S incy){return BLAS(sdsdot)(n, a, x, incx, y, incy);}
+template<class S> s dot(S n, s const& b, s const* x, S incx, s const* y, S incy){return BLAS(sdsdot)(n, b, x, incx, y, incy);}
 
 #define xnrm2(R, T, TT) template<class S>    R nrm2 (S n, T const* x, S incx){return BLAS(TT##nrm2  )(n, x, incx);}
 #define xasum(T, TT)    template<class S> auto asum (S n, T const* x, S incx){return BLAS(TT##asum  )(n, x, incx);}
 #define ixamax(T)       template<class S> auto iamax(S n, T const* x, S incx){return BLAS(i##T##amax)(n, x, incx);}
-xnrm2(s, s, s); xnrm2(d, d, d); xnrm2(s, c, sc); xnrm2(d, z, dz);
-xasum(s, s) ; xasum (d, d); xasum (c, sc); xasum (z, dz);
-ixamax(s); ixamax(d); ixamax(c); ixamax(z);
+ xnrm2(s, s, s) xnrm2(d, d, d)                                    xnrm2(s, c, sc)              xnrm2(d, z, dz)
+ xasum(s, s)    xasum(d, d)                        xasum (c, sc)                  xasum(z, dz)
+ixamax(s)      ixamax(d)       ixamax(c) ixamax(z)
 #undef xnrm2
 #undef xasum
 #undef ixamax
 
 ///////////////////////////////////////////////////////////////////////////////
 // LEVEL2
-#define xgemv(T) template<class C, class S> v gemv(C trans, S m, S n, T const& a, T const* A, S lda, T const* X, S incx, T beta, T* Y, S incy){BLAS(T##gemv)(trans, m, n, a, A, lda, X, incx, beta, Y, incy);}
-xgemv(s); xgemv(d); xgemv(c); xgemv(z);
-
+#define xgemv(T) template<class C, class S> v gemv(C trans, S m, S n, T const& a, T const* A, S lda, T const* X, S incx, T beta, T*       Y, S incy             ){BLAS(T##gemv)(trans, m, n, a, A, lda, X, incx, beta, Y, incy        );}
+#define xger(T)  template<         class S> v ger(          S m, S n, T const& a,                    T const* X, S incx,         T const* Y, S incy, T* A, S lda){BLAS(T##ger )(       m, n, a,         X, incx,       Y, incy, A, lda);}
+                 template<         class S> v ger(          S m, S n, c const& a,                    c const* X, S incx,         c const* Y, S incy, c* A, S lda){BLAS(cgeru  )(       m, n, a,         X, incx,       Y, incy, A, lda);}
+                 template<         class S> v ger(          S m, S n, z const& a,                    z const* X, S incx,         z const* Y, S incy, z* A, S lda){BLAS(zgeru  )(       m, n, a,         X, incx,       Y, incy, A, lda);}
+#define xgeru(T) template<         class S> v geru(         S m, S n, T const& a,                    T const* X, S incx,         T const* Y, S incy, T* A, S lda){BLAS(T##geru)(       m, n, a,         X, incx,       Y, incy, A, lda);}
+#define xgerc(T) template<         class S> v gerc(         S m, S n, T const& a,                    T const* X, S incx,         T const* Y, S incy, T* A, S lda){BLAS(T##gerc)(       m, n, a,         X, incx,       Y, incy, A, lda);}
+xgemv(s) xgemv(d) xgemv(c) xgemv(z)
+xger(s)   xger(d)
+                  xgeru(c) xgeru(z)
+                  xgerc(c) xgerc(z)
+#undef xgemv
+#undef xger
+#undef xgeru
+#undef xgerc
 }}}
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -236,77 +279,169 @@ auto rotm(X1D&& x, Y1D&& y, M const& param){
 	rotm(size(x), origin(x), stride(x), origin(y), stride(y), param.data_);
 }
 
+template<class It1, class It2>
+It2 swap(It1 first, It2 last, It2 first2){
+	assert(stride(first) == stride(last));
+	using std::distance;
+	auto d = distance(first, last);
+	swap(d, base(first), stride(first), base(first2), stride(first2));
+	return first2 + d;
+}
+
 template<class X1D, class Y1D>
-auto swap(X1D&& x, Y1D&& y)
-->decltype(swap(size(x), origin(x), stride(x), origin(y), stride(y)))
-{
+Y1D&& swap(X1D&& x, Y1D&& y){
 	assert( size(x) == size(y) );
 	assert( offset(x) == 0 and offset(y) == 0 );
-//	using blas::swap;
-	return swap(size(x), origin(x), stride(x), origin(y), stride(y));
+	swap(begin(x), end(x), begin(y));
+	return std::forward<Y1D>(y);
+}
+
+template<class T, class It>
+void scal(T a, It first, It last){
+//	using blas::scal;
+	scal(std::distance(first, last), a, base(first), stride(first));
 }
 
 template<class T, class X1D>//, typename = decltype(T{}*std::declval<X1D>()[0])>
-auto scal(T a, X1D&& m)
-->decltype(     size(m),    origin(m), stride(m) , m){
+X1D&& scal(T a, X1D&& m){
 	assert( offset(m) == 0 );
-	using blas::scal;
-	return scal(size(m), a, origin(m), stride(m)), m;}
+	scal(a, begin(m), end(m));
+	return std::forward<X1D>(m);
+}
+
+template<class It1, class OutIt>
+OutIt copy(It1 first, It1 last, OutIt d_first){
+//	using blas::copy;
+	auto d = std::distance(first, last);
+	copy(d, base(first), stride(first), base(d_first), stride(d_first));
+	return d_first + d;
+}
 
 template<class X1D, class Y1D>
-void copy(X1D const& x, Y1D&& y){
+Y1D&& copy(X1D const& x, Y1D&& y){
 	assert( size(x) == size(y) );
 	assert( offset(x) == 0 and offset(y) == 0 );
-	using blas::copy;
-	return copy(size(x), origin(x), stride(x), origin(y), stride(y));
+	auto it = copy(begin(x), end(x), begin(y));
+	assert( it == end(y));
+	return std::forward<Y1D>(y);
+}
+
+template<class X1D>
+multi::array<typename X1D::value_type, 1> copy(X1D const& x){
+	assert( not offset(x) );
+	return copy(x, multi::array<typename X1D::value_type, 1>({0, size(x)}, 0.));
+}
+
+template<class T, class It1, class OutIt>
+OutIt axpy(T alpha, It1 first, It1 last, OutIt d_first){
+	assert( stride(first) == stride(last) );
+	auto d = std::distance(first, last);
+//	using blas::axpy;
+	axpy(d, alpha, base(first), stride(last), base(d_first), stride(d_first));
+	return d_first + d;
 }
 
 template<class T, class X1D, class Y1D>
-auto axpy(T a, X1D const& x, Y1D&& y)
-->decltype(     size(x),    origin(x), stride(x), origin(y), stride(y) , y){
+Y1D&& axpy(T alpha, X1D const& x, Y1D&& y){
 	assert( size(x) == size(y) );
 	assert( not offset(x) and not offset(y) );
-	using blas::axpy;
-	return axpy(size(x), a, origin(x), stride(x), origin(y), stride(y)), y;}
+	axpy(alpha, begin(x), end(x), begin(y));
+	return std::forward<Y1D>(y);
+}
+
+template<class T, class X1D, class Y1D>
+Y1D&& axpy(X1D const& x, Y1D&& y){return axpy(1., x, y);}
+
+template<class R, class It1, class It2>
+auto dot(It1 first1, It1 last1, It2 first2){
+	assert( stride(first1) == stride(first2) );
+	auto d = std::distance(first1, last1);
+//	using blas::dot
+	return dot<R>(d, base(first1), stride(first1), base(first2), stride(first2));
+}
+
+template<class It1, class It2>
+auto dot(It1 first1, It1 last1, It2 first2){
+	assert( stride(first1) == stride(first2) );
+	auto d = std::distance(first1, last1);
+//	using blas::dot
+	return dot(d, base(first1), stride(first1), base(first2), stride(first2));
+}
+
+template<class R, class X1D, class Y1D>
+auto dot(X1D const& x, Y1D const& y){
+	assert( size(x) == size(y) );
+	assert( not offset(x) and not offset(y) );
+	return dot<R>(begin(x), end(x), begin(y));
+}
 
 template<class X1D, class Y1D>
 auto dot(X1D const& x, Y1D const& y){
 	assert( size(x) == size(y) );
 	assert( not offset(x) and not offset(y) );
-	using blas::dot;
-	return dot(size(x), origin(x), stride(x), origin(y), stride(y));
+	return dot(begin(x), end(x), begin(y));
+}
+
+template<class It1, class It2>
+auto dotu(It1 first1, It1 last1, It2 first2){
+	assert( stride(first1) == stride(last1) );
+//	using blas::dotu;
+	return dotu(std::distance(first1, last1), base(first1), stride(first1), base(first2), stride(first2));
 }
 
 template<class X1D, class Y1D>
-auto dotu(X1D const& x, Y1D const& y)
-->decltype(dotu(size(x), origin(x), stride(x), origin(y), stride(y))){
+auto dotu(X1D const& x, Y1D const& y){
 	assert( size(x) == size(y) );
 	assert( not offset(x) and not offset(y) );
+	return dotu(begin(x), end(x), begin(y));
+}
+
+template<class It1, class It2>
+auto dotc(It1 first1, It1 last1, It2 first2){
+	assert( stride(first1) == stride(last1) );
 //	using blas::dotu;
-	return dotu(size(x), origin(x), stride(x), origin(y), stride(y));
+	return dotc(std::distance(first1, last1), base(first1), stride(first1), base(first2), stride(first2));
 }
 
 template<class X1D, class Y1D>
 auto dotc(X1D const& x, Y1D const& y){
 	assert( size(x) == size(y) );
 	assert( not offset(x) and not offset(y) );
-	using blas::dotc;
-	return dotc(size(x), origin(x), stride(x), origin(y), stride(y));
+	return dotc(begin(x), end(x), begin(y));
 }
 
-template<class T, class X1D, class Y1D> 
-auto xdot(T a, X1D const& x, Y1D const& y){
+template<class T, class It1, class It2>
+auto dot(T const& beta, It1 first1, It1 last1, It2 first2){
+	assert( stride(first1) == stride(first2) );
+	auto d = std::distance(first1, last1);
+//	using blas::dot
+	return dot(d, beta, base(first1), stride(first1), base(first2), stride(first2));
+}
+
+template<class T, class X1D, class Y1D>
+auto dot(T const& beta, X1D const& x, Y1D const& y){
 	assert( size(x) == size(y) );
 	assert( not offset(x) and not offset(y) );
-//	using blas::apdot;
-	return apdot(size(x), a, origin(x), stride(x), origin(y), stride(y));
+	return dot(beta, begin(x), end(x), begin(y));
+}
+
+template<class It>
+auto nrm2(It first, It last){
+	assert( stride(first) == stride(last) );
+//	using blas::nrm2;
+	return nrm2(std::distance(first, last), base(first), stride(first));
 }
 
 template<class X1D> 
 auto nrm2(X1D const& x){
 	assert( not offset(x) );
-//	using blas::nrm2;
-	return nrm2(size(x), origin(x), stride(x));
+	return nrm2(begin(x), end(x));
+}
+
+template<class It>
+auto asum(It first, It last){
+	assert( stride(first) == stride(last) );
+	return asum(std::distance(first, last), base(first), stride(first));
 }
 
 template<class X1D> 
@@ -316,15 +451,21 @@ auto asum(X1D const& x){
 	return asum(size(x), origin(x), stride(x));
 }
 
-template<class X1D> 
-auto iamax(X1D const& x){
-	assert( not offset(x) );
+template<class It>
+auto iamax(It first, It last){
+	assert( stride(first) == stride(last) );
 //	using blas::iamax;
-	return iamax(size(x), origin(x), stride(x))
+	return iamax(std::distance(first, last), base(first), stride(first))
 	#ifndef CBLAS_H
 		- 1
 	#endif
 	;
+}
+
+template<class X1D> 
+auto iamax(X1D const& x){
+	assert( not offset(x) );
+	return iamax(begin(x), end(x));
 }
 
 }}
@@ -484,7 +625,114 @@ Y1D gemv(A const& a, M2D const& M, X1D const& X, B const& b, Y1D&& Y, Conj&& c){
 template<class A, class B, class M2D, class X1D, class Y1D>
 Y1D gemv(A const& a, M2D const& M, X1D const& X, B const& b, Y1D&& Y){
 	return gemv(a, M, X, b, std::forward<Y1D>(Y), [](auto&& e){return std::forward<decltype(e)>(e);});
-};
+}
+
+template<class ALPHA, class It1, class It2, class Out>
+Out ger(ALPHA const& alpha, It1 first1, It1 last1, It2 first2, It2 last2, Out out_first){
+	using std::distance;
+	assert( stride(first1) == stride(last1) );
+	assert( stride(first2) == stride(last2) );
+	assert( out_first->size() == distance(first2, last2) );
+	assert( out_first->stride() == 1 );
+	ger( distance(first2, last2), distance(first1, last1), alpha, base(first2), stride(first2), base(first1), stride(first1), base(out_first), stride(out_first) );
+	return out_first + distance(first1, last1);
+}
+
+template<class ALPHA, class X1D, class Y1D, class A2D>
+A2D&& ger(ALPHA const& alpha, X1D const& x, Y1D const& y, A2D&& A){
+	assert( size(x) == std::get<0>(extensions(A)) );
+	assert( size(y) == std::get<1>(extensions(A)) );
+	auto s = strides(A);
+		if(std::get<1>(s) == 1){
+		auto ret = ger( alpha, begin(x), end(x), begin(y), end(y), begin(A) );
+		assert( ret == end(A) );
+	}else if(std::get<0>(s) == 1){
+		auto ret = ger( alpha, begin(y), end(y), begin(x), end(x), begin(A.rotated()) );
+		assert( ret == end(A.rotated()) );
+	}else{assert(0); /* not implemented in blas*/ }
+	return std::forward<A2D>(A);
+}
+
+template<class ALPHA, class X1D, class Y1D>
+auto ger(ALPHA const& alpha, X1D const& x, Y1D const& y){
+	multi::array<decltype(alpha*x[0]*y[0]), 2> ret({size(x), size(y)}, 0.);
+	return ger(alpha, x, y, std::move(ret));
+}
+
+template<class ALPHA, class It1, class It2, class Out>
+Out gerc(ALPHA const& alpha, It1 first1, It1 last1, It2 first2, It2 last2, Out out_first){
+	using std::distance;
+	assert( stride(first1) == stride(last1) );
+	assert( stride(first2) == stride(last2) );
+	assert( out_first->size() == distance(first2, last2) );
+	assert( out_first->stride() == 1 );
+	gerc( distance(first2, last2), distance(first1, last1), alpha, base(first2), stride(first2), base(first1), stride(first1), base(out_first), stride(out_first) );
+	return out_first + distance(first1, last1);
+}
+
+template<class ALPHA, class X1D, class Y1D, class A2D>
+A2D&& gerc(ALPHA const& alpha, X1D const& x, Y1D const& y, A2D&& A){
+	assert( size(x) == std::get<0>(extensions(A)) );
+	assert( size(y) == std::get<1>(extensions(A)) );
+	auto s = strides(A);
+		if(std::get<1>(s) == 1){
+		auto ret = gerc( alpha, begin(x), end(x), begin(y), end(y), begin(A) );
+		assert( ret == end(A) );
+	}else if(std::get<0>(s) == 1){
+		auto ret = gerc( alpha, begin(y), end(y), begin(x), end(x), begin(A.rotated()) );
+		assert( ret == end(A.rotated()) );
+	}else{assert(0); /* not implemented in blas*/ }
+	return std::forward<A2D>(A);
+}
+
+template<class ALPHA, class X1D, class Y1D>
+auto gerc(ALPHA const& alpha, X1D const& x, Y1D const& y){
+	multi::array<decltype(alpha*x[0]*y[0]), 2> ret({size(x), size(y)}, 0.);
+	return gerc(alpha, x, y, std::move(ret));
+}
+
+template<class X1D, class Y1D>
+auto gerc(X1D const& x, Y1D const& y)
+->decltype(gerc(1., x, y)){
+	return gerc(1., x, y);}
+	
+template<class ALPHA, class It1, class It2, class Out>
+Out geru(ALPHA const& alpha, It1 first1, It1 last1, It2 first2, It2 last2, Out out_first){
+	using std::distance;
+	assert( stride(first1) == stride(last1) );
+	assert( stride(first2) == stride(last2) );
+	if(out_first->stride() == 1){
+		assert( out_first->size() == distance(first2, last2) );
+		geru( distance(first2, last2), distance(first1, last1), alpha, base(first2), stride(first2), base(first1), stride(first1), base(out_first), stride(out_first) );
+		return out_first + distance(first1, last1);
+	}else if(stride(out_first) == 1){
+		assert( out_first->size() == distance(first2, last2) );
+		geru( distance(first1, last1), distance(first2, last2), alpha, base(first1), stride(first1), base(first2), stride(first2), base(out_first), out_first->stride() );
+		return out_first + distance(first1, last1);
+	}
+	assert(0);
+}
+
+template<class ALPHA, class X1D, class Y1D, class A2D>
+A2D&& geru(ALPHA const& alpha, X1D const& x, Y1D const& y, A2D&& A){
+	assert( size(x) == std::get<0>(sizes(A)) );
+	assert( size(y) == std::get<1>(sizes(A)) );
+	auto ret = geru( alpha, begin(x), end(x), begin(y), end(y), begin(A) );
+	assert(ret == end(A));
+	return std::forward<A2D>(A);
+}
+
+template<class ALPHA, class X1D, class Y1D>
+auto geru(ALPHA const& alpha, X1D const& x, Y1D const& y){
+	multi::array<decltype(alpha*x[0]*y[0]), 2> ret({size(x), size(y)}, 0.);
+	return geru(alpha, x, y, std::move(ret));
+}
+
+template<class X1D, class Y1D>
+auto geru(X1D const& x, Y1D const& y)
+->decltype(geru(1., x, y)){
+	return geru(1., x, y);}
+
 
 }}
 
@@ -713,6 +961,7 @@ int main(){
 		assert( abs(Y[0] - Y3[0]) < 1e-12 && abs(Y[1] - Y3[1]) < 1e-12 && abs(Y[2] - Y3[2]) < 1e-12 );
 		assert( abs(Y[0] - Y2[0]) < 1e-12 && abs(Y[1] - Y2[1]) < 1e-12 && abs(Y[2] - Y2[2]) < 1e-12 );
 	}
+#if 0
 	{
 		multi::array<dcomplex, 2> const M = {
 			{9. + 1.*I, 4. + 1.*I, 14. + 3.*I}, 
@@ -733,8 +982,61 @@ int main(){
 	//	assert( abs(Y[0] - Y3[0]) < 1e-12 && abs(Y[1] - Y3[1]) < 1e-12 && abs(Y[2] - Y3[2]) < 1e-12 );
 	//	assert( abs(Y[0] - Y2[0]) < 1e-12 && abs(Y[1] - Y2[1]) < 1e-12 && abs(Y[2] - Y2[2]) < 1e-12 );
 	}
+#endif
 	cout<<__LINE__ <<std::endl;
+	{
+		multi::array<double, 2> a = {{2., 3.}, {1., 4.}, {1.,0.}};
+		multi::array<double, 1> const x = { 1., 2., 5.};
+		multi::array<double, 1> const y = {-2., 1.};
+		multi::blas::ger(1., x, y, a);
+	//	a = {{2., 3.}, {1., 4.}, {1., 0.}}; GER[1, {1., 2., 5.}, {-2., 1.}, a]; Print[a] : {{0., 4.}, {-3., 6.}, {-9., 5.}}
+		assert( a[1][1] == 6. );
+	}
+	{
+		multi::array<double, 2> a = {
+			{2., 1., 1.},
+			{3., 4., 0.}
+		};
+		multi::array<double, 1> const x = { 1., 2., 5.};
+		multi::array<double, 1> const y = {-2., 1.};
+		multi::blas::ger(1., x, y, rotated(a));
+	//	a = {{2., 3.}, {1., 4.}, {1., 0.}}; GER[1, {1., 2., 5.}, {-2., 1.}, a]; Print[a] : {{0., 4.}, {-3., 6.}, {-9., 5.}}
+		assert( a[1][1] == 6. );
+	}
+	{
+		multi::array<std::complex<double>, 2> a = {{2., 3.}, {1., 4.}, {1.,0.}};
+		multi::array<std::complex<double>, 1> const x = { 1., 2., 5.};
+		multi::array<std::complex<double>, 1> const y = {-2., 1.};
+		multi::blas::gerc(1., x, y, a);
+	//	a = {{2., 3.}, {1., 4.}, {1., 0.}}; GER[1, {1., 2., 5.}, {-2., 1.}, a]; Print[a] : {{0., 4.}, {-3., 6.}, {-9., 5.}}
+		assert( a[1][1] == 6. );
+	}
+	{
+		multi::array<std::complex<double>, 2> a = {{2. + 1.*I, 3. + 4.*I}, {1.+3.*I, 4. + 2.*I}, {1. + 7.*I, 0.}};
+		multi::array<std::complex<double>, 1> const x = { 1. + 1.*I, 2. + I*9., 5. + 4.*I};
+		multi::array<std::complex<double>, 1> const y = {-2. + 8.*I, 1. + 1.*I};
+		multi::blas::geru(1. + 2.*I, x, y, a); // a = alpha*outer(x, y) + a
+//		a = {{2. + 1.*I, 3. + 4.*I}, {1. + 3.*I, 4. + 2.*I}, {1. + 7.*I, 0.}}; GER[1 + 2.*I, {1. + 1.*I, 2. + I*9., 5. + 4.*I}, {-2. + 8.*I,  1. + 1.*I}, a]; Print[a]; 
+//		{{-20.-13. I,-1.+6. I},{-71.-151. I,-25.-1. I},{-105.-45. I,-17.+11. I}}
+		std::cout << "a11 " << a[1][1] << std::endl;
+		assert( a[1][1] == -25. - 1.*I );
+	}
+	{
+		multi::array<std::complex<double>, 2> a = {
+			{2. + 1.*I, 1. + 3.*I, 1. + 7.*I},
+			{3. + 4.*I, 4. + 2.*I, 0. + 0.*I}
+		};
+		std::cout << "a = " << size(a) << std::endl;
+		multi::array<std::complex<double>, 1> const x = { 1. + 1.*I, 2. + I*9., 5. + 4.*I};
+		multi::array<std::complex<double>, 1> const y = {-2. + 8.*I, 1. + 1.*I};
+		multi::blas::geru(1. + 2.*I, x, y, rotated(a)); // a = alpha*outer(x, y) + a
+//		a = {{2. + 1.*I, 3. + 4.*I}, {1. + 3.*I, 4. + 2.*I}, {1. + 7.*I, 0.}}; GER[1 + 2.*I, {1. + 1.*I, 2. + I*9., 5. + 4.*I}, {-2. + 8.*I,  1. + 1.*I}, a]; Print[a]; 
+//		{{-20.-13. I,-1.+6. I},{-71.-151. I,-25.-1. I},{-105.-45. I,-17.+11. I}}
+		std::cout << "here a11 " << a[1][1] << std::endl;
+		assert( a[1][1] == -25. - 1.*I );
+	}
 	return 0;
+//	return 0;
 	{
 //		multi::array<dcomplex, 2> const M = {
 //			{ 9.+I*1., 24.+I*2., 30.+I*3.},
@@ -766,6 +1068,7 @@ int main(){
 	//	assert( std::abs(Y[1] - Y3[1]) < 1e-12 );
 	//	assert( Y[1] == Y2[1] );
 	}
+//	assert(0);
 }
 
 #endif

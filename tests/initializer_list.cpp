@@ -4,6 +4,8 @@ c++ -O3 -std=c++17 -Wall -Wextra -Wpedantic $0 -o $0.x && $0.x $@ && rm -f $0.x;
 
 #include "../array.hpp"
 
+#include<complex>
+
 namespace multi = boost::multi;
 
 int main(){
@@ -73,6 +75,14 @@ int main(){
 	assert( A[1][1][0] == 34.4 and A[1][1][1] == 4.   );
 }
 #endif
+
+{
+	std::complex<double> const I(0.,1.);
+	multi::array<std::complex<double>, 2> b = {
+		{2. + 1.*I, 1. + 3.*I, 1. + 7.*I},
+		{3. + 4.*I, 4. + 2.*I, 0. + 0.*I}
+	};
+}
 
 }
 
