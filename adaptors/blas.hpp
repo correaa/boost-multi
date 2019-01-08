@@ -150,7 +150,7 @@ using v = void;
 #define xscal(XX, TA, TX) template<class S> TX* scal (S n, TA a, TX      *x, S incx                    ){       BLAS(XX##scal)(n, a, x, incx         ); return x+n*incx;}
 #define xcopy(T)          template<class S> v   copy (S n,       T const *x, S incx, T       *y, S incy){       BLAS( T##copy)(n,    x, incx, y, incy);} 
 #define xaxpy(T)          template<class S> T*  axpy (S n, T  a, T const *x, S incx, T       *y, S incy){       BLAS( T##axpy)(n, a, x, incx, y, incy); return y+n*incy;}
-#define xdot(R, TT, T)    template<class S> void dot(S n,       T const *x, S incx, T const *y, S incy, R& r){r = BLAS(TT##dot)(n,    x, incx, y, incy);                  }
+#define xdot(R, TT, T)    template<class S> v   dot  (S n,       T const *x, S incx, T const *y, S incy, R& r){r = BLAS(TT##dot)(n,    x, incx, y, incy);               }
 
 xrotg(s, s)    xrotg(d, d) //MKL extension xrotg(c, s); xrotg(z, d);
 xrotmg(s)      xrotmg(d)
@@ -354,13 +354,17 @@ multi::array<typename X1D::value_type, 1> copy(X1D const& x){
 	return copy(x, multi::array<typename X1D::value_type, 1>({0, size(x)}, 0.));
 }
 
+template<class T, class It1, class Size, class OutIt>
+OutIt axpy_n(T alpha, It1 first, Size n, OutIt d_first){
+//	using blas::axpy;
+	axpy(n, alpha, base(first), stride(last), base(d_first), stride(d_first));
+	return d_first + n;
+}
+
 template<class T, class It1, class OutIt>
 OutIt axpy(T alpha, It1 first, It1 last, OutIt d_first){
 	assert( stride(first) == stride(last) );
-	auto d = std::distance(first, last);
-//	using blas::axpy;
-	axpy(d, alpha, base(first), stride(last), base(d_first), stride(d_first));
-	return d_first + d;
+	return axpy_n(alpha, first, std::distance(first, last), d_first);
 }
 
 template<class T, class X1D, class Y1D>
@@ -368,6 +372,7 @@ Y1D&& axpy(T alpha, X1D const& x, Y1D&& y){
 	assert( size(x) == size(y) );
 	assert( not offset(x) and not offset(y) );
 	axpy(alpha, begin(x), end(x), begin(y));
+	blas::axpy(std::distance(begin(x), end(x)), alpha, origin(begin(x)), stride(begin(x)), origin(begin(y)), stride(begin(y)));
 	return std::forward<Y1D>(y);
 }
 
