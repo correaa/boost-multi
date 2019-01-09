@@ -127,7 +127,7 @@ struct basic_array :
 	using types = array_types<T, D, ElementPtr, Layout>;
 	friend struct basic_array<typename types::element, Layout::rank + 1, typename types::element_ptr >;
 	friend struct basic_array<typename types::element, Layout::rank + 1, typename types::element_ptr&>;
-	friend struct basic_array<typename types::element, Layout::rank    , typename std::pointer_traits<typename types::element_ptr>::template rebind<typename types::element>>;
+//	friend struct basic_array<typename types::element, Layout::rank    , typename std::pointer_traits<typename types::element_ptr>::template rebind<typename types::element>>;
 	using types::layout;
 	decltype(auto) layout() const{return array_types<T, D, ElementPtr, Layout>::layout();}
 protected:
@@ -311,8 +311,8 @@ public:
 
 template<typename T, typename ElementPtr, class Layout>
 struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout> : 
-	boost::multi::partially_ordered2<basic_array<T, dimensionality_type{1}, ElementPtr, Layout>, void>,
-	boost::multi::random_iterable<basic_array<T, dimensionality_type{1}, ElementPtr, Layout>>,
+	multi::random_iterable<basic_array<T, dimensionality_type{1}, ElementPtr, Layout> >,
+	multi::partially_ordered2<basic_array<T, dimensionality_type{1}, ElementPtr, Layout>, void>,
 	array_types<T, dimensionality_type{1}, ElementPtr, Layout>
 {
 	using types = array_types<T, dimensionality_type{1}, ElementPtr, Layout>;
