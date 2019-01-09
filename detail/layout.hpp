@@ -45,6 +45,7 @@ std::array<T, N-1> tail(std::array<T, N> const& a){
 	return ret;
 }
 
+#if 0
 template<typename Tuple, size_t... I, size_t S = sizeof...(I)>
 auto reverse_impl(Tuple&& t, std::index_sequence<I...>)
     return std::make_tuple(std::get<S - 1 - I>(std::forward<Tuple>(t))...);
@@ -54,6 +55,7 @@ template<typename Tuple, size_t S = std::tuple_size<std::decay_t<Tuple>>{} >
 auto reverse(Tuple&& t){
 	return reverse_impl(std::forward<Tuple>(t), std::make_index_sequence<S>());
 }
+#endif
 
 }
 
