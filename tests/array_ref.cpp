@@ -237,8 +237,8 @@ int main(){
 	cout << *v3D_cref.begin()->begin()->begin() << "\n\n";
 	cout << v3D_cref.begin()->begin()->begin()[0] << "\n\n";
 	{
-		std::vector v(100, 1.);
-		std::vector w(100, 2.);
+		std::vector<double> v(100, 1.);
+		std::vector<double> w(100, 2.);
 		auto f = [](std::vector<double>& a){return multi::array_ref<double,1>({100}, a.data());}; //	auto V = f(v); //	V = f(w);
 		f(v) = f(w);
 		assert( v[10] == 2. );

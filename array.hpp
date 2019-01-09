@@ -381,6 +381,7 @@ int main(){
 		 {1.,2.,3.},
 		 {4.,5.,6.}
 	};
+	multi::array<double, 2> A3{ multi::f_tag{}, {2, 3} };
 	*A2.begin()->begin() = 99;
 	assert(A2[0][0] == 99 );
 //					assert(A2.dimensionality==2 and A2.num_elements()==2*3);

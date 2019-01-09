@@ -233,8 +233,7 @@ public:
 		return d?sub.extension(d-1):extension();
 	}
 	constexpr auto extensions() const{
-		auto e = extension();
-		return std::tuple_cat(std::make_tuple(e), sub.extensions());
+		return std::tuple_cat(std::make_tuple(extension()), sub.extensions());
 	}
 	friend constexpr auto extensions(layout_t const& self){return self.extensions();}
 	void extensions_aux(index_extension* it) const{
@@ -310,9 +309,7 @@ struct layout_t<dimensionality_type{1}>{
 		return nelems_/stride_; // assert(stride_!=0 and nelems_%stride_ == 0)
 	}
 	constexpr size_type size(dimensionality_type d) const{
-		(void)d;
-		assert(d == 0 and stride_ != 0 and nelems_%stride_ == 0);
-		return nelems_/stride_;
+		return d==0?nelems_/stride_:throw 0; // assert(d == 0 and stride_ != 0 and nelems_%stride_ == 0);
 	}
 	friend constexpr size_type size(layout_t const& self){return self.size();}
 public:
