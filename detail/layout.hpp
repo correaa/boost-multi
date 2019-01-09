@@ -329,11 +329,10 @@ public:
 		return {offset_/stride_, (offset_ + nelems_)/stride_};
 	}
 	friend auto extension(layout_t const& self){return self.extension();}
-	constexpr index_extension extension(dimensionality_type d) const{
-		(void)d;
-		assert(d == 0);
-		assert(stride_ != 0 and nelems_%stride_ == 0);
-		return {offset_/stride_, (offset_ + nelems_)/stride_};
+	constexpr auto extension(dimensionality_type d) const{
+		return d==0?index_extension{offset_/stride_, (offset_ + nelems_)/stride_}:throw 0;
+	//	assert(stride_ != 0 and nelems_%stride_ == 0);
+	//	return {offset_/stride_, (offset_ + nelems_)/stride_};
 	}
 	constexpr extensions_type extensions() const{return std::make_tuple(extension());}
 	friend constexpr auto extensions(layout_t const& self){return self.extensions();}
