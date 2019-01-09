@@ -45,6 +45,16 @@ std::array<T, N-1> tail(std::array<T, N> const& a){
 	return ret;
 }
 
+template<typename Tuple, size_t... I, size_t S = sizeof...(I)>
+auto reverse_impl(Tuple&& t, std::index_sequence<I...>)
+    return std::make_tuple(std::get<S - 1 - I>(std::forward<Tuple>(t))...);
+}
+
+template<typename Tuple, size_t S = std::tuple_size<std::decay_t<Tuple>>{} >
+auto reverse(Tuple&& t){
+	return reverse_impl(std::forward<Tuple>(t), std::make_index_sequence<S>());
+}
+
 }
 
 }}
@@ -87,6 +97,8 @@ inline extents_t<1u> extents_t<0u>::operator[](index_extension ie) const{
 static constexpr extents_t<0u> extents;
 #endif
 
+struct f_tag{};
+
 template<dimensionality_type D>
 struct layout_t
 	: boost::equality_comparable<layout_t<D>>
@@ -108,7 +120,7 @@ struct layout_t
 	using extensions_type = typename detail::repeat<index_extension, D>::type;
 	using extensions_io_type = std::array<index_extension, D>;
 	auto operator()(index i) const{return i*stride_ - offset_;}
-	auto origin() const{return -offset_ + sub.origin();}
+	auto origin() const{return sub.origin() - offset_;}
 	constexpr layout_t(index_extension const& ie, layout_t<D-1> const& s) : 
 		sub{s},
 		stride_{size(ie)*num_elements(sub)!=0?size(sub)*stride(sub):1}, 
@@ -121,6 +133,18 @@ struct layout_t
 		offset_{0}, 
 		nelems_{std::get<0>(e).size()*sub.num_elements()} 
 	{}
+	constexpr layout_t(f_tag, extensions_type const& e = {}) : 
+		sub{detail::tail(e)}, 
+		stride_{std::get<0>(e).size()*sub.num_elements()!=0?sub.size()*sub.stride():1}, 
+		offset_{0}, 
+		nelems_{std::get<0>(e).size()*sub.num_elements()} 
+	{
+		reverse();
+	}
+	void reverse(){
+		unrotate();
+		sub.reverse();
+	}
 /*	template<class Ext>
 	constexpr layout_t(Ext const& e) :
 		sub{detail::tail(e)}, 
@@ -176,7 +200,6 @@ struct layout_t
 	friend constexpr index stride(layout_t const& self){return self.stride();}
 	constexpr auto strides() const{return tuple_cat(std::make_tuple(stride()), sub.strides());}
 	friend constexpr decltype(auto) strides(layout_t const& self){return self.strides();}
-
 
 	void offsets_aux(index* it) const{
 		*it = offset();
@@ -275,10 +298,7 @@ struct layout_t<dimensionality_type{1}>{
 	{}
 	constexpr auto offset() const{return offset_;}	
 	friend constexpr index offset(layout_t const& self){return self.offset();}
-	constexpr auto offset(dimensionality_type d) const{
-		assert(d==0); (void)d;
-		return offset_;
-	}
+	constexpr auto offset(dimensionality_type d) const{return offset_;}
 	constexpr auto nelems() const{return nelems_;}
 	constexpr auto nelems(dimensionality_type d) const{
 		assert(d==0); (void)d;
@@ -359,6 +379,9 @@ using std::cout;
 namespace multi = boost::multi;
 
 int main(){
+	auto t = std::make_tuple(1.,2.,3.);
+	auto u = multi::detail::reverse(t);
+	assert( std::get<0>(u) == 3. );
 
  {  multi::layout_t<1> L{}; assert( dimensionality(L)==1 and num_elements(L) == 0 and size(L) == 0 and size(extension(L))==0 and stride(L)!=0 and empty(L) );
 }{  multi::layout_t<2> L{}; assert( dimensionality(L)==2 and num_elements(L) == 0 and size(L) == 0 and size(extension(L))==0 and stride(L)!=0 and empty(L) );
