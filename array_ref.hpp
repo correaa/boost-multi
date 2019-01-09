@@ -313,7 +313,7 @@ template<typename T, typename ElementPtr, class Layout>
 struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout> : 
 	multi::partially_ordered2<basic_array<T, dimensionality_type(1), ElementPtr, Layout>, void>,
 	multi::random_iterable<basic_array<T, dimensionality_type(1), ElementPtr, Layout> >,
-	array_types<T, dimensionality_type{1}, ElementPtr, Layout>
+	array_types<T, dimensionality_type(1), ElementPtr, Layout>
 {
 	using types = array_types<T, dimensionality_type{1}, ElementPtr, Layout>;
 	using types::types;
