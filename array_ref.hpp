@@ -246,7 +246,7 @@ public:
 protected:
 	template<class A>
 	void intersection_assign_(A&& other) const{
-		for(auto i : intersection(types::extension(), extensions(other)))
+		for(auto i : intersection(types::extension(), extension(other)))
 			operator[](i).intersection_assign_(std::forward<A>(other)[i]);
 	}
 public:
@@ -255,16 +255,20 @@ public:
 		assert( distance(first, last) == this->size() );
 		copy(first, last, this->begin());
 	}
-	template<class Array>
-	basic_array const& operator=(Array&& o) const{
+	template<class A, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<A>>{}>>
+	basic_array const& operator=(A&& o) const{
 		using multi::extension;
 		assert(extension(*this) == extension(o));
 		using std::begin; using std::end;
-		assign(begin(std::forward<Array>(o)), end(std::forward<Array>(o)));
+		assign(begin(std::forward<A>(o)), end(std::forward<A>(o)));
 		return *this;
 	}
-	basic_array const& operator=(basic_array const& other) const{
-		return operator=<basic_array const&>(other);
+	basic_array const& operator=(basic_array const& o) const{
+		using multi::extension;
+		assert(extension(*this) == extension(o));
+		using std::begin; using std::end;
+		assign(begin(o), end(o));
+		return *this;
 	}
 	template<class Array>
 	void swap(Array&& o) const{
@@ -319,7 +323,7 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout> :
 protected:
 	template<class A>
 	void intersection_assign_(A&& other) const{
-		for(auto i : intersection(types::extension(), extensions(other)))
+		for(auto i : intersection(types::extension(), extension(other)))
 			operator[](i) = std::forward<A>(other)[i];
 	}
 protected:
@@ -329,6 +333,7 @@ protected:
 	template<class TT, dimensionality_type DD, typename EP, class LLayout>
 	friend struct basic_array;
 public:
+	basic_array(basic_array const&) = default;
 	basic_array_ptr<basic_array, Layout> operator&() const{
 		return {this->base_, this->layout(), this->nelems_};
 	}
@@ -336,7 +341,7 @@ public:
 		using std::distance; assert(distance(first, last) == this->size());
 		using std::copy; copy(first, last, this->begin());
 	}
-	template<class A>
+	template<class A, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<A>>{}> >
 	basic_array const& operator=(A&& o) const{
 		using multi::extension;
 		assert(this->extension() == extension(o));
@@ -344,9 +349,32 @@ public:
 		this->assign(begin(std::forward<A>(o)), end(std::forward<A>(o)));
 		return *this;
 	}
-	basic_array const& operator=(basic_array const& other) const{
-		return operator=<basic_array const&>(other);
+	basic_array const& operator=(basic_array const& o) const{
+		using multi::extension;
+		assert(this->extension() == extension(o));
+		using std::begin; using std::end;
+		this->assign(begin(o), end(o));
+		return *this;
 	}
+//	basic_array& operator=(basic_array const& o) = delete;
+#if 0
+	basic_array const& operator=(basic_array const& o) const{
+		return operator=<basic_array const&>(o);
+	/*	using multi::extension;
+		assert(this->extension() == extension(o));
+		using std::begin; using std::end;
+		this->assign(begin(o), end(o));
+		return *this;*/
+	}
+	basic_array const& operator=(basic_array&& o) const{
+	//	return operator=<basic_array&&>(std::move(other));
+		using multi::extension;
+		assert(this->extension() == extension(o));
+		using std::begin; using std::end;
+		this->assign(begin(o), end(o));
+		return *this;
+	}
+#endif
 	typename types::reference //	decltype(auto) 
 	operator[](typename types::index i) const{
 //		return types::base_[Layout::operator()(i)];
@@ -459,7 +487,6 @@ struct array_ref :
 	basic_array<T, D, ElementPtr>
 {	
 	array_ref(array_ref const&) = default;
-	array_ref(array_ref&&) = default;
 	constexpr array_ref(typename array_ref::extensions_type const& e, ElementPtr p) noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
 	constexpr array_ref(ElementPtr p, typename array_ref::extensions_type const& e) noexcept
@@ -467,6 +494,7 @@ struct array_ref :
 	using basic_array<T, D, ElementPtr>::operator=;
 	using basic_array<T, D, ElementPtr>::operator<;
 	using basic_array<T, D, ElementPtr>::operator>;
+//	array_ref& operator=(array_ref const&) = delete;
 //	template<class Array>//, std::enable_if_t<not std::is_base_of<array_cref<T, D, ElementPtr>, Array>{}>* =0> 
 /*	array_ref& operator=(Array&& other) const{
 		assert(this->extensions() == extensions(other));
@@ -477,6 +505,7 @@ struct array_ref :
 		array_cref<T, D, ElementPtr>::operator=(other);
 		return *this;
 	}*/
+//	array_ref const& operator=(array_ref<T, D, ElementPtr> const& other)  = default;
 /*	array_ref const& operator=(array_ref<T, D, ElementPstr> const& other) const{
 		assert(this->extensions() == other.extensions());
 		using std::copy_n;

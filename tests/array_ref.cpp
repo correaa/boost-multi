@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-c++ -O3 -std=c++14 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x && time $0.x $@ && rm -f $0.x; exit
+c++ -O3 -std=c++17 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x && time $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include "../array_ref.hpp"
@@ -61,7 +61,7 @@ int main(){
 	assert( d2D_cref.end() == end(d2D_cref) );
 	assert( begin(d2D_cref) != end(d2D_cref) );
 	assert( begin(d2D_cref) + size(d2D_cref) == end(d2D_cref) );
-	assert( end(d2D_cref) - begin(d2D_cref) == size(d2D_cref) );
+//	assert( end(d2D_cref) - begin(d2D_cref) == size(d2D_cref) );
 	using std::distance;
 	assert( distance(begin(d2D_cref), end(d2D_cref)) == size(d2D_cref));
 	assert( size(*begin(d2D_cref)) == 5 );
@@ -112,10 +112,15 @@ int main(){
 	
 	for(auto& row: d2D_cref){for(auto& el: row) cout<< el <<' '; cout<<'\n';}
 
-	for(decltype(d2D_cref)::reference r: d2D_cref){
-		for(decltype(d2D_cref)::element const& e: r) cout << e <<' '; 
+//	for(decltype(d2D_cref)::reference r : d2D_cref){
+//		for(decltype(d2D_cref)::element const& e: r) cout << e <<' '; 
+//		cout <<'\n';
+//	}
+	for(auto it = begin(d2D_cref); it != end(d2D_cref); ++it){
+		for(decltype(d2D_cref)::element const& e: *it) cout << e <<' '; 
 		cout <<'\n';
 	}
+
 	
 	for(auto it1=begin(d2D_cref); it1 != end(d2D_cref) ||!endl(cout); ++it1)
 		for(auto it2=it1->begin()   ; it2 != it1->end()    ||!endl(cout); ++it2)
@@ -231,6 +236,17 @@ int main(){
 	cout << v3D_cref[1][1][1] << "\n\n";
 	cout << *v3D_cref.begin()->begin()->begin() << "\n\n";
 	cout << v3D_cref.begin()->begin()->begin()[0] << "\n\n";
+	{
+		std::vector v(100, 1.);
+		std::vector w(100, 2.);
+		auto f = [](std::vector<double>& a){return multi::array_ref<double,2>({100}, a.data());}; //	auto V = f(v); //	V = f(w);
+		f(v) = f(w);
+		assert( v[10] == 2. );
 
+		std::vector x(100, 3.);
+		auto g = [](std::vector<double>& a){return multi::array_ref<double,2>({10, 10}, a.data());}; //	auto V = f(v); //	V = f(w);
+		g(v) = g(x);
+		assert( v[10] == 3. );
+	}
 }
 
