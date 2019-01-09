@@ -127,7 +127,7 @@ struct basic_array :
 	using types = array_types<T, D, ElementPtr, Layout>;
 	friend struct basic_array<typename types::element, Layout::rank + 1, typename types::element_ptr >;
 	friend struct basic_array<typename types::element, Layout::rank + 1, typename types::element_ptr&>;
-	friend struct basic_array<typename types::element, Layout::rank    , typename std::pointer_traits<typename types::element_ptr>::template rebind<typename basic_array::element>>;
+	friend struct basic_array<typename types::element, Layout::rank    , typename std::pointer_traits<typename types::element_ptr>::template rebind<typename types::element>>;
 	using types::layout;
 	decltype(auto) layout() const{return array_types<T, D, ElementPtr, Layout>::layout();}
 protected:
@@ -213,8 +213,8 @@ private:
 		std::reverse_iterator<Iterator>,
 		boost::totally_ordered<basic_reverse_iterator<Iterator>>
 	{
-		template<class O, typename = decltype(basic_reverse_iterator{std::declval<O const&>().base()})>
-		basic_reverse_iterator(O const& o) : std::reverse_iterator<Iterator>(o.base()){}
+		template<class O, typename = decltype(std::reverse_iterator<Iterator>{base(std::declval<O const&>())})>
+		basic_reverse_iterator(O const& o) : std::reverse_iterator<Iterator>{base(o)}{}
 		basic_reverse_iterator() : std::reverse_iterator<Iterator>(){}
 		explicit basic_reverse_iterator(Iterator it) : std::reverse_iterator<Iterator>(--it){}
 		explicit operator Iterator() const{auto ret = this->base(); return ++ret;}
@@ -489,6 +489,7 @@ struct array_ref :
 	array_ref(array_ref const&) = default;
 	constexpr array_ref(typename array_ref::extensions_type const& e, ElementPtr p) noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
+
 	constexpr array_ref(ElementPtr p, typename array_ref::extensions_type const& e) noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
 	using basic_array<T, D, ElementPtr>::operator=;
