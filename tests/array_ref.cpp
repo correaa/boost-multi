@@ -239,7 +239,7 @@ int main(){
 	{
 		std::vector v(100, 1.);
 		std::vector w(100, 2.);
-		auto f = [](std::vector<double>& a){return multi::array_ref<double,2>({100}, a.data());}; //	auto V = f(v); //	V = f(w);
+		auto f = [](std::vector<double>& a){return multi::array_ref<double,1>({100}, a.data());}; //	auto V = f(v); //	V = f(w);
 		f(v) = f(w);
 		assert( v[10] == 2. );
 
