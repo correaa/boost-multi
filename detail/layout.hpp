@@ -301,8 +301,7 @@ struct layout_t<dimensionality_type{1}>{
 	constexpr auto offset(dimensionality_type d) const{return d==0?offset_:throw 0;}
 	constexpr auto nelems() const{return nelems_;}
 	constexpr auto nelems(dimensionality_type d) const{
-		assert(d==0); (void)d;
-		return nelems_;
+		return d==0?nelems_:throw 0;
 	}
 	friend constexpr auto nelems(layout_t const& self){return self.nelems();}
 	constexpr size_type size() const{
