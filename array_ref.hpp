@@ -329,7 +329,7 @@ protected:
 protected:
 	friend struct basic_array<T, dimensionality_type{types::dimensionality + 1}, typename types::element_ptr>;
 	friend struct basic_array<T, dimensionality_type{types::dimensionality + 1}, typename types::element_ptr&>;
-	friend struct basic_array<T, dimensionality_type{types::dimensionality + 1}, typename std::pointer_traits<typename types::element_ptr>::template rebind<typename types::element>>;
+//	friend struct basic_array<T, dimensionality_type{types::dimensionality + 1}, typename std::pointer_traits<typename types::element_ptr>::template rebind<typename types::element>>;
 	template<class TT, dimensionality_type DD, typename EP, class LLayout>
 	friend struct basic_array;
 public:
