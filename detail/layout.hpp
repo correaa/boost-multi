@@ -191,10 +191,7 @@ struct layout_t
 	constexpr bool empty() const{return not nelems_;}
 	friend bool empty(layout_t const& s){return s.empty();}
 	constexpr size_type size() const{
-	//	assert(nelems_ != 0);
-		if(nelems_ == 0) return 0;
-		assert(stride_ != 0 and nelems_%stride_ == 0 );
-		return nelems_/stride_;
+		return nelems_/stride_; // assert(stride_ != 0 and nelems_%stride_ == 0 );
 	}
 	friend constexpr size_type size(layout_t const& l){return l.size();}
 	size_type size(dimensionality_type d) const{return d?sub.size(d-1):size();}
@@ -310,9 +307,7 @@ struct layout_t<dimensionality_type{1}>{
 	}
 	friend constexpr auto nelems(layout_t const& self){return self.nelems();}
 	constexpr size_type size() const{
-		if(nelems_ == 0) return 0;
-		assert(stride_ != 0 and nelems_%stride_ == 0);
-		return nelems_/stride_;
+		return nelems_/stride_; // assert(stride_!=0 and nelems_%stride_ == 0)
 	}
 	constexpr size_type size(dimensionality_type d) const{
 		(void)d;
