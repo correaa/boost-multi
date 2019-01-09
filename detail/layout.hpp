@@ -316,15 +316,6 @@ public:
 		return d==0?stride_:throw 0;
 	}
 	friend constexpr index stride(layout_t const& self){return self.stride();}
-private:
-	struct strides_t{
-		layout_t const& l_;
-		strides_t(strides_t const&) = delete;
-		constexpr decltype(auto) operator[](dimensionality_type d) const{
-			assert(d == 0); (void)d;
-			return l_.stride();
-		}
-	};
 public:
 	constexpr auto strides() const{return std::make_tuple(stride());}
 	constexpr auto sizes() const{return std::make_tuple(size());}
