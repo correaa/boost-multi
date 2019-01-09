@@ -133,6 +133,7 @@ struct layout_t
 		offset_{0}, 
 		nelems_{std::get<0>(e).size()*sub.num_elements()} 
 	{}
+#if 0
 	constexpr layout_t(f_tag, extensions_type const& e = {}) : 
 		sub{detail::tail(e)}, 
 		stride_{std::get<0>(e).size()*sub.num_elements()!=0?sub.size()*sub.stride():1}, 
@@ -145,6 +146,7 @@ struct layout_t
 		unrotate();
 		sub.reverse();
 	}
+#endif
 /*	template<class Ext>
 	constexpr layout_t(Ext const& e) :
 		sub{detail::tail(e)}, 
