@@ -120,7 +120,7 @@ struct layout_t
 	index offset_;
 	index nelems_;
 	using extensions_type = typename detail::repeat<index_extension, D>::type;
-	using extensions_io_type = std::array<index_extension, D>;
+//	using extensions_io_type = std::array<index_extension, D>;
 	auto operator()(index i) const{return i*stride_ - offset_;}
 	auto origin() const{return sub.origin() - offset_;}
 	constexpr layout_t(index_extension const& ie, layout_t<D-1> const& s) : 

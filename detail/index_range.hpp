@@ -25,7 +25,7 @@ public:
 	using const_pointer = value_type;
 	using pointer = value_type;
 	range() : first_{}, last_{first_}{}
-	template<class Range, std::enable_if_t<std::is_same<std::decay_t<Range>, value_type>{}>* =0>
+	template<class Range, typename = std::enable_if_t<std::is_same<std::decay_t<Range>, value_type>{}> >
 	constexpr range(Range&& o) : first_(o.first()), last_(o.last()){}
 	constexpr range(value_type fl) : first_{fl}, last_{fl + 1}{}
 	constexpr range(value_type f, value_type l) : first_{f}, last_{l}{}
