@@ -312,7 +312,9 @@ struct layout_t<dimensionality_type{1}>{
 	}
 	friend constexpr size_type size(layout_t const& self){return self.size();}
 public:
-	constexpr index stride(dimensionality_type d = 0) const{(void)d; assert(d == 0); return stride_;}
+	constexpr auto stride(dimensionality_type d = 0) const{
+		return d==0?stride_:throw 0;
+	}
 	friend constexpr index stride(layout_t const& self){return self.stride();}
 private:
 	struct strides_t{
