@@ -302,7 +302,7 @@ struct layout_t<dimensionality_type{1}>{
 	{}
 	constexpr auto offset() const{return offset_;}	
 	friend constexpr index offset(layout_t const& self){return self.offset();}
-	constexpr auto offset(dimensionality_type d) const{return offset_;}
+	constexpr auto offset(dimensionality_type d) const{return d==0?offset_:throw 0;}
 	constexpr auto nelems() const{return nelems_;}
 	constexpr auto nelems(dimensionality_type d) const{
 		assert(d==0); (void)d;

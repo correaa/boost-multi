@@ -88,8 +88,7 @@ auto extensions(T const& t)
 ->decltype(t.extensions()){
 	return t.extensions();}
 
-inline std::array<index_extension, 0> 
-extensions(...){return {};}
+inline std::tuple<> extensions(...){return {};}
 
 template<dimensionality_type> struct extension_aux;
 
