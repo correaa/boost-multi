@@ -98,7 +98,7 @@ public:
 		Alloc{a}, 
 		ref{}
 	{
-		this->layout_t<D>::operator=(typename array::layout_t{tuple_cat(std::make_tuple(index_extension{std::distance(first, last)}), multi::extensions(*first))});
+		layout_t<D>::operator=(typename array::layout_t{tuple_cat(std::make_tuple(index_extension{std::distance(first, last)}), multi::extensions(*first))});
 		this->base_ = allocate(typename array::layout_t{std::tuple_cat(std::make_tuple(index_extension{std::distance(first, last)}), multi::extensions(*first))}.num_elements());
 		using std::next;
 		using std::all_of;
