@@ -48,11 +48,11 @@ struct random_iterable : B{
 //	template<class SS>//, typename = std::enable_if_t<std::is_same<std::decay_t<SS>, T>{}> >
 //	friend auto cbegin(SS const& s, T* = 0)->decltype(s.cbegin()){return s.cbegin();}
 	friend auto cbegin(T const& s){return static_cast<random_iterable const&>(s).cbegin();}
-//	template<class SS>//, typename = std::enable_if_t<std::is_same<std::decay_t<SS>, T>{}> >
-//	friend auto cend  (SS const& s, T* = 0)->decltype(s.cend()  ){return s.cend  ();}
 	friend auto cend  (T const& s){return static_cast<random_iterable const&>(s).cend  ();}
 	auto crbegin() const{return typename T::const_reverse_iterator{cend  ()};}
 	auto crend  () const{return typename T::const_reverse_iterator{cbegin()};}
+	friend auto crbegin(random_iterable const& s){return s.cbegin();}
+	friend auto crend  (random_iterable const& s){return s.cend  ();}
 	friend auto begin(T const& t){return t.begin();}
 	friend auto begin(T& t){return t.begin();}
 	friend auto end(T const& t){return t.end();}
