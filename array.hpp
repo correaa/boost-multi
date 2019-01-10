@@ -57,10 +57,13 @@ public:
 	using ref::operator<;
 	array() noexcept(noexcept(Alloc())) : Alloc{}, ref{{}, nullptr}{}           //1a
 	explicit array(Alloc const& a) : Alloc{a}, ref{{}, nullptr}{}               //1b
-	array(typename array::extensions_type const& e, typename array::element const& el, Alloc const& a = {})  //2
+	array(typename array::extensions_type e, typename array::element const& el, Alloc const& a = {})  //2
 	:	Alloc{a} , ref{e, allocate(typename array::layout_t{e}.num_elements())}{
 		uninitialized_fill(el);
 	}
+#if __INTEL_COMPILER < 1900 or __GNUC__ < 5
+	array(std::initializer_list<typename array::index_extension> il, typename array::element const& el, Alloc const& a={}) noexcept : array{multi::detail::to_tuple<D>(il), el, a}{}
+#endif
 	array(typename array::index_extension n, value_type const& v, Alloc const& a = {})
 	: 	Alloc{a}, 
 		ref{
@@ -75,10 +78,14 @@ public:
 	array(typename array::size_type n, value_type const& v)
 	: 	array(typename array::index_extension(n), v){}
 
-	explicit array(typename array::extensions_type const& e, Alloc const& a={}) //3
+	explicit array(typename array::extensions_type e, Alloc const& a={}) //3
 	:	Alloc{a}, ref{e, allocate(typename array::layout_t{e}.num_elements())}{
 		uninitialized_value_construct();
 	}
+#if __INTEL_COMPILER < 1900 or __GNUC__ < 5
+	array(std::initializer_list<typename array::index_extension> il, Alloc const& a={}) noexcept : array{multi::detail::to_tuple<D>(il), a}{}
+#endif
+
 	template<class It> static auto distance(It a, It b){using std::distance; return distance(a, b);}
 	template<class It, typename=decltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>      
 	array(It first, It last, allocator_type const& a = {}) :                    //4
