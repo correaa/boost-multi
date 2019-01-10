@@ -108,17 +108,17 @@ public:
 		uninitialized_copy(other.data());
 	}
 	array(array&& other) noexcept                                              //6a
-	:	Alloc{static_cast<Alloc const&>(other)},
+	:	Alloc{other.get_allocator()},
 		ref{extensions(other), std::exchange(other.base_, nullptr)}
 	{
-		other.layout_t<D>::operator=({});
+		other.ref::layout_t::operator=({});
 	}
 	array(array&& other, allocator_type const& a)                             //6b
 	:	Alloc{a},
 		ref(other.extensions(), std::exchange(other.base_, nullptr))
 	{
 		//TODO
-		other.layout_t<D>::operator=({});
+		other.ref::layout_t::operator=({});
 	}
 	array(std::initializer_list<value_type> il, allocator_type const& a={}) 
 	:	array(il.begin(), il.end(), a){}
@@ -381,7 +381,7 @@ int main(){
 		 {1.,2.,3.},
 		 {4.,5.,6.}
 	};
-	multi::array<double, 2> A3{ multi::f_tag{}, {2, 3} };
+//	multi::array<double, 2> A3{ multi::f_tag{}, {2, 3} };
 	*A2.begin()->begin() = 99;
 	assert(A2[0][0] == 99 );
 //					assert(A2.dimensionality==2 and A2.num_elements()==2*3);
