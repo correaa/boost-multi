@@ -62,7 +62,8 @@ public:
 		uninitialized_fill(el);
 	}
 #if defined(__INTEL_COMPILER)
-	array(std::initializer_list<typename array::index_extension> il, typename array::element const& el, Alloc const& a={}) noexcept : array{multi::detail::to_tuple<D>(il), el, a}{}
+	array(std::initializer_list<typename array::index_extension> il, typename array::element const& el, Alloc const& a={}) noexcept : array{multi::detail::to_tuple<D, typename array::index_extension>(il), el, a}{}
+	array(std::initializer_list<typename array::index> il, typename array::element const& el, Alloc const& a={}) noexcept : array{multi::detail::to_tuple<D, typename array::index_extension>(il), el, a}{}
 #endif
 	array(typename array::index_extension n, value_type const& v, Alloc const& a = {})
 	: 	Alloc{a}, 
@@ -83,7 +84,7 @@ public:
 		uninitialized_value_construct();
 	}
 #if defined(__INTEL_COMPILER)
-	explicit array(std::initializer_list<typename array::index_extension> il, Alloc const& a={}) noexcept : array{multi::detail::to_tuple<D>(il), a}{}
+	explicit array(std::initializer_list<typename array::index_extension> il, Alloc const& a={}) noexcept : array{multi::detail::to_tuple<D, typename array::index_extension>(il), a}{}
 #endif
 
 	template<class It> static auto distance(It a, It b){using std::distance; return distance(a, b);}

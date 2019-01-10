@@ -490,7 +490,8 @@ struct array_ref :
 	constexpr array_ref(typename array_ref::extensions_type const& e, ElementPtr p) noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
 #if defined(__INTEL_COMPILER)
-	constexpr array_ref(std::initializer_list<index_extension> il, typename array_ref::element_ptr p) noexcept : array_ref{multi::detail::to_tuple<D>(il), p}{}
+	constexpr array_ref(std::initializer_list<typename array_ref::index_extension> il, typename array_ref::element_ptr p) noexcept : array_ref{multi::detail::to_tuple<D, typename array_ref::index_extension>(il), p}{}
+	constexpr array_ref(std::initializer_list<typename array_ref::index> il, typename array_ref::element_ptr p) noexcept : array_ref{multi::detail::to_tuple<D, typename array_ref::index_extension>(il), p}{}
 #endif
 	constexpr array_ref(ElementPtr p, typename array_ref::extensions_type const& e) noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
@@ -542,8 +543,10 @@ template<class P> auto make_array_ref(P p, index_extensions<5> x){return make_ar
 
 //In ICC you need to specify the dimensionality in make_array_ref<D>
 #if defined(__INTEL_COMPILER)
-template<dimensionality_type D, class P, class E> 
-auto make_array_ref(P p, std::initializer_list<E> il){return make_array_ref(p, detail::to_tuple<D>(il));}
+template<dimensionality_type D, class P> 
+auto make_array_ref(P p, std::initializer_list<index_extension> il){return make_array_ref(p, detail::to_tuple<D, index_extension>(il));}
+template<dimensionality_type D, class P> 
+auto make_array_ref(P p, std::initializer_list<index> il){return make_array_ref(p, detail::to_tuple<D, index_extension>(il));}
 #endif
 
 #if __cpp_deduction_guides
