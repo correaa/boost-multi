@@ -28,6 +28,8 @@ using boost::multi::size;
 }{  multi::array<double, 3> A, B  ; assert( A == B );
 }
 
+return 0;
+
  {	multi::array<double, 1, std::allocator<double>> A{std::allocator<double>{}}; assert( empty(A) );
 }{	multi::array<double, 2, std::allocator<double>> A{std::allocator<double>{}}; assert( empty(A) );
 }{	multi::array<double, 3, std::allocator<double>> A{std::allocator<double>{}}; assert( empty(A) );
