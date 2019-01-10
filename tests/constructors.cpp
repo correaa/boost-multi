@@ -61,7 +61,6 @@ using boost::multi::size;
 #if not __INTEL_COMPILER
 }{  multi::array<double, 3, std::allocator<double>> A({2, 3, 4}, std::allocator<double>{}); assert( num_elements(A)==24 );
 #endif
-}{  multi::array<double, 3, std::allocator<double>> A({2, 3, 4}, std::allocator<double>{}); assert( num_elements(A)==24 );
 }{  multi::array<double, 3, std::allocator<double>> A({{0, 2}, {0, 3}, {0, 4}}, std::allocator<double>{}); assert( num_elements(A)==24 );
 }
 
@@ -99,6 +98,9 @@ using boost::multi::size;
 
  {	multi::array<double, 1> A(multi::iextensions<1>{2}); multi::array<double, 1> B=A; assert(A == B);
 }{	multi::array<double, 2> A({2, 3}); multi::array<double, 2> B=A; assert(A == B);
+#if not __INTEL_COMPILER
+}{	multi::array<double, 3> A(multi::iextensions<3>{2, 3, 4}); multi::array<double, 3> B=A; assert(A == B);
+#endif
 }{	multi::array<double, 3> A({2, 3, 4}); multi::array<double, 3> B=A; assert(A == B);
 }
 
