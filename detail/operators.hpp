@@ -61,10 +61,10 @@ struct random_iterable : B{
 //	friend auto  begin(S&& s, T* =0){return std::forward<S>(s). begin();}
 //	template<class S>//, typename = std::enable_if_t<std::is_same<std::decay_t<S>, T>{}> > 
 //	friend auto  end  (S&& s, T* =0){return std::forward<S>(s). end  ();}
-	template<class S>//, typename = std::enable_if_t<std::is_same<std::decay_t<S>, T>{}> > 
-	friend auto rbegin(S&& s, T* =0){return std::forward<S>(s).rbegin();}
-	template<class S>//, typename = std::enable_if_t<std::is_same<std::decay_t<S>, T>{}> > 
-	friend auto rend  (S&& s, T* =0){return std::forward<S>(s).rend  ();}
+	auto rbegin(){return typename T::reverse_iterator{static_cast<T&>(*this).end  ()};}
+	auto rend  (){return typename T::reverse_iterator{static_cast<T&>(*this).begin()};}
+	friend auto rbegin(T& s){return static_cast<random_iterable&>(s).rbegin();}
+	friend auto rend  (T& s){return static_cast<random_iterable&>(s).rend  ();}
 //	template<class S>
 //	friend auto crbegin(S const& s, ...){return s.crbegin();}
 //	template<class S>

@@ -239,10 +239,10 @@ public:
 	}
 	iterator  begin() const{return {types::base_          , sub, stride_};}
 	iterator  end  () const{return {types::base_ + nelems_, sub, stride_};}
-	auto     rbegin() const{return reverse_iterator{end()};}
-	auto     rend  () const{return reverse_iterator{begin()};}
+//	auto     rbegin() const{return reverse_iterator{end()};}
+//	auto     rend  () const{return reverse_iterator{begin()};}
 	typename types::reference front() const{return * begin();}
-	typename types::reference back()  const{return *rbegin();}
+	typename types::reference back()  const{return *this->rbegin();}
 protected:
 	template<class A>
 	void intersection_assign_(A&& other) const{
