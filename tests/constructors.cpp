@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-c++ -O3 -std=c++17 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x && $0.x $@ &&rm -f $0.x; exit
+c++ -O3 -std=c++17 -Wall -Wextra -Wpedantic -Wfatal-errors $0 -o $0.x && $0.x $@ &&rm -f $0.x; exit
 #endif
 
 #include<iostream>
@@ -167,34 +167,34 @@ using boost::multi::size;
     std::unique_ptr<double[]> uparr = std::make_unique<double[]>(2*3*4);
     uparr[2] = 2.;
 
- {	multi::array_ref<double, 1> A({24}, uparr.get()); assert( num_elements(A)==24 and A[2]==2. );
-}{	multi::array_ref<double, 1> A({0}, nullptr); assert( empty(A) and num_elements(A)==0 ); 
-}{	multi::array_ref<double, 1> A({0}, uparr.get()); assert( empty(A) and num_elements(A)==0 ); 
-}{	multi::array_ref<double, 1> A({}, uparr.get()); assert( empty(A) and num_elements(A)==0 ); 
-}{	multi::array_ref<double, 2> A({6, 4}, uparr.get()); assert( num_elements(A)==24 and A[0][2]==2. );
-}{	multi::array_ref<double, 2> A({{0, 6}, {0, 4}}, uparr.get()); assert( num_elements(A)==24 and A[0][2]==2. );
-}{	multi::array_ref<double, 2> A({0, 0}, uparr.get()); assert( empty(A) and num_elements(A)==0 );
-}{	multi::array_ref<double, 2> A({}, uparr.get()); assert( empty(A) and num_elements(A)==0 );
+ {	multi::array_ref<double, 1> A(uparr.get(), {24}); assert( num_elements(A)==24 and A[2]==2. );
+}{	multi::array_ref<double, 1> A(nullptr, {0}); assert( empty(A) and num_elements(A)==0 ); 
+}{	multi::array_ref<double, 1> A(uparr.get(), {0}); assert( empty(A) and num_elements(A)==0 ); 
+}{	multi::array_ref<double, 1> A(uparr.get(), {}); assert( empty(A) and num_elements(A)==0 ); 
+}{	multi::array_ref<double, 2> A(uparr.get(), {6, 4}); assert( num_elements(A)==24 and A[0][2]==2. );
+}{	multi::array_ref<double, 2> A(uparr.get(), {{0, 6}, {0, 4}}); assert( num_elements(A)==24 and A[0][2]==2. );
+}{	multi::array_ref<double, 2> A(uparr.get(), {0, 0}); assert( empty(A) and num_elements(A)==0 );
+}{	multi::array_ref<double, 2> A(uparr.get(), {}); assert( empty(A) and num_elements(A)==0 );
 }
 
 {
 	std::ptrdiff_t NX = 123, NY = 456, NZ = 789;
 	std::vector<double> v(NX*NY*NZ); iota(begin(v), end(v), 0.);
-	multi::array_cref<double, 3> V({NX, NY, NZ}, v.data());
+	multi::array_cref<double, 3> V(v.data(), {NX, NY, NZ});
 	assert( V.extension(0) == NX and V.extension(1) == NY and V.extension(2) == NZ );
 	assert( std::get<0>(extensions(V)) == NX and std::get<1>(extensions(V)) == NY and std::get<2>(extensions(V)) == NZ );
 	for(auto i : std::get<0>(extensions(V))) assert(not V[i].empty());
 }
 
 #if __cpp_deduction_guides
- {	multi::array_ref A({24}, uparr.get()); assert( dimensionality(A)==1 and num_elements(A)==24 and A[2]==2. );
+ {	multi::array_ref A(uparr.get(), {24}); assert( dimensionality(A)==1 and num_elements(A)==24 and A[2]==2. );
 }{//multi::array_ref A({0}, nullptr); assert( dimensionality(A)==1 and empty(A) and num_elements(A)==0 ); 
-}{	multi::array_ref A({0}, static_cast<double*>(nullptr)); assert( dimensionality(A)==1 and empty(A) and num_elements(A)==0 ); 
-}{	multi::array_ref A({0}, uparr.get()); assert( dimensionality(A)==1 and empty(A) and num_elements(A)==0 ); 
+}{	multi::array_ref A(static_cast<double*>(nullptr), {0}); assert( dimensionality(A)==1 and empty(A) and num_elements(A)==0 ); 
+}{	multi::array_ref A(uparr.get(), {0}); assert( dimensionality(A)==1 and empty(A) and num_elements(A)==0 ); 
 }{//multi::array_ref A({}, uparr.get()); assert( empty(A) and num_elements(A)==0 ); 
-}{	multi::array_ref A({6, 4}, uparr.get()); assert( dimensionality(A)==2 and num_elements(A)==24 and A[0][2]==2. );
-}{	multi::array_ref A({{0, 6}, {0, 4}}, uparr.get()); assert( dimensionality(A)==2 and num_elements(A)==24 and A[0][2]==2. );
-}{	multi::array_ref A({0, 0}, uparr.get()); assert( dimensionality(A)==2 and empty(A) and num_elements(A)==0 );
+}{	multi::array_ref A(uparr.get(), {6, 4}); assert( dimensionality(A)==2 and num_elements(A)==24 and A[0][2]==2. );
+}{	multi::array_ref A(uparr.get(), {{0, 6}, {0, 4}}); assert( dimensionality(A)==2 and num_elements(A)==24 and A[0][2]==2. );
+}{	multi::array_ref A(uparr.get(), {0, 0}); assert( dimensionality(A)==2 and empty(A) and num_elements(A)==0 );
 }{//multi::array_ref A({}, uparr.get()); assert( dimensionality(A)==2 and empty(A) and num_elements(A)==0 );
 }
 #endif
@@ -202,42 +202,42 @@ using boost::multi::size;
 	std::vector<double> v(2*3*4);
 	v[2] = 99.;
 	
- {	multi::array_ref<double, 1> A({24}, v.data()); assert( num_elements(A)==24 and A[2]==99. );
-}{	multi::array_ref<double, 2> A({6, 4}, v.data()); assert( num_elements(A)==24 and A[0][2]==99. );
+ {	multi::array_ref<double, 1> A(v.data(), {24}); assert( num_elements(A)==24 and A[2]==99. );
+}{	multi::array_ref<double, 2> A(v.data(), {6, 4}); assert( num_elements(A)==24 and A[0][2]==99. );
 }
 
- {	multi::array_ref<double, 1, std::vector<double>::iterator> A({24}, v.begin()); assert( num_elements(A)==24 and A[2]==99. );
-}{	multi::array_ref<double, 2, std::vector<double>::iterator> A({6, 4}, v.begin()); assert( num_elements(A)==24 and A[0][2]==99. );
+ {	multi::array_ref<double, 1, std::vector<double>::iterator> A(v.begin(), {24}); assert( num_elements(A)==24 and A[2]==99. );
+}{	multi::array_ref<double, 2, std::vector<double>::iterator> A(v.begin(), {6, 4}); assert( num_elements(A)==24 and A[0][2]==99. );
 }
 
 	std::vector<double> const vc(2*3*4, 99.);
 	
- {	multi::array_ref<double, 1, double const*> A({24}, vc.data()); assert( num_elements(A)==24 and A[2]==99. );
-}{	multi::array_ref<double, 2, double const*> A({6, 4}, vc.data()); assert( num_elements(A)==24 and A[0][2]==99. );
-}{	multi::array_cref<double, 1> A({24}, vc.data()); assert( num_elements(A)==24 and A[2]==99. );
-}{	multi::array_cref<double, 2> A({6, 4}, vc.data()); assert( num_elements(A)==24 and A[0][2]==99. );
+ {	multi::array_ref<double, 1, double const*> A(vc.data(), {24}); assert( num_elements(A)==24 and A[2]==99. );
+}{	multi::array_ref<double, 2, double const*> A(vc.data(), {6, 4}); assert( num_elements(A)==24 and A[0][2]==99. );
+}{	multi::array_cref<double, 1> A(vc.data(), {24}); assert( num_elements(A)==24 and A[2]==99. );
+}{	multi::array_cref<double, 2> A(vc.data(), {6, 4}); assert( num_elements(A)==24 and A[0][2]==99. );
 }
 
 	std::deque<double> q = {0.,1.,2.,3.};
- {	multi::array_ref<double, 1, std::deque<double>::iterator> A({24}, q.begin()); assert( num_elements(A)==24 and A[2]==2. );
-}{	multi::array_ref<double, 2, std::deque<double>::iterator> A({6, 4}, q.begin()); assert( num_elements(A)==24 and A[0][2]==2. );
+ {	multi::array_ref<double, 1, std::deque<double>::iterator> A(q.begin(), {24}); assert( num_elements(A)==24 and A[2]==2. );
+}{	multi::array_ref<double, 2, std::deque<double>::iterator> A(q.begin(), {6, 4}); assert( num_elements(A)==24 and A[0][2]==2. );
 }
 
 #if __cpp_deduction_guides
- {	multi::array_ref A({24}, v.data()); assert( dimensionality(A)==1 and num_elements(A)==24 and A[2]==99. );
-}{	multi::array_ref A({6, 4}, v.data()); assert( dimensionality(A)==2 and num_elements(A)==24 and A[0][2]==99. );
+ {	multi::array_ref A(v.data(), {24}); assert( dimensionality(A)==1 and num_elements(A)==24 and A[2]==99. );
+}{	multi::array_ref A(v.data(), {6, 4}); assert( dimensionality(A)==2 and num_elements(A)==24 and A[0][2]==99. );
 }
 
- {	multi::array_ref A({24}, vc.data()); assert( dimensionality(A)==1 and num_elements(A)==24 and A[2]==99. );
-}{	multi::array_ref A({6, 4}, vc.data()); assert( dimensionality(A)==2 and num_elements(A)==24 and A[0][2]==99. );
+ {	multi::array_ref A(vc.data(), {24}); assert( dimensionality(A)==1 and num_elements(A)==24 and A[2]==99. );
+}{	multi::array_ref A(vc.data(), {6, 4}); assert( dimensionality(A)==2 and num_elements(A)==24 and A[0][2]==99. );
 }
 
- {	multi::array_ref A({24}, v.begin()); assert( dimensionality(A)==1 and num_elements(A)==24 and A[2]==99. );
-}{	multi::array_ref A({6, 4}, v.begin()); assert( dimensionality(A)==2 and num_elements(A)==24 and A[0][2]==99. );
+ {	multi::array_ref A(v.begin(), {24}); assert( dimensionality(A)==1 and num_elements(A)==24 and A[2]==99. );
+}{	multi::array_ref A(v.begin(), {6, 4}); assert( dimensionality(A)==2 and num_elements(A)==24 and A[0][2]==99. );
 }
 
- {	multi::array_ref A({24}, q.begin()); assert( dimensionality(A)==1 and num_elements(A)==24 and A[2]==2. );
-}{	multi::array_ref A({6, 4}, q.begin()); assert( dimensionality(A)==2 and num_elements(A)==24 and A[0][2]==2. );
+ {	multi::array_ref A(q.begin(), {24}); assert( dimensionality(A)==1 and num_elements(A)==24 and A[2]==2. );
+}{	multi::array_ref A(q.begin(), {6, 4}); assert( dimensionality(A)==2 and num_elements(A)==24 and A[0][2]==2. );
 }
 #endif
 }

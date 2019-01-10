@@ -1,5 +1,5 @@
 #if COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && clang++ -O3 `#-fconcepts` -fwrapv -ftrapv -std=c++17 -Wall -Wextra -Wfatal-errors -lboost_timer -I${HOME}/prj -D_TEST_BOOST_MULTI_ARRAY_REF $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
+(echo "#include\""$0"\"" > $0x.cpp) && clang++ -O3 -std=c++17 -Wall -Wextra -Wfatal-errors -D_TEST_BOOST_MULTI_ARRAY_REF $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
 #endif
 #ifndef BOOST_MULTI_ARRAY_REF_HPP
 #define BOOST_MULTI_ARRAY_REF_HPP
@@ -487,14 +487,15 @@ struct array_ref :
 	basic_array<T, D, ElementPtr>
 {	
 	array_ref(array_ref const&) = default;
-	constexpr array_ref(typename array_ref::extensions_type const& e, ElementPtr p) noexcept
+//	constexpr array_ref(typename array_ref::extensions_type const& e, ElementPtr p) noexcept
+//		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
+	constexpr array_ref(typename array_ref::element_ptr p, typename array_ref::extensions_type const& e) noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
 #if defined(__INTEL_COMPILER)
-	constexpr array_ref(std::initializer_list<typename array_ref::index_extension> il, typename array_ref::element_ptr p) noexcept : array_ref{multi::detail::to_tuple<D, typename array_ref::index_extension>(il), p}{}
-	constexpr array_ref(std::initializer_list<typename array_ref::index> il, typename array_ref::element_ptr p) noexcept : array_ref{multi::detail::to_tuple<D, typename array_ref::index_extension>(il), p}{}
+	constexpr array_ref(typename array_ref::element_ptr p, std::initializer_list<typename array_ref::index_extension> il) noexcept : array_ref{multi::detail::to_tuple<D, typename array_ref::index_extension>(il), p}{}
+	constexpr array_ref(typename array_ref::element_ptr p, std::initializer_list<typename array_ref::index> il) noexcept : array_ref{multi::detail::to_tuple<D, typename array_ref::index_extension>(il), p}{}
 #endif
-	constexpr array_ref(ElementPtr p, typename array_ref::extensions_type const& e) noexcept
-		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
+
 	using basic_array<T, D, ElementPtr>::operator=;
 	using basic_array<T, D, ElementPtr>::operator<;
 	using basic_array<T, D, ElementPtr>::operator>;
@@ -550,11 +551,11 @@ auto make_array_ref(P p, std::initializer_list<index> il){return make_array_ref(
 #endif
 
 #if __cpp_deduction_guides
-template<class It> array_ref(typename detail::repeat<index_extension, 1>::type, It)->array_ref<typename std::iterator_traits<It>::value_type, 1, It>;
-template<class It> array_ref(typename detail::repeat<index_extension, 2>::type, It)->array_ref<typename std::iterator_traits<It>::value_type, 2, It>;
-template<class It> array_ref(typename detail::repeat<index_extension, 3>::type, It)->array_ref<typename std::iterator_traits<It>::value_type, 3, It>;
-template<class It> array_ref(typename detail::repeat<index_extension, 4>::type, It)->array_ref<typename std::iterator_traits<It>::value_type, 4, It>;
-template<class It> array_ref(typename detail::repeat<index_extension, 5>::type, It)->array_ref<typename std::iterator_traits<It>::value_type, 5, It>;
+template<class It> array_ref(It, typename detail::repeat<index_extension, 1>::type)->array_ref<typename std::iterator_traits<It>::value_type, 1, It>;
+template<class It> array_ref(It, typename detail::repeat<index_extension, 2>::type)->array_ref<typename std::iterator_traits<It>::value_type, 2, It>;
+template<class It> array_ref(It, typename detail::repeat<index_extension, 3>::type)->array_ref<typename std::iterator_traits<It>::value_type, 3, It>;
+template<class It> array_ref(It, typename detail::repeat<index_extension, 4>::type)->array_ref<typename std::iterator_traits<It>::value_type, 4, It>;
+template<class It> array_ref(It, typename detail::repeat<index_extension, 5>::type)->array_ref<typename std::iterator_traits<It>::value_type, 5, It>;
 #endif
 
 }}
@@ -618,7 +619,7 @@ int main(){
 			{{"C0a", "C0b", "C0c"}, {"C1a", "C1b", "C1c"}}, 
 			{{"D0a", "D0b", "D0c"}, {"D1a", "D1b", "D1c"}}, 
 		};
-		multi::array_cref<std::string, 3> A({4, 2, 3}, &dc3D[0][0][0]);
+		multi::array_cref<std::string, 3> A(&dc3D[0][0][0], {4, 2, 3});
 		assert( dimensionality(A) == 3 and num_elements(A) == 24 and A[2][1][1] == "C1b" );
 		
 //		auto const& A2 = A.sliced(0, 3).rotated()[1].rotated(-1).rotated(1).sliced(0, 2).rotated(-1);
@@ -672,7 +673,7 @@ int main(){
 	{
 		double const dc2D[4][5] = {{1.,2.},{2.,3.}};
 //		multi::array_cref<double, 2> acrd2D{&dc2D[0][0], {4, 5}};
-		multi::array_ref acrd2D{{4, 5}, &dc2D[0][0]};
+		multi::array_ref acrd2D(&dc2D[0][0], {4, 5});
 		static_assert( decltype(acrd2D)::dimensionality == 2, "!");
 		static_assert( acrd2D.dimensionality == 2, "!");
 		static_assert( dimensionality(acrd2D) == 2, "!" );

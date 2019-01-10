@@ -55,11 +55,11 @@ private:
 public:
 	using typename ref::value_type;
 	using ref::operator<;
-	array() noexcept(noexcept(Alloc())) : Alloc{}, ref{{}, nullptr}{}           //1a
-	explicit array(Alloc const& a) : Alloc{a}, ref{{}, nullptr}{}               //1b
-	array(typename array::extensions_type e, typename array::element const& el, Alloc const& a = {})  //2
-	:	Alloc{a} , ref{e, allocate(typename array::layout_t{e}.num_elements())}{
-		uninitialized_fill(el);
+	array() noexcept(noexcept(Alloc())) : Alloc{}, ref{nullptr, {}}{}           //1a
+	explicit array(Alloc const& a) : Alloc{a}, ref{nullptr, {}}{}               //1b
+	array(typename array::extensions_type x, typename array::element const& e, Alloc const& a = {})  //2
+	:	Alloc{a}, ref(allocate(typename array::layout_t{x}.num_elements()), x){
+		uninitialized_fill(e);
 	}
 #if defined(__INTEL_COMPILER)
 	array(std::initializer_list<typename array::index_extension> il, typename array::element const& el, Alloc const& a={}) noexcept : array{multi::detail::to_tuple<D, typename array::index_extension>(il), el, a}{}
@@ -68,8 +68,8 @@ public:
 	array(typename array::index_extension n, value_type const& v, Alloc const& a = {})
 	: 	Alloc{a}, 
 		ref{
-			std::tuple_cat(std::make_tuple(n), multi::extensions(v)),
-			allocate(layout_t<D>{std::tuple_cat(std::make_tuple(n), multi::extensions(v))}.num_elements())
+			allocate(typename array::layout_t{tuple_cat(std::make_tuple(n), multi::extensions(v))}.num_elements()),
+			tuple_cat(std::make_tuple(n), multi::extensions(v)),
 		}
 	{
 		for(auto it = this->begin(); it != this->end(); ++it) *it = v;
@@ -79,8 +79,8 @@ public:
 	array(typename array::size_type n, value_type const& v)
 	: 	array(typename array::index_extension(n), v){}
 
-	explicit array(typename array::extensions_type e, Alloc const& a={}) //3
-	:	Alloc{a}, ref{e, allocate(typename array::layout_t{e}.num_elements())}{
+	explicit array(typename array::extensions_type x, Alloc const& a={}) //3
+	:	Alloc{a}, ref{allocate(typename array::layout_t{x}.num_elements()), x}{
 		uninitialized_value_construct();
 	}
 #if defined(__INTEL_COMPILER)
@@ -92,8 +92,8 @@ public:
 	array(It first, It last, allocator_type const& a = {}) :                    //4
 		Alloc{a}, 
 		ref{
+			allocate(typename array::layout_t{std::tuple_cat(std::make_tuple(index_extension{distance(first, last)}), multi::extensions(*first))}.num_elements()),
 			tuple_cat(std::make_tuple(index_extension{distance(first, last)}), multi::extensions(*first)),
-			allocate(layout_t<D>{std::tuple_cat(std::make_tuple(index_extension{distance(first, last)}), multi::extensions(*first))}.num_elements())
 		}
 	{
 		using std::next;
@@ -103,27 +103,27 @@ public:
 	}
 	template<class Array, typename=std::enable_if_t<!std::is_base_of<array, Array>{}>, typename=std::enable_if_t<std::rank<std::decay_t<Array>>{}==D> >
 	array(Array&& other, allocator_type const& a = {})
-	:	Alloc{a}, ref{extensions(other), allocate(num_elements(other))}{
+	:	Alloc{a}, ref{allocate(num_elements(other)), extensions(other)}{
 		using std::begin; using std::end;
 		multi::uninitialized_copy<D>(begin(other), end(other), ref::begin());
 	}
 	array(array const& other)                                                   // 5a
-	:	Alloc{other}, ref{extensions(other), allocate(other.num_elements())}{
+	:	Alloc{other}, ref{allocate(other.num_elements()), extensions(other)}{
 		uninitialized_copy(other.data());
 	}
 	array(array const& other, allocator_type const& a)                          // 5b
-	:	Alloc{a}, ref{extensions(other), allocate(other.num_elements())}{
+	:	Alloc{a}, ref{allocate(other.num_elements()), extensions(other)}{
 		uninitialized_copy(other.data());
 	}
 	array(array&& other) noexcept                                              //6a
 	:	Alloc{other.get_allocator()},
-		ref{extensions(other), std::exchange(other.base_, nullptr)}
+		ref{std::exchange(other.base_, nullptr), other.extensions()}
 	{
 		other.ref::layout_t::operator=({});
 	}
 	array(array&& other, allocator_type const& a)                             //6b
 	:	Alloc{a},
-		ref(other.extensions(), std::exchange(other.base_, nullptr))
+		ref{std::exchange(other.base_, nullptr), other.extensions()}
 	{
 		//TODO
 		other.ref::layout_t::operator=({});
