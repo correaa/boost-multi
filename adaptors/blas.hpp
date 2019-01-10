@@ -357,7 +357,7 @@ multi::array<typename X1D::value_type, 1> copy(X1D const& x){
 template<class T, class It1, class Size, class OutIt>
 OutIt axpy_n(T alpha, It1 first, Size n, OutIt d_first){
 //	using blas::axpy;
-	axpy(n, alpha, base(first), stride(last), base(d_first), stride(d_first));
+	axpy(n, alpha, base(first), stride(first), base(d_first), stride(d_first));
 	return d_first + n;
 }
 
@@ -760,31 +760,52 @@ auto geru(X1D const& x, Y1D const& y)
 ->decltype(geru(1., x, y)){
 	return geru(1., x, y);}
 
+template<class Op, class Ta, class Tb, class ItA, class ItB, class Size, class OutC>
+void gemm_nm(Ta a, Op opA, ItA Afirst, Size AM, Op opB, ItB Bfirst, Size BN, Tb b, OutC Cfirst){
+	assert(Afirst->stride()==1 and Bfirst->stride()==1 and Cfirst->stride()==1);
+	assert( d_first->size() == first1->size() );
+}
+
 template<class ALPHA, class BETA, class It1, class It2, class Out>
-void gemm(ALPHA const& a, It1 first1, It1 last1, It2 first2, It2 last2, BETA const& b, Out d_first){
+void gemm(ALPHA const& a, It1 A_first, It1 A_last, It2 B_first, It2 B_last, BETA const& b, Out d_first){
 //	using blas::gemm
 	assert( first1->stride() == 1 );
 	assert( first2->stride() == 1 );
 	assert( d_first->stride() == 1 );
+	using std::distance;
 	gemm(
 		'N', 'N', 
-		first1->size(), std::distance(first2, last2), std::distance(first1, last1), a, 
-		base(first1), stride(first1), 
-		base(first2), stride(first2), b, 
+		first1->size(), distance(first2, last2), distance(first1, last1), a, 
+		base(first1 ), stride(first1 ), 
+		base(first2 ), stride(first2 ), b, 
 		base(d_first), stride(d_first)
 	);
 }
 
-template<class ALPHA, class BETA, class A2D, class B2D, class C2D>
-C2D&& gemm(ALPHA const& a, A2D const& A, B2D const& B, BETA const& b, C2D&& C){
-	assert( size(A) == std::get<0>(sizes(B)) and size(C) == size(B) and std::get<1>(sizes(C)) == std::get<1>(sizes(A)) );
+template<class Trans, class ALPHA, class BETA, class A2D, class B2D, class C2D>
+C2D&& gemm(ALPHA const& a, Trans opA, A2D const& A, Trans opB, B2D const& B, BETA const& b, C2D&& C){
+	assert( size(C) == size(B) );
+	assert( size(A) == std::get<0>(sizes(B)) );
 	gemm(a, begin(A), end(A), begin(B), end(B), b, begin(C));
 	return std::forward<C2D>(C);
 }
+
+template<class Trans, class A2D, class B2D, class C2D>
+C2D&& gemm(Trans TA, A2D const& A, Trans TB, B2D const& B, C2D&& C){
+	return gemm(1., TA, A, TB, B, 0., std::forward<C2D>(C));
+}
+
 template<class A2D, class B2D, class C2D>
 C2D&& gemm(A2D const& A, B2D const& B, C2D&& C){
 	return gemm(1., A, B, 0., std::forward<C2D>(C));
 }
+
+template<class A2D, class B2D, class C2D>
+C2D&& gemm(A2D const& A, B2D const& B, C2D&& C){
+	return gemm(1., A, B, 0., std::forward<C2D>(C));
+}
+
+
 template<class A2D, class B2D>
 auto gemm(A2D const& A, B2D const& B){
 	return gemm(A, B, multi::array<typename A2D::element, 2>({size(B), std::get<1>(sizes(A))}));
