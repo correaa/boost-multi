@@ -26,23 +26,3 @@ int main(){
 	assert( &p3->operator[](1) == &A[2][1][1] );
 }
 
-template<class It>
-class F{
-	It first;
-	operator(It){ return std::distance() ; }
-};
-
-for(auto it = first; it != last; ++it){
-	f(*it);
-}
-
-for(auto it = first; it != last; ++it){
-	f(it);
-}
-
-
-
-for(auto it = first; it != last; ++it){
-	*it = f();
-}
-
