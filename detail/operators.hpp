@@ -51,8 +51,8 @@ struct random_iterable : B{
 	friend auto cend  (T const& s){return static_cast<random_iterable const&>(s).cend  ();}
 	auto crbegin() const{return typename T::const_reverse_iterator{cend  ()};}
 	auto crend  () const{return typename T::const_reverse_iterator{cbegin()};}
-	friend auto crbegin(random_iterable const& s){return s.cbegin();}
-	friend auto crend  (random_iterable const& s){return s.cend  ();}
+	friend auto crbegin(T const& s){return static_cast<random_iterable const&>(s).cbegin();}
+	friend auto crend  (T const& s){return static_cast<random_iterable const&>(s).cend  ();}
 	friend auto begin(T const& t){return t.begin();}
 	friend auto begin(T& t){return t.begin();}
 	friend auto end(T const& t){return t.end();}
