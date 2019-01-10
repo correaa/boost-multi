@@ -61,7 +61,7 @@ public:
 	:	Alloc{a} , ref{e, allocate(typename array::layout_t{e}.num_elements())}{
 		uninitialized_fill(el);
 	}
-#if __INTEL_COMPILER < 1900 or __GNUC__ < 5
+#if defined(__INTEL_COMPILER) and (__INTEL_COMPILER < 2000)
 	array(std::initializer_list<typename array::index_extension> il, typename array::element const& el, Alloc const& a={}) noexcept : array{multi::detail::to_tuple<D>(il), el, a}{}
 #endif
 	array(typename array::index_extension n, value_type const& v, Alloc const& a = {})
@@ -82,7 +82,7 @@ public:
 	:	Alloc{a}, ref{e, allocate(typename array::layout_t{e}.num_elements())}{
 		uninitialized_value_construct();
 	}
-#if __INTEL_COMPILER < 1900 or __GNUC__ < 5
+#if defined(__INTEL_COMPILER) && (__INTEL_COMPILER < 1900)
 	array(std::initializer_list<typename array::index_extension> il, Alloc const& a={}) noexcept : array{multi::detail::to_tuple<D>(il), a}{}
 #endif
 
