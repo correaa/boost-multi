@@ -15,7 +15,11 @@ namespace multi = boost::multi;
 
 int main(){
 
+#if not __INTEL_COMPILER
 	multi::array<double, 3> AAAA({50, 50, 50});
+#else
+	multi::array<double, 3> AAAA(multi::iextensions<3>{50, 50, 50});
+#endif
 	assert( AAAA.size() == 50 );
 	assert( AAAA[0].size() == 50 );
 	assert( AAAA[0][0].size() == 50 );
@@ -84,7 +88,7 @@ int main(){
 
 
 	double* p = new double[3*4*5];
-	multi::array_cref<double, 3> B({3, 4, 5}, p);
+	multi::array_cref<double, 3> B(p, {3, 4, 5});
 	multi::array<double, 2> BB = {{1.,2.},{3.,4.}};
 //	multi::layout_t<3> L({3, 4, 5});
 //	assert( A == B );
