@@ -332,8 +332,8 @@ protected:
 //	friend struct basic_array<T, dimensionality_type{types::dimensionality + 1}, typename std::pointer_traits<typename types::element_ptr>::template rebind<typename types::element>>;
 	template<class TT, dimensionality_type DD, typename EP, class LLayout>
 	friend struct basic_array;
-public:
 	basic_array(basic_array const&) = default;
+public:
 	basic_array_ptr<basic_array, Layout> operator&() const{
 		return {this->base_, this->layout(), this->nelems_};
 	}
@@ -460,7 +460,8 @@ public:
 		assert(this->extension() == extension(o));
 		swap_ranges(this->begin(), this->end(), begin(std::forward<Array>(o)));
 	}
-	friend void swap(basic_array&& a1, basic_array&& a2){return a1.swap(a2);}
+//	friend void swap(basic_array&& a1, basic_array&& a2){return a1.swap(a2);}
+	friend void swap(basic_array const& a1, basic_array const& a2){return a1.swap(a2);}
 	template<class A> friend void swap(basic_array&& a1, A&& a2){return a1.swap(std::forward<A>(a2));}
 	template<class A> friend void swap(A&& a1, basic_array&& a2){return a2.swap(std::forward<A>(a1));}
 private:
