@@ -50,7 +50,10 @@ using boost::multi::size;
 }{  multi::array<double, 2, std::allocator<double>> A({2, 3}, std::allocator<double>{}); assert( num_elements(A)==6 );
 #endif
 }{  multi::array<double, 2, std::allocator<double>> A(multi::iextensions<2>{2, 3}, std::allocator<double>{}); assert( num_elements(A)==6 );
+#if not __INTEL_COMPILER
 }{  multi::array<double, 3> A({2, 3, 4}); assert( num_elements(A)==24 and A[1][2][3]==0 );
+#endif
+}{  multi::array<double, 3> A(multi::iextensions<3>{2, 3, 4}); assert( num_elements(A)==24 and A[1][2][3]==0 );
 }{  multi::array<double, 3> A({{0, 2}, {0, 3}, {0, 4}}); assert( num_elements(A)==24 and A[1][2][3]==0 );
 }{  multi::array<double, 3, std::allocator<double>> A({2, 3, 4}, std::allocator<double>{}); assert( num_elements(A)==24 );
 }{  multi::array<double, 3, std::allocator<double>> A({{0, 2}, {0, 3}, {0, 4}}, std::allocator<double>{}); assert( num_elements(A)==24 );
