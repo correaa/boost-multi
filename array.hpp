@@ -200,7 +200,7 @@ public:
 	>::type;
 
 	reference       operator[](index i)      {return ref::operator[](i);}
-	typename array::const_reference operator[](index i) const{return ref::operator[](i);}
+	const_reference operator[](index i) const{return ref::operator[](i);}
 
 	typename array::element_ptr       data()      {return ref::data();}
 	typename array::element_const_ptr data() const{return ref::data();}
