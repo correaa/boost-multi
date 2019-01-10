@@ -486,6 +486,10 @@ struct array_ref :
 	boost::multi::partially_ordered2<array_ref<T, D, ElementPtr>, void>,
 	basic_array<T, D, ElementPtr>
 {	
+protected:
+	constexpr array_ref() noexcept
+		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{}, nullptr}{}
+public:
 	array_ref(array_ref const&) = default;
 //	constexpr array_ref(typename array_ref::extensions_type const& e, ElementPtr p) noexcept
 //		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}

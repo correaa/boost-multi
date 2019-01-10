@@ -55,8 +55,8 @@ private:
 public:
 	using typename ref::value_type;
 	using ref::operator<;
-	array() noexcept(noexcept(Alloc())) : Alloc{}, ref{nullptr, {}}{}           //1a
-	explicit array(Alloc const& a) : Alloc{a}, ref{nullptr, {}}{}               //1b
+	array() noexcept(noexcept(Alloc())) : Alloc{}, ref{}{}           //1a
+	explicit array(Alloc const& a) : Alloc{a}, ref{}{}               //1b
 	array(typename array::extensions_type x, typename array::element const& e, Alloc const& a = {})  //2
 	:	Alloc{a}, ref(allocate(typename array::layout_t{x}.num_elements()), x){
 		uninitialized_fill(e);
