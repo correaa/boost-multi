@@ -24,6 +24,8 @@ int main(){
 	assert( not (A[0] != A[2]) and not (AR[0] != AR[2]) );
 	assert( A[0] <= A[1] and AR[0] <= A[1] and AC[0] <= AC[1] );
 	assert( A[0][0] <= A[0][1] and AR[0][0] <= A[0][1] );
+
+	cout<< A[1][0][0] <<std::endl;
 	assert( A[1][0][0] == 1.2 );
 	assert( AR[1][0][0] == 1.2 );
 	assert( AC[1][0][0] == 1.2 );
