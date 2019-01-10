@@ -33,7 +33,7 @@ struct bitransformer{
 };
 
 auto neg = [](auto&& x){return -x;};
-#ifdef __has_cpp_attribute(maybe_unused)
+#if __has_cpp_attribute(maybe_unused)
 [[maybe_unused]] 
 #endif
 auto inverse_function(decltype(neg)){return [](auto&& x){return -x;};}

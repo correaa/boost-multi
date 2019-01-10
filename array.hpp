@@ -61,7 +61,7 @@ public:
 	:	Alloc{a} , ref{e, allocate(typename array::layout_t{e}.num_elements())}{
 		uninitialized_fill(el);
 	}
-#if defined(__INTEL_COMPILER) and (__INTEL_COMPILER < 2000)
+#if defined(__INTEL_COMPILER)
 	array(std::initializer_list<typename array::index_extension> il, typename array::element const& el, Alloc const& a={}) noexcept : array{multi::detail::to_tuple<D>(il), el, a}{}
 #endif
 	array(typename array::index_extension n, value_type const& v, Alloc const& a = {})
@@ -82,10 +82,9 @@ public:
 	:	Alloc{a}, ref{e, allocate(typename array::layout_t{e}.num_elements())}{
 		uninitialized_value_construct();
 	}
-//#if defined(__INTEL_COMPILER)
-	template<class Ext> // typename array::index_extension
-	array(std::initializer_list<Ext> il, Alloc const& a={}) noexcept : array{multi::detail::to_tuple<D>(il), a}{}
-//#endif
+#if defined(__INTEL_COMPILER)
+	array(std::initializer_list<typename array::index_extension> il, Alloc const& a={}) noexcept : array{multi::detail::to_tuple<D>(il), a}{}
+#endif
 
 	template<class It> static auto distance(It a, It b){using std::distance; return distance(a, b);}
 	template<class It, typename=decltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>      
