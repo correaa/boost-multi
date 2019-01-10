@@ -62,8 +62,8 @@ public:
 		uninitialized_fill(e);
 	}
 #if defined(__INTEL_COMPILER)
-	array(std::initializer_list<typename array::index_extension> il, typename array::element const& el, Alloc const& a={}) noexcept : array{multi::detail::to_tuple<D, typename array::index_extension>(il), el, a}{}
-	array(std::initializer_list<typename array::index> il, typename array::element const& el, Alloc const& a={}) noexcept : array{multi::detail::to_tuple<D, typename array::index_extension>(il), el, a}{}
+//	array(std::initializer_list<typename array::index_extension> il, typename array::element const& el, Alloc const& a={}) noexcept : array{multi::detail::to_tuple<D, typename array::index_extension>(il), el, a}{}
+//	array(std::initializer_list<typename array::index> il, typename array::element const& el, Alloc const& a={}) noexcept : array{multi::detail::to_tuple<D, typename array::index_extension>(il), el, a}{}
 #endif
 	array(typename array::index_extension n, value_type const& v, Alloc const& a = {})
 	: 	Alloc{a}, 
