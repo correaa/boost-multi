@@ -71,6 +71,7 @@ using boost::multi::size;
 }{  multi::array<double, 1> A({0,3}, 3.1); assert( size(A)==3 and A[1]==3.1 );
 }{  multi::array<double, 1> A({{0,3}}, 3.1); assert( size(A)==3 and A[1]==3.1 );
 }{  multi::array<double, 1> A(multi::iextension(3), 3.1); assert( size(A)==3 and A[1]==3.1 );
+return 0;
 }{  multi::array<double, 1> A(3l, 3.1); assert( size(A)==3 and A[1]==3.1 );
 }{  multi::array<double, 1> A(3, 3.1); assert( size(A)==3 and A[1]==3.1 );
 }{  multi::array<double, 1> A({0, 3}, 3.1); assert( size(A)==3 and A[1]==3.1 );
