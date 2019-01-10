@@ -240,8 +240,9 @@ using boost::multi::size;
 }{	multi::array_ref A({6, 4}, q.begin()); assert( dimensionality(A)==2 and num_elements(A)==24 and A[0][2]==2. );
 }
 #endif
-
 }
+
+cout<<"end"<<std::endl;
 
 }
 

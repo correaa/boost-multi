@@ -91,8 +91,8 @@ public:
 	array(It first, It last, allocator_type const& a = {}) :                    //4
 		Alloc{a}, 
 		ref{
-			std::tuple_cat(std::make_tuple(index_extension{index{distance(first, last)}}), multi::extensions(*first)),
-			allocate(layout_t<D>{std::tuple_cat(std::make_tuple(index_extension{index{distance(first, last)}}), multi::extensions(*first))}.num_elements())
+			tuple_cat(std::make_tuple(index_extension{distance(first, last)}), multi::extensions(*first)),
+			allocate(layout_t<D>{std::tuple_cat(std::make_tuple(index_extension{distance(first, last)}), multi::extensions(*first))}.num_elements())
 		}
 	{
 		using std::next;
