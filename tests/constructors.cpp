@@ -112,7 +112,7 @@ using boost::multi::size;
 	multi::array<double, 1> B1 = {3., 4.}; assert(num_elements(B1)==2 and B1[1]==4.);
 	multi::array<double, 1> C1 = {0, 4}; assert(num_elements(C1)==2 and C1[1]==4.);
 	multi::array<double, 1> D1 = {0l, 4l}; assert(num_elements(D1)==2 and D1[1]==4.);
-	multi::array<double, 1> E1 = {{0, 4}}; assert(num_elements(E1)==2 and E1[1]==4.);
+//	multi::array<double, 1> E1 = {{0, 4}}; assert(num_elements(E1)==2 and E1[1]==4.); // [X] icc19
 	multi::array<double, 1> F1({0, 4}); assert(num_elements(F1)==2 and F1[1]==4.);
 	multi::array<double, 2> A2 = {
 		{1., 2., 3.}, 
