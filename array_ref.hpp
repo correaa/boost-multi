@@ -228,7 +228,7 @@ public:
 	using reverse_iterator = basic_reverse_iterator<iterator>;
 	using ptr = basic_array_ptr<basic_array, Layout>;
 	ptr operator&() const{return {this->base_, this->layout(), this->nelems_};}
-	friend auto strides(basic_array const& self){return self.strides();}
+//	friend auto strides(basic_array const& self){return self.strides();}
 	iterator begin(index i) const{
 		Layout l = static_cast<Layout const&>(*this); l.rotate(i);
 		return {types::base_ + l(0       ), l.sub, l.stride_};
