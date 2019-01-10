@@ -65,8 +65,6 @@ using boost::multi::size;
 #endif
 }
 
-return 0;
-
  {  multi::array<double, 1> A(multi::iextensions<1>{3}, 3.1); assert( size(A)==3 and A[1]==3.1 );
 }{//multi::array<double, 1> A({3}, 3.1); assert( size(A)==3 and A[1]==3.1 ); // warning in clang
 }{//multi::array<double, 1> A({3l}, 3.1); assert( size(A)==3 and A[1]==3.1 ); // warning in clang
@@ -80,6 +78,8 @@ return 0;
 }{  multi::array<double, 2> A({{0,2}, {0,3}}, 3.1); assert( num_elements(A)==6 and A[1][2]==3.1 );
 }{  multi::array<double, 3> A({2, 3, 4}, 3.1); assert( num_elements(A)==24 and A[1][2][3]==3.1 );
 }
+
+return 0;
 
 {  
 	multi::array<double, 1> A1(multi::iextension{2}, 3.1); assert( num_elements(A1)==2 and A1[1]==3.1 );
