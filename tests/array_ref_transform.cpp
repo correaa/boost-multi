@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-c++ -O3 -std=c++14 -Wall -Wfatal-errors $0 -o $0.x && time $0.x $@ && rm -f $0.x; exit
+clang++ -O3 -std=c++14 -Wall `#-Wfatal-errors` $0 -o $0.x && time $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include "../array_ref.hpp"
@@ -33,7 +33,7 @@ struct bitransformer{
 };
 
 auto neg = [](auto&& x){return -x;};
-auto inverse_function(decltype(neg)){return [](auto&& x){return -x;};}
+[[maybe_unused]] auto inverse_function(decltype(neg)){return [](auto&& x){return -x;};}
 
 int main(){
 
@@ -57,21 +57,20 @@ int main(){
 		boost::make_transform_iterator(&d2D[0][0], neg), 
 		{4, 5}
 	);
-	auto md2DB = multi::make_array_ref({4, 5}, &md2D[0][0]);
+	auto d2DB = multi::make_array_ref(&md2D[0][0], {4, 5});
 #endif
 //	d2DA[0][0] = 4.;
 	assert( d2DA == d2DB );
 
 {
+#if __cpp_deduction_guides
 	double Z[4][5] {
 		{ 0,  1,  2,  3,  4}, 
 		{ 5,  6,  7,  8,  9}, 
 		{10, 11, 12, 13, 14}, 
 		{15, 16, 17, 18, 19}
 	};
-	
-#if __cpp_deduction_guides
-	auto d2DC = multi::make_array_ref({4, 5}, bitransformer<decltype(neg), decltype(&Z[0][0])>{&Z[0][0], neg});
+	auto d2DC = multi::make_array_ref(bitransformer<decltype(neg), decltype(&Z[0][0])>{&Z[0][0], neg}, {4, 5});
 //	multi::array_ref d2DC{bitransformer<decltype(neg), decltype(&Z[0][0])>{&Z[0][0], neg}, {4, 5}};
 	cout<< d2DC[1][1] <<'\n';
 	d2DC[1][1] = -66;

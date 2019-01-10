@@ -526,24 +526,24 @@ struct array_ref :
 template<class T, dimensionality_type D> 
 using array_cref = array_ref<T, D, T const*>;
 
-template<dimensionality_type D, class Ptr>
-array_ref<typename std::iterator_traits<Ptr>::value_type, D, Ptr> 
-make_array_ref(typename detail::repeat<index_extension, D>::type exts, Ptr p){
-	return {exts, p};
-}
+//template<dimensionality_type D, class P>
+//array_ref<typename std::iterator_traits<P>::value_type, D, P> 
+//make_array_ref(P p, typename detail::repeat<index_extension, D>::type x){return {p, x};}
 
-template<class Ptr> auto make_array_ref(index_extensions<1> exts, Ptr p){return make_array_ref<1>(exts, p);}
-template<class Ptr> auto make_array_ref(index_extensions<2> exts, Ptr p){return make_array_ref<2>(exts, p);}
-template<class Ptr> auto make_array_ref(index_extensions<3> exts, Ptr p){return make_array_ref<3>(exts, p);}
-template<class Ptr> auto make_array_ref(index_extensions<4> exts, Ptr p){return make_array_ref<4>(exts, p);}
-template<class Ptr> auto make_array_ref(index_extensions<5> exts, Ptr p){return make_array_ref<5>(exts, p);}
+template<dimensionality_type D, class P>
+array_ref<typename std::iterator_traits<P>::value_type, D, P> 
+make_array_ref(P p, index_extensions<D> x){return {p, x};}
+
+template<class P> auto make_array_ref(P p, index_extensions<1> x){return make_array_ref<1>(p, x);}
+template<class P> auto make_array_ref(P p, index_extensions<2> x){return make_array_ref<2>(p, x);}
+template<class P> auto make_array_ref(P p, index_extensions<3> x){return make_array_ref<3>(p, x);}
+template<class P> auto make_array_ref(P p, index_extensions<4> x){return make_array_ref<4>(p, x);}
+template<class P> auto make_array_ref(P p, index_extensions<5> x){return make_array_ref<5>(p, x);}
 
 //In ICC you need to specify the dimensionality in make_array_ref<D>
-#if __INTEL_COMPILER < 1900 or __GNUC__ < 5
+#if defined(__INTEL_COMPILER)
 template<dimensionality_type D, class Ptr, class E> 
-auto make_array_ref(std::initializer_list<E> il, Ptr p){
-	return make_array_ref(detail::to_tuple<D>(il), p);
-}
+auto make_array_ref(P p, std::initializer_list<E> il){return make_array_ref(p, detail::to_tuple<D>(il));}
 #endif
 
 #if __cpp_deduction_guides
