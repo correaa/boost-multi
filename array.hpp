@@ -98,7 +98,7 @@ public:
 		Alloc{a}, 
 		ref{
 			allocate(typename array::layout_t{std::tuple_cat(std::make_tuple(index_extension{std::distance(first, last)}), multi::extensions(*first))}.num_elements()),
-			tuple_cat(std::make_tuple(index_extension{std::distance(first, last)}), multi::extensions(*first)),
+			tuple_cat(std::make_tuple(index_extension{std::distance(first, last)}), multi::extensions(*first))
 		}
 	{
 		using std::next;
