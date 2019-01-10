@@ -19,7 +19,7 @@ template<class... T> void ddd(T&&...);
 
 int main(){
 
-	std::vector v = {1.,2.,3.};
+	std::vector<double> v = {1.,2.,3.};
 	double d2D[4][5] = {
 		{150, 16, 17, 18, 19},
 		{ 30,  1,  2,  3,  4}, 
