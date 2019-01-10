@@ -490,7 +490,7 @@ struct array_ref :
 	constexpr array_ref(typename array_ref::extensions_type const& e, ElementPtr p) noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
 #if __INTEL_COMPILER < 1900 or __GNUC__ < 5
-	template<class E> constexpr array_ref(std::initializer_list<E> il, ElementPtr p) noexcept : array_ref{multi::detail::to_tuple<D>(il), p}{}
+	template<class E> constexpr array_ref(std::initializer_list<E> il, typename array_ref::element_ptr p) noexcept : array_ref{multi::detail::to_tuple<D>(il), p}{}
 #endif
 	constexpr array_ref(ElementPtr p, typename array_ref::extensions_type const& e) noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}

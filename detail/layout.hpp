@@ -146,6 +146,9 @@ struct layout_t
 		offset_{0}, 
 		nelems_{std::get<0>(e).size()*sub.num_elements()} 
 	{}
+#if defined(__INTEL_COMPILER)
+	constexpr layout_t(std::initializer_list<index_extension> il) noexcept : layout_t{multi::detail::to_tuple<D>(il)}{}
+#endif
 #if 0
 	constexpr layout_t(f_tag, extensions_type const& e = {}) : 
 		sub{detail::tail(e)}, 
@@ -296,6 +299,9 @@ struct layout_t<dimensionality_type{1}>{
 	constexpr layout_t(index_extension ie, layout_t<0> const&) : 
 		stride_{1}, offset_{0}, nelems_{ie.size()}
 	{}
+#if defined(__INTEL_COMPILER)
+	constexpr layout_t(std::initializer_list<index_extension> il) noexcept : layout_t{multi::detail::to_tuple<1>(il)}{}
+#endif
 	template<class Extensions, typename = decltype(std::get<0>(Extensions{}))>
 	constexpr layout_t(Extensions e) : 
 		stride_{1*1}, offset_{0}, nelems_{std::get<0>(e).size()*1}
