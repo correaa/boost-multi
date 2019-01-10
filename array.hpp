@@ -88,6 +88,8 @@ public:
 //	explicit array(std::initializer_list<index> il, Alloc const& a={}) noexcept : array{multi::detail::to_tuple<D, typename array::index_extension>(il), a}{}
 	explicit array(std::array<index, D> arr, Alloc const& a = {}) : 
 		array{multi::detail::to_tuple<typename array::index_extension>(il), arr}{}
+	explicit array(std::array<typename array::index_extension, D> arr, Alloc const& a = {}) : 
+		array{multi::detail::to_tuple<typename array::index_extension>(il), arr}{}
 #endif
 
 	template<class It> static auto distance(It a, It b){using std::distance; return distance(a, b);}
