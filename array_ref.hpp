@@ -496,8 +496,8 @@ public:
 	constexpr array_ref(typename array_ref::element_ptr p, typename array_ref::extensions_type const& e) noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
 #if defined(__INTEL_COMPILER)
-	constexpr array_ref(typename array_ref::element_ptr p, std::initializer_list<typename array_ref::index_extension> il) noexcept : array_ref{p, multi::detail::to_tuple<D, typename array_ref::index_extension>(il)}{}
-	constexpr array_ref(typename array_ref::element_ptr p, std::initializer_list<typename array_ref::index> il) noexcept : array_ref{p, multi::detail::to_tuple<D, typename array_ref::index_extension>(il)}{}
+//	constexpr array_ref(typename array_ref::element_ptr p, std::initializer_list<typename array_ref::index_extension> il) noexcept : array_ref{p, multi::detail::to_tuple<D, typename array_ref::index_extension>(il)}{}
+//	constexpr array_ref(typename array_ref::element_ptr p, std::initializer_list<typename array_ref::index> il) noexcept : array_ref{p, multi::detail::to_tuple<D, typename array_ref::index_extension>(il)}{}
 #endif
 
 	using basic_array<T, D, ElementPtr>::operator=;
