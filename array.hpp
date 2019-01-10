@@ -99,7 +99,7 @@ public:
 		ref{}
 	{
 		auto const& f = *first;
-		auto xx = multi::extensions(f);
+		auto xx = extensions(f);
 		layout_t<D>::operator=(typename array::layout_t{tuple_cat(std::make_tuple(index_extension{std::distance(first, last)}), xx)});
 		this->base_ = allocate(typename array::layout_t{std::tuple_cat(std::make_tuple(index_extension{std::distance(first, last)}), multi::extensions(*first))}.num_elements());
 		using std::next;
