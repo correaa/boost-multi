@@ -542,7 +542,7 @@ template<class P> auto make_array_ref(P p, index_extensions<5> x){return make_ar
 
 //In ICC you need to specify the dimensionality in make_array_ref<D>
 #if defined(__INTEL_COMPILER)
-template<dimensionality_type D, class Ptr, class E> 
+template<dimensionality_type D, class P, class E> 
 auto make_array_ref(P p, std::initializer_list<E> il){return make_array_ref(p, detail::to_tuple<D>(il));}
 #endif
 
