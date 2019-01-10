@@ -45,10 +45,12 @@ template<class T, class B = empty_base>
 struct random_iterable : B{
 	auto cbegin() const{return typename T::const_iterator{static_cast<T const&>(*this).begin()};}
 	auto cend()   const{return typename T::const_iterator{static_cast<T const*>(this)->end()};}
-	template<class SS>//, typename = std::enable_if_t<std::is_same<std::decay_t<SS>, T>{}> >
-	friend auto cbegin(SS const& s, T* = 0)->decltype(s.cbegin()){return s.cbegin();}
-	template<class SS>//, typename = std::enable_if_t<std::is_same<std::decay_t<SS>, T>{}> >
-	friend auto cend  (SS const& s, T* = 0)->decltype(s.cend()  ){return s.cend  ();}
+//	template<class SS>//, typename = std::enable_if_t<std::is_same<std::decay_t<SS>, T>{}> >
+//	friend auto cbegin(SS const& s, T* = 0)->decltype(s.cbegin()){return s.cbegin();}
+	friend auto cbegin(T const& s){return static_cast<random_iterable const&>(s).cbegin();}
+//	template<class SS>//, typename = std::enable_if_t<std::is_same<std::decay_t<SS>, T>{}> >
+//	friend auto cend  (SS const& s, T* = 0)->decltype(s.cend()  ){return s.cend  ();}
+	friend auto cend  (T const& s){return static_cast<random_iterable const&>(s).cend  ();}
 	auto crbegin() const{return typename T::const_reverse_iterator{cend  ()};}
 	auto crend  () const{return typename T::const_reverse_iterator{cbegin()};}
 	friend auto begin(T const& t){return t.begin();}
