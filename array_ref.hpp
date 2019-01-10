@@ -489,7 +489,10 @@ struct array_ref :
 	array_ref(array_ref const&) = default;
 	constexpr array_ref(typename array_ref::extensions_type const& e, ElementPtr p) noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
-
+	template<class Extension>
+	constexpr array_ref(std::initializer_list<Extension> il, ElementPtr p) noexcept
+		: array_ref{multi::detail::to_tuple<D>(il), p}{}
+		
 	constexpr array_ref(ElementPtr p, typename array_ref::extensions_type const& e) noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
 	using basic_array<T, D, ElementPtr>::operator=;

@@ -45,6 +45,15 @@ std::array<T, N-1> tail(std::array<T, N> const& a){
 	return ret;
 }
 
+template<class T, size_t... I>
+constexpr auto to_tuple_impl(std::initializer_list<T> il, std::index_sequence<I...>){
+	return std::make_tuple(il.begin()[I]...);
+}
+
+template<size_t N, class T>
+constexpr auto to_tuple(std::initializer_list<T> il){
+	return il.size()==N?to_tuple_impl(il, std::make_index_sequence<N>()):throw 0;
+}
 #if 0
 template<typename Tuple, size_t... I, size_t S = sizeof...(I)>
 auto reverse_impl(Tuple&& t, std::index_sequence<I...>)
@@ -366,9 +375,11 @@ using std::cout;
 namespace multi = boost::multi;
 
 int main(){
-	auto t = std::make_tuple(1.,2.,3.);
-	auto u = multi::detail::reverse(t);
-	assert( std::get<0>(u) == 3. );
+//	auto t = std::make_tuple(1.,2.,3.);
+//	auto u = multi::detail::reverse(t);
+//	assert( std::get<0>(u) == 3. );
+	auto t = multi::detail::to_tuple<3>({1,2,3});
+	assert( std::get<1>(t) == 2 );
 
  {  multi::layout_t<1> L{}; assert( dimensionality(L)==1 and num_elements(L) == 0 and size(L) == 0 and size(extension(L))==0 and stride(L)!=0 and empty(L) );
 }{  multi::layout_t<2> L{}; assert( dimensionality(L)==2 and num_elements(L) == 0 and size(L) == 0 and size(extension(L))==0 and stride(L)!=0 and empty(L) );
