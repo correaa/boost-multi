@@ -54,6 +54,17 @@ template<size_t N, class To, class From>
 constexpr auto to_tuple(std::initializer_list<From> il){
 	return il.size()==N?to_tuple_impl<To>(il, std::make_index_sequence<N>()):throw 0;
 }
+
+template<class To, class From, size_t... I>
+constexpr auto to_tuple_impl(std::array<From, sizeof...(I)> arr, std::index_sequence<I...>){
+	return std::make_tuple(To{std::get<I>(arr)}...);
+}
+
+template<class To, size_t N, class From>
+constexpr auto to_tuple(std::array<From, N> arr){
+	return to_tuple_impl<To>(arr, std::make_index_sequence<N>());
+}
+
 #if 0
 template<typename Tuple, size_t... I, size_t S = sizeof...(I)>
 auto reverse_impl(Tuple&& t, std::index_sequence<I...>)
@@ -383,7 +394,10 @@ int main(){
 //	assert( std::get<0>(u) == 3. );
 	auto t = multi::detail::to_tuple<3, multi::index_extension>({1,2,3});
 	assert( std::get<1>(t) == 2 );
-
+	std::array<multi::index, 3> arr{1,2,3};
+	auto u = multi::detail::to_tuple<multi::index_extension>(arr);
+	assert( std::get<1>(u) == 2 );
+	
  {  multi::layout_t<1> L{}; assert( dimensionality(L)==1 and num_elements(L) == 0 and size(L) == 0 and size(extension(L))==0 and stride(L)!=0 and empty(L) );
 }{  multi::layout_t<2> L{}; assert( dimensionality(L)==2 and num_elements(L) == 0 and size(L) == 0 and size(extension(L))==0 and stride(L)!=0 and empty(L) );
 }{  multi::layout_t<3> L{}; assert( num_elements(L) == 0 );
