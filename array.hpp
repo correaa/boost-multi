@@ -82,7 +82,7 @@ public:
 	:	Alloc{a}, ref{e, allocate(typename array::layout_t{e}.num_elements())}{
 		uninitialized_value_construct();
 	}
-#if defined(__INTEL_COMPILER) && (__INTEL_COMPILER < 1900)
+#if defined(__INTEL_COMPILER)
 	array(std::initializer_list<typename array::index_extension> il, Alloc const& a={}) noexcept : array{multi::detail::to_tuple<D>(il), a}{}
 #endif
 
