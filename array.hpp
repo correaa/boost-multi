@@ -82,9 +82,9 @@ public:
 	:	Alloc{a}, ref{e, allocate(typename array::layout_t{e}.num_elements())}{
 		uninitialized_value_construct();
 	}
-//#if defined(__INTEL_COMPILER)
-//	array(std::initializer_list<typename array::index_extension> il, Alloc const& a={}) noexcept : array{multi::detail::to_tuple<D>(il), a}{}
-//#endif
+#if defined(__INTEL_COMPILER)
+	explicit array(std::initializer_list<typename array::index_extension> il, Alloc const& a={}) noexcept : array{multi::detail::to_tuple<D>(il), a}{}
+#endif
 
 	template<class It> static auto distance(It a, It b){using std::distance; return distance(a, b);}
 	template<class It, typename=decltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>      
