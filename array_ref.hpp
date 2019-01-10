@@ -519,7 +519,7 @@ struct array_ref :
 //		return operator=(static_cast<array_cref<T, D, ElementPtr> const&>(o));
 //	}
 	typename array_ref::element_ptr data() const{return array_ref::base_;}
-	friend auto data(array_ref const& self){return self.data();}
+	friend typename array_ref::element_ptr data(array_ref const& self){return self.data();}
 
 };
 
