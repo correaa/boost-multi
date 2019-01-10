@@ -16,8 +16,8 @@ int main(){
 		{{ 1.2,  1.1}, { 2.4, 1.}}
 	};
 
-	multi::array_ref<double, 3> AR(extensions(A), A.data());
-	multi::array_cref<double, 3> AC(extensions(A), A.data());
+	multi::array_ref<double, 3> AR(data(A), extensions(A));
+	multi::array_cref<double, 3> AC(data(A), extensions(A));
 
 	assert( A == A and AR == A and AR == AC );
 	assert( A[0] == A[2] and AR[0]==A[2] and AR[0]==AC[2] );
