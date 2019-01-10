@@ -66,7 +66,6 @@ int main(){
 		multi::array<double, 3>::const_iterator cit;
 		cit = it3;
 		assert( cit == it3 );
-		using std::rbegin;
 		multi::array<double, 3>::reverse_iterator rit;
 		assert(( rit == multi::array<double, 3>::reverse_iterator{} ));
 		++rit;
@@ -74,8 +73,8 @@ int main(){
 	//	assert( !rit );
 		rit = rbegin(A);
 		assert(( rit != multi::array<double, 3>::reverse_iterator{} ));
-		assert((multi::array<double, 3>::reverse_iterator{A.begin()} == A.rend()));
-		assert((A.begin() == multi::array<double, 3>::iterator{A.rend()}));
+		assert((multi::array<double, 3>::reverse_iterator{A.begin()} == rend(A)));
+		assert((begin(A) == multi::array<double, 3>::iterator{rend(A)}));
 		{
 		std::vector<double> vv = {1.,2.,3.};
 		auto it = vv.begin();
