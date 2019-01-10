@@ -96,11 +96,10 @@ public:
 	template<class It, typename=decltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>      
 	array(It first, It last, allocator_type const& a = {}) :                    //4
 		Alloc{a}, 
-		ref{
-			allocate(typename array::layout_t{std::tuple_cat(std::make_tuple(index_extension{std::distance(first, last)}), multi::extensions(*first))}.num_elements()),
-			tuple_cat(std::make_tuple(index_extension{std::distance(first, last)}), multi::extensions(*first))
-		}
+		ref{}
 	{
+		this->layout_t<D>::operator=(typename array::layout_t{tuple_cat(std::make_tuple(index_extension{std::distance(first, last)}), multi::extensions(*first))});
+		this->base_ = allocate(typename array::layout_t{std::tuple_cat(std::make_tuple(index_extension{std::distance(first, last)}), multi::extensions(*first))}.num_elements());
 		using std::next;
 		using std::all_of;
 		if(first!=last) assert( all_of(next(first), last, [x=multi::extensions(*first)](auto& e){return extensions(e)==x;}) );
@@ -145,6 +144,7 @@ public:
 			clear();
 			this->ref::layout_t::operator=(layout_t<D>{extensions(a)});
 			this->base_ = allocate(this->num_elements());
+		//	multi::uninitialized_copy<D>(maybestd_begin(std::forward<A>(a)), maybestd_end(std::forward<A>(a)), array::begin());
 			multi::uninitialized_copy<D>(maybestd_begin(std::forward<A>(a)), maybestd_end(std::forward<A>(a)), array::begin());
 		}
 		return *this;
