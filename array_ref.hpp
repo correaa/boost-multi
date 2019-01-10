@@ -319,7 +319,7 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout> :
 	using types::types;
 	using decay_type = array<typename types::element, dimensionality_type{1}, typename pointer_traits<typename types::element_ptr>::allocator_type>;
 	decay_type decay() const{return *this;}
-	friend auto decay(basic_array const& self){return self.decay();}
+	friend decay_type decay(basic_array const& self){return self.decay();}
 protected:
 	template<class A>
 	void intersection_assign_(A&& other) const{
