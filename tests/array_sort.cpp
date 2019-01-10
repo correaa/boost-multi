@@ -26,7 +26,7 @@ int main(){
 		{100, 11, 12, 13, 14}, 
 		{ 50,  6,  7,  8,  9} 
 	};
-	multi::array_ref<double, 2> d2D_ref({4, 5}, &d2D[0][0]);
+	multi::array_ref<double, 2> d2D_ref(&d2D[0][0], {4, 5});
 	
 	std::stable_sort( begin(d2D_ref), end(d2D_ref) );
 	std::stable_sort( d2D_ref.begin(1), d2D_ref.end(1) );
