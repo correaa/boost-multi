@@ -26,7 +26,7 @@ int main(){
 		{10, 11, 12, 13, 14}, 
 		{15, 16, 17, 18, 19}
 	};
-	multi::array_ref<double, 2, double const*> d2D_cref({4, 5}, &d2D[0][0]);
+	multi::array_ref<double, 2, double const*> d2D_cref(&d2D[0][0], {4, 5});
 
 	decltype(d2D_cref)::value_type a_row = d2D_cref[2];
 	decltype(d2D_cref[2])::decay_type b_row = d2D_cref[2];
@@ -36,7 +36,7 @@ int main(){
 	assert( e_row[3] == d2D_cref[2][3] );
 
 	std::vector<double> d2Dv(20); iota(d2Dv.begin(), d2Dv.end(), 0);
-	multi::array_ref<double, 2, double const*> d2Dv_cref({4, 5}, d2Dv.data());
+	multi::array_ref<double, 2, double const*> d2Dv_cref(d2Dv.data(), {4, 5});
 	assert( d2Dv.size() == std::size_t(num_elements(d2Dv_cref)) );
 	assert(d2Dv_cref[1][1] == 6);
 
@@ -98,7 +98,7 @@ int main(){
 		for(auto it2 = it1->begin()   ; it2 != it1->end()   ||!endl(cout); ++it2)
 			cout << *it2 << ' ';
 
-	multi::array_ref<double, 2, double const*> d2D_crefref{extensions(d2D_cref), data(d2D_cref)};
+	multi::array_ref<double, 2, double const*> d2D_crefref{data(d2D_cref), extensions(d2D_cref)};
 
 	using std::for_each;
 	using std::begin;
@@ -151,7 +151,7 @@ int main(){
 		{10, 11, 12, 13, 14}, 
 		{15, 16, 17, 18, 19}
 	};
-	multi::array_cref<double, 2> d2D_prime_cref{{4, 5}, &d2D_prime[0][0]};
+	multi::array_cref<double, 2> d2D_prime_cref(&d2D_prime[0][0], {4, 5});
 	assert( d2D_cref == d2D_prime_cref ); // deep comparison
 	assert( d2D_cref[1][2] == d2D_prime_cref[1][2] );
 	assert( &d2D_cref[1][2] != &d2D_prime_cref[1][2] );
@@ -170,7 +170,7 @@ int main(){
 #if defined(__INTEL_COMPILER)
 	auto d2D_null_cref = multi::make_array_ref<2>(&d2D_null[0][0], {4, 5});
 #else
-	auto d2D_null_cref = multi::make_array_ref(&d2D_null[0][0], {4, 5}, &d2D_null[0][0]);
+	auto d2D_null_cref = multi::make_array_ref(&d2D_null[0][0], {4, 5});
 #endif
 	using std::min;
 	assert( &min(d2D_null_cref, d2D_cref) == &d2D_null_cref );
@@ -228,7 +228,7 @@ int main(){
 	std::vector<double> v(NX*NY*NZ);
 	iota(begin(v), end(v), 0.);
 
-	multi::array_cref<double, 3> v3D_cref{{NX, NY, NZ}, v.data()};
+	multi::array_cref<double, 3> v3D_cref(v.data(), {NX, NY, NZ});
 	assert( num_elements(v3D_cref) == multi::size_type(v.size()) );
 
 	{
@@ -243,12 +243,12 @@ int main(){
 	{
 		std::vector<double> v(100, 1.);
 		std::vector<double> w(100, 2.);
-		auto f = [](std::vector<double>& a){return multi::array_ref<double,1>({100}, a.data());}; //	auto V = f(v); //	V = f(w);
+		auto f = [](std::vector<double>& a){return multi::array_ref<double,1>(a.data(), {100});}; //	auto V = f(v); //	V = f(w);
 		f(v) = f(w);
 		assert( v[10] == 2. );
 
 		std::vector<double> x(100, 3.);
-		auto g = [](std::vector<double>& a){return multi::array_ref<double,2>({10, 10}, a.data());}; //	auto V = f(v); //	V = f(w);
+		auto g = [](std::vector<double>& a){return multi::array_ref<double,2>(a.data(), {10, 10});}; //	auto V = f(v); //	V = f(w);
 		g(v) = g(x);
 		assert( v[10] == 3. );
 	}
