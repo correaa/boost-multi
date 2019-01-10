@@ -13,8 +13,28 @@ c++ -O3 -std=c++14 -Wall -Wfatal-errors -I$HOME/prj $0 -o $0.x && time $0.x $@ &
 using std::cout; using std::cerr;
 namespace multi = boost::multi;
 
+template<class T, typename = decltype(std::declval<T>().f())>
+std::true_type has_f_aux(T const&);
+std::false_type has_f_aux(...);
+
+template<class T> struct has_f : decltype(has_f_aux(std::declval<T>())){};
+
+struct A{
+	int n;
+	A() : n{5}{}
+	void f() const{};
+};
+struct B{
+	int n;
+	B() : n{5}{}
+};
+
 int main(){
 
+	assert( has_f<A>{} );
+	assert( not has_f<B>{} );
+	assert( not has_f<std::string>{} );
+	
 #if not __INTEL_COMPILER
 	multi::array<double, 3> AAAA({50, 50, 50});
 #else

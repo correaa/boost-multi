@@ -28,7 +28,7 @@ constexpr auto num_elements(A const& arr)
 ->decltype(arr.num_elements()){
 	return arr.num_elements();}
 
-constexpr size_type num_elements(...){return 1;}
+//constexpr size_type num_elements(...){return 1;}
 template<class T, std::size_t N>
 constexpr auto num_elements(const T(&t)[N]) noexcept{return size(t)*num_elements(t[0]);}
 
@@ -53,8 +53,8 @@ constexpr auto dimensionality(Container const&)
 ->decltype(Container::dimensionality){
 	return Container::dimensionality;}
 
-constexpr auto dimensionality(...){return 0;}
-	
+//constexpr auto dimensionality(...){return 0;}
+
 template<class T, std::size_t N>
 constexpr auto dimensionality(const T(&t)[N]){return 1 + dimensionality(t[0]);}
 
@@ -64,7 +64,7 @@ constexpr auto sizes(Array const& arr)
 	return arr.sizes();}
 
 template<class T>
-constexpr std::tuple<> sizes(...){return {};}
+inline constexpr std::tuple<> sizes(T const&){return {};}
 
 template<class T, std::size_t N>
 constexpr auto sizes(const T(&t)[N]) noexcept{
@@ -83,12 +83,19 @@ constexpr auto corigin(const T& t){return &t;}
 template<class T, std::size_t N>
 constexpr auto corigin(const T(&t)[N]) noexcept{return corigin(t[0]);}
 
+template<class T, typename = decltype(std::declval<T>().extensions())>
+std::true_type has_extensions_aux(T const&);
+std::false_type has_extensions_aux(...);
+
+template<class T> struct has_extensions : decltype(has_extensions_aux(std::declval<T>())){};
+
 template<class T>
 auto extensions(T const& t)
 ->decltype(t.extensions()){
 	return t.extensions();}
 
-inline std::tuple<> extensions(...){return {};}
+template<class T, typename = std::enable_if_t<not has_extensions<T>{}> >
+inline constexpr std::tuple<> extensions(T const&){return {};}
 
 template<dimensionality_type> struct extension_aux;
 
