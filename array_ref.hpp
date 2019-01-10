@@ -489,10 +489,9 @@ struct array_ref :
 	array_ref(array_ref const&) = default;
 	constexpr array_ref(typename array_ref::extensions_type const& e, ElementPtr p) noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
-	template<class Extension>
-	constexpr array_ref(std::initializer_list<Extension> il, ElementPtr p) noexcept
-		: array_ref{multi::detail::to_tuple<D>(il), p}{}
-		
+#if __INTEL_COMPILER < 1900 or __GNUC__ < 5
+	template<class E> constexpr array_ref(std::initializer_list<E> il, ElementPtr p) noexcept : array_ref{multi::detail::to_tuple<D>(il), p}{}
+#endif
 	constexpr array_ref(ElementPtr p, typename array_ref::extensions_type const& e) noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
 	using basic_array<T, D, ElementPtr>::operator=;
@@ -538,6 +537,14 @@ template<class Ptr> auto make_array_ref(index_extensions<2> exts, Ptr p){return 
 template<class Ptr> auto make_array_ref(index_extensions<3> exts, Ptr p){return make_array_ref<3>(exts, p);}
 template<class Ptr> auto make_array_ref(index_extensions<4> exts, Ptr p){return make_array_ref<4>(exts, p);}
 template<class Ptr> auto make_array_ref(index_extensions<5> exts, Ptr p){return make_array_ref<5>(exts, p);}
+
+//In ICC you need to specify the dimensionality in make_array_ref<D>
+#if __INTEL_COMPILER < 1900 or __GNUC__ < 5
+template<dimensionality_type D, class Ptr, class E> 
+auto make_array_ref(std::initializer_list<E> il, Ptr p){
+	return make_array_ref(detail::to_tuple<D>(il), p);
+}
+#endif
 
 #if __cpp_deduction_guides
 template<class It> array_ref(typename detail::repeat<index_extension, 1>::type, It)->array_ref<typename std::iterator_traits<It>::value_type, 1, It>;
