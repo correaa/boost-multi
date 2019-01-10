@@ -174,7 +174,7 @@ using boost::multi::size;
 }{	multi::array_ref<double, 2> A(uparr.get(), {6, 4}); assert( num_elements(A)==24 and A[0][2]==2. );
 }{	multi::array_ref<double, 2> A(uparr.get(), {{0, 6}, {0, 4}}); assert( num_elements(A)==24 and A[0][2]==2. );
 }{	multi::array_ref<double, 2> A(uparr.get(), {0, 0}); assert( empty(A) and num_elements(A)==0 );
-}{	multi::array_ref<double, 2> A(uparr.get(), {}); assert( empty(A) and num_elements(A)==0 );
+//}{	multi::array_ref<double, 2> A(uparr.get(), {}); assert( empty(A) and num_elements(A)==0 );
 }
 
 {
