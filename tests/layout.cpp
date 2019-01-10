@@ -39,7 +39,11 @@ int main(){
 	assert(( extension(DA) == multi::irange{0, 50} ));
 
 	{
+#if not __INTEL_COMPILER
 	multi::array<double, 2> B({50, 50});
+#else
+	multi::array<double, 2> B(multi::iextensions<2>{50, 50});
+#endif
 	assert( size(B) == 50 );
 	assert( B[0].sliced(10, 20).size() == 10 );
 	assert( B(0, {10, 20}).dimensionality == 1 );
