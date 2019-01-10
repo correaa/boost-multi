@@ -45,14 +45,14 @@ std::array<T, N-1> tail(std::array<T, N> const& a){
 	return ret;
 }
 
-template<class T, size_t... I>
-constexpr auto to_tuple_impl(std::initializer_list<T> il, std::index_sequence<I...>){
-	return std::make_tuple(il.begin()[I]...);
+template<class To, class From, size_t... I>
+constexpr auto to_tuple_impl(std::initializer_list<From> il, std::index_sequence<I...>){
+	return std::make_tuple(To{il.begin()[I]}...);
 }
 
-template<size_t N, class T>
-constexpr auto to_tuple(std::initializer_list<T> il){
-	return il.size()==N?to_tuple_impl(il, std::make_index_sequence<N>()):throw 0;
+template<size_t N, class To, class From>
+constexpr auto to_tuple(std::initializer_list<From> il){
+	return il.size()==N?to_tuple_impl<To>(il, std::make_index_sequence<N>()):throw 0;
 }
 #if 0
 template<typename Tuple, size_t... I, size_t S = sizeof...(I)>
@@ -147,7 +147,8 @@ struct layout_t
 		nelems_{std::get<0>(e).size()*sub.num_elements()} 
 	{}
 #if defined(__INTEL_COMPILER)
-	constexpr layout_t(std::initializer_list<index_extension> il) noexcept : layout_t{multi::detail::to_tuple<D>(il)}{}
+	constexpr layout_t(std::initializer_list<index_extension> il) noexcept : layout_t{multi::detail::to_tuple<D, index_extension>(il)}{}
+	constexpr layout_t(std::initializer_list<index> il) noexcept : layout_t{multi::detail::to_tuple<D, index_extension>(il)}{}
 #endif
 #if 0
 	constexpr layout_t(f_tag, extensions_type const& e = {}) : 
@@ -300,7 +301,8 @@ struct layout_t<dimensionality_type{1}>{
 		stride_{1}, offset_{0}, nelems_{ie.size()}
 	{}
 #if defined(__INTEL_COMPILER)
-	constexpr layout_t(std::initializer_list<index_extension> il) noexcept : layout_t{multi::detail::to_tuple<1>(il)}{}
+	constexpr layout_t(std::initializer_list<index_extension> il) noexcept : layout_t{multi::detail::to_tuple<1, typename layout_t::index_extension>(il)}{}
+	constexpr layout_t(std::initializer_list<index> il) noexcept : layout_t{multi::detail::to_tuple<1, typename layout_t::index_extension>(il)}{}
 #endif
 	template<class Extensions, typename = decltype(std::get<0>(Extensions{}))>
 	constexpr layout_t(Extensions e) : 
@@ -379,7 +381,7 @@ int main(){
 //	auto t = std::make_tuple(1.,2.,3.);
 //	auto u = multi::detail::reverse(t);
 //	assert( std::get<0>(u) == 3. );
-	auto t = multi::detail::to_tuple<3>({1,2,3});
+	auto t = multi::detail::to_tuple<3, multi::index_extension>({1,2,3});
 	assert( std::get<1>(t) == 2 );
 
  {  multi::layout_t<1> L{}; assert( dimensionality(L)==1 and num_elements(L) == 0 and size(L) == 0 and size(extension(L))==0 and stride(L)!=0 and empty(L) );
