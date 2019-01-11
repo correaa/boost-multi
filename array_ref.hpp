@@ -218,7 +218,7 @@ private:
 		basic_reverse_iterator() : std::reverse_iterator<Iterator>(){}
 		explicit basic_reverse_iterator(Iterator it) : std::reverse_iterator<Iterator>(--it){}
 		explicit operator Iterator() const{auto ret = this->base(); return ++ret;}
-		explicit operator bool() const{auto ret = this->base(); return static_cast<bool>(++ret);}
+		explicit operator bool() const{auto ret = this->base(); ++ret; return static_cast<bool>(ret);}
 		typename Iterator::reference operator*() const{return this->current;}
 		typename Iterator::pointer operator->() const{return &this->current;}
 		typename Iterator::reference operator[](typename Iterator::difference_type n) const{return *(this->current - n);}
@@ -414,7 +414,7 @@ public:
 		template<class Other, typename = decltype(Ptr{typename Other::pointer{}})> 
 		basic_iterator(Other const& o) : data_{o.data_}, stride_{o.stride_}{}
 		basic_iterator(std::nullptr_t np = nullptr) : data_{np}, stride_{}{}
-		explicit operator bool() const{return this->data_;}
+		explicit operator bool() const{return static_cast<bool>(this->data_);}
 		Ref operator[](typename types::difference_type n) const{assert(*this); return *((*this) + n);}
 	private:
 		basic_iterator(Ptr d, typename basic_array::index s) : data_{d}, stride_{s}{}
