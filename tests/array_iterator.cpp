@@ -26,11 +26,22 @@ decltype(auto) take(MA&& ma){return ma[0];}
 
 int main(){
 {
+#if not __INTEL_COMPILER
 	multi::array<double, 3> A {
 		{{ 1.2,  1.1}, { 2.4, 1.}},
 		{{11.2,  3.0}, {34.4, 4.}},
 		{{ 1.2,  1.1}, { 2.4, 1.}}
 	};
+#else
+	cout << "IC " << __INTEL_COMPILER << std::endl;
+	cout << "GNUC " << __GNUC__ << std::endl;
+	double const a[3][2][2] = {
+		{{ 1.2,  1.1}, { 2.4, 1.}},
+		{{11.2,  3.0}, {34.4, 4.}},
+		{{ 1.2,  1.1}, { 2.4, 1.}}
+	};
+	multi::array<double, 3> A(a);
+#endif
 
 	assert( begin(A) < end(A) );
 	assert( cbegin(A) < cend(A) );
