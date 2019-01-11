@@ -17,7 +17,7 @@ class range{
 	IndexType first_;
 	IndexType last_;
 public:
-	using value_type = IndexType;
+	using value_type = typename IndexType;
 	using difference_type = std::make_signed_t<value_type>;
 	using size_type = difference_type;
 	using const_reference = value_type const /*&*/;
