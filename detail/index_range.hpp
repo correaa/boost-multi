@@ -15,7 +15,7 @@ namespace multi{
 template<class IndexType>
 class range{
 	IndexType first_;
-	IndexType last_;s
+	IndexType last_;
 public:
 	using value_type = IndexType;
 	using difference_type = std::make_signed_t<value_type>;
