@@ -161,7 +161,12 @@ return 0;
 		#endif
 		{1.,2.,3.}; 
 	assert(num_elements(A1)==3 and A1[1]==2.);
-	multi::array<double, 2> A2 = {A1, A1, A1, A1}; assert(num_elements(A2)==12 and A2[2][1]==2.);
+	multi::array<double, 2> A2 = 
+		#if __INTEL_COMPILER
+		(double[4])
+		#endif
+		{A1, A1, A1, A1}; 
+	assert(num_elements(A2)==12 and A2[2][1]==2.);
 	multi::array<double, 3> A3 = {A2, A2, A2, A2, A2}; assert(num_elements(A3)==60 and A3[3][2][1]==2.);
 }
 
