@@ -161,7 +161,8 @@ return 0;
 		#endif
 		{1.,2.,3.}; 
 	assert(num_elements(A1)==3 and A1[1]==2.);
-	multi::array<double, 2> A2
+
+	multi::array<double, 2> A2 = 
 		#if __INTEL_COMPILER
 		(decltype(A1)[4])
 		#endif
@@ -169,7 +170,7 @@ return 0;
 	assert(num_elements(A2)==12 and A2[2][1]==2.);
 	multi::array<double, 3> A3 
 		#if __INTEL_COMPILER
-		= (decltype(A2)[3])
+		= (decltype(A2)[5])
 		#endif
 		{A2, A2, A2, A2, A2}; 
 	assert(num_elements(A3)==60 and A3[3][2][1]==2.);

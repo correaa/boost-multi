@@ -56,7 +56,7 @@ template<class T, typename = std::enable_if_t<not has_num_elements<T>{}> >
 constexpr size_type num_elements(T const&){return 1;}
 
 template<class T, std::size_t N>
-constexpr auto num_elements(const T(&t)[N]) noexcept{return size(t)*num_elements(t[0]);}
+constexpr auto num_elements(const T(&t)[N]) noexcept{return N*num_elements(t[0]);}
 
 template<class T, size_t N>
 constexpr auto num_elements(std::array<T, N> arr){return N*num_elements(arr[0]);}
