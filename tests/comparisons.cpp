@@ -10,11 +10,15 @@ using std::cout;
 
 int main(){
 
-	multi::array<double, 3> A {
-		{{ 1.2,  1.1}, { 2.4, 1.}},
-		{{11.2,  3.0}, {34.4, 4.}},
-		{{ 1.2,  1.1}, { 2.4, 1.}}
-	};
+	multi::array<double, 3> A 
+		#if __INTEL_COMPILER
+		= (double[3][2][2])
+		#endif
+		{
+			{{ 1.2,  1.1}, { 2.4, 1.}},
+			{{11.2,  3.0}, {34.4, 4.}},
+			{{ 1.2,  1.1}, { 2.4, 1.}}
+		};
 	
 	assert( A[0] < A[1] );
 	cout << A[0][0][1] <<std::endl;
