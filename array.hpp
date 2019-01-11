@@ -84,8 +84,6 @@ public:
 		uninitialized_value_construct();
 	}
 #if defined(__INTEL_COMPILER)
-//	explicit array(std::initializer_list<typename array::index_extension> il, Alloc const& a={}) noexcept : array{multi::detail::to_tuple<D, typename array::index_extension>(il), a}{}
-//	explicit array(std::initializer_list<index> il, Alloc const& a={}) noexcept : array{multi::detail::to_tuple<D, typename array::index_extension>(il), a}{}
 	array(std::array<index, D> arr, Alloc const& a = {}) : 
 		array{multi::detail::to_tuple<typename array::index_extension>(il), arr}{}
 	array(std::array<typename array::index_extension, D> arr, Alloc const& a = {}) : 
@@ -107,7 +105,7 @@ public:
 		if(first!=last) assert( all_of(next(first), last, [x=multi::extensions(*first)](auto& e){return extensions(e)==x;}) );
 		multi::uninitialized_copy<D>(first, last, ref::begin());
 	}
-	template<class Array, typename=std::enable_if_t<!std::is_base_of<array, Array>{}>, typename=std::enable_if_t<std::rank<std::decay_t<Array>>{}==D> >
+	template<class Array, typename=std::enable_if_t<!std::is_base_of<array, Array>{} and multi::rank<std::remove_reference_t<Array>>{}==D> >//, typename=std::enable_if_t<std::rank<std::remove_reference_t<Array>>{}==D> >
 	array(Array&& other, allocator_type const& a = {})
 	:	Alloc{a}, ref{allocate(num_elements(other)), extensions(other)}{
 		using std::begin; using std::end;
@@ -134,9 +132,10 @@ public:
 		//TODO
 		other.ref::layout_t::operator=({});
 	}
+#if not defined(__INTEL_COMPILER)
 	array(std::initializer_list<value_type> il, allocator_type const& a={}) 
 	:	array(il.begin(), il.end(), a){}
-
+#endif
 	template<class A>
 	array& operator=(A&& a){
 		auto ext = extensions(a);
@@ -304,14 +303,14 @@ template<class T, class A=std::allocator<T>> array(IL<IL<IL<IL<IL<T>>>>>, A={})-
 
 }}
 
-namespace std{
-	template<class T, boost::multi::dimensionality_type N, class... Ts> 
-	struct rank<boost::multi::array<T, N, Ts...>> 
-	: public std::integral_constant<
-		boost::multi::dimensionality_type, 
-		boost::multi::array<T, N, Ts...>::rank
-	>{};
-}
+//namespace std{
+//	template<class T, boost::multi::dimensionality_type N, class... Ts> 
+//	struct rank<boost::multi::array<T, N, Ts...>> 
+//	: public std::integral_constant<
+//		boost::multi::dimensionality_type, 
+//		typename boost::multi::array<T, N, Ts...>::rank{}
+//	>{};
+//}
 
 #if _TEST_BOOST_MULTI_ARRAY
 

@@ -127,8 +127,8 @@ struct layout_t
 {
 //	static constexpr dimensionality_type dimensionality = D;
 	using dimensionality_type = multi::dimensionality_type;
-	static constexpr dimensionality_type rank = D;
-	static constexpr dimensionality_type dimensionality(){return rank;}
+	using rank = std::integral_constant<dimensionality_type, D>;
+	static constexpr dimensionality_type dimensionality(){return rank{};}
 	friend constexpr dimensionality_type dimensionality(layout_t const& l){return l.dimensionality();}
 	using sub_t = layout_t<D-1>;
 	using index = multi::index;
@@ -292,8 +292,8 @@ template<>
 struct layout_t<dimensionality_type{1}>{
 	using sub_t = layout_t<dimensionality_type{0}>;
 //	typedef boost::multi::dimensionality_type dimensionality_type;
-	static constexpr dimensionality_type rank = 1;
-	static constexpr dimensionality_type dimensionality = rank;
+	using rank = std::integral_constant<dimensionality_type, 1>;
+	static constexpr dimensionality_type dimensionality = rank{};
 	friend constexpr auto dimensionality(layout_t const& l){return l.dimensionality;}
 	using index_extension = multi::index_extension;
 

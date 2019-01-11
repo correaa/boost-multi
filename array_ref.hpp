@@ -125,8 +125,8 @@ struct basic_array :
 	array_types<T, D, ElementPtr, Layout>
 {
 	using types = array_types<T, D, ElementPtr, Layout>;
-	friend struct basic_array<typename types::element, Layout::rank + 1, typename types::element_ptr >;
-	friend struct basic_array<typename types::element, Layout::rank + 1, typename types::element_ptr&>;
+	friend struct basic_array<typename types::element, typename Layout::rank{} + 1, typename types::element_ptr >;
+	friend struct basic_array<typename types::element, typename Layout::rank{} + 1, typename types::element_ptr&>;
 //	friend struct basic_array<typename types::element, Layout::rank    , typename std::pointer_traits<typename types::element_ptr>::template rebind<typename types::element>>;
 	using types::layout;
 	decltype(auto) layout() const{return array_types<T, D, ElementPtr, Layout>::layout();}
@@ -572,14 +572,14 @@ namespace std{
 	struct rank<boost::multi::array_ref<T, N, Ts...>> 
 	: public std::integral_constant<
 		boost::multi::dimensionality_type, 
-		boost::multi::array_ref<T, N, Ts...>::rank
+		typename boost::multi::array_ref<T, N, Ts...>::rank{}
 	>{};
 
 	template<class T, boost::multi::dimensionality_type N, class... Ts> 
 	struct rank<boost::multi::basic_array<T, N, Ts...>> 
 	: public std::integral_constant<
 		boost::multi::dimensionality_type, 
-		boost::multi::basic_array<T, N, Ts...>::rank
+		typename boost::multi::basic_array<T, N, Ts...>::rank{}
 	>{};
 }
 
@@ -627,11 +627,11 @@ int main(){
 			{{"D0a", "D0b", "D0c"}, {"D1a", "D1b", "D1c"}}, 
 		};
 		multi::array_cref<std::string, 3> A(&dc3D[0][0][0], {4, 2, 3});
-		assert( dimensionality(A) == 3 and num_elements(A) == 24 and A[2][1][1] == "C1b" );
+		assert( num_elements(A) == 24 and A[2][1][1] == "C1b" );
 		
 //		auto const& A2 = A.sliced(0, 3).rotated()[1].rotated(-1).rotated(1).sliced(0, 2).rotated(-1);
 		auto const& A2 = A.sliced(0, 3).rotated()[1].sliced(0, 2).unrotated();
-		assert( dimensionality(A2) == 2 and num_elements(A2) == 6 );
+		assert( multi::rank<std::decay_t<decltype(A2)>>{} == 2 and num_elements(A2) == 6 );
 		assert( std::get<0>(sizes(A2)) == 3 and std::get<1>(sizes(A2)) == 2 );
 		for(auto i : std::get<0>(extensions(A2)) ){
 			for(auto j : std::get<1>(extensions(A2)) ) cout<< A2[i][j] <<' ';
@@ -639,7 +639,7 @@ int main(){
 		}
 
 		auto const& A3 = A({0, 3}, 1, {0, 2});
-		assert( dimensionality(A3) == 2 and num_elements(A3) == 6 );
+		assert( multi::rank<std::decay_t<decltype(A3)>>{} == 2 and num_elements(A3) == 6 );
 		for(auto i : std::get<0>(extensions(A3)) ){
 			for(auto j : std::get<1>(extensions(A3)) ) cout<< A3[i][j] <<' ';
 			cout<<'\n';
@@ -683,7 +683,7 @@ int main(){
 		multi::array_ref acrd2D(&dc2D[0][0], {4, 5});
 		static_assert( decltype(acrd2D)::dimensionality == 2, "!");
 		static_assert( acrd2D.dimensionality == 2, "!");
-		static_assert( dimensionality(acrd2D) == 2, "!" );
+		static_assert( multi::rank<decltype(acrd2D)>{} == 2, "!" );
 		assert( &acrd2D[2][3] == &dc2D[2][3] );
 		assert( acrd2D.size() == 4);
 		assert( size(acrd2D) == 4 );

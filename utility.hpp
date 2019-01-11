@@ -12,6 +12,23 @@
 namespace boost{
 namespace multi{
 
+template<class T, typename = typename T::rank>
+std::true_type has_rank_aux(T const&);
+std::false_type has_rank_aux(...);
+
+///template<class T> struct has_rank : decltype(has_rank_aux(std::declval<T>())){};
+
+//template<class T, class T2 = void> struct rank;
+
+template<typename T> struct rank;
+
+template<typename T, size_t N> 
+std::integral_constant<size_t, 1 + multi::rank<T>{}>  rank_aux(std::array<T, N> const&);
+template<typename T> 
+std::integral_constant<size_t, std::rank<T>{}> rank_aux(T const&);
+
+template<typename T> struct rank : decltype(rank_aux(std::declval<T>())){};
+
 #if __cplusplus < 201703L
 template<class Container>
 constexpr auto size(Container const& con)
@@ -23,14 +40,24 @@ constexpr auto size(Container const& con)
 template <class T, std::size_t N>
 constexpr auto size(const T(&)[N]) noexcept{return multi::size_type{N};}
 
-template<class A> 
+template<class T>
+auto has_num_elements_aux(T const& t)->decltype(t.num_elements(), std::true_type {});
+auto has_num_elements_aux(...       )->decltype(                  std::false_type{});
+template<class T> struct has_num_elements : decltype(has_num_elements_aux(std::declval<T>())){};
+
+template<class A, typename = std::enable_if_t<has_num_elements<A>{}> > 
 constexpr auto num_elements(A const& arr)
 ->decltype(arr.num_elements()){
 	return arr.num_elements();}
+	
+template<class T, typename = std::enable_if_t<not has_num_elements<T>{}> > 
+constexpr size_type num_elements(T const&){return 1;}
 
-//constexpr size_type num_elements(...){return 1;}
 template<class T, std::size_t N>
 constexpr auto num_elements(const T(&t)[N]) noexcept{return size(t)*num_elements(t[0]);}
+
+template<class T, size_t N>
+constexpr auto num_elements(std::array<T, N> arr){return N*num_elements(arr[0]);}
 
 template <class T, std::size_t N>
 constexpr auto stride(const T(&t)[N]) noexcept{return num_elements(t[0]);}
@@ -43,27 +70,44 @@ auto extension(Container const& c) // TODO consider "extent"
 ->decltype(range<decltype(size(c))>{0, size(c)}){
 	return range<decltype(size(c))>{0, size(c)};}
 
-template<class Container>
+template<class T>
+auto has_dimensionaliy_aux(T const& t)->decltype(t.dimensionality(), std::true_type {});
+auto has_dimensionaliy_aux(...       )->decltype(                    std::false_type{});
+template<class T> struct has_dimensionality : decltype(has_dimensionaliy_aux(std::declval<T>())){};
+
+template<class Container, typename = std::enable_if_t<has_dimensionality<Container>{}> >
 constexpr auto dimensionality(Container const& con)
 ->decltype(con.dimensionality()){
 	return con.dimensionality();}
-	
-template<class Container>
-constexpr auto dimensionality(Container const&)
-->decltype(Container::dimensionality){
-	return Container::dimensionality;}
 
-//constexpr auto dimensionality(...){return 0;}
+template<class T>
+auto has_dimensionaliy_member_aux(T const& t)->decltype(size_t(t.dimensionality), std::true_type {});
+auto has_dimensionaliy_member_aux(...       )->decltype(                          std::false_type{});
+template<class T> struct has_dimensionality_member : decltype(has_dimensionaliy_member_aux(std::declval<T>())){};
+
+template<class C> constexpr auto dimensionality(C const&)->decltype(C::dimensionality){return C::dimensionality;}
+
+template<class T, typename = std::enable_if_t<not has_dimensionality<T>{}> >
+constexpr auto dimensionality(T const&){return 0;}
 
 template<class T, std::size_t N>
-constexpr auto dimensionality(const T(&t)[N]){return 1 + dimensionality(t[0]);}
+constexpr auto dimensionality(T(&t)[N]){return 1 + dimensionality(t[0]);}
 
-template<class Array>
+template<class T, std::size_t N>
+constexpr auto dimensionality(std::array<T, N> const&){return 1 + dimensionality<T>();}
+
+template<class T, typename = decltype(std::declval<T>().sizes())>
+std::true_type has_sizes_aux(T const&);
+std::false_type has_sizes_aux(...);
+
+template<class T> struct has_sizes : decltype(has_sizes_aux(std::declval<T>())){};
+
+template<class Array, typename = std::enable_if_t<has_sizes<Array>{}> >
 constexpr auto sizes(Array const& arr)
 ->decltype(arr.sizes()){
 	return arr.sizes();}
 
-template<class T>
+template<class T, typename = std::enable_if_t<not has_sizes<T>{}> >
 inline constexpr std::tuple<> sizes(T const&){return {};}
 
 template<class T, std::size_t N>
@@ -89,18 +133,19 @@ std::false_type has_extensions_aux(...);
 
 template<class T> struct has_extensions : decltype(has_extensions_aux(std::declval<T>())){};
 
-template<class T>
+template<class T, typename = std::enable_if_t<has_extensions<T>{}> >
 auto extensions(T const& t)
 ->decltype(t.extensions()){
 	return t.extensions();}
 
 template<class T, typename = std::enable_if_t<not has_extensions<T>{}> >
-inline constexpr std::tuple<> extensions(T const&){return {};}
+constexpr std::tuple<> extensions(T const&){return {};}
 
-template<dimensionality_type> struct extension_aux;
+template<class T, size_t N>
+constexpr auto extensions(T(&t)[N]){return tuple_cat(std::make_tuple(index_extension(N)), extensions(t[0]));}
 
-template<dimensionality_type D, class T>
-auto extensions(T const& t);
+template<class T, size_t N>
+constexpr auto extensions(std::array<T, N> const& t){return tuple_cat(std::make_tuple(index_extension(N)), extensions(t[0]));}
 
 template<dimensionality_type D>
 struct extensions_aux{
@@ -214,7 +259,15 @@ int main(){
 //	*origin(A) = 99.;
 }{
 
-};
+	static_assert( multi::rank<std::array<double, 10>>{} == 1, "!" );
+	static_assert( multi::rank<std::array<std::array<double, 2>, 10>>{} == 2, "!" );
+	std::array<std::array<double, 2>, 10> a;
+	auto x = multi::extensions(a);
+	assert( std::get<0>(x) == 10 );
+	assert( std::get<1>(x) == 2 );
+	std::cout << multi::num_elements(a) << std::endl;
+	assert( multi::num_elements(a) == 20 );
+}
 
 }
 

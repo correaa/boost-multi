@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-c++ -O3 -std=c++17 -Wall -Wextra -Wpedantic $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
+$CXX -O3 -std=c++17 -Wall -Wextra -Wpedantic $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include "../array.hpp"
@@ -13,6 +13,24 @@ int main(){
 	multi::array<double, 1> const A = {1.2,3.4,5.6}; 
 	assert( size(A) == 3 );
 	assert( A[2] == 5.6 );
+}
+{
+	double const a[3] = {1.1, 2.2, 3.3};
+	using multi::num_elements;
+	assert( num_elements(a) == 3 );
+	multi::array<double, 1> const A(a);
+	assert(size(A) == 3);
+}
+{
+//	multi::array<double, 1> const A((double[]){1.1,2.2,3.3}); // warning: ISO C++ forbids compound-literals [-Wpedantic]
+//	assert( size(A)==3 and A[1] == 2.2 );
+}
+{
+	std::array<double, 3> a = {1.1,2.2,3.3};
+	multi::array<double, 1> const A(a); assert( size(A)==3 and A[1]==2.2 );
+}
+{
+	multi::array<double, 1> const A(std::array<double, 3>{1.1,2.2,3.3}); assert( size(A)==3 and A[1]==2.2 );
 }
 {
 	multi::array<double, 2> const A = {
@@ -34,7 +52,40 @@ int main(){
 	assert( A[1][1] == 34.4 );
 }
 {
-	multi::array<double, 3> const A = {
+	double const a[3][2] = {
+		{ 1.2,  2.4},
+		{11.2, 34.4},
+		{15.2, 32.4}
+	};
+	multi::array<double, 2> A(a);
+}
+{
+	multi::array<double, 2> A((double const[3][4]){
+		{ 1.2,  2.4},
+		{11.2, 34.4},
+		{15.2, 32.4}
+	});
+}
+{
+	std::array<std::array<double, 2>, 3> a = {{
+		{{1.,2.}},
+		{{2.,4.}},
+		{{3.,6.}}
+	}};
+	multi::array<double, 2> A(a);
+	assert( num_elements(A) == 6 and A[2][1] == 6. );
+}
+{
+	multi::array<double, 2> A(
+		std::array<std::array<double, 2>, 3>{{
+			{{1.,2.}},
+			{{2.,4.}},
+			{{3.,6.}}
+		}}
+	);
+}
+{
+	multi::array<double, 3> const A = {  // warning: ISO C++ forbids compound-literals [-Wpedantic]
 		{{ 1.2,  0.}, { 2.4, 1.}},
 		{{11.2,  3.}, {34.4, 4.}},
 		{{15.2, 99.}, {32.4, 2.}}

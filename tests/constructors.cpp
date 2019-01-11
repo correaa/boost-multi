@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-c++ -O3 -std=c++17 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x && $0.x $@ &&rm -f $0.x; exit
+$CXX -O3 -std=c++17 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x && $0.x $@ &&rm -f $0.x; exit
 #endif
 
 #include<iostream>
@@ -27,8 +27,6 @@ using boost::multi::size;
 }{  multi::array<double, 3> A = {}; assert( empty(A) );
 }{  multi::array<double, 3> A, B  ; assert( A == B );
 }
-
-
 
  {	multi::array<double, 1, std::allocator<double>> A{std::allocator<double>{}}; assert( empty(A) );
 }{	multi::array<double, 2, std::allocator<double>> A{std::allocator<double>{}}; assert( empty(A) );
@@ -160,7 +158,7 @@ return 0;
 }
 
 {	
-	multi::array<double, 1> A1 = {1., 2., 3.}; assert(dimensionality(A1)==1); assert(num_elements(A1)==3 and A1[1]==2.);
+	multi::array<double, 1> A1 = {1., 2., 3.}; assert(num_elements(A1)==3 and A1[1]==2.);
 	multi::array<double, 1> B1 = {3., 4.}; assert(num_elements(B1)==2 and B1[1]==4.);
 	multi::array<double, 1> C1 = {0, 4}; assert(num_elements(C1)==2 and C1[1]==4.);
 	multi::array<double, 1> D1 = {0l, 4l}; assert(num_elements(D1)==2 and D1[1]==4.);
@@ -189,15 +187,15 @@ return 0;
 }
 
 #if __cpp_deduction_guides
- {	multi::array A = {1., 2., 3.}; assert( dimensionality(A)==1 and num_elements(A)==3 and A[1]==2. ); static_assert( dimensionality(A)==1 and std::rank<decltype(A)>{}==1 );
-}{	multi::array A = {1., 2.};     assert( dimensionality(A)==1 and num_elements(A)==2 and A[1]==2. ); static_assert( dimensionality(A)==1 and std::rank<decltype(A)>{}==1 );
-}{	multi::array A = {0, 2};       assert( dimensionality(A)==1 and num_elements(A)==2 and A[1]==2. ); static_assert( dimensionality(A)==1 and std::rank<decltype(A)>{}==1 );
-}{	multi::array A = {9.};         assert( dimensionality(A)==1 and num_elements(A)==1 and A[0]==9. ); static_assert( dimensionality(A)==1 and std::rank<decltype(A)>{}==1 );
-}{	multi::array A = {9};          assert( dimensionality(A)==1 and num_elements(A)==1 and A[0]==9. ); static_assert( dimensionality(A)==1 and std::rank<decltype(A)>{}==1 );
+ {	multi::array A = {1., 2., 3.}; assert( multi::rank<decltype(A)>{}==1 and num_elements(A)==3 and A[1]==2. ); static_assert( typename decltype(A)::rank{}==1 );
+}{	multi::array A = {1., 2.};     assert( multi::rank<decltype(A)>{}==1 and num_elements(A)==2 and A[1]==2. ); assert( multi::rank<decltype(A)>{}==1 );
+}{	multi::array A = {0, 2};       assert( multi::rank<decltype(A)>{}==1 and num_elements(A)==2 and A[1]==2. ); assert( multi::rank<decltype(A)>{}==1 );
+}{	multi::array A = {9.};         assert( multi::rank<decltype(A)>{}==1 and num_elements(A)==1 and A[0]==9. ); assert( multi::rank<decltype(A)>{}==1 );
+}{	multi::array A = {9};          assert( multi::rank<decltype(A)>{}==1 and num_elements(A)==1 and A[0]==9. ); assert( multi::rank<decltype(A)>{}==1 );
 }{	multi::array A = {
 		{1., 2., 3.}, 
 		{4., 5., 6.}
-	}; assert( dimensionality(A)==2 and num_elements(A)==6 );
+	}; assert( multi::rank<decltype(A)>{}==2 and num_elements(A)==6 );
 }{
 	multi::array A = {1., 2., 3.};
 	multi::array B = {1., 2.};
@@ -239,14 +237,14 @@ return 0;
 }
 
 #if __cpp_deduction_guides
- {	multi::array_ref A(uparr.get(), {24}); assert( dimensionality(A)==1 and num_elements(A)==24 and A[2]==2. );
+ {	multi::array_ref A(uparr.get(), {24}); assert( multi::rank<decltype(A)>{}==1 and num_elements(A)==24 and A[2]==2. );
 }{//multi::array_ref A({0}, nullptr); assert( dimensionality(A)==1 and empty(A) and num_elements(A)==0 ); 
-}{	multi::array_ref A(static_cast<double*>(nullptr), {0}); assert( dimensionality(A)==1 and empty(A) and num_elements(A)==0 ); 
-}{	multi::array_ref A(uparr.get(), {0}); assert( dimensionality(A)==1 and empty(A) and num_elements(A)==0 ); 
+}{	multi::array_ref A(static_cast<double*>(nullptr), {0}); assert( multi::rank<decltype(A)>{}==1 and empty(A) and num_elements(A)==0 ); 
+}{	multi::array_ref A(uparr.get(), {0}); assert( multi::rank<decltype(A)>{}==1 and empty(A) and num_elements(A)==0 ); 
 }{//multi::array_ref A({}, uparr.get()); assert( empty(A) and num_elements(A)==0 ); 
-}{	multi::array_ref A(uparr.get(), {6, 4}); assert( dimensionality(A)==2 and num_elements(A)==24 and A[0][2]==2. );
-}{	multi::array_ref A(uparr.get(), {{0, 6}, {0, 4}}); assert( dimensionality(A)==2 and num_elements(A)==24 and A[0][2]==2. );
-}{	multi::array_ref A(uparr.get(), {0, 0}); assert( dimensionality(A)==2 and empty(A) and num_elements(A)==0 );
+}{	multi::array_ref A(uparr.get(), {6, 4}); assert( multi::rank<decltype(A)>{}==2 and num_elements(A)==24 and A[0][2]==2. );
+}{	multi::array_ref A(uparr.get(), {{0, 6}, {0, 4}}); assert( multi::rank<decltype(A)>{}==2 and num_elements(A)==24 and A[0][2]==2. );
+}{	multi::array_ref A(uparr.get(), {0, 0}); assert( multi::rank<decltype(A)>{}==2 and empty(A) and num_elements(A)==0 );
 }{//multi::array_ref A({}, uparr.get()); assert( dimensionality(A)==2 and empty(A) and num_elements(A)==0 );
 }
 #endif
@@ -276,20 +274,20 @@ return 0;
 }
 
 #if __cpp_deduction_guides
- {	multi::array_ref A(v.data(), {24}); assert( dimensionality(A)==1 and num_elements(A)==24 and A[2]==99. );
-}{	multi::array_ref A(v.data(), {6, 4}); assert( dimensionality(A)==2 and num_elements(A)==24 and A[0][2]==99. );
+ {	multi::array_ref A(v.data(), {24}); assert( multi::rank<decltype(A)>{}==1 and num_elements(A)==24 and A[2]==99. );
+}{	multi::array_ref A(v.data(), {6, 4}); assert( multi::rank<decltype(A)>{}==2 and num_elements(A)==24 and A[0][2]==99. );
 }
 
- {	multi::array_ref A(vc.data(), {24}); assert( dimensionality(A)==1 and num_elements(A)==24 and A[2]==99. );
-}{	multi::array_ref A(vc.data(), {6, 4}); assert( dimensionality(A)==2 and num_elements(A)==24 and A[0][2]==99. );
+ {	multi::array_ref A(vc.data(), {24}); assert( multi::rank<decltype(A)>{}==1 and num_elements(A)==24 and A[2]==99. );
+}{	multi::array_ref A(vc.data(), {6, 4}); assert( multi::rank<decltype(A)>{}==2 and num_elements(A)==24 and A[0][2]==99. );
 }
 
- {	multi::array_ref A(v.begin(), {24}); assert( dimensionality(A)==1 and num_elements(A)==24 and A[2]==99. );
-}{	multi::array_ref A(v.begin(), {6, 4}); assert( dimensionality(A)==2 and num_elements(A)==24 and A[0][2]==99. );
+ {	multi::array_ref A(v.begin(), {24}); assert( multi::rank<decltype(A)>{}==1 and num_elements(A)==24 and A[2]==99. );
+}{	multi::array_ref A(v.begin(), {6, 4}); assert( multi::rank<decltype(A)>{}==2 and num_elements(A)==24 and A[0][2]==99. );
 }
 
- {	multi::array_ref A(q.begin(), {24}); assert( dimensionality(A)==1 and num_elements(A)==24 and A[2]==2. );
-}{	multi::array_ref A(q.begin(), {6, 4}); assert( dimensionality(A)==2 and num_elements(A)==24 and A[0][2]==2. );
+ {	multi::array_ref A(q.begin(), {24}); assert( multi::rank<decltype(A)>{}==1 and num_elements(A)==24 and A[2]==2. );
+}{	multi::array_ref A(q.begin(), {6, 4}); assert( multi::rank<decltype(A)>{}==2 and num_elements(A)==24 and A[0][2]==2. );
 }
 #endif
 }
