@@ -26,7 +26,7 @@ decltype(auto) take(MA&& ma){return ma[0];}
 
 int main(){
 {
-	cout << "GNUC " << __GNUC__ << std::endl;
+	cout << "GNUC " << __GNUC__ << " " << __GNUC_MINOR__ << std::endl;
 
 #if not __INTEL_COMPILER
 	multi::array<double, 3> A {
@@ -35,13 +35,14 @@ int main(){
 		{{ 1.2,  1.1}, { 2.4, 1.}}
 	};
 #else
-	cout << "IC " << __INTEL_COMPILER << std::endl;
-	double a[3][2][2] = {
-		{{ 1.2,  1.1}, { 2.4, 1.}},
-		{{11.2,  3.0}, {34.4, 4.}},
-		{{ 1.2,  1.1}, { 2.4, 1.}}
-	};
-	multi::array<double, 3> A(a);
+	multi::array<double, 3> A(
+		(double[3][2][2])
+		{
+			{{ 1.2,  1.1}, { 2.4, 1.}},
+			{{11.2,  3.0}, {34.4, 4.}},
+			{{ 1.2,  1.1}, { 2.4, 1.}}
+		}
+	);
 #endif
 
 	assert( begin(A) < end(A) );

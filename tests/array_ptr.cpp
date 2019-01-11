@@ -9,11 +9,22 @@ $CXX -O3 -std=c++14 -Wall -Wextra -Wpedantic $0 -o $0.x && $0.x $@ && rm -f $0.x
 namespace multi = boost::multi;
 
 int main(){
+#if not __INTEL_COMPILER
 	multi::array<double, 3> A {
 		{{ 1.2,  1.1}, { 2.4, 1.}},
 		{{11.2,  3.0}, {34.4, 4.}},
 		{{ 1.2,  1.1}, { 2.4, 1.}}
 	};
+#else
+	multi::array<double, 3> A(
+		(double[3][2][2])
+		{
+			{{ 1.2,  1.1}, { 2.4, 1.}},
+			{{11.2,  3.0}, {34.4, 4.}},
+			{{ 1.2,  1.1}, { 2.4, 1.}}
+		}
+	);
+#endif
 	
 	auto p = &A[1];
 	auto p2 = p + 1;
