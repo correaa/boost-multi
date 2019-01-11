@@ -83,7 +83,8 @@ public:
 	:	Alloc{a}, ref{allocate(typename array::layout_t{x}.num_elements()), x}{
 		uninitialized_value_construct();
 	}
-#if defined(__INTEL_COMPILER)
+#if 0 
+defined(__INTEL_COMPILER)
 	array(std::array<index, D> arr, Alloc const& a = {}) : 
 		array{multi::detail::to_tuple<typename array::index_extension>(il), arr}{}
 	array(std::array<typename array::index_extension, D> arr, Alloc const& a = {}) : 
@@ -302,15 +303,6 @@ template<class T, class A=std::allocator<T>> array(IL<IL<IL<IL<IL<T>>>>>, A={})-
 #endif
 
 }}
-
-//namespace std{
-//	template<class T, boost::multi::dimensionality_type N, class... Ts> 
-//	struct rank<boost::multi::array<T, N, Ts...>> 
-//	: public std::integral_constant<
-//		boost::multi::dimensionality_type, 
-//		typename boost::multi::array<T, N, Ts...>::rank{}
-//	>{};
-//}
 
 #if _TEST_BOOST_MULTI_ARRAY
 
