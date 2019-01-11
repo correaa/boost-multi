@@ -83,8 +83,7 @@ public:
 	:	Alloc{a}, ref{allocate(typename array::layout_t{x}.num_elements()), x}{
 		uninitialized_value_construct();
 	}
-#if 0 
-defined(__INTEL_COMPILER)
+#if defined(__INTEL_COMPILER)
 	array(std::array<index, D> arr, Alloc const& a = {}) : 
 		array{multi::detail::to_tuple<typename array::index_extension>(il), arr}{}
 	array(std::array<typename array::index_extension, D> arr, Alloc const& a = {}) : 
