@@ -44,8 +44,8 @@ using boost::multi::size;
 }{  multi::array<double, 1> A({3l}); assert( size(A)==3 and A[0]==0. );
 #endif
 }{  multi::array<double, 1> A(multi::index_extensions<1>{{0, 3}}); assert( size(A)==3 and A[0]==0 );
-#if (not defined(__INTEL_COMPILER)) or (defined(__GNUC) and __GNU_VERSION >= 600)
-}{  multi::array<double, 1> A({{0l, 3l}}); cout<<size(A)<<std::endl; assert( size(A)==3 and A[1]==0. ); //uses init_list
+#if (!defined(__INTEL_COMPILER)) && (defined(__GNUC) && __GNU_VERSION >= 600)
+//}{  multi::array<double, 1> A({{0l, 3l}}); cout<<size(A)<<std::endl; assert( size(A)==3 and A[1]==0. ); //uses init_list
 #endif
 }{  multi::array<double, 1, std::allocator<double>> A(multi::index_extensions<1>{2}, std::allocator<double>{}); assert( size(A)==2 );
 }{  multi::array<double, 1, std::allocator<double>> A(multi::index_extensions<1>{{0, 3}}, std::allocator<double>{}); assert( size(A)==3 );
@@ -57,7 +57,7 @@ using boost::multi::size;
 }{  multi::array<double, 2> A(multi::iextensions<2>{2, 3}); assert( num_elements(A)==6 );
 }{  multi::array<double, 2> A({2, 3}); assert( num_elements(A)==6 and size(A)==2 and std::get<1>(sizes(A))==3 );
 }{  multi::array<double, 2> A(multi::index_extensions<2>{{0,2}, {0,3}}); assert( num_elements(A)==6 );
-#if not defined(__INTEL_COMPILER)
+#if not defined(__INTEL_COMPILER) or (defined(__GNUC) and __GNU_VERSION >= 600)
 }{  multi::array<double, 2, std::allocator<double>> A({2, 3}, std::allocator<double>{}); assert( num_elements(A)==6 );
 #endif
 }{  multi::array<double, 2, std::allocator<double>> A(multi::iextensions<2>{2, 3}, std::allocator<double>{}); assert( num_elements(A)==6 );

@@ -111,7 +111,7 @@ public:
 	:	Alloc{other}, ref{allocate(other.num_elements()), extensions(other)}{
 		uninitialized_copy(other.data());
 	}
-	array(array const& other, allocator_type const& a)                          // 5b
+	array(array const& other, allocator_type const& a)                      //5b
 	:	Alloc{a}, ref{allocate(other.num_elements()), extensions(other)}{
 		uninitialized_copy(other.data());
 	}
