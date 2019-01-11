@@ -10,7 +10,10 @@ namespace multi = boost::multi;
 
 int main(){
 //#if not __INTEL_COMPILER
-	multi::array<double, 3> A = (double[3][2][2])
+	multi::array<double, 3> A = 
+#if __INTEL_COMPILER
+	(double[3][2][])
+#endif
 	{
 		{{ 1.2,  1.1}, { 2.4, 1.}},
 		{{11.2,  3.0}, {34.4, 4.}},
