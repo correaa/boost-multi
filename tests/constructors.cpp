@@ -155,7 +155,7 @@ return 0;
 }
 
 {	
-	multi::array<double, 1> A1 = 
+	multi::array<double, 1> A1
 		#if __INTEL_COMPILER
 		= (double[3])
 		#endif
