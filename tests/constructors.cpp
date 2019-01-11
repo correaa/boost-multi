@@ -45,7 +45,7 @@ using boost::multi::size;
 #endif
 }{  multi::array<double, 1> A(multi::index_extensions<1>{{0, 3}}); assert( size(A)==3 and A[0]==0 );
 #if defined(__INTEL_COMPILER)
-}{  multi::array<double, 1> A({0l, 3l}); assert( size(A)==3 and A[1]==0. ); //uses init_list
+}{  multi::array<double, 1> A({0l, 3l}); cout<<size(A)<<std::endl; assert( size(A)==3 and A[1]==0. ); //uses init_list
 #else
 }{  multi::array<double, 1> A({0l, 3l}); assert( size(A)==2 and A[1]==3. );
 #endif
