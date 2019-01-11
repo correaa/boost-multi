@@ -36,8 +36,8 @@ using boost::multi::size;
  {  multi::array<double, 1> A(multi::index_extensions<1>{3}); assert( size(A)==3 and A[0]==0 );
 #if not defined(__INTEL_COMPILER)
 }{	multi::array<double, 1> A({3}); assert( size(A)==1 and A[0]==3. );  // uses init_list
-#endif
 }{	multi::array<double, 1> A({{3}}); assert( size(A)==1 and A[0]==3. );  // uses init_list
+#endif
 }{  multi::array<double, 1> A({3l}); assert( size(A)==1 and A[0]==3. ); // uses init_list
 }{  multi::array<double, 1> A(multi::index_extensions<1>{{0, 3}}); assert( size(A)==3 and A[0]==0 );
 }{  multi::array<double, 1> A({0l, 3l}); assert( size(A)==2 and A[1]==3. ); //uses init_list
