@@ -12,7 +12,7 @@ int main(){
 //#if not __INTEL_COMPILER
 	multi::array<double, 3> A = 
 #if __INTEL_COMPILER
-	(double[3][][])
+	(double[3][2][])
 #endif
 	{
 		{{ 1.2,  1.1}, { 2.4, 1.}},
