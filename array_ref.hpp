@@ -684,6 +684,7 @@ int main(){
 		multi::array_ref acrd2D(&dc2D[0][0], {4, 5});
 		static_assert( decltype(acrd2D)::dimensionality == 2, "!");
 		static_assert( acrd2D.dimensionality == 2, "!");
+		static_assert( decltype(acrd2D)::rank{} == 2, "!" );
 		static_assert( multi::rank<decltype(acrd2D)>{} == 2, "!" );
 		assert( &acrd2D[2][3] == &dc2D[2][3] );
 		assert( acrd2D.size() == 4);

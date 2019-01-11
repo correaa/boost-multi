@@ -105,7 +105,7 @@ public:
 		if(first!=last) assert( all_of(next(first), last, [x=multi::extensions(*first)](auto& e){return extensions(e)==x;}) );
 		multi::uninitialized_copy<D>(first, last, ref::begin());
 	}
-	template<class Array, typename=std::enable_if_t<!std::is_base_of<array, Array>{} and multi::rank<std::remove_reference_t<Array>>{}==D> >//, typename=std::enable_if_t<std::rank<std::remove_reference_t<Array>>{}==D> >
+	template<class Array, typename=std::enable_if_t</*not std::is_base_of<array, Array>{} and*/ multi::rank<std::remove_reference_t<Array>>{}==D> >//, typename=std::enable_if_t<std::rank<std::remove_reference_t<Array>>{}==D> >
 	array(Array&& other, allocator_type const& a = {})
 	:	Alloc{a}, ref{allocate(num_elements(other)), extensions(other)}{
 		using std::begin; using std::end;

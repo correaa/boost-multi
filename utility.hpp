@@ -16,16 +16,18 @@ template<class T, typename = typename T::rank>
 std::true_type has_rank_aux(T const&);
 std::false_type has_rank_aux(...);
 
-///template<class T> struct has_rank : decltype(has_rank_aux(std::declval<T>())){};
-
-//template<class T, class T2 = void> struct rank;
+template<class T> struct has_rank : decltype(has_rank_aux(std::declval<T>())){};
 
 template<typename T> struct rank;
 
 template<typename T, size_t N> 
-std::integral_constant<size_t, 1 + multi::rank<T>{}>  rank_aux(std::array<T, N> const&);
-template<typename T> 
-std::integral_constant<size_t, std::rank<T>{}> rank_aux(T const&);
+constexpr std::integral_constant<size_t, 1 + multi::rank<T>{}> rank_aux(std::array<T, N> const&);
+
+template<typename T, typename = std::enable_if_t<has_rank<T>{}> > 
+constexpr typename T::rank rank_aux(T const&);
+
+template<typename T, typename = std::enable_if_t<not has_rank<T>{}> > 
+constexpr std::integral_constant<size_t, std::rank<T>{}> rank_aux(T const&);
 
 template<typename T> struct rank : decltype(rank_aux(std::declval<T>())){};
 
