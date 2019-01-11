@@ -74,9 +74,10 @@ struct uninitialized_copy_aux{
 	static auto call(InputIt first, InputIt last, ForwardIt dest){
 		while(first != last){
 			using std::begin; using std::end;
-			uninitialized_copy<N-1>(begin(*first), end(*first), begin(*dest++)); // to make it work with T[][]
+			uninitialized_copy<N-1>(begin(*first), end(*first), begin(*dest)); // to make it work with T[][]
 		//	uninitialized_copy<N-1>(first->begin(), first->end(), dest->begin());
 			++first;
+			++dest;
 		}
 		return dest;
 	}
