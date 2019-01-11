@@ -84,8 +84,8 @@ public:
 		uninitialized_value_construct();
 	}
 #if defined(__INTEL_COMPILER)
-	array(std::array<index, D> arr, Alloc const& a = {}) : 
-		array{multi::detail::to_tuple<typename array::index_extension>(il), arr}{}
+//	array(std::array<index, D> arr, Alloc const& a = {}) : 
+//		array{multi::detail::to_tuple<typename array::index_extension>(il), arr}{}
 	array(std::array<typename array::index_extension, D> arr, Alloc const& a = {}) : 
 		array{multi::detail::to_tuple<typename array::index_extension>(il), arr}{}
 #endif
