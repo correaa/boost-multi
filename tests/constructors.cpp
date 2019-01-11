@@ -47,7 +47,7 @@ using boost::multi::size;
 }{  multi::array<double, 2> A({2, 3}); assert( num_elements(A)==6 );
 #endif
 }{  multi::array<double, 2> A(multi::iextensions<2>{2, 3}); assert( num_elements(A)==6 );
-}{  multi::array<double, 2> A({2, 3}); assert( num_elements(A)==2 );
+}{  multi::array<double, 2> A({2, 3}); assert( num_elements(A)==2 and size(A)==1 and std::get<1>(sizes(A))=2 );
 }{  multi::array<double, 2> A(multi::index_extensions<2>{{0,2}, {0,3}}); assert( num_elements(A)==6 );
 #if not defined(__INTEL_COMPILER)
 }{  multi::array<double, 2, std::allocator<double>> A({2, 3}, std::allocator<double>{}); assert( num_elements(A)==6 );
@@ -155,7 +155,12 @@ return 0;
 }
 
 {	
-	multi::array<double, 1> A1 = {1.,2.,3.}; assert(num_elements(A1)==3 and A1[1]==2.);
+	multi::array<double, 1> A1 = 
+		#if __INTEL_COMPILER
+		= (double[3])
+		#endif
+		{1.,2.,3.}; 
+	assert(num_elements(A1)==3 and A1[1]==2.);
 	multi::array<double, 2> A2 = {A1, A1, A1, A1}; assert(num_elements(A2)==12 and A2[2][1]==2.);
 	multi::array<double, 3> A3 = {A2, A2, A2, A2, A2}; assert(num_elements(A3)==60 and A3[3][2][1]==2.);
 }
