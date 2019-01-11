@@ -72,6 +72,9 @@ int main(){
 //	assert( B(0, {10, 20}).size() == 10 );
 	}
 	multi::array<double, 2> AAA = 
+	#if defined(__INTEL_COMPILER)
+		(double[3][3])
+	#endif
 		{{1., 2., 3.}, 
 		 {4., 5., 6.}, 
 		 {7., 8., 9.}};
