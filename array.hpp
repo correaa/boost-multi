@@ -61,10 +61,6 @@ public:
 	:	Alloc{a}, ref(allocate(typename array::layout_t{x}.num_elements()), x){
 		uninitialized_fill(e);
 	}
-#if defined(__INTEL_COMPILER)
-//	array(std::initializer_list<typename array::index_extension> il, typename array::element const& el, Alloc const& a={}) noexcept : array{multi::detail::to_tuple<D, typename array::index_extension>(il), el, a}{}
-//	array(std::initializer_list<typename array::index> il, typename array::element const& el, Alloc const& a={}) noexcept : array{multi::detail::to_tuple<D, typename array::index_extension>(il), el, a}{}
-#endif
 	array(typename array::index_extension n, value_type const& v, Alloc const& a = {})
 	: 	Alloc{a}, 
 		ref{
@@ -119,20 +115,20 @@ public:
 	:	Alloc{a}, ref{allocate(other.num_elements()), extensions(other)}{
 		uninitialized_copy(other.data());
 	}
-	array(array&& other) noexcept                                              //6a
+	array(array&& other) noexcept                                           //6a
 	:	Alloc{other.get_allocator()},
 		ref{std::exchange(other.base_, nullptr), other.extensions()}
 	{
 		other.ref::layout_t::operator=({});
 	}
-	array(array&& other, allocator_type const& a)                             //6b
+	array(array&& other, allocator_type const& a)                           //6b
 	:	Alloc{a},
 		ref{std::exchange(other.base_, nullptr), other.extensions()}
 	{
 		//TODO
 		other.ref::layout_t::operator=({});
 	}
-#if not defined(__INTEL_COMPILER)
+#if (not defined(__INTEL_COMPILER)) or (__GNUC >= 6)
 	array(std::initializer_list<value_type> il, allocator_type const& a={}) 
 	:	array(il.begin(), il.end(), a){}
 #endif
