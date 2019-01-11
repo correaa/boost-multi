@@ -163,7 +163,7 @@ return 0;
 	assert(num_elements(A1)==3 and A1[1]==2.);
 	multi::array<double, 2> A2
 		#if __INTEL_COMPILER
-		((decltype(A1)&)[4])
+		(decltype(A1)[4])
 		#endif
 		{A1, A1, A1, A1}; 
 	assert(num_elements(A2)==12 and A2[2][1]==2.);
