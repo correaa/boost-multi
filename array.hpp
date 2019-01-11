@@ -87,7 +87,7 @@ public:
 //	array(std::array<index, D> arr, Alloc const& a = {}) : 
 //		array{multi::detail::to_tuple<typename array::index_extension>(il), arr}{}
 	array(std::array<typename array::index_extension, D> arr, Alloc const& a = {}) : 
-		array{multi::detail::to_tuple<typename array::index_extension>(arr), arr}{}
+		array{multi::detail::to_tuple<typename array::index_extension>(arr), a}{}
 #endif
 
 	template<class It> static auto distance(It a, It b){using std::distance; return distance(a, b);}
