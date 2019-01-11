@@ -176,62 +176,6 @@ return 0;
 	assert(num_elements(A3)==60 and A3[3][2][1]==2.);
 }
 
-{	
-	multi::array<double, 1> A1 = {1., 2., 3.}; assert(num_elements(A1)==3 and A1[1]==2.);
-	multi::array<double, 1> B1 = {3., 4.}; assert(num_elements(B1)==2 and B1[1]==4.);
-	multi::array<double, 1> C1 = {0, 4}; assert(num_elements(C1)==2 and C1[1]==4.);
-	multi::array<double, 1> D1 = {0l, 4l}; assert(num_elements(D1)==2 and D1[1]==4.);
-//	multi::array<double, 1> E1 = {{0, 4}}; assert(num_elements(E1)==2 and E1[1]==4.); // [X] icc19
-	multi::array<double, 1> F1({0, 4}); assert(num_elements(F1)==2 and F1[1]==4.);
-	multi::array<double, 2> A2 = {
-		{1., 2., 3.}, 
-		{4., 5., 6.}
-	}; 
-	assert(num_elements(A2)==6 and A2[1][1]==5.);
-	multi::array<double, 3> A3 = {
-		{ { 1.,  2.,  3.}, 
-		  { 4.,  5.,  6.} },
-		{ { 7.,  8.,  9.}, 
-		  {10., 11., 12.} }
-	};
-	assert(num_elements(A3)==12 and A3[1][1][1]==11.);
-	
-	multi::array<std::string, 3> B3 = {
-		{ {"000", "001", "002"}, 
-		  {"010", "011", "012"} },
-		{ {"100", "101", "102"}, 
-		  {"110", "111", "112"} }
-	};
-	assert( num_elements(B3)==12 and B3[1][0][1] == "101" );
-}
-
-#if __cpp_deduction_guides
- {	multi::array A = {1., 2., 3.}; assert( multi::rank<decltype(A)>{}==1 and num_elements(A)==3 and A[1]==2. ); static_assert( typename decltype(A)::rank{}==1 );
-}{	multi::array A = {1., 2.};     assert( multi::rank<decltype(A)>{}==1 and num_elements(A)==2 and A[1]==2. ); assert( multi::rank<decltype(A)>{}==1 );
-}{	multi::array A = {0, 2};       assert( multi::rank<decltype(A)>{}==1 and num_elements(A)==2 and A[1]==2. ); assert( multi::rank<decltype(A)>{}==1 );
-}{	multi::array A = {9.};         assert( multi::rank<decltype(A)>{}==1 and num_elements(A)==1 and A[0]==9. ); assert( multi::rank<decltype(A)>{}==1 );
-}{	multi::array A = {9};          assert( multi::rank<decltype(A)>{}==1 and num_elements(A)==1 and A[0]==9. ); assert( multi::rank<decltype(A)>{}==1 );
-}{	multi::array A = {
-		{1., 2., 3.}, 
-		{4., 5., 6.}
-	}; assert( multi::rank<decltype(A)>{}==2 and num_elements(A)==6 );
-}{
-	multi::array A = {1., 2., 3.};
-	multi::array B = {1., 2.};
-//	multi::array C = {A, A, B, A}; assert( dimensionality(C) == 1 and num_elements(C) == 3 );
-}{
-	multi::array B3 = {
-		{ {"000", "001", "002"}, 
-		  {"010", "011", "012"} },
-		{ {"100", "101", "102"}, 
-		  {"110", "111", "112"} }
-	};
-	static_assert( std::is_same<decltype(B3)::element, char const*>{}, "!");
-	static_assert( not std::is_same<decltype(B3)::element, std::string>{}, "!");
-	auto C3 = B3; 
-}
-#endif
-
 {
     std::unique_ptr<double[]> uparr = std::make_unique<double[]>(2*3*4);
     uparr[2] = 2.;
