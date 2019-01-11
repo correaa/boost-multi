@@ -567,12 +567,12 @@ template<class It> array_ref(It, typename detail::repeat<index_extension, 5>::ty
 
 }}
 
-namespace std{
+
+#if 0
+namespace {
 	template<class T, boost::multi::dimensionality_type N, class... Ts> 
 	struct rank<boost::multi::array_ref<T, N, Ts...>> 
-	: public std::integral_constant<
-		boost::multi::dimensionality_type, 
-		typename boost::multi::array_ref<T, N, Ts...>::rank{}
+	: public std::integral_constant<boost::multi::dimensionality_type,  typename boost::multi::array_ref<T, N, Ts...>::rank{}
 	>{};
 
 	template<class T, boost::multi::dimensionality_type N, class... Ts> 
@@ -582,6 +582,7 @@ namespace std{
 		typename boost::multi::basic_array<T, N, Ts...>::rank{}
 	>{};
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
