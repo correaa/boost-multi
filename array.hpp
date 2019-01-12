@@ -74,18 +74,10 @@ public:
 	: 	array(typename array::index_extension(n), v, a){}
 	array(typename array::size_type n, value_type const& v)
 	: 	array(typename array::index_extension(n), v){}
-
 	explicit array(typename array::extensions_type x, Alloc const& a={}) //3
 	:	Alloc{a}, ref{allocate(typename array::layout_t{x}.num_elements()), x}{
 		uninitialized_value_construct();
 	}
-#if defined(__INTEL_COMPILER) or (defined(__GNUC__) && (__GNUC__<6))
-//	array(std::array<index, D> arr, Alloc const& a = {}) : 
-//		array{multi::detail::to_tuple<typename array::index_extension>(il), arr}{}
-	array(std::array<typename array::index_extension, D> arr, Alloc const& a = {}) : 
-		array{multi::detail::to_tuple<typename array::index_extension>(arr), a}{}
-#endif
-
 	template<class It> static auto distance(It a, It b){using std::distance; return distance(a, b);}
 	template<class It, typename=decltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>      
 	array(It first, It last, allocator_type const& a = {}) :                    //4
