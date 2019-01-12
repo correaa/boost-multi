@@ -1,5 +1,5 @@
 #if COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && c++ -O3 -std=c++17 -Wall -Wextra `#-Wfatal-errors` -D_TEST_BOOST_MULTI_ARRAY_REF $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
+(echo "#include\""$0"\"" > $0x.cpp) && clang++ -O3 -std=c++17 -Wall -Wextra `#-Wfatal-errors` -D_TEST_BOOST_MULTI_ARRAY_REF $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
 #endif
 #ifndef BOOST_MULTI_ARRAY_REF_HPP
 #define BOOST_MULTI_ARRAY_REF_HPP
@@ -258,6 +258,7 @@ public:
 		assert( distance(first, last) == this->size() );
 		copy(first, last, this->begin());
 	}
+	void assign(std::initializer_list<typename basic_array::value_type> il) const{assign(il.begin(), il.end());}
 	template<class A, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<A>>{}>>
 	basic_array const& operator=(A&& o) const{
 		using multi::extension;
@@ -613,7 +614,9 @@ namespace {
 using std::cout;
 namespace multi = boost::multi;
 
+
 int main(){
+
 	{
 		double a[4][5] = {{1.,2.},{2.,3.}};
 		multi::array_ref<double, 2> A(&a[0][0], {4, 5});

@@ -92,6 +92,28 @@ struct uninitialized_copy_aux<1u>{
 	}
 };
 
+template<dimensionality_type N> struct fill_aux;
+
+template<dimensionality_type N, class Out, class T>
+void fill(Out f, Out l, T const& value){return fill_aux<N>::call(f, l, value);}
+
+template<dimensionality_type N>
+struct fill_aux{
+	template<class Out, class T>
+	static auto call(Out first, Out last, T const& value){
+		using std::begin; using std::end;
+		for(; first != last; ++first)
+			fill<N-1>(begin(*first), end(*first), value); // (*first).begin() instead of first->begin() to make it work with T[][]
+	}
+};
+
+template<>
+struct fill_aux<1u>{
+	template<class Out, class T>
+	static auto call(Out f, Out l, T const& v){using std::fill; return fill(f, l, v);}
+};
+
+
 template<class T, typename = decltype(std::declval<T const&>().default_allocator())>
 std::true_type           has_default_allocator_aux(T const&);
 std::false_type          has_default_allocator_aux(...);

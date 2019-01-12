@@ -93,7 +93,7 @@ public:
 		if(first!=last) assert( all_of(next(first), last, [x=multi::extensions(*first)](auto& e){return extensions(e)==x;}) );
 		multi::uninitialized_copy<D>(first, last, ref::begin());
 	}
-	template<class Array, typename=std::enable_if_t</*not std::is_base_of<array, Array>{} and*/ multi::rank<std::remove_reference_t<Array>>{}>=1 > >//, typename=std::enable_if_t<std::rank<std::remove_reference_t<Array>>{}==D> >
+	template<class Array, typename=std::enable_if_t<multi::rank<std::remove_reference_t<Array>>{}>=1 > >
 	array(Array&& other, allocator_type const& a = {})
 	:	Alloc{a}, ref{allocate(num_elements(other)), extensions(other)}{
 		using std::begin; using std::end;
@@ -150,6 +150,16 @@ public:
 	}
 	friend void swap(array& a, array& b){a.swap(b);}
 	array& operator=(array&& other){clear(); swap(other); return *this;}
+	void assign(typename array::extensions_type x, typename array::element const& e){
+		if(array::extensions()==x){
+			fill<D>(begin(), end(), e);
+		}else{
+			clear();
+			this->layout_t<D>::operator=(layout_t<D>{x});
+			this->base_ = allocate();
+			uninitialized_fill<dimensionality>(e);
+		}
+	}
 	template<class It>
 	array& assign(It first, It last){
 		using std::next;
@@ -177,9 +187,8 @@ public:
 
 	using element_const_ptr = typename std::pointer_traits<typename array::element_ptr>::template rebind<typename array::element const>;
 	using const_reference = std::conditional_t<
-		array::dimensionality!=1, 
+		array::dimensionality != 1, 
 		basic_array<typename array::element, array::dimensionality-1, element_const_ptr>, 
-	//	typename std::iterator_traits<element_ptr>::reference const	//	
 		typename pointer_traits<typename array::element_ptr>::element_type const&
 	>;
 	using const_iterator = typename std::conditional<
