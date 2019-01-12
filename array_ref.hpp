@@ -496,17 +496,12 @@ public:
 	array_ref(array_ref const&) = default;
 //	constexpr array_ref(typename array_ref::extensions_type const& e, ElementPtr p) noexcept
 //		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
-#if not(__GNUC__ < 6)
-protected:
-#endif
+#if (defined(__GNUC__) && (__GNUC__ < 6))
+	constexpr array_ref(typename array_ref::element_ptr p, std::array<typename array_ref::index_extension, D> arr) noexcept 
+		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{multi::detail::to_tuple<typename array_ref::index_extension>(arr)}, p}{}
+#else
 	constexpr array_ref(typename array_ref::element_ptr p, typename array_ref::extensions_type const& e) noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
-#if not(__GNUC__ < 6)
-public:
-#endif
-#if (__GNUC__ < 6)
-	constexpr array_ref(typename array_ref::element_ptr p, std::array<typename array_ref::index_extension, D> arr) noexcept : array_ref{p, multi::detail::to_tuple<typename array_ref::index_extension>(arr)}{}
-//	constexpr array_ref(typename array_ref::element_ptr p, std::initializer_list<typename array_ref::index> il) noexcept : array_ref{p, multi::detail::to_tuple<D, typename array_ref::index_extension>(il)}{}
 #endif
 
 	using basic_array<T, D, ElementPtr>::operator=;
