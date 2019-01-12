@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 -std=c++14 -Wall -Wfatal-errors $0 -o $0.x && time $0.x $@ && rm -f $0.x; exit
+c++ -O3 -std=c++14 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x && time $0.x $@ && rm -f $0.x; exit
 #endif
 //  (C) Copyright Alfredo A. Correa 2018.
 #include "../array_ref.hpp"
@@ -34,7 +34,7 @@ int main(){
 	assert( not has_f<B>{} );
 	assert( not has_f<std::string>{} );
 	
-#if (not defined(__INTEL_COMPILER)) and (__GNUC__ >= 6)
+#if defined(__INTEL_COMPILER) or (defined(__GNUC__) and (__GNUC__ < 6))
 	multi::array<double, 3> AAAA({50, 50, 50});
 #else
 	multi::array<double, 3> AAAA(multi::iextensions<3>{50, 50, 50});
@@ -58,7 +58,7 @@ int main(){
 	assert(( extension(DA) == multi::irange{0, 50} ));
 
 	{
-#if __GNUC__ < 6
+#if (defined(__GNUC__) and (__GNUC__ < 6))
 	multi::array<double, 2> B(multi::iextensions<2>{50, 50});
 #else
 	multi::array<double, 2> B({50, 50});
