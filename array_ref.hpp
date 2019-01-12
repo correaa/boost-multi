@@ -496,8 +496,8 @@ public:
 	array_ref(array_ref const&) = default;
 //#if (defined(__GNUC__) && (__GNUC__ < 6))
 #if defined(__INTEL_COMPILER) || (defined(__GNUC__) && (__GNUC__<6))
-	constexpr array_ref(typename array_ref::element_ptr p, std::array<typename array_ref::index_extension, D> arr) noexcept 
-		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{multi::detail::to_tuple<typename array_ref::index_extension>(arr)}, p}{}
+//	constexpr array_ref(typename array_ref::element_ptr p, std::array<typename array_ref::index_extension, D> arr) noexcept 
+//		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{multi::detail::to_tuple<typename array_ref::index_extension>(arr)}, p}{}
 	constexpr explicit array_ref(typename array_ref::element_ptr p, typename array_ref::extensions_type const& e) noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
 #else
