@@ -160,7 +160,7 @@ struct layout_t
 #if defined(__INTEL_COMPILER) or (defined(__GNUC) && (__GNUC<6))
 //	constexpr layout_t(std::initializer_list<index_extension> il) noexcept : layout_t{multi::detail::to_tuple<D, index_extension>(il)}{}
 //	constexpr layout_t(std::initializer_list<index> il) noexcept : layout_t{multi::detail::to_tuple<D, index_extension>(il)}{}
-	constexpr layout_t(std::arrays<index_extensions, D> x) noexcept : layout_t{multi::detail::to_tuple<index_extension>(x)}{}
+	constexpr layout_t(std::arrays<index_extension, D> x) noexcept : layout_t{multi::detail::to_tuple<index_extension>(x)}{}
 #endif
 #if 0
 	constexpr layout_t(f_tag, extensions_type const& e = {}) : 
