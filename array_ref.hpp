@@ -1,5 +1,5 @@
 #if COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && clang++ -O3 -std=c++17 -Wall -Wextra -Wfatal-errors -D_TEST_BOOST_MULTI_ARRAY_REF $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
+(echo "#include\""$0"\"" > $0x.cpp) && c++ -O3 -std=c++17 -Wall -Wextra -Wfatal-errors -D_TEST_BOOST_MULTI_ARRAY_REF $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
 #endif
 #ifndef BOOST_MULTI_ARRAY_REF_HPP
 #define BOOST_MULTI_ARRAY_REF_HPP
@@ -496,13 +496,16 @@ public:
 	array_ref(array_ref const&) = default;
 //	constexpr array_ref(typename array_ref::extensions_type const& e, ElementPtr p) noexcept
 //		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
-#if (defined(__GNUC__) && (__GNUC__ < 6))
-	constexpr array_ref(typename array_ref::element_ptr p, std::array<typename array_ref::index_extension, D> arr) noexcept 
-		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{multi::detail::to_tuple<typename array_ref::index_extension>(arr)}, p}{}
+//#if (defined(__GNUC__) && (__GNUC__ < 6))
+//	constexpr array_ref(typename array_ref::element_ptr p, std::array<typename array_ref::index_extension, D> arr) noexcept 
+//		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{multi::detail::to_tuple<typename array_ref::index_extension>(arr)}, p}{}
+//	explicit
+//#endif
+#if __GNUC_PREREQ(6,0)
 #else
+#endif
 	constexpr array_ref(typename array_ref::element_ptr p, typename array_ref::extensions_type const& e) noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
-#endif
 
 	using basic_array<T, D, ElementPtr>::operator=;
 	using basic_array<T, D, ElementPtr>::operator<;
@@ -608,7 +611,7 @@ using std::cout;
 namespace multi = boost::multi;
 
 int main(){
-
+//	cout << __GNUC__ << " " << GCC_VERSION << std::endl;
 #if 0
 	{
 		double const d2D[4][5] = {{1.,2.},{2.,3.}};
