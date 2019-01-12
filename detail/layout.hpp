@@ -62,7 +62,7 @@ constexpr auto to_tuple_impl(std::array<From, sizeof...(I)> arr, std::index_sequ
 
 template<class To, size_t N, class From>
 constexpr auto to_tuple(std::array<From, N> arr){
-	return to_tuple_impl<To>(arr, std::make_index_sequence<N>());
+	return to_tuple_impl<To, From>(arr, std::make_index_sequence<N>());
 }
 
 #if 0
