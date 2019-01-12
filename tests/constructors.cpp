@@ -99,7 +99,7 @@ return 0;
 }
 
 return 0;
-
+#if 0
 {  
 	multi::array<double, 1> A1(multi::iextension{2}, 3.1); assert( num_elements(A1)==2 and A1[1]==3.1 );
 	multi::array<double, 2> A2(3, A1); assert( num_elements(A2)==6 and A2[1][2]==3.1 );
@@ -264,6 +264,6 @@ return 0;
 }
 
 cout<<"end"<<std::endl;
-
+#endif
 }
 
