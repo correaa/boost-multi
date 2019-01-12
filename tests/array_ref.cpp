@@ -167,10 +167,10 @@ int main(){
 		{ 0,  0,  0,  0,  0}, 
 		{ 0,  0,  0,  0,  0}
 	};
-#if defined(__INTEL_COMPILER)
-	auto d2D_null_cref = multi::make_array_ref<2>(&d2D_null[0][0], {4, 5});
-#else
+#if __GNUC__ > 6
 	auto d2D_null_cref = multi::make_array_ref(&d2D_null[0][0], {4, 5});
+#else
+	auto d2D_null_cref = multi::make_array_ref<2>(&d2D_null[0][0], {4, 5});
 #endif
 	using std::min;
 	assert( &min(d2D_null_cref, d2D_cref) == &d2D_null_cref );
