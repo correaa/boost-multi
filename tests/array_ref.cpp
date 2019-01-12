@@ -98,7 +98,7 @@ int main(){
 		for(auto it2 = it1->begin()   ; it2 != it1->end()   ||!endl(cout); ++it2)
 			cout << *it2 << ' ';
 
-	multi::array_ref<double, 2, double const*> d2D_crefref{data(d2D_cref), extensions(d2D_cref)};
+	multi::array_ref<double, 2, double const*> d2D_crefref(data(d2D_cref), extensions(d2D_cref));
 
 	using std::for_each;
 	using std::begin;
