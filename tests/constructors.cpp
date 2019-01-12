@@ -33,7 +33,7 @@ using boost::multi::size;
 }{	multi::array<double, 3, std::allocator<double>> A{std::allocator<double>{}}; assert( empty(A) );
 }
 
- {  multi::array<double, 1> A(multi::index_extensions<1>{3}); assert( size(A)==3 and A[0]==0 );
+ {  multi::array<double, 1> A(multi::iextensions<1>{3}); assert( size(A)==3 and A[0]==0 );
 #if not defined(__INTEL_COMPILER)
 }{	multi::array<double, 1> A({3}); assert( size(A)==1 and A[0]==3. );  // uses init_list
 }{	multi::array<double, 1> A({{3}}); assert( size(A)==1 and A[0]==3. );  // uses init_list
