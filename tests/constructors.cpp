@@ -65,7 +65,7 @@ using boost::multi::size;
 }{  multi::array<double, 3> A({2, 3, 4}); assert( num_elements(A)==24 and A[1][2][3]==0 );
 #endif
 }{  multi::array<double, 3> A(multi::iextensions<3>{2, 3, 4}); assert( num_elements(A)==24 and A[1][2][3]==0 );
-#if not __INTEL_COMPILER
+#if not defined(__INTEL_COMPILER) and (defined(__GNUC__) and __GNU_VERSION__ >= 600 )
 }{  multi::array<double, 3> A({{0, 2}, {0, 3}, {0, 4}}); assert( num_elements(A)==24 and A[1][2][3]==0 );
 #endif
 }{  multi::array<double, 3> A(multi::iextensions<3>{{0, 2}, {0, 3}, {0, 4}}); assert( num_elements(A)==24 and A[1][2][3]==0 );
