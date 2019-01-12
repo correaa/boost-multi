@@ -157,7 +157,7 @@ struct layout_t
 		offset_{0}, 
 		nelems_{std::get<0>(e).size()*sub.num_elements()} 
 	{}
-#if defined(__INTEL_COMPILER)
+#if defined(__INTEL_COMPILER) or (defined(__GNUC) && (__GNUC<6))
 	constexpr layout_t(std::initializer_list<index_extension> il) noexcept : layout_t{multi::detail::to_tuple<D, index_extension>(il)}{}
 	constexpr layout_t(std::initializer_list<index> il) noexcept : layout_t{multi::detail::to_tuple<D, index_extension>(il)}{}
 #endif
