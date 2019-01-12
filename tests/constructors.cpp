@@ -84,15 +84,15 @@ return 0;
 }{  multi::array<double, 1> A(3l, 3.1); assert( size(A)==3 and A[1]==3.1 );
 }{  multi::array<double, 1> A(3, 3.1); assert( size(A)==3 and A[1]==3.1 );
 }{  multi::array<double, 1> A({0, 3}, 3.1); assert( size(A)==3 and A[1]==3.1 );
-#if not __INTEL_COMPILER
+#if (not defined(__INTEL_COMPILER)) and (defined(__GNUC__) and __GNU_VERSION__ >=0)
 }{  multi::array<double, 2> A({2, 3}, 3.1); assert( num_elements(A)==6 and A[1][2]==3.1 );
 #endif
 }{  multi::array<double, 2> A(multi::iextensions<2>{2, 3}, 3.1); assert( num_elements(A)==6 and A[1][2]==3.1 );
-#if not __INTEL_COMPILER
+#if (not defined(__INTEL_COMPILER)) and (defined(__GNUC__) and __GNU_VERSION__ >=0)
 }{  multi::array<double, 2> A({{0,2}, {0,3}}, 3.1); assert( num_elements(A)==6 and A[1][2]==3.1 );
 #endif
 }{  multi::array<double, 2> A(multi::iextensions<2>{{0,2}, {0,3}}, 3.1); assert( num_elements(A)==6 and A[1][2]==3.1 );
-#if not __INTEL_COMPILER
+#if (not defined(__INTEL_COMPILER)) and (defined(__GNUC__) and __GNU_VERSION__ >=0)
 }{  multi::array<double, 3> A({2, 3, 4}, 3.1); assert( num_elements(A)==24 and A[1][2][3]==3.1 );
 #endif
 }{  multi::array<double, 3> A(multi::iextensions<3>{2, 3, 4}, 3.1); assert( num_elements(A)==24 and A[1][2][3]==3.1 );
