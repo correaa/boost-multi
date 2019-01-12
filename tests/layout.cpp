@@ -30,14 +30,11 @@ struct B{
 };
 
 int main(){
-	cout << __GNUC__ << std::endl;
 	assert( has_f<A>{} );
 	assert( not has_f<B>{} );
 	assert( not has_f<std::string>{} );
 	
-#if 0
-#if (not defined(__INTEL_COMPILER)) or (__GNUC__ >= 6)
-	cout << __GNUC__ << std::endl;
+#if (not defined(__INTEL_COMPILER)) and (__GNUC__ >= 6)
 	multi::array<double, 3> AAAA({50, 50, 50});
 #else
 	multi::array<double, 3> AAAA(multi::iextensions<3>{50, 50, 50});
