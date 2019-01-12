@@ -35,9 +35,9 @@ int main(){
 	assert( not has_f<std::string>{} );
 	
 #if defined(__INTEL_COMPILER) or (defined(__GNUC__) and (__GNUC__ < 6))
-	multi::array<double, 3> AAAA({50, 50, 50});
-#else
 	multi::array<double, 3> AAAA(multi::iextensions<3>{50, 50, 50});
+#else
+	multi::array<double, 3> AAAA({50, 50, 50});
 #endif
 	assert( AAAA.size() == 50 );
 	assert( AAAA[0].size() == 50 );
