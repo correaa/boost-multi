@@ -26,7 +26,7 @@ int main(){
 		{10, 11, 12, 13, 14}, 
 		{15, 16, 17, 18, 19}
 	};
-	multi::array_ref<double, 2, double const*> d2D_cref(&d2D[0][0], {4, 5});
+	multi::array_ref<double, 2, double const*> d2D_cref(&d2D[0][0], multi::iextensions<2>{4, 5});
 
 	decltype(d2D_cref)::value_type a_row = d2D_cref[2];
 	decltype(d2D_cref[2])::decay_type b_row = d2D_cref[2];
