@@ -498,8 +498,8 @@ public:
 //		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
 	constexpr array_ref(typename array_ref::element_ptr p, typename array_ref::extensions_type const& e) noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
-#if defined(__INTEL_COMPILER) or (__GNUC__ < 5)
-	constexpr array_ref(typename array_ref::element_ptr p, std::initializer_list<typename array_ref::index_extension> il) noexcept : array_ref{p, multi::detail::to_tuple<D, typename array_ref::index_extension>(il)}{}
+#if defined(__INTEL_COMPILER) or (__GNUC__ < 6)
+	constexpr array_ref(typename array_ref::element_ptr p, std::array<typename array_ref::index_extension, D> arr) noexcept : array_ref{p, multi::detail::to_tuple<typename array_ref::index_extension>(arr)}{}
 //	constexpr array_ref(typename array_ref::element_ptr p, std::initializer_list<typename array_ref::index> il) noexcept : array_ref{p, multi::detail::to_tuple<D, typename array_ref::index_extension>(il)}{}
 #endif
 
