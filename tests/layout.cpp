@@ -35,7 +35,7 @@ int main(){
 	assert( not has_f<B>{} );
 	assert( not has_f<std::string>{} );
 	
-#if not __INTEL_COMPILER
+#if (not defined(__INTEL_COMPILER)) or (__GNUC >= 6)
 	multi::array<double, 3> AAAA({50, 50, 50});
 #else
 	multi::array<double, 3> AAAA(multi::iextensions<3>{50, 50, 50});
