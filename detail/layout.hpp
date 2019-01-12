@@ -217,8 +217,8 @@ struct layout_t
 	friend size_type num_elements(layout_t const& s){return s.num_elements();}
 	constexpr bool empty() const{return not nelems_;} friend
 	constexpr bool empty(layout_t const& s){return s.empty();}
-	constexpr size_type size() const {return nelems_/stride_;} friend 
-	constexpr size_type size(layout_t const& l){return l.size();}
+	constexpr size_type size() const {return nelems_/stride_;} 
+	friend constexpr size_type size(layout_t const& l){return l.size();}
 	size_type size(dimensionality_type d) const{return d?sub.size(d-1):size();}
 
 	constexpr index stride() const{return stride_;}
