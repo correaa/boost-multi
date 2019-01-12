@@ -55,7 +55,7 @@ using boost::multi::size;
 }{  multi::array<double, 2> A({2, 3}); assert( num_elements(A)==6 );
 #endif
 }{  multi::array<double, 2> A(multi::iextensions<2>{2, 3}); assert( num_elements(A)==6 );
-}{  multi::array<double, 2> A({2, 3}); assert( num_elements(A)==6 and size(A)==2 and std::get<1>(sizes(A))==3 );
+//}{  multi::array<double, 2> A({2, 3}); assert( num_elements(A)==6 and size(A)==2 and std::get<1>(sizes(A))==3 );
 }{  multi::array<double, 2> A(multi::index_extensions<2>{{0,2}, {0,3}}); assert( num_elements(A)==6 );
 #if not defined(__INTEL_COMPILER) or (defined(__GNUC) and __GNU_VERSION >= 600)
 }{  multi::array<double, 2, std::allocator<double>> A({2, 3}, std::allocator<double>{}); assert( num_elements(A)==6 );
