@@ -494,19 +494,14 @@ protected:
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{}, nullptr}{}
 public:
 	array_ref(array_ref const&) = default;
-//	constexpr array_ref(typename array_ref::extensions_type const& e, ElementPtr p) noexcept
-//		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
 //#if (defined(__GNUC__) && (__GNUC__ < 6))
-//	constexpr array_ref(typename array_ref::element_ptr p, std::array<typename array_ref::index_extension, D> arr) noexcept 
-//		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{multi::detail::to_tuple<typename array_ref::index_extension>(arr)}, p}{}
-//	explicit
-//#endif
-#if __GNUC_PREREQ(6,0)
+#if defined(__INTEL_COMPILER) || (defined(__GNUC__) && (__GNUC__<6))
+	constexpr array_ref(typename array_ref::element_ptr p, std::array<typename array_ref::index_extension, D> arr) noexcept 
+		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{multi::detail::to_tuple<typename array_ref::index_extension>(arr)}, p}{}
 #else
-#endif
 	constexpr array_ref(typename array_ref::element_ptr p, typename array_ref::extensions_type const& e) noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
-
+#endif
 	using basic_array<T, D, ElementPtr>::operator=;
 	using basic_array<T, D, ElementPtr>::operator<;
 	using basic_array<T, D, ElementPtr>::operator>;
