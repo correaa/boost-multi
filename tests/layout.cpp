@@ -76,11 +76,11 @@ int main(){
 		{{1., 2., 3.}, 
 		 {4., 5., 6.}, 
 		 {7., 8., 9.}};
-#if not defined(__INTEL_COMPILER)
-	multi::array<int, 2> A({4, 4});
-#else
+#if __GNUC__ < 6
 	using extents2 = multi::iextensions<2>;
 	multi::array<int, 2> A(extents2{4, 4});
+#else
+	multi::array<int, 2> A({4, 4});
 #endif
 	assert( size(A) == 4 );
 	A[3][3] = 99.;
