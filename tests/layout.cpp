@@ -30,11 +30,12 @@ struct B{
 };
 
 int main(){
-
+	cout << __GNUC__ << std::endl;
 	assert( has_f<A>{} );
 	assert( not has_f<B>{} );
 	assert( not has_f<std::string>{} );
 	
+#if 0
 #if (not defined(__INTEL_COMPILER)) or (__GNUC__ >= 6)
 	cout << __GNUC__ << std::endl;
 	multi::array<double, 3> AAAA({50, 50, 50});
@@ -415,6 +416,7 @@ int main(){
 	print(d2D_cref.range({0, 2}));
 	cout << "--\n";
 	print(d2D_cref.rotated(1).range({0, 2}).rotated(1));
+#endif
 #endif
 #endif
 }
