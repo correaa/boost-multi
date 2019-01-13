@@ -107,12 +107,30 @@ struct fill_aux{
 	}
 };
 
-template<>
-struct fill_aux<1u>{
-	template<class Out, class T>
-	static auto call(Out f, Out l, T const& v){using std::fill; return fill(f, l, v);}
+template<> struct fill_aux<1u>{
+	template<class O, class T> 
+	static auto call(O f, O l, T const& v){using std::fill; return fill(f, l, v);}
 };
 
+template<dimensionality_type N> struct uninitialized_fill_aux;
+
+template<dimensionality_type N, class Out, class T>
+void uninitialized_fill(Out f, Out l, T const& value){return uninitialized_fill_aux<N>::call(f, l, value);}
+
+template<dimensionality_type N>
+struct uninitialized_fill_aux{
+	template<class Out, class T>
+	static auto call(Out first, Out last, T const& value){
+		using std::begin; using std::end;
+		for(; first != last; ++first)
+			uninitialized_fill<N-1>(begin(*first), end(*first), value); // (*first).begin() instead of first->begin() to make it work with T[][]
+	}
+};
+
+template<> struct uninitialized_fill_aux<1u>{
+	template<class O, class T> 
+	static auto call(O f, O l, T const& v){using std::uninitialized_fill; return uninitialized_fill(f, l, v);}
+};
 
 template<class T, typename = decltype(std::declval<T const&>().default_allocator())>
 std::true_type           has_default_allocator_aux(T const&);
@@ -128,7 +146,7 @@ struct pointer_traits<P, std::enable_if_t<has_default_allocator<P>{}> > : std::p
 };
 template<class P>
 struct pointer_traits<P, std::enable_if_t<not has_default_allocator<P>{}> > : std::pointer_traits<P>{
-	using default_allocator_type = std::allocator<typename pointer_traits::element_type>;
+	using default_allocator_type = std::allocator<std::decay_t<typename pointer_traits::element_type> >;
 	static default_allocator_type default_allocator_of(typename pointer_traits::pointer const&){return {};}
 };
 
