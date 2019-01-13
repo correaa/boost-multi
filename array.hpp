@@ -118,13 +118,13 @@ public:
 	array& operator=(A&& a){
 		auto ext = extensions(a);
 		if(ext==array::extensions()){
-			ref::operator=(std::forward<A>(a));
+			const_cast<array const&>(*this).ref::operator=(std::forward<A>(a));
 		}else{
 			clear();
 			this->ref::layout_t::operator=(layout_t<D>{extensions(a)});
 			this->base_ = allocate(this->num_elements());
 		//	multi::uninitialized_copy<D>(maybestd_begin(std::forward<A>(a)), maybestd_end(std::forward<A>(a)), array::begin());
-			multi::uninitialized_copy<D>(maybestd_begin(std::forward<A>(a)), maybestd_end(std::forward<A>(a)), array::begin());
+			multi::uninitialized_copy<D>(std::begin(std::forward<A>(a)), std::end(std::forward<A>(a)), array::begin());
 		}
 		return *this;
 	}
@@ -272,14 +272,9 @@ private:
 	}
 };
 
-//template<class T, dimensionality_type D, class Alloc>
-//array<T, D, Alloc>::array(size_type, array<T, D-1> const& arr, allocator_type const& a){}
-//template<class T, class Alloc>
-//array<T, 1u, Alloc>::array(size_type, T const& e, Alloc const& a){}
-
 #if __cpp_deduction_guides
 #define IL std::initializer_list
-// clang cannot recognize templated-using, so don't replace IL<T>->IL1<T>
+// clang cannot recognize templated-using, so don't replace IL<IL<T>>->IL2<T>
 template<class T, class A=std::allocator<T>> array(IL<T>                , A={})->array<T,1,A>; 
 template<class T, class A=std::allocator<T>> array(IL<IL<T>>            , A={})->array<T,2,A>;
 template<class T, class A=std::allocator<T>> array(IL<IL<IL<T>>>        , A={})->array<T,3,A>; 

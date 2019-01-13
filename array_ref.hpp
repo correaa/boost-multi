@@ -514,7 +514,22 @@ public:
 	using basic_array<T, D, ElementPtr>::operator<;
 	using basic_array<T, D, ElementPtr>::operator>;
 	template<class ArrayRef> array_ref(ArrayRef&& a) : array_ref(a.data(), extensions(a)){} 
-//	array_ref& operator=(array_ref const&) = delete;
+	array_ref& operator=(array_ref const&) & = delete;
+	template<class A, typename = std::enable_if_t<not std::is_base_of<array_ref, std::decay_t<A>>{}> >
+	array_ref const& operator=(A&& o) const{
+		using multi::extension;
+		assert(this->extension() == extension(o));
+		using std::begin; using std::end;
+		this->assign(begin(std::forward<A>(o)), end(std::forward<A>(o)));
+		return *this;
+	}
+	array_ref const& operator=(array_ref const& o)&&{
+		using multi::extension;
+		assert(this->extension() == extension(o));
+		using std::begin; using std::end;
+		this->assign(begin(o), end(o));
+		return *this;
+	}
 //	template<class Array>//, std::enable_if_t<not std::is_base_of<array_cref<T, D, ElementPtr>, Array>{}>* =0> 
 /*	array_ref& operator=(Array&& other) const{
 		assert(this->extensions() == extensions(other));
