@@ -131,8 +131,8 @@ protected:
 	using types::types;
 	template<typename, dimensionality_type, class Alloc> friend struct array;
 public:
-	template<class BasicArray, typename = decltype(types(std::declval<BasicArray&&>()))> 
-	basic_array(BasicArray&& other) : types{std::forward<BasicArray>(other)}{}
+//	template<class BasicArray, typename = decltype(types(std::declval<BasicArray&&>()))> 
+//	basic_array(BasicArray&& other) : types{std::forward<BasicArray>(other)}{}
 	using decay_type = array<typename types::element, D, typename pointer_traits<typename types::element_ptr>::default_allocator_type>;
 	decay_type decay() const{return *this;}
 	friend auto decay(basic_array const& self){return self.decay();}
