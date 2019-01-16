@@ -129,7 +129,7 @@ public:
 		return *this;
 	}
 	array& operator=(array const& other){
-		if(this == &other) return *this;
+		if(this == std::addressof(other)) return *this;
 		return operator=<array const&>(other);
 	}
 	void swap(array& other) noexcept{
@@ -142,7 +142,7 @@ public:
 		);
 	}
 	friend void swap(array& a, array& b){a.swap(b);}
-	array& operator=(array&& other){if(this!=&other) clear(); swap(other); return *this;}
+	array& operator=(array&& other){if(this!=std::addressof(other)) clear(); swap(other); return *this;}
 	void assign(typename array::extensions_type x, typename array::element const& e){
 		if(array::extensions()==x){
 			fill<D>(begin(), end(), e);
