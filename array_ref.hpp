@@ -537,7 +537,7 @@ public:
 	using basic_array<T, D, ElementPtr>::operator<;
 	using basic_array<T, D, ElementPtr>::operator>;
 	template<class ArrayRef> array_ref(ArrayRef&& a) : array_ref(a.data(), extensions(a)){} 
-	array_ref& operator=(array_ref const&) & = delete;
+//	array_ref& operator=(array_ref const&) & = delete;
 	template<class A, typename = std::enable_if_t<not std::is_base_of<array_ref, std::decay_t<A>>{}> >
 	array_ref const& operator=(A&& o) const{
 		using multi::extension;
@@ -546,13 +546,27 @@ public:
 		this->assign(begin(std::forward<A>(o)), end(std::forward<A>(o)));
 		return *this;
 	}
-	array_ref const& operator=(array_ref const& o)&&{
+/*	array_ref& operator=(array_ref const& o)&{
 		using multi::extension;
 		assert(this->extension() == extension(o));
 		using std::begin; using std::end;
 		this->assign(begin(o), end(o));
 		return *this;
-	}
+	}*/
+/*	array_ref const& operator=(array_ref const& o)&&{
+		using multi::extension;
+		assert(this->extension() == extension(o));
+		using std::begin; using std::end;
+		this->assign(begin(o), end(o));
+		return *this;
+	}*/
+/*	array_ref const& operator=(array_ref const& o) const&{
+		using multi::extension;
+		assert(this->extension() == extension(o));
+		using std::begin; using std::end;
+		this->assign(begin(o), end(o));
+		return *this;
+	}*/
 	typename array_ref::element_ptr data() const{return array_ref::base_;}
 	friend typename array_ref::element_ptr data(array_ref const& self){return self.data();}
 

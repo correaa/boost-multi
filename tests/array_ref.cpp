@@ -252,5 +252,13 @@ int main(){
 		g(v) = g(x);
 		assert( v[10] == 3. );
 	}
+	{
+		std::vector<double> a(100, 1.), b(100, 2.);
+		multi::array_ref<double,1> A1(a.data(), {100}), B1(b.data(), {100});
+		A1 = B1;
+		assert( a[10] == b[10] );
+		assert( A1[10] == B1[10] );
+		assert( &A1[10] != &B1[10] );
+	}
 }
 
