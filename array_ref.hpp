@@ -482,8 +482,8 @@ public:
 
 	iterator  begin() const{return {types::base_                 , Layout::stride_};}
 	iterator  end  () const{return {types::base_ + types::nelems_, Layout::stride_};}
-	auto     rbegin() const{return reverse_iterator{end()  };}
-	auto     rend  () const{return reverse_iterator{begin()};}
+//	auto     rbegin() const{return reverse_iterator{end()  };}
+//	auto     rend  () const{return reverse_iterator{begin()};}
 
 //	typename types::reference front() const{return *begin();}
 //	typename types::reference back () const{return *rbegin();}
