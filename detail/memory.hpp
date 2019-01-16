@@ -11,7 +11,13 @@
 namespace boost{
 namespace multi{
 
-#if __cplusplus < 201703L
+#if __cplusplus >= 201703L
+using std::uninitialized_default_construct_n;
+using std::uninitialized_value_construct_n;
+using std::destroy_at;
+using std::destroy;
+using std::destroy_n;
+#else
 // https://en.cppreference.com/w/cpp/memory/destroy_at
 template<class T> void destroy_at(T* p){p->~T();}
 // https://en.cppreference.com/w/cpp/memory/destroy_n
@@ -21,24 +27,18 @@ ForwardIt destroy_n(ForwardIt first, Size n){
 		destroy_at(std::addressof(*first));
 	return first;
 }
-// https://en.cppreference.com/w/cpp/memory/destroy
+//https://en.cppreference.com/w/cpp/memory/destroy
 template<class ForwardIt>
 void destroy(ForwardIt first, ForwardIt last){
   for(; first != last; ++first) destroy_at(std::addressof(*first));
 }
-#else
-using std::destroy_at;
-using std::destroy_n;
-using std::destroy;
-#endif
 
-#if __cplusplus < 201703L
 template<class ForwardIt, class Size>
 ForwardIt uninitialized_default_construct_n(ForwardIt first, Size n){
     using T = typename std::iterator_traits<ForwardIt>::value_type;
     ForwardIt current = first;
     try{
-        for(; n > 0 ; (void) ++current, --n) ::new (static_cast<void*>(std::addressof(*current))) T;
+        for(; n > 0; (void) ++current, --n) ::new (static_cast<void*>(std::addressof(*current))) T;
         return current;
     }catch(...){
         destroy(first, current); throw;
@@ -55,11 +55,7 @@ ForwardIt uninitialized_value_construct_n(ForwardIt first, Size n){
         destroy(first, current); throw;
     }
 }
-#else
-using std::uninitialized_default_construct_n;
-using std::uninitialized_value_construct_n;
 #endif
-
 
 template<dimensionality_type N> struct uninitialized_copy_aux;
 

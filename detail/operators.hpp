@@ -43,6 +43,7 @@ struct partially_ordered2<T, void, B> : B{
 
 template<class T, class B = empty_base>
 struct random_iterable : B{
+//	using iterator = Iterator;
 	auto cbegin() const{return typename T::const_iterator{static_cast<T const&>(*this).begin()};}
 	auto cend()   const{return typename T::const_iterator{static_cast<T const*>(this)->end()};}
 	friend auto cbegin(T const& s){return static_cast<random_iterable const&>(s).cbegin();}
