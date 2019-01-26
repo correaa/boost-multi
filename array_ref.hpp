@@ -522,11 +522,16 @@ auto make_array_ref(P p, std::initializer_list<index> il){return make_array_ref(
 #endif
 
 #if __cpp_deduction_guides
-template<class It> array_ref(It, typename detail::repeat<index_extension, 1>::type)->array_ref<typename std::iterator_traits<It>::value_type, 1, It>;
-template<class It> array_ref(It, typename detail::repeat<index_extension, 2>::type)->array_ref<typename std::iterator_traits<It>::value_type, 2, It>;
-template<class It> array_ref(It, typename detail::repeat<index_extension, 3>::type)->array_ref<typename std::iterator_traits<It>::value_type, 3, It>;
-template<class It> array_ref(It, typename detail::repeat<index_extension, 4>::type)->array_ref<typename std::iterator_traits<It>::value_type, 4, It>;
-template<class It> array_ref(It, typename detail::repeat<index_extension, 5>::type)->array_ref<typename std::iterator_traits<It>::value_type, 5, It>;
+#if not defined(__clang__)
+template<class It, dimensionality_type D, typename V = typename std::iterator_traits<It>::value_type>
+array_ref(It, index_extensions<D>)->array_ref<V, D, It>;
+#else
+template<class It> array_ref(It, index_extensions<1>)->array_ref<typename std::iterator_traits<It>::value_type, 1, It>;
+template<class It> array_ref(It, index_extensions<2>)->array_ref<typename std::iterator_traits<It>::value_type, 2, It>;
+template<class It> array_ref(It, index_extensions<3>)->array_ref<typename std::iterator_traits<It>::value_type, 3, It>;
+template<class It> array_ref(It, index_extensions<4>)->array_ref<typename std::iterator_traits<It>::value_type, 4, It>;
+template<class It> array_ref(It, index_extensions<5>)->array_ref<typename std::iterator_traits<It>::value_type, 5, It>;
+#endif
 #endif
 
 }}
