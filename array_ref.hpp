@@ -363,7 +363,7 @@ protected:
 	template<class T2, class P2 = T2*>
 	friend basic_array<T2, 1, P2, Layout> static_array_cast(basic_array const& o){return basic_array<T2, 1, P2, Layout>(o);}
 public:
-	template<class BasicArray, typename = decltype(types(std::declval<BasicArray&&>()))> 
+	template<class BasicArray, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<BasicArray>>{}>, typename = decltype(types(std::declval<BasicArray&&>()))> 
 	basic_array(BasicArray&& other) : types{std::forward<BasicArray>(other)}{}
 
 	basic_array_ptr<basic_array, Layout> operator&() const{
