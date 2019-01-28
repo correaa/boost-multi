@@ -20,8 +20,8 @@ int main(){
 
 	std::vector<std::complex<double>> d(100);
 	std::vector<std::complex<double>> const dc(100);
-	
-	multi::array_ref<std::complex<double>, 2> A2D(d.data(), {10, 10});
+
+	multi::array_ref<std::complex<double>, 2> A2D(d.data(), multi::iextensions<2>{10, 10});
 	multi::array_ref<std::complex<double>, 2, std::complex<double>*> B2D(d.data(), {10, 10});
 	
 	assert( &A2D[3][4] == &B2D[3][4] );

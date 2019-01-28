@@ -71,12 +71,16 @@ struct basic_array_ptr :
 	>,
 	boost::totally_ordered<basic_array_ptr<Ref, Layout>>
 {
+
 	using difference_type = typename Layout::difference_type;
 	using value_type = typename Ref::decay_type;
 	using pointer = Ref const*;
 	using reference = Ref;//Ref const&;
 	using element_type = typename Ref::value_type;
 	using iterator_category = std::random_access_iterator_tag;
+
+	using element = typename Ref::element;
+	using element_ptr = typename Ref::element_ptr;
 	basic_array_ptr(std::nullptr_t p = nullptr) : Ref{p}{}
 	template<class, class> friend struct basic_array_ptr;
 	template<class Other, typename = decltype(typename Ref::types::element_ptr{typename Other::element_ptr{}})> 
@@ -318,6 +322,8 @@ struct array_iterator<Element, 1, Ptr, Ref> :
 	array_iterator(std::nullptr_t np = nullptr) : data_{np}, stride_{}{}
 	explicit operator bool() const{return static_cast<bool>(this->data_);}
 	Ref operator[](typename array_iterator::difference_type n) const{assert(*this); return *((*this) + n);}
+	using element = Element;
+	using element_ptr = Ptr;
 private:
 	array_iterator(Ptr d, typename basic_array<Element, 1, Ptr>::index s) : data_{d}, stride_{s}{}
 	friend struct basic_array<Element, 1, Ptr>;
@@ -370,7 +376,8 @@ public:
 		return {this->base_, this->layout(), this->nelems_};
 	}
 	template<class It> void assign(It first, It last) const{//using std::distance; assert(distance(first, last) == this->size());
-		using std::copy; copy(first, last, this->begin());
+		using std::copy;
+		copy(first, last, this->begin());
 	}
 	template<class A, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<A>>{}> >
 	basic_array const& operator=(A&& o) const{
@@ -500,8 +507,11 @@ public:
 
 };
 
-template<class T, dimensionality_type D> 
-using array_cref = array_ref<T, D, T const*>;
+template<class T, dimensionality_type D, class Ptr = void*> 
+using array_cref = array_ref<
+	std::decay_t<T>, D,
+	typename std::pointer_traits<Ptr>::template rebind<T const>
+>;
 
 template<dimensionality_type D, class P>
 array_ref<typename std::iterator_traits<P>::value_type, D, P> 

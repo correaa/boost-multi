@@ -34,11 +34,12 @@ template<class C> auto maybestd_end(C&& c)
 template<class T, dimensionality_type D, class Alloc>
 struct array : 
 	private Alloc, 
-	array_ref<T, D, typename std::allocator_traits<Alloc>::pointer>, 
-	boost::multi::random_iterable<array<T, D, Alloc>>
+	array_ref<T, D, typename std::allocator_traits<typename Alloc::template rebind<T>::other>::pointer>, 
+	boost::multi::random_iterable<array<T, D, Alloc> >
 {
-	using allocator_type = Alloc;
-	using ref = array_ref<T, D, typename std::allocator_traits<Alloc>::pointer>;
+	using allocator_type = typename Alloc::template rebind<T>::other; 
+	//Alloc;//typename std::allocator_traits<Alloc>::template rebind<T>;
+	using ref = array_ref<T, D, typename std::allocator_traits<typename Alloc::template rebind<T>::other>::pointer>;
 private:
 	using alloc_traits = std::allocator_traits<allocator_type>;
 	using typename ref::reference;
@@ -114,7 +115,7 @@ public:
 	array(std::initializer_list<value_type> il, allocator_type const& a={}) 
 	:	array(il.begin(), il.end(), a){}
 #endif
-	template<class A>
+	template<class A, typename = std::enable_if_t<not std::is_base_of<array, std::decay_t<A>>{}> >
 	array& operator=(A&& a){
 		auto ext = extensions(a);
 		if(ext==array::extensions()){
@@ -129,8 +130,18 @@ public:
 		return *this;
 	}
 	array& operator=(array const& other){
-		if(this == std::addressof(other)) return *this;
-		return operator=<array const&>(other);
+	//	if(this == std::addressof(other)) return *this;
+		if(extensions(other)==array::extensions()){
+			using std::copy_n;
+			copy_n(other.data(), other.num_elements(), this->data());
+		}else{
+			clear();
+			this->ref::layout_t::operator=(layout_t<D>{extensions(other)});
+			this->base_ = allocate(this->num_elements());
+			using std::uninitialized_copy_n;
+			uninitialized_copy_n(other.data(), other.num_elements(), this->data());
+		}
+		return *this;
 	}
 	void swap(array& other) noexcept{
 		using std::swap;
@@ -219,20 +230,20 @@ public:
 	~array() noexcept{clear();}
 private:
 	void destroy(){
-		using multi::destroy_n; 
+		using std::destroy_n; 
 		destroy_n(this->data(), this->num_elements());
 	}
 	template<typename It>
-	auto uninitialized_copy(It it){
+	auto uninitialized_copy(It first){
 		using std::uninitialized_copy_n;
-		return uninitialized_copy_n(it, this->num_elements(), this->data());
+		return uninitialized_copy_n(first, this->num_elements(), this->data());
 	}
 	auto uninitialized_default_construct(){
-		using multi::uninitialized_default_construct_n;
+		using std::uninitialized_default_construct_n;
 		return uninitialized_default_construct_n(this->base_, this->num_elements());
 	}
 	auto uninitialized_value_construct(){
-		using multi::uninitialized_value_construct_n;
+		using std::uninitialized_value_construct_n;
 		return uninitialized_value_construct_n(this->base_, this->num_elements());
 	}
 	auto uninitialized_fill(typename array::element const& el){
@@ -336,6 +347,8 @@ struct A{
 
 double f(){return 5.;}
 int main(){
+
+
 
 #if __cpp_deduction_guides
 {

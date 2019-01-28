@@ -8,16 +8,14 @@
 
 #include<memory>
 
-namespace boost{
-namespace multi{
-
 #if __cplusplus >= 201703L
-using std::uninitialized_default_construct_n;
-using std::uninitialized_value_construct_n;
-using std::destroy_at;
-using std::destroy;
-using std::destroy_n;
+//using std::uninitialized_default_construct_n;
+//using std::uninitialized_value_construct_n;
+//using std::destroy_at;
+//using std::destroy;
+//using std::destroy_n;
 #else
+namespace std{
 // https://en.cppreference.com/w/cpp/memory/destroy_at
 template<class T> void destroy_at(T* p){p->~T();}
 // https://en.cppreference.com/w/cpp/memory/destroy_n
@@ -52,7 +50,11 @@ ForwardIt uninitialized_value_construct_n(ForwardIt first, Size n){
 		return current;
     }catch(...){destroy(first, current); throw;}
 }
+}
 #endif
+
+namespace boost{
+namespace multi{
 
 template<dimensionality_type N> struct uninitialized_copy_aux;
 
