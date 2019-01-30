@@ -367,8 +367,8 @@ protected:
 	template<class TT, dimensionality_type DD, class Alloc> friend struct array;
 	basic_array(basic_array const&) = default;
 	template<class T2, class P2 = T2*>
-	friend basic_array<T2, 1, P2, Layout> static_array_cast(basic_array const& o){return basic_array<T2, 1, P2, Layout>(o);}
 public:
+	friend basic_array<T2, 1, P2, Layout> static_array_cast(basic_array const& o){return basic_array<T2, 1, P2, Layout>(o);}
 	template<class BasicArray, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<BasicArray>>{}>, typename = decltype(types(std::declval<BasicArray&&>()))> 
 	basic_array(BasicArray&& other) : types{std::forward<BasicArray>(other)}{}
 
