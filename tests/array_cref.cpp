@@ -38,7 +38,7 @@ int main(){
 #if __cpp_deduction_guides
 	multi::array_ref G2D(dc.data(), {10, 10}); assert( G2D == D2D );
 #endif
-	auto&& H2D = multi::make_array_ref<D>(dc.data(), {10, 10}); assert( H2D == D2D );
+	auto&& H2D = multi::make_array_ref<2>(dc.data(), {10, 10}); assert( H2D == D2D );
 
 }
 
