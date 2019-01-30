@@ -468,6 +468,9 @@ public:
 	array_ref(array_ref const&) = default;
 	constexpr array_ref(typename array_ref::element_ptr p, typename array_ref::extensions_type e) noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
+	constexpr array_ref(typename array_ref::element_ptr p, std::initializer_list<index_extension> il) noexcept
+		: array_ref(p, detail::to_tuple<D, index_extension>(il)){}
+
 	using basic_array<T, D, ElementPtr>::operator=;
 	using basic_array<T, D, ElementPtr>::operator<;
 	using basic_array<T, D, ElementPtr>::operator>;
