@@ -527,12 +527,12 @@ template<class P> auto make_array_ref(P p, index_extensions<4> x){return make_ar
 template<class P> auto make_array_ref(P p, index_extensions<5> x){return make_array_ref<5>(p, x);}
 
 //In ICC you need to specify the dimensionality in make_array_ref<D>
-#if defined(__INTEL_COMPILER)
+//#if defined(__INTEL_COMPILER)
 template<dimensionality_type D, class P> 
 auto make_array_ref(P p, std::initializer_list<index_extension> il){return make_array_ref(p, detail::to_tuple<D, index_extension>(il));}
 template<dimensionality_type D, class P> 
 auto make_array_ref(P p, std::initializer_list<index> il){return make_array_ref(p, detail::to_tuple<D, index_extension>(il));}
-#endif
+//#endif
 
 #if __cpp_deduction_guides
 #if not defined(__clang__)
