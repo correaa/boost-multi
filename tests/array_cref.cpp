@@ -13,28 +13,7 @@ $CXX -O3 -std=c++14 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x && tim
 using std::cout; using std::cerr;
 namespace multi = boost::multi;
 
-#include<iostream>
-
-template<class T>
-struct A{
-	A(){}
-	A(T*){}
-	void m() const{};
-private:
-	friend void F(A const&){}
-};
-struct B{};
-
-template<class T, typename = decltype(F(std::declval<T>()))>
-void g(T const&){std::cout << "F exists" << std::endl;}
-void g(...){std::cout << "F doesn't exists" << std::endl;}
-
 int main(){
-	A<double> a;
-	g(a);
-	B b;
-	g(b);
-	return 0;
 
 	static_assert(std::is_same<std::pointer_traits<std::complex<double>*>::element_type, std::complex<double>>{}, "!");
 	static_assert(std::is_same<std::pointer_traits<std::complex<double>*>::rebind<std::complex<double> const>, std::complex<double> const*>{}, "!");
