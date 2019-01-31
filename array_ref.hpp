@@ -301,7 +301,9 @@ public:
 };
 
 template<class T2, class P2 = std::add_pointer_t<T2>, class T, dimensionality_type D, class P>
-auto static_array_cast(basic_array<T, D, P> const& o){return basic_array<T2, D, P2>(o);} //need namespace
+auto static_array_cast(basic_array<T, D, P> const& o)
+->decltype(basic_array<T2, D, P2>(o)){
+	return basic_array<T2, D, P2>(o);}
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
