@@ -321,6 +321,7 @@ struct array_iterator<Element, 1, Ptr, Ref> :
 {
 	template<class Other, typename = decltype(Ptr{typename Other::pointer{}})> 
 	array_iterator(Other const& o) : data_{o.data_}, stride_{o.stride_}{}
+	template<class EE, dimensionality_type, class PP, class RR> friend struct array_iterator;
 	array_iterator(std::nullptr_t np = nullptr) : data_{np}, stride_{}{}
 	explicit operator bool() const{return static_cast<bool>(this->data_);}
 	Ref operator[](typename array_iterator::difference_type n) const{assert(*this); return *((*this) + n);}

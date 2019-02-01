@@ -222,8 +222,8 @@ public:
 //	typename array::iterator begin() &&{return ref::begin();}
 //	typename array::iterator end()   &&{return ref::end();}
 
-	typename array::iterator begin() const{return ref::begin();}
-	typename array::iterator end()   const{return ref::end();}
+	typename array::const_iterator begin() const{return ref::begin();}
+	typename array::const_iterator end()   const{return ref::end();}
 
 	void clear() noexcept{destroy(); deallocate(); layout_t<D>::operator=({});}
 	friend void clear(array& self) noexcept{self.clear();}
