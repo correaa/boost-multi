@@ -30,6 +30,13 @@ void destroy(ForwardIt first, ForwardIt last){
 	for(; first != last; ++first) destroy_at(std::addressof(*first));
 }
 
+template<class Alloc, class ForwardIt, typename AT = typename std::allocator_traits<Alloc> >
+void destroy(Alloc& a, ForwardIt first, ForwardIt last){
+	for(; first != last; ++first) 
+		AT::destroy(a, std::addressof(*first));
+	//	destroy_at(std::addressof(*first));
+}
+
 template<class ForwardIt, class Size>
 ForwardIt uninitialized_default_construct_n(ForwardIt first, Size n){
 	using T = typename std::iterator_traits<ForwardIt>::value_type;
@@ -50,6 +57,19 @@ ForwardIt uninitialized_value_construct_n(ForwardIt first, Size n){
 		return current;
     }catch(...){destroy(first, current); throw;}
 }
+
+template<class Alloc, class ForwardIt, class Size, class AT = typename std::allocator_traits<Alloc>>
+ForwardIt uninitialized_value_construct_n(Alloc& a, ForwardIt first, Size n){
+	using T = typename std::iterator_traits<ForwardIt>::value_type;
+	ForwardIt current = first;
+	try{
+		for(; n > 0; (void) ++current, --n) 
+			AT::construct(a, std::addressof(*current), T());
+//			::new (static_cast<void*>(std::addressof(*current))) T();
+		return current;
+    }catch(...){destroy(a, first, current); throw;}
+}
+
 }
 #endif
 
