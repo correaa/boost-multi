@@ -22,9 +22,20 @@ template<class T> struct ptr{ // minimal fancy ptr
 };
 template<> double ptr<double>::value = 42.;
 
-template<class T, class Size>
-ptr<T> copy_n(ptr<T>, Size, ptr<T> d){ // custom copy_n, Boost.Multi uses copy_n
-	std::cerr << "called Pointer-based copy_n(ptr, n, ptr)" << std::endl; 
+// all these are optional, depending on the level of specialization needed
+template<class Ptr, class T, class Size>
+ptr<T> copy_n(Ptr, Size, ptr<T> d){ // custom copy_n, Boost.Multi uses copy_n
+	std::cerr << "called Pointer-based copy_n(Ptr, n, fancy::ptr)" << std::endl; 
+	return d;
+}
+template<class Ptr, class T, class Size>
+Ptr copy_n(ptr<T>, Size, Ptr d){ // custom copy_n, Boost.Multi uses copy_n
+	std::cerr << "called Pointer-based copy_n(fancy::ptr, n, Ptr)" << std::endl; 
+	return d;
+}
+template<class T1, class T2, class Size>
+ptr<T2> copy_n(ptr<T1>, Size, ptr<T2> d){ // custom copy_n, Boost.Multi uses copy_n
+	std::cerr << "called Pointer-based copy_n(fancy::ptr, n, fancy::ptr)" << std::endl; 
 	return d;
 }
 
