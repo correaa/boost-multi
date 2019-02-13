@@ -247,7 +247,7 @@ public:
 		new_layout.rotate();
 		return basic_array<T, D, ElementPtr>{new_layout, types::base_};
 	}
-	friend auto rotated(basic_array const& self){return self.rotated();}
+	friend basic_array rotated(basic_array const& self){return self.rotated();}
 	auto unrotated() const{
 		typename types::layout_t new_layout = *this; 
 		new_layout.unrotate();
