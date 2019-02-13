@@ -58,7 +58,7 @@ protected:
 //	array_types(ArrayTypes&& other) : Layout{other.layout()}, base_{other.base_}{}
 public://TODO find why this needs to be public and not protected or friend
 	template<class ArrayTypes, typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>> 
-	array_types(ArrayTypes&& a) : Layout{a}, base_{a.base_}{}
+	array_types(ArrayTypes const& a) : Layout{a}, base_{a.base_}{}
 	template<typename ElementPtr2>
 	array_types(array_types<T, D, ElementPtr2, Layout> const& other) : Layout{other.layout()}, base_{other.base_}{}
 	template<class T2, dimensionality_type D2, class E2, class L2> friend struct array_types;
