@@ -57,7 +57,8 @@ protected:
 //	template<class ArrayTypes, typename = decltype(Layout{std::declval<ArrayTypes&&>().layout()}, element_ptr{std::declval<ArrayTypes&&>().base_})>
 //	array_types(ArrayTypes&& other) : Layout{other.layout()}, base_{other.base_}{}
 public://TODO find why this needs to be public and not protected or friend
-	template<class ArrayTypes> array_types(ArrayTypes&& a) : Layout{a}, base_{a.base_}{}
+	template<class ArrayTypes, typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>> 
+	array_types(ArrayTypes&& a) : Layout{a}, base_{a.base_}{}
 	template<typename ElementPtr2>
 	array_types(array_types<T, D, ElementPtr2, Layout> const& other) : Layout{other.layout()}, base_{other.base_}{}
 	template<class T2, dimensionality_type D2, class E2, class L2> friend struct array_types;
@@ -452,7 +453,6 @@ protected:
 //	->decltype(basic_array<T2, 1, P2, Layout>(o)){
 //		return basic_array<T2, 1, P2, Layout>(o);}
 public:
-	basic_array(basic_array&&) = default;
 	template<class BasicArray, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<BasicArray>>{}>, typename = decltype(types(std::declval<BasicArray&&>()))> 
 	basic_array(BasicArray&& other) : types{std::forward<BasicArray>(other)}{}
 	basic_array(basic_array&&) = default;
