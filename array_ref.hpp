@@ -452,6 +452,7 @@ protected:
 //	->decltype(basic_array<T2, 1, P2, Layout>(o)){
 //		return basic_array<T2, 1, P2, Layout>(o);}
 public:
+	basic_array(basic_array&&) = default;
 	template<class BasicArray, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<BasicArray>>{}>, typename = decltype(types(std::declval<BasicArray&&>()))> 
 	basic_array(BasicArray&& other) : types{std::forward<BasicArray>(other)}{}
 	basic_array(basic_array&&) = default;
