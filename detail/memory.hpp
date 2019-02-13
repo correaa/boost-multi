@@ -10,8 +10,10 @@
 
 namespace boost{
 namespace multi{
+
 // https://en.cppreference.com/w/cpp/memory/destroy_at
-//template<class T> void destroy_at(T* p){p->~T();}
+template<class Alloc, class T, typename AT = std::allocator_traits<Alloc> > 
+void destroy_at(Alloc& a, T* p){AT::destroy(a, p);}//p->~T();}
 
 //https://en.cppreference.com/w/cpp/memory/destroy
 template<class Alloc, class ForwardIt, typename AT = typename std::allocator_traits<Alloc> >
@@ -41,6 +43,19 @@ ForwardIt uninitialized_copy(Alloc& a, InputIt first, InputIt last, ForwardIt d)
 	}
 }
 
+template<class Alloc, class InputIt, class Size, class ForwardIt, typename AT = std::allocator_traits<Alloc> >
+ForwardIt uninitialized_copy_n(Alloc& a, InputIt first, Size count, ForwardIt d){
+	ForwardIt current = d;
+	try{
+		for(; count > 0; ++first, (void) ++current, --count)
+			AT::construct(std::addressof(*current), *first); // ::new (static_cast<void*>(std::addressof(*current))) Value(*first);
+	}catch(...){
+		for(; d != current; ++d) AT::destroy(a, std::addressof(*d));
+		throw;
+	}
+	return current;
+}
+
 template<class Alloc, class ForwardIt, class Size, class T, typename AT = typename std::allocator_traits<Alloc> >
 ForwardIt uninitialized_fill_n(Alloc& a, ForwardIt first, Size count, const T& value){
 	ForwardIt current = first;
@@ -54,18 +69,7 @@ ForwardIt uninitialized_fill_n(Alloc& a, ForwardIt first, Size count, const T& v
 	}
 }
 
-template<class ForwardIt, class Size>
-ForwardIt uninitialized_default_construct_n(ForwardIt first, Size n){
-	using T = typename std::iterator_traits<ForwardIt>::value_type;
-	ForwardIt current = first;
-	try{
-		for(; n > 0; (void) ++current, --n)
-			::new (static_cast<void*>(std::addressof(*current))) T;
-		return current;
-	}catch(...){destroy(first, current); throw;}
-}
-
-template<class Alloc, class ForwardIt, class Size, class AT = typename std::allocator_traits<Alloc>>
+template<class Alloc, class ForwardIt, class Size, class AT = typename std::allocator_traits<Alloc> >
 ForwardIt uninitialized_value_construct_n(Alloc& a, ForwardIt first, Size n){
 	using T = typename std::iterator_traits<ForwardIt>::value_type;
 	ForwardIt current = first;
@@ -110,10 +114,12 @@ struct recursive_uninitialized_copy_aux<1>{
 	}
 };
 
-template<dimensionality_type N> struct fill_aux;
+template<dimensionality_type N> struct recursive_fill_aux;
 
 template<dimensionality_type N, class Out, class T>
-void recursive_fill(Out f, Out l, T const& value){return fill_aux<N>::call(f, l, value);}
+void recursive_fill(Out f, Out l, T const& value){
+	return recursive_fill_aux<N>::call(f, l, value);
+}
 
 template<dimensionality_type N>
 struct recursive_fill_aux{
@@ -126,8 +132,9 @@ struct recursive_fill_aux{
 };
 
 template<> struct recursive_fill_aux<1>{
-	template<class O, class T> 
-	static auto call(O f, O l, T const& v){using std::fill; return fill(f, l, v);}
+	template<class O, class T>  static auto call(O f, O l, T const& v){
+		using std::fill; return fill(f, l, v);
+	}
 };
 
 template<dimensionality_type N> struct recursive_uninitialized_fill_aux;
@@ -140,15 +147,14 @@ void recursive_uninitialized_fill(Alloc& a, Out f, Out l, T const& value){
 template<dimensionality_type N>
 struct uninitialized_fill_aux{
 	template<class Alloc, class Out, class T>
-	static auto call(Alloc& a, Out first, Out last, T const& value){
+	static auto call(Alloc& a, Out first, Out last, T const& v){
 		using std::begin; using std::end;
 		for(; first != last; ++first)
-			recursive_uninitialized_fill<N-1>(a, begin(*first), end(*first), value); // (*first).begin() instead of first->begin() to make it work with T[][]
+			recursive_uninitialized_fill<N-1>(a, begin(*first), end(*first), v); // (*first).begin() instead of first->begin() to make it work with T[][]
 	}
 };
 
-template<> struct uninitialized_fill_aux<1>{
-	template<class Alloc, class O, class T> 
+template<> struct uninitialized_fill_aux<1>{template<class Alloc, class O, class T> 
 	static auto call(Alloc& a, O f, O l, T const& v){return uninitialized_fill(a, f, l, v);}
 };
 

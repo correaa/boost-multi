@@ -138,8 +138,7 @@ public:
 			clear();
 			this->ref::layout_t::operator=(layout_t<D>{extensions(other)});
 			this->base_ = allocate(this->num_elements());
-			using std::uninitialized_copy_n;
-			uninitialized_copy_n(other.data(), other.num_elements(), this->data());
+			uninitialized_copy_n(alloc(), other.data(), other.num_elements(), this->data());
 		}
 		return *this;
 	}
