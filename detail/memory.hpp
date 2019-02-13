@@ -48,7 +48,7 @@ ForwardIt uninitialized_copy_n(Alloc& a, InputIt first, Size count, ForwardIt d)
 	ForwardIt current = d;
 	try{
 		for(; count > 0; ++first, (void) ++current, --count)
-			AT::construct(std::addressof(*current), *first); // ::new (static_cast<void*>(std::addressof(*current))) Value(*first);
+			AT::construct(a, std::addressof(*current), *first); // ::new (static_cast<void*>(std::addressof(*current))) Value(*first);
 	}catch(...){
 		for(; d != current; ++d) AT::destroy(a, std::addressof(*d));
 		throw;
