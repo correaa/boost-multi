@@ -18,64 +18,61 @@ void destroy_at(Alloc& a, T* p){AT::destroy(a, p);}//p->~T();}
 //https://en.cppreference.com/w/cpp/memory/destroy
 template<class Alloc, class ForwardIt, typename AT = typename std::allocator_traits<Alloc> >
 void destroy(Alloc& a, ForwardIt first, ForwardIt last){
+	using std::addressof;
 	for(; first != last; ++first) 
-		AT::destroy(a, std::addressof(*first));//destroy_at(std::addressof(*first));
+		AT::destroy(a, addressof(*first));//destroy_at(std::addressof(*first));
 }
 
 // https://en.cppreference.com/w/cpp/memory/destroy_n
 template<class Alloc, class ForwardIt, class Size, typename AT = typename std::allocator_traits<Alloc> >
 ForwardIt destroy_n(Alloc& a, ForwardIt first, Size n){
+	using std::addressof;
 	for(; n > 0; ++first, --n)
-		AT::destroy(a, std::addressof(*first));//std::destroy_at(std::addressof(*first));
+		AT::destroy(a, addressof(*first));//std::destroy_at(std::addressof(*first));
 	return first;
 }
 
 template<class Alloc, class InputIt, class ForwardIt, typename AT = typename std::allocator_traits<Alloc> >
 ForwardIt uninitialized_copy(Alloc& a, InputIt first, InputIt last, ForwardIt d){
 	ForwardIt current = d;
+	using std::addressof;
 	try{
 		for(; first != last; ++first, ++current)
-			AT::construct(a, std::addressof(*current), *first);
+			AT::construct(a, addressof(*current), *first);
 		return current;
-	}catch(...){
-		for(; d != current; ++d) AT::destroy(a, std::addressof(*d));
-		throw;
-	}
+	}catch(...){destroy(a, d, current); throw;}
 }
 
 template<class Alloc, class InputIt, class Size, class ForwardIt, typename AT = std::allocator_traits<Alloc> >
 ForwardIt uninitialized_copy_n(Alloc& a, InputIt first, Size count, ForwardIt d){
 	ForwardIt current = d;
+	using std::addressof;
 	try{
 		for(; count > 0; ++first, (void) ++current, --count)
-			AT::construct(a, std::addressof(*current), *first); // ::new (static_cast<void*>(std::addressof(*current))) Value(*first);
-	}catch(...){
-		for(; d != current; ++d) AT::destroy(a, std::addressof(*d));
-		throw;
-	}
+			AT::construct(a, addressof(*current), *first); // ::new (static_cast<void*>(std::addressof(*current))) Value(*first);
+	}catch(...){destroy(a, d, current); throw;}
 	return current;
 }
 
 template<class Alloc, class ForwardIt, class Size, class T, typename AT = typename std::allocator_traits<Alloc> >
 ForwardIt uninitialized_fill_n(Alloc& a, ForwardIt first, Size count, const T& value){
 	ForwardIt current = first;
+	using std::addressof;
 	try{
 		for(; count > 0; ++current, (void) --count)
-			AT::construct(a, std::addressof(*current), value); // ::new (static_cast<void*>(std::addressof(*current))) Value(value);
+			AT::construct(a, addressof(*current), value); // ::new (static_cast<void*>(std::addressof(*current))) Value(value);
 		return current;
-	}catch(...){
-		for(; first != current; ++first) AT::destroy(a, std::addressof(*first));
-		throw;
-	}
+	}catch(...){destroy(a, first, current); throw;}
 }
 
 template<class Alloc, class ForwardIt, class Size, class AT = typename std::allocator_traits<Alloc> >
 ForwardIt uninitialized_value_construct_n(Alloc& a, ForwardIt first, Size n){
 	using T = typename std::iterator_traits<ForwardIt>::value_type;
 	ForwardIt current = first;
+	using std::addressof;
 	try{
 		for(; n > 0; (void) ++current, --n) 
-			AT::construct(a, std::addressof(*current), T()); // ::new (static_cast<void*>(std::addressof(*current))) T();
+			AT::construct(a, addressof(*current), T()); // ::new (static_cast<void*>(std::addressof(*current))) T();
 		return current;
     }catch(...){destroy(a, first, current); throw;}
 }
