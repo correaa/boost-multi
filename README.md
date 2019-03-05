@@ -31,8 +31,6 @@ Some features:
 
 ## Concept Requirements
 
-### Linear Sequences: Pointers
-
 The designs tries to impose the minimum possible requirements over the used referred types.
 Pointer-like random access types can be used as substitutes of built-in pointers.
 
@@ -55,6 +53,8 @@ int main(){
 	assert(CC[1][1] == 9);
 }
 ```
+
+### Linear Sequences: Pointers
 
 In particular it means that `array_ref` can reference to an arbitrary random access iterator sequence.
 This way, any linear sequence (e.g. `raw memory`, `std::vector`, `std::queue`) can be arranged 
@@ -94,10 +94,17 @@ copy_n(first, n, dest)
 fill_n(first, n, value)
 ```
 
-### Customizing recursive operations
+### Customizing recursive operations: SCARY iterators
 
 Finally, another level of customization can be achieved by intersepting internal recursive algorithms.
-Multi iterators are [SCARY](http://www.open-std.org/jtc1/sc22/WG21/docs/papers/2009/n2980.pdf), which means that they can be accessed generically through their dimension and underlying pointer types:
+Multi iterators are [SCARY](http://www.open-std.org/jtc1/sc22/WG21/docs/papers/2009/n2980.pdf). 
+SCARY means that they are independent of any container and can be accessed generically through their dimension and underlying pointer types:
+
+For example, `boost::multi::array_iterator<double, 2, double*> it` is a row (or column) iterator of an array of dimension 2 or higher, whose underlying pointer type is `double*`.
+This row (or column) and subseuent ones can be accessed by `*it` and `it[n]` respectively. 
+The base pointer, the strides and the size of the arrow can be accessed by `base(it)`, `stride(it)`, `it->size()`.
+
+The template arguments of the iterator can be used to customize operations that are recursive (and possibly inefficient) in the library:
 
 ```
 namespace boost{namespace multi{
@@ -115,11 +122,10 @@ void copy(It first, It last, multi::array_iterator<T, 2, fancy::ptr<T> > dest){
 }}
 ```
 
-These customization must be performed in the `boost::multi` namespace (this is where the Multi iterators are defined) and the customization happens through matching the dimension and the pointer type.
 For example, if your fancy pointers refers a memory type in which 2D memory copying (strided copy) that kind of instruction can be ejecuted when the library internally calls `copy`.
+This customization must be performed in the `boost::multi` namespace (this is where the Multi iterators are defined) and the customization happens through matching the dimension and the pointer type.
 
 If your (fancy) pointer are not so fancy and behavior is normal, it is not necessary to customize these functions in any way.
-
 
 ## Usage
 
