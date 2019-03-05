@@ -1,7 +1,7 @@
 #ifdef COMPILATION_INSTRUCTIONS
 (echo "#include\""$0"\"" > $0x.cpp) && c++ `#-DNDEBUG` -std=c++17 -Wall -Wextra `#-Wfatal-errors` -D_TEST_BOOST_MULTI_ARRAY $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
 #endif
-#ifndef BOOST_MULTI_ARRAY_HPP
+#ifndef BOOST_MULTI_ARRAY_HPP 
 #define BOOST_MULTI_ARRAY_HPP
 
 #include "./array_ref.hpp"
@@ -89,7 +89,7 @@ public:
 		using std::begin; using std::end;
 		recursive_uninitialized_copy<D>(alloc(), begin(o), end(o), ref::begin());
 	}
-	array(array const& other)                                                   // 5a
+	array(array const& other)                                              // 5a
 	:	allocator_type{other}, ref{allocate(other.num_elements()), extensions(other)}{
 		uninitialized_copy(other.data());
 	}
@@ -130,7 +130,6 @@ public:
 		return *this;
 	}
 	array& operator=(array const& other){
-	//	if(this == std::addressof(other)) return *this;
 		if(extensions(other)==array::extensions()){
 			using std::copy_n;
 			copy_n(other.data(), other.num_elements(), this->data());
@@ -142,25 +141,39 @@ public:
 		}
 		return *this;
 	}
+	array& operator=(array&& other){
+	//	if(this!=std::addressof(other)) clear(); 
+	//	swap(other); 
+	//	return *this;
+		using std::exchange;
+		this->base_ = exchange(other, nullptr);
+		alloc() = std::move(other.alloc());
+		static_cast<typename array::layout_t&>(*this) = exchange(static_cast<typename array::layout_t&>(other), {});
+	//	swap(
+	//		static_cast<typename array::layout_t&>(*this), 
+	//		static_cast<typename array::layout_t&>(other)
+	//	);
+		return *this;
+	}
 	void swap(array& other) noexcept{
 		using std::swap;
+		swap(alloc(), other.alloc());
 		swap(this->base_, other.base_);
-		swap(static_cast<Alloc&>(*this), static_cast<Alloc&>(other));
 		swap(
-			static_cast<typename array_ref<T, D, typename std::allocator_traits<allocator_type>::pointer>::layout_t&>(*this), 
-			static_cast<typename array_ref<T, D, typename std::allocator_traits<allocator_type>::pointer>::layout_t&>(other)
+			static_cast<typename array::layout_t&>(*this), 
+			static_cast<typename array::layout_t&>(other)
 		);
 	}
 	friend void swap(array& a, array& b){a.swap(b);}
-	array& operator=(array&& other){if(this!=std::addressof(other)) clear(); swap(other); return *this;}
 	void assign(typename array::extensions_type x, typename array::element const& e){
 		if(array::extensions()==x){
-			recursive_fill<D>(alloc(), begin(), end(), e);
+			fill_n(this->base_, this->num_elements(), e);
 		}else{
 			clear();
 			this->layout_t<D>::operator=(layout_t<D>{x});
 			this->base_ = allocate();
-			recursive_uninitialized_fill<dimensionality>(alloc(), begin(), end(), e);
+			uninitialized_fill_n(e);
+		//	recursive_uninitialized_fill<dimensionality>(alloc(), begin(), end(), e);
 		}
 	}
 	template<class It>

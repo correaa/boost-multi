@@ -40,7 +40,7 @@ struct array_types : Layout{ //	template<class... As> array_types(As&&... as) : 
 	using reference       = std::conditional_t<
 		dimensionality!=1, 
 		basic_array<element, dimensionality-1, element_ptr>, 
-		typename std::iterator_traits<element_ptr>::reference 	//	typename pointer_traits<element_ptr>::element_type&
+		decltype(*std::declval<ElementPtr>()) // typename std::iterator_traits<element_ptr>::reference 	//	typename pointer_traits<element_ptr>::element_type&
 	>;
 	element_ptr        base() const{return base_;} //	element_const_ptr cbase() const{return base();}
 	layout_t const& layout() const{return *this;}
@@ -403,6 +403,7 @@ struct array_iterator<Element, 1, Ptr, Ref> :
 	array_iterator(std::nullptr_t np = nullptr) : data_{np}, stride_{}{}
 	explicit operator bool() const{return static_cast<bool>(this->data_);}
 	Ref operator[](typename array_iterator::difference_type n) const{assert(*this); return *((*this) + n);}
+	Ptr operator->() const{return data_;}
 	using element = Element;
 	using element_ptr = Ptr;
 private:

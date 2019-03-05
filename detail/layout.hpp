@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && c++ -std=c++14 -Wall -Wextra -Wfatal-errors -D_TEST_MULTI_LAYOUT $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
+(echo "#include\""$0"\"" > $0x.cpp) && clang++ -std=c++14 -Wall -Wextra -Wfatal-errors -D_TEST_MULTI_LAYOUT $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
 #endif
 #ifndef MULTI_LAYOUT_HPP
 #define MULTI_LAYOUT_HPP
@@ -63,6 +63,24 @@ constexpr auto to_tuple_impl(std::array<From, sizeof...(I)> arr, std::index_sequ
 template<class To, size_t N, class From>
 constexpr auto to_tuple(std::array<From, N> arr){
 	return to_tuple_impl<To, From>(arr, std::make_index_sequence<N>());
+}
+
+template <class TT, class Tuple, std::size_t... I>
+constexpr std::array<TT, std::tuple_size<std::decay_t<Tuple>>{}> to_array_impl(
+	Tuple&& t, std::index_sequence<I...>
+){
+	return {static_cast<TT>(std::get<I>(std::forward<Tuple>(t)))...};
+}
+ 
+template<class T = void, class Tuple, class TT = std::conditional_t<std::is_same<T, void>{}, std::decay_t<decltype(std::get<0>(std::decay_t<Tuple>{}))>, T> >
+constexpr std::array<TT, std::tuple_size<std::decay_t<Tuple>>{}> 
+to_array(Tuple&& t){
+	return 
+		to_array_impl<TT>(
+			std::forward<Tuple>(t),
+			std::make_index_sequence<std::tuple_size<std::remove_reference_t<Tuple>>{}>{}	
+		)
+	;
 }
 
 #if 0
@@ -234,9 +252,12 @@ struct layout_t
 	decltype(auto) shape() const{return sizes();}
 	friend decltype(auto) shape(layout_t const& self){return self.shape();}
 
-	constexpr auto sizes() const{return tuple_cat(std::make_tuple(size()), sub.sizes());}
-	friend constexpr auto sizes(layout_t const& self){return self.sizes();}
-
+	template<class T = void>
+	constexpr auto sizes() const{
+		return detail::to_array<T>(tuple_cat(std::make_tuple(size()), sub.sizes()));
+	}
+	template<class T = void>
+	friend constexpr auto sizes(layout_t const& self){return self.sizes<T>();}
 private:
 	friend struct layout_t<D+1>; // void layout_t<D+1>::strides_aux(size_type*) const;
 public:
@@ -344,7 +365,14 @@ public:
 	friend constexpr index stride(layout_t const& self){return self.stride();}
 public:
 	constexpr auto strides() const{return std::make_tuple(stride());}
-	constexpr auto sizes() const{return std::make_tuple(size());}
+//	template<class T = void>
+//	constexpr auto sizes() const{
+//		return detail::to_array<T>(tuple_cat(std::make_tuple(size()), sub.sizes()));
+//	}
+	template<class T = void>
+	constexpr auto sizes() const{
+		return detail::to_array<T>(std::make_tuple(size()));
+	}
 	constexpr auto offsets() const{return std::make_tuple(offset());}
 
 	constexpr size_type num_elements() const{return this->size();}
@@ -387,6 +415,8 @@ public:
 #include<cassert>
 #include<iostream>
 #include<vector>
+
+#include "../../multi/utility.hpp"
 
 using std::cout;
 namespace multi = boost::multi;
@@ -463,6 +493,8 @@ int main(){
 	static_assert( get<2>(L.strides()) == 	 1, "!");
 	static_assert( L.size() == 10, "!");
 }
+	std::tuple<int, int, int> ttt = {1,2,3};
+	auto arrr = boost::multi::detail::to_array(ttt);
 }
 #endif
 #endif
