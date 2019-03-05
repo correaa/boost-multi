@@ -2,7 +2,7 @@
 
 (not an official Boost library)
 
-_Alfredo Correa, 2018_
+_Alfredo Correa, 2018-2019_
 
 Boost.Multi provides multidimensional array access to contiguous or regularly contiguous memory (or ranges).
 It shares the goals of Boost.MultiArray, although the code is completely independent and the syntax has slight differences.
