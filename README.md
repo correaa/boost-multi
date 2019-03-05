@@ -31,25 +31,95 @@ Some features:
 
 ## Concept Requirements
 
+### Linear Sequences: Pointers
+
 The designs tries to impose the minimum possible requirements over the used referred types.
 Pointer-like random access types can be used as substitutes of built-in pointers.
 
 ```
-template<class T> struct ptr{
+namespace min{
+template<class T> struct ptr{ // minimalistic pointer
+	T* impl_;
 	T& operator*() const{return *impl_;}
 	auto operator+(std::ptrdiff_t n) const{return ptr{impl_ + n};}
 //	T& operator[](std::ptrdiff_t n) const{return impl_[n];} // optional
-private: T* impl_;
 };
+}
+
 int main(){
 	double* buffer = new double[100];
-	multi::array_ref<double, 2, ptr<double> > CC({10, 10}, ptr<double>{buffer});
+	multi::array_ref<double, 2, min::ptr<double> > CC(min::ptr<double>{buffer}, {10, 10});
 	CC[2]; // requires operator+ 
 	CC[1][1]; // requires operator*
 	CC[1][1] = 9;
 	assert(CC[1][1] == 9);
 }
 ```
+
+In particular it means that `array_ref` can reference to an arbitrary random access iterator sequence.
+This way, any linear sequence (e.g. `raw memory`, `std::vector`, `std::queue`) can be arranged 
+
+```
+	std::vector<double> buffer(100);
+	multi::array_ref<double, 2, std::vector<double>::iterator> A(buffer.begin(), {10, 10});
+	A[1][1] = 9;
+	assert(A[1][1] == 9);
+	assert(buffer[11]==9);
+```
+Since `array_ref`'s do not manage the memory associated with it, the reference can be simply dangle of the `buffer` memory is reallocated (e.g. by `resize`).
+
+### Special Memory: Allocator and Fancy Pointers
+
+`array`'s manages its memory through allocators. 
+It can handle all sorts of special memory, as long as the underlying types behave coherently, these include fancy pointers and fancy references.
+Associated fancy pointers and fancy reference (if any) are deduced from the allocator types.
+
+The behavior regarding memory managament of the fancy pointers can be customized, if necessary, by specializations of these functions:
+
+```
+destroy(a, first, last)
+destroy_n(a, first, n) -> last
+uninitialized_copy_n(a, first, n, dest) -> last;
+uninitialized_fill_n(a, first, n, value) -> last
+uninitialized_default_construct_n(a, first, n) -> last
+uninitialized_value_construct_n(a, first, n) -> last
+```
+
+where `a` is the special allocator, `n` is a size (usually the number of elements), `first`, `last` and `dest` are fancy pointers.
+
+Copying underlying memory can be customized with 
+
+```
+copy_n(first, n, dest)
+fill_n(first, n, value)
+```
+
+### Customizing recursive operations
+
+Finally, another level of customization can be achieved by intersepting internal recursive algorithms.
+Multi iterators are [SCARY](http://www.open-std.org/jtc1/sc22/WG21/docs/papers/2009/n2980.pdf), which means that they can be accessed generically through their dimension and underlying pointer types:
+
+```
+namespace boost{namespace multi{
+template<class It, class T>  // custom copy 1D (aka strided copy)
+void copy(It first, It last, multi::array_iterator<T, 1, fancy::ptr<T> > dest){
+	assert( stride(first) == stride(last) );
+	std::cerr << "1D copy(it1D, it1D, it1D) with strides " << stride(first) << " " << stride(dest) << std::endl;
+}
+
+template<class It, class T> // custom copy 2D (aka double strided copy)
+void copy(It first, It last, multi::array_iterator<T, 2, fancy::ptr<T> > dest){
+	assert( stride(first) == stride(last) );
+	std::cerr << "2D copy(It, It, it2D) with strides " << stride(first) << " " << stride(dest) << std::endl;
+}
+}}
+```
+
+These customization must be performed in the `boost::multi` namespace (this is where the Multi iterators are defined) and the customization happens through matching the dimension and the pointer type.
+For example, if your fancy pointers refers a memory type in which 2D memory copying (strided copy) that kind of instruction can be ejecuted when the library internally calls `copy`.
+
+If your (fancy) pointer are not so fancy and behavior is normal, it is not necessary to customize these functions in any way.
+
 
 ## Usage
 
