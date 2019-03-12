@@ -15,7 +15,11 @@ namespace multi{
 template<class Alloc, class T, typename AT = std::allocator_traits<Alloc> > 
 void destroy_at(Alloc& a, T* p){AT::destroy(a, p);}
 
-template<class Ptr> auto to_address(const Ptr& p) noexcept ->decltype(p.operator->());
+//template<class Ptr> auto to_address(const Ptr& p) noexcept 
+//->decltype(p.operator->());
+
+template<class Ptr> auto to_address(Ptr const& p) noexcept 
+->decltype(p.operator->());
 
 template<class Alloc, class ForwardIt>
 void destroy(Alloc& a, ForwardIt first, ForwardIt last);
@@ -30,8 +34,8 @@ ForwardIt uninitialized_default_construct_n(Alloc& a, ForwardIt first, Size n);
 template<class Alloc, class ForwardIt, class Size>
 ForwardIt uninitialized_value_construct_n(Alloc& a, ForwardIt first, Size n);
 
-template<class Ptr>
-auto to_address(const Ptr& p) noexcept
+////////////////////////////////////////////////////////////////////////////////
+template<class Ptr> auto to_address(Ptr const& p) noexcept
 ->decltype(p.operator->()){
 	return p.operator->();}
 
@@ -108,6 +112,7 @@ ForwardIt uninitialized_value_construct_n(Alloc& a, ForwardIt first, Size n){
 //	using std::addressof;
 	try{
 		for(; n > 0; ++current, --n) 
+		//	a.construct(std::pointer_traits<Ptr>::pointer_to(*current), T());
 			a.construct(to_address(current), T());
 		//	AT::construct(a, to_address(current), T()); 
 		//	AT::construct(a, addressof(*current), T());

@@ -146,7 +146,7 @@ public:
 	//	swap(other); 
 	//	return *this;
 		using std::exchange;
-		this->base_ = exchange(other, nullptr);
+		this->base_ = exchange(other.base_, nullptr);
 		alloc() = std::move(other.alloc());
 		static_cast<typename array::layout_t&>(*this) = exchange(static_cast<typename array::layout_t&>(other), {});
 	//	swap(
