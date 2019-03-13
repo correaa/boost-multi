@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-clang++ -O3 -std=c++14 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x && time $0.x $@ && rm -f $0.x; exit
+clang++ -O3 -std=c++17 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x && time $0.x $@ && rm -f $0.x; exit
 #endif
 
 //#include<boost/operators.hpp>
@@ -43,6 +43,7 @@ private:
 public:
 	bool operator==(ref const&) const{std::cout << "compared" << std::endl; return true;}
 	bool operator!=(ref const&) const{return false;}
+	using decay_t = std::decay_t<T>;
 };
 
 template<class T> struct allocator{
@@ -87,16 +88,29 @@ namespace boost{
 namespace multi{
 
 template<class It, class T>  // custom copy 1D (aka strided copy)
-void copy(It first, It last, multi::array_iterator<T, 1, fancy::ptr<T> > dest){
-	assert( stride(first) == stride(last) );
+fancy::ptr<T> copy(It first, It last, fancy::ptr<T> dest){ (void)last;
+	return copy(first, last, multi::array_iterator<T, 1, fancy::ptr<T>>{dest});
+//	std::cerr << "1D copy(it1D, it1D, it1D) with strides " << stride(first) << " " << stride(dest) << std::endl;
+//	return dest;
+}
+
+template<class It, class T>  // custom copy 1D (aka strided copy)
+auto copy(It first, It last, multi::array_iterator<T, 1, fancy::ptr<T>> dest){ (void)last;
 	std::cerr << "1D copy(it1D, it1D, it1D) with strides " << stride(first) << " " << stride(dest) << std::endl;
+	return dest;
 }
 
 template<class It, class T> // custom copy 2D (aka double strided copy)
-void copy(It first, It last, multi::array_iterator<T, 2, fancy::ptr<T> > dest){
-	assert( stride(first) == stride(last) );
+auto copy(It first, It last, multi::array_iterator<T, 2, fancy::ptr<T>> dest){ (void)last;
 	std::cerr << "2D copy(It, It, it2D) with strides " << stride(first) << " " << stride(dest) << std::endl;
+	return dest;
 }
+
+//template<class Alloc, class It, class T> // custom copy 2D (aka double strided copy)
+//auto uninitialized_copy(Alloc&, It first, It last, multi::array_iterator<T, 2, fancy::ptr<T>> const& dest){
+//	std::cerr << "2D uninitialized_copy(...) calls raw copy 2D" << std::endl;
+//	return copy(first, last, dest);
+//}
 
 }}
 
@@ -123,6 +137,17 @@ int main(){
 	D = C;
 
 	D = std::move(B);
+
+//	C = A; // calls custom copy
+//	multi::array_ref<double, 2, fancy::ptr<double>> AA(A.data(), {5, 5});
+	C = A({0, 5}, {0,5});
+
+	multi::array<double, 2, fancy::allocator<double> > CC;// = A({0, 5}, {0,5});
+	CC = A({0, 5}, {0,5});
+
+//	using std::copy_n;
+//	copy_n(A.data(), 25, A.data());
+	static_assert( multi::array_iterator<double, 2, double*>::rank{} == 2, "!");
 }
 
 

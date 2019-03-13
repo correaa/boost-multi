@@ -81,21 +81,23 @@ public:
 		using std::next;
 		using std::all_of;
 		if(first!=last) assert( all_of(next(first), last, [x=multi::extensions(*first)](auto& e){return extensions(e)==x;}) );
-		recursive_uninitialized_copy<D>(alloc(), first, last, ref::begin());
+	//	recursive_uninitialized_copy<D>(alloc(), first, last, ref::begin());
+		uninitialized_copy(alloc(), first, last, ref::begin());
 	}
 	template<class Array, typename=std::enable_if_t<multi::rank<std::remove_reference_t<Array>>{}()>=1 > >
 	array(Array&& o, allocator_type const& a = {})
 	:	allocator_type{a}, ref{allocate(num_elements(o)), extensions(o)}{
 		using std::begin; using std::end;
-		recursive_uninitialized_copy<D>(alloc(), begin(o), end(o), ref::begin());
+	//	recursive_uninitialized_copy<D>(alloc(), begin(o), end(o), ref::begin());
+		uninitialized_copy(alloc(), begin(o), end(o), ref::begin());
 	}
 	array(array const& other)                                              // 5a
 	:	allocator_type{other}, ref{allocate(other.num_elements()), extensions(other)}{
-		uninitialized_copy(other.data());
+		uninitialized_copy_(other.data());
 	}
 	array(array const& other, allocator_type const& a)                      //5b
 	:	allocator_type{a}, ref{allocate(other.num_elements()), extensions(other)}{
-		uninitialized_copy(other.data());
+		uninitialized_copy_(other.data());
 	}
 	array(array&& other) noexcept                                           //6a
 	:	allocator_type{other.get_allocator()},
@@ -120,12 +122,10 @@ public:
 		if(ext==array::extensions()){
 			const_cast<array const&>(*this).ref::operator=(std::forward<A>(a));
 		}else{
-			clear();
-			this->ref::layout_t::operator=(layout_t<D>{extensions(a)});
-			this->base_ = allocate(this->num_elements());
-		//	multi::uninitialized_copy<D>(maybestd_begin(std::forward<A>(a)), maybestd_end(std::forward<A>(a)), array::begin());
+			clear(); //	this->ref::layout_t::operator=(layout_t<D>{extensions(a)}); //			this->base_ = allocate(this->num_elements());
+			this->base_ = allocate(this->ref::layout_t::operator=(layout_t<D>{extensions(a)}).num_elements());
 			using std::begin; using std::end;
-			recursive_uninitialized_copy<D>(alloc(), begin(std::forward<A>(a)), end(std::forward<A>(a)), array::begin());
+		//	uninitialized_copy(alloc(), begin(std::forward<A>(a)), end(std::forward<A>(a)), array::begin()); //	recursive_uninitialized_copy<D>(alloc(), begin(std::forward<A>(a)), end(std::forward<A>(a)), array::begin());
 		}
 		return *this;
 	}
@@ -238,7 +238,7 @@ private:
 	allocator_type& alloc(){return static_cast<allocator_type&>(*this);}
 	void destroy(){destroy_n(alloc(), this->data(), this->num_elements());}
 	template<typename It>
-	auto uninitialized_copy(It first){return uninitialized_copy_n(alloc(), first, this->num_elements(), this->data());}
+	auto uninitialized_copy_(It first){return uninitialized_copy(alloc(), first, first + this->num_elements(), this->data());}
 	auto uninitialized_default_construct(){return uninitialized_default_construct_n(alloc(), this->base_, this->num_elements());}
 	auto uninitialized_value_construct(){return uninitialized_value_construct_n(alloc(), this->base_, this->num_elements());}
 	auto uninitialized_fill(typename array::element const& el){return uninitialized_fill_n(alloc(), this->base_, this->num_elements(), el);}

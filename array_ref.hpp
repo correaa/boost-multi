@@ -156,6 +156,8 @@ struct array_iterator :
 //	using element_type = typename Ref::value_type;
 	using iterator_category = std::random_access_iterator_tag;
 
+	using rank = std::integral_constant<dimensionality_type, D>;
+
 	using element = typename Ref::element;
 	using element_ptr = typename Ref::element_ptr;
 	array_iterator(std::nullptr_t p = nullptr) : ptr_{p}, stride_{1}{}//Ref{p}{}
@@ -173,7 +175,7 @@ struct array_iterator :
 	Ref const& operator*() const{/*assert(*this);*/ return *ptr_;}//return *this;}
 //	Ref const* 
 	decltype(auto) operator->() const{/*assert(*this);*/ return ptr_;}//return this;}
-	Ref        operator[](difference_type n) const{return *(*this + n);}
+	Ref const&        operator[](difference_type n) const{return *(*this + n);}
 	template<class O> bool operator==(O const& o) const{return equal(o);}
 	bool operator<(array_iterator const& o) const{return distance_to(o) > 0;}
 	array_iterator(typename Ref::element_ptr p, layout_t<D-1> l, index stride) : /*Ref{l, p},*/ ptr_{p, l}, stride_{stride}{}
@@ -200,6 +202,159 @@ private:
 	friend class boost::iterator_core_access;
 };
 
+#if 0
+template<class Alloc, class It1, class It2>//class T, dimensionality_type D, class... As, typename=std::enable_if_t<D!=1>>
+auto uninitialized_copy_aux(Alloc& a, It1 first, It1 last, It2 dest, ...){//multi::array_iterator<T, D, As...> dest){
+	while(first != last){
+		using std::begin; using std::end;
+		uninitialized_copy(a, begin(*first), end(*first), begin(*dest)); // to make it work with T[][]
+		++first;
+		++dest;
+	}
+	return dest;
+}
+template<class Alloc, class InputIt, class ForwardIt>//, typename AT = typename std::allocator_traits<Alloc> >
+ForwardIt uninitialized_copy_aux(Alloc& a, InputIt f, InputIt l, ForwardIt d, std::integral_constant<dimensionality_type, 1>){
+	ForwardIt current = d; 
+	using multi::to_address;
+	try{
+		for(; f != l; ++f, ++current)
+			a.construct(to_address(current), *f);
+		//	AT::construct(a, to_address(current), *f);
+		//	AT::construct(a, addressof(*current), *f);
+		//	a.construct(addressof(*current), *f);
+		return current;
+	}catch(...){destroy(a, d, current); throw;}
+}
+template<class Alloc, class It1, class It2>//class T, dimensionality_type D, class... As, typename=std::enable_if_t<D!=1>>
+auto uninitialized_copy(Alloc& a, It1 first, It1 last, It2 dest){//multi::array_iterator<T, D, As...> dest){
+	return uninitialized_copy(a, first, last, dest, std::decay_t<It2>::rank);
+}
+#endif
+#if 0
+template<class Alloc, class It1, class T, dimensionality_type D, class... As, typename=std::enable_if_t<D!=1 and true /*not std::is_trivially_copyable<typename multi::array_iterator<T, D, As...>::element>{}*/>>
+auto uninitialized_copy(Alloc& a, It1 first, It1 last, multi::array_iterator<T, D, As...> dest){
+	while(first != last){
+		using std::begin; using std::end;
+		uninitialized_copy(a, begin(*first), end(*first), begin(*dest)); // to make it work with T[][]
+		++first;
+		++dest;
+	}
+	return dest;
+}
+
+template<class Alloc, class InputIt, class ForwardIt, typename = std::enable_if_t<true/*not std::is_trivially_copyable<typename std::iterator_traits<ForwardIt>::value_type>{}*/> >//, typename AT = typename std::allocator_traits<Alloc> >
+ForwardIt uninitialized_copy(Alloc& a, InputIt f, InputIt l, ForwardIt d){
+	ForwardIt current = d; 
+	using multi::to_address;
+	try{
+		for(; f != l; ++f, ++current)
+			a.construct(to_address(current), *f);
+		//	AT::construct(a, to_address(current), *f);
+		//	AT::construct(a, addressof(*current), *f);
+		//	a.construct(addressof(*current), *f);
+		return current;
+	}catch(...){destroy(a, d, current); throw;}
+}
+#endif
+
+//https://en.cppreference.com/w/cpp/memory/destroy
+template<class Alloc, class ForwardIt, typename = std::enable_if_t<!has_rank<ForwardIt>{}>>//, typename = std::enable_if_t<typename ForwardIt::rank{} == 1> >//, typename AT = typename std::allocator_traits<Alloc> >
+void destroy(Alloc& a, ForwardIt first, ForwardIt last){
+	//	using multi::to_address;
+	for(; first != last; ++first) a.destroy(to_address(first)); //	AT::destroy(a, to_address(first)); //	AT::destroy(a, addressof(*first)); // a.destroy(addressof(*first));
+}
+
+template<class Alloc, class ForwardIt, typename = std::enable_if_t<has_rank<ForwardIt>{} and typename ForwardIt::rank{} == 1>>//, typename = std::enable_if_t<typename ForwardIt::rank{} == 1> >//, typename AT = typename std::allocator_traits<Alloc> >
+void destroy(Alloc& a, ForwardIt first, ForwardIt last, double* = 0){
+	//	using multi::to_address;
+	for(; first != last; ++first) a.destroy(to_address(first)); //	AT::destroy(a, to_address(first)); //	AT::destroy(a, addressof(*first)); // a.destroy(addressof(*first));
+}
+template<class Alloc, class ForwardIt, typename = std::enable_if_t<has_rank<ForwardIt>{} and typename ForwardIt::rank{} != 1>>//, typename AT = typename std::allocator_traits<Alloc> >
+void destroy(Alloc& a, ForwardIt first, ForwardIt last, void* = 0){
+	for(; first != last; ++first) destroy(a, begin(*first), end(*first));
+}
+
+template<class Alloc, class InputIt, class Size, class ForwardIt>//, typename AT = std::allocator_traits<Alloc> >
+ForwardIt uninitialized_copy_n(Alloc& a, InputIt f, Size n, ForwardIt d){
+	ForwardIt c = d;
+//	using std::addressof;
+	try{
+		for(; n > 0; ++f, ++c, --n)
+			a.construct(to_address(c), *f);
+		//	AT::construct(a, to_address(c), *f);
+		//	AT::construct(a, addressof(*c), *f);
+		//	a.construct(addressof(*c), *f);
+		return c;
+	}catch(...){destroy(a, d, c); throw;}
+}
+
+template<class Alloc, class ForwardIt, class Size, class T>//, typename AT = typename std::allocator_traits<Alloc> >
+ForwardIt uninitialized_fill_n(Alloc& a, ForwardIt first, Size n, const T& v){
+	ForwardIt current = first; // using std::to_address;
+	try{
+		for(; n > 0; ++current, --n) a.construct(to_address(current), v); //	AT::construct(a, to_address(current), v); //	AT::construct(a, addressof(*current), v); //a.construct(addressof(*current), v);
+		return current;
+	}catch(...){destroy(a, first, current); throw;}
+}
+
+template<class Alloc, class ForwardIt, class Size>//, class AT = typename std::allocator_traits<Alloc> >
+ForwardIt uninitialized_default_construct_n(Alloc& a, ForwardIt first, Size n){
+	ForwardIt current = first;
+	try{
+		for(; n > 0; ++current, --n) a.construct(to_address(current));
+		return current;
+    }catch(...){destroy(a, first, current); throw;}
+}
+
+template<class Alloc, class ForwardIt, class Size, 
+	typename T = typename std::iterator_traits<ForwardIt>::value_type,
+	typename = std::enable_if_t<not std::is_trivially_default_constructible<T>{}> 
+>
+ForwardIt uninitialized_value_construct_n(Alloc& a, ForwardIt first, Size n){
+	ForwardIt current = first; // using std::addressof;
+	try{
+		for(; n > 0; ++current, --n) a.construct(to_address(current), T()); //	a.construct(std::pointer_traits<Ptr>::pointer_to(*current), T()); //	AT::construct(a, to_address(current), T()); //	AT::construct(a, addressof(*current), T()); //	a.construct(addressof(*current), T());
+		return current;
+	}catch(...){destroy(a, first, current); throw;}
+}
+
+template<class Alloc, class InputIt, class MMIt, 
+	typename = std::enable_if_t<has_rank<MMIt>{}>,
+	typename = std::enable_if_t<!std::is_trivially_copyable<typename MMIt::element>{}>, 
+	typename = std::enable_if_t<typename MMIt::rank{} != 1>
+>
+MMIt uninitialized_copy(Alloc& a, InputIt f, InputIt l, MMIt d){
+	MMIt c = d; using std::begin; using std::end;
+	try{
+		while(f!= l) uninitialized_copy(a, begin(*f), end(*f), begin(*c)), ++f, ++c; // to make it work with T[][]
+		return c;
+	}catch(...){destroy(a, d, c); throw;}
+}
+
+template<class Alloc, class In, class MIt, class=std::enable_if_t<std::is_trivially_copyable<typename MIt::element>{}>>
+MIt uninitialized_copy(Alloc&, In f, In l, MIt d){using std::copy; return copy(f, l, d);}
+
+template<class Alloc, class InputIt, class MIt, typename = std::enable_if_t<has_rank<MIt>{}>, typename = std::enable_if_t<typename MIt::rank{}==1>, class=std::enable_if_t<!std::is_trivially_copyable<typename MIt::element>{}> >
+MIt uninitialized_copy(Alloc& a, InputIt f, InputIt l, MIt const& d){
+	MIt current = d; // using multi::to_address;
+	try{
+		for(; f != l; ++f, ++current) a.construct(to_address(current), *f);
+		return current;
+	}catch(...){destroy(a, d, current); throw;}
+}
+
+template<class Alloc, class InputIt, class MIt, typename = std::enable_if_t<!has_rank<MIt>{}> >
+MIt uninitialized_copy(Alloc& a, InputIt f, InputIt l, MIt d, double* = 0){
+	MIt current = d;
+//	using multi::to_address;
+	try{
+		for(; f != l; ++f, ++current) a.construct(to_address(current), *f);
+		return current;
+	}catch(...){destroy(a, d, current); throw;}
+}
+
+
 template<typename T, dimensionality_type D, typename ElementPtr, class Layout /*= layout_t<D>*/ >
 struct basic_array : 
 	boost::multi::partially_ordered2<basic_array<T, D, ElementPtr, Layout>, void>,
@@ -214,8 +369,10 @@ struct basic_array :
 protected:
 	using types::types;
 	template<typename, dimensionality_type, class Alloc> friend struct array;
-public:
 	basic_array(basic_array const&) = default;
+	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
+	friend decltype(auto) static_array_cast(basic_array<TT, DD, PP> const&);
+public:
 	basic_array(basic_array&&) = default;
 	using decay_type = array<typename types::element, D, typename pointer_traits<typename types::element_ptr>::default_allocator_type>;
 	decay_type decay() const{return *this;}
@@ -401,11 +558,14 @@ struct array_iterator<Element, 1, Ptr, Ref> :
 	array_iterator(Other const& o) : data_{o.data_}, stride_{o.stride_}{}
 	template<class EE, dimensionality_type, class PP, class RR> friend struct array_iterator;
 	array_iterator(std::nullptr_t np = nullptr) : data_{np}, stride_{}{}
+	array_iterator(Ptr const& p) : data_{p}, stride_{1}{}
 	explicit operator bool() const{return static_cast<bool>(this->data_);}
 	Ref operator[](typename array_iterator::difference_type n) const{assert(*this); return *((*this) + n);}
 	Ptr operator->() const{return data_;}
 	using element = Element;
 	using element_ptr = Ptr;
+	explicit operator Ptr const&() const{return data_;}
+	using rank = std::integral_constant<dimensionality_type, 1>;
 private:
 	array_iterator(Ptr d, typename basic_array<Element, 1, Ptr>::index s) : data_{d}, stride_{s}{}
 	friend struct basic_array<Element, 1, Ptr>;
@@ -449,14 +609,12 @@ protected:
 	template<class TT, dimensionality_type DD, typename EP, class LLayout> friend struct basic_array;
 	template<class TT, dimensionality_type DD, class Alloc> friend struct array;
 	basic_array(basic_array const&) = default;
-//	template<class T2, class P2 = T2*>
-//	friend auto static_array_cast(basic_array const& o)
-//	->decltype(basic_array<T2, 1, P2, Layout>(o)){
-//		return basic_array<T2, 1, P2, Layout>(o);}
+	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
+	friend decltype(auto) static_array_cast(basic_array<TT, DD, PP> const&);
+	basic_array(basic_array&&) = default;
 public:
 	template<class BasicArray, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<BasicArray>>{}>, typename = decltype(types(std::declval<BasicArray&&>()))> 
 	basic_array(BasicArray&& other) : types{std::forward<BasicArray>(other)}{}
-	basic_array(basic_array&&) = default;
 	basic_array_ptr<basic_array, Layout> operator&() const{
 		return {this->base_, this->layout()};//, this->nelems_};
 	}
@@ -466,7 +624,7 @@ public:
 	template<class A, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<A>>{}> >
 	basic_array const& operator=(A&& o) const{
 		using multi::extension;
-		assert(this->extension() == extension(o));
+	//	assert(this->extension() == extension(o));
 		using std::begin; using std::end;
 		this->assign(begin(std::forward<A>(o)), end(std::forward<A>(o)));
 		return *this;

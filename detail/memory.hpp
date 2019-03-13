@@ -21,8 +21,8 @@ void destroy_at(Alloc& a, T* p){AT::destroy(a, p);}
 template<class Ptr> auto to_address(Ptr const& p) noexcept 
 ->decltype(p.operator->());
 
-template<class Alloc, class ForwardIt>
-void destroy(Alloc& a, ForwardIt first, ForwardIt last);
+//template<class Alloc, class ForwardIt>
+//void destroy(Alloc& a, ForwardIt first, ForwardIt last);
 template<class Alloc, class ForwardIt, class Size>
 ForwardIt destroy_n(Alloc& a, ForwardIt first, Size n);
 template<class Alloc, class InputIt, class Size, class ForwardIt>
@@ -31,8 +31,8 @@ template<class Alloc, class ForwardIt, class Size, class T>
 ForwardIt uninitialized_fill_n(Alloc& a, ForwardIt first, Size n, const T& v);
 template<class Alloc, class ForwardIt, class Size>
 ForwardIt uninitialized_default_construct_n(Alloc& a, ForwardIt first, Size n);
-template<class Alloc, class ForwardIt, class Size>
-ForwardIt uninitialized_value_construct_n(Alloc& a, ForwardIt first, Size n);
+//template<class Alloc, class ForwardIt, class Size>
+//ForwardIt uninitialized_value_construct_n(Alloc& a, ForwardIt first, Size n);
 
 ////////////////////////////////////////////////////////////////////////////////
 template<class Ptr> auto to_address(Ptr const& p) noexcept
@@ -40,17 +40,6 @@ template<class Ptr> auto to_address(Ptr const& p) noexcept
 	return p.operator->();}
 
 template<class T> constexpr T* to_address(T* p) noexcept{return p;}
-
-//https://en.cppreference.com/w/cpp/memory/destroy
-template<class Alloc, class ForwardIt>//, typename AT = typename std::allocator_traits<Alloc> >
-void destroy(Alloc& a, ForwardIt first, ForwardIt last){
-//	using std::addressof;
-	for(; first != last; ++first) 
-		a.destroy(to_address(first));
-	//	AT::destroy(a, to_address(first));
-	//	AT::destroy(a, addressof(*first));
-	//	a.destroy(addressof(*first));
-}
 
 // https://en.cppreference.com/w/cpp/memory/destroy_n
 template<class Alloc, class ForwardIt, class Size>//, typename AT = typename std::allocator_traits<Alloc> >
@@ -64,71 +53,12 @@ ForwardIt destroy_n(Alloc& a, ForwardIt first, Size n){
 	return first;
 }
 
-template<class Alloc, class InputIt, class ForwardIt>//, typename AT = typename std::allocator_traits<Alloc> >
-ForwardIt uninitialized_copy(Alloc& a, InputIt f, InputIt l, ForwardIt d){
-	ForwardIt current = d;
-//	using std::addressof;
-	try{
-		for(; f != l; ++f, ++current)
-			a.construct(to_address(current), *f);
-		//	AT::construct(a, to_address(current), *f);
-		//	AT::construct(a, addressof(*current), *f);
-		//	a.construct(addressof(*current), *f);
-		return current;
-	}catch(...){destroy(a, d, current); throw;}
-}
-
-template<class Alloc, class InputIt, class Size, class ForwardIt>//, typename AT = std::allocator_traits<Alloc> >
-ForwardIt uninitialized_copy_n(Alloc& a, InputIt f, Size n, ForwardIt d){
-	ForwardIt c = d;
-//	using std::addressof;
-	try{
-		for(; n > 0; ++f, ++c, --n)
-			a.construct(to_address(c), *f);
-		//	AT::construct(a, to_address(c), *f);
-		//	AT::construct(a, addressof(*c), *f);
-		//	a.construct(addressof(*c), *f);
-		return c;
-	}catch(...){destroy(a, d, c); throw;}
-}
-
-template<class Alloc, class ForwardIt, class Size, class T>//, typename AT = typename std::allocator_traits<Alloc> >
-ForwardIt uninitialized_fill_n(Alloc& a, ForwardIt first, Size n, const T& v){
-	ForwardIt current = first;
-//	using std::addressof;
-	try{
-		for(; n > 0; ++current, --n)
-			a.construct(to_address(current), v);
-		//	AT::construct(a, to_address(current), v);
-		//	AT::construct(a, addressof(*current), v); //a.construct(addressof(*current), v);
-		return current;
-	}catch(...){destroy(a, first, current); throw;}
-}
-
-template<class Alloc, class ForwardIt, class Size>//, class AT = typename std::allocator_traits<Alloc> >
-ForwardIt uninitialized_value_construct_n(Alloc& a, ForwardIt first, Size n){
-	using T = typename std::iterator_traits<ForwardIt>::value_type;
-	ForwardIt current = first;
-//	using std::addressof;
-	try{
-		for(; n > 0; ++current, --n) 
-		//	a.construct(std::pointer_traits<Ptr>::pointer_to(*current), T());
-			a.construct(to_address(current), T());
-		//	AT::construct(a, to_address(current), T()); 
-		//	AT::construct(a, addressof(*current), T());
-		//	a.construct(addressof(*current), T());
-		return current;
-    }catch(...){destroy(a, first, current); throw;}
-}
-
-template<class Alloc, class ForwardIt, class Size>//, class AT = typename std::allocator_traits<Alloc> >
-ForwardIt uninitialized_default_construct_n(Alloc& a, ForwardIt first, Size n){
-	ForwardIt current = first;
-	try{
-		for(; n > 0; ++current, --n) 
-			a.construct(to_address(current));
-		return current;
-    }catch(...){destroy(a, first, current); throw;}
+template<class Alloc, class ForwardIt, class Size, 
+	typename T = typename std::iterator_traits<ForwardIt>::value_type,
+	typename = std::enable_if_t<std::is_trivially_default_constructible<T>{}> 
+>
+ForwardIt uninitialized_value_construct_n(Alloc& a, ForwardIt first, Size n, void* = 0){
+	return uninitialized_default_construct_n(a, first, n);
 }
 
 }}
@@ -136,6 +66,19 @@ ForwardIt uninitialized_default_construct_n(Alloc& a, ForwardIt first, Size n){
 namespace boost{
 namespace multi{
 
+/*
+template<class Alloc, class It1, class T, class Ptr, class Ref>
+void uninitialized_copy(Alloc& a, It first, It last, multi::array_iterator<T, 1, Ptr, Ref> dest){
+	while(first != last){
+		using std::begin; using std::end;
+		uninitialized_copy(a, begin(*first), end(*first), begin(*dest)); // to make it work with T[][]
+		++first;
+		++dest;
+	}
+	return dest;
+}*/
+
+#if 0
 template<dimensionality_type N> struct recursive_uninitialized_copy_aux;
 
 template<dimensionality_type N, class Alloc, class InputIt, class ForwardIt>
@@ -164,6 +107,7 @@ struct recursive_uninitialized_copy_aux<1>{
 		return uninitialized_copy(a, first, last, dest);
 	}
 };
+#endif
 
 template<dimensionality_type N> struct recursive_fill_aux;
 
@@ -188,6 +132,7 @@ template<> struct recursive_fill_aux<1>{
 	}
 };
 
+#if 0
 template<dimensionality_type N> struct recursive_uninitialized_fill_aux;
 
 template<dimensionality_type N, class Alloc, class Out, class T>
@@ -208,6 +153,7 @@ struct uninitialized_fill_aux{
 template<> struct uninitialized_fill_aux<1>{template<class Alloc, class O, class T> 
 	static auto call(Alloc& a, O f, O l, T const& v){return uninitialized_fill(a, f, l, v);}
 };
+#endif
 
 template<class T, typename = decltype(std::declval<T const&>().default_allocator())>
 std::true_type           has_default_allocator_aux(T const&);
