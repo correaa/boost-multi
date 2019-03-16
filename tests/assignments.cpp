@@ -29,6 +29,7 @@ int main(){
 
 		multi::array_ref<double, 2> B{w.data(), {5, 7}};
 		make_ref(v.data()) = B;
+		make_ref(v.data()) = B.sliced(0,5);
 
 		assert( v[9] == 33. );
 	}
