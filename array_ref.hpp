@@ -734,7 +734,7 @@ public:
 		assert( e == this->data() + this->num_elements() );
 		return *this;
 	}
-	array_ref& operator=(array_ref const& o)&&{
+	array_ref const& operator=(array_ref const& o) const&{
 		using std::copy_n; auto e = copy_n(o.data(), o.num_elements(), this->data());
 		assert( e == this->data() + this->num_elements() );
 		return *this;
