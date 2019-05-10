@@ -40,6 +40,7 @@ struct array :
 	using allocator_type = typename std::allocator_traits<Alloc>::template rebind_alloc<T>;
 	using alloc_traits = std::allocator_traits<allocator_type>;
 	using ref = array_ref<T, D, typename alloc_traits::pointer>;
+	using difference_type = typename ref::difference_type;
 	static_assert(std::is_same<typename alloc_traits::value_type, T>{} or std::is_same<typename alloc_traits::value_type, void>{}, "!");
 private:
 	using typename ref::reference;

@@ -36,7 +36,7 @@ struct array_types : Layout{ //	template<class... As> array_types(As&&... as) : 
 		element
 	>;
 	using decay_type = array<element, dimensionality, typename pointer_traits<element_ptr>::default_allocator_type>;
-	using difference_type = index;
+//	using difference_type = index;
 	using reference       = std::conditional_t<
 		dimensionality!=1, 
 		basic_array<element, dimensionality-1, element_ptr>, 
@@ -611,7 +611,7 @@ protected:
 	basic_array(basic_array const&) = default;
 	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
 	friend decltype(auto) static_array_cast(basic_array<TT, DD, PP> const&);
-	basic_array(basic_array&&) = default;
+	basic_array(basic_array&&) = default; // ambiguos deep-copy a reference type, use auto&& A_ref = Expression; or decay_t<decltype(Expression)> A = Expression
 public:
 	template<class BasicArray, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<BasicArray>>{}>, typename = decltype(types(std::declval<BasicArray&&>()))> 
 	basic_array(BasicArray&& other) : types{std::forward<BasicArray>(other)}{}
@@ -720,49 +720,18 @@ public:
 	using basic_array<T, D, ElementPtr>::operator<;
 	using basic_array<T, D, ElementPtr>::operator>;
 	template<class ArrayRef> array_ref(ArrayRef&& a) : array_ref(a.data(), extensions(a)){} 
-//	array_ref& operator=(array_ref const&) & = delete;
-/*	template<class A, typename = std::enable_if_t<not std::is_base_of<array_ref, std::decay_t<A>>{}> >
-	array_ref const& operator=(A&& o) const&{
-		using multi::extension;
-		assert(this->extension() == extension(o));
-		using std::begin; using std::end;
-		this->assign(begin(std::forward<A>(o)), end(std::forward<A>(o)));
-		return *this;
-	}*/
-	array_ref& operator=(array_ref const& o)&{
-		using std::copy_n; auto e = copy_n(o.data(), o.num_elements(), this->data());
-		assert( e == this->data() + this->num_elements() );
-		return *this;
-	}
+//	array_ref& operator=(array_ref const& o) const&{
+//		using std::copy_n; auto e = copy_n(o.data(), o.num_elements(), this->data());
+//		assert( e == this->data() + this->num_elements() );
+//		return *this;
+//	}
 	array_ref const& operator=(array_ref const& o) const&{
 		using std::copy_n; auto e = copy_n(o.data(), o.num_elements(), this->data());
 		assert( e == this->data() + this->num_elements() );
 		return *this;
 	}
-/*	array_ref& operator=(array_ref const& o)&{
-		using multi::extension;
-		assert(this->extension() == extension(o));
-		using std::begin; using std::end;
-		this->assign(begin(o), end(o));
-		return *this;
-	}*/
-/*	array_ref const& operator=(array_ref const& o)&&{
-		using multi::extension;
-		assert(this->extension() == extension(o));
-		using std::begin; using std::end;
-		this->assign(begin(o), end(o));
-		return *this;
-	}*/
-/*	array_ref const& operator=(array_ref const& o) const&{
-		using multi::extension;
-		assert(this->extension() == extension(o));
-		using std::begin; using std::end;
-		this->assign(begin(o), end(o));
-		return *this;
-	}*/
 	typename array_ref::element_ptr data() const{return array_ref::base_;}
 	friend typename array_ref::element_ptr data(array_ref const& self){return self.data();}
-
 };
 
 template<class T, dimensionality_type D, class Ptr = void*> 
