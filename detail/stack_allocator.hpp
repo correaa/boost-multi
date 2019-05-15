@@ -81,8 +81,8 @@ public:
 	}
 };
 
-template<class T = void>
-using stack_allocator = multi::generic_allocator<T, multi::stack_buffer<std::allocator<char>>>;
+template<class T = void, class Allocator = std::allocator<char> >
+using stack_allocator = multi::generic_allocator<T, multi::stack_buffer<Allocator> >;
 
 }}
 
@@ -108,7 +108,7 @@ int main(){
 				multi::array<double, 2, multi::stack_allocator<> > A({2, 10}, &buf); assert( is_aligned(alignof(double), &A[1][3]) );
 				multi::array<double, 2, multi::stack_allocator<> > B({3, 10}, &buf); assert( is_aligned(alignof(double), &B[2][3]) );
 				multi::array<double, 2, multi::stack_allocator<> > C({4, 10}, &buf); assert( is_aligned(alignof(double), &C[3][3]) );
-				std::vector<int, multi::stack_allocator<int>> v(3, &buf); assert(is_aligned(alignof(int), &v[1]));
+				std::vector<int, multi::stack_allocator<int>> v(3, &buf); assert( is_aligned(alignof(int), &v[1]) );
 			//	v.push_back(3); // can produce a runtime error because it is not using buffer as a stack
 				for(int j = 0; j != 2; ++j){
 					multi::array<double, 2, multi::stack_allocator<> > D({4, 10}, &buf); assert( is_aligned(alignof(double), &D[2][1]) );
