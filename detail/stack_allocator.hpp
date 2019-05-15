@@ -110,7 +110,7 @@ int main(){
 				multi::array<double, 2, multi::stack_allocator<> > C({4, 10}, &buf); assert( is_aligned(alignof(double), &C[3][3]) );
 				std::vector<int, multi::stack_allocator<int>> v(3, &buf); assert( is_aligned(alignof(int), &v[1]) );
 			//	v.push_back(3); // can produce a runtime error because it is not using buffer as a stack
-				for(int j = 0; j != 2; ++j){
+				for(int j = 0; j != 100; ++j){
 					multi::array<double, 2, multi::stack_allocator<> > D({4, 10}, &buf); assert( is_aligned(alignof(double), &D[2][1]) );
 				}
 				multi::array<double, 2, multi::stack_allocator<> > E({4, 10}, &buf); assert( is_aligned(alignof(double), &E[2][1]) );

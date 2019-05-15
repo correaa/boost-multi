@@ -16,11 +16,21 @@ class generic_allocator{
 	MemoryResource* mr_;
 public:
 	using value_type = T;
-	using pointer = typename std::pointer_traits<typename MemoryResource::pointer>::template rebind<value_type>;
-	using size_type = typename MemoryResource::size_type;
-	generic_allocator(MemoryResource* mr) : mr_{mr}{}
-	pointer allocate(size_type n){return static_cast<pointer>(mr_->allocate(n*sizeof(value_type)));}
-	void deallocate(pointer p, size_type n){mr_->deallocate(p, n*sizeof(value_type));}
+	using pointer = typename std::pointer_traits<decltype(std::declval<MemoryResource*>()->allocate(0))>::template rebind<value_type>;
+	using difference_type = typename std::pointer_traits<pointer>::difference_type;
+	using size_type =  std::make_unsigned_t<difference_type>;
+	generic_allocator(MemoryResource* mr = std::experimental::pmr::get_default_resource()) : mr_{mr}{}
+	template<class OtherGenericAlloctor>
+	generic_allocator(OtherGenericAlloctor const& other) : mr_{other.mr_}{}
+	bool operator==(generic_allocator const& other) const{return mr_ == other.mr_;}
+	pointer allocate(size_type n){
+		if(n and !mr_) throw std::bad_alloc{};
+		return static_cast<pointer>(mr_->allocate(n*sizeof(value_type)));
+	}
+	void deallocate(pointer p, size_type n){
+		if(n == 0 and p == nullptr) return;
+		mr_->deallocate(p, n*sizeof(value_type));
+	}
 	template<class... Args>
 	decltype(auto) construct(pointer p, Args&&... args) const{mr_->allocator().construct(p, std::forward<Args>(args)...);}
 	decltype(auto) destroy(pointer p)   const{mr_->allocator().destroy(p);}
@@ -34,7 +44,10 @@ public:
 	using pointer = typename std::pointer_traits<void*>::template rebind<value_type>;
 	using size_type = std::size_t;
 	generic_allocator(std::experimental::pmr::memory_resource* mr = std::experimental::pmr::get_default_resource()) : mr_{mr}{}
-	pointer allocate(size_type n){return static_cast<pointer>(mr_->allocate(n*sizeof(value_type)));}
+	pointer allocate(size_type n){
+		if(n and !mr_) throw std::bad_alloc{};
+		return static_cast<pointer>(mr_->allocate(n*sizeof(value_type)));
+	}
 	void deallocate(pointer p, size_type n){mr_->deallocate(p, n*sizeof(value_type));}
 	template<class... Args>
 	void construct(pointer p, Args&&... args) const{::new((void *)p) T(std::forward<Args>(args)...);}
