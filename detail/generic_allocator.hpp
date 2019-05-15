@@ -41,7 +41,7 @@ public:
 	void destroy(pointer p) const{((T*)p)->~T();}
 };
 
-template<class T> 
+template<class T = void> 
 using allocator = boost::multi::generic_allocator<T, std::experimental::pmr::memory_resource>;
 
 }}
@@ -49,10 +49,14 @@ using allocator = boost::multi::generic_allocator<T, std::experimental::pmr::mem
 #ifdef _TEST_BOOST_MULTI_DETAIL_GENERIC_ALLOCATOR
 
 #include<vector>
+#include "../array.hpp"
 
 int main(){
 
 	std::vector<double, boost::multi::allocator<double>> v;
+	boost::multi::array<double, 2, boost::multi::allocator<> > m({2,4}, std::experimental::pmr::get_default_resource());
+	m[1][3] = 99.;
+	assert( m[1][3] == 99. );
 
 }
 #endif
