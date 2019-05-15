@@ -89,27 +89,31 @@ using stack_allocator = multi::generic_allocator<T, multi::stack_buffer<std::all
 #if _TEST_BOOST_MULTI_DETAIL_STACK_ALLOCATOR
 
 #include "../../multi/array.hpp"
+#include<boost/align/is_aligned.hpp>
 
 #include<iostream>
 #include<vector>
 
 namespace multi = boost::multi;
 using std::cout;
+using boost::alignment::is_aligned;
 
 int main(){
-	cout<<"----------stack"<<std::endl;
 	{
 		std::size_t guess_bytes = 120;
 		for(int i = 0; i != 3; ++i){
 			cout<<"pass "<< i << std::endl;
 			multi::stack_buffer<std::allocator<char>> buf{guess_bytes};
 			{
-				multi::array<double, 2, multi::stack_allocator<> > A({2, 10}, &buf);
-				multi::array<double, 2, multi::stack_allocator<> > B({3, 10}, &buf);
-				multi::array<double, 2, multi::stack_allocator<> > C({4, 10}, &buf);
-				std::vector<int, multi::stack_allocator<int>> v(3, &buf);
+				multi::array<double, 2, multi::stack_allocator<> > A({2, 10}, &buf); assert( is_aligned(alignof(double), &A[1][3]) );
+				multi::array<double, 2, multi::stack_allocator<> > B({3, 10}, &buf); assert( is_aligned(alignof(double), &B[2][3]) );
+				multi::array<double, 2, multi::stack_allocator<> > C({4, 10}, &buf); assert( is_aligned(alignof(double), &C[3][3]) );
+				std::vector<int, multi::stack_allocator<int>> v(3, &buf); assert(is_aligned(alignof(int), &v[1]));
 			//	v.push_back(3); // can produce a runtime error because it is not using buffer as a stack
-				multi::array<double, 2, multi::stack_allocator<> > D({4, 10}, &buf);
+				for(int j = 0; j != 2; ++j){
+					multi::array<double, 2, multi::stack_allocator<> > D({4, 10}, &buf); assert( is_aligned(alignof(double), &D[2][1]) );
+				}
+				multi::array<double, 2, multi::stack_allocator<> > E({4, 10}, &buf); assert( is_aligned(alignof(double), &E[2][1]) );
 			}
 			cout
 				<<"  size: "<< buf.size() 
@@ -122,6 +126,7 @@ int main(){
 				<< std::endl
 			;
 			guess_bytes = std::max(guess_bytes, buf.max_needed());
+			assert( buf.allocated_bytes() == buf.deallocated_bytes() );
 		}
 	}
 }
