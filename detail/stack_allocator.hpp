@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && c++ -std=c++14 -Wall -Wextra -Wfatal-errors -D_TEST_BOOST_MULTI_DETAIL_STACK_ALLOCATOR $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
+(echo "#include\""$0"\"" > $0x.cpp) && c++ -std=c++17 -Wall -Wextra -Wfatal-errors -D_TEST_BOOST_MULTI_DETAIL_STACK_ALLOCATOR $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
 #endif
 #ifndef BOOST_MULTI_DETAIL_STACK_ALLOCATOR_HPP
 #define BOOST_MULTI_DETAIL_STACK_ALLOCATOR_HPP
@@ -39,6 +39,10 @@ public:
 	using base_::allocator;
 	stack_buffer(size_type bytes, allocator_type alloc = {}) : monotonic_buffer<Alloc, MaxAlignemnt>{bytes, alloc}{}
 	~stack_buffer(){}
+	void reset(size_type bytes = 0){
+		assert(this->position_ == 0 and positions_.empty());
+		base_::reset(bytes);
+	}
 	template<size_type RequiredAlignment = sizeof(std::max_align_t)>
 	void_pointer allocate(size_type req_bytes, size_type al = RequiredAlignment){
 		static_assert( RequiredAlignment <= this->max_alignment, "!");
@@ -93,6 +97,7 @@ using stack_allocator = multi::generic_allocator<T, multi::stack_buffer<Allocato
 
 #include<iostream>
 #include<vector>
+#include<any>
 
 namespace multi = boost::multi;
 using std::cout;
@@ -101,10 +106,12 @@ using boost::alignment::is_aligned;
 int main(){
 	{
 		std::size_t guess_bytes = 120;
+		multi::stack_buffer<std::allocator<char>> buf{guess_bytes};
 		for(int i = 0; i != 3; ++i){
 			cout<<"pass "<< i << std::endl;
-			multi::stack_buffer<std::allocator<char>> buf{guess_bytes};
+		//	multi::stack_buffer buf{guess_bytes, std::allocator<char>{}}; // needs CTAD
 			{
+			//	multi::array A({2, 10}, 0., &buf); assert( is_aligned(alignof(double), &A[1][3]) ); // needs CTAD
 				multi::array<double, 2, multi::stack_allocator<> > A({2, 10}, &buf); assert( is_aligned(alignof(double), &A[1][3]) );
 				multi::array<double, 2, multi::stack_allocator<> > B({3, 10}, &buf); assert( is_aligned(alignof(double), &B[2][3]) );
 				multi::array<double, 2, multi::stack_allocator<> > C({4, 10}, &buf); assert( is_aligned(alignof(double), &C[3][3]) );
@@ -125,8 +132,9 @@ int main(){
 				<<"\n  stack recovered(bytes) " << buf.stack_recovered()
 				<< std::endl
 			;
-			guess_bytes = std::max(guess_bytes, buf.max_needed());
+		//	guess_bytes = std::max(guess_bytes, buf.max_needed());
 			assert( buf.allocated_bytes() == buf.deallocated_bytes() );
+			buf.reset(buf.max_needed());
 		}
 	}
 }

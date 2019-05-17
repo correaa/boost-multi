@@ -29,8 +29,8 @@ public:
 	constexpr static const size_type max_alignment = MaxAlignemnt;
 protected:
 	allocator_type alloc_;
-	char_pointer const  buffer_;
-	size_type const size_;
+	char_pointer buffer_;
+	size_type size_;
 	size_type position_ = 0;
 	static size_type align_up(size_type n) noexcept{return (n + (max_alignment-1)) & ~(max_alignment-1);}
 	long hits_ = 0;
@@ -47,8 +47,17 @@ public:
 	long misses() const{return misses_;}
 	size_type allocated_bytes() const{return allocated_bytes_;}
 	size_type deallocated_bytes() const{return deallocated_bytes_;}
-	monotonic_buffer(size_type bytes, allocator_type alloc = {}) : 
+	monotonic_buffer(size_type bytes = 0, allocator_type alloc = {}) : 
 		allocator_type{alloc}, buffer_{static_cast<char_pointer>(static_cast<void_pointer>(allocator_type::allocate(align_up(bytes)/sizeof(std::max_align_t))))}, size_{align_up(bytes)}{}
+	void reset(size_type bytes = 0){
+		if(size_ != bytes){
+			allocator_type::deallocate(static_cast<pointer>(static_cast<void_pointer>(buffer_)), size_/sizeof(std::max_align_t));
+			buffer_ = static_cast<char_pointer>(static_cast<void_pointer>(allocator_type::allocate(align_up(bytes)/sizeof(std::max_align_t))));
+			size_ = align_up(bytes);
+		}
+	}
+	monotonic_buffer(monotonic_buffer const&) = delete;
+	monotonic_buffer& operator=(monotonic_buffer const&) = delete;
 	~monotonic_buffer(){
 		#ifndef _BOOST_MULTI_RELAX_MONOTONIC_LEAK_CONDITION
 		assert(allocated_bytes() == deallocated_bytes());
@@ -120,9 +129,9 @@ int main(){
 	cout<<"----------"<<std::endl;
 	{
 		std::size_t guess = 0;
+		multi::monotonic_buffer<std::allocator<char>> buf(guess*sizeof(double));
 		for(int i = 0; i != 3; ++i){
 			cout<<"pass "<< i << std::endl;
-			multi::monotonic_buffer<std::allocator<char>> buf(guess*sizeof(double));
 			{
 				multi::array<double, 2, multi::monotonic_allocator<> > A({10, 10}, &buf);
 				multi::array<double, 2, multi::monotonic_allocator<> > B({10, 10}, &buf);
@@ -136,7 +145,8 @@ int main(){
 				<<"\n  released(bytes) "<< buf.deallocated_bytes()
 				<< std::endl
 			;
-			guess = std::max(guess, buf.allocated_bytes());
+		//	guess = std::max(guess, buf.allocated_bytes());
+			buf.reset(buf.allocated_bytes());
 		}
 	}
 	cout<<"----------monotonic"<<std::endl;
