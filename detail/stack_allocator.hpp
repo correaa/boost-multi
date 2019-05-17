@@ -119,8 +119,9 @@ int main(){
 			//	v.push_back(3); // can produce a runtime error because it is not using buffer as a stack
 				for(int j = 0; j != 100; ++j){
 					multi::array<double, 2, multi::stack_allocator<> > D({4, 10}, &buf); assert( is_aligned(alignof(double), &D[2][1]) );
+					multi::array<float, 2, multi::stack_allocator<> > E({4, 10}, &buf); assert( is_aligned(alignof(float), &E[3][3]) );
 				}
-				multi::array<double, 2, multi::stack_allocator<> > E({4, 10}, &buf); assert( is_aligned(alignof(double), &E[2][1]) );
+				multi::array<double, 2, multi::stack_allocator<> > F({4, 10}, &buf); assert( is_aligned(alignof(double), &F[2][1]) );
 			}
 			cout
 				<<"  size: "<< buf.size() 
