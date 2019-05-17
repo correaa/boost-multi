@@ -50,7 +50,7 @@ public:
 	monotonic_buffer(size_type bytes = 0, allocator_type alloc = {}) : 
 		allocator_type{alloc}, buffer_{static_cast<char_pointer>(static_cast<void_pointer>(allocator_type::allocate(align_up(bytes)/sizeof(std::max_align_t))))}, size_{align_up(bytes)}{}
 	void reset(size_type bytes = 0){
-		if(size_ != bytes){
+		if(bytes > size_){
 			allocator_type::deallocate(static_cast<pointer>(static_cast<void_pointer>(buffer_)), size_/sizeof(std::max_align_t));
 			buffer_ = static_cast<char_pointer>(static_cast<void_pointer>(allocator_type::allocate(align_up(bytes)/sizeof(std::max_align_t))));
 			size_ = align_up(bytes);
