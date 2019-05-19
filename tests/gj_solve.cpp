@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-c++ -Ofast -std=c++14 -Wall -Wextra -Wpedantic $0 -o $0.x `#-lboost_timer` && time $0.x $@ && rm -f $0.x;exit
+c++ -Ofast -std=c++14 -Wall -Wextra -Wpedantic $0 -o $0.x `#-lboost_timer` && $0.x $@ && rm -f $0.x;exit
 #endif
 
 #include "../../multi/array.hpp"
