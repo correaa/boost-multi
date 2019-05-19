@@ -12,14 +12,14 @@ using std::cout;
 void print(double const& d){cout<<d;}
 
 template<class MultiArray> 
-void print(MultiArray const& ma){
+decltype(auto) print(MultiArray const& ma){
 	cout<<"{";
 	if(not ma.empty()){
 		auto b = ma.begin();
 		print(*b);
 		std::for_each(++b, ma.end(), [](auto&& e){cout<<","; print(e);});
 	}
-	cout<<"}";
+	return cout<<"} ";
 }
 
 template<class MA>
@@ -42,8 +42,8 @@ int main(){
 	assert( cbegin(A) < cend(A) );
 	assert( crbegin(A) < crend(A) );
 	assert( crend(A) > crbegin(A) );
-	assert( end(A) - begin(A) == size(A));
-	assert( rend(A) - rbegin(A) == size(A));
+	assert( end(A) - begin(A) == size(A) );
+	assert( rend(A) - rbegin(A) == size(A) );
 
 	assert( size(*begin(A)) == 2 );
 	assert( size(begin(A)[1]) == 2 );
@@ -66,7 +66,8 @@ int main(){
 		multi::array<double, 3>::iterator it2 = begin(A);
 		assert(it == it2);
 		it = end(A);
-		assert(it != it2 and it > it2);
+		assert(it != it2);
+		assert(it > it2);
 		multi::array<double, 3>::iterator it3{it};
 		assert( it3 == it );
 		multi::array<double, 3>::const_iterator cit;
@@ -90,7 +91,7 @@ int main(){
 		}
 	}
 	assert( &take(A)[1][1] == &A[0][1][1] );
-	print(A);
+	print(A) << std::endl;
 }
 }
 

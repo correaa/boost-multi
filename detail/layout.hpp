@@ -13,7 +13,8 @@
 #include<cstddef>
 #include<type_traits> // make_signed_t
 #include<tuple> //make_tuple
-#include<boost/operators.hpp>
+//#include<boost/operators.hpp>
+#include "../detail/operators.hpp"
 
 namespace boost{
 namespace multi{
@@ -141,7 +142,7 @@ struct f_tag{};
 
 template<dimensionality_type D>
 struct layout_t
-	: boost::equality_comparable<layout_t<D>>
+	: boost::multi::equality_comparable2<layout_t<D>, void>
 {
 //	static constexpr dimensionality_type dimensionality = D;
 	using dimensionality_type = multi::dimensionality_type;
@@ -492,9 +493,12 @@ int main(){
 	static_assert( get<1>(L.strides()) == 	30, "!");
 	static_assert( get<2>(L.strides()) == 	 1, "!");
 	static_assert( L.size() == 10, "!");
-}
+}{
 	std::tuple<int, int, int> ttt = {1,2,3};
 	auto arrr = boost::multi::detail::to_array(ttt);
+	assert(arrr[1] == 2);
+}
+
 }
 #endif
 #endif

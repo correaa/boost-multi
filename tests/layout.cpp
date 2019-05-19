@@ -6,7 +6,7 @@ $CXX -O3 -std=c++14 -Wall -Wextra -Wpedantic -Wfatal-errors $0 -o $0.x && time $
 #include "../array.hpp"
 #include "../utility.hpp"
 
-#include<boost/multi_array.hpp>
+//#include<boost/multi_array.hpp>
 #include<iostream>
 #include<tuple>
 

@@ -7,6 +7,7 @@
 #include "./array_ref.hpp"
 
 #include "detail/memory.hpp"
+#include "detail/generic_allocator.hpp"
 
 #include "utility.hpp"
 
@@ -260,6 +261,23 @@ template<class T, class A=std::allocator<T>> array(IL<IL<IL<T>>>        , A={})-
 template<class T, class A=std::allocator<T>> array(IL<IL<IL<IL<T>>>>    , A={})->array<T,4,A>; 
 template<class T, class A=std::allocator<T>> array(IL<IL<IL<IL<IL<T>>>>>, A={})->array<T,5,A>; 
 #undef IL
+template<class T, class A=std::allocator<T>> array(iextensions<1>, T)->array<T,1,A>;
+template<class T, class A=std::allocator<T>> array(iextensions<2>, T)->array<T,2,A>;
+template<class T, class A=std::allocator<T>> array(iextensions<3>, T)->array<T,3,A>;
+template<class T, class A=std::allocator<T>> array(iextensions<4>, T)->array<T,4,A>;
+template<class T, class A=std::allocator<T>> array(iextensions<5>, T)->array<T,5,A>;
+
+template<class A> array(iextensions<1>, A)->array<typename std::allocator_traits<A>::value_type,1,A>;
+template<class A> array(iextensions<2>, A)->array<typename std::allocator_traits<A>::value_type,2,A>;
+template<class A> array(iextensions<3>, A)->array<typename std::allocator_traits<A>::value_type,3,A>;
+template<class A> array(iextensions<4>, A)->array<typename std::allocator_traits<A>::value_type,4,A>;
+template<class A> array(iextensions<5>, A)->array<typename std::allocator_traits<A>::value_type,5,A>;
+
+template<class T, class MR, class A=generic_allocator<T, MR>> array(iextensions<1>, T, MR*)->array<T,1,A>;
+template<class T, class MR, class A=generic_allocator<T, MR>> array(iextensions<2>, T, MR*)->array<T,2,A>;
+template<class T, class MR, class A=generic_allocator<T, MR>> array(iextensions<3>, T, MR*)->array<T,3,A>;
+template<class T, class MR, class A=generic_allocator<T, MR>> array(iextensions<4>, T, MR*)->array<T,4,A>;
+template<class T, class MR, class A=generic_allocator<T, MR>> array(iextensions<5>, T, MR*)->array<T,5,A>;
 #endif
 
 }}

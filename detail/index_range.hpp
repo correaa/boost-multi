@@ -5,11 +5,31 @@
 #ifndef MULTI_INDEX_RANGE_HPP
 #define MULTI_INDEX_RANGE_HPP
 
-#include<boost/iterator/iterator_facade.hpp>
+//#include<boost/iterator/iterator_facade.hpp>
 
 #include<iterator> // std::random_iterator_tag // std::reverse_iterator
 
 namespace boost{
+
+template<class Self, typename ValueType, class AccessCategory, typename Reference = ValueType&,  typename DifferenceType = typename std::pointer_traits<ValueType*>::difference_type, typename Pointer = ValueType*>
+class iterator_facade{
+	using self_type = Self;
+	self_type& self(){return *this;}
+	self_type const& self() const{return static_cast<Self const&>(*this);}
+public:
+	using value_type = ValueType;
+	using reference = Reference;
+	using pointer = Pointer;
+	using difference_type = DifferenceType;
+	using iterator_category = AccessCategory;
+	auto operator!=(self_type const& o) const{return not(o == self());}
+//	Self& operator++(){return ++self(); return *this;}
+	auto operator+(difference_type n) const{self_type r = self(); r += n; return r;}
+	auto operator-(difference_type n) const{self_type r = self(); r -= n; return r;}
+};
+
+class iterator_core_access{};
+
 namespace multi{
 
 template<class IndexType>
@@ -44,6 +64,11 @@ public:
 		constexpr const_iterator(value_type current) : curr_(current){}
 		friend class range;
 	    friend class boost::iterator_core_access;
+	public:
+		auto operator==(const_iterator const& y) const{return curr_ == y.curr_;}
+		const_iterator& operator++(){++curr_; return *this;}
+		const_iterator& operator--(){--curr_; return *this;}
+		typename const_iterator::reference operator*() const{return curr_;}
 	};
 	using iterator = const_iterator;
 	using reverse_iterator = std::reverse_iterator<iterator>;
