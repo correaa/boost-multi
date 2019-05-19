@@ -137,6 +137,8 @@ int main(){
 			assert( buf.allocated_bytes() == buf.deallocated_bytes() );
 			buf.reset(buf.max_needed());
 		}
+		multi::stack_allocator<double> sad{&buf};
+		multi::stack_allocator<int> sai{sad}; // check constructor
 	}
 }
 #endif
