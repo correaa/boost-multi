@@ -16,6 +16,10 @@
 #  - ln -svf $CI_PROJECT_DIR $GOPATH/src/$REPO_NAME
 #  - cd $GOPATH/src/$REPO_NAME
 
+
+variables:
+  CXX: "c++"
+
 stages:
     - test
 #    - build
