@@ -38,18 +38,18 @@ The design tries to impose the minimum possible requirements over the used refer
 Pointer-like random access types can be used as substitutes of built-in pointers.
 
 ```
-namespace min{
-template<class T> struct ptr{ // minimalistic pointer
-	T* impl_;
-	T& operator*() const{return *impl_;}
-	auto operator+(std::ptrdiff_t n) const{return ptr{impl_ + n};}
-//	T& operator[](std::ptrdiff_t n) const{return impl_[n];} // optional
-};
+namespace minimal{
+    template<class T> class ptr{ // minimalistic pointer
+    	T* impl_;
+    	T& operator*() const{return *impl_;}
+    	auto operator+(std::ptrdiff_t n) const{return ptr{impl_ + n};}
+    //	operator[], operator+=, etc are optional but not necessary
+    };
 }
 
 int main(){
 	double* buffer = new double[100];
-	multi::array_ref<double, 2, min::ptr<double> > CC(min::ptr<double>{buffer}, {10, 10});
+	multi::array_ref<double, 2, minimal::ptr<double> > CC(minimal::ptr<double>{buffer}, {10, 10});
 	CC[2]; // requires operator+ 
 	CC[1][1]; // requires operator*
 	CC[1][1] = 9;
