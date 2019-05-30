@@ -71,7 +71,7 @@ This way, any linear sequence (e.g. `raw memory`, `std::vector`, `std::queue`) c
 ```
 Since `array_ref`'s do not manage the memory associated with it, the reference can be simply dangle of the `buffer` memory is reallocated (e.g. by `resize`).
 
-### Special Memory: Allocator and Fancy Pointers
+### Special Memory: Allocators and Fancy Pointers
 
 `array`'s manages its memory through allocators. 
 It can handle all sorts of special memory, as long as the underlying types behave coherently, these include fancy pointers and fancy references.
@@ -95,6 +95,36 @@ Copying underlying memory can be customized by specializing
 ```
 copy_n(first, n, dest)
 fill_n(first, n, value)
+```
+
+Specific cases of fancy memory are file-mapped memory or interprocess shared memory.
+This example illustrates memory persistency by combining with Boost.Interprocess library. 
+The arrays support their allocators and fancy pointers (`boost::interprocess::offset_ptr`).
+
+```
+#include <boost/interprocess/managed_mapped_file.hpp>
+using namespace boost::interprocess;
+using manager = managed_mapped_file;
+template<class T> using mallocator = allocator<T, manager::segment_manager>;
+decltype(auto) get_allocator(manager& m){return m.get_segment_manager();}
+
+template<class T, auto D> using marray = multi::array<T, D, mallocator<T>>;
+
+int main(){
+{
+	manager m{create_only, "mapped_file.bin", 1 << 25};
+	auto&& arr2d = *m.construct<marray<double, 2>>("arr2d")(std::tuple{1000, 1000}, 0.0, get_allocator(m));
+	arr2d[4][5] = 45.001;
+}
+// imagine execution restarts here
+{
+	manager m{open_only, "mapped_file.bin"};
+	auto&& arr2d = *m.find<marray<double, 2>>("arr2d").first;
+	assert( arr2d[7][8] == 0. );
+	assert( arr2d[4][5] == 45.001 );
+	m.destroy<marray<double, 2>>("arr2d");//	eliminate<marray<double, 2>>(m, "arr2d");
+}
+}
 ```
 
 ### Customizing recursive operations: SCARY iterators
