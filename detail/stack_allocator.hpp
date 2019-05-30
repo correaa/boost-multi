@@ -38,7 +38,6 @@ public:
 	using base_::size;
 	using base_::allocator;
 	stack_buffer(size_type bytes, allocator_type alloc = {}) : monotonic_buffer<Alloc, MaxAlignemnt>{bytes, alloc}{}
-	~stack_buffer(){}
 	void reset(size_type bytes = 0){
 		assert(this->position_ == 0 and positions_.empty());
 		base_::reset(bytes);
