@@ -1,9 +1,9 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && c++ `#-DNDEBUG` -std=c++17 -Wall -Wextra -I$HOME/prj -D_TEST_MULTI_ADAPTORS_FFTW $0x.cpp -o $0x.x -lfftw3 && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
+(echo "#include\""$0"\"" > $0x.cpp) && time c++ `#-DNDEBUG` -O3 -std=c++17 -Wall -Wextra `#-Wfatal-errors` -I$HOME/prj -D_TEST_MULTI_ADAPTORS_FFTW $0x.cpp -o $0x.x -lfftw3 && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
 #endif
 #ifndef MULTI_ADAPTORS_FFTW_HPP
 #define MULTI_ADAPTORS_FFTW_HPP
-
+//  (C) Copyright Alfredo A. Correa 2018
 #include<memory> // allocator
 #include<cassert>
 #include<complex>
@@ -15,33 +15,16 @@
 namespace boost{
 namespace multi{
 
-template<class T>
-struct fftw_allocator : std::allocator<T>{
-	template< class U > struct rebind { typedef fftw_allocator<U> other; };
-	T* allocate(typename fftw_allocator::size_type n){
-		T* ret = static_cast<T*>(fftw_malloc(sizeof(T)*n));
-		if(ret == nullptr) throw std::bad_alloc{};
-		return ret;
-	}
-	void deallocate(T* p, typename fftw_allocator::size_type){fftw_free(p);}
-};
-
-template<class T>
-struct fftw_uallocator : fftw_allocator<T>{
-	template< class U > struct rebind { typedef fftw_uallocator<U> other; };
-	template<class U> void construct(U*) noexcept{
-		static_assert(
-			std::is_trivially_destructible<T>{}, 
-			"uallocator cannot be used with non trivial types"
-		);
-	}
-};
-
-
-//////////////////////////////////////////////////////////////////////////////
+namespace{
+	using std::complex;
+//	using complex = std::complex<double>;
+}
 
 template<typename Size>
-auto fftw_plan_dft_1d(Size N, std::complex<double> const* in, std::complex<double>* out, int sign, unsigned flags = FFTW_ESTIMATE){
+auto fftw_plan_dft_1d(
+	Size N, complex<double> const* in, complex<double>* out, int sign, 
+	unsigned flags = FFTW_ESTIMATE
+){
 	assert( flags & FFTW_ESTIMATE );
 	assert( flags & FFTW_PRESERVE_INPUT );
 #ifndef NDEBUG
@@ -52,8 +35,9 @@ auto fftw_plan_dft_1d(Size N, std::complex<double> const* in, std::complex<doubl
 	assert(check == in[N/3]); // check that const data has not been overwritten
 	return ret;
 }
+
 template<typename Size>
-auto fftw_plan_dft_1d(Size N, std::complex<double>* in, std::complex<double>* out, int sign, unsigned flags = FFTW_ESTIMATE){
+auto fftw_plan_dft_1d(Size N, complex<double>* in, std::complex<double>* out, int sign, unsigned flags = FFTW_ESTIMATE){
 	assert(fftw_alignment_of((double*)in) == fftw_alignment_of((double*)out));
 	return ::fftw_plan_dft_1d(N, (fftw_complex*)in, (fftw_complex*)out, sign, flags);
 }
@@ -65,6 +49,7 @@ auto fftw_plan_dft_2d(Size N1, Size N2, std::complex<double> const* in, std::com
 	assert(fftw_alignment_of((double*)in) == fftw_alignment_of((double*)out));
 	return ::fftw_plan_dft_2d(N1, N2, (fftw_complex*)in, (fftw_complex*)out, sign, flags);
 }
+
 template<typename Size>
 auto fftw_plan_dft_2d(Size N1, Size N2, std::complex<double>* in, std::complex<double>* out, int sign, unsigned flags = FFTW_ESTIMATE){
 	assert(fftw_alignment_of((double*)in) == fftw_alignment_of((double*)out));
@@ -142,6 +127,7 @@ auto fftw_plan_dft_3d(ArrayIn&& in, ArrayOut&& out, decltype(FFTW_FORWARD) sign,
 	);
 }
 
+/*
 namespace detail {
 template<class T, class Tuple, std::size_t... I>
 constexpr std::array<std::remove_cv_t<T>, std::tuple_size<Tuple>{}> 
@@ -149,7 +135,8 @@ to_array_impl(Tuple&& t, std::index_sequence<I...>){
 	return { static_cast<std::remove_cv_t<T>>(std::get<I>(std::forward<Tuple>(t)))... };
 }
 }
- 
+*/
+
 template<class T, class Tuple> constexpr auto to_array(Tuple&& t){
     return detail::to_array_impl<T>(std::forward<Tuple>(t), std::make_index_sequence<std::tuple_size<Tuple>{}>{});
 }
@@ -160,16 +147,21 @@ auto fftw_plan_dft(
 	int sign, unsigned flags = FFTW_ESTIMATE
 ){
 	using boost::multi::dimensionality;
-	static_assert(dimensionality(in) == dimensionality(out), "!");
+//	static_assert(dimensionality(in) == dimensionality(out), "!");
 //	static_assert(in.dimensionality == out.dimensionality, "!");
 	using boost::multi::sizes;
 	assert(sizes(in) == sizes(out));
-	static_assert(dimensionality(out) > 0, "!");
-	static_assert(dimensionality(in) > 0, "!");
-	std::array<int, dimensionality(in)> ns = to_array<int>(sizes(in));
+//	static_assert(dimensionality(out) > 0, "!");
+//	static_assert(dimensionality(in) > 0, "!");
+//	std::array<int, std::decay_t<ArrayIn>::dimensionality> 
+	auto ns = to_array<int>(sizes(in));
 //	for(auto i = 0; i != dimensionality(in); ++i) 
 //		ns[i] = sizes(in)[i];
-	return fftw_plan_dft(dimensionality(in), ns.data(), origin(std::forward<ArrayIn>(in)), origin(std::forward<ArrayOut>(out)), sign, flags);
+	return fftw_plan_dft(
+		dimensionality(in), ns.data(), 
+		origin(std::forward<ArrayIn>(in)), origin(std::forward<ArrayOut>(out)), 
+		sign, flags
+	);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -190,68 +182,80 @@ auto fftw_execute_dft(fftw_plan p, ArrayIn&& in, ArrayOut&& out)
 
 #if _TEST_MULTI_ADAPTORS_FFTW
 
+#include "../adaptors/fftw/allocator.hpp"
 #include<iostream>
 #include "../array.hpp"
 #include<complex>
+#include<numeric>
+
+#include<catch2/catch.hpp>
 
 using std::cout;
 namespace multi = boost::multi;
 using complex = std::complex<double>;
 
-template<class M> 
+template<class M>
 auto power(M const& m){
 	auto sum_norm = [](auto& a, auto& b){return a + std::norm(b);};
+	using multi::num_elements;
+	using multi::data;
 	return accumulate(data(m), data(m) + num_elements(m), complex{}, sum_norm);
 }
 template<class M1, class M2> 
 auto power_diff(M1 const& m1, M2 const& m2){
-	using std::abs;
+	using std::abs; using multi::num_elements;
 	return abs(power(m1) - power(m2)/double(num_elements(m2)));
 }
 
 constexpr int N = 16;
 
 int main(){
-	std::allocator_traits<typename multi::fftw_uallocator<double>>::rebind_alloc<complex> aa{};
-	complex* p = aa.allocate(10);
-	complex* q = new complex[10];//aa.allocate(10);
-	assert(fftw_alignment_of((double*)p) == fftw_alignment_of((double*)q));	
 {
-	auto const in = [](){
-		multi::array<complex, 1, multi::fftw_allocator<complex>> in({N});
-		std::iota(begin(in), end(in), 1.2);
-		return in;
-	}();
-	multi::array<complex, 1> out(in.extensions());
-	auto p = 
-//		multi::fftw_plan_dft_1d(in, out, FFTW_FORWARD)
-		multi::fftw_plan_dft(in, out, FFTW_FORWARD | FFTW_PRESERVE_INPUT)
-	;
+	multi::array<complex, 1> in({N}); 
+	std::iota(begin(in), end(in), 1.2); 
+	multi::array<complex, 1> out(extensions(in));
+	auto p = multi::fftw_plan_dft(in, out, FFTW_FORWARD);
 	fftw_execute(p);
 	fftw_destroy_plan(p);
 	assert( power_diff(in, out) < 1e-10 );
 }
 {
-	auto const in2 = [](){
-		multi::array<complex, 2, multi::fftw_allocator<complex>> in2({N, N});
-		std::iota(in2.data(), in2.data() + in2.num_elements(), 1.2);
-		return in2;
-	}();
-	multi::array<complex, 2, multi::fftw_uallocator<complex>> out2(extensions(in2));
-	auto p = 
-//		multi::fftw_plan_dft_2d(in2, out2, FFTW_FORWARD)
-		multi::fftw_plan_dft(in2, out2, FFTW_FORWARD | FFTW_PRESERVE_INPUT)
-	;
-	fftw_execute(p); fftw_destroy_plan(p);
-	assert( power_diff(in2, out2) < 1e-4 );
+	multi::array<complex, 1> in({N});
+	std::iota(begin(in), end(in), 1.2);
+	multi::array<complex, 1> out(extensions(in));
+	auto p = multi::fftw_plan_dft(in, out, FFTW_FORWARD | FFTW_PRESERVE_INPUT);
+	fftw_execute(p);
+	fftw_destroy_plan(p);
+	assert( power_diff(in, out) < 1e-10 );
 }
 {
-	complex in2[32][32];
-	complex out2[32][32];
-	auto p = multi::fftw_plan_dft(in2, out2, FFTW_FORWARD | FFTW_PRESERVE_INPUT);
-	fftw_execute(p); fftw_destroy_plan(p);
-	assert( power_diff(in2, out2) < 1e-4 );
+	using multi::adaptors::fftw::allocator;
+	multi::array<complex, 1, allocator<complex>> in({N});
+	std::iota(begin(in), end(in), 1.2);
+	multi::array<complex, 1> out(extensions(in));
+	auto p = multi::fftw_plan_dft(in, out, FFTW_FORWARD | FFTW_PRESERVE_INPUT);
+	fftw_execute(p);
+	fftw_destroy_plan(p);
+	assert( power_diff(in, out) < 1e-10 );
 }
+{
+	multi::array<complex, 2> in({N, N});
+	std::iota(in.data(), in.data() + in.num_elements(), 1.2);
+	multi::array<complex, 2> out(extensions(in));
+	auto p = multi::fftw_plan_dft(in, out, FFTW_FORWARD | FFTW_PRESERVE_INPUT);
+	fftw_execute(p); 
+	fftw_destroy_plan(p);
+	assert( power_diff(in, out) < 1e-4 );
+}
+{
+	complex in[32][32];
+	complex out[32][32];
+	power_diff(in, out);
+	auto p = multi::fftw_plan_dft(in, out, FFTW_FORWARD | FFTW_PRESERVE_INPUT);
+	fftw_execute(p); fftw_destroy_plan(p);
+//	assert( power_diff(in, out) < 1e-4 );
+}
+#if 0
 {
 	auto in3 = [](){
 		multi::array<complex, 3> in3({N, N, N});
@@ -281,6 +285,7 @@ int main(){
 	fftw_destroy_plan(p);
 	assert( power_diff(in4, out4) < 1e-3 );
 }
+#endif
 }
 
 #endif
