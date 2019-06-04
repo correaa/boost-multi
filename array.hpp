@@ -1,6 +1,7 @@
 #ifdef COMPILATION_INSTRUCTIONS
 (echo "#include\""$0"\"" > $0x.cpp) && c++ `#-DNDEBUG` -std=c++17 -Wall -Wextra `#-Wfatal-errors` -D_TEST_BOOST_MULTI_ARRAY $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
 #endif
+//  (C) Copyright Alfredo A. Correa 2018.
 #ifndef BOOST_MULTI_ARRAY_HPP 
 #define BOOST_MULTI_ARRAY_HPP
 
@@ -71,6 +72,12 @@ public:
 	:	allocator_type{a}, ref{allocate(typename array::layout_t{x}.num_elements()), x}{
 		uninitialized_value_construct();
 	}
+	template<class Extension, typename = decltype(array(std::array<Extension, D>{}, allocator_type{}, std::make_index_sequence<D>{}))>
+	explicit array(std::array<Extension, D> const& x, allocator_type const& a = {}) : array(x, a, std::make_index_sequence<D>{}){}
+private:
+	template<class Extension, size_t... Is>//, typename = decltype(typename array::extensions_type{std::array<Extension, D>{}})>
+	explicit array(std::array<Extension, D> const& x, allocator_type const& a, std::index_sequence<Is...>) : array(typename array::extensions_type{std::get<Is>(x)...}, a){}
+public:
 	template<class It> static auto distance(It a, It b){using std::distance; return distance(a, b);}
 	template<class It, typename=decltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>      
 	array(It first, It last, allocator_type const& a = {}) :                    //4
@@ -86,7 +93,7 @@ public:
 	//	recursive_uninitialized_copy<D>(alloc(), first, last, ref::begin());
 		uninitialized_copy(alloc(), first, last, ref::begin());
 	}
-	template<class Array, typename=std::enable_if_t<multi::rank<std::remove_reference_t<Array>>{}()>=1 > >
+	template<class Array, typename=std::enable_if_t<multi::rank<std::remove_reference_t<Array>>{}()>=1 >, typename = decltype(ref{allocate(num_elements(std::declval<Array&&>())), extensions(std::declval<Array&&>())}) >
 	array(Array&& o, allocator_type const& a = {})
 	:	allocator_type{a}, ref{allocate(num_elements(o)), extensions(o)}{
 		using std::begin; using std::end;
@@ -117,6 +124,10 @@ public:
 #if (not defined(__INTEL_COMPILER)) or (__GNUC >= 6)
 	array(std::initializer_list<value_type> il, allocator_type const& a={}) 
 	:	array(il.begin(), il.end(), a){}
+//	template<class T>//, typename = std::enable_if_t<std::is_same<T, int>>
+	array(std::initializer_list<int> il, allocator_type const& a={}) 
+	:	array(il.size()!=D?il.begin():throw std::runtime_error{"warning"}, il.end(), a){}
+	array(std::tuple<int>){assert(0);}
 #endif
 	template<class A, typename = std::enable_if_t<not std::is_base_of<array, std::decay_t<A>>{}> >
 	array& operator=(A&& a){
@@ -259,8 +270,9 @@ template<class T, class A=std::allocator<T>> array(IL<T>                , A={})-
 template<class T, class A=std::allocator<T>> array(IL<IL<T>>            , A={})->array<T,2,A>;
 template<class T, class A=std::allocator<T>> array(IL<IL<IL<T>>>        , A={})->array<T,3,A>; 
 template<class T, class A=std::allocator<T>> array(IL<IL<IL<IL<T>>>>    , A={})->array<T,4,A>; 
-template<class T, class A=std::allocator<T>> array(IL<IL<IL<IL<IL<T>>>>>, A={})->array<T,5,A>; 
+template<class T, class A=std::allocator<T>> array(IL<IL<IL<IL<IL<T>>>>>, A={})->array<T,5,A>;
 #undef IL
+
 template<class T, class A=std::allocator<T>> array(iextensions<1>, T)->array<T,1,A>;
 template<class T, class A=std::allocator<T>> array(iextensions<2>, T)->array<T,2,A>;
 template<class T, class A=std::allocator<T>> array(iextensions<3>, T)->array<T,3,A>;

@@ -18,6 +18,12 @@ using std::cout; using std::cerr;
 
 int main(){
 
+	std::tuple<int, int, int> sizes_tuple{4, 5, 3};
+	std::array<int, 3> sizes_array{4, 5, 3};
+	multi::array<double, 3> a1(sizes_tuple);
+//	std::tuple<int, int, int> sss{sizes_array};
+	multi::array<double, 3> a2(sizes_array);
+
 	multi::array<double, 2> d2D= {
 		{150, 16, 17, 18, 19},
 		{ 5.,  5.,  5.,  5.,  5.}, 

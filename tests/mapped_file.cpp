@@ -1,7 +1,7 @@
 #ifdef COMPILATION_INSTRUCTIONS
 c++ -std=c++17 `#-Wfatal-errors` -I$HOME/soft/metall/include $0 -o $0.x -lpthread -lrt -lstdc++fs && $0.x  $@ && rm -f $0.x; exit
 #endif
-
+//  (C) Copyright Alfredo A. Correa 2019
 #include<cassert>
 #include<numeric> // iota
 #include<iostream>
@@ -19,7 +19,7 @@ std::string candidates(manager& m){return "";}
 using namespace boost::interprocess;
 using manager = managed_mapped_file;
 template<class T> using mallocator = allocator<T, manager::segment_manager>;
-decltype(auto) get_allocator(manager& m){return m.get_segment_manager();}
+auto get_allocator(manager& m){return m.get_segment_manager();}
 void sync(manager& m){m.flush();}
 void mremove(char const* f){std::remove(f);}//shared_memory_object::remove(f);}
 std::string candidates(manager& m){
@@ -61,7 +61,6 @@ int main(){
 mremove("mapped_file.bin");
 {
 	manager m{create_only, "mapped_file.bin", 1 << 25};
-
 	auto&& arr1d = //create<marray<int, 1>>(m, "arr1d", tuple{10}, 99); 
 		*m.construct<marray<int, 1>>("arr1d")(tuple{10}, 99, get_allocator(m));
 	auto&& arr2d = //create<marray<double, 2>>(m, "arr2d", tuple{1000, 1000}, 0.); 
@@ -71,7 +70,7 @@ mremove("mapped_file.bin");
 
 	arr1d[3] = 33;
 	arr2d[4][5] = 45.001;
-	std::iota((arr3d)[6][7].begin(), (arr3d)[6][7].end(), 100);
+	std::iota(arr3d[6][7].begin(), arr3d[6][7].end(), 100);
 
 	sync(m);
 }

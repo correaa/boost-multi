@@ -7,6 +7,7 @@
 //#include "detail.hpp"
 #include "index_range.hpp"
 
+#include<tuple> // make_tuple
 #include<array>
 #include<cassert>
 #include<cstddef>
@@ -52,7 +53,22 @@ using iextension = index_extension;
 using irange     = index_range;
 
 template<dimensionality_type D> using index_extensions = typename detail::repeat<index_extension, D>::type;
-template<dimensionality_type D> using iextensions = index_extensions<D>;
+//template<dimensionality_type D> using iextensions = index_extensions<D>;
+
+template<dimensionality_type D> 
+struct iextensions : detail::repeat<index_extension, D>::type{
+	template<class... Args, typename = std::enable_if_t<sizeof...(Args)==D>>
+	iextensions(Args... args) : detail::repeat<index_extension, D>::type{args...}{}
+	template<class T>
+	iextensions(std::array<T, D> const& arr) : iextensions(arr, std::make_index_sequence<D>{}){}//detail::repeat<index_extension, D>::type{as_tuple(arr)}{}
+private:
+	template <class T, size_t... Is> 
+	iextensions(std::array<T, D> const& arr, std::index_sequence<Is...>) : iextensions{arr[Is]...}{}
+};
+
+#if __cpp_deduction_guides
+template<class... Args> iextensions(Args...) -> iextensions<sizeof...(Args)>;
+#endif
 
 }}
 

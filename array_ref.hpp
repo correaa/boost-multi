@@ -578,7 +578,14 @@ public:
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
 	constexpr array_ref(typename array_ref::element_ptr p, std::initializer_list<index_extension> il) noexcept
 		: array_ref(p, detail::to_tuple<D, index_extension>(il)){}
-
+	template<class Extension>//, typename = decltype(array_ref(std::array<Extension, D>{}, allocator_type{}, std::make_index_sequence<D>{}))>
+	constexpr array_ref(typename array_ref::element_ptr p, std::array<Extension, D> const& x) 
+		: array_ref(p, x, std::make_index_sequence<D>{}){}
+private:
+	template<class Extension, size_t... Is>//, typename = decltype(typename array::extensions_type{std::array<Extension, D>{}})>
+	constexpr array_ref(typename array_ref::element_ptr p, std::array<Extension, D> const& x, std::index_sequence<Is...>) 
+		: array_ref(p, typename array_ref::extensions_type{std::get<Is>(x)...}){}
+public:
 	using basic_array<T, D, ElementPtr>::operator=;
 	using basic_array<T, D, ElementPtr>::operator<;
 	using basic_array<T, D, ElementPtr>::operator>;

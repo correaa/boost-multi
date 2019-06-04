@@ -22,10 +22,12 @@ public:
 	using pointer = Pointer;
 	using difference_type = DifferenceType;
 	using iterator_category = AccessCategory;
-	auto operator!=(self_type const& o) const{return not(o == self());}
+	auto operator!=(self_type const& o) const
+//	->decltype(not(o == self()))
+	{	return not(o == self());}
 //	Self& operator++(){return ++self(); return *this;}
-	auto operator+(difference_type n) const{self_type r = self(); r += n; return r;}
-	auto operator-(difference_type n) const{self_type r = self(); r -= n; return r;}
+	self_type operator+(difference_type n) const{self_type r = self(); r += n; return r;}
+	self_type operator-(difference_type n) const{self_type r = self(); r -= n; return r;}
 };
 
 class iterator_core_access{};
