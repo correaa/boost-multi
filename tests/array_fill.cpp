@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 -std=c++14 -Wall -Wextra -Wpedantic -Werror -Wfatal-errors -I$HOME/include $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
+$CXX -O3 -std=c++14 -Wall -Wextra -Wpedantic -Werror `#-Wfatal-errors` -I$HOME/include $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include<iostream>
@@ -24,11 +24,11 @@ int main(){
 //	std::tuple<int, int, int> sss{sizes_array};
 	multi::array<double, 3> a2(sizes_array);
 
-	multi::array<double, 2> d2D= {
-		{150, 16, 17, 18, 19},
+	multi::array<double, 2> d2D = {
+		{150., 16. , 17. , 18. , 19. },
 		{ 5.,  5.,  5.,  5.,  5.}, 
-		{100, 11, 12, 13, 14}, 
-		{ 50,  6,  7,  8,  9} 
+		{100., 11. , 12. , 13. , 14. }, 
+		{ 50.,  6. ,  7. ,  8. ,  9. }  
 	};
 	assert( std::all_of(begin(d2D[1]), end(d2D[1]), [](auto&& e){return e == 5.;}) );
 

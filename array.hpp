@@ -68,7 +68,8 @@ public:
 	: 	array(typename array::index_extension(n), v, a){}
 	array(typename array::index n, value_type const& v)
 	: 	array(typename array::index_extension(n), v){}
-	explicit array(typename array::extensions_type x, allocator_type const& a={}) //3
+//	explicit 
+	array(typename array::extensions_type x, allocator_type const& a={}) //3
 	:	allocator_type{a}, ref{allocate(typename array::layout_t{x}.num_elements()), x}{
 		uninitialized_value_construct();
 	}
@@ -122,12 +123,13 @@ public:
 		other.ref::layout_t::operator=({});
 	}
 #if (not defined(__INTEL_COMPILER)) or (__GNUC >= 6)
+//	template<class TT, typename = std::enable_if_t<std::is_same<TT, value_type>{}> >
 	array(std::initializer_list<value_type> il, allocator_type const& a={}) 
 	:	array(il.begin(), il.end(), a){}
 //	template<class T>//, typename = std::enable_if_t<std::is_same<T, int>>
-	array(std::initializer_list<int> il, allocator_type const& a={}) 
-	:	array(il.size()!=D?il.begin():throw std::runtime_error{"warning"}, il.end(), a){}
-	array(std::tuple<int>){assert(0);}
+//	array(std::initializer_list<int> il, allocator_type const& a={}) 
+//	:	array(il.size()!=D?il.begin():throw std::runtime_error{"warning"}, il.end(), a){}
+//	array(std::tuple<int>){assert(0);}
 #endif
 	template<class A, typename = std::enable_if_t<not std::is_base_of<array, std::decay_t<A>>{}> >
 	array& operator=(A&& a){

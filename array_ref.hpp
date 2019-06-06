@@ -595,6 +595,8 @@ public:
 		assert( e == this->data() + this->num_elements() );
 		return *this;
 	}
+	typename array_ref::element_ptr data_elements() const{return array_ref::base_;}
+	friend typename array_ref::element_ptr data_elements(array_ref const& s){return s.data();}
 	typename array_ref::element_ptr data() const{return array_ref::base_;}
 	friend typename array_ref::element_ptr data(array_ref const& self){return self.data();}
 };
