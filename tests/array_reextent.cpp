@@ -13,8 +13,7 @@ namespace multi = boost::multi;
 using std::cout;
 
 int main(){
-
-	multi::array<double, 2> A({2, 3}); 
+	multi::array<double, 2> A({2, 3});
 	assert( num_elements(A)==6 );
 	A[1][2] = 6.;
 
@@ -29,7 +28,6 @@ int main(){
 	A.clear();
 	assert( num_elements(A) == 0 );
 	A.reextent({5, 4}, 66.);
-	assert( A[4][3] == 66. );
-
+	assert( A[4][3] == 66. );		
 }
 
