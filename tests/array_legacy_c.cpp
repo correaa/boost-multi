@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 -std=c++17 -Wall -Wextra -Wpedantic -Werror `#-Wfatal-errors` -I$HOME/include $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
+$CXX -O3 -std=c++14 -Wall -Wextra -Wpedantic -Werror `#-Wfatal-errors` -I$HOME/include $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include<iostream>
@@ -37,10 +37,10 @@ int main(){
 	assert( dimensionality(out) == dimensionality(in) );
 	assert( sizes(out) == sizes(in) );
 
+	using multi::sizes_as;
 	fake::fftw_plan_dft(
-		dimensionality(in), in.sizes_as<int>().data(),
+		dimensionality(in), sizes_as<int>(in).data(),
 		(fake::fftw_complex*)in.data_elements(), (fake::fftw_complex*)out.data_elements(), 1, 0
 	);
-
 }
 

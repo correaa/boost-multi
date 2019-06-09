@@ -239,8 +239,6 @@ struct layout_t
 	constexpr auto sizes() const{return tuple_cat(std::make_tuple(size()), sub.sizes());}
 	template<class T = void>
 	constexpr auto sizes_as() const{return detail::to_array<T>(sizes());}
-	template<class T = void>
-	friend constexpr auto sizes_as(layout_t const& self){return self.sizes_as<T>();}
 private:
 	friend struct layout_t<D+1>; // void layout_t<D+1>::strides_aux(size_type*) const;
 public:
@@ -286,6 +284,11 @@ public:
 	}
 
 };
+
+template<class T, class Layout>
+constexpr auto sizes_as(Layout const& self)
+->decltype(self.template sizes_as<T>()){
+	return self.template sizes_as<T>();}
 
 template<>
 struct layout_t<dimensionality_type{0}>{
