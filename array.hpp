@@ -94,7 +94,12 @@ public:
 	//	recursive_uninitialized_copy<D>(alloc(), first, last, ref::begin());
 		uninitialized_copy(alloc(), first, last, ref::begin());
 	}
-	template<class Array, typename=std::enable_if_t<multi::rank<std::remove_reference_t<Array>>{}()>=1 >, typename = decltype(ref{allocate(num_elements(std::declval<Array&&>())), extensions(std::declval<Array&&>())}) >
+	typename array::element_ptr allocate(typename array::index n){return alloc_traits::allocate(alloc(), n);}
+	auto allocate(){return allocate(this->num_elements());}
+	template<
+		class Array, typename=std::enable_if_t<multi::rank<std::remove_reference_t<Array>>{}()>=1>//, 
+	//	typename = decltype(ref{typename alloc_traits::allocate(num_elements(std::declval<Array&&>())), extensions(std::declval<Array&&>())}) 
+	>
 	array(Array&& o, allocator_type const& a = {})
 	:	allocator_type{a}, ref{allocate(num_elements(o)), extensions(o)}{
 		using std::begin; using std::end;
@@ -257,8 +262,8 @@ private:
 	auto uninitialized_default_construct(){return uninitialized_default_construct_n(alloc(), this->base_, this->num_elements());}
 	auto uninitialized_value_construct(){return uninitialized_value_construct_n(alloc(), this->base_, this->num_elements());}
 	auto uninitialized_fill(typename array::element const& el){return uninitialized_fill_n(alloc(), this->base_, this->num_elements(), el);}
-	typename array::element_ptr allocate(typename array::index n){return alloc_traits::allocate(alloc(), n);}
-	auto allocate(){return allocate(this->num_elements());}
+//	typename array::element_ptr allocate(typename array::index n){return alloc_traits::allocate(alloc(), n);}
+//	auto allocate(){return allocate(this->num_elements());}
 	void deallocate(){
 		alloc_traits::deallocate(alloc(), this->base_, this->num_elements());
 		this->base_ = nullptr;
