@@ -312,7 +312,7 @@ struct layout_t<dimensionality_type{0}>{
 		friend decltype(auto) base(extensions_type_ const& s){return s.base();}
 	};
 	using extensions_type = extensions_type_;
-	extensions_type extensions() const{return {};}
+	extensions_type extensions() const{return extensions_type{};}
 	friend auto extensions(layout_t const& self){return self.extensions();}
 	auto sizes() const{return std::tuple<>{};}
 	friend auto sizes(layout_t const& s){return s.sizes();}
