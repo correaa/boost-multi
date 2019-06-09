@@ -170,7 +170,7 @@ struct array_iterator :
 		stride_ = other.stride_;
 		return *this;
 	}
-//	explicit operator bool() const{return this->base_;}
+	explicit operator bool() const{return static_cast<bool>(ptr_.base_);}
 	Ref const& operator*() const{/*assert(*this);*/ return *ptr_;}//return *this;}
 //	Ref const* 
 	decltype(auto) operator->() const{/*assert(*this);*/ return ptr_;}//return this;}
@@ -313,10 +313,11 @@ private:
 	{
 		template<class O, typename = decltype(std::reverse_iterator<Iterator>{base(std::declval<O const&>())})>
 		basic_reverse_iterator(O const& o) : std::reverse_iterator<Iterator>{base(o)}{}
-		basic_reverse_iterator() : std::reverse_iterator<Iterator>(){}
-		explicit basic_reverse_iterator(Iterator it) : std::reverse_iterator<Iterator>(--it){}
-		explicit operator Iterator() const{auto ret = this->base(); return ++ret;}
-		explicit operator bool() const{auto ret = this->base(); ++ret; return static_cast<bool>(ret);}
+		basic_reverse_iterator() : std::reverse_iterator<Iterator>{}{}
+		explicit basic_reverse_iterator(Iterator it) : std::reverse_iterator<Iterator>(std::prev(it)){}
+		explicit operator Iterator() const{auto ret = this->base(); if(ret!=Iterator{}) return ++ret; else return Iterator{};}
+		explicit operator bool() const{return bool(this->base());}
+		bool operator==(basic_reverse_iterator const& other) const{return (this->base() == other.base());}
 		typename Iterator::reference operator*() const{return this->current;}
 		typename Iterator::pointer operator->() const{return &this->current;}
 		typename Iterator::reference operator[](typename Iterator::difference_type n) const{return *(this->current - n);}
@@ -425,7 +426,7 @@ struct array_iterator<Element, 1, Ptr, Ref> :
 private:
 	array_iterator(Ptr d, typename basic_array<Element, 1, Ptr>::index s) : data_{d}, stride_{s}{}
 	friend struct basic_array<Element, 1, Ptr>;
-	Ptr data_;
+	Ptr data_ = nullptr;
 	multi::index stride_;
 	Ref dereference() const{return *data_;}
 	bool equal(array_iterator const& o) const{return data_==o.data_ and stride_==o.stride_;}
@@ -464,7 +465,7 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout> :
 protected:
 	template<class A>
 	void intersection_assign_(A&& other) const{
-		auto is = intersection(types::extension(), extension(other));
+	//	auto is = intersection(types::extension(), extension(other));
 		for(auto i : intersection(types::extension(), extension(other)))
 			operator[](i) = std::forward<A>(other)[i];
 	}
@@ -578,13 +579,13 @@ public:
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
 	constexpr array_ref(typename array_ref::element_ptr p, std::initializer_list<index_extension> il) noexcept
 		: array_ref(p, detail::to_tuple<D, index_extension>(il)){}
-	template<class Extension>//, typename = decltype(array_ref(std::array<Extension, D>{}, allocator_type{}, std::make_index_sequence<D>{}))>
-	constexpr array_ref(typename array_ref::element_ptr p, std::array<Extension, D> const& x) 
-		: array_ref(p, x, std::make_index_sequence<D>{}){}
+//	template<class Extension>//, typename = decltype(array_ref(std::array<Extension, D>{}, allocator_type{}, std::make_index_sequence<D>{}))>
+//	constexpr array_ref(typename array_ref::element_ptr p, std::array<Extension, D> const& x) 
+//		: array_ref(p, x, std::make_index_sequence<D>{}){}
 private:
-	template<class Extension, size_t... Is>//, typename = decltype(typename array::extensions_type{std::array<Extension, D>{}})>
-	constexpr array_ref(typename array_ref::element_ptr p, std::array<Extension, D> const& x, std::index_sequence<Is...>) 
-		: array_ref(p, typename array_ref::extensions_type{std::get<Is>(x)...}){}
+//	template<class Extension, size_t... Is>//, typename = decltype(typename array::extensions_type{std::array<Extension, D>{}})>
+//	constexpr array_ref(typename array_ref::element_ptr p, std::array<Extension, D> const& x, std::index_sequence<Is...>) 
+//		: array_ref(p, typename array_ref::extensions_type{std::get<Is>(x)...}){}
 public:
 	using basic_array<T, D, ElementPtr>::operator=;
 	using basic_array<T, D, ElementPtr>::operator<;

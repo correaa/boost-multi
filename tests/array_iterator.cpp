@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 -std=c++14 -Wall -Wextra -Wpedantic -Wfatal-errors $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
+$CXX -O3 -std=c++14 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include<iostream>
@@ -26,7 +26,13 @@ template<class MA>
 decltype(auto) take(MA&& ma){return ma[0];}
 
 int main(){
-{
+
+	multi::array<double, 3>::reverse_iterator rit;
+	assert(( rit.base() == multi::array<double, 3>::reverse_iterator{}.base() ));
+	assert(( multi::array<double, 3>::reverse_iterator{}.base() == multi::array<double, 3>::reverse_iterator{}.base() ));
+	assert(( multi::array<double, 3>::reverse_iterator{} == multi::array<double, 3>::reverse_iterator{} ));
+	assert(( multi::array<double, 3>::reverse_iterator{} == multi::array<double, 3>::reverse_iterator{} ));
+
 	multi::array<double, 3> A =
 	#if defined(__INTEL_COMPILER)
 		(double[3][2][2])
@@ -37,6 +43,8 @@ int main(){
 			{{ 1.2,  1.1}, { 2.4, 1.}}
 		}
 	;
+	assert( size(A) == 3 and size(A[0]) == 2 and size(A[0][0]) == 2 and A[0][0][1] == 1.1 );
+	assert(( multi::array<double, 3>::reverse_iterator{A.begin()} == rend(A) ));
 
 	assert( begin(A) < end(A) );
 	assert( cbegin(A) < cend(A) );
@@ -57,41 +65,21 @@ int main(){
 	assert( &((begin(A)+1)->operator[](1).begin()[0]) == &A[1][1][0] );
 	assert( &((cbegin(A)+1)->operator[](1).begin()[0]) == &A[1][1][0] );
 
+	multi::array<double, 3>::iterator it; assert(( it == multi::array<double, 3>::iterator{} ));
+	--it;
+	it = begin(A);                                    assert( it == begin(A) );
+	multi::array<double, 3>::iterator it2 = begin(A); assert(it == it2);
+	it = end(A);                                      assert(it != it2);
+	assert(it > it2);
+	multi::array<double, 3>::iterator it3{it};        assert( it3 == it );
+	multi::array<double, 3>::const_iterator cit;
+	cit = it3;                                        assert( cit == it3 );
+	assert((begin(A) == multi::array<double, 3>::iterator{rend(A)}));
 	{
-		multi::array<double, 3>::iterator it; assert(( it == multi::array<double, 3>::iterator{} ));
-		--it;
-	//	assert(( it == multi::array<double, 3>::iterator{} ));
-		it = begin(A);
-		assert( it == begin(A) );
-		multi::array<double, 3>::iterator it2 = begin(A);
-		assert(it == it2);
-		it = end(A);
-		assert(it != it2);
-		assert(it > it2);
-		multi::array<double, 3>::iterator it3{it};
-		assert( it3 == it );
-		multi::array<double, 3>::const_iterator cit;
-		cit = it3;
-		assert( cit == it3 );
-		multi::array<double, 3>::reverse_iterator rit;
-		assert(( rit == multi::array<double, 3>::reverse_iterator{} ));
-		++rit;
-	//	assert(( rit == multi::array<double, 3>::reverse_iterator{} ));
-	//	assert( !rit );
-		rit = rbegin(A);
-		assert(( rit != multi::array<double, 3>::reverse_iterator{} ));
-		assert((multi::array<double, 3>::reverse_iterator{A.begin()} == rend(A)));
-		assert((begin(A) == multi::array<double, 3>::iterator{rend(A)}));
-		{
 		std::vector<double> vv = {1.,2.,3.};
 		auto it = vv.begin();
 		auto rit = vv.rend();
-	//	assert( it == rit ); // error: does not compile
 		assert(std::vector<double>::reverse_iterator{it} == rit);
-		}
 	}
-	assert( &take(A)[1][1] == &A[0][1][1] );
-	print(A) << std::endl;
-}
 }
 

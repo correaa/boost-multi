@@ -68,26 +68,32 @@ public:
 	: 	array(typename array::index_extension(n), v, a){}
 	array(typename array::index n, value_type const& v)
 	: 	array(typename array::index_extension(n), v){}
-//	explicit 
-	array(typename array::extensions_type x, allocator_type const& a={}) //3
+	array(typename array::extensions_type const& x, allocator_type const& a = {}) //3
 	:	allocator_type{a}, ref{allocate(typename array::layout_t{x}.num_elements()), x}{
 		uninitialized_value_construct();
 	}
-	template<class Extension, typename = decltype(array(std::array<Extension, D>{}, allocator_type{}, std::make_index_sequence<D>{}))>
-	explicit array(std::array<Extension, D> const& x, allocator_type const& a = {}) : array(x, a, std::make_index_sequence<D>{}){}
+//	array(typename array::extensions_type const& x) //3
+//	:	allocator_type{}, ref{allocate(typename array::layout_t{x}.num_elements()), x}{
+//		uninitialized_value_construct();
+//	}
+//	template<class Extension, typename = decltype(array(std::array<Extension, D>{}, allocator_type{}, std::make_index_sequence<D>{}))>
+//	array(std::array<Extension, D> const& x, allocator_type const& a = {}) : array(x, a, std::make_index_sequence<D>{}){}
+//	array(multi::iextensions<D> const& ie) : array(typename array::extensions_type{ie}){}
 private:
 	template<class Extension, size_t... Is>//, typename = decltype(typename array::extensions_type{std::array<Extension, D>{}})>
-	explicit array(std::array<Extension, D> const& x, allocator_type const& a, std::index_sequence<Is...>) : array(typename array::extensions_type{std::get<Is>(x)...}, a){}
+	array(std::array<Extension, D> const& x, allocator_type const& a, std::index_sequence<Is...>) : array(typename array::extensions_type{std::get<Is>(x)...}, a){}
 public:
 	template<class It> static auto distance(It a, It b){using std::distance; return distance(a, b);}
 	template<class It, typename=decltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>      
 	array(It first, It last, allocator_type const& a = {}) :                    //4
 		allocator_type{a}, ref{}
 	{
+	//	if(first == last) return;
 		auto const& f = *first;
 		auto xx = extensions(f);
-		layout_t<D>::operator=(typename array::layout_t{tuple_cat(std::make_tuple(index_extension{std::distance(first, last)}), xx)});
-		this->base_ = allocate(typename array::layout_t{std::tuple_cat(std::make_tuple(index_extension{std::distance(first, last)}), multi::extensions(*first))}.num_elements());
+	//	assert(0); 
+		layout_t<D>::operator=(typename array::layout_t{tuple_cat(std::make_tuple(index_extension{std::distance(first, last)}), base(xx))});
+		this->base_ = allocate(typename array::layout_t{std::tuple_cat(std::make_tuple(index_extension{std::distance(first, last)}), base(multi::extensions(*first)))}.num_elements());
 		using std::next;
 		using std::all_of;
 		if(first!=last) assert( all_of(next(first), last, [x=multi::extensions(*first)](auto& e){return extensions(e)==x;}) );
@@ -97,7 +103,9 @@ public:
 	typename array::element_ptr allocate(typename array::index n){return alloc_traits::allocate(alloc(), n);}
 	auto allocate(){return allocate(this->num_elements());}
 	template<
-		class Array, typename=std::enable_if_t<multi::rank<std::remove_reference_t<Array>>{}()>=1>//, 
+		class Array, 
+	//	typename=std::enable_if_t<not std::is_base_of<array, Array>{}>,
+		typename=std::enable_if_t<multi::rank<std::remove_reference_t<Array>>{}()>=1>//, 
 	//	typename = decltype(ref{typename alloc_traits::allocate(num_elements(std::declval<Array&&>())), extensions(std::declval<Array&&>())}) 
 	>
 	array(Array&& o, allocator_type const& a = {})
@@ -106,6 +114,7 @@ public:
 	//	recursive_uninitialized_copy<D>(alloc(), begin(o), end(o), ref::begin());
 		uninitialized_copy(alloc(), begin(o), end(o), ref::begin());
 	}
+	explicit	
 	array(array const& other)                                              // 5a
 	:	allocator_type{other}, ref{allocate(other.num_elements()), extensions(other)}{
 		uninitialized_copy_(other.data());
@@ -114,6 +123,7 @@ public:
 	:	allocator_type{a}, ref{allocate(other.num_elements()), extensions(other)}{
 		uninitialized_copy_(other.data());
 	}
+	explicit
 	array(array&& other) noexcept                                           //6a
 	:	allocator_type{other.get_allocator()},
 		ref{std::exchange(other.base_, nullptr), other.extensions()}
@@ -131,8 +141,14 @@ public:
 //	template<class TT, typename = std::enable_if_t<std::is_same<TT, value_type>{}> >
 	array(std::initializer_list<value_type> il, allocator_type const& a={}) 
 	:	array(il.begin(), il.end(), a){}
+//	template<class TT, typename std::enable_if_t<TT, >>
+//	array(std::initializer_list<typename array::size_type> il, allocator_type const& a={}) 
+//	:	array(il.begin(), il.end(), a){
+//		assert(0);
+//	}
+
 //	template<class T>//, typename = std::enable_if_t<std::is_same<T, int>>
-//	array(std::initializer_list<int> il, allocator_type const& a={}) 
+//	array(std::sinitializer_list<int> il, allocator_type const& a={}) 
 //	:	array(il.size()!=D?il.begin():throw std::runtime_error{"warning"}, il.end(), a){}
 //	array(std::tuple<int>){assert(0);}
 #endif

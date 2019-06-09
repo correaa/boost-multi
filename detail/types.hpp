@@ -40,6 +40,26 @@ struct repeat<T, 0, TT>{
 	using type = TT<>;
 };
 
+template<class T, std::size_t N>
+auto array_size_impl(const std::array<T, N>&) 
+    -> std::integral_constant<std::size_t, N>;
+
+template<class... T>
+auto array_size_impl(const std::tuple<T...>&) 
+    -> std::integral_constant<std::size_t, std::tuple_size<std::tuple<T...>>{}>;
+
+template<class Array>
+using array_size = decltype(array_size_impl(std::declval<const Array&>()));
+
+template<class Array>
+constexpr auto static_size() -> decltype(array_size<Array>::value){
+    return array_size<Array>::value;
+}
+template<class Array>
+constexpr auto static_size(Array const&) -> decltype(static_size<Array>()){
+    return static_size<Array>();
+}
+
 template<class Tuple>
 constexpr auto head(Tuple&& t)
 ->decltype(std::get<0>(std::forward<Tuple>(t))){
@@ -50,8 +70,10 @@ constexpr auto tail_impl(std::index_sequence<Ns...> , Tuple&& t){
 }
 template<class Tuple>
 constexpr auto tail(Tuple const& t)
-->decltype(tail_impl(std::make_index_sequence<(std::tuple_size<Tuple>{})-1>(), t)){
-	return tail_impl(std::make_index_sequence<(std::tuple_size<Tuple>{})-1>(), t);}
+->decltype(tail_impl(std::make_index_sequence<(static_size<Tuple>())-1>(), t)){
+	return tail_impl(std::make_index_sequence<(static_size<Tuple>())-1>(), t);}
+//->decltype(tail_impl(std::make_index_sequence<(std::tuple_size<Tuple>{})-1>(), t)){
+//	return tail_impl(std::make_index_sequence<(std::tuple_size<Tuple>{})-1>(), t);}
 
 template<typename T, std::size_t N>
 std::array<T, N-1> tail(std::array<T, N> const& a){
@@ -85,10 +107,15 @@ struct iextensions : detail::repeat<index_extension, D>::type{
 	template<class T>
 	iextensions(std::array<T, D> const& arr) : iextensions(arr, std::make_index_sequence<D>{}){}//detail::repeat<index_extension, D>::type{as_tuple(arr)}{}
 	iextensions(std::array<iextension, D> const& arr) : iextensions(arr, std::make_index_sequence<D>{}){}//detail::repeat<index_extension, D>::type{as_tuple(arr)}{}
+	base_ const& base() const{return *this;}
+	friend decltype(auto) base(iextensions const& s){return s.base();}
 private:
 	template <class T, size_t... Is> 
 	iextensions(std::array<T, D> const& arr, std::index_sequence<Is...>) : iextensions{arr[Is]...}{}
 };
+
+//template<dimensionality_type D>
+//using extensions_t = iextensions<D>;
 
 #if __cpp_deduction_guides
 template<class... Args> iextensions(Args...) -> iextensions<sizeof...(Args)>;
