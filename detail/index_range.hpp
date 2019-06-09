@@ -117,6 +117,7 @@ public:
 		if(first < last) return {first, last};
 		return {};
 	}
+	bool contains(value_type const& v) const{return (v >= first() and v < last())?true:false;}
 };
 
 //using index_range = range<index>;
@@ -201,9 +202,10 @@ int main(){
 	cout << intersection(multi::range<int>{5, 12}, multi::range<int>{14, 16}) << '\n';
 //	for(auto const& i : intersection(multi::range<int>{5, 12}, multi::range<int>{8, 16})) cout<< i <<' ';
 //	cout <<'\n';
-
 	
 	multi::range<int> rr{5, 12};
+	assert( rr.contains(6) );
+	assert( not rr.contains(12) );
 	for(auto it = rr.begin(); it != rr.end(); ++it) cout<< *it <<' ';
 	cout<<'\n';
 	for(auto it = rr.rbegin(); it != rr.rend(); ++it) cout<< *it <<' ';

@@ -26,26 +26,6 @@ inline void construct_from_initializer_list(T* p, As&&... as){
 	::new(static_cast<void*>(p)) T(std::forward<As>(as)...);
 }
 
-template<class Tuple>
-constexpr auto head(Tuple&& t)
-->decltype(std::get<0>(std::forward<Tuple>(t))){
-	return std::get<0>(std::forward<Tuple>(t));}
-template<typename Tuple, std::size_t... Ns>
-constexpr auto tail_impl(std::index_sequence<Ns...> , Tuple&& t){
-	return std::make_tuple(std::get<Ns+1u>(std::forward<Tuple>(t))...);
-}
-template<class Tuple>
-constexpr auto tail(Tuple const& t)
-->decltype(tail_impl(std::make_index_sequence<(std::tuple_size<Tuple>{})-1>(), t)){
-	return tail_impl(std::make_index_sequence<(std::tuple_size<Tuple>{})-1>(), t);}
-
-template<typename T, std::size_t N>
-std::array<T, N-1> tail(std::array<T, N> const& a){
-	std::array<T, N-1> ret;
-	std::copy(a.begin() + 1, a.end(), ret.begin());
-	return ret;
-}
-
 template<class To, class From, size_t... I>
 constexpr auto to_tuple_impl(std::initializer_list<From> il, std::index_sequence<I...>){
 	return std::make_tuple(To{il.begin()[I]}...);
@@ -158,6 +138,10 @@ struct layout_t
 	index stride_;
 	index offset_;
 	index nelems_;
+//	struct extensions_type : std::decay_t<decltype(tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename sub_t::extensions_type>()))>{
+//		using base_ = std::decay_t<decltype(tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename sub_t::extensions_type>()))>;
+//		using base_::base_;
+//	};
 	using extensions_type = decltype(tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename sub_t::extensions_type>()));
 	using strides_type    = decltype(tuple_cat(std::make_tuple(std::declval<index>()), std::declval<typename sub_t::strides_type>()));
 //	using extensions_type = typename detail::repeat<index_extension, D>::type;
@@ -252,13 +236,11 @@ struct layout_t
 
 	decltype(auto) shape() const{return sizes();}
 	friend decltype(auto) shape(layout_t const& self){return self.shape();}
-
+	constexpr auto sizes() const{return tuple_cat(std::make_tuple(size()), sub.sizes());}
 	template<class T = void>
-	constexpr auto sizes() const{
-		return detail::to_array<T>(tuple_cat(std::make_tuple(size()), sub.sizes()));
-	}
+	constexpr auto sizes_as() const{return detail::to_array<T>(sizes());}
 	template<class T = void>
-	friend constexpr auto sizes(layout_t const& self){return self.sizes<T>();}
+	friend constexpr auto sizes_as(layout_t const& self){return self.sizes_as<T>();}
 private:
 	friend struct layout_t<D+1>; // void layout_t<D+1>::strides_aux(size_type*) const;
 public:
