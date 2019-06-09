@@ -141,6 +141,7 @@ struct layout_t
 	struct extensions_type_ : std::decay_t<decltype(tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename sub_t::extensions_type::base_>()))>{
 		using base_ = std::decay_t<decltype(tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename sub_t::extensions_type::base_>()))>;
 		using base_::base_;
+		extensions_type_() = default;
 		template<class Array, typename = decltype(std::get<0>(std::declval<Array>()))> constexpr extensions_type_(Array const& t) : extensions_type_(t, std::make_index_sequence<D>{}){}
 	//	template<class T, std::size_t N> extensions_type_(std::array<T, N> const& t) : extensions_type_(t, std::make_index_sequence<N>{}){}
 		base_ const& base() const{return *this;}
@@ -340,6 +341,7 @@ struct layout_t<dimensionality_type{1}>{
 		using std::tuple<index_extension>::tuple;
 		using base_ = std::tuple<index_extension>;
 		extensions_type_(index_extension const& ie) : base_{ie}{}
+		extensions_type_() = default;
 		base_ const& base() const{return *this;}
 		template<class Array, typename = decltype(std::get<0>(std::declval<Array const&>()))> extensions_type_(Array const& arr) : base_{std::get<0>(arr)}{}
 		friend decltype(auto) base(extensions_type_ const& s){return s.base();}
