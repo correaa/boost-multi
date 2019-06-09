@@ -80,8 +80,8 @@ template<dimensionality_type D>
 struct iextensions : detail::repeat<index_extension, D>::type{
 	using base_ = typename detail::repeat<index_extension, D>::type;
 	using base_::base_;
-	template<class... Args, typename = std::enable_if_t<sizeof...(Args)==D>>
-	iextensions(Args... args) : detail::repeat<index_extension, D>::type{args...}{}
+//	template<class... Args, typename = std::enable_if_t<sizeof...(Args)==D>>
+//	iextensions(Args... args) : detail::repeat<index_extension, D>::type{args...}{}
 	template<class T>
 	iextensions(std::array<T, D> const& arr) : iextensions(arr, std::make_index_sequence<D>{}){}//detail::repeat<index_extension, D>::type{as_tuple(arr)}{}
 	iextensions(std::array<iextension, D> const& arr) : iextensions(arr, std::make_index_sequence<D>{}){}//detail::repeat<index_extension, D>::type{as_tuple(arr)}{}
