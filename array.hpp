@@ -104,6 +104,7 @@ public:
 	auto allocate(){return allocate(this->num_elements());}
 	template<
 		class Array, 
+		typename=std::enable_if_t<not std::is_constructible<typename array::extensions_type, std::decay_t<Array>>{}>,//, 
 	//	typename=std::enable_if_t<not std::is_base_of<array, Array>{}>,
 		typename=std::enable_if_t<multi::rank<std::remove_reference_t<Array>>{}()>=1>//, 
 	//	typename = decltype(ref{typename alloc_traits::allocate(num_elements(std::declval<Array&&>())), extensions(std::declval<Array&&>())}) 
