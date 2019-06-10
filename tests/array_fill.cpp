@@ -12,14 +12,8 @@ $CXX -O3 -std=c++17 -Wall -Wextra -Wpedantic -Werror `#-Wfatal-errors` -I$HOME/i
 namespace multi = boost::multi;
 
 TEST_CASE("Array fill", "[array]"){
-
-	std::tuple sizes_tuple{4, 5, 3};
-	std::array<int, 3> sizes_array{4, 5, 3};
-	multi::array<double, 3> a1(sizes_tuple);
-//	std::tuple<int, int, int> sss{sizes_array};
-	multi::array<double, 3> a2(sizes_tuple);
-	multi::array<double, 3>::extensions_type et{sizes_array};
-//	multi::extensions_t<3> aa{a1};
+	using std::fill;
+	using std::all_of;
 
 	multi::array<double, 2> d2D = {
 		{150., 16., 17., 18., 19.},
@@ -27,10 +21,7 @@ TEST_CASE("Array fill", "[array]"){
 		{100., 11., 12., 13., 14.}, 
 		{ 50.,  6.,  7.,  8.,  9.}  
 	};
-	REQUIRE( std::all_of(begin(d2D[1]), end(d2D[1]), [](auto&& e){return e == 5.;}) );
-
-	using std::fill; 
-	using std::all_of;
+	REQUIRE( all_of(begin(d2D[1]), end(d2D[1]), [](auto&& e){return e == 5.;}) );
 
 	fill(begin(d2D[1]), end(d2D[1]), 8.);
 	REQUIRE( all_of(begin(d2D[1]), end(d2D[1]), [](auto&& e){return e == 8.;}) );
