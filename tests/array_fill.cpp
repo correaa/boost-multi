@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 -std=c++17 -Wall -Wextra -Wpedantic -Werror `#-Wfatal-errors` -I$HOME/include $0 catch_main.o -o $0.x && $0.x $@ && rm -f $0.x; exit
+$CXX -O3 -std=c++17 -Wall -Wextra -Wpedantic -Werror $0 catch_main.o -o $0.x && $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include<catch2/catch.hpp>
@@ -28,6 +28,5 @@ TEST_CASE("Array fill", "[array]"){
 
 	fill(begin(d2D({0, 4}, 1)), end(d2D({0, 4}, 1)), 9.);
 	REQUIRE( all_of(begin(rotated(d2D)[1]), end(rotated(d2D)[1]), [](auto&& e){return e == 9.;}) );
-
 }
 
