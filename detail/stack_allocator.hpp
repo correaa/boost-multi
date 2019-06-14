@@ -42,9 +42,9 @@ public:
 		assert(this->position_ == 0 and positions_.empty());
 		base_::reset(bytes);
 	}
-	template<size_type RequiredAlignment = sizeof(std::max_align_t)>
+	template<size_type  RequiredAlignment = sizeof(std::max_align_t)>
 	void_pointer allocate(size_type req_bytes, size_type al = RequiredAlignment){
-		static_assert( RequiredAlignment <= this->max_alignment, "!");
+		static_assert( RequiredAlignment <= MaxAlignemnt, "!");
 		assert( al <= this->max_alignment );
 		auto bytes = this->align_up(req_bytes);
 		if(this->position_ + bytes <= this->size_){
@@ -84,8 +84,8 @@ public:
 	}
 };
 
-template<class T = void, class Allocator = std::allocator<char> >
-using stack_allocator = multi::generic_allocator<T, multi::stack_buffer<Allocator> >;
+template<class T = void, class Alloc = std::allocator<char>>
+using stack_allocator = multi::generic_allocator<T, multi::stack_buffer<Alloc>>;
 
 }}
 
@@ -111,7 +111,7 @@ int main(){
 		//	multi::stack_buffer buf{guess_bytes, std::allocator<char>{}}; // needs CTAD
 			{
 			//	multi::array A({2, 10}, 0., &buf); assert( is_aligned(alignof(double), &A[1][3]) ); // needs CTAD
-				multi::array<double, 2, multi::stack_allocator<> > A({2, 10}, &buf); assert( is_aligned(alignof(double), &A[1][3]) );
+				multi::array<double, 2, multi::stack_allocator<double, std::allocator<char>> > A({2, 10}, &buf); assert( is_aligned(alignof(double), &A[1][3]) );
 				multi::array<double, 2, multi::stack_allocator<> > B({3, 10}, &buf); assert( is_aligned(alignof(double), &B[2][3]) );
 				multi::array<double, 2, multi::stack_allocator<> > C({4, 10}, &buf); assert( is_aligned(alignof(double), &C[3][3]) );
 				std::vector<int, multi::stack_allocator<int>> v(3, &buf); assert( is_aligned(alignof(int), &v[1]) );

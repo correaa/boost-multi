@@ -38,12 +38,12 @@ public:
 	}
 	template<class... Args>
 	decltype(auto) construct(pointer p, Args&&... args) const{
-	//	mr_->allocator().construct(p, std::forward<Args>(args)...);
-		std::allocator_traits<std::decay_t<decltype(mr_->allocator())>>::construct(mr_->allocator(), p, std::forward<Args>(args)...);
+		mr_->allocator().construct(p, std::forward<Args>(args)...);
+	//	std::allocator_traits<std::decay_t<decltype(mr_->allocator())>>::construct(mr_->allocator(), p, std::forward<Args>(args)...);
 	}
 	decltype(auto) destroy(pointer p) const{
-	//	mr_->allocator().destroy(p);
-		std::allocator_traits<std::decay_t<decltype(mr_->allocator())>>::destroy(mr_->allocator(), p);
+		mr_->allocator().destroy(p);
+	//	std::allocator_traits<std::decay_t<decltype(mr_->allocator())>>::destroy(mr_->allocator(), p);
 	}
 };
 
