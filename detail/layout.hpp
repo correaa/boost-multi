@@ -308,7 +308,7 @@ struct layout_t<dimensionality_type{0}>{
 	struct extensions_type_ : std::tuple<>{
 		using std::tuple<>::tuple;
 		using base_ = std::tuple<>;
-		extensions_type_(base_ const& b) : base_{b}{}
+		extensions_type_(base_ const& b) : base_(b){}
 		extensions_type_() = default;
 		base_ const& base() const{return *this;}
 		friend decltype(auto) base(extensions_type_ const& s){return s.base();}
