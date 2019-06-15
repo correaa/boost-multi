@@ -9,8 +9,9 @@
 #include<cassert>
 #include<memory>
 
+#if __cplusplus >= 201703L
 #include<memory_resource>
-
+#endif
 //static_assert(__cpp_lib_experimental_memory_resources==201402, "!");
 
 namespace boost{
@@ -26,7 +27,10 @@ std::allocator<char>& allocator_of(...){
 	return instance;
 }
 
-template<class T, class MemoryResource//s = std::pmr::memory_resource
+template<class T, class MemoryResource//s
+#if(__cpp_lib_memory_resource==201603L)
+	= std::pmr::memory_resource
+#endif
 >
 class generic_allocator{
 	using memory_resource_type = MemoryResource;
@@ -63,30 +67,6 @@ public:
 	}
 };
 
-#if 0
-// __cpp_lib_experimental_memory_resources
-template<class T>
-class generic_allocator<T, std::experimental::pmr::memory_resource>{
-	std::experimental::pmr::memory_resource* mr_;
-public:
-	using value_type = T;
-	using pointer = typename std::pointer_traits<void*>::template rebind<value_type>;
-	using difference_type = std::ptrdiff_t;
-	using size_type = std::size_t;
-	generic_allocator(std::experimental::pmr::memory_resource* mr = std::experimental::pmr::get_default_resource()) : mr_{mr}{}
-	pointer allocate(size_type n){
-		if(n and !mr_) throw std::bad_alloc{};
-		return static_cast<pointer>(mr_->allocate(n*sizeof(value_type)));
-	}
-	void deallocate(pointer p, size_type n){mr_->deallocate(p, n*sizeof(value_type));}
-	template<class... Args>
-	void construct(pointer p, Args&&... args) const{::new((void *)p) T(std::forward<Args>(args)...);}
-	void destroy(pointer p) const{((T*)p)->~T();}
-};
-
-template<class T = void> 
-using allocator = boost::multi::generic_allocator<T, std::experimental::pmr::memory_resource>;
-#endif
 
 }}
 
@@ -101,7 +81,6 @@ namespace multi = boost::multi;
 using std::cout;
 
 int main(){
-//	static_assert(__cpp_lib_experimental_memory_resources==201402);
 #if 1
 	multi::generic_allocator<double, std::pmr::memory_resource> ga(std::pmr::get_default_resource());
 	double* p = ga.allocate(1);
