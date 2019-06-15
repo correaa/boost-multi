@@ -159,9 +159,9 @@ struct layout_t
 	auto origin() const{return sub.origin() - offset_;}
 	constexpr layout_t(index_extension const& ie, layout_t<D-1> const& s) : 
 		sub{s},
-		stride_{size(ie)*num_elements(sub)!=0?size(sub)*stride(sub):1},
+		stride_{ie.size()*num_elements(sub)!=0?size(sub)*stride(sub):1}, // use .size for nvcc
 		offset_{0}, 
-		nelems_{size(ie)*num_elements(sub)}
+		nelems_{ie.size()*num_elements(sub)}                             // use .size for nvcc
 	{}
 	constexpr layout_t(extensions_type const& e = {}) : 
 		sub{detail::tail(e)}, 
