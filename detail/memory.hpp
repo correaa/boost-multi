@@ -5,7 +5,7 @@
 #define BOOST_MULTI_DETAIL_MEMORY_HPP
 
 #include "layout.hpp"
-#include "../../multi/utility.hpp"
+#include "../utility.hpp"
 #include<memory>
 
 
