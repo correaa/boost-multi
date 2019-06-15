@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 -std=c++17 -Wall -Wextra -Wpedantic -Werror $0 catch_main.o -o $0.x && $0.x $@ && rm -f $0.x; exit
+$CXX catch_main.o -std=c++17 -Wall -Wextra $0 -o$0x && $0x $@ && rm $0x; exit
 #endif
 
 #include<catch2/catch.hpp>
