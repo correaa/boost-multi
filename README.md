@@ -60,16 +60,16 @@ int main(){
 ### Linear Sequences: Pointers
 
 An `array_ref` can reference to an arbitrary random access iterator sequence.
-This way, any linear sequence (e.g. `raw memory`, `std::vector`, `std::queue`) can be arranged as a  
+This way, any linear (random access) sequence (e.g. `raw memory`, `std::vector`, `std::queue`) can be efficiently arranged as a multidimensional array. 
 
 ```
 	std::vector<double> buffer(100);
-	multi::array_ref<double, 2, std::vector<double>::iterator> A(buffer.begin(), {10, 10});
+	multi::array_ref<double, 2, std::vector<double>::iterator> A({10, 10}, buffer.begin());
 	A[1][1] = 9;
 	assert(A[1][1] == 9);
 	assert(buffer[11]==9);
 ```
-Since `array_ref`'s do not manage the memory associated with it, the reference can be simply dangle of the `buffer` memory is reallocated (e.g. by `resize`).
+Since `array_ref` does not manage the memory associated with it, the reference can be simply dangle if the `buffer` memory is reallocated (e.g. by `resize`).
 
 ### Special Memory: Allocators and Fancy Pointers
 
@@ -122,7 +122,7 @@ int main(){
 	auto&& arr2d = *m.find<marray<double, 2>>("arr2d").first;
 	assert( arr2d[7][8] == 0. );
 	assert( arr2d[4][5] == 45.001 );
-	m.destroy<marray<double, 2>>("arr2d");//	eliminate<marray<double, 2>>(m, "arr2d");
+	m.destroy<marray<double, 2>>("arr2d");
 }
 }
 ```
