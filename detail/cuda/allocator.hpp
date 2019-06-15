@@ -1,8 +1,8 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && clang++ -std=c++17 -Wfatal-errors -I/usr/include/cuda -D_TEST_BOOST_MULTI_DETAIL_MEMORY_CUDA_ALLOCATOR $0x.cpp -o $0x.x -lcudart && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
+(echo "#include\""$0"\"" > $0x.cpp) && clang++ -std=c++17 -I/usr/include/cuda -Wfatal-errors -D_TEST_BOOST_MULTI_DETAIL_MEMORY_CUDA_ALLOCATOR $0x.cpp -o $0x.x -lcudart && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
 #endif
 
-#include<cuda/cuda_runtime.h> // cudaMalloc
+#include<cuda_runtime.h> // cudaMalloc
 
 #include<new> // bad_alloc
 #include<cassert>

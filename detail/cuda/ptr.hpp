@@ -1,11 +1,11 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && nvcc --compiler-options -std=c++17 `#-std=c++17 -Wall -Wextra -Wpedantic -Wfatal-errors` -I/usr/include/cuda -D_TEST_BOOST_MULTI_DETAIL_MEMORY_CUDA_PTR $0x.cpp -o $0x -lcudart && $0x $@ && rm -f $0x $0x.cpp; exit
+(echo "#include\""$0"\"" > $0x.cpp) && nvcc --compiler-options -std=c++17 `#-std=c++17 -Wall -Wextra -Wpedantic -Wfatal-errors` -D_TEST_BOOST_MULTI_DETAIL_MEMORY_CUDA_PTR $0x.cpp -o $0x -lcudart && $0x $@ && rm -f $0x $0x.cpp; exit
 #endif
 
 #ifndef BOOST_MULTI_DETAIL_MEMORY_CUDA_PTR_HPP
 #define BOOST_MULTI_DETAIL_MEMORY_CUDA_PTR_HPP
 
-#include<cuda/cuda_runtime.h> // cudaError_t
+#include<cuda_runtime.h> // cudaError_t
 
 #include<cassert>
 #include<cstddef> // nullptr_t
