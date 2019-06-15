@@ -59,7 +59,7 @@ public://TODO find why this needs to be public and not protected or friend
 template<class Ref, class Layout>
 struct basic_array_ptr : 
 	private Ref,
-	boost::iterator_facade<
+	boost::multi::iterator_facade<
 		basic_array_ptr<Ref, Layout>, void, std::random_access_iterator_tag, 
 		Ref const&, typename Layout::difference_type
 	>,
@@ -113,7 +113,7 @@ protected:
 		assert( layout() == other.layout() );
 		return (other.base_ - base_)/Ref::nelems();
 	}
-	friend class boost::iterator_core_access;
+//	friend class boost::iterator_core_access;
 public:
 	basic_array_ptr& operator+=(difference_type n){advance(n); return *this;}
 };
@@ -141,7 +141,7 @@ struct array_iterator;
 
 template<class Element, dimensionality_type D, typename Ptr, class Ref>
 struct array_iterator : 
-	boost::iterator_facade<
+	boost::multi::iterator_facade<
 		array_iterator<Element, D, Ptr, Ref>, void, std::random_access_iterator_tag, 
 		Ref const&, typename layout_t<D-1>::difference_type
 	>,
@@ -198,13 +198,13 @@ private:
 	//	assert( stride_ == other.stride_ and stride_ != 0 and (other.base_ - base_)%stride_ == 0 and layout() == other.layout() );
 		return (other.ptr_.base_ - ptr_.base_)/stride_;
 	}
-	friend class boost::iterator_core_access;
+//	friend class boost::iterator_core_access;
 public:
 	array_iterator& operator++(){increment(); return *this;}
 	array_iterator& operator--(){decrement(); return *this;}
 	bool operator==(array_iterator const& o) const{return equal(o);}
 	difference_type operator-(array_iterator const& o) const{return -distance_to(o);}
-	using boost::iterator_facade<
+	using boost::multi::iterator_facade<
 		array_iterator<Element, D, Ptr, Ref>, void, std::random_access_iterator_tag, 
 		Ref const&, typename layout_t<D-1>::difference_type
 	>::operator-;
@@ -405,7 +405,7 @@ decltype(auto) static_array_cast(basic_array<T, D, P> const& o)
 
 template<class Element, typename Ptr, typename Ref>
 struct array_iterator<Element, 1, Ptr, Ref> : 
-	boost::iterator_facade<
+	boost::multi::iterator_facade<
 		array_iterator<Element, 1, Ptr, Ref>, 
 		Element, std::random_access_iterator_tag, 
 		Ref, multi::difference_type
@@ -437,12 +437,13 @@ private:
 		assert(stride_==other.stride_ and (other.data_-data_)%stride_ == 0);
 		return (other.data_ - data_)/stride_;
 	}
-	friend class boost::iterator_core_access;
+//	friend class boost::iterator_core_access;
 	auto base() const{return data_;}
 	friend auto base(array_iterator const& self){return self.base();}
+public:
+	auto data() const{return data_;}
 	auto stride() const{return stride_;}
 	friend auto stride(array_iterator const& self){return self.stride();}
-public:
 	array_iterator& operator++(){increment(); return *this;}
 	array_iterator& operator--(){decrement(); return *this;}
 	bool operator==(array_iterator const& o) const{return equal(o);}
@@ -483,7 +484,8 @@ public:
 		return {this->base_, this->layout()};//, this->nelems_};
 	}
 	template<class It> void assign(It first, It last) const{//using std::distance; assert(distance(first, last) == this->size());
-		using std::copy; copy(first, last, this->begin());
+		using std::copy;
+		copy(first, last, this->begin());
 	}
 	template<class A, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<A>>{}> >
 	basic_array const& operator=(A&& o) const{
@@ -539,7 +541,8 @@ public:
 		if(this->extension() != extension(other)) return false;
 		return equal(this->begin(), this->end(), begin(other));
 	}
-	bool operator<(basic_array const& o) const{return operator< <basic_array const&>(o);}
+// commented for nvcc
+	bool operator<(basic_array const& o) const{return lexicographical_compare(*this, o);}//operator< <basic_array const&>(o);}
 	template<class Array> void swap(Array&& o) const{
 		using multi::extension; using std::swap_ranges; using std::begin;
 		assert(this->extension() == extension(o));
