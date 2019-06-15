@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && clang++ -std=c++14 -Wall -Wextra -Wfatal-errors -D_TEST_MULTI_LAYOUT $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
+(echo "#include\""$0"\"" > $0x.cpp) && cuda-g++ -std=c++14 -Wall -Wextra -Wfatal-errors -D_TEST_MULTI_LAYOUT $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
 #endif
 #ifndef MULTI_LAYOUT_HPP
 #define MULTI_LAYOUT_HPP
@@ -159,7 +159,7 @@ struct layout_t
 	auto origin() const{return sub.origin() - offset_;}
 	constexpr layout_t(index_extension const& ie, layout_t<D-1> const& s) : 
 		sub{s},
-		stride_{size(ie)*num_elements(sub)!=0?size(sub)*stride(sub):1}, 
+		stride_{size(ie)*num_elements(sub)!=0?size(sub)*stride(sub):1},
 		offset_{0}, 
 		nelems_{size(ie)*num_elements(sub)}
 	{}
