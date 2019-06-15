@@ -11,6 +11,8 @@
 
 namespace boost{
 
+namespace multi{
+
 template<class Self, typename ValueType, class AccessCategory, typename Reference = ValueType&,  typename DifferenceType = typename std::pointer_traits<ValueType*>::difference_type, typename Pointer = ValueType*>
 class iterator_facade{
 	using self_type = Self;
@@ -30,7 +32,8 @@ public:
 	self_type operator-(difference_type n) const{self_type r = self(); r -= n; return r;}
 };
 
-class iterator_core_access{};
+//class iterator_core_access{};
+}
 
 namespace multi{
 
@@ -52,7 +55,7 @@ public:
 	constexpr range(value_type fl) : first_{fl}, last_{fl + 1}{}
 	constexpr range(value_type f, value_type l) : first_{f}, last_{l}{}
 	class const_iterator 
-		: public boost::iterator_facade<const_iterator, 
+		: public boost::multi::iterator_facade<const_iterator, 
 			value_type, std::random_access_iterator_tag, 
 			const_reference, difference_type
 		>
@@ -65,7 +68,7 @@ public:
 		auto distance_to(const_iterator const& z) const{return z.curr_-curr_;}
 		constexpr const_iterator(value_type current) : curr_(current){}
 		friend class range;
-	    friend class boost::iterator_core_access;
+	 //   friend class boost::iterator_core_access;
 	public:
 		auto operator==(const_iterator const& y) const{return curr_ == y.curr_;}
 		const_iterator& operator++(){++curr_; return *this;}
