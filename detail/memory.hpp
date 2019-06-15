@@ -36,7 +36,7 @@ template<class T> struct use_address : decltype(use_address_aux<T>()){};
 template<class T>
 constexpr T* to_address(T* p) noexcept
 {
-    static_assert(!std::is_function<T>{});
+    static_assert(!std::is_function<T>{}, "!");
     return p;
 }
 
@@ -46,9 +46,10 @@ auto to_address_aux(const T& p, std::true_type) noexcept{
 }
 
 template<class T>
-auto to_address_aux(const T& p, std::false_type) noexcept{
-   return memory::to_address(p.operator->());
-}
+auto to_address_aux(const T& p, std::false_type) noexcept
+//->decltype(to_address(p.operator->()))
+{
+	return to_address(p.operator->());}
  
 template<class T>
 auto to_address(const T& p) noexcept{
@@ -60,11 +61,11 @@ auto to_address(const T& p) noexcept{
 //   }
 }
 
+
 }
 
-
-
 using memory::allocator_traits;
+using memory::to_address;
 ////////////////////////////////////////////////////////////////////////////////
 //template<class Ptr> auto to_address(Ptr const& p) noexcept
 //->decltype(p.operator->()){
@@ -182,8 +183,8 @@ void destroy_at(Alloc& a, T* p){AT::destroy(a, p);}
 //template<class Ptr> auto to_address(const Ptr& p) noexcept 
 //->decltype(p.operator->());
 
-template<class Ptr> auto to_address(Ptr const& p) noexcept 
-->decltype(p.operator->());
+//template<class Ptr> auto to_address(Ptr const& p) noexcept 
+//->decltype(p.operator->());
 
 //template<class Alloc, class ForwardIt>
 //void destroy(Alloc& a, ForwardIt first, ForwardIt last);
