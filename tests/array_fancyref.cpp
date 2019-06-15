@@ -29,7 +29,8 @@ public:
 	bool operator==(ptr const&) const{return true;}
 	bool operator!=(ptr const&) const{return false;}
 //	explicit operator T*() const{return &value;}
-	ptr const& operator->() const{return *this;} // friend ptr to_address(ptr const& p){return p;}
+	ptr const& operator->() const{return *this;} 
+	friend ptr to_address(ptr const& p){return p;}
 	operator ptr<T const>() const{return {};}
 };
 template<> double ptr<double>::value = 42.;
