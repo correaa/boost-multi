@@ -4,7 +4,8 @@
 #ifndef BOOST_MULTI_DETAIL_OPERATORS_HPP
 #define BOOST_MULTI_DETAIL_OPERATORS_HPP
 
-#include "layout.hpp"
+//#include "layout.hpp"
+#include<type_traits>
 
 namespace boost{
 namespace multi{
@@ -15,10 +16,10 @@ template<class T, class V, class B = empty_base> struct equality_comparable2;
 
 template <class T, class B>
 struct equality_comparable2<T, void, B> : B{
-	template<class U, typename = std::enable_if_t<not std::is_same<U, T>{}> >
-	friend bool operator==(const U& y, const T& x){return x == y;}
-	template<class U, typename = std::enable_if_t<not std::is_same<U, T>{}> >
-	friend bool operator!=(const U& y, const T& x){return not (x == y);}
+//	template<class U, typename = std::enable_if_t<not std::is_same<U, T>{}> >
+//	friend bool operator==(const U& y, const T& x){return x == y;}
+//	template<class U, typename = std::enable_if_t<not std::is_same<U, T>{}> >
+//	friend bool operator!=(const U& y, const T& x){return not (x == y);}
 	template<class U>
 	friend bool operator!=(const T& y, const U& x){return not (y == x);}
 };
@@ -39,6 +40,18 @@ struct partially_ordered2<T, void, B> : B{
 	friend bool operator<=(const U& x, const T& y){return (y > x) or (y == x);}
 	template<class U, typename = std::enable_if_t<not std::is_same<U, T>{}> >
 	friend bool operator>=(const U& x, const T& y){return (y < x) or (y == x);}
+};
+
+template<class T, class V, class B = empty_base> struct totally_ordered2;
+
+template<class T, class B>
+struct totally_ordered2<T, void, B> : B{
+	template<class U>
+	friend auto operator<=(const T& x, const U& y){return (x < y) or (x == y);}
+	template<class U>
+	friend auto operator>=(const T& x, const U& y){return (y < x) or (x == y);}
+	template<class U>
+	friend auto operator>(const T& x, const U& y){return y < x;}
 };
 
 template<class T, class B = empty_base>

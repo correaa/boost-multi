@@ -28,11 +28,11 @@ int main(){
 //	assert( size(A)==3 and A[1] == 2.2 );
 }
 {
-	std::array<double, 3> a = {1.1,2.2,3.3};
-	multi::array<double, 1> const A(a); assert( size(A)==3 and A[1]==2.2 );
+//	std::array<double, 3> a = {1.1,2.2,3.3};
+//	multi::array<double, 1> const A(a); assert( size(A)==3 and A[1]==2.2 );
 }
 {
-	multi::array<double, 1> const A(std::array<double, 3>{1.1,2.2,3.3}); assert( size(A)==3 and A[1]==2.2 );
+//	multi::array<double, 1> const A(std::array<double, 3>{1.1,2.2,3.3}); assert( size(A)==3 and A[1]==2.2 );
 }
 {
 	multi::array<double, 2> const A = {
@@ -72,22 +72,22 @@ int main(){
 		{15.2, 32.4}};
 }
 {
-	std::array<std::array<double, 2>, 3> a = {{
-		{{1.,2.}},
-		{{2.,4.}},
-		{{3.,6.}}
-	}};
-	multi::array<double, 2> A(a);
-	assert( num_elements(A) == 6 and A[2][1] == 6. );
+//	std::array<std::array<double, 2>, 3> a = {{
+//		{{1.,2.}},
+//		{{2.,4.}},
+//		{{3.,6.}}
+//	}};
+//	multi::array<double, 2> A(a);
+//	assert( num_elements(A) == 6 and A[2][1] == 6. );
 }
 {
-	multi::array<double, 2> A(
-		std::array<std::array<double, 2>, 3>{{
-			{{1.,2.}},
-			{{2.,4.}},
-			{{3.,6.}}
-		}}
-	);
+//	multi::array<double, 2> A(
+//		std::array<std::array<double, 2>, 3>{{
+//			{{1.,2.}},
+//			{{2.,4.}},
+//			{{3.,6.}}
+//		}}
+//	);
 }
 {
 	multi::array<double, 3> const A = {  // warning: ISO C++ forbids compound-literals [-Wpedantic]

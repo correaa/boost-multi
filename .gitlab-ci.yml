@@ -16,6 +16,10 @@
 #  - ln -svf $CI_PROJECT_DIR $GOPATH/src/$REPO_NAME
 #  - cd $GOPATH/src/$REPO_NAME
 
+
+variables:
+  CXX: "c++"
+
 stages:
     - test
 #    - build
@@ -26,8 +30,7 @@ Test:
       - cd tests
       - sh ./array_ptr.cpp
       - sh ./array_ref.cpp
-      - sh ./array_ref_transform.cpp
-      - sh ./array_ref_sort.cpp
+      - sh ./array_sort.cpp
       - sh ./comparisons.cpp
       - sh ./constructors.cpp
       - sh ./initializer_list.cpp
