@@ -9,7 +9,7 @@
 #include<cassert>
 #include<memory>
 
-#if __cplusplus >= 201703L
+#if __cplusplus > 201703L
 #include<memory_resource>
 #endif
 //static_assert(__cpp_lib_experimental_memory_resources==201402, "!");
