@@ -63,6 +63,15 @@ public:
 	template<class Other> ptr(ptr<Other> other) : impl_{other.impl_}{}
 };
 
+template<class... Fs> struct overload{}; //template<> struct overload<>{};
+template<class F, class... Fs> 
+struct overload<F, Fs...> : F, Fs...{
+	overload(F f, Fs... fs) : F{std::move(f)}, Fs{std::move(fs)}...{}
+	using F::operator();
+};
+template<class... Fs> 
+overload<Fs...> make_overload(Fs&&... fs){return {std::forward<Fs>(fs)...};}
+
 template<class T>
 struct ref : private ptr<T>{
 	using value_type = T;
@@ -80,17 +89,31 @@ private:
 	};
 	skeleton_t skeleton()&&{return {this->impl_};}
 public:
+	ref(ref&& r) : ptr<T>{r}{}
 	ref& operator=(ref const&)& = delete;
-	ref&& operator=(ref&& other)&&{
-		if constexpr(std::is_trivially_copy_assignable<T>{}){
-			cudaError_t s = cudaMemcpy(this->impl_, other.impl_, sizeof(T), cudaMemcpyDeviceToDevice); assert(s == cudaSuccess);
-			return std::move(*this);
-		}else return operator=(static_cast<T>(other));
-	}	
+private:
+	ref& move_assign(ref&& other, std::true_type)&{
+		cudaError_t s = cudaMemcpy(this->impl_, other.impl_, sizeof(T), cudaMemcpyDeviceToDevice); assert(s == cudaSuccess);
+		return *this;
+	}
+	ref& move_assign(ref&& other, std::false_type)&{
+		cudaError_t s = cudaMemcpy(this->impl_, other.impl_, sizeof(T), cudaMemcpyDeviceToDevice); assert(s == cudaSuccess);
+		return *this;
+	}
+public:
+	ref&& operator=(ref&& other)&&{return std::move(move_assign(std::move(other), std::is_trivially_copy_assignable<T>{}));}
+private:
+public:
 	ref&& operator=(value_type const& t)&&{
-		if constexpr(std::is_trivially_copy_assignable<T>{}){
-			cudaError_t s= cudaMemcpy(this->impl_, std::addressof(t), sizeof(T), cudaMemcpyHostToDevice); assert(s == cudaSuccess);
-		}else skeleton() = t;
+		make_overload(
+			[&](std::true_type ){cudaError_t s= cudaMemcpy(this->impl_, std::addressof(t), sizeof(T), cudaMemcpyHostToDevice); assert(s == cudaSuccess);},
+			[&](std::false_type){
+				char buff[sizeof(T)];
+				cudaError_t s1 = cudaMemcpy(buff, this->impl_, sizeof(T), cudaMemcpyDeviceToHost); assert(s1 == cudaSuccess);
+				reinterpret_cast<T&>(buff) = t;
+				cudaError_t s2 = cudaMemcpy(this->impl_, buff, sizeof(T), cudaMemcpyHostToDevice); assert(s2 == cudaSuccess);
+			}
+		)(std::is_trivially_copy_assignable<T>{});
 		return std::move(*this);
 	}
 	template<class Other>

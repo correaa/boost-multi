@@ -45,7 +45,7 @@ using boost::multi::size;
 }{  multi::array<double, 1> A({3.}); assert( size(A)==1 and A[0]==3. ); // uses init_list
 }{  multi::array<double, 1> A = {3l}; assert( size(A)==1 and A[0]==3. ); // uses init_list
 //#else
-}{  multi::array<double, 1> A({3l}, 0.); assert( size(A)==3 and A[0]==0. );
+}{  multi::array<double, 1> A(3l, 0.); assert( size(A)==3 and A[0]==0. ); // gives warning in clang++ A({3l}, 0.);
 //#endif
 }{  multi::array<double, 1> A(multi::index_extensions<1>{{0, 3}}); assert( size(A)==3 and A[0]==0 );
 #if (!defined(__INTEL_COMPILER)) && (defined(__GNUC) && __GNU_VERSION__ >= 600)

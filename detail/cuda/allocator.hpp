@@ -16,11 +16,16 @@ namespace cuda{
 struct bad_alloc : std::bad_alloc{};
 
 struct allocation_counter{
-	inline static long n_allocations = 0;
-	inline static long n_deallocations = 0;
-	inline static long bytes_allocated = 0;
-	inline static long bytes_deallocated = 0;
+	static long n_allocations;
+	static long n_deallocations;
+	static long bytes_allocated;
+	static long bytes_deallocated;
 };
+
+long allocation_counter::n_allocations = 0;
+long allocation_counter::n_deallocations = 0;
+long allocation_counter::bytes_allocated = 0;
+long allocation_counter::bytes_deallocated = 0;
 
 template<class T=void> class allocator : allocation_counter{
 public:
@@ -42,14 +47,13 @@ public:
 	}
 	std::true_type operator==(allocator const&) const{return {};}
 	std::false_type operator!=(allocator const&) const{return {};}
-	template<class P, 
-		class... Args>
+	template<class P, class... Args>
 	void construct([[maybe_unused]] P p, Args&&... args){
 	//	if constexpr(sizeof...(Args) == 0 and std::is_trivially_default_constructible<T>{}){
 		//	cudaError_t s = cudaMemset(p.impl_, 0, sizeof(T)); assert( s == cudaSuccess );
 	//	}else{
-		if constexpr( std::is_same<T, max_align_t>{} ) return;
-		else if(sizeof...(Args) == 0 and std::is_trivially_default_constructible<T>{}){
+	//	if constexpr( std::is_same<T, max_align_t>{} ) return;
+		if(sizeof...(Args) == 0 and std::is_trivially_default_constructible<T>{}){
 			cudaError_t s = cudaMemset(p.impl_, 0, sizeof(T)); assert( s == cudaSuccess );
 		}else{
 			char buff[sizeof(T)];
@@ -58,10 +62,10 @@ public:
 		}
 	}
 	template<class P>
-	void destroy([[maybe_unused]] P p){
-		if constexpr(not std::is_trivially_destructible<T>{}){
+	void destroy(P p){
+		if(not std::is_trivially_destructible<T>{}){
 			char buff[sizeof(T)];
-			cudaMemcpy(buff, p, sizeof(T), cudaMemcpyDeviceToHost);
+			cudaMemcpy(buff, p.impl_, sizeof(T), cudaMemcpyDeviceToHost);
 			((T*)buff)->~T();
 		}
 	}

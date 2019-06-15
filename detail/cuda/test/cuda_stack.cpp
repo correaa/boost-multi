@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-nvcc --compiler-options "-std=c++17, -Wall -Wextra" `#-Wfatal-errors` $0 -o $0x -lcudart && $0x && rm -f $0x; exit
+nvcc -ccbin cuda-c++ -std=c++14 $0 -o $0x && $0x && rm -f $0x; exit
 #endif
 
 #include "../../../../multi/array.hpp"
@@ -21,7 +21,7 @@ int main(){
 			cout<<"pass "<< i << std::endl;
 			{
 				multi::array<double, 2, multi::stack_allocator<double, cuda::allocator<>>> A({2, 10}, &buf);
-				multi::array<int, 2, multi::stack_allocator<double, cuda::allocator<>>> B({3, 10}, &buf);
+				multi::array<int,    2, multi::stack_allocator<double, cuda::allocator<>>> B({3, 10}, &buf);
 				multi::array<double, 2, multi::stack_allocator<double, cuda::allocator<>>> C({4, 10}, &buf);
 				for(int j = 0; j != 100; ++j)
 					multi::array<double, 2, multi::stack_allocator<double, cuda::allocator<>>> D({4, 10}, &buf);
