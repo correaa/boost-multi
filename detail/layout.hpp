@@ -242,7 +242,8 @@ struct layout_t
 	constexpr index offset(dimensionality_type d) const{return d?sub.offset(d-1):offset_;}
 	friend constexpr index offset(layout_t const& self){return self.offset();}
 	constexpr auto offsets() const{return tuple_cat(std::make_tuple(offset()), sub.offsets());}
-
+	constexpr auto base_size() const{using std::max; return max(nelems_, sub.base_size());}
+	auto is_compact() const{return base_size() == num_elements();}
 	decltype(auto) shape() const{return sizes();}
 	friend decltype(auto) shape(layout_t const& self){return self.shape();}
 	constexpr auto sizes() const{return tuple_cat(std::make_tuple(size()), sub.sizes());}
@@ -383,10 +384,12 @@ struct layout_t<dimensionality_type{1}>{
 		return d==0?nelems_/stride_:throw 0; // assert(d == 0 and stride_ != 0 and nelems_%stride_ == 0);
 	}
 	friend constexpr size_type size(layout_t const& self){return self.size();}
+	constexpr auto base_size() const{return nelems_;}
+	auto is_compact(){return base_size() == num_elements();}
 public:
-	constexpr auto stride(dimensionality_type d = 0) const{
-		return d==0?stride_:throw 0;
-	}
+	constexpr auto stride(dimensionality_type d = 0) const{return d?throw 0:stride_;}
+//		return d==0?stride_:throw 0;
+//	}
 	friend constexpr index stride(layout_t const& self){return self.stride();}
 public:
 	constexpr auto strides() const{return std::make_tuple(stride());}
@@ -433,6 +436,8 @@ public:
 	layout_t& unrotate(){return *this;}
 //	decltype(auto) shape() const{return sizes();}
 };
+
+
 
 }}
 
