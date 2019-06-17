@@ -12,6 +12,19 @@
 namespace boost{
 namespace multi{
 
+//template<class Array, typename Reference = void> struct array_traits;
+
+template<class Array>///, typename std::enable_if_t< Array::reference>
+struct array_traits{
+	using reference = typename Array::reference;
+};
+
+template<class T, size_t N>
+struct array_traits<T[N]>{
+	using reference = T&;
+};
+
+
 template<class T, typename = typename T::rank>
 std::true_type has_rank_aux(T const&){return {};}
 inline std::false_type has_rank_aux(...){return {};}
@@ -250,7 +263,11 @@ void f(T&& t){
 	std::cout<< dimensionality(t) <<'\n';
 }
 
+template<class T> void f();
 int main(){
+
+	using T4 = typename multi::array_traits<typename std::remove_reference_t<double(&)[4][4]>>::reference;
+	f<T4>();
 
 	using multi::corigin;
 	using multi::dimensionality;
