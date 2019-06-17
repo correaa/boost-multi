@@ -42,5 +42,20 @@ int main(){
 		dimensionality(in), sizes_as<int>(in).data(),
 		(fake::fftw_complex*)in.data_elements(), (fake::fftw_complex*)out.data_elements(), 1, 0
 	);
+
+	{
+		multi::array<double, 2> d2D = 
+			{
+				{150, 16, 17, 18, 19},
+				{ 30,  1,  2,  3,  4}, 
+				{100, 11, 12, 13, 14}, 
+				{ 50,  6,  7,  8,  9} 
+			};
+		assert( d2D.is_compact() );
+		assert( rotated(d2D).is_compact() );
+		assert( d2D[3].is_compact() );
+		assert( not rotated(d2D)[2].is_compact() );
+	}
+
 }
 
