@@ -57,15 +57,30 @@ struct totally_ordered2<T, void, B> : B{
 template<class T, class B = empty_base>
 struct random_iterable : B{
 //	using iterator = Iterator;
-	auto cbegin() const{return typename T::const_iterator{static_cast<T const&>(*this).begin()};}
-	auto cend()   const{return typename T::const_iterator{static_cast<T const*>(this)->end()};}
-	friend auto cbegin(T const& s){return static_cast<random_iterable const&>(s).cbegin();}
-	friend auto cend  (T const& s){return static_cast<random_iterable const&>(s).cend  ();}
+///	template<typename U = T>
+//	typename U::const_iterator
+//	 cbegin() const{return typename T::const_iterator{static_cast<T const&>(*this).begin()};}
+//	template<typename U = T>
+//	typename U::const_iterator
+//	 cend() const{return typename T::const_iterator{static_cast<T const&>(*this).end()};}
+//	template<typename U = T>
+//	friend typename U::const_iterator cbegin(U const& s, T* = 0, ...){
+//		return static_cast<random_iterable const&>(s).cbegin();}
+//	template<typename U = T>
+//	friend typename U::const_iterator cend  (U const& s, T* = 0, ...){
+//		return static_cast<random_iterable const&>(s).cend  ();}
+//	auto cend()   const{return typename T::const_iterator{static_cast<T const*>(this)->end()};}
+//	template<class TT, typename = std::enable_if_t<std::is_base_of<T, TT>{}> >
+//	friend auto cbegin(TT const& s)->typename TT::const_iterator
+//	{return typename TT::const_iterator{static_cast<T const&>(s).begin()};}
+//	template<class TT, typename = std::enable_if_t<std::is_base_of<T, TT>{}> >
+//	friend auto cend  (TT const& s)->typename TT::const_iterator
+//	{return typename TT::const_iterator{static_cast<T const&>(s)->end()};}
 
-	auto crbegin() const{return typename T::const_reverse_iterator{cend  ()};}
-	auto crend  () const{return typename T::const_reverse_iterator{cbegin()};}
-	friend auto crbegin(T const& s){return static_cast<random_iterable const&>(s).cbegin();}
-	friend auto crend  (T const& s){return static_cast<random_iterable const&>(s).cend  ();}
+//	auto crbegin() const{return typename T::const_reverse_iterator{cend  ()};}
+//	auto crend  () const{return typename T::const_reverse_iterator{cbegin()};}
+//	friend auto crbegin(T const& s){return static_cast<random_iterable const&>(s).cbegin();}
+//	friend auto crend  (T const& s){return static_cast<random_iterable const&>(s).cend  ();}
 
 	friend auto begin(T const& t){return t.begin();}
 	friend auto end  (T const& t){return t.end();}
@@ -83,6 +98,11 @@ struct random_iterable : B{
 	friend auto cfront(T const& s){return s.cfront();}
 	friend auto cback (T const& s){return s.cback() ;}
 };
+
+//template<class T, class B>
+//typename T::const_iterator cbegin(random_iterable<T, B> const& c){return c.cbegin();}
+//template<class T, class B>
+//typename T::const_iterator cend(random_iterable<T, B> const& c){return c.cend();}
 
 }}
 
