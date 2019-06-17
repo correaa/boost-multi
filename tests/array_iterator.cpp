@@ -42,7 +42,7 @@ int main(){
 		begin(A)[4][3] = 2.; // ok 
 		using multi::static_array_cast;
 		auto const& A_const = static_array_cast<double const>(A);
-		begin(A_const)[4][3] = 2.; // error, read only
+	//	begin(A_const)[4][3] = 2.; // error, read only
 	}
 	{
 		std::vector<double> dd(10000);
