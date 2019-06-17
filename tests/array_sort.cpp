@@ -15,8 +15,6 @@ $CXX -O3 -std=c++14 -Wall -Wextra -Wpedantic $0 -o $0.x && $0.x $@ && rm -f $0.x
 namespace multi = boost::multi;
 using std::cout; using std::cerr;
 
-template<class... T> void ddd(T&&...);
-
 int main(){
 
 	std::vector<double> v = {1.,2.,3.};
