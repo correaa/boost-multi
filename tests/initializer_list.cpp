@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-c++ -O3 -std=c++17 -Wall -Wextra -Wpedantic $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
+$CXX -O3 -std=c++17 -Wall -Wextra -Wpedantic $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include "../array.hpp"
@@ -61,6 +61,22 @@ int main(){
 		{15.2, 32.4}
 	};
 	multi::array<double, 2> A(a);
+}
+{
+	double const staticA[][2] = 
+	{	{ 1.2,  2.4},
+		{11.2, 34.4},
+		{15.2, 32.4}};
+	multi::array<double, 2> A = staticA;
+	assert( size(A) == 3 );
+}
+{
+	multi::array<double, 2> A = 
+		(double const[][2]) // warns with -Wpedantic
+	{	{ 1.2,  2.4},
+		{11.2, 34.4},
+		{15.2, 32.4}};
+	assert( size(A) == 3 );
 }
 {
 	multi::array<double, 2> A = 
