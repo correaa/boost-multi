@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 -std=c++14 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
+c++ -O3 -std=c++14 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include<iostream>
@@ -27,6 +27,32 @@ decltype(auto) take(MA&& ma){return ma[0];}
 
 int main(){
 
+	{
+		multi::array<double, 1> arr(100, 99.); assert(size(arr) == 100);
+		assert( begin(arr) < end(arr) );
+
+	}
+	{
+		multi::array<double, 2> arr({100, 100}, 99.); assert(size(arr) == 100);
+		assert( cbegin(arr) < cend(arr) );
+	}
+	{
+		std::vector<double> v(10000);
+		multi::array_ref<double, 2> A(v.data(), {100, 100}); assert(size(A) == 100);
+		begin(A)[4][3] = 2.; // ok 
+		using multi::static_array_cast;
+		auto const& A_const = static_array_cast<double const>(A);
+		begin(A_const)[4][3] = 2.; // error, read only
+	}
+	{
+		std::vector<double> dd(10000);
+		multi::array_ref<double, 2, std::vector<double>::iterator> arr(begin(dd), {100, 100}); assert(size(arr) == 100);
+		begin(arr)[4][3] = 2.;
+	//	assert( cbegin(arr)/2 );
+	//	assert( cbegin(arr) < cend(arr) );
+	}
+	return 0;
+
 	multi::array<double, 3>::reverse_iterator rit;
 	assert(( rit.base() == multi::array<double, 3>::reverse_iterator{}.base() ));
 	assert(( multi::array<double, 3>::reverse_iterator{}.base() == multi::array<double, 3>::reverse_iterator{}.base() ));
@@ -43,13 +69,20 @@ int main(){
 			{{ 1.2,  1.1}, { 2.4, 1.}}
 		}
 	;
+	assert( begin(A) < end(A) );
+	assert( cbegin(A) < cend(A) );
+	assert( begin(A[0]) < end(A[0]) );
+
+	multi::array<double, 1>::const_iterator i;
+	assert( begin(A[0]) < end(A[0]) );
+
 	assert( size(A) == 3 and size(A[0]) == 2 and size(A[0][0]) == 2 and A[0][0][1] == 1.1 );
 	assert(( multi::array<double, 3>::reverse_iterator{A.begin()} == rend(A) ));
 
 	assert( begin(A) < end(A) );
 	assert( cbegin(A) < cend(A) );
-	assert( crbegin(A) < crend(A) );
-	assert( crend(A) > crbegin(A) );
+//	assert( crbegin(A) < crend(A) );
+//	assert( crend(A) > crbegin(A) );
 	assert( end(A) - begin(A) == size(A) );
 	assert( rend(A) - rbegin(A) == size(A) );
 
