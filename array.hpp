@@ -267,6 +267,8 @@ public:
 
 	typename array::const_iterator begin() const{return ref::begin();}
 	typename array::const_iterator end()   const{return ref::end();}
+	const_iterator cbegin() const{return begin();}
+	const_iterator cend() const{return end();}
 
 	void clear() noexcept{destroy(); deallocate(); layout_t<D>::operator=({});}
 	friend void clear(array& self) noexcept{self.clear();}

@@ -161,7 +161,7 @@ struct layout_t
 		sub{s},
 		stride_{ie.size()*num_elements(sub)!=0?size(sub)*stride(sub):1}, // use .size for nvcc
 		offset_{0}, 
-		nelems_{ie.size()*num_elements(sub)}                             // use .size for nvcc
+		nelems_{ie.size()*num_elements(sub)}                             // use .size fort
 	{}
 	constexpr layout_t(extensions_type const& e = {}) : 
 		sub{detail::tail(e)}, 
