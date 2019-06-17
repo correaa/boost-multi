@@ -216,8 +216,8 @@ public:
 
 template<typename T, dimensionality_type D, typename ElementPtr, class Layout /*= layout_t<D>*/ >
 struct basic_array : 
-	boost::multi::partially_ordered2<basic_array<T, D, ElementPtr, Layout>, void>,
-	boost::multi::random_iterable<basic_array<T, D, ElementPtr, Layout>>,
+	multi::partially_ordered2<basic_array<T, D, ElementPtr, Layout>, void>,
+	multi::random_iterable<basic_array<T, D, ElementPtr, Layout>>,
 	array_types<T, D, ElementPtr, Layout>
 {
 	using types = array_types<T, D, ElementPtr, Layout>;
@@ -229,6 +229,9 @@ protected:
 	using types::types;
 	template<typename, dimensionality_type, class Alloc> friend struct array;
 	basic_array(basic_array const&) = default;
+	template<class T2, typename ElementPtr2>
+	basic_array(basic_array<T2, D, ElementPtr2> const& b)
+		: basic_array{b.layout(), b.base()}{}
 	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
 	friend decltype(auto) static_array_cast(basic_array<TT, DD, PP> const&);
 public:
@@ -307,10 +310,6 @@ private:
 public:
 	using iterator = //array_Iterator<typename types::reference, typename types::sub_t>;
 		array_iterator<typename types::element, D, typename types::element_ptr, typename types::reference>;
-	using const_iterator =
-		array_iterator<typename types::element, D, typename std::pointer_traits<typename types::element_ptr>::template rebind<typename types::element const>,
-			typename std::add_const<typename types::reference>::type
-		>;
 private:
 	template<class Iterator>
 	struct basic_reverse_iterator : 
@@ -547,7 +546,9 @@ public:
 
 	using iterator = multi::array_iterator<typename types::element, 1, typename types::element_ptr, typename types::reference>;
 	using const_iterator =
-		multi::array_iterator<typename types::element, 1, typename std::pointer_traits<typename types::element_ptr>::template rebind<typename types::element const>,
+		multi::array_iterator<typename types::element, 1,
+			typename types::element, 
+		//	typename std::pointer_traits<typename types::element_ptr>::template rebind<typename types::element const>,
 			typename std::add_const<typename types::reference>::type
 		>;
 	using reverse_iterator = std::reverse_iterator<iterator>;
@@ -604,11 +605,6 @@ public:
 //	template<class Extension>//, typename = decltype(array_ref(std::array<Extension, D>{}, allocator_type{}, std::make_index_sequence<D>{}))>
 //	constexpr array_ref(typename array_ref::element_ptr p, std::array<Extension, D> const& x) 
 //		: array_ref(p, x, std::make_index_sequence<D>{}){}
-private:
-//	template<class Extension, size_t... Is>//, typename = decltype(typename array::extensions_type{std::array<Extension, D>{}})>
-//	constexpr array_ref(typename array_ref::element_ptr p, std::array<Extension, D> const& x, std::index_sequence<Is...>) 
-//		: array_ref(p, typename array_ref::extensions_type{std::get<Is>(x)...}){}
-public:
 	using basic_array<T, D, ElementPtr>::operator=;
 	using basic_array<T, D, ElementPtr>::operator<;
 	using basic_array<T, D, ElementPtr>::operator>;
