@@ -49,7 +49,9 @@ protected:
 	array_types(array_types const&) = default;
 	array_types(layout_t l, element_ptr data) : Layout{l}, base_{data}{}
 public://TODO find why this needs to be public and not protected or friend
-	template<class ArrayTypes, typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>> 
+	template<class ArrayTypes, typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>
+		, typename = decltype(base_(std::declval<ArrayTypes const&>().base_))
+	> 
 	array_types(ArrayTypes const& a) : Layout{a}, base_{a.base_}{}
 	template<typename ElementPtr2>
 	array_types(array_types<T, D, ElementPtr2, Layout> const& other) : Layout{other.layout()}, base_{other.base_}{}
@@ -305,6 +307,10 @@ private:
 public:
 	using iterator = //array_Iterator<typename types::reference, typename types::sub_t>;
 		array_iterator<typename types::element, D, typename types::element_ptr, typename types::reference>;
+	using const_iterator =
+		array_iterator<typename types::element, D, typename std::pointer_traits<typename types::element_ptr>::template rebind<typename types::element const>,
+			typename std::add_const<typename types::reference>::type
+		>;
 private:
 	template<class Iterator>
 	struct basic_reverse_iterator : 
@@ -396,9 +402,9 @@ public:
 };
 
 template<class T2, class P2 = std::add_pointer_t<T2>, class T, dimensionality_type D, class P>
-decltype(auto) static_array_cast(basic_array<T, D, P> const& o)
-//->decltype(basic_array<T2, D, P2>(o))
-{	  return basic_array<T2, D, P2>(o);}
+decltype(auto) static_array_cast(basic_array<T, D, P> const& o){//->decltype(basic_array<T2, D, P2>(o))
+	return basic_array<T2, D, P2>(o); // name take from std::static_pointer_cast
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -409,7 +415,8 @@ struct array_iterator<Element, 1, Ptr, Ref> :
 		array_iterator<Element, 1, Ptr, Ref>, 
 		Element, std::random_access_iterator_tag, 
 		Ref, multi::difference_type
-	>
+	>,
+	multi::totally_ordered2<array_iterator<Element, 1, Ptr, Ref>, void>
 {
 	template<class Other, typename = decltype(Ptr{typename Other::pointer{}})> 
 	array_iterator(Other const& o) : data_{o.data_}, stride_{o.stride_}{}
@@ -423,6 +430,7 @@ struct array_iterator<Element, 1, Ptr, Ref> :
 	using element_ptr = Ptr;
 	explicit operator Ptr const&() const{return data_;}
 	using rank = std::integral_constant<dimensionality_type, 1>;
+	bool operator<(array_iterator const& o) const{return distance_to(o) > 0;}
 private:
 	array_iterator(Ptr d, typename basic_array<Element, 1, Ptr>::index s) : data_{d}, stride_{s}{}
 	friend struct basic_array<Element, 1, Ptr>;
@@ -487,7 +495,14 @@ public:
 		using std::copy;
 		copy(first, last, this->begin());
 	}
-	template<class A, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<A>>{}> >
+public:
+	template<class A, 
+		typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<A>>{}>,
+		typename = decltype(
+			std::declval<typename basic_array::reference&>() 
+				= std::declval<typename multi::array_traits<typename std::remove_reference_t<A>>::reference&&>()
+		)// std::declval<basic_array const&>().assign(begin(std::forward<A>(std::declval<A&&>())), end(std::forward<A>(std::declval<A&&>()))))
+	>
 	basic_array const& operator=(A&& o) const{
 		using multi::extension;
 	//	assert(this->extension() == extension(o));
@@ -531,6 +546,10 @@ public:
 	decltype(auto) unrotated(dimensionality_type) const{return *this;}
 
 	using iterator = multi::array_iterator<typename types::element, 1, typename types::element_ptr, typename types::reference>;
+	using const_iterator =
+		multi::array_iterator<typename types::element, 1, typename std::pointer_traits<typename types::element_ptr>::template rebind<typename types::element const>,
+			typename std::add_const<typename types::reference>::type
+		>;
 	using reverse_iterator = std::reverse_iterator<iterator>;
 
 	iterator begin() const{return{types::base_               ,Layout::stride_};}
