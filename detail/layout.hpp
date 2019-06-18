@@ -333,6 +333,7 @@ struct layout_t<dimensionality_type{1}>{
 
 //	using extensions_type = std::array<index_extension, 1>;
 	using index = multi::index;
+	using size_type = multi::size_type;
 	using index_range = multi::range<index>;
 	using difference_type = multi::difference_type;
 	index stride_ = 1;
