@@ -130,6 +130,7 @@ struct layout_t
 	static constexpr dimensionality_type dimensionality(){return rank{};}
 	friend constexpr dimensionality_type dimensionality(layout_t const& l){return l.dimensionality();}
 	using sub_t = layout_t<D-1>;
+	using size_type = multi::size_type;
 	using index = multi::index;
 	using difference_type = multi::difference_type;
 	using index_extension = multi::index_extension;
