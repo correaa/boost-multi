@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-c++ -O3 -std=c++14 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
+$CXX -O3 -std=c++14 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include<iostream>
@@ -41,7 +41,7 @@ int main(){
 		multi::array_ref<double, 2> A(v.data(), {100, 100}); assert(size(A) == 100);
 		begin(A)[4][3] = 2.; // ok 
 		using multi::static_array_cast;
-		auto const& A_const = static_array_cast<double const>(A);
+	//	auto const& A_const = static_array_cast<double const>(A);
 	//	begin(A_const)[4][3] = 2.; // error, read only
 	}
 	{
