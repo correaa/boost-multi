@@ -40,7 +40,7 @@ struct array :
 	boost::multi::random_iterable<array<T, D, Alloc> >
 {
 	using allocator_type = typename std::allocator_traits<Alloc>::template rebind_alloc<T>;
-	using alloc_traits = std::allocator_traits<allocator_type>;
+	using alloc_traits = typename std::allocator_traits<allocator_type>;
 	using ref = array_ref<T, D, typename alloc_traits::pointer>;
 	using difference_type = typename ref::difference_type;
 	static_assert(std::is_same<typename alloc_traits::value_type, T>{} or std::is_same<typename alloc_traits::value_type, void>{}, "!");
@@ -100,7 +100,7 @@ public:
 	//	recursive_uninitialized_copy<D>(alloc(), first, last, ref::begin());
 		uninitialized_copy(alloc(), first, last, ref::begin());
 	}
-	typename array::element_ptr allocate(typename array::index n){return alloc_traits::allocate(alloc(), n);}
+	typename array::element_ptr allocate(typename alloc_traits::size_type n){return alloc_traits::allocate(alloc(), n);}
 	auto allocate(){return allocate(this->num_elements());}
 	template<
 		class Array, 
@@ -110,7 +110,7 @@ public:
 	//	typename = decltype(ref{typename alloc_traits::allocate(num_elements(std::declval<Array&&>())), extensions(std::declval<Array&&>())}) 
 	>
 	array(Array&& o, allocator_type const& a = {})
-	:	allocator_type{a}, ref{allocate(num_elements(o)), extensions(o)}{
+	:	allocator_type{a}, ref{allocate(static_cast<typename alloc_traits::size_type>(num_elements(o))), extensions(o)}{
 		using std::begin; using std::end;
 	//	recursive_uninitialized_copy<D>(alloc(), begin(o), end(o), ref::begin());
 		uninitialized_copy(alloc(), begin(o), end(o), ref::begin());
@@ -160,7 +160,7 @@ public:
 			const_cast<array const&>(*this).ref::operator=(std::forward<A>(a));
 		}else{
 			clear(); //	this->ref::layout_t::operator=(layout_t<D>{extensions(a)}); //			this->base_ = allocate(this->num_elements());
-			this->base_ = allocate(this->ref::layout_t::operator=(layout_t<D>{extensions(a)}).num_elements());
+			this->base_ = allocate(static_cast<typename alloc_traits::size_type>(this->ref::layout_t::operator=(layout_t<D>{extensions(a)}).num_elements()));
 			using std::begin; using std::end;
 		//	uninitialized_copy(alloc(), begin(std::forward<A>(a)), end(std::forward<A>(a)), array::begin()); //	recursive_uninitialized_copy<D>(alloc(), begin(std::forward<A>(a)), end(std::forward<A>(a)), array::begin());
 		}
@@ -284,7 +284,7 @@ private:
 //	typename array::element_ptr allocate(typename array::index n){return alloc_traits::allocate(alloc(), n);}
 //	auto allocate(){return allocate(this->num_elements());}
 	void deallocate(){
-		alloc_traits::deallocate(alloc(), this->base_, this->num_elements());
+		alloc_traits::deallocate(alloc(), this->base_, static_cast<typename alloc_traits::size_type>(this->num_elements()));
 		this->base_ = nullptr;
 	}
 };
