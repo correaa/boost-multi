@@ -14,8 +14,6 @@ using std::cout;
 
 int main(){
 
-using boost::multi::size;
-
  {	multi::array<double, 1> A     ; assert( empty(A) );
 }{	multi::array<double, 1> A{}   ; assert( empty(A) );
 }{	multi::array<double, 1> A = {}; assert( empty(A) );
