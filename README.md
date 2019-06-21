@@ -37,7 +37,7 @@ Some features:
 The design tries to impose the minimum possible requirements over the used referred types.
 Pointer-like random access types can be used as substitutes of built-in pointers.
 
-```
+```c++
 namespace minimal{
     template<class T> class ptr{ // minimalistic pointer
     	T* impl_;
@@ -62,7 +62,7 @@ int main(){
 An `array_ref` can reference to an arbitrary random access iterator sequence.
 This way, any linear (random access) sequence (e.g. `raw memory`, `std::vector`, `std::queue`) can be efficiently arranged as a multidimensional array. 
 
-```
+```c++
 	std::vector<double> buffer(100);
 	multi::array_ref<double, 2, std::vector<double>::iterator> A({10, 10}, buffer.begin());
 	A[1][1] = 9;
@@ -79,7 +79,7 @@ Associated fancy pointers and fancy reference (if any) are deduced from the allo
 
 The behavior regarding memory managament of the fancy pointers can be customized (if necessary) by specializations of some or all of these functions:
 
-```
+```c++
 destroy(a, first, last)
 destroy_n(a, first, n) -> last
 uninitialized_copy_n(a, first, n, dest) -> last;
@@ -92,7 +92,7 @@ where `a` is the special allocator, `n` is a size (usually the number of element
 
 Copying underlying memory can be customized by specializing 
 
-```
+```c++
 copy_n(first, n, dest)
 fill_n(first, n, value)
 ```
