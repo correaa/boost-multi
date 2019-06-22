@@ -177,7 +177,7 @@ int main(){
 	assert( d2D_cref <= d2D_cref );
 	assert( d2D_cref >= d2D_cref );
 
-	assert(( d2D_prime_cref[std::array{2, 3}] == 13 ));
+	assert(( d2D_prime_cref[std::array<int, 2>{2, 3}] == 13 ));
 
 	double const d2D_null[4][5] {
 		{ 0,  0,  0,  0,  0}, 
