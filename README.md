@@ -101,7 +101,7 @@ Specific cases of fancy memory are file-mapped memory or interprocess shared mem
 This example illustrates memory persistency by combining with Boost.Interprocess library. 
 The arrays support their allocators and fancy pointers (`boost::interprocess::offset_ptr`).
 
-```
+```c++
 #include <boost/interprocess/managed_mapped_file.hpp>
 using namespace boost::interprocess;
 using manager = managed_mapped_file;
@@ -139,7 +139,7 @@ The base pointer, the strides and the size of the arrow can be accessed by `base
 
 The template arguments of the iterator can be used to customize operations that are recursive (and possibly inefficient in certain context) in the library:
 
-```
+```c++
 namespace boost{namespace multi{
 template<class It, class T>  // custom copy 1D (aka strided copy)
 void copy(It first, It last, multi::array_iterator<T, 1, fancy::ptr<T> > dest){
@@ -164,6 +164,7 @@ If your (fancy) pointer are not so fancy and behavior more standard, it is not n
 
 We create a static C-array of `double`s, and refer to it via a bidimensional array `multi::array_ref<double, 2>`.
 
+```c++
 	#include "../array_ref.hpp"
 	#include "../array.hpp"
 	
@@ -182,18 +183,20 @@ We create a static C-array of `double`s, and refer to it via a bidimensional arr
 		};
 		multi::array_ref<double, 2> d2D_ref{&d2D[0][0], {4, 5}};
 															...
-
+```
 
 Note that the syntax of creating a reference array involves passing the pointer to a memory block (20 elements here) and the logical dimensions of that memory block (4 by 5 here).
 
 Next we print the elements in a way that corresponds to the logical arrangement:
 
+```c++
 		for(auto i : d2D_ref.extension(0)){
 			for(auto j : d2D_ref.extension(1))
 				cout << d2D_ref[i][j] <<' ';
 			cout <<'\n';
 		}
-	
+```
+
 This will output:
 
 > 150 16 17 18 19  
@@ -201,10 +204,12 @@ This will output:
 > 100 11 12 13 14  
 > 50 6 7 8 9
 
-It is sometimes said (Sean Parent) that the whole of STL algorithms can be seen as intermediate pieces to implement`std::stable_sort`. 
+It is sometimes said (by Sean Parent) that the whole of STL algorithms can be seen as intermediate pieces to implement`std::stable_sort`. 
 Pressumably if one can sort over a range, one can perform any other standard algorithm.
 
+```c++
 		std::stable_sort( begin(d2D_ref), end(d2D_ref) );
+```
 
 If we print this we will get
 
@@ -217,13 +222,17 @@ If we print this we will get
 The array has been changed to be in row-based lexicographical order.
 Since the sorted array is a reference to the original data, the original array has changed. 
 
+```c++
 		assert( d2D[1][1] == 6 );
+```
 
 (Note that `std::*sort` cannot be applied directly to a multidimensional C-array or to Boost.MultiArray types.)
 
 If we want to order the matrix in a per-column basis we need to "view" the matrix as range of columns. This is done in the bidimensional case, by accessing the matrix as a range of columns:
 
+```c++
 	    std::stable_sort( d2D_ref.begin(1), d2D_ref.end(1) );
+```
 
 Which will transform the matrix into. 
 
@@ -239,7 +248,7 @@ In other words, a matrix of dimension `D` can be viewed simultaneously as `D` di
 
 `array_ref` is initialized from a preexisting contiguous memory (or range), the index extensions should compatible with the total number of elements.
 
-```
+```c++
 double* dp = new double[12];
 multi::array_ref<double, 2> A({3,4}, dp);
 multi::array_ref<double, 2> B({2,6}, dp);
@@ -248,7 +257,7 @@ delete[] dp;
 ```
 `array` is initialized by specifying the index extensions (and optionally a default value) or alternatively from a rectangular list. 
 
-```
+```c++
 /*In C++17 the element-type and the dimensionality can be omitted*/
 multi::array/*<double, 1>*/ A1 = {1.,2.,3.}; 
                      assert(A1.dimensionality==1 and A1.num_elements()==3);
@@ -280,7 +289,7 @@ For example in three dimensional array,
 
 As an example, this function allows printing arrays of arbitrary dimension into a linear comma-separated form.
 
-```
+```c++
 void print(double const& d){cout<<d;};
 template<class MultiArray> 
 void print(MultiArray const& ma){
@@ -327,7 +336,7 @@ Transpositions are also multi-dimensional arrays views in which the index are *l
 As an illustration of an algorithm based on index access (as opposed to iterators), 
 this example code implements Gauss Jordan Elimination without pivoting:
 
-```
+```c++
 template<class Matrix, class Vector>
 auto gj_solve(Matrix&& A, Vector&& y)->decltype(y[0]/=A[0][0], y){
 	std::ptrdiff_t Asize = size(A); 
@@ -353,7 +362,7 @@ auto gj_solve(Matrix&& A, Vector&& y)->decltype(y[0]/=A[0][0], y){
 
 This function can be applied to a `multi::array` container:
 
-```
+```c++
 		multi::array<double, 2> A = {{-3., 2., -4.},{0., 1., 2.},{2., 4., 5.}};
 		multi::array<double, 1> y = {12.,5.,2.}; //(M); assert(y.size() == M); iota(y.begin(), y.end(), 3.1);
 		gj_solve(A, y);
@@ -361,7 +370,7 @@ This function can be applied to a `multi::array` container:
 
 and also to a combination of `MultiArrayView`-type objects:
 
-```
+```c++
 		multi::array<double, 2> A({6000, 7000}); std::iota(A.data(), A.data() + A.num_elements(), 0.1);
 		std::vector<double> y(3000); std::iota(y.begin(), y.end(), 0.2);
 		gj_solve(A({1000, 4000}, {0, 3000}), y);
@@ -371,7 +380,7 @@ and also to a combination of `MultiArrayView`-type objects:
 
 Given an array, a slice in the first dimension can be taken with the `sliced` function. `sliced` takes two arguments, the first index of the slice and the last index (not included) of the slice. For example,
 
-```
+```c++
 multi::array<double, 2> d2D({4, 5});
 assert( d2D.size(0) == 4 and d2D.size(1) == 5 );
 
@@ -383,7 +392,7 @@ The number of rows in the sliced matrix is 2 because we took only two rows, row 
 
 In the same way a strided view of the original array can be taken with the `strided` function.
 
-```
+```c++
 auto&& d2D_strided = d2D.stride(2); // {{ d2D[0], d2D[1] }};
 assert( d2D_strided.size(0) == 2 and d2D_strided.size(1) == 5 );
 ```
@@ -392,7 +401,7 @@ In this case the number of rows is 2 because, out of the 4 original rows we took
 
 Operations can be combined in a single line:
 
-```
+```c++
 auto&& d2D_slicedstrided = d2D.sliced(1, 3).strided(2); // {{ d2D[1] }};
 assert( d2D_slicedstrided.size(0) == 1 and d2D_slicedstrided.size(1) == 5 );
 ```
@@ -402,7 +411,7 @@ For convenience, `A.sliced(a, b, c)` is the same as `A.sliced(a, b).strided(c)`.
 By combining `rotated`, `sliced` and `strided` one can take sub arrays at any dimension. 
 For example in a two dimensional array one can take a subset of columns by defining.
 
-```
+```c++
 auto&& subA = A.rotated(1).strided(1, 3).sliced(2).rotated(-1);
 ```
 
@@ -411,7 +420,7 @@ Other notations are available, but when in doubt the `rotated/strided/sliced/rot
 
 Blocks (slices) in multidimensions can be obtained but pure index notation using `.operator()`:
 
-```
+```c++
 multi::array<double, 2> A({6, 7}); // 6x7 array
 A({1, 4}, {2, 4}) // 3x2 array, containing indices 1 to 4 in the first dimension and 2 to 4 in the second dimension.
 ```
