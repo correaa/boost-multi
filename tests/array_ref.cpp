@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 -std=c++14 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
+$CXX -O3 -std=c++17 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include "../array_ref.hpp"
@@ -19,7 +19,7 @@ namespace multi = boost::multi;
 double f(){return 5.;}
 
 int main(){
-
+//	using multi::size;
 	{
 		double a[4][5] {
 			{ 0,  1,  2,  3,  4}, 
@@ -166,6 +166,7 @@ int main(){
 		{10, 11, 12, 13, 14}, 
 		{15, 16, 17, 18, 19}
 	};
+
 	multi::array_cref<double, 2> d2D_prime_cref(&d2D_prime[0][0], {4, 5});
 	assert( d2D_cref == d2D_prime_cref ); // deep comparison
 	assert( d2D_cref[1][2] == d2D_prime_cref[1][2] );
@@ -175,6 +176,8 @@ int main(){
 	assert( not(d2D_cref > d2D_cref) );
 	assert( d2D_cref <= d2D_cref );
 	assert( d2D_cref >= d2D_cref );
+
+	assert(( d2D_prime_cref[std::array{2, 3}] == 13 ));
 
 	double const d2D_null[4][5] {
 		{ 0,  0,  0,  0,  0}, 
