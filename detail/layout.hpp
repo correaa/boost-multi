@@ -64,6 +64,16 @@ to_array(Tuple&& t){
 	;
 }
 
+template <class Tuple, std::size_t... Ns>
+auto tuple_tail_impl(Tuple&& t, std::index_sequence<Ns...>){
+   return std::forward_as_tuple(std::forward<decltype(std::get<Ns + 1>(t))>(std::get<Ns + 1>(t))...);
+}
+
+template<class Tuple>
+auto tuple_tail(Tuple&& t)
+->decltype(tuple_tail_impl(t, std::make_index_sequence<std::tuple_size<std::decay_t<Tuple>>{} - 1>())){//std::tuple<Ts...> t){
+	return tuple_tail_impl(t, std::make_index_sequence<std::tuple_size<std::decay_t<Tuple>>{} - 1>());}
+
 #if 0
 template<typename Tuple, size_t... I, size_t S = sizeof...(I)>
 auto reverse_impl(Tuple&& t, std::index_sequence<I...>)
@@ -231,7 +241,8 @@ struct layout_t
 	constexpr bool empty() const{return not nelems_;} friend
 	constexpr bool empty(layout_t const& s){return s.empty();}
 	constexpr size_type size() const {return nelems_/stride_;} 
-//	friend constexpr size_type size(layout_t const& l){return l.size();} // removed for gcc6, using boost::multi::size
+//	friend constexpr size_type size(layout_t const& l){return l.size();} // removed for gcc6, add "using boost::multi::size"
+	friend constexpr size_type size(layout_t const& l){return l.size();}
 	size_type size(dimensionality_type d) const{return d?sub.size(d-1):size();}
 
 	constexpr index stride() const{return stride_;}
