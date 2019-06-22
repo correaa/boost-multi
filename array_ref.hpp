@@ -243,6 +243,17 @@ public:
 		assert( this->extension().count(i) );
 		return {sub, types::base_ + Layout::operator()(i)};
 	}
+	template<class Tuple, typename = std::enable_if_t<(std::tuple_size<std::decay_t<Tuple>>{}>1)> >
+	auto operator[](Tuple&& t) const
+	->decltype(operator[](std::get<0>(t))[detail::tuple_tail(t)]){
+		return operator[](std::get<0>(t))[detail::tuple_tail(t)];}
+	template<class Tuple, typename = std::enable_if_t<std::tuple_size<std::decay_t<Tuple>>{}==1> >
+	auto operator[](Tuple&& t) const
+	->decltype(operator[](std::get<0>(t))){
+		return operator[](std::get<0>(t));}
+	template<class Tuple, typename = std::enable_if_t<std::tuple_size<std::decay_t<Tuple>>{}==0> >
+	decltype(auto) operator[](Tuple&&) const{return *this;} //	decltype(auto) operator[](std::tuple<>) const{return *this;}
+
 	basic_array sliced(typename types::index first, typename types::index last) const{
 		typename types::layout_t new_layout = *this;
 		(new_layout.nelems_/=Layout::size())*=(last - first);
@@ -519,6 +530,14 @@ public:
 	typename types::reference operator[](typename types::index i) const{
 		return *(types::base_+Layout::operator()(i));//types::base_[Layout::operator()(i)];
 	}
+	template<class Tuple, typename = std::enable_if_t<(std::tuple_size<std::decay_t<Tuple>>{}>1) > >
+	auto operator[](Tuple&& t) const
+	->decltype(operator[](std::get<0>(t))[detail::tuple_tail(t)]){
+		return operator[](std::get<0>(t))[detail::tuple_tail(t)];}
+	template<class Tuple, typename = std::enable_if_t<std::tuple_size<std::decay_t<Tuple>>{}==1> >
+	decltype(auto) operator[](Tuple&& t) const{return operator[](std::get<0>(t));}
+	decltype(auto) operator[](std::tuple<>) const{return *this;}
+
 	basic_array sliced(typename types::index first, typename types::index last) const{
 		typename types::layout_t new_layout = *this; 
 		(new_layout.nelems_/=Layout::size())*=(last - first);
@@ -605,6 +624,7 @@ public:
 //	template<class Extension>//, typename = decltype(array_ref(std::array<Extension, D>{}, allocator_type{}, std::make_index_sequence<D>{}))>
 //	constexpr array_ref(typename array_ref::element_ptr p, std::array<Extension, D> const& x) 
 //		: array_ref(p, x, std::make_index_sequence<D>{}){}
+	using basic_array<T, D, ElementPtr>::operator[];
 	using basic_array<T, D, ElementPtr>::operator=;
 	using basic_array<T, D, ElementPtr>::operator<;
 	using basic_array<T, D, ElementPtr>::operator>;
