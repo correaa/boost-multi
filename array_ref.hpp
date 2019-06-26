@@ -235,6 +235,7 @@ protected:
 	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
 	friend decltype(auto) static_array_cast(basic_array<TT, DD, PP> const&);
 public:
+	using typename types::reference;
 	basic_array(basic_array&&) = default;
 	using decay_type = array<typename types::element, D, typename pointer_traits<typename types::element_ptr>::default_allocator_type>;
 	decay_type decay() const{return *this;}
@@ -243,16 +244,16 @@ public:
 		assert( this->extension().count(i) );
 		return {sub, types::base_ + Layout::operator()(i)};
 	}
-	template<class Tuple, typename = std::enable_if_t<(std::tuple_size<std::decay_t<Tuple>>{}>1)> >
-	auto operator[](Tuple&& t) const
+	template<class Tp = std::array<index, D>, typename = std::enable_if_t<(std::tuple_size<std::decay_t<Tp>>{}>1)> >
+	auto operator[](Tp&& t) const
 	->decltype(operator[](std::get<0>(t))[detail::tuple_tail(t)]){
 		return operator[](std::get<0>(t))[detail::tuple_tail(t)];}
-	template<class Tuple, typename = std::enable_if_t<std::tuple_size<std::decay_t<Tuple>>{}==1> >
-	auto operator[](Tuple&& t) const
+	template<class Tp, typename = std::enable_if_t<std::tuple_size<std::decay_t<Tp>>{}==1> >
+	auto operator[](Tp&& t) const
 	->decltype(operator[](std::get<0>(t))){
 		return operator[](std::get<0>(t));}
-	template<class Tuple, typename = std::enable_if_t<std::tuple_size<std::decay_t<Tuple>>{}==0> >
-	decltype(auto) operator[](Tuple&&) const{return *this;} //	decltype(auto) operator[](std::tuple<>) const{return *this;}
+	template<class Tp = std::tuple<>, typename = std::enable_if_t<std::tuple_size<std::decay_t<Tp>>{}==0> >
+	decltype(auto) operator[](Tp&&) const{return *this;} //	decltype(auto) operator[](std::tuple<>) const{return *this;}
 
 	basic_array sliced(typename types::index first, typename types::index last) const{
 		typename types::layout_t new_layout = *this;
@@ -426,6 +427,7 @@ struct array_iterator<Element, 1, Ptr, Ref> :
 		Element, std::random_access_iterator_tag, 
 		Ref, multi::difference_type
 	>,
+//	multi::incrementable<array_iterator<Element, 1, Ptr, Ref> >,
 	multi::totally_ordered2<array_iterator<Element, 1, Ptr, Ref>, void>
 {
 	template<class Other, typename = decltype(Ptr{typename Other::pointer{}})> 
