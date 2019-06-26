@@ -424,3 +424,27 @@ Blocks (slices) in multidimensions can be obtained but pure index notation using
 multi::array<double, 2> A({6, 7}); // 6x7 array
 A({1, 4}, {2, 4}) // 3x2 array, containing indices 1 to 4 in the first dimension and 2 to 4 in the second dimension.
 ```
+
+# Interoperability
+
+The library tries to interact with other existing C++ libraries
+
+## Range v3
+
+```
+#include <range/v3/all.hpp>
+int main(){
+
+	multi::array const d2D = {
+		{ 0,  1,  2,  3}, 
+		{ 5,  6,  7,  8}, 
+		{10, 11, 12, 13}, 
+		{15, 16, 17, 18}
+	};
+	assert( ranges::inner_product(d2D[0], d2D[1], 0.) == 6+2*7+3*8 );
+	assert( ranges::inner_product(d2D[0], rotated(d2D)[0], 0.) == 1*5+2*10+15*3 );
+
+	static_assert(ranges::RandomAccessIterator<multi::array<double, 1>::iterator>{});
+	static_assert(ranges::RandomAccessIterator<multi::array<double, 2>::iterator>{});
+}
+```
