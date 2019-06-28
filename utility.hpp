@@ -151,7 +151,7 @@ constexpr auto sizes(Array const& arr)
 template<class T, typename = std::enable_if_t<not has_sizes<T>{}> >
 inline constexpr std::tuple<> sizes(T const&){return {};}
 
-decltype(auto) base(std::tuple<> const& a){return a;}
+inline decltype(auto) base(std::tuple<> const& a){return a;}
 
 template<class T, std::size_t N>
 constexpr auto sizes(const T(&t)[N]) noexcept{
