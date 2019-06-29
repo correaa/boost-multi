@@ -429,16 +429,18 @@ public:
 	bool operator>(O const& o) const{return lexicographical_compare(o, *this);}
 public:
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
-	basic_array<T2, D, P2> static_array_cast() const{//(basic_array&& o){  // name taken from std::static_pointer_cast
-		return {this->layout(), static_cast<P2>(this->base())};
+	basic_array<T2, D, P2> static_array_cast() const{
+		return {this->layout(), P2{this->base_}};//static_cast<P2>(this->base_)};
+	}
+	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
+	basic_array<T2, D, P2> reinterpret_array_cast() const{
+		static_assert( sizeof(T)%sizeof(T2)== 0, "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
+		return {
+			this->layout().scale(sizeof(T)/sizeof(T2)), 
+			reinterpret_cast<P2>(this->base())
+		};
 	}
 };
-
-//template<class T2, class P2 = std::add_pointer_t<T2>, class T, dimensionality_type D, class P>
-//decltype(auto) static_array_cast(basic_array<T, D, P> const& o){//->decltype(basic_array<T2, D, P2>(o))
-//	return basic_array<T2, D, P2>(o.layout(), static_cast<P2>(o.base())); // name taken from std::static_pointer_cast
-//}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -652,6 +654,14 @@ decltype(auto) static_array_cast(Array&& a){return a.template static_array_cast<
 
 template<class T2, class Array, class P2 = typename std::pointer_traits<typename std::decay<Array>::type::element_ptr>::template rebind<T2> >
 decltype(auto) static_array_cast(Array&& a){return a.template static_array_cast<T2, P2>();}
+
+template<
+	class T2, class Array, 
+	class P2 = typename std::pointer_traits<typename std::decay<Array>::type::element_ptr>::template rebind<T2> 
+>
+decltype(auto) reinterpret_array_cast(Array&& a){
+	return a.template reinterpret_array_cast<T2, P2>();
+}
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*>
 struct array_ref : 
