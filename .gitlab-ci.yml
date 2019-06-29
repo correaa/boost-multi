@@ -27,6 +27,7 @@ stages:
 Test:
     stage: test
     script:
+      - c++ --version
       - cd tests
       - sh ./array_ptr.cpp
       - sh ./array_ref.cpp
