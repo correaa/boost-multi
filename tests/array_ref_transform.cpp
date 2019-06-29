@@ -1,10 +1,11 @@
 #ifdef COMPILATION_INSTRUCTIONS
-c++ -O3 -std=c++14 -Wall -Wfatal-errors -DBOOST_RESULT_OF_USE_DECLTYPE $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
+$CXX -O3 -std=c++14 -Wall `#-Wfatal-errors` -DBOOST_RESULT_OF_USE_DECLTYPE $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include "../array_ref.hpp"
 #include "../array.hpp"
 
+#include<complex>
 #include<iostream>
 #include<boost/iterator/transform_iterator.hpp>
 
@@ -37,6 +38,14 @@ auto neg = [](auto&& x){return -x;};
 [[maybe_unused]]
 #endif
 auto inverse_function(decltype(neg)){return [](auto&& x){return -x;};}
+
+template<class P = std::complex<double>*>
+struct indirect_real{
+	P impl_;
+	indirect_real(P const& p) : impl_{p}{}
+    auto operator+(std::ptrdiff_t n) const{return indirect_real{impl_ + n};}
+	decltype(auto) operator*() const{return impl_->real();}
+};
 
 int main(){
 
@@ -80,6 +89,43 @@ int main(){
 	cout<< d2DC[1][1] <<'\n';
 	assert( Z[1][1] == 66 );
 #endif
+
+	{
+		using complex = std::complex<double>;
+		multi::array<complex, 2> d2D = {
+			{ {0, 3}, {1, 9}, {2, 4},  3,  4}, 
+			{  5    , {6, 3}, {7, 5},  8,  9}, 
+			{ {1, 4}, {9, 1}, 12    , 13, 14}, 
+			{  15   ,  16   , 17    , 18, 19}
+		};
+
+		using multi::reinterpret_array_cast;
+		auto&& d2Dreal = reinterpret_array_cast<double>(d2D);
+		assert( d2Dreal[2][1] == 9. );
+		d2Dreal[2][1] = 12.;
+		assert( d2D[2][1] == complex(12., 1.) ); 
+
+		auto&& d2DrealT = reinterpret_array_cast<double>(rotated(d2D));
+		assert( d2DrealT[2][1] == 7. );
+
+		multi::array<double, 2> d2real_copy = d2Dreal;
+
+		using multi::static_array_cast;
+		auto&& d2Dreal2 = static_array_cast<double, indirect_real<>>(d2D);
+		assert( d2Dreal2[2][1] == 12. );
+
+		struct indirect_imag{
+			std::complex<double>* underlying; using element_type = double;
+			indirect_imag operator+(std::ptrdiff_t n) const{return {underlying + n};}
+			double& operator*() const{return reinterpret_cast<double(&)[2]>(*underlying)[1];}
+			operator double*() const{return &(*(*this));}
+		};
+		auto&& d2imag2 = static_array_cast<double, indirect_imag>(d2D);
+		assert( d2imag2[2][1] == 1. );
+		double* p = d2imag2.base();
+		assert( *p == 3 );
+
+	}
 }
 
 }
