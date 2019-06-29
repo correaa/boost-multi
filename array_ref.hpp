@@ -152,13 +152,10 @@ struct array_iterator :
 		array_iterator<Element, D, Ptr, Ref>, void, std::random_access_iterator_tag, 
 		Ref const&, typename layout_t<D-1>::difference_type
 	>,
-	multi::affine<array_iterator<Element, D, Ptr, Ref>, multi::difference_type>,
 	multi::decrementable<array_iterator<Element, D, Ptr, Ref>>,
 	multi::incrementable<array_iterator<Element, D, Ptr, Ref>>,
-	multi::totally_ordered2<array_iterator<Element, D, Ptr, Ref>, void>//,
-//,	multi::dereferenceable<array_iterator<Element, D, Ptr, Ref>, Ref>
-//	boost::multi::incrementable<array_iterator<Element, D, Ptr, Ref>>,
-//	boost::multi::totally_ordered2<array_iterator<Element, D, Ptr, Ref>, void>
+	multi::affine<array_iterator<Element, D, Ptr, Ref>, multi::difference_type>,
+	multi::totally_ordered2<array_iterator<Element, D, Ptr, Ref>, void>
 {
 	using difference_type = typename layout_t<D>::difference_type;
 	using value_type = typename Ref::decay_type;
