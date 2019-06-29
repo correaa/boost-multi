@@ -6,6 +6,7 @@
 
 //#include "layout.hpp"
 #include<type_traits>
+#include<utility> // forward
 
 namespace boost{
 namespace multi{
@@ -54,6 +55,58 @@ struct totally_ordered2<T, void, B> : B{
 	friend auto operator>(const T& x, const U& y){return y < x;}
 };
 
+template<class T>
+struct copy_constructible{};
+
+template<class T>
+struct weakly_incrementable{friend T& operator++(weakly_incrementable& t){return ++static_cast<T&>(t);}};
+
+template<class T>
+struct weakly_decrementable{
+	friend T& operator--(weakly_decrementable& t){return --static_cast<T&>(t);}
+};
+
+template<class T>
+struct incrementable : weakly_incrementable<T>{
+	friend T operator++(T& self, int){T tmp{self}; ++self; return tmp;}
+};
+
+template<class T>
+struct decrementable : weakly_decrementable<T>{
+	friend T operator--(T& self, int){T tmp{self}; --self; return tmp;}
+};
+
+template<class T>
+struct steppable : incrementable<T>, decrementable<T>{};
+
+template<class T, class Reference>//, typename Reference = decltype(*std::declval<T const&>())>
+struct dereferenceable{
+	using reference = Reference;
+	friend reference operator*(dereferenceable const& t){return *static_cast<T const&>(t);}
+};
+
+template<class T, class D>
+struct addable2{
+	using difference_type = D;
+	template<class TT>
+	friend T operator+(TT&& t, difference_type const& d){T tmp{std::forward<TT>(t)}; tmp+=d; return tmp;}
+	template<class TT>
+	friend T operator+(difference_type const& d, TT&& t){return std::forward<TT>(t) + d;}
+};
+
+template<class T, class D>
+struct subtractable2{
+	using difference_type = D;
+	template<class TT, class = T>
+	friend T operator-(TT&& t, difference_type const& d){T tmp{std::forward<TT>(t)}; tmp-=d; return tmp;}
+};
+
+template<class T, class D = typename T::difference_type>
+struct affine : addable2<T, D>, subtractable2<T, D>{
+	using difference_type = D;
+};
+
+// TODO random_iterable_container ??
 template<class T, class B = empty_base>
 struct random_iterable : B{
 //	using iterator = Iterator;
