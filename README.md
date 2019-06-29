@@ -1,3 +1,6 @@
+<!--
+(pandoc `#--from gfm` --to html --standalone --metadata title=" " $0 > $0.html) && firefox --new-window  $0.html; exit
+-->
 # [Boost].Multi
 
 (not an official Boost library)
