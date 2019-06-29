@@ -14,16 +14,19 @@ namespace multi{
 
 //template<class Array, typename Reference = void> struct array_traits;
 
-template<class Array>///, typename std::enable_if_t< Array::reference>
+template<
+	class Array
+>///, typename std::enable_if_t< Array::reference>
 struct array_traits{
 	using reference = typename Array::reference;
+	using element   = typename Array::element;
 };
 
 template<class T, size_t N>
 struct array_traits<T[N]>{
 	using reference = T&;
+	using element = std::remove_all_extents_t<T[N]>;
 };
-
 
 template<class T, typename = typename T::rank>
 std::true_type has_rank_aux(T const&){return {};}
@@ -112,9 +115,9 @@ auto extension(Container const& c) // TODO consider "extent"
 	return range<decltype(size(c))>{0, size(c)};}
 
 template<class T>
-auto has_dimensionaliy_aux(T const& t)->decltype(t.dimensionality(), std::true_type {});
-inline auto has_dimensionaliy_aux(...       )->decltype(                    std::false_type{});
-template<class T> struct has_dimensionality : decltype(has_dimensionaliy_aux(std::declval<T>())){};
+auto has_dimensionality_aux(T const& t)->decltype(t.dimensionality(), std::true_type {});
+inline auto has_dimensionality_aux(...)->decltype(                    std::false_type{});
+template<class T> struct has_dimensionality : decltype(has_dimensionality_aux(std::declval<T>())){};
 
 template<class Container, typename = std::enable_if_t<has_dimensionality<Container>{}> >
 constexpr auto dimensionality(Container const& con)
