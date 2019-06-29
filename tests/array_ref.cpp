@@ -125,7 +125,7 @@ int main(){
 		}
 	)("\n");
 	
-	for(auto& row: d2D_cref){for(auto& el: row) cout<< el <<' '; cout<<'\n';}
+	for(auto&& row: d2D_cref){for(auto&& el: row) cout<< el <<' '; cout<<'\n';}
 
 //	for(decltype(d2D_cref)::reference r : d2D_cref){
 //		for(decltype(d2D_cref)::element const& e: r) cout << e <<' '; 

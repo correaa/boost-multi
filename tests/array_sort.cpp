@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 -std=c++14 -W -Wall -Wextra -Wpedantic $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
+clang++ -O3 -std=c++14 -W -Wall -Wextra -Wpedantic $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include<iostream>
@@ -27,13 +27,15 @@ int main(){
 	multi::array_ref<double, 2> d2D_ref(&d2D[0][0], {4, 5});
 	
 	std::stable_sort( begin(d2D_ref), end(d2D_ref) );
+	std::is_sorted( begin(d2D_ref), end(d2D_ref) );
+
 	std::stable_sort( d2D_ref.begin(1), d2D_ref.end(1) );
+	std::is_sorted( d2D_ref.begin(1), d2D_ref.end(1) );
 
 	{
-		auto x = extensions(d2D_ref);
-		for(auto i : std::get<0>(x)){
-			for(auto j : std::get<1>(x))
-				cout << d2D_ref[i][j] <<' ';
+		auto xx = extensions(d2D_ref); using std::get;
+		for(auto i : get<0>(xx)){
+			for(auto j : get<1>(xx)) cout << d2D_ref[i][j] <<' ';
 			cout <<'\n';
 		}
 	}
