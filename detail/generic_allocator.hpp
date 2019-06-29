@@ -22,7 +22,7 @@ auto allocator_of(MR& mr)
 ->decltype(mr->allocator()){	
 	return mr->allocator();}
 
-std::allocator<char>& allocator_of(...){
+inline std::allocator<char>& allocator_of(...){
 	static std::allocator<char> instance;
 	return instance;
 }
