@@ -7,10 +7,10 @@
 
 #include "utility.hpp"
 
-#include "detail/layout.hpp"
-#include "detail/types.hpp" // dimensionality_type
-#include "detail/operators.hpp" // random_iterable
-#include "detail/memory.hpp" // pointer_traits
+#include "./detail/layout.hpp"
+#include "./detail/types.hpp" // dimensionality_type
+#include "./detail/operators.hpp" // random_iterable
+#include "./detail/memory.hpp" // pointer_traits
 
 #include<algorithm> // copy_n
 
