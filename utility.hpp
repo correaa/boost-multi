@@ -269,9 +269,6 @@ void f(T&& t){
 template<class T> void f();
 int main(){
 
-	using T4 = typename multi::array_traits<typename std::remove_reference_t<double(&)[4][4]>>::reference;
-	f<T4>();
-
 	using multi::corigin;
 	using multi::dimensionality;
 	using multi::extension;
