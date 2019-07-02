@@ -35,7 +35,7 @@ private:
 	ptr(ptr<TT const> const& p) : impl_{const_cast<T*>(impl_)}{}
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 public:
-	ptr(ptr const&  ) = default;
+	ptr(ptr const& p) : impl_{p.impl_}{}
 	using difference_type = ::ptrdiff_t;
 	using value_type = T;
 	using pointer = ptr<T>;
@@ -56,6 +56,7 @@ public:
 	auto operator==(ptr const& other) const{return impl_==other.impl_;}
 	auto operator!=(ptr const& other) const{return impl_!=other.impl_;}
 	friend ptr to_address(ptr const& p){return p;}
+	ptr operator-(difference_type n) const{return ptr{impl_ - 1};}
 	difference_type operator-(ptr const& other) const{return impl_-other.impl_;}
 //	ptr& operator=(ptr const&) = default;
 };
