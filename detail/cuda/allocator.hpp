@@ -33,9 +33,10 @@ public:
 	using pointer = ptr<T>;
 	using size_type = ::size_t; // as specified by CudaMalloc
 	pointer allocate(size_type n, const void* = 0){
+		if(n == 0) return nullptr;
 		T* p;
 		cudaError_t s = cudaMalloc(&p, n*sizeof(T));
-		if(s != cudaSuccess or p==nullptr) throw bad_alloc{};
+		if(s != cudaSuccess/* or p==nullptr*/) throw bad_alloc{};
 		++n_allocations;
 		bytes_allocated+=sizeof(T)*n;
 		return {p};
