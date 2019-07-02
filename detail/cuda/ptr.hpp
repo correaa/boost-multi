@@ -42,6 +42,7 @@ public:
 	template<class Other>
 	explicit ptr(ptr<Other> other) : impl_{static_cast<T*>(other.impl_)}{}
 	explicit operator bool() const{return impl_;}
+	operator ptr<T const>() const{return {impl_};}
 	reference operator*() const{return {*this};}
 	reference operator[](size_type n){return *operator+(n);} 
 	ptr& operator++(){++impl_; return *this;}
@@ -173,6 +174,8 @@ int main(){
 	static_assert(std::is_same<typename std::iterator_traits<cuda::ptr<double>>::value_type, double>{});
 	cuda::allocator<double> calloc;
 	cuda::ptr<double> p = calloc.allocate(100);
+	cuda::ptr<double const> pc = p;
+	cuda::ptr<double const> pc2 = pc;
 	p[33] = 123.;
 	p[99] = 321.;
 //	p[33] += 1;
