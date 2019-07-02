@@ -31,7 +31,11 @@ private:
 	template<class TT> friend class allocator;
 //	friend class ref<T>;
 	template<typename TT> friend class ptr;
+	template<class TT, typename = std::enable_if_t<not std::is_const<TT>{}>> 
+	ptr(ptr<TT const> const& p) : impl_{const_cast<T*>(impl_)}{}
+	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 public:
+	ptr(ptr const&  ) = default;
 	using difference_type = ::ptrdiff_t;
 	using value_type = T;
 	using pointer = ptr<T>;
@@ -55,6 +59,8 @@ public:
 	difference_type operator-(ptr const& other) const{return impl_-other.impl_;}
 //	ptr& operator=(ptr const&) = default;
 };
+
+template<class T> ptr<T> const_pointer_cast(ptr<T const> const& p){return {p};}
 
 template<>
 class ptr<void>{
@@ -175,7 +181,9 @@ int main(){
 	cuda::allocator<double> calloc;
 	cuda::ptr<double> p = calloc.allocate(100);
 	cuda::ptr<double const> pc = p;
-	cuda::ptr<double const> pc2 = pc;
+//	cuda::ptr<double const> pc2 = pc;
+	using cuda::const_pointer_cast;
+	cuda::ptr<double> p2 = const_pointer_cast<double>(pc);
 	p[33] = 123.;
 	p[99] = 321.;
 //	p[33] += 1;
