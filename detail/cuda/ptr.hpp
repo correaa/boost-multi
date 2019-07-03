@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && nvcc --compiler-options -std=c++17 `#-std=c++17 -Wall -Wextra -Wpedantic -Wfatal-errors` -D_TEST_BOOST_MULTI_DETAIL_MEMORY_CUDA_PTR $0x.cpp -o $0x -lcudart && $0x $@ && rm -f $0x $0x.cpp; exit
+(echo "#include\""$0"\"" > $0.cpp) && nvcc --compiler-options -std=c++14,-Wall,-Wextra,-Wpedantic`#,-Wfatal-errors` -D_TEST_BOOST_MULTI_DETAIL_MEMORY_CUDA_PTR $0.cpp -o $0x && $0x && rm $0x $0.cpp; exit
 #endif
 
 #ifndef BOOST_MULTI_DETAIL_MEMORY_CUDA_PTR_HPP
@@ -10,10 +10,11 @@
 #include<cassert>
 #include<cstddef> // nullptr_t
 #include<iterator> // random_access_iterator_tag
-#include<utility>
+
+#include<type_traits> // is_const
 
 namespace boost{
-namespace multi::detail::memory{
+namespace multi{namespace detail{namespace memory{
 namespace cuda{
 
 template<class T> struct ref;
@@ -25,11 +26,9 @@ class ptr{
 protected:
 	using Ptr = T*;
 	T* impl_;
-//	operator Ptr() const{return impl_;}
 private:
 	ptr(Ptr impl) : impl_{impl}{}
 	template<class TT> friend class allocator;
-//	friend class ref<T>;
 	template<typename TT> friend class ptr;
 	template<class TT, typename = std::enable_if_t<not std::is_const<TT>{}>> 
 	ptr(ptr<TT const> const& p) : impl_{const_cast<T*>(impl_)}{}
@@ -45,18 +44,20 @@ public:
 	ptr(std::nullptr_t n) : impl_{n}{}
 	template<class Other>
 	explicit ptr(ptr<Other> other) : impl_{static_cast<T*>(other.impl_)}{}
+	ptr& operator=(ptr const&) = default;
 	explicit operator bool() const{return impl_;}
 	operator ptr<T const>() const{return {impl_};}
 	reference operator*() const{return {*this};}
-	reference operator[](size_type n){return *operator+(n);} 
+	reference operator[](size_type n){return *operator+(n);}//*((*this)+n);} 
 	ptr& operator++(){++impl_; return *this;}
+	ptr& operator--(){--impl_; return *this;}
 	ptr  operator++(int){auto tmp = *this; ++(*this); return tmp;}
 	ptr& operator+=(difference_type n){impl_+=n; return *this;}
 	ptr operator+(difference_type n) const{auto tmp = (*this); return tmp+=n;}
 	auto operator==(ptr const& other) const{return impl_==other.impl_;}
 	auto operator!=(ptr const& other) const{return impl_!=other.impl_;}
 	friend ptr to_address(ptr const& p){return p;}
-	ptr operator-(difference_type n) const{return ptr{impl_ - 1};}
+	ptr operator-(difference_type n) const{return ptr{impl_ - n};}
 	difference_type operator-(ptr const& other) const{return impl_-other.impl_;}
 //	ptr& operator=(ptr const&) = default;
 };
@@ -93,7 +94,11 @@ private:
 		char buff[sizeof(T)]; T* p_;
 		skeleton_t(T* p) : p_{p}{cudaError_t s = cudaMemcpy(buff, p_, sizeof(T), cudaMemcpyDeviceToHost); assert(s == cudaSuccess);}
 		operator T&()&&{return reinterpret_cast<T&>(buff);}
-		~skeleton_t(){cudaError_t s = cudaMemcpy(p_, buff, sizeof(T), cudaMemcpyHostToDevice); assert(s == cudaSuccess);} 
+		void conditional_copyback_if_not(std::false_type) const{
+			cudaError_t s = cudaMemcpy(p_, buff, sizeof(T), cudaMemcpyHostToDevice); assert(s == cudaSuccess);
+		}
+		void conditional_copyback_if_not(std::true_type) const{}
+		~skeleton_t(){conditional_copyback_if_not(std::is_const<T>{});}
 	};
 	skeleton_t skeleton()&&{return {this->impl_};}
 public:
@@ -112,6 +117,14 @@ public:
 	ref&& operator=(ref&& other)&&{return std::move(move_assign(std::move(other), std::is_trivially_copy_assignable<T>{}));}
 private:
 public:
+	template<class Other>
+	auto operator+(Other&& o)&&
+	->decltype(std::move(*this).skeleton() + std::forward<Other>(o)){
+		return std::move(*this).skeleton() + std::forward<Other>(o);}
+//	template<class Self, class O, typename = std::enable_if_t<std::is_same<std::decay_t<Self>, ref>{}> > 
+//	friend auto operator+(Self&& self, O&& o)
+//	->decltype(std::forward<Self>(self).skeleton() + std::forward<O>(o)){
+//		return std::forward<Self>(self).skeleton() + std::forward<O>(o);}
 	ref&& operator=(value_type const& t)&&{
 		make_overload(
 			[&](std::true_type ){cudaError_t s= cudaMemcpy(this->impl_, std::addressof(t), sizeof(T), cudaMemcpyHostToDevice); assert(s == cudaSuccess);},
@@ -156,6 +169,8 @@ public:
 
 }}}
 
+}}
+
 #ifdef _TEST_BOOST_MULTI_DETAIL_MEMORY_CUDA_PTR
 
 #include<memory>
@@ -164,10 +179,10 @@ public:
 #include "../cuda/allocator.hpp"
 
 namespace boost{
-namespace multi::cuda{
+namespace multi{namespace cuda{
 	template<class T, dimensionality_type D>
 	using array = multi::array<T, D, multi::detail::memory::cuda::allocator<T>>;
-}
+}}
 }
 
 namespace multi = boost::multi;
@@ -178,13 +193,17 @@ template<class T>
 void add_one(T&& t){std::forward<T>(t) += 1.;}
 
 int main(){
-	static_assert(std::is_same<typename std::iterator_traits<cuda::ptr<double>>::value_type, double>{});
+	static_assert(std::is_same<typename std::iterator_traits<cuda::ptr<double>>::value_type, double>{}, "!");
 	cuda::allocator<double> calloc;
 	cuda::ptr<double> p = calloc.allocate(100);
-	cuda::ptr<double const> pc = p;
+	cuda::ptr<double const> pc = p; (void)pc;
 //	cuda::ptr<double const> pc2 = pc;
 	using cuda::const_pointer_cast;
-	cuda::ptr<double> p2 = const_pointer_cast<double>(pc);
+	auto end = p + 100;
+	auto rbegin = std::make_reverse_iterator(end);
+	auto rend = std::make_reverse_iterator(p);
+	std::transform(rbegin, rend, rbegin, [](auto&& e){return std::forward<decltype(e)>(e) + 99.;});
+	assert( p[11] == 99. );
 	p[33] = 123.;
 	p[99] = 321.;
 //	p[33] += 1;
