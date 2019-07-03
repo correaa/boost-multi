@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && clang++ -std=c++17 -I/usr/include/cuda -Wfatal-errors -D_TEST_BOOST_MULTI_DETAIL_MEMORY_CUDA_ALLOCATOR $0x.cpp -o $0x.x -lcudart && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
+(echo "#include\""$0"\"" > $0.cpp) && clang++ -std=c++14 -I/usr/include/cuda -Wfatal-errors -D_TEST_BOOST_MULTI_DETAIL_MEMORY_CUDA_ALLOCATOR $0.cpp -o $0x -lcudart && $0x && rm $0x $0.cpp; exit
 #endif
 
 #include<cuda_runtime.h> // cudaMalloc
@@ -9,7 +9,7 @@
 #include "../cuda/ptr.hpp"
 
 namespace boost{
-namespace multi::detail::memory{
+namespace multi{namespace detail{namespace memory{
 
 namespace cuda{
 
@@ -55,10 +55,14 @@ public:
 	//	}else{
 	//	if constexpr( std::is_same<T, max_align_t>{} ) return;
 		if(sizeof...(Args) == 0 and std::is_trivially_default_constructible<T>{}){
-			cudaError_t s = cudaMemset(p.impl_, 0, sizeof(T)); assert( s == cudaSuccess );
+			cudaError_t s = cudaMemset(p.impl_, 0, sizeof(T));
+			if(s == cudaErrorInvalidDevicePointer) throw std::runtime_error{"cudaErrorInvalidDevicePointer"};
+			if(s == cudaErrorInvalidValue)         throw std::runtime_error{"cudaErrorInvalidValue, probably could not allocate fuzzy memory"};
+			assert( s == cudaSuccess );
 		}else{
 			char buff[sizeof(T)];
-			::new(buff) T{std::forward<Args>(args)...};
+			::new(buff) T(std::forward<Args>(args)...);
+		//	::new(buff) T{std::forward<Args>(args)...};
 			cudaError_t s = cudaMemcpy(p.impl_, buff, sizeof(T), cudaMemcpyHostToDevice); assert( s == cudaSuccess );
 		}
 	}
@@ -72,7 +76,36 @@ public:
 	}
 };
 
+template<> class allocator<std::max_align_t> : allocation_counter{
+public:
+	using T = std::max_align_t;
+	using value_type = T;
+	using pointer = ptr<T>;
+	using size_type = ::size_t; // as specified by CudaMalloc
+	pointer allocate(size_type n, const void* = 0){
+		if(n == 0) return nullptr;
+		T* p;
+		cudaError_t s = cudaMalloc(&p, n*sizeof(T));
+		if(s != cudaSuccess/* or p==nullptr*/) throw bad_alloc{};
+		++n_allocations;
+		bytes_allocated+=sizeof(T)*n;
+		return {p};
+	}
+	void deallocate(pointer p, size_type n){
+		cudaError_t s = cudaFree(p.impl_); assert(s == cudaSuccess);
+		++n_deallocations;
+		bytes_deallocated+=sizeof(T)*n;
+	}
+	std::true_type operator==(allocator const&) const{return {};}
+	std::false_type operator!=(allocator const&) const{return {};}
+	template<class P, class... Args>
+	void construct([[maybe_unused]] P p, Args&&... args){} // TODO investigate who is calling this
+	template<class P>
+	void destroy(P p){} // TODO investigate who is calling this
+};
+
 }}}
+}}
 
 #ifdef _TEST_BOOST_MULTI_DETAIL_MEMORY_CUDA_ALLOCATOR
 
@@ -81,10 +114,10 @@ public:
 #include "../../../multi/array.hpp"
 
 namespace boost{
-namespace multi::cuda{
+namespace multi{namespace cuda{
 	template<class T, dimensionality_type D>
 	using array = multi::array<T, D, multi::detail::memory::cuda::allocator<T>>;
-}
+}}
 }
 
 namespace multi = boost::multi;
@@ -103,7 +136,7 @@ int main(){
 		std::is_same<
 			std::allocator_traits<cuda::allocator<int>>::rebind_alloc<double>,
 			cuda::allocator<double>
-		>{}
+		>{}, "!"
 	);
 	{
 	multi::array<double, 1> arr(multi::array<double, 1>::extensions_type{100}, 0.); assert(size(arr) == 100);
