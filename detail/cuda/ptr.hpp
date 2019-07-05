@@ -19,58 +19,111 @@ namespace cuda{
 
 template<class T> struct ref;
 
-template<class T> class allocator;
+//template<class T> class allocator;
 
-template<class T = void>
+template<typename T, typename Ptr = T*> struct ptr;
+
+template<typename T, typename Ptr>
 class ptr{
 protected:
-	using Ptr = T*;
-	T* impl_;
+	using impl_t = Ptr;
+	impl_t impl_;
 private:
-	ptr(Ptr impl) : impl_{impl}{}
+	ptr(impl_t impl) : impl_{impl}{}
 	template<class TT> friend class allocator;
-	template<typename TT> friend class ptr;
+	template<typename, typename> friend class ptr;
 	template<class TT, typename = std::enable_if_t<not std::is_const<TT>{}>> 
 	ptr(ptr<TT const> const& p) : impl_{const_cast<T*>(impl_)}{}
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 public:
-	ptr(ptr const& p) : impl_{p.impl_}{}
-	using difference_type = ::ptrdiff_t;
+	ptr() = default;
+	ptr(ptr const&) = default;
+	ptr(std::nullptr_t n) : impl_{n}{}
+	template<class Other, typename = decltype(impl_t{std::declval<Other const&>().impl_})>
+	ptr(Other const& o) : impl_{o.impl_}{}
+	ptr& operator=(ptr const&) = default;
+	auto operator==(ptr const& other) const{return impl_==other.impl_;}
+	auto operator!=(ptr const& other) const{return impl_!=other.impl_;}
+
+	using element_type = typename std::pointer_traits<impl_t>::element_type;
+	using difference_type = typename std::pointer_traits<impl_t>::difference_type;
 	using value_type = T;
 	using pointer = ptr<T>;
-	using size_type = ::size_t;
-	using reference = ref<value_type>;
-	using iterator_category = std::random_access_iterator_tag;
-	ptr(std::nullptr_t n) : impl_{n}{}
-	template<class Other>
-	explicit ptr(ptr<Other> other) : impl_{static_cast<T*>(other.impl_)}{}
-	ptr& operator=(ptr const&) = default;
+	using reference = ref<element_type>;
+	using iterator_category = typename std::iterator_traits<impl_t>::iterator_category;
+//	using iterator_concept  = typename std::iterator_traits<impl_t>::iterator_concept;
 	explicit operator bool() const{return impl_;}
-	operator ptr<T const>() const{return {impl_};}
-	reference operator*() const{return {*this};}
-	reference operator[](size_type n){return *operator+(n);}//*((*this)+n);} 
+
 	ptr& operator++(){++impl_; return *this;}
 	ptr& operator--(){--impl_; return *this;}
 	ptr  operator++(int){auto tmp = *this; ++(*this); return tmp;}
-	ptr& operator+=(difference_type n){impl_+=n; return *this;}
-	ptr operator+(difference_type n) const{auto tmp = (*this); return tmp+=n;}
+	ptr  operator--(int){auto tmp = *this; --(*this); return tmp;}
+	ptr& operator+=(typename ptr::difference_type n){impl_+=n; return *this;}
+	ptr& operator-=(typename ptr::difference_type n){impl_+=n; return *this;}
+	ptr operator+(typename ptr::difference_type n) const{return {impl_ + n};}
+	ptr operator-(typename ptr::difference_type n) const{return {impl_ - n};}
+	ref<element_type> operator*() const{return {*this};}
+	ref<element_type> operator[](difference_type n){return *operator+(n);}//*((*this)+n);} 
+	friend ptr to_address(ptr const& p){return p;}
+	typename ptr::difference_type operator-(ptr const& other) const{return impl_-other.impl_;}
+};
+
+template<typename Ptr>
+class ptr<void const, Ptr>{
+	using T = void const;
+	using impl_t = Ptr;
+	impl_t impl_;
+	template<typename, typename> friend class ptr;
+	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
+	ptr(impl_t impl) : impl_{impl}{}
+public:
+	ptr() = default;
+	ptr(ptr const&) = default;
+	ptr(std::nullptr_t n) : impl_{n}{}
+	template<class Other, typename = decltype(impl_t{std::declval<Other const&>().impl_})>
+	ptr(Other const& o) : impl_{o.impl_}{}
+	ptr& operator=(ptr const&) = default;
+
+	using pointer = ptr<T>;
+	using element_type = typename std::pointer_traits<impl_t>::element_type;
+	using difference_type = void;//typename std::pointer_traits<impl_t>::difference_type;
+	explicit operator bool() const{return impl_;}
 	auto operator==(ptr const& other) const{return impl_==other.impl_;}
 	auto operator!=(ptr const& other) const{return impl_!=other.impl_;}
 	friend ptr to_address(ptr const& p){return p;}
-	ptr operator-(difference_type n) const{return ptr{impl_ - n};}
-	difference_type operator-(ptr const& other) const{return impl_-other.impl_;}
-//	ptr& operator=(ptr const&) = default;
 };
 
-template<class T> ptr<T> const_pointer_cast(ptr<T const> const& p){return {p};}
-
-template<>
-class ptr<void>{
-	void* impl_;
-	template<class Other> friend class ptr;
+template<typename Ptr>
+struct ptr<void, Ptr>{
+protected:
+	using T = void;
+	using impl_t = Ptr;
+	impl_t impl_;
+private:
+	ptr(impl_t impl) : impl_{impl}{}
+	ptr(ptr<void const> const& p) : impl_{const_cast<void*>(p.impl_)}{}
+	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
+	template<class, class> friend class ptr;
 public:
-	template<class Other> ptr(ptr<Other> other) : impl_{other.impl_}{}
+	ptr() = default;
+	ptr(ptr const&) = default;
+	ptr(std::nullptr_t n) : impl_{n}{}
+	template<class Other, typename = decltype(impl_t{std::declval<Other const&>().impl_})>
+	ptr(Other const& o) : impl_{o.impl_}{}
+	ptr& operator=(ptr const&) = default;
+	auto operator==(ptr const& other) const{return impl_==other.impl_;}
+	auto operator!=(ptr const& other) const{return impl_!=other.impl_;}
+
+	using pointer = ptr<T>;
+	using element_type = typename std::pointer_traits<impl_t>::element_type;
+	using difference_type = void;// typename std::pointer_traits<impl_t>::difference_type;
+
+	explicit operator bool() const{return impl_;}
+	friend ptr to_address(ptr const& p){return p;}
 };
+
+template<class T> 
+ptr<T> const_pointer_cast(ptr<T const> const& p){return {p.impl_};}
 
 template<class... Fs> struct overload{}; //template<> struct overload<>{};
 template<class F, class... Fs> 
@@ -193,11 +246,16 @@ template<class T>
 void add_one(T&& t){std::forward<T>(t) += 1.;}
 
 int main(){
-	static_assert(std::is_same<typename std::iterator_traits<cuda::ptr<double>>::value_type, double>{}, "!");
+
+	static_assert(std::is_same<typename std::pointer_traits<cuda::ptr<double>>::element_type, double>{}, "!");
 	cuda::allocator<double> calloc;
 	cuda::ptr<double> p = calloc.allocate(100);
-	cuda::ptr<double const> pc = p; (void)pc;
-//	cuda::ptr<double const> pc2 = pc;
+	cuda::ptr<void> v = p;
+	cuda::ptr<void const> vc{v};
+	v = const_pointer_cast(vc);
+	assert( vc == v );
+	std::pointer_traits<decltype(p)>::rebind<double const> pc = p; // cuda::ptr<double const> pc = p;
+	assert( pc == p );
 	using cuda::const_pointer_cast;
 	auto end = p + 100;
 	auto rbegin = std::make_reverse_iterator(end);

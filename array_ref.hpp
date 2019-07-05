@@ -52,10 +52,13 @@ public:
 //	template<class T2, class P2, class Array> friend decltype(auto) static_array_cast(Array&&);
 public://TODO find why this needs to be public and not protected or friend
 	template<class ArrayTypes, typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>
-		, typename = decltype(base_(std::declval<ArrayTypes const&>().base_))
-	> 
+		, typename = decltype(element_ptr{std::declval<ArrayTypes const&>().base_})
+	>
 	array_types(ArrayTypes const& a) : Layout{a}, base_{a.base_}{}
-	template<typename ElementPtr2>
+	template<typename ElementPtr2, 
+		typename = decltype(Layout{std::declval<array_types<T, D, ElementPtr2, Layout> const&>().layout()}),
+		typename = decltype(element_ptr{std::declval<array_types<T, D, ElementPtr2, Layout> const&>().base_})
+	>
 	array_types(array_types<T, D, ElementPtr2, Layout> const& other) : Layout{other.layout()}, base_{other.base_}{}
 	template<class T2, dimensionality_type D2, class E2, class L2> friend struct array_types;
 };
@@ -174,18 +177,12 @@ struct array_iterator :
 	array_iterator(Other const& o) : /*Ref{o.layout(), o.base()},*/ ptr_{o.ptr_.base_, o.ptr_.layout()}, stride_{o.stride_}{}
 	array_iterator(array_iterator const&) = default;
 	array_iterator& operator=(array_iterator const& other){
-//			this->base_ = other.base_;
-//			static_cast<layout_t<D-1>&>(*this) = other;
 		ptr_ = other.ptr_;
 		stride_ = other.stride_;
 		return *this;
 	}
 	explicit operator bool() const{return static_cast<bool>(ptr_.base_);}
-//	Ref const& 
-//	decltype(auto) 
-//	reference 
 	Ref operator*() const{/*assert(*this);*/ return *ptr_;}//return *this;}
-//	Ref        operator*() const{/*assert(*this);*/ return *ptr_;}//return *this;}
 	decltype(auto) operator->() const{/*assert(*this);*/ return ptr_;}//return this;}
 	Ref          operator[](difference_type n) const{return *(*this + n);}
 	template<class O> bool operator==(O const& o) const{return equal(o);}
@@ -241,11 +238,6 @@ protected:
 	template<typename, dimensionality_type, class Alloc> friend struct array;
 	basic_array(basic_array const&) = default;
 	template<class, class> friend struct basic_array_ptr;
-//	template<class T2, typename ElementPtr2>
-//	basic_array(basic_array<T2, D, ElementPtr2> const& b) : basic_array{b.layout(), b.base()}{}
-//	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
-//	friend decltype(auto) static_array_cast(basic_array<TT, DD, PP> const&);
-//	template<class T2, class P2, class Array> friend decltype(auto) static_array_cast(Array&&);
 public:
 	using typename types::reference;
 	basic_array(basic_array&&) = default;
@@ -332,13 +324,8 @@ private:
 	using Layout::stride_;
 	using Layout::sub;
 public:
-	using iterator = //array_Iterator<typename types::reference, typename types::sub_t>;
+	using iterator =
 		array_iterator<typename types::element, D, typename types::element_ptr, typename types::reference>;
-//	using const_iterator =
-//		multi::array_iterator<typename types::element, D,
-//			typename types::element, //	typename std::pointer_traits<typename types::element_ptr>::template rebind<typename types::element const>,
-//			std::add_const_t<typename types::reference>
-//		>;
 private:
 	template<class Iterator>
 	struct basic_reverse_iterator : 
@@ -379,7 +366,6 @@ protected:
 	}
 public:
 	template<class It> void assign(It first, It last) const{
-	//	using std::distance; assert( distance(first, last) == this->size() );
 		using std::copy; copy(first, last, this->begin());
 	}
 	void assign(std::initializer_list<typename basic_array::value_type> il) const{assign(il.begin(), il.end());}
@@ -431,6 +417,15 @@ public:
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
 	basic_array<T2, D, P2> static_array_cast() const{
 		return {this->layout(), P2{this->base_}};//static_cast<P2>(this->base_)};
+	}
+	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>,
+		class Element = typename basic_array::element,
+		class PM = T2 Element::*
+	>
+	basic_array<T2, D, P2> member_cast(PM pm) const{
+		static_assert(sizeof(T)%sizeof(T2) == 0, 
+			"array_member_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements");
+		return {this->layout().scale(sizeof(T)/sizeof(T2)), &(this->base_->*pm)};
 	}
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
 	basic_array<T2, D, P2> reinterpret_array_cast() const{
@@ -546,7 +541,7 @@ public:
 	template<class A, 
 		typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<A>>{}>,
 		typename = decltype(
-			std::declval<typename basic_array::reference&>() 
+			std::declval<typename basic_array::reference&&>() 
 				= std::declval<typename multi::array_traits<typename std::remove_reference_t<A>>::reference&&>()
 		)// std::declval<basic_array const&>().assign(begin(std::forward<A>(std::declval<A&&>())), end(std::forward<A>(std::declval<A&&>()))))
 	>
@@ -654,6 +649,11 @@ decltype(auto) static_array_cast(Array&& a){return a.template static_array_cast<
 
 template<class T2, class Array, class P2 = typename std::pointer_traits<typename std::decay<Array>::type::element_ptr>::template rebind<T2> >
 decltype(auto) static_array_cast(Array&& a){return a.template static_array_cast<T2, P2>();}
+
+template<class T2, class Array, class P2 = typename std::pointer_traits<typename std::decay<Array>::type::element_ptr>::template rebind<T2>,
+	class PM = T2 std::decay_t<Array>::element::*
+>
+decltype(auto) member_array_cast(Array&& a, PM pm){return a.template member_cast<T2, P2>(pm);}
 
 template<
 	class T2, class Array, 
