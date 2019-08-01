@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 -std=c++14 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
+clang++ -O3 -std=c++17 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include<iostream>
@@ -30,11 +30,21 @@ int main(){
 	{
 		multi::array<double, 1> arr(100, 99.); assert(size(arr) == 100);
 		assert( begin(arr) < end(arr) );
-
 	}
 	{
-		multi::array<double, 2> arr({100, 100}, 99.); assert(size(arr) == 100);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wbraced-scalar-init"
+		multi::array<double, 1> arr({100}, 99.); assert(size(arr) == 100);
+#pragma GCC diagnostic pop
+		assert( begin(arr) < end(arr) );
+	}
+	{
+		multi::array<double, 2> arr({120, 140}, 99.); assert(size(arr) == 120);
 		assert( cbegin(arr) < cend(arr) );
+	}
+	{
+		multi::array<double, 2> arr(120, multi::array<double, 1>(140, 123.)); assert(size(arr) == 120);
+		assert( arr[99][111] == 123. );
 	}
 	{
 		std::vector<double> v(10000);

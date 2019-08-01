@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-clang++ -O3 -std=c++14 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
+clang++ -O3 -std=c++2a -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include<iostream>
@@ -29,7 +29,20 @@ template<class T> struct ptr2{ // minimalistic pointer
 
 }
 
+struct X{
+	int a1;
+	double a2;
+	double b;
+};
+
 int main(){
+
+	int X::*s = &X::a1;
+	X x{1, 2.5, 1.2};
+	assert( x.*s == x.a1 );
+
+//	X X::*ss = &X::X; 
+
 	double* buffer = new double[100];
 	multi::array_ref<double, 2, min::ptr<double> > CC(min::ptr<double>{buffer}, {10, 10});
 	CC[2]; // requires operator+ 

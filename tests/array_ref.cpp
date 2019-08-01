@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 -std=c++17 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
+c++ -O3 -std=c++17 -Wall -Wextra -Wpedantic $0 -o$0x && $0x && rm $0x; exit
 #endif
 
 #include "../array_ref.hpp"
@@ -28,8 +28,8 @@ int main(){
 			{15, 16, 17, 18, 19}
 		};
 		double b[4][5];
-		multi::array_ref<double, 2, double*> A(&a[0][0], multi::iextensions<2>{4, 5});
-		multi::array_ref<double, 2, double*> B(&b[0][0], multi::iextensions<2>{4, 5});
+		multi::array_ref<double, 2, double*> A(&a[0][0], {4, 5});
+		multi::array_ref<double, 2, double*> B(&b[0][0], {4, 5});
 		rotated(A) = rotated(B);
 	}
 
@@ -39,7 +39,7 @@ int main(){
 		{10, 11, 12, 13, 14}, 
 		{15, 16, 17, 18, 19}
 	};
-	multi::array_ref<double, 2, double const*> d2D_cref(&d2D[0][0], multi::iextensions<2>{4, 5});
+	multi::array_ref<double, 2, double const*> d2D_cref(&d2D[0][0], {4, 5});
 
 	decltype(d2D_cref)::value_type a_row = d2D_cref[2];
 	decltype(d2D_cref[2])::decay_type b_row = d2D_cref[2];
@@ -47,12 +47,10 @@ int main(){
 	auto d_row = decay(d2D_cref[2]);
 	auto const& e_row = d2D_cref[2];
 	assert( e_row[3] == d2D_cref[2][3] );
-
 	std::vector<double> d2Dv(20); iota(d2Dv.begin(), d2Dv.end(), 0);
 	multi::array_ref<double, 2, double const*> d2Dv_cref(d2Dv.data(), {4, 5});
 	assert( d2Dv.size() == std::size_t(num_elements(d2Dv_cref)) );
 	assert(d2Dv_cref[1][1] == 6);
-
 	assert( d2D_cref.data_elements() == data_elements(d2D_cref) );
 	assert( data_elements(d2D_cref) == &d2D[0][0] );
 	assert( d2D_cref.num_elements() == num_elements(d2D_cref) );
@@ -63,6 +61,8 @@ int main(){
 	assert( std::get<0>(sizes(d2D_cref)) == 4 );
 	assert( std::get<1>(sizes(d2D_cref)) == 5 );
 	assert( d2D_cref.shape() == sizes(d2D_cref) );
+
+
 	assert( stride(d2D_cref) == 5 );
 	assert( std::get<1>(strides(d2D_cref)) == 1 );
 	assert( strides(d2D_cref) == d2D_cref.strides() );	
@@ -197,6 +197,8 @@ int main(){
 
 	using std::find;
 	auto f = find(begin(d2D_cref), end(d2D_cref), d2D_cref[2]);
+	assert( f != end(d2D_cref) );
+	cout << "distance = " << std::distance(begin(d2D_cref), f) << std::endl;
 	assert( f == begin(d2D_cref) + 2 );
 	assert( *f == *(begin(d2D_cref) + 2) );
 	assert( *f == d2D_cref[2] );
@@ -283,5 +285,6 @@ int main(){
 		assert( a[10] == b[10] );
 		assert( A2[4][5] == B2[4][5] and &A2[4][5] != &B2[4][5] );
 	}
+
 }
 

@@ -1,8 +1,6 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 -std=c++14 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
+clang++ -O3 -std=c++17 -Wall -Wextra -Wpedantic -Wfatal-errors $0 -o$0x && $0x && rm $0x; exit
 #endif
-
-//#include<boost/operators.hpp>
 
 #include<iostream>
 #include<cassert>
@@ -36,12 +34,16 @@ public:
 template<> double ptr<double>::value = 42.;
 template<> double ptr<double const>::value = 42.;
 
+template<class T> struct ref;
+
 template<class T> struct ref{
-private:
+protected:
 	T* p_;
 	ref(T* p) : p_{p}{}
 	friend class ptr<T>;
+	friend struct ref<T const>;
 public:
+	ref(ref<std::remove_const_t<T>> const& other) : p_{other.p_}{}
 	bool operator==(ref const&) const{std::cout << "compared" << std::endl; return true;}
 	bool operator!=(ref const&) const{return false;}
 	using decay_t = std::decay_t<T>;
@@ -80,7 +82,8 @@ ptr<T2> copy_n(ptr<T1>, Size, ptr<T2> d){ // custom copy_n, Boost.Multi uses cop
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// multi-fancy glue, where should this be? In boost/multi/adaptors/MyFancyApaptor.hpp if anything, or in user code if it is very special
+// multi-fancy glue, where should this be? 
+// In boost/multi/adaptors/MyFancyApaptor.hpp if anything, or in user code if it is very specialized
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "../array.hpp"
@@ -102,8 +105,8 @@ auto copy(It first, It last, multi::array_iterator<T, 1, fancy::ptr<T>> dest){ (
 }
 
 template<class It, class T> // custom copy 2D (aka double strided copy)
-auto copy(It first, It last, multi::array_iterator<T, 2, fancy::ptr<T>> dest){ (void)last;
-	std::cerr << "2D copy(It, It, it2D) with strides " << stride(first) << " " << stride(dest) << std::endl;
+auto copy(It first, It last, multi::array_iterator<T, 2, fancy::ptr<T>> dest){ (void)last; (void)first;
+	std::cerr<<"2D copy(It, It, it2D) with strides 1"<< first.stride() <<" "<< dest.stride() <<std::endl;
 	return dest;
 }
 
@@ -124,20 +127,23 @@ namespace multi = boost::multi;
 
 int main(){
 
-
-	multi::array<double, 2, fancy::allocator<double> > A({5, 5}); // default element ctor
+	multi::array<double, 2, fancy::allocator<double>> A( 
+//		multi::index_extensions<2>
+		{5, 5}
+	); // default element ctor
+	assert( size(A) == 5 );
 	assert( A[1][1] == A[2][2] );
 
-	multi::array<double, 2, fancy::allocator<double> > B = A; // copy ctor
+	multi::array<double, 2, fancy::allocator<double>> B(A); // copy ctor
 	assert( A[1][1] == B[1][1] );
 
-	multi::array<double, 2, fancy::allocator<double> > C({5, 5}, 42.); // element value ctor
+	multi::array<double, 2, fancy::allocator<double>> C({5, 5}, 42.); // element value ctor
 
-	multi::array<double, 2, fancy::allocator<double> > D;
+	multi::array<double, 2, fancy::allocator<double>> D; assert( D.num_elements() == 0 );
 
-	D = C;
+	D = C; assert( D == C);
 
-	D = std::move(B);
+	D = std::move(B); assert( D.size() == 5 and B.size() == 0 );
 
 //	C = A; // calls custom copy
 //	multi::array_ref<double, 2, fancy::ptr<double>> AA(A.data(), {5, 5});

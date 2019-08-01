@@ -28,8 +28,8 @@ int main(){
 	cout << A[1][0][1] <<std::endl;
 	swap( A[0], A[1] );
 	
-	multi::array_ref<double, 3> AR(data(A), extensions(A));
-	multi::array_cref<double, 3> AC(data(A), extensions(A));
+	multi::array_ref<double, 3> AR(data_elements(A), extensions(A));
+	multi::array_cref<double, 3> AC(data_elements(A), extensions(A));
 
 	assert( A == A and AR == A and AR == AC );
 	assert( A[0] == A[2] and AR[0]==A[2] and AR[0]==AC[2] );
