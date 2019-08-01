@@ -1,22 +1,19 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 -std=c++14 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o$0x && $0x && rm $0x; exit
+$CXX -O3 -std=c++14 -Wall -Wextra -Wpedantic $0 -o$0x&&$0x&&rm $0x;exit
 #endif
 
-#include<iostream>
 #include "../array.hpp"
-
-#include<queue>
 #include<vector>
-#include<numeric> // iota
 
 namespace multi = boost::multi;
-using std::cout;
 
 int main(){
 {
 	multi::array<double, 2> A(multi::index_extensions<2>{8, 8}, 8.);
 	assert( size(A) == 8 );
 }
+
+std::vector<multi::static_array<double, 2>> v(9, {multi::index_extensions<2>{8, 8}});
 
  {  multi::static_array<double, 1> A     ; assert( empty(A) );
 }{  multi::static_array<double, 1> A{}   ; assert( empty(A) );
@@ -40,6 +37,24 @@ int main(){
 }{  multi::array<double, 3> A{}   ; assert( empty(A) );
 }{  multi::array<double, 3> A = {}; assert( empty(A) );
 }{  multi::array<double, 3> A, B  ; assert( A == B );
+}
+
+{
+	double a[4][5] {
+		{ 0,  1,  2,  3,  4}, 
+		{ 5,  6,  7,  8,  9}, 
+		{10, 11, 12, 13, 14}, 
+		{15, 16, 17, 18, 19}
+	};
+	double b[4][5];
+	multi::array_ref<double, 2> A(&a[0][0], {4, 5});
+	multi::array_ref
+#if not __cpp_deduction_guides
+		<double, 2, double const*>
+#endif
+		B((double const*)&b[0][0], {4, 5})
+	;
+	rotated(A) = rotated(B);
 }
 
  {  multi::array<double, 1, std::allocator<double>> A{std::allocator<double>{}}; assert( empty(A) );
