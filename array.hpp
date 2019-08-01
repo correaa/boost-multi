@@ -9,8 +9,8 @@
 
 #include "./array_ref.hpp"
 
-#include "../multi/detail/memory.hpp"
-#include "../multi/memory/allocator.hpp"
+//#include "../multi/detail/memory.hpp"
+#include "./memory/allocator.hpp"
 
 #include "utility.hpp"
 
