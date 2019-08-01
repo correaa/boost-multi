@@ -137,6 +137,16 @@ int main(){
 		}
 		assert( not im.leak() );
 	}
+	{
+		multi::memory::instrumented<> im;
+		{
+			using alloc = multi::memory::instrumented_allocator<double>;
+			multi::array<double, 3, alloc> A({10, 20, 30}, 99., &im);
+			multi::array<double, 3, alloc> B({10, 20, 30}, 11., &im);
+			B = std::move(A); assert( empty(A) );
+		}
+		assert( not im.leak() );
+	}
 	std::cout << "-------------------" << std::endl;
 	{
 		multi::memory::instrumented<> im;
