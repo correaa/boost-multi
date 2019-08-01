@@ -2,7 +2,6 @@
 nvcc -ccbin cuda-c++ -std=c++14 $0 -o $0x && $0x && rm $0x; exit
 #endif
 
-
 #include "../adaptors/thrust/allocator_traits.hpp"
 #include "../adaptors/thrust/algorithms.hpp"
 
@@ -20,16 +19,22 @@ using thrust_array = multi::array<T, D, thrust::device_allocator<T>>;
 
 int main(){
 
-	thrust::device_allocator<double> aaa;
-	auto p = aaa.allocate(10);
-	aaa.deallocate(p, 10);
-
-	namespace multi = boost::multi;
-	multi::array<double, 1, thrust::device_allocator<double>> A({100}, 0.);
-	A[20] = 44.;
-
-	thrust_array<double, 1> B({100}, 11.); assert( B[20] == 11. );
-
+//	using Alloc = thrust::device_allocator<double>;
+	using Alloc = std::allocator<double>;
+	{
+		Alloc all;
+		auto p = all.allocate(10);
+		all.deallocate(p, 10);
+		auto&& v = p[2];
+		v = 45.;
+		assert( v == 45. );
+		assert( p[2] == 45. );
+	}
+	multi::array<double, 1, Alloc> A(multi::index_extensions<1>{100}, 0.); A[20] = 44.;
+	multi::array<double, 1, thrust::device_allocator<double>> BB(multi::index_extensions<1>{10}, 99.);
+//	assert( B[2] == 99. );
+	thrust_array<double, 1> B(multi::index_extensions<1>{100}, 11.); assert( B[20] == 11. );
+#if 0
 	multi::array<double, 1> A_host({100}, 99.);
 	{
 	//	multi::array<double, 1, thrust::device_allocator<double>> Adev({10}, 0.); std::iota(begin(Adev), end(Adev), 0.);
@@ -103,7 +108,7 @@ int main(){
         std::cout << "D[" << i << "] = " << D[i] << std::endl;
 
     // H and D are automatically deleted when the function returns
-    return 0;
+#endif
 }
 
 
