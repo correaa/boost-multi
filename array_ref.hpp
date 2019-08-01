@@ -1,5 +1,6 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && c++ -O3 -std=c++17 -Wall -Wextra `#-Wfatal-errors` -D_TEST_BOOST_MULTI_ARRAY_REF $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
+for a in ./tests/*.cpp; do sh $a || break; done; exit; */
+#echo "#include\""$0"\"" > $0x.cpp) && c++ -O3 -std=c++17 -Wall -Wextra `#-Wfatal-errors` -D_TEST_BOOST_MULTI_ARRAY_REF $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
 #endif
 #ifndef BOOST_MULTI_ARRAY_REF_HPP
 #define BOOST_MULTI_ARRAY_REF_HPP
@@ -84,9 +85,6 @@ struct basic_array_ptr :
 	template<class, class> friend struct basic_array_ptr;
 	basic_array_ptr(typename Ref::element_ptr p, layout_t<Ref::dimensionality-1> l) : Ref{l, p}{}
 	basic_array_ptr(typename Ref::element_ptr p, index_extensions<Ref::dimensionality> e) : Ref{p, e}{}
-//	basic_array_ptr(typename array_ref::element_ptr p, typename array_ref::extensions_type e) noexcept
-//		: Ref{p, e}{}
-//		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
 
 	template<class Other, typename = decltype(typename Ref::element_ptr{typename Other::element_ptr{}})> 
 	basic_array_ptr(Other const& o) : Ref{layout(o), base(o)}{}//, stride_{o.stride_}{}
@@ -120,7 +118,6 @@ protected:
 		assert( layout() == other.layout() );
 		return (other.base_ - base_)/Ref::nelems();
 	}
-//	friend class boost::iterator_core_access;
 public:
 	basic_array_ptr& operator+=(difference_type n){advance(n); return *this;}
 };
@@ -565,6 +562,14 @@ public:
 		this->assign(begin(o), end(o));
 		return *this;
 	}
+	template<class TT, dimensionality_type DD, class... As>
+	basic_array const& operator=(basic_array<TT, DD, As...> const& o) const{
+		using multi::extension;
+		assert(this->extension() == extension(o));
+		using std::begin; using std::end;
+		this->assign(begin(o), end(o));
+		return *this;
+	}
 	typename types::reference operator[](typename types::index i) const{
 		return *(types::base_+Layout::operator()(i));//types::base_[Layout::operator()(i)];
 	}
@@ -788,7 +793,6 @@ auto make_array_ref(P p, std::initializer_list<index> il){return make_array_ref(
 //#endif
 
 #if __cpp_deduction_guides
-
 template<class It, typename V = typename std::iterator_traits<It>::value_type>
 array_ptr(It, index_extensions<1>)->array_ptr<V, 1, It>;
 template<class It, typename V = typename std::iterator_traits<It>::value_type>
