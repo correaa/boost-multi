@@ -60,6 +60,7 @@ constexpr auto static_size(Array const&) -> decltype(static_size<Array>()){
     return static_size<Array>();
 }
 
+//TODO consolidate with tuple_tail defined somewhere else
 template<class Tuple>
 constexpr auto head(Tuple&& t)
 ->decltype(std::get<0>(std::forward<Tuple>(t))){
