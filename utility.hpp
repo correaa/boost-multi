@@ -1,31 +1,45 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && clang++ `#-DNDEBUG` -std=c++17 -Wall `#-Wextra` -I$HOME/prj -D_TEST_MULTI_UTILITY $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&& c++ -std=c++17 -Wall -D_TEST_MULTI_UTILITY $0.cpp -o$0x && time $0x $@ && rm $0x $0.cpp; exit
 #endif
 #ifndef MULTI_UTILITY_HPP
 #define MULTI_UTILITY_HPP
 
-//#include "detail/index_range.hpp"
 #include "detail/layout.hpp"
-
-#include<tuple> 
 
 namespace boost{
 namespace multi{
 
-//template<class Array, typename Reference = void> struct array_traits;
+template<class Array, typename Reference = void, typename Element = void>
+struct array_traits;
 
-template<
-	class Array
->///, typename std::enable_if_t< Array::reference>
+template<>
+struct array_traits<std::array<double, 3>, void, void>{
+	using reference = double&;
+	using element = double;//std::remove_all_extents_t<T[N]>;
+};
+
+template<class Array, typename Reference, typename Element>
 struct array_traits{
 	using reference = typename Array::reference;
 	using element   = typename Array::element;
 };
 
+template<class Element>
+struct array_traits<Element, void, void>{
+	using reference = Element&;
+	using element   = Element;
+};
+
 template<class T, size_t N>
-struct array_traits<T[N]>{
+struct array_traits<T[N], void, void>{
 	using reference = T&;
 	using element = std::remove_all_extents_t<T[N]>;
+};
+
+template<class T, size_t N>
+struct array_traits<std::array<T, N>, void, void>{
+	using reference = T&;
+	using element = typename array_traits<T>::element;//std::remove_all_extents_t<T[N]>;
 };
 
 template<class T, typename = typename T::rank>
@@ -111,8 +125,8 @@ constexpr auto data_elements(T(&t)[N]) noexcept{return data_elements(t[0]);}
 
 template<class Container>
 auto extension(Container const& c) // TODO consider "extent"
-->decltype(range<decltype(size(c))>{0, size(c)}){
-	return range<decltype(size(c))>{0, size(c)};}
+->decltype(multi::extension_t<std::make_signed_t<decltype(size(c))>>(0, size(c))){
+	return multi::extension_t<std::make_signed_t<decltype(size(c))>>(0, size(c));}
 
 template<class T>
 auto has_dimensionality_aux(T const& t)->decltype(t.dimensionality(), std::true_type {});
@@ -185,13 +199,20 @@ auto extensions(T const& t)
 	return t.extensions();}
 
 template<class T, typename = std::enable_if_t<not has_extensions<T>{}> >
-constexpr std::tuple<> extensions(T const&){return {};}
+constexpr /*std::tuple<>*/ multi::layout_t<0>::extensions_type extensions(T const&){return {};}
 
 template<class T, size_t N>
-constexpr auto extensions(T(&t)[N]){return tuple_cat(std::make_tuple(index_extension(N)), extensions(t[0]));}
+constexpr auto extensions(T(&t)[N]){
+//	return tuple_cat(std::make_tuple(index_extension(N)), extensions(t[0]));
+	return index_extension(N)*extensions(t[0]);
+}
 
 template<class T, size_t N>
-constexpr auto extensions(std::array<T, N> const& t){return tuple_cat(std::make_tuple(index_extension(N)), extensions(t[0]));}
+constexpr auto extensions(std::array<T, N> const& t){
+	return index_extension(N)*extensions(t[0]);
+//	return std::tuple_cat(std::make_tuple(index_extension(N)), extensions(st[0]) );
+//	multi::layout_t<1>::extensions_type(index_extension(N)).x(extensions(t[0])
+}
 
 template<dimensionality_type D>
 struct extensions_aux{
@@ -272,6 +293,7 @@ int main(){
 	using multi::corigin;
 	using multi::dimensionality;
 	using multi::extension;
+	using multi::extensions;
 	using multi::origin;
 	using multi::size;
 	using multi::sizes;
@@ -298,6 +320,7 @@ int main(){
 	assert( dimensionality(A) == 2 );
 	assert( extension(A).first() == 0 );
 	assert( extension(A).last() == 2 );
+//	int a = extensions(A);
 	assert( origin(A) == &A[0][0] );
 	*origin(A) = 99.;
 	assert( A[0][0] == 99. );	
@@ -311,15 +334,14 @@ int main(){
 	assert( origin(A) == &A[0][0] );
 //	*origin(A) = 99.;
 }{
-
-	static_assert( multi::rank<std::array<double, 10>>{} == 1, "!" );
-	static_assert( multi::rank<std::array<std::array<double, 2>, 10>>{} == 2, "!" );
-	std::array<std::array<double, 2>, 10> a;
-	auto x = multi::extensions(a);
-	assert( std::get<0>(x) == 10 );
-	assert( std::get<1>(x) == 2 );
-	std::cout << multi::num_elements(a) << std::endl;
-	assert( multi::num_elements(a) == 20 );
+//	static_assert( multi::rank<std::array<double, 10>>{} == 1, "!" );
+//	static_assert( multi::rank<std::array<std::array<double, 2>, 10>>{} == 2, "!" );
+//	std::array<std::array<double, 2>, 10> a;
+//	auto x = multi::extensions(a);
+//	assert( std::get<0>(x) == 10 );
+//	assert( std::get<1>(x) == 2 );
+//	std::cout << multi::num_elements(a) << std::endl;
+//	assert( multi::num_elements(a) == 20 );
 }
 
 }
