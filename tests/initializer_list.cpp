@@ -2,7 +2,7 @@
 $CXX -O3 -std=c++14 -Wall -Wextra -Wpedantic -Wfatal-errors $0 -o$0x && $0x && rm $0x; exit
 #endif
 
-#include "../../multi/array.hpp"
+#include "../array.hpp"
 
 #include<complex>
 
