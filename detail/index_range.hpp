@@ -24,8 +24,11 @@ public:
 	using pointer = Pointer;
 	using difference_type = DifferenceType;
 	using iterator_category = AccessCategory;
+	auto operator==(self_type const& o) const
+//	->decltype(o == self()){
+	{	return o == self();}
 	auto operator!=(self_type const& o) const
-//	->decltype(not(o == self()))
+//	->decltype(not(o == self())){
 	{	return not(o == self());}
 //	Self& operator++(){return ++self(); return *this;}
 	self_type operator+(difference_type n) const{self_type r = self(); r += n; return r;}
