@@ -235,7 +235,8 @@ struct basic_array :
 	decltype(auto) layout() const{return array_types<T, D, ElementPtr, Layout>::layout();}
 protected:
 	using types::types;
-	template<typename, dimensionality_type, class Alloc> friend struct array;
+//	template<typename, dimensionality_type, class Alloc> friend struct array;
+	template<typename, dimensionality_type, class Alloc> friend struct static_array;
 	basic_array(basic_array const&) = default;
 	template<class, class> friend struct basic_array_ptr;
 public:
@@ -398,6 +399,10 @@ public:
 		using multi::extension;using std::equal;using std::begin;using std::end;
 		return extension(*this)!=extension(o)?0:equal(begin(o),end(o),begin(*this));
 	}
+	bool operator==(basic_array const& o) const{return operator==<basic_array>(o);
+	//	using multi::extension;using std::equal;using std::begin;using std::end;
+	//	return extension(*this)!=extension(o)?0:equal(begin(o),end(o),begin(*this));
+	}
 private:
 	template<class A1, class A2>
 	static auto lexicographical_compare(A1 const& a1, A2 const& a2){
@@ -517,7 +522,8 @@ protected:
 	}
 protected:
 	template<class TT, dimensionality_type DD, typename EP, class LLayout> friend struct basic_array;
-	template<class TT, dimensionality_type DD, class Alloc> friend struct array;
+//	template<class TT, dimensionality_type DD, class Alloc> friend struct array;
+	template<class TT, dimensionality_type DD, class Alloc> friend struct static_array;
 	basic_array(basic_array const&) = default;
 	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
 	friend decltype(auto) static_array_cast(basic_array<TT, DD, PP> const&);
@@ -607,11 +613,47 @@ public:
 	iterator begin() const{return{types::base_               ,Layout::stride_};}
 	iterator end  () const{return{types::base_+types::nelems_,Layout::stride_};}
 
-	template<class Array> bool operator==(Array const& other) const{
+//	template<class Array>//, typename = std::enable_if_t<not std::is_base_of<basic_array, Array>{}>> 
+//	bool operator==(Array const& other) const{
+//		using multi::extension; using std::equal; using std::begin;
+//		if(this->extension() != extension(other)) return false;
+//		return equal(this->begin(), this->end(), begin(other));
+//	}
+	bool operator==(basic_array const& other) const{//return operator==<basic_array>(other);}
 		using multi::extension; using std::equal; using std::begin;
 		if(this->extension() != extension(other)) return false;
 		return equal(this->begin(), this->end(), begin(other));
 	}
+//	bool operator==(basic_array const& other) const{return operator==<basic_array>(other);}
+//		using multi::extension; using std::equal; using std::begin;
+//		if(this->extension() != extension(other)) return false;
+//		return equal(this->begin(), this->end(), begin(other));
+//	}
+//	template<class Array, typename = std::enable_if_t<not std::is_base_of<basic_array, Array>{}>> 
+//	friend auto operator==(Array const& other, basic_array const& self){
+//		using multi::extension; using std::equal; using std::begin;
+//		if(self.extension() != extension(other)) return false;
+//		return equal(self.begin(), self.end(), begin(other));
+//		return self.operator==(other);
+//	}
+//	template<class Array>//, typename = std::enable_if_t<not std::is_base_of<basic_array, Array>{}>> 
+//	friend auto operator==(basic_array const& self, Array const& other){
+//		using multi::extension; using std::equal; using std::begin;
+//		if(self.extension() != extension(other)) return false;
+//		return equal(self.begin(), self.end(), begin(other));
+//		return self.operator==(other);
+//	}
+//	template<class Array> 
+//	auto operator==(Array const& other) const{
+//		using multi::extension; using std::equal; using std::begin;
+//		if(this->extension() != extension(other)) return false;
+//		return equal(this->begin(), this->end(), begin(other));
+	//	return self.operator==(other);
+//		return (*this) == other;
+//	}
+//	friend auto operator==(basic_array const& other, basic_array const& self){
+//		return self.operator==(other);
+//	}
 // commented for nvcc
 	bool operator<(basic_array const& o) const{return lexicographical_compare(*this, o);}//operator< <basic_array const&>(o);}
 	template<class Array> void swap(Array&& o) const{
@@ -684,11 +726,28 @@ public:
 	using basic_array<T, D, ElementPtr>::operator=;
 	using basic_array<T, D, ElementPtr>::operator<;
 	using basic_array<T, D, ElementPtr>::operator>;
-	template<class ArrayRef> array_ref(ArrayRef&& a) : array_ref(a.data(), extensions(a)){} 
+//	template<class ArrayRef> explicit array_ref(ArrayRef&& a) : array_ref(a.data(), extensions(a)){} 
 	array_ref const& operator=(array_ref const& o) const&{
 		using std::copy_n; auto e = copy_n(o.data(), o.num_elements(), this->data());
 		assert( e == this->data() + this->num_elements() );
 		return *this;
+	}
+/*	template<class Array>
+	bool operator==(Array const& other) const{//return basic_array<T, D, ElementPtr>::operator==(other);}
+		using std::equal;
+		using multi::extensions;
+		if(this->extensions() != extensions(other)) return false;
+	}*/
+//	bool operator==(array_ref const& other) const{
+//		using std::equal; 
+//		if(this->extensions() != other.extensions()) return false;
+//		return equal(other.data(), other.data() + other.num_elements(), this->data());
+//	}
+	template<class TT, dimensionality_type DD, class... As>
+	bool operator==(array_ref<TT, DD, As...> const& o) const{
+		using std::equal;
+		if( this->extensions() != o.extensions() ) return false;
+		return equal(data_elements(), data_elements() + this->num_elements(), o.data());
 	}
 	typename array_ref::element_ptr data_elements() const{return array_ref::base_;}
 	friend typename array_ref::element_ptr data_elements(array_ref const& s){return s.data();}
@@ -737,17 +796,16 @@ array_ptr(It, index_extensions<2>)->array_ptr<V, 2, It>;
 template<class It, typename V = typename std::iterator_traits<It>::value_type>
 array_ptr(It, index_extensions<3>)->array_ptr<V, 3, It>;
 
-#if not defined(__clang__)
-template<class It, dimensionality_type D, typename V = typename std::iterator_traits<It>::value_type>
-array_ref(It, index_extensions<D>)->array_ref<V, D, It>;
-
-#else
+//#if not defined(__clang__)
+//template<class It, dimensionality_type D, typename V = typename std::iterator_traits<It>::value_type>
+//array_ref(It, index_extensions<D>)->array_ref<V, D, It>;
+//#else
 template<class It> array_ref(It, index_extensions<1>)->array_ref<typename std::iterator_traits<It>::value_type, 1, It>;
 template<class It> array_ref(It, index_extensions<2>)->array_ref<typename std::iterator_traits<It>::value_type, 2, It>;
 template<class It> array_ref(It, index_extensions<3>)->array_ref<typename std::iterator_traits<It>::value_type, 3, It>;
 template<class It> array_ref(It, index_extensions<4>)->array_ref<typename std::iterator_traits<It>::value_type, 4, It>;
 template<class It> array_ref(It, index_extensions<5>)->array_ref<typename std::iterator_traits<It>::value_type, 5, It>;
-#endif
+//#endif
 #endif
 
 }}
@@ -780,9 +838,9 @@ int main(){
 	{
 		double a[4][5] = {{1.,2.},{2.,3.}};
 		multi::array_ref<double, 2> A(&a[0][0], {4, 5});
-		multi::array_ref<double, 2, double const*> B(A);
-		multi::array_ref<double const, 2> C(A);
-		multi::array_cref<double, 2> D(A);
+		multi::array_ref<double, 2, double const*> B(&a[0][0], {4, 5});
+		multi::array_ref<double const, 2> C(&a[0][0], {4, 5});
+		multi::array_cref<double, 2> D(&a[0][0], {4, 5});
 		A[1][1] = 2.;
 //		A[1].cast<double const*>()[1] = 2.;
 		double d[4][5] = {{1.,2.},{2.,3.}};
