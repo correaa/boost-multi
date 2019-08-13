@@ -108,6 +108,7 @@ int main(){
 	{
 		auto&& Areal = real(A);
 		auto&& Aimag = imag(A);
+		auto Areal_copy = decay(real(A));
 		assert( Areal[1][0] == 55. and std::get<1>(strides(Areal)) == 2 );
 		assert( Aimag[1][0] == 33. and std::get<1>(strides(Aimag)) == 2 );
 		Areal[1][0] = 888.;

@@ -216,10 +216,12 @@ Pressumably if one can sort over a range, one can perform any other standard alg
 
 If we print this we will get
 
+> ```c++
 > 30 1 2 3 4  
 > 50 6 7 8 9  
 > 100 11 12 13 14  
 > 150 16 17 18 19
+> ```
 
 
 The array has been changed to be in row-based lexicographical order.
