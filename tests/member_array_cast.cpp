@@ -45,7 +45,30 @@ decltype(auto) imag(Array&& a){
 
 }}
 
+using v3d = std::array<double, 3>;
+struct particle{double mass; v3d __attribute__((aligned(2*sizeof(double)))) position;
+	particle() = default;
+	particle(double m, v3d v) : mass{m}, position{v}{}
+	template<class P> particle(P&& p) : mass{p.mass}, position{p.position}{}
+};
+struct particle_ref{double& mass; v3d& position ;};
+struct particles{multi::array<double,2> masses; multi::array<v3d,2> positions;
+	auto operator()(int i, int j){return particle_ref{masses[i][j], positions[i][j]};}
+};
+
 int main(){
+
+{
+	multi::array<particle, 2> AoS({2, 2}); AoS[1][1] = particle{99., {1.,2.}};
+	auto&& masses = multi::member_array_cast<double>(AoS, &particle::mass);
+	assert( masses[1][1] == 99. );
+	multi::array<double, 2> masses_copy = masses;
+	particles SoA = {
+		multi::member_array_cast<double>(AoS, &particle::mass), 
+		multi::member_array_cast<v3d>(AoS, &particle::position)
+	};
+	particle p11 = SoA(1, 1); assert(p11.mass == 99. );
+}
 {
 	multi::array<employee, 2> d2D = {
 		{ {"Al"  , 1430, 35}, {"Bob"  , 3212, 34} }, 
