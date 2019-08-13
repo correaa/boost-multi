@@ -25,21 +25,22 @@ struct equality_comparable2<T, void, B> : B{
 	friend bool operator!=(const T& y, const U& x){return not (y == x);}
 };
 
-template<class T, class V, class B = empty_base> struct partially_ordered2;
+template<class T, class V> struct partially_ordered2;
 
-template <class T, class B>
-struct partially_ordered2<T, void, B> : B{
+template <class T>
+struct partially_ordered2<T, void>{
+	template<class U, typename = std::enable_if_t<not std::is_base_of<T, U>{}>>
+	friend bool operator>(const U& x, const T& y){return y < x;}
+	template<class U, typename = std::enable_if_t<not std::is_base_of<T, U>{}>>
+	friend bool operator<(const U& x, const T& y){return y > x;}
+
 	template<class U>
 	friend bool operator<=(const T& x, const U& y){return (x < y) or (x == y);}
+	template<class U, typename = std::enable_if_t<not std::is_base_of<T, U>{}>>
+	friend bool operator<=(const U& x, const T& y){return (y > x) or (y == x);}
 	template<class U>
 	friend bool operator>=(const T& x, const U& y){return (x > y) or (x == y);}
-	template<class U, typename = std::enable_if_t<not std::is_same<U, T>{}> >
-	friend bool operator>(const U& x, const T& y){return y < x;}
-	template<class U, typename = std::enable_if_t<not std::is_same<U, T>{}> >
-	friend bool operator<(const U& x, const T& y){return y > x;}
-	template<class U, typename = std::enable_if_t<not std::is_same<U, T>{}> >
-	friend bool operator<=(const U& x, const T& y){return (y > x) or (y == x);}
-	template<class U, typename = std::enable_if_t<not std::is_same<U, T>{}> >
+	template<class U, typename = std::enable_if_t<not std::is_base_of<T, U>{}>>
 	friend bool operator>=(const U& x, const T& y){return (y < x) or (y == x);}
 };
 
@@ -106,6 +107,26 @@ struct affine : addable2<T, D>, subtractable2<T, D>{
 	using difference_type = D;
 };
 
+template<class T>
+struct random_iterable{
+	friend auto begin(T const& t){return t.begin();}
+	friend auto end  (T const& t){return t.end();}
+
+	friend auto begin(T& t){return t.begin();}
+	friend auto end  (T& t){return t.end();}
+
+	auto rbegin(){return typename T::reverse_iterator{static_cast<T&>(*this).end  ()};}
+	auto rend  (){return typename T::reverse_iterator{static_cast<T&>(*this).begin()};}
+	friend auto rbegin(T& s){return static_cast<random_iterable&>(s).rbegin();}
+	friend auto rend  (T& s){return static_cast<random_iterable&>(s).rend  ();}
+
+	decltype(auto) cfront() const{return static_cast<T const&>(*this).front();}
+	decltype(auto) cback()  const{return static_cast<T const&>(*this).back() ;}
+	friend auto cfront(T const& s){return s.cfront();}
+	friend auto cback (T const& s){return s.cback() ;}
+};
+
+#if 0
 // TODO random_iterable_container ??
 template<class T, class B = empty_base>
 struct random_iterable : B{
@@ -135,22 +156,12 @@ struct random_iterable : B{
 //	friend auto crbegin(T const& s){return static_cast<random_iterable const&>(s).cbegin();}
 //	friend auto crend  (T const& s){return static_cast<random_iterable const&>(s).cend  ();}
 
-	friend auto begin(T const& t){return t.begin();}
-	friend auto end  (T const& t){return t.end();}
 
-	friend auto begin(T& t){return t.begin();}
-	friend auto end  (T& t){return t.end();}
 
-	auto rbegin(){return typename T::reverse_iterator{static_cast<T&>(*this).end  ()};}
-	auto rend  (){return typename T::reverse_iterator{static_cast<T&>(*this).begin()};}
-	friend auto rbegin(T& s){return static_cast<random_iterable&>(s).rbegin();}
-	friend auto rend  (T& s){return static_cast<random_iterable&>(s).rend  ();}
 
-	decltype(auto) cfront() const{return static_cast<T const&>(*this).front();}
-	decltype(auto) cback()  const{return static_cast<T const&>(*this).back() ;}
-	friend auto cfront(T const& s){return s.cfront();}
-	friend auto cback (T const& s){return s.cback() ;}
+
 };
+#endif
 
 //template<class T, class B>
 //typename T::const_iterator cbegin(random_iterable<T, B> const& c){return c.cbegin();}
