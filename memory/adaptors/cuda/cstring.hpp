@@ -28,7 +28,7 @@ namespace memcpy_{
 template<typename Dest, typename Src, typename = decltype(memcpy_::type(Dest{}, Src{}))>
 Dest memcpy(Dest dest, Src src, std::size_t byte_count){
 	cudaError_t s = cudaMemcpy(
-		static_cast<void*>(dest), static_cast<void const*>(src), 
+		static_cast<void*>(dest), static_cast<void const*>(src),  
 		byte_count, static_cast<cudaMemcpyKind>(memcpy_::type(dest, src))
 	); assert(s == cudaSuccess);
 	return dest;

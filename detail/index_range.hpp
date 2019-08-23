@@ -76,7 +76,12 @@ public:
 		auto operator==(const_iterator const& y) const{return curr_ == y.curr_;}
 		const_iterator& operator++(){++curr_; return *this;}
 		const_iterator& operator--(){--curr_; return *this;}
+		const_iterator& operator-=(typename const_iterator::difference_type n){curr_-=n; return *this;}
+		const_iterator& operator+=(typename const_iterator::difference_type n){curr_+=n; return *this;}
+		auto operator-(const_iterator const& y) const{return curr_ - y.curr_;}
+		const_iterator operator-(typename const_iterator::difference_type n) const{return curr_ - n;}
 		typename const_iterator::reference operator*() const{return curr_;}
+		auto operator[](typename const_iterator::difference_type n) const{return *((*this)+n);}
 	};
 	using iterator = const_iterator;
 	using reverse_iterator = std::reverse_iterator<iterator>;
