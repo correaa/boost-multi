@@ -1,9 +1,9 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0.cpp) && time c++ -O3 -g -rdynamic -std=c++17 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_FFTW $0.cpp catch_main.o -o $0.x -lfftw3 && $0.x $@ && rm $0.x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&& time clang++ -O3 -std=c++17 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_FFTW $0.cpp catch_main.o -o$0x -lfftw3 && $0x && rm $0x $0.cpp; exit
 #endif
 #ifndef MULTI_ADAPTORS_FFTW_HPP
 #define MULTI_ADAPTORS_FFTW_HPP
-//  (C) Copyright Alfredo A. Correa 2018
+//  (C) Copyright Alfredo A. Correa 2018-2019
 
 #include<fftw3.h>
 
@@ -183,13 +183,20 @@ template<class T, class Tuple> constexpr auto to_array(Tuple&& t){
     return detail::to_array_impl<T>(std::forward<Tuple>(t), std::make_index_sequence<std::tuple_size<Tuple>{}>{});
 }
 
+//https://stackoverflow.com/a/35110453/225186
+template<class T>constexpr std::remove_reference_t<T> const_aux(T&&t){return t;}
+#define logic_assert(ConD, MsG) \
+	if constexpr(noexcept(const_aux(ConD))) static_assert(ConD, MsG);\
+	else assert(ConD && MsG);
+
 template<class ArrayIn, class ArrayOut>
 auto fftw_plan_dft(
 	ArrayIn&& in, ArrayOut&& out, 
 	int sign, unsigned flags = FFTW_ESTIMATE
 ){
 	using multi::dimensionality;
-	static_assert(dimensionality(in) == dimensionality(out), "!");
+	logic_assert(dimensionality(in) == dimensionality(out), 
+		"incompatible input output");
 	using multi::sizes;
 	assert(sizes(in) == sizes(out));
 	auto ns = to_array<int>(sizes(in));
@@ -325,9 +332,10 @@ namespace{
 }
 
 TEST_CASE("fftw 1D power", "[report]"){
-	multi::array<complex, 1> in({N}, 0.); assert( size(in) == N );
+	multi::array<complex, 1> in(N, 0.); assert( size(in) == N );
 	std::iota(begin(in), end(in), 1.);
 	multi::array<complex, 1> out(extensions(in));
+	static_assert(dimensionality(in)==dimensionality(out));
 	auto p = multi::fftw_plan_dft(in, out, FFTW_FORWARD, FFTW_PRESERVE_INPUT);
 	fftw_execute(p); 
 	fftw_destroy_plan(p);
@@ -336,7 +344,7 @@ TEST_CASE("fftw 1D power", "[report]"){
 
 TEST_CASE("fftw 1D allocator power", "[report]"){
 	using multi::fftw::allocator;
-	multi::array<complex, 1, allocator<>> in({16}, 0.); std::iota(begin(in), end(in), 1.);
+	multi::array<complex, 1, allocator<>> in(16, 0.); std::iota(begin(in), end(in), 1.);
 	assert( size(in) == N );
 	multi::array<complex, 1, allocator<>> out(extensions(in));
 	auto p = multi::fftw_plan_dft(in, out, FFTW_FORWARD, FFTW_PRESERVE_INPUT);
@@ -347,7 +355,7 @@ TEST_CASE("fftw 1D allocator power", "[report]"){
 
 TEST_CASE("fftw 2D power", "[report]"){
 	multi::array<complex, 2> in({N, N});
-	std::iota(data(in), data(in) + num_elements(in), 1.2);
+	std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);
 	multi::array<complex, 2> out(extensions(in));
 	auto p = multi::fftw_plan_dft(in, out, FFTW_FORWARD, FFTW_PRESERVE_INPUT);
 	fftw_execute(p); fftw_destroy_plan(p);
@@ -356,7 +364,7 @@ TEST_CASE("fftw 2D power", "[report]"){
 
 TEST_CASE("fftw 2D power plan", "[report]"){
 	multi::array<complex, 2> in({16, 16});
-	std::iota(data(in), data(in) + num_elements(in), 1.2);
+	std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);
 	multi::array<complex, 2> out(extensions(in));
 	multi::fftw::plan const p{in, out, FFTW_FORWARD, FFTW_PRESERVE_INPUT};
 	p(); //execute(p); //p.execute();
@@ -364,20 +372,20 @@ TEST_CASE("fftw 2D power plan", "[report]"){
 }
 
 TEST_CASE("fftw 2D power dft", "[report]"){
-	multi::array<complex, 2> in({16, 16}); std::iota(data(in), data(in) + num_elements(in), 1.2);
+	multi::array<complex, 2> in({16, 16}); std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);
 	multi::array<complex, 2> out(extensions(in));
 	multi::fftw::dft(in, out, multi::fftw::forward);
 	REQUIRE( power(in) - power(out)/num_elements(out) == (0_a).margin(1e-8) );
 }
 
 TEST_CASE("fftw 2D power dft out", "[report]"){
-	multi::array<complex, 2> in({16, 16}); std::iota(data(in), data(in) + num_elements(in), 1.2);
+	multi::array<complex, 2> in({16, 16}); std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);
 	auto out = multi::fftw::dft(in, multi::fftw::forward, multi::fftw::estimate);
 	REQUIRE( power(in) - power(out)/num_elements(out) == (0_a).margin(1e-8) );
 }
 
 TEST_CASE("fftw 2D power dft out default", "[report]"){
-	multi::array<complex, 2> in({16, 16}); std::iota(data(in), data(in) + num_elements(in), 1.2);
+	multi::array<complex, 2> in({16, 16}); std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);
 	auto out = multi::fftw::dft(in, fftw::forward);
 	REQUIRE( power(in) - power(out)/num_elements(out) == (0_a).margin(1e-8) );
 }
