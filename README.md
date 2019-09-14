@@ -130,39 +130,6 @@ int main(){
 }
 ```
 
-### Customizing recursive operations: SCARY iterators
-
-Finally, another level of customization can be achieved by intercepting internal recursive algorithms.
-Multi iterators are [SCARY](http://www.open-std.org/jtc1/sc22/WG21/docs/papers/2009/n2980.pdf). 
-SCARY means that they are independent of any container and can be accessed generically through their dimension and underlying pointer types:
-
-For example, `boost::multi::array_iterator<double, 2, double*> it` is a row (or column) iterator of an array of dimension 2 or higher, whose underlying pointer type is `double*`.
-This row (or column) and subsequent ones can be accessed by `*it` and `it[n]` respectively. 
-The base pointer, the strides and the size of the arrow can be accessed by `base(it)`, `stride(it)`, `it->size()`.
-
-The template arguments of the iterator can be used to customize operations that are recursive (and possibly inefficient in certain context) in the library:
-
-```c++
-namespace boost{namespace multi{
-template<class It, class T>  // custom copy 1D (aka strided copy)
-void copy(It first, It last, multi::array_iterator<T, 1, fancy::ptr<T> > dest){
-	assert( stride(first) == stride(last) );
-	std::cerr << "1D copy(it1D, it1D, it1D) with strides " << stride(first) << " " << stride(dest) << std::endl;
-}
-
-template<class It, class T> // custom copy 2D (aka double strided copy)
-void copy(It first, It last, multi::array_iterator<T, 2, fancy::ptr<T> > dest){
-	assert( stride(first) == stride(last) );
-	std::cerr << "2D copy(It, It, it2D) with strides " << stride(first) << " " << stride(dest) << std::endl;
-}
-}}
-```
-
-For example, if your fancy pointers refers a memory type in which 2D memory copying (strided copy) is faster than sequencial copying, that kind of instruction can be ejecuted when the library internally calls `copy`.
-This customization must be performed (unfortunately) in the `boost::multi` namespace (this is where the Multi iterators are defined) and the customization happens through matching the dimension and the pointer type.
-
-If your (fancy) pointer are not so fancy and behavior more standard, it is not necessary to customize these functions in any way.
-
 ## Usage
 
 We create a static C-array of `double`s, and refer to it via a bidimensional array `multi::array_ref<double, 2>`.
@@ -462,7 +429,7 @@ The chained bracket notation (`A[i][j][k]`) allows to refer to elements and suba
 It is a frequently raised question whether the chained bracket notation is good for performance, since it appears that each utilization of the bracket leads to the creation of a temporary which in turn generates a partial copy of the layout.
 Moreover, this goes against [historical recommendations](https://isocpp.org/wiki/faq/operator-overloading#matrix-subscript-op).
 
-It turns out that [modern compilers with a fair level of optimization (`-O2`)](https://godbolt.org/z/aT9Kla) can elide these temporary objects, so that `A[i][j][k]` generates identical assembly code as `A.base() + i*stride1 + j*stride2 + k*stride3` (offsets are not shown for simplicity).
+It turns out that [modern compilers with a fair level of optimization (`-O2`)](https://godbolt.org/z/3fYd5c) can elide these temporary objects, so that `A[i][j][k]` generates identical assembly code as `A.base() + i*stride1 + j*stride2 + k*stride3` (offsets are not shown for simplicity).
 
 In a subsequence optimization, constant indices can have their "partial stride" computation removed from loops. 
 As a result, these two loops lead to the [same machine code](https://godbolt.org/z/p_ELwQ):
@@ -479,3 +446,36 @@ As a result, these two loops lead to the [same machine code](https://godbolt.org
 
 Incidentally, the library also supports parenthesis notation with multiple indices `A(i, j, k)` for element or partial access, but it does so for accidental reasons as part of a more general syntax to generate sub blocks.
 In any case `A(i, j, k)` is expanded to `A[i][j][k]` internally in the library when `i, j, k` are integer indices.
+
+### Customizing recursive operations: SCARY iterators
+
+A custom level of customization can be achieved by intercepting internal recursive algorithms.
+Multi iterators are [SCARY](http://www.open-std.org/jtc1/sc22/WG21/docs/papers/2009/n2980.pdf). 
+SCARY means that they are independent of any container and can be accessed generically through their dimension and underlying pointer types:
+
+For example, `boost::multi::array_iterator<double, 2, double*> it` is a row (or column) iterator of an array of dimension 2 or higher, whose underlying pointer type is `double*`.
+This row (or column) and subsequent ones can be accessed by `*it` and `it[n]` respectively. 
+The base pointer, the strides and the size of the arrow can be accessed by `base(it)`, `stride(it)`, `it->size()`.
+
+The template arguments of the iterator can be used to customize operations that are recursive (and possibly inefficient in certain context) in the library:
+
+```c++
+namespace boost{namespace multi{
+template<class It, class T>  // custom copy 1D (aka strided copy)
+void copy(It first, It last, multi::array_iterator<T, 1, fancy::ptr<T> > dest){
+	assert( stride(first) == stride(last) );
+	std::cerr << "1D copy(it1D, it1D, it1D) with strides " << stride(first) << " " << stride(dest) << std::endl;
+}
+
+template<class It, class T> // custom copy 2D (aka double strided copy)
+void copy(It first, It last, multi::array_iterator<T, 2, fancy::ptr<T> > dest){
+	assert( stride(first) == stride(last) );
+	std::cerr << "2D copy(It, It, it2D) with strides " << stride(first) << " " << stride(dest) << std::endl;
+}
+}}
+```
+
+For example, if your custom pointers refers a memory type in which 2D memory copying (strided copy) is faster than sequencial copying, that kind of instruction can be ejecuted when the library internally calls `copy`.
+This customization must be performed (unfortunately) in the `boost::multi` namespace (this is where the Multi iterators are defined) and the customization happens through matching the dimension and the pointer type.
+
+If your custom pointer are not so fancy, it is not necessary to customize these functions in any way and the default behavior will be correct.
