@@ -456,7 +456,22 @@ int main(){
 
 # Technical points
 
-What's up with the multiple bracket notation? The chained bracket notation `A[i][j][k]` allows to refer to elements and subarrays lower dimensional subarrays in a consistent and generic manner. 
+### What's up with the multiple bracket notation? 
+
+The chained bracket notation (`A[i][j][k]`) allows to refer to elements and subarrays lower dimensional subarrays in a consistent and _generic_ manner. 
 It is a frequently raised question whether the chained bracket notation is good for performance, since it appears that each utilization of the bracket leads to the creation of temporary which generates a partial copy of the layout.
 
-It turns out that [modern compilers with a fair level of optimization (`-O2`)](https://godbolt.org/z/WtRjhX) can elide all this temporary objects, so that `A[i][j][k]` generates identical assembly code as `A.base() + i*stride1 + j*stride2 + k*stride3` (offsets are not shown for simplicity).
+It turns out that [modern compilers with a fair level of optimization (`-O2`)](https://godbolt.org/z/aT9Kla) can elide these temporary objects, so that `A[i][j][k]` generates identical assembly code as `A.base() + i*stride1 + j*stride2 + k*stride3` (offsets are not shown for simplicity).
+
+Moreover, in common loops, constant indices can have their "partial stride" computation removed from the loop. 
+As a result, these two loops lead to the [same machine code](https://godbolt.org/z/8M8Xqh):
+
+```c++
+    for(std::ptrdiff_t jj = 0; jj != j; ++jj)
+        ++A[i][jj][k];
+```
+```c++
+    double* Aij = A.base() + i*stride1 + k*stride3;
+    for(std::ptrdiff_t jj = 0; jj != j; ++jj)
+        ++(*(Aij + jj*stride2));
+```
