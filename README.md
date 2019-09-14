@@ -460,10 +460,11 @@ int main(){
 
 The chained bracket notation (`A[i][j][k]`) allows to refer to elements and subarrays lower dimensional subarrays in a consistent and _generic_ manner and it is the recommended way to access the array objects.
 It is a frequently raised question whether the chained bracket notation is good for performance, since it appears that each utilization of the bracket leads to the creation of a temporary which in turn generates a partial copy of the layout.
+Moreover, this goes against [historical recommendations](https://isocpp.org/wiki/faq/operator-overloading#matrix-subscript-op).
 
 It turns out that [modern compilers with a fair level of optimization (`-O2`)](https://godbolt.org/z/aT9Kla) can elide these temporary objects, so that `A[i][j][k]` generates identical assembly code as `A.base() + i*stride1 + j*stride2 + k*stride3` (offsets are not shown for simplicity).
 
-In turn, constant indices can have their "partial stride" computation removed from loops. 
+In a subsequence optimization, constant indices can have their "partial stride" computation removed from loops. 
 As a result, these two loops lead to the [same machine code](https://godbolt.org/z/p_ELwQ):
 
 ```c++
@@ -475,3 +476,6 @@ As a result, these two loops lead to the [same machine code](https://godbolt.org
     for(int j = 0; j != nj; ++jj)
         ++(*(Ai_k + j*A_stride2));
 ```
+
+Incidentally, the library also supports parenthesis notation with multiple indices `A(i, j, k)` for element or partial access, but it does so for accidental reasons as part of a more general syntax to generate sub blocks.
+In any case `A(i, j, k)` is expanded to `A[i][j][k]` internally in the library when `i, j, k` are integer indices.
