@@ -453,3 +453,10 @@ int main(){
 	static_assert(ranges::RandomAccessIterator<multi::array<double, 2>::iterator>{});
 }
 ```
+
+# Technical points
+
+What's up with the multiple bracket notation? The chained bracket notation `A[i][j][k]` allows to refer to elements and subarrays lower dimensional subarrays in a consistent and generic manner. 
+It is a frequently raised question whether the chained bracket notation is good for performance, since it appears that each utilization of the bracket leads to the creation of temporary which generates a partial copy of the layout.
+
+It turns out that [modern compilers with a fair level of optimization (`-O2`)](https://godbolt.org/z/WtRjhX) can elide all this temporary objects, so that `A[i][j][k]` generates identical assembly code as `A.base() + i*stride1 + j*stride2 + k*stride3` (offsets are not shown for simplicity).
