@@ -15,6 +15,12 @@ for a in ./tests/*.cpp; do sh $a || break; done; exit; */
 
 #include<algorithm> // copy_n
 
+#if defined(__CUDACC__)
+#define HD __host__ __device__
+#else
+#define HD 
+#endif
+
 namespace boost{
 namespace multi{
 
@@ -35,10 +41,11 @@ struct array_types : Layout{
 	using reference = std::conditional_t<
 		dimensionality!=1, 
 		basic_array<element, dimensionality-1, element_ptr>, 
-		decltype(*std::declval<ElementPtr>()) // typename std::iterator_traits<element_ptr>::reference 	//	typename pointer_traits<element_ptr>::element_type&
+		typename std::iterator_traits<ElementPtr>::reference
+	//	decltype(*std::declval<ElementPtr>()) // typename std::iterator_traits<element_ptr>::reference 	//	typename pointer_traits<element_ptr>::element_type&
 	>;
-	element_ptr     base()   const{return base_;} //	element_const_ptr cbase() const{return base();}
-	layout_t const& layout() const{return *this;}
+	HD element_ptr     base()   const{return base_;} //	element_const_ptr cbase() const{return base();}
+	HD layout_t const& layout() const{return *this;}
 	friend layout_t const& layout(array_types const& s){return s.layout();}
 	element_ptr            origin() const{return base_+Layout::origin();} //	element_const_ptr     corigin() const{return origin();}
 	friend decltype(auto)  origin(array_types const& s){return s.origin();} //	friend decltype(auto) corigin(array_types const& s){return s.corigin();}
@@ -49,7 +56,7 @@ protected:
 	array_types(std::nullptr_t np) : Layout{}, base_{np}{}
 	array_types(array_types const&) = default;
 public:
-	array_types(layout_t l, element_ptr data) : Layout{l}, base_{data}{}
+	HD array_types(layout_t l, element_ptr data) : Layout{l}, base_{data}{}
 //	template<class T2, class P2, class Array> friend decltype(auto) static_array_cast(Array&&);
 public://TODO find why this needs to be public and not protected or friend
 	template<class ArrayTypes, typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>
@@ -229,20 +236,20 @@ struct basic_array :
 	friend struct basic_array<typename types::element, typename Layout::rank{} + 1, typename types::element_ptr >;
 	friend struct basic_array<typename types::element, typename Layout::rank{} + 1, typename types::element_ptr&>;
 	using types::layout;
-	decltype(auto) layout() const{return array_types<T, D, ElementPtr, Layout>::layout();}
+	HD decltype(auto) layout() const{return array_types<T, D, ElementPtr, Layout>::layout();}
 protected:
 	using types::types;
-//	template<typename, dimensionality_type, class Alloc> friend struct array;
 	template<typename, dimensionality_type, class Alloc> friend struct static_array;
 	basic_array(basic_array const&) = default;
 	template<class, class> friend struct basic_array_ptr;
 public:
+	friend constexpr auto dimensionality(basic_array const& self){return self.dimensionality;}
 	using typename types::reference;
 	basic_array(basic_array&&) = default;
 	using decay_type = array<typename types::element, D, typename pointer_traits<typename types::element_ptr>::default_allocator_type>;
 	decay_type decay() const{return *this;}
 	friend auto decay(basic_array const& self){return self.decay();}
-	typename types::reference operator[](index i) const{
+	HD typename types::reference operator[](index i) const{
 		assert( this->extension().count(i) );
 		return {sub, types::base_ + Layout::operator()(i)};
 	}
@@ -250,11 +257,11 @@ public:
 	auto operator[](Tp&& t) const
 	->decltype(operator[](std::get<0>(t))[detail::tuple_tail(t)]){
 		return operator[](std::get<0>(t))[detail::tuple_tail(t)];}
-	template<class Tp, typename = std::enable_if_t<std::tuple_size<std::decay_t<Tp>>{}==1> >
+	template<class Tp, typename = std::enable_if_t<std::tuple_size<std::decay_t<Tp>>::value==1> >
 	auto operator[](Tp&& t) const
 	->decltype(operator[](std::get<0>(t))){
 		return operator[](std::get<0>(t));}
-	template<class Tp = std::tuple<>, typename = std::enable_if_t<std::tuple_size<std::decay_t<Tp>>{}==0> >
+	template<class Tp = std::tuple<>, typename = std::enable_if_t<std::tuple_size<std::decay_t<Tp>>::value==0> >
 	decltype(auto) operator[](Tp&&) const{return *this;} //	decltype(auto) operator[](std::tuple<>) const{return *this;}
 
 	basic_array sliced(typename types::index first, typename types::index last) const{
@@ -417,7 +424,7 @@ public:
 	bool operator>(O const& o) const{return lexicographical_compare(o, *this);}
 public:
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
-	basic_array<T2, D, P2> static_array_cast() const{
+	HD basic_array<T2, D, P2> static_array_cast() const{
 		return {this->layout(), P2{this->base_}};//static_cast<P2>(this->base_)};
 	}
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>,
@@ -458,6 +465,7 @@ struct array_iterator<Element, 1, Ptr, Ref> :
 	using difference_type = typename affine::difference_type;
 	template<class Other, typename = decltype(Ptr{typename Other::pointer{}})> 
 	array_iterator(Other const& o) : data_{o.data_}, stride_{o.stride_}{}
+//	array_iterator(Ptr const& other) : data_{other}, stride_{1L}{}
 	template<class EE, dimensionality_type, class PP, class RR> friend struct array_iterator;
 	array_iterator(std::nullptr_t np = nullptr) : data_{np}, stride_{}{}
 	array_iterator(Ptr const& p) : data_{p}, stride_{1}{}
@@ -487,6 +495,10 @@ private:
 	auto base() const{return data_;}
 	friend auto base(array_iterator const& self){return self.base();}
 public:
+//#if defined(__CUDA__)// and defined(__CUDA_ARCH__)
+#if defined(__CUDACC__)
+	__host__ __device__ 
+#endif
 	auto data() const{return data_;}
 	auto stride() const{return stride_;}
 	friend auto stride(array_iterator const& self){return self.stride();}
@@ -498,6 +510,9 @@ public:
 	array_iterator& operator+=(difference_type d){advance(d); return *this;}
 	array_iterator& operator-=(difference_type d){advance(-d); return *this;}
 };
+
+template<class Element, dimensionality_type D, typename... Ts>
+using iterator = array_iterator<Element, D, Ts...>;
 
 template<typename T, typename ElementPtr, class Layout>
 struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout> : 
@@ -523,14 +538,17 @@ protected:
 	template<class TT, dimensionality_type DD, class Alloc> friend struct static_array;
 	basic_array(basic_array const&) = default;
 	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
-	friend decltype(auto) static_array_cast(basic_array<TT, DD, PP> const&);
+	HD friend decltype(auto) static_array_cast(basic_array<TT, DD, PP> const&);
+public:
 	basic_array(basic_array&&) = default; // ambiguos deep-copy a reference type, use auto&& A_ref = Expression; or decay_t<decltype(Expression)> A = Expression
+protected:
 	template<class, class> friend struct basic_array_ptr;
 	template<class, dimensionality_type D, class, class>
 	friend struct array_iterator;
 //boost::multi::array_iterator<std::complex<double>, 2, const std::complex<double> *, boost::multi::basic_array<std::complex<double>, 1, const std::complex<double>
 //      *, boost::multi::layout_t<boost::multi::dimensionality_type{1}> > >
 public:
+	friend constexpr auto dimensionality(basic_array const& self){return self.dimensionality;}
 	template<class BasicArray, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<BasicArray>>{}>, typename = decltype(types(std::declval<BasicArray&&>()))> 
 	basic_array(BasicArray&& other) : types{std::forward<BasicArray>(other)}{}
 	basic_array_ptr<basic_array, Layout> operator&() const{
@@ -570,7 +588,7 @@ public:
 		this->assign(begin(o), end(o));
 		return *this;
 	}
-	typename types::reference operator[](typename types::index i) const{
+	HD typename types::reference operator[](typename types::index i) const{
 		return *(types::base_+Layout::operator()(i));//types::base_[Layout::operator()(i)];
 	}
 	template<class Tuple, typename = std::enable_if_t<(std::tuple_size<std::decay_t<Tuple>>{}>1) > >
@@ -686,16 +704,16 @@ public:
 	bool operator>(O const& o) const{return lexicographical_compare(o, *this);}
 public:
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
-	basic_array<T2, 1, P2> static_array_cast() const{//(basic_array&& o){  // name taken from std::static_pointer_cast
+	HD basic_array<T2, 1, P2> static_array_cast() const{//(basic_array&& o){  // name taken from std::static_pointer_cast
 		return {this->layout(), static_cast<P2>(this->base())};
 	}
 };
 
 template<class T2, class P2, class Array>
-decltype(auto) static_array_cast(Array&& a){return a.template static_array_cast<T2, P2>();}
+HD decltype(auto) static_array_cast(Array&& a){return a.template static_array_cast<T2, P2>();}
 
 template<class T2, class Array, class P2 = typename std::pointer_traits<typename std::decay<Array>::type::element_ptr>::template rebind<T2> >
-decltype(auto) static_array_cast(Array&& a){return a.template static_array_cast<T2, P2>();}
+HD decltype(auto) static_array_cast(Array&& a){return a.template static_array_cast<T2, P2>();}
 
 template<class T2, class Array, class P2 = typename std::pointer_traits<typename std::decay<Array>::type::element_ptr>::template rebind<T2>,
 	class PM = T2 std::decay_t<Array>::element::*
@@ -712,7 +730,7 @@ decltype(auto) reinterpret_array_cast(Array&& a){
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*>
 struct array_ref : 
-	multi::partially_ordered2<array_ref<T, D, ElementPtr>, void>,
+//	multi::partially_ordered2<array_ref<T, D, ElementPtr>, void>,
 	basic_array<T, D, ElementPtr>
 {
 protected:
@@ -756,7 +774,8 @@ public:
 	}
 	typename array_ref::element_ptr data_elements() const{return array_ref::base_;}
 	friend typename array_ref::element_ptr data_elements(array_ref const& s){return s.data();}
-	typename array_ref::element_ptr data() const{return array_ref::base_;}
+//#if defined(__CUDA__)// and defined(__CUDA_ARCH__)
+HD	typename array_ref::element_ptr data() const{return array_ref::base_;} 
 	friend typename array_ref::element_ptr data(array_ref const& self){return self.data();}
 };
 
@@ -771,7 +790,10 @@ using array_cref = array_ref<
 
 template<class T, dimensionality_type D, typename Ptr = T*>
 struct array_ptr : basic_array_ptr<array_ref<T, D, Ptr>, typename array_ref<T, D, Ptr>::layout_t>{
+	using basic_ptr = basic_array_ptr<array_ref<T, D, Ptr>, typename array_ref<T, D, Ptr>::layout_t>;
 	using basic_array_ptr<array_ref<T, D, Ptr>, typename array_ref<T, D, Ptr>::layout_t>::basic_array_ptr;
+	template<class TT, std::size_t N>
+	array_ptr(TT(*t)[N]) : basic_ptr(data_elements(*t), extensions(*t)){}
 };
 
 template<dimensionality_type D, class P>
@@ -800,6 +822,9 @@ array_ptr(It, index_extensions<2>)->array_ptr<V, 2, It>;
 template<class It, typename V = typename std::iterator_traits<It>::value_type>
 array_ptr(It, index_extensions<3>)->array_ptr<V, 3, It>;
 
+template<class T, std::size_t N, typename V = typename std::remove_all_extents<T[N]>::type, std::size_t D = std::rank<T[N]>{}>
+array_ptr(T(*)[N])->array_ptr<V, D>;
+
 //#if not defined(__clang__)
 //template<class It, dimensionality_type D, typename V = typename std::iterator_traits<It>::value_type>
 //array_ref(It, index_extensions<D>)->array_ref<V, D, It>;
@@ -810,9 +835,13 @@ template<class It> array_ref(It, index_extensions<3>)->array_ref<typename std::i
 template<class It> array_ref(It, index_extensions<4>)->array_ref<typename std::iterator_traits<It>::value_type, 4, It>;
 template<class It> array_ref(It, index_extensions<5>)->array_ref<typename std::iterator_traits<It>::value_type, 5, It>;
 //#endif
+
+template<class It, class Tuple> array_ref(It, Tuple)->array_ref<typename std::iterator_traits<It>::value_type, std::tuple_size<Tuple>::value, It>;
 #endif
 
 }}
+
+#undef HD
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -890,6 +919,8 @@ int main(){
 	}
 	return 0;
 }
+#undef HD
+
 #endif
 #endif
 
