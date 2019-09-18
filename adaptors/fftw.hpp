@@ -284,7 +284,7 @@ O dft(I const& i, sign s, strategy st = fftw::estimate){
 }
 
 template<typename I>
-I& dft_inplace(I& i, sign s, strategy st = fftw::estimate){
+I& dft_inplace(I&& i, sign s, strategy st = fftw::estimate){
 	execute(fftw::plan{i, i, (int)s, (unsigned)st | FFTW_PRESERVE_INPUT});
 	return i;
 }
@@ -413,6 +413,14 @@ TEST_CASE("fftw 3D power in place", "[report]"){
 	fftw::dft_inplace(io, fftw::forward);
 	REQUIRE( powerin - power(io)/num_elements(io) == (0_a).margin(1e-10) );
 }
+
+TEST_CASE("fftw 3D power in place over block", "[report]"){
+	multi::array<complex, 3> io({4, 4, 4}); std::iota(io.data_elements(), io.data_elements() + io.num_elements(), 1.2);
+	auto powerin = power(io);
+	fftw::dft_inplace(multi::array_ref<complex, 3>(io.data(), io.extensions()), fftw::forward);
+	REQUIRE( powerin - power(io)/num_elements(io) == (0_a).margin(1e-10) );
+}
+
 
 #if 0
 {
