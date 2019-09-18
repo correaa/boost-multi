@@ -1,12 +1,12 @@
 #ifdef COMPILATION_INSTRUCTIONS
-c++ -O3 -std=c++17 -Wall -Wextra -Wpedantic $0 -o$0x && $0x && rm $0x; exit
+$CXX -O3 -std=c++17 -Wall -Wextra -Wpedantic -Wfatal-errors $0 -o$0x && $0x && rm $0x; exit
 #endif
 
 #include "../array_ref.hpp"
 #include "../array.hpp"
 
 #include<algorithm>
-#include<cassert>
+//#include<cassert>
 #include<iostream>
 #include<cmath>
 #include<vector>
@@ -18,8 +18,22 @@ namespace multi = boost::multi;
 
 double f(){return 5.;}
 
+struct A{
+	std::vector<double> impl;
+	A() : impl(27, -99.){}
+	auto linear(){return multi::array_ref(impl.data(), 27);}
+	auto linear() const{return multi::array_ref(impl.data(), 27);}
+	auto cubic(){return multi::array_ref(impl.data(), {3, 3, 3});}
+	auto cubic() const{return multi::array_ref(impl.data(), {3, 3, 3});}
+};
+
 int main(){
-//	using multi::size;
+
+	A a1;
+	A const a2;
+	a1.linear() = a2.linear();
+	a1.cubic() = a2.cubic();
+
 	{
 		double a[4][5] {
 			{ 0,  1,  2,  3,  4}, 
