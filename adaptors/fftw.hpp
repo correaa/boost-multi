@@ -271,9 +271,8 @@ enum sign : int {forward = FFTW_FORWARD, backward = FFTW_BACKWARD };
 enum strategy : unsigned { estimate = FFTW_ESTIMATE, measure = FFTW_MEASURE };
 
 template<typename I, class O>
-auto dft(I&& i, O&& o, sign s, strategy st = fftw::estimate){// unsigned flags = FFTW_ESTIMATE){
-	execute(fftw::plan{std::forward<I>(i), std::forward<O>(o), (int)s, (unsigned)st | FFTW_PRESERVE_INPUT});//.execute();
-//	fftw_plan p = multi::fftw_plan_dft(in, out, sign, flags); //	fftw_execute(p); //	fftw_destroy_plan(p);
+auto dft(I const& i, O&& o, sign s, strategy st = fftw::estimate){
+	execute(fftw::plan{i, std::forward<O>(o), (int)s, (unsigned)st | FFTW_PRESERVE_INPUT});
 }
 
 template<typename I, typename O = multi::array<typename std::decay_t<I>::element_type, std::decay_t<I>::dimensionality>>
@@ -283,17 +282,16 @@ O dft(I const& i, sign s, strategy st = fftw::estimate){
 	return ret;
 }
 
+template<typename T, dimensionality_type D, typename I = multi::array<T, D>, typename O = multi::array<typename std::decay_t<I>::element_type, std::decay_t<I>::dimensionality>>
+O dft(multi::array<T, D>&& i, sign s, strategy st = fftw::estimate){
+	O ret(extensions(i));
+	execute(fftw::plan{i, ret, (int)s, (unsigned)st | FFTW_DESTROY_INPUT});
+	return ret;
+}
+
 template<typename I>
 I& dft_inplace(I&& i, sign s, strategy st = fftw::estimate){
-	execute(fftw::plan{i, i, (int)s, (unsigned)st | FFTW_PRESERVE_INPUT});
-	return i;
-}
-//template<typename I>
-//I& dft(I& i, sign s, strategy st = fftw::estimate){return dft_inplace(i, s, st);}
-
-template<typename I, typename = std::enable_if_t<std::is_rvalue_reference<I&&>{}> >
-I&& dft(I&& i, sign s, strategy st = fftw::estimate){
-	execute(fftw::plan{i, i, (int)s, (unsigned)st | FFTW_PRESERVE_INPUT});
+	execute(fftw::plan{i, i, (int)s, (unsigned)st});
 	return i;
 }
 
@@ -414,11 +412,31 @@ TEST_CASE("fftw 3D power in place", "[report]"){
 	REQUIRE( powerin - power(io)/num_elements(io) == (0_a).margin(1e-10) );
 }
 
-TEST_CASE("fftw 3D power in place over block", "[report]"){
+TEST_CASE("fftw 3D power in-place over ref inplace", "[report]"){
 	multi::array<complex, 3> io({4, 4, 4}); std::iota(io.data_elements(), io.data_elements() + io.num_elements(), 1.2);
 	auto powerin = power(io);
-	fftw::dft_inplace(multi::array_ref<complex, 3>(io.data(), io.extensions()), fftw::forward);
+//	fftw::dft_inplace(multi::array_ref<complex, 3>(io.data(), io.extensions()), fftw::forward);
+	fftw::dft_inplace(multi::array_ref(data_elements(io), extensions(io)), fftw::forward);
 	REQUIRE( powerin - power(io)/num_elements(io) == (0_a).margin(1e-10) );
+}
+
+TEST_CASE("fftw 3D power out-of-place over ref", "[report]"){
+	multi::array<complex, 3> in({4, 4, 4}); std::iota(data_elements(in), data_elements(in)+num_elements(in), 1.2);
+	multi::array<complex, 3> out({4, 4, 4});
+	multi::array_ref<complex, 3>(data_elements(out), extensions(out)) = fftw::dft(multi::array_cref<complex, 3>(data_elements(in), extensions(in)), fftw::forward);
+	REQUIRE( power(in) - power(out)/num_elements(out) == (0_a).margin(1e-10) );
+}
+
+TEST_CASE("fftw 3D power out-of-place over temporary", "[report]"){
+	double powerin;
+	auto f = [&](){
+		multi::array<complex, 3> in({4, 4, 4}); 
+		std::iota(data_elements(in), data_elements(in)+num_elements(in), 1.2);
+		powerin = power(in);
+		return in;
+	};
+	auto out = fftw::dft(f(), fftw::forward);
+	REQUIRE( powerin - power(out)/num_elements(out) == (0_a).margin(1e-10) );
 }
 
 
