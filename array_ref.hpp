@@ -288,7 +288,7 @@ public:
 	decay_type decay() const{return *this;}
 	friend auto decay(basic_array const& self){return self.decay();}
 	HD typename types::reference operator[](index i) const{
-		assert( this->extension().count(i) );
+		assert( this->extension().contains(i) );
 	//	return typename types::reference(sub, types::base_ + Layout::operator()(i));
 		typename types::element_ptr new_base = typename types::element_ptr(this->base()) + std::ptrdiff_t{Layout::operator()(i)};
 		return typename types::reference(this->layout().sub, new_base);//typename types::element_ptr(this->base()) + std::ptrdiff_t{Layout::operator()(i)});
