@@ -1,16 +1,14 @@
 #ifdef COMPILATION_INSTRUCTIONS
 $CXX -O3 -std=c++14 -Wall -Wextra -Wpedantic -Wfatal-errors $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
 #endif
-//  (C) Copyright Alfredo A. Correa 2018.
-#include "../array_ref.hpp"
+//  (C) Copyright Alfredo A. Correa 2018-2019
+
 #include "../array.hpp"
 #include "../utility.hpp"
 
-//#include<boost/multi_array.hpp>
 #include<iostream>
 #include<tuple>
 
-using std::cout; using std::cerr;
 namespace multi = boost::multi;
 
 template<class T, typename = decltype(std::declval<T>().f())>
@@ -92,6 +90,30 @@ int main(){
 		 {A({2,4}, {0,2}), A({2, 4}, {2, 4})}};
 	assert( &Abb[1][1][1][1] == &A[3][3] );
 
-	return 0;
+	{
+		double A[3][4][5];
+		using multi::dimensionality;
+		static_assert(dimensionality(A)==3, "!");
+		using multi::extensions;
+		auto xA = extensions(A);
+		assert( std::get<0>(xA).size() == 3 );
+		assert( std::get<1>(xA).size() == 4 );
+		assert( std::get<2>(xA).size() == 5 );
+
+		multi::array<double, 3> AA({3, 4, 5});
+		using multi::layout;
+		assert( layout(AA) == layout(A) );
+
+		using multi::stride;
+		assert( stride(AA) == 20 );
+		static_assert( stride(A) == 20, "!" );
+		static_assert( stride(A[0]) == 5, "!" );
+		static_assert( stride(A[1]) == 5, "!" );
+		static_assert( stride(A[0][0]) == 1, "!" );
+
+//		assert( stride(A) == 20 );
+//		assert( stride(A[0]) == 20 );
+
+	}
 }
 
