@@ -41,10 +41,12 @@ struct array_types : Layout{
 	using reference = std::conditional_t<
 		dimensionality!=1, 
 		basic_array<element, dimensionality-1, element_ptr>, 
-		typename std::iterator_traits<ElementPtr>::reference
-	//	decltype(*std::declval<ElementPtr>()) // typename std::iterator_traits<element_ptr>::reference 	//	typename pointer_traits<element_ptr>::element_type&
+	//	typename std::iterator_traits<ElementPtr>::reference
+		decltype(*std::declval<ElementPtr>())
+	// typename std::iterator_traits<element_ptr>::reference 	//	typename pointer_traits<element_ptr>::element_type&
 	>;
 	HD element_ptr     base()   const{return base_;} //	element_const_ptr cbase() const{return base();}
+	friend element_ptr base(array_types const& s){return s.base();}
 	HD layout_t const& layout() const{return *this;}
 	friend layout_t const& layout(array_types const& s){return s.layout();}
 	element_ptr            origin() const{return base_+Layout::origin();} //	element_const_ptr     corigin() const{return origin();}
@@ -226,6 +228,42 @@ public:
 	array_iterator& operator-=(difference_type d){advance(-d); return *this;}
 };
 
+template<class It>
+struct biiterator : 
+	boost::multi::iterator_facade<
+		biiterator<It>,
+		typename std::iterator_traits<It>::value_type, std::random_access_iterator_tag, 
+		decltype(*(std::declval<It>()->begin())), multi::difference_type
+	>,
+	multi::affine<biiterator<It>, multi::difference_type>,
+	multi::decrementable<biiterator<It>>,
+	multi::incrementable<biiterator<It>>,
+	multi::totally_ordered2<biiterator<It>, void>
+{
+	It me;
+	std::ptrdiff_t pos;
+	std::ptrdiff_t stride;
+	biiterator() = default;
+	biiterator(biiterator const& other) : me{other.me}, pos{other.pos}, stride{other.stride}{}
+	biiterator(It me, std::ptrdiff_t pos, std::ptrdiff_t stride) : me{me}, pos{pos}, stride{stride}{}
+	decltype(auto) operator++(){
+		++pos;
+		if(pos==stride){
+			++me;
+			pos = 0;
+		}
+		return *this;
+	}
+	bool operator==(biiterator const& o) const{return me==o.me and pos==o.pos;}
+	biiterator& operator+=(multi::difference_type n){me += n/stride; pos += n%stride; return *this;}
+	decltype(auto) operator*() const{return me->begin()[pos];}
+	using difference_type = std::ptrdiff_t;
+	using reference = decltype(*std::declval<biiterator>());
+	using value_type = std::decay_t<reference>;
+	using pointer = void*;
+	using iterator_category = std::random_access_iterator_tag;
+};
+
 template<typename T, dimensionality_type D, typename ElementPtr, class Layout /*= layout_t<D>*/ >
 struct basic_array : 
 	multi::partially_ordered2<basic_array<T, D, ElementPtr, Layout>, void>,
@@ -251,7 +289,9 @@ public:
 	friend auto decay(basic_array const& self){return self.decay();}
 	HD typename types::reference operator[](index i) const{
 		assert( this->extension().count(i) );
-		return {sub, types::base_ + Layout::operator()(i)};
+	//	return typename types::reference(sub, types::base_ + Layout::operator()(i));
+		typename types::element_ptr new_base = typename types::element_ptr(this->base()) + std::ptrdiff_t{Layout::operator()(i)};
+		return typename types::reference(this->layout().sub, new_base);//typename types::element_ptr(this->base()) + std::ptrdiff_t{Layout::operator()(i)});
 	}
 	template<class Tp = std::array<index, D>, typename = std::enable_if_t<(std::tuple_size<std::decay_t<Tp>>{}>1)> >
 	auto operator[](Tp&& t) const
@@ -263,7 +303,6 @@ public:
 		return operator[](std::get<0>(t));}
 	template<class Tp = std::tuple<>, typename = std::enable_if_t<std::tuple_size<std::decay_t<Tp>>::value==0> >
 	decltype(auto) operator[](Tp&&) const{return *this;} //	decltype(auto) operator[](std::tuple<>) const{return *this;}
-
 	basic_array sliced(typename types::index first, typename types::index last) const{
 		typename types::layout_t new_layout = *this;
 		(new_layout.nelems_/=Layout::size())*=(last - first);
@@ -282,8 +321,20 @@ public:
 	auto range(typename types::index_range const& ir, dimensionality_type n) const{
 		return rotated(n).range(ir).rotated(-n);
 	}
+	auto flattened() const{
+		multi::biiterator<std::decay_t<decltype(this->begin())>> biit{this->begin(), 0, size(*(this->begin()))};
+		return basic_array<T, D-1, decltype(biit)>(this->layout().sub, biit);
+	}
+	friend auto flattened(basic_array const& self){return self.flattened();}
+	template<typename Size>
+	auto partitioned(Size const& s) const{
+		assert(this->layout().nelems_%s==0);
+		multi::layout_t<D+1> new_layout{this->layout(), this->layout().nelems_/s, 0, this->layout().nelems_};
+		new_layout.sub.nelems_/=s;
+		return basic_array<T, D+1, ElementPtr>{new_layout, types::base_};
+	}
 	auto rotated() const{
-		typename types::layout_t new_layout = *this; 
+		typename types::layout_t new_layout = *this;
 		new_layout.rotate();
 		return basic_array<T, D, ElementPtr>{new_layout, types::base_};
 	}
@@ -449,6 +500,7 @@ public:
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+
 template<class Element, typename Ptr, typename Ref>
 struct array_iterator<Element, 1, Ptr, Ref> : 
 	boost::multi::iterator_facade<
@@ -474,7 +526,7 @@ struct array_iterator<Element, 1, Ptr, Ref> :
 	Ptr operator->() const{return data_;}
 	using element = Element;
 	using element_ptr = Ptr;
-	explicit operator Ptr const&() const{return data_;}
+	explicit operator Ptr const&() const{assert(stride_==1); return data_;}
 	using rank = std::integral_constant<dimensionality_type, 1>;
 	bool operator<(array_iterator const& o) const{return distance_to(o) > 0;}
 private:
@@ -589,7 +641,9 @@ public:
 		return *this;
 	}
 	HD typename types::reference operator[](typename types::index i) const{
-		return *(types::base_+Layout::operator()(i));//types::base_[Layout::operator()(i)];
+	//	return *(types::base_+Layout::operator()(i));//types::base_[Layout::operator()(i)];
+	//	assert( types::base_ == this->base() );
+		return *(this->base() + Layout::operator()(i));//types::base_[Layout::operator()(i)];
 	}
 	template<class Tuple, typename = std::enable_if_t<(std::tuple_size<std::decay_t<Tuple>>{}>1) > >
 	auto operator[](Tuple&& t) const
@@ -616,7 +670,13 @@ public:
 	decltype(auto) operator()() const{return *this;}
 	auto operator()(index_range const& ir) const{return range(ir);}
 	auto operator()(typename types::index i) const{return operator[](i);}
-
+	template<typename Size>
+	auto partitioned(Size const& s) const{
+		assert(this->layout().nelems_%s==0);
+		multi::layout_t<2> new_layout{this->layout(), this->layout().nelems_/s, 0, this->layout().nelems_};
+		new_layout.sub.nelems_/=s;
+		return basic_array<T, 2, ElementPtr>{new_layout, types::base_};
+	}
 	decltype(auto)   rotated() const{return *this;}
 	decltype(auto) unrotated() const{return *this;}
 	friend decltype(auto) rotated(basic_array const& self){return self;}
@@ -779,10 +839,16 @@ HD	typename array_ref::element_ptr data() const{return array_ref::base_;}
 	friend typename array_ref::element_ptr data(array_ref const& self){return self.data();}
 };
 
-template<class T, dimensionality_type D, class Ptr = void*> 
+template<class T, dimensionality_type D, class Ptr = T*> 
 using array_cref = array_ref<
 	std::decay_t<T>, D,
 	typename std::pointer_traits<Ptr>::template rebind<T const>
+>;
+
+template<class T, dimensionality_type D, class Ptr = T*>
+using array_mref = array_ref<
+	std::decay_t<T>, D,
+	std::move_iterator<Ptr>
 >;
 
 //template<class T, dimensionality_type D, typename Ptr = T*>
