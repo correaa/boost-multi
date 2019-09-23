@@ -1,6 +1,8 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&& c++ -std=c++17 -Wall -D_TEST_MULTI_UTILITY $0.cpp -o$0x && time $0x $@ && rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&& c++ -std=c++17 -Wall -Wextra -Wpedantic -D_TEST_MULTI_UTILITY $0.cpp -o$0x &&$0x&&rm $0x $0.cpp; exit
 #endif
+//  (C) Copyright Alfredo A. Correa 2018-2019
+
 #ifndef MULTI_UTILITY_HPP
 #define MULTI_UTILITY_HPP
 
@@ -268,6 +270,10 @@ auto layout(T const& t)
 template<class T, typename = std::enable_if_t<not has_layout_member<T const&>{}> >
 layout_t<0> layout(T const&){return {};}
 
+template<class T, std::size_t N>
+constexpr auto layout(T(&t)[N]){
+	return multi::layout_t<multi::dimensionality(t)>(multi::extensions(t));
+}
 
 }}
 
