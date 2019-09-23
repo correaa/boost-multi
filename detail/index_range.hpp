@@ -35,7 +35,7 @@ public:
 
 namespace multi{
 
-template<typename IndexType, typename IndexTypeLast = IndexType>
+template<typename IndexType = std::true_type, typename IndexTypeLast = IndexType>
 class range{
 	IndexType first_;
 	IndexTypeLast last_;
@@ -47,12 +47,13 @@ public:
 	using reference = const_reference;
 	using const_pointer = value_type;
 	using pointer = value_type;
-	constexpr range() = default;
+	constexpr range() : first_{}, last_{first_}{}
 	template<class Range, typename = std::enable_if_t<std::is_same<std::decay_t<Range>, value_type>{}> >
 	constexpr range(Range&& o) : first_{std::forward<Range>(o).first()}, last_{std::forward<Range>(o).last()}{}
-	constexpr range(value_type fl) : first_{fl}, last_{fl + 1}{}
+//	constexpr range(value_type const& fl) : first_{fl}, last_{fl + 1}{}
 //	constexpr range(value_type f, value_type l) : first_{f}, last_{l}{}
 	constexpr range(IndexType f, IndexTypeLast l) : first_{f}, last_{l}{}
+	constexpr range(IndexType f) : range(f, f + 1){}
 	class const_iterator 
 		: public boost::multi::iterator_facade<const_iterator, 
 			value_type, std::random_access_iterator_tag, 
@@ -100,11 +101,11 @@ public:
 	friend std::ostream& operator<<(std::ostream& os, range const& s){
 		return s.empty()?os<<"[)":os <<"["<< s.first() <<", "<< s.last() <<")";
 	}
-	friend const_iterator begin(range const& self){return self.begin();}
+	friend constexpr const_iterator begin(range const& self){return self.begin();}
 	friend const_iterator end(range const& self){return self.end();}
-	range& operator=(range const&) = default;
-	friend constexpr bool operator==(range const& a, range const& b){
-		return(a.empty() and b.empty()) or (a.first_==b.first_ and a.last_==b.last_);
+	constexpr range& operator=(range const&) = default;
+	friend constexpr auto operator==(range const& a, range const& b){
+		return (a.empty() and b.empty()) or (a.first_==b.first_ and a.last_==b.last_);
 	}
 	friend constexpr 
 	bool operator!=(range const& r1, range const& r2){return not(r1 == r2);}
@@ -116,49 +117,31 @@ public:
 	template<class K>
 	constexpr bool contains(K const& k) const{return (k>=first_) and (k<last_);}
 	template<class K>
-	constexpr size_type count(K const& k) const{return contains(k);}
-	friend range intersection(range const& r1, range const& r2){
+	constexpr auto count(K const& k) const{return contains(k);}
+	friend constexpr auto intersection(range const& r1, range const& r2){
 		using std::max; using std::min;
 		auto first = max(r1.first(), r2.first()); 
 		auto last = min(r1.last(), r2.last());
-		if(first < last) return {first, last};
-		return {};
+		auto first2 = min(first, last);  
+		return range<decltype(first2), decltype(last)>{first2, last};
 	}
-	bool contains(value_type const& v) const{return (v >= first() and v < last())?true:false;}
+	constexpr auto contains(value_type const& v) const{return (v >= first() and v < last())?true:false;}
 };
 
-//using index_range = range<index>;
-/*
-class strided_index_range : index_range{	
-	index stride_;
-public:
-	strided_index_range(index first, index last, index stride = 1) : index_range{first, last}, stride_{stride}{}
-//	explicit operator index_range() const{return *this;}
-	index stride() const{return stride_;}
-	using index_range::front;
-	index back() const{return front() + size()*stride();}
-	size_type size() const{return (this->last_ - first_) / stride_;}
-	friend std::ostream& operator<<(std::ostream& os, strided_index_range const& self){
-		if(empty() 
-		if(self.first_ == self.last_) return os << "[)" << '\n';
-		return os << '[' << self.first_ << ", " << self.last_ << ')';
-	}
-};*/
-
-template<class IndexType>
-class extension_t : public range<IndexType>{
-	using range<IndexType>::range;
-	public:
-	constexpr extension_t() noexcept : range<IndexType>(0, 0){}
-	constexpr extension_t(typename extension_t::value_type last) noexcept : range<IndexType>(0, last){}
+template<class IndexType, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
+struct extension_t : public range<IndexType, IndexTypeLast>{
+	using range<IndexType, IndexTypeLast>::range;
+	constexpr extension_t(IndexType f, IndexTypeLast l) noexcept : range<IndexType, IndexTypeLast>{f, l}{}
+	constexpr extension_t(IndexType last) noexcept : range<IndexType, IndexTypeLast>(0, last){}
+	constexpr extension_t() noexcept : range<IndexType, IndexTypeLast>(){}
 	friend constexpr typename extension_t::size_type size(extension_t const& s){return s.size();}
 	friend std::ostream& operator<<(std::ostream& os, extension_t const& self){
 		if(self.empty()) return os << static_cast<range<IndexType> const&>(self);
 		if(self.first() == 0) return os <<"["<< self.last() <<"]";
 		return os << static_cast<range<IndexType> const&>(self);
 	}
-	friend bool operator==(extension_t const& a, extension_t const& b){return static_cast<range<IndexType> const&>(a)==static_cast<range<IndexType> const&>(b);}
-	friend bool operator!=(extension_t const& a, extension_t const& b){return not(a==b);}
+	friend constexpr auto operator==(extension_t const& a, extension_t const& b){return static_cast<range<IndexType> const&>(a)==static_cast<range<IndexType> const&>(b);}
+	friend constexpr auto operator!=(extension_t const& a, extension_t const& b){return not(a==b);}
 };
 
 }}
@@ -218,6 +201,8 @@ struct integral_constant : private hana::integral_constant<Integral, n>{
 		return integral_constant<Integral, hana::integral_constant<Integral, n>::value - n2>{};
 	}
 	constexpr integral_constant& operator=(Integral other){logic_assert(other == n, "!"); return *this;}
+	friend constexpr auto operator>=(Integral const& a, integral_constant const&){return a >= n;}
+	friend constexpr auto operator<(Integral const& a, integral_constant const&){return a < n;}
 };
 
 int main(int, char*[]){
@@ -240,23 +225,29 @@ int main(int, char*[]){
 }
 	cout<< multi::range<int>{5, 5} <<'\n';
 	cout<< multi::extension_t<int>{5} <<'\n';
-	multi::extension_t<int> ee{5};
-	assert( ee == 5 );
-	assert( multi::extension_t<int>{5} == 5 );
 	cout<< multi::extension_t<int>{5, 7} <<'\n';
-	
-	assert(( multi::extension_t<int>{5, 12}.count(10) == 1 ));
 
-	assert( size(multi::range<int>{5, 5}) == 0 );
-	assert( empty(multi::range<int>{5, 5}) );
+	static_assert( multi::extension_t{5} == 5 );
+	static_assert(( multi::extension_t{5, 12}.contains(10) ));
+	static_assert(( multi::extension_t{integral_constant<int, 5>{}, integral_constant<int, 12>{}}.contains(10) ));
+	static_assert(( multi::extension_t{integral_constant<int, 5>{}, integral_constant<int, 12>{}}.contains(integral_constant<int, 10>{}) ));
+
+
+	static_assert( size(multi::range<int>{5, 5}) == 0 );
+	static_assert( empty(multi::range<int>{5, 5}) );
 	
-	assert( size(multi::range<int>{}) == 0 );
-	assert( empty(multi::range<int>{}) );
+	static_assert( size(multi::range<int>{}) == 0 );
+	static_assert( empty(multi::range<int>{}) );
 	
 	for(auto const& i : multi::range<int>{5, 12}) cout<< i <<' ';
 	cout<<'\n';
 	
-	cout<<intersection(multi::range<int>{5, 12}, multi::range<int>{14, 16}) <<'\n';
+	static_assert(
+		empty(intersection(multi::range<int>{5, 12}, multi::range<int>{14, 16}))// == multi::range<int>{}
+	);
+	cout<< intersection(multi::range<int>{5, 12}, multi::range<int>{14, 16}) <<'\n';
+	cout<< intersection(multi::range<int>{5, 12}, multi::range<int>{14, 16}) <<'\n';
+
 //	for(auto const& i : intersection(multi::range<int>{5, 12}, multi::range<int>{8, 16})) cout<< i <<' ';
 //	cout <<'\n';
 	
