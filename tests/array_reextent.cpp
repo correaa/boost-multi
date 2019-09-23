@@ -1,6 +1,7 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX catch_main.o -std=c++17 -Wall -Wextra $0 -o $0x && $0x $@ && rm $0x; exit
+$CXX catch_main.o -std=c++17 -Wall -Wextra -Wpedantic $0 -o $0x &&$0x&& rm $0x; exit
 #endif
+//  (C) Copyright Alfredo A. Correa 2018-2019
 
 #include<catch2/catch.hpp>
 
@@ -24,7 +25,7 @@ TEST_CASE( "Array reextent", "[array]"){
 	REQUIRE( A[1][2] == 6. );  // reextent preserves values when it can...
 	REQUIRE( A[4][3] == 99. ); // ...and gives selected value to the rest
 
-	A = multi::array<double, 2>(extensions(A), 123.); // this is not inefficient
+	A = multi::array<double, 2>(extensions(A), 123.); // this is not inefficient, it moves
 	REQUIRE( A[1][2] == 123. );
 
 	clear(A); // A.clear();
@@ -32,6 +33,6 @@ TEST_CASE( "Array reextent", "[array]"){
 	REQUIRE( size(A) == 0 );
 
 	A.reextent({5, 4}, 66.);
-	REQUIRE( A[4][3] == 66. );		
+	REQUIRE( A[4][3] == 66. );
 }
 
