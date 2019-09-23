@@ -3,8 +3,8 @@
 #endif
 #ifndef BOOST_MULTI_DETAIL_OPERATORS_HPP
 #define BOOST_MULTI_DETAIL_OPERATORS_HPP
+//	return multi::layout_t<multi::dimensionality(t)>(multi::extensions(t));
 
-//#include "layout.hpp"
 #include<type_traits>
 #include<utility> // forward
 
@@ -60,11 +60,13 @@ template<class T>
 struct copy_constructible{};
 
 template<class T>
-struct weakly_incrementable{friend T& operator++(weakly_incrementable& t){return ++static_cast<T&>(t);}};
+struct weakly_incrementable{
+//	friend T& operator++(weakly_incrementable& t){return ++static_cast<T&>(t);}
+};
 
 template<class T>
 struct weakly_decrementable{
-	friend T& operator--(weakly_decrementable& t){return --static_cast<T&>(t);}
+//	friend T& operator--(weakly_decrementable& t){return --static_cast<T&>(t);}
 };
 
 template<class T>
@@ -89,9 +91,9 @@ struct dereferenceable{
 template<class T, class D>
 struct addable2{
 	using difference_type = D;
-	template<class TT>
+	template<class TT, typename = std::enable_if_t<std::is_base_of<T, TT>{}> >
 	friend T operator+(TT&& t, difference_type const& d){T tmp{std::forward<TT>(t)}; tmp+=d; return tmp;}
-	template<class TT>
+	template<class TT, typename = std::enable_if_t<std::is_base_of<T, TT>{}> >
 	friend T operator+(difference_type const& d, TT&& t){return std::forward<TT>(t) + d;}
 };
 
