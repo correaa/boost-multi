@@ -3,17 +3,12 @@
 #endif
 #ifndef MULTI_LAYOUT_HPP
 #define MULTI_LAYOUT_HPP
+//  (C) Copyright Alfredo A. Correa 2018-2019
 
-//#include "detail.hpp"
-#include "index_range.hpp"
 #include "types.hpp"
 
-#include<array>
-///#include<cassert>
-#include<cstddef>
 #include<type_traits> // make_signed_t
-#include<tuple> //make_tuple
-//#include<boost/operators.hpp>
+
 #include "../detail/operators.hpp"
 
 #if defined(__CUDACC__)
@@ -80,59 +75,12 @@ auto tuple_tail(Tuple&& t)
 ->decltype(tuple_tail_impl(t, std::make_index_sequence<std::tuple_size<std::decay_t<Tuple>>{} - 1>())){//std::tuple<Ts...> t){
 	return tuple_tail_impl(t, std::make_index_sequence<std::tuple_size<std::decay_t<Tuple>>{} - 1>());}
 
-#if 0
-template<typename Tuple, size_t... I, size_t S = sizeof...(I)>
-auto reverse_impl(Tuple&& t, std::index_sequence<I...>)
-    return std::make_tuple(std::get<S - 1 - I>(std::forward<Tuple>(t))...);
-}
-
-template<typename Tuple, size_t S = std::tuple_size<std::decay_t<Tuple>>{} >
-auto reverse(Tuple&& t){
-	return reverse_impl(std::forward<Tuple>(t), std::make_index_sequence<S>());
-}
-#endif
-
 }
 
 }}
 
 namespace boost{
 namespace multi{
-
-#if 0
-template<dimensionality_type D>
-struct extents_t{
-	extents_t<D-1> sub;
-	index_range extent_;
-	extents_t<D+1> operator[](index_extension ie) const{
-		return extents_t<D+1>{*this, ie};
-	}
-	friend index_range const& head(extents_t const& self){return head(self.sub);}
-	friend extents_t<D-1> const& tail(extents_t const& self){return self.sub;}
-};
-
-template<>
-struct extents_t<0u>{
-	extents_t<1u> operator[](index_extension ie) const;//{return {*this, ie};}
-};
-
-template<>
-struct extents_t<1u>{
-	extents_t<0u> sub;
-	index_range extent_;
-	friend index_range const& head(extents_t const& self){return self.extent_;}
-	friend extents_t<0u> const& tail(extents_t const& self){return self.sub;}
-	extents_t<2u> operator[](index_extension ie) const{
-		return {*this, ie};
-	}
-};
-
-inline extents_t<1u> extents_t<0u>::operator[](index_extension ie) const{
-	return {*this, ie};
-}
-
-static constexpr extents_t<0u> extents;
-#endif
 
 struct f_tag{};
 
@@ -141,13 +89,11 @@ template<dimensionality_type D> struct layout_t;
 template<>
 struct layout_t<dimensionality_type{1}>{
 	using sub_t = layout_t<dimensionality_type{0}>;
-//	typedef boost::multi::dimensionality_type dimensionality_type;
 	using rank = std::integral_constant<dimensionality_type, 1>;
 	static constexpr dimensionality_type dimensionality = rank{};
 	friend constexpr auto dimensionality(layout_t const& l){return l.dimensionality;}
 	using index_extension = multi::index_extension;
 
-//	using extensions_type = std::array<index_extension, 1>;
 	using index = multi::index;
 	using stride_type = index;
 	using offset_type = index;
@@ -164,28 +110,16 @@ struct layout_t<dimensionality_type{1}>{
 		extensions_type_(index_extension const& ie) : base_{ie}{}
 		extensions_type_() = default;
 		base_ const& base() const{return *this;}
-	//	template<class Array, typename = decltype(std::get<0>(std::declval<Array>()))> 
-	//	extensions_type_(Array const& arr) : base_{std::get<0>(arr)}{}
 		extensions_type_(std::tuple<index_extension> const& t) : std::tuple<index_extension>(t){}
 		friend decltype(auto) base(extensions_type_ const& s){return s.base();}
 	};
-//		typedef std::tuple<index_extension> base_;
-//		using base_::base_;
-//		template<class T, std::size_t N> extensions_type_(std::array<T, N> const& t) : extensions_type_(t, std::make_index_sequence<N>{}){}
-//	private:
-//		template<class T, std::size_t N, std::size_t... I> extensions_type_(std::array<T, N> const& t, std::index_sequence<I...>) : extensions_type_{std::get<I>(t)...}{}
-//	};
 	using extensions_type = extensions_type_;
-//	using extensions_type = std::tuple<index_extension>;//typename detail::repeat<index_extension, 1u>::type;
 	using strides_type = std::tuple<index>;
-//	layout_t() = default;
-	layout_t() : stride_{1}, offset_{0}, nelems_{0}{}
-	constexpr 
-	layout_t(index_extension ie, layout_t<0> const&) : 
+	constexpr layout_t() : stride_{1}, offset_{0}, nelems_{0}{} // needs stride != 0 for things to work well in partially formed state
+	constexpr layout_t(index_extension ie, layout_t<0> const&) : 
 		stride_{1}, offset_{0}, nelems_{ie.size()}
 	{}
-	constexpr 
-	layout_t(stride_type stride, offset_type offset, nelems_type nelems) 
+	constexpr layout_t(stride_type stride, offset_type offset, nelems_type nelems) 
 		: stride_{stride}, offset_{offset}, nelems_{nelems}
 	{}
 #if defined(__INTEL_COMPILER)
@@ -232,13 +166,13 @@ public:
 	constexpr auto offsets() const{return std::make_tuple(offset());}
 
 	constexpr size_type num_elements() const{return this->size();}
-	friend size_type num_elements(layout_t const& s){return s.num_elements();}
+	friend constexpr size_type num_elements(layout_t const& s){return s.num_elements();}
 	constexpr bool empty() const{return nelems_ == 0;}
-	friend bool empty(layout_t const& s){return s.empty();}
+	friend constexpr bool empty(layout_t const& s){return s.empty();}
 	constexpr index_extension extension() const{
 		return {offset_/stride_, (offset_ + nelems_)/stride_};
 	}
-	friend auto extension(layout_t const& self){return self.extension();}
+	friend constexpr auto extension(layout_t const& self){return self.extension();}
 	constexpr auto extension(dimensionality_type d) const{
 		return d==0?index_extension{offset_/stride_, (offset_ + nelems_)/stride_}:throw 0;
 	//	assert(stride_ != 0 and nelems_%stride_ == 0);
@@ -285,9 +219,9 @@ struct layout_t<dimensionality_type{0}>{
 		friend decltype(auto) base(extensions_type_ const& s){return s.base();}
 	};
 	using extensions_type = extensions_type_;
-	extensions_type extensions() const{return extensions_type{};}
-	friend auto extensions(layout_t const& self){return self.extensions();}
-	auto sizes() const{return std::tuple<>{};}
+	constexpr extensions_type extensions() const{return extensions_type{};}
+	friend constexpr auto extensions(layout_t const& self){return self.extensions();}
+	constexpr auto sizes() const{return std::tuple<>{};}
 	friend auto sizes(layout_t const& s){return s.sizes();}
 };
 
