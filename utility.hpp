@@ -272,7 +272,8 @@ layout_t<0> layout(T const&){return {};}
 
 template<class T, std::size_t N>
 constexpr auto layout(T(&t)[N]){
-	return multi::layout_t<multi::dimensionality(t)>(multi::extensions(t));
+//	return multi::layout_t<multi::dimensionality(t)>(multi::extensions(t));
+	return multi::layout_t<std::rank<T[N]>{}>(multi::extensions(t));
 }
 
 }}
