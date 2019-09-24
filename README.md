@@ -365,7 +365,7 @@ The number of rows in the sliced matrix is 2 because we took only two rows, row 
 In the same way a strided view of the original array can be taken with the `strided` function.
 
 ```c++
-auto&& d2D_strided = d2D.stride(2); // {{ d2D[0], d2D[1] }};
+auto&& d2D_strided = d2D.strided(2); // {{ d2D[0], d2D[1] }};
 assert( d2D_strided.size(0) == 2 and d2D_strided.size(1) == 5 );
 ```
 
@@ -500,13 +500,13 @@ namespace boost{namespace multi{
 template<class It, class T>  // custom copy 1D (aka strided copy)
 void copy(It first, It last, multi::array_iterator<T, 1, fancy::ptr<T> > dest){
 	assert( stride(first) == stride(last) );
-	std::cerr << "1D copy(it1D, it1D, it1D) with strides " << stride(first) << " " << stride(dest) << std::endl;
+	std::cerr<<"1D copy(it1D, it1D, it1D) with strides "<< stride(first) <<" "<< stride(dest) <<std::endl;
 }
 
 template<class It, class T> // custom copy 2D (aka double strided copy)
 void copy(It first, It last, multi::array_iterator<T, 2, fancy::ptr<T> > dest){
 	assert( stride(first) == stride(last) );
-	std::cerr << "2D copy(It, It, it2D) with strides " << stride(first) << " " << stride(dest) << std::endl;
+	std::cerr<<"2D copy(It, It, it2D) with strides "<< stride(first) <<" "<< stride(dest) <<std::endl;
 }
 }}
 ```
