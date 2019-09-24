@@ -399,7 +399,7 @@ A({1, 4}, {2, 4}) // 3x2 array, containing indices 1 to 4 in the first dimension
 
 # Interoperability
 
-The library tries to interact with other existing C++ libraries
+Along with STL itself, the library tries to interact with other existing C++ libraries.
 
 ## Range v3
 
@@ -424,37 +424,38 @@ int main(){
 
 ## Boost.Interprocess
 
-```
+Using Interprocess allows for shared memory and for persistent mapped memory.
+
+```c++
 #include <boost/interprocess/managed_mapped_file.hpp>
+#include "multi/array.hpp"
+#include<cassert>
+
 using namespace boost::interprocess;
 using manager = managed_mapped_file;
 template<class T> using mallocator = allocator<T, manager::segment_manager>;
 auto get_allocator(manager& m){return m.get_segment_manager();}
 void sync(manager& m){m.flush();}
 
-#include "../../multi/array.hpp"
-
 namespace multi = boost::multi;
-template<class T, auto D> using marray = multi::array<T, D, mallocator<T>>;
+template<class T, int D> using marray = multi::array<T, D, mallocator<T>>;
 
 int main(){
 {
-	auto&& arr2d =
-		*m.construct<marray<double, 2>>("arr2d")(std::tuple{1000, 1000}, 0.0, get_allocator(m));
-
+	manager m{create_only, "mapped_file.bin", 1 << 25};
+	auto&& arr2d = *m.construct<marray<double, 2>>("arr2d")(std::tuple{1000, 1000}, 0., get_allocator(m));
 	arr2d[4][5] = 45.001;
 	sync(m);
-}{
+}
+{
 	manager m{open_only, "mapped_file.bin"};
-	auto&& arr2d = //emerge<marray<double, 2>>(m, "arr2d");
-		*m.find<marray<double, 2>>("arr2d").first; assert(std::addressof(arr2d));
-	assert( arr2d[7][8] == 0. );
+	auto&& arr2d = *m.find<marray<double, 2>>("arr2d").first;
 	assert( arr2d[4][5] == 45.001 );
-	m.destroy<marray<double, 2>>("arr2d");//	eliminate<marray<double, 2>>(m, "arr2d");
-	m.destroy<marray<unsigned, 3>>("arr3d");//	eliminate<marray<unsigned, 3>>(m, "arr3d");
+	m.destroy<marray<double, 2>>("arr2d");//	eliminate<marray<double, 2>>(m, "arr2d");}
 }
 }
 ```
+(Similarly works with [LLNL's Meta Allocator](https://github.com/llnl/metall))
 
 # Technical points
 
