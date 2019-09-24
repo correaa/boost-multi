@@ -309,8 +309,9 @@ public:
 		return {new_layout, types::base_ + Layout::operator()(first)};
 	}
 	basic_array strided(typename types::index s) const{
-		typename types::layout_t new_layout = *this; new_layout.stride_*=s;
-		return {new_layout, types::base_ + types::nelems_};
+		typename types::layout_t new_layout = *this; 
+		new_layout.stride_*=s;
+		return {new_layout, types::base_};// + types::nelems_};
 	}
 	basic_array sliced(typename types::index first, typename types::index last, typename types::index stride) const{
 		return sliced(first, last).strided(stride);
@@ -323,9 +324,19 @@ public:
 	}
 	auto flattened() const{
 		multi::biiterator<std::decay_t<decltype(this->begin())>> biit{this->begin(), 0, size(*(this->begin()))};
-		return basic_array<T, D-1, decltype(biit)>(this->layout().sub, biit);
+		return basic_array<typename std::iterator_traits<decltype(biit)>::value_type, 1, decltype(biit)>{
+			multi::layout_t<1>(1, 0, this->size()*size(*(this->begin()))), 
+			biit
+		};
 	}
 	friend auto flattened(basic_array const& self){return self.flattened();}
+	auto flatted() const{
+		assert(this->stride() == this->layout().sub.nelems_ && "flatted doesn't work for all layouts!");//this->nelems());
+		multi::layout_t<D-1> new_layout{this->layout().sub};
+		new_layout.nelems_*=this->size();
+		return basic_array<T, D-1, ElementPtr>{new_layout, types::base_};
+	}
+	friend auto flatted(basic_array const& self){return self.flatted();}
 	template<typename Size>
 	auto partitioned(Size const& s) const{
 		assert(this->layout().nelems_%s==0);
@@ -659,9 +670,9 @@ public:
 		return {new_layout, types::base_ + Layout::operator()(first)};		
 	}
 	basic_array strided(typename types::index s) const{
-		typename types::layout_t new_layout = *this;
+		typename types::layout_t new_layout = this->layout();
 		new_layout.stride_*=s;
-		return {new_layout, types::base_ + Layout::operator()(this->extension().front())};
+		return {new_layout, types::base_};//+ Layout::operator()(this->extension().front())};
 	}
 	basic_array sliced(typename types::index first, typename types::index last, typename types::index stride) const{
 		return sliced(first, last).strided(stride);
