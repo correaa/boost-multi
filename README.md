@@ -421,6 +421,41 @@ int main(){
 }
 ```
 
+
+## Boost.Interprocess
+
+```
+#include <boost/interprocess/managed_mapped_file.hpp>
+using namespace boost::interprocess;
+using manager = managed_mapped_file;
+template<class T> using mallocator = allocator<T, manager::segment_manager>;
+auto get_allocator(manager& m){return m.get_segment_manager();}
+void sync(manager& m){m.flush();}
+
+#include "../../multi/array.hpp"
+
+namespace multi = boost::multi;
+template<class T, auto D> using marray = multi::array<T, D, mallocator<T>>;
+
+int main(){
+{
+	auto&& arr2d =
+		*m.construct<marray<double, 2>>("arr2d")(std::tuple{1000, 1000}, 0.0, get_allocator(m));
+
+	arr2d[4][5] = 45.001;
+	sync(m);
+}{
+	manager m{open_only, "mapped_file.bin"};
+	auto&& arr2d = //emerge<marray<double, 2>>(m, "arr2d");
+		*m.find<marray<double, 2>>("arr2d").first; assert(std::addressof(arr2d));
+	assert( arr2d[7][8] == 0. );
+	assert( arr2d[4][5] == 45.001 );
+	m.destroy<marray<double, 2>>("arr2d");//	eliminate<marray<double, 2>>(m, "arr2d");
+	m.destroy<marray<unsigned, 3>>("arr3d");//	eliminate<marray<unsigned, 3>>(m, "arr3d");
+}
+}
+```
+
 # Technical points
 
 ### What's up with the multiple bracket notation? 
