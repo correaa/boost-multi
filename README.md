@@ -1,7 +1,7 @@
 <!--
 (pandoc `#--from gfm` --to html --standalone --metadata title=" " $0 > $0.html) && firefox --new-window  $0.html; exit
 -->
-# [Boost].Multi
+# [Boost.]Multi
 
 (not an official Boost library)
 
@@ -57,6 +57,7 @@ int main(){
 	CC[1][1]; // requires operator*
 	CC[1][1] = 9;
 	assert(CC[1][1] == 9);
+	delete[] buffer;
 }
 ```
 
