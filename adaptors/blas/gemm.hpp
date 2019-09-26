@@ -35,10 +35,10 @@ auto gemm_n(
 			gemm(opA, opB, Cf->size(), Bn, An, a, base(Af), stride(Af), base(Bf), stride(Bf), b, base(Cf), stride(Cf));
 			return Cf + Bf->size();
 		}
-	case op::T: case op::C: assert( Cf->size() == An );
+	case op::T: case op::C: // assert( Cf->size() == An );
 		switch(opB){
 		case op::N:
-			gemm(opA, opB, Bn, An, Cf->size(), a, base(Af), stride(Af), base(Bf), stride(Bf), b, base(Cf), stride(Cf));
+			gemm(op::N, op::T, Cf->size(), Cf->size(), Bn, a, base(Af), stride(Af), base(Bf), stride(Bf), b, base(Cf), stride(Cf));
 			return Cf + Bn;
 		case op::T: case op::C:
 			gemm(opA, opB, Cf->size(), An, Bn, a, base(Af), stride(Af), base(Bf), stride(Bf), b, base(Cf), stride(Cf));
@@ -57,10 +57,11 @@ auto gemm(Op opA, Op opB, AA a, It1 Af, It1 Al, It2 Bf, It2 Bl, BB b, Out Cf){
 }
 
 template<class Op, class AA, class BB, class A2D, class B2D, class C2D>
-C2D&& gemm(Op opA, Op opB, AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
-	auto e = gemm(opA, opB, a, begin(A), end(A), begin(B), end(B), b, begin(C));
-	assert( end(C) == e );
-	return std::forward<C2D>(C);
+void gemm(Op opA, Op opB, AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
+	gemm(opA, opB, size(A), size(C), size(B), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
+//	auto e = gemm(opA, opB, a, begin(A), end(A), begin(B), end(B), b, begin(C)); (void)e;
+//	assert( end(C) == e );
+//	return std::forward<C2D>(C);
 }
 
 //template<class Op, class A2D, class B2D, class C2D>
@@ -68,6 +69,10 @@ C2D&& gemm(Op opA, Op opB, AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
 //	return gemm(TA, TB, 1., A, B, 0., std::forward<C2D>(C));
 //}
 
+//template<class AA, class BB, class A2D, class B2D, class C2D>
+//C2D&& gemm(AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
+//}
+#if 0
 template<class AA, class BB, class A2D, class B2D, class C2D>
 C2D&& gemm(AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
 	switch(stride(C)){
@@ -110,7 +115,7 @@ C2D&& gemm(AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
 	return std::forward<C2D>(C);
 #endif
 }
-
+#endif
 
 }}}
 
@@ -138,6 +143,34 @@ template<class M> void print(M const& C){
 }
 
 int main(){
+	{
+		multi::array<double, 2> const A = {
+			{ 1., 3., 4.},
+			{ 9., 7., 1.}
+		};
+		multi::array<double, 2> const B = {
+			{ 11., 12., 4., 3.},
+			{  7., 19., 1., 2.},
+			{ 11., 12., 4., 1.}
+		};
+		multi::array<double, 2> C({4, 2});
+		using multi::blas::gemm; 
+		gemm('T', 'T', 1., A, B, 0., C); // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
+		print(rotated(C)); //{{76., 117., 23., 13.}, {159., 253., 47., 42.}}
+	}
+//	{
+//		multi::array<double, 2> const A = {
+//			{ 1., 3., 4.},
+//			{ 9., 7., 1.}
+//		};
+//		multi::array<double, 2> const B = {
+//			{ 11., 12., 4.},
+//			{  7., 19., 1., 2.},
+//			{ 11., 12., 4., 1.}
+//		};
+//	}
+	return 0;
+#if 0
 	{
 		multi::array<double, 2> const A = {
 			{ 1., 1., 1.},
@@ -175,6 +208,16 @@ int main(){
 
 		using multi::blas::gemm;
 		gemm('N', 'N', 1., B, A, 0., C); // C = A*B , C^T = (B^T).(A^T) , if A, B, C are c-ordering
+		print(C);
+	}
+	{
+		multi::array<double, 2> const A = {
+			{ 1., 2., 3.},
+			{ 1., 4., 5.}
+		};
+		multi::array<double, 2> C({2, 2});
+		using multi::blas::gemm;
+		gemm('T', 'N', 1., A, A, 0., C); // C = A*B , C^T = (B^T).(A^T) , if A, B, C are c-ordering
 		print(C);
 	}
 	{
@@ -416,6 +459,7 @@ int main(){
 		gemm(1., rotated(A), rotated(B), 0., rotated(C)); // C^T = A^T.B^T, C = B.A
 		print(C);
 	}
+#endif
 }
 
 #endif
