@@ -1,14 +1,13 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"">$0.cpp)&& c++ -O3 -std=c++14 -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_BLAS_GEMV $0.cpp -o $0x \
--D_BLAS_INT=int32_t -lblas \
-`#-D_BLAS_INT=int64_t -Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core` \
+(echo "#include\""$0"\"">$0.cpp)&& clang++ -O3 -Ofast -std=c++14 -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_BLAS_GEMV $0.cpp -o $0x \
+`#-lblas` \
+-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
 #endif
 // Alfredo A. Correa 2019 ©
 
 #ifndef MULTI_ADAPTORS_BLAS_GEMV_HPP
 #define MULTI_ADAPTORS_BLAS_GEMV_HPP
-
 #include "../blas/core.hpp"
 
 namespace boost{
@@ -216,7 +215,6 @@ int main(){
 		gemm('T', 'T', 1., A, B, 0., C); // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
 		print(rotated(C)) << "---\n"; //{{76., 117., 23., 13.}, {159., 253., 47., 42.}}
 	}
-	return 0;
 	{
 		multi::array<double, 2> const A = {
 			{ 1., 3., 4.},
@@ -320,6 +318,16 @@ int main(){
 			{
 			boost::timer::auto_cpu_timer t;
 			gemm('C', 'N', 1., A, A, 0., C); // C^H = C = A*A^H , C = (A*A^H)^H, C = A*A^H = C^H, if A, B, C are c-ordering (e.g. array or array_ref)
+			}
+			cerr << C[10][1] << std::endl;
+		}
+		{
+			multi::array<complex<double>, 2> const A({2000, 2000}); std::iota(data_elements(A), data_elements(A) + num_elements(A), 0.1);
+			multi::array<complex<double>, 2> const B({2000, 2000}); std::iota(data_elements(A), data_elements(A) + num_elements(A), 1.2);
+			multi::array<std::complex<double>, 2> C({size(A), size(A)});
+			{
+			boost::timer::auto_cpu_timer t;
+			gemm('C', 'N', 1., A, B, 0., C); // C^H = C = A*A^H , C = (A*A^H)^H, C = A*A^H = C^H, if A, B, C are c-ordering (e.g. array or array_ref)
 			}
 			cerr << C[10][1] << std::endl;
 		}
