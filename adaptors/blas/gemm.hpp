@@ -1,5 +1,8 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"">$0.cpp)&& c++ -O3 -std=c++14 -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_BLAS_GEMV `#-DADD_` -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 $0.cpp -o $0x -lblas `#-lmkl_sequential.so /usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64/libmkl_intel_ilp64.so /usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64/libmkl_core.so` -lboost_timer &&$0x&& rm $0x $0.cpp; exit
+(echo "#include\""$0"\"">$0.cpp)&& c++ -O3 -std=c++14 -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_BLAS_GEMV $0.cpp -o $0x \
+-D_BLAS_INT=int32_t -lblas \
+`#-D_BLAS_INT=int64_t -Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core` \
+-lboost_timer &&$0x&& rm $0x $0.cpp; exit
 #endif
 // Alfredo A. Correa 2019 ©
 
@@ -213,6 +216,7 @@ int main(){
 		gemm('T', 'T', 1., A, B, 0., C); // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
 		print(rotated(C)) << "---\n"; //{{76., 117., 23., 13.}, {159., 253., 47., 42.}}
 	}
+	return 0;
 	{
 		multi::array<double, 2> const A = {
 			{ 1., 3., 4.},
