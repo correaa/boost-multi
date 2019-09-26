@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && clang++ `#-DNDEBUG` -O3 -std=c++14 -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_BLAS_GEMV -DADD_ -lboost_timer $0x.cpp -o $0x.x -lblas && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
+(echo "#include\""$0"\"">$0.cpp)&& c++ -O3 -std=c++14 -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_BLAS_GEMV `#-DADD_` -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 $0.cpp -o $0x -lblas `#-lmkl_sequential.so /usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64/libmkl_intel_ilp64.so /usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64/libmkl_core.so` -lboost_timer &&$0x&& rm $0x $0.cpp; exit
 #endif
 // Alfredo A. Correa 2019 ©
 
@@ -49,44 +49,66 @@ auto gemm_n(
 	return Cf;
 }
 
-template<class Op, class AA, class BB, class It1, class It2, class Out>
+/*template<class Op, class AA, class BB, class It1, class It2, class Out>
 auto gemm(Op opA, Op opB, AA a, It1 Af, It1 Al, It2 Bf, It2 Bl, BB b, Out Cf){
 	assert( stride(Af)==stride(Al) and Af->size()==Al->size() );
 	assert( stride(Bf)==stride(Bl) and Bf->size()==Bl->size() );
 	return gemm_n(opA, opB, a, Af, Al - Af, Bf, Bl - Bf, b, Cf);
 }
 
+
+template<class Op, class AA, class BB, class A2DIt, class B2DIt, class C2DIt, class Size>
+auto gemm_n(Op opA, Op opB, AA a, A2DIt Af, Size As, B2DIt Bf, Size Bs, BB b, C2DIt Cf, Size Cs){
+	gemm(opA, opB, As, Cs, Bs, a, base(Af), stride(Af), base(Bf), stride(Bf), b, base(Cf), stride(Cf));
+	return Cf + Bf->size();
+}
+
+template<class Op, class AA, class BB, class A2DIt, class B2DIt, class C2DIt>
+auto gemm(Op opA, Op opB, AA a, A2DIt Af, A2DIt Al, B2DIt Bf, B2DIt Bl, BB b, C2DIt Cf, C2DIt Cl){
+	if((opA == 'T' or opA == 'C') and (opB == 'T' or opB == 'C')){ // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, 
+		return gemm_n(opA, opB, Al - Af, Cl - Cf, Bl - Bf, a, Af, Bf, b, Cf);
+	}
+}
+*/
+
 template<class Op, class AA, class BB, class A2D, class B2D, class C2D>
-void gemm(Op opA, Op opB, AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
-	if((opA == 'T' or opA == 'C') and (opB == 'T' or opB == 'C')){
+decltype(auto) gemm(Op opA, Op opB, AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
+	assert(begin(A)->stride() == 1 and begin(B)->stride()==1 and begin(C)->stride()==1);
+	if((opA == 'T' or opA == 'C') and (opB == 'T' or opB == 'C')){ // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
 		assert(begin(A)->size() == size(B) and size(A)==begin(C)->size() and begin(B)->size() == size(C));
 		gemm(opA, opB, size(A), size(C), size(B), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
-		return;
+		return std::forward<C2D>(C);
 	}
 	if(opA == 'N' and (opB == 'T' or opB == 'C')){
 		assert(size(A) == size(B) and begin(A)->size()==begin(C)->size() and begin(B)->size() == size(C));
 		gemm(opA, opB, begin(A)->size(), size(C), size(B), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
-		return;
+		return std::forward<C2D>(C);
 	}
 	if((opA == 'T' or opA == 'C') and (opB == 'N')){
 		assert(begin(A)->size() == begin(B)->size() and size(A)==begin(C)->size() and size(B) == size(C));
 		gemm(opA, opB, size(A), size(C), begin(B)->size(), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
-		return;
+		return std::forward<C2D>(C);
 	}
 	if((opA == 'N') and (opB == 'N')){
 		assert(size(A) == begin(B)->size() and begin(A)->size()==begin(C)->size() and size(B) == size(C));
 		gemm(opA, opB, begin(A)->size(), size(C), begin(B)->size(), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
-		return;
+		return std::forward<C2D>(C);
 	}
 	assert(0);
-//	auto e = gemm(opA, opB, a, begin(A), end(A), begin(B), end(B), b, begin(C)); (void)e;
-//	assert( end(C) == e );
-//	return std::forward<C2D>(C);
+	return std::forward<C2D>(C);
+}
+
+template<class AA, class BB, class A2D, class B2D, class C2D>
+decltype(auto) gemm(AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
+	if(begin(A)->stride() == 1 and begin(B)->stride()==1 and begin(C)->stride()==1){
+		gemm('T', 'T', a, A, B, b, C);
+	}
+	return std::forward<C2D>(C);
 }
 
 template<class UL, class Op, class AA, class BB, class A2D, class C2D>
 void herk(UL uplo, Op op, AA a, A2D const& A, BB b, C2D&& C){
-	if(uplo == 'U' and op == 'C'){
+	if(uplo == 'U' and (op == 'C' or op == 'T')){
 		herk(uplo, op, size(C), begin(A)->size(), a, base(A), stride(A), b, base(C), stride(C));
 		return;
 	}
@@ -193,6 +215,20 @@ int main(){
 	}
 	{
 		multi::array<double, 2> const A = {
+			{ 1., 3., 4.},
+			{ 9., 7., 1.}
+		};
+		multi::array<double, 2> const B = {	
+			{ 11., 12., 4., 3.},
+			{  7., 19., 1., 2.},
+			{ 11., 12., 4., 1.}
+		};
+		multi::array<double, 2> C({4, 2});
+		gemm(1., A, B, 0., C); // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
+		print(rotated(C)) << "---\n"; //{{76., 117., 23., 13.}, {159., 253., 47., 42.}}
+	}
+	{
+		multi::array<double, 2> const A = {
 			{1., 9.}, 
 			{3., 7.}, 
 			{4., 1.}
@@ -265,7 +301,7 @@ int main(){
 	{
 		using std::complex;
 		{
-			multi::array<complex<double>, 2> const A({100, 100000}); std::iota(data_elements(A), data_elements(A) + num_elements(A), 0.1);
+			multi::array<complex<double>, 2> const A({1000, 1000}); std::iota(data_elements(A), data_elements(A) + num_elements(A), 0.1);
 			multi::array<std::complex<double>, 2> C({size(A), size(A)});
 			{
 			boost::timer::auto_cpu_timer t;
@@ -275,7 +311,7 @@ int main(){
 			cerr << C[10][1] << std::endl;
 		}
 		{
-			multi::array<complex<double>, 2> const A({100, 100000}); std::iota(data_elements(A), data_elements(A) + num_elements(A), 0.1);
+			multi::array<complex<double>, 2> const A({1000, 1000}); std::iota(data_elements(A), data_elements(A) + num_elements(A), 0.1);
 			multi::array<std::complex<double>, 2> C({size(A), size(A)});
 			{
 			boost::timer::auto_cpu_timer t;
