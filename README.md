@@ -1,7 +1,7 @@
 <!--
 (pandoc `#--from gfm` --to html --standalone --metadata title=" " $0 > $0.html) && firefox --new-window  $0.html; exit
 -->
-# [Boost].Multi
+# [Boost.]Multi
 
 (not an official Boost library)
 
@@ -57,6 +57,7 @@ int main(){
 	CC[1][1]; // requires operator*
 	CC[1][1] = 9;
 	assert(CC[1][1] == 9);
+	delete[] buffer;
 }
 ```
 
@@ -365,7 +366,7 @@ The number of rows in the sliced matrix is 2 because we took only two rows, row 
 In the same way a strided view of the original array can be taken with the `strided` function.
 
 ```c++
-auto&& d2D_strided = d2D.stride(2); // {{ d2D[0], d2D[1] }};
+auto&& d2D_strided = d2D.strided(2); // {{ d2D[0], d2D[1] }};
 assert( d2D_strided.size(0) == 2 and d2D_strided.size(1) == 5 );
 ```
 
@@ -399,7 +400,7 @@ A({1, 4}, {2, 4}) // 3x2 array, containing indices 1 to 4 in the first dimension
 
 # Interoperability
 
-The library tries to interact with other existing C++ libraries
+Along with STL itself, the library tries to interact with other existing C++ libraries.
 
 ## Range v3
 
@@ -420,6 +421,42 @@ int main(){
 	static_assert(ranges::RandomAccessIterator<multi::array<double, 2>::iterator>{});
 }
 ```
+
+
+## Boost.Interprocess
+
+Using Interprocess allows for shared memory and for persistent mapped memory.
+
+```c++
+#include <boost/interprocess/managed_mapped_file.hpp>
+#include "multi/array.hpp"
+#include<cassert>
+
+using namespace boost::interprocess;
+using manager = managed_mapped_file;
+template<class T> using mallocator = allocator<T, manager::segment_manager>;
+auto get_allocator(manager& m){return m.get_segment_manager();}
+void sync(manager& m){m.flush();}
+
+namespace multi = boost::multi;
+template<class T, int D> using marray = multi::array<T, D, mallocator<T>>;
+
+int main(){
+{
+	manager m{create_only, "mapped_file.bin", 1 << 25};
+	auto&& arr2d = *m.construct<marray<double, 2>>("arr2d")(std::tuple{1000, 1000}, 0., get_allocator(m));
+	arr2d[4][5] = 45.001;
+	sync(m);
+}
+{
+	manager m{open_only, "mapped_file.bin"};
+	auto&& arr2d = *m.find<marray<double, 2>>("arr2d").first;
+	assert( arr2d[4][5] == 45.001 );
+	m.destroy<marray<double, 2>>("arr2d");//	eliminate<marray<double, 2>>(m, "arr2d");}
+}
+}
+```
+(Similarly works with [LLNL's Meta Allocator](https://github.com/llnl/metall))
 
 # Technical points
 
@@ -464,13 +501,13 @@ namespace boost{namespace multi{
 template<class It, class T>  // custom copy 1D (aka strided copy)
 void copy(It first, It last, multi::array_iterator<T, 1, fancy::ptr<T> > dest){
 	assert( stride(first) == stride(last) );
-	std::cerr << "1D copy(it1D, it1D, it1D) with strides " << stride(first) << " " << stride(dest) << std::endl;
+	std::cerr<<"1D copy(it1D, it1D, it1D) with strides "<< stride(first) <<" "<< stride(dest) <<std::endl;
 }
 
 template<class It, class T> // custom copy 2D (aka double strided copy)
 void copy(It first, It last, multi::array_iterator<T, 2, fancy::ptr<T> > dest){
 	assert( stride(first) == stride(last) );
-	std::cerr << "2D copy(It, It, it2D) with strides " << stride(first) << " " << stride(dest) << std::endl;
+	std::cerr<<"2D copy(It, It, it2D) with strides "<< stride(first) <<" "<< stride(dest) <<std::endl;
 }
 }}
 ```
