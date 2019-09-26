@@ -73,6 +73,11 @@ void gemm(Op opA, Op opB, AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
 		gemm(opA, opB, size(A), size(C), begin(B)->size(), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
 		return;
 	}
+	if((opA == 'N') and (opB == 'N')){
+		assert(size(A) == begin(B)->size() and begin(A)->size()==begin(C)->size() and size(B) == size(C));
+		gemm(opA, opB, begin(A)->size(), size(C), begin(B)->size(), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
+		return;
+	}
 	assert(0);
 //	auto e = gemm(opA, opB, a, begin(A), end(A), begin(B), end(B), b, begin(C)); (void)e;
 //	assert( end(C) == e );
@@ -218,6 +223,22 @@ int main(){
 	}
 	{
 		multi::array<double, 2> const A = {
+			{1., 9.}, 
+			{3., 7.}, 
+			{4., 1.}
+		};
+		multi::array<double, 2> const B = {
+			{11., 7., 11.}, 
+			{12., 19., 12.}, 
+			{4., 1., 4.}, 
+			{3., 2., 1.}
+		};
+		multi::array<double, 2> C({4, 2});
+		gemm('N', 'N', 1., A, B, 0., C); // C^T = A^T*B^T , C = (A^T*B^T)^T, C = B*A, if A, B, and C are c-ordering (e.g. array or array_ref)
+		print(rotated(C)) << "---\n"; //{{76., 117., 23., 13.}, {159., 253., 47., 42.}}
+	}
+	{
+		multi::array<double, 2> const A = {
 			{ 1., 3., 4.},
 			{ 9., 7., 1.}
 		};
@@ -237,7 +258,7 @@ int main(){
 		print(C) << "---\n";
 		multi::array<std::complex<double>, 2> CC({2, 2});
 		using multi::blas::herk;
-		herk('U', 'C', 1., A, 0., CC); // CC^H = CC = A*A^H, CC = (A*A^H)^H, CC = A*A^H
+		herk('U', 'C', 1., A, 0., CC); // CC^H = CC = A*A^H, CC = (A*A^H)^H, CC = A*A^H, C lower triangular
 		print(CC) << "---\n";
 	}
 	{
