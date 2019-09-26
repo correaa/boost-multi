@@ -1,21 +1,20 @@
 #ifdef COMPILATION_INSTRUCTIONS
 (echo "#include\""$0"\"" > $0x.cpp) && clang++ `#-DNDEBUG` -O3 -std=c++14 -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_BLAS_CORE -DADD_ $0x.cpp -o $0x.x -lblas && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
 #endif
+// https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
 // Alfredo A. Correa 2019 ©
 
 #ifndef MULTI_ADAPTORS_BLAS_CORE_HPP
 #define MULTI_ADAPTORS_BLAS_CORE_HPP
 
-#include<iostream>
-//#include <cblas/cblas.h>
-
-#include<cassert>
-#include<complex>
 #include "../../utility.hpp"
 #include "../../array.hpp" // allocating multi::arrays for output
-#include<numeric> // inner_product
-//#include<algorithm>
-#include<iostream>
+
+//#include <cblas/cblas.h>
+
+#include<complex>
+
+static_assert(sizeof(_BLAS_INT)==32/8 or sizeof(_BLAS_INT)==64/8, "please set _BLAS_INT to int32_t or int64_t");
 
 #ifdef CBLAS_H
 #define BLAS(NamE) cblas_##NamE
@@ -30,7 +29,7 @@ extern "C"{
 #define v void 
 #define C _Complex s
 #define Z _Complex d
-#define INT int
+#define INT _BLAS_INT
 #define INTEGER INT const&
 #define N INTEGER n
 #define INCX INTEGER incx
@@ -69,9 +68,9 @@ xASUM(s, s, s); xASUM(d, d, d); xASUM(s, sc, c); xASUM(d, dz, z);
 IxAMAX(s); IxAMAX(d); IxAMAX(c); IxAMAX(z);
 
 #define TRANS const char& trans
-#define NR const int& nr
-#define NC const int& nc
-#define LDA const int& lda
+#define NR INT const& nr
+#define NC INT const& nc
+#define LDA INT const& lda
 
 #define xGEMV(T) void BLAS(T##gemv)(TRANS, NR, NC, T const& a, T const* A, LDA, T const* X, INCX, T const& beta, T*       Y, INCY)
 #define xGER(T)  void BLAS(T##ger )(       NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA)
@@ -85,12 +84,16 @@ xGERC(c); xGERC(z);
 
 #define TRANSA const char& transa
 #define TRANSB const char& transb
-#define NK const int& nk
-#define LDB const int& ldb
-#define LDC const int& ldc
+#define NK INT const& nk
+#define LDB INT const& ldb
+#define LDC INT const& ldc
+
+#define UPLO const char& uplo
 
 #define xGEMM(T) void BLAS(T##gemm)(TRANSA, TRANSB, NR, NC, NK, T const& a, T const* A, LDA, T const* B, LDB, T const& b, T* CC, LDC)
-xGEMM(s); xGEMM(d); xGEMM(c); xGEMM(z);
+#define xHERK(TT, T) void BLAS(T##herk)(UPLO, TRANSA, NR, NK, TT const& a, T const* A, LDA, TT const& b, T* CC, LDC) 
+xGEMM(s); xGEMM(d); xGEMM(c)   ; xGEMM(z)   ;
+                    xHERK(s, c); xHERK(d, z);
 
 #undef xROTG
 #undef xROTMG
@@ -112,6 +115,7 @@ xGEMM(s); xGEMM(d); xGEMM(c); xGEMM(z);
 #undef xGERU
 #undef xGERC
 #undef xGEMM
+#undef xHERK
 
 #undef s
 #undef d
@@ -185,8 +189,8 @@ template<class S, class T> T dot(S n, T const* x, S incx, T const* y, S incy){
 xdotu(c) xdotu(z)
 xdotc(c) xdotc(z)
 
-                 template<class S> z dot(S n,  c const *x, S incx, c const *y, S incy){return dotc(n, x, incx, y, incy);}
-                 template<class S> z dot(S n,  z const *x, S incx, z const *y, S incy){return dotc(n, x, incx, y, incy);}
+//                 template<class S> z dot(S n,  c const *x, S incx, c const *y, S incy){return dotc(n, x, incx, y, incy);}
+//                 template<class S> z dot(S n,  z const *x, S incx, z const *y, S incy){return dotc(n, x, incx, y, incy);}
 
 #undef xdotu
 #undef xdotc
@@ -231,7 +235,10 @@ xger(s)   xger(d)
 ///////////////////////////////////////////////////////////////////////////////
 // LEVEL 3
 #define xgemm(T) template<class C, class S> v gemm(C transA, C transB, S m, S n, S k, T const& a, T const* A, S lda, T const* B, S ldb, T const& beta, T* CC, S ldc){BLAS(T##gemm)(transA, transB, m, n, k, a, A, lda, B, ldb, beta, CC, ldc);}
+#define xherk(T) template<class UL, class C, class S, class Real> v herk(UL ul, C transA, S n, S k, Real alpha, T const* A, S lda, Real beta, T* CC, S ldc){BLAS(T##herk)(ul, transA, n, k, alpha, A, lda, beta, CC, ldc);}
+
 xgemm(s) xgemm(d) xgemm(c) xgemm(z)
+                  xherk(c) xherk(z)
 
 }}}
 ///////////////////////////////////////////////////////////////////////////////
