@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && clang++ `#-DNDEBUG` -O3 -std=c++14 -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_BLAS_GEMV -DADD_ $0x.cpp -o $0x.x -lblas && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
+(echo "#include\""$0"\"" > $0x.cpp) && clang++ `#-DNDEBUG` -O3 -std=c++14 -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_BLAS_GEMV -DADD_ -lboost_timer $0x.cpp -o $0x.x -lblas && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
 #endif
 // Alfredo A. Correa 2019 ©
 
@@ -58,14 +58,19 @@ auto gemm(Op opA, Op opB, AA a, It1 Af, It1 Al, It2 Bf, It2 Bl, BB b, Out Cf){
 
 template<class Op, class AA, class BB, class A2D, class B2D, class C2D>
 void gemm(Op opA, Op opB, AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
-	if(opA == 'T' and opB == 'T'){
+	if((opA == 'T' or opA == 'C') and (opB == 'T' or opB == 'C')){
 		assert(begin(A)->size() == size(B) and size(A)==begin(C)->size() and begin(B)->size() == size(C));
 		gemm(opA, opB, size(A), size(C), size(B), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
 		return;
 	}
-	if(opA == 'N' and opB == 'T'){
+	if(opA == 'N' and (opB == 'T' or opB == 'C')){
 		assert(size(A) == size(B) and begin(A)->size()==begin(C)->size() and begin(B)->size() == size(C));
 		gemm(opA, opB, begin(A)->size(), size(C), size(B), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
+		return;
+	}
+	if((opA == 'T' or opA == 'C') and (opB == 'N')){
+		assert(begin(A)->size() == begin(B)->size() and size(A)==begin(C)->size() and size(B) == size(C));
+		gemm(opA, opB, size(A), size(C), begin(B)->size(), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
 		return;
 	}
 	assert(0);
@@ -74,10 +79,14 @@ void gemm(Op opA, Op opB, AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
 //	return std::forward<C2D>(C);
 }
 
-//template<class UL, class Op, class AA, class BB, class A2D, class B2D, class C2D>
-//void syrk(UL uplo, Op ops, AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
-//	if(-
-//}
+template<class UL, class Op, class AA, class BB, class A2D, class C2D>
+void herk(UL uplo, Op op, AA a, A2D const& A, BB b, C2D&& C){
+	if(uplo == 'U' and op == 'C'){
+		herk(uplo, op, size(C), begin(A)->size(), a, base(A), stride(A), b, base(C), stride(C));
+		return;
+	}
+	assert(0);
+}
 
 //template<class Op, class A2D, class B2D, class C2D>
 //C2D&& gemm(Op TA, Op TB, A2D const& A, B2D const& B, C2D&& C){
@@ -139,6 +148,8 @@ C2D&& gemm(AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
 #include "../../array.hpp"
 #include "../../utility.hpp"
 
+#include <boost/timer/timer.hpp>
+
 #include<complex>
 #include<cassert>
 #include<iostream>
@@ -146,6 +157,8 @@ C2D&& gemm(AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
 #include<algorithm>
 
 using std::cout;
+using std::cerr;
+
 namespace multi = boost::multi;
 
 template<class M> decltype(auto) print(M const& C){
@@ -186,16 +199,73 @@ int main(){
 		};
 		multi::array<double, 2> C({4, 2}, 0.);
 		gemm('N', 'T', 1., A, B, 0., C); // C^T = A^T*B , C = (A^T*B)^T, C = B^T*A , if A, B, C are c-ordering (e.g. array or array_ref)
-//		print(rotated(C)) << "---\n";
+		print(rotated(C)) << "---\n";
 	}
 	{
 		multi::array<double, 2> const A = {
 			{ 1., 3., 4.},
 			{ 9., 7., 1.}
 		};
+		multi::array<double, 2> const B = {
+			{11., 7., 11.}, 
+			{12., 19., 12.}, 
+			{4., 1., 4.}, 
+			{3., 2., 1.}
+		};
 		multi::array<double, 2> C({4, 2});
-//		syrk('L', 'T', 1., A, 0., C); // C^T = A^T*B , C = (A^T*B)^T, C = B^T*A , if A, B, C are c-ordering (e.g. array or array_ref)
-//		print(rotated(C)) << "---\n";
+		gemm('T', 'N', 1., A, B, 0., C); // C^T = A*B^T , C = (A*B^T)^T, C = B*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
+		print(rotated(C)) << "---\n"; //{{76., 117., 23., 13.}, {159., 253., 47., 42.}}
+	}
+	{
+		multi::array<double, 2> const A = {
+			{ 1., 3., 4.},
+			{ 9., 7., 1.}
+		};
+		multi::array<double, 2> C({2, 2});
+		gemm('T', 'N', 1., A, A, 0., C); // C^T = C = A*A^T , C = (A*A^T)^T, C = A*A^T = C^T, if A, B, C are c-ordering (e.g. array or array_ref)
+		print(rotated(C)) << "---\n"; //{{76., 117., 23., 13.}, {159., 253., 47., 42.}}
+	}
+	{
+		using std::complex;
+		auto I = std::complex<double>{0., 1.};
+		multi::array<complex<double>, 2> const A = {
+			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
+			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
+		};
+		multi::array<std::complex<double>, 2> C({2, 2});
+		gemm('C', 'N', 1., A, A, 0., C); // C^H = C = A*A^H , C = (A*A^H)^H, C = A*A^H = C^H, if A, B, C are c-ordering (e.g. array or array_ref)
+		print(C) << "---\n";
+		multi::array<std::complex<double>, 2> CC({2, 2});
+		using multi::blas::herk;
+		herk('U', 'C', 1., A, 0., CC); // CC^H = CC = A*A^H, CC = (A*A^H)^H, CC = A*A^H
+		print(CC) << "---\n";
+	}
+	{
+	{
+		using std::complex;
+		{
+			multi::array<complex<double>, 2> const A({100, 100000}); std::iota(data_elements(A), data_elements(A) + num_elements(A), 0.1);
+			multi::array<std::complex<double>, 2> C({size(A), size(A)});
+			{
+			boost::timer::auto_cpu_timer t;
+			using multi::blas::herk;
+			herk('U', 'C', 1., A, 0., C); // C^H = C = A*A^H, C = (A*A^H)^H, C = A*A^H, C lower triangular. if A, B, C are c-ordering (e.g. array or array_ref)
+			}
+			cerr << C[10][1] << std::endl;
+		}
+		{
+			multi::array<complex<double>, 2> const A({100, 100000}); std::iota(data_elements(A), data_elements(A) + num_elements(A), 0.1);
+			multi::array<std::complex<double>, 2> C({size(A), size(A)});
+			{
+			boost::timer::auto_cpu_timer t;
+			gemm('C', 'N', 1., A, A, 0., C); // C^H = C = A*A^H , C = (A*A^H)^H, C = A*A^H = C^H, if A, B, C are c-ordering (e.g. array or array_ref)
+			}
+			cerr << C[10][1] << std::endl;
+		}
+	//	print(C) << "---\n";
+	//	print(CC) << "---\n";
+	}
+
 	}
 	return 0; 
 #if 0
