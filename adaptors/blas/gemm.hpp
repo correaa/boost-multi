@@ -197,7 +197,7 @@ int main(){
 //		syrk('L', 'T', 1., A, 0., C); // C^T = A^T*B , C = (A^T*B)^T, C = B^T*A , if A, B, C are c-ordering (e.g. array or array_ref)
 //		print(rotated(C)) << "---\n";
 	}
-	return 0;
+	return 0; 
 #if 0
 	{
 		multi::array<double, 2> const A = {
