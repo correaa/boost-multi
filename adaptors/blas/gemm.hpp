@@ -58,11 +58,26 @@ auto gemm(Op opA, Op opB, AA a, It1 Af, It1 Al, It2 Bf, It2 Bl, BB b, Out Cf){
 
 template<class Op, class AA, class BB, class A2D, class B2D, class C2D>
 void gemm(Op opA, Op opB, AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
-	gemm(opA, opB, size(A), size(C), size(B), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
+	if(opA == 'T' and opB == 'T'){
+		assert(begin(A)->size() == size(B) and size(A)==begin(C)->size() and begin(B)->size() == size(C));
+		gemm(opA, opB, size(A), size(C), size(B), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
+		return;
+	}
+	if(opA == 'N' and opB == 'T'){
+		assert(size(A) == size(B) and begin(A)->size()==begin(C)->size() and begin(B)->size() == size(C));
+		gemm(opA, opB, begin(A)->size(), size(C), size(B), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
+		return;
+	}
+	assert(0);
 //	auto e = gemm(opA, opB, a, begin(A), end(A), begin(B), end(B), b, begin(C)); (void)e;
 //	assert( end(C) == e );
 //	return std::forward<C2D>(C);
 }
+
+//template<class UL, class Op, class AA, class BB, class A2D, class B2D, class C2D>
+//void syrk(UL uplo, Op ops, AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
+//	if(-
+//}
 
 //template<class Op, class A2D, class B2D, class C2D>
 //C2D&& gemm(Op TA, Op TB, A2D const& A, B2D const& B, C2D&& C){
@@ -133,42 +148,55 @@ C2D&& gemm(AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
 using std::cout;
 namespace multi = boost::multi;
 
-template<class M> void print(M const& C){
+template<class M> decltype(auto) print(M const& C){
 	for(int i = 0; i != size(C); ++i){
 		for(int j = 0; j != size(C[i]); ++j)
 			std::cout << C[i][j] << ' ';
 		std::cout << std::endl;
 	}
-	std::cout << std::endl;
+	return std::cout << std::endl;
 }
 
 int main(){
+	using multi::blas::gemm;
 	{
 		multi::array<double, 2> const A = {
 			{ 1., 3., 4.},
 			{ 9., 7., 1.}
 		};
-		multi::array<double, 2> const B = {
+		multi::array<double, 2> const B = {	
 			{ 11., 12., 4., 3.},
 			{  7., 19., 1., 2.},
 			{ 11., 12., 4., 1.}
 		};
 		multi::array<double, 2> C({4, 2});
-		using multi::blas::gemm; 
 		gemm('T', 'T', 1., A, B, 0., C); // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
-		print(rotated(C)); //{{76., 117., 23., 13.}, {159., 253., 47., 42.}}
+		print(rotated(C)) << "---\n"; //{{76., 117., 23., 13.}, {159., 253., 47., 42.}}
 	}
-//	{
-//		multi::array<double, 2> const A = {
-//			{ 1., 3., 4.},
-//			{ 9., 7., 1.}
-//		};
-//		multi::array<double, 2> const B = {
-//			{ 11., 12., 4.},
-//			{  7., 19., 1., 2.},
-//			{ 11., 12., 4., 1.}
-//		};
-//	}
+	{
+		multi::array<double, 2> const A = {
+			{1., 9.}, 
+			{3., 7.}, 
+			{4., 1.}
+		};
+		multi::array<double, 2> const B = {
+			{ 11., 12., 4., 0.},
+			{  7., 19., 1., 2.},
+			{ 11., 12., 4., 1.}
+		};
+		multi::array<double, 2> C({4, 2}, 0.);
+		gemm('N', 'T', 1., A, B, 0., C); // C^T = A^T*B , C = (A^T*B)^T, C = B^T*A , if A, B, C are c-ordering (e.g. array or array_ref)
+//		print(rotated(C)) << "---\n";
+	}
+	{
+		multi::array<double, 2> const A = {
+			{ 1., 3., 4.},
+			{ 9., 7., 1.}
+		};
+		multi::array<double, 2> C({4, 2});
+//		syrk('L', 'T', 1., A, 0., C); // C^T = A^T*B , C = (A^T*B)^T, C = B^T*A , if A, B, C are c-ordering (e.g. array or array_ref)
+//		print(rotated(C)) << "---\n";
+	}
 	return 0;
 #if 0
 	{
