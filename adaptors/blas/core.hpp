@@ -14,13 +14,17 @@
 
 #include<complex>
 
-static_assert(sizeof(_BLAS_INT)==32/8 or sizeof(_BLAS_INT)==64/8, "please set _BLAS_INT to int32_t or int64_t");
+//static_assert(sizeof(_BLAS_INT)==32/8 or sizeof(_BLAS_INT)==64/8, "please set _BLAS_INT to int32_t or int64_t");
 
 #ifdef CBLAS_H
 #define BLAS(NamE) cblas_##NamE
 #else
 #define BLAS(NamE) NamE##_
 extern "C"{
+
+#ifndef _BLAS_INT
+#define _BLAS_INT __INTPTR_WIDTH__
+#endif
 
 #define s float
 #define d double
@@ -29,11 +33,18 @@ extern "C"{
 #define v void 
 #define C _Complex s
 #define Z _Complex d
-#define INT _BLAS_INT
+#if(_BLAS_INT==32)
+#define INT int32_t
+#endif
+#if(_BLAS_INT==64)
+#define INT int64_t
+#endif
 #define INTEGER INT const&
 #define N INTEGER n
 #define INCX INTEGER incx
 #define INCY INTEGER incy
+
+static_assert(sizeof(INT)==32/8 or sizeof(INT)==64/8, "please set _BLAS_INT to int32_t or int64_t");
 
 #define xROTG(T1, T2)     v BLAS(   T1##rotg)(T1 const*, T1 const*, T2*, T1*)
 #define xROTMG(T)         v BLAS(   T##rotmg)(T*, T*, T*, T const&, T(&param)[5])
@@ -68,9 +79,9 @@ xASUM(s, s, s); xASUM(d, d, d); xASUM(s, sc, c); xASUM(d, dz, z);
 IxAMAX(s); IxAMAX(d); IxAMAX(c); IxAMAX(z);
 
 #define TRANS const char& trans
-#define NR INT const& nr
-#define NC INT const& nc
-#define LDA INT const& lda
+#define NR INTEGER nr
+#define NC INTEGER nc
+#define LDA INTEGER lda
 
 #define xGEMV(T) void BLAS(T##gemv)(TRANS, NR, NC, T const& a, T const* A, LDA, T const* X, INCX, T const& beta, T*       Y, INCY)
 #define xGER(T)  void BLAS(T##ger )(       NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA)
@@ -84,9 +95,9 @@ xGERC(c); xGERC(z);
 
 #define TRANSA const char& transa
 #define TRANSB const char& transb
-#define NK INT const& nk
-#define LDB INT const& ldb
-#define LDC INT const& ldc
+#define NK INTEGER nk
+#define LDB INTEGER ldb
+#define LDC INTEGER ldc
 
 #define UPLO const char& uplo
 
@@ -146,15 +157,17 @@ using c = std::complex<s>;
 using z = std::complex<d>;
 using v = void;
 
+#define BC(x) [](auto const& xx){assert(xx >= std::numeric_limits<INT>::min()); assert(xx < std::numeric_limits<INT>::max()); return xx;}(x)
+
 #define xrotg(T1, T2)                       v   rotg (T1 const& a, T1 const& b, T2& cc, T1& ss){BLAS(T1##rotg )(const_cast<T1*>(&a), const_cast<T1*>(&b), &cc, &ss);}
 #define xrotmg(T)                           v   rotmg(T& d1, T& d2, T& A, T const& B, T(&p)[5]){BLAS(T##rotmg )(&d1, &d2, &A, B, p);}
-#define xrot(T, TT, CS)   template<class S> v   rot  (S n,       T       *x, S incx, T       *y, S incy, CS const& c, CS const& s){       BLAS(TT##rot )(n,    x, incx, y, incy, c, s);}
-#define xrotm(T)          template<class S> v   rotm (S n,       T       *x, S incx, T       *y, S incy, T const(&p)[5]){BLAS(T##rotm)(n, x, incx, y, incy, p);}
-#define xswap(T)          template<class S> v   swap (S n,       T       *x, S incx, T       *y, S incy){       BLAS( T##swap)(n,    x, incx, y, incy);} 
-#define xscal(XX, TA, TX) template<class S> TX* scal (S n, TA a, TX      *x, S incx                    ){       BLAS(XX##scal)(n, a, x, incx         ); return x+n*incx;}
-#define xcopy(T)          template<class S> v   copy (S n,       T const *x, S incx, T       *y, S incy){       BLAS( T##copy)(n,    x, incx, y, incy);} 
-#define xaxpy(T)          template<class S> T*  axpy (S n, T  a, T const *x, S incx, T       *y, S incy){       BLAS( T##axpy)(n, a, x, incx, y, incy); return y+n*incy;}
-#define xdot(R, TT, T)    template<class S> v   dot  (S n,       T const *x, S incx, T const *y, S incy, R& r){r = BLAS(TT##dot)(n,    x, incx, y, incy);               }
+#define xrot(T, TT, CS)   template<class S> v   rot  (S n,       T       *x, S incx, T       *y, S incy, CS const& c, CS const& s){       BLAS(TT##rot )(BC(n),    x, BC(incx), y, BC(incy), c, s);}
+#define xrotm(T)          template<class S> v   rotm (S n,       T       *x, S incx, T       *y, S incy, T const(&p)[5]){BLAS(T##rotm)(BC(n), x, BC(incx), y, BC(incy), p);}
+#define xswap(T)          template<class S> v   swap (S n,       T       *x, S incx, T       *y, S incy){       BLAS( T##swap)(BC(n),    x, BC(incx), y, BC(incy));} 
+#define xscal(XX, TA, TX) template<class S> TX* scal (S n, TA a, TX      *x, S incx                    ){       BLAS(XX##scal)(BC(n), a, x, BC(incx)         ); return x+n*incx;}
+#define xcopy(T)          template<class S> v   copy (S n,       T const *x, S incx, T       *y, S incy){       BLAS( T##copy)(BC(n),    x, BC(incx), y, BC(incy));} 
+#define xaxpy(T)          template<class S> T*  axpy (S n, T  a, T const *x, S incx, T       *y, S incy){       BLAS( T##axpy)(BC(n), a, x, BC(incx), y, BC(incy)); return y+n*incy;}
+#define xdot(R, TT, T)    template<class S> v   dot  (S n,       T const *x, S incx, T const *y, S incy, R& r){r = BLAS(TT##dot)(BC(n),    x, BC(incx), y, BC(incy));               }
 
 xrotg(s, s)    xrotg(d, d) //MKL extension xrotg(c, s); xrotg(z, d);
 xrotmg(s)      xrotmg(d)
@@ -184,8 +197,8 @@ template<class S, class T> T dot(S n, T const* x, S incx, T const* y, S incy){
 #undef xdot
 
 #ifndef CBLAS_H
-#define xdotu(T) template<class S> T dotu(S n, T const* x, S incx, T const* y, S incy){return BLAS(T##dotu)(n, x, incx, y, incy);}
-#define xdotc(T) template<class S> T dotc(S n, T const* x, S incx, T const* y, S incy){return BLAS(T##dotc)(n, x, incx, y, incy);}
+#define xdotu(T) template<class S> T dotu(S n, T const* x, S incx, T const* y, S incy){return BLAS(T##dotu)(BC(n), x, BC(incx), y, BC(incy));}
+#define xdotc(T) template<class S> T dotc(S n, T const* x, S incx, T const* y, S incy){return BLAS(T##dotc)(BC(n), x, BC(incx), y, BC(incy));}
 xdotu(c) xdotu(z)
 xdotc(c) xdotc(z)
 
@@ -195,34 +208,35 @@ xdotc(c) xdotc(z)
 #undef xdotu
 #undef xdotc
 #else
-#define xdotu(T) template<class S> T dotu(S n, T const* x, S incx, T const* y, S incy){T ret; BLAS(T##dotu_sub)(n, x, incx, y, incy, &ret); return ret;}
-#define xdotc(T) template<class S> T dotc(S n, T const* x, S incx, T const* y, S incy){T ret; BLAS(T##dotc_sub)(n, x, incx, y, incy, &ret); return ret;}
+#define xdotu(T) template<class S> T dotu(S n, T const* x, S incx, T const* y, S incy){T ret; BLAS(T##dotu_sub)(BC(n), x, BC(incx), y, BC(incy), &ret); return ret;}
+#define xdotc(T) template<class S> T dotc(S n, T const* x, S incx, T const* y, S incy){T ret; BLAS(T##dotc_sub)(BC(n), x, BC(incx), y, BC(incy), &ret); return ret;}
 xdotu(c) xdotu(z)
 xdotc(c) xdotc(z)
 #undef xdotu
 #undef xdotc
 #endif
 
-template<class S> s dot(S n, s const& b, s const* x, S incx, s const* y, S incy){return BLAS(sdsdot)(n, b, x, incx, y, incy);}
+template<class S> s dot(S n, s const& b, s const* x, S incx, s const* y, S incy){return BLAS(sdsdot)(BC(n), b, x, BC(incx), y, BC(incy));}
 
-#define xnrm2(R, T, TT) template<class S>    R nrm2 (S n, T const* x, S incx){return BLAS(TT##nrm2  )(n, x, incx);}
-#define xasum(T, TT)    template<class S> auto asum (S n, T const* x, S incx){return BLAS(TT##asum  )(n, x, incx);}
-#define ixamax(T)       template<class S> auto iamax(S n, T const* x, S incx){return BLAS(i##T##amax)(n, x, incx);}
- xnrm2(s, s, s) xnrm2(d, d, d)                                    xnrm2(s, c, sc)              xnrm2(d, z, dz)
- xasum(s, s)    xasum(d, d)                        xasum (c, sc)                  xasum(z, dz)
+#define xnrm2(R, T, TT) template<class S>    R nrm2 (S n, T const* x, S incx){return BLAS(TT##nrm2  )(BC(n), x, BC(incx));}
+#define xasum(T, TT)    template<class S> auto asum (S n, T const* x, S incx){return BLAS(TT##asum  )(BC(n), x, BC(incx));}
+#define ixamax(T)       template<class S> auto iamax(S n, T const* x, S incx){return BLAS(i##T##amax)(BC(n), x, BC(incx));}
+xnrm2(s, s, s) xnrm2(d, d, d)                                    xnrm2(s, c, sc)              xnrm2(d, z, dz)
+xasum(s, s)    xasum(d, d)                        xasum (c, sc)                  xasum(z, dz)
 ixamax(s)      ixamax(d)       ixamax(c) ixamax(z)
 #undef xnrm2
 #undef xasum
 #undef ixamax
 
+
 ///////////////////////////////////////////////////////////////////////////////
 // LEVEL2
-#define xgemv(T) template<class C, class S> v gemv(C trans, S m, S n, T const& a, T const* A, S lda, T const* X, S incx, T beta, T*       Y, S incy             ){BLAS(T##gemv)(trans, m, n, a, A, lda, X, incx, beta, Y, incy        );}
-#define xger(T)  template<         class S> v ger(          S m, S n, T const& a,                    T const* X, S incx,         T const* Y, S incy, T* A, S lda){BLAS(T##ger )(       m, n, a,         X, incx,       Y, incy, A, lda);}
-                 template<         class S> v ger(          S m, S n, c const& a,                    c const* X, S incx,         c const* Y, S incy, c* A, S lda){BLAS(cgeru  )(       m, n, a,         X, incx,       Y, incy, A, lda);}
-                 template<         class S> v ger(          S m, S n, z const& a,                    z const* X, S incx,         z const* Y, S incy, z* A, S lda){BLAS(zgeru  )(       m, n, a,         X, incx,       Y, incy, A, lda);}
-#define xgeru(T) template<         class S> v geru(         S m, S n, T const& a,                    T const* X, S incx,         T const* Y, S incy, T* A, S lda){BLAS(T##geru)(       m, n, a,         X, incx,       Y, incy, A, lda);}
-#define xgerc(T) template<         class S> v gerc(         S m, S n, T const& a,                    T const* X, S incx,         T const* Y, S incy, T* A, S lda){BLAS(T##gerc)(       m, n, a,         X, incx,       Y, incy, A, lda);}
+#define xgemv(T) template<class C, class S> v gemv(C trans, S m, S n, T const& a, T const* A, S lda, T const* X, S incx, T beta, T*       Y, S incy             ){BLAS(T##gemv)(trans, BC(m), BC(n), a, A, BC(lda), X, BC(incx), beta, Y, BC(incy)            );}
+#define xger(T)  template<         class S> v ger(          S m, S n, T const& a,                    T const* X, S incx,         T const* Y, S incy, T* A, S lda){BLAS(T##ger )(       BC(m), BC(n), a,             X, BC(incx),       Y, BC(incy), A, BC(lda));}
+                 template<         class S> v ger(          S m, S n, c const& a,                    c const* X, S incx,         c const* Y, S incy, c* A, S lda){BLAS(cgeru  )(       BC(m), BC(n), a,             X, BC(incx),       Y, BC(incy), A, BC(lda));}
+                 template<         class S> v ger(          S m, S n, z const& a,                    z const* X, S incx,         z const* Y, S incy, z* A, S lda){BLAS(zgeru  )(       BC(m), BC(n), a,             X, BC(incx),       Y, BC(incy), A, BC(lda));}
+#define xgeru(T) template<         class S> v geru(         S m, S n, T const& a,                    T const* X, S incx,         T const* Y, S incy, T* A, S lda){BLAS(T##geru)(       BC(m), BC(n), a,             X, BC(incx),       Y, BC(incy), A, BC(lda));}
+#define xgerc(T) template<         class S> v gerc(         S m, S n, T const& a,                    T const* X, S incx,         T const* Y, S incy, T* A, S lda){BLAS(T##gerc)(       BC(m), BC(n), a,             X, BC(incx),       Y, BC(incy), A, BC(lda));}
 xgemv(s) xgemv(d) xgemv(c) xgemv(z)
 xger(s)   xger(d)
                   xgeru(c) xgeru(z)
@@ -234,11 +248,13 @@ xger(s)   xger(d)
 
 ///////////////////////////////////////////////////////////////////////////////
 // LEVEL 3
-#define xgemm(T) template<class C, class S> v gemm(C transA, C transB, S m, S n, S k, T const& a, T const* A, S lda, T const* B, S ldb, T const& beta, T* CC, S ldc){BLAS(T##gemm)(transA, transB, m, n, k, a, A, lda, B, ldb, beta, CC, ldc);}
-#define xherk(T) template<class UL, class C, class S, class Real> v herk(UL ul, C transA, S n, S k, Real alpha, T const* A, S lda, Real beta, T* CC, S ldc){BLAS(T##herk)(ul, transA, n, k, alpha, A, lda, beta, CC, ldc);}
+#define xgemm(T) template<class C, class S> v gemm(C transA, C transB, S m, S n, S k, T const& a, T const* A, S lda, T const* B, S ldb, T const& beta, T* CC, S ldc){BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), a, A, BC(lda), B, BC(ldb), beta, CC, BC(ldc));}
+#define xherk(T) template<class UL, class C, class S, class Real> v herk(UL ul, C transA, S n, S k, Real alpha, T const* A, S lda, Real beta, T* CC, S ldc){BLAS(T##herk)(ul, transA, BC(n), BC(k), alpha, A, BC(lda), beta, CC, BC(ldc));}
 
 xgemm(s) xgemm(d) xgemm(c) xgemm(z)
                   xherk(c) xherk(z)
+
+#undef BC
 
 }}}
 ///////////////////////////////////////////////////////////////////////////////
