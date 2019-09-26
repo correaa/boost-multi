@@ -12,6 +12,7 @@
 
 //#include <cblas/cblas.h>
 
+#include<cassert>
 #include<complex>
 
 //static_assert(sizeof(_BLAS_INT)==32/8 or sizeof(_BLAS_INT)==64/8, "please set _BLAS_INT to int32_t or int64_t");
