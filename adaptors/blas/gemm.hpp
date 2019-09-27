@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"">$0.cpp)&& clang++ -O3 -Ofast -std=c++14 -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_BLAS_GEMV $0.cpp -o $0x \
+(echo "#include\""$0"\"">$0.cpp)&&clang++ -Ofast -std=c++14 -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_MULTI_ADAPTORS_BLAS_GEMV $0.cpp -o $0x \
 `#-lblas` \
 -Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
@@ -75,25 +75,26 @@ auto gemm(Op opA, Op opB, AA a, A2DIt Af, A2DIt Al, B2DIt Bf, B2DIt Bl, BB b, C2
 
 template<class Op, class AA, class BB, class A2D, class B2D, class C2D>
 decltype(auto) gemm(Op opA, Op opB, AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
-	assert(begin(A)->stride() == 1 and begin(B)->stride()==1 and begin(C)->stride()==1);
+	using std::begin;
+	assert(stride(*begin(A)) == 1 and stride(*begin(B))==1 and stride(*begin(C))==1);
 	if((opA == 'T' or opA == 'C') and (opB == 'T' or opB == 'C')){ // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
-		assert(begin(A)->size() == size(B) and size(A)==begin(C)->size() and begin(B)->size() == size(C));
+		assert(size(*begin(A)) == size(B) and size(A)==size(*begin(C)) and size(*begin(B)) == size(C));
 		gemm(opA, opB, size(A), size(C), size(B), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
 		return std::forward<C2D>(C);
 	}
 	if(opA == 'N' and (opB == 'T' or opB == 'C')){
-		assert(size(A) == size(B) and begin(A)->size()==begin(C)->size() and begin(B)->size() == size(C));
-		gemm(opA, opB, begin(A)->size(), size(C), size(B), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
+		assert(size(A) == size(B) and size(*begin(A))==size(*begin(C)) and size(*begin(B)) == size(C));
+		gemm(opA, opB, size(*begin(A)), size(C), size(B), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
 		return std::forward<C2D>(C);
 	}
 	if((opA == 'T' or opA == 'C') and (opB == 'N')){
-		assert(begin(A)->size() == begin(B)->size() and size(A)==begin(C)->size() and size(B) == size(C));
-		gemm(opA, opB, size(A), size(C), begin(B)->size(), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
+		assert(size(*begin(A)) == size(*begin(B)) and size(A)==size(*begin(C)) and size(B) == size(C));
+		gemm(opA, opB, size(A), size(C), size(*begin(B)), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
 		return std::forward<C2D>(C);
 	}
 	if((opA == 'N') and (opB == 'N')){
-		assert(size(A) == begin(B)->size() and begin(A)->size()==begin(C)->size() and size(B) == size(C));
-		gemm(opA, opB, begin(A)->size(), size(C), begin(B)->size(), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
+		assert(size(A) == size(*begin(B)) and size(*begin(A))==size(*begin(C)) and size(B) == size(C));
+		gemm(opA, opB, size(*begin(A)), size(C), size(*begin(B)), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
 		return std::forward<C2D>(C);
 	}
 	assert(0);
@@ -199,6 +200,8 @@ template<class M> decltype(auto) print(M const& C){
 	return std::cout << std::endl;
 }
 
+void f(double*){}
+
 int main(){
 	using multi::blas::gemm;
 	{
@@ -214,6 +217,19 @@ int main(){
 		multi::array<double, 2> C({4, 2});
 		gemm('T', 'T', 1., A, B, 0., C); // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
 		print(rotated(C)) << "---\n"; //{{76., 117., 23., 13.}, {159., 253., 47., 42.}}
+	}
+	{
+		double A[2][3] = {
+			{ 1., 3., 4.},
+			{ 9., 7., 1.}
+		};
+		double B[3][4] = {
+			{ 11., 12., 4., 3.},
+			{  7., 19., 1., 2.},
+			{ 11., 12., 4., 1.}
+		};
+		double C[4][2];
+		gemm('T', 'T', 1., A, B, 0., C); // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
 	}
 	{
 		multi::array<double, 2> const A = {
