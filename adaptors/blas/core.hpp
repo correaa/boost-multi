@@ -102,7 +102,7 @@ xGERC(c); xGERC(z);
 
 #define UPLO const char& uplo
 
-#define xGEMM(T) void BLAS(T##gemm)(TRANSA, TRANSB, NR, NC, NK, T const& a, T const* A, LDA, T const* B, LDB, T const& b, T* CC, LDC)
+#define xGEMM(T) void BLAS(T##gemm)(TRANSA, TRANSB, NR, NC, NK, T const& a, T const* A, LDA, T const* B, LDB, T const& b, T const* CC, LDC)
 #define xHERK(TT, T) void BLAS(T##herk)(UPLO, TRANSA, NR, NK, TT const& a, T const* A, LDA, TT const& b, T* CC, LDC) 
 xGEMM(s); xGEMM(d); xGEMM(c)   ; xGEMM(z)   ;
                     xHERK(s, c); xHERK(d, z);
