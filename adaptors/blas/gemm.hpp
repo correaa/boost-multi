@@ -1,13 +1,13 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"">$0.cpp)&&clang++ -Ofast -std=c++14 -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_MULTI_ADAPTORS_BLAS_GEMV $0.cpp -o $0x \
+(echo "#include\""$0"\"">$0.cpp)&&clang++ -Ofast -std=c++14 -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_MULTI_ADAPTORS_BLAS_GEMM $0.cpp -o $0x \
 `#-lblas` \
 -Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
 #endif
 // Alfredo A. Correa 2019 ©
 
-#ifndef MULTI_ADAPTORS_BLAS_GEMV_HPP
-#define MULTI_ADAPTORS_BLAS_GEMV_HPP
+#ifndef MULTI_ADAPTORS_BLAS_GEMM_HPP
+#define MULTI_ADAPTORS_BLAS_GEMM_HPP
 #include "../blas/core.hpp"
 
 namespace boost{
@@ -109,71 +109,11 @@ decltype(auto) gemm(AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
 	return std::forward<C2D>(C);
 }
 
-template<class UL, class Op, class AA, class BB, class A2D, class C2D>
-void herk(UL uplo, Op op, AA a, A2D const& A, BB b, C2D&& C){
-	if(uplo == 'U' and (op == 'C' or op == 'T')){
-		herk(uplo, op, size(C), begin(A)->size(), a, base(A), stride(A), b, base(C), stride(C));
-		return;
-	}
-	assert(0);
-}
-
-//template<class Op, class A2D, class B2D, class C2D>
-//C2D&& gemm(Op TA, Op TB, A2D const& A, B2D const& B, C2D&& C){
-//	return gemm(TA, TB, 1., A, B, 0., std::forward<C2D>(C));
-//}
-
-//template<class AA, class BB, class A2D, class B2D, class C2D>
-//C2D&& gemm(AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
-//}
-#if 0
-template<class AA, class BB, class A2D, class B2D, class C2D>
-C2D&& gemm(AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
-	switch(stride(C)){
-		case  1: gemm(a, rotated(B), rotated(A), b, rotated(C)); break;
-		default: switch(stride(A)){
-			case  1: switch(stride(B)){
-				case  1: gemm('T', 'T', a, rotated(B), rotated(A), b, C); break;
-				default: gemm('N', 'T', a, B, rotated(A), b,          C);
-			}; break;
-			default: switch(stride(B)){
-				case  1: gemm('T', 'N', a, rotated(B), A, b, C); break;
-				default: gemm('N', 'N', a, B         , A, b, C);
-			}
-		}
-	}
-	return std::forward<C2D>(C);
-#if 0
-	switch(stride(A)){
-		case 1: switch(stride(B)){
-			case  1: switch(stride(C)){
-				case  1: gemm('N', 'N', a, rotated(B), rotated(A), b, rotated(C)); break; // C = A.B, C^T = (A.B)^T, C^T = B^T.A^T
-				default: gemm('T', 'T', a, rotated(B), rotated(A), b,         C );
-			} break;
-			default: switch(stride(C)){
-				case  1: gemm('T', 'T', a, A, rotated(A), b, rotated(C)); break;
-				default: gemm('N', 'T', a, B, rotated(A), b,         C );
-			}
-		}; break;
-		default: switch(stride(B)){
-			case 1: switch(stride(C)){
-				case 1:  gemm(a, rotated(B), rotated(A), b, rotated(C)); break;
-				default: gemm('T', 'N', a, rotated(B), A, b,         C );
-			}; break;
-			default: switch(stride(C)){
-				case 1:  gemm(a, rotated(B), rotated(A), b, rotated(C) ); break; // C^T = (A*B)^T
-				default: gemm('N', 'N', a, B, A, b,         C ); // C = A.B
-			}
-		}
-	}
-	return std::forward<C2D>(C);
-#endif
-}
-#endif
-
 }}}
 
-#if _TEST_MULTI_ADAPTORS_BLAS_GEMV
+#if _TEST_MULTI_ADAPTORS_BLAS_GEMM
+
+#include "../blas/herk.hpp"
 
 #include "../../array.hpp"
 #include "../../utility.hpp"
@@ -192,6 +132,7 @@ using std::cerr;
 namespace multi = boost::multi;
 
 template<class M> decltype(auto) print(M const& C){
+	using boost::multi::size;
 	for(int i = 0; i != size(C); ++i){
 		for(int j = 0; j != size(C[i]); ++j)
 			std::cout << C[i][j] << ' ';
@@ -300,14 +241,14 @@ int main(){
 		gemm('T', 'N', 1., A, A, 0., C); // C^T = C = A*A^T , C = (A*A^T)^T, C = A*A^T = C^T, if A, B, C are c-ordering (e.g. array or array_ref)
 		print(rotated(C)) << "---\n"; //{{76., 117., 23., 13.}, {159., 253., 47., 42.}}
 	}
+	using std::complex;
+	constexpr auto const I = complex<double>{0., 1.};
 	{
-		using std::complex;
-		auto I = std::complex<double>{0., 1.};
 		multi::array<complex<double>, 2> const A = {
 			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
 			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
 		};
-		multi::array<std::complex<double>, 2> C({2, 2});
+		multi::array<complex<double>, 2> C({2, 2});
 		gemm('C', 'N', 1., A, A, 0., C); // C^H = C = A*A^H , C = (A*A^H)^H, C = A*A^H = C^H, if A, B, C are c-ordering (e.g. array or array_ref)
 		print(C) << "---\n";
 		multi::array<std::complex<double>, 2> CC({2, 2});
@@ -315,6 +256,33 @@ int main(){
 		herk('U', 'C', 1., A, 0., CC); // CC^H = CC = A*A^H, CC = (A*A^H)^H, CC = A*A^H, C lower triangular
 		print(CC) << "---\n";
 	}
+	{
+		complex<double> const A[2][3] = {
+			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
+			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
+		};
+		complex<double> C[2][2];
+		gemm('C', 'N', 1., A, A, 0., C); // C^H = C = A*A^H , C = (A*A^H)^H, C = A*A^H = C^H, if A, B, C are c-ordering (e.g. array or array_ref)
+		print(C) << "---\n";
+		complex<double> CC[2][2];
+		using multi::blas::herk;
+		herk('U', 'C', 1., A, 0., CC); // CC^H = CC = A*A^H, CC = (A*A^H)^H, CC = A*A^H, C lower triangular
+		print(CC) << "---\n";
+	}
+	{
+		multi::array<complex<double>, 2> const A = {
+			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
+			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
+		};
+		multi::array<complex<double>, 2> C({3, 3});
+		gemm('N', 'C', 1., A, A, 0., C); // C^H = C = A^H*A , C = (A^H*A)^H, C = A*A^H = C^H, if A, B, C are c-ordering (e.g. array or array_ref)
+	//	print(C) << "---\n";
+		multi::array<complex<double>, 2> CC({3, 3});
+		using multi::blas::herk;
+		herk('U', 'N', 1., A, 0., CC); // CC^H = CC = A*A^H, CC = (A*A^H)^H, CC = A*A^H, C lower triangular
+		print(CC) << "---\n";
+	}
+	return 0;
 	{
 	{
 		using std::complex;
