@@ -17,7 +17,7 @@ namespace blas{
 
 struct trans{enum : char{N='N', T='T', C='C'};};
 
-struct conj{template<class T> auto operator()(T const& t) const{using std::conj; return conj(t);}};
+//struct conj{template<class T> auto operator()(T const& t) const{using std::conj; return conj(t);}};
 
 template<class Trans, class T, class ItA, class Size, class Itx, class Ity>
 Ity gemv_n(Trans IN, T a, ItA A_first, Size n, Itx x_first, T beta, Ity y_first){
