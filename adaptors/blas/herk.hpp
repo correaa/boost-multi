@@ -1,7 +1,7 @@
 #ifdef COMPILATION_INSTRUCTIONS
 (echo "#include\""$0"\"">$0.cpp)&&clang++ -Ofast -std=c++14 -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_MULTI_ADAPTORS_BLAS_HERK $0.cpp -o $0x \
-`#-lblas` \
--Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core \
+`pkg-config --libs blas64` \
+`#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
 #endif
 // Alfredo A. Correa 2019 ©
@@ -204,6 +204,12 @@ int main(){
 		multi::array<complex, 2> C({2, 2}, 9999.);
 		herk(rotated(A), rotated(C)); // CC^H = CC =  A*A^H, information in C upper triangular
 		print(C) <<"---\n";
+	}
+	{
+		multi::array<complex, 2> const A({2000, 2000}); std::iota(data_elements(A), data_elements(A) + num_elements(A), 0.2);
+		multi::array<complex, 2> C({2000, 2000}, 9999.);
+		boost::timer::auto_cpu_timer t;
+		herk(rotated(A), rotated(C)); // CC^H = CC =  A*A^H, information in C upper triangular
 	}
 	return 0;
 }
