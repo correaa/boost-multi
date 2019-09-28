@@ -16,17 +16,6 @@ namespace multi{namespace blas{
 
 template<class UL, class Op, class AA, class BB, class A2D, class C2D>
 C2D&& herk(UL uplo, Op op, AA a, A2D const& A, BB b, C2D&& C){
-	if(stride(*begin(C))!=1){
-		if(uplo == 'U'){
-			herk('L', op, a, A, b, rotated(C));
-			return std::forward<C2D>(C);
-		}
-		if(uplo == 'L'){
-			herk('U', op, a, A, b, rotated(C));
-			return std::forward<C2D>(C);
-		}
-		assert(0);
-	}
 	if(op == 'C'){
 		assert(size(A) == size(C));
 		assert(stride(*begin(A))==1); assert(stride(*begin(C))==1);
@@ -50,14 +39,13 @@ C2D&& herk(UL uplo, AA a, A2D const& A, BB b, C2D&& C){
 
 template<class AA, class BB, class A2D, class C2D>
 C2D&& herk(AA a, A2D const& A, BB b, C2D&& C){
-	if(stride(A)==1) herk('L', 'C', a, rotated(A), b, std::forward<C2D>(C));
-	else             herk('L', 'N', a,         A , b, std::forward<C2D>(C));
-	for(std::ptrdiff_t i = 0; i != size(C); ++i)
-		for(std::ptrdiff_t j = 0; j != i; ++j)
-			C[j][i] = conj(C[i][j]);
+	if(stride(C)==1) herk('L', a, A, b, rotated(std::forward<C2D>(C)));
+	else             herk('U', a, A, b,         std::forward<C2D>(C) );
 	return std::forward<C2D>(C);
 }
 
+template<class A2D, class C2D>
+C2D&& herk(A2D const& A, C2D&& C){return herk(1., A, 0., std::forward<C2D>(C));}
 
 }}}
 
@@ -96,448 +84,128 @@ void f(double*){}
 int main(){
 	using multi::blas::gemm;
 	using multi::blas::herk;
-	using std::complex;
-	constexpr auto const I = complex<double>{0., 1.};
+	using complex = std::complex<double>;
+	constexpr auto const I = complex{0., 1.};
 	{
-		multi::array<complex<double>, 2> const A = {
+		multi::array<complex, 2> const A = {
 			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
 			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
 		};
-		multi::array<complex<double>, 2> C({2, 2});
-		gemm('C', 'N', 1., A, A, 0., C); // C^H = C = A*A^H , C = (A*A^H)^H, C = A*A^H = C^H, if A, B, C are c-ordering (e.g. array or array_ref)
-		print(C) << "---\n";
-		multi::array<std::complex<double>, 2> CC({2, 2});
-		herk('U', 'C', 1., A, 0., CC); // CC^H = CC = A*A^H, CC = (A*A^H)^H, CC = A*A^H, C lower triangular
-		print(CC) << "---\n";
+		multi::array<complex, 2> C({3, 3}, 9999.);
+		herk('U', 'N', 1., A, 0., C); // CC^H = CC =  A^H*A = (A^H*A)^H, A^H*A, A and C are C-ordering, information in C lower triangular
+	//	herk('U', 'N', 1., A, 0., C); // error: C must be C-ordering
+	//	herk('U', 'N', 1., rotated(A), 0., C); // error: A must be C-ordering
+		print(C) <<"---\n";
 	}
 	{
-		complex<double> const A[2][3] = {
+		multi::array<complex, 2> const A = {
 			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
 			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
 		};
-		complex<double> C[2][2];
-		gemm('C', 'N', 1., A, A, 0., C); // C^H = C = A*A^H , C = (A*A^H)^H, C = A*A^H = C^H, if A, B, C are c-ordering (e.g. array or array_ref)
-		print(C) << "---\n";
-		complex<double> CC[2][2];
-		herk('U', 'C', 1., A, 0., CC); // CC^H = CC = A*A^H, CC = (A*A^H)^H, CC = A*A^H, C lower triangular
-		print(CC) << "---\n";
+		multi::array<complex, 2> C({3, 3}, 9999.);
+		herk('L', 'N', 1., A, 0., C); // CC^H = CC =  A^H*A = (A^H*A)^H, A^H*A, A and C are C-ordering, information in C upper triangular
+		print(C) <<"---\n";
 	}
 	{
-		multi::array<complex<double>, 2> const A = {
+		multi::array<complex, 2> const A = {
 			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
 			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
 		};
-		multi::array<complex<double>, 2> C({3, 3});
-		gemm('N', 'C', 1., A, A, 0., C); // C^H = C = A^H*A , C = (A^H*A)^H, C = A*A^H = C^H, if A, B, C are c-ordering (e.g. array or array_ref)
-	//	print(C) << "---\n";
-		multi::array<complex<double>, 2> CC({3, 3});
-		using multi::blas::herk;
-		herk('U', 'N', 1., A, 0., CC); // CC^H = CC = A*A^H, CC = (A*A^H)^H, CC = A*A^H, C lower triangular
-		print(CC) << "---\n";
+		multi::array<complex, 2> C({2, 2}, 9999.);
+		herk('U', 'C', 1., A, 0., C); // CC^H = CC =  A*A^H, A and C are C-ordering, information in C lower triangular
+		print(C) <<"---\n";
 	}
 	{
-		multi::array<complex<double>, 2> const A = {
+		multi::array<complex, 2> const A = {
 			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
 			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
 		};
-		multi::array<complex<double>, 2> CC({3, 3});
-		using multi::blas::herk;
-		herk('L', 'N', 1., A, 0., CC); // CC^H = CC = A^H*A = (A^H*A)^H, A^H*A, A C-ordering, C lower triangular
-		print(CC) << "---\n";
+		multi::array<complex, 2> C({2, 2}, 9999.);
+		herk('L', 'C', 1., A, 0., C); // CC^H = CC =  A*A^H, A and C are C-ordering, information in C upper triangular
+		print(C) <<"---\n";
 	}
 	{
-		multi::array<complex<double>, 2> const A = {
+		multi::array<complex, 2> const A = {
 			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
 			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
 		};
-		multi::array<complex<double>, 2> CC({2, 2});
-		using multi::blas::herk;
-		herk('U', 'C', 1., A, 0., CC); // CC^H = CC = A^H*A^H, CC = (A*A^H)^H, CC = A*A^H, C lower triangular
-		print(CC) << "---\n";
+		multi::array<complex, 2> C({3, 3}, 9999.);
+		herk('U', 1., A, 0., C); // CC^H = CC =  A^H*A, C is C-ordering, information in C lower triangular
+		print(C) <<"---\n";
 	}
 	{
-		multi::array<complex<double>, 2> const A = {
+		multi::array<complex, 2> const A = {
 			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
 			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
 		};
-		multi::array<complex<double>, 2> CC({3, 3});
-		using multi::blas::herk;
-		herk('U', 1., A, 0., CC); // CC^H = CC =  A^H*A = (A^H*A)^H, A^H*A, A C-ordering, C lower triangular
-		print(CC) << "---\n";
+		multi::array<complex, 2> C({2, 2}, 9999.);
+		herk('U', 1., rotated(A), 0., C); // CC^H = CC =  A*A^H, C is C-ordering, information in C lower triangular
+		print(C) <<"---\n";
 	}
 	{
-		multi::array<complex<double>, 2> const A = {
-			{1. + 3.*I, 9. + 1.*I}, 
-			{3. - 2.*I, 7. - 8.*I}, 
-			{4. + 1.*I, 1. - 3.*I}
-		};
-		multi::array<complex<double>, 2> CC({3, 3});
-		using multi::blas::herk;
-		herk('U', 1., rotated(A), 0., CC); // CC^H = CC =  A*A^H = (A*A^H)^H, A*A^H, A C-ordering, C upper triangular
-		print(CC) << "---\n";
-	}
-	{
-		multi::array<complex<double>, 2> const A = {
+		multi::array<complex, 2> const A = {
 			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
 			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
 		};
-		multi::array<complex<double>, 2> CC({3, 3});
-		using multi::blas::herk;
-		herk(1., A, 0., CC); // CC^H = CC =  A^H*A = (A^H*A)^H, A^H*A, A C-ordering, C lower triangular
-		print(CC) << "---\n";
+		multi::array<complex, 2> C({3, 3}, 9999.);
+		herk(1., A, 0., C); // CC^H = CC =  A^H*A, information in C lower triangular
+		print(C) <<"---\n";
+	}
+	{
+		multi::array<complex, 2> const A = {
+			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
+			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
+		};
+		multi::array<complex, 2> C({3, 3}, 9999.);
+		herk(1., A, 0., rotated(C)); // CC^H = CC =  A^H*A, information in C upper triangular
+		print(C) <<"---\n";
+	}
+	{
+		multi::array<complex, 2> const A = {
+			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
+			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
+		};
+		multi::array<complex, 2> C({2, 2}, 9999.);
+		herk(1., rotated(A), 0., C); // CC^H = CC =  A*A^H, information in C lower triangular
+		print(C) <<"---\n";
+	}
+	{
+		multi::array<complex, 2> const A = {
+			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
+			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
+		};
+		multi::array<complex, 2> C({2, 2}, 9999.);
+		herk(1., rotated(A), 0., rotated(C)); // CC^H = CC =  A*A^H, information in C upper triangular
+		print(C) <<"---\n";
+	}
+	{
+		multi::array<complex, 2> const A = {
+			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
+			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
+		};
+		multi::array<complex, 2> C({3, 3}, 9999.);
+		herk(A, C); // CC^H = CC =  A^H*A, information in C lower triangular
+		print(C) <<"---\n";
+	}
+	{
+		multi::array<complex, 2> const A = {
+			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
+			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
+		};
+		multi::array<complex, 2> C({2, 2}, 9999.);
+		herk(rotated(A), C); // C^H = C =  A*A^H, also C = (A^T)^H*(A^T) information in C lower triangular
+		print(C) <<"---\n";
+	}
+	{
+		multi::array<complex, 2> const A = {
+			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
+			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
+		};
+		multi::array<complex, 2> C({2, 2}, 9999.);
+		herk(rotated(A), rotated(C)); // CC^H = CC =  A*A^H, information in C upper triangular
+		print(C) <<"---\n";
 	}
 	return 0;
-	{
-		multi::array<complex<double>, 2> const A = {
-			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
-			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
-		};
-		multi::array<complex<double>, 2> CC({2, 2});
-		using multi::blas::herk;
-		herk('U', 1., rotated(A), 0., CC); // CC^H = CC =  A*A^H = (A*A^H)^H, A*A^H, A C-ordering, C lower triangular
-		print(CC) << "---\n";
-	}
-	{
-		multi::array<complex<double>, 2> const A_aux = {
-			{1. + 3.*I, 9. + 1.*I}, 
-			{3. - 2.*I, 7. - 8.*I}, 
-			{4. + 1.*I, 1. - 3.*I}
-		};
-		auto const& A = rotated(A_aux);
-		multi::array<complex<double>, 2> CC({2, 2});
-		using multi::blas::herk;
-		herk('L', 1., rotated(A), 0., rotated(CC)); // CC^H = CC =  A*A^H = (A*A^H)^H, A*A^H, A C-ordering, C upper triangular
-		print(CC) << "---\n";
-	}
-	return 0;
-	{
-	{
-		using std::complex;
-		{
-			multi::array<complex<double>, 2> const A({1000, 1000}); std::iota(data_elements(A), data_elements(A) + num_elements(A), 0.1);
-			multi::array<std::complex<double>, 2> C({size(A), size(A)});
-			{
-			boost::timer::auto_cpu_timer t;
-			using multi::blas::herk;
-			herk('U', 'C', 1., A, 0., C); // C^H = C = A*A^H, C = (A*A^H)^H, C = A*A^H, C lower triangular. if A, B, C are c-ordering (e.g. array or array_ref)
-			}
-			cerr << C[10][1] << std::endl;
-		}
-		{
-			multi::array<complex<double>, 2> const A({1000, 1000}); std::iota(data_elements(A), data_elements(A) + num_elements(A), 0.1);
-			multi::array<std::complex<double>, 2> C({size(A), size(A)});
-			{
-			boost::timer::auto_cpu_timer t;
-			gemm('C', 'N', 1., A, A, 0., C); // C^H = C = A*A^H , C = (A*A^H)^H, C = A*A^H = C^H, if A, B, C are c-ordering (e.g. array or array_ref)
-			}
-			cerr << C[10][1] << std::endl;
-		}
-		{
-			multi::array<complex<double>, 2> const A({2000, 2000}); std::iota(data_elements(A), data_elements(A) + num_elements(A), 0.1);
-			multi::array<complex<double>, 2> const B({2000, 2000}); std::iota(data_elements(B), data_elements(B) + num_elements(B), 1.2);
-			multi::array<std::complex<double>, 2> C({size(A), size(A)});
-			{
-			boost::timer::auto_cpu_timer t;
-			gemm('C', 'N', 1., A, B, 0., C); // C^H = C = A*A^H , C = (A*A^H)^H, C = A*A^H = C^H, if A, B, C are c-ordering (e.g. array or array_ref)
-			}
-			cerr << C[1222][134] << std::endl;
-		}
-	//	print(C) << "---\n";
-	//	print(CC) << "---\n";
-	}
-
-	}
-	return 0; 
-#if 0
-	{
-		multi::array<double, 2> const A = {
-			{ 1., 1., 1.},
-			{ 0., 0., 0.},
-			{ 0., 0., 0.}
-		};
-		multi::array<double, 2> const B = {
-			{ 1., 0., 0.},
-			{ 1., 0., 0.},
-			{ 1., 0., 0.},
-		};
-		using multi::blas::gemm;
-
-		multi::array<double, 2> C1({3, 3});
-		gemm('N', 'N', 1., B, A, 0., C1); // C = A*B , C^T = (B^T).(A^T) , if A, B, C are c-ordering
-		print(C1);
-
-		multi::array<double, 2> C2({3, 3});
-		gemm('N', 'N', 1., A, B, 0., C2); // C = B*A , C^T = (A^T).(B^T) , if A, B, C are c-ordering
-		print(C2);
-	}
-	{
-		multi::array<double, 2> const A = {
-			{ 1., 1., 1.},
-			{ 0., 0., 0.},
-			{ 0., 0., 0.},
-			{ 0., 0., 0.}
-		};
-		multi::array<double, 2> const B = {
-			{ 1., 0., 0., 0., 0.},
-			{ 1., 0., 0., 0., 0.},
-			{ 1., 0., 0., 0., 0,}
-		};
-		multi::array<double, 2> C({4, 5});
-
-		using multi::blas::gemm;
-		gemm('N', 'N', 1., B, A, 0., C); // C = A*B , C^T = (B^T).(A^T) , if A, B, C are c-ordering
-		print(C);
-	}
-	{
-		multi::array<double, 2> const A = {
-			{ 1., 2., 3.},
-			{ 1., 4., 5.}
-		};
-		multi::array<double, 2> C({2, 2});
-		using multi::blas::gemm;
-		gemm('T', 'N', 1., A, A, 0., C); // C = A*B , C^T = (B^T).(A^T) , if A, B, C are c-ordering
-		print(C);
-	}
-	{
-		multi::array<double, 2> const A = {
-			{ 0., 0., 0.},
-			{ 1., 1., 1.}
-		};
-		multi::array<double, 2> const B = {
-			{ 0., 1., 0.},
-			{ 0., 1., 0.},
-			{ 0., 1., 0.}
-		};
-		multi::array<double, 2> C({2, 3});
-
-		using multi::blas::gemm;
-		gemm('N', 'N', 1., B, A, 0., C); // C = A*B , C^T = (B^T).(A^T) , if A, B, C are c-ordering
-		print(C);
-	}
-	{
-		multi::array<double, 2> const A = {
-			{ 0., 0., 0.},
-			{ 0., 0., 1.},
-			{ 0., 0., 0.}
-		};
-		multi::array<double, 2> const B = {
-			{ 0., 1., 0.},
-			{ 0., 0., 0.},
-			{ 0., 0., 0.}
-		};
-		multi::array<double, 2> C({3, 3});
-
-		using multi::blas::gemm; 
-		gemm('T', 'T', 1., B, A, 0., C); // C = (B*A)^T , C^T = A*B, C=A^T*B^T , if A, B, C are c-ordering
-		print(C);
-
-	}
-	{
-		multi::array<double, 2> const A = {
-			{ 0., 0., 0., 0.},
-			{ 0., 1., 0., 0.},
-			{ 0., 0., 0., 0.},
-			{ 0., 0., 0., 0.},
-			{ 0., 0., 0., 0.}
-		};
-		multi::array<double, 2> const B = {
-			{ 0., 0., 0., 0., 0.},
-			{ 0., 1., 0., 0., 0.},
-			{ 0., 0., 0., 0., 0.}
-		};
-		multi::array<double, 2> C({4, 3});
-
-		using multi::blas::gemm;
-		gemm('T', 'T', 1., B, A, 0., C); //C = (B*A)^T, C^T = A*B, C=A^T*B^T, if A, B, C are c-ordering
-		print(C);
-	}
-	{
-		multi::array<double, 2> const A = {
-			{ 0., 0., 0.},
-			{ 0., 1., 0.},
-			{ 0., 0., 0.},
-			{ 0., 0., 0.}
-		};
-		multi::array<double, 2> const B = {
-			{ 0., 0., 0., 0.},
-			{ 0., 1., 0., 0.},
-		};
-		multi::array<double, 2> C({3, 2});
-
-		using multi::blas::gemm;
-		gemm('T', 'T', 1., B, A, 0., C); //C = (B*A)^T, C^T = A*B, C=A^T*B^T, if A, B, C are c-ordering
-		print(C);
-	}
-	{
-		multi::array<double, 2> const A = {
-			{ 0., 1.},
-			{ 0., 1.}
-		};
-		multi::array<double, 2> const B = {
-			{ 1., 1.},
-			{ 0., 0.}
-		};
-		multi::array<double, 2> C({2, 2});
-		using multi::blas::gemm; 
-		gemm('T', 'N', 1., B, A, 0., C); // C = A*(B^T) , C^T = B*(A^T) , if A, B, C are c-ordering
-		print(C);
-	}
-	{
-		multi::array<double, 2> const A = {
-			{ 0., 1., 0., 0.},
-			{ 0., 1., 0., 0.}
-		};
-		multi::array<double, 2> const B = {
-			{ 1., 1., 1., 1.},
-			{ 0., 0., 0., 0.},
-			{ 0., 0., 0., 0.}
-		};
-		multi::array<double, 2> C({2, 3});
-		using multi::blas::gemm;
-		gemm('T', 'N', 1., B, A, 0., C); // C = A*(B^T) , C^T = B*(A^T) , if A, B, C are c-ordering
-		print(C);
-	}
-	{
-		multi::array<double, 2> const A = {
-			{ 0., 1.},
-			{ 0., 1.}
-		};
-		multi::array<double, 2> const B = {
-			{ 1., 1.},
-			{ 0., 0.}
-		};
-		multi::array<double, 2> C({2, 2});
-		using multi::blas::gemm;
-		gemm('N', 'T', 1., B, A, 0., C); // C = ((B^T)*A)^T , C^T = B^T*A, C = (A^T)*B , if A, B, C are c-ordering
-		print(C);
-	}
-	{
-		multi::array<double, 2> const A = {
-			{ 0., 1., 0., 0.},
-			{ 0., 1., 0., 0.},
-		};
-		multi::array<double, 2> const B = {
-			{ 1., 1., 1.},
-			{ 0., 0., 0.}
-		};
-		multi::array<double, 2> C({4, 3});
-		using multi::blas::gemm;
-		gemm('N', 'T', 1., B, A, 0., C); // C = ((B^T)*A)^T , C^T = B^T*A, C = (A^T)*B , if A, B, C are c-ordering
-		print(C);
-	}
-	{
-		multi::array<double, 2> const A = {
-			{ 1., 2.},
-			{ 3., 4.}
-		};
-		multi::array<double, 2> const B = {
-			{ 5., 6.},
-			{ 7., 8.}
-		};
-		multi::array<double, 2> C({2, 2});
-		using multi::blas::gemm;
-		gemm(1., A, B, 0., C); // C = A.B
-		print(C);
-	}
-	{
-		multi::array<double, 2> const A = {
-			{ 1., 2.},
-			{ 3., 4.}
-		};
-		multi::array<double, 2> const B = {
-			{ 5., 6.},
-			{ 7., 8.}
-		};
-		multi::array<double, 2> C({2, 2});
-		using multi::blas::gemm;
-		gemm(1., rotated(A), B, 0., C); // C = A^T.B
-		print(C);
-	}
-	{
-		multi::array<double, 2> const A = {
-			{ 1., 2.},
-			{ 3., 4.}
-		};
-		multi::array<double, 2> const B = {
-			{ 5., 6.},
-			{ 7., 8.}
-		};
-		multi::array<double, 2> C({2, 2});
-		using multi::blas::gemm;
-		gemm(1., A, rotated(B), 0., C); // C = A.B^T
-		print(C);
-	}
-	{
-		multi::array<double, 2> const A = {
-			{ 1., 2.},
-			{ 3., 4.}
-		};
-		multi::array<double, 2> const B = {
-			{ 5., 6.},
-			{ 7., 8.}
-		};
-		multi::array<double, 2> C({2, 2});
-		using multi::blas::gemm;
-		gemm(1., rotated(A), rotated(B), 0., C); // C = A^T.B^T
-		print(C);
-	}
-	{
-		multi::array<double, 2> const A = {
-			{ 1., 2.},
-			{ 3., 4.}
-		};
-		multi::array<double, 2> const B = {
-			{ 5., 6.},
-			{ 7., 8.}
-		};
-		multi::array<double, 2> C({2, 2});
-		using multi::blas::gemm;
-		gemm(1., A, B, 0., rotated(C)); // C^T = A.B, C = B^T.A^T
-		print(C);
-	}
-	{
-		multi::array<double, 2> const A = {
-			{ 1., 2.},
-			{ 3., 4.}
-		};
-		multi::array<double, 2> const B = {
-			{ 5., 6.},
-			{ 7., 8.}
-		};
-		multi::array<double, 2> C({2, 2});
-		using multi::blas::gemm;
-		gemm(1., rotated(A), B, 0., rotated(C)); // C^T = A^T.B, C = B^T.A
-		print(C);
-	}
-	{
-		multi::array<double, 2> const A = {
-			{ 1., 2.},
-			{ 3., 4.}
-		};
-		multi::array<double, 2> const B = {
-			{ 5., 6.},
-			{ 7., 8.}
-		};
-		multi::array<double, 2> C({2, 2});
-		using multi::blas::gemm;
-		gemm(1., A, rotated(B), 0., rotated(C)); // C^T = A.B^T, C = B.A^T
-		print(C);
-	}
-	{
-		multi::array<double, 2> const A = {
-			{ 1., 2.},
-			{ 3., 4.}
-		};
-		multi::array<double, 2> const B = {
-			{ 5., 6.},
-			{ 7., 8.}
-		};
-		multi::array<double, 2> C({2, 2});
-		using multi::blas::gemm;
-		gemm(1., rotated(A), rotated(B), 0., rotated(C)); // C^T = A^T.B^T, C = B.A
-		print(C);
-	}
-#endif
 }
 
 #endif
