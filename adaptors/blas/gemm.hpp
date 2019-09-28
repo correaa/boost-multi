@@ -16,7 +16,7 @@ namespace blas{
 
 struct op{enum : char{N='N', T='T', C='C'};};
 
-struct conj{template<class T> auto operator()(T const& t) const{using std::conj; return conj(t);}};
+//struct conj{template<class T> auto operator()(T const& t) const{using std::conj; return conj(t);}};
 
 template<class Op, class AA, class BB, class It1, class Size1, class It2, class Size2, class Out>
 auto gemm_n(
@@ -103,9 +103,10 @@ decltype(auto) gemm(Op opA, Op opB, AA a, A2D const& A, B2D const& B, BB b, C2D&
 
 template<class AA, class BB, class A2D, class B2D, class C2D>
 decltype(auto) gemm(AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
-	if(begin(A)->stride() == 1 and begin(B)->stride()==1 and begin(C)->stride()==1){
-		gemm('T', 'T', a, A, B, b, C);
+	if(stride(*begin(A)) == 1 and stride(*begin(B))==1 and stride(*begin(C))==1){
+		return gemm('T', 'T', a, A, B, b, C);
 	}
+	assert(0);
 	return std::forward<C2D>(C);
 }
 
