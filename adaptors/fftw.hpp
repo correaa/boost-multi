@@ -183,11 +183,14 @@ template<class T, class Tuple> constexpr auto to_array(Tuple&& t){
     return detail::to_array_impl<T>(std::forward<Tuple>(t), std::make_index_sequence<std::tuple_size<Tuple>{}>{});
 }
 
+#if(__cpp_if_constexpr>=201606)
 //https://stackoverflow.com/a/35110453/225186
-template<class T>constexpr std::remove_reference_t<T> const_aux(T&&t){return t;}
-#define logic_assert(ConD, MsG) \
-	if constexpr(noexcept(const_aux(ConD))) static_assert(ConD, MsG);\
-	else assert(ConD && MsG);
+template<class T>constexpr std::remove_reference_t<T> _constx(T&&t){return t;}
+#define logic_assert(C, M) \
+	if constexpr(noexcept(_constx(C))) static_assert((C), M); else assert((C)&& M);
+#else
+#define logic_assert(ConditioN, MessagE) assert(ConditioN && MesssagE);
+#endif
 
 template<class ArrayIn, class ArrayOut>
 auto fftw_plan_dft(
