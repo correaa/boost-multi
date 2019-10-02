@@ -1,10 +1,10 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"">$0.cpp)&&clang++ -Ofast -std=c++14 -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_MULTI_ADAPTORS_BLAS_HERK $0.cpp -o $0x \
+(echo '#include"'$0'"'>$0.cpp)&&clang++ -Ofast -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_HERK $0.cpp -o $0x \
 `pkg-config --libs blas64` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
 #endif
-// Alfredo A. Correa 2019 ©
+// © Alfredo A. Correa 2019
 
 #ifndef MULTI_ADAPTORS_BLAS_HERK_HPP
 #define MULTI_ADAPTORS_BLAS_HERK_HPP
@@ -31,13 +31,13 @@ C2D&& herk(UL uplo, Op op, AA a, A2D const& A, BB b, C2D&& C){
 	assert(0);
 }
 
-template<class UL, class AA, class BB, class A2D, class C2D>
+template<class UL, typename AA, typename BB, class A2D, class C2D>
 C2D&& herk(UL uplo, AA a, A2D const& A, BB b, C2D&& C){
 	if(stride(A)==1) return herk(uplo, 'C', a, rotated(A), b, std::forward<C2D>(C));
 	else             return herk(uplo, 'N', a,         A , b, std::forward<C2D>(C));
 }
 
-template<class AA, class BB, class A2D, class C2D>
+template<typename AA, class BB, class A2D, class C2D>
 C2D&& herk(AA a, A2D const& A, BB b, C2D&& C){
 	if(stride(C)==1) herk('L', a, A, b, rotated(std::forward<C2D>(C)));
 	else             herk('U', a, A, b,         std::forward<C2D>(C) );
@@ -84,8 +84,18 @@ void f(double*){}
 int main(){
 	using multi::blas::gemm;
 	using multi::blas::herk;
+	using multi::blas::syrk;
 	using complex = std::complex<double>;
 	constexpr auto const I = complex{0., 1.};
+	{
+		multi::array<complex, 2> const A = {
+			{ 1., 3., 4.},
+			{ 9., 7., 1.}
+		};
+		multi::array<complex, 2> C({3, 3}, 9999.);
+		herk('U', 'N', 1., A, 0., C); // CC^H = CC =  A^H*A = (A^H*A)^H, A^H*A, A and C are C-ordering, information in C lower triangular
+		print(C) <<"---\n";
+	}
 	{
 		multi::array<complex, 2> const A = {
 			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
@@ -184,7 +194,7 @@ int main(){
 			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
 		};
 		multi::array<complex, 2> C({3, 3}, 9999.);
-		herk(A, C); // CC^H = CC =  A^H*A, information in C lower triangular
+		herk(A, C); // C^H = C =  A^H*A = (A^H*A)^H, information in C lower triangular
 		print(C) <<"---\n";
 	}
 	{
@@ -202,14 +212,23 @@ int main(){
 			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
 		};
 		multi::array<complex, 2> C({2, 2}, 9999.);
-		herk(rotated(A), rotated(C)); // CC^H = CC =  A*A^H, information in C upper triangular
+		herk(rotated(A), rotated(C)); // C^H = C =  A*A^H, information in C upper triangular
+		print(C) <<"---\n";
+	}
+	{
+		multi::array<complex, 2> const A = {
+			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
+			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
+		};
+		multi::array<complex, 2> C({3, 3}, 9999.);
+		herk(A, rotated(C)); // C^H = C =  A^H*A, information in C upper triangular
 		print(C) <<"---\n";
 	}
 	{
 		multi::array<complex, 2> const A({2000, 2000}); std::iota(data_elements(A), data_elements(A) + num_elements(A), 0.2);
 		multi::array<complex, 2> C({2000, 2000}, 9999.);
 		boost::timer::auto_cpu_timer t;
-		herk(rotated(A), rotated(C)); // CC^H = CC =  A*A^H, information in C upper triangular
+		herk(rotated(A), rotated(C)); // C^H = C =  A*A^H, information in C upper triangular
 	}
 	return 0;
 }
