@@ -102,9 +102,11 @@ xGERC(c); xGERC(z);
 
 #define UPLO const char& uplo
 
-#define xGEMM(T) void BLAS(T##gemm)(TRANSA, TRANSB, NR, NC, NK, T const& a, T const* A, LDA, T const* B, LDB, T const& b, T const* CC, LDC)
+#define xGEMM(T)     void BLAS(T##gemm)(TRANSA, TRANSB, NR, NC, NK, T const& a, T const* A, LDA, T const* B, LDB, T const& b, T const* CC, LDC)
+#define xSYRK(T)     void BLAS(T##syrk)(UPLO, TRANSA, NR, NK, T const& a, T const* A, LDA, T const& b, T* CC, LDC) 
 #define xHERK(TT, T) void BLAS(T##herk)(UPLO, TRANSA, NR, NK, TT const& a, T const* A, LDA, TT const& b, T* CC, LDC) 
 xGEMM(s); xGEMM(d); xGEMM(c)   ; xGEMM(z)   ;
+xSYRK(s); xSYRK(d); xSYRK(c)   ; xSYRK(z)   ;
                     xHERK(s, c); xHERK(d, z);
 
 #undef xROTG
@@ -250,10 +252,16 @@ xger(s)   xger(d)
 ///////////////////////////////////////////////////////////////////////////////
 // LEVEL 3
 #define xgemm(T) template<class C, class S> v gemm(C transA, C transB, S m, S n, S k, T const& a, T const* A, S lda, T const* B, S ldb, T const& beta, T* CC, S ldc){BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), a, A, BC(lda), B, BC(ldb), beta, CC, BC(ldc));}
+#define xsyrk(T) template<class UL, class C, class S> v syrk(UL ul, C transA, S n, S k, T alpha, T const* A, S lda, T beta, T* CC, S ldc){BLAS(T##syrk)(ul, transA, BC(n), BC(k), alpha, A, BC(lda), beta, CC, BC(ldc));}
 #define xherk(T) template<class UL, class C, class S, class Real> v herk(UL ul, C transA, S n, S k, Real alpha, T const* A, S lda, Real beta, T* CC, S ldc){BLAS(T##herk)(ul, transA, BC(n), BC(k), alpha, A, BC(lda), beta, CC, BC(ldc));}
 
 xgemm(s) xgemm(d) xgemm(c) xgemm(z)
+xsyrk(s) xsyrk(d) xsyrk(c) xsyrk(z)
                   xherk(c) xherk(z)
+
+#undef xgemm
+#undef xsyrk
+#undef xherk
 
 #undef BC
 
