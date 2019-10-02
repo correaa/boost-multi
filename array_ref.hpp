@@ -41,8 +41,8 @@ struct array_types : Layout{
 	using reference = std::conditional_t<
 		dimensionality!=1, 
 		basic_array<element, dimensionality-1, element_ptr>, 
-	//	typename std::iterator_traits<ElementPtr>::reference
-		decltype(*std::declval<ElementPtr>())
+		typename std::iterator_traits<ElementPtr>::reference
+	//	decltype(*std::declval<ElementPtr>())
 	// typename std::iterator_traits<element_ptr>::reference 	//	typename pointer_traits<element_ptr>::element_type&
 	>;
 	HD element_ptr     base()   const{return base_;} //	element_const_ptr cbase() const{return base();}
@@ -339,6 +339,7 @@ public:
 	friend auto flatted(basic_array const& self){return self.flatted();}
 	template<typename Size>
 	auto partitioned(Size const& s) const{
+		assert(s!=0);
 		assert(this->layout().nelems_%s==0);
 		multi::layout_t<D+1> new_layout{this->layout(), this->layout().nelems_/s, 0, this->layout().nelems_};
 		new_layout.sub.nelems_/=s;
@@ -914,6 +915,21 @@ template<class It> array_ref(It, index_extensions<5>)->array_ref<typename std::i
 //#endif
 
 template<class It, class Tuple> array_ref(It, Tuple)->array_ref<typename std::iterator_traits<It>::value_type, std::tuple_size<Tuple>::value, It>;
+#endif
+
+#if 1
+template<class T, std::size_t N>
+constexpr auto rotated(const T(&t)[N]) noexcept{
+	return multi::array_ref<std::remove_all_extents<T[N]>, std::rank<T[N]>{}, decltype(base(t))>(
+		base(t), extensions(t)
+	).rotated();
+}
+template<class T, std::size_t N>
+constexpr auto rotated(T(&t)[N]) noexcept{
+	return multi::array_ref<std::remove_all_extents<T[N]>, std::rank<T[N]>{}, decltype(base(t))>(
+		base(t), extensions(t)
+	).rotated();
+}
 #endif
 
 }}
