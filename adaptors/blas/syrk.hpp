@@ -45,6 +45,12 @@ C2D&& syrk(AA a, A2D const& A, BB b, C2D&& C){
 template<class A2D, class C2D>
 C2D&& syrk(A2D const& A, C2D&& C){return syrk(1., A, 0., std::forward<C2D>(C));}
 
+template<class A2D>
+auto syrk(A2D const& A){
+	typename A2D::decay_type ret({size(rotated(A)), size(rotated(A))});
+	return syrk(A, ret);
+}
+
 }}}
 
 #if _TEST_MULTI_ADAPTORS_BLAS_SYRK
@@ -175,6 +181,38 @@ int main(){
 		};
 		multi::array<complex, 2> C({2, 2}, 9999.);
 		syrk(rotated(A), rotated(C)); // C^T = C =  A*A^T = (A*A^T)^T, A*A^T, C are C-ordering, information in C upper triangular
+		print(C) <<"---\n";
+	}
+	{
+		multi::array<complex, 2> const A = {
+			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
+			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
+		};
+		auto C = syrk(A); // C = C^T = A^T*A, C is a value type matrix (with C-ordering, information is in lower triangular part)
+		print(C) <<"---\n";
+	}
+	{
+		multi::array<complex, 2> const A = {
+			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
+			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
+		};
+		multi::array<complex, 2> C = rotated(syrk(A)); // C = C^T = A^T*A, C is a value type matrix (with C-ordering, information is in upper triangular part)
+		print(C) <<"---\n";
+	}
+	{
+		multi::array<complex, 2> const A = {
+			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
+			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
+		};
+		auto C = rotated(syrk(A)).decay(); // C = C^T = A^T*A, C is a value type matrix (with C-ordering, information is in upper triangular part)
+		print(C) <<"---\n";
+	}
+	{
+		multi::array<complex, 2> const A = {
+			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
+			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
+		};
+		auto C = syrk(rotated(A)); // C = C^T = A^T*A, C is a value type matrix (with C-ordering)
 		print(C) <<"---\n";
 	}
 }
