@@ -142,11 +142,14 @@ public:
 	typename ptr::difference_type operator-(ptr const& other) const{return impl_-other.impl_;}
 };
 
-template<class Alloc, class InputIt, class Size, class... T, class ForwardIt = ptr<T...>>//, typename AT = std::allocator_traits<Alloc> >
+template<
+	class Alloc, class InputIt, class Size, class... T, class ForwardIt = ptr<T...>,
+	typename InputV = typename std::pointer_traits<InputIt>::element_type, typename ForwardV = typename std::pointer_traits<ForwardIt>::element_type
+>
 ForwardIt uninitialized_copy_n(Alloc&, InputIt f, Size n, ptr<T...> d){
-	if(std::is_trivially_constructible<typename std::pointer_traits<ForwardIt>::element_type, typename std::pointer_traits<InputIt>::element_type>{}){
-		return memcpy(d, f, n*sizeof(typename std::pointer_traits<ForwardIt>::element_type)) + n;
-	} else assert(0);
+	if(std::is_trivially_constructible<ForwardV, InputV>{})
+		return memcpy(d, f, n*sizeof(ForwardV)) + n;
+	else assert(0);
 	return d;
 }
 
