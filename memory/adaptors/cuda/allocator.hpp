@@ -1,14 +1,14 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&& clang++ -std=c++14 -Wall -Wextra -D_DISABLE_CUDA_SLOW -D_TEST_MULTI_MEMORY_CUDA_ALLOCATOR -D_MULTI_MEMORY_CUDA_DISABLE_ELEMENT_ACCESS $0.cpp -o$0x  -lcudart && $0x && rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&& clang++ -std=c++14 -Wall -Wextra -D_DISABLE_CUDA_SLOW -D_TEST_MULTI_MEMORY_CUDA_ALLOCATOR -D_MULTI_MEMORY_CUDA_DISABLE_ELEMENT_ACCESS `pkg-config cudart --cflags --libs` $0.cpp -o$0x   && $0x && rm $0x $0.cpp; exit
 #endif
 
-#include<cuda_runtime.h> // cudaMalloc
+#include<cuda/cuda_runtime.h> // cudaMalloc
 
-#include "../cuda/ptr.hpp"
+#include "../../adaptors/cuda/ptr.hpp"
 
-#include "../cuda/clib.hpp" // cuda::malloc
-#include "../cuda/cstring.hpp" // cuda::memcpy
-#include "../cuda/malloc.hpp"
+#include "../../adaptors/cuda/clib.hpp" // cuda::malloc
+#include "../../adaptors/cuda/cstring.hpp" // cuda::memcpy
+#include "../../adaptors/cuda/malloc.hpp"
 
 #include<new> // bad_alloc
 #include<cassert>
