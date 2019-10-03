@@ -10,6 +10,7 @@
 #define MULTI_ADAPTORS_BLAS_SYRK_HPP
 
 #include "../blas/core.hpp"
+#include "../blas/copy.hpp"
 
 namespace boost{
 namespace multi{namespace blas{
@@ -39,6 +40,8 @@ template<typename AA, class BB, class A2D, class C2D>
 C2D&& syrk(AA a, A2D const& A, BB b, C2D&& C){
 	if(stride(C)==1) syrk('L', a, A, b, rotated(std::forward<C2D>(C)));
 	else             syrk('U', a, A, b,         std::forward<C2D>(C) );
+	for(typename std::decay_t<C2D>::difference_type i = 0; i != size(C); ++i)
+		blas::copy(begin(rotated(C)[i])+i+1, end(rotated(C)[i]), begin(C[i])+i+1);
 	return std::forward<C2D>(C);
 }
 
@@ -47,8 +50,9 @@ C2D&& syrk(A2D const& A, C2D&& C){return syrk(1., A, 0., std::forward<C2D>(C));}
 
 template<class A2D>
 auto syrk(A2D const& A){
-	typename A2D::decay_type ret({size(rotated(A)), size(rotated(A))});
-	return syrk(A, ret);
+	typename A2D::decay_type C({size(rotated(A)), size(rotated(A))});
+	syrk(A, C);
+	return C;
 }
 
 }}}
@@ -206,7 +210,9 @@ int main(){
 		};
 		auto C = rotated(syrk(A)).decay(); // C = C^T = A^T*A, C is a value type matrix (with C-ordering, information is in upper triangular part)
 		print(C) <<"---\n";
+//		print(C) <<"---\n";
 	}
+	return 0;
 	{
 		multi::array<complex, 2> const A = {
 			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
