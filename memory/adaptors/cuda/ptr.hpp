@@ -147,6 +147,7 @@ ForwardIt uninitialized_copy_n(Alloc&, InputIt f, Size n, ptr<T...> d){
 	if(std::is_trivially_constructible<typename std::pointer_traits<ForwardIt>::element_type, typename std::pointer_traits<InputIt>::element_type>{}){
 		return memcpy(d, f, n*sizeof(typename std::pointer_traits<ForwardIt>::element_type)) + n;
 	} else assert(0);
+	return d;
 }
 
 template<class T> 
