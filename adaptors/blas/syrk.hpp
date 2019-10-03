@@ -189,6 +189,16 @@ int main(){
 		print(C) <<"---\n";
 	}
 	{
+		complex const A[2][3] = {
+			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
+			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
+		};
+		complex C[2][2];
+		using multi::rotated;
+		syrk(rotated(A), rotated(C)); // C^T = C =  A*A^T = (A*A^T)^T, A*A^T, C are C-ordering, information in C upper triangular
+		print(C) <<"---\n";
+	}
+	{
 		multi::array<complex, 2> const A = {
 			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
 			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
