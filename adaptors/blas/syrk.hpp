@@ -54,7 +54,7 @@ template<class A2D, class C2D>
 C2D&& syrk(A2D const& A, C2D&& C){return syrk(1., A, std::forward<C2D>(C));}
 
 template<class A2D, class R = typename A2D::decay_type>
-auto syrk(A2D const& A){return syrk(A, R({size(rotated(A)), size(rotated(A))}));}
+R syrk(A2D const& A){return syrk(A, R({size(rotated(A)), size(rotated(A))}));}
 
 }}}
 
