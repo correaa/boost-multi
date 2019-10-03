@@ -162,15 +162,15 @@ using v = void;
 
 #define BC(x) [](auto const& xx){assert(xx >= std::numeric_limits<INT>::min()); assert(xx < std::numeric_limits<INT>::max()); return xx;}(x)
 
-#define xrotg(T1, T2)                       v   rotg (T1 const& a, T1 const& b, T2& cc, T1& ss){BLAS(T1##rotg )(const_cast<T1*>(&a), const_cast<T1*>(&b), &cc, &ss);}
-#define xrotmg(T)                           v   rotmg(T& d1, T& d2, T& A, T const& B, T(&p)[5]){BLAS(T##rotmg )(&d1, &d2, &A, B, p);}
-#define xrot(T, TT, CS)   template<class S> v   rot  (S n,       T       *x, S incx, T       *y, S incy, CS const& c, CS const& s){       BLAS(TT##rot )(BC(n),    x, BC(incx), y, BC(incy), c, s);}
-#define xrotm(T)          template<class S> v   rotm (S n,       T       *x, S incx, T       *y, S incy, T const(&p)[5]){BLAS(T##rotm)(BC(n), x, BC(incx), y, BC(incy), p);}
-#define xswap(T)          template<class S> v   swap (S n,       T       *x, S incx, T       *y, S incy){       BLAS( T##swap)(BC(n),    x, BC(incx), y, BC(incy));} 
-#define xscal(XX, TA, TX) template<class S> TX* scal (S n, TA a, TX      *x, S incx                    ){       BLAS(XX##scal)(BC(n), a, x, BC(incx)         ); return x+n*incx;}
-#define xcopy(T)          template<class S> v   copy (S n,       T const *x, S incx, T       *y, S incy){       BLAS( T##copy)(BC(n),    x, BC(incx), y, BC(incy));} 
-#define xaxpy(T)          template<class S> T*  axpy (S n, T  a, T const *x, S incx, T       *y, S incy){       BLAS( T##axpy)(BC(n), a, x, BC(incx), y, BC(incy)); return y+n*incy;}
-#define xdot(R, TT, T)    template<class S> v   dot  (S n,       T const *x, S incx, T const *y, S incy, R& r){r = BLAS(TT##dot)(BC(n),    x, BC(incx), y, BC(incy));               }
+#define xrotg(T1, T2)                       v   rotg (T1 const& a, T1 const& b, T2& cc, T1& ss                                   ){BLAS(T1##rotg )(const_cast<T1*>(&a), const_cast<T1*>(&b), &cc, &ss);}
+#define xrotmg(T)                           v   rotmg(T& d1, T& d2, T& A, T const& B, T(&p)[5]                                   ){BLAS(T##rotmg )(&d1, &d2, &A, B, p);}
+#define xrot(T, TT, CS)   template<class S> v   rot  (S n,       T       *x, S incx, T       *y, S incy, CS const& c, CS const& s){BLAS(TT##rot )(BC(n),    x, BC(incx), y, BC(incy), c, s);}
+#define xrotm(T)          template<class S> v   rotm (S n,       T       *x, S incx, T       *y, S incy, T const(&p)[5]          ){BLAS( T##rotm)(BC(n),    x, BC(incx), y, BC(incy), p);              }
+#define xswap(T)          template<class S> v   swap (S n,       T       *x, S incx, T       *y, S incy                          ){BLAS( T##swap)(BC(n),    x, BC(incx), y, BC(incy));                 }
+#define xscal(XX, TA, TX) template<class S> TX* scal (S n, TA a, TX      *x, S incx                                              ){BLAS(XX##scal)(BC(n), a, x, BC(incx)             ); return x+n*incx;}
+#define xcopy(T)          template<class S> v   copy (S n,       T const *x, S incx, T       *y, S incy                          ){BLAS( T##copy)(BC(n),    x, BC(incx), y, BC(incy));                 }
+#define xaxpy(T)          template<class S> T*  axpy (S n, T  a, T const *x, S incx, T       *y, S incy                          ){BLAS( T##axpy)(BC(n), a, x, BC(incx), y, BC(incy)); return y+n*incy;}
+#define xdot(R, TT, T)    template<class S> v   dot  (S n,       T const *x, S incx, T const *y, S incy, R& r                ){r = BLAS(TT##dot )(BC(n),    x, BC(incx), y, BC(incy));                 }
 
 xrotg(s, s)    xrotg(d, d) //MKL extension xrotg(c, s); xrotg(z, d);
 xrotmg(s)      xrotmg(d)
