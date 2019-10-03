@@ -189,7 +189,7 @@ template<class T>constexpr std::remove_reference_t<T> _constx(T&&t){return t;}
 #define logic_assert(C, M) \
 	if constexpr(noexcept(_constx(C))) static_assert((C), M); else assert((C)&& M);
 #else
-#define logic_assert(ConditioN, MessagE) assert(ConditioN && MesssagE);
+#define logic_assert(ConditioN, MessagE) assert(ConditioN && MessagE);
 #endif
 
 template<class ArrayIn, class ArrayOut>
