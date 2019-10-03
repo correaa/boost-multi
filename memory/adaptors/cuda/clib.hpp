@@ -7,7 +7,7 @@
 
 #include "../cuda/error.hpp"
 
-#include<cuda/cuda_runtime.h> // cudaMalloc
+#include<cuda_runtime.h> // cudaMalloc
 
 namespace Cuda{
 	using size_t = ::size_t;

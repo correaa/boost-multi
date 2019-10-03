@@ -5,7 +5,7 @@
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING_HPP
 #define BOOST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING_HPP
 
-#include<cuda/cuda_runtime.h> // cudaMemcpy/cudaMemset
+#include<cuda_runtime.h> // cudaMemcpy/cudaMemset
 #include "../cuda/ptr.hpp"
 
 #include<iostream>

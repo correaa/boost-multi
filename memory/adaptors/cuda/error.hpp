@@ -5,8 +5,8 @@
 #ifndef MULTI_MEMORY_ADAPTOR_CUDA_DETAIL_ERROR_HPP
 #define MULTI_MEMORY_ADAPTOR_CUDA_DETAIL_ERROR_HPP
 
-#include<cuda/driver_types.h> // cudaError_t
-#include<cuda/cuda_runtime_api.h> // cudaGetErrorString
+#include<driver_types.h> // cudaError_t
+#include<cuda_runtime_api.h> // cudaGetErrorString
 
 #include<system_error>
 #include<type_traits> // underlying_type
