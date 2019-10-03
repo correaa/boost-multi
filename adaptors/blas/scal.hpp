@@ -12,10 +12,17 @@ namespace boost{
 namespace multi{
 namespace blas{
 
+template<class T, class It, class Size>
+It scal_n(T a, It first, Size count){
+	scal(count, a, base(first), stride(first));
+	return first + count;
+}
+
 template<class T, class It>
-void scal(T a, It first, It last){
+It scal(T a, It first, It last){
 	assert(stride(first) == stride(last));
-	scal(std::distance(first, last), a, base(first), stride(first));
+	return scal_n(a, first, std::distance(first, last));
+//	scal(std::distance(first, last), a, base(first), stride(first));
 }
 
 template<class T, class X1D>
@@ -53,7 +60,6 @@ int main(){
 
 	assert( A[2][1] == 20. );
 	assert( S[0] == 4. );
-
 }
 
 #endif

@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-clang++ -Ofast -std=c++17 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x -ltbb && $0.x $@ && rm -f $0.x; exit
+clang++ -Ofast -std=c++17 -Wall -Wextra -Wpedantic -ffast-math $0 -o$0x -ltbb && $0x && rm $0x; exit
 #endif
 
 #include "../../multi/array.hpp"
@@ -13,6 +13,7 @@ clang++ -Ofast -std=c++17 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x 
 #include<vector>
 #include<execution>
 #include<map>
+#include<numeric>
 
 using watch = std::chrono::high_resolution_clock;
 using ns = std::chrono::nanoseconds;
@@ -43,16 +44,28 @@ auto gen = [&dist, &eng](){return complex(dist(eng), dist(eng));};
 {
 	multi::array<complex, 2> Asb({nstates, nbasis}, complex{});
 	for_each(begin(Asb), end(Asb), [&](auto&& e){generate(begin(e), end(e), gen);});
-	vector<double> d(nstates);
+	vector<double> d(nbasis);
 	{
 		auto tic = watch::now();
 		fill(begin(d), end(d), 0.);
 		for(std::size_t s = 0; s != nstates; ++s)
 			for(std::size_t b = 0; b != nbasis; ++b) 
-				d[s] += norm(Asb[s][b]);
+				d[b] += norm(Asb[s][b]);
 		timings[watch::now() - tic] = "array[state][basis] storage, raw loop state, raw loop basis";
 		cout<< d[d.size()/3] <<std::endl;
 	}
+#if 0
+	{
+		auto tic = watch::now();
+		fill(begin(d), end(d), 0.);
+#pragma omp parallel for 
+		for(std::size_t s = 0; s != nstates; ++s)
+			for(std::size_t b = 0; b != nbasis; ++b) 
+				d[s] += norm(Asb[s][b]);
+		timings[watch::now() - tic] = "array[state][basis] storage, raw omp loop state, raw loop basis";
+		cout<< d[d.size()/3] <<std::endl;
+	}
+#endif
 	{
 		auto tic = watch::now();
 		transform(begin(Asb), end(Asb), begin(d),
@@ -85,6 +98,7 @@ auto gen = [&dist, &eng](){return complex(dist(eng), dist(eng));};
 		timings[watch::now() - tic] = "array[state][basis] storage, transform states, sequential reduce basis"; 
 		cout<< d[d.size()/3] <<std::endl;
 	}
+#if 1
 	{
 		auto tic = watch::now();
 		transform(std::execution::par, begin(Asb), end(Asb), begin(d),
@@ -92,10 +106,51 @@ auto gen = [&dist, &eng](){return complex(dist(eng), dist(eng));};
 				return std::accumulate(begin(a), end(a), 0., [](auto&& acc, auto&& e){return acc + norm(e);});
 			}
 		);
-		timings[watch::now() - tic] = "array[state][basis] storage, transform states, sequential reduce basis"; 
+		timings[watch::now() - tic] = "array[state][basis] storage, par transform states, accumulate basis"; 
 		cout<< d[d.size()/3] <<std::endl;
 	}
+#endif
+#if 1
+	{
+		auto tic = watch::now();
+		transform(std::execution::par, begin(Asb), end(Asb), begin(d),
+			[](auto const& state){
+				auto const norm = [](auto const& e){return std::norm(e);};
+				return transform_reduce(std::execution::par, 
+					begin(state), end(state), 0., std::plus{}, norm
+				);
+			}
+		);
+		timings[watch::now() - tic] = "array[state][basis] storage, par transform states, par transform reduce basis"; 
+		cout<< d[d.size()/3] <<std::endl;
+	}
+#endif
+#if 1
+	{
+		auto tic = watch::now();
+		transform(begin(Asb), end(Asb), begin(d),
+			[](auto&& a){
+				return transform_reduce(std::execution::par, begin(a), end(a), 0., std::plus<>{}, [](auto&& e){return std::norm(e);});
+			}
+		);
+		timings[watch::now() - tic] = "array[state][basis] storage, seq transform states, par transform reduce basis"; 
+		cout<< d[d.size()/3] <<std::endl;
+	}
+#endif
+#if 1
+	{
+		auto tic = watch::now();
+		transform(std::execution::seq, begin(Asb), end(Asb), begin(d),
+			[](auto&& a){
+				return transform_reduce(std::execution::seq, begin(a), end(a), 0., std::plus<>{}, [](auto&& e){return std::norm(e);});
+			}
+		);
+		timings[watch::now() - tic] = "array[state][basis] storage, seq transform states, seq par transform reduce basis"; 
+		cout<< d[d.size()/3] <<std::endl;
+	}
+#endif
 }
+
 cout<<"------------"<<std::endl;
 {
 	multi::array<complex, 2> Abs({nbasis, nstates}, complex{});
@@ -121,6 +176,15 @@ cout<<"------------"<<std::endl;
 	}
 	{
 		auto tic = watch::now();
+		fill(std::execution::par, begin(d), end(d), 0.);
+		for(std::size_t b = 0; b != nbasis; ++b){
+			for(std::size_t s = 0; s != nstates; ++s) d[s] += norm(Abs[b][s]);
+		}
+		timings[watch::now() - tic] = "array[basis][state] storage, par fill, raw loop basis, raw loop states"; 
+		cout<< d[d.size()/3] <<std::endl;
+	}
+	{
+		auto tic = watch::now();
 		fill(begin(d), end(d), 0.);
 		for(std::size_t b = 0; b != nbasis; ++b)
 			transform(begin(d), end(d), begin(Abs[b]), begin(d), [](auto&& x, auto&& y){return x + norm(y);});
@@ -134,7 +198,7 @@ cout<<"------------"<<std::endl;
 			transform(std::execution::par_unseq, begin(d), end(d), begin(e), begin(d), [](auto&& x, auto&& y){return x + norm(y);});
 		});
 		timings[watch::now() - tic] = "array[basis][state] storage, for_each, parunseq transform"; 
-		cout<< d[d.size()/2]<<std::endl;
+		cout<< d[d.size()/3]<<std::endl;
 	}
 	{
 		auto tic = watch::now();
@@ -142,8 +206,17 @@ cout<<"------------"<<std::endl;
 		for_each(begin(Abs), end(Abs), [&](auto&& e){
 			transform(std::execution::par, begin(d), end(d), begin(e), begin(d), [](auto&& x, auto&& y){return x + norm(y);});
 		});
-		timings[watch::now() - tic] = "array[basis][state] storage, for_each, par transform"; 
-		cout<<"\t\t\t"<< d[d.size()/2]<<std::endl;
+		timings[watch::now() - tic] = "array[basis][state] storage, fill, for_each, par transform"; 
+		cout<<"\t\t\t"<< d[d.size()/3]<<std::endl;
+	}
+	{
+		auto tic = watch::now();
+		fill(begin(d), end(d), 0.);
+		for_each(std::execution::par, begin(Abs), end(Abs), [&](auto&& e){
+			transform(std::execution::par, begin(d), end(d), begin(e), begin(d), [](auto&& x, auto&& y){return x + norm(y);});
+		});
+		timings[watch::now() - tic] = "array[basis][state] storage, fill, for_each, par transform"; 
+		cout<<"\t\t\t"<< d[d.size()/3]<<std::endl;
 	}
 }
 for(auto&& p : timings) cout<< p.first.count()/1e9 <<"\t...."<< p.second  <<std::endl;

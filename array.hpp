@@ -11,8 +11,15 @@
 
 //#include "../multi/detail/memory.hpp"
 #include "./memory/allocator.hpp"
+#include "./detail/memory.hpp"
 
 #include "utility.hpp"
+
+#if defined(__CUDACC__)
+#define HD __host__ __device__
+#else
+#define HD 
+#endif
 
 namespace boost{
 namespace multi{
@@ -45,12 +52,12 @@ struct static_array :
 	using alloc_traits = typename std::allocator_traits<allocator_type>;
 protected:
 	using ref = array_ref<T, D, typename std::allocator_traits<typename std::allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
-	using typename ref::value_type;
 	allocator_type& alloc(){return static_cast<allocator_type&>(*this);}
 	auto uninitialized_value_construct(){return uninitialized_value_construct_n(alloc(), this->base_, this->num_elements());}
 	template<typename It>
 	auto uninitialized_copy_(It first){
-		return uninitialized_copy(this->alloc(), first, first + this->num_elements(), this->data());
+	//	using boost::multi::uninitialized_copy_n;
+		return uninitialized_copy_n(this->alloc(), first, this->num_elements(), this->data());
 	}
 	auto uninitialized_default_construct(){return uninitialized_default_construct_n(this->alloc(), this->base_, this->num_elements());}
 	typename static_array::element_ptr allocate(typename std::allocator_traits<allocator_type>::size_type n){
@@ -60,13 +67,14 @@ protected:
 	void destroy(){
 		auto n = this->num_elements();
 		while(n){
-			
 		//	std::allocator_traits<allocator_type>::destroy(alloc(), to_address(this->data() + n + (-1)));
 		//	alloc().destroy(to_address(this->data() + n + (-1)));
 			--n;
 		}
 	}
 public:
+	using typename ref::value_type;
+	using typename ref::size_type;
 	using typename ref::difference_type;
 	static_array(typename static_array::allocator_type const& a = {}) : static_array::allocator_type{a}{}
 protected:
@@ -125,7 +133,7 @@ public:
 	}
 	static_array(typename static_array::extensions_type const& x, allocator_type const& a) //3
 	:	allocator_type{a}, ref{allocate(typename static_array::layout_t{x}.num_elements()), x}{
-		uninitialized_value_construct();
+	//	uninitialized_value_construct();
 	}
 	static_array(typename static_array::extensions_type const& x) //3
 	: static_array(x, allocator_type{}){}
@@ -151,11 +159,26 @@ public:
 	static_array(multi::basic_array<TT, DD, Args...> const& other, allocator_type const& a = {})
 		: allocator_type{a}, ref{allocate(other.num_elements()), extensions(other)}
 	{
-		using std::copy; copy(other.begin(), other.end(), this->begin());
+//		assert(0);
+		using std::copy; 
+		copy(other.begin(), other.end(), this->begin());
+	}
+	template<class TT, class... Args>
+	static_array(array_ref<TT, D, Args...> const& other)
+	:	allocator_type{}, ref{allocate(other.num_elements()), extensions(other)}{
+		uninitialized_copy_(other.data());
 	}
 	static_array(static_array const& other, allocator_type const& a)                      //5b
 	:	allocator_type{a}, ref{allocate(other.num_elements()), extensions(other)}{
-		uninitialized_copy_(other.data());
+		assert(0);
+	//	uninitialized_copy_(other.data());
+	}
+	template<class O, typename = std::enable_if_t<not std::is_base_of<static_array, O>{}>>
+	static_array(O const& o)                                          //
+	:	allocator_type{}, 
+		ref(allocate(num_elements(o)), extensions(o))
+	{
+		uninitialized_copy_(data_elements(o));
 	}
 	static_array(static_array const& o)                                     //5b
 	:	allocator_type{o.get_allocator()}, 
@@ -219,12 +242,12 @@ public:
 	>;
 	using const_iterator = multi::array_iterator<T, static_array::dimensionality, typename static_array::element_const_ptr, const_reference>;
 //	reference       
-	decltype(auto) operator[](index i)      {return ref::operator[](i);}
+	HD decltype(auto) operator[](index i)      {return ref::operator[](i);}
 	const_reference operator[](index i) const{return ref::operator[](i);}
 	typename static_array::allocator_type get_allocator() const{return static_cast<typename static_array::allocator_type const&>(*this);}
 
-	typename static_array::element_ptr       data()      {return ref::data();}
-	typename static_array::element_const_ptr data() const{return ref::data();}
+	HD typename static_array::element_ptr       data()      {return ref::data();}
+	HD typename static_array::element_const_ptr data() const{return ref::data();}
 	friend typename static_array::element_ptr       data(static_array&       s){return s.data();}
 	friend typename static_array::element_const_ptr data(static_array const& s){return s.data();}
 
@@ -268,6 +291,8 @@ public:
 	using static_::ref::operator<;
 	array() = default;
 	array(array const&) = default;
+	template<class O, typename = std::enable_if_t<std::is_base_of<array, O>{}> > 
+	array(O const& o) : static_(o){}
 //	array() noexcept(noexcept(static_::allocator_type())) : static_{}{} // 1a //allocator_type{}, ref{}{}      //1a
 //	array(typename array::allocator_type a) : static_(a){}                  //1b
 #if (not defined(__INTEL_COMPILER)) or (__GNUC >= 6)
@@ -326,7 +351,7 @@ public:
 //	template<class... As>
 //	array(typename array::extensions_type x, As&&... as) : static_{x, std::forward<As>(as)...}{} //2
 //	array(array const& other) : static_{static_cast<static_ const&>(other)}{}
-	array(array&& other) : static_{other.get_allocator()}{
+	array(array&& other) noexcept : static_{other.get_allocator()}{
 		static_::layout_t::operator=(other);
 		this->base_ = std::exchange(other.base_, nullptr);
 		other.static_::layout_t::operator=({});
@@ -499,6 +524,19 @@ template<class T, class MR, class A=memory::allocator<T, MR>> array(iextensions<
 
 }}
 
+#undef HD
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
 #if _TEST_BOOST_MULTI_ARRAY
 
 #include<cassert>
@@ -573,7 +611,6 @@ struct A{
 
 double f(){return 5.;}
 int main(){
-
 
 
 #if __cpp_deduction_guides

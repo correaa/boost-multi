@@ -37,3 +37,18 @@ TEST_CASE( "Array partitioned 2D", "[array]"){
 	REQUIRE( &A3_ref[1][1][0] == &A2[3][0] );
 }
 
+TEST_CASE( "Partition", "[array]"){
+	multi::array<std::string, 2> A2 = 
+		{
+			{  "s0P0",  "s1P0"},
+			{  "s0P1",  "s1P1"},
+			{  "s0P2",  "s1P2"},
+			{  "s0P3",  "s1P3"},
+			{  "s0P4",  "s1P4"},
+			{  "s0P5",  "s1P5"},
+		}; assert( size(A2) == 6 );
+//	auto&& A2.
+//	A3[Pspace][nstate];
+//	auto&& A3 = A2.partitioned(6).partitioned(3);
+}
+

@@ -107,10 +107,13 @@ template<class T, std::size_t N>
 constexpr auto num_elements(const T(&t)[N]) noexcept{return N*num_elements(t[0]);}
 
 template<class T, size_t N>
-constexpr auto num_elements(std::array<T, N> arr){return N*num_elements(arr[0]);}
+constexpr ptrdiff_t num_elements(std::array<T, N> arr){return N*num_elements(arr[0]);}
 
 template <class T, std::size_t N>
-constexpr auto stride(const T(&t)[N]) noexcept{return num_elements(t[0]);}
+constexpr ptrdiff_t stride(const T(&t)[N]) noexcept{return num_elements(t[0]);}
+
+//template <class T, std::size_t N>
+//constexpr ptrdiff_t stride(T(&t)[N]) noexcept{return num_elements(t[0]);}
 
 template<class T, std::size_t N>
 constexpr std::ptrdiff_t offset(const T(&)[N]) noexcept{return 0;}
@@ -183,6 +186,42 @@ constexpr auto sizes(const T(&t)[N]) noexcept{
 //constexpr auto origin(T& t){return &t;}
 template<class T, std::size_t N>
 constexpr auto origin(T(&t)[N]) noexcept{return reinterpret_cast<std::remove_all_extents_t<T[N]>*>(&t);}
+
+//template<class T, std::size_t N>
+//constexpr auto base(const T(&t)[N]) noexcept{
+//	return reinterpret_cast<std::remove_all_extents_t<T[N]> const*>(&t);
+//}
+
+template<class T, std::size_t N>
+constexpr auto base(T(&t)[N]) noexcept{
+	return data_elements(t);
+//	return reinterpret_cast<std::remove_all_extents_t<T[N]>*>(&t);
+}
+
+
+template<class T, std::size_t N>
+constexpr auto base(T(*&t)[N]) noexcept{return base(*t);}
+//reinterpret_cast<std::remove_all_extents_t<T[N]>*>(&t);}
+
+template<class T, typename = std::enable_if_t<not std::is_array<T>{}> >
+constexpr auto base(T const* t) noexcept{return t;}
+
+template<class T, typename = std::enable_if_t<not std::is_array<T>{}> >
+constexpr auto base(T* t) noexcept{return t;}
+
+template<class T, typename = std::enable_if_t<not std::is_array<T>{}> > 
+constexpr std::ptrdiff_t stride(T*&/*t*/) noexcept{
+	return 1;
+}
+template<class T, typename = std::enable_if_t<not std::is_array<T>{}> > 
+constexpr std::ptrdiff_t stride(T const*&/*t*/) noexcept{
+	return 1;
+}
+
+//template<class T> constexpr std::ptrdiff_t stride(T const*/*t*/) noexcept{return 1;}
+
+template<typename T, std::size_t N>
+constexpr std::ptrdiff_t stride(T(*&/*t*/)[N]) noexcept{return N;}
 
 template<class T>
 constexpr auto corigin(const T& t){return &t;}

@@ -44,12 +44,11 @@ int main(){
 	constexpr complex const I{0, 1};
 	using multi::blas::herk;
 	{
-	//	multi::array<complex, 2> const A = {
-	//		{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
-	//		{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
-	//	};
-		multi::array<complex, 2> const Aaux = {{1. + 3.*I, 9. + 1.*I}, {3. - 2.*I, 7. - 8.*I}, {4. + 1.*I, 
-  1. - 3.*I}};
+		multi::array<complex, 2> const Aaux = {
+			{1. + 3.*I, 9. + 1.*I}, 
+			{3. - 2.*I, 7. - 8.*I}, 
+			{4. + 1.*I, 1. - 3.*I}
+		};
 		auto&& A = rotated(Aaux);
 		multi::array<complex, 2> C({3, 3}, 9999.);
 		herk(A, C); // herk(A, C); // C^H = C =  A^H*A = (A^H*A)^H, information in C lower triangular

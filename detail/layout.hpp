@@ -441,6 +441,9 @@ int main(){
 }{	multi::layout_t<3> L(std::make_tuple(multi::iextension{10}, multi::iextension{10}, multi::iextension{10})); assert( num_elements(L) == 1000);
 }{	multi::layout_t<3> L(std::make_tuple(10, 10, multi::iextension{10})); assert( num_elements(L) == 1000 );
 }{
+	multi::layout_t<2> LL({{0, 10}, {0, 20}}); 
+	multi::layout_t<1> LLL({{0, 10}}); 
+
 	multi::layout_t<3> L({{0, 10}, {0, 20}, {0, 30}}); 
 	multi::layout_t<3> L2{extensions(L)};
 

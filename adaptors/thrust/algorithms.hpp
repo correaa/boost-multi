@@ -20,8 +20,7 @@ namespace multi{
 		array_iterator<From, 1, thrust::device_ptr<To>> l, 
 		array_iterator<To, 1, To*> d
 	){
-		assert( f.stride() == l.stride() );
-		static_assert( sizeof(From) == sizeof(To) );
+		assert(f.stride() == l.stride()); static_assert(sizeof(From) == sizeof(To));
 		auto n = std::distance(f, l);
 		if(f.stride()==1 and d.stride()==1){
 			auto s = cudaMemcpy(d.data(), raw_pointer_cast(f.data()), n*sizeof(To), cudaMemcpyDeviceToHost); assert( s == cudaSuccess );
@@ -31,6 +30,26 @@ namespace multi{
 		}
 		return d + n;
 	}
+
+#if 1
+	template<typename From, typename To, typename = std::enable_if_t<std::is_trivially_assignable<To&, From>{}> >
+	void fill(
+		array_iterator<To, 1, thrust::device_ptr<To>> f, 
+		array_iterator<To, 1, thrust::device_ptr<To>> l, 
+		From const& value
+	){
+		assert( f.stride() == l.stride() ); static_assert(sizeof(From) == sizeof(To));
+		auto n = std::distance(f, l);
+		if(f.stride()==1){
+		//	auto s = cudaMemcpy(f.data(), thrust::raw_pointer_cast(&value), n*sizeof(To), cudaMemcpyHostToDevice); assert(s == cudaSuccess);
+		}else{
+		//	auto s = cudaMemcpy2D(f.data(), f.stride()*sizeof(To), raw_pointer_cast(&value), 0*sizeof(To), sizeof(To), n, cudaMemcpyHostToDevice);
+		//	assert( s == cudaSuccess );
+		}
+		return;
+	}
+#endif
+
 }}
 
 #ifdef _TEST_MULTI_THRUST_ALGORITHMS

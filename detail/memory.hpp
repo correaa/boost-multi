@@ -7,7 +7,7 @@
 #include "layout.hpp"
 #include "../utility.hpp"
 #include<memory>
-
+#include<algorithm> // copy_n
 
 namespace boost{
 namespace multi{
@@ -154,8 +154,18 @@ MMIt uninitialized_copy(Alloc& a, InputIt f, InputIt l, MMIt d){
 	}catch(...){destroy(a, d, c); throw;}
 }
 
+using std::copy_n;
+template<class Alloc, class In, typename Size, class Fwd, class=std::enable_if_t<std::is_trivially_copyable<typename Fwd::element>{}>>
+auto uninitialized_copy_n(Alloc&, In first, Size count, Fwd d_first)
+->decltype(copy_n(first, count, d_first)){
+	assert(0);
+	return copy_n(first, count, d_first);}
+
+using std::copy;
 template<class Alloc, class In, class MIt, class=std::enable_if_t<std::is_trivially_copyable<typename MIt::element>{}>>
-MIt uninitialized_copy(Alloc&, In f, In l, MIt d){using std::copy; return copy(f, l, d);}
+auto uninitialized_copy(Alloc&, In f, In l, MIt d) 
+->decltype(copy(f, l, d)){
+	return copy(f, l, d);}
 
 template<class Alloc, class InputIt, class MIt, typename = std::enable_if_t<has_rank<MIt>{}>, typename = std::enable_if_t<typename MIt::rank{}==1>, class=std::enable_if_t<!std::is_trivially_copyable<typename MIt::element>{}> >
 MIt uninitialized_copy(Alloc& a, InputIt f, InputIt l, MIt const& d){

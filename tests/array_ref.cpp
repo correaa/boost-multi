@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 -std=c++17 -Wall -Wextra -Wpedantic -Wfatal-errors $0 -o$0x && $0x && rm $0x; exit
+clang++ `#-fconcepts` -O3 -std=c++2a -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o$0x && $0x && rm $0x; exit
 #endif
 
 #include "../array_ref.hpp"
@@ -18,22 +18,9 @@ namespace multi = boost::multi;
 
 double f(){return 5.;}
 
-struct A{
-	std::vector<double> impl;
-	A() : impl(27, -99.){}
-	auto linear(){return multi::array_ref(impl.data(), 27);}
-	auto linear() const{return multi::array_ref(impl.data(), 27);}
-	auto cubic(){return multi::array_ref(impl.data(), {3, 3, 3});}
-	auto cubic() const{return multi::array_ref(impl.data(), {3, 3, 3});}
-};
+template<class A> void what(A&&);
 
 int main(){
-
-	A a1;
-	A const a2;
-	a1.linear() = a2.linear();
-	a1.cubic() = a2.cubic();
-
 	{
 		double a[4][5] {
 			{ 0,  1,  2,  3,  4}, 
@@ -44,9 +31,42 @@ int main(){
 		double b[4][5];
 		multi::array_ref<double, 2, double*> A(&a[0][0], {4, 5});
 		multi::array_ref<double, 2, double*> B(&b[0][0], {4, 5});
-		rotated(A) = rotated(B);
-	}
+		rotated(B) = rotated(A);
+		multi::biiterator<std::decay_t<decltype(begin(A))>> biit{begin(A), 0, size(*begin(A))};
+		for(int i = 0; i!=num_elements(A); ++i, ++biit)
+			cout << i << "->" << *biit << ", ";
+		cout << std::endl;
+	
+//		auto biit2 = biit + 2;
+		multi::array_ref<double, 2, decltype(biit)> P(biit, {2, 10});
 
+	//	cout << std::endl;	
+	//	P[0][0];
+		for(int i = 0; i != 2; ++i){
+			for(int j = 0; j != 10; ++j)
+				std::cout << "j = "<< j << "->" << P[i][j] << " ,";
+			std::cout << std::endl;
+		}
+#if 0
+		std::vector<double> v(20);
+		multi::array_ref<double, 2, std::vector<double>::iterator> R(begin(v), extensions(A));
+		assert( P.base() == biit );
+	//	auto at = [](auto&& pp, std::ptrdiff_t idx) -> multi::array_ref<double, 2, decltype(biit)>::reference{
+	//		return {pp.layout().sub, pp.base() + pp.layout().operator()(idx)};
+	//	};
+	//	at(P, 0);
+		P[0];
+	//	P[0][1];
+//		P[0];
+//		P[0];
+	//	for(int i = 0; i != 2; ++i){
+	//		for(int j = 0; j != 2; ++j)
+	//			std::cout << P[i][j] << ',';
+	//		std::cout << std::endl;
+	//	}
+#endif
+	}
+	return 0;
 	double const d2D[4][5] {
 		{ 0,  1,  2,  3,  4}, 
 		{ 5,  6,  7,  8,  9}, 

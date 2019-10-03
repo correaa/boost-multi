@@ -43,6 +43,14 @@ int main(){
 		(fake::fftw_complex*)in.data_elements(), (fake::fftw_complex*)out.data_elements(), 1, 0
 	);
 
+struct basic : multi::layout_t<2>{
+	double* p;
+};
+
+struct ref : basic{
+};
+
+
 	{
 		multi::array<double, 2> d2D = 
 			{
@@ -51,6 +59,7 @@ int main(){
 				{100, 11, 12, 13, 14}, 
 				{ 50,  6,  7,  8,  9} 
 			};
+		static_assert(sizeof(d2D) == sizeof(double*)+6*sizeof(std::size_t));
 		assert( d2D.is_compact() );
 		assert( rotated(d2D).is_compact() );
 		assert( d2D[3].is_compact() );

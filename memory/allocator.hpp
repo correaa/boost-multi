@@ -41,6 +41,7 @@ public:
 	allocator() = default;
 	allocator(memory_type* mp) : mp_{mp}{}
 	allocator(allocator const& o) : mp_{o.mp_}, ctor_{o.ctor_}{}
+	allocator& operator=(allocator const&) = default;
 	bool operator==(allocator const& o) const{return mp_ == o.mp_;}
 	bool operator!=(allocator const& o) const{return mp_ != o.mp_;}
 	using void_pointer = void*;//typename std::pointer_traits<typename Memory::pointer>::template rebind<void>;

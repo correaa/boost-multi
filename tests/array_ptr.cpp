@@ -1,37 +1,37 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 -std=c++17 -Wall -Wextra -Wpedantic $0 -o$0x && $0x $@ && rm $0x; exit
+$CXX -O3 -std=c++17 -Wall -Wextra -Wpedantic $0 -o$0x && $0x && rm $0x; exit
 #endif
 
+#include "../array_ref.hpp"
 #include "../array.hpp"
-#include<cassert>
 
+#include<algorithm>
+#include<cassert>
+#include<iostream>
+#include<cmath>
+#include<vector>
+#include<list>
+#include<numeric> //iota
+
+using std::cout; using std::cerr;
 namespace multi = boost::multi;
 
-int main(){
-	multi::array<double, 3> A
-		#if __INTEL_COMPILER
-		= (double[3][2][2])
-		#endif
-		{
-			{{ 1.2,  1.1}, { 2.4, 1.}},
-			{{11.2,  3.0}, {34.4, 4.}},
-			{{ 1.2,  1.1}, { 2.4, 1.}}
-		};	
-	auto p = &A[1];
-	auto p2 = p + 1;
-	assert( &(*p )[0][0] == &A[1][0][0] );
-	assert( &(*p2)[0][0] == &A[2][0][0] ); // this is true only because A is contiguous
-	p2 = p;
-	assert( p2 == p );
-	auto p3 = &A[2][1];
-	assert( &(*p3)[1] == &A[2][1][1] );
-	assert( &p3->operator[](1) == &A[2][1][1] );
-	{
-		multi::array_ptr<double, 3> Bptr(A.data(), {3, 2, 2});
-	//	auto const& Aref = *multi::array_ptr<double, 3>(A.data(), {3, 2, 2});
-//		auto const& Aref = *multi::array_ptr(A.data(), {3, 2, 2});
-//		assert( &A[2][1][1] == &Aref[2][1][1] );
-	}
+double f(){return 5.;}
 
+int main(){
+	{
+		double a[4][5] {
+			{ 0,  1,  2,  3,  4}, 
+			{ 5,  6,  7,  8,  9}, 
+			{10, 11, 12, 13, 14}, 
+			{15, 16, 17, 18, 19}
+		};
+		double b[4][5];
+		auto&& A = *multi::array_ptr<double, 2>(&a[0][0], {4, 5});
+		multi::array_ref<double, 2, double*> B(&b[0][0], {4, 5});
+		B = A;
+		rotated(A) = rotated(B);
+		assert( b[1][2] == a[1][2] );
+	}
 }
 

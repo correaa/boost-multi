@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 -std=c++14 -Wall -Wextra -Wpedantic $0 -o$0x&&$0x&&rm $0x;exit
+$CXX -O3 -std=c++17 -Wall -Wextra -Wpedantic $0 -o$0x&&$0x&&rm $0x;exit
 #endif
 
 #include "../array.hpp"
@@ -8,13 +8,11 @@ $CXX -O3 -std=c++14 -Wall -Wextra -Wpedantic $0 -o$0x&&$0x&&rm $0x;exit
 namespace multi = boost::multi;
 
 int main(){
+
 {
 	multi::array<double, 2> A(multi::index_extensions<2>{8, 8}, 8.);
 	assert( size(A) == 8 );
 }
-
-std::vector<multi::static_array<double, 2>> v(9, {multi::index_extensions<2>{8, 8}});
-
  {  multi::static_array<double, 1> A     ; assert( empty(A) );
 }{  multi::static_array<double, 1> A{}   ; assert( empty(A) );
 }{  multi::static_array<double, 1> A = {}; assert( empty(A) ); 
@@ -25,18 +23,6 @@ std::vector<multi::static_array<double, 2>> v(9, {multi::index_extensions<2>{8, 
 }{  multi::static_array<double, 3> A{}   ; assert( empty(A) );
 }{  multi::static_array<double, 3> A = {}; assert( empty(A) );
 }{  multi::static_array<double, 3> A, B  ; assert( A == B );
-}
-
- {	multi::array<double, 1> A     ; assert( empty(A) );
-}{	multi::array<double, 1> A{}   ; assert( empty(A) );
-}{	multi::array<double, 1> A = {}; assert( empty(A) ); 
-}{  multi::array<double, 2> A     ; assert( empty(A) );
-}{  multi::array<double, 2> A{}   ; assert( empty(A) ); 
-}{  multi::array<double, 2> A = {}; assert( empty(A) );
-}{  multi::array<double, 3> A     ; assert( empty(A) );
-}{  multi::array<double, 3> A{}   ; assert( empty(A) );
-}{  multi::array<double, 3> A = {}; assert( empty(A) );
-}{  multi::array<double, 3> A, B  ; assert( A == B );
 }
 
 {
@@ -57,15 +43,30 @@ std::vector<multi::static_array<double, 2>> v(9, {multi::index_extensions<2>{8, 
 	rotated(A) = rotated(B);
 }
 
+//{
+//	std::vector<multi::static_array<double, 2>> v(9, {multi::index_extensions<2>{8, 8}});
+//	#if __cpp_deduction_guides
+//	std::vector w(9, multi::static_array<double, 2>({8, 8}));
+//	#endif
+//}
+
  {  multi::array<double, 1, std::allocator<double>> A{std::allocator<double>{}}; assert( empty(A) );
 }{  multi::array<double, 2, std::allocator<double>> A{std::allocator<double>{}}; assert( empty(A) );
 }{  multi::array<double, 3, std::allocator<double>> A{std::allocator<double>{}}; assert( empty(A) );
 }
 
- {//multi::array<double, 1> A({3}); assert( size(A)==3 and A[0]==0 );
-}{  multi::array<double, 1> A(3); assert( size(A)==3 and A[0]==0 );
-}{  multi::array<double, 1> A(multi::iextensions<1>{3}); assert(size(A)==3 and A[0]==0);
-}{  multi::array<double, 1> A(multi::array<double, 1>::extensions_type{3}); assert( size(A)==3 and A[0]==0 );
+// { multi::array<double, 1> A(3); assert( size(A)==3); // ambiguos
+ { multi::array<double, 1> A(3, {});  assert( size(A)==3 );
+}{ multi::array<double, 1> A(3, 99.); assert( size(A)==3 and A[2]==99. );
+}{ multi::array<double, 1> A({3});    assert( size(A)==1 and A[0]==3 );
+}{// multi::array<double, 1> A({{3}});  assert( size(A)==1 and A[0]==3 );
+}{ multi::array<double, 1> A(multi::iextensions<1>{3}); assert(size(A)==3);
+}{ multi::array<double, 1> A(multi::array<double, 1>::extensions_type{3}); assert(size(A)==3);
+}
+
+#if 0
+
+
 //#if not defined(__INTEL_COMPILER)
 }{	multi::array<double, 1> A({3}); assert( size(A)==1 and A[0]==3. );  // uses init_list
 }{	multi::array<double, 1> A({3}); assert( size(A)==1 and A[0]==3. );  // uses init_list
@@ -80,10 +81,10 @@ std::vector<multi::static_array<double, 2>> v(9, {multi::index_extensions<2>{8, 
 #if (!defined(__INTEL_COMPILER)) && (defined(__GNUC) && __GNU_VERSION__ >= 600)
 //}{  multi::array<double, 1> A({{0l, 3l}}); cout<<size(A)<<std::endl; assert( size(A)==3 and A[1]==0. ); //uses init_list
 #endif
-}{  multi::array<double, 1, std::allocator<double>> A(multi::index_extensions<1>{2}, std::allocator<double>{}); assert( size(A)==2 );
-}{  multi::array<double, 1, std::allocator<double>> A(multi::index_extensions<1>{{0, 3}}, std::allocator<double>{}); assert( size(A)==3 );
-}{  multi::array<double, 1, std::allocator<double>> A(multi::iextensions<1>{2}, std::allocator<double>{}); assert( size(A)==2 );
-}{  multi::array<double, 1, std::allocator<double>> A(multi::iextensions<1>{{0, 3}}, std::allocator<double>{}); assert( size(A)==3 );
+}{  // multi::array<double, 1, std::allocator<double>> A(multi::index_extensions<1>{2}, std::allocator<double>{}); assert( size(A)==2 );
+}{  // multi::array<double, 1, std::allocator<double>> A(multi::index_extensions<1>{{0, 3}}, std::allocator<double>{}); assert( size(A)==3 );
+}{  // multi::array<double, 1, std::allocator<double>> A(multi::iextensions<1>{2}, std::allocator<double>{}); assert( size(A)==2 );
+}{  // multi::array<double, 1, std::allocator<double>> A(multi::iextensions<1>{{0, 3}}, std::allocator<double>{}); assert( size(A)==3 );
 #if not defined(__INTEL_COMPILER) and (defined(__GNUC) and __GNU_VERSION >= 600)
 }{  multi::array<double, 2> A({2, 3}); assert( num_elements(A)==6 );
 #endif
@@ -93,7 +94,7 @@ std::vector<multi::static_array<double, 2>> v(9, {multi::index_extensions<2>{8, 
 #if not defined(__INTEL_COMPILER) and (defined(__GNUC__) and __GNU_VERSION__ >= 600)
 }{  multi::array<double, 2, std::allocator<double>> A({2, 3}, std::allocator<double>{}); assert( num_elements(A)==6 );
 #endif
-}{  multi::array<double, 2, std::allocator<double>> A(multi::iextensions<2>{2, 3}, std::allocator<double>{}); assert( num_elements(A)==6 );
+}{  multi::array<double, 2, std::allocator<double>> A(multi::iextensions{2, 3}, std::allocator<double>{}); assert( num_elements(A)==6 );
 #if not defined(__INTEL_COMPILER) and (defined(__GNUC__) and (__GNU_VERSION >= 600))
 }{  multi::array<double, 3> A({2, 3, 4}); assert( num_elements(A)==24 and A[1][2][3]==0 );
 #endif
@@ -128,8 +129,6 @@ std::vector<multi::static_array<double, 2>> v(9, {multi::index_extensions<2>{8, 
 #endif
 }{  multi::array<double, 3> A(multi::iextensions<3>{2, 3, 4}, 3.1); assert( num_elements(A)==24 and A[1][2][3]==3.1 );
 }
-
-return 0;
-
+#endif
 }
 

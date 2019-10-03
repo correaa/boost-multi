@@ -1,15 +1,27 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && clang++ `#-DNDEBUG` -O3 -std=c++14 -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_BLAS_DOT -DADD_ $0x.cpp -o $0x.x -lblas && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
+(echo "#include\""$0"\"" > $0x.cpp) && c++ `#-DNDEBUG` -O3 -std=c++14 -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_BLAS_DOT -DADD_ $0x.cpp -o $0x.x -lblas && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
 #endif
-// Alfredo A. Correa 2019 ©
+// © Alfredo A. Correa 2019
 
 #ifndef MULTI_ADAPTORS_BLAS_DOT_HPP
 #define MULTI_ADAPTORS_BLAS_DOT_HPP
 
 #include "../blas/core.hpp"
+#include "../blas/operations.hpp"
 
 namespace boost{
 namespace multi{
+
+template<typename Size, class It2>
+auto dot_n(boost::multi::array_iterator<std::complex<double>, 1, const std::complex<double>*> first1, Size n, It2 first2){
+	return boost::multi::blas::dotu(n, base(first1), stride(first1), base(first2), stride(first2));
+}
+
+template<typename Size, class It2>
+auto dot_n(boost::multi::array_iterator<std::complex<double>, 1, boost::multi::blas::conj_proxy_impl<const std::complex<double>*>, std::complex<double> > first1, Size n, It2 first2){
+	return boost::multi::blas::dotc(n, base(first1).underlying(), stride(first1), base(first2), stride(first2));
+}
+
 namespace blas{
 
 template<class R, class It1, class It2>
@@ -19,11 +31,16 @@ auto dot(It1 first1, It1 last1, It2 first2){
 	return dot<R>(d, base(first1), stride(first1), base(first2), stride(first2));
 }
 
+template<class It1, typename Size, class It2>
+auto dot_n(It1 first1, Size n, It2 first2){
+	return dot(n, base(first1), stride(first1), base(first2), stride(first2));
+}
+
 template<class It1, class It2>
 auto dot(It1 first1, It1 last1, It2 first2){
-	assert( stride(first1) == stride(first2) );
-	auto d = std::distance(first1, last1);
-	return dot(d, base(first1), stride(first1), base(first2), stride(first2));
+	assert( stride(first1)==stride(first2) );
+	using std::distance;
+	return dot_n(first1, distance(first1, last1), first2);
 }
 
 template<class R, class X1D, class Y1D>
@@ -106,6 +123,20 @@ int main(){
 
 	using multi::blas::nrm2;
 	assert( std::sqrt(dot(cA[1], cA[1])) == nrm2(cA[1]) );
+	
+	{
+		auto const& I = std::complex<double>{0.,1.};
+		multi::array<std::complex<double>, 2> const A = {
+			{1. +    I,  2. + 3.*I,  3.+2.*I,  4.-9.*I},
+			{5. + 2.*I,  6. + 6.*I,  7.+2.*I,  8.-3.*I},
+			{9. + 1.*I, 10. + 9.*I, 11.+1.*I, 12.+2.*I}
+		};
+		using multi::blas::dot;
+		using multi::blas::C;
+		auto d = dot(C(A[1]), A[1]);
+		cout<<"d="<< d <<std::endl;
+	}
+
 }
 
 #endif

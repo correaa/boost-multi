@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 -std=c++14 -Wall `#-Wfatal-errors` -DBOOST_RESULT_OF_USE_DECLTYPE $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
+$CXX -O3 -std=c++14 -Wall -Wfatal-errors -DBOOST_RESULT_OF_USE_DECLTYPE $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include "../array_ref.hpp"
@@ -40,11 +40,11 @@ auto neg = [](auto&& x){return -x;};
 auto inverse_function(decltype(neg)){return [](auto&& x){return -x;};}
 
 template<class P = std::complex<double>*>
-struct indirect_real{
+struct indirect_real : std::iterator_traits<typename std::pointer_traits<P>::element_type::value_type*>{
 	P impl_;
 	indirect_real(P const& p) : impl_{p}{}
     auto operator+(std::ptrdiff_t n) const{return indirect_real{impl_ + n};}
-	decltype(auto) operator*() const{return impl_->real();}
+	double& operator*() const{return reinterpret_cast<double(&)[2]>(*impl_)[0];}
 };
 
 int main(){
@@ -116,9 +116,15 @@ int main(){
 
 		struct indirect_imag{
 			std::complex<double>* underlying; using element_type = double;
+			indirect_imag(std::complex<double>* underlying) : underlying{underlying}{}
 			indirect_imag operator+(std::ptrdiff_t n) const{return {underlying + n};}
 			double& operator*() const{return reinterpret_cast<double(&)[2]>(*underlying)[1];}
 			operator double*() const{return &(*(*this));}
+			using difference_type = std::ptrdiff_t;
+			using value_type = double;
+			using pointer = double*;
+			using reference = double&;
+			using iterator_category = std::random_access_iterator_tag;
 		};
 		auto&& d2imag2 = static_array_cast<double, indirect_imag>(d2D);
 		assert( d2imag2[2][1] == 1. );

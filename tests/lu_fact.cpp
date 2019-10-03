@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-c++ -O3 -std=c++17 -Wall -Wextra -Wpedantic $0 -o $0.x -lboost_timer -ltbb && $0.x $@ && rm -f $0.x;exit
+c++ -Ofast -std=c++17 -Wall -Wextra -Wpedantic $0 -o $0.x -lboost_timer -ltbb && $0.x $@ && rm -f $0.x;exit
 #endif
 
 #include "../../multi/array.hpp"
@@ -13,25 +13,23 @@ c++ -O3 -std=c++17 -Wall -Wextra -Wpedantic $0 -o $0.x -lboost_timer -ltbb && $0
 namespace multi = boost::multi;
 using std::cout;
 
-
 template<class Matrix>
 Matrix&& lu_fact(Matrix&& A){
 	using multi::size;
-	auto m = A.size(), n = std::get<1>(sizes(A));
-	
+	auto m = size(A);// n = size(A[0]);//std::get<1>(sizes(A));
+	using std::begin; using std::end;
 	for(auto k = 0*m; k != m - 1; ++k){
 		auto const& Ak = A[k];
-		if(k > n) continue;
-		std::for_each(std::execution::par, begin(A) + k + 1, end(A), [&](auto&& Ai){
-//		for(auto i = k + 1; i != m; ++i){
-		//	auto&& Ai = A[i];
-		//	auto const z = Ai[k]/Ak[k];
-		//	auto it = begin(Ai) + 
-			Ai[k] /= Ak[k];//z;
-		//	assert( k + 1 <= n );
-		//	for(auto j = k + 1; j < n; ++j) Ai[j] -= z*Ak[j];
-			std::transform(begin(Ai)+k+1, end(Ai), begin(Ak)+k+1, begin(Ai)+k+1, [z=Ai[k]](auto&& a, auto&& b){return a  - z*b;});
-		});
+		if(k > size(Ak)) continue;
+		std::for_each(std::execution::par, 
+			begin(A) + k + 1, end(A), [&](auto&& Ai){
+				Ai[k] /= Ak[k];
+				std::transform(
+					begin(Ai)+k+1, end(Ai), begin(Ak)+k+1, begin(Ai)+k+1, 
+					[z=Ai[k]](auto&& a, auto&& b){return a  - z*b;}
+				);
+			}
+		);
 	}
 	return std::forward<Matrix>(A);
 }
@@ -55,7 +53,6 @@ template<class Matrix>
 Matrix&& lu_fact3(Matrix&& A){
 	using multi::size;
 	auto m = A.size(), n = std::get<1>(sizes(A));
-	
 	for(auto k = 0*m; k != m - 1; ++k){
 		auto&& Ak = A[k];
 		std::for_each(std::execution::par, begin(A) + k + 1, end(A), [&](auto&& Ai){
@@ -68,16 +65,27 @@ Matrix&& lu_fact3(Matrix&& A){
 	return std::forward<Matrix>(A);
 }
 
-#include <boost/timer/timer.hpp>
+#include<boost/timer/timer.hpp>
 #include<iostream>
 
 using std::cout;
 int main(){
 	{
-		multi::array<double, 2> A = {{-3., 2., -4.},{0., 1., 2.},{2., 4., 5.}};
-		multi::array<double, 1> y = {12.,5.,2.}; //(M); assert(y.size() == M); iota(y.begin(), y.end(), 3.1);
+		multi::array<double, 2> A = {
+			{-3., 2., -4.}, 
+			{ 0., 1.,  2.}, 
+			{ 2., 4.,  5.}
+		};
+		multi::array<double, 1> y = {12.,5.,2.};
+		double AA[3][3]; 
+		copy( begin(A), end(A), begin(*multi::array_ptr(&AA)) );
+
 		lu_fact(A);
+		lu_fact(AA);
+		using std::equal; using std::begin;
+		assert( equal(begin(A), end(A), begin(*multi::array_ptr(&AA))) );
 	}
+//	return 0;
 	{
 		multi::array<double, 2> A({6000, 7000}); std::iota(A.data(), A.data() + A.num_elements(), 0.1);
 		std::transform(A.data(), A.data() + A.num_elements(), A.data(), [](auto x){return x/=2.e6;});

@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&& `#nvcc -ccbin=cuda-`c++ -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_PTR `pkg-config cudart --cflags --libs` $0.cpp -o $0x &&$0x&& rm $0x; exit
+(echo '#include"'$0'"'>$0.cpp)&& nvcc -ccbin=cuda-c++ -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_PTR `pkg-config cudart --cflags --libs` $0.cpp -o $0x &&$0x&& rm $0x; exit
 #endif
 
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_PTR_HPP
@@ -280,6 +280,12 @@ public:
 		{cudaError_t s2 = cudaMemcpy(buff2, other.impl_, sizeof(T), cudaMemcpyDeviceToHost); assert(s2 == cudaSuccess);}
 		return reinterpret_cast<T const&>(buff1)==reinterpret_cast<T const&>(buff2);
 	}
+//	[[SLOW]] 
+//	bool operator==(T const& other) const{
+//		char buff1[sizeof(T)];
+//		{cudaError_t s1 = cudaMemcpy(buff1, this->impl_, sizeof(T), cudaMemcpyDeviceToHost); assert(s1 == cudaSuccess);}
+//		return reinterpret_cast<T const&>(buff1)==other;
+//	}
 #endif
 #endif
 //	[[SLOW]] 
@@ -330,7 +336,9 @@ int main(){
 		[[maybe_unused]] cuda::ptr<void> pp = p;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-		*p = 99.; if(*p != 99.) assert(0);
+		*p = 99.; 
+		if(*p != 99.) assert(0);
+		if(*p == 11.) assert(0);
 #pragma GCC diagnostic pop
 		free(p);
 	}

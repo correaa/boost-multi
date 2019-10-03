@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-clang++ -O3 -std=c++2a -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
+clang++ -O3 -std=c++2a -Wall -Wextra -Wpedantic -Wfatal-errors $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
 #endif
 
 #include<iostream>
@@ -11,19 +11,20 @@ using std::cout; using std::cerr;
 namespace multi = boost::multi;
 
 namespace min{
-template<class T> struct ptr{ // minimalistic pointer
+template<class T> struct ptr : std::iterator_traits<T*>{ // minimalistic pointer
 	T* impl_;
-	T& operator*() const{return *impl_;}
-	auto operator+(std::ptrdiff_t n) const{return ptr{impl_ + n};}
+	ptr(T* impl) : impl_{impl}{}
+	typename ptr::reference operator*() const{return *impl_;}
+	auto operator+(typename ptr::difference_type n) const{return ptr{impl_ + n};}
 //	T& operator[](std::ptrdiff_t n) const{return impl_[n];} // optional
 };
 
-template<class T> struct ptr2{ // minimalistic pointer
+template<class T> struct ptr2 : std::iterator_traits<T*>{ // minimalistic pointer
 	T* impl_;
 	ptr2(T* impl) : impl_{impl}{}
 	explicit ptr2(ptr<T> p) : impl_{p.impl_}{} 
-	T& operator*() const{return *impl_;}
-	auto operator+(std::ptrdiff_t n) const{return ptr2{impl_ + n};}
+	typename ptr2::reference operator*() const{return *impl_;}
+	auto operator+(typename ptr2::difference_type n) const{return ptr2{impl_ + n};}
 //	T& operator[](std::ptrdiff_t n) const{return impl_[n];} // optional
 };
 

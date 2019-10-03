@@ -49,6 +49,8 @@ Y1D&& axpy(X1D const& x, Y1D&& y){return axpy(+1., x, y);}
 #include<numeric>
 #include<algorithm>
 
+#include "../blas/numeric.hpp"
+
 using std::cout;
 namespace multi = boost::multi;
 
@@ -63,6 +65,17 @@ int main(){
 	using multi::blas::axpy;
 	axpy(2., b, A[1]); // y = a*x + y, y+= a*x
 	assert( A[1][2] == 2.*b[2] + cA[1][2] );
+
+	using complex = std::complex<double>;
+	complex const I = {0., 1.};
+	using multi::blas::real;
+	using multi::blas::imag;
+	using multi::blas::axpy;
+	multi::array<complex, 1> AC = {1. + 2.*I, 3. + 4.*I, 4. - 8.*I};
+	multi::array<complex, 1> BC(size(AC), complex{0.});
+	axpy(+1., begin(real(AC)), end(real(AC)), begin(real(BC)));
+	axpy(-1., begin(imag(AC)), end(imag(AC)), begin(imag(BC)));
+	assert( BC[2] == std::conj(AC[2]) );
 }
 
 #endif

@@ -41,8 +41,11 @@ struct array_types : Layout{
 	using reference = std::conditional_t<
 		dimensionality!=1, 
 		basic_array<element, dimensionality-1, element_ptr>, 
-	//	typename std::iterator_traits<ElementPtr>::reference   // this seems more correct but it doesn't work with cuda fancy reference
+#ifdef __CUDACC__
 		decltype(*std::declval<ElementPtr>())                  // this works with cuda fancy reference
+#else
+		typename std::iterator_traits<ElementPtr>::reference   // this seems more correct but it doesn't work with cuda fancy reference
+#endif
 	// typename std::iterator_traits<element_ptr>::reference 	//	typename pointer_traits<element_ptr>::element_type&
 	>;
 	HD element_ptr     base()   const{return base_;} //	element_const_ptr cbase() const{return base();}
@@ -778,6 +781,24 @@ public:
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
 	HD basic_array<T2, 1, P2> static_array_cast() const{//(basic_array&& o){  // name taken from std::static_pointer_cast
 		return {this->layout(), static_cast<P2>(this->base())};
+	}
+	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>,
+		class Element = typename basic_array::element,
+		class PM = T2 Element::*
+	>
+	basic_array<T2, 1, P2> member_cast(PM pm) const{
+		static_assert(sizeof(T)%sizeof(T2) == 0, 
+			"array_member_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements");
+		return {this->layout().scale(sizeof(T)/sizeof(T2)), &(this->base_->*pm)};
+	}
+	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
+	basic_array<T2, 1, P2> reinterpret_array_cast() const{
+		static_assert( sizeof(T)%sizeof(T2)== 0, "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
+//			this->layout().scale(sizeof(T)/sizeof(T2));
+		return {
+			this->layout().scale(sizeof(T)/sizeof(T2)), 
+			reinterpret_cast<P2>(this->base())
+		};
 	}
 };
 
