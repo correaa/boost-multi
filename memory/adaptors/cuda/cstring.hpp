@@ -1,12 +1,13 @@
 #ifdef COMPILATION_INSTRUCTIONS
 (echo '#include"'$0'"'>$0.cpp)&&clang++ -std=c++14 -Wfatal-errors -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING -D_DISABLE_CUDA_SLOW `pkg-config cudart --cflags --libs` $0.cpp -o$0x -lboost_timer&&$0x&&rm $0x $0.cpp; exit
 #endif
-// © 2019 Alfredo A. Correa 
+// © Alfredo A. Correa 2019
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING_HPP
 #define BOOST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING_HPP
 
-#include<cuda_runtime.h> // cudaMemcpy/cudaMemset
 #include "../../adaptors/cuda/ptr.hpp"
+
+#include<cuda_runtime.h> // cudaMemcpy/cudaMemset
 
 #include<iostream>
 
@@ -50,7 +51,7 @@ ptr<void> memset(ptr<void> dest, int ch, std::size_t byte_count){
 
 #include<boost/timer/timer.hpp>
 #include<numeric>
-#include "../cuda/allocator.hpp"
+#include "../../adaptors/cuda/allocator.hpp"
 
 namespace multi = boost::multi;
 namespace cuda = multi::memory::cuda;
