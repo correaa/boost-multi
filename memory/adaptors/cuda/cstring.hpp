@@ -1,12 +1,14 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&& clang++ -std=c++17 -I/usr/include/cuda -Wfatal-errors -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING $0.cpp -o$0x -lcudart -lboost_timer&& $0x && rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&clang++ -std=c++17 -Wfatal-errors -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING -D_DISABLE_CUDA_SLOW $0.cpp -o$0x -lcudart -lboost_timer&&$0x&&rm $0x $0.cpp; exit
 #endif
 // © 2019 Alfredo A. Correa 
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING_HPP
 #define BOOST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING_HPP
 
-#include<cuda_runtime.h> // cudaMemcpy/cudaMemset
+#include<cuda/cuda_runtime.h> // cudaMemcpy/cudaMemset
 #include "../cuda/ptr.hpp"
+
+#include<iostream>
 
 namespace boost{
 namespace multi{
@@ -27,17 +29,18 @@ namespace memcpy_{
 
 template<typename Dest, typename Src, typename = decltype(memcpy_::type(Dest{}, Src{}))>
 Dest memcpy(Dest dest, Src src, std::size_t byte_count){
-	cudaError_t s = cudaMemcpy(
-		static_cast<void*>(dest), static_cast<void const*>(src),  
+	assert( byte_count > 1000 );
+	cudaError_t const s = cudaMemcpy(
+		static_cast<void*>(dest), static_cast<void const*>(src), 
 		byte_count, static_cast<cudaMemcpyKind>(memcpy_::type(dest, src))
 	); assert(s == cudaSuccess);
 	return dest;
 }
 
 ptr<void> memset(ptr<void> dest, int ch, std::size_t byte_count){
-//	assert(ch==0);
-	cudaError_t s = cudaMemset(static_cast<void*>(dest), ch, byte_count);
-	assert( s == cudaSuccess );
+	[[maybe_unused]] cudaError_t s = cudaMemset(static_cast<void*>(dest), ch, byte_count); assert(s == cudaSuccess);
+//	if(s == cudaErrorInvalidDevicePointer) throw std::runtime_error{"cudaErrorInvalidDevicePointer"};
+//	if(s == cudaErrorInvalidValue)         throw std::runtime_error{"cudaErrorInvalidValue"};//, probably could not allocate fuzzy memory"};
 	return dest;
 }
 
@@ -59,7 +62,7 @@ int main(){
 		boost::timer::auto_cpu_timer t;
 		memset(p, 0, n*sizeof(double));
 	}
-	assert(p[n/2]==0);
+	assert( p[n/2]==0 );
 	p[n/2] = 99.;
 	cuda::ptr q = cuda::allocator<double>{}.allocate(n);
 	{
