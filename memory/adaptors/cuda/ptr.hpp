@@ -1,12 +1,11 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&& `#nvcc -ccbin=cuda-`c++ -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_PTR $0.cpp -o $0x -lcudart &&$0x&& rm $0x; exit
+(echo '#include"'$0'"'>$0.cpp)&& `#nvcc -ccbin=cuda-`c++ -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_PTR `pkg-config cudart --cflags --libs` $0.cpp -o $0x &&$0x&& rm $0x; exit
 #endif
 
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_PTR_HPP
 #define BOOST_MULTI_MEMORY_ADAPTORS_CUDA_PTR_HPP
 
-
-#include "../cuda/clib.hpp"
+#include "../../adaptors/cuda/clib.hpp"
 
 #include<cassert>
 #include<cstddef> // nullptr_t
