@@ -155,7 +155,7 @@ int main(){
 			{  7., 19., 1., 2.},
 			{ 11., 12., 4., 1.} 
 		};
-		multi::array<complex, 2> C({4, 2});
+		multi::array<complex, 2> C({4, 2}); 
 		gemm('T', 'T', 1., A, B, 0., C); // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
 		print(rotated(C)) << "---\n"; //{{76., 117., 23., 13.}, {159., 253., 47., 42.}}
 	}
