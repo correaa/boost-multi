@@ -1,13 +1,13 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include "'$0'"'>$0.cpp)&&c++ -std=c++11 -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_MEMORY_ADAPTOR_CUDA_DETAIL_MALLOC $0.cpp -o $0x -lcudart &&$0x&& rm $0x $0.cpp; exit
+(echo '#include "'$0'"'>$0.cpp)&&c++ -std=c++11 -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_MEMORY_ADAPTOR_CUDA_DETAIL_MALLOC `pkg-config cudart --cflags --libs` $0.cpp -o $0x &&$0x&& rm $0x $0.cpp; exit
 #endif
 
 #ifndef MULTI_MEMORY_ADAPTOR_CUDA_LIB_HPP
 #define MULTI_MEMORY_ADAPTOR_CUDA_LIB_HPP
 
-#include "../cuda/error.hpp"
-
 #include<cuda_runtime.h> // cudaMalloc
+
+#include "../../adaptors/cuda/error.hpp"
 
 namespace Cuda{
 	using size_t = ::size_t;
