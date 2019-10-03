@@ -1,7 +1,7 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && clang++ `#-DNDEBUG` -O3 -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS -DADD_ $0x.cpp -o $0x.x -lblas && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&clang++ -Ofast -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS $0.cpp -o $0x -lblas &&$0x&&rm $0x $0.cpp; exit
 #endif
-// Alfredo A. Correa 2019 ©
+// Copyright Alfredo A. Correa 2018
 
 #ifndef MULTI_ADAPTORS_BLAS_HPP
 #define MULTI_ADAPTORS_BLAS_HPP
@@ -17,6 +17,8 @@
 #include "../adaptors/blas/copy.hpp"
 #include "../adaptors/blas/dot.hpp"
 #include "../adaptors/blas/gemm.hpp"
+#include "../adaptors/blas/syrk.hpp"
+#include "../adaptors/blas/herk.hpp"
 #include "../adaptors/blas/gemv.hpp"
 #include "../adaptors/blas/ger.hpp"
 #include "../adaptors/blas/nrm2.hpp"
@@ -38,6 +40,22 @@ using std::cout;
 namespace multi = boost::multi;
 
 int main(){
+	using complex = std::complex<double>;
+	constexpr complex const I{0, 1};
+	using multi::blas::herk;
+	{
+	//	multi::array<complex, 2> const A = {
+	//		{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
+	//		{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
+	//	};
+		multi::array<complex, 2> const Aaux = {{1. + 3.*I, 9. + 1.*I}, {3. - 2.*I, 7. - 8.*I}, {4. + 1.*I, 
+  1. - 3.*I}};
+		auto&& A = rotated(Aaux);
+		multi::array<complex, 2> C({3, 3}, 9999.);
+		herk(A, C); // herk(A, C); // C^H = C =  A^H*A = (A^H*A)^H, information in C lower triangular
+		assert( C[2][0] == 13. - 39.*I );
+		assert( C[0][2] == 9999. );
+	}
 #if 0
 	multi::array<double, 2> const CA = {
 		{1.,  2.,  3.,  4.},
