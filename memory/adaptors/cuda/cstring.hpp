@@ -1,12 +1,12 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&clang++ -std=c++17 -Wfatal-errors -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING -D_DISABLE_CUDA_SLOW $0.cpp -o$0x -lcudart -lboost_timer&&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&clang++ -std=c++14 -Wfatal-errors -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING -D_DISABLE_CUDA_SLOW `pkg-config cudart --cflags --libs` $0.cpp -o$0x -lboost_timer&&$0x&&rm $0x $0.cpp; exit
 #endif
 // © 2019 Alfredo A. Correa 
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING_HPP
 #define BOOST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING_HPP
 
 #include<cuda_runtime.h> // cudaMemcpy/cudaMemset
-#include "../cuda/ptr.hpp"
+#include "../../adaptors/cuda/ptr.hpp"
 
 #include<iostream>
 
@@ -29,7 +29,7 @@ namespace memcpy_{
 
 template<typename Dest, typename Src, typename = decltype(memcpy_::type(Dest{}, Src{}))>
 Dest memcpy(Dest dest, Src src, std::size_t byte_count){
-	assert( byte_count > 1000 );
+//	assert( byte_count > 1000 );
 	cudaError_t const s = cudaMemcpy(
 		static_cast<void*>(dest), static_cast<void const*>(src), 
 		byte_count, static_cast<cudaMemcpyKind>(memcpy_::type(dest, src))
@@ -64,7 +64,7 @@ int main(){
 	}
 	assert( p[n/2]==0 );
 	p[n/2] = 99.;
-	cuda::ptr q = cuda::allocator<double>{}.allocate(n);
+	cuda::ptr<double> q = cuda::allocator<double>{}.allocate(n);
 	{
 		boost::timer::auto_cpu_timer t;
 		memcpy(q, p, n*sizeof(double));
