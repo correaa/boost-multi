@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-clang++ `#-fconcepts` -O3 -std=c++2a -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o$0x && $0x && rm $0x; exit
+$CXX `#-fconcepts` -O3 -std=c++2a -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o$0x && $0x && rm $0x; exit
 #endif
 
 #include "../array_ref.hpp"
