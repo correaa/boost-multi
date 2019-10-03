@@ -196,7 +196,7 @@ int main(){
 		auto C = syrk(A); // C = C^T = A^T*A, C is a value type matrix (with C-ordering, information is everywhere)
 		print(C) <<"---\n";
 	}
-	return 0;
+	return 0; 
 	{
 		multi::array<complex, 2> const A = {
 			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
