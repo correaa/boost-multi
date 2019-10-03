@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-nvcc -x cu  --expt-relaxed-constexpr -O3 -ccbin=cuda-c++ -std=c++14 `pkg-config cudart --cflags --libs` $0 -o $0x -D_DISABLE_CUDA_SLOW &&$0x&&rm $0x; exit
+nvcc -x cu --expt-relaxed-constexpr -O3 -ccbin=cuda-c++ -std=c++14 `pkg-config cudart --cflags --libs` $0 -o $0x -D_DISABLE_CUDA_SLOW &&$0x&&rm $0x; exit
 #endif
 
 #include "../../cuda/allocator.hpp"
