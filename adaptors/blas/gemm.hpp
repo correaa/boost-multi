@@ -51,30 +51,11 @@ auto gemm_n(
 	return Cf;
 }
 
-/*template<class Op, class AA, class BB, class It1, class It2, class Out>
-auto gemm(Op opA, Op opB, AA a, It1 Af, It1 Al, It2 Bf, It2 Bl, BB b, Out Cf){
-	assert( stride(Af)==stride(Al) and Af->size()==Al->size() );
-	assert( stride(Bf)==stride(Bl) and Bf->size()==Bl->size() );
-	return gemm_n(opA, opB, a, Af, Al - Af, Bf, Bl - Bf, b, Cf);
-}
-
-
-template<class Op, class AA, class BB, class A2DIt, class B2DIt, class C2DIt, class Size>
-auto gemm_n(Op opA, Op opB, AA a, A2DIt Af, Size As, B2DIt Bf, Size Bs, BB b, C2DIt Cf, Size Cs){
-	gemm(opA, opB, As, Cs, Bs, a, base(Af), stride(Af), base(Bf), stride(Bf), b, base(Cf), stride(Cf));
-	return Cf + Bf->size();
-}
-
-template<class Op, class AA, class BB, class A2DIt, class B2DIt, class C2DIt>
-auto gemm(Op opA, Op opB, AA a, A2DIt Af, A2DIt Al, B2DIt Bf, B2DIt Bl, BB b, C2DIt Cf, C2DIt Cl){
-	if((opA == 'T' or opA == 'C') and (opB == 'T' or opB == 'C')){ // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, 
-		return gemm_n(opA, opB, Al - Af, Cl - Cf, Bl - Bf, a, Af, Bf, b, Cf);
-	}
-}
-*/
-
 template<class Op, class AA, class BB, class A2D, class B2D, class C2D>
 decltype(auto) gemm(Op opA, Op opB, AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
+//	gemm_n(opA, opB, a, begin(A), size(A), begin(B), size(B), b, begin(C));
+//	return std::forward<C2D>(C);
+#if 1
 	using std::begin;
 	assert(stride(*begin(A)) == 1 and stride(*begin(B))==1 and stride(*begin(C))==1);
 	if((opA == 'T' or opA == 'C') and (opB == 'T' or opB == 'C')){ // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
@@ -99,11 +80,14 @@ decltype(auto) gemm(Op opA, Op opB, AA a, A2D const& A, B2D const& B, BB b, C2D&
 	}
 	assert(0);
 	return std::forward<C2D>(C);
+#endif
 }
 
 template<class AA, class BB, class A2D, class B2D, class C2D>
 decltype(auto) gemm(AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
 	if(stride(*begin(A)) == 1 and stride(*begin(B))==1 and stride(*begin(C))==1){
+		assert( size(A) == size(rotated(C)) );
+		assert( size(rotated(B)) == size(C) );
 		return gemm('T', 'T', a, A, B, b, C);
 	}
 	assert(0);
@@ -145,6 +129,7 @@ template<class M> decltype(auto) print(M const& C){
 void f(double*){}
 
 int main(){
+	using complex = std::complex<double>;
 	using multi::blas::gemm;
 	{
 		multi::array<double, 2> const A = {
@@ -157,6 +142,20 @@ int main(){
 			{ 11., 12., 4., 1.}
 		};
 		multi::array<double, 2> C({4, 2});
+		gemm('T', 'T', 1., A, B, 0., C); // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
+		print(rotated(C)) << "---\n"; //{{76., 117., 23., 13.}, {159., 253., 47., 42.}}
+	}
+	{
+		multi::array<complex, 2> const A = {
+			{ 1., 3., 4.},
+			{ 9., 7., 1.}
+		};
+		multi::array<complex, 2> const B = {	
+			{ 11., 12., 4., 3.},
+			{  7., 19., 1., 2.},
+			{ 11., 12., 4., 1.}
+		};
+		multi::array<complex, 2> C({4, 2});
 		gemm('T', 'T', 1., A, B, 0., C); // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
 		print(rotated(C)) << "---\n"; //{{76., 117., 23., 13.}, {159., 253., 47., 42.}}
 	}
@@ -242,43 +241,42 @@ int main(){
 		gemm('T', 'N', 1., A, A, 0., C); // C^T = C = A*A^T , C = (A*A^T)^T, C = A*A^T = C^T, if A, B, C are c-ordering (e.g. array or array_ref)
 		print(rotated(C)) << "---\n"; //{{76., 117., 23., 13.}, {159., 253., 47., 42.}}
 	}
-	using std::complex;
-	constexpr auto const I = complex<double>{0., 1.};
+	constexpr auto const I = complex{0., 1.};
 	{
-		multi::array<complex<double>, 2> const A = {
+		multi::array<complex, 2> const A = {
 			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
 			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
 		};
-		multi::array<complex<double>, 2> C({2, 2});
+		multi::array<complex, 2> C({2, 2});
 		gemm('C', 'N', 1., A, A, 0., C); // C^H = C = A*A^H , C = (A*A^H)^H, C = A*A^H = C^H, if A, B, C are c-ordering (e.g. array or array_ref)
 		print(C) << "---\n";
-		multi::array<std::complex<double>, 2> CC({2, 2});
+		multi::array<complex, 2> CC({2, 2});
 		using multi::blas::herk;
 		herk('U', 'C', 1., A, 0., CC); // CC^H = CC = A*A^H, CC = (A*A^H)^H, CC = A*A^H, C lower triangular
 		print(CC) << "---\n";
 	}
 	{
-		complex<double> const A[2][3] = {
+		complex const A[2][3] = {
 			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
 			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
 		};
-		complex<double> C[2][2];
+		complex C[2][2];
 		gemm('C', 'N', 1., A, A, 0., C); // C^H = C = A*A^H , C = (A*A^H)^H, C = A*A^H = C^H, if A, B, C are c-ordering (e.g. array or array_ref)
 		print(C) << "---\n";
-		complex<double> CC[2][2];
+		complex CC[2][2];
 		using multi::blas::herk;
 		herk('U', 'C', 1., A, 0., CC); // CC^H = CC = A*A^H, CC = (A*A^H)^H, CC = A*A^H, C lower triangular
 		print(CC) << "---\n";
 	}
 	{
-		multi::array<complex<double>, 2> const A = {
+		multi::array<complex, 2> const A = {
 			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
 			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
 		};
-		multi::array<complex<double>, 2> C({3, 3});
+		multi::array<complex, 2> C({3, 3});
 		gemm('N', 'C', 1., A, A, 0., C); // C^H = C = A^H*A , C = (A^H*A)^H, C = A*A^H = C^H, if A, B, C are c-ordering (e.g. array or array_ref)
 	//	print(C) << "---\n";
-		multi::array<complex<double>, 2> CC({3, 3});
+		multi::array<complex, 2> CC({3, 3});
 		using multi::blas::herk;
 		herk('U', 'N', 1., A, 0., CC); // CC^H = CC = A*A^H, CC = (A*A^H)^H, CC = A*A^H, C lower triangular
 		print(CC) << "---\n";
