@@ -41,8 +41,8 @@ struct array_types : Layout{
 	using reference = std::conditional_t<
 		dimensionality!=1, 
 		basic_array<element, dimensionality-1, element_ptr>, 
-		typename std::iterator_traits<ElementPtr>::reference
-	//	decltype(*std::declval<ElementPtr>())
+	//	typename std::iterator_traits<ElementPtr>::reference   // this seems more correct but it doesn't work with cuda fancy reference
+		decltype(*std::declval<ElementPtr>())                  // this works with cuda fancy reference
 	// typename std::iterator_traits<element_ptr>::reference 	//	typename pointer_traits<element_ptr>::element_type&
 	>;
 	HD element_ptr     base()   const{return base_;} //	element_const_ptr cbase() const{return base();}
