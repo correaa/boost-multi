@@ -1,6 +1,6 @@
 #ifdef COMPILATION_INSTRUCTIONS
 (echo '#include"'$0'"'>$0.cpp)&&clang++ -Ofast -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_HERK $0.cpp -o $0x \
-`pkg-config --libs blas64` \
+`pkg-config --cflags --libs blas64` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
 #endif
@@ -10,6 +10,10 @@
 #define MULTI_ADAPTORS_BLAS_HERK_HPP
 
 #include "../blas/core.hpp"
+//#include "../blas/axpy.hpp" 
+#include "../blas/copy.hpp" 
+#include "../blas/numeric.hpp"
+#include "../blas/scal.hpp" 
 
 namespace boost{
 namespace multi{namespace blas{
@@ -37,15 +41,31 @@ C2D&& herk(UL uplo, AA a, A2D const& A, BB b, C2D&& C){
 	else             return herk(uplo, 'N', a,         A , b, std::forward<C2D>(C));
 }
 
-template<typename AA, class BB, class A2D, class C2D>
-C2D&& herk(AA a, A2D const& A, BB b, C2D&& C){
-	if(stride(C)==1) herk('L', a, A, b, rotated(std::forward<C2D>(C)));
-	else             herk('U', a, A, b,         std::forward<C2D>(C) );
+template<class UL, typename AA, class A2D, class C2D>
+C2D&& herk(UL uplo, AA a, A2D const& A, C2D&& C){
+	if(stride(A)==1) return herk(uplo, 'C', a, rotated(A), 0., std::forward<C2D>(C));
+	else             return herk(uplo, 'N', a,         A , 0., std::forward<C2D>(C));
+}
+
+template<typename AA, class A2D, class C2D>
+C2D&& herk(AA a, A2D const& A, C2D&& C){
+	if(stride(C)==1) herk('L', a, A, rotated(std::forward<C2D>(C)));
+	else             herk('U', a, A,         std::forward<C2D>(C) );
+	using multi::blas::imag;
+	using multi::rotated;
+	using multi::size;
+	for(typename std::decay_t<C2D>::difference_type i = 0; i != size(C); ++i){
+		blas::copy(begin(rotated(C)[i])+i+1, end(rotated(C)[i]), begin(C[i])+i+1);
+		blas::scal(-1., begin(imag(C[i]))+i+1, end(imag(C[i])));
+	}
 	return std::forward<C2D>(C);
 }
 
 template<class A2D, class C2D>
-C2D&& herk(A2D const& A, C2D&& C){return herk(1., A, 0., std::forward<C2D>(C));}
+C2D&& herk(A2D const& A, C2D&& C){return herk(1., A, std::forward<C2D>(C));}
+
+template<class A2D, class R = typename A2D::decay_type>
+R herk(A2D const& A){return herk(A, R({size(rotated(A)), size(rotated(A))}));}
 
 }}}
 
@@ -158,7 +178,7 @@ int main(){
 			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
 		};
 		multi::array<complex, 2> C({3, 3}, 9999.);
-		herk(1., A, 0., C); // CC^H = CC =  A^H*A, information in C lower triangular
+		herk(1., A, C); // CC^H = CC =  A^H*A, information in C lower triangular
 		print(C) <<"---\n";
 	}
 	{
@@ -167,7 +187,7 @@ int main(){
 			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
 		};
 		multi::array<complex, 2> C({3, 3}, 9999.);
-		herk(1., A, 0., rotated(C)); // CC^H = CC =  A^H*A, information in C upper triangular
+		herk(1., A, rotated(C)); // CC^H = CC =  A^H*A, information in C upper triangular
 		print(C) <<"---\n";
 	}
 	{
@@ -176,7 +196,7 @@ int main(){
 			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
 		};
 		multi::array<complex, 2> C({2, 2}, 9999.);
-		herk(1., rotated(A), 0., C); // CC^H = CC =  A*A^H, information in C lower triangular
+		herk(1., rotated(A), C); // CC^H = CC =  A*A^H, information in C lower triangular
 		print(C) <<"---\n";
 	}
 	{
@@ -185,7 +205,7 @@ int main(){
 			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
 		};
 		multi::array<complex, 2> C({2, 2}, 9999.);
-		herk(1., rotated(A), 0., rotated(C)); // CC^H = CC =  A*A^H, information in C upper triangular
+		herk(1., rotated(A), rotated(C)); // CC^H = CC =  A*A^H, information in C upper triangular
 		print(C) <<"---\n";
 	}
 	{
@@ -232,7 +252,7 @@ int main(){
 	}
 	return 0;
 }
-
+	
 #endif
 #endif
 
