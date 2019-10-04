@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-nvcc -ccbin cuda-c++ -std=c++14 $0 -o $0x && $0x && rm $0x; exit
+nvcc -ccbin=cuda-c++ --expt-relaxed-constexpr -std=c++14 $0 -o $0x && $0x && rm $0x; exit
 #endif
 
 #include "../adaptors/thrust/allocator_traits.hpp"
@@ -30,10 +30,26 @@ int main(){
 		assert( v == 45. );
 		assert( p[2] == 45. );
 	}
-	multi::array<double, 1, Alloc> A(multi::index_extensions<1>{100}, 0.); A[20] = 44.;
-	multi::array<double, 1, thrust::device_allocator<double>> BB(multi::index_extensions<1>{10}, 99.);
+	multi::array<double, 1, Alloc> A(100, 11.); 
+	assert(A[20]==11.);
+	A[20] = 44.;
+	multi::array<double, 1, thrust::device_allocator<double>> BB(10, 99.);
 //	assert( B[2] == 99. );
-	thrust_array<double, 1> B(multi::index_extensions<1>{100}, 11.); assert( B[20] == 11. );
+	thrust_array<double, 1> B(100, 11.); 
+	B[20] = 11.;
+	std::cout << B[20] << std::endl;
+	assert( B[20] == 11. );
+	thrust_array<double, 1> C(100);
+	thrust::copy(begin(B), end(B), begin(C));
+	assert(C[20]==11.);
+
+	multi::array<double, 2, thrust::device_allocator<double>> A2({10,10});
+	multi::array<double, 2, thrust::device_allocator<double>> B2({10,10});
+
+	A2[5][0] = 50.;
+	thrust::copy(begin(rotated(A2)[0]), end(rotated(A2)[0]), begin(rotated(B2)[0]));
+	assert(B2[5][0] == 50. );
+
 #if 0
 	multi::array<double, 1> A_host({100}, 99.);
 	{
