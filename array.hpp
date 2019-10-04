@@ -123,7 +123,8 @@ public:
 		uninitialized_fill(e);
 	}
 	explicit static_array(typename ref::size_type n, typename static_array::allocator_type const& a = {})
-	: 	static_array(typename static_array::index_extension(n), a){}
+	: 	static_array(typename static_array::index_extension(n), a){
+	}
 	explicit static_array(typename static_array::index n, typename static_array::value_type const& v, typename static_array::allocator_type const& a = {})
 	: 	static_array(typename static_array::index_extension(n), v, a){}
 	explicit static_array(typename static_array::index_extension const& e, typename static_array::value_type const& v, typename static_array::allocator_type const& a = {}) //3
@@ -133,6 +134,7 @@ public:
 	}
 	static_array(typename static_array::extensions_type const& x, allocator_type const& a) //3
 	:	allocator_type{a}, ref{allocate(typename static_array::layout_t{x}.num_elements()), x}{
+	//	assert(0);
 	//	uninitialized_value_construct();
 	}
 	static_array(typename static_array::extensions_type const& x) //3
@@ -173,7 +175,9 @@ public:
 		assert(0);
 	//	uninitialized_copy_(other.data());
 	}
-	template<class O, typename = std::enable_if_t<not std::is_base_of<static_array, O>{}>>
+	template<class O, typename = std::enable_if_t<not std::is_base_of<static_array, O>{}>,
+		typename = std::enable_if_t<dimensionality<O>()==dimensionality>
+	>
 	static_array(O const& o)                                          //
 	:	allocator_type{}, 
 		ref(allocate(num_elements(o)), extensions(o))
