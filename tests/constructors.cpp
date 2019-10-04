@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 -std=c++17 -Wall -Wextra -Wpedantic $0 -o$0x&&$0x&&rm $0x;exit
+clang++ -O3 -std=c++14 -Wall -Wextra -Wpedantic $0 -o $0x && valgrind $0x&&rm $0x;exit
 #endif
 
 #include "../array.hpp"
@@ -8,6 +8,15 @@ $CXX -O3 -std=c++17 -Wall -Wextra -Wpedantic $0 -o$0x&&$0x&&rm $0x;exit
 namespace multi = boost::multi;
 
 int main(){
+
+ {  multi::array<double, 1> A({10}); assert(size(A)==1);
+}{  multi::array<double, 1> A(10); assert(size(A)==10); A[2] = A[3] + 1.;
+//}{  multi::array<double, 1> A({10}, double{}); assert(size(A)==10); // warning in clang
+}{  multi::array<double, 1> A(10, {}); assert(size(A)==10);
+//}{  multi::array<double, 1> A({10}, double{}); assert(size(A)==10); // warning in clang
+//}{  multi::array<double, 1> A({10}, 0.); assert(size(A)==10); // warning in clang
+}{//multi::array<double, 1> A({10}, {}); assert(size(A)==10); // ambiguous 
+}
 
 {
 	multi::array<double, 2> A(multi::index_extensions<2>{8, 8}, 8.);
