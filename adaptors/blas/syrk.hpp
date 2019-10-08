@@ -28,6 +28,7 @@ C2D&& syrk(UL uplo, Op op, AA a, A2D const& A, BB b, C2D&& C){
 		return std::forward<C2D>(C);
 	}
 	assert(0);
+	return std::forward<C2D>(C);
 }
 
 template<class UL, typename AA, typename BB, class A2D, class C2D>
