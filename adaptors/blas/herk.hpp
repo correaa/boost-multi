@@ -1,6 +1,6 @@
 #ifdef COMPILATION_INSTRUCTIONS
 (echo '#include"'$0'"'>$0.cpp)&&clang++ -Ofast -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_HERK $0.cpp -o $0x \
-`pkg-config --cflags --libs blas64` \
+`pkg-config --cflags --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
 #endif
@@ -10,13 +10,14 @@
 #define MULTI_ADAPTORS_BLAS_HERK_HPP
 
 #include "../blas/core.hpp"
-//#include "../blas/axpy.hpp" 
 #include "../blas/copy.hpp" 
 #include "../blas/numeric.hpp"
 #include "../blas/scal.hpp" 
 
 namespace boost{
 namespace multi{namespace blas{
+
+enum triangular_storage{lower='L', upper='U'};
 
 template<class UL, class Op, class AA, class BB, class A2D, class C2D>
 C2D&& herk(UL uplo, Op op, AA a, A2D const& A, BB b, C2D&& C){
@@ -32,7 +33,8 @@ C2D&& herk(UL uplo, Op op, AA a, A2D const& A, BB b, C2D&& C){
 		herk(uplo, op, size(C), size(A), a, base(A), stride(A), b, base(C), stride(C));
 		return std::forward<C2D>(C);
 	}
-	assert(0);
+	return std::forward<C2D>(C);
+//	assert(0);
 }
 
 template<class UL, typename AA, typename BB, class A2D, class C2D>
@@ -64,8 +66,11 @@ C2D&& herk(AA a, A2D const& A, C2D&& C){
 template<class A2D, class C2D>
 C2D&& herk(A2D const& A, C2D&& C){return herk(1., A, std::forward<C2D>(C));}
 
+template<class AA, class A2D, class R = typename A2D::decay_type>
+R herk(AA a, A2D const& A){return herk(a, A, R({size(rotated(A)), size(rotated(A))}));}
+
 template<class A2D, class R = typename A2D::decay_type>
-R herk(A2D const& A){return herk(A, R({size(rotated(A)), size(rotated(A))}));}
+auto herk(A2D const& A){return herk(1., A);}
 
 }}}
 
