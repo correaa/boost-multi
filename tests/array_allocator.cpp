@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-nvcc -O3 -std=c++14 -ccbin cuda-c++ --compiler-options -Wall,-Wextra,-Wpedantic`#,-Wfatal-errors` $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
+nvcc -O3 -std=c++14 --compiler-options -std=c++17,-Wall,-Wextra,-Wpedantic,-Wfatal-errors $0 -o $0x && $0x $@ && rm $0x; exit
 #endif
 
 #include "../array.hpp"
