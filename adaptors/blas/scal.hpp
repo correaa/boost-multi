@@ -1,10 +1,10 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&clang++ -O3 -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_SCAL $0.cpp -o $0x `pkg-config blas64 --cflags --libs` &&$0x&& rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&clang++ -O3 -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_SCAL $0.cpp -o $0x `pkg-config blas --cflags --libs` &&$0x&& rm $0x $0.cpp; exit
 #endif
 // Alfredo A. Correa 2019 ©
 
-#ifndef MULTI_ADAPTORS_BLAS_DOT_HPP
-#define MULTI_ADAPTORS_BLAS_DOT_HPP
+#ifndef MULTI_ADAPTORS_BLAS_SCAL_HPP
+#define MULTI_ADAPTORS_BLAS_SCAL_HPP
 
 #include "../blas/core.hpp"
 
