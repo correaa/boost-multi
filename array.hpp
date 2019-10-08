@@ -299,12 +299,12 @@ public:
 	array(O const& o) : static_(o){}
 //	array() noexcept(noexcept(static_::allocator_type())) : static_{}{} // 1a //allocator_type{}, ref{}{}      //1a
 //	array(typename array::allocator_type a) : static_(a){}                  //1b
-#if (not defined(__INTEL_COMPILER)) or (__GNUC >= 6)
+//#if (not defined(__INTEL_COMPILER)) or (__GNUC >= 6)
 //	array(
 //		std::initializer_list<typename array::value_type> il, 
 //		typename array::allocator_type const& a={}
 //	) : static_(il, a){}
-#endif
+//#endif
 //	array(typename array::extensions_type const& x) //3
 //	:	allocator_type{}, ref{allocate(typename array::layout_t{x}.num_elements()), x}{
 //		uninitialized_value_construct();
