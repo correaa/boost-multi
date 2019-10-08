@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&& c++ -std=c++17 -Wall -Wextra `#-Wfatal-errors` -D_TEST_BOOST_MULTI_ARRAY $0.cpp -o$0x&&$0x&&rm $0x $0.cpp;exit
+(echo '#include"'$0'"'>$0.cpp)&& c++ -std=c++17 -Wall -Wextra `#-Wfatal-errors` -D_TEST_BOOST_MULTI_ARRAY $0.cpp -o $0x && $0x&&rm $0x $0.cpp;exit
 #endif
 //  (C) Copyright Alfredo A. Correa 2018.
 #ifndef BOOST_MULTI_ARRAY_HPP 
@@ -300,10 +300,10 @@ public:
 //	array() noexcept(noexcept(static_::allocator_type())) : static_{}{} // 1a //allocator_type{}, ref{}{}      //1a
 //	array(typename array::allocator_type a) : static_(a){}                  //1b
 #if (not defined(__INTEL_COMPILER)) or (__GNUC >= 6)
-	array(
-		std::initializer_list<typename array::value_type> il, 
-		typename array::allocator_type const& a={}
-	) : static_(il, a){}
+//	array(
+//		std::initializer_list<typename array::value_type> il, 
+//		typename array::allocator_type const& a={}
+//	) : static_(il, a){}
 #endif
 //	array(typename array::extensions_type const& x) //3
 //	:	allocator_type{}, ref{allocate(typename array::layout_t{x}.num_elements()), x}{
