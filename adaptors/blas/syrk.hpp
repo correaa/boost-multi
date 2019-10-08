@@ -1,6 +1,6 @@
 #ifdef COMPILATION_INSTRUCTIONS
 (echo '#include"'$0'"'>$0.cpp)&&clang++ -Ofast -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_SYRK $0.cpp -o $0x \
-`pkg-config --libs blas64` \
+`pkg-config --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core` \
 &&$0x&& rm $0x $0.cpp; exit
 #endif
@@ -53,8 +53,11 @@ C2D&& syrk(AA a, A2D const& A, C2D&& C){
 template<class A2D, class C2D>
 C2D&& syrk(A2D const& A, C2D&& C){return syrk(1., A, std::forward<C2D>(C));}
 
+template<class AA, class A2D, class R = typename A2D::decay_type>
+R syrk(AA a, A2D const& A){return syrk(a, A, R({size(rotated(A)), size(rotated(A))}));}
+
 template<class A2D, class R = typename A2D::decay_type>
-R syrk(A2D const& A){return syrk(A, R({size(rotated(A)), size(rotated(A))}));}
+auto syrk(A2D const& A){return syrk(1., A);}
 
 }}}
 
