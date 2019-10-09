@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&clang++ -Ofast -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_HERK $0.cpp -o $0x \
+(echo '#include"'$0'"'>$0.cpp)&&c++ -Ofast -std=c++17 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_HERK $0.cpp -o $0x \
 `pkg-config --cflags --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
@@ -13,6 +13,9 @@
 #include "../blas/copy.hpp" 
 #include "../blas/numeric.hpp"
 #include "../blas/scal.hpp" 
+#include "../blas/syrk.hpp" // fallback to real case
+
+#include<type_traits> // void_t
 
 namespace boost{
 namespace multi{namespace blas{
@@ -49,11 +52,13 @@ C2D&& herk(UL uplo, AA a, A2D const& A, C2D&& C){
 	else             return herk(uplo, 'N', a,         A , 0., std::forward<C2D>(C));
 }
 
-template<typename AA, class A2D, class C2D>
+template <typename T, typename=void> struct is_complex_array: std::false_type{};
+template <typename T> struct is_complex_array<T, std::void_t<decltype(imag(std::declval<T>()[0])[0])>>: std::true_type{};
+
+template<typename AA, class A2D, class C2D, typename = std::enable_if_t<is_complex_array<std::decay_t<C2D>>{}>>
 C2D&& herk(AA a, A2D const& A, C2D&& C){
 	if(stride(C)==1) herk('L', a, A, rotated(std::forward<C2D>(C)));
 	else             herk('U', a, A,         std::forward<C2D>(C) );
-	using multi::blas::imag;
 	using multi::rotated;
 	using multi::size;
 	for(typename std::decay_t<C2D>::difference_type i = 0; i != size(C); ++i){
@@ -63,8 +68,10 @@ C2D&& herk(AA a, A2D const& A, C2D&& C){
 	return std::forward<C2D>(C);
 }
 
-template<class A2D, class C2D>
-C2D&& herk(A2D const& A, C2D&& C){return herk(1., A, std::forward<C2D>(C));}
+template<typename AA, class A2D, class C2D, typename = std::enable_if_t<not is_complex_array<std::decay_t<C2D>>{}>>
+C2D&& herk(AA a, A2D const& A, C2D&& C, void* = 0){
+	return syrk(a, A, std::forward<C2D>(C));
+}
 
 template<class AA, class A2D, class R = typename A2D::decay_type>
 R herk(AA a, A2D const& A){return herk(a, A, R({size(rotated(A)), size(rotated(A))}));}
@@ -219,7 +226,7 @@ int main(){
 			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
 		};
 		multi::array<complex, 2> C({3, 3}, 9999.);
-		herk(A, C); // C^H = C =  A^H*A = (A^H*A)^H, information in C lower triangular
+		herk(1., A, C); // C^H = C =  A^H*A = (A^H*A)^H, information in C lower triangular
 		print(C) <<"---\n";
 	}
 	{
@@ -228,7 +235,7 @@ int main(){
 			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
 		};
 		multi::array<complex, 2> C({2, 2}, 9999.);
-		herk(rotated(A), C); // C^H = C =  A*A^H, also C = (A^T)^H*(A^T) information in C lower triangular
+		herk(1., rotated(A), C); // C^H = C =  A*A^H, also C = (A^T)^H*(A^T) information in C lower triangular
 		print(C) <<"---\n";
 	}
 	{
@@ -237,7 +244,7 @@ int main(){
 			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
 		};
 		multi::array<complex, 2> C({2, 2}, 9999.);
-		herk(rotated(A), rotated(C)); // C^H = C =  A*A^H, information in C upper triangular
+		herk(1., rotated(A), rotated(C)); // C^H = C =  A*A^H, information in C upper triangular
 		print(C) <<"---\n";
 	}
 	{
@@ -246,14 +253,23 @@ int main(){
 			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
 		};
 		multi::array<complex, 2> C({3, 3}, 9999.);
-		herk(A, rotated(C)); // C^H = C =  A^H*A, information in C upper triangular
+		herk(1., A, rotated(C)); // C^H = C =  A^H*A, information in C upper triangular
 		print(C) <<"---\n";
 	}
 	{
 		multi::array<complex, 2> const A({2000, 2000}); std::iota(data_elements(A), data_elements(A) + num_elements(A), 0.2);
 		multi::array<complex, 2> C({2000, 2000}, 9999.);
 		boost::timer::auto_cpu_timer t;
-		herk(rotated(A), rotated(C)); // C^H = C =  A*A^H, information in C upper triangular
+		herk(1., rotated(A), rotated(C)); // C^H = C =  A*A^H, information in C upper triangular
+	}
+	{
+		multi::array<double, 2> const A = {
+			{ 1., 3., 4.},
+			{ 9., 7., 1.}
+		};
+	//	multi::array<double, 2> C({2, 2}, 9999.);
+		auto C = herk(1., rotated(A)); // CC^H = CC =  A*A^H, information in C lower triangular
+		print(C) <<"---\n";
 	}
 	return 0;
 }
