@@ -482,7 +482,13 @@ As a result, these two loops lead to the [same machine code](https://godbolt.org
 ```
 
 Incidentally, the library also supports parenthesis notation with multiple indices `A(i, j, k)` for element or partial access, but it does so for accidental reasons as part of a more general syntax to generate sub blocks.
-In any case `A(i, j, k)` is expanded to `A[i][j][k]` internally in the library when `i, j, k` are integer indices.
+In any case `A(i, j, k)` is expanded to `A[i][j][k]` internally in the library when `i, j, k` are integer indices. 
+Additionally, array coordinates can be directly stored in tuple-like data structures, allowing this syntax 
+
+```c++
+std::array p = {2,3,4};
+std::apply(A, p) = 234; // A[2][3][4] = 234;
+```
 
 ### Customizing recursive operations: SCARY iterators
 
