@@ -1,10 +1,10 @@
 #ifdef COMPILATION_INSTRUCTIONS
 for a in ./tests/*.cpp; do sh $a || break; done; exit; */
-#echo "#include\""$0"\"" > $0x.cpp) && c++ -O3 -std=c++17 -Wall -Wextra `#-Wfatal-errors` -D_TEST_BOOST_MULTI_ARRAY_REF $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&& c++ -O3 -std=c++17 -Wall -Wextra `#-Wfatal-errors` -D_TEST_BOOST_MULTI_ARRAY_REF $0.cpp -o $0x&&$0x&&rm $0x $0.cpp;exit
 #endif
 #ifndef BOOST_MULTI_ARRAY_REF_HPP
 #define BOOST_MULTI_ARRAY_REF_HPP
-
+// © Alfredo Correa 2018-2019
 
 #include "utility.hpp"
 
@@ -369,7 +369,7 @@ public:
 	template<class... As>
 	auto operator()(index_range a, As... as) const{return range(a).rotated()(as...).unrotated();}
 	template<class... As>
-	auto operator()(index i, As... as) const{return operator[](i)(as...);}
+	decltype(auto) operator()(index i, As... as) const{return operator[](i)(as...);}
 #define SARRAY2(A1, A2)	auto operator()(A1 a1, A2 a2) const{return operator()<A2>(a1, a2);}
 	SARRAY2(index, index ); SARRAY2(irange, index );
 	SARRAY2(index, irange); SARRAY2(irange, irange);
@@ -684,7 +684,7 @@ public:
 	auto range(index_range const& ir) const{return sliced(ir.front(), ir.last());}
 	decltype(auto) operator()() const{return *this;}
 	auto operator()(index_range const& ir) const{return range(ir);}
-	auto operator()(typename types::index i) const{return operator[](i);}
+	decltype(auto) operator()(typename types::index i) const{return operator[](i);}
 	template<typename Size>
 	auto partitioned(Size const& s) const{
 		assert(this->layout().nelems_%s==0);
