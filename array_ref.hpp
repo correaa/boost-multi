@@ -1,6 +1,6 @@
 #ifdef COMPILATION_INSTRUCTIONS
 for a in ./tests/*.cpp; do sh $a || break; done; exit; */
-(echo '#include"'$0'"'>$0.cpp)&& c++ -O3 -std=c++17 -Wall -Wextra `#-Wfatal-errors` -D_TEST_BOOST_MULTI_ARRAY_REF $0.cpp -o $0x&&$0x&&rm $0x $0.cpp;exit
+(echo '#include"'$0'"'>$0.cpp)&& clang++ -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_BOOST_MULTI_ARRAY_REF $0.cpp -o $0x&&$0x&&rm $0x $0.cpp;exit
 #endif
 #ifndef BOOST_MULTI_ARRAY_REF_HPP
 #define BOOST_MULTI_ARRAY_REF_HPP
