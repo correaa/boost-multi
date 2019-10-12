@@ -39,7 +39,7 @@ C2D&& syrk(UL uplo, AA a, A2D const& A, BB b, C2D&& C){
 
 template<class UL, typename AA, class A2D, class C2D>
 C2D&& syrk(UL uplo, AA a, A2D const& A, C2D&& C){
-	return syrk(uplo, a, A, 0, std::forward<C2D>(C));
+	return syrk(uplo, a, A, 0., std::forward<C2D>(C));
 }
 
 template<typename AA, class A2D, class C2D>
@@ -54,7 +54,7 @@ C2D&& syrk(AA a, A2D const& A, C2D&& C){
 template<class A2D, class C2D>
 C2D&& syrk(A2D const& A, C2D&& C){return syrk(1., A, std::forward<C2D>(C));}
 
-template<class AA, class A2D, class R = typename A2D::decay_type>
+template<typename AA, class A2D, class R = typename A2D::decay_type>
 R syrk(AA a, A2D const& A){return syrk(a, A, R({size(rotated(A)), size(rotated(A))}));}
 
 template<class A2D, class R = typename A2D::decay_type>
