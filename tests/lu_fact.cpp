@@ -1,17 +1,14 @@
 #ifdef COMPILATION_INSTRUCTIONS
-c++ -Ofast -std=c++17 -Wall -Wextra -Wpedantic $0 -o $0.x -lboost_timer -ltbb && $0.x $@ && rm -f $0.x;exit
+clang++ -Ofast -std=c++17 -Wall -Wextra -Wpedantic $0 -o$0x -lboost_timer -ltbb &&$0x&&rm $0x;exit
 #endif
 
 #include "../../multi/array.hpp"
 
-#include<iostream>
-#include<vector>
 #include<numeric> // iota
 #include<algorithm>
 #include<execution>
 
 namespace multi = boost::multi;
-using std::cout;
 
 template<class Matrix>
 Matrix&& lu_fact(Matrix&& A){
