@@ -458,6 +458,22 @@ int main(){
 ```
 (Similarly works with [LLNL's Meta Allocator](https://github.com/llnl/metall))
 
+## Cuda thrust
+
+```
+#include "multi/adaptors/thrust/allocator_traits.hpp"
+#include "multi/adaptors/thrust/algorithms.hpp"
+#include "multi/array.hpp"
+
+namespace multi = boost::multi;
+int main(){
+	multi::array<double, 2, thrust::device_allocator<double>> A2({10,10});
+	multi::array<double, 2, thrust::device_allocator<double>> B2({10,10});
+	A2[5][0] = 50.;
+	thrust::copy(begin(rotated(A2)[0]), end(rotated(A2)[0]), begin(rotated(B2)[0]));
+	assert( B2[5][0] == 50. );
+```
+
 # Technical points
 
 ### What's up with the multiple bracket notation? 
