@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && c++ `#-DNDEBUG` -O3 -std=c++14 -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_BLAS_DOT -DADD_ $0x.cpp -o $0x.x -lblas && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&c++ `#-DNDEBUG` -O3 -std=c++14 -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_BLAS_DOT $0.cpp -o $0x `pkg-config --cflags --libs blas` &&$0x&&rm $0x $0.cpp; exit
 #endif
 // © Alfredo A. Correa 2019
 
@@ -102,16 +102,13 @@ auto dotc(X1D const& x, Y1D const& y){
 #include "../../utility.hpp"
 #include "../blas/nrm2.hpp"
 
-#include<complex>
 #include<cassert>
-#include<iostream>
-#include<numeric>
-#include<algorithm>
+#include<numeric> // inner_product
 
-using std::cout;
 namespace multi = boost::multi;
 
 int main(){
+{
 	multi::array<double, 2> const cA = {
 		{1.,  2.,  3.,  4.},
 		{5.,  6.,  7.,  8.},
@@ -119,24 +116,27 @@ int main(){
 	};
 	using multi::blas::dot;
 	auto d = dot(cA[1], cA[2]);
-	assert(d == std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.));
+	assert( d==std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.) );
 
 	using multi::blas::nrm2;
-	assert( std::sqrt(dot(cA[1], cA[1])) == nrm2(cA[1]) );
-	
-	{
-		auto const& I = std::complex<double>{0.,1.};
-		multi::array<std::complex<double>, 2> const A = {
-			{1. +    I,  2. + 3.*I,  3.+2.*I,  4.-9.*I},
-			{5. + 2.*I,  6. + 6.*I,  7.+2.*I,  8.-3.*I},
-			{9. + 1.*I, 10. + 9.*I, 11.+1.*I, 12.+2.*I}
-		};
-		using multi::blas::dot;
-		using multi::blas::C;
-		auto d = dot(C(A[1]), A[1]);
-		cout<<"d="<< d <<std::endl;
-	}
-
+	using std::sqrt;
+	assert( sqrt(dot(cA[1], cA[1]))==nrm2(cA[1]) );
+}
+{
+	using complex = std::complex<double>;
+	constexpr complex I{0, 1};
+	multi::array<complex, 2> const A = {
+		{1. +    I,  2. + 3.*I,  3.+2.*I,  4.-9.*I},
+		{5. + 2.*I,  6. + 6.*I,  7.+2.*I,  8.-3.*I},
+		{9. + 1.*I, 10. + 9.*I, 11.+1.*I, 12.+2.*I}
+	};
+	using multi::blas::dot;
+	using multi::blas::C;
+	auto d = dot(C(A[1]), A[1]);
+	assert( d==std::inner_product(begin(C(A[1])), end(C(A[1])), begin(A[1]), complex{0}) );
+	using std::conj;
+	assert( d==std::inner_product(begin(A[1]), end(A[1]), begin(A[1]), complex{0}, std::plus<complex>{}, [](auto&& a, auto&& b){return conj(a)*b;}) );
+}
 }
 
 #endif
