@@ -13,13 +13,13 @@ namespace boost{
 namespace multi{
 
 template<typename Size, class It2>
-auto dot_n(boost::multi::array_iterator<std::complex<double>, 1, const std::complex<double>*> first1, Size n, It2 first2){
-	return boost::multi::blas::dotu(n, base(first1), stride(first1), base(first2), stride(first2));
+auto dot_n(multi::array_iterator<std::complex<double>, 1, const std::complex<double>*> first1, Size n, It2 first2){
+	return multi::blas::dotu(n, base(first1), stride(first1), base(first2), stride(first2));
 }
 
 template<typename Size, class It2>
-auto dot_n(boost::multi::array_iterator<std::complex<double>, 1, boost::multi::blas::conj_proxy_impl<const std::complex<double>*>, std::complex<double> > first1, Size n, It2 first2){
-	return boost::multi::blas::dotc(n, base(first1).underlying(), stride(first1), base(first2), stride(first2));
+auto dot_n(multi::array_iterator<std::complex<double>, 1, multi::blas::conj_proxy_impl<const std::complex<double>*>, std::complex<double> > first1, Size n, It2 first2){
+	return multi::blas::dotc(n, base(first1).underlying(), stride(first1), base(first2), stride(first2));
 }
 
 namespace blas{
