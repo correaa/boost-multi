@@ -34,17 +34,9 @@ auto nrm2(X1D const& x)
 #include<catch.hpp>
 
 #include "../../array.hpp"
-#include "../../utility.hpp"
-
-#include<complex>
-#include<cassert>
-#include<iostream>
-#include<numeric>
-#include<algorithm>
 
 #include "../blas/dot.hpp"
 
-using std::cout;
 namespace multi = boost::multi;
 
 TEST_CASE("multi_adaptor_multi", "[nrm2]"){
