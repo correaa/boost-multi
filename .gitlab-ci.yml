@@ -16,6 +16,12 @@
 #  - ln -svf $CI_PROJECT_DIR $GOPATH/src/$REPO_NAME
 #  - cd $GOPATH/src/$REPO_NAME
 
+image: debian:unstable
+
+before_script:
+    - apt update -qq
+    - apt install -y -qq build-essential autoconf automake pkg-config
+    - apt install -y -qq libgsl-dev libblas-dev liblapack-dev libfftw3-dev
 
 variables:
   CXX: "c++"
@@ -37,4 +43,3 @@ Test:
       - sh ./constructors.cpp
       - sh ./initializer_list.cpp
       - sh ./layout.cpp
-
