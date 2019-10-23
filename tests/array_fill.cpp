@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-c++ .DCATCH_CONFIG_MAIN -std=c++17 -Wall -Wextra $0 -o$0x &&$0x&&rm $0x; exit
+$CXX .DCATCH_CONFIG_MAIN -std=c++14 -Wall -Wextra $0 -o$0x &&$0x&&rm $0x; exit
 #endif
 
 #include "../array.hpp"
