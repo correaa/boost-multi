@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-for a in ./tests/*.cpp; do sh $a || break; done; exit; */
+for a in ./tests/*.cpp; do echo $a; sh $a || break; echo '\n'; done; exit; */
 (echo '#include"'$0'"'>$0.cpp)&& clang++ -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_BOOST_MULTI_ARRAY_REF $0.cpp -o $0x&&$0x&&rm $0x $0.cpp;exit
 #endif
 #ifndef BOOST_MULTI_ARRAY_REF_HPP
@@ -348,12 +348,26 @@ public:
 		new_layout.sub.nelems_/=s;
 		return basic_array<T, D+1, ElementPtr>{new_layout, types::base_};
 	}
-	auto rotated() const{
+	decltype(auto) rotated()&&{
 		typename types::layout_t new_layout = *this;
 		new_layout.rotate();
 		return basic_array<T, D, ElementPtr>{new_layout, types::base_};
 	}
-	friend basic_array rotated(basic_array const& self){return self.rotated();}
+	decltype(auto) rotated() const&{
+		typename types::layout_t new_layout = *this;
+		new_layout.rotate();
+		return basic_array<T, D, typename basic_array::element_ptr>{new_layout, types::base_};
+	}
+//	auto rotated()&{
+//		typename types::layout_t new_layout = *this;
+//		new_layout.rotate();
+//		return basic_array<T, D, ElementPtr>{new_layout, types::base_};
+//	}
+	friend decltype(auto) rotated(basic_array const&  self){return self.rotated();}
+//	friend decltype(auto) rotated(basic_array      &  self){return self.rotated();}
+	friend decltype(auto) rotated(basic_array      && self){return std::move(self).rotated();}
+
+//	friend basic_array rotated(basic_array& self){return self.rotated();}
 	auto unrotated() const{
 		typename types::layout_t new_layout = *this; 
 		new_layout.unrotate();
@@ -370,6 +384,7 @@ public:
 	auto operator()(index_range a, As... as) const{return range(a).rotated()(as...).unrotated();}
 	template<class... As>
 	decltype(auto) operator()(index i, As... as) const{return operator[](i)(as...);}
+//#define SARRAY1(A1) auto operator()(A1 a1) const{return operator()<>(a1);}
 #define SARRAY2(A1, A2)	auto operator()(A1 a1, A2 a2) const{return operator()<A2>(a1, a2);}
 	SARRAY2(index, index ); SARRAY2(irange, index );
 	SARRAY2(index, irange); SARRAY2(irange, irange);
@@ -503,7 +518,7 @@ public:
 		return {this->layout().scale(sizeof(T)/sizeof(T2)), &(this->base_->*pm)};
 	}
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
-	basic_array<T2, D, P2> reinterpret_array_cast() const{
+	basic_array<std::decay_t<T2>, D, P2> reinterpret_array_cast() const{
 		static_assert( sizeof(T)%sizeof(T2)== 0, "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
 		return {
 			this->layout().scale(sizeof(T)/sizeof(T2)), 
@@ -607,7 +622,7 @@ protected:
 	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
 	HD friend decltype(auto) static_array_cast(basic_array<TT, DD, PP> const&);
 public:
-	basic_array(basic_array&&) = default; // ambiguos deep-copy a reference type, use auto&& A_ref = Expression; or decay_t<decltype(Expression)> A = Expression
+	basic_array(basic_array&&) = default; // ambiguos deep-copy a reference type, in C++14 use auto&& A_ref = Expression; or decay_t<decltype(Expression)> A = Expression
 protected:
 	template<class, class> friend struct basic_array_ptr;
 	template<class, dimensionality_type D, class, class>
@@ -717,10 +732,24 @@ public:
 //		if(this->extension() != extension(other)) return false;
 //		return equal(this->begin(), this->end(), begin(other));
 //	}
-	bool operator==(basic_array const& other) const{//return operator==<basic_array>(other);}
+	template<typename Array, typename = std::enable_if_t<not std::is_base_of<basic_array, Array>{}> >
+	bool operator==(Array const& o) const
+//	->decltype( std::equal(this->begin(), this->end(), std::begin(o)) )
+	{
 		using multi::extension; using std::equal; using std::begin;
-		if(this->extension() != extension(other)) return false;
-		return equal(this->begin(), this->end(), begin(other));
+		return (basic_array::extension()==extension(o)) and equal(this->begin(), this->end(), begin(o));
+	}
+//	template<typename TT, dimensionality_type DD, class... As>
+//	auto operator==(basic_array<TT, DD, As...> const& other) const
+//	->decltype( std::equal(this->begin(), this->end(), std::begin(other)) )
+//	{
+//		using multi::extension; using std::equal; using std::begin;
+//		return (this->extension()==extension(other)) and equal(this->begin(), this->end(), begin(other));
+//	}
+	bool operator==(basic_array const& other) const{
+		return operator==<basic_array, void>(other);
+	//	using multi::extension; using std::equal; using std::begin;
+	//	return (this->extension()==extension(other)) and equal(this->begin(), this->end(), begin(other));
 	}
 //	bool operator==(basic_array const& other) const{return operator==<basic_array>(other);}
 //		using multi::extension; using std::equal; using std::begin;
@@ -782,6 +811,10 @@ public:
 	HD basic_array<T2, 1, P2> static_array_cast() const{//(basic_array&& o){  // name taken from std::static_pointer_cast
 		return {this->layout(), static_cast<P2>(this->base())};
 	}
+	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>, class... Args>
+	HD basic_array<T2, 1, P2> static_array_cast(Args&&... args) const{//(basic_array&& o){  // name taken from std::static_pointer_cast
+		return {this->layout(), P2{this->base(), std::forward<Args>(args)...}};
+	}
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>,
 		class Element = typename basic_array::element,
 		class PM = T2 Element::*
@@ -802,11 +835,11 @@ public:
 	}
 };
 
-template<class T2, class P2, class Array>
-HD decltype(auto) static_array_cast(Array&& a){return a.template static_array_cast<T2, P2>();}
+template<class T2, class P2, class Array, class... Args>
+HD decltype(auto) static_array_cast(Array&& a, Args&&... args){return a.template static_array_cast<T2, P2>(std::forward<Args>(args)...);}
 
-template<class T2, class Array, class P2 = typename std::pointer_traits<typename std::decay<Array>::type::element_ptr>::template rebind<T2> >
-HD decltype(auto) static_array_cast(Array&& a){return a.template static_array_cast<T2, P2>();}
+template<class T2, class Array, class P2 = typename std::pointer_traits<typename std::decay<Array>::type::element_ptr>::template rebind<T2> , class... Args>
+HD decltype(auto) static_array_cast(Array&& a, Args&&... args){return a.template static_array_cast<T2, P2>(std::forward<Args>(args)...);}
 
 template<class T2, class Array, class P2 = typename std::pointer_traits<typename std::decay<Array>::type::element_ptr>::template rebind<T2>,
 	class PM = T2 std::decay_t<Array>::element::*
@@ -840,6 +873,7 @@ public:
 //		: array_ref(p, x, std::make_index_sequence<D>{}){}
 	using basic_array<T, D, ElementPtr>::operator[];
 	using basic_array<T, D, ElementPtr>::operator=;
+	using basic_array<T, D, ElementPtr>::operator==;
 	using basic_array<T, D, ElementPtr>::operator<;
 	using basic_array<T, D, ElementPtr>::operator>;
 //	template<class ArrayRef> explicit array_ref(ArrayRef&& a) : array_ref(a.data(), extensions(a)){} 
@@ -859,7 +893,7 @@ public:
 //		if(this->extensions() != other.extensions()) return false;
 //		return equal(other.data(), other.data() + other.num_elements(), this->data());
 //	}
-	template<class TT, dimensionality_type DD, class... As>
+	template<typename TT, dimensionality_type DD = D, class... As>
 	bool operator==(array_ref<TT, DD, As...> const& o) const{
 		using std::equal;
 		if( this->extensions() != o.extensions() ) return false;
