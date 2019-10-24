@@ -23,7 +23,7 @@ variables:
 
 before_script:
     - apt update --quiet
-    - apt upgrade --quiet
+    - apt upgrade -y --quiet
     - apt install --assume-yes --quiet g++ libboost-test-dev
 
 stages:
