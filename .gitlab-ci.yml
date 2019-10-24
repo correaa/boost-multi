@@ -23,7 +23,7 @@ before_script:
     - apt install -y -qq g++
 
 variables:
-  CXX: "c++"
+  CXX: "g++"
 
 stages:
     - test
