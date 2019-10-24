@@ -33,7 +33,7 @@ Test:
     stage: test
     script:
       - ln --symbolic --force . ../multi
-      - c++ --version
+      - $CXX --version
       - cd tests
       - sh ./array_ptr.cpp
       - sh ./array_ref.cpp
