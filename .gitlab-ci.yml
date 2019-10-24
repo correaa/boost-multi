@@ -20,7 +20,7 @@ image: debian:unstable
 
 before_script:
     - apt update --quiet
-    - apt install --assume-yes --quiet clang++ libboost-test-dev
+    - apt install --assume-yes --quiet clang libboost-test-dev
 
 variables:
   CXX: "clang++"
