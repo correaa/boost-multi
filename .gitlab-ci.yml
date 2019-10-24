@@ -20,10 +20,10 @@ image: debian:unstable
 
 before_script:
     - apt update -qq
-    - apt install -y -qq g++
+    - apt install -y -qq c++ libboost-test-dev
 
 variables:
-  CXX: "g++"
+  CXX: "c++"
 
 stages:
     - test
