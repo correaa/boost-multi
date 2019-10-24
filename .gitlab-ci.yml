@@ -20,7 +20,7 @@ image: debian:unstable
 
 before_script:
 #    - apt update -qq
-    - apt install -y -qq c++
+    - apt install -y -qq g++
 
 variables:
   CXX: "c++"
