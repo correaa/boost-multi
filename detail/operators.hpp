@@ -1,11 +1,10 @@
 #if COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && c++ -O3 -std=c++14 -Wall -Wextra -Wfatal-errors -D_TEST_BOOST_MULTI_DETAIL_OPERATORS $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&c++ -D_TEST_BOOST_MULTI_DETAIL_OPERATORS $0.cpp -o $0x &&$0x&&rm $0x $0.cpp;exit
 #endif
 #ifndef BOOST_MULTI_DETAIL_OPERATORS_HPP
 #define BOOST_MULTI_DETAIL_OPERATORS_HPP
-//	return multi::layout_t<multi::dimensionality(t)>(multi::extensions(t));
 
-#include<type_traits>
+//#include<type_traits>
 #include<utility> // forward
 
 namespace boost{
@@ -157,10 +156,6 @@ struct random_iterable : B{
 //	auto crend  () const{return typename T::const_reverse_iterator{cbegin()};}
 //	friend auto crbegin(T const& s){return static_cast<random_iterable const&>(s).cbegin();}
 //	friend auto crend  (T const& s){return static_cast<random_iterable const&>(s).cend  ();}
-
-
-
-
 
 };
 #endif
