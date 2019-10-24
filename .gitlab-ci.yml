@@ -19,7 +19,7 @@
 image: debian:unstable
 
 before_script:
-#    - apt update -qq
+    - apt update -qq
     - apt install -y -qq g++
 
 variables:
