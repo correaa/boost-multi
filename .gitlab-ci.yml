@@ -18,12 +18,13 @@
 
 image: debian:unstable
 
+variables:
+  CXX: "c++"
+
 before_script:
     - apt update --quiet
-    - apt install --assume-yes --quiet clang libboost-test-dev
-
-variables:
-  CXX: "clang++"
+    - apt upgrade --quiet
+    - apt install --assume-yes --quiet g++ libboost-test-dev
 
 stages:
     - test
