@@ -101,14 +101,20 @@ xGERC(c); xGERC(z);
 #define LDC INTEGER ldc
 
 #define UPLO const char& uplo
+#define SIDE const char& side
+#define DIAG const char& diag
 
 #define xGEMM(T)     void BLAS(T##gemm)(TRANSA, TRANSB, NR, NC, NK, T const& a, T const* A, LDA, T const* B, LDB, T const& b, T const* CC, LDC)
 #define xSYRK(T)     void BLAS(T##syrk)(UPLO, TRANSA, NR, NK, T const& a, T const* A, LDA, T const& b, T* CC, LDC) 
 #define xHERK(TT, T) void BLAS(T##herk)(UPLO, TRANSA, NR, NK, TT const& a, T const* A, LDA, TT const& b, T* CC, LDC) 
+#define xTRSM(T) void BLAS(T##trsm)(SIDE, UPLO, TRANSA, DIAG, NR, NK, T const& a, T const* A, LDA, T const* B, LDB) 
 xGEMM(s); xGEMM(d); xGEMM(c)   ; xGEMM(z)   ;
 xSYRK(s); xSYRK(d); xSYRK(c)   ; xSYRK(z)   ;
                     xHERK(s, c); xHERK(d, z);
+xTRSM(s); xTRSM(d); xTRSM(c)   ; xTRSM(z)   ;
 
+#undef TRANS
+#undef UPLO
 #undef xROTG
 #undef xROTMG
 #undef xROT
@@ -160,7 +166,7 @@ using c = std::complex<s>;
 using z = std::complex<d>;
 using v = void;
 
-#define BC(x) [](auto const& xx){assert(xx >= std::numeric_limits<INT>::min()); assert(xx < std::numeric_limits<INT>::max()); return xx;}(x)
+#define BC(x) [](auto xx){assert(xx>=std::numeric_limits<INT>::min() and xx<std::numeric_limits<INT>::max()); return xx;}(x)
 
 #define xrotg(T1, T2)                       v   rotg (T1 const& a, T1 const& b, T2& cc, T1& ss                                   ){BLAS(T1##rotg )(const_cast<T1*>(&a), const_cast<T1*>(&b), &cc, &ss);}
 #define xrotmg(T)                           v   rotmg(T& d1, T& d2, T& A, T const& B, T(&p)[5]                                   ){BLAS(T##rotmg )(&d1, &d2, &A, B, p);}
@@ -254,14 +260,17 @@ xger(s)   xger(d)
 #define xgemm(T) template<class C, class S> v gemm(C transA, C transB, S m, S n, S k, T const& a, T const* A, S lda, T const* B, S ldb, T const& beta, T* CC, S ldc){BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), a, A, BC(lda), B, BC(ldb), beta, CC, BC(ldc));}
 #define xsyrk(T) template<class UL, class C, class S> v syrk(UL ul, C transA, S n, S k, T alpha, T const* A, S lda, T beta, T* CC, S ldc){BLAS(T##syrk)(ul, transA, BC(n), BC(k), alpha, A, BC(lda), beta, CC, BC(ldc));}
 #define xherk(T) template<class UL, class C, class S, class Real> v herk(UL ul, C transA, S n, S k, Real alpha, T const* A, S lda, Real beta, T* CC, S ldc){BLAS(T##herk)(ul, transA, BC(n), BC(k), alpha, A, BC(lda), beta, CC, BC(ldc));}
+#define xtrsm(T) template<class C, class UL, class Di, class S> v trsm(C side, UL ul, C transA, Di di, S m, S n, T alpha, T const* A, S lda, T* B, S ldb){BLAS(T##trsm)(side, ul, transA, di, BC(m), BC(n), alpha, A, lda, B, ldb);}
 
 xgemm(s) xgemm(d) xgemm(c) xgemm(z)
 xsyrk(s) xsyrk(d) xsyrk(c) xsyrk(z)
                   xherk(c) xherk(z)
+xtrsm(s) xtrsm(d) xtrsm(c) xtrsm(z)
 
 #undef xgemm
 #undef xsyrk
 #undef xherk
+#undef xtrsm
 
 #undef BC
 
