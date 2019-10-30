@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&& c++ -std=c++14 -Wall -Wextra -D_DISABLE_CUDA_SLOW -D_TEST_MULTI_MEMORY_CUDA_ALLOCATOR -D_MULTI_MEMORY_CUDA_DISABLE_ELEMENT_ACCESS `pkg-config cudart --cflags --libs` $0.cpp -o$0x   && $0x && rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++14 -Wall -Wextra -D_DISABLE_CUDA_SLOW -D_TEST_MULTI_MEMORY_CUDA_ALLOCATOR -D_MULTI_MEMORY_CUDA_DISABLE_ELEMENT_ACCESS $0.cpp -o $0x -lcudart && $0x && rm $0x $0.cpp; exit
 #endif
 
 #include<cuda_runtime.h> // cudaMalloc
@@ -32,7 +32,7 @@ long allocation_counter::bytes_allocated = 0;
 long allocation_counter::bytes_deallocated = 0;
 
 template<class T=void> 
-class allocator : allocation_counter{
+class allocator : protected allocation_counter{
 public:
 	using value_type = T;
 	using pointer = ptr<T>;
@@ -68,6 +68,24 @@ public:
 		}
 	}
 };
+
+namespace managed{
+	template<class T=void>
+	struct allocator : cuda::allocator<T>{
+		using pointer = ptr<T>; // managed::ptr
+		pointer allocate(typename allocator::size_type n, const void* = 0){
+			if(n == 0) return pointer{nullptr};
+			auto ret = static_cast<pointer>(cuda::managed::malloc(n*sizeof(T)));
+			if(not ret) throw bad_alloc{};
+			++allocator::n_allocations; allocator::bytes_allocated+=sizeof(T)*n;
+			return ret;
+		}
+		template<class P, class... Args>
+		void construct(P p, Args&&... args){::new(p) T(std::forward<Args>(args)...);}
+		template<class P> void destroy(P p){p->~T();}
+	};
+}
+
 
 template<> 
 class allocator<std::max_align_t> : allocation_counter{
@@ -122,6 +140,11 @@ int main(){
 	{
 		multi::static_array<double, 1> A1(32, double{}); A1[17] = 3.;
 		multi::static_array<double, 1, cuda::allocator<double>> A1_gpu = A1;
+		assert( A1_gpu[17] == 3 );
+	}
+	{
+		multi::static_array<double, 1> A1(32, double{}); A1[17] = 3.;
+		multi::static_array<double, 1, cuda::managed::allocator<double>> A1_gpu = A1;
 		assert( A1_gpu[17] == 3 );
 	}
 	{

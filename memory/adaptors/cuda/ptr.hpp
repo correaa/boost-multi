@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&& nvcc -ccbin=cuda-c++ -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_PTR `pkg-config cudart --cflags --libs` $0.cpp -o $0x &&$0x&& rm $0x; exit
+(echo '#include"'$0'"'>$0.cpp)&&nvcc -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_PTR $0.cpp -o $0x &&$0x&& rm $0x; exit
 #endif
 
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_PTR_HPP
@@ -89,7 +89,6 @@ struct ptr{
 protected:
 	using impl_t = Ptr;
 	impl_t impl_;
-private:
 	template<class TT> friend class allocator;
 	template<typename, typename> friend struct ptr;
 	template<class TT, typename = typename std::enable_if<not std::is_const<TT>{}>::type> 
@@ -133,13 +132,52 @@ public:
 #ifdef __CUDA_ARCH__
 	__device__ T& operator*() const{return *impl_;}
 #else
-	__host__ [[SLOW]] ref<element_type> operator*() const{return {*this};}
+	__host__ ref<element_type> operator*() const{return {*this};}
 #endif
 //	__host__ __device__ 
 	reference operator[](difference_type n){return *((*this)+n);}
 	friend ptr to_address(ptr const& p){return p;}
 	typename ptr::difference_type operator-(ptr const& other) const{return impl_-other.impl_;}
 };
+
+namespace managed{
+	template<typename T, typename Ptr = T*> struct ptr;
+	template<typename T, typename Ptr>
+	struct ptr : cuda::ptr<T, Ptr>{
+		template<class Other> explicit ptr(ptr<Other> o) : cuda::ptr<T, Ptr>{std::move(o)}{}
+		ptr(typename ptr::impl_t o) : cuda::ptr<T, Ptr>{std::move(o)}{}
+	//	ptr(std::nullptr_t n) : cuda::ptr<T, Ptr>{n}{}
+		using pointer = typename ptr::impl_t;
+		using reference = T&;
+#ifdef __CUDA_ARCH__
+	__device__ reference operator*() const{return *ptr::impl_;}
+	__device__ /*explicit*/ operator impl_t&()&{return ptr::impl_;}
+	__device__ /*explicit*/ operator impl_t const&() const&{return ptr::impl_;}
+#else
+	__host__ [[SLOW]] reference operator*() const{return *ptr::impl_;}
+	__host__ [[SLOW]] operator typename ptr::impl_t&()&{return ptr::impl_;}
+	__host__ [[SLOW]] operator typename ptr::impl_t const&() const&{return ptr::impl_;}
+#endif
+		ptr operator+(typename ptr::difference_type n) const{return ptr{ptr::impl_ + n};}
+		reference operator[](typename ptr::difference_type n){return *((*this)+n);}
+		friend ptr to_address(ptr const& p){return p;}
+		pointer operator->() const{return ptr::impl_;}
+	};
+
+	template<typename Ptr>
+	struct ptr<void, Ptr> : cuda::ptr<void, Ptr>{
+		ptr(typename ptr::impl_t o) : cuda::ptr<void, Ptr>{std::move(o)}{}
+		using cuda::ptr<void, Ptr>::ptr;
+		using pointer = typename ptr::impl_t;
+#ifdef __CUDA_ARCH__
+	__device__ /*explicit*/ operator impl_t&()&{return impl_;}
+	__device__ /*explicit*/ operator impl_t const&() const&{return impl_;}
+#else
+	__host__ [[SLOW]] operator typename ptr::impl_t&()&{return ptr::impl_;}
+	__host__ [[SLOW]] operator typename ptr::impl_t const&() const&{return ptr::impl_;}
+#endif
+	};
+}
 
 template<
 	class Alloc, class InputIt, class Size, class... T, class ForwardIt = ptr<T...>,
@@ -221,9 +259,8 @@ public:
 //	friend auto operator+(Self&& self, O&& o)
 //	->decltype(std::forward<Self>(self).skeleton() + std::forward<O>(o)){
 //		return std::forward<Self>(self).skeleton() + std::forward<O>(o);}
-	__host__ __device__
+	__host__ __device__ [[SLOW]]
 	#ifndef __CUDA_ARCH__
-//	[[SLOW]]
 	#else
 	#endif
 	ref&& operator=(value_type const& t)&&{
@@ -260,7 +297,7 @@ public:
 #endif
 #if 1
 	template<class Other> 
-	[[SLOW]] 
+	[[SLOW]]
 	bool operator==(ref<Other>&& other)&&{
 //#pragma message ("Warning goes here")
 		char buff1[sizeof(T)];
@@ -316,6 +353,8 @@ public:
 #include "../cuda/clib.hpp" // cuda::malloc
 #include "../cuda/malloc.hpp"
 
+#include<cstring>
+
 namespace multi = boost::multi;
 namespace cuda = multi::memory::cuda;
 
@@ -333,14 +372,38 @@ int main(){
 	std::size_t const n = 100;
 	{
 		auto p = static_cast<cuda::ptr<T>>(cuda::malloc(n*sizeof(T)));
-		[[maybe_unused]] cuda::ptr<void> pp = p;
+//		*p = 3.14;
+		
+	//	double* ppp = static_cast<double*>(p); *ppp = 3.14;
+//		Fill_n(p, 1, 3.14);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+		*p = 99.;
+		if(*p != 99.) assert(0);
+		if(*p == 11.) assert(0);
+#pragma GCC diagnostic pop
+		cuda::free(p);
+		cuda::ptr<T> P = nullptr;
+	}
+	{
+		auto p = static_cast<cuda::managed::ptr<T>>(cuda::managed::malloc(n*sizeof(T)));
+		cuda::managed::ptr<void> pp = p;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 		*p = 99.; 
 		if(*p != 99.) assert(0);
 		if(*p == 11.) assert(0);
 #pragma GCC diagnostic pop
-		free(p);
+		cuda::managed::free(p);
+	}
+	{
+		auto p = static_cast<cuda::managed::ptr<T>>(cuda::managed::malloc(n*sizeof(T)));
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+		double* ppp = p; *ppp = 3.14;
+		assert( *p == 3.14 );
+#pragma GCC diagnostic pop
+		cuda::managed::ptr<T> P = nullptr;
 	}
 }
 #endif
