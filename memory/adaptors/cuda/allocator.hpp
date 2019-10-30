@@ -2,6 +2,9 @@
 (echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++14 -Wall -Wextra -D_DISABLE_CUDA_SLOW -D_TEST_MULTI_MEMORY_CUDA_ALLOCATOR -D_MULTI_MEMORY_CUDA_DISABLE_ELEMENT_ACCESS $0.cpp -o $0x -lcudart && $0x && rm $0x $0.cpp; exit
 #endif
 
+#ifndef MULTI_MEMORY_ADAPTORS_CUDA_ALLOCATOR_HPP
+#define MULTI_MEMORY_ADAPTORS_CUDA_ALLOCATOR_HPP
+
 #include<cuda_runtime.h> // cudaMalloc
 
 #include "../../adaptors/cuda/ptr.hpp"
@@ -202,5 +205,6 @@ int main(){
 			<<"bytes_alloc/dealloc "<< cuda::allocation_counter::bytes_allocated <<"/"<< cuda::allocation_counter::bytes_deallocated <<"\n";
 	}
 }
+#endif
 #endif
 
