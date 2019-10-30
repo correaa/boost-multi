@@ -42,8 +42,8 @@ namespace multi{namespace blas{
 
 complex_operation hermitize(complex_operation op){
 	switch(op){
-		case complex_operation::hermitian: return complex_operation::identity ;
-		case complex_operation::identity : return complex_operation::hermitian;
+		case complex_operation::hermitian: return complex_operation::identity;
+		case complex_operation::identity: return complex_operation::hermitian;
 	} __builtin_unreachable();
 }
 
