@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&clang++ -std=c++17 -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_MULTI_ADAPTORS_BLAS_SYRK .DCATCH_CONFIG_MAIN $0.cpp -o $0x \
+(echo '#include"'$0'"'>$0.cpp)&&nvcc -std=c++14 `#-Wall -Wextra -Wpedantic` `#-Wfatal-errors` -D_TEST_MULTI_ADAPTORS_BLAS_SYRK .DCATCH_CONFIG_MAIN.o $0.cpp -o $0x \
 `pkg-config --cflags --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -liomp5` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
@@ -32,7 +32,7 @@ real_operation transpose(real_operation op){
 	switch(op){
 		case real_operation::transposition: return real_operation::identity;
 		case real_operation::identity : return real_operation::transposition;
-		default: return real_operation::identity;
+		default: return {}; // for gcc and nvcc
 	}
 }
 
@@ -40,6 +40,7 @@ triangular flip(triangular side){
 	switch(side){
 		case triangular::lower: return triangular::upper;
 		case triangular::upper: return triangular::lower;
+		default: return {}; // for gcc and nvcc
 	}
 }
 
@@ -56,13 +57,12 @@ class operation{
 	};
 	impl_t impl_;
 public:
-	operation(complex_operation cop) : impl_{
-		[&]{switch(cop){
+	operation(complex_operation cop) : impl_{[&]{switch(cop){
 		case complex_operation::identity: return impl_t::identity;
 		case complex_operation::hermitian: return impl_t::hermitian;
-		}
-	}()}{}
-	operation(real_operation cop) : impl_{[&]{switch(cop){
+		default: return impl_t{}; // for gcc and nvcc
+	}}()}{}
+	operation(real_operation rop) : impl_{[&]{switch(rop){
 		case real_operation::identity: return impl_t::identity;
 		case real_operation::transposition: return impl_t::transposition;
 	}}()}{}
@@ -71,20 +71,21 @@ public:
 		case impl_t::identity: return complex_operation::identity; 
 		case impl_t::transposition: assert(0);
 		case impl_t::hermitian: return complex_operation::hermitian;
+		default: return {}; // for gcc and nvcc
 	}}
 	constexpr operator real_operation() const{switch(impl_){
 			case impl_t::identity: return real_operation::identity;
 			case impl_t::transposition: return real_operation::transposition;
 			case impl_t::hermitian: assert(0);
 	}}
-	static operation identity; //= impl_t::identity;
-	static operation hermitian; //= impl_t::hermitian;
-	static operation transposition; //= impl_t::transposition; 
+	static operation const identity; //= impl_t::identity;
+	static operation const hermitian; //= impl_t::hermitian;
+	static operation const transposition; //= impl_t::transposition; 
 };
 
-inline operation operation::identity{operation::impl_t::identity};
-inline operation operation::hermitian{operation::impl_t::hermitian};
-inline operation operation::transposition{operation::impl_t::transposition};
+/*inline*/ operation const operation::identity{operation::impl_t::identity};
+/*inline*/ operation const operation::hermitian{operation::impl_t::hermitian};
+/*inline*/ operation const operation::transposition{operation::impl_t::transposition};
 
 template<class T, typename = decltype(imag(std::declval<T>()[0])[0])>
 std::true_type is_complex_array_aux(T&&);
