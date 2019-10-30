@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++14 -Wall -Wextra -D_DISABLE_CUDA_SLOW -D_TEST_MULTI_MEMORY_CUDA_ALLOCATOR -D_MULTI_MEMORY_CUDA_DISABLE_ELEMENT_ACCESS $0.cpp -o $0x -lcudart && $0x && rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&clang++ -std=c++14 `#-Wall -Wextra` -D_DISABLE_CUDA_SLOW -D_TEST_MULTI_MEMORY_CUDA_ALLOCATOR -D_MULTI_MEMORY_CUDA_DISABLE_ELEMENT_ACCESS $0.cpp -o $0x -lcudart && $0x && rm $0x $0.cpp; exit
 #endif
 
 #ifndef MULTI_MEMORY_ADAPTORS_CUDA_ALLOCATOR_HPP
@@ -107,8 +107,8 @@ public:
 	void deallocate(pointer p, size_type n){
 		cuda::free(p); ++n_deallocations; bytes_deallocated+=sizeof(T)*n;
 	}
-	std::true_type operator==(allocator const&) const{return {};}
-	std::false_type operator!=(allocator const&) const{return {};}
+	std::true_type operator==(allocator<std::max_align_t> const&) const{return {};} // template explicit for nvcc
+	std::false_type operator!=(allocator<std::max_align_t> const&) const{return {};}
 	template<class P, class... Args>
 	void construct([[maybe_unused]] P p, Args&&...){assert(0);} // TODO investigate who is calling this
 	template<class P>
