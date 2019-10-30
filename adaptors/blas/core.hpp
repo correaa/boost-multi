@@ -136,6 +136,7 @@ xTRSM(s); xTRSM(d); xTRSM(c)   ; xTRSM(z)   ;
 #undef xGERC
 #undef xGEMM
 #undef xHERK
+#undef xTRSM
 
 #undef s
 #undef d
