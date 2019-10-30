@@ -1,6 +1,6 @@
 #ifdef COMPILATION_INSTRUCTIONS
 (echo '#include"'$0'"'>$0.cpp)&&clang++ -O3 -std=c++14 -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_MULTI_ADAPTORS_BLAS_GEMV -DADD_ $0.cpp -o $0x \
--lblas \
+`pkg-config --cflags --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core` \
 &&$0x&& rm $0x $0.cpp; exit
 #endif
@@ -15,7 +15,7 @@ namespace boost{
 namespace multi{
 namespace blas{
 
-struct trans{enum : char{N='N', T='T', C='C'};};
+//struct trans{enum : char{N='N', T='T', C='C'};};
 
 //struct conj{template<class T> auto operator()(T const& t) const{using std::conj; return conj(t);}};
 
@@ -271,7 +271,7 @@ int main(){
 		gemv(a, rotated(M), X, b, Y); // y = a*M*x + b*y
 
 		multi::array<double, 1> const Y3 = {214.02, 106.43, 188.37}; // = 1.1 {{9., 24., 30., 9.}, {4., 10., 12., 7.}, {14., 16., 36., 1.}}.{1.1, 2.1, 3.1, 4.1} + 1.2 {4., 5., 6.}
-		assert( abs(Y[1] - Y3[1]) < 1e-14 );
+		assert( abs(Y[1] - Y3[1]) < 2e-14 );
 	}
 
 }
