@@ -32,6 +32,7 @@ real_operation transpose(real_operation op){
 	switch(op){
 		case real_operation::transposition: return real_operation::identity;
 		case real_operation::identity : return real_operation::transposition;
+		default: return real_operation::identity;
 	}
 }
 
@@ -55,11 +56,13 @@ class operation{
 	};
 	impl_t impl_;
 public:
-	constexpr operation(complex_operation cop) : impl_{[&]{switch(cop){
+	operation(complex_operation cop) : impl_{
+		[&]{switch(cop){
 		case complex_operation::identity: return impl_t::identity;
 		case complex_operation::hermitian: return impl_t::hermitian;
-	}}()}{}
-	constexpr operation(real_operation cop) : impl_{[&]{switch(cop){
+		}
+	}()}{}
+	operation(real_operation cop) : impl_{[&]{switch(cop){
 		case real_operation::identity: return impl_t::identity;
 		case real_operation::transposition: return impl_t::transposition;
 	}}()}{}
