@@ -64,23 +64,22 @@ public:
 	}}()}{}
 	operation(real_operation rop) : impl_{[&]{switch(rop){
 		case real_operation::identity: return impl_t::identity;
-		case real_operation::transposition: return impl_t::transposition;
+		case real_operation::transposition: return impl_t::transposition; default:return impl_t{};
 	}}()}{}
 	constexpr operation(impl_t impl) : impl_{impl}{}
 	constexpr operator complex_operation() const{switch(impl_){
 		case impl_t::identity: return complex_operation::identity; 
 		case impl_t::transposition: assert(0);
-		case impl_t::hermitian: return complex_operation::hermitian;
-		default: return {}; // for gcc and nvcc
+		case impl_t::hermitian: return complex_operation::hermitian; default:return{}; // for gcc and nvcc
 	}}
 	constexpr operator real_operation() const{switch(impl_){
 			case impl_t::identity: return real_operation::identity;
 			case impl_t::transposition: return real_operation::transposition;
 			case impl_t::hermitian: assert(0);
 	}}
-	static operation const identity; //= impl_t::identity;
-	static operation const hermitian; //= impl_t::hermitian;
-	static operation const transposition; //= impl_t::transposition; 
+	static operation const identity;      //= impl_t::identity;
+	static operation const hermitian;     //= impl_t::hermitian;
+	static operation const transposition; //= impl_t::transposition;
 };
 
 /*inline*/ operation const operation::identity{operation::impl_t::identity};
