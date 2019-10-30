@@ -145,20 +145,23 @@ namespace managed{
 	template<typename T, typename Ptr>
 	struct ptr : cuda::ptr<T, Ptr>{
 		template<class Other> explicit ptr(ptr<Other> o) : cuda::ptr<T, Ptr>{std::move(o)}{}
+	__host__ __device__ 
 		ptr(typename ptr::impl_t o) : cuda::ptr<T, Ptr>{std::move(o)}{}
 	//	ptr(std::nullptr_t n) : cuda::ptr<T, Ptr>{n}{}
 		using pointer = typename ptr::impl_t;
 		using reference = T&;
 #ifdef __CUDA_ARCH__
 	__device__ reference operator*() const{return *ptr::impl_;}
-	__device__ /*explicit*/ operator impl_t&()&{return ptr::impl_;}
-	__device__ /*explicit*/ operator impl_t const&() const&{return ptr::impl_;}
+	__device__ /*explicit*/ operator typename ptr::impl_t&()&{return ptr::impl_;}
+	__device__ /*explicit*/ operator typename ptr::impl_t const&() const&{return ptr::impl_;}
 #else
 	__host__ [[SLOW]] reference operator*() const{return *ptr::impl_;}
 	__host__ [[SLOW]] operator typename ptr::impl_t&()&{return ptr::impl_;}
 	__host__ [[SLOW]] operator typename ptr::impl_t const&() const&{return ptr::impl_;}
 #endif
+	__host__ __device__ 
 		ptr operator+(typename ptr::difference_type n) const{return ptr{ptr::impl_ + n};}
+	__host__ __device__
 		reference operator[](typename ptr::difference_type n){return *((*this)+n);}
 		friend ptr to_address(ptr const& p){return p;}
 		pointer operator->() const{return ptr::impl_;}
@@ -170,8 +173,8 @@ namespace managed{
 		using cuda::ptr<void, Ptr>::ptr;
 		using pointer = typename ptr::impl_t;
 #ifdef __CUDA_ARCH__
-	__device__ /*explicit*/ operator impl_t&()&{return impl_;}
-	__device__ /*explicit*/ operator impl_t const&() const&{return impl_;}
+	__device__ /*explicit*/ operator typename ptr::impl_t&()&{return impl_;}
+	__device__ /*explicit*/ operator typename ptr::impl_t const&() const&{return impl_;}
 #else
 	__host__ [[SLOW]] operator typename ptr::impl_t&()&{return ptr::impl_;}
 	__host__ [[SLOW]] operator typename ptr::impl_t const&() const&{return ptr::impl_;}
