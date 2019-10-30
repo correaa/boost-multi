@@ -13,6 +13,7 @@
 namespace boost{
 namespace multi{namespace blas{
 
+enum class trans : char{N='N', T='T', C='C'};
 enum class uplo : char{L='L', U='U'};
 
 template<class M> decltype(auto) transposed(M const& m){return rotated(m);}

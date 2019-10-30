@@ -18,8 +18,6 @@
 namespace boost{
 namespace multi{namespace blas{
 
-enum class trans : char{N='N', T='T', C='C'};
-
 enum class real_operation : char{
 	transposition = static_cast<char>(trans::N),
 	identity      = static_cast<char>(trans::T),
