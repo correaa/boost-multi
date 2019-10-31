@@ -229,6 +229,23 @@ ForwardIt uninitialized_value_construct_n(Alloc& a, ForwardIt first, Size n, voi
 	return uninitialized_default_construct_n(a, first, n);
 }
 
+
+template<class AA> class is_allocator{
+	static std::false_type aux(...     );
+	template<
+		class A, 
+		class P = typename A::pointer, class S = typename A::size_type,
+		typename = decltype(
+			std::declval<A const&>()==A{std::declval<A const&>()},
+			std::declval<A&>().deallocate(P{std::declval<A&>().allocate(std::declval<S>())}, std::declval<S>())
+		)
+	>
+	static std::true_type  aux(A const&);
+public:
+	static bool const value = decltype(aux(std::declval<AA>())){};
+	constexpr operator bool() const{return value;}
+};
+
 }}
 
 namespace boost{
@@ -356,6 +373,10 @@ namespace multi = boost::multi;
 template<class T> void what(T&&);
 
 int main(){
+
+	static_assert(multi::is_allocator<std::allocator<double>>{}, "!");
+	static_assert(not multi::is_allocator<double>{}, "!");
+	static_assert(not multi::is_allocator<std::vector<double>>{}, "!");
 
 	{
 		double* p;
