@@ -4,33 +4,30 @@
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
 #endif
-// Alfredo A. Correa 2019 ©
+// © Alfredo A. Correa 2019
 
 #ifndef MULTI_ADAPTORS_BLAS_NUMERIC_HPP
 #define MULTI_ADAPTORS_BLAS_NUMERIC_HPP
 
-//#include "../blas/core.hpp"
 #include "../../array_ref.hpp"
 
-#include<functional> // negate
-#include<complex> // conj
+//#include<functional> // negate
+//#include<complex> // conj
 
 namespace boost{
 namespace multi{namespace blas{
 
-template<class A, typename C = typename std::decay_t<A>::element_type, typename T = typename C::value_type>
-decltype(auto) real(A&& a){
-	struct Complex_{T real_; T imag_;};
-	auto&& Acast = multi::reinterpret_array_cast<Complex_>(a);
-	return multi::member_array_cast<T>(Acast, &Complex_::real_);
-}
+template<class T> struct Complex_{T real_; T imag_;};
 
-template<class A, typename Complex = typename std::decay_t<A>::element_type, typename T = typename Complex::value_type>
-decltype(auto) imag(A&& a){
-	struct Complex_{T real_; T imag_;};
-	auto&& Acast = multi::reinterpret_array_cast<Complex_>(a);
-	return multi::member_array_cast<T>(Acast, &Complex_::imag_);
-}
+template<class A, typename T=typename std::decay_t<A>::element_type::value_type, typename C_=Complex_<T>>
+auto real(A&& a)
+->decltype(member_array_cast<T>(reinterpret_array_cast<C_>(a), &C_::real_)){
+	return member_array_cast<T>(reinterpret_array_cast<C_>(a), &C_::real_);}
+
+template<class A, typename T=typename std::decay_t<A>::element_type::value_type, typename C_=Complex_<T>>
+auto imag(A&& a)
+->decltype(member_array_cast<T>(reinterpret_array_cast<C_>(a), &C_::imag_)){
+	return member_array_cast<T>(reinterpret_array_cast<C_>(a), &C_::imag_);}
 
 template<class It, class F> class involuter;
 
@@ -130,7 +127,10 @@ template<class It>  using negater = involuter<It, std::negate<>>;
 
 struct conjugate{
 	template<class T>
-	auto operator()(T const& a) const{using std::conj; return conj(a);}
+	auto operator()(T const& a) const{
+	//	using std::conj; /*for doubles?*/ 
+		return conj(a);
+	}
 };
 
 namespace detail{
