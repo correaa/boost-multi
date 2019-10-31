@@ -1,6 +1,6 @@
 #ifdef COMPILATION_INSTRUCTIONS
 for a in ./tests/*.cpp; do echo $a; sh $a || break; echo '\n'; done; exit; */
-(echo '#include"'$0'"'>$0.cpp)&& clang++ -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_BOOST_MULTI_ARRAY_REF $0.cpp -o $0x&&$0x&&rm $0x $0.cpp;exit
+(echo '#include"'$0'"'>$0.cpp)&& c++ -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_BOOST_MULTI_ARRAY_REF $0.cpp -o $0x&&$0x&&rm $0x $0.cpp;exit
 #endif
 #ifndef BOOST_MULTI_ARRAY_REF_HPP
 #define BOOST_MULTI_ARRAY_REF_HPP
@@ -213,7 +213,9 @@ private:
 	void decrement(){ptr_.base_ -= stride_;}
 	void advance(difference_type n){ptr_.base_ += stride_*n;}
 	difference_type distance_to(array_iterator const& other) const{
-		assert( stride_ == other.stride_ and stride_ != 0 and (other.ptr_.base_ - ptr_.base_)%stride_ == 0 and ptr_.layout() == other.ptr_.layout() );
+		assert( stride_ == other.stride_ and stride_ != 0 );
+	//	assert( this->stride()==stride(other) and this->stride() );// and (base(other.ptr_) - base(this->ptr_))%stride_ == 0
+	//	assert( stride_ == other.stride_ and stride_ != 0 and (other.ptr_.base_-ptr_.base_)%stride_ == 0 and ptr_.layout() == other.ptr_.layout() );
 	//	assert( stride_ == other.stride_ and stride_ != 0 and (other.base_ - base_)%stride_ == 0 and layout() == other.layout() );
 		return (other.ptr_.base_ - ptr_.base_)/stride_;
 	}
@@ -287,8 +289,12 @@ public:
 	friend constexpr auto dimensionality(basic_array const& self){return self.dimensionality;}
 	using typename types::reference;
 	basic_array(basic_array&&) = default;
-	using decay_type = array<typename types::element, D, typename pointer_traits<typename types::element_ptr>::default_allocator_type>;
-	decay_type decay() const{return *this;}
+	auto get_allocator() const{return default_allocator_of(this->base());}
+	friend auto get_allocator(basic_array const& self){return self.get_allocator();}
+	using decay_type = array<typename types::element, D, decltype(default_allocator_of(std::declval<ElementPtr>()))>;
+	array<typename types::element, D, std::allocator<typename types::element>>//typename pointer_traits<typename types::element_ptr>::default_allocator_type>
+//	decay_type 
+	decay() const{return {*this, get_allocator()};}
 	friend auto decay(basic_array const& self){return self.decay();}
 	HD typename types::reference operator[](index i) const{
 		assert( this->extension().contains(i) );
@@ -604,8 +610,10 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout> :
 {
 	using types = array_types<T, dimensionality_type{1}, ElementPtr, Layout>;
 	using types::types;
-	using decay_type = array<typename types::element, dimensionality_type{1}, typename pointer_traits<typename types::element_ptr>::default_allocator_type>;
-	decay_type decay() const{return *this;}
+	auto get_allocator() const{return default_allocator_of(basic_array::base());}
+	friend auto get_allocator(basic_array const& self){return self.get_allocator();}
+	using decay_type = array<typename types::element, dimensionality_type{1}, decltype(default_allocator_of(std::declval<ElementPtr>()))>;
+	decay_type decay() const{return {*this, get_allocator()};}
 	friend decay_type decay(basic_array const& self){return self.decay();}
 protected:
 	template<class A>
