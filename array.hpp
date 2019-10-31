@@ -76,7 +76,7 @@ public:
 	using typename ref::value_type;
 	using typename ref::size_type;
 	using typename ref::difference_type;
-	static_array(typename static_array::allocator_type const& a = {}) : static_array::allocator_type{a}{}
+	static_array(typename static_array::allocator_type const& a) : static_array::allocator_type{a}{}
 protected:
 	static_array(static_array&& other, typename static_array::allocator_type const& a)                           //6b
 	:	static_array::allocator_type{a},
@@ -127,12 +127,14 @@ public:
 	}
 	explicit static_array(typename static_array::index n, typename static_array::value_type const& v, typename static_array::allocator_type const& a = {})
 	: 	static_array(typename static_array::index_extension(n), v, a){}
-	explicit static_array(typename static_array::index_extension const& e, typename static_array::value_type const& v, typename static_array::allocator_type const& a = {}) //3
+	template<class ValueType, typename = std::enable_if_t<std::is_same<ValueType, typename static_array::value_type>{}>> 
+	explicit static_array(typename static_array::index_extension const& e, ValueType const& v, typename static_array::allocator_type const& a = {}) //3
 	: static_array(e*extensions(v), a){
 	//	assert(0);
 		using std::fill; fill(this->begin(), this->end(), v);
 	}
-	static_array(typename static_array::extensions_type const& x, allocator_type const& a) //3
+	template<class Allocator, typename = std::enable_if_t<std::is_same<Allocator, allocator_type>{}> >
+	static_array(typename static_array::extensions_type const& x, Allocator const& a) //3
 	:	allocator_type{a}, ref{allocate(typename static_array::layout_t{x}.num_elements()), x}{
 	//	assert(0);
 	//	uninitialized_value_construct();
@@ -161,9 +163,7 @@ public:
 	static_array(multi::basic_array<TT, DD, Args...> const& other, allocator_type const& a = {})
 		: allocator_type{a}, ref{allocate(other.num_elements()), extensions(other)}
 	{
-//		assert(0);
-		using std::copy; 
-		copy(other.begin(), other.end(), this->begin());
+		using std::copy; copy(other.begin(), other.end(), this->begin());
 	}
 	template<class TT, class... Args>
 	static_array(array_ref<TT, D, Args...> const& other)
@@ -179,7 +179,7 @@ public:
 		typename = std::enable_if_t<dimensionality<O>()==dimensionality>
 	>
 	static_array(O const& o)                                          //
-	:	allocator_type{}, 
+	:	allocator_type{get_allocator(o)}, 
 		ref(allocate(num_elements(o)), extensions(o))
 	{
 		uninitialized_copy_(data_elements(o));
@@ -232,6 +232,7 @@ protected:
 	}
 	void clear() noexcept{this->destroy(); deallocate(); layout_t<D>::operator=({});}
 public:
+	static_array() = default;
 	~static_array() noexcept{clear();}
 	using element_const_ptr = typename std::pointer_traits<typename static_array::element_ptr>::template rebind<typename static_array::element const>;
 	using reference = std::conditional_t<
@@ -245,11 +246,11 @@ public:
 		typename pointer_traits<typename static_array::element_ptr>::element_type const&
 	>;
 	using const_iterator = multi::array_iterator<T, static_array::dimensionality, typename static_array::element_const_ptr, const_reference>;
-//	reference       
+//	reference
 	HD decltype(auto) operator[](index i)      {return ref::operator[](i);}
 	const_reference operator[](index i) const{return ref::operator[](i);}
 	typename static_array::allocator_type get_allocator() const{return static_cast<typename static_array::allocator_type const&>(*this);}
-
+	friend typename static_array::allocator_type get_allocator(static_array const& self){return self.get_allocator();}
 	HD typename static_array::element_ptr       data()      {return ref::data();}
 	HD typename static_array::element_const_ptr data() const{return ref::data();}
 	friend typename static_array::element_ptr       data(static_array&       s){return s.data();}
@@ -260,8 +261,27 @@ public:
 	friend typename static_array::element_ptr       origin(static_array&       s){return s.origin();}
 	friend typename static_array::element_const_ptr origin(static_array const& s){return s.origin();}
 
-//	using const_reverse_iterator = basic_reverse_iterator<const_iterator>;
+//	template<class... Args> decltype(auto) operator()(Args const&... args)&{return ref::operator()(args...);}
+//	template<class... Args> decltype(auto) operator()(Args const&... args) const&{return ref::operator()(args...);}
+	using ref::operator();
 
+	basic_array<T, D, typename static_array::element_ptr>      operator()()&{return *this;}
+	basic_array<T, D, typename static_array::element_const_ptr> operator()() const&{
+		return basic_array<T, D, typename static_array::element_const_ptr>{this->layout(), this->base_};
+	}
+//	using const_reverse_iterator = basic_reverse_iterator<const_iterator>;
+	auto rotated() const&{
+		typename static_array::layout_t new_layout = *this;
+		new_layout.rotate();
+		return basic_array<T, D, typename static_array::element_const_ptr>{new_layout, this->base_};
+	}
+	friend decltype(auto) rotated(static_array const& self){return self.rotated();}
+	auto rotated()&{
+		typename static_array::layout_t new_layout = *this;
+		new_layout.rotate();
+		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
+	}
+	friend decltype(auto) rotated(static_array& self){return self.rotated();}
 	typename static_array::iterator begin(){return ref::begin();}
 	typename static_array::iterator end()  {return ref::end();}
 //	typename array::iterator begin() &&{return ref::begin();}
@@ -281,7 +301,17 @@ public:
 };
 
 template<class T, dimensionality_type D, class Alloc>
-struct array : static_array<T, D, Alloc>,
+struct
+#if __cplusplus>=201703L
+#if __has_cpp_attribute(nodiscard)>=201603
+[[nodiscard
+#if __has_cpp_attribute(nodiscard)>=201907
+("result is returned because it was not passed as out parameter due to constness")
+#endif
+]]
+#endif
+#endif
+array : static_array<T, D, Alloc>,
 	boost::multi::random_iterable<array<T, D, Alloc> >
 {
 	using static_ = static_array<T, D, Alloc>;
@@ -497,6 +527,9 @@ template<class T, class A=std::allocator<T>> static_array(IL<IL<IL<T>>>        ,
 template<class T, class A=std::allocator<T>> static_array(IL<IL<IL<IL<T>>>>    , A={})->static_array<T,4,A>; 
 template<class T, class A=std::allocator<T>> static_array(IL<IL<IL<IL<IL<T>>>>>, A={})->static_array<T,5,A>;
 
+//template<class T> 
+array(std::initializer_list<std::initializer_list<double>>                )->array<double, 2, std::allocator<double>>; 
+
 template<class T, class A=std::allocator<T>> array(IL<T>                , A={})->array<T,1,A>; 
 template<class T, class A=std::allocator<T>> array(IL<IL<T>>            , A={})->array<T,2,A>;
 template<class T, class A=std::allocator<T>> array(IL<IL<IL<T>>>        , A={})->array<T,3,A>; 
@@ -507,23 +540,28 @@ template<class T, class A=std::allocator<T>> array(T[]                  , A={})-
 template<class Array, class A=std::allocator<typename multi::array_traits<Array>::element>> array(Array            , A={})->array<typename multi::array_traits<Array>::element, 1, A>;
 #undef IL
 
-template<class T, class A=std::allocator<T>> array(iextensions<1>, T)->array<T,1,A>;
-template<class T, class A=std::allocator<T>> array(iextensions<2>, T)->array<T,2,A>;
-template<class T, class A=std::allocator<T>> array(iextensions<3>, T)->array<T,3,A>;
-template<class T, class A=std::allocator<T>> array(iextensions<4>, T)->array<T,4,A>;
-template<class T, class A=std::allocator<T>> array(iextensions<5>, T)->array<T,5,A>;
+template<dimensionality_type D, class T, typename = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<D>, T)->array<T, D, std::allocator<T>>;
+	template<class T, typename = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<1>, T)->array<T,1, std::allocator<T>>;
+	template<class T, typename = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<2>, T)->array<T,2, std::allocator<T>>;
+	template<class T, typename = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<3>, T)->array<T,3, std::allocator<T>>;
+	template<class T, typename = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<4>, T)->array<T,4, std::allocator<T>>;
+	template<class T, typename = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<5>, T)->array<T,5, std::allocator<T>>;
 
-template<class A> array(iextensions<1>, A)->array<typename std::allocator_traits<A>::value_type,1,A>;
-template<class A> array(iextensions<2>, A)->array<typename std::allocator_traits<A>::value_type,2,A>;
-template<class A> array(iextensions<3>, A)->array<typename std::allocator_traits<A>::value_type,3,A>;
-template<class A> array(iextensions<4>, A)->array<typename std::allocator_traits<A>::value_type,4,A>;
-template<class A> array(iextensions<5>, A)->array<typename std::allocator_traits<A>::value_type,5,A>;
 
-template<class T, class MR, class A=memory::allocator<T, MR>> array(iextensions<1>, T, MR*)->array<T,1,A>;
-template<class T, class MR, class A=memory::allocator<T, MR>> array(iextensions<2>, T, MR*)->array<T,2,A>;
-template<class T, class MR, class A=memory::allocator<T, MR>> array(iextensions<3>, T, MR*)->array<T,3,A>;
-template<class T, class MR, class A=memory::allocator<T, MR>> array(iextensions<4>, T, MR*)->array<T,4,A>;
-template<class T, class MR, class A=memory::allocator<T, MR>> array(iextensions<5>, T, MR*)->array<T,5,A>;
+template<dimensionality_type D, class A, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<D>, A)->array<T, D, A>;
+	template<class A, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<1>, A)->array<T, 1, A>;
+	template<class A, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<2>, A)->array<T, 2, A>;
+	template<class A, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<3>, A)->array<T, 3, A>;
+	template<class A, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<4>, A)->array<T, 4, A>;
+	template<class A, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<5>, A)->array<T, 5, A>;
+
+template<class T, class MR, class A=memory::allocator<T, MR>> array(iextensions<1>, T, MR*)->array<T, 1, A>;
+template<class T, class MR, class A=memory::allocator<T, MR>> array(iextensions<2>, T, MR*)->array<T, 2, A>;
+template<class T, class MR, class A=memory::allocator<T, MR>> array(iextensions<3>, T, MR*)->array<T, 3, A>;
+template<class T, class MR, class A=memory::allocator<T, MR>> array(iextensions<4>, T, MR*)->array<T, 4, A>;
+template<class T, class MR, class A=memory::allocator<T, MR>> array(iextensions<5>, T, MR*)->array<T, 5, A>;
+
+template<typename T, dimensionality_type D, typename P> array(basic_array<T, D, P>)->array<T, D>;
 #endif
 
 }}
