@@ -74,6 +74,10 @@ constexpr auto size(Container const& con)
 template <class T, std::size_t N>
 constexpr auto size(const T(&)[N]) noexcept{return multi::size_type{N};}
 
+template <class T, std::size_t N>
+constexpr std::allocator<typename std::remove_all_extents<T[N]>::type> 
+get_allocator(const T(&)[N]) noexcept{return {};}
+
 template<class T>
 auto has_num_elements_aux(T const& t)->decltype(t.num_elements(), std::true_type {});
 inline auto has_num_elements_aux(...       )->decltype(                  std::false_type{});
@@ -352,6 +356,8 @@ int main(){
 	assert( origin(A) == &A[0] );
 	assert( size(A) == 4 );
 	assert( std::get<0>(sizes(A)) == size(A) );
+	using multi::get_allocator;
+	static_assert(std::is_same<decltype(get_allocator(A)), std::allocator<double> >{}, "!");
 	using std::addressof;
 //	using multi::data;
 	using multi::data_elements;
