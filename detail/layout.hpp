@@ -115,7 +115,7 @@ struct layout_t<dimensionality_type{1}>{
 	};
 	using extensions_type = extensions_type_;
 	using strides_type = std::tuple<index>;
-	constexpr layout_t() : stride_{1}, offset_{0}, nelems_{0}{} // needs stride != 0 for things to work well in partially formed state
+	constexpr layout_t() = default;//: stride_{1}, offset_{0}, nelems_{0}{} // needs stride != 0 for things to work well in partially formed state
 	constexpr layout_t(index_extension ie, layout_t<0> const&) : 
 		stride_{1}, offset_{0}, nelems_{ie.size()}
 	{}
@@ -286,8 +286,9 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 		offset_{0}, 
 		nelems_{ie.size()*sub.num_elements()}                             // use .size fort
 	{}
+	constexpr layout_t() = default;//: sub{}, stride_{1}, offset_{0}, nelems_{0}{} // needs stride != 0 for things to work well in partially formed state
 	constexpr 
-	layout_t(extensions_type const& e = {}) : 
+	layout_t(extensions_type const& e) :// = {}) : 
 		sub{detail::tail(e)}, 
 		stride_{std::get<0>(e).size()*sub.num_elements()!=0?sub.size()*sub.stride():1}, 
 		offset_{0}, 
@@ -441,8 +442,21 @@ int main(){
 }{	multi::layout_t<3> L(std::make_tuple(multi::iextension{10}, multi::iextension{10}, multi::iextension{10})); assert( num_elements(L) == 1000);
 }{	multi::layout_t<3> L(std::make_tuple(10, 10, multi::iextension{10})); assert( num_elements(L) == 1000 );
 }{
+	char buffer[sizeof(multi::layout_t<2>)];
+	new(buffer) multi::layout_t<2>;
+	assert( size( reinterpret_cast<multi::layout_t<2>&>(buffer) ) == 0 );
+}{
+	multi::layout_t<1> L;
+	assert( size(L) == 0 );
+}{
+	multi::layout_t<2> L;
+	assert( size(L) == 0 );
+}{
+	multi::layout_t<3> L;
+	assert( size(L) == 0 );
+}{
 	multi::layout_t<2> LL({{0, 10}, {0, 20}}); 
-	multi::layout_t<1> LLL({{0, 10}}); 
+//	multi::layout_t<1> LLL({{0, 10}}); 
 
 	multi::layout_t<3> L({{0, 10}, {0, 20}, {0, 30}}); 
 	multi::layout_t<3> L2{extensions(L)};
