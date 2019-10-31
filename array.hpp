@@ -161,7 +161,7 @@ public:
 #endif
 	template<class TT, dimensionality_type DD, class... Args>
 	static_array(multi::basic_array<TT, DD, Args...> const& other, allocator_type const& a = {})
-		: allocator_type{a}, ref{allocate(other.num_elements()), extensions(other)}
+		: allocator_type{a}, ref(allocate(other.num_elements()), extensions(other))
 	{
 		using std::copy; copy(other.begin(), other.end(), this->begin());
 	}
@@ -176,10 +176,19 @@ public:
 	//	uninitialized_copy_(other.data());
 	}
 	template<class O, typename = std::enable_if_t<not std::is_base_of<static_array, O>{}>,
-		typename = std::enable_if_t<dimensionality<O>()==dimensionality>
+		typename = std::enable_if_t<dimensionality<std::decay_t<O>>()==dimensionality>
 	>
 	static_array(O const& o)                                          //
 	:	allocator_type{get_allocator(o)}, 
+		ref(allocate(num_elements(o)), extensions(o))
+	{
+		uninitialized_copy_(data_elements(o));
+	}
+	template<class O, typename = std::enable_if_t<not std::is_base_of<static_array, O>{}>,
+		typename = std::enable_if_t<std::rank<O>{}==static_array::dimensionality>
+	>
+	static_array(O const& o, void* = 0)                                          //
+	:	allocator_type{multi::get_allocator(o)}, 
 		ref(allocate(num_elements(o)), extensions(o))
 	{
 		uninitialized_copy_(data_elements(o));
@@ -564,6 +573,10 @@ template<class T, class MR, class A=memory::allocator<T, MR>> array(iextensions<
 template<typename T, dimensionality_type D, typename P> array(basic_array<T, D, P>)->array<T, D>;
 #endif
 
+template <class T, std::size_t N>
+multi::array<typename std::remove_all_extents<T[N]>::type, std::rank<T[N]>{}> 
+decay(const T(&t)[N]) noexcept{return multi::array<typename std::remove_all_extents<T[N]>::type, std::rank<T[N]>{}>(t);}
+
 }}
 
 #undef HD
@@ -668,6 +681,12 @@ int main(){
 	assert(A2[0][0] == 99 );
 }
 #endif
+
+{
+	double A[2][3] = {{1.,2.,3.}, {4.,5.,6.}};
+	using multi::decay;
+	auto A_copy = decay(A);
+}
 
 }
 #endif
