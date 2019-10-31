@@ -337,7 +337,7 @@ struct pointer_traits<P, std::enable_if_t<has_default_allocator<P>{}> > : std::p
 };
 template<class P>
 struct pointer_traits<P, std::enable_if_t<not has_default_allocator<P>{}> > : std::pointer_traits<P>{
-	using default_allocator_type = std::allocator<std::decay_t<typename pointer_traits::element_type> >;
+	using default_allocator_type = std::allocator<std::decay_t<typename std::iterator_traits<P>::value_type> >;
 	static default_allocator_type default_allocator_of(typename pointer_traits::pointer const&){return {};}
 };
 
@@ -349,14 +349,26 @@ default_allocator_of(P const& p){return pointer_traits<P>::default_allocator_of(
 
 #if _TEST_BOOST_MULTI_DETAIL_MEMORY
 
+#include<vector>
+
 namespace multi = boost::multi;
+
+template<class T> void what(T&&);
 
 int main(){
 
-	double* p;
-	auto a = multi::default_allocator_of(p);
-	static_assert(std::is_same<decltype(a), std::allocator<double>>{}, "!");
-
+	{
+		double* p;
+		auto a = multi::default_allocator_of(p);
+		static_assert(std::is_same<decltype(a), std::allocator<double>>{}, "!");
+	//	what(typename std::iterator_traits<double*>::value_type{});
+	}
+	{
+		std::vector<double>::iterator it;
+		auto a = multi::default_allocator_of(it);
+	//	what(typename std::iterator_traits<decltype(it)>::value_type{});
+		static_assert(std::is_same<decltype(a), std::allocator<double>>{}, "!");
+	}
 }
 #endif
 #endif

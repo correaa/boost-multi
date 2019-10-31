@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++17 -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_MULTI_ADAPTORS_BLAS_HERK .DCATCH_CONFIG_MAIN $0.cpp -o $0x \
+(echo '#include"'$0'"'>$0.cpp)&&clang++ -std=c++14 -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_MULTI_ADAPTORS_BLAS_HERK .DCATCH_CONFIG_MAIN $0.cpp -o $0x \
 `pkg-config --cflags --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -liomp5` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
@@ -103,15 +103,12 @@ C2D&& herk(AA alpha, A2D const& a, C2D&& c){
 	return std::forward<C2D>(c);
 }
 
-template<class AA, class A2D>
-auto herk(AA alpha, A2D const& A){
-	multi::array<typename A2D::element, 2> ret({size(A), size(A)});
-	herk(alpha, A, ret);
-	return ret;
+template<class AA, class A2D, class Ret = typename A2D::decay_type>
+auto herk(AA alpha, A2D const& a){
+	return herk(alpha, a, Ret({size(a), size(a)}, get_allocator(a)));
 }
 
-template<class A2D, class R = typename A2D::decay_type>
-auto herk(A2D const& A){return herk(1., A);}
+template<class A2D> auto herk(A2D const& a){return herk(1., a);}
 
 }}
 
@@ -335,6 +332,8 @@ TEST_CASE("multi::blas::herk complex automatic operator interface implicit no-su
 	}
 }
 
+template<class T> void what(T&&);
+
 TEST_CASE("multi::blas::herk complex automatic ordering and symmetrization", "[report]"){
 
 	multi::array<complex, 2> const a = {
@@ -371,6 +370,7 @@ TEST_CASE("multi::blas::herk complex automatic ordering and symmetrization", "[r
 	{
 		using multi::blas::herk;
 		multi::array<complex, 2> c = herk(a); // c†=c=a†a
+//		what(multi::pointer_traits<decltype(base(a))>::default_allocator_of(base(a)));
 		REQUIRE( c[1][0] == complex(50., -49.) );
 		REQUIRE( c[0][1] == complex(50., +49.) );
 	}
@@ -391,12 +391,12 @@ TEST_CASE("multi::blas::herk real case", "[report]"){
 	using multi::blas::triangular;
 	using multi::blas::operation;
 	{
-		static_assert( not boost::multi::blas::is_complex_array<multi::array<double, 2>>{} );
+		static_assert( not boost::multi::blas::is_complex_array<multi::array<double, 2>>{} , "!");
 		multi::array<double, 2> c({2, 2}, 9999.);
 		syrk(triangular::lower, operation::identity, 1., a, 0., c);//c†=c=aa†=(aa†)†, `c` in lower triangular
 	}
 	{
-		static_assert( not boost::multi::blas::is_complex_array<multi::array<double, 2>>{} );
+		static_assert( not boost::multi::blas::is_complex_array<multi::array<double, 2>>{} , "!");
 		multi::array<double, 2> c({2, 2}, 9999.);
 		herk(triangular::lower, operation::identity, 1., a, 0., c);//c†=c=aa†=(aa†)†, `c` in lower triangular
 	}

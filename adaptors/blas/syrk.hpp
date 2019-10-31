@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&clang++ -std=c++14 `#--compiler-options` -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_MULTI_ADAPTORS_BLAS_SYRK .DCATCH_CONFIG_MAIN.o $0.cpp -o $0x \
+(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++14 `#--compiler-options` -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_MULTI_ADAPTORS_BLAS_SYRK .DCATCH_CONFIG_MAIN.o $0.cpp -o $0x \
 `pkg-config --cflags --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -liomp5` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
@@ -31,14 +31,14 @@ enum class triangular : char{
 real_operation transpose(real_operation op){
 	switch(op){
 		case real_operation::transposition: return real_operation::identity;
-		case real_operation::identity : return real_operation::transposition; // default: return {}; // for gcc and nvcc
+		case real_operation::identity: return real_operation::transposition;
 	} __builtin_unreachable();
 }
 
 triangular flip(triangular side){
 	switch(side){
 		case triangular::lower: return triangular::upper;
-		case triangular::upper: return triangular::lower; // default: return {}; // for gcc and nvcc
+		case triangular::upper: return triangular::lower;
 	} __builtin_unreachable();
 }
 
@@ -56,26 +56,26 @@ class operation{
 	impl_t impl_;
 public:
 	operation(complex_operation cop) : impl_{[&]{switch(cop){
-		case complex_operation::identity: return impl_t::identity;
-		case complex_operation::hermitian: return impl_t::hermitian; // default: return impl_t{}; // for gcc and nvcc
+		case complex_operation::identity  : return impl_t::identity;
+		case complex_operation::hermitian : return impl_t::hermitian;
 	} __builtin_unreachable();}()}{}
 	operation(real_operation rop) : impl_{[&]{switch(rop){
-		case real_operation::identity: return impl_t::identity;
-		case real_operation::transposition: return impl_t::transposition; // default:return impl_t{};
+		case real_operation::identity      : return impl_t::identity;
+		case real_operation::transposition : return impl_t::transposition;
 	} __builtin_unreachable();}()}{}
 	constexpr operation(impl_t impl) : impl_{impl}{}
 	constexpr operator complex_operation() const{switch(impl_){
-		case impl_t::identity: return complex_operation::identity; 
-		case impl_t::transposition: assert(0);
-		case impl_t::hermitian: return complex_operation::hermitian; // default:return{}; // for gcc and nvcc
-	} __builtin_unreachable(); }
+		case impl_t::identity      : return complex_operation::identity; 
+		case impl_t::transposition : assert(0);
+		case impl_t::hermitian     : return complex_operation::hermitian;
+	} __builtin_unreachable();}
 	constexpr operator real_operation() const{switch(impl_){
-			case impl_t::identity: return real_operation::identity;
-			case impl_t::transposition: return real_operation::transposition;
-			case impl_t::hermitian: assert(0); // default:return{};
-	} __builtin_unreachable(); }
-	static operation const identity;      //= impl_t::identity;
-	static operation const hermitian;     //= impl_t::hermitian;
+		case impl_t::identity      : return real_operation::identity;
+		case impl_t::transposition : return real_operation::transposition;
+		case impl_t::hermitian     : assert(0); // default:return{};
+	} __builtin_unreachable();}
+	static operation const identity; //= impl_t::identity;
+	static operation const hermitian; //= impl_t::hermitian;
 	static operation const transposition; //= impl_t::transposition;
 };
 
@@ -117,27 +117,25 @@ C2D&& syrk(triangular c_side, AA alpha, A2D const& a, BB beta, C2D&& c){
 
 template<typename AA, class A2D, class C2D>
 C2D&& syrk(triangular c_side, AA alpha, A2D const& a, C2D&& c){
-	return syrk(c_side, alpha, a, 0., std::forward<C2D>(c));
+	syrk(c_side, alpha, a, 0., c);
+	return std::forward<C2D>(c);
 }
 
 template<typename AA, class A2D, class C2D>
 C2D&& syrk(AA alpha, A2D const& a, C2D&& c){
-	if(stride(c)==1) syrk(triangular::upper, alpha, a, rotated(std::forward<C2D>(c)));
-	else             syrk(triangular::lower, alpha, a,         std::forward<C2D>(c) );
+	if(stride(c)==1) syrk(triangular::upper, alpha, a, rotated(c));
+	else             syrk(triangular::lower, alpha, a,        (c));
 	for(typename std::decay_t<C2D>::difference_type i = 0; i != size(c); ++i)
 		blas::copy(begin(rotated(c)[i])+i+1, end(rotated(c)[i]), begin(c[i])+i+1);
 	return std::forward<C2D>(c);
 }
 
 template<typename AA, class A2D, class Ret = typename A2D::decay_type>
-Ret syrk(AA alpha, A2D const& A){
-	Ret ret({size(A), size(A)});
-	syrk(alpha, A, ret);
-	return ret;
+auto syrk(AA alpha, A2D const& a){
+	return syrk(alpha, a, Ret({size(a), size(a)}, get_allocator(a)));
 }
 
-template<class A2D, class R = typename A2D::decay_type>
-auto syrk(A2D const& A){return syrk(1., A);}
+template<class A2D> auto syrk(A2D const& A){return syrk(1., A);}
 
 #if 0
 template<class UL, class Op, typename ScalarA, typename ScalarB, class A2D, class C2D>
