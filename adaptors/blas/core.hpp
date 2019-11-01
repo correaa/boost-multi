@@ -115,6 +115,8 @@ xTRSM(s); xTRSM(d); xTRSM(c)   ; xTRSM(z)   ;
 
 #undef TRANS
 #undef UPLO
+#undef SIDE
+#undef DIAG
 #undef xROTG
 #undef xROTMG
 #undef xROT
