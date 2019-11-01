@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&clang++ -O3 -std=c++17 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_TRSM .DCATCH_CONFIG_MAIN $0.cpp -o $0x \
+(echo '#include"'$0'"'>$0.cpp)&&nvcc --compiler-options -std=c++17,-Wall,-Wextra,-Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_TRSM .DCATCH_CONFIG_MAIN.o $0.cpp -o $0x \
 `pkg-config --cflags --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
@@ -88,24 +88,6 @@ decltype(auto) trsm(triangular a_nonz, AA alpha, A2D const& a, B2D&& b){
 	return trsm(a_nonz, diagonal::general, alpha, a, std::forward<B2D>(b));
 }
 
-template<class A2D>
-triangular detect_triangular(A2D const& A){
-	if constexpr(not is_hermitized<A2D>()){
-		for(auto i = size(A); i != 0; --i){
-			auto const asum_up = blas::asum(begin(A[i-1])+i, end(A[i-1]));
-			if(asum_up!=asum_up) return triangular::lower;
-			else if(asum_up!=0.) return triangular::upper;
-
-			auto const asum_lo = blas::asum(begin(rotated(A)[i-1])+i, end(rotated(A)[i-1]));
-			if(asum_lo!=asum_lo) return triangular::upper;
-			else if(asum_lo!=0.) return triangular::lower;
-		}
-	}else{
-		return flip(detect_triangular(hermitized(A)));
-	}
-	return triangular::lower;
-};
-
 template<typename AA, class A2D, class B2D>
 decltype(auto) trsm(AA a, A2D const& A, B2D&& B){
 	return trsm(detect_triangular(A), diagonal::general, a, A, std::forward<B2D>(B));
@@ -121,7 +103,9 @@ template<typename AA, class A2D, class B2D, class Ret = typename B2D::decay_type
 ]]
 #endif
 #endif 
-auto trsm(AA alpha, A2D const& a, B2D const& b){return trsm(alpha, a, Ret{b});}
+auto trsm(AA alpha, A2D const& a, B2D const& b){
+	return trsm(alpha, a, decay(b));
+}
 
 template<class A2D, class B2D>
 decltype(auto) trsm(A2D const& a, B2D&& b){return trsm(1., a, std::forward<B2D>(b));}

@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_OPERATIONS $0.cpp -o $0x `pkg-config --cflags --libs blas` &&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++17 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_OPERATIONS $0.cpp -o $0x `pkg-config --cflags --libs blas` &&$0x&&rm $0x $0.cpp; exit
 #endif
 // © Alfredo A. Correa 2019
 
@@ -7,6 +7,7 @@
 #define MULTI_ADAPTORS_BLAS_OPERATIONS_HPP
 
 #include    "../blas/core.hpp"
+#include    "../blas/asum.hpp"
 #include    "../blas/numeric.hpp"
 
 #include "../../array_ref.hpp"
@@ -142,6 +143,25 @@ decltype(auto) transposed(A&& a){return rotated(std::forward<A>(a));}
 template<class M> decltype(auto) N(M&& m){return m;}
 template<class M> decltype(auto) T(M&& m){return transposed(m);}
 template<class M> decltype(auto) C(M&& m){return conjugated_transposed(m);}
+
+template<class A2D>
+triangular detect_triangular(A2D const& A){
+	if constexpr(not is_hermitized<A2D>()){
+		for(auto i = size(A); i != 0; --i){
+			auto const asum_up = blas::asum(begin(A[i-1])+i, end(A[i-1]));
+			if(asum_up!=asum_up) return triangular::lower;
+			else if(asum_up!=0.) return triangular::upper;
+
+			auto const asum_lo = blas::asum(begin(rotated(A)[i-1])+i, end(rotated(A)[i-1]));
+			if(asum_lo!=asum_lo) return triangular::upper;
+			else if(asum_lo!=0.) return triangular::lower;
+		}
+	}else{
+		return flip(detect_triangular(hermitized(A)));
+	}
+	return triangular::lower;
+}
+
 
 }}
 
