@@ -16,7 +16,10 @@
 namespace boost{
 namespace multi{
 
+
+
 namespace detail{
+
 
 template<typename, typename>
 struct append_to_type_seq{};
@@ -95,6 +98,16 @@ using dimensionality_type = index;
 
 using iextension = index_extension;
 using irange     = index_range;
+
+template<typename T, dimensionality_type D>
+struct initializer_list{
+	using type = std::initializer_list<typename initializer_list<T, D-1>::type>;
+};
+template<typename T>
+struct initializer_list<T, 1>{using type = std::initializer_list<T>;};
+
+template<typename T, dimensionality_type D>
+using initializer_list_t = typename initializer_list<T, D>::type;
 
 template<dimensionality_type D> using index_extensions = typename detail::repeat<index_extension, D>::type;
 //template<dimensionality_type D> using iextensions = index_extensions<D>;

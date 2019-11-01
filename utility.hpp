@@ -75,8 +75,8 @@ template <class T, std::size_t N>
 constexpr auto size(const T(&)[N]) noexcept{return multi::size_type{N};}
 
 template <class T, std::size_t N>
-constexpr std::allocator<typename std::remove_all_extents<T[N]>::type> 
-get_allocator(const T(&)[N]) noexcept{return {};}
+constexpr std::allocator<std::decay_t<typename std::remove_all_extents<T[N]>::type>> 
+get_allocator(T(&)[N]) noexcept{return {};}
 
 template<class T>
 auto has_num_elements_aux(T const& t)->decltype(t.num_elements(), std::true_type {});

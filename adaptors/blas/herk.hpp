@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&clang++ -std=c++14 -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_MULTI_ADAPTORS_BLAS_HERK .DCATCH_CONFIG_MAIN $0.cpp -o $0x \
+(echo '#include"'$0'"'>$0.cpp)&&clang++ -std=c++17 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_HERK .DCATCH_CONFIG_MAIN $0.cpp -o $0x \
 `pkg-config --cflags --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -liomp5` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
@@ -16,43 +16,18 @@
 
 #include "../blas/operations.hpp"
 
+#include<iostream> //debug
 #include<type_traits> // void_t
 
 namespace boost{
 namespace multi{namespace blas{
-
-//enum class trans : char{N='N', C='C'};
-
-//enum class triangular : char{
-//	lower = static_cast<char>(uplo::U),
-//	upper = static_cast<char>(uplo::L),
-//};
-
-//triangular flip(triangular side){
-//	switch(side){
-//		case triangular::lower: return triangular::upper;
-//		case triangular::upper: return triangular::lower;
-//	}
-//}
-
-//enum class complex_operation : char{
-//	hermitian = static_cast<char>(trans::N),
-//	identity  = static_cast<char>(trans::C),
-//};
-
-complex_operation hermitize(complex_operation op){
-	switch(op){
-		case complex_operation::hermitian: return complex_operation::identity;
-		case complex_operation::identity: return complex_operation::hermitian;
-	} __builtin_unreachable();
-}
 
 template<class AA, class BB, class A2D, class C2D, typename = std::enable_if_t< is_complex_array<std::decay_t<C2D>>{}>
 >
 C2D&& herk(triangular c_side, complex_operation a_op, AA alpha, A2D const& a, BB beta, C2D&& c){
 	if(stride(c)!=1){
 		assert( stride(a)!=1 ); // sources and destination are incompatible layout
-		assert( size(c)==(a_op==complex_operation::hermitian?size(*begin(a)):size(a)) );
+	//	assert( size(c)==(a_op==complex_operation::hermitian?size(*begin(a)):size(a)) );
 		herk(
 			static_cast<char>(c_side), static_cast<char>(a_op), size(c), 
 			a_op==complex_operation::hermitian?size(a):size(*begin(a)), 
@@ -68,18 +43,9 @@ C2D&& herk(triangular c_side, complex_operation a_op, AA alpha, A2D const& a, BB
 	return std::forward<C2D>(c);
 }
 
-template<class A>
-constexpr bool is_hermitized(A&& a){
-	using ptr = decltype(base(a));
-	return
-		   std::is_same<std::decay_t<ptr>, boost::multi::blas::detail::conjugater<const std::complex<double>*>>{}
-		or std::is_same<std::decay_t<ptr>, boost::multi::blas::detail::conjugater<      std::complex<double>*>>{}
-	;
-}
-
 template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr>
 C2D&& herk(triangular c_side, AA alpha, A2D const& a, BB beta, C2D&& c){
-	if(is_hermitized(a))
+	if constexpr(is_hermitized<A2D>())
 		herk(c_side, complex_operation::hermitian, alpha, hermitized(a), beta, c);
 	else
 		herk(c_side, complex_operation::identity, alpha, a, beta, std::forward<C2D>(c));
@@ -104,8 +70,21 @@ C2D&& herk(AA alpha, A2D const& a, C2D&& c){
 }
 
 template<class AA, class A2D, class Ret = typename A2D::decay_type>
+#if __cplusplus>=201703L
+#if __has_cpp_attribute(nodiscard)>=201603
+[[nodiscard
+#if __has_cpp_attribute(nodiscard)>=201907
+("result is returned because it second parameter is const")
+#endif
+]]
+#endif
+#endif
 auto herk(AA alpha, A2D const& a){
-	return herk(alpha, a, Ret({size(a), size(a)}, get_allocator(a)));
+	auto s = size(a);
+	Ret ret(typename Ret::extensions_type{s, s}, get_allocator(a));
+	assert( size(ret)==size(*begin(ret)) );
+	herk(alpha, a, ret);
+	return ret;
 }
 
 template<class A2D> auto herk(A2D const& a){return herk(1., a);}
@@ -364,8 +343,10 @@ TEST_CASE("multi::blas::herk complex automatic ordering and symmetrization", "[r
 		using multi::blas::herk;
 		using multi::blas::hermitized;
 		multi::array<complex, 2> c = herk(1., hermitized(a)); // c†=c=a†a
-		assert( c[2][1] == complex(41., +2.) );
-		assert( c[1][2] == complex(41., -2.) );
+
+		REQUIRE( size(hermitized(a))==3 );		
+		REQUIRE( c[2][1] == complex(41., +2.) );
+		REQUIRE( c[1][2] == complex(41., -2.) );
 	}
 	{
 		using multi::blas::herk;
@@ -378,8 +359,8 @@ TEST_CASE("multi::blas::herk complex automatic ordering and symmetrization", "[r
 		using multi::blas::herk;
 		using multi::blas::hermitized;
 		multi::array<complex, 2> c = herk(hermitized(a)); // c†=c=a†a
-		assert( c[2][1] == complex(41., +2.) );
-		assert( c[1][2] == complex(41., -2.) );
+		REQUIRE( c[2][1] == complex(41., +2.) );
+		REQUIRE( c[1][2] == complex(41., -2.) );
 	}
 }
 

@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&clang++ -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_OPERATIONS $0.cpp -o $0x `pkg-config --cflags --libs blas` &&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_OPERATIONS $0.cpp -o $0x `pkg-config --cflags --libs blas` &&$0x&&rm $0x $0.cpp; exit
 #endif
 // Alfredo A. Correa 2019 ©
 
@@ -14,20 +14,120 @@ namespace boost{
 namespace multi{namespace blas{
 
 enum class trans : char{N='N', T='T', C='C'};
-enum class uplo : char{L='L', U='U'};
+enum class uplo  : char{L='L', U='U'};
+
+enum class triangular : char{
+	lower = static_cast<char>(uplo::U),
+	upper = static_cast<char>(uplo::L)
+};
+
+triangular flip(triangular side){
+	switch(side){
+		case triangular::lower: return triangular::upper;
+		case triangular::upper: return triangular::lower;
+	} __builtin_unreachable();
+}
+
+enum class real_operation : char{
+	transposition = static_cast<char>(trans::N),
+	identity      = static_cast<char>(trans::T),
+};
+
+real_operation transpose(real_operation op){
+	switch(op){
+		case real_operation::transposition: return real_operation::identity;
+		case real_operation::identity: return real_operation::transposition;
+	} __builtin_unreachable();
+}
+
+enum class complex_operation : char{
+	hermitian = static_cast<char>(trans::N),
+	identity  = static_cast<char>(trans::C),
+};
+complex_operation hermitize(complex_operation op){
+	switch(op){
+		case complex_operation::hermitian: return complex_operation::identity;
+		case complex_operation::identity: return complex_operation::hermitian;
+	} __builtin_unreachable();
+}
+
+class operation{
+	enum class impl_t : char{
+		identity,// = static_cast<char>(trans::N), 
+		transposition,// = static_cast<char>(real_operation::transposition), 
+		hermitian// = static_cast<char>(complex_operation::hermitian)
+	};
+	impl_t impl_;
+public:
+	operation(complex_operation cop) : impl_{[=]{switch(cop){
+		case complex_operation::identity  : return impl_t::identity;
+		case complex_operation::hermitian : return impl_t::hermitian;
+	} __builtin_unreachable();}()}{}
+	operation(real_operation rop) : impl_{[=]{switch(rop){
+		case real_operation::identity      : return impl_t::identity;
+		case real_operation::transposition : return impl_t::transposition;
+	} __builtin_unreachable();}()}{}
+	constexpr operation(impl_t impl) : impl_{impl}{}
+	constexpr operator complex_operation() const{switch(impl_){
+		case impl_t::identity      : return complex_operation::identity; 
+		case impl_t::transposition : assert(0);
+		case impl_t::hermitian     : return complex_operation::hermitian;
+	} __builtin_unreachable();}
+	constexpr operator real_operation() const{switch(impl_){
+		case impl_t::identity      : return real_operation::identity;
+		case impl_t::transposition : return real_operation::transposition;
+		case impl_t::hermitian     : assert(0); // default:return{};
+	} __builtin_unreachable();}
+	constexpr operator char() const{return static_cast<char>(impl_);}
+	friend bool operator==(operation const& o1, operation const& o2){return o1.impl_==o2.impl_;}
+	friend bool operator==(complex_operation const& o1, operation const& o2){return operation(o1)==o2;}
+	friend bool operator==(operation const& o1, complex_operation const& o2){return o1==operation(o2);}
+	static operation const identity; //= impl_t::identity;
+	static operation const hermitian; //= impl_t::hermitian;
+	static operation const transposition; //= impl_t::transposition;
+};
+
+/*inline*/ operation const operation::identity{operation::impl_t::identity};
+/*inline*/ operation const operation::hermitian{operation::impl_t::hermitian};
+/*inline*/ operation const operation::transposition{operation::impl_t::transposition};
 
 template<class M> decltype(auto) transposed(M const& m){return rotated(m);}
 template<class M> decltype(auto) transposed(M&       m){return rotated(m);}
 
-template<class A, typename D=std::decay_t<A>, typename E=typename D::element, class C=detail::conjugater<typename D::element_ptr>>
+template<class A>
+constexpr bool is_conjugated(){//A&& a){
+	using ptr = typename std::decay_t<A>::element_ptr;//decltype(base(a));
+	return
+		   std::is_same<std::decay_t<ptr>, boost::multi::blas::detail::conjugater<const std::complex<double>*>>{}
+		or std::is_same<std::decay_t<ptr>, boost::multi::blas::detail::conjugater<      std::complex<double>*>>{}
+	;
+}
+
+template<class A, typename D=std::decay_t<A>, typename E=typename D::element, class C=detail::conjugater<typename D::element_ptr>, typename = std::enable_if_t<not is_conjugated<A>()> >
 decltype(auto) conjugated(A&& a){
 	return multi::static_array_cast<E, C>(std::forward<A>(a));
 }
+
+template<class A, typename D=std::decay_t<A>, typename E=typename D::element, class C=typename D::element_ptr::underlying_type, typename = std::enable_if_t<is_conjugated<A>()> >
+decltype(auto) conjugated(A&& a, void* = 0){
+	return multi::static_array_cast<E, C>(std::forward<A>(a));
+}
+
 
 template<class A, typename D=std::decay_t<A>, typename E=typename D::element>
 decltype(auto) conjugated_transposed(A&& a){
 	return transposed(conjugated(a));
 }
+
+template<class A>
+constexpr bool is_hermitized(){//A&& a){
+	using ptr = typename std::decay_t<A>::element_ptr;//decltype(base(a));
+	return
+		   std::is_same<std::decay_t<ptr>, boost::multi::blas::detail::conjugater<const std::complex<double>*>>{}
+		or std::is_same<std::decay_t<ptr>, boost::multi::blas::detail::conjugater<      std::complex<double>*>>{}
+	;
+}
+
 
 template<class A>
 decltype(auto) identity(A&& a){return std::forward<A>(a);}
@@ -38,51 +138,9 @@ decltype(auto) hermitized(A&& a){return conjugated_transposed(std::forward<A>(a)
 template<class A>
 decltype(auto) transposed(A&& a){return rotated(std::forward<A>(a));}
 
-#if 0
-template<class ElementPtr = void*>
-struct conj_proxy_impl : 
-	std::iterator_traits<ElementPtr>
-{
-	ElementPtr p_;
-	using value_type = decltype(conj(std::declval<typename std::iterator_traits<ElementPtr>::value_type>()));
-	using reference = value_type;
-	explicit conj_proxy_impl(ElementPtr p) : p_{p}{}
-	explicit operator ElementPtr() const{return p_;}
-	decltype(auto) operator*() const{return conj(*p_);}
-	auto operator+(difference_type d) const{return conj_proxy_impl{p_ + d};}
-	auto operator++() const{return conj_proxy_impl{++p_};}
-	decltype(auto) operator+=(difference_type d){p_+=d; return *this;}
-	bool operator==(conj_proxy_impl const& other) const{return p_ == other.p_;}
-	bool operator!=(conj_proxy_impl const& other) const{return p_ != other.p_;}
-	difference_type operator-(conj_proxy_impl const& other) const{return p_ - other.p_;}
-	ElementPtr const& underlying() const{return p_;}
-	std::allocator<value_type> default_allocator() const{return {};}
-};
-
-template<class T, typename = decltype(conj(*std::declval<T>()))>
-std::true_type conj_detect(T t);
-std::false_type conj_detect(...);
-
-template<class T = void*> struct conj_proxy_aux{using type = std::conditional_t<decltype(conj_detect(std::declval<T const>())){}, conj_proxy_impl<T>, T>;};
-template<class T> struct conj_proxy_aux<conj_proxy_impl<T>>{using type = T;};
-template<> struct conj_proxy_aux<void*>{using type = conj_proxy_impl<void*>;};
-
-template<class... Ts> using conj_proxy_t = typename conj_proxy_aux<Ts...>::type;
-
-template<class M> decltype(auto) conjugated(M const& m){
-//	using multi::static_array_cast;
-	return multi::static_array_cast<typename M::element, conj_proxy_t<typename M::element_ptr> >(m);
-}
-
-template<class M> 
-auto conjugated_transposed(M const& m){return conjugated(transposed(m));}
-#endif
-
 template<class M> decltype(auto) N(M&& m){return m;}
 template<class M> decltype(auto) T(M&& m){return transposed(m);}
 template<class M> decltype(auto) C(M&& m){return conjugated_transposed(m);}
-//template<class M> auto H(M const& m){return C(m);}
-//template<class M> auto TH(M const& m){return conjugated(m);}
 
 }}
 
@@ -122,10 +180,10 @@ namespace multi = boost::multi;
 using complex = std::complex<double>;
 auto const I = complex(0., 1.);
 
-//template<class... T> void what(T&&...);
-
 //boost::multi::array<std::complex<double>, 2l, std::allocator<std::complex<double> > >&, 
 //boost::multi::array<std::complex<double>, 2l, std::allocator<std::complex<double>*> >&)
+
+template<class T> void what();
 
 int main(){
 
@@ -144,6 +202,10 @@ int main(){
 	assert( Aconj[1][2] == conj(A[1][2]) );
 	assert( Aconjd == Aconj );
 
+	auto&& Aconjdconjd = multi::blas::conjugated(Aconjd);
+	assert( Aconjdconjd[1][2] == A[1][2] );
+	assert( &Aconjdconjd[1][2] == &A[1][2] );
+
 	auto&& Atranspd = multi::blas::transposed(A);
 	assert( Atranspd[1][2] == A[2][1] );
 	multi::array<complex, 2> Atransp = multi::blas::transposed(A);
@@ -152,10 +214,12 @@ int main(){
 
 	auto&& Aconjdtranspd = multi::blas::conjugated_transposed(A); (void)Aconjdtranspd;
 	assert( Aconjdtranspd[1][2] == conj(A[2][1]) );
-	multi::array<complex, 2> Aconjtransp = multi::blas::conjugated_transposed(A);
+	auto Aconjtransp = multi::blas::conjugated_transposed(A).decay();
+	
 	assert( Aconjtransp[1][2] == conj(A[2][1]) );
 	assert( Aconjdtranspd == Aconjtransp );
 
+	
 {
 	multi::array<complex, 2> const A = {
 		{1. - 3.*I, 6.  + 2.*I},

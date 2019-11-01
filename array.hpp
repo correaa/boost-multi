@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&& c++ -std=c++17 -Wall -Wextra `#-Wfatal-errors` -D_TEST_BOOST_MULTI_ARRAY $0.cpp -o $0x && $0x&&rm $0x $0.cpp;exit
+(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++17 -Wall -Wextra `#-Wfatal-errors` -D_TEST_BOOST_MULTI_ARRAY $0.cpp -o $0x && $0x&&rm $0x $0.cpp;exit
 #endif
 //  (C) Copyright Alfredo A. Correa 2018.
 #ifndef BOOST_MULTI_ARRAY_HPP 
@@ -133,8 +133,8 @@ public:
 	//	assert(0);
 		using std::fill; fill(this->begin(), this->end(), v);
 	}
-	template<class Allocator, typename = std::enable_if_t<std::is_same<Allocator, allocator_type>{}> >
-	static_array(typename static_array::extensions_type const& x, Allocator const& a) //3
+//	template<class Allocator, typename = std::enable_if_t<std::is_same<Allocator, allocator_type>{}> >
+	static_array(typename static_array::extensions_type const& x, allocator_type const& a) //3
 	:	allocator_type{a}, ref{allocate(typename static_array::layout_t{x}.num_elements()), x}{
 	//	assert(0);
 	//	uninitialized_value_construct();
@@ -159,8 +159,8 @@ public:
 		uninitialized_copy(alloc(), begin(o), end(o), ref::begin());
 	}
 #endif
-	template<class TT, dimensionality_type DD, class... Args>
-	static_array(multi::basic_array<TT, DD, Args...> const& other, allocator_type const& a = {})
+	template<class TT, class... Args>
+	static_array(multi::basic_array<TT, D, Args...> const& other, allocator_type const& a = {})
 		: allocator_type{a}, ref(allocate(other.num_elements()), extensions(other))
 	{
 		using std::copy; copy(other.begin(), other.end(), this->begin());
@@ -206,12 +206,13 @@ public:
 		assert(0);
 		uninitialized_copy_(o.data());
 	}
-#if (not defined(__INTEL_COMPILER)) or (__GNUC >= 6)
+//#if (not defined(__INTEL_COMPILER)) or (__GNUC >= 6)
 	static_array(
-		std::initializer_list<typename static_array::value_type> il, 
+	//	multi::initializer_list_t<typename static_array::element, D> mil,
+		std::initializer_list<typename static_array::value_type> mil, 
 		typename static_array::allocator_type const& a={}
 	) 
-	: static_array(il.begin(), il.end(), a)
+	: static_array(mil.begin(), mil.end(), a)
 	{}
 #if 0
 	template<class TT, std::size_t N>
@@ -232,7 +233,7 @@ public:
 //	array(std::sinitializer_list<int> il, allocator_type const& a={}) 
 //	:	array(il.size()!=D?il.begin():throw std::runtime_error{"warning"}, il.end(), a){}
 //	array(std::tuple<int>){assert(0);}
-#endif
+//#endif
 	template<class It> static auto distance(It a, It b){using std::distance; return distance(a, b);}
 protected:
 	void deallocate(){
@@ -311,15 +312,15 @@ public:
 
 template<class T, dimensionality_type D, class Alloc>
 struct
-#if __cplusplus>=201703L
-#if __has_cpp_attribute(nodiscard)>=201603
-[[nodiscard
-#if __has_cpp_attribute(nodiscard)>=201907
-("result is returned because it was not passed as out parameter due to constness")
-#endif
-]]
-#endif
-#endif
+//#if __cplusplus>=201703L
+//#if __has_cpp_attribute(nodiscard)>=201603
+//[[nodiscard
+//#if __has_cpp_attribute(nodiscard)>=201907
+//("result is returned because it was not passed as out parameter due to constness")
+//#endif
+//]]
+//#endif
+//#endif
 array : static_array<T, D, Alloc>,
 	boost::multi::random_iterable<array<T, D, Alloc> >
 {
@@ -334,8 +335,15 @@ public:
 	using static_::ref::operator<;
 	array() = default;
 	array(array const&) = default;
-	template<class O, typename = std::enable_if_t<std::is_base_of<array, O>{}> > 
+	template<class O, typename = std::enable_if_t<not std::is_base_of<array, O>{}> > 
 	array(O const& o) : static_(o){}
+	array(
+	//	multi::initializer_list_t<typename static_array::element, D> mil,
+		std::initializer_list<typename array::value_type> mil, 
+		typename array::allocator_type const& a={}
+	) 
+	: static_(mil.begin(), mil.end(), a)
+	{}
 //	array() noexcept(noexcept(static_::allocator_type())) : static_{}{} // 1a //allocator_type{}, ref{}{}      //1a
 //	array(typename array::allocator_type a) : static_(a){}                  //1b
 //#if (not defined(__INTEL_COMPILER)) or (__GNUC >= 6)

@@ -292,9 +292,14 @@ public:
 	auto get_allocator() const{return default_allocator_of(this->base());}
 	friend auto get_allocator(basic_array const& self){return self.get_allocator();}
 	using decay_type = array<typename types::element, D, decltype(default_allocator_of(std::declval<ElementPtr>()))>;
-	array<typename types::element, D, std::allocator<typename types::element>>//typename pointer_traits<typename types::element_ptr>::default_allocator_type>
+//	array<typename types::element, D, std::allocator<typename types::element>>//typename pointer_traits<typename types::element_ptr>::default_allocator_type>
 //	decay_type 
-	decay() const{return {*this, get_allocator()};}
+	auto decay() const{
+		decay_type ret = *this;
+//		array<typename types::element, D, decltype(default_allocator_of(std::declval<ElementPtr>()))>
+//		return {*this};
+		return ret;
+	}
 	friend auto decay(basic_array const& self){return self.decay();}
 	HD typename types::reference operator[](index i) const{
 		assert( this->extension().contains(i) );
@@ -613,8 +618,10 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout> :
 	auto get_allocator() const{return default_allocator_of(basic_array::base());}
 	friend auto get_allocator(basic_array const& self){return self.get_allocator();}
 	using decay_type = array<typename types::element, dimensionality_type{1}, decltype(default_allocator_of(std::declval<ElementPtr>()))>;
-	decay_type decay() const{return {*this, get_allocator()};}
-	friend decay_type decay(basic_array const& self){return self.decay();}
+	decay_type decay() const{
+		decay_type ret{*this}; return ret;
+	}
+//	friend decay_type decay(basic_array const& self){return self.decay();}
 protected:
 	template<class A>
 	void intersection_assign_(A&& other) const{

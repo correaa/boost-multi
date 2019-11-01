@@ -10,6 +10,7 @@
 #define MULTI_ADAPTORS_BLAS_NUMERIC_HPP
 
 #include "../../array_ref.hpp"
+#include<complex>
 
 //#include<functional> // negate
 //#include<complex> // conj
@@ -93,8 +94,9 @@ public:
 	}
 	auto operator-(involuter const& other) const{return it_-other.it_;}
 	explicit operator bool() const{return it_;}
-	friend It underlying(involuter const& self){return self.it_;}
-	operator It() const{return underlying(*this);}
+	using underlying_type = It;
+	friend underlying_type underlying(involuter const& self){return self.it_;}
+	explicit operator It() const{return underlying(*this);}
 };
 
 template<class It2, class F>
@@ -116,7 +118,8 @@ public:
 	}
 	auto operator-(involuter const& other) const{return it_-other.it_;}
 	explicit operator bool() const{return it_;}
-	friend It underlying(involuter const& self){return self.it_;}
+	using underlying_type = It;
+	friend underlying_type underlying(involuter const& self){return self.it_;}
 	operator It() const{return underlying(*this);}
 	operator It2() const{return underlying(underlying(*this));}
 };
@@ -129,6 +132,7 @@ struct conjugate{
 	template<class T>
 	auto operator()(T const& a) const{
 	//	using std::conj; /*for doubles?*/ 
+		using std::conj;
 		return conj(a);
 	}
 };
