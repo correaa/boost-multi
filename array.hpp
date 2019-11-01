@@ -122,9 +122,9 @@ public:
 	:	allocator_type{}, ref(allocate(typename static_array::layout_t{x}.num_elements()), x){
 		uninitialized_fill(e);
 	}
-	explicit static_array(typename ref::size_type n, typename static_array::allocator_type const& a = {})
-	: 	static_array(typename static_array::index_extension(n), a){
-	}
+//	explicit static_array(typename ref::size_type n, typename static_array::allocator_type const& a = {})
+//	: 	static_array(typename static_array::index_extension(n), a){
+//	}
 	explicit static_array(typename static_array::index n, typename static_array::value_type const& v, typename static_array::allocator_type const& a = {})
 	: 	static_array(typename static_array::index_extension(n), v, a){}
 	template<class ValueType, typename = std::enable_if_t<std::is_same<ValueType, typename static_array::value_type>{}>> 
@@ -140,10 +140,10 @@ public:
 	//	uninitialized_value_construct();
 	}
 	static_array(typename static_array::extensions_type const& x) //3
-	: static_array(x, allocator_type{}){}
-//	:	allocator_type{}, ref{allocate(typename static_array::layout_t{x}.num_elements()), x}{
+//	: static_array(x, allocator_type{}){}
+	:	allocator_type{}, ref{allocate(typename static_array::layout_t{x}.num_elements()), x}{
 //		uninitialized_value_construct();
-//	}
+	}
 #if 0
 	template<
 		class Array, 
@@ -335,8 +335,8 @@ public:
 	using static_::ref::operator<;
 	array() = default;
 	array(array const&) = default;
-	template<class O, typename = std::enable_if_t<not std::is_base_of<array, O>{}> > 
-	array(O const& o) : static_(o){}
+//	template<class O, typename = std::enable_if_t<not std::is_base_of<array, O>{}> > 
+//	array(O const& o) : static_(o){}
 	array(
 	//	multi::initializer_list_t<typename static_array::element, D> mil,
 		std::initializer_list<typename array::value_type> mil, 

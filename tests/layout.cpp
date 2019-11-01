@@ -1,7 +1,7 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 -std=c++14 -Wall -Wextra -Wpedantic -Wfatal-errors $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
+c++ -Wall -Wextra -Wpedantic -Wfatal-errors $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
 #endif
-//  (C) Copyright Alfredo A. Correa 2018-2019
+// © Alfredo A. Correa 2018-2019
 
 #include "../array.hpp"
 #include "../utility.hpp"

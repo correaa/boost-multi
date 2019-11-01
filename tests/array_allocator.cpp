@@ -53,8 +53,9 @@ BOOST_AUTO_TEST_CASE(array_allocators){
 	BOOST_REQUIRE( size(AA[9][19]) == 9 + 19 );
 	BOOST_REQUIRE( AA[9][19][1][1][1] == 99. );
 }
+return;
 {
-	multi::array<multi::array<double, 3>, 2> AA({10, 20}, {});
+	multi::array<multi::array<double, 3>, 2> AA({10, 20}, multi::array<double, 3>{});
 	BOOST_REQUIRE( size(AA[9][19]) == 0 );
 	for(int i = 0; i != 10; ++i)
 		for(int j = 0; j != 20; ++j)
