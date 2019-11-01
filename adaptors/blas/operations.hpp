@@ -1,14 +1,15 @@
 #ifdef COMPILATION_INSTRUCTIONS
 (echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_OPERATIONS $0.cpp -o $0x `pkg-config --cflags --libs blas` &&$0x&&rm $0x $0.cpp; exit
 #endif
-// Alfredo A. Correa 2019 ©
+// © Alfredo A. Correa 2019
 
 #ifndef MULTI_ADAPTORS_BLAS_OPERATIONS_HPP
 #define MULTI_ADAPTORS_BLAS_OPERATIONS_HPP
 
-#include "../blas/core.hpp"
+#include    "../blas/core.hpp"
+#include    "../blas/numeric.hpp"
+
 #include "../../array_ref.hpp"
-#include "../blas/numeric.hpp"
 
 namespace boost{
 namespace multi{namespace blas{
@@ -180,9 +181,6 @@ namespace multi = boost::multi;
 using complex = std::complex<double>;
 auto const I = complex(0., 1.);
 
-//boost::multi::array<std::complex<double>, 2l, std::allocator<std::complex<double> > >&, 
-//boost::multi::array<std::complex<double>, 2l, std::allocator<std::complex<double>*> >&)
-
 template<class T> void what();
 
 int main(){
@@ -246,36 +244,6 @@ int main(){
 
 }
 	
-
-//	assert( A[1]
-#if 0
-	{
-		multi::array<complex, 2> Aconj_copy = multi::blas::conjugated(A);
-		assert( Aconj_copy[0][1] == std::conj(A[0][1]) );
-	//	what(multi::blas::conjugated(A));
-
-		auto Aconj_copy2 = multi::blas::conjugated(A).decay();
-	//	what(Aconj_copy, Aconj_copy2);
-//		static_assert(std::is_same<decltype(Aconj_copy), decltype(Aconj_copy2)>{}, "!");
-
-	//	what(multi::pointer_traits<std::complex<double>>::default_allocator_type{});
-	//	what(multi::pointer_traits<boost::multi::blas::conj_proxy_impl<std::complex<double>*>>::default_allocator_type{});
-	}
-	auto const& Aconj = multi::blas::conjugated(A);
-	assert( Aconj[0][1] == std::conj(A[0][1]) );
-	auto const& AC1 = multi::blas::conjugated(multi::blas::transposed(A));
-	assert( AC1[1][0] == std::conj(A[0][1]) );
-	
-	auto const& AC2 = multi::blas::C(A);
-	assert( AC2[2][1] == AC1[2][1] );
-	{
-		using multi::blas::C;
-		assert( C(C(A))[1][3] == A[1][3] );
-	}
-	
-	multi::array<double, 2> a = {{1.,2.},{3.,4.}};
-//	assert( rotated(multi::blas::C(a)) == a );
-#endif
 }
 
 #endif
