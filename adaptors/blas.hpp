@@ -1,16 +1,10 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&clang++ -Ofast -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS $0.cpp -o $0x -lblas &&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++17 -Ofast -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS $0.cpp -o $0x .DCATCH_CONFIG_MAIN `pkg-config --cflags --libs blas` -lboost_timer&&$0x&&rm $0x $0.cpp; exit
 #endif
-// Copyright Alfredo A. Correa 2018
+// © Alfredo A. Correa 2018
 
 #ifndef MULTI_ADAPTORS_BLAS_HPP
 #define MULTI_ADAPTORS_BLAS_HPP
-
-#include<iostream>
-//#include <cblas/cblas.h>
-
-//#include "../utility.hpp"
-//#include "../array.hpp" // allocating multi::arrays for output
 
 #include "../adaptors/blas/asum.hpp"
 #include "../adaptors/blas/axpy.hpp"
@@ -27,34 +21,63 @@
 
 #if _TEST_MULTI_ADAPTORS_BLAS
 
+#include<catch.hpp>
+
 #include "../array.hpp"
 #include "../utility.hpp"
 
-#include<complex>
-#include<cassert>
+#include <boost/timer/timer.hpp>
+
 #include<iostream>
-#include<numeric>
-#include<algorithm>
+#include<complex>
+#include<numeric> // iota
+#include<algorithm> // transform
 
-using std::cout;
 namespace multi = boost::multi;
+using complex = std::complex<double>;
+constexpr complex const I{0, 1};
 
-int main(){
-	using complex = std::complex<double>;
-	constexpr complex const I{0, 1};
+TEST_CASE("multi::blas::herk complex", "[report]"){
+
 	using multi::blas::herk;
 	{
-		multi::array<complex, 2> const Aaux = {
+		multi::array<complex, 2> const A = {
 			{1. + 3.*I, 9. + 1.*I}, 
 			{3. - 2.*I, 7. - 8.*I}, 
 			{4. + 1.*I, 1. - 3.*I}
 		};
-		auto&& A = rotated(Aaux);
 		multi::array<complex, 2> C({3, 3}, 9999.);
-		herk(A, C); // herk(A, C); // C^H = C =  A^H*A = (A^H*A)^H, information in C lower triangular
-		assert( C[2][0] == 13. - 39.*I );
-		assert( C[0][2] == 9999. );
+		herk(1., A, C); // herk(A, C); // C†=C=AA†=(A†A)†
+		REQUIRE( C[1][2] == complex(41., 2.) );
+		REQUIRE( C[2][1] == conj(C[1][2]) );
 	}
+}
+
+using T = std::complex<double>;
+TEST_CASE("multi::blas::asum complex", "[bench]"){
+	multi::array<T, 1> arr(1000000000, 0.);
+//	std::iota(begin(arr), end(arr), -700.);
+//	std::transform(cbegin(arr), cend(arr), begin(arr), [](auto&& a){return sqrt(a);});
+	{
+		boost::timer::auto_cpu_timer t;
+		using multi::blas::asum;
+		assert( asum(arr) == 0 );
+	//	std::cout << asum(arr) << std::endl;
+	}
+}
+
+TEST_CASE("multi::blas::nrm2 complex", "[bench]"){
+	multi::array<T, 1> arr(1000000000, 0.);
+//	std::iota(begin(arr), end(arr), -700.);
+//	std::transform(cbegin(arr), cend(arr), begin(arr), [](auto&& a){return sqrt(a);});
+	{
+		boost::timer::auto_cpu_timer t;
+		using multi::blas::nrm2;
+		assert( nrm2(arr) == 0 );
+	//	std::cout << nrm2(arr) << std::endl;
+	}
+}
+
 #if 0
 	multi::array<double, 2> const CA = {
 		{1.,  2.,  3.,  4.},
@@ -294,7 +317,7 @@ int main(){
 	}
 //	assert(0);
 #endif
-}
+
 #if 0
 
 namespace boost{
