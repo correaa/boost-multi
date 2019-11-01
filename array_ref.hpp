@@ -618,10 +618,8 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout> :
 	auto get_allocator() const{return default_allocator_of(basic_array::base());}
 	friend auto get_allocator(basic_array const& self){return self.get_allocator();}
 	using decay_type = array<typename types::element, dimensionality_type{1}, decltype(default_allocator_of(std::declval<ElementPtr>()))>;
-	decay_type decay() const{
-		decay_type ret{*this}; return ret;
-	}
-//	friend decay_type decay(basic_array const& self){return self.decay();}
+	decay_type decay() const{return {*this};} // decay_type ret{*this}; return ret;}
+	friend decay_type decay(basic_array const& self){return self.decay();}
 protected:
 	template<class A>
 	void intersection_assign_(A&& other) const{
