@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&clang++ -std=c++17 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_HERK .DCATCH_CONFIG_MAIN $0.cpp -o $0x \
+(echo '#include"'$0'"'>$0.cpp)&&nvcc --compiler-options "-std=c++17 -Wall -Wextra -Wpedantic" -D_TEST_MULTI_ADAPTORS_BLAS_HERK .DCATCH_CONFIG_MAIN.o $0.cpp -o $0x \
 `pkg-config --cflags --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -liomp5` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
@@ -59,12 +59,16 @@ C2D&& herk(triangular c_side, AA alpha, A2D const& a, C2D&& c){
 
 template<typename AA, class A2D, class C2D>
 C2D&& herk(AA alpha, A2D const& a, C2D&& c){
-	herk(triangular::lower, alpha, a, c);
-	using multi::rotated;
-	using multi::size;
-	for(typename std::decay_t<C2D>::difference_type i = 0; i != size(c); ++i){
-		blas::copy(begin(rotated(c)[i])+i+1, end(rotated(c)[i]), begin(c[i])+i+1);
-		blas::scal(-1., begin(imag(c[i]))+i+1, end(imag(c[i])));
+	if constexpr(is_complex_array<std::decay_t<C2D>>{}){
+		herk(triangular::lower, alpha, a, c);
+		using multi::rotated;
+		using multi::size;
+		for(typename std::decay_t<C2D>::difference_type i = 0; i != size(c); ++i){
+			blas::copy(begin(rotated(c)[i])+i+1, end(rotated(c)[i]), begin(c[i])+i+1);
+			blas::scal(-1., begin(imag(c[i]))+i+1, end(imag(c[i])));
+		}
+	}else{
+		syrk(alpha, a, c);
 	}
 	return std::forward<C2D>(c);
 }
@@ -380,6 +384,11 @@ TEST_CASE("multi::blas::herk real case", "[report]"){
 		static_assert( not boost::multi::blas::is_complex_array<multi::array<double, 2>>{} , "!");
 		multi::array<double, 2> c({2, 2}, 9999.);
 		herk(triangular::lower, operation::identity, 1., a, 0., c);//c†=c=aa†=(aa†)†, `c` in lower triangular
+	}
+	{
+		static_assert( not boost::multi::blas::is_complex_array<multi::array<double, 2>>{} , "!");
+		using multi::blas::herk;
+		multi::array<double, 2> c = herk(a);//c†=c=aa†=(aa†)†, `c` in lower triangular
 	}
 }
 
