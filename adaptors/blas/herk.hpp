@@ -390,6 +390,16 @@ TEST_CASE("multi::blas::herk real case", "[report]"){
 		using multi::blas::herk;
 		multi::array<double, 2> c = herk(a);//c†=c=aa†=(aa†)†, `c` in lower triangular
 	}
+	{
+		static_assert( not boost::multi::blas::is_complex_array<multi::array<double, 2>>{} , "!");
+		using multi::blas::herk;
+		using multi::blas::hermitized;
+		auto&& aa = hermitized(a);
+		REQUIRE( aa == multi::blas::transposed(a) );
+		static_assert( not boost::multi::blas::is_complex_array<std::decay_t<decltype(aa)>>{} , "!");
+
+		multi::array<double, 2> c = herk(hermitized(a));//c†=c=aa†=(aa†)†, `c` in lower triangular
+	}
 }
 
 TEST_CASE("multi::blas::herk complex timing", "[report]"){

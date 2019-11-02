@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++14 `#--compiler-options` -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_MULTI_ADAPTORS_BLAS_SYRK .DCATCH_CONFIG_MAIN.o $0.cpp -o $0x \
+(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++17 `#--compiler-options` -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_MULTI_ADAPTORS_BLAS_SYRK .DCATCH_CONFIG_MAIN.o $0.cpp -o $0x \
 `pkg-config --cflags --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -liomp5` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
@@ -17,12 +17,6 @@
 
 namespace boost{
 namespace multi{namespace blas{
-
-template<class T, typename = decltype(imag(std::declval<T>()[0])[0])>
-std::true_type is_complex_array_aux(T&&);
-std::false_type is_complex_array_aux(...);
-
-template <typename T> struct is_complex_array: decltype(is_complex_array_aux(std::declval<T>())){};
 
 template<typename AA, typename BB, class A2D, class C2D>
 C2D&& syrk(triangular c_side, real_operation a_op, AA alpha, A2D const& a, BB beta, C2D&& c){
@@ -67,61 +61,16 @@ C2D&& syrk(AA alpha, A2D const& a, C2D&& c){
 
 template<typename AA, class A2D, class Ret = typename A2D::decay_type>
 auto syrk(AA alpha, A2D const& a){
-	Ret ret(typename Ret::extensions_type{size(a), size(a)}, get_allocator(a));
-	syrk(alpha, a, ret);
-	return ret;
+	return syrk(alpha, a, Ret({size(a), size(a)}, get_allocator(a)));
 }
 
 template<class A2D> auto syrk(A2D const& A){return syrk(1., A);}
 
-#if 0
-template<class UL, class Op, typename ScalarA, typename ScalarB, class A2D, class C2D>
-C2D&& syrk(UL uplo, Op op, ScalarA alpha, A2D const& A, ScalarB beta, C2D&& C){
-	assert(stride(*begin(A))==1); assert(stride(*begin(C))==1);
-	switch(op){
-		case 'T': assert(size(A) == size(C));
-			syrk(uplo, op, size(C), size(*begin(A)), alpha, base(A), stride(A), beta, base(C), stride(C)); break;
-		case 'N': assert(size(*begin(A))==size(C));
-			syrk(uplo, op, size(C), size(A), alpha, base(A), stride(A), beta, base(C), stride(C)); break;
-		default: assert(0);
-	}
-	return std::forward<C2D>(C);
-}
-#endif
-
-#if 0
-template<class UpLo, class A2D, class C2D, typename ScalarA, typename ScalarB>
-C2D&& syrk(UpLo ul, ScalarA alpha, A2D const& A, ScalarB beta, C2D&& C){
-	if(stride(A)==1){
-		if(stride(C)==1) syrk(ul==U?L:U, T, alpha, rotated(A), beta, rotated(std::forward<C2D>(C)));
-		else             syrk(ul       , T, alpha, rotated(A), beta,        (std::forward<C2D>(C)));
-	}else{
-		if(stride(C)==1) syrk(ul==U?L:U, N, alpha,        (A), beta, rotated(std::forward<C2D>(C)) );
-		else             syrk(ul       , N, alpha,        (A), beta,        (std::forward<C2D>(C)));
-	}
-	return std::forward<C2D>(C);
-}
-
-template<class UpLo, typename ScalarA, class A2D, class C2D>
-C2D&& syrk(UpLo ul, ScalarA alpha, A2D const& A, C2D&& C){
-	return syrk(ul, alpha, A, 0., std::forward<C2D>(C));
-}
-
-template<typename AA, class A2D, class C2D>
-C2D&& syrk(AA a, A2D const& A, C2D&& C){
-	if(stride(C)==1) syrk(L, a, A, rotated(std::forward<C2D>(C)));
-	else             syrk(U, a, A,         std::forward<C2D>(C) );
-	for(typename std::decay_t<C2D>::difference_type i = 0; i != size(C); ++i)
-		blas::copy(begin(rotated(C)[i])+i+1, end(rotated(C)[i]), begin(C[i])+i+1);
-	return std::forward<C2D>(C);
-}
-
-template<class A2D, class C2D>
-C2D&& syrk(A2D const& A, C2D&& C){return syrk(1., A, std::forward<C2D>(C));}
-
-#endif
-
 }}}
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 #if _TEST_MULTI_ADAPTORS_BLAS_SYRK
 
@@ -396,12 +345,9 @@ TEST_CASE("multi::blas::syrk automatic symmetrization", "[report]"){
 		using multi::blas::transposed;
 		using multi::blas::syrk;
 		multi::array<double, 2> c = syrk(transposed(a)); // c⊤=c=a⊤a=(a⊤a)⊤
-		print(c) << "cacaca " << std::endl;
-	//	REQUIRE( c[2][1] == 19. );
-	//	REQUIRE( c[1][2] == 19. );
+		REQUIRE( c[2][1] == 19. );
+		REQUIRE( c[1][2] == 19. );
 	}
-	return;
-
 #if 0
 	{
 		{

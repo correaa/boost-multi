@@ -66,7 +66,7 @@ public:
 	friend auto operator==(DecayType&& other, Involuted const& self)
 	->decltype(other == self.operator decay_type()){
 		return other == self.operator decay_type();}
-
+	auto imag() const{return static_cast<decay_type>(*this).imag();}
 	template<class Any> friend auto operator<<(Any&& a, involuted const& self)->decltype(a << std::declval<decay_type>()){return a << self.operator decay_type();}
 };
 
