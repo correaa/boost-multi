@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&nvcc --compiler-options "-std=c++17 -Wall -Wextra -Wpedantic" -D_TEST_MULTI_ADAPTORS_BLAS_HERK .DCATCH_CONFIG_MAIN.o $0.cpp -o $0x \
+(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_HERK .DCATCH_CONFIG_MAIN.o $0.cpp -o $0x \
 `pkg-config --cflags --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -liomp5` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
@@ -44,11 +44,25 @@ C2D&& herk(triangular c_side, complex_operation a_op, AA alpha, A2D const& a, BB
 }
 
 template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr>
+void herk_aux(triangular c_side, AA alpha, A2D const& a, BB beta, C2D&& c, std::true_type){
+	herk(c_side, complex_operation::hermitian, alpha, hermitized(a), beta, c);
+}
+
+template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr>
+void herk_aux(triangular c_side, AA alpha, A2D const& a, BB beta, C2D&& c, std::false_type){
+	herk(c_side, complex_operation::identity, alpha, a, beta, std::forward<C2D>(c));
+}
+
+template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr>
 C2D&& herk(triangular c_side, AA alpha, A2D const& a, BB beta, C2D&& c){
+#if __cpp_if_constexpr>=201606
 	if constexpr(is_hermitized<A2D>())
 		herk(c_side, complex_operation::hermitian, alpha, hermitized(a), beta, c);
 	else
 		herk(c_side, complex_operation::identity, alpha, a, beta, std::forward<C2D>(c));
+#else
+	herk_aux(c_side, alpha, a, beta, std::forward<C2D>(c), std::integral_constant<bool, is_hermitized<A2D>()>{});
+#endif
 	return std::forward<C2D>(c);
 }
 
@@ -58,7 +72,25 @@ C2D&& herk(triangular c_side, AA alpha, A2D const& a, C2D&& c){
 }
 
 template<typename AA, class A2D, class C2D>
+void herk_aux(AA alpha, A2D const& a, C2D&& c, std::true_type){
+	{
+		herk(triangular::lower, alpha, a, c);
+		using multi::rotated;
+		using multi::size;
+		for(typename std::decay_t<C2D>::difference_type i = 0; i != size(c); ++i){
+			blas::copy(begin(rotated(c)[i])+i+1, end(rotated(c)[i]), begin(c[i])+i+1);
+			blas::scal(-1., begin(imag(c[i]))+i+1, end(imag(c[i])));
+		}
+	}
+}
+template<typename AA, class A2D, class C2D>
+void herk_aux(AA alpha, A2D const& a, C2D&& c, std::false_type){
+	syrk(alpha, a, c);
+}
+
+template<typename AA, class A2D, class C2D>
 C2D&& herk(AA alpha, A2D const& a, C2D&& c){
+#if __cpp_if_constexpr>=201606
 	if constexpr(is_complex_array<std::decay_t<C2D>>{}){
 		herk(triangular::lower, alpha, a, c);
 		using multi::rotated;
@@ -70,6 +102,9 @@ C2D&& herk(AA alpha, A2D const& a, C2D&& c){
 	}else{
 		syrk(alpha, a, c);
 	}
+#else
+	herk_aux(alpha, a, std::forward<C2D>(c), is_complex_array<std::decay_t<C2D>>{});
+#endif
 	return std::forward<C2D>(c);
 }
 

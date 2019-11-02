@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++17 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_OPERATIONS $0.cpp -o $0x `pkg-config --cflags --libs blas` &&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_OPERATIONS $0.cpp -o $0x `pkg-config --cflags --libs blas` &&$0x&&rm $0x $0.cpp; exit
 #endif
 // © Alfredo A. Correa 2019
 
@@ -141,12 +141,26 @@ std::false_type is_complex_array_aux(...);
 template <typename T> struct is_complex_array: decltype(is_complex_array_aux(std::declval<T const&>())){};
 
 template<class A>
+decltype(auto) hermitized(A&& a, std::true_type){
+	return conjugated_transposed(std::forward<A>(a));
+}
+
+template<class A>
+decltype(auto) hermitized(A&& a, std::false_type){
+	return transposed(std::forward<A>(a));
+}
+
+template<class A>
 decltype(auto) hermitized(A&& a){
+#if __cpp_if_constexpr>=201606
 	if constexpr(is_complex_array<std::decay_t<A>>{}){
 		return conjugated_transposed(std::forward<A>(a));
 	}else{
 		return transposed(std::forward<A>(a));
 	}
+#else
+	return hermitized(std::forward<A>(a), is_complex_array<std::decay_t<A>>{});
+#endif
 }
 
 template<class A>
@@ -157,7 +171,29 @@ template<class M> decltype(auto) T(M&& m){return transposed(m);}
 template<class M> decltype(auto) C(M&& m){return conjugated_transposed(m);}
 
 template<class A2D>
+triangular detect_triangular(A2D const& A, std::true_type){
+	{
+		for(auto i = size(A); i != 0; --i){
+			auto const asum_up = blas::asum(begin(A[i-1])+i, end(A[i-1]));
+			if(asum_up!=asum_up) return triangular::lower;
+			else if(asum_up!=0.) return triangular::upper;
+
+			auto const asum_lo = blas::asum(begin(rotated(A)[i-1])+i, end(rotated(A)[i-1]));
+			if(asum_lo!=asum_lo) return triangular::upper;
+			else if(asum_lo!=0.) return triangular::lower;
+		}
+	}
+	return triangular::lower;
+}
+
+template<class A2D>
+triangular detect_triangular(A2D const& A, std::false_type){
+	return flip(detect_triangular(hermitized(A)));
+}
+
+template<class A2D>
 triangular detect_triangular(A2D const& A){
+#if __cpp_if_constexpr>=201606
 	if constexpr(not is_hermitized<A2D>()){
 		for(auto i = size(A); i != 0; --i){
 			auto const asum_up = blas::asum(begin(A[i-1])+i, end(A[i-1]));
@@ -171,6 +207,9 @@ triangular detect_triangular(A2D const& A){
 	}else{
 		return flip(detect_triangular(hermitized(A)));
 	}
+#else
+	detect_triangular(A, std::integral_constant<bool, not is_hermitized<A2D>()>{});
+#endif
 	return triangular::lower;
 }
 
