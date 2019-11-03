@@ -204,7 +204,7 @@ public:
 		uninitialized_copy_(other.data());
 	}
 	static_array(static_array const& other, typename static_array::allocator_type const& a)                      //5b
-	:	array_alloc{a}, ref{allocate(other.num_elements()), extensions(other)}{
+	:	array_alloc{a}, ref{static_array::allocate(other.num_elements()), extensions(other)}{
 	//	assert(0);
 		uninitialized_copy_(other.data());
 	}
@@ -234,7 +234,7 @@ public:
 	}
 	static_array(static_array&& o)                                     //5b
 	:	array_alloc{o.get_allocator()}, 
-		ref{allocate(o.num_elements()), o.extensions()}
+		ref{static_array::allocate(o.num_elements()), o.extensions()}
 	{
 		assert(0);
 		uninitialized_copy_(o.data());
