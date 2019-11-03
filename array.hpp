@@ -200,7 +200,7 @@ public:
 	}
 	template<class TT, class... Args>
 	static_array(array_ref<TT, D, Args...> const& other)
-	:	array_alloc{}, ref{allocate(other.num_elements()), extensions(other)}{
+	:	array_alloc{}, ref{static_array::allocate(other.num_elements()), extensions(other)}{
 		uninitialized_copy_(other.data());
 	}
 	static_array(static_array const& other, typename static_array::allocator_type const& a)                      //5b
