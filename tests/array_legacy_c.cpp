@@ -1,6 +1,10 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 -std=c++17 -Wall -Wextra -Wpedantic -Werror `#-Wfatal-errors` -I$HOME/include $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
+clang++ -Wall -Wextra -Wpedantic $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
+
+#define BOOST_TEST_DYN_LINK 
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi legacy adaptor example"
+#include<boost/test/unit_test.hpp>
 
 #include<iostream>
 
@@ -23,7 +27,7 @@ void fftw_plan_dft(
 }
 }
 
-int main(){
+BOOST_AUTO_TEST_CASE(array_legacy_c){
 	using std::complex;
 
 	multi::array<complex<double>, 2> const in = {
@@ -59,11 +63,17 @@ struct ref : basic{
 				{100, 11, 12, 13, 14}, 
 				{ 50,  6,  7,  8,  9} 
 			};
-		static_assert(sizeof(d2D) == sizeof(double*)+6*sizeof(std::size_t));
-		assert( d2D.is_compact() );
-		assert( rotated(d2D).is_compact() );
-		assert( d2D[3].is_compact() );
-		assert( not rotated(d2D)[2].is_compact() );
+
+#if __has_cpp_attribute(no_unique_address) >=201803
+#endif
+		std::cout << sizeof(multi::array_allocator<double>) << std::endl;
+		std::cout << sizeof(std::allocator<double>) << std::endl;
+
+		BOOST_TEST( sizeof(d2D)==sizeof(double*)+6*sizeof(std::size_t)+sizeof(multi::array_allocator<double>) );
+		BOOST_REQUIRE( d2D.is_compact() );
+		BOOST_REQUIRE( rotated(d2D).is_compact() );
+		BOOST_REQUIRE( d2D[3].is_compact() );
+		BOOST_REQUIRE( not rotated(d2D)[2].is_compact() );
 	}
 
 }

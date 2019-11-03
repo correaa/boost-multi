@@ -71,6 +71,11 @@ constexpr auto size(Container const& con)
 #else
 #endif
 
+//template <class T>
+//constexpr auto size(T const& t)
+//->decltype(t.size()){
+//	return t.size();}
+
 template <class T, std::size_t N>
 constexpr auto size(const T(&)[N]) noexcept{return multi::size_type{N};}
 

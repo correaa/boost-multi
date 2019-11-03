@@ -121,8 +121,8 @@ ForwardIt uninitialized_default_construct_n(Alloc& a, ForwardIt first, Size n){
 	ForwardIt current = first;
 	try{
 		for(; n > 0; ++current, --n)
-			allocator_traits<Alloc>::construct(a, to_address(current));
-		//	a.construct(to_address(current));
+		//	allocator_traits<Alloc>::construct(a, to_address(current));
+			a.construct(to_address(current));
 		return current;
     }catch(...){destroy(a, first, current); throw;}
 }
@@ -226,7 +226,7 @@ template<class Alloc, class ForwardIt, class Size,
 	typename = std::enable_if_t<std::is_trivially_default_constructible<T>{}> 
 >
 ForwardIt uninitialized_value_construct_n(Alloc& a, ForwardIt first, Size n, void* = 0){
-	return uninitialized_default_construct_n(a, first, n);
+	return uninitialized_default_construct_n(a, to_address(first), n);
 }
 
 

@@ -11,6 +11,8 @@
 
 #include "../detail/operators.hpp"
 
+#include<iostream> //debug
+
 #if defined(__CUDACC__)
 #define HD __host__ __device__
 #else
@@ -144,7 +146,7 @@ struct layout_t<dimensionality_type{1}>{
 	constexpr size_type size(dimensionality_type d) const{
 		return d==0?nelems_/stride_:throw 0; // assert(d == 0 and stride_ != 0 and nelems_%stride_ == 0);
 	}
-	friend constexpr size_type size(layout_t const& self){return self.size();}
+//	friend constexpr size_type size(layout_t const& self){return self.size();}
 	constexpr auto base_size() const{return nelems_;}
 	auto is_compact(){return base_size() == num_elements();}
 public:
@@ -250,6 +252,14 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 	stride_type stride_ = 1;
 	offset_type offset_ = 0;
 	nelems_type nelems_ = 0;
+//	layout_t& operator=(layout_t const& other){
+//		std::cerr << "here" << __FILE__ << __LINE__ << std::endl;
+//		sub = other.sub;
+//		stride_ = other.stride_;
+//		offset_ = other.offset_;
+//		nelems_ = other.nelems_;
+//		return *this;
+//	}
 	struct extensions_type_ 
 		: std::decay_t<decltype(tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename sub_type::extensions_type::base_>()))>
 	{

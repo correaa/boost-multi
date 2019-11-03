@@ -1,6 +1,6 @@
 #ifdef COMPILATION_INSTRUCTIONS
-for a in ./tests/*.cpp; do echo $a; sh $a || break; echo '\n'; done; exit; */
-(echo '#include"'$0'"'>$0.cpp)&& c++ -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_BOOST_MULTI_ARRAY_REF $0.cpp -o $0x&&$0x&&rm $0x $0.cpp;exit
+for a in ./tests/*.cpp; do echo $a; sh $a || break; echo "\n"; done; exit;*/
+(echo '#include"'$0'"'>$0.cpp)&&c++ -Wall -Wextra -D_TEST_BOOST_MULTI_ARRAY_REF $0.cpp -o $0x&&$0x&&rm $0x $0.cpp;exit
 #endif
 #ifndef BOOST_MULTI_ARRAY_REF_HPP
 #define BOOST_MULTI_ARRAY_REF_HPP
@@ -213,7 +213,8 @@ private:
 	void decrement(){ptr_.base_ -= stride_;}
 	void advance(difference_type n){ptr_.base_ += stride_*n;}
 	difference_type distance_to(array_iterator const& other) const{
-		assert( stride_ == other.stride_ and stride_ != 0 );
+		assert( stride_ == other.stride_);
+		assert( stride_ != 0 );
 	//	assert( this->stride()==stride(other) and this->stride() );// and (base(other.ptr_) - base(this->ptr_))%stride_ == 0
 	//	assert( stride_ == other.stride_ and stride_ != 0 and (other.ptr_.base_-ptr_.base_)%stride_ == 0 and ptr_.layout() == other.ptr_.layout() );
 	//	assert( stride_ == other.stride_ and stride_ != 0 and (other.base_ - base_)%stride_ == 0 and layout() == other.layout() );
