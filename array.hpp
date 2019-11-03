@@ -45,23 +45,33 @@ template<class C> auto maybestd_end(C&& c)
 
 template<class Allocator> struct array_allocator{
 	using allocator_type = Allocator;
+protected:
 #if __has_cpp_attribute(no_unique_address) >=201803
 	[[no_unique_address]]
 #endif
 	allocator_type alloc_;
 	allocator_type& alloc(){return alloc_;}
+	array_allocator(allocator_type const& a = {}) : alloc_{a}{}
+	typename std::allocator_traits<allocator_type>::pointer allocate(typename std::allocator_traits<allocator_type>::size_type n){
+		return std::allocator_traits<allocator_type>::allocate(alloc_, n);
+	}
+public:
 	allocator_type get_allocator() const{return alloc_;}
 };
 
 template<class T, dimensionality_type D, class Alloc = std::allocator<T>>
 struct static_array : 
-	protected array_allocator<typename std::allocator_traits<Alloc>::template rebind_alloc<T>>,
+	protected array_allocator<Alloc>,
+//	protected array_allocator<typename std::allocator_traits<Alloc>::template rebind_alloc<T>>,
 //	protected std::allocator_traits<Alloc>::template rebind_alloc<T>,
-	array_ref<T, D, typename std::allocator_traits<typename std::allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>
+//	array_ref<T, D, typename std::allocator_traits<typename std::allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>
+	array_ref<T, D, typename std::allocator_traits<typename array_allocator<Alloc>::allocator_type>::pointer>
 {
-	using array_alloc = array_allocator<typename std::allocator_traits<Alloc>::template rebind_alloc<T>>;
-	using allocator_type = typename static_array::allocator_type;
-	using alloc_traits = typename std::allocator_traits<allocator_type>;
+private:
+	using array_alloc = array_allocator<Alloc>;
+//	using allocator_type = typename static_array::allocator_type;
+public:
+	using alloc_traits = typename std::allocator_traits<typename static_array::allocator_type>;
 	static_assert( std::is_same<typename std::allocator_traits<Alloc>::value_type, typename static_array::element>{}, 
 		"allocator value type must match array value type");
 	using array_alloc::get_allocator;
@@ -75,10 +85,10 @@ protected:
 		return uninitialized_copy_n(this->alloc(), first, this->num_elements(), this->data());
 	}
 	auto uninitialized_default_construct(){return uninitialized_default_construct_n(this->alloc(), this->base_, this->num_elements());}
-	typename static_array::element_ptr allocate(typename std::allocator_traits<allocator_type>::size_type n){
-		return std::allocator_traits<allocator_type>::allocate(this->alloc(), n);
-	}
-	auto allocate(){return allocate(this->num_elements());}
+//	typename static_array::element_ptr allocate(typename std::allocator_traits<allocator_type>::size_type n){
+//		return std::allocator_traits<allocator_type>::allocate(this->alloc(), n);
+//	}
+//	typename static_array::element_ptr allocate(){return static_array::allocate(this->num_elements());}
 	void destroy(){
 		if(this->data()){
 			auto n = this->num_elements();
@@ -107,14 +117,14 @@ public:
 //	template<class Array> auto operator==(Array const& other) const{return ref::operator==(other);}
 //	auto operator==(static_array const& other) const{return ref::operator==(other);}
 	template<class It, typename = typename std::iterator_traits<It>::difference_type>//edecltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>      
-	static_array(It first, It last, allocator_type const& a = {}) :        //(4)
+	static_array(It first, It last, typename static_array::allocator_type const& a = {}) :        //(4)
 		array_alloc{a}, //allocator_type{a}, 
 		ref{nullptr, index_extension(std::distance(first, last))*multi::extensions(*first)}
 	{
 	//	auto cat = std::tuple_cat(std::make_tuple(index_extension{std::distance(first, last)}), multi::extensions(*first).base() );
 	//	std::cout << std::get<0>(cat) << std::endl;
 	//	layout_t<D>::operator=(typename static_array::layout_t{std::tuple_cat(std::make_tuple(index_extension{std::distance(first, last)}), multi::extensions(*first))});
-		this->base_ = this->allocate(this->num_elements());
+		this->base_ = static_array::allocate(this->num_elements());
 	//	this->base_ = this->allocate(typename static_array::layout_t{std::tuple_cat(std::make_tuple(index_extension{std::distance(first, last)}), multi::extensions(*first))}.num_elements());
 		using std::next;
 		using std::all_of;
@@ -129,7 +139,7 @@ public:
 //	}
 	static_array(typename static_array::extensions_type x, typename static_array::element const& e, typename static_array::allocator_type const& a) : //2
 		array_alloc{a}, 
-		ref(allocate(typename static_array::layout_t{x}.num_elements()), x)
+		ref(static_array::allocate(typename static_array::layout_t{x}.num_elements()), x)
 	{
 		uninitialized_fill(e);
 	}
@@ -137,7 +147,7 @@ public:
 		return uninitialized_fill_n(this->alloc(), this->base_, this->num_elements(), e);
 	}
 	static_array(typename static_array::extensions_type const& x, typename static_array::element const& e)  //2
-	:	array_alloc{}, ref(allocate(typename static_array::layout_t{x}.num_elements()), x){
+	:	array_alloc{}, ref(static_array::allocate(typename static_array::layout_t{x}.num_elements()), x){
 		uninitialized_fill(e);
 	}
 //	explicit static_array(typename ref::size_type n, typename static_array::allocator_type const& a = {})
@@ -153,8 +163,8 @@ public:
 	}
 //	template<class Allocator, typename = std::enable_if_t<std::is_same<Allocator, allocator_type>{}> >
 //	explicit 
-	static_array(typename static_array::extensions_type const& x, allocator_type const& a) //3
-	: array_alloc{a}, ref{allocate(typename static_array::layout_t{x}.num_elements()), x}{
+	static_array(typename static_array::extensions_type const& x, typename static_array::allocator_type const& a) //3
+	: array_alloc{a}, ref{static_array::allocate(typename static_array::layout_t{x}.num_elements()), x}{
 	//	assert(0);
 	//	uninitialized_value_construct();
 	}
@@ -163,7 +173,7 @@ public:
 //		: static_array(typename static_array::extensions_type{e}, a){}
 	static_array(typename static_array::extensions_type const& x) //3
 //	: static_array(x, allocator_type{}){}
-	:	array_alloc{}, ref{allocate(typename static_array::layout_t{x}.num_elements()), x}{
+	:	array_alloc{}, ref{static_array::allocate(typename static_array::layout_t{x}.num_elements()), x}{
 		if(not std::is_trivially_default_constructible<typename static_array::element>{})
 			uninitialized_value_construct();
 	}
@@ -183,18 +193,18 @@ public:
 	}
 #endif
 	template<class TT, class... Args>
-	static_array(multi::basic_array<TT, D, Args...> const& other, allocator_type const& a = {})
-		: array_alloc{a}, ref(allocate(other.num_elements()), extensions(other))
+	static_array(multi::basic_array<TT, D, Args...> const& other, typename static_array::allocator_type const& a = {})
+		: array_alloc{a}, ref(static_array::allocate(other.num_elements()), extensions(other))
 	{
 		using std::copy; copy(other.begin(), other.end(), this->begin());
 	}
 	template<class TT, class... Args>
 	static_array(array_ref<TT, D, Args...> const& other)
-	:	allocator_type{}, ref{allocate(other.num_elements()), extensions(other)}{
+	:	array_alloc{}, ref{allocate(other.num_elements()), extensions(other)}{
 		uninitialized_copy_(other.data());
 	}
-	static_array(static_array const& other, allocator_type const& a)                      //5b
-	:	allocator_type{a}, ref{allocate(other.num_elements()), extensions(other)}{
+	static_array(static_array const& other, typename static_array::allocator_type const& a)                      //5b
+	:	array_alloc{a}, ref{allocate(other.num_elements()), extensions(other)}{
 	//	assert(0);
 		uninitialized_copy_(other.data());
 	}
@@ -202,7 +212,7 @@ public:
 		typename = std::enable_if_t<dimensionality<std::decay_t<O>>()==dimensionality>
 	>
 	static_array(O const& o)                                          //
-	:	allocator_type{get_allocator(o)}, 
+	:	array_alloc{get_allocator(o)}, 
 		ref(allocate(num_elements(o)), extensions(o))
 	{
 		uninitialized_copy_(data_elements(o));
@@ -218,12 +228,12 @@ public:
 	}
 	static_array(static_array const& o)                                     //5b
 	:	array_alloc{o.get_allocator()}, 
-		ref{allocate(o.num_elements()), o.extensions()}
+		ref{static_array::allocate(o.num_elements()), o.extensions()}
 	{
 		uninitialized_copy_(o.data());
 	}
 	static_array(static_array&& o)                                     //5b
-	:	allocator_type{o.get_allocator()}, 
+	:	array_alloc{o.get_allocator()}, 
 		ref{allocate(o.num_elements()), o.extensions()}
 	{
 		assert(0);
@@ -468,7 +478,7 @@ public:
 		else{
 			this->clear(); // std::cerr << "here" << __LINE__ << std::endl;
 			this->static_::ref::layout_t::operator=(layout_t<D>{extensions(other)}); // std::cerr << "here" << __LINE__ << std::endl;
-			this->base_ = this->allocate(); //this->num_elements());
+			this->base_ = array::allocate(this->num_elements());
 			uninitialized_copy_n(this->alloc(), other.data(), other.num_elements(), this->data());
 		}
 		return *this;
