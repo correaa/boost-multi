@@ -212,7 +212,7 @@ private:
 		__host__ __device__ skeleton_t(T* p) : p_{p}{
 			#if __CUDA_ARCH__
 			#else
-			cudaError_t s = cudaMemcpy(buff, p_, sizeof(T), cudaMemcpyDeviceToHost); assert(s == cudaSuccess);
+			[[maybe_unused]] cudaError_t s = cudaMemcpy(buff, p_, sizeof(T), cudaMemcpyDeviceToHost); assert(s == cudaSuccess);
 			#endif	
 		}
 		__host__ __device__ [[SLOW]] 
@@ -222,7 +222,7 @@ private:
 			#if __CUDA_ARCH__
 		//	*p_ = reinterpret_cast<T const&>(
 			#else
-			cudaError_t s = cudaMemcpy(p_, buff, sizeof(T), cudaMemcpyHostToDevice); assert(s == cudaSuccess);
+			[[maybe_unused]] cudaError_t s = cudaMemcpy(p_, buff, sizeof(T), cudaMemcpyHostToDevice); (void)s; assert(s == cudaSuccess);
 			#endif
 		}
 		void conditional_copyback_if_not(std::true_type) const{}
@@ -235,11 +235,11 @@ public:
 	ref& operator=(ref const&)& = delete;
 private:
 	ref& move_assign(ref&& other, std::true_type)&{
-		cudaError_t s = cudaMemcpy(this->impl_, other.impl_, sizeof(T), cudaMemcpyDeviceToDevice); assert(s == cudaSuccess);
+		[[maybe_unused]] cudaError_t s = cudaMemcpy(this->impl_, other.impl_, sizeof(T), cudaMemcpyDeviceToDevice); (void)s; assert(s == cudaSuccess);
 		return *this;
 	}
 	ref& move_assign(ref&& other, std::false_type)&{
-		cudaError_t s = cudaMemcpy(this->impl_, other.impl_, sizeof(T), cudaMemcpyDeviceToDevice); assert(s == cudaSuccess);
+		[[maybe_unused]] cudaError_t s = cudaMemcpy(this->impl_, other.impl_, sizeof(T), cudaMemcpyDeviceToDevice); (void)s; assert(s == cudaSuccess);
 		return *this;
 	}
 public:
@@ -290,9 +290,9 @@ public:
 	template<class Other>
 	bool operator!=(ref<Other>&& other)&&{
 		char buff1[sizeof(T)];
-		cudaError_t s1 = cudaMemcpy(buff1, this->impl_, sizeof(T), cudaMemcpyDeviceToHost); assert(s1 == cudaSuccess);
+		[[maybe_unused]] cudaError_t s1 = cudaMemcpy(buff1, this->impl_, sizeof(T), cudaMemcpyDeviceToHost); assert(s1 == cudaSuccess);
 		char buff2[sizeof(Other)];
-		cudaError_t s2 = cudaMemcpy(buff2, other.impl_, sizeof(Other), cudaMemcpyDeviceToHost); assert(s2 == cudaSuccess);
+		[[maybe_unused]] cudaError_t s2 = cudaMemcpy(buff2, other.impl_, sizeof(Other), cudaMemcpyDeviceToHost); assert(s2 == cudaSuccess);
 		return reinterpret_cast<T const&>(buff1)!=reinterpret_cast<Other const&>(buff2);
 	}
 #else
@@ -304,10 +304,10 @@ public:
 	bool operator==(ref<Other>&& other)&&{
 //#pragma message ("Warning goes here")
 		char buff1[sizeof(T)];
-		cudaError_t s1 = cudaMemcpy(buff1, this->impl_, sizeof(T), cudaMemcpyDeviceToHost);
+		[[maybe_unused]] cudaError_t s1 = cudaMemcpy(buff1, this->impl_, sizeof(T), cudaMemcpyDeviceToHost);
 		assert(s1 == cudaSuccess);
 		char buff2[sizeof(Other)];
-		cudaError_t s2 = cudaMemcpy(buff2, other.impl_, sizeof(Other), cudaMemcpyDeviceToHost); 
+		[[maybe_unused]] cudaError_t s2 = cudaMemcpy(buff2, other.impl_, sizeof(Other), cudaMemcpyDeviceToHost); 
 		assert(s2 == cudaSuccess);
 		return reinterpret_cast<T const&>(buff1)==reinterpret_cast<Other const&>(buff2);
 	}
@@ -315,9 +315,9 @@ public:
 	[[SLOW]] 
 	bool operator==(ref const& other) const&{
 		char buff1[sizeof(T)];
-		{cudaError_t s1 = cudaMemcpy(buff1, this->impl_, sizeof(T), cudaMemcpyDeviceToHost); assert(s1 == cudaSuccess);}
+		{[[maybe_unused]] cudaError_t s1 = cudaMemcpy(buff1, this->impl_, sizeof(T), cudaMemcpyDeviceToHost); assert(s1 == cudaSuccess);}
 		char buff2[sizeof(T)];
-		{cudaError_t s2 = cudaMemcpy(buff2, other.impl_, sizeof(T), cudaMemcpyDeviceToHost); assert(s2 == cudaSuccess);}
+		{[[maybe_unused]] cudaError_t s2 = cudaMemcpy(buff2, other.impl_, sizeof(T), cudaMemcpyDeviceToHost); assert(s2 == cudaSuccess);}
 		return reinterpret_cast<T const&>(buff1)==reinterpret_cast<T const&>(buff2);
 	}
 //	[[SLOW]] 
@@ -334,7 +334,7 @@ public:
 	#else
 	[[SLOW]] operator T()&&{
 		char buff[sizeof(T)];
-		{cudaError_t s = cudaMemcpy(buff, this->impl_, sizeof(T), cudaMemcpyDeviceToHost); assert(s == cudaSuccess);}
+		{[[maybe_unused]] cudaError_t s = cudaMemcpy(buff, this->impl_, sizeof(T), cudaMemcpyDeviceToHost); assert(s == cudaSuccess);}
 		return std::move(reinterpret_cast<T&>(buff));
 	}
 	#endif
