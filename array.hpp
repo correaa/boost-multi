@@ -1,20 +1,18 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra `#-Wfatal-errors` -D_TEST_BOOST_MULTI_ARRAY $0.cpp -o $0x && $0x&&rm $0x $0.cpp;exit
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -D_TEST_BOOST_MULTI_ARRAY $0.cpp -o $0x &&$0x&&rm $0x $0.cpp;exit
 #endif
-//  (C) Copyright Alfredo A. Correa 2018.
+//  © Alfredo A. Correa 2018-2019
 #ifndef BOOST_MULTI_ARRAY_HPP 
 #define BOOST_MULTI_ARRAY_HPP
 
-
 #include "./array_ref.hpp"
 
-//#include "../multi/detail/memory.hpp"
 #include "./memory/allocator.hpp"
 #include "./detail/memory.hpp"
 
 #include "utility.hpp"
 
-#include<iostream> // debug
+//#include<iostream> // debug
 
 #if defined(__CUDACC__)
 #define HD __host__ __device__
@@ -24,24 +22,6 @@
 
 namespace boost{
 namespace multi{
-
-namespace detail{
-    using std::begin;
-    template<class C> auto maybestd_begin(C&& c) 
-    ->decltype(begin(std::forward<C>(c))){
-        return begin(std::forward<C>(c));}
-	using std::end;
-    template<class C> auto maybestd_end(C&& c) 
-    ->decltype(end(std::forward<C>(c))){
-        return end(std::forward<C>(c));}
-}
-
-template<class C> auto maybestd_begin(C&& c)
-->decltype(detail::maybestd_begin(std::forward<C>(c))){
-    return detail::maybestd_begin(std::forward<C>(c));}
-template<class C> auto maybestd_end(C&& c)
-->decltype(detail::maybestd_end(std::forward<C>(c))){
-    return detail::maybestd_end(std::forward<C>(c));}
 
 template<class Allocator> struct array_allocator{
 	using allocator_type = Allocator;
@@ -54,6 +34,9 @@ protected:
 	array_allocator(allocator_type const& a = {}) : alloc_{a}{}
 	typename std::allocator_traits<allocator_type>::pointer allocate(typename std::allocator_traits<allocator_type>::size_type n){
 		return std::allocator_traits<allocator_type>::allocate(alloc_, n);
+	}
+	auto uninitialized_fill_n(typename std::allocator_traits<allocator_type>::pointer base, typename std::allocator_traits<allocator_type>::size_type num_elements, typename std::allocator_traits<allocator_type>::value_type e){
+		return uninitialized_fill_n(alloc_, base, num_elements, e);
 	}
 public:
 	allocator_type get_allocator() const{return alloc_;}
@@ -69,35 +52,29 @@ struct static_array :
 {
 private:
 	using array_alloc = array_allocator<Alloc>;
-//	using allocator_type = typename static_array::allocator_type;
 public:
-	using alloc_traits = typename std::allocator_traits<typename static_array::allocator_type>;
 	static_assert( std::is_same<typename std::allocator_traits<Alloc>::value_type, typename static_array::element>{}, 
 		"allocator value type must match array value type");
 	using array_alloc::get_allocator;
+	using allocator_type = typename static_array::allocator_type;
 protected:
+	using alloc_traits = typename std::allocator_traits<typename static_array::allocator_type>;
 	using ref = array_ref<T, D, typename std::allocator_traits<typename std::allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
-//	allocator_type& alloc(){return static_array::alloc_;}
 	auto uninitialized_value_construct(){return uninitialized_value_construct_n(static_array::alloc(), to_address(this->base_), this->num_elements());}
 	template<typename It>
 	auto uninitialized_copy_(It first){
-	//	using boost::multi::uninitialized_copy_n;
+		using boost::multi::uninitialized_copy_n;
 		return uninitialized_copy_n(this->alloc(), first, this->num_elements(), this->data());
 	}
-	auto uninitialized_default_construct(){return uninitialized_default_construct_n(this->alloc(), this->base_, this->num_elements());}
-//	typename static_array::element_ptr allocate(typename std::allocator_traits<allocator_type>::size_type n){
-//		return std::allocator_traits<allocator_type>::allocate(this->alloc(), n);
-//	}
-//	typename static_array::element_ptr allocate(){return static_array::allocate(this->num_elements());}
 	void destroy(){
-		if(this->data()){
-			auto n = this->num_elements();
-			while(n){
-			//	std::allocator_traits<allocator_type>::destroy(this->alloc(), to_address(this->data() + n + (-1)));
-				this->alloc().destroy(to_address(this->data() + n + (-1)));
-				--n;
-			}
+//		if(this->data()){
+		auto n = this->num_elements();
+		while(n){
+		//	std::allocator_traits<allocator_type>::destroy(this->alloc(), to_address(this->data() + n + (-1)));
+			this->alloc().destroy(to_address(this->data() + n + (-1)));
+			--n;
 		}
+//		}
 	}
 public:
 	using typename ref::value_type;
@@ -118,25 +95,22 @@ public:
 //	auto operator==(static_array const& other) const{return ref::operator==(other);}
 	template<class It, typename = typename std::iterator_traits<It>::difference_type>//edecltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>      
 	static_array(It first, It last, typename static_array::allocator_type const& a = {}) :        //(4)
-		array_alloc{a}, //allocator_type{a}, 
-		ref{nullptr, index_extension(std::distance(first, last))*multi::extensions(*first)}
+		array_alloc{a},
+		ref{
+			static_array::allocate(typename static_array::layout_t{index_extension(std::distance(first, last))*multi::extensions(*first)}.num_elements()), 
+			index_extension(std::distance(first, last))*multi::extensions(*first)
+		}
 	{
 	//	auto cat = std::tuple_cat(std::make_tuple(index_extension{std::distance(first, last)}), multi::extensions(*first).base() );
 	//	std::cout << std::get<0>(cat) << std::endl;
 	//	layout_t<D>::operator=(typename static_array::layout_t{std::tuple_cat(std::make_tuple(index_extension{std::distance(first, last)}), multi::extensions(*first))});
-		this->base_ = static_array::allocate(this->num_elements());
 	//	this->base_ = this->allocate(typename static_array::layout_t{std::tuple_cat(std::make_tuple(index_extension{std::distance(first, last)}), multi::extensions(*first))}.num_elements());
-		using std::next;
-		using std::all_of;
+	//	using std::next;
+	//	using std::all_of;
 	//	if(first!=last) assert( all_of(next(first), last, [x=multi::extensions(*first)](auto const& e){return extensions(e)==x;}) );
 	//	recursive_uninitialized_copy<D>(alloc(), first, last, ref::begin());
 		uninitialized_copy(static_array::alloc(), first, last, ref::begin());
 	}
-//	static_array(typename static_array::extensions_type x, typename static_array::allocator_type const& a) : //2
-//		allocator_type{a}, ref(allocate(typename static_array::layout_t{x}.num_elements()), x)
-//	{
-//		uninitialized_fill(e);
-//	}
 	static_array(typename static_array::extensions_type x, typename static_array::element const& e, typename static_array::allocator_type const& a) : //2
 		array_alloc{a}, 
 		ref(static_array::allocate(typename static_array::layout_t{x}.num_elements()), x)
@@ -547,27 +521,6 @@ public:
 		tmp.intersection_assign_(*this);
 		swap(tmp);
 	}
-
-
-
-private:
-#if 0
-	allocator_type& alloc(){return static_cast<allocator_type&>(*this);}
-	void destroy(){
-		auto n = this->num_elements();
-		while(n){
-			alloc().destroy(to_address(this->data() + n - 1));
-		//	multi::destroy(alloc(), this->data() + n - 1);
-		//	destroy(alloc(), this->data() + n - 1);
-			--n;
-		}
-	//	for(; first != last; ++first) a.destroy(to_address(first)); //	AT::destroy(a, to_address(first)); //	AT::destroy(a, addressof(*first)); //
-	//	destroy_n(alloc(), this->data(), this->num_elements());
-	//	destroy_n(alloc(), std::make_reverse_iterator(this->data() + this->num_elements()), this->num_elements());
-	}
-#endif
-//	typename array::element_ptr allocate(typename array::index n){return alloc_traits::allocate(alloc(), n);}
-//	auto allocate(){return allocate(this->num_elements());}
 };
 
 template<typename T, dimensionality_type D, class... Args>

@@ -2,16 +2,16 @@
 for a in ./tests/*.cpp; do echo $a; sh $a || break; echo "\n"; done; exit;*/
 (echo '#include"'$0'"'>$0.cpp)&&c++ -Wall -Wextra -D_TEST_BOOST_MULTI_ARRAY_REF $0.cpp -o $0x&&$0x&&rm $0x $0.cpp;exit
 #endif
+// © Alfredo Correa 2018-2019
 #ifndef BOOST_MULTI_ARRAY_REF_HPP
 #define BOOST_MULTI_ARRAY_REF_HPP
-// © Alfredo Correa 2018-2019
 
 #include "utility.hpp"
 
 #include "./detail/layout.hpp"
-#include "./detail/types.hpp" // dimensionality_type
+#include "./detail/types.hpp"     // dimensionality_type
 #include "./detail/operators.hpp" // random_iterable
-#include "./detail/memory.hpp" // pointer_traits
+#include "./detail/memory.hpp"    // pointer_traits
 
 #include<algorithm> // copy_n
 
