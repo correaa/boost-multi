@@ -182,24 +182,24 @@ public:
 	//	assert(0);
 		uninitialized_copy_(other.data());
 	}
-	template<class O, typename = std::enable_if_t<not std::is_base_of<static_array, O>{}>,
-		typename = std::enable_if_t<dimensionality<std::decay_t<O>>()==dimensionality>
-	>
-	static_array(O const& o)                                          //
-	:	array_alloc{get_allocator(o)}, 
-		ref(allocate(num_elements(o)), extensions(o))
-	{
-		uninitialized_copy_(data_elements(o));
-	}
-	template<class O, typename = std::enable_if_t<not std::is_base_of<static_array, O>{}>,
-		typename = std::enable_if_t<std::rank<O>{}==static_array::dimensionality>
-	>
-	static_array(O const& o, void* = 0)                                          //
-	:	array_alloc{multi::get_allocator(o)}, 
-		ref(this->alloc_.allocate(num_elements(o)), extensions(o))
-	{
-		uninitialized_copy_(data_elements(o));
-	}
+//	template<class O, typename = std::enable_if_t<not std::is_base_of<static_array, O>{}>,
+//		typename = std::enable_if_t<dimensionality<std::decay_t<O>>()==dimensionality>
+//	>
+//	static_array(O const& o)                                          //
+//	:	array_alloc{get_allocator(o)}, 
+//		ref(allocate(num_elements(o)), extensions(o))
+//	{
+//		uninitialized_copy_(data_elements(o));
+//	}
+//	template<class O, typename = std::enable_if_t<not std::is_base_of<static_array, O>{}>,
+//		typename = std::enable_if_t<std::rank<O>{}==static_array::dimensionality>
+//	>
+//	static_array(O const& o, void* = 0)                                          //
+//	:	array_alloc{multi::get_allocator(o)}, 
+//		ref(this->alloc_.allocate(num_elements(o)), extensions(o))
+//	{
+//		uninitialized_copy_(data_elements(o));
+//	}
 	static_array(static_array const& o)                                     //5b
 	:	array_alloc{o.get_allocator()}, 
 		ref{static_array::allocate(o.num_elements()), o.extensions()}
@@ -244,10 +244,8 @@ public:
 	template<class It> static auto distance(It a, It b){using std::distance; return distance(a, b);}
 protected:
 	void deallocate(){
-		if(this->base_){
-			alloc_traits::deallocate(this->alloc(), this->base_, static_cast<typename alloc_traits::size_type>(this->num_elements()));
-			this->base_ = nullptr;
-		}
+		alloc_traits::deallocate(this->alloc(), this->base_, static_cast<typename alloc_traits::size_type>(this->num_elements()));
+		this->base_ = nullptr;
 	}
 	void clear() noexcept{
 	//	std::cerr << "here" << __LINE__ << std::endl;
@@ -344,13 +342,13 @@ public:
 	array(array const&) = default;
 //	template<class O, typename = std::enable_if_t<not std::is_base_of<array, O>{}> > 
 //	array(O const& o) : static_(o){}
-	array(
+//	array(
 	//	multi::initializer_list_t<typename static_array::element, D> mil,
-		std::initializer_list<typename array::value_type> mil, 
-		typename array::allocator_type const& a={}
-	) 
-	: static_(mil.begin(), mil.end(), a)
-	{}
+//		std::initializer_list<typename array::value_type> mil, 
+//		typename array::allocator_type const& a={}
+//	) 
+//	: static_(mil.begin(), mil.end(), a)
+//	{}
 //	array() noexcept(noexcept(static_::allocator_type())) : static_{}{} // 1a //allocator_type{}, ref{}{}      //1a
 //	array(typename array::allocator_type a) : static_(a){}                  //1b
 //#if (not defined(__INTEL_COMPILER)) or (__GNUC >= 6)
