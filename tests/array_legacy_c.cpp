@@ -66,10 +66,10 @@ struct ref : basic{
 
 #if __has_cpp_attribute(no_unique_address) >=201803
 #endif
-		std::cout << sizeof(multi::array_allocator<double>) << std::endl;
+		std::cout << sizeof(multi::array_allocator<std::allocator<double>>) << std::endl;
 		std::cout << sizeof(std::allocator<double>) << std::endl;
 
-		BOOST_TEST( sizeof(d2D)==sizeof(double*)+6*sizeof(std::size_t)+sizeof(multi::array_allocator<double>) );
+		BOOST_TEST( sizeof(d2D)==sizeof(double*)+6*sizeof(std::size_t)+sizeof(multi::array_allocator<std::allocator<double>>) );
 		BOOST_REQUIRE( d2D.is_compact() );
 		BOOST_REQUIRE( rotated(d2D).is_compact() );
 		BOOST_REQUIRE( d2D[3].is_compact() );
