@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&nvcc -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_PTR $0.cpp -o $0x &&$0x&& rm $0x; exit
+(echo '#include"'$0'"'>$0.cpp)&&nvcc -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_PTR $0.cpp -o $0x &&$0x&&rm $0x; exit
 #endif
 
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_PTR_HPP
@@ -103,8 +103,8 @@ public:
 	__host__ __device__ ptr(ptr const& other) : impl_{other.impl_}{}
 //	ptr(ptr const&) = default;
 	__host__ __device__ ptr(std::nullptr_t n) : impl_{n}{}
-	template<class Other, typename = decltype(impl_t{std::declval<Other const&>().impl_}), typename = typename std::enable_if<not std::is_base_of<ptr, Other>{}>::type /*c++14*/>
-	__host__ __device__ ptr(Other const& o) : impl_{o.impl_}{}
+//	template<class Other, typename = decltype(impl_t{std::declval<Other const&>().impl_}), typename = typename std::enable_if<not std::is_base_of<ptr, Other>{}>::type /*c++14*/>
+//	__host__ __device__ ptr(Other const& o) : impl_{o.impl_}{}
 	ptr& operator=(ptr const&) = default;
 	bool operator==(ptr const& other) const{return impl_==other.impl_;}
 	bool operator!=(ptr const& other) const{return impl_!=other.impl_;}
@@ -144,7 +144,7 @@ namespace managed{
 	template<typename T, typename Ptr = T*> struct ptr;
 	template<typename T, typename Ptr>
 	struct ptr : cuda::ptr<T, Ptr>{
-		template<class Other> explicit ptr(ptr<Other> o) : cuda::ptr<T, Ptr>{std::move(o)}{}
+		template<class Other> explicit ptr(ptr<Other> o) : cuda::ptr<T, Ptr>{o}{}
 	__host__ __device__ 
 		ptr(typename ptr::impl_t o) : cuda::ptr<T, Ptr>{std::move(o)}{}
 	//	ptr(std::nullptr_t n) : cuda::ptr<T, Ptr>{n}{}
