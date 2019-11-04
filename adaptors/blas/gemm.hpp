@@ -65,17 +65,17 @@ decltype(auto) gemm(Op opA, Op opB, AA a, A2D const& A, B2D const& B, BB b, C2D&
 	}
 	if(opA == 'N' and (opB == 'T' or opB == 'C')){
 		assert(size(A) == size(B) and size(*begin(A))==size(*begin(C)) and size(*begin(B)) == size(C));
-		gemm(opA, opB, size(*begin(A)), size(C), size(B), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
+		gemm(opA, opB, std::get<0>(sizes(A)), size(C), size(B), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
 		return std::forward<C2D>(C);
 	}
 	if((opA == 'T' or opA == 'C') and (opB == 'N')){
 		assert(size(*begin(A)) == size(*begin(B)) and size(A)==size(*begin(C)) and size(B) == size(C));
-		gemm(opA, opB, size(A), size(C), size(*begin(B)), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
+		gemm(opA, opB, size(A), size(C), std::get<1>(sizes(B)), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
 		return std::forward<C2D>(C);
 	}
 	if((opA == 'N') and (opB == 'N')){
 		assert(size(A) == size(*begin(B)) and size(*begin(A))==size(*begin(C)) and size(B) == size(C));
-		gemm(opA, opB, size(*begin(A)), size(C), size(*begin(B)), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
+		gemm(opA, opB, std::get<1>(sizes(A)), size(C), std::get<1>(sizes(B)), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
 		return std::forward<C2D>(C);
 	}
 	assert(0);
