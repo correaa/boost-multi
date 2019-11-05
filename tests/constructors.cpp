@@ -1,11 +1,12 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 -std=c++14 -Wall -Wextra -Wpedantic $0 -o $0x &&$0x&&rm $0x;exit
+`#nvcc -x=cu -ccbin=`$CXX -O3 -std=c++17 -Wall -Wextra -Wpedantic $0 -o $0x &&$0x&&rm $0x;exit
 #endif
 
 #include "../array.hpp"
 #include<vector>
 #include<iostream>
 #include<numeric>
+#include<functional>
 
 namespace multi = boost::multi;
 
@@ -23,6 +24,15 @@ int main(){
 {
 	multi::array<double, 2> A(multi::index_extensions<2>{8, 8}, 8.);
 	assert( size(A) == 8 );
+	assert( std::get<0>(sizes(A)) == 8 );
+	assert( std::get<1>(sizes(A)) == 8 );
+
+}{
+	multi::array<double, 2> A({8, 8}, 8.);
+	assert( size(A) == 8 );
+	assert( std::get<0>(sizes(A)) == 8 );
+	assert( std::get<1>(sizes(A)) == 8 );
+
 }
  {  multi::static_array<double, 1> A     ; assert( empty(A) );
 }{  multi::static_array<double, 1> A{}   ; assert( empty(A) );
@@ -34,6 +44,10 @@ int main(){
 }{  multi::static_array<double, 3> A{}   ; assert( empty(A) );
 }{  multi::static_array<double, 3> A = {}; assert( empty(A) );
 }{  multi::static_array<double, 3> A, B  ; assert( A == B );
+}{
+	multi::array<double, 1> A1 = {0.0, 1.0, };
+	assert( size(A1) == 2 );
+	assert( A1[1] == 1.0 );
 }
 
 {
@@ -64,10 +78,7 @@ int main(){
  {  multi::array<double, 1, std::allocator<double>> A{std::allocator<double>{}}; assert( empty(A) );
 }{  multi::array<double, 2, std::allocator<double>> A{std::allocator<double>{}}; assert( empty(A) );
 }{  multi::array<double, 3, std::allocator<double>> A{std::allocator<double>{}}; assert( empty(A) );
-}
-
-// { multi::array<double, 1> A(3); assert( size(A)==3); // ambiguos
- { multi::array<double, 1> A(3, {});  assert( size(A)==3 );
+}{ multi::array<double, 1> A(3, {});  assert( size(A)==3 );
 }{ multi::array<double, 1> A(3, 99.); assert( size(A)==3 and A[2]==99. );
 }{ multi::array<double, 1> A({3});    assert( size(A)==1 and A[0]==3 );
 }{// multi::array<double, 1> A({{3}});  assert( size(A)==1 and A[0]==3 );
