@@ -144,7 +144,8 @@ namespace managed{
 	template<typename T, typename Ptr = T*> struct ptr;
 	template<typename T, typename Ptr>
 	struct ptr : cuda::ptr<T, Ptr>{
-		template<class Other> explicit ptr(ptr<Other> o) : cuda::ptr<T, Ptr>{o}{}
+		template<class Other, typename = std::enable_if_t<not std::is_same<std::decay_t<Other>, T>{}>> 
+		explicit ptr(ptr<Other> o) : cuda::ptr<T, Ptr>{o}{}
 	__host__ __device__ 
 		ptr(typename ptr::impl_t o) : cuda::ptr<T, Ptr>{std::move(o)}{}
 	//	ptr(std::nullptr_t n) : cuda::ptr<T, Ptr>{n}{}
@@ -370,7 +371,12 @@ void add_one(T&& t){std::forward<T>(t) += 1.;}
 //__global__ void set_5(cuda::ptr<double> p){*p = 5.;}
 //__global__ void check_5(cuda::ptr<double> p){assert(*p == 5.);}
 
+cuda::managed::ptr<double const> f(){
+	return cuda::managed::ptr<double>{nullptr};
+}
+
 int main(){
+	f();
 	using T = double; static_assert( sizeof(cuda::ptr<T>) == sizeof(T*) );
 	std::size_t const n = 100;
 	{
@@ -410,7 +416,11 @@ int main(){
 	}
 	{
 		cuda::managed::ptr<double> p = nullptr;
-		cuda::managed::ptr<double const> pc = nullptr; pc = p;
+		cuda::managed::ptr<double const> pc = nullptr; 
+		pc = static_cast<cuda::managed::ptr<double const>>(p);
+		double* dp = cuda::managed::ptr<double>{nullptr};
+		auto f = [](double const*){};
+		f(p);
 	}
 }
 #endif
