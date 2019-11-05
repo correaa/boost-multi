@@ -80,7 +80,7 @@ public:
 	template<class U> using rebind = ptr<U, typename std::pointer_traits<Ptr>::template rebind<U>>;
 
 	explicit operator bool() const{return impl_;}
-	explicit operator impl_t&()&{return impl_;}
+	__host__ __device__ explicit operator impl_t&()&{return impl_;}
 	friend ptr to_address(ptr const& p){return p;}
 };
 
@@ -144,9 +144,10 @@ namespace managed{
 	template<typename T, typename Ptr = T*> struct ptr;
 	template<typename T, typename Ptr>
 	struct ptr : cuda::ptr<T, Ptr>{
-		template<class Other, typename = std::enable_if_t<not std::is_same<std::decay_t<Other>, T>{}>> 
+		template<class Other, typename = std::enable_if_t<not std::is_same<std::decay_t<Other>, T>{}>>
+    __host__ __device__
 		explicit ptr(ptr<Other> o) : cuda::ptr<T, Ptr>{o}{}
-	__host__ __device__ 
+    __host__ __device__ 
 		ptr(typename ptr::impl_t o) : cuda::ptr<T, Ptr>{std::move(o)}{}
 	//	ptr(std::nullptr_t n) : cuda::ptr<T, Ptr>{n}{}
 		using pointer = typename ptr::impl_t;
