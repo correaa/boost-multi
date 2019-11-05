@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-clang++ -Wall -Wextra -Wpedantic $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXX -Wall -Wextra $0 -o$0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 
 #define BOOST_TEST_DYN_LINK 

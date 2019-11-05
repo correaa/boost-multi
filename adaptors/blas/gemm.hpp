@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&clang++ -Ofast -std=c++14 -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_MULTI_ADAPTORS_BLAS_GEMM $0.cpp -o $0x \
+(echo '#include"'$0'"'>$0.cpp)&&clang++ -std=c++17 -Wall -Wextra -Wpedantic  -D_TEST_MULTI_ADAPTORS_BLAS_GEMM $0.cpp -o $0x \
 `pkg-config --cflags --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
@@ -9,6 +9,7 @@
 #ifndef MULTI_ADAPTORS_BLAS_GEMM_HPP
 #define MULTI_ADAPTORS_BLAS_GEMM_HPP
 #include "../blas/core.hpp"
+#include "../blas/operations.hpp"
 
 namespace boost{
 namespace multi{
@@ -51,13 +52,23 @@ auto gemm_n(
 	return Cf;
 }
 
+template<class AA, class BB, class A2D, class B2D, class C2D>
+decltype(auto) gemm(){
+}
+
 template<class Op, class AA, class BB, class A2D, class B2D, class C2D>
 decltype(auto) gemm(Op opA, Op opB, AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
 //	gemm_n(opA, opB, a, begin(A), size(A), begin(B), size(B), b, begin(C));
 //	return std::forward<C2D>(C);
 #if 1
 	using std::begin;
+<<<<<<< Updated upstream
 	assert(stride(A[0]) == 1 and stride(B[0])==1 and stride(C[0])==1);
+=======
+	assert(stride(*begin(A)) == 1 and stride(*begin(B))==1 and stride(*begin(C))==1);
+//	using multi::size;
+//	using std::size;
+>>>>>>> Stashed changes
 	if((opA == 'T' or opA == 'C') and (opB == 'T' or opB == 'C')){ // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
 		assert(size(A[0]) == size(B) and size(A)==size(C[0]) and size(B[0]) == size(C));
 		gemm(opA, opB, size(A), size(C), size(B), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
@@ -94,11 +105,14 @@ decltype(auto) gemm(AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
 	return std::forward<C2D>(C);
 }
 
+
+
+
 }}}
 
 #if _TEST_MULTI_ADAPTORS_BLAS_GEMM
 
-#include "../blas/herk.hpp"
+//#include "../blas/herk.hpp"
 
 #include "../../array.hpp"
 #include "../../utility.hpp"
@@ -159,6 +173,7 @@ int main(){
 		gemm('T', 'T', 1., A, B, 0., C); // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
 		print(rotated(C)) << "---\n"; //{{76., 117., 23., 13.}, {159., 253., 47., 42.}}
 	}
+#if 0 // TODO: support c-arrays
 	{
 		double A[2][3] = {
 			{ 1., 3., 4.},
@@ -172,6 +187,7 @@ int main(){
 		double C[4][2];
 		gemm('T', 'T', 1., A, B, 0., C); // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
 	}
+#endif
 	{
 		multi::array<double, 2> const A = {
 			{ 1., 3., 4.},
@@ -250,11 +266,12 @@ int main(){
 		multi::array<complex, 2> C({2, 2});
 		gemm('C', 'N', 1., A, A, 0., C); // C^H = C = A*A^H , C = (A*A^H)^H, C = A*A^H = C^H, if A, B, C are c-ordering (e.g. array or array_ref)
 		print(C) << "---\n";
-		multi::array<complex, 2> CC({2, 2});
-		using multi::blas::herk;
-		herk('U', 'C', 1., A, 0., CC); // CC^H = CC = A*A^H, CC = (A*A^H)^H, CC = A*A^H, C lower triangular
-		print(CC) << "---\n";
+	//	multi::array<complex, 2> CC({2, 2});
+	//	using multi::blas::herk;
+	//	herk('U', 'C', 1., A, 0., CC); // CC^H = CC = A*A^H, CC = (A*A^H)^H, CC = A*A^H, C lower triangular
+	//	print(CC) << "---\n";
 	}
+#if 0 //TODO: support c-arrays
 	{
 		complex const A[2][3] = {
 			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
@@ -262,12 +279,13 @@ int main(){
 		};
 		complex C[2][2];
 		gemm('C', 'N', 1., A, A, 0., C); // C^H = C = A*A^H , C = (A*A^H)^H, C = A*A^H = C^H, if A, B, C are c-ordering (e.g. array or array_ref)
-		print(C) << "---\n";
-		complex CC[2][2];
-		using multi::blas::herk;
-		herk('U', 'C', 1., A, 0., CC); // CC^H = CC = A*A^H, CC = (A*A^H)^H, CC = A*A^H, C lower triangular
-		print(CC) << "---\n";
+	//	print(C) << "---\n";
+	//	complex CC[2][2];
+	//	using multi::blas::herk;
+	//	herk('U', 'C', 1., A, 0., CC); // CC^H = CC = A*A^H, CC = (A*A^H)^H, CC = A*A^H, C lower triangular
+	//	print(CC) << "---\n";
 	}
+#endif
 	{
 		multi::array<complex, 2> const A = {
 			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
@@ -276,13 +294,14 @@ int main(){
 		multi::array<complex, 2> C({3, 3});
 		gemm('N', 'C', 1., A, A, 0., C); // C^H = C = A^H*A , C = (A^H*A)^H, C = A*A^H = C^H, if A, B, C are c-ordering (e.g. array or array_ref)
 	//	print(C) << "---\n";
-		multi::array<complex, 2> CC({3, 3});
-		using multi::blas::herk;
-		herk('U', 'N', 1., A, 0., CC); // CC^H = CC = A*A^H, CC = (A*A^H)^H, CC = A*A^H, C lower triangular
-		print(CC) << "---\n";
+	//	multi::array<complex, 2> CC({3, 3});
+	//	using multi::blas::herk;
+	//	herk('U', 'N', 1., A, 0., CC); // CC^H = CC = A*A^H, CC = (A*A^H)^H, CC = A*A^H, C lower triangular
+	//	print(CC) << "---\n";
 	}
 	return 0;
 	{
+#if 0
 	{
 		using std::complex;
 		{
@@ -317,6 +336,7 @@ int main(){
 	//	print(C) << "---\n";
 	//	print(CC) << "---\n";
 	}
+#endif
 
 	}
 	return 0; 
