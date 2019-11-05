@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&clang++ -std=c++14 -Wfatal-errors -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING -D_DISABLE_CUDA_SLOW `pkg-config cudart --cflags --libs` $0.cpp -o$0x -lboost_timer&&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&clang++ -std=c++14 -Wfatal-errors -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING -D_DISABLE_CUDA_SLOW -lcudart $0.cpp -o$0x -lboost_timer&&$0x&&rm $0x $0.cpp; exit
 #endif
 // © Alfredo A. Correa 2019
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING_HPP
@@ -31,7 +31,7 @@ namespace memcpy_{
 template<typename Dest, typename Src, typename = decltype(memcpy_::type(Dest{}, Src{}))>
 Dest memcpy(Dest dest, Src src, std::size_t byte_count){
 //	assert( byte_count > 1000 );
-	cudaError_t const s = cudaMemcpy(
+	[[maybe_unused]] cudaError_t const s = cudaMemcpy(
 		static_cast<void*>(dest), static_cast<void const*>(src), 
 		byte_count, static_cast<cudaMemcpyKind>(memcpy_::type(dest, src))
 	); assert(s == cudaSuccess);

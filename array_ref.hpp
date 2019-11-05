@@ -832,9 +832,10 @@ public:
 	basic_array<T2, 1, P2> reinterpret_array_cast() const{
 		static_assert( sizeof(T)%sizeof(T2)== 0, "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
 //			this->layout().scale(sizeof(T)/sizeof(T2));
+		auto const thisbase = this->base();
 		return {
 			this->layout().scale(sizeof(T)/sizeof(T2)), 
-			reinterpret_cast<P2>(this->base())
+			reinterpret_cast<P2 const&>(thisbase)
 		};
 	}
 };

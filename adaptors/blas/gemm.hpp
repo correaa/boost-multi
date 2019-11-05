@@ -57,25 +57,25 @@ decltype(auto) gemm(Op opA, Op opB, AA a, A2D const& A, B2D const& B, BB b, C2D&
 //	return std::forward<C2D>(C);
 #if 1
 	using std::begin;
-	assert(stride(*begin(A)) == 1 and stride(*begin(B))==1 and stride(*begin(C))==1);
+	assert(stride(A[0]) == 1 and stride(B[0])==1 and stride(C[0])==1);
 	if((opA == 'T' or opA == 'C') and (opB == 'T' or opB == 'C')){ // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
-		assert(size(*begin(A)) == size(B) and size(A)==size(*begin(C)) and size(*begin(B)) == size(C));
+		assert(size(A[0]) == size(B) and size(A)==size(C[0]) and size(B[0]) == size(C));
 		gemm(opA, opB, size(A), size(C), size(B), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
 		return std::forward<C2D>(C);
 	}
 	if(opA == 'N' and (opB == 'T' or opB == 'C')){
-		assert(size(A) == size(B) and size(*begin(A))==size(*begin(C)) and size(*begin(B)) == size(C));
-		gemm(opA, opB, size(*begin(A)), size(C), size(B), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
+		assert(size(A) == size(B) and size(A[0])==size(C[0]) and size(B[0]) == size(C));
+		gemm(opA, opB, std::get<0>(sizes(A)), size(C), size(B), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
 		return std::forward<C2D>(C);
 	}
 	if((opA == 'T' or opA == 'C') and (opB == 'N')){
-		assert(size(*begin(A)) == size(*begin(B)) and size(A)==size(*begin(C)) and size(B) == size(C));
-		gemm(opA, opB, size(A), size(C), size(*begin(B)), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
+		assert(size(A[0]) == size(B[0]) and size(A)==size(C[0]) and size(B) == size(C));
+		gemm(opA, opB, size(A), size(C), std::get<1>(sizes(B)), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
 		return std::forward<C2D>(C);
 	}
 	if((opA == 'N') and (opB == 'N')){
-		assert(size(A) == size(*begin(B)) and size(*begin(A))==size(*begin(C)) and size(B) == size(C));
-		gemm(opA, opB, size(*begin(A)), size(C), size(*begin(B)), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
+		assert(size(A) == size(B[0]) and size(A[0])==size(C[0]) and size(B) == size(C));
+		gemm(opA, opB, std::get<1>(sizes(A)), size(C), std::get<1>(sizes(B)), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
 		return std::forward<C2D>(C);
 	}
 	assert(0);
