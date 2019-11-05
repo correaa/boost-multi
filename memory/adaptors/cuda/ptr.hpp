@@ -166,7 +166,7 @@ namespace managed{
 		reference operator[](typename ptr::difference_type n){return *((*this)+n);}
 		friend ptr to_address(ptr const& p){return p;}
 		typename ptr::impl_t operator->() const{return ptr::impl_;}
-		operator ptr<T const>() const{return {this->impl_};}
+//		operator ptr<T const>() const{return {this->impl_};}
 	};
 	template<typename Ptr>
 	struct ptr<void, Ptr> : cuda::ptr<void, Ptr>{
