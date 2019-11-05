@@ -164,9 +164,9 @@ namespace managed{
 	__host__ __device__
 		reference operator[](typename ptr::difference_type n){return *((*this)+n);}
 		friend ptr to_address(ptr const& p){return p;}
-		pointer operator->() const{return ptr::impl_;}
+		typename ptr::impl_t operator->() const{return ptr::impl_;}
+		operator ptr<T const>() const{return {this->impl_};}
 	};
-
 	template<typename Ptr>
 	struct ptr<void, Ptr> : cuda::ptr<void, Ptr>{
 		ptr(typename ptr::impl_t o) : cuda::ptr<void, Ptr>{std::move(o)}{}
@@ -407,6 +407,10 @@ int main(){
 		assert( *p == 3.14 );
 #pragma GCC diagnostic pop
 		cuda::managed::ptr<T> P = nullptr;
+	}
+	{
+		cuda::managed::ptr<double> p = nullptr;
+		cuda::managed::ptr<double const> pc = nullptr; pc = p;
 	}
 }
 #endif

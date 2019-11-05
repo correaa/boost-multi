@@ -18,17 +18,17 @@
 namespace boost{
 namespace multi{namespace blas{
 
-template<class T> struct Complex_{T real_; T imag_;};
+template<class T> struct Complex_{T real; T imag;};
 
 template<class A, typename T=typename std::decay_t<A>::element_type::value_type, typename C_=Complex_<T>>
 auto real(A&& a)
-->decltype(member_array_cast<T>(reinterpret_array_cast<C_>(a), &C_::real_)){
-	return member_array_cast<T>(reinterpret_array_cast<C_>(a), &C_::real_);}
+->decltype(member_array_cast<T>(reinterpret_array_cast<C_>(a), &C_::real)){
+	return member_array_cast<T>(reinterpret_array_cast<C_>(a), &C_::real);}
 
 template<class A, typename T=typename std::decay_t<A>::element_type::value_type, typename C_=Complex_<T>>
 auto imag(A&& a)
-->decltype(member_array_cast<T>(reinterpret_array_cast<C_>(a), &C_::imag_)){
-	return member_array_cast<T>(reinterpret_array_cast<C_>(a), &C_::imag_);}
+->decltype(member_array_cast<T>(reinterpret_array_cast<C_>(a), &C_::imag)){
+	return member_array_cast<T>(reinterpret_array_cast<C_>(a), &C_::imag);}
 
 template<class It, class F> class involuter;
 
@@ -213,7 +213,7 @@ int main(){
 	};
 	multi::array<complex, 2> Acomplex = A;
 	multi::array<complex, 2> B = {
-		{1. - 3.*I, 6.  + 2.*I},
+		{1. - 3.*I, 6. + 2.*I},
 		{8. + 2.*I, 2. + 4.*I},
 		{2. - 1.*I, 1. + 1.*I}
 	};
@@ -229,7 +229,7 @@ int main(){
 	};
 	using multi::blas::real;
 	using multi::blas::imag;
-
+	
 	assert( Breal == real(B) );
 	assert( real(B) == Breal );
 	assert( imag(B) == Bimag );
@@ -239,6 +239,9 @@ int main(){
 	auto&& Bconj = multi::static_array_cast<complex, multi::blas::detail::conjugater<complex*>>(B);
 	assert( size(Bconj) == size(B) );
 	assert( conj(B[1][2]) == Bconj[1][2] );
+
+
+
 
 //	auto&& BH = multi::blas::hermitized(B);
 //	assert( BH[1][2] == conj(B[2][1]) );
