@@ -620,9 +620,8 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout> :
 protected:
 	template<class A>
 	void intersection_assign_(A&& other) const{
-	//	auto is = intersection(types::extension(), extension(other));
-		for(auto i : intersection(types::extension(), extension(other)))
-			operator[](i) = std::forward<A>(other)[i];
+		for(auto idx : intersection(types::extension(), extension(other)))
+			operator[](idx) = std::forward<A>(other)[idx];
 	}
 protected:
 	template<class TT, dimensionality_type DD, typename EP, class LLayout> friend struct basic_array;
