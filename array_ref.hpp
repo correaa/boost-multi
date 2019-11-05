@@ -589,11 +589,7 @@ private:
 	auto base() const{return data_;}
 	friend auto base(array_iterator const& self){return self.base();}
 public:
-//#if defined(__CUDA__)// and defined(__CUDA_ARCH__)
-#if defined(__CUDACC__)
-	__host__ __device__ 
-#endif
-	auto data() const{return data_;}
+	HD auto data() const{return data_;}
 	auto stride() const{return stride_;}
 	friend auto stride(array_iterator const& self){return self.stride();}
 	array_iterator& operator++(){increment(); return *this;}
@@ -663,30 +659,24 @@ public:
 		)// std::declval<basic_array const&>().assign(begin(std::forward<A>(std::declval<A&&>())), end(std::forward<A>(std::declval<A&&>()))))
 	>
 	basic_array const& operator=(A&& o) const{
-		using multi::extension;
-	//	assert(this->extension() == extension(o));
-		using std::begin; using std::end;
+		{using multi::extension; assert(this->extension() == extension(o));}
+		using std::begin; 
+		using std::end;
 		this->assign(begin(std::forward<A>(o)), end(std::forward<A>(o)));
 		return *this;
 	}
 	basic_array const& operator=(basic_array const& o) const{
-		using multi::extension;
-		assert(this->extension() == extension(o));
-		using std::begin; using std::end;
-		this->assign(begin(o), end(o));
+		assert(this->extension() == o.extension());
+		this->assign(o.begin(), o.end());
 		return *this;
 	}
 	template<class TT, dimensionality_type DD, class... As>
 	basic_array const& operator=(basic_array<TT, DD, As...> const& o) const{
-		using multi::extension;
-		assert(this->extension() == extension(o));
-		using std::begin; using std::end;
-		this->assign(begin(o), end(o));
+		assert(this->extension() == o.extension());
+		this->assign(o.begin(), o.end());
 		return *this;
 	}
 	HD typename types::reference operator[](typename types::index i) const{
-	//	return *(types::base_+Layout::operator()(i));//types::base_[Layout::operator()(i)];
-	//	assert( types::base_ == this->base() );
 		return *(this->base() + Layout::operator()(i));//types::base_[Layout::operator()(i)];
 	}
 	template<class Tuple, typename = std::enable_if_t<(std::tuple_size<std::decay_t<Tuple>>{}>1) > >
