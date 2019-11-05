@@ -95,7 +95,7 @@ protected:
 	__host__ __device__ ptr(ptr<TT const> const& p) : impl_{const_cast<T*>(p.impl_)}{}
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 public:
-	template<class Other> explicit ptr(Other const& o) : impl_{static_cast<impl_t>(o.impl_)}{}
+	template<class Other> __host__ __device__ explicit ptr(Other const& o) : impl_{static_cast<impl_t>(o.impl_)}{}
 //	explicit ptr(ptr<void, void*> other) : impl_{static_cast<impl_t>(other.impl_)}{}
 	__host__ __device__ 
 	explicit ptr(impl_t p) : impl_{p}{}//Cuda::pointer::is_device(p);}
