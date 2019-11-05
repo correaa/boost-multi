@@ -277,7 +277,7 @@ public:
 //	typename static_array::allocator_type get_allocator() const{return static_cast<typename static_array::allocator_type const&>(*this);}
 	friend typename static_array::allocator_type get_allocator(static_array const& self){return self.get_allocator();}
 	HD typename static_array::element_ptr       data()      {return ref::data();}
-	HD typename static_array::element_const_ptr data() const{return ref::data();}
+	HD auto data() const{return typename static_array::element_const_ptr{ref::data()};}
 	friend typename static_array::element_ptr       data(static_array&       s){return s.data();}
 	friend typename static_array::element_const_ptr data(static_array const& s){return s.data();}
 
