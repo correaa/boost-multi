@@ -118,6 +118,9 @@ public:
 	explicit operator bool() const{return impl_;}
 	__host__ __device__ explicit operator impl_t&()&{return impl_;}
 	__host__ __device__ explicit operator impl_t const&() const&{return impl_;}
+//	impl_t operator->() const{return impl_;}
+	template<class PM>
+	decltype(auto) operator->*(PM pm) const{return *ptr<std::decay_t<decltype(impl_->*pm)>, decltype(&(impl_->*pm))>{&(impl_->*pm)};}
 	explicit operator typename std::pointer_traits<impl_t>::template rebind<void>()&{return impl_;}
 	ptr& operator++(){++impl_; return *this;}
 	ptr& operator--(){--impl_; return *this;}
@@ -125,6 +128,8 @@ public:
 	ptr  operator--(int){auto tmp = *this; --(*this); return tmp;}
 	ptr& operator+=(typename ptr::difference_type n){impl_+=n; return *this;}
 	ptr& operator-=(typename ptr::difference_type n){impl_+=n; return *this;}
+//	friend bool operator==(ptr const& s, ptr const& t){return s.impl_==t.impl_;}
+//	friend bool operator!=(ptr const& s, ptr const& t){return s.impl_!=t.impl_;}
 	__host__ __device__ 
 	ptr operator+(typename ptr::difference_type n) const{return ptr{impl_ + n};}
 	ptr operator-(typename ptr::difference_type n) const{return ptr{impl_ - n};}
@@ -144,6 +149,8 @@ namespace managed{
 	template<typename T, typename Ptr = T*> struct ptr;
 	template<typename T, typename Ptr>
 	struct ptr : cuda::ptr<T, Ptr>{
+		ptr(ptr<std::remove_const<T>> const& other) : cuda::ptr<T, Ptr>{other.impl_}{}
+		template<class TT> using rebind = ptr<TT, typename std::pointer_traits<Ptr>::template rebind<TT>>;
 		template<class Other, typename = std::enable_if_t<not std::is_same<std::decay_t<Other>, T>{}>>
     __host__ __device__
 		explicit ptr(ptr<Other> o) : cuda::ptr<T, Ptr>{o}{}
@@ -161,13 +168,15 @@ namespace managed{
 	__host__ [[SLOW]] operator typename ptr::impl_t&()&{return ptr::impl_;}
 	__host__ [[SLOW]] operator typename ptr::impl_t const&() const&{return ptr::impl_;}
 #endif
+	template<class PM>
+	decltype(auto) operator->*(PM pm) const{return ptr::impl_->*pm;}
 	__host__ __device__ 
 		ptr operator+(typename ptr::difference_type n) const{return ptr{ptr::impl_ + n};}
 	__host__ __device__
 		reference operator[](typename ptr::difference_type n){return *((*this)+n);}
 		friend ptr to_address(ptr const& p){return p;}
 		typename ptr::impl_t operator->() const{return ptr::impl_;}
-//		operator ptr<T const>() const{return {this->impl_};}
+		operator ptr<T const>() const{return ptr<T const>{this->impl_};}
 	};
 	template<typename Ptr>
 	struct ptr<void, Ptr> : cuda::ptr<void, Ptr>{
@@ -186,7 +195,9 @@ namespace managed{
 
 template<
 	class Alloc, class InputIt, class Size, class... T, class ForwardIt = ptr<T...>,
-	typename InputV = typename std::pointer_traits<InputIt>::element_type, typename ForwardV = typename std::pointer_traits<ForwardIt>::element_type
+	typename InputV = typename std::pointer_traits<InputIt>::element_type, 
+	typename ForwardV = typename std::pointer_traits<ForwardIt>::element_type
+	, typename = std::enable_if_t<std::is_constructible<ForwardV, InputV>{}>
 >
 ForwardIt uninitialized_copy_n(Alloc&, InputIt f, Size n, ptr<T...> d){
 	if(std::is_trivially_constructible<ForwardV, InputV>{})
@@ -206,6 +217,7 @@ struct ref : private ptr<T>{
 private:
 	__host__ __device__ ref(pointer p) : ptr<T>{std::move(p)}{}
 //	friend class ptr<T>;
+public:
 	template<class TT, class PP> friend struct ptr;
 	ptr<T> operator&(){return *this;}
 	struct skeleton_t{
@@ -359,6 +371,7 @@ public:
 #include "../cuda/malloc.hpp"
 
 #include<cstring>
+#include<iostream>
 
 namespace multi = boost::multi;
 namespace cuda = multi::memory::cuda;
@@ -423,6 +436,7 @@ int main(){
 		auto f = [](double const*){};
 		f(p);
 	}
+	std::cout << "Finish" << std::endl;
 }
 #endif
 #endif

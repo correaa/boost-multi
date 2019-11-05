@@ -527,14 +527,16 @@ public:
 	basic_array<T2, D, P2> member_cast(PM pm) const{
 		static_assert(sizeof(T)%sizeof(T2) == 0, 
 			"array_member_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements");
+	//	return {this->layout().scale(sizeof(T)/sizeof(T2)), &(this->base_->*pm)};
 		return {this->layout().scale(sizeof(T)/sizeof(T2)), &(this->base_->*pm)};
 	}
-	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
+	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
 	basic_array<std::decay_t<T2>, D, P2> reinterpret_array_cast() const{
 		static_assert( sizeof(T)%sizeof(T2)== 0, "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
+		auto thisbase = this->base();
 		return {
 			this->layout().scale(sizeof(T)/sizeof(T2)), 
-			reinterpret_cast<P2>(this->base())
+			reinterpret_cast<P2 const&>(thisbase)
 		};
 	}
 };
@@ -705,7 +707,7 @@ public:
 	decltype(auto) operator()(typename types::index i) const{return operator[](i);}
 	template<typename Size>
 	auto partitioned(Size const& s) const{
-		assert(this->layout().nelems_%s==0);
+		assert( this->layout().nelems_%s==0 );
 		multi::layout_t<2> new_layout{this->layout(), this->layout().nelems_/s, 0, this->layout().nelems_};
 		new_layout.sub.nelems_/=s;
 		return basic_array<T, 2, ElementPtr>{new_layout, types::base_};

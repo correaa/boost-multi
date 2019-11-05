@@ -66,7 +66,7 @@ public:
 	friend auto operator==(DecayType&& other, Involuted const& self)
 	->decltype(other == self.operator decay_type()){
 		return other == self.operator decay_type();}
-	auto imag() const{return static_cast<decay_type>(*this).imag();}
+//	auto imag() const{return static_cast<decay_type>(*this).imag();}
 	template<class Any> friend auto operator<<(Any&& a, involuted const& self)->decltype(a << std::declval<decay_type>()){return a << self.operator decay_type();}
 };
 
@@ -138,7 +138,12 @@ struct conjugate{
 };
 
 namespace detail{
-template<class Ref> using conjugated = involuted<Ref, conjugate>;
+template<class Ref> struct conjugated : involuted<Ref, conjugate>{
+	auto real() const{return static_cast<typename conjugated::decay_type>(*this).real();}
+	auto imag() const{return static_cast<typename conjugated::decay_type>(*this).imag();}
+	friend auto imag(conjugated const& self){return self.imag();}
+	friend auto real(conjugated const& self){return self.real();}	
+};
 template<class It>  using conjugater = involuter<It, conjugate>;
 
 template<class It> conjugater<It> make_conjugater(It it){return {it};}
