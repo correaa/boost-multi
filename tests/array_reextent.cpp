@@ -1,9 +1,9 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX catch_main.o -std=c++17 -Wall -Wextra -Wpedantic $0 -o $0x &&$0x&& rm $0x; exit
+$CXX .DCATCH_CONFIG_MAIN.o -Wall -Wextra -Wpedantic $0 -o$0x &&$0x&& rm $0x;exit
 #endif
 //  (C) Copyright Alfredo A. Correa 2018-2019
 
-#include<catch2/catch.hpp>
+#include<catch.hpp>
 
 #include "../array.hpp"
 

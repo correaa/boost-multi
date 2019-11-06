@@ -7,16 +7,19 @@
 
 #include "../../adaptors/cuda/clib.hpp"
 #include "../../adaptors/cuda/ptr.hpp"
+#include "../../adaptors/cuda/managed/ptr.hpp"
 
 namespace boost{namespace multi{
 namespace memory{
 
 namespace cuda{
 	using size_t = Cuda::size_t;
+	[[nodiscard]]
 	ptr<void> malloc(size_t bytes){return ptr<void>{Cuda::malloc(bytes)};}
 	void free(ptr<void> p){Cuda::free(static_cast<void*>(p));}
 
 namespace managed{
+	[[nodiscard]]
 	managed::ptr<void> malloc(size_t bytes){return managed::ptr<void>{Cuda::Managed::malloc(bytes)};}
 	using cuda::free;
 }

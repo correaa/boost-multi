@@ -91,9 +91,9 @@ template<class T, class D>
 struct addable2{
 	using difference_type = D;
 	template<class TT, typename = std::enable_if_t<std::is_base_of<T, TT>{}> >
-	friend T operator+(TT&& t, difference_type const& d){T tmp{std::forward<TT>(t)}; tmp+=d; return tmp;}
+	friend HD T operator+(TT&& t, difference_type const& d){T tmp{std::forward<TT>(t)}; tmp+=d; return tmp;}
 	template<class TT, typename = std::enable_if_t<std::is_base_of<T, TT>{}> >
-	friend T operator+(difference_type const& d, TT&& t){return std::forward<TT>(t) + d;}
+	friend HD T operator+(difference_type const& d, TT&& t){return std::forward<TT>(t) + d;}
 };
 
 template<class T, class D>

@@ -1,9 +1,9 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&& time clang++ -O3 -std=c++17 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_FFTW $0.cpp catch_main.o -o$0x -lfftw3 && $0x && rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&clang++ -O3 -std=c++17 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_FFTW $0.cpp .DCATCH_CONFIG_MAIN -o$0x `pkg-config --libs fftw3`&&$0x&&rm $0x $0.cpp; exit
 #endif
 #ifndef MULTI_ADAPTORS_FFTW_HPP
 #define MULTI_ADAPTORS_FFTW_HPP
-//  (C) Copyright Alfredo A. Correa 2018-2019
+// © Alfredo A. Correa 2018-2019
 
 #include<fftw3.h>
 
@@ -185,7 +185,7 @@ template<class T, class Tuple> constexpr auto to_array(Tuple&& t){
 
 #if(__cpp_if_constexpr>=201606)
 //https://stackoverflow.com/a/35110453/225186
-template<class T>constexpr std::remove_reference_t<T> _constx(T&&t){return t;}
+template<class T> constexpr std::remove_reference_t<T> _constx(T&&t){return t;}
 #define logic_assert(C, M) \
 	if constexpr(noexcept(_constx(C))) static_assert((C), M); else assert((C)&& M);
 #else
@@ -311,10 +311,10 @@ I& dft_inplace(I&& i, sign s, strategy st = fftw::estimate){
 #include<numeric>
 
 //#define CATCH_CONFIG_MAIN
-#include<catch2/catch.hpp>
+#include<catch.hpp>
 
 namespace{
-	using namespace Catch::literals;
+//	using namespace Catch::literals;
 
 	using std::cout;
 	namespace multi = boost::multi;
@@ -336,11 +336,11 @@ TEST_CASE("fftw 1D power", "[report]"){
 	multi::array<complex, 1> in(N, 0.); assert( size(in) == N );
 	std::iota(begin(in), end(in), 1.);
 	multi::array<complex, 1> out(extensions(in));
-	static_assert(dimensionality(in)==dimensionality(out));
+	static_assert(dimensionality(in)==dimensionality(out), "!");
 	auto p = multi::fftw_plan_dft(in, out, FFTW_FORWARD, FFTW_PRESERVE_INPUT);
 	fftw_execute(p); 
 	fftw_destroy_plan(p);
-	REQUIRE( (power(in) - power(out)/num_elements(out)) == (0_a).margin(1e-17) );
+	REQUIRE( (power(in) - power(out)/num_elements(out)) == Approx(0).margin(1e-17) );
 }
 
 TEST_CASE("fftw 1D allocator power", "[report]"){
@@ -351,7 +351,7 @@ TEST_CASE("fftw 1D allocator power", "[report]"){
 	auto p = multi::fftw_plan_dft(in, out, FFTW_FORWARD, FFTW_PRESERVE_INPUT);
 	fftw_execute(p);
 	fftw_destroy_plan(p);
-	REQUIRE( (power(in) - power(out)/num_elements(out)) == (0_a).margin(1e-12) );
+	REQUIRE( (power(in) - power(out)/num_elements(out)) == Approx(0).margin(1e-12) );
 }
 
 TEST_CASE("fftw 2D power", "[report]"){
@@ -360,7 +360,7 @@ TEST_CASE("fftw 2D power", "[report]"){
 	multi::array<complex, 2> out(extensions(in));
 	auto p = multi::fftw_plan_dft(in, out, FFTW_FORWARD, FFTW_PRESERVE_INPUT);
 	fftw_execute(p); fftw_destroy_plan(p);
-	REQUIRE( power(in) - power(out)/num_elements(out) == (0_a).margin(1e-12) );
+	REQUIRE( power(in) - power(out)/num_elements(out) == Approx(0).margin(1e-12) );
 }
 
 TEST_CASE("fftw 2D power plan", "[report]"){
@@ -369,26 +369,26 @@ TEST_CASE("fftw 2D power plan", "[report]"){
 	multi::array<complex, 2> out(extensions(in));
 	multi::fftw::plan const p{in, out, FFTW_FORWARD, FFTW_PRESERVE_INPUT};
 	p(); //execute(p); //p.execute();
-	REQUIRE( power(in) - power(out)/num_elements(out) == (0_a).margin(1e-8) );
+	REQUIRE( power(in) - power(out)/num_elements(out) == Approx(0).margin(1e-8) );
 }
 
 TEST_CASE("fftw 2D power dft", "[report]"){
 	multi::array<complex, 2> in({16, 16}); std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);
 	multi::array<complex, 2> out(extensions(in));
 	multi::fftw::dft(in, out, multi::fftw::forward);
-	REQUIRE( power(in) - power(out)/num_elements(out) == (0_a).margin(1e-8) );
+	REQUIRE( power(in) - power(out)/num_elements(out) == Approx(0).margin(1e-8) );
 }
 
 TEST_CASE("fftw 2D power dft out", "[report]"){
 	multi::array<complex, 2> in({16, 16}); std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);
 	auto out = multi::fftw::dft(in, multi::fftw::forward, multi::fftw::estimate);
-	REQUIRE( power(in) - power(out)/num_elements(out) == (0_a).margin(1e-8) );
+	REQUIRE( power(in) - power(out)/num_elements(out) == Approx(0).margin(1e-8) );
 }
 
 TEST_CASE("fftw 2D power dft out default", "[report]"){
 	multi::array<complex, 2> in({16, 16}); std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);
 	auto out = multi::fftw::dft(in, fftw::forward);
-	REQUIRE( power(in) - power(out)/num_elements(out) == (0_a).margin(1e-8) );
+	REQUIRE( power(in) - power(out)/num_elements(out) == Approx(0).margin(1e-8) );
 }
 
 TEST_CASE("fftw 2D c-array power", "[report]"){
@@ -399,20 +399,20 @@ TEST_CASE("fftw 2D c-array power", "[report]"){
 	complex out[N][N];
 	auto p = multi::fftw_plan_dft(in, out, FFTW_FORWARD | FFTW_PRESERVE_INPUT);
 	fftw_execute(p); fftw_destroy_plan(p);
-	REQUIRE( power(in) - power(out)/num_elements(out) == (0_a).margin(1e-8) );
+	REQUIRE( power(in) - power(out)/num_elements(out) == Approx(0).margin(1e-8) );
 }
 
 TEST_CASE("fftw 3D power", "[report]"){
 	multi::array<complex, 3> in({4, 4, 4}); std::iota(in.data_elements(), in.data_elements() + in.num_elements(), 1.2);
 	multi::array<complex, 3> out = fftw::dft(in, fftw::forward);
-	REQUIRE( power(in) - power(out)/num_elements(out) == (0_a).margin(1e-10) );
+	REQUIRE( power(in) - power(out)/num_elements(out) == Approx(0).margin(1e-10) );
 }
 
 TEST_CASE("fftw 3D power in place", "[report]"){
 	multi::array<complex, 3> io({4, 4, 4}); std::iota(io.data_elements(), io.data_elements() + io.num_elements(), 1.2);
 	auto powerin = power(io);
 	fftw::dft_inplace(io, fftw::forward);
-	REQUIRE( powerin - power(io)/num_elements(io) == (0_a).margin(1e-10) );
+	REQUIRE( powerin - power(io)/num_elements(io) == Approx(0).margin(1e-10) );
 }
 
 TEST_CASE("fftw 3D power in-place over ref inplace", "[report]"){
@@ -420,14 +420,14 @@ TEST_CASE("fftw 3D power in-place over ref inplace", "[report]"){
 	auto powerin = power(io);
 //	fftw::dft_inplace(multi::array_ref<complex, 3>(io.data(), io.extensions()), fftw::forward);
 	fftw::dft_inplace(multi::array_ref(data_elements(io), extensions(io)), fftw::forward);
-	REQUIRE( powerin - power(io)/num_elements(io) == (0_a).margin(1e-10) );
+	REQUIRE( powerin - power(io)/num_elements(io) == Approx(0).margin(1e-10) );
 }
 
 TEST_CASE("fftw 3D power out-of-place over ref", "[report]"){
 	multi::array<complex, 3> in({4, 4, 4}); std::iota(data_elements(in), data_elements(in)+num_elements(in), 1.2);
 	multi::array<complex, 3> out({4, 4, 4});
 	multi::array_ref<complex, 3>(data_elements(out), extensions(out)) = fftw::dft(multi::array_cref<complex, 3>(data_elements(in), extensions(in)), fftw::forward);
-	REQUIRE( power(in) - power(out)/num_elements(out) == (0_a).margin(1e-10) );
+	REQUIRE( power(in) - power(out)/num_elements(out) == Approx(0).margin(1e-10) );
 }
 
 TEST_CASE("fftw 3D power out-of-place over temporary", "[report]"){
@@ -439,9 +439,8 @@ TEST_CASE("fftw 3D power out-of-place over temporary", "[report]"){
 		return in;
 	};
 	auto out = fftw::dft(f(), fftw::forward);
-	REQUIRE( powerin - power(out)/num_elements(out) == (0_a).margin(1e-10) );
+	REQUIRE( powerin - power(out)/num_elements(out) == Approx(0).margin(1e-10) );
 }
-
 
 #if 0
 {

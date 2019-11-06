@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-clang++ -O3 -std=c++14 -Wall -Wextra -Wpedantic -Wfatal-errors $0 -o $0x -DBOOST_TEST_DYN_LINK -lboost_unit_test_framework &&$0x&& rm $0x; exit
+$CXX -Wall -Wextra -Wpedantic $0 -o $0x -DBOOST_TEST_DYN_LINK -lboost_unit_test_framework &&$0x&& rm $0x; exit
 #endif
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi allocators"
@@ -46,6 +46,12 @@ BOOST_AUTO_TEST_CASE(array_allocators){
 	BOOST_REQUIRE( VA[4][1][1] == 99. );
 }
 {
+	multi::array<double, 3> A{};
+	BOOST_REQUIRE( size(A) == 0 );
+	multi::array<double, 3> B{};
+	BOOST_REQUIRE( size(B) == 0 );
+}
+{
 	multi::array<multi::array<double, 3>, 2> AA({10, 20}, multi::array<double, 3>{});
 	for(int i = 0; i != 10; ++i)
 		for(int j = 0; j != 20; ++j)
@@ -53,7 +59,6 @@ BOOST_AUTO_TEST_CASE(array_allocators){
 	BOOST_REQUIRE( size(AA[9][19]) == 9 + 19 );
 	BOOST_REQUIRE( AA[9][19][1][1][1] == 99. );
 }
-return;
 {
 	multi::array<multi::array<double, 3>, 2> AA({10, 20}, multi::array<double, 3>{});
 	BOOST_REQUIRE( size(AA[9][19]) == 0 );
@@ -66,9 +71,9 @@ return;
 {
 	multi::array<multi::array<double, 3>, 2> AA({100, 200});
 	AA[9][19] = multi::array<double, 3>{};
+//	return;
 	BOOST_REQUIRE( size(AA[9][19]) == 0 );
-
-//	BOOST_REQUIRE( size(AA[8][18]) == 0 ); // no, cannot check because multi::array is only partially formed
+	BOOST_REQUIRE( size(AA[8][18]) == 0 ); // no, cannot check because multi::array is only partially formed
 
 	for(int i = 0; i != 10; ++i)
 		for(int j = 0; j != 20; ++j)

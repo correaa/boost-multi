@@ -1,11 +1,11 @@
 #ifdef COMPILATION_INSTRUCTIONS
-clang++ -Ofast -std=c++17 -Wall -Wextra -Wpedantic $0 -o$0x -lboost_timer -ltbb &&$0x&&rm $0x;exit
+clang++ -O2 -std=c++17 -Wall -Wextra -Wpedantic $0 -o$0x -lboost_timer `pkg-config --libs tbb` &&$0x&&rm $0x;exit
 #endif
 
 #include "../../multi/array.hpp"
 
 #include<numeric> // iota
-#include<algorithm>
+#include<algorithm> // transform
 #include<execution>
 
 namespace multi = boost::multi;
@@ -14,16 +14,15 @@ template<class Matrix>
 Matrix&& lu_fact(Matrix&& A){
 	using multi::size;
 	auto m = size(A);// n = size(A[0]);//std::get<1>(sizes(A));
-	using std::begin; using std::end;
-	for(auto k = 0*m; k != m - 1; ++k){
+	using std::begin; using std::end; using multi::rotated;
+	for(auto k = 0*m; k != std::min(m - 1, size(rotated(A))); ++k){
 		auto const& Ak = A[k];
-		if(k > size(Ak)) continue;
+		auto const& Akk = Ak[k];
 		std::for_each(std::execution::par, 
 			begin(A) + k + 1, end(A), [&](auto&& Ai){
-				Ai[k] /= Ak[k];
 				std::transform(
 					begin(Ai)+k+1, end(Ai), begin(Ak)+k+1, begin(Ai)+k+1, 
-					[z=Ai[k]](auto&& a, auto&& b){return a  - z*b;}
+					[z=(Ai[k]/=Akk)](auto&& a, auto&& b){return a-z*b;}
 				);
 			}
 		);

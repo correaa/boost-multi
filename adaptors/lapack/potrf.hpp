@@ -128,9 +128,9 @@ BOOST_AUTO_TEST_CASE(lapack_potrf, *boost::unit_test::tolerance(0.00001) ){
 	using multi::lapack::triangular;
 	using multi::lapack::potrf;
 	potrf(triangular::upper, begin(A), end(A)); // A is hermitic in the upper triangular (implicit hermitic below)
-	print(A);
 	BOOST_TEST( real(A[1][2]) == 3.78646 );
 	BOOST_TEST( imag(A[1][2]) == 0.0170734 );
+	BOOST_TEST( A[2][1] != A[2][1] );
 }
 {
 	multi::array<complex, 2> A =
@@ -141,8 +141,9 @@ BOOST_AUTO_TEST_CASE(lapack_potrf, *boost::unit_test::tolerance(0.00001) ){
 	using multi::lapack::triangular;
 	using multi::lapack::potrf;
 	potrf(triangular::upper, A); // A is hermitic in the upper triangular (implicit hermitic below)
-	print(A);
-	
+	BOOST_TEST( real(A[1][2]) == 3.78646 );
+	BOOST_TEST( imag(A[1][2]) == 0.0170734 );
+	BOOST_TEST( A[2][1] != A[2][1] );
 }
 {
 	multi::array<complex, 2> A =
@@ -157,6 +158,9 @@ BOOST_AUTO_TEST_CASE(lapack_potrf, *boost::unit_test::tolerance(0.00001) ){
 	print(Att);
 	potrf(triangular::upper, Att); // A is hermitic in the upper triangular (implicit hermitic below)
 	print(Att);
+	BOOST_TEST( real(Att[1][2]) == 3.78646 );
+	BOOST_TEST( imag(Att[1][2]) == 0.0170734 );
+	BOOST_TEST( Att[2][1] != Att[2][1] );
 }
 {
 	multi::array<complex, 2> A =
@@ -167,7 +171,20 @@ BOOST_AUTO_TEST_CASE(lapack_potrf, *boost::unit_test::tolerance(0.00001) ){
 	using multi::lapack::triangular;
 	using multi::lapack::potrf;
 	potrf(A); // A is hermitic in the upper triangular (implicit hermitic below)
-	print(A);
+	BOOST_TEST( real(A[1][2]) == 3.78646 );
+	BOOST_TEST( imag(A[1][2]) == 0.0170734 );
+	BOOST_TEST( A[2][1] != A[2][1] );
+}
+{
+	multi::array<complex, 2> A =
+		{{190., 126., 125.},
+		 {NAN , 111., 122.},
+		 {NAN , NAN , 135.}}
+	;
+	using multi::lapack::triangular;
+	using multi::lapack::potrf;
+	potrf(A); // A is hermitic in the upper triangular (implicit hermitic below)
+	BOOST_TEST( A[2][1] != A[2][1] );
 }
 
 //	multi::lapack::uhermitian<complex> H{std::move(A)};

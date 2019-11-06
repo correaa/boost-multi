@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&clang++ -std=c++14 `#-Wall -Wextra` -D_DISABLE_CUDA_SLOW -D_TEST_MULTI_MEMORY_CUDA_ALLOCATOR -D_MULTI_MEMORY_CUDA_DISABLE_ELEMENT_ACCESS $0.cpp -o $0x -lcudart && $0x && rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&nvcc -std=c++14 `#-Wall -Wextra` -D_DISABLE_CUDA_SLOW -D_TEST_MULTI_MEMORY_CUDA_ALLOCATOR -D_MULTI_MEMORY_CUDA_DISABLE_ELEMENT_ACCESS $0.cpp -o $0x -lcudart && $0x && rm $0x $0.cpp; exit
 #endif
 
 #ifndef MULTI_MEMORY_ADAPTORS_CUDA_ALLOCATOR_HPP
@@ -72,6 +72,7 @@ public:
 	}
 };
 
+#if 0
 namespace managed{
 	template<class T=void>
 	struct allocator : cuda::allocator<T>{
@@ -88,7 +89,7 @@ namespace managed{
 		template<class P> void destroy(P p){p->~T();}
 	};
 }
-
+#endif
 
 template<> 
 class allocator<std::max_align_t> : allocation_counter{
@@ -140,16 +141,46 @@ template<class T> void add_one(T&& t){std::forward<T>(t) += 1.;}
 using std::cout;
 
 int main(){
+#if 0
 	{
-		multi::static_array<double, 1> A1(32, double{}); A1[17] = 3.;
-		multi::static_array<double, 1, cuda::allocator<double>> A1_gpu = A1;
-		assert( A1_gpu[17] == 3 );
+		multi::static_array<double, 1> A(32, double{}); A[17] = 3.;
+		multi::static_array<double, 1, cuda::allocator<double>> A_gpu = A;
+		assert( A_gpu[17] == 3 );
+
+		multi::static_array<double, 1, cuda::managed::allocator<double>> A_mgpu = A;
+		assert( A_mgpu[17] == 3 );
+		
+		multi::static_array<double, 1, cuda::managed::allocator<double>> AA_mgpu = A_gpu;
+		assert( A_mgpu[17] == 3 );
+	}
+	{
+		multi::array<double, 1> A(32, double{}); A[17] = 3.;
+		multi::array<double, 1, cuda::allocator<double>> A_gpu = A;
+		assert( A_gpu[17] == 3 );
+
+		multi::array<double, 1, cuda::managed::allocator<double>> A_mgpu = A;
+		assert( A_mgpu[17] == 3 );
+		
+		multi::array<double, 1, cuda::managed::allocator<double>> AA_mgpu = A_gpu;
+		assert( A_mgpu[17] == 3 );
+	}
+	{
+		multi::array<double, 2> A_cpu({32, 64}, double{}); A_cpu[17][22] = 3.;
+		multi::array<double, 2, cuda::allocator<double>> A_gpu = A_cpu;
+		assert( A_gpu[17][22] == 3 );
+
+		multi::array<double, 2, cuda::managed::allocator<double>> A_mgpu = A_cpu;
+		assert( A_mgpu[17][22] == 3 );
+		
+		multi::array<double, 2, cuda::managed::allocator<double>> AA_mgpu = A_gpu;
+		assert( AA_mgpu[17][22] == 3 );
 	}
 	{
 		multi::static_array<double, 1> A1(32, double{}); A1[17] = 3.;
 		multi::static_array<double, 1, cuda::managed::allocator<double>> A1_gpu = A1;
 		assert( A1_gpu[17] == 3 );
 	}
+#endif
 	{
 		multi::array<double, 1> A1(32, double{}); A1[17] = 3.;
 		multi::array<double, 1, cuda::allocator<double>> A1_gpu = A1;

@@ -13,10 +13,12 @@
 
 #include<iostream> //debug
 
+#ifndef HD
 #if defined(__CUDACC__)
 #define HD __host__ __device__
 #else
 #define HD 
+#endif
 #endif
 
 namespace boost{

@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-`#nvcc -x=cu -ccbin=`$CXX -O3 -std=c++17 -Wall -Wextra -Wpedantic $0 -o $0x &&$0x&&rm $0x;exit
+nvcc -x cu -O3 $0 -o $0x &&$0x&&rm $0x;exit
 #endif
 
 #include "../array.hpp"

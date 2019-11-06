@@ -7,6 +7,14 @@
 
 //#include<boost/iterator/iterator_facade.hpp>
 
+#ifndef HD
+#if defined(__CUDACC__)
+#define HD __host__ __device__
+#else
+#define HD 
+#endif
+#endif
+
 #include<iterator> // std::random_iterator_tag // std::reverse_iterator
 
 namespace boost{
@@ -16,7 +24,7 @@ namespace multi{
 template<class Self, typename ValueType, class AccessCategory, typename Reference = ValueType&,  typename DifferenceType = typename std::pointer_traits<ValueType*>::difference_type, typename Pointer = ValueType*>
 class iterator_facade{
 	using self_type = Self;
-	constexpr self_type& self(){return *this;}
+HD	constexpr self_type& self(){return *this;}
 	constexpr self_type const& self() const{return static_cast<Self const&>(*this);}
 public:
 	using value_type = ValueType;
@@ -26,7 +34,7 @@ public:
 	using iterator_category = AccessCategory;
 	constexpr auto operator==(self_type const& o) const{return o == self();}
 	constexpr auto operator!=(self_type const& o) const{return not(o == self());}
-	constexpr self_type operator+(difference_type n) const{self_type r = self(); r += n; return r;}
+HD	constexpr self_type operator+(difference_type n) const{self_type r = self(); r += n; return r;}
 	constexpr self_type operator-(difference_type n) const{self_type r = self(); r -= n; return r;}
 };
 

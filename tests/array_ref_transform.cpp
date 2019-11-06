@@ -1,43 +1,147 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 -std=c++14 -Wall -Wfatal-errors -DBOOST_RESULT_OF_USE_DECLTYPE $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
+clang++ -O3 -std=c++17 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0x&&$0x&&rm $0x; exit
 #endif
 
-#include "../array_ref.hpp"
 #include "../array.hpp"
 
 #include<complex>
 #include<iostream>
-#include<boost/iterator/transform_iterator.hpp>
+#include<boost/iterator/transform_iterator.hpp> //might need -DBOOST_RESULT_OF_USE_DECLTYPE
 
 using std::cout; using std::cerr;
 namespace multi = boost::multi;
 
-template<class F, class It>
-struct bitransformer{
-	It it_;
-	F f_;
-	bitransformer(It it, F f) : it_{std::move(it)}, f_{std::move(f)}{}
-	using difference_type = typename std::iterator_traits<It>::difference_type;
-	using value_type = typename std::iterator_traits<It>::value_type;
-	using pointer  = typename std::iterator_traits<It>::pointer;
-	struct reference{
-		typename std::iterator_traits<It>::reference r_;
-		F f_;
-		reference(typename std::iterator_traits<It>::reference r, F f) : r_{r}, f_{std::move(f)}{}
-		operator typename std::iterator_traits<It>::value_type()&&{return f_(r_);}
-		template<class T, typename = decltype(*(std::declval<It>()) = std::declval<T>())> 
-		reference&& operator=(T&& t)&&{r_ = inverse_function(f_)(std::forward<T>(t)); return std::move(*this);}
-	};
-	using iterator_category = typename std::iterator_traits<It>::iterator_category;
-	reference operator*() const{return {*it_, f_};}
-	bitransformer operator+(std::ptrdiff_t n) const{return {it_ + n, f_};}
-};
-
-auto neg = [](auto&& x){return -x;};
+constexpr auto neg = [](auto const& x){return -x;};
 #if __has_cpp_attribute(maybe_unused)
 [[maybe_unused]]
 #endif
-auto inverse_function(decltype(neg)){return [](auto&& x){return -x;};}
+auto inverse(decltype(neg)){return [](auto&& x){return -x;};}
+
+constexpr auto bconj = [](auto const& x){using std::conj; return conj(x);};
+[[maybe_unused]] constexpr auto inverse(decltype(bconj)){return [](auto const& x){using std::conj; return conj(x);};}
+
+template<class It, class F> class involuter;
+
+#if __has_cpp_attribute(no_unique_address)>=201803
+#define CPP_NO_UNIQUE_ADDRESS [[no_unique_address]]
+#else
+#define CPP_NO_UNIQUE_ADDRESS
+#endif
+
+template<class Ref, class Involution>
+class involuted{
+protected:
+	Ref r_;
+	CPP_NO_UNIQUE_ADDRESS Involution f_;
+public:
+	using decay_type =std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
+	explicit involuted(Ref r) : involuted(
+		std::forward<Ref>(r), 
+		[&]()->Involution{if constexpr(std::is_empty<Involution>{}) return*(Involution*)this;else return {};}()
+	){
+	///	static_assert( std::is_trivially_default_constructible<std::decay_t<Involution>>{}, "!" );
+	//	static_assert( std::is_empty<Involution>{}, "!" );
+	}
+	explicit involuted(Ref r, Involution f) : r_{std::forward<Ref>(r)}, f_{f}{}
+	involuted& operator=(involuted const& other)=delete;//{r_ = other.r_; return *this;}
+public:
+	involuted(involuted const&) = delete;
+	involuted(involuted&&) = delete;
+	operator decay_type() const&{return f_(r_);}
+	decltype(auto) operator&()&&{return involuter<decltype(&std::declval<Ref>()), Involution>{&r_, f_};}
+	template<class DecayType>
+	auto operator=(DecayType&& other)&&
+	->decltype(r_=f_(std::forward<DecayType>(other)), *this){
+		return r_=f_(std::forward<DecayType>(other)), *this;}
+	template<class DecayType>
+	auto operator=(DecayType&& other)&
+	->decltype(r_=f_(std::forward<DecayType>(other)), *this){
+		return r_=f_(std::forward<DecayType>(other)), *this;}
+	template<class OtherRef>
+	auto operator=(involuted<OtherRef, Involution> const& o)&
+	->decltype(r_=f_==o.f_?std::forward<decltype(o.r_)>(o.r_):f_(o), *this){
+		return r_=f_==o.f_?std::forward<decltype(o.r_)>(o.r_):f_(o), *this;}
+	template<class DecayType>
+	auto operator==(DecayType&& other) const&
+	->decltype(this->operator decay_type()==other){
+		return this->operator decay_type()==other;}
+	template<class Any> friend auto operator<<(Any&& a, involuted const& self)->decltype(a << std::declval<decay_type>()){return a << self.operator decay_type();}
+};
+
+template<class T, class F> involuted(T&&, F)->involuted<T const, F>;
+//template<class T, class F> involuted(T&, F)->involuted<T&, F>;
+//template<class T, class F> involuted(T const&, F)->involuted<T const&, F>;
+
+template<class It, class F>
+class involuter : public std::iterator_traits<It>{
+	It it_;
+	CPP_NO_UNIQUE_ADDRESS F f_;
+public:
+	involuter(It it) : involuter(
+		std::move(it), 
+		[&]{if constexpr(sizeof(F)<=1) return *(F*)(this); else return F{};}()
+	){}
+	involuter(It it, F f) : it_{std::move(it)}, f_{std::move(f)}{}
+	using reference = involuted<typename std::iterator_traits<It>::reference, F>;
+	auto operator*() const{return reference{*it_, f_};}
+	involuter& operator+=(typename involuter::difference_type n){it_+=n; return *this;}
+	involuter operator+(typename involuter::difference_type n) const{return {it_+n, f_};}
+	decltype(auto) operator->() const{
+		return involuter<typename std::iterator_traits<It>::pointer, F>{&*it_, f_};
+	}
+};
+
+#undef CPP_NO_UNIQUE_ADDRESS
+
+template<class ComplexRef> using negated = involuted<ComplexRef, decltype(neg)>;
+template<class ComplexIt> using negater = involuter<ComplexIt, decltype(neg)>;
+
+constexpr auto conj = [](std::complex<double> const& a){return std::conj(std::forward<decltype(a)>(a));};
+
+template<class ComplexRef> struct conjd : involuted<ComplexRef, decltype(conj)>{
+	conjd(ComplexRef r) : involuted<ComplexRef, decltype(conj)>(r){}
+	decltype(auto) real() const{return this->r_.real();}
+	decltype(auto) imag() const{return negated<decltype(this->r_.imag())>(this->r_.imag());}//-this->r_.imag();}//negated<std::decay_t<decltype(this->r_.imag())>>(this->r_.imag());} 
+	friend decltype(auto) real(conjd const& self){using std::real; return real(static_cast<typename conjd::decay_type>(self));}
+	friend decltype(auto) imag(conjd const& self){using std::imag; return imag(static_cast<typename conjd::decay_type>(self));}
+};
+template<class T> conjd(T&&)->conjd<T>;
+
+template<class Complex> using conjr = involuter<Complex, decltype(conj)>;
+
+#if 0
+template<class It, class F, class InvF = decltype(inverse(std::declval<F>()))>
+struct bitransformer{
+	It it_;
+	F f_;
+	InvF invf_;
+	bitransformer(It it) : bitransformer(
+		std::move(it), 
+		[]{if constexpr(sizeof(F)==sizeof(std::true_type)) return *static_cast<F*>(nullptr); else return F{};}()
+	){}
+	bitransformer(It it, F f) : bitransformer(it, f, inverse(f)){}
+	bitransformer(It it, F f, InvF invf) : it_{std::move(it)}, f_{f}, invf_{invf}{}
+	using difference_type = typename std::iterator_traits<It>::difference_type;
+	using value_type = typename std::iterator_traits<It>::value_type;
+	using pointer  = typename std::iterator_traits<It>::pointer;
+	class reference{
+		typename std::iterator_traits<It>::reference r_;
+		F f_;
+		InvF invf_;
+		reference(typename std::iterator_traits<It>::reference r, F f, InvF invf) : r_{r}, f_{std::move(f)}, invf_{std::move(invf)}{}
+		reference(reference const&) = delete;
+		reference(reference&&) = default;
+	public:
+		operator typename std::iterator_traits<It>::value_type() &&{return f_(r_);}
+		template<class T, typename = decltype(*(std::declval<It>()) = std::declval<T>())> 
+		reference&& operator=(T&& t)&&{r_ = invf_(std::forward<T>(t)); return std::move(*this);}
+		friend struct bitransformer;
+	};
+	using iterator_category = typename std::iterator_traits<It>::iterator_category;
+	reference operator*() const{return reference{*it_, f_, invf_};}
+	bitransformer operator+(std::ptrdiff_t n) const{return {it_ + n, f_, invf_};}
+};
+#endif
 
 template<class P = std::complex<double>*>
 struct indirect_real : std::iterator_traits<typename std::pointer_traits<P>::element_type::value_type*>{
@@ -47,8 +151,42 @@ struct indirect_real : std::iterator_traits<typename std::pointer_traits<P>::ele
 	double& operator*() const{return reinterpret_cast<double(&)[2]>(*impl_)[0];}
 };
 
+struct A{
+	A(A const&)=delete;
+	A(A&&)=delete;
+};
+
+template<class T> void what(T&&);
+
 int main(){
 
+	{
+		using complex = std::complex<double>;
+		complex c{1., 2.};
+		auto&& z = conjd(c);
+		cout<< z << std::endl;
+		auto pz = &z;
+		cout << real(*pz) <<' '<< imag(*pz) << std::endl;
+		cout << pz->real() << std::endl;
+		cout << pz->imag() << std::endl;
+	}
+	{
+		double a = 5;
+		double& b = a; assert( b == 5 );
+		auto&& c = involuted(a, neg);
+		assert( c == -5. );
+		c = 10.; assert( c == 10. );
+		assert( a = -10. );
+		
+	//	double&& aa = 5.;
+		auto m5 = involuted(5., [](auto&& x){return -x;});
+	//	m5 = 4.;
+		std::cout << m5 << std::endl;
+		assert( m5 == -5. );
+		c = m5;
+	}
+
+#if 0
 	double const d2D[4][5] {
 		{ 0,  1,  2,  3,  4}, 
 		{ 5,  6,  7,  8,  9}, 
@@ -61,18 +199,58 @@ int main(){
 		{-10, -11, -12, -13, -14}, 
 		{-15, -16, -17, -18, -19}
 	};
-#if __cpp_deduction_guides
-	multi::array_ref d2DA({4, 5}, boost::transform_iterator{&d2D[0][0], neg});
-	multi::array_ref d2DB({4, 5}, &md2D[0][0]);
-#else
-	auto d2DA = multi::make_array_ref(
-		boost::make_transform_iterator(&d2D[0][0], neg), 
-		{4, 5}
-	);
-	auto d2DB = multi::make_array_ref(&md2D[0][0], {4, 5});
 #endif
+//#if __cpp_deduction_guides
+//	multi::array_ref d2DA({4, 5}, boost::transform_iterator{&d2D[0][0], neg});
+//	multi::array_ref d2DB({4, 5}, &md2D[0][0]);
+//#else
+//	auto d2DA = multi::make_array_ref(
+//		boost::make_transform_iterator(&d2D[0][0], neg), 
+//		{4, 5}
+//	);
+//	auto d2DB = multi::make_array_ref(&md2D[0][0], {4, 5});
+//#endif
 //	d2DA[0][0] = 4.;
-	assert( d2DA == d2DB );
+//	assert( d2DA == d2DB );
+
+{
+	multi::array<double, 1> A = { 0,  1,  2,  3,  4};
+	auto&& A_ref = multi::static_array_cast<double, double const*>(A);
+	assert( A_ref[2] == A[2] );
+//	assert( mA_ref == mA );
+//	assert( mA_ref[1][1] == mA[1][1] );
+//	assert( mA_ref[1] == mA[1] );
+//	assert( mA_ref == mA ); 
+}
+
+{
+	multi::array<double, 1> A = { 0,  1,  2,  3,  4};
+	multi::array<double, 1> mA = { -0,  -1,  -2,  -3, -4};
+	auto&& mA_ref = multi::static_array_cast<double, negater<double*>>(A);
+	assert( mA_ref[2] == mA[2] );
+//	assert( mA_ref == mA );
+//	assert( mA_ref[1][1] == mA[1][1] );
+//	assert( mA_ref[1] == mA[1] );
+//	assert( mA_ref == mA ); 
+}
+{
+	multi::array<double, 2> A = {
+		{ 0,  1,  2,  3,  4}, 
+		{ 5,  6,  7,  8,  9}, 
+		{10, 11, 12, 13, 14}, 
+		{15, 16, 17, 18, 19}
+	};
+	multi::array<double, 2> mA = {
+		{ -0,  -1,  -2,  -3, -4}, 
+		{ -5,  -6,  -7,  -8, -9}, 
+		{-10, -11, -12, -13, -14}, 
+		{-15, -16, -17, -18, -19}
+	};
+	auto&& mA_ref = multi::static_array_cast<double, negater<double*>>(A);
+	assert( mA_ref[1][1] == mA[1][1] );
+//	assert( mA_ref[1] == mA[1] );
+//	assert( mA_ref == mA ); 
+}
 
 {
 #if __cpp_deduction_guides
@@ -82,7 +260,7 @@ int main(){
 		{10, 11, 12, 13, 14}, 
 		{15, 16, 17, 18, 19}
 	};
-	auto d2DC = multi::make_array_ref(bitransformer<decltype(neg), decltype(&Z[0][0])>{&Z[0][0], neg}, {4, 5});
+	auto d2DC = multi::make_array_ref(involuter<double*, decltype(neg)>{&Z[0][0], neg}, {4, 5});
 //	multi::array_ref d2DC{bitransformer<decltype(neg), decltype(&Z[0][0])>{&Z[0][0], neg}, {4, 5}};
 	cout<< d2DC[1][1] <<'\n';
 	d2DC[1][1] = -66;
@@ -131,6 +309,16 @@ int main(){
 		double* p = d2imag2.base();
 		assert( *p == 3 );
 
+	}
+	{
+		using complex = std::complex<double>;
+		constexpr auto const I = complex{0., 1.};
+		multi::array<complex, 2> A = {
+			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
+			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
+		};
+		[[maybe_unused]] auto Aconj = multi::static_array_cast<complex, conjr<complex*>>(A);
+		assert( Aconj[1][2] == conj(A[1][2]) );
 	}
 }
 

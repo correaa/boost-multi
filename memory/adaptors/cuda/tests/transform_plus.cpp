@@ -1,8 +1,9 @@
 #ifdef COMPILATION_INSTRUCTIONS
-nvcc -x cu --expt-relaxed-constexpr -O3 $0 -o $0x -DBOOST_TEST_DYN_LINK -lboost_unit_test_framework -D_DISABLE_CUDA_SLOW -lcudart &&$0x&&rm $0x; exit
+nvcc -x cu --expt-relaxed-constexpr -O3 $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x; exit
 #endif
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUDA allocators"
+#define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
 #include "../../cuda/allocator.hpp"
@@ -16,9 +17,9 @@ __global__ void transform3_plus_CU(ItA first_a, ItB first_b, ItC first_c, Size m
 
 template<class ItA, class ItB, class ItC, typename Size, class ItD>
 ItD transform3_n_plus_cuda(ItA first_a, ItB first_b, ItC first_c, Size n, ItD first_d){
-	constexpr std::size_t cuda_block_size = 256;
+	constexpr std::size_t blockSize = 256;
 	auto nblock = n/cuda_block_size + (n%cuda_block_size!=0);// (n-1)/cuda_block_size+1; +if(nblock*cuda_block_size != n) nblock++;
-	transform3_plus_CU<<<nblock, nblock!=1?cuda_block_size:(n/32+1)*32>>>(first_a, first_b, first_c, n, first_d);
+	transform3_plus_CU<<<(n + blockSize - 1)/blockSize, nblock!=1?cuda_block_size:(n/32+1)*32>>>(first_a, first_b, first_c, n, first_d);
 	cudaDeviceSynchronize();
 	return first_d + n;
 }

@@ -1,6 +1,7 @@
 #ifdef COMPILATION_INSTRUCTIONS
-clang++ -O3 -std=c++17 -Wall -Wextra -Wpedantic -Wfatal-errors $0 -o$0x && $0x && rm $0x; exit
+nvcc -std=c++14 `#-Wall -Wextra -Wpedantic` $0 -o $0x &&$0x&&rm $0x; exit
 #endif
+// © Alfredo A. Correa 2018-2019
 
 #include<iostream>
 #include<cassert>
@@ -27,9 +28,11 @@ public:
 	bool operator==(ptr const&) const{return true;}
 	bool operator!=(ptr const&) const{return false;}
 //	explicit operator T*() const{return &value;}
-	ptr const& operator->() const{return *this;} 
+	ptr const& operator->() const{return *this;}
 	friend ptr to_address(ptr const& p){return p;}
 	operator ptr<T const>() const{return {};}
+	explicit operator bool(){return false;}
+//	operator double*() const{return &value;}
 };
 template<> double ptr<double>::value = 42.;
 template<> double ptr<double const>::value = 42.;
@@ -147,10 +150,10 @@ int main(){
 
 //	C = A; // calls custom copy
 //	multi::array_ref<double, 2, fancy::ptr<double>> AA(A.data(), {5, 5});
-	C = A({0, 5}, {0,5});
+//	C = A({0, 5}, {0,5});
 
 	multi::array<double, 2, fancy::allocator<double> > CC;// = A({0, 5}, {0,5});
-	CC = A({0, 5}, {0,5});
+//	CC = A({0, 5}, {0,5});
 
 //	using std::copy_n;
 //	copy_n(A.data(), 25, A.data());

@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-nvcc -ccbin=cuda-c++ --expt-relaxed-constexpr -std=c++14 $0 -o $0x && $0x && rm $0x; exit
+nvcc --expt-relaxed-constexpr -std=c++14 $0 -o $0x && $0x && rm $0x; exit
 #endif
 
 #include "../adaptors/thrust/allocator_traits.hpp"
@@ -18,7 +18,6 @@ template<class T, multi::dimensionality_type D>
 using thrust_array = multi::array<T, D, thrust::device_allocator<T>>;
 
 int main(){
-
 //	using Alloc = thrust::device_allocator<double>;
 	using Alloc = std::allocator<double>;
 	{
