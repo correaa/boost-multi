@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&clang++ -std=c++17 -Wall -Wextra -Wpedantic  -D_TEST_MULTI_ADAPTORS_BLAS_GEMM $0.cpp -o $0x \
+(echo '#include"'$0'" '>$0.cpp)&&clang++ -std=c++17 -Wall -Wextra -Wpedantic  -D_TEST_MULTI_ADAPTORS_BLAS_GEMM $0.cpp -o $0x \
 `pkg-config --cflags --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
@@ -62,13 +62,7 @@ decltype(auto) gemm(Op opA, Op opB, AA a, A2D const& A, B2D const& B, BB b, C2D&
 //	return std::forward<C2D>(C);
 #if 1
 	using std::begin;
-<<<<<<< Updated upstream
 	assert(stride(A[0]) == 1 and stride(B[0])==1 and stride(C[0])==1);
-=======
-	assert(stride(*begin(A)) == 1 and stride(*begin(B))==1 and stride(*begin(C))==1);
-//	using multi::size;
-//	using std::size;
->>>>>>> Stashed changes
 	if((opA == 'T' or opA == 'C') and (opB == 'T' or opB == 'C')){ // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
 		assert(size(A[0]) == size(B) and size(A)==size(C[0]) and size(B[0]) == size(C));
 		gemm(opA, opB, size(A), size(C), size(B), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
@@ -76,17 +70,17 @@ decltype(auto) gemm(Op opA, Op opB, AA a, A2D const& A, B2D const& B, BB b, C2D&
 	}
 	if(opA == 'N' and (opB == 'T' or opB == 'C')){
 		assert(size(A) == size(B) and size(A[0])==size(C[0]) and size(B[0]) == size(C));
-		gemm(opA, opB, std::get<0>(sizes(A)), size(C), size(B), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
+		gemm(opA, opB, size(A[0]), size(C), size(B), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
 		return std::forward<C2D>(C);
 	}
 	if((opA == 'T' or opA == 'C') and (opB == 'N')){
 		assert(size(A[0]) == size(B[0]) and size(A)==size(C[0]) and size(B) == size(C));
-		gemm(opA, opB, size(A), size(C), std::get<1>(sizes(B)), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
+		gemm(opA, opB, size(A), size(C), size(B[0]), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
 		return std::forward<C2D>(C);
 	}
 	if((opA == 'N') and (opB == 'N')){
 		assert(size(A) == size(B[0]) and size(A[0])==size(C[0]) and size(B) == size(C));
-		gemm(opA, opB, std::get<1>(sizes(A)), size(C), std::get<1>(sizes(B)), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
+		gemm(opA, opB, size(A[0]), size(C), size(B[0]), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
 		return std::forward<C2D>(C);
 	}
 	assert(0);
