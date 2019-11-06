@@ -5,6 +5,14 @@
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_PTR_HPP
 #define BOOST_MULTI_MEMORY_ADAPTORS_CUDA_PTR_HPP
 
+#ifndef HD
+#if defined(__CUDACC__)
+#define HD __host__ __device__
+#else
+#define HD 
+#endif
+#endif
+
 #include "../../adaptors/cuda/clib.hpp"
 
 #include<cassert>
@@ -126,7 +134,7 @@ public:
 	ptr& operator--(){--impl_; return *this;}
 	ptr  operator++(int){auto tmp = *this; ++(*this); return tmp;}
 	ptr  operator--(int){auto tmp = *this; --(*this); return tmp;}
-	ptr& operator+=(typename ptr::difference_type n){impl_+=n; return *this;}
+	ptr& operator+=(typename ptr::difference_type n) HD{impl_+=n; return *this;}
 	ptr& operator-=(typename ptr::difference_type n){impl_+=n; return *this;}
 //	friend bool operator==(ptr const& s, ptr const& t){return s.impl_==t.impl_;}
 //	friend bool operator!=(ptr const& s, ptr const& t){return s.impl_!=t.impl_;}
@@ -139,59 +147,10 @@ public:
 #else
 	__host__ ref<element_type> operator*() const{return {*this};}
 #endif
-//	__host__ __device__ 
-	reference operator[](difference_type n){return *((*this)+n);}
+	HD decltype(auto) operator[](difference_type n) const{return *((*this)+n);}
 	friend ptr to_address(ptr const& p){return p;}
 	typename ptr::difference_type operator-(ptr const& other) const{return impl_-other.impl_;}
 };
-
-namespace managed{
-	template<typename T, typename Ptr = T*> struct ptr;
-	template<typename T, typename Ptr>
-	struct ptr : cuda::ptr<T, Ptr>{
-		ptr(ptr<std::remove_const<T>> const& other) : cuda::ptr<T, Ptr>{other.impl_}{}
-		template<class TT> using rebind = ptr<TT, typename std::pointer_traits<Ptr>::template rebind<TT>>;
-		template<class Other, typename = std::enable_if_t<not std::is_same<std::decay_t<Other>, T>{}>>
-    __host__ __device__
-		explicit ptr(ptr<Other> o) : cuda::ptr<T, Ptr>{o}{}
-    __host__ __device__ 
-		ptr(typename ptr::impl_t o) : cuda::ptr<T, Ptr>{std::move(o)}{}
-	//	ptr(std::nullptr_t n) : cuda::ptr<T, Ptr>{n}{}
-		using pointer = typename ptr::impl_t;
-		using reference = T&;
-#ifdef __CUDA_ARCH__
-	__device__ reference operator*() const{return *ptr::impl_;}
-	__device__ /*explicit*/ operator typename ptr::impl_t&()&{return ptr::impl_;}
-	__device__ /*explicit*/ operator typename ptr::impl_t const&() const&{return ptr::impl_;}
-#else
-	__host__ [[SLOW]] reference operator*() const{return *ptr::impl_;}
-	__host__ [[SLOW]] operator typename ptr::impl_t&()&{return ptr::impl_;}
-	__host__ [[SLOW]] operator typename ptr::impl_t const&() const&{return ptr::impl_;}
-#endif
-	template<class PM>
-	decltype(auto) operator->*(PM pm) const{return ptr::impl_->*pm;}
-	__host__ __device__ 
-		ptr operator+(typename ptr::difference_type n) const{return ptr{ptr::impl_ + n};}
-	__host__ __device__
-		reference operator[](typename ptr::difference_type n){return *((*this)+n);}
-		friend ptr to_address(ptr const& p){return p;}
-		typename ptr::impl_t operator->() const{return ptr::impl_;}
-		operator ptr<T const>() const{return ptr<T const>{this->impl_};}
-	};
-	template<typename Ptr>
-	struct ptr<void, Ptr> : cuda::ptr<void, Ptr>{
-		ptr(typename ptr::impl_t o) : cuda::ptr<void, Ptr>{std::move(o)}{}
-		using cuda::ptr<void, Ptr>::ptr;
-		using pointer = typename ptr::impl_t;
-#ifdef __CUDA_ARCH__
-	__device__ /*explicit*/ operator typename ptr::impl_t&()&{return impl_;}
-	__device__ /*explicit*/ operator typename ptr::impl_t const&() const&{return impl_;}
-#else
-	__host__ [[SLOW]] operator typename ptr::impl_t&()&{return ptr::impl_;}
-	__host__ [[SLOW]] operator typename ptr::impl_t const&() const&{return ptr::impl_;}
-#endif
-	};
-}
 
 template<
 	class Alloc, class InputIt, class Size, class... T, class ForwardIt = ptr<T...>,

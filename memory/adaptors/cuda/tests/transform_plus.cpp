@@ -17,8 +17,8 @@ __global__ void transform3_plus_CU(ItA first_a, ItB first_b, ItC first_c, Size m
 template<class ItA, class ItB, class ItC, typename Size, class ItD>
 ItD transform3_n_plus_cuda(ItA first_a, ItB first_b, ItC first_c, Size n, ItD first_d){
 	constexpr std::size_t cuda_block_size = 256;
-	auto nblock = n/cuda_block_size; if(nblock*cuda_block_size != n) nblock++;
-	transform3_plus_CU<<<nblock, nblock==1?(n/32+1)*32:cuda_block_size>>>(first_a, first_b, first_c, n, first_d);
+	auto nblock = n/cuda_block_size + (n%cuda_block_size!=0);// (n-1)/cuda_block_size+1; +if(nblock*cuda_block_size != n) nblock++;
+	transform3_plus_CU<<<nblock, nblock!=1?cuda_block_size:(n/32+1)*32>>>(first_a, first_b, first_c, n, first_d);
 	cudaDeviceSynchronize();
 	return first_d + n;
 }
@@ -98,6 +98,13 @@ BOOST_AUTO_TEST_CASE(cuda_allocators){
 		auto e = transform3_n_plus_cuda(data_elements(A2), data_elements(B2), data_elements(C2), num_elements(A2), data_elements(D2));
 
 		BOOST_REQUIRE( D2[50][50] == 66. );
+	}
+	{
+		multi::array<double, 1, cuda::allocator<double>> D1(200, 0.);
+
+		auto e = transform3_n_plus_cuda(cbegin(A1), cbegin(B1), cbegin(C1), 0, begin(D1));	
+
+		BOOST_REQUIRE( e == begin(D1) );
 	}
 }
 

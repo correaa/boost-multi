@@ -316,6 +316,8 @@ public:
 	typename static_array::const_iterator end()   const{return ref::end();}
 	const_iterator cbegin() const{return begin();}
 	const_iterator cend() const{return end();}
+	friend const_iterator cbegin(static_array const& self){return self.cbegin();}
+	friend const_iterator cend(static_array const& self){return self.cend();}
 
 	static_array& operator=(static_array const& other){
 		assert( extensions(other) == static_array::extensions() );

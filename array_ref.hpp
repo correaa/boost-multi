@@ -15,10 +15,12 @@ for a in ./tests/*.cpp; do echo $a; sh $a || break; echo "\n"; done; exit;*/
 
 #include<algorithm> // copy_n
 
+#ifndef HD
 #if defined(__CUDACC__)
 #define HD __host__ __device__
 #else
 #define HD 
+#endif
 #endif
 
 namespace boost{
@@ -109,7 +111,7 @@ struct basic_array_ptr :
 	explicit operator bool() const{return this->base_;}
 	Ref operator*() const{return *this;}
 	Ref const* operator->() const{return this;}
-	Ref        operator[](difference_type n) const{return *(*this + n);}
+HD	Ref        operator[](difference_type n) const{return *(*this + n);}
 	template<class O> bool operator==(O const& o) const{return equal(o);}
 	bool operator<(basic_array_ptr const& o) const{return distance_to(o) > 0;}
 	basic_array_ptr(typename Ref::element_ptr p, Layout l) : Ref{l, p}{}
@@ -193,7 +195,7 @@ struct array_iterator :
 	explicit operator bool() const{return static_cast<bool>(ptr_.base_);}
 	Ref operator*() const{/*assert(*this);*/ return *ptr_;}//return *this;}
 	decltype(auto) operator->() const{/*assert(*this);*/ return ptr_;}//return this;}
-	Ref          operator[](difference_type n) const{return *(*this + n);}
+HD	Ref          operator[](difference_type n) const{return *(*this + n);}
 	template<class O> bool operator==(O const& o) const{return equal(o);}
 	bool operator<(array_iterator const& o) const{return distance_to(o) > 0;}
 	array_iterator(typename Ref::element_ptr p, layout_t<D-1> l, index stride) : /*Ref{l, p},*/ ptr_{p, l}, stride_{stride}{}
@@ -530,7 +532,7 @@ public:
 	//	return {this->layout().scale(sizeof(T)/sizeof(T2)), &(this->base_->*pm)};
 		return {this->layout().scale(sizeof(T)/sizeof(T2)), &(this->base_->*pm)};
 	}
-	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
+	template<class T2, class P2 = T2*>//typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
 	basic_array<std::decay_t<T2>, D, P2> reinterpret_array_cast() const{
 		static_assert( sizeof(T)%sizeof(T2)== 0, "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
 		auto thisbase = this->base();
@@ -566,7 +568,7 @@ struct array_iterator<Element, 1, Ptr, Ref> :
 	array_iterator(std::nullptr_t np = nullptr) : data_{np}, stride_{}{}
 	array_iterator(Ptr const& p) : data_{p}, stride_{1}{}
 	explicit operator bool() const{return static_cast<bool>(this->data_);}
-	Ref operator[](typename array_iterator::difference_type n) const{assert(*this); return *((*this) + n);}
+HD	Ref operator[](typename array_iterator::difference_type n) const{/*assert(*this);*/ return *((*this) + n);}
 	Ptr operator->() const{return data_;}
 	using element = Element;
 	using element_ptr = Ptr;
@@ -578,11 +580,11 @@ private:
 	friend struct basic_array<Element, 1, Ptr>;
 	Ptr data_ = nullptr;
 	multi::index stride_;
-	Ref dereference() const{return *data_;}
+HD	Ref dereference() const{return *data_;}
 	bool equal(array_iterator const& o) const{return data_==o.data_ and stride_==o.stride_;}
 	void increment(){data_ += stride_;}
 	void decrement(){data_ -= stride_;}
-	void advance(typename array_iterator::difference_type n){data_ += stride_*n;}
+	void advance(typename array_iterator::difference_type n) HD{data_ += stride_*n;}
 	difference_type distance_to(array_iterator const& other) const{
 		assert(stride_==other.stride_ and (other.data_-data_)%stride_ == 0);
 		return (other.data_ - data_)/stride_;
@@ -591,15 +593,15 @@ private:
 	auto base() const{return data_;}
 	friend auto base(array_iterator const& self){return self.base();}
 public:
-	HD auto data() const{return data_;}
+HD	auto data() const{return data_;}
 	auto stride() const{return stride_;}
 	friend auto stride(array_iterator const& self){return self.stride();}
 	array_iterator& operator++(){increment(); return *this;}
 	array_iterator& operator--(){decrement(); return *this;}
 	bool operator==(array_iterator const& o) const{return equal(o);}
-	Ref operator*() const{return dereference();}
+HD	Ref operator*() const{return dereference();}
 	difference_type operator-(array_iterator const& o) const{return -distance_to(o);}
-	array_iterator& operator+=(difference_type d){advance(d); return *this;}
+	array_iterator& operator+=(difference_type d) HD{advance(d); return *this;}
 	array_iterator& operator-=(difference_type d){advance(-d); return *this;}
 };
 
