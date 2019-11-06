@@ -17,9 +17,8 @@ __global__ void transform3_plus_CU(ItA first_a, ItB first_b, ItC first_c, Size m
 
 template<class ItA, class ItB, class ItC, typename Size, class ItD>
 ItD transform3_n_plus_cuda(ItA first_a, ItB first_b, ItC first_c, Size n, ItD first_d){
-	constexpr std::size_t blockSize = 256;
-	auto nblock = n/cuda_block_size + (n%cuda_block_size!=0);// (n-1)/cuda_block_size+1; +if(nblock*cuda_block_size != n) nblock++;
-	transform3_plus_CU<<<(n + blockSize - 1)/blockSize, nblock!=1?cuda_block_size:(n/32+1)*32>>>(first_a, first_b, first_c, n, first_d);
+	static constexpr Size blockSize = 256;
+	transform3_plus_CU<<<(n - 1 + blockSize)/blockSize, blockSize>>>(first_a, first_b, first_c, n, first_d);
 	cudaDeviceSynchronize();
 	return first_d + n;
 }

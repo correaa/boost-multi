@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&& `#nvcc -ccbin=cuda-`c++ -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_MALLOC $0.cpp -o $0x -lcudart &&$0x&&rm $0x; exit
+(echo '#include"'$0'"'>$0.cpp)&&nvcc -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_MALLOC $0.cpp -o $0x &&$0x&&rm $0x; exit
 #endif
 
 #ifndef MULTI_MEMORY_ADAPTORS_CUDA_MALLOC
@@ -7,7 +7,6 @@
 
 #include "../../adaptors/cuda/clib.hpp"
 #include "../../adaptors/cuda/ptr.hpp"
-#include "../../adaptors/cuda/managed/ptr.hpp"
 
 namespace boost{namespace multi{
 namespace memory{
@@ -15,15 +14,8 @@ namespace memory{
 namespace cuda{
 	using size_t = Cuda::size_t;
 	[[nodiscard]]
-	ptr<void> malloc(size_t bytes){return ptr<void>{Cuda::malloc(bytes)};}
-	void free(ptr<void> p){Cuda::free(static_cast<void*>(p));}
-
-namespace managed{
-	[[nodiscard]]
-	managed::ptr<void> malloc(size_t bytes){return managed::ptr<void>{Cuda::Managed::malloc(bytes)};}
-	using cuda::free;
-}
-
+	ptr<void> malloc(size_t bytes){return Cuda::malloc(bytes);}
+	void free(ptr<void> p){Cuda::free(p);}
 }
 
 }
@@ -31,8 +23,16 @@ namespace managed{
 
 #ifdef _TEST_MULTI_MEMORY_ADAPTORS_CUDA_MALLOC
 
+namespace multi = boost::multi;
+namespace cuda = multi::memory::cuda;
+
 int main(){
+	using cuda::ptr;
+	ptr<double> p = static_cast<ptr<double>>(cuda::malloc(100*sizeof(double)));
+	p[10] = 99.;
+	cuda::free(p);
 }
 
 #endif
 #endif
+

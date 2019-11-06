@@ -1,20 +1,11 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&nvcc -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_PTR $0.cpp -o $0x -lboost_unit_test_framework&&$0x&&rm $0x; exit
+(echo '#include"'$0'"'>$0.cpp)&&nvcc -Xcompiler -Wfatal-errors -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_PTR $0.cpp -o $0x &&$0x&&rm $0x; exit
 #endif
 
-#ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_PTR_HPP
-#define BOOST_MULTI_MEMORY_ADAPTORS_CUDA_PTR_HPP
+#ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_PTR_HPP
+#define BOOST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_PTR_HPP
 
-#ifndef HD
-#if defined(__CUDACC__)
-#define HD __host__ __device__
-#else
-#define HD 
-#endif
-#endif
-
-#include "../../adaptors/cuda/clib.hpp"
-#include "../../adaptors/cuda/cstring.hpp"
+//#include "../../../adaptors/cuda/clib.hpp"
 
 #include<cassert>
 #include<cstddef> // nullptr_t
@@ -23,23 +14,31 @@
 #include<type_traits> // is_const
 
 #ifndef _DISABLE_CUDA_SLOW
-#define SLOW deprecated("WARNING: slow function") 
+#define SLOW deprecated("WARNING: implies a slow access to GPU memory") 
 #else
 #define SLOW
+#endif
+
+#ifndef HD
+#ifdef __CUDA_ARCH__
+#define HD __host__ __device__
+#else
+#define HD
+#endif
 #endif
 
 namespace boost{namespace multi{
 namespace memory{namespace cuda{
 
-template<class T> struct ref;
+namespace managed{
+//template<class T> struct ref;
 
 template<typename T, typename Ptr = T*> struct ptr;
 
-#if 1
 template<typename RawPtr>
-struct ptr<void const, RawPtr>{ // used by memcpy
+struct ptr<void const, RawPtr>{
+	using T = void const;
 	using raw_pointer = RawPtr;
-private:
 	raw_pointer rp_;
 	template<typename, typename> friend struct ptr;
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
@@ -52,41 +51,34 @@ public:
 	ptr(Other const& o) : rp_{o.rp_}{}
 	ptr& operator=(ptr const&) = default;
 
-	using pointer = ptr;
+	using pointer = ptr<T>;
 	using element_type = typename std::pointer_traits<raw_pointer>::element_type;
 	using difference_type = void;//typename std::pointer_traits<impl_t>::difference_type;
 	explicit operator bool() const{return rp_;}
-//	explicit operator impl_t&()&{return impl_;}
+//	explicit operator raw_pointer&()&{return rp_;}
 	bool operator==(ptr const& other) const{return rp_==other.rp_;}
 	bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
 	friend ptr to_address(ptr const& p){return p;}
+	void operator*() const = delete;
 };
-#endif
 
 template<typename RawPtr>
 struct ptr<void, RawPtr>{
 protected:
 	using T = void;
 	using raw_pointer = RawPtr;
-	using raw_pointer_traits = std::pointer_traits<raw_pointer>;
-	static_assert(std::is_same<void, typename raw_pointer_traits::element_type>{}, "!");
 	raw_pointer rp_;
-	friend ptr<void> malloc(size_t);
-	friend void free();
-	friend ptr<void> memset(ptr<void> dest, int ch, std::size_t byte_count);
 private:
-//	ptr(ptr<void const> const& p) : rp_{const_cast<void*>(p.rp_)}{}
+	ptr(ptr<void const> const& p) : rp_{const_cast<void*>(p.rp_)}{}
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 	template<class, class> friend struct ptr;
-	ptr(raw_pointer rp) : rp_{rp}{}
-	operator raw_pointer() const{return rp_;}
-	friend ptr<void> malloc(std::size_t);
-	friend void free(ptr<void>);
 public:
+	template<class Other> ptr(ptr<Other> const& p) : rp_{p.rp_}{}
+	explicit ptr(raw_pointer rp) : rp_{rp}{}
 	ptr() = default;
-	ptr(ptr const& other) : rp_{other.rp_}{}//= default;
+	ptr(ptr const& p) : rp_{p.rp_}{}
 	ptr(std::nullptr_t n) : rp_{n}{}
-	template<class Other, typename = decltype(raw_pointer{std::declval<Other const&>().rp_})>
+	template<class Other, typename = decltype(raw_pointer{std::declval<Other const&>().impl_})>
 	ptr(Other const& o) : rp_{o.rp_}{}
 	ptr& operator=(ptr const&) = default;
 	bool operator==(ptr const& other) const{return rp_==other.rp_;}
@@ -98,70 +90,63 @@ public:
 	template<class U> using rebind = ptr<U, typename std::pointer_traits<raw_pointer>::template rebind<U>>;
 
 	explicit operator bool() const{return rp_;}
-//	explicit operator raw_pointer&()&{return impl_;}
+	explicit operator raw_pointer&()&{return rp_;}
 	friend ptr to_address(ptr const& p){return p;}
+	void operator*() = delete;
 };
 
 template<typename T, typename RawPtr>
 struct ptr{
-protected:
 	using raw_pointer = RawPtr;
+protected:
 	raw_pointer rp_;
-	using raw_pointer_traits = typename std::pointer_traits<raw_pointer>;
 	template<class TT> friend class allocator;
 	template<typename, typename> friend struct ptr;
 	template<class TT, typename = typename std::enable_if<not std::is_const<TT>{}>::type> 
-	ptr(ptr<TT const> const& p) : rp_{const_cast<T*>(p.rp_)}{}
+	ptr(ptr<TT const> const& p) : rp_{const_cast<T*>(p.impl_)}{}
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 public:
-	template<class Other> explicit ptr(Other const& o) : rp_{static_cast<raw_pointer>(o.rp_)}{}
-//	explicit ptr(ptr<void, void*> other) : impl_{static_cast<impl_t>(other.impl_)}{}
-	explicit ptr(raw_pointer rp) : rp_{rp}{}//Cuda::pointer::is_device(p);}
+	template<class Other> ptr(Other const& o) : rp_{static_cast<raw_pointer>(o.impl_)}{}
+	explicit ptr(raw_pointer p) : rp_{p}{}//Cuda::pointer::is_device(p);}
 	ptr() = default;
-	ptr(ptr const& other) : rp_{other.rp_}{}
+	ptr(ptr const&) = default;
 	ptr(std::nullptr_t n) : rp_{n}{}
-//	template<class Other, typename = decltype(impl_t{std::declval<Other const&>().impl_}), typename = typename std::enable_if<not std::is_base_of<ptr, Other>{}>::type /*c++14*/>
-//	__host__ __device__ ptr(Other const& o) : impl_{o.impl_}{}
 	ptr& operator=(ptr const&) = default;
-	bool operator==(ptr const& other) const{return rp_==other.rp_;}
-	bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
+	bool operator==(ptr const& other) const{return rp_==rp_.impl_;}
+	bool operator!=(ptr const& other) const{return rp_!=rp_.impl_;}
 
-	using element_type = typename raw_pointer_traits::element_type;
-	using difference_type = typename raw_pointer_traits::difference_type;
-	using value_type = element_type;
-	using pointer = ptr;//<T>;
+	using element_type = typename std::pointer_traits<raw_pointer>::element_type;
+	using difference_type = typename std::pointer_traits<raw_pointer>::difference_type;
+	using value_type = T;
+	using pointer = ptr<T>;
 	using iterator_category = typename std::iterator_traits<raw_pointer>::iterator_category;
 //	using iterator_concept  = typename std::iterator_traits<impl_t>::iterator_concept;
 	explicit operator bool() const{return rp_;}
-//	explicit operator impl_t&()&{return impl_;}
-//	explicit operator impl_t const&() const&{return impl_;}
-//	impl_t operator->() const{return impl_;}
+	operator raw_pointer&()&{return rp_;}
+	operator raw_pointer const&() const&{return rp_;}
+	operator ptr<void>() const{return ptr<void>{rp_};}
 //	template<class PM>
-//	decltype(auto) operator->*(PM pm) const{return *ptr<std::decay_t<decltype(impl_->*pm)>, decltype(&(impl_->*pm))>{&(impl_->*pm)};}
-	explicit operator typename raw_pointer_traits::template rebind<void>()&{return rp_;}
+//	decltype(auto) operator->*(PM pm) const{return *ptr<std::decay_t<decltype(rp_->*pm)>, decltype(&(rp_->*pm))>{&(rp_->*pm)};}
+	explicit operator typename std::pointer_traits<raw_pointer>::template rebind<void>() const{return rp_;}
 	ptr& operator++(){++rp_; return *this;}
 	ptr& operator--(){--rp_; return *this;}
 	ptr  operator++(int){auto tmp = *this; ++(*this); return tmp;}
 	ptr  operator--(int){auto tmp = *this; --(*this); return tmp;}
-	ptr& operator+=(typename ptr::difference_type n) HD{rp_+=n; return *this;}
-	ptr& operator-=(typename ptr::difference_type n) HD{rp_-=n; return *this;}
+	ptr& operator+=(typename ptr::difference_type n){rp_+=n; return *this;}
+	ptr& operator-=(typename ptr::difference_type n){rp_-=n; return *this;}
 //	friend bool operator==(ptr const& s, ptr const& t){return s.impl_==t.impl_;}
 //	friend bool operator!=(ptr const& s, ptr const& t){return s.impl_!=t.impl_;}
-	__host__ __device__ 
 	ptr operator+(typename ptr::difference_type n) const{return ptr{rp_ + n};}
 	ptr operator-(typename ptr::difference_type n) const{return ptr{rp_ - n};}
-	using reference = ref<element_type>;
-#ifdef __CUDA_ARCH__
-	__device__ T& operator*() const{return *impl_;}
-#else
-	__host__ ref<element_type> operator*() const{return {*this};}
-#endif
-	HD decltype(auto) operator[](difference_type n) const{return *((*this)+n);}
+	using reference = typename std::pointer_traits<raw_pointer>::element_type&;//ref<element_type>;
+	reference operator*() const{return *rp_;}
+	HD reference operator[](difference_type n){return *((*this)+n);}
 	friend ptr to_address(ptr const& p){return p;}
-	typename ptr::difference_type operator-(ptr const& o) const{return rp_-o.rp_;}
-	operator ptr<void>(){return {rp_};}
+	typename ptr::difference_type operator-(ptr const& other) const{return rp_-other.rp_;}
+	friend raw_pointer raw_pointer_cast(ptr const& self){return self.impl_;}
 };
 
+#if 0
 template<
 	class Alloc, class InputIt, class Size, class... T, class ForwardIt = ptr<T...>,
 	typename InputV = typename std::pointer_traits<InputIt>::element_type, 
@@ -255,14 +240,14 @@ public:
 		//	assert(0);
 		#else
 		if(std::is_trivially_copy_assignable<T>{}){
-			[[maybe_unused]] cudaError_t s= cudaMemcpy(this->rp_, std::addressof(t), sizeof(T), cudaMemcpyHostToDevice);
+			[[maybe_unused]] cudaError_t s= cudaMemcpy(this->impl_, std::addressof(t), sizeof(T), cudaMemcpyHostToDevice);
 			assert(s == cudaSuccess);
 		}else{
 			char buff[sizeof(T)];
-			[[maybe_unused]] cudaError_t s1 = cudaMemcpy(buff, this->rp_, sizeof(T), cudaMemcpyDeviceToHost); 
+			[[maybe_unused]] cudaError_t s1 = cudaMemcpy(buff, this->impl_, sizeof(T), cudaMemcpyDeviceToHost); 
 			assert(s1 == cudaSuccess);
 			reinterpret_cast<T&>(buff) = t;
-			[[maybe_unused]] cudaError_t s2 = cudaMemcpy(this->rp_, buff, sizeof(T), cudaMemcpyHostToDevice); 
+			[[maybe_unused]] cudaError_t s2 = cudaMemcpy(this->impl_, buff, sizeof(T), cudaMemcpyHostToDevice); 
 			assert(s2 == cudaSuccess);
 		}
 		#endif
@@ -287,9 +272,8 @@ public:
 	bool operator==(ref<Other>&& other)&&{
 //#pragma message ("Warning goes here")
 		char buff1[sizeof(T)];
-		memcpy(buff1, ref::rp_, sizeof(T));
-	//	[[maybe_unused]] cudaError_t s1 = cudaMemcpy(buff1, this->impl_, sizeof(T), cudaMemcpyDeviceToHost);
-	//	assert(s1 == cudaSuccess);
+		[[maybe_unused]] cudaError_t s1 = cudaMemcpy(buff1, this->impl_, sizeof(T), cudaMemcpyDeviceToHost);
+		assert(s1 == cudaSuccess);
 		char buff2[sizeof(Other)];
 		[[maybe_unused]] cudaError_t s2 = cudaMemcpy(buff2, other.impl_, sizeof(Other), cudaMemcpyDeviceToHost); 
 		assert(s2 == cudaSuccess);
@@ -318,7 +302,7 @@ public:
 	#else
 	[[SLOW]] operator T()&&{
 		char buff[sizeof(T)];
-		{[[maybe_unused]] cudaError_t s = cudaMemcpy(buff, this->rp_, sizeof(T), cudaMemcpyDeviceToHost); assert(s == cudaSuccess);}
+		{[[maybe_unused]] cudaError_t s = cudaMemcpy(buff, this->impl_, sizeof(T), cudaMemcpyDeviceToHost); assert(s == cudaSuccess);}
 		return std::move(reinterpret_cast<T&>(buff));
 	}
 	#endif
@@ -331,38 +315,87 @@ public:
 	ref<T>&& operator++()&&{++(std::move(*this).skeleton()); return std::move(*this);}
 	ref<T>&& operator--()&&{--(std::move(*this).skeleton()); return std::move(*this);}
 };
+#endif
+}
 
-}}}}
+}}
+}}
 #undef SLOW
 
-#ifdef _TEST_MULTI_MEMORY_ADAPTORS_CUDA_PTR
+#ifdef _TEST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_PTR
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUDA allocators"
-#define BOOST_TEST_DYN_LINK
-#include<boost/test/unit_test.hpp>
+#include "../../cuda/managed/clib.hpp" // cuda::malloc
+#include "../../cuda/managed/malloc.hpp"
 
-#include "../cuda/malloc.hpp"
+#include<cstring>
+#include<iostream>
 
 namespace multi = boost::multi;
 namespace cuda = multi::memory::cuda;
 
-BOOST_AUTO_TEST_CASE(multi_memory_cuda_ptr){
-	using T = double; 
-	static_assert( sizeof(cuda::ptr<T>) == sizeof(T*) );
+void add_one(double& d){d += 1.;}
+template<class T>
+void add_one(T&& t){std::forward<T>(t) += 1.;}
+
+// * Functions with a __global__ qualifier, which run on the device but are called by the host, cannot use pass by reference. 
+//__global__ void set_5(cuda::ptr<double> const& p){
+//__global__ void set_5(cuda::ptr<double> p){*p = 5.;}
+//__global__ void check_5(cuda::ptr<double> p){assert(*p == 5.);}
+
+double const* g(){double* p{nullptr}; return p;}
+
+cuda::managed::ptr<double const> f(){
+	return cuda::managed::ptr<double>{nullptr};
+}
+
+int main(){
+	f();
+	using T = double; static_assert( sizeof(cuda::ptr<T>) == sizeof(T*) );
 	std::size_t const n = 100;
 	{
-		using cuda::ptr;
-		auto p = static_cast<ptr<T>>(cuda::malloc(n*sizeof(T)));
+		auto p = static_cast<cuda::ptr<T>>(cuda::malloc(n*sizeof(T)));
+//		*p = 3.14;
+		
+	//	double* ppp = static_cast<double*>(p); *ppp = 3.14;
+//		Fill_n(p, 1, 3.14);
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 		*p = 99.;
-		BOOST_REQUIRE(*p == 99.);
-		BOOST_REQUIRE(*p != 11.);
+		if(*p != 99.) assert(0);
+		if(*p == 11.) assert(0);
 #pragma GCC diagnostic pop
 		cuda::free(p);
 		cuda::ptr<T> P = nullptr;
-		ptr<void> pv = p;
 	}
+	{
+		auto p = static_cast<cuda::managed::ptr<T>>(cuda::managed::malloc(n*sizeof(T)));
+		cuda::managed::ptr<void> pp = p;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+		*p = 99.; 
+		if(*p != 99.) assert(0);
+		if(*p == 11.) assert(0);
+#pragma GCC diagnostic pop
+		cuda::managed::free(p);
+	}
+	{
+		auto p = static_cast<cuda::managed::ptr<T>>(cuda::managed::malloc(n*sizeof(T)));
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+		double* ppp = p; *ppp = 3.14;
+		assert( *p == 3.14 );
+#pragma GCC diagnostic pop
+		cuda::managed::ptr<T> P = nullptr;
+	}
+	{
+		cuda::managed::ptr<double> p = nullptr;
+		cuda::managed::ptr<double const> pc = nullptr; 
+		pc = static_cast<cuda::managed::ptr<double const>>(p);
+		double* dp = cuda::managed::ptr<double>{nullptr};
+		auto f = [](double const*){};
+		f(p);
+	}
+	std::cout << "Finish" << std::endl;
 }
 #endif
 #endif

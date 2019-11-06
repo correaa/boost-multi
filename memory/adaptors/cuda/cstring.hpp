@@ -40,8 +40,6 @@ Dest memcpy(Dest dest, Src src, std::size_t byte_count){
 
 ptr<void> memset(ptr<void> dest, int ch, std::size_t byte_count){
 	[[maybe_unused]] cudaError_t s = cudaMemset(static_cast<void*>(dest), ch, byte_count); assert(s == cudaSuccess);
-//	if(s == cudaErrorInvalidDevicePointer) throw std::runtime_error{"cudaErrorInvalidDevicePointer"};
-//	if(s == cudaErrorInvalidValue)         throw std::runtime_error{"cudaErrorInvalidValue"};//, probably could not allocate fuzzy memory"};
 	return dest;
 }
 
