@@ -73,7 +73,7 @@ protected:
 	friend ptr<void> malloc(size_t);
 	friend void free();
 	friend ptr<void> memset(ptr<void> dest, int ch, std::size_t byte_count);
-	template<class> friend class managed::ptr;
+	template<class...> friend class managed::ptr;
 private:
 //	ptr(ptr<void const> const& p) : rp_{const_cast<void*>(p.rp_)}{}
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
