@@ -72,6 +72,7 @@ private:
 	ptr(ptr<void const> const& p) : rp_{const_cast<void*>(p.rp_)}{}
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 	template<class, class> friend struct ptr;
+	template<class> friend class allocator;
 public:
 	template<class Other> ptr(ptr<Other> const& p) : rp_{p.rp_}{}
 	explicit ptr(raw_pointer rp) : rp_{rp}{}
@@ -83,7 +84,7 @@ public:
 	ptr& operator=(ptr const&) = default;
 	bool operator==(ptr const& other) const{return rp_==other.rp_;}
 	bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
-
+	operator cuda::ptr<void>(){return {rp_};}
 	using pointer = ptr<T>;
 	using element_type    = typename std::pointer_traits<raw_pointer>::element_type;
 	using difference_type = typename std::pointer_traits<raw_pointer>::difference_type;
@@ -106,14 +107,14 @@ protected:
 	ptr(ptr<TT const> const& p) : rp_{const_cast<T*>(p.impl_)}{}
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 public:
-	template<class Other> ptr(Other const& o) : rp_{static_cast<raw_pointer>(o.impl_)}{}
+	template<class Other> ptr(Other const& o) : rp_{static_cast<raw_pointer>(o.rp_)}{}
 	explicit ptr(raw_pointer p) : rp_{p}{}//Cuda::pointer::is_device(p);}
 	ptr() = default;
 	ptr(ptr const&) = default;
 	ptr(std::nullptr_t n) : rp_{n}{}
 	ptr& operator=(ptr const&) = default;
-	bool operator==(ptr const& other) const{return rp_==rp_.impl_;}
-	bool operator!=(ptr const& other) const{return rp_!=rp_.impl_;}
+	bool operator==(ptr const& other) const{return rp_==other.rp_;}
+	bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
 
 	using element_type = typename std::pointer_traits<raw_pointer>::element_type;
 	using difference_type = typename std::pointer_traits<raw_pointer>::difference_type;

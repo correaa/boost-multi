@@ -1,9 +1,9 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&& `#nvcc -ccbin=cuda-`c++ -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_MALLOC $0.cpp -o $0x -lcudart &&$0x&&rm $0x; exit
+(echo '#include"'$0'"'>$0.cpp)&& `#nvcc -ccbin=cuda-`c++ -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_MALLOC $0.cpp -o $0x -lcudart &&$0x&&rm $0x; exit
 #endif
 
-#ifndef MULTI_MEMORY_ADAPTORS_CUDA_MALLOC
-#define MULTI_MEMORY_ADAPTORS_CUDA_MALLOC
+#ifndef MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_MALLOC_HPP
+#define MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_MALLOC_HPP
 
 #include "../../../adaptors/cuda/managed/clib.hpp"
 #include "../../../adaptors/cuda/managed/ptr.hpp"
@@ -24,7 +24,7 @@ namespace managed{
 }
 }}
 
-#ifdef _TEST_MULTI_MEMORY_ADAPTORS_CUDA_MALLOC
+#ifdef _TEST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_MALLOC
 
 int main(){
 }

@@ -1,17 +1,17 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&nvcc -std=c++14 `#-Wall -Wextra` -D_DISABLE_CUDA_SLOW -D_TEST_MULTI_MEMORY_CUDA_ALLOCATOR -D_MULTI_MEMORY_CUDA_DISABLE_ELEMENT_ACCESS $0.cpp -o $0x -lcudart && $0x && rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&nvcc -D_DISABLE_CUDA_SLOW -D_TEST_MULTI_MEMORY_CUDA_MANAGED_ALLOCATOR $0.cpp -o $0x&&$0x&&rm $0x $0.cpp; exit
 #endif
 
-#ifndef MULTI_MEMORY_ADAPTORS_CUDA_ALLOCATOR_HPP
-#define MULTI_MEMORY_ADAPTORS_CUDA_ALLOCATOR_HPP
+#ifndef MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_ALLOCATOR_HPP
+#define MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_ALLOCATOR_HPP
 
 #include<cuda_runtime.h> // cudaMalloc
 
-#include "../../adaptors/cuda/ptr.hpp"
+#include "../../../adaptors/cuda/allocator.hpp"
+#include "../../../adaptors/cuda/managed/ptr.hpp"
 
-#include "../../adaptors/cuda/clib.hpp" // cuda::malloc
-#include "../../adaptors/cuda/cstring.hpp" // cuda::memcpy
-#include "../../adaptors/cuda/malloc.hpp"
+#include "../../../adaptors/cuda/managed/clib.hpp" // cuda::malloc
+#include "../../../adaptors/cuda/managed/malloc.hpp"
 
 #include<new> // bad_alloc
 #include<cassert>
@@ -22,101 +22,44 @@
 namespace boost{namespace multi{
 namespace memory{namespace cuda{
 
-struct bad_alloc : std::bad_alloc{};
+namespace managed{
+	struct bad_alloc : std::bad_alloc{};
 
-struct allocation_counter{
-	static long n_allocations;
-	static long n_deallocations;
-	static long bytes_allocated;
-	static long bytes_deallocated;
-};
-
-long allocation_counter::n_allocations = 0;
-long allocation_counter::n_deallocations = 0;
-long allocation_counter::bytes_allocated = 0;
-long allocation_counter::bytes_deallocated = 0;
-
-template<class T=void> 
-class allocator : protected allocation_counter{
-public:
-	using value_type = T;
-	using pointer = ptr<T>;
-	using size_type = ::size_t; // as specified by CudaMalloc
-	pointer allocate(size_type n, const void* = 0){
-		if(n == 0) return pointer{nullptr};
-		auto ret = static_cast<pointer>(cuda::malloc(n*sizeof(T)));
-		if(not ret) throw bad_alloc{};
-		++n_allocations; bytes_allocated+=sizeof(T)*n;
-		return ret;
-	}
-	void deallocate(pointer p, size_type n){
-		cuda::free(p);
-		++n_deallocations; bytes_deallocated+=sizeof(T)*n;
-	}
-	std::true_type operator==(allocator const&) const{return {};}
-	std::false_type operator!=(allocator const&) const{return {};}
-	template<class P, class... Args>
-	void construct(P p, Args&&... args){
-		if(sizeof...(Args) == 0 and std::is_trivially_default_constructible<T>{})
-			cuda::memset(p, 0, sizeof(T));
-		else{
-			char buff[sizeof(T)];
-			::new(buff) T(std::forward<Args>(args)...);
-			cuda::memcpy(p, buff, sizeof(T));
+	template<class T=void>
+	struct allocator : cuda::allocator<T>{
+		using value_type = T;
+		using pointer = managed::ptr<T>;
+		using size_type = ::size_t; // as specified by CudaMalloc
+		pointer allocate(typename allocator::size_type n, const void* = 0){
+			if(n == 0) return pointer{nullptr};
+			auto ret = static_cast<pointer>(cuda::managed::malloc(n*sizeof(T)));
+			if(not ret) throw bad_alloc{};
+			++allocator::n_allocations; allocator::bytes_allocated+=sizeof(T)*n;
+			return ret;
 		}
-	}
-	template<class P> void destroy(P p){
-		if(not std::is_trivially_destructible<T>{}){
-			char buff[sizeof(T)];
-			cuda::memcpy(buff, p, sizeof(T)); // cudaMemcpy(buff, p.impl_, sizeof(T), cudaMemcpyDeviceToHost);
-			((T*)buff)->~T();
-		}
-	}
-};
-
-template<> 
-class allocator<std::max_align_t> : allocation_counter{
-public:
-	using T = std::max_align_t;
-	using value_type = T;
-	using pointer = ptr<T>;
-	using size_type = ::size_t; // as specified by CudaMalloc
-	auto allocate(size_type n, const void* = 0){
-		if(n == 0) return pointer{nullptr};
-		auto ret = static_cast<pointer>(cuda::malloc(n*sizeof(T)));
-		if(not ret) throw bad_alloc{};
-		++n_allocations; bytes_allocated+=sizeof(T)*n;
-		return ret;
-	}
-	void deallocate(pointer p, size_type n){
-		cuda::free(p); ++n_deallocations; bytes_deallocated+=sizeof(T)*n;
-	}
-	std::true_type operator==(allocator<std::max_align_t> const&) const{return {};} // template explicit for nvcc
-	std::false_type operator!=(allocator<std::max_align_t> const&) const{return {};}
-	template<class P, class... Args>
-	void construct([[maybe_unused]] P p, Args&&...){assert(0);} // TODO investigate who is calling this
-	template<class P>
-	void destroy(P){} // TODO investigate who is calling this
-};
+		void deallocate(pointer p, size_type n){cuda::free(static_cast<managed::ptr<void>>(p));}
+		template<class P, class... Args>
+		void construct(P p, Args&&... args){::new(p) T(std::forward<Args>(args)...);}
+		template<class P> void destroy(P p){p.rp_->~T();}
+	};
+}
 
 }}}}
 
-#ifdef _TEST_MULTI_MEMORY_CUDA_ALLOCATOR
+#ifdef _TEST_MULTI_MEMORY_CUDA_MANAGED_ALLOCATOR
 
 #include<memory>
 #include<iostream>
-#include "../../../array.hpp"
-#include "../cuda/algorithm.hpp"
+#include "../../../../array.hpp"
 
 namespace multi = boost::multi;
 namespace cuda = multi::memory::cuda;
 
-void add_one(double& d){d += 1.;}
-template<class T> void add_one(T&& t){std::forward<T>(t) += 1.;}
-
-using std::cout;
-
 int main(){
+
+	multi::array<double, 1, multi::memory::cuda::managed::allocator<double> > A(32, double{}); 
+	A[17] = 3.;
+	assert( A[17] == 3. );
 #if 0
 	{
 		multi::static_array<double, 1> A(32, double{}); A[17] = 3.;
@@ -156,7 +99,7 @@ int main(){
 		multi::static_array<double, 1, cuda::managed::allocator<double>> A1_gpu = A1;
 		assert( A1_gpu[17] == 3 );
 	}
-#endif
+
 	{
 		multi::array<double, 1> A1(32, double{}); A1[17] = 3.;
 		multi::array<double, 1, cuda::allocator<double>> A1_gpu = A1;
@@ -211,6 +154,7 @@ int main(){
 		cout<<"n_alloc/dealloc "<< cuda::allocation_counter::n_allocations <<"/"<< cuda::allocation_counter::n_deallocations <<"\n"
 			<<"bytes_alloc/dealloc "<< cuda::allocation_counter::bytes_allocated <<"/"<< cuda::allocation_counter::bytes_deallocated <<"\n";
 	}
+#endif
 }
 #endif
 #endif

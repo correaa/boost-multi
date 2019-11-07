@@ -58,6 +58,10 @@ public:
 };
 #endif
 
+namespace managed{
+	template<typename T, typename RawPtr> struct ptr;
+}
+
 template<typename RawPtr>
 struct ptr<void, RawPtr>{
 protected:
@@ -69,6 +73,7 @@ protected:
 	friend ptr<void> malloc(size_t);
 	friend void free();
 	friend ptr<void> memset(ptr<void> dest, int ch, std::size_t byte_count);
+	template<class> friend class managed::ptr;
 private:
 //	ptr(ptr<void const> const& p) : rp_{const_cast<void*>(p.rp_)}{}
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
@@ -208,17 +213,17 @@ public:
 		__host__ __device__ ~skeleton_t(){conditional_copyback_if_not(std::is_const<T>{});}
 	};
 	__host__ __device__
-	skeleton_t skeleton()&&{return {this->impl_};}
+	skeleton_t skeleton()&&{return {this->rp_};}
 public:
 	__host__ __device__ ref(ref&& r) : ptr<T>(r){}
 	ref& operator=(ref const&)& = delete;
 private:
 	ref& move_assign(ref&& other, std::true_type)&{
-		[[maybe_unused]] cudaError_t s = cudaMemcpy(this->impl_, other.impl_, sizeof(T), cudaMemcpyDeviceToDevice); (void)s; assert(s == cudaSuccess);
+		[[maybe_unused]] cudaError_t s = cudaMemcpy(this->rp_, other.rp_, sizeof(T), cudaMemcpyDeviceToDevice); (void)s; assert(s == cudaSuccess);
 		return *this;
 	}
 	ref& move_assign(ref&& other, std::false_type)&{
-		[[maybe_unused]] cudaError_t s = cudaMemcpy(this->impl_, other.impl_, sizeof(T), cudaMemcpyDeviceToDevice); (void)s; assert(s == cudaSuccess);
+		[[maybe_unused]] cudaError_t s = cudaMemcpy(this->rp_, other.rp_, sizeof(T), cudaMemcpyDeviceToDevice); (void)s; assert(s == cudaSuccess);
 		return *this;
 	}
 public:
@@ -284,11 +289,11 @@ public:
 	bool operator==(ref<Other>&& other)&&{
 //#pragma message ("Warning goes here")
 		char buff1[sizeof(T)];
-		cuda::memcpy(buff1, ref::rp_, sizeof(T));
-	//	[[maybe_unused]] cudaError_t s1 = cudaMemcpy(buff1, this->impl_, sizeof(T), cudaMemcpyDeviceToHost);
+	//	cuda::memcpy(buff1, ref::rp_, sizeof(T));
+		[[maybe_unused]] cudaError_t s1 = cudaMemcpy(buff1, this->rp_, sizeof(T), cudaMemcpyDeviceToHost);
 	//	assert(s1 == cudaSuccess);
 		char buff2[sizeof(Other)];
-		[[maybe_unused]] cudaError_t s2 = cudaMemcpy(buff2, other.impl_, sizeof(Other), cudaMemcpyDeviceToHost); 
+		[[maybe_unused]] cudaError_t s2 = cudaMemcpy(buff2, other.rp_, sizeof(Other), cudaMemcpyDeviceToHost); 
 		assert(s2 == cudaSuccess);
 		return reinterpret_cast<T const&>(buff1)==reinterpret_cast<Other const&>(buff2);
 	}
@@ -296,9 +301,9 @@ public:
 	[[SLOW]] 
 	bool operator==(ref const& other) const&{
 		char buff1[sizeof(T)];
-		{[[maybe_unused]] cudaError_t s1 = cudaMemcpy(buff1, this->impl_, sizeof(T), cudaMemcpyDeviceToHost); assert(s1 == cudaSuccess);}
+		{[[maybe_unused]] cudaError_t s1 = cudaMemcpy(buff1, this->rp_, sizeof(T), cudaMemcpyDeviceToHost); assert(s1 == cudaSuccess);}
 		char buff2[sizeof(T)];
-		{[[maybe_unused]] cudaError_t s2 = cudaMemcpy(buff2, other.impl_, sizeof(T), cudaMemcpyDeviceToHost); assert(s2 == cudaSuccess);}
+		{[[maybe_unused]] cudaError_t s2 = cudaMemcpy(buff2, other.rp_, sizeof(T), cudaMemcpyDeviceToHost); assert(s2 == cudaSuccess);}
 		return reinterpret_cast<T const&>(buff1)==reinterpret_cast<T const&>(buff2);
 	}
 //	[[SLOW]] 
