@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-nvcc -x cu -O3 $0 -o $0x &&$0x&&rm $0x;exit
+$CXX -Wall -Wextra -O3 $0 -o $0x &&$0x&&rm $0x;exit
 #endif
 
 #include "../array.hpp"
