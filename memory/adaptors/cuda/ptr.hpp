@@ -14,13 +14,8 @@
 #endif
 
 #include "../../adaptors/cuda/clib.hpp"
-#include "../../adaptors/cuda/cstring.hpp"
 
-#include<cassert>
-#include<cstddef> // nullptr_t
-#include<iterator> // random_access_iterator_tag
-
-#include<type_traits> // is_const
+#include<cassert> // debug
 
 #ifndef _DISABLE_CUDA_SLOW
 #define SLOW deprecated("WARNING: slow function") 
@@ -110,15 +105,16 @@ protected:
 	using raw_pointer_traits = typename std::pointer_traits<raw_pointer>;
 	template<class TT> friend class allocator;
 	template<typename, typename> friend struct ptr;
-	template<class TT, typename = typename std::enable_if<not std::is_const<TT>{}>::type> 
-	ptr(ptr<TT const> const& p) : rp_{const_cast<T*>(p.rp_)}{}
+//	template<class TT, typename = typename std::enable_if<not std::is_const<TT>{}>::type> 
+//	ptr(ptr<TT const> const& p) : rp_{const_cast<T*>(p.rp_)}{}
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 public:
+	explicit ptr(raw_pointer rp) HD : rp_{rp}{}//Cuda::pointer::is_device(p);}
 	template<class Other> explicit ptr(Other const& o) : rp_{static_cast<raw_pointer>(o.rp_)}{}
-//	explicit ptr(ptr<void, void*> other) : impl_{static_cast<impl_t>(other.impl_)}{}
-	explicit ptr(raw_pointer rp) : rp_{rp}{}//Cuda::pointer::is_device(p);}
 	ptr() = default;
-	ptr(ptr const& other) : rp_{other.rp_}{}
+	ptr(ptr const& other) HD : rp_{other.rp_}{}
+	ptr(ptr<std::remove_const<T>> const& other) : rp_{other.rp_}{}
+//	operator ptr<T const>() const{return ptr<T const>{rp_};}
 	ptr(std::nullptr_t n) : rp_{n}{}
 //	template<class Other, typename = decltype(impl_t{std::declval<Other const&>().impl_}), typename = typename std::enable_if<not std::is_base_of<ptr, Other>{}>::type /*c++14*/>
 //	__host__ __device__ ptr(Other const& o) : impl_{o.impl_}{}
@@ -148,11 +144,11 @@ public:
 //	friend bool operator==(ptr const& s, ptr const& t){return s.impl_==t.impl_;}
 //	friend bool operator!=(ptr const& s, ptr const& t){return s.impl_!=t.impl_;}
 	__host__ __device__ 
-	ptr operator+(typename ptr::difference_type n) const{return ptr{rp_ + n};}
-	ptr operator-(typename ptr::difference_type n) const{return ptr{rp_ - n};}
+	ptr operator+(typename ptr::difference_type n) const HD{return ptr{rp_ + n};}
+	ptr operator-(typename ptr::difference_type n) const HD{return ptr{rp_ - n};}
 	using reference = ref<element_type>;
 #ifdef __CUDA_ARCH__
-	__device__ T& operator*() const{return *impl_;}
+	__device__ T& operator*() const{return *rp_;}
 #else
 	__host__ ref<element_type> operator*() const{return {*this};}
 #endif
@@ -198,7 +194,7 @@ public:
 			[[maybe_unused]] cudaError_t s = cudaMemcpy(buff, p_, sizeof(T), cudaMemcpyDeviceToHost); assert(s == cudaSuccess);
 			#endif	
 		}
-		__host__ __device__ [[SLOW]] 
+		__host__ __device__ //[[SLOW]] 
 		operator T&()&&{return reinterpret_cast<T&>(buff);}
 		__host__ __device__
 		void conditional_copyback_if_not(std::false_type) const{
@@ -227,7 +223,8 @@ private:
 	}
 public:
 	__host__ __device__
-	[[SLOW]] ref&& operator=(ref&& other)&&{
+//	[[SLOW]] 
+	ref&& operator=(ref&& other)&&{
 		#ifdef __CUDA_ARCH__
 		*(this->impl_) = *(other.impl_);
 		return std::move(*this);
@@ -245,7 +242,7 @@ public:
 //	friend auto operator+(Self&& self, O&& o)
 //	->decltype(std::forward<Self>(self).skeleton() + std::forward<O>(o)){
 //		return std::forward<Self>(self).skeleton() + std::forward<O>(o);}
-	__host__ __device__ [[SLOW]]
+	__host__ __device__ // [[SLOW]]
 	#ifndef __CUDA_ARCH__
 	#else
 	#endif
@@ -287,7 +284,7 @@ public:
 	bool operator==(ref<Other>&& other)&&{
 //#pragma message ("Warning goes here")
 		char buff1[sizeof(T)];
-		memcpy(buff1, ref::rp_, sizeof(T));
+		cuda::memcpy(buff1, ref::rp_, sizeof(T));
 	//	[[maybe_unused]] cudaError_t s1 = cudaMemcpy(buff1, this->impl_, sizeof(T), cudaMemcpyDeviceToHost);
 	//	assert(s1 == cudaSuccess);
 		char buff2[sizeof(Other)];

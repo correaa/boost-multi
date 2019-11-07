@@ -17,6 +17,8 @@
 #include<cassert>
 #include<iostream> // debug
 
+#include<cstddef>
+
 namespace boost{namespace multi{
 namespace memory{namespace cuda{
 
@@ -124,13 +126,6 @@ public:
 #include<iostream>
 #include "../../../array.hpp"
 #include "../cuda/algorithm.hpp"
-
-namespace boost{namespace multi{
-namespace cuda{
-	template<class T, dimensionality_type D>
-	using array = multi::array<T, D, multi::memory::cuda::allocator<T>>;
-}
-}}
 
 namespace multi = boost::multi;
 namespace cuda = multi::memory::cuda;

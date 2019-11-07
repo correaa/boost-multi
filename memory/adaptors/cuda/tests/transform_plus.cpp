@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-nvcc -x cu --expt-relaxed-constexpr -O3 $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x; exit
+nvcc -x cu --expt-relaxed-constexpr $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x; exit
 #endif
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUDA allocators"
@@ -55,7 +55,6 @@ BOOST_AUTO_TEST_CASE(cuda_allocators){
 	A1[100] = 1.;
 	B1[100] = 2.;
 	C1[100] = 3.;
-
 
 	{
 		multi::array<double, 1, cuda::allocator<double>> D1(200, 0.);

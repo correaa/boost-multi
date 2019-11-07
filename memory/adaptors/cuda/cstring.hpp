@@ -9,7 +9,7 @@
 
 #include<cuda_runtime.h> // cudaMemcpy/cudaMemset
 
-#include<iostream>
+//#include<iostream>
 
 namespace boost{
 namespace multi{
