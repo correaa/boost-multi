@@ -120,6 +120,7 @@ struct layout_t<dimensionality_type{1}>{
 	using extensions_type = extensions_type_;
 	using strides_type = std::tuple<index>;
 	constexpr layout_t() = default;//: stride_{1}, offset_{0}, nelems_{0}{} // needs stride != 0 for things to work well in partially formed state
+	constexpr layout_t(layout_t const&) = default;
 	constexpr layout_t(index_extension ie, layout_t<0> const&) : 
 		stride_{1}, offset_{0}, nelems_{ie.size()}
 	{}
@@ -145,6 +146,7 @@ struct layout_t<dimensionality_type{1}>{
 	constexpr size_type size() const{
 		return nelems_/stride_; // assert(stride_!=0 and nelems_%stride_ == 0)
 	}
+	friend constexpr auto size(layout_t const& self){return self.size();}
 	constexpr size_type size(dimensionality_type d) const{
 		return d==0?nelems_/stride_:throw 0; // assert(d == 0 and stride_ != 0 and nelems_%stride_ == 0);
 	}
@@ -295,7 +297,7 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 	layout_t(index_extension const& ie, layout_t<D-1> const& s) : 
 		sub{s},
 		stride_{ie.size()*sub.num_elements()!=0?sub.size()*sub.stride():1}, // use .size for nvcc
-		offset_{0}, 
+		offset_{0},
 		nelems_{ie.size()*sub.num_elements()}                             // use .size fort
 	{}
 	constexpr layout_t() = default;//: sub{}, stride_{1}, offset_{0}, nelems_{0}{} // needs stride != 0 for things to work well in partially formed state
@@ -333,7 +335,6 @@ public:
 	constexpr bool empty() const{return not nelems_;} friend
 	constexpr bool empty(layout_t const& s){return s.empty();}
 	constexpr size_type size() const {return nelems_/stride_;} 
-//	friend constexpr size_type size(layout_t const& l){return l.size();} // removed for gcc6, add "using boost::multi::size"
 	friend constexpr size_type size(layout_t const& l){return l.size();}
 	size_type size(dimensionality_type d) const{return d?sub.size(d-1):size();}
 
