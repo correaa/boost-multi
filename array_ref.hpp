@@ -125,7 +125,7 @@ protected:
 	bool equal(basic_array_ptr const& o) const{return base_==o.base_ and layout()==o.layout();}
 	void increment(){base_ += Ref::nelems();}
 	void decrement(){base_ -= Ref::nelems();}
-	void advance(difference_type n){base_ += Ref::nelems()*n;}
+	void advance(difference_type n) HD{base_ += Ref::nelems()*n;}
 	difference_type distance_to(basic_array_ptr const& other) const{
 		assert( Ref::nelems() == other.Ref::nelems() and Ref::nelems() != 0 );
 		assert( (other.base_ - base_)%Ref::nelems() == 0); 
@@ -133,7 +133,7 @@ protected:
 		return (other.base_ - base_)/Ref::nelems();
 	}
 public:
-	basic_array_ptr& operator+=(difference_type n){advance(n); return *this;}
+	basic_array_ptr& operator+=(difference_type n) HD{advance(n); return *this;}
 };
 
 template<class Element, dimensionality_type D, typename Ptr, class Ref 
@@ -195,7 +195,7 @@ struct array_iterator :
 	explicit operator bool() const{return static_cast<bool>(ptr_.base_);}
 	Ref operator*() const{/*assert(*this);*/ return *ptr_;}//return *this;}
 	decltype(auto) operator->() const{/*assert(*this);*/ return ptr_;}//return this;}
-HD	Ref          operator[](difference_type n) const{return *(*this + n);}
+	Ref  operator[](difference_type n) const HD{return *(*this + n);}
 	template<class O> bool operator==(O const& o) const{return equal(o);}
 	bool operator<(array_iterator const& o) const{return distance_to(o) > 0;}
 	array_iterator(typename Ref::element_ptr p, layout_t<D-1> l, index stride) : /*Ref{l, p},*/ ptr_{p, l}, stride_{stride}{}
@@ -213,7 +213,7 @@ private:
 	bool equal(array_iterator const& o) const{return ptr_==o.ptr_ and stride_==o.stride_;}//base_==o.base_ && stride_==o.stride_ && ptr_.layout()==o.ptr_.layout();}
 	void increment(){ptr_.base_ += stride_;}
 	void decrement(){ptr_.base_ -= stride_;}
-	void advance(difference_type n){ptr_.base_ += stride_*n;}
+	void advance(difference_type n) HD{ptr_.base_ += stride_*n;}
 	difference_type distance_to(array_iterator const& other) const{
 		assert( stride_ == other.stride_);
 		assert( stride_ != 0 );
@@ -232,8 +232,8 @@ public:
 		array_iterator<Element, D, Ptr, Ref>, void, std::random_access_iterator_tag, 
 		Ref const&, typename layout_t<D-1>::difference_type
 	>::operator-;
-	array_iterator& operator+=(difference_type d){advance( d); return *this;}
-	array_iterator& operator-=(difference_type d){advance(-d); return *this;}
+	array_iterator& operator+=(difference_type d) HD{advance( d); return *this;}
+	array_iterator& operator-=(difference_type d) HD{advance(-d); return *this;}
 };
 
 template<class It>
@@ -263,7 +263,7 @@ struct biiterator :
 		return *this;
 	}
 	bool operator==(biiterator const& o) const{return me==o.me and pos==o.pos;}
-	biiterator& operator+=(multi::difference_type n){me += n/stride; pos += n%stride; return *this;}
+	biiterator& operator+=(multi::difference_type n) HD{me += n/stride; pos += n%stride; return *this;}
 	decltype(auto) operator*() const{return me->begin()[pos];}
 	using difference_type = std::ptrdiff_t;
 	using reference = decltype(*std::declval<biiterator>());
@@ -568,7 +568,7 @@ struct array_iterator<Element, 1, Ptr, Ref> :
 	array_iterator(std::nullptr_t np = nullptr) : data_{np}, stride_{}{}
 	array_iterator(Ptr const& p) : data_{p}, stride_{1}{}
 	explicit operator bool() const{return static_cast<bool>(this->data_);}
-HD	Ref operator[](typename array_iterator::difference_type n) const{/*assert(*this);*/ return *((*this) + n);}
+	Ref operator[](typename array_iterator::difference_type n) const HD{/*assert(*this);*/ return *((*this) + n);}
 	Ptr operator->() const{return data_;}
 	using element = Element;
 	using element_ptr = Ptr;
@@ -580,7 +580,7 @@ private:
 	friend struct basic_array<Element, 1, Ptr>;
 	Ptr data_ = nullptr;
 	multi::index stride_;
-HD	Ref dereference() const{return *data_;}
+	Ref dereference() const HD{return *data_;}
 	bool equal(array_iterator const& o) const{return data_==o.data_ and stride_==o.stride_;}
 	void increment(){data_ += stride_;}
 	void decrement(){data_ -= stride_;}
@@ -593,16 +593,16 @@ HD	Ref dereference() const{return *data_;}
 	auto base() const{return data_;}
 	friend auto base(array_iterator const& self){return self.base();}
 public:
-HD	auto data() const{return data_;}
+	auto data() const HD{return data_;}
 	auto stride() const{return stride_;}
 	friend auto stride(array_iterator const& self){return self.stride();}
 	array_iterator& operator++(){increment(); return *this;}
 	array_iterator& operator--(){decrement(); return *this;}
 	bool operator==(array_iterator const& o) const{return equal(o);}
-HD	Ref operator*() const{return dereference();}
+	Ref operator*() const HD{return dereference();}
 	difference_type operator-(array_iterator const& o) const{return -distance_to(o);}
 	array_iterator& operator+=(difference_type d) HD{advance(d); return *this;}
-	array_iterator& operator-=(difference_type d){advance(-d); return *this;}
+	array_iterator& operator-=(difference_type d) HD{advance(-d); return *this;}
 };
 
 template<class Element, dimensionality_type D, typename... Ts>
