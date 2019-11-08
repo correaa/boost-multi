@@ -79,7 +79,7 @@ public:
 	template<class Other> ptr(ptr<Other> const& p) : rp_{p.rp_}{}
 	explicit ptr(raw_pointer rp) : rp_{rp}{}
 	ptr() = default;
-	ptr(ptr const& p) : rp_{p.rp_}{}
+	ptr(ptr const& p) = default;
 	ptr(std::nullptr_t n) : rp_{n}{}
 	template<class Other, typename = decltype(raw_pointer{std::declval<Other const&>().impl_})>
 	ptr(Other const& o) : rp_{o.rp_}{}
