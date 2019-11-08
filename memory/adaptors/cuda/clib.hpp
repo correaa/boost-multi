@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include "'$0'"'>$0.cpp)&&c++ -std=c++11 -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_MEMORY_ADAPTOR_CUDA_CLIB $0.cpp -lcudart -o $0x &&$0x&& rm $0x $0.cpp; exit
+(echo '#include "'$0'"'>$0.cpp)&&c++ -std=c++14 -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_MEMORY_ADAPTOR_CUDA_CLIB $0.cpp -lcudart -o $0x &&$0x&& rm $0x $0.cpp; exit
 #endif
 
 #ifndef MULTI_MEMORY_ADAPTOR_CUDA_CLIB_HPP
@@ -7,6 +7,7 @@
 
 #include<cuda_runtime.h> // cudaMalloc
 
+#include<cassert>
 #include "../../adaptors/cuda/error.hpp"
 
 namespace Cuda{
@@ -31,6 +32,7 @@ namespace Cuda{
 		using attributes_t = cudaPointerAttributes;
 		error GetAttributes(attributes_t* ret, void* p){return static_cast<error>(cudaPointerGetAttributes(ret, p));}
 		attributes_t attributes(void* p){
+			assert(p);
 			attributes_t ret;
 			auto e = GetAttributes(&ret, p); 
 			if(e!=success) throw std::system_error{e, std::string{"cannot "}+ __PRETTY_FUNCTION__};

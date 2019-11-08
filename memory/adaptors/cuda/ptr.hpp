@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&nvcc -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_PTR $0.cpp -o $0x -lboost_unit_test_framework&&$0x&&rm $0x; exit
+(echo '#include"'$0'"'>$0.cpp)&&nvcc -std=c++14 -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_PTR $0.cpp -o $0x -lboost_unit_test_framework&&$0x&&rm $0x; exit
 #endif
 
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_PTR_HPP
@@ -113,6 +113,7 @@ protected:
 //	template<class TT, typename = typename std::enable_if<not std::is_const<TT>{}>::type> 
 //	ptr(ptr<TT const> const& p) : rp_{const_cast<T*>(p.rp_)}{}
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
+	friend class managed::ptr<T, RawPtr>;
 public:
 	explicit ptr(raw_pointer rp) HD : rp_{rp}{}//Cuda::pointer::is_device(p);}
 	template<class Other> explicit ptr(Other const& o) : rp_{static_cast<raw_pointer>(o.rp_)}{}
@@ -285,6 +286,24 @@ public:
 #endif
 #if 1
 	template<class Other> 
+	auto operator==(Other const& other)&&
+//	->decltype(static_cast<T>(std::move(*this))==other)
+	{
+#if __CUDA_ARCH__
+		return *(this->rp_)==other;
+#else
+		return static_cast<T>(std::move(*this))==other;
+#endif
+	}
+	template<class Other> 
+	friend auto operator==(Other&& other, ref&& self){
+#if __CUDA_ARCH__
+		return std::forward<Other>(other)==*(this->rp_);
+#else
+		return std::forward<Other>(other)==static_cast<T>(std::move(self));
+#endif
+	}
+	template<class Other>
 	[[SLOW]]
 	bool operator==(ref<Other>&& other)&&{
 //#pragma message ("Warning goes here")
@@ -316,7 +335,7 @@ public:
 #endif
 //	[[SLOW]] 
 	#if __CUDA_ARCH__
-	operator T()&&{return *(this->impl_);}
+	operator T()&&{return *(this->rp_);}
 	#else
 	[[SLOW]] operator T()&&{
 		char buff[sizeof(T)];

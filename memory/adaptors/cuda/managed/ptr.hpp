@@ -109,7 +109,18 @@ protected:
 	ptr(ptr<TT const> const& p) : rp_{const_cast<T*>(p.impl_)}{}
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 public:
-	template<class Other> ptr(Other const& o) HD : rp_{static_cast<raw_pointer>(o.rp_)}{}
+//	explicit ptr(cuda::ptr<T, RawPtr> const& other) : rp_{other.rp_}{}
+	template<class Other, typename = std::enable_if_t<std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{}>>
+	/*explicit(false)*/ ptr(ptr<Other> const& o) HD : rp_{static_cast<raw_pointer>(o.rp_)}{}
+	template<class Other, typename = std::enable_if_t<not std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{}>>
+	explicit/*(true)*/ ptr(ptr<Other> const& o, void** = 0) HD : rp_{static_cast<raw_pointer>(o.rp_)}{}
+//	template<class Other, typename = std::enable_if_t<std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{}>>
+//	ptr(ptr<Other> const& o) HD : rp_{static_cast<raw_pointer>(o.rp_)}{}
+//	template<class Other, typename = std::enable_if_t<not std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{}>>
+//	explicit ptr(ptr<Other> const& o, void** = 0) HD : rp_{static_cast<raw_pointer>(o.rp_)}{}
+	explicit ptr(cuda::ptr<T, raw_pointer> const& other) : ptr{other.rp_}{
+		assert(other.rp_!=nullptr or Cuda::pointer::attributes(other.rp_).type == cudaMemoryTypeManaged);
+	}
 	explicit ptr(raw_pointer p) HD : rp_{p}{}//Cuda::pointer::is_device(p);}
 	ptr() = default;
 	ptr(ptr const&) = default;
@@ -147,6 +158,7 @@ public:
 	friend ptr to_address(ptr const& p){return p;}
 	typename ptr::difference_type operator-(ptr const& other) const{return rp_-other.rp_;}
 	friend raw_pointer raw_pointer_cast(ptr const& self){return self.rp_;}
+	operator cuda::ptr<T, RawPtr>() const{return cuda::ptr<T, RawPtr>{rp_};}
 };
 
 }
@@ -181,6 +193,10 @@ cuda::managed::ptr<double const> f(){
 	return cuda::managed::ptr<double>{nullptr};
 }
 
+cuda::managed::ptr<double> ff(){
+	return cuda::managed::ptr<double>{cuda::ptr<double>{nullptr}};
+}
+
 int main(){
 	f();
 	using T = double; static_assert( sizeof(cuda::managed::ptr<T>) == sizeof(T*) );
@@ -212,6 +228,13 @@ int main(){
 		double* dp = cuda::managed::ptr<double>{nullptr};
 		auto f = [](double const*){};
 		f(p);
+		cuda::ptr<double> pp = p;
+	//	cuda::managed::ptr<double> ppp{pp};
+	}
+	{
+		auto p = static_cast<cuda::managed::ptr<T>>(cuda::managed::malloc(n*sizeof(T)));
+		cuda::ptr<T> cp = p;
+		cuda::managed::ptr<T> mcp{cp};
 	}
 	std::cout << "Finish" << std::endl;
 }
