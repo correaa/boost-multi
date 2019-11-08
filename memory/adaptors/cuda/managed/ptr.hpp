@@ -139,10 +139,10 @@ public:
 	ptr& operator-=(typename ptr::difference_type n){rp_-=n; return *this;}
 //	friend bool operator==(ptr const& s, ptr const& t){return s.impl_==t.impl_;}
 //	friend bool operator!=(ptr const& s, ptr const& t){return s.impl_!=t.impl_;}
-	ptr operator+(typename ptr::difference_type n) const{return ptr{rp_ + n};}
-	ptr operator-(typename ptr::difference_type n) const{return ptr{rp_ - n};}
+	ptr operator+(typename ptr::difference_type n) const HD{return ptr{rp_ + n};}
+	ptr operator-(typename ptr::difference_type n) const HD{return (*this) + (-n);}
 	using reference = typename std::pointer_traits<raw_pointer>::element_type&;//ref<element_type>;
-	reference operator*() const{return *rp_;}
+	[[SLOW]] reference operator*() const HD{return *rp_;}
 	HD reference operator[](difference_type n){return *((*this)+n);}
 	friend ptr to_address(ptr const& p){return p;}
 	typename ptr::difference_type operator-(ptr const& other) const{return rp_-other.rp_;}
