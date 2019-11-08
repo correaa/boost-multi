@@ -81,8 +81,8 @@ public:
 		constexpr auto operator==(const_iterator const& y) const{return curr_ == y.curr_;}
 		constexpr const_iterator& operator++(){++curr_; return *this;}
 		constexpr const_iterator& operator--(){--curr_; return *this;}
-		constexpr const_iterator& operator-=(typename const_iterator::difference_type n){curr_-=n; return *this;}
-		constexpr const_iterator& operator+=(typename const_iterator::difference_type n){curr_+=n; return *this;}
+		constexpr const_iterator& operator-=(typename const_iterator::difference_type n) HD{curr_-=n; return *this;}
+		constexpr const_iterator& operator+=(typename const_iterator::difference_type n) HD{curr_+=n; return *this;}
 		constexpr auto operator-(const_iterator const& y) const{return curr_ - y.curr_;}
 		constexpr const_iterator operator-(typename const_iterator::difference_type n) const{return curr_ - n;}
 		constexpr typename const_iterator::reference operator*() const{return curr_;}
