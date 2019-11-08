@@ -24,8 +24,8 @@ namespace multi{
 template<class Self, typename ValueType, class AccessCategory, typename Reference = ValueType&,  typename DifferenceType = typename std::pointer_traits<ValueType*>::difference_type, typename Pointer = ValueType*>
 class iterator_facade{
 	using self_type = Self;
-HD	constexpr self_type& self(){return *this;}
-	constexpr self_type const& self() const{return static_cast<Self const&>(*this);}
+	constexpr self_type& self() HD{return static_cast<self_type&>(*this);}
+	constexpr self_type const& self() const HD{return static_cast<self_type const&>(*this);}
 public:
 	using value_type = ValueType;
 	using reference = Reference;
@@ -34,8 +34,8 @@ public:
 	using iterator_category = AccessCategory;
 	constexpr auto operator==(self_type const& o) const{return o == self();}
 	constexpr auto operator!=(self_type const& o) const{return not(o == self());}
-HD	constexpr self_type operator+(difference_type n) const{self_type r = self(); r += n; return r;}
-	constexpr self_type operator-(difference_type n) const{self_type r = self(); r -= n; return r;}
+	constexpr self_type operator+(difference_type n) const HD{self_type r = self(); r += n; return r;}
+	constexpr self_type operator-(difference_type n) const HD{self_type r = self(); r -= n; return r;}
 };
 
 //class iterator_core_access{};
