@@ -13,6 +13,8 @@
 
 #include<type_traits> // is_const
 
+#include "../../cuda/ptr.hpp"
+
 #ifndef _DISABLE_CUDA_SLOW
 #define SLOW deprecated("WARNING: implies a slow access to GPU memory") 
 #else
@@ -107,8 +109,8 @@ protected:
 	ptr(ptr<TT const> const& p) : rp_{const_cast<T*>(p.impl_)}{}
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 public:
-	template<class Other> ptr(Other const& o) : rp_{static_cast<raw_pointer>(o.rp_)}{}
-	explicit ptr(raw_pointer p) : rp_{p}{}//Cuda::pointer::is_device(p);}
+	template<class Other> ptr(Other const& o) HD : rp_{static_cast<raw_pointer>(o.rp_)}{}
+	explicit ptr(raw_pointer p) HD : rp_{p}{}//Cuda::pointer::is_device(p);}
 	ptr() = default;
 	ptr(ptr const&) = default;
 	ptr(std::nullptr_t n) : rp_{n}{}
@@ -144,7 +146,7 @@ public:
 	HD reference operator[](difference_type n){return *((*this)+n);}
 	friend ptr to_address(ptr const& p){return p;}
 	typename ptr::difference_type operator-(ptr const& other) const{return rp_-other.rp_;}
-	friend raw_pointer raw_pointer_cast(ptr const& self){return self.impl_;}
+	friend raw_pointer raw_pointer_cast(ptr const& self){return self.rp_;}
 };
 
 #if 0
@@ -351,23 +353,8 @@ cuda::managed::ptr<double const> f(){
 
 int main(){
 	f();
-	using T = double; static_assert( sizeof(cuda::ptr<T>) == sizeof(T*) );
+	using T = double; static_assert( sizeof(cuda::managed::ptr<T>) == sizeof(T*) );
 	std::size_t const n = 100;
-	{
-		auto p = static_cast<cuda::ptr<T>>(cuda::malloc(n*sizeof(T)));
-//		*p = 3.14;
-		
-	//	double* ppp = static_cast<double*>(p); *ppp = 3.14;
-//		Fill_n(p, 1, 3.14);
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-		*p = 99.;
-		if(*p != 99.) assert(0);
-		if(*p == 11.) assert(0);
-#pragma GCC diagnostic pop
-		cuda::free(p);
-		cuda::ptr<T> P = nullptr;
-	}
 	{
 		auto p = static_cast<cuda::managed::ptr<T>>(cuda::managed::malloc(n*sizeof(T)));
 		cuda::managed::ptr<void> pp = p;
