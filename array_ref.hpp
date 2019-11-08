@@ -52,7 +52,7 @@ struct array_types : Layout{
 	>;
 	HD element_ptr     base()   const{return base_;} //	element_const_ptr cbase() const{return base();}
 	friend element_ptr base(array_types const& s){return s.base();}
-	HD layout_t const& layout() const{return *this;}
+	layout_t const& layout() const HD{return *this;}
 	friend layout_t const& layout(array_types const& s){return s.layout();}
 	element_ptr            origin() const{return base_+Layout::origin();} //	element_const_ptr     corigin() const{return origin();}
 	friend decltype(auto)  origin(array_types const& s){return s.origin();} //	friend decltype(auto) corigin(array_types const& s){return s.corigin();}
@@ -63,7 +63,7 @@ protected:
 	array_types(std::nullptr_t np) : Layout{}, base_{np}{}
 	array_types(array_types const&) = default;
 public:
-	HD array_types(layout_t l, element_ptr data) : Layout{l}, base_{data}{}
+	array_types(layout_t l, element_ptr data) HD : Layout{l}, base_{data}{}
 //	template<class T2, class P2, class Array> friend decltype(auto) static_array_cast(Array&&);
 public://TODO find why this needs to be public and not protected or friend
 	template<class ArrayTypes, typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>
