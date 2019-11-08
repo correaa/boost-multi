@@ -11,6 +11,8 @@
 #include "../../adaptors/cuda/error.hpp"
 
 namespace Cuda{
+	using namespace std::string_literals;
+
 	using size_t = ::size_t;
 	error Malloc(void** p, size_t bytes){return static_cast<error>(cudaMalloc(p, bytes));}
 	void* malloc(size_t bytes){
@@ -26,7 +28,7 @@ namespace Cuda{
 	void free(void* p){
 		auto e = Free(p);
 		// probably will terminate if called from noexcept functon
-		if(Cuda::success!=e) throw std::system_error{e, std::string{"cannot free "}+__PRETTY_FUNCTION__}; 
+		if(Cuda::success!=e) throw std::system_error{e, "cannot "s +__PRETTY_FUNCTION__}; 
 	}
 	namespace pointer{
 		using attributes_t = cudaPointerAttributes;
@@ -34,8 +36,8 @@ namespace Cuda{
 		attributes_t attributes(void* p){
 			assert(p);
 			attributes_t ret;
-			auto e = GetAttributes(&ret, p); 
-			if(e!=success) throw std::system_error{e, std::string{"cannot "}+ __PRETTY_FUNCTION__};
+			auto e = GetAttributes(&ret, p);
+			if(e!=success) throw std::system_error{e, "cannot "s+__PRETTY_FUNCTION__};
 			return ret;
 		}
 		bool is_device(void* p){return attributes(p).devicePointer or p==nullptr;}
