@@ -11,8 +11,8 @@ nvcc -x cu --expt-relaxed-constexpr $0 -o $0x -lboost_unit_test_framework&&$0x&&
 
 template<class ItA, class ItB, class ItC, class Size, class ItD>
 __global__ void transform3_plus_CU(ItA first_a, ItB first_b, ItC first_c, Size max_n, ItD first_d){
-	auto const ii = blockIdx.x*blockDim.x + threadIdx.x;
-	if(ii < max_n) first_d[ii] = first_a[ii] + first_b[ii] + first_c[ii];
+	auto const ii = blockIdx.x*blockDim.x + threadIdx.x; (void)ii;
+	if(ii < max_n) [[likely]] first_d[ii] = first_a[ii] + first_b[ii] + first_c[ii];
 }
 
 template<class ItA, class ItB, class ItC, typename Size, class ItD>
@@ -42,10 +42,35 @@ Ret plus3_cuda(A const& a, B const& b, C const& c){
 	return plus3_cuda(a, b, c, Ret(size(a), 0, get_allocator(a)));
 }
 
+#include<thrust/complex.h>
+
 namespace multi = boost::multi;
 namespace cuda = multi::memory::cuda;
 
-BOOST_AUTO_TEST_CASE(cuda_allocators){
+BOOST_AUTO_TEST_CASE(cuda_transform_plus_complex){
+	using complex = thrust::complex<double>;
+	using T = complex;
+	using allocator = cuda::allocator<T>;
+	using array1d = multi::array<T, 1, allocator>;
+	array1d A1(200, T{0.});
+	array1d B1(200, T{0.});
+	array1d C1(200, T{0.});
+
+	A1[100] = T{1., 1.};
+	B1[100] = T{2., 1.};
+	C1[100] = T{3., 1.};
+
+	{
+		multi::array<T, 1, allocator> D1(200, T{0.});
+
+		transform3_plus_CU<<<size(A1), 1>>>(cbegin(A1), cbegin(B1), cbegin(C1), size(A1), begin(D1));
+
+		BOOST_REQUIRE(( T{6., 3.} == D1[100] )); //complex{6., 6.} )); 
+	}
+
+}
+
+BOOST_AUTO_TEST_CASE(cuda_transform_plus_double){
 
 	multi::array<double, 1, cuda::allocator<double>> A1(200, 0.);
 	multi::array<double, 1, cuda::allocator<double>> B1(200, 0.);
