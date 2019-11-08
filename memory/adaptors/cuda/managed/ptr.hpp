@@ -135,8 +135,8 @@ public:
 	ptr& operator--(){--rp_; return *this;}
 	ptr  operator++(int){auto tmp = *this; ++(*this); return tmp;}
 	ptr  operator--(int){auto tmp = *this; --(*this); return tmp;}
-	ptr& operator+=(typename ptr::difference_type n){rp_+=n; return *this;}
-	ptr& operator-=(typename ptr::difference_type n){rp_-=n; return *this;}
+	ptr& operator+=(typename ptr::difference_type n) HD{rp_+=n; return *this;}
+	ptr& operator-=(typename ptr::difference_type n) HD{rp_-=n; return *this;}
 //	friend bool operator==(ptr const& s, ptr const& t){return s.impl_==t.impl_;}
 //	friend bool operator!=(ptr const& s, ptr const& t){return s.impl_!=t.impl_;}
 	ptr operator+(typename ptr::difference_type n) const HD{return ptr{rp_ + n};}
