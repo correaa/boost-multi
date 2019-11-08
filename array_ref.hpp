@@ -102,16 +102,16 @@ struct basic_array_ptr :
 
 	template<class Other, typename = decltype(typename Ref::element_ptr{typename Other::element_ptr{}})> 
 	basic_array_ptr(Other const& o) : Ref{layout(o), base(o)}{}//, stride_{o.stride_}{}
-	basic_array_ptr(basic_array_ptr const& o)  : Ref{static_cast<Layout const&>(o), o.base_}{}//, stride_{o.stride_}{}
+	basic_array_ptr(basic_array_ptr const& o) HD : Ref{static_cast<Layout const&>(o), o.base_}{}//, stride_{o.stride_}{}
 	basic_array_ptr& operator=(basic_array_ptr const& other){
 		this->base_ = other.base_;
 		static_cast<Layout&>(*this) = other;
 		return *this;
 	}
 	explicit operator bool() const{return this->base_;}
-	Ref operator*() const{return *this;}
+	Ref operator*() const HD{return *this;}
 	Ref const* operator->() const{return this;}
-HD	Ref        operator[](difference_type n) const{return *(*this + n);}
+	Ref        operator[](difference_type n) const HD{return *(*this + n);}
 	template<class O> bool operator==(O const& o) const{return equal(o);}
 	bool operator<(basic_array_ptr const& o) const{return distance_to(o) > 0;}
 	basic_array_ptr(typename Ref::element_ptr p, Layout l) : Ref{l, p}{}
@@ -193,9 +193,9 @@ struct array_iterator :
 		return *this;
 	}
 	explicit operator bool() const{return static_cast<bool>(ptr_.base_);}
-	Ref operator*() const{/*assert(*this);*/ return *ptr_;}//return *this;}
+	Ref operator*() const HD{/*assert(*this);*/ return *ptr_;}//return *this;}
 	decltype(auto) operator->() const{/*assert(*this);*/ return ptr_;}//return this;}
-	Ref  operator[](difference_type n) const HD{return *(*this + n);}
+	Ref operator[](difference_type n) const HD{return *(*this + n);}
 	template<class O> bool operator==(O const& o) const{return equal(o);}
 	bool operator<(array_iterator const& o) const{return distance_to(o) > 0;}
 	array_iterator(typename Ref::element_ptr p, layout_t<D-1> l, index stride) : /*Ref{l, p},*/ ptr_{p, l}, stride_{stride}{}
@@ -679,7 +679,7 @@ public:
 		this->assign(o.begin(), o.end());
 		return *this;
 	}
-	HD typename types::reference operator[](typename types::index i) const{
+	typename types::reference operator[](typename types::index i) const HD{
 		return *(this->base() + Layout::operator()(i));//types::base_[Layout::operator()(i)];
 	}
 	template<class Tuple, typename = std::enable_if_t<(std::tuple_size<std::decay_t<Tuple>>{}>1) > >
