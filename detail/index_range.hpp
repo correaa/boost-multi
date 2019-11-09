@@ -1,5 +1,5 @@
 #ifdef compile_instructions
-(echo '#include"'$0'"'>$0.cpp)&& time clang++ -O3 -std=c++17 -Wfatal-errors -Wall -Wextra -Wpedantic -D_TEST_MULTI_INDEX_RANGE $0.cpp -o $0x && $0x && rm $0.cpp $0x; exit
+(echo '#include"'$0'"'>$0.cpp)&&clang++ -O3 -std=c++17 -Wall -Wextra -Wpedantic -D_TEST_MULTI_INDEX_RANGE $0.cpp -o $0x &&$0x&&rm $0.cpp $0x;exit
 #endif
 
 #ifndef MULTI_INDEX_RANGE_HPP
@@ -36,6 +36,8 @@ public:
 	constexpr auto operator!=(self_type const& o) const{return not(o == self());}
 	constexpr self_type operator+(difference_type n) const HD{self_type r = self(); r += n; return r;}
 	constexpr self_type operator-(difference_type n) const HD{self_type r = self(); r -= n; return r;}
+	friend self_type operator++(self_type& s, int){self_type r = s; ++s; return r;}
+	friend self_type operator--(self_type& s, int){self_type r = s; --s; return r;}
 };
 
 //class iterator_core_access{};
@@ -78,6 +80,8 @@ public:
 		friend class range;
 	 //   friend class boost::iterator_core_access;
 	public:
+		using difference_type = std::ptrdiff_t;
+		const_iterator() = default;
 		constexpr auto operator==(const_iterator const& y) const{return curr_ == y.curr_;}
 		constexpr const_iterator& operator++(){++curr_; return *this;}
 		constexpr const_iterator& operator--(){--curr_; return *this;}
@@ -169,6 +173,8 @@ struct extension_t : public range<IndexType, IndexTypeLast>{
 
 //#include <boost/spirit/include/karma.hpp>
 
+#include<range/v3/begin_end.hpp>
+#include<range/v3/utility/concepts.hpp>
 
 #include <boost/hana/integral_constant.hpp>
 
@@ -213,6 +219,10 @@ struct integral_constant : private hana::integral_constant<Integral, n>{
 	friend constexpr auto operator<(Integral const& a, integral_constant const&){return a < n;}
 };
 
+template<class T> T& evoke(T&& t){return t;}
+
+template<class T> void what(T&&) = delete;
+
 int main(int, char*[]){
 
 #if __cpp_deduction_guides
@@ -220,6 +230,22 @@ int main(int, char*[]){
 #else
 	assert(( multi::range<std::ptrdiff_t>{5, 5}.size() == 0 ));
 #endif
+{
+	multi::extension_t x(10);
+	assert( size(x) == 10 );
+	auto b = begin(x);
+	ranges::begin(x);
+	ranges::end(x);
+	static_assert( typename ranges::ForwardIterator< std::decay_t<decltype(b)> >{} ); // error: static assertion failed
+}
+{
+	assert( *begin(multi::range{5, 10}) == 5 );
+	auto b = begin(multi::range{5, 10});
+	assert( *ranges::begin(evoke(multi::range{5, 10})) == 5 );
+	assert( *ranges::rbegin(evoke(multi::range{5, 10})) == 9 );
+//	std::iterator_traits<multi::range<std::ptrdiff_t>::iterator>::pointer s;
+	static_assert( typename ranges::ForwardIterator< std::decay_t<decltype(b)> >{} ); // error: static assertion failed
+}
 {
 	using namespace hana::literals; // contains the _c suffix
 	static_assert(( integral_constant<int, 1234>{} == 1234 ));
