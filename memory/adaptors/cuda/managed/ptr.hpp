@@ -62,6 +62,7 @@ public:
 	bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
 	friend ptr to_address(ptr const& p){return p;}
 	void operator*() const = delete;
+	template<class U> using rebind = ptr<U, typename std::pointer_traits<raw_pointer>::template rebind<U>>;
 };
 
 template<typename RawPtr>
@@ -109,6 +110,7 @@ protected:
 	ptr(ptr<TT const> const& p) : rp_{const_cast<T*>(p.impl_)}{}
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 public:
+	template<class U> using rebind = ptr<U, typename std::pointer_traits<RawPtr>::template rebind<U>>;
 //	explicit ptr(cuda::ptr<T, RawPtr> const& other) : rp_{other.rp_}{}
 	template<class Other, typename = std::enable_if_t<std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{}>>
 	/*explicit(false)*/ ptr(ptr<Other> const& o) HD : rp_{static_cast<raw_pointer>(o.rp_)}{}
@@ -235,6 +237,9 @@ int main(){
 		auto p = static_cast<cuda::managed::ptr<T>>(cuda::managed::malloc(n*sizeof(T)));
 		cuda::ptr<T> cp = p;
 		cuda::managed::ptr<T> mcp{cp};
+	}
+	{
+		static_assert(std::is_same<std::pointer_traits<cuda::managed::ptr<double>>::rebind<double const>, cuda::managed::ptr<double const>>{}, "!");
 	}
 	std::cout << "Finish" << std::endl;
 }

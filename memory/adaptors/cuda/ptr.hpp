@@ -115,6 +115,7 @@ protected:
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 	friend class managed::ptr<T, RawPtr>;
 public:
+	template<class U> using rebind = ptr<U, typename std::pointer_traits<raw_pointer>::template rebind<U>>;
 	explicit ptr(raw_pointer rp) HD : rp_{rp}{}//Cuda::pointer::is_device(p);}
 	template<class Other> explicit ptr(Other const& o) : rp_{static_cast<raw_pointer>(o.rp_)}{}
 	ptr() = default;
@@ -153,11 +154,19 @@ public:
 	ptr operator+(typename ptr::difference_type n) const HD{return ptr{rp_ + n};}
 	ptr operator-(typename ptr::difference_type n) const HD{return ptr{rp_ - n};}
 	using reference = ref<element_type>;
-#ifdef __CUDA_ARCH__
-	__device__ T& operator*() const{return *rp_;}
-#else
-	__host__ ref<element_type> operator*() const{return {*this};}
-#endif
+//#ifdef __CUDA_ARCH__
+//#else
+	__host__ __device__ 
+	decltype(auto)
+	operator*() const{
+	#ifdef __CUDA_ARCH__
+		return *rp_;
+	#else
+		return 	ref<element_type>{*this};
+	#endif
+	}
+//	__host__ ref<element_type> operator*() const{return {*this};}
+//#endif
 	HD decltype(auto) operator[](difference_type n) const{return *((*this)+n);}
 	friend ptr to_address(ptr const& p){return p;}
 	typename ptr::difference_type operator-(ptr const& o) const{return rp_-o.rp_;}
@@ -236,6 +245,14 @@ public:
 		return std::move(*this);
 		#else
 		return std::move(move_assign(std::move(other), std::is_trivially_copy_assignable<T>{}));
+		#endif
+	}
+	template<class Other>
+	decltype(auto) operator/=(Other&& o){
+		#ifdef __CUDA_ARCH__
+		return std::move(*(this->impl_) /= std::forward<Other>(o));
+		#else
+		assert(0);
 		#endif
 	}
 private:
@@ -367,6 +384,9 @@ public:
 namespace multi = boost::multi;
 namespace cuda = multi::memory::cuda;
 
+template<class T> T what() = delete;
+template<class T> T what(T&&) =  delete;
+
 BOOST_AUTO_TEST_CASE(multi_memory_cuda_ptr){
 	using T = double; 
 	static_assert( sizeof(cuda::ptr<T>) == sizeof(T*) );
@@ -384,6 +404,9 @@ BOOST_AUTO_TEST_CASE(multi_memory_cuda_ptr){
 		cuda::ptr<T> P = nullptr;
 		ptr<void> pv = p;
 	}
+//	what<typename cuda::ptr<T>::rebind<T const>>();
+//	what<typename std::pointer_traits<cuda::ptr<T>>::rebind<T const>>();
+	static_assert( std::is_same<typename std::pointer_traits<cuda::ptr<T>>::rebind<T const>, cuda::ptr<T const>>{} , "!");
 }
 #endif
 #endif
