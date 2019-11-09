@@ -116,6 +116,12 @@ protected:
 	friend class managed::ptr<T, RawPtr>;
 public:
 	template<class U> using rebind = ptr<U, typename std::pointer_traits<raw_pointer>::template rebind<U>>;
+
+	template<class Other, typename = std::enable_if_t<std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{}>>
+	/*explicit(false)*/ ptr(ptr<Other> const& o) HD : rp_{static_cast<raw_pointer>(o.rp_)}{}
+	template<class Other, typename = std::enable_if_t<not std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{}>>
+	explicit/*(true)*/ ptr(ptr<Other> const& o, void** = 0) HD : rp_{static_cast<raw_pointer>(o.rp_)}{}
+
 	explicit ptr(raw_pointer rp) HD : rp_{rp}{}//Cuda::pointer::is_device(p);}
 	template<class Other> explicit ptr(Other const& o) : rp_{static_cast<raw_pointer>(o.rp_)}{}
 	ptr() = default;
@@ -198,6 +204,10 @@ private:
 	__host__ __device__ ref(pointer p) : ptr<T>{std::move(p)}{}
 //	friend class ptr<T>;
 public:
+	template<class Other, typename = std::enable_if_t<std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>())>, pointer>{}>>
+	/*explicit(false)*/ ref(ref<Other> const& o) HD : ptr<T>{static_cast<pointer>(o)}{}
+	template<class Other, typename = std::enable_if_t<not std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>())>, pointer>{}>>
+	explicit/*(true)*/ ref(ref<Other> const& o, void** = 0) HD : ptr<T>{static_cast<pointer>(o)}{}
 	template<class TT, class PP> friend struct ptr;
 	ptr<T> operator&(){return *this;}
 	struct skeleton_t{
@@ -397,16 +407,22 @@ BOOST_AUTO_TEST_CASE(multi_memory_cuda_ptr){
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 		*p = 99.;
+		{
+			ptr<T const> pc = p;
+			BOOST_REQUIRE(*p == *pc);
+		}
 		BOOST_REQUIRE(*p == 99.);
 		BOOST_REQUIRE(*p != 11.);
 #pragma GCC diagnostic pop
 		cuda::free(p);
 		cuda::ptr<T> P = nullptr;
 		ptr<void> pv = p;
+
 	}
 //	what<typename cuda::ptr<T>::rebind<T const>>();
 //	what<typename std::pointer_traits<cuda::ptr<T>>::rebind<T const>>();
 	static_assert( std::is_same<typename std::pointer_traits<cuda::ptr<T>>::rebind<T const>, cuda::ptr<T const>>{} , "!");
+	
 }
 #endif
 #endif
