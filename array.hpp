@@ -263,12 +263,14 @@ public:
 	using reference = std::conditional_t<
 		static_array::dimensionality != 1, 
 		basic_array<typename static_array::element, static_array::dimensionality-1, typename static_array::element_ptr>, 
-		typename pointer_traits<typename static_array::element_ptr>::element_type&
+		typename std::iterator_traits<typename static_array::element_ptr>::reference
+	//	typename pointer_traits<typename static_array::element_ptr>::element_type&
 	>;
 	using const_reference = std::conditional_t<
 		static_array::dimensionality != 1, 
 		basic_array<typename static_array::element, static_array::dimensionality-1, typename static_array::element_const_ptr>, // TODO should be const_reference, but doesn't work witn rangev3
-		typename pointer_traits<typename static_array::element_ptr>::element_type const&
+		typename std::iterator_traits<typename static_array::element_const_ptr>::reference
+	//	typename pointer_traits<typename static_array::element_ptr>::element_type const&
 	>;
 	using const_iterator = multi::array_iterator<T, static_array::dimensionality, typename static_array::element_const_ptr, const_reference>;
 //	reference
@@ -583,7 +585,9 @@ template<typename T, dimensionality_type D, typename P> array(basic_array<T, D, 
 
 template <class T, std::size_t N>
 multi::array<typename std::remove_all_extents<T[N]>::type, std::rank<T[N]>{}> 
-decay(const T(&t)[N]) noexcept{return multi::array<typename std::remove_all_extents<T[N]>::type, std::rank<T[N]>{}>(t);}
+decay(const T(&t)[N]) noexcept{
+	return multi::array_cref<typename std::remove_all_extents<T[N]>::type, std::rank<T[N]>{}>(data_elements(t), extensions(t));
+}
 
 }}
 
