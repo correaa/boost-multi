@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && c++ -std=c++14 -Wall -Wextra -D_TEST_MULTI_DETAIL_TYPES $0x.cpp -o $0x.x && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -Wpedantic -D_TEST_MULTI_DETAIL_TYPES $0.cpp -o $0x&&$0x&&rm $0x $0.cpp;exit
 #endif
 #ifndef MULTI_DETAIL_TYPES_HPP
 #define MULTI_DETAIL_TYPES_HPP
@@ -146,6 +146,9 @@ auto contains(index_extensions<D> const& ie, Tuple const& tp){
 
 #if _TEST_MULTI_DETAIL_TYPES
 
+#include<range/v3/begin_end.hpp>
+#include<range/v3/utility/concepts.hpp>
+
 #include<cassert>
 #include<iostream>
 #include<vector>
@@ -153,7 +156,23 @@ auto contains(index_extensions<D> const& ie, Tuple const& tp){
 using std::cout;
 namespace multi = boost::multi;
 
-int main(){}
+
+template<class T> T what(T&&) = delete;
+
+int main(){
+
+	multi::index_extension x(10);
+
+	assert( *begin(x) == 0 );
+	assert( size(x) == 10 );
+	
+	auto b = begin(x);
+//	ranges::begin(x);
+//	ranges::end(x);
+//	what(b);
+	static_assert( typename ranges::ForwardIterator< std::decay_t<decltype(b)> >{} , "!"); // error: static assertion failed
+
+}
 #endif
 #endif
 
