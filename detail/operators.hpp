@@ -70,12 +70,14 @@ struct weakly_decrementable{
 
 template<class T>
 struct incrementable : weakly_incrementable<T>{
-	friend T operator++(T& self, int){T tmp{self}; ++self; return tmp;}
+	template<class U, typename = std::enable_if_t<not std::is_base_of<T, U>{}>>
+	friend T operator++(U& self, int){T tmp{self}; ++self; return tmp;}
 };
 
 template<class T>
 struct decrementable : weakly_decrementable<T>{
-	friend T operator--(T& self, int){T tmp{self}; --self; return tmp;}
+	template<class U, typename = std::enable_if_t<not std::is_base_of<T, U>{}>>
+	friend T operator--(U& self, int){T tmp{self}; --self; return tmp;}
 };
 
 template<class T>
