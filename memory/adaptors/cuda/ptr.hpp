@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&nvcc -std=c++14 -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_PTR $0.cpp -o $0x -lboost_unit_test_framework&&$0x&&rm $0x; exit
+(echo '#include"'$0'"'>$0.cpp)&&nvcc -std=c++14 -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_PTR -Wno-deprecated-declarations $0.cpp -o $0x -lboost_unit_test_framework&&$0x&&rm $0x; exit
 #endif
 
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_PTR_HPP
@@ -156,24 +156,28 @@ public:
 	ptr& operator-=(typename ptr::difference_type n) HD{rp_-=n; return *this;}
 //	friend bool operator==(ptr const& s, ptr const& t){return s.impl_==t.impl_;}
 //	friend bool operator!=(ptr const& s, ptr const& t){return s.impl_!=t.impl_;}
-	__host__ __device__ 
 	ptr operator+(typename ptr::difference_type n) const HD{return ptr{rp_ + n};}
 	ptr operator-(typename ptr::difference_type n) const HD{return ptr{rp_ - n};}
+#ifdef __CUDA_ARCH__
+	using reference = T&;
+#else
 	using reference = ref<element_type>;
+#endif
 //#ifdef __CUDA_ARCH__
 //#else
-	__host__ __device__ 
-	decltype(auto)
-	operator*() const{
 	#ifdef __CUDA_ARCH__
-		return *rp_;
+	__device__  T& operator*() const{return *rp_;}
 	#else
-		return 	ref<element_type>{*this};
+	__host__ decltype(auto) operator*() const{return ref<element_type>{*this};}
 	#endif
-	}
 //	__host__ ref<element_type> operator*() const{return {*this};}
 //#endif
-	HD decltype(auto) operator[](difference_type n) const{return *((*this)+n);}
+	#ifdef __CUDA_ARCH__
+	__device__ T& operator[](difference_type n) const HD{return *(rp_+n);}
+	#else
+	__host__ decltype(auto) operator[](difference_type n) const HD{return *((*this)+n);}
+	#endif
+//	decltype(auto) operator[](difference_type n) const HD{return *((*this)+n);}
 	friend ptr to_address(ptr const& p){return p;}
 	typename ptr::difference_type operator-(ptr const& o) const{return rp_-o.rp_;}
 	operator ptr<void>(){return {rp_};}
@@ -201,41 +205,45 @@ struct ref : private ptr<T>{
 	using reference = value_type&;
 	using pointer = ptr<T>;
 private:
-	__host__ __device__ ref(pointer p) : ptr<T>{std::move(p)}{}
+	ref(pointer const& p) HD: ptr<T>{p}{}
 //	friend class ptr<T>;
 public:
 	template<class Other, typename = std::enable_if_t<std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>())>, pointer>{}>>
 	/*explicit(false)*/ ref(ref<Other> const& o) HD : ptr<T>{static_cast<pointer>(o)}{}
 	template<class Other, typename = std::enable_if_t<not std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>())>, pointer>{}>>
 	explicit/*(true)*/ ref(ref<Other> const& o, void** = 0) HD : ptr<T>{static_cast<pointer>(o)}{}
+//	ref(T const& r) HD : ptr<T>(&r){}
 	template<class TT, class PP> friend struct ptr;
 	ptr<T> operator&(){return *this;}
 	struct skeleton_t{
 		char buff[sizeof(T)]; T* p_;
 		[[SLOW]] 
-		__host__ __device__ skeleton_t(T* p) : p_{p}{
+		skeleton_t(T* p) HD : p_{p}{
 			#if __CUDA_ARCH__
 			#else
 			[[maybe_unused]] cudaError_t s = cudaMemcpy(buff, p_, sizeof(T), cudaMemcpyDeviceToHost); assert(s == cudaSuccess);
 			#endif	
 		}
-		__host__ __device__ //[[SLOW]] 
-		operator T&()&&{return reinterpret_cast<T&>(buff);}
-		__host__ __device__
-		void conditional_copyback_if_not(std::false_type) const{
+		operator T&()&& HD{return reinterpret_cast<T&>(buff);}
+		void conditional_copyback_if_not(std::false_type) const HD{
 			#if __CUDA_ARCH__
 		//	*p_ = reinterpret_cast<T const&>(
 			#else
 			[[maybe_unused]] cudaError_t s = cudaMemcpy(p_, buff, sizeof(T), cudaMemcpyHostToDevice); (void)s; assert(s == cudaSuccess);
 			#endif
 		}
-		void conditional_copyback_if_not(std::true_type) const{}
-		__host__ __device__ ~skeleton_t(){conditional_copyback_if_not(std::is_const<T>{});}
+		void conditional_copyback_if_not(std::true_type) const HD{
+			#if __CUDA_ARCH__
+		//	*p_ = reinterpret_cast<T const&>(
+			#else
+			[[maybe_unused]] cudaError_t s = cudaMemcpy(p_, buff, sizeof(T), cudaMemcpyHostToDevice); (void)s; assert(s == cudaSuccess);
+			#endif
+		}
+		~skeleton_t() HD{conditional_copyback_if_not(std::is_const<T>{});}
 	};
-	__host__ __device__
-	skeleton_t skeleton()&&{return {this->rp_};}
+	skeleton_t skeleton()&& HD{return {this->rp_};}
 public:
-	__host__ __device__ ref(ref&& r) : ptr<T>(r){}
+	ref(ref&& r) HD : ptr<T>(r){}
 	ref& operator=(ref const&)& = delete;
 private:
 	ref& move_assign(ref&& other, std::true_type)&{
@@ -251,7 +259,7 @@ public:
 //	[[SLOW]] 
 	ref&& operator=(ref&& other)&&{
 		#ifdef __CUDA_ARCH__
-		*(this->impl_) = *(other.impl_);
+		*(this->rp_) = *(other.rp_);
 		return std::move(*this);
 		#else
 		return std::move(move_assign(std::move(other), std::is_trivially_copy_assignable<T>{}));
@@ -260,17 +268,21 @@ public:
 	template<class Other>
 	decltype(auto) operator/=(Other&& o){
 		#ifdef __CUDA_ARCH__
-		return std::move(*(this->impl_) /= std::forward<Other>(o));
+		return std::move(*(this->rp_) /= std::forward<Other>(o));
 		#else
 		assert(0);
 		#endif
 	}
 private:
 public:
-	template<class Other>
-	__host__ __device__ auto operator+(Other&& o)&&
-	->decltype(std::move(*this).skeleton() + std::forward<Other>(o)){
-		return std::move(*this).skeleton() + std::forward<Other>(o);}
+#if 1
+//	template<class Other>
+//	decltype(auto) operator+(Other&& other)&&{return static_cast<T>(*this) + std::forward<Other>(other);}
+#endif
+//	template<class Other>
+//	auto operator+(Other&& o)&& HD
+//	->decltype(std::move(*this).skeleton() + std::forward<Other>(o)){
+//		return std::move(*this).skeleton() + std::forward<Other>(o);}
 //	template<class Self, class O, typename = std::enable_if_t<std::is_same<std::decay_t<Self>, ref>{}> > 
 //	friend auto operator+(Self&& self, O&& o)
 //	->decltype(std::forward<Self>(self).skeleton() + std::forward<O>(o)){
@@ -281,7 +293,7 @@ public:
 	#endif
 	ref&& operator=(value_type const& t)&&{
 		#ifdef __CUDA_ARCH__
-			*(this->impl_) = t;
+			*(this->rp_) = t;
 		//	assert(0);
 		#else
 		if(std::is_trivially_copy_assignable<T>{}){
@@ -362,7 +374,10 @@ public:
 #endif
 //	[[SLOW]] 
 	#if __CUDA_ARCH__
-	operator T()&&{return *(this->rp_);}
+//	operator T const&()&& HD{return *(this->rp_);}
+	operator T&&()&& HD{return std::move(*(this->rp_));}
+	operator T const&() const& HD{return *(this->rp_);}
+	operator T&()& HD{return *(this->rp_);}
 	#else
 	[[SLOW]] operator T()&&{
 		char buff[sizeof(T)];

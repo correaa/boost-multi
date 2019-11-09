@@ -1,12 +1,11 @@
 #ifdef COMPILATION_INSTRUCTIONS
-nvcc -x cu --expt-relaxed-constexpr $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x; exit
+nvcc -std=c++14 -x cu --expt-relaxed-constexpr $0 -o $0x -Wno-deprecated-declarations -lboost_unit_test_framework&&$0x&&rm $0x; exit
 #endif
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUDA allocators"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
-#include "../../cuda/allocator.hpp"
 #include "../../../../../multi/array.hpp"
 
 template<class ItA, class ItB, class ItC, class Size, class ItD>
@@ -39,14 +38,20 @@ template<class A, class B, class C,
 >
 [[nodiscard]] 
 Ret plus3_cuda(A const& a, B const& b, C const& c){
-	return plus3_cuda(a, b, c, Ret(size(a), 0, get_allocator(a)));
+	Ret ret(size(a), 0, get_allocator(a));
+	plus3_cuda(a, b, c, ret);
+	return ret;
 }
+
+#include "../../cuda/allocator.hpp"
+#include "../../cuda/managed/allocator.hpp"
 
 #include<thrust/complex.h>
 
 namespace multi = boost::multi;
 namespace cuda = multi::memory::cuda;
 
+#if 0
 BOOST_AUTO_TEST_CASE(cuda_transform_plus_complex){
 	using complex = thrust::complex<double>;
 	using T = complex;
@@ -67,31 +72,42 @@ BOOST_AUTO_TEST_CASE(cuda_transform_plus_complex){
 
 		BOOST_REQUIRE(( T{6., 3.} == D1[100] )); //complex{6., 6.} )); 
 	}
-
 }
+#endif
+
+template<class T> T what() = delete;
+template<class T> T what(T&&) = delete;
 
 BOOST_AUTO_TEST_CASE(cuda_transform_plus_double){
 
-	multi::array<double, 1, cuda::allocator<double>> A1(200, 0.);
-	multi::array<double, 1, cuda::allocator<double>> B1(200, 0.);
-	multi::array<double, 1, cuda::allocator<double>> C1(200, 0.);
+	using allocator = cuda::allocator<double>;
+	multi::array<double, 1, allocator> A1(200, 0.);
+	multi::array<double, 1, allocator> B1(200, 0.);
+	multi::array<double, 1, allocator> C1(200, 0.);
 	BOOST_REQUIRE( size(A1) == 200 );
+
+	multi::array<double, 1, allocator> const Z1(200, 0.);
+	auto p = Z1.data();
+	p = nullptr;
+//	decltype(Z1)::element_ptr p = nullptr;
+//	what( Z1.cdata() );
+//	assert( Z1[10] == 0. );
 
 	A1[100] = 1.;
 	B1[100] = 2.;
 	C1[100] = 3.;
 
 	{
-		multi::array<double, 1, cuda::allocator<double>> D1(200, 0.);
+		multi::array<double, 1, allocator> D1(200, 0.);
 
-		transform3_plus_CU<<<size(A1), 1>>>(cbegin(A1), cbegin(B1), cbegin(C1), size(A1), begin(D1));
+		transform3_plus_CU<<<size(A1), 1>>>(begin(A1), begin(B1), begin(C1), size(A1), begin(D1));
 
 		BOOST_REQUIRE( D1[100] == 6. ); 
 	}
 	{
 		multi::array<double, 1, cuda::allocator<double>> D1(200, 0.);
 
-		auto e = transform3_n_plus_cuda(cbegin(A1), cbegin(B1), cbegin(C1), size(A1), begin(D1));	
+		auto e = transform3_n_plus_cuda(begin(A1), begin(B1), begin(C1), size(A1), begin(D1));	
 
 		BOOST_REQUIRE( D1[100] == 6. );
 		BOOST_REQUIRE( e == end(D1) );
@@ -126,7 +142,7 @@ BOOST_AUTO_TEST_CASE(cuda_transform_plus_double){
 	{
 		multi::array<double, 1, cuda::allocator<double>> D1(200, 0.);
 
-		auto e = transform3_n_plus_cuda(cbegin(A1), cbegin(B1), cbegin(C1), 0, begin(D1));	
+		auto e = transform3_n_plus_cuda(begin(A1), begin(B1), begin(C1), 0, begin(D1));	
 
 		BOOST_REQUIRE( e == begin(D1) );
 	}
