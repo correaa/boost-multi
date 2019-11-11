@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 -std=c++14 -Wall `#-Wfatal-errors` $0 -o$0x &&$0x&& rm $0x;exit
+$CXX -O1 -Wall -Wextra -Wpedantic $0 -o$0x &&$0x&& rm $0x;exit
 #endif
 
 #include "../array_ref.hpp"
@@ -13,9 +13,9 @@ $CXX -O3 -std=c++14 -Wall `#-Wfatal-errors` $0 -o$0x &&$0x&& rm $0x;exit
 using std::cout; using std::cerr;
 namespace multi = boost::multi;
 
-template<class F> void what();
-
 template<class T> T& stick(T&& t){return t;}
+
+#include "../adaptors/rangev3.hpp"
 
 int main(){
 
@@ -28,15 +28,16 @@ int main(){
 	assert( ranges::inner_product(d2D[0], d2D[1], 0.) == 6+2*7+3*8 );
 	assert( ranges::inner_product(d2D[0], rotated(d2D)[0], 0.) == 1*5+2*10+15*3 );
 
-
 //	ranges::transform(begin(d2D[0]), end(d2D[0]), begin(d2D[1]), begin(d2D[2]), [](auto const& a, auto const& b){return a + b;});
 
 //	auto row0 = d2D[0]; auto row1 = d2D[1];
 	using std::get; using std::cout; using std::endl;
-	ranges::for_each(ranges::view::zip(stick(d2D[0]), stick(d2D[1])), [](auto&& p){cout<< get<0>(p) <<' '<< get<1>(p) <<endl;});
+//	auto d2D0 = d2D[0];
+//	auto d2D1 = d2D[1];
+	ranges::for_each(ranges::view::zip(d2D[0](), d2D[1]()),  // produce segmentation fault in O0
+		[](auto&& p){cout<< get<0>(p) <<' '<< get<1>(p) <<endl;}
+	);
 
-
-	return 0;
 //	assert( ranges::inner_product(d2D, d2D, 0., [](auto&& a, auto&& b){return a + b;}, [](auto&& x, auto&& y){return std::inner_product(x, y);}) );
 
 //	static_assert(ranges::RandomAccessIterator<multi::array<double, 1>::iterator>{});
@@ -46,8 +47,49 @@ int main(){
 //	static_assert(ranges::RandomAccessRange<multi::array<double, 2>>{});
 //	static_assert(ranges::RandomAccessRange<decltype(d2D[2])>{});
 
-	static_assert( ranges::ForwardIterator<std::vector<double>::const_iterator>{} , "!");
-	static_assert( ranges::Readable<multi::array<double, 1>::const_iterator>{} , "!");
+{
+	boost::multi::array<double, 1, std::allocator<double> > arr;
+
+	using I = multi::array<double, 3>::const_iterator;
+		static_assert(
+ 			ranges::Same<
+				ranges::common_reference_t<
+					ranges::reference_t<I>&&, ranges::value_type_t<I>&
+				>, ranges::common_reference_t<
+					ranges::value_type_t<I>&, 
+					ranges::reference_t<I>&&
+				>
+			>{}, "!"
+		);
+		static_assert( 
+			ranges::ConvertibleTo<ranges::reference_t<I>&&, ranges::common_reference_t<ranges::reference_t<I>&&, ranges::value_type_t<I>&>>{}, "!"
+		);
+		static_assert( 
+			ranges::ConvertibleTo<ranges::value_type_t<I>&, ranges::common_reference_t<ranges::reference_t<I>&&, ranges::value_type_t<I>&>>{}, "!"
+		);
+		static_assert( ranges::CommonReference<ranges::reference_t<I>&&, ranges::value_type_t<I>&>{} , "!" );
+		static_assert( ranges::CommonReference<ranges::reference_t<I>&&, ranges::rvalue_reference_t<I>&&>{}, "!" );
+		static_assert( ranges::CommonReference<ranges::rvalue_reference_t<I>&&, const ranges::value_type_t<I>&>{}, "!");
+
+	static_assert( ranges::Readable<I>{}, "!");
+	static_assert( ranges::InputIterator<I>{}, "!");
+	static_assert( ranges::ForwardIterator<I>{}, "!");
+	static_assert( ranges::BidirectionalIterator<I>{}, "!");
+	static_assert( ranges::TotallyOrdered<I>{}, "!");
+	static_assert( ranges::SizedSentinel<I, I>{}, "!");
+	static_assert( ranges::RandomAccessIterator<I>{}, "!");
+	static_assert( ranges::Readable<I>{}, "!");
+	const ranges::difference_type_t<I> n = {};
+	static_assert( std::is_same<decltype(std::declval<I&>() += n), I&>{}, "!");
+	static_assert( std::is_convertible<decltype(std::declval<I const&>() + n), I&&>{}, "!");
+	static_assert( std::is_convertible<decltype(n + std::declval<I const&>()), I&&>{}, "!");
+	static_assert( std::is_same<decltype(std::declval<I&>() -= n), I&>{}, "!");
+	static_assert( std::is_convertible<decltype(std::declval<I const&>() - n), I&&>{}, "!");
+	static_assert( std::is_same<decltype(std::declval<I const&>()[n]), ranges::reference_t<I>>{}, "!");
+}
+//	I ii;
+//	double d = 6.;
+//	what<decltype(d + 7.)>();
 
 	using It = std::vector<bool>::iterator;//multi::array<double, 2>::iterator;
 	It i; 
