@@ -73,7 +73,7 @@ protected:
 	friend ptr<void> malloc(size_t);
 	friend void free();
 	friend ptr<void> memset(ptr<void> dest, int ch, std::size_t byte_count);
-	template<class TT, class RRawPtr> friend class managed::ptr;
+	template<class TT, class RRawPtr> friend struct managed::ptr;
 private:
 //	ptr(ptr<void const> const& p) : rp_{const_cast<void*>(p.rp_)}{}
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
@@ -102,6 +102,33 @@ public:
 	friend ptr to_address(ptr const& p){return p;}
 };
 
+template<typename T, typename RawPtr = T*>
+struct _ptr{
+protected:
+	using raw_pointer = RawPtr;
+	raw_pointer rp_;
+	using raw_pointer_traits = typename std::pointer_traits<raw_pointer>;
+	template<class TT> friend class allocator;
+	template<typename, typename> friend struct _ptr;
+//	template<class TT, typename = typename std::enable_if<not std::is_const<TT>{}>::type> 
+//	ptr(ptr<TT const> const& p) : rp_{const_cast<T*>(p.rp_)}{}
+	template<class TT> friend ptr<TT> const_pointer_cast(_ptr<TT const> const&);
+	friend class managed::ptr<T, RawPtr>;
+public:
+	template<class U> using rebind = ptr<U, typename std::pointer_traits<raw_pointer>::template rebind<U>>;
+
+	template<class Other, typename = std::enable_if_t<std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{} and not std::is_same<Other, T>{} >>
+	/*explicit(false)*/ _ptr(_ptr<Other> const& o) HD : rp_{static_cast<raw_pointer>(o.rp_)}{}
+	template<class Other, typename = std::enable_if_t<not std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{} and not std::is_same<Other, T>{}>>
+	explicit/*(true)*/ _ptr(_ptr<Other> const& o, void** = 0) HD : rp_{static_cast<raw_pointer>(o.rp_)}{}
+	explicit _ptr(raw_pointer rp) HD : rp_{rp}{}
+	template<class Other> explicit _ptr(Other const& o) : rp_{static_cast<raw_pointer>(o.rp_)}{}
+	_ptr() = default;
+	_ptr(_ptr const&) = default;
+	_ptr(std::nullptr_t nu) : rp_{nu}{}
+	_ptr& operator=(_ptr const&) = default;
+};
+
 template<typename T, typename RawPtr>
 struct ptr{
 protected:
@@ -117,20 +144,15 @@ protected:
 public:
 	template<class U> using rebind = ptr<U, typename std::pointer_traits<raw_pointer>::template rebind<U>>;
 
-	template<class Other, typename = std::enable_if_t<std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{}>>
+	template<class Other, typename = std::enable_if_t<std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{} and not std::is_same<Other, T>{} >>
 	/*explicit(false)*/ ptr(ptr<Other> const& o) HD : rp_{static_cast<raw_pointer>(o.rp_)}{}
-	template<class Other, typename = std::enable_if_t<not std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{}>>
+	template<class Other, typename = std::enable_if_t<not std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{} and not std::is_same<Other, T>{}>>
 	explicit/*(true)*/ ptr(ptr<Other> const& o, void** = 0) HD : rp_{static_cast<raw_pointer>(o.rp_)}{}
-
-	explicit ptr(raw_pointer rp) HD : rp_{rp}{}//Cuda::pointer::is_device(p);}
+	explicit ptr(raw_pointer rp) HD : rp_{rp}{}
 	template<class Other> explicit ptr(Other const& o) : rp_{static_cast<raw_pointer>(o.rp_)}{}
 	ptr() = default;
-	ptr(ptr const& other) HD : rp_{other.rp_}{}
-	ptr(ptr<std::remove_const<T>> const& other) : rp_{other.rp_}{}
-//	operator ptr<T const>() const{return ptr<T const>{rp_};}
-	ptr(std::nullptr_t n) : rp_{n}{}
-//	template<class Other, typename = decltype(impl_t{std::declval<Other const&>().impl_}), typename = typename std::enable_if<not std::is_base_of<ptr, Other>{}>::type /*c++14*/>
-//	__host__ __device__ ptr(Other const& o) : impl_{o.impl_}{}
+	ptr(ptr const&) = default;
+	ptr(std::nullptr_t nu) : rp_{nu}{}
 	ptr& operator=(ptr const&) = default;
 	bool operator==(ptr const& other) const{return rp_==other.rp_;}
 	bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
@@ -138,16 +160,10 @@ public:
 	using element_type = typename raw_pointer_traits::element_type;
 	using difference_type = typename raw_pointer_traits::difference_type;
 	using value_type = element_type;
-	using pointer = ptr;//<T>;
+	using pointer = ptr<T, RawPtr>;//<T>;
 	using iterator_category = typename std::iterator_traits<raw_pointer>::iterator_category;
-//	using iterator_concept  = typename std::iterator_traits<impl_t>::iterator_concept;
-	explicit operator bool() const{return rp_;}
-//	explicit operator impl_t&()&{return impl_;}
-//	explicit operator impl_t const&() const&{return impl_;}
-//	impl_t operator->() const{return impl_;}
-//	template<class PM>
-//	decltype(auto) operator->*(PM pm) const{return *ptr<std::decay_t<decltype(impl_->*pm)>, decltype(&(impl_->*pm))>{&(impl_->*pm)};}
-	explicit operator typename raw_pointer_traits::template rebind<void>()&{return rp_;}
+	explicit operator bool() const HD{return rp_;}
+	explicit operator typename raw_pointer_traits::template rebind<void>() const{return {rp_};}
 	ptr& operator++(){++rp_; return *this;}
 	ptr& operator--(){--rp_; return *this;}
 	ptr  operator++(int){auto tmp = *this; ++(*this); return tmp;}
@@ -163,21 +179,18 @@ public:
 #else
 	using reference = ref<element_type>;
 #endif
-//#ifdef __CUDA_ARCH__
-//#else
 	#ifdef __CUDA_ARCH__
-	__device__  T& operator*() const{return *rp_;}
+	__device__  reference operator*() const{return *rp_;}
 	#else
-	__host__ decltype(auto) operator*() const{return ref<element_type>{*this};}
+	__host__ reference operator*() const{return {*this};}
 	#endif
 //	__host__ ref<element_type> operator*() const{return {*this};}
 //#endif
 	#ifdef __CUDA_ARCH__
 	__device__ T& operator[](difference_type n) const HD{return *(rp_+n);}
 	#else
-	__host__ decltype(auto) operator[](difference_type n) const HD{return *((*this)+n);}
+	__host__ decltype(auto) operator[](difference_type n) const HD{assert(0); return *((*this)+n);}
 	#endif
-//	decltype(auto) operator[](difference_type n) const HD{return *((*this)+n);}
 	friend ptr to_address(ptr const& p){return p;}
 	typename ptr::difference_type operator-(ptr const& o) const{return rp_-o.rp_;}
 	operator ptr<void>(){return {rp_};}
@@ -259,6 +272,7 @@ public:
 //	[[SLOW]] 
 	ref&& operator=(ref&& other)&&{
 		#ifdef __CUDA_ARCH__
+		assert(0);
 		*(this->rp_) = *(other.rp_);
 		return std::move(*this);
 		#else
