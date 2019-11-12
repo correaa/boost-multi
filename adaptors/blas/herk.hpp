@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_HERK .DCATCH_CONFIG_MAIN.o $0.cpp -o $0x \
+(echo '#include"'$0'"'>$0.cpp)&&clang++ -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_HERK .DCATCH_CONFIG_MAIN.o $0.cpp -o $0x \
 `pkg-config --cflags --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -liomp5` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
@@ -22,8 +22,9 @@
 namespace boost{
 namespace multi{namespace blas{
 
-template<class AA, class BB, class A2D, class C2D, typename = std::enable_if_t< is_complex_array<std::decay_t<C2D>>{}>
->
+template<class T> auto underlying(T* p){return p;}
+
+template<class AA, class BB, class A2D, class C2D, typename = std::enable_if_t< is_complex_array<std::decay_t<C2D>>{}>>
 C2D&& herk(triangular c_side, complex_operation a_op, AA alpha, A2D const& a, BB beta, C2D&& c){
 	if(stride(c)!=1){
 		assert( stride(a)!=1 ); // sources and destination are incompatible layout
@@ -31,7 +32,7 @@ C2D&& herk(triangular c_side, complex_operation a_op, AA alpha, A2D const& a, BB
 		herk(
 			static_cast<char>(c_side), static_cast<char>(a_op), size(c), 
 			a_op==complex_operation::hermitian?size(a):size(*begin(a)), 
-			alpha, base(a), stride(a), beta, base(c), stride(c)
+			alpha, underlying(base(a)), stride(a), beta, underlying(base(c)), stride(c)
 		);
 	}else herk(flip(c_side), hermitize(a_op), alpha, rotated(a), beta, rotated(c));
 	return std::forward<C2D>(c);
