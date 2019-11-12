@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&c++ `#-Wfatal-errors` -Wall -Wextra -Wpedantic -Wno-deprecated-declarations $0 -o $0x -lcudart -lcublas -lboost_unit_test_framework \
+(echo '#include"'$0'"'>$0.cpp)&&c++ -Wall -Wextra -Wpedantic -Wno-deprecated-declarations $0 -o $0x -lcudart -lcublas -lboost_unit_test_framework \
 `pkg-config --cflags --libs blas` -lboost_timer &&$0x&&rm $0x $0.cpp; exit
 #endif
 // © Alfredo A. Correa 2019
