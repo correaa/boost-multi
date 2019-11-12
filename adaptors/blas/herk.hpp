@@ -26,15 +26,17 @@ template<class T> auto underlying(T* p){return p;}
 
 template<class AA, class BB, class A2D, class C2D, typename = std::enable_if_t< is_complex_array<std::decay_t<C2D>>{}>>
 C2D&& herk(triangular c_side, complex_operation a_op, AA alpha, A2D const& a, BB beta, C2D&& c){
-	if(stride(c)!=1){
-		assert( stride(a)!=1 ); // sources and destination are incompatible layout
-	//	assert( size(c)==(a_op==complex_operation::hermitian?size(*begin(a)):size(a)) );
+	if(stride(c)==1 and stride(c[0])!=1) herk(flip(c_side), hermitize(a_op), alpha, rotated(a), beta, rotated(c));
+	else{
+		assert( stride(c[0])==1 ); // sources and destination are incompatible layout
+		assert( stride(a[0])==1 ); // sources and destination are incompatible layout
+		assert( size(c[0]) == size(c) );
 		herk(
 			static_cast<char>(c_side), static_cast<char>(a_op), size(c), 
 			a_op==complex_operation::hermitian?size(a):size(*begin(a)), 
 			alpha, underlying(base(a)), stride(a), beta, underlying(base(c)), stride(c)
 		);
-	}else herk(flip(c_side), hermitize(a_op), alpha, rotated(a), beta, rotated(c));
+	}
 	return std::forward<C2D>(c);
 }
 
@@ -187,6 +189,20 @@ TEST_CASE("multi::blas::herk complex (real case)", "[report]"){
 		herk(triangular::upper, operation::hermitian, 1., a_, 0., c_);//c_†=c_=a_†a_=(a_†a_)†, `c_` in lower triangular
 		REQUIRE( c_[1][2]==complex(19.,0.) );
 		REQUIRE( c_[2][1]==9999. );
+	}
+}
+
+TEST_CASE("multi::blas::herk complex basic transparent interface, special case", "[report]"){
+	multi::array<complex, 2> const a = {
+		{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I}
+	};
+	using multi::blas::triangular;
+	using multi::blas::complex_operation;	
+	{
+		multi::array<complex, 2> c({1, 1}, 9999.);
+		using multi::blas::herk;
+		herk(triangular::lower, complex_operation::identity, 1., a, 0., c); // c†=c=aa†, `a` and `c` are c-ordering, information in c lower triangular
+		REQUIRE( c[0][0]==complex(40., 0.) );
 	}
 }
 
