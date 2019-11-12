@@ -189,11 +189,13 @@ public:
 	#ifdef __CUDA_ARCH__
 	__device__ T& operator[](difference_type n) const HD{return *(rp_+n);}
 	#else
-	__host__ decltype(auto) operator[](difference_type n) const HD{assert(0); return *((*this)+n);}
+	__host__ decltype(auto) operator[](difference_type n) const HD{return *((*this)+n);}
 	#endif
 	friend ptr to_address(ptr const& p){return p;}
 	typename ptr::difference_type operator-(ptr const& o) const{return rp_-o.rp_;}
 	operator ptr<void>(){return {rp_};}
+	explicit operator raw_pointer() const{return rp_;}
+	friend raw_pointer raw_pointer_cast(ptr self){return self.rp_;}
 };
 
 template<
