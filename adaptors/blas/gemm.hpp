@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&clang++ -std=c++17 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_GEMM $0.cpp -o $0x \
+(echo '#include"'$0'"'>$0.cpp)&&clang++ -std=c++17 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_GEMM $0.cpp -o $0x -lboost_unit_test_framework \
 `pkg-config --cflags --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
@@ -53,7 +53,14 @@ auto gemm_n(
 }
 
 template<class AA, class BB, class A2D, class B2D, class C2D>
-decltype(auto) gemm(){
+decltype(auto) gemm(real_operation a_op, real_operation b_op, AA alpha, A2D const& A, B2D const& B, BB beta, C2D&& C){
+	[&](){switch(a_op){
+		case real_operation::identity: switch(b_op){
+			case real_operation::identity: return gemm('N', 'N', size(C[0]), size(B), size(A), alpha, base(B), stride(B), base(A), stride(A), beta, base(C), stride(C));
+			case real_operation::transposition: assert(0);
+		}
+		case real_operation::transposition: assert(0);
+	};}();
 }
 
 template<class Op, class AA, class BB, class A2D, class B2D, class C2D>
@@ -99,14 +106,13 @@ decltype(auto) gemm(AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
 	return std::forward<C2D>(C);
 }
 
-
-
-
 }}}
 
 #if _TEST_MULTI_ADAPTORS_BLAS_GEMM
 
-//#include "../blas/herk.hpp"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS gemm"
+#define BOOST_TEST_DYN_LINK
+#include<boost/test/unit_test.hpp>
 
 #include "../../array.hpp"
 #include "../../utility.hpp"
@@ -125,20 +131,43 @@ using std::cerr;
 namespace multi = boost::multi;
 
 template<class M> decltype(auto) print(M const& C){
-	using boost::multi::size;
+	using multi::size;
 	for(int i = 0; i != size(C); ++i){
 		for(int j = 0; j != size(C[i]); ++j)
-			std::cout << C[i][j] << ' ';
-		std::cout << std::endl;
+			cout<< C[i][j] <<' ';
+		cout<<std::endl;
 	}
-	return std::cout << std::endl;
+	return cout<<std::endl;
 }
 
-void f(double*){}
 
-int main(){
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_implementation){
+	multi::array<double, 2> const a = {
+		{ 1., 3.},
+		{ 9., 7.},
+	};
+	multi::array<double, 2> const b = {	
+		{ 11., 12.},
+		{  7., 19.},
+	};
+	{
+		multi::array<double, 2> c({2, 2});
+		using multi::blas::real_operation;
+		gemm(real_operation::identity, real_operation::identity, 1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][1] == 241. );
+		BOOST_REQUIRE( multi::blas::operation{real_operation::identity} == real_operation::identity );
+	}
+	{
+//		multi::array<double, 2> c({2, 2});
+//		using multi::blas::real_operation;	
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_implementation, *boost::unit_test::disabled()){
+
 	using complex = std::complex<double>;
 	using multi::blas::gemm;
+	multi::array<double, 2> Ccpu({4, 2});
 	{
 		multi::array<double, 2> const A = {
 			{ 1., 3., 4.},
@@ -149,23 +178,8 @@ int main(){
 			{  7., 19., 1., 2.},
 			{ 11., 12., 4., 1.}
 		};
-		multi::array<double, 2> C({4, 2});
-		gemm('T', 'T', 1., A, B, 0., C); // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
-		print(rotated(C)) << "---\n"; //{{76., 117., 23., 13.}, {159., 253., 47., 42.}}
-	}
-	{
-		multi::array<complex, 2> const A = {
-			{ 1., 3., 4.},
-			{ 9., 7., 1.}
-		};
-		multi::array<complex, 2> const B = {	
-			{ 11., 12., 4., 3.},
-			{  7., 19., 1., 2.},
-			{ 11., 12., 4., 1.} 
-		};
-		multi::array<complex, 2> C({4, 2}); 
-		gemm('T', 'T', 1., A, B, 0., C); // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
-		print(rotated(C)) << "---\n"; //{{76., 117., 23., 13.}, {159., 253., 47., 42.}}
+		gemm('T', 'T', 1., A, B, 0., Ccpu); // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
+//		print(rotated(C)) << "---\n"; //{{76., 117., 23., 13.}, {159., 253., 47., 42.}}
 	}
 #if 0 // TODO: support c-arrays
 	{
@@ -293,7 +307,7 @@ int main(){
 	//	herk('U', 'N', 1., A, 0., CC); // CC^H = CC = A*A^H, CC = (A*A^H)^H, CC = A*A^H, C lower triangular
 	//	print(CC) << "---\n";
 	}
-	return 0;
+	return;
 	{
 #if 0
 	{
@@ -333,7 +347,7 @@ int main(){
 #endif
 
 	}
-	return 0; 
+	return; 
 #if 0
 	{
 		multi::array<double, 2> const A = {

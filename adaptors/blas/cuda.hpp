@@ -267,13 +267,31 @@ namespace multi = boost::multi;
 namespace cuda = multi::memory::cuda;
 #endif
 
+#include<complex>
+
 namespace boost{
 namespace multi{
 namespace blas{
 
-#if 1
-template<class C, class S>
-void gemm(C transA, C transB, S m, S n, S k, double const& a, boost::multi::memory::cuda::ptr<double const> A, S lda, boost::multi::memory::cuda::ptr<double const> B, S ldb, double const& beta, boost::multi::memory::cuda::ptr<double> CC, S ldc){
+template<class T> struct cublas;
+
+template<>
+struct cublas<double>{
+	template<class... Args>
+	static auto gemm(Args... args){return cublasDgemm(args...);}
+};
+
+template<>
+struct cublas<std::complex<double>>{
+	template<class T> static decltype(auto) to_cuComplex(T&& t){return std::forward<T>(t);}
+	static decltype(auto) to_cuComplex(std::complex<double> const* t){return reinterpret_cast<cuDoubleComplex const*>(t);}	
+	static decltype(auto) to_cuComplex(std::complex<double>* t){return reinterpret_cast<cuDoubleComplex*>(t);}	
+	template<class... Args>
+	static auto gemm(Args&&... args){return cublasZgemm(to_cuComplex(std::forward<Args>(args))...);}
+};
+
+template<typename T, typename AA, typename BB, class C, typename S>
+void gemm(C transA, C transB, S m, S n, S k, AA a, multi::memory::cuda::ptr<T const> A, S lda, multi::memory::cuda::ptr<T const> B, S ldb, BB beta, multi::memory::cuda::ptr<T> CC, S ldc){
 	cublasHandle_t handle;
 	{cublasStatus_t s = cublasCreate(&handle); assert(s==CUBLAS_STATUS_SUCCESS);}
 	cublasOperation_t cutransA = [transA](){
@@ -290,7 +308,9 @@ void gemm(C transA, C transB, S m, S n, S k, double const& a, boost::multi::memo
 			case 'C': return CUBLAS_OP_C;
 		} assert(0); return CUBLAS_OP_N;
 	}();
-	cublasStatus_t s = cublasDgemm(handle, cutransA, cutransB, m, n, k, &a, static_cast<double const*>(A), lda, static_cast<double const*>(B), ldb, &beta, static_cast<double*>(CC), ldc);
+	T Talpha{a};
+	T Tbeta{beta};
+	cublasStatus_t s = cublas<T>::gemm(handle, cutransA, cutransB, m, n, k, &Talpha, static_cast<T const*>(A), lda, static_cast<T const*>(B), ldb, &Tbeta, static_cast<T*>(CC), ldc);
 	if(s!=CUBLAS_STATUS_SUCCESS){
 		std::cerr << [&](){switch(s){
 			case CUBLAS_STATUS_SUCCESS: return "CUBLAS_STATUS_SUCCESS";
@@ -309,12 +329,10 @@ void gemm(C transA, C transB, S m, S n, S k, double const& a, boost::multi::memo
 	cublasDestroy(handle);
 }
 
-template<class C, class S>
-void gemm(C transA, C transB, S m, S n, S k, double const& a, boost::multi::memory::cuda::managed::ptr<double const> A, S lda, boost::multi::memory::cuda::managed::ptr<double const> B, S ldb, double const& beta, boost::multi::memory::cuda::managed::ptr<double> CC, S ldc){
-	gemm(transA, transB, m, n, k, a, boost::multi::memory::cuda::ptr<double const>(A), lda, boost::multi::memory::cuda::ptr<double const>(B), ldb, beta, boost::multi::memory::cuda::ptr<double>(CC), ldc);
+template<typename T, typename AA, typename BB, class C, class S>
+void gemm(C transA, C transB, S m, S n, S k, AA const& a, multi::memory::cuda::managed::ptr<T const> A, S lda, multi::memory::cuda::managed::ptr<T const> B, S ldb, BB const& beta, multi::memory::cuda::managed::ptr<T> CC, S ldc){
+	gemm(transA, transB, m, n, k, a, boost::multi::memory::cuda::ptr<T const>(A), lda, boost::multi::memory::cuda::ptr<T const>(B), ldb, beta, boost::multi::memory::cuda::ptr<T>(CC), ldc);
 }
-
-#endif
 
 }}}
 

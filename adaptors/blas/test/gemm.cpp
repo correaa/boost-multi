@@ -14,32 +14,74 @@
 #include "../../../adaptors/cuda.hpp"
 #include "../../../array.hpp"
 
-
 BOOST_AUTO_TEST_CASE(multi_blas_cuda_cpu){
 
 	namespace multi = boost::multi;
+	{
+		multi::array<double, 2> const A = {
+			{ 1., 3., 4.},
+			{ 9., 7., 1.}
+		};
+		multi::array<double, 2> const B = {	
+			{ 11., 12., 4., 3.},
+			{  7., 19., 1., 2.},
+			{ 11., 12., 4., 1.}
+		};
+		multi::array<double, 2> C({size(rotated(B)), size(A)});
 
-	multi::array<double, 2> const A = {
-		{ 1., 3., 4.},
-		{ 9., 7., 1.}
-	};
-	multi::array<double, 2> const B = {	
-		{ 11., 12., 4., 3.},
-		{  7., 19., 1., 2.},
-		{ 11., 12., 4., 1.}
-	};
-	multi::array<double, 2> C({size(rotated(B)), size(A)});
+		multi::cuda::array<double, 2> const Agpu = A;
+		multi::cuda::array<double, 2> const Bgpu = B;
+		multi::cuda::array<double, 2> Cgpu({size(rotated(B)), size(A)});
 
-	multi::cuda::array<double, 2> const Agpu = A;
-	multi::cuda::array<double, 2> const Bgpu = B;
-	multi::cuda::array<double, 2> Cgpu({size(rotated(B)), size(A)});
+		using multi::blas::gemm;
 
-	using multi::blas::gemm;
+		gemm('T', 'T', 1., A, B, 0., C); // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
+		gemm('T', 'T', 1., Agpu, Bgpu, 0., Cgpu);
 
-	gemm('T', 'T', 1., A, B, 0., C); // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
-	gemm('T', 'T', 1., Agpu, Bgpu, 0., Cgpu);
+		BOOST_REQUIRE( C == Cgpu );
 
-	BOOST_REQUIRE( C == Cgpu );
+		multi::cuda::managed::array<double, 2> const Amgpu = A;
+		multi::cuda::managed::array<double, 2> const Bmgpu = B;
+		multi::cuda::managed::array<double, 2> Cmgpu({size(rotated(B)), size(A)});
+
+		using multi::blas::gemm;
+		gemm('T', 'T', 1., Amgpu, Bmgpu, 0., Cmgpu);
+
+		BOOST_REQUIRE( C == Cmgpu );
+	}
+	{
+		using complex = std::complex<double>;
+		multi::array<complex, 2> const A = {
+			{ 1., 3., 4.},
+			{ 9., 7., 1.}
+		};
+		multi::array<complex, 2> const B = {	
+			{ 11., 12., 4., 3.},
+			{  7., 19., 1., 2.},
+			{ 11., 12., 4., 1.}
+		};
+		multi::array<complex, 2> C({size(rotated(B)), size(A)});
+
+		multi::cuda::array<complex, 2> const Agpu = A;
+		multi::cuda::array<complex, 2> const Bgpu = B;
+		multi::cuda::array<complex, 2> Cgpu({size(rotated(B)), size(A)});
+
+		using multi::blas::gemm;
+
+		gemm('T', 'T', 1., A, B, 0., C); // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
+		gemm('T', 'T', 1., Agpu, Bgpu, 0., Cgpu);
+
+		BOOST_REQUIRE( C == Cgpu );
+
+		multi::cuda::managed::array<complex, 2> const Amgpu = A;
+		multi::cuda::managed::array<complex, 2> const Bmgpu = B;
+		multi::cuda::managed::array<complex, 2> Cmgpu({size(rotated(B)), size(A)});
+
+		using multi::blas::gemm;
+		gemm('T', 'T', 1., Amgpu, Bmgpu, 0., Cmgpu);
+
+		BOOST_REQUIRE( C == Cmgpu );
+	}
 
 }
 
