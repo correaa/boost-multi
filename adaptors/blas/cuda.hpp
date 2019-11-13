@@ -273,21 +273,40 @@ namespace boost{
 namespace multi{
 namespace blas{
 
-template<class T> struct cublas;
+template<class T> class cublas;
 
 template<>
-struct cublas<double>{
+class cublas<double>{
+public:
 	template<class... Args>
 	static auto gemm(Args... args){return cublasDgemm(args...);}
 };
 
 template<>
-struct cublas<std::complex<double>>{
-	template<class T> static decltype(auto) to_cuComplex(T&& t){return std::forward<T>(t);}
-	static decltype(auto) to_cuComplex(std::complex<double> const* t){return reinterpret_cast<cuDoubleComplex const*>(t);}	
-	static decltype(auto) to_cuComplex(std::complex<double>* t){return reinterpret_cast<cuDoubleComplex*>(t);}	
+class cublas<float>{
+public:
 	template<class... Args>
-	static auto gemm(Args&&... args){return cublasZgemm(to_cuComplex(std::forward<Args>(args))...);}
+	static auto gemm(Args... args){return cublasSgemm(args...);}
+};
+
+template<>
+class cublas<std::complex<double>>{
+	template<class T> static decltype(auto) to_cu(T&& t){return std::forward<T>(t);}
+	static decltype(auto) to_cu(std::complex<double> const* t){return reinterpret_cast<cuDoubleComplex const*>(t);}	
+	static decltype(auto) to_cu(std::complex<double>* t){return reinterpret_cast<cuDoubleComplex*>(t);}	
+public:
+	template<class... Args>
+	static auto gemm(Args&&... args){return cublasZgemm(to_cu(std::forward<Args>(args))...);}
+};
+
+template<>
+class cublas<std::complex<float>>{
+	template<class T> static decltype(auto) to_cu(T&& t){return std::forward<T>(t);}
+	static decltype(auto) to_cu(std::complex<float> const* t){return reinterpret_cast<cuComplex const*>(t);}	
+	static decltype(auto) to_cu(std::complex<float>* t){return reinterpret_cast<cuComplex*>(t);}	
+public:
+	template<class... Args>
+	static auto gemm(Args&&... args){return cublasCgemm(to_cu(std::forward<Args>(args))...);}
 };
 
 template<typename T, typename AA, typename BB, class C, typename S>
