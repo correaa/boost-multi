@@ -14,6 +14,7 @@
 #include "../blas/scal.hpp" 
 #include "../blas/syrk.hpp" // fallback to real case
 
+#include "../blas/side.hpp"
 #include "../blas/operations.hpp"
 
 #include<iostream> //debug
@@ -22,21 +23,18 @@
 namespace boost{
 namespace multi{namespace blas{
 
-template<class T> auto underlying(T* p){return p;}
-
-template<class AA, class BB, class A2D, class C2D, typename = std::enable_if_t< is_complex_array<std::decay_t<C2D>>{}>>
+template<class AA, class BB, class A2D, class C2D, typename = std::enable_if_t<is_complex_array<std::decay_t<C2D>>{}>>
 C2D&& herk(triangular c_side, complex_operation a_op, AA alpha, A2D const& a, BB beta, C2D&& c){
 	if(stride(c)==1 and stride(c[0])!=1) herk(flip(c_side), hermitize(a_op), alpha, rotated(a), beta, rotated(c));
 	else{
 		assert( stride(c[0])==1 ); // sources and destination are incompatible layout
 		assert( stride(a[0])==1 ); // sources and destination are incompatible layout
 		assert( size(c[0]) == size(c) );
-		assert( size(c) == size(c[0]) );
 		assert( a_op==complex_operation::hermitian?size(a[0])==size(c):size(a)==size(c) ); 
 		herk(
 			static_cast<char>(c_side), static_cast<char>(a_op), size(c), 
 			a_op==complex_operation::hermitian?size(a):size(*begin(a)), 
-			alpha, underlying(base(a)), stride(a), beta, underlying(base(c)), stride(c)
+			alpha, base(a), stride(a), beta, base(c), stride(c)
 		);
 	}
 	return std::forward<C2D>(c);
@@ -88,10 +86,8 @@ void herk_aux(AA alpha, A2D const& a, C2D&& c, std::true_type){
 		}
 	}
 }
-template<typename AA, class A2D, class C2D>
-void herk_aux(AA alpha, A2D const& a, C2D&& c, std::false_type){
-	syrk(alpha, a, c);
-}
+template<typename A, class A2D, class C2D>
+void herk_aux(A alpha, A2D const& a, C2D&& c, std::false_type){syrk(alpha, a, c);}
 
 template<typename AA, class A2D, class C2D>
 C2D&& herk(AA alpha, A2D const& a, C2D&& c){
@@ -104,9 +100,7 @@ C2D&& herk(AA alpha, A2D const& a, C2D&& c){
 			blas::copy(begin(rotated(c)[i])+i+1, end(rotated(c)[i]), begin(c[i])+i+1);
 			blas::scal(-1., begin(imag(c[i]))+i+1, end(imag(c[i])));
 		}
-	}else{
-		syrk(alpha, a, c);
-	}
+	}else syrk(alpha, a, c);
 #else
 	herk_aux(alpha, a, std::forward<C2D>(c), is_complex_array<std::decay_t<C2D>>{});
 #endif
@@ -114,15 +108,7 @@ C2D&& herk(AA alpha, A2D const& a, C2D&& c){
 }
 
 template<class AA, class A2D, class Ret = typename A2D::decay_type>
-#if __cplusplus>=201703L
-#if __has_cpp_attribute(nodiscard)>=201603
-[[nodiscard
-#if __has_cpp_attribute(nodiscard)>=201907
-("result is returned because it second parameter is const")
-#endif
-]]
-#endif
-#endif
+NODISCARD("second argument is const")
 auto herk(AA alpha, A2D const& a){
 	auto s = size(a);
 	Ret ret(typename Ret::extensions_type{s, s}, get_allocator(a));
@@ -144,6 +130,7 @@ template<class A2D> auto herk(A2D const& a){return herk(1., a);}
 namespace multi = boost::multi;
 
 #include<catch.hpp>
+#include "../../array.hpp"
 
 #include<iostream>
 #include<numeric>
