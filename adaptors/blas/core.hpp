@@ -1,8 +1,8 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo "#include\""$0"\"" > $0x.cpp) && clang++ `#-DNDEBUG` -O3 -std=c++14 -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_BLAS_CORE -DADD_ $0x.cpp -o $0x.x -lblas && time $0x.x $@ && rm -f $0x.x $0x.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_BLAS_CORE $0.cpp -o $0x `pkg-config blas --cflags --libs`&&$0x&&rm $0x $0.cpp;exit
 #endif
 // https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
-// Alfredo A. Correa 2019 ©
+// © Alfredo A. Correa 2019
 
 #ifndef MULTI_ADAPTORS_BLAS_CORE_HPP
 #define MULTI_ADAPTORS_BLAS_CORE_HPP
