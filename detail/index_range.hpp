@@ -36,6 +36,7 @@ public:
 	constexpr auto operator!=(self_type const& o) const{return not(o == self());}
 	constexpr self_type operator+(difference_type n) const HD{self_type r = self(); r += n; return r;}
 	constexpr self_type operator-(difference_type n) const HD{self_type r = self(); r -= n; return r;}
+	friend constexpr self_type operator+(difference_type n, self_type const& s){return s + n;}
 	friend self_type operator++(self_type& s, int){self_type r = s; ++s; return r;}
 	friend self_type operator--(self_type& s, int){self_type r = s; --s; return r;}
 };
