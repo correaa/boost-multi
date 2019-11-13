@@ -40,7 +40,9 @@ auto real_aux(A&& a, T const&)
 	return member_array_cast<T>(std::forward<A>(a), &T::real);}
 
 template<class A>
-auto real(A&& a){return real_aux(std::forward<A>(a), typename std::decay_t<A>::element_type{});}
+auto real(A&& a)
+->decltype(real_aux(std::forward<A>(a), *(typename std::decay_t<A>::element_ptr{}))){
+	return real_aux(std::forward<A>(a), *(typename std::decay_t<A>::element_ptr{}));}
 
 template<class A, typename T=typename std::decay_t<A>::element_type::value_type, typename C_=Complex_<T>>
 auto imag_aux(A&& a, std::complex<T> const&)
@@ -108,6 +110,7 @@ class involuter : public std::iterator_traits<It>{
 	It it_; // [[no_unique_address]] 
 	F f_;
 public:
+	involuter() = default;
 	explicit involuter(It it, F f = {}) HD : it_{std::move(it)}, f_{std::move(f)}{}
 	involuter(involuter const& other) = default;
 	using reference = involuted<typename std::iterator_traits<It>::reference, F>;
