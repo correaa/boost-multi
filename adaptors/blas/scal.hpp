@@ -26,9 +26,9 @@ auto scal_n(T a, It first, Size count)
 	return scal(count, a, base(first), stride(first)), first + count;}
 
 template<typename T, class It>
-auto scal(T a, It first, It last)
-->decltype(scal_n(a, first, std::distance(first, last))){assert(stride(first) == stride(last));
-	return scal_n(a, first, std::distance(first, last));}
+auto scal(T a, It f, It l)
+->decltype(scal_n(a, f, std::distance(f, l))){ assert(stride(f) == stride(l));
+	return scal_n(a, f, std::distance(f, l));}
 
 template<typename T, class X1D>
 auto scal(T a, X1D&& m)
@@ -37,7 +37,8 @@ auto scal(T a, X1D&& m)
 
 template<typename T, class X1D> NODISCARD("when second argument is const")
 auto scal(T a, X1D const& m)->std::decay_t<decltype(scal(a, decay(m)))>{
-	return scal(a, decay(m));}
+	return scal(a, decay(m));
+}
 
 }}}
 
