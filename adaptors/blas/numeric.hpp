@@ -81,14 +81,14 @@ class involuter : public std::iterator_traits<It>{
 	It it_; // [[no_unique_address]] 
 	F f_;
 public:
-	explicit involuter(It it, F f = {}) : it_{std::move(it)}, f_{std::move(f)}{}
+	HD explicit involuter(It it, F f = {}) : it_{std::move(it)}, f_{std::move(f)}{}
 	involuter(involuter const& other) = default;
 	using reference = involuted<typename std::iterator_traits<It>::reference, F>;
 	auto operator*() const{return reference{*it_, f_};}
 	bool operator==(involuter const& o) const{return it_==o.it_;}
 	bool operator!=(involuter const& o) const{return it_!=o.it_;}
-	involuter& operator+=(typename involuter::difference_type n){it_+=n; return *this;}
-	auto operator+(typename involuter::difference_type n) const{return involuter{it_+n, f_};}
+	HD involuter& operator+=(typename involuter::difference_type n){it_+=n; return *this;}
+	HD auto operator+(typename involuter::difference_type n) const{return involuter{it_+n, f_};}
 	decltype(auto) operator->() const{
 		return involuter<typename std::iterator_traits<It>::pointer, F>{&*it_, f_};
 	}
