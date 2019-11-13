@@ -1,65 +1,85 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&clang++ -O3 -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_SCAL $0.cpp -o $0x `pkg-config blas --cflags --libs` &&$0x&& rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++17 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_SCAL $0.cpp -o $0x `pkg-config blas --cflags --libs` &&$0x&& rm $0x $0.cpp; exit
 #endif
-// Alfredo A. Correa 2019 ©
+// © Alfredo A. Correa 2019
 
 #ifndef MULTI_ADAPTORS_BLAS_SCAL_HPP
 #define MULTI_ADAPTORS_BLAS_SCAL_HPP
 
 #include "../blas/core.hpp"
 
+#if __cplusplus>=201703L and __has_cpp_attribute(nodiscard)>=201603
+#define NODISCARD(MsG) [[nodiscard]]
+#elif __has_cpp_attribute(gnu::warn_unused_result)
+#define NODISCARD(MsG) [[gnu::warn_unused_result]]
+#else
+#define NODISCARD(MsG)
+#endif
+
 namespace boost{
 namespace multi{
 namespace blas{
 
-template<class T, class It, class Size>
-It scal_n(T a, It first, Size count){
-	scal(count, a, base(first), stride(first));
-	return first + count;
-}
+template<typename T, class It, typename Size>
+auto scal_n(T a, It first, Size count)
+->decltype(scal(count, a, base(first), stride(first)), first + count){
+	return scal(count, a, base(first), stride(first)), first + count;}
 
-template<class T, class It>
-It scal(T a, It first, It last){
-	assert(stride(first) == stride(last));
-	return scal_n(a, first, std::distance(first, last));
-//	scal(std::distance(first, last), a, base(first), stride(first));
-}
+template<typename T, class It>
+auto scal(T a, It first, It last)
+->decltype(scal_n(a, first, std::distance(first, last))){assert(stride(first) == stride(last));
+	return scal_n(a, first, std::distance(first, last));}
 
-template<class T, class X1D>
-X1D&& scal(T a, X1D&& m){
-	assert( offset(m) == 0 );
-	scal(a, begin(m), end(m));
-	return std::forward<X1D>(m);
-}
+template<typename T, class X1D>
+auto scal(T a, X1D&& m)
+->decltype(scal(a, begin(m), end(m)), std::forward<X1D>(m)){
+	return scal(a, begin(m), end(m)), std::forward<X1D>(m);}
+
+template<typename T, class X1D> NODISCARD("when second argument is const")
+auto scal(T a, X1D const& m)->std::decay_t<decltype(scal(a, decay(m)))>{
+	return scal(a, decay(m));}
 
 }}}
 
 #if _TEST_MULTI_ADAPTORS_BLAS_SCAL
 
 #include "../../array.hpp"
-#include "../../utility.hpp"
-
-#include<complex>
 #include<cassert>
-#include<iostream>
-#include<numeric>
-#include<algorithm>
 
 using std::cout;
 namespace multi = boost::multi;
 
 int main(){
-	multi::array<double, 2> A = {
-		{1.,  2.,  3.,  4.},
-		{5.,  6.,  7.,  8.},
-		{9., 10., 11., 12.}
-	};
+	{
+		multi::array<double, 2> A = {
+			{1.,  2.,  3.,  4.},
+			{5.,  6.,  7.,  8.},
+			{9., 10., 11., 12.}
+		};
 
-	using multi::blas::scal;
-	auto&& S = scal(2., A.rotated(1)[1]);
+		using multi::blas::scal;
+		auto&& S = scal(2., rotated(A)[1]);
 
-	assert( A[2][1] == 20. );
-	assert( S[0] == 4. );
+		assert( A[2][1] == 20. );
+		assert( S[0] == 4. );
+	}
+	{
+		multi::array<double, 2> const A = {
+			{1.,  2.,  3.,  4.},
+			{5.,  6.,  7.,  8.},
+			{9., 10., 11., 12.}
+		};
+		using multi::blas::scal;
+		auto rA1_scaled = scal(2., A[1]);
+		assert( size(rA1_scaled) == 4 );
+		assert( rA1_scaled[1] == 12. );
+	}
+	{
+		multi::array<double, 1> b; // empty vector is ok
+		using multi::blas::scal;
+		scal(2., b);
+		assert( size(b) == 0 );
+	}
 }
 
 #endif
