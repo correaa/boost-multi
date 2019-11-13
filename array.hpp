@@ -183,13 +183,9 @@ protected:
 		this->base_ = nullptr;
 	}
 	void clear() noexcept{
-	//	std::cerr << "here" << __LINE__ << std::endl;
 		this->destroy();
-	//	std::cerr << "here" << __LINE__ << std::endl;
 		deallocate();
-	//	std::cerr << "here" << __LINE__ << std::endl;
 		layout_t<D>::operator=({});
-	//	std::cerr << "here" << __LINE__ << std::endl;
 	}
 public:
 	static_array() = default;
