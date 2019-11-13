@@ -215,6 +215,11 @@ public:
 	friend typename static_array::element_ptr       data(static_array&       s){return s.data();}
 	friend typename static_array::element_const_ptr data(static_array const& s){return s.data();}
 
+	HD typename static_array::element_ptr       base()      {return ref::base();}
+	HD auto base() const{return typename static_array::element_const_ptr{ref::base()};}
+	friend typename static_array::element_ptr       base(static_array&       s){return s.base();}
+	friend typename static_array::element_const_ptr base(static_array const& s){return s.base();}
+
 	typename static_array::element_ptr       origin()      {return ref::origin();}
 	typename static_array::element_const_ptr origin() const{return ref::origin();}
 	friend typename static_array::element_ptr       origin(static_array&       s){return s.origin();}

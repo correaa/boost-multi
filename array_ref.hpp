@@ -15,12 +15,10 @@ for a in ./tests/*.cpp; do echo $a; sh $a || break; echo "\n"; done; exit;*/
 
 #include<algorithm> // copy_n
 
-#ifndef HD
 #if defined(__CUDACC__)
 #define HD __host__ __device__
 #else
 #define HD 
-#endif
 #endif
 
 namespace boost{
@@ -43,11 +41,11 @@ struct array_types : Layout{
 	using reference = std::conditional_t<
 		dimensionality!=1, 
 		basic_array<element, dimensionality-1, element_ptr>, 
-#ifdef __CUDACC__
-		decltype(*std::declval<ElementPtr>())                  // this works with cuda fancy reference
-#else
-		typename std::iterator_traits<ElementPtr>::reference   // this seems more correct but it doesn't work with cuda fancy reference
-#endif
+//#ifdef __CUDACC__
+//		decltype(*std::declval<ElementPtr>())                  // this works with cuda fancy reference
+//#else
+		typename std::iterator_traits<element_ptr>::reference   // this seems more correct but it doesn't work with cuda fancy reference
+//#endif
 	// typename std::iterator_traits<element_ptr>::reference 	//	typename pointer_traits<element_ptr>::element_type&
 	>;
 	HD element_ptr     base()   const{return base_;} //	element_const_ptr cbase() const{return base();}
@@ -148,13 +146,14 @@ template<class Element, dimensionality_type D, typename Ptr, class Ref
 					Ptr
 				>::type
 			>,
-			typename std::iterator_traits<
-					typename std::conditional<
-						std::is_same<typename std::pointer_traits<Ptr>::element_type, void>{}, 
-						typename std::pointer_traits<Ptr>::template rebind<Element>,
-						Ptr
-					>::type
-			>::reference
+			typename std::iterator_traits<Ptr>::reference
+	//		typename std::iterator_traits<
+	//				typename std::conditional<
+	//					std::is_same<typename std::pointer_traits<Ptr>::element_type, void>{}, 
+	//					typename std::pointer_traits<Ptr>::template rebind<Element>,
+	//					Ptr
+	//				>::type
+	//		>::reference
 		>::type
 #endif
 >
@@ -530,7 +529,7 @@ public:
 		static_assert(sizeof(T)%sizeof(T2) == 0, 
 			"array_member_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements");
 	//	return {this->layout().scale(sizeof(T)/sizeof(T2)), &(this->base_->*pm)};
-		return {this->layout().scale(sizeof(T)/sizeof(T2)), &(this->base_->*pm)};
+		return basic_array<T2, D, P2>{this->layout().scale(sizeof(T)/sizeof(T2)), static_cast<P2>(&(this->base_->*pm))};
 	}
 	template<class T2, class P2 = T2*>//typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
 	basic_array<std::decay_t<T2>, D, P2> reinterpret_array_cast() const{
@@ -546,7 +545,6 @@ public:
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-
 template<class Element, typename Ptr, typename Ref>
 struct array_iterator<Element, 1, Ptr, Ref> : 
 	boost::multi::iterator_facade<
@@ -561,18 +559,22 @@ struct array_iterator<Element, 1, Ptr, Ref> :
 {
 	using affine = multi::affine<array_iterator<Element, 1, Ptr, Ref>, multi::difference_type>;
 	using difference_type = typename affine::difference_type;
+
+	array_iterator() = default;
+	array_iterator(array_iterator const& other) = default;//: data_{other.data_}, stride_{other.stride_}{}// = default;
 	template<class Other, typename = decltype(Ptr{typename Other::pointer{}})> 
-	array_iterator(Other const& o) : data_{o.data_}, stride_{o.stride_}{}
+	array_iterator(Other const& o) HD : data_{o.data_}, stride_{o.stride_}{}
 //	array_iterator(Ptr const& other) : data_{other}, stride_{1L}{}
 	template<class EE, dimensionality_type, class PP, class RR> friend struct array_iterator;
-	array_iterator(std::nullptr_t np = nullptr) : data_{np}, stride_{}{}
-	array_iterator(Ptr const& p) : data_{p}, stride_{1}{}
+	array_iterator(std::nullptr_t nu) HD : data_{nu}, stride_{1}{}
+	array_iterator(Ptr const& p) HD : data_{p}, stride_{1}{}
 	explicit operator bool() const{return static_cast<bool>(this->data_);}
 	Ref operator[](typename array_iterator::difference_type n) const HD{/*assert(*this);*/ return *((*this) + n);}
 	Ptr operator->() const{return data_;}
 	using element = Element;
 	using element_ptr = Ptr;
-	explicit operator Ptr const&() const{assert(stride_==1); return data_;}
+	using pointer = element_ptr;
+//	explicit operator Ptr const&() const{assert(stride_==1); return data_;}
 	using rank = std::integral_constant<dimensionality_type, 1>;
 	bool operator<(array_iterator const& o) const{return distance_to(o) > 0;}
 private:
@@ -589,7 +591,6 @@ private:
 		assert(stride_==other.stride_ and (other.data_-data_)%stride_ == 0);
 		return (other.data_ - data_)/stride_;
 	}
-//	friend class boost::iterator_core_access;
 	auto base() const{return data_;}
 	friend auto base(array_iterator const& self){return self.base();}
 public:
@@ -721,7 +722,7 @@ public:
 	decltype(auto)   rotated(dimensionality_type) const{return *this;}
 	decltype(auto) unrotated(dimensionality_type) const{return *this;}
 
-	using iterator = multi::array_iterator<typename types::element, 1, typename types::element_ptr, typename types::reference>;
+	using iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_ptr, typename types::reference>;
 //	using const_iterator =
 //		multi::array_iterator<typename types::element, 1,
 //			typename types::element, //	typename std::pointer_traits<typename types::element_ptr>::template rebind<typename types::element const>,
@@ -829,7 +830,7 @@ public:
 	basic_array<T2, 1, P2> member_cast(PM pm) const{
 		static_assert(sizeof(T)%sizeof(T2) == 0, 
 			"array_member_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements");
-		return {this->layout().scale(sizeof(T)/sizeof(T2)), &(this->base_->*pm)};
+		return {this->layout().scale(sizeof(T)/sizeof(T2)), static_cast<P2>(&(this->base_->*pm))};
 	}
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
 	basic_array<T2, 1, P2> reinterpret_array_cast() const{
@@ -855,8 +856,8 @@ template<class T2, class Array, class P2 = typename std::pointer_traits<typename
 decltype(auto) member_array_cast(Array&& a, PM pm){return a.template member_cast<T2, P2>(pm);}
 
 template<
-	class T2, class Array, 
-	class P2 = typename std::pointer_traits<typename std::decay<Array>::type::element_ptr>::template rebind<T2> 
+	class T2, class Array,
+	class P2 = typename std::pointer_traits<typename std::decay<Array>::type::element_ptr>::template rebind<T2>
 >
 decltype(auto) reinterpret_array_cast(Array&& a){
 	return a.template reinterpret_array_cast<T2, P2>();
@@ -864,7 +865,7 @@ decltype(auto) reinterpret_array_cast(Array&& a){
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*>
 struct array_ref : 
-//	multi::partially_ordered2<array_ref<T, D, ElementPtr>, void>,
+//TODO	multi::partially_ordered2<array_ref<T, D, ElementPtr>, void>,
 	basic_array<T, D, ElementPtr>
 {
 protected:

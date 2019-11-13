@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&clang++ -std=c++14 -D_TEST_MULTI_ADAPTORS_BLAS_NUMERIC $0.cpp -o $0x \
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -D_TEST_MULTI_ADAPTORS_BLAS_NUMERIC $0.cpp -o $0x -lboost_unit_test_framework -lcudart -Wno-deprecated-declarations \
 `pkg-config --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
@@ -12,6 +12,15 @@
 #include "../../array_ref.hpp"
 #include<complex>
 
+//#include "../blas/side.hpp"
+
+#if defined(__CUDACC__)
+#define HD __host__ __device__
+#else
+#define HD
+#endif
+
+#include<experimental/type_traits>
 //#include<functional> // negate
 //#include<complex> // conj
 
@@ -21,14 +30,32 @@ namespace multi{namespace blas{
 template<class T> struct Complex_{T real; T imag;};
 
 template<class A, typename T=typename std::decay_t<A>::element_type::value_type, typename C_=Complex_<T>>
-auto real(A&& a)
-->decltype(member_array_cast<T>(reinterpret_array_cast<C_>(a), &C_::real)){
-	return member_array_cast<T>(reinterpret_array_cast<C_>(a), &C_::real);}
+auto real_aux(A&& a, std::complex<T> const&)
+->decltype(member_array_cast<T>(reinterpret_array_cast<C_>(std::forward<A>(a)), &C_::real)){
+	return member_array_cast<T>(reinterpret_array_cast<C_>(std::forward<A>(a)), &C_::real);}
+
+template<class A, class T>
+auto real_aux(A&& a, T const&)
+->decltype(member_array_cast<T>(std::forward<A>(a), &T::real)){
+	return member_array_cast<T>(std::forward<A>(a), &T::real);}
+
+template<class A>
+auto real(A&& a){return real_aux(std::forward<A>(a), typename std::decay_t<A>::element_type{});}
 
 template<class A, typename T=typename std::decay_t<A>::element_type::value_type, typename C_=Complex_<T>>
+auto imag_aux(A&& a, std::complex<T> const&)
+->decltype(member_array_cast<T>(reinterpret_array_cast<C_>(std::forward<A>(a)), &C_::imag)){
+	return member_array_cast<T>(reinterpret_array_cast<C_>(std::forward<A>(a)), &C_::imag);}
+
+template<class A, class T>
+auto imag_aux(A&& a, T const&)
+->decltype(member_array_cast<T>(std::forward<A>(a), &T::imag)){
+	return member_array_cast<T>(std::forward<A>(a), &T::imag);}
+
+template<class A>
 auto imag(A&& a)
-->decltype(member_array_cast<T>(reinterpret_array_cast<C_>(a), &C_::imag)){
-	return member_array_cast<T>(reinterpret_array_cast<C_>(a), &C_::imag);}
+->decltype(imag_aux(std::forward<A>(a), *(typename std::decay_t<A>::element_ptr{}))){
+	return imag_aux(std::forward<A>(a), *(typename std::decay_t<A>::element_ptr{}));}
 
 template<class It, class F> class involuter;
 
@@ -81,14 +108,14 @@ class involuter : public std::iterator_traits<It>{
 	It it_; // [[no_unique_address]] 
 	F f_;
 public:
-	HD explicit involuter(It it, F f = {}) : it_{std::move(it)}, f_{std::move(f)}{}
+	explicit involuter(It it, F f = {}) HD : it_{std::move(it)}, f_{std::move(f)}{}
 	involuter(involuter const& other) = default;
 	using reference = involuted<typename std::iterator_traits<It>::reference, F>;
 	auto operator*() const{return reference{*it_, f_};}
 	bool operator==(involuter const& o) const{return it_==o.it_;}
 	bool operator!=(involuter const& o) const{return it_!=o.it_;}
-	HD involuter& operator+=(typename involuter::difference_type n){it_+=n; return *this;}
-	HD auto operator+(typename involuter::difference_type n) const{return involuter{it_+n, f_};}
+	involuter& operator+=(typename involuter::difference_type n) HD{it_+=n; return *this;}
+	auto operator+(typename involuter::difference_type n) const HD{return involuter{it_+n, f_};}
 	decltype(auto) operator->() const{
 		return involuter<typename std::iterator_traits<It>::pointer, F>{&*it_, f_};
 	}
@@ -96,9 +123,10 @@ public:
 	explicit operator bool() const{return it_;}
 	using underlying_type = It;
 	friend underlying_type underlying(involuter const& self){return self.it_;}
-	explicit operator It() const{return underlying(*this);}
+	operator It() const{return underlying(*this);}
 };
 
+#if 0
 template<class It2, class F>
 class involuter<involuter<It2, F>, F> : public std::iterator_traits<involuter<It2, F>>{
 	using It = involuter<It2, F>;
@@ -123,7 +151,7 @@ public:
 	operator It() const{return underlying(*this);}
 	operator It2() const{return underlying(underlying(*this));}
 };
-
+#endif
 
 template<class Ref> using negated = involuted<Ref, std::negate<>>;
 template<class It>  using negater = involuter<It, std::negate<>>;
@@ -183,13 +211,10 @@ template<class Complex> using conjr = involuter<Complex, decltype(conj)>;
 #include "../../array.hpp"
 #include "../../utility.hpp"
 
-#include <boost/timer/timer.hpp>
+#include "../../adaptors/cuda.hpp"
 
-#include<complex>
 #include<cassert>
 #include<iostream>
-#include<numeric>
-#include<algorithm>
 
 using std::cout;
 
@@ -204,9 +229,8 @@ template<class M> decltype(auto) print(M const& C){
 	return cout << std::endl;
 }
 
-template<class... T> void what(T&&...);
-
 int main(){
+
 	using multi::blas::gemm;
 	using multi::blas::herk;
 	using complex = std::complex<double>;
@@ -239,14 +263,18 @@ int main(){
 	assert( real(B) == Breal );
 	assert( imag(B) == Bimag );
 
+	{
+		namespace cuda = multi::cuda;
+		cuda::managed::array<complex, 2> Bgpu = B;
+		using multi::blas::imag;
+		assert( imag(Bgpu)[1][1] == imag(B)[1][1] );
+	}
+
 	multi::array_ref<double, 2> rB(reinterpret_cast<double*>(data_elements(B)), {size(B), 2*size(*begin(B))});
 
 	auto&& Bconj = multi::static_array_cast<complex, multi::blas::detail::conjugater<complex*>>(B);
 	assert( size(Bconj) == size(B) );
 	assert( conj(B[1][2]) == Bconj[1][2] );
-
-
-
 
 //	auto&& BH = multi::blas::hermitized(B);
 //	assert( BH[1][2] == conj(B[2][1]) );

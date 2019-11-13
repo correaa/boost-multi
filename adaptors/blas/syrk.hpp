@@ -14,6 +14,7 @@
 
 #include "../blas/numeric.hpp"
 #include "../blas/operations.hpp"
+#include "../blas/side.hpp"
 
 namespace boost{
 namespace multi{namespace blas{

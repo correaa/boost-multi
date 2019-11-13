@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&clang++ -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_HERK .DCATCH_CONFIG_MAIN.o $0.cpp -o $0x \
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_HERK .DCATCH_CONFIG_MAIN.o $0.cpp -o $0x \
 `pkg-config --cflags --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -liomp5` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
@@ -17,8 +17,8 @@
 #include "../blas/side.hpp"
 #include "../blas/operations.hpp"
 
-#include<iostream> //debug
-#include<type_traits> // void_t
+//#include<iostream> //debug
+//#include<type_traits> // void_t
 
 namespace boost{
 namespace multi{namespace blas{
@@ -451,7 +451,6 @@ TEST_CASE("multi::blas::herk complex timing", "[report]"){
 	using multi::blas::hermitized;
 	herk(1., hermitized(a), c); // c†=c=a†a
 }
-
 
 #endif
 #endif

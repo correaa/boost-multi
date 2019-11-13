@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_OPERATIONS $0.cpp -o $0x `pkg-config --cflags --libs blas` &&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_OPERATIONS $0.cpp -o $0x `pkg-config --cflags --libs blas` -lboost_unit_test_framework &&$0x&&rm $0x $0.cpp; exit
 #endif
 // © Alfredo A. Correa 2019
 
@@ -16,19 +16,6 @@ namespace boost{
 namespace multi{namespace blas{
 
 enum class trans : char{N='N', T='T', C='C'};
-enum class uplo  : char{L='L', U='U'};
-
-enum class triangular : char{
-	lower = static_cast<char>(uplo::U),
-	upper = static_cast<char>(uplo::L)
-};
-
-triangular flip(triangular side){
-	switch(side){
-		case triangular::lower: return triangular::upper;
-		case triangular::upper: return triangular::lower;
-	} __builtin_unreachable();
-}
 
 enum class real_operation : char{
 	transposition = static_cast<char>(trans::N),
@@ -84,6 +71,8 @@ public:
 	friend bool operator==(operation const& o1, operation const& o2){return o1.impl_==o2.impl_;}
 	friend bool operator==(complex_operation const& o1, operation const& o2){return operation(o1)==o2;}
 	friend bool operator==(operation const& o1, complex_operation const& o2){return o1==operation(o2);}
+	friend bool operator==(real_operation const& o1, operation const& o2){return operation(o1)==o2;}
+	friend bool operator==(operation const& o1, real_operation const& o2){return o1==operation(o2);}
 	static operation const identity; //= impl_t::identity;
 	static operation const hermitian; //= impl_t::hermitian;
 	static operation const transposition; //= impl_t::transposition;
@@ -170,50 +159,6 @@ template<class M> decltype(auto) N(M&& m){return m;}
 template<class M> decltype(auto) T(M&& m){return transposed(m);}
 template<class M> decltype(auto) C(M&& m){return conjugated_transposed(m);}
 
-template<class A2D>
-triangular detect_triangular(A2D const& A, std::true_type){
-	{
-		for(auto i = size(A); i != 0; --i){
-			auto const asum_up = blas::asum(begin(A[i-1])+i, end(A[i-1]));
-			if(asum_up!=asum_up) return triangular::lower;
-			else if(asum_up!=0.) return triangular::upper;
-
-			auto const asum_lo = blas::asum(begin(rotated(A)[i-1])+i, end(rotated(A)[i-1]));
-			if(asum_lo!=asum_lo) return triangular::upper;
-			else if(asum_lo!=0.) return triangular::lower;
-		}
-	}
-	return triangular::lower;
-}
-
-template<class A2D>
-triangular detect_triangular(A2D const& A, std::false_type){
-	return flip(detect_triangular(hermitized(A)));
-}
-
-template<class A2D>
-triangular detect_triangular(A2D const& A){
-#if __cpp_if_constexpr>=201606
-	if constexpr(not is_hermitized<A2D>()){
-		for(auto i = size(A); i != 0; --i){
-			auto const asum_up = blas::asum(begin(A[i-1])+i, end(A[i-1]));
-			if(asum_up!=asum_up) return triangular::lower;
-			else if(asum_up!=0.) return triangular::upper;
-
-			auto const asum_lo = blas::asum(begin(rotated(A)[i-1])+i, end(rotated(A)[i-1]));
-			if(asum_lo!=asum_lo) return triangular::upper;
-			else if(asum_lo!=0.) return triangular::lower;
-		}
-	}else{
-		return flip(detect_triangular(hermitized(A)));
-	}
-#else
-	detect_triangular(A, std::integral_constant<bool, not is_hermitized<A2D>()>{});
-#endif
-	return triangular::lower;
-}
-
-
 }}
 
 namespace multi{
@@ -225,6 +170,10 @@ namespace multi{
 }
 
 #if _TEST_MULTI_ADAPTORS_BLAS_OPERATIONS
+
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS gemm"
+#define BOOST_TEST_DYN_LINK
+#include<boost/test/unit_test.hpp>
 
 #include "../../array.hpp"
 #include "../../utility.hpp"
@@ -254,7 +203,17 @@ auto const I = complex(0., 1.);
 
 template<class T> void what();
 
-int main(){
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_operations_enums){
+	BOOST_REQUIRE( multi::blas::operation::identity == multi::blas::real_operation::identity );
+	BOOST_REQUIRE( multi::blas::operation::transposition == multi::blas::real_operation::transposition );
+	BOOST_REQUIRE( multi::blas::operation::hermitian == multi::blas::complex_operation::hermitian );
+	BOOST_REQUIRE( multi::blas::operation::identity == multi::blas::complex_operation::identity );
+
+	BOOST_REQUIRE( multi::blas::operation{multi::blas::real_operation::identity} == multi::blas::real_operation::identity );
+	BOOST_REQUIRE( multi::blas::operation{multi::blas::real_operation::transposition} == multi::blas::real_operation::transposition );
+}
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_operations){
 
 	multi::array<complex, 2> const A = {
 		{1. - 3.*I, 6.  + 2.*I},
@@ -296,9 +255,9 @@ int main(){
 		{2. - 1.*I, 1. + 1.*I}
 	};
 	static_assert( multi::blas::is_complex_array<std::decay_t<decltype(A)>>{} , "!");
-	auto&& AH = multi::blas::hermitized(A);
-	auto c = AH[0][0].imag();
-	static_assert( multi::blas::is_complex_array<std::decay_t<decltype(AH)>>{} , "!");
+//	auto&& AH = multi::blas::hermitized(A);
+//	auto c = AH[0][0].imag();
+//	static_assert( multi::blas::is_complex_array<std::decay_t<decltype(AH)>>{} , "!");
 
 //	auto&& Aconjd = multi::blas::conjugated(A);
 //	assert( Aconjd[1][2] == conj(A[1][2]) );
