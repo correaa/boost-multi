@@ -31,6 +31,8 @@ C2D&& herk(triangular c_side, complex_operation a_op, AA alpha, A2D const& a, BB
 		assert( stride(c[0])==1 ); // sources and destination are incompatible layout
 		assert( stride(a[0])==1 ); // sources and destination are incompatible layout
 		assert( size(c[0]) == size(c) );
+		assert( size(c) == size(c[0]) );
+		assert( a_op==complex_operation::hermitian?size(a[0])==size(c):size(a)==size(c) ); 
 		herk(
 			static_cast<char>(c_side), static_cast<char>(a_op), size(c), 
 			a_op==complex_operation::hermitian?size(a):size(*begin(a)), 

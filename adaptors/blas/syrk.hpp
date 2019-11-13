@@ -25,8 +25,7 @@ C2D&& syrk(triangular c_side, real_operation a_op, AA alpha, A2D const& a, BB be
 		assert( stride(c[0])==1 );
 		assert( stride(a[0])==1 ); // sources and destination are incompatible layout
 		assert( size(c) == size(c[0]) );
-	//	assert( a_op==real_operation::transposition?size(a[0])==size(c):size(a)==size(c) ); 
-	//	assert( size(c)==(a_op==real_operation::transposition?size(*begin(a)):size(a)) );
+		assert( a_op==real_operation::transposition?size(a[0])==size(c):size(a)==size(c) ); 
 		syrk(
 			static_cast<char>(c_side), static_cast<char>(a_op), size(c), 
 			a_op==real_operation::transposition?size(a):size(*begin(a)), 
@@ -171,7 +170,7 @@ TEST_CASE("multi::blas::syrk real special case", "[report]"){
 		{ 1., 3., 4.},
 	};
 	{
-		multi::array<double, 2> c({2, 2}, 9999.);
+		multi::array<double, 2> c({1, 1}, 9999.);
 		using multi::blas::triangular;
 		using multi::blas::real_operation;
 		syrk(triangular::lower, real_operation::identity, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
@@ -189,8 +188,8 @@ TEST_CASE("multi::blas::syrk complex (real case)", "[report]"){
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.);
 		using multi::blas::triangular;
-		using multi::blas::real_operation;
-		syrk(triangular::lower, real_operation::transposition, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
+		using multi::blas::operation;
+		syrk(triangular::lower, operation::transposition, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
 		REQUIRE( c[2][1] == 19. );
 		REQUIRE( c[1][2] == 9999. );
 	}
