@@ -7,15 +7,12 @@
 #ifndef MULTI_ADAPTORS_BLAS_CORE_HPP
 #define MULTI_ADAPTORS_BLAS_CORE_HPP
 
-#include "../../utility.hpp"
-#include "../../array.hpp" // allocating multi::arrays for output
-
 //#include <cblas/cblas.h>
 
 #include<cassert>
 #include<complex>
-
-//static_assert(sizeof(_BLAS_INT)==32/8 or sizeof(_BLAS_INT)==64/8, "please set _BLAS_INT to int32_t or int64_t");
+#include<cstdint> // int64_t
+#include<limits> // numeric_limits
 
 #ifdef CBLAS_H
 #define BLAS(NamE) cblas_##NamE
@@ -35,10 +32,10 @@ extern "C"{
 #define C _Complex s
 #define Z _Complex d
 #if(_BLAS_INT==32)
-#define INT int32_t
+#define INT std::int32_t
 #endif
 #if(_BLAS_INT==64)
-#define INT int64_t
+#define INT std::int64_t
 #endif
 #define INTEGER INT const&
 #define N INTEGER n

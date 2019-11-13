@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++17 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_SCAL $0.cpp -o $0x `pkg-config blas --cflags --libs` &&$0x&& rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++17 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_SCAL $0.cpp -o $0x `pkg-config blas --cflags --libs` &&$0x&&rm $0x $0.cpp; exit
 #endif
 // © Alfredo A. Correa 2019
 
@@ -7,6 +7,8 @@
 #define MULTI_ADAPTORS_BLAS_SCAL_HPP
 
 #include "../blas/core.hpp"
+
+#include<cassert>
 
 #if __cplusplus>=201703L and __has_cpp_attribute(nodiscard)>=201603
 #define NODISCARD(MsG) [[nodiscard]]
@@ -45,6 +47,7 @@ auto scal(T a, X1D const& m)->std::decay_t<decltype(scal(a, decay(m)))>{
 #if _TEST_MULTI_ADAPTORS_BLAS_SCAL
 
 #include "../../array.hpp"
+
 #include<cassert>
 
 using std::cout;
