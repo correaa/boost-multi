@@ -48,7 +48,7 @@ struct array_types : Layout{
 //#endif
 	// typename std::iterator_traits<element_ptr>::reference 	//	typename pointer_traits<element_ptr>::element_type&
 	>;
-	HD element_ptr     base()   const{return base_;} //	element_const_ptr cbase() const{return base();}
+	element_ptr base() const HD{return base_;} //	element_const_ptr cbase() const{return base();}
 	friend element_ptr base(array_types const& s){return s.base();}
 	layout_t const& layout() const HD{return *this;}
 	friend layout_t const& layout(array_types const& s){return s.layout();}

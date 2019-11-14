@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&c++ -Wall -Wextra -Wpedantic -Wno-deprecated-declarations $0 -o $0x -lcudart -lcublas -lboost_unit_test_framework \
+(echo '#include"'$0'"'>$0.cpp)&&nvcc `#-Wall -Wextra -Wpedantic` -Xcompiler -Wno-deprecated-declarations $0 -o $0x -lcudart -lcublas -lboost_unit_test_framework \
 `pkg-config --cflags --libs blas` -lboost_timer &&$0x&&rm $0x $0.cpp; exit
 #endif
 // © Alfredo A. Correa 2019
@@ -40,8 +40,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_cuda_cpu){
 
 		BOOST_REQUIRE( C == Cgpu );
 
-		multi::cuda::managed::array<double, 2> const Amgpu = A;
-		multi::cuda::managed::array<double, 2> const Bmgpu = B;
+		multi::cuda::managed::array<double, 2> Amgpu = A;
+		multi::cuda::managed::array<double, 2> Bmgpu = B;
 		multi::cuda::managed::array<double, 2> Cmgpu({size(rotated(B)), size(A)});
 
 		using multi::blas::gemm;
@@ -49,6 +49,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_cuda_cpu){
 
 		BOOST_REQUIRE( C == Cmgpu );
 	}
+#if 1
 	{
 		using complex = std::complex<double>;
 		multi::array<complex, 2> const A = {
@@ -82,6 +83,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_cuda_cpu){
 
 		BOOST_REQUIRE( C == Cmgpu );
 	}
-
+#endif
 }
 

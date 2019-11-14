@@ -31,15 +31,15 @@ namespace memcpy_{
 template<typename Dest, typename Src, typename = decltype(memcpy_::type(Dest{}, Src{}))>
 Dest memcpy(Dest dest, Src src, std::size_t byte_count){
 //	assert( byte_count > 1000 );
-	[[maybe_unused]] cudaError_t const s = cudaMemcpy(
+	/*[[maybe_unused]]*/ cudaError_t const s = cudaMemcpy(
 		static_cast<void*>(dest), static_cast<void const*>(src), 
 		byte_count, static_cast<cudaMemcpyKind>(memcpy_::type(dest, src))
-	); assert(s == cudaSuccess);
+	); assert(s == cudaSuccess); (void)s;
 	return dest;
 }
 
 ptr<void> memset(ptr<void> dest, int ch, std::size_t byte_count){
-	[[maybe_unused]] cudaError_t s = cudaMemset(static_cast<void*>(dest), ch, byte_count); assert(s == cudaSuccess);
+	/*[[maybe_unused]]*/ cudaError_t s = cudaMemset(static_cast<void*>(dest), ch, byte_count); assert(s == cudaSuccess); (void)s;
 	return dest;
 }
 
@@ -50,6 +50,7 @@ ptr<void> memset(ptr<void> dest, int ch, std::size_t byte_count){
 #include<boost/timer/timer.hpp>
 #include<numeric>
 #include "../../adaptors/cuda/allocator.hpp"
+#include<boost/test/unit_test.hpp>
 
 namespace multi = boost::multi;
 namespace cuda = multi::memory::cuda;
@@ -70,6 +71,9 @@ int main(){
 	}
 	assert( p[n/2] == 99. );
 	assert( q[n/2] == 99. );
+
+	double a = 5.;
+	BOOST_REQUIRE(a == 6.);
 }
 #endif
 #endif

@@ -13,7 +13,11 @@ namespace memory{
 
 namespace cuda{
 	using size_t = Cuda::size_t;
+#if __cplusplus >= 201703L
+#if __has_cpp_attribute(nodiscard) >= 201603L
 	[[nodiscard]]
+#endif
+#endif
 	ptr<void> malloc(size_t bytes){return Cuda::malloc(bytes);}
 	void free(ptr<void> p){Cuda::free(p);}
 }

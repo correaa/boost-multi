@@ -37,7 +37,7 @@ namespace managed{
 			++allocator::n_allocations; allocator::bytes_allocated+=sizeof(T)*n;
 			return ret;
 		}
-		void deallocate(pointer p, size_type n){cuda::free(static_cast<managed::ptr<void>>(p));}
+		void deallocate(pointer p, size_type){cuda::free(static_cast<managed::ptr<void>>(p));}
 		template<class P, class... Args>
 		void construct(P p, Args&&... args){::new(p) T(std::forward<Args>(args)...);}
 		template<class P> void destroy(P p){p.rp_->~T();}

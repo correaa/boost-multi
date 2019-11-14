@@ -94,7 +94,7 @@ public:
 	std::true_type operator==(allocator<std::max_align_t> const&) const{return {};} // template explicit for nvcc
 	std::false_type operator!=(allocator<std::max_align_t> const&) const{return {};}
 	template<class P, class... Args>
-	void construct([[maybe_unused]] P p, Args&&...){assert(0);} // TODO investigate who is calling this
+	void construct(/*[[maybe_unused]]*/ P p, Args&&...){(void)p; assert(0);} // TODO investigate who is calling this
 	template<class P>
 	void destroy(P){} // TODO investigate who is calling this
 };

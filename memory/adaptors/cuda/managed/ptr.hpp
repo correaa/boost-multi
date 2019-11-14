@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&nvcc -Xcompiler -Wfatal-errors -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_PTR $0.cpp -o $0x &&$0x&&rm $0x; exit
+(echo '#include"'$0'"'>$0.cpp)&&nvcc --Werror=cross-execution-space-call -Xcompiler -Wfatal-errors -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_PTR $0.cpp -o $0x &&$0x&&rm $0x; exit
 #endif
 
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_PTR_HPP
@@ -33,7 +33,6 @@ namespace boost{namespace multi{
 namespace memory{namespace cuda{
 
 namespace managed{
-//template<class T> struct ref;
 
 template<typename T, typename Ptr = T*> struct ptr;
 
@@ -103,6 +102,7 @@ template<typename T, typename RawPtr>
 struct ptr{
 	using raw_pointer = RawPtr;
 protected:
+	friend struct cuda::ptr<T, RawPtr>; // to allow automatic conversions
 	raw_pointer rp_;
 	template<class TT> friend class allocator;
 	template<typename, typename> friend struct ptr;

@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 $0 -o $0x -lboost_unit_test_framework -D_DISABLE_CUDA_SLOW -lcudart &&$0x&&rm $0x; exit
+nvcc -x cu -O3 $0 -o $0x -lboost_unit_test_framework -D_DISABLE_CUDA_SLOW &&$0x&&rm $0x; exit
 #endif
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUDA allocators"
@@ -17,7 +17,9 @@ template<class T> T what(T&&) = delete;
 
 BOOST_AUTO_TEST_CASE(cuda_allocators){
 
-	multi::array<double, 1, cuda::allocator<double>> A1(200, 0.);
+	multi::array<double, 1, cuda::allocator<double> > A1(200, 0.);
+	using it = multi::array<double, 1, cuda::allocator<double> >::iterator;
+	it sss = begin(A1);
 	BOOST_REQUIRE( size(A1) == 200 );
 	A1[100] = 1.;
 //	what(A1.data());
