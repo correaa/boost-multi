@@ -6,6 +6,9 @@
 #ifndef MULTI_ADAPTORS_BLAS_CUDA_HPP
 #define MULTI_ADAPTORS_BLAS_CUDA_HPP
 
+#ifdef MULTI_ADAPTORS_BLAS_GEMM_HPP
+#error "blas/cuda.hpp must be included before blas/gemm.hpp"
+#endif
 //#include "../../utility.hpp"
 //#include "../../array.hpp" // allocating multi::arrays for output
 #include "../../memory/adaptors/cuda/ptr.hpp"

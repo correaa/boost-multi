@@ -1,6 +1,6 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&nvcc `#-Wall -Wextra -Wpedantic` -Xcompiler -Wno-deprecated-declarations $0 -o $0x -lcudart -lcublas -lboost_unit_test_framework \
-`pkg-config --cflags --libs blas` -lboost_timer &&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&nvcc -x cu `#-Wall -Wextra -Wpedantic` -D_DISABLE_CUDA_SLOW --expt-relaxed-constexpr --Werror=cross-execution-space-call -Xcompiler -Wno-deprecated-declarations $0 -o $0x -lcudart -lcublas -lboost_unit_test_framework \
+`pkg-config --cflags --libs blas`&&$0x&&rm $0x $0.cpp; exit
 #endif
 // © Alfredo A. Correa 2019
 
@@ -8,8 +8,8 @@
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
-#include "../../../adaptors/blas/cuda.hpp" // must be included before blas/gemm.hpp
-#include "../../../adaptors/blas/gemm.hpp"
+#include "../../../adaptors/blas/cuda.hpp"
+#include "../../../adaptors/blas.hpp"
 
 #include "../../../adaptors/cuda.hpp"
 #include "../../../array.hpp"
