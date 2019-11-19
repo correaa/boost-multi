@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_HERK .DCATCH_CONFIG_MAIN.o $0.cpp -o $0x \
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_HERK $0.cpp -o $0x -lboost_unit_test_framework \
 `pkg-config --cflags --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -liomp5` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
@@ -125,6 +125,11 @@ template<class A2D> auto herk(A2D const& a){return herk(1., a);}
 
 //#include "../blas/gemm.hpp" TODO: test herk againt gemm
 
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS gemm"
+#define BOOST_TEST_DYN_LINK
+#include<boost/test/unit_test.hpp>
+
+
 namespace multi = boost::multi;
 
 #include<catch.hpp>
@@ -148,7 +153,7 @@ template<class M> decltype(auto) print(M const& C){
 using complex = std::complex<double>;
 constexpr auto const I = complex{0., 1.};
 
-TEST_CASE("multi::blas::herk complex (real case)", "[report]"){
+BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_real_case){
 	multi::array<complex, 2> const a = {
 		{ 1., 3., 4.},
 		{ 9., 7., 1.}
@@ -159,14 +164,14 @@ TEST_CASE("multi::blas::herk complex (real case)", "[report]"){
 		multi::array<complex, 2> c({3, 3}, 9999.);
 		assert( size(c) == size(*begin(a)) );
 		herk(triangular::lower, operation::hermitian, 1., a, 0., c);//c†=c=a†a=(a†a)†, `c` in lower triangular
-		REQUIRE( c[2][1]==complex(19.,0.) );
-		REQUIRE( c[1][2]==9999. );
+		BOOST_REQUIRE( c[2][1]==complex(19.,0.) );
+		BOOST_REQUIRE( c[1][2]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.);
 		herk(triangular::upper, operation::hermitian, 1., a, 0., c);//c†=c=a†a=(a†a)†, `c` in lower triangular
-		REQUIRE( c[1][2]==complex(19.,0.) );
-		REQUIRE( c[2][1]==9999. );
+		BOOST_REQUIRE( c[1][2]==complex(19.,0.) );
+		BOOST_REQUIRE( c[2][1]==9999. );
 	}
 	{
 		multi::array<complex, 2> const a_rot = rotated(a);
@@ -174,12 +179,12 @@ TEST_CASE("multi::blas::herk complex (real case)", "[report]"){
 		multi::array<complex, 2> c({3, 3}, 9999.);
 		auto&& c_ = rotated(c);
 		herk(triangular::upper, operation::hermitian, 1., a_, 0., c_);//c_†=c_=a_†a_=(a_†a_)†, `c_` in lower triangular
-		REQUIRE( c_[1][2]==complex(19.,0.) );
-		REQUIRE( c_[2][1]==9999. );
+		BOOST_REQUIRE( c_[1][2]==complex(19.,0.) );
+		BOOST_REQUIRE( c_[2][1]==9999. );
 	}
 }
 
-TEST_CASE("multi::blas::herk complex basic transparent interface, special case", "[report]"){
+BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_basic_transparent_interface_special_case){
 	multi::array<complex, 2> const a = {
 		{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I}
 	};
@@ -189,11 +194,11 @@ TEST_CASE("multi::blas::herk complex basic transparent interface, special case",
 		multi::array<complex, 2> c({1, 1}, 9999.);
 		using multi::blas::herk;
 		herk(triangular::lower, complex_operation::identity, 1., a, 0., c); // c†=c=aa†, `a` and `c` are c-ordering, information in c lower triangular
-		REQUIRE( c[0][0]==complex(40., 0.) );
+		BOOST_REQUIRE( c[0][0]==complex(40., 0.) );
 	}
 }
 
-TEST_CASE("multi::blas::herk complex basic transparent interface", "[report]"){
+BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_basic_transparent_interface){
 	multi::array<complex, 2> const a = {
 		{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
 		{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
@@ -204,33 +209,33 @@ TEST_CASE("multi::blas::herk complex basic transparent interface", "[report]"){
 		multi::array<complex, 2> c({3, 3}, 9999.);
 		using multi::blas::herk;
 		herk(triangular::lower, complex_operation::hermitian, 1., a, 0., c); // c†=c=a†a=(a†a)†, information in `c` lower triangular
-		REQUIRE( c[2][1]==complex(41.,2.) );
-		REQUIRE( c[1][2]==9999. );
+		BOOST_REQUIRE( c[2][1]==complex(41.,2.) );
+		BOOST_REQUIRE( c[1][2]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.);
 		using multi::blas::herk;
 		herk(triangular::upper, complex_operation::hermitian, 1., a, 0., c); // c†=c=a†a=(a†a)†, `c` in upper triangular
-		REQUIRE( c[1][2]==complex(41., -2.) );
-		REQUIRE( c[2][1]==9999. );
+		BOOST_REQUIRE( c[1][2]==complex(41., -2.) );
+		BOOST_REQUIRE( c[2][1]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
 		using multi::blas::herk;
 		herk(triangular::lower, complex_operation::identity, 1., a, 0., c); // c†=c=aa†, `a` and `c` are c-ordering, information in c lower triangular
-		REQUIRE( c[1][0]==complex(50., -49.) );
-		REQUIRE( c[0][1]==9999. );
+		BOOST_REQUIRE( c[1][0]==complex(50., -49.) );
+		BOOST_REQUIRE( c[0][1]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
 		using multi::blas::herk;
 		herk(triangular::upper, complex_operation::identity, 1., a, 0., c); //c†=c=aa†, `c` in upper triangular
-		REQUIRE( c[0][1]==complex(50., 49.) );
-		REQUIRE( c[1][0]==9999. );
+		BOOST_REQUIRE( c[0][1]==complex(50., 49.) );
+		BOOST_REQUIRE( c[1][0]==9999. );
 	}
 }
 
-TEST_CASE("multi::blas::herk complex basic enum interface", "[report]"){
+BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_basic_enum_interface){
 	multi::array<complex, 2> const a = {
 		{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
 		{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
@@ -240,33 +245,33 @@ TEST_CASE("multi::blas::herk complex basic enum interface", "[report]"){
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.);
 		herk(triangular::lower, complex_operation::hermitian, 1., a, 0., c); //c†=c=a†a=(a†a)†, `c` in lower triangular
-		REQUIRE( c[2][1]==complex(41.,2.) );
-		REQUIRE( c[1][2]==9999. );
+		BOOST_REQUIRE( c[2][1]==complex(41.,2.) );
+		BOOST_REQUIRE( c[1][2]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.);
 		using namespace multi::blas;
 		herk(triangular::upper, complex_operation::hermitian, 1., a, 0., c); //c†=c=a†a=(a†a)†, `c` in upper triangular
-		REQUIRE( c[1][2]==complex(41., -2.) );
-		REQUIRE( c[2][1]==9999. );
+		BOOST_REQUIRE( c[1][2]==complex(41., -2.) );
+		BOOST_REQUIRE( c[2][1]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
 		using namespace multi::blas;
 		herk(triangular::lower, complex_operation::identity, 1., a, 0., c); // c†=c=aa†, `c` in lower triangular
-		REQUIRE( c[1][0]==complex(50., -49.) );
-		REQUIRE( c[0][1]==9999. );
+		BOOST_REQUIRE( c[1][0]==complex(50., -49.) );
+		BOOST_REQUIRE( c[0][1]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
 		using namespace multi::blas;
 		herk(triangular::upper, complex_operation::identity, 1., a, 0., c); // c†=c=aa†, `c` in upper triangular
-		REQUIRE( c[0][1]==complex(50., 49.) );
-		REQUIRE( c[1][0]==9999. );
+		BOOST_REQUIRE( c[0][1]==complex(50., 49.) );
+		BOOST_REQUIRE( c[1][0]==9999. );
 	}
 }
 
-TEST_CASE("multi::blas::herk complex basic explicit enum interface", "[report]"){
+BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_basic_explicit_enum_interface){
 	multi::array<complex, 2> const a = {
 		{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
 		{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
@@ -276,41 +281,41 @@ TEST_CASE("multi::blas::herk complex basic explicit enum interface", "[report]")
 		using multi::blas::triangular;
 		using multi::blas::complex_operation;
 		herk(triangular::lower, complex_operation::hermitian, 1., a, 0., c); // c†=c=a†a=(a†a)†, `c` in lower triangular
-		REQUIRE( c[2][1]==complex(41.,2.) );
-		REQUIRE( c[1][2]==9999. );
+		BOOST_REQUIRE( c[2][1]==complex(41.,2.) );
+		BOOST_REQUIRE( c[1][2]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.);
 		using multi::blas::triangular;
 		using multi::blas::complex_operation;
 		herk(triangular::upper, complex_operation::hermitian, 1., a, 0., c); // c†=c=a†a=(a†a)†, `c` in upper triangular
-		REQUIRE( c[1][2]==complex(41., -2.) );
-		REQUIRE( c[2][1]==9999. );
+		BOOST_REQUIRE( c[1][2]==complex(41., -2.) );
+		BOOST_REQUIRE( c[2][1]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
 		using namespace multi::blas;
 		herk(triangular::lower, complex_operation::identity, 1., a, 0., c); // c†=c=aa†=(aa†)†, `c` in lower triangular
-		REQUIRE( c[1][0]==complex(50., -49.) );
-		REQUIRE( c[0][1]==9999. );
+		BOOST_REQUIRE( c[1][0]==complex(50., -49.) );
+		BOOST_REQUIRE( c[0][1]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
 		using namespace multi::blas;
 		herk(triangular::upper, complex_operation::identity, 1., a, 0., c); // c†=c=aa†=(aa†)†, `c` in upper triangular
-		REQUIRE( c[0][1]==complex(50., 49.) );
-		REQUIRE( c[1][0]==9999. );
+		BOOST_REQUIRE( c[0][1]==complex(50., 49.) );
+		BOOST_REQUIRE( c[1][0]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
 		using namespace multi::blas;
 		herk(triangular::upper, complex_operation::identity, 1., a, 0., c); // c†=c=aa†=(aa†)†, `c` in upper triangular
-		REQUIRE( c[0][1]==complex(50., 49.) );
-		REQUIRE( c[1][0]==9999. );
+		BOOST_REQUIRE( c[0][1]==complex(50., 49.) );
+		BOOST_REQUIRE( c[1][0]==9999. );
 	}
 }
 
-TEST_CASE("multi::blas::herk complex automatic operator interface", "[report]"){
+BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_automatic_operator_interface){
 	multi::array<complex, 2> const a = {
 		{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
 		{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
@@ -320,19 +325,19 @@ TEST_CASE("multi::blas::herk complex automatic operator interface", "[report]"){
 		using multi::blas::triangular;
 		using multi::blas::hermitized;
 		herk(triangular::lower, 1., hermitized(a), 0., c); // c=c†=a†a, `c` in lower triangular
-		REQUIRE( c[2][1]==complex(41., 2.) );
-		REQUIRE( c[1][2]==9999. );
+		BOOST_REQUIRE( c[2][1]==complex(41., 2.) );
+		BOOST_REQUIRE( c[1][2]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
 		using multi::blas::triangular;
 		herk(triangular::lower, 1., a, 0., c); // c=c†=aa†, `c` in lower triangular
-		REQUIRE( c[1][0]==complex(50., -49.) );
-		REQUIRE( c[0][1]==9999. );
+		BOOST_REQUIRE( c[1][0]==complex(50., -49.) );
+		BOOST_REQUIRE( c[0][1]==9999. );
 	}
 }
 
-TEST_CASE("multi::blas::herk complex automatic operator interface implicit no-sum", "[report]"){
+BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_automatic_operator_interface_implicit_no_sum){
 	multi::array<complex, 2> const a = {
 		{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
 		{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
@@ -342,21 +347,21 @@ TEST_CASE("multi::blas::herk complex automatic operator interface implicit no-su
 		using multi::blas::triangular;
 		using multi::blas::hermitized;
 		herk(triangular::lower, 1., hermitized(a), c); // c=c†=a†a, `c` in lower triangular
-		REQUIRE( c[2][1]==complex(41., 2.) );
-		REQUIRE( c[1][2]==9999. );
+		BOOST_REQUIRE( c[2][1]==complex(41., 2.) );
+		BOOST_REQUIRE( c[1][2]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
 		using multi::blas::triangular;
 		herk(triangular::lower, 1., a, c); // c=c†=aa†, `c` in lower triangular
-		REQUIRE( c[1][0]==complex(50., -49.) );
-		REQUIRE( c[0][1]==9999. );
+		BOOST_REQUIRE( c[1][0]==complex(50., -49.) );
+		BOOST_REQUIRE( c[0][1]==9999. );
 	}
 }
 
 template<class T> void what(T&&);
 
-TEST_CASE("multi::blas::herk complex automatic ordering and symmetrization", "[report]"){
+BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_automatic_ordering_and_symmetrization){
 
 	multi::array<complex, 2> const a = {
 		{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
@@ -366,48 +371,48 @@ TEST_CASE("multi::blas::herk complex automatic ordering and symmetrization", "[r
 		multi::array<complex, 2> c({3, 3}, 9999.);
 		using multi::blas::hermitized;
 		herk(1., hermitized(a), c); // c†=c=a†a
-		REQUIRE( c[2][1]==complex(41.,  2.) );
-		REQUIRE( c[1][2]==complex(41., -2.) );
+		BOOST_REQUIRE( c[2][1]==complex(41.,  2.) );
+		BOOST_REQUIRE( c[1][2]==complex(41., -2.) );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
 		using multi::blas::herk;
 		herk(1., a, c); // c†=c=aa†
-		REQUIRE( c[1][0] == complex(50., -49.) );
-		REQUIRE( c[0][1] == complex(50., +49.) );
+		BOOST_REQUIRE( c[1][0] == complex(50., -49.) );
+		BOOST_REQUIRE( c[0][1] == complex(50., +49.) );
 	}
 	{
 		using multi::blas::herk;
 		multi::array<complex, 2> c = herk(1., a); // c†=c=aa†
-		REQUIRE( c[1][0] == complex(50., -49.) );
-		REQUIRE( c[0][1] == complex(50., +49.) );
+		BOOST_REQUIRE( c[1][0] == complex(50., -49.) );
+		BOOST_REQUIRE( c[0][1] == complex(50., +49.) );
 	}
 	{
 		using multi::blas::herk;
 		using multi::blas::hermitized;
 		multi::array<complex, 2> c = herk(1., hermitized(a)); // c†=c=a†a
 
-		REQUIRE( size(hermitized(a))==3 );		
-		REQUIRE( c[2][1] == complex(41., +2.) );
-		REQUIRE( c[1][2] == complex(41., -2.) );
+		BOOST_REQUIRE( size(hermitized(a))==3 );		
+		BOOST_REQUIRE( c[2][1] == complex(41., +2.) );
+		BOOST_REQUIRE( c[1][2] == complex(41., -2.) );
 	}
 	{
 		using multi::blas::herk;
 		multi::array<complex, 2> c = herk(a); // c†=c=a†a
 //		what(multi::pointer_traits<decltype(base(a))>::default_allocator_of(base(a)));
-		REQUIRE( c[1][0] == complex(50., -49.) );
-		REQUIRE( c[0][1] == complex(50., +49.) );
+		BOOST_REQUIRE( c[1][0] == complex(50., -49.) );
+		BOOST_REQUIRE( c[0][1] == complex(50., +49.) );
 	}
 	{
 		using multi::blas::herk;
 		using multi::blas::hermitized;
 		multi::array<complex, 2> c = herk(hermitized(a)); // c†=c=a†a
-		REQUIRE( c[2][1] == complex(41., +2.) );
-		REQUIRE( c[1][2] == complex(41., -2.) );
+		BOOST_REQUIRE( c[2][1] == complex(41., +2.) );
+		BOOST_REQUIRE( c[1][2] == complex(41., -2.) );
 	}
 }
 
-TEST_CASE("multi::blas::herk complex automatic ordering and symmetrization real case", "[report]"){
+BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_automatic_ordering_and_symmetrization_real_case){
 
 	multi::array<complex, 2> const a = {
 		{ 1., 3., 4.},
@@ -417,47 +422,47 @@ TEST_CASE("multi::blas::herk complex automatic ordering and symmetrization real 
 		multi::array<complex, 2> c({3, 3}, 9999.);
 		using multi::blas::hermitized;
 		herk(1., hermitized(a), c); // c†=c=a†a
-		REQUIRE( c[2][1]==19. );
-		REQUIRE( c[1][2]==19. );
+		BOOST_REQUIRE( c[2][1]==19. );
+		BOOST_REQUIRE( c[1][2]==19. );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
 		using multi::blas::herk;
 		herk(1., a, c); // c†=c=aa†
-		REQUIRE( c[1][0] == 34. );
-		REQUIRE( c[0][1] == 34. );
+		BOOST_REQUIRE( c[1][0] == 34. );
+		BOOST_REQUIRE( c[0][1] == 34. );
 	}
 	{
 		using multi::blas::herk;
 		multi::array<complex, 2> c = herk(1., a); // c†=c=aa†
-		REQUIRE( c[1][0] == 34. );
-		REQUIRE( c[0][1] == 34. );
+		BOOST_REQUIRE( c[1][0] == 34. );
+		BOOST_REQUIRE( c[0][1] == 34. );
 	}
 	{
 		using multi::blas::herk;
 		using multi::blas::hermitized;
 		multi::array<complex, 2> c = herk(1., hermitized(a)); // c†=c=a†a
 
-		REQUIRE( size(hermitized(a))==3 );		
-		REQUIRE( c[2][1]==19. );
-		REQUIRE( c[1][2]==19. );
+		BOOST_REQUIRE( size(hermitized(a))==3 );		
+		BOOST_REQUIRE( c[2][1]==19. );
+		BOOST_REQUIRE( c[1][2]==19. );
 	}
 	{
 		using multi::blas::herk;
 		multi::array<complex, 2> c = herk(a); // c†=c=a†a
-		REQUIRE( c[1][0] == 34. );
-		REQUIRE( c[0][1] == 34. );
+		BOOST_REQUIRE( c[1][0] == 34. );
+		BOOST_REQUIRE( c[0][1] == 34. );
 	}
 	{
 		using multi::blas::herk;
 		using multi::blas::hermitized;
 		multi::array<complex, 2> c = herk(hermitized(a)); // c†=c=a†a
-		REQUIRE( c[2][1]==19. );
-		REQUIRE( c[1][2]==19. );
+		BOOST_REQUIRE( c[2][1]==19. );
+		BOOST_REQUIRE( c[1][2]==19. );
 	}
 }
 
-TEST_CASE("multi::blas::herk real automatic ordering and symmetrization real case", "[report]"){
+BOOST_AUTO_TEST_CASE(multi_blas_herk_real_automatic_ordering_and_symmetrization_real_case){
 
 	multi::array<double, 2> const a = {
 		{ 1., 3., 4.},
@@ -468,28 +473,28 @@ TEST_CASE("multi::blas::herk real automatic ordering and symmetrization real cas
 		using multi::blas::hermitized;
 		using multi::blas::herk;
 		herk(1., hermitized(a), c); // c†=c=a†a
-		REQUIRE( c[2][1]==19. );
-		REQUIRE( c[1][2]==19. );
+		BOOST_REQUIRE( c[2][1]==19. );
+		BOOST_REQUIRE( c[1][2]==19. );
 	}
 	{
 		multi::array<double, 2> c({2, 2}, 9999.);
 		using multi::blas::herk;
 		herk(1., a, c); // c†=c=aa†
-		REQUIRE( c[1][0] == 34. );
-		REQUIRE( c[0][1] == 34. );
+		BOOST_REQUIRE( c[1][0] == 34. );
+		BOOST_REQUIRE( c[0][1] == 34. );
 	}
 	{
 		multi::array<double, 2> c({2, 2}, 9999.);
 		using multi::blas::herk;
 		herk(1., a, c); // c†=c=aa†
-		REQUIRE( c[1][0] == 34. );
-		REQUIRE( c[0][1] == 34. );
+		BOOST_REQUIRE( c[1][0] == 34. );
+		BOOST_REQUIRE( c[0][1] == 34. );
 	}
 	{
 		using multi::blas::herk;
 		multi::array<double, 2> c = herk(1., a); // c†=c=aa†
-		REQUIRE( c[1][0] == 34. );
-		REQUIRE( c[0][1] == 34. );
+		BOOST_REQUIRE( c[1][0] == 34. );
+		BOOST_REQUIRE( c[0][1] == 34. );
 	}
 #if 0
 	{
@@ -497,28 +502,27 @@ TEST_CASE("multi::blas::herk real automatic ordering and symmetrization real cas
 		using multi::blas::hermitized;
 		multi::array<complex, 2> c = herk(1., hermitized(a)); // c†=c=a†a
 
-		REQUIRE( size(hermitized(a))==3 );		
+		BOOST_REQUIRE( size(hermitized(a))==3 );		
 		REQUIRE( c[2][1]==19. );
 		REQUIRE( c[1][2]==19. );
 	}
 	{
 		using multi::blas::herk;
 		multi::array<complex, 2> c = herk(a); // c†=c=a†a
-		REQUIRE( c[1][0] == 34. );
-		REQUIRE( c[0][1] == 34. );
+		BOOST_REQUIRE( c[1][0] == 34. );
+		BOOST_REQUIRE( c[0][1] == 34. );
 	}
 	{
 		using multi::blas::herk;
 		using multi::blas::hermitized;
 		multi::array<complex, 2> c = herk(hermitized(a)); // c†=c=a†a
-		REQUIRE( c[2][1]==19. );
-		REQUIRE( c[1][2]==19. );
+		BOOST_REQUIRE( c[2][1]==19. );
+		BOOST_REQUIRE( c[1][2]==19. );
 	}
 #endif
 }
 
-
-TEST_CASE("multi::blas::herk real case", "[report]"){
+BOOST_AUTO_TEST_CASE(multi_blas_herk_real_case){
 	multi::array<double, 2> const a = {
 		{ 1., 3., 4.},
 		{ 9., 7., 1.}
@@ -545,14 +549,14 @@ TEST_CASE("multi::blas::herk real case", "[report]"){
 		using multi::blas::herk;
 		using multi::blas::hermitized;
 		auto&& aa = hermitized(a);
-		REQUIRE( aa == multi::blas::transposed(a) );
+		BOOST_REQUIRE( aa == multi::blas::transposed(a) );
 		static_assert( not boost::multi::blas::is_complex_array<std::decay_t<decltype(aa)>>{} , "!");
 
 		multi::array<double, 2> c = herk(hermitized(a));//c†=c=aa†=(aa†)†, `c` in lower triangular
 	}
 }
 
-TEST_CASE("multi::blas::herk complex timing", "[report]"){
+BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_timing){
 	multi::array<complex, 2> const a({4000, 4000}); std::iota(data_elements(a), data_elements(a) + num_elements(a), 0.2);
 	multi::array<complex, 2> c({4000, 4000}, 9999.);
 	boost::timer::auto_cpu_timer t;

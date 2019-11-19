@@ -15,94 +15,181 @@ namespace boost{
 namespace multi{
 namespace blas{
 
-struct op{enum : char{N='N', T='T', C='C'};};
+using multi::blas::core::gemm;
 
-//struct conj{template<class T> auto operator()(T const& t) const{using std::conj; return conj(t);}};
-
-template<class Op, class AA, class BB, class It1, class Size1, class It2, class Size2, class Out>
-auto gemm_n(
-	Op opA, Op opB, AA const& a, 
-	It1 Af, Size1 An, It2 Bf, Size2 Bn, BB const& b, 
-	Out Cf
-){
-	assert( Af->stride() == 1 );
-	assert( Bf->stride() == 1 );
-	assert( Cf->stride() == 1 );
-	switch(opA){
-	case op::N: assert( Cf->size() == Af->size() );
-		switch(opB){
-		case op::N:
-			gemm(opA, opB, Cf->size(), Bn, An, a, base(Af), stride(Af), base(Bf), stride(Bf), b, base(Cf), stride(Cf));
-			return Cf + Bn;
-		case op::T: case op::C:
-			gemm(opA, opB, Cf->size(), Bn, An, a, base(Af), stride(Af), base(Bf), stride(Bf), b, base(Cf), stride(Cf));
-			return Cf + Bf->size();
-		}
-	case op::T: case op::C: // assert( Cf->size() == An );
-		switch(opB){
-		case op::N:
-			gemm(op::N, op::T, Cf->size(), Cf->size(), Bn, a, base(Af), stride(Af), base(Bf), stride(Bf), b, base(Cf), stride(Cf));
-			return Cf + Bn;
-		case op::T: case op::C:
-			gemm(opA, opB, Cf->size(), An, Bn, a, base(Af), stride(Af), base(Bf), stride(Bf), b, base(Cf), stride(Cf));
-			return Cf + Bf->size();
-		}
-	}
-	assert(0);
-	return Cf;
-}
-
-template<class AA, class BB, class A2D, class B2D, class C2D>
-decltype(auto) gemm(real_operation a_op, real_operation b_op, AA alpha, A2D const& A, B2D const& B, BB beta, C2D&& C){
+template<class AA, class BB, class A2D, class B2D, class C2D>//, typename = std::enable_if_t<not is_complex_array<std::decay_t<C2D>>{}> >
+auto gemm(real_operation a_op, real_operation b_op, AA alpha, A2D const& A, B2D const& B, BB beta, C2D&& C)
+->decltype(gemm('N', 'N', size(C[0]), size(A), size(B), alpha, base(B), stride(B), base(A), stride(A), beta, base(C), stride(C)), std::forward<C2D&&>(C))
+{
+	assert( stride(rotated(A))== 1 );
+	assert( stride(rotated(B))== 1 );
+	assert( stride(rotated(C))== 1 );
 	[&](){switch(a_op){
 		case real_operation::identity: switch(b_op){
-			case real_operation::identity: return gemm('N', 'N', size(C[0]), size(B), size(A), alpha, base(B), stride(B), base(A), stride(A), beta, base(C), stride(C));
-			case real_operation::transposition: assert(0);
+			case real_operation::identity: 
+				assert( size(C) == size(A) );
+				assert( std::get<1>(sizes(B)) == std::get<1>(sizes(C)) );
+				return gemm('N', 'N', size(C[0]), size(A), size(B), alpha, base(B), stride(B), base(A), stride(A), beta, base(C), stride(C));
+			case real_operation::transposition: 
+				assert( size(C) == size(A) );
+				assert( size(B) == std::get<1>(sizes(C)) );
+				return gemm('T', 'N', size(C[0]), size(A), size(B[0]), alpha, base(B), stride(B), base(A), stride(A), beta, base(C), stride(C));				
 		}
-		case real_operation::transposition: assert(0);
+		case real_operation::transposition: switch(b_op){
+			case real_operation::identity: 
+				assert( size(C) == size(rotated(A)) );
+				assert( std::get<1>(sizes(B)) == std::get<1>(sizes(C)) );
+				return gemm('N', 'T', size(C[0]), size(A[0]), size(B), alpha, base(B), stride(B), base(A), stride(A), beta, base(C), stride(C));
+			case real_operation::transposition: 
+				assert( size(C) == size(rotated(A)) );
+				assert( size(B) == std::get<1>(sizes(C)) );
+				return gemm('T', 'T', size(C[0]), size(A[0]), size(B[0]), alpha, base(B), stride(B), base(A), stride(A), beta, base(C), stride(C));
+		}
 	};}();
+	return std::forward<C2D>(C);
 }
 
-template<class Op, class AA, class BB, class A2D, class B2D, class C2D>
-decltype(auto) gemm(Op opA, Op opB, AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
-//	gemm_n(opA, opB, a, begin(A), size(A), begin(B), size(B), b, begin(C));
-//	return std::forward<C2D>(C);
-#if 1
-	using std::begin;
-	assert(stride(A[0]) == 1 and stride(B[0])==1 and stride(C[0])==1);
-	if((opA == 'T' or opA == 'C') and (opB == 'T' or opB == 'C')){ // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
-		assert(size(A[0]) == size(B) and size(A)==size(C[0]) and size(B[0]) == size(C));
-		gemm(opA, opB, size(A), size(C), size(B), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
-		return std::forward<C2D>(C);
-	}
-	if(opA == 'N' and (opB == 'T' or opB == 'C')){
-		assert(size(A) == size(B) and size(A[0])==size(C[0]) and size(B[0]) == size(C));
-		gemm(opA, opB, size(A[0]), size(C), size(B), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
-		return std::forward<C2D>(C);
-	}
-	if((opA == 'T' or opA == 'C') and (opB == 'N')){
-		assert(size(A[0]) == size(B[0]) and size(A)==size(C[0]) and size(B) == size(C));
-		gemm(opA, opB, size(A), size(C), size(B[0]), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
-		return std::forward<C2D>(C);
-	}
-	if((opA == 'N') and (opB == 'N')){
-		assert(size(A) == size(B[0]) and size(A[0])==size(C[0]) and size(B) == size(C));
-		gemm(opA, opB, size(A[0]), size(C), size(B[0]), a, base(A), stride(A), base(B), stride(B), b, base(C), stride(C));
-		return std::forward<C2D>(C);
-	}
-	assert(0);
-	return std::forward<C2D>(C);
-#endif
+template<class AA, class BB, class A2D, class B2D, class C2D, typename = std::enable_if_t<is_complex_array<std::decay_t<C2D>>{}> >
+auto gemm(complex_operation a_op, complex_operation b_op, AA alpha, A2D const& A, B2D const& B, BB beta, C2D&& C)
+->decltype(gemm('N', 'N', size(C[0]), size(A), size(B), alpha, base(B), stride(B), base(A), stride(A), beta, base(C), stride(C)), std::forward<C2D&&>(C))
+{
+	using multi::blas::core::gemm;
+	assert( stride(rotated(A))== 1 );
+	assert( stride(rotated(B))== 1 );
+	assert( stride(rotated(C))== 1 );
+	[&](){switch(a_op){
+		case complex_operation::identity: switch(b_op){
+			case complex_operation::identity: 
+				assert( size(C) == size(A) );
+				assert( std::get<1>(sizes(B)) == std::get<1>(sizes(C)) );
+				return gemm('N', 'N', size(C[0]), size(A), size(B), alpha, base(B), stride(B), base(A), stride(A), beta, base(C), stride(C));
+			case complex_operation::hermitian: 
+				assert( size(C) == size(A) );
+				assert( size(B) == std::get<1>(sizes(C)) );
+				return gemm('C', 'N', size(C[0]), size(A), size(B[0]), alpha, base(B), stride(B), base(A), stride(A), beta, base(C), stride(C));				
+		}
+		case complex_operation::hermitian: switch(b_op){
+			case complex_operation::identity: 
+				assert( size(C) == size(rotated(A)) );
+				assert( std::get<1>(sizes(B)) == std::get<1>(sizes(C)) );
+				return gemm('N', 'C', size(C[0]), size(A[0]), size(B), alpha, base(B), stride(B), base(A), stride(A), beta, base(C), stride(C));
+			case complex_operation::hermitian: 
+				assert( size(C) == size(rotated(A)) );
+				assert( size(B) == std::get<1>(sizes(C)) );
+				return gemm('C', 'C', size(C[0]), size(A[0]), size(B[0]), alpha, base(B), stride(B), base(A), stride(A), beta, base(C), stride(C));
+		}
+	};}();
+	return std::forward<C2D>(C);	
 }
+
+template<class AA, class BB, class A2D, class B2D, class C2D, typename = std::enable_if_t<is_complex_array<std::decay_t<C2D>>{}> >
+auto gemm(real_operation a_op, complex_operation b_op, AA alpha, A2D const& A, B2D const& B, BB beta, C2D&& C)
+->decltype(gemm('N', 'N', size(C[0]), size(A), size(B), alpha, base(B), stride(B), base(A), stride(A), beta, base(C), stride(C)), std::forward<C2D&&>(C))
+{
+	using multi::blas::core::gemm;
+	assert( stride(rotated(A))== 1 );
+	assert( stride(rotated(B))== 1 );
+	assert( stride(rotated(C))== 1 );
+	[&](){switch(a_op){
+		case real_operation::identity: switch(b_op){
+			case complex_operation::identity: 
+				assert( size(C) == size(A) );
+				assert( std::get<1>(sizes(B)) == std::get<1>(sizes(C)) );
+				return gemm('N', 'N', size(C[0]), size(A), size(B), alpha, base(B), stride(B), base(A), stride(A), beta, base(C), stride(C));
+			case complex_operation::hermitian: 
+				assert( size(C) == size(A) );
+				assert( size(B) == std::get<1>(sizes(C)) );
+				return gemm('C', 'N', size(C[0]), size(A), size(B[0]), alpha, base(B), stride(B), base(A), stride(A), beta, base(C), stride(C));				
+		}
+		case real_operation::transposition: switch(b_op){
+			case complex_operation::identity: 
+				assert( size(C) == size(rotated(A)) );
+				assert( std::get<1>(sizes(B)) == std::get<1>(sizes(C)) );
+				return gemm('N', 'T', size(C[0]), size(A[0]), size(B), alpha, base(B), stride(B), base(A), stride(A), beta, base(C), stride(C));
+			case complex_operation::hermitian: 
+				assert( size(C) == size(rotated(A)) );
+				assert( size(B) == std::get<1>(sizes(C)) );
+				return gemm('C', 'T', size(C[0]), size(A[0]), size(B[0]), alpha, base(B), stride(B), base(A), stride(A), beta, base(C), stride(C));
+		}
+	};}();
+	return std::forward<C2D>(C);	
+}
+
+template<class AA, class BB, class A2D, class B2D, class C2D, typename = std::enable_if_t<is_complex_array<std::decay_t<C2D>>{}> >
+auto gemm(complex_operation a_op, real_operation b_op, AA alpha, A2D const& A, B2D const& B, BB beta, C2D&& C)
+->decltype(gemm('N', 'N', size(C[0]), size(A), size(B), alpha, base(B), stride(B), base(A), stride(A), beta, base(C), stride(C)), std::forward<C2D&&>(C))
+{
+	using multi::blas::core::gemm;
+	assert( stride(rotated(A))== 1 );
+	assert( stride(rotated(B))== 1 );
+	assert( stride(rotated(C))== 1 );
+	[&](){switch(a_op){
+		case complex_operation::identity: switch(b_op){
+			case real_operation::identity: 
+				assert( size(C) == size(A) );
+				assert( std::get<1>(sizes(B)) == std::get<1>(sizes(C)) );
+				return gemm('N', 'N', size(C[0]), size(A), size(B), alpha, base(B), stride(B), base(A), stride(A), beta, base(C), stride(C));
+			case real_operation::transposition: 
+				assert( size(C) == size(A) );
+				assert( size(B) == std::get<1>(sizes(C)) );
+				return gemm('T', 'N', size(C[0]), size(A), size(B[0]), alpha, base(B), stride(B), base(A), stride(A), beta, base(C), stride(C));				
+		}
+		case complex_operation::hermitian: switch(b_op){
+			case real_operation::identity: 
+				assert( size(C) == size(rotated(A)) );
+				assert( std::get<1>(sizes(B)) == std::get<1>(sizes(C)) );
+				return gemm('N', 'T', size(C[0]), size(A[0]), size(B), alpha, base(B), stride(B), base(A), stride(A), beta, base(C), stride(C));
+			case real_operation::transposition: 
+				assert( size(C) == size(rotated(A)) );
+				assert( size(B) == std::get<1>(sizes(C)) );
+				return gemm('C', 'T', size(C[0]), size(A[0]), size(B[0]), alpha, base(B), stride(B), base(A), stride(A), beta, base(C), stride(C));
+		}
+	};}();
+	return std::forward<C2D>(C);
+}
+
+template<class M> bool is_c_ordering(M const& m){return stride(rotated(m))==1;}
 
 template<class AA, class BB, class A2D, class B2D, class C2D>
 decltype(auto) gemm(AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
-	if(stride(*begin(A)) == 1 and stride(*begin(B))==1 and stride(*begin(C))==1){
-		assert( size(A) == size(rotated(C)) );
-		assert( size(rotated(B)) == size(C) );
-		return gemm('T', 'T', a, A, B, b, C);
+	assert( stride(rotated(C)) == 1 );
+	if constexpr(not multi::blas::is_hermitized<A2D>{} and not multi::blas::is_hermitized<B2D>{}){
+		gemm(
+			is_c_ordering(A)?real_operation::identity:real_operation::transposition, 
+			is_c_ordering(B)?real_operation::identity:real_operation::transposition, 
+			a, 
+			is_c_ordering(A)?rotated(rotated(A)):rotated(A), 
+			is_c_ordering(B)?rotated(rotated(B)):rotated(B), 
+			b, C
+		);
+	}else if(multi::blas::is_hermitized<A2D>{} and not multi::blas::is_hermitized<B2D>{}){
+		gemm(
+			is_c_ordering(A)?complex_operation::identity:complex_operation::hermitian, 
+			is_c_ordering(B)?complex_operation::identity:complex_operation::hermitian, 
+			a, 
+			is_c_ordering(A)?conjugated(A):rotated(conjugated(A)), 
+			is_c_ordering(B)?rotated(rotated(B)):rotated(B), 
+			b, C
+		);
+	}else if(not multi::blas::is_hermitized<A2D>{} and multi::blas::is_hermitized<B2D>{}){
+		gemm(
+			is_c_ordering(A)?complex_operation::identity:complex_operation::hermitian, 
+			is_c_ordering(B)?complex_operation::identity:complex_operation::hermitian, 
+			a, 
+			is_c_ordering(A)?rotated(rotated(A)):rotated(A), 
+			is_c_ordering(B)?conjugated(B):rotated(conjugated(B)), 
+			b, C
+		);
+	}else if(multi::blas::is_hermitized<A2D>{} and multi::blas::is_hermitized<B2D>{}){
+		gemm(
+			is_c_ordering(A)?complex_operation::identity:complex_operation::hermitian, 
+			is_c_ordering(B)?complex_operation::identity:complex_operation::hermitian, 
+			a, 
+			is_c_ordering(A)?conjugated(A):rotated(conjugated(A)), 
+			is_c_ordering(B)?conjugated(B):rotated(conjugated(B)), 
+			b, C
+		);
 	}
-	assert(0);
 	return std::forward<C2D>(C);
 }
 
@@ -125,12 +212,11 @@ decltype(auto) gemm(AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
 #include<numeric>
 #include<algorithm>
 
-using std::cout;
-using std::cerr;
 
 namespace multi = boost::multi;
 
 template<class M> decltype(auto) print(M const& C){
+	using std::cout;
 	using multi::size;
 	for(int i = 0; i != size(C); ++i){
 		for(int j = 0; j != size(C[i]); ++j)
@@ -140,8 +226,7 @@ template<class M> decltype(auto) print(M const& C){
 	return cout<<std::endl;
 }
 
-
-BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_implementation){
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_square_implementation){
 	multi::array<double, 2> const a = {
 		{ 1., 3.},
 		{ 9., 7.},
@@ -152,20 +237,372 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_implementation){
 	};
 	{
 		multi::array<double, 2> c({2, 2});
-		using multi::blas::real_operation;
-		gemm(real_operation::identity, real_operation::identity, 1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
+		using multi::blas::operation;
+		gemm(operation::identity, operation::identity, 1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
 		BOOST_REQUIRE( c[1][1] == 241. );
-		BOOST_REQUIRE( multi::blas::operation{real_operation::identity} == real_operation::identity );
+		using multi::blas::real_operation;
+		BOOST_REQUIRE( operation{real_operation::identity} == operation::identity );
 	}
 	{
-//		multi::array<double, 2> c({2, 2});
-//		using multi::blas::real_operation;	
+		multi::array<double, 2> c({2, 2});
+		using multi::blas::operation;
+		gemm(operation::identity, operation::transposition, 1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][1] == 196. );
+		using multi::blas::real_operation;
+		BOOST_REQUIRE( operation{real_operation::identity} == operation::identity );
+	}
+	{
+		multi::array<double, 2> c({2, 2});
+		using multi::blas::operation;
+		gemm(operation::transposition, operation::identity, 1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE(( c[1][1] == 169. and c[1][0] == 82. ));
+		using multi::blas::real_operation;
+		BOOST_REQUIRE( operation{real_operation::identity} == operation::identity );
+	}
+	{
+		multi::array<double, 2> c({2, 2});
+		using multi::blas::operation;
+		gemm(operation::transposition, operation::transposition, 1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][1] == 154. );
+		using multi::blas::real_operation;
+		BOOST_REQUIRE( operation{real_operation::identity} == operation::identity );
 	}
 }
 
-BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_implementation, *boost::unit_test::disabled()){
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_implementation){
+	multi::array<double, 2> const a = {
+		{ 1., 3., 1.},
+		{ 9., 7., 1.},
+	};
+	multi::array<double, 2> const b = {	
+		{ 11., 12., 1.},
+		{  7., 19., 1.},
+		{  1.,  1., 1.}
+	};
+	{
+		multi::array<double, 2> c({2, 3});
+		using multi::blas::real_operation;
+		gemm(real_operation::identity, real_operation::identity, 1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][2] == 17. );
+	}
+}
 
-	using complex = std::complex<double>;
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare2_implementation){
+	multi::array<double, 2> const a = {
+		{ 1., 3.},
+		{ 9., 7.},
+		{ 1., 1.}
+	};
+	multi::array<double, 2> const b = {	
+		{ 11., 12.},
+		{  7., 19.}
+	};
+	{
+		multi::array<double, 2> c({3, 2});
+		using multi::blas::real_operation;
+		gemm(real_operation::identity, real_operation::identity, 1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[2][1] == 31. );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare3_implementation){
+	multi::array<double, 2> const a = {
+		{ 1., 9., 1.},
+		{ 3., 7., 1.}
+	};
+	multi::array<double, 2> const b = {	
+		{ 11., 12.},
+		{  7., 19.}
+	};
+	{
+		multi::array<double, 2> c({3, 2});
+		using multi::blas::real_operation;
+		gemm(real_operation::transposition, real_operation::identity, 1., a, b, 0., c); // c=a⸆b, c⸆=b⸆a
+		BOOST_REQUIRE( c[2][1] == 31. );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_square_implementation){
+	using complex = std::complex<double>; constexpr complex I{0,1};
+	multi::array<complex, 2> const a = {
+		{ 1. + 2.*I, 3. - 3.*I},
+		{ 9. + 1.*I, 7. + 4.*I},
+	};
+	multi::array<complex, 2> const b = {	
+		{ 11. + 1.*I, 12. + 1.*I},
+		{  7. + 8.*I, 19. - 2.*I},
+	};
+	{
+		multi::array<complex, 2> c({2, 2});
+		using multi::blas::real_operation;
+		gemm(real_operation::identity, real_operation::identity, 1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][0] == complex(115, 104) );
+	}
+	{
+		multi::array<complex, 2> c({2, 2});
+		using multi::blas::real_operation;
+		gemm(real_operation::identity, real_operation::transposition, 1., a, b, 0., c); // c=ab⸆, c⸆=ba⸆
+		BOOST_REQUIRE( c[1][0] == complex(178, 75) );
+	}
+	{
+		multi::array<complex, 2> c({2, 2});
+		using multi::blas::real_operation;
+		gemm(real_operation::transposition, real_operation::identity, 1., a, b, 0., c); // c=a⸆b, c⸆=b⸆a
+		BOOST_REQUIRE(( c[1][1] == complex(180, 29) and c[1][0] == complex(53, 54) ));
+	}
+	{
+		multi::array<complex, 2> c({2, 2});
+		using multi::blas::real_operation;
+		gemm(real_operation::transposition, real_operation::transposition, 1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE(( c[1][1] == complex(186, 65) and c[1][0] == complex(116, 25) ));
+	}
+	{
+		multi::array<complex, 2> c({2, 2});
+		using multi::blas::complex_operation;
+		gemm(complex_operation::identity, complex_operation::identity, 1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][0] == complex(115, 104) );
+	}
+	{
+		multi::array<complex, 2> c({2, 2});
+		using multi::blas::complex_operation;
+		gemm(complex_operation::hermitian, complex_operation::identity, 1., a, b, 0., c); // c=a†b, c†=b†a
+		BOOST_REQUIRE( c[1][0] == complex(111, 64) and c[1][1] == complex(158, -51) );
+	}
+	{
+		multi::array<complex, 2> c({2, 2});
+		using multi::blas::complex_operation;
+		gemm(complex_operation::identity, complex_operation::hermitian, 1., a, b, 0., c); // c=ab†, c†=ba†
+		BOOST_REQUIRE( c[1][0] == complex(188, 43) and c[1][1] == complex(196, 25) );
+	}
+	{
+		multi::array<complex, 2> c({2, 2});
+		using multi::blas::complex_operation;
+		gemm(complex_operation::hermitian, complex_operation::hermitian, 1., a, b, 0., c); // c=a†b†, c†=ba
+		BOOST_REQUIRE( c[1][0] == complex(116, -25) and c[1][1] == complex(186, -65) );
+	}
+	{
+		multi::array<complex, 2> c({2, 2});
+		using multi::blas::complex_operation;
+		using multi::blas::real_operation;
+		gemm(real_operation::transposition, complex_operation::hermitian, 1., a, b, 0., c); // c=a⸆b†, c†=ba⸆†
+		BOOST_REQUIRE( c[1][0] == complex(118, 5) and c[1][1] == complex(122, 45) );
+	}
+	{
+		multi::array<complex, 2> c({2, 2});
+		using multi::blas::complex_operation;
+		using multi::blas::real_operation;
+		gemm(real_operation::transposition, complex_operation::hermitian, 1., a, b, 0., c); // c=a⸆b†, c†=ba⸆†
+		BOOST_REQUIRE( c[1][0] == complex(118, 5) and c[1][1] == complex(122, 45) );
+	}
+	{
+		multi::array<complex, 2> c({2, 2});
+		using multi::blas::complex_operation;
+		using multi::blas::real_operation;
+		gemm(real_operation::transposition, real_operation::transposition, 1., a, b, 0., c); // c=a⸆b⸆, c⸆=ba
+		BOOST_REQUIRE( c[1][0] == complex(116, 25) and c[1][1] == complex(186, 65) );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_implementation){
+	using complex = std::complex<double>; constexpr complex I{0,1};
+	multi::array<complex, 2> const a = {
+		{ 1. + 2.*I, 3. - 3.*I},
+		{ 9. + 1.*I, 7. + 4.*I},
+		{ 1.       , 1.       }
+	};
+	multi::array<complex, 2> const b = {	
+		{ 11. + 1.*I, 12. + 1.*I},
+		{  7. + 8.*I, 19. - 2.*I},
+	};
+	{
+		multi::array<complex, 2> c({3, 2});
+		using multi::blas::real_operation;
+		gemm(real_operation::identity, real_operation::identity, 1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[2][1] == complex(31, -1) );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare2_implementation){
+	using complex = std::complex<double>; constexpr complex I{0,1};
+	multi::array<complex, 2> const a = {
+		{ 1. + 2.*I, 9. + 1.*I, 1.},
+		{ 3. - 3.*I, 7. + 4.*I, 1.}
+	};
+	multi::array<complex, 2> const b = {	
+		{ 11. + 1.*I, 12. + 1.*I},
+		{  7. + 8.*I, 19. - 2.*I},
+	};
+	{
+		multi::array<complex, 2> c({3, 2});
+		using multi::blas::real_operation;
+		gemm(real_operation::transposition, real_operation::identity, 1., a, b, 0., c); // c=a⸆b, c⸆=b⸆a
+		BOOST_REQUIRE( c[2][1] == complex(31, -1) );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare3_implementation){
+	using complex = std::complex<double>; constexpr complex I{0,1};
+	multi::array<complex, 2> const a = {
+		{ 1. + 2.*I, 9. - 1.*I, 1.},
+		{ 3. + 3.*I, 7. - 4.*I, 1.}
+	};
+	multi::array<complex, 2> const b = {	
+		{ 11. + 1.*I, 12. + 1.*I},
+		{  7. + 8.*I, 19. - 2.*I},
+	};
+	{
+		multi::array<complex, 2> c({3, 2});
+		using multi::blas::complex_operation;
+		using multi::blas::real_operation;
+		gemm(complex_operation::hermitian, real_operation::identity, 1., a, b, 0., c); // c=a⸆b, c⸆=b⸆a
+		BOOST_REQUIRE( c[2][1] == complex(31, -1) );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_square_automatic){
+	multi::array<double, 2> const a = {
+		{ 1., 3.},
+		{ 9., 7.},
+	};
+	multi::array<double, 2> const b = {	
+		{ 11., 12.},
+		{  7., 19.},
+	};
+	{
+		multi::array<double, 2> c({2, 2});
+		using multi::blas::gemm;
+		gemm(1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][0] == 148 and c[1][1] == 241 );
+	}
+	{
+		multi::array<double, 2> c({2, 2});
+		using multi::blas::gemm;
+		gemm(1., a, rotated(b), 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][1] == 196. );
+	}
+	{
+		multi::array<double, 2> c({2, 2});
+		using multi::blas::gemm;
+		gemm(1., rotated(a), b, 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE(( c[1][1] == 169. and c[1][0] == 82. ));
+	}
+	{
+		multi::array<double, 2> c({2, 2});
+		using multi::blas::gemm;
+		gemm(1., rotated(a), rotated(b), 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][1] == 154. );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_automatic){
+	multi::array<double, 2> const a = {
+		{ 1., 3., 1.},
+		{ 9., 7., 1.},
+	};
+	multi::array<double, 2> const b = {	
+		{ 11., 12., 1.},
+		{  7., 19., 1.},
+		{  1.,  1., 1.}
+	};
+	{
+		multi::array<double, 2> c({2, 3});
+		using multi::blas::gemm;
+		gemm(1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][2] == 17. );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_square_automatic){
+	using complex = std::complex<double>; constexpr complex I{0,1};
+	multi::array<complex, 2> const a = {
+		{ 1. + 2.*I, 3. - 3.*I},
+		{ 9. + 1.*I, 7. + 4.*I},
+	};
+	multi::array<complex, 2> const b = {	
+		{ 11. + 1.*I, 12. + 1.*I},
+		{  7. + 8.*I, 19. - 2.*I},
+	};
+	{
+		multi::array<complex, 2> c({2, 2});
+		using multi::blas::gemm;
+		gemm(1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][0] == complex(115, 104) );
+	}
+	{
+		multi::array<complex, 2> c({2, 2});
+		using multi::blas::gemm;
+		gemm(1., a, rotated(b), 0., c); // c=ab⸆, c⸆=ba⸆
+		BOOST_REQUIRE( c[1][0] == complex(178, 75) );
+	}
+	{
+		multi::array<complex, 2> c({2, 2});
+		using multi::blas::gemm;
+		gemm(1., rotated(a), b, 0., c); // c=a⸆b, c⸆=b⸆a
+		BOOST_REQUIRE(( c[1][1] == complex(180, 29) and c[1][0] == complex(53, 54) ));
+	}
+	{
+		multi::array<complex, 2> c({2, 2});
+		using multi::blas::gemm;
+		gemm(1., rotated(a), rotated(b), 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE(( c[1][1] == complex(186, 65) and c[1][0] == complex(116, 25) ));
+	}
+	{
+		multi::array<complex, 2> c({2, 2});
+		using multi::blas::gemm;
+		gemm(1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][0] == complex(115, 104) );
+	}
+	{
+		multi::array<complex, 2> c({2, 2});
+	//	using multi::blas::complex_operation;
+	//	gemm(complex_operation::hermitian, complex_operation::identity, 1., a, b, 0., c); // c=a†b, c†=b†a
+		using multi::blas::gemm;
+		using multi::blas::hermitized;
+		gemm(1., hermitized(a), b, 0., c); // c=a†b, c†=b†a
+		print(c);
+		BOOST_REQUIRE( c[1][0] == complex(111, 64) and c[1][1] == complex(158, -51) );
+	}
+	{
+		multi::array<complex, 2> c({2, 2});
+	//	using multi::blas::complex_operation;
+	//	gemm(complex_operation::identity, complex_operation::hermitian, 1., a, b, 0., c); // c=ab†, c†=ba†
+		using multi::blas::gemm;
+		using multi::blas::hermitized;
+		gemm(1., a, hermitized(b), 0., c); // c=ab†, c†=ba†
+		BOOST_REQUIRE( c[1][0] == complex(188, 43) and c[1][1] == complex(196, 25) );
+	}
+	{
+		multi::array<complex, 2> c({2, 2});
+		using multi::blas::gemm;
+		using multi::blas::hermitized;
+		gemm(1., hermitized(a), hermitized(b), 0., c); // c=a†b†, c†=ba
+		BOOST_REQUIRE( c[1][0] == complex(116, -25) and c[1][1] == complex(186, -65) );
+	}
+	{
+		multi::array<complex, 2> c({2, 2});
+		using multi::blas::complex_operation;
+		using multi::blas::real_operation;
+		gemm(real_operation::transposition, complex_operation::hermitian, 1., a, b, 0., c); // c=a⸆b†, c†=ba⸆†
+		BOOST_REQUIRE( c[1][0] == complex(118, 5) and c[1][1] == complex(122, 45) );
+	}
+	{
+		multi::array<complex, 2> c({2, 2});
+		using multi::blas::complex_operation;
+		using multi::blas::real_operation;
+		gemm(real_operation::transposition, complex_operation::hermitian, 1., a, b, 0., c); // c=a⸆b†, c†=ba⸆†
+		BOOST_REQUIRE( c[1][0] == complex(118, 5) and c[1][1] == complex(122, 45) );
+	}
+	{
+		multi::array<complex, 2> c({2, 2});
+		using multi::blas::complex_operation;
+		using multi::blas::real_operation;
+		gemm(real_operation::transposition, real_operation::transposition, 1., a, b, 0., c); // c=a⸆b⸆, c⸆=ba
+		BOOST_REQUIRE( c[1][0] == complex(116, 25) and c[1][1] == complex(186, 65) );
+	}
+}
+
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_implementation, *boost::unit_test::disabled()){
 	using multi::blas::gemm;
 	multi::array<double, 2> Ccpu({4, 2});
 	{
@@ -178,9 +615,11 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_implementation, *boost::unit_test:
 			{  7., 19., 1., 2.},
 			{ 11., 12., 4., 1.}
 		};
-		gemm('T', 'T', 1., A, B, 0., Ccpu); // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
+		using multi::blas::real_operation;
+		gemm(real_operation::identity, real_operation::identity, 1., A, B, 0., Ccpu); // C^T = A*B , C = (A*B)^T, C = B^T*A^T , if A, B, C are c-ordering (e.g. array or array_ref)
 //		print(rotated(C)) << "---\n"; //{{76., 117., 23., 13.}, {159., 253., 47., 42.}}
 	}
+#if 0
 #if 0 // TODO: support c-arrays
 	{
 		double A[2][3] = {
@@ -637,6 +1076,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_implementation, *boost::unit_test:
 		gemm(1., rotated(A), rotated(B), 0., rotated(C)); // C^T = A^T.B^T, C = B.A
 		print(C);
 	}
+#endif
 #endif
 }
 
