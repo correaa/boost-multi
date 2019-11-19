@@ -51,5 +51,23 @@ BOOST_AUTO_TEST_CASE(multi_blas_cuda_herk){
 		BOOST_REQUIRE( c[1][0] == complex(50., -49.) );
 		BOOST_REQUIRE( c[0][1] == conj(c[1][0]) );
 	}
+	{
+		multi::array<complex, 2> c({3, 3}, 9999.);
+		using multi::blas::triangular;
+		using multi::blas::hermitized;
+		herk(triangular::lower, 1., hermitized(a), c); // c=c†=a†a, `c` in lower triangular
+		BOOST_REQUIRE( c[2][1]==complex(41., 2.) );
+		BOOST_REQUIRE( c[1][2]==9999. );
+	}
+	{
+		cuda::managed::array<complex, 2> c({3, 3}, 9999.);
+		using multi::blas::triangular;
+		using multi::blas::hermitized;
+	//	auto a = hermitized(agpu);
+		herk(triangular::lower, 1., hermitized(agpu), c); // c=c†=a†a, `c` in lower triangular
+	//	BOOST_REQUIRE( c[2][1]==complex(41., 2.) );
+	//	BOOST_REQUIRE( c[1][2]==9999. );
+	}
+
 }
 

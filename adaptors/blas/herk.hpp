@@ -30,7 +30,7 @@ C2D&& herk(triangular c_side, complex_operation a_op, AA alpha, A2D const& a, BB
 		assert( stride(c[0])==1 ); // sources and destination are incompatible layout
 		assert( stride(a[0])==1 ); // sources and destination are incompatible layout
 		assert( size(c[0]) == size(c) );
-		assert( a_op==complex_operation::hermitian?size(a[0])==size(c):size(a)==size(c) ); 
+		assert( a_op==complex_operation::hermitian?size(a[0])==size(c):size(a)==size(c) );
 		herk(
 			static_cast<char>(c_side), static_cast<char>(a_op), size(c), 
 			a_op==complex_operation::hermitian?size(a):size(*begin(a)), 
@@ -59,12 +59,10 @@ void herk_aux(triangular c_side, AA alpha, A2D const& a, BB beta, C2D&& c, std::
 template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr>
 C2D&& herk(triangular c_side, AA alpha, A2D const& a, BB beta, C2D&& c){
 #if __cpp_if_constexpr>=201606
-	if constexpr(is_hermitized<A2D>())
-		herk(c_side, complex_operation::hermitian, alpha, hermitized(a), beta, c);
-	else
-		herk(c_side, complex_operation::identity, alpha, a, beta, std::forward<C2D>(c));
+	if constexpr(is_hermitized<A2D>{}) herk(c_side, complex_operation::hermitian, alpha, hermitized(a), beta, c);
+	else                               herk(c_side, complex_operation::identity , alpha, a, beta, std::forward<C2D>(c));
 #else
-	herk_aux(c_side, alpha, a, beta, std::forward<C2D>(c), std::integral_constant<bool, is_hermitized<A2D>()>{});
+	herk_aux(c_side, alpha, a, beta, std::forward<C2D>(c), is_hermitized<A2D>{});
 #endif
 	return std::forward<C2D>(c);
 }
@@ -408,6 +406,117 @@ TEST_CASE("multi::blas::herk complex automatic ordering and symmetrization", "[r
 		REQUIRE( c[1][2] == complex(41., -2.) );
 	}
 }
+
+TEST_CASE("multi::blas::herk complex automatic ordering and symmetrization real case", "[report]"){
+
+	multi::array<complex, 2> const a = {
+		{ 1., 3., 4.},
+		{ 9., 7., 1.}
+	};
+	{
+		multi::array<complex, 2> c({3, 3}, 9999.);
+		using multi::blas::hermitized;
+		herk(1., hermitized(a), c); // c†=c=a†a
+		REQUIRE( c[2][1]==19. );
+		REQUIRE( c[1][2]==19. );
+	}
+	{
+		multi::array<complex, 2> c({2, 2}, 9999.);
+		using multi::blas::herk;
+		herk(1., a, c); // c†=c=aa†
+		REQUIRE( c[1][0] == 34. );
+		REQUIRE( c[0][1] == 34. );
+	}
+	{
+		using multi::blas::herk;
+		multi::array<complex, 2> c = herk(1., a); // c†=c=aa†
+		REQUIRE( c[1][0] == 34. );
+		REQUIRE( c[0][1] == 34. );
+	}
+	{
+		using multi::blas::herk;
+		using multi::blas::hermitized;
+		multi::array<complex, 2> c = herk(1., hermitized(a)); // c†=c=a†a
+
+		REQUIRE( size(hermitized(a))==3 );		
+		REQUIRE( c[2][1]==19. );
+		REQUIRE( c[1][2]==19. );
+	}
+	{
+		using multi::blas::herk;
+		multi::array<complex, 2> c = herk(a); // c†=c=a†a
+		REQUIRE( c[1][0] == 34. );
+		REQUIRE( c[0][1] == 34. );
+	}
+	{
+		using multi::blas::herk;
+		using multi::blas::hermitized;
+		multi::array<complex, 2> c = herk(hermitized(a)); // c†=c=a†a
+		REQUIRE( c[2][1]==19. );
+		REQUIRE( c[1][2]==19. );
+	}
+}
+
+TEST_CASE("multi::blas::herk real automatic ordering and symmetrization real case", "[report]"){
+
+	multi::array<double, 2> const a = {
+		{ 1., 3., 4.},
+		{ 9., 7., 1.}
+	};
+	{
+		multi::array<double, 2> c({3, 3}, 9999.);
+		using multi::blas::hermitized;
+		using multi::blas::herk;
+		herk(1., hermitized(a), c); // c†=c=a†a
+		REQUIRE( c[2][1]==19. );
+		REQUIRE( c[1][2]==19. );
+	}
+	{
+		multi::array<double, 2> c({2, 2}, 9999.);
+		using multi::blas::herk;
+		herk(1., a, c); // c†=c=aa†
+		REQUIRE( c[1][0] == 34. );
+		REQUIRE( c[0][1] == 34. );
+	}
+	{
+		multi::array<double, 2> c({2, 2}, 9999.);
+		using multi::blas::herk;
+		herk(1., a, c); // c†=c=aa†
+		REQUIRE( c[1][0] == 34. );
+		REQUIRE( c[0][1] == 34. );
+	}
+	{
+		using multi::blas::herk;
+		multi::array<double, 2> c = herk(1., a); // c†=c=aa†
+		REQUIRE( c[1][0] == 34. );
+		REQUIRE( c[0][1] == 34. );
+	}
+#if 0
+	{
+		using multi::blas::herk;
+		using multi::blas::hermitized;
+		multi::array<complex, 2> c = herk(1., hermitized(a)); // c†=c=a†a
+
+		REQUIRE( size(hermitized(a))==3 );		
+		REQUIRE( c[2][1]==19. );
+		REQUIRE( c[1][2]==19. );
+	}
+	{
+		using multi::blas::herk;
+		multi::array<complex, 2> c = herk(a); // c†=c=a†a
+		REQUIRE( c[1][0] == 34. );
+		REQUIRE( c[0][1] == 34. );
+	}
+	{
+		using multi::blas::herk;
+		using multi::blas::hermitized;
+		multi::array<complex, 2> c = herk(hermitized(a)); // c†=c=a†a
+		REQUIRE( c[2][1]==19. );
+		REQUIRE( c[1][2]==19. );
+	}
+#endif
+}
+
 
 TEST_CASE("multi::blas::herk real case", "[report]"){
 	multi::array<double, 2> const a = {
