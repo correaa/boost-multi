@@ -14,7 +14,8 @@ namespace blas{
 
 template<class It, typename Size, class OutIt>
 OutIt copy_n(It first, Size n, OutIt d_first){
-	blas::copy(n, base(first), stride(first), base(d_first), stride(d_first));
+	using core::copy;
+	copy(n, base(first), stride(first), base(d_first), stride(d_first));
 	return d_first + n;
 }
 

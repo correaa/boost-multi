@@ -1,8 +1,9 @@
 #ifdef COMPILATION_INSTRUCTIONS
-c++ -Wall -Wextra -Wpedantic $0 -o $0x `pkg-config --cflags --libs blas` -Wno-deprecated-declarations -lboost_unit_test_framework -lcudart &&$0x&&rm $0x;exit
+c++ -Wall -Wextra -Wpedantic $0 -o $0x `pkg-config --cflags --libs blas` -Wno-deprecated-declarations -lboost_unit_test_framework -lcudart -lcublas &&$0x&&rm $0x;exit
 #endif
 
 #include "../../blas.hpp"
+#include "../../blas/cuda.hpp"
 
 #include "../../../array.hpp"
 #include "../../../adaptors/cuda.hpp"
@@ -26,7 +27,8 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_copy_real){
 	BOOST_REQUIRE( A[0][2] == 3. );
 	BOOST_REQUIRE( A[2][2] == 11. );
 
-	multi::blas::copy(A[0], A[2]); // dcopy
+	using multi::blas::copy;
+	copy(A[0], A[2]); // dcopy
 	BOOST_REQUIRE( A[0][2] == 3. );
 	BOOST_REQUIRE( A[2][2] == 3. );
 
@@ -47,21 +49,39 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_copy_complex){
 		{5.,  6.,  7.,  8.},
 		{9., 10., 11., 12.}
 	};
-	multi::blas::copy(A[0], A[2]);
+	using multi::blas::copy;
+	copy(A[0], A[2]);
 	BOOST_REQUIRE( A[0][2] == 3. + 5.*I );
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_copy_cuda_complex){
 	namespace cuda = multi::cuda;
 	using complex = std::complex<double>;
-	constexpr complex I(0.,1.);
+	constexpr complex I(0, 1);
+
+	cuda::array<complex, 2> A = {
+		{1. + 3.*I,  2. + 4.*I,  3. + 5.*I,  4. + 6.*I},
+		{5.,  6.,  7.,  8.},
+		{9., 10., 11., 12.}
+	};
+	using multi::blas::copy;
+	copy(A[0], A[2]);
+	BOOST_REQUIRE( A[0][2] == 3. + 5.*I );
+	BOOST_REQUIRE( A[2][2] == 3. + 5.*I );
+}
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_copy_cuda_managed_complex){
+	namespace cuda = multi::cuda;
+	using complex = std::complex<double>;
+	constexpr complex I(0, 1);
 
 	cuda::managed::array<complex, 2> A = {
 		{1. + 3.*I,  2. + 4.*I,  3. + 5.*I,  4. + 6.*I},
 		{5.,  6.,  7.,  8.},
 		{9., 10., 11., 12.}
 	};
-	multi::blas::copy(A[0], A[2]);
+	using multi::blas::copy;
+	copy(A[0], A[2]);
 	BOOST_REQUIRE( A[0][2] == 3. + 5.*I );
 	BOOST_REQUIRE( A[2][2] == 3. + 5.*I );
 }
