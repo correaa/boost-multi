@@ -135,11 +135,12 @@ public:
 	using difference_type = typename std::pointer_traits<raw_pointer>::difference_type;
 	using value_type = T;
 	using pointer = ptr<T>;
-	using iterator_category = typename std::iterator_traits<raw_pointer>::iterator_category;
-//	using iterator_concept  = typename std::iterator_traits<impl_t>::iterator_concept;
+	using iterator_category = typename std::iterator_traits<raw_pointer>::iterator_category; //	using iterator_concept  = typename std::iterator_traits<impl_t>::iterator_concept;
 	explicit operator bool() const{return rp_;}
-	operator raw_pointer&()&{return rp_;}
-	operator raw_pointer const&() const&{return rp_;}
+	bool operator not() const{return !rp_;}
+//	[[SLOW]] explicit operator raw_pointer&()&{return rp_;}
+//	[[SLOW]] explicit operator raw_pointer const&() const&{return rp_;}
+	[[SLOW]] operator raw_pointer() const{return rp_;}
 	operator ptr<void>() const{return ptr<void>{rp_};}
 //	template<class PM>
 //	decltype(auto) operator->*(PM pm) const{return *ptr<std::decay_t<decltype(rp_->*pm)>, decltype(&(rp_->*pm))>{&(rp_->*pm)};}
