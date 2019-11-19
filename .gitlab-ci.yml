@@ -38,7 +38,7 @@ Test:
       - cd tests
       - sh ./array_ptr.cpp
       - sh ./array_ref.cpp
-      - sh ./array_sort.cpp
+      - sh ./sort.cpp
       - sh ./comparisons.cpp
       - sh ./constructors.cpp
       - sh ./initializer_list.cpp
