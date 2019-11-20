@@ -61,7 +61,10 @@ protected:
 	array_types(std::nullptr_t np) : Layout{}, base_{np}{}
 	array_types(array_types const&) = default;
 public:
-	array_types(layout_t l, element_ptr data) HD : Layout{l}, base_{data}{}
+	array_types(layout_t l, element_ptr data) HD : 
+		Layout{l}, 
+		base_{data}
+	{}
 //	template<class T2, class P2, class Array> friend decltype(auto) static_array_cast(Array&&);
 public://TODO find why this needs to be public and not protected or friend
 	template<class ArrayTypes, typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>
@@ -95,7 +98,7 @@ struct basic_array_ptr :
 
 	basic_array_ptr(std::nullptr_t p = nullptr) : Ref{p}{}
 	template<class, class> friend struct basic_array_ptr;
-	basic_array_ptr(typename Ref::element_ptr p, layout_t<Ref::dimensionality-1> l) : Ref{l, p}{}
+	basic_array_ptr(typename Ref::element_ptr p, layout_t<Ref::dimensionality-1> l) HD : Ref{l, p}{}
 	basic_array_ptr(typename Ref::element_ptr p, index_extensions<Ref::dimensionality> e) : Ref{p, e}{}
 
 	template<class Other, typename = decltype(typename Ref::element_ptr{typename Other::element_ptr{}})> 
@@ -197,7 +200,10 @@ struct array_iterator :
 	Ref operator[](difference_type n) const HD{return *(*this + n);}
 	template<class O> bool operator==(O const& o) const{return equal(o);}
 	bool operator<(array_iterator const& o) const{return distance_to(o) > 0;}
-	array_iterator(typename Ref::element_ptr p, layout_t<D-1> l, index stride) : /*Ref{l, p},*/ ptr_{p, l}, stride_{stride}{}
+	array_iterator(typename Ref::element_ptr p, layout_t<D-1> l, index stride) HD : /*Ref{l, p},*/
+		ptr_{p, l}, 
+		stride_{stride}
+	{}
 	template<typename T, dimensionality_type DD, typename ElementPtr, class LLayout>
 	friend struct basic_array;
 	auto base() const{return ptr_.base_;}//this->base_;}
@@ -251,8 +257,8 @@ struct biiterator :
 	std::ptrdiff_t pos;
 	std::ptrdiff_t stride;
 	biiterator() = default;
-	biiterator(biiterator const& other) : me{other.me}, pos{other.pos}, stride{other.stride}{}
-	biiterator(It me, std::ptrdiff_t pos, std::ptrdiff_t stride) : me{me}, pos{pos}, stride{stride}{}
+	biiterator(biiterator const& other) = default;// : me{other.me}, pos{other.pos}, stride{other.stride}{}
+	biiterator(It me, std::ptrdiff_t pos, std::ptrdiff_t stride) HD : me{me}, pos{pos}, stride{stride}{}
 	decltype(auto) operator++(){
 		++pos;
 		if(pos==stride){
@@ -263,7 +269,10 @@ struct biiterator :
 	}
 	bool operator==(biiterator const& o) const{return me==o.me and pos==o.pos;}
 	biiterator& operator+=(multi::difference_type n) HD{me += n/stride; pos += n%stride; return *this;}
-	decltype(auto) operator*() const{return me->begin()[pos];}
+	decltype(auto) operator*() const HD{
+		auto meb = me->begin();
+		return meb[pos];
+	}
 	using difference_type = std::ptrdiff_t;
 	using reference = decltype(*std::declval<biiterator>());
 	using value_type = std::decay_t<reference>;
@@ -465,7 +474,7 @@ public:
 		Layout l = static_cast<Layout const&>(*this); l.rotate(i);
 		return {types::base_ + l(l.size()), l.sub, l.stride_};
 	}
-	iterator  begin() const{return {types::base_          , sub, stride_};}
+	iterator  begin() const HD{return {types::base_          , sub, stride_};}
 	iterator  end  () const{return {types::base_ + nelems_, sub, stride_};}
 protected:
 	template<class A>
@@ -589,7 +598,7 @@ struct array_iterator<Element, 1, Ptr, Ref> :
 	using rank = std::integral_constant<dimensionality_type, 1>;
 	bool operator<(array_iterator const& o) const{return distance_to(o) > 0;}
 private:
-	array_iterator(Ptr d, typename basic_array<Element, 1, Ptr>::index s) : data_{d}, stride_{s}{}
+	array_iterator(Ptr d, typename basic_array<Element, 1, Ptr>::index s) HD : data_{d}, stride_{s}{}
 	friend struct basic_array<Element, 1, Ptr>;
 	Ptr data_ = nullptr;
 	multi::index stride_;
@@ -745,8 +754,8 @@ public:
 //	using const_iterator = multi::array_iterator<T, 1, element_const_ptr, const_reference>;
 	using reverse_iterator = std::reverse_iterator<iterator>;
 
-	iterator begin() const{return{types::base_               ,Layout::stride_};}
-	iterator end  () const{return{types::base_+types::nelems_,Layout::stride_};}
+	iterator begin() const HD{return {types::base_               , Layout::stride_};}
+	iterator end  () const{return{types::base_+types::nelems_, Layout::stride_};}
 
 //	template<class Array>//, typename = std::enable_if_t<not std::is_base_of<basic_array, Array>{}>> 
 //	bool operator==(Array const& other) const{
