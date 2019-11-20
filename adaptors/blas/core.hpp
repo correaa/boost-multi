@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_BLAS_CORE $0.cpp -o $0x `pkg-config blas --cflags --libs`&&$0x&&rm $0x $0.cpp;exit
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_BLAS_CORE $0.cpp -o $0x `pkg-config --libs blas`&&$0x&&(rm $0x $0.cpp; for a in `find tests/ -name '*.cpp'`; do sh $a || break; done); exit
 #endif
 // https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
 // © Alfredo A. Correa 2019
@@ -231,10 +231,12 @@ template<class S> s dot(S n, s const& b, s const* x, S incx, s const* y, S incy)
 
 #define xnrm2(R, T, TT) template<class S>    R nrm2 (S n, T const* x, S incx){return BLAS(TT##nrm2  )(BC(n), x, BC(incx));}
 #define xasum(T, TT)    template<class S> auto asum (S n, T const* x, S incx){return BLAS(TT##asum  )(BC(n), x, BC(incx));}
-#define ixamax(T)       template<class S> auto iamax(S n, T const* x, S incx){return BLAS(i##T##amax)(BC(n), x, BC(incx));}
+#define ixamax(T)       template<class S> auto iamax(S n, T const* x, S incx){return BLAS(i##T##amax)(BC(n), x, BC(incx)) - 1;}
 xnrm2(s, s, s) xnrm2(d, d, d)                                    xnrm2(s, c, sc)              xnrm2(d, z, dz)
 xasum(s, s)    xasum(d, d)                        xasum (c, sc)                  xasum(z, dz)
+namespace core{
 ixamax(s)      ixamax(d)       ixamax(c) ixamax(z)
+}
 #undef xnrm2
 #undef xasum
 #undef ixamax
