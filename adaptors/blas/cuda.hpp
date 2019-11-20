@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_BLAS_CUDA $0.cpp -o $0x `pkg-config --libs blas` -lcudart&&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_BLAS_CUDA $0.cpp -o $0x `pkg-config --libs blas` -lcudart -lcublas&&$0x&&rm $0x $0.cpp; exit
 #endif
 // © Alfredo A. Correa 2019
 
@@ -25,21 +25,22 @@ namespace boost{
 namespace multi{
 //namespace blas{
 
-struct cublas_context{
+class cublas_context{
 	cublasHandle_t h_;
+public:
 	cublas_context(){
-		{cublasStatus_t s = cublasCreate(&h_); assert(s==CUBLAS_STATUS_SUCCESS);}
+		cublasStatus_t s = cublasCreate(&h_); assert(s==CUBLAS_STATUS_SUCCESS);
 	}
 	int version() const{
 		int ret;
-		{cublasStatus_t s = cublasGetVersion(h_, &ret); assert(s==CUBLAS_STATUS_SUCCESS);}
+		cublasStatus_t s = cublasGetVersion(h_, &ret); assert(s==CUBLAS_STATUS_SUCCESS);
 		return ret;
 	}
+	~cublas_context() noexcept{cublasDestroy(h_);}
 	//set_stream https://docs.nvidia.com/cuda/cublas/index.html#cublassetstream
 	//get_stream https://docs.nvidia.com/cuda/cublas/index.html#cublasgetstream
 	//get_pointer_mode https://docs.nvidia.com/cuda/cublas/index.html#cublasgetpointermode
 	//set_pointer_mode https://docs.nvidia.com/cuda/cublas/index.html#cublasgetpointermode
-	~cublas_context() noexcept{cublasDestroy(h_);}
 };
 
 template<class T> class cublas;
@@ -53,11 +54,8 @@ public:
 	static auto scal(Args... args){return cublasDscal(args...);}
 	template<class... Args>
 	static auto syrk(Args&&... args){return cublasDsyrk(args...);}
-	template<class... Args> void copy(Args... args){
-		cublasStatus_t s = cublasDcopy(h_, args...); assert(s==CUBLAS_STATUS_SUCCESS);
-	}
-	template<class... Args> 
-	void iamax(Args... args){auto s = cublasIdamax(h_, args...); assert(s==CUBLAS_STATUS_SUCCESS);}
+	template<class... As> void copy (As... as){auto s=cublasDcopy (h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
+	template<class... As> void iamax(As... as){auto s=cublasIdamax(h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
 };
 
 template<>
@@ -69,11 +67,8 @@ public:
 	static auto scal(Args... args){return cublasSscal(args...);}
 	template<class... Args>
 	static auto syrk(Args&&... args){return cublasSsyrk(args...);}
-	template<class... Args> void copy(Args... args){
-		cublasStatus_t s = cublasScopy(h_, args...); assert(s==CUBLAS_STATUS_SUCCESS);
-	}
-	template<class... Args> 
-	void iamax(Args... as){auto s=cublasIsamax(h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
+	template<class... As> void copy (As... as){auto s=cublasScopy (h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
+	template<class... As> void iamax(As... as){auto s=cublasIsamax(h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
 };
 
 template<>
@@ -95,11 +90,8 @@ public:
 	static auto scal(Handle h, Size s, double* alpha, Args2&&... args2){
 		return cublasZdscal(h, s, alpha, to_cu(std::forward<Args2>(args2))...);
 	}
-	template<class... Args> void copy(Args... args){
-		auto s = cublasZcopy(h_, to_cu(args)...); assert(s==CUBLAS_STATUS_SUCCESS);
-	}
-	template<class... Args> 
-	void iamax(Args... as){auto s=cublasIzamax(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
+	template<class... As> void copy (As... as){auto s=cublasZcopy (h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
+	template<class... As> void iamax(As... as){auto s=cublasIzamax(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
 };
 
 template<>
@@ -121,11 +113,8 @@ public:
 	static auto scal(Handle h, Size s, float* alpha, Args2&&... args2){
 		return cublasZdscal(h, s, alpha, to_cu(std::forward<Args2>(args2))...);
 	}
-	template<class... Args> void copy(Args... args){
-		cublasStatus_t s = cublasCcopy(h_, to_cu(args)...); assert(s==CUBLAS_STATUS_SUCCESS);
-	}
-	template<class... Args> 
-	void iamax(Args... as){auto s=cublasIcamax(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
+	template<class... As> void copy (As... as){auto s=cublasCcopy (h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
+	template<class... As> void iamax(As... as){auto s=cublasIcamax(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
 };
 
 namespace memory{
@@ -133,9 +122,7 @@ namespace cuda{
 
 template<class T, typename S>
 S iamax(S n, cuda::ptr<T const> x, S incx){
-	int ret = n;
-	cublas<T>{}.iamax(n, static_cast<T const*>(x), incx, &ret);
-	return ret - 1;
+	int r; cublas<T>{}.iamax(n, static_cast<T const*>(x), incx, &r); return r-1;
 }
 
 template<class T, class TA, class S> 
@@ -311,7 +298,7 @@ void syrk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::managed::p
 	syrk(ul, transA, n, k, alpha, boost::multi::memory::cuda::ptr<Tconst>(A), lda, beta, boost::multi::memory::cuda::ptr<T>(CC), ldc);
 }
 
-}}}}}//}
+}}}}}
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -319,10 +306,14 @@ void syrk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::managed::p
 
 #include "../../array.hpp"
 #include "../../utility.hpp"
+#include<cassert>
 
 namespace multi = boost::multi;
 
-int main(){}
+int main(){
+	multi::cublas_context c;
+	assert( c.version() >= 10100 );
+}
 
 #endif
 #endif
