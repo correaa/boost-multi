@@ -15,7 +15,8 @@ namespace blas{
 template<class It, class Size>
 auto iamax_n(It first, Size n){
 	using multi::blas::core::iamax;
-	return iamax(n, base(first), stride(first));	
+	return iamax(n, base(first), stride(first)); 
+	// if you get an error here make sure that you are including (and linking) the appropriate BLAS backend for your memory type
 }
 
 template<class It>

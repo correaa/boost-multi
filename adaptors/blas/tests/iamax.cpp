@@ -12,7 +12,6 @@ $CXX -Wall -Wextra -Wpedantic $0 -o $0x `pkg-config --libs blas` -lboost_unit_te
 #include "../../../array.hpp"
 
 #include<complex>
-#include<cassert>
 
 using std::cout;
 namespace multi = boost::multi;
@@ -20,15 +19,23 @@ namespace multi = boost::multi;
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_iamax){
 	{
 		using complex = std::complex<double>;
-		using Z = complex; 
-		Z const I{0.,1};
-		multi::array<Z, 2> const A = {
+		complex const I{0,1};
+		multi::array<complex, 2> const A = {
 			{1. + 2.*I,  2.,  3.,  4.},
 			{5.,  6. + 3.*I,  7.,  8.},
 			{9., 10., 11.+ 4.*I, 12.}
 		};
 		using multi::blas::iamax;
-		BOOST_REQUIRE(iamax(A[1]) == std::distance(begin(A[1]), std::max_element(begin(A[1]), end(A[1]), [](auto&& a, auto&& b){using std::abs; return abs(real(a))+abs(imag(a)) < abs(real(b))+abs(imag(b));})));
+		auto chess = [](auto const& a, auto const& b){
+			using std::abs; 
+			return abs(real(a))+abs(imag(a)) < abs(real(b))+abs(imag(b));
+		};
+		BOOST_REQUIRE(
+			iamax(A[1])==std::max_element(begin(A[1]), end(A[1]), chess)-begin(A[1])
+		);
+		BOOST_REQUIRE(
+			A[1][iamax(A[1])]==*std::max_element(begin(A[1]), end(A[1]), chess)
+		);
 	}
 }
 

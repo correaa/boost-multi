@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -Wno-deprecated-declarations -D_TEST_MULTI_ADAPTORS_CUDA $0.cpp -o $0x -lcudart -lboost_unit_test_framework&& $0x &&rm $0x $0.cpp;exit
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -Wpedantic -Wno-deprecated-declarations -D_TEST_MULTI_ADAPTORS_CUDA $0.cpp -o $0x -lcudart -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp;exit
 #endif
 // © Alfredo A. Correa 2019
 
@@ -10,9 +10,6 @@
 #include "../memory/adaptors/cuda/managed/allocator.hpp"
 
 #include "../array.hpp"
-
-using std::cout;
-using std::cerr;
 
 namespace boost{
 namespace multi{
@@ -42,9 +39,7 @@ namespace cuda{
 		using array_ref = multi::array<T, D, multi::memory::cuda::managed::ptr<T>>;
 	}
 
-}
-}
-}
+}}}
 
 #ifdef _TEST_MULTI_ADAPTORS_CUDA
 
@@ -89,7 +84,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_cuda){
 	}
 	{
 		cuda::array<double, 2> arr;
-		cuda::allocator<double> a = get_allocator(arr);
+		cuda::allocator<double> a = get_allocator(arr); (void)a;
 	}
 //	cuda::allocator<double> a = get_allocator(Rgpu);
 

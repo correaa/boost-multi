@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&clang++ -std=c++14 -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_BLAS_CORE -DADD_ $0.cpp -o $0x -lblas -lcudart&&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_BLAS_CUDA $0.cpp -o $0x `pkg-config --libs blas` -lcudart&&$0x&&rm $0x $0.cpp; exit
 #endif
 // © Alfredo A. Correa 2019
 
@@ -14,45 +14,71 @@
 #include "../../memory/adaptors/cuda/ptr.hpp"
 #include "../../memory/adaptors/cuda/managed/ptr.hpp"
 
-#include<iostream> // debug
 #include<cublas_v2.h>
-//#include <cblas/cblas.h>
+
+#include<iostream> // debug
+
 #include<complex>
+#include<memory>
 
 namespace boost{
 namespace multi{
 //namespace blas{
 
+struct cublas_context{
+	cublasHandle_t h_;
+	cublas_context(){
+		{cublasStatus_t s = cublasCreate(&h_); assert(s==CUBLAS_STATUS_SUCCESS);}
+	}
+	int version() const{
+		int ret;
+		{cublasStatus_t s = cublasGetVersion(h_, &ret); assert(s==CUBLAS_STATUS_SUCCESS);}
+		return ret;
+	}
+	//set_stream https://docs.nvidia.com/cuda/cublas/index.html#cublassetstream
+	//get_stream https://docs.nvidia.com/cuda/cublas/index.html#cublasgetstream
+	//get_pointer_mode https://docs.nvidia.com/cuda/cublas/index.html#cublasgetpointermode
+	//set_pointer_mode https://docs.nvidia.com/cuda/cublas/index.html#cublasgetpointermode
+	~cublas_context() noexcept{cublasDestroy(h_);}
+};
+
 template<class T> class cublas;
 
 template<>
-class cublas<double>{
+class cublas<double> : cublas_context{
 public:
-	template<class... Args>
-	static auto copy(Args... args){return cublasDcopy(args...);}
 	template<class... Args>
 	static auto gemm(Args... args){return cublasDgemm(args...);}
 	template<class... Args>
 	static auto scal(Args... args){return cublasDscal(args...);}
 	template<class... Args>
 	static auto syrk(Args&&... args){return cublasDsyrk(args...);}
+	template<class... Args> void copy(Args... args){
+		cublasStatus_t s = cublasDcopy(h_, args...); assert(s==CUBLAS_STATUS_SUCCESS);
+	}
+	template<class... Args> 
+	void iamax(Args... args){auto s = cublasIdamax(h_, args...); assert(s==CUBLAS_STATUS_SUCCESS);}
 };
 
 template<>
-class cublas<float>{
+class cublas<float> : cublas_context{
 public:
-	template<class... Args>
-	static auto copy(Args... args){return cublasScopy(args...);}
 	template<class... Args>
 	static auto gemm(Args... args){return cublasSgemm(args...);}
 	template<class... Args>
 	static auto scal(Args... args){return cublasSscal(args...);}
 	template<class... Args>
 	static auto syrk(Args&&... args){return cublasSsyrk(args...);}
+	template<class... Args> void copy(Args... args){
+		cublasStatus_t s = cublasScopy(h_, args...); assert(s==CUBLAS_STATUS_SUCCESS);
+	}
+	template<class... Args> 
+	void iamax(Args... as){auto s=cublasIsamax(h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
 };
 
 template<>
-class cublas<std::complex<double>>{
+class cublas<std::complex<double>> : cublas_context{
+	static_assert(sizeof(std::complex<double>)==sizeof(cuDoubleComplex), "!");
 	template<class T> static decltype(auto) to_cu(T&& t){return std::forward<T>(t);}
 	static decltype(auto) to_cu(std::complex<double> const* t){return reinterpret_cast<cuDoubleComplex const*>(t);}	
 	static decltype(auto) to_cu(std::complex<double>* t){return reinterpret_cast<cuDoubleComplex*>(t);}	
@@ -62,8 +88,6 @@ public:
 	template<class... Args>
 	static auto herk(Args&&... args){return cublasZherk(to_cu(std::forward<Args>(args))...);}
 	template<class... Args>
-	static auto copy(Args&&... args){return cublasZcopy(to_cu(std::forward<Args>(args))...);}
-	template<class... Args>
 	static auto scal(Args&&... args)
 	->decltype(cublasZscal(to_cu(std::forward<Args>(args))...)){
 		return cublasZscal(to_cu(std::forward<Args>(args))...);}
@@ -71,10 +95,16 @@ public:
 	static auto scal(Handle h, Size s, double* alpha, Args2&&... args2){
 		return cublasZdscal(h, s, alpha, to_cu(std::forward<Args2>(args2))...);
 	}
+	template<class... Args> void copy(Args... args){
+		auto s = cublasZcopy(h_, to_cu(args)...); assert(s==CUBLAS_STATUS_SUCCESS);
+	}
+	template<class... Args> 
+	void iamax(Args... as){auto s=cublasIzamax(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
 };
 
 template<>
-class cublas<std::complex<float>>{
+class cublas<std::complex<float>> : cublas_context{
+	static_assert(sizeof(std::complex<float>)==sizeof(cuComplex), "!");
 	template<class T> static decltype(auto) to_cu(T&& t){return std::forward<T>(t);}
 	static decltype(auto) to_cu(std::complex<float> const* t){return reinterpret_cast<cuComplex const*>(t);}	
 	static decltype(auto) to_cu(std::complex<float>* t){return reinterpret_cast<cuComplex*>(t);}	
@@ -84,8 +114,6 @@ public:
 	template<class... Args>
 	static auto herk(Args&&... args){return cublasCherk(to_cu(std::forward<Args>(args))...);}
 	template<class... Args>
-	static auto copy(Args&&... args){return cublasCcopy(to_cu(std::forward<Args>(args))...);}
-	template<class... Args>
 	static auto scal(Args&&... args)
 	->decltype(cublasZscal(to_cu(std::forward<Args>(args))...)){
 		return cublasZscal(to_cu(std::forward<Args>(args))...);}
@@ -93,10 +121,22 @@ public:
 	static auto scal(Handle h, Size s, float* alpha, Args2&&... args2){
 		return cublasZdscal(h, s, alpha, to_cu(std::forward<Args2>(args2))...);
 	}
+	template<class... Args> void copy(Args... args){
+		cublasStatus_t s = cublasCcopy(h_, to_cu(args)...); assert(s==CUBLAS_STATUS_SUCCESS);
+	}
+	template<class... Args> 
+	void iamax(Args... as){auto s=cublasIcamax(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
 };
 
 namespace memory{
 namespace cuda{
+
+template<class T, typename S>
+S iamax(S n, cuda::ptr<T const> x, S incx){
+	int ret = n;
+	cublas<T>{}.iamax(n, static_cast<T const*>(x), incx, &ret);
+	return ret - 1;
+}
 
 template<class T, class TA, class S> 
 void scal(S n, TA a, multi::memory::cuda::ptr<T> x, S incx){
@@ -122,26 +162,8 @@ void scal(S n, TA a, multi::memory::cuda::ptr<T> x, S incx){
 }
 
 template<class Tconst, class T, class S> 
-void copy(S n, multi::memory::cuda::ptr<Tconst> x, S incx, multi::memory::cuda::ptr<T> y, S incy){
-	cublasHandle_t handle;
-	{cublasStatus_t s = cublasCreate(&handle); assert(s==CUBLAS_STATUS_SUCCESS);}
-	cublasStatus_t s = cublas<T>::copy(handle, n, static_cast<T const*>(x), incx, static_cast<T*>(y), incy);
-	if(s!=CUBLAS_STATUS_SUCCESS){
-		std::cerr << [&](){switch(s){
-			case CUBLAS_STATUS_SUCCESS: return "CUBLAS_STATUS_SUCCESS";
-			case CUBLAS_STATUS_NOT_INITIALIZED: return "CUBLAS_STATUS_NOT_INITIALIZED";
-			case CUBLAS_STATUS_ALLOC_FAILED: return "CUBLAS_STATUS_ALLOC_FAILED";
-			case CUBLAS_STATUS_INVALID_VALUE: return "CUBLAS_STATUS_INVALID_VALUE";
-			case CUBLAS_STATUS_ARCH_MISMATCH: return "CUBLAS_STATUS_ARCH_MISMATCH";
-			case CUBLAS_STATUS_MAPPING_ERROR: return "CUBLAS_STATUS_MAPPING_ERROR";
-			case CUBLAS_STATUS_EXECUTION_FAILED: return "CUBLAS_STATUS_EXECUTION_FAILED";
-			case CUBLAS_STATUS_INTERNAL_ERROR: return "CUBLAS_STATUS_INTERNAL_ERROR";
-			case CUBLAS_STATUS_NOT_SUPPORTED: return "CUBLAS_STATUS_NOT_SUPPORTED";
-			case CUBLAS_STATUS_LICENSE_ERROR: return "CUBLAS_STATUS_LICENSE_ERROR";
-		} return "<unknown>";}() << std::endl;
-	}
-	assert( s==CUBLAS_STATUS_SUCCESS ); (void)s;
-	cublasDestroy(handle);
+void copy(S n, cuda::ptr<Tconst> x, S incx, cuda::ptr<T> y, S incy){
+	cublas<T>{}.copy(n, static_cast<T const*>(x), incx, static_cast<T*>(y), incy);
 }
 
 //template<class T, class S> 
@@ -264,6 +286,11 @@ void gemm(C transA, C transB, S m, S n, S k, AA a, multi::memory::cuda::ptr<T co
 
 namespace boost{namespace multi{namespace memory{namespace cuda{namespace managed{//namespace boost::multi::memory::cuda::managed{
 
+template<class T, typename S>
+S iamax(S n, cuda::managed::ptr<T const> x, S incx){
+	return cuda::iamax(n, cuda::ptr<T const>(x), incx);
+}
+
 template<class T, class TA, class S> 
 void scal(S n, TA a, multi::memory::cuda::managed::ptr<T> x, S incx){
 	scal(n, a, multi::memory::cuda::ptr<T>(x), incx);
@@ -286,39 +313,13 @@ void syrk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::managed::p
 
 }}}}}//}
 
-#if 0
-#define xgemm(T) template<class C, class S> v gemm(C transA, C transB, S m, S n, S k, T const& a, T const* A, S lda, T const* B, S ldb, T const& beta, T* CC, S ldc){BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), a, A, BC(lda), B, BC(ldb), beta, CC, BC(ldc));}
-#define xsyrk(T) template<class UL, class C, class S> v syrk(UL ul, C transA, S n, S k, T alpha, T const* A, S lda, T beta, T* CC, S ldc){BLAS(T##syrk)(ul, transA, BC(n), BC(k), alpha, A, BC(lda), beta, CC, BC(ldc));}
-#define xherk(T) template<class UL, class C, class S, class Real> v herk(UL ul, C transA, S n, S k, Real alpha, T const* A, S lda, Real beta, T* CC, S ldc){BLAS(T##herk)(ul, transA, BC(n), BC(k), alpha, A, BC(lda), beta, CC, BC(ldc));}
-#define xtrsm(T) template<class C, class UL, class Di, class S> v trsm(C side, UL ul, C transA, Di di, S m, S n, T alpha, T const* A, S lda, T* B, S ldb){BLAS(T##trsm)(side, ul, transA, di, BC(m), BC(n), alpha, A, lda, B, ldb);}
-
-xgemm(s) xgemm(d) xgemm(c) xgemm(z)
-xsyrk(s) xsyrk(d) xsyrk(c) xsyrk(z)
-                  xherk(c) xherk(z)
-xtrsm(s) xtrsm(d) xtrsm(c) xtrsm(z)
-
-#undef xgemm
-#undef xsyrk
-#undef xherk
-#undef xtrsm
-
-}}}
-#endif
-
 ///////////////////////////////////////////////////////////////////////////////
 
-#if _TEST_MULTI_ADAPTORS_BLAS_CORE
+#if _TEST_MULTI_ADAPTORS_BLAS_CUDA
 
 #include "../../array.hpp"
 #include "../../utility.hpp"
 
-#include<complex>
-#include<cassert>
-#include<iostream>
-#include<numeric>
-#include<algorithm>
-
-using std::cout;
 namespace multi = boost::multi;
 
 int main(){}

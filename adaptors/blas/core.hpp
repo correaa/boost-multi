@@ -235,7 +235,7 @@ template<class S> s dot(S n, s const& b, s const* x, S incx, s const* y, S incy)
 xnrm2(s, s, s) xnrm2(d, d, d)                                    xnrm2(s, c, sc)              xnrm2(d, z, dz)
 xasum(s, s)    xasum(d, d)                        xasum (c, sc)                  xasum(z, dz)
 namespace core{
-ixamax(s)      ixamax(d)       ixamax(c) ixamax(z)
+	ixamax(s)      ixamax(d)       ixamax(c) ixamax(z)
 }
 #undef xnrm2
 #undef xasum
