@@ -115,7 +115,7 @@ struct random_iterable{
 	friend auto begin(T const& t){return t.begin();}
 	friend auto end  (T const& t){return t.end();}
 
-	friend auto begin(T& t){return t.begin();}
+	friend auto begin(T& t) HD{return t.begin();}
 	friend auto end  (T& t){return t.end();}
 
 	auto rbegin(){return typename T::reverse_iterator{static_cast<T&>(*this).end  ()};}

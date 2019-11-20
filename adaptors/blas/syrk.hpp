@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++17 `#--compiler-options` -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_MULTI_ADAPTORS_BLAS_SYRK $0.cpp -o $0x -lboost_unit_test_framework \
+(echo '#include"'$0'"'>$0.cpp)&&$CXX `#--compiler-options` -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_SYRK $0.cpp -o $0x -lboost_unit_test_framework \
 `pkg-config --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -liomp5` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit

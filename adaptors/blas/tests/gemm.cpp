@@ -1,6 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&clang++ `#-D_DISABLE_CUDA_SLOW` $0 -o $0x -lcudart -lcublas -lboost_unit_test_framework \
-`pkg-config --cflags --libs blas`&&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&$CXX $0 -o $0x -lcudart -lcublas -lboost_unit_test_framework `pkg-config --libs blas`&&$0x&&rm $0x $0.cpp; exit
 #endif
 // © Alfredo A. Correa 2019
 
@@ -19,14 +18,12 @@
 namespace multi = boost::multi;
 
 template<class M> decltype(auto) print(M const& C){
-	using std::cout;
 	using multi::size;
 	for(int i = 0; i != size(C); ++i){
-		for(int j = 0; j != size(C[i]); ++j)
-			cout<< C[i][j] <<' ';
-		cout<<std::endl;
+		for(int j = 0; j != size(C[i]); ++j) std::cout<< C[i][j] <<' ';
+		std::cout<<std::endl;
 	}
-	return cout<<std::endl;
+	return std::cout<<std::endl;
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_cuda_cpu){

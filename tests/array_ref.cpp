@@ -1,6 +1,7 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX `#-fconcepts` -O3 -std=c++2a -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o$0x && $0x && rm $0x; exit
+g++-7 -Wall -Wextra -Wpedantic -Wfatal-errors $0 -o $0x &&$0x&&rm $0x;exit
 #endif
+// © Alfredo A. Correa 2019
 
 #include "../array_ref.hpp"
 #include "../array.hpp"
@@ -15,10 +16,6 @@ $CXX `#-fconcepts` -O3 -std=c++2a -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 
 
 using std::cout; using std::cerr;
 namespace multi = boost::multi;
-
-double f(){return 5.;}
-
-template<class A> void what(A&&);
 
 int main(){
 	{
@@ -66,7 +63,7 @@ int main(){
 	//	}
 #endif
 	}
-	return 0;
+//	return 0;
 	double const d2D[4][5] {
 		{ 0,  1,  2,  3,  4}, 
 		{ 5,  6,  7,  8,  9}, 
