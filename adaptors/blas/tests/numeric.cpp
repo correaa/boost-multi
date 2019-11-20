@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-clang++ -Wall -Wextra -Wpedantic $0 -o $0x `pkg-config --cflags --libs blas` -Wno-deprecated-declarations -lboost_unit_test_framework -lcudart -lcublas &&$0x&&rm $0x;exit
+$CXX -Wall -Wextra -Wpedantic $0 -o $0x `pkg-config --libs blas` -lboost_unit_test_framework -lcudart &&$0x&&rm $0x;exit
 #endif
 
 #include "../../blas.hpp"
@@ -24,8 +24,6 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_numeric_imag){
 	multi::array<complex, 1> a = { 1. + 2.*I, 3. + 5.*I, 9. + 2.*I };
 	using multi::blas::imag;
 	BOOST_REQUIRE( imag(a)[2] == 2. );
-
-	multi::member_array_cast<double>(multi::reinterpret_array_cast<multi::blas::Complex_<double>>(a), &multi::blas::Complex_<double>::imag); 
 }
 
 namespace cuda = multi::cuda;
@@ -42,7 +40,6 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_numeric_imag_cuda){
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_numeric_imag_cuda_managed){
 	cuda::managed::array<complex, 1> a = { 1. + 2.*I, 3. + 5.*I, 9. + 2.*I };
 	using multi::blas::imag;
-	imag(a);
 	BOOST_REQUIRE( imag(a)[2] == 2. );
 }
 

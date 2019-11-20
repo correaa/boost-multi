@@ -56,8 +56,8 @@ auto imag_aux(A&& a, T const&)
 
 template<class A>
 auto imag(A&& a)
-->decltype(imag_aux(std::forward<A>(a), *(typename std::decay_t<A>::element_ptr{}))){
-	return imag_aux(std::forward<A>(a), *(typename std::decay_t<A>::element_ptr{}));}
+->decltype(imag_aux(std::forward<A>(a), typename std::decay_t<A>::element_type{})){
+	return imag_aux(std::forward<A>(a), typename std::decay_t<A>::element_type{});}
 
 template<class It, class F> class involuter;
 
@@ -234,8 +234,6 @@ template<class M> decltype(auto) print(M const& C){
 
 int main(){
 
-	using multi::blas::gemm;
-	using multi::blas::herk;
 	using complex = std::complex<double>;
 	constexpr auto const I = complex{0., 1.};
 
@@ -304,7 +302,6 @@ int main(){
 //	gemm('T', 'T', 1., A, B, 0., C);
 //	gemm('T', 'T', 1., real(A), B, 0., C);
 }
-
 #endif
 #endif
 

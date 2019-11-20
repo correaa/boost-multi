@@ -170,9 +170,9 @@ public:
 	explicit operator raw_pointer() const{return rp_;}
 	friend raw_pointer raw_pointer_cast(ptr self){return self.rp_;}
 	template<class PM>
-	auto operator->*(PM pm) const
-	->decltype(ref<std::decay_t<decltype(rp_->*pm)>>{ptr<std::decay_t<decltype(rp_->*pm)>>{&(rp_->*pm)}}){
-		return ref<std::decay_t<decltype(rp_->*pm)>>{ptr<std::decay_t<decltype(rp_->*pm)>>{&(rp_->*pm)}};}
+	auto operator->*(PM&& pm) const
+	->decltype(ref<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{ptr<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{&(rp_->*std::forward<PM>(pm))}}){
+		return ref<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{ptr<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{&(rp_->*std::forward<PM>(pm))}};}
 };
 
 template<

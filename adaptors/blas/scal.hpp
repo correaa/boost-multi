@@ -22,6 +22,8 @@ namespace boost{
 namespace multi{
 namespace blas{
 
+using blas::core::scal;
+
 template<typename T, class It, typename Size>
 auto scal_n(T a, It first, Size count)
 ->decltype(scal(count, a, base(first), stride(first)), first + count){
