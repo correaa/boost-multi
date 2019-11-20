@@ -102,33 +102,6 @@ public:
 	friend ptr to_address(ptr const& p){return p;}
 };
 
-template<typename T, typename RawPtr = T*>
-struct _ptr{
-protected:
-	using raw_pointer = RawPtr;
-	raw_pointer rp_;
-	using raw_pointer_traits = typename std::pointer_traits<raw_pointer>;
-	template<class TT> friend class allocator;
-	template<typename, typename> friend struct _ptr;
-//	template<class TT, typename = typename std::enable_if<not std::is_const<TT>{}>::type> 
-//	ptr(ptr<TT const> const& p) : rp_{const_cast<T*>(p.rp_)}{}
-	template<class TT> friend ptr<TT> const_pointer_cast(_ptr<TT const> const&);
-	friend class managed::ptr<T, RawPtr>;
-public:
-	template<class U> using rebind = ptr<U, typename std::pointer_traits<raw_pointer>::template rebind<U>>;
-
-	template<class Other, typename = std::enable_if_t<std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{} and not std::is_same<Other, T>{} >>
-	/*explicit(false)*/ _ptr(_ptr<Other> const& o) HD : rp_{static_cast<raw_pointer>(o.rp_)}{}
-	template<class Other, typename = std::enable_if_t<not std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{} and not std::is_same<Other, T>{}>>
-	explicit/*(true)*/ _ptr(_ptr<Other> const& o, void** = 0) HD : rp_{static_cast<raw_pointer>(o.rp_)}{}
-	explicit _ptr(raw_pointer rp) HD : rp_{rp}{}
-	template<class Other> explicit _ptr(Other const& o) : rp_{static_cast<raw_pointer>(o.rp_)}{}
-	_ptr() = default;
-	_ptr(_ptr const&) = default;
-	_ptr(std::nullptr_t nu) : rp_{nu}{}
-	_ptr& operator=(_ptr const&) = default;
-};
-
 template<typename T, typename RawPtr>
 struct ptr{
 protected:
@@ -196,6 +169,10 @@ public:
 	operator ptr<void>(){return {rp_};}
 	explicit operator raw_pointer() const{return rp_;}
 	friend raw_pointer raw_pointer_cast(ptr self){return self.rp_;}
+	template<class PM>
+	auto operator->*(PM pm) const
+	->decltype(ref<std::decay_t<decltype(rp_->*pm)>>{ptr<std::decay_t<decltype(rp_->*pm)>>{&(rp_->*pm)}}){
+		return ref<std::decay_t<decltype(rp_->*pm)>>{ptr<std::decay_t<decltype(rp_->*pm)>>{&(rp_->*pm)}};}
 };
 
 template<
@@ -460,10 +437,24 @@ BOOST_AUTO_TEST_CASE(multi_memory_cuda_ptr){
 	}
 //	what<typename cuda::ptr<T>::rebind<T const>>();
 //	what<typename std::pointer_traits<cuda::ptr<T>>::rebind<T const>>();
-	static_assert( std::is_same<typename std::pointer_traits<cuda::ptr<T>>::rebind<T const>, cuda::ptr<T const>>{} , "!");
-	
+	static_assert( std::is_same<typename std::pointer_traits<cuda::ptr<T>>::rebind<T const>, cuda::ptr<T const>>{} , "!");	
 }
-#endif
-#endif
 
+template<class T> struct Complex_{T real; T imag;};
+
+BOOST_AUTO_TEST_CASE(multi_memory_cuda_ptr_member_pointer){
+	
+	Complex_<double> c{10.,20.};
+//	double Complex_<double>::* 
+	Complex_<double>* p = &c;
+	auto pm = &Complex_<double>::imag;
+	BOOST_REQUIRE( p->*pm == 20. );
+	BOOST_REQUIRE( *p.*pm == 20. );
+
+	cuda::ptr<Complex_<double>> pcu;
+//	pcu->*pm;
+}
+
+#endif
+#endif
 
