@@ -392,7 +392,7 @@ public:
 		new_layout.rotate(i);
 		return basic_array<T, D, ElementPtr>{new_layout, types::base_};
 	}
-	basic_array const& operator()() const{return *this;}
+	basic_array const& operator()() const&{return *this;}
 	template<class... As>
 	auto operator()(index_range a, As... as) const{return range(a).rotated()(as...).unrotated();}
 	template<class... As>

@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_HERK $0.cpp -o $0x -lboost_unit_test_framework \
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -std=c++17 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_HERK $0.cpp -o $0x -lboost_unit_test_framework \
 `pkg-config --cflags --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -liomp5` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
@@ -23,18 +23,23 @@
 namespace boost{
 namespace multi{namespace blas{
 
+template<class A> auto base_aux(A&& a, std::false_type){return base(a);}
+template<class A> auto base_aux(A&& a, std::true_type){return underlying(base(a));}
+
 template<class AA, class BB, class A2D, class C2D, typename = std::enable_if_t<is_complex_array<std::decay_t<C2D>>{}>>
 C2D&& herk(triangular c_side, complex_operation a_op, AA alpha, A2D const& a, BB beta, C2D&& c){
+	using multi::blas::core::herk;
 	if(stride(c)==1 and stride(c[0])!=1) herk(flip(c_side), hermitize(a_op), alpha, rotated(a), beta, rotated(c));
 	else{
 		assert( stride(c[0])==1 ); // sources and destination are incompatible layout
 		assert( stride(a[0])==1 ); // sources and destination are incompatible layout
 		assert( size(c[0]) == size(c) );
 		assert( a_op==complex_operation::hermitian?size(a[0])==size(c):size(a)==size(c) );
+		auto base_x = base_aux(a, is_hermitized<A2D>{});
 		herk(
 			static_cast<char>(c_side), static_cast<char>(a_op), size(c), 
 			a_op==complex_operation::hermitian?size(a):size(*begin(a)), 
-			alpha, base(a), stride(a), beta, base(c), stride(c)
+			alpha, base_x, stride(a), beta, base(c), stride(c)
 		);
 	}
 	return std::forward<C2D>(c);
@@ -84,6 +89,7 @@ void herk_aux(AA alpha, A2D const& a, C2D&& c, std::true_type){
 		}
 	}
 }
+
 template<typename A, class A2D, class C2D>
 void herk_aux(A alpha, A2D const& a, C2D&& c, std::false_type){syrk(alpha, a, c);}
 

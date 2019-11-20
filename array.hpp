@@ -68,7 +68,7 @@ protected:
 		auto n = this->num_elements();
 		while(n){
 		//	std::allocator_traits<allocator_type>::destroy(this->alloc(), to_address(this->data() + n + (-1)));
-			this->alloc().destroy(to_address(this->data() + n + (-1)));
+			this->alloc().destroy(this->data() + n + (-1));//to_address(this->data() + n + (-1)));
 			--n;
 		}
 //		}
@@ -279,39 +279,9 @@ struct array : static_array<T, D, Alloc>,
 public:
 	using static_::static_;
 	using typename array::ref::value_type;
-//	using typename ref::reference;
-//	using static_::operator==;
-//	template<class Array> auto operator==(Array const& other) const{return static_::operator==(other);}
 	using static_::ref::operator<;
 	array() = default;
 	array(array const&) = default;
-//	template<class O, typename = std::enable_if_t<not std::is_base_of<array, O>{}> > 
-//	array(O const& o) : static_(o){}
-//	array(
-	//	multi::initializer_list_t<typename static_array::element, D> mil,
-//		std::initializer_list<typename array::value_type> mil, 
-//		typename array::allocator_type const& a={}
-//	) 
-//	: static_(mil.begin(), mil.end(), a)
-//	{}
-//	array() noexcept(noexcept(static_::allocator_type())) : static_{}{} // 1a //allocator_type{}, ref{}{}      //1a
-//	array(typename array::allocator_type a) : static_(a){}                  //1b
-//#if (not defined(__INTEL_COMPILER)) or (__GNUC >= 6)
-//	array(
-//		std::initializer_list<typename array::value_type> il, 
-//		typename array::allocator_type const& a={}
-//	) : static_(il, a){}
-//#endif
-//	array(typename array::extensions_type const& x) //3
-//	:	allocator_type{}, ref{allocate(typename array::layout_t{x}.num_elements()), x}{
-//		uninitialized_value_construct();
-//	}
-//	template<class Extension, typename = decltype(array(std::array<Extension, D>{}, allocator_type{}, std::make_index_sequence<D>{}))>
-//	array(std::array<Extension, D> const& x, allocator_type const& a = {}) : array(x, a, std::make_index_sequence<D>{}){}
-//	array(multi::iextensions<D> const& ie) : array(typename array::extensions_type{ie}){}
-private:
-//	template<class Extension, size_t... Is>//, typename = decltype(typename array::extensions_type{std::array<Extension, D>{}})>
-//	array(std::array<Extension, D> const& x, allocator_type const& a, std::index_sequence<Is...>) : array(typename array::extensions_type{std::get<Is>(x)...}, a){}
 public:
 	using static_::clear;
 	friend void clear(array& self) noexcept{self.clear();}

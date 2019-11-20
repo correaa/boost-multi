@@ -26,20 +26,23 @@ namespace managed{
 	struct bad_alloc : std::bad_alloc{};
 
 	template<class T=void>
-	struct allocator : cuda::allocator<T>{
+	class allocator : cuda::allocator<T>{
+	public:
 		using value_type = T;
 		using pointer = managed::ptr<T>;
 		using size_type = ::size_t; // as specified by CudaMalloc
 		pointer allocate(typename allocator::size_type n, const void* = 0){
 			if(n == 0) return pointer{nullptr};
 			auto ret = static_cast<pointer>(cuda::managed::malloc(n*sizeof(T)));
-			if(not ret) throw bad_alloc{};
+			if(!ret) throw bad_alloc{};
 			++allocator::n_allocations; allocator::bytes_allocated+=sizeof(T)*n;
 			return ret;
 		}
 		void deallocate(pointer p, size_type){cuda::free(static_cast<managed::ptr<void>>(p));}
 		template<class P, class... Args>
-		void construct(P p, Args&&... args){::new(p) T(std::forward<Args>(args)...);}
+		void construct(P p, Args&&... args){
+			::new(p.rp_) T(std::forward<Args>(args)...);
+		}
 		template<class P> void destroy(P p){p.rp_->~T();}
 	};
 }

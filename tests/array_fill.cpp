@@ -1,8 +1,9 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -std=c++14 -Wall -Wextra -Wpedantic $0 -DBOOST_TEST_DYN_LINK -lboost_unit_test_framework -o $0x &&$0x $@&&rm $0x;exit
+$CXX -Wall -Wextra $0 -lboost_unit_test_framework -o$0x&&$0x&&rm $0x;exit
 #endif
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi fill"
+#define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
 #include "../array.hpp"

@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_OPERATIONS $0.cpp -o $0x `pkg-config --cflags --libs blas` -lboost_unit_test_framework &&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++2a -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_OPERATIONS $0.cpp -o $0x `pkg-config --cflags --libs blas` -lboost_unit_test_framework &&$0x&&rm $0x $0.cpp; exit
 #endif
 // © Alfredo A. Correa 2019
 
@@ -11,6 +11,8 @@
 #include    "../blas/numeric.hpp"
 
 #include "../../array_ref.hpp"
+
+//#include<experimental/functional> // std::identity
 
 namespace boost{
 namespace multi{namespace blas{
@@ -48,6 +50,9 @@ class operation{
 	};
 	impl_t impl_;
 public:
+#if __cplusplus > 201900L
+	operation(std::identity<>) : impl_{impl_t::identity}{}
+#endif
 	operation(complex_operation cop) : impl_{[=]{switch(cop){
 		case complex_operation::identity  : return impl_t::identity;
 		case complex_operation::hermitian : return impl_t::hermitian;
@@ -82,6 +87,10 @@ public:
 /*inline*/ operation const operation::hermitian{operation::impl_t::hermitian};
 /*inline*/ operation const operation::transposition{operation::impl_t::transposition};
 
+//operation const& identity = operation::identity;
+//operation const& hermitian = operation::hermitian;
+//operation const& transposition = operation::transposition;
+
 template<class M> decltype(auto) transposed(M const& m){return rotated(m);}
 template<class M> decltype(auto) transposed(M&       m){return rotated(m);}
 
@@ -91,14 +100,13 @@ template<class T> std::false_type is_conjugated_aux(T const&);
 template<class A>
 struct is_conjugated : decltype(is_conjugated_aux(typename std::decay_t<A>::element_ptr{})){};
 
-
 template<class A, typename D=std::decay_t<A>, typename E=typename D::element, class C=detail::conjugater<typename D::element_ptr>, typename = std::enable_if_t<not is_conjugated<std::decay_t<A>>()> >
 decltype(auto) conjugated(A&& a){
 	return multi::static_array_cast<E, C>(std::forward<A>(a));
 }
 
 template<class A, typename D=std::decay_t<A>, typename E=typename D::element, class C=typename D::element_ptr::underlying_type, typename = std::enable_if_t<is_conjugated<std::decay_t<A>>{}> >
-[[deprecated]] decltype(auto) conjugated(A&& a, void* = 0){
+decltype(auto) conjugated(A&& a, void* = 0){
 	return multi::static_array_cast<E, C>(std::forward<A>(a));
 }
 
@@ -111,11 +119,11 @@ template<class ComplexPtr> std::true_type is_hermitized_aux(multi::blas::detail:
 template<class T> std::false_type is_hermitized_aux(T const&);
 
 template<class A>
-struct is_hermitized : decltype(is_hermitized_aux(typename std::decay_t<A>::element_ptr{})){};
+struct is_hermitized : std::decay_t<decltype(is_hermitized_aux(typename std::decay_t<A>::element_ptr{}))>{};
 
 template<class A> decltype(auto) identity(A&& a){return std::forward<A>(a);}
 
-template<class T, typename = decltype(std::declval<T const&>()[0][0].imag())>
+template<class T, typename = decltype(std::declval<typename T::element>().imag())>
 std::true_type is_complex_array_aux(T const&);
 std::false_type is_complex_array_aux(...);
 
@@ -209,9 +217,13 @@ BOOST_AUTO_TEST_CASE(m){
 	using multi::blas::conjugated;
 //	[]{}(conjugated(conjugated(A)));
 
-	static_assert( multi::blas::is_conjugated<std::decay_t<decltype( conjugated(hermitized(A)) )>>{}, "!");
+	static_assert( not multi::blas::is_conjugated<std::decay_t<decltype( conjugated(hermitized(A)) )>>{}, "!");
 	using multi::blas::hermitized;
-	[]{}(hermitized(hermitized(A)));
+//	[]{}(hermitized(hermitized(A)));
+}
+
+BOOST_AUTO_TEST_CASE(is_complex_array_test){
+	static_assert(multi::blas::is_complex_array<multi::array<std::complex<double>, 2>>{}, "!");
 }
 
 #if 0

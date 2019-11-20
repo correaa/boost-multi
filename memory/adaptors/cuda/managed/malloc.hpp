@@ -14,7 +14,11 @@ namespace memory{
 namespace cuda{
 
 namespace managed{
+#if __cplusplus >= 201703L
+#if __has_cpp_attribute(nodiscard) >= 201603L
 	[[nodiscard]]
+#endif
+#endif
 	managed::ptr<void> malloc(size_t bytes){return managed::ptr<void>{Cuda::Managed::malloc(bytes)};}
 	void free(managed::ptr<void> p){Cuda::Managed::free(static_cast<void*>(p));}
 }

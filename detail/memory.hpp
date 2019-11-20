@@ -32,13 +32,16 @@ template<class T, typename = decltype(std::pointer_traits<T>::to_address(std::de
 template<class T> auto use_address_aux(...       )->std::false_type;
 
 template<class T> struct use_address : decltype(use_address_aux<T>()){};
- 
+
+
+#if 1
 template<class T>
-constexpr T* to_address(T* p) noexcept
+constexpr T* to_address(T* p, void* = 0) noexcept
 {
     static_assert(!std::is_function<T>{}, "!");
     return p;
 }
+#endif
 
 template<class T>
 auto to_address_aux(const T& p, std::true_type) noexcept{

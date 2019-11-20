@@ -183,8 +183,10 @@ xrotmg(s)      xrotmg(d)
 xrot(s, s, s)  xrot(d, d, d)  xrot(c, cs, s) xrot(z, zd, d)
 xrotm(s)       xrotm(d)
 xswap(s)       xswap(d)       xswap(c)       xswap(z)
-xscal(s, s, s) xscal(d, d, d) xscal(c, c, c) xscal(z, z, z)                xscal(zd, d, z) xscal(cs, s, c)
+namespace core{
+xscal(s, s, s) xscal(d, d, d) xscal(c, c, c) xscal(z, z, z) xscal(zd, d, z) xscal(cs, s, c)
 xcopy(s)       xcopy(d)       xcopy(c)       xcopy(z)
+}
 xaxpy(s)       xaxpy(d)       xaxpy(c)       xaxpy(z)
 xdot(s, s, s)  xdot(d, d, d)                                xdot(d, ds, s)
 
@@ -262,9 +264,15 @@ xger(s)   xger(d)
 #define xherk(T) template<class UL, class C, class S, class Real> v herk(UL ul, C transA, S n, S k, Real alpha, T const* A, S lda, Real beta, T* CC, S ldc){BLAS(T##herk)(ul, transA, BC(n), BC(k), alpha, A, BC(lda), beta, CC, BC(ldc));}
 #define xtrsm(T) template<class C, class UL, class Di, class S> v trsm(C side, UL ul, C transA, Di di, S m, S n, T alpha, T const* A, S lda, T* B, S ldb){BLAS(T##trsm)(side, ul, transA, di, BC(m), BC(n), alpha, A, lda, B, ldb);}
 
+namespace core{
 xgemm(s) xgemm(d) xgemm(c) xgemm(z)
+}
+
 xsyrk(s) xsyrk(d) xsyrk(c) xsyrk(z)
+namespace core{
                   xherk(c) xherk(z)
+}
+
 xtrsm(s) xtrsm(d) xtrsm(c) xtrsm(z)
 
 #undef xgemm

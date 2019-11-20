@@ -144,8 +144,8 @@ void copy(S n, multi::memory::cuda::ptr<Tconst> x, S incx, multi::memory::cuda::
 //void copy(S n, multi::memory::cuda::ptr<T const> x, S incx, multi::memory::cuda::ptr<T> y, S incy){
 //}
 
-template<class T, class UL, class C, class S, class Real>
-void herk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::ptr<T const> A, S lda, Real beta, multi::memory::cuda::ptr<T> CC, S ldc){
+template<class Tconst, class T, class UL, class C, class S, class Real>
+void herk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::ptr<Tconst> A, S lda, Real beta, multi::memory::cuda::ptr<T> CC, S ldc){
 	cublasHandle_t handle;
 	{cublasStatus_t s = cublasCreate(&handle); assert(s==CUBLAS_STATUS_SUCCESS);}
 	cublasFillMode_t uplo = [ul](){
