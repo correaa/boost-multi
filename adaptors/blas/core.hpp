@@ -268,8 +268,8 @@ namespace core{
 xgemm(s) xgemm(d) xgemm(c) xgemm(z)
 }
 
-xsyrk(s) xsyrk(d) xsyrk(c) xsyrk(z)
 namespace core{
+xsyrk(s) xsyrk(d) xsyrk(c) xsyrk(z)
                   xherk(c) xherk(z)
 }
 

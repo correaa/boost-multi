@@ -1,6 +1,6 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++17 `#--compiler-options` -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_MULTI_ADAPTORS_BLAS_SYRK .DCATCH_CONFIG_MAIN.o $0.cpp -o $0x \
-`pkg-config --cflags --libs blas` \
+(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++17 `#--compiler-options` -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_MULTI_ADAPTORS_BLAS_SYRK $0.cpp -o $0x -lboost_unit_test_framework \
+`pkg-config --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -liomp5` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
 #endif
@@ -27,6 +27,7 @@ C2D&& syrk(triangular c_side, real_operation a_op, AA alpha, A2D const& a, BB be
 		assert( stride(a[0])==1 ); // sources and destination are incompatible layout
 		assert( size(c) == size(c[0]) );
 		assert( a_op==real_operation::transposition?size(a[0])==size(c):size(a)==size(c) ); 
+		using boost::multi::blas::core::syrk;
 		syrk(
 			static_cast<char>(c_side), static_cast<char>(a_op), size(c), 
 			a_op==real_operation::transposition?size(a):size(*begin(a)), 
@@ -78,6 +79,10 @@ template<class A2D> auto syrk(A2D const& A){return syrk(1., A);}
 
 #if _TEST_MULTI_ADAPTORS_BLAS_SYRK
 
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS gemm"
+#define BOOST_TEST_DYN_LINK
+#include<boost/test/unit_test.hpp>
+
 #include "../blas/gemm.hpp"
 
 #include "../../array.hpp"
@@ -91,7 +96,7 @@ template<class A2D> auto syrk(A2D const& A){return syrk(1., A);}
 #include<numeric>
 #include<algorithm>
 
-#include<catch.hpp>
+//#include<catch.hpp>
 
 using std::cout;
 using std::cerr;
@@ -108,14 +113,14 @@ template<class M> decltype(auto) print(M const& C){
 	return std::cout << std::endl;
 }
 
-TEST_CASE("multi::blas::syrk enums", "[report]"){
-	REQUIRE( multi::blas::complex_operation::hermitian == multi::blas::operation::hermitian );
-	REQUIRE( multi::blas::complex_operation::identity == multi::blas::operation::identity );
+BOOST_AUTO_TEST_CASE(multi_blas_syrk_enums){
+	BOOST_REQUIRE( multi::blas::complex_operation::hermitian == multi::blas::operation::hermitian );
+	BOOST_REQUIRE( multi::blas::complex_operation::identity == multi::blas::operation::identity );
 	multi::blas::operation op = multi::blas::complex_operation::identity;
-	REQUIRE( op == multi::blas::complex_operation::identity );
+	BOOST_REQUIRE( op == multi::blas::complex_operation::identity );
 }
 
-TEST_CASE("multi::blas::syrk real", "[report]"){
+BOOST_AUTO_TEST_CASE(multi_blas_syrk_real){
 
 	multi::array<double, 2> const a = {
 		{ 1., 3., 4.},
@@ -126,32 +131,32 @@ TEST_CASE("multi::blas::syrk real", "[report]"){
 		using multi::blas::triangular;
 		using multi::blas::real_operation;
 		syrk(triangular::lower, real_operation::transposition, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
-		REQUIRE( c[2][1] == 19. ); 
-		REQUIRE( c[1][2] == 9999. );
+		BOOST_REQUIRE( c[2][1] == 19. ); 
+		BOOST_REQUIRE( c[1][2] == 9999. );
 	}
 	{
 		multi::array<double, 2> c({3, 3}, 9999.);
 		using multi::blas::triangular;
 		using multi::blas::real_operation;
 		syrk(triangular::upper, real_operation::transposition, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
-		REQUIRE( c[1][2] == 19. );
-		REQUIRE( c[2][1] == 9999. );
+		BOOST_REQUIRE( c[1][2] == 19. );
+		BOOST_REQUIRE( c[2][1] == 9999. );
 	}
 	{
 		multi::array<double, 2> c({2, 2}, 9999.);
 		using multi::blas::triangular;
 		using multi::blas::real_operation;
 		syrk(triangular::lower, real_operation::identity, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
-		REQUIRE( c[1][0] == 34. ); 
-		REQUIRE( c[0][1] == 9999. );
+		BOOST_REQUIRE( c[1][0] == 34. ); 
+		BOOST_REQUIRE( c[0][1] == 9999. );
 	}
 	{
 		multi::array<double, 2> c({2, 2}, 9999.);
 		using multi::blas::triangular;
 		using multi::blas::real_operation;
 		syrk(triangular::upper, real_operation::identity, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, a⸆a, `c` in lower triangular
-		REQUIRE( c[0][1] == 34. ); 
-		REQUIRE( c[1][0] == 9999. );
+		BOOST_REQUIRE( c[0][1] == 34. ); 
+		BOOST_REQUIRE( c[1][0] == 9999. );
 	}
 	{
 		multi::array<double, 2> const at = rotated(a);
@@ -161,12 +166,12 @@ TEST_CASE("multi::blas::syrk real", "[report]"){
 		using multi::blas::triangular;
 		using multi::blas::real_operation;
 		syrk(triangular::upper, real_operation::identity, 1., a_, 0., c_); // c⸆=c=a⸆a=(a⸆a)⸆, a⸆a, `c` in lower triangular
-		REQUIRE( c_[0][1] == 34. ); 
-		REQUIRE( c_[1][0] == 9999. );
+		BOOST_REQUIRE( c_[0][1] == 34. ); 
+		BOOST_REQUIRE( c_[1][0] == 9999. );
 	}
 }
 
-TEST_CASE("multi::blas::syrk real special case", "[report]"){
+BOOST_AUTO_TEST_CASE(multi_blas_syrk_real_special_case){
 	multi::array<double, 2> const a = {
 		{ 1., 3., 4.},
 	};
@@ -175,12 +180,12 @@ TEST_CASE("multi::blas::syrk real special case", "[report]"){
 		using multi::blas::triangular;
 		using multi::blas::real_operation;
 		syrk(triangular::lower, real_operation::identity, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
-		//REQUIRE( c[1][0] == 34. ); 
-		//REQUIRE( c[0][1] == 9999. );
+		//BOOST_REQUIRE( c[1][0] == 34. ); 
+		//BOOST_REQUIRE( c[0][1] == 9999. );
 	}
 }
 
-TEST_CASE("multi::blas::syrk complex (real case)", "[report]"){
+BOOST_AUTO_TEST_CASE(multi_blas_syrk_complex_real_case){
 	using complex = std::complex<double>;
 	multi::array<complex, 2> const a = {
 		{ 1., 3., 4.},
@@ -191,12 +196,12 @@ TEST_CASE("multi::blas::syrk complex (real case)", "[report]"){
 		using multi::blas::triangular;
 		using multi::blas::operation;
 		syrk(triangular::lower, operation::transposition, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
-		REQUIRE( c[2][1] == 19. );
-		REQUIRE( c[1][2] == 9999. );
+		BOOST_REQUIRE( c[2][1] == 19. );
+		BOOST_REQUIRE( c[1][2] == 9999. );
 	}
 }
 
-TEST_CASE("multi::blas::syrk complex", "[report]"){
+BOOST_AUTO_TEST_CASE(multi_blas_syrk_complex){
 	using complex = std::complex<double>;
 	constexpr auto const I = complex{0., 1.};
 	multi::array<complex, 2> const a = {
@@ -208,16 +213,16 @@ TEST_CASE("multi::blas::syrk complex", "[report]"){
 		using multi::blas::triangular;
 		using multi::blas::real_operation;
 		syrk(triangular::lower, real_operation::transposition, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
-		REQUIRE( c[2][1] == complex(-3., -34.) );
-		REQUIRE( c[1][2] == 9999. );
+		BOOST_REQUIRE( c[2][1] == complex(-3., -34.) );
+		BOOST_REQUIRE( c[1][2] == 9999. );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
 		using multi::blas::triangular;
 		using multi::blas::real_operation;
 		syrk(triangular::lower, real_operation::identity, 1., a, 0., c); // c⸆=c=aa⸆=(aa⸆)⸆, `c` in lower triangular
-		REQUIRE( c[1][0] == complex(18., -21.) );
-		REQUIRE( c[0][1] == 9999. );
+		BOOST_REQUIRE( c[1][0] == complex(18., -21.) );
+		BOOST_REQUIRE( c[0][1] == 9999. );
 	}
 	{
 		multi::array<complex, 2> const at = rotated(a);
@@ -227,12 +232,12 @@ TEST_CASE("multi::blas::syrk complex", "[report]"){
 		using multi::blas::triangular;
 		using multi::blas::real_operation;
 		syrk(triangular::upper, real_operation::identity, 1., a_, 0., c_); // c⸆=c=aa⸆=(aa⸆)⸆, `c` in upper triangular
-		REQUIRE( c_[0][1] == complex(18., -21.) ); 
-		REQUIRE( c_[1][0] == 9999. );
+		BOOST_REQUIRE( c_[0][1] == complex(18., -21.) ); 
+		BOOST_REQUIRE( c_[1][0] == 9999. );
 	}
 }
 
-TEST_CASE("multi::blas::syrk automatic operation complex", "[report]"){
+BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_operation_complex){
 	using complex = std::complex<double>;
 	constexpr auto const I = complex{0., 1.};
 	multi::array<complex, 2> const a = {
@@ -243,28 +248,28 @@ TEST_CASE("multi::blas::syrk automatic operation complex", "[report]"){
 		multi::array<complex, 2> c({2, 2}, 9999.);
 		using multi::blas::triangular;
 		syrk(triangular::lower, 1., a, 0., c); // c⸆=c=aa⸆=(aa⸆)⸆, `c` in lower triangular
-		REQUIRE( c[1][0]==complex(18., -21.) );
-		REQUIRE( c[0][1]==9999. );
+		BOOST_REQUIRE( c[1][0]==complex(18., -21.) );
+		BOOST_REQUIRE( c[0][1]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.);
 		using multi::blas::triangular;
 		using multi::blas::transposed;
 		syrk(triangular::lower, 1., transposed(a), 0., c); // c⸆=c=a⸆a=(aa⸆)⸆, `c` in lower triangular
-		REQUIRE( c[2][1]==complex(-3.,-34.) );
-		REQUIRE( c[1][2]==9999. );
+		BOOST_REQUIRE( c[2][1]==complex(-3.,-34.) );
+		BOOST_REQUIRE( c[1][2]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.);
 		using multi::blas::triangular;
 		using multi::blas::transposed;
 		syrk(triangular::lower, 1., rotated(a), 0., c); // c⸆=c=a⸆a=(aa⸆)⸆, `c` in lower triangular
-		REQUIRE( c[2][1]==complex(-3.,-34.) );
-		REQUIRE( c[1][2]==9999. );
+		BOOST_REQUIRE( c[2][1]==complex(-3.,-34.) );
+		BOOST_REQUIRE( c[1][2]==9999. );
 	}
 }
 
-TEST_CASE("multi::blas::syrk automatic operation real", "[report]"){
+BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_operation_real){
 	multi::array<double, 2> const a = {
 		{ 1., 3., 4.},
 		{ 9., 7., 1.}
@@ -273,38 +278,38 @@ TEST_CASE("multi::blas::syrk automatic operation real", "[report]"){
 		multi::array<double, 2> c({2, 2}, 9999.);
 		using multi::blas::triangular;
 		syrk(triangular::lower, 1., a, 0., c); // c⸆=c=aa⸆=(aa⸆)⸆, `c` in lower triangular
-		REQUIRE( c[1][0] == 34. );
-		REQUIRE( c[0][1] == 9999. );
+		BOOST_REQUIRE( c[1][0] == 34. );
+		BOOST_REQUIRE( c[0][1] == 9999. );
 	}
 	{
 		multi::array<double, 2> c({2, 2}, 9999.);
 		using multi::blas::triangular;
 		syrk(triangular::upper, 1., a, 0., c); // c⸆=c=aa⸆=(aa⸆)⸆, `c` in upper triangular
-		REQUIRE( c[0][1] == 34. );
-		REQUIRE( c[1][0] == 9999. );
+		BOOST_REQUIRE( c[0][1] == 34. );
+		BOOST_REQUIRE( c[1][0] == 9999. );
 	}
 	{
 		multi::array<double, 2> c({3, 3}, 9999.);
 		using multi::blas::triangular;
 		syrk(triangular::lower, 1., rotated(a), 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
-		REQUIRE( c[2][1] == 19. );
-		REQUIRE( c[1][2] == 9999. );
+		BOOST_REQUIRE( c[2][1] == 19. );
+		BOOST_REQUIRE( c[1][2] == 9999. );
 	}
 	{
 		multi::array<double, 2> c({3, 3}, 9999.);
 		using multi::blas::transposed;
 		using multi::blas::triangular;
 		syrk(triangular::lower, 1., transposed(a), 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
-		REQUIRE( c[2][1] == 19. );
-		REQUIRE( c[1][2] == 9999. );
+		BOOST_REQUIRE( c[2][1] == 19. );
+		BOOST_REQUIRE( c[1][2] == 9999. );
 	}
 	{
 		multi::array<double, 2> c({3, 3}, 9999.);
 		using multi::blas::transposed;
 		using multi::blas::triangular;
 		syrk(triangular::upper, 1., transposed(a), 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in upper triangular
-		REQUIRE( c[1][2] == 19. );
-		REQUIRE( c[2][1] == 9999. );
+		BOOST_REQUIRE( c[1][2] == 19. );
+		BOOST_REQUIRE( c[2][1] == 9999. );
 	}
 	{
 		multi::array<double, 2> const at = rotated(a);
@@ -314,12 +319,12 @@ TEST_CASE("multi::blas::syrk automatic operation real", "[report]"){
 		using multi::blas::triangular;
 		syrk(triangular::upper, 1., a_, 0., c_); // c⸆=c=aa⸆=(aa⸆)⸆, `c` in upper triangular
 		print(c_);
-		REQUIRE( c_[0][1] == 34. ); 
-		REQUIRE( c_[1][0] == 9999. );
+		BOOST_REQUIRE( c_[0][1] == 34. ); 
+		BOOST_REQUIRE( c_[1][0] == 9999. );
 	}
 }
 
-TEST_CASE("multi::blas::syrk automatic implicit zero", "[report]"){
+BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_implicit_zero){
 	multi::array<double, 2> const a = {
 		{ 1., 3., 4.},
 		{ 9., 7., 1.}
@@ -328,14 +333,13 @@ TEST_CASE("multi::blas::syrk automatic implicit zero", "[report]"){
 		multi::array<double, 2> c({2, 2}, 9999.);
 		using multi::blas::triangular;
 		syrk(triangular::lower, 1., a, c); // c⸆=c=aa⸆=(aa⸆)⸆, `c` in lower triangular
-		REQUIRE( c[1][0] == 34. );
-		REQUIRE( c[0][1] == 9999. );
+		BOOST_REQUIRE( c[1][0] == 34. );
+		BOOST_REQUIRE( c[0][1] == 9999. );
 	}
 }
 
 
-
-TEST_CASE("multi::blas::syrk automatic symmetrization", "[report]"){
+BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_symmetrization){
 	multi::array<double, 2> const a = {
 		{ 1., 3., 4.},
 		{ 9., 7., 1.}
@@ -344,27 +348,27 @@ TEST_CASE("multi::blas::syrk automatic symmetrization", "[report]"){
 		multi::array<double, 2> c({2, 2}, 9999.);
 		using multi::blas::syrk;
 		syrk(1., a, c); // c⸆=c=aa⸆=(aa⸆)⸆
-		REQUIRE( c[1][0] == 34. );
-		REQUIRE( c[0][1] == 34. );
+		BOOST_REQUIRE( c[1][0] == 34. );
+		BOOST_REQUIRE( c[0][1] == 34. );
 	}
 	{
 		using multi::blas::syrk;
 		multi::array<double, 2> c = syrk(1., a); // c⸆=c=aa⸆=(aa⸆)⸆
-		REQUIRE( c[1][0] == 34. );
-		REQUIRE( c[0][1] == 34. );
+		BOOST_REQUIRE( c[1][0] == 34. );
+		BOOST_REQUIRE( c[0][1] == 34. );
 	}
 	{
 		using multi::blas::syrk;
 		multi::array<double, 2> c = syrk(a); // c⸆=c=aa⸆=(aa⸆)⸆
-		REQUIRE( c[1][0] == 34. );
-		REQUIRE( c[0][1] == 34. );
+		BOOST_REQUIRE( c[1][0] == 34. );
+		BOOST_REQUIRE( c[0][1] == 34. );
 	}
 	{
 		using multi::blas::transposed;
 		using multi::blas::syrk;
 		multi::array<double, 2> c = syrk(transposed(a)); // c⸆=c=a⸆a=(a⸆a)⸆
-		REQUIRE( c[2][1] == 19. );
-		REQUIRE( c[1][2] == 19. );
+		BOOST_REQUIRE( c[2][1] == 19. );
+		BOOST_REQUIRE( c[1][2] == 19. );
 	}
 #if 0
 	{
@@ -423,7 +427,7 @@ TEST_CASE("multi::blas::syrk automatic symmetrization", "[report]"){
 #endif
 }
 
-TEST_CASE("multi::blas::syrk herk fallback", "[report]"){
+BOOST_AUTO_TEST_CASE(multi_blas_syrk_herk_fallback){
 	multi::array<double, 2> const a = {
 		{ 1., 3., 4.},
 		{ 9., 7., 1.}
@@ -435,8 +439,8 @@ TEST_CASE("multi::blas::syrk herk fallback", "[report]"){
 		using multi::blas::triangular;
 		using multi::blas::real_operation;
 		syrk(triangular::lower, real_operation::identity, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
-		REQUIRE( c[1][0] == 34. ); 
-		REQUIRE( c[0][1] == 9999. );
+		BOOST_REQUIRE( c[1][0] == 34. ); 
+		BOOST_REQUIRE( c[0][1] == 9999. );
 	}
 }
 

@@ -34,6 +34,8 @@ public:
 	static auto gemm(Args... args){return cublasDgemm(args...);}
 	template<class... Args>
 	static auto scal(Args... args){return cublasDscal(args...);}
+	template<class... Args>
+	static auto syrk(Args&&... args){return cublasDsyrk(args...);}
 };
 
 template<>
@@ -45,6 +47,8 @@ public:
 	static auto gemm(Args... args){return cublasSgemm(args...);}
 	template<class... Args>
 	static auto scal(Args... args){return cublasSscal(args...);}
+	template<class... Args>
+	static auto syrk(Args&&... args){return cublasSsyrk(args...);}
 };
 
 template<>
@@ -145,6 +149,42 @@ void copy(S n, multi::memory::cuda::ptr<Tconst> x, S incx, multi::memory::cuda::
 //}
 
 template<class Tconst, class T, class UL, class C, class S, class Real>
+void syrk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::ptr<Tconst> A, S lda, Real beta, multi::memory::cuda::ptr<T> CC, S ldc){
+	cublasHandle_t handle;
+	{cublasStatus_t s = cublasCreate(&handle); assert(s==CUBLAS_STATUS_SUCCESS);}
+	cublasFillMode_t uplo = [ul](){
+		switch(ul){
+			case 'U': return CUBLAS_FILL_MODE_UPPER;
+			case 'L': return CUBLAS_FILL_MODE_LOWER;
+		} assert(0); return CUBLAS_FILL_MODE_UPPER;
+	}();
+	cublasOperation_t cutransA = [transA](){
+		switch(transA){
+			case 'N': return CUBLAS_OP_N;
+			case 'T': return CUBLAS_OP_T;
+			case 'C': return CUBLAS_OP_C;
+		} assert(0); return CUBLAS_OP_N;
+	}();
+	cublasStatus_t s = cublas<T>::syrk(handle, uplo, cutransA, n, k, &alpha, static_cast<T const*>(A), lda, &beta, static_cast<T*>(CC), ldc);
+	if(s!=CUBLAS_STATUS_SUCCESS){
+		std::cerr << [&](){switch(s){
+			case CUBLAS_STATUS_SUCCESS: return "CUBLAS_STATUS_SUCCESS";
+			case CUBLAS_STATUS_NOT_INITIALIZED: return "CUBLAS_STATUS_NOT_INITIALIZED";
+			case CUBLAS_STATUS_ALLOC_FAILED: return "CUBLAS_STATUS_ALLOC_FAILED";
+			case CUBLAS_STATUS_INVALID_VALUE: return "CUBLAS_STATUS_INVALID_VALUE";
+			case CUBLAS_STATUS_ARCH_MISMATCH: return "CUBLAS_STATUS_ARCH_MISMATCH";
+			case CUBLAS_STATUS_MAPPING_ERROR: return "CUBLAS_STATUS_MAPPING_ERROR";
+			case CUBLAS_STATUS_EXECUTION_FAILED: return "CUBLAS_STATUS_EXECUTION_FAILED";
+			case CUBLAS_STATUS_INTERNAL_ERROR: return "CUBLAS_STATUS_INTERNAL_ERROR";
+			case CUBLAS_STATUS_NOT_SUPPORTED: return "CUBLAS_STATUS_NOT_SUPPORTED";
+			case CUBLAS_STATUS_LICENSE_ERROR: return "CUBLAS_STATUS_LICENSE_ERROR";
+		} return "<unknown>";}() << std::endl;
+	}
+	assert( s==CUBLAS_STATUS_SUCCESS ); (void)s;
+	cublasDestroy(handle);
+}
+
+template<class Tconst, class T, class UL, class C, class S, class Real>
 void herk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::ptr<Tconst> A, S lda, Real beta, multi::memory::cuda::ptr<T> CC, S ldc){
 	cublasHandle_t handle;
 	{cublasStatus_t s = cublasCreate(&handle); assert(s==CUBLAS_STATUS_SUCCESS);}
@@ -234,9 +274,14 @@ void gemm(char transA, char transB, S m, S n, S k, AA const& a, multi::memory::c
 	gemm(transA, transB, m, n, k, a, boost::multi::memory::cuda::ptr<double const>(A), lda, boost::multi::memory::cuda::ptr<double const>(B), ldb, beta, boost::multi::memory::cuda::ptr<double>(CC), ldc);
 }
 
-template<class T, class UL, class C, class S, class Real>
-void herk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::managed::ptr<T const> A, S lda, Real beta, multi::memory::cuda::managed::ptr<T> CC, S ldc){
-	herk(ul, transA, n, k, alpha, boost::multi::memory::cuda::ptr<T const>(A), lda, beta, boost::multi::memory::cuda::ptr<T>(CC), ldc);
+template<class Tconst, class T, class UL, class C, class S, class Real>
+void herk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::managed::ptr<Tconst> A, S lda, Real beta, multi::memory::cuda::managed::ptr<T> CC, S ldc){
+	herk(ul, transA, n, k, alpha, boost::multi::memory::cuda::ptr<Tconst>(A), lda, beta, boost::multi::memory::cuda::ptr<T>(CC), ldc);
+}
+
+template<class Tconst, class T, class UL, class C, class S, class Real>
+void syrk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::managed::ptr<Tconst> A, S lda, Real beta, multi::memory::cuda::managed::ptr<T> CC, S ldc){
+	syrk(ul, transA, n, k, alpha, boost::multi::memory::cuda::ptr<Tconst>(A), lda, beta, boost::multi::memory::cuda::ptr<T>(CC), ldc);
 }
 
 }}}}}//}
