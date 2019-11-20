@@ -83,6 +83,12 @@ template <class T, std::size_t N>
 constexpr std::allocator<std::decay_t<typename std::remove_all_extents<T[N]>::type>> 
 get_allocator(T(&)[N]) noexcept{return {};}
 
+template<class Pointer>
+constexpr 
+std::allocator<typename std::iterator_traits<Pointer>::value_type> get_allocator(Pointer const&){
+	return {};
+}
+
 template<class T>
 auto has_num_elements_aux(T const& t)->decltype(t.num_elements(), std::true_type {});
 inline auto has_num_elements_aux(...       )->decltype(                  std::false_type{});
@@ -353,7 +359,7 @@ int main(){
 	using multi::size;
 	using multi::sizes;
 	using multi::num_elements;
-;{
+ {
 	double A[4] = {1.,2.,3.,4.};
 	assert( dimensionality(A) == 1 );
 	assert( extension(A).first() == 0 );

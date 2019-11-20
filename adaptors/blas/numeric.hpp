@@ -68,7 +68,7 @@ protected:
 	Involution f_;
 public:
 	using decay_type =std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
-	explicit involuted(Ref r, Involution f = {}) : r_{std::forward<Ref>(r)}, f_{f}{}
+	explicit involuted(Ref r, Involution f = {}) HD : r_{std::forward<Ref>(r)}, f_{f}{}
 	involuted& operator=(involuted const& other)=delete;//{r_ = other.r_; return *this;}
 public:
 	involuted(involuted const&) = delete;
@@ -91,12 +91,14 @@ public:
 	auto operator==(DecayType&& other) const
 	->decltype(this->operator decay_type()==other){
 		return this->operator decay_type()==other;}
-	template<class DecayType, class Involuted /**/>
-	friend auto operator==(DecayType&& other, Involuted const& self)
+	template<class DecayType>//, class Involuted /**/>
+	friend auto operator==(DecayType&& other, involuted const& self)
 	->decltype(other == self.operator decay_type()){
 		return other == self.operator decay_type();}
 //	auto imag() const{return static_cast<decay_type>(*this).imag();}
-	template<class Any> friend auto operator<<(Any&& a, involuted const& self)->decltype(a << std::declval<decay_type>()){return a << self.operator decay_type();}
+	template<class Any> friend auto operator<<(Any&& a, involuted const& self)
+	->decltype(a << self.operator decay_type()){
+		return a << self.operator decay_type();}
 };
 
 #if __cpp_deduction_guides
@@ -114,7 +116,7 @@ public:
 	explicit involuter(It it, F f = {}) HD : it_{std::move(it)}, f_{std::move(f)}{}
 	involuter(involuter const& other) = default;
 	using reference = involuted<typename std::iterator_traits<It>::reference, F>;
-	auto operator*() const{return reference{*it_, f_};}
+	auto operator*() const HD{return reference{*it_, f_};}
 	bool operator==(involuter const& o) const{return it_==o.it_;}
 	bool operator!=(involuter const& o) const{return it_!=o.it_;}
 	involuter& operator+=(typename involuter::difference_type n) HD{it_+=n; return *this;}
@@ -125,8 +127,9 @@ public:
 	auto operator-(involuter const& other) const{return it_-other.it_;}
 	explicit operator bool() const{return it_;}
 	using underlying_type = It;
-	friend underlying_type underlying(involuter const& self){return self.it_;}
-	operator It() const{return underlying(*this);}
+	friend underlying_type underlying(involuter const& self) HD{return self.it_;}
+	operator It() const HD{return underlying(*this);}
+	friend auto get_allocator(involuter const& s){return get_allocator(s.it_);}
 };
 
 #if 0
@@ -164,7 +167,8 @@ struct conjugate{
 	auto operator()(T const& a) const{
 	//	using std::conj; /*for doubles?*/ 
 		using std::conj;
-		return conj(a);
+		std::complex<double> A{a};
+		return conj(A);
 	}
 };
 
@@ -173,7 +177,10 @@ template<class Ref> struct conjugated : involuted<Ref, conjugate>{
 	auto real() const{return static_cast<typename conjugated::decay_type>(*this).real();}
 	auto imag() const{return static_cast<typename conjugated::decay_type>(*this).imag();}
 	friend auto imag(conjugated const& self){return self.imag();}
-	friend auto real(conjugated const& self){return self.real();}	
+	friend auto real(conjugated const& self){return self.real();}
+//	friend auto conj(conjugated const& self){
+//		return conjugate{}(static_cast<typename conjugated::decay_type>(self));
+//	}
 };
 template<class It>  using conjugater = involuter<It, conjugate>;
 

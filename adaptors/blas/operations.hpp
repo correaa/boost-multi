@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++2a -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_OPERATIONS $0.cpp -o $0x `pkg-config --cflags --libs blas` -lboost_unit_test_framework &&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&nvcc -x cu --expt-relaxed-constexpr`#c++ -Wall -Wextra -Wpedantic` -D_TEST_MULTI_ADAPTORS_BLAS_OPERATIONS $0.cpp -o $0x `pkg-config --libs blas` -lboost_unit_test_framework &&$0x&&rm $0x $0.cpp;exit
 #endif
 // © Alfredo A. Correa 2019
 
@@ -101,12 +101,12 @@ template<class A>
 struct is_conjugated : decltype(is_conjugated_aux(typename std::decay_t<A>::element_ptr{})){};
 
 template<class A, typename D=std::decay_t<A>, typename E=typename D::element, class C=detail::conjugater<typename D::element_ptr>, typename = std::enable_if_t<not is_conjugated<std::decay_t<A>>()> >
-decltype(auto) conjugated(A&& a){
+decltype(auto) conjugated(A&& a, void* = 0){
 	return multi::static_array_cast<E, C>(std::forward<A>(a));
 }
 
 template<class A, typename D=std::decay_t<A>, typename E=typename D::element, class C=typename D::element_ptr::underlying_type, typename = std::enable_if_t<is_conjugated<std::decay_t<A>>{}> >
-decltype(auto) conjugated(A&& a, void* = 0){
+decltype(auto) conjugated(A&& a){
 	return multi::static_array_cast<E, C>(std::forward<A>(a));
 }
 
@@ -211,15 +211,13 @@ BOOST_AUTO_TEST_CASE(m){
 	};
 	using multi::blas::hermitized;
 	assert( hermitized(A)[0][1] == conj(A[1][0]) );
-//	[]{}(hermitized(A));
-	static_assert( multi::blas::is_conjugated<decltype(hermitized(A))>{} , "!");
+	static_assert( multi::blas::is_conjugated<decltype(hermitized(A))>{} , "!" );
 
-	using multi::blas::conjugated;
-//	[]{}(conjugated(conjugated(A)));
 
 	static_assert( not multi::blas::is_conjugated<std::decay_t<decltype( conjugated(hermitized(A)) )>>{}, "!");
-	using multi::blas::hermitized;
-//	[]{}(hermitized(hermitized(A)));
+	static_assert( not multi::blas::is_hermitized<std::decay_t<decltype( conjugated(hermitized(A)) )>>{}, "!");
+
+
 }
 
 BOOST_AUTO_TEST_CASE(is_complex_array_test){

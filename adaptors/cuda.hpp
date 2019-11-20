@@ -18,15 +18,25 @@ namespace boost{
 namespace multi{
 namespace cuda{
 
-	template<class T, multi::dimensionality_type D>
-	using array = multi::array<T, D, multi::memory::cuda::allocator<T>>;
+	template<class T>
+	using allocator = multi::memory::cuda::allocator<T>;
+
+	template<class T> using ptr = multi::memory::cuda::ptr<T>;
 
 	template<class T, multi::dimensionality_type D>
-	using array_ref = multi::array_ref<T, D, multi::memory::cuda::ptr<T>>;
+	using array = multi::array<T, D, cuda::allocator<T>>;
+
+	template<class T, multi::dimensionality_type D>
+	using array_ref = multi::array_ref<T, D, cuda::ptr<T>>;
 
 	namespace managed{
+		template<class T>
+		using allocator = multi::memory::cuda::managed::allocator<T>;
+
+		template<class T> using ptr = multi::memory::cuda::managed::ptr<T>;
+
 		template<class T, multi::dimensionality_type D>
-		using array = multi::array<T, D, multi::memory::cuda::managed::allocator<T>>;
+		using array = multi::array<T, D, cuda::managed::allocator<T>>;
 
 		template<class T, multi::dimensionality_type D>
 		using array_ref = multi::array<T, D, multi::memory::cuda::managed::ptr<T>>;
@@ -55,6 +65,33 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_cuda){
 	assert( Amng == Agpu );
 
 	cuda::array_ref<double, 2> Rgpu(data_elements(Agpu), extensions(Agpu));
+
+	{std::allocator<double> a = get_allocator(A);}
+
+	{
+		cuda::ptr<double> p;
+		using multi::get_allocator;
+		cuda::allocator<double> a = get_allocator(p); (void)a;
+	}
+	{
+		cuda::managed::ptr<double> p;
+		using multi::get_allocator;
+		cuda::managed::allocator<double> a = get_allocator(p); (void)a;
+	}
+	{
+		double* p = nullptr;
+		using multi::get_allocator;
+		std::allocator<double> a = get_allocator(p); (void)a;
+	}
+	{
+		multi::array<double, 2> arr;
+		std::allocator<double> a = get_allocator(arr);
+	}
+	{
+		cuda::array<double, 2> arr;
+		cuda::allocator<double> a = get_allocator(arr);
+	}
+//	cuda::allocator<double> a = get_allocator(Rgpu);
 
 }
 

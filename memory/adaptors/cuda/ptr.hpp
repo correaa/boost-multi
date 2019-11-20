@@ -62,6 +62,8 @@ namespace managed{
 	template<typename T, typename RawPtr> struct ptr;
 }
 
+template<class T> class allocator;
+
 template<typename RawPtr>
 struct ptr<void, RawPtr>{
 protected:
@@ -109,7 +111,10 @@ protected:
 	raw_pointer rp_;
 	using raw_pointer_traits = typename std::pointer_traits<raw_pointer>;
 	template<class TT> friend class allocator;
+	using default_allocator_type = typename cuda::allocator<T>;
 	template<typename, typename> friend struct ptr;
+	template<typename> friend struct ref;
+
 //	template<class TT, typename = typename std::enable_if<not std::is_const<TT>{}>::type> 
 //	ptr(ptr<TT const> const& p) : rp_{const_cast<T*>(p.rp_)}{}
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
@@ -137,7 +142,7 @@ public:
 	using pointer = ptr<T, RawPtr>;//<T>;
 	using iterator_category = typename std::iterator_traits<raw_pointer>::iterator_category;
 	explicit operator bool() const HD{return rp_;}
-	explicit operator typename raw_pointer_traits::template rebind<void>() const{return {rp_};}
+	explicit operator typename raw_pointer_traits::template rebind<void>() const HD{return {rp_};}
 	ptr& operator++(){++rp_; return *this;}
 	ptr& operator--(){--rp_; return *this;}
 	ptr  operator++(int){auto tmp = *this; ++(*this); return tmp;}
@@ -171,9 +176,10 @@ public:
 	explicit operator raw_pointer() const{return rp_;}
 	friend raw_pointer raw_pointer_cast(ptr self){return self.rp_;}
 	template<class PM>
-	auto operator->*(PM&& pm) const
+	HD auto operator->*(PM&& pm) const
 	->decltype(ref<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{ptr<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{&(rp_->*std::forward<PM>(pm))}}){
 		return ref<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{ptr<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{&(rp_->*std::forward<PM>(pm))}};}
+	friend allocator<T> get_allocator(ptr const&){return {};}
 };
 
 template<
@@ -191,6 +197,12 @@ ForwardIt uninitialized_copy_n(Alloc&, InputIt f, Size n, ptr<T...> d){
 
 template<class T> 
 ptr<T> const_pointer_cast(ptr<T const> const& p){return ptr<T>{p.impl_};}
+
+template<class TTT>
+static std::true_type is_ref_aux(ref<TTT> const&);
+std::false_type is_ref_aux(...);
+
+template<class TTT> struct is_ref : decltype(is_ref_aux(std::declval<TTT>())){};
 
 template<class T>
 struct ref : private ptr<T>{
@@ -336,7 +348,7 @@ public:
 		return static_cast<T>(std::move(*this))==other;
 #endif
 	}
-	template<class Other> 
+	template<class Other, typename = std::enable_if_t<not is_ref<Other>{}> > 
 	friend auto operator==(Other&& other, ref&& self){
 #if __CUDA_ARCH__
 		return std::forward<Other>(other)==*(this->rp_);
@@ -344,7 +356,7 @@ public:
 		return std::forward<Other>(other)==static_cast<T>(std::move(self));
 #endif
 	}
-	template<class Other>
+	template<class Other, typename = std::enable_if_t<not std::is_same<T, Other>{}> >
 	[[SLOW]]
 	bool operator==(ref<Other>&& other)&&{
 //#pragma message ("Warning goes here")
@@ -353,13 +365,13 @@ public:
 		/*[[maybe_unused]]*/ cudaError_t s1 = cudaMemcpy(buff1, this->rp_, sizeof(T), cudaMemcpyDeviceToHost);
 		assert(s1 == cudaSuccess); (void)s1;
 		char buff2[sizeof(Other)];
-		/*[[maybe_unused]]*/ cudaError_t s2 = cudaMemcpy(buff2, other.rp_, sizeof(Other), cudaMemcpyDeviceToHost); 
+		/*[[maybe_unused]]*/ cudaError_t s2 = cudaMemcpy(buff2, raw_pointer_cast(&other), sizeof(Other), cudaMemcpyDeviceToHost); 
 		assert(s2 == cudaSuccess); (void)s2;
 		return reinterpret_cast<T const&>(buff1)==reinterpret_cast<Other const&>(buff2);
 	}
 #if 1
 	[[SLOW]] 
-	bool operator==(ref const& other) const&{
+	bool operator==(ref const& other) &&{
 		char buff1[sizeof(T)];
 		{/*[[maybe_unused]]*/ cudaError_t s1 = cudaMemcpy(buff1, this->rp_, sizeof(T), cudaMemcpyDeviceToHost); assert(s1 == cudaSuccess); (void)s1;}
 		char buff2[sizeof(T)];
@@ -386,6 +398,11 @@ public:
 		{/*[[maybe_unused]]*/ cudaError_t s = cudaMemcpy(buff, this->rp_, sizeof(T), cudaMemcpyDeviceToHost); assert(s == cudaSuccess); (void)s;}
 		return std::move(reinterpret_cast<T&>(buff));
 	}
+	[[SLOW]] operator T() const&{
+		char buff[sizeof(T)];
+		{/*[[maybe_unused]]*/ cudaError_t s = cudaMemcpy(buff, this->rp_, sizeof(T), cudaMemcpyDeviceToHost); assert(s == cudaSuccess); (void)s;}
+		return std::move(reinterpret_cast<T&>(buff));
+	}
 	#endif
 	template<class Other, typename = decltype(std::declval<T&>()+=std::declval<Other&&>())>
 	__host__ __device__
@@ -395,6 +412,8 @@ public:
 	friend void swap(ref&& a, ref&& b){T tmp = std::move(a); std::move(a) = std::move(b); std::move(b) = tmp;}
 	ref<T>&& operator++()&&{++(std::move(*this).skeleton()); return std::move(*this);}
 	ref<T>&& operator--()&&{--(std::move(*this).skeleton()); return std::move(*this);}
+	template<class Self, typename = std::enable_if_t<std::is_base_of<ref, Self>{}>>
+	friend auto conj(Self&& self, ref* = 0){return conj(std::forward<Self>(self).skeleton());}
 };
 
 }}}}

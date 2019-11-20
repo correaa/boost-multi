@@ -327,6 +327,7 @@ public:
 		this->base_ = std::exchange(other.base_, nullptr);
 		other.static_::layout_t::operator=({});
 	}
+	friend typename array::allocator_type get_allocator(array const& self){return self.get_allocator();}
 //	array(array const& o)                                                    //5b
 //	:	static_{o.get_allocator()}//, 
 //		static_::ref{allocate(o.num_elements()), o.extensions()}

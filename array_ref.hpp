@@ -291,9 +291,19 @@ public:
 	friend constexpr auto dimensionality(basic_array const& self){return self.dimensionality;}
 	using typename types::reference;
 	basic_array(basic_array&&) = default;
-	auto get_allocator() const{return default_allocator_of(this->base());}
+//	auto get_allocator() const{return default_allocator_of(this->base());}
+	auto get_allocator() const{
+		using multi::get_allocator;
+		return get_allocator(this->base());
+	}
 	friend auto get_allocator(basic_array const& self){return self.get_allocator();}
-	using decay_type = array<typename types::element, D, decltype(default_allocator_of(std::declval<ElementPtr>()))>;
+//	using decay_type = array<typename types::element, D, decltype(default_allocator_of(std::declval<ElementPtr>()))>;
+	template<class P>
+	static decltype(auto) get_allocator_(P const& p){
+		using multi::get_allocator;
+		return get_allocator(p);
+	}
+	using decay_type = array<typename types::element_type, D, decltype(get_allocator_(std::declval<ElementPtr>()))>;
 //	array<typename types::element, D, std::allocator<typename types::element>>//typename pointer_traits<typename types::element_ptr>::default_allocator_type>
 //	decay_type 
 	auto decay() const{
@@ -518,8 +528,9 @@ public:
 	bool operator>(O const& o) const{return lexicographical_compare(o, *this);}
 public:
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
-	HD basic_array<T2, D, P2> static_array_cast() const{
-		return {this->layout(), P2{this->base_}};//static_cast<P2>(this->base_)};
+	basic_array<T2, D, P2> static_array_cast() const HD{
+		P2 p2{this->base_};
+		return {this->layout(), p2};//static_cast<P2>(this->base_)};
 	}
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>,
 		class Element = typename basic_array::element,
@@ -681,6 +692,9 @@ public:
 		return *this;
 	}
 	typename types::reference operator[](typename types::index i) const HD{
+	//	auto np = this->base() + Layout::operator()(i);
+	//	auto&& r = *np;
+	//	return *np;
 		return *(this->base() + Layout::operator()(i));//types::base_[Layout::operator()(i)];
 	}
 	template<class Tuple, typename = std::enable_if_t<(std::tuple_size<std::decay_t<Tuple>>{}>1) > >
