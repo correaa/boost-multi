@@ -1,20 +1,20 @@
 <!--
-(pandoc `#--from gfm` --to html --standalone --metadata title=" " $0 > $0.html) && firefox --new-window  $0.html; exit
+(pandoc `#--from gfm` --to html --standalone --metadata title=" " $0 > $0.html) && firefox --new-window $0.html; sleep 5; rm $0.html; exit
 -->
 # [Boost.]Multi
 
 (not an official Boost library)
 
-_Alfredo Correa, 2018-2019_
+_© Alfredo A. Correa, 2018-2019_
 
-Multi provides multidimensional array access to contiguous or regularly contiguous memory (or ranges).
+`Multi` provides multidimensional array access to contiguous or regularly contiguous memory (or ranges).
 It shares the goals of [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html), 
 although the code is completely independent and the syntax has slight differences or has been extended.
-Multi and Boost.MultiArray types can be used interchangeably for the most part, they differ slightly in the semantics of reference and value types. 
+`Multi` and `Boost.MultiArray` types can be used interchangeably for the most part, they differ in the semantics of reference and value types. 
 
 Multi aims to simplify the semantics of Boost.MultiArray and make it more compatible with the Standard (STL) Algorithms and special memory.
 It requires C++14. 
-The code was developed on `clang` and `gcc` compilers, and tested regularly with Intel compilers.
+The code was developed on `clang` and `gcc` compilers, and tested regularly with Intel and NVCC compilers.
 
 Before testing speed, please make sure that you are compiling in release mode (`-DNDEBUG`) and with optimizations (`-O3`), 
 if your test involves mathematical operations add arithmetic optimizations (`-Ofast`) to compare with Fortran code.
@@ -26,6 +26,7 @@ Some features:
 * Fast access of subarrays (view) types
 * Value semantics of multi-dimensional array container
 * Better semantics of subarray (view) types
+* Interoperability with other libraries, STL, ranges, 
 
 ## Types
 
