@@ -1,8 +1,13 @@
 #ifdef COMPILATION_INSTRUCTIONS
-c++ -std=c++14 -Wall -Wextra -Wpedantic -lblas -DADD_ $0 -o $0x.x  && time $0x.x $@ && rm -f $0x.x; exit
+$CXX -Wall -Wextra -Wpedantic $0 -o $0x `pkg-config --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x; exit
 #endif
+// © Alfredo A. Correa 2019
 
-#include "../../blas.hpp"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS gemm"
+#define BOOST_TEST_DYN_LINK
+#include<boost/test/unit_test.hpp>
+
+#include "../../blas/iamax.hpp"
 
 #include "../../../array.hpp"
 
@@ -12,16 +17,18 @@ c++ -std=c++14 -Wall -Wextra -Wpedantic -lblas -DADD_ $0 -o $0x.x  && time $0x.x
 using std::cout;
 namespace multi = boost::multi;
 
-int main(){
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_iamax){
 	{
-		using Z = std::complex<double>; Z const I(0.,1.);
+		using complex = std::complex<double>;
+		using Z = complex; 
+		Z const I{0.,1};
 		multi::array<Z, 2> const A = {
 			{1. + 2.*I,  2.,  3.,  4.},
 			{5.,  6. + 3.*I,  7.,  8.},
 			{9., 10., 11.+ 4.*I, 12.}
 		};
-		using multi::blas::iamax; // izmax, uses zero-based indexing
-		assert(iamax(A[1]) == std::distance(begin(A[1]), std::max_element(begin(A[1]), end(A[1]), [](auto&& a, auto&& b){return std::abs(real(a)) + std::abs(imag(a)) < std::abs(real(b)) + std::abs(imag(b));})));
+		using multi::blas::iamax;
+		BOOST_REQUIRE(iamax(A[1]) == std::distance(begin(A[1]), std::max_element(begin(A[1]), end(A[1]), [](auto&& a, auto&& b){using std::abs; return abs(real(a))+abs(imag(a)) < abs(real(b))+abs(imag(b));})));
 	}
 }
 
