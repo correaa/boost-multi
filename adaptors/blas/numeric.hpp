@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&$CXX -D_TEST_MULTI_ADAPTORS_BLAS_NUMERIC $0.cpp -o $0x -lboost_unit_test_framework -lcudart -Wno-deprecated-declarations \
+(echo '#include"'$0'"'>$0.cpp)&&nvcc -x cu --expt-relaxed-constexpr`#$CXX` -D_TEST_MULTI_ADAPTORS_BLAS_NUMERIC $0.cpp -o $0x -lboost_unit_test_framework -lcudart -Wno-deprecated-declarations \
 `pkg-config --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
@@ -41,8 +41,8 @@ auto real_aux(A&& a, T const&)
 
 template<class A>
 auto real(A&& a)
-->decltype(real_aux(std::forward<A>(a), *(typename std::decay_t<A>::element_ptr{}))){
-	return real_aux(std::forward<A>(a), *(typename std::decay_t<A>::element_ptr{}));}
+->decltype(real_aux(std::forward<A>(a), typename std::decay_t<A>::element_type{})){
+	return real_aux(std::forward<A>(a), typename std::decay_t<A>::element_type{});}
 
 template<class A, typename T=typename std::decay_t<A>::element_type::value_type, typename C_=Complex_<T>>
 auto imag_aux(A&& a, std::complex<T> const&)
@@ -223,6 +223,10 @@ template<class Complex> using conjr = involuter<Complex, decltype(conj)>;
 
 #if _TEST_MULTI_ADAPTORS_BLAS_NUMERIC
 
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS gemm"
+#define BOOST_TEST_DYN_LINK
+#include<boost/test/unit_test.hpp>
+
 #include "../blas/gemm.hpp"
 
 #include "../../array.hpp"
@@ -233,23 +237,23 @@ template<class Complex> using conjr = involuter<Complex, decltype(conj)>;
 #include<cassert>
 #include<iostream>
 
-using std::cout;
 
 namespace multi = boost::multi;
 
 template<class M> decltype(auto) print(M const& C){
+	using std::cout;
 	using boost::multi::size;
 	for(int i = 0; i != size(C); ++i){
-		for(int j = 0; j != size(C[i]); ++j) cout << C[i][j] << ' ';
-		cout << std::endl;
+		for(int j = 0; j != size(C[i]); ++j) cout<< C[i][j] <<' ';
+		cout<<std::endl;
 	}
-	return cout << std::endl;
+	return cout<<std::endl;
 }
 
-int main(){
+BOOST_AUTO_TEST_CASE(multi_blas_numeric){
 
 	using complex = std::complex<double>;
-	constexpr auto const I = complex{0., 1.};
+	complex const I{0, 1};
 
 	multi::array<double, 2> A = {
 		{1., 3., 4.}, 
@@ -274,15 +278,21 @@ int main(){
 	using multi::blas::real;
 	using multi::blas::imag;
 	
-	assert( Breal == real(B) );
-	assert( real(B) == Breal );
-	assert( imag(B) == Bimag );
+	BOOST_REQUIRE( Breal == real(B) );
+	BOOST_REQUIRE( real(B) == Breal );
+	BOOST_REQUIRE( imag(B) == Bimag );
 
 	{
-		namespace cuda = multi::cuda;
-		cuda::managed::array<complex, 2> Bgpu = B;
+		multi::cuda::array<complex, 2> Bgpu = B;
 		using multi::blas::imag;
-		assert( imag(Bgpu)[1][1] == imag(B)[1][1] );
+		BOOST_REQUIRE( imag(Bgpu)[1][1] == imag(B)[1][1] );
+		BOOST_REQUIRE( real(Bgpu)[1][1] == real(B)[1][1] );
+	}
+	{
+		multi::cuda::managed::array<complex, 2> Bgpu = B;
+		using multi::blas::imag;
+		BOOST_REQUIRE( imag(Bgpu)[1][1] == imag(B)[1][1] );
+		BOOST_REQUIRE( real(Bgpu)[1][1] == real(B)[1][1] );
 	}
 
 	multi::array_ref<double, 2> rB(reinterpret_cast<double*>(data_elements(B)), {size(B), 2*size(*begin(B))});
