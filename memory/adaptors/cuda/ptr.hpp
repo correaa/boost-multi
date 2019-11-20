@@ -179,8 +179,11 @@ public:
 	HD auto operator->*(PM&& pm) const
 	->decltype(ref<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{ptr<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{&(rp_->*std::forward<PM>(pm))}}){
 		return ref<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{ptr<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{&(rp_->*std::forward<PM>(pm))}};}
+public:
 	friend allocator<T> get_allocator(ptr const&){return {};}
 };
+
+template<class T> allocator<T> get_allocator(ptr<T> const&){return {};}
 
 template<
 	class Alloc, class InputIt, class Size, class... T, class ForwardIt = ptr<T...>,

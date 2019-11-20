@@ -85,8 +85,8 @@ get_allocator(T(&)[N]) noexcept{return {};}
 
 template<class Pointer>
 constexpr 
-std::allocator<typename std::iterator_traits<Pointer>::value_type> get_allocator(Pointer const&){
-	return {};
+std::allocator<typename std::iterator_traits<Pointer*>::value_type> get_allocator(Pointer* const&){
+	return std::allocator<typename std::iterator_traits<Pointer*>::value_type>{};
 }
 
 template<class T>

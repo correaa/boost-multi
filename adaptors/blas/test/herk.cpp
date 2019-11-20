@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-clang++ -Wall -Wextra -Wpedantic -Wfatal-errors -Wno-deprecated-declarations $0 -o $0x -lcudart -lcublas -lboost_unit_test_framework \
+nvcc -x cu --expt-relaxed-constexpr`#$CXX -Wall -Wextra -Wpedantic -Wfatal-errors` -Wno-deprecated-declarations $0 -o $0x -lcudart -lcublas -lboost_unit_test_framework \
 `pkg-config --libs blas`&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019
@@ -8,7 +8,7 @@ clang++ -Wall -Wextra -Wpedantic -Wfatal-errors -Wno-deprecated-declarations $0 
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
-#include "../../../adaptors/cuda.hpp"
+#include "../../../adaptors/cuda.hpp" // multi::cuda ns
 
 #include "../../../adaptors/blas/cuda.hpp"
 #include "../../../adaptors/blas/herk.hpp"
@@ -20,7 +20,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_cuda_herk){
 	namespace cuda = multi::cuda;
 
 	using complex = std::complex<double>;
-	constexpr complex I{0., 1.};
+	constexpr complex I{0, 1};
 
 	multi::array<complex, 2> const a = {
 		{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},

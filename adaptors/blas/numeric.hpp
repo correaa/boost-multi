@@ -129,8 +129,15 @@ public:
 	using underlying_type = It;
 	friend underlying_type underlying(involuter const& self) HD{return self.it_;}
 	operator It() const HD{return underlying(*this);}
-	friend auto get_allocator(involuter const& s){return get_allocator(s.it_);}
+	template<class Itt, class FF> friend auto get_allocator(involuter<Itt, FF> const&);
+//	friend auto get_allocator(involuter const& s){return get_allocator(s.it_);}
 };
+
+template<class It, class F>
+auto get_allocator(involuter<It, F> const& s){
+	using multi::get_allocator;
+	return get_allocator(s.it_);
+}
 
 #if 0
 template<class It2, class F>
