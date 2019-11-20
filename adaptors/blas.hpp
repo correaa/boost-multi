@@ -1,11 +1,12 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++17 -Ofast -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS $0.cpp -o $0x .DCATCH_CONFIG_MAIN `pkg-config --cflags --libs blas` -lboost_timer&&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -Wpedantic -D _TEST_MULTI_ADAPTORS_BLAS $0.cpp -o $0x `pkg-config --libs blas` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp; exit
 #endif
 // © Alfredo A. Correa 2018
 
 #ifndef MULTI_ADAPTORS_BLAS_HPP
 #define MULTI_ADAPTORS_BLAS_HPP
 
+#include "../adaptors/blas/iamax.hpp"
 #include "../adaptors/blas/asum.hpp"
 #include "../adaptors/blas/axpy.hpp"
 #include "../adaptors/blas/copy.hpp"
@@ -21,7 +22,9 @@
 
 #if _TEST_MULTI_ADAPTORS_BLAS
 
-#include<catch.hpp>
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS iamax"
+#define BOOST_TEST_DYN_LINK
+#include<boost/test/unit_test.hpp>
 
 #include "../array.hpp"
 #include "../utility.hpp"
@@ -35,9 +38,9 @@
 
 namespace multi = boost::multi;
 using complex = std::complex<double>;
-constexpr complex const I{0, 1};
+complex const I{0, 1};
 
-TEST_CASE("multi::blas::herk complex", "[report]"){
+BOOST_AUTO_TEST_CASE(multi_blas_herk_complex){
 
 	using multi::blas::herk;
 	{
@@ -48,32 +51,33 @@ TEST_CASE("multi::blas::herk complex", "[report]"){
 		};
 		multi::array<complex, 2> C({3, 3}, 9999.);
 		herk(1., A, C); // herk(A, C); // C†=C=AA†=(A†A)†
-		REQUIRE( C[1][2] == complex(41., 2.) );
-		REQUIRE( C[2][1] == conj(C[1][2]) );
+		BOOST_REQUIRE( C[1][2] == complex(41., 2.) );
+		BOOST_REQUIRE( C[2][1] == conj(C[1][2]) );
 	}
 }
 
 using T = std::complex<double>;
-TEST_CASE("multi::blas::asum complex", "[bench]"){
+
+BOOST_AUTO_TEST_CASE(multi_blas_asum_complex){
 	multi::array<T, 1> arr(1000000000, 0.);
 //	std::iota(begin(arr), end(arr), -700.);
 //	std::transform(cbegin(arr), cend(arr), begin(arr), [](auto&& a){return sqrt(a);});
 	{
 		boost::timer::auto_cpu_timer t;
 		using multi::blas::asum;
-		assert( asum(arr) == 0 );
+		BOOST_REQUIRE( asum(arr) == 0 );
 	//	std::cout << asum(arr) << std::endl;
 	}
 }
 
-TEST_CASE("multi::blas::nrm2 complex", "[bench]"){
+BOOST_AUTO_TEST_CASE(multi_blas_nrm2_complex){
 	multi::array<T, 1> arr(1000000000, 0.);
 //	std::iota(begin(arr), end(arr), -700.);
 //	std::transform(cbegin(arr), cend(arr), begin(arr), [](auto&& a){return sqrt(a);});
 	{
 		boost::timer::auto_cpu_timer t;
 		using multi::blas::nrm2;
-		assert( nrm2(arr) == 0 );
+		BOOST_REQUIRE( nrm2(arr) == 0 );
 	//	std::cout << nrm2(arr) << std::endl;
 	}
 }
