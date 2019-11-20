@@ -14,7 +14,7 @@ template<class T = void> class ptr{
 	static double value;
 public:
 	using difference_type = std::ptrdiff_t;
-	using value_type = T;
+	using value_type = std::decay_t<T>;
 	using pointer = T*;
 	using reference = ref<T>;
 	using iterator_category = std::random_access_iterator_tag;
@@ -33,6 +33,7 @@ public:
 	operator ptr<T const>() const{return {};}
 	explicit operator bool(){return false;}
 //	operator double*() const{return &value;}
+	friend std::allocator<value_type> get_allocator(ptr const&){return std::allocator<value_type>{};}
 };
 template<> double ptr<double>::value = 42.;
 template<> double ptr<double const>::value = 42.;

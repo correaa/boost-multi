@@ -83,11 +83,18 @@ template <class T, std::size_t N>
 constexpr std::allocator<std::decay_t<typename std::remove_all_extents<T[N]>::type>> 
 get_allocator(T(&)[N]) noexcept{return {};}
 
-template<class Pointer>
+template<class T>
 constexpr 
-std::allocator<typename std::iterator_traits<Pointer*>::value_type> get_allocator(Pointer* const&){
-	return std::allocator<typename std::iterator_traits<Pointer*>::value_type>{};
+std::allocator<typename std::iterator_traits<T*>::value_type> get_allocator(T* const&){
+	return std::allocator<typename std::iterator_traits<T*>::value_type>{};
 }
+
+//template<class It>
+//constexpr auto get_allocator(It const& it)
+//->decltype(get_allocator(to_address(it))){
+//	return get_allocator(to_address(it));}
+
+template<class T> auto get_allocator(T const&, ...){return std::allocator<typename std::iterator_traits<T>::value_type>{};}
 
 template<class T>
 auto has_num_elements_aux(T const& t)->decltype(t.num_elements(), std::true_type {});
