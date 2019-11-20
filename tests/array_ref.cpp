@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-g++-7 -Wall -Wextra -Wpedantic -Wfatal-errors $0 -o $0x &&$0x&&rm $0x;exit
+$CXX -Wall -Wextra -Wpedantic -Wfatal-errors $0 -o $0x &&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019
 
