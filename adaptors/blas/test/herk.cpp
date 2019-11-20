@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-`#nvcc -x cu --expt-relaxed-constexpr`clang++ -Wall -Wextra -Wpedantic -Wfatal-errors -Wno-deprecated-declarations $0 -o $0x -lcudart -lcublas -lboost_unit_test_framework \
+nvcc -x cu --expt-relaxed-constexpr`#clang++ -Wall -Wextra -Wpedantic -Wfatal-errors` -Wno-deprecated-declarations $0 -o $0x -lcudart -lcublas -lboost_unit_test_framework \
 `pkg-config --libs blas`&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019
