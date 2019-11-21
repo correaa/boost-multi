@@ -27,6 +27,7 @@ namespace managed{
 
 	template<class T=void>
 	class allocator : cuda::allocator<T>{
+		static_assert( std::is_same<T, std::decay_t<T>>{}, "!" );
 	public:
 		using value_type = T;
 		using pointer = managed::ptr<T>;

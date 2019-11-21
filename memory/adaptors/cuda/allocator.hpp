@@ -39,6 +39,7 @@ long allocation_counter::bytes_deallocated = 0;
 template<class T=void> 
 class allocator : protected allocation_counter{
 public:
+	static_assert( std::is_same<T, std::decay_t<T>>{}, "!" );
 	using value_type = T;
 	using pointer = ptr<T>;
 	using size_type = ::size_t; // as specified by CudaMalloc
