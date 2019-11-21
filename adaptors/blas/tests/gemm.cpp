@@ -241,6 +241,9 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_automatic4){
 		using multi::blas::gemm;
 		gemm(1., a, hermitized(b), 0., c);
 		BOOST_REQUIRE( real(c[0][0]) > 0);
+
+		auto c_copy = gemm(1., a, hermitized(b));
+		BOOST_REQUIRE( c_copy == c );
 	}
 	{
 		multi::array<complex, 2> const a_block({24, 100}, 1.+2.*I);
@@ -253,6 +256,9 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_automatic4){
 
 		BOOST_REQUIRE( real(c[0][0]) > 0);
 		BOOST_REQUIRE( c == c2 );
+
+		auto c2_copy = gemm(1., a_block.strided(2), hermitized(b));
+		BOOST_REQUIRE( c2_copy == c2 );
 	}
 }
 
