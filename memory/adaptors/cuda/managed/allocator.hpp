@@ -44,6 +44,8 @@ namespace managed{
 			::new(p.rp_) T(std::forward<Args>(args)...);
 		}
 		template<class P> void destroy(P p){p.rp_->~T();}
+		constexpr bool operator==(allocator<T> const&) const{return true;}
+		constexpr bool operator!=(allocator<T> const&) const{return false;}
 	};
 }
 

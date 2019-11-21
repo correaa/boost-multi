@@ -92,12 +92,14 @@ public:
 	->decltype(this->operator decay_type()==other){
 		return this->operator decay_type()==other;}
 	template<class DecayType>//, class Involuted /**/>
-	friend auto operator==(DecayType&& other, involuted const& self)
-	->decltype(other == self.operator decay_type()){
+	friend bool operator==(DecayType&& other, involuted const& self)
+//	->decltype(other == self.operator decay_type())
+	{
 		return other == self.operator decay_type();}
 //	auto imag() const{return static_cast<decay_type>(*this).imag();}
-	template<class Any> friend auto operator<<(Any&& a, involuted const& self)
-	->decltype(a << self.operator decay_type()){
+	template<class Any> friend Any& operator<<(Any&& a, involuted const& self)
+//	->decltype(a << self.operator decay_type())
+	{
 		return a << self.operator decay_type();}
 };
 

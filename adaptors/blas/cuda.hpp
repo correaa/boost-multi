@@ -26,6 +26,7 @@ namespace multi{
 //namespace blas{
 
 class cublas_context{
+protected:
 	cublasHandle_t h_;
 public:
 	cublas_context(){
@@ -229,8 +230,8 @@ void herk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::ptr<Tconst
 	cublasDestroy(handle);
 }
 
-template<typename T, typename AA, typename BB, class C, typename S>
-void gemm(C transA, C transB, S m, S n, S k, AA a, multi::memory::cuda::ptr<T const> A, S lda, multi::memory::cuda::ptr<T const> B, S ldb, BB beta, multi::memory::cuda::ptr<T> CC, S ldc){
+template<typename TconstA, typename TconstB, typename T, typename AA, typename BB, class C, typename S>
+void gemm(C transA, C transB, S m, S n, S k, AA a, multi::memory::cuda::ptr<TconstA> A, S lda, multi::memory::cuda::ptr<TconstB> B, S ldb, BB beta, multi::memory::cuda::ptr<T> CC, S ldc){
 	cublasHandle_t handle;
 	{cublasStatus_t s = cublasCreate(&handle); assert(s==CUBLAS_STATUS_SUCCESS);}
 	cublasOperation_t cutransA = [transA](){
@@ -283,9 +284,9 @@ void scal(S n, TA a, multi::memory::cuda::managed::ptr<T> x, S incx){
 	scal(n, a, multi::memory::cuda::ptr<T>(x), incx);
 }
 
-template<typename AA, typename BB, class S>
-void gemm(char transA, char transB, S m, S n, S k, AA const& a, multi::memory::cuda::managed::ptr<double const> A, S lda, multi::memory::cuda::managed::ptr<double const> B, S ldb, BB const& beta, multi::memory::cuda::managed::ptr<double> CC, S ldc){
-	gemm(transA, transB, m, n, k, a, boost::multi::memory::cuda::ptr<double const>(A), lda, boost::multi::memory::cuda::ptr<double const>(B), ldb, beta, boost::multi::memory::cuda::ptr<double>(CC), ldc);
+template<typename AA, typename BB, class S, class TconstA, class TconstB, class T>
+void gemm(char transA, char transB, S m, S n, S k, AA const& a, multi::memory::cuda::managed::ptr<TconstA> A, S lda, multi::memory::cuda::managed::ptr<TconstB> B, S ldb, BB const& beta, multi::memory::cuda::managed::ptr<T> CC, S ldc){
+	gemm(transA, transB, m, n, k, a, boost::multi::memory::cuda::ptr<TconstA>(A), lda, boost::multi::memory::cuda::ptr<TconstB>(B), ldb, beta, boost::multi::memory::cuda::ptr<T>(CC), ldc);
 }
 
 template<class Tconst, class T, class UL, class C, class S, class Real>

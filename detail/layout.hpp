@@ -175,7 +175,7 @@ public:
 	friend constexpr size_type num_elements(layout_t const& s){return s.num_elements();}
 	constexpr bool empty() const{return nelems_ == 0;}
 	friend constexpr bool empty(layout_t const& s){return s.empty();}
-	constexpr index_extension extension() const{
+	constexpr index_extension extension() const HD{
 		return {offset_/stride_, (offset_ + nelems_)/stride_};
 	}
 	friend constexpr auto extension(layout_t const& self){return self.extension();}

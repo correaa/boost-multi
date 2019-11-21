@@ -115,7 +115,7 @@ struct basic_array_ptr :
 	Ref        operator[](difference_type n) const HD{return *(*this + n);}
 	template<class O> bool operator==(O const& o) const{return equal(o);}
 	bool operator<(basic_array_ptr const& o) const{return distance_to(o) > 0;}
-	basic_array_ptr(typename Ref::element_ptr p, Layout l) : Ref{l, p}{}
+	basic_array_ptr(typename Ref::element_ptr p, Layout l) HD : Ref{l, p}{}
 	template<typename T, dimensionality_type D, typename ElementPtr, class LLayout>
 	friend struct basic_array;
 	auto base() const{return this->base_;}
@@ -201,8 +201,15 @@ struct array_iterator :
 	template<class O> bool operator==(O const& o) const{return equal(o);}
 	bool operator<(array_iterator const& o) const{return distance_to(o) > 0;}
 	array_iterator(typename Ref::element_ptr p, layout_t<D-1> l, index stride) HD : /*Ref{l, p},*/
+
+
 		ptr_{p, l}, 
+
+
+
 		stride_{stride}
+
+
 	{}
 	template<typename T, dimensionality_type DD, typename ElementPtr, class LLayout>
 	friend struct basic_array;
@@ -323,7 +330,8 @@ public:
 	}
 	friend auto decay(basic_array const& self){return self.decay();}
 	HD typename types::reference operator[](index i) const{
-		assert( this->extension().contains(i) );
+		auto x = this->extension();
+		assert( x.contains(i) );
 	//	return typename types::reference(sub, types::base_ + Layout::operator()(i));
 		typename types::element_ptr new_base = typename types::element_ptr(this->base()) + std::ptrdiff_t{Layout::operator()(i)};
 		return typename types::reference(this->layout().sub, new_base);//typename types::element_ptr(this->base()) + std::ptrdiff_t{Layout::operator()(i)});

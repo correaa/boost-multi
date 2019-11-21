@@ -26,8 +26,8 @@ int main(){
 			{15, 16, 17, 18, 19}
 		};
 		double b[4][5];
-		multi::array_ref<double, 2, double*> A(&a[0][0], {4, 5});
-		multi::array_ref<double, 2, double*> B(&b[0][0], {4, 5});
+		multi::array_ref<double, 2> A(&a[0][0], {4, 5});
+		multi::array_ref<double, 2> B(&b[0][0], {4, 5});
 		rotated(B) = rotated(A);
 		multi::biiterator<std::decay_t<decltype(begin(A))>> biit{begin(A), 0, size(*begin(A))};
 		for(int i = 0; i!=num_elements(A); ++i, ++biit)

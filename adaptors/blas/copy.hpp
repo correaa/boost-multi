@@ -12,24 +12,23 @@ namespace boost{
 namespace multi{
 namespace blas{
 
-template<class It, typename Size, class OutIt>
-OutIt copy_n(It first, Size n, OutIt d_first){
-	using core::copy;
-	copy(n, base(first), stride(first), base(d_first), stride(d_first));
-	return d_first + n;
-}
+using multi::blas::core::copy;
 
-template<class It1, class OutIt>
-OutIt copy(It1 first, It1 last, OutIt d_first){
-	assert( stride(first) == stride(last) );
-	return blas::copy_n(first, std::distance(first, last), d_first);
-}
+template<class It, typename Size, class OutIt>
+auto copy_n(It first, Size n, OutIt d_first)
+->decltype(copy(n, base(first), stride(first), base(d_first), stride(d_first)), d_first + n){
+	return copy(n, base(first), stride(first), base(d_first), stride(d_first)), d_first + n;}
+
+//template<class It1, class OutIt>
+//auto copy(It1 f, It1 l, OutIt d)
+//->decltype(blas::copy_n(f, std::distance(f, l), d)){assert(stride(f)==stride(l));
+//	return blas::copy_n(f, std::distance(f, l), d);
+//}
 
 template<class X1D, class Y1D>
-Y1D&& copy(X1D const& x, Y1D&& y){
-	assert( size(x) == size(y) );
-	assert( offset(x) == 0 and offset(y) == 0 );
-	auto e = blas::copy(begin(x), end(x), begin(y)); (void)e; assert(e==end(y));
+Y1D&& copy(X1D const& x, Y1D&& y){assert(size(x)==size(y)); assert(offset(x)==0 and offset(y)==0);
+	copy(size(x), base(x), stride(x), base(y), stride(y));
+//	auto e = blas::copy(begin(x), end(x), begin(y)); (void)e; assert(e==end(y));
 	return std::forward<Y1D>(y);
 }
 

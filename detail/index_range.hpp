@@ -60,7 +60,7 @@ public:
 	using pointer = value_type;
 	constexpr range() : first_{}, last_{first_}{}
 	template<class Range, typename = std::enable_if_t<std::is_same<std::decay_t<Range>, value_type>{}> >
-	constexpr range(Range&& o) : first_{std::forward<Range>(o).first()}, last_{std::forward<Range>(o).last()}{}
+	constexpr range(Range&& o) HD : first_{std::forward<Range>(o).first()}, last_{std::forward<Range>(o).last()}{}
 //	constexpr range(value_type const& fl) : first_{fl}, last_{fl + 1}{}
 //	constexpr range(value_type f, value_type l) : first_{f}, last_{l}{}
 	constexpr range(IndexType f, IndexTypeLast l) : first_{f}, last_{l}{}
