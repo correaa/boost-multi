@@ -164,7 +164,7 @@ public:
 	typename ptr::difference_type operator-(ptr const& other) const{return rp_-other.rp_;}
 	friend raw_pointer raw_pointer_cast(ptr const& self){return self.rp_;}
 	operator cuda::ptr<T, RawPtr>() const{return cuda::ptr<T, RawPtr>{rp_};}
-	friend allocator<T> get_allocator(ptr const&){return {};}
+	friend allocator<std::decay_t<T>> get_allocator(ptr const&){return {};}
 };
 
 }

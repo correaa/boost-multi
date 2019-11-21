@@ -94,7 +94,12 @@ std::allocator<typename std::iterator_traits<T*>::value_type> get_allocator(T* c
 //->decltype(get_allocator(to_address(it))){
 //	return get_allocator(to_address(it));}
 
-template<class T> auto get_allocator(T const&, ...){return std::allocator<typename std::iterator_traits<T>::value_type>{};}
+template<class Iterator> auto get_allocator(Iterator const& it)
+->decltype(get_allocator(typename std::iterator_traits<Iterator>::pointer{})){
+	return get_allocator(typename std::iterator_traits<Iterator>::pointer{});}
+
+//->decltype(std::allocator<typename std::iterator_traits<Iterator>::value_type>{}){
+//	return std::allocator<typename std::iterator_traits<Iterator>::value_type>{};}
 
 template<class T>
 auto has_num_elements_aux(T const& t)->decltype(t.num_elements(), std::true_type {});
@@ -357,6 +362,7 @@ void f(T&& t){
 
 template<class T> void f();
 int main(){
+	static_assert( std::is_same<std::iterator_traits<double const*>::value_type, double>{}, "!");
 
 	using multi::corigin;
 	using multi::dimensionality;
@@ -366,7 +372,7 @@ int main(){
 	using multi::size;
 	using multi::sizes;
 	using multi::num_elements;
- {
+{
 	double A[4] = {1.,2.,3.,4.};
 	assert( dimensionality(A) == 1 );
 	assert( extension(A).first() == 0 );
@@ -375,7 +381,9 @@ int main(){
 	assert( size(A) == 4 );
 	assert( std::get<0>(sizes(A)) == size(A) );
 	using multi::get_allocator;
+
 	static_assert(std::is_same<decltype(get_allocator(A)), std::allocator<double> >{}, "!");
+
 	using std::addressof;
 //	using multi::data;
 	using multi::data_elements;
@@ -412,6 +420,8 @@ int main(){
 //	assert( std::get<1>(x) == 2 );
 //	std::cout << multi::num_elements(a) << std::endl;
 //	assert( multi::num_elements(a) == 20 );
+}{
+	
 }
 
 }
