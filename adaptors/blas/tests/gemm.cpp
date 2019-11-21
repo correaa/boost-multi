@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_automatic2){
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_automatic3){
-	using complex = std::complex<double>; constexpr complex I{0,1};
+	using complex = std::complex<double>; complex const I{0,1};
 	multi::array<complex, 2> const a = {
 		{1.-2.*I, 9.-1.*I},
 		{3.+3.*I, 7.-4.*I},
@@ -230,4 +230,30 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_automatic3){
 		BOOST_REQUIRE( cmcu[1][2] == complex(112, 12) );
 	}
 }
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_automatic4){
+	using complex = std::complex<double>; complex const I{0,1};
+	multi::array<complex, 2> c({12, 12});
+	{
+		multi::array<complex, 2> const a({12, 100}, 1.+2.*I);
+		multi::array<complex, 2> const b({12, 100}, 1.+2.*I);
+		using multi::blas::hermitized;
+		using multi::blas::gemm;
+		gemm(1., a, hermitized(b), 0., c);
+		BOOST_REQUIRE( real(c[0][0]) > 0);
+	}
+	{
+		multi::array<complex, 2> const a_block({24, 100}, 1.+2.*I);
+		multi::array<complex, 2> const b({12, 100}, 1.+2.*I);
+		multi::array<complex, 2> c2({12, 12});
+
+		using multi::blas::hermitized;
+		using multi::blas::gemm;
+		gemm(1., a_block.strided(2), hermitized(b), 0., c2);
+
+		BOOST_REQUIRE( real(c[0][0]) > 0);
+		BOOST_REQUIRE( c == c2 );
+	}
+}
+
 
