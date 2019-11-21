@@ -85,18 +85,21 @@ get_allocator(T(&)[N]) noexcept{return {};}
 
 template<class T>
 constexpr 
-std::allocator<typename std::iterator_traits<T*>::value_type> get_allocator(T* const&){
-	return std::allocator<typename std::iterator_traits<T*>::value_type>{};
-}
+auto get_allocator(T* const&)
+->decltype(std::allocator<typename std::iterator_traits<T*>::value_type>{}){
+	return std::allocator<typename std::iterator_traits<T*>::value_type>{};}
 
 //template<class It>
 //constexpr auto get_allocator(It const& it)
 //->decltype(get_allocator(to_address(it))){
 //	return get_allocator(to_address(it));}
 
-template<class Iterator> auto get_allocator(Iterator const& it)
-->decltype(get_allocator(typename std::iterator_traits<Iterator>::pointer{})){
-	return get_allocator(typename std::iterator_traits<Iterator>::pointer{});}
+template<class It>//, class ss = decltype(get_allocator(typename std::iterator_traits<Iterator>::pointer{}))> 
+auto get_allocator(It const&, ...)
+->decltype(std::allocator<typename std::iterator_traits<It>::value_type>{}){
+	return std::allocator<typename std::iterator_traits<It>::value_type>{};}
+//->decltype(get_allocator(typename std::iterator_traits<Iterator>::pointer{})){
+//	return get_allocator(typename std::iterator_traits<Iterator>::pointer{});}
 
 //->decltype(std::allocator<typename std::iterator_traits<Iterator>::value_type>{}){
 //	return std::allocator<typename std::iterator_traits<Iterator>::value_type>{};}
