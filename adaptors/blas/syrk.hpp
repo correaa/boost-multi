@@ -59,8 +59,10 @@ template<typename AA, class A2D, class C2D>
 C2D&& syrk(AA alpha, A2D const& a, C2D&& c){
 	if(stride(c)==1) syrk(triangular::upper, alpha, a, rotated(c));
 	else             syrk(triangular::lower, alpha, a,        (c));
+	assert( size(c) == size(rotated(c)) );
 	for(typename std::decay_t<C2D>::difference_type i = 0; i != size(c); ++i)
-		blas::copy(begin(rotated(c)[i])+i+1, end(rotated(c)[i]), begin(c[i])+i+1);
+		blas::copy(rotated(c)[i]({i+1, size(c)}), c[i]({i+1, size(c)}) );
+	//	blas::copy(begin(rotated(c)[i])+i+1, end(rotated(c)[i]), begin(c[i])+i+1);
 	return std::forward<C2D>(c);
 }
 

@@ -83,8 +83,11 @@ void herk_aux(AA alpha, A2D const& a, C2D&& c, std::true_type){
 		herk(triangular::lower, alpha, a, c);
 		using multi::rotated;
 		using multi::size;
+		assert( size(c) == size(rotated(c)) );
 		for(typename std::decay_t<C2D>::difference_type i = 0; i != size(c); ++i){
-			blas::copy(begin(rotated(c)[i])+i+1, end(rotated(c)[i]), begin(c[i])+i+1);
+			blas::copy( rotated(c)[i]({i + 1, size(c)}), c[i]({i+1, size(c)}) );
+		//	blas::copy(rotated(c)[i]({i + 1, size(c)})
+		//	blas::copy(begin(rotated(c)[i])+i+1, end(rotated(c)[i]), begin(c[i])+i+1);
 			blas::scal(-1., begin(imag(c[i]))+i+1, end(imag(c[i])));
 		}
 	}
@@ -101,7 +104,8 @@ C2D&& herk(AA alpha, A2D const& a, C2D&& c){
 		using multi::rotated;
 		using multi::size;
 		for(typename std::decay_t<C2D>::difference_type i = 0; i != size(c); ++i){
-			blas::copy(begin(rotated(c)[i])+i+1, end(rotated(c)[i]), begin(c[i])+i+1);
+			blas::copy( rotated(c)[i]({i + 1, size(c)}), c[i]({i+1, size(c)}) );
+		//	blas::copy(begin(rotated(c)[i])+i+1, end(rotated(c)[i]), begin(c[i])+i+1);
 			blas::scal(-1., begin(imag(c[i]))+i+1, end(imag(c[i])));
 		}
 	}else syrk(alpha, a, c);

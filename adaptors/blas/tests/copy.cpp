@@ -32,7 +32,8 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_copy_real){
 	BOOST_REQUIRE( A[0][2] == 3. );
 	BOOST_REQUIRE( A[2][2] == 3. );
 
-	multi::blas::copy(begin(A[1]), end(A[1]), begin(A[2])); // dcopy
+//	multi::blas::copy(begin(A[1]), end(A[1]), begin(A[2])); // dcopy
+	multi::blas::copy( A[1]({0, size(A[1])}), A[2]({0, size(A[1])}) );
 	BOOST_REQUIRE( A[1][3] == 8. );
 	BOOST_REQUIRE( A[2][3] == 8. );
 
