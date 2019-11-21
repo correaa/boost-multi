@@ -15,6 +15,8 @@ for a in ./tests/*.cpp; do echo $a; sh $a || break; echo "\n"; done; exit;*/
 
 #include<algorithm> // copy_n
 
+#include<boost/serialization/nvp.hpp>
+
 #if defined(__CUDACC__)
 #define HD __host__ __device__
 #else
@@ -274,7 +276,7 @@ struct biiterator :
 	using difference_type = std::ptrdiff_t;
 	using reference = decltype(*std::declval<biiterator>());
 	using value_type = std::decay_t<reference>;
-	using pointer = void*;
+	using pointer = value_type*;
 	using iterator_category = std::random_access_iterator_tag;
 };
 
@@ -295,6 +297,10 @@ protected:
 	basic_array(basic_array const&) = default;
 	template<class, class> friend struct basic_array_ptr;
 public:
+//	template<class Archive>
+//	void serialize(Archive& ar, unsigned int file_version){
+//		for(auto&& e : *this) ar & BOOST_SERIALIZATION_NVP(e);
+//	}
 	friend constexpr auto dimensionality(basic_array const& self){return self.dimensionality;}
 	using typename types::reference;
 	basic_array(basic_array&&) = default;
@@ -635,6 +641,10 @@ protected:
 	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
 	HD friend decltype(auto) static_array_cast(basic_array<TT, DD, PP> const&);
 public:
+	template<class Archive>
+	void serialize(Archive& ar, unsigned int){
+		for(auto&& e : *this) ar & BOOST_SERIALIZATION_NVP(e);
+	}
 	basic_array(basic_array&&) = default; // ambiguos deep-copy a reference type, in C++14 use auto&& A_ref = Expression; or decay_t<decltype(Expression)> A = Expression
 	// in c++17 things changed and non-moveable non-copyable types can be returned from functions and captured by auto
 protected:

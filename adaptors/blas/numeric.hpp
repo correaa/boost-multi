@@ -110,6 +110,12 @@ template<class T, class F> involuted(T&&, F)->involuted<T const, F>;
 #endif
 
 template<class It, class F>
+class involuter;
+
+template<class It, class F>
+auto get_allocator(involuter<It, F> const& s);
+
+template<class It, class F>
 class involuter : public std::iterator_traits<It>{
 	It it_; // [[no_unique_address]] 
 	F f_;

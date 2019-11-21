@@ -200,7 +200,7 @@ void gemm_aux(AA a, A2D const& A, B2D const& B, BB b, C2D&& C, std::true_type, s
 }
 
 template<class AA, class BB, class A2D, class B2D, class C2D>
-decltype(auto) gemm_aux2(AA a, A2D const& A, B2D const& B, BB b, C2D&& C, std::false_type){
+C2D&& gemm_aux2(AA a, A2D const& A, B2D const& B, BB b, C2D&& C, std::false_type){
 	assert( stride(rotated(C)) == 1 );
 	gemm_aux(a, A, B, b, is_c_ordering(C)?rotated(rotated(C)):rotated(C), multi::blas::is_hermitized<A2D>{}, multi::blas::is_hermitized<B2D>{});
 	return std::forward<C2D>(C);
