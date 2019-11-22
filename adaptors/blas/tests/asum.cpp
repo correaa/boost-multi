@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-c++ -std=c++14 -Wall -Wextra -Wpedantic -lblas -DADD_ $0 -o $0x.x  && time $0x.x $@ && rm -f $0x.x; exit
+$CXX -Wall -Wextra -Wpedantic $0 -o $0x -lblas `pkg-config --libs blas`&&$0x&&rm $0x; exit
 #endif
 
 #include "../../blas.hpp"
@@ -8,6 +8,7 @@ c++ -std=c++14 -Wall -Wextra -Wpedantic -lblas -DADD_ $0 -o $0x.x  && time $0x.x
 
 #include<complex>
 #include<cassert>
+#include<numeric>
 
 using std::cout;
 namespace multi = boost::multi;
