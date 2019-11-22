@@ -12,6 +12,14 @@
 #include "../blas/core.hpp"
 #include "../blas/operations.hpp"
 
+#if __cplusplus>=201703L and __has_cpp_attribute(nodiscard)>=201603
+#define NODISCARD(MsG) [[nodiscard]]
+#elif __has_cpp_attribute(gnu::warn_unused_result)
+#define NODISCARD(MsG) [[gnu::warn_unused_result]]
+#else
+#define NODISCARD(MsG)
+#endif
+
 namespace boost{
 namespace multi{
 namespace blas{
@@ -220,6 +228,7 @@ decltype(auto) gemm(AA a, A2D const& A, B2D const& B, BB b, C2D&& C){
 }
 
 template<class AA, class A2D, class B2D, class C2D = typename A2D::decay_type>
+NODISCARD("second argument is const")
 auto gemm(AA a, A2D const& A, B2D const& B){
 	assert(get_allocator(A) == get_allocator(B));
 	C2D ret({size(A), size(rotated(B))});
