@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_SCAL $0.cpp -o $0x `pkg-config blas --cflags --libs` &&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_SCAL $0.cpp -o $0x `pkg-config  --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp; exit
 #endif
 // © Alfredo A. Correa 2019
 
@@ -48,14 +48,15 @@ auto scal(T a, X1D const& m)->std::decay_t<decltype(scal(a, m.decay()))>{
 
 #if _TEST_MULTI_ADAPTORS_BLAS_SCAL
 
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS scal"
+#define BOOST_TEST_DYN_LINK
+#include<boost/test/unit_test.hpp>
+
 #include "../../array.hpp"
 
-#include<cassert>
-
-using std::cout;
 namespace multi = boost::multi;
 
-int main(){
+BOOST_AUTO_TEST_CASE(multi_blas_scal_real){
 	{
 		multi::array<double, 2> A = {
 			{1.,  2.,  3.,  4.},
@@ -64,10 +65,10 @@ int main(){
 		};
 
 		using multi::blas::scal;
-		auto&& S = scal(2., rotated(A)[1]);
+		auto S = scal(2., rotated(A)[1]);
 
-		assert( A[2][1] == 20. );
-		assert( S[0] == 4. );
+		BOOST_REQUIRE( A[2][1] == 20 );
+		BOOST_REQUIRE( S[0] == 4 );
 	}
 	{
 		multi::array<double, 2> const A = {
@@ -77,14 +78,8 @@ int main(){
 		};
 		using multi::blas::scal;
 		auto rA1_scaled = scal(2., A[1]);
-		assert( size(rA1_scaled) == 4 );
-		assert( rA1_scaled[1] == 12. );
-	}
-	{
-	//	multi::array<double, 1> b; // empty vector is ok
-	//	using multi::blas::scal;
-	//	scal(2., b);
-	//	assert( size(b) == 0 );
+		BOOST_REQUIRE( size(rA1_scaled) == 4 );
+		BOOST_REQUIRE( rA1_scaled[1] == 12 );
 	}
 }
 
