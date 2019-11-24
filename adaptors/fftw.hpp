@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&c++ -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_FFTW $0.cpp -o$0x `pkg-config --libs fftw3` -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&clang++ -std=c++17 -Ofast -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_FFTW $0.cpp -o$0x `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp; exit
 #endif
 #ifndef MULTI_ADAPTORS_FFTW_HPP
 #define MULTI_ADAPTORS_FFTW_HPP
@@ -13,6 +13,17 @@
 #include<cmath>
 #include<complex>
 #include<memory>
+#include<numeric> // accumulate
+
+#include<experimental/tuple> // experimental::apply
+
+#if __cplusplus>=201703L and __has_cpp_attribute(nodiscard)>=201603
+#define NODISCARD(MsG) [[nodiscard]]
+#elif __has_cpp_attribute(gnu::warn_unused_result)
+#define NODISCARD(MsG) [[gnu::warn_unused_result]]
+#else
+#define NODISCARD(MsG)
+#endif
 
 namespace boost{
 namespace multi{
@@ -143,6 +154,7 @@ auto fftw_plan_dft_1d(
 	In&& in, Out&& out, int sign, unsigned flags = FFTW_ESTIMATE
 ){
 	static_assert(in.dimensionality == 1, "!"); assert(size(in) == size(out));
+	assert( in.is_compact() ); assert( out.is_compact() );
 	return multi::fftw_plan_dft_1d(size(in), data_elements(in), data_elements(out), sign, flags);
 }
 
@@ -151,6 +163,7 @@ auto fftw_plan_dft_2d(
 	In&& in, Out&& out, int sign, unsigned flags = FFTW_ESTIMATE
 ){
 	static_assert(in.dimensionality == 2, "!"); assert(in.sizes() == out.sizes());
+	assert( in.is_compact() ); assert( out.is_compact() );
 	return multi::fftw_plan_dft_2d(
 		sizes(in)[0], sizes(in)[1], 
 		data_elements(in), data_elements(out), sign, flags
@@ -162,6 +175,7 @@ auto fftw_plan_dft_3d(
 	In&& in, Out&& out, int sign, unsigned flags = FFTW_ESTIMATE
 ){
 	static_assert(in.dimensionality == 3, "!"); assert(in.sizes() == out.sizes());
+	assert( in.is_compact() ); assert( out.is_compact() );
 	return multi::fftw_plan_dft_3d(
 		sizes(in)[0], sizes(in)[1], sizes(in)[2],
 		data(in), data(out),
@@ -192,49 +206,103 @@ template<class T> constexpr std::remove_reference_t<T> _constx(T&&t){return t;}
 #define logic_assert(ConditioN, MessagE) assert(ConditioN && MessagE);
 #endif
 
-template<class ArrayIn, class ArrayOut>
-auto fftw_plan_dft(
-	ArrayIn&& in, ArrayOut&& out, 
-	int sign, unsigned flags = FFTW_ESTIMATE
-){
-	using multi::dimensionality;
-	logic_assert(dimensionality(in) == dimensionality(out), 
-		"incompatible input output");
-	using multi::sizes;
-	assert(sizes(in) == sizes(out));
-	auto ns = to_array<int>(sizes(in));
-	return fftw_plan_dft(
-		dimensionality(in), ns.data(), 
-		origin(std::forward<ArrayIn>(in)), origin(std::forward<ArrayOut>(out)), 
+template<class In, class Out, dimensionality_type D = std::decay_t<In>::dimensionality,
+typename = std::enable_if_t<D == std::decay_t<Out>::dimensionality>>
+fftw_plan fftw_plan_many_dft(dimensionality_type Rank, In&& in, Out&& out, int sign, unsigned flags = FFTW_ESTIMATE){
+	using multi::sizes; using multi::strides; assert(sizes(in) == sizes(out));
+	auto ion = to_array<std::ptrdiff_t>(sizes(in));
+	auto istrides = to_array<std::ptrdiff_t>(strides(in));
+	auto ostrides = to_array<std::ptrdiff_t>(strides(out));
+	std::array<fftw_iodim64, D> dims;
+	for(int i = 0; i != D; ++i) dims[i] = fftw_iodim64{ion[i], istrides[i], ostrides[i]};
+//	std::array<fftw_iodim64, D> howmany_dims = dims;//{ion[0], istrides[0], ostrides[0]};
+	assert( Rank <= D );
+	return fftw_plan_guru64_dft(
+		/*int rank*/ Rank, 
+		/*const fftw_iodim64 *dims*/ &dims[D - Rank],
+		/*int howmany_rank*/ D - Rank,
+		/*const fftw_iodim *howmany_dims*/ dims.data(), //nullptr, //howmany_dims.data(), //;//nullptr,
+		/*fftw_complex *in*/ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(base(in))), 
+		/*fftw_complex *out*/ reinterpret_cast<fftw_complex*>(base(out)),
 		sign, flags
 	);
 }
 
-
-#if 0
-template<class ItIn, class ItOut>
-fftw_plan_many_dft(ItIn first, ItIn last, ItOut d_first, int sign, unsigned flags = FFTW_ESTIMATE){
-	assert(first->dimensionality == last->dimensionality);
-	assert(first->dimensionality == d_first->dimensionality);
-	assert(first->extensions() == last->extensions());
-	auto ns = to_array<int>(sizes(*first));
-//	for(int i = 0; i != first->dimensionality; ++i) 
-	return fftw_plan_many_dft(
-		first->dimensionality, ns.data(), std::distance(first, last),
-		first.data(), nullptr, 
-		
-	)
+template<class In, class Out, std::size_t D = std::decay_t<In>::dimensionality,
+typename = std::enable_if_t<D == std::decay_t<Out>::dimensionality>>
+fftw_plan fftw_plan_many_dft(std::array<bool, D> which, In&& in, Out&& out, int sign, unsigned flags = FFTW_ESTIMATE){
+	using multi::sizes; using multi::strides; assert(sizes(in) == sizes(out));
+	auto ion = to_array<std::ptrdiff_t>(sizes(in));
+	auto istrides = to_array<std::ptrdiff_t>(strides(in));
+	auto ostrides = to_array<std::ptrdiff_t>(strides(out));
+	std::array<fftw_iodim64, D> dims   ; auto next_yes = dims.begin();
+	std::array<fftw_iodim64, D> howmany; auto next_not = howmany.begin();
+	for(int i = 0; i != D; ++i){
+		if(which[i]){*next_yes = fftw_iodim64{ion[i], istrides[i], ostrides[i]}; ++next_yes;}
+		else        {*next_not = fftw_iodim64{ion[i], istrides[i], ostrides[i]}; ++next_not;}
+	};
+//	std::array<fftw_iodim64, D> howmany_dims = dims;//{ion[0], istrides[0], ostrides[0]};
+//	assert( Rank <= D );
+	return fftw_plan_guru64_dft(
+		/*int rank*/ next_yes - dims.begin(), 
+		/*const fftw_iodim64 *dims*/ dims.data(), 
+		/*int howmany_rank*/ next_not - howmany.begin(),
+		/*const fftw_iodim *howmany_dims*/ howmany.data(), //nullptr, //howmany_dims.data(), //;//nullptr,
+		/*fftw_complex *in*/ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(base(in))), 
+		/*fftw_complex *out*/ reinterpret_cast<fftw_complex*>(base(out)),
+		sign, flags
+	);
 }
-	ItIn->dimensionality, 
-fftw_plan fftw_plan_many_dft(int rank, const int *n, int howmany,
-                             fftw_complex *in, const int *inembed,
-                             int istride, int idist,
-                             fftw_complex *out, const int *onembed,
-                             int ostride, int odist,
-                             int sign, unsigned flags);
-#endif
 
-///////////////////////////////////////////////////////////////////////////////
+template<dimensionality_type Rank, class In, class Out, dimensionality_type D = std::decay_t<In>::dimensionality,
+typename = std::enable_if_t<D == std::decay_t<Out>::dimensionality>>
+fftw_plan fftw_plan_many_dft(In&& in, Out&& out, int sign, unsigned flags = FFTW_ESTIMATE){
+	static_assert( Rank <= D );
+	return fftw_plan_many_dft(Rank, in, out, sign, flags);
+}
+
+template<class In, class Out, dimensionality_type D = std::decay_t<In>::dimensionality,
+typename = std::enable_if_t<D == std::decay_t<Out>::dimensionality>>
+fftw_plan fftw_plan_many_dft(In&& in, Out&& out, int sign, unsigned flags = FFTW_ESTIMATE){
+	static_assert( 1 <= D );
+	return fftw_plan_many_dft<1>(in, out, sign, flags);
+}
+
+template<class ArrayIn, class ArrayOut, dimensionality_type D = std::decay_t<ArrayIn>::dimensionality, typename = std::enable_if_t<D == std::decay_t<ArrayOut>::dimensionality> >
+auto fftw_plan_dft(
+	ArrayIn&& in, ArrayOut&& out, 
+	int sign, unsigned flags = FFTW_ESTIMATE
+){
+	using multi::sizes; using multi::strides; assert(sizes(in) == sizes(out));
+#if 0
+	using multi::is_compact;
+	if( is_compact(in) and is_compact(out) and strides(in) == strides(out) ){
+		auto ion = to_array<int>(sizes(in));
+		return fftw_plan_dft(
+			dimensionality(in), ion.data(), 
+			origin(std::forward<ArrayIn>(in)), origin(std::forward<ArrayOut>(out)), 
+			sign, flags
+		);
+	}
+#endif
+	auto ion = to_array<std::ptrdiff_t>(sizes(in));
+	auto istrides = to_array<std::ptrdiff_t>(strides(in));
+	auto ostrides = to_array<std::ptrdiff_t>(strides(out));
+	std::array<fftw_iodim64, D> dims;
+	for(int i = 0; i != D; ++i) dims[i] = fftw_iodim64{ion[i], istrides[i], ostrides[i]};
+//	std::array<fftw_iodim64, D> howmany_dims = dims;//{ion[0], istrides[0], ostrides[0]};
+	return fftw_plan_guru64_dft(
+		/*int rank*/ D, 
+		/*const fftw_iodim64 *dims*/ dims.data(),
+		/*int howmany_rank*/ 0,
+		/*const fftw_iodim *howmany_dims*/ nullptr, //howmany_dims.data(), //;//nullptr,
+		/*fftw_complex *in*/ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(base(in))), 
+		/*fftw_complex *out*/ reinterpret_cast<fftw_complex*>(base(out)),
+		sign, flags
+	);
+}
+
+std::complex<double> const* base(std::complex<double> const& c){return &c;}
 
 void fftw_execute_dft(
 	fftw_plan p, std::complex<double>* in, std::complex<double>* out){
@@ -249,8 +317,21 @@ auto fftw_execute_dft(fftw_plan p, ArrayIn&& in, ArrayOut&& out)
 
 namespace fftw{
 
-struct plan{
-	std::unique_ptr<std::pointer_traits<fftw_plan>::element_type, decltype(&fftw_destroy_plan)> impl_;
+class plan{
+	plan() : impl_{nullptr, &fftw_destroy_plan}{}
+	std::unique_ptr<std::remove_pointer_t<fftw_plan>, decltype(&fftw_destroy_plan)> impl_;
+public:
+	template<dimensionality_type R, class...  As>
+	static auto many(As&&... as){
+		plan r; r.impl_.reset(multi::fftw_plan_many_dft<R>(std::forward<As>(as)...)); return r;
+	}
+	template<std::size_t R, class...  As>
+	static auto many(std::array<bool, R> which, As&&... as){
+		plan r; r.impl_.reset(multi::fftw_plan_many_dft(which, std::forward<As>(as)...)); return r;
+	}
+
+	plan(plan const&) = delete;//default;
+	plan(plan&&) = default;
 	template<typename... Args>
 	plan(Args&&... args) : impl_{multi::fftw_plan_dft(std::forward<Args>(args)...), &fftw_destroy_plan}{}
 	void execute() const{fftw_execute(impl_.get());}
@@ -270,27 +351,92 @@ struct plan{
 	}
 };
 
-enum sign : int {forward = FFTW_FORWARD, backward = FFTW_BACKWARD };
-enum strategy : unsigned { estimate = FFTW_ESTIMATE, measure = FFTW_MEASURE };
+enum sign : decltype(FFTW_FORWARD) {none = 0, forward = FFTW_FORWARD, backward = FFTW_BACKWARD };
+enum strategy : decltype(FFTW_ESTIMATE) { estimate = FFTW_ESTIMATE, measure = FFTW_MEASURE };
+
+sign invert(sign s){
+	switch(s){
+		case sign::forward : return sign::backward;
+		case sign::backward: return sign::forward;
+		case sign::none: return sign::none;
+	} __builtin_unreachable();
+}
 
 template<typename In, class Out>
-auto dft(In const& i, Out&& o, sign s, strategy st = fftw::estimate){
-	execute(fftw::plan{i, std::forward<Out>(o), (int)s, (unsigned)st | FFTW_PRESERVE_INPUT});
+auto dft(In const& i, Out&& o, sign s){//, strategy st = fftw::estimate){
+	if(s == sign::none) o = i;
+	else execute(fftw::plan{i, std::forward<Out>(o), static_cast<int>(s), static_cast<unsigned>(fftw::estimate) | FFTW_PRESERVE_INPUT});
+	return std::forward<Out>(o);
 }
 
-template<typename In, typename Out = multi::array<typename std::decay_t<In>::element_type, std::decay_t<In>::dimensionality>>
-Out dft(In const& i, sign s, strategy st = fftw::estimate){
-	Out ret(extensions(i));
-	dft(i, ret, s, st);
+template<dimensionality_type R, typename In, class Out>
+Out&& many_dft(In const& i, Out&& o, sign s){//, strategy st = fftw::estimate){
+	if(s == sign::none) o = i;
+	else execute(fftw::plan::many<R>(i, std::forward<Out>(o), static_cast<int>(s), static_cast<unsigned>(fftw::estimate) | FFTW_PRESERVE_INPUT));
+	return std::forward<Out>(o);
+}
+
+template<typename In, class Out, std::size_t D = std::decay_t<In>::dimensionality>
+Out&& dft(std::array<bool, D> which, In const& i, Out&& o, sign s){
+	execute(fftw::plan::many(which, i, std::forward<Out>(o), static_cast<int>(s), static_cast<unsigned>(fftw::estimate) | FFTW_PRESERVE_INPUT));
+	return std::forward<Out>(o);
+}
+
+#if 1
+template<typename In, class Out, std::size_t D = std::decay_t<In>::dimensionality>
+auto dft(std::array<sign, D> which, In const& i, Out&& o){//, strategy st = fftw::estimate){
+	{
+		std::array<bool, D> which_forward;
+		std::transform(begin(which), end(which), begin(which_forward), [](auto e){return e==sign::forward?true:false;});
+		assert(which_forward[0] == false);
+		assert(which_forward[1] == true);
+		dft(which_forward, i, o, sign::forward);
+	}
+	{
+		std::array<bool, D> which_backward;
+		std::transform(which.begin(), which.end(), which_backward.begin(), [](auto e){return e==sign::backward;}); 
+		assert(which_backward[0] == false);
+		assert(which_backward[1] == false);
+		if(std::accumulate(begin(which_backward), end(which_backward)))
+			dft(which_backward, o, o, sign::backward);
+	}
+}
+#endif
+
+template<typename In, typename Out = multi::array<typename std::decay_t<In>::element_type, std::decay_t<In>::dimensionality, decltype(get_allocator(std::declval<In const&>()))>>
+NODISCARD("when first argument is const")
+Out dft(In const& i, sign s){//, strategy st = fftw::estimate){
+	Out ret(extensions(i), get_allocator(i));
+	dft(i, ret, s);
 	return ret;
 }
 
-template<typename T, dimensionality_type D, typename In = multi::array<T, D>, typename Out = multi::array<typename std::decay_t<In>::element_type, std::decay_t<In>::dimensionality>>
-Out dft(multi::array<T, D>&& i, sign s, strategy st = fftw::estimate){
-	Out ret(extensions(i));
-	execute(fftw::plan{i, ret, (int)s, (unsigned)st | FFTW_DESTROY_INPUT});
+template<dimensionality_type R, typename In, typename Out = multi::array<typename std::decay_t<In>::element_type, std::decay_t<In>::dimensionality, decltype(get_allocator(std::declval<In const&>()))>>
+NODISCARD("when first argument is const")
+Out many_dft(In const& i, sign s){
+	Out ret(extensions(i), get_allocator(i));
+	many_dft<R>(i, ret, s);
 	return ret;
 }
+
+template<typename T, dimensionality_type D, class... As, typename Out = multi::array<T, D, As...>>//typename std::decay_t<In>::element_type, std::decay_t<In>::dimensionality>>
+NODISCARD("when first argument can be destroyed")
+Out dft(multi::array<T, D, As...>&& i, sign s){
+	Out ret(extensions(i), get_allocator(i));
+	execute(fftw::plan{i, ret, static_cast<int>(s), static_cast<unsigned>(fftw::estimate) | FFTW_DESTROY_INPUT}); // to do destroy input for move iterators
+	return ret;
+}
+
+template<class T>
+auto dft(std::initializer_list<T> il, sign s){return dft(multi::array<T, 1>(il), s);}
+
+template<class A> decltype(auto) dft_forward(A&& a){return dft(std::forward<A>(a), fftw::forward);}
+template<class A> decltype(auto) dft_backward(A&& a){return dft(std::forward<A>(a), fftw::backward);}
+
+template<class T>
+auto dft_forward(std::initializer_list<T> il){return dft_forward(multi::array<T, 1>(il));}
+template<class T>
+auto dft_backward(std::initializer_list<T> il){return dft_backward(multi::array<T, 1>(il));}
 
 template<typename In>
 In& dft_inplace(In&& i, sign s, strategy st = fftw::estimate){
@@ -304,15 +450,22 @@ In& dft_inplace(In&& i, sign s, strategy st = fftw::estimate){
 
 #if _TEST_MULTI_ADAPTORS_FFTW
 
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW adaptor"
+#define BOOST_TEST_DYN_LINK
+#include<boost/test/unit_test.hpp>
+
+#include <boost/timer/timer.hpp>
+
 #include "../adaptors/fftw/allocator.hpp"
 #include<iostream>
 #include "../array.hpp"
 #include<complex>
 #include<numeric>
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW adaptor"
-#define BOOST_TEST_DYN_LINK
-#include<boost/test/unit_test.hpp>
+#include<experimental/array>
+#include<experimental/tuple>
+
+#include<random>
 
 namespace{
 //	using namespace Catch::literals;
@@ -322,6 +475,7 @@ namespace{
 	namespace fftw = multi::fftw;
 
 	using complex = std::complex<double>;
+	complex const I{0, 1};
 
 	template<class M>
 	auto power(M const& m){
@@ -331,6 +485,180 @@ namespace{
 	}
 
 	constexpr int N = 16;
+}
+
+template<class T> struct randomizer{
+	template<class M> void operator()(M&& m) const{for(auto&& e:m) operator()(e);}
+	void operator()(T& e) const{
+		static std::random_device r; static std::mt19937 g{r()}; static std::normal_distribution<T> d;
+		e = d(g);
+	}
+};
+
+template<class T> struct randomizer<std::complex<T>>{
+	template<class M> void operator()(M&& m) const{for(auto&& e:m) operator()(e);}
+	void operator()(std::complex<T>& e) const{
+		static std::random_device r; static std::mt19937 g{r()}; static std::normal_distribution<T> d;
+		e = std::complex<T>(d(g), d(g));
+	}
+};
+BOOST_AUTO_TEST_CASE(fftw_2D_identity_2, *boost::unit_test::tolerance(0.0001)){
+	multi::array<complex, 2> const in = {
+		{ 1. + 2.*I, 9. - 1.*I, 2. + 4.*I},
+		{ 3. + 3.*I, 7. - 4.*I, 1. + 9.*I},
+		{ 4. + 1.*I, 5. + 3.*I, 2. + 4.*I},
+		{ 3. - 1.*I, 8. + 7.*I, 2. + 1.*I},
+		{ 31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+	};
+	multi::array<complex, 2> fwd(extensions(in));
+	multi::fftw::dft({false, false}, in, fwd, multi::fftw::forward);
+	std::cout << fwd[3][2] << ' ' << in[3][2] << std::endl;
+	BOOST_REQUIRE( fwd == in );
+}
+
+BOOST_AUTO_TEST_CASE(fftw_1D){
+	multi::array<complex, 1> in = {1. + 2.*I, 2. + 3. *I, 4. + 5.*I, 5. + 6.*I};
+	auto fwd = multi::fftw::dft(in, multi::fftw::forward); // Fourier[in, FourierParameters -> {1, -1}]
+	BOOST_REQUIRE(fwd[2] == -2. - 2.*I);
+	BOOST_REQUIRE( in[1] == 2. + 3.*I );
+
+	auto bwd = multi::fftw::dft(in, multi::fftw::backward); // InverseFourier[in, FourierParameters -> {-1, -1}]
+	BOOST_REQUIRE(bwd[2] == -2. - 2.*I);
+}
+
+BOOST_AUTO_TEST_CASE(fftw_2D_identity, *boost::unit_test::tolerance(0.0001)){
+	multi::array<complex, 2> const in = {
+		{ 1. + 2.*I, 9. - 1.*I, 2. + 4.*I},
+		{ 3. + 3.*I, 7. - 4.*I, 1. + 9.*I},
+		{ 4. + 1.*I, 5. + 3.*I, 2. + 4.*I},
+		{ 3. - 1.*I, 8. + 7.*I, 2. + 1.*I},
+		{ 31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+	};
+	auto fwd = multi::fftw::dft(in, multi::fftw::none);
+	std::cout << fwd[3][2] << ' ' << in[3][2] << std::endl;
+	BOOST_REQUIRE( fwd == in );
+}
+
+BOOST_AUTO_TEST_CASE(fftw_2D, *boost::unit_test::tolerance(0.0001)){
+	multi::array<complex, 2> const in = {
+		{ 1. + 2.*I, 9. - 1.*I, 2. + 4.*I},
+		{ 3. + 3.*I, 7. - 4.*I, 1. + 9.*I},
+		{ 4. + 1.*I, 5. + 3.*I, 2. + 4.*I},
+		{ 3. - 1.*I, 8. + 7.*I, 2. + 1.*I},
+		{ 31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+	};
+	auto fwd = multi::fftw::dft(in, multi::fftw::forward);
+	BOOST_TEST( real(fwd[3][1]) == -19.0455 ); // Fourier[in, FourierParameters -> {1, -1}][[4]][[2]]
+	BOOST_TEST( imag(fwd[3][1]) == - 2.22717 );
+
+	multi::array<complex, 1> const in0 = { 1. + 2.*I, 9. - 1.*I, 2. + 4.*I};
+	using multi::fftw::dft_forward;
+
+	BOOST_REQUIRE( dft_forward(in[0]) == dft_forward(in0) );
+	BOOST_REQUIRE( dft_forward(in[3]) == dft_forward({3.-1.*I, 8.+7.*I, 2.+1.*I}) );
+	BOOST_REQUIRE( dft_forward(rotated(in)[0]) == dft_forward({1.+2.*I, 3.+3.*I, 4. + 1.*I,  3. - 1.*I, 31. - 1.*I}) );
+}
+
+BOOST_AUTO_TEST_CASE(fftw_2D_rotated, *boost::unit_test::tolerance(0.0001)){
+	multi::array<complex, 2> const in = {
+		{ 1. + 2.*I, 9. - 1.*I, 2. + 4.*I},
+		{ 3. + 3.*I, 7. - 4.*I, 1. + 9.*I},
+		{ 4. + 1.*I, 5. + 3.*I, 2. + 4.*I},
+		{ 3. - 1.*I, 8. + 7.*I, 2. + 1.*I},
+		{ 31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+	};
+	auto fwd = multi::fftw::dft(in, multi::fftw::forward);
+
+	using multi::fftw::dft_forward;
+	BOOST_REQUIRE( dft_forward(rotated(in)[0]) == dft_forward({1.+2.*I, 3.+3.*I, 4. + 1.*I,  3. - 1.*I, 31. - 1.*I}) );
+	BOOST_REQUIRE( dft_forward(rotated(in)) == rotated(fwd) );// rotated(fwd) );
+}
+
+BOOST_AUTO_TEST_CASE(fftw_2D_many, *boost::unit_test::tolerance(0.0001)){
+	multi::array<complex, 2> const in = {
+		{ 1. + 2.*I, 9. - 1.*I, 2. + 4.*I},
+		{ 3. + 3.*I, 7. - 4.*I, 1. + 9.*I},
+		{ 4. + 1.*I, 5. + 3.*I, 2. + 4.*I},
+		{ 3. - 1.*I, 8. + 7.*I, 2. + 1.*I},
+		{ 31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+	};
+	multi::array<complex, 2> out(extensions(in));
+//	multi::fftw::many_dft<1>(in, out, multi::fftw::forward);
+	multi::fftw::dft({false, true}, in, out, multi::fftw::forward);
+
+	using multi::fftw::dft_forward;
+	BOOST_REQUIRE( dft_forward(in[0]) == out[0] );
+
+	multi::fftw::many_dft<1>(rotated(in), rotated(out), multi::fftw::forward);
+	BOOST_REQUIRE( dft_forward(rotated(in)[0]) == rotated(out)[0] );
+
+	multi::fftw::many_dft<0>(rotated(in), rotated(out), multi::fftw::forward);
+	BOOST_REQUIRE( in == out );
+}
+
+BOOST_AUTO_TEST_CASE(fftw_many1_from_2){
+	multi::array<complex, 2> in({3, 10}); randomizer<complex>{}(in);
+	multi::array<complex, 2> out({3, 10});
+	fftw::many_dft<1>(in, out, multi::fftw::forward);
+
+	multi::array<complex, 2> out2({3, 10});
+	for(int i = 0; i!=size(in); ++i)
+		fftw::dft(in[i], out2[i], multi::fftw::forward);
+
+	BOOST_REQUIRE(out2 == out);
+}
+
+BOOST_AUTO_TEST_CASE(fftw_many2_from_3){
+	multi::array<complex, 3> in({3, 5, 6}); randomizer<complex>{}(in);
+	multi::array<complex, 3> out({3, 5, 6});
+	fftw::many_dft<2>(in, out, multi::fftw::forward);
+
+	multi::array<complex, 3> out2({3, 5, 6});
+	for(int i = 0; i!=size(in); ++i)
+		fftw::dft(in[i], out2[i], multi::fftw::forward);
+
+	BOOST_REQUIRE(out2 == out);
+}
+
+BOOST_AUTO_TEST_CASE(fftw_many2_from_2){
+	multi::array<complex, 2> in({5, 6}); randomizer<complex>{}(in);
+	multi::array<complex, 2> out({5, 6});
+	fftw::many_dft<2>(in, out, multi::fftw::forward);
+
+	multi::array<complex, 2> out2({5, 6});
+	fftw::dft(in, out2, multi::fftw::forward);
+	BOOST_REQUIRE(out2 == out);
+}
+
+BOOST_AUTO_TEST_CASE(fftw_3D){
+	multi::array<complex, 3> in({10, 10, 10});
+	in[2][3][4] = 99.;
+	auto fwd = multi::fftw::dft(in, multi::fftw::forward);
+	BOOST_REQUIRE(in[2][3][4] == 99.);
+}
+
+BOOST_AUTO_TEST_CASE(fftw_4D){
+	multi::array<complex, 4> in({10, 10, 10, 10});
+	in[2][3][4][5] = 99.;
+	auto fwd = multi::fftw::dft(in, multi::fftw::forward);
+	BOOST_REQUIRE(in[2][3][4][5] == 99.);
+}
+
+BOOST_AUTO_TEST_CASE(fftw_5D){
+	multi::array<complex, 5> in({4, 5, 6, 7, 8});
+	in[2][3][4][5][6] = 99.;
+	auto fwd = multi::fftw::dft(in, multi::fftw::forward);
+	BOOST_REQUIRE(in[2][3][4][5][6] == 99.);
+
+	BOOST_REQUIRE( std::get<2>(sizes(in)) == 6 );
+	auto sizes_as_int = std::experimental::apply(
+		[](auto... n){
+			auto safe = [](auto i){assert(i<=std::numeric_limits<int>::max()); return static_cast<int>(i);};
+			return std::array<int, sizeof...(n)>{safe(n)...};
+		}, 
+		sizes(in)
+	);
+	BOOST_REQUIRE( sizes_as_int[2] == 6 );
 }
 
 BOOST_AUTO_TEST_CASE(fftw_1D_power){
@@ -382,7 +710,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_power_dft){
 
 BOOST_AUTO_TEST_CASE(fftw_2D_power_dft_out){
 	multi::array<complex, 2> in({16, 16}); std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);
-	auto out = multi::fftw::dft(in, multi::fftw::forward, multi::fftw::estimate);
+	auto out = multi::fftw::dft(in, multi::fftw::forward);
 	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-8 );
 }
 
@@ -392,6 +720,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_power_dft_out_default){
 	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-8 );
 }
 
+/*
 BOOST_AUTO_TEST_CASE(fftw_2D_carray_power){
 	int const N = 16;
 	complex in[N][N];
@@ -402,6 +731,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_carray_power){
 	fftw_execute(p); fftw_destroy_plan(p);
 	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-8 );
 }
+*/
 
 BOOST_AUTO_TEST_CASE(fftw_3D_power){
 	multi::array<complex, 3> in({4, 4, 4}); std::iota(in.data_elements(), in.data_elements() + in.num_elements(), 1.2);
