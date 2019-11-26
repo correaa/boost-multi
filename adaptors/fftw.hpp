@@ -206,7 +206,7 @@ fftw_plan fftw_plan_dft(std::array<bool, D> which, In&& in, Out&& out, int sign,
 
 template<class In, class Out, dimensionality_type D = In::dimensionality>
 auto fftw_plan_dft(In const& in, Out&& out, int s, unsigned flags = FFTW_ESTIMATE){
-	static_assert( D == std::decay_t<Out>::dimensionality );
+	static_assert( D == std::decay_t<Out>::dimensionality , "!");
 	using multi::sizes; using multi::strides; assert(sizes(in) == sizes(out));
 	auto 
 		ion      = to_array<ptrdiff_t>(sizes(in)), 
@@ -283,7 +283,7 @@ Out&& dft(std::array<bool, D> which, In const& i, Out&& o, sign s){
 
 template<dimensionality_type R, class In, class Out, std::size_t D = std::decay_t<In>::dimensionality>
 Out&& dft(In const& i, Out&& o, sign s){
-	static_assert( R <= D );
+	static_assert( R <= D , "dimension of transpformation cannot be larger than total dimension" );
 	std::array<bool, D> which; std::fill(std::fill_n(begin(which), R, false), end(which), true);
 	plan{which, i, o, s}();//(i, std::forward<Out>(o)); 
 	return std::forward<Out>(o);
