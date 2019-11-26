@@ -94,10 +94,19 @@ auto get_allocator(T* const&)
 //->decltype(get_allocator(to_address(it))){
 //	return get_allocator(to_address(it));}
 
-template<class It>//, class ss = decltype(get_allocator(typename std::iterator_traits<Iterator>::pointer{}))> 
-auto get_allocator(It const&, ...)
-->decltype(std::allocator<typename std::iterator_traits<It>::value_type>{}){
-	return std::allocator<typename std::iterator_traits<It>::value_type>{};}
+template<class T>
+auto has_get_allocator_aux(T const& t)->decltype(t.get_allocator(), std::true_type {});
+inline auto has_get_allocator_aux(...)->decltype(                   std::false_type{});
+template<class T> struct has_get_allocator : decltype(has_get_allocator_aux(std::declval<T>())){};
+
+template<class It, typename = std::enable_if_t<not has_get_allocator<It>{}>>
+auto get_allocator(It)->std::allocator<typename std::iterator_traits<It>::value_type>{return {};}
+
+//template<class It>//, class ss = decltype(get_allocator(typename std::iterator_traits<Iterator>::pointer{}))> 
+//auto get_allocator(It const&, void* = 0)
+//->decltype(std::allocator<typename std::iterator_traits<It>::value_type>{}){
+//	return std::allocator<typename std::iterator_traits<It>::value_type>{};}
+
 //->decltype(get_allocator(typename std::iterator_traits<Iterator>::pointer{})){
 //	return get_allocator(typename std::iterator_traits<Iterator>::pointer{});}
 
@@ -141,6 +150,9 @@ constexpr ptrdiff_t num_elements(std::array<T, N> arr){return N*num_elements(arr
 
 template <class T, std::size_t N>
 constexpr ptrdiff_t stride(const T(&t)[N]) noexcept{return num_elements(t[0]);}
+
+template <class T, std::size_t N>
+constexpr bool is_compact(const T(&)[N]) noexcept{return true;}
 
 //template <class T, std::size_t N>
 //constexpr ptrdiff_t stride(T(&t)[N]) noexcept{return num_elements(t[0]);}
@@ -345,6 +357,11 @@ constexpr auto layout(T(&t)[N]){
 	return multi::layout_t<std::rank<T[N]>{}>(multi::extensions(t));
 }
 
+template<class T, std::size_t N>
+constexpr auto strides(T(&t)[N]){
+	return layout(t).strides();
+}
+
 }}
 
 #if _TEST_MULTI_UTILITY
@@ -366,6 +383,10 @@ void f(T&& t){
 template<class T> void f();
 int main(){
 	static_assert( std::is_same<std::iterator_traits<double const*>::value_type, double>{}, "!");
+
+	std::vector<double>::iterator it;
+	using multi::get_allocator;
+	std::allocator<double> all = get_allocator(it);
 
 	using multi::corigin;
 	using multi::dimensionality;
