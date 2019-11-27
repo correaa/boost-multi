@@ -466,7 +466,7 @@ public:
 		return {types::base_ + l(l.size()), l.sub, l.stride_};
 	}
 	iterator  begin() const HD{return {types::base_          , sub, stride_};}
-	iterator  end  () const{return {types::base_ + nelems_, sub, stride_};}
+	iterator  end  () const HD{return {types::base_ + nelems_, sub, stride_};}
 protected:
 	template<class A>
 	void intersection_assign_(A&& other) const{
@@ -740,14 +740,8 @@ public:
 	using reverse_iterator = std::reverse_iterator<iterator>;
 
 	iterator begin() const HD{return {types::base_               , Layout::stride_};}
-	iterator end  () const{return{types::base_+types::nelems_, Layout::stride_};}
+	iterator end  () const HD{return{types::base_+types::nelems_, Layout::stride_};}
 
-//	template<class Array>//, typename = std::enable_if_t<not std::is_base_of<basic_array, Array>{}>> 
-//	bool operator==(Array const& other) const{
-//		using multi::extension; using std::equal; using std::begin;
-//		if(this->extension() != extension(other)) return false;
-//		return equal(this->begin(), this->end(), begin(other));
-//	}
 	template<typename Array, typename = std::enable_if_t<not std::is_base_of<basic_array, Array>{}> >
 	bool operator==(Array const& o) const
 //	->decltype( std::equal(this->begin(), this->end(), std::begin(o)) )
