@@ -12,6 +12,8 @@
 
 #include "utility.hpp"
 
+#include<boost/serialization/nvp.hpp>
+#include<boost/serialization/array_wrapper.hpp>
 //#include<iostream> // debug
 
 #if defined(__CUDACC__)
@@ -246,7 +248,7 @@ public:
 		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
 	}
 	friend decltype(auto) rotated(static_array& self){return self.rotated();}
-	typename static_array::iterator begin(){return ref::begin();}
+	typename static_array::iterator begin() HD{return ref::begin();}
 	typename static_array::iterator end()  {return ref::end();}
 //	typename array::iterator begin() &&{return ref::begin();}
 //	typename array::iterator end()   &&{return ref::end();}
@@ -277,6 +279,17 @@ struct array : static_array<T, D, Alloc>,
 	using static_ = static_array<T, D, Alloc>;
 	static_assert(std::is_same<typename array::alloc_traits::value_type, T>{} or std::is_same<typename array::alloc_traits::value_type, void>{}, "!");
 public:
+#if 0
+	template<class Archive>
+	auto serialize(Archive& ar, const unsigned int)
+	->decltype(ar & boost::serialization::make_nvp(nullptr, boost::serialization::make_array(this->data(), this->num_elements())), void())
+	{
+		auto extensions = this->extensions();
+		ar & BOOST_SERIALIZATION_NVP(extensions);
+		if(extensions != this->extensions()){clear(); reextent(extensions);}
+		ar & boost::serialization::make_nvp("data", boost::serialization::make_array(this->data(), this->num_elements()));
+	}
+#endif
 	using static_::static_;
 	using typename array::ref::value_type;
 	using static_::ref::operator<;
@@ -437,6 +450,7 @@ public:
 	}
 };
 
+
 template<typename T, dimensionality_type D, class... Args>
 auto size(basic_array<T, D, Args...> const& arr){return arr.size();}
 //template<typename T, dimensionality_type D, class... Args>
@@ -501,8 +515,49 @@ decay(const T(&t)[N]) noexcept{
 	return multi::array_cref<typename std::remove_all_extents<T[N]>::type, std::rank<T[N]>{}>(data_elements(t), extensions(t));
 }
 
+template<class Archive, class T, boost::multi::dimensionality_type D, class... Args>
+auto serialize(Archive& ar, array_ref<T, D, Args...>& self, unsigned) 
+->decltype(ar & boost::serialization::make_nvp(nullptr, boost::serialization::make_array(data_elements(self), num_elements(self))),void()){
+	auto x = extensions(self);
+	ar & boost::serialization::make_nvp("extensions", x);
+	assert( x == extensions(self) );// {clear(self); self.reextent(x);}
+	ar & boost::serialization::make_nvp("data", boost::serialization::make_array(data_elements(self), num_elements(self)));
+}
+
+template<class Archive, class T, dimensionality_type D, class... Args>
+auto serialize_aux(Archive& ar, multi::array<T, D, Args...>& self, unsigned) 
+->decltype(ar & boost::serialization::make_nvp(nullptr, boost::serialization::make_array(data_elements(self), num_elements(self))),void()){
+	auto x = extensions(self);
+	ar & boost::serialization::make_nvp("extensions", x);
+	if(x != extensions(self)){clear(self); self.reextent(x);}
+	ar & boost::serialization::make_nvp("data", boost::serialization::make_array(data_elements(self), num_elements(self)));
+}
+
+template<class Archive, class T, dimensionality_type D, class... Args>
+auto serialize(Archive& ar, multi::array<T, D, Args...>& self, unsigned version)
+->decltype(serialize_aux(ar, self, version)){
+	return serialize_aux(ar, self, version);}
+
+template<class Archive, class T, dimensionality_type D, class... Args>
+auto serialize(Archive& ar, basic_array<T, D, Args...>& self, unsigned version)
+->decltype(serialize_aux(ar, std::declval<array<T, D>&>(), version), void())
+{
+	if(Archive::is_saving()) serialize(ar, multi::array<T, D>{self}, version);
+	else{
+		boost::multi::array<T, D> tmp(extensions(self));
+		serialize(ar, tmp, version); assert( extensions(self) == extensions(tmp) );
+		self = tmp;
+	}
+}
+
 }}
 
+
+//namespace boost{
+//namespace serialization{
+
+
+//}}
 #undef HD
 
 ////////////////////////////////////////////////////////////////////////////////
