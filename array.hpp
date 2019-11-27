@@ -248,8 +248,8 @@ public:
 		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
 	}
 	friend decltype(auto) rotated(static_array& self){return self.rotated();}
-	typename static_array::iterator begin() HD{return ref::begin();}
-	typename static_array::iterator end()  {return ref::end();}
+	typename static_array::iterator begin() HD {return ref::begin();}
+	typename static_array::iterator end() HD {return ref::end();}
 //	typename array::iterator begin() &&{return ref::begin();}
 //	typename array::iterator end()   &&{return ref::end();}
 
