@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&clang++ -std=c++17 -Ofast -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_FFTW $0.cpp -o$0x `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&c++ -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_FFTW $0.cpp -o$0x `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp; exit
 #endif
 #ifndef MULTI_ADAPTORS_FFTW_HPP
 #define MULTI_ADAPTORS_FFTW_HPP
@@ -29,8 +29,7 @@ namespace boost{
 namespace multi{
 
 namespace fftw{
-	template<class T>
-	auto alignment_of(T* p){return fftw_alignment_of((double*)p);}
+	template<class T> auto alignment_of(T* p){return fftw_alignment_of((double*)p);}
 }
 
 #if 0
@@ -192,7 +191,7 @@ fftw_plan fftw_plan_dft(std::array<bool, D> which, In&& in, Out&& out, int sign,
 	std::array<fftw_iodim64, D> dims   ; auto l_dims = dims.begin();
 	std::array<fftw_iodim64, D> howmany; auto l_howmany = howmany.begin();
 	for(int i = 0; i != D; ++i) 
-		(which[i]?*l_dims++:*l_howmany++) = {ion[i], istrides[i], ostrides[i]};
+		(which[i]?*l_dims++:*l_howmany++) = fftw_iodim64{ion[i], istrides[i], ostrides[i]};
 	return fftw_plan_guru64_dft(
 		/*int rank*/ l_dims - dims.begin(), 
 		/*const fftw_iodim64 *dims*/ dims.data(), 
@@ -301,6 +300,9 @@ auto dft(std::array<sign, D> w, In const& i, Out&& o){
 
 	return std::forward<Out>(o);
 }
+
+//template<typename It>
+//auto dft(It first, It last, 
 
 template<typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
 NODISCARD("when first argument is const")
