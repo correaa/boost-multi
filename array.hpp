@@ -12,8 +12,8 @@
 
 #include "utility.hpp"
 
-#include<boost/serialization/nvp.hpp>
-#include<boost/serialization/array_wrapper.hpp>
+//#include<boost/serialization/nvp.hpp>
+//#include<boost/serialization/array_wrapper.hpp>
 //#include<iostream> // debug
 
 #if defined(__CUDACC__)
@@ -250,8 +250,6 @@ public:
 	friend decltype(auto) rotated(static_array& self){return self.rotated();}
 	typename static_array::iterator begin() HD {return ref::begin();}
 	typename static_array::iterator end() HD {return ref::end();}
-//	typename array::iterator begin() &&{return ref::begin();}
-//	typename array::iterator end()   &&{return ref::end();}
 
 	typename static_array::const_iterator begin() const{return ref::begin();}
 	typename static_array::const_iterator end()   const{return ref::end();}
@@ -514,7 +512,7 @@ multi::array<typename std::remove_all_extents<T[N]>::type, std::rank<T[N]>{}>
 decay(const T(&t)[N]) noexcept{
 	return multi::array_cref<typename std::remove_all_extents<T[N]>::type, std::rank<T[N]>{}>(data_elements(t), extensions(t));
 }
-
+#if 0
 template<class Archive, class T, boost::multi::dimensionality_type D, class... Args>
 auto serialize(Archive& ar, array_ref<T, D, Args...>& self, unsigned) 
 ->decltype(ar & boost::serialization::make_nvp(nullptr, boost::serialization::make_array(data_elements(self), num_elements(self))),void()){
@@ -549,6 +547,7 @@ auto serialize(Archive& ar, basic_array<T, D, Args...>& self, unsigned version)
 		self = tmp;
 	}
 }
+#endif
 
 }}
 

@@ -15,7 +15,7 @@ for a in ./tests/*.cpp; do echo $a; sh $a || break; echo "\n"; done; exit;*/
 
 #include<algorithm> // copy_n
 
-#include<boost/serialization/nvp.hpp>
+//#include<boost/serialization/nvp.hpp>
 
 #if defined(__CUDACC__)
 #define HD __host__ __device__
@@ -641,10 +641,10 @@ protected:
 	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
 	HD friend decltype(auto) static_array_cast(basic_array<TT, DD, PP> const&);
 public:
-	template<class Archive>
-	void serialize(Archive& ar, unsigned int){
-		for(auto&& e : *this) ar & BOOST_SERIALIZATION_NVP(e);
-	}
+//	template<class Archive>
+//	void serialize(Archive& ar, unsigned int){
+//		for(auto&& e : *this) ar & BOOST_SERIALIZATION_NVP(e);
+//	}
 	basic_array(basic_array&&) = default; // ambiguos deep-copy a reference type, in C++14 use auto&& A_ref = Expression; or decay_t<decltype(Expression)> A = Expression
 	// in c++17 things changed and non-moveable non-copyable types can be returned from functions and captured by auto
 protected:
