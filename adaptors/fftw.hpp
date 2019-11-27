@@ -219,8 +219,8 @@ auto fftw_plan_dft(In const& in, Out&& out, int s, unsigned flags = FFTW_ESTIMAT
 		/*const fftw_iodim64 *dims*/ dims.data(),
 		/*int howmany_rank*/ 0,
 		/*const fftw_iodim *howmany_dims*/ nullptr, //howmany_dims.data(), //;//nullptr,
-		/*fftw_complex *in*/ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(base(in))), 
-		/*fftw_complex *out*/ reinterpret_cast<fftw_complex*>(base(out)),
+		/*fftw_complex *in*/ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(static_cast<std::complex<double> const*>(base(in)))), 
+		/*fftw_complex *out*/ reinterpret_cast<fftw_complex*>(static_cast<std::complex<double>*>(base(out))),
 		s, flags
 	);
 }
@@ -242,7 +242,7 @@ private:
 	void execute() const{fftw_execute(impl_.get());}
 	template<class I, class O>
 	void execute_dft(I&& i, O&& o) const{
-		::fftw_execute_dft(impl_.get(), (fftw_complex*)base(i), (fftw_complex*)base(o));
+		::fftw_execute_dft(impl_.get(), const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(static_cast<std::complex<double> const*>(base(i)))), reinterpret_cast<fftw_complex*>(static_cast<std::complex<double>*>(base(o))));
 	}
 	template<class I, class O> void execute(I&& i, O&& o) const{execute_dft(std::forward<I>(i), std::forward<O>(o));}
 	friend void execute(plan const& p){p.execute();}
@@ -374,6 +374,8 @@ template<class In> In&& dft_inplace(In&& i, sign s){
 
 #include<random>
 
+#include "../adaptors/cuda.hpp"
+
 namespace{
 
 	using std::cout;
@@ -408,6 +410,7 @@ template<class T> struct randomizer<std::complex<T>>{
 		e = std::complex<T>(d(g), d(g));
 	}
 };
+
 BOOST_AUTO_TEST_CASE(fftw_2D_identity_2, *boost::unit_test::tolerance(0.0001)){
 	multi::array<complex, 2> const in = {
 		{ 1. + 2.*I, 9. - 1.*I, 2. + 4.*I},
@@ -424,7 +427,6 @@ BOOST_AUTO_TEST_CASE(fftw_2D_identity_2, *boost::unit_test::tolerance(0.0001)){
 	BOOST_REQUIRE( fwd == in );
 }
 
-
 BOOST_AUTO_TEST_CASE(fftw_1D){
 	multi::array<complex, 1> in = {1. + 2.*I, 2. + 3. *I, 4. + 5.*I, 5. + 6.*I};
 	auto fwd = multi::fftw::dft(in, multi::fftw::forward); // Fourier[in, FourierParameters -> {1, -1}]
@@ -437,6 +439,20 @@ BOOST_AUTO_TEST_CASE(fftw_1D){
 	auto bwd = multi::fftw::dft(in, multi::fftw::backward); // InverseFourier[in, FourierParameters -> {-1, -1}]
 	BOOST_REQUIRE(bwd[2] == -2. - 2.*I);
 }
+
+BOOST_AUTO_TEST_CASE(fftw_1D_cuda){
+	multi::cuda::managed::array<complex, 1> in = {1. + 2.*I, 2. + 3. *I, 4. + 5.*I, 5. + 6.*I};
+	auto fwd = multi::fftw::dft(in, multi::fftw::forward); // Fourier[in, FourierParameters -> {1, -1}]
+//	auto fwd = multi::fftw::dft(in, multi::fftw::forward); // Fourier[in, FourierParameters -> {1, -1}]
+//	auto fwd = multi::fftw::dft({multi::fftw::forward}, in); // Fourier[in, FourierParameters -> {1, -1}]
+//	auto fwd = multi::fftw::dft<0>(in, multi::fftw::forward); // Fourier[in, FourierParameters -> {1, -1}]
+	BOOST_REQUIRE(fwd[2] == -2. - 2.*I);
+	BOOST_REQUIRE( in[1] == 2. + 3.*I );
+
+	auto bwd = multi::fftw::dft(in, multi::fftw::backward); // InverseFourier[in, FourierParameters -> {-1, -1}]
+	BOOST_REQUIRE(bwd[2] == -2. - 2.*I);
+}
+
 
 BOOST_AUTO_TEST_CASE(fftw_2D_identity, *boost::unit_test::tolerance(0.0001)){
 	multi::array<complex, 2> const in = {
