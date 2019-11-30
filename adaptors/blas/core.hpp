@@ -9,6 +9,7 @@
 
 //#include <cblas/cblas.h>
 
+#include<iostream> // debug
 #include<cassert>
 #include<complex>
 #include<cstdint> // int64_t
@@ -210,9 +211,10 @@ template<class S, class T> T dot(S n, T const* x, S incx, T const* y, S incy){
 #ifndef CBLAS_H
 #define xdotu(T) template<class S> T dotu(S n, T const* x, S incx, T const* y, S incy){return BLAS(T##dotu)(BC(n), x, BC(incx), y, BC(incy));}
 #define xdotc(T) template<class S> T dotc(S n, T const* x, S incx, T const* y, S incy){return BLAS(T##dotc)(BC(n), x, BC(incx), y, BC(incy));}
+namespace core{
 xdotu(c) xdotu(z)
 xdotc(c) xdotc(z)
-
+}
 //                 template<class S> z dot(S n,  c const *x, S incx, c const *y, S incy){return dotc(n, x, incx, y, incy);}
 //                 template<class S> z dot(S n,  z const *x, S incx, z const *y, S incy){return dotc(n, x, incx, y, incy);}
 
@@ -221,13 +223,17 @@ xdotc(c) xdotc(z)
 #else
 #define xdotu(T) template<class S> T dotu(S n, T const* x, S incx, T const* y, S incy){T ret; BLAS(T##dotu_sub)(BC(n), x, BC(incx), y, BC(incy), &ret); return ret;}
 #define xdotc(T) template<class S> T dotc(S n, T const* x, S incx, T const* y, S incy){T ret; BLAS(T##dotc_sub)(BC(n), x, BC(incx), y, BC(incy), &ret); return ret;}
+namespace core{
 xdotu(c) xdotu(z)
 xdotc(c) xdotc(z)
+}
 #undef xdotu
 #undef xdotc
 #endif
 
+namespace core{
 template<class S> s dot(S n, s const& b, s const* x, S incx, s const* y, S incy){return BLAS(sdsdot)(BC(n), b, x, BC(incx), y, BC(incy));}
+}
 
 #define xnrm2(R, T, TT) template<class S>    R nrm2 (S n, T const* x, S incx){return BLAS(TT##nrm2  )(BC(n), x, BC(incx));}
 #define xasum(T, TT)    template<class S> auto asum (S n, T const* x, S incx){return BLAS(TT##asum  )(BC(n), x, BC(incx));}
@@ -264,7 +270,10 @@ xger(s)   xger(d)
 #define xgemm(T) \
 template<class C, class S> v gemm(C transA, C transB, S m, S n, S k, T const& a, T const* A, S lda, T const* B, S ldb, T const& beta, T* CC, S ldc){ \
 	if(transA == 'N' or transA == 'n') {assert(lda >= std::max(1l, m));} else {assert(lda >= std::max(1l, k));} \
-	if(transB == 'N' or transB == 'n') {assert(ldb >= std::max(1l, k));} else {assert(ldb >= std::max(1l, n));} \
+	assert(ldb >= std::max(1l, transB=='N'?k:n)); \
+	/*if(transB == 'N' or transB == 'n') {std::cerr<<"ldb,k,n,m ="<< ldb <<','<<k<<','<<n<<','<<m<<std::endl;*/ \
+		/*if(ldb==1 and n==1) return gemv(transA, m, k, a, A, lda, B, S{1}, beta, CC, S{1});*/ \
+		/*assert(ldb >= std::max(1l, k));} else {std::cerr<<"ldb ="<< ldb <<std::endl; assert(ldb >= std::max(1l, n));}*/ \
 	assert(ldc >= std::max(1l, m)); \
 	BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), a, A, BC(lda), B, BC(ldb), beta, CC, BC(ldc));\
 }

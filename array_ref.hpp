@@ -402,6 +402,8 @@ public:
 		new_layout.rotate(i);
 		return basic_array<T, D, ElementPtr>{new_layout, types::base_};
 	}
+	decltype(auto) operator<<(dimensionality_type i) const{return rotated(i);}
+	decltype(auto) operator>>(dimensionality_type i) const{return unrotated(i);}
 	basic_array const& operator()() const&{return *this;}
 	template<class... As>
 	auto operator()(index_range a, As... as) const{return range(a).rotated()(as...).unrotated();}
@@ -729,6 +731,8 @@ public:
 	friend decltype(auto) unrotated(basic_array const& self){return self;}
 	decltype(auto)   rotated(dimensionality_type) const{return *this;}
 	decltype(auto) unrotated(dimensionality_type) const{return *this;}
+	decltype(auto) operator<<(dimensionality_type i) const{return rotated(i);}
+	decltype(auto) operator>>(dimensionality_type i) const{return unrotated(i);}
 
 	using iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_ptr, typename types::reference>;
 //	using const_iterator =
