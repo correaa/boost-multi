@@ -191,7 +191,10 @@ protected:
 	}
 public:
 	static_array() = default;
-	~static_array() noexcept{clear();}
+	~static_array() noexcept{
+		this->destroy();
+		alloc_traits::deallocate(this->alloc(), this->base_, static_cast<typename alloc_traits::size_type>(this->num_elements()));
+	}
 	using element_const_ptr = typename std::pointer_traits<typename static_array::element_ptr>::template rebind<typename static_array::element const>;
 	using reference = std::conditional_t<
 		static_array::dimensionality != 1, 
@@ -277,17 +280,15 @@ struct array : static_array<T, D, Alloc>,
 	using static_ = static_array<T, D, Alloc>;
 	static_assert(std::is_same<typename array::alloc_traits::value_type, T>{} or std::is_same<typename array::alloc_traits::value_type, void>{}, "!");
 public:
-#if 0
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int)
-	->decltype(ar & boost::serialization::make_nvp(nullptr, boost::serialization::make_array(this->data(), this->num_elements())), void())
+	->decltype(ar & Archive::make_nvp(nullptr, Archive::make_array(this->data(), this->num_elements())), void())
 	{
 		auto extensions = this->extensions();
-		ar & BOOST_SERIALIZATION_NVP(extensions);
+		ar & Archive::make_nvp("extensions", extensions);
 		if(extensions != this->extensions()){clear(); reextent(extensions);}
-		ar & boost::serialization::make_nvp("data", boost::serialization::make_array(this->data(), this->num_elements()));
+		ar & Archive::make_nvp("data", Archive::make_array(this->data(), this->num_elements()));
 	}
-#endif
 	using static_::static_;
 	using typename array::ref::value_type;
 	using static_::ref::operator<;
