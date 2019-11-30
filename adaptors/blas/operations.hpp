@@ -94,18 +94,28 @@ public:
 template<class M> decltype(auto) transposed(M const& m){return rotated(m);}
 template<class M> decltype(auto) transposed(M&       m){return rotated(m);}
 
+template<class T, typename = decltype(std::declval<typename T::element>().imag())>
+std::true_type is_complex_array_aux(T const&);
+std::false_type is_complex_array_aux(...);
+
+template <typename T> struct is_complex_array: decltype(is_complex_array_aux(std::declval<T const&>())){};
+
 template<class ComplexPtr> std::true_type is_conjugated_aux(multi::blas::detail::conjugater<ComplexPtr> const&);
 template<class T> std::false_type is_conjugated_aux(T const&);
 
 template<class A>
-struct is_conjugated : decltype(is_conjugated_aux(typename std::decay_t<A>::element_ptr{})){};
+struct is_conjugated_t : decltype(is_conjugated_aux(typename std::decay_t<A>::element_ptr{})){};
 
-template<class A, typename D=std::decay_t<A>, typename E=typename D::element, class C=detail::conjugater<typename D::element_ptr>, typename = std::enable_if_t<not is_conjugated<std::decay_t<A>>()> >
+template<class A> constexpr bool is_conjugated(A const&){return is_conjugated_t<A>{};}
+
+template<class A> constexpr bool is_not_conjugated(A const& a){return is_complex_array<A>{} and not is_conjugated(a);}
+
+template<class A, typename D=std::decay_t<A>, typename E=typename D::element, class C=detail::conjugater<typename D::element_ptr>, typename = std::enable_if_t<not is_conjugated_t<std::decay_t<A>>()> >
 decltype(auto) conjugated(A&& a, void* = 0){
 	return multi::static_array_cast<E, C>(std::forward<A>(a));
 }
 
-template<class A, typename D=std::decay_t<A>, typename E=typename D::element, class C=typename D::element_ptr::underlying_type, typename = std::enable_if_t<is_conjugated<std::decay_t<A>>{}> >
+template<class A, typename D=std::decay_t<A>, typename E=typename D::element, class C=typename D::element_ptr::underlying_type, typename = std::enable_if_t<is_conjugated_t<std::decay_t<A>>{}> >
 decltype(auto) conjugated(A&& a){
 	return multi::static_array_cast<E, C>(std::forward<A>(a));
 }
@@ -123,11 +133,6 @@ struct is_hermitized : std::decay_t<decltype(is_hermitized_aux(typename std::dec
 
 template<class A> decltype(auto) identity(A&& a){return std::forward<A>(a);}
 
-template<class T, typename = decltype(std::declval<typename T::element>().imag())>
-std::true_type is_complex_array_aux(T const&);
-std::false_type is_complex_array_aux(...);
-
-template <typename T> struct is_complex_array: decltype(is_complex_array_aux(std::declval<T const&>())){};
 
 template<class A>
 decltype(auto) hermitized(A&& a, std::true_type){
@@ -211,10 +216,10 @@ BOOST_AUTO_TEST_CASE(m){
 	};
 	using multi::blas::hermitized;
 	assert( hermitized(A)[0][1] == conj(A[1][0]) );
-	static_assert( multi::blas::is_conjugated<decltype(hermitized(A))>{} , "!" );
+	static_assert( multi::blas::is_conjugated_t<decltype(hermitized(A))>{} , "!" );
 
 
-	static_assert( not multi::blas::is_conjugated<std::decay_t<decltype( conjugated(hermitized(A)) )>>{}, "!");
+	static_assert( not multi::blas::is_conjugated_t<std::decay_t<decltype( conjugated(hermitized(A)) )>>{}, "!");
 	static_assert( not multi::blas::is_hermitized<std::decay_t<decltype( conjugated(hermitized(A)) )>>{}, "!");
 
 
