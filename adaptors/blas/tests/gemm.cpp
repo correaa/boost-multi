@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&nvcc -x cu --expt-relaxed-constexpr`#$CXX` $0 -o $0x -Wno-deprecated-declarations -lcudart -lcublas -lboost_unit_test_framework `pkg-config --libs blas`&&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&`#nvcc -x cu --expt-relaxed-constexpr`$CXX $0 -o $0x -Wno-deprecated-declarations -lcudart -lcublas -lboost_unit_test_framework -Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core &&$0x&&rm $0x $0.cpp; exit
 #endif
 // © Alfredo A. Correa 2019
 
@@ -39,26 +39,28 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_square_real){
 	};
 	{
 		multi::array<double, 2> c({size(a), size(rotated(b))}, 9999);
-		using multi::blas::operation;
-		gemm(operation::identity, operation::identity, 1., a, b, 0., c);
+		using multi::blas::gemm;
+		gemm(1., a, b, 0., c);
 		BOOST_REQUIRE( c[2][1] == 86 );
 	}
 	{
 		multi::array<double, 2> c({size(a), size(rotated(b))}, 9999);
-		using multi::blas::operation;
-		gemm(operation::identity, operation::transposition, 1., a, b, 0., c);
+		using multi::blas::gemm;
+		using multi::blas::transposed;
+		gemm(1., a, transposed(b), 0., c);
 		BOOST_REQUIRE( c[2][1] == 48 );
 	}
 	{
 		multi::array<double, 2> c({size(a), size(rotated(b))}, 9999);
-		using multi::blas::operation;
-		gemm(operation::transposition, operation::identity, 1., a, b, 0., c);
+		using multi::blas::transposed;
+		using multi::blas::gemm;
+		gemm(1., transposed(a), b, 0., c);
 		BOOST_REQUIRE( c[2][1] == 103 );
 	}
 	{
 		multi::array<double, 2> c({size(a), size(rotated(b))}, 9999);
-		using multi::blas::operation;
-		gemm(operation::transposition, operation::transposition, 1., a, b, 0., c);
+		using multi::blas::transposed; using multi::blas::gemm;
+		gemm(1., transposed(a), transposed(b), 0., c);
 		BOOST_REQUIRE( c[2][1] == 50 );		
 	}
 	{
@@ -136,8 +138,179 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_automatic){
 	}
 }
 
+BOOST_AUTO_TEST_CASE(multi_blas_gemm_elongated){
+	using complex = std::complex<double>; complex const I{0,1};
+	multi::array<complex, 2> const a = {
+		{1.-2.*I, 9.-1.*I}
+	};
+	BOOST_REQUIRE( size(a) == 1 and size(a[0]) == 2 );
+	multi::array<complex, 2> const b = {
+		{2.+3.*I}, 
+		{19.+11.*I}
+	};
+	BOOST_REQUIRE( size(b) == 2 and size(b[0]) == 1 );
+	{
+		multi::array<complex, 2> c({1, 1});
+		using multi::blas::gemm;
+		using multi::blas::hermitized;
+		gemm(1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[0][0] == a[0][0]*b[0][0] + a[0][1]*b[1][0] );
+	}
+	{
+		multi::array<complex, 2> c({2, 2});
+		using multi::blas::gemm;
+		using multi::blas::hermitized;
+		gemm(1., b, a, 0., c); // c=ba, c⸆=a⸆b⸆
+		BOOST_REQUIRE( c[0][0] == b[0][0]*a[0][0] );
+		BOOST_TEST( c[1][1] == b[1][0]*a[0][1] );
+		auto const c_copy = gemm(1., b, a);
+		BOOST_REQUIRE( c_copy == c );
+	}
+	{
+		multi::array<complex, 2> c({1, 1});
+		using multi::blas::gemm;
+		using multi::blas::hermitized;
+		gemm(1., a, hermitized(a), 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[0][0] == a[0][0]*conj(a[0][0]) + a[0][1]*conj(a[0][1]) );
+		auto const c_copy = gemm(1., a, hermitized(a));
+		BOOST_REQUIRE( c_copy == c );
+	}
+	{
+		multi::array<complex, 2> c({2, 2});
+		using multi::blas::gemm;
+		using multi::blas::hermitized;
+		gemm(1., hermitized(a), a, 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[0][0] == a[0][0]*conj(a[0][0]) );
+		auto const c_copy = gemm(hermitized(a), a);
+		BOOST_REQUIRE( c_copy == c );
+	}
+	{
+		multi::array<complex, 2> const a = {
+			{1.-2.*I, 9.-1.*I}
+		};
+		multi::array<complex, 2> const b = {
+			{2.+3.*I}, 
+			{19.+11.*I}
+		};
+		multi::array<complex, 2> c({1, 1});
+		using multi::blas::gemm;
+		using multi::blas::hermitized;
+		gemm(1., a, b, 0., c);
+	}
+	{
+		multi::array<double, 2> const a = {{2., 3.}};
+		multi::array<double, 2> const b = {{4., 5.}};
+		multi::array<double, 2> c({1, 1});
+		using multi::blas::gemm; using multi::blas::hermitized;
+		gemm(1., a, rotated(b), 0., c); // blas error
+	}
+	{
+		multi::array<double, 2> const a = {
+			{2.},
+			{3.},
+			{5.}
+		};
+		multi::array<double, 2> const b = {
+			{4.},
+			{5.},
+			{6.}
+		};
+		multi::array<double, 2> c1({1, 1}), c2({1, 1});
+		using multi::blas::gemm; using multi::blas::hermitized;
+		auto ra = rotated(a).decay();
+		gemm(1., ra, b, 0., c1); // ok
+		BOOST_REQUIRE( c1[0][0] == a[0][0]*b[0][0] + a[1][0]*b[1][0] + a[2][0]*b[2][0] );
+
+	//	gemm(1., rotated(a), b, 0., c2); // was blas error
+	//	BOOST_REQUIRE(c1 == c2); // not reached
+	}
+	{
+		multi::array<double, 2> const a = {
+			{2.},
+			{3.},
+			{5.}
+		};
+		multi::array<double, 2> const b = {
+			{4., 2.},
+			{5., 1.},
+			{6., 2.}
+		};
+		multi::array<double, 2> c1({1, 2}), c2({1, 2});
+		using multi::blas::gemm; using multi::blas::hermitized;
+		auto ra = rotated(a).decay();
+		gemm(1., ra, b, 0., c1); // ok
+		BOOST_REQUIRE( c1[0][0] == a[0][0]*b[0][0] + a[1][0]*b[1][0] + a[2][0]*b[2][0] );
+		gemm(1., rotated(a), b, 0., c2);
+		BOOST_REQUIRE(c1 == c2);
+	}
+	if(0){
+		multi::array<double, 2> const a = {
+			{2.},
+			{3.},
+			{5.}
+		};
+		multi::array<double, 2> const b = {
+			{4.},
+			{5.},
+			{6.}
+		};
+		multi::array<double, 2> c1({1, 1}), c2({1, 1});
+		using multi::blas::gemm; using multi::blas::hermitized;
+		auto ra = rotated(a).decay();
+		gemm(1., ra, b, 0., c1); // ok
+		BOOST_REQUIRE( c1[0][0] == a[0][0]*b[0][0] + a[1][0]*b[1][0] + a[2][0]*b[2][0] );
+		gemm(1., rotated(a), b, 0., c2);
+		BOOST_REQUIRE(c1 == c2);
+	}
+	if(0){
+		multi::array<complex, 2> const a = {
+			{2. + 1.*I},
+			{3. + 2.*I}
+		};
+		multi::array<complex, 2> const b = {
+			{4. + 3.*I}, 
+			{5. + 4.*I}
+		};
+		multi::array<complex, 2> c1({1, 1}), c2({1, 1});
+		using multi::blas::gemm; using multi::blas::hermitized;
+		auto ha = hermitized(a).decay(); 
+		gemm(1., ha, b, 0., c1); // ok
+		gemm(1., hermitized(a), b, 0., c2); // was blas error
+		print(c1);
+		print(c2);
+	//	BOOST_REQUIRE(c1 == c2);
+	}
+	{
+		multi::array<complex, 2> const a = {
+			{1.-2.*I}, 
+			{9.-1.*I}
+		};
+		multi::array<complex, 2> const b = {
+			{2.+3.*I, 2. + 999.*I}, 
+			{19.+11.*I, 1. + 999.*I}
+		};
+		multi::array<complex, 2> c1({1, 2}), c2({2, 1}, 999.);
+		using multi::blas::gemm;
+		using multi::blas::hermitized;
+		auto ha = hermitized(a).decay();
+		gemm(1., ha, b, 0., c1);
+		gemm(1., hermitized(b), a, 0., c2);
+//		print(c1);
+//		print(c2);
+	//	std::cout << std::endl;
+		BOOST_REQUIRE( c1 == hermitized(c2) );
+	}
+	{
+	//	multi::array<complex, 2> c({1, 1});
+	//	using multi::blas::gemm;
+	//	using multi::blas::hermitized;
+//		gemm(1., hermitized(b), b, 0., c);
+	//	BOOST_REQUIRE( c[0][0] == b[0][0]*conj(b[0][0]) + b[1][0]*conj(b[1][0]) );
+	}
+}
+
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_automatic2){
-	using complex = std::complex<double>; constexpr complex I{0,1};
+	using complex = std::complex<double>; complex const I{0,1};
 	multi::array<complex, 2> const a = {
 		{1.-2.*I, 9.-1.*I},
 		{3.+3.*I, 7.-4.*I},
