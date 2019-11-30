@@ -435,4 +435,31 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_automatic4){
 	}
 }
 
+BOOST_AUTO_TEST_CASE(multi_blas_gemm_complex_issue68){
+	using complex = std::complex<double>; complex const I{0,1};
+	multi::cuda::managed::array<complex, 2> const a = {
+		{1.-2.*I},
+		{3.+3.*I},
+		{1.+9.*I}
+	};
+	{
+		multi::cuda::managed::array<complex, 2> c({1, 1});
+		using multi::blas::gemm;
+		using multi::blas::hermitized;
+		gemm(1., hermitized(a), a, 0., c);
+		BOOST_REQUIRE( c[0][0] == 105. + 0.*I );
+	}
+	{
+		using multi::blas::gemm;
+		using multi::blas::hermitized;
+		auto c = gemm(2., hermitized(a), a);
+		BOOST_REQUIRE( c[0][0] == 210. + 0.*I );
+	}
+	{
+		using multi::blas::gemm;
+		using multi::blas::hermitized;
+		auto c = gemm(hermitized(a), a);
+		BOOST_REQUIRE( c[0][0] == 105. + 0.*I );
+	}
+}
 
