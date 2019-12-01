@@ -239,18 +239,33 @@ public:
 		return basic_array<T, D, typename static_array::element_const_ptr>{this->layout(), this->base_};
 	}
 //	using const_reverse_iterator = basic_reverse_iterator<const_iterator>;
-	auto rotated() const&{
+	auto rotated(dimensionality_type d = 1) const&{
 		typename static_array::layout_t new_layout = *this;
-		new_layout.rotate();
+		new_layout.rotate(d);
 		return basic_array<T, D, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
-	friend decltype(auto) rotated(static_array const& self){return self.rotated();}
-	auto rotated()&{
+	auto rotated(dimensionality_type d = 1)&{
 		typename static_array::layout_t new_layout = *this;
-		new_layout.rotate();
+		new_layout.rotate(d);
 		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
 	}
-	friend decltype(auto) rotated(static_array& self){return self.rotated();}
+	friend decltype(auto) rotated(static_array const& self){return self.rotated();}
+	auto unrotated(dimensionality_type d = 1) const&{
+		typename static_array::layout_t new_layout = *this;
+		new_layout.unrotate(d);
+		return basic_array<T, D, typename static_array::element_const_ptr>{new_layout, this->base_};
+	}
+	auto unrotated(dimensionality_type d = 1)&{
+		typename static_array::layout_t new_layout = *this;
+		new_layout.unrotate(d);
+		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
+	}
+	friend decltype(auto) unrotated(static_array& self){return self.rotated();}
+	decltype(auto) operator<<(dimensionality_type d){return rotated(d);}
+	decltype(auto) operator>>(dimensionality_type d){return unrotated(d);}
+	decltype(auto) operator<<(dimensionality_type d) const{return rotated(d);}
+	decltype(auto) operator>>(dimensionality_type d) const{return unrotated(d);}
+
 	typename static_array::iterator begin() HD {return ref::begin();}
 	typename static_array::iterator end() HD {return ref::end();}
 

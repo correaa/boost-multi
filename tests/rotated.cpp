@@ -26,5 +26,25 @@ BOOST_AUTO_TEST_CASE(multi_rotate){
 	BOOST_REQUIRE( B[1][2] == 7  );
 	BOOST_REQUIRE( (B <<1) == (A <<1) );
 	BOOST_REQUIRE( (B<<1)[2][1] == 7 );
+
+	{
+		multi::array<double, 2> a = {
+			{00, 01},
+			{10, 11}
+		};
+		BOOST_REQUIRE( a[1][0] == 10 );
+		BOOST_REQUIRE( (a <<1)[0][1] == 10 );
+		BOOST_REQUIRE( &a[1][0] == &(a << 1)[0][1] );
+		(a<<1)[0][1] = 100;
+		BOOST_REQUIRE( a[1][0] == 100 );
+	}
+	{
+		multi::array<double, 2> const a = {
+			{00, 01},
+			{10, 11}
+		};
+		BOOST_REQUIRE( (a<<1)[0][1] == 10 );
+	}
+
 }
 
