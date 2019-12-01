@@ -249,7 +249,16 @@ public:
 		new_layout.rotate(d);
 		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
 	}
+	auto rotated(dimensionality_type d = 1)&&{
+		typename static_array::layout_t new_layout = *this;
+		new_layout.rotate(d);
+		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
+	}
+//	friend decltype(auto) rotated(static_array const& self){return self.rotated();}
+//	template<class Array, typename = std::enable_if_t<std::is_same<static_array, std::decay_t<Array>>{}> > 
+	friend decltype(auto) rotated(static_array& self){return self.rotated();}
 	friend decltype(auto) rotated(static_array const& self){return self.rotated();}
+
 	auto unrotated(dimensionality_type d = 1) const&{
 		typename static_array::layout_t new_layout = *this;
 		new_layout.unrotate(d);
@@ -260,7 +269,9 @@ public:
 		new_layout.unrotate(d);
 		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
 	}
-	friend decltype(auto) unrotated(static_array& self){return self.rotated();}
+	friend decltype(auto) unrotated(static_array& self){return self.unrotated();}
+	friend decltype(auto) unrotated(static_array const& self){return self.unrotated();}
+
 	decltype(auto) operator<<(dimensionality_type d){return rotated(d);}
 	decltype(auto) operator>>(dimensionality_type d){return unrotated(d);}
 	decltype(auto) operator<<(dimensionality_type d) const{return rotated(d);}

@@ -6,7 +6,12 @@ $CXX -Wall -Wextra $0 -lboost_unit_test_framework -o$0x&&$0x&&rm $0x;exit
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
+#include<random>
+
 #include "../array.hpp"
+
+std::random_device r;
+
 
 BOOST_AUTO_TEST_CASE(fill){
 	namespace multi = boost::multi;
@@ -21,11 +26,19 @@ BOOST_AUTO_TEST_CASE(fill){
 	BOOST_REQUIRE( all_of(begin(d2D[1]), end(d2D[1]), [](auto& e){return e==5.;}) );
 
 	using std::fill;
-
 	fill(begin(d2D[1]), end(d2D[1]), 8.);
 	BOOST_REQUIRE( all_of(begin(d2D[1]), end(d2D[1]), [](auto& e){return e==8.;}) );
 
 	fill(begin(rotated(d2D)[1]), end(rotated(d2D)[1]), 8.);
 	BOOST_REQUIRE( all_of(begin(rotated(d2D)[1]), end(rotated(d2D)[1]), [](auto&& e){return e==8.;}) );
+
+	fill(begin((d2D<<1)[1]), end((d2D<<1)[1]), 8.);
+	BOOST_REQUIRE( all_of(begin((d2D<<1)[1]), end((d2D<<1)[1]), [](auto&& e){return e==8.;}) );
+
+	std::mt19937 g{r()};
+	auto rand = [d=std::normal_distribution<>{}, g = std::mt19937{r()}]() mutable{return d(g);};
+	multi::array<double, 2> r2D({5, 5});
+	std::for_each(begin(r2D), end(r2D), [&](auto&& e){std::generate(begin(e), end(e), rand);});
+
 }
 

@@ -43,5 +43,6 @@ Test:
       - sh ./constructors.cpp
       - sh ./initializer_list.cpp
       - sh ./layout.cpp
-      - sh ./array_fill.cpp
+      - sh ./fill.cpp
+      - sh ./rotated.cpp
 
