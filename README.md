@@ -22,7 +22,7 @@ if your test involves mathematical operations add arithmetic optimizations (`-Of
 Some features:
 
 * Arbitrary pointer types (minimal requirements)
-* Simplified implementation (~600 lines)
+* Simplified implementation (~1000 lines)
 * Fast access of subarrays (view) types
 * Value semantics of multi-dimensional array container
 * Better semantics of subarray (view) types
@@ -51,7 +51,7 @@ The size is automatically deduced; the first dimension are the "rows" above.
 
 ```c++
 	assert( A.size()==2 );
-    assert( std::get<1>(A.sizes()) == 3 );
+	assert( std::get<1>(A.sizes()) == 3 );
 ```
 
 Arrays can be copied, or moved, and compared. Copies are independent.
