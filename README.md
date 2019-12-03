@@ -22,7 +22,7 @@ if your test involves mathematical operations add arithmetic optimizations (`-Of
 Some features:
 
 * Arbitrary pointer types (minimal requirements)
-* Simplified implementation (~1000 lines)
+* Simplified implementation (~1200 lines)
 * Fast access of subarrays (view) types
 * Value semantics of multi-dimensional array container
 * Better semantics of subarray (view) types
