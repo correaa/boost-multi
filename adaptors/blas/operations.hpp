@@ -92,7 +92,7 @@ public:
 //operation const& transposition = operation::transposition;
 
 template<class M> decltype(auto) transposed(M const& m){return rotated(m);}
-template<class M> decltype(auto) transposed(M&       m){return rotated(m);}
+//template<class M> decltype(auto) transposed(M&       m){return rotated(m);}
 
 template<class T, typename = decltype(std::declval<typename T::element>().imag())>
 std::true_type is_complex_array_aux(T const&);
