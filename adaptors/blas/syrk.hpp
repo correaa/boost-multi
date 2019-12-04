@@ -20,7 +20,7 @@ namespace boost{
 namespace multi{namespace blas{
 
 template<typename AA, typename BB, class A2D, class C2D>
-C2D&& syrk(triangular c_side, real_operation a_op, AA alpha, A2D const& a, BB beta, C2D&& c){
+C2D&& syrk(fill c_side, real_operation a_op, AA alpha, A2D const& a, BB beta, C2D&& c){
 	if(stride(c)==1 and stride(c[0])!=1) syrk(flip(c_side), transpose(a_op), alpha, rotated(a), beta, rotated(c));
 	else{
 		assert( stride(c[0])==1 );
@@ -38,7 +38,7 @@ C2D&& syrk(triangular c_side, real_operation a_op, AA alpha, A2D const& a, BB be
 }
 
 template<typename AA, typename BB, class A2D, class C2D>
-C2D&& syrk(triangular c_side, AA alpha, A2D const& a, BB beta, C2D&& c){
+C2D&& syrk(fill c_side, AA alpha, A2D const& a, BB beta, C2D&& c){
 	if(stride(a)==1){
 		if(stride(c)==1) syrk(flip(c_side), real_operation::transposition, alpha, rotated(a), beta, rotated(std::forward<C2D>(c)));
 		else             syrk(c_side      , real_operation::transposition, alpha, rotated(a), beta,        (std::forward<C2D>(c)));
@@ -50,15 +50,15 @@ C2D&& syrk(triangular c_side, AA alpha, A2D const& a, BB beta, C2D&& c){
 }
 
 template<typename AA, class A2D, class C2D>
-C2D&& syrk(triangular c_side, AA alpha, A2D const& a, C2D&& c){
+C2D&& syrk(fill c_side, AA alpha, A2D const& a, C2D&& c){
 	syrk(c_side, alpha, a, 0., c);
 	return std::forward<C2D>(c);
 }
 
 template<typename AA, class A2D, class C2D>
 C2D&& syrk(AA alpha, A2D const& a, C2D&& c){
-	if(stride(c)==1) syrk(triangular::upper, alpha, a, rotated(c));
-	else             syrk(triangular::lower, alpha, a,        (c));
+	if(stride(c)==1) syrk(fill::upper, alpha, a, rotated(c));
+	else             syrk(fill::lower, alpha, a,        (c));
 	assert( size(c) == size(rotated(c)) );
 	for(typename std::decay_t<C2D>::difference_type i = 0; i != size(c); ++i)
 		blas::copy(rotated(c)[i]({i+1, size(c)}), c[i]({i+1, size(c)}) );
@@ -130,33 +130,33 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_real){
 	};
 	{
 		multi::array<double, 2> c({3, 3}, 9999.);
-		using multi::blas::triangular;
+		using multi::blas::fill;
 		using multi::blas::real_operation;
-		syrk(triangular::lower, real_operation::transposition, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
+		syrk(fill::lower, real_operation::transposition, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
 		BOOST_REQUIRE( c[2][1] == 19. ); 
 		BOOST_REQUIRE( c[1][2] == 9999. );
 	}
 	{
 		multi::array<double, 2> c({3, 3}, 9999.);
-		using multi::blas::triangular;
+		using multi::blas::fill;
 		using multi::blas::real_operation;
-		syrk(triangular::upper, real_operation::transposition, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
+		syrk(fill::upper, real_operation::transposition, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
 		BOOST_REQUIRE( c[1][2] == 19. );
 		BOOST_REQUIRE( c[2][1] == 9999. );
 	}
 	{
 		multi::array<double, 2> c({2, 2}, 9999.);
-		using multi::blas::triangular;
+		using multi::blas::fill;
 		using multi::blas::real_operation;
-		syrk(triangular::lower, real_operation::identity, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
+		syrk(fill::lower, real_operation::identity, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
 		BOOST_REQUIRE( c[1][0] == 34. ); 
 		BOOST_REQUIRE( c[0][1] == 9999. );
 	}
 	{
 		multi::array<double, 2> c({2, 2}, 9999.);
-		using multi::blas::triangular;
+		using multi::blas::fill;
 		using multi::blas::real_operation;
-		syrk(triangular::upper, real_operation::identity, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, a⸆a, `c` in lower triangular
+		syrk(fill::upper, real_operation::identity, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, a⸆a, `c` in lower triangular
 		BOOST_REQUIRE( c[0][1] == 34. ); 
 		BOOST_REQUIRE( c[1][0] == 9999. );
 	}
@@ -165,9 +165,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_real){
 		multi::array<double, 2> ct({2, 2}, 9999.);
 		auto&& a_ = rotated(at);
 		auto&& c_ = rotated(ct);
-		using multi::blas::triangular;
+		using multi::blas::fill;
 		using multi::blas::real_operation;
-		syrk(triangular::upper, real_operation::identity, 1., a_, 0., c_); // c⸆=c=a⸆a=(a⸆a)⸆, a⸆a, `c` in lower triangular
+		syrk(fill::upper, real_operation::identity, 1., a_, 0., c_); // c⸆=c=a⸆a=(a⸆a)⸆, a⸆a, `c` in lower triangular
 		BOOST_REQUIRE( c_[0][1] == 34. ); 
 		BOOST_REQUIRE( c_[1][0] == 9999. );
 	}
@@ -179,9 +179,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_real_special_case){
 	};
 	{
 		multi::array<double, 2> c({1, 1}, 9999.);
-		using multi::blas::triangular;
+		using multi::blas::fill;
 		using multi::blas::real_operation;
-		syrk(triangular::lower, real_operation::identity, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
+		syrk(fill::lower, real_operation::identity, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
 		//BOOST_REQUIRE( c[1][0] == 34. ); 
 		//BOOST_REQUIRE( c[0][1] == 9999. );
 	}
@@ -195,9 +195,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_complex_real_case){
 	};
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.);
-		using multi::blas::triangular;
+		using multi::blas::fill;
 		using multi::blas::operation;
-		syrk(triangular::lower, operation::transposition, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
+		syrk(fill::lower, operation::transposition, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
 		BOOST_REQUIRE( c[2][1] == 19. );
 		BOOST_REQUIRE( c[1][2] == 9999. );
 	}
@@ -212,17 +212,17 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_complex){
 	};
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.);
-		using multi::blas::triangular;
+		using multi::blas::fill;
 		using multi::blas::real_operation;
-		syrk(triangular::lower, real_operation::transposition, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
+		syrk(fill::lower, real_operation::transposition, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
 		BOOST_REQUIRE( c[2][1] == complex(-3., -34.) );
 		BOOST_REQUIRE( c[1][2] == 9999. );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
-		using multi::blas::triangular;
+		using multi::blas::fill;
 		using multi::blas::real_operation;
-		syrk(triangular::lower, real_operation::identity, 1., a, 0., c); // c⸆=c=aa⸆=(aa⸆)⸆, `c` in lower triangular
+		syrk(fill::lower, real_operation::identity, 1., a, 0., c); // c⸆=c=aa⸆=(aa⸆)⸆, `c` in lower triangular
 		BOOST_REQUIRE( c[1][0] == complex(18., -21.) );
 		BOOST_REQUIRE( c[0][1] == 9999. );
 	}
@@ -231,9 +231,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_complex){
 		multi::array<complex, 2> ct({2, 2}, 9999.);
 		auto&& a_ = rotated(at);
 		auto&& c_ = rotated(ct);
-		using multi::blas::triangular;
+		using multi::blas::fill;
 		using multi::blas::real_operation;
-		syrk(triangular::upper, real_operation::identity, 1., a_, 0., c_); // c⸆=c=aa⸆=(aa⸆)⸆, `c` in upper triangular
+		syrk(fill::upper, real_operation::identity, 1., a_, 0., c_); // c⸆=c=aa⸆=(aa⸆)⸆, `c` in upper triangular
 		BOOST_REQUIRE( c_[0][1] == complex(18., -21.) ); 
 		BOOST_REQUIRE( c_[1][0] == 9999. );
 	}
@@ -248,24 +248,24 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_operation_complex){
 	};
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
-		using multi::blas::triangular;
-		syrk(triangular::lower, 1., a, 0., c); // c⸆=c=aa⸆=(aa⸆)⸆, `c` in lower triangular
+		using multi::blas::fill;
+		syrk(fill::lower, 1., a, 0., c); // c⸆=c=aa⸆=(aa⸆)⸆, `c` in lower triangular
 		BOOST_REQUIRE( c[1][0]==complex(18., -21.) );
 		BOOST_REQUIRE( c[0][1]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.);
-		using multi::blas::triangular;
+		using multi::blas::fill;
 		using multi::blas::transposed;
-		syrk(triangular::lower, 1., transposed(a), 0., c); // c⸆=c=a⸆a=(aa⸆)⸆, `c` in lower triangular
+		syrk(fill::lower, 1., transposed(a), 0., c); // c⸆=c=a⸆a=(aa⸆)⸆, `c` in lower triangular
 		BOOST_REQUIRE( c[2][1]==complex(-3.,-34.) );
 		BOOST_REQUIRE( c[1][2]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.);
-		using multi::blas::triangular;
+		using multi::blas::fill;
 		using multi::blas::transposed;
-		syrk(triangular::lower, 1., rotated(a), 0., c); // c⸆=c=a⸆a=(aa⸆)⸆, `c` in lower triangular
+		syrk(fill::lower, 1., rotated(a), 0., c); // c⸆=c=a⸆a=(aa⸆)⸆, `c` in lower triangular
 		BOOST_REQUIRE( c[2][1]==complex(-3.,-34.) );
 		BOOST_REQUIRE( c[1][2]==9999. );
 	}
@@ -278,38 +278,38 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_operation_real){
 	};
 	{
 		multi::array<double, 2> c({2, 2}, 9999.);
-		using multi::blas::triangular;
-		syrk(triangular::lower, 1., a, 0., c); // c⸆=c=aa⸆=(aa⸆)⸆, `c` in lower triangular
+		using multi::blas::fill;
+		syrk(fill::lower, 1., a, 0., c); // c⸆=c=aa⸆=(aa⸆)⸆, `c` in lower triangular
 		BOOST_REQUIRE( c[1][0] == 34. );
 		BOOST_REQUIRE( c[0][1] == 9999. );
 	}
 	{
 		multi::array<double, 2> c({2, 2}, 9999.);
-		using multi::blas::triangular;
-		syrk(triangular::upper, 1., a, 0., c); // c⸆=c=aa⸆=(aa⸆)⸆, `c` in upper triangular
+		using multi::blas::fill;
+		syrk(fill::upper, 1., a, 0., c); // c⸆=c=aa⸆=(aa⸆)⸆, `c` in upper triangular
 		BOOST_REQUIRE( c[0][1] == 34. );
 		BOOST_REQUIRE( c[1][0] == 9999. );
 	}
 	{
 		multi::array<double, 2> c({3, 3}, 9999.);
-		using multi::blas::triangular;
-		syrk(triangular::lower, 1., rotated(a), 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
+		using multi::blas::fill;
+		syrk(fill::lower, 1., rotated(a), 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
 		BOOST_REQUIRE( c[2][1] == 19. );
 		BOOST_REQUIRE( c[1][2] == 9999. );
 	}
 	{
 		multi::array<double, 2> c({3, 3}, 9999.);
 		using multi::blas::transposed;
-		using multi::blas::triangular;
-		syrk(triangular::lower, 1., transposed(a), 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
+		using multi::blas::fill;
+		syrk(fill::lower, 1., transposed(a), 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
 		BOOST_REQUIRE( c[2][1] == 19. );
 		BOOST_REQUIRE( c[1][2] == 9999. );
 	}
 	{
 		multi::array<double, 2> c({3, 3}, 9999.);
 		using multi::blas::transposed;
-		using multi::blas::triangular;
-		syrk(triangular::upper, 1., transposed(a), 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in upper triangular
+		using multi::blas::fill;
+		syrk(fill::upper, 1., transposed(a), 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in upper triangular
 		BOOST_REQUIRE( c[1][2] == 19. );
 		BOOST_REQUIRE( c[2][1] == 9999. );
 	}
@@ -318,8 +318,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_operation_real){
 		multi::array<double, 2> ct({2, 2}, 9999.);
 		auto&& a_ = rotated(at);
 		auto&& c_ = rotated(ct);
-		using multi::blas::triangular;
-		syrk(triangular::upper, 1., a_, 0., c_); // c⸆=c=aa⸆=(aa⸆)⸆, `c` in upper triangular
+		using multi::blas::fill;
+		syrk(fill::upper, 1., a_, 0., c_); // c⸆=c=aa⸆=(aa⸆)⸆, `c` in upper triangular
 		print(c_);
 		BOOST_REQUIRE( c_[0][1] == 34. ); 
 		BOOST_REQUIRE( c_[1][0] == 9999. );
@@ -333,8 +333,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_automatic_implicit_zero){
 	};
 	{
 		multi::array<double, 2> c({2, 2}, 9999.);
-		using multi::blas::triangular;
-		syrk(triangular::lower, 1., a, c); // c⸆=c=aa⸆=(aa⸆)⸆, `c` in lower triangular
+		using multi::blas::fill;
+		syrk(fill::lower, 1., a, c); // c⸆=c=aa⸆=(aa⸆)⸆, `c` in lower triangular
 		BOOST_REQUIRE( c[1][0] == 34. );
 		BOOST_REQUIRE( c[0][1] == 9999. );
 	}
@@ -434,13 +434,13 @@ BOOST_AUTO_TEST_CASE(multi_blas_syrk_herk_fallback){
 		{ 1., 3., 4.},
 		{ 9., 7., 1.}
 	};
-	using multi::blas::triangular;
+	using multi::blas::fill;
 	using multi::blas::real_operation;
 	{
 		multi::array<double, 2> c({2, 2}, 9999.);
-		using multi::blas::triangular;
+		using multi::blas::fill;
 		using multi::blas::real_operation;
-		syrk(triangular::lower, real_operation::identity, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
+		syrk(fill::lower, real_operation::identity, 1., a, 0., c); // c⸆=c=a⸆a=(a⸆a)⸆, `c` in lower triangular
 		BOOST_REQUIRE( c[1][0] == 34. ); 
 		BOOST_REQUIRE( c[0][1] == 9999. );
 	}
