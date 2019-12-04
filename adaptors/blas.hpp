@@ -17,6 +17,7 @@
 #include "../adaptors/blas/gemv.hpp"
 #include "../adaptors/blas/ger.hpp"
 #include "../adaptors/blas/nrm2.hpp"
+#include "../adaptors/blas/trsm.hpp"
 #include "../adaptors/blas/scal.hpp"
 #include "../adaptors/blas/swap.hpp"
 

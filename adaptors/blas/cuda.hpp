@@ -57,6 +57,8 @@ public:
 	static auto syrk(Args&&... args){return cublasDsyrk(args...);}
 	template<class... As> void copy (As... as){auto s=cublasDcopy (h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
 	template<class... As> void iamax(As... as){auto s=cublasIdamax(h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
+	template<class... As> void asum(As... as){auto s=cublasDasum(h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
+	template<class... As> void trsm(As... as){auto s=cublasDtrsm(h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
 };
 
 template<>
@@ -70,6 +72,8 @@ public:
 	static auto syrk(Args&&... args){return cublasSsyrk(args...);}
 	template<class... As> void copy (As... as){auto s=cublasScopy (h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
 	template<class... As> void iamax(As... as){auto s=cublasIsamax(h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
+	template<class... As> void asum(As... as){auto s=cublasSasum(h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
+	template<class... As> void trsm(As... as){auto s=cublasStrsm(h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
 };
 
 template<>
@@ -93,6 +97,8 @@ public:
 	}
 	template<class... As> void copy (As... as){auto s=cublasZcopy (h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
 	template<class... As> void iamax(As... as){auto s=cublasIzamax(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
+	template<class... As> void asum(As... as){auto s=cublasDzasum(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
+	template<class... As> void trsm(As... as){auto s=cublasZtrsm(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
 };
 
 template<>
@@ -116,10 +122,22 @@ public:
 	}
 	template<class... As> void copy (As... as){auto s=cublasCcopy (h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
 	template<class... As> void iamax(As... as){auto s=cublasIcamax(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
+	template<class... As> void asum(As... as){auto s=cublasScasum(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
+	template<class... As> void trsm(As... as){auto s=cublasCtrsm(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
 };
 
 namespace memory{
 namespace cuda{
+
+template<class ComplexTconst, typename S>//, typename T = typename std::decay_t<ComplexTconst>::value_type>
+auto asum(S n, cuda::ptr<ComplexTconst> x, S incx){
+	decltype(std::abs(ComplexTconst{})) r; cublas<std::decay_t<ComplexTconst>>{}.asum(n, static_cast<ComplexTconst*>(x), incx, &r); return r;
+}
+
+//template<class Tconst, typename S>
+//auto asum(S n, cuda::ptr<Tconst> x, S incx, void* = 0){
+//	std::decay_t<Tconst> r; cublas<std::decay_t<Tconst>>{}.asum(n, static_cast<Tconst*>(x), incx, &r); return r;
+//s}
 
 template<class T, typename S>
 S iamax(S n, cuda::ptr<T const> x, S incx){
@@ -269,10 +287,28 @@ void gemm(C transA, C transB, S m, S n, S k, AA a, multi::memory::cuda::ptr<Tcon
 	cublasDestroy(handle);
 }
 
+template<class Side, class Fill, class Trans, class Diag, typename Size, class Tconst, class T>
+void trsm(Side /*cublasSideMode_t*/ side, /*cublasFillMode_t*/ Fill uplo, /*cublasOperation_t*/ Trans trans, /*cublasDiagType_t*/ Diag diag,
+                           Size m, Size n, T alpha, cuda::ptr<Tconst> A, Size lda, cuda::ptr<T> B, Size ldb){
+	cublasOperation_t trans_cu = [&]{
+		switch(trans){
+			case 'N': return CUBLAS_OP_N;
+			case 'T': return CUBLAS_OP_T;
+			case 'C': return CUBLAS_OP_C;
+		} __builtin_unreachable();
+	}();
+	cublas<T>{}.trsm(
+		side=='L'?CUBLAS_SIDE_LEFT:CUBLAS_SIDE_RIGHT, uplo=='L'?CUBLAS_FILL_MODE_LOWER:CUBLAS_FILL_MODE_UPPER, trans_cu, diag=='N'?CUBLAS_DIAG_NON_UNIT:CUBLAS_DIAG_UNIT, m, n, &alpha, static_cast<Tconst*>(A), lda, static_cast<T*>(B), ldb);
+}
 
 }}}}
 
 namespace boost{namespace multi{namespace memory{namespace cuda{namespace managed{//namespace boost::multi::memory::cuda::managed{
+
+template<class Tconst, typename S>
+auto asum(S n, cuda::managed::ptr<Tconst> x, S incx){
+	return asum(n, cuda::ptr<Tconst>(x), incx);
+}
 
 template<class T, typename S>
 S iamax(S n, cuda::managed::ptr<T const> x, S incx){
@@ -297,6 +333,12 @@ void herk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::managed::p
 template<class Tconst, class T, class UL, class C, class S, class Real>
 void syrk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::managed::ptr<Tconst> A, S lda, Real beta, multi::memory::cuda::managed::ptr<T> CC, S ldc){
 	syrk(ul, transA, n, k, alpha, boost::multi::memory::cuda::ptr<Tconst>(A), lda, beta, boost::multi::memory::cuda::ptr<T>(CC), ldc);
+}
+
+template<class Side, class Fill, class Trans, class Diag, typename Size, class Tconst, class T>
+void trsm(Side /*cublasSideMode_t*/ side, /*cublasFillMode_t*/ Fill uplo, /*cublasOperation_t*/ Trans trans, /*cublasDiagType_t*/ Diag diag,
+                           Size m, Size n, T alpha, cuda::managed::ptr<Tconst> A, Size lda, cuda::managed::ptr<T> B, Size ldb){
+	return trsm(side, uplo, trans, diag, m, n, alpha, cuda::ptr<Tconst>(A), lda, cuda::ptr<T>(B), ldb);
 }
 
 }}}}}
