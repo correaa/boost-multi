@@ -89,14 +89,19 @@ B2D&& trsm(side a_side, fill a_nonz, diagonal a_diag, AA alpha, A2D const& a, B2
 
 template<typename AA, class A2D, class B2D>
 B2D&& trsm(fill a_nonz, diagonal a_diag, AA a, A2D const& A, B2D&& B){
-	if(stride(B)==1) trsm(side::right, a_nonz==fill::lower?fill::upper:fill::lower, a_diag, a, rotated(A), rotated(B));
-	else             trsm(side::left , a_nonz             , a_diag, a, A, std::forward<B2D>(B));
+	if(stride(B)==1) trsm(side::right, flip(a_nonz), a_diag, a, rotated(A), rotated(B));
+	else             trsm(side::left , a_nonz      , a_diag, a, A, std::forward<B2D>(B));
 	return std::forward<B2D>(B);
 }
 
 template<typename AA, class A2D, class B2D>
 decltype(auto) trsm(fill a_nonz, AA alpha, A2D const& a, B2D&& b){
 	return trsm(a_nonz, diagonal::general, alpha, a, std::forward<B2D>(b));
+}
+
+template<class A2D, class B2D>
+decltype(auto) trsm(fill a_nonz, A2D const& a, B2D&& b){
+	return trsm(a_nonz, diagonal::general, 1.0, a, std::forward<B2D>(b));
 }
 
 template<typename AA, class A2D, class B2D>
@@ -132,70 +137,6 @@ template<class A2D, class B2D>
 #endif
 #endif
 auto trsm(A2D const& a, B2D const& b){return trsm(1., a, b);}
-
-#if 0
-enum triangular_storage{lower='L', upper='U'};
-
-template<class UL, class Op, class AA, class BB, class A2D, class C2D>
-C2D&& herk(UL uplo, Op op, AA a, A2D const& A, BB b, C2D&& C){
-	if(op == 'C'){
-		assert(size(A) == size(C));
-		assert(stride(*begin(A))==1); assert(stride(*begin(C))==1);
-		herk(uplo, op, size(C), size(*begin(A)), a, base(A), stride(A), b, base(C), stride(C));
-		return std::forward<C2D>(C);
-	}
-	if(op == 'N'){
-		assert(size(*begin(A))==size(C));
-		assert(stride(*begin(A))==1); assert(stride(*begin(C))==1);
-		herk(uplo, op, size(C), size(A), a, base(A), stride(A), b, base(C), stride(C));
-		return std::forward<C2D>(C);
-	}
-	return std::forward<C2D>(C);
-//	assert(0);
-}
-
-template<class UL, typename AA, typename BB, class A2D, class C2D>
-C2D&& herk(UL uplo, AA a, A2D const& A, BB b, C2D&& C){
-	if(stride(A)==1) return herk(uplo, 'C', a, rotated(A), b, std::forward<C2D>(C));
-	else             return herk(uplo, 'N', a,         A , b, std::forward<C2D>(C));
-}
-
-template<class UL, typename AA, class A2D, class C2D>
-C2D&& herk(UL uplo, AA a, A2D const& A, C2D&& C){
-	if(stride(A)==1) return herk(uplo, 'C', a, rotated(A), 0., std::forward<C2D>(C));
-	else             return herk(uplo, 'N', a,         A , 0., std::forward<C2D>(C));
-}
-
-template<class T, typename = decltype(imag(std::declval<T>()[0])[0])>
-std::true_type is_complex_array_aux(T&&);
-std::false_type is_complex_array_aux(...);
-
-template <typename T> struct is_complex_array: decltype(is_complex_array_aux(std::declval<T>())){};
-
-template<typename AA, class A2D, class C2D, typename = std::enable_if_t<is_complex_array<std::decay_t<C2D>>{}>>
-C2D&& herk(AA a, A2D const& A, C2D&& C){
-	if(stride(C)==1) herk('L', a, A, rotated(std::forward<C2D>(C)));
-	else             herk('U', a, A,         std::forward<C2D>(C) );
-	using multi::rotated;
-	using multi::size;
-	for(typename std::decay_t<C2D>::difference_type i = 0; i != size(C); ++i){
-		blas::copy(begin(rotated(C)[i])+i+1, end(rotated(C)[i]), begin(C[i])+i+1);
-		blas::scal(-1., begin(imag(C[i]))+i+1, end(imag(C[i])));
-	}
-	return std::forward<C2D>(C);
-}
-
-template<typename AA, class A2D, class C2D, typename = std::enable_if_t<not is_complex_array<std::decay_t<C2D>>{}>>
-C2D&& herk(AA a, A2D const& A, C2D&& C, void* = 0){
-	return syrk(a, A, std::forward<C2D>(C));
-}
-
-template<class AA, class A2D, class R = typename A2D::decay_type>
-R herk(AA a, A2D const& A){return herk(a, A, R({size(rotated(A)), size(rotated(A))}));}
-
-template<class A2D, class R = typename A2D::decay_type>
-auto herk(A2D const& A){return herk(1., A);}
-#endif
 
 }}}
 
@@ -874,6 +815,27 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_RxNx_hermitized, *utf::tolerance(0.
 	using multi::blas::hermitized;
 
 	trsm(fill::lower, 1., hermitized(A), B); // B=Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
+	BOOST_TEST( real(B[1][2]) == 0.916923 );
+	BOOST_TEST( imag(B[1][2]) == -0.504615 );
+}
+
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_RxNx_hermitized_auto_alpha, *utf::tolerance(0.00001)){
+	using complex = std::complex<double>;
+	constexpr complex I{0., 1.};
+	multi::array<complex, 2> const A = {
+		{ 1. + 2.*I,  3. - 1.*I,  4. + 9.*I},
+		{NAN       ,  7. + 4.*I,  1. + 8.*I},
+		{NAN       , NAN       ,  8. + 2.*I}
+	};
+	multi::array<complex, 2> B = {
+		{1. - 9.*I, 3. + 2.*I, 4. + 3.*I},
+		{2. - 2.*I, 7. - 2.*I, 1. - 1.*I},
+		{3. + 1.*I, 4. + 8.*I, 2. + 7.*I}
+	};
+	using multi::blas::fill;
+	using multi::blas::hermitized;
+
+	trsm(fill::lower, hermitized(A), B); // B=Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
 	BOOST_TEST( real(B[1][2]) == 0.916923 );
 	BOOST_TEST( imag(B[1][2]) == -0.504615 );
 }
