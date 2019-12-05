@@ -29,7 +29,7 @@ fill flip(fill side){
 }
 
 template<class A2D>
-fill detect_triangular(A2D const& A, std::true_type){
+fill detect_triangular_aux(A2D const& A, std::false_type){
 	{
 		for(auto i = size(A); i != 0; --i){
 			auto const asum_up = blas::asum(begin(A[i-1])+i, end(A[i-1]));
@@ -45,9 +45,7 @@ fill detect_triangular(A2D const& A, std::true_type){
 }
 
 template<class A2D>
-fill detect_triangular(A2D const& A, std::false_type){
-	return flip(detect_triangular(hermitized(A)));
-}
+fill detect_triangular_aux(A2D const& A, std::true_type);
 
 template<class A2D>
 fill detect_triangular(A2D const& A){
@@ -66,10 +64,15 @@ fill detect_triangular(A2D const& A){
 	}else{
 		return flip(detect_triangular(hermitized(A)));
 	}
-#else
-	detect_triangular(A, std::integral_constant<bool, not is_hermitized<A2D>()>{});
-#endif
 	return fill::lower;
+#else
+	return detect_triangular_aux(A, is_conjugated_t<A2D>{});//std::integral_constant<bool, not is_hermitized<A2D>()>{});
+#endif
+}
+
+template<class A2D>
+fill detect_triangular_aux(A2D const& A, std::true_type){
+	return flip(detect_triangular(hermitized(A)));
 }
 
 

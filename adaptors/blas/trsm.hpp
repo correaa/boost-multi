@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&`#nvcc`clang++ -std=c++17 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_TRSM $0.cpp -o $0x -lboost_unit_test_framework \
+(echo '#include"'$0'"'>$0.cpp)&&nvcc -x cu --expt-relaxed-constexpr`#c++ -Wall -Wextra -Wpedantic` -D_TEST_MULTI_ADAPTORS_BLAS_TRSM $0.cpp -o $0x -lboost_unit_test_framework \
 `pkg-config --cflags --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
@@ -60,15 +60,31 @@ B2D&& trsm(side a_side, fill a_nonz, operation a_op, diagonal a_diag, AA alpha, 
 }
 
 template<typename AA, class A2D, class B2D>
-B2D&& trsm(side a_side, fill a_nonz, diagonal a_diag, AA alpha, A2D const& a, B2D&& b){
-	if constexpr(not multi::blas::is_hermitized<A2D>()){
-		if(stride(a)==1) trsm(a_side, flip(a_nonz), operation::transposition, a_diag, alpha, rotated(a), std::forward<B2D>(b));
-		else             trsm(a_side, a_nonz      , operation::identity     , a_diag, alpha,         a , std::forward<B2D>(b));
-	}else{
-		if(stride(a)==1) trsm(a_side, flip(a_nonz), operation::hermitian, a_diag, alpha, hermitized(a), std::forward<B2D>(b));
-		else assert(0);
-	}
+B2D&& trsm_aux(side a_side, fill a_nonz, diagonal a_diag, AA alpha, A2D const& a, B2D&& b, std::false_type){
+	if(stride(a)==1) trsm(a_side, flip(a_nonz), operation::transposition, a_diag, alpha, rotated(a), std::forward<B2D>(b));
+	else             trsm(a_side, a_nonz      , operation::identity     , a_diag, alpha,         a , std::forward<B2D>(b));
 	return std::forward<B2D>(b);
+}
+
+template<typename AA, class A2D, class B2D>
+B2D&& trsm_aux(side a_side, fill a_nonz, diagonal a_diag, AA alpha, A2D const& a, B2D&& b, std::true_type){
+	if(stride(a)==1) trsm(a_side, flip(a_nonz), operation::hermitian, a_diag, alpha, hermitized(a), std::forward<B2D>(b));
+	else assert(0);
+	return std::forward<B2D>(b);
+}
+
+
+template<typename AA, class A2D, class B2D>
+B2D&& trsm(side a_side, fill a_nonz, diagonal a_diag, AA alpha, A2D const& a, B2D&& b){
+//	if constexpr(not multi::blas::is_hermitized<A2D>()){
+//		if(stride(a)==1) trsm(a_side, flip(a_nonz), operation::transposition, a_diag, alpha, rotated(a), std::forward<B2D>(b));
+//		else             trsm(a_side, a_nonz      , operation::identity     , a_diag, alpha,         a , std::forward<B2D>(b));
+//	}else{
+//		if(stride(a)==1) trsm(a_side, flip(a_nonz), operation::hermitian, a_diag, alpha, hermitized(a), std::forward<B2D>(b));
+//		else assert(0);
+//	}
+//	return std::forward<B2D>(b);
+	return trsm_aux(a_side, a_nonz, a_diag, alpha, a, std::forward<B2D>(b), multi::blas::is_hermitized<A2D>{});
 }
 
 template<typename AA, class A2D, class B2D>
@@ -501,8 +517,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_xLxx_rot, *utf::tolerance(0.00001)){
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_xxxx, *utf::tolerance(0.00001)){
 	multi::array<double, 2> const A = {
 		{ 1.,  3.,  4.},
-		{NAN,  7.,  1.},
-		{NAN, NAN,  8.}
+		{ 0,  7.,  1.},
+		{ 0,  0,  8.}
 	};
 	multi::array<double, 2> B = {
 		{1., 3., 4.},
@@ -607,7 +623,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_xxxx_ret_as_const, *utf::tolerance(0
 		{3., 4., 2.}
 	};
 	using multi::blas::trsm;
-	auto C = trsm(1., A, std::as_const(B)); // C=Inv[A].B, T[C]=T[B].Inv[T[A]], C<-Solve(A.X=B, X), if A is upper or lower triangular (w/explicit zeros or NAN on the other triangular)
+	auto const& Bconst = B;
+	auto C = trsm(1., A, Bconst); // C=Inv[A].B, T[C]=T[B].Inv[T[A]], C<-Solve(A.X=B, X), if A is upper or lower triangular (w/explicit zeros or NAN on the other triangular)
 	BOOST_TEST( B[1][2] == 1. );
 	BOOST_TEST( C[1][2] == 0.107143 );
 }
