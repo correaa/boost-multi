@@ -39,9 +39,9 @@ template<class A> auto gemm_base_aux(A&& a, std::true_type){return underlying(ba
 
 template<class AA, class BB, class A2D, class B2D, class C2D>
 C2D&& gemm(AA alpha, A2D const& a, B2D const& b, BB beta, C2D&& c){
-	assert( size(a[0]) == size(b) );
+	assert( size(rotated(a)) == size(b) );
 	assert( size(c) == size(a) );
-	assert( size(b[0]) == size(c[0]) );
+	assert( size(rotated(b)) == size(rotated(c)) );
 	auto base_a = gemm_base_aux(a, is_hermitized<A2D>{}); (void)base_a;
 	auto base_b = gemm_base_aux(b, is_hermitized<B2D>{}); (void)base_b;
 	auto base_c = gemm_base_aux(c, is_hermitized<std::decay_t<C2D>>{}); (void)base_c;
@@ -51,42 +51,42 @@ C2D&& gemm(AA alpha, A2D const& a, B2D const& b, BB beta, C2D&& c){
 		if(is_c_ordering(c)){//gemm(alpha, transposed(b), transposed(a), beta, transposed(c));
 			     if( is_c_ordering(a) and  is_c_ordering(b)){
 				assert(!is_conjugated(a) and !is_conjugated(b));
-				gemm('N', 'N', size(c[0]), size(a   ), size(b   ), alpha, base_b, stride(b   ), base_a, stride(a   ), beta, base_c, stride(c   ));}
+				gemm('N', 'N', size(rotated(c)), size(a   ), size(b   ), alpha, base_b, stride(b   ), base_a, stride(a   ), beta, base_c, stride(c   ));}
 			else if(!is_c_ordering(a) and  is_c_ordering(b)){
 				assert(!is_conjugated(b));
-				gemm('N', is_conjugated(a)?'C':'T', size(c[0]), size(a   ), size(b   ), alpha, base_b, stride(b   ), base_a, stride(a[0]), beta, base_c, stride(c   ));
+				gemm('N', is_conjugated(a)?'C':'T', size(rotated(c)), size(a   ), size(b   ), alpha, base_b, stride(b   ), base_a, stride(rotated(a)), beta, base_c, stride(c   ));
 			}
 			else if( is_c_ordering(a) and !is_c_ordering(b)){
 				assert(!is_conjugated(a));
-				gemm(is_conjugated(b)?'C':'T', 'N', size(c[0]), size(a   ), size(b   ), alpha, base_b, stride(b[0]), base_a, stride(a   ), beta, base_c, stride(c   ));
-			}else if(!is_c_ordering(a) and !is_c_ordering(b)){gemm(is_conjugated(b)?'C':'T', is_conjugated(a)?'C':'T', size(c[0]), size(a   ), size(b   ), alpha, base_b, stride(b[0]), base_a, stride(a[0]), beta, base_c, stride(c   ));}
+				gemm(is_conjugated(b)?'C':'T', 'N', size(rotated(c)), size(a   ), size(b   ), alpha, base_b, stride(rotated(b)), base_a, stride(a   ), beta, base_c, stride(c   ));
+			}else if(!is_c_ordering(a) and !is_c_ordering(b)){gemm(is_conjugated(b)?'C':'T', is_conjugated(a)?'C':'T', size(rotated(c)), size(a   ), size(b   ), alpha, base_b, stride(rotated(b)), base_a, stride(rotated(a)), beta, base_c, stride(c   ));}
 		}else{
 			using core::gemm;
 				 if( is_c_ordering(a) and  is_c_ordering(b)){
-				gemm(is_conjugated(a)?'C':'T', is_conjugated(b)?'C':'T', size(c   ), size(b[0]), size(a[0]), alpha, base_a, stride(a   ), base_b, stride(b   ), beta, base_c, stride(c[0]));
+				gemm(is_conjugated(a)?'C':'T', is_conjugated(b)?'C':'T', size(c   ), size(rotated(b)), size(rotated(a)), alpha, base_a, stride(a   ), base_b, stride(b   ), beta, base_c, stride(rotated(c)));
 			}else if(!is_c_ordering(a) and  is_c_ordering(b)){
 				if(is_conjugated(a) and size(a)==1){
-					gemm('C', is_conjugated(b)?'C':'T', size(c   ), size(b[0]), size(a[0]), alpha, base_a, size(a[0]), base_b, stride(b   ), beta, base_c, stride(c[0]));
+					gemm('C', is_conjugated(b)?'C':'T', size(c   ), size(rotated(b)), size(rotated(a)), alpha, base_a, size(rotated(a)), base_b, stride(b   ), beta, base_c, stride(rotated(c)));
 				}else{
 					assert(not is_conjugated(a));
-					gemm('N', is_conjugated(b)?'C':'T', size(c   ), size(b[0]), size(a[0]), alpha, base_a, stride(a[0]), base_b, stride(b   ), beta, base_c, stride(c[0]));
+					gemm('N', is_conjugated(b)?'C':'T', size(c   ), size(rotated(b)), size(rotated(a)), alpha, base_a, stride(rotated(a)), base_b, stride(b   ), beta, base_c, stride(rotated(c)));
 				}
 			}
 			else if( is_c_ordering(a) and !is_c_ordering(b)){
-				if(is_conjugated(b) and size(b[0])==1){
-					gemm(is_conjugated(a)?'C':'T', 'C', size(c   ), size(b[0]), size(a[0]), alpha, base_a, stride(a   ), base_b, size(b[0]), beta, base_c, stride(c[0]));
+				if(is_conjugated(b) and size(rotated(b))==1){
+					gemm(is_conjugated(a)?'C':'T', 'C', size(c   ), size(rotated(b)), size(rotated(a)), alpha, base_a, stride(a   ), base_b, size(rotated(b)), beta, base_c, stride(rotated(c)));
 				}else{
 					assert(not is_conjugated(b));
-					gemm(is_conjugated(a)?'C':'T', 'N', size(c   ), size(b[0]), size(a[0]), alpha, base_a, stride(a   ), base_b, stride(b[0]), beta, base_c, stride(c[0]));
+					gemm(is_conjugated(a)?'C':'T', 'N', size(c   ), size(rotated(b)), size(rotated(a)), alpha, base_a, stride(a   ), base_b, stride(rotated(b)), beta, base_c, stride(rotated(c)));
 				}
 			}else if(!is_c_ordering(a) and !is_c_ordering(b)){
-				      if(not is_conjugated(a) and is_conjugated(b) and size(b[0])==1){
-					gemm('N', 'C', size(c   ), size(b[0]), size(a[0]), alpha, base_a, stride(a[0]), base_b, stride(b), beta, base_c, stride(c[0]));
-				}else if(is_conjugated(a) and size(a)==1 and is_conjugated(b) and size(b[0])==1){
-					gemm('C', 'C', size(c   ), size(b[0]), size(a[0]), alpha, base_a, size(a[0]), base_b, stride(b), beta, base_c, stride(c[0]));
+				      if(not is_conjugated(a) and is_conjugated(b) and size(rotated(b))==1){
+					gemm('N', 'C', size(c   ), size(rotated(b)), size(rotated(a)), alpha, base_a, stride(rotated(a)), base_b, stride(b), beta, base_c, stride(rotated(c)));
+				}else if(is_conjugated(a) and size(a)==1 and is_conjugated(b) and size(rotated(b))==1){
+					gemm('C', 'C', size(c   ), size(rotated(b)), size(rotated(a)), alpha, base_a, size(rotated(a)), base_b, stride(b), beta, base_c, stride(rotated(c)));
 				}else{
 					assert(not is_conjugated(a)); assert(not is_conjugated(b));
-					gemm('N', 'N', size(c   ), size(b[0]), size(a[0]), alpha, base_a, stride(a[0]), base_b, stride(b[0]), beta, base_c, stride(c[0]));
+					gemm('N', 'N', size(c   ), size(rotated(b)), size(rotated(a)), alpha, base_a, stride(rotated(a)), base_b, stride(rotated(b)), beta, base_c, stride(rotated(c)));
 				}
 			}
 		}
