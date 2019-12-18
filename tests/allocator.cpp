@@ -8,7 +8,7 @@ $CXX -Wall -Wextra -Wpedantic $0 -o $0x -lboost_unit_test_framework&&valgrind $0
 
 #include "../array.hpp"
 
-#include "../../multi/memory/stack.hpp"
+//#include "../../multi/memory/stack.hpp" //TODO test custom allocator
 
 #include<vector>
 #include<complex>
