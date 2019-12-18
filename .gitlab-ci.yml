@@ -24,7 +24,7 @@ variables:
 before_script:
     - apt update --quiet
     - apt upgrade -y --quiet
-    - apt install --assume-yes --quiet g++ libboost-test-dev
+    - apt install --assume-yes --quiet g++ libboost-test-dev valgrind
 
 stages:
     - test
@@ -45,4 +45,7 @@ Test:
       - sh ./layout.cpp
       - sh ./fill.cpp
       - sh ./rotated.cpp
+      - sh ./allocator.cpp
+      - sh ./reextent.cpp
+
 
