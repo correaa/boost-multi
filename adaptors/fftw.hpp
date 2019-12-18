@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&`#nvcc -x cu --expt-relaxed-constexpr`$CXX -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_FFTW $0.cpp -o $0x -lcudart `pkg-config --libs fftw3` -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp;exit
+(echo '#include"'$0'"'>$0.cpp)&&`#nvcc -x cu --expt-relaxed-constexpr`clang++ -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_FFTW $0.cpp -o $0x -lcudart `pkg-config --libs fftw3` -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp;exit
 #endif
 #ifndef MULTI_ADAPTORS_FFTW_HPP
 #define MULTI_ADAPTORS_FFTW_HPP
@@ -231,7 +231,7 @@ fftw_plan fftw_plan_dft(std::array<bool, D> which, In&& in, Out&& out, int sign,
 	for(int i = 0; i != D; ++i) 
 		(which[i]?*l_dims++:*l_howmany++) = fftw_iodim64{ion[i], istrides[i], ostrides[i]};
 	return fftw_plan_guru64_dft(
-		/*int rank*/ l_dims - dims.begin(), 
+		/*int rank*/ sign?(l_dims - dims.begin()):0, 
 		/*const fftw_iodim64 *dims*/ dims.data(), 
 		/*int howmany_rank*/ l_howmany - howmany.begin(),
 		/*const fftw_iodim *howmany_dims*/ howmany.data(), //nullptr, //howmany_dims.data(), //;//nullptr,
@@ -311,9 +311,14 @@ sign invert(sign s){
 }
 
 template<typename In, class Out>
-auto dft(In const& i, Out&& o, sign s){
-	if(s == sign::none) o = i; else plan{i, std::forward<Out>(o), s}(i, std::forward<Out>(o));
+Out&& dft(In const& i, Out&& o, sign s){
+	plan{i, std::forward<Out>(o), s}(i, std::forward<Out>(o));
 	return std::forward<Out>(o);
+}
+
+template<class In, class Out, std::size_t D = std::decay_t<In>::dimensionality>
+Out&& transpose(In const& i, Out&& o){
+	return dft(i, std::forward<Out>(o), sign::none);
 }
 
 template<typename In, class Out, std::size_t D = std::decay_t<In>::dimensionality>
@@ -330,12 +335,15 @@ Out&& dft(In const& i, Out&& o, sign s){
 	return std::forward<Out>(o);
 }
 
+
 template<typename In, class Out, std::size_t D = std::decay_t<In>::dimensionality>
 auto dft(std::array<sign, D> w, In const& i, Out&& o){
-	std::array<bool, D> fwd, bwd;
+	std::array<bool, D> fwd, non, bwd;
 
 	std::transform(begin(w), end(w), begin(fwd), [](auto e){return e==sign::forward;});
 	dft(fwd, i, o, sign::forward);
+
+//	std::transform(begin(w), end(w), begin(non), [](auto e){return e==sign::none;});
 
 	std::transform(begin(w), end(w), begin(bwd), [](auto e){return e==sign::backward;}); 
 	if(std::accumulate(begin(bwd), end(bwd), false)) dft(bwd, o, o, sign::backward);
@@ -352,6 +360,26 @@ auto many_dft(It1 first, It1 last, It2 d_first, int sign){
 template<typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
 NODISCARD("when first argument is const")
 R dft(In const& i, sign s){return dft(i, R(extensions(i), get_allocator(i)), s);}
+
+template<typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
+NODISCARD("when first argument is const")
+R transpose(In const& i){
+	return transpose(i, R(extensions(i), get_allocator(i)));
+}
+
+template<typename T, dimensionality_type D, class... Args>
+decltype(auto) rotate(multi::array<T, D, Args...>& i, int = 1){
+	multi::array_ref<T, D, typename multi::array<T, D, Args...>::element_ptr> before(data_elements(i), extensions(i));
+//	std::cout << "1. "<< size(i) <<' '<< size(rotated(i)) << std::endl;
+	i.reshape(extensions(rotated(before) ));
+//	auto x = extensions(i);
+//	std::cout << "2. "<< size(i) <<' '<< size(rotated(i)) << std::endl;
+	fftw::dft(before, i, sign::none);
+//	std::cout << "3. "<< size(i) <<' '<< size(rotated(i)) << std::endl;
+	return i;
+//	assert( extensions(i) == x );
+//	return i;
+}
 
 template<typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
 NODISCARD("when first argument is const")
@@ -408,7 +436,7 @@ template<class In> In&& dft_inplace(In&& i, sign s){
 
 #include <boost/timer/timer.hpp>
 
-#include "../adaptors/fftw/allocator.hpp"
+//#include "../adaptors/fftw/allocator.hpp"
 #include<iostream>
 #include "../array.hpp"
 #include<complex>
@@ -469,6 +497,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_identity_2, *boost::unit_test::tolerance(0.0001)){
 //	multi::fftw::dft<2>(in, fwd, multi::fftw::forward);
 //	multi::fftw::dft({multi::fftw::none, multi::fftw::none}, in, fwd);
 	multi::fftw::dft(in, fwd, multi::fftw::none);
+//	multi::fftw::transpose(in, fwd);
 	BOOST_REQUIRE( fwd == in );
 }
 
@@ -678,6 +707,7 @@ BOOST_AUTO_TEST_CASE(fftw_1D_power){
 	BOOST_REQUIRE( (power(in) - power(out)/num_elements(out)) < 1e-17 );
 }
 
+/*
 BOOST_AUTO_TEST_CASE(fftw_1D_allocator_power){
 	using multi::fftw::allocator;
 	multi::array<complex, 1, allocator<complex>> in(16, 0.); std::iota(begin(in), end(in), 1.);
@@ -688,6 +718,7 @@ BOOST_AUTO_TEST_CASE(fftw_1D_allocator_power){
 	fftw_destroy_plan(p);
 	BOOST_REQUIRE( (power(in) - power(out)/num_elements(out)) < 1e-12 );
 }
+*/
 
 BOOST_AUTO_TEST_CASE(fftw_2D_power){
 	multi::array<complex, 2> in({N, N});
@@ -777,6 +808,45 @@ BOOST_AUTO_TEST_CASE(fftw_3D_power_out_of_place_over_temporary){
 	};
 	auto out = fftw::dft(f(), fftw::forward);
 	BOOST_REQUIRE( std::abs(powerin - power(out)/num_elements(out)) < 1e-10 );
+}
+
+BOOST_AUTO_TEST_CASE(fftw_2D_transposition_square_inplace){
+	multi::array<complex, 2> in = {
+		{11., 12.},
+		{21., 22.}
+	};
+	BOOST_REQUIRE( in[1][0] == 21. );
+
+	multi::fftw::transpose(in, rotated(in));
+	BOOST_REQUIRE( in[1][0] == 12. );
+}
+
+BOOST_AUTO_TEST_CASE(fftw_2D_transposition_outofplace){
+	multi::array<complex, 2> in = {
+		{11., 12., 13.},
+		{21., 22., 23.}
+	};
+	{
+		multi::array<complex, 2> out(extensions(rotated(in)));
+		multi::fftw::transpose(in, rotated(out));
+		BOOST_REQUIRE( out[1][0]==12. );
+		BOOST_REQUIRE( out[2][0]==13. );
+		BOOST_REQUIRE( out[0][1]==21. );
+	}
+	{
+	//	multi::array<complex, 2> out(extensions(rotated(in)));
+		auto out = multi::fftw::transpose(rotated(in));
+		BOOST_REQUIRE( out[1][0]==12. );
+		BOOST_REQUIRE( out[2][0]==13. );
+		BOOST_REQUIRE( out[0][1]==21. );
+	}
+	{
+		BOOST_REQUIRE( size(in) == 2 );
+	//	in.reshape({3, 2});
+		multi::fftw::rotate(in);
+		std::cout << size(in) << std::endl;
+		BOOST_REQUIRE( size(in) == 3 );
+	}
 }
 
 #if 0
