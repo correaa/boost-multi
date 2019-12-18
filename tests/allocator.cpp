@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -Wall -Wextra -Wpedantic $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXX -Wall -Wextra -Wpedantic $0 -o $0x -lboost_unit_test_framework&&valgrind $0x&&rm $0x;exit
 #endif
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi allocators"
@@ -21,15 +21,20 @@ using std::cout;
 
 BOOST_AUTO_TEST_CASE(array_allocators){
 {
-	multi::array<double, 3> AA({10, 20, 30}, 99.);
-	BOOST_REQUIRE( AA[5][10][15] == 99. );
+	std::vector<multi::array<double, 2>> VA;
+	VA.emplace_back(multi::index_extensions<2>{0, 0}, 0);
+	BOOST_REQUIRE( size(VA[0]) == 0 );
+	for(int i = 1; i != 3; ++i)
+		VA.emplace_back(multi::index_extensions<2>{i, i}, i);
+	BOOST_REQUIRE( size(VA[0]) == 0 );
+	BOOST_REQUIRE( size(VA[1]) == 1 );
+	BOOST_REQUIRE( size(VA[2]) == 2 );
+	BOOST_REQUIRE( VA[1][0][0] == 1 );
+	BOOST_REQUIRE( VA[2][0][0] == 2 );
 }
 {
-	std::vector<multi::array<double, 2>> VA;
-	for(int i = 0; i != 10; ++i)
-		VA.emplace_back(multi::index_extensions<2>{i, i}, i);
-	BOOST_REQUIRE( size(VA[8]) == 8 );
-	BOOST_REQUIRE( VA[2][0][0] == 2 );
+	multi::array<double, 3> AA({10, 20, 30}, 99.);
+	BOOST_REQUIRE( AA[5][10][15] == 99. );
 }
 {
 	std::vector<multi::array<double, 2>> VA(33);

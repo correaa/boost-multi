@@ -14,7 +14,7 @@
 
 //#include<boost/serialization/nvp.hpp>
 //#include<boost/serialization/array_wrapper.hpp>
-//#include<iostream> // debug
+#include<iostream> // debug
 
 #if defined(__CUDACC__)
 #define HD __host__ __device__
@@ -35,7 +35,7 @@ protected:
 	allocator_type& alloc(){return alloc_;}
 	array_allocator(allocator_type const& a = {}) : alloc_{a}{}
 	typename std::allocator_traits<allocator_type>::pointer allocate(typename std::allocator_traits<allocator_type>::size_type n){
-		return std::allocator_traits<allocator_type>::allocate(alloc_, n);
+		return n?std::allocator_traits<allocator_type>::allocate(alloc_, n):nullptr;
 	}
 	auto uninitialized_fill_n(typename std::allocator_traits<allocator_type>::pointer base, typename std::allocator_traits<allocator_type>::size_type num_elements, typename std::allocator_traits<allocator_type>::value_type e){
 		return uninitialized_fill_n(alloc_, base, num_elements, e);
@@ -66,14 +66,12 @@ protected:
 		return uninitialized_copy_n(this->alloc(), first, this->num_elements(), this->data());
 	}
 	void destroy(){
-//		if(this->data()){
 		auto n = this->num_elements();
 		while(n){
 		//	std::allocator_traits<allocator_type>::destroy(this->alloc(), to_address(this->data() + n + (-1)));
 			this->alloc().destroy(this->data() + n + (-1));//to_address(this->data() + n + (-1)));
 			--n;
 		}
-//		}
 	}
 public:
 	using typename ref::value_type;
@@ -181,8 +179,12 @@ public:
 	template<class It> static auto distance(It a, It b){using std::distance; return distance(a, b);}
 protected:
 	void deallocate(){
+	//	if(this->base_){
+	//		std::cout << "deallocated " << this->base_ <<" "<< this->num_elements() << std::endl;
+//			if(this->num_elements()) 
 		alloc_traits::deallocate(this->alloc(), this->base_, static_cast<typename alloc_traits::size_type>(this->num_elements()));
-		this->base_ = nullptr;
+	//	}
+	//	this->base_ = nullptr;
 	}
 	void clear() noexcept{
 		this->destroy();
@@ -193,7 +195,8 @@ public:
 	static_array() = default;
 	~static_array() noexcept{
 		this->destroy();
-		alloc_traits::deallocate(this->alloc(), this->base_, static_cast<typename alloc_traits::size_type>(this->num_elements()));
+		deallocate();
+	//	alloc_traits::deallocate(this->alloc(), this->base_, static_cast<typename alloc_traits::size_type>(this->num_elements()));
 	}
 	using element_const_ptr = typename std::pointer_traits<typename static_array::element_ptr>::template rebind<typename static_array::element const>;
 	using reference = std::conditional_t<
@@ -321,6 +324,11 @@ public:
 	array() = default;
 	array(array const&) = default;
 public:
+	void reshape(typename array::extensions_type x) &{
+		typename array::layout_t new_layout{x};
+		assert( new_layout.num_elements() == this->num_elements() );
+		static_cast<typename array::layout_t&>(*this)=new_layout;
+	}
 	using static_::clear;
 	friend void clear(array& self) noexcept{self.clear();}
 //	explicit	
