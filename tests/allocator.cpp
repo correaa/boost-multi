@@ -1,7 +1,7 @@
 #ifdef COMPILATION_INSTRUCTIONS
 $CXX -Wall -Wextra -Wpedantic $0 -o $0x -lboost_unit_test_framework&&valgrind $0x&&rm $0x;exit
 #endif
-
+// © Alfredo A. Correa 2018-2019
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi allocators"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>

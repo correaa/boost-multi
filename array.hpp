@@ -182,7 +182,7 @@ protected:
 	//	if(this->base_){
 	//		std::cout << "deallocated " << this->base_ <<" "<< this->num_elements() << std::endl;
 //			if(this->num_elements()) 
-		alloc_traits::deallocate(this->alloc(), this->base_, static_cast<typename alloc_traits::size_type>(this->num_elements()));
+		if(this->num_elements()) alloc_traits::deallocate(this->alloc(), this->base_, static_cast<typename alloc_traits::size_type>(this->num_elements()));
 	//	}
 	//	this->base_ = nullptr;
 	}
