@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&nvcc -x cu --expt-relaxed-constexpr`#c++ -Wall -Wextra -Wpedantic` -D_TEST_MULTI_ADAPTORS_BLAS_TRSM $0.cpp -o $0x -lboost_unit_test_framework \
+(echo '#include"'$0'"'>$0.cpp)&&nvcc -x cu --expt-relaxed-constexpr`#clang++ -Wall -Wextra -Wpedantic` -D_TEST_MULTI_ADAPTORS_BLAS_TRSM $0.cpp -o $0x -lboost_unit_test_framework \
 `pkg-config --cflags --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
@@ -12,22 +12,13 @@
 #include "../blas/core.hpp"
 
 #include "../blas/operations.hpp" // uplo
+#include "../blas/filling.hpp"
 #include "../blas/side.hpp"
 
 namespace boost{
 namespace multi{namespace blas{
 
-enum class SIDE : char{L='L', R='R'};
 enum class DIAG : char{U='U', N='N'};
-
-enum class side : char{left = static_cast<char>(SIDE::R), right = static_cast<char>(SIDE::L)};
-
-side swap(side s){
-	switch(s){
-		case side::left: return side::right;
-		case side::right: return side::left;
-	} __builtin_unreachable();
-}
 
 enum class diagonal : char{
 	unit = static_cast<char>(DIAG::U), 
@@ -37,16 +28,17 @@ enum class diagonal : char{
 template<class A> auto trsm_base_aux(A&& a, std::false_type){return base(a);}
 template<class A> auto trsm_base_aux(A&& a, std::true_type){return underlying(base(a));}
 
+#if 0
 template<typename AA, class A2D, class B2D>
-B2D&& trsm(side a_side, fill a_nonz, operation a_op, diagonal a_diag, AA alpha, A2D const& a, B2D&& b){
+B2D&& trsm(side a_side, filling a_nonz, operation a_op, diagonal a_diag, AA alpha, A2D const& a, B2D&& b){
 	if(stride(a)==1){trsm(a_side, flip(a_nonz), transpose(a_op), a_diag, alpha, rotated(a), b); return std::forward<B2D>(b);}
 	if(stride(b)==1){trsm(swap(a_side), a_nonz, transpose(a_op), a_diag, alpha, a, rotated(b)); return std::forward<B2D>(b);}
 	assert(stride(*begin(a))==1);
 	assert(stride(*begin(b))==1);
 	char OP = [&]{
-		if(a_op==operation::identity) return 'N';
+		if(a_op==operation::identity)      return 'N';
 		if(a_op==operation::transposition) return 'T';
-		if(a_op==operation::hermitian) return 'C'; 
+		if(a_op==operation::hermitian)     return 'C'; 
 		__builtin_unreachable();
 	}();
 	using core::trsm;
@@ -58,85 +50,101 @@ B2D&& trsm(side a_side, fill a_nonz, operation a_op, diagonal a_diag, AA alpha, 
 	);
 	return std::forward<B2D>(b);
 }
+#endif
+
+using multi::blas::core::trsm;
 
 template<typename AA, class A2D, class B2D>
-B2D&& trsm_aux(side a_side, fill a_nonz, diagonal a_diag, AA alpha, A2D const& a, B2D&& b, std::false_type){
-	if(stride(a)==1) trsm(a_side, flip(a_nonz), operation::transposition, a_diag, alpha, rotated(a), std::forward<B2D>(b));
-	else             trsm(a_side, a_nonz      , operation::identity     , a_diag, alpha,         a , std::forward<B2D>(b));
+auto trsm_move(filling a_nonz, diagonal a_diag, AA alpha, A2D const& a, B2D&& b, side s = side::left)
+->decltype(
+	trsm('R', static_cast<char>(+a_nonz), 'N', static_cast<char>(a_diag), size(rotated(b)), size(b), alpha, trsm_base_aux(a, is_hermitized<A2D>{}), stride(a)         , trsm_base_aux(b, is_hermitized<B2D>{}), stride(b))
+	, std::forward<B2D>(b)
+){
+	if(s==side::left) assert( size(rotated(a)) == size(b) );
+	else              assert( size(rotated(b)) == size(a) );
+
+	if(size(b)==0) return std::forward<B2D>(b);
+
+	auto base_a = trsm_base_aux(a, is_hermitized<A2D>{}); (void)base_a;
+	auto base_b = trsm_base_aux(b, is_hermitized<B2D>{}); (void)base_b;
+
+	using core::trsm;
+	if(size(rotated(b))==1){
+		if(stride(rotated(a))==1) trsm(static_cast<char>(s), static_cast<char>(+a_nonz), 'N', static_cast<char>(a_diag), size(rotated(b)), size(b), alpha, base_a, stride(a)         , base_b, stride(b));
+		else if(stride(a)==1){		
+			if(!is_conjugated(a)) trsm(static_cast<char>(s), static_cast<char>(-a_nonz), 'T', static_cast<char>(a_diag), size(rotated(b)), size(b), alpha, base_a, stride(rotated(a)), base_b, stride(b));
+			else                  trsm(static_cast<char>(s), static_cast<char>(-a_nonz), 'C', static_cast<char>(a_diag), size(rotated(b)), size(b), alpha, base_a, stride(rotated(a)), base_b, stride(b));
+		}
+	}else{
+		      if(stride(rotated(a))==1 and stride(rotated(b))==1){
+			assert(!is_conjugated(a));
+			trsm(static_cast<char>(s), static_cast<char>(+a_nonz), 'N', static_cast<char>(a_diag), size(rotated(b)), size(b), alpha, base_a, stride(a)         , base_b, stride(b));
+		}else if(stride(a)==1 and stride(rotated(b))==1){
+			if(!is_conjugated(a)) trsm(static_cast<char>(s), static_cast<char>(-a_nonz), 'T', static_cast<char>(a_diag), size(rotated(b)), size(b), alpha, base_a, stride(rotated(a)), base_b, stride(b));
+			else                  trsm(static_cast<char>(s), static_cast<char>(-a_nonz), 'C', static_cast<char>(a_diag), size(rotated(b)), size(b), alpha, base_a, stride(rotated(a)), base_b, stride(b));
+		}
+		else if(stride(a)==1 and stride(b)==1){
+			assert(!is_conjugated(a));
+			                      trsm(static_cast<char>(swap(s)), static_cast<char>(-a_nonz), 'N', static_cast<char>(a_diag), size(rotated(a)), size(rotated(b)), alpha, base_a, stride(rotated(a)), base_b, stride(rotated(b)));
+		}else if(stride(rotated(a))==1 and stride(b)==1){
+			if(!is_conjugated(a)) trsm(static_cast<char>(swap(s)), static_cast<char>(+a_nonz), 'T', static_cast<char>(a_diag), size(a), size(rotated(b)), alpha, base_a, stride(a), base_b, stride(rotated(b)));
+			else                  trsm(static_cast<char>(swap(s)), static_cast<char>(+a_nonz), 'C', static_cast<char>(a_diag), size(a), size(rotated(b)), alpha, base_a, stride(a), base_b, stride(rotated(b)));
+		}
+		else assert(0); // case is not part of BLAS
+	}
+	return std::forward<B2D>(b);
+}
+
+#ifndef __has_cpp_attribute
+#define __has_cpp_attribute(name) 0
+#endif
+
+#if (__has_cpp_attribute(nodiscard)) && (__cplusplus>=201703L)
+#define NODISCARD(MsG) [[nodiscard]]
+#if (__has_cpp_attribute(nodiscard)>=201907) && (__cplusplus>=201703L)
+#define NODISCARD(MsG) [[nodiscard(MsG)]]
+#endif
+#elif __has_cpp_attribute(gnu::warn_unused_result)
+#define NODISCARD(MsG) [[gnu::warn_unused_result]]
+#else
+#define NODISCARD(MsG)
+#endif
+
+template<typename AA, class A2D, class B2D>
+auto trsm(filling a_nonz, diagonal a_diag, AA alpha, A2D const& a, B2D&& b)
+->decltype(trsm_move(a_nonz, a_diag, alpha, a, std::forward<B2D>(b)), std::declval<B2D&&>()){
+	if(!is_conjugated(b)){
+//		return 
+		trsm_move(a_nonz, a_diag, alpha, a, std::forward<B2D>(b));
+	}else{
+		trsm_move(-a_nonz, a_diag, alpha, hermitized(a), rotated(b), side::right);
+	//	return std::forward<B2D>(b);
+	}
 	return std::forward<B2D>(b);
 }
 
 template<typename AA, class A2D, class B2D>
-B2D&& trsm_aux(side a_side, fill a_nonz, diagonal a_diag, AA alpha, A2D const& a, B2D&& b, std::true_type){
-	if(stride(a)==1) trsm(a_side, flip(a_nonz), operation::hermitian, a_diag, alpha, hermitized(a), std::forward<B2D>(b));
-	else assert(0);
-	return std::forward<B2D>(b);
+NODISCARD("result is returned because third argument is const")
+auto trsm(filling a_nonz, diagonal a_diag, AA alpha, A2D const& a, B2D const& b){
+	auto ret = b.decay();
+	trsm_move(a_nonz, a_diag, alpha, a, ret);
+	return ret;
 }
 
-
-template<typename AA, class A2D, class B2D>
-B2D&& trsm(side a_side, fill a_nonz, diagonal a_diag, AA alpha, A2D const& a, B2D&& b){
-//	if constexpr(not multi::blas::is_hermitized<A2D>()){
-//		if(stride(a)==1) trsm(a_side, flip(a_nonz), operation::transposition, a_diag, alpha, rotated(a), std::forward<B2D>(b));
-//		else             trsm(a_side, a_nonz      , operation::identity     , a_diag, alpha,         a , std::forward<B2D>(b));
-//	}else{
-//		if(stride(a)==1) trsm(a_side, flip(a_nonz), operation::hermitian, a_diag, alpha, hermitized(a), std::forward<B2D>(b));
-//		else assert(0);
-//	}
-//	return std::forward<B2D>(b);
-	return trsm_aux(a_side, a_nonz, a_diag, alpha, a, std::forward<B2D>(b), multi::blas::is_hermitized<A2D>{});
-}
-
-template<typename AA, class A2D, class B2D>
-B2D&& trsm(fill a_nonz, diagonal a_diag, AA a, A2D const& A, B2D&& B){
-	if(stride(B)==1) trsm(side::right, flip(a_nonz), a_diag, a, rotated(A), rotated(B));
-	else             trsm(side::left , a_nonz      , a_diag, a, A, std::forward<B2D>(B));
-	return std::forward<B2D>(B);
-}
-
-template<typename AA, class A2D, class B2D>
-decltype(auto) trsm(fill a_nonz, AA alpha, A2D const& a, B2D&& b){
-	return trsm(a_nonz, diagonal::general, alpha, a, std::forward<B2D>(b));
-}
+template<class AA, class A2D, class B2D>
+auto trsm(filling a_nonz, AA alpha, A2D const& a, B2D&& b)
+->decltype(trsm(a_nonz, diagonal::general, alpha, a, std::forward<B2D>(b))){
+	return trsm(a_nonz, diagonal::general, alpha, a, std::forward<B2D>(b));}
 
 template<class A2D, class B2D>
-decltype(auto) trsm(fill a_nonz, A2D const& a, B2D&& b){
-	return trsm(a_nonz, diagonal::general, 1.0, a, std::forward<B2D>(b));
-}
-
-template<typename AA, class A2D, class B2D>
-decltype(auto) trsm(AA a, A2D const& A, B2D&& B){
-	return trsm(detect_triangular(A), diagonal::general, a, A, std::forward<B2D>(B));
-}
-
-template<typename AA, class A2D, class B2D, class Ret = typename B2D::decay_type>
-#if __cplusplus>=201703L
-#if __has_cpp_attribute(nodiscard)>=201603
-[[nodiscard
-#if __has_cpp_attribute(nodiscard)>=201907
-("result is returned because third argument is const")
-#endif
-]]
-#endif
-#endif 
-auto trsm(AA alpha, A2D const& a, B2D const& b){
-	return trsm(alpha, a, b.decay());
-}
+auto trsm(filling a_nonz, A2D const& a, B2D&& b)
+->decltype(trsm(a_nonz, 1.0, a, std::forward<B2D>(b))){
+	return trsm(a_nonz, 1.0, a, std::forward<B2D>(b));}
 
 template<class A2D, class B2D>
-decltype(auto) trsm(A2D const& a, B2D&& b){return trsm(1., a, std::forward<B2D>(b));}
-
-template<class A2D, class B2D>
-#if __cplusplus>=201703L
-#if __has_cpp_attribute(nodiscard)>=201603
-[[nodiscard
-#if __has_cpp_attribute(nodiscard)>=201907
-("result is returned because second argument is const")
-#endif
-]]
-#endif
-#endif
-auto trsm(A2D const& a, B2D const& b){return trsm(1., a, b);}
+auto trsm(A2D const& a, B2D&& b)
+->decltype(trsm(multi::blas::detect_triangular(a), a, std::forward<B2D>(b))){
+	return trsm(multi::blas::detect_triangular(a), a, std::forward<B2D>(b));}
 
 }}}
 
@@ -145,6 +153,9 @@ auto trsm(A2D const& a, B2D const& b){return trsm(1., a, b);}
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS gemm"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
+#include <boost/test/floating_point_comparison.hpp>
+
+#include "../blas/gemm.hpp"
 
 #include "../../array.hpp"
 
@@ -154,37 +165,400 @@ namespace multi = boost::multi;
 #include<vector>
 
 template<class M> decltype(auto) print(M const& C){
-	using boost::multi::size;
+	using boost::multi::size; using std::cout;
 	for(int i = 0; i != size(C); ++i){
 		for(int j = 0; j != size(C[i]); ++j)
-			std::cout << C[i][j] << ' ';
-		std::cout << std::endl;
+			cout<< C[i][j] <<' ';
+		cout<<std::endl;
 	}
-	return std::cout << std::endl;
+	return cout<<std::endl;
 }
-
-multi::array<double, 2> const A = {
-	{ 1.,  3.,  4.},
-	{NAN,  7.,  1.},
-	{NAN, NAN,  8.}
-};
 
 namespace utf = boost::unit_test;
 
-BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_RLNN, *utf::tolerance(0.00001)){
-	multi::array<double, 2> B = {
-		{1., 3., 4.},
-		{2., 7., 1.},
-		{3., 4., 2.}
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_1x1, *utf::tolerance(0.00001)){
+	multi::array<double, 2> const A = {
+		{10.,},
 	};
 	using multi::blas::side;
-	using multi::blas::fill;
-	using multi::blas::operation;
+	using multi::blas::filling;
 	using multi::blas::diagonal;
-
-	trsm(side::left, fill::upper, operation::identity, diagonal::general, 1., A, B); // B=solve(A.x=alpha*B, x) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
-	BOOST_TEST( B[1][2] == 0.107143 );
+	{
+		multi::array<double, 2> B = {
+			{3.,},
+		};
+		trsm(filling::upper, diagonal::general, 1., A, B); // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
+		BOOST_TEST( B[0][0] == 3./10. );
+	}
+	{
+		multi::array<double, 2> B = {
+			{3.,},
+		};
+		trsm(filling::upper, diagonal::general, 2., A, B); // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
+		BOOST_TEST( B[0][0] == 2.*3./10. );
+	}
+	{
+		multi::array<double, 2> B = {
+			{3., 4., 5.},
+		};
+		trsm(filling::upper, diagonal::general, 1., A, B); // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
+		BOOST_TEST( B[0][1] == 4./10. );
+	}
 }
+
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_0x0, *utf::tolerance(0.00001)){
+	multi::array<double, 2> const A;
+	using multi::blas::side;
+	using multi::blas::filling;
+	using multi::blas::diagonal;
+	{
+		multi::array<double, 2> B;
+		trsm(filling::upper, diagonal::general, 1., A, B); // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square, *utf::tolerance(0.00001)){
+	multi::array<double, 2> const A = {
+		{ 1.,  3.,  4.},
+		{NAN,  7.,  1.},
+		{NAN, NAN,  8.}
+	};
+	using multi::blas::side;
+	using multi::blas::filling;
+	using multi::blas::diagonal;
+	{
+		multi::array<double, 2> B = {
+			{1., 3., 4.},
+			{2., 7., 1.},
+			{3., 4., 2.}
+		};
+		trsm(filling::upper, diagonal::general, 1., A, B); // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
+		BOOST_TEST( B[1][2] == 0.107143 );
+	}
+	{
+		multi::array<double, 2> AT = rotated(A);
+		multi::array<double, 2> B = {
+			{1., 3., 4.},
+			{2., 7., 1.},
+			{3., 4., 2.}
+		};
+		trsm(filling::upper, diagonal::general, 1., rotated(AT), B);
+		BOOST_TEST( B[1][2] == 0.107143 );
+	}
+	{
+		multi::array<double, 2> AT = rotated(A);
+		multi::array<double, 2> B = {
+			{1., 3., 4.},
+			{2., 7., 1.},
+			{3., 4., 2.}
+		};
+		multi::array<double, 2> BT = rotated(B);
+		trsm(filling::upper, diagonal::general, 1., rotated(AT), rotated(BT));
+		BOOST_TEST( rotated(BT)[1][2] == 0.107143 );
+	}
+	{
+		multi::array<double, 2> AT = rotated(A);
+		multi::array<double, 2> B = {
+			{1., 3., 4.},
+			{2., 7., 1.},
+			{3., 4., 2.}
+		};
+		multi::array<double, 2> BT = rotated(B);
+		trsm(filling::upper, diagonal::general, 1., A, rotated(BT));
+		BOOST_TEST( rotated(BT)[1][2] == 0.107143 );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare, *utf::tolerance(0.00001)){
+	multi::array<double, 2> const A = {
+		{ 1.,  3.,  4.},
+		{ 0.,  7.,  1.},
+		{ 0.,  0.,  8.}
+	};
+	using multi::blas::side;
+	using multi::blas::filling;
+	using multi::blas::diagonal;
+	{
+		multi::array<double, 2> B = {
+			{1., 3., 4., 8.},
+			{2., 7., 1., 9.},
+			{3., 4., 2., 1.},
+		};
+		multi::array<double, 2> BT = rotated(B);
+		trsm(filling::upper, diagonal::general, 1., A, B); // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
+		BOOST_TEST( B[1][2] == 0.107143 );
+
+		trsm(filling::upper, diagonal::general, 1., A, rotated(BT));
+		BOOST_TEST( rotated(BT)[1][2] == 0.107143 );
+	}
+	{
+		multi::array<double, 2> B = {
+			{1., 3., 4., 8.},
+			{2., 7., 1., 9.},
+			{3., 4., 2., 1.},
+		};
+		multi::array<double, 2> AT = rotated(A);
+		multi::array<double, 2> BT = rotated(B);
+		trsm(filling::upper, diagonal::general, 1., rotated(AT), B); // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
+		BOOST_TEST( B[1][2] == 0.107143 );
+
+		trsm(filling::upper, diagonal::general, 1., rotated(AT), rotated(BT));
+		print(rotated(BT));
+		BOOST_TEST( rotated(BT)[1][2] == 0.107143 );
+	}
+	{
+		multi::array<double, 2> B = {
+			{1.},
+			{2.},
+			{3.},
+		};
+		trsm(filling::upper, diagonal::general, 1., A, B); // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
+		BOOST_TEST( B[2][0] == 0.375 );
+	}
+	{
+		multi::array<double, 2> B = {
+			{1.},
+			{2.},
+			{3.},
+		};
+		multi::array<double, 2> BT = rotated(B);
+		trsm(filling::upper, diagonal::general, 1., A, rotated(BT));
+		BOOST_TEST( rotated(BT)[2][0] == 0.375 );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare_default_diagonal_gemm_check, *utf::tolerance(0.00001)){
+	multi::array<double, 2> const A = {
+		{ 1.,  3.,  4.},
+		{ 0.,  7.,  1.},
+		{ 0.,  0.,  8.}
+	};
+	using multi::blas::side;
+	using multi::blas::filling;
+	using multi::blas::diagonal;
+	{
+		multi::array<double, 2> const B = {
+			{1.},// 3., 4.},
+			{2.},// 7., 1.},
+			{3.},// 4., 2.},
+		};
+		using multi::blas::gemm;
+		{
+			auto S = trsm(filling::upper, diagonal::general, 1., A, B);
+			BOOST_REQUIRE( S[2][0] == 0.375 );
+			auto Bck=gemm(1., A, S);
+			BOOST_REQUIRE( Bck[2][0] == 3. );
+			for(int i{};i<3;++i)for(int j{};j<size(rotated(B));++j) BOOST_CHECK_SMALL(Bck[i][j]-B[i][j], 0.00001);
+		}
+		{
+			multi::array<double, 2> const BT = rotated(B);
+			auto Bck=gemm(1., A, trsm(filling::upper, diagonal::general, 1., A, rotated(BT)));
+			for(int i{};i<3;++i)for(int j{};j<size(rotated(B));++j) BOOST_CHECK_SMALL(Bck[i][j]-B[i][j], 0.00001);
+		}
+		{
+			auto const AT = rotated(A);
+			auto Bck=gemm(1., rotated(AT), trsm(filling::upper, diagonal::general, 1., rotated(AT), B));
+			for(int i{};i<3;++i)for(int j{};j<size(rotated(B));++j) BOOST_CHECK_SMALL(Bck[i][j]-B[i][j], 0.00001);
+		}
+		{
+			auto const AT =* rotated(A);
+			auto const BT =* rotated(B);
+			auto const Bck=gemm(1., A, trsm(filling::upper, diagonal::general, 1., rotated(AT), rotated(BT)));
+			for(int i{};i<3;++i)for(int j{};j<size(rotated(B));++j) BOOST_REQUIRE_SMALL(Bck[i][j]-B[i][j], 0.00001);
+		}
+		{
+			auto const AT =* rotated(A);
+			auto const BT =* rotated(B);
+			using multi::blas::trsm;
+			auto const Bck=gemm(A, trsm(rotated(AT), rotated(BT)));
+			for(int i{};i<3;++i)for(int j{};j<size(rotated(B));++j) BOOST_CHECK_SMALL(Bck[i][j]-B[i][j], 0.00001);
+		}
+		{
+			using multi::blas::trsm;
+			auto const Bck=gemm(A, trsm(A, B));
+			for(int i{};i<3;++i)for(int j{};j<size(rotated(B));++j) BOOST_CHECK_SMALL(Bck[i][j]-B[i][j], 0.00001);
+		}
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_1x1_check, *utf::tolerance(0.00001)){
+	multi::array<double, 2> const A = {
+		{ 4.},
+	};
+	using multi::blas::side;
+	using multi::blas::filling;
+	using multi::blas::diagonal;
+	{
+		multi::array<double, 2> const B = {
+			{5.},
+		};
+		using multi::blas::gemm;
+		{
+			auto S = trsm(filling::upper, diagonal::general, 3., A, B);
+			BOOST_REQUIRE( S[0][0] == 3.*5./4. );
+		}
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_1x1_check, *utf::tolerance(0.00001)){
+	using complex = std::complex<double>; complex const I = complex{0, 1};
+	multi::array<complex, 2> const A = {
+		{ 4. + 2.*I},
+	};
+	using multi::blas::side;
+	using multi::blas::filling;
+	using multi::blas::diagonal;
+	{
+		multi::array<complex, 2> const B = {
+			{5. + 1.*I},
+		};
+		using multi::blas::gemm;
+		{
+			auto S = trsm(filling::upper, diagonal::general, 3.+5.*I, A, B);
+			BOOST_TEST( real(S[0][0]) == real((3.+5.*I)*B[0][0]/A[0][0]) );
+			BOOST_TEST( imag(S[0][0]) == imag((3.+5.*I)*B[0][0]/A[0][0]) );
+		}
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_one_check, *utf::tolerance(0.00001)){
+	using complex = std::complex<double>; complex const I{0, 1};
+	multi::array<complex, 2> const A = {
+		{ 1. + 4.*I,  3.,  4.- 10.*I},
+		{ 0.,  7.- 3.*I,  1.},
+		{ 0.,  0.,  8.- 2.*I}
+	};
+	using multi::blas::side;
+	using multi::blas::filling;
+	using multi::blas::diagonal;
+	{
+		multi::array<complex, 2> const B = {
+			{1. + 1.*I},
+			{2. + 1.*I},
+			{3. + 1.*I},
+		};
+		using multi::blas::gemm;
+		{
+			auto S = trsm(filling::upper, diagonal::general, 1., A, B);
+			BOOST_TEST( real(S[2][0]) == 0.323529 );
+		}
+		{
+			auto const BT = +rotated(B);
+			auto S = trsm(filling::upper, diagonal::general, 1., A, rotated(BT));
+			BOOST_TEST( real(S[2][0]) == 0.323529 );
+		}
+		{
+			auto const AT = +rotated(A);
+			auto S = trsm(filling::upper, diagonal::general, 1., rotated(AT), B);
+			BOOST_TEST( real(S[2][0]) == 0.323529 );
+		}
+		{
+			auto const AT = +rotated(A);
+			auto const BT = +rotated(B);
+			auto S = trsm(filling::upper, diagonal::general, 1., rotated(AT), rotated(BT));
+			BOOST_TEST( real(S[2][0]) == 0.323529 );
+		}
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_gemm_check, *utf::tolerance(0.00001)){
+	using complex = std::complex<double>; complex const I{0, 1};
+	multi::array<complex, 2> const A = {
+		{ 1. + 4.*I,  3.,  4.- 10.*I},
+		{ 0.,  7.- 3.*I,  1.},
+		{ 0.,  0.,  8.- 2.*I}
+	};
+	using multi::blas::side;
+	using multi::blas::filling;
+	using multi::blas::diagonal;
+	{
+		multi::array<complex, 2> const B = {
+			{1. + 1.*I, 5. + 3.*I},
+			{2. + 1.*I, 9. + 3.*I},
+			{3. + 1.*I, 1. - 1.*I},
+		};
+		using multi::blas::gemm;
+		{
+			auto S = trsm(filling::upper, diagonal::general, 1., A, B); // S = Ainv.B
+			BOOST_TEST( real(S[2][1]) == 0.147059  );
+		}
+		{
+			auto const BT = +rotated(B);
+			auto S = trsm(filling::upper, diagonal::general, 1., A, rotated(BT));
+			BOOST_TEST( real(S[2][1]) == 0.147059  );
+		}
+		{
+			auto const AT = +rotated(A);
+			auto S = trsm(filling::upper, diagonal::general, 1., rotated(AT), B);
+			BOOST_TEST( real(S[2][1]) == 0.147059  );
+		}
+		{
+			auto const AT = +rotated(A);
+			auto const BT = +rotated(B);
+			auto S = trsm(filling::upper, diagonal::general, 1., rotated(AT), rotated(BT));
+			BOOST_TEST( real(S[2][1]) == 0.147059  );
+		}
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitized_gemm_check, *utf::tolerance(0.00001)){
+	using complex = std::complex<double>; complex const I{0, 1};
+	multi::array<complex, 2> const A = {
+		{ 1. + 4.*I,  3.,  4.- 10.*I},
+		{ 0.,  7.- 3.*I,  1.},
+		{ 0.,  0.,  8.- 2.*I}
+	};
+	using multi::blas::side;
+	using multi::blas::filling;
+	using multi::blas::diagonal;
+	{
+		multi::array<complex, 2> const B = {
+			{1. + 1.*I, 5. + 3.*I},
+			{2. + 1.*I, 9. + 3.*I},
+			{3. + 1.*I, 1. - 1.*I},
+		};
+		using multi::blas::hermitized;
+		{
+			auto S = trsm(filling::lower, diagonal::general, 1., hermitized(A), B); // S = A⁻¹†.B, S† = B†.A⁻¹
+			BOOST_TEST( real(S[2][1]) == 1.71608  );
+		}
+		{
+			multi::array<complex, 2> const B = {
+				{1. + 1.*I, 2. + 1.*I, 3. + 1.*I},
+				{5. + 3.*I, 9. + 3.*I, 1. - 1.*I}
+			};
+			auto S =* trsm(filling::upper, 1., A, hermitized(B)); // S = A⁻¹B†, S†=B.A⁻¹†, S=(B.A⁻¹)†, B <- S†, B <- B.A⁻¹†
+			BOOST_TEST( imag(S[2][1]) == +0.147059 );
+			BOOST_TEST( imag(B[1][2]) == -0.147059 );
+		}
+		{
+			multi::array<complex, 2> const B = {
+				{1. + 1.*I, 2. + 1.*I, 3. + 1.*I},
+				{5. + 3.*I, 9. + 3.*I, 1. - 1.*I}
+			};
+			auto S =* trsm(filling::upper, 2., A, hermitized(B)); // S = A⁻¹B†, S†=B.A⁻¹†, S=(B.A⁻¹)†, B <- S†, B <- B.A⁻¹†
+			BOOST_TEST( imag(S[2][1]) == +0.147059*2. );
+			BOOST_TEST( imag(B[1][2]) == -0.147059*2. );
+		}
+
+#if 0
+		{
+			auto const AT = +rotated(A);
+			auto S = trsm(filling::upper, diagonal::general, 1., rotated(AT), B);
+			BOOST_TEST( real(S[2][1]) == 0.147059  );
+		}
+		{
+			auto const AT = +rotated(A);
+			auto const BT = +rotated(B);
+			auto S = trsm(filling::upper, diagonal::general, 1., rotated(AT), rotated(BT));
+			BOOST_TEST( real(S[2][1]) == 0.147059  );
+		}
+#endif
+	}
+}
+
+
+#if 0
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_LLNN, *utf::tolerance(0.00001)){
 	multi::array<double, 2> B = {
 		{1., 3., 4.},
@@ -192,10 +566,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_LLNN, *utf::tolerance(0.00001)){
 		{3., 4., 2.}
 	};
 	using multi::blas::side;
-	using multi::blas::fill;
+	using multi::blas::filling;
 	using multi::blas::operation;
 	using multi::blas::diagonal;
-	trsm(side::right, fill::upper, operation::identity, diagonal::general, 1., A, B); // B=B.A⁻¹, B⊤=(A⊤)⁻¹.B⊤, A is upper triangular (implicit zeros below)
+	trsm(side::right, filling::upper, operation::identity, diagonal::general, 1., A, B); // B=B.A⁻¹, B⊤=(A⊤)⁻¹.B⊤, A is upper triangular (implicit zeros below)
 	BOOST_TEST( B[1][2] == -0.892857 );
 }
 
@@ -206,10 +580,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_RLTN, *utf::tolerance(0.00001)){
 		{3., 4., 2.}
 	};
 	using multi::blas::side;
-	using multi::blas::fill;
+	using multi::blas::filling;
 	using multi::blas::operation;
 	using multi::blas::diagonal;
-	trsm(side::left, fill::upper, operation::transposition, diagonal::general, 1., A, B); // B=A⊤⁻¹.B, B⊤=B⊤.A⁻¹, A is upper triangular (implicit zeros below)
+	trsm(side::left, filling::upper, operation::transposition, diagonal::general, 1., A, B); // B=A⊤⁻¹.B, B⊤=B⊤.A⁻¹, A is upper triangular (implicit zeros below)
 	BOOST_TEST( B[1][2] ==  -1.57143 );
 }
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_LLTN){
@@ -219,10 +593,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_LLTN){
 		{3., 4., 2.}
 	};
 	using multi::blas::side;
-	using multi::blas::fill;
+	using multi::blas::filling;
 	using multi::blas::operation;
 	using multi::blas::diagonal;
-	trsm(side::right, fill::upper, operation::transposition, diagonal::general, 1., A, B); // B=B.A⊤⁻¹, B⊤=A⁻¹.B⊤, A is upper triangular (implicit zeros below)
+	trsm(side::right, filling::upper, operation::transposition, diagonal::general, 1., A, B); // B=B.A⊤⁻¹, B⊤=A⁻¹.B⊤, A is upper triangular (implicit zeros below)
 	BOOST_TEST( B[1][2] == 0.125 );
 }
 
@@ -235,11 +609,12 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_LLTN_Att){
 		{3., 4., 2.}
 	};
 	using multi::blas::side;
-	using multi::blas::fill;
+	using multi::blas::filling;
 	using multi::blas::operation;
 	using multi::blas::diagonal;
-	trsm(side::right, fill::upper, operation::transposition, diagonal::general, 1., Att, B); // B=B.A⊤⁻¹, B⊤=A⁻¹.B⊤, A is upper triangular (implicit zeros below)
+	trsm(side::right, filling::upper, operation::transposition, diagonal::general, 1., Att, B); // B=B.A⊤⁻¹, B⊤=A⁻¹.B⊤, A is upper triangular (implicit zeros below)
 	BOOST_REQUIRE( B[1][2] == 0.125 );
+
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_LLTN_Btt){
@@ -251,10 +626,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_LLTN_Btt){
 	multi::array<double, 2> Bt = rotated(B);
 	auto&& Btt = rotated(Bt);
 	using multi::blas::side;
-	using multi::blas::fill;
+	using multi::blas::filling;
 	using multi::blas::operation;
 	using multi::blas::diagonal;
-	trsm(side::right, fill::upper, operation::transposition, diagonal::general, 1., A, Btt); // B=B.A⊤⁻¹, B⊤=A⁻¹.B⊤, A is upper triangular (implicit zeros below)
+	trsm(side::right, filling::upper, operation::transposition, diagonal::general, 1., A, Btt); // B=B.A⊤⁻¹, B⊤=A⁻¹.B⊤, A is upper triangular (implicit zeros below)
 	BOOST_REQUIRE( Btt[1][2] ==  0.125 );
 }
 
@@ -269,10 +644,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_LLTN_Att_Btt){
 	multi::array<double, 2> Bt = rotated(B);
 	auto&& Btt = rotated(Bt);
 	using multi::blas::side;
-	using multi::blas::fill;
+	using multi::blas::filling;
 	using multi::blas::operation;
 	using multi::blas::diagonal;
-	trsm(side::right, fill::upper, operation::transposition, diagonal::general, 1., Att, Btt); // B=B.A⊤⁻¹, B⊤=A⁻¹.B⊤, A is upper triangular (implicit zeros below)
+	trsm(side::right, filling::upper, operation::transposition, diagonal::general, 1., Att, Btt); // B=B.A⊤⁻¹, B⊤=A⁻¹.B⊤, A is upper triangular (implicit zeros below)
 	BOOST_REQUIRE( Btt[1][2] ==  0.125 );
 }
 
@@ -283,9 +658,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_RLxN, * utf::tolerance(0.00001)){
 		{3., 4., 2.}
 	};
 	using multi::blas::side;
-	using multi::blas::fill;
+	using multi::blas::filling;
 	using multi::blas::diagonal;
-	trsm(side::left, fill::upper, diagonal::general, 1., A, B); // B=A⁻¹.B, B⊤=B⊤.A⊤⁻¹, A is upper triangular (implicit zeros below)
+	trsm(side::left, filling::upper, diagonal::general, 1., A, B); // B=A⁻¹.B, B⊤=B⊤.A⊤⁻¹, A is upper triangular (implicit zeros below)
 	BOOST_TEST( B[1][2] == 0.107143 );
 }
 
@@ -300,11 +675,12 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_RLxN_trans, *utf::tolerance(0.00001)
 		{2., 7., 1.},
 		{3., 4., 2.}
 	};
-	using multi::blas::side;
-	using multi::blas::fill;
-	using multi::blas::diagonal;
-	using multi::blas::transposed;
-	trsm(side::left, fill::upper, diagonal::general, 1., transposed(A), B); // B=A⊤⁻¹.B, B⊤=B⊤.A⁻¹, A is upper triangular (implicit zeros below)
+	namespace blas = multi::blas;
+	using blas::filling;
+	using blas::side;
+	using blas::diagonal;
+	using blas::transposed;
+	trsm(side::left, filling::upper, diagonal::general, 1., transposed(A), B); // B=A⊤⁻¹.B, B⊤=B⊤.A⁻¹, A is upper triangular (implicit zeros below)
 	BOOST_TEST( B[1][2] == 0.107143 );
 }
 
@@ -320,9 +696,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_RLxN_rot, *utf::tolerance(0.00001)){
 		{3., 4., 2.}
 	};
 	using multi::blas::side;
-	using multi::blas::fill;
+	using multi::blas::filling;
 	using multi::blas::diagonal;
-	trsm(side::left, fill::upper, diagonal::general, 1., rotated(A), B); // B=A⊤⁻¹.B, B⊤=B⊤.A⁻¹, A is upper triangular (implicit zeros below)
+	trsm(side::left, filling::upper, diagonal::general, 1., rotated(A), B); // B=A⊤⁻¹.B, B⊤=B⊤.A⁻¹, A is upper triangular (implicit zeros below)
 	BOOST_TEST( B[1][2] == 0.107143 );
 }
 
@@ -337,10 +713,11 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_LLxN, *utf::tolerance(0.00001)){
 		{2., 7., 1.},
 		{3., 4., 2.}
 	};
-	using multi::blas::side;
-	using multi::blas::fill;
-	using multi::blas::diagonal;
-	trsm(side::right, fill::upper, diagonal::general, 1., A, B); // B=B.A⁻¹, B⊤=A⊤⁻¹.B⊤, A is upper triangular (implicit zeros below)
+	namespace blas = multi::blas;
+	using blas::side;
+	using blas::filling;
+	using blas::diagonal;
+	trsm(side::right, filling::upper, diagonal::general, 1., A, B); // B=B.A⁻¹, B⊤=A⊤⁻¹.B⊤, A is upper triangular (implicit zeros below)
 	BOOST_TEST( B[1][2] == -0.892857 );
 }
 
@@ -357,10 +734,11 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_LLxN_Att, *utf::tolerance(0.00001)){
 		{2., 7., 1.},
 		{3., 4., 2.}
 	};
-	using multi::blas::side;
-	using multi::blas::fill;
-	using multi::blas::diagonal;
-	trsm(side::right, fill::upper, diagonal::general, 1., Att, B); // B=B.A⁻¹, B⊤=A⊤⁻¹.B⊤, A is upper triangular (implicit zeros below)
+	namespace blas = multi::blas;
+	using blas::side;
+	using blas::filling;
+	using blas::diagonal;
+	trsm(side::right, filling::upper, diagonal::general, 1., Att, B); // B=B.A⁻¹, B⊤=A⊤⁻¹.B⊤, A is upper triangular (implicit zeros below)
 	BOOST_TEST( B[1][2] == -0.892857 );
 }
 
@@ -379,10 +757,11 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_LLxN_Att_Btt, *utf::tolerance(0.0000
 	};
 	multi::array<double, 2> Bt = rotated(B);
 	auto&& Btt = rotated(Bt);
-	using multi::blas::side;
-	using multi::blas::fill;
-	using multi::blas::diagonal;
-	trsm(side::right, fill::upper, diagonal::general, 1., Att, Btt); // B=B.A⁻¹, B⊤=A⊤⁻¹.B⊤, A is upper triangular (implicit zeros below)
+	namespace blas = multi::blas;
+	using blas::filling;
+	using blas::side;
+	using blas::diagonal;
+	trsm(side::right, filling::upper, diagonal::general, 1., Att, Btt); // B=B.A⁻¹, B⊤=A⊤⁻¹.B⊤, A is upper triangular (implicit zeros below)
 	BOOST_TEST( Btt[1][2] == -0.892857 );
 }
 
@@ -397,9 +776,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_xLxN, *utf::tolerance(0.00001)){
 		{2., 7., 1.},
 		{3., 4., 2.}
 	};
-	using multi::blas::fill;
-	using multi::blas::diagonal;
-	trsm(fill::upper, diagonal::general, 1., A, B); // B=A⁻¹.B, B⊤=B⊤.A⊤⁻¹, A is upper triangular (implicit zeros below)
+	namespace blas = multi::blas;
+	using blas::filling;
+	using blas::diagonal;
+	trsm(filling::upper, diagonal::general, 1., A, B); // B=A⁻¹.B, B⊤=B⊤.A⊤⁻¹, A is upper triangular (implicit zeros below)
 	BOOST_TEST(B[1][2] == 0.107143 );
 }
 
@@ -414,10 +794,11 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_xLxN_trans){
 		{2., 7., 1.},
 		{3., 4., 2.}
 	};
-	using multi::blas::fill;
-	using multi::blas::diagonal;
-	using multi::blas::transposed;
-	trsm(fill::upper, diagonal::general, 1., A, transposed(B)); // B⊤=A⁻¹.B⊤, B=B.A⊤⁻¹, A is upper triangular (implicit zeros below)
+	namespace blas = multi::blas;
+	using blas::filling;
+	using blas::diagonal;
+	using blas::transposed;
+	trsm(filling::upper, diagonal::general, 1., A, transposed(B)); // B⊤=A⁻¹.B⊤, B=B.A⊤⁻¹, A is upper triangular (implicit zeros below)
 	BOOST_REQUIRE( B[1][2] == 0.125 );
 }
 
@@ -432,9 +813,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_xLxN_rot){
 		{2., 7., 1.},
 		{3., 4., 2.}
 	};
-	using multi::blas::fill;
-	using multi::blas::diagonal;
-	trsm(fill::upper, diagonal::general, 1., A, rotated(B)); // B⊤=A⁻¹.B⊤, B=B.A⊤⁻¹, A is upper triangular (implicit zeros below)
+	namespace blas = multi::blas;
+	using blas::filling;
+	using blas::diagonal;
+	trsm(filling::upper, diagonal::general, 1., A, rotated(B)); // B⊤=A⁻¹.B⊤, B=B.A⊤⁻¹, A is upper triangular (implicit zeros below)
 	BOOST_REQUIRE( B[1][2] == 0.125 );
 }
 
@@ -449,8 +831,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_xLxx_rot, *utf::tolerance(0.00001)){
 		{2., 7., 1.},
 		{3., 4., 2.}
 	};
-	using multi::blas::fill;
-	trsm(fill::upper, 1., A, rotated(B)); // B⊤=A⁻¹.B⊤, B=B.A⊤⁻¹, A is upper triangular (implicit zeros below)
+	namespace blas = multi::blas;
+	using blas::filling;
+	trsm(filling::upper, 1., A, rotated(B)); // B⊤=A⁻¹.B⊤, B=B.A⊤⁻¹, A is upper triangular (implicit zeros below)
 	BOOST_TEST( rotated(B)[1][2] == 0.5357142857  );
 	BOOST_TEST( B[1][2] == 0.125 );
 }
@@ -719,11 +1102,12 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_RLCN, *utf::tolerance(0.00001)){
 		{2. - 2.*I, 7. - 2.*I, 1. - 1.*I},
 		{3. + 1.*I, 4. + 8.*I, 2. + 7.*I}
 	};
-	using multi::blas::side;
-	using multi::blas::fill;
-	using multi::blas::operation;
-	using multi::blas::diagonal;
-	trsm(side::left, fill::upper, operation::hermitian, diagonal::general, 1., A, B); // B=Inv[A⊹].B, B⊹=B⊹.Inv[A], Solve(A⊹.X=B, X), Solve(X⊹.A=B⊹, X), A is upper triangular (with implicit zeros below)
+	namespace blas = multi::blas;
+	using blas::side;
+	using blas::filling;
+	using blas::operation;
+	using blas::diagonal;
+	trsm(side::left, filling::upper, operation::hermitian, diagonal::general, 1., A, B); // B=Inv[A⊹].B, B⊹=B⊹.Inv[A], Solve(A⊹.X=B, X), Solve(X⊹.A=B⊹, X), A is upper triangular (with implicit zeros below)
 	BOOST_TEST( real(B[1][2]) == 0.916923 );
 	BOOST_TEST( imag(B[1][2]) == -0.504615 );
 }
@@ -741,11 +1125,12 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_RLCN_complex_factor, *utf::toleranc
 		{2. - 2.*I, 7. - 2.*I, 1. - 1.*I},
 		{3. + 1.*I, 4. + 8.*I, 2. + 7.*I}
 	};
-	using multi::blas::side;
-	using multi::blas::fill;
-	using multi::blas::operation;
-	using multi::blas::diagonal;
-	trsm(side::left, fill::upper, operation::hermitian, diagonal::general, 2.+5.*I, A, B); // B=Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
+	namespace blas = multi::blas;
+	using blas::side;
+	using blas::filling;
+	using blas::operation;
+	using blas::diagonal;
+	trsm(side::left, filling::upper, operation::hermitian, diagonal::general, 2.+5.*I, A, B); // B=Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
 	BOOST_TEST( real(B[1][2]) == 4.35692 );
 	BOOST_TEST( imag(B[1][2]) == 3.57538 );
 }
@@ -763,13 +1148,13 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_RLNN_hermitized, *utf::tolerance(0.
 		{2. - 2.*I, 7. - 2.*I, 1. - 1.*I},
 		{3. + 1.*I, 4. + 8.*I, 2. + 7.*I}
 	};
-	using multi::blas::side;
-	using multi::blas::fill;
-	using multi::blas::operation;
-	using multi::blas::diagonal;
-	using multi::blas::hermitized;
-
-	trsm(side::left, fill::lower, diagonal::general, 1., hermitized(A), B); // B=Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
+	namespace blas = multi::blas;
+	using blas::side;
+	using blas::filling;
+	using blas::operation;
+	using blas::diagonal;
+	using blas::hermitized;
+	trsm(side::left, filling::lower, diagonal::general, 1., hermitized(A), B); // B=Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
 	BOOST_TEST( real(B[1][2]) == 0.916923 );
 	BOOST_TEST( imag(B[1][2]) == -0.504615 );
 }
@@ -787,13 +1172,14 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_RxNN_hermitized, *utf::tolerance(0.
 		{2. - 2.*I, 7. - 2.*I, 1. - 1.*I},
 		{3. + 1.*I, 4. + 8.*I, 2. + 7.*I}
 	};
-	using multi::blas::side;
-	using multi::blas::fill;
-	using multi::blas::operation;
-	using multi::blas::diagonal;
-	using multi::blas::hermitized;
+	namespace blas = multi::blas;
+	using blas::side;
+	using blas::filling;
+	using blas::operation;
+	using blas::diagonal;
+	using blas::hermitized;
 
-	trsm(fill::lower, diagonal::general, 1., hermitized(A), B); // B=Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
+	trsm(filling::lower, diagonal::general, 1., hermitized(A), B); // B=Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
 	BOOST_TEST( real(B[1][2]) == 0.916923 );
 	BOOST_TEST( imag(B[1][2]) == -0.504615 );
 }
@@ -811,10 +1197,11 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_RxNx_hermitized, *utf::tolerance(0.
 		{2. - 2.*I, 7. - 2.*I, 1. - 1.*I},
 		{3. + 1.*I, 4. + 8.*I, 2. + 7.*I}
 	};
-	using multi::blas::fill;
+	namespace blas = multi::blas;
+	using multi::blas::filling;
 	using multi::blas::hermitized;
+	trsm(filling::lower, 1., hermitized(A), B); // B=Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
 
-	trsm(fill::lower, 1., hermitized(A), B); // B=Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
 	BOOST_TEST( real(B[1][2]) == 0.916923 );
 	BOOST_TEST( imag(B[1][2]) == -0.504615 );
 }
@@ -832,12 +1219,16 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_RxNx_hermitized_auto_alpha, *utf::t
 		{2. - 2.*I, 7. - 2.*I, 1. - 1.*I},
 		{3. + 1.*I, 4. + 8.*I, 2. + 7.*I}
 	};
-	using multi::blas::fill;
-	using multi::blas::hermitized;
-
-	trsm(fill::lower, hermitized(A), B); // B=Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
-	BOOST_TEST( real(B[1][2]) == 0.916923 );
-	BOOST_TEST( imag(B[1][2]) == -0.504615 );
+	namespace blas = multi::blas;
+	using blas::filling;
+	using blas::hermitized;
+	using blas::diagonal;
+	using blas::side;
+	using blas::operation;
+	trsm(side::left, filling::lower, operation::hermitian, diagonal::general, 1.0, hermitized(A), B); // B†=Inv[A].B†, B=B.Inv[A†], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
+	print(B);
+	BOOST_TEST( real(B[1][2]) == 0.147059 );
+	BOOST_TEST( imag(B[1][2]) == -0.0882353 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_xxxx_hermitized, *utf::tolerance(0.00001)){
@@ -854,11 +1245,11 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_xxxx_hermitized, *utf::tolerance(0.
 		{3. + 1.*I, 4. + 8.*I, 2. + 7.*I}
 	};
 
-	using multi::blas::fill;
+	using multi::blas::filling;
 
-	BOOST_REQUIRE( multi::blas::detect_triangular(A)==fill::upper );
-	BOOST_REQUIRE( multi::blas::detect_triangular(rotated(A))==fill::lower );
-	BOOST_REQUIRE( multi::blas::detect_triangular(multi::blas::hermitized(A))==fill::lower );
+	BOOST_REQUIRE( multi::blas::detect_triangular(A)==filling::upper );
+	BOOST_REQUIRE( multi::blas::detect_triangular(rotated(A))==filling::lower );
+	BOOST_REQUIRE( multi::blas::detect_triangular(multi::blas::hermitized(A))==filling::lower );
 	
 	using multi::blas::hermitized;
 	trsm(1., hermitized(A), B); // B=Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
@@ -881,7 +1272,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_xxxx_hermitized_complex_factor, *ut
 		{3. + 1.*I, 4. + 8.*I, 2. + 7.*I}
 	};
 
-	using multi::blas::fill;	
+	using multi::blas::filling;	
 	using multi::blas::hermitized;
 	trsm(2.+1.*I, hermitized(A), B); // B=Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
 	BOOST_TEST( real(B[1][2]) == 2.33846 );
@@ -902,7 +1293,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_xxxx_hermitized_complex_factor_retu
 		{3. + 1.*I, 4. + 8.*I, 2. + 7.*I}
 	};
 
-	using multi::blas::fill;	
+	using multi::blas::filling;	
 	using multi::blas::hermitized;
 	auto C = trsm(2.+1.*I, hermitized(A), B); // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
 	BOOST_TEST( real(C[1][2]) == 2.33846 );
@@ -928,8 +1319,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_xxxx_hermitized_return_value, *utf:
 	BOOST_TEST( real(C[1][2]) == 0.916923 );
 	BOOST_TEST( imag(C[1][2]) == -0.504615 );
 }
-
-
+#endif
 
 #endif
 #endif

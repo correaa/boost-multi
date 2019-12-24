@@ -14,71 +14,25 @@ namespace boost{
 namespace multi{
 namespace blas{
 
-enum class uplo  : char{L='L', U='U'};
+enum class SIDE : char{L='L', R='R'};
 
-enum class fill : char{
-	lower = static_cast<char>(uplo::U),
-	upper = static_cast<char>(uplo::L)
+enum side : char{
+	left = static_cast<char>(SIDE::R), right = static_cast<char>(SIDE::L),
+	pre_multiply = static_cast<char>(SIDE::R), post_multiply = static_cast<char>(SIDE::L)
 };
 
-fill flip(fill side){
-	switch(side){
-		case fill::lower: return fill::upper;
-		case fill::upper: return fill::lower;
+side swap(side s){
+	switch(s){
+		case side::left: return side::right;
+		case side::right: return side::left;
 	} __builtin_unreachable();
 }
 
-template<class A2D>
-fill detect_triangular_aux(A2D const& A, std::false_type){
-	{
-		for(auto i = size(A); i != 0; --i){
-			auto const asum_up = blas::asum(begin(A[i-1])+i, end(A[i-1]));
-			if(asum_up!=asum_up) return fill::lower;
-			else if(asum_up!=0.) return fill::upper;
+}}}
 
-			auto const asum_lo = blas::asum(begin(rotated(A)[i-1])+i, end(rotated(A)[i-1]));
-			if(asum_lo!=asum_lo) return fill::upper;
-			else if(asum_lo!=0.) return fill::lower;
-		}
-	}
-	return fill::lower;
-}
-
-template<class A2D>
-fill detect_triangular_aux(A2D const& A, std::true_type);
-
-template<class A2D>
-fill detect_triangular(A2D const& A){
-#if __cpp_if_constexpr>=201606
-	if constexpr(not is_hermitized<A2D>()){
-		using blas::asum;
-		for(auto i = size(A); i != 0; --i){
-			auto const asum_up = asum(A[i-1]({i, A[i-1].size()}));
-			if(asum_up!=asum_up) return fill::lower;
-			else if(asum_up!=0.) return fill::upper;
-
-			auto const asum_lo = asum(rotated(A)[i-1]({i, rotated(A)[i-1].size()}));
-			if(asum_lo!=asum_lo) return fill::upper;
-			else if(asum_lo!=0.) return fill::lower;
-		}
-	}else{
-		return flip(detect_triangular(hermitized(A)));
-	}
-	return fill::lower;
-#else
-	return detect_triangular_aux(A, is_conjugated_t<A2D>{});//std::integral_constant<bool, not is_hermitized<A2D>()>{});
-#endif
-}
-
-template<class A2D>
-fill detect_triangular_aux(A2D const& A, std::true_type){
-	return flip(detect_triangular(hermitized(A)));
-}
-
-
-}}
-
-}
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 #if _TEST_MULTI_ADAPTORS_BLAS_SIDE
 

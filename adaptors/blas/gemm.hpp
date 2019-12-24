@@ -259,12 +259,16 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare){
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_empty){
-	multi::array<double, 2> const a;
+	multi::array<double, 2> const a({0, 5});
+	assert( size(a) == 0 );
+	assert( size(rotated(a)) == 5 );
+	assert( a.empty() );
+	assert( rotated(a).empty() );
 	multi::array<double, 2> const b;
 	{
 		multi::array<double, 2> c;//({3, 2});
 		using multi::blas::gemm;
-		gemm(1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
+//		gemm(1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
 	}
 }
 

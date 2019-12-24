@@ -15,6 +15,8 @@
 #include "../blas/syrk.hpp" // fallback to real case
 
 #include "../blas/side.hpp"
+#include "../blas/filling.hpp"
+
 #include "../blas/operations.hpp"
 
 //#include<iostream> //debug
@@ -27,7 +29,7 @@ template<class A> auto base_aux(A&& a, std::false_type){return base(a);}
 template<class A> auto base_aux(A&& a, std::true_type){return underlying(base(a));}
 
 template<class AA, class BB, class A2D, class C2D, typename = std::enable_if_t<is_complex_array<std::decay_t<C2D>>{}>>
-C2D&& herk(fill c_side, complex_operation a_op, AA alpha, A2D const& a, BB beta, C2D&& c){
+C2D&& herk(filling c_side, complex_operation a_op, AA alpha, A2D const& a, BB beta, C2D&& c){
 	using multi::blas::core::herk;
 	if(stride(c)==1 and stride(c[0])!=1) herk(flip(c_side), hermitize(a_op), alpha, rotated(a), beta, rotated(c));
 	else{
@@ -46,23 +48,23 @@ C2D&& herk(fill c_side, complex_operation a_op, AA alpha, A2D const& a, BB beta,
 }
 
 template<class AA, class BB, class A2D, class C2D, typename = std::enable_if_t<not is_complex_array<std::decay_t<C2D>>{}>>
-C2D&& herk(fill c_side, complex_operation a_op, AA alpha, A2D const& a, BB beta, C2D&& c, void* = 0){
+C2D&& herk(filling c_side, complex_operation a_op, AA alpha, A2D const& a, BB beta, C2D&& c, void* = 0){
 	syrk(c_side, a_op==complex_operation::hermitian?real_operation::transposition:real_operation::identity, alpha, a, beta, c);
 	return std::forward<C2D>(c);
 }
 
 template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr>
-void herk_aux(fill c_side, AA alpha, A2D const& a, BB beta, C2D&& c, std::true_type){
+void herk_aux(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c, std::true_type){
 	herk(c_side, complex_operation::hermitian, alpha, hermitized(a), beta, c);
 }
 
 template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr>
-void herk_aux(fill c_side, AA alpha, A2D const& a, BB beta, C2D&& c, std::false_type){
+void herk_aux(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c, std::false_type){
 	herk(c_side, complex_operation::identity, alpha, a, beta, std::forward<C2D>(c));
 }
 
 template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr>
-C2D&& herk(fill c_side, AA alpha, A2D const& a, BB beta, C2D&& c){
+C2D&& herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c){
 #if __cpp_if_constexpr>=201606
 	if constexpr(is_hermitized<A2D>{}) herk(c_side, complex_operation::hermitian, alpha, hermitized(a), beta, c);
 	else                               herk(c_side, complex_operation::identity , alpha, a, beta, std::forward<C2D>(c));
@@ -73,14 +75,14 @@ C2D&& herk(fill c_side, AA alpha, A2D const& a, BB beta, C2D&& c){
 }
 
 template<class AA, class A2D, class C2D, class = typename A2D::element_ptr>
-C2D&& herk(fill c_side, AA alpha, A2D const& a, C2D&& c){
+C2D&& herk(filling c_side, AA alpha, A2D const& a, C2D&& c){
 	return herk(c_side, alpha, a, 0., std::forward<C2D>(c));
 }
 
 template<typename AA, class A2D, class C2D>
 void herk_aux(AA alpha, A2D const& a, C2D&& c, std::true_type){
 	{
-		herk(fill::lower, alpha, a, c);
+		herk(filling::lower, alpha, a, c);
 		using multi::rotated;
 		using multi::size;
 		assert( size(c) == size(rotated(c)) );
@@ -100,12 +102,11 @@ template<typename AA, class A2D, class C2D>
 C2D&& herk(AA alpha, A2D const& a, C2D&& c){
 #if __cpp_if_constexpr>=201606
 	if constexpr(is_complex_array<std::decay_t<C2D>>{}){
-		herk(fill::lower, alpha, a, c);
+		herk(filling::lower, alpha, a, c);
 		using multi::rotated;
 		using multi::size;
 		for(typename std::decay_t<C2D>::difference_type i = 0; i != size(c); ++i){
 			blas::copy( rotated(c)[i]({i + 1, size(c)}), c[i]({i+1, size(c)}) );
-		//	blas::copy(begin(rotated(c)[i])+i+1, end(rotated(c)[i]), begin(c[i])+i+1);
 			blas::scal(-1., begin(imag(c[i]))+i+1, end(imag(c[i])));
 		}
 	}else syrk(alpha, a, c);
@@ -168,18 +169,19 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_real_case){
 		{ 1., 3., 4.},
 		{ 9., 7., 1.}
 	};
-	using multi::blas::fill;
-	using multi::blas::operation;
+	namespace blas = multi::blas;
+	using blas::filling;
+	using blas::operation;
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.);
 		assert( size(c) == size(*begin(a)) );
-		herk(fill::lower, operation::hermitian, 1., a, 0., c);//c†=c=a†a=(a†a)†, `c` in lower triangular
+		herk(filling::lower, operation::hermitian, 1., a, 0., c);//c†=c=a†a=(a†a)†, `c` in lower triangular
 		BOOST_REQUIRE( c[2][1]==complex(19.,0.) );
 		BOOST_REQUIRE( c[1][2]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.);
-		herk(fill::upper, operation::hermitian, 1., a, 0., c);//c†=c=a†a=(a†a)†, `c` in lower triangular
+		herk(filling::upper, operation::hermitian, 1., a, 0., c);//c†=c=a†a=(a†a)†, `c` in lower triangular
 		BOOST_REQUIRE( c[1][2]==complex(19.,0.) );
 		BOOST_REQUIRE( c[2][1]==9999. );
 	}
@@ -188,7 +190,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_real_case){
 		auto&& a_ = rotated(a_rot);
 		multi::array<complex, 2> c({3, 3}, 9999.);
 		auto&& c_ = rotated(c);
-		herk(fill::upper, operation::hermitian, 1., a_, 0., c_);//c_†=c_=a_†a_=(a_†a_)†, `c_` in lower triangular
+		herk(filling::upper, operation::hermitian, 1., a_, 0., c_);//c_†=c_=a_†a_=(a_†a_)†, `c_` in lower triangular
 		BOOST_REQUIRE( c_[1][2]==complex(19.,0.) );
 		BOOST_REQUIRE( c_[2][1]==9999. );
 	}
@@ -198,12 +200,12 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_basic_transparent_interface_special
 	multi::array<complex, 2> const a = {
 		{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I}
 	};
-	using multi::blas::fill;
-	using multi::blas::complex_operation;	
+	namespace blas = multi::blas;
+	using blas::filling;
+	using blas::complex_operation;	
 	{
 		multi::array<complex, 2> c({1, 1}, 9999.);
-		using multi::blas::herk;
-		herk(fill::lower, complex_operation::identity, 1., a, 0., c); // c†=c=aa†, `a` and `c` are c-ordering, information in c lower triangular
+		herk(filling::lower, complex_operation::identity, 1., a, 0., c); // c†=c=aa†, `a` and `c` are c-ordering, information in c lower triangular
 		BOOST_REQUIRE( c[0][0]==complex(40., 0.) );
 	}
 }
@@ -213,33 +215,33 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_basic_transparent_interface){
 		{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
 		{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
 	};
-	using multi::blas::fill;
-	using multi::blas::complex_operation;
+	namespace blas = multi::blas;
+	using blas::filling;
+	using blas::complex_operation;
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.);
-		using multi::blas::herk;
-		herk(fill::lower, complex_operation::hermitian, 1., a, 0., c); // c†=c=a†a=(a†a)†, information in `c` lower triangular
+		herk(filling::lower, complex_operation::hermitian, 1., a, 0., c); // c†=c=a†a=(a†a)†, information in `c` lower triangular
 		BOOST_REQUIRE( c[2][1]==complex(41.,2.) );
 		BOOST_REQUIRE( c[1][2]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.);
 		using multi::blas::herk;
-		herk(fill::upper, complex_operation::hermitian, 1., a, 0., c); // c†=c=a†a=(a†a)†, `c` in upper triangular
+		herk(filling::upper, complex_operation::hermitian, 1., a, 0., c); // c†=c=a†a=(a†a)†, `c` in upper triangular
 		BOOST_REQUIRE( c[1][2]==complex(41., -2.) );
 		BOOST_REQUIRE( c[2][1]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
 		using multi::blas::herk;
-		herk(fill::lower, complex_operation::identity, 1., a, 0., c); // c†=c=aa†, `a` and `c` are c-ordering, information in c lower triangular
+		herk(filling::lower, complex_operation::identity, 1., a, 0., c); // c†=c=aa†, `a` and `c` are c-ordering, information in c lower triangular
 		BOOST_REQUIRE( c[1][0]==complex(50., -49.) );
 		BOOST_REQUIRE( c[0][1]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
 		using multi::blas::herk;
-		herk(fill::upper, complex_operation::identity, 1., a, 0., c); //c†=c=aa†, `c` in upper triangular
+		herk(filling::upper, complex_operation::identity, 1., a, 0., c); //c†=c=aa†, `c` in upper triangular
 		BOOST_REQUIRE( c[0][1]==complex(50., 49.) );
 		BOOST_REQUIRE( c[1][0]==9999. );
 	}
@@ -250,32 +252,33 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_basic_enum_interface){
 		{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
 		{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
 	};
-	using multi::blas::fill;
-	using multi::blas::complex_operation;
+	namespace blas = multi::blas;
+	using blas::filling;
+	using blas::complex_operation;
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.);
-		herk(fill::lower, complex_operation::hermitian, 1., a, 0., c); //c†=c=a†a=(a†a)†, `c` in lower triangular
+		herk(filling::lower, complex_operation::hermitian, 1., a, 0., c); //c†=c=a†a=(a†a)†, `c` in lower triangular
 		BOOST_REQUIRE( c[2][1]==complex(41.,2.) );
 		BOOST_REQUIRE( c[1][2]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.);
 		using namespace multi::blas;
-		herk(fill::upper, complex_operation::hermitian, 1., a, 0., c); //c†=c=a†a=(a†a)†, `c` in upper triangular
+		herk(filling::upper, complex_operation::hermitian, 1., a, 0., c); //c†=c=a†a=(a†a)†, `c` in upper triangular
 		BOOST_REQUIRE( c[1][2]==complex(41., -2.) );
 		BOOST_REQUIRE( c[2][1]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
 		using namespace multi::blas;
-		herk(fill::lower, complex_operation::identity, 1., a, 0., c); // c†=c=aa†, `c` in lower triangular
+		herk(filling::lower, complex_operation::identity, 1., a, 0., c); // c†=c=aa†, `c` in lower triangular
 		BOOST_REQUIRE( c[1][0]==complex(50., -49.) );
 		BOOST_REQUIRE( c[0][1]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
 		using namespace multi::blas;
-		herk(fill::upper, complex_operation::identity, 1., a, 0., c); // c†=c=aa†, `c` in upper triangular
+		herk(filling::upper, complex_operation::identity, 1., a, 0., c); // c†=c=aa†, `c` in upper triangular
 		BOOST_REQUIRE( c[0][1]==complex(50., 49.) );
 		BOOST_REQUIRE( c[1][0]==9999. );
 	}
@@ -288,38 +291,40 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_basic_explicit_enum_interface){
 	};
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.);
-		using multi::blas::fill;
-		using multi::blas::complex_operation;
-		herk(fill::lower, complex_operation::hermitian, 1., a, 0., c); // c†=c=a†a=(a†a)†, `c` in lower triangular
+		namespace blas = multi::blas;
+		using blas::filling;
+		using blas::complex_operation;
+		herk(filling::lower, complex_operation::hermitian, 1., a, 0., c); // c†=c=a†a=(a†a)†, `c` in lower triangular
 		BOOST_REQUIRE( c[2][1]==complex(41.,2.) );
 		BOOST_REQUIRE( c[1][2]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.);
-		using multi::blas::fill;
-		using multi::blas::complex_operation;
-		herk(fill::upper, complex_operation::hermitian, 1., a, 0., c); // c†=c=a†a=(a†a)†, `c` in upper triangular
+		namespace blas = multi::blas;
+		using blas::filling;
+		using blas::complex_operation;
+		herk(filling::upper, complex_operation::hermitian, 1., a, 0., c); // c†=c=a†a=(a†a)†, `c` in upper triangular
 		BOOST_REQUIRE( c[1][2]==complex(41., -2.) );
 		BOOST_REQUIRE( c[2][1]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
 		using namespace multi::blas;
-		herk(fill::lower, complex_operation::identity, 1., a, 0., c); // c†=c=aa†=(aa†)†, `c` in lower triangular
+		herk(filling::lower, complex_operation::identity, 1., a, 0., c); // c†=c=aa†=(aa†)†, `c` in lower triangular
 		BOOST_REQUIRE( c[1][0]==complex(50., -49.) );
 		BOOST_REQUIRE( c[0][1]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
 		using namespace multi::blas;
-		herk(fill::upper, complex_operation::identity, 1., a, 0., c); // c†=c=aa†=(aa†)†, `c` in upper triangular
+		herk(filling::upper, complex_operation::identity, 1., a, 0., c); // c†=c=aa†=(aa†)†, `c` in upper triangular
 		BOOST_REQUIRE( c[0][1]==complex(50., 49.) );
 		BOOST_REQUIRE( c[1][0]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
 		using namespace multi::blas;
-		herk(fill::upper, complex_operation::identity, 1., a, 0., c); // c†=c=aa†=(aa†)†, `c` in upper triangular
+		herk(filling::upper, complex_operation::identity, 1., a, 0., c); // c†=c=aa†=(aa†)†, `c` in upper triangular
 		BOOST_REQUIRE( c[0][1]==complex(50., 49.) );
 		BOOST_REQUIRE( c[1][0]==9999. );
 	}
@@ -332,16 +337,17 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_automatic_operator_interface){
 	};
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.);
-		using multi::blas::fill;
-		using multi::blas::hermitized;
-		herk(fill::lower, 1., hermitized(a), 0., c); // c=c†=a†a, `c` in lower triangular
+		namespace blas = multi::blas;
+		using blas::filling;
+		using blas::hermitized;
+		herk(filling::lower, 1., hermitized(a), 0., c); // c=c†=a†a, `c` in lower triangular
 		BOOST_REQUIRE( c[2][1]==complex(41., 2.) );
 		BOOST_REQUIRE( c[1][2]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
-		using multi::blas::fill;
-		herk(fill::lower, 1., a, 0., c); // c=c†=aa†, `c` in lower triangular
+		using multi:: blas::filling;
+		herk(filling::lower, 1., a, 0., c); // c=c†=aa†, `c` in lower triangular
 		BOOST_REQUIRE( c[1][0]==complex(50., -49.) );
 		BOOST_REQUIRE( c[0][1]==9999. );
 	}
@@ -354,16 +360,17 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_automatic_operator_interface_implic
 	};
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.);
-		using multi::blas::fill;
-		using multi::blas::hermitized;
-		herk(fill::lower, 1., hermitized(a), c); // c=c†=a†a, `c` in lower triangular
+		namespace blas = multi::blas;
+		using blas::filling;
+		using blas::hermitized;
+		herk(filling::lower, 1., hermitized(a), c); // c=c†=a†a, `c` in lower triangular
 		BOOST_REQUIRE( c[2][1]==complex(41., 2.) );
 		BOOST_REQUIRE( c[1][2]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
-		using multi::blas::fill;
-		herk(fill::lower, 1., a, c); // c=c†=aa†, `c` in lower triangular
+		using multi::blas::filling;
+		herk(filling::lower, 1., a, c); // c=c†=aa†, `c` in lower triangular
 		BOOST_REQUIRE( c[1][0]==complex(50., -49.) );
 		BOOST_REQUIRE( c[0][1]==9999. );
 	}
@@ -537,17 +544,17 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_real_case){
 		{ 1., 3., 4.},
 		{ 9., 7., 1.}
 	};
-	using multi::blas::fill;
+	using multi::blas::filling;
 	using multi::blas::operation;
 	{
 		static_assert( not boost::multi::blas::is_complex_array<multi::array<double, 2>>{} , "!");
 		multi::array<double, 2> c({2, 2}, 9999.);
-		syrk(fill::lower, operation::identity, 1., a, 0., c);//c†=c=aa†=(aa†)†, `c` in lower triangular
+		syrk(filling::lower, operation::identity, 1., a, 0., c);//c†=c=aa†=(aa†)†, `c` in lower triangular
 	}
 	{
 		static_assert( not boost::multi::blas::is_complex_array<multi::array<double, 2>>{} , "!");
 		multi::array<double, 2> c({2, 2}, 9999.);
-		herk(fill::lower, operation::identity, 1., a, 0., c);//c†=c=aa†=(aa†)†, `c` in lower triangular
+		herk(filling::lower, operation::identity, 1., a, 0., c);//c†=c=aa†=(aa†)†, `c` in lower triangular
 	}
 	{
 		static_assert( not boost::multi::blas::is_complex_array<multi::array<double, 2>>{} , "!");
