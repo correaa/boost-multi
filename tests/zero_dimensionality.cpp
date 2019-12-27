@@ -36,6 +36,7 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality){
 
 	{
 		multi::array<double, 0> a0 = 45.;
+		BOOST_REQUIRE( num_elements(a0) == 1 );
 		BOOST_REQUIRE( a0 == 45. );
 		a0 = 60.;
 		BOOST_REQUIRE( a0 == 60. );
