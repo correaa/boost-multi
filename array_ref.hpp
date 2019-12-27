@@ -23,6 +23,17 @@ for a in ./tests/*.cpp; do echo $a; sh $a || break; echo "\n"; done; exit;*/
 #define HD 
 #endif
 
+#if (__has_cpp_attribute(nodiscard)) && (__cplusplus>=201703L)
+#define NODISCARD(MsG) [[nodiscard]]
+#if (__has_cpp_attribute(nodiscard)>=201907) && (__cplusplus>=201703L)
+#define NODISCARD(MsG) [[nodiscard(MsG)]]
+#endif
+#elif __has_cpp_attribute(gnu::warn_unused_result)
+#define NODISCARD(MsG) [[gnu::warn_unused_result]]
+#else
+#define NODISCARD(MsG)
+#endif
+
 namespace boost{
 namespace multi{
 
@@ -103,8 +114,8 @@ struct basic_array_ptr :
 	basic_array_ptr(typename Ref::element_ptr p, layout_t<Ref::dimensionality-1> l) HD : Ref{l, p}{}
 	basic_array_ptr(typename Ref::element_ptr p, index_extensions<Ref::dimensionality> e) : Ref{p, e}{}
 
-	template<class Other, typename = decltype(typename Ref::element_ptr{typename Other::element_ptr{}})> 
-	basic_array_ptr(Other const& o) : Ref{layout(o), base(o)}{}//, stride_{o.stride_}{}
+	template<class Array, typename = decltype(typename Ref::element_ptr{typename Array::element_ptr{}})> 
+	basic_array_ptr(Array const& o) : Ref{o->layout(), o->base()}{}//, stride_{o.stride_}{}
 	basic_array_ptr(basic_array_ptr const& o) HD : Ref{static_cast<Layout const&>(o), o.base_}{}//, stride_{o.stride_}{}
 	basic_array_ptr& operator=(basic_array_ptr const& other){
 		this->base_ = other.base_;
@@ -317,10 +328,13 @@ public:
 	}
 	using decay_type = array<typename types::element_type, D, decltype(get_allocator_(std::declval<ElementPtr>()))>;
 //	decay_type 
-	auto decay() const{
+//	auto
+	decay_type decay() const{
 		decay_type ret = *this;
 		return ret;
 	}
+	friend /*NODISCARD("decayed type is ignored")*/ auto operator+(basic_array const& self){return self.decay();}
+	friend /*NODISCARD("decayed type is ignored")*/ auto operator*(basic_array const& self){return self.decay();}
 	friend auto decay(basic_array const& self){return self.decay();}
 	typename types::reference operator[](index i) const HD{
 		assert( this->extension().contains(i) );
@@ -618,6 +632,28 @@ template<class Element, dimensionality_type D, typename... Ts>
 using iterator = array_iterator<Element, D, Ts...>;
 
 template<typename T, typename ElementPtr, class Layout>
+struct basic_array<T, dimensionality_type{0}, ElementPtr, Layout> :
+	array_types<T, dimensionality_type(0), ElementPtr, Layout>
+{
+	using types = array_types<T, dimensionality_type{0}, ElementPtr, Layout>;
+	using types::types;
+	using element_ref = decltype(*typename basic_array::element_ptr{});
+	decltype(auto) operator=(typename basic_array::element_type const& e) const&{
+		using std::copy_n; copy_n(&e, 1, this->base_); return *this;
+	}
+	bool operator==(typename basic_array::element_type const& e) const&{
+		using std::equal; return equal(&e, &e + 1, this->base_);
+	}
+	operator element_ref(){return *(this->base_);}
+	template<class TT> operator TT(){return static_cast<TT>(element_ref());}
+	typename basic_array::element_ptr operator&() const{return this->base_;}
+	using decay_type = typename types::element;
+//	basic_array&
+	element_ref operator()(){return *(this->base_);}
+	
+};
+
+template<typename T, typename ElementPtr, class Layout>
 struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout> : 
 	multi::partially_ordered2<basic_array<T, dimensionality_type(1), ElementPtr, Layout>, void>,
 	multi::random_iterable<basic_array<T, dimensionality_type(1), ElementPtr, Layout> >,
@@ -661,8 +697,7 @@ public:
 		return {this->base_, this->layout()};
 	}
 	template<class It> void assign(It first, It last) const{
-		using std::copy;
-		copy(first, last, this->begin());
+		using std::copy; copy(first, last, this->begin());
 	}
 public:
 	template<class A, 
@@ -753,13 +788,6 @@ public:
 		using multi::extension; using std::equal; using std::begin;
 		return (basic_array::extension()==extension(o)) and equal(this->begin(), this->end(), begin(o));
 	}
-//	template<typename TT, dimensionality_type DD, class... As>
-//	auto operator==(basic_array<TT, DD, As...> const& other) const
-//	->decltype( std::equal(this->begin(), this->end(), std::begin(other)) )
-//	{
-//		using multi::extension; using std::equal; using std::begin;
-//		return (this->extension()==extension(other)) and equal(this->begin(), this->end(), begin(other));
-//	}
 	bool operator==(basic_array const& other) const{
 		return operator==<basic_array, void>(other);
 	//	using multi::extension; using std::equal; using std::begin;
@@ -879,18 +907,18 @@ protected:
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{}, nullptr}{}
 public:
 	array_ref(array_ref const&) = default;
-	constexpr array_ref(typename array_ref::element_ptr p, typename array_ref::extensions_type e) noexcept
+	constexpr array_ref(typename array_ref::element_ptr p, typename array_ref::extensions_type e = {}) noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
 	constexpr array_ref(typename array_ref::element_ptr p, std::initializer_list<index_extension> il) noexcept
 		: array_ref(p, detail::to_tuple<D, index_extension>(il)){}
 //	template<class Extension>//, typename = decltype(array_ref(std::array<Extension, D>{}, allocator_type{}, std::make_index_sequence<D>{}))>
 //	constexpr array_ref(typename array_ref::element_ptr p, std::array<Extension, D> const& x) 
 //		: array_ref(p, x, std::make_index_sequence<D>{}){}
-	using basic_array<T, D, ElementPtr>::operator[];
+//	using basic_array<T, D, ElementPtr>::operator[];
 	using basic_array<T, D, ElementPtr>::operator=;
 	using basic_array<T, D, ElementPtr>::operator==;
-	using basic_array<T, D, ElementPtr>::operator<;
-	using basic_array<T, D, ElementPtr>::operator>;
+//	using basic_array<T, D, ElementPtr>::operator<;
+//	using basic_array<T, D, ElementPtr>::operator>;
 //	template<class ArrayRef> explicit array_ref(ArrayRef&& a) : array_ref(a.data(), extensions(a)){} 
 	array_ref const& operator=(array_ref const& o) const&{
 		using std::copy_n; auto e = copy_n(o.data(), o.num_elements(), this->data());

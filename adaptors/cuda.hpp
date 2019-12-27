@@ -26,6 +26,9 @@ namespace cuda{
 	template<class T, multi::dimensionality_type D>
 	using array_ref = multi::array_ref<T, D, cuda::ptr<T>>;
 
+	template<class T, multi::dimensionality_type D>
+	using static_array = multi::static_array<T, D, cuda::allocator<T>>;
+
 	namespace managed{
 		template<class T>
 		using allocator = multi::memory::cuda::managed::allocator<T>;
@@ -37,6 +40,9 @@ namespace cuda{
 
 		template<class T, multi::dimensionality_type D>
 		using array_ref = multi::array<T, D, multi::memory::cuda::managed::ptr<T>>;
+
+		template<class T, multi::dimensionality_type D>
+		using static_array = multi::array<T, D, multi::memory::cuda::managed::ptr<T>>;
 	}
 
 }}}
@@ -86,8 +92,14 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_cuda){
 		cuda::array<double, 2> arr;
 		cuda::allocator<double> a = get_allocator(arr); (void)a;
 	}
-//	cuda::allocator<double> a = get_allocator(Rgpu);
-
+	{
+		cuda::array<double, 0> arr = 45.;
+		BOOST_REQUIRE( arr == 45. );
+	}
+	{
+		cuda::managed::array<double, 0> arr = 45.;
+		BOOST_REQUIRE( arr == 45. );
+	}
 }
 
 #endif

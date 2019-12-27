@@ -80,10 +80,9 @@ public:
 	static_array(typename static_array::allocator_type const& a) : array_alloc{a}{}
 protected:
 	static_array(static_array&& other, typename static_array::allocator_type const& a)                           //6b
-	:	static_array::allocator_type{a},
-		ref{std::exchange(other.base_, nullptr), other.extensions()}
+	:	array_alloc{a},
+		ref{other.base_, other.extensions()}
 	{
-		//TODO
 		other.ref::layout_t::operator=({});
 	}
 public:
@@ -114,6 +113,8 @@ public:
 	{
 		uninitialized_fill(e);
 	}
+	static_array(typename static_array::element const& e, typename static_array::allocator_type const& a)
+	:	static_array(typename static_array::extensions_type{}, e, a){}
 	auto uninitialized_fill(typename static_array::element const& e){
 		return uninitialized_fill_n(this->alloc(), this->base_, this->num_elements(), e);
 	}
@@ -121,6 +122,10 @@ public:
 	:	array_alloc{}, ref(static_array::allocate(typename static_array::layout_t{x}.num_elements()), x){
 		uninitialized_fill(e);
 	}
+	template<class Elem, typename = std::enable_if_t<std::is_convertible<Elem, typename static_array::element>{} and D==0>>
+	static_array(Elem const& e)  //2
+	:	static_array(multi::iextensions<D>{}, e){}
+
 	explicit static_array(typename static_array::index n, typename static_array::value_type const& v, typename static_array::allocator_type const& a = {})
 	: 	static_array(typename static_array::index_extension(n), v, a){}
 	template<class ValueType, typename = std::enable_if_t<std::is_same<ValueType, typename static_array::value_type>{}>> 
@@ -237,7 +242,11 @@ public:
 //	template<class... Args> decltype(auto) operator()(Args const&... args) const&{return ref::operator()(args...);}
 	using ref::operator();
 
-	basic_array<T, D, typename static_array::element_ptr>      operator()()&{return *this;}
+//	basic_array<T, D, typename static_array::element_ptr> 
+	decltype(auto) operator()()&{
+		return ref::operator()();
+	//	return *this;
+	}
 	basic_array<T, D, typename static_array::element_const_ptr> operator()() const&{
 		return basic_array<T, D, typename static_array::element_const_ptr>{this->layout(), this->base_};
 	}
@@ -302,6 +311,14 @@ public:
 	}
 };
 
+template<typename T, class Alloc>
+struct array<T, dimensionality_type{0}, Alloc>
+	: static_array<T, 0, Alloc>
+{
+	using static_ = static_array<T, 0, Alloc>;
+	using static_::static_;
+};
+
 template<class T, dimensionality_type D, class Alloc>
 struct array : static_array<T, D, Alloc>,
 	boost::multi::random_iterable<array<T, D, Alloc> >
@@ -320,7 +337,7 @@ public:
 	}
 	using static_::static_;
 	using typename array::ref::value_type;
-	using static_::ref::operator<;
+//	using static_::ref::operator<;
 	array() = default;
 	array(array const&) = default;
 public:
@@ -368,11 +385,7 @@ public:
 //	template<class... As>
 //	array(typename array::extensions_type x, As&&... as) : static_{x, std::forward<As>(as)...}{} //2
 //	array(array const& other) : static_{static_cast<static_ const&>(other)}{}
-	array(array&& other) noexcept : static_{other.get_allocator()}{
-		static_::layout_t::operator=(other);
-		this->base_ = std::exchange(other.base_, nullptr);
-		other.static_::layout_t::operator=({});
-	}
+	array(array&& o) noexcept : static_{std::move(o), o.get_allocator()}{}
 	friend typename array::allocator_type get_allocator(array const& self){return self.get_allocator();}
 //	array(array const& o)                                                    //5b
 //	:	static_{o.get_allocator()}//, 
@@ -394,7 +407,10 @@ public:
 //		//TODO
 //		other.static_::ref::layout_t::operator=({});
 //	}
-	template<class A, typename = std::enable_if_t<not std::is_base_of<array, std::decay_t<A>>{}> >
+//	using ref_::operator=;
+	template<class A, typename = std::enable_if_t<not std::is_base_of<array, std::decay_t<A>>{}>,
+		typename = std::enable_if_t<not std::is_convertible<std::decay_t<A>, typename array::element_type>{}>
+	>
 	array& operator=(A&& a){
 		auto ext = extensions(a);
 		if(ext==array::extensions()){

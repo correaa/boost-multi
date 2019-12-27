@@ -1,9 +1,9 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&& c++ -std=c++17 -Wall -Wextra -Wfatal-errors -D_TEST_MULTI_LAYOUT $0.cpp -o$0x&& $0x &&rm $0x $0.cpp;exit
+(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++17 -Wall -Wextra `#-Wfatal-errors` -D_TEST_MULTI_LAYOUT $0.cpp -o$0x&& $0x &&rm $0x $0.cpp;exit
 #endif
 #ifndef MULTI_LAYOUT_HPP
 #define MULTI_LAYOUT_HPP
-//  (C) Copyright Alfredo A. Correa 2018-2019
+// © Alfredo A. Correa 2018-2019
 
 #include "types.hpp"
 
@@ -11,7 +11,9 @@
 
 #include "../detail/operators.hpp"
 
-#include<iostream> //debug
+#include<boost/serialization/nvp.hpp>
+//#include<iostream> //debug
+#include<limits>
 
 #ifndef HD
 #if defined(__CUDACC__)
@@ -33,6 +35,7 @@ inline void construct_from_initializer_list(T* p, As&&... as){
 
 template<class To, class From, size_t... I>
 constexpr auto to_tuple_impl(std::initializer_list<From> il, std::index_sequence<I...>){
+	(void)il;
 	return std::make_tuple(To{il.begin()[I]}...);
 }
 
@@ -88,26 +91,60 @@ namespace multi{
 
 struct f_tag{};
 
-template<dimensionality_type D> struct layout_t;
+template<dimensionality_type D, typename SSize=multi::size_type> struct layout_t;
 
-template<>
-struct layout_t<dimensionality_type{1}>{
-	using sub_t = layout_t<dimensionality_type{0}>;
+template<typename SSize>
+struct layout_t<dimensionality_type{0}, SSize>{
+	using size_type = SSize;
+	using difference_type = std::make_signed_t<size_type>;
+	using index_extension = multi::index_extension;
+	using index = difference_type;
+	using stride_type=index;
+	using offset_type=index;
+	using nelems_type=index;
+	using index_range = multi::range<index>;
+	using rank = std::integral_constant<dimensionality_type, 0>;
+	static constexpr dimensionality_type dimensionality = 0;
+	friend constexpr auto dimensionality(layout_t const& l){return l.dimensionality;}
+	using strides_type    = std::tuple<>;
+	nelems_type nelems_ = 1;
+	void* stride_ = nullptr;
+	void* sub = nullptr;
+	struct extensions_type_ : std::tuple<>{
+		using std::tuple<>::tuple;
+		using base_ = std::tuple<>;
+		extensions_type_(base_ const& b) : base_(b){}
+		extensions_type_() = default;
+		base_ const& base() const{return *this;}
+		friend decltype(auto) base(extensions_type_ const& s){return s.base();}
+		operator nelems_type() const{return 1;}
+	};
+	constexpr layout_t(extensions_type_ const& = {}) : nelems_{1}{}
+	using extensions_type = extensions_type_;
+	constexpr extensions_type extensions() const{return extensions_type{};}
+	friend constexpr auto extensions(layout_t const& self){return self.extensions();}
+	constexpr auto sizes() const{return std::tuple<>{};}
+	friend auto sizes(layout_t const& s){return s.sizes();}
+	nelems_type num_elements() const{return nelems_;}
+};
+
+template<typename SSize>
+struct layout_t<dimensionality_type{1}, SSize>{
+	using size_type=SSize; 
+	using difference_type=std::make_signed_t<size_type>;
+	using index_extension = multi::index_extension;
+	using index = difference_type;
+	using stride_type=index; 
+	using offset_type=index; 
+	using nelems_type=index;
+	using index_range = multi::range<index>;
 	using rank = std::integral_constant<dimensionality_type, 1>;
 	static constexpr dimensionality_type dimensionality = rank{};
 	friend constexpr auto dimensionality(layout_t const& l){return l.dimensionality;}
-	using index_extension = multi::index_extension;
-
-	using index = multi::index;
-	using stride_type = index;
-	using offset_type = index;
-	using nelems_type = index;
-	using size_type = multi::size_type;
-	using index_range = multi::range<index>;
-	using difference_type = multi::difference_type;
-	stride_type stride_ = 1;
-	offset_type offset_ = 0;
-	nelems_type nelems_ = 0;
+	using sub_t = layout_t<dimensionality_type{0}, SSize>;
+protected:
+public:
+	stride_type stride_ = 1; offset_type offset_ = 0; nelems_type nelems_ = 0;
 	struct extensions_type_ : std::tuple<index_extension>{
 		using std::tuple<index_extension>::tuple;
 		using base_ = std::tuple<index_extension>;
@@ -116,14 +153,15 @@ struct layout_t<dimensionality_type{1}>{
 		base_ const& base() const{return *this;}
 		extensions_type_(std::tuple<index_extension> const& t) : std::tuple<index_extension>(t){}
 		friend decltype(auto) base(extensions_type_ const& s){return s.base();}
+	//	template<class Archive> void serialize(Archive& ar, unsigned){
+	//		ar & BOOST_SERIALIZATION_NVP(std::get<0>(*this));
+	//	}
 	};
 	using extensions_type = extensions_type_;
 	using strides_type = std::tuple<index>;
-	constexpr layout_t() = default;//: stride_{1}, offset_{0}, nelems_{0}{} // needs stride != 0 for things to work well in partially formed state
+	constexpr layout_t() = default;
 	constexpr layout_t(layout_t const&) = default;
-	constexpr layout_t(index_extension ie, layout_t<0> const&) : 
-		stride_{1}, offset_{0}, nelems_{ie.size()}
-	{}
+	constexpr layout_t(index_extension ie, layout_t<0> const&) : nelems_{ie.size()}{}
 	constexpr layout_t(stride_type stride, offset_type offset, nelems_type nelems) 
 		: stride_{stride}, offset_{offset}, nelems_{nelems}
 	{}
@@ -132,57 +170,40 @@ struct layout_t<dimensionality_type{1}>{
 	constexpr layout_t(std::initializer_list<index> il) noexcept : layout_t{multi::detail::to_tuple<1, typename layout_t::index_extension>(il)}{}
 #endif
 	template<class Extensions, typename = decltype(std::get<0>(Extensions{}).size())>
-	constexpr layout_t(Extensions e) : 
-		stride_{1*1}, offset_{0}, nelems_{std::get<0>(e).size()*1}
-	{}
-	constexpr auto offset() const{return offset_;}	
+	constexpr layout_t(Extensions const& e) : nelems_{std::get<0>(e).size()}{}
+	constexpr auto offset() const{return offset_;}
 	friend constexpr index offset(layout_t const& self){return self.offset();}
-	constexpr auto offset(dimensionality_type d) const{return d==0?offset_:throw 0;}
+	constexpr auto offset(dimensionality_type d) const{assert(d==0); return offset_;}
 	constexpr auto nelems() const{return nelems_;}
-	constexpr auto nelems(dimensionality_type d) const{
-		return d==0?nelems_:throw 0;
-	}
+	constexpr auto nelems(dimensionality_type d) const{return d==0?nelems_:throw 0;}
 	friend constexpr auto nelems(layout_t const& self){return self.nelems();}
-	constexpr size_type size() const{
-		return nelems_/stride_; // assert(stride_!=0 and nelems_%stride_ == 0)
+	constexpr size_type size() const{assert(stride_!=0 and nelems_%stride_==0);
+		return nelems_/stride_;
 	}
 	friend constexpr auto size(layout_t const& self){return self.size();}
 	constexpr size_type size(dimensionality_type d) const{
 		return d==0?nelems_/stride_:throw 0; // assert(d == 0 and stride_ != 0 and nelems_%stride_ == 0);
 	}
-//	friend constexpr size_type size(layout_t const& self){return self.size();}
 	constexpr auto base_size() const{return nelems_;}
 	auto is_compact(){return base_size() == num_elements();}
+	friend auto is_compact(layout_t const& self){return self.is_compact();}
 public:
-	constexpr auto stride(dimensionality_type d = 0) const{return d?throw 0:stride_;}
-//		return d==0?stride_:throw 0;
-//	}
+	constexpr auto stride(dimensionality_type d = 0) const{assert(!d); return stride_;}
 	friend constexpr index stride(layout_t const& self){return self.stride();}
 public:
 	constexpr auto strides() const{return std::make_tuple(stride());}
-//	template<class T = void>
-//	constexpr auto sizes() const{
-//		return detail::to_array<T>(tuple_cat(std::make_tuple(size()), sub.sizes()));
-//	}
+	friend auto strides(layout_t const& self){return self.strides();}
 	constexpr auto sizes() const{return std::make_tuple(size());}
-	template<class T = void>
-	constexpr auto sizes_as() const{
-		return detail::to_array<T>(sizes());
-	}
+	template<class T=void> constexpr auto sizes_as() const{return detail::to_array<T>(sizes());}
 	constexpr auto offsets() const{return std::make_tuple(offset());}
-
 	constexpr size_type num_elements() const{return this->size();}
 	friend constexpr size_type num_elements(layout_t const& s){return s.num_elements();}
 	constexpr bool empty() const{return nelems_ == 0;}
 	friend constexpr bool empty(layout_t const& s){return s.empty();}
-	constexpr index_extension extension() const HD{
-		return {offset_/stride_, (offset_ + nelems_)/stride_};
-	}
+	constexpr index_extension extension() const HD{return {offset_/stride_, (offset_+nelems_)/stride_};}
 	friend constexpr auto extension(layout_t const& self){return self.extension();}
 	constexpr auto extension(dimensionality_type d) const{
 		return d==0?index_extension{offset_/stride_, (offset_ + nelems_)/stride_}:throw 0;
-	//	assert(stride_ != 0 and nelems_%stride_ == 0);
-	//	return {offset_/stride_, (offset_ + nelems_)/stride_};
 	}
 	constexpr extensions_type extensions() const{return extensions_type{extension()};}//std::make_tuple(extension());}
 	friend constexpr auto extensions(layout_t const& self){return self.extensions();}
@@ -193,7 +214,7 @@ private:
 	void offsets_aux(index* it) const{*it = offset();}
 	void extensions_aux(index_extension* it) const{*it = extension();}
 public:
-	HD constexpr auto operator()(index i) const{return i*stride_ - offset_;}
+	constexpr auto operator()(index i) const HD{return i*stride_ - offset_;}
 	constexpr auto origin() const{return -offset_;}
 	constexpr bool operator==(layout_t const& other) const{
 		return stride_==other.stride_ and offset_==other.offset_ and nelems_==other.nelems_;
@@ -203,39 +224,14 @@ public:
 	layout_t& partition(Size const&){return *this;}
 	layout_t& rotate(){return *this;}
 	layout_t& unrotate(){return *this;}
-	constexpr layout_t scale(size_type s) const{
-		return {stride_*s, offset_*s, nelems_*s};
-	}
-};
-
-template<>
-struct layout_t<dimensionality_type{0}>{
-	using rank = std::integral_constant<dimensionality_type, 0>;
-	static constexpr dimensionality_type dimensionality = 0;
-	friend constexpr auto dimensionality(layout_t const& l){return l.dimensionality;}
-	using difference_type = multi::difference_type;
-	using strides_type    = std::tuple<>;
-	using index_extension = multi::index_extension;
-	struct extensions_type_ : std::tuple<>{
-		using std::tuple<>::tuple;
-		using base_ = std::tuple<>;
-		extensions_type_(base_ const& b) : base_(b){}
-		extensions_type_() = default;
-		base_ const& base() const{return *this;}
-		friend decltype(auto) base(extensions_type_ const& s){return s.base();}
-	};
-	using extensions_type = extensions_type_;
-	constexpr extensions_type extensions() const{return extensions_type{};}
-	friend constexpr auto extensions(layout_t const& self){return self.extensions();}
-	constexpr auto sizes() const{return std::tuple<>{};}
-	friend auto sizes(layout_t const& s){return s.sizes();}
+	constexpr layout_t scale(size_type s) const{return {stride_*s, offset_*s, nelems_*s};}
 };
 
 typename layout_t<1>::extensions_type_ operator*(layout_t<0>::index_extension const& ie, layout_t<0>::extensions_type_ const&){
 	return std::make_tuple(ie);
 }
 
-template<dimensionality_type D>
+template<dimensionality_type D, typename SSize>
 struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 	using dimensionality_type = multi::dimensionality_type;
 	using rank = std::integral_constant<dimensionality_type, D>;
@@ -253,17 +249,9 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 	using offset_type = index;
 	using nelems_type = index;
  	sub_type    sub = {};
-	stride_type stride_ = 1;
+	stride_type stride_ = std::numeric_limits<stride_type>::max();
 	offset_type offset_ = 0;
 	nelems_type nelems_ = 0;
-//	layout_t& operator=(layout_t const& other){
-//		std::cerr << "here" << __FILE__ << __LINE__ << std::endl;
-//		sub = other.sub;
-//		stride_ = other.stride_;
-//		offset_ = other.offset_;
-//		nelems_ = other.nelems_;
-//		return *this;
-//	}
 	struct extensions_type_ 
 		: std::decay_t<decltype(tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename sub_type::extensions_type::base_>()))>
 	{
@@ -273,7 +261,6 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 		template<class Array, typename = decltype(std::get<D-1>(std::declval<Array>()))> 
 		constexpr extensions_type_(Array const& t) : extensions_type_(t, std::make_index_sequence<D>{}){}
 		extensions_type_(index_extension const& ie, typename layout_t<D-1>::extensions_type_ const& other) : extensions_type_(std::tuple_cat(std::make_tuple(ie), other.base())){}
-	//	template<class T, std::size_t N> extensions_type_(std::array<T, N> const& t) : extensions_type_(t, std::make_index_sequence<N>{}){}
 		base_ const& base() const{return *this;}
 		friend decltype(auto) base(extensions_type_ const& s){return s.base();}
 		friend typename layout_t<D + 1>::extensions_type_ operator*(index_extension const& ie, extensions_type_ const& self){
@@ -282,6 +269,15 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 	private:
 		template<class Array, std::size_t... I, typename = decltype(base_{std::get<I>(std::declval<Array const&>())...})> constexpr extensions_type_(Array const& t, std::index_sequence<I...>) : base_{std::get<I>(t)...}{}
 	//	template<class T, std::size_t N, std::size_t... I> extensions_type_(std::array<T, N> const& t, std::index_sequence<I...>) : extensions_type_{std::get<I>(t)...}{}
+		template<typename Archive, size_t... Is>
+		void serialize_impl(Archive& ar, std::index_sequence<Is...>){
+			auto f = [&](auto& e){ar & BOOST_SERIALIZATION_NVP(e);};
+			(void)std::initializer_list<int>{(f(std::get<Is>(*this)),0)...};
+		}
+	public:
+		template<class Archive> void serialize(Archive& ar, unsigned){
+			serialize_impl(ar, std::make_index_sequence<std::tuple_size<base_>{}>{});
+		}
 	};
 	using extensions_type = extensions_type_;
 	using strides_type    = decltype(tuple_cat(std::make_tuple(std::declval<index>()), std::declval<typename sub_type::strides_type>()));
@@ -349,6 +345,7 @@ public:
 	constexpr auto offsets() const{return tuple_cat(std::make_tuple(offset()), sub.offsets());}
 	constexpr auto base_size() const{using std::max; return max(nelems_, sub.base_size());}
 	auto is_compact() const{return base_size() == num_elements();}
+	friend auto is_compact(layout_t const& self){return self.is_compact();}
 	decltype(auto) shape() const{return sizes();}
 	friend decltype(auto) shape(layout_t const& self){return self.shape();}
 	constexpr auto sizes() const{return tuple_cat(std::make_tuple(size()), sub.sizes());}
@@ -404,6 +401,11 @@ public:
 		else return rotate(D - r);
 		return *this;
 	}
+	layout_t& unrotate(dimensionality_type r){
+		if(r >= 0) while(r){unrotate(); --r;}
+		else return unrotate(D-r);
+		return *this;
+	}
 	layout_t scale(size_type s) const{
 		return layout_t{sub.scale(s), stride_*s, offset_*s, nelems_*s};
 	}
@@ -440,8 +442,39 @@ int main(){
 	std::array<multi::index, 3> arr{1,2,3};
 	auto u = multi::detail::to_tuple<multi::index_extension>(arr);
 	assert( std::get<1>(u) == 2 );
-	
- {  multi::layout_t<1> L{}; assert( dimensionality(L)==1 and num_elements(L) == 0 and size(L) == 0 and size(extension(L))==0 and stride(L)!=0 and empty(L) );
+
+{
+	multi::layout_t<0> L; assert( dimensionality(L)==0 and num_elements(L) == 1 ); sizes(L);
+}{
+	multi::iextensions<0> x{};
+	multi::layout_t<0> L(x);
+}{  multi::layout_t<1> L{}; assert( dimensionality(L)==1 and num_elements(L) == 0 and size(L) == 0 and size(extension(L))==0 and stride(L)!=0 and empty(L) );
+}{  multi::layout_t<2> L({2, 10}); assert( dimensionality(L)==2 and num_elements(L) == 20 and size(L) == 2); assert( size(extension(L))==2 and stride(L)==10/*std::numeric_limits<std::ptrdiff_t>::max()*/ and not empty(L) );
+}{
+	multi::layout_t<1> L(multi::iextensions<1>{20});
+	assert( dimensionality(L)==1 and num_elements(L) == 20 and size(L) == 20 );
+	assert( stride(L) == 1 );
+}{
+	multi::layout_t<1> L(multi::iextensions<1>{1});
+	assert( dimensionality(L)==1 );
+	assert( num_elements(L) == 1 );
+	assert( size(L) == 1 );
+	assert( stride(L) == 1 );
+}{
+	multi::layout_t<2> L({1, 10}); 
+	assert( dimensionality(L)==2 and num_elements(L) == 10 and size(L) == 1); 
+	assert( not empty(L) );
+	assert( size(extension(L))==1 );
+	assert( stride(L)== 10 );//std::numeric_limits<std::ptrdiff_t>::max() );
+	using std::get;
+	assert( get<0>(strides(L)) == 10);
+	assert( get<1>(strides(L)) == 1 );
+}{
+	multi::layout_t<2> L({10, 1});
+	assert( dimensionality(L)==2 and num_elements(L) == 10 and size(L) == 10);
+	using std::get;
+	assert( get<0>(strides(L)) == 1 );
+	assert( get<1>(strides(L)) == 1 );
 }{  multi::layout_t<2> L{}; assert( dimensionality(L)==2 and num_elements(L) == 0 and size(L) == 0 and size(extension(L))==0 and stride(L)!=0 and empty(L) );
 }{  multi::layout_t<3> L{}; assert( num_elements(L) == 0 );
 }{	multi::layout_t<3> L({{0, 10}, {0, 10}, {0, 10}}); assert( num_elements(L) == 1000 );
@@ -473,6 +506,8 @@ int main(){
 
 	multi::layout_t<3> L({{0, 10}, {0, 20}, {0, 30}}); 
 	multi::layout_t<3> L2{extensions(L)};
+
+	assert( not L.empty() );
 
 	assert( stride(L) == L.stride() );
 	assert( offset(L) == L.offset() );

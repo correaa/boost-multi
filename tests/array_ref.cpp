@@ -28,6 +28,8 @@ int main(){
 		double b[4][5];
 		multi::array_ref<double, 2> A(&a[0][0], {4, 5});
 		multi::array_ref<double, 2> B(&b[0][0], {4, 5});
+		assert( size(rotated(B(2, {1, 3})))==2 );;
+		assert( not A.empty() );
 		rotated(B) = rotated(A);
 		multi::biiterator<std::decay_t<decltype(begin(A))>> biit{begin(A), 0, size(*begin(A))};
 		for(int i = 0; i!=num_elements(A); ++i, ++biit)

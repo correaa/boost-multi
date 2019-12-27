@@ -16,10 +16,7 @@
 namespace boost{
 namespace multi{
 
-
-
 namespace detail{
-
 
 template<typename, typename>
 struct append_to_type_seq{};
@@ -127,9 +124,6 @@ private:
 	template <class T, size_t... Is> 
 	iextensions(std::array<T, D> const& arr, std::index_sequence<Is...>) : iextensions{arr[Is]...}{}
 };
-
-//template<dimensionality_type D>
-//using extensions_t = iextensions<D>;
 
 #if __cpp_deduction_guides
 template<class... Args> iextensions(Args...) -> iextensions<sizeof...(Args)>;
