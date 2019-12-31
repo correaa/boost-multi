@@ -12,7 +12,6 @@ $CXX -Wall -Wextra $0 -o$0x -lboost_unit_test_framework&&$0x&&rm $0x; exit
 #include<vector>
 
 namespace multi = boost::multi;
-using std::cout; using std::cerr;
 
 BOOST_AUTO_TEST_CASE(multi_array_ref_stable_sort){
 
