@@ -553,12 +553,12 @@ struct array : static_array<T, D, Alloc>,
 public:
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int)
-	->decltype(ar & serialization::archive_traits<Archive>::make_nvp(nullptr, serialization::archive_traits<Archive>::make_array(this->data(), this->num_elements())), void())
+	->decltype(ar & boost::serialization::archive_traits<Archive>::make_nvp(nullptr, boost::serialization::archive_traits<Archive>::make_array(this->data(), this->num_elements())), void())
 	{
 		auto extensions = this->extensions();
-		ar & serialization::archive_traits<Archive>::make_nvp("extensions", extensions);
+		ar & boost::serialization::archive_traits<Archive>::make_nvp("extensions", extensions);
 		if(extensions != this->extensions()){clear(); reextent(extensions);}
-		ar & serialization::archive_traits<Archive>::make_nvp("data", serialization::archive_traits<Archive>::make_array(this->data(), this->num_elements()));
+		ar & boost::serialization::archive_traits<Archive>::make_nvp("data", boost::serialization::archive_traits<Archive>::make_array(this->data(), this->num_elements()));
 	}
 	using static_::static_;
 	using typename array::ref::value_type;
