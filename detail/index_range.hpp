@@ -15,7 +15,29 @@
 #endif
 #endif
 
+#include<boost/serialization/nvp.hpp>
+
 #include<iterator> // std::random_iterator_tag // std::reverse_iterator
+
+namespace boost{
+namespace serialization{
+	template<class> struct nvp;
+	template<class T> const nvp<T> make_nvp(char const* name, T& t);
+	template<class T> class array_wrapper;
+	template<class T, class S> const array_wrapper<T> make_array(T* t, S s);
+
+	template<class Archive>
+	struct archive_traits{
+		template<class T>
+		static decltype(auto) make_nvp(char const* name, T&& t){
+			return boost::serialization::make_nvp(name, std::forward<T>(t));
+		}
+		template<class P1, class P2>
+		static decltype(auto) make_array(P1&& p1, P2&& p2){
+			return boost::serialization::make_array(std::forward<P1>(p1), std::forward<P2>(p2));
+		}
+	};
+}}
 
 namespace boost{
 
@@ -32,8 +54,8 @@ public:
 	using pointer = Pointer;
 	using difference_type = DifferenceType;
 	using iterator_category = AccessCategory;
-	constexpr auto operator==(self_type const& o) const{return o == self();}
-	constexpr auto operator!=(self_type const& o) const{return not(o == self());}
+	constexpr auto operator==(self_type const& o) const{return o==self();}
+	constexpr auto operator!=(self_type const& o) const{return not(o==self());}
 	constexpr self_type operator+(difference_type n) const HD{self_type r = self(); r += n; return r;}
 	constexpr self_type operator-(difference_type n) const HD{self_type r = self(); r -= n; return r;}
 	friend constexpr self_type operator+(difference_type n, self_type const& s){return s + n;}
@@ -51,6 +73,11 @@ class range{
 	IndexType first_;
 	IndexTypeLast last_;
 public:
+	template<class Archive>
+	void serialize(Archive& ar, unsigned){
+		ar & serialization::archive_traits<Archive>::make_nvp("first", first_);//BOOST_SERIALIZATION_NVP(first);
+		ar & serialization::archive_traits<Archive>::make_nvp("last", last_);//BOOST_SERIALIZATION_NVP(last);
+	}
 	using value_type = IndexType;
 	using difference_type = decltype(IndexTypeLast{} - IndexType{});// std::make_signed_t<value_type>;
 	using size_type = difference_type;

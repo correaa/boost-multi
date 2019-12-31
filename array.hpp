@@ -21,6 +21,11 @@
 #endif
 
 namespace boost{
+namespace serialization{
+	template<class Archive> struct archive_traits;
+}}
+
+namespace boost{
 namespace multi{
 
 template<class Allocator> struct array_allocator{
