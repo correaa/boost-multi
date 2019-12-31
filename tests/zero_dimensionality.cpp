@@ -1,7 +1,7 @@
 #ifdef COMPILATION_INSTRUCTIONS
-clang++ -Wno-deprecated-declarations -Wall -Wextra -Wfatal-errors $0 -o$0x -lboost_unit_test_framework -lcudart&&$0x&&rm $0x;exit
+`#nvcc`$CXX -Wall -Wextra `#-Wno-deprecated-declarations` $0 -o $0x -lboost_unit_test_framework -lcudart&&$0x&&rm $0x;exit
 #endif
-
+// © Alfredo Correa 2019-2020
 #define BOOST_TEST_DYN_LINK 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi legacy adaptor example"
 #include<boost/test/unit_test.hpp>
@@ -9,11 +9,8 @@ clang++ -Wno-deprecated-declarations -Wall -Wextra -Wfatal-errors $0 -o$0x -lboo
 #include<iostream>
 
 #include "../array.hpp"
-
 #include "../adaptors/cuda.hpp"
 
-#include<iostream>
-#include<vector>
 #include<complex>
 
 namespace multi = boost::multi;
@@ -64,8 +61,14 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality){
 		assert( num_elements(a) == 1 );
 	}
 	{
-		multi::cuda::managed::array<double, 0> a0 = 45.;
-		BOOST_REQUIRE( a0 == 45. );
+		multi::cuda::array<double, 0> a0; a0 = 45.;
+		multi::cuda::array<double, 0> b0; b0 = 45.;
+		BOOST_REQUIRE( a0 == b0 );
+	}
+	{
+		multi::cuda::managed::array<double, 0> a0; a0 = 45.;
+		multi::cuda::managed::array<double, 0> b0; b0 = 45.;
+		BOOST_REQUIRE( a0 == b0 );
 	}
 }
 
