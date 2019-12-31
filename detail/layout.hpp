@@ -185,7 +185,7 @@ public:
 		return d==0?nelems_/stride_:throw 0; // assert(d == 0 and stride_ != 0 and nelems_%stride_ == 0);
 	}
 	constexpr auto base_size() const{return nelems_;}
-	auto is_compact(){return base_size() == num_elements();}
+	auto is_compact() const{return base_size() == num_elements();}
 	friend auto is_compact(layout_t const& self){return self.is_compact();}
 public:
 	constexpr auto stride(dimensionality_type d = 0) const{assert(!d); return stride_;}
