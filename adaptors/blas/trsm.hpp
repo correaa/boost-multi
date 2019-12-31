@@ -508,7 +508,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitiz
 		{ 0.,  7.- 3.*I,  1.},
 		{ 0.,  0.,  8.- 2.*I}
 	};
-	using multi::blas::side;
 	using multi::blas::filling;
 	using multi::blas::diagonal;
 	{
@@ -542,6 +541,25 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitiz
 		}
 	}
 }
+
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitized_gemm_check_no_const, *utf::tolerance(0.00001)){
+	using complex = std::complex<double>; complex const I{0, 1};
+	multi::array<complex, 2> const A = {
+		{ 1. + 4.*I,  3.,  4.- 10.*I},
+		{ 0.,  7.- 3.*I,  1.},
+		{ 0.,  0.,  8.- 2.*I}
+	};
+	multi::array<complex, 2> B = {
+		{1. + 1.*I, 2. + 1.*I, 3. + 1.*I},
+		{5. + 3.*I, 9. + 3.*I, 1. - 1.*I}
+	};
+	using multi::blas::trsm;
+	using multi::blas::filling;
+	using multi::blas::hermitized;
+	trsm(filling::upper, A, hermitized(B)); // B†←A⁻¹.B†, B←B.A⁻¹†, B←(A⁻¹.B†)†
+	BOOST_TEST( imag(B[1][2]) == -0.147059 );
+}
+
 
 #endif
 #endif
