@@ -49,18 +49,30 @@ struct array_types : Layout{
 	constexpr static dimensionality_type const dimensionality = D;
 	using element_ptr = ElementPtr;
 	using layout_t = Layout;
-	using value_type = std::conditional_t<dimensionality!=1, array<element, dimensionality-1>, element>;
+	using value_type = typename std::conditional<
+		(dimensionality>1), 
+		array<element, dimensionality-1>, 
+		typename std::conditional<
+			dimensionality == 1,
+			element,
+			element
+		>::type
+	>::type;
 	using decay_type = array<element, dimensionality, typename pointer_traits<element_ptr>::default_allocator_type>;
-	using reference = std::conditional_t<
-		dimensionality!=1, 
-		basic_array<element, dimensionality-1, element_ptr>, 
+	using reference = typename std::conditional<
+		(dimensionality > 1), 
+		basic_array<element, dimensionality-1, element_ptr>,
+			typename std::conditional<
+				dimensionality == 1, 
 //#ifdef __CUDACC__
 //		decltype(*std::declval<ElementPtr>())                  // this works with cuda fancy reference
 //#else
-		typename std::iterator_traits<element_ptr>::reference   // this seems more correct but it doesn't work with cuda fancy reference
+			typename std::iterator_traits<element_ptr>::reference   // this seems more correct but it doesn't work with cuda fancy reference
 //#endif
+			, typename std::iterator_traits<element_ptr>::reference
+		>::type
 	// typename std::iterator_traits<element_ptr>::reference 	//	typename pointer_traits<element_ptr>::element_type&
-	>;
+	>::type;
 	element_ptr base() const HD{return base_;} //	element_const_ptr cbase() const{return base();}
 	friend element_ptr base(array_types const& s){return s.base();}
 	layout_t const& layout() const HD{return *this;}

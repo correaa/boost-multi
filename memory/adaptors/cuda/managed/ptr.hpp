@@ -160,7 +160,7 @@ public:
 	using reference = typename std::pointer_traits<raw_pointer>::element_type&;//ref<element_type>;
 	[[SLOW]] reference operator*() const HD{return *rp_;}
 	HD reference operator[](difference_type n){return *((*this)+n);}
-	friend ptr to_address(ptr const& p){return p;}
+	friend inline ptr to_address(ptr const& p){return p;}
 	typename ptr::difference_type operator-(ptr const& other) const{return rp_-other.rp_;}
 	friend raw_pointer raw_pointer_cast(ptr const& self){return self.rp_;}
 	operator cuda::ptr<T, RawPtr>() const{return cuda::ptr<T, RawPtr>{rp_};}
