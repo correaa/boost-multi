@@ -372,6 +372,7 @@ protected:
 	}
 public:
 	using ref::operator==;
+	using ref::operator!=;
 	static_array(typename static_array::extensions_type x, typename static_array::element const& e, typename static_array::allocator_type const& a) : //2
 		array_alloc{a}, 
 		ref(static_array::allocate(typename static_array::layout_t{x}.num_elements()), x)
@@ -387,6 +388,7 @@ public:
 	:	array_alloc{}, ref(static_array::allocate(typename static_array::layout_t{x}.num_elements()), x){
 		uninitialized_fill(e);
 	}
+	static_array() : static_array(multi::iextensions<0>{}){}
 	static_array(typename static_array::element const& e)  //2
 	:	static_array(multi::iextensions<0>{}, e){}
 
@@ -450,7 +452,7 @@ protected:
 		layout_t<0>::operator=({});
 	}
 public:
-	static_array() = default;
+//	static_array() = default;
 	~static_array() noexcept{
 		this->destroy();
 		deallocate();

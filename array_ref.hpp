@@ -2,7 +2,7 @@
 for a in ./tests/*.cpp; do echo $a; sh $a || break; echo "\n"; done; exit;*/
 (echo '#include"'$0'"'>$0.cpp)&&c++ -Wall -Wextra -D_TEST_BOOST_MULTI_ARRAY_REF $0.cpp -o $0x&&$0x&&rm $0x $0.cpp;exit
 #endif
-// © Alfredo Correa 2018-2019
+// © Alfredo Correa 2018-2020
 #ifndef BOOST_MULTI_ARRAY_REF_HPP
 #define BOOST_MULTI_ARRAY_REF_HPP
 
@@ -649,13 +649,18 @@ struct basic_array<T, dimensionality_type{0}, ElementPtr, Layout> :
 {
 	using types = array_types<T, dimensionality_type{0}, ElementPtr, Layout>;
 	using types::types;
-	using element_ref = decltype(*typename basic_array::element_ptr{});
+	using element_ref = typename std::iterator_traits<typename basic_array::element_ptr>::reference;//decltype(*typename basic_array::element_ptr{});
 	decltype(auto) operator=(typename basic_array::element_type const& e) const&{
 		using std::copy_n; copy_n(&e, 1, this->base_); return *this;
 	}
+	bool operator==(basic_array const& o) const&{
+		using std::equal; return equal(o.base_, o.base_ + 1, this->base_);
+	}
+	bool operator!=(basic_array const& o) const&{return not operator==(o);}
 	bool operator==(typename basic_array::element_type const& e) const&{
 		using std::equal; return equal(&e, &e + 1, this->base_);
 	}
+	bool operator!=(typename basic_array::element_type const& e) const&{return not operator==(e);}
 	operator element_ref(){return *(this->base_);}
 	template<class TT> operator TT(){return static_cast<TT>(element_ref());}
 	typename basic_array::element_ptr operator&() const{return this->base_;}
