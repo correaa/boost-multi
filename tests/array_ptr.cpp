@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -std=c++14 -Wall -Wextra -Wpedantic $0 -o$0x &&$0x&&rm $0x; exit
+$CXX -Wall -Wextra -Wpedantic $0 -o $0x &&$0x&&rm $0x;exit
 #endif
 
 #include "../array.hpp"
