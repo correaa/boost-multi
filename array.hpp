@@ -12,24 +12,13 @@
 
 #include "utility.hpp"
 
-//#include<boost/serialization/nvp.hpp>
-//#include<boost/serialization/array_wrapper.hpp>
-#include<iostream> // debug
+//#include<iostream> // debug
 
 #if defined(__CUDACC__)
 #define HD __host__ __device__
 #else
 #define HD 
 #endif
-
-namespace boost{
-namespace serialization{
-	template<class> struct nvp;
-	template<class T> const nvp<T> make_nvp(char const* name, T& t);
-	template<class T> class array_wrapper;
-	template<class T, class S> const array_wrapper< T > make_array(T* t, S s);
-}
-}
 
 namespace boost{
 namespace multi{
@@ -547,18 +536,6 @@ public:
 	}
 };
 
-template<class Archive>
-struct archive_traits{
-	template<class T>
-	static decltype(auto) make_nvp(char const* name, T&& t){
-		return boost::serialization::make_nvp(name, std::forward<T>(t));
-	}
-	template<class P1, class P2>
-	static decltype(auto) make_array(P1&& p1, P2&& p2){
-		return boost::serialization::make_array(std::forward<P1>(p1), std::forward<P2>(p2));
-	}
-};
-
 template<typename T, class Alloc>
 struct array<T, dimensionality_type{0}, Alloc>
 	: static_array<T, 0, Alloc>
@@ -576,12 +553,12 @@ struct array : static_array<T, D, Alloc>,
 public:
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int)
-	->decltype(ar & archive_traits<Archive>::make_nvp(nullptr, archive_traits<Archive>::make_array(this->data(), this->num_elements())), void())
+	->decltype(ar & serialization::archive_traits<Archive>::make_nvp(nullptr, serialization::archive_traits<Archive>::make_array(this->data(), this->num_elements())), void())
 	{
 		auto extensions = this->extensions();
-		ar & archive_traits<Archive>::make_nvp("extensions", extensions);
+		ar & serialization::archive_traits<Archive>::make_nvp("extensions", extensions);
 		if(extensions != this->extensions()){clear(); reextent(extensions);}
-		ar & archive_traits<Archive>::make_nvp("data", archive_traits<Archive>::make_array(this->data(), this->num_elements()));
+		ar & serialization::archive_traits<Archive>::make_nvp("data", serialization::archive_traits<Archive>::make_array(this->data(), this->num_elements()));
 	}
 	using static_::static_;
 	using typename array::ref::value_type;
