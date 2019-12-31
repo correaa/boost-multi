@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality){
 		BOOST_REQUIRE( a0 == 45. );
 
 		a0 = 60.;
-	//	BOOST_REQUIRE( a0 == 60. );
+		BOOST_REQUIRE( a0 == 60. );
 	}
 	{
 		std::allocator<double> alloc;
