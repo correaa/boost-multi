@@ -1,10 +1,10 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&nvcc -x cu --expt-relaxed-constexpr`#$CXX` -D_TEST_MULTI_ADAPTORS_BLAS_NUMERIC $0.cpp -o $0x -lboost_unit_test_framework -lcudart -Wno-deprecated-declarations \
+(echo '#include"'$0'"'>$0.cpp)&&`#nvcc -x cu --expt-relaxed-constexpr`$CXX -D_TEST_MULTI_ADAPTORS_BLAS_NUMERIC $0.cpp -o $0x -lboost_unit_test_framework -lcudart -Wno-deprecated-declarations \
 `pkg-config --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
 #endif
-// © Alfredo A. Correa 2019
+// © Alfredo A. Correa 2019-2020
 
 #ifndef MULTI_ADAPTORS_BLAS_NUMERIC_HPP
 #define MULTI_ADAPTORS_BLAS_NUMERIC_HPP
@@ -12,17 +12,13 @@
 #include "../../array_ref.hpp"
 #include<complex>
 
-//#include "../blas/side.hpp"
-
 #if defined(__CUDACC__)
 #define HD __host__ __device__
 #else
 #define HD
 #endif
 
-#include<experimental/type_traits>
-//#include<functional> // negate
-//#include<complex> // conj
+//#include<experimental/type_traits>
 
 namespace boost{
 namespace multi{namespace blas{
@@ -73,6 +69,7 @@ public:
 public:
 	involuted(involuted const&) = delete;
 	involuted(involuted&&) = default; // for C++14
+	decay_type decay() const&{return f_(r_);}
 	operator decay_type() const&{return f_(r_);}
 	decltype(auto) operator&()&&{return involuter<decltype(&std::declval<Ref>()), Involution>{&r_, f_};}
 //	template<class DecayType>
@@ -147,33 +144,6 @@ auto get_allocator(involuter<It, F> const& s){
 	return get_allocator(s.it_);
 }
 
-#if 0
-template<class It2, class F>
-class involuter<involuter<It2, F>, F> : public std::iterator_traits<involuter<It2, F>>{
-	using It = involuter<It2, F>;
-	It it_; // [[no_unique_address]] 
-	F f_;
-public:
-	explicit involuter(It it, F f = {}) : it_{std::move(it)}, f_{std::move(f)}{}
-	involuter(involuter const& other) = default;
-	using reference = involuted<typename std::iterator_traits<It>::reference, F>;
-	auto operator*() const{return reference{*it_, f_};}
-	bool operator==(involuter const& o) const{return it_==o.it_;}
-	bool operator!=(involuter const& o) const{return it_!=o.it_;}
-	involuter& operator+=(typename involuter::difference_type n){it_+=n; return *this;}
-	auto operator+(typename involuter::difference_type n) const{return involuter{it_+n, f_};}
-	decltype(auto) operator->() const{
-		return involuter<typename std::iterator_traits<It>::pointer, F>{&*it_, f_};
-	}
-	auto operator-(involuter const& other) const{return it_-other.it_;}
-	explicit operator bool() const{return it_;}
-	using underlying_type = It;
-	friend underlying_type underlying(involuter const& self){return self.it_;}
-	operator It() const{return underlying(*this);}
-	operator It2() const{return underlying(underlying(*this));}
-};
-#endif
-
 template<class Ref> using negated = involuted<Ref, std::negate<>>;
 template<class It>  using negater = involuter<It, std::negate<>>;
 
@@ -186,6 +156,7 @@ struct conjugate{
 		return conj(A);
 	}
 };
+
 
 namespace detail{
 template<class Ref> struct conjugated : involuted<Ref, conjugate>{
@@ -203,6 +174,11 @@ template<class It> conjugater<It> make_conjugater(It it){return {it};}
 template<class It> It make_conjugater(conjugater<It> it){return underlying(it);}
 
 }
+
+template<class T> auto imag(involuted<T, conjugate> const& s){return s.decay().imag();}
+template<class T> auto real(involuted<T, conjugate> const& s){return s.decay().real();}
+
+
 
 #if 0
 constexpr auto conj = [](auto const& a){using std::conj; return conj(std::forward<decltype(a)>(a));};
@@ -289,6 +265,12 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric){
 	BOOST_REQUIRE( Breal == real(B) );
 	BOOST_REQUIRE( real(B) == Breal );
 	BOOST_REQUIRE( imag(B) == Bimag );
+
+	using multi::blas::hermitized;
+	BOOST_REQUIRE( B[1][0] == 8. + 2.*I );
+	BOOST_REQUIRE( imag(B[1][0]) == 2. );
+	BOOST_REQUIRE( hermitized(B)[0][1] == 8. - 2.*I );
+	BOOST_REQUIRE( imag(hermitized(B)[0][1]) == -2. );
 
 	{
 		multi::cuda::array<complex, 2> Bgpu = B;

@@ -9,6 +9,8 @@
 #include<memory>
 #include<algorithm> // copy_n
 
+//#include<boost/core/alloc_construct.hpp>
+
 namespace boost{
 namespace multi{
 
@@ -108,6 +110,22 @@ ForwardIt uninitialized_copy_n(Alloc& a, InputIt f, Size n, ForwardIt d){
 	}catch(...){destroy(a, d, c); throw;}
 }
 
+template<class Alloc, class InputIt, class Size, class ForwardIt>//, typename AT = std::allocator_traits<Alloc> >
+ForwardIt uninitialized_move_n(Alloc& a, InputIt f, Size n, ForwardIt d){
+	ForwardIt c = d;
+//	using std::addressof;
+	try{
+		for(; n > 0; ++f, ++c, --n)
+		//	alloc_construct(a, to_address(c), std::move(*f));
+			a.construct(to_address(c), std::move(*f));
+		//	AT::construct(a, to_address(c), *f);
+		//	AT::construct(a, addressof(*c), *f);
+		//	a.construct(addressof(*c), *f);
+		return c;
+	}catch(...){destroy(a, d, c); throw;}
+}
+
+
 template<class Alloc, class ForwardIt, class Size, class T>//, typename AT = typename std::allocator_traits<Alloc> >
 ForwardIt uninitialized_fill_n(Alloc& a, ForwardIt first, Size n, const T& v){
 	ForwardIt current = first; // using std::to_address;
@@ -205,6 +223,8 @@ template<class Alloc, class ForwardIt, class Size>
 ForwardIt destroy_n(Alloc& a, ForwardIt first, Size n);
 template<class Alloc, class InputIt, class Size, class ForwardIt>
 ForwardIt uninitialized_copy_n(Alloc& a, InputIt f, Size n, ForwardIt d);
+template<class Alloc, class InputIt, class Size, class ForwardIt>
+ForwardIt uninitialized_move_n(Alloc& a, InputIt f, Size n, ForwardIt d);
 template<class Alloc, class ForwardIt, class Size, class T>
 ForwardIt uninitialized_fill_n(Alloc& a, ForwardIt first, Size n, const T& v);
 template<class Alloc, class ForwardIt, class Size>

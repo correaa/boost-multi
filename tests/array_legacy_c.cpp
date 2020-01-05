@@ -72,6 +72,14 @@ struct ref : basic{
 		BOOST_REQUIRE( d2D[3].is_compact() );
 		BOOST_REQUIRE( not rotated(d2D)[2].is_compact() );
 	}
+	{
+		using complex = std::complex<double>;
+		multi::array<complex, 2> d2D({5, 3});
+		BOOST_REQUIRE( d2D.is_compact() );
+		BOOST_REQUIRE( rotated(d2D).is_compact() );
+		BOOST_REQUIRE( d2D[3].is_compact() );
+		BOOST_REQUIRE( not rotated(d2D)[2].is_compact() );
+	}
 
 }
 

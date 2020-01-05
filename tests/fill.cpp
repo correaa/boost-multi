@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -Wall -Wextra $0 -lboost_unit_test_framework -o$0x&&$0x&&rm $0x;exit
+$CXX -Wall -Wextra $0 -o$0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi fill"
@@ -11,7 +11,6 @@ $CXX -Wall -Wextra $0 -lboost_unit_test_framework -o$0x&&$0x&&rm $0x;exit
 #include "../array.hpp"
 
 std::random_device r;
-
 
 BOOST_AUTO_TEST_CASE(fill){
 	namespace multi = boost::multi;
