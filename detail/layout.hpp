@@ -188,7 +188,7 @@ public:
 	auto is_compact() const{return base_size() == num_elements();}
 	friend auto is_compact(layout_t const& self){return self.is_compact();}
 public:
-	constexpr auto stride(dimensionality_type d = 0) const{assert(!d); return stride_;}
+	constexpr auto stride(dimensionality_type d = 0) const{assert(!d); (void)d; return stride_;}
 	friend constexpr index stride(layout_t const& self){return self.stride();}
 public:
 	constexpr auto strides() const{return std::make_tuple(stride());}

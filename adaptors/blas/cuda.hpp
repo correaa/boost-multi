@@ -30,11 +30,11 @@ protected:
 	cublasHandle_t h_;
 public:
 	cublas_context(){
-		cublasStatus_t s = cublasCreate(&h_); assert(s==CUBLAS_STATUS_SUCCESS);
+		cublasStatus_t s = cublasCreate(&h_); assert(s==CUBLAS_STATUS_SUCCESS); (void)s;
 	}
 	int version() const{
 		int ret;
-		cublasStatus_t s = cublasGetVersion(h_, &ret); assert(s==CUBLAS_STATUS_SUCCESS);
+		cublasStatus_t s = cublasGetVersion(h_, &ret); assert(s==CUBLAS_STATUS_SUCCESS); (void)s;
 		return ret;
 	}
 	~cublas_context() noexcept{cublasDestroy(h_);}
@@ -114,9 +114,9 @@ class cublas<std::complex<double>> : cublas_context{
 	static decltype(auto) to_cu(std::complex<double> const* t){return reinterpret_cast<cuDoubleComplex const*>(t);}	
 	static decltype(auto) to_cu(std::complex<double>* t){return reinterpret_cast<cuDoubleComplex*>(t);}	
 public:
-	template<class... As> void asum(As... as){auto s=cublasDzasum(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
-	template<class... As> void dotu(As... as){auto s=cublasZdotu(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
-	template<class... As> void dotc(As... as){auto s=cublasZdotc(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
+	template<class... As> void asum(As... as){auto s=cublasDzasum(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS); (void)s;}
+	template<class... As> void dotu(As... as){auto s=cublasZdotu(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS); (void)s;}
+	template<class... As> void dotc(As... as){auto s=cublasZdotc(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS); (void)s;}
 public:
 	template<class... Args>
 	static auto gemm(Args&&... args){return cublasZgemm(to_cu(std::forward<Args>(args))...);}
@@ -341,18 +341,18 @@ void scal(S n, TA a, multi::memory::cuda::managed::ptr<T> x, S incx){
 
 template<class X, class Y, class R, class S>
 auto dot(S n, cuda::managed::ptr<X> x, S incx, cuda::managed::ptr<Y> y, S incy, cuda::managed::ptr<R> result)
-->decltype(cuda::dot(n, x, incx, y, incy, result)){
-	return cuda::dot(n, x, incx, y, incy, result);}
+->decltype(cuda::dot(n, cuda_pointer_cast(x), incx, cuda_pointer_cast(y), incy, result)){
+	return cuda::dot(n, cuda_pointer_cast(x), incx, cuda_pointer_cast(y), incy, result);}
 
 template<class X, class Y, class R, class S>
 auto dotu(S n, cuda::managed::ptr<X> x, S incx, cuda::managed::ptr<Y> y, S incy, cuda::managed::ptr<R> result)
-->decltype(cuda::dotu(n, x, incx, y, incy, result)){
-	return cuda::dotu(n, x, incx, y, incy, result);}
+->decltype(cuda::dotu(n, cuda_pointer_cast(x), incx, cuda_pointer_cast(y), incy, cuda_pointer_cast(result))){
+	return cuda::dotu(n, cuda_pointer_cast(x), incx, cuda_pointer_cast(y), incy, cuda_pointer_cast(result));}
 
 template<class X, class Y, class R, class S>
 auto dotc(S n, cuda::managed::ptr<X> x, S incx, cuda::managed::ptr<Y> y, S incy, cuda::managed::ptr<R> result)
-->decltype(cuda::dotc(n, x, incx, y, incy, result)){
-	return cuda::dotc(n, x, incx, y, incy, result);}
+->decltype(cuda::dotc(n, cuda_pointer_cast(x), incx, cuda_pointer_cast(y), incy, cuda_pointer_cast(result))){
+	return cuda::dotc(n, cuda_pointer_cast(x), incx, cuda_pointer_cast(y), incy, cuda_pointer_cast(result));}
 
 template<typename AA, typename BB, class S, class TconstA, class TconstB, class T>
 void gemm(char transA, char transB, S m, S n, S k, AA const& a, multi::memory::cuda::managed::ptr<TconstA> A, S lda, multi::memory::cuda::managed::ptr<TconstB> B, S ldb, BB const& beta, multi::memory::cuda::managed::ptr<T> CC, S ldc){

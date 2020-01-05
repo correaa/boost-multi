@@ -18,7 +18,11 @@
 #include<cassert> // debug
 
 #ifndef _DISABLE_CUDA_SLOW
-#define SLOW deprecated("WARNING: slow function") 
+#ifdef NDEBUG
+#define SLOW deprecated("WARNING: slow memory operation")
+#else
+#define SLOW
+#endif
 #else
 #define SLOW
 #endif
@@ -143,6 +147,7 @@ public:
 	using iterator_category = typename std::iterator_traits<raw_pointer>::iterator_category;
 	explicit operator bool() const HD{return rp_;}
 	explicit operator typename raw_pointer_traits::template rebind<void>() const HD{return {rp_};}
+	explicit operator typename raw_pointer_traits::template rebind<void const>() const HD{return {rp_};}
 	ptr& operator++(){++rp_; return *this;}
 	ptr& operator--(){--rp_; return *this;}
 	ptr  operator++(int){auto tmp = *this; ++(*this); return tmp;}
@@ -196,6 +201,11 @@ ForwardIt uninitialized_copy_n(Alloc&, InputIt f, Size n, ptr<T...> d){
 		return memcpy(d, f, n*sizeof(ForwardV)) + n;
 	else assert(0);
 	return d;
+}
+
+template<class Alloc, class InputIt, typename Size, class... T, class ForwardIt = ptr<T...>>
+ForwardIt uninitialized_move_n(Alloc& a, InputIt f, Size n, ptr<T...> d){
+	return uninitialized_copy_n(a, f, n, d);
 }
 
 template<class T> 

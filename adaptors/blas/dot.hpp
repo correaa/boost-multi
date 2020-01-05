@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++17 -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_MULTI_ADAPTORS_BLAS_DOT $0.cpp -o $0x `pkg-config --cflags --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++14 -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_MULTI_ADAPTORS_BLAS_DOT $0.cpp -o $0x `pkg-config --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp; exit
 #endif
 // © Alfredo A. Correa 2019-2020
 #ifndef MULTI_ADAPTORS_BLAS_DOT_HPP
@@ -24,24 +24,38 @@ namespace blas{
 
 namespace{
 
-using core::dotu;
 
+#if 0
 template<class X1D, class Y1D, class R>
 auto dot_complex_aux(X1D const& x, Y1D const& y, R&& r, std::false_type)
 ->decltype(dotu(size(x), base(x), stride(x), base(y), stride(y), &r), std::forward<R>(r)){assert( size(x) == size(y) and not offset(x) and not offset(y) );
 	return dotu(size(x), base(x), stride(x), base(y), stride(y), &r), std::forward<R>(r);}
 
-using core::dotc;
+
 
 template<class X1D, class Y1D, class R>
 auto dot_complex_aux(X1D const& x, Y1D const& y, R&& r, std::true_type)
 ->decltype(dotc(size(x), base(x), stride(x), underlying(base(y)), stride(y), &r), std::forward<R>(r)){assert( size(x) == size(y) and not offset(x) and not offset(y) );
 	return dotc(size(x), base(x), stride(x), underlying(base(y)), stride(y), &r), std::forward<R>(r);}
+#endif
+
+using core::dotu;
+using core::dotc;
+
+template<class A> auto dot_base_aux(A&& a, std::false_type){return base(a);}
+template<class A> auto dot_base_aux(A&& a, std::true_type){return underlying(base(a));}
 
 template<class X1D, class Y1D, class R>
-auto dot_aux(X1D const& x, Y1D const& y, R&& r, std::true_type)
-->decltype(dot_complex_aux(x, y, std::forward<R>(r), is_hermitized<Y1D>{})){
-	return dot_complex_aux(x, y, std::forward<R>(r), is_hermitized<Y1D>{});
+auto dot_aux(X1D const& x, Y1D const& y, R&& r, std::true_type){
+
+	auto base_x = dot_base_aux(x, is_hermitized<X1D>{}); (void)base_x;
+	auto base_y = dot_base_aux(y, is_hermitized<Y1D>{}); (void)base_y;
+
+	     if(not is_hermitized<X1D>{} and not is_hermitized<Y1D>{}) dotu(size(x), base_x, stride(x), base_y, stride(y), &r);
+	else if(not is_hermitized<X1D>{} and     is_hermitized<Y1D>{}) dotc(size(x), base_y, stride(y), base_x, stride(x), &r);
+	else if(    is_hermitized<X1D>{} and not is_hermitized<Y1D>{}) dotc(size(x), base_x, stride(x), base_y, stride(y), &r);
+	else                                                           assert(0);
+	return std::forward<R>(r);
 }
 
 using core::dot;
@@ -130,6 +144,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl){
 	{
 		double d = dot(cA[1], cA[2]);
 		BOOST_REQUIRE( d == std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.) );
+		BOOST_REQUIRE( dot(cA[1], cA[2]) == dot(cA[2], cA[1]) );
 	}
 	{	
 		using blas::nrm2;
@@ -172,6 +187,20 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl){
 			auto const c = dot(A[1], conjugated(A[1]));
 			std::cout<< c() <<std::endl;
 			BOOST_REQUIRE( c() == std::inner_product(begin(A[1]), end(A[1]), begin(A[1]), complex{0}, std::plus<>{}, [](auto a, auto b){return a*conj(b);}) );
+			BOOST_REQUIRE( dot(A[1], conjugated(A[1])) == dot(conjugated(A[1]), A[1]) );
+		}
+		{
+			auto const c = dot(conjugated(A[1]), A[1]);
+			std::cout<< c() <<std::endl;
+			BOOST_REQUIRE( c() == std::inner_product(begin(A[1]), end(A[1]), begin(A[1]), complex{0}, std::plus<>{}, [](auto a, auto b){return a*conj(b);}) );
+		}
+		{
+			multi::array<complex, 1> a = {1. +    I,  2. + 3.*I,  3.+2.*I,  4.-9.*I};
+			multi::array<complex, 1> b = {5. + 2.*I,  6. + 6.*I,  7.+2.*I,  8.-3.*I};
+			BOOST_REQUIRE( dot(a            , b            )()== 19. - 27.*I );
+			BOOST_REQUIRE( dot(a            , conjugated(b))()==121. - 43.*I );
+			BOOST_REQUIRE( dot(conjugated(a), b            )()==121. + 43.*I );
+		//	BOOST_REQUIRE( dot(conjugated(a), conjugated(b))() == 19. + 27.*I );
 		}
 	}
 }

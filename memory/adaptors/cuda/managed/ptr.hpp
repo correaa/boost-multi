@@ -16,7 +16,11 @@
 #include "../../cuda/ptr.hpp"
 
 #ifndef _DISABLE_CUDA_SLOW
+#ifdef NDEBUG
 #define SLOW deprecated("WARNING: implies a slow access to GPU memory") 
+#else
+#define SLOW
+#endif
 #else
 #define SLOW
 #endif
@@ -163,6 +167,7 @@ public:
 	friend inline ptr to_address(ptr const& p){return p;}
 	typename ptr::difference_type operator-(ptr const& other) const{return rp_-other.rp_;}
 	friend raw_pointer raw_pointer_cast(ptr const& self){return self.rp_;}
+	friend cuda::ptr<T, RawPtr> cuda_pointer_cast(ptr const& self){return cuda::ptr<T, RawPtr>{self.rp_};}
 	operator cuda::ptr<T, RawPtr>() const{return cuda::ptr<T, RawPtr>{rp_};}
 	friend allocator<std::decay_t<T>> get_allocator(ptr const&){return {};}
 };
