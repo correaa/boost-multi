@@ -102,6 +102,10 @@ template<class T> struct has_get_allocator : decltype(has_get_allocator_aux(std:
 template<class It, typename = std::enable_if_t<not has_get_allocator<It>{}>>
 auto get_allocator(It)->std::allocator<typename std::iterator_traits<It>::value_type>{return {};}
 
+template<class T1, class T2, typename Ret = T1>// std::common_type_t<T1, T2>> 
+Ret common(T1 const& t1, T2 const& t2){
+	return t1==t2?t1:Ret{};}
+
 //template<class It>//, class ss = decltype(get_allocator(typename std::iterator_traits<Iterator>::pointer{}))> 
 //auto get_allocator(It const&, void* = 0)
 //->decltype(std::allocator<typename std::iterator_traits<It>::value_type>{}){

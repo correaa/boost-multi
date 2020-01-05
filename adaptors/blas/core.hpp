@@ -177,25 +177,28 @@ using v = void;
 #define xscal(XX, TA, TX) template<class S> TX* scal (S n, TA a, TX      *x, S incx                                              ){BLAS(XX##scal)(BC(n), a, x, BC(incx)             ); return x+n*incx;}
 #define xcopy(T)          template<class S> v   copy (S n,       T const *x, S incx, T       *y, S incy                          ){BLAS( T##copy)(BC(n),    x, BC(incx), y, BC(incy));                 }
 #define xaxpy(T)          template<class S> T*  axpy (S n, T  a, T const *x, S incx, T       *y, S incy                          ){BLAS( T##axpy)(BC(n), a, x, BC(incx), y, BC(incy)); return y+n*incy;}
-#define xdot(R, TT, T)    template<class S> v   dot  (S n,       T const *x, S incx, T const *y, S incy, R& r                ){r = BLAS(TT##dot )(BC(n),    x, BC(incx), y, BC(incy));                 }
+#define xdot(R, TT, T)    template<class S> v   dot  (S n,       T const *x, S incx, T const *y, S incy, R* r                    ){*r = BLAS(TT##dot )(BC(n),    x, BC(incx), y, BC(incy));                 }
 
 xrotg(s, s)    xrotg(d, d) //MKL extension xrotg(c, s); xrotg(z, d);
 xrotmg(s)      xrotmg(d)
 xrot(s, s, s)  xrot(d, d, d)  xrot(c, cs, s) xrot(z, zd, d)
 xrotm(s)       xrotm(d)
 xswap(s)       xswap(d)       xswap(c)       xswap(z)
+
 namespace core{
 xscal(s, s, s) xscal(d, d, d) xscal(c, c, c) xscal(z, z, z) xscal(zd, d, z) xscal(cs, s, c)
 xcopy(s)       xcopy(d)       xcopy(c)       xcopy(z)
+
+xdot(s, s, s)  xdot(d, d, d)                                xdot(d, ds, s)
 }
 xaxpy(s)       xaxpy(d)       xaxpy(c)       xaxpy(z)
-xdot(s, s, s)  xdot(d, d, d)                                xdot(d, ds, s)
 
 template<class R, class S, class T> R dot(S n, T const* x, S incx, T const* y, S incy){
 	R ret;
-	dot(n, x, incx, y, incy, ret);
+	dot(n, x, incx, y, incy, &ret);
 	return ret;
 }
+
 template<class S, class T> T dot(S n, T const* x, S incx, T const* y, S incy){
 	return dot<T, S, T>(n, x, incx, y, incy);
 }
@@ -209,8 +212,9 @@ template<class S, class T> T dot(S n, T const* x, S incx, T const* y, S incy){
 #undef xdot
 
 #ifndef CBLAS_H
-#define xdotu(T) template<class S> T dotu(S n, T const* x, S incx, T const* y, S incy){return BLAS(T##dotu)(BC(n), x, BC(incx), y, BC(incy));}
-#define xdotc(T) template<class S> T dotc(S n, T const* x, S incx, T const* y, S incy){return BLAS(T##dotc)(BC(n), x, BC(incx), y, BC(incy));}
+//#define xdotu(T) template<class S> v dotu(S n, T const* x, S incx, T const* y, S incy, T* r){*r = BLAS(T##dotu)(BC(n), x, BC(incx), y, BC(incy));}
+#define xdotu(T) template<class S> v dotu(S n, T const* x, S incx, T const* y, S incy, T* r){*r = (T)(BLAS(T##dotu)(BC(n), x, BC(incx), y, BC(incy)));}
+#define xdotc(T) template<class S> v dotc(S n, T const* x, S incx, T const* y, S incy, T* r){*r = (T)(BLAS(T##dotc)(BC(n), x, BC(incx), y, BC(incy)));}
 namespace core{
 xdotu(c) xdotu(z)
 xdotc(c) xdotc(z)
@@ -221,8 +225,8 @@ xdotc(c) xdotc(z)
 #undef xdotu
 #undef xdotc
 #else
-#define xdotu(T) template<class S> T dotu(S n, T const* x, S incx, T const* y, S incy){T ret; BLAS(T##dotu_sub)(BC(n), x, BC(incx), y, BC(incy), &ret); return ret;}
-#define xdotc(T) template<class S> T dotc(S n, T const* x, S incx, T const* y, S incy){T ret; BLAS(T##dotc_sub)(BC(n), x, BC(incx), y, BC(incy), &ret); return ret;}
+#define xdotu(T) template<class S> v dotu(S n, T const* x, S incx, T const* y, S incy, T* r){BLAS(T##dotu_sub)(BC(n), x, BC(incx), y, BC(incy), r);}
+#define xdotc(T) template<class S> v dotc(S n, T const* x, S incx, T const* y, S incy, T* r){BLAS(T##dotc_sub)(BC(n), x, BC(incx), y, BC(incy), r);}
 namespace core{
 xdotu(c) xdotu(z)
 xdotc(c) xdotc(z)
@@ -233,6 +237,9 @@ xdotc(c) xdotc(z)
 
 namespace core{
 template<class S> s dot(S n, s const& b, s const* x, S incx, s const* y, S incy){return BLAS(sdsdot)(BC(n), b, x, BC(incx), y, BC(incy));}
+
+//template<class S> void dot(S n, s const& b, s const* x, S incx, s const* y, S incy, s* result){*result = BLAS(sdsdot)(BC(n), b, x, BC(incx), y, BC(incy));}
+
 }
 
 #define xnrm2(R, T, TT) template<class S>    R nrm2 (S n, T const* x, S incx){return BLAS(TT##nrm2  )(BC(n), x, BC(incx));}

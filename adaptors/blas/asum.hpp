@@ -3,8 +3,8 @@
 #endif
 // © Alfredo A. Correa 2019
 
-#ifndef MULTI_ADAPTORS_BLAS_DOT_HPP
-#define MULTI_ADAPTORS_BLAS_DOT_HPP
+#ifndef MULTI_ADAPTORS_BLAS_ASUM_HPP
+#define MULTI_ADAPTORS_BLAS_ASUM_HPP
 
 #include "../blas/core.hpp"
 

@@ -4,8 +4,7 @@
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core` \
 &&$0x&& rm $0x $0.cpp; exit
 #endif
-// © Alfredo A. Correa 2019
-
+// © Alfredo A. Correa 2019-2020
 #ifndef MULTI_ADAPTORS_BLAS_GEMM_HPP
 #define MULTI_ADAPTORS_BLAS_GEMM_HPP
 

@@ -1,105 +1,79 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&clang++ -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_BLAS_DOT $0.cpp -o $0x `pkg-config --cflags --libs blas` &&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++17 -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_MULTI_ADAPTORS_BLAS_DOT $0.cpp -o $0x `pkg-config --cflags --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp; exit
 #endif
-// © Alfredo A. Correa 2019
-
+// © Alfredo A. Correa 2019-2020
 #ifndef MULTI_ADAPTORS_BLAS_DOT_HPP
 #define MULTI_ADAPTORS_BLAS_DOT_HPP
 
 #include "../blas/core.hpp"
 #include "../blas/numeric.hpp"
 #include "../blas/operations.hpp"
+#include "../../array.hpp"
+
+#if __cplusplus>=201703L and __has_cpp_attribute(nodiscard)>=201603
+#define NODISCARD(MsG) [[nodiscard]]
+#elif __has_cpp_attribute(gnu::warn_unused_result)
+#define NODISCARD(MsG) [[gnu::warn_unused_result]]
+#else
+#define NODISCARD(MsG)
+#endif
 
 namespace boost{
 namespace multi{
-
-//template<typename Size, class It2>
-//auto dot_n(multi::array_iterator<std::complex<double>, 1, const std::complex<double>*> first1, Size n, It2 first2){
-//	return multi::blas::dotu(n, base(first1), stride(first1), base(first2), stride(first2));
-//}
-
-//template<typename Size, class It2>
-//auto dot_n(multi::array_iterator<std::complex<double>, 1, multi::blas::conjugater<const std::complex<double>*>, std::complex<double> > first1, Size n, It2 first2){
-//	return multi::blas::dotc(n, base(first1).underlying(), stride(first1), base(first2), stride(first2));
-//}
-
 namespace blas{
 
-//template<class R, class It1, class It2>
-//auto dot(It1 first1, It1 last1, It2 first2){
-//	assert( stride(first1) == stride(first2) );
-//	auto d = std::distance(first1, last1);
-//	return dot<R>(d, base(first1), stride(first1), base(first2), stride(first2));
-//}
+namespace{
 
-//template<class It1, typename Size, class It2>
-//auto dot_n(It1 first1, Size n, It2 first2){
-//	return dot(n, base(first1), stride(first1), base(first2), stride(first2));
-//}
+using core::dotu;
 
-//template<class It1, class It2>
-//auto dot(It1 first1, It1 last1, It2 first2){
-//	assert( stride(first1)==stride(first2) );
-//	using std::distance;
-//	return dot_n(first1, distance(first1, last1), first2);
-//}
+template<class X1D, class Y1D, class R>
+auto dot_complex_aux(X1D const& x, Y1D const& y, R&& r, std::false_type)
+->decltype(dotu(size(x), base(x), stride(x), base(y), stride(y), &r), std::forward<R>(r)){assert( size(x) == size(y) and not offset(x) and not offset(y) );
+	return dotu(size(x), base(x), stride(x), base(y), stride(y), &r), std::forward<R>(r);}
 
-template<class R, class X1D, class Y1D>
-auto dot(X1D const& x, Y1D const& y){
-	assert( size(x) == size(y) );
-	assert( not offset(x) and not offset(y) );
-	return dot<R>(begin(x), end(x), begin(y));
+using core::dotc;
+
+template<class X1D, class Y1D, class R>
+auto dot_complex_aux(X1D const& x, Y1D const& y, R&& r, std::true_type)
+->decltype(dotc(size(x), base(x), stride(x), underlying(base(y)), stride(y), &r), std::forward<R>(r)){assert( size(x) == size(y) and not offset(x) and not offset(y) );
+	return dotc(size(x), base(x), stride(x), underlying(base(y)), stride(y), &r), std::forward<R>(r);}
+
+template<class X1D, class Y1D, class R>
+auto dot_aux(X1D const& x, Y1D const& y, R&& r, std::true_type)
+->decltype(dot_complex_aux(x, y, std::forward<R>(r), is_hermitized<Y1D>{})){
+	return dot_complex_aux(x, y, std::forward<R>(r), is_hermitized<Y1D>{});
+}
+
+using core::dot;
+
+template<class X1D, class Y1D, class R>
+auto dot_aux(X1D const& x, Y1D const& y, R&& r, std::false_type)
+->decltype(dot(size(x), base(x), stride(x), base(y), stride(y), &r), std::forward<R>(r)){assert(size(x)==size(y) and not offset(x) and not offset(y) );
+	return dot(size(x), base(x), stride(x), base(y), stride(y), &r), std::forward<R>(r);}
+
 }
 
 template<class X1D, class Y1D, class R>
-R&& dot(X1D const& x, Y1D const& y, R&& r){
-	assert( size(x) == size(y) );
-	assert( not offset(x) and not offset(y) );
-	multi::blas::core::dot(size(x), base(x), stride(x), base(y), stride(y), &r);
-	return std::forward<R>(r);
-//	return dot(begin(x), end(x), begin(y));
-}
-
-template<class It1, class Size, class It2>
-auto dotu(It1 first1, Size n, It2 first2){
-	return dotu(n, base(first1), stride(first1), base(first2), stride(first2));
-}
-
-template<class It1, class It2>
-auto dotu(It1 first1, It1 last1, It2 first2){
-	assert( stride(first1) == stride(last1) );
-	return dot(first1, std::distance(first1, last1), first2);
-}
+auto dot(X1D const& x, Y1D const& y, R&& r)
+->decltype(dot_aux(x, y, std::forward<R>(r), is_complex_array<std::decay_t<X1D>>{})){
+	return dot_aux(x, y, std::forward<R>(r), is_complex_array<std::decay_t<X1D>>{});}
 
 template<class X1D, class Y1D>
-auto dotu(X1D const& x, Y1D const& y){
-	assert( size(x) == size(y) );
-	assert( not offset(x) and not offset(y) );
-	return dotu(begin(x), end(x), begin(y));
-}
-
-template<class It1, typename Size, class It2>
-auto dotc_n(It1 first1, Size n, It2 first2){
-	dotc(n, base(first1), stride(first1), base(first2), stride(first2));
-	return first2 + n;
-}
-
-template<class It1, class It2>
-auto dotc(It1 first1, It1 last1, It2 first2){
-	assert( stride(first1) == stride(last1) );
-	return dotc_n(first1, std::distance(first1, last1), first2);
-}
-
-template<class X1D, class Y1D>
-auto dotc(X1D const& x, Y1D const& y){
-	assert( size(x) == size(y) );
-	assert( not offset(x) and not offset(y) );
-	return dotc(begin(x), end(x), begin(y));
+NODISCARD("")
+auto dot(X1D const& x, Y1D const& y){
+	return dot(x, y, 
+		multi::static_array<typename X1D::value_type, 0, decltype(common(get_allocator(std::declval<X1D>()), get_allocator(std::declval<Y1D>())))>
+			(typename X1D::value_type{0}, common(get_allocator(x), get_allocator(y)))
+	);
 }
 
 }}}
 
 #if _TEST_MULTI_ADAPTORS_BLAS_DOT
+
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS gemm"
+#define BOOST_TEST_DYN_LINK
+#include<boost/test/unit_test.hpp>
 
 #include "../../array.hpp"
 #include "../../utility.hpp"
@@ -110,45 +84,96 @@ auto dotc(X1D const& x, Y1D const& y){
 #include<numeric> // inner_product
 
 namespace multi = boost::multi;
+namespace blas = multi::blas;
 
-int main(){
-{
+template<class M, typename = decltype(std::declval<M const&>()[0]), typename = decltype(std::declval<M const&>()[0][0])> 
+decltype(auto) print_2D(M const& C){
+	using std::cout;
+	using multi::size;
+	for(int i = 0; i != size(C); ++i){
+		for(int j = 0; j != size(C[i]); ++j)
+			cout<< C[i][j] <<' ';
+		cout<<std::endl;
+	}
+	return cout<<std::endl;
+}
+
+template<class M, typename = decltype(std::declval<M const&>()[0])>//, typename = decltype(std::declval<M const&>()[0])>
+decltype(auto) print_1D(M const& C){
+	using std::cout; using multi::size;
+	for(int i = 0; i != size(C); ++i) cout<< C[i] <<' ';
+	return cout<<std::endl;
+}
+
+BOOST_AUTO_TEST_CASE(multi_blas_dot_impl){
 	multi::array<double, 2> const cA = {
 		{1.,  2.,  3.,  4.},
 		{5.,  6.,  7.,  8.},
 		{9., 10., 11., 12.}
 	};
-	
-	using multi::blas::dot;
+	using blas::dot;
 	{
-		double d;
+		double d = NAN;
 		dot(cA[1], cA[2], d);
-		assert( d==std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.) );
+		BOOST_TEST( d==std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.) );
 	}
-	using multi::blas::nrm2;
-	using std::sqrt;
 	{
-		double s;
-		dot(cA[1], cA[1], s);
-		assert( sqrt(s)==nrm2(cA[1]) );
+		double d = NAN;
+		auto d2 = dot(cA[1], cA[2], d);
+		BOOST_TEST( d==d2 );
 	}
-}
-{
-	using complex = std::complex<double>;
-	constexpr complex I{0, 1};
-	multi::array<complex, 2> const A = {
-		{1. +    I,  2. + 3.*I,  3.+2.*I,  4.-9.*I},
-		{5. + 2.*I,  6. + 6.*I,  7.+2.*I,  8.-3.*I},
-		{9. + 1.*I, 10. + 9.*I, 11.+1.*I, 12.+2.*I}
-	};
-	using multi::blas::dot;
-	using multi::blas::C;
-	complex d;
-	dot(C(A[1]), A[1], d);
-	assert( d==std::inner_product(begin(C(A[1])), end(C(A[1])), begin(A[1]), complex{0}) );
-	using std::conj;
-	assert( d==std::inner_product(begin(A[1]), end(A[1]), begin(A[1]), complex{0}, std::plus<complex>{}, [](auto&& a, auto&& b){return conj(a)*b;}) );
-}
+	{
+		multi::array<double, 0> d;
+		auto d2 = dot(cA[1], cA[2], d);
+		BOOST_REQUIRE( d == std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.) );
+	}
+	{
+		double d = dot(cA[1], cA[2]);
+		BOOST_REQUIRE( d == std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.) );
+	}
+	{	
+		using blas::nrm2;
+		using std::sqrt;
+		{
+			double s;
+			dot(cA[1], cA[1], s);
+			assert( sqrt(s)==nrm2(cA[1]) );
+		}
+	}
+	{
+		using complex = std::complex<double>; complex const I{0, 1};
+		multi::array<complex, 2> const A = {
+			{1. +    I,  2. + 3.*I,  3.+2.*I,  4.-9.*I},
+			{5. + 2.*I,  6. + 6.*I,  7.+2.*I,  8.-3.*I},
+			{9. + 1.*I, 10. + 9.*I, 11.+1.*I, 12.+2.*I}
+		};
+		print_2D(A);
+		print_1D(A[1]);
+		using blas::conjugated;
+
+		{
+			complex c; dot(A[1], A[1], c);
+			BOOST_TEST( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[1]), complex{0}) );
+		}
+		{
+			complex c = dot(A[1], A[1]);
+			BOOST_TEST( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[1]), complex{0}) );
+		}
+		{
+			complex c; dot(A[1], conjugated(A[1]), c);
+			BOOST_TEST( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[1]), complex{0}, std::plus<>{}, [](auto a, auto b){return a*conj(b);}) );
+		}
+		{
+			multi::array<complex, 1> cc = {1., 2., 3.};
+			dot(A[1], conjugated(A[1]), cc[0]);
+			BOOST_TEST( cc[0] == std::inner_product(begin(A[1]), end(A[1]), begin(A[1]), complex{0}, std::plus<>{}, [](auto a, auto b){return a*conj(b);}) );
+		}
+		{
+			auto const c = dot(A[1], conjugated(A[1]));
+			std::cout<< c() <<std::endl;
+			BOOST_REQUIRE( c() == std::inner_product(begin(A[1]), end(A[1]), begin(A[1]), complex{0}, std::plus<>{}, [](auto a, auto b){return a*conj(b);}) );
+		}
+	}
 }
 
 #endif

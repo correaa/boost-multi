@@ -47,7 +47,25 @@ public:
 template<class T> class cublas;
 
 template<>
+class cublas<float> : cublas_context{
+public:
+	template<class... Args>
+	static auto gemm(Args... args){return cublasSgemm(args...);}
+	template<class... Args>
+	static auto scal(Args... args){return cublasSscal(args...);}
+	template<class... Args>
+	static auto syrk(Args&&... args){return cublasSsyrk(args...);}
+	template<class... As> void copy (As... as){auto s=cublasScopy (h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
+	template<class... As> void iamax(As... as){auto s=cublasIsamax(h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
+	template<class... As> void asum(As... as){auto s=cublasSasum(h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
+	template<class... As> void trsm(As... as){auto s=cublasStrsm(h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
+	template<class... As> void dot(As... as){auto s=cublasSdot(h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
+};
+
+template<>
 class cublas<double> : cublas_context{
+public:
+	template<class... As> void dot(As... as){auto s=cublasDdot(h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
 public:
 	template<class... Args>
 	static auto gemm(Args... args){return cublasDgemm(args...);}
@@ -62,51 +80,14 @@ public:
 };
 
 template<>
-class cublas<float> : cublas_context{
-public:
-	template<class... Args>
-	static auto gemm(Args... args){return cublasSgemm(args...);}
-	template<class... Args>
-	static auto scal(Args... args){return cublasSscal(args...);}
-	template<class... Args>
-	static auto syrk(Args&&... args){return cublasSsyrk(args...);}
-	template<class... As> void copy (As... as){auto s=cublasScopy (h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
-	template<class... As> void iamax(As... as){auto s=cublasIsamax(h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
-	template<class... As> void asum(As... as){auto s=cublasSasum(h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
-	template<class... As> void trsm(As... as){auto s=cublasStrsm(h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
-};
-
-template<>
-class cublas<std::complex<double>> : cublas_context{
-	static_assert(sizeof(std::complex<double>)==sizeof(cuDoubleComplex), "!");
-	template<class T> static decltype(auto) to_cu(T&& t){return std::forward<T>(t);}
-	static decltype(auto) to_cu(std::complex<double> const* t){return reinterpret_cast<cuDoubleComplex const*>(t);}	
-	static decltype(auto) to_cu(std::complex<double>* t){return reinterpret_cast<cuDoubleComplex*>(t);}	
-public:
-	template<class... Args>
-	static auto gemm(Args&&... args){return cublasZgemm(to_cu(std::forward<Args>(args))...);}
-	template<class... Args>
-	static auto herk(Args&&... args){return cublasZherk(to_cu(std::forward<Args>(args))...);}
-	template<class... Args>
-	static auto scal(Args&&... args)
-	->decltype(cublasZscal(to_cu(std::forward<Args>(args))...)){
-		return cublasZscal(to_cu(std::forward<Args>(args))...);}
-	template<class Handle, class Size, class... Args2>
-	static auto scal(Handle h, Size s, double* alpha, Args2&&... args2){
-		return cublasZdscal(h, s, alpha, to_cu(std::forward<Args2>(args2))...);
-	}
-	template<class... As> void copy (As... as){auto s=cublasZcopy (h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
-	template<class... As> void iamax(As... as){auto s=cublasIzamax(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
-	template<class... As> void asum(As... as){auto s=cublasDzasum(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
-	template<class... As> void trsm(As... as){auto s=cublasZtrsm(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
-};
-
-template<>
 class cublas<std::complex<float>> : cublas_context{
 	static_assert(sizeof(std::complex<float>)==sizeof(cuComplex), "!");
 	template<class T> static decltype(auto) to_cu(T&& t){return std::forward<T>(t);}
 	static decltype(auto) to_cu(std::complex<float> const* t){return reinterpret_cast<cuComplex const*>(t);}	
 	static decltype(auto) to_cu(std::complex<float>* t){return reinterpret_cast<cuComplex*>(t);}	
+public:
+	template<class... As> void dotu(As... as){auto s=cublasCdotu(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
+	template<class... As> void dotc(As... as){auto s=cublasCdotc(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
 public:
 	template<class... Args>
 	static auto gemm(Args&&... args){return cublasCgemm(to_cu(std::forward<Args>(args))...);}
@@ -126,6 +107,34 @@ public:
 	template<class... As> void trsm(As... as){auto s=cublasCtrsm(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
 };
 
+template<>
+class cublas<std::complex<double>> : cublas_context{
+	static_assert(sizeof(std::complex<double>)==sizeof(cuDoubleComplex), "!");
+	template<class T> static decltype(auto) to_cu(T&& t){return std::forward<T>(t);}
+	static decltype(auto) to_cu(std::complex<double> const* t){return reinterpret_cast<cuDoubleComplex const*>(t);}	
+	static decltype(auto) to_cu(std::complex<double>* t){return reinterpret_cast<cuDoubleComplex*>(t);}	
+public:
+	template<class... As> void asum(As... as){auto s=cublasDzasum(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
+	template<class... As> void dotu(As... as){auto s=cublasZdotu(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
+	template<class... As> void dotc(As... as){auto s=cublasZdotc(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
+public:
+	template<class... Args>
+	static auto gemm(Args&&... args){return cublasZgemm(to_cu(std::forward<Args>(args))...);}
+	template<class... Args>
+	static auto herk(Args&&... args){return cublasZherk(to_cu(std::forward<Args>(args))...);}
+	template<class... Args>
+	static auto scal(Args&&... args)
+	->decltype(cublasZscal(to_cu(std::forward<Args>(args))...)){
+		return cublasZscal(to_cu(std::forward<Args>(args))...);}
+	template<class Handle, class Size, class... Args2>
+	static auto scal(Handle h, Size s, double* alpha, Args2&&... args2){
+		return cublasZdscal(h, s, alpha, to_cu(std::forward<Args2>(args2))...);
+	}
+	template<class... As> void copy (As... as){auto s=cublasZcopy (h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
+	template<class... As> void iamax(As... as){auto s=cublasIzamax(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
+	template<class... As> void trsm(As... as){auto s=cublasZtrsm(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
+};
+
 namespace memory{
 namespace cuda{
 
@@ -133,11 +142,6 @@ template<class ComplexTconst, typename S>//, typename T = typename std::decay_t<
 auto asum(S n, cuda::ptr<ComplexTconst> x, S incx){
 	decltype(std::abs(ComplexTconst{})) r; cublas<std::decay_t<ComplexTconst>>{}.asum(n, static_cast<ComplexTconst*>(x), incx, &r); return r;
 }
-
-//template<class Tconst, typename S>
-//auto asum(S n, cuda::ptr<Tconst> x, S incx, void* = 0){
-//	std::decay_t<Tconst> r; cublas<std::decay_t<Tconst>>{}.asum(n, static_cast<Tconst*>(x), incx, &r); return r;
-//s}
 
 template<class T, typename S>
 S iamax(S n, cuda::ptr<T const> x, S incx){
@@ -171,6 +175,21 @@ template<class Tconst, class T, class S>
 void copy(S n, cuda::ptr<Tconst> x, S incx, cuda::ptr<T> y, S incy){
 	cublas<T>{}.copy(n, static_cast<T const*>(x), incx, static_cast<T*>(y), incy);
 }
+
+template<class X, class Y, class R, class S>
+auto dot(S n, cuda::ptr<X> x, S incx, cuda::ptr<Y> y, S incy, cuda::ptr<R> result)
+->decltype(cublas<R>{}.dot(n, static_cast<X*>(x), incx, static_cast<Y*>(y), incy, static_cast<R*>(result))){
+	return cublas<R>{}.dot(n, static_cast<X*>(x), incx, static_cast<Y*>(y), incy, static_cast<R*>(result));}
+
+template<class X, class Y, class R, class S>
+auto dotc(S n, cuda::ptr<X> x, S incx, cuda::ptr<Y> y, S incy, cuda::ptr<R> result)
+->decltype(cublas<R>{}.dotc(n, static_cast<X*>(x), incx, static_cast<Y*>(y), incy, static_cast<R*>(result))){
+	return cublas<R>{}.dotc(n, static_cast<X*>(x), incx, static_cast<Y*>(y), incy, static_cast<R*>(result));}
+
+template<class X, class Y, class R, class S>
+auto dotu(S n, cuda::ptr<X> x, S incx, cuda::ptr<Y> y, S incy, cuda::ptr<R> result)
+->decltype(cublas<R>{}.dotu(n, static_cast<X*>(x), incx, static_cast<Y*>(y), incy, static_cast<R*>(result))){
+	return cublas<R>{}.dotu(n, static_cast<X*>(x), incx, static_cast<Y*>(y), incy, static_cast<R*>(result));}
 
 //template<class T, class S> 
 //void copy(S n, multi::memory::cuda::ptr<T const> x, S incx, multi::memory::cuda::ptr<T> y, S incy){
@@ -319,6 +338,21 @@ template<class T, class TA, class S>
 void scal(S n, TA a, multi::memory::cuda::managed::ptr<T> x, S incx){
 	scal(n, a, multi::memory::cuda::ptr<T>(x), incx);
 }
+
+template<class X, class Y, class R, class S>
+auto dot(S n, cuda::managed::ptr<X> x, S incx, cuda::managed::ptr<Y> y, S incy, cuda::managed::ptr<R> result)
+->decltype(cuda::dot(n, x, incx, y, incy, result)){
+	return cuda::dot(n, x, incx, y, incy, result);}
+
+template<class X, class Y, class R, class S>
+auto dotu(S n, cuda::managed::ptr<X> x, S incx, cuda::managed::ptr<Y> y, S incy, cuda::managed::ptr<R> result)
+->decltype(cuda::dotu(n, x, incx, y, incy, result)){
+	return cuda::dotu(n, x, incx, y, incy, result);}
+
+template<class X, class Y, class R, class S>
+auto dotc(S n, cuda::managed::ptr<X> x, S incx, cuda::managed::ptr<Y> y, S incy, cuda::managed::ptr<R> result)
+->decltype(cuda::dotc(n, x, incx, y, incy, result)){
+	return cuda::dotc(n, x, incx, y, incy, result);}
 
 template<typename AA, typename BB, class S, class TconstA, class TconstB, class T>
 void gemm(char transA, char transB, S m, S n, S k, AA const& a, multi::memory::cuda::managed::ptr<TconstA> A, S lda, multi::memory::cuda::managed::ptr<TconstB> B, S ldb, BB const& beta, multi::memory::cuda::managed::ptr<T> CC, S ldc){
