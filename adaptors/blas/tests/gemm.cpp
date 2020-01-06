@@ -356,6 +356,8 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_automatic2){
 		gemm(1., hermitized(amcu), bmcu, 0., cmcu);
 		BOOST_REQUIRE( cmcu[1][2] == complex(112, 12) );
 
+	//	[](void*){}();
+
 		cuda::managed::array<complex, 2> const cmcu_copy = gemm(1., hermitized(amcu), bmcu);
 		cuda::managed::array<complex, 2> const cmcu_copy2 = gemm(hermitized(amcu), bmcu);
 		BOOST_REQUIRE(( cmcu_copy == cmcu and cmcu_copy2 == cmcu ));

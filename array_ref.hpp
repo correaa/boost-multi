@@ -890,7 +890,7 @@ public:
 	//	auto const thisbase = this->base();
 		return {
 			this->layout().scale(sizeof(T)/sizeof(T2)), 
-			reinterpret_cast<P2 const&>(this->base())//(thisbase) // 
+			reinterpret_cast<P2>(this->base())//(thisbase) // 
 		};
 	}
 };
