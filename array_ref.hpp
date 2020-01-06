@@ -335,8 +335,8 @@ public:
 //	using decay_type = array<typename types::element, D, decltype(default_allocator_of(std::declval<ElementPtr>()))>;
 	template<class P>
 	static decltype(auto) get_allocator_(P const& p){
-		using multi::get_allocator;
-		return get_allocator(p);
+		using multi::default_allocator_of;
+		return default_allocator_of(p);
 	}
 	using decay_type = array<typename types::element_type, D, decltype(get_allocator_(std::declval<ElementPtr>()))>;
 //	decay_type 

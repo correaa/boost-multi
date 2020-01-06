@@ -23,6 +23,10 @@
 namespace boost{
 namespace serialization{
 	template<class Archive> struct archive_traits;
+	template<class> struct nvp;
+	template<class T> const nvp<T> make_nvp(char const* name, T& t);
+	template<class T> class array_wrapper;
+	template<class T, class S> const array_wrapper<T> make_array(T* t, S s);
 }}
 
 namespace boost{
@@ -570,12 +574,12 @@ struct array : static_array<T, D, Alloc>,
 public:
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int)
-	->decltype(ar & typename boost::serialization::archive_traits<Archive>::make_nvp(nullptr, boost::serialization::archive_traits<Archive>::make_array(this->data(), this->num_elements())), void())
+//	->decltype(ar & typename boost::serialization::archive_traits<Archive>::make_nvp(nullptr, boost::serialization::archive_traits<Archive>::make_array(this->data(), this->num_elements())), void())
 	{
 		auto extensions = this->extensions();
-		ar & typename boost::serialization::archive_traits<Archive>::make_nvp("extensions", extensions);
+		ar & /*typename*/boost::serialization::/*archive_traits<Archive>::*/make_nvp("extensions", extensions);
 		if(extensions != this->extensions()){clear(); reextent(extensions);}
-		ar & boost::serialization::archive_traits<Archive>::make_nvp("data", boost::serialization::archive_traits<Archive>::make_array(this->data(), this->num_elements()));
+		ar & boost::serialization::/*archive_traits<Archive>::*/make_nvp("data", boost::serialization::archive_traits<Archive>::make_array(this->data(), this->num_elements()));
 	}
 	using static_::static_;
 	using typename array::ref::value_type;
