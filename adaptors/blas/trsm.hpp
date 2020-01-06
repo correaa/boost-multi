@@ -28,31 +28,7 @@ enum class diagonal : char{
 template<class A> auto trsm_base_aux(A&& a, std::false_type){return base(a);}
 template<class A> auto trsm_base_aux(A&& a, std::true_type){return underlying(base(a));}
 
-#if 0
-template<typename AA, class A2D, class B2D>
-B2D&& trsm(side a_side, filling a_nonz, operation a_op, diagonal a_diag, AA alpha, A2D const& a, B2D&& b){
-	if(stride(a)==1){trsm(a_side, flip(a_nonz), transpose(a_op), a_diag, alpha, rotated(a), b); return std::forward<B2D>(b);}
-	if(stride(b)==1){trsm(swap(a_side), a_nonz, transpose(a_op), a_diag, alpha, a, rotated(b)); return std::forward<B2D>(b);}
-	assert(stride(*begin(a))==1);
-	assert(stride(*begin(b))==1);
-	char OP = [&]{
-		if(a_op==operation::identity)      return 'N';
-		if(a_op==operation::transposition) return 'T';
-		if(a_op==operation::hermitian)     return 'C'; 
-		__builtin_unreachable();
-	}();
-	using core::trsm;
-	auto base_a = trsm_base_aux(a, is_hermitized<A2D>{}); (void)base_a;
-	auto base_b = trsm_base_aux(b, is_hermitized<B2D>{}); (void)base_b;
-	trsm(
-		static_cast<char>(a_side), static_cast<char>(a_nonz), OP, static_cast<char>(a_diag), size(rotated(b)), size(b), alpha, base_a, 
-		stride(a), base_b, stride(b)
-	);
-	return std::forward<B2D>(b);
-}
-#endif
-
-using multi::blas::core::trsm;
+using core::trsm;
 
 template<typename AA, class A2D, class B2D>
 auto trsm_move(filling a_nonz, diagonal a_diag, AA alpha, A2D const& a, B2D&& b, side s = side::left)
