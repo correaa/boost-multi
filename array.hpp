@@ -475,7 +475,8 @@ public:
 //	template<class... Args> decltype(auto) operator()(Args const&... args)&{return ref::operator()(args...);}
 //	template<class... Args> decltype(auto) operator()(Args const&... args) const&{return ref::operator()(args...);}
 
-	using ref::operator typename static_array::element_ref;//{return *(this->base_);}
+//	using ref::operator typename static_array::element_ref;//{return *(this->base_);}
+	operator decltype(auto)(){return *(this->base_);}
 	operator decltype(auto)() const{return *(this->base_);}
 
 //	using ref::operator();
@@ -573,14 +574,13 @@ struct array : static_array<T, D, Alloc>,
 	static_assert(std::is_same<typename array::alloc_traits::value_type, T>{} or std::is_same<typename array::alloc_traits::value_type, void>{}, "!");
 public:
 	template<class Archive>
-	auto serialize(Archive& ar, const unsigned int)
-//	->decltype(ar & typename boost::serialization::archive_traits<Archive>::make_nvp(nullptr, boost::serialization::archive_traits<Archive>::make_array(this->data(), this->num_elements())), void())
-	{
+	auto serialize(Archive& ar, const unsigned int version){
 		auto extensions = this->extensions();
-		ar & /*typename*/boost::serialization::/*archive_traits<Archive>::*/make_nvp("extensions", extensions);
-		if(extensions != this->extensions()){clear(); reextent(extensions);}
-		using boost::serialization::make_array;
-		ar & boost::serialization::/*archive_traits<Archive>::*/make_nvp("data", make_array(this->data(), this->num_elements()));
+		using boost::serialization::make_nvp;
+		ar & make_nvp("extensions", extensions);
+		if(extensions != this->extensions()){clear(); this->reextent(extensions);}
+		assert(extensions == this->extensions());
+		static_::serialize(ar, version);
 	}
 	using static_::static_;
 	using typename array::ref::value_type;

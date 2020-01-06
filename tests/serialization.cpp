@@ -42,6 +42,23 @@ struct watch{
 };
 
 BOOST_AUTO_TEST_CASE(multi_serialization){
+
+	{
+		multi::static_array<double, 2> d2D({10, 10});
+		auto gen = [d = std::uniform_real_distribution<double>{-1, 1}, e = std::mt19937{std::random_device{}()}]() mutable{return d(e);};
+		std::for_each(
+			begin(d2D), end(d2D), 
+			[&](auto&& r){std::generate(begin(r), end(r), gen);}
+		);
+		std::ofstream ofs{"serialization-static.xml"}; assert(ofs);
+		boost::archive::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(d2D);
+	}
+	{
+		multi::static_array<double, 0> d0D = 12.;
+		std::ofstream ofs{"serialization-static_0D.xml"}; assert(ofs);
+		boost::archive::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(d0D);
+	}
+
 	using complex = std::complex<float>;
 
 	multi::array<complex, 2> d2D = {

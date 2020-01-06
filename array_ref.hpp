@@ -964,6 +964,15 @@ public:
 //#if defined(__CUDA__)// and defined(__CUDA_ARCH__)
 HD	typename array_ref::element_ptr data() const{return array_ref::base_;} 
 	friend typename array_ref::element_ptr data(array_ref const& self){return self.data();}
+	template<class Archive>
+	auto serialize(Archive& ar, const unsigned int){
+	//	auto extensions = this->extensions();
+		using boost::serialization::make_nvp;
+	//	ar & make_nvp("extensions", extensions);
+	//	assert(extensions == this->extensions());
+		using boost::serialization::make_array;
+		ar & make_nvp("data", make_array(this->data(), this->num_elements()));
+	}
 };
 
 template<class T, dimensionality_type D, class Ptr = T*> 
