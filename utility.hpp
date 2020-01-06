@@ -89,6 +89,12 @@ auto get_allocator(T* const&)
 ->decltype(std::allocator<typename std::iterator_traits<T*>::value_type>{}){
 	return std::allocator<typename std::iterator_traits<T*>::value_type>{};}
 
+template<class T>
+constexpr 
+auto default_allocator_of(T*)
+->decltype(std::allocator<typename std::iterator_traits<T*>::value_type>{}){
+	return std::allocator<typename std::iterator_traits<T*>::value_type>{};}
+
 //template<class It>
 //constexpr auto get_allocator(It const& it)
 //->decltype(get_allocator(to_address(it))){
@@ -99,8 +105,8 @@ auto has_get_allocator_aux(T const& t)->decltype(t.get_allocator(), std::true_ty
 inline auto has_get_allocator_aux(...)->decltype(                   std::false_type{});
 template<class T> struct has_get_allocator : decltype(has_get_allocator_aux(std::declval<T>())){};
 
-template<class It, typename = std::enable_if_t<not has_get_allocator<It>{}>>
-auto get_allocator(It)->std::allocator<typename std::iterator_traits<It>::value_type>{return {};}
+//template<class It, typename = std::enable_if_t<not has_get_allocator<It>{}>>
+//auto get_allocator(It)->std::allocator<typename std::iterator_traits<It>::value_type>{return {};}
 
 template<class T1, class T2, typename Ret = T1>// std::common_type_t<T1, T2>> 
 Ret common(T1 const& t1, T2 const& t2){

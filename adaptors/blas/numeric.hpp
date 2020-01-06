@@ -113,6 +113,11 @@ template<class It, class F>
 auto get_allocator(involuter<It, F> const& s);
 
 template<class It, class F>
+auto default_allocator_of(involuter<It, F> const& s){
+	return default_allocator_of(s.it_);
+}
+
+template<class It, class F>
 class involuter : public std::iterator_traits<It>{
 	It it_; // [[no_unique_address]] 
 	F f_;
@@ -135,6 +140,10 @@ public:
 	friend underlying_type underlying(involuter const& self) HD{return self.it_;}
 	operator It() const HD{return underlying(*this);}
 	template<class Itt, class FF> friend auto get_allocator(involuter<Itt, FF> const&);
+	friend auto default_allocator_of(involuter const& s){
+		using multi::default_allocator_of;
+		return default_allocator_of(s.it_);
+	}
 //	friend auto get_allocator(involuter const& s){return get_allocator(s.it_);}
 };
 
@@ -272,14 +281,15 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric){
 	BOOST_REQUIRE( hermitized(B)[0][1] == 8. - 2.*I );
 	BOOST_REQUIRE( imag(hermitized(B)[0][1]) == -2. );
 
+	namespace cuda = multi::cuda;
 	{
-		multi::cuda::array<complex, 2> Bgpu = B;
+		cuda::array<complex, 2> Bgpu = B;
 		using multi::blas::imag;
 		BOOST_REQUIRE( imag(Bgpu)[1][1] == imag(B)[1][1] );
 		BOOST_REQUIRE( real(Bgpu)[1][1] == real(B)[1][1] );
 	}
 	{
-		multi::cuda::managed::array<complex, 2> Bgpu = B;
+		cuda::managed::array<complex, 2> Bgpu = B;
 		using multi::blas::imag;
 		BOOST_REQUIRE( imag(Bgpu)[1][1] == imag(B)[1][1] );
 		BOOST_REQUIRE( real(Bgpu)[1][1] == real(B)[1][1] );
@@ -311,7 +321,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric){
 	multi::array<complex, 2> C({2, 2});
 	multi::array_ref<double, 2> rC(reinterpret_cast<double*>(data_elements(C)), {size(C), 2*size(*begin(C))});
 
-	
 //	gemm('T', 'T', 1., A, B, 0., C);
 //	gemm('T', 'T', 1., A, B, 0., C);
 //	gemm('T', 'T', 1., real(A), B, 0., C);

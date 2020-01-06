@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-clang++ -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0x `pkg-config --libs blas` -lcudart -lcublas -lboost_unit_test_framework&&$0x&&rm $0x;exit
+c++ -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0x `pkg-config --libs blas` -lcudart -lcublas -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -21,6 +21,8 @@ clang++ -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0x `pkg-config --libs 
 using std::cout;
 namespace multi = boost::multi;
 namespace blas = multi::blas;
+
+template<class T> void what(T&&) = delete;
 
 BOOST_AUTO_TEST_CASE(blas_dot){
 	{
@@ -82,9 +84,18 @@ BOOST_AUTO_TEST_CASE(blas_dot){
 			BOOST_REQUIRE( ccu() == 121. - 43.*I );
 		}
 		{
+			auto const ccu = dot(acu, conjugated(bcu));
+			BOOST_REQUIRE( ccu() == 121. - 43.*I );
+		}
+		{
 			cuda::array<complex, 1> ccu = {1, 2, 3};
 			dot(acu, conjugated(bcu), ccu[0]);
 			BOOST_REQUIRE( ccu[0] == 121. - 43.*I );
+		}
+		{
+			cuda::array<complex, 2> ccu({1, 1});
+			dot(acu, conjugated(bcu), ccu[0][0]);
+			BOOST_REQUIRE( ccu[0][0] == 121. - 43.*I );
 		}
 	}
 	{
