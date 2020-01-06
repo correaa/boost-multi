@@ -579,7 +579,8 @@ public:
 		auto extensions = this->extensions();
 		ar & /*typename*/boost::serialization::/*archive_traits<Archive>::*/make_nvp("extensions", extensions);
 		if(extensions != this->extensions()){clear(); reextent(extensions);}
-		ar & boost::serialization::/*archive_traits<Archive>::*/make_nvp("data", boost::serialization::archive_traits<Archive>::make_array(this->data(), this->num_elements()));
+		using boost::serialization::make_array;
+		ar & boost::serialization::/*archive_traits<Archive>::*/make_nvp("data", make_array(this->data(), this->num_elements()));
 	}
 	using static_::static_;
 	using typename array::ref::value_type;

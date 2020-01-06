@@ -33,6 +33,12 @@
 #endif
 #endif
 
+namespace boost{
+namespace serialization{
+	template<class T> class array_wrapper;
+	template<class T, class S> const array_wrapper<T> make_array(T* t, S s);
+}}
+
 namespace boost{namespace multi{
 namespace memory{namespace cuda{
 
@@ -172,10 +178,16 @@ public:
 	friend allocator<std::decay_t<T>> get_allocator(ptr const&){return {};}
 };
 
+	template<class T, class S> const boost::serialization::array_wrapper<T> make_array(ptr<T> t, S s){
+		using boost::serialization::make_array;
+		return make_array(raw_pointer_cast(t), s);
+	}
+
 }
 
 }}
 }}
+
 #undef SLOW
 
 #ifdef _TEST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_PTR
