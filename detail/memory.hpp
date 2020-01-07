@@ -402,7 +402,7 @@ int main(){
 	static_assert(not multi::is_allocator<std::vector<double>>{}, "!");
 
 	{
-		double* p;
+		double* p = nullptr;
 		auto a = multi::default_allocator_of(p);
 		static_assert(std::is_same<decltype(a), std::allocator<double>>{}, "!");
 	//	what(typename std::iterator_traits<double*>::value_type{});

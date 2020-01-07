@@ -144,6 +144,7 @@ public:
 		using multi::default_allocator_of;
 		return default_allocator_of(s.it_);
 	}
+	using default_allocator_type = typename multi::pointer_traits<It>::default_allocator_type;
 //	friend auto get_allocator(involuter const& s){return get_allocator(s.it_);}
 };
 

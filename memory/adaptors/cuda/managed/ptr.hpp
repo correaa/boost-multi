@@ -15,6 +15,8 @@
 
 #include "../../cuda/ptr.hpp"
 
+#include "../../../../detail/memory.hpp"
+
 #ifndef _DISABLE_CUDA_SLOW
 #ifdef NDEBUG
 #define SLOW deprecated("WARNING: implies a slow access to GPU memory") 
@@ -176,6 +178,8 @@ public:
 	friend cuda::ptr<T, RawPtr> cuda_pointer_cast(ptr const& self){return cuda::ptr<T, RawPtr>{self.rp_};}
 	operator cuda::ptr<T, RawPtr>() const{return cuda::ptr<T, RawPtr>{rp_};}
 	friend allocator<std::decay_t<T>> get_allocator(ptr const&){return {};}
+	using default_allocator_type = allocator<std::decay_t<T>>;
+	default_allocator_type default_allocator() const{return {};}
 };
 
 	template<class T, class S> const boost::serialization::array_wrapper<T> make_array(ptr<T> t, S s){
@@ -186,6 +190,14 @@ public:
 }
 
 }}
+}}
+
+namespace boost{namespace multi{
+
+//template<class T> struct pointer_traits<memory::cuda::managed::ptr<T>, void> : std::pointer_traits<memory::cuda::managed::ptr<T>>{
+//	using default_allocator_type = memory::cuda::managed::allocator<std::decay_t<T>>;
+//};
+
 }}
 
 #undef SLOW

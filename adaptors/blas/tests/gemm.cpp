@@ -145,7 +145,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_elongated){
 	};
 	BOOST_REQUIRE( size(a) == 1 and size(a[0]) == 2 );
 	multi::array<complex, 2> const b = {
-		{2.+3.*I}, 
+		{2. + 3.*I}, 
 		{19.+11.*I}
 	};
 	BOOST_REQUIRE( size(b) == 2 and size(b[0]) == 1 );
@@ -437,6 +437,8 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_automatic4){
 	}
 }
 
+template<class... T> void what(T&&...) = delete;
+
 BOOST_AUTO_TEST_CASE(multi_blas_gemm_complex_issue68){
 	using complex = std::complex<double>; complex const I{0,1};
 	multi::cuda::managed::array<complex, 2> const a = {
@@ -462,9 +464,17 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_complex_issue68){
 		using multi::blas::hermitized;
 		auto c = gemm(hermitized(a), a);
 		
+	//	what<decltype(hermitized(a)),  decltype(base(hermitized(a))), decltype(underlying(base(hermitized(a)))), multi::pointer_traits<decltype(base(a))>::default_allocator_type, decltype(hermitized(a))::decay_type>();
+
+//[with T = {boost::multi::basic_array<std::complex<double>, 2, boost::multi::blas::involuter<boost::multi::memory::cuda::managed::ptr<std::complex<double>, std::complex<double>*>, boost::multi::blas::conjugate>, boost::multi::layout_t<2, long int> >,
+//boost::multi::blas::involuter<boost::multi::memory::cuda::managed::ptr<std::complex<double>, std::complex<double>*>, boost::multi::blas::conjugate>, 
+//boost::multi::memory::cuda::managed::ptr<std::complex<double>, std::complex<double>*>, 
+//boost::multi::memory::cuda::managed::allocator<std::complex<double> >, 
+//boost::multi::array<std::complex<double>, 2, std::allocator<std::complex<double> > >}]’
+
+	//	boost::multi::basic_array<std::complex<double>, 2, boost::multi::blas::involuter<boost::multi::memory::cuda::managed::ptr<std::complex<double>, std::complex<double>*>, boost::multi::blas::conjugate>, boost::multi::layout_t<2, long int> >
+	//	boost::multi::array<std::complex<double>, 2, std::allocator<std::complex<double> > >
 		BOOST_REQUIRE( c[0][0] == 105. + 0.*I );
 	}
 }
-
-
 
