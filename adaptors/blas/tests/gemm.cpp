@@ -461,6 +461,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_complex_issue68){
 		using multi::blas::gemm;
 		using multi::blas::hermitized;
 		auto c = gemm(hermitized(a), a);
+		
+	//	[](void*){}(get_allocator(hermitized(a)));
 		BOOST_REQUIRE( c[0][0] == 105. + 0.*I );
 	}
 }

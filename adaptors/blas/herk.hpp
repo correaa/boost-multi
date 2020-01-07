@@ -120,7 +120,7 @@ template<class AA, class A2D, class Ret = typename A2D::decay_type>
 NODISCARD("second argument is const")
 auto herk(AA alpha, A2D const& a){
 	auto s = size(a);
-	Ret ret(typename Ret::extensions_type{s, s}, get_allocator(a));
+	Ret ret(typename Ret::extensions_type{s, s});//, get_allocator(a));
 	assert( size(ret)==size(*begin(ret)) );
 	herk(alpha, a, ret);
 	return ret;
