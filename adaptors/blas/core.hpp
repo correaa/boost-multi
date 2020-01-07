@@ -242,13 +242,13 @@ template<class S> s dot(S n, s const& b, s const* x, S incx, s const* y, S incy)
 
 }
 
-#define xnrm2(R, T, TT) template<class S>    R nrm2 (S n, T const* x, S incx){return BLAS(TT##nrm2  )(BC(n), x, BC(incx));}
+#define xnrm2(R, T, TT) template<class S>    v nrm2 (S n, T const* x, S incx, R* r){*r = BLAS(TT##nrm2  )(BC(n), x, BC(incx));}
 #define xasum(T, TT)    template<class S> auto asum (S n, T const* x, S incx){return BLAS(TT##asum  )(BC(n), x, BC(incx));}
 #define ixamax(T)       template<class S> auto iamax(S n, T const* x, S incx){return BLAS(i##T##amax)(BC(n), x, BC(incx)) - 1;}
-xnrm2(s, s, s) xnrm2(d, d, d)                                    xnrm2(s, c, sc)              xnrm2(d, z, dz)
 xasum(s, s)    xasum(d, d)                        xasum (c, sc)                  xasum(z, dz)
 namespace core{
-	ixamax(s)      ixamax(d)       ixamax(c) ixamax(z)
+	xnrm2(s, s, s) xnrm2(d, d, d)  xnrm2(s, c, sc) xnrm2(d, z, dz)
+	ixamax(s)      ixamax(d)       ixamax(c)       ixamax(z)
 }
 #undef xnrm2
 #undef xasum

@@ -477,9 +477,9 @@ public:
 //	template<class... Args> decltype(auto) operator()(Args const&... args) const&{return ref::operator()(args...);}
 
 //	using ref::operator typename static_array::element_ref;//{return *(this->base_);}
-	operator decltype(auto)(){return *(this->base_);}
-	operator decltype(auto)() const{return *(this->base_);}
-
+//	operator decltype(auto)(){return *(this->base_);}
+//	operator decltype(auto)() const{return *(this->base_);}
+//	operator typename static_array::element_type() const{return *(this->base_);}
 //	using ref::operator();
 	operator typename std::iterator_traits<typename static_array::element_const_ptr>::reference() const{
 		return *(this->base_);

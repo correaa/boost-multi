@@ -661,13 +661,13 @@ struct basic_array<T, dimensionality_type{0}, ElementPtr, Layout> :
 //		using std::equal; return equal(&e, &e + 1, this->base_);
 //	}
 //	bool operator!=(typename basic_array::element_type const& e) const&{return not operator==(e);}
-	operator element_ref(){return *(this->base_);}
-	template<class TT> operator TT(){return static_cast<TT>(element_ref());}
+//	operator element_ref() const{return *(this->base_);}
+//	template<class TT> operator TT(){return static_cast<TT>(element_ref());}
 	typename basic_array::element_ptr operator&() const{return this->base_;}
 	using decay_type = typename types::element;
 //	basic_array&
 	element_ref operator()() &{return *(this->base_);}
-	decltype(auto) operator()() &&{return std::move(*(this->base_));}
+//	decltype(auto) operator()() &&{return std::move(*(this->base_));}
 };
 
 template<typename T, typename ElementPtr, class Layout>
