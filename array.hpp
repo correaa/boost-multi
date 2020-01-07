@@ -63,6 +63,7 @@ public:
 		"allocator value type must match array value type");
 	using array_alloc::get_allocator;
 	using allocator_type = typename static_array::allocator_type;
+	using decay_type = array<T, D, Alloc>;
 protected:
 	using alloc_traits = typename std::allocator_traits<typename static_array::allocator_type>;
 	using ref = array_ref<T, D, typename std::allocator_traits<typename std::allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
