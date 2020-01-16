@@ -94,7 +94,7 @@ xGERC(c); xGERC(z);
 
 #define TRANSA const char& transa
 #define TRANSB const char& transb
-#define NK INTEGER nk
+#define NK  INTEGER nk
 #define LDB INTEGER ldb
 #define LDC INTEGER ldc
 

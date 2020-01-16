@@ -94,11 +94,20 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_cuda){
 	}
 	{
 		cuda::array<double, 0> arr = 45.;
-		BOOST_REQUIRE( arr == 45. );
+		BOOST_REQUIRE( arr() == 45. );
 	}
 	{
 		cuda::managed::array<double, 0> arr = 45.;
-		BOOST_REQUIRE( arr == 45. );
+		BOOST_REQUIRE( arr() == 45. );
+	}
+	{
+		using complex = std::complex<double>;
+		cuda::managed::array<complex, 2> a({1000, 1000}, 99.);
+		BOOST_REQUIRE( size(a) == 1000 );
+		cuda::managed::array<complex, 2> b;
+		b = std::move(a);
+		BOOST_REQUIRE( size(b) == 1000 );
+		BOOST_REQUIRE( size(a) == 0 );
 	}
 }
 

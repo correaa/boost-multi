@@ -1,6 +1,8 @@
 #ifdef COMPILATION_INSTRUCTIONS
-clang++ -O3 -std=c++17 -Wall `#-Wfatal-errors` $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
+c++ -O3 -Wall -Wextra $0 -o $0x -lboost_unit_test_framework &&$0x&&rm $0x;exit
 #endif
+// © Alfredo Correa 2018-2020
+// this needs O3
 
 #include "../array_ref.hpp"
 #include "../array.hpp"
@@ -10,10 +12,7 @@ clang++ -O3 -std=c++17 -Wall `#-Wfatal-errors` $0 -o $0.x && $0.x $@ && rm -f $0
 #include<iostream>
 #include<complex>
 
-using std::cout; using std::cerr;
 namespace multi = boost::multi;
-
-template<class F> void what();
 
 int main(){
 
@@ -35,17 +34,17 @@ int main(){
 //	static_assert(ranges::RandomAccessRange<multi::array<double, 2>>{});
 //	static_assert(ranges::RandomAccessRange<decltype(d2D[2])>{});
 
-	static_assert( ranges::ForwardIterator<std::vector<double>::const_iterator>{} );
-	static_assert( ranges::Readable<multi::array<double, 1>::const_iterator>{} );
+	static_assert( ranges::forward_iterator<std::vector<double>::const_iterator>, "!");
+	static_assert( ranges::readable<multi::array<double, 1>::const_iterator>, "!");
 
 	using It = std::vector<bool>::iterator;//multi::array<double, 2>::iterator;
 	It i; 
 	typename It::value_type val = *i; (void)val;
 	typename It::reference ref = *i;
 	typename It::value_type val2{ref}; (void)val2;
-	static_assert( ranges::CommonReference<typename It::reference&&, typename It::value_type&>{} );
+//	static_assert( ranges::common_reference<typename It::reference&&, typename It::value_type&> );
 //	ranges::rvalue_reference_t<It> rr;
-	static_assert( ranges::Readable<It>::value );
+	static_assert( ranges::readable<It>, "!");
 	return 0;
 #if 0
 //	static_assert( ranges::Readable<>{} );

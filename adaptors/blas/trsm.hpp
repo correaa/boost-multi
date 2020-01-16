@@ -4,7 +4,7 @@
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
 #endif
-// © Alfredo A. Correa 2019
+// © Alfredo A. Correa 2019-2020
 
 #ifndef MULTI_ADAPTORS_BLAS_TRSM_HPP
 #define MULTI_ADAPTORS_BLAS_TRSM_HPP
@@ -14,6 +14,8 @@
 #include "../blas/operations.hpp" // uplo
 #include "../blas/filling.hpp"
 #include "../blas/side.hpp"
+
+#include "../../config/nodiscard_.hpp"
 
 namespace boost{
 namespace multi{namespace blas{
@@ -71,41 +73,19 @@ auto trsm_move(filling a_nonz, diagonal a_diag, AA alpha, A2D const& a, B2D&& b,
 	return std::forward<B2D>(b);
 }
 
-#ifndef __has_cpp_attribute
-#define __has_cpp_attribute(name) 0
-#endif
-
-#if (__has_cpp_attribute(nodiscard)) && (__cplusplus>=201703L)
-#define NODISCARD(MsG) [[nodiscard]]
-#if (__has_cpp_attribute(nodiscard)>=201907) && (__cplusplus>=201703L)
-#define NODISCARD(MsG) [[nodiscard(MsG)]]
-#endif
-#elif __has_cpp_attribute(gnu::warn_unused_result)
-#define NODISCARD(MsG) [[gnu::warn_unused_result]]
-#else
-#define NODISCARD(MsG)
-#endif
-
 template<typename AA, class A2D, class B2D>
 auto trsm(filling a_nonz, diagonal a_diag, AA alpha, A2D const& a, B2D&& b)
 ->decltype(trsm_move(a_nonz, a_diag, alpha, a, std::forward<B2D>(b)), std::declval<B2D&&>()){
-	if(!is_conjugated(b)){
-//		return 
-		trsm_move(a_nonz, a_diag, alpha, a, std::forward<B2D>(b));
-	}else{
-		trsm_move(-a_nonz, a_diag, alpha, hermitized(a), rotated(b), side::right);
-	//	return std::forward<B2D>(b);
-	}
+	if(!is_conjugated(b)) trsm_move( a_nonz, a_diag, alpha,            a, std::forward<B2D>(b));
+	else                  trsm_move(-a_nonz, a_diag, alpha, hermitized(a), rotated(b), side::right);
 	return std::forward<B2D>(b);
 }
 
 template<typename AA, class A2D, class B2D>
-NODISCARD("result is returned because third argument is const")
-auto trsm(filling a_nonz, diagonal a_diag, AA alpha, A2D const& a, B2D const& b){
-	auto ret = b.decay();
-	trsm_move(a_nonz, a_diag, alpha, a, ret);
-	return ret;
-}
+NODISCARD("because last argument is const")
+auto trsm(filling a_nonz, diagonal a_diag, AA alpha, A2D const& a, B2D const& b)
+->std::decay_t<decltype(trsm_move(a_nonz, a_diag, alpha, a, decay(b)))>{
+	return trsm_move(a_nonz, a_diag, alpha, a, decay(b));}
 
 template<class AA, class A2D, class B2D>
 auto trsm(filling a_nonz, AA alpha, A2D const& a, B2D&& b)
@@ -117,10 +97,10 @@ auto trsm(filling a_nonz, A2D const& a, B2D&& b)
 ->decltype(trsm(a_nonz, 1.0, a, std::forward<B2D>(b))){
 	return trsm(a_nonz, 1.0, a, std::forward<B2D>(b));}
 
-template<class A2D, class B2D>
-auto trsm(A2D const& a, B2D&& b)
-->decltype(trsm(multi::blas::detect_triangular(a), a, std::forward<B2D>(b))){
-	return trsm(multi::blas::detect_triangular(a), a, std::forward<B2D>(b));}
+//template<class A2D, class B2D>
+//auto trsm(A2D const& a, B2D&& b)
+//->decltype(trsm(multi::blas::detect_triangular(a), a, std::forward<B2D>(b))){
+//	return trsm(multi::blas::detect_triangular(a), a, std::forward<B2D>(b));}
 
 }}}
 
@@ -346,13 +326,13 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare_default_diagonal_gemm_check,
 			auto const AT =* rotated(A);
 			auto const BT =* rotated(B);
 			using multi::blas::trsm;
-			auto const Bck=gemm(A, trsm(rotated(AT), rotated(BT)));
-			for(int i{};i<3;++i)for(int j{};j<size(rotated(B));++j) BOOST_CHECK_SMALL(Bck[i][j]-B[i][j], 0.00001);
+		//	auto const Bck=gemm(A, trsm(rotated(AT), rotated(BT)));
+		//	for(int i{};i<3;++i)for(int j{};j<size(rotated(B));++j) BOOST_CHECK_SMALL(Bck[i][j]-B[i][j], 0.00001);
 		}
 		{
 			using multi::blas::trsm;
-			auto const Bck=gemm(A, trsm(A, B));
-			for(int i{};i<3;++i)for(int j{};j<size(rotated(B));++j) BOOST_CHECK_SMALL(Bck[i][j]-B[i][j], 0.00001);
+		//	auto const Bck=gemm(A, trsm(A, B));
+		//	for(int i{};i<3;++i)for(int j{};j<size(rotated(B));++j) BOOST_CHECK_SMALL(Bck[i][j]-B[i][j], 0.00001);
 		}
 	}
 }
@@ -368,10 +348,17 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_1x1_check, *utf::tolerance(0.00001)){
 		multi::array<double, 2> const B = {
 			{5.},
 		};
-		using multi::blas::gemm;
 		{
 			auto S = trsm(filling::upper, diagonal::general, 3., A, B);
 			BOOST_REQUIRE( S[0][0] == 3.*5./4. );
+		}
+		{
+			auto S = trsm(filling::upper, 1., A, B);
+			BOOST_REQUIRE( S[0][0] == 1.*5./4. );
+		}
+		{
+			auto S = trsm(filling::upper, A, B);
+			BOOST_REQUIRE( S[0][0] == 1.*5./4. );
 		}
 	}
 }

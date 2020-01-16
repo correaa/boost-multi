@@ -12,13 +12,7 @@
 #include "../blas/operations.hpp"
 #include "../blas/numeric.hpp"
 
-#if __cplusplus>=201703L and __has_cpp_attribute(nodiscard)>=201603
-#define NODISCARD(MsG) [[nodiscard]]
-#elif __has_cpp_attribute(gnu::warn_unused_result)
-#define NODISCARD(MsG) [[gnu::warn_unused_result]]
-#else
-#define NODISCARD(MsG)
-#endif
+#include "../../config/nodiscard_.hpp"
 
 namespace boost{
 namespace multi{

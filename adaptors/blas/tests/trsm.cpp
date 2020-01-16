@@ -18,12 +18,12 @@
 namespace multi = boost::multi;
 
 template<class M> decltype(auto) print(M const& C){
-	using multi::size;
+	using multi::size; using std::cout;
 	for(int i = 0; i != size(C); ++i){
-		for(int j = 0; j != size(C[i]); ++j) std::cout<< C[i][j] <<' ';
-		std::cout<<std::endl;
+		for(int j = 0; j != size(C[i]); ++j) cout<< C[i][j] <<' ';
+		cout<<std::endl;
 	}
-	return std::cout<<std::endl;
+	return cout<<std::endl;
 }
 
 namespace utf = boost::unit_test;
@@ -108,7 +108,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_cuda_trsm_complex, *utf::tolerance(0.00001)){
 	namespace blas = multi::blas;
 	using blas::filling;	
 	using blas::hermitized;
-	auto C = trsm(filling::lower, 2.+1.*I, hermitized(A), B); // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
+//	auto C = trsm(filling::lower, 2.+1.*I, hermitized(A), B); // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
+	auto C = trsm(filling::lower, 1., hermitized(A), B); // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit 
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_cuda_managed_trsm_complex, *utf::tolerance(0.00001)){

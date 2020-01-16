@@ -13,25 +13,16 @@ for a in ./tests/*.cpp; do echo $a; sh $a || break; echo "\n"; done; exit;*/
 #include "./detail/operators.hpp" // random_iterable
 #include "./detail/memory.hpp"    // pointer_traits
 
-#include<algorithm> // copy_n
+#include "./config/nodiscard_.hpp"
 
-//#include<boost/serialization/nvp.hpp>
+#include<boost/serialization/binary_object.hpp>
+
+#include<algorithm> // copy_n
 
 #if defined(__CUDACC__)
 #define HD __host__ __device__
 #else
-#define HD 
-#endif
-
-#if (__has_cpp_attribute(nodiscard)) && (__cplusplus>=201703L)
-#define NODISCARD(MsG) [[nodiscard]]
-#if (__has_cpp_attribute(nodiscard)>=201907) && (__cplusplus>=201703L)
-#define NODISCARD(MsG) [[nodiscard(MsG)]]
-#endif
-#elif __has_cpp_attribute(gnu::warn_unused_result)
-#define NODISCARD(MsG) [[gnu::warn_unused_result]]
-#else
-#define NODISCARD(MsG)
+#define HD
 #endif
 
 namespace boost{
@@ -344,6 +335,11 @@ public:
 	decay_type decay() const{
 		decay_type ret = *this;
 		return ret;
+	}
+	template<class Archive>
+	auto serialize(Archive& ar, const unsigned int){
+		using boost::serialization::make_nvp;
+		std::for_each(this->begin(), this->end(), [&](auto&& e){ar & make_nvp("item", e);});
 	}
 	friend /*NODISCARD("decayed type is ignored")*/ auto operator+(basic_array const& self){return self.decay();}
 	friend /*NODISCARD("decayed type is ignored")*/ auto operator*(basic_array const& self){return self.decay();}
@@ -716,7 +712,11 @@ public:
 	template<class It> void assign(It first, It last) const{
 		using std::copy; copy(first, last, this->begin());
 	}
-public:
+	template<class Archive>
+	auto serialize(Archive& ar, const unsigned int){
+		using boost::serialization::make_nvp;
+		std::for_each(this->begin(), this->end(), [&](auto&& e){ar & make_nvp("item", e);});
+	}
 	template<class A, 
 		typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<A>>{}>,
 		typename = decltype(
@@ -965,13 +965,20 @@ public:
 HD	typename array_ref::element_ptr data() const{return array_ref::base_;} 
 	friend typename array_ref::element_ptr data(array_ref const& self){return self.data();}
 	template<class Archive>
-	auto serialize(Archive& ar, const unsigned int){
-	//	auto extensions = this->extensions();
+	auto serialize(Archive& ar, const unsigned int v){ (void)v;
 		using boost::serialization::make_nvp;
-	//	ar & make_nvp("extensions", extensions);
+	//	ar & make_nvp("extensions", this->extensions());
 	//	assert(extensions == this->extensions());
-		using boost::serialization::make_array;
-		ar & make_nvp("data", make_array(this->data(), this->num_elements()));
+		if(this->num_elements() < (2<<8) ) basic_array<T, D, ElementPtr>::serialize(ar, v);
+		else{
+			if(std::is_trivial<typename array_ref::element>{}){
+				using boost::serialization::make_binary_object;
+				ar & make_nvp("binary_data", make_binary_object(this->data(), sizeof(typename array_ref::element)*this->num_elements()));
+			}else{
+				using boost::serialization::make_array;
+				ar & make_nvp("data", make_array(this->data(), this->num_elements()));
+			}
+		}
 	}
 };
 

@@ -11,8 +11,8 @@
 #ifndef MULTI_ADAPTORS_RANGEV3_HPP
 #define MULTI_ADAPTORS_RANGEV3_HPP
 
-namespace ranges{
-namespace v3{
+namespace ranges{namespace v3{
+namespace concepts{ // needed for later version of rangesv3
 // this allows to recognize const_iterator as RandomAccessIterator
 	template<class MA>
 	struct common_reference<
@@ -28,6 +28,7 @@ namespace v3{
 	>{
 		using type = boost::multi::basic_array<typename MA::element, MA::dimensionality, typename MA::element_const_ptr, typename MA::layout_t>&&;
 	};
+}
 }}
 
 #ifdef _TEST_MULTI_ADAPTORS_RANGEV3

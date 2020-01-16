@@ -13,10 +13,13 @@
 //#include "../../array.hpp" // allocating multi::arrays for output
 #include "../../memory/adaptors/cuda/ptr.hpp"
 #include "../../memory/adaptors/cuda/managed/ptr.hpp"
+#include "../../memory/adaptors/cuda/managed/allocator.hpp"
 
 #include<cublas_v2.h>
 
 #include<iostream> // debug
+
+#include <boost/log/trivial.hpp>
 
 #include<complex>
 #include<memory>
@@ -233,6 +236,7 @@ void syrk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::ptr<Tconst
 
 template<class Tconst, class T, class UL, class C, class S, class Real>
 void herk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::ptr<Tconst> A, S lda, Real beta, multi::memory::cuda::ptr<T> CC, S ldc){
+	BOOST_LOG_TRIVIAL(trace) <<"cublas::herk called on size/stride " <<n <<" "<< lda;
 	cublasHandle_t handle;
 	{cublasStatus_t s = cublasCreate(&handle); assert(s==CUBLAS_STATUS_SUCCESS);}
 	cublasFillMode_t uplo = [ul](){
@@ -306,9 +310,9 @@ void gemm(C transA, C transB, S m, S n, S k, AA a, multi::memory::cuda::ptr<Tcon
 	cublasDestroy(handle);
 }
 
-template<class Side, class Fill, class Trans, class Diag, typename Size, class Tconst, class T>
+template<class Side, class Fill, class Trans, class Diag, typename Size, class Tconst, class T, class Alpha>
 void trsm(Side /*cublasSideMode_t*/ side, /*cublasFillMode_t*/ Fill uplo, /*cublasOperation_t*/ Trans trans, /*cublasDiagType_t*/ Diag diag,
-                           Size m, Size n, T alpha, cuda::ptr<Tconst> A, Size lda, cuda::ptr<T> B, Size ldb){
+                           Size m, Size n, Alpha alpha, cuda::ptr<Tconst> A, Size lda, cuda::ptr<T> B, Size ldb){
 	cublasOperation_t trans_cu = [&]{
 		switch(trans){
 			case 'N': return CUBLAS_OP_N;
@@ -316,8 +320,9 @@ void trsm(Side /*cublasSideMode_t*/ side, /*cublasFillMode_t*/ Fill uplo, /*cubl
 			case 'C': return CUBLAS_OP_C;
 		} __builtin_unreachable();
 	}();
+	T alpha_{alpha};
 	cublas<T>{}.trsm(
-		side=='L'?CUBLAS_SIDE_LEFT:CUBLAS_SIDE_RIGHT, uplo=='L'?CUBLAS_FILL_MODE_LOWER:CUBLAS_FILL_MODE_UPPER, trans_cu, diag=='N'?CUBLAS_DIAG_NON_UNIT:CUBLAS_DIAG_UNIT, m, n, &alpha, static_cast<Tconst*>(A), lda, static_cast<T*>(B), ldb);
+		side=='L'?CUBLAS_SIDE_LEFT:CUBLAS_SIDE_RIGHT, uplo=='L'?CUBLAS_FILL_MODE_LOWER:CUBLAS_FILL_MODE_UPPER, trans_cu, diag=='N'?CUBLAS_DIAG_NON_UNIT:CUBLAS_DIAG_UNIT, m, n, &alpha_, static_cast<Tconst*>(A), lda, static_cast<T*>(B), ldb);
 }
 
 }}}}

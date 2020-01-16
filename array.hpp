@@ -27,6 +27,10 @@ namespace serialization{
 	template<class T> const nvp<T> make_nvp(char const* name, T& t);
 	template<class T> class array_wrapper;
 	template<class T, class S> const array_wrapper<T> make_array(T* t, S s);
+//	template<class T> 
+	class binary_object;
+//	inline binary_object make_binary_object(const void * t, std::size_t size);
+
 }}
 
 namespace boost{
@@ -946,7 +950,6 @@ struct A{
 	A(std::initializer_list<double> il){ p = &*(il.begin() + 1); };
 };
 
-double f(){return 5.;}
 int main(){
 
 

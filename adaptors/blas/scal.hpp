@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_BLAS_SCAL $0.cpp -o $0x `pkg-config  --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -D_TEST_MULTI_ADAPTORS_BLAS_SCAL $0.cpp -o $0x `pkg-config --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp;exit
 #endif
 // © Alfredo A. Correa 2019
 
@@ -7,16 +7,9 @@
 #define MULTI_ADAPTORS_BLAS_SCAL_HPP
 
 #include "../blas/core.hpp"
+#include "../../config/nodiscard_.hpp"
 
 #include<cassert>
-
-#if __cplusplus>=201703L and __has_cpp_attribute(nodiscard)>=201603
-#define NODISCARD(MsG) [[nodiscard]]
-#elif __has_cpp_attribute(gnu::warn_unused_result)
-#define NODISCARD(MsG) [[gnu::warn_unused_result]]
-#else
-#define NODISCARD(MsG)
-#endif
 
 namespace boost{
 namespace multi{
@@ -31,7 +24,7 @@ auto scal_n(T a, It first, Size count)
 
 template<typename T, class It>
 auto scal(T a, It f, It l)
-->decltype(scal_n(a, f, std::distance(f, l))){ assert(stride(f) == stride(l));
+->decltype(scal_n(a, f, std::distance(f, l))){assert(stride(f) == stride(l));
 	return scal_n(a, f, std::distance(f, l));}
 
 template<typename T, class X1D>
@@ -39,7 +32,8 @@ auto scal(T a, X1D&& m)
 ->decltype(scal(a, begin(m), end(m)), std::forward<X1D>(m)){
 	return scal(a, begin(m), end(m)), std::forward<X1D>(m);}
 
-template<typename T, class X1D> NODISCARD("when second argument is const")
+template<typename T, class X1D> 
+NODISCARD("when second argument is const")
 auto scal(T a, X1D const& m)->std::decay_t<decltype(scal(a, m.decay()))>{
 	return scal(a, m.decay());
 }
