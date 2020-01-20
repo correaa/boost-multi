@@ -426,12 +426,17 @@ public:
 	}
 	decltype(auto) operator<<(dimensionality_type i) const{return rotated(i);}
 	decltype(auto) operator>>(dimensionality_type i) const{return unrotated(i);}
-	basic_array const& operator()() const&{return *this;}
+	basic_array //const& 
+		operator()() const&{return *this;}
 	template<class... As>
 	auto operator()(index_range a, As... as) const{return range(a).rotated()(as...).unrotated();}
 	template<class... As>
+	auto operator()(index i) const
+	->decltype(operator[](i)){
+		return operator[](i);}
+	template<class... As>
 	auto operator()(index i, As... as) const
-//	->decltype(operator[](i)(as...))
+	->decltype(operator[](i)(as...))
 	{	return operator[](i)(as...);}
 //#define SARRAY1(A1) auto operator()(A1 a1) const{return operator()<>(a1);}
 #define SARRAY2(A1, A2)	auto operator()(A1 a1, A2 a2) const{return operator()<A2>(a1, a2);}

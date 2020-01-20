@@ -20,7 +20,6 @@ BOOST_AUTO_TEST_CASE(multi_tests_element_access){
 	multi::array<double, 2> m({3, 3}, {});
 	std::array<int, 2> p = {1, 2};
 	BOOST_REQUIRE( &m[p[0]][p[1]] == &m(p[0], p[1]) );
-
 #if __cpp_lib_apply>=201603
 	BOOST_REQUIRE( &m[p[0]][p[1]] == &std::apply(m, p) );
 #else
