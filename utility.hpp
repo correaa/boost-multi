@@ -79,6 +79,10 @@ constexpr auto size(Container const& con)
 template <class T, std::size_t N>
 constexpr auto size(const T(&)[N]) noexcept{return multi::size_type{N};}
 
+template<class T, typename = typename T::get_allocator>
+std::true_type has_get_allocator_aux(T const&);
+inline std::false_type has_get_allocator_aux(...);
+
 template <class T, std::size_t N>
 constexpr std::allocator<std::decay_t<typename std::remove_all_extents<T[N]>::type>> 
 get_allocator(T(&)[N]) noexcept{return {};}
@@ -104,6 +108,9 @@ template<class T>
 auto has_get_allocator_aux(T const& t)->decltype(t.get_allocator(), std::true_type {});
 inline auto has_get_allocator_aux(...)->decltype(                   std::false_type{});
 template<class T> struct has_get_allocator : decltype(has_get_allocator_aux(std::declval<T>())){};
+
+//template<class T, typename = std::enable_if_t<has_get_allocator<T>>
+//decltype(auto) get_allocator(T const& v){return v.get_allocator();}
 
 //template<class It, typename = std::enable_if_t<not has_get_allocator<It>{}>>
 //auto get_allocator(It)->std::allocator<typename std::iterator_traits<It>::value_type>{return {};}
@@ -147,7 +154,8 @@ constexpr auto data_elements(A const& arr)
 	return arr.data_elements();}
 
 template<class T, typename = std::enable_if_t<not std::is_array<T>{}> >
-[[deprecated("use constexpr data_elements")]] auto data(T& t){return &t;}
+[[deprecated("use constexpr data_elements")]] 
+auto data(T& t){return &t;}
 
 template<class T, typename = std::enable_if_t<not std::is_array<T>{} and not has_data_elements<T>{}>>
 constexpr auto data_elements(T& t){return &t;}
@@ -396,7 +404,7 @@ int main(){
 
 	std::vector<double>::iterator it;
 	using multi::get_allocator;
-	std::allocator<double> all = get_allocator(it);
+//	std::allocator<double> all = get_allocator(it);
 
 	using multi::corigin;
 	using multi::dimensionality;
