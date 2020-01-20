@@ -13,7 +13,7 @@ for a in ./tests/*.cpp; do echo $a; sh $a || break; echo "\n"; done; exit;*/
 #include "./detail/operators.hpp" // random_iterable
 #include "./detail/memory.hpp"    // pointer_traits
 
-#include "./config/nodiscard_.hpp"
+#include "./config/NODISCARD.hpp"
 
 #include<boost/serialization/binary_object.hpp>
 
