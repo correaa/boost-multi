@@ -107,7 +107,7 @@ struct layout_t<dimensionality_type{0}, SSize>{
 	static constexpr dimensionality_type dimensionality = 0;
 	friend constexpr auto dimensionality(layout_t const& l){return l.dimensionality;}
 	using strides_type    = std::tuple<>;
-	nelems_type nelems_ = std::numeric_limits<nelems_type>::max(); // 1
+	nelems_type nelems_ = 1;//std::numeric_limits<nelems_type>::max(); // 1
 	void* stride_ = nullptr;
 	void* sub = nullptr;
 	struct extensions_type_ : std::tuple<>{
@@ -160,13 +160,12 @@ public:
 	using strides_type = std::tuple<index>;
 	constexpr layout_t() = default;
 	constexpr layout_t(layout_t const&) = default;
-//	constexpr layout_t(index_extension ie, layout_t<0> const&) :
+	constexpr layout_t(index_extension ie, layout_t<0> const&) :
 //		stride_{ie.size()<=1?std::numeric_limits<stride_type>::max():1},
-//		nelems_{
+		nelems_{
 //			ie.size()<=1?ie.size()*std::numeric_limits<stride_type>::max():ie.size()
-		//	ie.size()
-//		}{
-//		}
+			ie.size()
+		}{}
 	constexpr layout_t(stride_type stride, offset_type offset, nelems_type nelems) 
 		: stride_{stride}, offset_{offset}, nelems_{nelems}
 	{}//assert(0);}
