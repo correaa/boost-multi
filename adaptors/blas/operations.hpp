@@ -131,9 +131,15 @@ BOOST_AUTO_TEST_CASE(m){
 		{8. + 2.*I, 2. + 4.*I},
 		{2. - 1.*I, 1. + 1.*I}
 	};
+	using multi::blas::gemm;
+
 	using multi::blas::hermitized;
 	BOOST_REQUIRE( hermitized(A)[0][1] == conj(A[1][0]) );
 	BOOST_REQUIRE( gemm(A, hermitized(A))[2][1] == 20. - 14.*I );
+
+	using multi::blas::transposed;
+	BOOST_REQUIRE( transposed(A)[0][1] == A[1][0] );
+	BOOST_REQUIRE( gemm(A, transposed(A))[2][1] == 16. + 2.*I );
 
 	static_assert( multi::blas::is_conjugated_t<decltype(hermitized(A))>{} , "!" );
 	static_assert( not multi::blas::is_conjugated_t<std::decay_t<decltype( conjugated(hermitized(A)) )>>{}, "!");
