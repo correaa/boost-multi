@@ -1,9 +1,8 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&`#nvcc -x cu --expt-relaxed-constexpr`$CXX $0 -o $0x -Wno-deprecated-declarations -lcudart -lcublas -lcusolver -lboost_unit_test_framework `pkg-config --libs blas lapack` -DBOOST_LOG_DYN_LINK -lboost_log -pthread -lboost_system &&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&nvcc -x cu --expt-relaxed-constexpr`#$CXX` $0 -o $0x -Wno-deprecated-declarations -lcudart -lcublas -lcusolver `pkg-config --libs blas lapack` -DBOOST_TEST_DYN_LINK -lboost_unit_test_framework -DBOOST_LOG_DYN_LINK -lboost_log -lpthread -lboost_system &&$0x&&rm $0x $0.cpp; exit
 #endif
 // © Alfredo A. Correa 2019-2020
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuSolver potrf"
-#define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
 #include "../../../adaptors/cuda.hpp"

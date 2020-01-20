@@ -17,80 +17,6 @@
 namespace boost{
 namespace multi{namespace blas{
 
-enum class trans : char{N='N', T='T', C='C'};
-
-enum class real_operation : char{
-	transposition = static_cast<char>(trans::N),
-	identity      = static_cast<char>(trans::T),
-};
-
-real_operation transpose(real_operation op){
-	switch(op){
-		case real_operation::transposition: return real_operation::identity;
-		case real_operation::identity: return real_operation::transposition;
-	} __builtin_unreachable();
-}
-
-enum class complex_operation : char{
-	hermitian = static_cast<char>(trans::N),
-	identity  = static_cast<char>(trans::C),
-};
-complex_operation hermitize(complex_operation op){
-	switch(op){
-		case complex_operation::hermitian: return complex_operation::identity;
-		case complex_operation::identity: return complex_operation::hermitian;
-	} __builtin_unreachable();
-}
-
-class operation{
-	enum class impl_t : char{
-		identity,// = static_cast<char>(trans::N), 
-		transposition,// = static_cast<char>(real_operation::transposition), 
-		hermitian// = static_cast<char>(complex_operation::hermitian)
-	};
-	impl_t impl_;
-public:
-#if __cplusplus > 201900L
-	operation(std::identity<>) : impl_{impl_t::identity}{}
-#endif
-	operation(complex_operation cop) : impl_{[=]{switch(cop){
-		case complex_operation::identity  : return impl_t::identity;
-		case complex_operation::hermitian : return impl_t::hermitian;
-	} __builtin_unreachable();}()}{}
-	operation(real_operation rop) : impl_{[=]{switch(rop){
-		case real_operation::identity      : return impl_t::identity;
-		case real_operation::transposition : return impl_t::transposition;
-	} __builtin_unreachable();}()}{}
-	constexpr operation(impl_t impl) : impl_{impl}{}
-	constexpr operator complex_operation() const{switch(impl_){
-		case impl_t::identity      : return complex_operation::identity; 
-		case impl_t::transposition : assert(0);
-		case impl_t::hermitian     : return complex_operation::hermitian;
-	} __builtin_unreachable();}
-	constexpr operator real_operation() const{switch(impl_){
-		case impl_t::identity      : return real_operation::identity;
-		case impl_t::transposition : return real_operation::transposition;
-		case impl_t::hermitian     : assert(0); // default:return{};
-	} __builtin_unreachable();}
-	constexpr operator char() const{return static_cast<char>(impl_);}
-	friend bool operator==(operation const& o1, operation const& o2){return o1.impl_==o2.impl_;}
-	friend bool operator==(complex_operation const& o1, operation const& o2){return operation(o1)==o2;}
-	friend bool operator==(operation const& o1, complex_operation const& o2){return o1==operation(o2);}
-	friend bool operator==(real_operation const& o1, operation const& o2){return operation(o1)==o2;}
-	friend bool operator==(operation const& o1, real_operation const& o2){return o1==operation(o2);}
-	static operation const identity; //= impl_t::identity;
-	static operation const hermitian; //= impl_t::hermitian;
-	static operation const transposition; //= impl_t::transposition;
-};
-
-/*inline*/ operation const operation::identity{operation::impl_t::identity};
-/*inline*/ operation const operation::hermitian{operation::impl_t::hermitian};
-/*inline*/ operation const operation::transposition{operation::impl_t::transposition};
-
-//operation const& identity = operation::identity;
-//operation const& hermitian = operation::hermitian;
-//operation const& transposition = operation::transposition;
-
 template<class M> decltype(auto) transposed(M const& m){return rotated(m);}
 //template<class M> decltype(auto) transposed(M&       m){return rotated(m);}
 
@@ -160,17 +86,7 @@ decltype(auto) hermitized(A&& a){
 template<class A>
 decltype(auto) transposed(A&& a){return rotated(std::forward<A>(a));}
 
-template<class M> decltype(auto) N(M&& m){return m;}
-template<class M> decltype(auto) T(M&& m){return transposed(m);}
-template<class M> decltype(auto) C(M&& m){return conjugated_transposed(m);}
-
 }}
-
-namespace multi{
-	using blas::N;
-	using blas::T;
-	using blas::C;
-}
 
 }
 
@@ -183,6 +99,7 @@ namespace multi{
 #include "../../array.hpp"
 #include "../../utility.hpp"
 #include "../blas/nrm2.hpp"
+#include "../blas/gemm.hpp"
 
 #include<complex>
 #include<cassert>
@@ -215,14 +132,12 @@ BOOST_AUTO_TEST_CASE(m){
 		{2. - 1.*I, 1. + 1.*I}
 	};
 	using multi::blas::hermitized;
-	assert( hermitized(A)[0][1] == conj(A[1][0]) );
+	BOOST_REQUIRE( hermitized(A)[0][1] == conj(A[1][0]) );
+	BOOST_REQUIRE( gemm(A, hermitized(A))[2][1] == 20. - 14.*I );
+
 	static_assert( multi::blas::is_conjugated_t<decltype(hermitized(A))>{} , "!" );
-
-
 	static_assert( not multi::blas::is_conjugated_t<std::decay_t<decltype( conjugated(hermitized(A)) )>>{}, "!");
 	static_assert( not multi::blas::is_hermitized<std::decay_t<decltype( conjugated(hermitized(A)) )>>{}, "!");
-
-
 }
 
 BOOST_AUTO_TEST_CASE(is_complex_array_test){

@@ -11,7 +11,7 @@
 #endif
 
 #if (__has_cpp_attribute(nodiscard)) && (__cplusplus>=201703L)
-	#define nodiscard_(MsG) [[nodiscard]]
+	#define nodiscard_(MsG) nodiscard
 	#define NODISCARD(MsG) [[nodiscard_(MsG)]]
 	#if (__has_cpp_attribute(nodiscard)>=201907) && (__cplusplus>=201703L)
 		#define nodiscard_(MsG) nodiscard(MsG)

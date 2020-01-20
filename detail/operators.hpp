@@ -1,10 +1,16 @@
 #if COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&c++ -D_TEST_BOOST_MULTI_DETAIL_OPERATORS $0.cpp -o $0x &&$0x&&rm $0x $0.cpp;exit
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -D_TEST_BOOST_MULTI_DETAIL_OPERATORS $0.cpp -o $0x&&$0x&&rm $0x $0.cpp;exit
 #endif
 #ifndef BOOST_MULTI_DETAIL_OPERATORS_HPP
 #define BOOST_MULTI_DETAIL_OPERATORS_HPP
 
-//#include<type_traits>
+#if defined(__CUDACC__)
+#define HD __host__ __device__
+#else
+#define HD 
+#endif
+
+#include<type_traits> // enable_if
 #include<utility> // forward
 
 namespace boost{
@@ -20,8 +26,8 @@ struct equality_comparable2<T, void, B> : B{
 //	friend bool operator==(const U& y, const T& x){return x == y;}
 //	template<class U, typename = std::enable_if_t<not std::is_same<U, T>{}> >
 //	friend bool operator!=(const U& y, const T& x){return not (x == y);}
-	template<class U>
-	friend bool operator!=(const T& y, const U& x){return not (y == x);}
+	template<class U> 
+	friend bool operator!=(const T& y, const U& x){return not(y==x);}
 };
 
 template<class T, class V> struct partially_ordered2;
@@ -93,9 +99,9 @@ template<class T, class D>
 struct addable2{
 	using difference_type = D;
 	template<class TT, typename = std::enable_if_t<std::is_base_of<T, TT>{}> >
-	friend HD T operator+(TT&& t, difference_type const& d){T tmp{std::forward<TT>(t)}; tmp+=d; return tmp;}
+	friend T operator+(TT&& t, difference_type const& d) HD{T tmp{std::forward<TT>(t)}; tmp+=d; return tmp;}
 	template<class TT, typename = std::enable_if_t<std::is_base_of<T, TT>{}> >
-	friend HD T operator+(difference_type const& d, TT&& t){return std::forward<TT>(t) + d;}
+	friend T operator+(difference_type const& d, TT&& t) HD{return std::forward<TT>(t) + d;}
 };
 
 template<class T, class D>
