@@ -11,7 +11,7 @@
 #include "./memory/allocator.hpp"
 #include "./detail/memory.hpp"
 
-#include <boost/log/trivial.hpp>
+//#include <boost/log/trivial.hpp>
 
 #if defined(__CUDACC__)
 #define HD __host__ __device__
@@ -936,7 +936,7 @@ int main(){
 		assert( stride(A) == 1 );
 	}
 	{
-	//	multi::array<double, 0> A = 3.;
+		multi::array<double, 0> A = 3.;
 	//	assert( stride(A) == 1 );
 	}
 }
