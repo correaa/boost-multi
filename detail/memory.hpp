@@ -265,7 +265,7 @@ template<class AA> class is_allocator{
 	>
 	static std::true_type  aux(A const&);
 public:
-	static bool const value = decltype(aux(std::declval<AA>())){};
+	static bool const value = decltype(aux(std::declval<AA>()))::value;
 	constexpr operator bool() const{return value;}
 };
 
