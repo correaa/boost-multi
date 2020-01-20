@@ -7,7 +7,7 @@
 #define MULTI_ADAPTORS_BLAS_SCAL_HPP
 
 #include "../blas/core.hpp"
-#include "../../config/nodiscard_.hpp"
+#include "../../config/NODISCARD.hpp"
 
 #include<cassert>
 

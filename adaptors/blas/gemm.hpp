@@ -12,7 +12,7 @@
 #include "../blas/operations.hpp"
 #include "../blas/numeric.hpp"
 
-#include "../../config/nodiscard_.hpp"
+#include "../../config/NODISCARD.hpp"
 
 namespace boost{
 namespace multi{

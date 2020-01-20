@@ -10,7 +10,7 @@
 
 #include "../blas/core.hpp"
 #include "../blas/copy.hpp" 
-#include "../blas/scal.hpp" 
+//#include "../blas/scal.hpp" 
 #include "../blas/syrk.hpp" // fallback to real case
 
 #include "../blas/side.hpp"
@@ -18,7 +18,7 @@
 
 #include "../blas/operations.hpp"
 
-#include "../../config/nodiscard_.hpp"
+#include "../../config/NODISCARD.hpp"
 
 //#include<iostream> //debug
 //#include<type_traits> // void_t
@@ -37,6 +37,7 @@ auto herk_aux(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c, std::tru
 {
 	assert( size(a) == size(c) );
 	assert( size(c) == size(rotated(c)) );
+	if(size(c)==0) return std::forward<C2D>(c);
 
 	if(is_hermitized<std::decay_t<C2D>>{}){
 		herk_aux(flip(c_side), alpha, a, beta, hermitized(c), std::true_type{});
@@ -52,7 +53,10 @@ auto herk_aux(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c, std::tru
 			else assert(0);
 		}else{
 				 if(stride(a)!=1 and stride(c)!=1) herk(c_side==filling::upper?'L':'U', 'C', size(c), size(rotated(a)), alpha, base_a, stride(        a ), beta, base_c, stride(c));
-			else if(stride(a)!=1 and stride(c)==1) assert(0);//herk(c_side==filling::upper?'U':'L', 'C', size(c), size(rotated(a)), alpha, base_a, stride(        a ), beta, base(c), stride(rotated(c)));
+			else if(stride(a)!=1 and stride(c)==1){
+				if(size(a)==1) herk(c_side==filling::upper?'L':'U', 'N', size(c), size(rotated(a)), alpha, base_a, stride(rotated(a)), beta, base_c, stride(rotated(c)));
+				else assert(0);
+			}
 			else if(stride(a)==1 and stride(c)!=1) assert(0);//herk(c_side==filling::upper?'L':'U', 'N', size(c), size(rotated(a)), alpha, base_a, stride(rotated(a)), beta, base(c), stride(c));
 			else if(stride(a)==1 and stride(c)==1) herk(c_side==filling::upper?'U':'L', 'N', size(c), size(rotated(a)), alpha, base_a, stride(rotated(a)), beta, base_c, stride(rotated(c)));
 			else assert(0);
@@ -131,21 +135,16 @@ template<class A2D> auto herk(A2D const& a)
 
 #if _TEST_MULTI_ADAPTORS_BLAS_HERK
 
-//#include "../blas/gemm.hpp" TODO: test herk againt gemm
-
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS gemm"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS herk"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
-
-namespace multi = boost::multi;
-
 #include "../../array.hpp"
+#include "../../adaptors/blas/gemm.hpp"
 
 #include<iostream>
-#include<numeric>
 
-#include <boost/timer/timer.hpp>
+namespace multi = boost::multi;
 
 template<class M> decltype(auto) print(M const& C){
 	using std::cout;
@@ -377,21 +376,16 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_basic_explicit_enum_interface){
 		{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
 		{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
 	};
+	using namespace multi::blas;
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.);
-		namespace blas = multi::blas;
-		using blas::filling;
-		using blas::hermitized;
 		herk(filling::lower, 1., hermitized(a), 0., c); // c†=c=a†a=(a†a)†, `c` in lower triangular
 		BOOST_REQUIRE( c[2][1]==complex(41.,2.) );
 		BOOST_REQUIRE( c[1][2]==9999. );
 	}
+	BOOST_REQUIRE( herk(hermitized(a)) == gemm(hermitized(a), a) );
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.);
-		namespace blas = multi::blas;
-		using blas::filling;
-		using blas::hermitized;
-		using blas::transposed;
 	//	herk(filling::lower, 1., hermitized(a), 0., transposed(c)); // c†=c=a†a=(a†a)†, `c` in lower triangular
 	//	print(transposed(c));
 	//	BOOST_REQUIRE( c[2][1]==complex(41.,2.) );
@@ -399,43 +393,45 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_basic_explicit_enum_interface){
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
-		namespace blas = multi::blas;
-		using blas::filling;
-		using blas::hermitized;
-		using blas::transposed;
 		herk(filling::lower, 1., hermitized(transposed(a)), 0., transposed(c)); // c†=c=a†a=(a†a)†, `c` in lower triangular
 		BOOST_REQUIRE( transposed(c)[1][0]==complex(50.,+49.) );
 		BOOST_REQUIRE( transposed(c)[0][1]==9999. );
 	}
+//	BOOST_REQUIRE( herk(hermitized(transposed(a))) == gemm(hermitized(transposed(a)), transposed(a)) );
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.);
-		namespace blas = multi::blas;
-		using blas::filling;
-		using blas::hermitized;
 		herk(filling::upper, 1., hermitized(a), 0., c); // c†=c=a†a=(a†a)†, `c` in upper triangular
 		BOOST_REQUIRE( c[1][2]==complex(41., -2.) );
 		BOOST_REQUIRE( c[2][1]==9999. );
+		BOOST_REQUIRE( herk(hermitized(a)) == gemm(hermitized(a), a) );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
-		using namespace multi::blas;
 		herk(filling::lower, 1., a, 0., c); // c†=c=aa†=(aa†)†, `c` in lower triangular
 		BOOST_REQUIRE( c[1][0]==complex(50., -49.) );
 		BOOST_REQUIRE( c[0][1]==9999. );
+		BOOST_REQUIRE( herk(a) == gemm(a, hermitized(a)) );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
-		using namespace multi::blas;
 		herk(filling::upper, 1., a, 0., c); // c†=c=aa†=(aa†)†, `c` in upper triangular
 		BOOST_REQUIRE( c[0][1]==complex(50., 49.) );
 		BOOST_REQUIRE( c[1][0]==9999. );
+		BOOST_REQUIRE( herk(a) == gemm(a, hermitized(a)) );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
-		using namespace multi::blas;
+		herk(filling::upper, 2., a, 0., c); // c†=c=aa†=(aa†)†, `c` in upper triangular
+		BOOST_REQUIRE( c[0][1]==complex(100., 98.) );
+		BOOST_REQUIRE( c[1][0]==9999. );
+		BOOST_REQUIRE( herk(2., a) == gemm(2., a, hermitized(a)) );
+	}
+	{
+		multi::array<complex, 2> c({2, 2}, 9999.);
 		herk(filling::upper, 1., a, 0., c); // c†=c=aa†=(aa†)†, `c` in upper triangular
 		BOOST_REQUIRE( c[0][1]==complex(50., 49.) );
 		BOOST_REQUIRE( c[1][0]==9999. );
+		BOOST_REQUIRE( herk(1., a) == gemm(1., a, hermitized(a)) );
 	}
 }
 
@@ -576,6 +572,40 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_automatic_ordering_and_symmetrizati
 	}
 }
 
+BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_size1_real_case){
+	multi::array<complex, 2> const a = {
+		{1., 3., 4.}
+	};
+	using namespace multi::blas;
+	{
+		multi::array<complex, 2> c({1, 1}, 9999.);
+		herk(filling::upper, 1., a, c); // c†=c=aa†
+		BOOST_TEST( c[0][0] == 26. );
+	}
+	BOOST_TEST( herk(a) == gemm(a, hermitized(a)) );
+}
+
+BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_size1){
+	multi::array<complex, 2> const a = {
+		{1. + 4.*I, 3. + 2.*I, 4. - 1.*I}
+	};
+	using namespace multi::blas;
+	{
+		multi::array<complex, 2> c({1, 1}, 9999.);
+		herk(filling::upper, 1., a, c); // c†=c=aa†
+		BOOST_TEST( c[0][0] == 47. );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_size0){
+	multi::array<complex, 2> const a;
+	using namespace multi::blas;
+	{
+		multi::array<complex, 2> c;
+		herk(filling::upper, 1., a, c); // c†=c=aa†
+	//	BOOST_TEST( c[0][0] == 47. );
+	}
+}
 
 
 BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_automatic_ordering_and_symmetrization_real_case){
@@ -584,50 +614,36 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_automatic_ordering_and_symmetrizati
 		{ 1., 3., 4.},
 		{ 9., 7., 1.}
 	};
+	using namespace multi::blas;
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.);
-		using multi::blas::hermitized;
-		using multi::blas::filling;
 		herk(filling::upper, 1., hermitized(a), c); // c†=c=a†a
 	//	BOOST_REQUIRE( c[2][1]==19. );
 		BOOST_REQUIRE( c[1][2]==19. );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
-		using multi::blas::herk;
-		using multi::blas::filling;
 		herk(filling::upper, 1., a, c); // c†=c=aa†
 	//	BOOST_REQUIRE( c[1][0] == 34. );
 		BOOST_REQUIRE( c[0][1] == 34. );
 	}
 	{
-		using multi::blas::herk;
-		using multi::blas::filling;
 		multi::array<complex, 2> c = herk(filling::upper, 1., a); // c†=c=aa†
 	//	BOOST_REQUIRE( c[1][0] == 34. );
 		BOOST_REQUIRE( c[0][1] == 34. );
 	}
 	{
-		using multi::blas::herk;
-		using multi::blas::hermitized;
-		using multi::blas::filling;
 		multi::array<complex, 2> c = herk(filling::upper, 1., hermitized(a)); // c†=c=a†a
-
 		BOOST_REQUIRE( size(hermitized(a))==3 );		
 	//	BOOST_REQUIRE( c[2][1]==19. );
 		BOOST_REQUIRE( c[1][2]==19. );
 	}
 	{
-		using multi::blas::herk;
-		using multi::blas::filling;
 		multi::array<complex, 2> c = herk(filling::upper, a); // c†=c=a†a
 	//	BOOST_REQUIRE( c[1][0] == 34. );
 		BOOST_REQUIRE( c[0][1] == 34. );
 	}
 	{
-		using multi::blas::herk;
-		using multi::blas::hermitized;
-		using multi::blas::filling;
 		multi::array<complex, 2> c = herk(filling::upper, hermitized(a)); // c†=c=a†a
 	//	BOOST_REQUIRE( c[2][1]==19. );
 		BOOST_REQUIRE( c[1][2]==19. );

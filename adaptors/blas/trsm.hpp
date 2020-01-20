@@ -15,7 +15,7 @@
 #include "../blas/filling.hpp"
 #include "../blas/side.hpp"
 
-#include "../../config/nodiscard_.hpp"
+#include "../../config/NODISCARD.hpp"
 
 namespace boost{
 namespace multi{namespace blas{
