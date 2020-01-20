@@ -11,24 +11,25 @@
 #endif
 
 #if (__has_cpp_attribute(nodiscard)) && (__cplusplus>=201703L)
-	#define NODISCARD(MsG) [[nodiscard]]
 	#define nodiscard_(MsG) [[nodiscard]]
+	#define NODISCARD(MsG) [[nodiscard_(MsG)]]
 	#if (__has_cpp_attribute(nodiscard)>=201907) && (__cplusplus>=201703L)
-		#define NODISCARD(MsG) [[nodiscard(MsG)]]
 		#define nodiscard_(MsG) nodiscard(MsG)
+		#define NODISCARD(MsG) [[nodiscard_(MsG)]]
 	#endif
 #elif __has_cpp_attribute(gnu::warn_unused_result)
-	#define NODISCARD(MsG) [[gnu::warn_unused_result]]
 	#define nodiscard_(MsG) gnu::warn_unused_result
+	#define NODISCARD(MsG) [[nodiscard_(MsG)]]
 #else
-	#define NODISCARD(MsG)
 	#define nodiscard_(MsG)
+	#define NODISCARD(MsG)
 #endif
+
+#ifdef _TEST_MULTI_CONFIG_NODISCARD
 
 NODISCARD("because...") int f(){return 5;}
 //[[nodiscard]] int g(){return 5;} // ok in g++ -std=c++14
 
-#ifdef _TEST_MULTI_CONFIG_NODISCARD
 int main(){
 	int i; 
 	i = f(); // ok
