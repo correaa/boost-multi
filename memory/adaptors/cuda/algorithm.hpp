@@ -1,11 +1,13 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&& clang++ -fopenmp -std=c++14 -Wall -Wextra -Weffc++ -D_DISABLE_CUDA_SLOW -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_ALGORITHM $0.cpp -o$0x -lcudart -lboost_timer&&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra `#-Weffc++` -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_ALGORITHM $0.cpp -o$0x -lcudart&&$0x&&rm $0x $0.cpp; exit
 #endif
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_ALGORITHM_HPP
 #define BOOST_MULTI_MEMORY_ADAPTORS_CUDA_ALGORITHM_HPP
 
 #include "../cuda/cstring.hpp"
 #include "../../../../multi/array_ref.hpp"
+
+#include <boost/log/trivial.hpp>
 #include<iostream>
 
 namespace boost{namespace multi{
@@ -35,6 +37,7 @@ template<
 >
 //[[deprecated]]
 ptr<T> copy_n(PtrU first, Size count, PtrT result){
+	assert(0);
 	std::cerr<<"copying " << count*sizeof(T) << " bytes" << std::endl;
 	memcpy(result, first, count*sizeof(T));  return result + count;
 }
@@ -91,6 +94,7 @@ array_iterator<T2, 1, memory::cuda::ptr<Q2>> copy_n(
 	array_iterator<T1, 1, memory::cuda::ptr<Q1>> first, Size count, 
 	array_iterator<T2, 1, memory::cuda::ptr<Q2>> result
 ){
+	assert(0);
 	std::cerr<<"copying " << count << " elements " << std::endl;
 	[[maybe_unused]] cudaError_t const s = cudaMemcpy2D(
 		static_cast<void*>(base(result)), sizeof(T2)*stride(result),
@@ -105,7 +109,7 @@ array_iterator<T2, 1, memory::cuda::ptr<Q2>> copy_n(
 	iterator<T1, 1, Q1*> first, Size count, 
 	iterator<T2, 1, memory::cuda::ptr<Q2>> result
 ){
-	std::cerr<<"copying " << count << " elements " << std::endl;
+	assert(0);
 	[[maybe_unused]] cudaError_t const s = cudaMemcpy2D(
 		static_cast<Q2*>(base(result)), sizeof(T2)*stride(result),
 		                 base(first ) , sizeof(T1)*stride(first ),
@@ -132,22 +136,6 @@ auto copy(
 
 
 }}
-
-#if 0
-namespace boost{
-namespace multi{
-
-double* omp_copy_n(double const* first, std::size_t count, double* result){
-	std::size_t i;
-#pragma omp target parallel for shared(result,first) private(i)
-	for(i = 0; i != count; ++i){
-		result[i] = first[i];
-	}
-	return result + count;
-}
-
-}}
-#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -203,16 +191,8 @@ int main(){
 	}
 #endif
 	{
-		multi::array<double, 2> A({32, 8}, double{99.});
-	//	std::iota(A.data(), A.data()+A.num_elements(), 0.);
-		multi::array<double, 2, cuda::allocator<double>> A_gpu = A;//({32, 8000});// = A;
-		assert( A_gpu[2][2] == 99. );
-	//	assert( A_gpu[10][10] == A[10][10] );
-	//	std::cerr<< "initialized" << std::endl;
-	//	assert( A_gpu[2][2] == 99. );
-	//	assert( A_gpu[2][2] == A[2][2] );
-	//	multi::array<double, 2> const A({32, 100000}, double{99.});
-	//	multi::array<double, 2, cuda::allocator<double>> A_gpu = A;
+		multi::array<double, 2> A({32, 8}, 99.);
+		multi::array<double, 2, cuda::allocator<double>> A_gpu({32, 8}, 0.);// = A;//({32, 8000});// = A;
 	}
 }
 #endif

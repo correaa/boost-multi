@@ -97,7 +97,7 @@ void destroy(Alloc& a, ForwardIt first, ForwardIt last, void* = 0){
 }
 
 template<class Alloc, class InputIt, class Size, class ForwardIt>//, typename AT = std::allocator_traits<Alloc> >
-ForwardIt uninitialized_copy_n(Alloc& a, InputIt f, Size n, ForwardIt d){
+ForwardIt alloc_uninitialized_copy_n(Alloc& a, InputIt f, Size n, ForwardIt d){
 	ForwardIt c = d;
 //	using std::addressof;
 	try{

@@ -107,7 +107,7 @@ struct layout_t<dimensionality_type{0}, SSize>{
 	static constexpr dimensionality_type dimensionality = 0;
 	friend constexpr auto dimensionality(layout_t const& l){return l.dimensionality;}
 	using strides_type    = std::tuple<>;
-	nelems_type nelems_ = 1;
+	nelems_type nelems_ = std::numeric_limits<nelems_type>::max(); // 1
 	void* stride_ = nullptr;
 	void* sub = nullptr;
 	struct extensions_type_ : std::tuple<>{
@@ -119,7 +119,7 @@ struct layout_t<dimensionality_type{0}, SSize>{
 		friend decltype(auto) base(extensions_type_ const& s){return s.base();}
 		operator nelems_type() const{return 1;}
 	};
-	constexpr layout_t(extensions_type_ const& = {}) : nelems_{1}{}
+	constexpr layout_t(extensions_type_ const& = {}){}// : nelems_{1}{}
 	using extensions_type = extensions_type_;
 	constexpr extensions_type extensions() const{return extensions_type{};}
 	friend constexpr auto extensions(layout_t const& self){return self.extensions();}
