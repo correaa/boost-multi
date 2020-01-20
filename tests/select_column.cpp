@@ -27,6 +27,9 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section){
 	BOOST_REQUIRE( dimensionality(col2) == 1 );
 	BOOST_REQUIRE( size(col2) == size(A) );
 	BOOST_REQUIRE( col2.size() == size(A) );
+	BOOST_REQUIRE( stride(col2) == 3 );
+	BOOST_REQUIRE( col2[0] == 02. );
+	BOOST_REQUIRE( col2[1] == 12. );
 	BOOST_REQUIRE(( col2 == multi::array<double, 1>{02., 12., 22., 32.} ));
 	BOOST_REQUIRE(( col2 == multi::array<double, 1>(rotated(A)[2]) ));
 	BOOST_REQUIRE(( col2 == rotated(A)[2] ));
