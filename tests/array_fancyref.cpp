@@ -1,7 +1,7 @@
 #ifdef COMPILATION_INSTRUCTIONS
-nvcc -std=c++14 `#-Wall -Wextra -Wpedantic` $0 -o $0x &&$0x&&rm $0x; exit
+$CXX -Wall -Wextra -Wpedantic $0 -o $0x &&$0x&&rm $0x; exit
 #endif
-// © Alfredo A. Correa 2018-2019
+// © Alfredo A. Correa 2018-2020
 
 #include<iostream>
 #include<cassert>
