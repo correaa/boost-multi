@@ -50,18 +50,9 @@ M&& randomize(M&& A){
 	return std::forward<M>(A);
 }
 
-template<class A> A&& onrm(A&& a){ // orthonormalize rows
-	assert(size(a) <= size(rotated(a)));
-	using blas::hermitized;
-	using blas::filling;
-	using lapack::potrf;
-	auto const f = filling::upper;
-	return trsm(flip(f), hermitized(potrf(f, herk(f, a))), std::forward<A>(a));		
-}
-
 BOOST_AUTO_TEST_CASE(orthogonalization_over_rows, *boost::unit_test::tolerance(0.00001)){
 	auto A = randomize(multi::array<complex, 2>({3, 10}));
-	onrm(A);
+	lapack::onrm(A);
 
 	using blas::herk;
 	using blas::hermitized;
@@ -91,7 +82,7 @@ BOOST_AUTO_TEST_CASE(orthogonalization_over_columns, *boost::unit_test::toleranc
 
 	auto A = randomize(	multi::array<complex, 2>({10, 3}) );
 	using blas::hermitized;
-	onrm(hermitized(A));
+	lapack::onrm(hermitized(A));
 
 	using blas::filling;
 	auto id = herk(filling::upper, hermitized(A));
