@@ -436,8 +436,8 @@ public:
 		return operator[](i);}
 	template<class... As>
 	auto operator()(index i, As... as) const
-	->decltype(operator[](i)(as...))
-	{	return operator[](i)(as...);}
+	->decltype(operator[](i)(as...)){
+		return operator[](i)(as...);}
 //#define SARRAY1(A1) auto operator()(A1 a1) const{return operator()<>(a1);}
 #define SARRAY2(A1, A2)	auto operator()(A1 a1, A2 a2) const{return operator()<A2>(a1, a2);}
 	SARRAY2(index, index ); SARRAY2(irange, index );

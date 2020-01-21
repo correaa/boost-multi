@@ -247,8 +247,40 @@ public:
 	//	return *this;
 	}
 	basic_array<T, D, typename static_array::element_const_ptr> operator()() const&{
-		return basic_array<T, D, typename static_array::element_const_ptr>{this->layout(), this->base_};
+		return static_array_cast<typename static_array::element_type const>(*this);
+	//	return basic_array<T, D, typename static_array::element_const_ptr>{this->layout(), this->base_};
 	}
+	template<class... Ts> decltype(auto) operator()(Ts&&... t){return ref::operator()(std::forward<Ts>(t)...);}
+	template<class... Ts> decltype(auto) operator()(Ts&&... t) const{
+		return static_array_cast<typename static_array::element_type const>(*this)(std::forward<Ts>(t)...);
+	}
+	template<class... As> decltype(auto) operator()(index a, As... as){return ref::operator()(a, std::forward<As>(as)...);}
+	template<class... As> decltype(auto) operator()(index a, As... as) const{return operator()()(a, std::forward<As>(as)...);}
+	template<class... As> decltype(auto) operator()(index_range a, As... as){return ref::operator()(a, std::forward<As>(as)...);}
+	template<class... As> decltype(auto) operator()(index_range a, As... as) const{return operator()()(a, std::forward<As>(as)...);}
+
+//#define SARRAY1(A1) auto operator()(A1 a1) const{return operator()<>(a1);}
+#define SARRAY2(A1, A2)	auto operator()(A1 a1, A2 a2) const{return operator()<A2>(a1, a2);} auto operator()(A1 a1, A2 a2){return operator()<A2>(a1, a2);}
+	SARRAY2(index, index ); SARRAY2(irange, index );
+	SARRAY2(index, irange); SARRAY2(irange, irange);
+#undef SARRAY2
+#define SARRAY3(A1, A2, A3) auto operator()(A1 a1, A2 a2, A3 a3) const{return operator()<A2, A3>(a1, a2, a3);} auto operator()(A1 a1, A2 a2, A3 a3){return operator()<A2, A3>(a1, a2, a3);}
+	SARRAY3(index, index , index ); SARRAY3(irange, index , index );
+	SARRAY3(index, index , irange); SARRAY3(irange, index , irange);
+	SARRAY3(index, irange, index ); SARRAY3(irange, irange, index );
+	SARRAY3(index, irange, irange); SARRAY3(irange, irange, irange);
+#undef SARRAY3
+#define SARRAY4(A1, A2, A3, A4) auto operator()(A1 a1, A2 a2, A3 a3, A4) const{return operator()<A2, A3, A4>(a1, a2, a3);} auto operator()(A1 a1, A2 a2, A3 a3, A4) {return operator()<A2, A3, A4>(a1, a2, a3);}
+	SARRAY4(index, index, index , index ); SARRAY4(index, irange, index , index );
+	SARRAY4(index, index, index , irange); SARRAY4(index, irange, index , irange);
+	SARRAY4(index, index, irange, index ); SARRAY4(index, irange, irange, index );
+	SARRAY4(index, index, irange, irange); SARRAY4(index, irange, irange, irange);
+	SARRAY4(irange, index, index , index ); SARRAY4(irange, irange, index , index );
+	SARRAY4(irange, index, index , irange); SARRAY4(irange, irange, index , irange);
+	SARRAY4(irange, index, irange, index ); SARRAY4(irange, irange, irange, index );
+	SARRAY4(irange, index, irange, irange); SARRAY4(irange, irange, irange, irange);
+#undef SARRAY4
+
 //	using const_reverse_iterator = basic_reverse_iterator<const_iterator>;
 	auto rotated(dimensionality_type d = 1) const&{
 		typename static_array::layout_t new_layout = *this;
