@@ -1,43 +1,20 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++14 -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_MULTI_ADAPTORS_BLAS_DOT $0.cpp -o $0x `pkg-config --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -D_TEST_MULTI_ADAPTORS_BLAS_DOT $0.cpp -o$0x `pkg-config --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 #ifndef MULTI_ADAPTORS_BLAS_DOT_HPP
 #define MULTI_ADAPTORS_BLAS_DOT_HPP
 
 #include "../blas/core.hpp"
-#include "../blas/numeric.hpp"
 #include "../blas/operations.hpp"
 #include "../../array.hpp"
-
-#if __cplusplus>=201703L and __has_cpp_attribute(nodiscard)>=201603
-#define NODISCARD(MsG) [[nodiscard]]
-#elif __has_cpp_attribute(gnu::warn_unused_result)
-#define NODISCARD(MsG) [[gnu::warn_unused_result]]
-#else
-#define NODISCARD(MsG)
-#endif
+#include "../../config/NODISCARD.hpp"
 
 namespace boost{
 namespace multi{
 namespace blas{
 
 namespace{
-
-
-#if 0
-template<class X1D, class Y1D, class R>
-auto dot_complex_aux(X1D const& x, Y1D const& y, R&& r, std::false_type)
-->decltype(dotu(size(x), base(x), stride(x), base(y), stride(y), &r), std::forward<R>(r)){assert( size(x) == size(y) and not offset(x) and not offset(y) );
-	return dotu(size(x), base(x), stride(x), base(y), stride(y), &r), std::forward<R>(r);}
-
-
-
-template<class X1D, class Y1D, class R>
-auto dot_complex_aux(X1D const& x, Y1D const& y, R&& r, std::true_type)
-->decltype(dotc(size(x), base(x), stride(x), underlying(base(y)), stride(y), &r), std::forward<R>(r)){assert( size(x) == size(y) and not offset(x) and not offset(y) );
-	return dotc(size(x), base(x), stride(x), underlying(base(y)), stride(y), &r), std::forward<R>(r);}
-#endif
 
 using core::dotu;
 using core::dotc;
@@ -73,7 +50,7 @@ auto dot(X1D const& x, Y1D const& y, R&& r)
 	return dot_aux(x, y, std::forward<R>(r), is_complex_array<std::decay_t<X1D>>{});}
 
 template<class X1D, class Y1D>
-NODISCARD("")
+NODISCARD("when last argument is read-only")
 auto dot(X1D const& x, Y1D const& y){
 	return dot(x, y, 
 		multi::static_array<typename X1D::value_type, 0, decltype(common(get_allocator(std::declval<X1D>()), get_allocator(std::declval<Y1D>())))>
@@ -204,7 +181,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl){
 		}
 	}
 }
-
 #endif
 #endif
 
