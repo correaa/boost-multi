@@ -1,5 +1,5 @@
 #ifdef compile_instructions
-(echo '#include"'$0'"'>$0.cpp)&&clang++ -O3 -std=c++17 -Wall -Wextra -Wpedantic -D_TEST_MULTI_INDEX_RANGE $0.cpp -o $0x &&$0x&&rm $0.cpp $0x;exit
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -std=c++17 -Wall -Wextra -Wpedantic -D_TEST_MULTI_INDEX_RANGE $0.cpp -o $0x &&$0x&&rm $0.cpp $0x;exit
 #endif
 
 #ifndef MULTI_INDEX_RANGE_HPP
@@ -15,7 +15,7 @@
 #endif
 #endif
 
-#include<boost/serialization/nvp.hpp>
+//#include<boost/serialization/nvp.hpp>
 
 #include<iterator> // std::random_iterator_tag // std::reverse_iterator
 
@@ -168,7 +168,7 @@ public:
 	constexpr auto contains(value_type const& v) const{return (v >= first() and v < last())?true:false;}
 };
 
-template<class IndexType, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
+template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
 struct extension_t : public range<IndexType, IndexTypeLast>{
 	using range<IndexType, IndexTypeLast>::range;
 	constexpr extension_t(IndexType f, IndexTypeLast l) noexcept : range<IndexType, IndexTypeLast>{f, l}{}
@@ -216,9 +216,11 @@ using std::cout;
 
 //https://stackoverflow.com/a/35110453/225186
 template<class T>constexpr std::remove_reference_t<T> const_aux(T&&t){return t;}
+#if 1
 #define logic_assert(ConD, MsG) \
 	if constexpr(noexcept(const_aux(ConD))) static_assert(ConD, MsG);\
 	else assert(ConD && MsG);
+#endif
 
 template<typename Integral, Integral const n>
 struct integral_constant : private hana::integral_constant<Integral, n>{
@@ -259,12 +261,12 @@ int main(int, char*[]){
 	assert(( multi::range<std::ptrdiff_t>{5, 5}.size() == 0 ));
 #endif
 {
-	multi::extension_t x(10);
+	multi::extension_t<> x(10);
 	assert( size(x) == 10 );
 	auto b = begin(x);
 	ranges::begin(x);
 	ranges::end(x);
-	static_assert( typename ranges::ForwardIterator< std::decay_t<decltype(b)> >{} ); // error: static assertion failed
+	static_assert( ranges::forward_iterator< std::decay_t<decltype(b)> > , "!"); // error: static assertion failed
 }
 {
 	assert( *begin(multi::range{5, 10}) == 5 );
@@ -272,7 +274,7 @@ int main(int, char*[]){
 	assert( *ranges::begin(evoke(multi::range{5, 10})) == 5 );
 	assert( *ranges::rbegin(evoke(multi::range{5, 10})) == 9 );
 //	std::iterator_traits<multi::range<std::ptrdiff_t>::iterator>::pointer s;
-	static_assert( typename ranges::ForwardIterator< std::decay_t<decltype(b)> >{} ); // error: static assertion failed
+	static_assert( ranges::forward_iterator< std::decay_t<decltype(b)> > ); // error: static assertion failed
 }
 {
 	using namespace hana::literals; // contains the _c suffix

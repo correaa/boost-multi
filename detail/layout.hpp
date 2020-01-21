@@ -1,18 +1,16 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++17 -Wall -Wextra `#-Wfatal-errors` -D_TEST_MULTI_LAYOUT $0.cpp -o$0x&& $0x &&rm $0x $0.cpp;exit
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -D_TEST_MULTI_LAYOUT $0.cpp -o$0x&&$0x&&rm $0x $0.cpp;exit
 #endif
 #ifndef MULTI_LAYOUT_HPP
 #define MULTI_LAYOUT_HPP
-// © Alfredo A. Correa 2018-2019
+// © Alfredo A. Correa 2018-2020
 
 #include "types.hpp"
 
-#include<type_traits> // make_signed_t
-
 #include "../detail/operators.hpp"
 
-#include<boost/serialization/nvp.hpp>
-//#include<iostream> //debug
+#include<type_traits> // make_signed_t
+
 #include<limits>
 
 #ifndef HD

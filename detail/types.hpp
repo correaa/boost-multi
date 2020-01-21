@@ -165,7 +165,7 @@ int main(){
 //	ranges::begin(x);
 //	ranges::end(x);
 //	what(b);
-	static_assert( typename ranges::ForwardIterator< std::decay_t<decltype(b)> >{} , "!"); // error: static assertion failed
+	static_assert( ranges::forward_iterator< std::decay_t<decltype(b)> > , "!");
 
 }
 #endif
