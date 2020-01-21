@@ -84,6 +84,17 @@ decltype(auto) potrf(HA&& ha){
 	return hermitic(ha.side, potrf(ha.side, std::forward<HA>(ha).underlying()));//static_cast<typename HA::underlying_type&>(ha)));
 }
 
+// orthonormalize rows
+template<class A> auto onrm(A&& a, filling f = filling::upper)
+->decltype(trsm(flip(f), hermitized(potrf(f, herk(f, a))), std::forward<A>(a))){assert(size(a) <= size(rotated(a)));
+	return trsm(flip(f), hermitized(potrf(f, herk(f, a))), std::forward<A>(a));		
+}
+
+template<class A, class B> auto onrm(A&& a, B&& buffer, filling f = filling::upper)
+->decltype(trsm(flip(f), hermitized(potrf(f, herk(f, a, buffer))), std::forward<A>(a))){assert(size(a) <= size(rotated(a)));
+	return trsm(flip(f), hermitized(potrf(f, herk(f, a, buffer))), std::forward<A>(a));
+}
+
 //template<class A2D>
 //decltype(auto) potrf(A2D&& A){return potrf(blas::detect_triangular(A), A);}
 
