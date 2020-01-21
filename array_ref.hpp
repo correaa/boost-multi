@@ -15,7 +15,7 @@ for a in ./tests/*.cpp; do echo $a; sh $a || break; echo "\n"; done; exit;*/
 
 #include "./config/NODISCARD.hpp"
 
-#include<boost/serialization/binary_object.hpp>
+//#include<boost/serialization/binary_object.hpp>
 
 #include<algorithm> // copy_n
 
@@ -24,6 +24,18 @@ for a in ./tests/*.cpp; do echo $a; sh $a || break; echo "\n"; done; exit;*/
 #else
 #define HD
 #endif
+
+namespace boost{
+namespace serialization{
+//	template<class Archive> struct archive_traits;
+//	template<class> struct nvp;
+//	template<class T> const nvp<T> make_nvp(char const* name, T& t);
+//	template<class T> class array_wrapper;
+//	template<class T, class S> const array_wrapper<T> make_array(T* t, S s);
+//	template<class T> 
+	class binary_object;
+	inline binary_object make_binary_object(const void * t, std::size_t size);
+}}
 
 namespace boost{
 namespace multi{

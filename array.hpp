@@ -28,8 +28,7 @@ namespace serialization{
 	template<class T, class S> const array_wrapper<T> make_array(T* t, S s);
 //	template<class T> 
 	class binary_object;
-//	inline binary_object make_binary_object(const void * t, std::size_t size);
-
+	inline binary_object make_binary_object(const void * t, std::size_t size);
 }}
 
 namespace boost{
