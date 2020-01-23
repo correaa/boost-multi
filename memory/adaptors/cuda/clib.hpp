@@ -1,20 +1,22 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include "'$0'"'>$0.cpp)&&c++ -std=c++14 -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_MEMORY_ADAPTOR_CUDA_CLIB $0.cpp -lcudart -o $0x &&$0x&& rm $0x $0.cpp; exit
+(echo '#include "'$0'"'>$0.cpp)&&nvcc -x cu `#-Wall -Wextra` -D_TEST_MULTI_MEMORY_ADAPTOR_CUDA_CLIB $0.cpp -o $0x -lcudart&&$0x&&rm $0x $0.cpp;exit
 #endif
+// © Alfredo A. Correa 2019-2020
 
 #ifndef MULTI_MEMORY_ADAPTOR_CUDA_CLIB_HPP
 #define MULTI_MEMORY_ADAPTOR_CUDA_CLIB_HPP
 
 #include<cuda_runtime.h> // cudaMalloc
 
-#include<cassert>
-#include "../../adaptors/cuda/error.hpp"
+#include    "../../adaptors/cuda/error.hpp"
+#include "../../../config/NODISCARD.hpp"
 
 namespace Cuda{
 	using namespace std::string_literals;
 
 	using size_t = ::size_t;
 	error Malloc(void** p, size_t bytes){return static_cast<error>(cudaMalloc(p, bytes));}
+	NODISCARD("because it will produce a memory leak")
 	void* malloc(size_t bytes){
 		void* ret;
 		switch(auto e = Malloc(&ret, bytes)){
@@ -34,7 +36,6 @@ namespace Cuda{
 		using attributes_t = cudaPointerAttributes;
 		error GetAttributes(attributes_t* ret, void* p){return static_cast<error>(cudaPointerGetAttributes(ret, p));}
 		attributes_t attributes(void* p){
-			assert(p);
 			attributes_t ret;
 			auto e = GetAttributes(&ret, p);
 			if(e!=success) throw std::system_error{e, "cannot "s+__PRETTY_FUNCTION__};
@@ -47,6 +48,7 @@ namespace Cuda{
 #ifdef _TEST_MULTI_MEMORY_ADAPTOR_CUDA_CLIB
 
 #include "../cuda/ptr.hpp"
+#include "../cuda/cstring.hpp"
 
 #include<iostream>
 
@@ -56,8 +58,15 @@ namespace cuda = multi::memory::cuda;
 using std::cout;
 
 int main(){
-	void* p = Cuda::malloc(100);
-	Cuda::free(p);
+	{
+		void* p = Cuda::malloc(100);
+		Cuda::free(p);
+	}
+	{
+		char* p = (char*)Cuda::malloc(1ul<<50);
+		assert(!p);
+		Cuda::free(p);
+	}
 }
 #endif
 #endif
