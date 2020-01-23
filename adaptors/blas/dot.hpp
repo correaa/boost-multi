@@ -7,6 +7,7 @@
 
 #include "../blas/core.hpp"
 #include "../blas/operations.hpp"
+
 #include "../../array.hpp"
 #include "../../config/NODISCARD.hpp"
 

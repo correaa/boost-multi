@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-c++ -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0x `pkg-config --libs blas` -lcudart -lcublas -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXX -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0x `pkg-config --libs blas` -lcudart -lcublas -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -21,8 +21,6 @@ c++ -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0x `pkg-config --libs blas
 using std::cout;
 namespace multi = boost::multi;
 namespace blas = multi::blas;
-
-template<class T> void what(T&&) = delete;
 
 BOOST_AUTO_TEST_CASE(blas_dot){
 	{
@@ -72,29 +70,28 @@ BOOST_AUTO_TEST_CASE(blas_dot){
 		cuda::array<complex, 1> const bcu = {5. + 2.*I, 6. + 6.*I, 7. + 2.*I, 8. - 3.*I};
 
 		using blas::conjugated;
-		using blas::dot;
 		{
 			cuda::array<complex, 0> ccu;
-			dot(acu, bcu, ccu);
+			blas::dot(acu, bcu, ccu);
 			BOOST_REQUIRE( ccu() == 19. - 27.*I );
 		}
 		{
 			cuda::array<complex, 0> ccu;
-			dot(acu, conjugated(bcu), ccu);
+			blas::dot(acu, conjugated(bcu), ccu);
 			BOOST_REQUIRE( ccu() == 121. - 43.*I );
 		}
 		{
-			auto const ccu = dot(acu, conjugated(bcu));
+			auto const ccu = blas::dot(acu, conjugated(bcu));
 			BOOST_REQUIRE( ccu() == 121. - 43.*I );
 		}
 		{
 			cuda::array<complex, 1> ccu = {1, 2, 3};
-			dot(acu, conjugated(bcu), ccu[0]);
+			blas::dot(acu, conjugated(bcu), ccu[0]);
 			BOOST_REQUIRE( ccu[0] == 121. - 43.*I );
 		}
 		{
 			cuda::array<complex, 2> ccu({1, 1});
-			dot(acu, conjugated(bcu), ccu[0][0]);
+			blas::dot(acu, conjugated(bcu), ccu[0][0]);
 			BOOST_REQUIRE( ccu[0][0] == 121. - 43.*I );
 		}
 	}
@@ -104,10 +101,9 @@ BOOST_AUTO_TEST_CASE(blas_dot){
 		cuda::managed::array<complex, 1> const bmcu = {5. + 2.*I, 6. + 6.*I, 7. + 2.*I, 8. - 3.*I};
 
 		using blas::conjugated;
-		using blas::dot;
 		{
 			cuda::managed::array<complex, 0> cmcu;
-			dot(amcu, bmcu, cmcu);
+			blas::dot(amcu, bmcu, cmcu);
 			BOOST_REQUIRE( cmcu() == 19.- I*27. );
 		}
 	}
