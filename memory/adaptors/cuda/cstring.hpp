@@ -1,15 +1,13 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&clang++ -std=c++14 -Wfatal-errors -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING -D_DISABLE_CUDA_SLOW -lcudart $0.cpp -o$0x -lboost_timer&&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wfatal-errors -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING -D_DISABLE_CUDA_SLOW $0.cpp -o$0x -lcudart -lboost_unit_test_framework -lboost_timer&&$0x&&rm $0x $0.cpp;exit
 #endif
-// © Alfredo A. Correa 2019
+// © Alfredo A. Correa 2019-2020
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING_HPP
 #define BOOST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING_HPP
 
 #include "../../adaptors/cuda/ptr.hpp"
 
 #include<cuda_runtime.h> // cudaMemcpy/cudaMemset
-
-//#include<iostream>
 
 namespace boost{
 namespace multi{
@@ -47,33 +45,39 @@ ptr<void> memset(ptr<void> dest, int ch, std::size_t byte_count){
 
 #ifdef _TEST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING
 
-#include<boost/timer/timer.hpp>
-#include<numeric>
-#include "../../adaptors/cuda/allocator.hpp"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUDA cstring"
+#define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
+
+#include "../../adaptors/cuda/allocator.hpp"
+
+#include<boost/timer/timer.hpp>
+
+#include<numeric>
 
 namespace multi = boost::multi;
 namespace cuda = multi::memory::cuda;
 
-int main(){
+BOOST_AUTO_TEST_CASE(multi_memory_cuda_cstring){
+
 	std::size_t const n = 2e9/sizeof(double);
 	cuda::ptr<double> p = cuda::allocator<double>{}.allocate(n);
 	{
 		boost::timer::auto_cpu_timer t;
 		memset(p, 0, n*sizeof(double));
 	}
-	assert( p[n/2]==0 );
+	BOOST_REQUIRE( p[n/2]==0 );
 	p[n/2] = 99.;
 	cuda::ptr<double> q = cuda::allocator<double>{}.allocate(n);
 	{
 		boost::timer::auto_cpu_timer t;
 		memcpy(q, p, n*sizeof(double));
 	}
-	assert( p[n/2] == 99. );
-	assert( q[n/2] == 99. );
+	BOOST_REQUIRE( p[n/2] == 99. );
+	BOOST_REQUIRE( q[n/2] == 99. );
 
 	double a = 5.;
-	BOOST_REQUIRE(a == 6.);
+	BOOST_REQUIRE(a == 5.);
 }
 #endif
 #endif
