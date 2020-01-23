@@ -1,6 +1,9 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 -std=c++14 -Wall -Wextra -Wpedantic -Wfatal-errors $0 -o$0x && $0x && rm $0x; exit
+$CXX -Wall -Wextra -Wfatal-errors $0 -o$0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi initializer_list"
+#define BOOST_TEST_DYN_LINK
+#include<boost/test/unit_test.hpp>
 
 #include "../array.hpp"
 
@@ -8,49 +11,57 @@ $CXX -O3 -std=c++14 -Wall -Wextra -Wpedantic -Wfatal-errors $0 -o$0x && $0x && r
 
 namespace multi = boost::multi;
 
-int main(){
+BOOST_AUTO_TEST_CASE(multi_tests_initializer_list){
 {
 	auto il = {1.2, 3.4, 5.6};
 	multi::static_array<double, 1> const A(begin(il), end(il));
-	assert( size(A) == 3 and A[2] == 5.6 );
+	BOOST_REQUIRE( size(A) == 3 );
+	BOOST_REQUIRE( A[2] == il.begin()[2] );
 }
 {
 	multi::static_array<double, 1> const A = {1.2, 3.4, 5.6};
-	assert( size(A) == 3 and A[2] == 5.6 );
-	assert(( A == multi::static_array<double, 1>{1.2, 3.4, 5.6} ));
-	assert(( A == decltype(A){1.2, 3.4, 5.6} ));
+	BOOST_REQUIRE( size(A) == 3 );
+	BOOST_REQUIRE( A[2] == 5.6 );
+	BOOST_REQUIRE(( A == multi::static_array<double, 1>{1.2, 3.4, 5.6} ));
+	BOOST_REQUIRE(( A == decltype(A){1.2, 3.4, 5.6} ));
 }
 {
 #if __cpp_deduction_guides
 	multi::static_array const A = {1.2, 3.4, 5.6};
-	assert( size(A) == 3 and A[2] == 5.6 );
-	assert(( A == multi::static_array{1.2, 3.4, 5.6} ));
+	BOOST_REQUIRE( size(A) == 3 );
+	BOOST_REQUIRE( A[2] == 5.6 );
+	BOOST_REQUIRE(( A == multi::static_array{1.2, 3.4, 5.6} ));
 #endif
 }
 {
 	auto il = {1.2, 3.4, 5.6};
 	multi::array<double, 1> const A(il.begin(), il.end());
-	assert( size(A) == 3 and A[2] == 5.6 );
+	BOOST_REQUIRE( size(A) == 3 );
+	BOOST_REQUIRE( A[2] == 5.6 );
 }
 {
 	multi::array<double, 1> const A = {1.2, 3.4, 5.6};
-	assert( size(A) == 3 and A[2] == 5.6 );
-	assert(( A == multi::array<double, 1>{1.2, 3.4, 5.6} ));
-	assert(( A == decltype(A){1.2, 3.4, 5.6} ));
+	BOOST_REQUIRE( size(A) == 3 );
+	BOOST_REQUIRE( A[2] == 5.6 );
+	BOOST_REQUIRE(( A == multi::array<double, 1>{1.2, 3.4, 5.6} ));
+	BOOST_REQUIRE(( A == decltype(A){1.2, 3.4, 5.6} ));
 }
 {
 #if __cpp_deduction_guides
 	multi::array const A = {1.2, 3.4, 5.6};
-	assert( size(A) == 3 and A[2] == 5.6 );
-	assert(( A == multi::array{1.2, 3.4, 5.6} ));
+	BOOST_REQUIRE( size(A) == 3 );
+	BOOST_REQUIRE( A[2] == 5.6 );
+	BOOST_REQUIRE(( A == multi::array{1.2, 3.4, 5.6} ));
 #endif
 }
 {
 	double const a[3] = {1.1, 2.2, 3.3};
 	using multi::num_elements;
-	assert( num_elements(a) == 3 );
-	multi::static_array<double, 1> const A(std::begin(a), std::end(a));
-	assert(size(A) == 3);
+	BOOST_REQUIRE( num_elements(a) == 3 );
+
+	using std::begin; using std::end;
+	multi::static_array<double, 1> const A(begin(a), end(a));
+	BOOST_REQUIRE( size(A) == 3 );
 }
 #if 0
 {
@@ -89,7 +100,7 @@ const A =
 {
 	std::array<double, 3> a = {1.1, 2.2, 3.3};
 	multi::array<double, 1> const A(begin(a), end(a));
-	assert(( A == decltype(A){1.1, 2.2, 3.3} ));
+	BOOST_REQUIRE(( A == decltype(A){1.1, 2.2, 3.3} ));
 }
 {
 #if __cpp_deduction_guides
@@ -104,9 +115,9 @@ const A =
 		{11.2, 34.4, 5.6, 1.1},
 		{15.2, 32.4, 5.6, 3.4}
 	};
-	assert( size(A) == 3 and size(A[0]) == 4 );
-	assert((
-		A == decltype(A)
+	BOOST_REQUIRE( size(A) == 3 );
+	BOOST_REQUIRE( size(A[0]) == 4 );
+	BOOST_REQUIRE(( A == decltype(A)
 		{
 			{ 1.2,  2.4, 3.6, 8.9},
 			{11.2, 34.4, 5.6, 1.1},
@@ -120,9 +131,9 @@ const A =
 		{11.2, 34.4, 5.6},
 		{15.2, 32.4, 5.6}
 	};
-	assert( size(A) == 3 );
-	assert( size(A) == 3 and size(A[0]) == 3 );
-	assert( A[1][1] == 34.4 );
+	BOOST_REQUIRE( size(A) == 3 );
+	BOOST_REQUIRE( size(A) == 3 and size(A[0]) == 3 );
+	BOOST_REQUIRE( A[1][1] == 34.4 );
 }
 {
 	double const a[3][2] = {
@@ -130,7 +141,8 @@ const A =
 		{11.2, 34.4},
 		{15.2, 32.4}
 	};
-	multi::static_array<double, 2> A(std::begin(a), std::end(a));
+	using std::begin; using std::end;
+	multi::static_array<double, 2> A(begin(a), end(a));
 }
 {
 	double const a[3][2] = {
@@ -138,7 +150,8 @@ const A =
 		{11.2, 34.4},
 		{15.2, 32.4}
 	};
-	multi::static_array<double, 2> A(std::begin(a), std::end(a));
+	using std::begin; using std::end;
+	multi::static_array<double, 2> A(begin(a), end(a));
 }
 {
 	double const staticA[3][2] = 
@@ -149,7 +162,7 @@ const A =
 		}
 	;
 	multi::static_array<double, 2> const A(std::begin(staticA), std::end(staticA));
-	assert(( A == multi::static_array<double, 2>{
+	BOOST_REQUIRE(( A == multi::static_array<double, 2>{
 			{ 1.2,  2.4},
 			{11.2, 34.4},
 			{15.2, 32.4}
@@ -191,7 +204,7 @@ const A =
 		{{3.,6.}}
 	}};
 	multi::array<double, 2> A(begin(a), end(a));
-	assert( num_elements(A) == 6 and A[2][1] == 6. );
+	BOOST_REQUIRE( num_elements(A) == 6 and A[2][1] == 6. );
 }
 {
 	multi::array<double, 3> const A = 
@@ -210,7 +223,7 @@ const A =
 			}
 		}
 	;
-	assert( A[1][1][0] == 34.4 and A[1][1][1] == 4.   );
+	BOOST_REQUIRE( A[1][1][0] == 34.4 and A[1][1][1] == 4.   );
 }
 {
 	using complex = std::complex<double>;
@@ -228,19 +241,18 @@ const A =
 		{ {"100", "101", "102"}, 
 		  {"110", "111", "112"} }
 	};
-	assert( num_elements(B3)==12 and B3[1][0][1] == "101" );
+	BOOST_REQUIRE( num_elements(B3)==12 and B3[1][0][1] == "101" );
 }
-return 0;
 #if __cpp_deduction_guides
- {	multi::array A = {1., 2., 3.}; assert( multi::rank<decltype(A)>{}==1 and num_elements(A)==3 and A[1]==2. ); static_assert( typename decltype(A)::rank{}==1 );
-}{	multi::array A = {1., 2.};     assert( multi::rank<decltype(A)>{}==1 and num_elements(A)==2 and A[1]==2. ); assert( multi::rank<decltype(A)>{}==1 );
-}{	multi::array A = {0, 2};       assert( multi::rank<decltype(A)>{}==1 and num_elements(A)==2 and A[1]==2. ); assert( multi::rank<decltype(A)>{}==1 );
-}{	multi::array A = {9.};         assert( multi::rank<decltype(A)>{}==1 and num_elements(A)==1 and A[0]==9. ); assert( multi::rank<decltype(A)>{}==1 );
-}{	multi::array A = {9};          assert( multi::rank<decltype(A)>{}==1 and num_elements(A)==1 and A[0]==9. ); assert( multi::rank<decltype(A)>{}==1 );
+ {	multi::array A = {1., 2., 3.}; BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 and num_elements(A)==3 and A[1]==2. ); static_assert( typename decltype(A)::rank{}==1 );
+}{	multi::array A = {1., 2.};     BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 and num_elements(A)==2 and A[1]==2. ); BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 );
+}{	multi::array A = {0, 2};       BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 and num_elements(A)==2 and A[1]==2. ); BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 );
+}{	multi::array A = {9.};         BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 and num_elements(A)==1 and A[0]==9. ); BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 );
+}{	multi::array A = {9};          BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 and num_elements(A)==1 and A[0]==9. ); BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 );
 }{	multi::array A = {
 		{1., 2., 3.}, 
 		{4., 5., 6.}
-	}; assert( multi::rank<decltype(A)>{}==2 and num_elements(A)==6 );
+	}; BOOST_REQUIRE( multi::rank<decltype(A)>{}==2 and num_elements(A)==6 );
 }
 #endif
 
