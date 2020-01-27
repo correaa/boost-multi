@@ -15,7 +15,7 @@ for a in ./tests/*.cpp; do echo $a; sh $a || break; echo "\n"; done; exit;*/
 
 #include "./config/NODISCARD.hpp"
 
-//#include<boost/serialization/binary_object.hpp>
+//#include<iostream> // debug
 
 #include<algorithm> // copy_n
 
@@ -34,7 +34,7 @@ namespace serialization{
 //	template<class T, class S> const array_wrapper<T> make_array(T* t, S s);
 //	template<class T> 
 	class binary_object;
-	inline binary_object make_binary_object(const void * t, std::size_t size);
+	inline const binary_object make_binary_object(const void * t, std::size_t size);
 }}
 
 namespace boost{
@@ -279,25 +279,25 @@ struct biiterator :
 	multi::incrementable<biiterator<It>>,
 	multi::totally_ordered2<biiterator<It>, void>
 {
-	It me;
-	std::ptrdiff_t pos;
-	std::ptrdiff_t stride;
+	It me_;
+	std::ptrdiff_t pos_;
+	std::ptrdiff_t stride_;
 	biiterator() = default;
 	biiterator(biiterator const& other) = default;// : me{other.me}, pos{other.pos}, stride{other.stride}{}
-	biiterator(It me, std::ptrdiff_t pos, std::ptrdiff_t stride) HD : me{me}, pos{pos}, stride{stride}{}
+	biiterator(It me, std::ptrdiff_t pos, std::ptrdiff_t stride) HD : me_{me}, pos_{pos}, stride_{stride}{}
 	decltype(auto) operator++(){
-		++pos;
-		if(pos==stride){
-			++me;
-			pos = 0;
+		++pos_;
+		if(pos_==stride_){
+			++me_;
+			pos_ = 0;
 		}
 		return *this;
 	}
-	bool operator==(biiterator const& o) const{return me==o.me and pos==o.pos;}
-	biiterator& operator+=(multi::difference_type n) HD{me += n/stride; pos += n%stride; return *this;}
+	bool operator==(biiterator const& o) const{return me_==o.me_ and pos_==o.pos_;}
+	biiterator& operator+=(multi::difference_type n) HD{me_ += n/stride_; pos_ += n%stride_; return *this;}
 	decltype(auto) operator*() const HD{
-		auto meb = me->begin();
-		return meb[pos];
+		auto meb = me_->begin();
+		return meb[pos_];
 	}
 	using difference_type = std::ptrdiff_t;
 	using reference = decltype(*std::declval<biiterator>());
@@ -359,9 +359,9 @@ public:
 	typename types::reference operator[](index i) const HD{
 		assert( this->extension().contains(i) );
 		typename types::element_ptr new_base = typename types::element_ptr(this->base()) + std::ptrdiff_t{Layout::operator()(i)};
-		return typename types::reference(this->layout().sub, new_base);
+		return typename types::reference(this->layout().sub_, new_base);
 	}
-	template<class Tp = std::array<index, D>, typename = std::enable_if_t<(std::tuple_size<std::decay_t<Tp>>{}>1)> >
+	template<class Tp = std::array<index, static_cast<std::size_t>(D)>, typename = std::enable_if_t<(std::tuple_size<std::decay_t<Tp>>{}>1)> >
 	auto operator[](Tp&& t) const
 	->decltype(operator[](std::get<0>(t))[detail::tuple_tail(t)]){
 		return operator[](std::get<0>(t))[detail::tuple_tail(t)];}
@@ -399,8 +399,8 @@ public:
 	}
 	friend auto flattened(basic_array const& self){return self.flattened();}
 	auto flatted() const{
-		assert(this->stride() == this->layout().sub.nelems_ && "flatted doesn't work for all layouts!");//this->nelems());
-		multi::layout_t<D-1> new_layout{this->layout().sub};
+		assert(this->stride() == this->layout().sub_.nelems_ && "flatted doesn't work for all layouts!");//this->nelems());
+		multi::layout_t<D-1> new_layout{this->layout().sub_};
 		new_layout.nelems_*=this->size();
 		return basic_array<T, D-1, ElementPtr>{new_layout, types::base_};
 	}
@@ -410,7 +410,7 @@ public:
 		assert(s!=0);
 		assert(this->layout().nelems_%s==0);
 		multi::layout_t<D+1> new_layout{this->layout(), this->layout().nelems_/s, 0, this->layout().nelems_};
-		new_layout.sub.nelems_/=s;
+		new_layout.sub_.nelems_/=s;
 		return basic_array<T, D+1, ElementPtr>{new_layout, types::base_};
 	}
 	decltype(auto) rotated()&&{
@@ -474,7 +474,7 @@ public:
 private:
 	using Layout::nelems_;
 	using Layout::stride_;
-	using Layout::sub;
+	using Layout::sub_;
 public:
 	using iterator =
 		array_iterator<typename types::element, D, typename types::element_ptr, typename types::reference>;
@@ -502,14 +502,14 @@ public:
 	ptr operator&() const{return {this->base_, this->layout()};}
 	iterator begin(index i) const{
 		Layout l = static_cast<Layout const&>(*this); l.rotate(i);
-		return {types::base_ + l(0       ), l.sub, l.stride_};
+		return {types::base_ + l(0       ), l.sub_, l.stride_};
 	}
 	iterator end(index i) const{
 		Layout l = static_cast<Layout const&>(*this); l.rotate(i);
-		return {types::base_ + l(l.size()), l.sub, l.stride_};
+		return {types::base_ + l(l.size()), l.sub_, l.stride_};
 	}
-	iterator  begin() const HD{return {types::base_          , sub, stride_};}
-	iterator  end  () const HD{return {types::base_ + nelems_, sub, stride_};}
+	iterator  begin() const HD{return {types::base_          , sub_, stride_};}
+	iterator  end  () const HD{return {types::base_ + nelems_, sub_, stride_};}
 protected:
 	template<class A>
 	void intersection_assign_(A&& other) const{
@@ -518,48 +518,37 @@ protected:
 	}
 public:
 	template<class It> void assign(It first, It last) const{
-		using std::copy; copy(first, last, this->begin());
+		assert( this->size() == std::distance(first, last) );
+		adl::copy(first, last, this->begin());
 	}
-	void assign(std::initializer_list<typename basic_array::value_type> il) const{assign(il.begin(), il.end());}
+	void assign(std::initializer_list<typename basic_array::value_type> il) const{assert( il.size() == this->size() );
+		assign(il.begin(), il.end());
+	}
 	template<class A, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<A>>{}>>
-	basic_array const& operator=(A&& o) const{
-		using multi::extension;
-		assert(extension(*this) == extension(o));
-		using std::begin; using std::end;
-		assign(begin(std::forward<A>(o)), end(std::forward<A>(o)));
+	basic_array const& operator=(A&& o) const{assert(extension(*this) == extension(o));
+		assign(adl::begin(std::forward<A>(o)), adl::end(std::forward<A>(o)));
 		return *this;
 	}
-	basic_array const& operator=(basic_array const& o) const{
-		using multi::extension;
-		assert(extension(*this) == extension(o));
-		using std::begin; using std::end;
-		assign(begin(o), end(o));
+	basic_array const& operator=(basic_array const& o) const{assert(extension(*this) == extension(o));
+		assign(o.begin(), o.end());
 		return *this;
 	}
-	template<class Array> void swap(Array&& o) const{
-		using multi::extension; 
-		using std::swap_ranges; 
-		using std::begin;
-		assert(this->extension() == extension(o));
-		swap_ranges(this->begin(), this->end(), begin(std::forward<Array>(o)));
+	template<class Array> void swap(Array&& o) const{assert(this->extension() == extension(o));
+		adl::swap_ranges(this->begin(), this->end(), adl::begin(std::forward<Array>(o)));
 	}
 	friend void swap(basic_array const& a, basic_array const& b){a.swap(b);}
 	template<class Array> void swap(basic_array const& s, Array&& a){s.swap(a);}
 	template<class Array> void swap(Array&& a, basic_array const& s){s.swap(a);}
 	template<class Array> bool operator==(Array const& o) const{
-		using multi::extension;using std::equal;using std::begin;using std::end;
-		return extension(*this)!=extension(o)?0:equal(begin(o),end(o),begin(*this));
+		return extension(*this)!=extension(o)?0:adl::equal(this->begin(), this->end(), adl::begin(o));
 	}
 	bool operator==(basic_array const& o) const{return operator==<basic_array>(o);}
 private:
 	template<class A1, class A2>
 	static auto lexicographical_compare(A1 const& a1, A2 const& a2){
-		using multi::extension;
 		if(extension(a1).first() > extension(a2).first()) return true;
 		if(extension(a1).first() < extension(a2).first()) return false;
-		using std::lexicographical_compare;
-		using std::begin; using std::end;
-		return lexicographical_compare(begin(a1), end(a1), begin(a2), end(a2));
+		return adl::lexicographical_compare(adl::begin(a1), adl::end(a1), adl::begin(a2), adl::end(a2));
 	}
 public:
 	template<class O>
@@ -666,10 +655,10 @@ struct basic_array<T, dimensionality_type{0}, ElementPtr, Layout> :
 	using types::types;
 	using element_ref = typename std::iterator_traits<typename basic_array::element_ptr>::reference;//decltype(*typename basic_array::element_ptr{});
 	decltype(auto) operator=(typename basic_array::element_type const& e) const&{
-		using std::copy_n; copy_n(&e, 1, this->base_); return *this;
+		adl::copy_n(&e, 1, this->base_); return *this;
 	}
 	bool operator==(basic_array const& o) const&{
-		using std::equal; return equal(o.base_, o.base_ + 1, this->base_);
+		return adl::equal(o.base_, o.base_ + 1, this->base_);
 	}
 	bool operator!=(basic_array const& o) const&{return not operator==(o);}
 //	bool operator==(typename basic_array::element_type const& e) const&{
@@ -681,8 +670,15 @@ struct basic_array<T, dimensionality_type{0}, ElementPtr, Layout> :
 	typename basic_array::element_ptr operator&() const{return this->base_;}
 	using decay_type = typename types::element;
 //	basic_array&
-	element_ref operator()() &{return *(this->base_);}
+	element_ref operator()() const&{return *(this->base_);}
+	operator element_ref() const&{return *(this->base_);}
 //	decltype(auto) operator()() &&{return std::move(*(this->base_));}
+	template<class Archive>
+	auto serialize(Archive& ar, const unsigned int){
+		using boost::serialization::make_nvp;
+		ar & make_nvp("element",  *(this->base_));
+	//	std::for_each(this->begin(), this->end(), [&](auto&& e){ar & make_nvp("item", e);});
+	}
 };
 
 template<typename T, typename ElementPtr, class Layout>
@@ -728,8 +724,11 @@ public:
 	basic_array_ptr<basic_array, Layout> operator&() const{
 		return {this->base_, this->layout()};
 	}
-	template<class It> void assign(It first, It last) const{
-		using std::copy; copy(first, last, this->begin());
+	void assign(std::initializer_list<typename basic_array::value_type> il) const{assert( il.size() == static_cast<std::size_t>(this->size()) );
+		assign(il.begin(), il.end());
+	}
+	template<class It> void assign(It first, It last) const{assert( std::distance(first, last) == this->size() );
+		adl::copy(first, last, this->begin());
 	}
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int){
@@ -743,21 +742,16 @@ public:
 				= std::declval<typename multi::array_traits<typename std::remove_reference_t<A>>::reference&&>()
 		)
 	>
-	basic_array const& operator=(A&& o) const{
-		{using multi::extension; assert(this->extension() == extension(o));}
-		using std::begin; 
-		using std::end;
-		this->assign(begin(std::forward<A>(o)), end(std::forward<A>(o)));
+	basic_array const& operator=(A&& o) const{{using multi::extension; assert(this->extension() == extension(o));}
+		this->assign(adl::begin(std::forward<A>(o)), adl::end(std::forward<A>(o)));
 		return *this;
 	}
-	basic_array const& operator=(basic_array const& o) const{
-		assert(this->extension() == o.extension());
+	basic_array const& operator=(basic_array const& o) const{assert(this->extension() == o.extension());
 		this->assign(o.begin(), o.end());
 		return *this;
 	}
 	template<class TT, dimensionality_type DD, class... As>
-	basic_array const& operator=(basic_array<TT, DD, As...> const& o) const{
-		assert(this->extension() == o.extension());
+	basic_array const& operator=(basic_array<TT, DD, As...> const& o) const{assert(this->extension() == o.extension());
 		this->assign(o.begin(), o.end());
 		return *this;
 	}
@@ -793,80 +787,36 @@ public:
 	auto partitioned(Size const& s) const{
 		assert( this->layout().nelems_%s==0 );
 		multi::layout_t<2> new_layout{this->layout(), this->layout().nelems_/s, 0, this->layout().nelems_};
-		new_layout.sub.nelems_/=s;
+		new_layout.sub_.nelems_/=s;
 		return basic_array<T, 2, ElementPtr>{new_layout, types::base_};
 	}
-	decltype(auto)   rotated() const{return *this;}
-	decltype(auto) unrotated() const{return *this;}
-	friend decltype(auto) rotated(basic_array const& self){return self;}
-	friend decltype(auto) unrotated(basic_array const& self){return self;}
-	decltype(auto)   rotated(dimensionality_type) const{return *this;}
-	decltype(auto) unrotated(dimensionality_type) const{return *this;}
+	friend decltype(auto) rotated(basic_array const& self){return self.rotated();}
+	friend decltype(auto) unrotated(basic_array const& self){return self.unrotated();}
+	decltype(auto)   rotated(dimensionality_type = 1) const{return *this;}
+	decltype(auto) unrotated(dimensionality_type = 1) const{return *this;}
 	decltype(auto) operator<<(dimensionality_type i) const{return rotated(i);}
 	decltype(auto) operator>>(dimensionality_type i) const{return unrotated(i);}
 
 	using iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_ptr, typename types::reference>;
-//	using const_iterator =
-//		multi::array_iterator<typename types::element, 1,
-//			typename types::element, //	typename std::pointer_traits<typename types::element_ptr>::template rebind<typename types::element const>,
-//			std::add_const_t<typename types::reference>
-//		>;
-//	using const_iterator = multi::array_iterator<T, 1, element_const_ptr, const_reference>;
 	using reverse_iterator = std::reverse_iterator<iterator>;
 
 	iterator begin() const HD{return {types::base_               , Layout::stride_};}
 	iterator end  () const HD{return{types::base_+types::nelems_, Layout::stride_};}
 
 	template<typename Array, typename = std::enable_if_t<not std::is_base_of<basic_array, Array>{}> >
-	bool operator==(Array const& o) const
-//	->decltype( std::equal(this->begin(), this->end(), std::begin(o)) )
-	{
-		using multi::extension; using std::equal; using std::begin;
-		return (basic_array::extension()==extension(o)) and equal(this->begin(), this->end(), begin(o));
+	bool operator==(Array const& o) const{ // TODO assert extensions are equal?
+		return (basic_array::extension()==extension(o)) and adl::equal(this->begin(), this->end(), adl::begin(o));
 	}
 	bool operator==(basic_array const& other) const{
 		return operator==<basic_array, void>(other);
 	//	using multi::extension; using std::equal; using std::begin;
 	//	return (this->extension()==extension(other)) and equal(this->begin(), this->end(), begin(other));
 	}
-//	bool operator==(basic_array const& other) const{return operator==<basic_array>(other);}
-//		using multi::extension; using std::equal; using std::begin;
-//		if(this->extension() != extension(other)) return false;
-//		return equal(this->begin(), this->end(), begin(other));
-//	}
-//	template<class Array, typename = std::enable_if_t<not std::is_base_of<basic_array, Array>{}>> 
-//	friend auto operator==(Array const& other, basic_array const& self){
-//		using multi::extension; using std::equal; using std::begin;
-//		if(self.extension() != extension(other)) return false;
-//		return equal(self.begin(), self.end(), begin(other));
-//		return self.operator==(other);
-//	}
-//	template<class Array>//, typename = std::enable_if_t<not std::is_base_of<basic_array, Array>{}>> 
-//	friend auto operator==(basic_array const& self, Array const& other){
-//		using multi::extension; using std::equal; using std::begin;
-//		if(self.extension() != extension(other)) return false;
-//		return equal(self.begin(), self.end(), begin(other));
-//		return self.operator==(other);
-//	}
-//	template<class Array> 
-//	auto operator==(Array const& other) const{
-//		using multi::extension; using std::equal; using std::begin;
-//		if(this->extension() != extension(other)) return false;
-//		return equal(this->begin(), this->end(), begin(other));
-	//	return self.operator==(other);
-//		return (*this) == other;
-//	}
-//	friend auto operator==(basic_array const& other, basic_array const& self){
-//		return self.operator==(other);
-//	}
 // commented for nvcc
 	bool operator<(basic_array const& o) const{return lexicographical_compare(*this, o);}//operator< <basic_array const&>(o);}
-	template<class Array> void swap(Array&& o) const{
-		using multi::extension; using std::swap_ranges; using std::begin;
-		assert(this->extension() == extension(o));
-		swap_ranges(this->begin(), this->end(), begin(std::forward<Array>(o)));
+	template<class Array> void swap(Array&& o) const{{using multi::extension;assert(this->extension() == extension(o));}
+		adl::swap_ranges(this->begin(), this->end(), adl::begin(std::forward<Array>(o)));
 	}
-
 	friend void swap(basic_array const& a, basic_array const& b){a.swap(b);}
 	template<class A, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<A>>{}> > friend void swap(basic_array&& s, A&& a){s.swap(a);}
 	template<class A, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<A>>{}> > friend void swap(A&& a, basic_array&& s){s.swap(a);}
@@ -876,8 +826,7 @@ private:
 		using multi::extension;
 		if(extension(a1).first() > extension(a2).first()) return true;
 		if(extension(a1).first() < extension(a2).first()) return false;
-		using std::lexicographical_compare; using std::begin; using std::end;
-		return lexicographical_compare(begin(a1), end(a1), begin(a2), end(a2));
+		return adl::lexicographical_compare(adl::begin(a1), adl::end(a1), adl::begin(a2), adl::end(a2));
 	}
 public:
 	template<class O>
@@ -957,37 +906,21 @@ public:
 //	using basic_array<T, D, ElementPtr>::operator>;
 //	template<class ArrayRef> explicit array_ref(ArrayRef&& a) : array_ref(a.data(), extensions(a)){} 
 	array_ref const& operator=(array_ref const& o) const&{
-		using std::copy_n; auto e = copy_n(o.data(), o.num_elements(), this->data());
-		assert( e == this->data() + this->num_elements() );
+		auto e = adl::copy_n(o.data(), o.num_elements(), this->data()); assert( e == this->data() + this->num_elements() );
 		return *this;
 	}
-/*	template<class Array>
-	bool operator==(Array const& other) const{//return basic_array<T, D, ElementPtr>::operator==(other);}
-		using std::equal;
-		using multi::extensions;
-		if(this->extensions() != extensions(other)) return false;
-	}*/
-//	bool operator==(array_ref const& other) const{
-//		using std::equal; 
-//		if(this->extensions() != other.extensions()) return false;
-//		return equal(other.data(), other.data() + other.num_elements(), this->data());
-//	}
 	template<typename TT, dimensionality_type DD = D, class... As>
 	bool operator==(array_ref<TT, DD, As...> const& o) const{
-		using std::equal;
-		if( this->extensions() != o.extensions() ) return false;
-		return equal(data_elements(), data_elements() + this->num_elements(), o.data());
+		if( this->extensions() != o.extensions() ) return false; // TODO, or assert?
+		return adl::equal(data_elements(), data_elements() + this->num_elements(), o.data());
 	}
 	typename array_ref::element_ptr data_elements() const{return array_ref::base_;}
 	friend typename array_ref::element_ptr data_elements(array_ref const& s){return s.data();}
-//#if defined(__CUDA__)// and defined(__CUDA_ARCH__)
-HD	typename array_ref::element_ptr data() const{return array_ref::base_;} 
+	typename array_ref::element_ptr data() const HD{return array_ref::base_;} 
 	friend typename array_ref::element_ptr data(array_ref const& self){return self.data();}
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int v){ (void)v;
 		using boost::serialization::make_nvp;
-	//	ar & make_nvp("extensions", this->extensions());
-	//	assert(extensions == this->extensions());
 		if(this->num_elements() < (2<<8) ) basic_array<T, D, ElementPtr>::serialize(ar, v);
 		else{
 			if(std::is_trivial<typename array_ref::element>{}){

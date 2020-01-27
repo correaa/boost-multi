@@ -19,6 +19,7 @@
 #define HD 
 #endif
 
+#if 1
 namespace boost{
 namespace serialization{
 	template<class Archive> struct archive_traits;
@@ -28,8 +29,9 @@ namespace serialization{
 	template<class T, class S> const array_wrapper<T> make_array(T* t, S s);
 //	template<class T> 
 	class binary_object;
-	inline binary_object make_binary_object(const void * t, std::size_t size);
+	inline const binary_object make_binary_object(const void * t, std::size_t size);
 }}
+#endif
 
 namespace boost{
 namespace multi{
@@ -47,7 +49,7 @@ protected:
 		return uninitialized_fill_n(alloc_, base, num_elements, e);
 	}
 	template<typename It> auto uninitialized_copy_n(It first, size_type n, typename std::allocator_traits<allocator_type>::pointer data){
-		using boost::multi::alloc_uninitialized_copy_n;
+	//	using boost::multi::alloc_uninitialized_copy_n;
 		return alloc_uninitialized_copy_n(this->alloc(), first, n, data);
 	}
 public:
@@ -106,7 +108,7 @@ public:
 			index_extension(std::distance(first, last))*multi::extensions(*first)
 		}
 	{
-		uninitialized_copy(static_array::alloc(), first, last, ref::begin());
+		alloc_uninitialized_copy(static_array::alloc(), first, last, ref::begin());
 	}
 	static_array(typename static_array::extensions_type x, typename static_array::element const& e, typename static_array::allocator_type const& a) : //2
 		array_alloc{a}, 
@@ -168,8 +170,11 @@ public:
 		uninitialized_copy_from(o.data());
 	}
 	static_array(
+		std::initializer_list<typename static_array::value_type> mil
+	) : static_array(mil.begin(), mil.end()){}
+	static_array(
 		std::initializer_list<typename static_array::value_type> mil, 
-		typename static_array::allocator_type const& a={}
+		typename static_array::allocator_type const& a
 	) : static_array(mil.begin(), mil.end(), a){}
 	template<class It> static auto distance(It a, It b){using std::distance; return distance(a, b);}
 protected:
@@ -359,8 +364,8 @@ protected:
 	auto uninitialized_value_construct(){return uninitialized_value_construct_n(static_array::alloc(), to_address(this->base_), this->num_elements());}
 	template<typename It>
 	auto uninitialized_copy(It first){
-		using boost::multi::uninitialized_copy_n;
-		return uninitialized_copy_n(this->alloc(), first, this->num_elements(), this->data());
+		using boost::multi::alloc_uninitialized_copy_n;
+		return alloc_uninitialized_copy_n(this->alloc(), first, this->num_elements(), this->data());
 	}
 	template<typename It>
 	auto uninitialized_move(It first){
@@ -660,7 +665,7 @@ public:
 			this->clear(); //	this->ref::layout_t::operator=(layout_t<D>{extensions(a)}); //			this->base_ = allocate(this->num_elements());
 			this->base_ = this->allocate(static_cast<typename array::alloc_traits::size_type>(this->static_::ref::layout_t::operator=(layout_t<D>{extensions(a)}).num_elements()));
 			using std::begin; using std::end;
-			uninitialized_copy(this->alloc(), begin(std::forward<A>(a)), end(std::forward<A>(a)), array::begin()); //	recursive_uninitialized_copy<D>(alloc(), begin(std::forward<A>(a)), end(std::forward<A>(a)), array::begin());
+			alloc_uninitialized_copy(this->alloc(), begin(std::forward<A>(a)), end(std::forward<A>(a)), array::begin()); //	recursive_uninitialized_copy<D>(alloc(), begin(std::forward<A>(a)), end(std::forward<A>(a)), array::begin());
 		}
 		return *this;
 	}
@@ -703,13 +708,17 @@ public:
 		//	recursive_uninitialized_fill<dimensionality>(alloc(), begin(), end(), e);
 		}
 	}
+	void assign(std::initializer_list<typename array::value_type> il){assign(il.begin(), il.end());}
 	template<class It>
 	array& assign(It first, It last){
 		using std::next;
 		using std::all_of;
+		using std::distance;
 		if(distance(first, last) == array::size() and multi::extensions(*first) == multi::extensions(*array::begin())){
 			static_::ref::assign(first, last);
 		}else{
+			this->operator=(array(first, last));
+		/*
 			this->clear();
 			this->layout_t<D>::operator=(layout_t<D>{std::tuple_cat(std::make_tuple(index_extension{array::extension().front(), array::extension().front() + distance(first, last)}), multi::extensions(*first))});
 			using std::next;
@@ -717,6 +726,7 @@ public:
 			if(first!=last) assert( all_of(next(first), last, [x=multi::extensions(*first)](auto& e){return extensions(e)==x;}) );
 			this->base_ = this->allocate();
 			multi::uninitialized_copy<D>(first, last, array::begin());
+		*/
 		}
 		return *this;
 	}

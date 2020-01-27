@@ -9,10 +9,44 @@
 
 #include<cuda_runtime.h> // cudaMemcpy/cudaMemset
 
+#include<iostream>
+
 namespace boost{
 namespace multi{
 namespace memory{
 namespace cuda{
+
+template<class CudaFunction>
+auto call_dynamic(CudaFunction f, std::string name = "cudaFunction"){
+	return [=](auto... args)->decltype(f(args...), void()){
+		std::cerr << "calling " + name << std::endl;
+		auto s = static_cast<Cuda::error>(f(args...));
+		if(s != Cuda::error::success) throw std::system_error{make_error_code(s), "cannot call cuda function "};
+	};
+}
+#define CUDA_(FunctionPostfix) ::boost::multi::memory::cuda::call_dynamic(cuda##FunctionPostfix, "cuda"#FunctionPostfix)
+
+#if __cpp_nontype_template_parameter_auto>=201606
+template<auto CudaFunction>
+auto call_static(std::string name = ""){
+	return [=](auto... args)->decltype(CublasFunction(args...), void()){
+		std::cerr << "calling function " << name << std::endl;
+		Cuda::error s = CudaFunction(args...);
+		if( s != Cuda::error::success ) throw std::system_error{make_error_code(s), "cannot call cuda function "};
+	};
+}
+#endif
+template<class T, T CudaFunction>
+auto call_static(std::string name = ""){
+	return [=](auto... args)->decltype(CublasFunction(args...), void()){
+		std::cerr << "Calling function " << name << std::endl;
+		Cuda::error s = CublasFunction(args...);
+		if( s != Cuda::error::success ) throw std::system_error{make_error_code(s), "cannot call cuda function "};
+	};	
+}
+
+#define CUDA(FunctionPostfix) ::boost::multi::memory::cuda::call_static<decltype(&cuda##FunctionPostfix), cuda##FunctionPostfix>(#FunctionPostfix)
+
 
 namespace memcpy_{
 //https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html#group__CUDART__TYPES_1g18fa99055ee694244a270e4d5101e95b
@@ -20,16 +54,15 @@ namespace memcpy_{
 		host_to_host=cudaMemcpyHostToHost, host_to_device=cudaMemcpyHostToDevice,
 		device_to_host=cudaMemcpyDeviceToHost, device_to_device=cudaMemcpyDeviceToDevice
 	};
-	kind type(void*    , void const*    ){return kind::host_to_host    ;}
-	kind type(ptr<void>, void const*    ){return kind::host_to_device  ;}
-	kind type(void*    , ptr<void const>){return kind::device_to_host  ;}
-	kind type(ptr<void>, ptr<void const>){return kind::device_to_device;}
+	constexpr kind type(void*    , void const*    ){return kind::host_to_host    ;}
+	constexpr kind type(ptr<void>, void const*    ){return kind::host_to_device  ;}
+	constexpr kind type(void*    , ptr<void const>){return kind::device_to_host  ;}
+	constexpr kind type(ptr<void>, ptr<void const>){return kind::device_to_device;}
 }
 
 template<typename Dest, typename Src, typename = decltype(memcpy_::type(Dest{}, Src{}))>
 Dest memcpy(Dest dest, Src src, std::size_t byte_count){
-//	assert( byte_count > 1000 );
-	/*[[maybe_unused]]*/ cudaError_t const s = cudaMemcpy(
+	cudaError_t const s = cudaMemcpy(
 		static_cast<void*>(dest), static_cast<void const*>(src), 
 		byte_count, static_cast<cudaMemcpyKind>(memcpy_::type(dest, src))
 	); assert(s == cudaSuccess); (void)s;
@@ -40,6 +73,11 @@ ptr<void> memset(ptr<void> dest, int ch, std::size_t byte_count){
 	/*[[maybe_unused]]*/ cudaError_t s = cudaMemset(static_cast<void*>(dest), ch, byte_count); assert(s == cudaSuccess); (void)s;
 	return dest;
 }
+
+template<class VoidPDst = void*, class VoidPCSrc = void const*>
+auto memcpy2D(VoidPDst const& dst, std::size_t dpitch, VoidPCSrc const& src, std::size_t spitch, std::size_t width, std::size_t height)
+->decltype(CUDA_(Memcpy2D)(static_cast<void*>(dst), dpitch, static_cast<void const*>(src), spitch, width, height, static_cast<cudaMemcpyKind>(memcpy_::type(dst, src))), dst){
+	return CUDA_(Memcpy2D)(static_cast<void*>(dst), dpitch, static_cast<void const*>(src), spitch, width, height, static_cast<cudaMemcpyKind>(memcpy_::type(dst, src))), dst;}
 
 }}}}
 

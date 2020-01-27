@@ -78,11 +78,11 @@ public:
 		using size_type = typename monotonic::size_type;
 		size_type required;
 		size_type available;
-		static constexpr auto to_string = [](auto a){return std::to_string(a);};
+	//	constexpr auto to_string = [](auto a){return std::to_string(a);};
 		std::string msg;
 		overflow(size_type required, size_type available) 
 		: required{required}, available{available}, 
-			msg{"required "+to_string(required)+" while only "+to_string(available)+" bytes available"}
+			msg{"required "+std::to_string(required)+" while only "+std::to_string(available)+" bytes available"}
 		{}
 		virtual const char* what() const noexcept{return msg.c_str();}// + std::to_string(required)).c_str();}
 	};

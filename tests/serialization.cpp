@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -std=c++17 -O3 -Wall -Wextra -Wfatal-errors $0 -o $0x -lboost_unit_test_framework  -lstdc++fs -lboost_serialization -lboost_iostreams -lcudart&&$0x $@&&rm $0x;exit
+$CXX -std=c++17 -O3 -Wall -Wextra -Wfatal-errors $0 -o$0x -lboost_unit_test_framework  -lstdc++fs -lboost_serialization -lboost_iostreams -lcudart&&$0x $@&&rm $0x;exit
 #endif
 // © Alfredo Correa 2018-2020
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi fill"
@@ -10,6 +10,7 @@ $CXX -std=c++17 -O3 -Wall -Wextra -Wfatal-errors $0 -o $0x -lboost_unit_test_fra
 
 #include "../adaptors/cuda.hpp"
 
+
 #include<boost/archive/xml_oarchive.hpp>
 #include<boost/archive/xml_iarchive.hpp>
 #include<boost/archive/text_oarchive.hpp>
@@ -18,6 +19,7 @@ $CXX -std=c++17 -O3 -Wall -Wextra -Wfatal-errors $0 -o $0x -lboost_unit_test_fra
 #include<boost/archive/binary_iarchive.hpp>
 
 #include<boost/serialization/nvp.hpp>
+#include<boost/serialization/binary_object.hpp>
 #include<boost/serialization/complex.hpp>
 
 #include<boost/iostreams/filtering_stream.hpp>
@@ -125,11 +127,12 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_small){
 			begin(d2D), end(d2D), 
 			[&](auto&& r){std::generate(begin(r), end(r), gen);}
 		);
+		auto name = "serialization-small-double2D.xml";
 		[&, _ = watch("xml write double")]{
 			std::ofstream ofs{"serialization-small-double2D.xml"}; assert(ofs);
 			boost::archive::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(d2D);
 		}();
-		std::cerr<<"size "<< (std::filesystem::file_size("serialization-double.xml")/1e6) <<"MB\n";
+		std::cerr<<"size "<< (std::filesystem::file_size(name)/1e6) <<"MB\n";
 	}
 	{
 		multi::array<double, 2> d2D = {

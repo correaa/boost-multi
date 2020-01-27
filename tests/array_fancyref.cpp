@@ -48,7 +48,7 @@ protected:
 	friend struct ref<T const>;
 public:
 	ref(ref<std::remove_const_t<T>> const& other) : p_{other.p_}{}
-	bool operator==(ref const&) const{std::cout << "compared" << std::endl; return true;}
+	bool operator==(ref const&) const{return true;}
 	bool operator!=(ref const&) const{return false;}
 	using decay_t = std::decay_t<T>;
 };
@@ -130,7 +130,7 @@ using std::cout; using std::cerr;
 namespace multi = boost::multi;
 
 int main(){
-
+#if 0
 	multi::array<double, 2, fancy::allocator<double>> A( 
 //		multi::index_extensions<2>
 		{5, 5}
@@ -159,6 +159,7 @@ int main(){
 //	using std::copy_n;
 //	copy_n(A.data(), 25, A.data());
 	static_assert( multi::array_iterator<double, 2, double*>::rank{} == 2, "!");
+#endif
 }
 
 

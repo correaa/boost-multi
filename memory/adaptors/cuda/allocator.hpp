@@ -69,7 +69,7 @@ public:
 	template<class P> void destroy(P p){
 		if(not std::is_trivially_destructible<T>{}){
 			char buff[sizeof(T)];
-			cuda::memcpy(buff, p, sizeof(T)); // cudaMemcpy(buff, p.impl_, sizeof(T), cudaMemcpyDeviceToHost);
+			cuda::memcpy(buff, p, sizeof(T));
 			((T*)buff)->~T();
 		}
 	}

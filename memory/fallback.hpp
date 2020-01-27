@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&& c++ -std=c++17 -Wall -Wextra -Wfatal-errors -D_TEST_MULTI_MEMORY_FALLBACK $0.cpp -o$0x&& $0x&&rm $0x $0.cpp;exit
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra `#-Wfatal-errors` -D_TEST_MULTI_MEMORY_FALLBACK $0.cpp -o$0x&& $0x&&rm $0x $0.cpp;exit
 #endif
 #ifndef MULTI_MEMORY_FALLBACK_HPP
 #define MULTI_MEMORY_FALLBACK_HPP
@@ -8,16 +8,37 @@
 #include<memory_resource>
 //#endif
 
+#include<stdlib.h> // aligned_alloc in c++17 this will be <cstdlib
+
 #include "../memory/block.hpp"
 #include "../memory/allocator.hpp"
+
 
 namespace boost{
 namespace multi{
 namespace memory{
 
+template<class Ptr = memory::byte*> struct resource;
+
+template<class T>
+struct resource<T*>{
+	auto allocate(std::size_t size, std::size_t alignment = alignof(std::max_align_t)){
+		return ::aligned_alloc(alignment, size);
+	}
+	void deallocate(void* ptr, std::size_t = alignof(std::max_align_t)){::free(ptr);}
+};
+
+template<class Ptr = memory::byte*>
+inline auto get_default_resource(){
+	static resource<Ptr> instance_;
+	return &instance_;
+}
+
 template<class MemoryResource1, class MemoryResource2
 #if(__cpp_lib_memory_resource>=201603L)
-	= std::pmr::memory_resource //= std::allocator<std::byte>
+	= std::pmr::memory_resource
+#else
+	= memory::resource<>
 #endif
 >
 class fallback : public MemoryResource1{
@@ -29,6 +50,8 @@ public:
 	fallback(MemoryResource1 const& mr, MemoryResource2* back
 #if(__cpp_lib_memory_resource>=201603L)
 		= std::pmr::get_default_resource()
+#else
+		= nullptr//memory::get_default_resource<>()
 #endif
 	) : MemoryResource1{mr}, back_{back}{}
 	typename fallback::void_pointer 
@@ -46,6 +69,8 @@ public:
 template<class T, class MR1, class MR2
 #if(__cpp_lib_memory_resource>=201603L)
 	= std::pmr::memory_resource //= std::allocator<std::byte>
+#else
+	= memory::resource<>
 #endif
 > 
 using fallback_allocator = memory::allocator<T, fallback<MR1, MR2>>;//, alignof(T)>>;
@@ -78,7 +103,7 @@ int main(){
 }
 {
 	alignas(double) char buffer[256*sizeof(double)];
-	memory::fallback<memory::monotonic<char*>> m(buffer);
+	memory::fallback<memory::monotonic<char*>> m(buffer);//, boost::multi::memory::get_default_resource());
 	auto p1 = m.allocate(100*sizeof(double), alignof(double));
 	auto p2 = m.allocate(200*sizeof(double), alignof(double));
 	m.deallocate(p2, 200*sizeof(double));

@@ -154,7 +154,10 @@ public:
 	bool operator not() const{return !rp_;}
 //	[[SLOW]] explicit operator raw_pointer&()&{return rp_;}
 //	[[SLOW]] explicit operator raw_pointer const&() const&{return rp_;}
-	[[SLOW]] operator raw_pointer() const{return rp_;}
+	[[SLOW]] operator raw_pointer()const&{return rp_;}
+//	[[deprecated("WARNING: implies a slow access to GPU memory") ]] operator raw_pointer()&{assert(0); return rp_;}
+//	[[deprecated("WARNING: implies a slow access to GPU memory") ]] operator raw_pointer()&&{assert(0); return rp_;}
+
 	operator ptr<void>() const{return ptr<void>{rp_};}
 //	template<class PM>
 //	decltype(auto) operator->*(PM pm) const{return *ptr<std::decay_t<decltype(rp_->*pm)>, decltype(&(rp_->*pm))>{&(rp_->*pm)};}
@@ -186,6 +189,22 @@ public:
 		using boost::serialization::make_array;
 		return make_array(raw_pointer_cast(t), s);
 	}
+
+//template<class Alloc, class Size, class ForwardIt>
+//auto alloc_uninitialized_copy_n(Alloc& a, boost::multi::memory::cuda::managed::ptr<std::complex<double>, std::complex<double> *> f, Size n, ForwardIt d){
+//	assert(0);
+//	static_assert(0, "!");
+//	return d;
+//}
+
+//template< class InputIt, class OutputIt >
+//constexpr OutputIt copy(InputIt first, InputIt last, OutputIt d_first){
+//	while(first != last) *d_first++ = *first++;
+//	return d_first;
+//}
+
+//->decltype(cuda::alloc_uninitialized_copy_n(a, f, n, cuda_pointer_cast(d))){
+//	return cuda::alloc_uninitialized_copy_n(a, f, n, cuda_pointer_cast(d));}
 
 }
 

@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&nvcc -std=c++14 -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_PTR -Wno-deprecated-declarations $0.cpp -o $0x -lboost_unit_test_framework&&$0x&&rm $0x; exit
+(echo '#include"'$0'"'>$0.cpp)&&nvcc -x cu -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_PTR -Wno-deprecated-declarations $0.cpp -o $0x -lboost_unit_test_framework&&$0x&&rm $0x; exit
 #endif
 
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_PTR_HPP
@@ -146,8 +146,8 @@ public:
 	using pointer = ptr<T, RawPtr>;//<T>;
 	using iterator_category = typename std::iterator_traits<raw_pointer>::iterator_category;
 	explicit operator bool() const HD{return rp_;}
-	explicit operator typename raw_pointer_traits::template rebind<void>() const HD{return {rp_};}
-	explicit operator typename raw_pointer_traits::template rebind<void const>() const HD{return {rp_};}
+	using void_C_type = typename std::conditional<std::is_const<typename std::pointer_traits<RawPtr>::element_type>{}, void const, void>::type;
+	explicit operator typename raw_pointer_traits::template rebind<void_C_type>() const HD{return {rp_};}
 	ptr& operator++(){++rp_; return *this;}
 	ptr& operator--(){--rp_; return *this;}
 	ptr  operator++(int){auto tmp = *this; ++(*this); return tmp;}
@@ -197,7 +197,7 @@ template<
 	typename ForwardV = typename std::pointer_traits<ForwardIt>::element_type
 	, typename = std::enable_if_t<std::is_constructible<ForwardV, InputV>{}>
 >
-ForwardIt uninitialized_copy_n(Alloc&, InputIt f, Size n, ptr<T...> d){
+ForwardIt alloc_uninitialized_copy_n(Alloc&, InputIt f, Size n, ptr<T...> d){
 	if(std::is_trivially_constructible<ForwardV, InputV>{})
 		return memcpy(d, f, n*sizeof(ForwardV)) + n;
 	else assert(0);
@@ -205,8 +205,8 @@ ForwardIt uninitialized_copy_n(Alloc&, InputIt f, Size n, ptr<T...> d){
 }
 
 template<class Alloc, class InputIt, typename Size, class... T, class ForwardIt = ptr<T...>>
-ForwardIt uninitialized_move_n(Alloc& a, InputIt f, Size n, ptr<T...> d){
-	return uninitialized_copy_n(a, f, n, d);
+ForwardIt alloc_uninitialized_move_n(Alloc& a, InputIt f, Size n, ptr<T...> d){
+	return alloc_uninitialized_copy_n(a, f, n, d);
 }
 
 template<class T> 
@@ -485,7 +485,7 @@ BOOST_AUTO_TEST_CASE(multi_memory_cuda_ptr_member_pointer){
 	BOOST_REQUIRE( p->*pm == 20. );
 	BOOST_REQUIRE( *p.*pm == 20. );
 
-	cuda::ptr<Complex_<double>> pcu;
+//	cuda::ptr<Complex_<double>> pcu;
 //	pcu->*pm;
 }
 

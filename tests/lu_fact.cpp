@@ -73,7 +73,8 @@ int main(){
 			{ 2., 4.,  5.}
 		};
 		multi::array<double, 1> y = {12.,5.,2.};
-		double AA[3][3]; 
+		double AA[3][3];
+		using std::copy;
 		copy( begin(A), end(A), begin(*multi::array_ptr(&AA)) );
 
 		lu_fact(A);

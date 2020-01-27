@@ -106,7 +106,7 @@ auto default_allocator_of(T*)
 
 template<class T>
 auto has_get_allocator_aux(T const& t)->decltype(t.get_allocator(), std::true_type {});
-inline auto has_get_allocator_aux(...)->decltype(                   std::false_type{});
+//inline auto has_get_allocator_aux(...)->decltype(                   std::false_type{});
 template<class T> struct has_get_allocator : decltype(has_get_allocator_aux(std::declval<T>())){};
 
 //template<class T, typename = std::enable_if_t<has_get_allocator<T>>

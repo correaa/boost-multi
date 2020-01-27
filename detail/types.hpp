@@ -16,6 +16,17 @@
 namespace boost{
 namespace multi{
 
+using size_type = std::make_signed_t<std::size_t>;
+
+using index               = std::make_signed_t<size_type>;
+using difference_type     = std::make_signed_t<index>;
+using index_range         = range<index>;
+using index_extension     = extension_t<index>;
+using dimensionality_type = index;
+
+using iextension = index_extension;
+using irange     = index_range;
+
 namespace detail{
 
 template<typename, typename>
@@ -26,7 +37,7 @@ struct append_to_type_seq<T, TT<Ts...>>{
     using type = TT<Ts..., T>;
 };
 
-template<typename T, unsigned int N, template<typename...> class TT = std::tuple> 
+template<typename T, dimensionality_type N, template<typename...> class TT = std::tuple> 
 struct repeat{
     using type = typename
         append_to_type_seq<
@@ -85,17 +96,6 @@ std::array<T, N-1> tail(std::array<T, N> const& a){
 
 }
 
-using size_type = std::make_signed_t<std::size_t>;
-
-using index               = std::make_signed_t<size_type>;
-using difference_type     = std::make_signed_t<index>;
-using index_range         = range<index>;
-using index_extension     = extension_t<index>;
-using dimensionality_type = index;
-
-using iextension = index_extension;
-using irange     = index_range;
-
 template<typename T, dimensionality_type D>
 struct initializer_list{
 	using type = std::initializer_list<typename initializer_list<T, D-1>::type>;
@@ -117,13 +117,13 @@ struct iextensions : detail::repeat<index_extension, D>::type{
 //	iextensions(Args... args) : detail::repeat<index_extension, D>::type{args...}{}
 	iextensions() = default;
 	template<class T>
-	iextensions(std::array<T, D> const& arr) : iextensions(arr, std::make_index_sequence<D>{}){}//detail::repeat<index_extension, D>::type{as_tuple(arr)}{}
-	iextensions(std::array<iextension, D> const& arr) : iextensions(arr, std::make_index_sequence<D>{}){}//detail::repeat<index_extension, D>::type{as_tuple(arr)}{}
+	iextensions(std::array<T, static_cast<std::size_t>(D)> const& arr) : iextensions(arr, std::make_index_sequence<static_cast<std::size_t>(D)>{}){}//detail::repeat<index_extension, D>::type{as_tuple(arr)}{}
+	iextensions(std::array<iextension, static_cast<std::size_t>(D)> const& arr) : iextensions(arr, std::make_index_sequence<static_cast<std::size_t>(D)>{}){}//detail::repeat<index_extension, D>::type{as_tuple(arr)}{}
 	base_ const& base() const{return *this;}
 	friend decltype(auto) base(iextensions const& s){return s.base();}
 private:
 	template <class T, size_t... Is> 
-	iextensions(std::array<T, D> const& arr, std::index_sequence<Is...>) : iextensions{arr[Is]...}{}
+	iextensions(std::array<T, static_cast<std::size_t>(D)> const& arr, std::index_sequence<Is...>) : iextensions{arr[Is]...}{}
 };
 
 #if __cpp_deduction_guides
