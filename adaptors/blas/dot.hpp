@@ -42,7 +42,6 @@ template<class X1D, class Y1D, class R>
 auto dot_aux(X1D const& x, Y1D const& y, R&& r, std::false_type)
 ->decltype(dot(size(x), base(x), stride(x), base(y), stride(y), &r), std::forward<R>(r)){assert(size(x)==size(y) and not offset(x) and not offset(y) );
 	return dot(size(x), base(x), stride(x), base(y), stride(y), &r), std::forward<R>(r);}
-
 }
 
 template<class X1D, class Y1D, class R>
@@ -50,20 +49,24 @@ auto dot(X1D const& x, Y1D const& y, R&& r)
 ->decltype(dot_aux(x, y, std::forward<R>(r), is_complex_array<std::decay_t<X1D>>{})){
 	return dot_aux(x, y, std::forward<R>(r), is_complex_array<std::decay_t<X1D>>{});}
 
+template<class X1D, class Y1D, class Alloc>
+NODISCARD("when last argument is an allocator")
+auto alloc_dot(X1D const& x, Y1D const& y, Alloc const& alloc){
+	return dot(x, y, multi::static_array<typename X1D::value_type, 0, Alloc>(0, alloc) );
+}
+
 template<class X1D, class Y1D>
 NODISCARD("when last argument is read-only")
 auto dot(X1D const& x, Y1D const& y){
-	return dot(x, y, 
-		multi::static_array<typename X1D::value_type, 0, decltype(common(get_allocator(std::declval<X1D>()), get_allocator(std::declval<Y1D>())))>
-			(typename X1D::value_type{0}, common(get_allocator(x), get_allocator(y)))
-	);
+	return alloc_dot(x, y, common(get_allocator(x), get_allocator(y)));
 }
+
 
 }}}
 
 #if _TEST_MULTI_ADAPTORS_BLAS_DOT
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS gemm"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS dot"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 

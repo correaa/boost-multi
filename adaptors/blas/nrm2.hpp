@@ -20,14 +20,13 @@ using core::nrm2;
 
 template<class X1D, class R0D>
 auto nrm2(X1D const& x, R0D&& r)
-->decltype(nrm2(size(x), base(x), stride(x), &r), std::forward<R0D>(r)){
-	return nrm2(size(x), base(x), stride(x), &r), std::forward<R0D>(r);}
+->decltype(nrm2(size(x), base(x), stride(x), base(r)), std::forward<R0D>(r)){
+	return nrm2(size(x), base(x), stride(x), base(r)), std::forward<R0D>(r);}
 
 template<class X1D, class T = decltype(std::norm(typename X1D::value_type{})), class Alloc = typename std::allocator_traits<decltype(get_allocator(std::declval<X1D>()))>::template rebind_alloc<T>>
 auto nrm2(X1D const& x){
 	return nrm2(x, multi::static_array<T, 0, Alloc>{}); // TODO: this supports only default constructible (deduced) allocator
 }
-
 
 }}}
 
@@ -48,9 +47,10 @@ BOOST_AUTO_TEST_CASE(multi_adaptor_multi_nrm2_real){
 		{9., 10., 11., 12.}
 	};
 
-
 	using multi::blas::nrm2;
-	BOOST_REQUIRE( nrm2(rotated(cA)[1]) == std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
+	double n;
+	BOOST_REQUIRE( nrm2(rotated(cA)[1], n) ==  std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
+	BOOST_REQUIRE( nrm2(rotated(cA)[1]) ==  std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
 
 	multi::array<double, 1> R(4);
 	nrm2( rotated(cA)[1], R[2]);
@@ -68,6 +68,9 @@ BOOST_AUTO_TEST_CASE(multi_adaptor_multi_nrm2_complex_real_case){
 	};
 
 	using multi::blas::nrm2;
+	double n; 
+	BOOST_REQUIRE( nrm2(rotated(cA)[1], n) == std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
+
 	BOOST_REQUIRE( nrm2(rotated(cA)[1]) == std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
 }
 
@@ -79,9 +82,10 @@ BOOST_AUTO_TEST_CASE(multi_adaptor_multi_nrm2_complex){
 	};
 
 	using multi::blas::nrm2;
+	double n;
+	BOOST_REQUIRE( nrm2(rotated(cA)[1], n) == std::sqrt( norm(cA[0][1]) + norm(cA[1][1]) + norm(cA[2][1]) ) );
 	BOOST_REQUIRE( nrm2(rotated(cA)[1]) == std::sqrt( norm(cA[0][1]) + norm(cA[1][1]) + norm(cA[2][1]) ) );
 }
-
 
 #endif
 #endif

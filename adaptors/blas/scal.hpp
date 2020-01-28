@@ -1,7 +1,7 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&$CXX -D_TEST_MULTI_ADAPTORS_BLAS_SCAL $0.cpp -o $0x `pkg-config --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp;exit
+(echo '#include"'$0'"'>$0.cpp)&&clang++ -D_TEST_MULTI_ADAPTORS_BLAS_SCAL $0.cpp -o $0x `pkg-config --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp;exit
 #endif
-// © Alfredo A. Correa 2019
+// © Alfredo A. Correa 2019-2020
 
 #ifndef MULTI_ADAPTORS_BLAS_SCAL_HPP
 #define MULTI_ADAPTORS_BLAS_SCAL_HPP
@@ -21,9 +21,9 @@ auto scal(typename std::decay_t<X1D>::element_type a, X1D&& m)
 
 template<class X1D>
 NODISCARD("because last argument is const")
-auto scal(typename std::decay_t<X1D>::element_type a, X1D const& m)
-->decltype(scal(a, m.decay())){
-	return scal(a, m.decay());}
+auto scal(typename X1D::element_type a, X1D const& m){
+	return scal(a, m.decay());
+}
 
 }}}
 
@@ -63,6 +63,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_scal_real){
 		BOOST_REQUIRE( size(rA1_scaled) == 4 );
 		BOOST_REQUIRE( rA1_scaled[1] == 12 );
 	}
+
 }
 
 #endif

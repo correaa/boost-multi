@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-c++ -Wall -Wextra -Wpedantic $0 -o $0x `pkg-config --cflags --libs blas` -Wno-deprecated-declarations -lboost_unit_test_framework -lcudart -lcublas &&$0x&&rm $0x;exit
+$CXX -Wall -Wextra $0 -o $0x `pkg-config --libs blas` -lcudart -lcublas -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 
 #include "../../blas.hpp"

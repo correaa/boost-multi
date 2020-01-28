@@ -81,16 +81,20 @@ IxAMAX(s); IxAMAX(d); IxAMAX(c); IxAMAX(z);
 #define NR INTEGER nr
 #define NC INTEGER nc
 #define LDA INTEGER lda
+#define UPLO const char& uplo
+#define DIAG const char& diag
 
 #define xGEMV(T) void BLAS(T##gemv)(TRANS, NR, NC, T const& a, T const* A, LDA, T const* X, INCX, T const& beta, T*       Y, INCY)
 #define xGER(T)  void BLAS(T##ger )(       NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA)
 #define xGERU(T) void BLAS(T##geru)(       NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA)
 #define xGERC(T) void BLAS(T##gerc)(       NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA)
+#define xTRSV(T) void BLAS(T##trsv)(UPLO, TRANS, DIAG, N, T const* A, LDA, T* X, INCX)
 
 xGEMV(s); xGEMV(d); xGEMV(c); xGEMV(z);
 xGER(s); xGER(d);
 xGERU(c); xGERU(z);
 xGERC(c); xGERC(z);
+xTRSV(s); xTRSV(d); xTRSV(c); xTRSV(z);
 
 #define TRANSA const char& transa
 #define TRANSB const char& transb
@@ -98,9 +102,7 @@ xGERC(c); xGERC(z);
 #define LDB INTEGER ldb
 #define LDC INTEGER ldc
 
-#define UPLO const char& uplo
 #define SIDE const char& side
-#define DIAG const char& diag
 
 #define xGEMM(T)     void BLAS(T##gemm)(TRANSA, TRANSB, NR, NC, NK, T const& a, T const* A, LDA, T const* B, LDB, T const& b, T const* CC, LDC)
 #define xSYRK(T)     void BLAS(T##syrk)(UPLO, TRANSA, NR, NK, T const& a, T const* A, LDA, T const& b, T* CC, LDC) 
@@ -174,7 +176,7 @@ using v = void;
 #define xrot(T, TT, CS)   template<class S> v   rot  (S n,       T       *x, S incx, T       *y, S incy, CS const& c, CS const& s){BLAS(TT##rot )(BC(n),    x, BC(incx), y, BC(incy), c, s);}
 #define xrotm(T)          template<class S> v   rotm (S n,       T       *x, S incx, T       *y, S incy, T const(&p)[5]          ){BLAS( T##rotm)(BC(n),    x, BC(incx), y, BC(incy), p);              }
 #define xswap(T)          template<class S> v   swap (S n,       T       *x, S incx, T       *y, S incy                          ){BLAS( T##swap)(BC(n),    x, BC(incx), y, BC(incy));                 }
-#define xscal(XX, TA, TX) template<class S> TX* scal (S n, TA a, TX      *x, S incx                                              ){BLAS(XX##scal)(BC(n), a, x, BC(incx)             ); return x+n*incx;}
+#define xscal(XX, TA, TX) template<class S> TX* scal (S n, TA* a, TX      *x, S incx                                              ){BLAS(XX##scal)(BC(n), *a, x, BC(incx)             ); return x+n*incx;}
 #define xcopy(T)          template<class S> v   copy (S n,       T const *x, S incx, T       *y, S incy                          ){BLAS( T##copy)(BC(n),    x, BC(incx), y, BC(incy));                 }
 #define xaxpy(T)          template<class S> T*  axpy (S n, T  a, T const *x, S incx, T       *y, S incy                          ){BLAS( T##axpy)(BC(n), a, x, BC(incx), y, BC(incy)); return y+n*incy;}
 #define xdot(R, TT, T)    template<class S> v   dot  (S n,       T const *x, S incx, T const *y, S incy, R* r                    ){*r = BLAS(TT##dot )(BC(n),    x, BC(incx), y, BC(incy));                 }
@@ -267,6 +269,22 @@ xgemv(s) xgemv(d) xgemv(c) xgemv(z)
 xger(s)   xger(d)
                   xgeru(c) xgeru(z)
                   xgerc(c) xgerc(z)
+
+template<class T> 
+struct blas2{
+//	template<class S>
+//	static v trsv(char ulA, char transA, char di, S m, T const* A, S lda, T* X, S incx) = delete;
+};
+
+template<> struct blas2<s>{template<class... As> static v trsv(As... as){BLAS(strsv)(as...);}};
+template<> struct blas2<d>{template<class... As> static v trsv(As... as){BLAS(dtrsv)(as...);}};
+template<> struct blas2<c>{template<class... As> static v trsv(As... as){BLAS(ctrsv)(as...);}};
+template<> struct blas2<z>{template<class... As> static auto trsv(As... as)->decltype(BLAS(ztrsv)(as...)){BLAS(ztrsv)(as...);}};
+
+namespace core{
+template<typename TconstP, typename TP, typename S=std::size_t, typename C=char> v trsv(C ulA, C transA, C diA, S n, TconstP A, S lda, TP X, S incx){blas2<std::decay_t<typename std::pointer_traits<TP>::element_type>>::trsv(ulA, transA, diA, n, A, lda, X, incx);}
+}
+
 #undef xgemv
 #undef xger
 #undef xgeru
@@ -275,14 +293,14 @@ xger(s)   xger(d)
 ///////////////////////////////////////////////////////////////////////////////
 // LEVEL 3
 #define xgemm(T) \
-template<class C, class S> v gemm(C transA, C transB, S m, S n, S k, T const& a, T const* A, S lda, T const* B, S ldb, T const& beta, T* CC, S ldc){ \
+template<class C, class S> v gemm(C transA, C transB, S m, S n, S k, T const* a, T const* A, S lda, T const* B, S ldb, T const* beta, T* CC, S ldc){ \
 	if(transA == 'N' or transA == 'n') {assert(lda >= std::max(1l, m));} else {assert(lda >= std::max(1l, k));} \
 	assert(ldb >= std::max(1l, transB=='N'?k:n)); \
 	/*if(transB == 'N' or transB == 'n') {std::cerr<<"ldb,k,n,m ="<< ldb <<','<<k<<','<<n<<','<<m<<std::endl;*/ \
 		/*if(ldb==1 and n==1) return gemv(transA, m, k, a, A, lda, B, S{1}, beta, CC, S{1});*/ \
 		/*assert(ldb >= std::max(1l, k));} else {std::cerr<<"ldb ="<< ldb <<std::endl; assert(ldb >= std::max(1l, n));}*/ \
 	assert(ldc >= std::max(1l, m)); \
-	BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), a, A, BC(lda), B, BC(ldb), beta, CC, BC(ldc));\
+	BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), *a, A, BC(lda), B, BC(ldb), *beta, CC, BC(ldc));\
 }
 #define xsyrk(T) template<class UL, class C, class S> v syrk(UL ul, C transA, S n, S k, T alpha, T const* A, S lda, T beta, T* CC, S ldc){BLAS(T##syrk)(ul, transA, BC(n), BC(k), alpha, A, BC(lda), beta, CC, BC(ldc));}
 #define xherk(T) template<class UL, class C, class S, class Real> v herk(UL ul, C transA, S n, S k, Real alpha, T const* A, S lda, Real beta, T* CC, S ldc){BLAS(T##herk)(ul, transA, BC(n), BC(k), alpha, A, BC(lda), beta, CC, BC(ldc));}

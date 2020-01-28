@@ -278,6 +278,14 @@ constexpr std::ptrdiff_t stride(T const*&/*t*/) noexcept{
 	return 1;
 }
 
+//inline auto base(double& d){return &d;}
+//inline auto base(float& f){return &f;}
+//inline auto base(std::complex<double>& c){return &c;}
+//inline auto base(std::complex<float>& z){return &z;}
+
+template<class T, std::enable_if_t<std::is_pod<std::decay_t<T>>{}, int> = 0>
+auto base(T& t){return &t;}
+
 //template<class T> constexpr std::ptrdiff_t stride(T const*/*t*/) noexcept{return 1;}
 
 template<typename T, std::size_t N>
