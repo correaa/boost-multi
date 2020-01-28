@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&$CXX -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_DETAIL_ADL $0.cpp -o$0x -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp;exit
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -Wpedantic -D_TEST_MULTI_DETAIL_ADL $0.cpp -o$0x -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp;exit
 #endif
 // © Alfredo A. Correa 2020
 #ifndef MULTI_DETAIL_ADL_HPP
@@ -11,13 +11,16 @@
 #include<algorithm> // copy, copy_n, equal
 #include<iterator> // begin, end
 
+namespace boost{namespace multi{
+	template<std::size_t I> struct priority : std::conditional_t<I==0, std::true_type, struct priority<I-1>>{}; 
+}}
+
 #define RET(ExpR) decltype(ExpR){return ExpR;}
 #define BOOST_MULTI_DEFINE_ADL(FuN) \
 namespace boost{namespace multi{ \
 namespace adl{ \
 	namespace custom{template<class...> struct FuN##_t;} \
 	static constexpr class{ \
-		template<std::size_t I> struct priority : std::conditional_t<I==0, std::true_type, priority<I-1>>{}; \
 		template<class... As> [[deprecated]] auto _(priority<0>,        As&&... as) const = delete; \
 		template<class... As>          auto _(priority<1>,        As&&... as) const->RET(std::FuN(std::forward<As>(as)...)) \
 		template<class... As>          auto _(priority<2>,        As&&... as) const->RET(     FuN(std::forward<As>(as)...)) \

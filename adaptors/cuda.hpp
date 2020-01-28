@@ -1,7 +1,7 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -Wpedantic -Wno-deprecated-declarations -D_TEST_MULTI_ADAPTORS_CUDA $0.cpp -o $0x -lcudart -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp;exit
+(echo '#include"'$0'"'>$0.cpp)&&c++ -Wall -Wextra -DNDEBUG `#-Wno-deprecated-declarations` -D_TEST_MULTI_ADAPTORS_CUDA $0.cpp -o $0x -lcudart -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp;exit
 #endif
-// © Alfredo A. Correa 2019
+// © Alfredo A. Correa 2019-2020
 
 #ifndef MULTI_ADAPTORS_CUDA_HPP
 #define MULTI_ADAPTORS_CUDA_HPP
@@ -45,7 +45,18 @@ namespace cuda{
 		using static_array = multi::array<T, D, multi::memory::cuda::managed::ptr<T>>;
 	}
 
-}}}
+}
+
+/*
+auto copy(const double* first, const double* last, boost::multi::array_iterator<double, 1, boost::multi::memory::cuda::managed::ptr<double, double*>, double&> d_first){
+	return copy(
+		boost::multi::array_iterator<double, 1, double const*, double const&>(first), 
+		boost::multi::array_iterator<double, 1, double const*, double const&>(last), 
+		d_first
+	);
+}*/
+
+}}
 
 #ifdef _TEST_MULTI_ADAPTORS_CUDA
 
@@ -55,6 +66,13 @@ namespace cuda{
 
 namespace multi = boost::multi;
 namespace cuda = multi::cuda;
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_cuda_copy){
+
+	multi::array<double, 2> A({4, 5}, 99.);
+	cuda::array<double, 2> Agpu = A;
+
+}
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_cuda){
 
@@ -93,12 +111,15 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_cuda){
 		cuda::allocator<double> a = get_allocator(arr); (void)a;
 	}
 	{
-		cuda::array<double, 0> arr = 45.;
-		BOOST_REQUIRE( arr() == 45. );
+//		cuda::array<double, 0> arr = 45.;
+//		BOOST_REQUIRE( arr() == 45. );
 	}
 	{
-		cuda::managed::array<double, 0> arr = 45.;
-		BOOST_REQUIRE( arr() == 45. );
+//		cuda::managed::array<double, 0> arr = 45.;
+//		BOOST_REQUIRE( arr() == 45. );
+	}
+	{
+		cuda::managed::array<double, 1> arr = {1.2, 3.4, 4.5};
 	}
 	{
 		using complex = std::complex<double>;

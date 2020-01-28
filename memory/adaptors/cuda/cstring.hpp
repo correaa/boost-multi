@@ -16,7 +16,7 @@ namespace multi{
 namespace memory{
 namespace cuda{
 
-template<class CudaFunction>
+/*template<class CudaFunction>
 auto call_dynamic(CudaFunction f, std::string name = "cudaFunction"){
 	return [=](auto... args)->decltype(f(args...), void()){
 		std::cerr << "calling " + name << std::endl;
@@ -25,6 +25,7 @@ auto call_dynamic(CudaFunction f, std::string name = "cudaFunction"){
 	};
 }
 #define CUDA_(FunctionPostfix) ::boost::multi::memory::cuda::call_dynamic(cuda##FunctionPostfix, "cuda"#FunctionPostfix)
+*/
 
 #if __cpp_nontype_template_parameter_auto>=201606
 template<auto CudaFunction>
@@ -50,14 +51,16 @@ auto call_static(std::string name = ""){
 
 namespace memcpy_{
 //https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html#group__CUDART__TYPES_1g18fa99055ee694244a270e4d5101e95b
-	enum class kind{ // 
+	enum class kind : std::underlying_type_t<enum cudaMemcpyKind>{
 		host_to_host=cudaMemcpyHostToHost, host_to_device=cudaMemcpyHostToDevice,
-		device_to_host=cudaMemcpyDeviceToHost, device_to_device=cudaMemcpyDeviceToDevice
+		device_to_host=cudaMemcpyDeviceToHost, device_to_device=cudaMemcpyDeviceToDevice,
+		inferred = cudaMemcpyDefault, default_ = cudaMemcpyDefault
 	};
 	constexpr kind type(void*    , void const*    ){return kind::host_to_host    ;}
 	constexpr kind type(ptr<void>, void const*    ){return kind::host_to_device  ;}
 	constexpr kind type(void*    , ptr<void const>){return kind::device_to_host  ;}
 	constexpr kind type(ptr<void>, ptr<void const>){return kind::device_to_device;}
+	[[deprecated]] constexpr kind type(...)                       {return kind::inferred;        }
 }
 
 template<typename Dest, typename Src, typename = decltype(memcpy_::type(Dest{}, Src{}))>
@@ -76,8 +79,8 @@ ptr<void> memset(ptr<void> dest, int ch, std::size_t byte_count){
 
 template<class VoidPDst = void*, class VoidPCSrc = void const*>
 auto memcpy2D(VoidPDst const& dst, std::size_t dpitch, VoidPCSrc const& src, std::size_t spitch, std::size_t width, std::size_t height)
-->decltype(CUDA_(Memcpy2D)(static_cast<void*>(dst), dpitch, static_cast<void const*>(src), spitch, width, height, static_cast<cudaMemcpyKind>(memcpy_::type(dst, src))), dst){
-	return CUDA_(Memcpy2D)(static_cast<void*>(dst), dpitch, static_cast<void const*>(src), spitch, width, height, static_cast<cudaMemcpyKind>(memcpy_::type(dst, src))), dst;}
+->decltype(cudaMemcpy2D(static_cast<void*>(dst), dpitch, static_cast<void const*>(src), spitch, width, height, static_cast<cudaMemcpyKind>(memcpy_::type(dst, src))), dst){
+	return cudaMemcpy2D(static_cast<void*>(dst), dpitch, static_cast<void const*>(src), spitch, width, height, static_cast<cudaMemcpyKind>(memcpy_::type(dst, src))), dst;}
 
 }}}}
 

@@ -1,8 +1,7 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -Wpedantic -D _TEST_MULTI_ADAPTORS_BLAS $0.cpp -o $0x `pkg-config --libs blas` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -D_TEST_MULTI_ADAPTORS_BLAS $0.cpp -o$0x `pkg-config --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp;exit
 #endif
-// © Alfredo A. Correa 2018
-
+// © Alfredo A. Correa 2018-2020
 #ifndef MULTI_ADAPTORS_BLAS_HPP
 #define MULTI_ADAPTORS_BLAS_HPP
 
@@ -23,14 +22,12 @@
 
 #if _TEST_MULTI_ADAPTORS_BLAS
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS iamax"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
 #include "../array.hpp"
 #include "../utility.hpp"
-
-#include <boost/timer/timer.hpp>
 
 #include<iostream>
 #include<complex>
@@ -64,7 +61,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_asum_complex){
 //	std::iota(begin(arr), end(arr), -700.);
 //	std::transform(cbegin(arr), cend(arr), begin(arr), [](auto&& a){return sqrt(a);});
 	{
-		boost::timer::auto_cpu_timer t;
 		using multi::blas::asum;
 		BOOST_REQUIRE( asum(arr) == 0 );
 	//	std::cout << asum(arr) << std::endl;
@@ -76,10 +72,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_nrm2_complex){
 //	std::iota(begin(arr), end(arr), -700.);
 //	std::transform(cbegin(arr), cend(arr), begin(arr), [](auto&& a){return sqrt(a);});
 	{
-		boost::timer::auto_cpu_timer t;
 		using multi::blas::nrm2;
-		BOOST_REQUIRE( nrm2(arr) == 0 );
-	//	std::cout << nrm2(arr) << std::endl;
+		BOOST_REQUIRE( nrm2(arr) == 0. );
 	}
 }
 

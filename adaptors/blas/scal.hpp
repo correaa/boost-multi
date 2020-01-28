@@ -9,34 +9,21 @@
 #include "../blas/core.hpp"
 #include "../../config/NODISCARD.hpp"
 
-#include<cassert>
-
-namespace boost{
-namespace multi{
+namespace boost{namespace multi{
 namespace blas{
 
-using blas::core::scal;
+using core::scal;
 
-template<typename T, class It, typename Size>
-auto scal_n(T a, It first, Size count)
-->decltype(scal(count, a, base(first), stride(first)), first + count){
-	return scal(count, a, base(first), stride(first)), first + count;}
+template<class X1D>
+auto scal(typename std::decay_t<X1D>::element_type a, X1D&& m)
+->decltype(scal(size(m), &a, base(m), stride(m)), std::forward<X1D>(m)){
+	return scal(size(m), &a, base(m), stride(m)), std::forward<X1D>(m);}
 
-template<typename T, class It>
-auto scal(T a, It f, It l)
-->decltype(scal_n(a, f, std::distance(f, l))){assert(stride(f) == stride(l));
-	return scal_n(a, f, std::distance(f, l));}
-
-template<typename T, class X1D>
-auto scal(T a, X1D&& m)
-->decltype(scal(a, begin(m), end(m)), std::forward<X1D>(m)){
-	return scal(a, begin(m), end(m)), std::forward<X1D>(m);}
-
-template<typename T, class X1D> 
-NODISCARD("when second argument is const")
-auto scal(T a, X1D const& m)->std::decay_t<decltype(scal(a, m.decay()))>{
-	return scal(a, m.decay());
-}
+template<class X1D>
+NODISCARD("because last argument is const")
+auto scal(typename std::decay_t<X1D>::element_type a, X1D const& m)
+->decltype(scal(a, m.decay())){
+	return scal(a, m.decay());}
 
 }}}
 
@@ -49,6 +36,7 @@ auto scal(T a, X1D const& m)->std::decay_t<decltype(scal(a, m.decay()))>{
 #include "../../array.hpp"
 
 namespace multi = boost::multi;
+namespace blas = multi::blas;
 
 BOOST_AUTO_TEST_CASE(multi_blas_scal_real){
 	{
@@ -58,7 +46,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_scal_real){
 			{9., 10., 11., 12.}
 		};
 
-		using multi::blas::scal;
+		using blas::scal;
 		auto S = scal(2., rotated(A)[1]);
 
 		BOOST_REQUIRE( A[2][1] == 20 );

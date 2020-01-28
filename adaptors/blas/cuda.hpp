@@ -1,16 +1,11 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_BLAS_CUDA $0.cpp -o $0x `pkg-config --libs blas` -lcudart -lcublas&&$0x&&rm $0x $0.cpp;exit
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_MULTI_ADAPTORS_BLAS_CUDA $0.cpp -o $0x `pkg-config --libs blas` -lcudart -lcublas&&$0x&&rm $0x $0.cpp;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
 #ifndef MULTI_ADAPTORS_BLAS_CUDA_HPP
 #define MULTI_ADAPTORS_BLAS_CUDA_HPP
 
-//#ifdef MULTI_ADAPTORS_BLAS_GEMM_HPP
-//#error "blas/cuda.hpp must be included before blas/gemm.hpp"
-//#endif
-//#include "../../utility.hpp"
-//#include "../../array.hpp" // allocating multi::arrays for output
 #include "../../memory/adaptors/cuda/ptr.hpp"
 #include "../../memory/adaptors/cuda/managed/ptr.hpp"
 #include "../../memory/adaptors/cuda/managed/allocator.hpp"
@@ -18,11 +13,9 @@
 #include<cublas_v2.h>
 
 //#include<iostream> // debug
-
 //#include <boost/log/trivial.hpp>
 
 #include<complex>
-//#include<memory>
 
 ///////////////////
 #include<system_error>
@@ -65,15 +58,15 @@ inline std::error_code make_error_code(cublas_error err) noexcept{
 	return std::error_code(int(err), cublas_error_category::instance());
 }
 
-template<class CublasFunction>
-auto cublas_call(CublasFunction f){
-	return [=](auto... args){
-		auto s = (enum cublas_error)(f(args...));
-		if( s != cublas_error::success ) throw std::system_error{make_error_code(s), "cannot call cublas function "};
-	};
-}
+//template<class CublasFunction>
+//auto cublas_call(CublasFunction f){
+//	return [=](auto... args){
+//		auto s = (enum cublas_error)(f(args...));
+//		if( s != cublas_error::success ) throw std::system_error{make_error_code(s), "cannot call cublas function "};
+//	};
+//}
 
-#define CUBLAS_(FunctionPostfix) boost::multi::cublas_call(cublas##FunctionPostfix)
+//#define CUBLAS_(FunctionPostfix) boost::multi::cublas_call(cublas##FunctionPostfix)
 
 }}
 
@@ -84,14 +77,25 @@ namespace std{template<> struct is_error_code_enum<::boost::multi::cublas_error>
 namespace boost{
 namespace multi{
 
+namespace cublas{
+	using Complex = cuComplex;
+	using DoubleComplex = cuDoubleComplex;
+	namespace {
+		template<class T> struct complex_t;
+		template<> struct complex_t<float>{using type = Complex;};
+		template<> struct complex_t<double>{using type = DoubleComplex;};
+	}
+	template<class T> using complex = typename complex_t<T>::type;
+}
 
 using v = void;
 using s = float;
 using d = double;
-using c = cuComplex;
-using z = cuDoubleComplex;
+using c = cublas::complex<float>;
+using z = cublas::complex<double>;
 
 template<class T = void> struct cublas1{};
+template<class T = void> struct cublas2{};
 template<class T = void> struct cublas3{};
 
 template<> struct cublas1<s>{
@@ -99,9 +103,9 @@ template<> struct cublas1<s>{
 	template<class...A> static auto asum (A...a){return cublasSasum(a...);}
 	template<class...A> static auto copy (A...a){return cublasScopy(a...);}
 	template<class...A> static auto dot  (A...a){return cublasSdot(a...);}	
-	template<class...A> static auto dotu (A...a){return cublasSdot(a...);}	
-	template<class...A> static auto dotc (A...a){return cublasSdot(a...);}	
-	template<class...A> static auto scal (A...a){return cublasSscal(a...);}
+	template<class...A> static auto dotu (A...a){return cublasSdotu(a...);}	
+	template<class...A> static auto dotc (A...a){return cublasSdotc(a...);}	
+	template<class...As> static auto scal (As...as){return cublasSscal(as...);}
 };
 template<> struct cublas1<d>{
 	template<class...A> static auto iamax(A...a){return cublasIdamax(a...);}
@@ -110,7 +114,7 @@ template<> struct cublas1<d>{
 	template<class...A> static auto dot  (A...a){return cublasDdot(a...);}
 	template<class...A> static auto dotu (A...a){return cublasDdotu(a...);}	
 	template<class...A> static auto dotc (A...a){return cublasDdotc(a...);}	
-	template<class...A> static auto scal (A...a){return cublasDscal(a...);}
+	template<class...As> static auto scal (As...as){return cublasDscal(as...);}
 };
 template<> struct cublas1<c>{
 	template<class...A> static auto iamax(A...a){return cublasIcamax(a...);}
@@ -119,7 +123,7 @@ template<> struct cublas1<c>{
 	template<class...A> static auto dot  (A...a){return cublasCdot(a...);}
 	template<class...A> static auto dotu (A...a){return cublasCdotu(a...);}	
 	template<class...A> static auto dotc (A...a){return cublasCdotc(a...);}	
-	template<class...A> static auto scal (A...a){return cublasCscal(a...);}
+	template<class...As> static auto scal (As...as){return cublasCscal(as...);}
 };
 template<> struct cublas1<z>{
 	template<class...A> static auto iamax(A...a){return cublasIzamax(a...);}
@@ -128,7 +132,7 @@ template<> struct cublas1<z>{
 	template<class...A> static auto dot  (A...a){return cublasZdot(a...);}
 	template<class...A> static auto dotu (A...a){return cublasZdotu(a...);}	
 	template<class...A> static auto dotc (A...a){return cublasZdotc(a...);}	
-	template<class...A> static auto scal (A...a){return cublasZscal(a...);}
+	template<class...As> static auto scal (As...as){return cublasZscal(as...);}
 };
 
 template<> struct cublas1<void>{
@@ -150,6 +154,27 @@ template<> struct cublas1<void>{
 	template<class T> static cublasStatus_t scal(cublasHandle_t handle, int n, const T* alpha, T* x, int incx){return cublas1<T>::scal(handle, n, alpha, x, incx);}
 };
 
+template<> struct cublas2<void>{
+// 2.6.16. cublas<t>trsv() https://docs.nvidia.com/cuda/cublas/index.html#cublas-lt-t-gt-trsv
+	template<class T> static cublasStatus_t trsv(cublasHandle_t handle, cublasFillMode_t uplo,
+                           cublasOperation_t trans, cublasDiagType_t diag,
+                           int n, const T           *A, int lda,
+                           T           *x, int incx){return cublas2<T>::trsv(handle, uplo, trans, diag, n, A, lda, x, incx);}
+};
+
+template<> struct cublas2<s>{
+	template<class...A> static auto trsv(A...a){return cublasStrsv(a...);}
+};
+template<> struct cublas2<d>{
+	template<class...A> static auto trsv(A...a){return cublasDtrsv(a...);}
+};
+template<> struct cublas2<c>{
+	template<class...A> static auto trsv(A...a){return cublasCtrsv(a...);}
+};
+template<> struct cublas2<z>{
+	template<class...A> static auto trsv(A...a){return cublasZtrsv(a...);}
+};
+
 template<> struct cublas3<void>{
 // 2.7.1. cublas<t>gemm() https://docs.nvidia.com/cuda/cublas/index.html#cublas-lt-t-gt-gemm
 	template<class T> static cublasStatus_t gemm(cublasHandle_t handle,
@@ -159,7 +184,7 @@ template<> struct cublas3<void>{
                            const T           *A, int lda,
                            const T           *B, int ldb,
                            const T           *beta,
-                           T           *C, int ldc){return cublas3<T>::gemm(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta);}
+                           T           *C, int ldc){return cublas3<T>::gemm(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);}
 // 2.7.6. cublas<t>syrk() https://docs.nvidia.com/cuda/cublas/index.html#cublas-lt-t-gt-syrk
 	template<class T> static cublasStatus_t syrk(cublasHandle_t handle,
                            cublasFillMode_t uplo, cublasOperation_t trans,
@@ -187,28 +212,48 @@ template<> struct cublas3<void>{
 };
 
 template<> struct cublas3<s>{
+	template<class...A> static auto gemm (A...a){return cublasSgemm(a...);}
 	template<class...A> static auto syrk (A...a){return cublasSsyrk(a...);}
 };
 template<> struct cublas3<d>{
+	template<class...A> static auto gemm (A...a){return cublasDgemm(a...);}
 	template<class...A> static auto syrk (A...a){return cublasDsyrk(a...);}
 };
 template<> struct cublas3<c>{
+	template<class...A> static auto gemm (A...a){return cublasCgemm(a...);}
 	template<class...A> static auto syrk (A...a){return cublasCsyrk(a...);}
 	template<class...A> static auto herk (A...a){return cublasCherk(a...);}
 };
 template<> struct cublas3<z>{
+	template<class...A> static auto gemm (A...a){return cublasZgemm(a...);}
 	template<class...A> static auto syrk (A...a){return cublasZsyrk(a...);}
 	template<class...A> static auto herk (A...a){return cublasZherk(a...);}
 };
 
 
 namespace cublas{
+
+template<class T> decltype(auto) translate(T&& t){return std::forward<T>(t);}
+
+auto translate(std::complex<float> const * t){return reinterpret_cast<cuDoubleComplex const*>(t);}	
+auto translate(std::complex<float>       * t){return reinterpret_cast<cuDoubleComplex      *>(t);}	
+auto translate(std::complex<double> const* t){return reinterpret_cast<cuDoubleComplex const*>(t);}	
+auto translate(std::complex<double>      * t){return reinterpret_cast<cuDoubleComplex      *>(t);}
+
+template<class T> auto translate(memory::cuda::ptr<T> p)->decltype(translate(raw_pointer_cast(p))){return translate(raw_pointer_cast(p));}
+template<class T> auto translate(memory::cuda::managed::ptr<T> p)->decltype(translate(raw_pointer_cast(p))){return translate(raw_pointer_cast(p));}
+
+auto translate(char O)->cublasOperation_t{
+	switch(O){case 'N': return CUBLAS_OP_N; case 'T': return CUBLAS_OP_T; case 'C': return CUBLAS_OP_C;} assert(0); 
+	return CUBLAS_OP_N;
+}
+
 struct context : std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>{
 	context()  : std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>(
-		[]{cublasHandle_t h; CUBLAS_(Create)(&h); return h;}(), &cublasDestroy
+		[]{cublasHandle_t h; cublasCreate(&h); return h;}(), &cublasDestroy
 	){}
 	int version() const{
-		int ret; CUBLAS_(GetVersion)(get(), &ret); return ret;
+		int ret; cublasGetVersion(get(), &ret); return ret;
 	}
 	~context() noexcept = default;
 	//set_stream https://docs.nvidia.com/cuda/cublas/index.html#cublassetstream
@@ -217,13 +262,15 @@ struct context : std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decl
 	//set_pointer_mode https://docs.nvidia.com/cuda/cublas/index.html#cublasgetpointermode
 	template<class...A> auto iamax(A...a) const{return cublas1<>::iamax(get(), a...);}
 	template<class...A> auto asum (A...a) const{return cublas1<>::asum(get(), a...);}
-	template<class...A> auto scal (A...a) const{return cublas1<>::scal(get(), a...);}
+	template<class...As> auto scal (As...as) const->RET(cublas1<>::scal(get(), translate(as)...))
 	template<class...A> auto dot  (A...a) const{return cublas1<>::dot(get(), a...);}
 	template<class...A> auto dotu (A...a) const->decltype(cublas1<>::dotu(get(), a...)){return cublas1<>::dotu(get(), a...);}
 	template<class...A> auto dotc (A...a) const->decltype(cublas1<>::dotc(get(), a...)){return cublas1<>::dotc(get(), a...);}
-	template<class...A> auto copy (A...a) const{return cublas1<>::copy(get(), a...);}
+	template<class...A> auto copy (A...a) const{return cublas1<>::copy(get(), translate(a)...);}
+	template<class...A> auto trsv (A...a) const{return cublas2<>::trsv(get(), a...);}
 
-	template<class...A> auto gemm (A...a) const{return cublas3<>::gemm(get(), a...);}
+	template<typename... As> auto gemm(As... as)->RET(cublas3<>::gemm(get(), translate(as)...))
+
 	template<class...A> auto syrk (A...a) const{return cublas3<>::syrk(get(), a...);}
 	template<class...A> auto herk (A...a) const{return cublas3<>::herk(get(), a...);}
 	template<class...A> auto trsm (A...a) const{return cublas3<>::trsm(get(), a...);}
@@ -238,10 +285,6 @@ namespace multi{
 namespace memory{
 namespace cuda{
 
-template<class T> static decltype(auto) translate(T&& t){return std::forward<T>(t);}
-static decltype(auto) translate(std::complex<double> const* t){return reinterpret_cast<cuDoubleComplex const*>(t);}	
-static decltype(auto) translate(std::complex<double>* t){return reinterpret_cast<cuDoubleComplex*>(t);}	
-
 template<class Tconst, typename S>
 S iamax(S n, cuda::ptr<Tconst> x, S incx){
 	int r; cublas::context{}.iamax(n, translate(raw_pointer_cast(x)), incx, &r); return r-1;
@@ -254,16 +297,16 @@ auto asum(S n, cuda::ptr<ComplexTconst> x, S incx){
 	return r;
 }
 
-template<class Tconst, class T, class S> 
-void copy(S n, cuda::ptr<Tconst> x, S incx, cuda::ptr<T> y, S incy){
-	cublas::context{}.copy(n, translate(raw_pointer_cast(x)), incx, translate(raw_pointer_cast(y)), incy);
+template<class PtrTconst, class PtrT, class S> 
+auto copy(S n, PtrTconst x, S incx, PtrT y, S incy)
+->decltype(cublas::context{}.copy(n, x, incx, y, incy)){std::cerr << "cuda copy " << n << " elements";
+	return cublas::context{}.copy(n, x, incx, y, incy);
 }
 
-template<class T, class TA, class S> 
-void scal(S n, TA a, multi::memory::cuda::ptr<T> x, S incx){
-	T aa{a};
-	cublas::context{}.scal(n, translate(&aa), translate(raw_pointer_cast(x)), incx);
-}
+template<class...As>
+auto scal(As... as)
+->decltype(cublas::context{}.scal(as...)){
+	return cublas::context{}.scal(as...);}
 
 template<class X, class Y, class R, class S>
 auto dot(S n, cuda::ptr<X> x, S incx, cuda::ptr<Y> y, S incy, cuda::ptr<R> result)
@@ -279,6 +322,26 @@ template<class X, class Y, class R, class S>
 auto dotc(S n, cuda::ptr<X> x, S incx, cuda::ptr<Y> y, S incy, cuda::ptr<R> result)
 ->decltype(cublas::context{}.dotc(n, translate(raw_pointer_cast(x)), incx, translate(raw_pointer_cast(y)), incy, translate(raw_pointer_cast(result)))){
 	return cublas::context{}.dotc(n, translate(raw_pointer_cast(x)), incx, translate(raw_pointer_cast(y)), incy, translate(raw_pointer_cast(result)));}
+
+
+template<class S, class Tconst, class T>
+auto trsv(char ul, char transA, char a_diag, S n, multi::memory::cuda::ptr<Tconst> A, S lda, multi::memory::cuda::ptr<T> X, S ldc){
+	cublasFillMode_t uplo = [ul](){
+		switch(ul){
+			case 'U': return CUBLAS_FILL_MODE_UPPER;
+			case 'L': return CUBLAS_FILL_MODE_LOWER;
+		} assert(0); return CUBLAS_FILL_MODE_UPPER;
+	}();
+	cublasOperation_t cutransA = [transA](){
+		switch(transA){
+			case 'N': return CUBLAS_OP_N;
+			case 'T': return CUBLAS_OP_T;
+			case 'C': return CUBLAS_OP_C;
+		} assert(0); return CUBLAS_OP_N;
+	}();
+	auto cudiag = a_diag=='N'?CUBLAS_DIAG_NON_UNIT:CUBLAS_DIAG_UNIT;
+	return cublas::context{}.trsv(uplo, cutransA, cudiag, n, translate(raw_pointer_cast(A)), lda, translate(raw_pointer_cast(X)), ldc);
+}
 
 template<class Tconst, class T, class UL, class C, class S, class Real>
 void syrk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::ptr<Tconst> A, S lda, Real beta, multi::memory::cuda::ptr<T> CC, S ldc){
@@ -351,41 +414,10 @@ void herk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::ptr<Tconst
 //	cublasDestroy(handle);
 }
 
-template<typename TconstA, typename TconstB, typename T, typename AA, typename BB, class C, typename S>
-void gemm(C transA, C transB, S m, S n, S k, AA a, multi::memory::cuda::ptr<TconstA> A, S lda, multi::memory::cuda::ptr<TconstB> B, S ldb, BB beta, multi::memory::cuda::ptr<T> CC, S ldc){
-	cublasOperation_t cutransA = [transA](){
-		switch(transA){
-			case 'N': return CUBLAS_OP_N;
-			case 'T': return CUBLAS_OP_T;
-			case 'C': return CUBLAS_OP_C;
-		} assert(0); return CUBLAS_OP_N;
-	}();
-	cublasOperation_t cutransB = [transB](){
-		switch(transB){
-			case 'N': return CUBLAS_OP_N;
-			case 'T': return CUBLAS_OP_T;
-			case 'C': return CUBLAS_OP_C;
-		} assert(0); return CUBLAS_OP_N;
-	}();
-	T Talpha{a};
-	T Tbeta{beta};
-	cublasStatus_t s = cublas::context{}.gemm(cutransA, cutransB, m, n, k, &Talpha, static_cast<T const*>(A), lda, static_cast<T const*>(B), ldb, &Tbeta, static_cast<T*>(CC), ldc);
-	if(s!=CUBLAS_STATUS_SUCCESS){
-		std::cerr << [&](){switch(s){
-			case CUBLAS_STATUS_SUCCESS: return "CUBLAS_STATUS_SUCCESS";
-			case CUBLAS_STATUS_NOT_INITIALIZED: return "CUBLAS_STATUS_NOT_INITIALIZED";
-			case CUBLAS_STATUS_ALLOC_FAILED: return "CUBLAS_STATUS_ALLOC_FAILED";
-			case CUBLAS_STATUS_INVALID_VALUE: return "CUBLAS_STATUS_INVALID_VALUE";
-			case CUBLAS_STATUS_ARCH_MISMATCH: return "CUBLAS_STATUS_ARCH_MISMATCH";
-			case CUBLAS_STATUS_MAPPING_ERROR: return "CUBLAS_STATUS_MAPPING_ERROR";
-			case CUBLAS_STATUS_EXECUTION_FAILED: return "CUBLAS_STATUS_EXECUTION_FAILED";
-			case CUBLAS_STATUS_INTERNAL_ERROR: return "CUBLAS_STATUS_INTERNAL_ERROR";
-			case CUBLAS_STATUS_NOT_SUPPORTED: return "CUBLAS_STATUS_NOT_SUPPORTED";
-			case CUBLAS_STATUS_LICENSE_ERROR: return "CUBLAS_STATUS_LICENSE_ERROR";
-		} return "<unknown>";}() << std::endl;
-	}
-	assert( s==CUBLAS_STATUS_SUCCESS ); (void)s;
-}
+template<class... As>
+auto gemm(As... as)
+->decltype(cublas::context{}.gemm(as...)){
+	return cublas::context{}.gemm(as...);}
 
 template<class Side, class Fill, class Trans, class Diag, typename Size, class Tconst, class T, class Alpha>
 void trsm(Side /*cublasSideMode_t*/ side, /*cublasFillMode_t*/ Fill uplo, /*cublasOperation_t*/ Trans trans, /*cublasDiagType_t*/ Diag diag,
@@ -404,7 +436,7 @@ void trsm(Side /*cublasSideMode_t*/ side, /*cublasFillMode_t*/ Fill uplo, /*cubl
 
 }}}}
 
-namespace boost{namespace multi{namespace memory{namespace cuda{namespace managed{//namespace boost::multi::memory::cuda::managed{
+namespace boost{namespace multi{namespace memory{namespace cuda{namespace managed{
 
 template<class Tconst, typename S>
 auto asum(S n, cuda::managed::ptr<Tconst> x, S incx){
@@ -416,10 +448,12 @@ S iamax(S n, cuda::managed::ptr<T const> x, S incx){
 	return cuda::iamax(n, cuda::ptr<T const>(x), incx);
 }
 
-template<class T, class TA, class S> 
-void scal(S n, TA a, multi::memory::cuda::managed::ptr<T> x, S incx){
-	scal(n, a, multi::memory::cuda::ptr<T>(x), incx);
-}
+using cuda::copy;
+
+using cuda::scal;
+//template<class T, class TA, class S> 
+//void scal(S n, TA a, cuda::managed::ptr<T> x, S incx){
+//	scal(n, a, multi::memory::cuda::ptr<T>(x), incx);}
 
 template<class X, class Y, class R, class S>
 auto dot(S n, cuda::managed::ptr<X> x, S incx, cuda::managed::ptr<Y> y, S incy, cuda::managed::ptr<R> result)
@@ -436,10 +470,12 @@ auto dotc(S n, cuda::managed::ptr<X> x, S incx, cuda::managed::ptr<Y> y, S incy,
 ->decltype(cuda::dotc(n, cuda_pointer_cast(x), incx, cuda_pointer_cast(y), incy, cuda_pointer_cast(result))){
 	return cuda::dotc(n, cuda_pointer_cast(x), incx, cuda_pointer_cast(y), incy, cuda_pointer_cast(result));}
 
-template<typename AA, typename BB, class S, class TconstA, class TconstB, class T>
-void gemm(char transA, char transB, S m, S n, S k, AA const& a, multi::memory::cuda::managed::ptr<TconstA> A, S lda, multi::memory::cuda::managed::ptr<TconstB> B, S ldb, BB const& beta, multi::memory::cuda::managed::ptr<T> CC, S ldc){
-	gemm(transA, transB, m, n, k, a, boost::multi::memory::cuda::ptr<TconstA>(A), lda, boost::multi::memory::cuda::ptr<TconstB>(B), ldb, beta, boost::multi::memory::cuda::ptr<T>(CC), ldc);
+template<class S, class Tconst, class T>
+auto trsv(char ul, char transA, char a_diag, S n, multi::memory::cuda::managed::ptr<Tconst> A, S lda, cuda::managed::ptr<T> X, S ldc){
+	cuda::trsv(ul, transA, a_diag, n, cuda::ptr<Tconst>(A), lda, cuda::ptr<T>(X), ldc);
 }
+
+using cuda::gemm;
 
 template<class Tconst, class T, class UL, class C, class S, class Real>
 void herk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::managed::ptr<Tconst> A, S lda, Real beta, multi::memory::cuda::managed::ptr<T> CC, S ldc){
