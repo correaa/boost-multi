@@ -255,27 +255,6 @@ auto uninitialized_copy(InputIt first, InputIt last, ForwardIt dest){
 	return dest;
 }
 
-template<dimensionality_type N>
-struct recursive{
-	template<class Alloc, class InputIt, class ForwardIt>
-	static auto alloc_uninitialized_copy(Alloc& a, InputIt first, InputIt last, ForwardIt dest){
-		using std::begin; using std::end;
-		while(first!=last){
-			recursive<N-1>::alloc_uninitialized_copy(a, begin(*first), end(*first), begin(*dest));
-			++first;
-			++dest;
-		}
-		return dest;
-	}
-};
-
-template<> struct recursive<1>{
-	template<class Alloc, class InputIt, class ForwardIt>
-	static auto alloc_uninitialized_copy(Alloc& a, InputIt first, InputIt last, ForwardIt dest){
-		return adl::alloc_uninitialized_copy(a, first, last, dest);
-	}
-};
-
 template<dimensionality_type N> struct recursive_fill_aux;
 
 template<dimensionality_type N, class Out, class T>
