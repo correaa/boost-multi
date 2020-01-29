@@ -15,6 +15,13 @@ namespace multi = boost::multi;
 template<class MA>
 decltype(auto) take(MA&& ma){return ma[0];}
 
+BOOST_AUTO_TEST_CASE(nested_array){
+	multi::array<double, 2> A(120, multi::array<double, 1>(140, 123.)); 
+	BOOST_REQUIRE( size(A) == 120 );
+	BOOST_REQUIRE( std::get<1>(sizes(A)) == 140 );
+	BOOST_REQUIRE( A[119][139] == 123. );
+}
+#if 1
 BOOST_AUTO_TEST_CASE(iterator_1d){
 {
 	multi::array<double, 1> A(100, 99.); 
@@ -34,12 +41,6 @@ BOOST_AUTO_TEST_CASE(iterator_2d){
 	BOOST_REQUIRE( size(A) == 120 );
 	BOOST_REQUIRE( cbegin(A) < cend(A) );
 	BOOST_REQUIRE( cend(A) - cbegin(A) == size(A) );
-}
-{
-	multi::array<double, 2> A(120, multi::array<double, 1>(140, 123.)); 
-	BOOST_REQUIRE( size(A) == 120 );
-	BOOST_REQUIRE( std::get<1>(sizes(A)) == 140 );
-	BOOST_REQUIRE( A[119][139] == 123. );
 }
 {
 	std::vector<double> v(10000);
@@ -65,8 +66,6 @@ BOOST_AUTO_TEST_CASE(iterator_2d){
 	BOOST_REQUIRE(( multi::array<double, 3>::reverse_iterator{}.base() == multi::array<double, 3>::reverse_iterator{}.base() ));
 	BOOST_REQUIRE(( multi::array<double, 3>::reverse_iterator{} == multi::array<double, 3>::reverse_iterator{} ));
 	BOOST_REQUIRE(( multi::array<double, 3>::reverse_iterator{} == multi::array<double, 3>::reverse_iterator{} ));
-}
-{
 }
 }
 #if 0
@@ -134,5 +133,6 @@ BOOST_AUTO_TEST_CASE(iterator_2d){
 		assert(std::vector<double>::reverse_iterator{it} == rit);
 	}
 }
+#endif
 #endif
 

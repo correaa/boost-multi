@@ -1,7 +1,7 @@
 #ifdef COMPILATION_INSTRUCTIONS
 $CXX -O3 -Wall -Wextra $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x; exit
 #endif
-
+// © Alfredo A. Correa 2019-2020
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi References"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>

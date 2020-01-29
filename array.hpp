@@ -136,7 +136,8 @@ public:
 	explicit static_array(typename static_array::index_extension const& e, ValueType const& v, typename static_array::allocator_type const& a = {}) //3
 	: static_array(e*extensions(v), a){
 	//	assert(0);
-		using std::fill; fill(this->begin(), this->end(), v);
+	//	using std::fill; fill(this->begin(), this->end(), v);
+		adl::fill(this->begin(), this->end(), v);
 	}
 //	template<class Allocator, typename = std::enable_if_t<std::is_same<Allocator, allocator_type>{}> >
 //	explicit 
@@ -336,8 +337,8 @@ public:
 
 	static_array& operator=(static_array const& other){
 		assert( extensions(other) == static_array::extensions() );
-		using std::copy_n;
-		copy_n(other.data(), other.num_elements(), this->data());
+//		using std::copy_n; copy_n(other.data(), other.num_elements(), this->data());
+		adl::copy_n(other.data(), other.num_elements(), this->data());
 		return *this;
 	}
 
@@ -574,8 +575,8 @@ public:
 
 	static_array& operator=(static_array const& other){
 		assert( extensions(other) == static_array::extensions() );
-		using std::copy_n;
-		copy_n(other.data(), other.num_elements(), this->data());
+//		using std::copy_n; copy_n(other.data(), other.num_elements(), this->data());
+		adl::copy_n(other.data(), other.num_elements(), this->data());	
 		return *this;
 	}
 

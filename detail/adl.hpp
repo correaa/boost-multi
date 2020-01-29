@@ -45,10 +45,12 @@ namespace adl{ \
 	namespace custom{template<class...> struct copy_t;} \
 	static constexpr class copy_t{ \
 /*		template<class... As> [[deprecated]] auto _(priority<0>,  As&&... as) const = delete;*/                                                            \
-		template<class... As>          auto _(priority<1>,        As&&... as) const->RET(              std::copy              (std::forward<As>(as)...)) \
+		template<class... As>          auto _(priority<1>,        As&&... as) const->RET(              std::copy              (std::forward<As>(as)...))
 /*		template<class T, class... As> auto _(priority<2>, T&& t, As&&... as) const->RET(                   copy<T&&>(std::forward(t), std::forward(as)...))*/ \
-		template<class... As>          auto _(priority<2>,        As&&... as) const->RET(               adl_copy              (std::forward<As>(as)...)) \
-		template<class... As>          auto _(priority<3>,        As&&... as) const->RET(                   copy              (std::forward<As>(as)...)) \
+		template<class... As>          auto _(priority<2>,        As&&... as) const->decltype(               adl_copy              (std::forward<As>(as)...)){
+return                adl_copy              (std::forward<As>(as)...);
+	} \
+		template<class... As>          auto _(priority<3>,        As&&... as) const->RET(                   copy(std::forward<As>(as)...)) \
 		template<class T, class... As> auto _(priority<4>, T&& t, As&&... as) const->RET(std::decay_t<T>::copy(std::forward<T>(t), std::forward<As>(as)...))
 		template<class T, class... As> auto _(priority<5>, T&& t, As&&... as) const->RET(std::forward<T>(t).copy              (std::forward<As>(as)...)) \
 /*		template<class... As>          auto _(priority<5>,        As&&... as) const->RET(custom::           copy_t<As&&...>::_(std::forward<As>(as)...))*/ \
@@ -56,7 +58,28 @@ namespace adl{ \
 		template<class... As> auto operator()(As&&... as) const->decltype(_(priority<5>{}, std::forward<As>(as)...)){return _(priority<5>{}, std::forward<As>(as)...);} \
 	} copy; \
 } \
-}} void* copy_dummy;
+}}
+
+namespace boost{namespace multi{ \
+namespace adl{ \
+	namespace custom{template<class...> struct fill_t;} \
+	static constexpr class fill_t{ \
+/*		template<class... As> [[deprecated]] auto _(priority<0>,  As&&... as) const = delete;*/                                                            \
+		template<class... As>          auto _(priority<1>,        As&&... as) const->RET(              std::fill              (std::forward<As>(as)...))       \
+/*		template<class T, class... As> auto _(priority<2>, T&& t, As&&... as) const->RET(                   copy<T&&>(std::forward(t), std::forward(as)...))*/ \
+		template<class... As>          auto _(priority<2>,        As&&... as) const->decltype(               adl_fill              (std::forward<As>(as)...)){
+return                adl_fill              (std::forward<As>(as)...);
+	} \
+		template<class... As>          auto _(priority<3>,        As&&... as) const->RET(                   fill(std::forward<As>(as)...))
+		template<class T, class... As> auto _(priority<4>, T&& t, As&&... as) const->RET(std::decay_t<T>::fill(std::forward<T>(t), std::forward<As>(as)...))
+		template<class T, class... As> auto _(priority<5>, T&& t, As&&... as) const->RET(std::forward<T>(t).fill              (std::forward<As>(as)...))
+/*		template<class... As>          auto _(priority<5>,        As&&... as) const->RET(custom::           fill_t<As&&...>::_(std::forward<As>(as)...))*/ \
+	public: \
+		template<class... As> auto operator()(As&&... as) const->decltype(_(priority<5>{}, std::forward<As>(as)...)){return _(priority<5>{}, std::forward<As>(as)...);} \
+	} fill; \
+} \
+}}
+
 
 namespace boost{namespace multi{
 
@@ -200,6 +223,30 @@ namespace adl{ \
 	} alloc_uninitialized_fill_n; \
 } \
 }} void* alloc_uninitialized_fill_n_dummy;
+
+namespace boost{
+namespace multi{
+template<dimensionality_type N>
+struct recursive{
+	template<class Alloc, class InputIt, class ForwardIt>
+	static auto alloc_uninitialized_copy(Alloc& a, InputIt first, InputIt last, ForwardIt dest){
+		using std::begin; using std::end;
+		while(first!=last){
+			recursive<N-1>::alloc_uninitialized_copy(a, begin(*first), end(*first), begin(*dest));
+			++first;
+			++dest;
+		}
+		return dest;
+	}
+};
+
+template<> struct recursive<1>{
+	template<class Alloc, class InputIt, class ForwardIt>
+	static auto alloc_uninitialized_copy(Alloc& a, InputIt first, InputIt last, ForwardIt dest){
+		return adl::alloc_uninitialized_copy(a, first, last, dest);
+	}
+};
+}}
 
 
 BOOST_MULTI_DEFINE_ADL(equal);

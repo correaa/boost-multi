@@ -914,6 +914,12 @@ public:
 		return *this;
 	}
 	template<typename TT, dimensionality_type DD = D, class... As>
+	array_ref const& operator=(array_ref<TT, DD, As...> const& o) const{
+		assert( this->extensions() != o.extensions() ); // TODO, or assert?
+		adl::copy_n(o.data(), o.num_elements(), this->data());//data_elements(), data_elements() + this->num_elements(), o.data());
+		return *this;
+	}
+	template<typename TT, dimensionality_type DD = D, class... As>
 	bool operator==(array_ref<TT, DD, As...> const& o) const{
 		if( this->extensions() != o.extensions() ) return false; // TODO, or assert?
 		return adl::equal(data_elements(), data_elements() + this->num_elements(), o.data());
