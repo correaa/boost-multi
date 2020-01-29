@@ -1,8 +1,8 @@
 #ifdef COMPILATION_INSTRUCTIONS
-`#nvcc -x cu --expt-relaxed-constexpr`c++ -Wall -Wextra -Wno-deprecated-declarations $0 -o $0x -lcudart -lcublas -lboost_unit_test_framework \
-`pkg-config --libs blas` -DBOOST_LOG_DYN_LINK -lboost_log -lpthread -lboost_system&&$0x&&rm $0x;exit
+nvcc -x cu --expt-relaxed-constexpr`#$CXX` -Wno-deprecated-declarations $0 -o $0x -lcudart -lcublas -lboost_unit_test_framework \
+`pkg-config --libs blas` -DBOOST_LOG_DYN_LINK -lboost_system&&$0x&&rm $0x;exit
 #endif
-// © Alfredo A. Correa 2019
+// © Alfredo A. Correa 2019-2020
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS herk"
 #define BOOST_TEST_DYN_LINK

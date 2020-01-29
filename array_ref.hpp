@@ -531,8 +531,9 @@ public:
 		assign(adl::begin(std::forward<A>(o)), adl::end(std::forward<A>(o)));
 		return *this;
 	}
-	basic_array const& operator=(basic_array const& o) const{assert(extension(*this) == extension(o));
-		assign(o.begin(), o.end());
+	basic_array const& operator=(basic_array const& o) const{
+		assert( this->extension() == o.extension() );
+		assign( o.begin(), o.end() );
 		return *this;
 	}
 	template<class Array> void swap(Array&& o) const{assert(this->extension() == extension(o));
@@ -542,7 +543,8 @@ public:
 	template<class Array> void swap(basic_array const& s, Array&& a){s.swap(a);}
 	template<class Array> void swap(Array&& a, basic_array const& s){s.swap(a);}
 	template<class Array> bool operator==(Array const& o) const{
-		return extension(*this)!=extension(o)?0:adl::equal(this->begin(), this->end(), adl::begin(o));
+		if(this->extension()!=o.extension()) return false;
+		return adl::equal(this->begin(), this->end(), adl::begin(o));
 	}
 	bool operator==(basic_array const& o) const{return operator==<basic_array>(o);}
 private:
