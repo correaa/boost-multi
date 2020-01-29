@@ -30,48 +30,10 @@ struct allocator_traits : std::allocator_traits<Alloc>{
 		return a.destroy(p);}
 };
 
-template<class T, typename = decltype(std::pointer_traits<T>::to_address(std::declval<T const&>()))> 
-                  auto use_address_aux(T const& p)->std::true_type;
-template<class T> auto use_address_aux(...       )->std::false_type;
-
-template<class T> struct use_address : decltype(use_address_aux<T>()){};
-
-
-#if 1
-template<class T>
-constexpr T* to_address(T* p, void* = 0) noexcept
-{
-    static_assert(!std::is_function<T>{}, "!");
-    return p;
-}
-#endif
-
-template<class T>
-auto to_address_aux(const T& p, std::true_type) noexcept{
-   return std::pointer_traits<T>::to_address(p);
-}
-
-template<class T>
-auto to_address_aux(const T& p, std::false_type) noexcept
-//->decltype(to_address(p.operator->()))
-{
-	return to_address(p.operator->());}
- 
-template<class T>
-auto to_address(const T& p) noexcept{
-	return to_address_aux(p, use_address<T>{});
-//    if constexpr (use_address<T>::value) {
-//       return std::pointer_traits<T>::to_address(p);
-//    } else {
-//       return memory::to_address(p.operator->());
-//   }
-}
-
-
 }
 
 using memory::allocator_traits;
-using memory::to_address;
+//using memory::to_address;
 ////////////////////////////////////////////////////////////////////////////////
 //template<class Ptr> auto to_address(Ptr const& p) noexcept
 //->decltype(p.operator->()){
@@ -98,21 +60,6 @@ void destroy(Alloc& a, ForwardIt first, ForwardIt last, void* = 0){
 }
 
 template<class Alloc, class InputIt, class Size, class ForwardIt>//, typename AT = std::allocator_traits<Alloc> >
-auto alloc_uninitialized_copy_n(Alloc& a, InputIt f, Size n, ForwardIt d)
-->std::decay_t<decltype(a.construct(to_address(d), *f), d)>{
-	ForwardIt c = d;
-//	using std::addressof;
-	try{
-		for(; n > 0; ++f, ++c, --n)
-			a.construct(to_address(c), *f);
-		//	AT::construct(a, to_address(c), *f);
-		//	AT::construct(a, addressof(*c), *f);
-		//	a.construct(addressof(*c), *f);
-		return c;
-	}catch(...){destroy(a, d, c); throw;}
-}
-
-template<class Alloc, class InputIt, class Size, class ForwardIt>//, typename AT = std::allocator_traits<Alloc> >
 ForwardIt uninitialized_move_n(Alloc& a, InputIt f, Size n, ForwardIt d){
 	ForwardIt c = d;
 //	using std::addressof;
@@ -125,18 +72,6 @@ ForwardIt uninitialized_move_n(Alloc& a, InputIt f, Size n, ForwardIt d){
 		//	a.construct(addressof(*c), *f);
 		return c;
 	}catch(...){destroy(a, d, c); throw;}
-}
-
-
-template<class Alloc, class ForwardIt, class Size, class T>//, typename AT = typename std::allocator_traits<Alloc> >
-ForwardIt uninitialized_fill_n(Alloc& a, ForwardIt first, Size n, const T& v){
-	ForwardIt current = first; // using std::to_address;
-	try{
-		for(; n > 0; ++current, --n)
-			allocator_traits<Alloc>::construct(a, to_address(current), v);
-		//	a.construct(to_address(current), v); //	AT::construct(a, to_address(current), v); //	AT::construct(a, addressof(*current), v); //a.construct(addressof(*current), v);
-		return current;
-	}catch(...){destroy(a, first, current); throw;}
 }
 
 template<class Alloc, class ForwardIt, class Size>//, class AT = typename std::allocator_traits<Alloc> >
@@ -164,37 +99,22 @@ ForwardIt uninitialized_value_construct_n(Alloc& a, ForwardIt first, Size n){
 	}catch(...){destroy(a, first, current); throw;}
 }
 
-template<class Alloc, class InputIt, class MMIt, 
-	typename = std::enable_if_t<has_rank<MMIt>{}>,
-	typename = std::enable_if_t<!std::is_trivially_copyable<typename MMIt::element>{}>, 
-	typename = std::enable_if_t<typename MMIt::rank{} != 1>
->
-auto alloc_uninitialized_copy(Alloc& a, InputIt f, InputIt l, MMIt d)
-->std::decay_t<decltype(alloc_uninitialized_copy(a, begin(*f), end(*f), begin(*d)), d)>
-{
-	MMIt c = d; using std::begin; using std::end;
-	try{
-		while(f!= l) alloc_uninitialized_copy(a, begin(*f), end(*f), begin(*c)), ++f, ++c; // to make it work with T[][]
-		return c;
-	}catch(...){destroy(a, d, c); throw;}
-}
-
 template<class... Args> auto std_copy(Args&&... args){
 	using std::copy;
 	return copy(std::forward<Args>(args)...);
 }
 //using std::copy_n;
-template<class Alloc, class In, typename Size, class Fwd, class=std::enable_if_t<std::is_trivially_copyable<typename Fwd::element>{}>>
-auto alloc_uninitialized_copy_n(Alloc&, In first, Size count, Fwd d_first)
-->decltype(std_copy_n(first, count, d_first)){
-	assert(0);
-	return copy_n(first, count, d_first);}
+//template<class Alloc, class In, typename Size, class Fwd, class=std::enable_if_t<std::is_trivially_copyable<typename Fwd::element>{}>>
+//auto alloc_uninitialized_copy_n(Alloc&, In first, Size count, Fwd d_first)
+//->decltype(std_copy_n(first, count, d_first)){
+//	assert(0);
+//	return copy_n(first, count, d_first);}
 
 //using std::copy;
-template<class Alloc, class In, class MIt, class=std::enable_if_t<std::is_trivially_copyable<typename MIt::element>{}>>
-auto alloc_uninitialized_copy(Alloc&, In f, In l, MIt d)
-->decltype(adl::copy(f, l, d)){
-	return adl::copy(f, l, d);}
+//template<class Alloc, class In, class MIt, class=std::enable_if_t<std::is_trivially_copyable<typename MIt::element>{}>>
+//auto alloc_uninitialized_copy(Alloc&, In f, In l, MIt d)
+//->decltype(adl::copy(f, l, d)){
+//	return adl::copy(f, l, d);}
 	
 template<class Alloc, class InputIt, class MIt, typename = std::enable_if_t<has_rank<MIt>{}>, typename = std::enable_if_t<typename MIt::rank{}==1>, class=std::enable_if_t<!std::is_trivially_copyable<typename MIt::element>{}> >
 MIt alloc_uninitialized_copy(Alloc& a, InputIt f, InputIt l, MIt const& d){
@@ -216,7 +136,7 @@ MIt alloc_uninitialized_copy(Alloc& a, InputIt f, InputIt l, MIt d, double* = 0)
 }
 
 // https://en.cppreference.com/w/cpp/memory/destroy_at
-template<class Alloc, class T, typename AT = std::allocator_traits<Alloc> > 
+template<class Alloc, class T, typename AT = std::allocator_traits<Alloc> >
 void destroy_at(Alloc& a, T* p){AT::destroy(a, p);}
 
 //template<class Ptr> auto to_address(const Ptr& p) noexcept 
@@ -335,16 +255,26 @@ auto uninitialized_copy(InputIt first, InputIt last, ForwardIt dest){
 	return dest;
 }
 
-template<dimensionality_type N, class Alloc, class InputIt, class ForwardIt>
-auto uninitialized_copy(Alloc& a, InputIt first, InputIt last, ForwardIt dest){
-	while(first!=last){
-		uninitialized_copy<N-1>(a, begin(*first), end(*first), begin(*dest));
-		++first;
-		++dest;
+template<dimensionality_type N>
+struct recursive{
+	template<class Alloc, class InputIt, class ForwardIt>
+	static auto alloc_uninitialized_copy(Alloc& a, InputIt first, InputIt last, ForwardIt dest){
+		using std::begin; using std::end;
+		while(first!=last){
+			recursive<N-1>::alloc_uninitialized_copy(a, begin(*first), end(*first), begin(*dest));
+			++first;
+			++dest;
+		}
+		return dest;
 	}
-	return dest;
-}
+};
 
+template<> struct recursive<1>{
+	template<class Alloc, class InputIt, class ForwardIt>
+	static auto alloc_uninitialized_copy(Alloc& a, InputIt first, InputIt last, ForwardIt dest){
+		return adl::alloc_uninitialized_copy(a, first, last, dest);
+	}
+};
 
 template<dimensionality_type N> struct recursive_fill_aux;
 

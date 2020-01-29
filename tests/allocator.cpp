@@ -1,7 +1,7 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -Wall -Wextra -Wpedantic $0 -o $0x -lboost_unit_test_framework&&valgrind $0x&&rm $0x;exit
+$CXX `#-Wfatal-errors` $0 -o $0x -lboost_unit_test_framework&&valgrind $0x&&rm $0x;exit
 #endif
-// © Alfredo A. Correa 2018-2019
+// © Alfredo A. Correa 2018-2020
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi allocators"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
@@ -18,8 +18,7 @@ $CXX -Wall -Wextra -Wpedantic $0 -o $0x -lboost_unit_test_framework&&valgrind $0
 namespace multi = boost::multi;
 using std::cout;
 
-
-BOOST_AUTO_TEST_CASE(array_allocators){
+BOOST_AUTO_TEST_CASE(std_vector_of_arrays){
 {
 	std::vector<multi::array<double, 2>> VA;
 	VA.emplace_back(multi::index_extensions<2>{0, 0}, 0);
@@ -31,10 +30,6 @@ BOOST_AUTO_TEST_CASE(array_allocators){
 	BOOST_REQUIRE( size(VA[2]) == 2 );
 	BOOST_REQUIRE( VA[1][0][0] == 1 );
 	BOOST_REQUIRE( VA[2][0][0] == 2 );
-}
-{
-	multi::array<double, 3> AA({10, 20, 30}, 99.);
-	BOOST_REQUIRE( AA[5][10][15] == 99. );
 }
 {
 	std::vector<multi::array<double, 2>> VA(33);
@@ -50,23 +45,19 @@ BOOST_AUTO_TEST_CASE(array_allocators){
 	BOOST_REQUIRE( size(VA[4]) == 4 );
 	BOOST_REQUIRE( VA[4][1][1] == 99. );
 }
+}
+
+BOOST_AUTO_TEST_CASE(array_of_arrays){
 {
-	multi::array<double, 3> A{};
-	BOOST_REQUIRE( size(A) == 0 );
-	multi::array<double, 3> B{};
-	BOOST_REQUIRE( size(B) == 0 );
+	multi::array<multi::array<double, 2>, 1> A(10, multi::array<double, 2>{});
+	for(auto i : extension(A)) A[i] = multi::array<double, 2>({i, i}, static_cast<double>(i));
+	BOOST_REQUIRE( size(A[0]) == 0 );
+	BOOST_REQUIRE( size(A[1]) == 1 );
+	BOOST_REQUIRE( size(A[8]) == 8 );
+	BOOST_REQUIRE( A[8][4][4] == 8 );
 }
 {
 	multi::array<multi::array<double, 3>, 2> AA({10, 20}, multi::array<double, 3>{});
-	for(int i = 0; i != 10; ++i)
-		for(int j = 0; j != 20; ++j)
-			AA[i][j] = multi::array<double, 3>({i+j, i+j, i+j}, 99.);
-	BOOST_REQUIRE( size(AA[9][19]) == 9 + 19 );
-	BOOST_REQUIRE( AA[9][19][1][1][1] == 99. );
-}
-{
-	multi::array<multi::array<double, 3>, 2> AA({10, 20}, multi::array<double, 3>{});
-	BOOST_REQUIRE( size(AA[9][19]) == 0 );
 	for(int i = 0; i != 10; ++i)
 		for(int j = 0; j != 20; ++j)
 			AA[i][j] = multi::array<double, 3>({i+j, i+j, i+j}, 99.);

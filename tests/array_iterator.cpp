@@ -1,6 +1,10 @@
 #ifdef COMPILATION_INSTRUCTIONS
-clang++ -O3 -std=c++17 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
+$CXX -Wfatal-errors $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
+// © Alfredo A. Correa 2018-2020
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi allocators"
+#define BOOST_TEST_DYN_LINK
+#include<boost/test/unit_test.hpp>
 
 #include<iostream>
 #include<vector>
@@ -8,75 +12,80 @@ clang++ -O3 -std=c++17 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x && 
 
 namespace multi = boost::multi;
 
-using std::cout;
-void print(double const& d){cout<<d;}
-
-template<class MultiArray> 
-decltype(auto) print(MultiArray const& ma){
-	cout<<"{";
-	if(not ma.empty()){
-		auto b = ma.begin();
-		print(*b);
-		std::for_each(++b, ma.end(), [](auto&& e){cout<<","; print(e);});
-	}
-	return cout<<"} ";
-}
-
 template<class MA>
 decltype(auto) take(MA&& ma){return ma[0];}
 
-int main(){
-
-	{
-		multi::array<double, 1> arr(100, 99.); assert(size(arr) == 100);
-		assert( begin(arr) < end(arr) );
-	}
-	{
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wbraced-scalar-init"
-		multi::array<double, 1> arr({100}, 99.); assert(size(arr) == 100);
-#pragma GCC diagnostic pop
-		assert( begin(arr) < end(arr) );
-	}
-	{
-		multi::array<double, 2> arr({120, 140}, 99.); assert(size(arr) == 120);
-		assert( cbegin(arr) < cend(arr) );
-	}
-	{
-		multi::array<double, 2> arr(120, multi::array<double, 1>(140, 123.)); assert(size(arr) == 120);
-		assert( arr[99][111] == 123. );
-	}
-	{
-		std::vector<double> v(10000);
-		multi::array_ref<double, 2> A(v.data(), {100, 100}); assert(size(A) == 100);
-		begin(A)[4][3] = 2.; // ok 
-		using multi::static_array_cast;
-	//	auto const& A_const = static_array_cast<double const>(A);
-	//	begin(A_const)[4][3] = 2.; // error, read only
-	}
-	{
-		std::vector<double> dd(10000);
-		multi::array_ref<double, 2, std::vector<double>::iterator> arr(begin(dd), {100, 100}); assert(size(arr) == 100);
-		begin(arr)[4][3] = 2.;
-	//	assert( cbegin(arr)/2 );
-	//	assert( cbegin(arr) < cend(arr) );
-	}
+BOOST_AUTO_TEST_CASE(iterator_1d){
+{
+	multi::array<double, 1> A(100, 99.); 
+	BOOST_REQUIRE( size(A) == 100 );
+	BOOST_REQUIRE( begin(A) < end(A) );
+	BOOST_REQUIRE( end(A) - begin(A) == size(A) );
+}
+{
+	multi::array<double, 1> A({100}, 99.); 
+	BOOST_REQUIRE( size(A) == 100 );
+	BOOST_REQUIRE( begin(A) < end(A) );
+}
+}
+BOOST_AUTO_TEST_CASE(iterator_2d){
+{
+	multi::array<double, 2> A({120, 140}, 99.); 
+	BOOST_REQUIRE( size(A) == 120 );
+	BOOST_REQUIRE( cbegin(A) < cend(A) );
+	BOOST_REQUIRE( cend(A) - cbegin(A) == size(A) );
+}
+{
+	multi::array<double, 2> A(120, multi::array<double, 1>(140, 123.)); 
+	BOOST_REQUIRE( size(A) == 120 );
+	BOOST_REQUIRE( std::get<1>(sizes(A)) == 140 );
+	BOOST_REQUIRE( A[119][139] == 123. );
+}
+{
+	std::vector<double> v(10000);
+	multi::array_ref<double, 2> A(v.data(), {100, 100}); 
+	BOOST_REQUIRE(size(A) == 100);
+	begin(A)[4][3] = 2.; // ok 
+	using multi::static_array_cast;
+//	auto const& A_const = static_array_cast<double const>(A);
+//	begin(A_const)[4][3] = 2.; // error, read only
+}
+{
+	std::vector<double> V(10000);
+	multi::array_ref<double, 2, std::vector<double>::iterator> A(begin(V), {100, 100}); 
+	BOOST_REQUIRE(size(A) == 100);
+//	begin(arr)[4][3] = 2.;
+	A[1][0] = 99.;
+	BOOST_REQUIRE( cbegin(A) < cend(A) );
+	BOOST_REQUIRE( V[100] == 99. );
+}
+{
+	multi::array<double, 3>::reverse_iterator rit;
+	BOOST_REQUIRE(( rit.base() == multi::array<double, 3>::reverse_iterator{}.base() ));
+	BOOST_REQUIRE(( multi::array<double, 3>::reverse_iterator{}.base() == multi::array<double, 3>::reverse_iterator{}.base() ));
+	BOOST_REQUIRE(( multi::array<double, 3>::reverse_iterator{} == multi::array<double, 3>::reverse_iterator{} ));
+	BOOST_REQUIRE(( multi::array<double, 3>::reverse_iterator{} == multi::array<double, 3>::reverse_iterator{} ));
+}
+{
+}
+}
+#if 0
 	return 0;
 
-	multi::array<double, 3>::reverse_iterator rit;
-	assert(( rit.base() == multi::array<double, 3>::reverse_iterator{}.base() ));
-	assert(( multi::array<double, 3>::reverse_iterator{}.base() == multi::array<double, 3>::reverse_iterator{}.base() ));
-	assert(( multi::array<double, 3>::reverse_iterator{} == multi::array<double, 3>::reverse_iterator{} ));
-	assert(( multi::array<double, 3>::reverse_iterator{} == multi::array<double, 3>::reverse_iterator{} ));
-
 	multi::array<double, 3> A =
-	#if defined(__INTEL_COMPILER)
-		(double[3][2][2])
-	#endif
+//	#if defined(__INTEL_COMPILER)
+//		(double[3][2][2])
+//	#endif
 		{
-			{{ 1.2,  1.1}, { 2.4, 1.}},
-			{{11.2,  3.0}, {34.4, 4.}},
-			{{ 1.2,  1.1}, { 2.4, 1.}}
+			{
+				{ 1.2,  1.1}, { 2.4, 1.}
+			},
+			{
+				{11.2,  3.0}, {34.4, 4.}
+			},
+			{
+				{ 1.2,  1.1}, { 2.4, 1.}
+			}
 		}
 	;
 	assert( begin(A) < end(A) );
@@ -125,4 +134,5 @@ int main(){
 		assert(std::vector<double>::reverse_iterator{it} == rit);
 	}
 }
+#endif
 

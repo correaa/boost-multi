@@ -10,8 +10,7 @@
 
 #include "./memory/allocator.hpp"
 #include "./detail/memory.hpp"
-
-//#include <boost/log/trivial.hpp>
+#include "./detail/adl.hpp"
 
 #if defined(__CUDACC__)
 #define HD __host__ __device__
@@ -49,8 +48,7 @@ protected:
 		return uninitialized_fill_n(alloc_, base, num_elements, e);
 	}
 	template<typename It> auto uninitialized_copy_n(It first, size_type n, typename std::allocator_traits<allocator_type>::pointer data){
-	//	using boost::multi::alloc_uninitialized_copy_n;
-		return alloc_uninitialized_copy_n(this->alloc(), first, n, data);
+		return adl::alloc_uninitialized_copy_n(this->alloc(), first, n, data);
 	}
 public:
 	allocator_type get_allocator() const{return alloc_;}
@@ -108,7 +106,9 @@ public:
 			index_extension(std::distance(first, last))*multi::extensions(*first)
 		}
 	{
-		alloc_uninitialized_copy(static_array::alloc(), first, last, ref::begin());
+		recursive<D>::alloc_uninitialized_copy(static_array::alloc(), first, last, ref::begin());
+//		adl::uninitialized_copy(first, last, ref::begin());
+//		using std::uninitialized_copy; uninitialized_copy(first, last, ref::begin());
 	}
 	static_array(typename static_array::extensions_type x, typename static_array::element const& e, typename static_array::allocator_type const& a) : //2
 		array_alloc{a}, 
@@ -120,7 +120,7 @@ public:
 	explicit static_array(Element const& e, typename static_array::allocator_type const& a)
 	:	static_array(typename static_array::extensions_type{}, e, a){}
 	auto uninitialized_fill(typename static_array::element const& e){
-		return uninitialized_fill_n(this->alloc(), this->base_, this->num_elements(), e);
+		return adl::alloc_uninitialized_fill_n(this->alloc(), this->base_, this->num_elements(), e);
 	}
 	static_array(typename static_array::extensions_type const& x, typename static_array::element const& e)  //2
 	:	array_alloc{}, ref(static_array::allocate(typename static_array::layout_t{x}.num_elements()), x){
@@ -400,7 +400,7 @@ public:
 	static_array(typename static_array::element_type const& e, typename static_array::allocator_type const& a)
 	:	static_array(typename static_array::extensions_type{}, e, a){}
 	auto uninitialized_fill(typename static_array::element const& e){
-		return uninitialized_fill_n(this->alloc(), this->base_, this->num_elements(), e);
+		return adl::alloc_uninitialized_fill_n(this->alloc(), this->base_, this->num_elements(), e);
 	}
 	static_array(typename static_array::extensions_type const& x, typename static_array::element const& e)  //2
 	:	array_alloc{}, ref(static_array::allocate(typename static_array::layout_t{x}.num_elements()), x){
@@ -415,7 +415,6 @@ public:
 	template<class ValueType, typename = std::enable_if_t<std::is_same<ValueType, typename static_array::value_type>{}>> 
 	explicit static_array(typename static_array::index_extension const& e, ValueType const& v, typename static_array::allocator_type const& a = {}) //3
 	: static_array(e*extensions(v), a){
-	//	assert(0);
 		using std::fill; fill(this->begin(), this->end(), v);
 	}
 //	template<class Allocator, typename = std::enable_if_t<std::is_same<Allocator, allocator_type>{}> >
@@ -498,10 +497,18 @@ public:
 //	operator decltype(auto)(){return *(this->base_);}
 //	operator decltype(auto)() const{return *(this->base_);}
 //	operator typename static_array::element_type() const{return *(this->base_);}
-//	using ref::operator();
-	operator typename std::iterator_traits<typename static_array::element_const_ptr>::reference() const{
+//	using ref::operator();	
+//	operator typename static_array::element_ref() const& = delete;//{return *(this->base_);}
+	operator typename std::iterator_traits<typename static_array::element_const_ptr>::reference() const&{
 		return *(this->base_);
 	}
+	operator typename std::add_rvalue_reference<typename std::iterator_traits<typename static_array::element_ptr>::reference>::type()&&{
+		return *(this->base_);
+	}
+	operator typename std::iterator_traits<typename static_array::element_ptr>::reference()&{
+		return *(this->base_);
+	}
+
 //	basic_array<T, D, typename static_array::element_ptr> 
 	decltype(auto) operator()()&{
 		return ref::operator()();

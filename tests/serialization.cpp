@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -std=c++17 -O3 -Wall -Wextra -Wfatal-errors $0 -o$0x -lboost_unit_test_framework  -lstdc++fs -lboost_serialization -lboost_iostreams -lcudart&&$0x $@&&rm $0x;exit
+$CXX -std=c++17 -O3 -Wfatal-errors $0 -o$0x -lboost_unit_test_framework  -lstdc++fs -lboost_serialization -lboost_iostreams -lcudart&&$0x $@&&rm $0x;exit
 #endif
 // © Alfredo Correa 2018-2020
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi fill"
@@ -9,7 +9,6 @@ $CXX -std=c++17 -O3 -Wall -Wextra -Wfatal-errors $0 -o$0x -lboost_unit_test_fram
 #include "../array.hpp"
 
 #include "../adaptors/cuda.hpp"
-
 
 #include<boost/archive/xml_oarchive.hpp>
 #include<boost/archive/xml_iarchive.hpp>

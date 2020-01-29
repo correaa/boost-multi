@@ -348,6 +348,8 @@ public:
 		decay_type ret = *this;
 		return ret;
 	}
+	static decay_type remake(std::initializer_list<typename basic_array::value_type> il){return decay_type(il);}
+	template<class... As> static auto remake(As&&... as)->decltype(decay_type(std::forward<As>(as)...)){return decay_type(std::forward<As>(as)...);}
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int){
 		using boost::serialization::make_nvp;
@@ -713,6 +715,8 @@ public:
 //	}
 	basic_array(basic_array&&) = default; // ambiguos deep-copy a reference type, in C++14 use auto&& A_ref = Expression; or decay_t<decltype(Expression)> A = Expression
 	// in c++17 things changed and non-moveable non-copyable types can be returned from functions and captured by auto
+	decay_type static remake(std::initializer_list<typename basic_array::value_type> il){return decay_type(il);}
+	template<class... As> static auto remake(As&&... as)->decltype(decay_type(std::forward<As>(as)...)){return decay_type(std::forward<As>(as)...);}
 protected:
 	template<class, class> friend struct basic_array_ptr;
 	template<class, dimensionality_type D, class, class>
