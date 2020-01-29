@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&c++ -std=c++14 -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_LAPACK_POTRF $0.cpp -o $0x `pkg-config --libs blas lapack` -lboost_unit_test_framework &&$0x&& rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -D_TEST_MULTI_ADAPTORS_LAPACK_POTRF $0.cpp -o$0x `pkg-config --libs blas lapack` -lboost_unit_test_framework&&$0x&& rm $0x $0.cpp; exit
 #endif
 // © Alfredo A. Correa 2019
 
@@ -102,7 +102,7 @@ template<class A, class B> auto onrm(A&& a, B&& buffer, filling f = filling::upp
 
 #if _TEST_MULTI_ADAPTORS_LAPACK_POTRF
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi lapack adaptor"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi lapack adaptor potrf"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 

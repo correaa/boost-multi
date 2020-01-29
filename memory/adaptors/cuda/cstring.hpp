@@ -43,7 +43,7 @@ auto call_static(std::string name = ""){
 		std::cerr << "Calling function " << name << std::endl;
 		Cuda::error s = CublasFunction(args...);
 		if( s != Cuda::error::success ) throw std::system_error{make_error_code(s), "cannot call cuda function "};
-	};	
+	};
 }
 
 #define CUDA(FunctionPostfix) ::boost::multi::memory::cuda::call_static<decltype(&cuda##FunctionPostfix), cuda##FunctionPostfix>(#FunctionPostfix)

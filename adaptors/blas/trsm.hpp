@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&nvcc -x cu --expt-relaxed-constexpr`#clang++ -Wall -Wextra -Wpedantic` -D_TEST_MULTI_ADAPTORS_BLAS_TRSM $0.cpp -o $0x -lboost_unit_test_framework \
+(echo '#include"'$0'"'>$0.cpp)&&`#nvcc -x cu --expt-relaxed-constexpr`$CXX -D_TEST_MULTI_ADAPTORS_BLAS_TRSM $0.cpp -o $0x -lboost_unit_test_framework \
 `pkg-config --cflags --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core` \
 -lboost_timer &&$0x&& rm $0x $0.cpp; exit
@@ -23,7 +23,7 @@ namespace multi{namespace blas{
 enum class DIAG : char{U='U', N='N'};
 
 enum class diagonal : char{
-	unit = static_cast<char>(DIAG::U), 
+	unit = static_cast<char>(DIAG::U),
 	non_unit = static_cast<char>(DIAG::N), general = non_unit
 };
 
@@ -32,12 +32,13 @@ template<class A> auto trsm_base_aux(A&& a, std::true_type){return underlying(ba
 
 using core::trsm;
 
-template<typename AA, class A2D, class B2D>
-auto trsm_move(filling a_nonz, diagonal a_diag, AA alpha, A2D const& a, B2D&& b, side s = side::left)
+template<class A2D, class B2D>
+auto trsm_move(filling a_nonz, diagonal a_diag, typename A2D::element_type alpha, A2D const& a, B2D&& b, side s = side::left)
 ->decltype(
 	trsm('R', static_cast<char>(+a_nonz), 'N', static_cast<char>(a_diag), size(rotated(b)), size(b), alpha, trsm_base_aux(a, is_hermitized<A2D>{}), stride(a)         , trsm_base_aux(b, is_hermitized<B2D>{}), stride(b))
 	, std::forward<B2D>(b)
-){
+)
+{
 	if(s==side::left) assert( size(rotated(a)) == size(b) );
 	else              assert( size(rotated(b)) == size(a) );
 
@@ -75,7 +76,8 @@ auto trsm_move(filling a_nonz, diagonal a_diag, AA alpha, A2D const& a, B2D&& b,
 
 template<typename AA, class A2D, class B2D>
 auto trsm(filling a_nonz, diagonal a_diag, AA alpha, A2D const& a, B2D&& b)
-->decltype(trsm_move(a_nonz, a_diag, alpha, a, std::forward<B2D>(b)), std::declval<B2D&&>()){
+->decltype(trsm_move(a_nonz, a_diag, alpha, a, std::forward<B2D>(b)), std::declval<B2D&&>())
+{
 	if(!is_conjugated(b)) trsm_move( a_nonz, a_diag, alpha,            a, std::forward<B2D>(b));
 	else                  trsm_move(-a_nonz, a_diag, alpha, hermitized(a), rotated(b), side::right);
 	return std::forward<B2D>(b);
@@ -92,24 +94,31 @@ auto trsm(filling a_nonz, AA alpha, A2D const& a, B2D&& b)
 ->decltype(trsm(a_nonz, diagonal::general, alpha, a, std::forward<B2D>(b))){
 	return trsm(a_nonz, diagonal::general, alpha, a, std::forward<B2D>(b));}
 
-template<class A2D, class B2D>
-auto trsm(filling a_nonz, A2D const& a, B2D&& b)
-->decltype(trsm(a_nonz, 1.0, a, std::forward<B2D>(b))){
-	return trsm(a_nonz, 1.0, a, std::forward<B2D>(b));}
+template<class AA, class A2D, class B2D>
+NODISCARD("because last argument is const")
+auto trsm(filling a_nonz, AA alpha, A2D const& a, B2D const& b)
+->decltype(trsm(a_nonz, diagonal::general, alpha, a, std::forward<B2D>(b))){
+	return trsm(a_nonz, diagonal::general, alpha, a, std::forward<B2D>(b));}
 
-//template<class A2D, class B2D>
-//auto trsm(A2D const& a, B2D&& b)
-//->decltype(trsm(multi::blas::detect_triangular(a), a, std::forward<B2D>(b))){
-//	return trsm(multi::blas::detect_triangular(a), a, std::forward<B2D>(b));}
+template<class A2D, class B2D, class T = typename A2D::element_type>
+auto trsm(filling a_nonz, A2D const& a, B2D&& b)
+->decltype(trsm(a_nonz, T{1.}, a, std::forward<B2D>(b))){
+	return trsm(a_nonz, T{1.}, a, std::forward<B2D>(b));}
+
+template<class A2D, class B2D, class T = typename A2D::element_type>
+NODISCARD("because last argument is const")
+auto trsm(filling a_nonz, A2D const& a, B2D const& b)
+->decltype(trsm(a_nonz, T{1.}, a, std::forward<B2D>(b))){
+	return trsm(a_nonz, T{1.}, a, std::forward<B2D>(b));}
 
 }}}
 
 #if _TEST_MULTI_ADAPTORS_BLAS_TRSM
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS gemm"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi.BLAS trsm"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
-#include <boost/test/floating_point_comparison.hpp>
+#include<boost/test/floating_point_comparison.hpp>
 
 #include "../blas/gemm.hpp"
 
@@ -294,9 +303,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare_default_diagonal_gemm_check,
 	using multi::blas::diagonal;
 	{
 		multi::array<double, 2> const B = {
-			{1.},// 3., 4.},
-			{2.},// 7., 1.},
-			{3.},// 4., 2.},
+			{1.},
+			{2.},
+			{3.}
 		};
 		using multi::blas::gemm;
 		{

@@ -124,7 +124,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_automatic){
 		cuda::array<complex, 2> const bcu = b;
 		cuda::array<complex, 2> ccu({2, 4});
 		using multi::blas::gemm;
-		gemm(1., acu, bcu, 0., ccu);
+		gemm(complex(1.), acu, bcu, complex(0.), ccu);
 		BOOST_REQUIRE( ccu[1][2] == complex(112, 12) );
 	}
 	{

@@ -22,8 +22,6 @@ namespace cuda = multi::cuda;
 
 BOOST_AUTO_TEST_CASE(multi_blas_cuda_herk_complex){
 
-	boost::log::core::get()->set_filter( boost::log::trivial::severity >= boost::log::trivial::info );
-
 	using complex = std::complex<double>;
 	complex const I{0, 1};
 

@@ -180,6 +180,23 @@ template<> struct cublas2<Z>{
 	template<class...A> static auto trsv(A...a){return cublasZtrsv(a...);}
 };
 
+#define DEFINE_CUBLAS3(UppeR, LowR) \
+template<> struct cublas3<UppeR>{ \
+	template<class...As> static auto gemm (As...as){return cublas##UppeR##gemm(as...);} \
+	template<class...As> static auto syrk (As...as){return cublas##UppeR##syrk(as...);} \
+	template<class...As> static auto herk (As...as){return cublas##UppeR##herk(as...);} \
+	template<class...As> static auto trsm (As...as){return cublas##UppeR##trsm(as...);} \
+}
+
+DEFINE_CUBLAS3(S, s);
+DEFINE_CUBLAS3(D, d);
+DEFINE_CUBLAS3(C, c);
+DEFINE_CUBLAS3(Z, z);
+
+template<class T> struct herk_scalar;//{using type = T;};
+template<> struct herk_scalar<C>{using type = S;};
+template<> struct herk_scalar<Z>{using type = D;};
+
 template<> struct cublas3<void>{
 // 2.7.1. cublas<t>gemm() https://docs.nvidia.com/cuda/cublas/index.html#cublas-lt-t-gt-gemm
 	template<class T> static cublasStatus_t gemm(cublasHandle_t handle,
@@ -202,31 +219,19 @@ template<> struct cublas3<void>{
 	template<class T> static cublasStatus_t herk(cublasHandle_t handle,
                            cublasFillMode_t uplo, cublasOperation_t trans,
                            int n, int k,
-                           const float  *alpha,
+                           const typename herk_scalar<T>::type  *alpha,
                            const T       *A, int lda,
-                           const float  *beta,
-                           cuComplex       *C, int ldc){return cublas3<T>::herk(handle, uplo, trans, n, k, alpha, A, lda, beta, C, ldc);}
+                           const typename herk_scalar<T>::type  *beta,
+                           T       *C, int ldc){return cublas3<T>::herk(handle, uplo, trans, n, k, alpha, A, lda, beta, C, ldc);}
 // 2.7.10. cublas<t>trsm() https://docs.nvidia.com/cuda/cublas/index.html#cublas-lt-t-gt-trsm
 	template<class T> static cublasStatus_t trsm(cublasHandle_t handle,
                            cublasSideMode_t side, cublasFillMode_t uplo,
                            cublasOperation_t trans, cublasDiagType_t diag,
                            int m, int n,
-                           const float           *alpha,
-                           const float           *A, int lda,
-                           float           *B, int ldb){return cublas3<T>::trsm(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb);}
+                           std::add_const_t<T>           *alpha,
+                           std::add_const_t<T>           *A, int lda,
+                           T           *B, int ldb){return cublas3<T>::trsm(handle, side, uplo, trans, diag, m, n, alpha, A, lda, B, ldb);}
 };
-
-
-#define DEFINE_CUBLAS3(UppeR, LowR) \
-	template<> struct cublas3<UppeR>{ \
-		template<class...A> static auto gemm (A...a){return cublas##UppeR##gemm(a...);} \
-		template<class...A> static auto syrk (A...a){return cublas##UppeR##syrk(a...);} \
-	}
-
-DEFINE_CUBLAS3(S, s);
-DEFINE_CUBLAS3(D, d);
-DEFINE_CUBLAS3(C, c);
-DEFINE_CUBLAS3(Z, z);
 
 namespace cublas{
 
@@ -239,6 +244,12 @@ auto translate(std::complex<double>      * t){return reinterpret_cast<cublas::co
 
 template<class T> auto translate(memory::cuda::ptr<T> p)->decltype(translate(raw_pointer_cast(p))){return translate(raw_pointer_cast(p));}
 template<class T> auto translate(memory::cuda::managed::ptr<T> p)->decltype(translate(raw_pointer_cast(p))){return translate(raw_pointer_cast(p));}
+
+template<class T, std::enable_if_t<std::is_integral<T>{}>* = 0> inline auto translate(T n){
+	assert(n <= +static_cast<T>(std::numeric_limits<int>::max()));
+	assert(n >  -static_cast<T>(std::numeric_limits<int>::max()));
+	return static_cast<T>(n);
+}
 
 auto translate(char O)->cublasOperation_t{
 	switch(O){case 'N': return CUBLAS_OP_N; case 'T': return CUBLAS_OP_T; case 'C': return CUBLAS_OP_C;} assert(0); 
@@ -287,9 +298,9 @@ struct context : std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decl
 
 	template<typename... As> auto gemm(As... as)->RET(cublas3<>::gemm(get(), translate(as)...))
 
-	template<class...A> auto syrk (A...a) const{return cublas3<>::syrk(get(), a...);}
-	template<class...A> auto herk (A...a) const{return cublas3<>::herk(get(), a...);}
-	template<class...A> auto trsm (A...a) const{return cublas3<>::trsm(get(), a...);}
+	template<class...As> auto syrk (As...as) const{return cublas3<>::syrk(get(), translate(as)...);}
+	template<class...As> auto herk (As...as) const{return cublas3<>::herk(get(), translate(as)...);}
+	template<class...As> auto trsm (As...as) const{return cublas3<>::trsm(get(), translate(as)...);}
 };
 }
 
@@ -341,6 +352,11 @@ auto trsv(char ul, char transA, char a_diag, S n, multi::memory::cuda::ptr<Tcons
 	return cublas::context{}.trsv(uplo, cutransA, cudiag, n, translate(raw_pointer_cast(A)), lda, translate(raw_pointer_cast(X)), ldc);
 }
 
+template<class... As>
+auto gemm(As... as)
+->decltype(cublas::context{}.gemm(as...)){
+	return cublas::context{}.gemm(as...);}
+
 template<class Tconst, class T, class UL, class C, class S, class Real>
 void syrk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::ptr<Tconst> A, S lda, Real beta, multi::memory::cuda::ptr<T> CC, S ldc){
 	cublasFillMode_t uplo = [ul](){
@@ -356,29 +372,11 @@ void syrk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::ptr<Tconst
 			case 'C': return CUBLAS_OP_C;
 		} assert(0); return CUBLAS_OP_N;
 	}();
-	cublasStatus_t s = cublas::context{}.syrk(uplo, cutransA, n, k, &alpha, static_cast<T const*>(A), lda, &beta, static_cast<T*>(CC), ldc);
-	if(s!=CUBLAS_STATUS_SUCCESS){
-		std::cerr << [&](){switch(s){
-			case CUBLAS_STATUS_SUCCESS: return "CUBLAS_STATUS_SUCCESS";
-			case CUBLAS_STATUS_NOT_INITIALIZED: return "CUBLAS_STATUS_NOT_INITIALIZED";
-			case CUBLAS_STATUS_ALLOC_FAILED: return "CUBLAS_STATUS_ALLOC_FAILED";
-			case CUBLAS_STATUS_INVALID_VALUE: return "CUBLAS_STATUS_INVALID_VALUE";
-			case CUBLAS_STATUS_ARCH_MISMATCH: return "CUBLAS_STATUS_ARCH_MISMATCH";
-			case CUBLAS_STATUS_MAPPING_ERROR: return "CUBLAS_STATUS_MAPPING_ERROR";
-			case CUBLAS_STATUS_EXECUTION_FAILED: return "CUBLAS_STATUS_EXECUTION_FAILED";
-			case CUBLAS_STATUS_INTERNAL_ERROR: return "CUBLAS_STATUS_INTERNAL_ERROR";
-			case CUBLAS_STATUS_NOT_SUPPORTED: return "CUBLAS_STATUS_NOT_SUPPORTED";
-			case CUBLAS_STATUS_LICENSE_ERROR: return "CUBLAS_STATUS_LICENSE_ERROR";
-		} return "<unknown>";}() << std::endl;
-	}
-	assert( s==CUBLAS_STATUS_SUCCESS ); (void)s;
+	return cublas::context{}.syrk(uplo, cutransA, n, k, &alpha, static_cast<T const*>(A), lda, &beta, static_cast<T*>(CC), ldc);
 }
 
 template<class Tconst, class T, class UL, class C, class S, class Real>
-void herk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::ptr<Tconst> A, S lda, Real beta, multi::memory::cuda::ptr<T> CC, S ldc){
-//	BOOST_LOG_TRIVIAL(trace) <<"cublas::herk called on size/stride " <<n <<" "<< lda;
-//	cublasHandle_t handle;
-//	{cublasStatus_t s = cublasCreate(&handle); assert(s==CUBLAS_STATUS_SUCCESS);}
+auto herk(UL ul, C transA, S n, S k, Real alpha, memory::cuda::ptr<Tconst> A, S lda, Real beta, memory::cuda::ptr<T> CC, S ldc){
 	cublasFillMode_t uplo = [ul](){
 		switch(ul){
 			case 'U': return CUBLAS_FILL_MODE_UPPER;
@@ -392,34 +390,15 @@ void herk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::ptr<Tconst
 			case 'C': return CUBLAS_OP_C;
 		} assert(0); return CUBLAS_OP_N;
 	}();
-	cublasStatus_t s = cublas::context{}.herk(uplo, cutransA, n, k, &alpha, static_cast<T const*>(A), lda, &beta, static_cast<T*>(CC), ldc);
-//https://stackoverflow.com/questions/13041399/equivalent-of-cudageterrorstring-for-cublas
-	if(s!=CUBLAS_STATUS_SUCCESS){
-		std::cerr << [&](){switch(s){
-			case CUBLAS_STATUS_SUCCESS: return "CUBLAS_STATUS_SUCCESS";
-			case CUBLAS_STATUS_NOT_INITIALIZED: return "CUBLAS_STATUS_NOT_INITIALIZED";
-			case CUBLAS_STATUS_ALLOC_FAILED: return "CUBLAS_STATUS_ALLOC_FAILED";
-			case CUBLAS_STATUS_INVALID_VALUE: return "CUBLAS_STATUS_INVALID_VALUE";
-			case CUBLAS_STATUS_ARCH_MISMATCH: return "CUBLAS_STATUS_ARCH_MISMATCH";
-			case CUBLAS_STATUS_MAPPING_ERROR: return "CUBLAS_STATUS_MAPPING_ERROR";
-			case CUBLAS_STATUS_EXECUTION_FAILED: return "CUBLAS_STATUS_EXECUTION_FAILED";
-			case CUBLAS_STATUS_INTERNAL_ERROR: return "CUBLAS_STATUS_INTERNAL_ERROR";
-			case CUBLAS_STATUS_NOT_SUPPORTED: return "CUBLAS_STATUS_NOT_SUPPORTED";
-			case CUBLAS_STATUS_LICENSE_ERROR: return "CUBLAS_STATUS_LICENSE_ERROR";
-		} return "<unknown>";}() << std::endl;
-	}
-	assert( s==CUBLAS_STATUS_SUCCESS ); (void)s;
-//	cublasDestroy(handle);
+	return cublas::context{}.herk(uplo, cutransA, n, k, &alpha, raw_pointer_cast(A), lda, &beta, raw_pointer_cast(CC), ldc);
 }
 
-template<class... As>
-auto gemm(As... as)
-->decltype(cublas::context{}.gemm(as...)){
-	return cublas::context{}.gemm(as...);}
-
-template<class Side, class Fill, class Trans, class Diag, typename Size, class Tconst, class T, class Alpha>
-void trsm(Side /*cublasSideMode_t*/ side, /*cublasFillMode_t*/ Fill uplo, /*cublasOperation_t*/ Trans trans, /*cublasDiagType_t*/ Diag diag,
-                           Size m, Size n, Alpha alpha, cuda::ptr<Tconst> A, Size lda, cuda::ptr<T> B, Size ldb){
+template<class Side, class Fill, class Trans, class Diag, typename Size, class Tconst, class T/*, class Alpha*/>
+auto trsm(Side /*cublasSideMode_t*/ side, /*cublasFillMode_t*/ Fill uplo, /*cublasOperation_t*/ Trans trans, /*cublasDiagType_t*/ Diag diag,
+                           Size m, Size n, T alpha, cuda::ptr<Tconst> A, Size lda, cuda::ptr<T> B, Size ldb)
+->decltype(cublas::context{}.trsm(
+		side=='L'?CUBLAS_SIDE_LEFT:CUBLAS_SIDE_RIGHT, uplo=='L'?CUBLAS_FILL_MODE_LOWER:CUBLAS_FILL_MODE_UPPER, CUBLAS_OP_N, diag=='N'?CUBLAS_DIAG_NON_UNIT:CUBLAS_DIAG_UNIT, m, n, &alpha, raw_pointer_cast(A), lda, raw_pointer_cast(B), ldb))
+{
 	cublasOperation_t trans_cu = [&]{
 		switch(trans){
 			case 'N': return CUBLAS_OP_N;
@@ -427,9 +406,9 @@ void trsm(Side /*cublasSideMode_t*/ side, /*cublasFillMode_t*/ Fill uplo, /*cubl
 			case 'C': return CUBLAS_OP_C;
 		} __builtin_unreachable();
 	}();
-	T alpha_{alpha};
-	cublas::context{}.trsm(
-		side=='L'?CUBLAS_SIDE_LEFT:CUBLAS_SIDE_RIGHT, uplo=='L'?CUBLAS_FILL_MODE_LOWER:CUBLAS_FILL_MODE_UPPER, trans_cu, diag=='N'?CUBLAS_DIAG_NON_UNIT:CUBLAS_DIAG_UNIT, m, n, &alpha_, static_cast<Tconst*>(A), lda, static_cast<T*>(B), ldb);
+//	T alpha_{alpha};
+	return cublas::context{}.trsm(
+		side=='L'?CUBLAS_SIDE_LEFT:CUBLAS_SIDE_RIGHT, uplo=='L'?CUBLAS_FILL_MODE_LOWER:CUBLAS_FILL_MODE_UPPER, trans_cu, diag=='N'?CUBLAS_DIAG_NON_UNIT:CUBLAS_DIAG_UNIT, m, n, &alpha, raw_pointer_cast(A), lda, raw_pointer_cast(B), ldb);
 }
 
 }}}}
@@ -451,19 +430,11 @@ auto trsv(char ul, char transA, char a_diag, S n, multi::memory::cuda::managed::
 }
 
 using cuda::gemm;
-
-template<class Tconst, class T, class UL, class C, class S, class Real>
-void herk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::managed::ptr<Tconst> A, S lda, Real beta, multi::memory::cuda::managed::ptr<T> CC, S ldc){
-	herk(ul, transA, n, k, alpha, boost::multi::memory::cuda::ptr<Tconst>(A), lda, beta, boost::multi::memory::cuda::ptr<T>(CC), ldc);
-}
-
-template<class Tconst, class T, class UL, class C, class S, class Real>
-void syrk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::managed::ptr<Tconst> A, S lda, Real beta, multi::memory::cuda::managed::ptr<T> CC, S ldc){
-	syrk(ul, transA, n, k, alpha, boost::multi::memory::cuda::ptr<Tconst>(A), lda, beta, boost::multi::memory::cuda::ptr<T>(CC), ldc);
-}
+using cuda::syrk;
+using cuda::herk;
 
 template<class Side, class Fill, class Trans, class Diag, typename Size, class Tconst, class T>
-void trsm(Side /*cublasSideMode_t*/ side, /*cublasFillMode_t*/ Fill uplo, /*cublasOperation_t*/ Trans trans, /*cublasDiagType_t*/ Diag diag,
+auto trsm(Side /*cublasSideMode_t*/ side, /*cublasFillMode_t*/ Fill uplo, /*cublasOperation_t*/ Trans trans, /*cublasDiagType_t*/ Diag diag,
                            Size m, Size n, T alpha, cuda::managed::ptr<Tconst> A, Size lda, cuda::managed::ptr<T> B, Size ldb){
 	return trsm(side, uplo, trans, diag, m, n, alpha, cuda::ptr<Tconst>(A), lda, cuda::ptr<T>(B), ldb);
 }

@@ -154,7 +154,8 @@ public:
 	bool operator not() const{return !rp_;}
 //	[[SLOW]] explicit operator raw_pointer&()&{return rp_;}
 //	[[SLOW]] explicit operator raw_pointer const&() const&{return rp_;}
-	[[SLOW]] operator raw_pointer()const&{return rp_;}
+//	[[SLOW]] 
+	operator raw_pointer()const&{return rp_;}
 //	[[deprecated("WARNING: implies a slow access to GPU memory") ]] operator raw_pointer()&{assert(0); return rp_;}
 //	[[deprecated("WARNING: implies a slow access to GPU memory") ]] operator raw_pointer()&&{assert(0); return rp_;}
 

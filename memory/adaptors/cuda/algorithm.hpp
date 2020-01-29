@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&$CXX -std=c++2a -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_ALGORITHM -DNDEBUG $0.cpp -o$0x -lcudart -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp;exit
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -std=c++14 -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_ALGORITHM -DNDEBUG $0.cpp -o$0x -lcudart -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp;exit
 #endif
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_ALGORITHM_HPP
 #define BOOST_MULTI_MEMORY_ADAPTORS_CUDA_ALGORITHM_HPP
@@ -32,6 +32,7 @@ namespace memory{namespace cuda{
 
 using memory::cuda::ptr;
 
+/*
 template<
 	class PtrU, class PtrT, //typename Size, 
 	typename U = typename std::iterator_traits<PtrU>::value_type, typename T = typename std::iterator_traits<PtrT>::value_type,
@@ -40,6 +41,7 @@ template<
 auto copy_n(PtrU first, std::ptrdiff_t count, PtrT result)
 ->decltype(memcpy(result, first, count*sizeof(T)), result + count){std::cerr<<"cudamemcpy " << count*sizeof(T) << " bytes" << std::endl;
 	return memcpy(result, first, count*sizeof(T)), result + count;}
+*/
 
 //template<class U, class PtrT, typename Size>
 //auto copy_n(ptr<U> first, Size count, PtrT result)
@@ -115,8 +117,32 @@ auto copy_n(It1 first, typename std::iterator_traits<It1>::difference_type count
 
 template<class It1, class It2>
 auto copy(It1 first, It1 last, It2 result)
-->decltype(copy_n(first, last - first, result)){
-	return copy_n(first, last - first, result);}
+->decltype(cuda::copy_n(first, last - first, result)){
+	return cuda::copy_n(first, last - first, result);}
+
+namespace managed{
+
+template<class It1, class It2, class T1 = typename std::iterator_traits<It1>::value_type, class T2 = typename std::iterator_traits<It2>::value_type>//, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
+auto copy_n(It1 first, typename std::iterator_traits<It1>::difference_type count, It2 result)
+->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count){
+	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count;}
+
+template<class It1, class It2>
+auto copy(It1 first, It1 last, It2 result)
+//->decltype(copy_n(first, last - first, result))
+{	return copy_n(first, last - first, result);}
+
+template<class It1, class It2>
+auto adl_copy(It1 first, It1 last, It2 result)
+->decltype(managed::copy_n(first, last - first, result)){
+	return managed::copy_n(first, last - first, result);}
+
+template<class Alloc, class Ptr, class ForwardIt, std::enable_if_t<std::is_trivially_copyable<typename std::iterator_traits<ForwardIt>::value_type>{}, int> = 0>
+auto alloc_uninitialized_copy(Alloc&, Ptr first, Ptr last, ForwardIt dest)
+->decltype(cuda::copy(first, last, dest)){
+	return cuda::copy(first, last, dest);}
+
+}
 
 }}
 
@@ -152,10 +178,6 @@ auto copy(
 
 #define FWD(x) std::forward<decltype(x)>(x)
 
-namespace boost::multi{
-	template<size_t I> struct priority_tag : priority_tag<I-1> {};
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -175,6 +197,8 @@ namespace boost::multi{
 namespace multi = boost::multi;
 namespace cuda = multi::memory::cuda;
 
+using complex = std::complex<double>; complex const I{0, 1};
+
 BOOST_AUTO_TEST_CASE(multi_memory_adaptors_cuda_copy_2D){
 	multi::array<double, 1> A(50, 99.);
 	multi::cuda::array<double, 1> B(50);
@@ -182,7 +206,7 @@ BOOST_AUTO_TEST_CASE(multi_memory_adaptors_cuda_copy_2D){
 
 //	using std::copy_n;
 //	using std::copy;
-	using boost::multi::copy_n;
+	using boost::multi::adl::copy_n;
 //	copy_n(&A[0], size(A), &B[0]);
 	copy_n(begin(A), size(A), begin(B));
 
@@ -194,6 +218,20 @@ BOOST_AUTO_TEST_CASE(multi_memory_adaptors_cuda_copy_2D){
 //	C = B;
 
 //	BOOST_REQUIRE( C == A );
+}
+
+BOOST_AUTO_TEST_CASE(multi_cuda_managed_array_initialization_double){
+	multi::cuda::managed::array<double, 1> B = {1., 3., 4.};
+	multi::array<double, 1> Bcpu(3); 
+	Bcpu = B;
+	BOOST_REQUIRE( Bcpu[1] == 3. );
+}
+
+BOOST_AUTO_TEST_CASE(multi_cuda_managed_array_initialization_complex){
+	multi::cuda::managed::array<complex, 1> B = {1. + 2.*I, 3. + 1.*I, 4. + 5.*I};
+	multi::array<complex, 1> Bcpu(3); 
+	Bcpu = B;
+	BOOST_REQUIRE( Bcpu[1] == 3. + 1.*I );
 }
 
 namespace utf = boost::unit_test;

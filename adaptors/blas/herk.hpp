@@ -29,7 +29,7 @@ namespace multi{namespace blas{
 template<class A> auto base_aux(A&& a, std::false_type){return base(a);}
 template<class A> auto base_aux(A&& a, std::true_type){return underlying(base(a));}
 
-using multi::blas::core::herk;
+using core::herk;
 
 template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr>
 auto herk_aux(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c, std::true_type)
@@ -710,7 +710,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_real_case){
 		{ 9., 7., 1.}
 	};
 	using multi::blas::filling;
-	using multi::blas::operation;
 	{
 		static_assert( not boost::multi::blas::is_complex_array<multi::array<double, 2>>{} , "!");
 		multi::array<double, 2> c({2, 2}, 9999.);
