@@ -38,7 +38,6 @@ auto herk_aux(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c, std::tru
 	assert( size(a) == size(c) );
 	assert( size(c) == size(rotated(c)) );
 	if(size(c)==0) return std::forward<C2D>(c);
-
 	if(is_hermitized<std::decay_t<C2D>>{}){
 		herk_aux(flip(c_side), alpha, a, beta, hermitized(c), std::true_type{});
 	}else{
@@ -46,7 +45,7 @@ auto herk_aux(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c, std::tru
 		auto base_c = base_aux(c, is_hermitized<std::decay_t<C2D>>{});
 		if(is_hermitized<A2D>{}){
 			// if you get an error here might be due to lack of inclusion of a header file with the backend appropriate for your type of iterator
-				 if(stride(a)==1 and stride(c)!=1) herk(c_side==filling::upper?'L':'U', 'N', size(c), size(         a), alpha, base_a, stride(rotated(a)), beta, base_c, stride(c));
+				 if(stride(a)==1 and stride(c)!=1) herk(c_side==filling::upper?'L':'U', 'N', size(c), size(rotated(a)), alpha, base_a, stride(rotated(a)), beta, base_c, stride(c));
 			else if(stride(a)==1 and stride(c)==1) assert(0);
 			else if(stride(a)!=1 and stride(c)==1) herk(c_side==filling::upper?'U':'L', 'C', size(c), size(rotated(a)), alpha, base_a, stride(        a ), beta, base_c, stride(rotated(c)));
 			else if(stride(a)!=1 and stride(c)!=1) herk(c_side==filling::upper?'L':'U', 'C', size(c), size(rotated(a)), alpha, base_a, stride(        a ), beta, base_c, stride(        c ));
@@ -156,9 +155,21 @@ template<class M> decltype(auto) print(M const& C){
 	return cout << std::endl;
 }
 
-using complex = std::complex<double>;
-constexpr auto const I = complex{0., 1.};
+using complex = std::complex<double>; complex const I{0, 1};
 
+BOOST_AUTO_TEST_CASE(inq_case){
+	using namespace multi::blas;
+	multi::array<double, 2> A({4, 3});
+	for(auto i : extension(A))
+		for(auto j : extension(A[i]))
+			A[i][j] = 20.*(i + 1)*sqrt(j);
+
+	BOOST_REQUIRE( 
+		herk(0.01, hermitized(A)) == gemm(0.01, transposed(A), A) 
+	);
+}
+
+#if 1
 BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_identity){
 	multi::array<complex, 2> const a = {
 		{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
@@ -724,6 +735,33 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_real_case){
 		multi::array<double, 2> c = herk(filling::upper, a);//c†=c=aa†=(aa†)†, `c` in lower triangular
 	}
 }
+
+BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_real_case_1d){
+	multi::array<complex, 2> const a = {
+		{ 1., 3., 4.},
+	};
+	namespace blas = multi::blas;
+	using blas::filling;
+	using blas::transposed;
+	using blas::hermitized;
+	{
+		multi::array<complex, 2> c({3, 3}, 9999.);
+		herk(filling::lower, 1., hermitized(a), 0., c);//c†=c=a†a=(a†a)†, `c` in lower triangular
+		print(c);
+		BOOST_REQUIRE( c[2][1]==complex(12.,0.) );
+		BOOST_REQUIRE( c[1][2]==9999. );
+	}
+	{
+		multi::array<complex, 2> c({3, 3}, 9999.);
+		herk(2., hermitized(a), c);//c†=c=a†a=(a†a)†, `c` in lower triangular
+
+		BOOST_REQUIRE( c[2][1]==complex(24.,0.) );
+		BOOST_REQUIRE( c[1][2]==complex(24.,0.) );
+		multi::array<complex, 2> c_gemm({3, 3});
+	//	gemm(2., hermitized(a), a, c_gemm);
+	}
+}
+#endif
 
 #if 0
 BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_timing){
