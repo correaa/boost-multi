@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d){
 	BOOST_REQUIRE(( A == multi::array<double, 1>{1.2, 3.4, 5.6} ));
 	BOOST_REQUIRE(( A == decltype(A){1.2, 3.4, 5.6} ));
 	BOOST_REQUIRE(( A == decltype(A)::decay_type({1.2, 3.4, 5.6}) ));
-	BOOST_REQUIRE(( A == A.remake({1.2, 3.4, 5.6}) ));
+//	BOOST_REQUIRE(( A == A.remake({1.2, 3.4, 5.6}) ));
 //	BOOST_REQUIRE(( A == A.remake{1.2, 3.4, 5.6} )); // doesn't work
 }
 {
@@ -178,12 +178,12 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d){
 			{15.2, 32.4}
 		}
 	));
-	BOOST_REQUIRE(( A == A.remake({
+/*	BOOST_REQUIRE(( A == A.remake({
 			{ 1.2,  2.4},
 			{11.2, 34.4},
 			{15.2, 32.4}
 		})
-	));
+	));*/
 /* TODO make this work
 	BOOST_REQUIRE(( A.equal_to({
 			{ 1.2,  2.4},
