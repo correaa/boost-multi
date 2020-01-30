@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -Wpedantic `#-Wfatal-errors` -D_TEST_MULTI_ADAPTORS_BLAS_CUDA $0.cpp -o $0x `pkg-config --libs blas` -lcudart -lcublas&&$0x&&rm $0x $0.cpp;exit
+(echo '#include"'$0'"'>$0.cpp)&&$CXX `#-Wfatal-errors` -D_TEST_MULTI_ADAPTORS_BLAS_CUDA $0.cpp -o $0x `pkg-config --libs blas` -lcudart -lcublas&&$0x&&rm $0x $0.cpp;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -235,7 +235,7 @@ template<> struct cublas3<void>{
 
 namespace cublas{
 
-template<class T> decltype(auto) translate(T&& t){return std::forward<T>(t);}
+template<class T, std::enable_if_t<not std::is_integral<T>{}, int> =0> auto translate(T const& t){return t;}
 
 auto translate(std::complex<float> const * t){return reinterpret_cast<cublas::complex<float>  const*>(t);}	
 auto translate(std::complex<float>       * t){return reinterpret_cast<cublas::complex<float>       *>(t);}	
@@ -245,7 +245,8 @@ auto translate(std::complex<double>      * t){return reinterpret_cast<cublas::co
 template<class T> auto translate(memory::cuda::ptr<T> p)->decltype(translate(raw_pointer_cast(p))){return translate(raw_pointer_cast(p));}
 template<class T> auto translate(memory::cuda::managed::ptr<T> p)->decltype(translate(raw_pointer_cast(p))){return translate(raw_pointer_cast(p));}
 
-template<class T, std::enable_if_t<std::is_integral<T>{}>* = 0> inline auto translate(T n){
+template<class T, std::enable_if_t<std::is_integral<T>{},int> = 0> 
+auto translate(T n){
 	assert(n <= +static_cast<T>(std::numeric_limits<int>::max()));
 	assert(n >  -static_cast<T>(std::numeric_limits<int>::max()));
 	return static_cast<T>(n);

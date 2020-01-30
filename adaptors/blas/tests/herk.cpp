@@ -12,6 +12,7 @@ nvcc -x cu --expt-relaxed-constexpr`#$CXX` -Wno-deprecated-declarations $0 -o $0
 
 #include "../../../adaptors/blas/cuda.hpp"
 #include "../../../adaptors/blas/herk.hpp"
+#include "../../../adaptors/blas/gemm.hpp"
 
 #include "../../../array.hpp"
 
@@ -31,13 +32,18 @@ BOOST_AUTO_TEST_CASE(multi_blas_cuda_herk_complex){
 	};
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
-		using multi::blas::herk;
+		namespace blas = multi::blas;
+		using blas::herk;
 		herk(a, c);
 		BOOST_REQUIRE( c[1][0] == complex(50., -49.) );
 		BOOST_REQUIRE( c[0][1] == complex(50., +49.) );
 
 		multi::array<complex, 2> const c_copy = herk(1., a);
 		BOOST_REQUIRE( c == c_copy );
+
+		using blas::gemm;
+		using blas::hermitized;
+		BOOST_REQUIRE( gemm(a, hermitized(a)) == herk(a) );
 	}
 	{
 		cuda::array<complex, 2> const acu = a; BOOST_REQUIRE(a == acu);

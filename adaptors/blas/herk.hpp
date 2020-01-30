@@ -46,7 +46,10 @@ auto herk_aux(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c, std::tru
 		if(is_hermitized<A2D>{}){
 			// if you get an error here might be due to lack of inclusion of a header file with the backend appropriate for your type of iterator
 				 if(stride(a)==1 and stride(c)!=1) herk(c_side==filling::upper?'L':'U', 'N', size(c), size(rotated(a)), alpha, base_a, stride(rotated(a)), beta, base_c, stride(c));
-			else if(stride(a)==1 and stride(c)==1) assert(0);
+			else if(stride(a)==1 and stride(c)==1){
+				if(size(a)==1) herk(c_side==filling::upper?'L':'U', 'N', size(c), size(rotated(a)), alpha, base_a, stride(rotated(a)), beta, base_c, stride(c));
+				else assert(0);
+			}
 			else if(stride(a)!=1 and stride(c)==1) herk(c_side==filling::upper?'U':'L', 'C', size(c), size(rotated(a)), alpha, base_a, stride(        a ), beta, base_c, stride(rotated(c)));
 			else if(stride(a)!=1 and stride(c)!=1) herk(c_side==filling::upper?'L':'U', 'C', size(c), size(rotated(a)), alpha, base_a, stride(        a ), beta, base_c, stride(        c ));
 			else assert(0);
@@ -140,6 +143,7 @@ template<class A2D> auto herk(A2D const& a)
 
 #include "../../array.hpp"
 #include "../../adaptors/blas/gemm.hpp"
+#include "../../adaptors/blas/nrm2.hpp"
 
 #include<iostream>
 
@@ -167,6 +171,41 @@ BOOST_AUTO_TEST_CASE(inq_case){
 	BOOST_REQUIRE( 
 		herk(0.01, hermitized(A)) == gemm(0.01, transposed(A), A) 
 	);
+}
+
+BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_case){
+	multi::array<double, 2> A = {{1., 2., 3.}};
+	multi::array<double, 2> B = multi::blas::herk(A);
+	BOOST_REQUIRE( size(B) == 1 );
+	BOOST_REQUIRE( B[0][0] == 1.*1. + 2.*2. + 3.*3. );
+}
+
+BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_real_case){
+	multi::array<complex, 2> A = {{1., 2., 3.}};
+	multi::array<complex, 2> B = multi::blas::herk(A);
+	BOOST_REQUIRE( size(B) == 1 );
+	BOOST_REQUIRE( B[0][0] == 1.*1. + 2.*2. + 3.*3. );
+}
+
+BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case){
+	multi::array<complex, 2> A = {{1. + 2.*I, 2.+3.*I, 3. + 4.*I}};
+	namespace blas = multi::blas;
+	multi::array<complex, 2> B = blas::herk(A);
+	BOOST_REQUIRE( size(B) == 1 );
+	BOOST_REQUIRE( B[0][0] == std::norm(1. + 2.*I) + std::norm(2.+3.*I) + std::norm(3. + 4.*I) );
+
+	BOOST_TEST( std::sqrt(real(blas::herk(A)[0][0])) == blas::nrm2(A[0])() );
+}
+
+BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case_hermitized){
+	multi::array<complex, 2> A = {{1. + 2.*I}, {2.+3.*I}, {3. + 4.*I}};
+	namespace blas = multi::blas;
+	multi::array<complex, 2> B = blas::herk(blas::hermitized(A));
+	BOOST_REQUIRE( size(B) == 1 );
+	BOOST_REQUIRE( B[0][0] == std::norm(1. + 2.*I) + std::norm(2.+3.*I) + std::norm(3. + 4.*I) );
+
+	using blas::herk; using blas::hermitized; using blas::nrm2;
+	BOOST_TEST( std::sqrt(real(herk(hermitized(A))[0][0])) == nrm2(rotated(A)[0])() );
 }
 
 #if 1
