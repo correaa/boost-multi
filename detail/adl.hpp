@@ -182,12 +182,13 @@ namespace adl{ \
 	static constexpr class alloc_uninitialized_copy_t{ \
 /*		template<class... As> [[deprecated]] auto _(priority<0>,        As&&... as) const = delete;*/ \
 /*		template<class... As>          auto _(priority<1>,        As&&... as) const->RET(std::copy(std::forward<As>(as)...))*/ \
-		template<class... As>          auto _(priority<1>,        As&&... as) const->RET(     boost::multi::alloc_uninitialized_copy(std::forward<As>(as)...))    \
+		template<class... As>          auto _(priority<1>,        As&&... as) const->RET(     boost::multi::alloc_uninitialized_copy(std::forward<As>(as)...))  
 		template<class... As>          auto _(priority<2>,        As&&... as) const->RET(                   alloc_uninitialized_copy(std::forward<As>(as)...))    \
-		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const->RET(std::forward<T>(t).alloc_uninitialized_copy(std::forward<As>(as)...))
-		template<class... As>          auto _(priority<4>,        As&&... as) const->RET(custom::alloc_uninitialized_copy_t<As&&...>::_(std::forward<As>(as)...))
+		template<class... As>          auto _(priority<3>,        As&&... as) const->RET(               adl_alloc_uninitialized_copy(std::forward<As>(as)...))    \
+		template<class T, class... As> auto _(priority<4>, T&& t, As&&... as) const->RET(std::forward<T>(t).alloc_uninitialized_copy(std::forward<As>(as)...))
+		template<class... As>          auto _(priority<5>,        As&&... as) const->RET(custom::alloc_uninitialized_copy_t<As&&...>::_(std::forward<As>(as)...))
 	public: \
-		template<class... As> auto operator()(As&&... as) const->decltype(_(priority<4>{}, std::forward<As>(as)...)){return _(priority<4>{}, std::forward<As>(as)...);} \
+		template<class... As> auto operator()(As&&... as) const->decltype(_(priority<5>{}, std::forward<As>(as)...)){return _(priority<5>{}, std::forward<As>(as)...);} \
 	} alloc_uninitialized_copy; \
 } \
 }} void* alloc_uninitialized_copy_dummy;

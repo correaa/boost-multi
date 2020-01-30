@@ -335,7 +335,7 @@ template<class... As> auto dotc(As... as)->RET(cublas::context{}.dotc(as...))
 template<class... As> auto nrm2(As... as)->RET(cublas::context{}.nrm2(as...))
 
 template<class S, class Tconst, class T>
-auto trsv(char ul, char transA, char a_diag, S n, multi::memory::cuda::ptr<Tconst> A, S lda, multi::memory::cuda::ptr<T> X, S ldc){
+auto trsv(char ul, char transA, char a_diag, S n, memory::cuda::ptr<Tconst> A, S lda, memory::cuda::ptr<T> X, S ldc){
 	cublasFillMode_t uplo = [ul](){
 		switch(ul){
 			case 'U': return CUBLAS_FILL_MODE_UPPER;
@@ -350,7 +350,7 @@ auto trsv(char ul, char transA, char a_diag, S n, multi::memory::cuda::ptr<Tcons
 		} assert(0); return CUBLAS_OP_N;
 	}();
 	auto cudiag = a_diag=='N'?CUBLAS_DIAG_NON_UNIT:CUBLAS_DIAG_UNIT;
-	return cublas::context{}.trsv(uplo, cutransA, cudiag, n, translate(raw_pointer_cast(A)), lda, translate(raw_pointer_cast(X)), ldc);
+	return cublas::context{}.trsv(uplo, cutransA, cudiag, n, A, lda, X, ldc);
 }
 
 template<class... As>
