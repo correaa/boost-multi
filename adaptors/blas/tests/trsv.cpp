@@ -83,6 +83,22 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_cuda_managed, *utf::tolerance(0.000
 //	BOOST_REQUIRE( real(b_cpu[2]) ==  0.569231 );
 }
 
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_cuda_managed, *utf::tolerance(0.00001)){
+	multi::cuda::managed::array<double, 2> const A = {
+		{ 1.,  3.,  4.},
+		{NAN,  7.,  1.},
+		{NAN, NAN,  8.}
+	};
+	multi::cuda::managed::array<double, 1> b = {1., 3., 4.};
+	blas::trsv(filling::upper, A, b); // this operation happens in GPU when #include "adaptors/blas/cuda.hpp"
+	multi::array<double, 1> const b_cpu = b;
+	std::cout << b_cpu[1] << '\n';
+//	BOOST_REQUIRE( real(b_cpu[0]) == -1.37259  );
+//	BOOST_REQUIRE( real(b_cpu[1]) ==  0.2127   );
+//	BOOST_REQUIRE( real(b_cpu[2]) ==  0.569231 );
+}
+
+
 #if 0
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_cuda, *utf::tolerance(0.00001)){
 	multi::cuda::array<complex, 2> const A = {
