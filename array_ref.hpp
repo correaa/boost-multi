@@ -527,7 +527,9 @@ public:
 		assign(il.begin(), il.end());
 	}
 	template<class A, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<A>>{}>>
-	basic_array const& operator=(A&& o) const{assert(extension(*this) == extension(o));
+	basic_array const& operator=(A&& o) const{
+	//	assert(extension(*this) == extension(o));
+		assert(this->extension() == o.extension());
 		assign(adl::begin(std::forward<A>(o)), adl::end(std::forward<A>(o)));
 		return *this;
 	}
