@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&`#nvcc -x cu --expt-relaxed-constexpr`clang++ -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_FFTW $0.cpp -o $0x -lcudart `pkg-config --libs fftw3` -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp;exit
+(echo '#include"'$0'"'>$0.cpp)&&`#nvcc -x cu --expt-relaxed-constexpr`$CXX -Wfatal-errors -D_TEST_MULTI_ADAPTORS_FFTW $0.cpp -o $0x -lcudart `pkg-config --libs fftw3` -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp;exit
 #endif
 #ifndef MULTI_ADAPTORS_FFTW_HPP
 #define MULTI_ADAPTORS_FFTW_HPP
@@ -9,6 +9,7 @@
 
 #include "../../multi/utility.hpp"
 #include "../../multi/array.hpp"
+#include "../../multi/config/NODISCARD.hpp"
 
 #include<cmath>
 #include<complex>
@@ -16,14 +17,6 @@
 #include<numeric> // accumulate
 
 #include<experimental/tuple> // experimental::apply
-
-#if __cplusplus>=201703L and __has_cpp_attribute(nodiscard)>=201603
-#define NODISCARD(MsG) [[nodiscard]]
-#elif __has_cpp_attribute(gnu::warn_unused_result)
-#define NODISCARD(MsG) [[gnu::warn_unused_result]]
-#else
-#define NODISCARD(MsG)
-#endif
 
 namespace boost{
 namespace multi{
@@ -191,14 +184,14 @@ fftw_plan fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, unsigne
 
 	int istride = istrides.back();
 	auto inembed = istrides; inembed.fill(0);
-	for(int i = 1; i != inembed.size(); ++i){
+	for(std::size_t i = 1; i != inembed.size(); ++i){
 		assert( istrides[i-1]%istrides[i] == 0 );
 		inembed[i]=istrides[i-1]/istrides[i];
 	}
 
 	int ostride = ostrides.back();
 	auto onembed = ostrides; onembed.fill(0);
-	for(int i = 1; i != onembed.size(); ++i){
+	for(std::size_t i = 1; i != onembed.size(); ++i){
 		assert( ostrides[i-1]%ostrides[i] == 0 );
 		onembed[i]=ostrides[i-1]/ostrides[i];
 	}
