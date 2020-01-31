@@ -235,7 +235,7 @@ template<> struct cublas3<void>{
 
 namespace cublas{
 
-template<class T, std::enable_if_t<not std::is_integral<T>{}, int> =0> auto translate(T const& t){return t;}
+template<class T, std::enable_if_t<not std::is_integral<T>{}, int> =0> decltype(auto) translate(T const& t){return t;}
 
 auto translate(std::complex<float> const * t){return reinterpret_cast<cublas::complex<float>  const*>(t);}	
 auto translate(std::complex<float>       * t){return reinterpret_cast<cublas::complex<float>       *>(t);}	
