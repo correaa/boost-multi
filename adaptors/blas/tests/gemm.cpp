@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&`#nvcc -x cu --expt-relaxed-constexpr`$CXX $0 -o $0x -Wno-deprecated-declarations -lcudart -lcublas -lboost_unit_test_framework -Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core &&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&nvcc -x cu --expt-relaxed-constexpr`#$CXX` $0 -o $0x -Wno-deprecated-declarations `pkg-config --libs blas` -lcudart -lcublas -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp; exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -101,8 +101,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_square_real){
 	}
 }
 
+using complex = std::complex<double>; complex const I{0, 1};
+
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_automatic){
-	using complex = std::complex<double>; constexpr complex I{0,1};
 	multi::array<complex, 2> const a = {
 		{ 1. + 2.*I, 3. - 3.*I, 1.-9.*I},
 		{ 9. + 1.*I, 7. + 4.*I, 1.-8.*I},
@@ -136,6 +137,51 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_automatic){
 		gemm(1., amcu, bmcu, 0., cmcu);
 		BOOST_REQUIRE( cmcu[1][2] == complex(112, 12) );
 	}
+}
+
+using complex = std::complex<double>;
+
+struct multiplies_bind1st{
+	multiplies_bind1st(multi::cuda::managed::array<complex, 2>&& m) : m_(std::move(m)){}
+	template<class A>
+	auto operator()(A const& a) const{
+		using multi::blas::gemm;
+		return gemm(m_, a);
+	}
+	multi::cuda::managed::array<complex, 2> m_;
+};
+
+BOOST_AUTO_TEST_CASE(multi_constructors_inqnvcc_bug){
+	multi::cuda::managed::array<complex, 2> m = {
+		{ 1. + 2.*I, 3. - 3.*I, 1.-9.*I},
+		{ 9. + 1.*I, 7. + 4.*I, 1.-8.*I},
+	};
+	multi::cuda::managed::array<complex, 2> const b = {	
+		{ 11.+1.*I, 12.+1.*I, 4.+1.*I, 8.-2.*I},
+		{  7.+8.*I, 19.-2.*I, 2.+1.*I, 7.+1.*I},
+		{  5.+1.*I,  3.-1.*I, 3.+8.*I, 1.+1.*I}
+	};
+	auto c = multi::blas::gemm(m, b);
+	BOOST_REQUIRE( c[1][2] == complex(112, 12) );
+	BOOST_REQUIRE( b[1][2] == 2.+1.*I );
+
+	auto m_as_operator2 = [&](auto const& B){
+		using multi::blas::gemm; return gemm(m, B);
+	};
+	auto c2 = m_as_operator2(b);
+	BOOST_REQUIRE( c == c2 );
+
+	auto m_as_operator3 = [=](auto const& B){
+		using multi::blas::gemm; 
+		return gemm(m, B);
+	};
+	auto c3 = m_as_operator3(b);
+	BOOST_REQUIRE( c == c3 );	
+
+	multiplies_bind1st m_as_operator4(std::move(m));
+	auto c4 = m_as_operator4(b);
+	BOOST_REQUIRE( c == c4 );
+	BOOST_REQUIRE( empty(m) );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_gemm_elongated){
