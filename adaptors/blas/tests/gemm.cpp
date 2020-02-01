@@ -148,6 +148,7 @@ struct multiplies_bind1st{
 		using multi::blas::gemm;
 		return gemm(m_, a);
 	}
+private:
 	multi::cuda::managed::array<complex, 2> m_;
 };
 
