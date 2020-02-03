@@ -919,8 +919,8 @@ public:
 	}
 	template<typename TT, dimensionality_type DD = D, class... As>
 	array_ref const& operator=(array_ref<TT, DD, As...> const& o) const{
-		assert( this->extensions() != o.extensions() ); // TODO, or assert?
-		adl::copy_n(o.data(), o.num_elements(), this->data());//data_elements(), data_elements() + this->num_elements(), o.data());
+		assert( this->extensions() == o.extensions() );
+		adl::copy_n(o.data(), o.num_elements(), this->data());
 		return *this;
 	}
 	template<typename TT, dimensionality_type DD = D, class... As>
