@@ -206,7 +206,7 @@ template<> struct cublas3<void>{
                            const T           *A, int lda,
                            const T           *B, int ldb,
                            const T           *beta,
-                           T           *C, int ldc){return cublas3<T>::gemm(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);}
+                           T           *C, int ldc){assert(C != NULL); return cublas3<T>::gemm(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);}
 // 2.7.6. cublas<t>syrk() https://docs.nvidia.com/cuda/cublas/index.html#cublas-lt-t-gt-syrk
 	template<class T> static cublasStatus_t syrk(cublasHandle_t handle,
                            cublasFillMode_t uplo, cublasOperation_t trans,
@@ -235,7 +235,7 @@ template<> struct cublas3<void>{
 
 namespace cublas{
 
-template<class T, std::enable_if_t<not std::is_integral<T>{}, int> =0> decltype(auto) translate(T const& t){return t;}
+template<class T, std::enable_if_t<not std::is_integral<T>{}, int> =0> decltype(auto) translate(T t){return t;}
 
 auto translate(std::complex<float> const * t){return reinterpret_cast<cublas::complex<float>  const*>(t);}	
 auto translate(std::complex<float>       * t){return reinterpret_cast<cublas::complex<float>       *>(t);}	
