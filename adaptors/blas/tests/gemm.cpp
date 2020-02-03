@@ -113,26 +113,23 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_automatic, *utf::to
 		{  7., 19., 2., 7.},
 		{  5.,  3., 3., 1.}
 	};
+	using multi::blas::gemm;
 	{
 		multi::array<double, 2> c({2, 4});
-		using multi::blas::gemm;
 		gemm(1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
 		BOOST_REQUIRE( c[1][2] == 53 );
 	}
 	{
 		multi::array<double, 2> c({2, 4});
-		using multi::blas::gemm;
 		gemm(0.1, a, b, 0., c); // c=ab, c⸆=b⸆a⸆
 		BOOST_TEST( c[1][2] == 5.3 );
 	}
 	{
 		multi::array<double, 2> c({2, 4});
-		using multi::blas::gemm;
 		gemm(0.1, a, b, 0., c); // c=ab, c⸆=b⸆a⸆
 		BOOST_TEST( c[1][2] == 5.3 );
 	}
 	{
-		using multi::blas::gemm;
 		auto c = gemm(0.1, a, b); // c=ab, c⸆=b⸆a⸆
 		BOOST_TEST( c[1][2] == 5.3 );
 	}
@@ -148,26 +145,23 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_automatic_cuda, *ut
 		{  7., 19., 2., 7.},
 		{  5.,  3., 3., 1.}
 	};
+	using multi::blas::gemm;
 	{
 		multi::cuda::array<double, 2> c({2, 4});
-		using multi::blas::gemm;
 		gemm(1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
 		BOOST_REQUIRE( c[1][2] == 53 );
 	}
 	{
 		multi::cuda::array<double, 2> c({2, 4});
-		using multi::blas::gemm;
 		gemm(0.1, a, b, 0., c); // c=ab, c⸆=b⸆a⸆
 		BOOST_TEST( c[1][2] == 5.3 );
 	}
 	{
 		multi::cuda::array<double, 2> c({2, 4});
-		using multi::blas::gemm;
 		gemm(0.1, a, b, 0., c); // c=ab, c⸆=b⸆a⸆
 		BOOST_TEST( c[1][2] == 5.3 );
 	}
 	{
-		using multi::blas::gemm;
 		auto c = gemm(0.1, a, b); // c=ab, c⸆=b⸆a⸆
 		BOOST_TEST( c[1][2] == 5.3 );
 	}
@@ -307,6 +301,12 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_hermitized_second_m
 		multi::cuda::managed::array<double, 2> c;
 		c = f(a, b);
 		BOOST_TEST( c[1][2] == 5.3 );
+	}
+	{
+		auto f = [](auto&& a, auto&& b){return gemm(0.1, a, hermitized(b));};
+		multi::cuda::managed::array<double, 2> c = a; BOOST_REQUIRE(size(c) == 2 and size(rotated(c)) == 3);
+		c = f(a, b);
+		BOOST_TEST( c[1][2] == 5.3 ); BOOST_REQUIRE(size(c) == 2 and size(rotated(c)) == 4);
 	}
 	{
 		auto c = gemm(0.1, a, hermitized(b)); // c=ab, c⸆=b⸆a⸆
