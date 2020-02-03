@@ -166,7 +166,7 @@ public:
 	#ifdef __CUDA_ARCH__
 	__device__  reference operator*() const{return *rp_;}
 	#else
-	__host__ reference operator*() const{return {*this};}
+	__host__ [[deprecated]] reference operator*() const{return {*this};}
 	#endif
 //	__host__ ref<element_type> operator*() const{return {*this};}
 //#endif
@@ -365,7 +365,8 @@ public:
 	template<class Other, typename = std::enable_if_t<not is_ref<Other>{}> > 
 	friend auto operator==(Other&& other, ref&& self){
 #if __CUDA_ARCH__
-		return std::forward<Other>(other)==*(this->rp_);
+//		return std::forward<Other>(other)==*(this->rp_);
+		return std::forward<Other>(other)==*(self->rp_);
 #else
 		return std::forward<Other>(other)==static_cast<T>(std::move(self));
 #endif
