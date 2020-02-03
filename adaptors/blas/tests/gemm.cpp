@@ -101,6 +101,221 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_square_real){
 	}
 }
 
+namespace utf = boost::unit_test;
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_automatic, *utf::tolerance(0.00001)){
+	multi::array<double, 2> const a = {
+		{ 1., 3., 1.},
+		{ 9., 7., 1.},
+	};
+	multi::array<double, 2> const b = {	
+		{ 11., 12., 4., 8.},
+		{  7., 19., 2., 7.},
+		{  5.,  3., 3., 1.}
+	};
+	{
+		multi::array<double, 2> c({2, 4});
+		using multi::blas::gemm;
+		gemm(1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][2] == 53 );
+	}
+	{
+		multi::array<double, 2> c({2, 4});
+		using multi::blas::gemm;
+		gemm(0.1, a, b, 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_TEST( c[1][2] == 5.3 );
+	}
+	{
+		multi::array<double, 2> c({2, 4});
+		using multi::blas::gemm;
+		gemm(0.1, a, b, 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_TEST( c[1][2] == 5.3 );
+	}
+	{
+		using multi::blas::gemm;
+		auto c = gemm(0.1, a, b); // c=ab, c⸆=b⸆a⸆
+		BOOST_TEST( c[1][2] == 5.3 );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_automatic_cuda, *utf::tolerance(0.00001)){
+	multi::cuda::array<double, 2> const a = {
+		{ 1., 3., 1.},
+		{ 9., 7., 1.},
+	};
+	multi::cuda::array<double, 2> const b = {	
+		{ 11., 12., 4., 8.},
+		{  7., 19., 2., 7.},
+		{  5.,  3., 3., 1.}
+	};
+	{
+		multi::cuda::array<double, 2> c({2, 4});
+		using multi::blas::gemm;
+		gemm(1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][2] == 53 );
+	}
+	{
+		multi::cuda::array<double, 2> c({2, 4});
+		using multi::blas::gemm;
+		gemm(0.1, a, b, 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_TEST( c[1][2] == 5.3 );
+	}
+	{
+		multi::cuda::array<double, 2> c({2, 4});
+		using multi::blas::gemm;
+		gemm(0.1, a, b, 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_TEST( c[1][2] == 5.3 );
+	}
+	{
+		using multi::blas::gemm;
+		auto c = gemm(0.1, a, b); // c=ab, c⸆=b⸆a⸆
+		BOOST_TEST( c[1][2] == 5.3 );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_hermitized_second, *utf::tolerance(0.00001)){
+	multi::array<double, 2> const a = {
+		{1, 3, 1},
+		{9, 7, 1},
+	};
+	multi::array<double, 2> const b = {	
+		{11,  7, 5},
+		{12, 19, 3},
+		{ 4,  2, 3},
+		{ 8,  7, 1}
+	};
+	using multi::blas::gemm;using multi::blas::hermitized;
+	{
+		multi::array<double, 2> c({2, 4});
+		gemm(1., a, hermitized(b), 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][2] == 53 );
+	}
+	{
+		multi::array<double, 2> c({2, 4});
+		gemm(0.1, a, hermitized(b), 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_TEST( c[1][2] == 5.3 );
+	}
+	{
+		multi::array<double, 2> c({2, 4});
+		gemm(0.1, a, hermitized(b), 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_TEST( c[1][2] == 5.3 );
+	}
+	{
+		auto c = gemm(0.1, a, hermitized(b)); // c=ab, c⸆=b⸆a⸆
+		BOOST_TEST( c[1][2] == 5.3 );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_hermitized_second_gpu, *utf::tolerance(0.00001)){
+	multi::cuda::array<double, 2> const a = {
+		{1, 3, 1},
+		{9, 7, 1},
+	};
+	multi::cuda::array<double, 2> const b = {	
+		{11,  7, 5},
+		{12, 19, 3},
+		{ 4,  2, 3},
+		{ 8,  7, 1}
+	};
+	using multi::blas::gemm;using multi::blas::hermitized;
+	{
+		multi::cuda::array<double, 2> c({2, 4});
+		gemm(1., a, hermitized(b), 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][2] == 53 );
+	}
+	{
+		multi::cuda::array<double, 2> c({2, 4});
+		gemm(0.1, a, hermitized(b), 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_TEST( c[1][2] == 5.3 );
+	}
+	{
+		multi::cuda::array<double, 2> c({2, 4});
+		gemm(0.1, a, hermitized(b), 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_TEST( c[1][2] == 5.3 );
+	}
+	{
+		multi::cuda::array<double, 2> c({2, 4});
+		auto c_copy = gemm(0.1, a, hermitized(b), 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_TEST( c_copy[1][2] == 5.3 );
+	}
+	{
+		multi::cuda::array<double, 2> c({2, 4});
+		auto c_copy = gemm(0.1, a, hermitized(b), 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_TEST( c_copy[1][2] == 5.3 );
+	}
+	{
+		auto f = [](auto&& a, auto&& b){return gemm(0.1, a, hermitized(b));};
+		auto c = f(a, b);
+		BOOST_TEST( c[1][2] == 5.3 );
+	}
+	{
+		auto f = [](auto&& a, auto&& b){return gemm(0.1, a, hermitized(b));};
+		multi::cuda::array<double, 2> c;
+		c = f(a, b);
+		BOOST_TEST( c[1][2] == 5.3 );
+	}
+	{
+		auto c = gemm(0.1, a, hermitized(b)); // c=ab, c⸆=b⸆a⸆
+		BOOST_TEST( c[1][2] == 5.3 );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_hermitized_second_managed, *utf::tolerance(0.00001)){
+	multi::cuda::managed::array<double, 2> const a = {
+		{1, 3, 1},
+		{9, 7, 1},
+	};
+	multi::cuda::managed::array<double, 2> const b = {	
+		{11,  7, 5},
+		{12, 19, 3},
+		{ 4,  2, 3},
+		{ 8,  7, 1}
+	};
+	using multi::blas::gemm; using multi::blas::hermitized;
+	{
+		multi::cuda::managed::array<double, 2> c({2, 4});
+		gemm(1., a, hermitized(b), 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][2] == 53 );
+	}
+	{
+		multi::cuda::managed::array<double, 2> c({2, 4});
+		gemm(0.1, a, hermitized(b), 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_TEST( c[1][2] == 5.3 );
+	}
+	{
+		multi::cuda::managed::array<double, 2> c({2, 4});
+		gemm(0.1, a, hermitized(b), 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_TEST( c[1][2] == 5.3 );
+	}
+	{
+		multi::cuda::managed::array<double, 2> c({2, 4});
+		auto c_copy = gemm(0.1, a, hermitized(b), 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_TEST( c_copy[1][2] == 5.3 );
+	}
+	{
+		multi::cuda::managed::array<double, 2> c({2, 4});
+		auto c_copy = gemm(0.1, a, hermitized(b), 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_TEST( c_copy[1][2] == 5.3 );
+	}
+	{
+		auto f = [](auto&& a, auto&& b){return gemm(0.1, a, hermitized(b));};
+		auto c = f(a, b);
+		BOOST_TEST( c[1][2] == 5.3 );
+	}
+	{
+		auto f = [](auto&& a, auto&& b){return gemm(0.1, a, hermitized(b));};
+		multi::cuda::managed::array<double, 2> c;
+		c = f(a, b);
+		BOOST_TEST( c[1][2] == 5.3 );
+	}
+	{
+		auto c = gemm(0.1, a, hermitized(b)); // c=ab, c⸆=b⸆a⸆
+		BOOST_TEST( c[1][2] == 5.3 );
+	}
+}
+
+
+
 using complex = std::complex<double>; complex const I{0, 1};
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_automatic){
@@ -138,6 +353,9 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_automatic){
 		BOOST_REQUIRE( cmcu[1][2] == complex(112, 12) );
 	}
 }
+
+
+
 
 using complex = std::complex<double>;
 
