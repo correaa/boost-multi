@@ -166,7 +166,7 @@ public:
 	#ifdef __CUDA_ARCH__
 	__device__  reference operator*() const{return *rp_;}
 	#else
-	__host__ [[deprecated]] reference operator*() const{return {*this};}
+	__host__ reference operator*() const{return {*this};}
 	#endif
 //	__host__ ref<element_type> operator*() const{return {*this};}
 //#endif
