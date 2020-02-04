@@ -5,7 +5,7 @@
 
 (not an official Boost library)
 
-_© Alfredo A. Correa, 2018-2019_
+_© Alfredo A. Correa, 2018-2020_
 
 `Multi` provides multidimensional array access to contiguous or regularly contiguous memory (or ranges).
 It shares the goals of [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html), 
@@ -27,6 +27,8 @@ Some features:
 * Value semantics of multi-dimensional array container
 * Better semantics of subarray (view) types
 * Interoperability with other libraries, STL, ranges, 
+
+(Do not confuse this library with Boost.MultiArray or Boost.MultiIndex.)
 
 ## Types
 
