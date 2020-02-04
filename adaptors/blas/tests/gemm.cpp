@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&nvcc -x cu --expt-relaxed-constexpr`#$CXX` $0 -o $0x -Wno-deprecated-declarations `pkg-config --libs blas` -lcudart -lcublas -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp; exit
+(echo '#include"'$0'"'>$0.cpp)&&`#nvcc -x cu --expt-relaxed-constexpr -O3 --compiler-options=-Wall`clang++ -D_MULTI_CUBLAS_ALWAYS_SYNC -O3 $0 -o $0x -Wno-deprecated-declarations `pkg-config --libs blas` -lcudart -lcublas -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp; exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_automatic_cuda, *ut
 	{
 		multi::cuda::array<double, 2> c({2, 4});
 		gemm(1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[1][2] == 53 );
+		BOOST_TEST( c[1][2] == 53 );
 	}
 	{
 		multi::cuda::array<double, 2> c({2, 4});

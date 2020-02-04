@@ -58,13 +58,16 @@ inline std::error_code make_error_code(cublas_error err) noexcept{
 	return std::error_code(int(err), cublas_error_category::instance());
 }
 
-//template<class CublasFunction>
-//auto cublas_call(CublasFunction f){
-//	return [=](auto... args){
-//		auto s = (enum cublas_error)(f(args...));
-//		if( s != cublas_error::success ) throw std::system_error{make_error_code(s), "cannot call cublas function "};
-//	};
-//}
+template<class CublasFunction>
+auto cublas_call(CublasFunction f){
+	return [=](auto... args){
+		auto s = (enum cublas_error)(f(args...));
+		if( s != cublas_error::success ) throw std::system_error{make_error_code(s), "cannot call cublas function "};
+#ifdef _MULTI_CUBLAS_ALWAYS_SYNC
+		cudaDeviceSynchronize();
+#endif
+	};
+}
 
 //#define CUBLAS_(FunctionPostfix) boost::multi::cublas_call(cublas##FunctionPostfix)
 
@@ -180,18 +183,31 @@ template<> struct cublas2<Z>{
 	template<class...A> static auto trsv(A...a){return cublasZtrsv(a...);}
 };
 
-#define DEFINE_CUBLAS3(UppeR, LowR) \
-template<> struct cublas3<UppeR>{ \
-	template<class...As> static auto gemm (As...as){return cublas##UppeR##gemm(as...);} \
-	template<class...As> static auto syrk (As...as){return cublas##UppeR##syrk(as...);} \
-	template<class...As> static auto herk (As...as){return cublas##UppeR##herk(as...);} \
-	template<class...As> static auto trsm (As...as){return cublas##UppeR##trsm(as...);} \
-}
+template<> struct cublas3<S>{
+	template<class...As> static auto gemm (As...as){return cublas_call(cublasSgemm)(as...);}
+	template<class...As> static auto syrk (As...as){return cublas_call(cublasSsyrk)(as...);}
+//	template<class...As> static auto herk (As...as){return cublas_call(cublasSherk)(as...);}
+	template<class...As> static auto trsm (As...as){return cublas_call(cublasStrsm)(as...);}
+};
+template<> struct cublas3<D>{
+	template<class...As> static auto gemm (As...as){return cublas_call(cublasDgemm)(as...);}
+	template<class...As> static auto syrk (As...as){return cublas_call(cublasDsyrk)(as...);}
+//	template<class...As> static auto herk (As...as){return cublas_call(cublasDherk)(as...);}
+	template<class...As> static auto trsm (As...as){return cublas_call(cublasDtrsm)(as...);}
+};
+template<> struct cublas3<C>{
+	template<class...As> static auto gemm (As...as){return cublas_call(cublasCgemm)(as...);}
+	template<class...As> static auto syrk (As...as){return cublas_call(cublasCsyrk)(as...);}
+	template<class...As> static auto herk (As...as){return cublas_call(cublasCherk)(as...);}
+	template<class...As> static auto trsm (As...as){return cublas_call(cublasCtrsm)(as...);}
+};
+template<> struct cublas3<Z>{
+	template<class...As> static auto gemm (As...as){return cublas_call(cublasZgemm)(as...);}
+	template<class...As> static auto syrk (As...as){return cublas_call(cublasZsyrk)(as...);}
+	template<class...As> static auto herk (As...as){return cublas_call(cublasZherk)(as...);}
+	template<class...As> static auto trsm (As...as){return cublas_call(cublasZtrsm)(as...);}
+};
 
-DEFINE_CUBLAS3(S, s);
-DEFINE_CUBLAS3(D, d);
-DEFINE_CUBLAS3(C, c);
-DEFINE_CUBLAS3(Z, z);
 
 template<class T> struct herk_scalar;//{using type = T;};
 template<> struct herk_scalar<C>{using type = S;};
@@ -199,16 +215,16 @@ template<> struct herk_scalar<Z>{using type = D;};
 
 template<> struct cublas3<void>{
 // 2.7.1. cublas<t>gemm() https://docs.nvidia.com/cuda/cublas/index.html#cublas-lt-t-gt-gemm
-	template<class T> static cublasStatus_t gemm(cublasHandle_t handle,
+	template<class T> static auto gemm(cublasHandle_t handle,
                            cublasOperation_t transa, cublasOperation_t transb,
                            int m, int n, int k,
                            const T           *alpha,
                            const T           *A, int lda,
                            const T           *B, int ldb,
                            const T           *beta,
-                           T           *C, int ldc){assert(C != NULL); return cublas3<T>::gemm(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);}
+                           T           *C, int ldc){return cublas3<T>::gemm(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);}
 // 2.7.6. cublas<t>syrk() https://docs.nvidia.com/cuda/cublas/index.html#cublas-lt-t-gt-syrk
-	template<class T> static cublasStatus_t syrk(cublasHandle_t handle,
+	template<class T> static auto syrk(cublasHandle_t handle,
                            cublasFillMode_t uplo, cublasOperation_t trans,
                            int n, int k,
                            const T           *alpha,
@@ -216,7 +232,7 @@ template<> struct cublas3<void>{
                            const T           *beta,
                            T           *C, int ldc){return cublas3<T>::syrk(handle, uplo, trans, n, k, alpha, A, lda, beta, C, ldc);}
 // 2.7.13. cublas<t>herk() https://docs.nvidia.com/cuda/cublas/index.html#cublas-lt-t-gt-herk
-	template<class T> static cublasStatus_t herk(cublasHandle_t handle,
+	template<class T> static auto herk(cublasHandle_t handle,
                            cublasFillMode_t uplo, cublasOperation_t trans,
                            int n, int k,
                            const typename herk_scalar<T>::type  *alpha,
@@ -224,7 +240,7 @@ template<> struct cublas3<void>{
                            const typename herk_scalar<T>::type  *beta,
                            T       *C, int ldc){return cublas3<T>::herk(handle, uplo, trans, n, k, alpha, A, lda, beta, C, ldc);}
 // 2.7.10. cublas<t>trsm() https://docs.nvidia.com/cuda/cublas/index.html#cublas-lt-t-gt-trsm
-	template<class T> static cublasStatus_t trsm(cublasHandle_t handle,
+	template<class T> static auto trsm(cublasHandle_t handle,
                            cublasSideMode_t side, cublasFillMode_t uplo,
                            cublasOperation_t trans, cublasDiagType_t diag,
                            int m, int n,
@@ -242,7 +258,7 @@ auto translate(std::complex<float>       * t){return reinterpret_cast<cublas::co
 auto translate(std::complex<double> const* t){return reinterpret_cast<cublas::complex<double> const*>(t);}	
 auto translate(std::complex<double>      * t){return reinterpret_cast<cublas::complex<double>      *>(t);}
 
-template<class T> auto translate(memory::cuda::ptr<T> p)->decltype(translate(raw_pointer_cast(p))){return translate(raw_pointer_cast(p));}
+template<class T> auto translate(memory::cuda::ptr<T>          p)->decltype(translate(raw_pointer_cast(p))){return translate(raw_pointer_cast(p));}
 template<class T> auto translate(memory::cuda::managed::ptr<T> p)->decltype(translate(raw_pointer_cast(p))){return translate(raw_pointer_cast(p));}
 
 template<class T, std::enable_if_t<std::is_integral<T>{},int> = 0> 
@@ -356,7 +372,8 @@ auto trsv(char ul, char transA, char a_diag, S n, memory::cuda::ptr<Tconst> A, S
 template<class... As>
 auto gemm(As... as)
 ->decltype(cublas::context{}.gemm(as...)){
-	return cublas::context{}.gemm(as...);}
+	return cublas::context{}.gemm(as...);
+}
 
 template<class Tconst, class T, class UL, class C, class S, class Real>
 void syrk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::ptr<Tconst> A, S lda, Real beta, multi::memory::cuda::ptr<T> CC, S ldc){
