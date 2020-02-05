@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&$CXX -D_TEST_MULTI_ADAPTORS_LAPACK_SYEV $0.cpp -o$0x `pkg-config --libs blas lapack` -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp;exit
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -D_TEST_MULTI_ADAPTORS_LAPACK_SYEV $0.cpp -o $0x `pkg-config --libs blas lapack` -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp;exit
 #endif
 // © Alfredo A. Correa 2020
 
@@ -113,8 +113,6 @@ BOOST_AUTO_TEST_CASE(lapack_syev, *boost::unit_test::tolerance(0.00001) ){
 	multi::array<double, 1> W(size(A));
 	multi::array<double, 1> WORK(std::max(1l, 3*size(A)-1));
 	multi::lapack::syev(multi::blas::filling::upper, A, W, WORK);
-	print(A);
-	std::cout << W[0] <<' '<< W[1] <<' '<< W[2] << std::endl;
 	BOOST_TEST( A[2][1] == -0.579092 );
 	BOOST_TEST( W[1] == 42.2081 );
 }
@@ -163,6 +161,39 @@ BOOST_AUTO_TEST_CASE(lapack_syev, *boost::unit_test::tolerance(0.00001) ){
 	BOOST_TEST( A[1][2] == 126.746 );
 	BOOST_TEST( A_copy[2][1] == -0.579092 );
 	BOOST_TEST( W[1] == 42.2081 );
+}
+{
+	multi::array<double, 2> A = {
+		{167.413, 126.804, 0.},
+		{NAN    , 167.381, 0.},
+		{NAN    , NAN    , 0.}
+	};
+	multi::array<double, 1> W(size(A));
+	namespace lapack = multi::lapack;
+	auto&& A_ref = lapack::syev(lapack::filling::upper, A, W);
+	BOOST_TEST( size(A_ref)==3 );
+	BOOST_TEST( W[0]==0. );
+}
+{
+	multi::array<double, 2> A = {
+		{1. , 1.,  1.},
+		{NAN, 2 ,  1.},
+		{NAN, NAN, 1.}
+	};
+	multi::array<double, 1> W(size(A));
+	namespace lapack = multi::lapack;
+	auto&& A_ref = lapack::syev(lapack::filling::upper, A, W);
+	print(A_ref);
+	BOOST_TEST( size(A_ref)==3 );
+	BOOST_TEST( W[0]==0. );
+}
+{
+	multi::array<double, 2> A = {{5.}};
+	multi::array<double, 1> W(size(A));
+	namespace lapack = multi::lapack;
+	lapack::syev(lapack::filling::upper, A, W);
+	BOOST_TEST( A[0][0] == 1. );
+	BOOST_TEST( W[0]==5. );
 }
 {
 	multi::array<double, 2> const A = {
