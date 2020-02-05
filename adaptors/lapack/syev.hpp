@@ -54,7 +54,7 @@ typename Array2D::decay_type syev(blas::filling uplo, Array2D const& a, Array1D&
 }
 
 template<class Array2D>
-NODISCARD("because input array is const, output gives eigenvectors")
+NODISCARD("because input array is const, output gives eigenvalues")
 auto syev(blas::filling uplo, Array2D&& a){
 	multi::array<typename std::decay_t<Array2D>::element_type, 1, decltype(get_allocator(a))> eigenvalues(size(a), get_allocator(a));
 	syev(uplo, a, eigenvalues);
@@ -62,7 +62,7 @@ auto syev(blas::filling uplo, Array2D&& a){
 }
 
 template<class Array2D>
-NODISCARD("because input array is const, output gives eigenvectors and eigenvactor")
+NODISCARD("because input array is const, output gives a structured binding eigenvectors and eigenvactor")
 auto syev(blas::filling uplo, Array2D const& a){
 	struct{
 		typename Array2D::decay_type eigenvectors;
@@ -177,6 +177,21 @@ BOOST_AUTO_TEST_CASE(lapack_syev, *boost::unit_test::tolerance(0.00001) ){
 	BOOST_TEST( sys.eigenvectors[2][1] == -0.579092 );
 	BOOST_TEST( sys.eigenvalues[1] == 42.2081 );
 }
+#if __cpp_structured_bindings
+{
+	multi::array<double, 2> const A = {
+		{167.413, 126.804, 125.114},
+		{NAN    , 167.381, 126.746},
+		{NAN    , NAN    , 167.231}
+	};
+	multi::array<double, 1> W(size(A));
+	namespace lapack = multi::lapack;
+	auto [eigenvecs, eigenvals] = lapack::syev(lapack::filling::upper, A);
+	BOOST_TEST( A[1][2] == 126.746 );
+	BOOST_TEST( eigenvecs[2][1] == -0.579092 );
+	BOOST_TEST( eigenvals[1] == 42.2081 );
+}
+#endif
 
 }
 #endif
