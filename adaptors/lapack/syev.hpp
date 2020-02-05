@@ -26,10 +26,10 @@ auto syev(blas::filling uplo, Array2D&& a, Array1D&& w, Array1DW&& work)
 {
 	assert( size(work) >= std::max(1l, 3*size(a)-1l) );
 	assert( size(a) == size(w) );
-	assert(stride(w)==1);
-	assert(stride(work)==1);
+	assert( stride(w)==1 );
+	assert( stride(work)==1 );
+	if(size(a)==0) return a();
 	int info = -1;
-	assert(base(a));
 	if(stride(rotated(a))==1){
 		::core::syev('V', uplo==blas::filling::upper?'L':'U', size(a), base(a), stride(a), base(w), base(work), size(work), info);
 	}else if(stride(a)==1){
@@ -194,6 +194,12 @@ BOOST_AUTO_TEST_CASE(lapack_syev, *boost::unit_test::tolerance(0.00001) ){
 	lapack::syev(lapack::filling::upper, A, W);
 	BOOST_TEST( A[0][0] == 1. );
 	BOOST_TEST( W[0]==5. );
+}
+{
+	multi::array<double, 2> A;
+	multi::array<double, 1> W(size(A));
+	namespace lapack = multi::lapack;
+	lapack::syev(lapack::filling::upper, A, W);
 }
 {
 	multi::array<double, 2> const A = {
