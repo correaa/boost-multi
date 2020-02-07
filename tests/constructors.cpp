@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-`#nvcc -x cu --expt-relaxed-constexpr`$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
+clang++ -x cuda --cuda-gpu-arch=sm_50 -std=c++14`#$CXX` $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi constructors"
