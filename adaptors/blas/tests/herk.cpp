@@ -22,7 +22,7 @@ namespace multi = boost::multi;
 namespace cuda = multi::cuda;
 
 BOOST_AUTO_TEST_CASE(multi_blas_cuda_herk_complex){
-
+#if 1
 	using complex = std::complex<double>;
 	complex const I{0, 1};
 
@@ -102,6 +102,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_cuda_herk_complex){
 		cuda::managed::array<complex, 2> const ccu_copy = herk(1., hermitized(acu));
 		BOOST_REQUIRE( ccu_copy == ccu );		
 	}
+#endif
 }
 
 #if 0
