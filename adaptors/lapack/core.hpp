@@ -29,9 +29,12 @@
 #define JOBZ CHARACTER
 #define LAPACK(NamE) NamE##_
 #define LWORK INTEGER lwork
+#define LIWORK INTEGER liwork
+#define IWORK int*
 
 #define xPOTRF(T)     v LAPACK(T##potrf)(UPLO, N, T*, LDA, INFO)
 #define xSYEV(T)      v LAPACK(T##syev)(JOBZ, UPLO, N, T*, LDA, T*, T*, LWORK, INFO)
+#define xSYEVD(T)     v LAPACK(T##syevd)(JOBZ, UPLO, N, T*, LDA, T*, T*, LWORK, IWORK, LIWORK, INFO)
 #define xHEEV(T)      v LAPACK(T##heev)(JOBZ, UPLO, N, T*, LDA, T*, T*, LWORK, INFO)
 
 extern "C"{
@@ -39,7 +42,8 @@ xPOTRF(s)   ; xPOTRF(d)    ;
 xPOTRF(c)   ; xPOTRF(z)    ;
 
 xSYEV(s)    ; xSYEV(d)     ;
-xHEEV(c)    ; xHEEV(z)     ;
+xSYEVD(s)   ; xSYEVD(d)    ;
+                           ; xHEEV(c)    ; xHEEV(z)     ;
 }
 
 #undef JOBZ
@@ -62,11 +66,19 @@ xpotrf(c) xpotrf(z)
 
 // http://www.netlib.org/lapack/explore-html/d2/d8a/group__double_s_yeigen_ga442c43fca5493590f8f26cf42fed4044.html
 #define xsyev(T) template<class S> v syev(char jobz, char uplo, S n, T* a, S lda, T* w, T* work, S lwork, int& info){LAPACK(T##syev)(jobz, uplo, n, a, lda, w, work, lwork, info);}
+// http://www.netlib.org/lapack/explore-html/d2/d8a/group__double_s_yeigen_ga77dfa610458b6c9bd7db52533bfd53a1.html
+#define xsyevd(T) template<class S> v syevd(char jobz, char uplo, S n, T* a, S lda, T* w, T* work, S lwork, int* iwork, S liwork, int& info){ \
+	if(n <= 1               ){assert(lwork >= 1              ); assert(liwork >=1       );} \
+	if(jobz == 'N' and n > 1){assert(lwork >= 2*n+1          ); assert(liwork >= 1      );} \
+	if(jobz == 'V' and n > 1){assert(lwork >= 1 + 6*n + 2*n*n); assert(liwork >= 3 + 5*n);} \
+	LAPACK(T##syevd)(jobz, uplo, n, a, lda, w, work, lwork, iwork, liwork, info); \
+}
 #define xheev(T) template<class S> v heev(char jobz, char uplo, S n, T* a, S lda, T* w, T* work, S lwork, int& info){LAPACK(T##heev)(jobz, uplo, n, a, lda, w, work, lwork, info);}
 
 namespace core{
-xsyev(s) xsyev(d)
-                   xheev(c) xheev(z)
+xsyev (s) xsyev (d)
+xsyevd(s) xsyevd(d)
+                    xheev(c) xheev(z)
 }
 
 #undef s
