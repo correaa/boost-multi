@@ -43,143 +43,45 @@ Some features:
 Declare an array specifying the element type and the dimension.
 Elements can be input with nested braced notation.
 ```c++
-	std::array<double, 2> A = {
-		{1, 2, 3}
-		{4, 5, 6}
-	};
+std::array<double, 2> A = {
+	{1, 2, 3}
+	{4, 5, 6}
+};
 ```
 
 The size is automatically deduced; the first dimension are the "rows" above.
 
 ```c++
-	assert( A.size()==2 );
-	assert( std::get<1>(A.sizes()) == 3 );
+assert( A.size()==2 );
+assert( std::get<1>(A.sizes()) == 3 );
 ```
 
 Arrays can be copied, or moved, and compared. Copies are independent.
 ```c++
-	std::array<double, 2> B = A;
-	assert( B[0][1] == A[0][1] );
-	assert( &B[0][1] == &A[0][1] );
-	assert( extensions(B) == extensions(A) );
-	assert( B == A );
+std::array<double, 2> B = A;
+assert( B[0][1] == A[0][1] );
+assert( &B[0][1] == &A[0][1] );
+assert( extensions(B) == extensions(A) );
+assert( B == A );
 ```
 
-Matrices can be passed by value or by reference, most of the time they should be passed through generic interfaces
+Arrays can be passed by value or by reference, most of the time they should be passed through generic parameters,
 
 ```c++
-template<class ArrayDouble2D> // instead of the specific argument std::array<double, 2>
+template<class ArrayDouble2D> // instead of the over specific argument std::array<double, 2>
 double const& element_1_1(ArrayDouble2D const& m){return m[1][1];}
 ...
-	assert( element_1_1(A) == A[1][1] );
+assert( element_1_1(A) == A[1][1] );
 ```
 
 In this way the functions can be called on blocks of larger matrices.
 
 ```c++
-	std::array<double, 3> C3D;
-	assert( &element_1_1(C3D[0]) == &C3D[0][1][1] );
+std::array<double, 3> C3D;
+assert( &element_1_1(C3D[0]) == &C3D[0][1][1] );
 ```
 
-Now we move to more advanced features.
-
-## Concept Requirements
-
-The design tries to impose the minimum possible requirements over the used referred types.
-Pointer-like random access types can be used as substitutes of built-in pointers.
-
-```c++
-namespace minimal{
-    template<class T> class ptr{ // minimalistic pointer
-    	T* impl_;
-    	T& operator*() const{return *impl_;}
-    	auto operator+(std::ptrdiff_t n) const{return ptr{impl_ + n};}
-    //	operator[], operator+=, etc are optional but not necessary
-    };
-}
-
-int main(){
-	double* buffer = new double[100];
-	multi::array_ref<double, 2, minimal::ptr<double> > CC(minimal::ptr<double>{buffer}, {10, 10});
-	CC[2]; // requires operator+ 
-	CC[1][1]; // requires operator*
-	CC[1][1] = 9;
-	assert(CC[1][1] == 9);
-	delete[] buffer;
-}
-```
-
-### Linear Sequences: Pointers
-
-An `array_ref` can reference to an arbitrary random access iterator sequence.
-This way, any linear (random access) sequence (e.g. `raw memory`, `std::vector`, `std::queue`) can be efficiently arranged as a multidimensional array. 
-
-```c++
-	std::vector<double> buffer(100);
-	multi::array_ref<double, 2, std::vector<double>::iterator> A({10, 10}, buffer.begin());
-	A[1][1] = 9;
-	assert(A[1][1] == 9);
-	assert(buffer[11]==9);
-```
-Since `array_ref` does not manage the memory associated with it, the reference can be simply dangle if the `buffer` memory is reallocated (e.g. by `resize`).
-
-### Special Memory: Allocators and Fancy Pointers
-
-`array`'s manages its memory through allocators. 
-It can handle special memory, as long as the underlying types behave coherently, these include fancy pointers and fancy references.
-Associated fancy pointers and fancy reference (if any) are deduced from the allocator types.
-
-The behavior regarding memory managament of the [fancy pointers](https://en.cppreference.com/w/cpp/named_req/Allocator#Fancy_pointers) can be customized (if necessary) by specializations of some or all of these functions:
-
-```c++
-destroy(a, first, last)
-destroy_n(a, first, n) -> last
-uninitialized_copy_n(a, first, n, dest) -> last;
-uninitialized_fill_n(a, first, n, value) -> last
-uninitialized_default_construct_n(a, first, n) -> last
-uninitialized_value_construct_n(a, first, n) -> last
-```
-
-where `a` is the special allocator, `n` is a size (usually the number of elements), `first`, `last` and `dest` are fancy pointers.
-
-Copying underlying memory can be customized by specializing 
-
-```c++
-copy_n(first, n, dest)
-fill_n(first, n, value)
-```
-
-Specific cases of fancy memory are file-mapped memory or interprocess shared memory.
-This example illustrates memory persistency by combining with Boost.Interprocess library. 
-The arrays support their allocators and fancy pointers (`boost::interprocess::offset_ptr`).
-
-```c++
-#include <boost/interprocess/managed_mapped_file.hpp>
-using namespace boost::interprocess;
-using manager = managed_mapped_file;
-template<class T> using mallocator = allocator<T, manager::segment_manager>;
-decltype(auto) get_allocator(manager& m){return m.get_segment_manager();}
-
-template<class T, auto D> using marray = multi::array<T, D, mallocator<T>>;
-
-int main(){
-{
-	manager m{create_only, "mapped_file.bin", 1 << 25};
-	auto&& arr2d = *m.construct<marray<double, 2>>("arr2d")(std::tuple{1000, 1000}, 0.0, get_allocator(m));
-	arr2d[4][5] = 45.001;
-}
-// imagine execution restarts here
-{
-	manager m{open_only, "mapped_file.bin"};
-	auto&& arr2d = *m.find<marray<double, 2>>("arr2d").first;
-	assert( arr2d[7][8] == 0. );
-	assert( arr2d[4][5] == 45.001 );
-	m.destroy<marray<double, 2>>("arr2d");
-}
-}
-```
-
-## Usage
+## Advanced Usage
 
 We create a static C-array of `double`s, and refer to it via a bidimensional array `multi::array_ref<double, 2>`.
 
@@ -267,7 +169,7 @@ In other words, a matrix of dimension `D` can be viewed simultaneously as `D` di
 
 ## Initialization
 
-`array_ref` is initialized from a preexisting contiguous memory (or range), the index extensions should compatible with the total number of elements.
+`array_ref` is initialized from a preexisting contiguous range, the index extensions should compatible with the total number of elements.
 
 ```c++
 double* dp = new double[12];
@@ -327,7 +229,7 @@ print(A);
 > {{{1.2,1.1},{2.4,1}},{{11.2,3},{34.4,4}},{{15.2,99},{32.4,2}}}
 
 
-Except for those corresponding to the last dimension, derreferencing iterators generally produce proxy-reference objects. 
+Except for those corresponding to the one-dimensional case, derreferencing iterators generally produce proxy-reference objects. 
 Therefore this is not allowed:
 
     auto row = *begin(A); // compile error 
@@ -344,15 +246,17 @@ In my experience, however, this produces a more consistent idiom to hold referen
 
 ## Indexing
 
-Many algorithms on arrays are oriented to linear algebra, which are ubiquitously implemented in terms of multidimensional index access. 
+Arrays provide random access to elements or subviews.
+Many algorithms on arrays are oriented to linear algebra, which are ubiquitously implemented in terms of multidimensional index access.
 
 ### Element access and partial access
 
 Index access mimics that of C-fixed sizes arrays, for example a 3-dimensional array will access to an element by `m[1][2][3]`, 
-which can be used for write and read operations. 
+which can be used for write and read operations.
 
 Partial index arguments `m[1][2]` generate a view 1-dimensional object.
-Transpositions are also multi-dimensional arrays views in which the index are *logically* rearranged, for example `m.rotated(1)[2][3][1] == m[1][2][3]`.
+Transpositions are also multi-dimensional arrays views in which the index are *logically* rearranged, for example `m.rotated(1)[2][3][1] == rotated(m)[2][3][1] == m[1][2][3]`.
+(rotate refers to the fact that the logical indices are rotated.)
 
 As an illustration of an algorithm based on index access (as opposed to iterators), 
 this example code implements Gauss Jordan Elimination without pivoting:
@@ -384,17 +288,17 @@ auto gj_solve(Matrix&& A, Vector&& y)->decltype(y[0]/=A[0][0], y){
 This function can be applied to a `multi::array` container:
 
 ```c++
-		multi::array<double, 2> A = {{-3., 2., -4.},{0., 1., 2.},{2., 4., 5.}};
-		multi::array<double, 1> y = {12.,5.,2.}; //(M); assert(y.size() == M); iota(y.begin(), y.end(), 3.1);
-		gj_solve(A, y);
+multi::array<double, 2> A = {{-3., 2., -4.},{0., 1., 2.},{2., 4., 5.}};
+multi::array<double, 1> y = {12.,5.,2.}; //(M); assert(y.size() == M); iota(y.begin(), y.end(), 3.1);
+gj_solve(A, y);
 ```
 
 and also to a combination of `MultiArrayView`-type objects:
 
 ```c++
-		multi::array<double, 2> A({6000, 7000}); std::iota(A.data(), A.data() + A.num_elements(), 0.1);
-		std::vector<double> y(3000); std::iota(y.begin(), y.end(), 0.2);
-		gj_solve(A({1000, 4000}, {0, 3000}), y);
+multi::array<double, 2> A({6000, 7000}); std::iota(A.data(), A.data() + A.num_elements(), 0.1);
+std::vector<double> y(3000); std::iota(y.begin(), y.end(), 0.2);
+gj_solve(A({1000, 4000}, {0, 3000}), y);
 ```
 
 ### Slices and strides
@@ -444,6 +348,102 @@ Blocks (slices) in multidimensions can be obtained but pure index notation using
 ```c++
 multi::array<double, 2> A({6, 7}); // 6x7 array
 A({1, 4}, {2, 4}) // 3x2 array, containing indices 1 to 4 in the first dimension and 2 to 4 in the second dimension.
+```
+
+## Concept Requirements
+
+The design tries to impose the minimum possible requirements over the used referred types.
+Pointer-like random access types can be used as substitutes of built-in pointers.
+
+```c++
+namespace minimal{
+    template<class T> class ptr{ // minimalistic pointer
+    	T* impl_;
+    	T& operator*() const{return *impl_;}
+    	auto operator+(std::ptrdiff_t n) const{return ptr{impl_ + n};}
+    //	operator[], operator+=, etc are optional but not necessary
+    };
+}
+
+int main(){
+	double* buffer = new double[100];
+	multi::array_ref<double, 2, minimal::ptr<double> > CC(minimal::ptr<double>{buffer}, {10, 10});
+	CC[2]; // requires operator+ 
+	CC[1][1]; // requires operator*
+	CC[1][1] = 9;
+	assert(CC[1][1] == 9);
+	delete[] buffer;
+}
+```
+
+### Linear Sequences: Pointers
+
+An `array_ref` can reference to an arbitrary random access iterator sequence.
+This way, any linear (random access) sequence (e.g. `raw memory`, `std::vector`, `std::queue`) can be efficiently arranged as a multidimensional array. 
+
+```c++
+std::vector<double> buffer(100);
+multi::array_ref<double, 2, std::vector<double>::iterator> A({10, 10}, buffer.begin());
+A[1][1] = 9;
+assert(A[1][1] == 9);
+assert(buffer[11]==9);
+```
+Since `array_ref` does not manage the memory associated with it, the reference can be simply dangle if the `buffer` memory is reallocated (e.g. by `resize`).
+
+### Special Memory: Allocators and Fancy Pointers
+
+`array`'s manages its memory through allocators. 
+It can handle special memory, as long as the underlying types behave coherently, these include fancy pointers and fancy references.
+Associated fancy pointers and fancy reference (if any) are deduced from the allocator types.
+
+The behavior regarding memory managament of the [fancy pointers](https://en.cppreference.com/w/cpp/named_req/Allocator#Fancy_pointers) can be customized (if necessary) by specializations of some or all of these functions:
+
+```c++
+destroy(a, first, last)
+destroy_n(a, first, n) -> last
+uninitialized_copy_n(a, first, n, dest) -> last;
+uninitialized_fill_n(a, first, n, value) -> last
+uninitialized_default_construct_n(a, first, n) -> last
+uninitialized_value_construct_n(a, first, n) -> last
+```
+
+where `a` is the special allocator, `n` is a size (usually the number of elements), `first`, `last` and `dest` are fancy pointers.
+
+Copying underlying memory can be customized by specializing 
+
+```c++
+copy_n(first, n, dest)
+fill_n(first, n, value)
+```
+
+Specific cases of fancy memory are file-mapped memory or interprocess shared memory.
+This example illustrates memory persistency by combining with Boost.Interprocess library. 
+The arrays support their allocators and fancy pointers (`boost::interprocess::offset_ptr`).
+
+```c++
+#include <boost/interprocess/managed_mapped_file.hpp>
+using namespace boost::interprocess;
+using manager = managed_mapped_file;
+template<class T> using mallocator = allocator<T, manager::segment_manager>;
+decltype(auto) get_allocator(manager& m){return m.get_segment_manager();}
+
+template<class T, auto D> using marray = multi::array<T, D, mallocator<T>>;
+
+int main(){
+{
+	manager m{create_only, "mapped_file.bin", 1 << 25};
+	auto&& arr2d = *m.construct<marray<double, 2>>("arr2d")(std::tuple{1000, 1000}, 0.0, get_allocator(m));
+	arr2d[4][5] = 45.001;
+}
+// imagine execution restarts here
+{
+	manager m{open_only, "mapped_file.bin"};
+	auto&& arr2d = *m.find<marray<double, 2>>("arr2d").first;
+	assert( arr2d[7][8] == 0. );
+	assert( arr2d[4][5] == 45.001 );
+	m.destroy<marray<double, 2>>("arr2d");
+}
+}
 ```
 
 # Interoperability
@@ -530,9 +530,9 @@ The chained bracket notation (`A[i][j][k]`) allows to refer to elements and suba
 It is a frequently raised question whether the chained bracket notation is good for performance, since it appears that each utilization of the bracket leads to the creation of a temporary which in turn generates a partial copy of the layout.
 Moreover, this goes against [historical recommendations](https://isocpp.org/wiki/faq/operator-overloading#matrix-subscript-op).
 
-It turns out that [modern compilers with a fair level of optimization (`-O2`)](https://godbolt.org/z/3fYd5c) can elide these temporary objects, so that `A[i][j][k]` generates identical assembly code as `A.base() + i*stride1 + j*stride2 + k*stride3` (offsets are not shown for simplicity).
+It turns out that [modern compilers with a fair level of optimization (`-O2`)](https://godbolt.org/z/3fYd5c) can elide these temporary objects, so that `A[i][j][k]` generates identical assembly code as `A.base() + i*stride1 + j*stride2 + k*stride3` (+offsets not shown).
 
-In a subsequence optimization, constant indices can have their "partial stride" computation removed from loops. 
+In a subsequent optimization, constant indices can have their "partial stride" computation removed from loops. 
 As a result, these two loops lead to the [same machine code](https://godbolt.org/z/p_ELwQ):
 
 ```c++
@@ -545,9 +545,9 @@ As a result, these two loops lead to the [same machine code](https://godbolt.org
         ++(*(Ai_k + j*A_stride2));
 ```
 
-Incidentally, the library also supports parenthesis notation with multiple indices `A(i, j, k)` for element or partial access, but it does so for accidental reasons as part of a more general syntax to generate sub blocks.
+Incidentally, the library also supports parenthesis notation with multiple indices `A(i, j, k)` for element or partial access, but it does so for accidental reasons as part of a more general syntax to generate sub-blocks.
 In any case `A(i, j, k)` is expanded to `A[i][j][k]` internally in the library when `i, j, k` are integer indices. 
-Additionally, array coordinates can be directly stored in tuple-like data structures, allowing this syntax 
+Additionally, array coordinates can be directly stored in tuple-like data structures, allowing this functional syntax:
 
 ```c++
 std::array p = {2,3,4};
@@ -561,7 +561,8 @@ Multi iterators are [SCARY](http://www.open-std.org/jtc1/sc22/WG21/docs/papers/2
 SCARY means that they are independent of any container and can be accessed generically through their dimension and underlying pointer types:
 
 For example, `boost::multi::array_iterator<double, 2, double*> it` is a row (or column) iterator of an array of dimension 2 or higher, whose underlying pointer type is `double*`.
-This row (or column) and subsequent ones can be accessed by `*it` and `it[n]` respectively. 
+This row (or column) and subsequent ones can be accessed by the normal iterator(pointer) notation `*it` and `it[n]` respectively.
+Indirection `it->...` is supported (even for iterators if high dimension). 
 The base pointer, the strides and the size of the arrow can be accessed by `base(it)`, `stride(it)`, `it->size()`.
 
 The template arguments of the iterator can be used to customize operations that are recursive (and possibly inefficient in certain context) in the library:
