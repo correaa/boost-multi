@@ -83,7 +83,18 @@ protected:
 		}
 	}
 public:
-	using typename ref::value_type;
+//	using typename ref::value_type;
+
+	using value_type = typename std::conditional<
+		(static_array::dimensionality>1),
+		array<typename static_array::element, static_array::dimensionality-1, allocator_type>, 
+		typename std::conditional<
+			static_array::dimensionality == 1,
+			typename static_array::element,
+			typename static_array::element // TODO or void?
+		>::type
+	>::type;
+
 	using typename ref::size_type;
 	using typename ref::difference_type;
 	static_array(typename static_array::allocator_type const& a) : array_alloc{a}{}
@@ -610,7 +621,7 @@ public:
 		static_::serialize(ar, version);
 	}
 	using static_::static_;
-	using typename array::ref::value_type;
+	using typename static_::value_type;
 //	using static_::ref::operator<;
 	array() = default;
 	array(array const&) = default;

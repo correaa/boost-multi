@@ -16,6 +16,7 @@ for a in ./tests/*.cpp; do echo $a; sh $a || break; echo "\n"; done; exit;*/
 #include "./config/NODISCARD.hpp"
 
 //#include<iostream> // debug
+#include<boost/pointer_cast.hpp>
 
 #include<algorithm> // copy_n
 
@@ -53,8 +54,8 @@ struct array_types : Layout{
 	using element_ptr = ElementPtr;
 	using layout_t = Layout;
 	using value_type = typename std::conditional<
-		(dimensionality>1), 
-		array<element, dimensionality-1>, 
+		(dimensionality>1),
+		array<element, dimensionality-1, typename pointer_traits<element_ptr>::default_allocator_type>, 
 		typename std::conditional<
 			dimensionality == 1,
 			element,
@@ -565,8 +566,16 @@ public:
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
 	basic_array<T2, D, P2> static_array_cast() const HD{
 		P2 p2{this->base_};
-		return {this->layout(), p2};//static_cast<P2>(this->base_)};
+		return {this->layout(), p2};
 	}
+//	template<class T2, class P2 = decltype(boost::static_pointer_cast<T2>(std::declval<typename basic_array::element_ptr>()))>
+//	auto static_array_cast() const HD ->basic_array<T2, D, P2>{
+//		return basic_array<T2, D, P2>{this->layout(), boost::static_pointer_cast<T2>(this->base_)};
+//	}
+//	template<class T2>
+//	auto static_array_cast() const HD -> basic_array<T2, D, decltype(boost::static_pointer_cast<T2>(std::declval<typename basic_array::element_ptr>()))>{
+//		return {this->layout(), boost::static_pointer_cast<T2>(this->base_)};
+//	}
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>,
 		class Element = typename basic_array::element,
 		class PM = T2 Element::*
