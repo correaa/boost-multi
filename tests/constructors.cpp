@@ -1,6 +1,10 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -Wall -Wextra -O3 $0 -o $0x &&$0x&&rm $0x;exit
+nvcc -x cu --expt-relaxed-constexpr`#$CXX` $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
+// © Alfredo A. Correa 2019-2020
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi constructors"
+#define BOOST_TEST_DYN_LINK
+#include<boost/test/unit_test.hpp>
 
 #include "../array.hpp"
 #include<vector>
@@ -10,7 +14,19 @@ $CXX -Wall -Wextra -O3 $0 -o $0x &&$0x&&rm $0x;exit
 
 namespace multi = boost::multi;
 
-int main(){
+using complex = std::complex<double>;
+
+struct multiplies_bind1st{
+	multiplies_bind1st(multi::array<complex, 2>&& m) : m_(std::move(m)){}
+	multi::array<complex, 2> m_;
+};
+
+BOOST_AUTO_TEST_CASE(multi_constructors_inqnvcc_bug){
+	multi::array<complex, 2> m({10, 10});
+	multiplies_bind1st(std::move(m));
+}
+
+BOOST_AUTO_TEST_CASE(multi_constructors){
  {  multi::array<double, 1> A(10); assert(size(A)==10);
 }{//multi::array<double, 1> A({10}); assert(size(A)==1); // warning in clang
 }{//multi::array<double, 1> A({10}, double{}); assert(size(A)==10); // warning in clang
@@ -19,8 +35,29 @@ int main(){
 }{//multi::array<double, 1> A({10}, double{}); assert(size(A)==10); // warning in clang
 }{//multi::array<double, 1> A({10}, 0.); assert(size(A)==10); // warning in clang
 }{//multi::array<double, 1> A({10}, {}); assert(size(A)==10); // error ambiguous 
-}
+}{ multi::array<std::size_t, 1> A = {10}    ; assert( size(A)==1 and A[0]==10 );
+}{ multi::array<int        , 1> A = {10}    ; assert( size(A)==1 and A[0]==10 );
+}{ multi::array<double     , 1> A = {10}    ; assert( size(A)==1 and A[0]==10 );
+}{ multi::array<std::size_t, 1> A({10})     ; assert( size(A)==1 and A[0]==10 );
+}{ multi::array<int        , 1> A({10})     ; assert( size(A)==1 and A[0]==10 );
+}{ multi::array<double     , 1> A({10})    ; assert( size(A)==1 and A[0]==10 );
+}{ multi::array<std::size_t, 1> A({{10}})   ; assert( size(A)==1 and A[0]==10 );  // clang warns about double bracked
+}{ multi::array<int        , 1> A({{10}})   ; assert( size(A)==1 and A[0]==10 );  // clang warns about double bracked
+}{ multi::array<double     , 1> A({{10}})   ; assert( size(A)==1 and A[0]==10 );  // gcc warns about double bracked
+}{ multi::array<std::size_t, 1> A({0, 10})  ; assert( size(A)==2 );
+}{ multi::array<int        , 1> A({0, 10})  ; assert( size(A)==2 );
+}{ multi::array<double     , 1> A({0, 10})  ; assert( size(A)==2 );
+}{ multi::array<std::size_t, 1> A({{0, 10}}); assert( size(A)==2 ); // ambiguous in gcc (error)
+}{ multi::array<int        , 1> A({{0, 10}}); assert( size(A)==2 ); // ambiguous in gcc (error)
+}{ multi::array<double     , 1> A({{0, 10}}); assert( size(A)==2 ); // ambiguous in gcc (error)
 
+}{ multi::array<std::size_t, 2> A = {{1, 2}, {3, 4}}; assert( size(A)==2 and A[0][0]==1 );
+}{ multi::array<int, 2> A = {{1, 2}, {3, 4}}; assert( size(A)==2 and A[0][0]==1 );
+}{ multi::array<double, 2> A = {{1, 2}, {3, 4}}; assert( size(A)==2 and A[0][0]==1 );
+}{ multi::array<std::size_t, 2> A({{1, 2}, {3, 4}}); assert( size(A)==2 and A[0][0]==1 );
+}{ multi::array<int, 2> A({{1, 2}, {3, 4}}); assert( size(A)==2 and A[0][0]==1 );
+}{ multi::array<double, 2> A({{1, 2}, {3, 4}}); assert( size(A)==2 and A[0][0]==1 );
+}
 {
 	multi::array<double, 2> A(multi::index_extensions<2>{8, 8}, 8.);
 	assert( size(A) == 8 );
@@ -32,7 +69,6 @@ int main(){
 	assert( size(A) == 8 );
 	assert( std::get<0>(sizes(A)) == 8 );
 	assert( std::get<1>(sizes(A)) == 8 );
-
 }
  {  multi::static_array<double, 1> A     ; assert( empty(A) );
 }{  multi::static_array<double, 1> A{}   ; assert( empty(A) );
