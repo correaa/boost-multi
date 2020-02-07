@@ -29,6 +29,39 @@ namespace multi{
 
 namespace cusolver{
 
+enum class status : typename std::underlying_type<cusolverStatus_t>::type{
+	success                   = CUSOLVER_STATUS_SUCCESS, // "The operation completed successfully."
+	not_initialized           = CUSOLVER_STATUS_NOT_INITIALIZED, // "The cuSolver library was not initialized. This is usually caused by the lack of a prior call, an error in the CUDA Runtime API called by the cuSolver routine, or an error in the hardware setup. To correct: call cusolverCreate() prior to the function call; and check that the hardware, an appropriate version of the driver, and the cuSolver library are correctly installed."
+	allocation_failed         = CUSOLVER_STATUS_ALLOC_FAILED, // "Resource allocation failed inside the cuSolver library. This is usually caused by a cudaMalloc() failure. To correct: prior to the function call, deallocate previously allocated memory as much as possible."
+	invalid_value             = CUSOLVER_STATUS_INVALID_VALUE, // "An unsupported value or parameter was passed to the function (a negative vector size, for example). To correct: ensure that all the parameters being passed have valid values."
+	architecture_mismatch     = CUSOLVER_STATUS_ARCH_MISMATCH, // "The function requires a feature absent from the device architecture; usually caused by the lack of support for atomic operations or double precision. To correct: compile and run the application on a device with compute capability 2.0 or above."
+	execution_failed          = CUSOLVER_STATUS_EXECUTION_FAILED, // "The GPU program failed to execute. This is often caused by a launch failure of the kernel on the GPU, which can be caused by multiple reasons. To correct: check that the hardware, an appropriate version of the driver, and the cuSolver library are correctly installed."
+	internal_error            = CUSOLVER_STATUS_INTERNAL_ERROR, // "An internal cuSolver operation failed. This error is usually caused by a cudaMemcpyAsync() failure. To correct: check that the hardware, an appropriate version of the driver, and the cuSolver library are correctly installed. Also, check that the memory passed as a parameter to the routine is not being deallocated prior to the routine’s completion."
+	matrix_type_not_supported = CUSOLVER_STATUS_MATRIX_TYPE_NOT_SUPPORTED // "The matrix type is not supported by this function. This is usually caused by passing an invalid matrix descriptor to the function. To correct: check that the fields in descrA were set correctly."
+};
+
+std::string inline status_string(enum status s){ //https://stackoverflow.com/questions/13041399/equivalent-of-cudageterrorstring-for-cublas
+	switch(s){
+		case status::success                   : return "The operation completed successfully.";
+		case status::not_initialized           : return "The cuSolver library was not initialized. This is usually caused by the lack of a prior call, an error in the CUDA Runtime API called by the cuSolver routine, or an error in the hardware setup. To correct: call cusolverCreate() prior to the function call; and check that the hardware, an appropriate version of the driver, and the cuSolver library are correctly installed.";
+		case status::allocation_failed         : return "Resource allocation failed inside the cuSolver library. This is usually caused by a cudaMalloc() failure. To correct: prior to the function call, deallocate previously allocated memory as much as possible.";
+		case status::invalid_value             : return "An unsupported value or parameter was passed to the function (a negative vector size, for example). To correct: ensure that all the parameters being passed have valid values.";
+		case status::architecture_mismatch     : return "The function requires a feature absent from the device architecture; usually caused by the lack of support for atomic operations or double precision. To correct: compile and run the application on a device with compute capability 2.0 or above.";
+		case status::execution_failed          : return "The GPU program failed to execute. This is often caused by a launch failure of the kernel on the GPU, which can be caused by multiple reasons. To correct: check that the hardware, an appropriate version of the driver, and the cuSolver library are correctly installed.";
+		case status::internal_error            : return "An internal cuSolver operation failed. This error is usually caused by a cudaMemcpyAsync() failure. To correct: check that the hardware, an appropriate version of the driver, and the cuSolver library are correctly installed. Also, check that the memory passed as a parameter to the routine is not being deallocated prior to the routine’s completion.";
+		case status::matrix_type_not_supported : return "The matrix type is not supported by this function. This is usually caused by passing an invalid matrix descriptor to the function. To correct: check that the fields in descrA were set correctly.";
+	}
+	return "cublas status <unknown>";
+}
+struct error_category : std::error_category{
+	char const* name() const noexcept override{return "cusolver wrapper";}
+	std::string message(int err) const override{return cusolver::status_string(static_cast<enum cusolver::status>(err));}
+	static error_category& instance(){static cusolver::error_category instance; return instance;}
+};
+inline std::error_code make_error_code(cusolver::status s) noexcept{
+	return std::error_code(int(s), cusolver::error_category::instance());
+}
+
 struct version_t{
 	int major = -1, minor =-1, patch=-1;
 	friend std::ostream& operator<<(std::ostream& os, version_t const& self){
@@ -71,6 +104,12 @@ struct cusolverDn<float>{
 	static auto potrf_bufferSize(A3... a3, double* ptr, B2... b2)
 	->decltype(cusolverDnSpotrf_bufferSize(a3..., ptr, b2...)){
 		return cusolverDnSpotrf_bufferSize(a3..., ptr, b2...);}
+	template<class... A> static auto syev(A... a)
+	->decltype(cusolverDnSsyevd_bufferSize(a...)){
+		return cusolverDnSsyevd_bufferSize(a...);}
+	template<class... A> static auto syev(A... a)
+	->decltype(cusolverDnSsyevd(a...)){
+		return cusolverDnSsyevd(a...);}
 };
 
 template<>
@@ -79,6 +118,12 @@ struct cusolverDn<double>{
 	static auto potrf_bufferSize(A3... a3, double* ptr, B2... b2)
 	->decltype(cusolverDnDpotrf_bufferSize(a3..., ptr, b2...)){
 		return cusolverDnDpotrf_bufferSize(a3..., ptr, b2...);}
+	template<class... A> static auto syevd_bufferSize(A... a)
+//	->decltype(cusolverDnDsyevd_bufferSize(a...)){
+	{	return cusolverDnDsyevd_bufferSize(a...);}
+	template<class... A> static auto syevd(A... a)
+	->decltype(cusolverDnDsyevd(a...))
+	{	return cusolverDnDsyevd(a...);}
 };
 
 template<>
@@ -104,333 +149,12 @@ struct cusolverDn<std::complex<double>>{
 }
 }
 
-//namespace blas{
-#if 0
-class cublas_context{
-protected:
-	cublasHandle_t h_;
-public:
-	cublas_context(){
-		cublasStatus_t s = cublasCreate(&h_); assert(s==CUBLAS_STATUS_SUCCESS);
-	}
-	int version() const{
-		int ret;
-		cublasStatus_t s = cublasGetVersion(h_, &ret); assert(s==CUBLAS_STATUS_SUCCESS);
-		return ret;
-	}
-	~cublas_context() noexcept{cublasDestroy(h_);}
-	//set_stream https://docs.nvidia.com/cuda/cublas/index.html#cublassetstream
-	//get_stream https://docs.nvidia.com/cuda/cublas/index.html#cublasgetstream
-	//get_pointer_mode https://docs.nvidia.com/cuda/cublas/index.html#cublasgetpointermode
-	//set_pointer_mode https://docs.nvidia.com/cuda/cublas/index.html#cublasgetpointermode
-};
-
-template<class T> class cublas;
-
-template<>
-class cublas<double> : cublas_context{
-public:
-	template<class... Args>
-	static auto gemm(Args... args){return cublasDgemm(args...);}
-	template<class... Args>
-	static auto scal(Args... args){return cublasDscal(args...);}
-	template<class... Args>
-	static auto syrk(Args&&... args){return cublasDsyrk(args...);}
-	template<class... As> void copy (As... as){auto s=cublasDcopy (h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
-	template<class... As> void iamax(As... as){auto s=cublasIdamax(h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
-	template<class... As> void asum(As... as){auto s=cublasDasum(h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
-	template<class... As> void trsm(As... as){auto s=cublasDtrsm(h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
-};
-
-template<>
-class cublas<float> : cublas_context{
-public:
-	template<class... Args>
-	static auto gemm(Args... args){return cublasSgemm(args...);}
-	template<class... Args>
-	static auto scal(Args... args){return cublasSscal(args...);}
-	template<class... Args>
-	static auto syrk(Args&&... args){return cublasSsyrk(args...);}
-	template<class... As> void copy (As... as){auto s=cublasScopy (h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
-	template<class... As> void iamax(As... as){auto s=cublasIsamax(h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
-	template<class... As> void asum(As... as){auto s=cublasSasum(h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
-	template<class... As> void trsm(As... as){auto s=cublasStrsm(h_, as...); assert(s==CUBLAS_STATUS_SUCCESS);}
-};
-
-template<>
-class cublas<std::complex<double>> : cublas_context{
-	static_assert(sizeof(std::complex<double>)==sizeof(cuDoubleComplex), "!");
-	template<class T> static decltype(auto) to_cu(T&& t){return std::forward<T>(t);}
-	static decltype(auto) to_cu(std::complex<double> const* t){return reinterpret_cast<cuDoubleComplex const*>(t);}	
-	static decltype(auto) to_cu(std::complex<double>* t){return reinterpret_cast<cuDoubleComplex*>(t);}	
-public:
-	template<class... Args>
-	static auto gemm(Args&&... args){return cublasZgemm(to_cu(std::forward<Args>(args))...);}
-	template<class... Args>
-	static auto herk(Args&&... args){return cublasZherk(to_cu(std::forward<Args>(args))...);}
-	template<class... Args>
-	static auto scal(Args&&... args)
-	->decltype(cublasZscal(to_cu(std::forward<Args>(args))...)){
-		return cublasZscal(to_cu(std::forward<Args>(args))...);}
-	template<class Handle, class Size, class... Args2>
-	static auto scal(Handle h, Size s, double* alpha, Args2&&... args2){
-		return cublasZdscal(h, s, alpha, to_cu(std::forward<Args2>(args2))...);
-	}
-	template<class... As> void copy (As... as){auto s=cublasZcopy (h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
-	template<class... As> void iamax(As... as){auto s=cublasIzamax(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
-	template<class... As> void asum(As... as){auto s=cublasDzasum(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
-	template<class... As> void trsm(As... as){auto s=cublasZtrsm(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
-};
-
-template<>
-class cublas<std::complex<float>> : cublas_context{
-	static_assert(sizeof(std::complex<float>)==sizeof(cuComplex), "!");
-	template<class T> static decltype(auto) to_cu(T&& t){return std::forward<T>(t);}
-	static decltype(auto) to_cu(std::complex<float> const* t){return reinterpret_cast<cuComplex const*>(t);}	
-	static decltype(auto) to_cu(std::complex<float>* t){return reinterpret_cast<cuComplex*>(t);}	
-public:
-	template<class... Args>
-	static auto gemm(Args&&... args){return cublasCgemm(to_cu(std::forward<Args>(args))...);}
-	template<class... Args>
-	static auto herk(Args&&... args){return cublasCherk(to_cu(std::forward<Args>(args))...);}
-	template<class... Args>
-	static auto scal(Args&&... args)
-	->decltype(cublasZscal(to_cu(std::forward<Args>(args))...)){
-		return cublasZscal(to_cu(std::forward<Args>(args))...);}
-	template<class Handle, class Size, class... Args2>
-	static auto scal(Handle h, Size s, float* alpha, Args2&&... args2){
-		return cublasZdscal(h, s, alpha, to_cu(std::forward<Args2>(args2))...);
-	}
-	template<class... As> void copy (As... as){auto s=cublasCcopy (h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
-	template<class... As> void iamax(As... as){auto s=cublasIcamax(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
-	template<class... As> void asum(As... as){auto s=cublasScasum(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
-	template<class... As> void trsm(As... as){auto s=cublasCtrsm(h_, to_cu(as)...); assert(s==CUBLAS_STATUS_SUCCESS);}
-};
-
-namespace memory{
-namespace cuda{
-
-template<class ComplexTconst, typename S>//, typename T = typename std::decay_t<ComplexTconst>::value_type>
-auto asum(S n, cuda::ptr<ComplexTconst> x, S incx){
-	decltype(std::abs(ComplexTconst{})) r; cublas<std::decay_t<ComplexTconst>>{}.asum(n, static_cast<ComplexTconst*>(x), incx, &r); return r;
-}
-
-//template<class Tconst, typename S>
-//auto asum(S n, cuda::ptr<Tconst> x, S incx, void* = 0){
-//	std::decay_t<Tconst> r; cublas<std::decay_t<Tconst>>{}.asum(n, static_cast<Tconst*>(x), incx, &r); return r;
-//s}
-
-template<class T, typename S>
-S iamax(S n, cuda::ptr<T const> x, S incx){
-	int r; cublas<T>{}.iamax(n, static_cast<T const*>(x), incx, &r); return r-1;
-}
-
-template<class T, class TA, class S> 
-void scal(S n, TA a, multi::memory::cuda::ptr<T> x, S incx){
-	cublasHandle_t handle;
-	{cublasStatus_t s = cublasCreate(&handle); assert(s==CUBLAS_STATUS_SUCCESS);}
-	cublasStatus_t s = cublas<T>::scal(handle, n, &a, static_cast<T*>(x), incx);
-	if(s!=CUBLAS_STATUS_SUCCESS){
-		std::cerr << [&](){switch(s){
-			case CUBLAS_STATUS_SUCCESS: return "CUBLAS_STATUS_SUCCESS";
-			case CUBLAS_STATUS_NOT_INITIALIZED: return "CUBLAS_STATUS_NOT_INITIALIZED";
-			case CUBLAS_STATUS_ALLOC_FAILED: return "CUBLAS_STATUS_ALLOC_FAILED";
-			case CUBLAS_STATUS_INVALID_VALUE: return "CUBLAS_STATUS_INVALID_VALUE";
-			case CUBLAS_STATUS_ARCH_MISMATCH: return "CUBLAS_STATUS_ARCH_MISMATCH";
-			case CUBLAS_STATUS_MAPPING_ERROR: return "CUBLAS_STATUS_MAPPING_ERROR";
-			case CUBLAS_STATUS_EXECUTION_FAILED: return "CUBLAS_STATUS_EXECUTION_FAILED";
-			case CUBLAS_STATUS_INTERNAL_ERROR: return "CUBLAS_STATUS_INTERNAL_ERROR";
-			case CUBLAS_STATUS_NOT_SUPPORTED: return "CUBLAS_STATUS_NOT_SUPPORTED";
-			case CUBLAS_STATUS_LICENSE_ERROR: return "CUBLAS_STATUS_LICENSE_ERROR";
-		} return "<unknown>";}() << std::endl;
-	}
-	assert( s==CUBLAS_STATUS_SUCCESS ); (void)s;
-	cublasDestroy(handle);
-}
-
-template<class Tconst, class T, class S> 
-void copy(S n, cuda::ptr<Tconst> x, S incx, cuda::ptr<T> y, S incy){
-	cublas<T>{}.copy(n, static_cast<T const*>(x), incx, static_cast<T*>(y), incy);
-}
-
-//template<class T, class S> 
-//void copy(S n, multi::memory::cuda::ptr<T const> x, S incx, multi::memory::cuda::ptr<T> y, S incy){
-//}
-
-template<class Tconst, class T, class UL, class C, class S, class Real>
-void syrk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::ptr<Tconst> A, S lda, Real beta, multi::memory::cuda::ptr<T> CC, S ldc){
-	cublasHandle_t handle;
-	{cublasStatus_t s = cublasCreate(&handle); assert(s==CUBLAS_STATUS_SUCCESS);}
-	cublasFillMode_t uplo = [ul](){
-		switch(ul){
-			case 'U': return CUBLAS_FILL_MODE_UPPER;
-			case 'L': return CUBLAS_FILL_MODE_LOWER;
-		} assert(0); return CUBLAS_FILL_MODE_UPPER;
-	}();
-	cublasOperation_t cutransA = [transA](){
-		switch(transA){
-			case 'N': return CUBLAS_OP_N;
-			case 'T': return CUBLAS_OP_T;
-			case 'C': return CUBLAS_OP_C;
-		} assert(0); return CUBLAS_OP_N;
-	}();
-	cublasStatus_t s = cublas<T>::syrk(handle, uplo, cutransA, n, k, &alpha, static_cast<T const*>(A), lda, &beta, static_cast<T*>(CC), ldc);
-	if(s!=CUBLAS_STATUS_SUCCESS){
-		std::cerr << [&](){switch(s){
-			case CUBLAS_STATUS_SUCCESS: return "CUBLAS_STATUS_SUCCESS";
-			case CUBLAS_STATUS_NOT_INITIALIZED: return "CUBLAS_STATUS_NOT_INITIALIZED";
-			case CUBLAS_STATUS_ALLOC_FAILED: return "CUBLAS_STATUS_ALLOC_FAILED";
-			case CUBLAS_STATUS_INVALID_VALUE: return "CUBLAS_STATUS_INVALID_VALUE";
-			case CUBLAS_STATUS_ARCH_MISMATCH: return "CUBLAS_STATUS_ARCH_MISMATCH";
-			case CUBLAS_STATUS_MAPPING_ERROR: return "CUBLAS_STATUS_MAPPING_ERROR";
-			case CUBLAS_STATUS_EXECUTION_FAILED: return "CUBLAS_STATUS_EXECUTION_FAILED";
-			case CUBLAS_STATUS_INTERNAL_ERROR: return "CUBLAS_STATUS_INTERNAL_ERROR";
-			case CUBLAS_STATUS_NOT_SUPPORTED: return "CUBLAS_STATUS_NOT_SUPPORTED";
-			case CUBLAS_STATUS_LICENSE_ERROR: return "CUBLAS_STATUS_LICENSE_ERROR";
-		} return "<unknown>";}() << std::endl;
-	}
-	assert( s==CUBLAS_STATUS_SUCCESS ); (void)s;
-	cublasDestroy(handle);
-}
-
-template<class Tconst, class T, class UL, class C, class S, class Real>
-void herk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::ptr<Tconst> A, S lda, Real beta, multi::memory::cuda::ptr<T> CC, S ldc){
-	cublasHandle_t handle;
-	{cublasStatus_t s = cublasCreate(&handle); assert(s==CUBLAS_STATUS_SUCCESS);}
-	cublasFillMode_t uplo = [ul](){
-		switch(ul){
-			case 'U': return CUBLAS_FILL_MODE_UPPER;
-			case 'L': return CUBLAS_FILL_MODE_LOWER;
-		} assert(0); return CUBLAS_FILL_MODE_UPPER;
-	}();
-	cublasOperation_t cutransA = [transA](){
-		switch(transA){
-			case 'N': return CUBLAS_OP_N;
-			case 'T': return CUBLAS_OP_T;
-			case 'C': return CUBLAS_OP_C;
-		} assert(0); return CUBLAS_OP_N;
-	}();
-	cublasStatus_t s = cublas<T>::herk(handle, uplo, cutransA, n, k, &alpha, static_cast<T const*>(A), lda, &beta, static_cast<T*>(CC), ldc);
-	if(s!=CUBLAS_STATUS_SUCCESS){
-		std::cerr << [&](){switch(s){
-			case CUBLAS_STATUS_SUCCESS: return "CUBLAS_STATUS_SUCCESS";
-			case CUBLAS_STATUS_NOT_INITIALIZED: return "CUBLAS_STATUS_NOT_INITIALIZED";
-			case CUBLAS_STATUS_ALLOC_FAILED: return "CUBLAS_STATUS_ALLOC_FAILED";
-			case CUBLAS_STATUS_INVALID_VALUE: return "CUBLAS_STATUS_INVALID_VALUE";
-			case CUBLAS_STATUS_ARCH_MISMATCH: return "CUBLAS_STATUS_ARCH_MISMATCH";
-			case CUBLAS_STATUS_MAPPING_ERROR: return "CUBLAS_STATUS_MAPPING_ERROR";
-			case CUBLAS_STATUS_EXECUTION_FAILED: return "CUBLAS_STATUS_EXECUTION_FAILED";
-			case CUBLAS_STATUS_INTERNAL_ERROR: return "CUBLAS_STATUS_INTERNAL_ERROR";
-			case CUBLAS_STATUS_NOT_SUPPORTED: return "CUBLAS_STATUS_NOT_SUPPORTED";
-			case CUBLAS_STATUS_LICENSE_ERROR: return "CUBLAS_STATUS_LICENSE_ERROR";
-		} return "<unknown>";}() << std::endl;
-	}
-	assert( s==CUBLAS_STATUS_SUCCESS ); (void)s;
-	cublasDestroy(handle);
-}
-
-template<typename TconstA, typename TconstB, typename T, typename AA, typename BB, class C, typename S>
-void gemm(C transA, C transB, S m, S n, S k, AA a, multi::memory::cuda::ptr<TconstA> A, S lda, multi::memory::cuda::ptr<TconstB> B, S ldb, BB beta, multi::memory::cuda::ptr<T> CC, S ldc){
-	cublasHandle_t handle;
-	{cublasStatus_t s = cublasCreate(&handle); assert(s==CUBLAS_STATUS_SUCCESS);}
-	cublasOperation_t cutransA = [transA](){
-		switch(transA){
-			case 'N': return CUBLAS_OP_N;
-			case 'T': return CUBLAS_OP_T;
-			case 'C': return CUBLAS_OP_C;
-		} assert(0); return CUBLAS_OP_N;
-	}();
-	cublasOperation_t cutransB = [transB](){
-		switch(transB){
-			case 'N': return CUBLAS_OP_N;
-			case 'T': return CUBLAS_OP_T;
-			case 'C': return CUBLAS_OP_C;
-		} assert(0); return CUBLAS_OP_N;
-	}();
-	T Talpha{a};
-	T Tbeta{beta};
-	cublasStatus_t s = cublas<T>::gemm(handle, cutransA, cutransB, m, n, k, &Talpha, static_cast<T const*>(A), lda, static_cast<T const*>(B), ldb, &Tbeta, static_cast<T*>(CC), ldc);
-	if(s!=CUBLAS_STATUS_SUCCESS){
-		std::cerr << [&](){switch(s){
-			case CUBLAS_STATUS_SUCCESS: return "CUBLAS_STATUS_SUCCESS";
-			case CUBLAS_STATUS_NOT_INITIALIZED: return "CUBLAS_STATUS_NOT_INITIALIZED";
-			case CUBLAS_STATUS_ALLOC_FAILED: return "CUBLAS_STATUS_ALLOC_FAILED";
-			case CUBLAS_STATUS_INVALID_VALUE: return "CUBLAS_STATUS_INVALID_VALUE";
-			case CUBLAS_STATUS_ARCH_MISMATCH: return "CUBLAS_STATUS_ARCH_MISMATCH";
-			case CUBLAS_STATUS_MAPPING_ERROR: return "CUBLAS_STATUS_MAPPING_ERROR";
-			case CUBLAS_STATUS_EXECUTION_FAILED: return "CUBLAS_STATUS_EXECUTION_FAILED";
-			case CUBLAS_STATUS_INTERNAL_ERROR: return "CUBLAS_STATUS_INTERNAL_ERROR";
-			case CUBLAS_STATUS_NOT_SUPPORTED: return "CUBLAS_STATUS_NOT_SUPPORTED";
-			case CUBLAS_STATUS_LICENSE_ERROR: return "CUBLAS_STATUS_LICENSE_ERROR";
-		} return "<unknown>";}() << std::endl;
-	}
-	assert( s==CUBLAS_STATUS_SUCCESS ); (void)s;
-	cublasDestroy(handle);
-}
-
-template<class Side, class Fill, class Trans, class Diag, typename Size, class Tconst, class T>
-void trsm(Side /*cublasSideMode_t*/ side, /*cublasFillMode_t*/ Fill uplo, /*cublasOperation_t*/ Trans trans, /*cublasDiagType_t*/ Diag diag,
-                           Size m, Size n, T alpha, cuda::ptr<Tconst> A, Size lda, cuda::ptr<T> B, Size ldb){
-	cublasOperation_t trans_cu = [&]{
-		switch(trans){
-			case 'N': return CUBLAS_OP_N;
-			case 'T': return CUBLAS_OP_T;
-			case 'C': return CUBLAS_OP_C;
-		} __builtin_unreachable();
-	}();
-	cublas<T>{}.trsm(
-		side=='L'?CUBLAS_SIDE_LEFT:CUBLAS_SIDE_RIGHT, uplo=='L'?CUBLAS_FILL_MODE_LOWER:CUBLAS_FILL_MODE_UPPER, trans_cu, diag=='N'?CUBLAS_DIAG_NON_UNIT:CUBLAS_DIAG_UNIT, m, n, &alpha, static_cast<Tconst*>(A), lda, static_cast<T*>(B), ldb);
-}
-
-}}}}
-
-namespace boost{namespace multi{namespace memory{namespace cuda{namespace managed{//namespace boost::multi::memory::cuda::managed{
-
-template<class Tconst, typename S>
-auto asum(S n, cuda::managed::ptr<Tconst> x, S incx){
-	return asum(n, cuda::ptr<Tconst>(x), incx);
-}
-
-template<class T, typename S>
-S iamax(S n, cuda::managed::ptr<T const> x, S incx){
-	return cuda::iamax(n, cuda::ptr<T const>(x), incx);
-}
-
-template<class T, class TA, class S> 
-void scal(S n, TA a, multi::memory::cuda::managed::ptr<T> x, S incx){
-	scal(n, a, multi::memory::cuda::ptr<T>(x), incx);
-}
-
-template<typename AA, typename BB, class S, class TconstA, class TconstB, class T>
-void gemm(char transA, char transB, S m, S n, S k, AA const& a, multi::memory::cuda::managed::ptr<TconstA> A, S lda, multi::memory::cuda::managed::ptr<TconstB> B, S ldb, BB const& beta, multi::memory::cuda::managed::ptr<T> CC, S ldc){
-	gemm(transA, transB, m, n, k, a, boost::multi::memory::cuda::ptr<TconstA>(A), lda, boost::multi::memory::cuda::ptr<TconstB>(B), ldb, beta, boost::multi::memory::cuda::ptr<T>(CC), ldc);
-}
-
-template<class Tconst, class T, class UL, class C, class S, class Real>
-void herk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::managed::ptr<Tconst> A, S lda, Real beta, multi::memory::cuda::managed::ptr<T> CC, S ldc){
-	herk(ul, transA, n, k, alpha, boost::multi::memory::cuda::ptr<Tconst>(A), lda, beta, boost::multi::memory::cuda::ptr<T>(CC), ldc);
-}
-
-template<class Tconst, class T, class UL, class C, class S, class Real>
-void syrk(UL ul, C transA, S n, S k, Real alpha, multi::memory::cuda::managed::ptr<Tconst> A, S lda, Real beta, multi::memory::cuda::managed::ptr<T> CC, S ldc){
-	syrk(ul, transA, n, k, alpha, boost::multi::memory::cuda::ptr<Tconst>(A), lda, beta, boost::multi::memory::cuda::ptr<T>(CC), ldc);
-}
-
-template<class Side, class Fill, class Trans, class Diag, typename Size, class Tconst, class T>
-void trsm(Side /*cublasSideMode_t*/ side, /*cublasFillMode_t*/ Fill uplo, /*cublasOperation_t*/ Trans trans, /*cublasDiagType_t*/ Diag diag,
-                           Size m, Size n, T alpha, cuda::managed::ptr<Tconst> A, Size lda, cuda::managed::ptr<T> B, Size ldb){
-	return trsm(side, uplo, trans, diag, m, n, alpha, cuda::ptr<Tconst>(A), lda, cuda::ptr<T>(B), ldb);
-}
-
-}}}
-#endif
-
 namespace memory{
 namespace cuda{
 
 template<class UL, class S, class PtrT, typename T = typename std::pointer_traits<PtrT>::element_type>
 void potrf(UL ul, S n, PtrT A, S incx, int& info){
-	boost::multi::cusolver::dense::context ctx; BOOST_LOG_TRIVIAL(trace)<<"cuda::potrf called on size/stride "<< n <<' '<< incx <<'\n';
+	boost::multi::cusolver::dense::context ctx; //BOOST_LOG_TRIVIAL(trace)<<"cuda::potrf called on size/stride "<< n <<' '<< incx <<'\n';
 	int lwork = -1;
 	{
 		auto s = cusolver::dense::cusolverDn<T>::potrf_bufferSize(ctx.get(), ul=='U'?CUBLAS_FILL_MODE_UPPER:CUBLAS_FILL_MODE_LOWER, n, raw_pointer_cast(A), incx, &lwork);
@@ -444,17 +168,60 @@ void potrf(UL ul, S n, PtrT A, S incx, int& info){
 	info = devInfo();
 }
 
+// https://docs.nvidia.com/cuda/cusolver/index.html#cuds-lt-t-gt-syevd
+template<class S, class PtrT, typename T = typename std::pointer_traits<PtrT>::element_type>
+void syev(char jobz, char uplo, S n, PtrT a, S lda, PtrT w, PtrT /*work*/, S /*lwork*/, int& info){
+	boost::multi::cusolver::dense::context ctx;
+	int lwork_needed = -1;
+	{
+		auto s = cusolver::dense::cusolverDn<T>::syevd_bufferSize(
+			ctx.get(), jobz=='V'?CUSOLVER_EIG_MODE_VECTOR:CUSOLVER_EIG_MODE_NOVECTOR, 
+			uplo=='U'?CUBLAS_FILL_MODE_UPPER:CUBLAS_FILL_MODE_LOWER, 
+			n,
+			raw_pointer_cast(a),
+			lda,
+			raw_pointer_cast(w),
+			&lwork_needed
+		);
+		assert(s == CUSOLVER_STATUS_SUCCESS); assert(lwork_needed >= 0);
+	}
+	multi::cuda::array<T, 1> tmp_work(lwork_needed); // buffers needs no-managed memory!
+	multi::cuda::static_array<int, 0> devInfo;
+	auto s = cusolver::dense::cusolverDn<T>::syevd(
+		ctx.get(), jobz=='V'?CUSOLVER_EIG_MODE_VECTOR:CUSOLVER_EIG_MODE_NOVECTOR, 
+		uplo=='U'?CUBLAS_FILL_MODE_UPPER:CUBLAS_FILL_MODE_LOWER, 
+		n,
+		raw_pointer_cast(a),
+		lda,
+		raw_pointer_cast(w),
+		raw_pointer_cast(tmp_work.data_elements()),
+		tmp_work.size(),
+		raw_pointer_cast(base(devInfo))
+	);
+	if( s != CUSOLVER_STATUS_SUCCESS ) throw std::system_error{cusolver::make_error_code(static_cast<cusolver::status>(s)), "cannot call cusolver function "};
+//	cudaDeviceSynchronize();
+	info = devInfo();
+}
+
 namespace managed{
 	template<class UL, class S, class PtrT, typename T = typename std::pointer_traits<PtrT>::element_type>
 	auto potrf(UL ul, S n, PtrT A, S incx, int& info)
 	->decltype(cuda::potrf(ul, n, cuda::ptr<T>(A), incx, info)){
 		return cuda::potrf(ul, n, cuda::ptr<T>(A), incx, info);}
+
+	template<class S, class PtrT, class P2, typename T = typename std::pointer_traits<PtrT>::element_type>
+	auto syev(char jobz, char uplo, S n, PtrT a, S lda, PtrT w, P2 work, S lwork, int& info)
+	->decltype(cuda::syev(jobz, uplo, n, cuda::ptr<T>(a), lda, cuda::ptr<T>(w), cuda::ptr<T>(work), lwork, info)){
+		return cuda::syev(jobz, uplo, n, cuda::ptr<T>(a), lda, cuda::ptr<T>(w), cuda::ptr<T>(work), lwork, info);}
+
 }
 
 }
 }
 
 }}
+
+namespace std{template<> struct is_error_code_enum<::boost::multi::cusolver::status> : true_type{};}
 
 ///////////////////////////////////////////////////////////////////////////////
 

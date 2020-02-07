@@ -28,13 +28,18 @@
 #define UPLO CHARACTER
 #define JOBZ CHARACTER
 #define LAPACK(NamE) NamE##_
+#define LWORK INTEGER lwork
 
 #define xPOTRF(T)     v LAPACK(T##potrf)(UPLO, N, T*, LDA, INFO)
-//#define xHEEV(T)      v LAPACK(T##heev)(JOBZ, UPLO, N, LDA, T*, T*, T*, T*, INFO)
+#define xSYEV(T)      v LAPACK(T##syev)(JOBZ, UPLO, N, T*, LDA, T*, T*, LWORK, INFO)
+#define xHEEV(T)      v LAPACK(T##heev)(JOBZ, UPLO, N, T*, LDA, T*, T*, LWORK, INFO)
 
 extern "C"{
 xPOTRF(s)   ; xPOTRF(d)    ;
 xPOTRF(c)   ; xPOTRF(z)    ;
+
+xSYEV(s)    ; xSYEV(d)     ;
+xHEEV(c)    ; xHEEV(z)     ;
 }
 
 #undef JOBZ
@@ -55,13 +60,20 @@ xpotrf(s) xpotrf(d)
 xpotrf(c) xpotrf(z)
 }
 
+// http://www.netlib.org/lapack/explore-html/d2/d8a/group__double_s_yeigen_ga442c43fca5493590f8f26cf42fed4044.html
+#define xsyev(T) template<class S> v syev(char jobz, char uplo, S n, T* a, S lda, T* w, T* work, S lwork, int& info){LAPACK(T##syev)(jobz, uplo, n, a, lda, w, work, lwork, info);}
+#define xheev(T) template<class S> v heev(char jobz, char uplo, S n, T* a, S lda, T* w, T* work, S lwork, int& info){LAPACK(T##heev)(jobz, uplo, n, a, lda, w, work, lwork, info);}
+
+namespace core{
+xsyev(s) xsyev(d)
+                   xheev(c) xheev(z)
+}
+
 #undef s
 #undef d
 #undef c
 #undef z
 #undef v
-
-
 
 #define TRANS const char& trans
 
