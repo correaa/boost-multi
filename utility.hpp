@@ -154,7 +154,7 @@ constexpr auto data_elements(A const& arr)
 	return arr.data_elements();}
 
 template<class T, typename = std::enable_if_t<not std::is_array<T>{}> >
-[[deprecated("use constexpr data_elements")]] 
+[[deprecated("use constexpr data_elements() or base() to extract pointer")]] 
 auto data(T& t){return &t;}
 
 template<class T, typename = std::enable_if_t<not std::is_array<T>{} and not has_data_elements<T>{}>>
