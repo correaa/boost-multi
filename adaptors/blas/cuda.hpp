@@ -61,7 +61,7 @@ inline std::error_code make_error_code(cublas_error err) noexcept{
 template<class CublasFunction>
 auto cublas_call(CublasFunction f){
 	return [=](auto... args){
-		auto s = (enum cublas_error)(f(args...));
+		auto s = static_cast<enum cublas_error>(f(args...));
 		if( s != cublas_error::success ) throw std::system_error{make_error_code(s), "cannot call cublas function "};
 #ifdef _MULTI_CUBLAS_ALWAYS_SYNC
 		cudaDeviceSynchronize();
@@ -69,7 +69,17 @@ auto cublas_call(CublasFunction f){
 	};
 }
 
+#ifdef _MULTI_CUBLAS_ALWAYS_SYNC
+#define CONDITIONAL_MULTI_CUBLAS_ALWAYS_SYNC cudaDeviceSynchronize()
+#else
+#define CONDITIONAL_MULTI_CUBLAS_ALWAYS_SYNC
+#endif
+
 //#define CUBLAS_(FunctionPostfix) boost::multi::cublas_call(cublas##FunctionPostfix)
+#define CUBLAS_CALL(CodE) \
+	auto s = static_cast<enum cublas_error>(CodE); \
+	if( s != cublas_error::success ) throw std::system_error{make_error_code(s), "cannot call cublas function "#CodE }; \
+	CONDITIONAL_MULTI_CUBLAS_ALWAYS_SYNC ; \
 
 }}
 
@@ -184,30 +194,29 @@ template<> struct cublas2<Z>{
 };
 
 template<> struct cublas3<S>{
-	template<class...As> static auto gemm (As...as){return cublas_call(cublasSgemm)(as...);}
-	template<class...As> static auto syrk (As...as){return cublas_call(cublasSsyrk)(as...);}
-//	template<class...As> static auto herk (As...as){return cublas_call(cublasSherk)(as...);}
-	template<class...As> static auto trsm (As...as){return cublas_call(cublasStrsm)(as...);}
+	template<class...As> static auto gemm (As...as){CUBLAS_CALL(cublasSgemm(as...));}
+	template<class...As> static auto syrk (As...as){CUBLAS_CALL(cublasSsyrk(as...));}
+//	template<class...As> static auto herk (As...as){return CUBLAS_CALL(cublasSherk)(as...);}
+	template<class...As> static auto trsm (As...as){CUBLAS_CALL(cublasStrsm(as...));}
 };
 template<> struct cublas3<D>{
-	template<class...As> static auto gemm (As...as){return cublas_call(cublasDgemm)(as...);}
-	template<class...As> static auto syrk (As...as){return cublas_call(cublasDsyrk)(as...);}
+	template<class...As> static auto gemm (As...as){ CUBLAS_CALL(cublasDgemm(as...));}
+	template<class...As> static auto syrk (As...as){ CUBLAS_CALL(cublasDsyrk(as...));}
 //	template<class...As> static auto herk (As...as){return cublas_call(cublasDherk)(as...);}
-	template<class...As> static auto trsm (As...as){return cublas_call(cublasDtrsm)(as...);}
+	template<class...As> static auto trsm (As...as){ CUBLAS_CALL(cublasDtrsm(as...));}
 };
 template<> struct cublas3<C>{
-	template<class...As> static auto gemm (As...as){return cublas_call(cublasCgemm)(as...);}
-	template<class...As> static auto syrk (As...as){return cublas_call(cublasCsyrk)(as...);}
-	template<class...As> static auto herk (As...as){return cublas_call(cublasCherk)(as...);}
-	template<class...As> static auto trsm (As...as){return cublas_call(cublasCtrsm)(as...);}
+	template<class...As> static auto gemm (As...as){ CUBLAS_CALL(cublasCgemm(as...));}
+	template<class...As> static auto syrk (As...as){ CUBLAS_CALL(cublasCsyrk(as...));}
+	template<class...As> static auto herk (As...as){ CUBLAS_CALL(cublasCherk(as...));}
+	template<class...As> static auto trsm (As...as){ CUBLAS_CALL(cublasCtrsm(as...));}
 };
 template<> struct cublas3<Z>{
-	template<class...As> static auto gemm (As...as){return cublas_call(cublasZgemm)(as...);}
-	template<class...As> static auto syrk (As...as){return cublas_call(cublasZsyrk)(as...);}
-	template<class...As> static auto herk (As...as){return cublas_call(cublasZherk)(as...);}
-	template<class...As> static auto trsm (As...as){return cublas_call(cublasZtrsm)(as...);}
+	template<class...As> static auto gemm (As...as){ CUBLAS_CALL(cublasZgemm(as...));}
+	template<class...As> static auto syrk (As...as){ CUBLAS_CALL(cublasZsyrk(as...));}
+	template<class...As> static auto herk (As...as){ CUBLAS_CALL(cublasZherk(as...));}
+	template<class...As> static auto trsm (As...as){ CUBLAS_CALL(cublasZtrsm(as...));}
 };
-
 
 template<class T> struct herk_scalar;//{using type = T;};
 template<> struct herk_scalar<C>{using type = S;};
