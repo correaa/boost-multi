@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-clang++ -x cuda --cuda-gpu-arch=sm_50 -std=c++14`#$CXX` $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi constructors"
@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(multi_constructors){
 }{ multi::array<double     , 1> A = {10}    ; assert( size(A)==1 and A[0]==10 );
 }{ multi::array<std::size_t, 1> A({10})     ; assert( size(A)==1 and A[0]==10 );
 }{ multi::array<int        , 1> A({10})     ; assert( size(A)==1 and A[0]==10 );
-}{ multi::array<double     , 1> A({10})    ; assert( size(A)==1 and A[0]==10 );
+}{ multi::array<double     , 1> A({10})     ; assert( size(A)==1 and A[0]==10 );
 //}{ multi::array<std::size_t, 1> A({{10}})   ; assert( size(A)==1 and A[0]==10 );  // clang warns about double bracked
 //}{ multi::array<int        , 1> A({{10}})   ; assert( size(A)==1 and A[0]==10 );  // clang warns about double bracked
 //}{ multi::array<double     , 1> A({{10}})   ; assert( size(A)==1 and A[0]==10 );  // clang warns about double bracked
@@ -52,11 +52,11 @@ BOOST_AUTO_TEST_CASE(multi_constructors){
 //}{ multi::array<double     , 1> A({{0, 10}}); assert( size(A)==2 ); // ambiguous in gcc (error)
 
 }{ multi::array<std::size_t, 2> A = {{1, 2}, {3, 4}}; assert( size(A)==2 and A[0][0]==1 );
-}{ multi::array<int, 2> A = {{1, 2}, {3, 4}}; assert( size(A)==2 and A[0][0]==1 );
-}{ multi::array<double, 2> A = {{1, 2}, {3, 4}}; assert( size(A)==2 and A[0][0]==1 );
-}{ multi::array<std::size_t, 2> A({{1, 2}, {3, 4}}); assert( size(A)==2 and A[0][0]==1 );
-}{ multi::array<int, 2> A({{1, 2}, {3, 4}}); assert( size(A)==2 and A[0][0]==1 );
-}{ multi::array<double, 2> A({{1, 2}, {3, 4}}); assert( size(A)==2 and A[0][0]==1 );
+}{ multi::array<int,         2> A = {{1, 2}, {3, 4}}; assert( size(A)==2 and A[0][0]==1 );
+}{ multi::array<double,      2> A = {{1, 2}, {3, 4}}; assert( size(A)==2 and A[0][0]==1 );
+}{ multi::array<std::size_t, 2> A({{1, 2}, {3, 4}}) ; assert( size(A)==2 and A[0][0]==1 );
+}{ multi::array<int,         2> A({{1, 2}, {3, 4}}) ; assert( size(A)==2 and A[0][0]==1 );
+}{ multi::array<double,      2> A({{1, 2}, {3, 4}}) ; assert( size(A)==2 and A[0][0]==1 );
 }
 {
 	multi::array<double, 2> A(multi::index_extensions<2>{8, 8}, 8.);
