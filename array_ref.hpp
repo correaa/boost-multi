@@ -50,7 +50,7 @@ template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layo
 struct array_types : Layout{
 	using element = T;
 	using element_type = element; // this follows more closely https://en.cppreference.com/w/cpp/memory/pointer_traits
-	constexpr static dimensionality_type const dimensionality = D;
+	constexpr static dimensionality_type dimensionality = D;
 	using element_ptr = ElementPtr;
 	using layout_t = Layout;
 	using value_type = typename std::conditional<
@@ -516,7 +516,8 @@ public:
 protected:
 	template<class A>
 	void intersection_assign_(A&& other) const{
-		for(auto i : intersection(types::extension(), extension(other)))
+		// using multi::extension
+		for(auto i : intersection(types::extension(), multi::extension(other)))
 			operator[](i).intersection_assign_(std::forward<A>(other)[i]);
 	}
 public:
