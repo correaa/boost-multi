@@ -10,6 +10,8 @@ $CXX -Wall -Wextra -Wpedantic $0 -o$0x -lboost_unit_test_framework &&$0x&& rm $0
 
 namespace multi = boost::multi;
 
+template<class... T> void what(T&&...) = delete;
+
 BOOST_AUTO_TEST_CASE(multi_rotate){
 	double a[4][5] {
 		{ 0,  1,  2,  3,  4}, 
@@ -34,7 +36,7 @@ BOOST_AUTO_TEST_CASE(multi_rotate){
 		};
 		BOOST_REQUIRE(       a[1][0] == 10 );
 		BOOST_REQUIRE( (a <<1)[0][1] == 10 );
-		BOOST_REQUIRE( &a[1][0] == &(a <<1)[0][1] );
+		BOOST_REQUIRE( &     a[1][0] == &(a <<1)[0][1] );
 
 		BOOST_REQUIRE( a.transposed()[0][1] == 10 );
 		BOOST_REQUIRE( transposed(a)[0][1] == 10 );
@@ -49,6 +51,14 @@ BOOST_AUTO_TEST_CASE(multi_rotate){
 		BOOST_REQUIRE( &a[3][5][7] == &a.transposed()[5][3][7] );
 		BOOST_REQUIRE( &a[3][5][7] == &transposed(a)[5][3][7] );
 		BOOST_REQUIRE( &a[3][5][7] == &(~a)[5][3][7] );
+
+		BOOST_REQUIRE( & a[3][5][7] == & a[3].transposed()[7][5] );	
+		BOOST_REQUIRE( & a[3][5][7] == & (~a[3])[7][5] );
+
+		BOOST_REQUIRE( & a[3][5] == & (~a)[5][3] );
+		BOOST_REQUIRE( & (~~a) == & a );
+		BOOST_REQUIRE( & (a <<3) == & a);
+		BOOST_REQUIRE( & (a >>1 <<1) == &a );
 	}
 	{
 		multi::array<double, 2> const a = {
@@ -56,6 +66,8 @@ BOOST_AUTO_TEST_CASE(multi_rotate){
 			{10, 11}
 		};
 		BOOST_REQUIRE( (a<<1)[0][1] == 10 );
+		BOOST_REQUIRE( &(a<<1)[1][0] == &a[0][1] );
+		BOOST_REQUIRE( &(~a)[1][0] == &a[0][1] );
 	}
 	{
 		multi::array<double, 3> const A({3, 5, 7});
