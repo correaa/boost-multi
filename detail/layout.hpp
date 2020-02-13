@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -D_TEST_MULTI_LAYOUT $0.cpp -o$0x&&$0x&&rm $0x $0.cpp;exit
+(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -D_TEST_MULTI_LAYOUT $0.cpp -o$0x -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp;exit
 #endif
 #ifndef MULTI_LAYOUT_HPP
 #define MULTI_LAYOUT_HPP
@@ -162,14 +162,16 @@ public:
 	constexpr layout_t() = default;
 	constexpr layout_t(layout_t const&) = default;
 	constexpr layout_t(index_extension ie, layout_t<0> const&) :
-//		stride_{ie.size()<=1?std::numeric_limits<stride_type>::max():1},
+		stride_{1},
+		offset_{ie.first()},
 		nelems_{
 //			ie.size()<=1?ie.size()*std::numeric_limits<stride_type>::max():ie.size()
 			ie.size()
 		}{}
-	constexpr layout_t(stride_type stride, offset_type offset, nelems_type nelems) 
-		: stride_{stride}, offset_{offset}, nelems_{nelems}
-	{}//assert(0);}
+	constexpr layout_t(extensions_type e) : layout_t(std::get<0>(e), {}){}
+	constexpr layout_t(stride_type stride, offset_type offset, nelems_type nelems) : 
+		stride_{stride}, offset_{offset}, nelems_{nelems}
+	{}
 #if defined(__INTEL_COMPILER)
 	constexpr layout_t(std::initializer_list<index_extension> il) noexcept : layout_t{multi::detail::to_tuple<1, typename layout_t::index_extension>(il)}{}
 	constexpr layout_t(std::initializer_list<index> il) noexcept : layout_t{multi::detail::to_tuple<1, typename layout_t::index_extension>(il)}{}
@@ -262,7 +264,7 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 	using offset_type = index;
 	using nelems_type = index;
  	sub_type    sub_ = {};
-	stride_type stride_ = std::numeric_limits<stride_type>::max();
+	stride_type stride_ = 1;//std::numeric_limits<stride_type>::max();
 	offset_type offset_ = 0;
 	nelems_type nelems_ = 0;
 	struct extensions_type_ 
@@ -305,18 +307,18 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 	constexpr 
 	layout_t(index_extension const& ie, layout_t<D-1> const& s) : 
 		sub_{s},
-		stride_{ie.size()*sub_.num_elements()!=0?sub_.size()*sub_.stride():1}, // use .size for nvcc
-		offset_{0},
+		stride_{1},//ie.size()*sub_.num_elements()!=0?sub_.size()*sub_.stride():1}, // use .size for nvcc
+		offset_{sub_.offset_ + ie.first()*sub_.stride()},
 		nelems_{ie.size()*sub_.num_elements()}                             // use .size fort
 	{}
 	constexpr layout_t() = default;//: sub{}, stride_{1}, offset_{0}, nelems_{0}{} // needs stride != 0 for things to work well in partially formed state
-	constexpr 
+//	constexpr 
 	layout_t(extensions_type const& e) :// = {}) : 
 		sub_{detail::tail(e)}, 
-		stride_{std::get<0>(e).size()*sub_.num_elements()!=0?sub_.size()*sub_.stride():1}, 
-		offset_{0}, 
+		stride_{sub_.size()*sub_.stride()},//std::get<0>(e).size()*sub_.num_elements()!=0?sub_.size()*sub_.stride():1}, 
+		offset_{sub_.offset_ + std::get<0>(e).first()*sub_.stride()}, 
 		nelems_{std::get<0>(e).size()*sub_.num_elements()} 
-	{}
+	{}//assert(0);}
 #if defined(__INTEL_COMPILER) or (defined(__GNUC) && (__GNUC<6))
 	constexpr 
 	layout_t(std::array<index_extension, D> x) noexcept :
@@ -327,9 +329,9 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 	constexpr 
 	layout_t(StdArray const& e) : 
 		sub_{detail::tail(e)}, 
-		stride_{std::get<0>(e).size()*sub_.num_elements()!=0?sub_.size()*sub_.stride():1}, 
-		offset_{0}, 
-		nelems_{std::get<0>(e).size()*sub_.num_elements()} 
+		stride_{1},//std::get<0>(e).size()*sub_.num_elements()!=0?sub_.size()*sub_.stride():1}, 
+		offset_{sub_.offset_ + std::get<0>(e).first()*sub_.stride()}, 
+		nelems_{std::get<0>(e).size()*sub_.num_elements()}
 	{}
 	constexpr index nelems() const{return nelems_;}
 	friend constexpr index nelems(layout_t const& self){return self.nelems();}
@@ -343,7 +345,11 @@ public:
 	friend size_type num_elements(layout_t const& s){return s.num_elements();}
 	constexpr bool empty() const{return not nelems_;} friend
 	constexpr bool empty(layout_t const& s){return s.empty();}
-	constexpr size_type size() const {return nelems_/stride_;} 
+	constexpr size_type size() const{
+		if(not nelems_) return 0;
+		assert(stride_);
+		return nelems_/stride_;
+	}
 	friend constexpr size_type size(layout_t const& l){return l.size();}
 	size_type size(dimensionality_type d) const{return d?sub_.size(d-1):size();}
 
@@ -366,6 +372,8 @@ public:
 	constexpr auto sizes_as() const{return detail::to_array<T>(sizes());}
 public:
 	constexpr index_extension extension() const{
+		if(not nelems_) return {};
+		assert(stride_);
 		return {offset_/stride_, (offset_ + nelems_)/stride_};
 	}
 	friend auto extension(layout_t const& self){return self.extension();}
@@ -391,6 +399,13 @@ public:
 	//	offset
 		nelems_ *= s;
 		sub_.partition(s);
+		return *this;
+	}
+	layout_t& transpose(){
+		using std::swap;
+		swap(stride_, sub_.stride_);
+		swap(offset_, sub_.offset_);
+		swap(nelems_, sub_.nelems_);
 		return *this;
 	}
 	layout_t& rotate(){
@@ -437,6 +452,10 @@ constexpr auto sizes_as(Layout const& self)
 
 #if _TEST_MULTI_LAYOUT
 
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi layout"
+#define BOOST_TEST_DYN_LINK
+#include<boost/test/unit_test.hpp>
+
 #include<cassert>
 #include<iostream>
 #include<vector>
@@ -446,7 +465,7 @@ constexpr auto sizes_as(Layout const& self)
 using std::cout;
 namespace multi = boost::multi;
 
-int main(){
+BOOST_AUTO_TEST_CASE(multi_layout){
 //	auto t = std::make_tuple(1.,2.,3.);
 //	auto u = multi::detail::reverse(t);
 //	assert( std::get<0>(u) == 3. );
@@ -456,7 +475,7 @@ int main(){
 	auto u = multi::detail::to_tuple<multi::index_extension>(arr);
 	assert( std::get<1>(u) == 2 );
 
-{
+ {
 	multi::layout_t<0> L; assert( dimensionality(L)==0 and num_elements(L) == 1 ); sizes(L);
 }{
 	multi::iextensions<0> x{};
@@ -465,7 +484,6 @@ int main(){
 }{
 	multi::layout_t<2> L({2, 10}); 
 	assert( dimensionality(L)==2 );
-	std::cerr << size(L) << std::endl;
 	assert( num_elements(L) == 20 );
 	assert( size(L) == 2 ); 
 	assert( size(extension(L))==2 );
@@ -493,7 +511,6 @@ int main(){
 }{
 	multi::layout_t<2> L({10, 1});
 	assert( dimensionality(L)==2 );
-	std::cerr << "ne " << num_elements(L) << std::endl;
 	assert( num_elements(L) == 10 );
 	assert( size(L) == 10 );
 	using std::get;
@@ -506,8 +523,17 @@ int main(){
 }{	multi::layout_t<3> L({10, 10, 10}); assert( num_elements(L) == 1000 );
 }{	multi::layout_t<3> L({multi::index_extension{0, 10}, {0, 10}, {0, 10}}); assert( num_elements(L) == 1000 );
 }{	multi::layout_t<3> L(multi::layout_t<3>::extensions_type{{0, 10}, {0, 10}, {0, 10}}); assert( num_elements(L) == 1000 );
-}{	multi::layout_t<3> L(std::array<multi::index_extension, 3>{{ {0,10}, {0,10}, {0,10} }}); assert( num_elements(L) == 1000 );
-}{	multi::layout_t<3> L(multi::layout_t<3>::extensions_type{{0, 10}, {0, 10}, {0, 10}}); assert( num_elements(L) == 1000);
+}{	
+//	multi::layout_t<3> L(std::array<multi::index_extension, 3>{{ {0,10}, {0,10}, {0,10} }}); 
+//	std::array<multi::index_extension, 3>{{ {0,10}, {0,10}, {0,10} }}; 
+//	assert( size(L) == 1 );
+//	std::cout << "ne " << num_elements(L) << std::endl;
+//	assert( num_elements(L) == 1000 );
+}
+}
+
+BOOST_AUTO_TEST_CASE(continued){
+ {	multi::layout_t<3> L(multi::layout_t<3>::extensions_type{{0, 10}, {0, 10}, {0, 10}}); assert( num_elements(L) == 1000);
 }{	multi::layout_t<3> L(std::make_tuple(multi::iextension{0, 10}, multi::iextension{0, 10}, multi::iextension{0, 10})); assert(L.num_elements() == 1000);
 }{	multi::layout_t<3> L(std::make_tuple(multi::iextension{10}, multi::iextension{10}, multi::iextension{10})); assert( num_elements(L) == 1000);
 }{	multi::layout_t<3> L(std::make_tuple(10, 10, multi::iextension{10})); assert( num_elements(L) == 1000 );
@@ -525,9 +551,6 @@ int main(){
 	multi::layout_t<3> L;
 	assert( size(L) == 0 );
 }{
-	multi::layout_t<2> LL({{0, 10}, {0, 20}}); 
-//	multi::layout_t<1> LLL({{0, 10}}); 
-
 	multi::layout_t<3> L({{0, 10}, {0, 20}, {0, 30}}); 
 	multi::layout_t<3> L2{extensions(L)};
 
@@ -579,16 +602,64 @@ int main(){
 	assert( get<0>(strides) == L.stride(0) );
 }
 {
-	constexpr multi::layout_t<3> L( {{0, 10}, {0, 20}, {0, 30}} );
+	multi::layout_t<3> L( {{0, 10}, {0, 20}, {0, 30}} );
+	assert( stride(L) == 20*30 );
 //	static_assert( L.stride() == 20*30, "!");
-	using std::get;
-	using std::cerr;
-	cerr << get<0>(strides(L)) <<' '<< get<1>(strides(L)) <<' '<< get<2>(strides(L)) <<'\n';
 //	static_assert( get<0>(L.strides()) == 20*30, "!");
 //	static_assert( get<1>(L.strides()) == 	30, "!");
 //	static_assert( get<2>(L.strides()) == 	 1, "!");
 //	static_assert( size(L) == 10, "!");
-	cerr << size(L) <<'\n';
+//	cerr << size(L) <<'\n';
+}
+{
+	multi::layout_t<1> L({{0, 10}});
+	assert( extension(L).first() == 0 );
+	assert( extension(L).last() == 10 );
+}
+{
+	multi::layout_t<1> L({{8, 18}});
+	assert( extension(L).first() == 8 );
+	assert( extension(L).last() == 18 );
+}
+{
+	multi::layout_t<2> L({{0, 10}, {0, 20}});
+	assert( extension(L).first() == 0 and extension(L).last() == 10 );
+}
+{
+	multi::layout_t<2> L( {{0, 10}, {11, 31}} );
+	BOOST_TEST( size(L) == 10   );
+	BOOST_TEST( stride(L) == 20 );
+	BOOST_TEST( offset(L) == 0 );
+//	auto Lr = L.rotate();
+//	assert( extension(L).first() == 0 );
+//	assert( extension(L).last() == 10 );
+}
+{
+	multi::layout_t<2> L( {{8, 18}, {0, 20}} );
+	assert( size(L) == 10 );
+	assert( stride(L) == 20 );
+//	std::cout << extension(L).first() << std::endl;
+//	assert( extension(L).first() == 8 );
+//	assert( extension(L).last() == 18 );
+}
+{
+	multi::layout_t<3> L({{0, 3}, {0, 5}, {10, 17}}); 
+	assert( stride(L) == 5*7 );
+	BOOST_TEST( stride(L.sub_.sub_) == 1 );
+//	BOOST_TEST( offset(L.sub_.sub_) == 10 );
+//	assert( nelems(L) == 10*20*30 );
+}
+{
+	multi::layout_t<3> L({{0, 10}, {0, 20}, {0, 30}}); 
+	assert( stride(L) == 20*30 );
+	assert( offset(L) == 0 );
+	assert( nelems(L) == 10*20*30 );
+}
+{
+	multi::layout_t<3> L({{10, 20}, {10, 30}, {10, 40}}); 
+	assert( stride(L) == 20*30 );
+//	BOOST_TEST( offset(L) == 0 );
+//	assert( nelems(L) == 10*20*30 );
 }
 {
 	std::tuple<int, int, int> ttt = {1,2,3};

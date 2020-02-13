@@ -181,9 +181,11 @@ public:
 	: array_alloc{o.get_allocator()}, ref{static_array::allocate(num_elements(o)), extensions(o)}{
 		uninitialized_copy_from(o.data());
 	}
-	static_array(
+	constexpr static_array(
 		std::initializer_list<typename static_array::value_type> mil
-	) : static_array(mil.begin(), mil.end()){}
+	) : static_array(mil.begin(), mil.end()){
+	//	if(static_array::dimensionality == 1 and mil.size() == 1) assert(0);
+	}
 	static_array(
 		std::initializer_list<typename static_array::value_type> mil, 
 		typename static_array::allocator_type const& a
@@ -817,6 +819,14 @@ template<dimensionality_type D, class A, typename T = typename std::allocator_tr
 	template<class A, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<3>, A)->array<T, 3, A>;
 	template<class A, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<4>, A)->array<T, 4, A>;
 	template<class A, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<5>, A)->array<T, 5, A>;
+
+
+
+	template<class T> array(iextensions<0>, T)->array<T, 0>;
+	template<class T> array(iextensions<1>, T)->array<T, 1>;
+		template<class T> array(multi::size_type, T)->array<T, 1>;
+	template<class T> array(iextensions<2>, T)->array<T, 2>;
+	template<class T> array(iextensions<3>, T)->array<T, 3>;
 
 template<class T, class MR, class A=memory::allocator<T, MR>> array(iextensions<1>, T, MR*)->array<T, 1, A>;
 template<class T, class MR, class A=memory::allocator<T, MR>> array(iextensions<2>, T, MR*)->array<T, 2, A>;
