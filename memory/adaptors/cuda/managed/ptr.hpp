@@ -5,9 +5,6 @@
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_PTR_HPP
 #define BOOST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_PTR_HPP
 
-//#include "../../../adaptors/cuda/clib.hpp"
-
-#include<cassert>
 #include<cstddef> // nullptr_t
 #include<iterator> // random_access_iterator_tag
 
@@ -19,7 +16,7 @@
 
 #ifndef _DISABLE_CUDA_SLOW
 #ifdef NDEBUG
-#define SLOW deprecated("WARNING: implies a slow access to GPU memory") 
+#define SLOW deprecated("because it implies a slow element access to GPU memory")
 #else
 #define SLOW
 #endif
@@ -152,13 +149,7 @@ public:
 	using iterator_category = typename std::iterator_traits<raw_pointer>::iterator_category; //	using iterator_concept  = typename std::iterator_traits<impl_t>::iterator_concept;
 	explicit operator bool() const{return rp_;}
 	bool operator not() const{return !rp_;}
-//	[[SLOW]] explicit operator raw_pointer&()&{return rp_;}
-//	[[SLOW]] explicit operator raw_pointer const&() const&{return rp_;}
-//	[[SLOW]] 
 	operator raw_pointer()const&{return rp_;}
-//	[[deprecated("WARNING: implies a slow access to GPU memory") ]] operator raw_pointer()&{assert(0); return rp_;}
-//	[[deprecated("WARNING: implies a slow access to GPU memory") ]] operator raw_pointer()&&{assert(0); return rp_;}
-
 	operator ptr<void>() const{return ptr<void>{rp_};}
 //	template<class PM>
 //	decltype(auto) operator->*(PM pm) const{return *ptr<std::decay_t<decltype(rp_->*pm)>, decltype(&(rp_->*pm))>{&(rp_->*pm)};}
@@ -169,8 +160,6 @@ public:
 	ptr  operator--(int){auto tmp = *this; --(*this); return tmp;}
 	ptr& operator+=(typename ptr::difference_type n) HD{rp_+=n; return *this;}
 	ptr& operator-=(typename ptr::difference_type n) HD{rp_-=n; return *this;}
-//	friend bool operator==(ptr const& s, ptr const& t){return s.impl_==t.impl_;}
-//	friend bool operator!=(ptr const& s, ptr const& t){return s.impl_!=t.impl_;}
 	ptr operator+(typename ptr::difference_type n) const HD{return ptr{rp_ + n};}
 	ptr operator-(typename ptr::difference_type n) const HD{return (*this) + (-n);}
 	using reference = typename std::pointer_traits<raw_pointer>::element_type&;//ref<element_type>;
@@ -186,38 +175,15 @@ public:
 	default_allocator_type default_allocator() const{return {};}
 };
 
-	template<class T, class S> const boost::serialization::array_wrapper<T> make_array(ptr<T> t, S s){
-		using boost::serialization::make_array;
-		return make_array(raw_pointer_cast(t), s);
-	}
+template<class T, class S> const boost::serialization::array_wrapper<T> make_array(ptr<T> t, S s){
+	using boost::serialization::make_array;
+	return make_array(raw_pointer_cast(t), s);
+}
 
-//template<class Alloc, class Size, class ForwardIt>
-//auto alloc_uninitialized_copy_n(Alloc& a, boost::multi::memory::cuda::managed::ptr<std::complex<double>, std::complex<double> *> f, Size n, ForwardIt d){
-//	assert(0);
-//	static_assert(0, "!");
-//	return d;
-//}
-
-//template< class InputIt, class OutputIt >
-//constexpr OutputIt copy(InputIt first, InputIt last, OutputIt d_first){
-//	while(first != last) *d_first++ = *first++;
-//	return d_first;
-//}
-
-//->decltype(cuda::alloc_uninitialized_copy_n(a, f, n, cuda_pointer_cast(d))){
-//	return cuda::alloc_uninitialized_copy_n(a, f, n, cuda_pointer_cast(d));}
 
 }
 
 }}
-}}
-
-namespace boost{namespace multi{
-
-//template<class T> struct pointer_traits<memory::cuda::managed::ptr<T>, void> : std::pointer_traits<memory::cuda::managed::ptr<T>>{
-//	using default_allocator_type = memory::cuda::managed::allocator<std::decay_t<T>>;
-//};
-
 }}
 
 #undef SLOW
@@ -258,7 +224,9 @@ int main(){
 	std::size_t const n = 100;
 	{
 		auto p = static_cast<cuda::managed::ptr<T>>(cuda::managed::malloc(n*sizeof(T)));
-		cuda::managed::ptr<void> pp = p;
+		cuda::managed::ptr<void> vp = p;
+		T* rp = p;
+		void* vrp = p;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 		*p = 99.; 
