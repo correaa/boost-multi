@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&`#nvcc -x cu --expt-relaxed-constexpr`$CXX -Wfatal-errors -D_TEST_MULTI_ADAPTORS_FFTW $0.cpp -o $0x -lcudart `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp;exit
+(echo '#include"'$0'" '>$0.cpp)&&`#nvcc -x cu --expt-relaxed-constexpr`$CXX -Wfatal-errors -D_TEST_MULTI_ADAPTORS_FFTW $0.cpp -o $0x -lcudart `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp;exit
 #endif
 // © Alfredo A. Correa 2018-2019
 
@@ -229,8 +229,8 @@ fftw_plan fftw_plan_dft(std::array<bool, D> which, In&& in, Out&& out, int sign,
 		/*const fftw_iodim64 *dims*/ dims.data(), 
 		/*int howmany_rank*/ l_howmany - howmany.begin(),
 		/*const fftw_iodim *howmany_dims*/ howmany.data(), //nullptr, //howmany_dims.data(), //;//nullptr,
-		/*fftw_complex *in*/ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(base(in))), 
-		/*fftw_complex *out*/ reinterpret_cast<fftw_complex*>(base(out)),
+		/*fftw_complex *in*/ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(static_cast<std::complex<double> const *>(base(in)))), 
+		/*fftw_complex *out*/ reinterpret_cast<fftw_complex*>(static_cast<std::complex<double> *>(base(out))),
 		sign, flags | FFTW_ESTIMATE
 	);
 }
