@@ -106,6 +106,9 @@ BOOST_AUTO_TEST_CASE(rearranged_assignment){
 
 	BOOST_REQUIRE( extensions(rearranged(tmp)) == extensions(src) );
 	rearranged(tmp) = src;
+
+	auto rearranged2 = [](auto&& arr){return std::forward<decltype(arr)>(arr).unrotated().partitioned(2).transposed().rotated();};
+	rearranged2(tmp) = src;	
 }
 
 BOOST_AUTO_TEST_CASE(assignments){
