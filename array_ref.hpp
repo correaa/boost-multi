@@ -472,7 +472,7 @@ public:
 	SARRAY3(index, irange, index ); SARRAY3(irange, irange, index );
 	SARRAY3(index, irange, irange); SARRAY3(irange, irange, irange);
 #undef SARRAY3
-#define SARRAY4(A1, A2, A3, A4) auto operator()(A1 a1, A2 a2, A3 a3, A4) const{return operator()<A2, A3, A4>(a1, a2, a3);}
+#define SARRAY4(A1, A2, A3, A4) auto operator()(A1 a1, A2 a2, A3 a3, A4 a4) const{return operator()<A2, A3, A4>(a1, a2, a3, a4);}
 	SARRAY4(index, index, index , index ); SARRAY4(index, irange, index , index );
 	SARRAY4(index, index, index , irange); SARRAY4(index, irange, index , irange);
 	SARRAY4(index, index, irange, index ); SARRAY4(index, irange, irange, index );
@@ -529,23 +529,25 @@ protected:
 			operator[](i).intersection_assign_(std::forward<A>(other)[i]);
 	}
 public:
-	template<class It> void assign(It first, It last) const{
-		assert( this->size() == std::distance(first, last) );
+	template<class It> void assign(It first, It last) &&{assert( this->size() == std::distance(first, last) );
 		adl::copy(first, last, this->begin());
 	}
+	template<class Range> auto assign(Range&& r) 
+	->decltype(std::move(*this).assign(adl::begin(r), adl::end(r))) &&{
+		return std::move(*this).assign(adl::begin(r), adl::end(r));}
 	void assign(std::initializer_list<typename basic_array::value_type> il) const{assert( il.size() == this->size() );
 		assign(il.begin(), il.end());
 	}
 	template<class A, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<A>>{}>>
-	basic_array const& operator=(A&& o) const{
+	basic_array const& operator=(A&& o) &&{
 	//	assert(extension(*this) == extension(o));
 		assert(this->extension() == o.extension());
-		assign(adl::begin(std::forward<A>(o)), adl::end(std::forward<A>(o)));
+		std::move(*this).assign(adl::begin(std::forward<A>(o)), adl::end(std::forward<A>(o)));
 		return *this;
 	}
-	basic_array const& operator=(basic_array const& o) const{
+	basic_array const& operator=(basic_array const& o) &&{
 		assert( this->extension() == o.extension() );
-		assign( o.begin(), o.end() );
+		std::move(*this).assign( o.begin(), o.end() );
 		return *this;
 	}
 	template<class Array> void swap(Array&& o) const{assert(this->extension() == extension(o));
@@ -645,10 +647,13 @@ private:
 	Ptr data_ = nullptr;
 	multi::index stride_;
 	Ref dereference() const HD{return *data_;}
-	bool equal(array_iterator const& o) const{return data_==o.data_ and stride_==o.stride_;}
-	void increment(){data_ += stride_;}
-	void decrement(){data_ -= stride_;}
-	void advance(typename array_iterator::difference_type n) HD{data_ += stride_*n;}
+//	bool equal(array_iterator const& o) const{
+//		assert(stride_ == o.stride_);
+//		return data_==o.data_;// and stride_==o.stride_;
+//	}
+//	void increment(){data_ += stride_;}
+//	void decrement(){data_ -= stride_;}
+//	void advance(typename array_iterator::difference_type n) HD{data_ += stride_*n;}
 	difference_type distance_to(array_iterator const& other) const{
 		assert(stride_==other.stride_ and (other.data_-data_)%stride_ == 0);
 		return (other.data_ - data_)/stride_;
@@ -659,13 +664,14 @@ public:
 	auto data() const HD{return data_;}
 	auto stride() const{return stride_;}
 	friend auto stride(array_iterator const& self){return self.stride();}
-	array_iterator& operator++(){increment(); return *this;}
-	array_iterator& operator--(){decrement(); return *this;}
-	bool operator==(array_iterator const& o) const{return equal(o);}
+	array_iterator& operator++(){data_+=stride_; /*increment()*/; return *this;}
+	array_iterator& operator--(){data_-=stride_; /*decrement()*/; return *this;}
+	bool operator==(array_iterator const& o) const{return data_== o.data_;/*return equal(o);*/}
+	bool operator!=(array_iterator const& o) const{return data_!= o.data_;/*return equal(o);*/}
 	Ref operator*() const HD{return dereference();}
 	difference_type operator-(array_iterator const& o) const{return -distance_to(o);}
-	array_iterator& operator+=(difference_type d) HD{advance(d); return *this;}
-	array_iterator& operator-=(difference_type d) HD{advance(-d); return *this;}
+	array_iterator& operator+=(difference_type d) HD{data_+=stride_*d; return *this;}
+	array_iterator& operator-=(difference_type d) HD{data_-=stride_*d; return *this;}
 };
 
 template<class Element, dimensionality_type D, typename... Ts>
@@ -934,8 +940,8 @@ public:
 //	using basic_array<T, D, ElementPtr>::operator<;
 //	using basic_array<T, D, ElementPtr>::operator>;
 //	template<class ArrayRef> explicit array_ref(ArrayRef&& a) : array_ref(a.data(), extensions(a)){} 
-	array_ref const& operator=(array_ref const& o) const&{
-		auto e = adl::copy_n(o.data(), o.num_elements(), this->data()); assert( e == this->data() + this->num_elements() );
+	array_ref const& operator=(array_ref const& o) &&{assert(this->num_elements()==o.num_elements());
+		auto e = adl::copy_n(o.data(), o.num_elements(), this->data()); (void)e; assert( e == this->data() + this->num_elements() );
 		return *this;
 	}
 	template<typename TT, dimensionality_type DD = D, class... As>
