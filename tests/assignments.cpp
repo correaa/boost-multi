@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -Wall -Wextra -Wpedantic $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi assignments"
@@ -7,6 +7,9 @@ $CXX -Wall -Wextra -Wpedantic $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x
 #include<boost/test/unit_test.hpp>
 
 #include "../../multi/array.hpp"
+#include<functional>
+#include <boost/iterator/transform_iterator.hpp>
+#include<boost/functional/hash.hpp>
 
 #include<iostream>
 #include<vector>
@@ -15,6 +18,95 @@ namespace multi = boost::multi;
 using std::cout;
 
 multi::array_ref<double, 2> make_ref(double* p){return {p, {5, 7}};}
+
+template<class... T> void what(T&&...) = delete;
+
+BOOST_AUTO_TEST_CASE(range_assignment){
+{
+	auto r = multi::make_range(5, 10);
+	auto f = [](auto x){return x+1;};
+	std::vector<double> v(
+		boost::make_transform_iterator(r.begin(), f), 
+		boost::make_transform_iterator(r.end()  , f)
+	);
+	assert( v[1] == 7 );
+}
+{
+	auto r = multi::make_range(5, 10);
+	auto f = [](auto x){return x+1;};
+	multi::array<double, 1> v(
+		boost::make_transform_iterator(r.begin(), f), 
+		boost::make_transform_iterator(r.end()  , f)
+	);
+	assert( v[1] == 7 );
+}
+{
+	auto r = multi::make_extension_t(10l);
+	multi::array<double, 1> v(r.begin(), r.end());
+	assert( r.size() == v.size() );
+	assert( v[1] = 10 );
+}
+{
+	auto r = multi::make_extension_t(10l);
+	auto f = [](auto x){
+		std::size_t seed = 1234;
+	//	boost::hash_combine(seed, );
+		seed ^= boost::hash<multi::index>{}(x) + 0x9e3779b9 + (seed<<6) + (seed>>2);
+		return seed/(double)std::numeric_limits<std::size_t>::max();
+	};
+	multi::array<double, 1> v(
+		boost::make_transform_iterator(r.begin(), f), 
+		boost::make_transform_iterator(r.end()  , f)
+	);
+
+	std::cerr << std::hash<std::size_t>{}(13) << std::endl;
+	std::size_t seed = 12349l;
+	//	boost::hash_combine(seed, );
+//	seed ^= boost::hash<std::size_t>{}(13) + 0x9e3779b9 + (seed<<6) + (seed>>2);
+	boost::hash_combine(seed, 13);
+	std::cerr << seed << std::endl;
+	std::cerr << seed*1./std::numeric_limits<std::size_t>::max() << std::endl;
+
+	assert( v.size() == r.size() );
+	assert( v[1] >= 0. );
+	assert( v[1] < 1.  );
+	assert( std::all_of(begin(v), end(v), [](auto x){
+		std::cout << x << std::endl;
+		return x >= 0. and x < 1.;
+	}) );
+}
+{
+	multi::array<double, 1> v(10);
+	auto r = extension(v);
+	v.assign(r.begin(), r.end());
+	assert( v[1] == 1 );
+}
+{
+	multi::array<double, 1> v(10);
+	auto r = extension(v);
+	auto f = [](auto x){return x*2;};
+	v.assign(
+		boost::make_transform_iterator(r.begin(), f),
+		boost::make_transform_iterator(r.end()  , f)
+	);
+	assert( v[1] == 2 );
+}
+}
+
+template<class Array> auto rearranged(Array&& arr){
+	return std::forward<Array>(arr).unrotated().partitioned(2).transposed().rotated();
+}
+
+BOOST_AUTO_TEST_CASE(rearranged_assignment){
+	multi::array<double, 4> tmp({14, 14, 7, 4});
+	multi::array<double, 5> src({2, 14, 14, 7, 2});
+
+//	BOOST_REQUIRE( extensions(tmp.unrotated().partitioned(2).transposed().rotated()) == extensions(src) );
+//	tmp.unrotated().partitioned(2).transposed().rotated() = src;
+
+	BOOST_REQUIRE( extensions(rearranged(tmp)) == extensions(src) );
+	rearranged(tmp) = src;
+}
 
 BOOST_AUTO_TEST_CASE(assignments){
 	{
