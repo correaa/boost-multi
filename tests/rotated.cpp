@@ -12,6 +12,48 @@ namespace multi = boost::multi;
 
 template<class... T> void what(T&&...) = delete;
 
+BOOST_AUTO_TEST_CASE(multi_rotate_3d){
+	multi::array<double, 3> A({3, 4, 5});
+	BOOST_REQUIRE(( sizes(A) == decltype(sizes(A)){3, 4, 5} ));
+
+	auto&& RA = rotated(A);
+	BOOST_REQUIRE(( sizes(RA) == decltype(sizes(RA)){4, 5, 3} ));
+	BOOST_REQUIRE(  &A[0][1][2] == &RA[1][2][0] );
+
+	auto&& UA = unrotated(A);
+	BOOST_REQUIRE(( sizes(UA) == decltype(sizes(UA)){5, 3, 4} ));
+	BOOST_REQUIRE( &A[0][1][2] == &UA[2][0][1] );
+
+	auto&& RRA = rotated(RA);
+	BOOST_REQUIRE(( sizes(RRA) == decltype(sizes(RRA)){5, 3, 4} ));
+	BOOST_REQUIRE( &A[0][1][2] == &RRA[2][0][1] );
+}
+
+BOOST_AUTO_TEST_CASE(multi_rotate_4d){
+	multi::array<double, 4> original({14, 14, 7, 4});
+
+	auto&& unrotd = original.unrotated();
+	BOOST_REQUIRE(( sizes(unrotd) == decltype(sizes(unrotd)){4, 14, 14, 7} ));
+	BOOST_REQUIRE( &original[0][1][2][3] == &unrotd[3][0][1][2] );
+
+	auto&& unrotd2 = original.unrotated(2);
+	BOOST_REQUIRE(( sizes(unrotd2) == decltype(sizes(unrotd2)){7, 4, 14, 14} ));
+	BOOST_REQUIRE( &original[0][1][2][3] == &unrotd2[2][3][0][1] );
+}
+
+BOOST_AUTO_TEST_CASE(multi_rotate_4d_op){
+	multi::array<double, 4> original({14, 14, 7, 4});
+
+	auto&& unrotd = (original >> 1);
+	BOOST_REQUIRE(( sizes(unrotd) == decltype(sizes(unrotd)){4, 14, 14, 7} ));
+	BOOST_REQUIRE( &original[0][1][2][3] == &unrotd[3][0][1][2] );
+
+	auto&& unrotd2 = (original >> 2);
+	BOOST_REQUIRE(( sizes(unrotd2) == decltype(sizes(unrotd2)){7, 4, 14, 14} ));
+	BOOST_REQUIRE( &original[0][1][2][3] == &unrotd2[2][3][0][1] );
+}
+
+
 BOOST_AUTO_TEST_CASE(multi_rotate){
 	double a[4][5] {
 		{ 0,  1,  2,  3,  4}, 
