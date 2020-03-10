@@ -146,7 +146,9 @@ auto contains(index_extensions<D> const& ie, Tuple const& tp){
 
 #include<cassert>
 #include<iostream>
+#include<numeric> // accumulate
 #include<vector>
+
 
 using std::cout;
 namespace multi = boost::multi;
@@ -160,12 +162,18 @@ int main(){
 
 	assert( *begin(x) == 0 );
 	assert( size(x) == 10 );
+	assert( x[0] == 0 );
+	assert( x[1] == 1 );
+	assert( x[9] == 9 );
 	
 	auto b = begin(x);
-//	ranges::begin(x);
-//	ranges::end(x);
-//	what(b);
+	assert( b[0] == x[0] );
+	assert( b[1] == x[1] );
+
 	static_assert( ranges::forward_iterator< std::decay_t<decltype(b)> > , "!");
+
+	assert( std::accumulate( begin(x), end(x), 0) == 0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 );
+//	for(auto i : x) std::cout << i << std::endl;
 
 }
 #endif
