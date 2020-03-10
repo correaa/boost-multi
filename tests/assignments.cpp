@@ -108,6 +108,7 @@ BOOST_AUTO_TEST_CASE(rearranged_assignment){
 
 	rearranged(tmp) = src;
 	BOOST_REQUIRE( rearranged(tmp) == src );
+	BOOST_REQUIRE( rearranged(tmp) == ~(tmp>>1).partitioned(2)<<1 );
 
 	auto rearranged2 = [](auto&& arr){return std::forward<decltype(arr)>(arr).unrotated().partitioned(2).transposed().rotated();};
 	rearranged2(tmp) = src;	
