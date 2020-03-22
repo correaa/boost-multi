@@ -24,7 +24,7 @@ variables:
 before_script:
     - apt update --quiet
     - apt upgrade -y --quiet
-    - apt install --assume-yes --quiet g++ libboost-test-dev valgrind
+    - apt install --assume-yes --quiet g++ libboost-test-dev librange-v3-dev valgrind
 
 stages:
     - test
