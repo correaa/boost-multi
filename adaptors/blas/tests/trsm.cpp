@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex, *utf::tolerance(0.00001)){
 		{3. + 1.*I, 4. + 8.*I, 2. + 7.*I}
 	};
 	namespace blas = multi::blas;
-	using blas::filling;	
+	using blas::filling;
 	using blas::hermitized;
 	trsm(filling::lower, 2.+1.*I, hermitized(A), B); // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
 	BOOST_TEST( std::real(B[1][2]) == 2.33846 );

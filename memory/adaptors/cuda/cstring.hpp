@@ -60,7 +60,7 @@ namespace memcpy_{
 	constexpr kind type(ptr<void>, void const*    ){return kind::host_to_device  ;}
 	constexpr kind type(void*    , ptr<void const>){return kind::device_to_host  ;}
 	constexpr kind type(ptr<void>, ptr<void const>){return kind::device_to_device;}
-	[[deprecated]] constexpr kind type(...)                       {return kind::inferred;        }
+	[[deprecated]] constexpr kind type(...)        {return kind::inferred;        }
 }
 
 template<typename Dest, typename Src, typename = decltype(memcpy_::type(Dest{}, Src{}))>

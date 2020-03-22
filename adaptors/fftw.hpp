@@ -6,7 +6,7 @@
 #ifndef MULTI_ADAPTORS_FFTW_HPP
 #define MULTI_ADAPTORS_FFTW_HPP
 
-#include<fftw3.h>
+#include<fftw3.h> // external fftw3 library
 
 #include "../../multi/utility.hpp"
 #include "../../multi/array.hpp"
@@ -299,8 +299,8 @@ enum strategy: decltype(FFTW_ESTIMATE){ estimate = FFTW_ESTIMATE, measure = FFTW
 sign invert(sign s){
 	switch(s){
 		case sign::forward : return sign::backward;
-		case sign::backward: return sign::forward;
-		case sign::none: return sign::none;
+		case sign::backward: return sign::forward ;
+		case sign::none    : return sign::none    ;
 	} __builtin_unreachable();
 }
 
@@ -328,7 +328,6 @@ Out&& dft(In const& i, Out&& o, sign s){
 	plan{which, i, o, s}();//(i, std::forward<Out>(o)); 
 	return std::forward<Out>(o);
 }
-
 
 template<typename In, class Out, std::size_t D = std::decay_t<In>::dimensionality>
 auto dft(std::array<sign, D> w, In const& i, Out&& o){

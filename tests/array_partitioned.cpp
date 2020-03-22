@@ -1,24 +1,25 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX  -Wall -Wextra -Wpedantic $0 -o$0x .DCATCH_CONFIG_MAIN.o &&$0x&&rm $0x;exit
+$CXX  -Wall -Wextra -Wpedantic $0 -o$0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo Correa 2018-2019
-
-#include<catch.hpp>
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS gemm"
+#define BOOST_TEST_DYN_LINK
+#include<boost/test/unit_test.hpp>
 
 #include "../array.hpp"
 
 namespace multi = boost::multi;
 
-TEST_CASE( "Array partitioned 1D", "[array]"){
+BOOST_AUTO_TEST_CASE(array_partitioned_1d){
 	multi::array<double, 1>	A1 = {0, 1, 2, 3, 4, 5};
 	auto&& A2_ref = A1.partitioned(2);
-	REQUIRE(dimensionality(A2_ref)==dimensionality(A1)+1);
-	REQUIRE(size(A2_ref)==2);
-	REQUIRE(size(A2_ref[0])==3);
-	REQUIRE( &A2_ref[1][0] == &A1[3] );
+	BOOST_REQUIRE( dimensionality(A2_ref)==dimensionality(A1)+1 );
+	BOOST_REQUIRE( size(A2_ref)==2 );
+	BOOST_REQUIRE( size(A2_ref[0])==3 );
+	BOOST_REQUIRE( &A2_ref[1][0] == &A1[3] );
 }
 
-TEST_CASE( "Array partitioned 2D", "[array]"){
+BOOST_AUTO_TEST_CASE(array_partitioned_2d){
 	multi::array<double, 2>	A2 = 
 		{
 			{  0,  1,  2,  3,  4,  5}, 
@@ -29,15 +30,15 @@ TEST_CASE( "Array partitioned 2D", "[array]"){
 		}
 	;
 	auto&& A3_ref = A2.partitioned(2);
-	REQUIRE( dimensionality(A3_ref) == dimensionality(A2)+1 );
-	REQUIRE( num_elements(A3_ref) == num_elements(A2) );
-	REQUIRE( size(A3_ref)==2 );
-	REQUIRE( size(A3_ref[0])==2 );
-	REQUIRE( size(A3_ref[0][0])==6 );
-	REQUIRE( &A3_ref[1][1][0] == &A2[3][0] );
+	BOOST_REQUIRE( dimensionality(A3_ref) == dimensionality(A2)+1 );
+	BOOST_REQUIRE( num_elements(A3_ref) == num_elements(A2) );
+	BOOST_REQUIRE( size(A3_ref)==2 );
+	BOOST_REQUIRE( size(A3_ref[0])==2 );
+	BOOST_REQUIRE( size(A3_ref[0][0])==6 );
+	BOOST_REQUIRE( &A3_ref[1][1][0] == &A2[3][0] );
 }
 
-TEST_CASE( "Partition", "[array]"){
+BOOST_AUTO_TEST_CASE(array_partitioned){
 	multi::array<std::string, 2> A2 = 
 		{
 			{  "s0P0",  "s1P0"},

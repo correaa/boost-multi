@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX $0 -o $0x -lboost_serialization&&$0x&&rm $0x;exit
+$CXX $0 -o $0x -lboost_serialization -lstdc++fs &&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2020
 #include<fstream>
@@ -15,6 +15,7 @@ $CXX $0 -o $0x -lboost_serialization&&$0x&&rm $0x;exit
 #include <boost/archive/polymorphic_binary_oarchive.hpp>
 
 #include "../../multi/array.hpp"
+#include<experimental/filesystem>
 
 enum format {xml, txt, bin};
 
@@ -32,6 +33,13 @@ void save(Array const& a, std::string name, format f){
 		case bin: return std::make_unique<barch::polymorphic_binary_oarchive>(ofs);
 	}UNSWITCH;}() << bs11n::make_nvp("root", a);
 	assert(ofs);
+}
+
+template<class Array>
+void save(Array const& a, std::experimental::filesystem::path p){
+	     if(p.extension()==".xml") return save(a, p.string(), xml);
+	else if(p.extension()==".txt") return save(a, p.string(), txt);
+	else                           return save(a, p.string(), bin);
 }
 
 template<class Array>
@@ -55,7 +63,7 @@ namespace multi = boost::multi;
 
 int main(){
 	multi::array<double, 2> const arrD2d = {{1., 2., 3.}, {4.,5.,6.}, {7.,8.,9.}};
-	save_xml(arrD2d, "arrD2d.xml");
+	save(arrD2d, "arrD2d.xml");
 
 	multi::array<double, 2> arrD2d_copy;
 	load(arrD2d_copy, "arrD2d.xml", format::xml);

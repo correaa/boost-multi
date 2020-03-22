@@ -44,9 +44,7 @@ using memory::allocator_traits;
 //https://en.cppreference.com/w/cpp/memory/destroy
 template<class Alloc, class ForwardIt, typename = std::enable_if_t<!(has_rank<ForwardIt>{})>>//, typename = std::enable_if_t<typename ForwardIt::rank{} == 1> >//, typename AT = typename std::allocator_traits<Alloc> >
 void destroy(Alloc& a, ForwardIt f, ForwardIt l){
-	//	using multi::to_address;
-	for(; f != l; ++f) allocator_traits<Alloc>::destroy(a, to_address(f));
-	//	 a.destroy(to_address(first)); //	AT::destroy(a, to_address(first)); //	AT::destroy(a, addressof(*first)); // a.destroy(addressof(*first));
+	for(; f != l; ++f) allocator_traits<Alloc>::destroy(a, std::addressof(*f));
 }
 
 template<class Alloc, class ForwardIt, typename = std::enable_if_t<has_rank<ForwardIt>{} and typename ForwardIt::rank{} == 1>>//, typename = std::enable_if_t<typename ForwardIt::rank{} == 1> >//, typename AT = typename std::allocator_traits<Alloc> >
@@ -66,7 +64,7 @@ ForwardIt uninitialized_move_n(Alloc& a, InputIt f, Size n, ForwardIt d){
 	try{
 		for(; n > 0; ++f, ++c, --n)
 		//	alloc_construct(a, to_address(c), std::move(*f));
-			a.construct(to_address(c), std::move(*f));
+			a.construct(std::addressof(*c), std::move(*f));
 		//	AT::construct(a, to_address(c), *f);
 		//	AT::construct(a, addressof(*c), *f);
 		//	a.construct(addressof(*c), *f);
@@ -82,7 +80,7 @@ ForwardIt uninitialized_default_construct_n(Alloc& a, ForwardIt first, Size n){
 		//	allocator_traits<Alloc>::construct(a, to_address(current));
 			a.construct(to_address(current));
 		return current;
-    }catch(...){destroy(a, first, current); throw;}
+	}catch(...){destroy(a, first, current); throw;}
 }
 
 template<class Alloc, class ForwardIt, class Size, 
@@ -115,7 +113,8 @@ template<class... Args> auto std_copy(Args&&... args){
 //auto alloc_uninitialized_copy(Alloc&, In f, In l, MIt d)
 //->decltype(adl::copy(f, l, d)){
 //	return adl::copy(f, l, d);}
-	
+
+/*
 template<class Alloc, class InputIt, class MIt, typename = std::enable_if_t<has_rank<MIt>{}>, typename = std::enable_if_t<typename MIt::rank{}==1>, class=std::enable_if_t<!std::is_trivially_copyable<typename MIt::element>{}> >
 MIt alloc_uninitialized_copy(Alloc& a, InputIt f, InputIt l, MIt const& d){
 	MIt current = d; // using multi::to_address;
@@ -123,8 +122,9 @@ MIt alloc_uninitialized_copy(Alloc& a, InputIt f, InputIt l, MIt const& d){
 		for(; f != l; ++f, ++current) a.construct(to_address(current), *f);
 		return current;
 	}catch(...){destroy(a, d, current); throw;}
-}
+}*/
 
+namespace xtd{
 template<class Alloc, class InputIt, class MIt, typename = std::enable_if_t<!has_rank<MIt>{}> >
 MIt alloc_uninitialized_copy(Alloc& a, InputIt f, InputIt l, MIt d, double* = 0){
 	MIt current = d;
@@ -133,6 +133,7 @@ MIt alloc_uninitialized_copy(Alloc& a, InputIt f, InputIt l, MIt d, double* = 0)
 		for(; f != l; ++f, ++current) a.construct(to_address(current), *f);
 		return current;
 	}catch(...){destroy(a, d, current); throw;}
+}
 }
 
 // https://en.cppreference.com/w/cpp/memory/destroy_at
@@ -172,14 +173,13 @@ ForwardIt destroy_n(Alloc& a, ForwardIt first, Size n){
 	return first;
 }
 
-template<class Alloc, class ForwardIt, class Size, 
-	typename T = typename std::iterator_traits<ForwardIt>::value_type,
-	typename = std::enable_if_t<std::is_trivially_default_constructible<T>{}> 
->
-ForwardIt uninitialized_value_construct_n(Alloc& a, ForwardIt first, Size n, void* = 0){
-	return uninitialized_default_construct_n(a, to_address(first), n);
-}
-
+//template<class Alloc, class ForwardIt, class Size, 
+//	typename T = typename std::iterator_traits<ForwardIt>::value_type,
+//	typename = std::enable_if_t<std::is_trivially_default_constructible<T>{}> 
+//>
+//ForwardIt uninitialized_value_construct_n(Alloc& a, ForwardIt first, Size n, void* = 0){
+//	return uninitialized_default_construct_n(a, to_address(first), n);
+//}
 
 template<class AA> class is_allocator{
 	static std::false_type aux(...     );

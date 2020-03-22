@@ -1,8 +1,9 @@
 #ifdef COMPILATION_INSTRUCTIONS
 for a in ./tests/*.cpp; do echo $a; sh $a || break; echo "\n"; done; exit;*/
-(echo '#include"'$0'"'>$0.cpp)&&c++ -Wall -Wextra -D_TEST_BOOST_MULTI_ARRAY_REF $0.cpp -o $0x&&$0x&&rm $0x $0.cpp;exit
+$CXX -D_TEST_BOOST_MULTI_ARRAY_REF -xc++ $0 -o $0x&&$0x&&rm $0x $0.cpp;exit
 #endif
 // © Alfredo Correa 2018-2020
+
 #ifndef BOOST_MULTI_ARRAY_REF_HPP
 #define BOOST_MULTI_ARRAY_REF_HPP
 
@@ -259,11 +260,10 @@ public:
 	array_iterator& operator++(){increment(); return *this;}
 	array_iterator& operator--(){decrement(); return *this;}
 	bool operator==(array_iterator const& o) const{return equal(o);}
-	difference_type operator-(array_iterator const& o) const{return -distance_to(o);}
-	using boost::multi::iterator_facade<
-		array_iterator<Element, D, Ptr, Ref>, void, std::random_access_iterator_tag, 
-		Ref const&, typename layout_t<D-1>::difference_type
-	>::operator-;
+	friend difference_type operator-(array_iterator const& self, array_iterator const& other){
+		assert(self.stride_ == other.stride_); assert(self.stride_ != 0);
+		return (self.ptr_.base_ - other.ptr_.base_)/self.stride_;
+	}
 	array_iterator& operator+=(difference_type d) HD{advance( d); return *this;}
 	array_iterator& operator-=(difference_type d) HD{advance(-d); return *this;}
 };
@@ -532,6 +532,12 @@ public:
 	template<class It> void assign(It first, It last) &&{assert( this->size() == std::distance(first, last) );
 		adl::copy(first, last, this->begin());
 	}
+	template<class It> It assign(It first) &&{
+		return adl::copy_n(first, this->size(), this->begin()), first + this->size();
+	}
+//	template<class It> void assign(It first) &&
+//	->decltype(adl::copy_n(first, this->size(), this->begin())){
+//		return adl::copy_n(first, this->size(), this->begin()), ;}
 	template<class Range> auto assign(Range&& r) 
 	->decltype(std::move(*this).assign(adl::begin(r), adl::end(r))) &&{
 		return std::move(*this).assign(adl::begin(r), adl::end(r));}
@@ -762,6 +768,10 @@ public:
 	template<class It> void assign(It first, It last) const{assert( std::distance(first, last) == this->size() );
 		adl::copy(first, last, this->begin());
 	}
+	template<class It> auto assign(It f)&& //	->decltype(adl::copy_n(f, this->size(), begin(std::move(*this))), void()){
+//	->decltype(adl::copy_n(f, this->size(), std::declval<basic_array&&>().begin()), void()){
+	{	return adl::copy_n(f, this->size(), std::move(*this)             .begin()), void();}
+
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int){
 		using boost::serialization::make_nvp;
@@ -778,9 +788,8 @@ public:
 		this->assign(adl::begin(std::forward<A>(o)), adl::end(std::forward<A>(o)));
 		return *this;
 	}
-	basic_array const& operator=(basic_array const& o) const{assert(this->extension() == o.extension());
-		this->assign(o.begin(), o.end());
-		return *this;
+	basic_array&& operator=(basic_array const& o)&&{ assert(this->extension() == o.extension());
+		return std::move(*this).assign(o.begin()), std::move(*this);
 	}
 	template<class TT, dimensionality_type DD, class... As>
 	basic_array const& operator=(basic_array<TT, DD, As...> const& o) const{assert(this->extension() == o.extension());
@@ -812,7 +821,7 @@ public:
 		return sliced(first, last).strided(stride);
 	}
 	auto range(index_range const& ir) const{return sliced(ir.front(), ir.last());}
-	decltype(auto) operator()() const{return *this;}
+	decltype(auto) operator()()&&{return std::move(*this);}
 	auto operator()(index_range const& ir) const{return range(ir);}
 	decltype(auto) operator()(typename types::index i) const{return operator[](i);}
 	template<typename Size>
@@ -929,8 +938,8 @@ public:
 	array_ref(array_ref const&) = default;
 	constexpr array_ref(typename array_ref::element_ptr p, typename array_ref::extensions_type e = {}) noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
-	constexpr array_ref(typename array_ref::element_ptr p, std::initializer_list<index_extension> il) noexcept
-		: array_ref(p, detail::to_tuple<D, index_extension>(il)){}
+//	constexpr array_ref(typename array_ref::element_ptr p, std::initializer_list<index_extension> il) noexcept
+//		: array_ref(p, detail::to_tuple<D, index_extension>(il)){}
 //	template<class Extension>//, typename = decltype(array_ref(std::array<Extension, D>{}, allocator_type{}, std::make_index_sequence<D>{}))>
 //	constexpr array_ref(typename array_ref::element_ptr p, std::array<Extension, D> const& x) 
 //		: array_ref(p, x, std::make_index_sequence<D>{}){}
@@ -1010,10 +1019,10 @@ template<class P> auto make_array_ref(P p, index_extensions<5> x){return make_ar
 
 //In ICC you need to specify the dimensionality in make_array_ref<D>
 //#if defined(__INTEL_COMPILER)
-template<dimensionality_type D, class P> 
-auto make_array_ref(P p, std::initializer_list<index_extension> il){return make_array_ref(p, detail::to_tuple<D, index_extension>(il));}
-template<dimensionality_type D, class P> 
-auto make_array_ref(P p, std::initializer_list<index> il){return make_array_ref(p, detail::to_tuple<D, index_extension>(il));}
+//template<dimensionality_type D, class P> 
+//auto make_array_ref(P p, std::initializer_list<index_extension> il){return make_array_ref(p, detail::to_tuple<D, index_extension>(il));}
+//template<dimensionality_type D, class P> 
+//auto make_array_ref(P p, std::initializer_list<index> il){return make_array_ref(p, detail::to_tuple<D, index_extension>(il));}
 //#endif
 
 #if __cpp_deduction_guides

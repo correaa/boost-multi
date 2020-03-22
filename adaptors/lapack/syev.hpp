@@ -177,6 +177,7 @@ BOOST_AUTO_TEST_CASE(lapack_syev, *boost::unit_test::tolerance(0.00001) ){
 	multi::array<double, 1> W(size(A));
 	namespace lapack = multi::lapack;
 	auto&& A_ref = lapack::syev(lapack::filling::upper, A, W);
+	print(A_ref);
 	BOOST_TEST( size(A_ref)==3 );
 	BOOST_TEST( W[0]==0. );
 }

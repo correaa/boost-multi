@@ -1,21 +1,24 @@
 #ifdef COMPILATION_INSTRUCTIONS
-nvcc --expt-relaxed-constexpr -std=c++14 $0 -o $0x && $0x && rm $0x; exit
+clang++ --cuda-gpu-arch=sm_52`#nvcc --expt-relaxed-constexpr` -std=c++14 $0 -o $0x -lcudart&& $0x && rm $0x; exit
 #endif
 
 #include "../adaptors/thrust/allocator_traits.hpp"
 #include "../adaptors/thrust/algorithms.hpp"
-
 #include "../array.hpp"
 
 #include <thrust/host_vector.h>
 #include <thrust/device_vector.h>
+#include <thrust/uninitialized_copy.h>
 
 #include<numeric> // iota
+#include<complex>
 
 namespace multi = boost::multi;
 
 template<class T, multi::dimensionality_type D>
 using thrust_array = multi::array<T, D, thrust::device_allocator<T>>;
+
+
 
 int main(){
 //	using Alloc = thrust::device_allocator<double>;
@@ -33,6 +36,12 @@ int main(){
 	assert(A[20]==11.);
 	A[20] = 44.;
 	multi::array<double, 1, thrust::device_allocator<double>> BB(10, 99.);
+
+	multi::array<std::complex<double>, 1, thrust::device_allocator<std::complex<double> >> BBB(10, 99.);
+	multi::array<std::complex<double>, 1, thrust::device_allocator<std::complex<double> >> BBB_cpy = BBB;
+
+	assert( static_cast<std::complex<double>>(BBB[0]) == std::complex<double>(99.) );
+	
 //	assert( B[2] == 99. );
 	thrust_array<double, 1> B(100, 11.); 
 	B[20] = 11.;

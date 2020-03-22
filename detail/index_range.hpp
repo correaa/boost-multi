@@ -70,8 +70,8 @@ namespace multi{
 
 template<typename IndexType = std::true_type, typename IndexTypeLast = IndexType>
 class range{
-	IndexType first_;
-	IndexTypeLast last_;
+	IndexType first_ = {};
+	IndexTypeLast last_ = first_;
 public:
 	template<class Archive>
 	void serialize(Archive& ar, unsigned){
@@ -85,12 +85,12 @@ public:
 	using reference = const_reference;
 	using const_pointer = value_type;
 	using pointer = value_type;
-	constexpr range() : first_{}, last_{first_}{}
+	range() = default; // constexpr range() HD: first_{}, last_{first_}{}
 	template<class Range, typename = std::enable_if_t<std::is_same<std::decay_t<Range>, value_type>{}> >
 	constexpr range(Range&& o) HD : first_{std::forward<Range>(o).first()}, last_{std::forward<Range>(o).last()}{}
 //	constexpr range(value_type const& fl) : first_{fl}, last_{fl + 1}{}
 //	constexpr range(value_type f, value_type l) : first_{f}, last_{l}{}
-	constexpr range(IndexType f, IndexTypeLast l) : first_{f}, last_{l}{}
+	constexpr range(IndexType f, IndexTypeLast l) HD : first_{f}, last_{l}{}
 	constexpr range(IndexType f) : range(f, f + 1){}
 	class const_iterator 
 		: public boost::multi::iterator_facade<const_iterator, 
@@ -111,6 +111,7 @@ public:
 		using difference_type = std::ptrdiff_t;
 		const_iterator() = default;
 		constexpr auto operator==(const_iterator const& y) const{return curr_ == y.curr_;}
+		constexpr auto operator<(const_iterator const& y) const{return curr_ < y.curr_;}
 		constexpr const_iterator& operator++(){++curr_; return *this;}
 		constexpr const_iterator& operator--(){--curr_; return *this;}
 		constexpr const_iterator& operator-=(typename const_iterator::difference_type n) HD{curr_-=n; return *this;}
@@ -165,15 +166,20 @@ public:
 		auto first2 = min(first, last);  
 		return range<decltype(first2), decltype(last)>{first2, last};
 	}
-	constexpr auto contains(value_type const& v) const{return (v >= first() and v < last())?true:false;}
+	constexpr auto contains(value_type const& v) const HD{return v>=first_ and v<last_;}//?true:false;}
 };
+
+template<class IndexType = std::true_type, typename IndexTypeLast = IndexType>
+range<IndexType, IndexTypeLast> make_range(IndexType first, IndexTypeLast last){
+	return {first, last};
+}
 
 template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
 struct extension_t : public range<IndexType, IndexTypeLast>{
 	using range<IndexType, IndexTypeLast>::range;
-	constexpr extension_t(IndexType f, IndexTypeLast l) noexcept : range<IndexType, IndexTypeLast>{f, l}{}
+	constexpr extension_t(IndexType f, IndexTypeLast l) noexcept HD : range<IndexType, IndexTypeLast>{f, l}{}
 	constexpr extension_t(IndexType last) noexcept : range<IndexType, IndexTypeLast>(0, last){}
-	constexpr extension_t() noexcept : range<IndexType, IndexTypeLast>(){}
+	constexpr extension_t() noexcept HD : range<IndexType, IndexTypeLast>(){}
 	friend constexpr typename extension_t::size_type size(extension_t const& s){return s.size();}
 	friend std::ostream& operator<<(std::ostream& os, extension_t const& self){
 		if(self.empty()) return os << static_cast<range<IndexType> const&>(self);
@@ -183,6 +189,12 @@ struct extension_t : public range<IndexType, IndexTypeLast>{
 	friend constexpr auto operator==(extension_t const& a, extension_t const& b){return static_cast<range<IndexType> const&>(a)==static_cast<range<IndexType> const&>(b);}
 	friend constexpr auto operator!=(extension_t const& a, extension_t const& b){return not(a==b);}
 };
+
+template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
+extension_t<IndexType, IndexTypeLast> make_extension_t(IndexType f, IndexTypeLast l){return {f, l};}
+
+template<class IndexTypeLast = std::ptrdiff_t>
+auto make_extension_t(IndexTypeLast l){return make_extension_t(IndexTypeLast{0}, l);}
 
 }}
 
@@ -205,6 +217,7 @@ struct extension_t : public range<IndexType, IndexTypeLast>{
 #include<range/v3/utility/concepts.hpp>
 
 #include <boost/hana/integral_constant.hpp>
+#include <boost/iterator/transform_iterator.hpp>
 
 #include<cassert>
 #include<iostream>
@@ -253,6 +266,8 @@ template<class T> T& evoke(T&& t){return t;}
 
 template<class T> void what(T&&) = delete;
 
+namespace multi = boost::multi;
+
 int main(int, char*[]){
 
 #if __cpp_deduction_guides
@@ -260,6 +275,20 @@ int main(int, char*[]){
 #else
 	assert(( multi::range<std::ptrdiff_t>{5, 5}.size() == 0 ));
 #endif
+{
+	auto r = multi::range{5, 10};
+	std::vector<double> v(r.begin(), r.end());
+	assert( v[1] == 6 );
+}
+{
+	auto r = multi::range{5, 10};
+	auto f = [](auto x){return x+1;};
+	std::vector<double> v(
+		boost::make_transform_iterator(r.begin(), f), 
+		boost::make_transform_iterator(r.end()  , f)
+	);
+	assert( v[1] == 7 );
+}
 {
 	multi::extension_t<> x(10);
 	assert( size(x) == 10 );
@@ -322,6 +351,8 @@ int main(int, char*[]){
 	cout<<'\n';
 	for(auto it = rr.rbegin(); it != rr.rend(); ++it) cout<< *it <<' ';
 	cout<<'\n';
+
+
 
 //	cout<< *rr.rbegin() <<'\n';
 //	for(auto it = rr.rbegin(); it != rr.rend(); ++it) cout<< *it <<' ';

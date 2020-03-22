@@ -37,10 +37,10 @@ constexpr auto to_tuple_impl(std::initializer_list<From> il, std::index_sequence
 	return std::make_tuple(To{il.begin()[I]}...);
 }
 
-template<size_t N, class To, class From>
-constexpr auto to_tuple(std::initializer_list<From> il){
-	return il.size()==N?to_tuple_impl<To>(il, std::make_index_sequence<N>()):throw 0;
-}
+//template<size_t N, class To, class From>
+//constexpr auto to_tuple(std::initializer_list<From> il){
+//	return il.size()==N?to_tuple_impl<To>(il, std::make_index_sequence<N>()):throw 0;
+//}
 
 template<class To, class From, size_t... I>
 constexpr auto to_tuple_impl(std::array<From, sizeof...(I)> arr, std::index_sequence<I...>){
@@ -371,7 +371,7 @@ public:
 	template<class T = void>
 	constexpr auto sizes_as() const{return detail::to_array<T>(sizes());}
 public:
-	constexpr index_extension extension() const{
+	constexpr index_extension extension() const HD{
 		if(not nelems_) return {};
 		assert(stride_);
 		return {offset_/stride_, (offset_ + nelems_)/stride_};

@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX `#-Wfatal-errors` $0 -o $0x -lboost_unit_test_framework&&valgrind $0x&&rm $0x;exit
+nvcc -x cu $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2018-2020
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi allocators"
@@ -23,8 +23,8 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays){
 	std::vector<multi::array<double, 2>> VA;
 	VA.emplace_back(multi::index_extensions<2>{0, 0}, 0);
 	BOOST_REQUIRE( size(VA[0]) == 0 );
-	for(int i = 1; i != 3; ++i)
-		VA.emplace_back(multi::index_extensions<2>{i, i}, i);
+
+	for(int i = 1; i != 3; ++i) VA.emplace_back(multi::index_extensions<2>{i, i}, i);
 	BOOST_REQUIRE( size(VA[0]) == 0 );
 	BOOST_REQUIRE( size(VA[1]) == 1 );
 	BOOST_REQUIRE( size(VA[2]) == 2 );
@@ -50,7 +50,8 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays){
 BOOST_AUTO_TEST_CASE(array_of_arrays){
 {
 	multi::array<multi::array<double, 2>, 1> A(10, multi::array<double, 2>{});
-	for(auto i : extension(A)) A[i] = multi::array<double, 2>({i, i}, static_cast<double>(i));
+//	for(auto i : extension(A)) A[i] = multi::array<double, 2>({i, i}, static_cast<double>(i));
+	for(auto i : extension(A)) A[i] = {{i, i}, static_cast<double>(i)};
 	BOOST_REQUIRE( size(A[0]) == 0 );
 	BOOST_REQUIRE( size(A[1]) == 1 );
 	BOOST_REQUIRE( size(A[8]) == 8 );

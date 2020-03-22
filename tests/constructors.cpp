@@ -26,12 +26,33 @@ BOOST_AUTO_TEST_CASE(multi_constructors_inqnvcc_bug){
 	multiplies_bind1st(std::move(m));
 }
 
+BOOST_AUTO_TEST_CASE(multi_constructors_1d){
+	{
+		multi::array<double, 1> A(10); 
+		BOOST_REQUIRE( size(A)==10 );
+	}
+	{
+		multi::array<double, 1> A(10, {}); 
+		BOOST_REQUIRE( size(A)==10 );
+		BOOST_REQUIRE( A[5]== double{} );
+	}
+	{
+		multi::array<double, 1> A(10, double{}); 
+		BOOST_REQUIRE( size(A)==10 );
+		BOOST_REQUIRE( A[5]== double{} );
+	}
+	{
+		#if __cpp_deduction_guides
+	//	multi::array A(10, double{}); 
+	//	BOOST_REQUIRE( size(A)==10 );
+	//	BOOST_REQUIRE( A[5]== double{} );
+		#endif
+	}
+}
+
 BOOST_AUTO_TEST_CASE(multi_constructors){
- {  multi::array<double, 1> A(10); assert(size(A)==10);
-}{//multi::array<double, 1> A({10}); assert(size(A)==1); // warning in clang
+{//multi::array<double, 1> A({10}); assert(size(A)==1); // warning in clang
 }{//multi::array<double, 1> A({10}, double{}); assert(size(A)==10); // warning in clang
-}{ multi::array<double, 1> A(10, {}); assert(size(A)==10);
-}{ multi::array<double, 1> A(10, double{}); assert(size(A)==10);
 }{//multi::array<double, 1> A({10}, double{}); assert(size(A)==10); // warning in clang
 }{//multi::array<double, 1> A({10}, 0.); assert(size(A)==10); // warning in clang
 }{//multi::array<double, 1> A({10}, {}); assert(size(A)==10); // error ambiguous 
@@ -103,14 +124,23 @@ BOOST_AUTO_TEST_CASE(multi_constructors){
 	;
 	rotated(A) = rotated(B);
 }
-
+{
+	multi::array<double, 2> A = {{0, 3}, {0, 5}};
+	assert( size(A) == 2 );
+	assert( size(A[0]) == 2 );
+	assert( A[1][1] == 5 );
+}
+{
+	multi::array<double, 2> A({{0, 3}, {0, 5}});
+	assert( size(A) == 2 );
+	assert( size(A[0]) == 2 );
+}
 //{
 //	std::vector<multi::static_array<double, 2>> v(9, {multi::index_extensions<2>{8, 8}});
 //	#if __cpp_deduction_guides
 //	std::vector w(9, multi::static_array<double, 2>({8, 8}));
 //	#endif
 //}
-
  {  multi::array<double, 1, std::allocator<double>> A{std::allocator<double>{}}; assert( empty(A) );
 }{  multi::array<double, 2, std::allocator<double>> A{std::allocator<double>{}}; assert( empty(A) );
 }{  multi::array<double, 3, std::allocator<double>> A{std::allocator<double>{}}; assert( empty(A) );

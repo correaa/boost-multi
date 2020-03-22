@@ -173,6 +173,8 @@ int main(){
 	static_assert( ranges::forward_iterator< std::decay_t<decltype(b)> > , "!");
 
 	assert( std::accumulate( begin(x), end(x), 0) == 0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 );
+
+	std::iterator_traits<std::decay_t<decltype(begin(x))>>::difference_type d; (void)d;
 //	for(auto i : x) std::cout << i << std::endl;
 
 }

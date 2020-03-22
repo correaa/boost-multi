@@ -8,6 +8,7 @@
 
 #include "../memory/adaptors/cuda/allocator.hpp"
 #include "../memory/adaptors/cuda/managed/allocator.hpp"
+#include "../adaptors/cuda/algorithms/copy.hpp"
 
 #include "../array.hpp"
 

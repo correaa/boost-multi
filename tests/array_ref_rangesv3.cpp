@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-c++ -O3 -Wall -Wextra $0 -o $0x -lboost_unit_test_framework &&$0x&&rm $0x;exit
+$CXX -O2 $0 -o $0x -lboost_unit_test_framework &&$0x&&rm $0x;exit
 #endif
 // © Alfredo Correa 2018-2020
 // this needs O3
@@ -17,7 +17,7 @@ namespace multi = boost::multi;
 int main(){
 
 	multi::array<double, 2> d2D = {
-		{ 0.,  1.,  2.,  3.},
+		{ 0.,  1.,  2.,  3.}, 
 		{ 5.,  6.,  7.,  8.}, 
 		{10., 11., 12., 13.}, 
 		{15., 16., 17., 18.}
@@ -45,6 +45,10 @@ int main(){
 //	static_assert( ranges::common_reference<typename It::reference&&, typename It::value_type&> );
 //	ranges::rvalue_reference_t<It> rr;
 	static_assert( ranges::readable<It>, "!");
+
+	{ // this needs O2 to run without segmentation fault
+		assert( ranges::inner_product(extension(d2D), extension(d2D), 0) == 0*0 + 1*1 + 2*2 + 3*3 );
+	}
 	return 0;
 #if 0
 //	static_assert( ranges::Readable<>{} );

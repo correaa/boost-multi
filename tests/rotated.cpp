@@ -53,7 +53,6 @@ BOOST_AUTO_TEST_CASE(multi_rotate_4d_op){
 	BOOST_REQUIRE( &original[0][1][2][3] == &unrotd2[2][3][0][1] );
 }
 
-
 BOOST_AUTO_TEST_CASE(multi_rotate){
 	double a[4][5] {
 		{ 0,  1,  2,  3,  4}, 

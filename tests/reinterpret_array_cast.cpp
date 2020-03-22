@@ -1,12 +1,11 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 $0 -o $0x -lboost_unit_test_framework -lcudart&&$0x&&rm $0x;exit
+clang++ -std=c++14 -x cuda --cuda-gpu-arch=sm_52 -ffast-math -ffp-contract=fast -fcuda-flush-denormals-to-zero -Ofast -ltbb -lcudart -O3 $0 -o $0x -lboost_unit_test_framework -lcudart&&$0x&&rm $0x;exit
 #endif
 
 #include "../array.hpp"
 #include "../adaptors/cuda.hpp"
 
 #include<complex>
-#include<iostream>
 #include<numeric>
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi reinterpret array"
@@ -48,15 +47,15 @@ namespace{
 		}
 		{
 			multi::cuda::array<std::complex<double>, 1> A(10);
-			A[8] = std::complex<double>{1000., 2000.};
+			CUDA_SLOW(( A[8] = std::complex<double>{1000., 2000.} ));
 			auto&& A2 = multi::reinterpret_array_cast<Complex_<double>>(A);
-			BOOST_REQUIRE( A[8] == std::complex<double>(1000., 2000.) );
+			BOOST_REQUIRE( CUDA_SLOW( A[8] == std::complex<double>(1000., 2000.) ) );
 
 			auto&& AR = multi::member_array_cast<double>(A2, &Complex_<double>::real);
 			auto&& AI = multi::member_array_cast<double>(A2, &Complex_<double>::imag);
 
-			BOOST_REQUIRE( AR[8] == 1000. );
-			BOOST_REQUIRE( AI[8] == 2000. );
+			BOOST_REQUIRE( CUDA_SLOW( AR[8] == 1000. ) );
+			BOOST_REQUIRE( CUDA_SLOW( AI[8] == 2000. ) );
 		}
 
 	}

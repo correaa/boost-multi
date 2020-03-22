@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-clang++ -Ofast -std=c++17 -Wall -Wextra -Wpedantic -ffast-math $0 -o$0x -ltbb && $0x && rm $0x; exit
+$CXX -Ofast -std=c++17 $0 -o $0x -ltbb && $0x && rm $0x; exit
 #endif
 
 #include "../../multi/array.hpp"

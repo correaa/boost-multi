@@ -44,7 +44,12 @@ namespace managed{
 		void construct(P p, Args&&... args){
 			::new(p.rp_) T(std::forward<Args>(args)...);
 		}
+		template<class P, class... Args>
+		void construct(P* p, Args&&... args){
+			::new(p) T(std::forward<Args>(args)...);
+		}
 		template<class P> void destroy(P p){p.rp_->~T();}
+		template<class P> void destroy(P* p){p->~T();}
 		constexpr bool operator==(allocator<T> const&) const{return true;}
 		constexpr bool operator!=(allocator<T> const&) const{return false;}
 	};

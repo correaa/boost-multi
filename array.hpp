@@ -71,24 +71,14 @@ protected:
 	using alloc_traits = typename std::allocator_traits<typename static_array::allocator_type>;
 	using ref = array_ref<T, D, typename std::allocator_traits<typename std::allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
 	auto uninitialized_value_construct(){
-		return adl::alloc_uninitialized_value_construct_n(static_array::alloc(), to_address(this->base_), this->num_elements());
+		return adl::alloc_uninitialized_value_construct_n(static_array::alloc(), this->base_, this->num_elements());
 	//	return uninitialized_value_construct_n(static_array::alloc(), to_address(this->base_), this->num_elements());
 	}
 	template<typename It> auto uninitialized_copy_from(It first){
 		return array_alloc::uninitialized_copy_n(first, this->num_elements(), this->data());
 	}
-	void destroy(){
-		auto n = this->num_elements();
-		adl::alloc_reverse_destroy_n(static_array::alloc(), this->data() + n, n);
-	//	while(n){
-		//	std::allocator_traits<allocator_type>::destroy(this->alloc(), to_address(this->data() + n + (-1)));
-	//		this->alloc().destroy(this->data() + n + (-1));//to_address(this->data() + n + (-1)));
-	//		--n;
-	//	}
-	}
+	void destroy(){adl::alloc_destroy_n(static_array::alloc(), this->data(), this->num_elements());}
 public:
-//	using typename ref::value_type;
-
 	using value_type = typename std::conditional<
 		(static_array::dimensionality>1),
 		array<typename static_array::element, static_array::dimensionality-1, allocator_type>, 
@@ -218,7 +208,6 @@ public:
 	~static_array() noexcept{
 		this->destroy();
 		deallocate();
-	//	alloc_traits::deallocate(this->alloc(), this->base_, static_cast<typename alloc_traits::size_type>(this->num_elements()));
 	}
 	using element_const_ptr = typename std::pointer_traits<typename static_array::element_ptr>::template rebind<typename static_array::element const>;
 	using reference = typename std::conditional<
@@ -268,8 +257,9 @@ public:
 	using ref::operator();
 
 //	basic_array<T, D, typename static_array::element_ptr> 
-	decltype(auto) operator()()&{
-		return ref::operator()();
+	decltype(auto) operator()() &{
+		return static_array_cast<typename static_array::element_type>(*this);//(std::forward<Ts>(t)...);
+	//	return ref::operator()();
 	//	return *this;
 	}
 	basic_array<T, D, typename static_array::element_const_ptr> operator()() const&{
@@ -735,12 +725,19 @@ public:
 		}
 	}
 	void assign(std::initializer_list<typename array::value_type> il){assign(il.begin(), il.end());}
+//	template<class It, class Size> It assign_n(It first, Size n){
+//		if(n == array::size() and multi::extensions(*first) == multi::extensions(*array::begin())){
+//			return static_::ref::assign(first);
+//		}
+//		this->
+//	}
 	template<class It>
 	array& assign(It first, It last){
 		using std::next;
 		using std::all_of;
-		using std::distance;
-		if(distance(first, last) == array::size() and multi::extensions(*first) == multi::extensions(*array::begin())){
+	//	using std::distance;
+		auto const s = adl::distance(first, last);
+		if(s == array::size() and multi::extensions(*first) == multi::extensions(*array::begin())){
 			static_::ref::assign(first, last);
 		}else{
 			this->operator=(array(first, last));

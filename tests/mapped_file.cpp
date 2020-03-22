@@ -1,7 +1,8 @@
 #ifdef COMPILATION_INSTRUCTIONS
-c++ -std=c++17 `#-Wfatal-errors` -I$HOME/soft/metall/include $0 -o $0.x -lpthread -lrt -lstdc++fs && $0.x  $@ && rm -f $0.x; exit
+$CXX -std=c++17 `#-Wfatal-errors` -I$HOME/soft/metall/include $0 -o $0.x -lpthread -lrt -lstdc++fs && $0.x  $@ && rm -f $0.x; exit
 #endif
-//  (C) Copyright Alfredo A. Correa 2019
+// © Alfredo A. Correa 2019-2020
+
 #include<cassert>
 #include<numeric> // iota
 #include<iostream>

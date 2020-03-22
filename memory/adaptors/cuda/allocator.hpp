@@ -8,6 +8,7 @@
 #include<cuda_runtime.h> // cudaMalloc
 
 #include "../../adaptors/cuda/ptr.hpp"
+#include "../../adaptors/cuda/algorithm.hpp"
 
 #include "../../adaptors/cuda/clib.hpp" // cuda::malloc
 #include "../../adaptors/cuda/cstring.hpp" // cuda::memcpy
@@ -57,7 +58,8 @@ public:
 	std::true_type operator==(allocator const&) const{return {};}
 	std::false_type operator!=(allocator const&) const{return {};}
 	template<class P, class... Args>
-	void construct(P p, Args&&... args){
+	[[deprecated("cuda slow")]]
+	void construct(P p, Args&&... args) = delete;/*{
 		if(sizeof...(Args) == 0 and std::is_trivially_default_constructible<T>{})
 			cuda::memset(p, 0, sizeof(T));
 		else{
@@ -65,13 +67,25 @@ public:
 			::new(buff) T(std::forward<Args>(args)...);
 			cuda::memcpy(p, buff, sizeof(T));
 		}
-	}
-	template<class P> void destroy(P p){
+	}*/
+	template<class P> 
+	[[deprecated("cuda slow")]]
+	void destroy(P p){
 		if(not std::is_trivially_destructible<T>{}){
 			char buff[sizeof(T)];
 			cuda::memcpy(buff, p, sizeof(T));
 			((T*)buff)->~T();
 		}
+	}
+	template<class Ptr, class Size, class V = typename Ptr::element_type>//, std::enable_if_t<typename Ptr::element_type> >
+	Ptr alloc_uninitialized_value_construct_n(Ptr p, Size n){
+		return fill_n(p, n, V{});
+	}
+	template<class Ptr, class Size, class V = typename Ptr::element_type>
+	Ptr alloc_destroy_n(Ptr p, Size n){
+		if(std::is_trivially_destructible<V>{}){
+		}else{assert(0);}
+		return p + n;
 	}
 };
 
