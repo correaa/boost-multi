@@ -16,8 +16,7 @@
 #  - ln -svf $CI_PROJECT_DIR $GOPATH/src/$REPO_NAME
 #  - cd $GOPATH/src/$REPO_NAME
 #    - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
-#    - apt upgrade -y --quiet
-#    - apt update --quiet
+
 
 image: debian:testing
 
@@ -25,6 +24,8 @@ variables:
   CXX: "c++"
 
 before_script:
+    - apt update --quiet
+    - apt upgrade -y --quiet
     - DEBIAN_FRONTEND=noninteractive apt install --assume-yes --quiet software-properties-common g++ libboost-test-dev librange-v3-dev valgrind nvidia-cuda-toolkit nvidia-cuda-dev nvidia-smi
     - apt-add-repository non-free
     - apt update --quiet
