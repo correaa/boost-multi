@@ -20,6 +20,7 @@ image: debian:testing
 
 variables:
   CXX: "c++"
+  DOCKER_DRIVER: overlay2
 
 before_script:
     - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
