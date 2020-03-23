@@ -1,4 +1,4 @@
-#ifdef COMPILATION_INSTRUCTIONS
+#ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
 for a in ./tests/*.cpp; do echo $a; sh $a || break; echo "\n"; done; exit;*/
 $CXX -D_TEST_BOOST_MULTI_ARRAY_REF -xc++ $0 -o $0x&&$0x&&rm $0x $0.cpp;exit
 #endif

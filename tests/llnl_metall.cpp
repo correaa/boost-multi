@@ -14,7 +14,6 @@ using namespace metall;
 template<class T> using mallocator = manager::allocator_type<T>;
 
 decltype(auto) get_allocator(manager& m){return m.get_allocator();}
-//void sync(manager& m){m.sync();}
 
 void mremove(std::string const& s){for(auto fix:{"bin_directory","chunk_directory","named_object_directory","segment"}) std::filesystem::remove(s +"_"+ fix);}
 std::string candidates(manager&){return "";}
@@ -51,7 +50,7 @@ mremove("mapped_file.bin");
 
 	arr3d_cpy = arr3d;
 	assert( arr3d_cpy[6][7][8] == arr3d[6][7][8] );
-//	sync(m);
+	m.flush();
 }
 {
 	manager m{open_only, "mapped_file.bin"};

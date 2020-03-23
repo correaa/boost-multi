@@ -1,4 +1,4 @@
-#ifdef COMPILATION_INSTRUCTIONS
+#ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
 $CXX -D_TEST_BOOST_MULTI_ARRAY -xc++ $0 -o$0x -DBOOST_LOG_DYN_LINK -lboost_log -pthread&&$0x&&rm $0x;exit
 #endif
 //  © Alfredo A. Correa 2018-2019

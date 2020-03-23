@@ -1,6 +1,7 @@
-#ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&nvcc -std=c++14 `#-Wall -Wextra` -D_DISABLE_CUDA_SLOW -D_TEST_MULTI_MEMORY_CUDA_ALLOCATOR -D_MULTI_MEMORY_CUDA_DISABLE_ELEMENT_ACCESS $0.cpp -o $0x -lcudart && $0x && rm $0x $0.cpp; exit
+#ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
+nvcc -std=c++14 -D_DISABLE_CUDA_SLOW -D_TEST_MULTI_MEMORY_CUDA_ALLOCATOR -D_MULTI_MEMORY_CUDA_DISABLE_ELEMENT_ACCESS -x cu $0 -o $0x -lcudart&&$0x&&rm $0x;exit
 #endif
+// © Alfredo A. Correa 2020
 
 #ifndef MULTI_MEMORY_ADAPTORS_CUDA_ALLOCATOR_HPP
 #define MULTI_MEMORY_ADAPTORS_CUDA_ALLOCATOR_HPP
@@ -10,11 +11,11 @@
 #include "../../adaptors/cuda/ptr.hpp"
 #include "../../adaptors/cuda/algorithm.hpp"
 
-#include "../../adaptors/cuda/clib.hpp" // cuda::malloc
+#include "../../adaptors/cuda/clib.hpp"    // cuda::malloc
 #include "../../adaptors/cuda/cstring.hpp" // cuda::memcpy
 #include "../../adaptors/cuda/malloc.hpp"
 
-#include<new> // bad_alloc
+#include<new>      // bad_alloc
 #include<cassert>
 #include<iostream> // debug
 
