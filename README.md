@@ -479,24 +479,23 @@ Using Interprocess allows for shared memory and for persistent mapped memory.
 #include "multi/array.hpp"
 #include<cassert>
 
-using namespace boost::interprocess;
-using manager = managed_mapped_file;
-template<class T> using mallocator = allocator<T, manager::segment_manager>;
+namespace bip = boost::interprocess;
+using manager = bip::managed_mapped_file;
+template<class T> using mallocator = bip::allocator<T, manager::segment_manager>;
 auto get_allocator(manager& m){return m.get_segment_manager();}
-void sync(manager& m){m.flush();}
 
 namespace multi = boost::multi;
 template<class T, int D> using marray = multi::array<T, D, mallocator<T>>;
 
 int main(){
 {
-	manager m{create_only, "mapped_file.bin", 1 << 25};
+	manager m{bip::create_only, "bip_mapped_file.bin", 1 << 25};
 	auto&& arr2d = *m.construct<marray<double, 2>>("arr2d")(std::tuple{1000, 1000}, 0., get_allocator(m));
 	arr2d[4][5] = 45.001;
-	sync(m);
+	m.flush();
 }
 {
-	manager m{open_only, "mapped_file.bin"};
+	manager m{bip::open_only, "bip_mapped_file.bin"};
 	auto&& arr2d = *m.find<marray<double, 2>>("arr2d").first;
 	assert( arr2d[4][5] == 45.001 );
 	m.destroy<marray<double, 2>>("arr2d");//	eliminate<marray<double, 2>>(m, "arr2d");}
@@ -520,6 +519,7 @@ int main(){
 	A2[5][0] = 50.;
 	thrust::copy(begin(rotated(A2)[0]), end(rotated(A2)[0]), begin(rotated(B2)[0]));
 	assert( B2[5][0] == 50. );
+}
 ```
 
 # Technical points

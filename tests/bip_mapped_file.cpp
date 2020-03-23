@@ -16,7 +16,7 @@ using manager = bip::managed_mapped_file;
 
 template<class T> using mallocator = bip::allocator<T, manager::segment_manager>;
 auto get_allocator(manager& m){return m.get_segment_manager();}
-void mremove(char const* f){std::filesystem::remove(f);}
+void mremove(std::filesystem::path f){std::filesystem::remove(f);}
 std::string candidates(manager& m){
 	std::string ret = "  candidates are:\n";
 	for(auto it = get_allocator(m)->named_begin(); it != get_allocator(m)->named_end(); ++it)
@@ -32,9 +32,10 @@ template<class T, auto D> using marray = multi::array<T, D, mallocator<T>>;
 using std::tuple;
 
 int main(){
-mremove("bip_mapped_file.bin");
+std::filesystem::path file = "bip_mapped_file.bin";
+mremove(file);
 {
-	manager m{bip::create_only, "bip_mapped_file.bin", 1 << 25};
+	manager m{bip::create_only, file.c_str(), 1 << 25};
 	auto&& arr1d = 
 		*m.construct<marray<int, 1>>("arr1d")(tuple{10}, 99, get_allocator(m));
 	auto&& arr2d = 
@@ -49,7 +50,7 @@ mremove("bip_mapped_file.bin");
 	m.flush();
 }
 {
-	manager m{bip::open_only, "bip_mapped_file.bin"};
+	manager m{bip::open_only, file.c_str()};
 
 	auto&& arr1d = 
 		*m.find<marray<int, 1>>("arr1d").first; assert(std::addressof(arr1d));
@@ -70,6 +71,6 @@ mremove("bip_mapped_file.bin");
 	m.destroy<marray<double, 2>>("arr2d");//	eliminate<marray<double, 2>>(m, "arr2d");
 	m.destroy<marray<unsigned, 3>>("arr3d");//	eliminate<marray<unsigned, 3>>(m, "arr3d");
 }
-mremove("bip_mapped_file.bin");
+mremove(file);
 }
 
