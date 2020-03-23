@@ -1,4 +1,4 @@
-#ifdef COMPILATION_INSTRUCTIONS
+#ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
 $CXX -std=c++17 -I$HOME/github.com/LLNL/metall.git/include/ $0 -o $0x -lstdc++fs&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
@@ -9,36 +9,30 @@ $CXX -std=c++17 -I$HOME/github.com/LLNL/metall.git/include/ $0 -o $0x -lstdc++fs
 
 #include<metall/metall.hpp>
 
-using namespace metall;
-
-template<class T> using mallocator = manager::allocator_type<T>;
-
-decltype(auto) get_allocator(manager& m){return m.get_allocator();}
-
-void mremove(std::string const& s){for(auto fix:{"bin_directory","chunk_directory","named_object_directory","segment"}) std::filesystem::remove(s +"_"+ fix);}
-std::string candidates(manager&){return "";}
+template<class T> using mallocator = metall::manager::allocator_type<T>;
 
 #include "../../multi/array.hpp"
 
 namespace multi = boost::multi;
 
-template<class T, auto D> using marray = multi::array<T, D, mallocator<T>>;
+template<class T, multi::dimensionality_type D> 
+using marray = multi::array<T, D, mallocator<T>>;
 
 using std::tuple;
 
 int main(){
-
-mremove("mapped_file.bin");
+std::filesystem::path dir = "llnl_metall_mapped_file.bin/";
+remove_all(dir);
 {
-	manager m{create_only, "mapped_file.bin", 1 << 25};
+	metall::manager m{metall::create_only, dir.c_str(), 1 << 25};
 	auto&& arr1d = 
-		*m.construct<marray<int, 1>>("arr1d")(tuple{10}, 99, get_allocator(m));
+		*m.construct<marray<int     , 1>>("arr1d")(tuple{10}        , 99 , m.get_allocator());
 	auto&& arr2d = 
-		*m.construct<marray<double, 2>>("arr2d")(tuple{1000, 1000}, 1.0, get_allocator(m));
+		*m.construct<marray<double  , 2>>("arr2d")(tuple{1000, 1000}, 1.0, m.get_allocator());
 	auto&& arr3d = 
-		*m.construct<marray<unsigned, 3>>("arr3d")(tuple{10, 10, 10}, 1u, get_allocator(m));
+		*m.construct<marray<unsigned, 3>>("arr3d")(tuple{10, 10, 10}, 1u , m.get_allocator());
 	auto&& arr3d_cpy = 
-		*m.construct<marray<unsigned, 3>>("arr3d_cpy")(tuple{0, 0, 0}, get_allocator(m));
+		*m.construct<marray<unsigned, 3>>("arr3d_cpy")(tuple{0, 0, 0}, m.get_allocator());
 
 	assert( arr1d[3] == 99 );
 	assert( arr2d[4][5] == 1.0 );
@@ -53,12 +47,12 @@ mremove("mapped_file.bin");
 	m.flush();
 }
 {
-	manager m{open_only, "mapped_file.bin"};
+	metall::manager m{metall::open_only, dir.c_str()};
 
 	auto&& arr1d =
-		*m.find<marray<int, 1>>("arr1d").first; assert(std::addressof(arr1d));
+		*m.find<marray<int     , 1>>("arr1d").first; assert(std::addressof(arr1d));
 	auto&& arr2d =
-		*m.find<marray<double, 2>>("arr2d").first; assert(std::addressof(arr2d));
+		*m.find<marray<double  , 2>>("arr2d").first; assert(std::addressof(arr2d));
 	auto&& arr3d =
 		*m.find<marray<unsigned, 3>>("arr3d").first; assert(std::addressof(arr3d));
 	auto&& arr3d_cpy =
@@ -73,10 +67,11 @@ mremove("mapped_file.bin");
 	assert( arr3d[6][7][3] == 103 );
 	assert( arr3d_cpy == arr3d );
 
-	m.destroy<marray<int, 1>>("arr1d");//	eliminate<marray<int, 1>>(m, "arr1d"); 
-	m.destroy<marray<double, 2>>("arr2d");//	eliminate<marray<double, 2>>(m, "arr2d");
-	m.destroy<marray<unsigned, 3>>("arr3d");//	eliminate<marray<unsigned, 3>>(m, "arr3d");
+	m.destroy<marray<int     , 1>>("arr1d");
+	m.destroy<marray<double  , 2>>("arr2d");
+	m.destroy<marray<unsigned, 3>>("arr3d");
+	m.destroy<marray<unsigned, 3>>("arr3d_cpy");
 }
-mremove("mapped_file.bin");
+remove_all(dir);
 }
 
