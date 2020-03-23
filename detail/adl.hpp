@@ -69,8 +69,7 @@ namespace adl{
 //BOOST_MULTI_DEFINE_ADL(copy);
 namespace boost{namespace multi{ \
 namespace adl{ \
-	namespace custom{template<class...> struct copy_t;} \
-	__attribute__((unused)) 
+	namespace custom{template<class...> struct copy_t;} __attribute__((unused)) 
 	static constexpr class copy_t{ \
 /*		template<class... As> [[deprecated]] auto _(priority<0>,  As&&... as) const = delete;*/                                                            \
 		template<class... As>          auto _(priority<1>,        As&&... as) const->RET(              std::copy              (std::forward<As>(as)...))
@@ -78,12 +77,13 @@ namespace adl{ \
 		template<class... As>          auto _(priority<2>,        As&&... as) const->decltype(               adl_copy              (std::forward<As>(as)...)){
 return                adl_copy              (std::forward<As>(as)...);
 	} \
-		template<class... As>          auto _(priority<3>,        As&&... as) const->RET(                   copy(std::forward<As>(as)...)) \
+		template<class... As>          auto _(priority<3>,        As&&... as) const{return                   copy(std::forward<As>(as)...);} \
 		template<class T, class... As> auto _(priority<4>, T&& t, As&&... as) const->RET(std::decay_t<T>::copy(std::forward<T>(t), std::forward<As>(as)...))
 		template<class T, class... As> auto _(priority<5>, T&& t, As&&... as) const->RET(std::forward<T>(t).copy              (std::forward<As>(as)...)) \
-/*		template<class... As>          auto _(priority<5>,        As&&... as) const->RET(custom::           copy_t<As&&...>::_(std::forward<As>(as)...))*/ \
+		template<class... As>          auto _(priority<6>,        As&&... as) const->RET(custom::           copy_t<As&&...>::_(std::forward<As>(as)...)) \
+		template<class T, class... As> auto _(priority<7>, T&& t, As&&... as) const->RET(copy(t)(std::forward<As>(as)...)) 
 	public: \
-		template<class... As> auto operator()(As&&... as) const->decltype(_(priority<5>{}, std::forward<As>(as)...)){return _(priority<5>{}, std::forward<As>(as)...);} \
+		template<class... As> auto operator()(As&&... as) const->decltype(_(priority<7>{}, std::forward<As>(as)...)){return _(priority<5>{}, std::forward<As>(as)...);} \
 	} copy; \
 } \
 }}
@@ -182,6 +182,8 @@ constexpr BidirIt alloc_destroy_n(Alloc& a, BidirIt first, Size n){
 }
 
 namespace xtd{
+
+
 template<class Alloc, class InputIt, class Size, class ForwardIt>//, typename AT = std::allocator_traits<Alloc> >
 auto alloc_uninitialized_copy_n(Alloc& a, InputIt f, Size n, ForwardIt d)
 ->std::decay_t<decltype(a.construct(std::addressof(*d), *f), d)>
@@ -191,7 +193,7 @@ auto alloc_uninitialized_copy_n(Alloc& a, InputIt f, Size n, ForwardIt d)
 		for(; n > 0; ++f, ++c, --n) std::allocator_traits<Alloc>::construct(a, std::addressof(*c), *f);
 		return c;
 	}catch(...){
-		for(; d != c; ++d) std::allocator_traits<Alloc>::destroy(a, d);
+		for(; d != c; ++d) std::allocator_traits<Alloc>::destroy(a, std::addressof(*d));
 		throw;
 	}
 }

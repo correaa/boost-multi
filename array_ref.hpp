@@ -797,7 +797,7 @@ public:
 		return *this;
 	}
 	typename types::reference operator[](typename types::index i) const HD{
-		return *(this->base() + Layout::operator()(i));
+		return *(this->base() + Layout::operator()(i)); // in C++17 this is allowed even with syntethic references
 	}
 	template<class Tuple, typename = std::enable_if_t<(std::tuple_size<std::decay_t<Tuple>>{}>1) > >
 	auto operator[](Tuple&& t) const
