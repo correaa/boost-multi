@@ -15,6 +15,7 @@
 #  - mkdir -p $GOPATH/src/$(dirname $REPO_NAME)
 #  - ln -svf $CI_PROJECT_DIR $GOPATH/src/$REPO_NAME
 #  - cd $GOPATH/src/$REPO_NAME
+#    - apt upgrade -y --quiet
 
 image: debian:testing
 
@@ -25,7 +26,6 @@ variables:
 before_script:
     - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
     - apt update --quiet
-    - apt upgrade -y --quiet
     - DEBIAN_FRONTEND=noninteractive apt install --assume-yes --quiet g++ libboost-test-dev librange-v3-dev valgrind nvidia-cuda-toolkit nvidia-cuda-dev nvidia-smi
 
 stages:
