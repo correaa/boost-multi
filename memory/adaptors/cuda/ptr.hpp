@@ -1,5 +1,5 @@
-#ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&nvcc -x cu -Xcompiler=-Wall,-Wextra`#clang++ -Wall -std=c++14 -x cuda --cuda-gpu-arch=sm_50 -lcudart` -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_PTR $0.cpp -o $0x -lboost_unit_test_framework&&$0x&&rm $0x; exit
+#ifdef COMPILATION_INSTRUCTIONS// -*- indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4 -*-
+nvcc -x cu -Xcompiler=-Wall,-Wextra`#clang++ -Wall -std=c++14 -x cuda --cuda-gpu-arch=sm_50 -lcudart` -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_PTR $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x; exit
 #endif
 
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_PTR_HPP

@@ -37,6 +37,7 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr_test){
 	BOOST_REQUIRE( size(rotated(A)) == size(rotated(B)) );
 	
 	BOOST_REQUIRE( std::distance(begin(rotated(B)), end(rotated(B))) == 5 );		
+
 	rotated(A) = rotated(B);
 	BOOST_REQUIRE( b[1][2] == a[1][2] );
 }

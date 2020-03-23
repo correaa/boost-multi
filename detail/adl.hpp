@@ -1,15 +1,17 @@
-#ifdef COMPILATION_INSTRUCTIONS
-$CXX -Wall -Wextra -Wpedantic -D_TEST_MULTI_DETAIL_ADL -xc++ $0 -o$0x -lboost_unit_test_framework&&$0x --color-output=no&&rm $0x;exit
+#ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4-*-
+$CXX -Wall -Wextra -Wpedantic -D_TEST_MULTI_DETAIL_ADL -xc++ $0 -o$0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2020
+
 #ifndef MULTI_DETAIL_ADL_HPP
 #define MULTI_DETAIL_ADL_HPP
+
 #include<cstddef> // std::size_t
 #include<type_traits> // std::conditional_t
 #include<utility>
 
 #include<memory> // uninitialized_copy, etc
-#include<algorithm> // copy, copy_n, equal
+#include<algorithm> // std::copy, std::copy_n, std::equal, etc
 #include<iterator> // begin, end
 
 #include "../detail/memory.hpp"

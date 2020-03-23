@@ -1,5 +1,5 @@
-#ifdef COMPILATION_INSTRUCTIONS
-clang++ -std=c++14 -x cuda --cuda-gpu-arch=sm_52 -ffast-math -ffp-contract=fast -fcuda-flush-denormals-to-zero -Ofast -ltbb -lcudart -O3 $0 -o $0x -lboost_unit_test_framework -lcudart&&$0x&&rm $0x;exit
+#ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4-*-
+clang++ -std=c++14 --cuda-gpu-arch=sm_52 -Ofast -x cuda $0 -o $0x -ltbb -lcudart -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 
 #include "../array.hpp"
