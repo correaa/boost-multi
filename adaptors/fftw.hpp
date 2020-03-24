@@ -1,5 +1,7 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'" '>$0.cpp)&&`#nvcc -x cu --expt-relaxed-constexpr`$CXX -Wfatal-errors -D_TEST_MULTI_ADAPTORS_FFTW $0.cpp -o $0x -lcudart `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x $0.cpp;exit
+#nvcc    -D_TEST_MULTI_ADAPTORS_FFTW -x cu  $0 -o $0x                                   `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x
+clang++ -D_TEST_MULTI_ADAPTORS_FFTW -x c++ $0 -o $0x -lcudart -pthread -lfftw3_threads `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x
+exit
 #endif
 // © Alfredo A. Correa 2018-2019
 
@@ -175,8 +177,9 @@ template<class T> constexpr std::remove_reference_t<T> _constx(T&&t){return t;}
 #define logic_assert(ConditioN, MessagE) assert(ConditioN && MessagE);
 #endif
 
-template<typename It1, class It2>
-fftw_plan fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, unsigned flags = FFTW_ESTIMATE){
+template<typename It1, class It2, std::enable_if_t<std::is_pointer<decltype(base(It2{}))>{}, int> = 0>
+auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, unsigned flags = FFTW_ESTIMATE)
+->decltype(reinterpret_cast<fftw_complex*>(static_cast<std::complex<double>*>(base(d_first))), fftw_plan{}){
 	assert(strides(*first) == strides(*last));
 	assert(sizes(*first)==sizes(*d_first));
 	auto ion      = to_array<int>(sizes(*first));
@@ -184,17 +187,17 @@ fftw_plan fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, unsigne
 	auto ostrides = to_array<int>(strides(*d_first));
 
 	int istride = istrides.back();
-	auto inembed = istrides; inembed.fill(0);
-	for(std::size_t i = 1; i != inembed.size(); ++i){
+	auto iembed = istrides; iembed.fill(0);
+	for(std::size_t i = 1; i != iembed.size(); ++i){
 		assert( istrides[i-1]%istrides[i] == 0 );
-		inembed[i]=istrides[i-1]/istrides[i];
+		iembed[i]=istrides[i-1]/istrides[i];
 	}
 
 	int ostride = ostrides.back();
-	auto onembed = ostrides; onembed.fill(0);
-	for(std::size_t i = 1; i != onembed.size(); ++i){
+	auto oembed = ostrides; oembed.fill(0);
+	for(std::size_t i = 1; i != oembed.size(); ++i){
 		assert( ostrides[i-1]%ostrides[i] == 0 );
-		onembed[i]=ostrides[i-1]/ostrides[i];
+		oembed[i]=ostrides[i-1]/ostrides[i];
 	}
 
 	return ::fftw_plan_many_dft(
@@ -202,11 +205,11 @@ fftw_plan fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, unsigne
 		/*const int* n*/ ion.data(),
 		/*int howmany*/ last - first,
 		/*fftw_complex * in */ reinterpret_cast<fftw_complex*>(const_cast<std::complex<double>*>(static_cast<std::complex<double> const*>(base(first)))), 
-		/*const int *inembed*/ inembed.data(),
+		/*const int *inembed*/ iembed.data(),
 		/*int*/ istride, 
 		/*int idist*/ stride(first),
 		/*fftw_complex * out */ reinterpret_cast<fftw_complex*>(static_cast<std::complex<double>*>(base(d_first))),
-		/*const int *onembed*/ onembed.data(),
+		/*const int *onembed*/ oembed.data(),
 		/*int*/ ostride, 
 		/*int odist*/ stride(d_first),
 		/*int*/ sign, /*unsigned*/ flags
@@ -271,7 +274,9 @@ public:
 		assert(impl_);
 	}
 	template<typename... As>
-	static plan many(As&&... as){
+	static auto many(As&&... as)
+	->std::decay_t<decltype(fftw_plan_many_dft(std::forward<As>(as)...) , std::declval<plan>())>
+	{
 		plan r; r.impl_.reset(fftw_plan_many_dft(std::forward<As>(as)...)); return r;
 	}
 private:
@@ -283,7 +288,9 @@ private:
 	template<class I, class O> void execute(I&& i, O&& o) const{execute_dft(std::forward<I>(i), std::forward<O>(o));}
 	friend void execute(plan const& p){p.execute();}
 public:
-	void operator()() const{execute();}
+	plan& operator=(plan&&) = default;
+	plan& operator=(plan const&) = delete;//default;
+	void operator()() const{execute();} // http://www.fftw.org/fftw3_doc/Thread-safety.html#Thread-safety
 	template<class I, class O> void operator()(I&& i, O&& o) const{return execute(std::forward<I>(i), std::forward<O>(o));}
 	double cost() const{return fftw_cost(impl_.get());}
 	auto flops() const{
@@ -291,7 +298,18 @@ public:
 		fftw_flops(impl_.get(), &r.add, &r.mul, &r.fma);
 		return r;
 	}
+	static void make_thread_safe(){
+		fftw_make_planner_thread_safe(); // needs linking to -lfftw3_threads, requires FFTW-3.3.6 or greater
+		is_thread_safe_ = true;
+	}
+	static bool is_thread_safe(){return is_thread_safe_;}
+private:
+	static bool is_thread_safe_;
 };
+
+#if _REENTRANT
+bool plan::is_thread_safe_ = (plan::make_thread_safe(), true);
+#endif
 
 enum sign: decltype(FFTW_FORWARD){none = 0, forward = FFTW_FORWARD, backward = FFTW_BACKWARD };
 enum strategy: decltype(FFTW_ESTIMATE){ estimate = FFTW_ESTIMATE, measure = FFTW_MEASURE };
@@ -331,7 +349,7 @@ Out&& dft(In const& i, Out&& o, sign s){
 
 template<typename In, class Out, std::size_t D = std::decay_t<In>::dimensionality>
 auto dft(std::array<sign, D> w, In const& i, Out&& o){
-	std::array<bool, D> fwd, non, bwd;
+	std::array<bool, D> fwd, /*non,*/ bwd;
 
 	std::transform(begin(w), end(w), begin(fwd), [](auto e){return e==sign::forward;});
 	dft(fwd, i, o, sign::forward);
@@ -345,10 +363,9 @@ auto dft(std::array<sign, D> w, In const& i, Out&& o){
 }
 
 template<typename It1, typename It2>
-auto many_dft(It1 first, It1 last, It2 d_first, int sign){
-	plan::many(first, last, d_first, sign)();
-	return d_first + (last - first);
-}
+auto many_dft(It1 first, It1 last, It2 d_first, int sign)
+->decltype(plan::many(first, last, d_first, sign)(), d_first + (last - first)){
+	return plan::many(first, last, d_first, sign)(), d_first + (last - first);}
 
 template<typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
 NODISCARD("when first argument is const")
@@ -417,6 +434,10 @@ template<class In> In&& dft_inplace(In&& i, sign s){
 	return std::forward<In>(i);
 }
 
+}
+
+namespace fft{
+	using fftw::many_dft;
 }
 
 }}
@@ -590,9 +611,9 @@ BOOST_AUTO_TEST_CASE(fftw_2D_many, *boost::unit_test::tolerance(0.0001)){
 		{ 31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
 	};
 	multi::array<complex, 2> out(extensions(in));
-	multi::fftw::dft<1>(in, out, multi::fftw::forward);
+//	multi::fftw::dft<1>(in, out, multi::fftw::forward);
 //	dft({false, true}, in, out, multi::fftw::forward);
-//	multi::fftw::dft({multi::fftw::none, multi::fftw::forward}, in, out);
+	multi::fftw::dft({multi::fftw::none, multi::fftw::forward}, in, out);
 
 	using multi::fftw::dft_forward;
 	BOOST_REQUIRE( dft_forward(in[0]) == out[0] );
@@ -603,7 +624,6 @@ BOOST_AUTO_TEST_CASE(fftw_2D_many, *boost::unit_test::tolerance(0.0001)){
 	multi::fftw::dft({false, false}, rotated(in), rotated(out), multi::fftw::forward);
 	BOOST_REQUIRE( in == out );
 
-	
 	multi::fftw::many_dft(begin(in), end(in), begin(out), multi::fftw::forward);
 	using multi::fftw::dft_forward;
 	BOOST_REQUIRE( dft_forward(in[0]) == out[0] );
