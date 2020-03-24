@@ -23,10 +23,10 @@ namespace memory{namespace cuda{
 //	memcpy(result, first, count*sizeof(T)); return result + count;
 //}
 
-//template<class U, class T, typename Size, typename = std::enable_if_t<std::is_trivially_assignable<T&, U>{}>>
-//ptr<T> copy_n(ptr<U> first, Size count, ptr<T> result){
-//	memcpy(result, first, count*sizeof(T)); return result + count;
-//}
+template<class U, class T, typename Size, typename = std::enable_if_t<std::is_trivially_assignable<T&, U>{}>>
+ptr<T> copy_n(ptr<U> first, Size count, ptr<T> result){
+	memcpy(result, first, count*sizeof(T)); return result + count;
+}
 
 //	template<class P> 
 //	using element_t = typename std::pointer_traits<P>::element_type;
@@ -78,7 +78,10 @@ auto fill(memory::cuda::ptr<T> first, memory::cuda::ptr<T> last, T const& value)
 
 template<class U, class T, typename Size, typename = std::enable_if_t<std::is_trivially_assignable<T&, U>{}>>
 memory::cuda::ptr<T> fill_n(ptr<T> const first, Size count, U const& value){
-	     if(value == 0.) cuda::memset(first, 0, count*sizeof(T));
+	if(std::find_if_not(reinterpret_cast<char const*>(&value), reinterpret_cast<char const*>(&value) + sizeof(value), [](char c){return c==0;}) == reinterpret_cast<char const*>(&value) + sizeof(value)){
+//	if(value == 0.){
+		cuda::memset(first, 0, count*sizeof(T));
+	}
 	else if(count--) for(ptr<T> new_first = copy_n(&value, 1, first); count;){
 		auto n = std::min(Size(std::distance(first, new_first)), count);
 		new_first = copy_n(first, n, new_first);

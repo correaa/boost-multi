@@ -153,8 +153,7 @@ ForwardIt alloc_uninitialized_value_construct_n(Alloc& alloc, ForwardIt first, S
 {
 	ForwardIt current = first;
 	try{
-		for (; n > 0 ; (void)++current, --n)
-			std::allocator_traits<Alloc>::construct(alloc, std::addressof(*current), Value());
+		for (; n > 0 ; ++current, --n) std::allocator_traits<Alloc>::construct(alloc, std::addressof(*current), Value());
 		//	::new (static_cast<void*>(std::addressof(*current))) Value();
 		return current;
 	}catch(...){
@@ -162,6 +161,22 @@ ForwardIt alloc_uninitialized_value_construct_n(Alloc& alloc, ForwardIt first, S
 		throw;
 	}
 }
+
+template<class Alloc, class ForwardIt, class Size>//, typename Value = typename std::iterator_traits<ForwardIt>::value_type>
+ForwardIt alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size n)
+//->std::decay_t<decltype(std::allocator_traits<Alloc>::construct(alloc, std::addressof(*first), Value()), first)>
+{
+	ForwardIt current = first;
+	try{
+		for(; n > 0 ; ++current, --n) std::allocator_traits<Alloc>::construct(alloc, std::addressof(*current));
+		//	::new (static_cast<void*>(std::addressof(*current))) Value;
+		return current;
+	}catch(...){
+		for(; current != first; ++first) std::allocator_traits<Alloc>::destroy(alloc, std::addressof(*first));
+		throw;
+	}
+}
+
 }
 
 template<class Alloc> struct alloc_destroy_elem_t{
@@ -277,6 +292,22 @@ namespace adl{ \
 
 namespace boost{namespace multi{ \
 namespace adl{ \
+	namespace custom{template<class...> struct alloc_uninitialized_default_construct_n_t;} 	__attribute__((unused)) 
+	static constexpr class alloc_uninitialized_default_construct_n_t{ \
+/*		template<class... As> [[deprecated]] auto _(priority<0>,        As&&... as) const = delete;*/ \
+		template<class... As>          auto _(priority<1>,        As&&... as) const{return xtd::            alloc_uninitialized_default_construct_n              (std::forward<As>(as)...);} // TODO: use boost? 
+		template<class... As>          auto _(priority<2>,        As&&... as) const->RET( alloc_uninitialized_default_construct_n              (std::forward<As>(as)...))
+		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const->RET(std::forward<T>(t).alloc_uninitialized_default_construct_n              (std::forward<As>(as)...))
+		template<class... As>          auto _(priority<4>,        As&&... as) const->RET(custom::           alloc_uninitialized_default_construct_n_t<As&&...>::_(std::forward<As>(as)...))
+	public:
+		template<class... As> auto operator()(As&&... as) const{return (_(priority<4>{}, std::forward<As>(as)...));}
+	} alloc_uninitialized_default_construct_n; \
+} \
+}}
+
+
+namespace boost{namespace multi{ \
+namespace adl{ \
 	namespace custom{template<class...> struct alloc_destroy_n_t;} 	__attribute__((unused)) \
 	static constexpr class alloc_reverse_destroy_n_t { \
 		template<class... As>          auto _(priority<1>,        As&&... as) const->RET(multi::            alloc_destroy_n              (std::forward<As>(as)...)) // TODO: use boost?
@@ -332,7 +363,7 @@ namespace adl{ \
 /*		template<class... As>          auto _(priority<1>,        As&&... as) const->RET(std::copy(std::forward<As>(as)...))*/ \
 		template<class... As>          auto _(priority<1>,        As&&... as) const{return (           xtd::alloc_uninitialized_fill_n(std::forward<As>(as)...));}       \
 		template<class... As>          auto _(priority<2>,        As&&... as) const->RET(                   alloc_uninitialized_fill_n(std::forward<As>(as)...)) \
-		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const->RET(std::forward<T>(t).alloc_uninitialized_fill_n(std::forward<As>(as)...))       \
+		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const->RET( std::forward<T>(t).alloc_uninitialized_fill_n(std::forward<As>(as)...))       \
 		template<class... As>          auto _(priority<4>,        As&&... as) const->RET(custom::alloc_uninitialized_fill_n_t<As&&...>::_(std::forward<As>(as)...))    \
 	public: \
 		template<class T1, class... As> auto operator()(T1&& t1, As&&... as) const->decltype(_(priority<4>{}, std::forward<T1>(t1), std::forward<As>(as)...)){return _(priority<4>{}, t1, std::forward<As>(as)...);} \

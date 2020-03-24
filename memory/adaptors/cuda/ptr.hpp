@@ -406,12 +406,14 @@ public:
 //		{cudaError_t s = cudaMemcpy(buff, pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToHost); assert(s == cudaSuccess); (void)s;}
 //		return std::move(reinterpret_cast<T&>(buff));
 //	}
-	operator T&()&& __device__{return *(pimpl_.rp_);}
-	operator T&()&& __host__  {assert(0);}//delete;//{return *(pimpl_.rp_);}
+#if defined(__CUDA_ARCH__)
+	operator T const&()&& __device__{return *(pimpl_.rp_);}
+#endif
+//	operator T&()&& __host__  = delete;//{return *(pimpl_.rp_);}//delete;//{return *(pimpl_.rp_);}
 
-	operator T&()& __device__{return *(pimpl_.rp_);}
-	operator T() const& __device__{return *(pimpl_.rp_);}
-	operator T() const& __host__  {
+//	operator T&()&      __device__{return *(pimpl_.rp_);}
+	operator T()&& __device__{return *(pimpl_.rp_);}
+	operator T()&& __host__  {
 		T ret;
 		{cudaError_t s=cudaMemcpy((void*)&ret, pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToHost); assert(s == cudaSuccess); (void)s;}
 		return ret;
@@ -529,6 +531,7 @@ public:
 #endif
 
 	friend decltype(auto) raw_reference_cast(ref&& r){return *raw_pointer_cast(&r);}
+	friend auto raw_value_cast(ref&& r){return std::move(r).operator T();}
 
 	template<class Other, typename = std::enable_if_t<not is_ref<Other>{}> > 
 	friend auto operator==(Other&& other, ref&& self){

@@ -74,6 +74,9 @@ protected:
 		return adl::alloc_uninitialized_value_construct_n(static_array::alloc(), this->base_, this->num_elements());
 	//	return uninitialized_value_construct_n(static_array::alloc(), to_address(this->base_), this->num_elements());
 	}
+	auto uninitialized_default_construct(){
+		return adl::alloc_uninitialized_default_construct_n(static_array::alloc(), this->base_, this->num_elements());
+	}
 	template<typename It> auto uninitialized_copy_from(It first){
 		return array_alloc::uninitialized_copy_n(first, this->num_elements(), this->data());
 	}
@@ -156,8 +159,8 @@ public:
 	}
 	static_array(typename static_array::extensions_type const& x) //3
 	:	array_alloc{}, ref{static_array::allocate(typename static_array::layout_t{x}.num_elements()), x}{
-		if(not std::is_trivially_default_constructible<typename static_array::element>{})
-			uninitialized_value_construct();
+		uninitialized_default_construct();
+	//	if(not std::is_trivially_default_constructible<typename static_array::element>{}) uninitialized_value_construct();
 	}
 	template<class TT, class... Args>
 	static_array(multi::basic_array<TT, D, Args...> const& other, typename static_array::allocator_type const& a = {})

@@ -19,6 +19,8 @@ nvcc -std=c++14 -D_DISABLE_CUDA_SLOW -D_TEST_MULTI_MEMORY_CUDA_ALLOCATOR -D_MULT
 #include<cassert>
 #include<iostream> // debug
 
+#include<complex>
+
 #include<cstddef>
 
 namespace boost{namespace multi{
@@ -79,9 +81,21 @@ public:
 		}
 	}
 	template<class Ptr, class Size, class V = typename Ptr::element_type>//, std::enable_if_t<typename Ptr::element_type> >
-	Ptr alloc_uninitialized_value_construct_n(Ptr p, Size n){
-		return fill_n(p, n, V{});
+	Ptr alloc_uninitialized_value_construct_n(Ptr const& p, Size n) const{
+		return boost::multi::memory::cuda::fill_n(p, n, V{});
 	}
+	template<class Ptr, class Size, class V>// = typename Ptr::element_type>
+	Ptr alloc_uninitialized_fill_n(Ptr const& p, Size n, V const& v){
+		return boost::multi::memory::cuda::fill_n(p, n, v);
+	}
+	template<class TT> static std::true_type is_complex_(std::complex<TT>);
+	static std::false_type is_complex_(...);
+	template<class TT> struct is_complex : decltype(is_complex_(TT{})){};
+	template<
+		class Ptr, class Size, class V = typename Ptr::element_type, 
+		std::enable_if_t<std::is_trivially_default_constructible<V>{} or is_complex<V>{}, int> = 0
+	>
+	Ptr alloc_uninitialized_default_construct_n(Ptr const& p, Size n) const{return p + n;}
 	template<class Ptr, class Size, class V = typename Ptr::element_type>
 	Ptr alloc_destroy_n(Ptr p, Size n){
 		if(std::is_trivially_destructible<V>{}){
