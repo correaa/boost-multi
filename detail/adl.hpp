@@ -296,7 +296,7 @@ namespace adl{ \
 	static constexpr class alloc_uninitialized_default_construct_n_t{ \
 /*		template<class... As> [[deprecated]] auto _(priority<0>,        As&&... as) const = delete;*/ \
 		template<class... As>          auto _(priority<1>,        As&&... as) const{return xtd::            alloc_uninitialized_default_construct_n              (std::forward<As>(as)...);} // TODO: use boost? 
-		template<class... As>          auto _(priority<2>,        As&&... as) const->RET( alloc_uninitialized_default_construct_n              (std::forward<As>(as)...))
+		template<class... As>          auto _(priority<2>,        As&&... as) const->RET(                   alloc_uninitialized_default_construct_n              (std::forward<As>(as)...))
 		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const->RET(std::forward<T>(t).alloc_uninitialized_default_construct_n              (std::forward<As>(as)...))
 		template<class... As>          auto _(priority<4>,        As&&... as) const->RET(custom::           alloc_uninitialized_default_construct_n_t<As&&...>::_(std::forward<As>(as)...))
 	public:

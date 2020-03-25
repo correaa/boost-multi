@@ -1,4 +1,4 @@
-#ifdef COMPILATION_INSTRUCTIONS
+#ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
 $CXX -Wall -Wextra -Wpedantic -Wfatal-errors $0 -o $0x &&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019

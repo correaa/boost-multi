@@ -500,12 +500,12 @@ public:
 #if defined(__clang__)
 #if defined(__CUDA__) && defined(__CUDA_ARCH__)
 	template<class Other, typename = std::enable_if_t<not is_ref<std::decay_t<Other>>{}> > 
-	friend auto operator==(ref const& self, Other&& other) __host__{
+	friend auto operator==(ref&& self, Other&& other) __host__{
 //#if __CUDA_ARCH__
 //		return std::forward<Other>(other)==*(this->rp_);
 //		return *(self->rp_) == std::forward<Other>(other);
 //#else
-		return self.operator T() == std::forward<Other>(other);
+		return std::move(self).operator T() == std::forward<Other>(other);
 	//	return static_cast<T>(std::move(self)) == std::forward<Other>(other);
 //#endif
 	}

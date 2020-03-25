@@ -82,7 +82,7 @@ memory::cuda::ptr<T> fill_n(ptr<T> const first, Size count, U const& value){
 //	if(value == 0.){
 		cuda::memset(first, 0, count*sizeof(T));
 	}
-	else if(count--) for(ptr<T> new_first = copy_n(&value, 1, first); count;){
+	else if(count--) for(ptr<T> new_first = adl::copy_n(&value, 1, first); count;){
 		auto n = std::min(Size(std::distance(first, new_first)), count);
 		new_first = copy_n(first, n, new_first);
 		count -= n;

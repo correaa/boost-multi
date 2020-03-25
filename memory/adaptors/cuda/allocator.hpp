@@ -84,7 +84,7 @@ public:
 	Ptr alloc_uninitialized_value_construct_n(Ptr const& p, Size n) const{
 		return boost::multi::memory::cuda::fill_n(p, n, V{});
 	}
-	template<class Ptr, class Size, class V>// = typename Ptr::element_type>
+	template<class Ptr, class Size, class V, std::enable_if_t<std::is_trivially_copy_constructible<V>{}, int> =0>// = typename Ptr::element_type>
 	Ptr alloc_uninitialized_fill_n(Ptr const& p, Size n, V const& v){
 		return boost::multi::memory::cuda::fill_n(p, n, v);
 	}

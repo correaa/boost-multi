@@ -45,11 +45,13 @@ protected:
 		return n?std::allocator_traits<allocator_type>::allocate(alloc_, n):nullptr;
 	}
 	auto uninitialized_fill_n(typename std::allocator_traits<allocator_type>::pointer base, typename std::allocator_traits<allocator_type>::size_type num_elements, typename std::allocator_traits<allocator_type>::value_type e){
-		return uninitialized_fill_n(alloc_, base, num_elements, e);
+		return adl::alloc_uninitialized_fill_n(alloc_, base, num_elements, e);
 	}
 	template<typename It> auto uninitialized_copy_n(It first, size_type n, typename std::allocator_traits<allocator_type>::pointer data){
 		return adl::alloc_uninitialized_copy_n(this->alloc(), first, n, data);
 	}
+	template<typename It> 
+	auto destroy_n(It first, size_type n){return adl::alloc_destroy_n(this->alloc(), first, n);}
 public:
 	allocator_type get_allocator() const{return alloc_;}
 };
@@ -376,17 +378,14 @@ public:
 protected:
 	using alloc_traits = typename std::allocator_traits<typename static_array::allocator_type>;
 	using ref = array_ref<T, 0, typename std::allocator_traits<typename std::allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
-	auto uninitialized_value_construct(){return uninitialized_value_construct_n(static_array::alloc(), to_address(this->base_), this->num_elements());}
+	auto uninitialized_value_construct(){return adl::alloc_uninitialized_value_construct_n(static_array::alloc(), to_address(this->base_), this->num_elements());}
 	template<typename It> auto uninitialized_copy(It first){return adl::alloc_uninitialized_copy_n(this->alloc(), first, this->num_elements(), this->data());}
 	template<typename It>
 	auto uninitialized_move(It first){
 		using boost::multi::uninitialized_move_n;
 		return uninitialized_move_n(this->alloc(), first, this->num_elements(), this->data());
 	}
-	void destroy(){
-		for(auto n = this->num_elements(); n != 0; --n)
-			this->alloc().destroy(this->data() + n + (-1));//to_address(this->data() + n + (-1)));
-	}
+	void destroy(){array_alloc::destroy_n(this->data(), this->num_elements());}
 public:
 	using typename ref::value_type;
 	using typename ref::size_type;
@@ -410,9 +409,9 @@ public:
 	}
 	static_array(typename static_array::element_type const& e, typename static_array::allocator_type const& a)
 	:	static_array(typename static_array::extensions_type{}, e, a){}
-	auto uninitialized_fill(typename static_array::element const& e){
-		return adl::alloc_uninitialized_fill_n(this->alloc(), this->base_, this->num_elements(), e);
-	}
+	auto uninitialized_fill(typename static_array::element const& e){array_alloc::uninitialized_fill_n(this->base_, this->num_elements(), e);}
+//		return adl::alloc_uninitialized_fill_n(this->alloc(), this->base_, this->num_elements(), e);
+//	}
 	static_array(typename static_array::extensions_type const& x, typename static_array::element const& e)  //2
 	:	array_alloc{}, ref(static_array::allocate(typename static_array::layout_t{x}.num_elements()), x){
 		uninitialized_fill(e);
