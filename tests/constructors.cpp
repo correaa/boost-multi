@@ -80,6 +80,13 @@ BOOST_AUTO_TEST_CASE(multi_constructors){
 }{ multi::array<double,      2> A({{1, 2}, {3, 4}}) ; assert( size(A)==2 and A[0][0]==1 );
 }
 {
+	multi::array<double, 3> A(multi::index_extensions<3>{4, 5, 6}, 8.);
+	multi::array<double, 3> B(multi::iextensions<3>{4, 5, 6}, 8.);
+	multi::array<double, 3> C({4, 5, 6}, 8.);
+	multi::array<double, 3> D(std::array<multi::size_type, 3>{4, 5, 6}, 8.);
+//	multi::array<double, 3> E(std::array<multi::size_type, 3>{4, 5, 6});
+}
+{
 	multi::array<double, 2> A(multi::index_extensions<2>{8, 8}, 8.);
 	assert( size(A) == 8 );
 	assert( std::get<0>(sizes(A)) == 8 );
