@@ -120,14 +120,14 @@ public:
 //		adl::uninitialized_copy(first, last, ref::begin());
 //		using std::uninitialized_copy; uninitialized_copy(first, last, ref::begin());
 	}
-	template<class TT, std::size_t DD>
-	static std::true_type is_array_(std::array<TT, DD>);
-	static std::false_type is_array_(...);
-	template<class TT> struct is_array : decltype(is_array_(std::declval<TT>())){};
+//	template<class TT, typename = decltype(extension_t{std::decltype<TT>()})>
+//	static std::true_type is_array_(std::array<TT, D>);
+//	static std::false_type is_array_(...);
+//	template<class TT> struct is_array_of_extensions : decltype(is_array_(std::declval<TT>())){};
 
 	template<class Range, typename = decltype(static_array(std::declval<Range const&>().begin(), std::declval<Range const&>().end(), std::declval<typename static_array::allocator_type const&>())), 
 		std::enable_if_t<not std::is_base_of<static_array, Range>{}, int> = 0,
-		std::enable_if_t<not is_array<Range>{}, int> = 0
+		std::enable_if_t<not std::is_convertible<Range, typename static_array::extensions_type>{}, int> = 0
 	>
 	explicit static_array(Range const& rng, typename static_array::allocator_type const& a = {})
 		: static_array(adl::begin(rng), adl::end(rng), a){}
