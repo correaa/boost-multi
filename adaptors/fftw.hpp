@@ -177,7 +177,7 @@ template<class T> constexpr std::remove_reference_t<T> _constx(T&&t){return t;}
 #define logic_assert(ConditioN, MessagE) assert(ConditioN && MessagE);
 #endif
 
-template<typename It1, class It2, std::enable_if_t<std::is_pointer<decltype(base(It2{}))>{}, int> = 0>
+template<typename It1, class It2, std::enable_if_t<std::is_pointer<decltype(base(It2{}))>{} or std::is_convertible<decltype(base(It2{})), std::complex<double>*>{}, int> = 0>
 auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, unsigned flags = FFTW_ESTIMATE)
 ->decltype(reinterpret_cast<fftw_complex*>(static_cast<std::complex<double>*>(base(d_first))), fftw_plan{}){
 	assert(strides(*first) == strides(*last));

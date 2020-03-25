@@ -143,9 +143,24 @@ auto many_dft(It1 first, It1 last, It2 d_first, int sign)
 	return plan::many(first, last, d_first, sign)(), d_first + (last - first);}
 
 }
+}}
 
+#include "../adaptors/cuda.hpp"
+
+namespace boost{
+namespace multi{
 namespace fft{
 	using cufft::many_dft;
+
+	template<dimensionality_type D, class Complex, class... TP1, class... R1, class It2>
+	auto many_dft(
+		array_iterator<Complex, D, memory::cuda::managed::ptr<TP1...>, R1...> first,
+		array_iterator<Complex, D, memory::cuda::managed::ptr<TP1...>, R1...> last,
+		It2 d_first, int direction
+	)
+	->decltype(cufft::many_dft(first, last, d_first, direction)){
+		return cufft::many_dft(first, last, d_first, direction);}
+
 }
 
 #if 0
@@ -280,15 +295,11 @@ template<class In> In&& dft_inplace(In&& i, sign s){
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
-#include<iostream>
-
 #include "../adaptors/cuda.hpp"
 #include "../adaptors/fftw.hpp"
 #include "../adaptors/cufft.hpp"
 
 #include<complex>
-
-//#include <boost/timer/timer.hpp>
 
 namespace multi = boost::multi;
 using complex = std::complex<double>;
@@ -313,7 +324,7 @@ BOOST_AUTO_TEST_CASE(cufft_4D_many, *utf::tolerance(0.00001) ){
 	multi::array<complex, 4> out_cpu(extensions(in));
 	multi::fft::many_dft(begin(unrotated(in_cpu)), end(unrotated(in_cpu)), begin(unrotated(out_cpu)), +1);
 
-	BOOST_TEST( imag( raw_value_cast(out[5][4][3][2]) - out_cpu[5][4][3][2]) == 0. );
+	BOOST_TEST( imag( out[5][4][3][2].operator std::complex<double>() - out_cpu[5][4][3][2]) == 0. );
 
 }
 
