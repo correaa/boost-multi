@@ -422,7 +422,13 @@ public:
 #else
 	[[SLOW]] operator T()&&{
 		char buff[sizeof(T)];
-		{cudaError_t s = cudaMemcpy(buff, pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToHost); assert(s == cudaSuccess); (void)s;}
+		cudaError_t s = cudaMemcpy(buff, pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToHost);
+		switch(s){
+			case cudaSuccess: break;
+			case cudaErrorInvalidValue: throw std::runtime_error{"cudaErrorInvalidValue"};
+			case cudaErrorInvalidMemcpyDirection: throw std::runtime_error{"cudaErrorInvalidMemcpyDirection"};
+			default: throw std::runtime_error{"unknown error"};
+		}
 		return std::move(reinterpret_cast<T&>(buff));
 	}
 #endif

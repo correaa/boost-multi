@@ -1,6 +1,6 @@
 #ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
 nvcc               -D_TEST_MULTI_ADAPTORS_CUFFT -x c++ $0 -o $0x          -lcufft `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x
-clang++ -std=c++14 -D_TEST_MULTI_ADAPTORS_CUFFT -x c++  $0 -o $0x -lcudart -lcufft `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x
+clang++ -std=c++14 -D_TEST_MULTI_ADAPTORS_CUFFT -x c++ $0 -o $0x -lcudart -lcufft `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x
 exit
 #endif
 // © Alfredo A. Correa 2020
@@ -24,19 +24,30 @@ namespace boost{
 namespace multi{
 namespace cufft{
 
+class sign{
+	int impl_;
+public:
+	sign() = default;
+	constexpr sign(int i) : impl_{i}{}
+	constexpr operator int() const{return impl_;}
+};
+
+constexpr sign forward{CUFFT_FORWARD};
+constexpr sign none{0};
+constexpr sign backward{CUFFT_INVERSE};
+
 class plan{
-	cufftHandle h_;
 	using complex_type = cufftDoubleComplex;
 	complex_type const* idata_     = nullptr;
 	complex_type*       odata_     = nullptr;
 	int                 direction_ = 0;
+	cufftHandle h_;
 	plan() = default;
 	plan(plan const&) = delete;
 	plan(plan&& other) : h_{std::exchange(other.h_, {})}{} // needed in <=C++14 for return
 	void ExecZ2Z(complex_type const* idata, complex_type* odata, int direction) const{
 		assert(idata_ and odata_); assert(direction_!=0);
 		cufftResult r = ::cufftExecZ2Z(h_, const_cast<complex_type*>(idata), odata, direction); 
-	//	cudaDeviceSynchronize();
 		switch(r){
 			case CUFFT_SUCCESS        : break;// "cuFFT successfully executed the FFT plan."
 			case CUFFT_INVALID_PLAN   : throw std::runtime_error{"The plan parameter is not a valid handle."};
@@ -57,8 +68,17 @@ class plan{
 		//	case CUFFT_NOT_SUPPORTED  : throw std::runtime_error{"CUFFT_NOT_SUPPORTED"};
 			default                   : throw std::runtime_error{"cufftExecZ2Z unknown error"};
 		}
+	//	if(cudaDeviceSynchronize() != cudaSuccess) throw std::runtime_error{"Cuda error: Failed to synchronize"};
+	}
+	void swap(plan& other){ 
+		using std::swap;
+		swap(idata_, other.idata_);
+		swap(odata_, other.odata_);
+		swap(direction_, other.direction_);
+		swap(h_, other.h_);
 	}
 public:
+	plan& operator=(plan other){swap(other); return *this;}
 	void operator()() const{ExecZ2Z(idata_, odata_, direction_);}
 	template<class I, class O>
 	O&& execute_dft(I&& i, O&& o, int direction) const{
@@ -74,6 +94,70 @@ public:
 	~plan(){if(h_) cufftDestroy(h_);}
 	using size_type = int;
 	using ssize_type = int;
+
+	template<class I, class O, std::enable_if_t<I::dimensionality <= 4, int> =0, 
+		typename = decltype(raw_pointer_cast(base(std::declval<I const&>())), reinterpret_cast<complex_type*      >(raw_pointer_cast(base(std::declval<O&&>()))))
+	>
+	plan(I const& i, O&& o, sign s) : 
+		idata_{                          reinterpret_cast<complex_type const*>(raw_pointer_cast(base(i))) },
+		odata_{const_cast<complex_type*>(reinterpret_cast<complex_type*      >(raw_pointer_cast(base(o))))},
+		direction_{s}
+	{
+		assert( CUFFT_FORWARD == s or CUFFT_INVERSE == s or s == 0 );
+		assert( sizes(i) == sizes(o) );
+#if 0
+		assert( stride(i) == 1 );
+		assert( stride(o) == 1 );
+		switch(::cufftPlan1d(&h_, size(i), CUFFT_Z2Z, 1)){
+			case CUFFT_SUCCESS        : break;// "cuFFT successfully executed the FFT plan."
+			case CUFFT_ALLOC_FAILED   : throw std::runtime_error{"CUFFT failed to allocate GPU memory."};
+			case CUFFT_INVALID_VALUE  : throw std::runtime_error{"At least one of the parameters idata, odata, and direction is not valid."};
+			case CUFFT_INTERNAL_ERROR : throw std::runtime_error{"Used for all internal driver errors."};
+			case CUFFT_SETUP_FAILED   : throw std::runtime_error{"The cuFFT library failed to initialize."};
+			case CUFFT_INVALID_SIZE   : throw std::runtime_error{"The user specifies an unsupported FFT size."};
+			default                   : throw std::runtime_error{"cufftPlanMany unknown error"};
+		}
+#endif
+		using namespace std::experimental;
+		auto ion = apply([](auto... t){return make_array<size_type>(t...);}, sizes(i));
+
+		auto istrides = apply([](auto... t){return make_array<ssize_type>(t...);}, strides(i));
+		auto ostrides = apply([](auto... t){return make_array<ssize_type>(t...);}, strides(o));
+
+		int istride = istrides.back();
+		auto iembed = istrides;
+		std::adjacent_difference(begin(istrides), end(istrides), begin(iembed), [](auto a, auto b){assert(b%a==0); return b/a;});
+
+		int ostride = ostrides.back();
+		auto oembed = ostrides;
+		std::adjacent_difference(begin(ostrides), end(ostrides), begin(oembed), [](auto a, auto b){assert(b%a==0); return b/a;});
+
+		direction_ = s;
+		idata_ =                           reinterpret_cast<complex_type const*>(raw_pointer_cast(base(i))) ;
+		odata_ = const_cast<complex_type*>(reinterpret_cast<complex_type*      >(raw_pointer_cast(base(o))));
+
+		switch(::cufftPlanMany(
+			/*cufftHandle *plan*/ &h_, 
+			/*int rank*/          ion.size(), 
+			/*int *n*/            ion.data(), //	/*NX*/      last - first,
+			/*int *inembed*/      iembed.data(),
+			/*int istride*/       istride, 
+			/*int idist*/         1, //stride(first), 
+			/*int *onembed*/      oembed.data(), 
+			/*int ostride*/       ostride, 
+			/*int odist*/         1, //stride(d_first), 
+			/*cufftType type*/    CUFFT_Z2Z, 
+			/*int batch*/         1 //BATCH
+		)){
+			case CUFFT_SUCCESS        : break;// "cuFFT successfully executed the FFT plan."
+			case CUFFT_ALLOC_FAILED   : throw std::runtime_error{"CUFFT failed to allocate GPU memory."};
+			case CUFFT_INVALID_VALUE  : throw std::runtime_error{"At least one of the parameters idata, odata, and direction is not valid."};
+			case CUFFT_INTERNAL_ERROR : throw std::runtime_error{"Used for all internal driver errors."};
+			case CUFFT_SETUP_FAILED   : throw std::runtime_error{"The cuFFT library failed to initialize."};
+			case CUFFT_INVALID_SIZE   : throw std::runtime_error{"The user specifies an unsupported FFT size."};
+			default                   : throw std::runtime_error{"cufftPlanMany unknown error"};
+		}
+	}
 	template<class It1, class It2>
 	static auto many(It1 first, It1 last, It2 d_first, int sign = 0, unsigned = 0)
 	->std::decay_t<decltype(const_cast<complex_type*>(reinterpret_cast<complex_type*>(raw_pointer_cast(base(d_first)))), std::declval<plan>())>
@@ -100,7 +184,7 @@ public:
 		ret.idata_ =                           reinterpret_cast<complex_type const*>(raw_pointer_cast(base(  first))) ;
 		ret.odata_ = const_cast<complex_type*>(reinterpret_cast<complex_type*      >(raw_pointer_cast(base(d_first))));
 
-		cufftResult r = ::cufftPlanMany(
+		switch(::cufftPlanMany(
 			/*cufftHandle *plan*/ &ret.h_, 
 			/*int rank*/          ion.size(), 
 			/*int *n*/            ion.data(), //	/*NX*/      last - first,
@@ -112,8 +196,7 @@ public:
 			/*int odist*/         stride(d_first), 
 			/*cufftType type*/    CUFFT_Z2Z, 
 			/*int batch*/         last - first //BATCH
-		);
-		switch(r){
+		)){
 			case CUFFT_SUCCESS        : break;// "cuFFT successfully executed the FFT plan."
 		//	case CUFFT_INVALID_PLAN   : throw std::runtime_error{"The plan parameter is not a valid handle."};
 			case CUFFT_ALLOC_FAILED   : throw std::runtime_error{"CUFFT failed to allocate GPU memory."};
@@ -137,12 +220,28 @@ public:
 	}
 };
 
+template<typename In, class Out>
+auto dft(In const& i, Out&& o, int s)
+->decltype(plan{i, std::forward<Out>(o), s}()){
+	return plan{i, std::forward<Out>(o), s}();}
+
+template<typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
+NODISCARD("when first argument is const")
+R dft(In const& i, int s){
+	R ret(extensions(i), get_allocator(i));
+	dft(i, ret, s);
+	return ret;
+}
+
 template<typename It1, typename It2>
-auto many_dft(It1 first, It1 last, It2 d_first, int sign)
-->decltype(plan::many(first, last, d_first, sign)(), d_first + (last - first)){
-	return plan::many(first, last, d_first, sign)(), d_first + (last - first);}
+auto many_dft(It1 first, It1 last, It2 d_first, sign s)
+->decltype(plan::many(first, last, d_first, s)(), d_first + (last - first)){
+	return plan::many(first, last, d_first, s)(), d_first + (last - first);}
 
 }
+
+
+
 }}
 
 #include "../adaptors/cuda.hpp"
@@ -151,6 +250,7 @@ namespace boost{
 namespace multi{
 namespace fft{
 	using cufft::many_dft;
+	using cufft::dft;
 
 	template<dimensionality_type D, class Complex, class... TP1, class... R1, class It2>
 	auto many_dft(
@@ -160,6 +260,27 @@ namespace fft{
 	)
 	->decltype(cufft::many_dft(first, last, d_first, direction)){
 		return cufft::many_dft(first, last, d_first, direction);}
+
+	template<class Complex, dimensionality_type D, class... PAs, class... As, class Out>
+	auto dft(basic_array<Complex, D, memory::cuda::managed::ptr<PAs...>, As...> const& i, Out&& o, int s)
+	->decltype(cufft::dft(i, o, s)){
+		return cufft::dft(i, o, s);}
+
+	template<class Complex, dimensionality_type D, class... AAs, class Out>
+	auto dft(array<Complex, D, memory::cuda::managed::allocator<AAs...> > const& i, Out&& o, int s)
+	->decltype(cufft::dft(i, o, s)){
+		return cufft::dft(i, o, s);}
+
+	template<class Complex, dimensionality_type D, class... AAs> NODISCARD("when first argument is const")
+	auto dft(array<Complex, D, memory::cuda::managed::allocator<AAs...> > const& i, int s)
+	->decltype(cufft::dft(i, s)){
+		return cufft::dft(i, s);}
+
+	template<class Complex, dimensionality_type D, class... PAs, class... As> NODISCARD("when first argument is const")
+	auto dft(basic_array<Complex, D, memory::cuda::managed::ptr<PAs...>, As...> const& i, int s)
+	->decltype(cufft::dft(i, s)){
+		return cufft::dft(i, s);}
+
 
 }
 
@@ -300,10 +421,65 @@ template<class In> In&& dft_inplace(In&& i, sign s){
 #include "../adaptors/cufft.hpp"
 
 #include<complex>
+#include<thrust/complex.h>
 
 namespace multi = boost::multi;
 using complex = std::complex<double>;
 namespace utf = boost::unit_test;
+
+constexpr auto I = complex{0, 1};
+
+BOOST_AUTO_TEST_CASE(cufft_dft_1D_out_of_place, *utf::tolerance(0.00001)){
+
+	multi::array<complex, 1> const in_cpu = {
+		1. + 2.*I, 2. + 3. *I, 4. + 5.*I, 5. + 6.*I
+	};
+	multi::array<complex, 1> fw_cpu(size(in_cpu));
+	multi::fft::dft(in_cpu, fw_cpu, multi::fft::forward);
+	BOOST_REQUIRE( in_cpu[1] == +2. + 3.*I );
+	BOOST_REQUIRE( fw_cpu[2] == -2. - 2.*I );
+
+	multi::cuda::array<complex, 1> const in_gpu = in_cpu;
+	multi::cuda::array<complex, 1> fw_gpu(size(in_cpu));
+	multi::fft::dft( in_gpu, fw_gpu, multi::fft::forward );
+	BOOST_REQUIRE( fw_gpu[3].operator complex() - fw_cpu[3] == 0. );
+
+	multi::cuda::managed::array<complex, 1> const in_mng = in_cpu;
+	multi::cuda::managed::array<complex, 1> fw_mng(size(in_cpu));
+	multi::fft::dft( in_mng, fw_mng, multi::fft::forward );
+	BOOST_REQUIRE( fw_mng[3] - fw_cpu[3] == 0. );
+}
+
+BOOST_AUTO_TEST_CASE(cufft_2D, *boost::unit_test::tolerance(0.0001)){
+	multi::array<complex, 2> const in_cpu = {
+		{ 1. + 2.*I, 9. - 1.*I, 2. + 4.*I},
+		{ 3. + 3.*I, 7. - 4.*I, 1. + 9.*I},
+		{ 4. + 1.*I, 5. + 3.*I, 2. + 4.*I},
+		{ 3. - 1.*I, 8. + 7.*I, 2. + 1.*I},
+		{ 31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+	};
+	multi::array<complex, 2> fw_cpu(extensions(in_cpu));
+	multi::fftw::dft(in_cpu, fw_cpu, multi::fftw::forward);
+
+	multi::cuda::array<complex, 2> const in_gpu = in_cpu;
+	multi::cuda::array<complex, 2> fw_gpu(extensions(in_gpu));
+	multi::fft::dft(in_gpu, fw_gpu, multi::fft::forward);
+
+	BOOST_TEST( imag(fw_gpu[3][2].operator complex() - fw_cpu[3][2]) == 0. );
+
+	auto fw2_gpu = multi::fft::dft(in_gpu, multi::fft::forward);
+	BOOST_TEST( imag(fw2_gpu[3][1].operator complex() - fw_cpu[3][1]) == 0. );
+
+	multi::cuda::managed::array<complex, 2> const in_mng = in_cpu;
+	multi::cuda::managed::array<complex, 2> fw_mng(extensions(in_gpu));
+	multi::fft::dft(in_mng, fw_mng, multi::fft::forward);
+
+	BOOST_TEST( imag(fw_mng[3][2] - fw_cpu[3][2]) == 0. );
+
+	auto fw2_mng = multi::fft::dft(in_mng, multi::fft::forward);
+	BOOST_TEST( imag(fw2_mng[3][1] - fw_cpu[3][1]) == 0. );
+
+}
 
 BOOST_AUTO_TEST_CASE(cufft_4D_many, *utf::tolerance(0.00001) ){
 

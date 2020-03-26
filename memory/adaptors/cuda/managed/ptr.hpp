@@ -193,6 +193,7 @@ template<class T, class S> const boost::serialization::array_wrapper<T> make_arr
 #include "../../cuda/managed/clib.hpp" // cuda::malloc
 #include "../../cuda/managed/malloc.hpp"
 
+#include<memory>
 #include<cstring>
 #include<iostream>
 
@@ -252,6 +253,7 @@ int main(){
 		auto f = [](double const*){};
 		f(p);
 		cuda::ptr<double> pp = p;
+		std::reinterpret_pointer_cast<double*>(pp);
 	//	cuda::managed::ptr<double> ppp{pp};
 	}
 	{
