@@ -255,7 +255,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case_hermitized_auto){
 }
 
 
-#if 0
+#if 1
 #if 1
 BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_identity){
 	multi::array<complex, 2> const a = {
