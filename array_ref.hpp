@@ -768,9 +768,6 @@ public:
 	template<class It> void assign(It first, It last) const{assert( std::distance(first, last) == this->size() );
 		adl::copy(first, last, this->begin());
 	}
-	template<class It> auto assign(It f)&& //	->decltype(adl::copy_n(f, this->size(), begin(std::move(*this))), void()){
-//	->decltype(adl::copy_n(f, this->size(), std::declval<basic_array&&>().begin()), void()){
-	{	return adl::copy_n(f, this->size(), std::move(*this)             .begin()), void();}
 
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int){
@@ -846,6 +843,10 @@ public:
 
 	iterator begin() const HD{return {types::base_               , Layout::stride_};}
 	iterator end  () const HD{return{types::base_+types::nelems_, Layout::stride_};}
+
+	template<class It> auto assign(It f)&& //	->decltype(adl::copy_n(f, this->size(), begin(std::move(*this))), void()){
+	->decltype(adl::copy_n(f, this->size(), std::declval<iterator>()), void()){
+		return adl::copy_n(f, this->size(), std::move(*this).begin()), void();}
 
 	template<typename Array, typename = std::enable_if_t<not std::is_base_of<basic_array, Array>{}> >
 	bool operator==(Array const& o) const{ // TODO assert extensions are equal?
