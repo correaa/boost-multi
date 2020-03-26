@@ -236,6 +236,7 @@ int main(){
 	assert( *f == *(begin(d2D_cref) + 2) );
 	assert( *f == d2D_cref[2] );
 	assert( & (*f)[3] == &d2D_cref[2][3] );
+
 	
 	using std::find_if;
 	auto fif1 = find_if(begin(d2D_cref), end(d2D_cref), [](auto&& e){return e[3] == 8.111;});
@@ -246,8 +247,10 @@ int main(){
 	assert( fif2 != end(d2D_cref) );
 	assert( fif2->operator[](4) == 9. );
 
+
 	using std::count;
-	assert( count(begin(d2D_cref), end(d2D_cref), d2D_prime_cref[3]) == 1 );
+//	assert( count(begin(d2D_cref), end(d2D_cref), d2D_prime_cref[3]) == 1 );
+
 
 	using std::min_element;
 	using std::max_element;
@@ -267,7 +270,9 @@ int main(){
 		decltype(d2D_cref)::iterator it5(0);
 		assert( it == it2 and it2 == it3 and it3 == it4 and it4 == it5 );
 	//	assert(not it); // there are not null iterator
-		assert( std::addressof(it->operator[](0)) == nullptr);
+
+	//	return 0;
+	//	assert( std::addressof(it->operator[](0)) == nullptr);
 		it = begin(d2D_cref);
 		assert(it == begin(d2D_cref));
 		it = decltype(it){};
@@ -277,6 +282,8 @@ int main(){
 		assert( std::addressof(*vit) == nullptr );
 	}
 	
+
+
 	auto NX = 2, NY = 2, NZ = 2;
 	std::vector<double> v(NX*NY*NZ);
 	iota(begin(v), end(v), 0.);

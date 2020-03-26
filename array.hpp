@@ -386,7 +386,7 @@ public:
 protected:
 	using alloc_traits = typename std::allocator_traits<typename static_array::allocator_type>;
 	using ref = array_ref<T, 0, typename std::allocator_traits<typename std::allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
-	auto uninitialized_value_construct(){return adl::alloc_uninitialized_value_construct_n(static_array::alloc(), to_address(this->base_), this->num_elements());}
+	auto uninitialized_value_construct(){return adl::alloc_uninitialized_value_construct_n(static_array::alloc(), this->base_, this->num_elements());}
 	template<typename It> auto uninitialized_copy(It first){return adl::alloc_uninitialized_copy_n(this->alloc(), first, this->num_elements(), this->data());}
 	template<typename It>
 	auto uninitialized_move(It first){
@@ -685,7 +685,8 @@ public:
 	array& operator=(A&& a){
 		auto ext = extensions(a);
 		if(ext==array::extensions()){
-			const_cast<array const&>(*this).static_::ref::operator=(std::forward<A>(a));
+		//	const_cast<array const&>
+			std::move(*this).static_::ref::operator=(std::forward<A>(a));
 		}else{
 			this->clear(); //	this->ref::layout_t::operator=(layout_t<D>{extensions(a)}); //			this->base_ = allocate(this->num_elements());
 			this->base_ = this->allocate(static_cast<typename array::alloc_traits::size_type>(this->static_::ref::layout_t::operator=(layout_t<D>{extensions(a)}).num_elements()));

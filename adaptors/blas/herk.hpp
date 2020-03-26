@@ -149,6 +149,8 @@ template<class A2D> auto herk(A2D const& a)
 
 namespace multi = boost::multi;
 
+template<class T> void what(T&&) = delete;
+
 template<class M> decltype(auto) print(M const& C){
 	using std::cout;
 	using boost::multi::size;
@@ -160,6 +162,7 @@ template<class M> decltype(auto) print(M const& C){
 }
 
 using complex = std::complex<double>; complex const I{0, 1};
+
 
 BOOST_AUTO_TEST_CASE(inq_case){
 	using namespace multi::blas;
@@ -180,11 +183,27 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_case){
 	BOOST_REQUIRE( B[0][0] == 1.*1. + 2.*2. + 3.*3. );
 }
 
+BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_case_scale){
+	multi::array<double, 2> A = {{1., 2., 3.}};
+	multi::array<double, 2> B = multi::blas::herk(0.1, A);
+	BOOST_REQUIRE( size(B) == 1 );
+	BOOST_TEST( B[0][0]/0.1 == 1.*1. + 2.*2. + 3.*3. );
+}
+
 BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_real_case){
 	multi::array<complex, 2> A = {{1., 2., 3.}};
 	multi::array<complex, 2> B = multi::blas::herk(A);
 	BOOST_REQUIRE( size(B) == 1 );
 	BOOST_REQUIRE( B[0][0] == 1.*1. + 2.*2. + 3.*3. );
+}
+
+namespace utf = boost::unit_test;
+
+BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_real_case_scale, *utf::tolerance(0.00001)){
+	multi::array<complex, 2> A = {{1., 2., 3.}};
+	multi::array<complex, 2> B = multi::blas::herk(0.1, A);
+	BOOST_REQUIRE( size(B) == 1 );
+	BOOST_TEST( real( B[0][0]/0.1 ) == 1.*1. + 2.*2. + 3.*3. );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case){
@@ -195,6 +214,20 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case){
 	BOOST_REQUIRE( B[0][0] == std::norm(1. + 2.*I) + std::norm(2.+3.*I) + std::norm(3. + 4.*I) );
 
 	BOOST_TEST( std::sqrt(real(blas::herk(A)[0][0])) == blas::nrm2(A[0])() );
+}
+
+BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case_hermitized_out_param){
+	multi::array<complex, 2> A = {{1. + 2.*I}, {2.+3.*I}, {3. + 4.*I}};
+	namespace blas = multi::blas;
+	multi::array<complex, 2> B({1, 1});
+	BOOST_REQUIRE( size(B) == 1 );
+
+	blas::herk(blas::hermitized(A), B);
+
+	BOOST_REQUIRE( B[0][0] == std::norm(1. + 2.*I) + std::norm(2.+3.*I) + std::norm(3. + 4.*I) );
+
+	using blas::herk; using blas::hermitized; using blas::nrm2;
+	BOOST_TEST( std::sqrt(real(B[0][0])) == nrm2(rotated(A)[0])() );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case_hermitized){
@@ -208,6 +241,21 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case_hermitized){
 	BOOST_TEST( std::sqrt(real(herk(hermitized(A))[0][0])) == nrm2(rotated(A)[0])() );
 }
 
+BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case_hermitized_auto){
+	multi::array<complex, 2> A = {{1. + 2.*I}, {2.+3.*I}, {3. + 4.*I}};
+	namespace blas = multi::blas;
+
+	auto B = blas::herk(1., blas::hermitized(A));
+	static_assert( std::is_same<decltype(B), multi::array<complex, 2>>{}, "!" );
+	BOOST_REQUIRE( size(B) == 1 );
+	BOOST_REQUIRE( B[0][0] == std::norm(1. + 2.*I) + std::norm(2.+3.*I) + std::norm(3. + 4.*I) );
+
+	using blas::herk; using blas::hermitized; using blas::nrm2;
+	BOOST_TEST( std::sqrt(real(herk(hermitized(A))[0][0])) == nrm2(rotated(A)[0])() );
+}
+
+
+#if 0
 #if 1
 BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_identity){
 	multi::array<complex, 2> const a = {
@@ -812,6 +860,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_timing){
 	using multi::blas::filling;
 	herk(filling::upper, 1., hermitized(a), c); // c†=c=a†a
 }
+#endif
 #endif
 
 #endif

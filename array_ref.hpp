@@ -792,9 +792,8 @@ public:
 		return std::move(*this).assign(o.begin()), std::move(*this);
 	}
 	template<class TT, dimensionality_type DD, class... As>
-	basic_array const& operator=(basic_array<TT, DD, As...> const& o) const{assert(this->extension() == o.extension());
-		this->assign(o.begin(), o.end());
-		return *this;
+	basic_array&& operator=(basic_array<TT, DD, As...> const& o)&&{assert(this->extension() == o.extension());
+		std::move(*this).assign(o.begin(), o.end()); return std::move(*this);
 	}
 	typename types::reference operator[](typename types::index i) const HD{
 		assert( this->extension().contains(i) );
