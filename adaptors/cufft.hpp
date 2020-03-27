@@ -416,6 +416,8 @@ template<class In> In&& dft_inplace(In&& i, sign s){
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
+#include <boost/timer/timer.hpp>
+
 #include "../adaptors/cuda.hpp"
 #include "../adaptors/fftw.hpp"
 #include "../adaptors/cufft.hpp"
@@ -478,6 +480,32 @@ BOOST_AUTO_TEST_CASE(cufft_2D, *boost::unit_test::tolerance(0.0001)){
 
 	auto fw2_mng = multi::fft::dft(in_mng, multi::fft::forward);
 	BOOST_TEST( imag(fw2_mng[3][1] - fw_cpu[3][1]) == 0. );
+
+}
+
+BOOST_AUTO_TEST_CASE(cufft_3D_timing, *boost::unit_test::tolerance(0.0001)){
+
+	{
+		multi::array<complex, 3> const in_cpu({400, 400, 400}, 10.); 
+		BOOST_ASSERT( in_cpu.num_elements()*sizeof(complex) < 2e9 );
+		multi::array<complex, 3> fw_cpu(extensions(in_cpu), 99.);
+		{
+			boost::timer::auto_cpu_timer t;  // 1.041691s wall, 1.030000s user + 0.000000s system = 1.030000s CPU (98.9%)
+			multi::fftw::dft(in_cpu, fw_cpu, multi::fftw::forward);
+
+		//	BOOST_TEST( fw_cpu[8][9][10] != 99. );
+		}
+	}
+	{
+		multi::cuda::array<complex, 3> const in_gpu({400, 400, 400}, 10.); 
+		multi::cuda::array<complex, 3> fw_gpu(extensions(in_gpu), 99.);
+		{
+			boost::timer::auto_cpu_timer t; //  0.208237s wall, 0.200000s user + 0.010000s system = 0.210000s CPU (100.8%)
+			multi::cufft::dft(in_gpu, fw_gpu, multi::fftw::forward);
+
+		//	BOOST_TEST( fw_gpu[8][9][10].operator complex() != 99. );
+		}
+	}
 
 }
 
