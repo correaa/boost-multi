@@ -25,7 +25,7 @@ namespace boost{
 namespace multi{
 
 namespace fftw{
-	template<class T> auto alignment_of(T* p){return fftw_alignment_of((double*)p);}
+	template<class T> auto alignment_of(T* p){return ::fftw_alignment_of((double*)p);}
 }
 
 #if 0
@@ -376,7 +376,7 @@ auto many_dft(It1 first, It1 last, It2 d_first, int sign)
 template<typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
 NODISCARD("when first argument is const")
 auto dft(In const& i, sign s)
-->decltype(dft(i, R(extensions(i), get_allocator(i)), s)){
+->std::decay_t<decltype(dft(i, R(extensions(i), get_allocator(i)), s))>{
 	return dft(i, R(extensions(i), get_allocator(i)), s);}
 
 template<typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
@@ -532,6 +532,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_identity_2, *boost::unit_test::tolerance(0.0001)){
 BOOST_AUTO_TEST_CASE(fftw_1D){
 	multi::array<complex, 1> in = {1. + 2.*I, 2. + 3. *I, 4. + 5.*I, 5. + 6.*I};
 	auto fwd = multi::fftw::dft(in, fftw::forward); // Fourier[in, FourierParameters -> {1, -1}]
+	BOOST_TEST( size(fwd) == size(in) );
 //	auto fwd = multi::fftw::dft({multi::fftw::forward}, in); // Fourier[in, FourierParameters -> {1, -1}]
 //	auto fwd = multi::fftw::dft<0>(in, multi::fftw::forward); // Fourier[in, FourierParameters -> {1, -1}]
 
@@ -541,7 +542,7 @@ BOOST_AUTO_TEST_CASE(fftw_1D){
 	auto bwd = multi::fftw::dft(in, FFTW_BACKWARD); // InverseFourier[in, FourierParameters -> {-1, -1}]
 	BOOST_REQUIRE(bwd[2] == -2. - 2.*I);
 }
-
+#if 1
 /*
 BOOST_AUTO_TEST_CASE(fftw_1D_cuda){
 	multi::cuda::managed::array<complex, 1> in = {1. + 2.*I, 2. + 3. *I, 4. + 5.*I, 5. + 6.*I};
@@ -933,6 +934,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_transposition_outofplace){
 	fftw_destroy_plan(p);
 	assert( power_diff(in4, out4) < 1e-3 );
 }
+#endif
 #endif
 #endif
 #endif
