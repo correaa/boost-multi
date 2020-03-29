@@ -286,7 +286,9 @@ auto fftw_plan_dft(In const& in, Out&& out, int s, unsigned flags = FFTW_ESTIMAT
 
 namespace fftw{
 
+#if _REENTRANT
 void initialize_threads(){int good = fftw_init_threads(); assert(good);}
+#endif
 
 class plan{
 	plan() : impl_{nullptr, &fftw_destroy_plan}{}
