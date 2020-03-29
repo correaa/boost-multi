@@ -1,6 +1,6 @@
 #ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
-nvcc               -D_TEST_MULTI_ADAPTORS_CUFFT -x c++ $0 -o $0x `#-Xcompiler=-pthread` -lcufft -lfftw3_threads `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x
-clang++ -std=c++14 -DCUDA_API_PER_THREAD_DEFAULT_STREAM -D_TEST_MULTI_ADAPTORS_CUFFT -x c++ $0 -o $0x -lcudart `#-pthread` -lcufft -lfftw3_threads `pkg-config --libs fftw3` -lboost_timer -ltbb -lboost_unit_test_framework&&$0x&&rm $0x
+nvcc               -D_TEST_MULTI_ADAPTORS_CUFFT -x c++ $0 -o $0x `#-Xcompiler=-pthread` -lcufft `#-lfftw3_threads` `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x
+clang++ -std=c++14 -DCUDA_API_PER_THREAD_DEFAULT_STREAM -D_TEST_MULTI_ADAPTORS_CUFFT -x c++ $0 -o $0x -lcudart `#-pthread` -lcufft `#-lfftw3_threads` `pkg-config --libs fftw3` -lboost_timer -ltbb -lboost_unit_test_framework&&$0x&&rm $0x
 exit
 #endif
 // © Alfredo A. Correa 2020
@@ -284,7 +284,7 @@ Out&& dft(std::array<bool, D> which, In const& i, Out&& o, int s){
 template<typename In, class Out,  std::size_t D = In::dimensionality, std::enable_if_t<(D>1), int> = 0>
 Out&& dft(std::array<bool, D> which, In const& i, Out&& o, int s){
 	assert(extension(i) == extension(o));
-	auto const tail = reinterpret_cast<std::array<bool, D-1> const&>(which[1]);
+	std::array<bool, D-1> tail = reinterpret_cast<std::array<bool, D-1> const&>(which[1]);
 	if(which[0] == true){
 		if(std::all_of(tail.begin(), tail.end(), [](auto e){return e==true;})){
 			dft(i, o, s);
@@ -301,8 +301,16 @@ Out&& dft(std::array<bool, D> which, In const& i, Out&& o, int s){
 			if(which.size() > 1 and which[1] == false and i.is_flattable() and o.is_flattable()){
 				dft(tail, i.flatted(), o.flatted(), s);
 			}else{
-				std::cout << "warning: needs loops! (loop size " << i.size() << ")\n";
-				for(auto idx : extension(i)) dft(tail, i[idx], o[idx], s);
+				auto d_min = 0; auto n_min = size(i);
+				for(auto d = 0; d != D; ++d){if((size(i<<d) < n_min) and (tail[d]==false)){n_min = size(i<<d); d_min = d;}}
+				if(d_min!=0){
+					std::rotate(which.begin(), which.begin()+d_min, which.end());
+					dft(which, i<<d_min, o<<d_min, s);
+				}else{
+					std::cout << "warning: needs loops! (loop size " << (i<<d_min).size() << ")\n";
+					std::cout << "internal case "; std::copy(which.begin(), which.end(), std::ostream_iterator<bool>{std::cout,", "}); std::cout << "\n";
+					for(auto idx : extension(i)) dft(tail, i[idx], o[idx], s);
+				}
 			}
 		}
 	}
@@ -313,24 +321,6 @@ Out&& dft(std::array<bool, D> which, In const& i, Out&& o, int s){
 
 
 }}
-
-#if 0
-case 0, 1, 1, 1, 
-cpu 0.119178s wall, CPU (998.5%)
-gpu 0.064867s wall, CPU (92.5%)
-case 0, 1, 1, 0, 
-cpu 0.127376s wall, CPU (879.3%)
-gpu 0.089769s wall, CPU (111.4%)
-case 1, 0, 0, 0, 
-cpu 0.058539s wall, CPU (1042.0%)
-gpu 1.079468s wall, CPU (131.5%)
-case 1, 1, 0, 0, 
-cpu 0.104632s wall, CPU (879.3%)
-gpu 0.073204s wall, CPU (109.3%)
-case 0, 0, 1, 0, 
-cpu 0.062713s wall, CPU (988.6%)
-gpu 0.552235s wall, CPU (130.4%)
-#endif
 
 #include "../adaptors/cuda.hpp"
 
@@ -690,7 +680,7 @@ BOOST_AUTO_TEST_CASE(cufft_combinations, *utf::tolerance(0.00001)){
 		multi::cuda::array<complex, 4> out_gpu(extensions(in_gpu));
 		{
 			boost::timer::auto_cpu_timer t{"gpu %ws wall, CPU (%p%)\n"};
-			multi::cufft::dft(c, in_gpu, out_gpu, multi::fft::forward);
+			multi::cufft::dft(c, in_gpu   , out_gpu   , multi::fft::forward);
 		}
 		BOOST_TEST( imag( out_gpu[5][4][3][1].operator complex() - out[5][4][3][1]) == 0. );	
 	}
