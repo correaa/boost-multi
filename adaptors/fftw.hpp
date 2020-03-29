@@ -19,6 +19,10 @@ exit
 #include<memory>
 #include<numeric> // accumulate
 
+#if _REENTRANT
+#include <thread>
+#endif
+
 #include<experimental/tuple> // experimental::apply
 
 namespace boost{
@@ -180,24 +184,37 @@ template<class T> constexpr std::remove_reference_t<T> _constx(T&&t){return t;}
 template<typename It1, class It2, std::enable_if_t<std::is_pointer<decltype(base(It2{}))>{} or std::is_convertible<decltype(base(It2{})), std::complex<double>*>{}, int> = 0>
 auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, unsigned flags = FFTW_ESTIMATE)
 ->decltype(reinterpret_cast<fftw_complex*>(static_cast<std::complex<double>*>(base(d_first))), fftw_plan{}){
-	assert(strides(*first) == strides(*last));
 	assert(sizes(*first)==sizes(*d_first));
 	auto ion      = to_array<int>(sizes(*first));
+
+	assert(strides(*first) == strides(*last));
 	auto istrides = to_array<int>(strides(*first));
 	auto ostrides = to_array<int>(strides(*d_first));
 
-	int istride = istrides.back();
-	auto iembed = istrides; iembed.fill(0);
-	for(std::size_t i = 1; i != iembed.size(); ++i){
-		assert( istrides[i-1]%istrides[i] == 0 );
-		iembed[i]=istrides[i-1]/istrides[i];
-	}
+//	auto inelemss = to_array<int>(first->nelemss());
+//	auto onelemss = to_array<int>(d_first->nelemss());
 
+	std::array<std::tuple<int, int, int>, std::decay_t<decltype(*It1{})>::dimensionality> ssn;
+	for(std::size_t i = 0; i != ssn.size(); ++i) ssn[i] = std::make_tuple(istrides[i], ostrides[i], ion[i]);
+	std::sort(ssn.begin(), ssn.end(), std::greater<>{});
+
+	for(std::size_t i = 0; i != ssn.size(); ++i){
+		istrides[i] = std::get<0>(ssn[i]);
+		ostrides[i] = std::get<1>(ssn[i]);
+		ion[i]      = std::get<2>(ssn[i]);
+	}// = std::tuple<int, int, int>(istrides[i], ostrides[i], ion[i]);
+
+
+	int istride = istrides.back();
+	auto inembed = istrides; inembed.fill(0);
 	int ostride = ostrides.back();
-	auto oembed = ostrides; oembed.fill(0);
-	for(std::size_t i = 1; i != oembed.size(); ++i){
-		assert( ostrides[i-1]%ostrides[i] == 0 );
-		oembed[i]=ostrides[i-1]/ostrides[i];
+	auto onembed = ostrides; onembed.fill(0);	
+	for(std::size_t i = 1; i != onembed.size(); ++i){
+		assert(ostrides[i-1] >= ostrides[i]); // otherwise ordering is incompatible
+		assert(ostrides[i-1]%ostrides[i]==0);
+		onembed[i]=ostrides[i-1]/ostrides[i]; //	assert( onembed[i] <= ion[i] );
+		assert(istrides[i-1]%istrides[i]==0);
+		inembed[i]=istrides[i-1]/istrides[i]; //	assert( inembed[i] <= ion[i] );
 	}
 
 	return ::fftw_plan_many_dft(
@@ -205,11 +222,11 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, unsigned fla
 		/*const int* n*/ ion.data(),
 		/*int howmany*/ last - first,
 		/*fftw_complex * in */ reinterpret_cast<fftw_complex*>(const_cast<std::complex<double>*>(static_cast<std::complex<double> const*>(base(first)))), 
-		/*const int *inembed*/ iembed.data(),
+		/*const int *inembed*/ inembed.data(),
 		/*int*/ istride, 
 		/*int idist*/ stride(first),
 		/*fftw_complex * out */ reinterpret_cast<fftw_complex*>(static_cast<std::complex<double>*>(base(d_first))),
-		/*const int *onembed*/ oembed.data(),
+		/*const int *onembed*/ onembed.data(),
 		/*int*/ ostride, 
 		/*int odist*/ stride(d_first),
 		/*int*/ sign, /*unsigned*/ flags
@@ -240,10 +257,8 @@ fftw_plan fftw_plan_dft(std::array<bool, D> which, In&& in, Out&& out, int sign,
 	);
 }
 
-    template<class To, class From, std::enable_if_t<std::is_convertible<From, To>{},int> =0>
-    To implicit_cast(From&& f){
-        return static_cast<To>(f);
-    }
+template<class To, class From, std::enable_if_t<std::is_convertible<From, To>{},int> =0>
+To implicit_cast(From&& f){return static_cast<To>(f);}
 
 template<class In, class Out, dimensionality_type D = In::dimensionality, typename = decltype(reinterpret_cast<fftw_complex*>(implicit_cast<std::complex<double>*>(base(std::declval<Out&>()))))>
 auto fftw_plan_dft(In const& in, Out&& out, int s, unsigned flags = FFTW_ESTIMATE){
@@ -270,6 +285,8 @@ auto fftw_plan_dft(In const& in, Out&& out, int s, unsigned flags = FFTW_ESTIMAT
 //std::complex<double> const* base(std::complex<double> const& c){return &c;}
 
 namespace fftw{
+
+void initialize_threads(){int good = fftw_init_threads(); assert(good);}
 
 class plan{
 	plan() : impl_{nullptr, &fftw_destroy_plan}{}
@@ -307,17 +324,26 @@ public:
 		fftw_flops(impl_.get(), &r.add, &r.mul, &r.fma);
 		return r;
 	}
+#if _REENTRANT
+public:
 	static void make_thread_safe(){
 		fftw_make_planner_thread_safe(); // needs linking to -lfftw3_threads, requires FFTW-3.3.6 or greater
 		is_thread_safe_ = true;
 	}
+	static int with_nthreads(int n){fftw_plan_with_nthreads(n); nthreads_ = n; return n;}
+	static int with_nthreads(){return with_nthreads(std::max(2u, std::thread::hardware_concurrency()));}
 	static bool is_thread_safe(){return is_thread_safe_;}
+	static bool nthreads(){return nthreads_;}
 private:
 	static bool is_thread_safe_;
+	static int nthreads_;
+	static bool initialized_threads_;
+#endif
 };
 
 #if _REENTRANT
 bool plan::is_thread_safe_ = (plan::make_thread_safe(), true);
+int plan::nthreads_ = (initialize_threads(), with_nthreads());
 #endif
 
 //enum sign: decltype(FFTW_FORWARD){forward = FFTW_FORWARD, none = 0, backward = FFTW_BACKWARD };
@@ -705,6 +731,22 @@ BOOST_AUTO_TEST_CASE(fftw_4D_many){
 //	multi::fftw::many_dft(begin(unrotated(in)), end(unrotated(in)), begin(out2), multi::fftw::forward);
 //	BOOST_REQUIRE( fwd == rotated(out2) );
 
+}
+
+BOOST_AUTO_TEST_CASE(cufft_many_2D){
+	auto const in = []{
+		multi::array<complex, 3> ret({10, 10, 10});
+		std::generate(ret.data_elements(), ret.data_elements() + ret.num_elements(), 
+			[](){return complex{std::rand()*1./RAND_MAX, std::rand()*1./RAND_MAX};}
+		);
+		return ret;
+	}();
+	multi::array<complex, 3> out(extensions(in));
+	multi::fftw::many_dft((in<<1).begin(), (in<<1).end(), (out<<1).begin(), multi::fftw::forward);
+
+	multi::array<complex, 3> out2(extensions(in));	
+	multi::fftw::dft({true, false, true}, in, out2, multi::fftw::forward);
+	BOOST_REQUIRE( out == out2 );
 }
 
 BOOST_AUTO_TEST_CASE(fftw_5D){

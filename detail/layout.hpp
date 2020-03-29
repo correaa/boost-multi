@@ -211,6 +211,7 @@ public:
 	constexpr auto sizes() const{return std::make_tuple(size());}
 	template<class T=void> constexpr auto sizes_as() const{return detail::to_array<T>(sizes());}
 	constexpr auto offsets() const{return std::make_tuple(offset());}
+	constexpr auto nelemss() const{return std::make_tuple(nelems_);}
 	constexpr size_type num_elements() const{return this->size();}
 	friend constexpr size_type num_elements(layout_t const& s){return s.num_elements();}
 	constexpr bool empty() const{return nelems_ == 0;}
@@ -362,6 +363,8 @@ public:
 	constexpr index offset(dimensionality_type d) const{return d?sub_.offset(d-1):offset_;}
 	friend constexpr index offset(layout_t const& self){return self.offset();}
 	constexpr auto offsets() const{return tuple_cat(std::make_tuple(offset()), sub_.offsets());}
+	constexpr auto nelemss() const{return tuple_cat(std::make_tuple(nelems()), sub_.nelemss());}
+
 	constexpr auto base_size() const{using std::max; return max(nelems_, sub_.base_size());}
 	auto is_compact() const{return base_size() == num_elements();}
 	friend auto is_compact(layout_t const& self){return self.is_compact();}
@@ -469,12 +472,11 @@ BOOST_AUTO_TEST_CASE(multi_layout){
 //	auto t = std::make_tuple(1.,2.,3.);
 //	auto u = multi::detail::reverse(t);
 //	assert( std::get<0>(u) == 3. );
-	auto t = multi::detail::to_tuple<3, multi::index_extension>({1,2,3});
-	assert( std::get<1>(t) == 2 );
-	std::array<multi::index, 3> arr{1,2,3};
-	auto u = multi::detail::to_tuple<multi::index_extension>(arr);
-	assert( std::get<1>(u) == 2 );
-
+//	auto t = multi::detail::to_tuple<3, multi::index_extension>({1,2,3});
+//	assert( std::get<1>(t) == 2 );
+//	std::array<multi::index, 3> arr{1,2,3};
+//	auto u = multi::detail::to_tuple<multi::index_extension>(arr);
+//	assert( std::get<1>(u) == 2 );
  {
 	multi::layout_t<0> L; assert( dimensionality(L)==0 and num_elements(L) == 1 ); sizes(L);
 }{

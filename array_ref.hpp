@@ -401,8 +401,9 @@ public:
 		};
 	}
 	friend auto flattened(basic_array const& self){return self.flattened();}
+	bool is_flattable() const{return this->stride() == this->layout().sub_.nelems_;}
 	auto flatted() const{
-		assert(this->stride() == this->layout().sub_.nelems_ && "flatted doesn't work for all layouts!");//this->nelems());
+		assert(is_flattable() && "flatted doesn't work for all layouts!");//this->nelems());
 		multi::layout_t<D-1> new_layout{this->layout().sub_};
 		new_layout.nelems_*=this->size();
 		return basic_array<T, D-1, ElementPtr>{new_layout, types::base_};

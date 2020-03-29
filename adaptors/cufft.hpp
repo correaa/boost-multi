@@ -1,6 +1,6 @@
 #ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
-nvcc               -D_TEST_MULTI_ADAPTORS_CUFFT -x c++ $0 -o $0x          -lcufft `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x
-clang++ -std=c++14 -D_TEST_MULTI_ADAPTORS_CUFFT -x c++ $0 -o $0x -lcudart -lcufft `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x
+nvcc               -D_TEST_MULTI_ADAPTORS_CUFFT -x c++ $0 -o $0x `#-Xcompiler=-pthread` -lcufft -lfftw3_threads `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x
+clang++ -std=c++14 -DCUDA_API_PER_THREAD_DEFAULT_STREAM -D_TEST_MULTI_ADAPTORS_CUFFT -x c++ $0 -o $0x -lcudart `#-pthread` -lcufft -lfftw3_threads `pkg-config --libs fftw3` -lboost_timer -ltbb -lboost_unit_test_framework&&$0x&&rm $0x
 exit
 #endif
 // © Alfredo A. Correa 2020
@@ -16,7 +16,10 @@ exit
 
 #include<experimental/tuple>
 #include<experimental/array>
+#include<vector>
 
+//#include<execution>
+#include<future>
 #include<cufft.h>
 //#include<cuda_runtime.h> // cudaDeviceSynchronize
 
@@ -95,7 +98,7 @@ public:
 	using size_type = int;
 	using ssize_type = int;
 
-	template<class I, class O, std::enable_if_t<I::dimensionality <= 4, int> =0, 
+	template<class I, class O, //std::enable_if_t<(I::dimensionality < 4), int> =0, 
 		typename = decltype(raw_pointer_cast(base(std::declval<I const&>())), reinterpret_cast<complex_type*      >(raw_pointer_cast(base(std::declval<O&&>()))))
 	>
 	plan(I const& i, O&& o, sign s) : 
@@ -103,6 +106,7 @@ public:
 		odata_{const_cast<complex_type*>(reinterpret_cast<complex_type*      >(raw_pointer_cast(base(o))))},
 		direction_{s}
 	{
+		assert( I::dimensionality < 4 );
 		assert( CUFFT_FORWARD == s or CUFFT_INVERSE == s or s == 0 );
 		assert( sizes(i) == sizes(o) );
 #if 0
@@ -119,18 +123,35 @@ public:
 		}
 #endif
 		using namespace std::experimental;
-		auto ion = apply([](auto... t){return make_array<size_type>(t...);}, sizes(i));
-
+		auto ion      = apply([](auto... t){return make_array< size_type>(t...);}, sizes  (i));
 		auto istrides = apply([](auto... t){return make_array<ssize_type>(t...);}, strides(i));
 		auto ostrides = apply([](auto... t){return make_array<ssize_type>(t...);}, strides(o));
 
-		int istride = istrides.back();
-		auto iembed = istrides;
-		std::adjacent_difference(begin(istrides), end(istrides), begin(iembed), [](auto a, auto b){assert(b%a==0); return b/a;});
+//	auto inelemss = to_array<int>(first->nelemss());
+//	auto onelemss = to_array<int>(d_first->nelemss());
 
+		std::array<std::tuple<int, int, int>, I::dimensionality> ssn;
+		for(std::size_t i = 0; i != ssn.size(); ++i) ssn[i] = std::make_tuple(istrides[i], ostrides[i], ion[i]);
+		std::sort(ssn.begin(), ssn.end(), std::greater<>{});
+
+		for(std::size_t i = 0; i != ssn.size(); ++i){
+			istrides[i] = std::get<0>(ssn[i]);
+			ostrides[i] = std::get<1>(ssn[i]);
+			ion[i]      = std::get<2>(ssn[i]);
+		}// = std::tuple<int, int, int>(istrides[i], ostrides[i], ion[i]);
+
+
+		int istride = istrides.back();
+		auto inembed = istrides; inembed.fill(0);
 		int ostride = ostrides.back();
-		auto oembed = ostrides;
-		std::adjacent_difference(begin(ostrides), end(ostrides), begin(oembed), [](auto a, auto b){assert(b%a==0); return b/a;});
+		auto onembed = ostrides; onembed.fill(0);	
+		for(std::size_t i = 1; i != onembed.size(); ++i){
+			assert(ostrides[i-1] >= ostrides[i]); // otherwise ordering is incompatible
+			assert(ostrides[i-1]%ostrides[i]==0);
+			onembed[i]=ostrides[i-1]/ostrides[i]; //	assert( onembed[i] <= ion[i] );
+			assert(istrides[i-1]%istrides[i]==0);
+			inembed[i]=istrides[i-1]/istrides[i]; //	assert( inembed[i] <= ion[i] );
+		}
 
 		direction_ = s;
 		idata_ =                           reinterpret_cast<complex_type const*>(raw_pointer_cast(base(i))) ;
@@ -140,10 +161,10 @@ public:
 			/*cufftHandle *plan*/ &h_, 
 			/*int rank*/          ion.size(), 
 			/*int *n*/            ion.data(), //	/*NX*/      last - first,
-			/*int *inembed*/      iembed.data(),
+			/*int *inembed*/      inembed.data(),
 			/*int istride*/       istride, 
 			/*int idist*/         1, //stride(first), 
-			/*int *onembed*/      oembed.data(), 
+			/*int *onembed*/      onembed.data(), 
 			/*int ostride*/       ostride, 
 			/*int odist*/         1, //stride(d_first), 
 			/*cufftType type*/    CUFFT_Z2Z, 
@@ -163,21 +184,35 @@ public:
 	->std::decay_t<decltype(const_cast<complex_type*>(reinterpret_cast<complex_type*>(raw_pointer_cast(base(d_first)))), std::declval<plan>())>
 	{
 		assert( CUFFT_FORWARD == sign or CUFFT_INVERSE == sign or sign == 0 );
-		assert( size(*first) == size(*last) );
-		using namespace std::experimental;
-		auto ion = apply([](auto... t){return make_array<size_type>(t...);}, sizes(*  first));
+		using namespace std::experimental; //using std::apply;
+		assert(sizes(*first)==sizes(*d_first));
+		auto ion      = apply([](auto... t){return make_array< size_type>(t...);}, sizes  (*first));
 
-		assert( stride(first)==stride(last) );
-		auto istrides = apply([](auto... t){return make_array<ssize_type>(t...);}, strides(*  first));
+		assert(strides(*first) == strides(*last));
+		auto istrides = apply([](auto... t){return make_array<ssize_type>(t...);}, strides(*first));
 		auto ostrides = apply([](auto... t){return make_array<ssize_type>(t...);}, strides(*d_first));
 
-		int istride = istrides.back();
-		auto iembed = istrides;
-		std::adjacent_difference(begin(istrides), end(istrides), begin(iembed), [](auto a, auto b){assert(b%a==0); return b/a;});//std::divides<>{});
+		std::array<std::tuple<int, int, int>, std::decay_t<decltype(*It1{})>::dimensionality> ssn;
+		for(std::size_t i = 0; i != ssn.size(); ++i) ssn[i] = std::make_tuple(istrides[i], ostrides[i], ion[i]);
+		std::sort(ssn.begin(), ssn.end(), std::greater<>{});
 
+		for(std::size_t i = 0; i != ssn.size(); ++i){
+			istrides[i] = std::get<0>(ssn[i]);
+			ostrides[i] = std::get<1>(ssn[i]);
+			ion[i]      = std::get<2>(ssn[i]);
+		}
+
+		int istride = istrides.back();
+		auto inembed = istrides; inembed.fill(0);
 		int ostride = ostrides.back();
-		auto oembed = ostrides;
-		std::adjacent_difference(begin(ostrides), end(ostrides), begin(oembed), [](auto a, auto b){assert(b%a==0); return b/a;});
+		auto onembed = ostrides; onembed.fill(0);	
+		for(std::size_t i = 1; i != onembed.size(); ++i){
+			assert(ostrides[i-1] >= ostrides[i]); // otherwise ordering is incompatible
+			assert(ostrides[i-1]%ostrides[i]==0);
+			onembed[i]=ostrides[i-1]/ostrides[i]; //	assert( onembed[i] <= ion[i] );
+			assert(istrides[i-1]%istrides[i]==0);
+			inembed[i]=istrides[i-1]/istrides[i]; //	assert( inembed[i] <= ion[i] );
+		}
 
 		plan ret;
 		ret.direction_ = sign;
@@ -188,10 +223,10 @@ public:
 			/*cufftHandle *plan*/ &ret.h_, 
 			/*int rank*/          ion.size(), 
 			/*int *n*/            ion.data(), //	/*NX*/      last - first,
-			/*int *inembed*/      iembed.data(),
+			/*int *inembed*/      inembed.data(),
 			/*int istride*/       istride, 
 			/*int idist*/         stride(first), 
-			/*int *onembed*/      oembed.data(), 
+			/*int *onembed*/      onembed.data(), 
 			/*int ostride*/       ostride, 
 			/*int odist*/         stride(d_first), 
 			/*cufftType type*/    CUFFT_Z2Z, 
@@ -225,6 +260,7 @@ auto dft(In const& i, Out&& o, int s)
 ->decltype(plan{i, std::forward<Out>(o), s}()){
 	return plan{i, std::forward<Out>(o), s}();}
 
+
 template<typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
 NODISCARD("when first argument is const")
 R dft(In const& i, int s){
@@ -238,11 +274,63 @@ auto many_dft(It1 first, It1 last, It2 d_first, sign s)
 ->decltype(plan::many(first, last, d_first, s)(), d_first + (last - first)){
 	return plan::many(first, last, d_first, s)(), d_first + (last - first);}
 
+template<typename In, class Out,  std::size_t D = In::dimensionality, std::enable_if_t<(D==1), int> = 0>
+Out&& dft(std::array<bool, D> which, In const& i, Out&& o, int s){
+	if(which[0]) dft(i, o, s);
+	else assert(0);//o = i;
+	return std::forward<Out>(o);
+}
+
+template<typename In, class Out,  std::size_t D = In::dimensionality, std::enable_if_t<(D>1), int> = 0>
+Out&& dft(std::array<bool, D> which, In const& i, Out&& o, int s){
+	assert(extension(i) == extension(o));
+	auto const tail = reinterpret_cast<std::array<bool, D-1> const&>(which[1]);
+	if(which[0] == true){
+		if(std::all_of(tail.begin(), tail.end(), [](auto e){return e==true;})){
+			dft(i, o, s);
+		}else{
+			auto ff = std::find(which.begin(), which.end(), false);
+			auto n = ff - which.begin();
+			std::rotate(which.begin(), ff, which.end());
+			dft(which, (i<<n), (o<<n), s);
+		}
+	}else if(which[0]==false){
+		if(std::all_of(tail.begin(), tail.end(), [](auto e){return e==true;})){
+			many_dft(i.begin(), i.end(), o.begin(), s);
+		}else{
+			if(which.size() > 1 and which[1] == false and i.is_flattable() and o.is_flattable()){
+				dft(tail, i.flatted(), o.flatted(), s);
+			}else{
+				std::cout << "warning: needs loops! (loop size " << i.size() << ")\n";
+				for(auto idx : extension(i)) dft(tail, i[idx], o[idx], s);
+			}
+		}
+	}
+	return std::forward<Out>(o);
+}
+
 }
 
 
-
 }}
+
+#if 0
+case 0, 1, 1, 1, 
+cpu 0.119178s wall, CPU (998.5%)
+gpu 0.064867s wall, CPU (92.5%)
+case 0, 1, 1, 0, 
+cpu 0.127376s wall, CPU (879.3%)
+gpu 0.089769s wall, CPU (111.4%)
+case 1, 0, 0, 0, 
+cpu 0.058539s wall, CPU (1042.0%)
+gpu 1.079468s wall, CPU (131.5%)
+case 1, 1, 0, 0, 
+cpu 0.104632s wall, CPU (879.3%)
+gpu 0.073204s wall, CPU (109.3%)
+case 0, 0, 1, 0, 
+cpu 0.062713s wall, CPU (988.6%)
+gpu 0.552235s wall, CPU (130.4%)
+#endif
 
 #include "../adaptors/cuda.hpp"
 
@@ -425,6 +513,8 @@ template<class In> In&& dft_inplace(In&& i, sign s){
 #include<complex>
 #include<thrust/complex.h>
 
+#include<iostream>
+
 namespace multi = boost::multi;
 using complex = std::complex<double>;
 namespace utf = boost::unit_test;
@@ -432,6 +522,9 @@ namespace utf = boost::unit_test;
 constexpr auto I = complex{0, 1};
 
 BOOST_AUTO_TEST_CASE(cufft_dft_1D_out_of_place, *utf::tolerance(0.00001)){
+
+//	int good = fftw_init_threads(); assert(good);
+//	fftw_plan_with_nthreads(std::thread::hardware_concurrency());
 
 	multi::array<complex, 1> const in_cpu = {
 		1. + 2.*I, 2. + 3. *I, 4. + 5.*I, 5. + 6.*I
@@ -485,31 +578,46 @@ BOOST_AUTO_TEST_CASE(cufft_2D, *boost::unit_test::tolerance(0.0001)){
 
 BOOST_AUTO_TEST_CASE(cufft_3D_timing, *boost::unit_test::tolerance(0.0001)){
 
+	auto x = std::make_tuple(300, 300, 300);
 	{
-		multi::array<complex, 3> const in_cpu({400, 400, 400}, 10.); 
+		multi::array<complex, 3> const in_cpu(x, 10.); 
 		BOOST_ASSERT( in_cpu.num_elements()*sizeof(complex) < 2e9 );
 		multi::array<complex, 3> fw_cpu(extensions(in_cpu), 99.);
 		{
-			boost::timer::auto_cpu_timer t;  // 1.041691s wall, 1.030000s user + 0.000000s system = 1.030000s CPU (98.9%)
+		//	boost::timer::auto_cpu_timer t;  // 1.041691s wall, 1.030000s user + 0.000000s system = 1.030000s CPU (98.9%)
 			multi::fftw::dft(in_cpu, fw_cpu, multi::fftw::forward);
 
 		//	BOOST_TEST( fw_cpu[8][9][10] != 99. );
 		}
 	}
 	{
-		multi::cuda::array<complex, 3> const in_gpu({400, 400, 400}, 10.); 
+		multi::cuda::array<complex, 3> const in_gpu(x, 10.); 
 		multi::cuda::array<complex, 3> fw_gpu(extensions(in_gpu), 99.);
 		{
-			boost::timer::auto_cpu_timer t; //  0.208237s wall, 0.200000s user + 0.010000s system = 0.210000s CPU (100.8%)
+		//	boost::timer::auto_cpu_timer t; //  0.208237s wall, 0.200000s user + 0.010000s system = 0.210000s CPU (100.8%)
 			multi::cufft::dft(in_gpu, fw_gpu, multi::fftw::forward);
 
+		//	BOOST_TEST( fw_gpu[8][9][10].operator complex() != 99. );
+		}
+	}
+	{
+		multi::cuda::managed::array<complex, 3> const in_gpu(x, 10.); 
+		multi::cuda::managed::array<complex, 3> fw_gpu(extensions(in_gpu), 99.);
+		{
+		//	boost::timer::auto_cpu_timer t; //  0.208237s wall, 0.200000s user + 0.010000s system = 0.210000s CPU (100.8%)
+			multi::fft::dft(in_gpu, fw_gpu, multi::fft::forward);
+		//	BOOST_TEST( fw_gpu[8][9][10].operator complex() != 99. );
+		}
+		{
+		//	boost::timer::auto_cpu_timer t; //  0.208237s wall, 0.200000s user + 0.010000s system = 0.210000s CPU (100.8%)
+			multi::fft::dft(in_gpu, fw_gpu, multi::fft::forward);
 		//	BOOST_TEST( fw_gpu[8][9][10].operator complex() != 99. );
 		}
 	}
 
 }
 
-BOOST_AUTO_TEST_CASE(cufft_4D_many, *utf::tolerance(0.00001) ){
+BOOST_AUTO_TEST_CASE(cufft_many_3D, *utf::tolerance(0.00001) ){
 
 	auto const in_cpu = []{
 		multi::array<complex, 4> ret({45, 18, 32, 16});
@@ -531,6 +639,99 @@ BOOST_AUTO_TEST_CASE(cufft_4D_many, *utf::tolerance(0.00001) ){
 	BOOST_TEST( imag( out[5][4][3][2].operator std::complex<double>() - out_cpu[5][4][3][2]) == 0. );
 
 }
+
+BOOST_AUTO_TEST_CASE(cufft_4D, *utf::tolerance(0.00001)){
+	auto const in = []{
+		multi::array<complex, 3> ret({10, 10, 10});
+		std::generate(ret.data_elements(), ret.data_elements() + ret.num_elements(), 
+			[](){return complex{std::rand()*1./RAND_MAX, std::rand()*1./RAND_MAX};}
+		);
+		return ret;
+	}();
+	multi::array<complex, 3> out(extensions(in));
+//	multi::fftw::dft({true, false, true}, in, out, multi::fftw::forward);
+	multi::fftw::many_dft((in<<1).begin(), (in<<1).end(), (out<<1).begin(), multi::fftw::forward);
+
+	multi::cuda::array<complex, 3> in_gpu = in;
+	multi::cuda::array<complex, 3> out_gpu(extensions(in));
+
+	multi::cufft::dft({true, false, true}, in_gpu, out_gpu, multi::fftw::forward);//multi::cufft::forward);	
+//	multi::cufft::many_dft(in_gpu.begin(), in_gpu.end(), out_gpu.begin(), multi::fftw::forward);
+	BOOST_TEST( imag( out_gpu[5][4][3].operator complex() - out[5][4][3]) == 0. );	
+}
+
+BOOST_AUTO_TEST_CASE(cufft_combinations, *utf::tolerance(0.00001)){
+
+	auto const in = []{
+		multi::array<complex, 4> ret({32, 90, 98, 96});
+		std::generate(ret.data_elements(), ret.data_elements() + ret.num_elements(), 
+			[](){return complex{std::rand()*1./RAND_MAX, std::rand()*1./RAND_MAX};}
+		);
+		return ret;
+	}();
+	multi::cuda::array<complex, 4> const in_gpu = in;
+
+	std::vector<std::array<bool, 4>> cases = {
+		{false, true , true , true }, 
+		{false, true , true , false}, 
+		{true , false, false, false}, 
+		{true , true , false, false},
+		{false, false, true , false},
+	};
+
+	for(auto c : cases){
+		std::cout << "case "; std::copy(c.begin(), c.end(), std::ostream_iterator<bool>{std::cout,", "}); std::cout << "\n";
+		multi::array<complex, 4> out(extensions(in));
+		{
+			boost::timer::auto_cpu_timer t{"cpu %ws wall, CPU (%p%)\n"};
+			multi::fftw::dft (c, in, out, multi::fftw::forward);
+		}
+
+		multi::cuda::array<complex, 4> out_gpu(extensions(in_gpu));
+		{
+			boost::timer::auto_cpu_timer t{"gpu %ws wall, CPU (%p%)\n"};
+			multi::cufft::dft(c, in_gpu, out_gpu, multi::fft::forward);
+		}
+		BOOST_TEST( imag( out_gpu[5][4][3][1].operator complex() - out[5][4][3][1]) == 0. );	
+	}
+
+}
+
+//BOOST_AUTO_TEST_CASE(cu
+
+#if 0
+BOOST_AUTO_TEST_CASE(cufft_4D){
+	auto const in = []{
+		multi::array<complex, 3> ret({10, 10, 10});
+		ret[2][3][4] = 99.;
+		return ret;
+	}();
+	multi::array<complex, 3> out(extensions(in));
+
+	multi::fftw::dft({true, true, false}, in, out, multi::fftw::forward);
+	
+//	auto fwd = multi::fftw::dft({true, true, true, true}, in, out, multi::fftw::forward);
+//	BOOST_REQUIRE(in[2][3][4][5] == 99.);
+	std::cout << out[9][1][2] << std::endl;
+	for(auto i = 0; i != out.num_elements(); ++i) std:cout << (out.data_elements()[i]) <<' ';
+
+#if 0
+	multi::cuda::array<complex, 3> in_gpu = in;//[]{
+//		multi::cuda::array<complex, 4> ret({10, 10, 10, 10});
+//		ret[2][3][4][5] = 99.;
+//		return ret;
+//	}();
+	multi::cuda::array<complex, 3> out_gpu(extensions(in));
+	multi::cufft::dft({true, true, false}, in_gpu, out_gpu, multi::cufft::forward);
+
+	std::cout << out_gpu[5][4][3].operator complex() << std::endl;
+
+//	multi::cufft::dft({true, true, true, true}, in_gpu, out_gpu, multi::cufft::forward);
+//	multi::cufft::dft({true, true, true, true}, in_gpu, out_gpu, multi::cufft::forward);
+#endif
+
+}
+#endif
 
 #endif
 #endif
