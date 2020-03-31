@@ -5,7 +5,11 @@ clang++ -O3 -std=c++17 -Wall $0 -o$0x && $0x && rm $0x; exit
 #include "../array_ref.hpp"
 #include "../array.hpp"
 
+#include "../complex.hpp"
+
 //#include<boost/iterator/transform_iterator.hpp>
+
+#include<thrust/complex.h>
 
 #include<complex>
 //#include<iostream>
@@ -35,10 +39,10 @@ namespace{
 	}
 }
 
-template<class Array> decltype(auto) real(Array&& a){return real_(a, priority_1{});}
+template<class Array> decltype(auto) Real(Array&& a){return real_(a, priority_1{});}
 
 template<class Array, typename E = typename std::decay_t<Array>::element, typename R = decltype(std::real(E{})), typename I = decltype(E{}.imag())>
-decltype(auto) imag(Array&& a){
+decltype(auto) Imag(Array&& a){
 	struct C{R real; I imag;}; static_assert(sizeof(E) == sizeof(C));
 	return member_array_cast<I>(reinterpret_array_cast<C>(a), &C::imag);
 }
@@ -92,6 +96,21 @@ int main(){
 		double imag;
 	};
 	{
+		struct complex{double real; double imag;};
+		auto&& Areal = multi::member_array_cast<double>(A, &complex::real);
+		auto&& Aimag = multi::member_array_cast<double>(A, &complex::imag);
+
+		assert( Areal[1][0] == 22. );
+		assert( Aimag[1][0] == 33. );
+	}
+	{
+		auto&& Areal = multi::member_array_cast<double>(A, &multi::complex<double>::real);
+		auto&& Aimag = multi::member_array_cast<double>(A, &multi::complex<double>::imag);
+
+		assert( Areal[1][0] == 22. );
+		assert( Aimag[1][0] == 33. );
+	}
+	{
 		auto&& Acast = multi::reinterpret_array_cast<Complex>(A);
 		auto&& Areal = multi::member_array_cast<double>(Acast, &Complex::real);
 		auto&& Aimag = multi::member_array_cast<double>(Acast, &Complex::imag);
@@ -105,6 +124,7 @@ int main(){
 		assert( Aimag[1][0] == 33. and std::get<1>(strides(Aimag)) == 2 );
 		Areal[1][0] = 55.;
 	}
+#if 0
 	{
 		auto&& Areal = real(A);
 		auto&& Aimag = imag(A);
@@ -131,6 +151,7 @@ int main(){
 		assert( Areal[1][1] == 5. );
 	//	Areal[1][1] = 55.;
 	}
+#endif
 }
 
 }
