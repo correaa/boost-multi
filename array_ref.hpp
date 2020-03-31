@@ -317,7 +317,7 @@ struct basic_array :
 	friend struct basic_array<typename types::element, typename Layout::rank{} + 1, typename types::element_ptr >;
 	friend struct basic_array<typename types::element, typename Layout::rank{} + 1, typename types::element_ptr&>;
 	using types::layout;
-	HD decltype(auto) layout() const{return array_types<T, D, ElementPtr, Layout>::layout();}
+	auto layout() const HD{return array_types<T, D, ElementPtr, Layout>::layout();}
 protected:
 	using types::types;
 	template<typename, dimensionality_type, class Alloc> friend struct static_array;
@@ -584,7 +584,7 @@ public:
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
 	basic_array<T2, D, P2> static_array_cast() const HD{
 		P2 p2{this->base_};
-		return {this->layout(), p2};
+		return basic_array<T2, D, P2>{this->layout(), p2};
 	}
 //	template<class T2, class P2 = decltype(boost::static_pointer_cast<T2>(std::declval<typename basic_array::element_ptr>()))>
 //	auto static_array_cast() const HD ->basic_array<T2, D, P2>{
@@ -675,7 +675,7 @@ public:
 	array_iterator& operator--(){data_-=stride_; /*decrement()*/; return *this;}
 	bool operator==(array_iterator const& o) const{return data_== o.data_;/*return equal(o);*/}
 	bool operator!=(array_iterator const& o) const{return data_!= o.data_;/*return equal(o);*/}
-	Ref operator*() const HD{return dereference();}
+	Ref operator*() const HD{return 	dereference();}
 	difference_type operator-(array_iterator const& o) const{return -distance_to(o);}
 	array_iterator& operator+=(difference_type d) HD{data_+=stride_*d; return *this;}
 	array_iterator& operator-=(difference_type d) HD{data_-=stride_*d; return *this;}
@@ -910,10 +910,10 @@ public:
 };
 
 template<class T2, class P2, class Array, class... Args>
-HD decltype(auto) static_array_cast(Array&& a, Args&&... args){return a.template static_array_cast<T2, P2>(std::forward<Args>(args)...);}
+decltype(auto) static_array_cast(Array&& a, Args&&... args) HD{return a.template static_array_cast<T2, P2>(std::forward<Args>(args)...);}
 
 template<class T2, class Array, class P2 = typename std::pointer_traits<typename std::decay<Array>::type::element_ptr>::template rebind<T2> , class... Args>
-HD decltype(auto) static_array_cast(Array&& a, Args&&... args){return a.template static_array_cast<T2, P2>(std::forward<Args>(args)...);}
+decltype(auto) static_array_cast(Array&& a, Args&&... args) HD{return a.template static_array_cast<T2, P2>(std::forward<Args>(args)...);}
 
 template<
 	class T2, class Array,

@@ -148,16 +148,17 @@ void destroy_at(Alloc& a, T* p){AT::destroy(a, p);}
 
 //template<class Alloc, class ForwardIt>
 //void destroy(Alloc& a, ForwardIt first, ForwardIt last);
-template<class Alloc, class ForwardIt, class Size>
-ForwardIt destroy_n(Alloc& a, ForwardIt first, Size n);
+/*template<class Alloc, class ForwardIt, class Size>
+ForwardIt alloc_destroy_n(Alloc& a, ForwardIt first, Size n);
 template<class Alloc, class InputIt, class Size, class ForwardIt>
-ForwardIt uninitialized_copy_n(Alloc& a, InputIt f, Size n, ForwardIt d);
+ForwardIt alloc_uninitialized_copy_n(Alloc& a, InputIt f, Size n, ForwardIt d);
 template<class Alloc, class InputIt, class Size, class ForwardIt>
-ForwardIt uninitialized_move_n(Alloc& a, InputIt f, Size n, ForwardIt d);
+ForwardIt alloc_uninitialized_move_n(Alloc& a, InputIt f, Size n, ForwardIt d);
 template<class Alloc, class ForwardIt, class Size, class T>
-ForwardIt uninitialized_fill_n(Alloc& a, ForwardIt first, Size n, const T& v);
+ForwardIt alloc_uninitialized_fill_n(Alloc& a, ForwardIt first, Size n, const T& v);
 template<class Alloc, class ForwardIt, class Size>
-ForwardIt uninitialized_default_construct_n(Alloc& a, ForwardIt first, Size n);
+ForwardIt alloc_uninitialized_default_construct_n(Alloc& a, ForwardIt first, Size n);
+*/
 //template<class Alloc, class ForwardIt, class Size>
 //ForwardIt uninitialized_value_construct_n(Alloc& a, ForwardIt first, Size n);
 

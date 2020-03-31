@@ -1,60 +1,33 @@
 #ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
-$CXX -std=c++14 -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_ALGORITHM -DNDEBUG -xc++ $0 -o $0x -lcudart -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXX -std=c++14 -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_ALGORITHM -g -x c++ $0 -o $0x -lcudart -lboost_unit_test_framework -lboost_timer&&$0x&&rm $0x;exit
 #endif
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_ALGORITHM_HPP
 #define BOOST_MULTI_MEMORY_ADAPTORS_CUDA_ALGORITHM_HPP
 
 #include          "../cuda/cstring.hpp"
 #include "../../../../multi/array_ref.hpp"
+#include "../../../../multi/detail/adl.hpp"
 
 #include "../cuda/error.hpp"
 //#include <boost/log/trivial.hpp>
 
 //#include "../cuda/algorithm/copy.hpp"
 
-#include<iostream>
+#include<complex> //TODO remove
 
 
 namespace boost{namespace multi{
 namespace memory{namespace cuda{
-
-//template<class U, class T, typename Size, typename = std::enable_if_t<std::is_trivially_assignable<T&, U>{}>>
-//ptr<T> copy_n(U const* first, Size count, ptr<T> result){
-//	memcpy(result, first, count*sizeof(T)); return result + count;
-//}
 
 template<class U, class T, typename Size, typename = std::enable_if_t<std::is_trivially_assignable<T&, U>{}>>
 ptr<T> copy_n(ptr<U> first, Size count, ptr<T> result){
 	memcpy(result, first, count*sizeof(T)); return result + count;
 }
 
-//	template<class P> 
-//	using element_t = typename std::pointer_traits<P>::element_type;
-//	using std::enable_if_t;
-//	using std::is_trivially_assignable;
-
-//using memory::cuda::ptr;
-
-/*
-template<
-	class PtrU, class PtrT, //typename Size, 
-	typename U = typename std::iterator_traits<PtrU>::value_type, typename T = typename std::iterator_traits<PtrT>::value_type,
-	typename = std::enable_if_t<std::is_trivially_assignable<T&, U>{}>
->
-auto copy_n(PtrU first, std::ptrdiff_t count, PtrT result)
-->decltype(memcpy(result, first, count*sizeof(T)), result + count){std::cerr<<"cudamemcpy " << count*sizeof(T) << " bytes" << std::endl;
-	return memcpy(result, first, count*sizeof(T)), result + count;}
-*/
-
-//template<class U, class PtrT, typename Size>
-//auto copy_n(ptr<U> first, Size count, PtrT result)
-//->decltype(copy_n<ptr<U>, PtrT>(first, count, result)){
-//	return copy_n<ptr<U>, PtrT>(first, count, result);}
-
-//template<class PtrU, class PtrT>
-//auto copy(PtrU first, PtrU last, PtrT result)
-//->decltype(copy_n(first, std::distance(first, last), result)){
-//	return copy_n(first, std::distance(first, last), result);}
+template<class U, class T, typename Size, typename = std::enable_if_t<std::is_trivially_assignable<T&, U>{}>>
+ptr<T> copy_n(U* first, Size count, ptr<T> result){
+	memcpy(result, first, count*sizeof(T)); return result + count;
+}
 
 template<class PtrU, class T>
 auto copy(PtrU first, PtrU last, ptr<T> result){
@@ -113,7 +86,7 @@ namespace multi{
 namespace memory{
 namespace cuda{
 
-#if 0
+#if 1
 template<class T1, class Q1, typename Size, class T2, class Q2, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
 auto copy_n(iterator<T1, 1, Q1*> first, Size count, iterator<T2, 1, ptr<Q2>> result)
 ->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first ), sizeof(T1), count), result + count){
@@ -128,34 +101,47 @@ template<class T1, class Q1, typename Size, class T2, class Q2, typename = std::
 auto copy_n(iterator<T1, 1, ptr<Q1>> first, Size count, iterator<T2, 1, ptr<Q2>> result)
 ->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count){
 	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count;}
+
+template<class T1, class... Q1, typename Size, class T2, class... Q2, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
+auto copy_n(iterator<T1, 1, managed::ptr<Q1...>> first, Size count, iterator<T2, 1, managed::ptr<Q2...>> result)
+->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count){assert(0);
+	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count;}
+
+template<class T1, class... Q1, class T2, class... Q2, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
+auto copy(iterator<T1, 1, managed::ptr<Q1...>> first, iterator<T1, 1, managed::ptr<Q1...>> last, iterator<T2, 1, managed::ptr<Q2...>> result)
+->decltype(copy_n(first, last - first, result)){assert(0);
+	return copy_n(first, last - first, result);}
+
 #endif
 
-template<class It1, class It2, class T1 = typename std::iterator_traits<It1>::value_type, class T2 = typename std::iterator_traits<It2>::value_type, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
-auto copy_n(It1 first, typename std::iterator_traits<It1>::difference_type count, It2 result)
+template<class T1, class T1P, class Size, class T2, class T2P, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
+auto copy_n(array_iterator<T1, 1, ptr<T1P>> first, Size count, array_iterator<T1, 1, ptr<T1P>> result)
 ->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count){
 	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count;}
 
-template<class It1, class It2>
-auto copy(It1 first, It1 last, It2 result)
-->decltype(cuda::copy_n(first, last - first, result)){
-	return cuda::copy_n(first, last - first, result);}
-
-template<class It1, class It2>
-auto adl_copy(It1 first, It1 last, It2 result)
+template<class T1, class T1P, class Size, class T2, class T2P>
+auto copy(array_iterator<T1, 1, ptr<T1P>> first, array_iterator<T1, 1, ptr<T1P>> last, array_iterator<T1, 1, ptr<T1P>> result)
 ->decltype(cuda::copy_n(first, last - first, result)){
 	return cuda::copy_n(first, last - first, result);}
 
 namespace managed{
 
-template<class It1, class It2, class T1 = typename std::iterator_traits<It1>::value_type, class T2 = typename std::iterator_traits<It2>::value_type>//, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
-auto copy_n(It1 first, typename std::iterator_traits<It1>::difference_type count, It2 result)
-->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count){assert(0);
-	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count;}
+template<class T1, class T1const, class... A1, class Size, class T2, class T2const, class... A2, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
+auto copy_n(
+	array_iterator<T1, 1, managed::ptr<T1const, A1...>> first, Size n, 
+	array_iterator<T2, 1, managed::ptr<T2const, A2...>> result
+)
+->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), n), result + n){assert(0);
+	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), n), result + n;}
 
-template<class It1, class It2>
-auto copy(It1 first, It1 last, It2 result)
-//->decltype(copy_n(first, last - first, result))
-{	return copy_n(first, last - first, result);}
+template<class T1, class T1const, class... A1, class T2, class T2const, class... A2>
+auto copy(
+	array_iterator<T1, 1, managed::ptr<T1const, A1...>> first,
+	array_iterator<T1, 1, managed::ptr<T1const, A1...>> last,
+	array_iterator<T2, 1, managed::ptr<T2const, A2...>> d_first
+){
+	return managed::copy_n(first, last - first, d_first);
+}
 
 template<class It1, class It2>
 auto adl_copy(It1 first, It1 last, It2 result)
@@ -167,11 +153,24 @@ auto alloc_uninitialized_copy(Alloc&, Ptr first, Ptr last, ForwardIt dest)
 ->decltype(cuda::copy(first, last, dest)){
 	return cuda::copy(first, last, dest);}
 
+template<class Alloc, class Ptr, class Size, class ForwardIt, std::enable_if_t<std::is_trivially_copyable<typename std::iterator_traits<ForwardIt>::value_type>{}, int> = 0>
+auto alloc_uninitialized_copy(Alloc&, Ptr first, Size n, ForwardIt dest)
+->decltype(cuda::copy_n(first, n, dest)){
+	return cuda::copy_n(first, n, dest);}
+
 template<class Alloc, class Ptr, class ForwardIt, std::enable_if_t<std::is_trivially_copyable<typename std::iterator_traits<ForwardIt>::value_type>{}, int> = 0>
 auto adl_alloc_uninitialized_copy(Alloc&, Ptr first, Ptr last, ForwardIt dest)
 ->decltype(cuda::copy(first, last, dest)){
 	return cuda::copy(first, last, dest);}
 
+template<class T, class TP, class Size, std::enable_if_t<std::is_trivially_default_constructible<T>{}, int> =0>
+auto uninitialized_default_construct_n(cuda::managed::ptr<T, TP> first, Size n){return first + n;}
+
+template<class T, class TP, class Size, std::enable_if_t<std::is_trivially_default_constructible<T>{}, int> =0>
+auto uninitialized_default_construct_n(cuda::managed::ptr<std::complex<T>, TP> first, Size n){return first + n;}
+
+template<class T, class TP, class Size, std::enable_if_t<std::is_trivially_destructible<T>{}, int> =0>
+auto destroy_n(cuda::managed::ptr<T, TP> first, Size n){return first + n;}
 
 }
 
@@ -228,10 +227,54 @@ auto copy(
 namespace multi = boost::multi;
 namespace cuda = multi::memory::cuda;
 
-using complex = std::complex<double>; complex const I{0, 1};
+BOOST_AUTO_TEST_CASE(copy_1d){
+	auto const A_cpu = []{
+		multi::array<double, 1> ret(1e8);
+		std::generate(
+			ret.data_elements(), ret.data_elements() + ret.num_elements(), std::rand
+		);
+		return ret;
+	}();
+	std::cout<<"memory size "<< A_cpu.num_elements()*sizeof(decltype(A_cpu)::element)/1e6 <<" MB\n";
+	{
+		multi::array<double, 1> B_cpu(size(A_cpu));
+		boost::timer::auto_cpu_timer t{"cpu->cpu %ws wall, CPU (%p%)\n"};
+		B_cpu = A_cpu;
+	}
+	{
+		multi::cuda::array<double, 1> A_gpu(size(A_cpu));
+		multi::cuda::array<double, 1> B_gpu(size(A_cpu));
+		boost::timer::auto_cpu_timer t{"gpu->gpu %ws wall, CPU (%p%)\n"};
+		B_gpu = A_gpu;
+		cudaDeviceSynchronize();
+	}
+	{
+		multi::cuda::array<double, 1> B_gpu(size(A_cpu));
+		boost::timer::auto_cpu_timer t{"cpu->gpu %ws wall, CPU (%p%)\n"};
+		B_gpu = A_cpu;
+	}
+	multi::cuda::array<double, 1> C_cpu(size(A_cpu));
+	{
+		multi::cuda::array<double, 1> B_gpu(size(A_cpu));
+		boost::timer::auto_cpu_timer t{"gpu->cpu %ws wall, CPU (%p%)\n"};
+		C_cpu = B_gpu;
+		cudaDeviceSynchronize();
+	}
+	{
+		multi::cuda::managed::array<double, 1> const A_mng(size(A_cpu));
+		multi::cuda::managed::array<double, 1> B_mng(size(A_cpu));
+		{
+			boost::timer::auto_cpu_timer t{"cold mng->mng %ws wall, CPU (%p%)\n"};
+			B_mng = A_mng;
+			cudaDeviceSynchronize();
+		}
+		{
+			boost::timer::auto_cpu_timer t{"haut mng->mng %ws wall, CPU (%p%)\n"};
+			B_mng = A_mng;
+			cudaDeviceSynchronize();
+		}
+	}
 
-BOOST_AUTO_TEST_CASE(mmm){//multi_cuda_managed_array_initialization_double){
-//	multi::cuda::managed::array<double, 1> B = {1., 3., 4.};
 //	multi::array<double, 1> Bcpu(3); 
 //	Bcpu = B;
 //	BOOST_REQUIRE( Bcpu[1] == 3. );

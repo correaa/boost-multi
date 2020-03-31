@@ -318,8 +318,8 @@ public:
 
 #if defined(__clang__)
 	decltype(auto) operator=(ref const& other) && __device__ {return operator=(static_cast<T const&>(other));}
-	decltype(auto) operator=(ref& other) && __device__ {return operator=(static_cast<T&>(other));}
-	decltype(auto) operator=(ref&& other) & __device__{return operator=(static_cast<T const&>(std::move(other)));}
+	decltype(auto) operator=(ref&  other) && __device__ {return operator=(static_cast<T&>(other));}
+	decltype(auto) operator=(ref&& other) &  __device__{return operator=(static_cast<T const&>(std::move(other)));}
 	decltype(auto) operator=(ref&& other) && __device__{return operator=(static_cast<T const&>(std::move(other)));}
 #endif
 
@@ -363,7 +363,8 @@ public:
 	template<class ValueType, 
 		std::enable_if_t<std::is_assignable<T&, decltype(value_type{std::declval<ValueType>()})>{}, int> = 0
 	>
-	[[deprecated("WARNING: slow memory operation")]]
+//	[[deprecated("WARNING: slow memory operation")]]
+	[[deprecated]]
 	ref&& operator=(ValueType const& t) && __host__ {
 		static_assert( std::is_trivially_copy_assignable<T>{}, "!" );
 	//	if(std::is_trivially_copy_assignable<T>{}){
@@ -411,6 +412,8 @@ public:
 //	}
 #if defined(__CUDA_ARCH__)
 	operator T const&()&& __device__{return *(pimpl_.rp_);}
+//	[[deprecated]] 
+	operator T const&()&& __host__{return *(pimpl_.rp_);}
 #endif
 //	operator T&()&& __host__  = delete;//{return *(pimpl_.rp_);}//delete;//{return *(pimpl_.rp_);}
 

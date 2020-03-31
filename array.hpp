@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
-$CXX -D_TEST_BOOST_MULTI_ARRAY -xc++ $0 -o$0x -DBOOST_LOG_DYN_LINK -lboost_log -pthread&&$0x&&rm $0x;exit
+$CXX -D_TEST_BOOST_MULTI_ARRAY -x c++ $0 -o$0x -DBOOST_LOG_DYN_LINK -lboost_log -pthread&&$0x&&rm $0x;exit
 #endif
 //  © Alfredo A. Correa 2018-2019
 #ifndef BOOST_MULTI_ARRAY_HPP 
@@ -252,8 +252,12 @@ public:
 	const_reference operator[](index i) const{return ref::operator[](i);}
 //	typename static_array::allocator_type get_allocator() const{return static_cast<typename static_array::allocator_type const&>(*this);}
 	friend typename static_array::allocator_type get_allocator(static_array const& self){return self.get_allocator();}
-	HD typename static_array::element_ptr       data()      {return ref::data();}
-	HD auto data() const{return typename static_array::element_const_ptr{ref::data()};}
+	typename static_array::element_ptr data()       {
+		return ref::data();
+	}
+	auto                               data() const HD{
+		return typename static_array::element_const_ptr{ref::data()};
+	}
 	friend typename static_array::element_ptr       data(static_array&       s){return s.data();}
 	friend typename static_array::element_const_ptr data(static_array const& s){return s.data();}
 
@@ -698,6 +702,21 @@ public:
 		}
 		return *this;
 	}
+	template<class OtherT, class... As>
+	auto operator=(array<OtherT, array::dimensionality, As...> const& o)
+	->decltype(array::uninitialized_copy_from(o.data_elements()), *this)
+	{
+		if(extensions(o)==array::extensions()){
+			adl::copy_n(o.data_elements(), o.num_elements(), array::data_elements());
+		}else{
+			array::clear();
+			this->static_::ref::layout_t::operator=(layout_t<D>{extensions(o)});
+			this->base_ = array::allocate(this->num_elements());
+			array::uninitialized_copy_from(o.data_elements());
+		}
+		return *this;
+	}
+
 	array& operator=(array const& o){
 		if(extensions(o)==array::extensions()) static_::operator=(o);
 		else{
@@ -780,6 +799,7 @@ public:
 		tmp.intersection_assign_(*this);
 		swap(tmp);
 	}
+	~array() noexcept{}
 };
 
 

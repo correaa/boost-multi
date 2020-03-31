@@ -52,6 +52,16 @@ namespace managed{
 		template<class P> void destroy(P* p){p->~T();}
 		constexpr bool operator==(allocator<T> const&) const{return true;}
 		constexpr bool operator!=(allocator<T> const&) const{return false;}
+		template<class InputIt, class Size, class ForwardIt>
+		ForwardIt alloc_uninitialized_copy_n(InputIt first, Size count, ForwardIt d_first) const{
+			return adl::uninitialized_copy_n(first, count, d_first);
+		}
+		template<class ForwardIt, class Size>
+		ForwardIt alloc_uninitialized_default_construct_n(ForwardIt first, Size n) const{
+			return adl::uninitialized_default_construct_n(first, n);
+		}
+		template<class ForwardIt, class Size>
+		ForwardIt alloc_destroy_n(ForwardIt first, Size n) const{return destroy_n(first, n);}
 	};
 }
 

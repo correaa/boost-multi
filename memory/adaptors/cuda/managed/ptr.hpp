@@ -154,6 +154,7 @@ public:
 //	template<class PM>
 //	decltype(auto) operator->*(PM pm) const{return *ptr<std::decay_t<decltype(rp_->*pm)>, decltype(&(rp_->*pm))>{&(rp_->*pm)};}
 	explicit operator typename std::pointer_traits<raw_pointer>::template rebind<void>() const{return typename std::pointer_traits<raw_pointer>::template rebind<void>{rp_};}
+	explicit operator typename std::pointer_traits<raw_pointer>::template rebind<void const>() const{return typename std::pointer_traits<raw_pointer>::template rebind<void const>{rp_};}
 	ptr& operator++(){++rp_; return *this;}
 	ptr& operator--(){--rp_; return *this;}
 	ptr  operator++(int){auto tmp = *this; ++(*this); return tmp;}
@@ -163,7 +164,8 @@ public:
 	ptr operator+(typename ptr::difference_type n) const HD{return ptr{rp_ + n};}
 	ptr operator-(typename ptr::difference_type n) const HD{return (*this) + (-n);}
 	using reference = typename std::pointer_traits<raw_pointer>::element_type&;//ref<element_type>;
-	[[SLOW]] reference operator*() const HD{return *rp_;}
+//	[[SLOW]] 
+	[[deprecated]] reference operator*() const HD{return *rp_;}
 	HD reference operator[](difference_type n){return *((*this)+n);}
 	friend inline ptr to_address(ptr const& p){return p;}
 	typename ptr::difference_type operator-(ptr const& other) const{return rp_-other.rp_;}
@@ -173,6 +175,7 @@ public:
 	friend allocator<std::decay_t<T>> get_allocator(ptr const&){return {};}
 	using default_allocator_type = allocator<std::decay_t<T>>;
 	default_allocator_type default_allocator() const{return {};}
+
 };
 
 template<class T, class S> const boost::serialization::array_wrapper<T> make_array(ptr<T> t, S s){

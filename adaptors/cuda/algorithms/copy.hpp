@@ -27,8 +27,8 @@ namespace multi{namespace cuda{
 #if 0
 template<typename From, typename To, typename = std::enable_if_t<std::is_trivially_assignable<To&, From>{}> >
 array_iterator<To, 1, To*> copy(
-	array_iterator<From, 1, cuda::ptr<To>> f, 
-	array_iterator<From, 1, cuda::ptr<To>> l, 
+	array_iterator<From, 1, memory::cuda::ptr<To>> f, 
+	array_iterator<From, 1, memory::cuda::ptr<To>> l, 
 	array_iterator<To, 1, To*> d
 ){
 	assert(0);
@@ -43,11 +43,11 @@ array_iterator<To, 1, To*> copy(
 	return d + n;
 }
 
-template<typename From, typename To, typename = std::enable_if_t<std::is_trivially_assignable<To&, From>{}> >
+template<typename From, typename From2, typename To, typename To2, typename = std::enable_if_t<std::is_trivially_assignable<To&, From>{}> >
 array_iterator<To, 1, To*> copy(
-	array_iterator<From, 1, cuda::ptr<To>> f, 
-	array_iterator<From, 1, cuda::ptr<To>> l, 
-	array_iterator<To, 1, cuda::ptr<To>> d
+	array_iterator<From, 1, memory::cuda::ptr<From2>> f, 
+	array_iterator<From, 1, memory::cuda::ptr<From2>> l, 
+	array_iterator<To  , 1, memory::cuda::ptr<To2>  > d
 ){
 	assert(0);
 	assert(f.stride() == l.stride()); static_assert(sizeof(From) == sizeof(To), "!");
@@ -90,22 +90,32 @@ template<class T> __device__ void WHAT(int) = delete;
 
 template<class T> T&& what(T&&) = delete;
 
-BOOST_AUTO_TEST_CASE(mmm){
+BOOST_AUTO_TEST_CASE(copy_by_iterator){
 	auto const A_cpu = []{
-		multi::array<double, 1> ret(198);
-		std::generate(
-			ret.data_elements(), ret.data_elements() + ret.num_elements(), 
-			[](){return std::rand()*1./RAND_MAX;}//, std::rand()*1./RAND_MAX};}
-		);
-		return ret;
+		multi::array<double, 2> r({198, 23});
+		std::generate(r.data_elements(), r.data_elements()+r.num_elements(), &std::rand);
+		return r;
 	}();
-	multi::cuda::array<double, 1> A = A_cpu;
-//	BOOST_REQUIRE( A[12] == A_cpu[12] );
+	multi::cuda::array<double, 2> A = A_cpu;
 
-	multi::cuda::array<double, 1> B(size(A));
+	multi::cuda::array<double, 2> B(extensions(A));
 	B() = A();
-	BOOST_REQUIRE( A[13] == B[13] );
+//	BOOST_REQUIRE( A[13] == B[13] );
 }
+
+BOOST_AUTO_TEST_CASE(copy_by_pointer){
+	auto const A_cpu = []{
+		multi::array<double, 2> r({198, 23});
+		std::generate(r.data_elements(), r.data_elements()+r.num_elements(), &std::rand);
+		return r;
+	}();
+	multi::cuda::array<double, 2> A = A_cpu;
+
+	multi::cuda::array<double, 2> B(extensions(A));
+	B = A;
+//	BOOST_REQUIRE( A[13] == B[13] );
+}
+
 
 BOOST_AUTO_TEST_CASE(cuda_copy){
 

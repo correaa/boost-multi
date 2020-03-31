@@ -80,6 +80,11 @@ public:
 			((T*)buff)->~T();
 		}
 	}
+	template<class InputIt, class Size, class ForwardIt>
+	auto alloc_uninitialized_copy_n(InputIt first, Size count, ForwardIt d_first) const
+	->decltype(copy_n(first, count, d_first)){
+		return copy_n(first, count, d_first);}
+
 	template<class Ptr, class Size, class V = typename Ptr::element_type>//, std::enable_if_t<typename Ptr::element_type> >
 	Ptr alloc_uninitialized_value_construct_n(Ptr const& p, Size n) const{
 		return boost::multi::memory::cuda::fill_n(p, n, V{});
