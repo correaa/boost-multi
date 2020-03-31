@@ -1,5 +1,5 @@
-#ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&nvcc -D_DISABLE_CUDA_SLOW -D_TEST_MULTI_MEMORY_CUDA_MANAGED_ALLOCATOR $0.cpp -o $0x&&$0x&&rm $0x $0.cpp; exit
+#ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
+nvcc -D_TEST_MULTI_MEMORY_CUDA_MANAGED_ALLOCATOR -x cu $0 -o $0x&&$0x&&rm $0x;exit
 #endif
 
 #ifndef MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_ALLOCATOR_HPP
@@ -68,7 +68,7 @@ namespace cuda = multi::memory::cuda;
 
 int main(){
 
-	multi::array<double, 1, multi::memory::cuda::managed::allocator<double> > A(32, double{}); 
+	multi::array<double, 1, multi::memory::cuda::managed::allocator<double> > A(32);
 	A[17] = 3.;
 	assert( A[17] == 3. );
 #if 0
