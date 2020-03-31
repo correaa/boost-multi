@@ -1,6 +1,6 @@
 #ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
 for a in ./tests/*.cpp; do echo $a; sh $a || break; echo "\n"; done; exit;*/
-$CXX -D_TEST_BOOST_MULTI_ARRAY_REF -xc++ $0 -o $0x&&$0x&&rm $0x $0.cpp;exit
+$CXX -D_TEST_BOOST_MULTI_ARRAY_REF -xc++ $0 -o $0x&&$0x&&rm $0x;exit
 #endif
 // © Alfredo Correa 2018-2020
 
@@ -915,17 +915,29 @@ HD decltype(auto) static_array_cast(Array&& a, Args&&... args){return a.template
 template<class T2, class Array, class P2 = typename std::pointer_traits<typename std::decay<Array>::type::element_ptr>::template rebind<T2> , class... Args>
 HD decltype(auto) static_array_cast(Array&& a, Args&&... args){return a.template static_array_cast<T2, P2>(std::forward<Args>(args)...);}
 
-template<class T2, class Array, class P2 = typename std::pointer_traits<typename std::decay<Array>::type::element_ptr>::template rebind<T2>,
-	class PM = T2 std::decay_t<Array>::element::*
->
-decltype(auto) member_array_cast(Array&& a, PM pm){return a.template member_cast<T2, P2>(pm);}
-
 template<
 	class T2, class Array,
 	class P2 = typename std::pointer_traits<typename std::decay<Array>::type::element_ptr>::template rebind<T2>
 >
 decltype(auto) reinterpret_array_cast(Array&& a){
 	return a.template reinterpret_array_cast<T2, P2>();
+}
+
+template<class T2, class Array, class P2 = typename std::pointer_traits<typename std::decay_t<Array>::element_ptr>::template rebind<T2>,
+	class PM = T2 std::decay_t<Array>::element::*
+>
+decltype(auto) member_array_cast(Array&& a, PM pm){return a.template member_cast<T2, P2>(pm);}
+
+template<
+	class T2, class Array, class P2 = typename std::pointer_traits<typename std::decay_t<Array>::element_ptr>::template rebind<T2>,
+	class OtherT2, class OtherElement, std::enable_if_t<not std::is_same<T2, OtherElement>{}, int> =0
+>
+decltype(auto) member_array_cast(Array&& a, OtherT2 OtherElement::* pm){
+	static_assert(sizeof(OtherElement)==sizeof(typename std::decay_t<Array>::element_type),
+		"member cast does not implicitly reinterprets between types of different size");
+	static_assert(sizeof(OtherT2)==sizeof(T2), 
+		"member cast does not implicitly reinterprets between types of different size");
+	return reinterpret_array_cast<OtherElement>(std::forward<Array>(a)).template member_cast<T2>(pm);
 }
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*>
