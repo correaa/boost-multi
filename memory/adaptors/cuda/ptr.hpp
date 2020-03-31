@@ -360,22 +360,25 @@ public:
 		#pragma GCC diagnostic pop
 	}
 #else // this is clang
-	template<class ValueType, std::enable_if_t<std::is_assignable<T&, decltype(value_type{std::declval<ValueType>()})>{}, int> = 0>
+	template<class ValueType, 
+		std::enable_if_t<std::is_assignable<T&, decltype(value_type{std::declval<ValueType>()})>{}, int> = 0
+	>
 	[[deprecated("WARNING: slow memory operation")]]
 	ref&& operator=(ValueType const& t) && __host__ {
-		if(std::is_trivially_copy_assignable<T>{}){
-			value_type const& tt = t;
-			cudaError_t s= cudaMemcpy(pimpl_.rp_, std::addressof(tt), sizeof(T), cudaMemcpyHostToDevice);
+		static_assert( std::is_trivially_copy_assignable<T>{}, "!" );
+	//	if(std::is_trivially_copy_assignable<T>{}){
+		//	value_type const& tt = t;
+			cudaError_t s= cudaMemcpy(pimpl_.rp_, std::addressof(t), sizeof(T), cudaMemcpyHostToDevice);
 		//	assert(s == cudaSuccess); (void)s;
 			if( s != cudaSuccess ) throw std::runtime_error( cudaGetErrorString(s) );
-		}else{
-			char buff[sizeof(T)];
-			/*[[maybe_unused]]*/ cudaError_t s1 = cudaMemcpy(buff, pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToHost); 
-			assert(s1 == cudaSuccess); (void)s1;
-			reinterpret_cast<T&>(buff) = t;
-			/*[[maybe_unused]]*/ cudaError_t s2 = cudaMemcpy(pimpl_.rp_, buff, sizeof(T), cudaMemcpyHostToDevice); 
-			assert(s2 == cudaSuccess); (void)s2;
-		}
+	//	}else{
+	//		char buff[sizeof(T)];
+	//		/*[[maybe_unused]]*/ cudaError_t s1 = cudaMemcpy(buff, pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToHost); 
+	//		assert(s1 == cudaSuccess); (void)s1;
+	//		reinterpret_cast<std::decay_t<T>&>(buff) = t;
+	//		/*[[maybe_unused]]*/ cudaError_t s2 = cudaMemcpy(pimpl_.rp_, buff, sizeof(T), cudaMemcpyHostToDevice); 
+	//		assert(s2 == cudaSuccess); (void)s2;
+	//	}
 		return std::move(*this);
 	}
 	[[deprecated("WARNING: slow memory operation")]]
