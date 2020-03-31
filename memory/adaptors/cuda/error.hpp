@@ -14,7 +14,7 @@
 
 namespace Cuda{
 
-enum /*class*/ error : typename std::underlying_type<cudaError_t>::type{
+enum /*class*/ error : std::underlying_type<cudaError_t>::type{
 	success                    = cudaSuccess, // = 0 The API call returned with no errors. In the case of query calls, this also means that the operation being queried is complete (see cudaEventQuery() and cudaStreamQuery()).
 	missing_configuration      = cudaErrorMissingConfiguration,
 //	invalid_value /*invalid_argument*/ = cudaErrorInvalidValue, // = 1, This indicates that one or more of the parameters passed to the API call is not within an acceptable range of values.
