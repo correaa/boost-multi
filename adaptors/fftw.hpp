@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-#nvcc    -D_TEST_MULTI_ADAPTORS_FFTW -x cu  $0 -o $0x                                   `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x
+ nvcc   -D_TEST_MULTI_ADAPTORS_FFTW -x cu  $0 -o $0x                                   `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x
 clang++ -D_TEST_MULTI_ADAPTORS_FFTW -x c++ $0 -o $0x -lcudart -pthread -lfftw3_threads `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x
 exit
 #endif
@@ -29,7 +29,7 @@ namespace boost{
 namespace multi{
 
 namespace fftw{
-	template<class T> auto alignment_of(T* p){return ::fftw_alignment_of((double*)p);}
+//	template<class T> auto alignment_of(T* p){return ::fftw_alignment_of((double*)p);}
 }
 
 #if 0
@@ -351,8 +351,10 @@ int plan::nthreads_ = (initialize_threads(), with_nthreads());
 //enum sign: decltype(FFTW_FORWARD){forward = FFTW_FORWARD, none = 0, backward = FFTW_BACKWARD };
 using sign = int;
 constexpr sign forward = FFTW_FORWARD;
-constexpr sign none = 0; static_assert( FFTW_FORWARD != 0 and FFTW_BACKWARD != 0, "!");
-constexpr sign backward = FFTW_BACKWARD;
+constexpr sign none = 0;
+constexpr sign backward = FFTW_BACKWARD; 
+
+static_assert( forward != none and none != backward and backward != forward, "!");
 
 enum strategy: decltype(FFTW_ESTIMATE){ estimate = FFTW_ESTIMATE, measure = FFTW_MEASURE };
 
@@ -368,10 +370,9 @@ Out&& transpose(In const& i, Out&& o){
 }
 
 template<typename In, class Out, std::size_t D = std::decay_t<In>::dimensionality>
-Out&& dft(std::array<bool, D> which, In const& i, Out&& o, sign s){
-	plan{which, i, o, s}();//(i, std::forward<Out>(o)); 
-	return std::forward<Out>(o);
-}
+auto dft(std::array<bool, D> which, In const& i, Out&& o, sign s)
+->decltype(plan{which, i, o, s}(), std::forward<Out>(o)){
+	return plan{which, i, o, s}(), std::forward<Out>(o);}
 
 template<dimensionality_type R, class In, class Out, std::size_t D = std::decay_t<In>::dimensionality>
 Out&& dft(In const& i, Out&& o, sign s){
@@ -478,6 +479,8 @@ namespace fft{
 	static constexpr int forward = FFTW_FORWARD;
 	static constexpr int none = 0;
 	static constexpr int backward = FFTW_BACKWARD;
+
+	static_assert( forward != none and none != backward and backward != forward, "!");
 }
 
 }}
