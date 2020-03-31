@@ -1,5 +1,5 @@
-#ifdef COMPILATION_INSTRUCTIONS
-(echo '#include "'$0'"'>$0.cpp)&& c++ -std=c++14 -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_DETAIL_ERROR $0.cpp -o $0x -lcudart && $0x && rm $0x $0.cpp; exit
+#ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
+$CXX -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_DETAIL_ERROR -xc++ $0 -o$0x -lcudart&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
