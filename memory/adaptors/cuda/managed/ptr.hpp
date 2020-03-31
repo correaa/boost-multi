@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&nvcc --Werror=cross-execution-space-call -Xcompiler -Wfatal-errors -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_PTR $0.cpp -o $0x &&$0x&&rm $0x; exit
+nvcc -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_PTR -x c++ $0 -o $0x&&$0x&&rm $0x; exit
 #endif
 
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_PTR_HPP
