@@ -72,7 +72,7 @@ namespace boost{namespace multi{ \
 namespace adl{ \
 	namespace custom{template<class...> struct copy_t;} __attribute__((unused)) 
 	static constexpr class copy_t{ \
-//		template<         class... As> auto _(priority<1>,        As&&... as) const RET(              std::copy(                    std::forward<As>(as)...))
+		template<         class... As> auto _(priority<1>,        As&&... as) const RET(              std::copy(                    std::forward<As>(as)...))
 #if defined(__NVCC__) or (defined(__clang__) && defined(__CUDA__))
 		template<class... As> 		   auto _(priority<2>,        As&&... as) const RET(           thrust::copy(                    std::forward<As>(as)...))
 #endif
