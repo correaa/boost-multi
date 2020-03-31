@@ -76,7 +76,7 @@ namespace adl{ \
 #if defined(__NVCC__) or (defined(__clang__) && defined(__CUDA__))
 		template<class... As> 		   auto _(priority<2>,        As&&... as) const RET(           thrust::copy(                    std::forward<As>(as)...))
 #endif
-		template<         class... As> auto _(priority<3>,        As&&... as) const RAT(                   copy(                    std::forward<As>(as)...)) \
+		template<         class... As> auto _(priority<3>,        As&&... as) const RET(                   copy(                    std::forward<As>(as)...)) \
 		template<class T, class... As> auto _(priority<4>, T&& t, As&&... as) const RET(std::forward<T>(t).copy                    (std::forward<As>(as)...)) \
 		template<         class... As> auto _(priority<5>,        As&&... as) const RET(custom::           copy_t<As&&...>::_      (std::forward<As>(as)...)) \
 		template<class T, class... As> auto _(priority<6>, T&& t, As&&... as) const RET(                   copy(std::forward<T>(t))(std::forward<As>(as)...)) \
