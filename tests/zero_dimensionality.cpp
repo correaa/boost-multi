@@ -1,5 +1,5 @@
-#ifdef COMPILATION_INSTRUCTIONS
-`#nvcc`$CXX -Wall -Wextra `#-Wno-deprecated-declarations` $0 -o $0x -lboost_unit_test_framework -lcudart&&$0x&&rm $0x;exit
+#ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
+$CXX -Wall -Wextra $0 -o $0x -lboost_unit_test_framework -lcudart&&$0x&&rm $0x;exit
 #endif
 // © Alfredo Correa 2019-2020
 #define BOOST_TEST_DYN_LINK 
