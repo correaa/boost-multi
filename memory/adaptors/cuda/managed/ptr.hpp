@@ -153,7 +153,7 @@ public:
 	operator ptr<void>() const{return ptr<void>{rp_};}
 //	template<class PM>
 //	decltype(auto) operator->*(PM pm) const{return *ptr<std::decay_t<decltype(rp_->*pm)>, decltype(&(rp_->*pm))>{&(rp_->*pm)};}
-	explicit operator typename std::pointer_traits<raw_pointer>::template rebind<void>() const{return rp_;}
+	explicit operator typename std::pointer_traits<raw_pointer>::template rebind<void>() const{return typename std::pointer_traits<raw_pointer>::template rebind<void>{rp_};}
 	ptr& operator++(){++rp_; return *this;}
 	ptr& operator--(){--rp_; return *this;}
 	ptr  operator++(int){auto tmp = *this; ++(*this); return tmp;}
@@ -253,7 +253,7 @@ int main(){
 		auto f = [](double const*){};
 		f(p);
 		cuda::ptr<double> pp = p;
-		std::reinterpret_pointer_cast<double*>(pp);
+//		std::reinterpret_pointer_cast<double*>(pp);
 	//	cuda::managed::ptr<double> ppp{pp};
 	}
 	{
