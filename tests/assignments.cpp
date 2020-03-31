@@ -114,6 +114,17 @@ BOOST_AUTO_TEST_CASE(rearranged_assignment){
 	rearranged2(tmp) = src;	
 }
 
+BOOST_AUTO_TEST_CASE(rvalue_assignments){
+	using complex = std::complex<double>;
+
+	std::vector<double> const v1(200, 99.);
+	std::vector<complex> v2(200);
+	auto linear1 = [&]{return multi::array_cref<double, 1>(v1.data(), 200);};
+	auto linear2 = [&]{return multi::array_ref<complex, 1>(v2.data(), 200);};
+	linear2() = linear1();
+
+}
+
 BOOST_AUTO_TEST_CASE(assignments){
 	{
 		std::vector<double> v(5*7, 99.);

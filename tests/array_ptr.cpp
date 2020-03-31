@@ -24,12 +24,12 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr_test){
 	multi::array_ref B(&b[0][0], {4, 5});
 #else
 	auto&& A = *multi::array_ptr<double, 2>(&a[0][0], {4, 5});
-	multi::array_ref<double, 2, double*> B(&b[0][0], {4, 5});
+	multi::array_ref<double, 2, double*>&& B = multi::array_ref<double, 2, double*>(&b[0][0], {4, 5});
 #endif
 	BOOST_REQUIRE( size(A) == 4 );
 	BOOST_REQUIRE( size(A) == size(B) );
 
-	B = A;
+	std::move(B) = A;
 	BOOST_REQUIRE( B == A );
 
 	BOOST_REQUIRE( size(rotated(A)) == 5 );

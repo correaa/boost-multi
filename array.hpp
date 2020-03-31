@@ -12,10 +12,12 @@ $CXX -D_TEST_BOOST_MULTI_ARRAY -xc++ $0 -o$0x -DBOOST_LOG_DYN_LINK -lboost_log -
 #include "./detail/memory.hpp"
 #include "./detail/adl.hpp"
 
+#ifndef HD
 #if defined(__CUDACC__)
 #define HD __host__ __device__
 #else
 #define HD 
+#endif
 #endif
 
 #if 1

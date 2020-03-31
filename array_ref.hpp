@@ -956,7 +956,7 @@ public:
 		return *this;
 	}
 	template<typename TT, dimensionality_type DD = D, class... As>
-	array_ref const& operator=(array_ref<TT, DD, As...> const& o) const{
+	array_ref const& operator=(array_ref<TT, DD, As...> const& o)&&{//const{
 		assert( this->extensions() == o.extensions() );
 		adl::copy_n(o.data(), o.num_elements(), this->data());
 		return *this;
