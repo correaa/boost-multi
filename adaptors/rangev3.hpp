@@ -14,6 +14,7 @@
 namespace ranges{namespace v3{
 namespace concepts{ // needed for later version of rangesv3
 // this allows to recognize const_iterator as RandomAccessIterator
+#if 0
 	template<class MA>
 	struct common_reference<
 		boost::multi::basic_array<typename MA::element, MA::dimensionality, typename MA::element_const_ptr, typename MA::layout_t>&&, 
@@ -28,6 +29,7 @@ namespace concepts{ // needed for later version of rangesv3
 	>{
 		using type = boost::multi::basic_array<typename MA::element, MA::dimensionality, typename MA::element_const_ptr, typename MA::layout_t>&&;
 	};
+#endif
 }
 }}
 
