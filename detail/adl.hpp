@@ -26,7 +26,8 @@ namespace boost{namespace multi{
 	template<std::size_t I> struct priority : std::conditional_t<I==0, std::true_type, struct priority<I-1>>{}; 
 }}
 
-#define RET(ExpR) ->decltype(ExpR){return ExpR;}
+#define DECLRETURN(ExpR) ->decltype(ExpR){return ExpR;}
+#define JUSTRETURN(ExpR)                 {return ExpR;}
 
 #define BOOST_MULTI_DEFINE_ADL(FuN) \
 namespace boost{namespace multi{ \
@@ -34,10 +35,10 @@ namespace adl{ \
 	namespace custom{template<class...> struct FuN##_t;} 	__attribute__((unused))  \
 	static constexpr class FuN##_t{ \
 		template<class... As> [[deprecated]] auto _(priority<0>,        As&&... as) const = delete; \
-		template<class... As>          auto _(priority<1>,        As&&... as) const RET(std::FuN(std::forward<As>(as)...)) \
-		template<class... As>          auto _(priority<2>,        As&&... as) const RET(     FuN(std::forward<As>(as)...)) \
-		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const RET(std::forward<T>(t).FuN(std::forward<As>(as)...))     \
-		template<class... As>          auto _(priority<4>,        As&&... as) const RET(custom::FuN##_t<As&&...>::_(std::forward<As>(as)...)) \
+		template<class... As>          auto _(priority<1>,        As&&... as) const DECLRETURN(std::FuN(std::forward<As>(as)...)) \
+		template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(     FuN(std::forward<As>(as)...)) \
+		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).FuN(std::forward<As>(as)...))     \
+		template<class... As>          auto _(priority<4>,        As&&... as) const DECLRETURN(custom::FuN##_t<As&&...>::_(std::forward<As>(as)...)) \
 	public: \
 		template<class... As> auto operator()(As&&... as) const->decltype(_(priority<4>{}, std::forward<As>(as)...)){return _(priority<4>{}, std::forward<As>(as)...);} \
 	} FuN; \
@@ -47,7 +48,6 @@ namespace adl{ \
 //BOOST_MULTI_DEFINE_ADL(copy_n);
 //BOOST_MULTI_DEFINE_ADL(fill_n);
 
-#define RAT(ExpR) {return ExpR;}
 
 namespace boost{namespace multi{
 namespace adl{
@@ -55,16 +55,14 @@ namespace adl{
 	static constexpr class copy_n_t{
 		template<class... As>          auto _(priority<0>,        As&&... as) const{return             std::copy_n              (std::forward<As>(as)...);}
 #if defined(__NVCC__) or (defined(__clang__) && defined(__CUDA__))
-		template<class... As> 		   auto _(priority<1>,        As&&... as) const RET(           thrust::copy_n              (std::forward<As>(as)...))
+		template<class... As> 		   auto _(priority<1>,        As&&... as) const DECLRETURN(           thrust::copy_n              (std::forward<As>(as)...))
 #endif
-		template<class... As>          auto _(priority<2>,        As&&... as) const RET(                   copy_n              (std::forward<As>(as)...))
-		template<class T, class... As> auto _(priority<4>, T&& t, As&&... as) const RET(std::decay_t<T>::  copy_n(std::forward<T>(t), std::forward<As>(as)...))
-		template<class T, class... As> auto _(priority<5>, T&& t, As&&... as) const RET(std::forward<T>(t).copy_n              (std::forward<As>(as)...))
-		template<class... As>          auto _(priority<6>,        As&&... as) const RET(custom::           copy_n_t<As&&...>::_(std::forward<As>(as)...)) 
+		template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   copy_n              (std::forward<As>(as)...))
+		template<class T, class... As> auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(std::decay_t<T>::  copy_n(std::forward<T>(t), std::forward<As>(as)...))
+		template<class T, class... As> auto _(priority<5>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).copy_n              (std::forward<As>(as)...))
+		template<class... As>          auto _(priority<6>,        As&&... as) const DECLRETURN(custom::           copy_n_t<As&&...>::_(std::forward<As>(as)...)) 
 	public:
-		template<class... As> auto operator()(As&&... as) const->decltype(_(priority<6>{}, std::forward<As>(as)...)){
-			return _(priority<6>{}, std::forward<As>(as)...);
-		}
+		template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<6>{}, std::forward<As>(as)...))
 	} copy_n;
 }}}
 
@@ -72,40 +70,33 @@ namespace boost{namespace multi{ \
 namespace adl{ \
 	namespace custom{template<class...> struct copy_t;} __attribute__((unused)) 
 	static constexpr class copy_t{ \
-		template<         class... As> auto _(priority<1>,        As&&... as) const RET(              std::copy(                    std::forward<As>(as)...))
+		template<         class... As> auto _(priority<1>,        As&&... as) const DECLRETURN(              std::copy(                    std::forward<As>(as)...))
 #if defined(__NVCC__) or (defined(__clang__) && defined(__CUDA__))
-		template<class... As> 		   auto _(priority<2>,        As&&... as) const RET(           thrust::copy(                    std::forward<As>(as)...))
+		template<class... As> 		   auto _(priority<2>,        As&&... as) const DECLRETURN(           thrust::copy(                    std::forward<As>(as)...))
 #endif
-		template<         class... As> auto _(priority<3>,        As&&... as) const RET(                   copy(                    std::forward<As>(as)...)) \
-		template<class T, class... As> auto _(priority<4>, T&& t, As&&... as) const RET(std::forward<T>(t).copy                    (std::forward<As>(as)...)) \
-		template<         class... As> auto _(priority<5>,        As&&... as) const RET(custom::           copy_t<As&&...>::_      (std::forward<As>(as)...)) \
-		template<class T, class... As> auto _(priority<6>, T&& t, As&&... as) const RET(                   copy(std::forward<T>(t))(std::forward<As>(as)...)) \
+		template<         class... As> auto _(priority<3>,        As&&... as) const DECLRETURN(                   copy(                    std::forward<As>(as)...)) \
+		template<class T, class... As> auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).copy                    (std::forward<As>(as)...)) \
+		template<         class... As> auto _(priority<5>,        As&&... as) const DECLRETURN(custom::           copy_t<As&&...>::_      (std::forward<As>(as)...)) \
+		template<class T, class... As> auto _(priority<6>, T&& t, As&&... as) const DECLRETURN(                   copy(std::forward<T>(t))(std::forward<As>(as)...)) \
 	public: \
-		template<class... As> auto operator()(As&&... as) const RET( _(priority<6>{}, std::forward<As>(as)...) ) \
+		template<class... As> auto operator()(As&&... as) const DECLRETURN( _(priority<6>{}, std::forward<As>(as)...) ) \
 	} copy; \
 } \
 }}
 
 namespace boost{namespace multi{ \
 namespace adl{ \
-	namespace custom{template<class...> struct fill_t;}                          __attribute__((unused))
+	namespace custom{template<class...> struct fill_t;} __attribute__((unused))
 	static constexpr class fill_t{ \
-/*		template<class... As> [[deprecated]] auto _(priority<0>,  As&&... as) const = delete;*/                                                            \
-		template<class... As>          auto _(priority<1>,        As&&... as) const RET(              std::fill              (std::forward<As>(as)...))       \
-/*		template<class T, class... As> auto _(priority<2>, T&& t, As&&... as) const RET(                   copy<T&&>(std::forward(t), std::forward(as)...))*/ \
-		template<class... As>          auto _(priority<2>,        As&&... as) const->decltype(               adl_fill              (std::forward<As>(as)...)){
-return                adl_fill              (std::forward<As>(as)...);
-	} \
-		template<class... As>          auto _(priority<3>,        As&&... as) const RET(                   fill(std::forward<As>(as)...))
-		template<class T, class... As> auto _(priority<4>, T&& t, As&&... as) const RET(std::decay_t<T>::fill(std::forward<T>(t), std::forward<As>(as)...))
-		template<class T, class... As> auto _(priority<5>, T&& t, As&&... as) const RET(std::forward<T>(t).fill              (std::forward<As>(as)...))
-/*		template<class... As>          auto _(priority<5>,        As&&... as) const RET(custom::           fill_t<As&&...>::_(std::forward<As>(as)...))*/ \
+		template<class... As>          auto _(priority<1>,        As&&... as) const DECLRETURN(              std::fill              (std::forward<As>(as)...)) \
+		template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   fill              (std::forward<As>(as)...)) \
+		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).fill              (std::forward<As>(as)...)) \
+		template<class... As>          auto _(priority<4>,        As&&... as) const DECLRETURN(custom::           fill_t<As&&...>::_(std::forward<As>(as)...)) \
 	public: \
-		template<class... As> auto operator()(As&&... as) const->decltype(_(priority<5>{}, std::forward<As>(as)...)){return _(priority<5>{}, std::forward<As>(as)...);} \
+		template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<5>{}, std::forward<As>(as)...)) \
 	} fill; \
 } \
 }}
-
 
 namespace boost{namespace multi{
 
@@ -267,12 +258,12 @@ namespace boost{namespace multi{ \
 namespace adl{
 	namespace custom{template<class...> struct distance_t;} __attribute__((unused)) 
 	static constexpr class distance_t{
-		template<class... As>          auto _(priority<1>,        As&&... as) const RET(     std::distance(std::forward<As>(as)...))
-		template<class... As>          auto _(priority<2>,        As&&... as) const RET(          distance(std::forward<As>(as)...))
-		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const RET(std::forward<T>(t).distance(std::forward<As>(as)...))
-		template<class... As>          auto _(priority<4>,        As&&... as) const RET(custom::distance_t<As&&...>::_(std::forward<As>(as)...))
+		template<class... As>          auto _(priority<1>,        As&&... as) const DECLRETURN(     std::distance(std::forward<As>(as)...))
+		template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(          distance(std::forward<As>(as)...))
+		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).distance(std::forward<As>(as)...))
+		template<class... As>          auto _(priority<4>,        As&&... as) const DECLRETURN(custom::distance_t<As&&...>::_(std::forward<As>(as)...))
 	public:
-		template<class... As> auto operator()(As&&... as) const RET(_(priority<4>{}, std::forward<As>(as)...))
+		template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
 	} distance;
 }
 
@@ -280,12 +271,12 @@ namespace adl{ \
 	namespace custom{template<class...> struct uninitialized_copy_t;} 	__attribute__((unused)) \
 	static constexpr class uninitialized_copy_t { \
 /*		template<class... As> [[deprecated]] auto _(priority<0>,        As&&... as) const = delete;*/ \
-		template<class... As>          auto _(priority<1>,        As&&... as) const RET(     std::uninitialized_copy(std::forward<As>(as)...))
-		template<class... As>          auto _(priority<2>,        As&&... as) const RET(          uninitialized_copy(std::forward<As>(as)...))
-		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const RET(std::forward<T>(t).uninitialized_copy(std::forward<As>(as)...))
-		template<class... As>          auto _(priority<4>,        As&&... as) const RET(custom::uninitialized_copy_t<As&&...>::_(std::forward<As>(as)...))
+		template<class... As>          auto _(priority<1>,        As&&... as) const DECLRETURN(     std::uninitialized_copy(std::forward<As>(as)...))
+		template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(          uninitialized_copy(std::forward<As>(as)...))
+		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).uninitialized_copy(std::forward<As>(as)...))
+		template<class... As>          auto _(priority<4>,        As&&... as) const DECLRETURN(custom::uninitialized_copy_t<As&&...>::_(std::forward<As>(as)...))
 	public:
-		template<class... As> auto operator()(As&&... as) const RET(_(priority<4>{}, std::forward<As>(as)...))
+		template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
 	} uninitialized_copy; \
 } \
 }}
@@ -296,9 +287,9 @@ namespace adl{ \
 	static constexpr class alloc_uninitialized_value_construct_n_t{ \
 /*		template<class... As> [[deprecated]] auto _(priority<0>,        As&&... as) const = delete;*/ \
 		template<class... As>          auto _(priority<1>,        As&&... as) const{return xtd::            alloc_uninitialized_value_construct_n              (std::forward<As>(as)...);} // TODO: use boost? 
-		template<class... As>          auto _(priority<2>,        As&&... as) const RET(                   alloc_uninitialized_value_construct_n              (std::forward<As>(as)...))
-		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const RET(std::forward<T>(t).alloc_uninitialized_value_construct_n              (std::forward<As>(as)...))
-		template<class... As>          auto _(priority<4>,        As&&... as) const RET(custom::           alloc_uninitialized_value_construct_n_t<As&&...>::_(std::forward<As>(as)...))
+		template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   alloc_uninitialized_value_construct_n              (std::forward<As>(as)...))
+		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).alloc_uninitialized_value_construct_n              (std::forward<As>(as)...))
+		template<class... As>          auto _(priority<4>,        As&&... as) const DECLRETURN(custom::           alloc_uninitialized_value_construct_n_t<As&&...>::_(std::forward<As>(as)...))
 	public:
 		template<class... As> auto operator()(As&&... as) const{return (_(priority<4>{}, std::forward<As>(as)...));}
 	} alloc_uninitialized_value_construct_n; \
@@ -311,9 +302,9 @@ namespace adl{ \
 	static constexpr class alloc_uninitialized_default_construct_n_t{ \
 /*		template<class... As> [[deprecated]] auto _(priority<0>,        As&&... as) const = delete;*/ \
 		template<class... As>          auto _(priority<1>,        As&&... as) const{return xtd::            alloc_uninitialized_default_construct_n              (std::forward<As>(as)...);} // TODO: use boost? 
-		template<class... As>          auto _(priority<2>,        As&&... as) const RET(                   alloc_uninitialized_default_construct_n              (std::forward<As>(as)...))
-		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const RET(std::forward<T>(t).alloc_uninitialized_default_construct_n              (std::forward<As>(as)...))
-		template<class... As>          auto _(priority<4>,        As&&... as) const RET(custom::           alloc_uninitialized_default_construct_n_t<As&&...>::_(std::forward<As>(as)...))
+		template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   alloc_uninitialized_default_construct_n              (std::forward<As>(as)...))
+		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).alloc_uninitialized_default_construct_n              (std::forward<As>(as)...))
+		template<class... As>          auto _(priority<4>,        As&&... as) const DECLRETURN(custom::           alloc_uninitialized_default_construct_n_t<As&&...>::_(std::forward<As>(as)...))
 	public:
 		template<class... As> auto operator()(As&&... as) const{return (_(priority<4>{}, std::forward<As>(as)...));}
 	} alloc_uninitialized_default_construct_n; \
@@ -325,9 +316,9 @@ namespace adl{ \
 	namespace custom{template<class...> struct uninitialized_default_construct_n_t;} 	__attribute__((unused)) 
 	static constexpr class uninitialized_default_construct_n_t{ \
 		template<class... As>          auto _(priority<1>,        As&&... as) const{return            xtd::uninitialized_default_construct_n              (std::forward<As>(as)...);}
-		template<class... As>          auto _(priority<2>,        As&&... as) const RET(                   uninitialized_default_construct_n              (std::forward<As>(as)...))
-		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const RET(std::forward<T>(t).uninitialized_default_construct_n              (std::forward<As>(as)...))
-		template<class... As>          auto _(priority<4>,        As&&... as) const RET(custom::           uninitialized_default_construct_n_t<As&&...>::_(std::forward<As>(as)...))
+		template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   uninitialized_default_construct_n              (std::forward<As>(as)...))
+		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).uninitialized_default_construct_n              (std::forward<As>(as)...))
+		template<class... As>          auto _(priority<4>,        As&&... as) const DECLRETURN(custom::           uninitialized_default_construct_n_t<As&&...>::_(std::forward<As>(as)...))
 	public:
 		template<class... As> auto operator()(As&&... as) const{return (_(priority<4>{}, std::forward<As>(as)...));}
 	} uninitialized_default_construct_n; \
@@ -338,13 +329,13 @@ namespace boost{namespace multi{ \
 namespace adl{ \
 	namespace custom{template<class...> struct alloc_destroy_n_t;} 	__attribute__((unused)) \
 	static constexpr class alloc_reverse_destroy_n_t { \
-		template<class... As>          auto _(priority<1>,        As&&... as) const RET(multi::            alloc_destroy_n              (std::forward<As>(as)...)) // TODO: use boost?
-		template<class... As>          auto _(priority<2>,        As&&... as) const RET(                   alloc_destroy_n              (std::forward<As>(as)...))
-		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const RET(std::decay_t<T>::alloc_destroy_n(std::forward<T>(t), std::forward<As>(as)...))
-		template<class T, class... As> auto _(priority<4>, T&& t, As&&... as) const RET(std::forward<T>(t).alloc_destroy_n              (std::forward<As>(as)...))
-		template<class... As>          auto _(priority<5>,        As&&... as) const RET(custom::           alloc_destroy_n_t<As&&...>::_(std::forward<As>(as)...))
+		template<class... As>          auto _(priority<1>,        As&&... as) const DECLRETURN(multi::            alloc_destroy_n              (std::forward<As>(as)...)) // TODO: use boost?
+		template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   alloc_destroy_n              (std::forward<As>(as)...))
+		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::decay_t<T>::alloc_destroy_n(std::forward<T>(t), std::forward<As>(as)...))
+		template<class T, class... As> auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).alloc_destroy_n              (std::forward<As>(as)...))
+		template<class... As>          auto _(priority<5>,        As&&... as) const DECLRETURN(custom::           alloc_destroy_n_t<As&&...>::_(std::forward<As>(as)...))
 	public:
-		template<class... As> auto operator()(As&&... as) const RET(_(priority<5>{}, std::forward<As>(as)...))
+		template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<5>{}, std::forward<As>(as)...))
 	} alloc_destroy_n; \
 } \
 }}
@@ -355,12 +346,12 @@ namespace adl{ \
 	namespace custom{template<class...> struct alloc_uninitialized_copy_t;} 	__attribute__((unused))  \
 	static constexpr class alloc_uninitialized_copy_t{ \
 /*		template<class... As> [[deprecated]] auto _(priority<0>,        As&&... as) const = delete;*/ \
-/*		template<class... As>          auto _(priority<1>,        As&&... as) const RET(std::copy(std::forward<As>(as)...))*/ \
+/*		template<class... As>          auto _(priority<1>,        As&&... as) const DECLRETURN(std::copy(std::forward<As>(as)...))*/ \
 		template<class... As>          auto _(priority<1>,        As&&... as) const{return              xtd::alloc_uninitialized_copy(std::forward<As>(as)...);}
-		template<class... As>          auto _(priority<2>,        As&&... as) const RET(                   alloc_uninitialized_copy(std::forward<As>(as)...))    \
-		template<class... As>          auto _(priority<3>,        As&&... as) const RET(               adl_alloc_uninitialized_copy(std::forward<As>(as)...))    \
-		template<class T, class... As> auto _(priority<4>, T&& t, As&&... as) const RET(std::forward<T>(t).alloc_uninitialized_copy(std::forward<As>(as)...))
-		template<class... As>          auto _(priority<5>,        As&&... as) const RET(custom::alloc_uninitialized_copy_t<As&&...>::_(std::forward<As>(as)...))
+		template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   alloc_uninitialized_copy(std::forward<As>(as)...))    \
+		template<class... As>          auto _(priority<3>,        As&&... as) const DECLRETURN(               adl_alloc_uninitialized_copy(std::forward<As>(as)...))    \
+		template<class T, class... As> auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).alloc_uninitialized_copy(std::forward<As>(as)...))
+		template<class... As>          auto _(priority<5>,        As&&... as) const DECLRETURN(custom::alloc_uninitialized_copy_t<As&&...>::_(std::forward<As>(as)...))
 	public: \
 		template<class... As> auto operator()(As&&... as) const->decltype(_(priority<5>{}, std::forward<As>(as)...)){return _(priority<5>{}, std::forward<As>(as)...);} \
 	} alloc_uninitialized_copy; \
@@ -372,9 +363,9 @@ namespace adl{ \
 	namespace custom{template<class...> struct alloc_uninitialized_copy_n_t;} 	__attribute__((unused)) \
 	static constexpr class alloc_uninitialized_copy_n_t{ \
 		template<class... As>          auto _(priority<1>,        As&&... as) const{return (              xtd::alloc_uninitialized_copy_n(std::forward<As>(as)...));} \
-		template<class... As>          auto _(priority<2>,        As&&... as) const RET(                   alloc_uninitialized_copy_n(std::forward<As>(as)...)) \
-		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const RET(std::forward<T>(t).alloc_uninitialized_copy_n(std::forward<As>(as)...)) \
-	/*	template<class... As>          auto _(priority<4>,        As&&... as) const RET(custom::alloc_uninitialized_copy_n_t<As&&...>::_(std::forward<As>(as)...))*/ \
+		template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   alloc_uninitialized_copy_n(std::forward<As>(as)...)) \
+		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).alloc_uninitialized_copy_n(std::forward<As>(as)...)) \
+	/*	template<class... As>          auto _(priority<4>,        As&&... as) const DECLRETURN(custom::alloc_uninitialized_copy_n_t<As&&...>::_(std::forward<As>(as)...))*/ \
 	public: \
 		template<class... As> auto operator()(As&&... as) const{return _(priority<4>{}, std::forward<As>(as)...);} \
 	} alloc_uninitialized_copy_n; \
@@ -386,9 +377,9 @@ namespace adl{ \
 	namespace custom{template<class...> struct uninitialized_copy_n_t;} 	__attribute__((unused)) \
 	static constexpr class uninitialized_copy_n_t{ \
 		template<class... As>          auto _(priority<1>,        As&&... as) const{return (          std::uninitialized_copy_n(std::forward<As>(as)...));} \
-		template<class... As>          auto _(priority<2>,        As&&... as) const RET(                   uninitialized_copy_n(std::forward<As>(as)...)) \
-		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const RET(std::forward<T>(t).uninitialized_copy_n(std::forward<As>(as)...)) \
-		template<class... As>          auto _(priority<4>,        As&&... as) const RET(custom::uninitialized_copy_n_t<As&&...>::_(std::forward<As>(as)...)) \
+		template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   uninitialized_copy_n(std::forward<As>(as)...)) \
+		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).uninitialized_copy_n(std::forward<As>(as)...)) \
+		template<class... As>          auto _(priority<4>,        As&&... as) const DECLRETURN(custom::uninitialized_copy_n_t<As&&...>::_(std::forward<As>(as)...)) \
 	public: \
 		template<class... As> auto operator()(As&&... as) const{return _(priority<4>{}, std::forward<As>(as)...);} \
 	} uninitialized_copy_n; \
@@ -400,11 +391,11 @@ namespace adl{ \
 	namespace custom{template<class...> struct alloc_uninitialized_fill_n_t;} 	__attribute__((unused)) \
 	static constexpr class alloc_uninitialized_fill_n_t{ \
 /*		template<class... As> [[deprecated]] auto _(priority<0>,        As&&... as) const = delete;*/ \
-/*		template<class... As>          auto _(priority<1>,        As&&... as) const RET(std::copy(std::forward<As>(as)...))*/ \
+/*		template<class... As>          auto _(priority<1>,        As&&... as) const DECLRETURN(std::copy(std::forward<As>(as)...))*/ \
 		template<class... As>          auto _(priority<1>,        As&&... as) const{return (           xtd::alloc_uninitialized_fill_n(std::forward<As>(as)...));}       \
-		template<class... As>          auto _(priority<2>,        As&&... as) const RET(                   alloc_uninitialized_fill_n(std::forward<As>(as)...)) \
-		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const RET( std::forward<T>(t).alloc_uninitialized_fill_n(std::forward<As>(as)...))       \
-		template<class... As>          auto _(priority<4>,        As&&... as) const RET(custom::alloc_uninitialized_fill_n_t<As&&...>::_(std::forward<As>(as)...))    \
+		template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   alloc_uninitialized_fill_n(std::forward<As>(as)...)) \
+		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN( std::forward<T>(t).alloc_uninitialized_fill_n(std::forward<As>(as)...))       \
+		template<class... As>          auto _(priority<4>,        As&&... as) const DECLRETURN(custom::alloc_uninitialized_fill_n_t<As&&...>::_(std::forward<As>(as)...))    \
 	public: \
 		template<class T1, class... As> auto operator()(T1&& t1, As&&... as) const->decltype(_(priority<4>{}, std::forward<T1>(t1), std::forward<As>(as)...)){return _(priority<4>{}, t1, std::forward<As>(as)...);} \
 	} alloc_uninitialized_fill_n; \
