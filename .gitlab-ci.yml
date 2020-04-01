@@ -50,5 +50,5 @@ Test:
       - sh ./rotated.cpp
       - sh ./allocator.cpp
       - sh ./reextent.cpp
-      - for a in ./tests/*.cpp; do echo $a; sh $a || break; echo "\n"; done;
+      - for a in *.cpp; do echo $a; sh $a || break; echo "\n"; done;
 
