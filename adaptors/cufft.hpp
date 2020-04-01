@@ -1,6 +1,6 @@
 #ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
-clang++ -DCUDA_API_PER_THREAD_DEFAULT_STREAM -D_TEST_MULTI_ADAPTORS_CUFFT -std=c++14 --cuda-gpu-arch=sm_60 -x cuda $0 -o $0x -lcudart  -lcufft -pthread -lfftw3_threads `pkg-config --libs fftw3` -lboost_timer -ltbb -lboost_unit_test_framework&&$0x&&rm $0x
  nvcc   -D_TEST_MULTI_ADAPTORS_CUFFT            -x cu  $0 -o $0x `#-Xcompiler=-pthread` -lcufft             `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x
+clang++ -DCUDA_API_PER_THREAD_DEFAULT_STREAM -D_TEST_MULTI_ADAPTORS_CUFFT -std=c++14 --cuda-gpu-arch=sm_60 -x cuda $0 -o $0x -lcudart  -lcufft -pthread -lfftw3_threads `pkg-config --libs fftw3` -lboost_timer -ltbb -lboost_unit_test_framework&&$0x&&rm $0x
 exit
 #endif
 // © Alfredo A. Correa 2020
@@ -535,11 +535,9 @@ namespace multi = boost::multi;
 using complex = std::complex<double>;
 namespace utf = boost::unit_test;
 
-//constexpr auto I = complex{0, 1};
+constexpr auto I = complex{0, 1};
 
-#if 0
 BOOST_AUTO_TEST_CASE(cufft_dft_1D_out_of_place, *utf::tolerance(0.00001)){
-
 //	int good = fftw_init_threads(); assert(good);
 //	fftw_plan_with_nthreads(std::thread::hardware_concurrency());
 
@@ -554,13 +552,16 @@ BOOST_AUTO_TEST_CASE(cufft_dft_1D_out_of_place, *utf::tolerance(0.00001)){
 	multi::cuda::array<complex, 1> const in_gpu = in_cpu;
 	multi::cuda::array<complex, 1> fw_gpu(size(in_cpu));
 	multi::fft::dft( in_gpu, fw_gpu, multi::fft::forward );
-	BOOST_REQUIRE( fw_gpu[3].operator complex() - fw_cpu[3] == 0. );
+	BOOST_REQUIRE( static_cast<complex>(fw_gpu[3]) - fw_cpu[3] == 0. );
 
 	multi::cuda::managed::array<complex, 1> const in_mng = in_cpu;
 	multi::cuda::managed::array<complex, 1> fw_mng(size(in_cpu));
 	multi::fft::dft( in_mng, fw_mng, multi::fft::forward );
-//	BOOST_REQUIRE( fw_mng[3] - fw_cpu[3] == 0. );
+	BOOST_REQUIRE( fw_mng[3] - fw_cpu[3] == 0. );
 }
+
+#if 1
+
 
 BOOST_AUTO_TEST_CASE(cufft_2D, *boost::unit_test::tolerance(0.0001)){
 	multi::array<complex, 2> const in_cpu = {
@@ -577,10 +578,10 @@ BOOST_AUTO_TEST_CASE(cufft_2D, *boost::unit_test::tolerance(0.0001)){
 	multi::cuda::array<complex, 2> fw_gpu(extensions(in_gpu));
 	multi::fft::dft(in_gpu, fw_gpu, multi::fft::forward);
 
-	BOOST_TEST( imag(fw_gpu[3][2].operator complex() - fw_cpu[3][2]) == 0. );
+	BOOST_TEST( imag(static_cast<complex>(fw_gpu[3][2]) - fw_cpu[3][2]) == 0. );
 
 	auto fw2_gpu = multi::fft::dft(in_gpu, multi::fft::forward);
-	BOOST_TEST( imag(fw2_gpu[3][1].operator complex() - fw_cpu[3][1]) == 0. );
+	BOOST_TEST( imag(static_cast<complex>(fw2_gpu[3][1]) - fw_cpu[3][1]) == 0. );
 
 	multi::cuda::managed::array<complex, 2> const in_mng = in_cpu;
 	multi::cuda::managed::array<complex, 2> fw_mng(extensions(in_gpu));
@@ -653,7 +654,7 @@ BOOST_AUTO_TEST_CASE(cufft_many_3D, *utf::tolerance(0.00001) ){
 	multi::array<complex, 4> out_cpu(extensions(in));
 	multi::fft::many_dft(begin(unrotated(in_cpu)), end(unrotated(in_cpu)), begin(unrotated(out_cpu)), +1);
 
-	BOOST_TEST( imag( out[5][4][3][2].operator std::complex<double>() - out_cpu[5][4][3][2]) == 0. );
+	BOOST_TEST( imag( static_cast<complex>(out[5][4][3][2]) - out_cpu[5][4][3][2]) == 0. );
 
 }
 
@@ -674,9 +675,8 @@ BOOST_AUTO_TEST_CASE(cufft_4D, *utf::tolerance(0.00001)){
 
 	multi::cufft::dft({true, false, true}, in_gpu, out_gpu, multi::fftw::forward);//multi::cufft::forward);	
 //	multi::cufft::many_dft(in_gpu.begin(), in_gpu.end(), out_gpu.begin(), multi::fftw::forward);
-	BOOST_TEST( imag( out_gpu[5][4][3].operator complex() - out[5][4][3]) == 0. );	
+	BOOST_TEST( imag( static_cast<complex>(out_gpu[5][4][3]) - out[5][4][3]) == 0. );	
 }
-#endif
 
 BOOST_AUTO_TEST_CASE(cufft_combinations, *utf::tolerance(0.00001)){
 
@@ -775,6 +775,7 @@ BOOST_AUTO_TEST_CASE(cufft_4D){
 #endif
 
 }
+#endif
 #endif
 
 #endif
