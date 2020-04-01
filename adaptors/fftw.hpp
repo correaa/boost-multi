@@ -286,8 +286,10 @@ auto fftw_plan_dft(In const& in, Out&& out, int s, unsigned flags = FFTW_ESTIMAT
 
 namespace fftw{
 
+#if HAVE_FFTW3_THREADS
 #if _REENTRANT
 void initialize_threads(){int good = fftw_init_threads(); assert(good);}
+#endif
 #endif
 
 class plan{
@@ -333,7 +335,11 @@ public:
 		is_thread_safe_ = true;
 	}
 	static int with_nthreads(int n){fftw_plan_with_nthreads(n); nthreads_ = n; return n;}
-	static int with_nthreads(){return with_nthreads(std::max(2u, std::thread::hardware_concurrency()));}
+	static int with_nthreads(){
+		int n = std::thread::hardware_concurrency();
+		if(n==0) n = 2;
+		return with_nthreads(n);
+	}
 	static bool is_thread_safe(){return is_thread_safe_;}
 	static bool nthreads(){return nthreads_;}
 private:
@@ -344,7 +350,7 @@ private:
 
 };
 
-#if HAVE_FFTW3
+#if HAVE_FFTW3_THREADS
 bool plan::is_thread_safe_ = (plan::make_thread_safe(), true);
 int plan::nthreads_ = (initialize_threads(), with_nthreads());
 #endif
