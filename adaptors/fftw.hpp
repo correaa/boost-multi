@@ -287,9 +287,9 @@ auto fftw_plan_dft(In const& in, Out&& out, int s, unsigned flags = FFTW_ESTIMAT
 namespace fftw{
 
 #if HAVE_FFTW3_THREADS
-#if _REENTRANT
 void initialize_threads(){int good = fftw_init_threads(); assert(good);}
-#endif
+#else
+void initialize_threads(){}
 #endif
 
 class plan{
@@ -345,8 +345,11 @@ private:
 	static bool is_thread_safe_;
 	static int nthreads_;
 	static bool initialized_threads_;
+#else
+	static constexpr bool is_thread_safe(){return false;}
+	static constexpr bool nthreads(){return 1;}
+	static constexpr int with_nthreads(){return 1;}
 #endif
-
 };
 
 #if HAVE_FFTW3_THREADS
