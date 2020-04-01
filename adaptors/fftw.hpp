@@ -336,9 +336,8 @@ public:
 	}
 	static int with_nthreads(int n){fftw_plan_with_nthreads(n); nthreads_ = n; return n;}
 	static int with_nthreads(){
-		int n = std::thread::hardware_concurrency();
-		if(n==0) n = 2;
-		return with_nthreads(n);
+		int n=std::thread::hardware_concurrency(); return with_nthreads(n?n:2);
+	//	return with_nthreads(std::thread::hardware_concurrency()?:2);
 	}
 	static bool is_thread_safe(){return is_thread_safe_;}
 	static bool nthreads(){return nthreads_;}
