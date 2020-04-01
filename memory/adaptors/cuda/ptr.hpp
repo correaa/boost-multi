@@ -189,9 +189,10 @@ public:
 	#ifdef __CUDA_ARCH__
 	using reference = T&;
 	T& operator*() const __device__ {return *rp_;}
+//	ref<element_type> operator*() const __host__{return {*this};}
 	#else
 	using reference = ref<element_type>;
-	ref<element_type> operator*() const __host__{return {*this};}
+	ref<element_type> operator*() const __host__ __device__{return {*this};}
 	#endif
 #endif
 	#ifdef __CUDA_ARCH__
@@ -544,6 +545,7 @@ public:
 
 	friend decltype(auto) raw_reference_cast(ref&& r){return *raw_pointer_cast(&r);}
 	friend auto raw_value_cast(ref&& r){return std::move(r).operator T();}
+	auto raw_value_cast()&&{return std::move(*this).operator T();}
 
 	template<class Other, typename = std::enable_if_t<not is_ref<Other>{}> > 
 	friend auto operator==(Other&& other, ref&& self){
