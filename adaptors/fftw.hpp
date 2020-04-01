@@ -1,6 +1,6 @@
 #ifdef COMPILATION_INSTRUCTIONS
- nvcc   -D_TEST_MULTI_ADAPTORS_FFTW -x cu  $0 -o $0x                                   `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x
-clang++ -D_TEST_MULTI_ADAPTORS_FFTW -x c++ $0 -o $0x -lcudart -pthread -lfftw3_threads `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x
+ nvcc   -D_TEST_MULTI_ADAPTORS_FFTW -x cu  $0 -o $0x          `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x
+clang++ -D_TEST_MULTI_ADAPTORS_FFTW -x c++ $0 -o $0x -lcudart `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x
 exit
 #endif
 // © Alfredo A. Correa 2018-2019
@@ -19,7 +19,7 @@ exit
 #include<memory>
 #include<numeric> // accumulate
 
-#if _REENTRANT
+#if HAVE_FFTW3_THREADS
 #include <thread>
 #endif
 
@@ -326,7 +326,7 @@ public:
 		fftw_flops(impl_.get(), &r.add, &r.mul, &r.fma);
 		return r;
 	}
-#if _REENTRANT
+#if HAVE_FFTW3_THREADS
 public:
 	static void make_thread_safe(){
 		fftw_make_planner_thread_safe(); // needs linking to -lfftw3_threads, requires FFTW-3.3.6 or greater
@@ -341,9 +341,10 @@ private:
 	static int nthreads_;
 	static bool initialized_threads_;
 #endif
+
 };
 
-#if _REENTRANT
+#if HAVE_FFTW3
 bool plan::is_thread_safe_ = (plan::make_thread_safe(), true);
 int plan::nthreads_ = (initialize_threads(), with_nthreads());
 #endif
