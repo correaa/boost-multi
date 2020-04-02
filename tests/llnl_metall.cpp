@@ -9,9 +9,9 @@ $CXX -std=c++17 -I$HOME/github.com/LLNL/metall.git/include/ $0 -o $0x -lstdc++fs
 
 #include<metall/metall.hpp>
 
-template<class T> using mallocator = metall::manager::allocator_type<T>;
-
 #include "../../multi/array.hpp"
+
+template<class T> using mallocator = metall::manager::allocator_type<T>;
 
 namespace multi = boost::multi;
 
