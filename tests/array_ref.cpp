@@ -83,9 +83,9 @@ int main(){
 	std::vector<double> d2Dv(20); iota(d2Dv.begin(), d2Dv.end(), 0);
 	multi::array_ref<double, 2, double const*> d2Dv_cref(d2Dv.data(), {4, 5});
 	assert( d2Dv.size() == std::size_t(num_elements(d2Dv_cref)) );
-	assert(d2Dv_cref[1][1] == 6);
-	assert( d2D_cref.data_elements() == data_elements(d2D_cref) );
-	assert( data_elements(d2D_cref) == &d2D[0][0] );
+	assert( d2Dv_cref[1][1] == 6);
+	assert( std::move(d2D_cref).data_elements() == data_elements(std::move(d2D_cref)) );
+	assert( data_elements(std::move(d2D_cref)) == &d2D[0][0] );
 	assert( d2D_cref.num_elements() == num_elements(d2D_cref) );
 	assert( num_elements(d2D_cref) == 4*5 );
 	assert( d2D_cref.size() == size(d2D_cref) );
@@ -100,8 +100,8 @@ int main(){
 	assert( std::get<1>(strides(d2D_cref)) == 1 );
 	assert( strides(d2D_cref) == d2D_cref.strides() );	
 	assert( std::get<0>(extensions(d2D_cref)) == extension(d2D_cref) );
-	assert( &data_elements(d2D_cref)[2] == &d2D_cref[0][2] );
-	assert( &data_elements(d2D_cref)[6] == &d2D_cref[1][1] );
+	assert( &data_elements(std::move(d2D_cref))[2] == &d2D_cref[0][2] );
+	assert( &data_elements(std::move(d2D_cref))[6] == &d2D_cref[1][1] );
 
 	assert( d2D_cref.begin() == begin(d2D_cref) );
 	assert( d2D_cref.end() == end(d2D_cref) );
@@ -145,8 +145,8 @@ int main(){
 		for(auto it2 = it1->begin()   ; it2 != it1->end()   ||!endl(cout); ++it2)
 			cout << *it2 << ' ';
 
-	multi::array_ref<double, 2, double const*> d2D_crefref(data_elements(d2D_cref), extensions(d2D_cref));
-	multi::array_cref<double, 2> d2D_crefcref(data_elements(d2D_cref), extensions(d2D_cref));
+	multi::array_ref<double, 2, double const*> d2D_crefref(std::move(d2D_cref).data_elements(), extensions(d2D_cref));
+	multi::array_cref<double, 2> d2D_crefcref(data_elements(std::move(d2D_cref)), extensions(d2D_cref));
 
 	using std::for_each;
 	using std::begin;

@@ -962,10 +962,18 @@ public:
 	using basic_array<T, D, ElementPtr>::operator==;
 //	using basic_array<T, D, ElementPtr>::operator<;
 //	using basic_array<T, D, ElementPtr>::operator>;
-//	template<class ArrayRef> explicit array_ref(ArrayRef&& a) : array_ref(a.data(), extensions(a)){} 
-	array_ref const& operator=(array_ref const& o) &&{assert(this->num_elements()==o.num_elements());
-		auto e = adl::copy_n(o.data(), o.num_elements(), this->data()); (void)e; assert( e == this->data() + this->num_elements() );
-		return *this;
+//	template<class ArrayRef> explicit array_ref(ArrayRef&& a) : array_ref(a.data(), extensions(a)){}
+private:
+	template<class It> auto copy_elements(It first){
+		return adl::copy_n(first, array_ref::num_elements(), array_ref::data_elements());
+	}
+	template<class It> auto equal_elements(It first) const{
+		return adl::equal(first, first + this->num_elements(), this->data_elements());
+	}
+	typename array_ref::element_ptr data_elements() const&{return array_ref::base_;}
+public:
+	array_ref&& operator=(array_ref const& o) &&{assert(this->num_elements()==o.num_elements());
+		return array_ref::copy_elements(o.data_elements()), std::move(*this);
 	}
 	template<typename TT, dimensionality_type DD = D, class... As>
 	array_ref const& operator=(array_ref<TT, DD, As...> const& o)&&{//const{
@@ -974,13 +982,14 @@ public:
 		return *this;
 	}
 	template<typename TT, dimensionality_type DD = D, class... As>
-	bool operator==(array_ref<TT, DD, As...> const& o) const{
+	bool operator==(array_ref<TT, DD, As...>&& o) const&{
 		if( this->extensions() != o.extensions() ) return false; // TODO, or assert?
-		return adl::equal(data_elements(), data_elements() + this->num_elements(), o.data());
+		return equal_elements(std::move(o).data_elements());
 	}
-	typename array_ref::element_ptr data_elements() const{return array_ref::base_;}
-	friend typename array_ref::element_ptr data_elements(array_ref const& s){return s.data();}
-	typename array_ref::element_ptr data() const HD{return array_ref::base_;} 
+	typename array_ref::element_ptr data_elements()&&{return array_ref::base_;}
+	friend typename array_ref::element_ptr data_elements(array_ref&& s){return std::move(s).data_elements();}
+
+	typename array_ref::element_ptr data() const& HD{return array_ref::base_;} 
 	friend typename array_ref::element_ptr data(array_ref const& self){return self.data();}
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int v){ (void)v;

@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(comparisons){
 	swap( A[0], A[1] );
 	swap( A[0], A[1] );
 	
-	multi::array_ref<double, 3> AR(data_elements(A), extensions(A));
+	multi::array_ref<double, 3>  AR(A.data_elements(), extensions(A));
 	multi::array_cref<double, 3> AC(data_elements(A), extensions(A));
 
 	BOOST_REQUIRE( A == A );
