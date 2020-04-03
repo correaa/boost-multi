@@ -43,7 +43,6 @@ auto copy(ptr<U> first, ptr<U> last, ptr<T> result){
 template<class T>
 auto fill(memory::cuda::ptr<T> first, memory::cuda::ptr<T> last, T const& value)
 ->decltype(fill_n(first, std::distance(first, last), value)){
-	assert(0);
 	return fill_n(first, std::distance(first, last), value);}
 
 template<class U, class T, typename Size>//, typename = std::enable_if_t<std::is_trivially_assignable<T&, U>{}>>
@@ -109,7 +108,7 @@ auto copy_n(iterator<T1, 1, managed::ptr<Q1...>> first, Size count, iterator<T2,
 
 template<class T1, class... Q1, class T2, class... Q2, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
 auto copy(iterator<T1, 1, managed::ptr<Q1...>> first, iterator<T1, 1, managed::ptr<Q1...>> last, iterator<T2, 1, managed::ptr<Q2...>> result)
-->decltype(copy_n(first, last - first, result)){assert(0);
+->decltype(copy_n(first, last - first, result)){
 	return copy_n(first, last - first, result);}
 
 #endif
