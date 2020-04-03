@@ -14,7 +14,7 @@ namespace utf = boost::unit_test;
 
 namespace multi = boost::multi;
 
-BOOST_AUTO_TEST_CASE(cudart_double, *utf::tolerance(0.00001)*utf::timeout(2)){
+BOOST_AUTO_TEST_CASE(cudart_double, *utf::tolerance(0.00001)*utf::timeout(10)){
 
 	auto const in = []{
 		multi::array<double, 4> r({32, 90, 98, 96});
@@ -31,11 +31,35 @@ BOOST_AUTO_TEST_CASE(cudart_double, *utf::tolerance(0.00001)*utf::timeout(2)){
 		boost::timer::auto_cpu_timer t{"%ws wall, CPU (%p%)\n"};
 		multi::cuda::array<double, 4> const in_gpu = in;
 	}
-
-
+	{
+		multi::cuda::array<double, 4> const in_gpu = in;
+		multi::cuda::array<double, 4> out_gpu = in;
+		boost::timer::auto_cpu_timer t{"copy assign gpu____ %ws wall, CPU (%p%)\n"};
+		out_gpu = in_gpu;
+		auto c = static_cast<double>(out_gpu[1][2][3][4]); (void)c;
+	}
+	{
+		multi::cuda::managed::array<double, 4> const in_mng = in;
+		multi::cuda::managed::array<double, 4> out_mng = in;
+		{
+			boost::timer::auto_cpu_timer t{"copy assign mng____ %ws wall, CPU (%p%)\n"};
+			out_mng = in_mng;
+			auto c = static_cast<double>(out_mng[1][2][3][4]); (void)c;
+		}
+		{
+			boost::timer::auto_cpu_timer t{"copy assign mng_hot %ws wall, CPU (%p%)\n"};
+			out_mng = in_mng;
+			auto c = static_cast<double>(out_mng[1][2][3][4]); (void)c;
+		}
+		{
+			boost::timer::auto_cpu_timer t{"copy assign mng loop %ws wall, CPU (%p%)\n"};
+			out_mng() = in_mng();
+			auto c = static_cast<double>(out_mng[1][2][3][4]); (void)c;
+		}
+	}
 }
 
-BOOST_AUTO_TEST_CASE(cudart_complex, *utf::tolerance(0.00001)*utf::timeout(2)){
+BOOST_AUTO_TEST_CASE(cudart_complex, *utf::tolerance(0.00001)*utf::timeout(10)){
 
 	using complex = std::complex<double>;
 

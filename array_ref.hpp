@@ -72,7 +72,7 @@ struct array_types : Layout{
 //#ifdef __CUDACC__
 //		decltype(*std::declval<ElementPtr>())                  // this works with cuda fancy reference
 //#else
-			typename std::iterator_traits<element_ptr>::reference   // this seems more correct but it doesn't work with cuda fancy reference
+			  typename std::iterator_traits<element_ptr>::reference   // this seems more correct but it doesn't work with cuda fancy reference
 //#endif
 			, typename std::iterator_traits<element_ptr>::reference
 		>::type

@@ -1,6 +1,7 @@
 #ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
- nvcc   -D_TEST_MULTI_ADAPTORS_CUFFT            -x cu  $0 -o $0x `#-Xcompiler=-pthread` -lcufft             `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x
-clang++ -DCUDA_API_PER_THREAD_DEFAULT_STREAM -D_TEST_MULTI_ADAPTORS_CUFFT -std=c++14 --cuda-gpu-arch=sm_60 -x cuda $0 -o $0x -lcudart  -lcufft -pthread -lfftw3_threads `pkg-config --libs fftw3` -lboost_timer -ltbb -lboost_unit_test_framework&&$0x&&rm $0x
+clang++ -D_TEST_MULTI_ADAPTORS_CUFFT                                  -x c++  $0 -o $0x -lcudart  -lcufft -pthread `pkg-config --libs fftw3` -lboost_timer -ltbb -lboost_unit_test_framework&&$0x $@&&rm $0x
+clang++ -D_TEST_MULTI_ADAPTORS_CUFFT -std=c++14 --cuda-gpu-arch=sm_60 -x cuda $0 -o $0x -lcudart  -lcufft -pthread -lfftw3_threads `pkg-config --libs fftw3` -lboost_timer -ltbb -lboost_unit_test_framework&&$0x $@&&rm $0x
+#nvcc   -D_TEST_MULTI_ADAPTORS_CUFFT            -x cu  $0 -o $0x `#-Xcompiler=-pthread` -lcufft             `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x
 exit
 #endif
 // © Alfredo A. Correa 2020
@@ -288,6 +289,7 @@ auto dft(In const& i, Out&& o, int s)
 template<typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
 NODISCARD("when first argument is const")
 R dft(In const& i, int s){
+	static_assert(std::is_trivially_default_constructible<typename In::element_type>{}, "!");
 	R ret(extensions(i), get_allocator(i));
 	dft(i, ret, s);
 	return ret;
@@ -526,6 +528,7 @@ template<class In> In&& dft_inplace(In&& i, sign s){
 
 #include<complex>
 #include<thrust/complex.h>
+#include "../complex.hpp"
 
 #include<cuda_runtime.h> // cudaDeviceSynchronize
 
@@ -535,9 +538,9 @@ namespace multi = boost::multi;
 using complex = std::complex<double>;
 namespace utf = boost::unit_test;
 
-constexpr auto I = complex{0, 1};
+constexpr complex I{0, 1};
 
-BOOST_AUTO_TEST_CASE(cufft_dft_1D_out_of_place, *utf::tolerance(0.00001)){
+BOOST_AUTO_TEST_CASE(cufft_dft_1D_out_of_place, *utf::tolerance(0.00001)* utf::timeout(2) ){
 //	int good = fftw_init_threads(); assert(good);
 //	fftw_plan_with_nthreads(std::thread::hardware_concurrency());
 
@@ -701,36 +704,37 @@ BOOST_AUTO_TEST_CASE(cufft_combinations, *utf::tolerance(0.00001)){
 		{false, false, false, false},
 	};
 
+	using std::cout;
 	for(auto c : cases){
-		std::cout << "case "; std::copy(c.begin(), c.end(), std::ostream_iterator<bool>{std::cout,", "}); std::cout << "\n";
+		cout<<"case "; copy(begin(c), end(c), std::ostream_iterator<bool>{cout,", "}); cout<<"\n";
 		multi::array<complex, 4> out(extensions(in));
-	#if 1
 		{
 			boost::timer::auto_cpu_timer t{"cpu____ %ws wall, CPU (%p%)\n"};
 			multi::fft::dft(c, in, out, multi::fftw::forward);
 		}
-
 		multi::cuda::array<complex, 4> out_gpu(extensions(in_gpu));
-		cudaDeviceSynchronize();
 		{
-			boost::timer::auto_cpu_timer t{"gpu cld %ws wall, CPU (%p%)\n"};
+			boost::timer::auto_cpu_timer t{"gpu____ %ws wall, CPU (%p%)\n"};
 			multi::fft::dft(c, in_gpu   , out_gpu   , multi::fft::forward);
-		//	(void)static_cast<complex>(out_gpu[5][4][3][1]);
-		//	out_gpu[5][4][3][1].operator complex();
+			BOOST_TEST( abs( out_gpu[5][4][3][1].operator complex() - out[5][4][3][1] ) == 0. );
 		}
-		BOOST_TEST( imag( static_cast<complex>(out_gpu[5][4][3][1]) - out[5][4][3][1]) == 0. );
-		{
-			boost::timer::auto_cpu_timer t{"gpu hot %ws wall, CPU (%p%)\n"};
-			multi::fft::dft(c, in_gpu   , out_gpu   , multi::fft::forward);
-		//	(void)static_cast<complex>(out_gpu[5][4][3][1]);
-		//	out_gpu[5][4][3][1].operator complex();
-		}
-	#endif
-		multi::cuda::managed::array<complex, 4> out_mng(extensions(out));
+		multi::cuda::managed::array<complex, 4> out_mng(extensions(in_mng));
 		{
 			boost::timer::auto_cpu_timer t{"mng_cld %ws wall, CPU (%p%)\n"};
 			multi::fft::dft(c, in_mng   , out_mng   , multi::fft::forward);
+			BOOST_TEST( abs( out_mng[5][4][3][1] - out[5][4][3][1] ) == 0. );
 		}
+		{
+			boost::timer::auto_cpu_timer t{"mng_hot %ws wall, CPU (%p%)\n"};
+			multi::fft::dft(c, in_mng   , out_mng   , multi::fft::forward);
+			BOOST_TEST( abs( out_mng[5][4][3][1] - out[5][4][3][1] ) == 0. );
+		}
+	}
+#if 0
+
+	#if 1
+	#endif
+
 		{
 			boost::timer::auto_cpu_timer t{"mng_hot %ws wall, CPU (%p%)\n"};
 			multi::fft::dft(c, in_mng   , out_mng   , multi::fft::forward);
@@ -738,6 +742,7 @@ BOOST_AUTO_TEST_CASE(cufft_combinations, *utf::tolerance(0.00001)){
 	//	BOOST_TEST( imag( out_mng[5][4][3][1] - out[5][4][3][1]) == 0. );
 
 	}
+#endif
 
 }
 
