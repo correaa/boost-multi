@@ -3,7 +3,7 @@ $CXX -Wall -Wextra $0 -o $0x -lboost_unit_test_framework -lcudart&&$0x&&rm $0x;e
 #endif
 // © Alfredo Correa 2019-2020
 #define BOOST_TEST_DYN_LINK 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi legacy adaptor example"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi zero dimensionality"
 #include<boost/test/unit_test.hpp>
 
 #include<iostream>

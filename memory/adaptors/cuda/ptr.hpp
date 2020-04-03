@@ -203,9 +203,11 @@ public:
 	#endif
 #else //no clang
 	#ifdef __CUDA_ARCH__
-	using reference = T&;
-	T& operator*() const __device__ {return *rp_;}
+//	using reference = T&;
+//	T& operator*() const __device__ {return *rp_;}
 //	ref<element_type> operator*() const __host__{return {*this};}
+	using reference = ref<element_type>;
+	ref<element_type> operator*() const __device__{return {*this};}
 	#else
 	using reference = ref<element_type>;
 	ref<element_type> operator*() const __host__ __device__{return {*this};}

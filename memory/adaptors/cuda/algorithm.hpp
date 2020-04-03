@@ -46,7 +46,7 @@ auto fill(memory::cuda::ptr<T> first, memory::cuda::ptr<T> last, T const& value)
 	assert(0);
 	return fill_n(first, std::distance(first, last), value);}
 
-template<class U, class T, typename Size, typename = std::enable_if_t<std::is_trivially_assignable<T&, U>{}>>
+template<class U, class T, typename Size>//, typename = std::enable_if_t<std::is_trivially_assignable<T&, U>{}>>
 memory::cuda::ptr<T> fill_n(ptr<T> const first, Size count, U const& value){
 	if(std::find_if_not(reinterpret_cast<char const*>(&value), reinterpret_cast<char const*>(&value) + sizeof(value), [](char c){return c==0;}) == reinterpret_cast<char const*>(&value) + sizeof(value)){
 //	if(value == 0.){
@@ -58,6 +58,11 @@ memory::cuda::ptr<T> fill_n(ptr<T> const first, Size count, U const& value){
 		count -= n;
 	}
 	return first + count;
+}
+
+template<class It, class Size, class V, class T = typename std::iterator_traits<It>::value_type, std::enable_if_t<std::is_trivially_constructible<T, V const&>{}, int> =0>
+auto uninitialized_fill_n(It first, Size n, V const& v){
+	return fill_n(first, n, v);
 }
 
 template<class It, class Size, class T = typename std::iterator_traits<It>::value_type, std::enable_if_t<std::is_trivially_constructible<T>{}, int> = 0>
@@ -132,8 +137,16 @@ auto copy_n(
 	array_iterator<T1, 1, managed::ptr<T1const, A1...>> first, Size n, 
 	array_iterator<T2, 1, managed::ptr<T2const, A2...>> result
 )
-->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), n), result + n){assert(0);
+->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), n), result + n){
 	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), n), result + n;}
+
+template<class T1, class... A1, class Size, class T2, class... A2, std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}, int> =0>
+auto copy_n(
+	managed::ptr<T1, A1...> first, Size count, 
+	managed::ptr<T2, A2...> result
+)
+->decltype(memcpy(result, first, count*sizeof(T1)), result + count){
+	return memcpy(result, first, count*sizeof(T1)), result + count;}
 
 template<class T1, class T1const, class... A1, class T2, class T2const, class... A2>
 auto copy(
@@ -144,10 +157,10 @@ auto copy(
 	return managed::copy_n(first, last - first, d_first);
 }
 
-template<class It1, class It2>
-auto adl_copy(It1 first, It1 last, It2 result)
-->decltype(managed::copy_n(first, last - first, result)){
-	return managed::copy_n(first, last - first, result);}
+template<class U, class T, class... As, typename Size>//, typename = std::enable_if_t<std::is_trivially_assignable<T&, U>{}>>
+auto fill_n(managed::ptr<T, As...> first, Size count, U const& value){
+	return fill_n(cuda::ptr<T>(first), count, value), first + count;
+}
 
 template<class Alloc, class Ptr, class ForwardIt, std::enable_if_t<std::is_trivially_copyable<typename std::iterator_traits<ForwardIt>::value_type>{}, int> = 0>
 auto alloc_uninitialized_copy(Alloc&, Ptr first, Ptr last, ForwardIt dest)

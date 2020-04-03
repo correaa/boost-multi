@@ -316,7 +316,8 @@ struct pointer_traits<P, std::enable_if_t<has_default_allocator<P>{}> > : std::p
 };
 template<class P>
 struct pointer_traits<P, std::enable_if_t<not has_default_allocator<P>{}> > : std::pointer_traits<P>{
-	using default_allocator_type = std::allocator<std::decay_t<typename std::iterator_traits<P>::value_type> >;
+//	using default_allocator_type = std::allocator<std::decay_t<typename std::iterator_traits<P>::value_type> >;
+	using default_allocator_type = std::allocator<std::decay_t<typename std::pointer_traits<P>::element_type> >;
 	static default_allocator_type default_allocator_of(typename pointer_traits::pointer const&){return {};}
 };
 
