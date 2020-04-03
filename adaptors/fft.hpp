@@ -12,8 +12,8 @@ exit
 #include "../adaptors/fftw.hpp"
 #include "../adaptors/cufft.hpp"
 
-#if(!__INCLUDE_LEVEL__)
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuFFT adaptor"
+#if not __INCLUDE_LEVEL__
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFT adaptor"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 #include <boost/timer/timer.hpp>
@@ -24,13 +24,16 @@ namespace utf = boost::unit_test;
 using complex = std::complex<double>;
 namespace multi = boost::multi;
 
+using std::cout;
+
 BOOST_AUTO_TEST_CASE(cufft_combinations, *utf::tolerance(0.00001)){
-	std::cout<<"=========================================================\n";
-	std::cout<< BOOST_PLATFORM <<' '<< BOOST_COMPILER <<' '<< __DATE__<<'\n';
+	cout<<"=========================================================\n";
+	cout<< BOOST_PLATFORM <<' '<< BOOST_COMPILER <<' '<< __DATE__<<'\n';
+
 	auto const in = []{
 		multi::array<complex, 4> ret({32, 90, 98, 96});
 		std::generate(ret.data_elements(), ret.data_elements() + ret.num_elements(), 
-			[](){return complex{std::rand()*1./RAND_MAX, std::rand()*1./RAND_MAX};}
+			[](){return complex{std::rand()/1./RAND_MAX, std::rand()/1./RAND_MAX};}
 		);
 		return ret;
 	}();
@@ -48,9 +51,10 @@ BOOST_AUTO_TEST_CASE(cufft_combinations, *utf::tolerance(0.00001)){
 		{false, false, false, false},
 	};
 
-	using std::cout;
 	for(auto c : cases){
-		cout<<"case "; copy(begin(c), end(c), std::ostream_iterator<bool>{cout,", "}); cout<<"\n";
+		cout<<"case: "<<std::boolalpha; 
+		copy(begin(c), end(c), std::ostream_iterator<bool>{cout,", "}); cout<<"\n";
+
 		multi::array<complex, 4> out(extensions(in));
 		{
 			boost::timer::auto_cpu_timer t{"cpu____ %ws wall, CPU (%p%)\n"};
@@ -79,19 +83,6 @@ BOOST_AUTO_TEST_CASE(cufft_combinations, *utf::tolerance(0.00001)){
 			BOOST_TEST( abs( out_mng[5][4][3][1] - out[5][4][3][1] ) == 0. );
 		}
 	}
-#if 0
-
-	#if 1
-	#endif
-
-		{
-			boost::timer::auto_cpu_timer t{"mng_hot %ws wall, CPU (%p%)\n"};
-			multi::fft::dft(c, in_mng   , out_mng   , multi::fft::forward);
-		}
-	//	BOOST_TEST( imag( out_mng[5][4][3][1] - out[5][4][3][1]) == 0. );
-
-	}
-#endif
 
 }
 #endif
