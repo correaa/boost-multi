@@ -7,6 +7,9 @@ $CXX -std=c++14 -D_TEST_MULTI_COMPLEX -x c++ $0 -o $0x&&$0x&&rm $0x;exit
 
 #include "array_ref.hpp"
 
+#include<complex>
+
+
 namespace boost{
 namespace multi{
 
@@ -117,6 +120,11 @@ static imag_t const imag __attribute__((unused)) ;
 
 }}
 
+namespace std{
+	template<class T>
+	struct is_trivially_default_constructible<std::complex<T>> : is_trivially_default_constructible<T>{};
+}
+
 #if _TEST_MULTI_COMPLEX
 
 #include<cassert>
@@ -128,6 +136,8 @@ namespace multi = boost::multi;
 template<class T> void what(T&&)=delete;
 
 int main(){
+	static_assert( std::is_trivially_default_constructible<std::complex<double>>{}, "!");
+	static_assert( std::is_trivially_copy_constructible<std::complex<double>>{}, "!");
 
 	using complex = std::complex<double>;
 	multi::array<complex, 2> A = {
