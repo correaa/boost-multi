@@ -9,7 +9,6 @@ namespace utf = boost::unit_test;
 #include <boost/timer/timer.hpp>
 
 #include "../../../adaptors/cuda.hpp"
-#include "../../../complex.hpp"
 
 #include<complex>
 
