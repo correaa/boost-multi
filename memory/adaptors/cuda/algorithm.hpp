@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
-$CXX -std=c++14 -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_ALGORITHM -g -x c++ $0 -o $0x -lcudart -lboost_unit_test_framework -lboost_timer&&$0x&&rm $0x;exit
+$CXX -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_ALGORITHM -g -x c++ $0 -o $0x -lcudart -lboost_unit_test_framework -lboost_timer&&$0x&&rm $0x;exit
 #endif
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_ALGORITHM_HPP
 #define BOOST_MULTI_MEMORY_ADAPTORS_CUDA_ALGORITHM_HPP
@@ -9,9 +9,6 @@ $CXX -std=c++14 -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_ALGORITHM -g -x c++ $0 -o $0x
 #include "../../../../multi/detail/adl.hpp"
 
 #include "../cuda/error.hpp"
-//#include <boost/log/trivial.hpp>
-
-//#include "../cuda/algorithm/copy.hpp"
 
 #include<complex> //TODO remove
 
@@ -63,11 +60,6 @@ memory::cuda::ptr<T> fill_n(ptr<T> const first, Size count, U const& value){
 	return first + count;
 }
 
-template<class It, class Size, class T>//, class R = typename std::iterator_traits<It>::reference, std::enable_if_t<std::is_trivially_assignable<R, T const&>{} , int> = 0>
-auto uninitialized_fill_n(It first, Size n, T const& t){
-	return fill_n(first, n, t);
-}
-
 template<class It, class Size, class T = typename std::iterator_traits<It>::value_type, std::enable_if_t<std::is_trivially_constructible<T>{}, int> = 0>
 auto uninitialized_value_construct_n(It first, Size n){
 	return uninitialized_fill_n(first, n, T());
@@ -104,7 +96,7 @@ auto copy_n(iterator<T1, 1, ptr<Q1>> first, Size count, iterator<T2, 1, ptr<Q2>>
 
 template<class T1, class... Q1, typename Size, class T2, class... Q2, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
 auto copy_n(iterator<T1, 1, managed::ptr<Q1...>> first, Size count, iterator<T2, 1, managed::ptr<Q2...>> result)
-->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count){assert(0);
+->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count){
 	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count;}
 
 template<class T1, class... Q1, class T2, class... Q2, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
@@ -123,6 +115,12 @@ template<class T1, class T1P, class Size, class T2, class T2P>
 auto copy(array_iterator<T1, 1, ptr<T1P>> first, array_iterator<T1, 1, ptr<T1P>> last, array_iterator<T1, 1, ptr<T1P>> result)
 ->decltype(cuda::copy_n(first, last - first, result)){
 	return cuda::copy_n(first, last - first, result);}
+
+template<class T, class Size, std::enable_if_t<std::is_trivially_copy_constructible<T>{}, int> =0>
+auto uninitialized_fill_n(ptr<T> first, Size n, T const& t){return fill_n(first, n, t);}
+
+template<class T, class Size, std::enable_if_t<std::is_trivially_default_constructible<T>{}, int> =0>
+auto uninitialized_value_construct_n(ptr<T> first, Size n){return uninitialized_fill_n(first, n, T{});}
 
 namespace managed{
 
@@ -158,16 +156,11 @@ auto alloc_uninitialized_copy(Alloc&, Ptr first, Size n, ForwardIt dest)
 ->decltype(cuda::copy_n(first, n, dest)){
 	return cuda::copy_n(first, n, dest);}
 
-template<class Alloc, class Ptr, class ForwardIt, std::enable_if_t<std::is_trivially_copyable<typename std::iterator_traits<ForwardIt>::value_type>{}, int> = 0>
-auto adl_alloc_uninitialized_copy(Alloc&, Ptr first, Ptr last, ForwardIt dest)
-->decltype(cuda::copy(first, last, dest)){
-	return cuda::copy(first, last, dest);}
-
 template<class T, class TP, class Size, std::enable_if_t<std::is_trivially_default_constructible<T>{}, int> =0>
 auto uninitialized_default_construct_n(cuda::managed::ptr<T, TP> first, Size n){return first + n;}
 
 template<class T, class TP, class Size, std::enable_if_t<std::is_trivially_default_constructible<T>{}, int> =0>
-auto uninitialized_default_construct_n(cuda::managed::ptr<std::complex<T>, TP> first, Size n){return first + n;}
+auto uninitialized_default_construct_n(cuda::managed::ptr<std::complex<T>, TP> first, Size n){assert(0); return first + n;}
 
 template<class T, class TP, class Size, std::enable_if_t<std::is_trivially_destructible<T>{}, int> =0>
 auto destroy_n(cuda::managed::ptr<T, TP> first, Size n){return first + n;}
@@ -229,7 +222,7 @@ namespace cuda = multi::memory::cuda;
 
 BOOST_AUTO_TEST_CASE(copy_1d){
 	auto const A_cpu = []{
-		multi::array<double, 1> ret(1e8);
+		multi::array<double, 1> ret(10);
 		std::generate(
 			ret.data_elements(), ret.data_elements() + ret.num_elements(), std::rand
 		);
