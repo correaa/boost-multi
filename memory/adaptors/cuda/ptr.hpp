@@ -17,6 +17,7 @@ nvcc -x cu -Xcompiler=-Wall,-Wextra`#clang++ -Wall -std=c++14 -x cuda --cuda-gpu
 #include "../../adaptors/cuda/error.hpp"
 
 #include<cassert> // debug
+#include<utility> // exchange
 
 #ifndef _DISABLE_CUDA_SLOW
 #ifdef NDEBUG
@@ -29,11 +30,18 @@ nvcc -x cu -Xcompiler=-Wall,-Wextra`#clang++ -Wall -std=c++14 -x cuda --cuda-gpu
 #endif
 
 #define BEGIN_NO_DEPRECATED \
+\
 _Pragma("GCC diagnostic push") \
-_Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
+_Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"") \
+\
 
 #define END_NO_DEPRECATED \
-_Pragma("GCC diagnostic pop")
+\
+_Pragma("GCC diagnostic pop") \
+\
+
+#define BEGIN_CUDA_SLOW BEGIN_NO_DEPRECATED
+#define END_CUDA_SLOW   END_NO_DEPRECATED
 
 #define NO_DEPRECATED(ExpR) \
 	BEGIN_NO_DEPRECATED \
@@ -155,9 +163,11 @@ public:
 	bool operator==(ptr const& other) const{return rp_==other.rp_;}
 	bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
 
-	using element_type = typename raw_pointer_traits::element_type;
+	using element_type    = typename raw_pointer_traits::element_type;
 	using difference_type = typename raw_pointer_traits::difference_type;
-	using value_type = element_type;
+	using size_type       = difference_type;
+	using value_type      = T;
+
 	using pointer = ptr<T, RawPtr>;//<T>;
 	using iterator_category = typename std::iterator_traits<raw_pointer>::iterator_category;
 	explicit operator bool() const HD{return rp_;}
@@ -173,6 +183,12 @@ public:
 //	friend bool operator!=(ptr const& s, ptr const& t){return s.impl_!=t.impl_;}
 	ptr operator+(typename ptr::difference_type n) const HD{return ptr{rp_ + n};}
 	ptr operator-(typename ptr::difference_type n) const HD{return ptr{rp_ - n};}
+#ifdef __CUDA_ARCH__
+//	element_type& operator[](difference_type n) const __device__{return rp_[n];}
+	ref<element_type> operator[](difference_type n) const __host__{return *((*this)+n);}
+#else
+	ref<element_type> operator[](difference_type n) const __host__ __device__{return *((*this)+n);}
+#endif
 #if defined(__clang__)
 	#if defined(__CUDA__)
 	static T& reference_aux() __device__;
@@ -195,11 +211,6 @@ public:
 	ref<element_type> operator*() const __host__ __device__{return {*this};}
 	#endif
 #endif
-	#ifdef __CUDA_ARCH__
-	__device__ T& operator[](difference_type n) const HD{return *(rp_+n);}
-	#else
-	__host__ decltype(auto) operator[](difference_type n) const HD{return *((*this)+n);}
-	#endif
 	friend ptr to_address(ptr const& p){return p;}
 	typename ptr::difference_type operator-(ptr const& o) const{return rp_-o.rp_;}
 	operator ptr<void>(){return {rp_};}
@@ -320,16 +331,16 @@ public:
 #if defined(__clang__)
 	decltype(auto) operator=(ref const& other) && __device__ {return operator=(static_cast<T const&>(other));}
 	decltype(auto) operator=(ref&  other) && __device__ {return operator=(static_cast<T&>(other));}
-	decltype(auto) operator=(ref&& other) &  __device__{return operator=(static_cast<T const&>(std::move(other)));}
-	decltype(auto) operator=(ref&& other) && __device__{return operator=(static_cast<T const&>(std::move(other)));}
+//	decltype(auto) operator=(ref&& other) &  __device__{return operator=(static_cast<T const&>(std::move(other)));}
+//	decltype(auto) operator=(ref&& other) && __device__{return operator=(static_cast<T const&>(std::move(other)));}
 #endif
-
+	ref&& operator=(ref&& other) && __host__{
+		static_assert( std::is_trivially_copyable<value_type>{}, "!");
+		auto s=cudaMemcpy(pimpl_.rp_, other.pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToDevice); (void)s; assert(s==cudaSuccess);
+		return std::move(*this);
+	}
 #if not defined(__clang__)
-	#ifndef __CUDA_ARCH__
 	[[deprecated("WARNING: slow memory operation")]]
-	#else
-	#endif
-//	[[SLOW]]
 	ref&& operator=(value_type const& t) && HD {
 		#ifdef __CUDA_ARCH__
 			*(pimpl_.rp_) = t;
@@ -364,8 +375,7 @@ public:
 	template<class ValueType, 
 		std::enable_if_t<std::is_assignable<T&, decltype(value_type{std::declval<ValueType>()})>{}, int> = 0
 	>
-//	[[deprecated("WARNING: slow memory operation")]]
-	[[deprecated]]
+	[[deprecated("WARNING: slow cuda memory operation")]]
 	ref&& operator=(ValueType const& t) && __host__ {
 		static_assert( std::is_trivially_copy_assignable<T>{}, "!" );
 	//	if(std::is_trivially_copy_assignable<T>{}){
@@ -412,9 +422,9 @@ public:
 //		return std::move(reinterpret_cast<T&>(buff));
 //	}
 #if defined(__CUDA_ARCH__)
-	operator T const&()&& __device__{return *(pimpl_.rp_);}
+//	operator T const&()&& __device__{return *(pimpl_.rp_);}
 //	[[deprecated]] 
-	operator T const&()&& __host__{return *(pimpl_.rp_);}
+//	operator T const&()&& __host__{return *(pimpl_.rp_);}
 #endif
 //	operator T&()&& __host__  = delete;//{return *(pimpl_.rp_);}//delete;//{return *(pimpl_.rp_);}
 
@@ -535,11 +545,11 @@ public:
 #else // no clang
 	template<class Other, typename = std::enable_if_t<not is_ref<Other>{}> > 
 	friend auto operator==(ref&& self, Other&& other) HD{
-	#if __CUDA_ARCH__
-		return *(self->rp_) == std::forward<Other>(other);
-	#else
+//	#if __CUDA_ARCH__
+//		return *(self.pimpl_.rp_) == std::forward<Other>(other);
+//	#else
 		return static_cast<T>(std::move(self)) == std::forward<Other>(other);
-	#endif
+//	#endif
 	}
 #endif
 
@@ -591,7 +601,33 @@ public:
 	ref& operator+=(Other&& o)&&{std::move(*this).skeleton()+=o; return *this;}
 	template<class Other, typename = decltype(std::declval<T&>()-=std::declval<Other&&>())>
 	ref&& operator-=(Other&& o)&&{std::move(*this).skeleton()-=o; return std::move(*this);}
-	friend void swap(ref&& a, ref&& b){T tmp = std::move(a); std::move(a) = std::move(b); std::move(b) = tmp;}
+private:
+	template<class Ref>
+	void swap(Ref&& b) &&{
+		T tmp = std::move(*this);
+	BEGIN_CUDA_SLOW
+		std::move(*this) = std::forward<Ref>(b);
+		std::forward<Ref>(b) = std::move(tmp);
+	END_CUDA_SLOW
+	}
+public:
+#ifdef __NVCC__
+#define DEPRECATED(MsG)	__attribute__((deprecated))
+#else
+#define	DEPRECATED(MsG) [[deprecated(MsG)]]
+#endif
+
+	template<class Ref>
+#if __NVCC__
+	__attribute__((deprecated))
+#else
+	[[deprecated("WARNING: slow cuda memory operation")]]
+#endif
+	friend void swap(ref&& a, Ref&& b){a.swap(std::forward<Ref>(b));}
+	template<class Ref> DEPRECATED("WARNING: slow cuda memory operation")
+	friend void swap(Ref&& a, ref&& b){std::move(b).swap(a);}
+	DEPRECATED("WARNING: slow cuda memory operation")
+	friend void swap(ref&& a, ref&& b){std::move(a).swap(std::move(b));}
 	ref<T>&& operator++()&&{++(std::move(*this).skeleton()); return std::move(*this);}
 	ref<T>&& operator--()&&{--(std::move(*this).skeleton()); return std::move(*this);}
 	template<class Self, typename = std::enable_if_t<std::is_base_of<ref, Self>{}>>

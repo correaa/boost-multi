@@ -187,6 +187,11 @@ public:
 		adl::copy(o.begin(), o.end(), this->begin()); // TODO: should be uninitialized_copy
 	}
 	template<class TT, class... Args>
+	static_array(static_array<TT, D, Args...> const& o)
+	: array_alloc{}, ref{array_alloc::allocate(num_elements(o)), extensions(o)}{
+		static_array::uninitialized_copy_elements(o.data_elements());
+	}
+	template<class TT, class... Args>
 	static_array(array_ref<TT, D, Args...>&& o)
 	: array_alloc{}, ref{array_alloc::allocate(num_elements(o)), extensions(o)}{
 		static_array::uninitialized_copy_elements(std::move(o).data_elements());
@@ -274,6 +279,10 @@ public:
 	element_const_ptr                   data_elements() const&{return this->base_;}
 	typename static_array::element_ptr  data_elements()      &{return this->base_;}
 	static_array::element_move_ptr      data_elements()     &&{return std::make_move_iterator(this->base_);}
+
+	friend auto data_elements(static_array const& self){return self.data_elements();}
+	friend auto data_elements(static_array      & self){return self.data_elements();}
+	friend auto data_elements(static_array     && self){return std::move(self).data_elements();}
 
 	HD typename static_array::element_ptr       base()      {return ref::base();}
 	HD auto base() const{return typename static_array::element_const_ptr{ref::base()};}
@@ -651,10 +660,8 @@ public:
 	}
 	using static_::static_;
 	using typename static_::value_type;
-//	using static_::ref::operator<;
 	array() = default;
 	array(array const&) = default;
-public:
 	void reshape(typename array::extensions_type x) &{
 		typename array::layout_t new_layout{x};
 		assert( new_layout.num_elements() == this->num_elements() );
@@ -662,6 +669,11 @@ public:
 	}
 	using static_::clear;
 	friend void clear(array& self) noexcept{self.clear();}
+
+	friend auto data_elements(array const& self){return self.data_elements();}
+	friend auto data_elements(array      & self){return self.data_elements();}
+	friend auto data_elements(array     && self){return std::move(self).data_elements();}
+
 //	explicit	
 //	array(array const& other)                                              // 5a
 //	:	allocator_type{other}, ref{allocate(other.num_elements()), extensions(other)}{

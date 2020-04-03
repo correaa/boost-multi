@@ -65,6 +65,9 @@ auto uninitialized_value_construct_n(It first, Size n){
 	return uninitialized_fill_n(first, n, T());
 }
 
+template<class It, class Size, class T, std::enable_if_t<std::is_trivially_copy_constructible<T>{}, int> = 0>
+auto uninitialized_copy_n(It first, Size n, ptr<T> d_first){return copy_n(first, n, d_first);}
+
 //template<class Alloc, class It, class Size>
 //auto alloc_uninitialized_value_construct_n(Alloc&, It first, Size n){
 //	return uninitialized_value_construct_n(first, n);
@@ -160,7 +163,9 @@ template<class T, class TP, class Size, std::enable_if_t<std::is_trivially_defau
 auto uninitialized_default_construct_n(cuda::managed::ptr<T, TP> first, Size n){return first + n;}
 
 template<class T, class TP, class Size, std::enable_if_t<std::is_trivially_default_constructible<T>{}, int> =0>
-auto uninitialized_default_construct_n(cuda::managed::ptr<std::complex<T>, TP> first, Size n){assert(0); return first + n;}
+auto uninitialized_default_construct_n(cuda::managed::ptr<std::complex<T>, TP> first, Size n){
+	return first + n; // TODO remove?
+}
 
 template<class T, class TP, class Size, std::enable_if_t<std::is_trivially_destructible<T>{}, int> =0>
 auto destroy_n(cuda::managed::ptr<T, TP> first, Size n){return first + n;}
