@@ -357,7 +357,7 @@ public:
 		std::for_each(this->begin(), this->end(), [&](auto&& e){ar & make_nvp("item", e);});
 	}
 	friend /*NODISCARD("decayed type is ignored")*/ auto operator+(basic_array const& self){return self.decay();}
-	friend /*NODISCARD("decayed type is ignored")*/ auto operator*(basic_array const& self){return self.decay();}
+//	friend /*NODISCARD("decayed type is ignored")*/ auto operator*(basic_array const& self){return self.decay();}
 	friend auto decay(basic_array const& self){return self.decay();}
 	typename types::reference operator[](index i) const HD{
 		assert( this->extension().contains(i) );
@@ -793,12 +793,11 @@ public:
 	basic_array&& operator=(basic_array<TT, DD, As...> const& o)&&{assert(this->extension() == o.extension());
 		std::move(*this).assign(o.begin(), o.end()); return std::move(*this);
 	}
-	typename types::reference operator[](typename types::index i) const HD{
-		assert( this->extension().contains(i) );
+	typename types::reference operator[](typename types::index i) const HD{assert( this->extension().contains(i) );
 		return *(this->base() + Layout::operator()(i)); // in C++17 this is allowed even with syntethic references
 	}
 	template<class Tuple, typename = std::enable_if_t<(std::tuple_size<std::decay_t<Tuple>>{}>1) > >
-	auto operator[](Tuple&& t) const
+	constexpr auto operator[](Tuple&& t) const
 	->decltype(operator[](std::get<0>(t))[detail::tuple_tail(t)]){
 		return operator[](std::get<0>(t))[detail::tuple_tail(t)];}
 	template<class Tuple, typename = std::enable_if_t<std::tuple_size<std::decay_t<Tuple>>{}==1> >
