@@ -151,7 +151,10 @@ auto fill_n(managed::ptr<T, As...> first, Size count, U const& value){
 	return fill_n(cuda::ptr<T>(first), count, value), first + count;
 }
 
-template<class Alloc, class Ptr, class ForwardIt, std::enable_if_t<std::is_trivially_copyable<typename std::iterator_traits<ForwardIt>::value_type>{}, int> = 0>
+template<class T, class...As, class Size, class V, std::enable_if_t<std::is_trivially_constructible<T, V const&>{}, int> =0>
+auto uninitialized_fill_n(managed::ptr<T, As...> first, Size n, V const& v){return fill_n(first, n, v);}
+
+template<class Alloc, class Ptr, class ForwardIt, std::enable_if_t<std::is_trivially_copy_constructible<typename std::iterator_traits<ForwardIt>::value_type>{}, int> = 0>
 auto alloc_uninitialized_copy(Alloc&, Ptr first, Ptr last, ForwardIt dest)
 ->decltype(cuda::copy(first, last, dest)){
 	return cuda::copy(first, last, dest);}
