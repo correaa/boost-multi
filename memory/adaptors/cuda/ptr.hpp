@@ -258,6 +258,9 @@ std::false_type is_ref_aux(...);
 
 template<class TTT> struct is_ref : decltype(is_ref_aux(std::declval<TTT>())){};
 
+template<class To, class From, std::enable_if_t<std::is_convertible<From, To>{},int> =0>
+To implicit_cast(From&& f){return static_cast<To>(f);}
+
 template<class T>
 struct ref{
 	using value_type = T;
@@ -267,10 +270,11 @@ struct ref{
 private:
 	pointer pimpl_;
 	ref(pointer const& p) HD: pimpl_{p}{}
+	template<class TT> friend struct ref;
 public:
-	ref(T& t) HD : pimpl_{&t}{}
-	template<class Other, typename = std::enable_if_t<std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>())>, pointer>{}>>
-	/*explicit(false)*/ ref(ref<Other> const& o) HD : pimpl_{static_cast<pointer>(o)}{}
+//	ref(T& t) HD : pimpl_{&t}{}
+	template<class Other, typename = decltype(implicit_cast<pointer>(std::declval<ref<Other>>().pimpl_))>
+	/*explicit(false)*/ ref(ref<Other>&& o) HD : pimpl_{implicit_cast<pointer>(std::move(o).pimpl_)}{}
 	template<class Other, typename = std::enable_if_t<not std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>())>, pointer>{}>>
 	explicit/*(true)*/ ref(ref<Other> const& o, void** = 0) HD : pimpl_{static_cast<pointer>(o)}{}
 	template<class TT, class PP> friend struct ptr;
@@ -660,8 +664,8 @@ template<class T> __device__ void WHAT(T&&) = delete;
 
 #if __CUDA_ARCH__
 __device__ void f(cuda::ptr<double> p){
-	printf("%f", *p);
-//	printf("%f", static_cast<double const&>(*p));
+//	printf("%f", *p);
+	printf("%f", static_cast<double const&>(*p));
 }
 #endif
 

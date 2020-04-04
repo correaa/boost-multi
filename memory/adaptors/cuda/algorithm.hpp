@@ -59,10 +59,8 @@ memory::cuda::ptr<T> fill_n(ptr<T> const first, Size count, U const& value){
 	return first + count;
 }
 
-template<class It, class Size, class V, class T = typename std::iterator_traits<It>::value_type, std::enable_if_t<std::is_trivially_constructible<T, V const&>{}, int> =0>
-auto uninitialized_fill_n(It first, Size n, V const& v){
-	return fill_n(first, n, v);
-}
+template<class T, class Size, class V, std::enable_if_t<std::is_trivially_constructible<T, V const&>{}, int> =0>
+auto uninitialized_fill_n(cuda::ptr<T> first, Size n, V const& v){return fill_n(first, n, v);}
 
 template<class It, class Size, class T = typename std::iterator_traits<It>::value_type, std::enable_if_t<std::is_trivially_constructible<T>{}, int> = 0>
 auto uninitialized_value_construct_n(It first, Size n){
@@ -77,14 +75,6 @@ auto uninitialized_copy_n(It first, Size n, ptr<T> d_first){return copy_n(first,
 //	return uninitialized_value_construct_n(first, n);
 //}
 
-}}}}
-
-namespace boost{
-namespace multi{
-
-namespace memory{
-namespace cuda{
-
 #if 1
 template<class T1, class Q1, typename Size, class T2, class Q2, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
 auto copy_n(iterator<T1, 1, Q1*> first, Size count, iterator<T2, 1, ptr<Q2>> result)
@@ -93,8 +83,8 @@ auto copy_n(iterator<T1, 1, Q1*> first, Size count, iterator<T2, 1, ptr<Q2>> res
 
 template<class T1, class Q1, typename Size, class T2, class Q2, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
 auto copy_n(iterator<T1, 1, ptr<Q1>> first, Size count, iterator<T2, 1, Q2*> result)
-->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count){
-	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count;}
+->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result+count){
+	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result+count;}
 
 template<class T1, class Q1, typename Size, class T2, class Q2, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
 auto copy_n(iterator<T1, 1, ptr<Q1>> first, Size count, iterator<T2, 1, ptr<Q2>> result)

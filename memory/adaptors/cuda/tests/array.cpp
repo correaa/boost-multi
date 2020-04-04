@@ -36,6 +36,6 @@ BOOST_AUTO_TEST_CASE(cuda_allocators){
 //	B1[100] = 2.;
 //	C1[100] = 3.;
 
-
 }
+
 
