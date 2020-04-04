@@ -111,6 +111,7 @@ template<dimensionality_type D> using index_extensions = typename detail::repeat
 
 template<dimensionality_type D> 
 struct iextensions : detail::repeat<index_extension, D>::type{
+	static constexpr dimensionality_type dimensionality = D;
 	using base_ = typename detail::repeat<index_extension, D>::type;
 	using base_::base_;
 //	template<class... Args, typename = std::enable_if_t<sizeof...(Args)==D>>
@@ -138,6 +139,7 @@ auto contains(index_extensions<D> const& ie, Tuple const& tp){
 }
 
 }}
+
 
 #if _TEST_MULTI_DETAIL_TYPES
 

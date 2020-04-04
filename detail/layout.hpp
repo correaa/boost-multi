@@ -117,6 +117,7 @@ struct layout_t<dimensionality_type{0}, SSize>{
 		friend decltype(auto) base(extensions_type_ const& s){return s.base();}
 		operator nelems_type() const{return 1;}
 		template<class Archive> void serialize(Archive&, unsigned){}
+		static constexpr dimensionality_type dimensionality = 0;
 	};
 	constexpr layout_t(extensions_type_ const& = {}){}// : nelems_{1}{}
 	using extensions_type = extensions_type_;
@@ -156,6 +157,7 @@ public:
 		friend decltype(auto) base(extensions_type_ const& s){return s.base();}
 		template<class Archive>
 		void serialize(Archive& ar, unsigned){ar & make_nvp("extension", std::get<0>(*this));}
+		static constexpr dimensionality_type dimensionality = 1;
 	};
 	using extensions_type = extensions_type_;
 	using strides_type = std::tuple<index>;
@@ -291,6 +293,7 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 		void serialize(Archive& ar, unsigned){
 			serialize_impl(ar, std::make_index_sequence<D>{});
 		}
+		static constexpr dimensionality_type dimensionality = D;
 	private:
 		template<class Array, std::size_t... I, typename = decltype(base_{std::get<I>(std::declval<Array const&>())...})> constexpr extensions_type_(Array const& t, std::index_sequence<I...>) : base_{std::get<I>(t)...}{}
 	//	template<class T, std::size_t N, std::size_t... I> extensions_type_(std::array<T, N> const& t, std::index_sequence<I...>) : extensions_type_{std::get<I>(t)...}{}
@@ -446,12 +449,23 @@ inline typename layout_t<2>::extensions_type_ operator*(layout_t<1>::index_exten
 	return layout_t<2>::extensions_type_(ie, self);
 }
 
+template<dimensionality_type D>
+using extensions_type_ = typename layout_t<D>::extensions_type_;
+
 template<class T, class Layout>
 constexpr auto sizes_as(Layout const& self)
 ->decltype(self.template sizes_as<T>()){
 	return self.template sizes_as<T>();}
 
 }}
+
+namespace std{
+	template<> struct tuple_size<boost::multi::extensions_type_<0>> : std::integral_constant<boost::multi::dimensionality_type, 0>{};
+	template<> struct tuple_size<boost::multi::extensions_type_<1>> : std::integral_constant<boost::multi::dimensionality_type, 1>{};
+	template<> struct tuple_size<boost::multi::extensions_type_<2>> : std::integral_constant<boost::multi::dimensionality_type, 2>{};
+	template<> struct tuple_size<boost::multi::extensions_type_<3>> : std::integral_constant<boost::multi::dimensionality_type, 3>{};
+	template<> struct tuple_size<boost::multi::extensions_type_<4>> : std::integral_constant<boost::multi::dimensionality_type, 4>{};
+}
 
 #if _TEST_MULTI_LAYOUT
 
