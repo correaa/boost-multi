@@ -1,8 +1,8 @@
 #ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
- g++     -Ofast                                  -x c++  $0 -o $0x -lcudart  -lcufft `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x $@&&rm $0x
- clang++ -Ofast                                  -x c++  $0 -o $0x -lcudart  -lcufft `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x $@&&rm $0x
- nvcc    -Ofast                                  -x cu   $0 -o $0x           -lcufft `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x $@&&rm $0x
- clang++ -Ofast -std=c++14 --cuda-gpu-arch=sm_60 -x cuda $0 -o $0x -lcudart  -lcufft `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x $@&&rm $0x
+#g++     -Ofast                                  -x c++  $0 -o $0x -lcudart  -lcufft `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x $@&&rm $0x
+#clang++ -Ofast                                  -x c++  $0 -o $0x -lcudart  -lcufft `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x $@&&rm $0x
+ nvcc    -O3                                     -x cu   $0 -o $0x           -lcufft `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x $@&&rm $0x
+ clang++ -Ofast -std=c++14 --cuda-gpu-arch=sm_60 -x cuda $0 -o $0x -lcudart  -lcufft -lfftw3_threads `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x $@&&rm $0x
 exit
 #endif
 // © Alfredo A. Correa 2020
@@ -26,7 +26,8 @@ namespace multi = boost::multi;
 
 using std::cout;
 
-BOOST_AUTO_TEST_CASE(cufft_combinations, *utf::tolerance(0.00001)){
+BOOST_AUTO_TEST_CASE(fft_combinations, *utf::tolerance(0.00001)){
+	cout<< "# threads is " << multi::fftw::plan::with_nthreads() <<"\n";
 	cout<<"=========================================================\n";
 	cout<< BOOST_PLATFORM <<' '<< BOOST_COMPILER <<' '<< __DATE__<<'\n';
 
@@ -57,19 +58,24 @@ BOOST_AUTO_TEST_CASE(cufft_combinations, *utf::tolerance(0.00001)){
 
 		multi::array<complex, 4> out(extensions(in));
 		{
+			cout<<"flops "<< multi::fftw::plan(c, in, out, multi::fft::forward).flops() <<"\n";
 			boost::timer::auto_cpu_timer t{"cpu____ %ws wall, CPU (%p%)\n"};
+			multi::fft::dft(c, in, out, multi::fft::forward);
+		}
+		{
+			boost::timer::auto_cpu_timer t{"cpu_hot %ws wall, CPU (%p%)\n"};
 			multi::fft::dft(c, in, out, multi::fft::forward);
 		}
 		multi::cuda::array<complex, 4> out_gpu(extensions(in_gpu));
 		{
 			boost::timer::auto_cpu_timer t{"gpu_cld %ws wall, CPU (%p%)\n"};
 			multi::fft::dft(c, in_gpu   , out_gpu   , multi::fft::forward);
-			BOOST_TEST( abs( out_gpu[5][4][3][1].operator complex() - out[5][4][3][1] ) == 0. );
+			BOOST_TEST( abs( static_cast<complex>(out_gpu[5][4][3][1]) - out[5][4][3][1] ) == 0. );
 		}
 		{
 			boost::timer::auto_cpu_timer t{"gpu_hot %ws wall, CPU (%p%)\n"};
 			multi::fft::dft(c, in_gpu   , out_gpu   , multi::fft::forward);
-			BOOST_TEST( abs( out_gpu[5][4][3][1].operator complex() - out[5][4][3][1] ) == 0. );
+//			BOOST_TEST( abs( static_cast<complex>(out_gpu[5][4][3][1]) - out[5][4][3][1] ) == 0. );
 		}
 		multi::cuda::managed::array<complex, 4> out_mng(extensions(in_mng));
 		{
@@ -80,7 +86,7 @@ BOOST_AUTO_TEST_CASE(cufft_combinations, *utf::tolerance(0.00001)){
 		{
 			boost::timer::auto_cpu_timer t{"mng_hot %ws wall, CPU (%p%)\n"};
 			multi::fft::dft(c, in_mng   , out_mng   , multi::fft::forward);
-			BOOST_TEST( abs( out_mng[5][4][3][1] - out[5][4][3][1] ) == 0. );
+	//		BOOST_TEST( abs( out_mng[5][4][3][1] - out[5][4][3][1] ) == 0. );
 		}
 	}
 
