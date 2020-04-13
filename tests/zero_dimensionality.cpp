@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality){
 		m0 = 5.1;
 		BOOST_REQUIRE( v1[0] == 5.1 );
 
-		double d = m0;
+		double const& d = std::move(m0);
 		BOOST_REQUIRE( d == 5.1 );
 	}
 	{
