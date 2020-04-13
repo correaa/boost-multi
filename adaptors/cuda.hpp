@@ -65,13 +65,25 @@ auto copy(const double* first, const double* last, boost::multi::array_iterator<
 #include<boost/test/unit_test.hpp>
 #include<boost/timer/timer.hpp>
 
+#include<chrono>
+
 template <class T>
 __attribute__((always_inline)) inline void DoNotOptimize(const T &value) {
   asm volatile("" : "+m"(const_cast<T &>(value)));
 }
 
+struct watch : private std::chrono::high_resolution_clock{
+	std::string label_; time_point  start_;
+	watch(std::string label ="") : label_{label}, start_{now()}{}
+	~watch(){
+		std::cerr<< label_<<": "<< std::chrono::duration<double>(now() - start_).count() <<" sec"<<std::endl;
+	}
+};
+
+
 namespace multi = boost::multi;
 namespace cuda = multi::cuda;
+namespace utf = boost::unit_test::framework;
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_cuda_copy_1d){
 	multi::array<double, 1> A(4, 99.);
@@ -83,35 +95,31 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_cuda_copy_1d){
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_cuda_copy_vs_move){
 	cuda::array<double, 4> Agpu({30, 100, 100, 100}, 99.);
-	{
-		boost::timer::auto_cpu_timer t{"copy %ws wall, CPU (%p%)\n"};
+	[&, _ = watch{utf::current_test_case().full_name()+" COPY"}]{
 		cuda::array<double, 4> Agpu_cpy = Agpu;
 		BOOST_REQUIRE( &Agpu_cpy[1][2][3][4] != &Agpu[1][2][3][4] );
 		BOOST_REQUIRE( Agpu_cpy[1][2][3][4] == Agpu[1][2][3][4] );
-	}
-	{
-		boost::timer::auto_cpu_timer t{"move %ws wall, CPU (%p%)\n"};
+	}();
+	[&, _ = watch{utf::current_test_case().full_name()+" MOVE"}]{
 		cuda::array<double, 4> Agpu_mov = std::move(Agpu);
 		BOOST_REQUIRE( Agpu.empty() );
 		BOOST_REQUIRE( Agpu_mov.size() == 30 );
-	}
+	}();
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_cuda_copy_vs_move_complex){
 	using complex = std::complex<double>;
 	cuda::array<complex, 4> Agpu({30, 100, 100, 100}, 99.);
-	{
-		boost::timer::auto_cpu_timer t{"copy %ws wall, CPU (%p%)\n"};
+	[&, _ = watch{utf::current_test_case().full_name()+" COPY"}]{
 		cuda::array<complex, 4> Agpu_cpy = Agpu;
 		BOOST_REQUIRE( &Agpu_cpy[1][2][3][4] != &Agpu[1][2][3][4] );
 		BOOST_REQUIRE( Agpu_cpy[1][2][3][4] == Agpu[1][2][3][4] );
-	}
-	{
-		boost::timer::auto_cpu_timer t{"move %ws wall, CPU (%p%)\n"};
+	}();
+	[&, _ = watch{utf::current_test_case().full_name()+" MOVE"}]{
 		cuda::array<complex, 4> Agpu_mov = std::move(Agpu);
 		BOOST_REQUIRE( Agpu.empty() );
 		BOOST_REQUIRE( Agpu_mov.size() == 30 );
-	}
+	}();
 }
 
 
