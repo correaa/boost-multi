@@ -348,7 +348,7 @@ public:
 	constexpr size_type num_elements() const{return size()*sub_.num_elements();}
 	friend size_type num_elements(layout_t const& s){return s.num_elements();}
 	constexpr bool empty() const{return not nelems_;} friend
-	constexpr bool empty(layout_t const& s){return s.empty();}
+	constexpr bool is_empty(layout_t const& s){return s.empty();}
 	constexpr size_type size() const{
 		if(not nelems_) return 0;
 		assert(stride_);
