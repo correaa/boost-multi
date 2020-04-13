@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&& c++ -std=c++17 -Wall -Wextra -Wpedantic -D_TEST_MULTI_UTILITY $0.cpp -o$0x &&$0x&&rm $0x $0.cpp; exit
+$CXX -std=c++17 -xc++ $0 -o $0x&&$0x&&rm $0x;exit
 #endif
 //  (C) Copyright Alfredo A. Correa 2018-2019
 
@@ -66,7 +66,7 @@ template<typename T> struct rank : decltype(rank_aux(std::declval<T>())){};
 #if __cpp_lib_nonmember_container_access < 201411
 template<class Container>
 constexpr auto size(Container const& con)
-->decltype(con.size()){
+->std::make_signed_t<decltype(con.size())>{
 	return con.size();}
 #else
 #endif
@@ -137,27 +137,49 @@ template<class T> struct has_num_elements : decltype(has_num_elements_aux(std::d
 
 template<class A, typename = std::enable_if_t<has_num_elements<A>{}> > 
 constexpr auto num_elements(A const& arr)
-->decltype(arr.num_elements()){
+->std::make_signed_t<decltype(arr.num_elements())>{
 	return arr.num_elements();}
+
+template<class T>
+auto has_size_aux(T const& t)->decltype(t.size(), std::true_type {});
+inline auto has_size_aux(...       )->decltype(                  std::false_type{});
+template<class T> struct has_size : decltype(has_size_aux(std::declval<T>())){};
 	
-template<class T, typename = std::enable_if_t<!has_num_elements<T>{}>> 
-constexpr size_type num_elements(T const&){return 1;}
+
 
 template<class T>
 auto has_data_elements_aux(T&& t)->decltype(t.data_elements(), std::true_type {});
 auto has_data_elements_aux(...  )->decltype(                   std::false_type{});
 template<class T> struct has_data_elements : decltype(has_data_elements_aux(std::declval<T>())){};
 
+template<class T>
+auto has_data_aux(T&& t)->decltype(t.data(), std::true_type {});
+auto has_data_aux(...  )->decltype(          std::false_type{});
+template<class T> struct has_data : decltype(has_data_aux(std::declval<T>())){};
+
+template<class T, typename = std::enable_if_t<not has_num_elements<T>{} and not (has_size<T>{} and has_data<T>{})>> 
+constexpr size_type num_elements(T const&){return 1;}
+
+template<class A, typename = std::enable_if_t<not has_num_elements<A>{} and has_size<A>{} and has_data<A>{}> >
+constexpr auto num_elements(A const& arr)
+->std::make_signed_t<decltype(arr.size())>{
+	return arr.size();}
+
 template<class A, typename = std::enable_if_t<has_data_elements<A>{}> > 
 constexpr auto data_elements(A const& arr)
 ->decltype(arr.data_elements()){
 	return arr.data_elements();}
 
+template<class A, typename = std::enable_if_t<(not has_data_elements<A>{}) and (has_data<A>{} and has_size<A>{})>>
+constexpr auto data_elements(A&& arr)
+//->decltype(arr.data()){
+{	return arr.data();}
+
 template<class T, typename = std::enable_if_t<not std::is_array<T>{}> >
 [[deprecated("use constexpr data_elements() or base() to extract pointer")]] 
 auto data(T& t){return &t;}
 
-template<class T, typename = std::enable_if_t<not std::is_array<T>{} and not has_data_elements<T>{}>>
+template<class T, typename = std::enable_if_t<not std::is_array<T>{} and not has_data_elements<T>{} and not has_data<T>{}>>
 constexpr auto data_elements(T& t){return &t;}
 
 template<class T, std::size_t N>
@@ -390,8 +412,15 @@ constexpr auto strides(T(&t)[N]){
 
 }}
 
-#if _TEST_MULTI_UTILITY
+namespace boost{
+namespace serialization{
+	template<class Archive, template<class,  std::size_t> class ArrayRef, class E,  std::size_t D>
+	inline void serialize(Archive&, ArrayRef<E, D>&, const unsigned int){
+		assert(0);
+	}
+}}
 
+#if not __INCLUDE_LEVEL__ // TEST BELOW
 #include<cassert>
 #include<iostream>
 #include<vector>
@@ -410,7 +439,7 @@ template<class T> void f();
 int main(){
 	static_assert( std::is_same<std::iterator_traits<double const*>::value_type, double>{}, "!");
 
-	std::vector<double>::iterator it;
+	std::vector<double>::iterator it; (void)it;
 	using multi::get_allocator;
 //	std::allocator<double> all = get_allocator(it);
 
