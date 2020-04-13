@@ -24,7 +24,7 @@ int main(){
 std::filesystem::path dir = "llnl_metall_mapped_file.bin/";
 remove_all(dir);
 {
-	metall::manager m{metall::create_only, dir.c_str(), 1 << 25};
+	metall::manager m{metall::create_only, dir.c_str(), 1<<25};
 	auto&& arr1d = 
 		*m.construct<marray<int     , 1>>("arr1d")(tuple{10}        , 99 , m.get_allocator());
 	auto&& arr2d = 
