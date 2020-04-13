@@ -35,9 +35,24 @@ namespace serialization{
 //	template<class T> class array_wrapper;
 //	template<class T, class S> const array_wrapper<T> make_array(T* t, S s);
 //	template<class T> 
+//	class binary_object;
+//	inline auto make_binary_object(const void * t, std::size_t size);
+}}
+
+#if 1
+namespace boost{
+namespace serialization{
+	template<class Archive> struct archive_traits;
+	template<class> struct nvp;
+	template<class T> const nvp<T> make_nvp(char const* name, T& t);
+	template<class T> class array_wrapper;
+	template<class T, class S> const array_wrapper<T> make_array(T* t, S s);
+//	template<class T> 
 	class binary_object;
 	inline const binary_object make_binary_object(const void * t, std::size_t size);
 }}
+#endif
+
 
 namespace boost{
 namespace multi{
@@ -357,7 +372,7 @@ public:
 		std::for_each(this->begin(), this->end(), [&](auto&& e){ar & make_nvp("item", e);});
 	}
 	friend /*NODISCARD("decayed type is ignored")*/ auto operator+(basic_array const& self){return self.decay();}
-//	friend /*NODISCARD("decayed type is ignored")*/ auto operator*(basic_array const& self){return self.decay();}
+
 	friend auto decay(basic_array const& self){return self.decay();}
 	typename types::reference operator[](index i) const HD{
 		assert( this->extension().contains(i) );
@@ -694,6 +709,10 @@ struct basic_array<T, dimensionality_type{0}, ElementPtr, Layout> :
 	decltype(auto) operator=(typename basic_array::element_type const& e) const&{
 		adl::copy_n(&e, 1, this->base_); return *this;
 	}
+	bool operator==(typename basic_array::element const& e) const&{
+		return adl::equal(&e, &e + 1, this->base_);
+	}
+	bool operator!=(typename basic_array::element const& e) const&{return not((*this)==e);}
 	bool operator==(basic_array const& o) const&{
 		return adl::equal(o.base_, o.base_ + 1, this->base_);
 	}
@@ -708,7 +727,7 @@ struct basic_array<T, dimensionality_type{0}, ElementPtr, Layout> :
 	using decay_type = typename types::element;
 //	basic_array&
 	element_ref operator()() const&{return *(this->base_);}
-	operator element_ref() const&{return *(this->base_);}
+	operator element_ref()&&{return *(this->base_);}
 //	decltype(auto) operator()() &&{return std::move(*(this->base_));}
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int){
@@ -969,8 +988,8 @@ private:
 	template<class It> auto equal_elements(It first) const{
 		return adl::equal(first, first + this->num_elements(), this->data_elements());
 	}
-	typename array_ref::element_ptr data_elements() const&{return array_ref::base_;}
 public:
+	typename array_ref::element_ptr data_elements() const&{return array_ref::base_;}
 	array_ref&& operator=(array_ref const& o) &&{assert(this->num_elements()==o.num_elements());
 		return array_ref::copy_elements(o.data_elements()), std::move(*this);
 	}
@@ -990,18 +1009,27 @@ public:
 
 	typename array_ref::element_ptr data() const& HD{return array_ref::base_;} 
 	friend typename array_ref::element_ptr data(array_ref const& self){return self.data();}
+	friend decltype(auto) operator*(array_ref const& self){
+		return static_cast<typename array_ref::decay_type const&>(self);
+	}
+//	explicit 
+	operator typename array_ref::decay_type const&() const&{
+		return static_cast<typename array_ref::decay_type const&>(*this);		
+	}
+//	operator typename array_ref::decay_type() &&{
+//		return static_cast<typename array_ref::decay_type&&>(std::move(*this));		
+//	}
+	operator typename array_ref::decay_type&&() & = delete;
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int v){ (void)v;
 		using boost::serialization::make_nvp;
 		if(this->num_elements() < (2<<8) ) basic_array<T, D, ElementPtr>::serialize(ar, v);
 		else{
-			if(std::is_trivial<typename array_ref::element>{}){
-				using boost::serialization::make_binary_object;
-				ar & make_nvp("binary_data", make_binary_object(this->data(), sizeof(typename array_ref::element)*this->num_elements()));
-			}else{
-				using boost::serialization::make_array;
-				ar & make_nvp("data", make_array(this->data(), this->num_elements()));
-			}
+			using boost::serialization::make_binary_object;
+			using boost::serialization::make_array;
+			if(std::is_trivially_copy_assignable<typename array_ref::element>{})
+				ar & make_nvp("binary_data", make_binary_object(this->data(), sizeof(typename array_ref::element)*this->num_elements())); // if you get an error here, try #include<boost/serialization/binary_object.hpp>
+			else ar & make_nvp("data", make_array(this->data(), this->num_elements()));
 		}
 	}
 };

@@ -153,19 +153,22 @@ ForwardIt alloc_uninitialized_value_construct_n(Alloc& alloc, ForwardIt first, S
 	}
 }
 
-template<class Alloc, class ForwardIt, class Size>//, typename Value = typename std::iterator_traits<ForwardIt>::value_type>
-ForwardIt alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size n)
-//->std::decay_t<decltype(std::allocator_traits<Alloc>::construct(alloc, std::addressof(*first), Value()), first)>
+template<class Alloc, class ForwardIt, class Size, class T = typename std::iterator_traits<ForwardIt>::value_type>
+auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size n)
+->std::decay_t<decltype(std::allocator_traits<Alloc>::construct(alloc, std::addressof(*first)), first)>
 {
-	ForwardIt current = first;
-	try{
-		for(; n > 0 ; ++current, --n) std::allocator_traits<Alloc>::construct(alloc, std::addressof(*current));
-		//	::new (static_cast<void*>(std::addressof(*current))) Value;
-		return current;
-	}catch(...){
-		for(; current != first; ++first) std::allocator_traits<Alloc>::destroy(alloc, std::addressof(*first));
-		throw;
+	ForwardIt curr = first;
+	if(std::is_trivially_default_constructible<T>{}) std::advance(curr, n);
+	else{
+		using _ = std::allocator_traits<Alloc>;
+		try{
+			for(;n > 0; ++curr, --n) _::construct(alloc, std::addressof(*curr));
+		}catch(...){
+			for(;curr!=first; ++first) _::destroy(alloc, std::addressof(*first));
+			throw;
+		}
 	}
+	return curr;
 }
 
 template<class ForwardIt, class Size>
