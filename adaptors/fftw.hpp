@@ -1,6 +1,6 @@
 #ifdef COMPILATION_INSTRUCTIONS
- nvcc   -D_TEST_MULTI_ADAPTORS_FFTW -x cu  $0 -o $0x          `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x
-clang++ -D_TEST_MULTI_ADAPTORS_FFTW -x c++ $0 -o $0x -lcudart `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x
+clang++ -Ofast -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_FFTW -x c++ $0 -o $0x -lcudart `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x
+# nvcc -D_TEST_MULTI_ADAPTORS_FFTW -x cu  $0 -o $0x          `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x
 exit
 #endif
 // © Alfredo A. Correa 2018-2019
@@ -9,9 +9,10 @@ exit
 #define MULTI_ADAPTORS_FFTW_HPP
 
 #include<fftw3.h> // external fftw3 library
-
+	
 #include "../../multi/utility.hpp"
 #include "../../multi/array.hpp"
+
 #include "../../multi/config/NODISCARD.hpp"
 
 #include<cmath>
@@ -25,11 +26,20 @@ exit
 
 #include<experimental/tuple> // experimental::apply
 
+#include<utility>
+#include<type_traits>
+
 namespace boost{
 namespace multi{
 
 namespace fftw{
 //	template<class T> auto alignment_of(T* p){return ::fftw_alignment_of((double*)p);}
+#if  __cpp_lib_as_const >= 201510
+using std::as_const;
+#else
+template<class T> constexpr std::add_const_t<T>& as_const(T& t) noexcept{return t;}
+#endif
+
 }
 
 #if 0
@@ -324,7 +334,7 @@ public:
 	template<class I, class O> void operator()(I&& i, O&& o) const{return execute(std::forward<I>(i), std::forward<O>(o));}
 	double cost() const{return fftw_cost(impl_.get());}
 	auto flops() const{
-		struct{double add; double mul; double fma;} r;
+		struct{double add; double mul; double fma; operator double() const{return add + mul + 2*fma;}} r;
 		fftw_flops(impl_.get(), &r.add, &r.mul, &r.fma);
 		return r;
 	}
@@ -439,15 +449,23 @@ decltype(auto) rotate(multi::array<T, D, Args...>& i, int = 1){
 
 template<typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
 NODISCARD("when first argument is const")
-R dft(std::array<bool, In::dimensionality> which, In const& i, sign s){
-	return dft(which, i, R(extensions(i), get_allocator(i)), s);
+auto dft(std::array<bool, In::dimensionality> which, In const& i, sign s)
+->std::decay_t<decltype(dft(which, i, R(extensions(i), get_allocator(i)), s))>{
+	return dft(which, i, R(extensions(i), get_allocator(i)), s);}
+
+template<typename In, std::size_t D = std::decay_t<In>::dimensionality>
+auto dft(std::array<bool, D> which, In&& i, sign s)
+->decltype(dft(which, i, std::forward<In>(i), s)){
+	return dft(which, i, std::forward<In>(i), s);}
+
+template<typename In, std::size_t D = In::dimensionality, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
+NODISCARD("when second argument is const")
+R dft(std::array<sign, D> which, In const& i){
+	return dft(which, i, R(extensions(i), get_allocator(i)));
 }
 
 template<typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
-NODISCARD("when second argument is const")
-R dft(std::array<sign, In::dimensionality> which, In const& i){
-	return dft(which, i, R(extensions(i), get_allocator(i)));
-}
+void dft(std::array<bool, In::dimensionality> which, In const& i) = delete;
 
 template<dimensionality_type Rank, typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
 NODISCARD("when second argument is const")
@@ -463,17 +481,34 @@ R dft(multi::array<T, D, As...>&& i, sign s){
 	return ret;
 }
 
-template<typename T> auto dft(std::initializer_list<T> il, sign s){return dft(multi::array<T, 1>(il), s);}
-template<typename T> auto dft(std::initializer_list<std::initializer_list<T>> il, sign s){return dft(multi::array<T, 2>(il), s);}
+template<typename T> decltype(auto) dft(std::initializer_list<T> il, sign s){return dft(multi::array<T, 1>(il), s);}
+template<typename T> decltype(auto) dft(std::initializer_list<std::initializer_list<T>> il, sign s){return dft(multi::array<T, 2>(il), s);}
 
-template<typename... A> auto dft_forward (A&&... a){return dft(std::forward<A>(a)..., FFTW_FORWARD );}
-template<typename... A> auto dft_backward(A&&... a){return dft(std::forward<A>(a)..., FFTW_BACKWARD);}
+template<typename... A> auto            dft_forward(A&&... a)
+->decltype(fftw::dft(std::forward<A>(a)..., fftw::forward)){
+	return fftw::dft(std::forward<A>(a)..., fftw::forward);}
 
-template<typename T, typename... As> auto dft_forward(As&... as, std::initializer_list<T> il){return dft_forward(std::forward<As>(as)..., multi::array<T, 1>(il));}
-template<typename T, typename... As> auto dft_forward(As&... as, std::initializer_list<std::initializer_list<T>> il){return dft_forward(std::forward<As>(as)..., multi::array<T, 2>(il));}
+template<typename Array, typename A> 
+NODISCARD("when input argument is read only")
+auto dft_forward(Array which, A const& a)
+->decltype(fftw::dft(which, a, fftw::forward)){
+	return fftw::dft(which, a, fftw::forward);}
 
-template<typename T, typename... As> auto dft_backward(As&... as, std::initializer_list<T> il){return dft_backward(std::forward<As>(as)..., multi::array<T, 1>(il));}
-template<typename T, typename... As> auto dft_backward(As&... as, std::initializer_list<std::initializer_list<T>> il){return dft_backward(std::forward<As>(as)..., multi::array<T, 2>(il));}
+template<typename Array, typename A> 
+NODISCARD("when input argument is read only")
+auto dft_forward(A const& a)
+->decltype(fftw::dft(a, fftw::forward)){
+	return fftw::dft(a, fftw::forward);}
+
+template<typename... A> auto            dft_backward(A&&... a)
+->decltype(dft(std::forward<A>(a)..., fftw::backward)){
+	return dft(std::forward<A>(a)..., fftw::backward);}
+
+template<typename T, typename... As> decltype(auto) dft_forward(As&... as, std::initializer_list<T> il){return dft_forward(std::forward<As>(as)..., multi::array<T, 1>(il));}
+template<typename T, typename... As> decltype(auto) dft_forward(As&... as, std::initializer_list<std::initializer_list<T>> il){return dft_forward(std::forward<As>(as)..., multi::array<T, 2>(il));}
+
+template<typename T, typename... As> decltype(auto) dft_backward(As&... as, std::initializer_list<T> il){return dft_backward(std::forward<As>(as)..., multi::array<T, 1>(il));}
+template<typename T, typename... As> decltype(auto) dft_backward(As&... as, std::initializer_list<std::initializer_list<T>> il){return dft_backward(std::forward<As>(as)..., multi::array<T, 2>(il));}
 
 template<class In> In&& dft_inplace(In&& i, sign s){
 	fftw::plan{i, i, (int)s}();//(i, i); 
@@ -485,9 +520,12 @@ template<class In> In&& dft_inplace(In&& i, sign s){
 namespace fft{
 	using fftw::many_dft;
 	using fftw::dft;
-	static constexpr int forward = FFTW_FORWARD;
+	using fftw::dft_forward;
+	using fftw::dft_backward;
+
+	static constexpr int forward = fftw::forward;//FFTW_FORWARD;
 	static constexpr int none = 0;
-	static constexpr int backward = FFTW_BACKWARD;
+	static constexpr int backward = fftw::backward;//FFTW_BACKWARD;
 
 	static_assert( forward != none and none != backward and backward != forward, "!");
 }
@@ -517,6 +555,10 @@ namespace fft{
 
 #include <boost/timer/timer.hpp>
 
+#include<chrono>
+
+#include "../../multi/complex.hpp"
+
 namespace{
 
 	using std::cout;
@@ -535,6 +577,14 @@ namespace{
 
 	constexpr int N = 16;
 }
+
+struct watch : private std::chrono::high_resolution_clock{
+	std::string label_; time_point  start_;
+	watch(std::string label ="") : label_{label}, start_{now()}{}
+	~watch(){
+		std::cerr<< label_<<": "<< std::chrono::duration<double>(now() - start_).count() <<" sec"<<std::endl;
+	}
+};
 
 template<class T> struct randomizer{
 	template<class M> void operator()(M&& m) const{for(auto&& e:m) operator()(e);}
@@ -724,16 +774,16 @@ BOOST_AUTO_TEST_CASE(fftw_3D){
 }
 
 BOOST_AUTO_TEST_CASE(fftw_4D){
-	multi::array<complex, 4> in({10, 10, 10, 10});
-	in[2][3][4][5] = 99.;
+	auto const in = []{
+		multi::array<complex, 4> in({10, 10, 10, 10}); in[2][3][4][5] = 99.; return in;
+	}();
 	auto fwd = multi::fftw::dft({true, true, true, true}, in, fftw::forward);
 	BOOST_REQUIRE(in[2][3][4][5] == 99.);
 }
 
 BOOST_AUTO_TEST_CASE(fftw_4D_many){
 
-	multi::array<complex, 4> in({97, 95, 101, 10});
-	in[2][3][4][5] = 99.;
+	auto const in = []{multi::array<complex, 4> in({97, 95, 101, 10}); in[2][3][4][5] = 99.; return in;}();
 	auto fwd = multi::fftw::dft({true, true, true, false}, in, fftw::forward);
 	BOOST_REQUIRE( in[2][3][4][5] == 99. );
 
@@ -918,79 +968,95 @@ BOOST_AUTO_TEST_CASE(fftw_3D_power_benchmark){
 	std::cout << sum << std::endl;
 }
 
-BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark){
-	multi::array<complex, 4> in({32, 100, 100, 10});
-	std::iota(in.data_elements(), in.data_elements() + in.num_elements(), 1.2);
-	complex sum = 1.2;
-	{boost::timer::auto_cpu_timer t;
-		for(int i = 0; i != 100; ++i){
-			multi::array<complex, 4> out = in;//.rotated(); //fftw::dft({false, 0, 0, 1}, in, fftw::forward);
-			sum += out[0][0][0][0];
+namespace utf = boost::unit_test::framework;
+
+BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001)){
+
+	auto const in = []{
+		multi::array<complex, 4> ret({32, 90, 98, 96});
+		std::generate(ret.data_elements(), ret.data_elements() + ret.num_elements(), 
+			[](){return complex{std::rand()*1./RAND_MAX, std::rand()*1./RAND_MAX};}
+		);
+		return ret;
+	}();
+	std::cout<<"memory size "<< in.num_elements()*sizeof(complex)/1e6 <<" MB\n";
+
+	std::vector<std::array<bool, 4>> cases = {
+		{false, true , true , true }, 
+		{false, true , true , false}, 
+		{true , false, false, false}, 
+		{true , true , false, false},
+		{false, false, true , false},
+		{false, false, false, false},
+	};
+
+	using std::cout;
+	for(auto c : cases){
+		cout<<"case "; copy(begin(c), end(c), std::ostream_iterator<bool>{cout,", "}); cout<<"\n";
+		multi::array<complex, 4> out = in;
+		{
+			boost::timer::auto_cpu_timer t{"cpu_oplac %ws wall, CPU (%p%)\n"};
+			multi::fftw::dft_forward(c, in, out);
+		}
+		{
+			auto in_rw = in;
+			boost::timer::auto_cpu_timer t{"cpu_iplac %ws wall, CPU (%p%)\n"};
+			multi::fftw::dft_forward(c, in_rw);
+			BOOST_TEST( abs( in_rw[5][4][3][1] - out[5][4][3][1] ) == 0. );
+		}
+		{
+			boost::timer::auto_cpu_timer t{"cpu_alloc %ws wall, CPU (%p%)\n"}; 
+			auto out_cpy = multi::fftw::dft_forward(c, in);
+			BOOST_TEST( abs( out_cpy[5][4][3][1] - out[5][4][3][1] ) == 0. );
+		}
+		{
+			auto in_rw = in;
+			boost::timer::auto_cpu_timer t{"cpu_move %ws wall, CPU (%p%)\n"}; 
+			auto out_cpy = multi::fftw::dft_forward(c, std::move(in_rw));
+			BOOST_REQUIRE( in_rw.empty() );
+			BOOST_TEST( abs( out_cpy[5][4][3][1] - out[5][4][3][1] ) == 0. );
 		}
 	}
-	std::cout << sum << std::endl;
 }
 
+BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark){
+	auto x = multi::array<complex, 4>::extensions_type({64, 128, 128, 128});
+	multi::array<complex, 4> in(x);
+	std::iota(in.data_elements(), in.data_elements() + in.num_elements(), 1.2);
 
-BOOST_AUTO_TEST_CASE(fftw_2D_transposition_outofplace){
-	multi::array<complex, 2> in = {
-		{11., 12., 13.},
-		{21., 22., 23.}
-	};
-	{
-		multi::array<complex, 2> out(extensions(rotated(in)));
-		multi::fftw::transpose(in, rotated(out));
-//		BOOST_REQUIRE( out[1][0]==12. );
-//		BOOST_REQUIRE( out[2][0]==13. );
-//		BOOST_REQUIRE( out[0][1]==21. );
-	}
-	{
-	//	multi::array<complex, 2> out(extensions(rotated(in)));
-		auto out = multi::fftw::transpose(rotated(in));
-//		BOOST_REQUIRE( out[1][0]==12. );
-//		BOOST_REQUIRE( out[2][0]==13. );
-//		BOOST_REQUIRE( out[0][1]==21. );
-	}
-	{
-//		BOOST_REQUIRE( size(in) == 2 );
-	//	in.reshape({3, 2});
-//		multi::fftw::rotate(in);
-//		std::cout << size(in) << std::endl;
-//		BOOST_REQUIRE( size(in) == 3 );
-	}
-}
-
-#if 0
-{
-	auto in3 = [](){
-		multi::array<complex, 3> in3({N, N, N});
-		std::iota(in3.data(), in3.data() + in3.num_elements(), 1.2);
-		return in3;
+	BOOST_REQUIRE( in[0][0][0][0] == 1.2 );
+	std::array<bool, 4> c = {false, true, true, true};
+	[&, _ = watch{utf::current_test_case().full_name()+" inplace FTTT"}]{
+		fftw::dft(c, in, fftw::forward);
 	}();
-	multi::array<complex, 3> out3(extensions(in3));
-	auto p = 
-//		multi::fftw_plan_dft_3d(in3, out3, fftw::forward);
-		multi::fftw_plan_dft(in3, out3, fftw::forward| FFTW_PRESERVE_INPUT)
-	;
-	fftw_execute(p);
-	assert( power_diff(in3, out3) < 1e-3 );	
-	fftw_execute_dft(p, in3, out3);//, out3);
-	fftw_destroy_plan(p);
-	assert( power_diff(in3, out3) < 1e-3 );
-}
-{
-	auto in4 = [](){
-		multi::array<complex, 4> in4({5, 6, 7, 8});
-		std::iota(in4.data(), in4.data() + in4.num_elements(), 10.2);
-		return in4;
+	[&, _ = watch{utf::current_test_case().full_name()+" inplace FTTT"}]{
+		fftw::dft(c, in, fftw::forward);
 	}();
-	multi::array<complex, 4> out4(extensions(in4));
-	auto p = multi::fftw_plan_dft(in4, out4, fftw::forward, FFTW_ESTIMATE | FFTW_PRESERVE_INPUT);
-	fftw_execute(p);
-	fftw_destroy_plan(p);
-	assert( power_diff(in4, out4) < 1e-3 );
+	auto in0000 = in[0][0][0][0];
+	BOOST_REQUIRE( in0000 != 1.2 );
+
+
+	multi::array<complex, 4> out(x);
+	[&, _ = watch{utf::current_test_case().full_name()+" outofplace FTTT"}]{
+		fftw::dft(c, in, out, fftw::forward);
+	}();
+	[&, _ = watch{utf::current_test_case().full_name()+" outofplace FTTT"}]{
+		fftw::dft(c, in, out, fftw::forward);
+	}();
+	[&, _ = watch{utf::current_test_case().full_name()+" outofplace FTTT"}]{
+		fftw::dft(c, in, out, fftw::forward);
+	}();
+	[&, _ = watch{utf::current_test_case().full_name()+" outofplace+alloc FTTT"}]{
+		multi::array<complex, 4> out2(x);
+		fftw::dft(c, in, out2, fftw::forward);
+	}();
+	[&, _ = watch{utf::current_test_case().full_name()+" outofplace+alloc FTTT"}]{
+		multi::array<complex, 4> out2(x);
+		fftw::dft(c, in, out2, fftw::forward);
+	}();
+	BOOST_REQUIRE( in0000 == in[0][0][0][0] );
 }
-#endif
+
 #endif
 #endif
 #endif

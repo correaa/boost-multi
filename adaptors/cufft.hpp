@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
-clang++ -D_TEST_MULTI_ADAPTORS_CUFFT                                  -x c++  $0 -o $0x -lcudart  -lcufft -pthread `pkg-config --libs fftw3` -lboost_timer -ltbb -lboost_unit_test_framework&&$0x $@&&rm $0x
+clang++ -D_TEST_MULTI_ADAPTORS_CUFFT -O3 -x c++ $0 -o $0x -lcudart  -lcufft -pthread `pkg-config --libs fftw3` -lboost_timer -ltbb -lboost_unit_test_framework&&$0x $@&&rm $0x
 clang++ -D_TEST_MULTI_ADAPTORS_CUFFT -std=c++14 --cuda-gpu-arch=sm_60 -x cuda $0 -o $0x -lcudart  -lcufft -pthread -lfftw3_threads `pkg-config --libs fftw3` -lboost_timer -ltbb -lboost_unit_test_framework&&$0x $@&&rm $0x
 #nvcc   -D_TEST_MULTI_ADAPTORS_CUFFT            -x cu  $0 -o $0x `#-Xcompiler=-pthread` -lcufft             `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x
 exit
@@ -22,6 +22,8 @@ exit
 
 
 #include<vector>
+
+#include "../complex.hpp"
 
 //#include<execution>
 #include<future>
@@ -125,7 +127,7 @@ public:
 
 	template<class I, class O, //std::enable_if_t<(I::dimensionality < 4), int> =0,
 		dimensionality_type D = I::dimensionality,  
-		typename = decltype(raw_pointer_cast(base(std::declval<I const&>())), reinterpret_cast<complex_type*      >(raw_pointer_cast(base(std::declval<O&&>()))))
+		typename = decltype(raw_pointer_cast(base(std::declval<I const&>())), reinterpret_cast<complex_type*      >(raw_pointer_cast(base(std::declval<O&>()))))
 	>
 	plan(I const& i, O&& o, sign s) : 
 		idata_{                          reinterpret_cast<complex_type const*>(raw_pointer_cast(base(i))) },
@@ -322,7 +324,10 @@ auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
 			dft(which, (i<<n), (o<<n), s);
 		}
 	}else if(which[0]==false){
-		if(D==1 or std::all_of(begin(which)+1, end(which), [](auto e){return e==false;})) std::forward<Out>(o) = i;
+		if(D==1 or std::all_of(begin(which)+1, end(which), [](auto e){return e==false;})){
+			if(base(o) != base(i)) std::forward<Out>(o) = i;
+			else if(o.layout() != i.layout()) std::forward<Out>(o) = +i;
+		}
 		else if(ff==end(which)) many_dft(i.begin(), i.end(), o.begin(), s);
 		else{
 			if(which.size() > 1 and which[1] == false and i.is_flattable() and o.is_flattable()) dft(tail, i.flatted(), o.flatted(), s);
@@ -335,7 +340,12 @@ auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
 				}else{
 					std::cout << "                 warning: needs loops! (loop size " << (i<<d_min).size() << ")\n";
 					std::cout << "                 internal case "; std::copy(which.begin(), which.end(), std::ostream_iterator<bool>{std::cout,", "}); std::cout << "\n";
-					for(auto idx : extension(i)) dft(tail, i[idx], o[idx], s);
+					if(base(i) != base(o) or i.layout()==o.layout()){
+						for(auto idx : extension(i)) dft(tail, i[idx], o[idx], s);
+					}else{
+						auto tmp = +i;
+						for(auto idx : extension(i)) dft(tail, tmp[idx], o[idx], s);
+					}
 				}
 			}
 		}
@@ -343,8 +353,57 @@ auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
 	return std::forward<Out>(o);
 }
 
-}
+//template<typename In,  std::size_t D = std::decay_t<In>::dimensionality>
+//decltype(auto) dft(std::array<bool, D> which, In&& i, int sign){
+//	return dft(which, i, std::forward<In>(i), sign, true);
+//}
 
+template<typename In,  std::size_t D = In::dimensionality>
+NODISCARD("when passing a const argument")
+auto dft(std::array<bool, D> which, In const& i, int sign)->std::decay_t<decltype(
+dft(which, i, typename In::decay_type(extensions(i)), sign))>{return 
+dft(which, i, typename In::decay_type(extensions(i)), sign);}
+
+template<typename In,  std::size_t D = In::dimensionality>
+auto dft(std::array<bool, D> which, In&& i, int sign)
+->decltype(dft(which, i, i, sign), std::forward<In>(i)){
+	return dft(which, i, i, sign), std::forward<In>(i);}	
+
+template<typename... A> auto            dft_forward(A&&... a)
+->decltype(cufft::dft(std::forward<A>(a)..., cufft::forward)){
+	return cufft::dft(std::forward<A>(a)..., cufft::forward);}
+
+template<typename Array, typename A> NODISCARD("when passing a const argument")
+auto dft_forward(Array arr, A const& a) 
+->decltype(cufft::dft(arr, a, cufft::forward)){
+	return cufft::dft(arr, a, cufft::forward);}
+
+template<typename Array, dimensionality_type D> NODISCARD("when passing a const argument")
+auto dft_forward(Array arr, multi::cuda::array<std::complex<double>, D>&& a) 
+->decltype(cufft::dft(arr, a, cufft::forward), multi::cuda::array<std::complex<double>, D>{}){//assert(0);
+	return cufft::dft(arr, a, cufft::forward), std::move(a);}
+
+template<typename A> NODISCARD("when passing a const argument")
+auto dft_forward(A const& a)
+->decltype(cufft::dft(a, cufft::forward)){
+	return cufft::dft(a, cufft::forward);}
+
+template<typename... A> auto            dft_backward(A&&... a)
+->decltype(cufft::dft(std::forward<A>(a)..., cufft::backward)){
+	return cufft::dft(std::forward<A>(a)..., cufft::backward);}
+
+template<typename Array, typename A> NODISCARD("when passing a const argument")
+auto dft_backward(Array arr, A const& a) 
+->decltype(cufft::dft(arr, a, cufft::backward)){
+	return cufft::dft(arr, a, cufft::backward);}
+
+template<typename A> NODISCARD("when passing a const argument")
+auto dft_backward(A const& a)
+->decltype(cufft::dft(a, cufft::backward)){
+	return cufft::dft(a, cufft::backward);}
+
+
+}
 
 }}
 
@@ -355,6 +414,8 @@ namespace multi{
 namespace fft{
 	using cufft::many_dft;
 	using cufft::dft;
+	using cufft::dft_forward;
+	using cufft::dft_backward;
 
 	template<dimensionality_type D, class Complex, class... TP1, class... R1, class It2>
 	auto many_dft(
@@ -538,6 +599,12 @@ namespace multi = boost::multi;
 using complex = std::complex<double>;
 namespace utf = boost::unit_test;
 
+
+template <class T>
+__attribute__((always_inline)) inline void DoNotOptimize(const T &value) {
+  asm volatile("" : "+m"(const_cast<T &>(value)));
+}
+
 constexpr complex I{0, 1};
 
 BOOST_AUTO_TEST_CASE(cufft_dft_1D_out_of_place, *utf::tolerance(0.00001)* utf::timeout(2) ){
@@ -618,7 +685,7 @@ BOOST_AUTO_TEST_CASE(cufft_3D_timing, *boost::unit_test::tolerance(0.0001)){
 		//	boost::timer::auto_cpu_timer t; //  0.208237s wall, 0.200000s user + 0.010000s system = 0.210000s CPU (100.8%)
 			multi::cufft::dft(in_gpu, fw_gpu, multi::fftw::forward);
 
-		//	BOOST_TEST( fw_gpu[8][9][10].operator complex() != 99. );
+			BOOST_TEST( static_cast<complex>(fw_gpu[8][9][10]) != 99. );
 		}
 	}
 	{
@@ -695,41 +762,69 @@ BOOST_AUTO_TEST_CASE(cufft_combinations, *utf::tolerance(0.00001)){
 	multi::cuda::array<complex, 4> const in_gpu = in;
 	multi::cuda::managed::array<complex, 4> const in_mng = in;
 
-	std::vector<std::array<bool, 4>> cases = {
+	using std::cout;
+	for(auto c : std::vector<std::array<bool, 4>>{
 		{false, true , true , true }, 
 		{false, true , true , false}, 
 		{true , false, false, false}, 
 		{true , true , false, false},
 		{false, false, true , false},
 		{false, false, false, false},
-	};
-
-	using std::cout;
-	for(auto c : cases){
-		cout<<"case "; copy(begin(c), end(c), std::ostream_iterator<bool>{cout,", "}); cout<<"\n";
-		multi::array<complex, 4> out(extensions(in));
+	}){
+		cout<<"case "; copy(begin(c), end(c), std::ostream_iterator<bool>{cout,", "}); cout<<std::endl;
+		multi::array<complex, 4> out = in;
+		auto in_rw = in;
 		{
-			boost::timer::auto_cpu_timer t{"cpu____ %ws wall, CPU (%p%)\n"};
-			multi::fft::dft(c, in, out, multi::fftw::forward);
+			boost::timer::auto_cpu_timer t{"cpu_opl %ws wall, CPU (%p%)\n"};
+			multi::fft::dft_forward(c, in, out);
+		}
+		{
+			boost::timer::auto_cpu_timer t{"cpu_ipl %ws wall, CPU (%p%)\n"};
+			multi::fft::dft_forward(c, in_rw);
+			BOOST_TEST( abs( static_cast<multi::complex<double>>(in_rw[5][4][3][1]) - multi::complex<double>(out[5][4][3][1]) ) == 0. );			
+		}
+		{
+			boost::timer::auto_cpu_timer t{"cpu_new %ws wall, CPU (%p%)\n"}; 
+			auto out_cpy = multi::fft::dft_forward(c, in);
+			BOOST_TEST( abs( static_cast<multi::complex<double>>(out_cpy[5][4][3][1]) - multi::complex<double>(out[5][4][3][1]) ) == 0. );
 		}
 		multi::cuda::array<complex, 4> out_gpu(extensions(in_gpu));
 		{
-			boost::timer::auto_cpu_timer t{"gpu____ %ws wall, CPU (%p%)\n"};
-			multi::fft::dft(c, in_gpu   , out_gpu   , multi::fft::forward);
-			BOOST_TEST( abs( out_gpu[5][4][3][1].operator complex() - out[5][4][3][1] ) == 0. );
+			boost::timer::auto_cpu_timer t{"gpu_opl %ws wall, CPU (%p%)\n"};
+			multi::fft::dft_forward(c, in_gpu   , out_gpu);
+			BOOST_TEST( abs( static_cast<complex>(out_gpu[5][4][3][1]) - out[5][4][3][1] ) == 0. );
+		}
+		{
+			multi::cuda::array<complex, 4> in_rw_gpu = in_gpu;
+			boost::timer::auto_cpu_timer t{"gpu_ipl %ws wall, CPU (%p%)\n"};
+			multi::fft::dft_forward(c, in_rw_gpu);
+			BOOST_TEST( abs( static_cast<complex>(in_rw_gpu[5][4][3][1]) - out[5][4][3][1] ) == 0. );
+		}
+		{
+			boost::timer::auto_cpu_timer t{"gpu_new %ws wall, CPU (%p%)\n"};
+			auto out_cpy = multi::fft::dft_forward(c, in_gpu);
+			BOOST_TEST( abs( static_cast<complex>(out_cpy[5][4][3][1]) - out[5][4][3][1] ) == 0. );
+		}
+		{
+			multi::cuda::array<complex, 4> in_rw_gpu = in_gpu;
+			boost::timer::auto_cpu_timer t{"gpu_mov %ws wall, CPU (%p%)\n"};			DoNotOptimize(in_rw_gpu);
+			multi::cuda::array<complex, 4> out_cpy = multi::fft::dft_forward(c, std::move(in_rw_gpu));
+			BOOST_REQUIRE( in_rw_gpu.empty() );
+			BOOST_TEST( abs( static_cast<complex>(out_cpy[5][4][3][1]) - out[5][4][3][1] ) == 0. );
 		}
 		multi::cuda::managed::array<complex, 4> out_mng(extensions(in_mng));
 		{
 			boost::timer::auto_cpu_timer t{"mng_cld %ws wall, CPU (%p%)\n"};
-			multi::fft::dft(c, in_mng   , out_mng   , multi::fft::forward);
+			multi::fft::dft_forward(c, in_mng, out_mng);
 			BOOST_TEST( abs( out_mng[5][4][3][1] - out[5][4][3][1] ) == 0. );
 		}
 		{
 			boost::timer::auto_cpu_timer t{"mng_hot %ws wall, CPU (%p%)\n"};
-			multi::fft::dft(c, in_mng   , out_mng   , multi::fft::forward);
+			multi::fft::dft_forward(c, in_mng   , out_mng);
 			BOOST_TEST( abs( out_mng[5][4][3][1] - out[5][4][3][1] ) == 0. );
 		}
 	}
+	cout<<std::endl;
 #if 0
 
 	#if 1

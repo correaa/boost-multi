@@ -117,8 +117,8 @@ protected:
 	raw_pointer rp_;
 	template<class TT> friend class allocator;
 	template<typename, typename> friend struct ptr;
-	template<class TT, typename = typename std::enable_if<not std::is_const<TT>{}>::type> 
-	ptr(ptr<TT const> const& p) : rp_{const_cast<T*>(p.impl_)}{}
+//	template<class TT, typename = typename std::enable_if<not std::is_const<TT>{}>::type> 
+//	ptr(ptr<TT const> const& p) : rp_{const_cast<T*>(p.impl_)}{}
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 public:
 	template<class U> using rebind = ptr<U, typename std::pointer_traits<RawPtr>::template rebind<U>>;

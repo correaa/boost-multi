@@ -162,7 +162,14 @@ public:
 	ptr& operator=(ptr const&) = default;
 	bool operator==(ptr const& other) const{return rp_==other.rp_;}
 	bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
-
+	template<class Other>
+	auto operator==(ptr<Other> const& other) const
+	->decltype(rp_==other.rp_){
+		return rp_==other.rp_;}
+	template<class Other>
+	auto operator!=(ptr<Other> const& other) const
+	->decltype(rp_!=other.rp_){
+		return rp_!=other.rp_;}
 	using element_type    = typename raw_pointer_traits::element_type;
 	using difference_type = typename raw_pointer_traits::difference_type;
 	using size_type       = difference_type;
@@ -191,15 +198,19 @@ public:
 #endif
 #if defined(__clang__)
 	#if defined(__CUDA__)
-	static T& reference_aux() __device__;
-	static ref<element_type> reference_aux() __host__;
-	using reference = decltype(reference_aux());
-	decltype(auto) operator*() const __device__{return *rp_;}
-	auto operator*() const __host__{return ref<element_type>{*this};}
+//	static T&                reference_aux() __device__;
+//	static ref<element_type> reference_aux() __host__;
+	#if __CUDA_ARCH__
+	using reference = T&;
+	T& operator*() const __device__{return *rp_;}
+	#else
+	using reference = ref<element_type>;
+	reference operator*() const __host__ /*__device__??*/{return ref<element_type>{*this};}
+	#endif
 	#else
 	static ref<element_type> reference_aux();
 	using reference = decltype(reference_aux());
-	auto operator*() const {return ref<element_type>{*this};}
+	reference operator*() const {return ref<element_type>{*this};}
 	#endif
 #else //no clang
 	#ifdef __CUDA_ARCH__
