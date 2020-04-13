@@ -16,7 +16,7 @@ namespace multi{
 struct real_t;
 struct imag_t;
 
-template<class ValueType>
+template<class ValueType = double>
 struct complex{
 	using value_type = ValueType;
 	value_type real;
@@ -24,6 +24,7 @@ struct complex{
 	complex() = default;
 	complex(value_type real) : real{real}, imag{value_type{0}}{}
 	complex(value_type real, value_type imag) : real{real}, imag{imag}{}
+	complex(std::complex<ValueType> const& other) : real{other.real()}, imag{other.imag()}{}
 /*	friend value_type const& real(complex const& c){return c.real;}
 	friend value_type      & real(complex      & c){return c.real;}
 	friend value_type const& imag(complex const& c){return c.imag;}
@@ -46,6 +47,10 @@ struct complex{
 		> =0
 	>
 	operator T&()&{return reinterpret_cast<T const&>(*this);}
+	std::complex<value_type> const& std() const&{return reinterpret_cast<std::complex<value_type> const&>(*this);}
+	std::complex<value_type>& std()&{return reinterpret_cast<std::complex<value_type&>>(*this);}
+	friend auto abs(complex const& self){return abs(self.std());}
+	friend complex operator-(complex const& self, complex const& other){return self.std() - other.std();}
 };
 
 struct real_t{
