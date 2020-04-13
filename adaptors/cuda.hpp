@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4-*-
-$CXX -x c++ $0 -o $0x -lcudart -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXX -x c++ $0 -o $0x -lcudart -lboost_unit_test_framework -lboost_timer&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -65,6 +65,11 @@ auto copy(const double* first, const double* last, boost::multi::array_iterator<
 #include<boost/test/unit_test.hpp>
 #include<boost/timer/timer.hpp>
 
+template <class T>
+__attribute__((always_inline)) inline void DoNotOptimize(const T &value) {
+  asm volatile("" : "+m"(const_cast<T &>(value)));
+}
+
 namespace multi = boost::multi;
 namespace cuda = multi::cuda;
 
@@ -75,6 +80,40 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_cuda_copy_1d){
 	Agpu = A;
 //	BOOST_REQUIRE( Agpu[1] == 99. );
 }
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_cuda_copy_vs_move){
+	cuda::array<double, 4> Agpu({30, 100, 100, 100}, 99.);
+	{
+		boost::timer::auto_cpu_timer t{"copy %ws wall, CPU (%p%)\n"};
+		cuda::array<double, 4> Agpu_cpy = Agpu;
+		BOOST_REQUIRE( &Agpu_cpy[1][2][3][4] != &Agpu[1][2][3][4] );
+		BOOST_REQUIRE( Agpu_cpy[1][2][3][4] == Agpu[1][2][3][4] );
+	}
+	{
+		boost::timer::auto_cpu_timer t{"move %ws wall, CPU (%p%)\n"};
+		cuda::array<double, 4> Agpu_mov = std::move(Agpu);
+		BOOST_REQUIRE( Agpu.empty() );
+		BOOST_REQUIRE( Agpu_mov.size() == 30 );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_cuda_copy_vs_move_complex){
+	using complex = std::complex<double>;
+	cuda::array<complex, 4> Agpu({30, 100, 100, 100}, 99.);
+	{
+		boost::timer::auto_cpu_timer t{"copy %ws wall, CPU (%p%)\n"};
+		cuda::array<complex, 4> Agpu_cpy = Agpu;
+		BOOST_REQUIRE( &Agpu_cpy[1][2][3][4] != &Agpu[1][2][3][4] );
+		BOOST_REQUIRE( Agpu_cpy[1][2][3][4] == Agpu[1][2][3][4] );
+	}
+	{
+		boost::timer::auto_cpu_timer t{"move %ws wall, CPU (%p%)\n"};
+		cuda::array<complex, 4> Agpu_mov = std::move(Agpu);
+		BOOST_REQUIRE( Agpu.empty() );
+		BOOST_REQUIRE( Agpu_mov.size() == 30 );
+	}
+}
+
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_cuda_copy_2d){
 //	multi::array<double, 2> A({4, 4}, 99.);
@@ -96,6 +135,8 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_cuda_managed_ai3){
 	cuda::managed::array<ai3, 4> B({2,3,4,5}, ai3{} ); // value initialize elements
 	cuda::managed::array<ai3, 4> C({2,3,4,5}, ai3{11, 22, 33} ); // value initialize elements
 }
+
+
 
 
 #if 0
