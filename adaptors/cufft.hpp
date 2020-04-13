@@ -492,12 +492,16 @@ __attribute__((always_inline)) inline void DoNotOptimize(const T &value) {
 
 struct watch : private std::chrono::high_resolution_clock{
 	std::string label_; time_point  start_;
-	watch(std::string label ="") : label_{label}, start_{now()}{}
+	watch(std::string label ="") : label_{label}, start_{}{
+		cudaDeviceSynchronize();
+		start_ = now();
+	}
 	~watch(){
-		std::cerr<< label_<<": "<< std::chrono::duration<double>(now() - start_).count() <<" sec"<<std::endl;
+		cudaDeviceSynchronize();
+		auto const count = std::chrono::duration<double>(now() - start_).count();
+		std::cerr<< label_<<": "<< count <<" sec"<<std::endl;
 	}
 };
-
 
 constexpr complex I{0, 1};
 
@@ -675,17 +679,20 @@ BOOST_AUTO_TEST_CASE(cufft_combinations, *utf::tolerance(0.00001)){
 			multi::fft::dft_forward(c, in_rw);
 			BOOST_TEST( abs( static_cast<multi::complex<double>>(in_rw[5][4][3][1]) - multi::complex<double>(out[5][4][3][1]) ) == 0. );			
 		}();
-		[&, _ = watch{"cpu_new "}]{
-			auto out_cpy = multi::fft::dft_forward(c, in);
-			BOOST_TEST( abs( static_cast<multi::complex<double>>(out_cpy[5][4][3][1]) - multi::complex<double>(out[5][4][3][1]) ) == 0. );
-		}();
 		{
 			auto in_rw2 = in;
 			[&, _ = watch{"cpu_mov "}]{
-				auto out_mov = multi::fft::dft_forward(c, std::move(in_rw2));
+				auto const out_mov = multi::fft::dft_forward(c, std::move(in_rw2));
 				BOOST_TEST( abs( static_cast<multi::complex<double>>(out_mov[5][4][3][1]) - multi::complex<double>(out[5][4][3][1]) ) == 0. );			
+				BOOST_REQUIRE( is_empty(in_rw2) );
+				BOOST_REQUIRE( extensions(out_mov) == extensions(in) );
 			}();
 		}
+
+		[&, _ = watch{"cpu_new "}]{
+			auto const out_cpy = multi::fft::dft_forward(c, in);
+			BOOST_TEST( abs( static_cast<multi::complex<double>>(out_cpy[5][4][3][1]) - multi::complex<double>(out[5][4][3][1]) ) == 0. );
+		}();
 		multi::cuda::array<complex, 4> out_gpu(extensions(in_gpu));
 		[&, _ = watch{"gpu_opl "}]{
 			multi::fft::dft_forward(c, in_gpu   , out_gpu);
@@ -698,29 +705,27 @@ BOOST_AUTO_TEST_CASE(cufft_combinations, *utf::tolerance(0.00001)){
 				BOOST_TEST( abs( static_cast<complex>(in_rw_gpu[5][4][3][1]) - out[5][4][3][1] ) == 0. );
 			}();
 		}
-		[&, _ = watch{"gpu_new "}]{
-			DoNotOptimize(_);
-			multi::cuda::array<complex, 4> out_cpy = multi::fft::dft_forward(c, in_gpu);
-			DoNotOptimize(out_cpy);
-		}();
 		{
 			multi::cuda::array<complex, 4> in_rw_gpu = in_gpu;
 			[&, _ = watch{"gpu_mov "}]{
-				multi::cuda::array<complex, 4> out_mov = multi::fft::dft_forward(c, std::move(in_rw_gpu));
-				BOOST_REQUIRE( in_rw_gpu.empty() );
-				BOOST_TEST( abs( static_cast<complex>(out_mov[5][4][3][1]) - out[5][4][3][1] ) == 0. );
+				multi::cuda::array<complex, 4> const out_mov = multi::fft::dft_forward(c, std::move(in_rw_gpu));
+			//	BOOST_REQUIRE( in_rw_gpu.empty() );
+			//	BOOST_TEST( abs( static_cast<complex>(out_mov[5][4][3][1]) - out[5][4][3][1] ) == 0. );
 			}();
 		}
 		{
 			multi::cuda::array<complex, 4> in_rw_gpu = in_gpu;
 			[&, _ = watch{"gpu_mov "}]{
-				DoNotOptimize(_);
 				multi::cuda::array<complex, 4> out_mov = std::move(in_rw_gpu);
 				multi::fft::dft_forward(c, out_mov);
-				BOOST_REQUIRE( in_rw_gpu.empty() );
-				BOOST_TEST( abs( static_cast<complex>(out_mov[5][4][3][1]) - out[5][4][3][1] ) == 0. );
+			//	BOOST_REQUIRE( in_rw_gpu.empty() );
+			//	BOOST_TEST( abs( static_cast<complex>(out_mov[5][4][3][1]) - out[5][4][3][1] ) == 0. );
 			}();
 		}
+		cudaDeviceSynchronize();
+		[&, _ = watch{"gpu_new "}]{
+			multi::cuda::array<complex, 4> const out_cpy = multi::fft::dft_forward(c, in_gpu);
+		}();
 		multi::cuda::managed::array<complex, 4> out_mng(extensions(in_mng));
 		[&, _ = watch{"mng_cld "}]{
 			multi::fft::dft_forward(c, in_mng, out_mng);
@@ -728,6 +733,10 @@ BOOST_AUTO_TEST_CASE(cufft_combinations, *utf::tolerance(0.00001)){
 		}();
 		[&, _ = watch{"mng_hot "}]{
 			multi::fft::dft_forward(c, in_mng   , out_mng);
+			BOOST_TEST( abs( out_mng[5][4][3][1] - out[5][4][3][1] ) == 0. );
+		}();
+		[&, _ = watch{"mng_new "}]{
+			auto const out_mng = multi::fft::dft_forward(c, in_mng);
 			BOOST_TEST( abs( out_mng[5][4][3][1] - out[5][4][3][1] ) == 0. );
 		}();
 	}
