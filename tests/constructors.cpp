@@ -105,15 +105,15 @@ BOOST_AUTO_TEST_CASE(multi_constructors){
 	assert( std::get<0>(sizes(A)) == 8 );
 	assert( std::get<1>(sizes(A)) == 8 );
 }
- {  multi::static_array<double, 1> A     ; assert( empty(A) );
-}{  multi::static_array<double, 1> A{}   ; assert( empty(A) );
-}{  multi::static_array<double, 1> A = {}; assert( empty(A) ); 
-}{  multi::static_array<double, 2> A     ; assert( empty(A) );
-}{  multi::static_array<double, 2> A{}   ; assert( empty(A) );
-}{  multi::static_array<double, 2> A = {}; assert( empty(A) );
-}{  multi::static_array<double, 3> A     ; assert( empty(A) );
-}{  multi::static_array<double, 3> A{}   ; assert( empty(A) );
-}{  multi::static_array<double, 3> A = {}; assert( empty(A) );
+ {  multi::static_array<double, 1> A     ; assert( is_empty(A) );
+}{  multi::static_array<double, 1> A{}   ; assert( is_empty(A) );
+}{  multi::static_array<double, 1> A = {}; assert( is_empty(A) ); 
+}{  multi::static_array<double, 2> A     ; assert( is_empty(A) );
+}{  multi::static_array<double, 2> A{}   ; assert( is_empty(A) );
+}{  multi::static_array<double, 2> A = {}; assert( is_empty(A) );
+}{  multi::static_array<double, 3> A     ; assert( is_empty(A) );
+}{  multi::static_array<double, 3> A{}   ; assert( is_empty(A) );
+}{  multi::static_array<double, 3> A = {}; assert( is_empty(A) );
 }{  multi::static_array<double, 3> A, B  ; assert( A == B );
 }{
 	multi::array<double, 1> A1 = {0.0, 1.0, };
@@ -155,9 +155,9 @@ BOOST_AUTO_TEST_CASE(multi_constructors){
 //	std::vector w(9, multi::static_array<double, 2>({8, 8}));
 //	#endif
 //}
- {  multi::array<double, 1, std::allocator<double>> A{std::allocator<double>{}}; assert( empty(A) );
-}{  multi::array<double, 2, std::allocator<double>> A{std::allocator<double>{}}; assert( empty(A) );
-}{  multi::array<double, 3, std::allocator<double>> A{std::allocator<double>{}}; assert( empty(A) );
+ {  multi::array<double, 1, std::allocator<double>> A{std::allocator<double>{}}; assert( is_empty(A) );
+}{  multi::array<double, 2, std::allocator<double>> A{std::allocator<double>{}}; assert( is_empty(A) );
+}{  multi::array<double, 3, std::allocator<double>> A{std::allocator<double>{}}; assert( is_empty(A) );
 }{ multi::array<double, 1> A(3, {});  assert( size(A)==3 );
 }{ multi::array<double, 1> A(3, 99.); assert( size(A)==3 and A[2]==99. );
 }{ multi::array<double, 1> A({3});    assert( size(A)==1 and A[0]==3 );
