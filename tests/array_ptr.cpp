@@ -11,6 +11,37 @@ $CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 
 namespace multi = boost::multi;
 
+BOOST_AUTO_TEST_CASE(multi_array_ptr){
+
+	double a[4][5] = {
+		{ 0,  1,  2,  3,  4}, 
+		{ 5,  6,  7,  8,  9}, 
+		{10, 11, 12, 13, 14}, 
+		{15, 16, 17, 18, 19}
+	};
+	double b[4][5];
+	{
+		multi::array_ptr<double, 2> aP(&a[0][0], multi::extensions(a));
+		multi::array_ptr<double, 2> bP(&b[0][0], multi::extensions(b));
+		multi::array_ptr<double, 2> cP(&a[0][0], {2, 2});
+		BOOST_REQUIRE( aP == aP );
+		BOOST_REQUIRE( aP != bP );
+		BOOST_REQUIRE( aP != cP );
+		BOOST_REQUIRE( aP.base() == cP.base() );
+		BOOST_REQUIRE( & aP->operator[](1)[1] == & a[1][1] );
+		bP = aP;
+		BOOST_REQUIRE( aP == bP );
+		BOOST_REQUIRE( *aP == *bP );
+	}
+	{
+		multi::array_ptr<double, 2> aP(&a);
+		multi::array_ptr<double, 2> bP(&b);
+		BOOST_REQUIRE( aP == aP );
+		BOOST_REQUIRE( aP != bP );
+		BOOST_REQUIRE( &(*aP)[1][1] == &a[1][1] );
+	}
+}
+
 BOOST_AUTO_TEST_CASE(multi_array_ptr_test){
 	double a[4][5] = {
 		{ 0,  1,  2,  3,  4}, 

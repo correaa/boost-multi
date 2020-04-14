@@ -158,7 +158,7 @@ struct basic_array_ptr :
 	Ref operator*() const HD{return *this;}
 	Ref const* operator->() const{return this;}
 	Ref        operator[](difference_type n) const HD{return *(*this + n);}
-	template<class O> bool operator==(O const& o) const{return equal(o);}
+//	template<class O> bool operator==(O const& o) const{return equal(o);}
 	bool operator<(basic_array_ptr const& o) const{return distance_to(o) > 0;}
 	basic_array_ptr(typename Ref::element_ptr p, Layout l) HD : Ref{l, p}{}
 	template<typename T, dimensionality_type D, typename ElementPtr, class LLayout>
@@ -167,8 +167,13 @@ struct basic_array_ptr :
 	friend auto base(basic_array_ptr const& self){return self.base();}
 	using Ref::base_;
 	using Ref::layout;
+	bool operator==(basic_array_ptr const& o) const{return base_==o.base_ and layout()==o.layout();}
+	template<class O>
+	bool operator==(O const& o) const{return base_==o.base_ and layout() == o.layout();}
+	template<class O>
+	bool operator!=(O const& o) const{return base_!=o.base_ or  layout() != o.layout();}
 protected:
-	bool equal(basic_array_ptr const& o) const{return base_==o.base_ and layout()==o.layout();}
+//	bool equal(basic_array_ptr const& o) const{return base_==o.base_ and layout()==o.layout();}
 	void increment(){base_ += Ref::nelems();}
 	void decrement(){base_ -= Ref::nelems();}
 	void advance(difference_type n) HD{base_ += Ref::nelems()*n;}

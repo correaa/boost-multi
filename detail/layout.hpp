@@ -216,8 +216,12 @@ public:
 	constexpr auto nelemss() const{return std::make_tuple(nelems_);}
 	constexpr size_type num_elements() const{return this->size();}
 	friend constexpr size_type num_elements(layout_t const& s){return s.num_elements();}
-	constexpr bool empty() const{return nelems_ == 0;}
-	friend constexpr bool empty(layout_t const& s){return s.empty();}
+//	constexpr bool empty() const{return nelems_ == 0;}
+//	friend constexpr bool empty(layout_t const& s){return s.empty();}
+	       constexpr bool is_empty()        const    {return not nelems_;}
+	friend constexpr bool is_empty(layout_t const& s){return s.is_empty();}
+	       constexpr bool    empty()        const    {return is_empty();}
+
 	constexpr index_extension extension() const HD{return {offset_/stride_, (offset_+nelems_)/stride_};}
 	friend constexpr auto extension(layout_t const& self){return self.extension();}
 	constexpr auto extension(dimensionality_type d) const{
@@ -344,11 +348,14 @@ public:
 	constexpr bool operator==(layout_t const& o) const{
 		return sub_==o.sub_ and stride_==o.stride_ and offset_==o.offset_ and nelems_==o.nelems_;
 	}
+	constexpr bool operator!=(layout_t const& o) const{return not((*this)==o);}
 public:
 	constexpr size_type num_elements() const{return size()*sub_.num_elements();}
 	friend size_type num_elements(layout_t const& s){return s.num_elements();}
-	constexpr bool empty() const{return not nelems_;} friend
-	constexpr bool is_empty(layout_t const& s){return s.empty();}
+
+	       constexpr bool is_empty()        const    {return not nelems_;}
+	friend constexpr bool is_empty(layout_t const& s){return s.is_empty();}
+	       constexpr bool    empty()        const    {return is_empty();}
 	constexpr size_type size() const{
 		if(not nelems_) return 0;
 		assert(stride_);

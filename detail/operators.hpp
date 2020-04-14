@@ -26,7 +26,7 @@ struct equality_comparable2<T, void, B> : B{
 //	friend bool operator==(const U& y, const T& x){return x == y;}
 //	template<class U, typename = std::enable_if_t<not std::is_same<U, T>{}> >
 //	friend bool operator!=(const U& y, const T& x){return not (x == y);}
-	template<class U> 
+	template<class U, typename = std::enable_if_t<not std::is_base_of<T, U>{}>> 
 	friend bool operator!=(const T& y, const U& x){return not(y==x);}
 };
 

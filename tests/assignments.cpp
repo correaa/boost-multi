@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE(assignments){
 		multi::array_ref<double, 2>(v.data(), {5, 7}) = A;
 		BOOST_REQUIRE( v[9] == 33. );
 		BOOST_REQUIRE( not v.empty() );
-		BOOST_REQUIRE( not empty(A) );
+		BOOST_REQUIRE( not is_empty(A) );
 
 		multi::array<double, 1> V;
 		BOOST_REQUIRE( V.empty() );
