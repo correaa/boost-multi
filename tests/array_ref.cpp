@@ -27,6 +27,13 @@ int main(){
 		};
 		double b[4][5];
 		multi::array_ref<double, 2> A(&a[0][0], {4, 5});
+
+		double const(&AAconst)[4][5] = A;
+		assert( &AAconst[1][1] == &A[1][1] );
+
+		double(&AA)[4][5] = A;
+		assert( &AA[1][1] == &A[1][1] );
+
 		multi::array_ref<double, 2> B(&b[0][0], {4, 5});
 		assert( size(rotated(B(2, {1, 3})))==2 );;
 		assert( not A.empty() );
@@ -223,6 +230,9 @@ int main(){
 #else
 	auto d2D_null_cref = multi::make_array_ref(&d2D_null[0][0], {4, 5});
 #endif
+
+	
+
 	using std::min;
 	assert( &min(d2D_null_cref, d2D_cref) == &d2D_null_cref );
 	using std::max;
@@ -281,8 +291,6 @@ int main(){
 		std::list<double>::iterator lit{nullptr};
 		assert( std::addressof(*vit) == nullptr );
 	}
-	
-
 
 	auto NX = 2, NY = 2, NZ = 2;
 	std::vector<double> v(NX*NY*NZ);

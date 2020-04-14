@@ -993,7 +993,13 @@ private:
 	template<class It> auto equal_elements(It first) const{
 		return adl::equal(first, first + this->num_elements(), this->data_elements());
 	}
+	template<class TT, std::size_t N> using carr = TT[N];
 public:
+	template<class TT, std::size_t N>//, std::enable_if<std::is_convertible<typename array_ref::element_ptr, std::remove_all_extents_t<carr<TT, N>> >{}, int> =0> 
+	operator carr<TT, N>&() const&{
+		assert(extensions(*(carr<TT, N>*)this)==this->extensions());
+		return *reinterpret_cast<carr<TT, N>*>(this->base_);
+	}
 	typename array_ref::element_ptr data_elements() const&{return array_ref::base_;}
 	array_ref&& operator=(array_ref const& o) &&{assert(this->num_elements()==o.num_elements());
 		return array_ref::copy_elements(o.data_elements()), std::move(*this);
