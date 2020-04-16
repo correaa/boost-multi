@@ -28,6 +28,12 @@ BOOST_AUTO_TEST_CASE(iterator_1d){
 	BOOST_REQUIRE( size(A) == 100 );
 	BOOST_REQUIRE( begin(A) < end(A) );
 	BOOST_REQUIRE( end(A) - begin(A) == size(A) );
+	
+	multi::array<double, 1>::const_iterator cb = cbegin(A);
+	multi::array<double, 1>::iterator b = begin(A);
+	BOOST_REQUIRE( cb == b );
+	multi::array<double, 1>::const_iterator cb2 = begin(A);
+	BOOST_REQUIRE( cb2 == cb );
 }
 {
 	multi::array<double, 1> A({100}, 99.); 
