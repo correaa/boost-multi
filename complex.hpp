@@ -48,7 +48,6 @@ struct complex{
 	>
 	operator T&()&{return reinterpret_cast<T const&>(*this);}
 	std::complex<value_type> const& std() const&{return reinterpret_cast<std::complex<value_type> const&>(*this);}
-	std::complex<value_type>& std()&{return reinterpret_cast<std::complex<value_type&>>(*this);}
 	friend auto abs(complex const& self){return abs(self.std());}
 	friend complex operator-(complex const& self, complex const& other){return self.std() - other.std();}
 };
