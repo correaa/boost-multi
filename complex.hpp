@@ -9,7 +9,6 @@ $CXX -std=c++14 -D_TEST_MULTI_COMPLEX -x c++ $0 -o $0x&&$0x&&rm $0x;exit
 
 #include<complex>
 
-
 namespace boost{
 namespace multi{
 
@@ -33,8 +32,8 @@ struct complex{
 		class T,
 		std::enable_if_t<
 			sizeof(T)==2*sizeof(value_type) and 
-			std::is_assignable<typename T::value_type&, decltype(real(std::declval<T>()))>{} and
-			std::is_assignable<typename T::value_type&, decltype(imag(std::declval<T>()))>{}, int
+			std::is_assignable<typename T::value_type&, decltype(std::declval<T>().real())>{} and
+			std::is_assignable<typename T::value_type&, decltype(std::declval<T>().imag())>{}, int
 		> =0
 	>
 	operator T const&() const&{return reinterpret_cast<T const&>(*this);}
@@ -42,13 +41,13 @@ struct complex{
 		class T,
 		std::enable_if_t<
 			sizeof(T)==2*sizeof(value_type) and 
-			std::is_assignable<typename T::value_type&, decltype(real(std::declval<T>()))>{} and
-			std::is_assignable<typename T::value_type&, decltype(imag(std::declval<T>()))>{}, int
+			std::is_assignable<typename T::value_type&, decltype(std::declval<T>().real())>{} and
+			std::is_assignable<typename T::value_type&, decltype(std::declval<T>().imag())>{}, int
 		> =0
 	>
 	operator T&()&{return reinterpret_cast<T const&>(*this);}
 	std::complex<value_type> const& std() const&{return reinterpret_cast<std::complex<value_type> const&>(*this);}
-	std::complex<value_type>& std()&{return reinterpret_cast<std::complex<value_type&>>(*this);}
+	std::complex<value_type>& std()&{return reinterpret_cast<std::complex<value_type>&>(*this);}
 	friend auto abs(complex const& self){return abs(self.std());}
 	friend complex operator-(complex const& self, complex const& other){return self.std() - other.std();}
 };
@@ -144,6 +143,7 @@ template<class T> void what(T&&)=delete;
 int main(){
 	static_assert( std::is_trivially_default_constructible<std::complex<double>>{}, "!");
 	static_assert( std::is_trivially_copy_constructible<std::complex<double>>{}, "!");
+	static_assert( std::is_trivially_assignable<std::complex<double>&, std::complex<double> const>{}, "!");
 
 	using complex = std::complex<double>;
 
