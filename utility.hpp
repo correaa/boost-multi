@@ -414,10 +414,10 @@ constexpr auto strides(T(&t)[N]){
 
 namespace boost{
 namespace serialization{
-	template<class Archive, template<class,  std::size_t> class ArrayRef, class E,  std::size_t D>
-	inline void serialize(Archive&, ArrayRef<E, D>&, const unsigned int){
-		assert(0);
-	}
+//	template<class Archive, template<class,  std::size_t> class ArrayRef, class E,  std::size_t D>
+//	inline void serialize(Archive&, ArrayRef<E, D>&, const unsigned int){
+//		assert(0);
+//	}
 }}
 
 #if not __INCLUDE_LEVEL__ // TEST BELOW
