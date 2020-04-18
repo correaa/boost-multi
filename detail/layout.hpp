@@ -8,6 +8,7 @@ $CXX -Wall -Wextra -D_TEST_MULTI_LAYOUT -xc++ $0 -o$0x -lboost_unit_test_framewo
 #include "types.hpp"
 
 #include "../detail/operators.hpp"
+#include "../config/NODISCARD.hpp"
 
 #include<type_traits> // make_signed_t
 
@@ -222,13 +223,13 @@ public:
 	friend constexpr bool is_empty(layout_t const& s){return s.is_empty();}
 	       constexpr bool    empty()        const    {return is_empty();}
 
-	constexpr index_extension extension() const HD{return {offset_/stride_, (offset_+nelems_)/stride_};}
+	constexpr index_extension extension() const{return {offset_/stride_, (offset_+nelems_)/stride_};}
 	friend constexpr auto extension(layout_t const& self){return self.extension();}
 	constexpr auto extension(dimensionality_type d) const{
 		return d==0?index_extension{offset_/stride_, (offset_ + nelems_)/stride_}:throw 0;
 	}
 	constexpr extensions_type extensions() const{return extensions_type{extension()};}//std::make_tuple(extension());}
-	friend constexpr auto extensions(layout_t const& self){return self.extensions();}
+	friend constexpr extensions_type extensions(layout_t const& self){return self.extensions();}
 private:
 	friend struct layout_t<2u>;
 	void strides_aux(size_type* it) const{*it = stride();}
@@ -236,7 +237,7 @@ private:
 	void offsets_aux(index* it) const{*it = offset();}
 	void extensions_aux(index_extension* it) const{*it = extension();}
 public:
-	constexpr auto operator()(index i) const HD{return i*stride_ - offset_;}
+	constexpr auto operator()(index i) const{return i*stride_ - offset_;}
 	constexpr auto origin() const{return -offset_;}
 	constexpr bool operator==(layout_t const& other) const{
 		return stride_==other.stride_ and offset_==other.offset_ and nelems_==other.nelems_;
@@ -355,6 +356,7 @@ public:
 
 	       constexpr bool is_empty()        const    {return not nelems_;}
 	friend constexpr bool is_empty(layout_t const& s){return s.is_empty();}
+	NODISCARD(".empty means .is_empty")
 	       constexpr bool    empty()        const    {return is_empty();}
 	constexpr size_type size() const{
 		if(not nelems_) return 0;
@@ -384,7 +386,7 @@ public:
 	template<class T = void>
 	constexpr auto sizes_as() const{return detail::to_array<T>(sizes());}
 public:
-	constexpr index_extension extension() const HD{
+	constexpr index_extension extension() const{
 		if(not nelems_) return {};
 		assert(stride_);
 		return {offset_/stride_, (offset_ + nelems_)/stride_};
@@ -399,7 +401,7 @@ public:
 		return d?sub_.extension(d-1):extension();
 	}
 	constexpr extensions_type extensions() const{return tuple_cat(std::make_tuple(extension()), sub_.extensions().base());}
-	friend constexpr auto extensions(layout_t const& self){return self.extensions();}
+	friend constexpr extensions_type extensions(layout_t const& self){return self.extensions();}
 	void extensions_aux(index_extension* it) const{
 		*it = extension();
 		++it;
@@ -503,7 +505,7 @@ BOOST_AUTO_TEST_CASE(multi_layout){
 }{
 	multi::iextensions<0> x{};
 	multi::layout_t<0> L(x);
-}{  multi::layout_t<1> L{}; assert( dimensionality(L)==1 and num_elements(L) == 0 and size(L) == 0 and size(extension(L))==0 and stride(L)!=0 and empty(L) );
+}{  multi::layout_t<1> L{}; assert( dimensionality(L)==1 and num_elements(L) == 0 and size(L) == 0 and size(extension(L))==0 and stride(L)!=0 and is_empty(L) );
 }{
 	multi::layout_t<2> L({2, 10}); 
 	assert( dimensionality(L)==2 );
@@ -511,7 +513,7 @@ BOOST_AUTO_TEST_CASE(multi_layout){
 	assert( size(L) == 2 ); 
 	assert( size(extension(L))==2 );
 	assert( stride(L)==10 );/*std::numeric_limits<std::ptrdiff_t>::max()*/ 
-	assert( not empty(L) );
+	assert( not is_empty(L) );
 }{
 	multi::layout_t<1> L(multi::iextensions<1>{20});
 	assert( dimensionality(L)==1 and num_elements(L) == 20 and size(L) == 20 );
@@ -525,7 +527,7 @@ BOOST_AUTO_TEST_CASE(multi_layout){
 }{
 	multi::layout_t<2> L({1, 10}); 
 	assert( dimensionality(L)==2 and num_elements(L) == 10 and size(L) == 1); 
-	assert( not empty(L) );
+	assert( not is_empty(L) );
 	assert( size(extension(L))==1 );
 	assert( stride(L)== 10 );//std::numeric_limits<std::ptrdiff_t>::max() );
 	using std::get;
@@ -539,7 +541,7 @@ BOOST_AUTO_TEST_CASE(multi_layout){
 	using std::get;
 	assert( get<0>(strides(L)) == 1 );
 	assert( get<1>(strides(L)) == 1 );
-}{  multi::layout_t<2> L{}; assert( dimensionality(L)==2 and num_elements(L) == 0 and size(L) == 0 and size(extension(L))==0 and stride(L)!=0 and empty(L) );
+}{  multi::layout_t<2> L{}; assert( dimensionality(L)==2 and num_elements(L) == 0 and size(L) == 0 and size(extension(L))==0 and stride(L)!=0 and is_empty(L) );
 }{  multi::layout_t<3> L{}; assert( num_elements(L) == 0 );
 }{	multi::layout_t<3> L({{0, 10}, {0, 10}, {0, 10}}); assert( num_elements(L) == 1000 );
 }{	multi::layout_t<3> L({{10}, {10}, {10}}); assert( num_elements(L) == 1000 );

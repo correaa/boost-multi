@@ -27,16 +27,17 @@ variables:
 before_script:
     - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
     - apt update --quiet
-    - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet g++ libboost-test-dev librange-v3-dev valgrind nvidia-cuda-toolkit 
+    - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet g++ clang libboost-test-dev librange-v3-dev valgrind nvidia-cuda-toolkit 
 
 stages:
     - test
 #    - build
 
-Test:
+gcc:
     stage: test
     script:
       - ln --symbolic --force . ../multi
+      - export CXX="g++     -x c++  -Wall -Wextra -Wpedantic -Ofast "
       - $CXX --version
       - cd tests
       - sh ./array_ptr.cpp
@@ -50,5 +51,14 @@ Test:
       - sh ./rotated.cpp
       - sh ./allocator.cpp
       - sh ./reextent.cpp
+      - for a in ./*.cpp; do echo $a; sh $a || break; echo "\n"; done;
+
+clang:
+    stage: test
+    script:
+      - ln --symbolic --force . ../multi
+      - export CXX="clang++ -x c++ -Wall -Wextra -Wpedantic -Wmove -Ofast "
+      - $CXX --version
+      - cd tests
       - for a in ./*.cpp; do echo $a; sh $a || break; echo "\n"; done;
 

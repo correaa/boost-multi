@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE(multi_array_copy){
 	}
 
 	BOOST_REQUIRE( size(B) == size(A) );
-	BOOST_REQUIRE( empty(A[4]) );
+	BOOST_REQUIRE( is_empty(A[4]) );
 	BOOST_REQUIRE( size(B[5]) == 4 );
 	BOOST_REQUIRE( B[5][1][2] == 99. );
 }

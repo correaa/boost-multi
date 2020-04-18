@@ -1,7 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-clang++ -Ofast -Wall -Wextra -Wpedantic -D_TEST_MULTI_ADAPTORS_FFTW -x c++ $0 -o $0x -lcudart `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x
-# nvcc -D_TEST_MULTI_ADAPTORS_FFTW -x cu  $0 -o $0x          `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x
-exit
+$CXX $0 -o $0x -lcudart `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2018-2019
 
@@ -247,7 +245,7 @@ template<class In, class Out, std::size_t D = std::decay_t<In>::dimensionality,
 typename = std::enable_if_t<D == std::decay_t<Out>::dimensionality>,
 typename = decltype(reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double> *>*/(base(std::declval<Out&>()))))
 >
-fftw_plan fftw_plan_dft(std::array<bool, D> which, In&& in, Out&& out, int sign, unsigned flags = FFTW_ESTIMATE){
+fftw_plan fftw_plan_dft(std::decay_t<std::array<bool, D>> which, In&& in, Out&& out, int sign, unsigned flags = FFTW_ESTIMATE){
 	using multi::sizes; using multi::strides; assert(sizes(in) == sizes(out));
 	auto ion      = to_array<ptrdiff_t>(sizes(in));
 	auto istrides = to_array<ptrdiff_t>(strides(in));
@@ -263,7 +261,7 @@ fftw_plan fftw_plan_dft(std::array<bool, D> which, In&& in, Out&& out, int sign,
 		/*const fftw_iodim *howmany_dims*/ howmany.data(), //nullptr, //howmany_dims.data(), //;//nullptr,
 		/*fftw_complex *in*/ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(static_cast<std::complex<double> const *>(base(in)))), 
 		/*fftw_complex *out*/ reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double> *>*/(base(out))),
-		sign, flags | FFTW_ESTIMATE
+		sign, flags// | FFTW_ESTIMATE
 	);
 }
 
@@ -378,21 +376,35 @@ static_assert( forward != none and none != backward and backward != forward, "!"
 enum strategy: decltype(FFTW_ESTIMATE){ estimate = FFTW_ESTIMATE, measure = FFTW_MEASURE };
 
 
-template<typename In, class Out>
+template<class In, class Out>
 auto dft(In const& i, Out&& o, int s)
-->decltype(plan{i, std::forward<Out>(o), s}(i, std::forward<Out>(o)), std::forward<Out>(o))
-{	return plan{i, std::forward<Out>(o), s}(i, std::forward<Out>(o)), std::forward<Out>(o);}
+->decltype(fftw::plan{i, o, s}(), std::forward<Out>(o)){
+	return fftw::plan{i, o, s}(), std::forward<Out>(o);}
 
-template<class In, class Out, std::size_t D = std::decay_t<In>::dimensionality>
+template<class In, class Out, std::size_t = std::decay_t<In>::dimensionality>
 Out&& transpose(In const& i, Out&& o){
 	return dft(i, std::forward<Out>(o), fftw::none);
 }
 
-template<typename In, class Out, std::size_t D = std::decay_t<In>::dimensionality>
+//template<class In, class Out>//, std::size_t D = >
+//decltype(auto) dft(std::array<bool, In::dimensionality> which, In const& i, Out&& o, sign s)
+//->decltype(plan{which, i, o, s}(), std::forward<Out>(o)){
+//{	return plan{which, i, o, s}(), std::forward<Out>(o);}
+
+//template<class In, class Out, std::size_t W>//class Array = std::array<bool, In::dimensionality> >//, std::size_t D = >
+//decltype(auto) dft(std::array<bool, W> which, In const& i, Out&& o, sign s)
+//->decltype(plan{which, i, o, s}(), std::forward<Out>(o)){
+//{	return plan{which, i, o, s}(), std::forward<Out>(o);}
+
+using std::decay_t;
+
+template<class In, class Out, std::size_t D = In::dimensionality>
 auto dft(std::array<bool, D> which, In const& i, Out&& o, sign s)
 ->decltype(plan{which, i, o, s}(), std::forward<Out>(o)){
 	return plan{which, i, o, s}(), std::forward<Out>(o);}
 
+
+/*
 template<dimensionality_type R, class In, class Out, std::size_t D = std::decay_t<In>::dimensionality>
 Out&& dft(In const& i, Out&& o, sign s){
 	static_assert( R <= D , "dimension of transpformation cannot be larger than total dimension" );
@@ -400,16 +412,16 @@ Out&& dft(In const& i, Out&& o, sign s){
 	plan{which, i, o, s}();//(i, std::forward<Out>(o)); 
 	return std::forward<Out>(o);
 }
+*/
 
-template<typename In, class Out, std::size_t D = std::decay_t<In>::dimensionality, std::size_t = std::decay_t<Out>::dimensionality>
+template<typename In, class Out, std::size_t D = In::dimensionality, std::size_t = std::decay_t<Out>::dimensionality>
 auto dft(std::array<sign, D> w, In const& i, Out&& o){
 	std::array<bool, D> fwd, /*non,*/ bwd;
 
 	std::transform(begin(w), end(w), begin(fwd), [](auto e){return e==FFTW_FORWARD;});
-	dft(fwd, i, o, FFTW_FORWARD);
+	dft(fwd, i, o, fftw::forward);
 
 //	std::transform(begin(w), end(w), begin(non), [](auto e){return e==sign::none;});
-
 	std::transform(begin(w), end(w), begin(bwd), [](auto e){return e==FFTW_BACKWARD;}); 
 	if(std::accumulate(begin(bwd), end(bwd), false)) dft(bwd, o, o, FFTW_BACKWARD);
 
@@ -447,25 +459,26 @@ decltype(auto) rotate(multi::array<T, D, Args...>& i, int = 1){
 //	return i;
 }
 
-template<typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
+template<typename In, std::size_t D = In::dimensionality, typename R = multi::array<typename In::element_type, D, decltype(get_allocator(std::declval<In>()))>>
 NODISCARD("when first argument is const")
-auto dft(std::array<bool, In::dimensionality> which, In const& i, sign s)
-->std::decay_t<decltype(dft(which, i, R(extensions(i), get_allocator(i)), s))>{
-	return dft(which, i, R(extensions(i), get_allocator(i)), s);}
+auto dft(std::array<bool, D> which, In const& i, sign s)
+->std::decay_t<decltype(fftw::dft(which, i, R(extensions(i), get_allocator(i)), s))>{
+	return fftw::dft(which, i, R(extensions(i), get_allocator(i)), s);}
 
 template<typename In, std::size_t D = std::decay_t<In>::dimensionality>
-auto dft(std::array<bool, D> which, In&& i, sign s)
-->decltype(dft(which, i, std::forward<In>(i), s)){
-	return dft(which, i, std::forward<In>(i), s);}
+auto dft(std::array<bool, std::decay_t<In>::dimensionality> which, In&& i, sign s)
+->decltype(dft(which, i, i, s), std::forward<In>(i)){
+	return dft(which, i, i, s), std::forward<In>(i);}
 
+/*
 template<typename In, std::size_t D = In::dimensionality, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
 NODISCARD("when second argument is const")
 R dft(std::array<sign, D> which, In const& i){
 	return dft(which, i, R(extensions(i), get_allocator(i)));
-}
+}*/
 
-template<typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
-void dft(std::array<bool, In::dimensionality> which, In const& i) = delete;
+template<typename In, std::size_t D = In::dimensionality, typename R = multi::array<typename In::element_type, D, decltype(get_allocator(std::declval<In>()))>>
+void dft(std::array<bool, D> which, In const& i) = delete;
 
 template<dimensionality_type Rank, typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
 NODISCARD("when second argument is const")
@@ -473,13 +486,15 @@ R dft(In const& i, sign s){
 	return dft<Rank>(i, R(extensions(i), get_allocator(i)), s);
 }
 
+/*
 template<typename T, dimensionality_type D, class... As, typename R = multi::array<T, D, As...>>//typename std::decay_t<In>::element_type, std::decay_t<In>::dimensionality>>
 NODISCARD("when first argument can be destroyed")
 R dft(multi::array<T, D, As...>&& i, sign s){
-	R ret(extensions(i), get_allocator(i));
-	plan{i, ret, s, static_cast<unsigned>(fftw::estimate) | FFTW_DESTROY_INPUT}();//(i, ret); // to do destroy input for move iterators
-	return ret;
+//	R ret(extensions(i), get_allocator(i));
+//	plan{i, ret, s, static_cast<unsigned>(fftw::estimate) | FFTW_DESTROY_INPUT}();//(i, ret); // to do destroy input for move iterators
+	return R{std::move(dft(i, s))};
 }
+*/
 
 template<typename T> decltype(auto) dft(std::initializer_list<T> il, sign s){return dft(multi::array<T, 1>(il), s);}
 template<typename T> decltype(auto) dft(std::initializer_list<std::initializer_list<T>> il, sign s){return dft(multi::array<T, 2>(il), s);}
@@ -488,7 +503,7 @@ template<typename... A> auto            dft_forward(A&&... a)
 ->decltype(fftw::dft(std::forward<A>(a)..., fftw::forward)){
 	return fftw::dft(std::forward<A>(a)..., fftw::forward);}
 
-template<typename Array, typename A> 
+template<typename Array, typename A>
 NODISCARD("when input argument is read only")
 auto dft_forward(Array which, A const& a)
 ->decltype(fftw::dft(which, a, fftw::forward)){
@@ -532,7 +547,7 @@ namespace fft{
 
 }}
 
-#if _TEST_MULTI_ADAPTORS_FFTW
+#if not __INCLUDE_LEVEL__ // _TEST_MULTI_ADAPTORS_FFTW
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW adaptor"
 #define BOOST_TEST_DYN_LINK
@@ -552,8 +567,6 @@ namespace fft{
 #include<random>
 
 #include "../adaptors/cuda.hpp"
-
-#include <boost/timer/timer.hpp>
 
 #include<chrono>
 
@@ -774,7 +787,7 @@ BOOST_AUTO_TEST_CASE(fftw_3D){
 }
 
 BOOST_AUTO_TEST_CASE(fftw_4D){
-	auto const in = []{
+	multi::array<complex, 4> const in = []{
 		multi::array<complex, 4> in({10, 10, 10, 10}); in[2][3][4][5] = 99.; return in;
 	}();
 	auto fwd = multi::fftw::dft({true, true, true, true}, in, fftw::forward);
@@ -999,10 +1012,29 @@ BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001)){
 			multi::fftw::dft_forward(c, in, out);
 		}
 		{
+			multi::fftw::plan p(c, in, out, fftw::forward);
+			boost::timer::auto_cpu_timer t{"cpu_oplac planned %ws wall, CPU (%p%)\n"};
+			p();
+		}
+		{
 			auto in_rw = in;
 			boost::timer::auto_cpu_timer t{"cpu_iplac %ws wall, CPU (%p%)\n"};
 			multi::fftw::dft_forward(c, in_rw);
-			BOOST_TEST( abs( in_rw[5][4][3][1] - out[5][4][3][1] ) == 0. );
+		//	BOOST_TEST( abs( in_rw[5][4][3][1] - out[5][4][3][1] ) == 0. );
+		}
+		{
+			auto in_rw = in;
+			multi::fftw::plan p(c, in_rw, in_rw, fftw::forward);
+			boost::timer::auto_cpu_timer t{"cpu_iplac planned %ws wall, CPU (%p%)\n"};
+			p();
+		//	BOOST_TEST( abs( in_rw[5][4][3][1] - out[5][4][3][1] ) == 0. );
+		}
+		{
+			auto in_rw = in;
+			multi::fftw::plan p(c, in_rw, in_rw, fftw::forward);// | FFTW_MEASURE);
+			boost::timer::auto_cpu_timer t{"cpu_iplac planned measured %ws wall, CPU (%p%)\n"};
+			p();
+		//	BOOST_TEST( abs( in_rw[5][4][3][1] - out[5][4][3][1] ) == 0. );
 		}
 		{
 			boost::timer::auto_cpu_timer t{"cpu_alloc %ws wall, CPU (%p%)\n"}; 
@@ -1019,7 +1051,7 @@ BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001)){
 	}
 }
 
-BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark){
+BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark, *boost::unit_test::disabled() ){
 	auto x = multi::array<complex, 4>::extensions_type({64, 128, 128, 128});
 	multi::array<complex, 4> in(x);
 	std::iota(in.data_elements(), in.data_elements() + in.num_elements(), 1.2);

@@ -17,14 +17,22 @@ namespace boost{namespace multi{
 namespace memory{namespace cuda{
 
 template<class U, class T, typename Size, typename = std::enable_if_t<std::is_trivially_assignable<T&, U>{}>>
-ptr<T> copy_n(ptr<U> first, Size count, ptr<T> result){
-	memcpy(result, first, count*sizeof(T)); return result + count;
-}
+ptr<T> copy_n(ptr<U> first, Size count, ptr<T> result){return memcpy(result, first, count*sizeof(T)), result + count;}
 
 template<class U, class T, typename Size, typename = std::enable_if_t<std::is_trivially_assignable<T&, U>{}>>
-ptr<T> copy_n(U* first, Size count, ptr<T> result){
-	memcpy(result, first, count*sizeof(T)); return result + count;
-}
+ptr<T> copy_n(U* first, Size count, ptr<T> result){return memcpy(result, first, count*sizeof(T)), result + count;}
+
+//template<class U, class T, typename Size, typename = std::enable_if_t<std::is_trivially_assignable<T&, U>{}>>
+//T* copy_n(ptr<U> first, Size count, T* result){return memcpy(result, first, count*sizeof(T)), result + count;}
+
+template<class U, class T, typename Size, typename = std::enable_if_t<std::is_trivially_assignable<T&, U>{}>>
+ptr<T> uninitialized_copy_n(ptr<U> first, Size count, ptr<T> result){return memcpy(result, first, count*sizeof(T)), result + count;}
+
+template<class U, class T, typename Size, typename = std::enable_if_t<std::is_trivially_assignable<T&, U>{}>>
+ptr<T> uninitialized_copy_n(U* first, Size count, ptr<T> result){return memcpy(result, first, count*sizeof(T)), result + count;}
+
+template<class U, class T, typename Size, typename = std::enable_if_t<std::is_trivially_assignable<T&, U>{}>>
+T* uninitialized_copy_n(ptr<U> first, Size count, T* result){return memcpy(result, first, count*sizeof(T)), result + count;}
 
 template<class PtrU, class T>
 auto copy(PtrU first, PtrU last, ptr<T> result){
@@ -76,6 +84,8 @@ auto uninitialized_copy_n(It first, Size n, ptr<T> d_first){return copy_n(first,
 //}
 
 #if 1
+
+
 template<class T1, class Q1, typename Size, class T2, class Q2, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
 auto copy_n(iterator<T1, 1, Q1*> first, Size count, iterator<T2, 1, ptr<Q2>> result)
 ->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first ), sizeof(T1), count), result + count){
@@ -109,9 +119,14 @@ auto copy_n(array_iterator<T1, 1, ptr<T1P>> first, Size count, array_iterator<T1
 	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count;}
 
 template<class T1, class T1P, class Size, class T2, class T2P>
-auto copy(array_iterator<T1, 1, ptr<T1P>> first, array_iterator<T1, 1, ptr<T1P>> last, array_iterator<T1, 1, ptr<T1P>> result)
+auto copy(array_iterator<T1, 1, ptr<T1P>> first, array_iterator<T1, 1, ptr<T1P>> last, array_iterator<T2, 1, ptr<T2P>> result)
 ->decltype(cuda::copy_n(first, last - first, result)){
 	return cuda::copy_n(first, last - first, result);}
+
+template<class T1, class P1, class T2, class P2>
+void copy(array_iterator<T1, 1, boost::multi::memory::cuda::ptr<P1>>, array_iterator<T1, 1, boost::multi::memory::cuda::ptr<P1>>, array_iterator<T2, 1, boost::multi::memory::cuda::ptr<P2>>){
+	assert(0);
+}
 
 template<class T, class Size, std::enable_if_t<std::is_trivially_copy_constructible<T>{}, int> =0>
 auto uninitialized_fill_n(ptr<T> first, Size n, T const& t){return fill_n(first, n, t);}

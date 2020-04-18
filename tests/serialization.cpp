@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -std=c++17 -O3 -Wfatal-errors $0 -o$0x -lboost_unit_test_framework  -lstdc++fs -lboost_serialization -lboost_iostreams -lcudart&&$0x $@&&rm $0x;exit
+$CXX -std=c++17 -Ofast -Wfatal-errors $0 -o$0x -lboost_unit_test_framework  -lstdc++fs -lboost_serialization -lboost_iostreams -lcudart&&$0x $@&&rm $0x;exit
 #endif
 // © Alfredo Correa 2018-2020
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi fill"
@@ -38,9 +38,14 @@ namespace multi = boost::multi;
 struct watch : private std::chrono::high_resolution_clock{
 	std::string name_;
 	time_point  start_;
+	mutable bool engaged = true;
 	watch(std::string name = "") : name_{name}, start_{now()}{}
+	auto operator*() const{engaged = false; return std::chrono::duration<double>(now() - start_).count();}
 	~watch(){
-		std::cerr<< name_ <<": "<< std::chrono::duration<double>(now() - start_).count() <<" sec"<<std::endl;
+		if(engaged){
+			auto count = operator*();
+			std::cerr<< name_ <<": "<< count <<" sec"<<std::endl;
+		}
 	}
 };
 
@@ -155,32 +160,54 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_small){
 
 	using complex = std::complex<float>;
 
-	multi::array<complex, 2> d2D = {
-		{150., 16., 17., 18., 19.}, 
-		{  5.,  5.,  5.,  5.,  5.}, 
-		{100., 11., 12., 13., 14.}, 
-		{ 50.,  6.,  7.,  8.,  9.}  
-	};
-	d2D.reextent({2000, 2000});
-
-	auto gen = [d = std::uniform_real_distribution<double>{-1, 1}, e = std::mt19937{std::random_device{}()}]() mutable{return std::complex{d(e), d(e)};};
-	std::for_each(
-		begin(d2D), end(d2D), 
-		[&](auto&& r){std::generate(begin(r), end(r), gen);}
-	);
+	auto const d2D = []{
+		multi::array<complex, 2> d2D({20000, 2000});
+		auto gen = [d = std::uniform_real_distribution<double>{-1, 1}, e = std::mt19937{std::random_device{}()}]() mutable{return std::complex{d(e), d(e)};};
+		std::for_each(
+			begin(d2D), end(d2D), [&](auto&& r){std::generate(begin(r), end(r), gen);}
+		);
+		return d2D;
+	}();
+	auto size = sizeof(double)*d2D.num_elements();
+	std::cout<<"data size (in memory) "<< size <<std::endl;
 	{
-		[&, _=watch("binary write")]{
-			std::ofstream ofs{"serialization.bin"}; assert(ofs);
+		std::filesystem::path file{"serialization.bin"};
+		auto count = [&, w=watch("binary write")]{
+			std::ofstream ofs{file}; assert(ofs);
 			boost::archive::binary_oarchive{ofs} << d2D;
+			return *w;
 		}();
-		std::cerr<<"size "<< (std::filesystem::file_size("serialization.bin")/1e6) <<"MB\n";
+		std::cerr<<"size "<< (file_size(file)/1e6) <<"MB\n";
+		std::cerr<<"speed " << (size/1e6)/count <<"MB/s\n";
+		std::decay_t<decltype(d2D)> d2D_cpy;
+		auto count_load = [&, w=watch("binary load")]{
+			std::ifstream ifs{file}; assert(ifs);
+			boost::archive::binary_iarchive{ifs} >> d2D_cpy;
+			return *w;
+		}();
+		std::cerr<<"load speed " << (file_size(file)/1e6)/count_load <<"MB/s\n";
+		BOOST_REQUIRE( d2D == d2D_cpy );
 	}
 	{
-		[&, _ = watch("xml write base64")]{
-			std::ofstream ofs{"serialization-base64.xml"}; assert(ofs);
+		using std::cout;
+		std::filesystem::path file{"serialization-base64.xml"};
+		cout<< file << std::endl;
+		auto count = [&, w = watch("xml write base64")]{
+			std::ofstream ofs{file}; assert(ofs);
 			boost::archive::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(d2D);
+			return *w;
 		}();
-		std::cerr<<"size "<< (std::filesystem::file_size("serialization-base64.xml")/1e6) <<"MB\n";
+		cout<<"data size "<< size/1e6 << "MB\n";
+		cout<<"file size "<< (file_size(file)/1e6) <<"MB\n";
+		cout<<"save speed "<< size/1e6/count <<"MB/s"<< std::endl;
+		multi::array<complex, 2> d2D_cpy;
+		auto count2 = [&, w = watch("xml load base64")]{
+			std::ifstream ifs{file}; assert(ifs);
+			boost::archive::xml_iarchive{ifs} >> BOOST_SERIALIZATION_NVP(d2D_cpy);
+			return *w;
+		}();
+		cout<<"load speed "<< size/1e6/count2 <<"MB/s"<< std::endl;
+		BOOST_REQUIRE( d2D_cpy == d2D );
 	}
 	return;
 	{

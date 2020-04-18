@@ -93,7 +93,7 @@ struct array_types : Layout{
 		>::type
 	// typename std::iterator_traits<element_ptr>::reference 	//	typename pointer_traits<element_ptr>::element_type&
 	>::type;
-	element_ptr base() const HD{return base_;} //	element_const_ptr cbase() const{return base();}
+	constexpr element_ptr base() const{return base_;} //	element_const_ptr cbase() const{return base();}
 	friend element_ptr base(array_types const& s){return s.base();}
 	layout_t const& layout() const HD{return *this;}
 	friend layout_t const& layout(array_types const& s){return s.layout();}
@@ -103,10 +103,10 @@ protected:
 	using derived = basic_array<T, D, ElementPtr, Layout>;
 	element_ptr base_;
 	array_types() = delete;
-	array_types(std::nullptr_t np) : Layout{}, base_{np}{}
+	constexpr array_types(std::nullptr_t np) : Layout{}, base_{np}{}
 	array_types(array_types const&) = default;
 public:
-	array_types(layout_t l, element_ptr data) HD : 
+	constexpr array_types(layout_t l, element_ptr data): 
 		Layout{l}, 
 		base_{data}
 	{}
@@ -156,7 +156,7 @@ struct basic_array_ptr :
 	}
 	explicit operator bool() const{return this->base_;}
 	Ref operator*() const HD{return *this;}
-	Ref const* operator->() const{return this;}
+	constexpr Ref const* operator->() const{return this;}
 	Ref        operator[](difference_type n) const HD{return *(*this + n);}
 //	template<class O> bool operator==(O const& o) const{return equal(o);}
 	bool operator<(basic_array_ptr const& o) const{return distance_to(o) > 0;}
@@ -337,17 +337,13 @@ struct basic_array :
 	friend struct basic_array<typename types::element, typename Layout::rank{} + 1, typename types::element_ptr >;
 	friend struct basic_array<typename types::element, typename Layout::rank{} + 1, typename types::element_ptr&>;
 	using types::layout;
-	auto layout() const HD{return array_types<T, D, ElementPtr, Layout>::layout();}
+	constexpr auto layout() const /*HD*/{return array_types<T, D, ElementPtr, Layout>::layout();}
 protected:
 	using types::types;
 	template<typename, dimensionality_type, class Alloc> friend struct static_array;
 	basic_array(basic_array const&) = default;
 	template<class, class> friend struct basic_array_ptr;
 public:
-//	template<class Archive>
-//	void serialize(Archive& ar, unsigned int file_version){
-//		for(auto&& e : *this) ar & BOOST_SERIALIZATION_NVP(e);
-//	}
 	friend constexpr auto dimensionality(basic_array const& self){return self.dimensionality;}
 	using typename types::reference;
 	basic_array(basic_array&&) = default;
@@ -372,14 +368,14 @@ public:
 //	static decay_type remake(std::initializer_list<typename basic_array::value_type> il){return decay_type(il);}
 //	template<class... As> static auto remake(As&&... as) -> decay_type{return decay_type(std::forward<As>(as)...);}
 	template<class Archive>
-	auto serialize(Archive& ar, const unsigned int){
+	auto serialize(Archive& ar, unsigned int /*file version*/){
 		using boost::serialization::make_nvp;
 		std::for_each(this->begin(), this->end(), [&](auto&& e){ar & make_nvp("item", e);});
 	}
 	friend /*NODISCARD("decayed type is ignored")*/ auto operator+(basic_array const& self){return self.decay();}
 
 	friend auto decay(basic_array const& self){return self.decay();}
-	typename types::reference operator[](index i) const HD{
+	constexpr typename types::reference operator[](index i) const{
 		assert( this->extension().contains(i) );
 		typename types::element_ptr new_base = typename types::element_ptr(this->base()) + std::ptrdiff_t{Layout::operator()(i)};
 		return typename types::reference(this->layout().sub_, new_base);
@@ -602,7 +598,7 @@ public:
 	bool operator>(O const& o) const{return lexicographical_compare(o, *this);}
 public:
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
-	basic_array<T2, D, P2> static_array_cast() const HD{
+	constexpr basic_array<T2, D, P2> static_array_cast() const{
 		P2 p2{this->base_};
 		return basic_array<T2, D, P2>{this->layout(), p2};
 	}
@@ -638,6 +634,12 @@ public:
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+template<class To, class From, std::enable_if_t<std::is_convertible<From, To>{},int> =0>
+To _implicit_cast(From&& f){return static_cast<To>(f);}
+
+template<class To, class From, std::enable_if_t<std::is_constructible<To, From>{} and not std::is_convertible<From, To>{},int> =0>
+To _explicit_cast(From&& f){return static_cast<To>(f);}
+
 template<class Element, typename Ptr, typename Ref>
 struct array_iterator<Element, 1, Ptr, Ref> : 
 	boost::multi::iterator_facade<
@@ -655,8 +657,11 @@ struct array_iterator<Element, 1, Ptr, Ref> :
 
 	array_iterator() = default;
 	array_iterator(array_iterator const& other) = default;
-	template<class Other, typename = decltype(Ptr{typename Other::pointer{}})> 
-	array_iterator(Other const& o) HD : data_{o.data_}, stride_{o.stride_}{}
+	template<class Other, typename = decltype(_implicit_cast<Ptr>(typename Other::pointer{}))> 
+	array_iterator(Other const& o) : data_{o.data_}, stride_{o.stride_}{}
+	template<class Other, typename = decltype(_explicit_cast<Ptr>(typename Other::pointer{}))> 
+	explicit array_iterator(Other const& o, int = 0) : data_{o.data_}, stride_{o.stride_}{}
+
 	template<class EE, dimensionality_type, class PP, class RR> friend struct array_iterator;
 	array_iterator(std::nullptr_t nu) HD : data_{nu}, stride_{1}{}
 	array_iterator(Ptr const& p) HD : data_{p}, stride_{1}{}
@@ -681,7 +686,7 @@ private:
 //	void increment(){data_ += stride_;}
 //	void decrement(){data_ -= stride_;}
 //	void advance(typename array_iterator::difference_type n) HD{data_ += stride_*n;}
-	difference_type distance_to(array_iterator const& other) const{
+	constexpr difference_type distance_to(array_iterator const& other) const{
 		assert(stride_==other.stride_ and (other.data_-data_)%stride_ == 0);
 		return (other.data_ - data_)/stride_;
 	}
@@ -696,7 +701,7 @@ public:
 	bool operator==(array_iterator const& o) const{return data_== o.data_;/*return equal(o);*/}
 	bool operator!=(array_iterator const& o) const{return data_!= o.data_;/*return equal(o);*/}
 	Ref operator*() const HD{return 	dereference();}
-	difference_type operator-(array_iterator const& o) const{return -distance_to(o);}
+	constexpr difference_type operator-(array_iterator const& o) const{return -distance_to(o);}
 	array_iterator& operator+=(difference_type d) HD{data_+=stride_*d; return *this;}
 	array_iterator& operator-=(difference_type d) HD{data_-=stride_*d; return *this;}
 };
@@ -783,17 +788,17 @@ protected:
 public:
 	friend constexpr auto dimensionality(basic_array const& self){return self.dimensionality;}
 	template<class BasicArray, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<BasicArray>>{}>, typename = decltype(types(std::declval<BasicArray&&>()))> 
-	basic_array(BasicArray&& other) : types{std::forward<BasicArray>(other)}{}
+	constexpr basic_array(BasicArray&& other) : types{std::forward<BasicArray>(other)}{}
 	basic_array_ptr<basic_array, Layout> operator&() const{
 		return {this->base_, this->layout()};
 	}
 	void assign(std::initializer_list<typename basic_array::value_type> il) const{assert( il.size() == static_cast<std::size_t>(this->size()) );
 		assign(il.begin(), il.end());
 	}
-	template<class It> void assign(It first, It last) const{assert( std::distance(first, last) == this->size() );
+	template<class It> basic_array&& assign(It first, It last)&&{assert( std::distance(first, last) == this->size() );
 		adl::copy(first, last, this->begin());
+		return std::move(*this);
 	}
-
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int){
 		using boost::serialization::make_nvp;
@@ -806,9 +811,10 @@ public:
 				= std::declval<typename multi::array_traits<typename std::remove_reference_t<A>>::reference&&>()
 		)
 	>
-	basic_array const& operator=(A&& o) const{{using multi::extension; assert(this->extension() == extension(o));}
-		this->assign(adl::begin(std::forward<A>(o)), adl::end(std::forward<A>(o)));
-		return *this;
+	basic_array&& operator=(A&& o)&&{
+		{using multi::extension; assert(this->extension() == extension(o));}
+		return std::move(*this).assign(adl::begin(std::forward<A>(o)), adl::end(std::forward<A>(o)));
+	//	return std::move(*this);
 	}
 	basic_array&& operator=(basic_array const& o)&&{ assert(this->extension() == o.extension());
 		return std::move(*this).assign(o.begin()), std::move(*this);
@@ -817,7 +823,7 @@ public:
 	basic_array&& operator=(basic_array<TT, DD, As...> const& o)&&{assert(this->extension() == o.extension());
 		std::move(*this).assign(o.begin(), o.end()); return std::move(*this);
 	}
-	typename types::reference operator[](typename types::index i) const HD{assert( this->extension().contains(i) );
+	typename types::reference operator[](typename types::index i) const{assert( this->extension().contains(i) );
 		return *(this->base() + Layout::operator()(i)); // in C++17 this is allowed even with syntethic references
 	}
 	template<class Tuple, typename = std::enable_if_t<(std::tuple_size<std::decay_t<Tuple>>{}>1) > >
@@ -865,8 +871,8 @@ public:
 	using iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_ptr, typename types::reference>;
 	using reverse_iterator = std::reverse_iterator<iterator>;
 
-	iterator begin() const HD{return {types::base_               , Layout::stride_};}
-	iterator end  () const HD{return{types::base_+types::nelems_, Layout::stride_};}
+	constexpr iterator begin() const{return {basic_array::base_                 , basic_array::stride_};}
+	constexpr iterator end  () const{return {basic_array::base_ + types::nelems_, basic_array::stride_};}
 
 	template<class It> auto assign(It f)&& //	->decltype(adl::copy_n(f, this->size(), begin(std::move(*this))), void()){
 	->decltype(adl::copy_n(f, this->size(), std::declval<iterator>()), void()){
@@ -933,7 +939,7 @@ public:
 };
 
 template<class T2, class P2, class Array, class... Args>
-decltype(auto) static_array_cast(Array&& a, Args&&... args) HD{return a.template static_array_cast<T2, P2>(std::forward<Args>(args)...);}
+constexpr decltype(auto) static_array_cast(Array&& a, Args&&... args){return a.template static_array_cast<T2, P2>(std::forward<Args>(args)...);}
 
 template<class T2, class Array, class P2 = typename std::pointer_traits<typename std::decay<Array>::type::element_ptr>::template rebind<T2> , class... Args>
 decltype(auto) static_array_cast(Array&& a, Args&&... args) HD{return a.template static_array_cast<T2, P2>(std::forward<Args>(args)...);}
@@ -1032,14 +1038,14 @@ public:
 //	}
 	operator typename array_ref::decay_type&&() & = delete;
 	template<class Archive>
-	auto serialize(Archive& ar, const unsigned int v){ (void)v;
+	auto serialize(Archive& ar, const unsigned int v){
 		using boost::serialization::make_nvp;
-		if(this->num_elements() < (2<<8) ) basic_array<T, D, ElementPtr>::serialize(ar, v);
+		if(this->num_elements() < (2<<8) ) std::move(*this).basic_array<T, D, ElementPtr>::serialize(ar, v);
 		else{
 			using boost::serialization::make_binary_object;
 			using boost::serialization::make_array;
 			if(std::is_trivially_copy_assignable<typename array_ref::element>{})
-				ar & make_nvp("binary_data", make_binary_object(this->data(), sizeof(typename array_ref::element)*this->num_elements())); // if you get an error here, try #include<boost/serialization/binary_object.hpp>
+				ar & make_nvp("binary_data", make_binary_object(this->data(), sizeof(typename array_ref::element)*this->num_elements())); //#include<boost/serialization/binary_object.hpp>
 			else ar & make_nvp("data", make_array(this->data(), this->num_elements()));
 		}
 	}
