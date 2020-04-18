@@ -33,10 +33,11 @@ stages:
     - test
 #    - build
 
-Test:
+gcc:
     stage: test
     script:
       - ln --symbolic --force . ../multi
+      - export CXX="g++     -x c++  -Wall -Wextra -Wpedantic -Ofast "
       - $CXX --version
       - cd tests
       - sh ./array_ptr.cpp
@@ -50,5 +51,14 @@ Test:
       - sh ./rotated.cpp
       - sh ./allocator.cpp
       - sh ./reextent.cpp
+      - for a in ./*.cpp; do echo $a; sh $a || break; echo "\n"; done;
+
+clang:
+    stage: test
+    script:
+      - ln --symbolic --force . ../multi
+      - export CXX="clang++ -x c++ -Wall -Wextra -Wpedantic -Wmove -Ofast "
+      - $CXX --version
+      - cd tests
       - for a in ./*.cpp; do echo $a; sh $a || break; echo "\n"; done;
 
