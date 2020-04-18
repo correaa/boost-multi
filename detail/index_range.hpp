@@ -46,8 +46,8 @@ namespace multi{
 template<class Self, typename ValueType, class AccessCategory, typename Reference = ValueType&,  typename DifferenceType = typename std::pointer_traits<ValueType*>::difference_type, typename Pointer = ValueType*>
 class iterator_facade{
 	using self_type = Self;
-	constexpr self_type& self() HD{return static_cast<self_type&>(*this);}
-	constexpr self_type const& self() const HD{return static_cast<self_type const&>(*this);}
+	constexpr self_type&       self()      {return static_cast<self_type&      >(*this);}
+	constexpr self_type const& self() const{return static_cast<self_type const&>(*this);}
 public:
 	using value_type = ValueType;
 	using reference = Reference;
@@ -56,8 +56,8 @@ public:
 	using iterator_category = AccessCategory;
 	constexpr auto operator==(self_type const& o) const{return o==self();}
 	constexpr auto operator!=(self_type const& o) const{return not(o==self());}
-	constexpr self_type operator+(difference_type n) const HD{self_type r = self(); r += n; return r;}
-	constexpr self_type operator-(difference_type n) const HD{self_type r = self(); r -= n; return r;}
+	constexpr self_type operator+(difference_type n) const{self_type r = self(); r += n; return r;}
+	constexpr self_type operator-(difference_type n) const{self_type r = self(); r -= n; return r;}
 	friend constexpr self_type operator+(difference_type n, self_type const& s){return s + n;}
 	friend self_type operator++(self_type& s, int){self_type r = s; ++s; return r;}
 	friend self_type operator--(self_type& s, int){self_type r = s; --s; return r;}
@@ -90,7 +90,7 @@ public:
 	constexpr range(Range&& o) HD : first_{std::forward<Range>(o).first()}, last_{std::forward<Range>(o).last()}{}
 //	constexpr range(value_type const& fl) : first_{fl}, last_{fl + 1}{}
 //	constexpr range(value_type f, value_type l) : first_{f}, last_{l}{}
-	constexpr range(IndexType f, IndexTypeLast l) HD : first_{f}, last_{l}{}
+	constexpr range(IndexType f, IndexTypeLast l) : first_{f}, last_{l}{}
 	constexpr range(IndexType f) : range(f, f + 1){}
 	class const_iterator 
 		: public boost::multi::iterator_facade<const_iterator, 
@@ -166,7 +166,7 @@ public:
 		auto first2 = min(first, last);  
 		return range<decltype(first2), decltype(last)>{first2, last};
 	}
-	constexpr auto contains(value_type const& v) const HD{return v>=first_ and v<last_;}//?true:false;}
+	constexpr auto contains(value_type const& v) const{return v>=first_ and v<last_;}//?true:false;}
 };
 
 template<class IndexType = std::true_type, typename IndexTypeLast = IndexType>
@@ -177,9 +177,9 @@ range<IndexType, IndexTypeLast> make_range(IndexType first, IndexTypeLast last){
 template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
 struct extension_t : public range<IndexType, IndexTypeLast>{
 	using range<IndexType, IndexTypeLast>::range;
-	constexpr extension_t(IndexType f, IndexTypeLast l) noexcept HD : range<IndexType, IndexTypeLast>{f, l}{}
+	constexpr extension_t(IndexType f, IndexTypeLast l) noexcept : range<IndexType, IndexTypeLast>{f, l}{}
 	constexpr extension_t(IndexType last) noexcept : range<IndexType, IndexTypeLast>(0, last){}
-	constexpr extension_t() noexcept HD : range<IndexType, IndexTypeLast>(){}
+	constexpr extension_t() noexcept : range<IndexType, IndexTypeLast>(){}
 	friend constexpr typename extension_t::size_type size(extension_t const& s){return s.size();}
 	friend std::ostream& operator<<(std::ostream& os, extension_t const& self){
 		if(self.empty()) return os << static_cast<range<IndexType> const&>(self);
