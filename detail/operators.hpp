@@ -118,11 +118,11 @@ struct affine : addable2<T, D>, subtractable2<T, D>{
 
 template<class T>
 struct random_iterable{
-	friend auto begin(T const& t){return t.begin();}
-	friend auto end  (T const& t){return t.end();}
 
-	friend auto begin(T& t) HD{return t.begin();}
-	friend auto end  (T& t){return t.end();}
+	template<class Self, std::enable_if_t<std::is_base_of<T, std::decay_t<Self>>{}, int> =0>
+	friend constexpr typename std::decay_t<Self>::iterator begin(Self&& t){return std::forward<Self>(t).begin();}
+	template<class Self, std::enable_if_t<std::is_base_of<T, std::decay_t<Self>>{}, int> =0>
+	friend constexpr typename std::decay_t<Self>::iterator end  (Self&& t){return std::forward<Self>(t).end();}
 
 	auto rbegin(){return typename T::reverse_iterator{static_cast<T&>(*this).end  ()};}
 	auto rend  (){return typename T::reverse_iterator{static_cast<T&>(*this).begin()};}
@@ -133,6 +133,7 @@ struct random_iterable{
 	decltype(auto) cback()  const{return static_cast<T const&>(*this).back() ;}
 	friend auto cfront(T const& s){return s.cfront();}
 	friend auto cback (T const& s){return s.cback() ;}
+
 };
 
 #if 0
