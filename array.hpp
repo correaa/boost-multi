@@ -169,10 +169,10 @@ public:
 		}
 	}
 	template<class TT, class... Args>
-	static_array(multi::basic_array<TT, D, Args...> const& o, typename static_array::allocator_type const& a = {})
+	static_array(multi::basic_array<TT, D, Args...>&& o, typename static_array::allocator_type const& a = {})
 		: array_alloc{a}, ref(array_alloc::allocate(num_elements(o)), extensions(o))
 	{
-		adl::copy(o.begin(), o.end(), this->begin()); // TODO: should be uninitialized_copy
+		adl::copy(std::move(o).begin(), std::move(o).end(), this->begin()); // TODO: should be uninitialized_copy
 	}
 	template<class TT, class... Args>
 	static_array(static_array<TT, D, Args...> const& o)
@@ -358,15 +358,23 @@ public:
 	decltype(auto) operator<<(dimensionality_type d) const{return rotated(d);}
 	decltype(auto) operator>>(dimensionality_type d) const{return unrotated(d);}
 
-	constexpr typename static_array::iterator begin(){return ref::begin();}
-	constexpr typename static_array::iterator end()  {return ref::end()  ;}
+	constexpr typename static_array::iterator begin(){return std::move(*this).ref::begin();}
+	constexpr typename static_array::iterator end()  {return std::move(*this).ref::end()  ;}
 
-	typename static_array::const_iterator begin() const{return typename static_array::const_iterator{ref::begin()};}
-	typename static_array::const_iterator end()   const{return ref::end();}
-	const_iterator cbegin() const{return begin();}
-	const_iterator cend() const{return end();}
-	friend const_iterator cbegin(static_array const& self){return self.cbegin();}
-	friend const_iterator cend(static_array const& self){return self.cend();}
+	friend typename static_array::iterator begin(static_array& self){return self.begin();}
+	friend typename static_array::iterator end  (static_array& self){return self.end()  ;}
+
+	constexpr const_iterator begin() const{return typename static_array::const_iterator{const_cast<static_array&&>(*this).ref::begin()};}
+	constexpr const_iterator end()   const{return const_cast<static_array&&>(*this).ref::end();}
+
+	friend typename static_array::iterator begin(static_array const& self){return self.begin();}
+	friend typename static_array::iterator end  (static_array const& self){return self.end()  ;}
+
+	constexpr const_iterator cbegin() const{return begin();}
+	constexpr const_iterator cend() const{return end();}
+
+	friend constexpr const_iterator cbegin(static_array const& self){return self.cbegin();}
+	friend constexpr const_iterator cend(static_array const& self){return self.cend();}
 
 	static_array& operator=(static_array const& other){
 		assert( extensions(other) == static_array::extensions() );
