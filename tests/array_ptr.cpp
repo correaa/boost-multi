@@ -40,6 +40,10 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr){
 		BOOST_REQUIRE( aP != bP );
 		BOOST_REQUIRE( &(*aP)[1][1] == &a[1][1] );
 	}
+	{
+		multi::array_ref<double, 2> aR(*multi::array_ptr<double, 2>(&a));
+		BOOST_REQUIRE(( &aR[1][1] == &a[1][1] ));
+	}
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_ptr_test){
