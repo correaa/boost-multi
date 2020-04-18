@@ -1,8 +1,7 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&$CXX -std=c++14 -Ofast -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_ADAPTORS_BLAS_HERK $0.cpp -o $0x -lboost_unit_test_framework \
-`pkg-config --cflags --libs blas` \
+$CXX $0 -o $0x -lboost_unit_test_framework `pkg-config --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -liomp5` \
--lboost_timer &&$0x&& rm $0x $0.cpp; exit
+-lboost_timer &&$0x&&rm $0x; exit
 #endif
 // © Alfredo A. Correa 2019
 #ifndef MULTI_ADAPTORS_BLAS_HERK_HPP
@@ -111,7 +110,7 @@ template<class T> struct numeric_limits<std::complex<T>> : std::numeric_limits<s
 };
 
 template<class AA, class A2D, class Ret = typename A2D::decay_type>
-NODISCARD("second argument is const")
+NODISCARD("because argument is read-only")
 auto herk(filling cs, AA alpha, A2D const& a)
 ->std::decay_t<
 decltype(herk(cs, alpha, a, Ret({size(a), size(a)}, 0., get_allocator(a))))>{
@@ -135,7 +134,7 @@ template<class A2D> auto herk(A2D const& a)
 
 }
 
-#if _TEST_MULTI_ADAPTORS_BLAS_HERK
+#if not __INCLUDE_LEVEL__ // _TEST_MULTI_ADAPTORS_BLAS_HERK
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS herk"
 #define BOOST_TEST_DYN_LINK
@@ -147,6 +146,7 @@ template<class A2D> auto herk(A2D const& a)
 
 #include<iostream>
 
+namespace utf = boost::unit_test;
 namespace multi = boost::multi;
 
 template<class T> void what(T&&) = delete;
@@ -161,8 +161,8 @@ template<class M> decltype(auto) print(M const& C){
 	return cout << std::endl;
 }
 
-using complex = std::complex<double>; complex const I{0, 1};
-
+using complex = std::complex<double>; 
+constexpr complex I(0, 1);
 
 BOOST_AUTO_TEST_CASE(inq_case){
 	using namespace multi::blas;
@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE(inq_case){
 		for(auto j : extension(A[i]))
 			A[i][j] = 20.*(i + 1)*sqrt(j);
 
-	BOOST_REQUIRE( 
+	BOOST_REQUIRE(
 		herk(0.01, hermitized(A)) == gemm(0.01, transposed(A), A) 
 	);
 }
@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_case_scale){
 	multi::array<double, 2> A = {{1., 2., 3.}};
 	multi::array<double, 2> B = multi::blas::herk(0.1, A);
 	BOOST_REQUIRE( size(B) == 1 );
-	BOOST_TEST( B[0][0]/0.1 == 1.*1. + 2.*2. + 3.*3. );
+	BOOST_TEST( B[0][0] == (1.*1. + 2.*2. + 3.*3.)*0.1 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_real_case){
@@ -196,8 +196,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_real_case){
 	BOOST_REQUIRE( size(B) == 1 );
 	BOOST_REQUIRE( B[0][0] == 1.*1. + 2.*2. + 3.*3. );
 }
-
-namespace utf = boost::unit_test;
 
 BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_real_case_scale, *utf::tolerance(0.00001)){
 	multi::array<complex, 2> A = {{1., 2., 3.}};
@@ -257,6 +255,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_case_hermitized_auto){
 
 #if 1
 #if 1
+
 BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_identity){
 	multi::array<complex, 2> const a = {
 		{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
@@ -346,6 +345,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_identity){
 	}
 #endif
 }
+
+#if 0
 
 BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_real_case){
 	multi::array<complex, 2> const a = {
@@ -860,6 +861,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_timing){
 	using multi::blas::filling;
 	herk(filling::upper, 1., hermitized(a), c); // c†=c=a†a
 }
+#endif
 #endif
 #endif
 
