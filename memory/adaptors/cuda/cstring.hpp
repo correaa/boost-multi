@@ -6,6 +6,7 @@
 #define BOOST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING_HPP
 
 #include "../../adaptors/cuda/ptr.hpp"
+#include "../../adaptors/cuda/managed/ptr.hpp"
 
 #include<cuda_runtime.h> // cudaMemcpy/cudaMemset
 
@@ -56,10 +57,13 @@ namespace memcpy_{
 		device_to_host=cudaMemcpyDeviceToHost, device_to_device=cudaMemcpyDeviceToDevice,
 		inferred = cudaMemcpyDefault, default_ = cudaMemcpyDefault
 	};
-	constexpr kind type(void*    , void const*    ){return kind::host_to_host    ;}
-	constexpr kind type(ptr<void>, void const*    ){return kind::host_to_device  ;}
-	constexpr kind type(void*    , ptr<void const>){return kind::device_to_host  ;}
-	constexpr kind type(ptr<void>, ptr<void const>){return kind::device_to_device;}
+	template<class T1, class T2> constexpr kind type(T1*    , T2*    ){return kind::host_to_host    ;}
+	template<class T1, class T2> constexpr kind type(ptr<T1>, T2*    ){return kind::host_to_device  ;}
+	template<class T1, class T2> constexpr kind type(T1*    , ptr<T2>){return kind::device_to_host  ;}
+	template<class T1, class T2> constexpr kind type(ptr<T1>, ptr<T2>){return kind::device_to_device;}
+	template<class T1, class P2> constexpr kind type(managed::ptr<T1>, P2){return kind::inferred;}
+	template<class P1, class T2> constexpr kind type(P1, managed::ptr<T2>){return kind::inferred;}
+	template<class T1, class T2> constexpr kind type(managed::ptr<T1>, managed::ptr<T2>){return kind::inferred;}
 	[[deprecated]] constexpr kind type(...)        {return kind::inferred;        }
 }
 
