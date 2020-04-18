@@ -64,8 +64,8 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr_test){
 	BOOST_REQUIRE( size(A) == 4 );
 	BOOST_REQUIRE( size(A) == size(B) );
 
-	std::move(B) = A;
-	BOOST_REQUIRE( B == A );
+	std::move(B) = std::move(A);
+	BOOST_REQUIRE( std::move(B) == std::move(A) );
 
 	BOOST_REQUIRE( size(rotated(A)) == 5 );
 	BOOST_REQUIRE( size(rotated(B)) == 5 );

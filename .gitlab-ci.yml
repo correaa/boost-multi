@@ -40,25 +40,25 @@ gcc:
       - export CXX="g++     -x c++  -Wall -Wextra -Wpedantic -Ofast "
       - $CXX --version
       - cd tests
-      - sh ./array_ptr.cpp
-      - sh ./array_ref.cpp
-      - sh ./sort.cpp
-      - sh ./comparisons.cpp
-      - sh ./constructors.cpp
-      - sh ./initializer_list.cpp
-      - sh ./layout.cpp
-      - sh ./fill.cpp
-      - sh ./rotated.cpp
-      - sh ./allocator.cpp
-      - sh ./reextent.cpp
-      - for a in ./*.cpp; do echo $a; sh $a || break; echo "\n"; done;
+#      - sh ./array_ptr.cpp
+#      - sh ./array_ref.cpp
+#      - sh ./sort.cpp
+#      - sh ./comparisons.cpp
+#      - sh ./constructors.cpp
+#      - sh ./initializer_list.cpp
+#      - sh ./layout.cpp
+#      - sh ./fill.cpp
+#      - sh ./rotated.cpp
+#      - sh ./allocator.cpp
+#      - sh ./reextent.cpp
+#      - for a in ./*.cpp; do echo $a; sh $a || break; echo "\n"; done;
 
-clang:
-    stage: test
-    script:
-      - ln --symbolic --force . ../multi
-      - export CXX="clang++ -x c++ -Wall -Wextra -Wpedantic -Wmove -Ofast "
-      - $CXX --version
-      - cd tests
-      - for a in ./*.cpp; do echo $a; sh $a || break; echo "\n"; done;
+#clang:
+#    stage: test
+#    script:
+#      - ln --symbolic --force . ../multi
+#      - export CXX="clang++ -x c++ -Wall -Wextra -Wpedantic -Wmove -Ofast "
+#      - $CXX --version
+#      - cd tests
+#      - for a in ./*.cpp; do echo $a; sh $a || break; echo "\n"; done;
 

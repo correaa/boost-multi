@@ -319,6 +319,28 @@ namespace adl{
 	public:
 		template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
 	} distance;
+
+	namespace custom{template<class...> struct begin_t;} __attribute__((unused))
+	static constexpr class begin_t{
+		template<class... As>          auto _(priority<1>,        As&&... as) const DECLRETURN(              std::begin(std::forward<As>(as)...))
+		template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   begin(std::forward<As>(as)...))
+		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).begin(std::forward<As>(as)...))
+		template<class... As>          auto _(priority<4>,        As&&... as) const DECLRETURN(custom::begin_t<As&&...>::_(std::forward<As>(as)...))
+	public:
+		template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
+	} begin;
+
+	namespace custom{template<class...> struct end_t;} __attribute__((unused))
+	static constexpr class end_t{
+		template<class... As>          auto _(priority<1>,        As&&... as) const DECLRETURN(              std::end(std::forward<As>(as)...))
+		template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   end(std::forward<As>(as)...))
+		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).end(std::forward<As>(as)...))
+		template<class... As>          auto _(priority<4>,        As&&... as) const DECLRETURN(custom::end_t<As&&...>::_(std::forward<As>(as)...))
+	public:
+		template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
+	} end;
+
+
 }
 }}
 
@@ -457,8 +479,8 @@ BOOST_MULTI_DEFINE_ADL(equal);
 BOOST_MULTI_DEFINE_ADL(lexicographical_compare);
 BOOST_MULTI_DEFINE_ADL(swap_ranges);
 
-BOOST_MULTI_DEFINE_ADL(begin);
-BOOST_MULTI_DEFINE_ADL(end);
+//BOOST_MULTI_DEFINE_ADL(begin);
+//BOOST_MULTI_DEFINE_ADL(end);
 
 #ifdef _TEST_MULTI_DETAIL_ADL
 

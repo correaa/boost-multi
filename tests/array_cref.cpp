@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(array_cref){
 	BOOST_REQUIRE( G2D == D2D );
 #endif
 	auto&& H2D = multi::make_array_ref<2>(dc.data(), {10, 10}); 
-	BOOST_REQUIRE( H2D == D2D );
+	BOOST_REQUIRE( std::move(H2D) == std::move(D2D) );
 
 }
 

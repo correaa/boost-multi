@@ -99,9 +99,9 @@ template<class T, class D>
 struct addable2{
 	using difference_type = D;
 	template<class TT, typename = std::enable_if_t<std::is_base_of<T, TT>{}> >
-	friend T operator+(TT&& t, difference_type const& d) HD{T tmp{std::forward<TT>(t)}; tmp+=d; return tmp;}
+	friend constexpr T operator+(TT&& t, difference_type const& d){T tmp{std::forward<TT>(t)}; tmp+=d; return tmp;}
 	template<class TT, typename = std::enable_if_t<std::is_base_of<T, TT>{}> >
-	friend T operator+(difference_type const& d, TT&& t) HD{return std::forward<TT>(t) + d;}
+	friend constexpr T operator+(difference_type const& d, TT&& t) HD{return std::forward<TT>(t) + d;}
 };
 
 template<class T, class D>
@@ -119,10 +119,8 @@ struct affine : addable2<T, D>, subtractable2<T, D>{
 template<class T>
 struct random_iterable{
 
-	template<class Self, std::enable_if_t<std::is_base_of<T, std::decay_t<Self>>{}, int> =0>
-	friend constexpr typename std::decay_t<Self>::iterator begin(Self&& t){return std::forward<Self>(t).begin();}
-	template<class Self, std::enable_if_t<std::is_base_of<T, std::decay_t<Self>>{}, int> =0>
-	friend constexpr typename std::decay_t<Self>::iterator end  (Self&& t){return std::forward<Self>(t).end();}
+//	friend constexpr decltype(auto) begin(T& t){return t.begin();}
+//	friend constexpr decltype(auto) end  (T& t){return t.end();}
 
 	auto rbegin(){return typename T::reverse_iterator{static_cast<T&>(*this).end  ()};}
 	auto rend  (){return typename T::reverse_iterator{static_cast<T&>(*this).begin()};}
