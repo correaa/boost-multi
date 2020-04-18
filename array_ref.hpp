@@ -155,8 +155,8 @@ struct basic_array_ptr :
 		return *this;
 	}
 	explicit operator bool() const{return this->base_;}
-	Ref operator*() const HD{return *this;}
-	constexpr Ref const* operator->() const{return this;}
+	constexpr Ref  operator* () const{return *this;}
+	constexpr Ref* operator->()      {return  this;}
 	Ref        operator[](difference_type n) const HD{return *(*this + n);}
 //	template<class O> bool operator==(O const& o) const{return equal(o);}
 	bool operator<(basic_array_ptr const& o) const{return distance_to(o) > 0;}
@@ -366,7 +366,7 @@ public:
 	template<class Archive>
 	auto serialize(Archive& ar, unsigned int /*file version*/){
 		using boost::serialization::make_nvp;
-		std::for_each(this->begin(), this->end(), [&](auto&& e){ar & make_nvp("item", e);});
+		std::for_each(std::move(*this).begin(), std::move(*this).end(), [&](auto&& e){ar & make_nvp("item", e);});
 	}
 
 	decay_type decay() const{
@@ -411,14 +411,14 @@ public:
 	auto range(typename types::index_range const& ir, dimensionality_type n) const{
 		return rotated(n).range(ir).rotated(-n);
 	}
-	auto flattened() const{
-		multi::biiterator<std::decay_t<decltype(this->begin())>> biit{this->begin(), 0, size(*(this->begin()))};
+	decltype(auto) flattened()&&{
+		multi::biiterator<std::decay_t<decltype(std::move(*this).begin())>> biit{std::move(*this).begin(), 0, size(*(std::move(*this).begin()))};
 		return basic_array<typename std::iterator_traits<decltype(biit)>::value_type, 1, decltype(biit)>{
-			multi::layout_t<1>(1, 0, this->size()*size(*(this->begin()))),
+			multi::layout_t<1>(1, 0, this->size()*size(*(std::move(*this).begin()))),
 			biit
 		};
 	}
-	friend auto flattened(basic_array const& self){return self.flattened();}
+	friend decltype(auto) flattened(basic_array&& self){return std::move(self).flattened();}
 	bool is_flattable() const{return this->stride() == this->layout().sub_.nelems_;}
 	auto flatted() const{
 		assert(is_flattable() && "flatted doesn't work for all layouts!");//this->nelems());
@@ -529,13 +529,13 @@ private:
 public:
 	using reverse_iterator = basic_reverse_iterator<iterator>;
 	using ptr = basic_array_ptr<basic_array, Layout>;
-	ptr operator&() const{return {this->base_, this->layout()};}
-	iterator begin(index i) const{
-		Layout l = static_cast<Layout const&>(*this); l.rotate(i);
+	ptr operator&() &&{return {this->base_, this->layout()};}
+	constexpr iterator begin(dimensionality_type d) &&{
+		Layout l = static_cast<Layout const&>(*this); l.rotate(d);
 		return {types::base_ + l(0       ), l.sub_, l.stride_};
 	}
-	iterator end(index i) const{
-		Layout l = static_cast<Layout const&>(*this); l.rotate(i);
+	constexpr iterator end(dimensionality_type d) &&{
+		Layout l = static_cast<Layout const&>(*this); l.rotate(d);
 		return {types::base_ + l(l.size()), l.sub_, l.stride_};
 	}
 	constexpr iterator  begin()&&{return {types::base_          , sub_, stride_};}
@@ -553,8 +553,8 @@ public:
 	template<class It> void assign(It first, It last) &&{assert( this->size() == std::distance(first, last) );
 		adl::copy(first, last, std::move(*this).begin());
 	}
-	template<class It> It assign(It first) &&{
-		return adl::copy_n(first, this->size(), this->begin()), first + this->size();
+	template<class It> It assign(It first)&&{
+		return adl::copy_n(first, this->size(), std::move(*this).begin()), first + std::move(*this).size();
 	}
 //	template<class It> void assign(It first) &&
 //	->decltype(adl::copy_n(first, this->size(), this->begin())){
@@ -578,25 +578,31 @@ public:
 		return std::move(*this);
 	}
 	template<class Array> void swap(Array&& o) const{assert(this->extension() == extension(o));
-		adl::swap_ranges(this->begin(), this->end(), adl::begin(std::forward<Array>(o)));
+		adl::swap_ranges(std::move(*this).begin(), std::move(*this).end(), adl::begin(std::forward<Array>(o)));
 	}
 	friend void swap(basic_array const& a, basic_array const& b){a.swap(b);}
 	template<class Array> void swap(basic_array const& s, Array&& a){s.swap(a);}
 	template<class Array> void swap(Array&& a, basic_array const& s){s.swap(a);}
-	template<class Array> bool operator==(Array const& o) const{
+	template<class Array>//, std::enable_if_t<std::is_same<Array, basic_array>{}, int> =0> 
+	bool operator==(Array&& o)&&{
 		if(this->extension()!=o.extension()) return false;
-		return adl::equal(this->begin(), this->end(), adl::begin(o));
+		return adl::equal(std::move(*this).begin(), std::move(*this).end(), adl::begin(std::forward<Array>(o)));
 	}
-	bool operator==(basic_array const& o) const{return operator==<basic_array>(o);}
+//	bool operator==(basic_array const& o) const{
+//		return operator==<basic_array>(o);
+//	}
 private:
-	friend bool lexicographical_compare(basic_array const& a1, basic_array const& a2){
+	friend bool lexicographical_compare(basic_array&& a1, basic_array&& a2){
 		if(a1.extension().first() > a2.extension().first()) return true;
 		if(a1.extension().first() < a2.extension().first()) return false;
-		return adl::lexicographical_compare(adl::begin(a1), adl::end(a1), adl::begin(a2), adl::end(a2));
+		return adl::lexicographical_compare(
+			std::move(a1).begin(), std::move(a1).end(), 
+			std::move(a2).begin(), std::move(a2).end()
+		);
 	}
 public:
-	template<class O> bool operator<(O const& o) const{return lexicographical_compare(*this, o);}
-	template<class O> bool operator>(O const& o) const{return lexicographical_compare(o, *this);}
+	template<class O> bool operator<(O&& o)&&{return lexicographical_compare(std::move(*this), std::move(o));}
+	template<class O> bool operator>(O&& o)&&{return lexicographical_compare(std::move(o), std::move(*this));}
 public:
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
 	constexpr basic_array<T2, D, P2> static_array_cast() const{
@@ -668,7 +674,7 @@ struct array_iterator<Element, 1, Ptr, Ref> :
 	array_iterator(Ptr const& p) HD : data_{p}, stride_{1}{}
 	explicit operator bool() const{return static_cast<bool>(this->data_);}
 	constexpr Ref operator[](typename array_iterator::difference_type n) const{return *((*this) + n);}
-	Ptr operator->() const{return data_;}
+	constexpr Ptr operator->() const{return data_;}
 	using element = Element;
 	using element_ptr = Ptr;
 	using pointer = element_ptr;
@@ -759,8 +765,8 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout> :
 	auto get_allocator() const{return default_allocator_of(basic_array::base());}
 	friend auto get_allocator(basic_array const& self){return self.get_allocator();}
 	using decay_type = array<typename types::element, dimensionality_type{1}, decltype(default_allocator_of(std::declval<ElementPtr>()))>;
-	decay_type decay() const{return {*this};}
-	friend decay_type decay(basic_array const& self){return self.decay();}
+	       decay_type decay(          )&&      {return decay_type{std::move(*this)};}
+	friend decay_type decay(basic_array&& self){return std::move(self).decay();}
 protected:
 	template<class A>
 	void intersection_assign_(A&& other) const{
