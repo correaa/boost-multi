@@ -119,7 +119,8 @@ int main(){
 	assert( distance(begin(std::move(d2D_cref)), end(std::move(d2D_cref))) == size(d2D_cref));
 	assert( size(*begin(std::move(d2D_cref))) == 5 );
 	assert( distance(begin(std::move(d2D_cref))->begin(), begin(std::move(d2D_cref))->end()) == begin(std::move(d2D_cref))->size() );
-//	assert( distance(begin(*begin(std::move(d2D_cref))), end(*begin(std::move(d2D_cref)))) == size(*begin(std::move(d2D_cref))) );
+	assert( distance(begin(*begin(std::move(std::move(d2D_cref)))), end(*begin(std::move(d2D_cref)))) == size(*begin(std::move(d2D_cref))) );
+
 	assert( size(std::move(d2D_cref)[0]) == 5 );
 	assert( num_elements(std::move(d2D_cref)[0]) == 5 );
 
@@ -149,7 +150,7 @@ int main(){
 	assert(std::move(d2D_cref).begin() == std::move(d2D_cref).begin(0));
 	assert(std::move(d2D_cref).begin() != std::move(d2D_cref).begin(1));
 	for(auto it1 = std::move(d2D_cref).begin(1); it1 != std::move(d2D_cref).end(1)||!endl(cout); ++it1)
-		for(auto it2 = it1->begin()   ; it2 != it1->end()   ||!endl(cout); ++it2)
+		for(auto it2 = std::move(*it1).begin()   ; it2 != std::move(*it1).end()   ||!endl(cout); ++it2)
 			cout << *it2 << ' ';
 
 	multi::array_ref<double, 2, double const*> d2D_crefref(std::move(d2D_cref).data_elements(), extensions(d2D_cref));
@@ -161,7 +162,7 @@ int main(){
 	for_each(
 		begin(std::move(d2D_cref)), end(std::move(d2D_cref)), 
 		[](auto&& row){
-			for_each(begin(row), end(row), [](auto&& e){cout<<' '<< e;})("\n");
+			for_each(begin(std::move(row)), end(std::move(row)), [](auto&& e){cout<<' '<< e;})("\n");
 		}
 	)("\n");
 	
@@ -175,12 +176,13 @@ int main(){
 //		cout <<'\n';
 //	}
 	for(auto it=begin(std::move(d2D_cref)); it!=end(std::move(d2D_cref)); ++it){
-		for(decltype(d2D_cref)::element const& e: *it) cout << e <<' '; 
-		cout <<'\n';
+//		for(decltype(d2D_cref)::element const& e: *it) cout << e <<' '; 
+		for(auto it2=begin(*it); it2!=end(*it); ++it2) cout<< *it2 <<' ';
+		cout<<'\n';
 	}
 	
 	for(auto it1=begin(std::move(d2D_cref)); it1 != end(std::move(d2D_cref)) ||!endl(cout); ++it1)
-		for(auto it2=it1->begin()   ; it2 != it1->end()    ||!endl(cout); ++it2)
+		for(auto it2=(*it1).begin(); it2!=(*it1).end() ||!endl(cout); ++it2)
 			cout<< *it2 <<' ';
 
 //	for(auto it1=(&std::move(d2D_cref))->begin(); it1 != (&std::move(d2D_cref))->end() ||!endl(cout); ++it1)
@@ -189,7 +191,7 @@ int main(){
 
 	auto print = [](auto&& arr){
 		for(auto it1 = std::forward<decltype(arr)>(arr).begin(); it1 != std::forward<decltype(arr)>(arr).end()||!endl(cout); ++it1)
-			for(auto it2 = it1->begin()   ; it2 != it1->end()   ||!endl(cout); ++it2)
+			for(auto it2 = (*it1).begin()   ; it2 != (*it1).end()   ||!endl(cout); ++it2)
 				cout << *it2 << ' ';
 	};
 	print(std::move(d2D_cref));

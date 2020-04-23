@@ -1,8 +1,9 @@
-#ifdef COMPILATION_INSTRUCTIONS
-$CXX  -Wall -Wextra -Wpedantic $0 -o$0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
+$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
-// © Alfredo Correa 2018-2019
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS gemm"
+// © Alfredo Correa 2018-2020
+
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi partitioned operation"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
@@ -13,6 +14,7 @@ namespace multi = boost::multi;
 BOOST_AUTO_TEST_CASE(array_partitioned_1d){
 	multi::array<double, 1>	A1 = {0, 1, 2, 3, 4, 5};
 	auto&& A2_ref = A1.partitioned(2);
+	static_assert( std::decay<decltype(A2_ref)>::type::dimensionality == decltype(A1)::dimensionality+1 , "!");
 	BOOST_REQUIRE( dimensionality(A2_ref)==dimensionality(A1)+1 );
 	BOOST_REQUIRE( size(A2_ref)==2 );
 	BOOST_REQUIRE( size(A2_ref[0])==3 );
@@ -47,9 +49,16 @@ BOOST_AUTO_TEST_CASE(array_partitioned){
 			{  "s0P3",  "s1P3"},
 			{  "s0P4",  "s1P4"},
 			{  "s0P5",  "s1P5"},
-		}; assert( size(A2) == 6 );
-//	auto&& A2.
-//	A3[Pspace][nstate];
-//	auto&& A3 = A2.partitioned(6).partitioned(3);
+		}; 
+
+	BOOST_REQUIRE(  size(A2) == 6 );
+	BOOST_REQUIRE(( sizes(A2) == decltype(sizes(A2)){6, 2} ));
+
+//	BOOST_REQUIRE( size(*(&A2/3)[0]) == 2 );
+	BOOST_REQUIRE( size(A2.partitioned(3)) == 3 );
+	BOOST_REQUIRE( dimensionality(A2.partitioned(3)) == 3 );
+
+	BOOST_REQUIRE(( sizes(A2.partitioned(3)) == decltype(sizes(A2.partitioned(3))){3, 2, 2} ));
+	
 }
 
