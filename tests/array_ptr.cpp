@@ -22,6 +22,10 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr){
 	double b[4][5];
 	{
 		multi::array_ptr<double, 2> aP = &a; // = multi::addressof(a);
+		BOOST_REQUIRE( aP->extensions() == multi::extensions(a) );
+		BOOST_REQUIRE( extensions(*aP) == multi::extensions(a) );
+		using multi::extensions;
+		BOOST_REQUIRE( extensions(*aP) == extensions(a) );
 		BOOST_REQUIRE( &aP->operator[](1)[1] == &a[1][1] );
 
 		multi::array_ptr<double, 2> aP2 = &a;
