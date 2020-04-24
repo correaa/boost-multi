@@ -1,7 +1,8 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 -Wall -Wextra $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x; exit
+$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
+
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi References"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
@@ -12,9 +13,19 @@ $CXX -O3 -Wall -Wextra $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x; exit
 #include<complex>
 
 namespace multi = boost::multi;
+using complex = std::complex<double>;
+
+BOOST_AUTO_TEST_CASE(array_cref_no_mention_type){
+
+	std::vector<double> v(20, 1.);// {1., 2.});
+
+	auto&& v2D = *(v.data()/multi::iextensions<2>{4, 5});
+	BOOST_REQUIRE( &v[2] == &v2D[0][2] );
+	v2D[1][1] = 30.;
+
+}
 
 BOOST_AUTO_TEST_CASE(array_cref){
-	using complex = std::complex<double>;
 
 	static_assert(std::is_same<std::pointer_traits<complex*>::element_type, complex>{}, "!");
 	static_assert(std::is_same<std::pointer_traits<complex*>::rebind<complex const>, complex const*>{}, "!");
@@ -41,7 +52,7 @@ BOOST_AUTO_TEST_CASE(array_cref){
 	BOOST_REQUIRE( G2D == D2D );
 #endif
 	auto&& H2D = multi::make_array_ref<2>(dc.data(), {10, 10}); 
-	BOOST_REQUIRE( std::move(H2D) == std::move(D2D) );
+	BOOST_REQUIRE(( H2D == *(dc.data()/multi::iextensions<2>{10, 10}) ));
 
 }
 
