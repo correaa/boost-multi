@@ -13,14 +13,15 @@ namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(multi_array_ptr){
 
-	double a[4][5] = {
-		{ 0,  1,  2,  3,  4}, 
-		{ 5,  6,  7,  8,  9}, 
-		{10, 11, 12, 13, 14}, 
-		{15, 16, 17, 18, 19}
-	};
-	double b[4][5];
 	{
+		double a[4][5] = {
+			{ 0,  1,  2,  3,  4}, 
+			{ 5,  6,  7,  8,  9}, 
+			{10, 11, 12, 13, 14}, 
+			{15, 16, 17, 18, 19}
+		};
+		double b[4][5];
+
 		multi::array_ptr<double, 2> aP = &a; // = multi::addressof(a);
 		BOOST_REQUIRE( aP->extensions() == multi::extensions(a) );
 		BOOST_REQUIRE( extensions(*aP) == multi::extensions(a) );
