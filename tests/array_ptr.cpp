@@ -1,9 +1,9 @@
-#ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
 $CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUDA adaptor"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi array pointer"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
@@ -21,59 +21,36 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr){
 	};
 	double b[4][5];
 	{
-		multi::array_ptr<double, 2> aP(&a[0][0], multi::extensions(a));
-		multi::array_ptr<double, 2> bP(&b[0][0], multi::extensions(b));
-		multi::array_ptr<double, 2> cP(&a[0][0], {2, 2});
-		BOOST_REQUIRE( aP == aP );
-		BOOST_REQUIRE( aP != bP );
-		BOOST_REQUIRE( aP != cP );
-		BOOST_REQUIRE( aP.base() == cP.base() );
-		BOOST_REQUIRE( & aP->operator[](1)[1] == & a[1][1] );
+		multi::array_ptr<double, 2> aP = &a; // = multi::addressof(a);
+		BOOST_REQUIRE( &aP->operator[](1)[1] == &a[1][1] );
+
+		multi::array_ptr<double, 2> aP2 = &a;
+		BOOST_REQUIRE( aP == aP2 );
+
+		multi::array_ptr<double, 2> bP = &b;
+		BOOST_REQUIRE( bP != aP );
+
 		bP = aP;
 		BOOST_REQUIRE( aP == bP );
 		BOOST_REQUIRE( *aP == *bP );
+		BOOST_REQUIRE( aP->operator==(*bP) );
+
+		auto&& aR = *aP;
+		BOOST_REQUIRE( &aR[1][1] == &a[1][1] );
+		BOOST_REQUIRE( aR == *aP );
+		BOOST_REQUIRE( aR.equal(aP->begin()) );
+		BOOST_REQUIRE( size(aR) == aP->size() );
 	}
 	{
-		multi::array_ptr<double, 2> aP(&a);
-		multi::array_ptr<double, 2> bP(&b);
-		BOOST_REQUIRE( aP == aP );
-		BOOST_REQUIRE( aP != bP );
-		BOOST_REQUIRE( &(*aP)[1][1] == &a[1][1] );
+		std::vector<double> v1(100, 3.);
+		std::vector<double> const v2(100, 4.);
+		multi::array_ptr<double, 2> v1P2D(v1.data(), {10, 10});
+		multi::array_cptr<double, 2> v2P2D(v2.data(), {10, 10});
+
+		*v1P2D = *v2P2D;
+		v1P2D->operator=(*v2P2D);
+
+		BOOST_REQUIRE( v1[8] == 4. );
 	}
-	{
-		multi::array_ref<double, 2> aR(*multi::array_ptr<double, 2>(&a));
-		BOOST_REQUIRE(( &aR[1][1] == &a[1][1] ));
-	}
-}
-
-BOOST_AUTO_TEST_CASE(multi_array_ptr_test){
-	double a[4][5] = {
-		{ 0,  1,  2,  3,  4}, 
-		{ 5,  6,  7,  8,  9}, 
-		{10, 11, 12, 13, 14}, 
-		{15, 16, 17, 18, 19}
-	};
-	double b[4][5];
-#ifdef __cpp_deduction_guides
-	auto&& A = *multi::array_ptr(&a[0][0], {4, 5});
-	multi::array_ref B(&b[0][0], {4, 5});
-#else
-	auto&& A = *multi::array_ptr<double, 2>(&a[0][0], {4, 5});
-	multi::array_ref<double, 2, double*>&& B = multi::array_ref<double, 2, double*>(&b[0][0], {4, 5});
-#endif
-	BOOST_REQUIRE( size(A) == 4 );
-	BOOST_REQUIRE( size(A) == size(B) );
-
-	std::move(B) = std::move(A);
-	BOOST_REQUIRE( std::move(B) == std::move(A) );
-
-	BOOST_REQUIRE( size(rotated(A)) == 5 );
-	BOOST_REQUIRE( size(rotated(B)) == 5 );
-	BOOST_REQUIRE( size(rotated(A)) == size(rotated(B)) );
-	
-	BOOST_REQUIRE( std::distance(begin(rotated(B)), end(rotated(B))) == 5 );		
-
-	rotated(A) = rotated(B);
-	BOOST_REQUIRE( b[1][2] == a[1][2] );
 }
 
