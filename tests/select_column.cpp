@@ -1,5 +1,5 @@
-#ifdef COMPILATION_INSTRUCTIONS
-$CXX $0 -o$0x -DBOOST_TEST_DYN_LINK -lboost_unit_test_framework &&$0x&&rm $0x;exit
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
+clang++ $0 -o $0x -DBOOST_TEST_DYN_LINK -lboost_unit_test_framework &&$0x&&rm $0x;exit
 #endif
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi range selection"
@@ -9,6 +9,8 @@ $CXX $0 -o$0x -DBOOST_TEST_DYN_LINK -lboost_unit_test_framework &&$0x&&rm $0x;ex
 
 namespace multi = boost::multi;
 
+template<class A> void what(A&&);
+
 BOOST_AUTO_TEST_CASE(multi_array_range_section){
 	multi::array<double, 2> A = {
 		{00., 01., 02.},
@@ -16,9 +18,52 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section){
 		{20., 21., 22.},
 		{30., 31., 32.},
 	};
-	BOOST_REQUIRE( size(A) == 4 );
 
-	auto&& col2( A(A.extension(0), 2) ); // select column #2 
+	BOOST_TEST( size( A( multi::all, 2) ) == size(A) );
+	BOOST_TEST( size( A( multi::_ , 2) ) == size(A) );
+	BOOST_TEST( size( A( *multi::_ , 2) ) == size(A) );
+	BOOST_TEST( size( A( multi::U , 2) ) == size(A) );
+
+	BOOST_TEST( size( A(   multi::all  , 2) ) == 4 );
+	BOOST_TEST( size( A(   multi::all<2, 2) ) == 2 );
+	BOOST_TEST( size( A(1<=multi::all  , 2) ) == 3 );
+	BOOST_TEST( size( A(1<=multi::all<3, 2) ) == 2 );
+
+	BOOST_TEST( size( A(   multi::_  , 2) ) == 4 );
+	BOOST_TEST( size( A(   multi::_<2, 2) ) == 2 );
+	BOOST_TEST( size( A(1<=multi::_  , 2) ) == 3 );
+	BOOST_TEST( size( A(1<=multi::_<3, 2) ) == 2 );
+
+	using multi::_;
+
+	BOOST_TEST( size( A(   _  , 2) ) == 4 );
+	BOOST_TEST( size( A(   _<2, 2) ) == 2 );
+	BOOST_TEST( size( A(1<=_  , 2) ) == 3 );
+	BOOST_TEST( size( A(1<=_<3, 2) ) == 2 );
+
+	using multi::__; using multi::U;
+	BOOST_TEST( size( A(_, 2) ) == size(A) );
+	BOOST_TEST( size( A(*_, 2) ) == size(A) );
+	BOOST_TEST( size( A(__, 2) ) == size(A) );
+
+	BOOST_TEST( size( A(_<2, 2) ) == 2 );
+	BOOST_TEST( size( A(*_<2, 2) ) == 2 );
+	BOOST_TEST( size( A(U<2, 2) ) == 2 );
+
+	BOOST_TEST( size( A(1<=_, 2) ) == 3 );
+	BOOST_TEST( size( A(1<=*_, 2) ) == 3 );
+	BOOST_TEST( size( A(1<=U, 2) ) == 3 );
+
+	BOOST_TEST( size( A(1<=_<3, 2) ) == 2 );
+	BOOST_TEST( size( A(1<=*_<3, 2) ) == 2 );
+	BOOST_TEST( size( A(1<=U<3, 2) ) == 2 );
+
+//	BOOST_TEST( size( A(*_<2, 2) ) == 2 );
+	BOOST_TEST( size( A(U<2, 2) ) == 2 );
+
+	BOOST_REQUIRE( size( A(A.extension(), 2) ) == size(A) );
+
+	auto&& col2( A(A.extension(0), 2) ); // select column #2
 	// same as A(extesion(A), 2)
 	// same as A(A.extension(0), 2);
 	// same as rotated(A)[2];
