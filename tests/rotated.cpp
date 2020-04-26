@@ -1,5 +1,5 @@
-#ifdef COMPILATION_INSTRUCTIONS
-$CXX -Wall -Wextra -Wpedantic $0 -o$0x -lboost_unit_test_framework &&$0x&& rm $0x; exit
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
+$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi rotate"
@@ -9,8 +9,6 @@ $CXX -Wall -Wextra -Wpedantic $0 -o$0x -lboost_unit_test_framework &&$0x&& rm $0
 #include "../array.hpp"
 
 namespace multi = boost::multi;
-
-template<class... T> void what(T&&...) = delete;
 
 BOOST_AUTO_TEST_CASE(multi_rotate_3d){
 	multi::array<double, 3> A({3, 4, 5});
@@ -97,9 +95,13 @@ BOOST_AUTO_TEST_CASE(multi_rotate){
 		BOOST_REQUIRE( & a[3][5][7] == & (~a[3])[7][5] );
 
 		BOOST_REQUIRE( & a[3][5] == & (~a)[5][3] );
-		BOOST_REQUIRE( & (~~a) == & a );
-		BOOST_REQUIRE( & (a <<3) == & a);
-		BOOST_REQUIRE( & (a >>1 <<1) == &a );
+		BOOST_REQUIRE( ~~a == a );
+		BOOST_REQUIRE( &~~a == &a );
+		BOOST_REQUIRE( &(a <<3) == &a);
+		BOOST_REQUIRE( &a == &(a<<3) );
+		BOOST_REQUIRE( &(a <<1) != &a);
+		BOOST_REQUIRE( (a >>1 <<1) == a );
+		BOOST_REQUIRE( &(a >>1 <<1) == &a );
 	}
 	{
 		multi::array<double, 2> const a = {
