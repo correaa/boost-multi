@@ -52,7 +52,7 @@ gcc:
       - export CXX="g++     -x c++  -Wall -Wextra -Wpedantic -Ofast "
       - $CXX --version
       - cd tests
-      - for a in ./*.cpp; do echo $a; sh $a || break; echo "\n"; done;
+      - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
 
 clang:
     stage: test
