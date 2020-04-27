@@ -1,6 +1,7 @@
-#ifdef COMPILATION_INSTRUCTIONS
-$CXX -Wall -Wextra -Wpedantic $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
+$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
+// © Alfredo A. Correa 2019-2020
 
 #include "../array.hpp"
 
@@ -26,7 +27,8 @@ public:
 	explicit involuted(Ref r, Involution f = {}) : r_{std::forward<Ref>(r)}, f_{f}{}
 	involuted& operator=(involuted const& other)=delete;//{r_ = other.r_; return *this;}
 public:
-	involuted(involuted const&) = delete;
+	involuted(involuted const&) = default;
+public:
 	involuted(involuted&&) = default; // for C++14
 	operator decay_type() const&{return f_(r_);}
 	decltype(auto) operator&()&&{return involuter<decltype(&std::declval<Ref>()), Involution>{&r_, f_};}
@@ -60,6 +62,7 @@ class involuter : public std::iterator_traits<It>{
 	It it_; // [[no_unique_address]] 
 	F f_;
 public:
+	using rebind_const = involuter<typename multi::iterator_traits<It>::rebind_const, F>;
 	explicit involuter(It it, F f = {}) : it_{std::move(it)}, f_{std::move(f)}{}
 	involuter(involuter const& other) = default;
 	using reference = involuted<typename std::iterator_traits<It>::reference, F>;
