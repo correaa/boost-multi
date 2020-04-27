@@ -1,5 +1,5 @@
-#ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4-*-
-$CXX -D_TEST_MULTI_CONFIG_NODISCARD -xc++ $0 -o $0x &&$0x&&rm $0x;exit
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
+$CXX $0 -o $0x &&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -29,7 +29,7 @@ $CXX -D_TEST_MULTI_CONFIG_NODISCARD -xc++ $0 -o $0x &&$0x&&rm $0x;exit
 	#define NODISCARD(MsG)
 #endif
 
-#ifdef _TEST_MULTI_CONFIG_NODISCARD
+#if not __INCLUDE_LEVEL__ // _TEST_MULTI_CONFIG_NODISCARD
 
 NODISCARD("because...") int f(){return 5;}
 //[[nodiscard]] int g(){return 5;} // ok in g++ -std=c++14
@@ -38,6 +38,7 @@ int main(){
 	int i; 
 	i = f(); // ok
 //	f();  // warning
+	++i;
 	(void)i;
 }
 #endif
