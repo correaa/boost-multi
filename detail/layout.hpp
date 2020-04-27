@@ -1,5 +1,5 @@
-#ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
-$CXX -Wall -Wextra -D_TEST_MULTI_LAYOUT -xc++ $0 -o$0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
+$CXX $0 -o$0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 #ifndef MULTI_LAYOUT_HPP
 #define MULTI_LAYOUT_HPP
@@ -176,8 +176,8 @@ public:
 		stride_{stride}, offset_{offset}, nelems_{nelems}
 	{}
 #if defined(__INTEL_COMPILER)
-	constexpr layout_t(std::initializer_list<index_extension> il) noexcept : layout_t{multi::detail::to_tuple<1, typename layout_t::index_extension>(il)}{}
-	constexpr layout_t(std::initializer_list<index> il) noexcept : layout_t{multi::detail::to_tuple<1, typename layout_t::index_extension>(il)}{}
+//	constexpr layout_t(std::initializer_list<index_extension> il) noexcept : layout_t{multi::detail::to_tuple<1, typename layout_t::index_extension>(il)}{}
+//	constexpr layout_t(std::initializer_list<index> il) noexcept : layout_t{multi::detail::to_tuple<1, typename layout_t::index_extension>(il)}{}
 #endif
 	template<class Extensions, typename = decltype(std::get<0>(Extensions{}).size())>
 	constexpr layout_t(Extensions const& e)
@@ -476,7 +476,7 @@ namespace std{
 	template<> struct tuple_size<boost::multi::extensions_type_<4>> : std::integral_constant<boost::multi::dimensionality_type, 4>{};
 }
 
-#if _TEST_MULTI_LAYOUT
+#if not __INCLUDE_LEVEL__ // _TEST_MULTI_LAYOUT
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi layout"
 #define BOOST_TEST_DYN_LINK

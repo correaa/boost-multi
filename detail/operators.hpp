@@ -1,5 +1,5 @@
-#if COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&$CXX -D_TEST_BOOST_MULTI_DETAIL_OPERATORS $0.cpp -o $0x&&$0x&&rm $0x $0.cpp;exit
+#if defined(COMPILATION)
+$CXX $0 -o $0x&&$0x&&rm $0x $0.cpp;exit
 #endif
 #ifndef BOOST_MULTI_DETAIL_OPERATORS_HPP
 #define BOOST_MULTI_DETAIL_OPERATORS_HPP
@@ -40,12 +40,12 @@ struct partially_ordered2<T, void>{
 	friend bool operator<(const U& x, const T& y){return y > x;}
 
 	template<class U>
-	friend bool operator<=(const T& x, const U& y){return (x < y) or (x == y);}
+	friend bool operator<=(T&& x, U&& y){return (std::forward<T>(x) < std::forward<T>(y)) or (std::forward<T>(x) == std::forward<T>(y));}
 	template<class U, typename = std::enable_if_t<not std::is_base_of<T, U>{}>>
 	friend bool operator<=(const U& x, const T& y){return (y > x) or (y == x);}
 	template<class U>
 	friend bool operator>=(const T& x, const U& y){return (x > y) or (x == y);}
-	template<class U, typename = std::enable_if_t<not std::is_base_of<T, U>{}>>
+	template<class U, typename = std ::enable_if_t<not std::is_base_of<T, U>{}>>
 	friend bool operator>=(const U& x, const T& y){return (y < x) or (y == x);}
 };
 
@@ -174,7 +174,7 @@ struct random_iterable : B{
 
 }}
 
-#if _TEST_BOOST_MULTI_DETAIL_OPERATORS
+#if not __INCLUDE_LEVEL__ // _TEST_BOOST_MULTI_DETAIL_OPERATORS
 
 #include<iostream>
 using std::cout;

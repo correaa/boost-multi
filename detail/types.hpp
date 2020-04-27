@@ -1,6 +1,8 @@
 #ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wall -Wextra -Wpedantic -D_TEST_MULTI_DETAIL_TYPES $0.cpp -o $0x&&$0x&&rm $0x $0.cpp;exit
+$CXX $0.cpp -o $0x&&$0x&&rm $0x $0.cpp;exit
 #endif
+//  © Alfredo A. Correa 2018-2019
+
 #ifndef MULTI_DETAIL_TYPES_HPP
 #define MULTI_DETAIL_TYPES_HPP
 
@@ -127,7 +129,7 @@ private:
 	iextensions(std::array<T, static_cast<std::size_t>(D)> const& arr, std::index_sequence<Is...>) : iextensions{arr[Is]...}{}
 };
 
-#if __cpp_deduction_guides
+#if defined(__cpp_deduction_guides) and __cpp_deduction_guides >= 201703
 template<class... Args> iextensions(Args...) -> iextensions<sizeof...(Args)>;
 #endif
 
@@ -141,7 +143,7 @@ auto contains(index_extensions<D> const& ie, Tuple const& tp){
 }}
 
 
-#if _TEST_MULTI_DETAIL_TYPES
+#if not __INCLUDE_LEVEL__ // _TEST_MULTI_DETAIL_TYPES
 
 #include<range/v3/begin_end.hpp>
 #include<range/v3/utility/concepts.hpp>

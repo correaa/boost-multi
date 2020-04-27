@@ -1,5 +1,5 @@
 #ifdef compile_instructions
-(echo '#include"'$0'"'>$0.cpp)&&$CXX -std=c++17 -Wall -Wextra -Wpedantic -D_TEST_MULTI_INDEX_RANGE $0.cpp -o $0x &&$0x&&rm $0.cpp $0x;exit
+$CXX -std=c++17 $0 -o $0x &&$0x&&rm $0x;exit
 #endif
 
 #ifndef MULTI_INDEX_RANGE_HPP
@@ -16,7 +16,7 @@
 #endif
 
 //#include<boost/serialization/nvp.hpp>
-
+#include<limits> // numeric_limits
 #include<iterator> // std::random_iterator_tag // std::reverse_iterator
 
 namespace boost{
@@ -87,11 +87,11 @@ public:
 	using pointer = value_type;
 	range() = default; // constexpr range() HD: first_{}, last_{first_}{}
 	template<class Range, typename = std::enable_if_t<std::is_same<std::decay_t<Range>, value_type>{}> >
-	constexpr range(Range&& o) HD : first_{std::forward<Range>(o).first()}, last_{std::forward<Range>(o).last()}{}
+	constexpr range(Range&& o) : first_{std::forward<Range>(o).first()}, last_{std::forward<Range>(o).last()}{}
 //	constexpr range(value_type const& fl) : first_{fl}, last_{fl + 1}{}
 //	constexpr range(value_type f, value_type l) : first_{f}, last_{l}{}
 	constexpr range(IndexType f, IndexTypeLast l) : first_{f}, last_{l}{}
-	constexpr range(IndexType f) : range(f, f + 1){}
+	constexpr explicit range(IndexType f) : range{f, f + 1}{}
 	class const_iterator 
 		: public boost::multi::iterator_facade<const_iterator, 
 			value_type, std::random_access_iterator_tag, 
@@ -144,7 +144,7 @@ public:
 	}
 	friend constexpr const_iterator begin(range const& self){return self.begin();}
 	friend const_iterator end(range const& self){return self.end();}
-	constexpr range& operator=(range const&) = default;
+//	constexpr range& operator=(range const&) = default;
 	friend constexpr auto operator==(range const& a, range const& b){
 		return (a.empty() and b.empty()) or (a.first_==b.first_ and a.last_==b.last_);
 	}
@@ -173,6 +173,36 @@ template<class IndexType = std::true_type, typename IndexTypeLast = IndexType>
 range<IndexType, IndexTypeLast> make_range(IndexType first, IndexTypeLast last){
 	return {first, last};
 }
+
+template<class IndexType = std::ptrdiff_t>
+class intersecting_range{
+	range<IndexType> impl_{std::numeric_limits<IndexType>::min(), std::numeric_limits<IndexType>::max()};
+	intersecting_range() = default;	
+	explicit intersecting_range(IndexType first, IndexType last) = delete;//: impl_{first, last}{}
+	static intersecting_range make(IndexType first, IndexType last){
+		intersecting_range ret; ret.impl_ = range<IndexType>{first, last}; return ret;
+	}
+	friend constexpr auto intersection(intersecting_range const& self, range<IndexType> const& other){
+		return intersection(self.impl_, other);
+	}
+	friend constexpr auto intersection(range<IndexType> const& other, intersecting_range const& self){
+		return intersection(other, self.impl_);
+	}
+	friend constexpr auto operator<(intersecting_range const& self, IndexType end){
+		return intersecting_range::make(self.impl_.first(), end);
+	}
+	friend constexpr auto operator<=(IndexType first, intersecting_range const& self){
+		return intersecting_range::make(first, self.impl_.last());
+	}
+public:
+	constexpr intersecting_range const& operator*() const&{return *this;}
+	static constexpr intersecting_range all(){return {};}
+};
+
+constexpr intersecting_range<> const all = intersecting_range<>::all();
+constexpr intersecting_range<> const _   = all;
+constexpr intersecting_range<> const __  = all;
+constexpr intersecting_range<> const U   = all;
 
 template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
 struct extension_t : public range<IndexType, IndexTypeLast>{
@@ -209,8 +239,7 @@ auto make_extension_t(IndexTypeLast l){return make_extension_t(IndexTypeLast{0},
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-#ifdef _TEST_MULTI_INDEX_RANGE
-
+#if not __INCLUDE_LEVEL__ // -D_TEST_MULTI_INDEX_RANGE
 //#include <boost/spirit/include/karma.hpp>
 
 #include<range/v3/begin_end.hpp>
