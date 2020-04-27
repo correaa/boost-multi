@@ -69,7 +69,7 @@ nvcc:
     script:
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet g++ nvidia-cuda-toolkit 
       - ln --symbolic --force . ../multi
-      - export CXX="nvcc    -x cu --compiler-options=-Wall,-Wextra,-Ofast "
+      - export CXX="nvcc    -x cu --compiler-options=-Wall,-Wextra"
       - $CXX --version
       - cd tests
       - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
