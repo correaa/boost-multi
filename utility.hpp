@@ -8,6 +8,8 @@ $CXX -std=c++17 -xc++ $0 -o $0x&&$0x&&rm $0x;exit
 
 #include "detail/layout.hpp"
 
+//#include "utility/const_iterator.hpp"
+
 namespace boost{
 namespace multi{
 
@@ -63,7 +65,7 @@ constexpr std::integral_constant<size_t, std::rank<T>{}> rank_aux(T const&);
 
 template<typename T> struct rank : decltype(rank_aux(std::declval<T>())){};
 
-#if __cpp_lib_nonmember_container_access < 201411
+#if not defined(__cpp_lib_nonmember_container_access) or __cpp_lib_nonmember_container_access < 201411
 template<class Container>
 constexpr auto size(Container const& con)
 ->std::make_signed_t<decltype(con.size())>{
@@ -226,14 +228,14 @@ constexpr auto dimensionality(Container const& con)
 	return con.dimensionality();}
 
 template<class T>
-auto has_dimensionaliy_member_aux(T const& t)->decltype(size_t(t.dimensionality), std::true_type {});
+auto has_dimensionaliy_member_aux(T const& t)->decltype((size_t(t.dimensionality), std::true_type{}));
 inline auto has_dimensionaliy_member_aux(...       )->decltype(                          std::false_type{});
 template<class T> struct has_dimensionality_member : decltype(has_dimensionaliy_member_aux(std::declval<T>())){};
 
 template<class C> constexpr auto dimensionality(C const& c)->decltype(c.dimensionality){return c.dimensionality;}
 
 template<class T, typename = std::enable_if_t<not has_dimensionality_member<T>{}>>
-constexpr auto dimensionality(T const&, void* = 0){return 0;}
+constexpr auto dimensionality(T const&, void* = nullptr){return 0;}
 
 template<class T, std::size_t N>
 constexpr auto dimensionality(T const(&t)[N]){return 1 + dimensionality(t[0]);}
