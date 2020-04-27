@@ -1,6 +1,10 @@
-#ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 -std=c++14 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
+$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
+
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi array_ref vector"
+#define BOOST_TEST_DYN_LINK
+#include<boost/test/unit_test.hpp>
 
 #include<iostream>
 #include<cassert>
@@ -11,7 +15,7 @@ $CXX -O3 -std=c++14 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0.x && $0.
 using std::cout; using std::cerr;
 namespace multi = boost::multi;
 
-int main(){
+BOOST_AUTO_TEST_CASE(array_ref_vector){
 	std::vector<double> buffer(100);
 	multi::array_ref<double, 2, std::vector<double>::iterator> A(buffer.begin(), {10, 10});
 	A[1][1] = 9;
