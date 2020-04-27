@@ -11,7 +11,7 @@ $CXX $0 -o $0x&&$0x&&rm $0x;exit
 using std::cout; using std::cerr;
 namespace multi = boost::multi;
 
-namespace min{
+namespace minimalistic{
 template<class T> struct ptr : std::iterator_traits<T*>{ // minimalistic pointer
 	T* impl_;
 	ptr(T* impl) : impl_{impl}{}
@@ -39,21 +39,21 @@ struct X{
 
 int main(){
 
-	int X::*s = &X::a1;
+	int X::* s = &X::a1;
 	X x{1, 2.5, 1.2};
 	assert( x.*s == x.a1 );
 
 //	X X::*ss = &X::X; 
 
 	double* buffer = new double[100];
-	multi::array_ref<double, 2, min::ptr<double> > CC(min::ptr<double>{buffer}, {10, 10});
+	multi::array_ref<double, 2, minimalistic::ptr<double> > CC(minimalistic::ptr<double>{buffer}, {10, 10});
 	CC[2]; // requires operator+ 
 	CC[1][1]; // requires operator*
 	CC[1][1] = 9;
 	assert(CC[1][1] == 9);
 
 	using multi::static_array_cast;
-	auto&& CC2 = static_array_cast<double, min::ptr2<double>>(CC);
+	auto&& CC2 = static_array_cast<double, minimalistic::ptr2<double>>(CC);
 	assert( &CC2[1][1] == &CC[1][1] );
 
 }
