@@ -1,7 +1,8 @@
-#ifdef COMPILATION_INSTRUCTIONS
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
 $CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
+
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi constructors"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
@@ -122,21 +123,22 @@ BOOST_AUTO_TEST_CASE(multi_constructors){
 }
 
 {
-	double a[4][5] {
+	double a[4][5];
+	double const b[4][5] = {
 		{ 0,  1,  2,  3,  4}, 
 		{ 5,  6,  7,  8,  9}, 
 		{10, 11, 12, 13, 14}, 
 		{15, 16, 17, 18, 19}
-	};
-	double b[4][5];
-	multi::array_ref<double, 2> A(&a[0][0], {4, 5});
-	multi::array_ref
+	};;
+	multi::array_ptr<double, 2> ap(&a[0][0], {4, 5});
+	multi::array_ptr
 #if not __cpp_deduction_guides
 		<double, 2, double const*>
 #endif
-		B((double const*)&b[0][0], {4, 5})
+		bp(&b[0][0], {4, 5})
 	;
-	rotated(A) = rotated(B);
+	*ap = *bp;
+	BOOST_REQUIRE( (*ap).rotated() == (*bp).rotated() );
 }
 {
 	multi::array<double, 2> A = {{0, 3}, {0, 5}};
