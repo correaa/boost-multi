@@ -69,8 +69,7 @@ protected:
 		return adl::alloc_uninitialized_value_construct_n(static_array::alloc(), this->base_, this->num_elements());
 	}
 	auto uninitialized_default_construct(){
-	//	return std::uninitialized_default_construct_n(this->base_, this->num_elements());
-		return adl::alloc_uninitialized_default_construct_n(static_array::alloc(), this->base_, this->num_elements());
+		return adl_alloc_uninitialized_default_construct_n(static_array::alloc(), this->base_, this->num_elements());
 	}
 	template<typename It> auto uninitialized_copy_elements(It first){
 		return array_alloc::uninitialized_copy_n(first, this->num_elements(), this->data());
