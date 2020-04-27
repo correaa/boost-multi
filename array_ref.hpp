@@ -76,8 +76,8 @@ struct array_types : Layout{
 	using element_type = element; // this follows more closely https://en.cppreference.com/w/cpp/memory/pointer_traits
 	constexpr static dimensionality_type dimensionality = D;
 	using element_ptr = ElementPtr;
-//	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element_type const>; //multi::const_iterator<ElementPtr>; 
-	using element_const_ptr = typename multi::iterator_traits<ElementPtr>::rebind_const;
+	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element_type const>; //multi::const_iterator<ElementPtr>; 
+//	using element_const_ptr = typename multi::iterator_traits<ElementPtr>::rebind_const;
 	using layout_t = Layout;
 	using value_type = typename std::conditional<
 		(dimensionality>1),
@@ -350,7 +350,11 @@ struct basic_array :
 	friend struct basic_array<typename types::element, typename Layout::rank{} + 1, typename types::element_ptr&>;
 	using types::layout;
 	constexpr auto layout() const /*HD*/{return array_types<T, D, ElementPtr, Layout>::layout();}
-	using basic_const_array = basic_array<T, D, typename multi::iterator_traits<ElementPtr>::rebind_const, Layout>;
+	using basic_const_array = basic_array<T, D, 
+		typename std::pointer_traits<ElementPtr>::template rebind<typename basic_array::element_type const>,
+	//	typename multi::iterator_traits<ElementPtr>::rebind_const, 
+		Layout
+	>;
 protected:
 	using types::types;
 	template<typename, dimensionality_type, class Alloc> friend struct static_array;
@@ -970,7 +974,12 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout> :
 	using decay_type = array<typename types::element, dimensionality_type{1}, decltype(default_allocator_of(std::declval<ElementPtr>()))>;
 	       decay_type decay(          )&&      {return decay_type{std::move(*this)};}
 	friend decay_type decay(basic_array&& self){return std::move(self).decay();}
-	using basic_const_array = basic_array<T, 1, typename multi::iterator_traits<ElementPtr>::rebind_const, Layout>;
+	using basic_const_array = basic_array<
+		T, 1, 
+		typename std::pointer_traits<ElementPtr>::template rebind<typename basic_array::element_type const>,
+	//	typename multi::iterator_traits<ElementPtr>::rebind_const, 
+		Layout
+	>;
 protected:
 	template<class A>
 	void intersection_assign_(A&& other)&{
