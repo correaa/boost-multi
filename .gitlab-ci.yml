@@ -38,7 +38,7 @@ variables:
 before_script:
     - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
     - apt update --quiet
-    - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev libboost-timer-dev librange-v3-dev valgrind
+    - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev libboost-timer-dev libtbb-dev librange-v3-dev valgrind
 
 stages:
     - test
