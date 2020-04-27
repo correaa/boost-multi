@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-clang++ -Ofast -std=c++14 -Wall -Wextra -Wpedantic $0 -o$0x -lboost_timer && $0x && rm $0x;exit
+$CXX $0 -o $0x -lboost_timer&&$0x&&rm $0x;exit
 #endif
 
 #include "../../multi/array.hpp"
@@ -42,7 +42,7 @@ auto gj_solve2(Matrix&& A, Vector&& y)->decltype(y[0]/=A[0][0], y){
 		auto const& yr = (y[r] /= Arr);
 		for(idx r2 = r + 1; r2 != Asize; ++r2){
 			auto&& Ar2 = A[r2]; auto const& Ar2r = A[r2][r];
-			std::transform(Ar2.begin() + r + 1, Ar2.end(), Ar.begin() + r + 1, Ar2.begin() + r + 1, [&](auto&& a, auto&& b){return a - Ar2r*b;});
+			std::transform(std::move(Ar2).begin() + r + 1, std::move(Ar2).end(), std::move(Ar).begin() + r + 1, std::move(Ar2).begin() + r + 1, [&](auto&& a, auto&& b){return a - Ar2r*b;});
 			y[r2] -= Ar2r*yr;
 		}
 	}
