@@ -1,12 +1,13 @@
-#ifdef COMPILATION_INSTRUCTIONS
-$CXX -O3 -std=c++14 -Wall -Wextra -Wpedantic $0 -DBOOST_TEST_DYN_LINK -lboost_unit_test_framework -o $0x &&$0x $@&&rm $0x;exit
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
+$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
-
-
-#include "../array.hpp"
+//  © Alfredo A. Correa 2018-2019
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi comparisons"
+#define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
+
+#include "../array.hpp"
 
 BOOST_AUTO_TEST_CASE(comparisons){
 	namespace multi = boost::multi;
@@ -25,13 +26,13 @@ BOOST_AUTO_TEST_CASE(comparisons){
 		BOOST_REQUIRE( A[1][1] == B[1][1] );
 		BOOST_REQUIRE( A == B );
 		BOOST_REQUIRE( B == A );
-		BOOST_REQUIRE( std::equal(begin(A[1]), end(A[1]), begin(B[1])) );
+		BOOST_REQUIRE( std::equal(A[1].begin(), A[1].end(), begin(B[1])) );
 	}
 
 	multi::array<double, 3> A =
-		#if __INTEL_COMPILER
-		(double[3][2][2])
-		#endif
+//		#if __INTEL_COMPILER
+//		(double[3][2][2])
+//		#endif
 		{
 			{{ 1.2,  1.1}, { 2.4, 1.}},
 			{{11.2,  3.0}, {34.4, 4.}},
