@@ -1,5 +1,5 @@
-#ifdef COMPILATION_INSTRUCTIONS
-clang++ -O3 -std=c++17 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0x&&$0x&&rm $0x; exit
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
+$CXX $0 -o $0x&&$0x&&rm $0x;exit
 #endif
 
 #include "../array.hpp"
@@ -11,14 +11,11 @@ clang++ -O3 -std=c++17 -Wall -Wextra -Wpedantic `#-Wfatal-errors` $0 -o $0x&&$0x
 using std::cout; using std::cerr;
 namespace multi = boost::multi;
 
-constexpr auto neg = [](auto const& x){return -x;};
-#if __has_cpp_attribute(maybe_unused)
-[[maybe_unused]]
-#endif
-auto inverse(decltype(neg)){return [](auto&& x){return -x;};}
+auto neg = [](auto const& x){return -x;};
 
-constexpr auto bconj = [](auto const& x){using std::conj; return conj(x);};
-[[maybe_unused]] constexpr auto inverse(decltype(bconj)){return [](auto const& x){using std::conj; return conj(x);};}
+//auto inverse(decltype(neg)){return [](auto&& x){return -x;};}
+//auto bconj = [](auto const& x){using std::conj; return conj(x);};
+//auto inverse(decltype(bconj)){return [](auto const& x){using std::conj; return conj(x);};}
 
 template<class It, class F> class involuter;
 
@@ -27,6 +24,12 @@ template<class It, class F> class involuter;
 #else
 #define CPP_NO_UNIQUE_ADDRESS
 #endif
+
+template<class T, std::enable_if_t<std::is_empty<T>{}, int> =0> 
+T default_construct(){return *(T*)(&default_construct<T>);}
+
+template<class T, std::enable_if_t<not std::is_empty<T>{}, int> =0> 
+T default_construct(){return {};}
 
 template<class Ref, class Involution>
 class involuted{
@@ -37,7 +40,8 @@ public:
 	using decay_type =std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
 	explicit involuted(Ref r) : involuted(
 		std::forward<Ref>(r), 
-		[&]()->Involution{if constexpr(std::is_empty<Involution>{}) return*(Involution*)this;else return {};}()
+		default_construct<Involution>()
+//		[&]()->Involution{if constexpr(std::is_empty<Involution>{}) return*(Involution*)this;else return {};}()
 	){
 	///	static_assert( std::is_trivially_default_constructible<std::decay_t<Involution>>{}, "!" );
 	//	static_assert( std::is_empty<Involution>{}, "!" );
@@ -46,7 +50,11 @@ public:
 	involuted& operator=(involuted const& other)=delete;//{r_ = other.r_; return *this;}
 public:
 	involuted(involuted const&) = delete;
+#if __cplusplus >= 201703L
 	involuted(involuted&&) = delete;
+#else
+	involuted(involuted&&) = default;
+#endif
 	operator decay_type() const&{return f_(r_);}
 	decltype(auto) operator&()&&{return involuter<decltype(&std::declval<Ref>()), Involution>{&r_, f_};}
 	template<class DecayType>
@@ -68,9 +76,11 @@ public:
 	template<class Any> friend auto operator<<(Any&& a, involuted const& self)->decltype(a << std::declval<decay_type>()){return a << self.operator decay_type();}
 };
 
+#if __cpp_deduction_guides
 template<class T, class F> involuted(T&&, F)->involuted<T const, F>;
 //template<class T, class F> involuted(T&, F)->involuted<T&, F>;
 //template<class T, class F> involuted(T const&, F)->involuted<T const&, F>;
+#endif
 
 template<class It, class F>
 class involuter : public std::iterator_traits<It>{
@@ -79,7 +89,8 @@ class involuter : public std::iterator_traits<It>{
 public:
 	involuter(It it) : involuter(
 		std::move(it), 
-		[&]{if constexpr(sizeof(F)<=1) return *(F*)(this); else return F{};}()
+		default_construct<F>()
+//		[&]{if constexpr(sizeof(F)<=1) return *(F*)(this); else return F{};}()
 	){}
 	involuter(It it, F f) : it_{std::move(it)}, f_{std::move(f)}{}
 	using reference = involuted<typename std::iterator_traits<It>::reference, F>;
@@ -96,7 +107,7 @@ public:
 template<class ComplexRef> using negated = involuted<ComplexRef, decltype(neg)>;
 template<class ComplexIt> using negater = involuter<ComplexIt, decltype(neg)>;
 
-constexpr auto conj = [](std::complex<double> const& a){return std::conj(std::forward<decltype(a)>(a));};
+auto const conj = [](std::complex<double> const& a){return std::conj(std::forward<decltype(a)>(a));};
 
 template<class ComplexRef> struct conjd : involuted<ComplexRef, decltype(conj)>{
 	conjd(ComplexRef r) : involuted<ComplexRef, decltype(conj)>(r){}
@@ -105,7 +116,10 @@ template<class ComplexRef> struct conjd : involuted<ComplexRef, decltype(conj)>{
 	friend decltype(auto) real(conjd const& self){using std::real; return real(static_cast<typename conjd::decay_type>(self));}
 	friend decltype(auto) imag(conjd const& self){using std::imag; return imag(static_cast<typename conjd::decay_type>(self));}
 };
+
+#if __cpp_deduction_guides
 template<class T> conjd(T&&)->conjd<T>;
+#endif
 
 template<class Complex> using conjr = involuter<Complex, decltype(conj)>;
 
@@ -163,7 +177,7 @@ int main(){
 	{
 		using complex = std::complex<double>;
 		complex c{1., 2.};
-		auto&& z = conjd(c);
+		auto&& z = conjd<complex&>{c};
 		cout<< z << std::endl;
 		auto pz = &z;
 		cout << real(*pz) <<' '<< imag(*pz) << std::endl;
@@ -173,17 +187,18 @@ int main(){
 	{
 		double a = 5;
 		double& b = a; assert( b == 5 );
-		auto&& c = involuted(a, neg);
+		auto&& c = involuted<double&, decltype(neg)>(a, neg);
 		assert( c == -5. );
 		c = 10.; assert( c == 10. );
 		assert( a = -10. );
 		
 	//	double&& aa = 5.;
-		auto m5 = involuted(5., [](auto&& x){return -x;});
+	//	auto neg_fun = [](auto const& x){return -x;};
+	//	auto m5 = involuted<double const&, decltype(neg_fun)>(5., neg_fun);
 	//	m5 = 4.;
-		std::cout << m5 << std::endl;
-		assert( m5 == -5. );
-		c = m5;
+	//	std::cout << m5 << std::endl;
+	//	assert( m5 == -5. );
+	//	c = m5;
 	}
 
 #if 0
@@ -286,7 +301,7 @@ int main(){
 		auto&& d2DrealT = reinterpret_array_cast<double>(rotated(d2D));
 		assert( d2DrealT[2][1] == 7. );
 
-		multi::array<double, 2> d2real_copy = d2Dreal;
+		multi::array<double, 2> d2real_copy = reinterpret_array_cast<double>(d2D);//d2Dreal;
 
 		using multi::static_array_cast;
 		auto&& d2Dreal2 = static_array_cast<double, indirect_real<>>(d2D);
@@ -317,7 +332,8 @@ int main(){
 			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
 			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
 		};
-		[[maybe_unused]] auto Aconj = multi::static_array_cast<complex, conjr<complex*>>(A);
+	//	[[maybe_unused]] 
+		auto Aconj = multi::static_array_cast<complex, conjr<complex*>>(A);
 		assert( Aconj[1][2] == conj(A[1][2]) );
 	}
 }
