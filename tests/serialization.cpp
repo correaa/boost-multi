@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x -lboost_unit_test_framework  -lstdc++fs -lboost_serialization -lboost_iostreams -lcudart&&$0x $@&&rm $0x;exit
+$CXX $0 -o $0x -lboost_unit_test_framework  -lstdc++fs -lboost_serialization -lboost_iostreams&&$0x $@&&rm $0x;exit
 #endif
 // © Alfredo Correa 2018-2020
 
@@ -9,7 +9,7 @@ $CXX $0 -o $0x -lboost_unit_test_framework  -lstdc++fs -lboost_serialization -lb
 
 #include "../tests/../array.hpp"
 
-#include "../adaptors/cuda.hpp"
+//#include "../adaptors/cuda.hpp"
 
 #include<boost/archive/xml_oarchive.hpp>
 #include<boost/archive/xml_iarchive.hpp>
@@ -212,6 +212,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_small){
 		BOOST_REQUIRE( d2D_cpy == d2D );
 	}
 	return;
+#if 0
 	{
 		multi::cuda::managed::array<complex, 2> cud2D({2000, 2000});
 		[&, _=watch("cuda binary write")]{
@@ -220,6 +221,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_small){
 		}();
 		std::cerr<<"size "<< (fs::file_size("serialization.bin")/1e6) <<"MB\n";
 	}
+#endif
 	{
 		[&, _ = watch("text write")]{
 			std::ofstream ofs{"serialization.txt"}; assert(ofs);
