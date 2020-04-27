@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXX -Wall -Wextra -Wpedantic $0 -o $0x &&$0x&&rm $0x; exit
+$CXX $0 -o $0x&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2018-2020
 
@@ -20,6 +20,7 @@ public:
 	using iterator_category = std::random_access_iterator_tag;
 	ptr() = default;//ptr(ptr const=default; ptr& operator=(ptr const&)=default;
 	ptr(std::nullptr_t){}
+	template<class Other> ptr(ptr<Other> const&){}
 	reference operator*() const{return reference{&value};}
 	ptr operator+(difference_type) const{return *this;}
 	ptr& operator+=(difference_type){return *this;}
@@ -30,7 +31,6 @@ public:
 //	explicit operator T*() const{return &value;}
 	ptr const& operator->() const{return *this;}
 	friend ptr to_address(ptr const& p){return p;}
-	operator ptr<T const>() const{return {};}
 	explicit operator bool(){return false;}
 //	operator double*() const{return &value;}
 	friend std::allocator<value_type> get_allocator(ptr const&){return std::allocator<value_type>{};}
