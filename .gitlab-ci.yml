@@ -63,7 +63,7 @@ clang:
       - cd tests
       - for a in ./*.cpp; do echo $a; sh $a || break; echo "\n"; done;
 
-clang:
+nvcc:
     stage: test
     script:
       - ln --symbolic --force . ../multi
