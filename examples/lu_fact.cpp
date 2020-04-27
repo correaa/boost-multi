@@ -1,6 +1,7 @@
-#ifdef COMPILATION_INSTRUCTIONS
-clang++ -O2 -std=c++17 -Wall -Wextra -Wpedantic $0 -o$0x -lboost_timer `pkg-config --libs tbb` &&$0x&&rm $0x;exit
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
+$CXX $0 -o $0x -lboost_timer `pkg-config --libs tbb` &&$0x&&rm $0x;exit
 #endif
+// © Alfredo A. Correa 2018-2020
 
 #include "../../multi/array.hpp"
 
