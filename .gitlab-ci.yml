@@ -38,12 +38,11 @@ variables:
 before_script:
     - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
     - apt update --quiet
-    - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev librange-v3-dev valgrind nvidia-cuda-toolkit 
+    - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev librange-v3-dev valgrind
 
 stages:
     - test
 #    - build
-
 
 gcc:
     stage: test
@@ -58,6 +57,7 @@ gcc:
 clang:
     stage: test
     script:
+      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang
       - ln --symbolic --force . ../multi
       - export CXX="clang++ -x c++ -Wall -Wextra -Wpedantic -Wmove -Ofast "
       - $CXX --version
@@ -67,6 +67,7 @@ clang:
 nvcc:
     stage: test
     script:
+      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet nvidia-cuda-toolkit 
       - ln --symbolic --force . ../multi
       - export CXX="nvcc    -x cu --compiler-options=-Wall,-Wextra,-Wpedantic,-Ofast "
       - $CXX --version
