@@ -1,6 +1,7 @@
-#ifdef COMPILATION_INSTRUCTIONS
-clang++ -O3 -std=c++2a -Wall -Wextra -Wpedantic -Wfatal-errors $0 -o $0.x && $0.x $@ && rm -f $0.x; exit
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
+$CXX $0 -o $0x&&$0x&&rm $0x;exit
 #endif
+// © Alfredo A. Correa 2018-2020
 
 #include<iostream>
 #include<cassert>
