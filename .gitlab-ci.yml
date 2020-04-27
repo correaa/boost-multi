@@ -67,7 +67,7 @@ clang:
 nvcc:
     stage: test
     script:
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet nvidia-cuda-toolkit 
+      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet g++ nvidia-cuda-toolkit 
       - ln --symbolic --force . ../multi
       - export CXX="nvcc    -x cu --compiler-options=-Wall,-Wextra,-Wpedantic,-Ofast "
       - $CXX --version
