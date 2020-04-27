@@ -19,8 +19,8 @@ BOOST_AUTO_TEST_CASE(array_ref_vector){
 	std::vector<double> buffer(100);
 	multi::array_ref<double, 2, std::vector<double>::iterator> A(buffer.begin(), {10, 10});
 	A[1][1] = 9;
-	assert(A[1][1] == 9);
-	assert(buffer[11]==9);
+	BOOST_REQUIRE( A[1][1] == 9 );
+	BOOST_REQUIRE( buffer[11]==9 );
 
 	A[2]; // requires operator+ 
 	A[1][1]; // requires operator*
