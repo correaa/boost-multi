@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x -ltbb -lcudart -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXX $0 -o $0x -ltbb -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 
 #include "../array.hpp"
