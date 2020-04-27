@@ -61,7 +61,7 @@ clang:
       - export CXX="clang++ -x c++ -Wall -Wextra -Wpedantic -Wmove -Ofast "
       - $CXX --version
       - cd tests
-      - for a in ./*.cpp; do echo $a; sh $a || break; echo "\n"; done;
+      - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
 
 nvcc:
     stage: test
@@ -70,5 +70,5 @@ nvcc:
       - export CXX="nvcc    -x cu --compiler-options=-Wall,-Wextra,-Wpedantic,-Ofast "
       - $CXX --version
       - cd tests
-      - for a in ./*.cpp; do echo $a; $CXX $a || break; echo "\n"; done;
+      - for a in ./*.cpp; do echo $a; $CXX $a || exit; echo "\n"; done;
 
