@@ -1,5 +1,5 @@
-#ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4-*-
-clang++ -std=c++14 --cuda-gpu-arch=sm_52 -Ofast -x cuda $0 -o $0x -ltbb -lcudart -lboost_unit_test_framework&&$0x&&rm $0x;exit
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
+$CXX $0 -o $0x -ltbb -lcudart -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 
 #include "../array.hpp"
@@ -47,6 +47,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast){
 
 //	auto&& ARP = multi::member_array_cast<double>(A2, &Complex_<double>::re);
 }
+#if 0
 {
 	multi::cuda::array<std::complex<double>, 1> A(10);
 	CUDA_SLOW(( A[8] = std::complex<double>{1000., 2000.} ));
@@ -59,6 +60,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast){
 	BOOST_REQUIRE( CUDA_SLOW( AR[8] == 1000. ) );
 	BOOST_REQUIRE( CUDA_SLOW( AI[8] == 2000. ) );
 }
+#endif
 }
 
 }
