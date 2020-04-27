@@ -1,7 +1,11 @@
-#ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
-$CXX $0 -o $0x &&$0x&&rm $0x;exit
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
+$CXX $0 -o $0x -lboost_unit_test_framework&&$0x &&rm $0x;exit
 #endif
-// © Alfredo A. Correa 2019
+// © Alfredo A. Correa 2019-2020
+
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi allocators"
+#define BOOST_TEST_DYN_LINK
+#include<boost/test/unit_test.hpp>
 
 #include "../array_ref.hpp"
 #include "../array.hpp"
@@ -17,27 +21,61 @@ $CXX $0 -o $0x &&$0x&&rm $0x;exit
 using std::cout; using std::cerr;
 namespace multi = boost::multi;
 
-int main(){
+
+BOOST_AUTO_TEST_CASE(array_ref_from_carray){
+
+	double a[4][5] {
+		{ 0,  1,  2,  3,  4}, 
+		{ 5,  6,  7,  8,  9}, 
+		{10, 11, 12, 13, 14}, 
+		{15, 16, 17, 18, 19}
+	};
+
+	multi::array_ptr<double, 2> map = &a;
+	multi::array_ref<double, 2>&& mar = *map;
+
+	BOOST_REQUIRE( mar[1][1] == 6. );
+
+	mar[1][1] = 9.;
+	BOOST_REQUIRE( mar[1][1] == 9. );
+	BOOST_REQUIRE( a[1][1] == 9. );
+
+	double const(&a_const)[4][5] = a;
+	BOOST_REQUIRE( &a_const[1][1] == &a[1][1] );
+
+	BOOST_REQUIRE( mar(2, {1, 3}).dimensionality == 1 );
+	BOOST_REQUIRE( size(mar(2, {1, 3})) == 2 );
+	BOOST_REQUIRE( mar(2, {1, 3})[1] == 12. );
+
+	
+}
+
+template<class T> void what(T&&) = delete;
+
+BOOST_AUTO_TEST_CASE(array_from_iterator_range){
+	std::vector<double> v(20);
+	multi::array_ref<double, 2, std::vector<double>::iterator> R(begin(v), {4, 5});
+//	assert( P.base() == biit );
+//	auto at = [](auto&& pp, std::ptrdiff_t idx) -> multi::array_ref<double, 2, decltype(biit)>::reference{
+//		return {pp.layout().sub, pp.base() + pp.layout().operator()(idx)};
+//	};
+//	at(P, 0);
+//	P[0];
+//	P[0][1];
+//		P[0];
+//		P[0];
+//	for(int i = 0; i != 2; ++i){
+//		for(int j = 0; j != 2; ++j)
+//			std::cout << P[i][j] << ',';
+//		std::cout << std::endl;
+//	}
+}
+
+#if 0
+
+BOOST_AUTO_TEST_CASE(iterator_1d){
 	{
-		double a[4][5] {
-			{ 0,  1,  2,  3,  4}, 
-			{ 5,  6,  7,  8,  9}, 
-			{10, 11, 12, 13, 14}, 
-			{15, 16, 17, 18, 19}
-		};
-		double b[4][5];
-		multi::array_ref<double, 2> A(&a[0][0], {4, 5});
 
-		double const(&AAconst)[4][5] = A;
-		assert( &AAconst[1][1] == &A[1][1] );
-
-		double(&AA)[4][5] = A;
-		assert( &AA[1][1] == &A[1][1] );
-
-		multi::array_ref<double, 2> B(&b[0][0], {4, 5});
-		assert( size(rotated(B(2, {1, 3})))==2 );;
-		assert( not A.empty() );
-		rotated(B) = rotated(A);
 		multi::biiterator<std::decay_t<decltype(std::move(A).begin())>> biit{std::move(A).begin(), 0, size(*std::move(A).begin())};
 		for(int i = 0; i!=num_elements(A); ++i, ++biit)
 			cout << i << "->" << *biit << ", ";
@@ -118,7 +156,7 @@ int main(){
 	using std::distance;
 	assert( distance(begin(std::move(d2D_cref)), end(std::move(d2D_cref))) == size(d2D_cref));
 	assert( size(*begin(std::move(d2D_cref))) == 5 );
-	assert( distance(begin(std::move(d2D_cref))->begin(), begin(std::move(d2D_cref))->end()) == begin(std::move(d2D_cref))->size() );
+//	assert( distance((std::move(d2D_cref).begin())->begin(), ((std::move(d2D_cref)).begin())->end()) == ((std::move(d2D_cref)).begin())->size() );
 	assert( distance(begin(*begin(std::move(std::move(d2D_cref)))), end(*begin(std::move(d2D_cref)))) == size(*begin(std::move(d2D_cref))) );
 
 	assert( size(std::move(d2D_cref)[0]) == 5 );
@@ -210,7 +248,7 @@ int main(){
 	};
 
 	multi::array_cref<double, 2> d2D_prime_cref(&d2D_prime[0][0], {4, 5});
-	assert( std::move(d2D_cref) == std::move(d2D_prime_cref) ); // deep comparison
+//	assert( std::move(d2D_cref) == std::move(d2D_prime_cref) ); // deep comparison
 	assert( std::move(d2D_cref)[1][2] == std::move(d2D_prime_cref)[1][2] );
 	assert( &std::move(d2D_cref)[1][2] != &std::move(d2D_prime_cref)[1][2] );
 	assert( not(std::move(d2D_cref) != std::move(d2D_prime_cref)) );
@@ -337,4 +375,5 @@ int main(){
 	}
 
 }
+#endif
 
