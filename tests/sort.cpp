@@ -1,6 +1,7 @@
-#ifdef COMPILATION_INSTRUCTIONS
-$CXX -Wall -Wextra $0 -o$0x -lboost_unit_test_framework&&$0x&&rm $0x; exit
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
+$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x; exit
 #endif
+// © Alfredo A. Correa 2019-2020
 
 #define BOOST_TEST_MODULE "Unit Tests for Multi sort"
 #define BOOST_TEST_DYN_LINK
@@ -8,14 +9,13 @@ $CXX -Wall -Wextra $0 -o$0x -lboost_unit_test_framework&&$0x&&rm $0x; exit
 
 #include "../array.hpp"
 
-#include<algorithm> // for sort
+#include<algorithm> // stable_sort
 #include<vector>
 
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(multi_array_ref_stable_sort){
 
-// begin-snippet: multi_array_ref_stable_sort
 	std::vector<double> v = {1.,2.,3.};
 	double d2D[4][5] = {
 		{150, 16, 17, 18, 19},
@@ -29,14 +29,9 @@ BOOST_AUTO_TEST_CASE(multi_array_ref_stable_sort){
 	std::stable_sort( begin(d2D_ref), end(d2D_ref) );
 	BOOST_REQUIRE( std::is_sorted( begin(d2D_ref), end(d2D_ref) ) );
 
-//	BOOST_REQUIRE( not std::is_sorted( begin(rotated(d2D_ref)), end(rotated(d2D_ref))) );
-//	std::stable_sort( begin(rotated(d2D_ref)), end(rotated(d2D_ref)) );
-//	BOOST_REQUIRE( std::is_sorted( begin(rotated(d2D_ref)), end(rotated(d2D_ref))) );
-
-	BOOST_REQUIRE( not std::is_sorted( d2D_ref.begin(1), d2D_ref.end(1) ) );
-	std::stable_sort( d2D_ref.begin(1), d2D_ref.end(1) );
-	BOOST_REQUIRE( std::is_sorted( d2D_ref.begin(1), d2D_ref.end(1) ) );
-// end-snippet
+	BOOST_REQUIRE( not std::is_sorted( begin(d2D_ref<<1), end(d2D_ref<<1) ) );
+	std::stable_sort( begin(d2D_ref<<1), end(d2D_ref<<1) );
+	BOOST_REQUIRE( std::is_sorted( begin(d2D_ref<<1), end(d2D_ref<<1) ) );
 
 }
 
