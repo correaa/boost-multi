@@ -17,6 +17,17 @@
 #  - cd $GOPATH/src/$REPO_NAME
 #    - apt upgrade -y --quiet
 # nvidia-cuda-dev  nvidia-smi
+#      - sh ./array_ptr.cpp
+#      - sh ./array_ref.cpp
+#      - sh ./sort.cpp
+#      - sh ./comparisons.cpp
+#      - sh ./constructors.cpp
+#      - sh ./initializer_list.cpp
+#      - sh ./layout.cpp
+#      - sh ./fill.cpp
+#      - sh ./rotated.cpp
+#      - sh ./allocator.cpp
+#      - sh ./reextent.cpp
 
 image: debian:testing
 
@@ -33,6 +44,7 @@ stages:
     - test
 #    - build
 
+
 gcc:
     stage: test
     script:
@@ -40,18 +52,7 @@ gcc:
       - export CXX="g++     -x c++  -Wall -Wextra -Wpedantic -Ofast "
       - $CXX --version
       - cd tests
-#      - sh ./array_ptr.cpp
-#      - sh ./array_ref.cpp
-#      - sh ./sort.cpp
-#      - sh ./comparisons.cpp
-#      - sh ./constructors.cpp
-#      - sh ./initializer_list.cpp
-#      - sh ./layout.cpp
-#      - sh ./fill.cpp
-#      - sh ./rotated.cpp
-#      - sh ./allocator.cpp
-#      - sh ./reextent.cpp
-       - for a in ./*.cpp; do echo $a; sh $a || break; echo "\n"; done;
+      - for a in ./*.cpp; do echo $a; sh $a || break; echo "\n"; done;
 
 clang:
     stage: test
