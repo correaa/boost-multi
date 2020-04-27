@@ -63,3 +63,12 @@ clang:
       - cd tests
       - for a in ./*.cpp; do echo $a; sh $a || break; echo "\n"; done;
 
+clang:
+    stage: test
+    script:
+      - ln --symbolic --force . ../multi
+      - export CXX="export CXX="nvcc    -x cu --compiler-options=-Wall,-Wextra,-Wpedantic,-Ofast "
+      - $CXX --version
+      - cd tests
+      - for a in ./*.cpp; do echo $a; $CXX $a || break; echo "\n"; done;
+
