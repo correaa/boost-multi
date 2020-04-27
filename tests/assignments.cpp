@@ -1,16 +1,18 @@
-#ifdef COMPILATION_INSTRUCTIONS
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
 $CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
-// © Alfredo A. Correa 2019
+// © Alfredo A. Correa 2019-2020
+
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi assignments"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
 #include "../../multi/array.hpp"
-#include<functional>
-#include <boost/iterator/transform_iterator.hpp>
+
+#include<boost/iterator/transform_iterator.hpp>
 #include<boost/functional/hash.hpp>
 
+#include<functional>
 #include<iostream>
 #include<vector>
 
@@ -18,8 +20,6 @@ namespace multi = boost::multi;
 using std::cout;
 
 multi::array_ref<double, 2> make_ref(double* p){return {p, {5, 7}};}
-
-template<class... T> void what(T&&...) = delete;
 
 BOOST_AUTO_TEST_CASE(range_assignment){
 {
@@ -119,9 +119,9 @@ BOOST_AUTO_TEST_CASE(rvalue_assignments){
 
 	std::vector<double> const v1(200, 99.);
 	std::vector<complex> v2(200);
-	auto linear1 = [&]{return multi::array_cref<double, 1>(v1.data(), 200);};
-	auto linear2 = [&]{return multi::array_ref<complex, 1>(v2.data(), 200);};
-	linear2() = linear1();
+	auto linear1 = [&]{return multi::array_cptr<double, 1>(v1.data(), 200);};
+	auto linear2 = [&]{return multi::array_ptr<complex, 1>(v2.data(), 200);};
+	*linear2() = *linear1();
 
 }
 
@@ -142,8 +142,8 @@ BOOST_AUTO_TEST_CASE(assignments){
 		std::vector<double> v(5*7, 99.), w(5*7, 33.);
 
 		multi::array_ref<double, 2> B{w.data(), {5, 7}};
-		make_ref(v.data()) = B;
-		make_ref(v.data()) = B.sliced(0,5);
+		make_ref(v.data()) = std::move(B);
+		make_ref(v.data()) = std::move(B).sliced(0,5);
 
 		BOOST_REQUIRE( v[9] == 33. );
 	}
