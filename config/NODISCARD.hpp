@@ -18,7 +18,7 @@ $CXX -D_TEST_MULTI_CONFIG_NODISCARD -xc++ $0 -o $0x &&$0x&&rm $0x;exit
 		#define NODISCARD(MsG) [[nodiscard_(MsG)]]
 	#endif
 #elif __has_cpp_attribute(gnu::warn_unused_result)
-#if __NVCC__
+#if defined(__NVCC__)
 	#define NODISCARD(MsG)
 #else
 	#define nodiscard_(MsG) gnu::warn_unused_result
