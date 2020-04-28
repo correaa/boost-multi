@@ -98,17 +98,16 @@ clang8:
       - cd tests
       - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
 
-clang7:
+clang10:
     stage: test
     script:
       - DEBIAN_FRONTEND=noninteractiveapt-get update
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang-7
+      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang-10
       - ln --symbolic --force . ../multi
-      - export CXX="clang++-7 -x c++ -Wall -Wextra -Wpedantic -Wmove -Ofast "
+      - export CXX="clang++-10 -x c++ -Wall -Wextra -Wpedantic -Wmove -Ofast "
       - $CXX --version
       - cd tests
       - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
-
 
 nvcc:
     stage: test
