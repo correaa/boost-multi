@@ -17,7 +17,7 @@ $CXX $0 -o $0x&&$0x&&rm $0x;exit
 #include "./detail/types.hpp"     // dimensionality_type
 #include "./detail/operators.hpp" // random_iterable
 #include "./detail/memory.hpp"    // pointer_traits
-#include "./utility/const_iterator.hpp"
+//#include "./utility/const_iterator.hpp"
 
 #include "./config/NODISCARD.hpp"
 
@@ -837,10 +837,10 @@ public:
 	basic_array<std::decay_t<T2>, D, P2> const_array_cast()&&{
 		return {this->layout(), const_cast<P2>(this->base())};
 	}
-	template<class T2, class P2 = T2*>
-	basic_array<std::decay_t<T2>, D, P2> move_array_cast()&&{
-		return {this->layout(), multi::make_const_iterator(this->base())};
-	}
+//	template<class T2, class P2 = T2*> // TODO implement move pointer
+//	basic_array<std::decay_t<T2>, D, P2> move_array_cast()&&{
+//		return {this->layout(), multi::make_const_iterator(this->base())};
+//	}
 };
 
 ////////////////////////////////////////////////////////////////////////////////
