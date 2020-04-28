@@ -74,6 +74,16 @@ clang:
       - cd tests
       - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
 
+clang8:
+    stage: test
+    script:
+      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang-8
+      - ln --symbolic --force . ../multi
+      - export CXX="clang++ -x c++ -Wall -Wextra -Wpedantic -Wmove -Ofast "
+      - $CXX --version
+      - cd tests
+      - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
+
 nvcc:
     stage: test
     script:
