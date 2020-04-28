@@ -67,7 +67,7 @@ gcc8:
 gcc7:
     stage: test
     script:
-      - DEBIAN_FRONTEND=noninteractive apt-get install software-properties-common
+      - DEBIAN_FRONTEND=noninteractive apt-get instal --assume-yes --quiet software-properties-common
       - DEBIAN_FRONTEND=noninteractive apt-get update
       - DEBIAN_FRONTEND=noninteractive add-apt-repository ppa:jonathonf/gcc-7.1
       - DEBIAN_FRONTEND=noninteractive apt-get update
