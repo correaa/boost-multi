@@ -68,16 +68,6 @@ gcc8:
       - cd tests
       - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
 
-gcc7:
-    stage: test
-    script:
-      - DEBIAN_FRONTEND=noninteractive apt search gcc-7
-      - ln --symbolic --force . ../multi
-      - export CXX="g++-7     -x c++  -Wall -Wextra -Wpedantic -Ofast "
-      - $CXX --version
-      - cd tests
-      - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
-
 clang:
     stage: test
     script:
@@ -101,7 +91,7 @@ clang8:
 clang10:
     stage: test
     script:
-      - DEBIAN_FRONTEND=noninteractiveapt-get update
+      - DEBIAN_FRONTEND=noninteractive apt-get update
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang-10
       - ln --symbolic --force . ../multi
       - export CXX="clang++-10 -x c++ -Wall -Wextra -Wpedantic -Wmove -Ofast "
