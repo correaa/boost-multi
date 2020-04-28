@@ -67,10 +67,7 @@ gcc8:
 gcc7:
     stage: test
     script:
-      - DEBIAN_FRONTEND=noninteractive apt-get install --assume-yes --quiet software-properties-common
-      - DEBIAN_FRONTEND=noninteractive apt-get update
-      - DEBIAN_FRONTEND=noninteractive add-apt-repository ppa:jonathonf/gcc-7.1
-      - DEBIAN_FRONTEND=noninteractive apt-get update
+      - DEBIAN_FRONTEND=noninteractive apt install build-essential
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet g++-7
       - ln --symbolic --force . ../multi
       - export CXX="g++-7     -x c++  -Wall -Wextra -Wpedantic -Ofast "
