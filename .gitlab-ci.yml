@@ -71,6 +71,7 @@ gcc8:
 gcc7:
     stage: test
     script:
+      - DEBIAN_FRONTEND=noninteractive apt search gcc-7
       - ln --symbolic --force . ../multi
       - export CXX="g++-7     -x c++  -Wall -Wextra -Wpedantic -Ofast "
       - $CXX --version
@@ -96,6 +97,17 @@ clang8:
       - $CXX --version
       - cd tests
       - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
+
+clang7:
+    stage: test
+    script:
+      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang-7
+      - ln --symbolic --force . ../multi
+      - export CXX="clang++-7 -x c++ -Wall -Wextra -Wpedantic -Wmove -Ofast "
+      - $CXX --version
+      - cd tests
+      - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
+
 
 nvcc:
     stage: test
