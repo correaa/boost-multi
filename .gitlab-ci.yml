@@ -91,9 +91,6 @@ clang8:
 clang10:
     stage: test
     script:
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet build-essential
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet gcc-7 g++-7 gcc-8 g++-8 gcc-9 g++-9
-      - DEBIAN_FRONTEND=noninteractive apt-get update
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang-10
       - ln --symbolic --force . ../multi
       - export CXX="clang++-10 -x c++ -Wall -Wextra -Wpedantic -Wmove -Ofast "
