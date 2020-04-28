@@ -768,10 +768,11 @@ public:
 		std::move(*this).assign(std::move(o).begin(), std::move(o).end() );
 		return std::move(*this);
 	}
-	template<class Array> void swap(Array&& o)&&{
-		assert( std::move(*this).extension() == std::forward<Array>(o).extension() );
-		adl::swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
+	template<class Array> void swap(Array&& o) &&{assert( std::move(*this).extension() == std::forward<Array>(o).extension() );
+		adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
 	}
+	template<class A> void swap(A&& o) &{return swap(std::forward<A>(o));}
+
 	friend void swap(basic_array&& a, basic_array&& b){std::move(a).swap(std::move(b));}
 	template<class Array> void swap(basic_array const& s, Array&& a){s.swap(a);}
 	template<class Array> void swap(Array&& a, basic_array const& s){s.swap(a);}
@@ -792,7 +793,7 @@ private:
 	friend bool lexicographical_compare(basic_array&& a1, basic_array&& a2){
 		if(a1.extension().first() > a2.extension().first()) return true;
 		if(a1.extension().first() < a2.extension().first()) return false;
-		return adl::lexicographical_compare(
+		return adl_lexicographical_compare(
 			std::move(a1).begin(), std::move(a1).end(), 
 			std::move(a2).begin(), std::move(a2).end()
 		);
@@ -1182,8 +1183,9 @@ public:
 //	}
 	bool operator<(basic_array const& o) const&{return lexicographical_compare(*this, o);}//operator< <basic_array const&>(o);}
 	template<class Array> void swap(Array&& o)&&{{using multi::extension; assert(this->extension() == extension(o));}
-		adl::swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
+		adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
 	}
+	template<class A> void swap(A&& o)&{return swap(std::forward<A>(o));}
 	friend void swap(basic_array&& a, basic_array&& b){std::move(a).swap(std::move(b));}
 	template<class A, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<A>>{}> > friend void swap(basic_array&& s, A&& a){s.swap(a);}
 	template<class A, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<A>>{}> > friend void swap(A&& a, basic_array&& s){s.swap(a);}
@@ -1193,7 +1195,7 @@ private:
 		using multi::extension;
 		if(extension(a1).first() > extension(a2).first()) return true;
 		if(extension(a1).first() < extension(a2).first()) return false;
-		return adl::lexicographical_compare(adl_begin(a1), adl_end(a1), adl_begin(a2), adl_end(a2));
+		return adl_lexicographical_compare(adl_begin(a1), adl_end(a1), adl_begin(a2), adl_end(a2));
 	}
 public:
 	template<class O>
