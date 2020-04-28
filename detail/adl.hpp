@@ -213,9 +213,9 @@ constexpr BidirIt alloc_destroy_n(Alloc& a, BidirIt first, Size n){
 }
 
 MAYBE_UNUSED constexpr class{
-	template<class... As>          auto _(priority<1>,        As&&... as) DECLRETURN(              std::uninitialized_copy(std::forward<As>(as)...))
-	template<class... As>          auto _(priority<2>,        As&&... as) DECLRETURN(                   uninitialized_copy(std::forward<As>(as)...))
-	template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) DECLRETURN(std::forward<T>(t).uninitialized_copy(std::forward<As>(as)...))
+	template<class... As>          auto _(priority<1>,        As&&... as) const DECLRETURN(              std::uninitialized_copy(std::forward<As>(as)...))
+	template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   uninitialized_copy(std::forward<As>(as)...))
+	template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).uninitialized_copy(std::forward<As>(as)...))
 public:
 	template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
 } adl_uninitialized_copy;
