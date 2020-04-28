@@ -374,20 +374,15 @@ namespace boost{namespace multi{ \
 	public:
 		template<class... As> auto operator()(As&&... as) const{return (_(priority<4>{}, std::forward<As>(as)...));}
 	} adl_alloc_uninitialized_default_construct_n; \
-}}
 
-namespace boost{namespace multi{ \
-namespace adl{ \
-	namespace custom{template<class...> struct uninitialized_default_construct_n_t;} 	__attribute__((unused)) 
-	static constexpr class uninitialized_default_construct_n_t{ \
+MAYBE_UNUSED constexpr class adl_uninitialized_default_construct_n_t{
 		template<class... As>          auto _(priority<1>,        As&&... as) const{return            xtd::uninitialized_default_construct_n              (std::forward<As>(as)...);}
 //		template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   uninitialized_default_construct_n              (std::forward<As>(as)...))
 		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).uninitialized_default_construct_n              (std::forward<As>(as)...))
-		template<class... As>          auto _(priority<4>,        As&&... as) const DECLRETURN(custom::           uninitialized_default_construct_n_t<As&&...>::_(std::forward<As>(as)...))
 	public:
 		template<class... As> auto operator()(As&&... as) const{return (_(priority<4>{}, std::forward<As>(as)...));}
-	} uninitialized_default_construct_n; \
-} \
+	} adl_uninitialized_default_construct_n;
+
 }}
 
 namespace boost{namespace multi{ \
