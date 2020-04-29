@@ -547,6 +547,10 @@ public:
 	decltype(auto) operator<<(dimensionality_type i) const&{return rotated(i);}
 	decltype(auto) operator>>(dimensionality_type i) const&{return unrotated(i);}
 
+	decltype(auto) operator|(typename basic_array::size_type n) &{return partitioned(n);}
+	decltype(auto) operator|(typename basic_array::size_type n) &&{return std::move(*this).partitioned(n);}
+	decltype(auto) operator|(typename basic_array::size_type n) const&{return partitioned(n);}
+
 	basic_array       operator()() &     {return *this;}
 	basic_array       operator()() &&    {return operator()();}
 	basic_const_array operator()() const&{return {this->layout(), this->base()};}
@@ -724,11 +728,11 @@ protected:
 	}
 	template<class A> void intersection_assign_(A&& o)&&{intersection_assign_(std::forward<A>(o));}
 public:
-	template<class It> void assign(It first, It last) &&{assert( this->size() == std::distance(first, last) );
+	template<class It> void assign(It first, It last)&&{//assert( this->size() == std::distance(first, last) );
 		adl_copy(first, last, std::move(*this).begin());
 	}
-	template<class It> void assign(It first, It last) & {assert( this->size() == std::distance(first, last) );
-		adl_copy(first, last, std::move(*this).begin());
+	template<class It> void assign(It first, It last)&{//assert( this->size() == std::distance(first, last) );
+		adl_copy(first, last, this->begin());
 	}
 //	template<class It> auto assign(It first)&&
 //	->decltype(adl_copy_n(first, this->size(), this->begin()), first + this->size(), void()){
@@ -764,10 +768,25 @@ public:
 	//	std::move(*this).assign(adl::begin(std::forward<A>(o)), adl::end(std::forward<A>(o)));
 //		return std::move(this->operator=(std::forward<A>(o)));
 //	}
+	template<class TT, class... As>
+	basic_array& operator=(basic_array<TT, D, As...> const& o)&{assert(this->extension() == o.extension());
+		return this->assign(o.begin(), o.end()), *this; // TODO improve performance by rotating
+	} // TODO leave only r-value version?
+	template<class TT, class... As>
+	basic_array&& operator=(basic_array<TT, D, As...> const& o)&&{return std::move(this->operator=(o));}
+//	template<class TT, class... As>
+//	basic_array&& operator=(basic_array<TT, D, As...>&& o)&& = delete;//{return std::move(this->operator=(o));}
+
+//		this->assign(o.begin(), o.end());//, *this; // TODO improve performance by rotating	
+//		return std::move(*this);//.operator=(o);
+//	}
 	basic_array& operator=(basic_array const& o) &{assert( this->extension() == o.extension() );
 		return this->assign(o.begin(), o.end() ), *this;
 	}
-	basic_array&& operator=(basic_array const& o) &&{return std::move(this->operator=(o));}	
+	basic_array&& operator=(basic_array const& o) &&{assert( this->extension() == o.extension() );
+		return this->assign(o.begin(), o.end() ), std::move(*this);
+	}
+//return std::move(this->operator=(o));}	
 	template<class Array> void swap(Array&& o) &&{assert( std::move(*this).extension() == std::forward<Array>(o).extension() );
 		adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
 	}
@@ -1028,10 +1047,16 @@ public:
 	}
 	template<class It> 
 	basic_array&& assign(It first, It last)&&{return std::move(assign(first, last));}
-	basic_array& operator=(basic_array const& other)&{assert(this->extensions() == other.extensions());
+	template<class TT, class... As>
+	basic_array& operator=(basic_array<TT, 1, As...> const& other)&{assert(this->extensions() == other.extensions());
 		return adl_copy(other.begin(), other.end(), this->begin()), *this;
 	}
-	basic_array&& operator=(basic_array const& o)&&{return std::move(this->operator=(o));}
+	template<class TT, class... As>
+	basic_array& operator=(basic_array<TT, 1, As...> const& other)&&{assert(this->extensions() == other.extensions());
+		return adl_copy(other.begin(), other.end(), this->begin()), *this;
+	}
+//	basic_array&& operator=(basic_array const& o)&&{assert(0); return *this;}
+
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int){
 		using boost::serialization::make_nvp;
@@ -1049,15 +1074,15 @@ public:
 		assert(this->extension() == extension(o));
 		return std::move(this->assign(adl_begin(std::forward<A>(o)), adl_end(std::forward<A>(o))));
 	}*/
-	template<class TT, dimensionality_type DD, class... As>
-	basic_array& operator=(basic_array<TT, DD, As...> const& o)&{assert(this->extension() == o.extension());
+	basic_array& operator=(basic_array const& o)&{assert(this->extension() == o.extension());
 		return this->assign(o.begin(), o.end()), *this; // TODO improve performance by rotating
 	} // TODO leave only r-value version?
 	template<class TT, dimensionality_type DD, class... As>
-	basic_array&& operator=(basic_array<TT, DD, As...> const& o)&&{return std::move(this->operator=(o));}
+	basic_array&& operator=(basic_array const& o)&&{return std::move(this->operator=(o));}
 //		this->assign(o.begin(), o.end());//, *this; // TODO improve performance by rotating	
 //		return std::move(*this);//.operator=(o);
 //	}
+
 	typename basic_array::const_reference operator[](index i) const&{assert( this->extension().contains(i) );
 		return *(this->base() + Layout::operator()(i)); // in C++17 this is allowed even with syntethic references
 	}
@@ -1123,7 +1148,7 @@ public:
 
 	template<typename Size>
 	auto partitioned(Size const& s) const{
-		assert( this->layout().nelems_%s==0 );
+		assert( this->layout().nelems_%s==0 ); // TODO remove assert? truncate left over? (like mathematica)
 		multi::layout_t<2> new_layout{this->layout(), this->layout().nelems_/s, 0, this->layout().nelems_};
 		new_layout.sub_.nelems_/=s;
 		return basic_array<T, 2, ElementPtr>{new_layout, types::base_};
