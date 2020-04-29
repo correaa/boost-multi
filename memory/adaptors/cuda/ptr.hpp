@@ -191,16 +191,16 @@ public:
 	constexpr ptr operator+(typename ptr::difference_type n) const {return ptr{rp_ + n};}
 	constexpr ptr operator-(typename ptr::difference_type n) const HD{return ptr{rp_ - n};}
 	using reference = ref<element_type>;
-#ifdef __NVCC__
-	#ifndef __CUDA_ARCH__
-		__host__   constexpr reference operator*() const{return {*this};}
-	#else
-		__device__ constexpr reference operator*() const{return *rp_; }
-	#endif
-#else
+//#ifdef __NVCC__
+//	#ifndef __CUDA_ARCH__
+//		__host__   constexpr reference operator*() const{return {*this};}
+//	#else
+//		__device__ constexpr reference operator*() const{return *rp_; }
+//	#endif
+//#else
 	constexpr reference operator*() const __host__ __device__ { return {*this}; }
 //  __device__ reference operator*() const{return *rp_;}
-#endif
+//#endif
 	reference operator[](difference_type n) const __host__ __device__{return *((*this)+n);}
 	friend ptr to_address(ptr const& p){return p;}
 	difference_type operator-(ptr const& o) const HD{return rp_-o.rp_;}
