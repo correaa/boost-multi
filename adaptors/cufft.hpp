@@ -1,5 +1,5 @@
-#ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
-time $CXX $0 -o $0x -lcudart -lcufft `pkg-config --libs fftw3` -lboost_unit_test_framework&&time $0x&&rm $0x;exit
+#ifdef COMPILATION// -*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
+$CXX $0 -o $0x -lcudart -lcufft `pkg-config --libs fftw3` -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2020
 
@@ -289,7 +289,7 @@ auto many_dft(It1 first, It1 last, It2 d_first, sign s)
 template<typename In, class Out,  std::size_t D = In::dimensionality, std::enable_if_t<(D==1), int> = 0>
 Out&& dft(std::array<bool, D> which, In const& i, Out&& o, int s){
 	if(which[0]) return cufft::dft(i, std::forward<Out>(o), s);
-	else return std::forward<Out>(o) = i;
+	else return std::forward<Out>(std::forward<Out>(o) = i);
 }
 
 template<typename In, class Out, std::size_t D = In::dimensionality, std::enable_if_t<(D>1), int> = 0> 
