@@ -730,9 +730,10 @@ public:
 	template<class It> void assign(It first, It last) & {assert( this->size() == std::distance(first, last) );
 		adl_copy(first, last, std::move(*this).begin());
 	}
-	template<class It> It assign(It first)&&{
-		return adl_copy_n(first, this->size(), std::move(*this).begin()), first + std::move(*this).size();
-	}
+//	template<class It> auto assign(It first)&&
+//	->decltype(adl_copy_n(first, this->size(), this->begin()), first + this->size(), void()){
+//		return adl_copy_n(first, this->size(), this->begin()), first + this->size();}
+
 //	template<class It> void assign(It first) &&
 //	->decltype(adl::copy_n(first, this->size(), this->begin())){
 //		return adl::copy_n(first, this->size(), this->begin()), ;}
@@ -763,6 +764,11 @@ public:
 	//	std::move(*this).assign(adl::begin(std::forward<A>(o)), adl::end(std::forward<A>(o)));
 		return std::move(this->operator=(std::forward<A>(o)));
 	}
+	basic_array&& operator=(basic_array const& o) &&{
+		assert( this->extension() == o.extension() );
+		std::move(*this).assign(std::move(o).begin(), std::move(o).end() );
+		return std::move(*this);
+	}
 	basic_array&& operator=(basic_array&& o) &&{
 		assert( this->extension() == o.extension() );
 		std::move(*this).assign(std::move(o).begin(), std::move(o).end() );
@@ -780,7 +786,11 @@ public:
 	bool operator==(Array const& o) const&{
 		return (this->extension()==o.extension()) and adl_equal(this->begin(), this->end(), adl_begin(o));
 	}
-//	bool operator==(basic_array const& o) = delete;//&&{return operator==<basic_array>(o);}
+	template<class Array> bool operator!=(Array const& o) const&{return not((*this)==o);}
+	template<class TT, class... As>
+	bool operator==(basic_array<TT, D, As...> const& o) const&{
+		return (this->extension()==o.extension()) and adl_equal(this->begin(), this->end(), adl_begin(o));		
+	}
 	template<class It>
 	bool equal(It begin) const&{
 		return adl_equal(
@@ -876,8 +886,8 @@ struct array_iterator<Element, 1, Ptr, Ref> :
 	explicit constexpr array_iterator(Other const& o, int = 0) : data_{o.data_}, stride_{o.stride_}{}
 
 	template<class EE, dimensionality_type, class PP, class RR> friend struct array_iterator;
-	constexpr array_iterator(std::nullptr_t nu) HD : data_{nu}, stride_{1}{}
-	constexpr array_iterator(Ptr const& p) HD : data_{p}, stride_{1}{}
+	constexpr array_iterator(std::nullptr_t nu)  : data_{nu}, stride_{1}{}
+	constexpr array_iterator(Ptr const& p) : data_{p}, stride_{1}{}
 	template<class EElement, typename PPtr, typename RRef>
 	constexpr array_iterator(array_iterator<EElement, 1, PPtr, RRef> other) : data_{other.data_}, stride_{other.stride_}{} 
 	explicit constexpr operator bool() const{return static_cast<bool>(this->data_);}
@@ -931,14 +941,13 @@ struct basic_array<T, dimensionality_type{0}, ElementPtr, Layout> :
 	using types = array_types<T, dimensionality_type{0}, ElementPtr, Layout>;
 	using types::types;
 	using element_ref = typename std::iterator_traits<typename basic_array::element_ptr>::reference;//decltype(*typename basic_array::element_ptr{});
-	decltype(auto) operator=(typename basic_array::element_type const& e) const&{
+	decltype(auto) operator=(typename basic_array::element_type const& e) &{
 		adl_copy_n(&e, 1, this->base_); return *this;
 	}
-	bool operator==(typename basic_array::element const& e) const&{
-		return adl_equal(&e, &e + 1, this->base_);
-	}
+	decltype(auto) operator=(typename basic_array::element_type const& e) &&{return std::move(operator=(e));}
+	bool operator==(typename basic_array::element const& e) const&{return adl_equal(&e, &e + 1, this->base_);}
 	bool operator!=(typename basic_array::element const& e) const&{return not((*this)==e);}
-	bool operator==(basic_array const& o) const&{
+	bool operator==(basic_array const& o) const&{assert(0);
 		return adl_equal(o.base_, o.base_ + 1, this->base_);
 	}
 	bool operator!=(basic_array const& o) const&{return not operator==(o);}
@@ -1025,11 +1034,16 @@ public:
 	}
 	template<class It> 
 	basic_array&& assign(It first, It last)&&{return std::move(assign(first, last));}
+	basic_array& operator=(basic_array const& other)&{assert(this->extensions() == other.extensions());
+		return adl_copy(other.begin(), other.end(), this->begin()), *this;
+	}
+	basic_array&& operator=(basic_array const& other)&&{return std::move(operator=(other));}
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int){
 		using boost::serialization::make_nvp;
 		std::for_each(std::move(*this).begin(), std::move(*this).end(),[&](auto&& e){ar&make_nvp("item",e);});
 	}
+/*
 	template<class A, 
 		typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<A>>{}>,
 		typename = decltype(
@@ -1039,18 +1053,14 @@ public:
 	>
 	basic_array&& operator=(A&& o)&&{
 		assert(this->extension() == extension(o));
-		return this->assign(adl_begin(std::forward<A>(o)), adl_end(std::forward<A>(o)));
-	}
-	basic_array&& operator=(basic_array const& o)&&{
-		return std::move(*this).assign(std::move(modify(o)).begin()), std::move(*this);
-	}
-	basic_array&& operator=(basic_array&& o)&&{ assert(this->extension() == o.extension());
-		return std::move(*this).assign(std::move(o).begin()), std::move(*this);
-	}
+		return std::move(this->assign(adl_begin(std::forward<A>(o)), adl_end(std::forward<A>(o))));
+	}*/
 	template<class TT, dimensionality_type DD, class... As>
-	basic_array&& operator=(basic_array<TT, DD, As...>&& o)&&{assert(this->extension() == o.extension());
-		std::move(*this).assign(std::move(o).begin(), std::move(o).end()); return std::move(*this);
-	}
+	basic_array& operator=(basic_array<TT, DD, As...> const& o)&{assert(this->extension() == o.extension());
+		return this->assign(o.begin(), o.end()), *this; // TODO improve performance by rotating
+	} // TODO leave only r-value version?
+	template<class TT, dimensionality_type DD, class... As>
+	basic_array&& operator=(basic_array<TT, DD, As...> const& o)&&{return std::move(*this).operator=(o);}
 	typename basic_array::const_reference operator[](index i) const&{assert( this->extension().contains(i) );
 		return *(this->base() + Layout::operator()(i)); // in C++17 this is allowed even with syntethic references
 	}
