@@ -10,9 +10,9 @@ $CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #include "../array.hpp"
 
 namespace multi = boost::multi;
+namespace utf = boost::unit_test;
 
-BOOST_AUTO_TEST_CASE(multi_array_ptr){
-
+BOOST_AUTO_TEST_CASE(multi_array_ptr, *utf::timeout(2)){
 	{
 		double a[4][5] = {
 			{ 0,  1,  2,  3,  4}, 

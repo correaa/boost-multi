@@ -249,7 +249,7 @@ struct array_iterator :
 	array_iterator(std::nullptr_t p = nullptr) : ptr_{p}, stride_{1}{}//Ref{p}{}
 	template<class, dimensionality_type, class, class> friend struct array_iterator;
 	template<class Other, typename = decltype(typename Ref::types::element_ptr{typename Other::element_ptr{}})> 
-	array_iterator(Other const& o) : /*Ref{o.layout(), o.base()},*/ ptr_{o.ptr_.base_, o.ptr_.layout()}, stride_{o.stride_}{}
+	constexpr array_iterator(Other const& o) : /*Ref{o.layout(), o.base()},*/ ptr_{o.ptr_.base_, o.ptr_.layout()}, stride_{o.stride_}{}
 	array_iterator(array_iterator const&) = default;
 	array_iterator& operator=(array_iterator const& other){
 		ptr_ = other.ptr_;
@@ -757,23 +757,17 @@ public:
 		this->assign(adl_begin(std::forward<A>(o)), adl_end(std::forward<A>(o)));
 		return *this;
 	}
-	template<class A>//, typename = std::enable_if_t<not std::is_same<basic_array, std::decay_t<A>>{}>>
-	basic_array&& operator=(A&& o)&&{
+//	template<class A>//, typename = std::enable_if_t<not std::is_same<basic_array, std::decay_t<A>>{}>>
+//	basic_array&& operator=(A&& o)&&{
 	//	assert(extension(*this) == extension(o));
 	//	assert(this->extension() == o.extension());
 	//	std::move(*this).assign(adl::begin(std::forward<A>(o)), adl::end(std::forward<A>(o)));
-		return std::move(this->operator=(std::forward<A>(o)));
+//		return std::move(this->operator=(std::forward<A>(o)));
+//	}
+	basic_array& operator=(basic_array const& o) &{assert( this->extension() == o.extension() );
+		return this->assign(o.begin(), o.end() ), *this;
 	}
-	basic_array&& operator=(basic_array const& o) &&{
-		assert( this->extension() == o.extension() );
-		std::move(*this).assign(std::move(o).begin(), std::move(o).end() );
-		return std::move(*this);
-	}
-	basic_array&& operator=(basic_array&& o) &&{
-		assert( this->extension() == o.extension() );
-		std::move(*this).assign(std::move(o).begin(), std::move(o).end() );
-		return std::move(*this);
-	}
+	basic_array&& operator=(basic_array const& o) &&{return std::move(this->operator=(o));}	
 	template<class Array> void swap(Array&& o) &&{assert( std::move(*this).extension() == std::forward<Array>(o).extension() );
 		adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
 	}
@@ -1037,7 +1031,7 @@ public:
 	basic_array& operator=(basic_array const& other)&{assert(this->extensions() == other.extensions());
 		return adl_copy(other.begin(), other.end(), this->begin()), *this;
 	}
-	basic_array&& operator=(basic_array const& other)&&{return std::move(operator=(other));}
+	basic_array&& operator=(basic_array const& o)&&{return std::move(this->operator=(o));}
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int){
 		using boost::serialization::make_nvp;
@@ -1060,7 +1054,10 @@ public:
 		return this->assign(o.begin(), o.end()), *this; // TODO improve performance by rotating
 	} // TODO leave only r-value version?
 	template<class TT, dimensionality_type DD, class... As>
-	basic_array&& operator=(basic_array<TT, DD, As...> const& o)&&{return std::move(*this).operator=(o);}
+	basic_array&& operator=(basic_array<TT, DD, As...> const& o)&&{return std::move(this->operator=(o));}
+//		this->assign(o.begin(), o.end());//, *this; // TODO improve performance by rotating	
+//		return std::move(*this);//.operator=(o);
+//	}
 	typename basic_array::const_reference operator[](index i) const&{assert( this->extension().contains(i) );
 		return *(this->base() + Layout::operator()(i)); // in C++17 this is allowed even with syntethic references
 	}
