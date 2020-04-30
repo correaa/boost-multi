@@ -1,6 +1,8 @@
-#ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&& c++ -std=c++17 -Wall -Wextra -Wfatal-errors -D_TEST_BOOST_MULTI_MEMORY_ALLOCATOR $0.cpp -o $0x && $0x && rm $0x $0.cpp; exit
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
+$CXX $0 -o $0x&&$0x&&rm $0x;exit
 #endif
+// © Alfredo A. Correa 2019-2020
+
 #ifndef BOOST_MULTI_MEMORY_ALLOCATOR_HPP
 #define BOOST_MULTI_MEMORY_ALLOCATOR_HPP
 
@@ -17,7 +19,7 @@ namespace multi{
 namespace memory{
 
 template<class T, class Memory
-#if(__cpp_lib_memory_resource>=201603L)
+#if defined(__cpp_lib_memory_resource) and (__cpp_lib_memory_resource>=201603L)
 	= std::pmr::memory_resource //= std::allocator<std::byte>
 #endif
 	, typename Constructor = std::allocator<T>
@@ -25,7 +27,7 @@ template<class T, class Memory
 class allocator{
 	using memory_type = Memory;
 	memory_type* mp_ 
-#if(__cpp_lib_memory_resource>=201603L)
+#if defined(__cpp_lib_memory_resource) and (__cpp_lib_memory_resource>=201603L)
 		= std::pmr::get_default_resource()
 #endif
 	;
@@ -62,7 +64,7 @@ public:
 
 }}}
 
-#ifdef _TEST_BOOST_MULTI_MEMORY_ALLOCATOR
+#if not __INCLUDE_LEVEL__ // _TEST_BOOST_MULTI_MEMORY_ALLOCATOR
 
 #include "../memory/monotonic.hpp"
 #include<boost/align/is_aligned.hpp>
