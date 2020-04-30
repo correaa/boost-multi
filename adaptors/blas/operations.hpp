@@ -1,4 +1,4 @@
-#ifdef COMPILATION// -*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
 $CXX $0 -o $0x `pkg-config --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
@@ -37,8 +37,8 @@ decltype(auto) hermitized(A&& a){return conjugated_transposed(std::forward<A>(a)
 template<class A>
 decltype(auto) transposed(A&& a){return rotated(std::forward<A>(a));}
 
-template<class A> decltype(auto) H(A&& a){return hermitized(std::forward<A>(a));}
 template<class A> decltype(auto) C(A&& a){return hermitized(std::forward<A>(a));}
+template<class A> decltype(auto) H(A&& a){return          C(std::forward<A>(a));}
 template<class A> decltype(auto) T(A&& a){return transposed(std::forward<A>(a));}
 template<class A> decltype(auto) N(A&& a){return identity  (std::forward<A>(a));}
 
@@ -53,20 +53,9 @@ template<class A> decltype(auto) N(A&& a){return identity  (std::forward<A>(a));
 #include<boost/test/unit_test.hpp>
 
 #include "../../array.hpp"
-#include "../../utility.hpp"
-//#include "../blas/nrm2.hpp"
-//#include "../blas/gemm.hpp"
-
-#include<complex>
-#include<cassert>
-#include<iostream>
-#include<numeric>
-#include<algorithm>
 
 using std::cout;
-
-template<class M> 
-decltype(auto) print(M const& C){
+template<class M> decltype(auto) print(M const& C){
 	using boost::multi::size;
 	for(int i = 0; i != size(C); ++i){
 		for(int j = 0; j != size(C[i]); ++j) cout<< C[i][j] <<' ';
@@ -76,10 +65,7 @@ decltype(auto) print(M const& C){
 }
 
 namespace multi = boost::multi;
-using complex = std::complex<double>;
-auto const I = complex(0., 1.);
-
-template<class T> void what();
+using complex = std::complex<double>; constexpr complex I{0, 1};
 
 BOOST_AUTO_TEST_CASE(m){
 	multi::array<complex, 2> const A = {
@@ -91,13 +77,17 @@ BOOST_AUTO_TEST_CASE(m){
 	BOOST_REQUIRE( hermitized(A)[0][1] == conj(A[1][0]) );
 
 	using multi::blas::C;
+	static_assert( multi::blas::is_conjugated<decltype(C(A))>{}, "!" );
 	BOOST_REQUIRE( C(A)[0][1] == conj(A[1][0]) );
 
 	using multi::blas::transposed;
 	BOOST_REQUIRE( transposed(A)[0][1] == A[1][0] );
 
 	using multi::blas::T;
+	static_assert( not multi::blas::is_conjugated<decltype(T(A))>{}, "!" );
 	BOOST_REQUIRE( T(A)[0][1] == A[1][0] );
+	
+//	static_assert( multi::blas::is_conjugated<decltype(T(A))>{}, "!" );
 
 /*	using multi::blas::gemm;
 
