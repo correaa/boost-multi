@@ -22,14 +22,14 @@ $CXX -std=c++17 $0 -o $0x &&$0x&&rm $0x;exit
 namespace boost{
 namespace serialization{
 	template<class> struct nvp;
-	template<class T> const nvp<T> make_nvp(char const* name, T& t);
+	template<class T> const nvp<T> make_nvp(char const* name, T& t) noexcept;
 	template<class T> class array_wrapper;
 	template<class T, class S> const array_wrapper<T> make_array(T* t, S s);
 
 	template<class Archive>
 	struct archive_traits{
 		template<class T>
-		static decltype(auto) make_nvp(char const* name, T&& t){
+		static decltype(auto) make_nvp(char const* name, T&& t) noexcept{
 			return boost::serialization::make_nvp(name, std::forward<T>(t));
 		}
 		template<class P1, class P2>
