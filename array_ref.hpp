@@ -50,7 +50,11 @@ namespace boost{
 namespace serialization{
 	template<class Archive> struct archive_traits;
 	template<class> struct nvp;
-	template<class T> const nvp<T> make_nvp(char const* name, T& t);
+	template<class T> inline const nvp<T> make_nvp(char const* name, T& t)
+#if defined(BOOST_VERSION) and (BOOST_VERSION > 107100)
+noexcept
+#endif
+	;
 	template<class T> class array_wrapper;
 	template<class T, class S> const array_wrapper<T> make_array(T* t, S s);
 //	template<class T> 
@@ -493,7 +497,8 @@ public:
 	}
 	decltype(auto) rotated() const&{
 		typename types::layout_t new_layout = *this; new_layout.rotate();
-		return basic_const_array{new_layout, types::base_};
+		typename basic_const_array::element_ptr new_base_{types::base_};
+		return basic_const_array{new_layout, new_base_};
 	}
 	friend decltype(auto) rotated(basic_array const&  self){return self.rotated();}
 	friend decltype(auto) rotated(basic_array      && self){return std::move(self).rotated();}
