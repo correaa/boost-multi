@@ -29,7 +29,7 @@ namespace serialization{
 	template<class Archive>
 	struct archive_traits{
 		template<class T>
-		static decltype(auto) make_nvp(char const* name, T&& t){
+		static decltype(auto) make_nvp(char const* name, T&& t) noexcept{
 			return boost::serialization::nvp<T>(name, std::forward<T>(t));
 		}
 		template<class P1, class P2>
