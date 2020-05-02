@@ -293,7 +293,7 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 		void serialize_impl(Archive& ar, std::index_sequence<I...>){
 		//	using boost::serialization::make_nvp;
 		//	(void)std::initializer_list<int>{(ar & make_nvp("extension", std::get<I>(*this)),0)...};
-			(void)std::initializer_list<int>{(ar & boost::serialization::nvp<decltype(std::get<I>(*this))>{"extension", std::get<I>(*this)},0)...};
+			(void)std::initializer_list<int>{(ar & boost::serialization::nvp<std::decay_t<decltype(std::get<I>(*this))>>{"extension", std::get<I>(*this)},0)...};
 		}
 		template<class Archive>
 		void serialize(Archive& ar, unsigned){
