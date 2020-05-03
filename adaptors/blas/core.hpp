@@ -1,7 +1,7 @@
-#ifdef COMPILATION// -*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
-$CXX $0 -o $0x `pkg-config --libs blas`&&$0x&&rm $0x;exit
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
+$CXX $0 -o $0x `pkg-config --libs blas`&&$0x&&rm $0x;
+(for a in `find tests/ -name '*.cpp'`; do sh $a || break; done); exit
 #endif
-//for a in `find tests/ -name '*.cpp'`; do sh $a || break; done); exit
 // https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
 // © Alfredo A. Correa 2019-2020
 
