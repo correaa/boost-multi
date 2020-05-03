@@ -112,7 +112,7 @@ nvcc:
 blas:
     stage: test
     script:
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet g++
+      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet g++ pkg-config
       - ln --symbolic --force . ../multi
       - export CXX="g++     -x c++  -Wall -Wextra -Wpedantic -Ofast "
       - $CXX --version
