@@ -107,6 +107,11 @@ auto to_address(T* const& t)
 ->decltype(t){
 	return t;}
 
+template<class Archive> struct archive_traits{ // TODO implemente a poors man nvp that works with boost serialization, is it possible?
+	template<class T>
+	static constexpr T& make_nvp(char const* /*name*/, T& v){return v;}
+};
+
 //template<class It>
 //constexpr auto get_allocator(It const& it)
 //->decltype(get_allocator(to_address(it))){

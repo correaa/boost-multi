@@ -7,20 +7,24 @@ $CXX $0 -o $0x -lboost_unit_test_framework  -lstdc++fs -lboost_serialization -lb
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
-#include "../tests/../array.hpp"
+#include "../adaptors/serialization/xml_archive.hpp"
+//#include<boost/archive/xml_oarchive.hpp>
+//#include<boost/archive/xml_iarchive.hpp>
 
-//#include "../adaptors/cuda.hpp"
-
-#include<boost/archive/xml_oarchive.hpp>
-#include<boost/archive/xml_iarchive.hpp>
 #include<boost/archive/text_oarchive.hpp>
 #include<boost/archive/text_iarchive.hpp>
 #include<boost/archive/binary_oarchive.hpp>
 #include<boost/archive/binary_iarchive.hpp>
-
 #include<boost/serialization/nvp.hpp>
 #include<boost/serialization/binary_object.hpp>
 #include<boost/serialization/complex.hpp>
+
+#include "../tests/../array.hpp"
+
+//#include "../adaptors/cuda.hpp"
+
+
+
 
 #include<boost/iostreams/filtering_stream.hpp>
 #include<boost/iostreams/filter/gzip.hpp>
@@ -33,6 +37,10 @@ $CXX $0 -o $0x -lboost_unit_test_framework  -lstdc++fs -lboost_serialization -lb
 #include<random>
 
 #include<boost/serialization/vector.hpp>
+
+
+
+
 
 namespace multi = boost::multi;
 namespace fs = std::experimental::filesystem;
