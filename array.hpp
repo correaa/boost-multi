@@ -681,8 +681,7 @@ public:
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int version){
 		auto extensions = this->extensions();
-		using boost::serialization::make_nvp;
-		ar & make_nvp("extensions", extensions);
+		ar & multi::archive_traits<Archive>::make_nvp("extensions", extensions);
 		if(extensions != this->extensions()){clear(); this->reextent(extensions);}
 		assert(extensions == this->extensions());
 		static_::serialize(ar, version);

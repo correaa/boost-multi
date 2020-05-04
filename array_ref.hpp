@@ -34,37 +34,6 @@ $CXX $0 -o $0x&&$0x&&rm $0x;exit
 #endif
 
 namespace boost{
-namespace serialization{
-//	template<class Archive> struct archive_traits;
-//	template<class> struct nvp;
-//	template<class T> const nvp<T> make_nvp(char const* name, T& t);
-//	template<class T> class array_wrapper;
-//	template<class T, class S> const array_wrapper<T> make_array(T* t, S s);
-//	template<class T> 
-//	class binary_object;
-//	inline auto make_binary_object(const void * t, std::size_t size);
-}}
-
-#if 1
-namespace boost{
-namespace serialization{
-	template<class Archive> struct archive_traits;
-	template<class> struct nvp;
-	template<class T> inline const nvp<T> make_nvp(char const* name, T& t)
-#if defined(BOOST_VERSION) and (BOOST_VERSION > 107100)
-noexcept
-#endif
-	;
-	template<class T> class array_wrapper;
-	template<class T, class S> const array_wrapper<T> make_array(T* t, S s);
-//	template<class T> 
-	class binary_object;
-	inline const binary_object make_binary_object(const void * t, std::size_t size);
-}}
-#endif
-
-
-namespace boost{
 namespace multi{
 
 template<class T> T& modify(T const& t){return const_cast<T&>(t);}
@@ -391,8 +360,7 @@ public:
 //	template<class... As> static auto remake(As&&... as) -> decay_type{return decay_type(std::forward<As>(as)...);}
 	template<class Archive>
 	auto serialize(Archive& ar, unsigned int /*file version*/){
-		using boost::serialization::make_nvp;
-		std::for_each(std::move(*this).begin(), std::move(*this).end(), [&](auto&& e){ar & make_nvp("item", e);});
+		std::for_each(this->begin(), this->end(), [&](auto&& e){ar & multi::archive_traits<Archive>::make_nvp("item", e);});
 	}
 
 	decay_type decay() const{
@@ -983,8 +951,8 @@ struct basic_array<T, dimensionality_type{0}, ElementPtr, Layout> :
 //	decltype(auto) operator()() &&{return std::move(*(this->base_));}
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int){
-		using boost::serialization::make_nvp;
-		ar & make_nvp("element",  *(this->base_));
+	//	using boost::serialization::make_nvp;
+		ar & multi::archive_traits<Archive>::make_nvp("element",  *(this->base_));
 	//	std::for_each(this->begin(), this->end(), [&](auto&& e){ar & make_nvp("item", e);});
 	}
 };
@@ -1064,8 +1032,8 @@ public:
 
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int){
-		using boost::serialization::make_nvp;
-		std::for_each(std::move(*this).begin(), std::move(*this).end(),[&](auto&& e){ar&make_nvp("item",e);});
+	//	using boost::serialization::make_nvp;
+		std::for_each(this->begin(), this->end(),[&](auto&& e){ar& multi::archive_traits<Archive>::make_nvp("item",e);});
 	}
 /*
 	template<class A, 
@@ -1377,15 +1345,16 @@ public:
 	friend typename array_ref::decay_type const& decay(array_ref const& s){return s.decay();}
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int v){
-		using boost::serialization::make_nvp;
-		if(this->num_elements() < (2<<8) ) std::move(*this).basic_array<T, D, ElementPtr>::serialize(ar, v);
-		else{
-			using boost::serialization::make_binary_object;
-			using boost::serialization::make_array;
-			if(std::is_trivially_copy_assignable<typename array_ref::element>{})
-				ar & make_nvp("binary_data", make_binary_object(this->data(), sizeof(typename array_ref::element)*this->num_elements())); //#include<boost/serialization/binary_object.hpp>
-			else ar & make_nvp("data", make_array(this->data(), this->num_elements()));
-		}
+	//	using boost::serialization::make_nvp;
+//		if(this->num_elements() < (2<<8) ) 
+			basic_array<T, D, ElementPtr>::serialize(ar, v);
+//		else{
+		//	using boost::serialization::make_binary_object;
+		//	using boost::serialization::make_array;
+//			if(std::is_trivially_copy_assignable<typename array_ref::element>{})
+//				ar & multi::archive_traits<Archive>::make_nvp("binary_data", multi::archive_traits<Archive>::make_binary_object(this->data(), sizeof(typename array_ref::element)*this->num_elements())); //#include<boost/serialization/binary_object.hpp>
+//			else ar & multi::archive_traits<Archive>::make_nvp("data", multi::archive_traits<Archive>::make_array(this->data(), this->num_elements()));
+//		}
 	}
 };
 
