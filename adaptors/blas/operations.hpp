@@ -37,9 +37,18 @@ decltype(auto) hermitized(A&& a){return conjugated_transposed(std::forward<A>(a)
 template<class A>
 decltype(auto) transposed(A&& a){return rotated(std::forward<A>(a));}
 
-template<class A> [[deprecated("use blas::H instead of blas::C for hermitized to avoid confusions")]]
+template<class A, std::enable_if_t<std::decay_t<A>::dimensionality == 2, int> =0> 
+[[deprecated("use blas::H instead of blas::C for hermitized matrices to avoid confusions")]]
 decltype(auto) C(A&& a){return hermitized(std::forward<A>(a));}
-template<class A> decltype(auto) H(A&& a){return hermitized(std::forward<A>(a));}
+template<class A, std::enable_if_t<std::decay_t<A>::dimensionality == 2, int> =0>
+decltype(auto) H(A&& a){return hermitized(std::forward<A>(a));}
+
+template<class A, std::enable_if_t<std::decay_t<A>::dimensionality == 1, int> =0> 
+decltype(auto) C(A&& a){return blas::conj(std::forward<A>(a));}
+template<class A, std::enable_if_t<std::decay_t<A>::dimensionality == 1, int> =0>
+[[deprecated("use blas::C instead of blas::H for conjugated vectors to avoid confusions")]]
+decltype(auto) H(A&& a){return blas::conj(std::forward<A>(a));}
+
 template<class A> decltype(auto) T(A&& a){return transposed(std::forward<A>(a));}
 template<class A> decltype(auto) N(A&& a){return identity  (std::forward<A>(a));}
 
