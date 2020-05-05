@@ -38,7 +38,8 @@ auto dot(X1D const& x, Y1D const& y, R&& r){
 	     if(not is_conjugated<X1D>{} and not is_conjugated<Y1D>{}) dotu(size(x), base_x, stride(x), base_y, stride(y), &r);
 	else if(not is_conjugated<X1D>{} and     is_conjugated<Y1D>{}) dotc(size(x), base_y, stride(y), base_x, stride(x), &r);
 	else if(    is_conjugated<X1D>{} and not is_conjugated<Y1D>{}) dotc(size(x), base_x, stride(x), base_y, stride(y), &r);
-	else                                                           assert(0);
+//	else if(    is_conjugated<X1D>{} and     is_conjugated<Y1D>{}) dotu(size(x), base_y, stride(y), base_x, stride(x), &r);
+	else                                                           assert(0); // case not implemented in blas
 	return std::forward<R>(r);
 }
 
@@ -58,7 +59,7 @@ auto dot(X1D const& x, Y1D const& y){
 
 #if not __INCLUDE_LEVEL__ // _TEST_MULTI_ADAPTORS_BLAS_DOT
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS dot"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS dot"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
@@ -134,7 +135,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_real){
 	}
 }
 
-#if 1
 BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex){
 	namespace blas = multi::blas;
 
@@ -144,60 +144,27 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex){
 		{5. + 2.*I,  6. + 6.*I,  7.+2.*I,  8.-3.*I},
 		{9. + 1.*I, 10. + 9.*I, 11.+1.*I, 12.+2.*I}
 	};
-//	print_2D(A);
-//	print_1D(A[1]);
 	{
 		complex c; blas::dot(A[1], A[1], c);
-		BOOST_TEST( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[1]), complex{0}) );
+		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[1]), complex{0}) );
 	}
 	{
 		complex c = blas::dot(A[1], A[1]);
-		BOOST_TEST( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[1]), complex{0}) );
+		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[1]), complex{0}) );
 	}
 	{
-//		conjugated(A[1]);
-//		complex c; dot(A[1], conjugated(A[1]), c);
-//		BOOST_TEST( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[1]), complex{0}, std::plus<>{}, [](auto a, auto b){return a*conj(b);}) );
+		complex c = blas::dot(A[1], blas::C(A[2]));
+		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}, std::plus<>{}, [](auto a, auto b){return a*conj(b);}) );
 	}
-#if 0
-
-
 	{
-
-
-
-
-		{
-
-		{
-			multi::array<complex, 1> cc = {1., 2., 3.};
-			dot(A[1], conjugated(A[1]), cc[0]);
-			BOOST_TEST( cc[0] == std::inner_product(begin(A[1]), end(A[1]), begin(A[1]), complex{0}, std::plus<>{}, [](auto a, auto b){return a*conj(b);}) );
-		}
-		{
-			auto const c = dot(A[1], conjugated(A[1]));
-			std::cout<< c() <<std::endl;
-			BOOST_REQUIRE( c() == std::inner_product(begin(A[1]), end(A[1]), begin(A[1]), complex{0}, std::plus<>{}, [](auto a, auto b){return a*conj(b);}) );
-			BOOST_REQUIRE( dot(A[1], conjugated(A[1])) == dot(conjugated(A[1]), A[1]) );
-		}
-		{
-			auto const c = dot(conjugated(A[1]), A[1]);
-			std::cout<< c() <<std::endl;
-			BOOST_REQUIRE( c() == std::inner_product(begin(A[1]), end(A[1]), begin(A[1]), complex{0}, std::plus<>{}, [](auto a, auto b){return a*conj(b);}) );
-		}
-		{
-			multi::array<complex, 1> a = {1. +    I,  2. + 3.*I,  3.+2.*I,  4.-9.*I};
-			multi::array<complex, 1> b = {5. + 2.*I,  6. + 6.*I,  7.+2.*I,  8.-3.*I};
-			BOOST_REQUIRE( dot(a            , b            )()== 19. - 27.*I );
-			BOOST_REQUIRE( dot(a            , conjugated(b))()==121. - 43.*I );
-			BOOST_REQUIRE( dot(conjugated(a), b            )()==121. + 43.*I );
-		//	BOOST_REQUIRE( dot(conjugated(a), conjugated(b))() == 19. + 27.*I );
-		}
+		complex c = blas::dot(blas::C(A[1]), A[2]);
+		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}, std::plus<>{}, [](auto a, auto b){return conj(a)*b;}) );
 	}
-#endif
+	{
+//		complex c = blas::dot(blas::C(A[1]), blas::C(A[2]));
+//		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}, std::plus<>{}, [](auto a, auto b){return conj(a)*conj(b);}) );
+	}
 }
-#endif
-
 
 #endif
 #endif
