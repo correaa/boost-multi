@@ -309,8 +309,8 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 	using strides_type    = decltype(tuple_cat(std::make_tuple(std::declval<index>()), std::declval<typename sub_type::strides_type>()));
 //	using extensions_type = typename detail::repeat<index_extension, D>::type;
 //	using extensions_io_type = std::array<index_extension, D>;
-	HD auto operator()(index i) const{return i*stride_ - offset_;}
-	auto origin() const{return sub_.origin() - offset_;}
+	constexpr auto operator()(index i) const{return i*stride_ - offset_;}
+	constexpr auto origin() const{return sub_.origin() - offset_;}
 	constexpr
 	layout_t(
 		sub_type sub, stride_type stride, offset_type offset, nelems_type nelems
@@ -322,7 +322,7 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 		offset_{sub_.offset_ + ie.first()*sub_.stride()},
 		nelems_{ie.size()*sub_.num_elements()}                             // use .size fort
 	{}
-	constexpr layout_t() = default;//: sub{}, stride_{1}, offset_{0}, nelems_{0}{} // needs stride != 0 for things to work well in partially formed state
+	layout_t() = default;//: sub{}, stride_{1}, offset_{0}, nelems_{0}{} // needs stride != 0 for things to work well in partially formed state
 //	constexpr 
 	layout_t(extensions_type const& e) :// = {}) : 
 		sub_{detail::tail(e)}, 
