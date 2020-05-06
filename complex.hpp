@@ -1,7 +1,8 @@
-#ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
-$CXX -std=c++14 -D_TEST_MULTI_COMPLEX -x c++ $0 -o $0x&&$0x&&rm $0x;exit
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
+$CXX $0 -o $0x&&$0x&&rm $0x;exit
 #endif
 // © Alfredo Correa 2020
+
 #ifndef MULTI_COMPLEX_HPP
 #define MULTI_COMPLEX_HPP
 
@@ -11,6 +12,22 @@ $CXX -std=c++14 -D_TEST_MULTI_COMPLEX -x c++ $0 -o $0x&&$0x&&rm $0x;exit
 
 namespace boost{
 namespace multi{
+
+MAYBE_UNUSED constexpr class adl_conj_fn__{
+	template<class... As>          auto _(priority<1>,        As&&... as) const JUSTRETURN(              std::conj(std::forward<As>(as)...))
+	template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   conj(std::forward<As>(as)...))
+	template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).conj(std::forward<As>(as)...))
+public:
+	template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<3>{}, std::forward<As>(as)...))
+} adl_conj;
+
+MAYBE_UNUSED constexpr class adl_imag_fn__{
+	template<class... As>          auto _(priority<1>,        As&&... as) const DECLRETURN(              std::imag(std::forward<As>(as)...))
+	template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   imag(std::forward<As>(as)...))
+	template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).imag(std::forward<As>(as)...))
+public:
+	template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<3>{}, std::forward<As>(as)...))
+} adl_imag;
 
 struct real_t;
 struct imag_t;
@@ -130,7 +147,7 @@ namespace std{
 		is_trivially_default_constructible<T>{};
 }
 
-#if _TEST_MULTI_COMPLEX
+#if not __INCLUDE_LEVEL__ // _TEST_MULTI_COMPLEX
 
 #include<cassert>
 #include<complex>
