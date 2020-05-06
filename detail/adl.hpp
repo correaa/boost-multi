@@ -153,7 +153,7 @@ ForwardIt alloc_uninitialized_value_construct_n(Alloc& alloc, ForwardIt first, S
 {
 	ForwardIt current = first;
 	try{
-		for (; n > 0 ; ++current, --n) std::allocator_traits<Alloc>::construct(alloc, std::addressof(*current), Value());
+		for (; n > 0 ; ++current, --n) std::allocator_traits<Alloc>::construct(alloc, std::addressof(*current), Value()); // !!!!!!!!!!!!!! if you are using std::complex type consider making complex default constructible (e.g. by type traits)
 		//	::new (static_cast<void*>(std::addressof(*current))) Value();
 		return current;
 	}catch(...){
