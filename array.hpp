@@ -12,6 +12,7 @@ $CXX $0 -o $0x&&$0x&&rm $0x;exit
 #include "./memory/allocator.hpp"
 #include "./detail/memory.hpp"
 #include "./detail/adl.hpp"
+//#include "./config/DEPRECATED.hpp"
 
 #include<memory>
 
@@ -438,13 +439,13 @@ protected:
 	using alloc_traits = typename std::allocator_traits<typename static_array::allocator_type>;
 	using ref = array_ref<T, 0, typename std::allocator_traits<typename std::allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
 	auto uninitialized_value_construct(){return adl::alloc_uninitialized_value_construct_n(static_array::alloc(), this->base_, this->num_elements());}
-	template<typename It> auto uninitialized_copy(It first){return adl_alloc_uninitialized_copy_n(this->alloc(), first, this->num_elements(), this->data());}
+	template<typename It> auto uninitialized_copy(It first){return adl_alloc_uninitialized_copy_n(this->alloc(), first, this->num_elements(), this->data_elements());}
 	template<typename It>
 	auto uninitialized_move(It first){
 		using boost::multi::uninitialized_move_n;
-		return uninitialized_move_n(this->alloc(), first, this->num_elements(), this->data());
+		return uninitialized_move_n(this->alloc(), first, this->num_elements(), this->data_elements());
 	}
-	void destroy(){array_alloc::destroy_n(this->data(), this->num_elements());}
+	void destroy(){array_alloc::destroy_n(this->data_elements(), this->num_elements());}
 public:
 	using typename ref::value_type;
 	using typename ref::size_type;
@@ -518,13 +519,13 @@ public:
 		array_alloc{o.get_allocator()}, 
 		ref{static_array::allocate(o.num_elements()), o.extensions()}
 	{
-		uninitialized_copy(o.data());
+		uninitialized_copy(o.data_elements());
 	}
 	static_array(static_array&& o) :                                       //5b
 		array_alloc{o.get_allocator()}, 
 		ref{static_array::allocate(o.num_elements()), o.extensions()}
 	{
-		uninitialized_move(o.data()); // TODO: uninitialized_move?
+		uninitialized_move(o.data_elements()); // TODO: uninitialized_move?
 	}
 	template<class It> static auto distance(It a, It b){using std::distance; return distance(a, b);}
 protected:
@@ -544,10 +545,17 @@ public:
 	}
 	using element_const_ptr = typename std::pointer_traits<typename static_array::element_ptr>::template rebind<typename static_array::element const>;
 	friend typename static_array::allocator_type get_allocator(static_array const& self){return self.get_allocator();}
-	HD typename static_array::element_ptr       data()      {return ref::data();}
-	HD auto data() const{return typename static_array::element_const_ptr{ref::data()};}
-	friend typename static_array::element_ptr       data(static_array&       s){return s.data();}
-	friend typename static_array::element_const_ptr data(static_array const& s){return s.data();}
+
+	[[deprecated("use data_elements() instead of data()")]]
+	constexpr typename static_array::element_ptr       data()      {return ref::data();}
+	[[deprecated("use data_elements() instead of data()")]]
+	constexpr auto data() const{return typename static_array::element_const_ptr{ref::data()};}
+
+	// TODO find how to use `deprecated` with nvcc
+	friend constexpr typename static_array::element_ptr       data(static_array&       s)
+	{return s.data_elements();}
+	friend constexpr typename static_array::element_const_ptr data(static_array const& s)
+	{return s.data_elements();}
 
 	constexpr typename static_array::element_ptr       base()      {return ref::base();}
 	constexpr typename static_array::element_const_ptr base() const{return typename static_array::element_const_ptr{ref::base()};}
@@ -641,8 +649,8 @@ public:
 //	friend const_iterator cbegin(static_array const& self){return self.cbegin();}
 //	friend const_iterator cend(static_array const& self){return self.cend();}
 
-	static_array& operator=(static_array const& other) &{assert( extensions(other) == static_array::extensions() );
-		return adl_copy_n(other.data(), other.num_elements(), this->data()), *this;
+	static_array& operator=(static_array const& other)&{assert( extensions(other) == static_array::extensions() );
+		return adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements()), *this;
 	}
 
 	operator basic_array<typename static_array::value_type, static_array::dimensionality, typename static_array::element_const_ptr, typename static_array::layout_t>()&{
