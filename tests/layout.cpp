@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(layout){
 	BOOST_REQUIRE( &B2blk[1][1][1][1] == &B2[3][3] );
 }
 {
-	double A[3][4][5];
+	double A[3][4][5] = {};
 	using multi::dimensionality;
 	static_assert(dimensionality(A)==3, "!");
 	using multi::extensions;
@@ -97,10 +97,10 @@ BOOST_AUTO_TEST_CASE(layout){
 
 	using multi::stride;
 	BOOST_REQUIRE( stride(AA) == 20 );
-	static_assert( stride(A) == 20, "!" );
-	static_assert( stride(A[0]) == 5, "!" );
-	static_assert( stride(A[1]) == 5, "!" );
-	static_assert( stride(A[0][0]) == 1, "!" );
+	static_assert( stride(A) == 20 , "!" );
+	static_assert( stride(A[0]) == 5 , "!" );
+	static_assert( stride(A[1]) == 5 , "!" );
+	static_assert( stride(A[0][0]) == 1 , "!" );
 //		assert( stride(A) == 20 );
 //		assert( stride(A[0]) == 20 );
 }
