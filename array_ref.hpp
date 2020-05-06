@@ -125,14 +125,14 @@ struct basic_array_ptr :
 	using reference = Ref const&;
 	using iterator_category = std::random_access_iterator_tag;
 
-	basic_array_ptr(std::nullptr_t p = nullptr) : Ref{p}{}
+	constexpr basic_array_ptr(std::nullptr_t p = nullptr) : Ref{p}{}
 	template<class, class> friend struct basic_array_ptr;
-	basic_array_ptr(typename Ref::element_ptr p, layout_t<Ref::dimensionality-1> l) HD : Ref{l, p}{}
-	basic_array_ptr(typename Ref::element_ptr p, index_extensions<Ref::dimensionality> e) : Ref{p, e}{}
+	constexpr basic_array_ptr(typename Ref::element_ptr p, layout_t<Ref::dimensionality-1> l) : Ref{l, p}{}
+	constexpr basic_array_ptr(typename Ref::element_ptr p, index_extensions<Ref::dimensionality> e) : Ref{p, e}{}
 
 	template<class Array, typename = decltype(typename Ref::element_ptr{typename Array::element_ptr{}})> 
-	basic_array_ptr(Array const& o) : Ref{o->layout(), o->base()}{}//, stride_{o.stride_}{}
-	basic_array_ptr(basic_array_ptr const& o) : Ref{static_cast<Layout const&>(o), o.base_}{}//, stride_{o.stride_}{}
+	constexpr basic_array_ptr(Array const& o) : Ref{o->layout(), o->base()}{}//, stride_{o.stride_}{}
+	constexpr basic_array_ptr(basic_array_ptr const& o) : Ref{static_cast<Layout const&>(o), o.base_}{}//, stride_{o.stride_}{}
 	basic_array_ptr& operator=(basic_array_ptr const& other){
 		this->base_ = other.base_;
 		static_cast<Layout&>(*this) = other;
@@ -219,7 +219,7 @@ struct array_iterator :
 
 	using element = typename Ref::element;
 	using element_ptr = typename Ref::element_ptr;
-	array_iterator(std::nullptr_t p = nullptr) : ptr_{p}, stride_{1}{}//Ref{p}{}
+	constexpr array_iterator(std::nullptr_t p = nullptr) : ptr_{p}, stride_{1}{}//Ref{p}{}
 	template<class, dimensionality_type, class, class> friend struct array_iterator;
 	template<class Other, typename = decltype(typename Ref::types::element_ptr{typename Other::element_ptr{}})> 
 	constexpr array_iterator(Other const& o) : /*Ref{o.layout(), o.base()},*/ ptr_{o.ptr_.base_, o.ptr_.layout()}, stride_{o.stride_}{}
@@ -229,7 +229,7 @@ struct array_iterator :
 		stride_ = other.stride_;
 		return *this;
 	}
-	explicit operator bool() const{return static_cast<bool>(ptr_.base_);}
+	explicit constexpr operator bool() const{return static_cast<bool>(ptr_.base_);}
 	constexpr Ref operator*() const{/*assert(*this);*/ return {*ptr_};}//return *this;}
 	constexpr decltype(auto) operator->() const{/*assert(*this);*/ return ptr_;}//return this;}
 	constexpr Ref operator[](difference_type n) const{return *(*this + n);}
