@@ -110,25 +110,30 @@ namespace blas = multi::blas;
 
 BOOST_AUTO_TEST_CASE(multi_blas_trsv_real_square, *utf::tolerance(0.0001)){
 
-	multi::array<double, 2> const A = {
-		{ 1.,  3.,  4.},
-		{NAN,  7.,  1.},
-		{NAN, NAN,  8.}
-	};
+
 	{
+		multi::array<double, 2> const A = {
+			{ 1.,  3.,  4.},
+			{ NAN,  7.,  1.},
+			{ NAN,  NAN,  8.}
+		};
 		multi::array<double, 1> b = {1., 3., 4.};
 		blas::trsv(blas::filling::upper, blas::diagonal::general, A, b); // B<-Solve(A.X==B), B<-A⁻¹.B, B⊤<-(A⁻¹.B)⊤, B<-B⊤.A⁻¹⊤
-		BOOST_TEST_REQUIRE( b[0] == -2.07143 );
+		BOOST_TEST( b[0] == -2.07143 );
 		BOOST_TEST( b[1] ==  0.357143 );
 		BOOST_TEST( b[2] ==  0.5 );
 	}
 	{
-		multi::array<double, 1> b = {3., 3., 1.};
+		multi::array<double, 2> const A = {
+			{ 1.,  3.,  4.},
+			{ NAN,  7.,  1.},
+			{ NAN,  NAN,  8.}
+		};
+		multi::array<double, 1> b = {1., 3., 4.};
 		blas::trsv(blas::filling::lower, blas::diagonal::general, blas::T(A), b); // B<-Solve(A.X==B), B<-A⊤⁻¹.B, B⊤<-(A⊤⁻¹.B)⊤, B<-B⊤.A⁻¹
-		print_1D(b);
-		BOOST_TEST( b[0] ==  -2.07143 );
-		BOOST_TEST( b[1] == -0.857143 );
-		BOOST_TEST( b[2] == -1.26786 );
+		BOOST_TEST( b[0] ==  1. );
+		BOOST_TEST( b[1] ==  0. );
+		BOOST_TEST( b[2] ==  0. );
 	}
 #if 0
 	{
