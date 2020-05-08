@@ -47,7 +47,7 @@ auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c)
 		auto base_c = base_aux(c); //  static_assert( not is_conjugated<C2D>{}, "!" );
 		if(is_conjugated<A2D>{}){
 			// if you get an error here might be due to lack of inclusion of a header file with the backend appropriate for your type of iterator
-				 if(stride(a)==1 and stride(c)!=1) core::herk(c_side==filling::upper?'L':'U', 'N', size(c), size(rotated(a)), alpha, base_a, stride(rotated(a)), beta, base_c, stride(c));
+				 if(stride(a)==1 and stride(c)!=1) herk(c_side==filling::upper?'L':'U', 'N', size(c), size(rotated(a)), alpha, base_a, stride(rotated(a)), beta, base_c, stride(c));
 			else if(stride(a)==1 and stride(c)==1){
 				if(size(a)==1) herk(c_side==filling::upper?'L':'U', 'N', size(c), size(rotated(a)), alpha, base_a, stride(rotated(a)), beta, base_c, stride(c));
 				else assert(0);
@@ -94,16 +94,18 @@ auto herk(A2D const& a, C2D&& c)
 ->decltype(herk(1., a, std::forward<C2D>(c))){
 	return herk(1., a, std::forward<C2D>(c));}
 
+/*
 template<class A2D, class C2D>
 NODISCARD("when last argument is const")
 auto herk(A2D const& a, C2D const& c)
 ->decltype(herk(1., a, decay(c))){
 	return herk(1., a, decay(c));}
+*/
 
 template<class AA, class A2D, class Ret = typename A2D::decay_type>
 NODISCARD("when second argument is const")
 auto herk(AA alpha, A2D const& a)
-{//->std::decay_t<decltype(herk(alpha, a, Ret({size(a), size(a)}, get_allocator(a))))>{
+->std::decay_t<decltype(herk(alpha, a, Ret({size(a), size(a)}, get_allocator(a))))>{
 	return herk(alpha, a, Ret({size(a), size(a)}, get_allocator(a)));
 }
 
