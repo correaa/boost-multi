@@ -61,11 +61,11 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d){
 }
 {
 #if __cpp_deduction_guides
-	multi::array const A = {1.2, 3.4, 5.6};
+	multi::array A({1.2, 3.4, 5.6});
 	BOOST_REQUIRE( size(A) == 3 );
 	BOOST_REQUIRE( A[2] == 5.6 );
-	BOOST_REQUIRE(( A == multi::array{1.2, 3.4, 5.6} ));
-	BOOST_REQUIRE(( A == A.remake({1.2, 3.4, 5.6}) ));
+	BOOST_REQUIRE(( A == multi::array({1.2, 3.4, 5.6}) ));
+//	BOOST_REQUIRE(( A == A.remake({1.2, 3.4, 5.6}) ));
 #endif
 }
 {
@@ -258,15 +258,42 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d){
 	BOOST_REQUIRE( num_elements(B3)==12 and B3[1][0][1] == "101" );
 }
 #if __cpp_deduction_guides
- {	multi::array A = {1., 2., 3.}; BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 and num_elements(A)==3 and A[1]==2. ); static_assert( typename decltype(A)::rank{}==1 );
-}{	multi::array A = {1., 2.};     BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 and num_elements(A)==2 and A[1]==2. ); BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 );
-}{	multi::array A = {0, 2};       BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 and num_elements(A)==2 and A[1]==2. ); BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 );
-}{	multi::array A = {9.};         BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 and num_elements(A)==1 and A[0]==9. ); BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 );
-}{	multi::array A = {9};          BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 and num_elements(A)==1 and A[0]==9. ); BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 );
-}{	multi::array A = {
+{	
+	multi::array A({1., 2., 3.});
+	static_assert( std::is_same<decltype(A)::element_type, double>{}, "!");
+	BOOST_REQUIRE( size(A) == 3 and num_elements(A) == 3 );
+	BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 and num_elements(A)==3 and A[1]==2. ); 
+	static_assert( typename decltype(A)::rank{}==1 );
+}
+{	
+	multi::array A({1., 2.});
+	static_assert( std::is_same<decltype(A)::element_type, double>{}, "!");
+	BOOST_REQUIRE( size(A) == 2 and num_elements(A) == 2 );
+	BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 and num_elements(A)==2 and A[1]==2. ); BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 );
+}
+{	
+	multi::array A({0, 2});
+	static_assert( std::is_same<decltype(A)::element_type, int>{}, "!" );
+	BOOST_REQUIRE( size(A) == 2 and num_elements(A) == 2 );
+	BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 and num_elements(A)==2 and A[1]==2. ); BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 );
+}
+{
+	multi::array A = {9.};
+	static_assert( std::is_same<decltype(A)::element_type, double>{}, "!" );
+	BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 and num_elements(A)==1 and A[0]==9. ); BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 );
+}
+{
+	multi::array A = {9};
+	static_assert( std::is_same<decltype(A)::element_type, int>{}, "!" );
+	BOOST_REQUIRE( size(A) == 1 and num_elements(A) == 1 );
+	BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 and num_elements(A)==1 and A[0]==9. ); BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 );
+}
+{
+	multi::array A({
 		{1., 2., 3.}, 
 		{4., 5., 6.}
-	}; BOOST_REQUIRE( multi::rank<decltype(A)>{}==2 and num_elements(A)==6 );
+	}); 
+	BOOST_REQUIRE( multi::rank<decltype(A)>{}==2 and num_elements(A)==6 );
 }
 #endif
 }
