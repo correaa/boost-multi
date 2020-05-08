@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(static_array_cast){
 }
 {
 	multi::array<double, 1> A = { 0,  1,  2,  3,  4};
-	auto&& A_ref = multi::static_array_cast<double, double const*>(A);
+	auto&& A_ref = A.template static_array_cast<double, double const*>();
 	BOOST_REQUIRE( A_ref[2] == A[2] );
 	BOOST_REQUIRE( A[2] == A_ref[2] );
 
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(static_array_cast){
 		{ 0, 1, 2, 3, 4},
 		{ 5, 6, 7, 8, 9}
 	};
-	auto&& A_ref = multi::static_array_cast<double, double const*>(A);
+	auto&& A_ref = A.template static_array_cast<double, double const*>();
 	BOOST_REQUIRE( A_ref[1][1] == A[1][1] );
 	BOOST_REQUIRE( std::equal(begin(A_ref[1]), end(A_ref[1]), begin(A[1])) );
 	BOOST_REQUIRE( A_ref[1] == A[1] );
@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE(static_array_cast){
 {
 	multi::array<double, 1> A = { 0,  1,  2,  3,  4};
 	multi::array<double, 1> mA = { -0,  -1,  -2,  -3, -4};
-	auto&& mA_ref = multi::static_array_cast<double, involuter<double*, std::negate<>>>(A);
+	auto&& mA_ref = A.template static_array_cast<double, involuter<double*, std::negate<>>>();
 	BOOST_REQUIRE( mA_ref[2] == mA[2] );
 	BOOST_REQUIRE( mA[2] == mA_ref[2] );
 	BOOST_REQUIRE( std::equal(begin(mA_ref), end(mA_ref), begin(mA)) );
@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE(static_array_cast){
 		{-10, -11, -12, -13, -14}, 
 		{-15, -16, -17, -18, -19}
 	};
-	auto&& mA_ref = multi::static_array_cast<double, negater<double*>>(A);
+	auto&& mA_ref = A.template static_array_cast<double, negater<double*>>();
 	BOOST_REQUIRE( mA_ref[1][1] == mA[1][1] );
 	BOOST_REQUIRE( mA[1][1] == mA_ref[1][1] );
 	BOOST_REQUIRE( std::equal(begin(mA[1]), end(mA[1]), begin(mA_ref[1])) );
