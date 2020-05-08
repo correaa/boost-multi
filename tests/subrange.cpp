@@ -9,7 +9,12 @@ $CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 
 #include "../array.hpp"
 
-#include<experimental/tuple>
+#if __cplusplus>=201703L
+#include<tuple> // std::apply
+#else
+#include<experimental/tuple> // std::experimental::apply
+#endif
+
 #include<numeric>
 
 namespace multi = boost::multi;
@@ -19,7 +24,11 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section){
 	multi::array<double, 4> A({10, 20, 30, 40}, 99.);
 	std::iota(data_elements(A), data_elements(A) + num_elements(A), 0.);
 
+#if __cpp_lib_apply  >= 201603
+	using std::apply;
+#else
 	using std::experimental::apply;
+#endif
 	{
 		BOOST_REQUIRE( A({0, 10}, {0, 20}, {0, 30}, {0, 40}).dimensionality == 4 );
 		BOOST_REQUIRE( A( 5, {0, 20}, {0, 30}, {0, 40}).dimensionality == 3 );
