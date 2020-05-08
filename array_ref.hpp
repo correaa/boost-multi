@@ -26,6 +26,7 @@ $CXX $0 -o $0x&&$0x&&rm $0x;exit
 
 #include<algorithm> // copy_n
 #include<cstring> // for memset in reinterpret_cast
+#include<functional> // invoke
 
 #if defined(__CUDACC__)
 #define HD __host__ __device__
@@ -334,11 +335,28 @@ protected:
 	basic_array(basic_array const&) = default;
 	template<class, class> friend struct basic_array_ptr;
 #if __cplusplus >= 201703L
-protected: basic_array(basic_array&&) = default; // if you need to generate a copy you can't use `auto` here, use `decay`.
+#if __INTEL_COMPILER
+public:
+#else
+protected:
+#endif
+basic_array(basic_array&&) = default; // if you need to generate a copy you can't use `auto` here, use `decay`.
 #else
 public   : basic_array(basic_array&&) = default; // in C++ < 17 this is necessary to return references from functions
 #endif
 public:
+
+	template<
+		class T2
+	> friend auto reinterpret_array_cast(basic_array&& a){
+		return std::move(a).template reinterpret_array_cast<T2, typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>();
+	}
+	template<
+		class T2
+	> friend auto reinterpret_array_cast(basic_array const& a){
+		return a.template reinterpret_array_cast<T2, typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>();
+	}
+
 	friend constexpr auto dimensionality(basic_array const& self){return self.dimensionality;}
 	using typename types::reference;
 
@@ -350,8 +368,8 @@ public:
 //	using decay_type = array<typename types::element, D, decltype(default_allocator_of(std::declval<ElementPtr>()))>;
 	template<class P>
 	static decltype(auto) get_allocator_(P const& p){
-		using multi::default_allocator_of;
-		return default_allocator_of(p);
+	//	using multi::default_allocator_of;
+		return multi::default_allocator_of(p);
 	}
 	using decay_type = array<typename types::element_type, D, decltype(get_allocator_(std::declval<ElementPtr>()))>;
 //	decay_type 
@@ -811,18 +829,34 @@ public:
 //	auto static_array_cast() const HD -> basic_array<T2, D, decltype(boost::static_pointer_cast<T2>(std::declval<typename basic_array::element_ptr>()))>{
 //		return {this->layout(), boost::static_pointer_cast<T2>(this->base_)};
 //	}
-	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>,
+	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2 const>,
 		class Element = typename basic_array::element,
 		class PM = T2 Element::*
 	>
-	basic_array<T2, D, P2> member_cast(PM pm) const{
+	basic_array<T2, D, P2> member_cast(PM pm) const&{
 		static_assert(sizeof(T)%sizeof(T2) == 0, 
 			"array_member_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements");
 	//	return {this->layout().scale(sizeof(T)/sizeof(T2)), &(this->base_->*pm)};
 		return basic_array<T2, D, P2>{this->layout().scale(sizeof(T)/sizeof(T2)), static_cast<P2>(&(this->base_->*pm))};
 	}
-	template<class T2, class P2 = T2*>//typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
-	basic_array<std::decay_t<T2>, D, P2> reinterpret_array_cast() const{
+	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>,
+		class Element = typename basic_array::element,
+		class PM = T2 Element::*
+	>
+	basic_array<T2, D, P2> member_cast(PM pm) &{
+		static_assert(sizeof(T)%sizeof(T2) == 0, 
+			"array_member_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements");
+	//	return {this->layout().scale(sizeof(T)/sizeof(T2)), &(this->base_->*pm)};
+		return basic_array<T2, D, P2>{this->layout().scale(sizeof(T)/sizeof(T2)), static_cast<P2>(&(this->base_->*pm))};
+	}
+	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>,
+		class Element = typename basic_array::element,
+		class PM = T2 Element::*
+	>
+	basic_array<T2, D, P2> member_cast(PM pm) &&{return this->member_cast<T2, P2, Element, PM>(pm);}
+
+	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2 const> >
+	basic_array<std::decay_t<T2>, D, P2> reinterpret_array_cast() const&{
 		static_assert( sizeof(T)%sizeof(T2)== 0, "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
 		auto thisbase = this->base();
 		return {
@@ -830,6 +864,18 @@ public:
 			static_cast<P2>(static_cast<void*>(thisbase))
 		};
 	}
+	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
+	basic_array<std::decay_t<T2>, D, P2> reinterpret_array_cast()&{
+		static_assert( sizeof(T)%sizeof(T2)== 0, "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
+		auto thisbase = this->base();
+		return {
+			this->layout().scale(sizeof(T)/sizeof(T2)), 
+			static_cast<P2>(static_cast<void*>(thisbase))
+		};
+	}
+	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
+	basic_array<std::decay_t<T2>, D, P2> reinterpret_array_cast()&&{return this->template reinterpret_array_cast<T2, P2>();}
+
 	template<class T2, class P2 = T2*>
 	basic_array<std::decay_t<T2>, D, P2> const_array_cast()&&{
 		return {this->layout(), const_cast<P2>(this->base())};
@@ -994,8 +1040,23 @@ public:
 //	void serialize(Archive& ar, unsigned int){
 //		for(auto&& e : *this) ar & BOOST_SERIALIZATION_NVP(e);
 //	}
+template<
+	class T2
+> friend auto reinterpret_array_cast(basic_array&& a){
+	return std::move(a).template reinterpret_array_cast<T2, typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>();
+}
+template<
+	class T2
+> friend auto reinterpret_array_cast(basic_array const& a){
+	return a.template reinterpret_array_cast<T2, typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>();
+}
 #if __cplusplus >= 201703L
-protected: basic_array(basic_array&&) = default; // if you need to generate a copy you can't use `auto` here, use `decay` or `aut&&`.
+#if __INTEL_COMPILER
+public: // bug in icc c++17 return from function non copyable non moveable
+#else
+protected:
+#endif
+basic_array(basic_array&&) = default; // if you need to generate a copy you can't use `auto` here, use `decay` or `aut&&`.
 #else
 public   : basic_array(basic_array&&) = default; // in C++ < 17 this is necessary to return references from functions
 // in c++17 things changed and non-moveable non-copyable types can be returned from functions and captured by auto
@@ -1218,12 +1279,18 @@ public:
 	}
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>,
 		class Element = typename basic_array::element,
-		class PM = T2 Element::*
+		class PM = T2 std::decay_t<Element>::*
 	>
 	basic_array<T2, 1, P2> member_cast(PM pm) const{
 		static_assert(sizeof(T)%sizeof(T2) == 0, 
 			"array_member_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements");
-		return {this->layout().scale(sizeof(T)/sizeof(T2)), static_cast<P2>(&(this->base_->*pm))};
+#if defined(__GNUC__) and (not defined(__INTEL_COMPILER))
+		auto&& r1 = (*((typename basic_array::element_type*)(basic_array::base_))).*pm;//->*pm;
+		auto p1 = &r1; auto p2 = (P2)p1;
+		return {this->layout().scale(sizeof(T)/sizeof(T2)), p2};
+#else
+		return {this->layout().scale(sizeof(T)/sizeof(T2)), static_cast<P2>(&(this->base_->*pm))}; // this crashes the gcc compiler
+#endif
 	}
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
 	basic_array<T2, 1, P2> reinterpret_array_cast() const{
@@ -1236,25 +1303,29 @@ public:
 	}
 };
 
-template<class T2, class P2, class Array, class... Args>
-constexpr decltype(auto) static_array_cast(Array&& a, Args&&... args){return a.template static_array_cast<T2, P2>(std::forward<Args>(args)...);}
+//template<class T2, class P2, class Array, class... Args>
+//constexpr decltype(auto) static_array_cast(Array&& a, Args&&... args){return a.template static_array_cast<T2, P2>(std::forward<Args>(args)...);}
 
-template<class T2, class Array, class P2 = typename std::pointer_traits<typename std::decay<Array>::type::element_ptr>::template rebind<T2> , class... Args>
-constexpr decltype(auto) static_array_cast(Array&& a, Args&&... args){return a.template static_array_cast<T2, P2>(std::forward<Args>(args)...);}
+//template<class T2, class Array, class P2 = typename std::pointer_traits<typename std::decay<Array>::type::element_ptr>::template rebind<T2> , class... Args>
+//constexpr decltype(auto) static_array_cast(Array&& a, Args&&... args){return a.template static_array_cast<T2, P2>(std::forward<Args>(args)...);}
 
+/*
 template<
 	class T2, class Array,
 	class P2 = typename std::pointer_traits<typename std::decay<Array>::type::element_ptr>::template rebind<T2>
 >
 decltype(auto) reinterpret_array_cast(Array&& a){
 	return a.template reinterpret_array_cast<T2, P2>();
-}
+}*/
 
+/*
 template<class T2, class Array, class P2 = typename std::pointer_traits<typename std::decay_t<Array>::element_ptr>::template rebind<T2>,
 	class PM = T2 std::decay_t<Array>::element::*
 >
 decltype(auto) member_array_cast(Array&& a, PM pm){return a.template member_cast<T2, P2>(pm);}
+*/
 
+/*
 template<
 	class T2, class Array, class P2 = typename std::pointer_traits<typename std::decay_t<Array>::element_ptr>::template rebind<T2>,
 	class OtherT2, class OtherElement, std::enable_if_t<not std::is_same<T2, OtherElement>{}, int> =0
@@ -1264,8 +1335,9 @@ decltype(auto) member_array_cast(Array&& a, OtherT2 OtherElement::* pm){
 		"member cast does not implicitly reinterprets between types of different size");
 	static_assert(sizeof(OtherT2)==sizeof(T2), 
 		"member cast does not implicitly reinterprets between types of different size");
-	return reinterpret_array_cast<OtherElement>(std::forward<Array>(a)).template member_cast<T2>(pm);
-}
+	return std::forward<Array>(a).template reinterpret_array_cast<OtherElement>().template member_cast<T2>(pm);
+//	return reinterpret_array_cast<OtherElement>(std::forward<Array>(a)).template member_cast<T2>(pm);
+}*/
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*>
 struct array_ref : 
@@ -1278,6 +1350,9 @@ protected:
 	[[deprecated("references are not copyable, use &&")]]
 	array_ref(array_ref const&) = default; // don't try to use `auto` for references, use `auto&&` or explicit value type
 public:
+#if __INTEL_COMPILER
+	array_ref(array_ref&&) = default;
+#endif
 	constexpr array_ref(typename array_ref::element_ptr p, typename array_ref::extensions_type e = {}) noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
 
