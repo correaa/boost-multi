@@ -3,7 +3,7 @@ $CXX $0 -o $0x -lboost_unit_test_framework  -lstdc++fs -lboost_serialization -lb
 #endif
 // © Alfredo Correa 2018-2020
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi fill"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi serialization"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
@@ -23,9 +23,6 @@ $CXX $0 -o $0x -lboost_unit_test_framework  -lstdc++fs -lboost_serialization -lb
 
 //#include "../adaptors/cuda.hpp"
 
-
-
-
 #include<boost/iostreams/filtering_stream.hpp>
 #include<boost/iostreams/filter/gzip.hpp>
 
@@ -37,10 +34,6 @@ $CXX $0 -o $0x -lboost_unit_test_framework  -lstdc++fs -lboost_serialization -lb
 #include<random>
 
 #include<boost/serialization/vector.hpp>
-
-
-
-
 
 namespace multi = boost::multi;
 namespace fs = std::experimental::filesystem;
@@ -171,7 +164,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_small){
 	using complex = std::complex<float>;
 
 	auto const d2D = []{
-		multi::array<complex, 2> d2D({20000, 2000});
+		multi::array<complex, 2> d2D({10000, 1000});
 		auto gen = [d = std::uniform_real_distribution<double>{-1, 1}, e = std::mt19937{std::random_device{}()}]() mutable{return std::complex<double>{d(e), d(e)};};
 		std::for_each(
 			begin(d2D), end(d2D), [&](auto&& r){std::generate(begin(r), end(r), gen);}
@@ -179,6 +172,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_small){
 		return d2D;
 	}();
 	auto size = sizeof(double)*d2D.num_elements();
+	using std::cerr;
 	std::cout<<"data size (in memory) "<< size <<std::endl;
 	{
 		fs::path file{"serialization.bin"};
@@ -187,8 +181,8 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_small){
 			boost::archive::binary_oarchive{ofs} << d2D;
 			return *w;
 		}();
-		std::cerr<<"size "<< (file_size(file)/1e6) <<"MB\n";
-		std::cerr<<"speed " << (size/1e6)/count <<"MB/s\n";
+		cerr<<"size  "<< (file_size(file)/1e6) <<"MB\n";
+		cerr<<"speed "<< (size/1e6)/count <<"MB/s\n";
 		std::decay_t<decltype(d2D)> d2D_cpy;
 		auto count_load = [&, w=watch("binary load")]{
 			std::ifstream ifs{file}; assert(ifs);
@@ -200,7 +194,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_small){
 	}
 	{
 		using std::cout;
-		fs::path file{"serialization-base64.xml"};
+		fs::path file{"serialization.xml"};
 		cout<< file << std::endl;
 		auto count = [&, w = watch("xml write base64")]{
 			std::ofstream ofs{file}; assert(ofs);
