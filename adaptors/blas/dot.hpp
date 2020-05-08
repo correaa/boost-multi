@@ -22,9 +22,11 @@ auto dot_base_aux(A&& a){return base(a);}
 template<class A, std::enable_if_t<  is_conjugated<A>{}, int> =0> 
 auto dot_base_aux(A&& a){return underlying(base(a));}
 
+using core::dot;
+
 template<class X1D, class Y1D, class R, std::enable_if_t<not is_complex<X1D>{}, int> =0>
 auto dot(X1D const& x, Y1D const& y, R&& r){
-	return core::dot(size(x), base(x), stride(x), base(y), stride(y), &r), std::forward<R>(r);}
+	return dot(size(x), base(x), stride(x), base(y), stride(y), &r), std::forward<R>(r);}
 
 template<class X1D, class Y1D, class R, std::enable_if_t<    is_complex<X1D>{}, int> =0>
 auto dot(X1D const& x, Y1D const& y, R&& r){
@@ -99,39 +101,34 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_real){
 		{5.,  6.,  7.,  8.},
 		{9., 10., 11., 12.}
 	};
-	using blas::dot;
 	{
-		double d = dot(cA[1], cA[2]);
+		double d = blas::dot(cA[1], cA[2]);
 		BOOST_REQUIRE( d==std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.) );
 	}
 	{
 		double d = NAN;
-		dot(cA[1], cA[2], d);
+		blas::dot(cA[1], cA[2], d);
 		BOOST_REQUIRE( d==std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.) );
 	}
 	{
 		double d = NAN;
-		auto d2 = dot(cA[1], cA[2], d);
+		auto d2 = blas::dot(cA[1], cA[2], d);
 		BOOST_REQUIRE( d==d2 );
 	}
 	{
 		multi::array<double, 0> d;
-		auto d2 = dot(cA[1], cA[2], d);
+		auto d2 = blas::dot(cA[1], cA[2], d);
 		BOOST_REQUIRE( d == std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.) );
 	}
 	{
-		double d = dot(cA[1], cA[2]);
+		double d = blas::dot(cA[1], cA[2]);
 		BOOST_REQUIRE( d == std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.) );
-		BOOST_REQUIRE( dot(cA[1], cA[2]) == dot(cA[2], cA[1]) );
+		BOOST_REQUIRE( blas::dot(cA[1], cA[2]) == blas::dot(cA[2], cA[1]) );
 	}
 	{	
-		using blas::nrm2;
-		using std::sqrt;
-		{
-			double s;
-			dot(cA[1], cA[1], s);
-			assert( sqrt(s)==nrm2(cA[1]) );
-		}
+		double s;
+		blas::dot(cA[1], cA[1], s);
+		BOOST_REQUIRE( std::sqrt(s)==blas::nrm2(cA[1]) );
 	}
 }
 
@@ -145,12 +142,12 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex){
 		{9. + 1.*I, 10. + 9.*I, 11.+1.*I, 12.+2.*I}
 	};
 	{
-		complex c; blas::dot(A[1], A[1], c);
-		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[1]), complex{0}) );
+		complex c; blas::dot(A[1], A[2], c);
+		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}) );
 	}
 	{
-		complex c = blas::dot(A[1], A[1]);
-		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[1]), complex{0}) );
+		complex c = blas::dot(A[1], A[2]);
+		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}) );
 	}
 	{
 		complex c = blas::dot(A[1], blas::C(A[2]));
