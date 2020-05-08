@@ -1,7 +1,8 @@
-#ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&$CXX -Wfatal-errors -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING -D_DISABLE_CUDA_SLOW $0.cpp -o$0x -lcudart -lboost_unit_test_framework -lboost_timer&&$0x&&rm $0x $0.cpp;exit
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
+$CXX $0 -o $0x -lcudart -lboost_unit_test_framework -lboost_timer&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
+
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING_HPP
 #define BOOST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING_HPP
 
@@ -82,13 +83,14 @@ ptr<void> memset(ptr<void> dest, int ch, std::size_t byte_count){
 }
 
 template<class VoidPDst = void*, class VoidPCSrc = void const*>
-auto memcpy2D(VoidPDst const& dst, std::size_t dpitch, VoidPCSrc const& src, std::size_t spitch, std::size_t width, std::size_t height)
-->decltype(cudaMemcpy2D(static_cast<void*>(dst), dpitch, static_cast<void const*>(src), spitch, width, height, static_cast<cudaMemcpyKind>(memcpy_::type(dst, src))), dst){
+auto memcpy2D(VoidPDst dst, std::size_t dpitch, VoidPCSrc src, std::size_t spitch, std::size_t width, std::size_t height)
+->std::decay_t<
+  decltype(cudaMemcpy2D(static_cast<void*>(dst), dpitch, static_cast<void const*>(src), spitch, width, height, static_cast<cudaMemcpyKind>(memcpy_::type(dst, src))), dst)>{
 	return cudaMemcpy2D(static_cast<void*>(dst), dpitch, static_cast<void const*>(src), spitch, width, height, static_cast<cudaMemcpyKind>(memcpy_::type(dst, src))), dst;}
 
 }}}}
 
-#ifdef _TEST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING
+#if not __INCLUDE_LEVEL__ // _TEST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUDA cstring"
 #define BOOST_TEST_DYN_LINK
@@ -112,7 +114,9 @@ BOOST_AUTO_TEST_CASE(multi_memory_cuda_cstring){
 		memset(p, 0, n*sizeof(double));
 	}
 	BOOST_REQUIRE( p[n/2]==0 );
-	p[n/2] = 99.;
+	CUDA_SLOW ( 
+		p[n/2] = 99.;
+	)
 	cuda::ptr<double> q = cuda::allocator<double>{}.allocate(n);
 	{
 		boost::timer::auto_cpu_timer t;
