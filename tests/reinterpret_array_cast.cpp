@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast){
 	multi::array<std::complex<double>, 1> A(10); 
 	std::iota( begin(A), end(A), 1.);
 	BOOST_REQUIRE( A[8] == 9. );
-	auto&& A2 = multi::reinterpret_array_cast<Complex_<double>>(A);
+	auto&& A2 = A.template reinterpret_array_cast<Complex_<double>>();
 	A2[8].real = 1000.;
 	BOOST_REQUIRE( A[8] == 1000. );
 }
