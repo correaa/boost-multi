@@ -62,7 +62,7 @@ struct array_types : Layout{
 			element
 		>::type
 	>::type;
-	using decay_type = array<element, dimensionality, typename pointer_traits<element_ptr>::default_allocator_type>;
+//	using decay_type = array<element, dimensionality, decltype(basic_array::get_allocator())>;//typename pointer_traits<element_ptr>::default_allocator_type>;
 	using reference = typename std::conditional<(dimensionality > 1), 
 		basic_array<element, dimensionality-1, element_ptr>,
 		typename std::conditional<(dimensionality == 1), 
@@ -367,11 +367,12 @@ public:
 	friend auto get_allocator(basic_array const& self){return self.get_allocator();}
 //	using decay_type = array<typename types::element, D, decltype(default_allocator_of(std::declval<ElementPtr>()))>;
 	template<class P>
-	static decltype(auto) get_allocator_(P const& p){
+	static auto get_allocator_(P const& p)
+	->decltype(multi::default_allocator_of(p)){
 	//	using multi::default_allocator_of;
 		return multi::default_allocator_of(p);
 	}
-	using decay_type = array<typename types::element_type, D, decltype(get_allocator_(std::declval<ElementPtr>()))>;
+	using decay_type = array<typename types::element_type, D, decltype(multi::default_allocator_of(std::declval<typename basic_array::element_ptr>()))>;//get_allocator_(std::declval<ElementPtr>()))>;
 //	decay_type 
 //	auto
 //	static decay_type remake(std::initializer_list<typename basic_array::value_type> il){return decay_type(il);}

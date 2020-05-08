@@ -542,6 +542,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_elongated){
 	}
 }
 
+template<class A> void what(A&&) = delete;
+template<class... A> void what() = delete;
+
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_automatic2){
 	namespace cuda = multi::cuda;
 	namespace blas = multi::blas;
@@ -564,18 +567,21 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_automatic2){
 		multi::array<complex, 2> const c_copy2 = blas::gemm(blas::H(a), b);
 		BOOST_REQUIRE(( c == c_copy and c == c_copy2 ));
 	}
-#if 0
 	{
 		cuda::array<complex, 2> const acu = a;
 		cuda::array<complex, 2> const bcu = b;
-		cuda::array<complex, 2> ccu({2, 4});
+		cuda::array<complex, 2> ccu({2, 4}, acu.get_allocator());
 		blas::gemm(1., blas::H(acu), bcu, 0., ccu);
 		BOOST_REQUIRE( ccu[1][2] == complex(112, 12) );
 
-		cuda::array<complex, 2> const ccu_copy  = blas::gemm(1., blas::H(acu), bcu);
-		cuda::array<complex, 2> const ccu_copy2 = blas::gemm(blas::H(acu), bcu);
-		BOOST_REQUIRE(( ccu_copy == ccu and ccu_copy2 == ccu ));
+	//	what(base(acu));
+	//	what(blas::H(acu).get_allocator());
+	//	what<decltype(blas::H(acu))::decay_type, decltype(acu)::decay_type>();
+	//	cuda::array<complex, 2> const ccu_copy  = blas::gemm(1., blas::H(acu), bcu);
+	//	cuda::array<complex, 2> const ccu_copy2 = blas::gemm(blas::H(acu), bcu);
+	//	BOOST_REQUIRE(( ccu_copy == ccu and ccu_copy2 == ccu ));
 	}
+#if 0
 	{
 		cuda::managed::array<complex, 2> const amcu = a;
 		cuda::managed::array<complex, 2> const bmcu = b;
