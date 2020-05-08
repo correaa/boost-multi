@@ -1,9 +1,9 @@
-#ifdef COMPILATION_INSTRUCTIONS
-$CXX -Wall -Wextra -Wpedantic $0 -o $0x `pkg-config --libs blas` -lcudart -lcublas -lboost_unit_test_framework&&$0x&&rm $0x;exit
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
+$CXX $0 -o $0x `pkg-config --libs blas` -lcudart -lcublas -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
-// © Alfredo A. Correa 2019
+// © Alfredo A. Correa 2019-2020
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS axpy"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS asum"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
@@ -49,16 +49,18 @@ BOOST_AUTO_TEST_CASE(multi_blas_asum_double_cuda){
 	BOOST_REQUIRE(asum(A[1]) == 26 );
 }
 
+using complex = std::complex<double>; constexpr complex I{0, 1};
+
 BOOST_AUTO_TEST_CASE(multi_blas_asum_complex_cuda){
-	using Z = std::complex<double>; Z const I{0, 1};
-	multi::cuda::array<Z, 2> const A = {
+	namespace blas = multi::blas;
+	multi::cuda::array<complex, 2> const A = {
 		{1. + 2.*I,  2.,  3.,  4.},
 		{5.,  6. + 3.*I,  7.,  8.},
 		{9., 10., 11.+ 4.*I, 12.}
 	};
-	using multi::blas::asum;
-	BOOST_REQUIRE( asum(A[1]) == Z{29.} );
-	BOOST_REQUIRE( asum(A[1]({0, 4})) == Z{29.} );
+
+	BOOST_REQUIRE( blas::asum(A[1]) == 29. );
+	BOOST_REQUIRE( blas::asum(A[1]({0, 4})) == 29. );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_asum_complex_cuda_mutable){

@@ -1,7 +1,12 @@
-#ifdef COMPILATION_INSTRUCTIONS
-$CXX -Wall -Wextra $0 -o$0x `pkg-config --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x; exit
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
+$CXX $0 -o $0x `pkg-config --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x; exit
 #endif
 // © Alfredo A. Correa 2019-2020
+
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS swap"
+#define BOOST_TEST_DYN_LINK
+#include<boost/test/unit_test.hpp>
+
 #include "../../blas.hpp"
 
 #include "../../../array.hpp"
@@ -11,10 +16,6 @@ $CXX -Wall -Wextra $0 -o$0x `pkg-config --libs blas` -lboost_unit_test_framework
 
 using std::cout;
 namespace multi = boost::multi;
-
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi lapack adaptor potrf"
-#define BOOST_TEST_DYN_LINK
-#include<boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE(lapack_potrf, *boost::unit_test::tolerance(0.00001) ){
 	{
