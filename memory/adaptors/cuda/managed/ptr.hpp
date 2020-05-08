@@ -112,9 +112,9 @@ template<class T> class allocator;
 template<typename T, typename RawPtr>
 struct ptr{
 	using raw_pointer = RawPtr;
+	raw_pointer rp_;
 protected:
 	friend struct cuda::ptr<T, RawPtr>; // to allow automatic conversions
-	raw_pointer rp_;
 	template<class TT> friend class allocator;
 	template<typename, typename> friend struct ptr;
 //	template<class TT, typename = typename std::enable_if<not std::is_const<TT>{}>::type> 
