@@ -53,11 +53,13 @@ auto trsv(filling a_nonzero_side, diagonal a_diag, A2D const& a, X1D&& x)
 	return std::forward<X1D>(x);
 }
 
-#if 0
 template<class A2D, class X1D>
 auto trsv(filling a_nonzero_side, A2D const& a, X1D&& x)
-->decltype(trsv(a_nonzero_side, diagonal::non_unit, a, std::forward<X1D>(x))){
-	return trsv(a_nonzero_side, diagonal::non_unit, a, std::forward<X1D>(x));}
+->decltype(trsv(a_nonzero_side, diagonal::general, a, std::forward<X1D>(x))){
+	return trsv(a_nonzero_side, diagonal::general, a, std::forward<X1D>(x));}
+
+#if 0
+
 
 #if 1
 template<class A2D, class X1D, class Ret = typename X1D::decay_type>
@@ -124,7 +126,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsv_real_square, *utf::tolerance(0.0001)){
 		multi::array<double, 1> b = {3., 3., 1.};
 		blas::trsv(blas::filling::lower, blas::diagonal::general, blas::T(A), b); // B<-Solve(A.X==B), B<-A⊤⁻¹.B, B⊤<-(A⊤⁻¹.B)⊤, B<-B⊤.A⁻¹
 		print_1D(b);
-		BOOST_TEST( b[0] ==  3. );
+		BOOST_TEST( b[0] ==  -2.07143 );
 		BOOST_TEST( b[1] == -0.857143 );
 		BOOST_TEST( b[2] == -1.26786 );
 	}
