@@ -21,6 +21,14 @@ public:
 	template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<3>{}, std::forward<As>(as)...))
 } adl_conj;
 
+MAYBE_UNUSED constexpr class adl_real_fn__{
+	template<class... As>          auto _(priority<1>,        As&&... as) const DECLRETURN(              std::real(std::forward<As>(as)...))
+	template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   real(std::forward<As>(as)...))
+	template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).real(std::forward<As>(as)...))
+public:
+	template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<3>{}, std::forward<As>(as)...))
+} adl_real;
+
 MAYBE_UNUSED constexpr class adl_imag_fn__{
 	template<class... As>          auto _(priority<1>,        As&&... as) const DECLRETURN(              std::imag(std::forward<As>(as)...))
 	template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   imag(std::forward<As>(as)...))
@@ -72,8 +80,8 @@ struct complex{
 struct real_t{
 	template<class Array, typename E = typename std::decay_t<Array>::element, typename ValueType = typename E::value_type> 
 	auto operator()(Array&& a) const
-	->decltype(multi::member_array_cast<ValueType>(multi::reinterpret_array_cast<complex<ValueType>>(std::forward<Array>(a)), &complex<ValueType>::real)){
-		return multi::member_array_cast<ValueType>(multi::reinterpret_array_cast<complex<ValueType>>(std::forward<Array>(a)), &complex<ValueType>::real);}
+	->decltype(std::forward<Array>(a).template reinterpret_array_cast<complex<ValueType>>().template member_cast<ValueType>(&complex<ValueType>::real)){
+		return std::forward<Array>(a).template reinterpret_array_cast<complex<ValueType>>().template member_cast<ValueType>(&complex<ValueType>::real);}
 	template<class T, typename ValueType = typename std::decay_t<T>::value_type,
 		std::enable_if_t<
 			sizeof(T)==2*sizeof(ValueType) and 
@@ -95,8 +103,8 @@ struct real_t{
 struct imag_t{
 	template<class Array, typename E = typename std::decay_t<Array>::element, typename ValueType = typename E::value_type> 
 	auto operator()(Array&& a) const
-	->decltype(multi::member_array_cast<ValueType>(multi::reinterpret_array_cast<complex<ValueType>>(std::forward<Array>(a)), &complex<ValueType>::imag)){
-		return multi::member_array_cast<ValueType>(multi::reinterpret_array_cast<complex<ValueType>>(std::forward<Array>(a)), &complex<ValueType>::imag);}
+	->decltype(std::forward<Array>(a).template reinterpret_array_cast<complex<ValueType>>().template member_array_cast<ValueType>(&complex<ValueType>::imag)){
+		return std::forward<Array>(a).template reinterpret_array_cast<complex<ValueType>>().template member_array_cast<ValueType>(&complex<ValueType>::imag);}
 	template<class T, typename ValueType = typename std::decay_t<T>::value_type, 
 		std::enable_if_t<
 			sizeof(T)==2*sizeof(ValueType) and 
