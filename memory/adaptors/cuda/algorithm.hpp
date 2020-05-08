@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX -x c++ $0 -o $0x -lcudart -lboost_unit_test_framework -lboost_timer&&$0x&&rm $0x;exit
+$CXX $0 -o $0x -lcudart -lboost_unit_test_framework -lboost_timer&&$0x&&rm $0x;exit
 #endif
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_ALGORITHM_HPP
 #define BOOST_MULTI_MEMORY_ADAPTORS_CUDA_ALGORITHM_HPP
@@ -12,6 +12,10 @@ $CXX -x c++ $0 -o $0x -lcudart -lboost_unit_test_framework -lboost_timer&&$0x&&r
 
 #include<complex> //TODO remove
 
+//#if __INTEL_COMPILER
+//_Pragma("warning disable 2196") // suppress warning #2196: routine is both "inline" and "noinline"
+//#endif
+//#include <boost/stacktrace.hpp> // compile with -rdynamic -g -ldl -no-pie?? -fno-pie??
 
 namespace boost{namespace multi{
 namespace memory{namespace cuda{
@@ -118,15 +122,16 @@ auto copy_n(array_iterator<T1, 1, ptr<T1P>> first, Size count, array_iterator<T1
 ->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count){
 	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count;}
 
-template<class T1, class T1P, class Size, class T2, class T2P>
-auto copy(array_iterator<T1, 1, ptr<T1P>> first, array_iterator<T1, 1, ptr<T1P>> last, array_iterator<T2, 1, ptr<T2P>> result)
+template<class T1, class T1P, class T2, class T2P>
+auto copy(array_iterator<T1, 1, cuda::ptr<T1P>> first, array_iterator<T1, 1, cuda::ptr<T1P>> last, array_iterator<T2, 1, cuda::ptr<T2P>> result)
 ->decltype(cuda::copy_n(first, last - first, result)){
 	return cuda::copy_n(first, last - first, result);}
 
-template<class T1, class P1, class T2, class P2>
-void copy(array_iterator<T1, 1, boost::multi::memory::cuda::ptr<P1>>, array_iterator<T1, 1, boost::multi::memory::cuda::ptr<P1>>, array_iterator<T2, 1, boost::multi::memory::cuda::ptr<P2>>){
-	assert(0);
-}
+//template<class T1, class P1, class T2, class P2>
+//auto copy(array_iterator<T1, 1, cuda::ptr<P1 >> first, array_iterator<T1, 1, cuda::ptr<P1 >> last, array_iterator<T2, 1, cuda::ptr<P2>> result){
+//	std::cout << boost::stacktrace::stacktrace() << std::endl;
+//	assert(0);
+//}
 
 template<class T, class Size, std::enable_if_t<std::is_trivially_copy_constructible<T>{}, int> =0>
 auto uninitialized_fill_n(ptr<T> first, Size n, T const& t){return fill_n(first, n, t);}
@@ -396,5 +401,4 @@ BOOST_AUTO_TEST_CASE(multi_memory_adaptors_cuda_algorithm, *utf::disabled()){
 #endif
 #endif
 #endif
-
 
