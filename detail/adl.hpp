@@ -236,6 +236,22 @@ auto uninitialized_copy_n(InputIt first, Size count, ForwardIt d_first)
 	}
 	return current;
 }
+
+template<class InputIt, class Size, class ForwardIt, class Value = typename std::iterator_traits<ForwardIt>::value_type>
+auto uninitialized_move_n(InputIt first, Size count, ForwardIt d_first)
+->std::decay_t<decltype(::new (static_cast<void*>(std::addressof(*d_first))) Value(std::move(*first)), d_first)>{
+	ForwardIt current = d_first;
+	try{
+		for (; count > 0; ++first, (void) ++current, --count) {
+			::new (static_cast<void*>(std::addressof(*current))) Value(std::move(*first));
+		}
+	}catch(...){
+		for(; d_first != current; ++d_first) d_first->~Value();
+		throw;
+	}
+	return current;
+}
+
 }
 
 MAYBE_UNUSED static constexpr class adl_uninitialized_copy_n_fn__ {
@@ -246,10 +262,24 @@ public:
 	template<class... As> auto operator()(As&&... as) const{return _(priority<3>{}, std::forward<As>(as)...);}
 } adl_uninitialized_copy_n;
 
+MAYBE_UNUSED static constexpr class adl_uninitialized_move_n_fn__ {
+	template<class... As>          auto _(priority<1>,        As&&... as) const{return                   xtd::uninitialized_move_n(std::forward<As>(as)...);}
+	template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   uninitialized_move_n(std::forward<As>(as)...))
+	template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).uninitialized_move_n(std::forward<As>(as)...))
+public:
+	template<class... As> auto operator()(As&&... as) const{return _(priority<3>{}, std::forward<As>(as)...);}
+} adl_uninitialized_move_n;
+
+
 namespace xtd{
+
 template<class T, class InputIt, class Size, class ForwardIt>//, typename AT = std::allocator_traits<Alloc> >
 auto alloc_uninitialized_copy_n(std::allocator<T>&, InputIt f, Size n, ForwardIt d){
 	return adl_uninitialized_copy_n(f, n, d);}
+
+template<class T, class InputIt, class Size, class ForwardIt>//, typename AT = std::allocator_traits<Alloc> >
+auto alloc_uninitialized_move_n(std::allocator<T>&, InputIt f, Size n, ForwardIt d){
+	return adl_uninitialized_move_n(f, n, d);}
 
 template<class Alloc, class InputIt, class Size, class ForwardIt>//, typename AT = std::allocator_traits<Alloc> >
 auto alloc_uninitialized_copy_n(Alloc& a, InputIt f, Size n, ForwardIt d)
@@ -258,6 +288,20 @@ auto alloc_uninitialized_copy_n(Alloc& a, InputIt f, Size n, ForwardIt d)
 	ForwardIt c = d;
 	try{
 		for(; n > 0; ++f, ++c, --n) std::allocator_traits<Alloc>::construct(a, std::addressof(*c), *f);
+		return c;
+	}catch(...){
+		for(; d != c; ++d) std::allocator_traits<Alloc>::destroy(a, std::addressof(*d));
+		throw;
+	}
+}
+
+template<class Alloc, class InputIt, class Size, class ForwardIt>//, typename AT = std::allocator_traits<Alloc> >
+auto alloc_uninitialized_move_n(Alloc& a, InputIt f, Size n, ForwardIt d)
+//->std::decay_t<decltype(a.construct(std::addressof(*d), *f), d)>
+{
+	ForwardIt c = d;
+	try{
+		for(; n > 0; ++f, ++c, --n) std::allocator_traits<Alloc>::construct(a, std::addressof(*c), std::move(*f));
 		return c;
 	}catch(...){
 		for(; d != c; ++d) std::allocator_traits<Alloc>::destroy(a, std::addressof(*d));
@@ -412,8 +456,17 @@ MAYBE_UNUSED constexpr class alloc_uninitialized_copy_n_fn__ {
 	template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   alloc_uninitialized_copy_n(std::forward<As>(as)...))
 	template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).alloc_uninitialized_copy_n(std::forward<As>(as)...))
 public:
-	template<class... As> auto operator()(As&&... as) const{return _(priority<4>{}, std::forward<As>(as)...);} \
+	template<class... As> auto operator()(As&&... as) const{return _(priority<3>{}, std::forward<As>(as)...);} \
 } adl_alloc_uninitialized_copy_n;
+
+MAYBE_UNUSED constexpr class alloc_uninitialized_move_n_fn__ {
+	template<class... As>          auto _(priority<1>,        As&&... as) const{return(                  xtd::alloc_uninitialized_move_n(std::forward<As>(as)...));}
+	template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   alloc_uninitialized_move_n(std::forward<As>(as)...))
+	template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).alloc_uninitialized_move_n(std::forward<As>(as)...))
+public:
+	template<class... As> auto operator()(As&&... as) const{return _(priority<3>{}, std::forward<As>(as)...);} \
+} adl_alloc_uninitialized_move_n;
+
 
 MAYBE_UNUSED static constexpr class alloc_uninitialized_fill_n_fn__ {
 	template<class... As>          auto _(priority<1>,        As&&... as) const{return (                 xtd::alloc_uninitialized_fill_n(std::forward<As>(as)...));}
