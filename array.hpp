@@ -301,12 +301,14 @@ public:
 
 //	basic_array<T, D, typename static_array::element_ptr> 
 	decltype(auto) operator()() &{
-		return static_array_cast<typename static_array::element_type>(*this);//(std::forward<Ts>(t)...);
+		this->template static_array_cast<typename static_array::element_type>();
+	//	return static_array_cast<typename static_array::element_type>(*this);//(std::forward<Ts>(t)...);
 	//	return ref::operator()();
 	//	return *this;
 	}
 	basic_array<T, D, typename static_array::element_const_ptr> operator()() const&{
-		return static_array_cast<typename static_array::element_type const>(*this);
+		this->template static_array_cast<typename static_array::element_type>();
+	//	return static_array_cast<typename static_array::element_type const>(*this);
 	//	return basic_array<T, D, typename static_array::element_const_ptr>{this->layout(), this->base_};
 	}
 //	template<class... Ts> decltype(auto) operator()(Ts&&... t) &     {assert(0); return ref::operator()(std::forward<Ts>(t)...);}
@@ -419,7 +421,8 @@ public:
 //		return adl::copy_elements(o.data_elements()), *this;
 //	}
 	operator basic_array<typename static_array::value_type, static_array::dimensionality, typename static_array::element_const_ptr, typename static_array::layout_t>()&{
-		return static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
+		return this->template static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
+//		return static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
 	}
 };
 
@@ -442,8 +445,7 @@ protected:
 	template<typename It> auto uninitialized_copy(It first){return adl_alloc_uninitialized_copy_n(this->alloc(), first, this->num_elements(), this->data_elements());}
 	template<typename It>
 	auto uninitialized_move(It first){
-		using boost::multi::uninitialized_move_n;
-		return uninitialized_move_n(this->alloc(), first, this->num_elements(), this->data_elements());
+		return adl_alloc_uninitialized_move_n(this->alloc(), first, this->num_elements(), this->data_elements());
 	}
 	void destroy(){array_alloc::destroy_n(this->data_elements(), this->num_elements());}
 public:
@@ -521,7 +523,7 @@ public:
 	{
 		uninitialized_copy(o.data_elements());
 	}
-	static_array(static_array&& o) :                                       //5b
+	static_array(static_array&& o) :       // it is private because it is a valid operation for derived classes //5b
 		array_alloc{o.get_allocator()}, 
 		ref{static_array::allocate(o.num_elements()), o.extensions()}
 	{
@@ -654,7 +656,8 @@ public:
 	}
 
 	operator basic_array<typename static_array::value_type, static_array::dimensionality, typename static_array::element_const_ptr, typename static_array::layout_t>()&{
-		return static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
+		return this->template static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>();
+	//	return static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
 	}
 
 	template<class Archive>
@@ -879,10 +882,10 @@ public:
 
 #if __cpp_deduction_guides
 // clang cannot recognize templated-using, so don't replace IL<IL<T>> by IL2<T>, etc
-#ifndef __clang__
-template<class T, dimensionality_type D, class A=std::allocator<T>> static_array(multi::initializer_list_t<T, D>, A={})->static_array<T, D, A>;
-template<class T, dimensionality_type D, class A=std::allocator<T>> array(multi::initializer_list_t<T, D>, A={})->array<T, D, A>;
-#else
+//#ifndef __clang__
+//template<class T, dimensionality_type D, class A=std::allocator<T>> static_array(multi::initializer_list_t<T, D>, A={})->static_array<T, D, A>;
+//template<class T, dimensionality_type D, class A=std::allocator<T>> array(multi::initializer_list_t<T, D>, A={})->array<T, D, A>;
+//#else
 #define IL std::initializer_list
 	template<class T, class A=std::allocator<T>> static_array(IL<T>                , A={})->static_array<T,1,A>; 
 	template<class T, class A=std::allocator<T>> static_array(IL<IL<T>>            , A={})->static_array<T,2,A>;
@@ -890,13 +893,16 @@ template<class T, dimensionality_type D, class A=std::allocator<T>> array(multi:
 	template<class T, class A=std::allocator<T>> static_array(IL<IL<IL<IL<T>>>>    , A={})->static_array<T,4,A>; 
 	template<class T, class A=std::allocator<T>> static_array(IL<IL<IL<IL<IL<T>>>>>, A={})->static_array<T,5,A>;
 
-	template<class T, class A=std::allocator<T>> array(IL<T>                , A={})->array<T,1,A>; 
+//	template<class T, class A=std::allocator<T>> array(IL<T>                , A={})->array<T,1,A>; 
 	template<class T, class A=std::allocator<T>> array(IL<IL<T>>            , A={})->array<T,2,A>;
 	template<class T, class A=std::allocator<T>> array(IL<IL<IL<T>>>        , A={})->array<T,3,A>; 
 	template<class T, class A=std::allocator<T>> array(IL<IL<IL<IL<T>>>>    , A={})->array<T,4,A>; 
 	template<class T, class A=std::allocator<T>> array(IL<IL<IL<IL<IL<T>>>>>, A={})->array<T,5,A>;
+
+
+	template<class T> array(std::initializer_list<T>)->array<T, 1>; 
 #undef IL
-#endif
+//#endif
 
 //template<class T> 
 //array(std::initializer_list<std::initializer_list<double>>                )->array<double, 2, std::allocator<double>>; 
