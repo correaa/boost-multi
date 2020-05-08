@@ -39,22 +39,21 @@ struct X{
 
 int main(){
 
-	int X::* s = &X::a1;
-	X x{1, 2.5, 1.2};
-	assert( x.*s == x.a1 );
+//	int X::* s = &X::a1; // gives warning
+//	X x{1, 2.5, 1.2};
+//	assert( x.*s == x.a1 );
 
 //	X X::*ss = &X::X; 
 
 	double* buffer = new double[100];
-	multi::array_ref<double, 2, minimalistic::ptr<double> > CC(minimalistic::ptr<double>{buffer}, {10, 10});
-	CC[2]; // requires operator+ 
-	CC[1][1]; // requires operator*
-	CC[1][1] = 9;
-	assert(CC[1][1] == 9);
+	multi::array_ptr<double, 2, minimalistic::ptr<double> > CCP(minimalistic::ptr<double>{buffer}, {10, 10});
+	(*CCP)[2]; // requires operator+ 
+	(*CCP)[1][1]; // requires operator*
+	(*CCP)[1][1] = 9;
+	assert((*CCP)[1][1] == 9);
 
-	using multi::static_array_cast;
-	auto&& CC2 = static_array_cast<double, minimalistic::ptr2<double>>(CC);
-	assert( &CC2[1][1] == &CC[1][1] );
+	auto&& CC2 = CCP->template static_array_cast<double, minimalistic::ptr2<double>>();
+	assert( &CC2[1][1] == &(*CCP)[1][1] );
 
 }
 
