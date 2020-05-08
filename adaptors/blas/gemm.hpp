@@ -92,10 +92,10 @@ C2D&& gemm(typename std::decay_t<C2D>::element_type alpha, A2D const& a, B2D con
 }
 
 template<class AA, class A2D, class B2D, class C2D = typename A2D::decay_type>
-NODISCARD("second argument is const")
+NODISCARD("because input arguments are const")
 auto gemm(AA a, A2D const& A, B2D const& B){
 	assert(get_allocator(A) == get_allocator(B));
-	return gemm(a, A, B, 0., C2D({size(A), size(rotated(B))}, get_allocator(A)));
+	return gemm(a, A, B, 0., C2D({size(A), size(rotated(B))}));//, get_allocator(A)));
 }
 
 template<class A2D, class B2D> auto gemm(A2D const& A, B2D const& B){return gemm(1., A, B);}
