@@ -84,6 +84,11 @@ auto cublas_call(CublasFunction f){
 
 namespace std{template<> struct is_error_code_enum<::boost::multi::cublas_error> : true_type{};}
 
+cublasStatus_t cublasZdot (cublasHandle_t handle, int n,
+                           const double2          *x, int incx,
+                           const double2          *y, int incy,
+                           double2          *result) = delete;
+
 namespace boost{
 namespace multi{
 
@@ -136,8 +141,27 @@ template<class T = void> struct cublas3{};
 
 DEFINE_CUBLAS1(S, s);
 DEFINE_CUBLAS1(D, d);
-DEFINE_CUBLAS1(C, c);
-DEFINE_CUBLAS1(Z, z);
+
+#define DEFINE_CUBLAS1_COMPLEX(UppeR, LowR, ReaLUppeR, ReaLLowR) \
+	template<> struct cublas1<UppeR>{ \
+		template<class...As> static auto iamax(As...as){return cublasI##LowR##amax(as...);}    \
+		/*amin */ \
+		template<class...As> static auto asum (As...as){return cublas##ReaLUppeR##LowR##asum (as...);}   \
+		/*axpy */ \
+		template<class...As> static auto copy (As...as){return cublas##UppeR##copy (as...);}   \
+		template<class...As> static auto dot  (As...as){return cublas##UppeR##dotu  (as...);} \
+		template<class...As> static auto dotu (As...as){return cublas##UppeR##dotu (as...);}   \
+		template<class...As> static auto dotc (As...as){return cublas##UppeR##dotc (as...);}   \
+		template<class...As> static auto nrm2 (As...as){return cublas##UppeR##nrm2 (as...);}   \
+		/*rot  */ \
+		/*rotg */ \
+		/*rotmg*/ \
+		template<class...As> static auto scal (As...as){return cublas##UppeR##scal (as...);}   \
+		/*swap */ \
+	}
+
+DEFINE_CUBLAS1_COMPLEX(C, c, S, s);
+DEFINE_CUBLAS1_COMPLEX(Z, z, D, d);
 
 template<class T> struct nrm2_result;//{using type = T;};
 template<> struct nrm2_result<S>{using type = S;};
@@ -149,7 +173,7 @@ template<> struct cublas1<void>{
 // 2.5.1. cublasI<t>amax() https://docs.nvidia.com/cuda/cublas/index.html#cublasi-lt-t-gt-amax
 	template<class T> static cublasStatus_t iamax(cublasHandle_t handle, int n, const T* x, int incx, int *result   ){return cublas1<T>::iamax(handle, n, x, incx, result);}
 // 2.5.3. cublas<t>asum() https://docs.nvidia.com/cuda/cublas/index.html#cublas-lt-t-gt-asum
-	template<class T> static cublasStatus_t asum (cublasHandle_t handle, int n, const T* x, int incx, T* result     ){return cublas1<T>::asum(handle, n, x, incx, result);}
+	template<class T1, class T2> static cublasStatus_t asum (cublasHandle_t handle, int n, T1 const* x, int incx, T2* result     ){return cublas1<T1>::asum(handle, n, x, incx, result);}
 // 2.5.5. cublas<t>copy() https://docs.nvidia.com/cuda/cublas/index.html#cublas-lt-t-gt-copy
 	template<class T> static cublasStatus_t copy (cublasHandle_t handle, int n, const T* x, int incx, T* y, int incy){return cublas1<T>::copy(handle, n, x, incx, y, incy);}
 // 2.5.6. cublas<t>dot() https://docs.nvidia.com/cuda/cublas/index.html#cublas-lt-t-gt-dot
@@ -203,9 +227,15 @@ template<> struct cublas3<Z>{
 	template<class...As> static auto trsm (As...as){ CUBLAS_CALL(cublasZtrsm(as...));}
 };
 
-template<class T> struct herk_scalar;//{using type = T;};
+template<class T> struct herk_scalar;
 template<> struct herk_scalar<C>{using type = S;};
 template<> struct herk_scalar<Z>{using type = D;};
+
+template<class T> struct asum_scalar;
+template<> struct asum_scalar<C>{using type = S;};
+template<> struct asum_scalar<Z>{using type = D;};
+
+template<class T> using herk_scalar_t = typename herk_scalar<T>::type;
 
 template<> struct cublas3<void>{
 // 2.7.1. cublas<t>gemm() https://docs.nvidia.com/cuda/cublas/index.html#cublas-lt-t-gt-gemm
@@ -226,13 +256,13 @@ template<> struct cublas3<void>{
                            const T           *beta,
                            T           *C, int ldc){return cublas3<T>::syrk(handle, uplo, trans, n, k, alpha, A, lda, beta, C, ldc);}
 // 2.7.13. cublas<t>herk() https://docs.nvidia.com/cuda/cublas/index.html#cublas-lt-t-gt-herk
-	template<class T> static auto herk(cublasHandle_t handle,
+	template<class T2, class T3> static auto herk(cublasHandle_t handle,
                            cublasFillMode_t uplo, cublasOperation_t trans,
                            int n, int k,
-                           const typename herk_scalar<T>::type  *alpha,
-                           const T       *A, int lda,
-                           const typename herk_scalar<T>::type  *beta,
-                           T       *C, int ldc){return cublas3<T>::herk(handle, uplo, trans, n, k, alpha, A, lda, beta, C, ldc);}
+                           const herk_scalar_t<T2> *alpha,
+                           const T2       *A, int lda,
+                           const herk_scalar_t<T2> *beta,
+                           T3       *C, int ldc){return cublas3<T2>::herk(handle, uplo, trans, n, k, alpha, A, lda, beta, C, ldc);}
 // 2.7.10. cublas<t>trsm() https://docs.nvidia.com/cuda/cublas/index.html#cublas-lt-t-gt-trsm
 	template<class T> static auto trsm(cublasHandle_t handle,
                            cublasSideMode_t side, cublasFillMode_t uplo,
