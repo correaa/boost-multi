@@ -89,7 +89,7 @@ clang8:
       - cd tests
       - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
 
-clang10:
+clangX:
     stage: test
     script:
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang-10
@@ -124,11 +124,11 @@ blas:
     script:
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet g++ pkg-config libblas-dev libblas64-dev nvidia-cuda-toolkit
       - ln --symbolic --force . ../multi
-      - export CXX="g++     -x c++  -Wall -Wextra -Wpedantic -Ofast "
+      - export CXX="clang++     -x c++  -Wall -Wextra -Wpedantic -Ofast -lcudart -lcublas -lboost_unit_test_framework `pkg-config --libs blas` "
       - $CXX --version
       - cd adaptors/blas
       - for a in ./*.hpp; do echo $a; sh $a || exit; echo "\n"; done;
       - cd tests
-      - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
+      - for a in ./*.cpp; do echo $a; $CXX $a || exit; echo "\n"; done;
 
 
