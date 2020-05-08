@@ -1,9 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
- c++     -D_TEST_MULTI_MEMORY_CUDA_ALLOCATOR -x c++                                   $0 -o $0x -lcudart&&$0x&&rm $0x;
-#clang++ -D_TEST_MULTI_MEMORY_CUDA_ALLOCATOR -x c++                                   $0 -o $0x -lcudart&&$0x&&rm $0x;
-#clang++ -D_TEST_MULTI_MEMORY_CUDA_ALLOCATOR -x cuda --cuda-gpu-arch=sm_60 -std=c++14 $0 -o $0x -lcudart&&$0x&&rm $0x;
-#nvcc    -D_TEST_MULTI_MEMORY_CUDA_ALLOCATOR -x cu                                    $0 -o $0x         &&$0x&&rm $0x;
-exit
+$CXX $0 -o $0x -lcudart&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2020
 
@@ -92,6 +88,16 @@ public:
 	template<class InputIt, class Size, class ForwardIt, typename T1 = typename std::iterator_traits<ForwardIt>::value_type>
 	auto alloc_uninitialized_copy_n(InputIt first, Size count, ForwardIt d_first)
 	DECLRETURN(adl_uninitialized_copy_n(first, count, d_first))
+
+	template<class InputIt, class Size, class ForwardIt, typename T1 = typename std::iterator_traits<ForwardIt>::value_type>
+	auto alloc_uninitialized_move_n(InputIt first, Size count, ForwardIt d_first)
+	DECLRETURN(adl_uninitialized_move_n(first, count, d_first))
+
+	template<class InputIt, class ForwardIt, typename T1 = typename std::iterator_traits<ForwardIt>::value_type>
+	auto alloc_uninitialized_copy(InputIt first, InputIt last, ForwardIt d_first)
+	DECLRETURN(adl_uninitialized_copy(first, last, d_first))
+
+//	DECLRETURN(adl_uninitialized_copy(first, count, d_first))
 	template<class InputIt, class Size, class ForwardIt, typename T1 = typename std::iterator_traits<ForwardIt>::value_type>
 	auto alloc_uninitialized_copy(InputIt first, Size count, ForwardIt d_first) 
 	DECLRETURN(uninitialized_copy(first, count, d_first))
@@ -167,7 +173,7 @@ public:
 
 }
 
-#ifdef _TEST_MULTI_MEMORY_CUDA_ALLOCATOR
+#if not __INCLUDE_LEVEL__ // def _TEST_MULTI_MEMORY_CUDA_ALLOCATOR
 
 #include<memory>
 #include<iostream>
