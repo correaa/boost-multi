@@ -1,5 +1,5 @@
-#ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4-*-
-$CXX -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_PTR $0 -o $0x -lcudart -lboost_unit_test_framework&&$0x&&rm $0x; exit
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
+$CXX $0 -o $0x -lcudart -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_PTR_HPP
@@ -15,6 +15,8 @@ $CXX -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_PTR $0 -o $0x -lcudart -lboost_unit_test
 
 #include "../../adaptors/cuda/clib.hpp"
 #include "../../adaptors/cuda/error.hpp"
+#include "../../../array_ref.hpp"
+#include "../../../complex.hpp" // adl_conj
 
 #include<cassert> // debug
 #include<utility> // exchange
@@ -29,16 +31,33 @@ $CXX -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_PTR $0 -o $0x -lcudart -lboost_unit_test
 #define SLOW
 #endif
 
+#if not defined(__INTEL_COMPILER)
 #define BEGIN_NO_DEPRECATED \
 \
 _Pragma("GCC diagnostic push") \
 _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"") \
 \
 
+#else
+#define BEGIN_NO_DEPRECATED \
+_Pragma("warning push") \
+_Pragma("warning disable 1786") \
+
+#endif
+
+#if not defined(__INTEL_COMPILER)
 #define END_NO_DEPRECATED \
 \
 _Pragma("GCC diagnostic pop") \
 \
+
+#else
+#define END_NO_DEPRECATED \
+\
+_Pragma("warning pop") \
+\
+
+#endif
 
 #define BEGIN_CUDA_SLOW BEGIN_NO_DEPRECATED
 #define END_CUDA_SLOW   END_NO_DEPRECATED
@@ -134,8 +153,8 @@ public:
 template<typename T, typename RawPtr>
 struct ptr{
 	using raw_pointer = RawPtr;
-protected:
 	raw_pointer rp_;
+protected:
 	using raw_pointer_traits = typename std::pointer_traits<raw_pointer>;
 	template<class TT> friend class allocator;
 	using default_allocator_type = typename cuda::allocator<T>;
@@ -155,10 +174,10 @@ public:
 	explicit/*(true)*/ constexpr ptr(ptr<Other> const& o, void** = 0) : rp_{static_cast<raw_pointer>(o.rp_)}{}
 	explicit constexpr ptr(raw_pointer rp)  : rp_{rp}{}
 	template<class Other, typename = decltype(static_cast<raw_pointer>(std::declval<Other const&>().rp_))> 
-	explicit ptr(Other const& o) : rp_{static_cast<raw_pointer>(o.rp_)}{}
+	explicit constexpr ptr(Other const& o) : rp_{static_cast<raw_pointer>(o.rp_)}{}
 	ptr() = default;
 	ptr(ptr const&) = default;
-	ptr(std::nullptr_t nu) : rp_{nu}{}
+	constexpr ptr(std::nullptr_t nu) : rp_{nu}{}
 	ptr& operator=(ptr const&) = default;
 	constexpr bool operator==(ptr const& other) const{return rp_==other.rp_;}
 	constexpr bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
@@ -177,19 +196,22 @@ public:
 
 	using pointer = ptr<T, RawPtr>;//<T>;
 	using iterator_category = typename std::iterator_traits<raw_pointer>::iterator_category;
-	explicit operator bool() const HD{return rp_;}
-	using void_C_type = typename std::conditional<std::is_const<typename std::pointer_traits<RawPtr>::element_type>{}, void const, void>::type;
-	explicit operator typename raw_pointer_traits::template rebind<void_C_type>() const HD{return {rp_};}
+	explicit constexpr operator bool() const{return rp_;}
+	explicit constexpr operator void const*() const{return rp_;}
+	template<class TT=T, typename = decltype(static_cast<TT*>(raw_pointer{}))>
+	explicit constexpr operator TT*() const{return static_cast<TT*>(rp_);}
+//	using void_C_type = typename std::conditional<std::is_const<typename std::pointer_traits<RawPtr>::element_type>{}, void const, void>::type;
+//	explicit constexpr operator typename raw_pointer_traits::template rebind<void_C_type>() const{return {rp_};}
 	ptr& operator++(){++rp_; return *this;}
 	ptr& operator--(){--rp_; return *this;}
 	ptr  operator++(int){auto tmp = *this; ++(*this); return tmp;}
 	ptr  operator--(int){auto tmp = *this; --(*this); return tmp;}
-	ptr& operator+=(typename ptr::difference_type n) HD{rp_+=n; return *this;}
-	ptr& operator-=(typename ptr::difference_type n) HD{rp_-=n; return *this;}
+	ptr& operator+=(typename ptr::difference_type n) /*HD*/{rp_+=n; return *this;}
+	ptr& operator-=(typename ptr::difference_type n) /*HD*/{rp_-=n; return *this;}
 //	friend bool operator==(ptr const& s, ptr const& t){return s.impl_==t.impl_;}
 //	friend bool operator!=(ptr const& s, ptr const& t){return s.impl_!=t.impl_;}
 	constexpr ptr operator+(typename ptr::difference_type n) const {return ptr{rp_ + n};}
-	constexpr ptr operator-(typename ptr::difference_type n) const HD{return ptr{rp_ - n};}
+	constexpr ptr operator-(typename ptr::difference_type n) const /*HD*/{return ptr{rp_ - n};}
 	using reference = ref<element_type>;
 //#ifdef __NVCC__
 //	#ifndef __CUDA_ARCH__
@@ -198,23 +220,23 @@ public:
 //		__device__ constexpr reference operator*() const{return *rp_; }
 //	#endif
 //#else
-	constexpr reference operator*() const __host__ __device__ { return {*this}; }
+	constexpr reference operator*() const /*__host__ __device__*/ { return {*this}; }
 //  __device__ reference operator*() const{return *rp_;}
 //#endif
 	reference operator[](difference_type n) const __host__ __device__{return *((*this)+n);}
 	friend ptr to_address(ptr const& p){return p;}
-	difference_type operator-(ptr const& o) const HD{return rp_-o.rp_;}
+	difference_type operator-(ptr const& o) const /*HD*/{return rp_-o.rp_;}
 	operator ptr<void>(){return {rp_};}
 	auto get() const{return rp_;}
 //	#ifdef __CUDA_ARCH__
-	explicit operator raw_pointer() const HD{return rp_;}
+	explicit operator raw_pointer() const /*HD*/{return rp_;}
 //	#else
 //	explicit operator raw_pointer() const HD{return rp_;}
 //	#endif
-	raw_pointer raw_pointer_cast() const HD{return this->rp_;}
-	friend raw_pointer raw_pointer_cast(ptr const& self) HD{return self.rp_;}
+	raw_pointer raw_pointer_cast() const /*HD*/{return this->rp_;}
+	friend raw_pointer raw_pointer_cast(ptr const& self) /*HD*/{return self.rp_;}
 	template<class PM>
-	HD auto operator->*(PM&& pm) const
+	/*HD*/ auto operator->*(PM&& pm) const
 	->decltype(ref<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{ptr<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{&(rp_->*std::forward<PM>(pm))}}){
 		return ref<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{ptr<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{&(rp_->*std::forward<PM>(pm))}};}
 public:
@@ -224,9 +246,8 @@ public:
 
 template<class T> allocator<T> get_allocator(ptr<T> const&){return {};}
 
-
 template<
-	class Alloc, class InputIt, class Size, class... T, class ForwardIt = ptr<T...>,
+	class InputIt, class Size, class... T, class ForwardIt = ptr<T...>,
 	typename InputV = typename std::pointer_traits<InputIt>::element_type, 
 	typename ForwardV = typename std::pointer_traits<ForwardIt>::element_type
 //	, typename = std::enable_if_t<std::is_constructible<ForwardV, InputV>{}>
@@ -238,6 +259,26 @@ ForwardIt uninitialized_copy_n(InputIt f, Size n, ptr<T...> d){
 	return d;
 }
 
+template<class It, typename Size, class T2, class Q2, typename T = typename std::iterator_traits<It>::value_type, typename = std::enable_if_t<std::is_trivially_constructible<T2, T>{}>>
+auto uninitialized_copy_n(It first, Size count, boost::multi::iterator<T2, 1, ptr<Q2>> result)
+//->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), first, sizeof(T)*stride(first), sizeof(T), count), result + count){
+{	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T)*stride(first), sizeof(T), count), result + count;}
+
+template<class It, typename Size, class T2, class Q2, typename T = typename std::iterator_traits<It>::value_type, typename = std::enable_if_t<std::is_trivially_constructible<T2, T>{}>>
+auto uninitialized_move_n(It first, Size count, boost::multi::iterator<T2, 1, ptr<Q2>> result)
+//->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), first, sizeof(T)*stride(first), sizeof(T), count), result + count){
+{	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T)*stride(first), sizeof(T), count), result + count;}
+
+template<class... T1, class Size, class... T2, class Element = typename std::pointer_traits<ptr<T1...>>::element_type>
+auto uninitialized_move_n(ptr<T1...> first, Size n, ptr<T2...> dest){
+	assert(( std::is_trivially_constructible<Element, Element>{} ));
+	return memcpy(dest, first, n*sizeof(Element)) + n; // TODO, this is not correct whe InputIt is not a pointer
+}
+//->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), first, sizeof(T)*stride(first), sizeof(T), count), result + count){
+//{	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T)*stride(first), sizeof(T), count), result + count;}
+
+
+#if 0
 template<
 	class Alloc, class InputIt, class Size, class... T, class ForwardIt = ptr<T...>,
 	typename InputV = typename std::pointer_traits<InputIt>::element_type, 
@@ -247,6 +288,25 @@ template<
 ForwardIt alloc_uninitialized_copy_n(Alloc&, InputIt f, Size n, ptr<T...> d){
 	if(std::is_trivially_constructible<ForwardV, InputV>{})
 		return memcpy(d, f, n*sizeof(ForwardV)) + n;
+	else assert(0);
+	return d;
+}
+#endif
+
+template<class It, class T2, class Q2, typename = std::enable_if_t<std::is_trivially_constructible<T2, typename std::iterator_traits<It>::value_type>{}>>
+auto uninitialized_copy(It first, It last, boost::multi::iterator<T2, 1, ptr<Q2>> d_first){
+	return uninitialized_copy_n(first, last - first, d_first);
+}
+
+template<
+	class Alloc, class InputIt, class Size, class... T, class ForwardIt = ptr<T...>,
+	typename InputV = typename std::pointer_traits<InputIt>::element_type, 
+	typename ForwardV = typename std::pointer_traits<ForwardIt>::element_type
+//	, typename = std::enable_if_t<std::is_constructible<ForwardV, InputV>{}>
+>
+ForwardIt alloc_uninitialized_copy_n(Alloc&, InputIt f, Size n, ptr<T...> d){ 
+	if(std::is_trivially_constructible<ForwardV, InputV>{})
+		return memcpy(d, f, n*sizeof(ForwardV)) + n; // TODO, this is not correct whe InputIt is not a pointer
 	else assert(0);
 	return d;
 }
@@ -276,15 +336,15 @@ struct ref{
 	using raw_reference = value_type&;
 private:
 	pointer pimpl_;
-	ref(pointer const& p) HD: pimpl_{p}{}
+	constexpr ref(pointer const& p) /*HD*/ : pimpl_{p}{}
 	template<class TT> friend struct ref;
 public:
 	constexpr ref(T& t) : pimpl_{&t}{}
 //	ref(T& t) HD : pimpl_{&t}{}
 	template<class Other, typename = decltype(implicit_cast<pointer>(std::declval<ref<Other>>().pimpl_))>
-	/*explicit(false)*/ ref(ref<Other>&& o) HD : pimpl_{implicit_cast<pointer>(std::move(o).pimpl_)}{}
+	/*explicit(false)*/ ref(ref<Other>&& o) /*HD*/ : pimpl_{implicit_cast<pointer>(std::move(o).pimpl_)}{}
 	template<class Other, typename = std::enable_if_t<not std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>())>, pointer>{}>>
-	explicit/*(true)*/ ref(ref<Other> const& o, void** = 0) HD : pimpl_{static_cast<pointer>(o)}{}
+	explicit/*(true)*/ ref(ref<Other> const& o, void** = 0) /*HD*/ : pimpl_{static_cast<pointer>(o)}{}
 	template<class TT, class PP> friend struct ptr;
 //	typename pointer::raw_pointer operator&() & __device__{return pimpl_.rp_;}
 //	typename pointer::raw_pointer operator&() const& __device__{return pimpl_.rp_;}
@@ -297,7 +357,7 @@ public:
 	struct skeleton_t{
 		char buff[sizeof(T)]; T* p_;
 		[[SLOW]] 
-		skeleton_t(T* p) HD : p_{p}{
+		skeleton_t(T* p) /*HD*/ : p_{p}{
 			#if __CUDA_ARCH__
 			#else
 //			[[maybe_unused]] 
@@ -305,8 +365,8 @@ public:
 			(void)s; assert(s == cudaSuccess);
 			#endif	
 		}
-		operator T&()&& HD{return reinterpret_cast<T&>(buff);}
-		void conditional_copyback_if_not(std::false_type) const HD{
+		operator T&()&& /*HD*/{return reinterpret_cast<T&>(buff);}
+		void conditional_copyback_if_not(std::false_type) const /*HD*/{
 			#if __CUDA_ARCH__
 		//	*p_ = reinterpret_cast<T const&>(
 			#else
@@ -315,7 +375,7 @@ public:
 			(void)s; assert(s == cudaSuccess);
 			#endif
 		}
-		void conditional_copyback_if_not(std::true_type) const HD{
+		void conditional_copyback_if_not(std::true_type) const /*HD*/{
 			#if __CUDA_ARCH__
 		//	*p_ = reinterpret_cast<T const&>(
 			#else
@@ -324,9 +384,9 @@ public:
 			(void)s; assert(s == cudaSuccess);
 			#endif
 		}
-		~skeleton_t() HD{conditional_copyback_if_not(std::is_const<T>{});}
+		~skeleton_t() /*HD*/{conditional_copyback_if_not(std::is_const<T>{});}
 	};
-	skeleton_t skeleton()&& HD{return {pimpl_.rp_};}
+	skeleton_t skeleton()&& /*HD*/{return {pimpl_.rp_};}
 public:
 	constexpr ref(ref&& r) : pimpl_{std::move(r.pimpl_).rp_}{}
 //	ref& operator=(ref const&)& = delete;
@@ -471,6 +531,11 @@ public:
 		{cudaError_t s=cudaMemcpy((void*)&ret, pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToHost); assert(s == cudaSuccess); (void)s;}
 		return *reinterpret_cast<T*>(&ret);
 	}
+	operator T() const& __host__  {static_assert( std::is_trivially_copyable<std::decay_t<T>>{}, "!" );
+		typename std::aligned_storage<sizeof(T), alignof(T)>::type ret;
+		{cudaError_t s=cudaMemcpy((void*)&ret, pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToHost); assert(s == cudaSuccess); (void)s;}
+		return *reinterpret_cast<T*>(&ret);
+	}
 #else
 	[[SLOW]] operator T()&&{
 		char buff[sizeof(T)];
@@ -482,6 +547,17 @@ public:
 			default: throw std::runtime_error{"unknown error"};
 		}
 		return std::move(reinterpret_cast<T&>(buff));
+	}
+	[[SLOW]] operator T() const&{
+		char buff[sizeof(T)];
+		cudaError_t s = cudaMemcpy(buff, pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToHost);
+		switch(s){
+			case cudaSuccess: break;
+			case cudaErrorInvalidValue: throw std::runtime_error{"cudaErrorInvalidValue"};
+			case cudaErrorInvalidMemcpyDirection: throw std::runtime_error{"cudaErrorInvalidMemcpyDirection"};
+			default: throw std::runtime_error{"unknown error"};
+		}
+		return reinterpret_cast<T&>(buff);
 	}
 #endif
 #else // no clang
@@ -579,7 +655,7 @@ public:
 #endif
 #else // no clang
 	template<class Other, typename = std::enable_if_t<not is_ref<Other>{}> > 
-	friend auto operator==(ref&& self, Other&& other) HD{
+	friend auto operator==(ref&& self, Other&& other) /*HD*/{
 //	#if __CUDA_ARCH__
 //		return *(self.pimpl_.rp_) == std::forward<Other>(other);
 //	#else
@@ -593,10 +669,10 @@ public:
 	auto raw_value_cast()&&{return std::move(*this).operator T();}
 
 	template<class Other, typename = std::enable_if_t<not is_ref<Other>{}> > 
-	friend auto operator==(Other&& other, ref&& self){
+	friend constexpr bool operator==(Other&& other, ref const& self){
 #if __CUDA_ARCH__
 //		return std::forward<Other>(other)==*(this->rp_);
-		return std::forward<Other>(other)==*(self->rp_);
+		return std::forward<Other>(other)==*(self.pimpl_);
 #else
 		return std::forward<Other>(other)==static_cast<T>(std::move(self));
 #endif
@@ -665,8 +741,23 @@ public:
 	friend void swap(ref&& a, ref&& b){std::move(a).swap(std::move(b));}
 	ref<T>&& operator++()&&{++(std::move(*this).skeleton()); return std::move(*this);}
 	ref<T>&& operator--()&&{--(std::move(*this).skeleton()); return std::move(*this);}
-	template<class Self, typename = std::enable_if_t<std::is_base_of<ref, Self>{}>>
-	friend auto conj(Self&& self, ref* = 0){return conj(std::forward<Self>(self).skeleton());}
+//	template<class Self, typename = std::enable_if_t<std::is_base_of<ref, Self>{}>>
+//	friend auto conj(Self&& self, ref* = 0){
+//		using std::conj;
+//		return conj(std::forward<Self>(self).skeleton());
+//	}
+	template<class RRef, std::enable_if_t<std::is_same<RRef, ref>{}, int> =0>
+	friend /*std::decay_t<T>*/ auto conj(RRef const& self){
+		return adl_conj(self.operator T());
+	}
+	template<class RRef, std::enable_if_t<std::is_same<RRef, ref>{}, int> =0>
+	friend auto /*std::decay_t<T>*/ imag(RRef const& self){
+		return adl_imag(self.operator T());
+	}
+	template<class RRef, std::enable_if_t<std::is_same<RRef, ref>{}, int> =0>
+	friend auto /*std::decay_t<T>*/ real(RRef const& self){
+		return adl_real(self.operator T());
+	}
 };
 
 }}}}
@@ -678,13 +769,15 @@ template<class T, class P> P raw_pointer_cast(boost::multi::memory::cuda::ptr<T,
 }
 #undef SLOW
 
-#ifdef _TEST_MULTI_MEMORY_ADAPTORS_CUDA_PTR
+#if not __INCLUDE_LEVEL__ // def _TEST_MULTI_MEMORY_ADAPTORS_CUDA_PTR
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUDA allocators"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUDA pointers"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
 #include "../cuda/malloc.hpp"
+
+#include "../../../adaptors/blas/numeric.hpp"
 
 namespace multi = boost::multi;
 namespace cuda = multi::memory::cuda;
@@ -694,7 +787,7 @@ template<class T> __device__ void WHAT(T&&) = delete;
 #if __CUDA_ARCH__
 __device__ void f(cuda::ptr<double> p){
 //	printf("%f", *p);
-	printf("%f", static_cast<double const&>(*p));
+//	printf("%f", static_cast<double const&>(*p));
 }
 #endif
 
@@ -704,15 +797,21 @@ BOOST_AUTO_TEST_CASE(multi_memory_cuda_ptr){
 //	static_assert( not std::is_convertible<multi::memory::cuda::ptr<std::complex<double>>, std::complex<double>*>{}, "!" );
 
 	multi::memory::cuda::ptr<std::complex<double>> xxx = nullptr;
-	std::complex<double>* ppp = xxx;
-
+	std::complex<double>* ppp = raw_pointer_cast(xxx); (void)ppp;
+	{
+		auto ppp = static_cast<multi::memory::cuda::ptr<std::complex<double>>>(cuda::malloc(1*sizeof(std::complex<double>)));
+		std::complex<double> const dd{*ppp};
+		assert( dd == std::complex<double>{0} );
+	}
 	using T = double; 
 	static_assert( sizeof(cuda::ptr<T>) == sizeof(T*), "!");
 	std::size_t const n = 100;
 	{
 		using cuda::ptr;
 		auto p = static_cast<ptr<T>>(cuda::malloc(n*sizeof(T)));
-		CUDA_SLOW( *p = 99. );
+CUDA_SLOW( 
+		*p = 99.; 
+)
 		{
 			ptr<T const> pc = p;
 			BOOST_REQUIRE( *p == *pc );
@@ -720,9 +819,9 @@ BOOST_AUTO_TEST_CASE(multi_memory_cuda_ptr){
 		BOOST_REQUIRE( CUDA_SLOW( *p == 99. ) );
 		BOOST_REQUIRE( *p != 11. );
 		cuda::free(p);
-		cuda::ptr<T> P = nullptr; (void)P;
+		cuda::ptr<T> P = nullptr; 
+		BOOST_REQUIRE( P == nullptr );
 		ptr<void> pv = p; (void)pv;
-
 	}
 //	what<typename cuda::ptr<T>::rebind<T const>>();
 //	what<typename std::pointer_traits<cuda::ptr<T>>::rebind<T const>>();
@@ -731,7 +830,7 @@ BOOST_AUTO_TEST_CASE(multi_memory_cuda_ptr){
 
 BOOST_AUTO_TEST_CASE(ptr_conversion){
 	cuda::ptr<double> p = nullptr;
-	cuda::ptr<double const> pc = p;
+	cuda::ptr<double const> pc = p; (void)pc;
 }
 
 template<class T> struct Complex_{T real; T imag;};
