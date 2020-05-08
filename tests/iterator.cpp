@@ -48,7 +48,6 @@ BOOST_AUTO_TEST_CASE(iterator_2d){
 		multi::array_ref<double, 2> A(v.data(), {100, 100}); 
 		BOOST_REQUIRE(size(A) == 100);
 		begin(std::move(A))[4][3] = 2.; // ok 
-		using multi::static_array_cast;
 	}
 }
 
