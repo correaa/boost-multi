@@ -65,7 +65,7 @@ filling detect_triangular_aux(A2D const& A){
 template<class A2D>
 filling detect_triangular(A2D const& A){
 #if __cpp_if_constexpr>=201606
-	if constexpr(not is_hermitized<A2D>()){
+	if constexpr(not is_conjugated<A2D>{}){
 		using blas::asum;
 		for(auto i = size(A); i != 0; --i){
 			auto const asum_up = asum(A[i-1]({i, A[i-1].size()}));
