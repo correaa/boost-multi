@@ -99,6 +99,16 @@ clang10:
       - cd tests
       - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
 
+clangX-17:
+    stage: test
+    script:
+      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang-10
+      - ln --symbolic --force . ../multi
+      - export CXX="clang++-10 -std=c++17 -x c++ -Wall -Wextra -Wpedantic -Wmove -Ofast "
+      - $CXX --version
+      - cd tests
+      - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
+
 nvcc:
     stage: test
     script:
@@ -118,4 +128,7 @@ blas:
       - $CXX --version
       - cd adaptors/blas
       - for a in ./*.hpp; do echo $a; sh $a || exit; echo "\n"; done;
+      - cd tests
+      - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
+
 
