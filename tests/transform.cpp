@@ -3,6 +3,7 @@ $CXX $0 -o $0x&&$0x&&rm $0x;exit
 #endif
 
 #include "../array.hpp"
+//#include "../config/MAYBE_UNUSED.hpp"
 
 #include<complex>
 #include<iostream>
@@ -114,7 +115,7 @@ public:
 template<class ComplexRef> using negated = test::involuted<ComplexRef, decltype(neg)>;
 template<class ComplexIt>  using negater = test::involuter<ComplexIt, decltype(neg)>;
 
-[[maybe_unused]] static auto conj = [](std::complex<double> const& a){return std::conj(std::forward<decltype(a)>(a));};
+MAYBE_UNUSED static auto conj = [](std::complex<double> const& a){return std::conj(std::forward<decltype(a)>(a));};
 
 #if defined(__NVCC__)
 #pragma GCC diagnostic push
