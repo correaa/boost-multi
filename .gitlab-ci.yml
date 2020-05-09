@@ -110,6 +110,9 @@ clangX-17:
       - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
 
 nvcc:
+    stage: build
+    tags:
+      - cuda_gpu
     stage: test
     script:
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet g++ nvidia-cuda-toolkit 
