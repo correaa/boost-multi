@@ -41,23 +41,24 @@ variables:
   DOCKER_DRIVER: overlay2
 
 before_script:
-    - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
-    - apt update --quiet
-    - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev libboost-timer-dev libtbb-dev libboost-serialization-dev libboost-iostreams-dev librange-v3-dev valgrind
+
 
 stages:
     - test
 #    - build
 
 gcc:
-    stage: test
-    script:
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet g++
-      - ln --symbolic --force . ../multi
-      - export CXX="g++     -x c++  -Wall -Wextra -Wpedantic -Ofast "
-      - $CXX --version
-      - cd tests
-      - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
+  stage: test
+  script:
+    - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
+    - apt update --quiet
+    - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev libboost-timer-dev libtbb-dev libboost-serialization-dev libboost-iostreams-dev librange-v3-dev valgrind
+    - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet g++
+    - ln --symbolic --force . ../multi
+    - export CXX="g++     -x c++  -Wall -Wextra -Wpedantic -Ofast "
+    - $CXX --version
+    - cd tests
+    - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
 
 gcc8:
     stage: test
