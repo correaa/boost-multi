@@ -101,6 +101,9 @@ clang8:
 clangX:
     stage: test
     script:
+      - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
+      - apt update --quiet
+      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev libboost-timer-dev libtbb-dev libboost-serialization-dev libboost-iostreams-dev librange-v3-dev valgrind
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang-10
       - ln --symbolic --force . ../multi
       - export CXX="clang++-10 -x c++ -Wall -Wextra -Wpedantic -Wmove -Ofast "
