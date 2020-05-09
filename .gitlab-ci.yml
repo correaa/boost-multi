@@ -155,7 +155,7 @@ blas&fft:
       - $CXX fft.hpp
 
 #      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang pkg-config libblas-dev libblas64-dev libfftw3-dev nvidia-cuda-toolkit
-#      - ln --symbolic --force . ../multi
+#      - ln --symbolic --force . ../multi 
 
 blas&fftGPU:
     stage: build
