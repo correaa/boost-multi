@@ -40,7 +40,10 @@ variables:
   CXX: "c++"
   DOCKER_DRIVER: overlay2
 
-#before_script:
+before_script:
+    - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
+    - apt update --quiet
+    - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev libboost-timer-dev libtbb-dev libboost-serialization-dev libboost-iostreams-dev librange-v3-dev valgrind
 
 stages:
     - test
@@ -49,9 +52,6 @@ stages:
 gcc:
     stage: test
     script:
-      - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
-      - apt update --quiet
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev libboost-timer-dev libtbb-dev libboost-serialization-dev libboost-iostreams-dev librange-v3-dev valgrind
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet g++
       - ln --symbolic --force . ../multi
       - export CXX="g++     -x c++  -Wall -Wextra -Wpedantic -Ofast "
@@ -62,9 +62,6 @@ gcc:
 gcc8:
     stage: test
     script:
-      - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
-      - apt update --quiet
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev libboost-timer-dev libtbb-dev libboost-serialization-dev libboost-iostreams-dev librange-v3-dev valgrind
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet g++-8 g++-10
       - ln --symbolic --force . ../multi
       - export CXX="g++-8     -x c++  -Wall -Wextra -Wpedantic -Ofast "
@@ -75,9 +72,6 @@ gcc8:
 clang:
     stage: test
     script:
-      - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
-      - apt update --quiet
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev libboost-timer-dev libtbb-dev libboost-serialization-dev libboost-iostreams-dev librange-v3-dev valgrind
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang
       - ln --symbolic --force . ../multi
       - export CXX="clang++ -x c++ -Wall -Wextra -Wpedantic -Wmove -Ofast "
@@ -88,9 +82,6 @@ clang:
 clang8:
     stage: test
     script:
-      - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
-      - apt update --quiet
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev libboost-timer-dev libtbb-dev libboost-serialization-dev libboost-iostreams-dev librange-v3-dev valgrind
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang-8
       - ln --symbolic --force . ../multi
       - export CXX="clang++-8 -x c++ -Wall -Wextra -Wpedantic -Wmove -Ofast "
@@ -101,9 +92,6 @@ clang8:
 clangX:
     stage: test
     script:
-      - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
-      - apt update --quiet
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev libboost-timer-dev libtbb-dev libboost-serialization-dev libboost-iostreams-dev librange-v3-dev valgrind
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang-10
       - ln --symbolic --force . ../multi
       - export CXX="clang++-10 -x c++ -Wall -Wextra -Wpedantic -Wmove -Ofast "
@@ -114,9 +102,6 @@ clangX:
 clangX-17:
     stage: test
     script:
-      - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
-      - apt update --quiet
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev libboost-timer-dev libtbb-dev libboost-serialization-dev libboost-iostreams-dev librange-v3-dev valgrind
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang-10
       - ln --symbolic --force . ../multi
       - export CXX="clang++-10 -std=c++17 -x c++ -Wall -Wextra -Wpedantic -Wmove -Ofast "
@@ -127,9 +112,6 @@ clangX-17:
 nvcc:
     stage: test
     script:
-    - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
-    - apt update --quiet
-    - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev libboost-timer-dev libtbb-dev libboost-serialization-dev libboost-iostreams-dev librange-v3-dev valgrind
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet g++ nvidia-cuda-toolkit 
       - ln --symbolic --force . ../multi
       - export CXX="nvcc    -x cu --compiler-options=-Wall,-Wextra,-O3"
