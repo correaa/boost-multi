@@ -40,8 +40,7 @@ variables:
   CXX: "c++"
   DOCKER_DRIVER: overlay2
 
-before_script:
-
+#before_script:
 
 stages:
     - test
