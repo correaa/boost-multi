@@ -11,6 +11,7 @@ $CXX $0 -o $0x&&$0x&&rm $0x;exit
 #ifndef BOOST_MULTI_ARRAY_REF_HPP
 #define BOOST_MULTI_ARRAY_REF_HPP
 
+#include "./memory/pointer_traits.hpp"
 #include "utility.hpp"
 
 #include "./detail/layout.hpp"
@@ -55,7 +56,7 @@ struct array_types : Layout{
 	using layout_t = Layout;
 	using value_type = typename std::conditional<
 		(dimensionality>1),
-		array<element, dimensionality-1, typename pointer_traits<element_ptr>::default_allocator_type>, 
+		array<element, dimensionality-1, typename multi::pointer_traits<element_ptr>::default_allocator_type>, 
 		typename std::conditional<
 			dimensionality == 1,
 			element,
@@ -372,7 +373,7 @@ public:
 	//	using multi::default_allocator_of;
 		return multi::default_allocator_of(p);
 	}
-	using decay_type = array<typename types::element_type, D, decltype(multi::default_allocator_of(std::declval<typename basic_array::element_ptr>()))>;//get_allocator_(std::declval<ElementPtr>()))>;
+	using decay_type = array<typename types::element_type, D, typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type>;//get_allocator_(std::declval<ElementPtr>()))>;
 //	decay_type 
 //	auto
 //	static decay_type remake(std::initializer_list<typename basic_array::value_type> il){return decay_type(il);}
@@ -1014,7 +1015,7 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout> :
 	using types::types;
 	auto get_allocator() const{return default_allocator_of(basic_array::base());}
 	friend auto get_allocator(basic_array const& self){return self.get_allocator();}
-	using decay_type = array<typename types::element, dimensionality_type{1}, decltype(default_allocator_of(std::declval<ElementPtr>()))>;
+	using decay_type = array<typename types::element, dimensionality_type{1}, typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type>;
 	       decay_type decay()           const&      {return decay_type{*this};}
 	friend decay_type decay(basic_array const& self){return self.decay();}
 	using basic_const_array = basic_array<
