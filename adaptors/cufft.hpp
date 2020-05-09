@@ -6,9 +6,9 @@ $CXX $0 -o $0x -lcudart -lcufft `pkg-config --libs fftw3` -lboost_unit_test_fram
 #ifndef MULTI_ADAPTORS_CUFFTW_HPP
 #define MULTI_ADAPTORS_CUFFTW_HPP
 
-#include "../../multi/utility.hpp"
-#include "../../multi/array.hpp"
-#include "../../multi/config/NODISCARD.hpp"
+#include "../adaptors/../utility.hpp"
+#include "../adaptors/../array.hpp"
+#include "../adaptors/../config/NODISCARD.hpp"
 
 #include "../adaptors/cuda.hpp"
 
