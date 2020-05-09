@@ -1,14 +1,14 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x&&$0x&&rm $0x;exit
+$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2018-2020
 
-#include<iostream>
-#include<cassert>
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi minimalistic pointer"
+#define BOOST_TEST_DYN_LINK
+#include<boost/test/unit_test.hpp>
 
 #include "../array.hpp"
 
-using std::cout; using std::cerr;
 namespace multi = boost::multi;
 
 namespace minimalistic{
@@ -18,6 +18,7 @@ template<class T> struct ptr : std::iterator_traits<T*>{ // minimalistic pointer
 	typename ptr::reference operator*() const{return *impl_;}
 	auto operator+(typename ptr::difference_type n) const{return ptr{impl_ + n};}
 //	T& operator[](std::ptrdiff_t n) const{return impl_[n];} // optional
+	using default_allocator_type = std::allocator<T>;
 };
 
 template<class T> struct ptr2 : std::iterator_traits<T*>{ // minimalistic pointer
@@ -27,6 +28,7 @@ template<class T> struct ptr2 : std::iterator_traits<T*>{ // minimalistic pointe
 	typename ptr2::reference operator*() const{return *impl_;}
 	auto operator+(typename ptr2::difference_type n) const{return ptr2{impl_ + n};}
 //	T& operator[](std::ptrdiff_t n) const{return impl_[n];} // optional
+	using default_allocator_type = std::allocator<T>;
 };
 
 }
@@ -37,7 +39,7 @@ struct X{
 	double b;
 };
 
-int main(){
+BOOST_AUTO_TEST_CASE(test_minimalistic_ptr){
 
 //	int X::* s = &X::a1; // gives warning
 //	X x{1, 2.5, 1.2};
@@ -50,10 +52,10 @@ int main(){
 	(*CCP)[2]; // requires operator+ 
 	(*CCP)[1][1]; // requires operator*
 	(*CCP)[1][1] = 9;
-	assert((*CCP)[1][1] == 9);
+	BOOST_REQUIRE((*CCP)[1][1] == 9);
 
 	auto&& CC2 = CCP->template static_array_cast<double, minimalistic::ptr2<double>>();
-	assert( &CC2[1][1] == &(*CCP)[1][1] );
+	BOOST_REQUIRE( &CC2[1][1] == &(*CCP)[1][1] );
 
 }
 
