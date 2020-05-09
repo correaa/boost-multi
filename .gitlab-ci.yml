@@ -172,12 +172,12 @@ blas&fftGPU:
       - cd adaptors/blas
       - for a in ./*.hpp; do echo $a; sh $a || exit; echo "\n"; done;
       - cd tests
-      - for a in ./*.cpp; do echo $a; $CXX $a || exit; echo "\n"; done;
+      - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
       - cd ..
       - cd ../..
       - cd adaptors
       - sh ./fftw.hpp
-      - $CXX fft.hpp
+      - sh ./fft.hpp
 
 
 
