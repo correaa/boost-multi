@@ -36,16 +36,16 @@ typename pointer_traits<P>::default_allocator_type
 default_allocator_of(P const& p){return pointer_traits<P>::default_allocator_of(p);}
 #endif
 
-template<
-	class Pointer,
-	class DefaultAllocator = void//typename Pointer::default_allocator_type
->
-struct pointer_traits{
-	using default_allocator_type = std::allocator<typename std::iterator_traits<Pointer>::value_type>;
-};
+//template<
+//	class Pointer//,
+//	class DefaultAllocator = void//typename Pointer::default_allocator_type
+//>
+//struct pointer_traits;//{
+//	using default_allocator_type = std::allocator<typename std::iterator_traits<Pointer>::value_type>;
+//};
 
 template<class Pointer>
-struct pointer_traits<Pointer, typename Pointer::default_allocator_type> : std::pointer_traits<Pointer>{
+struct pointer_traits/*, typename Pointer::default_allocator_type>*/ : std::pointer_traits<Pointer>{
 	using default_allocator_type = typename Pointer::default_allocator_type;
 };
 
