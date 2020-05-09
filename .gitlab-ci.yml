@@ -134,6 +134,5 @@ blas&fft:
       - cd ../..
       - cd adaptors
       - sh fftw.hpp
-      - cd fft
-      - $CXX test.cpp
+      - $CXX fft.hpp
 
