@@ -22,8 +22,6 @@ $CXX $0 -o $0x -lcudart `pkg-config --libs fftw3` -lboost_timer -lboost_unit_tes
 #include <thread>
 #endif
 
-#include<experimental/tuple> // experimental::apply
-
 #include<utility>
 #include<type_traits>
 
@@ -315,7 +313,7 @@ public:
 	static auto many(As&&... as)
 	->std::decay_t<decltype(fftw_plan_many_dft(std::forward<As>(as)...) , std::declval<plan>())>
 	{
-		plan r; r.impl_.reset(fftw_plan_many_dft(std::forward<As>(as)...)); return r;
+		plan r; r.impl_.reset(fftw_plan_many_dft(std::forward<As>(as)...)); return r; // this produces a compilation error in icc++17
 	}
 private:
 	void execute() const{fftw_execute(impl_.get());}
@@ -555,14 +553,22 @@ namespace fft{
 
 #include <boost/timer/timer.hpp>
 
+#if __cplusplus >=201703L
+#include<tuple>
+#else
+#include<experimental/tuple>
+#endif
+//#include<experimental/tuple> // experimental::apply
+
+
 //#include "../adaptors/fftw/allocator.hpp"
 #include<iostream>
 #include "../array.hpp"
 #include<complex>
 #include<numeric>
 
-#include<experimental/array>
-#include<experimental/tuple>
+//#include<experimental/array>
+//#include<experimental/tuple>
 
 #include<random>
 
@@ -833,7 +839,14 @@ BOOST_AUTO_TEST_CASE(fftw_5D){
 	BOOST_REQUIRE(in[2][3][4][5][6] == 99.);
 
 	BOOST_REQUIRE( std::get<2>(sizes(in)) == 6 );
-	auto sizes_as_int = std::experimental::apply(
+
+#if __cpp_lib_apply >= 201603 
+using std::apply;
+#else
+using std::experimental::apply;
+#endif
+
+	auto sizes_as_int = apply(
 		[](auto... n){
 			auto safe = [](auto i){assert(i<=std::numeric_limits<int>::max()); return static_cast<int>(i);};
 			return std::array<int, sizeof...(n)>{safe(n)...};
