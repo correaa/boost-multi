@@ -251,9 +251,9 @@ private:
 	basic_array_ptr<Ref, layout_t<D-1>> ptr_;
 	index stride_ = {1}; // nice non-zero default
 	bool equal(array_iterator const& o) const{return ptr_==o.ptr_ and stride_==o.stride_;}//base_==o.base_ && stride_==o.stride_ && ptr_.layout()==o.ptr_.layout();}
-	void increment(){ptr_.base_ += stride_;}
-	void decrement(){ptr_.base_ -= stride_;}
-	void advance(difference_type n) HD{ptr_.base_ += stride_*n;}
+	constexpr void increment(){ptr_.base_ += stride_;}
+	constexpr void decrement(){ptr_.base_ -= stride_;}
+	constexpr void advance(difference_type n){ptr_.base_ += stride_*n;}
 	difference_type distance_to(array_iterator const& other) const{
 		assert( stride_ == other.stride_);
 		assert( stride_ != 0 );
