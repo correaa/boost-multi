@@ -140,7 +140,7 @@ blas&fft:
       - $CXX fft.hpp
 
 #      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang pkg-config libblas-dev libblas64-dev libfftw3-dev nvidia-cuda-toolkit
-
+#      - ln --symbolic --force . ../multi
 
 blas&fftGPU:
     stage: build
@@ -148,7 +148,6 @@ blas&fftGPU:
       - cuda_gpu
     stage: test
     script:
-      - ln --symbolic --force . ../multi
       - export CXX="clang++     -x c++  -Wall -Wextra -Wpedantic -Ofast -lcudart -lfftw3 -lcublas -lcufft -lboost_timer -lboost_unit_test_framework `pkg-config --libs blas` "
       - $CXX --version
       - cd adaptors/blas
