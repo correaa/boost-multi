@@ -153,7 +153,7 @@ public:
 template<typename T, typename RawPtr>
 struct ptr{
 	using raw_pointer = RawPtr;
-	using default_allocator_type = typename cuda::allocator<T>;
+	using default_allocator_type = typename cuda::allocator<std::decay_t<T>>;
 	raw_pointer rp_;
 protected:
 	using raw_pointer_traits = typename std::pointer_traits<raw_pointer>;
