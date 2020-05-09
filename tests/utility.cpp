@@ -1,9 +1,9 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x -DBOOST_TEST_DYN_LINK -lboost_unit_test_framework -lboost_serialization&&$0x&&rm $0x;exit
+$CXX $0 -o $0x -DBOOST_TEST_DYN_LINK -lstdc++fs -lboost_unit_test_framework -lboost_serialization&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2018-2020
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi range selection"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi utility"
 #include<boost/test/unit_test.hpp>
 
 #include "../array.hpp"
@@ -17,8 +17,10 @@ $CXX $0 -o $0x -DBOOST_TEST_DYN_LINK -lboost_unit_test_framework -lboost_seriali
 #include "../adaptors/serialization/xml_archive.hpp"
 
 #include<fstream>
+#include<experimental/filesystem>
 
 namespace multi = boost::multi;
+namespace fs = std::experimental::filesystem;
 
 BOOST_AUTO_TEST_CASE(test_utility_1d){
 
@@ -128,16 +130,19 @@ BOOST_AUTO_TEST_CASE(test_utility_serialization_2d){
 	{
 		std::ofstream ofs{"utility_serialization_marr.xml"}; assert(ofs);
 		arxiv::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(marr);
+		fs::remove("utility_serialization_marr.xml");
 	}
 	{
 		std::ofstream ofs{"utility_serialization_marr_as_value.xml"}; assert(ofs);
 		multi::array<double, 2> const& marr_value = decay(marr);//static_cast<multi::array<double, 2> const&>(marr);
 		BOOST_REQUIRE( marr_value.data_elements() == marr.data_elements() );
 		arxiv::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(marr_value);
+		fs::remove("utility_serialization_marr_as_value.xml");
 	}
 	{
 		std::ofstream ofs{"utility_serialization_carr.xml"}; assert(ofs);
 		arxiv::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(carr);
+		fs::remove("utility_serialization_carr.xml");
 	}
 	{
 //		std::ofstream ofs{"utility_serialization_Marr.xml"}; assert(ofs);
