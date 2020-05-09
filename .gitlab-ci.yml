@@ -133,6 +133,6 @@ blas&fft:
       - cd ..
       - cd ../..
       - cd adaptors
-      - sh fftw.hpp
+      - sh ./fftw.hpp
       - $CXX fft.hpp
 
