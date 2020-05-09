@@ -6,6 +6,7 @@ $CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #ifndef MULTI_ADAPTORS_BLAS_NUMERIC_HPP
 #define MULTI_ADAPTORS_BLAS_NUMERIC_HPP
 
+#include "../../memory/pointer_traits.hpp"
 #include "../../array_ref.hpp"
 #include "../../complex.hpp"
 
@@ -142,7 +143,7 @@ public:
 	using reference 	  = Reference;
 	using iterator_category = typename std::iterator_traits<It>::iterator_category;
 	using element_type 	  = typename std::pointer_traits<It>::element_type;
-	template<class U> using rebind = involuter<typename std::pointer_traits<It>::template rebind<U>, F>; 
+	template<class U> using rebind = involuter<typename std::pointer_traits<It>::template rebind<U>, F>;
 
 	involuter() = default;
 	explicit involuter(It it, F f = {}) : it_{std::move(it)}, f_{std::move(f)}{}
@@ -261,6 +262,12 @@ auto conj(A&& a)
 //	return multi::static_array_cast<Elem, Ptr>(a);}
 
 }
+
+template<class It, class F, class Reference>
+auto default_allocator_of(blas::involuter<It, F, Reference> it){
+	return multi::default_allocator_of(underlying(it));
+}
+
 }
 }
 

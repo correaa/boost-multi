@@ -476,7 +476,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_elongated){
 		blas::gemm(1., ra, b, 0., c1); // ok
 		BOOST_REQUIRE( c1[0][0] == a[0][0]*b[0][0] + a[1][0]*b[1][0] + a[2][0]*b[2][0] );
 
-		blas::gemm(1., rotated(a), b, 0., c2);
+		blas::gemm(1., blas::T(a), b, 0., c2);
 		BOOST_REQUIRE(c1 == c2);
 	}
 	if(0){

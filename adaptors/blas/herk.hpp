@@ -103,10 +103,10 @@ auto herk(A2D const& a, C2D const& c)
 */
 
 template<class AA, class A2D, class Ret = typename A2D::decay_type>
-NODISCARD("when second argument is const")
-auto herk(AA alpha, A2D const& a)
-->std::decay_t<decltype(herk(alpha, a, Ret({size(a), size(a)}, get_allocator(a))))>{
-	return herk(alpha, a, Ret({size(a), size(a)}, get_allocator(a)));
+NODISCARD("when argument is read-only")
+auto herk(AA alpha, A2D const& a)//->std::decay_t<decltype(herk(alpha, a, Ret({size(a), size(a)}, get_allocator(a))))>{
+{
+	return herk(alpha, a, Ret({size(a), size(a)}));//Ret({size(a), size(a)}));//, get_allocator(a)));
 }
 
 template<class T> struct numeric_limits : std::numeric_limits<T>{};

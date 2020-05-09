@@ -23,6 +23,9 @@ namespace cuda = multi::cuda;
 
 using complex = std::complex<double>; constexpr complex I{0, 1};
 
+template<class... T> void what(T&&...) = delete;
+template<class... T> void what() = delete;
+
 BOOST_AUTO_TEST_CASE(multi_blas_cuda_herk_complex){
 	namespace blas = multi::blas;
 	multi::array<complex, 2> const a = {
@@ -85,6 +88,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_cuda_herk_complex){
 		cuda::array<complex, 2> const ccu_copy = blas::herk(1., blas::H(acu));
 		BOOST_REQUIRE( ccu_copy == ccu );
 	}
+#if 1
 	{
 		cuda::managed::array<complex, 2> const acu = a; BOOST_REQUIRE(a == acu);
 		cuda::managed::array<complex, 2> ccu({3, 3}, 9999.);
@@ -96,8 +100,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_cuda_herk_complex){
 		cuda::managed::array<complex, 2> const ccu_copy = blas::herk(1., blas::H(acu));
 		BOOST_REQUIRE( ccu_copy == ccu );
 	}
+#endif
 }
 
+#if 1
 BOOST_AUTO_TEST_CASE(multi_blas_cuda_herk_real){
 	namespace blas = multi::blas;
 	multi::array<double, 2> const a = {
@@ -128,6 +134,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_cuda_herk_real){
 	}
 
 }
+#endif
 
 #if 0
 	{
