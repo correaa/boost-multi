@@ -144,7 +144,7 @@ public:
 	using element_type    = typename std::pointer_traits<raw_pointer>::element_type;
 	using difference_type = typename std::pointer_traits<raw_pointer>::difference_type;
 	template<class U> using rebind = ptr<U, typename std::pointer_traits<raw_pointer>::template rebind<U>>;
-
+//	using default_allocator_type = typename cuda::allocator<typename std::iterator_traits<raw_pointer>::value_type>;
 	explicit operator bool() const{return rp_;}
 //	explicit operator raw_pointer&()&{return impl_;}
 	friend ptr to_address(ptr const& p){return p;}
@@ -153,11 +153,12 @@ public:
 template<typename T, typename RawPtr>
 struct ptr{
 	using raw_pointer = RawPtr;
+	using default_allocator_type = typename cuda::allocator<T>;
 	raw_pointer rp_;
 protected:
 	using raw_pointer_traits = typename std::pointer_traits<raw_pointer>;
 	template<class TT> friend class allocator;
-	using default_allocator_type = typename cuda::allocator<T>;
+
 	template<typename, typename> friend struct ptr;
 	template<typename> friend struct ref;
 
@@ -785,7 +786,7 @@ namespace cuda = multi::memory::cuda;
 template<class T> __device__ void WHAT(T&&) = delete;
 
 #if __CUDA_ARCH__
-__device__ void f(cuda::ptr<double> p){
+__device__ void f(cuda::ptr<double>){
 //	printf("%f", *p);
 //	printf("%f", static_cast<double const&>(*p));
 }
