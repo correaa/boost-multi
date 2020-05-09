@@ -127,6 +127,9 @@ clangX-17:
 nvcc:
     stage: test
     script:
+      - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
+      - apt update --quiet
+      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev libboost-timer-dev libtbb-dev libboost-serialization-dev libboost-iostreams-dev librange-v3-dev valgrind
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet g++ nvidia-cuda-toolkit 
       - ln --symbolic --force . ../multi
       - export CXX="nvcc    -x cu --compiler-options=-Wall,-Wextra,-O3"
