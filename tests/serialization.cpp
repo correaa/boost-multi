@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x -lboost_unit_test_framework  -lstdc++fs -lboost_serialization -lboost_iostreams&&$0x&&rm $0x;exit
+$CXX $0 -o $0x -lboost_unit_test_framework -lstdc++fs -lboost_serialization -lboost_iostreams&&$0x&&rm $0x;exit
 #endif
 // © Alfredo Correa 2018-2020
 
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_small_xml){
 		BOOST_REQUIRE( d2D_copy == d2D );
 	}
 	std::cout<< fs::file_size(name) <<'\n';
-//	std::filesystem::remove(name);
+	fs::remove(name);
 }
 
 BOOST_AUTO_TEST_CASE(multi_serialization_small_xml){
@@ -91,9 +91,10 @@ BOOST_AUTO_TEST_CASE(multi_serialization_small_xml){
 		std::ofstream ofs{"serialization-small-part.xml"}; assert(ofs);
 		auto&& a = d2D({0, 5}, {0, 5});
 		boost::archive::xml_oarchive{ofs} << boost::serialization::make_nvp("d2D_part", a);//BOOST_SERIALIZATION_NVP(d2D);
+		fs::remove("serialization-small-part.xml");
 	}
 	std::cout<< fs::file_size(name) <<'\n';
-//	std::filesystem::remove(name);
+	fs::remove(name);
 }
 
 
@@ -113,7 +114,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_large_xml){
 		BOOST_REQUIRE( d2D_copy == d2D );
 	}
 	std::cout<< fs::file_size(name) <<'\n';
-//	std::filesystem::remove(name);
+	fs::remove(name);
 }
 
 BOOST_AUTO_TEST_CASE(multi_serialization_static_small){
@@ -121,6 +122,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_small){
 		multi::static_array<double, 0> d0D = 12.;
 		std::ofstream ofs{"serialization-static_0D.xml"}; assert(ofs);
 		boost::archive::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(d0D);
+		fs::remove("serialization-static_0D.xml");
 	}
 	{
 		multi::array<double, 2> d2D = {
@@ -140,6 +142,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_small){
 			boost::archive::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(d2D);
 		}();
 		std::cerr<<"size "<< (fs::file_size(name)/1e6) <<"MB\n";
+		fs::remove("serialization-small-double2D.xml");
 	}
 	{
 		multi::array<double, 2> d2D = {
@@ -159,6 +162,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_small){
 			boost::archive::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(d2D);
 		}();
 		std::cerr<<"size "<< (fs::file_size("serialization-double.xml")/1e6) <<"MB\n";
+		fs::remove("serialization-double.xml");
 	}
 
 	using complex = std::complex<float>;
@@ -191,6 +195,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_small){
 		}();
 		std::cerr<<"load speed " << (file_size(file)/1e6)/count_load <<"MB/s\n";
 		BOOST_REQUIRE( d2D == d2D_cpy );
+		fs::remove(file);
 	}
 	{
 		using std::cout;
@@ -212,6 +217,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_small){
 		}();
 		cout<<"load speed "<< size/1e6/count2 <<"MB/s"<< std::endl;
 		BOOST_REQUIRE( d2D_cpy == d2D );
+		fs::remove(file);
 	}
 	return;
 #if 0
@@ -230,6 +236,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_small){
 			boost::archive::text_oarchive{ofs} << d2D;
 		}();
 		std::cerr<<"size "<< (fs::file_size("serialization.txt")/1e6) <<"MB\n";
+		fs::remove("serialization.txt");
 	}
 	{
 		multi::array<complex, 2> d2D_copy;//(extensions(d2D), 9999.);
@@ -238,6 +245,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_small){
 			boost::archive::text_iarchive{ifs} >> d2D_copy;
 		}();
 		BOOST_REQUIRE( d2D_copy == d2D );
+		fs::remove("serialization.txt");
 	}
 	{
 		multi::array<complex, 2> d2D_copy;//(extensions(d2D), 9999.);
@@ -246,6 +254,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_small){
 			boost::archive::binary_iarchive{ifs} >> d2D_copy;
 		}();
 		BOOST_REQUIRE( d2D_copy == d2D );
+		fs::remove("serialization.bin");
 	}
 	{
 		[&, _=watch("binary compressed write")]{
@@ -258,6 +267,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_small){
 			}
 		}();
 		std::cerr<<"size "<< (fs::file_size("serialization.bin.gz")/1e6) <<"MB\n";
+		fs::remove("serialization.bin.gz");
 	}
 	{
 		[&, _ = watch("compressed xml write")]{
@@ -270,6 +280,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_small){
 			}
 		}();
 		std::cerr<<"size "<< (fs::file_size("serialization.xml.gz")/1e6) <<"MB\n";
+		fs::remove("serialization.xml.gz");
 	}
 	{
 		multi::array<complex, 2> d2D_copy;//(extensions(d2D), 9999.);
@@ -278,6 +289,7 @@ BOOST_AUTO_TEST_CASE(multi_serialization_static_small){
 			boost::archive::xml_iarchive{ifs} >> BOOST_SERIALIZATION_NVP(d2D_copy);
 		}();
 		BOOST_REQUIRE( d2D_copy == d2D );
+		fs::remove("serialization.xml");
 	}
 }
 
