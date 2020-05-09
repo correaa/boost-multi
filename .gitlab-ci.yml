@@ -119,7 +119,7 @@ nvcc:
       - cd tests
       - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
 
-blas:
+blas&fft:
     stage: test
     script:
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang pkg-config libblas-dev libblas64-dev nvidia-cuda-toolkit
@@ -130,5 +130,10 @@ blas:
       - for a in ./*.hpp; do echo $a; sh $a || exit; echo "\n"; done;
       - cd tests
       - for a in ./*.cpp; do echo $a; $CXX $a || exit; echo "\n"; done;
-
+      - cd ..
+      - cd ../..
+      - cd adaptors
+      - sh fftw.hpp
+      - cd fft
+      - $CXX test.cpp
 
