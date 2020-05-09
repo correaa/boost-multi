@@ -1,21 +1,22 @@
-#ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
-#g++     -Ofast                                  -x c++  $0 -o $0x -lcudart  -lcufft `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x $@&&rm $0x
-#clang++ -Ofast                                  -x c++  $0 -o $0x -lcudart  -lcufft `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x $@&&rm $0x
- nvcc    -O3                                     -x cu   $0 -o $0x           -lcufft `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x $@&&rm $0x
- clang++ -Ofast -std=c++14 --cuda-gpu-arch=sm_60 -x cuda $0 -o $0x -lcudart  -lcufft -lfftw3_threads `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x $@&&rm $0x
-exit
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
+$CXX $0 -o $0x -lcudart  -lcufft `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2020
+
 #ifndef MULTI_ADAPTORS_FFT_HPP
 #define MULTI_ADAPTORS_FFT_HPP
 
 #include "../adaptors/fftw.hpp"
 #include "../adaptors/cufft.hpp"
 
+
+
 #if not __INCLUDE_LEVEL__
+
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFT adaptor"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
+
 #include <boost/timer/timer.hpp>
 #include <boost/config.hpp>
 
