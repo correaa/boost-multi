@@ -44,14 +44,20 @@ default_allocator_of(P const& p){return pointer_traits<P>::default_allocator_of(
 //	using default_allocator_type = std::allocator<typename std::iterator_traits<Pointer>::value_type>;
 //};
 
+template<std::size_t I> struct Priority : std::conditional_t<I==0, std::true_type, struct Priority<I-1>>{}; 
+
+template<class Pointer> std::allocator<typename std::iterator_traits<Pointer>::value_type> dat_aux(Priority<0>, Pointer);
+template<class T> std::allocator<typename std::iterator_traits<T*>::value_type> dat_aux(Priority<1>, T*);
+template<class FancyPtr> typename FancyPtr::default_allocator_type dat_aux(Priority<2>, FancyPtr);
+
 template<class Pointer>
 struct pointer_traits/*, typename Pointer::default_allocator_type>*/ : std::pointer_traits<Pointer>{
-	using default_allocator_type = typename Pointer::default_allocator_type;
+	using default_allocator_type = decltype(dat_aux(Priority<2>{}, std::declval<Pointer>()));
 };
 
-template<class T> struct pointer_traits<T*> : std::pointer_traits<T*>{
-	using default_allocator_type = std::allocator<typename std::iterator_traits<T*>::value_type>;
-};
+//template<class T> struct pointer_traits<T*> : std::pointer_traits<T*>{
+//	using default_allocator_type = std::allocator<typename std::iterator_traits<T*>::value_type>;
+//};
 
 }}
 
