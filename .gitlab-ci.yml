@@ -110,9 +110,6 @@ clangX-17:
       - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
 
 nvcc:
-    stage: build
-    tags:
-      - cuda_gpu
     stage: test
     script:
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet g++ nvidia-cuda-toolkit 
@@ -138,4 +135,27 @@ blas&fft:
       - cd adaptors
       - sh ./fftw.hpp
       - $CXX fft.hpp
+
+#      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang pkg-config libblas-dev libblas64-dev libfftw3-dev nvidia-cuda-toolkit
+
+blas&fftGPU:
+    stage: build
+    tags:
+      - cuda_gpu
+    stage: test
+    script:
+      - ln --symbolic --force . ../multi
+      - export CXX="clang++     -x c++  -Wall -Wextra -Wpedantic -Ofast -lcudart -lfftw3 -lcublas -lcufft -lboost_timer -lboost_unit_test_framework `pkg-config --libs blas` "
+      - $CXX --version
+      - cd adaptors/blas
+      - for a in ./*.hpp; do echo $a; sh $a || exit; echo "\n"; done;
+      - cd tests
+      - for a in ./*.cpp; do echo $a; $CXX $a || exit; echo "\n"; done;
+      - cd ..
+      - cd ../..
+      - cd adaptors
+      - sh ./fftw.hpp
+      - $CXX fft.hpp
+
+
 
