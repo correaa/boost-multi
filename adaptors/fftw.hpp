@@ -8,10 +8,10 @@ $CXX $0 -o $0x -lcudart `pkg-config --libs fftw3` -lboost_timer -lboost_unit_tes
 
 #include<fftw3.h> // external fftw3 library
 	
-#include "../../multi/utility.hpp"
-#include "../../multi/array.hpp"
+#include "../adaptors/../utility.hpp"
+#include "../adaptors/../array.hpp"
 
-#include "../../multi/config/NODISCARD.hpp"
+#include "../adaptors/../config/NODISCARD.hpp"
 
 #include<cmath>
 #include<complex>
