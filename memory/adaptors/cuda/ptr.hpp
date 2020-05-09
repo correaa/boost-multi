@@ -675,7 +675,7 @@ public:
 //		return std::forward<Other>(other)==*(this->rp_);
 		return std::forward<Other>(other)==*(self.pimpl_);
 #else
-		return std::forward<Other>(other)==static_cast<T>(std::move(self));
+		return std::forward<Other>(other)== self.operator T();//static_cast<T>(std::move(self));
 #endif
 	}
 	template<class Other, typename = std::enable_if_t<not std::is_same<T, Other>{}> >
