@@ -545,7 +545,7 @@ public:
 	decltype(auto) operator|(typename basic_array::size_type n) const&{return partitioned(n);}
 
 	basic_array       operator()() &     {return *this;}
-	basic_array       operator()() &&    {return operator()();}
+	basic_array       operator()() &&    {return this->operator()();}
 	basic_const_array operator()() const&{return {this->layout(), this->base()};}
 
 //	decltype(auto) operator()(index_range a) &     {return range(a);}
@@ -1160,7 +1160,9 @@ public:
 	auto range(index_range const& ir) const&{return sliced(ir.front(), ir.last());}
 
 
-	decltype(auto) operator()()&&{return std::move(*this);}
+	basic_array operator()()&&{return std::move(*this);}
+	basic_array operator()()&{return *this;}
+	basic_const_array operator()() const&{return {this->layout(), this->base()};}
 
 	auto operator()(index_range const& ir) &{return range(ir);}
 	auto operator()(index_range const& ir) &&{return std::move(*this).range(ir);}

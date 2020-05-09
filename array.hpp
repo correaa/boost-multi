@@ -297,20 +297,20 @@ public:
 
 //	template<class... Args> decltype(auto) operator()(Args const&... args)&{return ref::operator()(args...);}
 //	template<class... Args> decltype(auto) operator()(Args const&... args) const&{return ref::operator()(args...);}
-	using ref::operator();
+//	using ref::operator();
 
 //	basic_array<T, D, typename static_array::element_ptr> 
-	decltype(auto) operator()() &{
-		this->template static_array_cast<typename static_array::element_type>();
+//	decltype(auto) operator()() &{
+//		this->template static_array_cast<typename static_array::element_type>();
 	//	return static_array_cast<typename static_array::element_type>(*this);//(std::forward<Ts>(t)...);
 	//	return ref::operator()();
 	//	return *this;
-	}
-	basic_array<T, D, typename static_array::element_const_ptr> operator()() const&{
-		this->template static_array_cast<typename static_array::element_type>();
+//	}
+//	basic_array<T, D, typename static_array::element_const_ptr> operator()() const&{
+//		this->template static_array_cast<typename static_array::element_type>();
 	//	return static_array_cast<typename static_array::element_type const>(*this);
 	//	return basic_array<T, D, typename static_array::element_const_ptr>{this->layout(), this->base_};
-	}
+//	}
 //	template<class... Ts> decltype(auto) operator()(Ts&&... t) &     {assert(0); return ref::operator()(std::forward<Ts>(t)...);}
 //	template<class... Ts> decltype(auto) operator()(Ts&&... t) &&    {return std::move(*this).ref::operator()(std::forward<Ts>(t)...);}
 //	template<class... Ts> decltype(auto) operator()(Ts&&... t) const&{return ref::operator()(std::forward<Ts>(t)...);}
@@ -589,17 +589,17 @@ public:
 	}
 
 //	basic_array<T, D, typename static_array::element_ptr> 
-	decltype(auto) operator()()&{
-		return ref::operator()();
+//	decltype(auto) operator()()&{
+//		return ref::operator()();
 	//	return *this;
-	}
+//	}
 //	basic_array<T, 0, typename static_array::element_const_ptr> operator()() const&{
 //		return basic_array<T, 0, typename static_array::element_const_ptr>{this->layout(), this->base_};
 //	}
 
-	typename std::iterator_traits<typename static_array::element_const_ptr>::reference operator()() const&{
-		return *(this->base_);
-	}
+//	typename std::iterator_traits<typename static_array::element_const_ptr>::reference operator()() const&{
+//		return *(this->base_);
+//	}
 
 
 //	using const_reverse_iterator = basic_reverse_iterator<const_iterator>;
