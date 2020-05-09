@@ -3,8 +3,8 @@ $CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2020
 
-#ifndef MULTI_TRAITS_HPP
-#define MULTI_TRAITS_HPP
+#ifndef MULTI_POINTER_TRAITS_HPP
+#define MULTI_POINTER_TRAITS_HPP
 
 #include<memory> 
 
@@ -58,7 +58,7 @@ template<class T> struct pointer_traits<T*> : std::pointer_traits<T*>{
 #if not __INCLUDE_LEVEL__ // TEST BELOW
 
 #define BOOST_TEST_DYN_LINK 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi traits"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi memory pointer traits"
 #include<boost/test/unit_test.hpp>
 
 namespace multi = boost::multi;
