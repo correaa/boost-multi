@@ -44,6 +44,7 @@ auto copy(
 		case cudaErrorInvalidPitchValue: assert(0);
 		case cudaErrorInvalidDevicePointer: assert(0);
 		case cudaErrorInvalidMemcpyDirection: assert(0);
+		default: assert(0); // unknown error
 	}
 	return d_first + (last - first);
 }
