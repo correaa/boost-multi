@@ -63,7 +63,7 @@ int main(){
 		Cuda::free(p);
 	}
 	{
-		char* p = (char*)Cuda::malloc(1ul<<50);
+		char* p = (char*)Cuda::malloc(1ul<<40);
 		assert(!p);
 		Cuda::free(p);
 	}

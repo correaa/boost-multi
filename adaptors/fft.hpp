@@ -82,12 +82,12 @@ BOOST_AUTO_TEST_CASE(fft_combinations, *utf::tolerance(0.00001)){
 		{
 			boost::timer::auto_cpu_timer t{"mng_cld %ws wall, CPU (%p%)\n"};
 			multi::fft::dft(c, in_mng   , out_mng   , multi::fft::forward);
-		//	BOOST_TEST( abs( out_mng[5][4][3][1] - out[5][4][3][1] ) == 0. );
+			BOOST_TEST( abs( out_mng[5][4][3][1] - out[5][4][3][1] ) == 0. );
 		}
 		{
 		///	boost::timer::auto_cpu_timer t{"mng_hot %ws wall, CPU (%p%)\n"};
 			multi::fft::dft(c, in_mng   , out_mng   , multi::fft::forward);
-	//		BOOST_TEST( abs( out_mng[5][4][3][1] - out[5][4][3][1] ) == 0. );
+			BOOST_TEST( abs( out_mng[5][4][3][1] - out[5][4][3][1] ) == 0. );
 		}
 	}
 

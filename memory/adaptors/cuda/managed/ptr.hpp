@@ -1,5 +1,5 @@
-#ifdef COMPILATION_INSTRUCTIONS
-nvcc -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_PTR -x c++ $0 -o $0x&&$0x&&rm $0x; exit
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
+$CXX $0 -o $0x&&$0x&&rm $0x;exit
 #endif
 
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_PTR_HPP
@@ -192,7 +192,7 @@ template<class T, class S> const boost::serialization::array_wrapper<T> make_arr
 
 #undef SLOW
 
-#ifdef _TEST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_PTR
+#if not __INCLUDE_LEVEL__ // def _TEST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_PTR
 
 #include "../../cuda/managed/clib.hpp" // cuda::malloc
 #include "../../cuda/managed/malloc.hpp"
