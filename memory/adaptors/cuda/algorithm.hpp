@@ -157,6 +157,15 @@ auto copy_n(
 ->decltype(memcpy(result, first, count*sizeof(T1)), result + count){
 	return memcpy(result, first, count*sizeof(T1)), result + count;}
 
+template<class T1, class T1const, class... A1, class Size, class T2, class T2const, class... A2>
+auto copy_n(
+	array_iterator<T1, 1, managed::ptr<T1const, A1...>> first, Size count,
+	array_iterator<T2, 1, managed::ptr<T2const, A2...>> d_first
+){
+	copy_n(cuda::ptr<T1>(first), count, cuda::ptr<T2>(d_first));
+	return d_first + count;
+}
+
 template<class T1, class T1const, class... A1, class T2, class T2const, class... A2>
 auto copy(
 	array_iterator<T1, 1, managed::ptr<T1const, A1...>> first,
