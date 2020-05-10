@@ -29,10 +29,20 @@ $CXX $0 -o $0x &&$0x&&rm $0x;exit
 	#define NODISCARD(MsG)
 #endif
 
+#if defined(__NVCC__)
+	#define NODISCARD(MsG)
+#endif
+
 #if not __INCLUDE_LEVEL__ // _TEST_MULTI_CONFIG_NODISCARD
 
 NODISCARD("because...") int f(){return 5;}
 //[[nodiscard]] int g(){return 5;} // ok in g++ -std=c++14
+
+struct A{
+	NODISCARD("because...")
+	friend
+	int ff(){return 5.;}
+};
 
 int main(){
 	int i; 
