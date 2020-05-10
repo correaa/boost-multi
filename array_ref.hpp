@@ -1124,10 +1124,10 @@ public:
 	typename basic_array::const_reference operator[](index i) const&{assert( this->extension().contains(i) );
 		return *(this->base() + Layout::operator()(i)); // in C++17 this is allowed even with syntethic references
 	}
-	typename basic_array::reference operator[](index i)&{assert(this->extension().contains(i));
+	constexpr typename basic_array::reference operator[](index i)&{//assert(this->extension().contains(i));
 		return *(this->base() + Layout::operator()(i));
 	}
-	typename basic_array::reference operator[](index i)&&{return this->operator[](i);}
+	constexpr typename basic_array::reference operator[](index i)&&{return this->operator[](i);}
 
 	template<class Tuple, typename = std::enable_if_t<(std::tuple_size<std::decay_t<Tuple>>{}>1) > >
 	constexpr auto operator[](Tuple&& t) const
