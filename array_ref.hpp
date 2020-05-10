@@ -922,7 +922,9 @@ struct array_iterator<Element, 1, Ptr, Ref> :
 	template<class EE, dimensionality_type, class PP, class RR> friend struct array_iterator;
 	constexpr array_iterator(std::nullptr_t nu)  : data_{nu}, stride_{1}{}
 	constexpr array_iterator(Ptr const& p) : data_{p}, stride_{1}{}
-	template<class EElement, typename PPtr, typename RRef>
+	template<class EElement, typename PPtr, typename RRef, 
+		typename = decltype(_implicit_cast<Ptr>(std::declval<array_iterator<EElement, 1, PPtr, RRef>>().data_))
+	>
 	constexpr array_iterator(array_iterator<EElement, 1, PPtr, RRef> other) : data_{other.data_}, stride_{other.stride_}{} 
 	explicit constexpr operator bool() const{return static_cast<bool>(this->data_);}
 	constexpr Ref operator[](typename array_iterator::difference_type n) const{return *((*this) + n);}
