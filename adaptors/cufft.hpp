@@ -30,6 +30,7 @@ namespace multi{
 namespace memory{
 namespace cuda{
 
+#if 0
 template<class T1, class T1const, class T2, class T2const>
 auto copy(
 	array_iterator<T1, 1, managed::ptr<T1const>> first, 
@@ -48,6 +49,7 @@ auto copy(
 	}
 	return d_first + (last - first);
 }
+#endif
 
 }}}}
 
