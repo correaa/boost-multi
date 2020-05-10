@@ -41,7 +41,13 @@ namespace Cuda{
 			if(e!=success) throw std::system_error{e, "cannot "s+__PRETTY_FUNCTION__};
 			return ret;
 		}
-		bool is_device(void* p){return attributes(p).devicePointer or p==nullptr;}
+		bool is_device(void* p){
+			attributes_t ret;
+			auto e = GetAttributes(&ret, p);
+			if(e!=success) throw std::system_error{e, "cannot "s+__PRETTY_FUNCTION__};
+			return ret.devicePointer or p==nullptr;
+		//	return attributes(p).devicePointer or p==nullptr;
+		}
 	}
 }
 
