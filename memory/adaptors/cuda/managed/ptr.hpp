@@ -132,7 +132,7 @@ public:
 //	template<class Other, typename = std::enable_if_t<not std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{}>>
 //	explicit ptr(ptr<Other> const& o, void** = 0) HD : rp_{static_cast<raw_pointer>(o.rp_)}{}
 	explicit ptr(cuda::ptr<T, raw_pointer> const& other) : ptr{other.rp_}{
-		assert(other.rp_!=nullptr or Cuda::pointer::attributes(other.rp_).type == cudaMemoryTypeManaged);
+		assert(other.rp_!=nullptr or Cuda::pointer::type(other.rp_) == cudaMemoryTypeManaged);
 	}
 	explicit ptr(raw_pointer p) HD : rp_{p}{}//Cuda::pointer::is_device(p);}
 	ptr() = default;
