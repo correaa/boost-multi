@@ -404,8 +404,8 @@ public:
 	constexpr const_iterator begin() const{return typename static_array::const_iterator{const_cast<static_array&&>(*this).ref::begin()};}
 	constexpr const_iterator end()   const{return const_cast<static_array&&>(*this).ref::end();}
 
-	friend typename static_array::iterator begin(static_array const& self){return self.begin();}
-	friend typename static_array::iterator end  (static_array const& self){return self.end()  ;}
+//	friend typename static_array::iterator begin(static_array const& self){return self.begin();}
+//	friend typename static_array::iterator end  (static_array const& self){return self.end()  ;}
 
 	constexpr const_iterator cbegin() const{return begin();}
 	constexpr const_iterator cend() const{return end();}
