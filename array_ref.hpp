@@ -388,12 +388,11 @@ public:
 		return ret;
 	}
 	friend decay_type decay(basic_array const& self){return self.decay();}
-//#if defined(__NVCC__)
-//	friend auto operator+(basic_array const& self){return self.decay();}
-//#else
+#if not defined(__NVCC__)
 	NODISCARD("because an identity decay was created")
+#endif
 	friend auto operator+(basic_array const& self){return self.decay();}
-//#endif
+
 	constexpr typename types::const_reference operator[](index i) const&{ assert( this->extension().contains(i) );
 		typename types::element_const_ptr new_base = typename types::element_ptr(this->base()) + std::ptrdiff_t{Layout::operator()(i)};
 		return typename types::const_reference(this->layout().sub_, new_base);
