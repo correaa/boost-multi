@@ -414,6 +414,11 @@ namespace fft{
 	->decltype(cufft::dft(which, i, std::forward<Out>(o), s)){
 		return cufft::dft(which, i, std::forward<Out>(o), s);}
 
+	template<class Complex, dimensionality_type D, class... PAs, class... As, class Out>
+	auto dft(std::array<bool, D> which, basic_array<Complex, D, memory::cuda::managed::ptr<PAs...>, As...>&& i, Out&& o, int s)
+	->decltype(cufft::dft(which, i, std::forward<Out>(o), s)){
+		return cufft::dft(which, i, std::forward<Out>(o), s);}
+
 	template<class Complex, dimensionality_type D, class... AAs, class Out>
 	auto dft(std::array<bool, D> which, array<Complex, D, memory::cuda::managed::allocator<AAs...> > const& i, Out&& o, int s)
 	->decltype(cufft::dft(which, i, std::forward<Out>(o), s)){
