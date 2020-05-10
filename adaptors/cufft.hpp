@@ -38,7 +38,13 @@ auto copy(
 ){
 	assert(first.stride() == last.stride());
 	auto s = cudaMemcpy2D(raw_pointer_cast(d_first.data()), d_first.stride()*sizeof(T2), raw_pointer_cast(first.data()), first.stride()*sizeof(T2), sizeof(T2), last - first, cudaMemcpyDefault);
-	assert( s == cudaSuccess );
+	switch(s){
+		case cudaSuccess: break;
+		case cudaErrorInvalidValue: assert(0);
+		case cudaErrorInvalidPitchValue: assert(0);
+		case cudaErrorInvalidDevicePointer: assert(0);
+		case cudaErrorInvalidMemcpyDirection: assert(0);
+	}
 	return d_first + (last - first);
 }
 
@@ -403,6 +409,8 @@ namespace fft{
 	auto dft(array<Complex, D, memory::cuda::managed::allocator<AAs...> > const& i, Out&& o, int s)
 	->decltype(cufft::dft(i, std::forward<Out>(o), s)){
 		return cufft::dft(i, std::forward<Out>(o), s);}
+
+// TODO replace this by dispatching through pointer type
 
 	template<class Complex, dimensionality_type D, class... AAs> NODISCARD("when first argument is const")
 	auto dft(array<Complex, D, memory::cuda::managed::allocator<AAs...> > const& i, int s)
