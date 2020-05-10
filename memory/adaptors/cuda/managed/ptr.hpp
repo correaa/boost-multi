@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x&&$0x&&rm $0x;exit
+$CXX $0 -o $0x -lcudart&&$0x&&rm $0x;exit
 #endif
 
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_PTR_HPP
@@ -225,13 +225,13 @@ cuda::managed::ptr<double> ff(){
 
 int main(){
 	f();
-	using T = double; static_assert( sizeof(cuda::managed::ptr<T>) == sizeof(T*) );
+	using T = double; static_assert( sizeof(cuda::managed::ptr<T>) == sizeof(T*) , "!");
 	std::size_t const n = 100;
 	{
 		auto p = static_cast<cuda::managed::ptr<T>>(cuda::managed::malloc(n*sizeof(T)));
-		cuda::managed::ptr<void> vp = p;
-		T* rp = p;
-		void* vrp = p;
+	//	cuda::managed::ptr<void> vp = p;
+	//	T* rp = p;
+	//	void* vrp = p;
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 		*p = 99.; 
@@ -247,16 +247,16 @@ int main(){
 		double* ppp = p; *ppp = 3.14;
 		assert( *p == 3.14 );
 #pragma GCC diagnostic pop
-		cuda::managed::ptr<T> P = nullptr;
+	//	cuda::managed::ptr<T> P = nullptr;
 	}
 	{
 		cuda::managed::ptr<double> p = nullptr;
 		cuda::managed::ptr<double const> pc = nullptr; 
 		pc = static_cast<cuda::managed::ptr<double const>>(p);
-		double* dp = cuda::managed::ptr<double>{nullptr};
+	//	double* dp = cuda::managed::ptr<double>{nullptr};
 		auto f = [](double const*){};
 		f(p);
-		cuda::ptr<double> pp = p;
+	//	cuda::ptr<double> pp = p;
 //		std::reinterpret_pointer_cast<double*>(pp);
 	//	cuda::managed::ptr<double> ppp{pp};
 	}
