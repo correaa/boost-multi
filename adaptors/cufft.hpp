@@ -314,10 +314,14 @@ auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
 			dft(which, (i<<n), (o<<n), s);
 		}
 	}else if(which[0]==false){
-		if(D==1 or std::all_of(begin(which)+1, end(which), [](auto e){return e==false;})){
-			if(base(o) != base(i)) std::forward<Out>(o) = i;//.assign(i);//std::forward<Out>(o) = i;
+		if(D==1 or std::none_of(begin(which)+1, end(which), [](auto e){return e;})){
+			if(base(o) != base(i)) std::forward<Out>(o) = i;
 			else if(o.layout() != i.layout()) std::forward<Out>(o) = +i;
 		}
+//		if(D==1 or std::all_of(begin(which)+1, end(which), [](auto e){return e==false;})){
+//			if(base(o) != base(i)) std::forward<Out>(o) = i;//.assign(i);//std::forward<Out>(o) = i;
+//			else if(o.layout() != i.layout()) std::forward<Out>(o) = +i;
+//		}
 		else if(ff==end(which)) many_dft(i.begin(), i.end(), o.begin(), s);
 		else{
 			if(which.size() > 1 and which[1] == false and i.is_flattable() and o.is_flattable()) cufft::dft(tail, i.flatted(), o.flatted(), s);

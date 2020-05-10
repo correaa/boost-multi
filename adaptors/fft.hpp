@@ -1,4 +1,4 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 $CXX $0 -o $0x -lcudart  -lcufft `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2020
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(fft_combinations, *utf::tolerance(0.00001)){
 		}
 		{
 		///	boost::timer::auto_cpu_timer t{"mng_hot %ws wall, CPU (%p%)\n"};
-			multi::fft::dft(c, in_mng   , out_mng   , multi::fft::forward);
+			multi::fft::dft(c, in_mng()   , out_mng()   , multi::fft::forward);
 			cudaDeviceSynchronize();
 			BOOST_TEST( abs( out_mng[5][4][3][1] - out[5][4][3][1] ) == 0. );
 		}
