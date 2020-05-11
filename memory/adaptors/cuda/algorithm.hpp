@@ -21,7 +21,9 @@ namespace boost{namespace multi{
 namespace memory{namespace cuda{
 
 template<class U, class T, typename Size, typename = std::enable_if_t<std::is_trivially_assignable<T&, U>{}>>
-ptr<T> copy_n(ptr<U> first, Size count, ptr<T> result){return memcpy(result, first, count*sizeof(T)), result + count;}
+ptr<T> copy_n(ptr<U> first, Size count, ptr<T> result){
+	return memcpy(result, first, count*sizeof(T)), result + count;
+}
 
 template<class U, class T, typename Size, typename = std::enable_if_t<std::is_trivially_assignable<T&, U>{}>>
 ptr<T> copy_n(U* first, Size count, ptr<T> result){return memcpy(result, first, count*sizeof(T)), result + count;}
@@ -69,6 +71,16 @@ memory::cuda::ptr<T> fill_n(ptr<T> const first, Size count, U const& value){
 		count -= n;
 	}
 	return first + count;
+}
+
+template<class T1, typename Size, class T2, std::enable_if_t<std::is_same<std::decay_t<T1>, T2>{},int> =0>
+ptr<std::complex<T2>> copy_n(ptr<T1> first, Size count, ptr<std::complex<T2>> result){
+	fill_n(result, count, std::complex<T2>{0});
+	copy_n(
+		multi::array_iterator<std::decay_t<T1>, 1, ptr<T1>>{first, 1}, count,
+		multi::array_iterator<T2, 1, ptr<T2>>{reinterpret_pointer_cast<T2>(result), 2}
+	);
+	return result + count;
 }
 
 template<class T, class Size, class V, std::enable_if_t<std::is_trivially_constructible<T, V const&>{}, int> =0>
