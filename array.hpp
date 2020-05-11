@@ -185,13 +185,13 @@ public:
 		//	assert(0);
 		}
 	}
-	template<class TT, class... Args>
+	template<class TT, class... Args, typename = 
+		decltype(adl_copy(std::declval<multi::basic_array<TT, D, Args...> const&>().begin(), std::declval<multi::basic_array<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
+	>
 	static_array(multi::basic_array<TT, D, Args...> const& o, typename static_array::allocator_type const& a = {})
-	: 
-	//	array_alloc{a}, ref(array_alloc::allocate(num_elements(o)), extensions(o))
-		static_array(extensions(o), a) // TODO: should be uninitialized_copy
+	: static_array(extensions(o), a) // TODO: should be uninitialized_copy
 	{
-		adl_copy(o.begin(), o.end(), this->begin()); // TODO: should be uninitialized_copy
+		adl_copy(o.begin(), o.end(), this->begin()); // TODO: should be uninitialized_copy, and recursive
 	}
 //	template<class TT, class... Args>
 //	static_array(static_array<TT, D, Args...> const& o)
