@@ -255,14 +255,11 @@ template<class T> allocator<T> get_allocator(ptr<T> const&){return {};}
 template<
 	class InputIt, class Size, class... T, class ForwardIt = ptr<T...>,
 	typename InputV = typename std::pointer_traits<InputIt>::element_type, 
-	typename ForwardV = typename std::pointer_traits<ForwardIt>::element_type
-//	, typename = std::enable_if_t<std::is_constructible<ForwardV, InputV>{}>
+	typename ForwardV = typename std::pointer_traits<ForwardIt>::element_type, 
+	std::enable_if_t<std::is_trivially_constructible<ForwardV, InputV>{}, int> =0
 >
 ForwardIt uninitialized_copy_n(InputIt f, Size n, ptr<T...> d){
-	if(std::is_trivially_constructible<ForwardV, InputV>{})
-		return memcpy(d, f, n*sizeof(ForwardV)) + n;
-	else assert(0);
-	return d;
+	return memcpy(d, f, n*sizeof(ForwardV)) + n;
 }
 
 template<class It, typename Size, class T2, class Q2, typename T = typename std::iterator_traits<It>::value_type, typename = std::enable_if_t<std::is_trivially_constructible<T2, T>{}>>
