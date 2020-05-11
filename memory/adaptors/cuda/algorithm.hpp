@@ -61,7 +61,8 @@ auto fill(memory::cuda::ptr<T> first, memory::cuda::ptr<T> last, T const& value)
 
 template<class U, class T, typename Size>//, typename = std::enable_if_t<std::is_trivially_assignable<T&, U>{}>>
 memory::cuda::ptr<T> fill_n(ptr<T> const first, Size count, U const& value){
-	if(std::find_if_not(reinterpret_cast<char const*>(&value), reinterpret_cast<char const*>(&value) + sizeof(value), [](char c){return c==0;}) == reinterpret_cast<char const*>(&value) + sizeof(value)){
+//	if(std::find_if_not(reinterpret_cast<char const*>(&value), reinterpret_cast<char const*>(&value) + sizeof(value), [](char c){return c==0;}) == reinterpret_cast<char const*>(&value) + sizeof(value)){
+	if(std::find(reinterpret_cast<char const*>(&value), reinterpret_cast<char const*>(&value) + sizeof(value), true) == reinterpret_cast<char const*>(&value) + sizeof(value)){
 //	if(value == 0.){
 		cuda::memset(first, 0, count*sizeof(T));
 	}
@@ -73,6 +74,17 @@ memory::cuda::ptr<T> fill_n(ptr<T> const first, Size count, U const& value){
 	return first + count;
 }
 
+template<class U, class T, class TT, typename Size>//, typename = std::enable_if_t<std::is_trivially_assignable<T&, U>{}>>
+memory::cuda::ptr<T> fill_n(array_iterator<T, 1, ptr<TT>> const first, Size count, U const& value){
+	if(count--) 
+		for(ptr<T> new_first = adl_copy_n(&value, 1, first); count;){
+			auto n = std::min(Size(std::distance(first, new_first)), count);
+			new_first = copy_n(first, n, new_first);
+			count -= n;
+		}
+	return first + count;
+}
+
 template<class T1, typename Size, class T2, std::enable_if_t<std::is_same<std::decay_t<T1>, T2>{},int> =0>
 ptr<std::complex<T2>> copy_n(ptr<T1> first, Size count, ptr<std::complex<T2>> result){
 	fill_n(result, count, std::complex<T2>{0});
@@ -80,6 +92,13 @@ ptr<std::complex<T2>> copy_n(ptr<T1> first, Size count, ptr<std::complex<T2>> re
 		multi::array_iterator<std::decay_t<T1>, 1, ptr<T1>>{first, 1}, count,
 		multi::array_iterator<T2, 1, ptr<T2>>{reinterpret_pointer_cast<T2>(result), 2}
 	);
+	return result + count;
+}
+
+template<class T1, typename Size, class T2, std::enable_if_t<std::is_same<std::decay_t<T1>, T2>{},int> =0>
+auto copy_n(iterator<T1, 1, ptr<T1>> first, Size count, iterator<std::complex<T2>, 1, ptr<std::complex<T2>>> result){
+	if(stride(first) == 1 and stride(result)) copy_n(base(first), count, base(result));
+	else assert(0);
 	return result + count;
 }
 
