@@ -18,24 +18,27 @@ BOOST_AUTO_TEST_CASE(cuda_adaptor_real_to_complex_copy){
 	cuda::array<double              , 1> R(1<<26, 1.);
 	cuda::array<std::complex<double>, 1> C(1<<26, 0.);
 
-	std::cout << "elements (M) " << size(R)/1e6 << " total memory " << (size(R)*sizeof(double) + size(C)*sizeof(std::complex<double>))/1e6 << "MB" << std::endl;
 	
+	std::cout << "elements (M) " << size(R)/1e6 << " total memory " << (size(R)*sizeof(double) + size(C)*sizeof(std::complex<double>))/1e6 << "MB" << std::endl;
+	// elements (M) 67.1089 total memory 1610.61MB
+
 CUDA_SLOW(
 	R[13] = 3.;
 )
 
 	{
-		boost::timer::auto_cpu_timer t;
-		C = R;
-		BOOST_REQUIRE( static_cast<double>(R[13]) == 3. );
-		BOOST_REQUIRE( static_cast<std::complex<double>>(C[13]) == 3. );
-	}
-	{
-		boost::timer::auto_cpu_timer t;
+		boost::timer::auto_cpu_timer t; //  0.144042s wall, 0.140000s user + 0.000000s system = 0.140000s CPU (97.2%)
 		C() = R();
 		BOOST_REQUIRE( static_cast<double>(R[13]) == 3. );
 		BOOST_REQUIRE( static_cast<std::complex<double>>(C[13]) == 3. );
 	}
+	{
+		boost::timer::auto_cpu_timer t; //  0.196395s wall, 0.190000s user + 0.010000s system = 0.200000s CPU (101.8%)
+		C = R;
+		BOOST_REQUIRE( static_cast<double>(R[13]) == 3. );
+		BOOST_REQUIRE( static_cast<std::complex<double>>(C[13]) == 3. );
+	}
+
 
 
 	
