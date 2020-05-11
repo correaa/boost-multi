@@ -139,8 +139,8 @@ public:
 //		std::enable_if_t<not std::is_base_of<static_array, Range>{}, int> = 0,
 //		std::enable_if_t<not std::is_convertible<Range, typename static_array::extensions_type>{}, int> = 0
 //	>
-	template<class... As>
-	static_array(array_ref<T, D, As...> const& other, typename static_array::allocator_type const& a = {}) :
+	template<class TT, class... As>
+	static_array(array_ref<TT, D, As...> const& other, typename static_array::allocator_type const& a = {}) :
 		array_alloc{a},
 		ref{array_alloc::allocate(other.num_elements()), other.extensions()}
 	{
@@ -416,6 +416,10 @@ public:
 	static_array& operator=(static_array const& other) &{assert( extensions(other) == static_array::extensions() );
 		return adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements()), *this;
 	}
+	template<class TT, class... As>
+	static_array& operator=(static_array<TT, static_array::dimensionality, As...> const& other)&{assert( extensions(other) == static_array::extensions() );
+		return adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements()), *this;
+	}
 //	template<class... As>
 //	static_array operator=(static_array<static_array::value_type, static_array::dimensionality, As...> const& o){assert( extensions(o) == static_array::extensions() );
 //		return adl::copy_elements(o.data_elements()), *this;
@@ -654,6 +658,10 @@ public:
 	static_array& operator=(static_array const& other)&{assert( extensions(other) == static_array::extensions() );
 		return adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements()), *this;
 	}
+	template<class TT, class... As>
+	static_array& operator=(static_array<TT, static_array::dimensionality, As...> const& other)&{assert( extensions(other) == static_array::extensions() );
+		return adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements()), *this;
+	}
 
 	operator basic_array<typename static_array::value_type, static_array::dimensionality, typename static_array::element_const_ptr, typename static_array::layout_t>()&{
 		return this->template static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>();
@@ -786,9 +794,10 @@ public:
 	//	return *this;
 	}
 	template<class OtherT, class... As>
-	auto operator=(array<OtherT, array::dimensionality, As...> const& o){
-		if(extensions(o)==array::extensions()) static_::operator=(o);
-		else{
+	auto operator=(array<OtherT, array::dimensionality, As...> const& o) &{
+		if(extensions(o)==array::extensions()){
+			static_::operator=(o);
+		}else{
 			array::destroy(); array::deallocate();
 			this->static_::ref::layout_t::operator=(layout_t<D>{extensions(o)});
 			array::allocate(); array::uninitialized_copy_elements(data_elements(o));
