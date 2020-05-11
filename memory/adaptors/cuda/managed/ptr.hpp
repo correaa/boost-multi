@@ -167,7 +167,7 @@ public:
 //	[[SLOW]] 
 //	[[deprecated]] 
 	reference operator*() const HD{return *rp_;}
-	HD reference operator[](difference_type n){return *((*this)+n);}
+	constexpr reference operator[](difference_type n){return *((*this)+n);}
 	friend inline ptr to_address(ptr const& p){return p;}
 	typename ptr::difference_type operator-(ptr const& other) const{return rp_-other.rp_;}
 	friend raw_pointer raw_pointer_cast(ptr const& self){return self.rp_;}
@@ -176,6 +176,14 @@ public:
 	friend allocator<std::decay_t<T>> get_allocator(ptr const&){return {};}
 	using default_allocator_type = allocator<std::decay_t<T>>;
 	default_allocator_type default_allocator() const{return {};}
+
+	template<class T1, class... A1, class Size, class T2, class... A2>//, std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}, int> =0>
+	static auto copy_n(
+		managed::ptr<T1, A1...> first, Size count, 
+		managed::ptr<T2, A2...> result
+	){
+		return adl_copy_n(cuda::ptr<T1>(first), count, cuda::ptr<T2>(result)), result + count;
+	}
 
 };
 
