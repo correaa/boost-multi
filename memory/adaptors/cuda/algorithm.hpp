@@ -95,8 +95,8 @@ ptr<std::complex<T2>> copy_n(ptr<T1> first, Size count, ptr<std::complex<T2>> re
 	return result + count;
 }
 
-template<class T1, typename Size, class T2, std::enable_if_t<std::is_same<std::decay_t<T1>, T2>{},int> =0>
-auto copy_n(iterator<T1, 1, ptr<T1>> first, Size count, iterator<std::complex<T2>, 1, ptr<std::complex<T2>>> result){
+template<class T1, class TT1, typename Size, class T2, std::enable_if_t<std::is_same<std::decay_t<T1>, T2>{},int> =0>
+auto copy_n(iterator<T1, 1, ptr<TT1>> first, Size count, iterator<std::complex<T2>, 1, ptr<std::complex<T2>>> result){
 	if(stride(first) == 1 and stride(result)) copy_n(base(first), count, base(result));
 	else assert(0);
 	return result + count;
