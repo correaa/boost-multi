@@ -1245,6 +1245,7 @@ public:
 	constexpr bool operator==(Array const& o) const&{ // TODO assert extensions are equal?
 		return (this->extension()==extension(o)) and adl_equal(this->begin(), this->end(), adl_begin(o));
 	}
+
 //	constexpr bool operator==(basic_array const& other) const&{
 //		return (this->extension()==extension(std::move(modify(other))))
 //			and adl_equal(std::move(*this).begin(), std::move(*this).end(), std::move(modify(other)).begin());
@@ -1309,6 +1310,15 @@ public:
 		P2 new_base; std::memcpy(&new_base, &thisbase, sizeof(P2)); //reinterpret_cast<P2 const&>(thisbase) // TODO find a better way, fancy pointers wouldn't need reinterpret_cast
 		return {this->layout().scale(sizeof(T)/sizeof(T2)), new_base};
 	}
+	template<class TT = typename basic_array::element_type>
+	constexpr decltype(auto) fill(TT const& value = TT{})&
+//	->decltype(adl_fill_n(this->begin(), typename basic_array::size_type{}, value), *this){
+	{	return adl_fill_n(this->begin(), this->size(), value), *this;}
+	template<class TT = typename basic_array::element_type>
+	constexpr decltype(auto) fill(TT const& value = TT{})&&
+//	->decltype(std::move(this->fill(value))){
+	{	return std::move(this->fill(value));}
+
 };
 
 //template<class T2, class P2, class Array, class... Args>
@@ -1358,7 +1368,7 @@ protected:
 	[[deprecated("references are not copyable, use &&")]]
 	array_ref(array_ref const&) = default; // don't try to use `auto` for references, use `auto&&` or explicit value type
 public:
-#if __INTEL_COMPILER
+#if __INTEL_COMPILER or __cplusplus < 201703L
 	array_ref(array_ref&&) = default;
 #endif
 	constexpr array_ref(typename array_ref::element_ptr p, typename array_ref::extensions_type e = {}) noexcept
@@ -1400,6 +1410,10 @@ public:
 	array_ref&& operator=(array_ref<TT, DD, As...> const& o)&&{assert(this->extensions() == o.extensions());
 		return adl_copy_n(o.data(), o.num_elements(), this->data()), std::move(*this);
 	}
+	auto elements()&{return array_ref<typename array_ref::element_type, 1, typename array_ref::element_ptr>{array_ref::data(), array_ref::num_elements()};}
+	auto elements()&&{return std::move(*this).elements();}
+	auto elements() const&{return array_ref<typename array_ref::element_type, 1, typename array_ref::element_const_ptr>{array_ref::data(), array_ref::num_elements()};}
+
 	template<typename TT, dimensionality_type DD = D, class... As>
 	bool operator==(array_ref<TT, DD, As...>&& o) const&{
 		if( this->extensions() != o.extensions() ) return false; // TODO, or assert?

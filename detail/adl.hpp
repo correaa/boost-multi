@@ -1,4 +1,4 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 $CXX $0 -o $0x -DBOOST_TEST_DYN_LINK -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2020
@@ -53,35 +53,42 @@ namespace adl{ \
 
 namespace boost{namespace multi{
 
-	static constexpr class adl_copy_n_t{
-		template<class... As>          auto _(priority<0>,        As&&... as) const{return                   std::copy_n              (std::forward<As>(as)...);}
+MAYBE_UNUSED static constexpr class adl_copy_n_t{
+	template<class... As>          auto _(priority<0>,        As&&... as) const{return                   std::copy_n              (std::forward<As>(as)...);}
 #if defined(__NVCC__) or (defined(__clang__) && defined(__CUDA__))
-		template<class... As> 		   auto _(priority<1>,        As&&... as) const DECLRETURN(           thrust::copy_n              (std::forward<As>(as)...))
+	template<class... As> 		   auto _(priority<1>,        As&&... as) const DECLRETURN(           thrust::copy_n              (std::forward<As>(as)...))
 #endif
-		template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   copy_n              (std::forward<As>(as)...))
-		template<class T, class... As> auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(std::decay_t<T>::  copy_n(std::forward<T>(t), std::forward<As>(as)...))
-		template<class T, class... As> auto _(priority<5>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).copy_n              (std::forward<As>(as)...))
-	public:
-		template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<5>{}, std::forward<As>(as)...))
-	} adl_copy_n;
+	template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   copy_n              (std::forward<As>(as)...))
+	template<class T, class... As> auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(std::decay_t<T>::  copy_n(std::forward<T>(t), std::forward<As>(as)...))
+	template<class T, class... As> auto _(priority<5>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).copy_n              (std::forward<As>(as)...))
+public:
+	template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<5>{}, std::forward<As>(as)...))
+} adl_copy_n;
 
-}}
+MAYBE_UNUSED static constexpr class adl_fill_n_t{
+	template<class... As>          auto _(priority<0>,        As&&... as) const{return                   std::fill_n              (std::forward<As>(as)...);}
+#if defined(__NVCC__) or (defined(__clang__) && defined(__CUDA__))
+	template<class... As> 		   auto _(priority<1>,        As&&... as) const DECLRETURN(           thrust::fill_n              (std::forward<As>(as)...))
+#endif
+	template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   fill_n              (std::forward<As>(as)...))
+	template<class T, class... As> auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(std::decay_t<T>::  fill_n(std::forward<T>(t), std::forward<As>(as)...))
+	template<class T, class... As> auto _(priority<5>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).fill_n              (std::forward<As>(as)...))
+public:
+	template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<5>{}, std::forward<As>(as)...))
+} adl_fill_n;
 
-namespace boost{namespace multi{
-	constexpr class equal_t{
-		template<         class...As> constexpr auto _(priority<1>,      As...as) const DECLRETURN(   std::equal(as...))
+
+constexpr class equal_t{
+	template<         class...As> constexpr auto _(priority<1>,      As...as) const DECLRETURN(   std::equal(as...))
 #ifdef THRUST_VERSION
 //		template<         class...As> constexpr auto _(priority<2>,      As...as) const DECLRETURN(thrust::equal(as...))
 #endif
-		template<         class...As> constexpr auto _(priority<3>,      As...as) const DECLRETURN(        equal(as...))
-		template<class T, class...As> constexpr auto _(priority<4>, T t, As...as) const DECLRETURN(      t.equal(as...))
-	public:
-		template<class...As> constexpr auto operator()(As...as) const DECLRETURN(_(priority<4>{}, as...))
-	} adl_equal;
-}
-}
+	template<         class...As> constexpr auto _(priority<3>,      As...as) const DECLRETURN(        equal(as...))
+	template<class T, class...As> constexpr auto _(priority<4>, T t, As...as) const DECLRETURN(      t.equal(as...))
+public:
+	template<class...As> constexpr auto operator()(As...as) const DECLRETURN(_(priority<4>{}, as...))
+} adl_equal;
 
-namespace boost{namespace multi{
 	MAYBE_UNUSED constexpr class{
 		template<         class... As> auto _(priority<1>,       As&... as) const DECLRETURN(              std::copy(   as...))
 #if defined(__NVCC__) or (defined(__clang__) && defined(__CUDA__))
