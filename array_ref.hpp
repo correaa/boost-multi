@@ -961,9 +961,9 @@ public:
 	friend auto stride(array_iterator const& self){return self.stride();}
 	array_iterator& operator++(){data_+=stride_; /*increment()*/; return *this;}
 	array_iterator& operator--(){data_-=stride_; /*decrement()*/; return *this;}
-	bool operator==(array_iterator const& o) const{return data_== o.data_;/*return equal(o);*/}
-	bool operator!=(array_iterator const& o) const{return data_!= o.data_;/*return equal(o);*/}
-	Ref operator*() const{return *data_;}//dereference();}
+	bool operator==(array_iterator const& o) const{return data_== o.data_;}
+	bool operator!=(array_iterator const& o) const{return data_!= o.data_;}
+	constexpr Ref operator*() const{return *data_;}
 	constexpr difference_type operator-(array_iterator const& o) const{return -distance_to(o);}
 	constexpr array_iterator& operator+=(difference_type d){data_+=stride_*d; return *this;}
 	constexpr array_iterator& operator-=(difference_type d){data_-=stride_*d; return *this;}
