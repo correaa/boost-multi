@@ -1,6 +1,5 @@
-#ifdef COMPILATION// -*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
-$CXX $0 -o $0x -lcudart -lcublas -lboost_unit_test_framework \
-`pkg-config --libs blas` -DBOOST_LOG_DYN_LINK -lboost_system&&$0x&&rm $0x;exit
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
+$CXX $0 -o $0x -lcudart -lcublas -lboost_unit_test_framework `pkg-config --libs blas` -lboost_system&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -16,15 +15,10 @@ $CXX $0 -o $0x -lcudart -lcublas -lboost_unit_test_framework \
 
 #include "../../../array.hpp"
 
-// #include <boost/log/expressions.hpp> // this produces compilation errors with culang
-
 namespace multi = boost::multi;
 namespace cuda = multi::cuda;
 
 using complex = std::complex<double>; constexpr complex I{0, 1};
-
-template<class... T> void what(T&&...) = delete;
-template<class... T> void what() = delete;
 
 BOOST_AUTO_TEST_CASE(multi_blas_cuda_herk_complex){
 	namespace blas = multi::blas;
@@ -88,7 +82,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_cuda_herk_complex){
 		cuda::array<complex, 2> const ccu_copy = blas::herk(1., blas::H(acu));
 		BOOST_REQUIRE( ccu_copy == ccu );
 	}
-#if 1
 	{
 		cuda::managed::array<complex, 2> const acu = a; BOOST_REQUIRE(a == acu);
 		cuda::managed::array<complex, 2> ccu({3, 3}, 9999.);
@@ -100,7 +93,25 @@ BOOST_AUTO_TEST_CASE(multi_blas_cuda_herk_complex){
 		cuda::managed::array<complex, 2> const ccu_copy = blas::herk(1., blas::H(acu));
 		BOOST_REQUIRE( ccu_copy == ccu );
 	}
-#endif
+}
+
+BOOST_AUTO_TEST_CASE(multi_blas_cuda_herk_row){
+	namespace blas = multi::blas;
+	auto const a = []{ 
+		multi::array<complex, 2> ret({1, 100});
+		std::generate(begin(ret[0]), end(ret[0]), [c=complex{1, 2}]()mutable{return c+=2.;}); 
+		return ret;
+	}();
+	BOOST_REQUIRE( size(a) == 1 );
+	{
+		BOOST_REQUIRE( blas::gemm(a, blas::H(a)) == blas::herk(a) );
+
+		cuda::array<complex, 2> const agpu = a;
+		BOOST_REQUIRE( blas::gemm(agpu, blas::H(agpu)) == blas::herk(agpu) );
+
+		cuda::managed::array<complex, 2> const amng = a;
+		BOOST_REQUIRE( blas::gemm(amng, blas::H(amng)) == blas::herk(amng) );
+	}
 }
 
 #if 1
