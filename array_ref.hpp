@@ -941,7 +941,7 @@ private:
 	friend struct basic_array<Element, 1, Ptr>;
 	Ptr data_ = nullptr;
 	multi::index stride_;
-	Ref dereference() const{return *data_;}
+//	Ref dereference() const{return *data_;}
 //	bool equal(array_iterator const& o) const{
 //		assert(stride_ == o.stride_);
 //		return data_==o.data_;// and stride_==o.stride_;
@@ -956,13 +956,13 @@ private:
 	auto base() const{return data_;}
 	friend auto base(array_iterator const& self){return self.base();}
 public:
-	auto data() const HD{return data_;}
-	auto stride() const{return stride_;}
-	friend auto stride(array_iterator const& self){return self.stride();}
-	array_iterator& operator++(){data_+=stride_; /*increment()*/; return *this;}
-	array_iterator& operator--(){data_-=stride_; /*decrement()*/; return *this;}
-	bool operator==(array_iterator const& o) const{return data_== o.data_;}
-	bool operator!=(array_iterator const& o) const{return data_!= o.data_;}
+	constexpr auto data() const{return data_;}
+	constexpr auto stride() const{return stride_;}
+	friend constexpr auto stride(array_iterator const& self){return self.stride();}
+	constexpr array_iterator& operator++(){data_+=stride_; return *this;}
+	constexpr array_iterator& operator--(){data_-=stride_; return *this;}
+	constexpr bool operator==(array_iterator const& o) const{return data_== o.data_;}
+	constexpr bool operator!=(array_iterator const& o) const{return data_!= o.data_;}
 	constexpr Ref operator*() const{return *data_;}
 	constexpr difference_type operator-(array_iterator const& o) const{return -distance_to(o);}
 	constexpr array_iterator& operator+=(difference_type d){data_+=stride_*d; return *this;}
