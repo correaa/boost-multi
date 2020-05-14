@@ -8,10 +8,12 @@ $CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #include<boost/test/unit_test.hpp>
 
 #include "../array.hpp"
-#include<vector>
-#include<iostream>
-#include<numeric>
+
+#include<complex>
 #include<functional>
+#include<iostream>
+#include<vector>
+#include<numeric>
 
 namespace multi = boost::multi;
 
