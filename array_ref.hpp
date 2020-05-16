@@ -23,7 +23,7 @@ $CXX $0 -o $0x&&$0x&&rm $0x;exit
 #include "./config/NODISCARD.hpp"
 
 //#include<iostream> // debug
-#include<boost/pointer_cast.hpp>
+//#include<boost/pointer_cast.hpp>
 
 #include<algorithm> // copy_n
 #include<cstring> // for memset in reinterpret_cast
