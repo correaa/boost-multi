@@ -1325,8 +1325,20 @@ public:
 			static_cast<P2>(static_cast<void*>(thisbase))
 		}.rotated();
 	}
-	
-	
+	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
+	basic_array<std::decay_t<T2>, 2, P2> reinterpret_array_cast(size_type n)&{
+		static_assert( sizeof(T)%sizeof(T2)== 0, 
+			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
+	//	assert( sizeof(T )%(sizeof(T2)*n)== 0 );
+		auto thisbase = this->base();		
+		return basic_array<std::decay_t<T2>, 2, P2>{
+			layout_t<2>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n}, 
+			static_cast<P2>(static_cast<void*>(thisbase))
+		}.rotated();
+	}
+	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
+	basic_array<std::decay_t<T2>, 2, P2> reinterpret_array_cast(size_type n)&&{return this->reinterpret_array_cast(n);}
+
 	template<class TT = typename basic_array::element_type>
 	constexpr decltype(auto) fill(TT const& value = TT{})&
 //	->decltype(adl_fill_n(this->begin(), typename basic_array::size_type{}, value), *this){

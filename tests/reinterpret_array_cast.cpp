@@ -1,16 +1,16 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x `#-ltbb` -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
+
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi reinterpret array"
+#define BOOST_TEST_DYN_LINK
+#include<boost/test/unit_test.hpp>
 
 #include "../array.hpp"
 //#include "../adaptors/cuda.hpp"
 
 #include<complex>
 #include<numeric>
-
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi reinterpret array"
-#define BOOST_TEST_DYN_LINK
-#include<boost/test/unit_test.hpp>
 
 namespace multi = boost::multi;
 
@@ -22,16 +22,19 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_struct_to_dimension){
 	A[8] = {1., 2., 3.};
 	BOOST_REQUIRE( A[8].y == 2. );
 
-	BOOST_REQUIRE( (A.template reinterpret_array_cast<double>(3))[8][1] == A[8].y );
+	BOOST_REQUIRE( A.reinterpret_array_cast<double>(3)[8][1] == A[8].y );
 
 	multi::array<double, 2> A2D = A.reinterpret_array_cast<double>(3);
 	BOOST_REQUIRE( dimensionality(A2D) == dimensionality(A) + 1 );
 	BOOST_REQUIRE( size(A2D) == size(A) );
 	BOOST_REQUIRE(  A2D[8][1] ==  A[8].y );
 	BOOST_REQUIRE( &A2D[8][1] != &A[8].y );
+
+	A.reinterpret_array_cast<double>(3)[8][1] = 99.;
+	BOOST_REQUIRE( A[8].y == 99.);
 }
 
-BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_complex_to_real_dimension){
+BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_complex_to_real_extra_dimension){
 	using complex = std::complex<double>;
 	multi::array<complex, 1> A(100, {1, 2});
 	BOOST_REQUIRE(  size(A) == 100 );
