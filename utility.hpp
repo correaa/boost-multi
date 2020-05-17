@@ -76,6 +76,11 @@ constexpr auto size(Container const& con)
 //->decltype(t.size()){
 //	return t.size();}
 
+template<class T, class U>
+auto reinterpret_pointer_cast(U* other)
+->decltype(reinterpret_cast<T*>(other)){
+	return reinterpret_cast<T*>(other);}
+
 template <class T, std::size_t N>
 constexpr auto size(const T(&)[N]) noexcept{return multi::size_type{N};}
 
@@ -521,8 +526,8 @@ BOOST_AUTO_TEST_CASE(multi_utility_test){
 	assert( corigin(A) == &A[0][0] );
 	assert( size(A) == 2 );
 	assert( std::get<0>(sizes(A)) == size(A) );
-	BOOST_TEST_REQUIRE( num_elements(A) == 6. );
-	static_assert( num_elements(A) == 6. , "!" );
+	BOOST_REQUIRE( num_elements(A) == 6 );
+	static_assert( num_elements(A) == 6 , "!" );
 
 }{
 	double const A[2][3] = {{1.,2.,3.},{4.,5.,6.}};
