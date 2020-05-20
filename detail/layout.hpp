@@ -157,7 +157,7 @@ public:
 		extensions_type_(std::tuple<index_extension> const& t) : std::tuple<index_extension>(t){}
 		friend decltype(auto) base(extensions_type_ const& s){return s.base();}
 		template<class Archive>
-		void serialize(Archive& ar, unsigned){ar & make_nvp("extension", std::get<0>(*this));}
+		void serialize(Archive& ar, unsigned){ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<0>(*this));}
 		static constexpr dimensionality_type dimensionality = 1;
 	};
 	using extensions_type = extensions_type_;
