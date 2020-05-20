@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x -lcudart `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXX $0 -o $0x `pkg-config --libs fftw3` -Ofast -DNDEBUG -g -lboost_timer -lboost_unit_test_framework&&valgrind  --leak-check=full --track-origins=yes --show-leak-kinds=all $0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2018-2019
 
@@ -572,7 +572,7 @@ namespace fft{
 
 #include<random>
 
-#include "../adaptors/cuda.hpp"
+//#include "../adaptors/cuda.hpp"
 
 #include<chrono>
 
@@ -802,17 +802,16 @@ BOOST_AUTO_TEST_CASE(fftw_4D){
 
 BOOST_AUTO_TEST_CASE(fftw_4D_many){
 
-	auto const in = []{multi::array<complex, 4> in({97, 95, 101, 10}); in[2][3][4][5] = 99.; return in;}();
+	auto const in = []{
+		multi::array<complex, 4> in({97, 95, 101, 10}, 0.); 
+		in[2][3][4][5] = 99.; return in;
+	}();
 	auto fwd = multi::fftw::dft({true, true, true, false}, in, fftw::forward);
 	BOOST_REQUIRE( in[2][3][4][5] == 99. );
 
 	multi::array<complex, 4> out(extensions(in));
 	multi::fftw::many_dft(begin(unrotated(in)), end(unrotated(in)), begin(unrotated(out)), fftw::forward);
-	BOOST_REQUIRE( fwd == out );
-
-//	multi::array<complex, 4> out2({10, 97, 95, 101});
-//	multi::fftw::many_dft(begin(unrotated(in)), end(unrotated(in)), begin(out2), multi::fftw::forward);
-//	BOOST_REQUIRE( fwd == rotated(out2) );
+	BOOST_REQUIRE( out == fwd );
 
 }
 
