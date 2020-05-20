@@ -1,7 +1,7 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x `pkg-config --libs fftw3` -Ofast -DNDEBUG -g -lboost_timer -lboost_unit_test_framework&&valgrind  --leak-check=full --track-origins=yes --show-leak-kinds=all $0x&&rm $0x;exit
+$CXX $0 -o $0x `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
-// © Alfredo A. Correa 2018-2019
+// © Alfredo A. Correa 2018-2020
 
 #ifndef MULTI_ADAPTORS_FFTW_HPP
 #define MULTI_ADAPTORS_FFTW_HPP
@@ -621,6 +621,14 @@ template<class T> struct randomizer<std::complex<T>>{
 	}
 };
 
+
+struct fftw_fixture{
+	void setup(){} 
+	void teardown(){fftw_cleanup();}
+};
+
+BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
+
 BOOST_AUTO_TEST_CASE(fftw_2D_identity_2, *boost::unit_test::tolerance(0.0001)){
 	multi::array<complex, 2> const in = {
 		{ 1. + 2.*I, 9. - 1.*I, 2. + 4.*I},
@@ -1099,6 +1107,7 @@ BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark, *boost::unit_test::disabled() ){
 		fftw::dft(c, in, out2, fftw::forward);
 	}();
 	BOOST_REQUIRE( in0000 == in[0][0][0][0] );
+	
 }
 
 #endif
