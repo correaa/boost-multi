@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXX $0 -o $0x `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&valgrind $0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2018-2020
 
@@ -297,6 +297,12 @@ void initialize_threads(){int good = fftw_init_threads(); assert(good);}
 #else
 void initialize_threads(){}
 #endif
+
+void cleanup(){fftw_cleanup();}
+
+struct environment{
+	~environment(){cleanup();}
+};
 
 class plan{
 	plan() : impl_{nullptr, &fftw_destroy_plan}{}
@@ -621,10 +627,9 @@ template<class T> struct randomizer<std::complex<T>>{
 	}
 };
 
-
-struct fftw_fixture{
+struct fftw_fixture : fftw::environment{
 	void setup(){} 
-	void teardown(){fftw_cleanup();}
+	void teardown(){}//fftw_cleanup();}
 };
 
 BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
