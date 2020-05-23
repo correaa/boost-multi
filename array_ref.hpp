@@ -1350,8 +1350,10 @@ public:
 
 };
 
-//template<class T2, class P2, class Array, class... Args>
-//constexpr decltype(auto) static_array_cast(Array&& a, Args&&... args){return a.template static_array_cast<T2, P2>(std::forward<Args>(args)...);}
+template<class T2, class P2, class Array, class... Args>
+constexpr decltype(auto) static_array_cast(Array&& a, Args&&... args){
+	return a.template static_array_cast<T2, P2>(std::forward<Args>(args)...);
+}
 
 //template<class T2, class Array, class P2 = typename std::pointer_traits<typename std::decay<Array>::type::element_ptr>::template rebind<T2> , class... Args>
 //constexpr decltype(auto) static_array_cast(Array&& a, Args&&... args){return a.template static_array_cast<T2, P2>(std::forward<Args>(args)...);}
@@ -1400,7 +1402,11 @@ public:
 #if __INTEL_COMPILER or __cplusplus < 201703L
 	array_ref(array_ref&&) = default;
 #endif
+//	[[deprecated]]
 	constexpr array_ref(typename array_ref::element_ptr p, typename array_ref::extensions_type e = {}) noexcept
+		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
+
+	constexpr array_ref(typename array_ref::extensions_type e, typename array_ref::element_ptr p) noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
 
 	template<class TT, std::size_t N>

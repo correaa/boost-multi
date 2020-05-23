@@ -127,7 +127,9 @@ BOOST_AUTO_TEST_CASE(static_array_cast){
 {
 	multi::array<double, 1> A = { 0,  1,  2,  3,  4};
 	multi::array<double, 1> mA = { -0,  -1,  -2,  -3, -4};
-	auto&& mA_ref = A.template static_array_cast<double, involuter<double*, std::negate<>>>();
+//	auto&& mA_ref = A.static_array_cast<double, involuter<double*, std::negate<>>>();
+//	auto&& mA_ref = A.template static_array_cast<double, involuter<double*, std::negate<>>>();
+	auto&& mA_ref = multi::static_array_cast<double, involuter<double*, std::negate<>>>(A);
 	BOOST_REQUIRE( mA_ref[2] == mA[2] );
 	BOOST_REQUIRE( mA[2] == mA_ref[2] );
 	BOOST_REQUIRE( std::equal(begin(mA_ref), end(mA_ref), begin(mA)) );
