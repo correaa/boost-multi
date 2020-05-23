@@ -875,7 +875,7 @@ public:
 	template<class Range> auto assign(Range&& r) &
 	->decltype(assign(adl_begin(r), adl_end(r))){
 		return assign(adl_begin(r), adl_end(r));}
-	array& operator=(std::initializer_list<value_type> il){return assign(begin(il), end(il));}
+	array& operator=(std::initializer_list<typename array::value_type> il){assign(il.begin(), il.end()); return *this;}
 	void reextent(typename array::extensions_type const& e){
 		array tmp(e, this->get_allocator());
 		tmp.intersection_assign_(*this);

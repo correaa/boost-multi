@@ -155,6 +155,21 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d){
 	BOOST_REQUIRE( A[1][1] == 34.4 );
 }
 {
+	multi::array<double, 2> A = {
+		{ 1.2,  2.4, 3.6},
+		{11.2, 34.4, 5.6},
+		{15.2, 32.4, 5.6}
+	};
+	BOOST_REQUIRE( size(A) == 3 );
+	BOOST_REQUIRE( size(A) == 3 and size(A[0]) == 3 );
+	BOOST_REQUIRE( A[1][1] == 34.4 );
+	A = {
+		{ 00.,  01., 02.},
+		{ 10.,  11., 12.},
+		{ 20.,  21., 22.}
+	};
+}
+{
 	double const a[3][2] = {
 		{ 1.2,  2.4},
 		{11.2, 34.4},
