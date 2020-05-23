@@ -168,6 +168,13 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d){
 		{ 10.,  11., 12.},
 		{ 20.,  21., 22.}
 	};
+	BOOST_REQUIRE( A[1][2] == 12. );
+}
+{
+	multi::array<double, 1> vec;
+	vec = {4.0, 5.5};
+	BOOST_REQUIRE( size(vec) == 2 );
+	BOOST_REQUIRE( vec[1] == 5.5 );
 }
 {
 	double const a[3][2] = {
