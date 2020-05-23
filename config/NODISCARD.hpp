@@ -10,6 +10,7 @@ $CXX $0 -o $0x &&$0x&&rm $0x;exit
 #define __has_cpp_attribute(name) 0
 #endif
 
+#ifndef NODISCARD
 #if (__has_cpp_attribute(nodiscard)) && (__cplusplus>=201703L)
 	#if (__has_cpp_attribute(nodiscard)>=201907) && (__cplusplus>=201703L)
 		#define nodiscard_(MsG) nodiscard(MsG)
@@ -31,6 +32,7 @@ $CXX $0 -o $0x &&$0x&&rm $0x;exit
 
 #if defined(__NVCC__)
 	#define NODISCARD(MsG)
+#endif
 #endif
 
 #if not __INCLUDE_LEVEL__ // _TEST_MULTI_CONFIG_NODISCARD
