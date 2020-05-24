@@ -293,7 +293,7 @@ auto fftw_plan_dft(In const& in, Out&& out, int s, unsigned flags = FFTW_ESTIMAT
 namespace fftw{
 
 #if HAVE_FFTW3_THREADS
-void initialize_threads(){int good = fftw_init_threads(); assert(good);}
+void initialize_threads(){int good = fftw_init_threads(); assert(good); (void)good;}
 #else
 void initialize_threads(){}
 #endif
