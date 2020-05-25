@@ -114,6 +114,8 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_cuda_construct_2d){
 	cuda::array<double, 2> Agpu{A};
 	BOOST_REQUIRE( extensions(A) == extensions(Agpu) );
 	BOOST_REQUIRE( Agpu == A );
+	
+	A[1][1] = Agpu[1][1];
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_cuda_copy_2d){
