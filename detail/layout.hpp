@@ -14,14 +14,6 @@ $CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 
 #include<limits>
 
-#ifndef HD
-#if defined(__CUDACC__)
-#define HD __host__ __device__
-#else
-#define HD 
-#endif
-#endif
-
 namespace boost{
 namespace multi{
 
