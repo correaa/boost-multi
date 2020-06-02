@@ -7,13 +7,8 @@ $CXX $0 -o $0x &&$0x&&rm $0x;exit
 
 //#include<boost/iterator/iterator_facade.hpp>
 
-#ifndef HD
 #if defined(__CUDACC__)
 #define BOOST_RESULT_OF_USE_TR1_WITH_DECLTYPE_FALLBACK
-#define HD __host__ __device__
-#else
-#define HD 
-#endif
 #endif
 
 #include "../config/MAYBE_UNUSED.hpp"
@@ -21,8 +16,6 @@ $CXX $0 -o $0x &&$0x&&rm $0x;exit
 //#include<boost/serialization/nvp.hpp>
 #include<limits> // numeric_limits
 #include<iterator> // std::random_iterator_tag // std::reverse_iterator
-
-
 
 #if 0
 namespace boost{
@@ -129,8 +122,8 @@ public:
 		constexpr auto operator<(const_iterator const& y) const{return curr_ < y.curr_;}
 		constexpr const_iterator& operator++(){++curr_; return *this;}
 		constexpr const_iterator& operator--(){--curr_; return *this;}
-		constexpr const_iterator& operator-=(typename const_iterator::difference_type n) HD{curr_-=n; return *this;}
-		constexpr const_iterator& operator+=(typename const_iterator::difference_type n) HD{curr_+=n; return *this;}
+		constexpr const_iterator& operator-=(typename const_iterator::difference_type n){curr_-=n; return *this;}
+		constexpr const_iterator& operator+=(typename const_iterator::difference_type n){curr_+=n; return *this;}
 		constexpr auto operator-(const_iterator const& y) const{return curr_ - y.curr_;}
 		constexpr const_iterator operator-(typename const_iterator::difference_type n) const{return curr_ - n;}
 		constexpr typename const_iterator::reference operator*() const{return curr_;}
@@ -243,15 +236,6 @@ auto make_extension_t(IndexTypeLast l){return make_extension_t(IndexTypeLast{0},
 
 }}
 
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 #if not __INCLUDE_LEVEL__ // -D_TEST_MULTI_INDEX_RANGE
