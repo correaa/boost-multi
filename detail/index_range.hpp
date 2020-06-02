@@ -274,7 +274,7 @@ using std::cout;
 
 //https://stackoverflow.com/a/35110453/225186
 template<class T>constexpr std::remove_reference_t<T> const_aux(T&&t){return t;}
-template<bool b> class logic_assert_aux;
+template<bool b> struct logic_assert_aux;
 template<> struct logic_assert_aux<true>{
 	template<class T> static constexpr void _(T&& cond){static_assert(cond, "!");}
 };
