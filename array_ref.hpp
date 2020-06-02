@@ -29,12 +29,6 @@ $CXX $0 -o $0x&&$0x&&rm $0x;exit
 #include<cstring> // for memset in reinterpret_cast
 #include<functional> // invoke
 
-#if defined(__CUDACC__)
-#define HD __host__ __device__
-#else
-#define HD
-#endif
-
 namespace boost{
 namespace multi{
 
@@ -163,7 +157,7 @@ protected:
 //	bool equal(basic_array_ptr const& o) const{return base_==o.base_ and layout()==o.layout();}
 	void increment(){base_ += Ref::nelems();}
 	void decrement(){base_ -= Ref::nelems();}
-	void advance(difference_type n) HD{base_ += Ref::nelems()*n;}
+	void advance(difference_type n){base_ += Ref::nelems()*n;}
 	difference_type distance_to(basic_array_ptr const& other) const{
 		assert( Ref::nelems() == other.Ref::nelems() and Ref::nelems() != 0 );
 		assert( (other.base_ - base_)%Ref::nelems() == 0); 
@@ -171,7 +165,7 @@ protected:
 		return (other.base_ - base_)/Ref::nelems();
 	}
 public:
-	basic_array_ptr& operator+=(difference_type n) HD{advance(n); return *this;}
+	basic_array_ptr& operator+=(difference_type n){advance(n); return *this;}
 };
 
 template<class Element, dimensionality_type D, typename Ptr, class Ref 
@@ -292,7 +286,7 @@ struct biiterator :
 	std::ptrdiff_t stride_;
 	biiterator() = default;
 	biiterator(biiterator const& other) = default;// : me{other.me}, pos{other.pos}, stride{other.stride}{}
-	biiterator(It me, std::ptrdiff_t pos, std::ptrdiff_t stride) HD : me_{me}, pos_{pos}, stride_{stride}{}
+	biiterator(It me, std::ptrdiff_t pos, std::ptrdiff_t stride) : me_{me}, pos_{pos}, stride_{stride}{}
 	decltype(auto) operator++(){
 		++pos_;
 		if(pos_==stride_){
@@ -756,13 +750,6 @@ public:
 		this->assign(adl_begin(std::forward<A>(o)), adl_end(std::forward<A>(o)));
 		return *this;
 	}
-//	template<class A>//, typename = std::enable_if_t<not std::is_same<basic_array, std::decay_t<A>>{}>>
-//	basic_array&& operator=(A&& o)&&{
-	//	assert(extension(*this) == extension(o));
-	//	assert(this->extension() == o.extension());
-	//	std::move(*this).assign(adl::begin(std::forward<A>(o)), adl::end(std::forward<A>(o)));
-//		return std::move(this->operator=(std::forward<A>(o)));
-//	}
 	template<class TT, class... As>
 	basic_array& operator=(basic_array<TT, D, As...> const& o)&{assert(this->extension() == o.extension());
 		return this->assign(o.begin(), o.end()), *this; // TODO improve performance by rotating
@@ -825,14 +812,6 @@ public:
 		P2 p2{this->base_};
 		return basic_array<T2, D, P2>{this->layout(), p2};
 	}
-//	template<class T2, class P2 = decltype(boost::static_pointer_cast<T2>(std::declval<typename basic_array::element_ptr>()))>
-//	auto static_array_cast() const HD ->basic_array<T2, D, P2>{
-//		return basic_array<T2, D, P2>{this->layout(), boost::static_pointer_cast<T2>(this->base_)};
-//	}
-//	template<class T2>
-//	auto static_array_cast() const HD -> basic_array<T2, D, decltype(boost::static_pointer_cast<T2>(std::declval<typename basic_array::element_ptr>()))>{
-//		return {this->layout(), boost::static_pointer_cast<T2>(this->base_)};
-//	}
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2 const>,
 		class Element = typename basic_array::element,
 		class PM = T2 Element::*
@@ -887,10 +866,6 @@ public:
 	basic_array<std::decay_t<T2>, D, P2> const_array_cast()&&{
 		return {this->layout(), const_cast<P2>(this->base())};
 	}
-//	template<class T2, class P2 = T2*> // TODO implement move pointer
-//	basic_array<std::decay_t<T2>, D, P2> move_array_cast()&&{
-//		return {this->layout(), multi::make_const_iterator(this->base())};
-//	}
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -944,14 +919,6 @@ private:
 	friend struct basic_array<Element, 1, Ptr>;
 	Ptr data_ = nullptr;
 	multi::index stride_;
-//	Ref dereference() const{return *data_;}
-//	bool equal(array_iterator const& o) const{
-//		assert(stride_ == o.stride_);
-//		return data_==o.data_;// and stride_==o.stride_;
-//	}
-//	void increment(){data_ += stride_;}
-//	void decrement(){data_ -= stride_;}
-//	void advance(typename array_iterator::difference_type n) HD{data_ += stride_*n;}
 	constexpr difference_type distance_to(array_iterator const& other) const{
 		assert(stride_==other.stride_ and (other.data_-data_)%stride_ == 0);
 		return (other.data_ - data_)/stride_;
@@ -1355,9 +1322,6 @@ constexpr decltype(auto) static_array_cast(Array&& a, Args&&... args){
 	return a.template static_array_cast<T2, P2>(std::forward<Args>(args)...);
 }
 
-//template<class T2, class Array, class P2 = typename std::pointer_traits<typename std::decay<Array>::type::element_ptr>::template rebind<T2> , class... Args>
-//constexpr decltype(auto) static_array_cast(Array&& a, Args&&... args){return a.template static_array_cast<T2, P2>(std::forward<Args>(args)...);}
-
 /*
 template<
 	class T2, class Array,
@@ -1457,20 +1421,12 @@ public:
 	typename array_ref::element_ptr data_elements()&&{return array_ref::base_;}
 	friend typename array_ref::element_ptr data_elements(array_ref&& s){return std::move(s).data_elements();}
 
-	typename array_ref::element_ptr data() const& HD{return array_ref::base_;} 
+	constexpr typename array_ref::element_ptr data() const&{return array_ref::base_;} 
 	friend typename array_ref::element_ptr data(array_ref const& self){return self.data();}
 	friend decltype(auto) operator*(array_ref const& self){
 		return static_cast<typename array_ref::decay_type const&>(self);
 	}
 	
-//	explicit 
-//	operator typename array_ref::decay_type const&() const&{
-//		return static_cast<typename array_ref::decay_type const&>(*this);		
-// 	}
-//	operator typename array_ref::decay_type() &&{
-//		return static_cast<typename array_ref::decay_type&&>(std::move(*this));		
-//	}
-//	operator typename array_ref::decay_type&&() & = delete;
 	typename array_ref::decay_type const& decay() const&{
 		return static_cast<typename array_ref::decay_type const&>(*this);
 	}
@@ -1594,8 +1550,6 @@ operator/(RandomAccessIterator data, multi::iextensions<D> x){return {data, x};}
 
 }}
 
-#undef HD
-
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -1672,7 +1626,6 @@ int main(){
 	}
 	return 0;
 }
-#undef HD
 
 #endif
 #endif
