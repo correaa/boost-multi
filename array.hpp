@@ -12,17 +12,8 @@ $CXX $0 -o $0x&&$0x&&rm $0x;exit
 #include "./memory/allocator.hpp"
 #include "./detail/memory.hpp"
 #include "./detail/adl.hpp"
-//#include "./config/DEPRECATED.hpp"
 
 #include<memory>
-
-#ifndef HD
-#if defined(__CUDACC__)
-#define HD __host__ __device__
-#else
-#define HD 
-#endif
-#endif
 
 namespace boost{
 namespace multi{
@@ -271,9 +262,7 @@ public:
 	typename static_array::element_ptr data()       {
 		return ref::data();
 	}
-	auto                               data() const HD{
-		return typename static_array::element_const_ptr{ref::data()};
-	}
+	constexpr auto data() const{return typename static_array::element_const_ptr{ref::data()};}
 	friend typename static_array::element_ptr       data(static_array&       s){return s.data();}
 	friend typename static_array::element_const_ptr data(static_array const& s){return s.data();}
 
@@ -645,16 +634,6 @@ public:
 	decltype(auto) operator<<(dimensionality_type d) const{return rotated(d);}
 	decltype(auto) operator>>(dimensionality_type d) const{return unrotated(d);}
 
-//	typename static_array::iterator begin() HD {return ref::begin();}
-//	typename static_array::iterator end() HD {return ref::end();}
-
-//	typename static_array::const_iterator begin() const{return ref::begin();}
-//	typename static_array::const_iterator end()   const{return ref::end();}
-//	const_iterator cbegin() const{return begin();}
-//	const_iterator cend() const{return end();}
-//	friend const_iterator cbegin(static_array const& self){return self.cbegin();}
-//	friend const_iterator cend(static_array const& self){return self.cend();}
-
 	static_array& operator=(static_array const& other)&{assert( extensions(other) == static_array::extensions() );
 		return adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements()), *this;
 	}
@@ -1000,14 +979,6 @@ auto serialize(Archive& ar, basic_array<T, D, Args...>& self, unsigned version)
 #endif
 
 }}
-
-
-//namespace boost{
-//namespace serialization{
-
-
-//}}
-#undef HD
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
