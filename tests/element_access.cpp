@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(multi_test_constness_reference){
 
 	BOOST_REQUIRE( m(1, {0, 3})[1] == 99. );
 	BOOST_REQUIRE( m({0, 3}, 1).dimensionality == 1 );
-	BOOST_TEST_REQUIRE( size(m.sliced(0, 3)) == 3 );
+	BOOST_REQUIRE( size(m.sliced(0, 3)) == 3 );
 
 	BOOST_REQUIRE( m.range({0, 3}).rotated()[1].unrotated().size() == 3 );
 
