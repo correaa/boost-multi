@@ -5,8 +5,6 @@ $CXX $0 -o $0x &&$0x&&rm $0x;exit
 #ifndef MULTI_INDEX_RANGE_HPP
 #define MULTI_INDEX_RANGE_HPP
 
-//#include<boost/iterator/iterator_facade.hpp>
-
 #if defined(__CUDACC__)
 #define BOOST_RESULT_OF_USE_TR1_WITH_DECLTYPE_FALLBACK
 #endif
@@ -93,7 +91,7 @@ public:
 	using reference = const_reference;
 	using const_pointer = value_type;
 	using pointer = value_type;
-	constexpr range() = default; // constexpr range() HD: first_{}, last_{first_}{}
+	constexpr range() = default;
 	template<class Range, typename = std::enable_if_t<std::is_same<std::decay_t<Range>, value_type>{}> >
 	constexpr range(Range&& o) : first_{std::forward<Range>(o).first()}, last_{std::forward<Range>(o).last()}{}
 //	constexpr range(value_type const& fl) : first_{fl}, last_{fl + 1}{}
