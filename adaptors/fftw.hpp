@@ -189,7 +189,13 @@ template<class T> constexpr std::remove_reference_t<T> _constx(T&&t){return t;}
 
 template<typename It1, class It2, std::enable_if_t<std::is_pointer<decltype(base(It2{}))>{} or std::is_convertible<decltype(base(It2{})), std::complex<double>*>{}, int> = 0>
 auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, unsigned flags = FFTW_ESTIMATE)
-->decltype(reinterpret_cast<fftw_complex*>(static_cast<std::complex<double>*>(base(d_first))), fftw_plan{}){
+->decltype(reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double>*>*/(base(d_first))), fftw_plan{}){
+
+	static_assert( sizeof(*base(  first)) == sizeof(real(*base(  first))) + sizeof(imag(*base(  first))) and sizeof(*base(  first)) == sizeof(fftw_complex), 
+		"input  must have complex pod layout" );
+	static_assert( sizeof(*base(d_first)) == sizeof(real(*base(d_first))) + sizeof(imag(*base(d_first))) and sizeof(*base(d_first)) == sizeof(fftw_complex), 
+		"output must have complex pod layout");
+
 	assert(sizes(*first)==sizes(*d_first));
 	auto ion      = to_array<int>(sizes(*first));
 
@@ -244,6 +250,11 @@ typename = std::enable_if_t<D == std::decay_t<Out>::dimensionality>,
 typename = decltype(reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double> *>*/(base(std::declval<Out&>()))))
 >
 fftw_plan fftw_plan_dft(std::decay_t<std::array<bool, D>> which, In&& in, Out&& out, int sign, unsigned flags = FFTW_ESTIMATE){
+	static_assert( sizeof(*base(in )) == sizeof((*base(in )).real()) + sizeof((*base(in)).imag()) and sizeof(*base(in)) == sizeof(fftw_complex), 
+		"input must have complex pod layout" );
+	static_assert( sizeof(*base(out)) == sizeof((*base(out)).real()) + sizeof((*base(in)).imag()) and sizeof(*base(out)) == sizeof(fftw_complex), 
+		"output must have complex pod layout" );
+
 	using multi::sizes; using multi::strides; assert(sizes(in) == sizes(out));
 	auto ion      = to_array<ptrdiff_t>(sizes(in));
 	auto istrides = to_array<ptrdiff_t>(strides(in));
@@ -257,7 +268,7 @@ fftw_plan fftw_plan_dft(std::decay_t<std::array<bool, D>> which, In&& in, Out&& 
 		/*const fftw_iodim64 *dims*/ dims.data(), 
 		/*int howmany_rank*/ l_howmany - howmany.begin(),
 		/*const fftw_iodim *howmany_dims*/ howmany.data(), //nullptr, //howmany_dims.data(), //;//nullptr,
-		/*fftw_complex *in*/ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(static_cast<std::complex<double> const *>(base(in)))), 
+		/*fftw_complex *in*/ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(/*static_cast<std::complex<double> const *>*/(base(in)))), 
 		/*fftw_complex *out*/ reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double> *>*/(base(out))),
 		sign, flags// | FFTW_ESTIMATE
 	);
@@ -286,6 +297,14 @@ auto fftw_plan_dft(In const& in, Out&& out, int s, unsigned flags = FFTW_ESTIMAT
 		/*fftw_complex *out*/ reinterpret_cast<fftw_complex*>(implicit_cast<std::complex<double>*>(base(out))),
 		s, flags
 	);
+}
+
+template<class In, class Out, dimensionality_type D = In::dimensionality, 
+typename = decltype(implicit_cast<double const*>(base(std::declval<In&>()))), 
+typename = decltype(reinterpret_cast<fftw_complex*>(implicit_cast<std::complex<double>*>(base(std::declval<Out&>()))))
+>
+auto fftw_plan_dft(In const&, Out&&, int /*s*/, unsigned /*flags*/ = FFTW_ESTIMATE){
+	assert(0);
 }
 
 //std::complex<double> const* base(std::complex<double> const& c){return &c;}
