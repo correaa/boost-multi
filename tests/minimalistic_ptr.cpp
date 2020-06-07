@@ -56,6 +56,7 @@ BOOST_AUTO_TEST_CASE(test_minimalistic_ptr){
 
 	auto&& CC2 = CCP->template static_array_cast<double, minimalistic::ptr2<double>>();
 	BOOST_REQUIRE( &CC2[1][1] == &(*CCP)[1][1] );
+	delete[] buffer;
 
 }
 
