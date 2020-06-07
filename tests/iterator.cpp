@@ -123,7 +123,6 @@ BOOST_AUTO_TEST_CASE(iterator_semantics){
 	multi::array<double, 3>::iterator it; 
 	BOOST_REQUIRE(( it == multi::array<double, 3>::iterator{} ));
 
-	--it;
 	it = begin(A);
 	BOOST_REQUIRE( it == begin(A) );
 
@@ -142,5 +141,6 @@ BOOST_AUTO_TEST_CASE(iterator_semantics){
 	BOOST_REQUIRE( cit == it3 );
 
 	BOOST_REQUIRE((begin(A) == multi::array<double, 3>::iterator{rend(A)}));
+
 }
 
