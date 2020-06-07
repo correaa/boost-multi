@@ -34,7 +34,7 @@ protected:
 	template<typename It> auto uninitialized_copy_n(It first, size_type n, typename std::allocator_traits<allocator_type>::pointer data){
 		return adl_alloc_uninitialized_copy_n(alloc_, first, n, data);
 	}
-	template<typename It> auto destroy_n(It first, size_type n){return adl::alloc_destroy_n(this->alloc(), first, n);}
+	template<typename It> auto destroy_n(It first, size_type n){return adl_alloc_destroy_n(this->alloc(), first, n);}
 public:
 	allocator_type get_allocator() const{return alloc_;}
 	friend allocator_type get_allocator(array_allocator const& s){return s.get_allocator();}

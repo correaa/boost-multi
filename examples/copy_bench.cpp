@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS //sudo cpupower frequency-set --governor performance
-clang++ -O3 $0 -o$0x -DBOOST_TEST_DYN_LINK -lboost_unit_test_framework -lboost_timer -lbenchmark -lpthread&&$0x&&rm $0x;exit
+$CXX -Ofast -DNDEBUG $0 -o $0x -lbenchmark&&$0x&&rm $0x;exit
 #endif
 
 //#define BOOST_TEST_MODULE "C++ Unit Tests for Multi move"
@@ -42,7 +42,7 @@ namespace multi{
 }}
 
 class A{
-	double i;
+	[[maybe_unused]] double i;
 public:
 	A(double const& i) : i{i}{}
 	A(A const& o) = default;
@@ -80,6 +80,68 @@ static void Copy(benchmark::State& state) {
 	}
 }
 BENCHMARK(Copy);
+
+static void noinit_timing(benchmark::State& state) {
+	constexpr std::size_t size = 1 << 20;  
+	for (auto _ : state) {
+		double acc = 0;
+		double* d = new double[size];
+		for(std::size_t n = 0; n != size; ++n){
+			d[n] = 0.; 
+			for(int i =0; i!=3; ++i) d[n] += n*1.2*i*i;
+			acc += d[n];
+		}
+		delete[] d;
+		benchmark::DoNotOptimize(acc);
+	}
+}
+BENCHMARK(noinit_timing);
+
+static void multi_noinit_timing(benchmark::State& state) {
+	constexpr std::size_t size = 1 << 20;  
+	for (auto _ : state) {
+		double acc = 0;
+		multi::array<double, 1> d(size);
+		for(std::size_t n = 0; n != size; ++n){
+			d[n] = 0.; 
+			for(int i =0; i!=3; ++i) d[n] += n*1.2*i*i;
+			acc += d[n];
+		}
+		benchmark::DoNotOptimize(acc);
+	}
+}
+BENCHMARK(multi_noinit_timing);
+
+static void array_init_timing(benchmark::State& state) {
+	constexpr std::size_t size = 1 << 20;
+	for (auto _ : state) {
+		double acc = 0;
+		multi::array<double, 1> d(size, 0);
+		for(std::size_t n = 0; n != size; ++n){
+			for(int i =0; i!=3; ++i) d[n] += n*1.2*i*i; 
+			acc += d[n];
+		}
+		benchmark::DoNotOptimize(acc);
+	}
+}
+BENCHMARK(array_init_timing);
+
+static void init_timing(benchmark::State& state) {
+	constexpr std::size_t size = 1 << 20;
+	for (auto _ : state) {
+		double acc = 0;
+		double* d = new double[size];
+		std::memset(d, 1, size*sizeof(double) );
+		for(std::size_t n = 0; n != size; ++n){
+			for(int i =0; i!=3; ++i) d[n] += n*1.2*i*i; 
+			acc += d[n];
+		}
+		delete[] d;
+		benchmark::DoNotOptimize(acc);
+	}
+}
+BENCHMARK(init_timing);
+
 
 BENCHMARK_MAIN();
 

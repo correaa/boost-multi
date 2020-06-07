@@ -45,8 +45,6 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays)
 	BOOST_REQUIRE( ua == va );
 }
 
-template<class T> void what(T&&) = delete;
-
 BOOST_AUTO_TEST_CASE(array1d_of_arrays2d)
 {
 	multi::array<multi::array<double, 2>, 1> A(10, multi::array<double, 2>{});

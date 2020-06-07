@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(range_assignment){
 //	seed ^= boost::hash<std::size_t>{}(13) + 0x9e3779b9 + (seed<<6) + (seed>>2);
 	boost::hash_combine(seed, 13);
 	std::cerr << seed << std::endl;
-	std::cerr << seed*1./std::numeric_limits<std::size_t>::max() << std::endl;
+//	std::cerr << seed*1./std::numeric_limits<std::size_t>::max() << std::endl;
 
 	assert( v.size() == r.size() );
 	assert( v[1] >= 0. );

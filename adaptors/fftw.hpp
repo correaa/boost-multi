@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&valgrind $0x&&rm $0x;exit
+$CXX $0 -o $0x `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2018-2020
 
@@ -187,7 +187,11 @@ template<class T> constexpr std::remove_reference_t<T> _constx(T&&t){return t;}
 #define logic_assert(ConditioN, MessagE) assert(ConditioN && MessagE);
 #endif
 
-template<typename It1, class It2, std::enable_if_t<std::is_pointer<decltype(base(It2{}))>{} or std::is_convertible<decltype(base(It2{})), std::complex<double>*>{}, int> = 0>
+template<typename It1, class It2
+#ifndef __INTEL_COMPILER
+, std::enable_if_t<std::is_pointer<decltype(base(It2{}))>{} or std::is_convertible<decltype(base(It2{})), std::complex<double>*>{}, int> = 0
+#endif
+>
 auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, unsigned flags = FFTW_ESTIMATE)
 ->decltype(reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double>*>*/(base(d_first))), fftw_plan{}){
 
@@ -334,12 +338,21 @@ public:
 	> plan(As&&... as) : impl_{fftw_plan_dft(std::forward<As>(as)...), &fftw_destroy_plan}{
 		assert(impl_);
 	}
+#ifndef __INTEL_COMPILER
 	template<typename... As>
 	static auto many(As&&... as)
 	->std::decay_t<decltype(fftw_plan_many_dft(std::forward<As>(as)...) , std::declval<plan>())>
 	{
 		plan r; r.impl_.reset(fftw_plan_many_dft(std::forward<As>(as)...)); return r; // this produces a compilation error in icc++17
 	}
+#else
+	template<typename... As>
+	static decltype(auto) many(As&&... as)
+	{
+		plan r; r.impl_.reset(fftw_plan_many_dft(std::forward<As>(as)...)); return r; // this produces a compilation error in icc++17
+	}
+#endif
+
 private:
 	void execute() const{fftw_execute(impl_.get());}
 	template<class I, class O>
@@ -451,16 +464,43 @@ auto dft(std::array<sign, D> w, In const& i, Out&& o){
 	return std::forward<Out>(o);
 }
 
+#ifndef __INTEL_COMPILER
 template<typename It1, typename It2>
 auto many_dft(It1 first, It1 last, It2 d_first, int sign)
 ->decltype(plan::many(first, last, d_first, sign)(), d_first + (last - first)){
 	return plan::many(first, last, d_first, sign)(), d_first + (last - first);}
+#else
+template<typename It1, typename It2>
+decltype(auto) many_dft(It1 first, It1 last, It2 d_first, int sign)
+//->decltype(plan::many(first, last, d_first, sign)(), d_first + (last - first)){
+{	return plan::many(first, last, d_first, sign)(), d_first + (last - first);}
+#endif
 
+#ifndef __INTEL_COMPILER
 template<typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
 NODISCARD("when first argument is const")
 auto dft(In const& i, sign s)
 ->std::decay_t<decltype(dft(i, R(extensions(i), get_allocator(i)), s))>{
 	return dft(i, R(extensions(i), get_allocator(i)), s);}
+#else
+template<typename In, typename R = multi::array<typename In::element_type, In::dimensionality>>//, decltype(std::declval<In&>().get_allocator())>>//, decltype(std::declval<In>().get_allocator())>>
+NODISCARD("when first argument is const")
+auto dft(In const& i, sign s)
+//->multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>
+//->std::decay_t<decltype(dft(i, R(extensions(i), get_allocator(i)), s))>{
+{assert(0);	return dft(i, multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>(extensions(i), get_allocator(i)), s);}
+#endif
+
+#if 0
+//template<typename Complex>//, typename R = multi::array<Complex, 1L, std::allocator<Complex>>>
+auto dft(boost::multi::basic_array<std::complex<double>, 1L, std::complex<double> const*, boost::multi::layout_t<1L, boost::multi::size_type>>&& i, sign s)
+->std::decay_t<decltype(dft(i, multi::array<std::complex<double>, 1L, std::allocator<std::complex<double>>>(extensions(i), get_allocator(i)), s))>{
+	return dft(i, multi::array<std::complex<double>, 1L, std::allocator<std::complex<double>>>(extensions(i), get_allocator(i)), s);}
+	
+auto dft(boost::multi::array_cref<std::complex<double>, 3L, std::complex<double>*>&& i, sign s)
+->std::decay_t<decltype(dft(i, multi::array<std::complex<double>, 1L, std::allocator<std::complex<double>>>(extensions(i), get_allocator(i)), s))>{
+	return dft(i, multi::array<std::complex<double>, 1L, std::allocator<std::complex<double>>>(extensions(i), get_allocator(i)), s);}
+#endif
 
 template<typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
 NODISCARD("when first argument is const")
@@ -503,7 +543,7 @@ R dft(std::array<sign, D> which, In const& i){
 template<typename In, std::size_t D = In::dimensionality, typename R = multi::array<typename In::element_type, D, decltype(get_allocator(std::declval<In>()))>>
 void dft(std::array<bool, D> which, In const& i) = delete;
 
-template<dimensionality_type Rank, typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
+template<dimensionality_type Rank /*not deduced*/, typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
 NODISCARD("when second argument is const")
 R dft(In const& i, sign s){
 	return dft<Rank>(i, R(extensions(i), get_allocator(i)), s);
@@ -519,8 +559,8 @@ R dft(multi::array<T, D, As...>&& i, sign s){
 }
 */
 
-template<typename T> decltype(auto) dft(std::initializer_list<T> il, sign s){return dft(multi::array<T, 1>(il), s);}
-template<typename T> decltype(auto) dft(std::initializer_list<std::initializer_list<T>> il, sign s){return dft(multi::array<T, 2>(il), s);}
+//template<typename T> decltype(auto) dft(std::initializer_list<T> il, sign s){return dft(multi::array<T, 1>(il), s);}
+//template<typename T> decltype(auto) dft(std::initializer_list<std::initializer_list<T>> il, sign s){return dft(multi::array<T, 2>(il), s);}
 
 template<typename... A> auto            dft_forward(A&&... a)
 ->decltype(fftw::dft(std::forward<A>(a)..., fftw::forward)){
@@ -532,7 +572,7 @@ auto dft_forward(Array which, A const& a)
 ->decltype(fftw::dft(which, a, fftw::forward)){
 	return fftw::dft(which, a, fftw::forward);}
 
-template<typename Array, typename A> 
+template</*typename Array,*/typename A> 
 NODISCARD("when input argument is read only")
 auto dft_forward(A const& a)
 ->decltype(fftw::dft(a, fftw::forward)){
@@ -571,6 +611,10 @@ namespace fft{
 }}
 
 #if not __INCLUDE_LEVEL__ // _TEST_MULTI_ADAPTORS_FFTW
+
+#if defined(__NVCC__)
+#define BOOST_PP_VARIADICS 1
+#endif
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW adaptor"
 #define BOOST_TEST_DYN_LINK
@@ -730,9 +774,12 @@ BOOST_AUTO_TEST_CASE(fftw_2D, *boost::unit_test::tolerance(0.0001)){
 	BOOST_TEST( imag(fwd[3][1]) == - 2.22717 );
 
 	multi::array<complex, 1> const in0 = { 1. + 2.*I, 9. - 1.*I, 2. + 4.*I};
-	using multi::fftw::dft_forward;
+//	using multi::fftw::dft_forward;
 
-	BOOST_REQUIRE( dft_forward(in[0]) == dft_forward(in0) );
+	auto b = multi::fftw::dft(in0, multi::fftw::forward);
+	auto a = multi::fftw::dft(in[0], multi::fftw::forward);
+
+	BOOST_REQUIRE( multi::fftw::dft(in[0], multi::fftw::forward) == multi::fftw::dft(in0, multi::fftw::forward) );
 //	BOOST_REQUIRE( dft_forward(in[3]) == dft_forward({3.-1.*I, 8.+7.*I, 2.+1.*I}) );
 //	BOOST_REQUIRE( dft_forward(rotated(in)[0]) == dft_forward({1.+2.*I, 3.+3.*I, 4. + 1.*I,  3. - 1.*I, 31. - 1.*I}) );
 }

@@ -1,6 +1,7 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+$CXX $0 -o $0x&&$0x&&rm $0x
 for a in ./tests/*.cpp; do echo $a; sh $a || break; echo "\n"; done; exit;*/
-$CXX $0 -o $0x&&$0x&&rm $0x;exit
+exit
 #endif
 // © Alfredo Correa 2018-2020
 
@@ -92,10 +93,12 @@ public:
 	{}
 //	template<class T2, class P2, class Array> friend decltype(auto) static_array_cast(Array&&);
 public://TODO find why this needs to be public and not protected or friend
+#ifndef __INTEL_COMPILER
 	template<class ArrayTypes, typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>
 		, typename = decltype(element_ptr{std::declval<ArrayTypes const&>().base_})
 	>
 	array_types(ArrayTypes const& a) : Layout{a}, base_{a.base_}{}
+#endif
 	template<typename ElementPtr2, 
 		typename = decltype(Layout{std::declval<array_types<T, D, ElementPtr2, Layout> const&>().layout()}),
 		typename = decltype(element_ptr{std::declval<array_types<T, D, ElementPtr2, Layout> const&>().base_})
@@ -359,6 +362,9 @@ public:
 		using multi::get_allocator;
 		return get_allocator(this->base());
 	}
+	
+	using default_allocator_type = typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type;
+	
 	friend auto get_allocator(basic_array const& self){return self.get_allocator();}
 //	using decay_type = array<typename types::element, D, decltype(default_allocator_of(std::declval<ElementPtr>()))>;
 	template<class P>

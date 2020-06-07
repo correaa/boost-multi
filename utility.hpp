@@ -160,8 +160,6 @@ template<class T>
 auto has_size_aux(T const& t)->decltype(t.size(), std::true_type {});
 inline auto has_size_aux(...       )->decltype(                  std::false_type{});
 template<class T> struct has_size : decltype(has_size_aux(std::declval<T>())){};
-	
-
 
 template<class T>
 auto has_data_elements_aux(T&& t)->decltype(t.data_elements(), std::true_type {});
