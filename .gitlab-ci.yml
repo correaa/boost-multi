@@ -135,7 +135,7 @@ clang-san:
       - export CXX="clang++ -fsanitize=undefined -fsanitize=address -g -x c++ -Wall -Wextra -Wpedantic -Wmove -Ofast "
       - $CXX --version
       - cd tests
-      - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
+      - for a in ./*.cpp; do echo $a; sh $a || exit 1; echo "\n"; done;
 
 nvcc:
     stage: test
