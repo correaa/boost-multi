@@ -2,15 +2,13 @@
 $CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi range selection"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi select range"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
 #include "../array.hpp"
 
 namespace multi = boost::multi;
-
-template<class A> void what(A&&);
 
 BOOST_AUTO_TEST_CASE(multi_array_range_section){
 	multi::array<double, 2> A = {
@@ -59,7 +57,7 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section){
 	BOOST_REQUIRE( size( A(1<=*_<3, 2) ) == 2 );
 	BOOST_REQUIRE( size( A(1<=U<3, 2) ) == 2 );
 
-//	BOOST_REQUIRE( size( A(*_<2, 2) ) == 2 );
+	BOOST_REQUIRE( size( A(*_<2, 2) ) == 2 );
 	BOOST_REQUIRE( size( A(U<2, 2) ) == 2 );
 
 	BOOST_REQUIRE( size( A(A.extension(), 2) ) == size(A) );
