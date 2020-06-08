@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(test_utility_1d){
 //	BOOST_REQUIRE( *(rend(Marr)-1) == *(rend(marr)-1) );
 //	BOOST_REQUIRE( *(rend(carr)-1) == *(rend(marr)-1) );
 
-	BOOST_TEST( *(end(varr)-1) == *(end(marr)-1) );
+	BOOST_REQUIRE( *(end(varr)-1) == *(end(marr)-1) );
 	using std::end;
 	BOOST_REQUIRE( *(end(Marr)-1) == *(end(marr)-1) );
 	BOOST_REQUIRE( *(end(carr)-1) == *(end(marr)-1) );
