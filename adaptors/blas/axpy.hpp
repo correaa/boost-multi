@@ -12,28 +12,27 @@ namespace boost{
 namespace multi{namespace blas{
 
 template<class T, class It1, class Size, class OutIt>
-OutIt axpy_n(T alpha, It1 first, Size n, OutIt d_first){
-	axpy(n, alpha, base(first), stride(first), base(d_first), stride(d_first));
-	return d_first + n;
-}
+auto axpy_n(T alpha, It1 first, Size n, OutIt d_first)
+{	return axpy(n, alpha, base(first), stride(first), base(d_first), stride(d_first)), d_first + n;}
 
 template<class T, class It1, class OutIt>
-OutIt axpy(T alpha, It1 first, It1 last, OutIt d_first){
-	assert( stride(first) == stride(last) );
-	return axpy_n(alpha, first, std::distance(first, last), d_first);
-}
+auto axpy(T alpha, It1 first, It1 last, OutIt d_first)
+{	return axpy_n(alpha, first, std::distance(first, last), d_first);}
+
+template<class T, class X1D, class Y1D>//, typename = decltype(std::declval<Y1D&&>()[0]=0.)>
+decltype(auto) axpy(T alpha, X1D const& x, Y1D&& y)
+{	return axpy(alpha, begin(x), end(x), begin(y)), std::forward<Y1D>(y);}
 
 template<class T, class X1D, class Y1D>
-Y1D&& axpy(T alpha, X1D const& x, Y1D&& y){
-	assert( size(x) == size(y) );
-	assert( not offset(x) and not offset(y) );
-	auto e = axpy(alpha, begin(x), end(x), begin(y));
-	assert( e == end(y));
-	return std::forward<Y1D>(y);
-}
+typename Y1D::decay_type axpy(T alpha, X1D const& x, Y1D const& y)
+{	return axpy(alpha, x, typename Y1D::decay_type{y});}
+
+template<class X1D, class Y1D>
+Y1D&& axpy(X1D const& x, Y1D&& y){return axpy(+1., x, std::forward<Y1D>(y));}
 
 template<class T, class X1D, class Y1D>
-Y1D&& axpy(X1D const& x, Y1D&& y){return axpy(+1., x, y);}
+typename Y1D::decay_type axpy(X1D const& x, Y1D const& y)
+{	return axpy(x, typename Y1D::decay_type{y});}
 
 }}
 }
@@ -70,7 +69,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_double){
 	multi::array<double, 1> const b = cA[2];
 
 	blas::axpy(2., b, A[1]); // y = a*x + y, y+= a*x
-	assert( A[1][2] == 2.*b[2] + cA[1][2] );
+	BOOST_REQUIRE( A[1][2] == 2.*b[2] + cA[1][2] );
 
 	using complex = std::complex<double>;
 	complex const I = {0., 1.};
@@ -78,7 +77,15 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_double){
 	multi::array<complex, 1> BC(size(AC), complex{0.});
 	blas::axpy(+1., begin(blas::real(AC)), end(blas::real(AC)), begin(blas::real(BC)));
 	blas::axpy(-1., begin(blas::imag(AC)), end(blas::imag(AC)), begin(blas::imag(BC)));
-	assert( BC[2] == std::conj(AC[2]) );
+	BOOST_REQUIRE( BC[2] == std::conj(AC[2]) );
+}
+
+BOOST_AUTO_TEST_CASE(multi_blas_axpy_double_const){
+	using complex = std::complex<double>;
+	multi::array<complex, 1> const x = {1., 2., 3.};
+	multi::array<complex, 1> const y = {2., 3., 4.};
+	multi::array<complex, 1> const y_cpy = blas::axpy(4., x, y);
+	BOOST_REQUIRE( y_cpy[1] == 4.*x[1] + y[1] );
 }
 
 #endif
