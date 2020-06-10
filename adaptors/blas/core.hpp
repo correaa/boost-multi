@@ -195,8 +195,8 @@ xscal(s, s, s) xscal(d, d, d) xscal(c, c, c) xscal(z, z, z) xscal(zd, d, z) xsca
 xcopy(s)       xcopy(d)       xcopy(c)       xcopy(z)
 
 xdot(s, s, s)  xdot(d, d, d)                                xdot(d, ds, s)
-}
 xaxpy(s)       xaxpy(d)       xaxpy(c)       xaxpy(z)
+}
 
 template<class R, class S, class T> R dot(S n, T const* x, S incx, T const* y, S incy){
 	R ret;

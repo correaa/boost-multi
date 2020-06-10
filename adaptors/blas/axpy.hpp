@@ -11,6 +11,8 @@ $CXX $0 -o $0x `pkg-config --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x
 namespace boost{
 namespace multi{namespace blas{
 
+using core::axpy;
+
 template<class T, class It1, class Size, class OutIt>
 auto axpy_n(T alpha, It1 first, Size n, OutIt d_first)
 {	return axpy(n, alpha, base(first), stride(first), base(d_first), stride(d_first)), d_first + n;}
