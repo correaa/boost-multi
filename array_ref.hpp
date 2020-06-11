@@ -223,11 +223,11 @@ struct array_iterator :
 	template<class Other, typename = decltype(typename Ref::types::element_ptr{typename Other::element_ptr{}})> 
 	constexpr array_iterator(Other const& o) : /*Ref{o.layout(), o.base()},*/ ptr_{o.ptr_.base_, o.ptr_.layout()}, stride_{o.stride_}{}
 	array_iterator(array_iterator const&) = default;
-	array_iterator& operator=(array_iterator const& other){
-		ptr_ = other.ptr_;
-		stride_ = other.stride_;
-		return *this;
-	}
+	array_iterator& operator=(array_iterator const& other) = default;//{
+//		ptr_ = other.ptr_;
+//		stride_ = other.stride_;
+//		return *this;
+//	}
 	explicit constexpr operator bool() const{return static_cast<bool>(ptr_.base_);}
 	constexpr Ref operator*() const{/*assert(*this);*/ return {*ptr_};}//return *this;}
 	constexpr decltype(auto) operator->() const{/*assert(*this);*/ return ptr_;}//return this;}
@@ -252,8 +252,7 @@ private:
 	constexpr void decrement(){ptr_.base_ -= stride_;}
 	constexpr void advance(difference_type n){ptr_.base_ += stride_*n;}
 	difference_type distance_to(array_iterator const& other) const{
-		assert( stride_ == other.stride_);
-		assert( stride_ != 0 );
+		assert( stride_ == other.stride_); assert( stride_ != 0 );
 	//	assert( this->stride()==stride(other) and this->stride() );// and (base(other.ptr_) - base(this->ptr_))%stride_ == 0
 	//	assert( stride_ == other.stride_ and stride_ != 0 and (other.ptr_.base_-ptr_.base_)%stride_ == 0 and ptr_.layout() == other.ptr_.layout() );
 	//	assert( stride_ == other.stride_ and stride_ != 0 and (other.base_ - base_)%stride_ == 0 and layout() == other.layout() );
@@ -1067,9 +1066,9 @@ public:
 	basic_array& operator=(basic_array<TT, 1, As...> const& other)&{assert(this->extensions() == other.extensions());
 		return adl_copy(other.begin(), other.end(), this->begin()), *this;
 	}
-	template<class TT, class... As>
-	basic_array& operator=(basic_array<TT, 1, As...> const& other)&&{assert(this->extensions() == other.extensions());
-		return adl_copy(other.begin(), other.end(), this->begin()), *this;
+	template<class TT, class... As, typename = std::enable_if_t<std::is_assignable<typename basic_array::reference, typename basic_array<TT, 1, As...>::reference>{}> >
+	basic_array&& operator=(basic_array<TT, 1, As...> const& other)&&{assert(this->extensions() == other.extensions());
+		return adl_copy(other.begin(), other.end(), this->begin()), std::move(*this);
 	}
 //	basic_array&& operator=(basic_array const& o)&&{assert(0); return *this;}
 
@@ -1136,7 +1135,7 @@ public:
 		return sliced(first, last).strided(stride);
 	}
 	auto range(index_range const& ir) &{return sliced(ir.front(), ir.last());}
-	auto range(index_range const& ir) &&{return sliced(ir.front(), ir.last());}
+	auto range(index_range const& ir) &&{return std::move(*this).sliced(ir.front(), ir.last());}
 	auto range(index_range const& ir) const&{return sliced(ir.front(), ir.last());}
 
 
