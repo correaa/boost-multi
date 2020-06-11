@@ -1,4 +1,4 @@
-#ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
 $CXX $0 -o $0x&&$0x&&rm $0x;exit
 #endif
 //  © Alfredo A. Correa 2018-2019
@@ -31,10 +31,14 @@ protected:
 	auto uninitialized_fill_n(typename std::allocator_traits<allocator_type>::pointer base, typename std::allocator_traits<allocator_type>::size_type num_elements, typename std::allocator_traits<allocator_type>::value_type e){
 		return adl_alloc_uninitialized_fill_n(alloc_, base, num_elements, e);
 	}
-	template<typename It> auto uninitialized_copy_n(It first, size_type n, typename std::allocator_traits<allocator_type>::pointer data){
+	template<typename It> 
+	auto uninitialized_copy_n(It first, size_type n, typename std::allocator_traits<allocator_type>::pointer data){
 		return adl_alloc_uninitialized_copy_n(alloc_, first, n, data);
 	}
-	template<typename It> auto destroy_n(It first, size_type n){return adl_alloc_destroy_n(this->alloc(), first, n);}
+	template<typename It> 
+	auto destroy_n(It first, size_type n){
+		return adl_alloc_destroy_n(this->alloc(), first, n);
+	}
 public:
 	allocator_type get_allocator() const{return alloc_;}
 	friend allocator_type get_allocator(array_allocator const& s){return s.get_allocator();}
@@ -51,6 +55,8 @@ private:
 public:	
 	static_assert( std::is_same<typename std::allocator_traits<Alloc>::value_type, typename static_array::element>{}, 
 		"allocator value type must match array value type");
+	static_assert( std::is_same<typename std::allocator_traits<Alloc>::pointer, typename static_array::element_ptr>{}, 
+		"allocator pointer type must match array pointer type");
 	using array_alloc::get_allocator;
 	using allocator_type = typename static_array::allocator_type;
 	using decay_type = array<T, D, Alloc>;
@@ -117,19 +123,11 @@ public:
 //	static std::false_type is_array_(...);
 //	template<class TT> struct is_array_of_extensions : decltype(is_array_(std::declval<TT>())){};
 
-	template<class TT> auto uninitialized_fill_elements(TT const& value){return array_alloc::uninitialized_fill_n(this->data_elements(), this->num_elements(), value);}
+	template<class TT> 
+	auto uninitialized_fill_elements(TT const& value){
+		return array_alloc::uninitialized_fill_n(this->data_elements(), this->num_elements(), value);
+	}
 	
-/*	template<class Range, typename = decltype(static_array(std::declval<Range const&>().begin(), std::declval<Range const&>().end(), std::declval<typename static_array::allocator_type const&>())), 
-		std::enable_if_t<not std::is_base_of<static_array, Range>{}, int> = 0,
-		std::enable_if_t<not std::is_convertible<Range, typename static_array::extensions_type>{}, int> = 0
-	>
-	explicit static_array(Range const& rng, typename static_array::allocator_type const& a = {})
-		: static_array(adl_begin(rng), adl_end(rng), a){}
-*/
-//	template<class Range, typename = decltype(static_array(std::declval<Range const&>().begin(), std::declval<Range const&>().end(), std::declval<typename static_array::allocator_type const&>())), 
-//		std::enable_if_t<not std::is_base_of<static_array, Range>{}, int> = 0,
-//		std::enable_if_t<not std::is_convertible<Range, typename static_array::extensions_type>{}, int> = 0
-//	>
 	template<class TT, class... As>
 	static_array(array_ref<TT, D, As...> const& other, typename static_array::allocator_type const& a = {}) :
 		array_alloc{a},
@@ -142,17 +140,18 @@ public:
 		array_alloc{a}, 
 		ref(array_alloc::allocate(typename static_array::layout_t{x}.num_elements()), x)
 	{
-		uninitialized_fill_elements(e);
+		array_alloc::uninitialized_fill_n(this->data_elements(), this->num_elements(), e);
 	}
 	template<class Element, std::enable_if_t<std::is_convertible<Element, typename static_array::element>{} and D==0, int> = 0>
 	explicit static_array(Element const& e, typename static_array::allocator_type const& a)
 	:	static_array(typename static_array::extensions_type{}, e, a){}
-	auto uninitialized_fill(typename static_array::element const& e){
-		return adl_alloc_uninitialized_fill_n(this->alloc(), this->base_, this->num_elements(), e);
-	}
-	static_array(typename static_array::extensions_type const& x, typename static_array::element const& e)  //2
-	:	array_alloc{}, ref(array_alloc::allocate(typename static_array::layout_t{x}.num_elements()), x){
-		uninitialized_fill(e);
+//	auto uninitialized_fill(typename static_array::element const& e){
+//		return adl_alloc_uninitialized_fill_n(this->alloc(), this->base_, this->num_elements(), e);
+//	}
+	static_array(typename static_array::extensions_type const& x, typename static_array::element const& e) : //2
+		array_alloc{}, ref(array_alloc::allocate(typename static_array::layout_t{x}.num_elements()), x)
+	{
+		array_alloc::uninitialized_fill_n(this->base(), this->num_elements(), e);
 	}
 //	template<class Elem, typename = std::enable_if_t<std::is_convertible<Elem, typename static_array::element>{} and D==0>>
 //	static_array(Elem const& e)  //2
@@ -169,12 +168,11 @@ public:
 //	template<class Allocator, typename = std::enable_if_t<std::is_same<Allocator, allocator_type>{}> >
 //	explicit 
 // analgous to std::vector::vector ((4)) https://en.cppreference.com/w/cpp/container/vector/vector
-	static_array(typename static_array::extensions_type x, typename static_array::allocator_type const& a = typename static_array::allocator_type{})
-	: array_alloc{a}, ref{array_alloc::allocate(typename static_array::layout_t{x}.num_elements()), x}{
-		if(not std::is_trivially_default_constructible<typename static_array::element_type>{}){
+	static_array(typename static_array::extensions_type x, typename static_array::allocator_type const& a = typename static_array::allocator_type{}) :
+		array_alloc{a}, ref{array_alloc::allocate(typename static_array::layout_t{x}.num_elements()), x}
+	{
+		if(not std::is_trivially_default_constructible<typename static_array::element_type>{})
 			uninitialized_default_construct();
-		//	assert(0);
-		}
 	}
 	template<class TT, class... Args, typename = 
 		decltype(adl_copy(std::declval<multi::basic_array<TT, D, Args...> const&>().begin(), std::declval<multi::basic_array<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
