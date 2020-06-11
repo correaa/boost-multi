@@ -1,6 +1,6 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 $CXX $0 -o $0x&&$0x&&rm $0x
-for a in ./tests/*.cpp; do echo $a; sh $a || break; echo "\n"; done; exit;*/
+#for a in ./tests/*.cpp; do echo $a; sh $a || break; echo "\n"; done; exit;*/
 exit
 #endif
 // © Alfredo Correa 2018-2020
@@ -22,6 +22,7 @@ exit
 //#include "./utility/const_iterator.hpp"
 
 #include "./config/NODISCARD.hpp"
+#include "./config/DELETE.hpp"
 
 //#include<iostream> // debug
 //#include<boost/pointer_cast.hpp>
@@ -1062,15 +1063,16 @@ public:
 	}
 	template<class It> 
 	basic_array&& assign(It first, It last)&&{return std::move(assign(first, last));}
-	template<class TT, class... As>
-	basic_array& operator=(basic_array<TT, 1, As...> const& other)&{assert(this->extensions() == other.extensions());
-		return adl_copy(other.begin(), other.end(), this->begin()), *this;
-	}
-	template<class TT, class... As, typename = std::enable_if_t<std::is_assignable<typename basic_array::reference, typename basic_array<TT, 1, As...>::reference>{}> >
+
+	template<class TT, class... As, DELETE((not std::is_assignable<typename basic_array::reference, typename basic_array<TT, 1, As...>::reference>{}))>
 	basic_array&& operator=(basic_array<TT, 1, As...> const& other)&&{assert(this->extensions() == other.extensions());
 		return adl_copy(other.begin(), other.end(), this->begin()), std::move(*this);
 	}
-//	basic_array&& operator=(basic_array const& o)&&{assert(0); return *this;}
+	template<class TT, class... As>
+	auto operator=(basic_array<TT, 1, As...> const& other)&
+	->decltype(std::move(*this).operator=(other)){assert(this->extensions() == other.extensions());
+		return std::move(*this).operator=(other);
+	}
 
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int){
