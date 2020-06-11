@@ -85,23 +85,29 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos){
 		std::string name;
 		short salary;
 		std::size_t age;
+		employee() = default;
 		employee(std::string name, short salary, std::size_t age) : name{name}, salary{salary}, age{age}{}
 	};
 
+	multi::array<employee, 1> d1D = { {"Al"  , 1430, 35}, {"Bob"  , 3212, 34} }; 
+	auto&& d1D_names = d1D.template member_cast<std::string>(&employee::name);
+	BOOST_REQUIRE( size(d1D_names) == size(d1D) );
+	BOOST_REQUIRE( d1D_names[1] == "Bob" );
+	BOOST_REQUIRE( &d1D_names[1] == &d1D[1].name );
+
+#if 0	
 	multi::array<employee, 2> d2D = {
 		{ {"Al"  , 1430, 35}, {"Bob"  , 3212, 34} }, 
 		{ {"Carl", 1589, 32}, {"David", 2300, 38} }
 	};
-
 	auto&& d2D_names = d2D.template member_cast<std::string>(&employee::name);
-
 	BOOST_REQUIRE( size(d2D_names) == size(d2D) ); 
 	BOOST_REQUIRE( d2D_names[1][1] == "David" );
 
-	multi::static_array<std::string, 2> d2D_names_copy{d2D_names};
+	multi::array<std::string, 2> d2D_names_copy{d2D_names};
 	BOOST_REQUIRE( d2D_names == d2D_names_copy );
 	BOOST_REQUIRE( base(d2D_names) != base(d2D_names_copy) );
-
+#endif
 }
 }
 
@@ -109,48 +115,33 @@ BOOST_AUTO_TEST_CASE(member_array_cast_complex){
 
 	using complex = std::complex<double>;
 	multi::array<complex, 2> A = {
-		{ {1.,2.}, {3.,4.} },
-		{ {22.,33.}, {5.,9.} }
+		{ { 1.,  2.}, {  3.,  4.} },
+		{ {22., 33.}, {  5.,  9.} }
 	};
 	struct Complex{
 		double real;
 		double imag;
 	};
 	{
-	//	struct complex{double real; double imag;};
-	//	auto&& Areal = A.template member_cast<double>(&complex::real);
-	//	auto&& Aimag = A.template member_cast<double>(&complex::imag);
-
-	//	assert( Areal[1][0] == 22. );
-	//	assert( Aimag[1][0] == 33. );
-	}
-	{
-	//	auto&& Areal = A.template member_cast<double>(&multi::complex<double>::real);
-	//	auto&& Aimag = A.template member_cast<double>(&multi::complex<double>::imag);
-
-	//	assert( Areal[1][0] == 22. );
-	//	assert( Aimag[1][0] == 33. );
-	}
-	{
 		auto&& Acast = A.template reinterpret_array_cast<Complex>();//multi::reinterpret_array_cast<Complex>(A);
 		auto&& Areal = Acast.template member_cast<double>(&Complex::real);
 		auto&& Aimag = Acast.template member_cast<double>(&Complex::imag);
-		assert( Areal[1][0] == 22. and std::get<1>(strides(Areal)) == 2 );
-		assert( Aimag[1][0] == 33. and std::get<1>(strides(Aimag)) == 2 );
+		BOOST_REQUIRE( Areal[1][0] == 22. and std::get<1>(strides(Areal)) == 2 );
+		BOOST_REQUIRE( Aimag[1][0] == 33. and std::get<1>(strides(Aimag)) == 2 );
 	}
 	{
 		auto&& Areal = A.template reinterpret_array_cast<Complex>().template member_cast<double>(&Complex::real);
 		auto&& Aimag = A.template reinterpret_array_cast<Complex>().template member_cast<double>(&Complex::imag);
-		assert( Areal[1][0] == 22. and std::get<1>(strides(Areal)) == 2 );
-		assert( Aimag[1][0] == 33. and std::get<1>(strides(Aimag)) == 2 );
+		BOOST_REQUIRE( Areal[1][0] == 22. and std::get<1>(strides(Areal)) == 2 );
+		BOOST_REQUIRE( Aimag[1][0] == 33. and std::get<1>(strides(Aimag)) == 2 );
 		Areal[1][0] = 55.;
 	}
 	{
 		auto&& Areal = Real(A);
 		auto&& Aimag = Imag(A);
 		auto Areal_copy = decay(Real(A));
-		assert( Areal[1][0] == 55. and std::get<1>(strides(Areal)) == 2 );
-		assert( Aimag[1][0] == 33. and std::get<1>(strides(Aimag)) == 2 );
+		BOOST_REQUIRE( Areal[1][0] == 55. and std::get<1>(strides(Areal)) == 2 );
+		BOOST_REQUIRE( Aimag[1][0] == 33. and std::get<1>(strides(Aimag)) == 2 );
 		Areal[1][0] = 888.;
 	}
 	{
@@ -159,7 +150,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_complex){
 			{ 22., 5.}
 		};
 		auto&& Areal = Real(A);
-		assert( Areal[1][1] == 5. );
+		BOOST_REQUIRE( Areal[1][1] == 5. );
 		Areal[1][1] = 55.;
 	}
 	{
@@ -168,7 +159,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_complex){
 			{ 22., 5.}
 		};
 		auto&& Areal = Real(A);
-		assert( Areal[1][1] == 5. );
+		BOOST_REQUIRE( Areal[1][1] == 5. );
 	}
 }
 
