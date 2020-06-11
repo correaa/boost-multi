@@ -102,6 +102,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_double_const){
 	BOOST_REQUIRE( y_cpy[1] == 4.*01. + 11. );
 	
 	multi::array<complex, 1> y_mut = {10., 11., 12., 13.};
+	blas::axpy( 4., x, y_mut({0, 3}) );
 	BOOST_REQUIRE( y_mut[1] == 4.*01. + 11. );
 }
 
