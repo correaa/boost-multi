@@ -81,11 +81,11 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos){
 	BOOST_REQUIRE(p11.mass == 99. );
 }
 {
-	struct alignas(sizeof(std::string)) employee{
+	struct employee{
 		std::string name;
 		short salary;
 		std::size_t age;
-		employee() = default;
+		char dummy[9];
 		employee(std::string name, short salary, std::size_t age) : name{name}, salary{salary}, age{age}{}
 	};
 
@@ -95,7 +95,6 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos){
 	BOOST_REQUIRE( d1D_names[1] == "Bob" );
 	BOOST_REQUIRE( &d1D_names[1] == &d1D[1].name );
 
-#if 0	
 	multi::array<employee, 2> d2D = {
 		{ {"Al"  , 1430, 35}, {"Bob"  , 3212, 34} }, 
 		{ {"Carl", 1589, 32}, {"David", 2300, 38} }
@@ -107,7 +106,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos){
 	multi::array<std::string, 2> d2D_names_copy{d2D_names};
 	BOOST_REQUIRE( d2D_names == d2D_names_copy );
 	BOOST_REQUIRE( base(d2D_names) != base(d2D_names_copy) );
-#endif
+
 }
 }
 
