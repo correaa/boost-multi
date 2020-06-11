@@ -117,38 +117,6 @@ BOOST_AUTO_TEST_CASE(test_utility_2d){
 
 }
 
-BOOST_AUTO_TEST_CASE(test_utility_serialization_2d){
-	double carr[3][10] = {
-		{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
-		{10, 11, 12, 13, 14, 15, 16, 17, 18, 19},
-		{20, 21, 22, 23, 24, 25, 26, 27, 28, 29},
-	};
-	multi::array_ref<double, 2> marr(&carr[0][0], {3, 10});
-	boost::multi_array_ref<double, 2> Marr(&carr[0][0], boost::extents[3][10]);
-
-	namespace arxiv = boost::archive;
-	{
-		std::ofstream ofs{"utility_serialization_marr.xml"}; assert(ofs);
-		arxiv::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(marr);
-		fs::remove("utility_serialization_marr.xml");
-	}
-	{
-		std::ofstream ofs{"utility_serialization_marr_as_value.xml"}; assert(ofs);
-		multi::array<double, 2> const& marr_value = decay(marr);//static_cast<multi::array<double, 2> const&>(marr);
-		BOOST_REQUIRE( marr_value.data_elements() == marr.data_elements() );
-		arxiv::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(marr_value);
-		fs::remove("utility_serialization_marr_as_value.xml");
-	}
-	{
-		std::ofstream ofs{"utility_serialization_carr.xml"}; assert(ofs);
-		arxiv::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(carr);
-		fs::remove("utility_serialization_carr.xml");
-	}
-	{
-//		std::ofstream ofs{"utility_serialization_Marr.xml"}; assert(ofs);
-//		arxiv::xml_oarchive{ofs} << BOOST_SERIALIZATION_NVP(Marr);
-	}
-}
 
 
 
