@@ -42,7 +42,7 @@ template<class T, class X1D, class Y1D>
 NODISCARD("because input is read-only")
 auto axpy(X1D const& x, Y1D const& y)->std::decay_t<
 decltype(axpy(x, typename Y1D::decay_type{y}))>{
-return   axpy(x, typename Y1D::decay_type{y}));}
+return   axpy(x, typename Y1D::decay_type{y}) ;}
 
 }}
 
