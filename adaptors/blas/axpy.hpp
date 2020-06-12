@@ -32,8 +32,8 @@ auto axpy(T alpha, X1D const& x, Y1D&& y)
 template<class T, class X1D, class Y1D>
 NODISCARD("because input is read-only")
 auto axpy(T alpha, X1D const& x, Y1D const& y)->std::decay_t<
-decltype(axpy(alpha, x, typename Y1D::decay_type{y})){
-return   axpy(alpha, x, typename Y1D::decay_type{y});}
+decltype(axpy(alpha, x, typename Y1D::decay_type{y}))>{
+return   axpy(alpha, x, typename Y1D::decay_type{y}) ;}
 
 template<class X1D, class Y1D, DELETE((not std::is_assignable<Y1D&&, X1D>{}))>
 Y1D&& axpy(X1D const& x, Y1D&& y){return axpy(+1., x, std::forward<Y1D>(y));}
