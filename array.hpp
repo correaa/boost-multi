@@ -400,7 +400,8 @@ public:
 	friend constexpr const_iterator cbegin(static_array const& self){return self.cbegin();}
 	friend constexpr const_iterator cend(static_array const& self){return self.cend();}
 
-	static_array& operator=(static_array const& other) &{assert( extensions(other) == static_array::extensions() );
+	static_array& operator=(static_array const& other) &{
+		assert( extensions(other) == static_array::extensions() );
 		return adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements()), *this;
 	}
 	template<class TT, class... As>
@@ -757,10 +758,12 @@ public:
 		return *this;
 	}
 #endif
+#if 0
 	template<class... As>
 	array& operator=(array<array::value_type, array::dimensionality, As...> const& o){
+		if(o.extensions()==array::extensions()) return static_::operator=(o);
 		return operator=(array{o});
-	/*	if(o.extensions()==array::extensions()) static_::operator=(o);
+	/*
 		else{
 			array::destroy();
 			array::deallocate();
@@ -782,26 +785,7 @@ public:
 		return *this;
 	}
 //	array& operator=(array other) noexcept{swap(other);} //TODO consider this
-	array& operator=(array const& o){
-		if(this!=std::addressof(o)){
-			array::destroy(); 
-			if(array::num_elements() != o.num_elements()){
-				array::deallocate();
-				this->static_::ref::layout_t::operator=(layout_t<D>{extensions(o)});
-				array::allocate();
-			}
-			array::uninitialized_copy_elements(data_elements(o));
-		}
-		return *this;
-	}
-	array& operator=(array&& other) noexcept{
-		using std::exchange;
-		clear();
-		this->base_ = exchange(other.base_, nullptr);
-		this->alloc() = std::move(other.alloc());
-		static_cast<typename array::layout_t&>(*this) = exchange(static_cast<typename array::layout_t&>(other), {});
-		return *this;
-	}
+#endif
 	void swap(array& other) noexcept{
 		using std::swap;
 		swap(this->alloc(), other.alloc());
@@ -811,6 +795,23 @@ public:
 			static_cast<typename array::layout_t&>(other)
 		);
 	}
+#ifndef NOEXCEPT_ASSIGNMENT
+	array& operator=(array&& other) noexcept{
+		using std::exchange;
+		clear();
+		this->base_ = exchange(other.base_, nullptr);
+		this->alloc() = std::move(other.alloc());
+		static_cast<typename array::layout_t&>(*this) = exchange(static_cast<typename array::layout_t&>(other), {});
+		return *this;
+	}
+	array& operator=(array const& o){
+		if(array::extensions() == o.extensions()) static_::operator=(o);
+		else operator=(array{o});
+		return *this;
+	}
+#else
+	array& operator=(array o) noexcept{return swap(o), *this;}
+#endif
 	friend void swap(array& a, array& b){a.swap(b);}
 	void assign(typename array::extensions_type x, typename array::element const& e){
 		if(array::extensions()==x){
