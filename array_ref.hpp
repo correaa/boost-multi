@@ -241,8 +241,6 @@ struct array_iterator :
 	friend struct basic_array;
 	auto base() const{return ptr_.base_;}//this->base_;}
 	friend auto base(array_iterator const& self){return self.base();}
-	auto stride() const{return stride_;}
-	friend index stride(array_iterator const& s){return s.stride();}
 private:
 	basic_array_ptr<Ref, layout_t<D-1>> ptr_;
 	index stride_ = {1}; // nice non-zero default
@@ -841,23 +839,24 @@ struct array_iterator<Element, 1, Ptr, Ref> :
 	using element = Element;
 	using element_ptr = Ptr;
 	using pointer = element_ptr;
+	using stride_type = multi::index;
 	using rank = std::integral_constant<dimensionality_type, 1>;
 	bool operator<(array_iterator const& o) const{return distance_to(o) > 0;}
 	constexpr array_iterator(Ptr d, typename basic_array<Element, 1, Ptr>::index s) : data_{d}, stride_{s}{} // TODO make explicit?
 private:
 	friend struct basic_array<Element, 1, Ptr>;
-	Ptr data_ = nullptr;
-	multi::index stride_;
+	element_ptr data_ = nullptr;
+	stride_type stride_;
 	constexpr difference_type distance_to(array_iterator const& other) const{
 		assert(stride_==other.stride_ and (other.data_-data_)%stride_ == 0);
 		return (other.data_ - data_)/stride_;
 	}
-	auto base() const{return data_;}
-	friend auto base(array_iterator const& self){return self.base();}
 public:
-	constexpr auto data() const{return data_;}
-	constexpr auto stride() const{return stride_;}
-	friend constexpr auto stride(array_iterator const& self){return self.stride();}
+	constexpr element_ptr data() const{return data_;} 
+	constexpr element_ptr base()              const&   {return   data_;} friend
+	constexpr element_ptr base(array_iterator const& s){return s.data_;}
+	constexpr stride_type stride()              const&   {return   stride_;} friend
+	constexpr stride_type stride(array_iterator const& s){return s.stride_;}
 	constexpr array_iterator& operator++(){data_+=stride_; return *this;}
 	constexpr array_iterator& operator--(){data_-=stride_; return *this;}
 	constexpr bool operator==(array_iterator const& o) const{return data_== o.data_;}
@@ -1248,36 +1247,6 @@ constexpr decltype(auto) static_array_cast(Array&& a, Args&&... args){
 	return a.template static_array_cast<T2, P2>(std::forward<Args>(args)...);
 }
 
-/*
-template<
-	class T2, class Array,
-	class P2 = typename std::pointer_traits<typename std::decay<Array>::type::element_ptr>::template rebind<T2>
->
-decltype(auto) reinterpret_array_cast(Array&& a){
-	return a.template reinterpret_array_cast<T2, P2>();
-}*/
-
-/*
-template<class T2, class Array, class P2 = typename std::pointer_traits<typename std::decay_t<Array>::element_ptr>::template rebind<T2>,
-	class PM = T2 std::decay_t<Array>::element::*
->
-decltype(auto) member_array_cast(Array&& a, PM pm){return a.template member_cast<T2, P2>(pm);}
-*/
-
-/*
-template<
-	class T2, class Array, class P2 = typename std::pointer_traits<typename std::decay_t<Array>::element_ptr>::template rebind<T2>,
-	class OtherT2, class OtherElement, std::enable_if_t<not std::is_same<T2, OtherElement>{}, int> =0
->
-decltype(auto) member_array_cast(Array&& a, OtherT2 OtherElement::* pm){
-	static_assert(sizeof(OtherElement)==sizeof(typename std::decay_t<Array>::element_type),
-		"member cast does not implicitly reinterprets between types of different size");
-	static_assert(sizeof(OtherT2)==sizeof(T2), 
-		"member cast does not implicitly reinterprets between types of different size");
-	return std::forward<Array>(a).template reinterpret_array_cast<OtherElement>().template member_cast<T2>(pm);
-//	return reinterpret_array_cast<OtherElement>(std::forward<Array>(a)).template member_cast<T2>(pm);
-}*/
-
 template<typename T, dimensionality_type D, typename ElementPtr = T*>
 struct array_ref : 
 //TODO	multi::partially_ordered2<array_ref<T, D, ElementPtr>, void>,
@@ -1320,11 +1289,15 @@ private:
 	template<class It> auto equal_elements(It first) const{
 		return adl_equal(first, first + this->num_elements(), this->data_elements());
 	}
+	template<class TT, std::size_t N> using const_carr = TT const[N];
 	template<class TT, std::size_t N> using carr = TT[N];
 public:
-	template<class TT, std::size_t N>//, std::enable_if<std::is_convertible<typename array_ref::element_ptr, std::remove_all_extents_t<carr<TT, N>> >{}, int> =0> 
-	operator carr<TT, N>&() const&{
-		assert(extensions(*(carr<TT, N>*)this)==this->extensions());
+	template<class TT, std::size_t N, std::enable_if_t<std::is_same<typename array_ref::element_type, std::decay_t<std::remove_all_extents_t<const_carr<TT, N>>>>{}, int> =0>
+	operator const_carr<TT, N>&() const&{assert(extensions(*(const_carr<TT, N>*)this)==this->extensions());
+		return *reinterpret_cast<const_carr<TT, N>*>(this->base_);
+	}
+	template<class TT, std::size_t N, std::enable_if_t<std::is_same<typename array_ref::element_type, std::decay_t<std::remove_all_extents_t<carr<TT, N>>> >{}, int> =0>
+	operator carr<TT, N>&()&{assert(extensions(*(carr<TT, N>*)this)==this->extensions());
 		return *reinterpret_cast<carr<TT, N>*>(this->base_);
 	}
 	typename array_ref::element_ptr data_elements() const&{return array_ref::base_;}
