@@ -6,9 +6,9 @@ $CXX $0 -o $0x `pkg-config --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x
 #ifndef MULTI_ADAPTORS_BLAS_AXPY_HPP
 #define MULTI_ADAPTORS_BLAS_AXPY_HPP
 
-#include "../blas/core.hpp"
+#include "../../adaptors/blas/core.hpp"
 #include "../../config/NODISCARD.hpp"
-#include "../../config/DELETE.hpp"
+#include "../../array_ref.hpp"
 
 namespace boost{
 namespace multi{namespace blas{
@@ -16,33 +16,37 @@ namespace multi{namespace blas{
 using core::axpy;
 
 template<class T, class It1, class Size, class OutIt>
-auto axpy_n(T alpha, It1 first, Size n, OutIt d_first)
-{	return axpy(n, alpha, base(first), stride(first), base(d_first), stride(d_first)), d_first + n;}
+auto axpy_n(T alpha, It1 f, Size n, OutIt d)
+->decltype(axpy(n, alpha, base(f), stride(f), base(d), stride(d)), d + n){
+	return axpy(n, alpha, base(f), stride(d), base(d), stride(d)), d + n;}
 
 template<class T, class It1, class OutIt>
 auto axpy(T alpha, It1 first, It1 last, OutIt d_first)
-->decltype(axpy_n(alpha, first, std::distance(first, last), d_first)){
-	return axpy_n(alpha, first, std::distance(first, last), d_first);}
+->decltype(axpy_n(alpha, first, last - first, d_first)){
+	return axpy_n(alpha, first, last - first, d_first);}
 
-template<class T, class X1D, class Y1D, DELETE((not std::is_assignable<Y1D&&, X1D>{}))>
+using std::begin;
+using std::end;
+
+template<class T, class X1D, class Y1D>
 auto axpy(T alpha, X1D const& x, Y1D&& y)
-->decltype(axpy(size(x), alpha, base(x), stride(x), base(y), stride(y)), std::forward<Y1D>(y)){assert(size(x)==size(y));
-	return axpy(size(x), alpha, base(x), stride(x), base(y), stride(y)), std::forward<Y1D>(y);}
+->decltype(axpy_n(alpha, begin(x), size(x), begin(y)), std::forward<Y1D>(y)){assert(size(x)==size(y));
+	return axpy_n(alpha, begin(x), size(x), begin(y)), std::forward<Y1D>(y);}
 
 template<class T, class X1D, class Y1D>
 NODISCARD("because input is read-only")
-auto axpy(T alpha, X1D const& x, Y1D const& y)->std::decay_t<
-decltype(axpy(alpha, x, typename Y1D::decay_type{y}))>{
-return   axpy(alpha, x, typename Y1D::decay_type{y}) ;}
+auto axpy(T alpha, X1D const& x, Y1D const& y){
+	return  axpy(alpha, x, typename array_traits<Y1D>::decay_type{y});
+}
 
-template<class X1D, class Y1D, DELETE((not std::is_assignable<Y1D&&, X1D>{}))>
-Y1D&& axpy(X1D const& x, Y1D&& y){return axpy(+1., x, std::forward<Y1D>(y));}
+template<class X1D, class Y1D>
+Y1D&& axpy(X1D const& x, Y1D&& y){return axpy(1., x, std::forward<Y1D>(y));}
 
 template<class T, class X1D, class Y1D>
 NODISCARD("because input is read-only")
-auto axpy(X1D const& x, Y1D const& y)->std::decay_t<
-decltype(axpy(x, typename Y1D::decay_type{y}))>{
-return   axpy(x, typename Y1D::decay_type{y}) ;}
+auto axpy(X1D const& x, Y1D const& y){
+	return axpy(x, typename array_traits<Y1D>::decay_type{y});
+}
 
 }}
 
@@ -79,14 +83,12 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_double){
 	multi::array<double, 2> A = cA;
 	multi::array<double, 1> const b = cA[2];
 
-	blas::axpy(2., b, A[1]); // y = a*x + y, y+= a*x
+	blas::axpy(2., b, A[1]); // A[1] = 2*b + A[1], A[1]+= a*A[1]
 	BOOST_REQUIRE( A[1][2] == 2.*b[2] + cA[1][2] );
 
 	using complex = std::complex<double>; complex const I = {0, 1};
 	multi::array<complex, 1> AC = {1. + 2.*I, 3. + 4.*I, 4. - 8.*I};
 	multi::array<complex, 1> BC(size(AC), complex{0.});
-//	blas::axpy(+1., begin(blas::real(AC)), end(blas::real(AC)), begin(blas::real(BC)));
-//	blas::axpy(-1., begin(blas::imag(AC)), end(blas::imag(AC)), begin(blas::imag(BC)));
 	
 	blas::axpy(+1., blas::real(AC), blas::real(BC));
 	blas::axpy(-1., blas::imag(AC), blas::imag(BC));
@@ -106,6 +108,13 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_double_const){
 	multi::array<complex, 1> y_mut = {10., 11., 12., 13.};
 	blas::axpy( 4., x, y_mut({0, 3}) );
 	BOOST_REQUIRE( y_mut[1] == 4.*01. + 11. );
+}
+
+BOOST_AUTO_TEST_CASE(multi_blas_axpy_carray){
+	double const x[] = {00., 01., 02.};
+	double const y[] = {10., 11., 12.};
+	auto y_cpy = blas::axpy(4., x, y);
+	BOOST_REQUIRE( y_cpy[1] == 4.*01. + 11. );
 }
 
 #endif
