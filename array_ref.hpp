@@ -217,6 +217,7 @@ struct array_iterator :
 
 	using element = typename Ref::element;
 	using element_ptr = typename Ref::element_ptr;
+	using stride_type = index;
 	constexpr array_iterator(std::nullptr_t p = nullptr) : ptr_{p}, stride_{1}{}//Ref{p}{}
 	template<class, dimensionality_type, class, class> friend struct array_iterator;
 	template<class Other, typename = decltype(typename Ref::types::element_ptr{typename Other::element_ptr{}})> 
@@ -243,9 +244,8 @@ struct array_iterator :
 	friend auto base(array_iterator const& self){return self.base();}
 private:
 	basic_array_ptr<Ref, layout_t<D-1>> ptr_;
-	index stride_ = {1}; // nice non-zero default
+	stride_type stride_ = {1}; // nice non-zero default
 	bool equal(array_iterator const& o) const{return ptr_==o.ptr_ and stride_==o.stride_;}//base_==o.base_ && stride_==o.stride_ && ptr_.layout()==o.ptr_.layout();}
-	constexpr void increment(){ptr_.base_ += stride_;}
 	constexpr void decrement(){ptr_.base_ -= stride_;}
 	constexpr void advance(difference_type n){ptr_.base_ += stride_*n;}
 	difference_type distance_to(array_iterator const& other) const{
@@ -257,7 +257,9 @@ private:
 	}
 //	friend class boost::iterator_core_access;
 public:
-	array_iterator& operator++(){increment(); return *this;}
+	constexpr stride_type stride()              const&   {return   stride_;} friend
+	constexpr stride_type stride(array_iterator const& s){return s.stride_;}
+	array_iterator& operator++(){ptr_.base_ += stride_; return *this;}
 	array_iterator& operator--(){decrement(); return *this;}
 	constexpr bool operator==(array_iterator const& o) const{return equal(o);}
 	friend constexpr difference_type operator-(array_iterator const& self, array_iterator const& other){
