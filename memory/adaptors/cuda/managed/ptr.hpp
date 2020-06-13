@@ -170,6 +170,7 @@ public:
 	constexpr reference operator[](difference_type n){return *((*this)+n);}
 	friend inline ptr to_address(ptr const& p){return p;}
 	typename ptr::difference_type operator-(ptr const& other) const{return rp_-other.rp_;}
+	raw_pointer raw_pointer_cast() const&{return this->rp_;}
 	friend raw_pointer raw_pointer_cast(ptr const& self){return self.rp_;}
 	friend cuda::ptr<T, RawPtr> cuda_pointer_cast(ptr const& self){return cuda::ptr<T, RawPtr>{self.rp_};}
 	operator cuda::ptr<T, RawPtr>() const{return cuda::ptr<T, RawPtr>{rp_};}
