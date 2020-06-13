@@ -213,6 +213,10 @@ public:
 		std::initializer_list<typename static_array::value_type> mil, 
 		typename static_array::allocator_type const& a
 	) : static_array(mil.begin(), mil.end(), a){}
+//	template<std::size_t N>
+//	static_array(static_array::value_type const(&array)[N]) : static_array(std::begin(array), std::end(array)){}
+	template<class TT, std::size_t N>
+	static_array(TT(&array)[N]) : static_array(std::begin(array), std::end(array)){}
 	template<class It> static auto distance(It a, It b){using std::distance; return distance(a, b);}
 protected:
 	void deallocate(){
@@ -940,6 +944,13 @@ multi::array<typename std::remove_all_extents<T[N]>::type, std::rank<T[N]>{}>
 decay(const T(&t)[N]) noexcept{
 	return multi::array_cref<typename std::remove_all_extents<T[N]>::type, std::rank<T[N]>{}>(data_elements(t), extensions(t));
 }
+
+template<class T, size_t N>
+struct array_traits<T[N], void, void>{
+	using reference = T&;
+	using element = std::remove_all_extents_t<T[N]>;
+	using decay_type = multi::array<T, 1>;
+};
 #if 0
 template<class Archive, class T, boost::multi::dimensionality_type D, class... Args>
 auto serialize(Archive& ar, array_ref<T, D, Args...>& self, unsigned) 
@@ -1099,6 +1110,11 @@ int main(){
 	{
 		multi::array<double, 0> A = 3.;
 	//	assert( stride(A) == 1 );
+	}
+	{
+		double D3[3] = {0, 1, 2};
+		multi::array<double, 1> A(D3);
+		assert( A[1] == 1 );
 	}
 }
 #endif
