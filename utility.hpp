@@ -440,10 +440,8 @@ constexpr auto layout(T(&t)[N]){
 	return multi::layout_t<std::rank<T[N]>{}>(multi::extensions(t));
 }
 
-//template<class T, std::size_t N>
-//constexpr auto strides(T(&t)[N]){
-//	return layout(t).strides();
-//}
+template<class T, std::size_t N>
+constexpr auto strides(T(&t)[N]){return layout(t).strides();}
 
 }}
 
