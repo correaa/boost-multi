@@ -72,8 +72,8 @@ constexpr auto size(Container const& con)
 //->decltype(t.size()){
 //	return t.size();}
 
-template<class T> constexpr std::ptrdiff_t stride(T*){return 1;}
-template<class T> constexpr T* base(T* d){return d;}
+template<class Pointer, std::enable_if_t<std::is_pointer<Pointer>{}, int> =0> constexpr std::ptrdiff_t stride(Pointer){return 1;}
+template<class Pointer, std::enable_if_t<std::is_pointer<Pointer>{}, int> =0> constexpr Pointer base(Pointer d){return d;}
 
 template<class T, class U>
 auto reinterpret_pointer_cast(U* other)
@@ -220,8 +220,8 @@ auto data_elements(Vector const& v)
 ->decltype(v.data()){
 	return v.data();}
 
-//template <class T, std::size_t N>
-//constexpr ptrdiff_t stride(const T(&/*t*/)[N]) noexcept{return num_elements_t<T>{};}
+template <class T, std::size_t N>
+constexpr std::ptrdiff_t stride(const T(&/*t*/)[N]) noexcept{return num_elements_t<T>{};}
 
 template <class T, std::size_t N>
 constexpr bool is_compact(const T(&)[N]) noexcept{return true;}
@@ -340,8 +340,8 @@ constexpr auto base(T* t) noexcept{return t;}
 template<class T, std::enable_if_t<std::is_pod<std::decay_t<T>>{}, int> = 0>
 auto base(T& t){return &t;}
 
-template<class T, std::enable_if_t<std::is_pod<std::decay_t<T>>{}, int> = 0>
-auto stride(T& t) = delete;
+//template<class T, std::enable_if_t<std::is_pod<std::decay_t<T>>{}, int> = 0>
+//auto stride(T& t) = delete;
 
 //template<class T> constexpr std::ptrdiff_t stride(T const*/*t*/) noexcept{return 1;}
 
