@@ -100,7 +100,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_double_const){
 	using complex = std::complex<double>;
 	multi::array<complex, 1> const x = {00., 01., 02.};
 	multi::array<complex, 1> const y = {10., 11., 12., 13.};
-	static_assert( not std::is_assignable<decltype(y({0, 3})), decltype(x)>{}, "!" );
 
 	multi::array<complex, 1> const y_cpy = blas::axpy( 4., x, y({0, 3}) );
 	BOOST_REQUIRE( y_cpy[1] == 4.*01. + 11. );
@@ -113,8 +112,12 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_double_const){
 BOOST_AUTO_TEST_CASE(multi_blas_axpy_carray){
 	double const x[] = {00., 01., 02.};
 	double const y[] = {10., 11., 12.};
-	auto y_cpy = blas::axpy(4., x, y);
+	auto const y_cpy = blas::axpy(4., x, y);
 	BOOST_REQUIRE( y_cpy[1] == 4.*01. + 11. );
+
+	double const(&y_ref)[3] = y_cpy;
+	BOOST_REQUIRE( y_ref[1] == 4.*01. + 11. );
+	BOOST_REQUIRE( &y_ref[1] == &y_cpy[1] );
 }
 
 #endif
