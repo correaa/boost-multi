@@ -18,25 +18,21 @@ template<>
 struct array_traits<std::array<double, 3>, void, void>{
 	using reference = double&;
 	using element = double;//std::remove_all_extents_t<T[N]>;
+	using decay_type = std::array<double, 3>;
 };
 
 template<class Array, typename Reference, typename Element>
 struct array_traits{
 	using reference = typename Array::reference;
 	using element   = typename Array::element;
+	using decay_type = typename Array::decay_type;
 };
 
-template<class Element>
+/*template<class Element>
 struct array_traits<Element, void, void>{
 	using reference = Element&;
 	using element   = Element;
-};
-
-template<class T, size_t N>
-struct array_traits<T[N], void, void>{
-	using reference = T&;
-	using element = std::remove_all_extents_t<T[N]>;
-};
+};*/
 
 template<class T, size_t N>
 struct array_traits<std::array<T, N>, void, void>{
@@ -45,8 +41,8 @@ struct array_traits<std::array<T, N>, void, void>{
 };
 
 template<class T, typename = typename T::rank>
-std::true_type has_rank_aux(T const&){return {};}
-inline std::false_type has_rank_aux(...){return {};}
+       std::true_type  has_rank_aux(T const&){return {};}
+inline std::false_type has_rank_aux(...     ){return {};}
 
 template<class T> struct has_rank : decltype(has_rank_aux(std::declval<T>())){};
 
@@ -75,6 +71,9 @@ constexpr auto size(Container const& con)
 //constexpr auto size(T const& t)
 //->decltype(t.size()){
 //	return t.size();}
+
+template<class T> constexpr std::ptrdiff_t stride(T*){return 1;}
+template<class T> constexpr T* base(T* d){return d;}
 
 template<class T, class U>
 auto reinterpret_pointer_cast(U* other)
@@ -221,8 +220,8 @@ auto data_elements(Vector const& v)
 ->decltype(v.data()){
 	return v.data();}
 
-template <class T, std::size_t N>
-constexpr ptrdiff_t stride(const T(&/*t*/)[N]) noexcept{return num_elements_t<T>{};}
+//template <class T, std::size_t N>
+//constexpr ptrdiff_t stride(const T(&/*t*/)[N]) noexcept{return num_elements_t<T>{};}
 
 template <class T, std::size_t N>
 constexpr bool is_compact(const T(&)[N]) noexcept{return true;}
@@ -324,14 +323,14 @@ constexpr auto base(T const* t) noexcept{return t;}
 template<class T, typename = std::enable_if_t<not std::is_array<T>{}> >
 constexpr auto base(T* t) noexcept{return t;}
 
-template<class T, typename = std::enable_if_t<not std::is_array<T>{}> > 
-constexpr std::ptrdiff_t stride(T*&/*t*/) noexcept{
-	return 1;
-}
-template<class T, typename = std::enable_if_t<not std::is_array<T>{}> > 
-constexpr std::ptrdiff_t stride(T const*&/*t*/) noexcept{
-	return 1;
-}
+//template<class T, typename = std::enable_if_t<not std::is_array<T>{}> > 
+//constexpr std::ptrdiff_t stride(T*&/*t*/) noexcept{
+//	return 1;
+//}
+//template<class T, typename = std::enable_if_t<not std::is_array<T>{}> > 
+//constexpr std::ptrdiff_t stride(T const*&/*t*/) noexcept{
+//	return 1;
+//}
 
 //inline auto base(double& d){return &d;}
 //inline auto base(float& f){return &f;}
@@ -341,10 +340,13 @@ constexpr std::ptrdiff_t stride(T const*&/*t*/) noexcept{
 template<class T, std::enable_if_t<std::is_pod<std::decay_t<T>>{}, int> = 0>
 auto base(T& t){return &t;}
 
+template<class T, std::enable_if_t<std::is_pod<std::decay_t<T>>{}, int> = 0>
+auto stride(T& t) = delete;
+
 //template<class T> constexpr std::ptrdiff_t stride(T const*/*t*/) noexcept{return 1;}
 
-template<typename T, std::size_t N>
-constexpr std::ptrdiff_t stride(T(*&/*t*/)[N]) noexcept{return N;}
+//template<typename T, std::size_t N>
+//constexpr std::ptrdiff_t stride(T(*&/*t*/)[N]) noexcept{return N;}
 
 template<class T>
 constexpr auto corigin(const T& t){return &t;}
@@ -352,8 +354,8 @@ template<class T, std::size_t N>
 constexpr auto corigin(const T(&t)[N]) noexcept{return corigin(t[0]);}
 
 template<class T, typename = decltype(std::declval<T>().extensions())>
-std::true_type has_extensions_aux(T const&);
-inline std::false_type has_extensions_aux(...);
+       std::true_type  has_extensions_aux(T const&);
+inline std::false_type has_extensions_aux(...     );
 
 template<class T> struct has_extensions : decltype(has_extensions_aux(std::declval<T>())){};
 
@@ -438,10 +440,10 @@ constexpr auto layout(T(&t)[N]){
 	return multi::layout_t<std::rank<T[N]>{}>(multi::extensions(t));
 }
 
-template<class T, std::size_t N>
-constexpr auto strides(T(&t)[N]){
-	return layout(t).strides();
-}
+//template<class T, std::size_t N>
+//constexpr auto strides(T(&t)[N]){
+//	return layout(t).strides();
+//}
 
 }}
 
