@@ -891,23 +891,13 @@ struct basic_array<T, dimensionality_type{0}, ElementPtr, Layout> :
 		return adl_equal(o.base_, o.base_ + 1, this->base_);
 	}
 	bool operator!=(basic_array const& o) const&{return not operator==(o);}
-//	bool operator==(typename basic_array::element_type const& e) const&{
-//		using std::equal; return equal(&e, &e + 1, this->base_);
-//	}
-//	bool operator!=(typename basic_array::element_type const& e) const&{return not operator==(e);}
-//	operator element_ref() const{return *(this->base_);}
-//	template<class TT> operator TT(){return static_cast<TT>(element_ref());}
 	typename basic_array::element_ptr operator&() const{return this->base_;}
 	using decay_type = typename types::element;
-//	basic_array&
 	element_ref operator()() const&{return *(this->base_);}
 	operator element_ref()&&{return *(this->base_);}
-//	decltype(auto) operator()() &&{return std::move(*(this->base_));}
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int){
-	//	using boost::serialization::make_nvp;
-		ar & multi::archive_traits<Archive>::make_nvp("element",  *(this->base_));
-	//	std::for_each(this->begin(), this->end(), [&](auto&& e){ar & make_nvp("item", e);});
+		ar & multi::archive_traits<Archive>::make_nvp("element", *(this->base_));
 	}
 };
 
@@ -927,7 +917,6 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout> :
 	using basic_const_array = basic_array<
 		T, 1, 
 		typename std::pointer_traits<ElementPtr>::template rebind<typename basic_array::element_type const>,
-	//	typename multi::iterator_traits<ElementPtr>::rebind_const, 
 		Layout
 	>;
 protected:
@@ -944,29 +933,22 @@ protected:
 	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
 	friend decltype(auto) static_array_cast(basic_array<TT, DD, PP> const&);
 public:
-//	template<class Archive>
-//	void serialize(Archive& ar, unsigned int){
-//		for(auto&& e : *this) ar & BOOST_SERIALIZATION_NVP(e);
-//	}
-template<
-	class T2
-> friend auto reinterpret_array_cast(basic_array&& a){
-	return std::move(a).template reinterpret_array_cast<T2, typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>();
-}
-template<
-	class T2
-> friend auto reinterpret_array_cast(basic_array const& a){
-	return a.template reinterpret_array_cast<T2, typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>();
-}
+	template<class T2> friend auto reinterpret_array_cast(basic_array&& a){
+		return std::move(a).template reinterpret_array_cast<T2, typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>();
+	}
+	template<class T2> friend auto reinterpret_array_cast(basic_array const& a){
+		return a.template reinterpret_array_cast<T2, typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>();
+	}
 #if __cplusplus >= 201703L
 #if __INTEL_COMPILER
 public: // bug in icc c++17 return from function non copyable non moveable
 #else
 protected:
 #endif
-basic_array(basic_array&&) = default; // if you need to generate a copy you can't use `auto` here, use `decay` or `aut&&`.
+	basic_array(basic_array&&) = default; // if you need to generate a copy you can't use `auto` here, use `decay` or `aut&&`.
 #else
-public   : basic_array(basic_array&&) = default; // in C++ < 17 this is necessary to return references from functions
+public:
+	basic_array(basic_array&&) = default; // in C++ < 17 this is necessary to return references from functions
 // in c++17 things changed and non-moveable non-copyable types can be returned from functions and captured by auto
 #endif
 protected:
@@ -998,24 +980,10 @@ public:
 	basic_array&  operator=(basic_array<TT, 1, As...> const& other)&{assert(this->extensions() == other.extensions());
 		return adl_copy(other.begin(), other.end(), this->begin()), std::move(*this);
 	}
-
 	template<class Archive>
-	auto serialize(Archive& ar, const unsigned int){
-	//	using boost::serialization::make_nvp;
+	auto serialize(Archive& ar, unsigned){
 		std::for_each(this->begin(), this->end(),[&](auto&& e){ar& multi::archive_traits<Archive>::make_nvp("item",e);});
 	}
-/*
-	template<class A, 
-		typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<A>>{}>,
-		typename = decltype(
-			std::declval<typename basic_array::reference&&>() 
-				= std::declval<typename multi::array_traits<typename std::remove_reference_t<A>>::reference&&>()
-		)
-	>
-	basic_array&& operator=(A&& o)&&{
-		assert(this->extension() == extension(o));
-		return std::move(this->assign(adl_begin(std::forward<A>(o)), adl_end(std::forward<A>(o))));
-	}*/
 	basic_array& operator=(basic_array const& o)&{assert(this->extension() == o.extension()); 	// TODO make sfinae friendly
 		return this->assign(o.begin(), o.end()), *this; // TODO improve performance by rotating
 	} // TODO leave only r-value version?
@@ -1062,7 +1030,6 @@ public:
 	auto range(index_range const& ir) &&{return std::move(*this).sliced(ir.front(), ir.last());}
 	auto range(index_range const& ir) const&{return sliced(ir.front(), ir.last());}
 
-
 	basic_array operator()()&&{return std::move(*this);}
 	basic_array operator()()&{return *this;}
 	basic_const_array operator()() const&{return {this->layout(), this->base()};}
@@ -1096,8 +1063,6 @@ public:
 	}
 	friend decltype(auto) rotated(basic_array const& self){return self.rotated();}
 	friend decltype(auto) unrotated(basic_array const& self){return self.unrotated();}
-//	friend decltype(auto) transposed(basic_array const& self){return self.transposed();}
-//	friend decltype(auto) operator~(basic_array const& self){return transposed(self);}
 
 	decltype(auto) rotated(dimensionality_type = 1) &     {return operator()();}
 	decltype(auto) rotated(dimensionality_type = 1) &&    {return std::move(*this).operator()();}
@@ -1114,9 +1079,6 @@ public:
 	using const_iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_const_ptr>;
 	using reverse_iterator = std::reverse_iterator<iterator>;
 
-//	using const_iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_const_ptr, typename types::const_reference>;
-//	using const_iterator = multi::const_iterator<iterator>;
-
 	constexpr iterator begin()&           {return {this->base_, this->stride_};}
 	constexpr iterator begin()&&          {return begin();}
 	constexpr const_iterator begin()const&{return iterator{this->base_, this->stride_};}
@@ -1132,9 +1094,6 @@ public:
 	friend iterator end(basic_array      & s){return s.end();}
 	friend iterator end(basic_array     && s){return std::move(s).end();}
 	friend const_iterator end(basic_array const& s){return s.end();}
-
-//	constexpr const_iterator begin() const&{return {basic_array::base_                 , basic_array::stride_};}
-//	constexpr const_iterator end  () const&{return {basic_array::base_ + types::nelems_, basic_array::stride_};}
 
 	template<class It> auto assign(It f)&& //	->decltype(adl::copy_n(f, this->size(), begin(std::move(*this))), void()){
 	->decltype(adl_copy_n(f, this->size(), std::declval<iterator>()), void()){
