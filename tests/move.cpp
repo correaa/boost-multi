@@ -13,7 +13,7 @@ $CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 
 namespace multi = boost::multi;
 
-BOOST_AUTO_TEST_CASE(multi_array_copy){
+BOOST_AUTO_TEST_CASE(multi_array_move_into_vector){
 	std::vector<multi::array<double, 2> > A(10, multi::array<double, 2>({4, 5}, 99.));
 	std::vector<multi::array<double, 2> > B;
 	B.reserve(10);
