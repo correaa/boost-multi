@@ -191,14 +191,14 @@ blas&fftGPU:
       - cd adaptors
       - sh ./fftw.hpp
       - sh ./fft.hpp
-      
+
 icpc:
     stage: test
     tags:
       - cuda_gpu
     script:
       - export PATH=/usr/local/cuda/bin:$PATH
-      - export CXX="icpc -fopenmp -std=c++14 -diag-disable=remark -x c++ -Wall -Wextra -Ofast -ldl -pthread "
+      - export CXX="/opt/intel/sw_dev_tools/bin/icpc -fopenmp -std=c++14 -diag-disable=remark -x c++ -Wall -Wextra -Ofast -ldl -pthread "
       - $CXX --version
       - cd tests
       - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
