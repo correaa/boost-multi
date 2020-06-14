@@ -240,8 +240,6 @@ struct array_iterator :
 	{}
 	template<typename T, dimensionality_type DD, typename ElementPtr, class LLayout>
 	friend struct basic_array;
-	auto base() const{return ptr_.base_;}//this->base_;}
-	friend auto base(array_iterator const& self){return self.base();}
 private:
 	basic_array_ptr<Ref, layout_t<D-1>> ptr_;
 	stride_type stride_ = {1}; // nice non-zero default
@@ -257,6 +255,9 @@ private:
 	}
 //	friend class boost::iterator_core_access;
 public:
+	constexpr element_ptr base()              const&      {return ptr_.base_;} friend 
+	constexpr element_ptr base(array_iterator const& self){return self.base();}
+
 	constexpr stride_type stride()              const&   {return   stride_;} friend
 	constexpr stride_type stride(array_iterator const& s){return s.stride_;}
 	array_iterator& operator++(){ptr_.base_ += stride_; return *this;}
