@@ -255,8 +255,8 @@ private:
 	}
 //	friend class boost::iterator_core_access;
 public:
-	constexpr element_ptr base()              const&      {return ptr_.base_;} friend 
-	constexpr element_ptr base(array_iterator const& self){return self.base();}
+	constexpr element_ptr base(              )const&   {return ptr_.base_;} friend 
+	constexpr element_ptr base(array_iterator const& s){return s.base();}
 
 	constexpr stride_type stride()              const&   {return   stride_;} friend
 	constexpr stride_type stride(array_iterator const& s){return s.stride_;}
@@ -320,7 +320,8 @@ struct basic_array :
 	friend struct basic_array<typename types::element, typename Layout::rank{} + 1, typename types::element_ptr >;
 	friend struct basic_array<typename types::element, typename Layout::rank{} + 1, typename types::element_ptr&>;
 	using types::layout;
-	constexpr auto layout() const /*HD*/{return array_types<T, D, ElementPtr, Layout>::layout();}
+	using layout_type = Layout;
+	constexpr layout_type layout() const{return array_types<T, D, ElementPtr, Layout>::layout();}
 	using basic_const_array = basic_array<T, D, 
 		typename std::pointer_traits<ElementPtr>::template rebind<typename basic_array::element_type const>,
 	//	typename multi::iterator_traits<ElementPtr>::rebind_const, 
@@ -989,11 +990,11 @@ public:
 	template<class It> 
 	basic_array&& assign(It first, It last)&&{return std::move(assign(first, last));}
 
-	template<class TT, class... As, DELETE((not std::is_assignable<typename basic_array::reference, typename basic_array<TT, 1, As...>::reference>{}))>
+	template<class TT, class... As>//, DELETE((not std::is_assignable<typename basic_array::reference, typename basic_array<TT, 1, As...>::reference>{}))>
 	basic_array&& operator=(basic_array<TT, 1, As...> const& other)&&{assert(this->extensions() == other.extensions());
 		return adl_copy(other.begin(), other.end(), this->begin()), std::move(*this);
 	}
-	template<class TT, class... As, DELETE((not std::is_assignable<typename basic_array::reference, typename basic_array<TT, 1, As...>::reference>{}))>
+	template<class TT, class... As>//, DELETE((not std::is_assignable<typename basic_array::reference, typename basic_array<TT, 1, As...>::reference>{}))>
 	basic_array&  operator=(basic_array<TT, 1, As...> const& other)&{assert(this->extensions() == other.extensions());
 		return adl_copy(other.begin(), other.end(), this->begin()), std::move(*this);
 	}
