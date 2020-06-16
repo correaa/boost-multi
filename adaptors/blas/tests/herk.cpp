@@ -32,23 +32,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_cuda_herk_real){
 		BOOST_REQUIRE( c[1][0] == 34 );
 		BOOST_REQUIRE( c[0][1] == 34 );
 
-		multi::array<double, 2> const c_copy = blas::herk(1., a);
-		BOOST_REQUIRE( c == c_copy );
+		BOOST_REQUIRE( c ==  blas::herk(1., a) );
 	}
-	{
-//		cuda::array<double, 2> acu = a; 
-//		BOOST_REQUIRE(a == acu);
-
-//		cuda::array<double, 2> ccu({2, 2}, 9999.);
-
-	//	blas::herk(acu, ccu);
-	//	BOOST_REQUIRE( ccu[1][0] == 34 );
-	//	BOOST_REQUIRE( ccu[0][1] == 34 );
-
-	//	cuda::array<double, 2> const ccu_copy = blas::herk(1., acu);
-	//	BOOST_REQUIRE( herk(1., acu) == ccu );
-	}
-
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_cuda_herk_complex){
