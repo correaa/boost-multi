@@ -17,6 +17,7 @@ $CXX $0 -o $0x `pkg-config --libs blas` -lcudart -lcublas -lboost_unit_test_fram
 
 using std::cout;
 namespace multi = boost::multi;
+namespace blas = multi::blas;
 
 BOOST_AUTO_TEST_CASE(multi_blas_asum_double){
 	multi::array<double, 2> const A = {
@@ -24,19 +25,17 @@ BOOST_AUTO_TEST_CASE(multi_blas_asum_double){
 		{5.,  6.,  7.,  8.},
 		{9., 10., 11., 12.}
 	};
-	using multi::blas::asum;
-	BOOST_REQUIRE(asum(A[1]) == std::accumulate(begin(A[1]), end(A[1]), 0., [](auto&& a, auto&& b){return a + std::abs(b);}));
+	BOOST_REQUIRE(blas::asum(A[1]) == std::accumulate(begin(A[1]), end(A[1]), 0., [](auto&& a, auto&& b){return a + std::abs(b);}));
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_asum_complex){
 	using Z = std::complex<double>; Z const I{0, 1};
 	multi::array<Z, 2> const A = {
-		{1. + 2.*I,  2.,  3.,  4.},
-		{5.,  6. + 3.*I,  7.,  8.},
+		{1. + 2.*I, 2.,  3.,  4.},
+		{5., 6. + 3.*I,  7.,  8.},
 		{9., 10., 11.+ 4.*I, 12.}
 	};
-	using multi::blas::asum;
-	BOOST_REQUIRE(asum(A[1]) == std::accumulate(begin(A[1]), end(A[1]), 0., [](auto&& a, auto&& b){return a + std::abs(real(b)) + std::abs(imag(b));}));
+	BOOST_REQUIRE(blas::asum(A[1]) == std::accumulate(begin(A[1]), end(A[1]), 0., [](auto&& a, auto&& b){return a + std::abs(real(b)) + std::abs(imag(b));}));
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_asum_double_cuda){
@@ -45,14 +44,12 @@ BOOST_AUTO_TEST_CASE(multi_blas_asum_double_cuda){
 		{5.,  6.,  7.,  8.},
 		{9., 10., 11., 12.}
 	};
-	using multi::blas::asum;
-	BOOST_REQUIRE(asum(A[1]) == 26 );
+	BOOST_REQUIRE(blas::asum(A[1]) == 26 );
 }
 
 using complex = std::complex<double>; constexpr complex I{0, 1};
 
 BOOST_AUTO_TEST_CASE(multi_blas_asum_complex_cuda){
-	namespace blas = multi::blas;
 	multi::cuda::array<complex, 2> const A = {
 		{1. + 2.*I,  2.,  3.,  4.},
 		{5.,  6. + 3.*I,  7.,  8.},
@@ -70,9 +67,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_asum_complex_cuda_mutable){
 		{5.,  6. + 3.*I,  7.,  8.},
 		{9., 10., 11.+ 4.*I, 12.}
 	};
-	using multi::blas::asum;
-	BOOST_REQUIRE( asum(A[1]) == Z{29.} );
-	BOOST_REQUIRE( asum(A[1]({0, 4})) == Z{29.} );
+	BOOST_REQUIRE( blas::asum(A[1]) == Z{29.} );
+	BOOST_REQUIRE( blas::asum(A[1]({0, 4})) == Z{29.} );
 }
 
 
