@@ -933,6 +933,7 @@ protected:
 	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
 	friend decltype(auto) static_array_cast(basic_array<TT, DD, PP> const&);
 public:
+	using default_allocator_type = typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type;
 	template<class T2> friend auto reinterpret_array_cast(basic_array&& a){
 		return std::move(a).template reinterpret_array_cast<T2, typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>();
 	}
@@ -1103,17 +1104,6 @@ public:
 	constexpr bool operator==(Array const& o) const&{ // TODO assert extensions are equal?
 		return (this->extension()==extension(o)) and adl_equal(this->begin(), this->end(), adl_begin(o));
 	}
-
-//	constexpr bool operator==(basic_array const& other) const&{
-//		return (this->extension()==extension(std::move(modify(other))))
-//			and adl_equal(std::move(*this).begin(), std::move(*this).end(), std::move(modify(other)).begin());
-//		return this->operator==<basic_array>(std::move(other));
-//	}
-//	constexpr bool operator==(basic_array&& other)&&{
-//		return (basic_array::extension()==extension(std::move(other))) 
-//			and adl_equal(std::move(*this).begin(), std::move(*this).end(), adl::begin(std::move(other)));
-//		return this->operator==<basic_array>(std::move(other));
-//	}
 	bool operator<(basic_array const& o) const&{return lexicographical_compare(*this, o);}//operator< <basic_array const&>(o);}
 	template<class Array> void swap(Array&& o)&&{{using multi::extension; assert(this->extension() == extension(o));}
 		adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
