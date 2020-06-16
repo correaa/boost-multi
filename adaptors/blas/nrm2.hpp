@@ -27,7 +27,7 @@ using std::norm; // for some reason nvcc needs using std::norm/norm (and works i
 
 template<class X1D, 
 	typename T = decltype(norm(std::declval<typename X1D::value_type>())),
-	typename Alloc = typename std::allocator_traits<decltype(get_allocator(std::declval<X1D>()))>::template rebind_alloc<T>
+	typename Alloc = typename std::allocator_traits<typename X1D::default_allocator_type>::template rebind_alloc<T>
 >
 auto nrm2(X1D const& x){
 	return nrm2(x, multi::static_array<T, 0, Alloc>{}); // TODO: this supports only default constructible (deduced) allocator
@@ -52,6 +52,8 @@ BOOST_AUTO_TEST_CASE(multi_adaptor_multi_nrm2_real){
 		{5.,  6.,  7.,  8.},
 		{9., 10., 11., 12.}
 	};
+	
+	multi::static_array<double, 0> sarr(std::allocator<double>{});
 
 	double n;
 	BOOST_REQUIRE( blas::nrm2(rotated(cA)[1], n) ==  std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
