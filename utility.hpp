@@ -25,7 +25,9 @@ template<class Array, typename Reference, typename Element>
 struct array_traits{
 	using reference = typename Array::reference;
 	using element   = typename Array::element;
+	using element_ptr = typename Array::element_ptr;
 	using decay_type = typename Array::decay_type;
+	using default_allocator_type = typename Array::default_allocator_type;
 };
 
 /*template<class Element>

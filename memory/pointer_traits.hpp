@@ -8,6 +8,8 @@ $CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 
 #include<memory> 
 
+#include<experimental/type_traits> // std::experimental::void_t
+
 namespace boost{
 namespace multi{
 
@@ -50,10 +52,34 @@ template<class Pointer> std::allocator<typename std::iterator_traits<Pointer>::v
 template<class T> std::allocator<typename std::iterator_traits<T*>::value_type> dat_aux(Priority<1>, T*);
 template<class FancyPtr> typename FancyPtr::default_allocator_type dat_aux(Priority<2>, FancyPtr);
 
-template<class Pointer>
-struct pointer_traits/*, typename Pointer::default_allocator_type>*/ : std::pointer_traits<Pointer>{
-	using default_allocator_type = decltype(dat_aux(Priority<2>{}, std::declval<Pointer>()));
+template<class... T> using void_t = std::experimental::void_t<T...>;
+
+template <typename T, typename = void>
+struct pointer_traits_impl{};
+
+template <typename Pointer>
+struct pointer_traits_impl<
+	Pointer, 
+	void_t<
+		std::pointer_traits<Pointer>, 
+		typename Pointer::default_allocator_type//,
+//		typename = decltype(Pointer::default_allocator())
+	>
+> : std::pointer_traits<Pointer>{
+	using default_allocator_type = typename Pointer::default_allocator_type;
+//	default_allocator_type default_allocator_of(Pointer p){return p.default_allocator();}
 };
+
+template<typename T> struct pointer_traits : pointer_traits_impl<T>{};
+
+template<typename T> struct pointer_traits<T*> : std::pointer_traits<T*>{
+	using default_allocator_type = std::allocator<typename std::pointer_traits<T*>::element_type>;
+};
+
+//template<class Pointer>
+//struct pointer_traits/*, typename Pointer::default_allocator_type>*/ : std::pointer_traits<Pointer>{
+//	using default_allocator_type = decltype(dat_aux(Priority<2>{}, std::declval<Pointer>()));
+//};
 
 //template<class T> struct pointer_traits<T*> : std::pointer_traits<T*>{
 //	using default_allocator_type = std::allocator<typename std::iterator_traits<T*>::value_type>;
@@ -67,10 +93,14 @@ struct pointer_traits/*, typename Pointer::default_allocator_type>*/ : std::poin
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi memory pointer traits"
 #include<boost/test/unit_test.hpp>
 
+
+
 namespace multi = boost::multi;
+using vv = std::experimental::void_t<double>;
 
 BOOST_AUTO_TEST_CASE(multi_pointer_traits){
-	static_assert(std::is_same<multi::pointer_traits<double*>::default_allocator_type, std::allocator<double>>{}, "!");
+	static_assert(std::is_same<multi::pointer_traits<double*>::default_allocator_type, std::allocator<double>>{}, 
+		"default allocator of raw pointer should be std allocator");
 }
 
 #endif
