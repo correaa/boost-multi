@@ -476,40 +476,41 @@ public:
 	friend decltype(auto) transposed(basic_array const& self){return self.transposed();}
 	friend decltype(auto) operator~(basic_array const& self){return self.transposed();}
 
-	
-	decltype(auto) rotated()&{
-		typename types::layout_t new_layout = *this; new_layout.rotate();
-		return basic_array{new_layout, types::base_};
-	}
-	decltype(auto) rotated()&&{
-		typename types::layout_t new_layout = *this; new_layout.rotate();
-		return basic_array{new_layout, types::base_};
-	}
-	decltype(auto) rotated() const&{
+	basic_const_array rotated() const&{
 		typename types::layout_t new_layout = *this; new_layout.rotate();
 		typename basic_const_array::element_ptr new_base_{types::base_};
-		return basic_const_array{new_layout, new_base_};
+		return {new_layout, new_base_};
+	}	
+	basic_array rotated()&{
+		typename types::layout_t new_layout = *this; new_layout.rotate();
+		return {new_layout, types::base_};
 	}
-	friend decltype(auto) rotated(basic_array const&  self){return self.rotated();}
-	friend decltype(auto) rotated(basic_array      && self){return std::move(self).rotated();}
-	friend decltype(auto) rotated(basic_array      &  self){return self.rotated();}
+	basic_array rotated()&&{
+		typename types::layout_t new_layout = *this; new_layout.rotate();
+		return {new_layout, types::base_};
+	}
+	friend basic_const_array rotated(basic_array const& self){return self.rotated();}
+	friend basic_array       rotated(basic_array      & self){return self.rotated();}
+	friend basic_array       rotated(basic_array     && self){return std::move(self).rotated();}
 
-	auto unrotated() &{
+	basic_array<T, D, ElementPtr> unrotated() &{
+		typename types::layout_t new_layout = *this; 
+		new_layout.unrotate();
+		return {new_layout, types::base_};
+	}
+	basic_array<T, D, ElementPtr> unrotated() &&{
 		typename types::layout_t new_layout = *this; 
 		new_layout.unrotate();
 		return basic_array<T, D, ElementPtr>{new_layout, types::base_};
 	}
-	auto unrotated() &&{
+	basic_const_array unrotated() const&{
 		typename types::layout_t new_layout = *this; 
 		new_layout.unrotate();
-		return basic_array<T, D, ElementPtr>{new_layout, types::base_};
+		return {new_layout, types::base_};
 	}
-	auto unrotated() const&{
-		typename types::layout_t new_layout = *this; 
-		new_layout.unrotate();
-		return basic_const_array{new_layout, types::base_};
-	}
-	friend auto unrotated(basic_array const& self){return self.unrotated();}
+	friend basic_const_array unrotated(basic_array const& self){return self.unrotated();}
+	friend basic_array       unrotated(basic_array      & self){return self.unrotated();}
+	friend basic_array       unrotated(basic_array     && self){return std::move(self).unrotated();}
 
 	basic_array rotated(dimensionality_type i) &{
 		typename types::layout_t new_layout = *this; 
