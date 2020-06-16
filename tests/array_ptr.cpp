@@ -12,12 +12,7 @@ $CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 namespace multi = boost::multi;
 namespace utf = boost::unit_test;
 
-#ifndef __NVCC__
-BOOST_AUTO_TEST_CASE(multi_array_ptr, *utf::timeout(2))
-#else
-BOOST_AUTO_TEST_CASE(multi_array_ptr)
-#endif
-{
+BOOST_AUTO_TEST_CASE(multi_array_ptr, *utf::timeout(2)){
 	{
 		double a[4][5] = {
 			{ 0,  1,  2,  3,  4}, 
@@ -76,7 +71,8 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr)
 		multi::array_cptr<double, 2> v2P2D(v2.data(), {10, 10});
 
 		*v1P2D = *v2P2D;
-		v1P2D->operator=(*v2P2D);
+	//	v2P2D->operator=(*v2P2D);
+	//	v1P2D->operator=(*v2P2D);
 
 		BOOST_REQUIRE( v1[8] == 4. );
 	}
