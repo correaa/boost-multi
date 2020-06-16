@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x -lcudart -lcublas -lboost_unit_test_framework `pkg-config --libs blas` -lboost_system&&$0x&&rm $0x;exit
+$CXX $0 -o $0x -lcudart -lcublas -lboost_unit_test_framework `pkg-config --libs blas`&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -19,6 +19,37 @@ namespace multi = boost::multi;
 namespace cuda = multi::cuda;
 
 using complex = std::complex<double>; constexpr complex I{0, 1};
+
+BOOST_AUTO_TEST_CASE(multi_blas_cuda_herk_real){
+	namespace blas = multi::blas;
+	multi::array<double, 2> const a = {
+		{ 1., 3., 4.},
+		{ 9., 7., 1.}
+	};
+	{
+		multi::array<double, 2> c({2, 2}, 9999);
+		blas::herk(1., a, c);
+		BOOST_REQUIRE( c[1][0] == 34 );
+		BOOST_REQUIRE( c[0][1] == 34 );
+
+		multi::array<double, 2> const c_copy = blas::herk(1., a);
+		BOOST_REQUIRE( c == c_copy );
+	}
+	{
+//		cuda::array<double, 2> acu = a; 
+//		BOOST_REQUIRE(a == acu);
+
+//		cuda::array<double, 2> ccu({2, 2}, 9999.);
+
+	//	blas::herk(acu, ccu);
+	//	BOOST_REQUIRE( ccu[1][0] == 34 );
+	//	BOOST_REQUIRE( ccu[0][1] == 34 );
+
+	//	cuda::array<double, 2> const ccu_copy = blas::herk(1., acu);
+	//	BOOST_REQUIRE( herk(1., acu) == ccu );
+	}
+
+}
 
 BOOST_AUTO_TEST_CASE(multi_blas_cuda_herk_complex){
 	namespace blas = multi::blas;
@@ -114,38 +145,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_cuda_herk_row){
 	}
 }
 
-#if 1
-BOOST_AUTO_TEST_CASE(multi_blas_cuda_herk_real){
-	namespace blas = multi::blas;
-	multi::array<double, 2> const a = {
-		{ 1., 3., 4.},
-		{ 9., 7., 1.}
-	};
-	{
-		multi::array<double, 2> c({2, 2}, 9999);
-		blas::herk(1., a, c);
-		BOOST_REQUIRE( c[1][0] == 34 );
-		BOOST_REQUIRE( c[0][1] == 34 );
 
-		multi::array<double, 2> const c_copy = blas::herk(1., a);
-		BOOST_REQUIRE( c == c_copy );
-	}
-	{
-		cuda::array<double, 2> acu = a; 
-		BOOST_REQUIRE(a == acu);
-
-		cuda::array<double, 2> ccu({2, 2}, 9999.);
-
-	//	blas::herk(acu, ccu);
-	//	BOOST_REQUIRE( ccu[1][0] == 34 );
-	//	BOOST_REQUIRE( ccu[0][1] == 34 );
-
-	//	cuda::array<double, 2> const ccu_copy = blas::herk(1., acu);
-	//	BOOST_REQUIRE( herk(1., acu) == ccu );
-	}
-
-}
-#endif
 
 #if 0
 	{
