@@ -348,26 +348,25 @@ public:
 #endif
 #endif
 //	using const_reverse_iterator = basic_reverse_iterator<const_iterator>;
-	basic_array<T, D, typename static_array::element_const_ptr> rotated(dimensionality_type d = 1) const&{
+	auto rotated(dimensionality_type d = 1) const&{
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate(d);
 		return basic_array<T, D, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
-	basic_array<T, D, typename static_array::element_ptr> rotated(dimensionality_type d = 1)&{
+	auto rotated(dimensionality_type d = 1)&{
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate(d);
 		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
 	}
-	basic_array<T, D, typename static_array::element_ptr> rotated(dimensionality_type d = 1)&&{
+	auto rotated(dimensionality_type d = 1)&&{
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate(d);
 		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
 	}
 //	friend decltype(auto) rotated(static_array const& self){return self.rotated();}
 //	template<class Array, typename = std::enable_if_t<std::is_same<static_array, std::decay_t<Array>>{}> > 
-	friend basic_array<T, D, typename static_array::element_const_ptr> rotated(static_array const& self){return self.rotated();}
-	friend basic_array<T, D, typename static_array::element_ptr      > rotated(static_array     && self){return std::move(self).rotated();}
-	friend basic_array<T, D, typename static_array::element_ptr      > rotated(static_array      & self){return self.rotated();}
+	friend decltype(auto) rotated(static_array& self){return self.rotated();}
+	friend decltype(auto) rotated(static_array const& self){return self.rotated();}
 
 	auto unrotated(dimensionality_type d = 1) const&{
 		typename static_array::layout_t new_layout = *this;

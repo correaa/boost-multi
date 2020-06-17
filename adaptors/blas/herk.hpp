@@ -27,14 +27,10 @@ namespace boost{
 namespace multi{namespace blas{
 
 template<class A, std::enable_if_t<not is_conjugated<A>{}, int> =0> 
-auto base_aux(A&& a)
-->decltype(base(a)){
-	return base(a);}
+auto base_aux(A&& a){return base(a);}
 
 template<class A, std::enable_if_t<    is_conjugated<A>{}, int> =0>
-auto base_aux(A&& a)
-->decltype(underlying(base(a))){
-	return underlying(base(a));}
+auto base_aux(A&& a){return underlying(base(a));}
 
 using core::herk;
 
@@ -171,7 +167,8 @@ template<class M> decltype(auto) print(M const& C){
 	return cout << std::endl;
 }
 
-using complex = std::complex<double>; constexpr complex I(0, 1);
+using complex = std::complex<double>; 
+constexpr complex I(0, 1);
 
 BOOST_AUTO_TEST_CASE(inq_case){
 	using namespace multi::blas;
@@ -223,23 +220,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_real_case){
 	BOOST_REQUIRE( B[0][0] == 1.*1. + 2.*2. + 3.*3. );
 }
 
-BOOST_AUTO_TEST_CASE(multi_blas_herk_real){
-	namespace blas = multi::blas;
-	multi::array<double, 2> const a = {
-		{ 1., 3., 4.},
-		{ 9., 7., 1.}
-	};
-	{
-		multi::array<double, 2> c({2, 2}, 9999);
-		blas::herk(1., a, c);
-		BOOST_REQUIRE( c[1][0] == 34 );
-		BOOST_REQUIRE( c[0][1] == 34 );
-
-		BOOST_REQUIRE( c == blas::herk(1., a) );
-	}
-}
-
-BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_real_case_scale, *utf::tolerance(0.00001)){ // this needs BOOST_PP_VARIADICS 1 to work on nvcc
+BOOST_AUTO_TEST_CASE(multi_blas_herk1x1_complex_real_case_scale, *utf::tolerance(0.00001)){
 	namespace blas = multi::blas;
 	multi::array<complex, 2> const A = {{1., 2., 3.}};
 	multi::array<complex, 2> B = blas::herk(0.1, A);

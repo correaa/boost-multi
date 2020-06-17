@@ -476,41 +476,40 @@ public:
 	friend decltype(auto) transposed(basic_array const& self){return self.transposed();}
 	friend decltype(auto) operator~(basic_array const& self){return self.transposed();}
 
-	basic_const_array rotated() const&{
+	
+	decltype(auto) rotated()&{
+		typename types::layout_t new_layout = *this; new_layout.rotate();
+		return basic_array{new_layout, types::base_};
+	}
+	decltype(auto) rotated()&&{
+		typename types::layout_t new_layout = *this; new_layout.rotate();
+		return basic_array{new_layout, types::base_};
+	}
+	decltype(auto) rotated() const&{
 		typename types::layout_t new_layout = *this; new_layout.rotate();
 		typename basic_const_array::element_ptr new_base_{types::base_};
-		return {new_layout, new_base_};
-	}	
-	basic_array rotated()&{
-		typename types::layout_t new_layout = *this; new_layout.rotate();
-		return {new_layout, types::base_};
+		return basic_const_array{new_layout, new_base_};
 	}
-	basic_array rotated()&&{
-		typename types::layout_t new_layout = *this; new_layout.rotate();
-		return {new_layout, types::base_};
-	}
-	friend basic_const_array rotated(basic_array const& self){return self.rotated();}
-	friend basic_array       rotated(basic_array      & self){return self.rotated();}
-	friend basic_array       rotated(basic_array     && self){return std::move(self).rotated();}
+	friend decltype(auto) rotated(basic_array const&  self){return self.rotated();}
+	friend decltype(auto) rotated(basic_array      && self){return std::move(self).rotated();}
+	friend decltype(auto) rotated(basic_array      &  self){return self.rotated();}
 
-	basic_array<T, D, ElementPtr> unrotated() &{
-		typename types::layout_t new_layout = *this; 
-		new_layout.unrotate();
-		return {new_layout, types::base_};
-	}
-	basic_array<T, D, ElementPtr> unrotated() &&{
+	auto unrotated() &{
 		typename types::layout_t new_layout = *this; 
 		new_layout.unrotate();
 		return basic_array<T, D, ElementPtr>{new_layout, types::base_};
 	}
-	basic_const_array unrotated() const&{
+	auto unrotated() &&{
 		typename types::layout_t new_layout = *this; 
 		new_layout.unrotate();
-		return {new_layout, types::base_};
+		return basic_array<T, D, ElementPtr>{new_layout, types::base_};
 	}
-	friend basic_const_array unrotated(basic_array const& self){return self.unrotated();}
-	friend basic_array       unrotated(basic_array      & self){return self.unrotated();}
-	friend basic_array       unrotated(basic_array     && self){return std::move(self).unrotated();}
+	auto unrotated() const&{
+		typename types::layout_t new_layout = *this; 
+		new_layout.unrotate();
+		return basic_const_array{new_layout, types::base_};
+	}
+	friend auto unrotated(basic_array const& self){return self.unrotated();}
 
 	basic_array rotated(dimensionality_type i) &{
 		typename types::layout_t new_layout = *this; 
@@ -934,7 +933,6 @@ protected:
 	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
 	friend decltype(auto) static_array_cast(basic_array<TT, DD, PP> const&);
 public:
-	using default_allocator_type = typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type;
 	template<class T2> friend auto reinterpret_array_cast(basic_array&& a){
 		return std::move(a).template reinterpret_array_cast<T2, typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>();
 	}
@@ -1105,6 +1103,17 @@ public:
 	constexpr bool operator==(Array const& o) const&{ // TODO assert extensions are equal?
 		return (this->extension()==extension(o)) and adl_equal(this->begin(), this->end(), adl_begin(o));
 	}
+
+//	constexpr bool operator==(basic_array const& other) const&{
+//		return (this->extension()==extension(std::move(modify(other))))
+//			and adl_equal(std::move(*this).begin(), std::move(*this).end(), std::move(modify(other)).begin());
+//		return this->operator==<basic_array>(std::move(other));
+//	}
+//	constexpr bool operator==(basic_array&& other)&&{
+//		return (basic_array::extension()==extension(std::move(other))) 
+//			and adl_equal(std::move(*this).begin(), std::move(*this).end(), adl::begin(std::move(other)));
+//		return this->operator==<basic_array>(std::move(other));
+//	}
 	bool operator<(basic_array const& o) const&{return lexicographical_compare(*this, o);}//operator< <basic_array const&>(o);}
 	template<class Array> void swap(Array&& o)&&{{using multi::extension; assert(this->extension() == extension(o));}
 		adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
