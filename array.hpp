@@ -583,7 +583,9 @@ public:
 	operator typename std::iterator_traits<typename static_array::element_ptr>::reference()&{
 		return *(this->base_);
 	}
-
+	explicit operator typename std::iterator_traits<typename static_array::element_const_ptr>::value_type(){
+		return *(this->base_);
+	}
 //	basic_array<T, D, typename static_array::element_ptr> 
 //	decltype(auto) operator()()&{
 //		return ref::operator()();
