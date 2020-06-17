@@ -18,19 +18,19 @@ namespace blas{
 
 using core::nrm2;
 
-template<class X1D, class R0D>
-auto nrm2(X1D const& x, R0D&& r)
-->decltype(nrm2(size(x), base(x), stride(x), base(r)), std::forward<R0D>(r)){
-	return nrm2(size(x), base(x), stride(x), base(r)), std::forward<R0D>(r);}
+template<class Arr1D, class Arr0D>
+auto nrm2(Arr1D const& x, Arr0D&& r)
+->decltype(nrm2(size(x), base(x), stride(x), base(r)), std::forward<Arr0D>(r)){
+	return nrm2(size(x), base(x), stride(x), base(r)), std::forward<Arr0D>(r);}
 
 using std::norm; // for some reason nvcc needs using std::norm/norm (and works in clang, gcc, culang, icc)
 
-template<class X1D, 
-	typename T = decltype(norm(std::declval<typename X1D::value_type>())),
-	typename Alloc = typename std::allocator_traits<decltype(get_allocator(std::declval<X1D>()))>::template rebind_alloc<T>
+template<class Arr1D, 
+	typename T = decltype(norm(std::declval<typename Arr1D::value_type>())),
+	typename Alloc = typename std::allocator_traits<typename Arr1D::default_allocator_type>::template rebind_alloc<T>
 >
-auto nrm2(X1D const& x){
-	return nrm2(x, multi::static_array<T, 0, Alloc>{}); // TODO: this supports only default constructible (deduced) allocator
+auto nrm2(Arr1D const& x, Alloc const& alloc = {}){
+	return nrm2(x, multi::static_array<T, 0, Alloc>({}, alloc));
 }
 
 }}}
@@ -55,11 +55,18 @@ BOOST_AUTO_TEST_CASE(multi_adaptor_multi_nrm2_real){
 
 	double n;
 	BOOST_REQUIRE( blas::nrm2(rotated(cA)[1], n) ==  std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
+	BOOST_REQUIRE( n == std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
 	BOOST_REQUIRE( blas::nrm2(rotated(cA)[1]) ==  std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
 
 	multi::array<double, 1> R(4);
 	blas::nrm2( rotated(cA)[1], R[2]);
 	BOOST_REQUIRE( R[2] ==  std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
+
+	multi::array<double, 0> R0;
+	blas::nrm2( rotated(cA)[1], R0);
+	BOOST_REQUIRE( R0 ==  std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
+	
+	BOOST_REQUIRE( blas::nrm2( rotated(cA)[1], std::allocator<double>{} ) == std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
 
 }
 
