@@ -12,12 +12,7 @@ $CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #include<boost/iterator/transform_iterator.hpp>
 #include<boost/functional/hash.hpp>
 
-#include<functional>
-#include<iostream>
-#include<vector>
-
 namespace multi = boost::multi;
-using std::cout;
 
 multi::array_ref<double, 2> make_ref(double* p){return {p, {5, 7}};}
 
@@ -29,7 +24,7 @@ BOOST_AUTO_TEST_CASE(range_assignment){
 		boost::make_transform_iterator(r.begin(), f), 
 		boost::make_transform_iterator(r.end()  , f)
 	);
-	assert( v[1] == 7 );
+	BOOST_REQUIRE( v[1] == 7 );
 }
 {
 	auto r = multi::make_range(5, 10);
@@ -38,13 +33,13 @@ BOOST_AUTO_TEST_CASE(range_assignment){
 		boost::make_transform_iterator(r.begin(), f), 
 		boost::make_transform_iterator(r.end()  , f)
 	);
-	assert( v[1] == 7 );
+	BOOST_REQUIRE( v[1] == 7 );
 }
 {
 	auto r = multi::make_extension_t(10l);
 	multi::array<double, 1> v(r.begin(), r.end());
-	assert( r.size() == v.size() );
-	assert( v[1] = 10 );
+	BOOST_REQUIRE( r.size() == v.size() );
+	BOOST_REQUIRE( v[1] = 10 );
 }
 {
 	auto r = multi::make_extension_t(10l);
@@ -64,14 +59,11 @@ BOOST_AUTO_TEST_CASE(range_assignment){
 	//	boost::hash_combine(seed, );
 //	seed ^= boost::hash<std::size_t>{}(13) + 0x9e3779b9 + (seed<<6) + (seed>>2);
 	boost::hash_combine(seed, 13);
-	std::cerr << seed << std::endl;
-//	std::cerr << seed*1./std::numeric_limits<std::size_t>::max() << std::endl;
 
-	assert( v.size() == r.size() );
-	assert( v[1] >= 0. );
-	assert( v[1] < 1.  );
-	assert( std::all_of(begin(v), end(v), [](auto x){
-		std::cout << x << std::endl;
+	BOOST_REQUIRE( v.size() == r.size() );
+	BOOST_REQUIRE( v[1] >= 0. );
+	BOOST_REQUIRE( v[1] < 1.  );
+	BOOST_REQUIRE( std::all_of(begin(v), end(v), [](auto x){
 		return x >= 0. and x < 1.;
 	}) );
 }
@@ -79,7 +71,7 @@ BOOST_AUTO_TEST_CASE(range_assignment){
 	multi::array<double, 1> v(10);
 	auto r = extension(v);
 	v.assign(r.begin(), r.end());
-	assert( v[1] == 1 );
+	BOOST_REQUIRE( v[1] == 1 );
 }
 {
 	multi::array<double, 1> v(10);
@@ -89,7 +81,7 @@ BOOST_AUTO_TEST_CASE(range_assignment){
 		boost::make_transform_iterator(r.begin(), f),
 		boost::make_transform_iterator(r.end()  , f)
 	);
-	assert( v[1] == 2 );
+	BOOST_REQUIRE( v[1] == 2 );
 }
 }
 
