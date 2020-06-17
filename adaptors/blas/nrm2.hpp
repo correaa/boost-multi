@@ -57,6 +57,9 @@ BOOST_AUTO_TEST_CASE(multi_adaptor_multi_nrm2_real){
 	BOOST_REQUIRE( blas::nrm2(rotated(cA)[1], n) ==  std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
 	BOOST_REQUIRE( n == std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
 	BOOST_REQUIRE( blas::nrm2(rotated(cA)[1]) ==  std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
+	
+	double n2 = blas::nrm2(rotated(cA)[1]);
+	BOOST_REQUIRE( n == n2 );
 
 	multi::array<double, 1> R(4);
 	blas::nrm2( rotated(cA)[1], R[2]);
@@ -66,7 +69,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptor_multi_nrm2_real){
 	blas::nrm2( rotated(cA)[1], R0);
 	BOOST_REQUIRE( R0 ==  std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
 	
-	BOOST_REQUIRE( blas::nrm2( rotated(cA)[1], std::allocator<double>{} ) == std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
+	BOOST_REQUIRE( blas::nrm2(rotated(cA)[1]) == std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
 
 }
 
