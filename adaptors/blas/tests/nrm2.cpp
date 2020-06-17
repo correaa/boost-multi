@@ -40,6 +40,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_nrm2){
 		multi::cuda::array<double, 2> Agpu = A;
 		double n = 99.;
 		blas::nrm2(Agpu[1], n); // cuda supports putting scalar results in CPU
+		double n2{blas::nrm2(Agpu[1])};
+		BOOST_REQUIRE( n == n2 );
 	}
 }
 
