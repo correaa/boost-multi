@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x -lcudart -lcublas -lboost_unit_test_framework `pkg-config --libs blas` -lboost_system&&$0x&&rm $0x;exit
+$CXX $0 -o $0x -lcudart -lcublas -lboost_unit_test_framework `pkg-config --libs blas`&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -127,8 +127,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_cuda_herk_real){
 		BOOST_REQUIRE( c[1][0] == 34 );
 		BOOST_REQUIRE( c[0][1] == 34 );
 
-		multi::array<double, 2> const c_copy = blas::herk(1., a);
-		BOOST_REQUIRE( c == c_copy );
+	//	multi::array<double, 2> const c_copy = blas::herk(1., a);
+	//	BOOST_REQUIRE( c == c_copy );
 	}
 	{
 		cuda::array<double, 2> acu = a; 
