@@ -27,20 +27,24 @@ namespace boost{
 namespace multi{namespace blas{
 
 template<class A, std::enable_if_t<not is_conjugated<A>{}, int> =0> 
-auto base_aux(A&& a){return base(a);}
+auto base_aux(A&& a)
+->decltype(base(a)){
+	return base(a);}
 
 template<class A, std::enable_if_t<    is_conjugated<A>{}, int> =0>
-auto base_aux(A&& a){return underlying(base(a));}
+auto base_aux(A&& a)
+->decltype(underlying(base(a))){
+	return underlying(base(a));}
 
 using core::herk;
 
 template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr, std::enable_if_t<is_complex<C2D>{}, int> =0>
 auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c)
-->decltype(herk('\0', '\0', size(c), size(         a), alpha, base_aux(a), stride(rotated(a)), beta, base_aux(c), stride(c)), std::forward<C2D>(c))
+->decltype(herk('\0', '\0',size(c), size(a), alpha, base_aux(a), stride(a.rotated()), beta, base_aux(c), stride(c)), std::forward<C2D>(c))
 {
 	assert( size(a) == size(c) );
 	assert( size(c) == size(rotated(c)) );
-	if( is_conjugated<C2D>{} ){ herk(flip(c_side), alpha, a, beta, hermitized(c)); return std::forward<C2D>(c);}
+	if(is_conjugated<C2D>{}){herk(flip(c_side), alpha, a, beta, hermitized(c)); return std::forward<C2D>(c);}
 	if(size(c)==0) return std::forward<C2D>(c);
 	{
 		auto base_a = base_aux(a);
@@ -193,6 +197,23 @@ BOOST_AUTO_TEST_CASE(inq_case){
 	}
 	{
 		BOOST_REQUIRE( herk(2.0, a) == gemm(2.0, a, T(a)) );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_blas_herk_real){
+	namespace blas = multi::blas;
+	multi::array<double, 2> const a = {
+		{ 1., 3., 4.},
+		{ 9., 7., 1.}
+	};
+	{
+		multi::array<double, 2> c({2, 2}, 9999);
+		blas::herk(1., a, c);
+		BOOST_REQUIRE( c[1][0] == 34 );
+		BOOST_REQUIRE( c[0][1] == 34 );
+
+		multi::array<double, 2> const c_copy = blas::herk(1., a);
+		BOOST_REQUIRE( c == c_copy );
 	}
 }
 
