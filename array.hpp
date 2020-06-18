@@ -555,10 +555,10 @@ public:
 	friend constexpr typename static_array::element_const_ptr data(static_array const& s)
 	{return s.data_elements();}
 
-	constexpr typename static_array::element_ptr       base()      {return ref::base();}
-	constexpr typename static_array::element_const_ptr base() const{return typename static_array::element_const_ptr{ref::base()};}
-	friend typename static_array::element_ptr       base(static_array&       s){return s.base();}
-	friend typename static_array::element_const_ptr base(static_array const& s){return s.base();}
+	       constexpr typename static_array::element_ptr       base()                 &   {return ref::base();}
+	       constexpr typename static_array::element_const_ptr base()            const&   {return ref::base();}
+	friend constexpr typename static_array::element_ptr       base(static_array&       s){return s.base();}
+	friend constexpr typename static_array::element_const_ptr base(static_array const& s){return s.base();}
 
 	typename static_array::element_ptr       origin()      {return ref::origin();}
 	typename static_array::element_const_ptr origin() const{return ref::origin();}
