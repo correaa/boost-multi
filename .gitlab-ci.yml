@@ -195,9 +195,10 @@ blas&fftGPU:
 icpc:
     stage: test
     tags:
-      - cuda_gpu
+      - intel_compiler
     script:
       - export PATH=/usr/local/cuda/bin:$PATH
+      - . /opt/intel/system_studio_2020/bin/compilervars.sh intel64 
       - export CXX="icpc -fopenmp -std=c++14 -diag-disable=remark -x c++ -Wall -Wextra -Ofast -ldl -pthread "
       - $CXX --version
       - cd tests
