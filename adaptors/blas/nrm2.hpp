@@ -43,6 +43,8 @@ auto nrm2(Arr1D const& x, Alloc const& alloc = {}){
 
 #include "../../array.hpp"
 
+#include<thrust/complex.h>
+
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(multi_adaptor_multi_nrm2_real){
@@ -77,6 +79,20 @@ using complex = std::complex<double>; complex const I{0,1};
 
 BOOST_AUTO_TEST_CASE(multi_adaptor_multi_nrm2_complex_real_case){
 	multi::array<complex, 2> const cA = {
+		{1.,  2.,  3.,  4.},
+		{5.,  6.,  7.,  8.},
+		{9., 10., 11., 12.}
+	};
+
+	using multi::blas::nrm2;
+	double n; 
+	BOOST_REQUIRE( nrm2(rotated(cA)[1], n) == std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
+
+	BOOST_REQUIRE( nrm2(rotated(cA)[1]) == std::sqrt( 2.*2. + 6.*6 + 10.*10.) );
+}
+
+BOOST_AUTO_TEST_CASE(multi_adaptor_multi_nrm2_complex_real_case_thrust){
+	multi::array<thrust::complex<double>, 2> const cA = {
 		{1.,  2.,  3.,  4.},
 		{5.,  6.,  7.,  8.},
 		{9., 10., 11., 12.}

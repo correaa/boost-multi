@@ -166,6 +166,29 @@ namespace boost{
 namespace multi{
 namespace blas{
 
+template<class T> struct complex_ptr{
+	std::complex<T>* impl_;
+	template<class TT, std::enable_if_t<sizeof(*TT{})==sizeof(TT{}->real())+sizeof(TT{}->imag()), int> =0>
+	complex_ptr(TT tt) : impl_{reinterpret_cast<std::complex<T>*>(tt)}{}
+	operator std::complex<T>*() const{return impl_;}
+};
+
+template<class T> struct complex_const_ptr{
+	std::complex<T> const* impl_;
+	template<class TT, std::enable_if_t<sizeof(*TT{})==sizeof(TT{}->real())+sizeof(TT{}->imag()), int> =0>
+	complex_const_ptr(TT tt) : impl_{reinterpret_cast<std::complex<T> const*>(tt)}{}
+	operator std::complex<T> const*() const{return impl_;}
+};
+
+template<class T> struct add_ptr{using type = T*;};
+template<class T> struct add_const_ptr{using type = T const*;};
+
+template<class T> struct add_ptr<std::complex<T>>{using type = complex_ptr<T>;};
+template<class T> struct add_const_ptr<std::complex<T>>{using type = complex_const_ptr<T>;};
+
+template<class T> using add_ptr_t = typename add_ptr<T>::type;
+template<class T> using add_const_ptr_t = typename add_const_ptr<T>::type;
+
 using s = float;
 using d = double;
 using c = std::complex<s>;
@@ -247,12 +270,15 @@ template<class S> s dot(S n, s const& b, s const* x, S incx, s const* y, S incy)
 
 }
 
-#define xnrm2(R, T, TT) template<class S>    v nrm2 (S n, T const* x, S incx, R* r){*r = BLAS(TT##nrm2  )(BC(n), x, BC(incx));}
+#define xnrm2(R, T, TT) template<class S>    v nrm2 (S n, add_const_ptr_t<T> x, S incx, R* r){*r = BLAS(TT##nrm2  )(BC(n), x, BC(incx));}
 #define xasum(T, TT)    template<class S> auto asum (S n, T const* x, S incx){return BLAS(TT##asum  )(BC(n), x, BC(incx));}
 #define ixamax(T)       template<class S> auto iamax(S n, T const* x, S incx){return BLAS(i##T##amax)(BC(n), x, BC(incx)) - 1;}
 xasum(s, s)    xasum(d, d)                        xasum (c, sc)                  xasum(z, dz)
 namespace core{
 	xnrm2(s, s, s) xnrm2(d, d, d)  xnrm2(s, c, sc) xnrm2(d, z, dz)
+	
+//	template<class S>    v nrm2 (S n, typename add_const_ptr<std::complex<double>>::type x, S incx, d* r){*r = BLAS(dznrm2  )(BC(n), x, BC(incx));}
+	
 	ixamax(s)      ixamax(d)       ixamax(c)       ixamax(z)
 }
 #undef xnrm2
