@@ -54,11 +54,13 @@ BOOST_AUTO_TEST_CASE(array_partitioned){
 	BOOST_REQUIRE(  size(A2) == 6 );
 	BOOST_REQUIRE(( sizes(A2) == decltype(sizes(A2)){6, 2} ));
 
-//	BOOST_REQUIRE( size(*(&A2/3)[0]) == 2 );
 	BOOST_REQUIRE( size(A2.partitioned(3)) == 3 );
 	BOOST_REQUIRE( dimensionality(A2.partitioned(3)) == 3 );
 
 	BOOST_REQUIRE(( sizes(A2.partitioned(3)) == decltype(sizes(A2.partitioned(3))){3, 2, 2} ));
 	
+	BOOST_REQUIRE( size(A2.partitioned(1)) == 1 );
+	BOOST_REQUIRE( dimensionality(A2.partitioned(1)) == 3 );
+	BOOST_REQUIRE( &A2.partitioned(1).rotated()[3][1][0] == &A2[3][1] );
 }
 
