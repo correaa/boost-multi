@@ -418,86 +418,6 @@ auto dft_backward(A const& a)
 
 }}
 
-#include "../adaptors/cuda.hpp"
-
-namespace boost{
-namespace multi{
-namespace fft{
-	using cufft::many_dft;
-	using cufft::dft;
-	using cufft::dft_forward;
-	using cufft::dft_backward;
-
-	template<class Complex, dimensionality_type D, class... PAs, class... As, class Out>
-	auto dft(basic_array<Complex, D, memory::cuda::managed::ptr<PAs...>, As...> const& i, Out&& o, int s)
-	->decltype(cufft::dft(i, std::forward<Out>(o), s)){
-		return cufft::dft(i, std::forward<Out>(o), s);}
-
-	template<class Complex, dimensionality_type D, class... AAs, class Out>
-	auto dft(array<Complex, D, memory::cuda::managed::allocator<AAs...> > const& i, Out&& o, int s)
-	->decltype(cufft::dft(i, std::forward<Out>(o), s)){
-		return cufft::dft(i, std::forward<Out>(o), s);}
-
-// TODO replace this by dispatching through pointer type
-
-	template<class Complex, dimensionality_type D, class... AAs> NODISCARD("when first argument is const")
-	auto dft(array<Complex, D, memory::cuda::managed::allocator<AAs...> > const& i, int s)
-	->decltype(cufft::dft(i, s)){
-		return cufft::dft(i, s);}
-
-	template<class Complex, dimensionality_type D, class... PAs, class... As, class Out>
-	auto dft(std::array<bool, D> which, basic_array<Complex, D, memory::cuda::managed::ptr<PAs...>, As...> const& i, Out&& o, int s)
-	->decltype(cufft::dft(which, i, std::forward<Out>(o), s)){
-		return cufft::dft(which, i, std::forward<Out>(o), s);}
-
-	template<class Complex, dimensionality_type D, class... PAs, class... As, class Out>
-	auto dft(std::array<bool, D> which, basic_array<Complex, D, memory::cuda::managed::ptr<PAs...>, As...>&& i, Out&& o, int s)
-	->decltype(cufft::dft(which, i, std::forward<Out>(o), s)){
-		return cufft::dft(which, i, std::forward<Out>(o), s);}
-
-	template<class Complex, dimensionality_type D, class... AAs, class Out>
-	auto dft(std::array<bool, D> which, array<Complex, D, memory::cuda::managed::allocator<AAs...> > const& i, Out&& o, int s)
-	->decltype(cufft::dft(which, i, std::forward<Out>(o), s)){
-		return cufft::dft(which, i, std::forward<Out>(o), s);}
-
-	template<class Complex, dimensionality_type D, class... AAs> NODISCARD("when first argument is const")
-	auto dft(std::array<bool, D> which, array<Complex, D, memory::cuda::managed::allocator<AAs...> > const& i, int s)
-	->decltype(cufft::dft(which, i, s)){
-		return cufft::dft(which, i, s);}
-
-	template<class... Arr, class Complex, dimensionality_type D, class... PAs, class... As, class Out>
-	auto dft_forward(Arr... which, basic_array<Complex, D, memory::cuda::managed::ptr<PAs...>, As...> const& i, Out&& o)
-	->decltype(cufft::dft_forward(which..., i, std::forward<Out>(o))){
-		return cufft::dft_forward(which..., i, std::forward<Out>(o));}
-
-	template<class... Arr, class Complex, dimensionality_type D, class... AAs, class Out>
-	auto dft_forward(Arr... which, array<Complex, D, memory::cuda::managed::allocator<AAs...> > const& i, Out&& o)
-	->decltype(cufft::dft_forward(which..., i, std::forward<Out>(o))){
-		return cufft::dft_forward(which..., i, std::forward<Out>(o));}
-
-	template<class... Arr, class Complex, dimensionality_type D, class... AAs> NODISCARD("when first argument is const")
-	auto dft_forward(Arr... which, array<Complex, D, memory::cuda::managed::allocator<AAs...> > const& i)
-	->decltype(cufft::dft_forward(which..., i)){
-		return cufft::dft_forward(which..., i);}
-
-	template<class... Arr, class Complex, dimensionality_type D, class... PAs, class... As, class Out>
-	auto dft_backward(Arr... which, basic_array<Complex, D, memory::cuda::managed::ptr<PAs...>, As...> const& i, Out&& o)
-	->decltype(cufft::dft_backward(which..., i, std::forward<Out>(o))){
-		return cufft::dft_backward(which..., i, std::forward<Out>(o));}
-
-	template<class... Arr, class Complex, dimensionality_type D, class... AAs, class Out>
-	auto dft_backward(Arr... which, array<Complex, D, memory::cuda::managed::allocator<AAs...> > const& i, Out&& o)
-	->decltype(cufft::dft_backward(which..., i, std::forward<Out>(o))){
-		return cufft::dft_backward(which..., i, std::forward<Out>(o));}
-
-	template<class... Arr, class Complex, dimensionality_type D, class... AAs> NODISCARD("when first argument is const")
-	auto dft_backward(Arr... which, array<Complex, D, memory::cuda::managed::allocator<AAs...> > const& i)
-	->decltype(cufft::dft_backward(which..., i)){
-		return cufft::dft_backward(which..., i);}
-
-}
-
-}}
 
 #if not __INCLUDE_LEVEL__ // TEST BELOW
 
@@ -510,6 +430,8 @@ namespace fft{
 #include "../adaptors/cuda.hpp"
 #include "../adaptors/fftw.hpp"
 #include "../adaptors/cufft.hpp"
+
+//#include "../adaptors/fft.hpp"
 
 #include<complex>
 #include<thrust/complex.h>
@@ -560,20 +482,20 @@ BOOST_AUTO_TEST_CASE(cufft_2D, *boost::unit_test::tolerance(0.0001)){
 
 	multi::cuda::array<complex, 2> const in_gpu = in_cpu;
 	multi::cuda::array<complex, 2> fw_gpu(extensions(in_gpu));
-	multi::fft::dft(in_gpu, fw_gpu, multi::fft::forward);
+	multi::cufft::dft(in_gpu, fw_gpu, multi::cufft::forward);
 
 	BOOST_TEST( imag(static_cast<complex>(fw_gpu[3][2]) - fw_cpu[3][2]) == 0. );
 
-	auto fw2_gpu = multi::fft::dft(in_gpu, multi::fft::forward);
+	auto fw2_gpu = multi::cufft::dft(in_gpu, multi::cufft::forward);
 	BOOST_TEST( imag(static_cast<complex>(fw2_gpu[3][1]) - fw_cpu[3][1]) == 0. );
 
 	multi::cuda::managed::array<complex, 2> const in_mng = in_cpu;
 	multi::cuda::managed::array<complex, 2> fw_mng(extensions(in_gpu));
-	multi::fft::dft(in_mng, fw_mng, multi::fft::forward);
+	multi::cufft::dft(in_mng, fw_mng, multi::cufft::forward);
 
 	BOOST_TEST( imag(fw_mng[3][2] - fw_cpu[3][2]) == 0. );
 
-	auto fw2_mng = multi::fftw::dft(in_mng, multi::fft::forward);
+	auto fw2_mng = multi::fftw::dft(in_mng, multi::fftw::forward);
 	BOOST_TEST( imag(fw2_mng[3][1] - fw_cpu[3][1]) == 0. );
 
 }
@@ -606,12 +528,12 @@ BOOST_AUTO_TEST_CASE(cufft_3D_timing, *boost::unit_test::tolerance(0.0001)){
 		multi::cuda::managed::array<complex, 3> fw_gpu(extensions(in_gpu), 99.);
 		{
 		//	boost::timer::auto_cpu_timer t; //  0.208237s wall, 0.200000s user + 0.010000s system = 0.210000s CPU (100.8%)
-			multi::fft::dft(in_gpu, fw_gpu, multi::fft::forward);
+			multi::cufft::dft(in_gpu, fw_gpu, multi::cufft::forward);
 		//	BOOST_TEST( fw_gpu[8][9][10].operator complex() != 99. );
 		}
 		{
 		//	boost::timer::auto_cpu_timer t; //  0.208237s wall, 0.200000s user + 0.010000s system = 0.210000s CPU (100.8%)
-			multi::fft::dft(in_gpu, fw_gpu, multi::fft::forward);
+			multi::cufft::dft(in_gpu, fw_gpu, multi::cufft::forward);
 		//	BOOST_TEST( fw_gpu[8][9][10].operator complex() != 99. );
 		}
 	}
@@ -644,7 +566,7 @@ BOOST_AUTO_TEST_CASE(cufft_combinations, *utf::tolerance(0.00001)){
 		multi::array<complex, 4> out = in;
 		multi::array<complex, 4> in_rw = in;
 		[&, _ = watch{"cpu_opl "}]{
-			multi::fft::dft_forward(c, in, out);
+			multi::fftw::dft_forward(c, in, out);
 		}();
 		[&, _ = watch{"cpu_ipl "}]{
 			multi::fftw::dft(c, in_rw, multi::fftw::forward);
@@ -653,7 +575,7 @@ BOOST_AUTO_TEST_CASE(cufft_combinations, *utf::tolerance(0.00001)){
 		{
 			multi::array<complex, 4> in_rw2 = in;
 			[&, _ = watch{"cpu_mov "}]{
-				multi::array<complex, 4> const out_mov = multi::fft::dft_forward(c, std::move(in_rw2));
+				multi::array<complex, 4> const out_mov = multi::fftw::dft_forward(c, std::move(in_rw2));
 			//	what(out_mov);
 				BOOST_TEST( abs( static_cast<multi::complex<double>>(out_mov[5][4][3][1]) - multi::complex<double>(out[5][4][3][1]) ) == 0. );			
 				BOOST_REQUIRE( is_empty(in_rw2) );
@@ -663,25 +585,25 @@ BOOST_AUTO_TEST_CASE(cufft_combinations, *utf::tolerance(0.00001)){
 
 
 		[&, _ = watch{"cpu_new "}]{
-			auto const out_cpy = multi::fft::dft_forward(c, in);
+			auto const out_cpy = multi::fftw::dft_forward(c, in);
 			BOOST_TEST( abs( static_cast<multi::complex<double>>(out_cpy[5][4][3][1]) - multi::complex<double>(out[5][4][3][1]) ) == 0. );
 		}();
 		multi::cuda::array<complex, 4> out_gpu(extensions(in_gpu));
 		[&, _ = watch{"gpu_opl "}]{
-			multi::fft::dft(c, in_gpu   , out_gpu, multi::fft::forward);
+			multi::cufft::dft(c, in_gpu   , out_gpu, multi::cufft::forward);
 			BOOST_TEST( abs( static_cast<complex>(out_gpu[5][4][3][1]) - out[5][4][3][1] ) == 0. );
 		}();
 		{
 			multi::cuda::array<complex, 4> in_rw_gpu = in_gpu;
 			[&, _ = watch{"gpu_ipl "}]{
-				multi::fft::dft(c, in_rw_gpu, multi::fft::forward);
+				multi::cufft::dft(c, in_rw_gpu, multi::cufft::forward);
 				BOOST_TEST( abs( static_cast<complex>(in_rw_gpu[5][4][3][1]) - out[5][4][3][1] ) == 0. );
 			}();
 		}
 		{
 			multi::cuda::array<complex, 4> in_rw_gpu = in_gpu;
 			[&, _ = watch{"gpu_mov "}]{
-				multi::cuda::array<complex, 4> const out_mov = multi::fft::dft_forward(c, std::move(in_rw_gpu));
+				multi::cuda::array<complex, 4> const out_mov = multi::cufft::dft_forward(c, std::move(in_rw_gpu));
 			//	BOOST_REQUIRE( in_rw_gpu.empty() );
 			//	BOOST_TEST( abs( static_cast<complex>(out_mov[5][4][3][1]) - out[5][4][3][1] ) == 0. );
 			}();
@@ -690,43 +612,30 @@ BOOST_AUTO_TEST_CASE(cufft_combinations, *utf::tolerance(0.00001)){
 			multi::cuda::array<complex, 4> in_rw_gpu = in_gpu;
 			[&, _ = watch{"gpu_mov "}]{
 				multi::cuda::array<complex, 4> out_mov = std::move(in_rw_gpu);
-				multi::fft::dft(c, out_mov, multi::fft::forward);
+				multi::cufft::dft(c, out_mov, multi::cufft::forward);
 			//	BOOST_REQUIRE( in_rw_gpu.empty() );
 			//	BOOST_TEST( abs( static_cast<complex>(out_mov[5][4][3][1]) - out[5][4][3][1] ) == 0. );
 			}();
 		}
 		cudaDeviceSynchronize();
 		[&, _ = watch{"gpu_new "}]{
-			multi::cuda::array<complex, 4> const out_cpy = multi::fft::dft(c, in_gpu, multi::fft::forward);
+			multi::cuda::array<complex, 4> const out_cpy = multi::cufft::dft(c, in_gpu, multi::cufft::forward);
 		}();
 		multi::cuda::managed::array<complex, 4> out_mng(extensions(in_mng));
 		[&, _ = watch{"mng_cld "}]{
-			multi::fft::dft(c, in_mng, out_mng, multi::fft::forward);
+			multi::cufft::dft(c, in_mng, out_mng, multi::cufft::forward);
 			BOOST_TEST( abs( out_mng[5][4][3][1] - out[5][4][3][1] ) == 0. );
 		}();
 		[&, _ = watch{"mng_hot "}]{
-			multi::fft::dft(c, in_mng   , out_mng, multi::fft::forward);
+			multi::cufft::dft(c, in_mng   , out_mng, multi::cufft::forward);
 			BOOST_TEST( abs( out_mng[5][4][3][1] - out[5][4][3][1] ) == 0. );
 		}();
 		[&, _ = watch{"mng_new "}]{
-			auto const out_mng = multi::fft::dft(c, in_mng, multi::fft::forward);
+			auto const out_mng = multi::cufft::dft(c, in_mng, multi::cufft::forward);
 			BOOST_TEST( abs( out_mng[5][4][3][1] - out[5][4][3][1] ) == 0. );
 		}();
 	}
 	std::clog<<std::endl;
-#if 0
-
-	#if 1
-	#endif
-
-		{
-			boost::timer::auto_cpu_timer t{"mng_hot %ws wall, CPU (%p%)\n"};
-			multi::fft::dft(c, in_mng   , out_mng   , multi::fft::forward);
-		}
-	//	BOOST_TEST( imag( out_mng[5][4][3][1] - out[5][4][3][1]) == 0. );
-
-	}
-#endif
 
 }
 

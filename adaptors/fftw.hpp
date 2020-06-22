@@ -570,19 +570,6 @@ template<class In> In&& dft_inplace(In&& i, sign s){
 
 }
 
-namespace fft{
-	using fftw::many_dft;
-	using fftw::dft;
-	using fftw::dft_forward;
-	using fftw::dft_backward;
-
-	static constexpr int forward = fftw::forward;//FFTW_FORWARD;
-	static constexpr int none = 0;
-	static constexpr int backward = fftw::backward;//FFTW_BACKWARD;
-
-	static_assert( forward != none and none != backward and backward != forward, "!");
-}
-
 }}
 
 #if not __INCLUDE_LEVEL__ // _TEST_MULTI_ADAPTORS_FFTW
