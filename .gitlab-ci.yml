@@ -150,6 +150,18 @@ nvcc:
       - cd test
       - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
 
+icpc:
+    stage: test
+    tags:
+      - intel_compiler
+    script:
+      - export PATH=/usr/local/cuda/bin:$PATH
+      - . /opt/intel/system_studio_2020/bin/compilervars.sh intel64 
+      - export CXX="icpc -fopenmp -std=c++14 -diag-disable=remark -x c++ -Wall -Wextra -Ofast -ldl -pthread "
+      - $CXX --version
+      - cd test
+      - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
+
 cmake:
     stage: test
     script:
@@ -164,6 +176,7 @@ cmake:
       - mkdir build
       - cd build
       - cmake ..
+      - make
       - make test
 
 blas&fft:
@@ -178,7 +191,7 @@ blas&fft:
       - $CXX --version
       - cd adaptors/blas
       - for a in ./*.hpp; do echo $a; sh $a || exit; echo "\n"; done;
-      - cd test
+      - cd tests
       - for a in ./*.cpp; do echo $a; $CXX $a || exit; echo "\n"; done;
       - cd ..
       - cd ../..
@@ -200,7 +213,7 @@ blas&fftGPU:
       - $CXX --version
       - cd adaptors/blas
       - for a in ./*.hpp; do echo $a; sh $a || exit; echo "\n"; done;
-      - cd test
+      - cd tests
       - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
       - cd ..
       - cd ../..
@@ -208,15 +221,4 @@ blas&fftGPU:
       - sh ./fftw.hpp
       - sh ./fft.hpp
 
-icpc:
-    stage: test
-    tags:
-      - intel_compiler
-    script:
-      - export PATH=/usr/local/cuda/bin:$PATH
-      - . /opt/intel/system_studio_2020/bin/compilervars.sh intel64 
-      - export CXX="icpc -fopenmp -std=c++14 -diag-disable=remark -x c++ -Wall -Wextra -Ofast -ldl -pthread "
-      - $CXX --version
-      - cd test
-      - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
 
