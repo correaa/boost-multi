@@ -14,7 +14,6 @@ although the code is completely independent and the syntax has slight difference
 
 Multi aims to simplify the semantics of Boost.MultiArray and make it more compatible with the Standard (STL) Algorithms and special memory.
 It requires C++14. 
-The code was developed on `clang` (9.0) and `gcc` (9.2) compilers, and [tested regularly ](https://gitlab.com/correaa/boost-multi/pipelines) with NVCC (10.1) awith Intel (19.1) and  compilers.
 
 Before testing speed, please make sure that you are compiling in release mode (`-DNDEBUG`) and with optimizations (`-O3`), 
 if your test involves mathematical operations add arithmetic optimizations (`-Ofast`) to compare with Fortran code.
@@ -29,6 +28,26 @@ Some features:
 * Interoperability with other libraries, STL, ranges, 
 
 (Do not confuse this library with Boost.MultiArray or Boost.MultiIndex.)
+
+## Installation and Tests
+
+Multi doesn't require instalation, including a single file `#include<multi/array.hpp>` is enough to load the full library.
+Multi's _only_ dependecy is the standard C++ library.
+
+A CMake build system is provided to optionally run basic tests,
+
+```bash
+#export CXX="nvcc -DBOOST_PP_VARIADICS=1 -use_fast_math -x cu --compiler-options=-Wall,-Wextra,-Ofast,-ldl,-fopenmp" #optional compiler choice
+export CXXFLAGS="-O3"
+mkdir -p test/build
+cd test/build
+cmake ..
+make -j
+make test -j
+```
+
+The code is developed on `clang` (9.0) and `gcc` (9.2) compilers, and [tested regularly ](https://gitlab.com/correaa/boost-multi/pipelines) with clang 10.0, NVCC 10.1, Intel (19.1) compilers.
+For detailed compilation instructions of test see the Continuous Integration definition file https://gitlab.com/correaa/boost-multi/-/blob/master/.gitlab-ci.yml
 
 ## Types
 
