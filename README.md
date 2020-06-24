@@ -15,9 +15,6 @@ although the code is completely independent and the syntax has slight difference
 Multi aims to simplify the semantics of Boost.MultiArray and make it more compatible with the Standard (STL) Algorithms and special memory.
 It requires C++14. 
 
-Before testing speed, please make sure that you are compiling in release mode (`-DNDEBUG`) and with optimizations (`-O3`), 
-if your test involves mathematical operations add arithmetic optimizations (`-Ofast`) to compare with Fortran code.
-
 Some features:
 
 * Arbitrary pointer types (minimal requirements)
@@ -33,14 +30,18 @@ Some features:
 
 `Multi` doesn't require instalation, including a single file `#include<multi/array.hpp>` is enough to load the full library.
 `Multi`'s _only_ dependecy is the standard C++ library.
+It is important to compile programs that use the library with a decent level of optimization (e.g. `-O2`) to avoid slowdown if indiviudual element-access is intensively used.
 
-A CMake build system is provided to optionally run basic tests,
+Before testing speed, please make sure that you are compiling in release mode (`-DNDEBUG`) and with optimizations (`-O3`), 
+if your test involves mathematical operations add arithmetic optimizations (`-Ofast`) to compare with Fortran code.
+
+A CMake build system is provided to automatically run basic tests,
 
 ```bash
-#export CXX="nvcc -DBOOST_PP_VARIADICS=1 -x cu "  #optional spec. compiler
+#export CXX="nvcc -DBOOST_PP_VARIADICS=1 -x cu -O3"  #optional spec. compiler
 mkdir -p test/build
 cd test/build
-CMAKE_CXX_FLAGS="-O3" cmake ..
+cmake ..
 make -j
 make test -j
 ```
