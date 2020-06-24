@@ -170,14 +170,14 @@ cmake:
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev libboost-timer-dev libtbb-dev libboost-serialization-dev libboost-iostreams-dev librange-v3-dev valgrind
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet g++ cmake make
       - ln --symbolic --force . ../multi
-      - export CXX="c++"
+      - export CXX="clang++"
       - $CXX --version
       - cd test
       - mkdir build
       - cd build
       - cmake ..
-      - make
-      - make test
+      - make -j
+      - make test -j
 
 blas&fft:
     stage: test
