@@ -28,17 +28,18 @@ Some features:
 
 ## Installation and Tests
 
-`Multi` doesn't require instalation, including a single file `#include<multi/array.hpp>` is enough to load the full library.
+`Multi` doesn't require instalation, single file `#include<multi/array.hpp>` is enough to use the full library.
 `Multi`'s _only_ dependecy is the standard C++ library.
-It is important to compile programs that use the library with a decent level of optimization (e.g. `-O2`) to avoid slowdown if indiviudual element-access is intensively used.
 
-Before testing speed, please make sure that you are compiling in release mode (`-DNDEBUG`) and with optimizations (`-O3`), 
+It is important to compile programs that use the library with a decent level of optimization (e.g. `-O2`) to avoid slowdown if indiviudual element-access is intensively used.
+For example, when testing speed, please make sure that you are compiling in release mode (`-DNDEBUG`) and with optimizations (`-O3`), 
 if your test involves mathematical operations add arithmetic optimizations (`-Ofast`) to compare with Fortran code.
 
-A CMake build system is provided to automatically run basic tests,
+A CMake build system is provided to automatically run basic tests.
+Test do depend on Boost.Test.
 
 ```bash
-git clone git@gitlab.com:correaa/boost-multi.git multi
+git clone https://gitlab.com/correaa/boost-multi.git multi
 cd multi
 ```
 ```bash
