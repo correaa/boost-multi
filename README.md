@@ -31,8 +31,8 @@ Some features:
 
 ## Installation and Tests
 
-Multi doesn't require instalation, including a single file `#include<multi/array.hpp>` is enough to load the full library.
-Multi's _only_ dependecy is the standard C++ library.
+`Multi` doesn't require instalation, including a single file `#include<multi/array.hpp>` is enough to load the full library.
+`Multi`'s _only_ dependecy is the standard C++ library.
 
 A CMake build system is provided to optionally run basic tests,
 
