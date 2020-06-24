@@ -121,7 +121,7 @@ clangX-17:
       - ln --symbolic --force . ../multi
       - export CXX="clang++-10 -std=c++17 -x c++ -Wall -Wextra -Wpedantic -Wmove -Ofast "
       - $CXX --version
-      - cd tests
+      - cd test
       - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
 
 clang-san:
@@ -134,7 +134,7 @@ clang-san:
       - ln --symbolic --force . ../multi
       - export CXX="clang++ -fsanitize=undefined -fsanitize=address -g -x c++ -Wall -Wextra -Wpedantic -Wmove -Ofast "
       - $CXX --version
-      - cd tests
+      - cd test
       - for a in ./*.cpp; do echo $a; sh $a || exit 1; echo "\n"; done;
 
 nvcc:
@@ -147,7 +147,7 @@ nvcc:
       - ln --symbolic --force . ../multi
       - export CXX="nvcc    -x cu --compiler-options=-Wall,-Wextra,-O3"
       - $CXX --version
-      - cd tests
+      - cd test
       - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
 
 blas&fft:
@@ -162,7 +162,7 @@ blas&fft:
       - $CXX --version
       - cd adaptors/blas
       - for a in ./*.hpp; do echo $a; sh $a || exit; echo "\n"; done;
-      - cd tests
+      - cd test
       - for a in ./*.cpp; do echo $a; $CXX $a || exit; echo "\n"; done;
       - cd ..
       - cd ../..
@@ -184,7 +184,7 @@ blas&fftGPU:
       - $CXX --version
       - cd adaptors/blas
       - for a in ./*.hpp; do echo $a; sh $a || exit; echo "\n"; done;
-      - cd tests
+      - cd test
       - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
       - cd ..
       - cd ../..
@@ -201,6 +201,6 @@ icpc:
       - . /opt/intel/system_studio_2020/bin/compilervars.sh intel64 
       - export CXX="icpc -fopenmp -std=c++14 -diag-disable=remark -x c++ -Wall -Wextra -Ofast -ldl -pthread "
       - $CXX --version
-      - cd tests
+      - cd test
       - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
 
