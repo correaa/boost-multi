@@ -37,11 +37,10 @@ Multi's _only_ dependecy is the standard C++ library.
 A CMake build system is provided to optionally run basic tests,
 
 ```bash
-#export CXX="nvcc -DBOOST_PP_VARIADICS=1 -use_fast_math -x cu --compiler-options=-Wall,-Wextra,-Ofast,-ldl,-fopenmp" #optional compiler choice
-export CXXFLAGS="-O3"
+#export CXX="nvcc -DBOOST_PP_VARIADICS=1 -x cu "  #optional spec. compiler
 mkdir -p test/build
 cd test/build
-cmake ..
+CMAKE_CXX_FLAGS="-O3" cmake ..
 make -j
 make test -j
 ```
