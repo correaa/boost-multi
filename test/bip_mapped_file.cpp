@@ -38,7 +38,7 @@ static void mremove(std::experimental::filesystem::path f){std::experimental::fi
 //	return ret;
 //}
 
-#include "../tests/../array.hpp"
+#include "../array.hpp"
 
 namespace multi = boost::multi;
 
