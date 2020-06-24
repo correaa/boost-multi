@@ -38,6 +38,10 @@ if your test involves mathematical operations add arithmetic optimizations (`-Of
 A CMake build system is provided to automatically run basic tests,
 
 ```bash
+git clone git@gitlab.com:correaa/boost-multi.git multi
+cd multi
+```
+```bash
 #export CXX="nvcc -DBOOST_PP_VARIADICS=1 -x cu -O3"  #optional spec. compiler
 mkdir -p test/build
 cd test/build
