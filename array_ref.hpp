@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-$CXX $0 -o $0x&&$0x&&rm $0x&&for a in ./tests/*.cpp; do echo $a; sh $a || break; echo "\n"; done; exit;*/
+$CXX $0 -o $0x&&$0x&&rm $0x&&for a in ./test/*.cpp; do echo $a; sh $a || break; echo "\n"; done; exit;*/
 #endif
 // © Alfredo Correa 2018-2020
 
