@@ -145,7 +145,7 @@ nvcc:
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev libboost-timer-dev libtbb-dev libboost-serialization-dev libboost-iostreams-dev librange-v3-dev valgrind
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet g++ nvidia-cuda-toolkit 
       - ln --symbolic --force . ../multi
-      - export CXX="nvcc    -x cu --compiler-options=-Wall,-Wextra,-O3"
+      - export CXX="nvcc -DBOOST_PP_VARIADICS=1 -x cu --compiler-options=-Wall,-Wextra,-O3"
       - $CXX --version
       - cd test
       - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
