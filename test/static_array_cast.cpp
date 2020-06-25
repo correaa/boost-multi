@@ -19,8 +19,8 @@ template<class It, class F> class involuter;
 
 template<class Ref, class Involution>
 class involuted{
-	Ref r_; // [[no_unique_address]] 
-	Involution f_;
+	Ref r_;
+	NO_UNIQUE_ADDRESS Involution f_;
 public:
 	using decay_type =std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
 	explicit involuted(Ref r, Involution f) : r_{std::forward<Ref>(r)}, f_{f}{}
@@ -30,32 +30,13 @@ public:
 	involuted(involuted&&) noexcept = default; // for C++14
 	operator decay_type() const&{return f_(r_);}
 	decltype(auto) operator&()&&{return involuter<decltype(&std::declval<Ref>()), Involution>{&r_, f_};}
-//	template<class DecayType>
-//	auto operator=(DecayType&& other)&&
-//	->decltype(r_=f_(std::forward<DecayType>(other)), *this){
-//		return r_=f_(std::forward<DecayType>(other)), *this;}
 	template<class DecayType>
 	auto operator=(DecayType&& other)&
 	->decltype(r_=f_(std::forward<DecayType>(other)), *this){
 		return r_=f_(std::forward<DecayType>(other)), *this;}
 	involuted& operator=(involuted&& other) = default;
 	~involuted() = default;
-//	template<class OtherRef>
-//	auto operator=(involuted<OtherRef, Involution> const& o)&
-//	->decltype(r_=f_==o.f_?std::forward<decltype(o.r_)>(o.r_):f_(o), *this){
-//		return r_=f_==o.f_?std::forward<decltype(o.r_)>(o.r_):f_(o), *this;}
-//	template<class DecayType>
-//	auto operator==(DecayType&& other) const&
-//	->decltype(this->operator decay_type()==other){
-//		return this->operator decay_type()==other;}
-//	template<class Any> friend auto operator<<(Any&& a, involuted const& self)->decltype(a << std::declval<decay_type>()){return a << self.operator decay_type();}
 };
-
-#if __cpp_deduction_guides
-template<class T, class F> involuted(T&&, F)->involuted<T const, F>;
-//template<class T, class F> involuted(T&, F)->involuted<T&, F>;
-//template<class T, class F> involuted(T const&, F)->involuted<T const&, F>;
-#endif
 
 template<class It, class F>
 class involuter{//: public std::iterator_traits<It>{
@@ -70,13 +51,10 @@ public:
 	using reference = involuted<typename std::iterator_traits<It>::reference, F>;
 	using value_type = typename std::iterator_traits<It>::value_type;
 	using iterator_category = typename std::iterator_traits<It>::iterator_category;
-
-//	using rebind_const = involuter<typename multi::iterator_traits<It>::rebind_const, F>;
 	explicit involuter(It it, F f) : it_{std::move(it)}, f_{std::move(f)}{}
 	explicit involuter(It it) : it_{std::move(it)}, f_{}{}
 	involuter(involuter const& other) = default;
 	template<class Other> involuter(involuter<Other, F> const& o) : it_{o.it_}, f_{o.f_}{}
-//	using reference = involuted<typename std::iterator_traits<It>::reference, F>;
 	auto operator*() const{return reference{*it_, f_};}
 	bool operator==(involuter const& o) const{return it_==o.it_;}
 	bool operator!=(involuter const& o) const{return it_!=o.it_;}
@@ -127,8 +105,6 @@ BOOST_AUTO_TEST_CASE(static_array_cast){
 {
 	multi::array<double, 1> A = { 0,  1,  2,  3,  4};
 	multi::array<double, 1> mA = { -0,  -1,  -2,  -3, -4};
-//	auto&& mA_ref = A.static_array_cast<double, involuter<double*, std::negate<>>>();
-//	auto&& mA_ref = A.template static_array_cast<double, involuter<double*, std::negate<>>>();
 	auto&& mA_ref = multi::static_array_cast<double, involuter<double*, std::negate<>>>(A);
 	BOOST_REQUIRE( mA_ref[2] == mA[2] );
 	BOOST_REQUIRE( mA[2] == mA_ref[2] );
