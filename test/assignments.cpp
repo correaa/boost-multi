@@ -122,10 +122,10 @@ BOOST_AUTO_TEST_CASE(rvalue_assignments){
 BOOST_AUTO_TEST_CASE(assignments){
 	{
 		std::vector<double> v(5*7, 99.);
-
-		multi::array<double, 2> A{{5, 7}, 33.};
+		constexpr double val = 33.;
+		multi::array<double, 2> A({5, 7}, val);
 		multi::array_ref<double, 2>(v.data(), {5, 7}) = A;
-		BOOST_REQUIRE( v[9] == 33. );
+		BOOST_REQUIRE( v[9] == val );
 		BOOST_REQUIRE( not v.empty() );
 		BOOST_REQUIRE( not is_empty(A) );
 

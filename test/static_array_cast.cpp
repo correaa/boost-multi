@@ -5,31 +5,29 @@ $CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 
 #include "../array.hpp"
 
-#include<complex>
-#include<iostream>
-
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi comparisons"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
-using std::cout; using std::cerr;
+#include<complex>
+#include<iostream>
+#include<numeric>
+
 namespace multi = boost::multi;
 
 template<class It, class F> class involuter;
 
 template<class Ref, class Involution>
 class involuted{
-protected:
 	Ref r_; // [[no_unique_address]] 
 	Involution f_;
 public:
 	using decay_type =std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
-	explicit involuted(Ref r, Involution f = {}) : r_{std::forward<Ref>(r)}, f_{f}{}
+	explicit involuted(Ref r, Involution f) : r_{std::forward<Ref>(r)}, f_{f}{}
+	explicit involuted(Ref r) : r_{std::forward<Ref>(r)}, f_{}{}
 	involuted& operator=(involuted const& other)=delete;//{r_ = other.r_; return *this;}
-public:
 	involuted(involuted const&) = default;
-public:
-	involuted(involuted&&) = default; // for C++14
+	involuted(involuted&&) noexcept = default; // for C++14
 	operator decay_type() const&{return f_(r_);}
 	decltype(auto) operator&()&&{return involuter<decltype(&std::declval<Ref>()), Involution>{&r_, f_};}
 //	template<class DecayType>
@@ -40,6 +38,8 @@ public:
 	auto operator=(DecayType&& other)&
 	->decltype(r_=f_(std::forward<DecayType>(other)), *this){
 		return r_=f_(std::forward<DecayType>(other)), *this;}
+	involuted& operator=(involuted&& other) = default;
+	~involuted() = default;
 //	template<class OtherRef>
 //	auto operator=(involuted<OtherRef, Involution> const& o)&
 //	->decltype(r_=f_==o.f_?std::forward<decltype(o.r_)>(o.r_):f_(o), *this){
@@ -72,7 +72,8 @@ public:
 	using iterator_category = typename std::iterator_traits<It>::iterator_category;
 
 //	using rebind_const = involuter<typename multi::iterator_traits<It>::rebind_const, F>;
-	explicit involuter(It it, F f = {}) : it_{std::move(it)}, f_{std::move(f)}{}
+	explicit involuter(It it, F f) : it_{std::move(it)}, f_{std::move(f)}{}
+	explicit involuter(It it) : it_{std::move(it)}, f_{}{}
 	involuter(involuter const& other) = default;
 	template<class Other> involuter(involuter<Other, F> const& o) : it_{o.it_}, f_{o.f_}{}
 //	using reference = involuted<typename std::iterator_traits<It>::reference, F>;
@@ -112,10 +113,9 @@ BOOST_AUTO_TEST_CASE(static_array_cast){
 	BOOST_REQUIRE( A == A_ref );
 }
 {
-	multi::array<double, 2> A = {
-		{ 0, 1, 2, 3, 4},
-		{ 5, 6, 7, 8, 9}
-	};
+	multi::array<double, 2> A({2, 5});
+	std::iota(data_elements(A), data_elements(A) + num_elements(A), 0.);
+
 	auto&& A_ref = A.template static_array_cast<double, double const*>();
 	BOOST_REQUIRE( A_ref[1][1] == A[1][1] );
 	BOOST_REQUIRE( std::equal(begin(A_ref[1]), end(A_ref[1]), begin(A[1])) );
@@ -137,18 +137,14 @@ BOOST_AUTO_TEST_CASE(static_array_cast){
 	BOOST_REQUIRE( mA == mA_ref );
 }
 {
-	multi::array<double, 2> A = {
-		{ 0,  1,  2,  3,  4}, 
-		{ 5,  6,  7,  8,  9}, 
-		{10, 11, 12, 13, 14}, 
-		{15, 16, 17, 18, 19}
-	};
-	multi::array<double, 2> mA = {
-		{ -0,  -1,  -2,  -3, -4}, 
-		{ -5,  -6,  -7,  -8, -9}, 
-		{-10, -11, -12, -13, -14}, 
-		{-15, -16, -17, -18, -19}
-	};
+	constexpr std::array<int, 2> x = {4, 5};
+
+	multi::array<double, 2> A(x);
+	std::iota(data_elements(A), data_elements(A) + num_elements(A), 0.);
+
+	multi::array<double, 2> mA(x); 
+	std::transform(data_elements(A), num_elements(mA) + data_elements(A), data_elements(mA), [](auto e){return -e;});
+
 	auto&& mA_ref = A.template static_array_cast<double, negater<double*>>();
 	BOOST_REQUIRE( mA_ref[1][1] == mA[1][1] );
 	BOOST_REQUIRE( mA[1][1] == mA_ref[1][1] );
