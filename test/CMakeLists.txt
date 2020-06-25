@@ -13,13 +13,7 @@ project(boost-multi-test VERSION 0.1)
 find_package(Boost REQUIRED COMPONENTS unit_test_framework timer)
 find_package(Threads REQUIRED)
 
-#find_package(BLAS REQUIRED)
-
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
-set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 enable_testing()
 include(CTest)
@@ -29,6 +23,8 @@ file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 foreach(TEST_FILE ${TEST_SRCS})
   SET(TEST_EXE "${TEST_FILE}x")
   add_executable            (${TEST_EXE} ${TEST_FILE})
+  target_compile_features   (${TEST_EXE} PRIVATE cxx_std_14)
+  target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS} "BOOST_ALL_DYN_LINK")
   target_include_directories(${TEST_EXE} PRIVATE ${Boost_INCLUDE_DIRS})
   target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS} "BOOST_ALL_DYN_LINK")
   target_link_libraries     (${TEST_EXE} ${Boost_LIBRARIES} ${pthread_LIBRARIES} stdc++fs)
