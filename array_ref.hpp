@@ -1272,10 +1272,21 @@ public:
 	array_ref&& operator=(array_ref<TT, DD, As...> const& o)&&{assert(this->extensions() == o.extensions());
 		return adl_copy_n(o.data(), o.num_elements(), this->data()), std::move(*this);
 	}
-	auto elements()&{return array_ref<typename array_ref::element_type, 1, typename array_ref::element_ptr>{array_ref::data(), array_ref::num_elements()};}
-	auto elements()&&{return std::move(*this).elements();}
-	auto elements() const&{return array_ref<typename array_ref::element_type, 1, typename array_ref::element_const_ptr>{array_ref::data(), array_ref::num_elements()};}
+	
+	using  elements_type = array_ref<typename array_ref::element_type, 1, typename array_ref::element_ptr      >;
+	using celements_type = array_ref<typename array_ref::element_type, 1, typename array_ref::element_const_ptr>;
 
+	        elements_type elements()         &     {return {array_ref::data(), array_ref::num_elements()};}
+	        elements_type elements()         &&    {return std::move(*this).elements();}
+	       celements_type elements()         const&{return {array_ref::data(), array_ref::num_elements()};}
+
+	friend  elements_type elements(array_ref &      self){return           self . elements();}	
+	friend  elements_type elements(array_ref &&     self){return std::move(self). elements();}
+	friend celements_type elements(array_ref const& self){return           self . elements();}
+
+	       celements_type celements()         const&      {return {array_ref::data(), array_ref::num_elements()};}
+	friend celements_type celements(array_ref const& self){return self .celements();}
+	
 	template<typename TT, dimensionality_type DD = D, class... As>
 	bool operator==(array_ref<TT, DD, As...>&& o) const&{
 		if( this->extensions() != o.extensions() ) return false; // TODO, or assert?
