@@ -10,7 +10,7 @@ cmake_minimum_required(VERSION 3.16)
 
 project(boost-multi-test VERSION 0.1)
 
-find_package(Boost REQUIRED COMPONENTS unit_test_framework timer)
+find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 find_package(Threads REQUIRED)
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
