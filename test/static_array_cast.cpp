@@ -1,12 +1,11 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXX -DBOOST_TEST_DYN_LINK $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
 #include "../array.hpp"
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi comparisons"
-#define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi static array cast"
 #include<boost/test/unit_test.hpp>
 
 #include<complex>
@@ -20,14 +19,14 @@ template<class It, class F> class involuter;
 template<class Ref, class Involution>
 class involuted{
 	Ref r_;
-	NO_UNIQUE_ADDRESS Involution f_;
+	Involution f_;
 public:
 	using decay_type =std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
 	explicit involuted(Ref r, Involution f) : r_{std::forward<Ref>(r)}, f_{f}{}
 	explicit involuted(Ref r) : r_{std::forward<Ref>(r)}, f_{}{}
-	involuted& operator=(involuted const& other)=delete;//{r_ = other.r_; return *this;}
+	involuted& operator=(involuted const& other)=delete;
 	involuted(involuted const&) = default;
-	involuted(involuted&&) noexcept = default; // for C++14
+	involuted(involuted&&) noexcept = default;
 	operator decay_type() const&{return f_(r_);}
 	decltype(auto) operator&()&&{return involuter<decltype(&std::declval<Ref>()), Involution>{&r_, f_};}
 	template<class DecayType>
@@ -39,12 +38,12 @@ public:
 };
 
 template<class It, class F>
-class involuter{//: public std::iterator_traits<It>{
-	It it_; // [[no_unique_address]] 
+class involuter{
+	It it_;
 	F f_;
 	template<class, class> friend class involuter;
 public:
-	using pointer = void;
+	using pointer = involuter<typename std::iterator_traits<It>::pointer, F>;
 	using element_type = typename std::pointer_traits<It>::element_type;
 	using difference_type = typename std::pointer_traits<It>::difference_type;
 	template <class U> using rebind = involuter<typename std::pointer_traits<It>::template rebind<U>, F>;
@@ -60,9 +59,7 @@ public:
 	bool operator!=(involuter const& o) const{return it_!=o.it_;}
 	involuter& operator+=(typename involuter::difference_type n){it_+=n; return *this;}
 	auto operator+(typename involuter::difference_type n) const{return involuter{it_+n, f_};}
-	decltype(auto) operator->() const{
-		return involuter<typename std::iterator_traits<It>::pointer, F>{&*it_, f_};
-	}
+	pointer operator->() const{return {&*it_, f_};}
 };
 
 template<class Ref> using negated = involuted<Ref, std::negate<>>;
