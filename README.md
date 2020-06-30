@@ -127,7 +127,7 @@ We create a static C-array of `double`s, and refer to it via a bidimensional arr
 			{ 50,  6,  7,  8,  9} 
 		};
 		multi::array_ref<double, 2> d2D_ref{&d2D[0][0], {4, 5}};
-															...
+		...
 ```
 
 Note that the syntax of creating a reference array involves passing the pointer to a memory block (20 elements here) and the logical dimensions of that memory block (4 by 5 here).
@@ -135,25 +135,31 @@ Note that the syntax of creating a reference array involves passing the pointer 
 Next we print the elements in a way that corresponds to the logical arrangement:
 
 ```c++
+		...
 		for(auto i : d2D_ref.extension(0)){
 			for(auto j : d2D_ref.extension(1))
 				cout << d2D_ref[i][j] <<' ';
 			cout <<'\n';
 		}
+		...
 ```
 
 This will output:
 
+> ```c++
 > 150 16 17 18 19  
 > 30 1 2 3 4  
 > 100 11 12 13 14  
 > 50 6 7 8 9
+> ```
 
 It is sometimes said (by Sean Parent) that the whole of STL algorithms can be seen as intermediate pieces to implement`std::stable_sort`. 
 Pressumably if one can sort over a range, one can perform any other standard algorithm.
 
 ```c++
+		...
 		std::stable_sort( begin(d2D_ref), end(d2D_ref) );
+		...
 ```
 
 If we print this we will get
@@ -170,7 +176,9 @@ The array has been changed to be in row-based lexicographical order.
 Since the sorted array is a reference to the original data, the original array has changed. 
 
 ```c++
+		...
 		assert( d2D[1][1] == 6 );
+		...
 ```
 
 (Note that `std::*sort` cannot be applied directly to a multidimensional C-array or to Boost.MultiArray types.)
@@ -178,15 +186,19 @@ Since the sorted array is a reference to the original data, the original array h
 If we want to order the matrix in a per-column basis we need to "view" the matrix as range of columns. This is done in the bidimensional case, by accessing the matrix as a range of columns:
 
 ```c++
-	    std::stable_sort( d2D_ref.begin(1), d2D_ref.end(1) );
+		...
+		std::stable_sort( d2D_ref.begin(1), d2D_ref.end(1) );
+	}
 ```
 
 Which will transform the matrix into. 
 
+> ```c++
 > 1 2 3 4 30  
 > 6 7 8 9 50  
 > 11 12 13 14 100  
 > 16 17 18 19 150 
+> ```
 
 In other words, a matrix of dimension `D` can be viewed simultaneously as `D` different ranges of different "transpositions" by passing an interger value to `begin` and `end` indicating the preferred dimension.
 `begin(0)` is equivalent to `begin()`.
