@@ -52,10 +52,9 @@ _Pragma("warning pop") \
 	ExpR \
 	END_NO_DEPRECATED
 
-#if not __INCLUDE_LEVEL__ // _TEST_MULTI_CONFIG_NODISCARD
+#if not __INCLUDE_LEVEL__
 
 DEPRECATED("because...") int f(){return 5;}
-//[[nodiscard]] int g(){return 5;} // ok in g++ -std=c++14
 
 int main(){
 	int i;
