@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-$CXX $0 -o $0x&&$0x&&rm $0x&&(mkdir -p test/build&&cd test/build&&cmake ..&&make -j&&make test -j); exit
+$CXXX $CXXFLAGS $0 -o $0x&&$0x&&rm $0x&&(rm -rf test/build&&mkdir -p test/build&&cd test/build&&time cmake ..&&make -j&&time ctest -j); exit
 #endif
 // © Alfredo Correa 2018-2020
 
@@ -156,7 +156,6 @@ struct basic_array_ptr :
 	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> friend constexpr bool operator==(O const& o, basic_array_ptr const& s){return s==o;}
 	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> friend constexpr bool operator!=(O const& o, basic_array_ptr const& s){return not(o==s);}
 protected:
-//	bool equal(basic_array_ptr const& o) const{return base_==o.base_ and layout()==o.layout();}
 	void increment(){base_ += Ref::nelems();}
 	void decrement(){base_ -= Ref::nelems();}
 	void advance(difference_type n){base_ += Ref::nelems()*n;}
@@ -183,13 +182,6 @@ template<class Element, dimensionality_type D, typename Ptr, class Ref
 				>::type
 			>,
 			typename std::iterator_traits<Ptr>::reference
-	//		typename std::iterator_traits<
-	//				typename std::conditional<
-	//					std::is_same<typename std::pointer_traits<Ptr>::element_type, void>{}, 
-	//					typename std::pointer_traits<Ptr>::template rebind<Element>,
-	//					Ptr
-	//				>::type
-	//		>::reference
 		>::type
 #endif
 >
@@ -223,11 +215,7 @@ struct array_iterator :
 	template<class Other, typename = decltype(typename Ref::types::element_ptr{typename Other::element_ptr{}})> 
 	constexpr array_iterator(Other const& o) : /*Ref{o.layout(), o.base()},*/ ptr_{o.ptr_.base_, o.ptr_.layout()}, stride_{o.stride_}{}
 	array_iterator(array_iterator const&) = default;
-	array_iterator& operator=(array_iterator const& other) = default;//{
-//		ptr_ = other.ptr_;
-//		stride_ = other.stride_;
-//		return *this;
-//	}
+	array_iterator& operator=(array_iterator const& other) = default;
 	explicit constexpr operator bool() const{return static_cast<bool>(ptr_.base_);}
 	constexpr Ref operator*() const{/*assert(*this);*/ return {*ptr_};}//return *this;}
 	constexpr decltype(auto) operator->() const{/*assert(*this);*/ return ptr_;}//return this;}
@@ -1292,14 +1280,13 @@ public:
 		if( this->extensions() != o.extensions() ) return false; // TODO, or assert?
 		return equal_elements(std::move(o).data_elements());
 	}
-	typename array_ref::element_ptr data_elements()&&{return array_ref::base_;}
-	friend typename array_ref::element_ptr data_elements(array_ref&& s){return std::move(s).data_elements();}
+	       constexpr typename array_ref::element_ptr data_elements()        &&   {return array_ref::base_;}
+	friend constexpr typename array_ref::element_ptr data_elements(array_ref&& s){return std::move(s).data_elements();}
 
-	constexpr typename array_ref::element_ptr data() const&{return array_ref::base_;} 
-	friend typename array_ref::element_ptr data(array_ref const& self){return self.data();}
-	friend decltype(auto) operator*(array_ref const& self){
-		return static_cast<typename array_ref::decay_type const&>(self);
-	}
+	       constexpr typename array_ref::element_ptr data()         const&   {return array_ref::base_;} 
+	friend constexpr typename array_ref::element_ptr data(array_ref const& s){return s.data();}
+
+	constexpr typename array_ref::decay_type const& operator*() const&{return *this;}
 	
 	typename array_ref::decay_type const& decay() const&{
 		return static_cast<typename array_ref::decay_type const&>(*this);
@@ -1439,13 +1426,8 @@ operator/(RandomAccessIterator data, multi::iextensions<D> x){return {data, x};}
 #if not __INCLUDE_LEVEL__ // _TEST_BOOST_MULTI_ARRAY_REF
 
 #include<cassert>
-#include<numeric> // iota
-#include<iostream>
-#include<vector>
 
-using std::cout;
 namespace multi = boost::multi;
-
 
 int main(){
 
@@ -1456,9 +1438,9 @@ int main(){
 		multi::array_ref<double const, 2> C(&a[0][0], {4, 5});
 		multi::array_cref<double, 2> D(&a[0][0], {4, 5});
 		A[1][1] = 2.;
-//		A[1].cast<double const*>()[1] = 2.;
+
 		double d[4][5] = {{1.,2.},{2.,3.}};
-	//	typedef d45 = double const[4][5];
+
 		auto dd = (double const(&)[4][5])(d);
 		assert( &(dd[1][2]) == &(d[1][2]) );
 		assert(( & A[1].static_array_cast<double, double const*>()[1] == &A[1][1] ));
@@ -1483,22 +1465,10 @@ int main(){
 		auto const& A2 = A.sliced(0, 3).rotated()[1].sliced(0, 2).unrotated();
 		assert( multi::rank<std::decay_t<decltype(A2)>>{} == 2 and num_elements(A2) == 6 );
 		assert( std::get<0>(sizes(A2)) == 3 and std::get<1>(sizes(A2)) == 2 );
-		{auto x = extensions(A2);
-		for(auto i : std::get<0>(x) ){
-			for(auto j : std::get<1>(x) ) cout<< A2[i][j] <<' ';
-			cout<<'\n';
-		}}
+		
 		auto const& A3 = A({0, 3}, 1, {0, 2});
 		assert( multi::rank<std::decay_t<decltype(A3)>>{} == 2 and num_elements(A3) == 6 );
-		{
-			auto x = extensions(A3);
-			for(auto i : std::get<0>(x)){
-				for(auto j : std::get<1>(x)) cout<< A3[i][j] <<' ';
-				cout<<'\n';
-			}
-		}
 	}
-	return 0;
 }
 
 #endif
