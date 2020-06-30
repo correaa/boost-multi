@@ -1,19 +1,19 @@
-#[=[
-Multi Test suite can be run like this:
-  mkdir -p test/build
-  cd test/build
+#[=[Multi Test suite can be run like this:
+  mkdir -p build
+  cd build
   cmake ..
   make -j
   make test -j
+  exit
 #]=]
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.11)
 
-project(boost-multi-test VERSION 0.1)
+project(boost-multi-test VERSION 0.1 LANGUAGES CXX)
 
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 find_package(Threads REQUIRED)
 
-set(CMAKE_VERBOSE_MAKEFILE OFF)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 enable_testing()
 include(CTest)
