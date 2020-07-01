@@ -10,10 +10,14 @@ $CXXX $CXXFLAGS $0 -o $0x &&$0x&&rm $0x;exit
 #define __has_cpp_attribute(name) 0
 #endif
 
-#if __has_cpp_attribute(deprecated)
-	#define	DEPRECATED(MsG) [[deprecated(MsG)]]
+#ifdef __NVCC__
+	#define DEPRECATED(MsG) __attribute__((deprecated))
 #else
-	#define DEPRECATED(MsG)
+	#if __has_cpp_attribute(deprecated)
+		#define	DEPRECATED(MsG) [[deprecated(MsG)]]
+	#else
+		#define DEPRECATED(MsG)
+	#endif
 #endif
 
 #if not defined(__INTEL_COMPILER)
