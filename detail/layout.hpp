@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 #ifndef MULTI_LAYOUT_HPP
 #define MULTI_LAYOUT_HPP
@@ -230,6 +230,8 @@ private:
 	void extensions_aux(index_extension* it) const{*it = extension();}
 public:
 	constexpr auto operator()(index i) const{return i*stride_ - offset_;}
+	constexpr std::ptrdiff_t at(index i) const{return offset_ + i*stride_;}
+	constexpr std::ptrdiff_t operator[](index i) const{return at(i);}
 	constexpr auto origin() const{return -offset_;}
 	constexpr bool operator==(layout_t const& other) const{
 		return stride_==other.stride_ and offset_==other.offset_ and nelems_==other.nelems_;
@@ -303,6 +305,12 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 //	using extensions_io_type = std::array<index_extension, D>;
 	constexpr auto operator()(index i) const{return i*stride_ - offset_;}
 	constexpr auto origin() const{return sub_.origin() - offset_;}
+	constexpr sub_type at(index i) const{//assert( this->extension().contains(i) ); see why it gives false positives
+		auto ret = sub_;
+		ret.offset_ += offset_ + i*stride_;
+		return ret;
+	}
+	constexpr sub_type operator[](index i) const{return at(i);}
 	constexpr
 	layout_t(
 		sub_type sub, stride_type stride, offset_type offset, nelems_type nelems
@@ -322,7 +330,7 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 		offset_{sub_.offset_ + std::get<0>(e).first()*sub_.stride()}, 
 		nelems_{std::get<0>(e).size()*sub_.num_elements()} 
 	{}//assert(0);}
-#if defined(__INTEL_COMPILER) or (defined(__GNUC) && (__GNUC<6))
+#if(defined(__INTEL_COMPILER) and (__INTEL_COMPILER < 1900)) or (defined(__GNUC) && (__GNUC<6))
 	constexpr 
 	layout_t(std::array<index_extension, D> x) noexcept :
 		layout_t{multi::detail::to_tuple<index_extension>(x)}
@@ -477,12 +485,10 @@ namespace std{
 #include<boost/test/unit_test.hpp>
 
 #include<cassert>
-#include<iostream>
-#include<vector>
 
-#include "../../multi/utility.hpp"
+#include "../utility.hpp"
+#include "../array.hpp"
 
-using std::cout;
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(multi_layout){
@@ -687,6 +693,29 @@ BOOST_AUTO_TEST_CASE(continued){
 }
 
 }
+
+BOOST_AUTO_TEST_CASE(layout_to_offset){
+	multi::layout_t<3> L({10, 20, 30});
+	multi::array<double, 3> A({10, 20, 30});
+	assert( L[0][0][0] == &A[0][0][0] - data_elements(A) );
+	assert( L[0][0][1] == &A[0][0][1] - data_elements(A) );
+	assert( L[0][0][2] == &A[0][0][2] - data_elements(A) );
+	assert( L[0][1][2] == &A[0][1][2] - data_elements(A) );
+	assert( L[3][1][2] == &A[3][1][2] - data_elements(A) );
+}
+
+BOOST_AUTO_TEST_CASE(layout_to_offset_sub){
+	multi::array<double, 3> A({10, 20, 30});
+	auto&& s = A({2, 6}, {4, 8}, {10, 20});
+	auto l = layout(s);
+	assert( l[0][0][0] == &s[0][0][0] - base(s) );
+	assert( l[0][0][1] == &s[0][0][1] - base(s) );
+	assert( l[0][0][2] == &s[0][0][2] - base(s) );
+	assert( l[0][1][2] == &s[0][1][2] - base(s) );
+	assert( l[3][1][2] == &s[3][1][2] - base(s) );
+}
+
+
 #endif
 #endif
 
