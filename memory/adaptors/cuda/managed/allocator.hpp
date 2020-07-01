@@ -53,15 +53,15 @@ namespace managed{
 		constexpr bool operator==(allocator<T> const&) const{return true;}
 		constexpr bool operator!=(allocator<T> const&) const{return false;}
 		template<class InputIt, class Size, class ForwardIt>
-		ForwardIt alloc_uninitialized_copy_n(InputIt first, Size count, ForwardIt d_first) const{
-			return adl_uninitialized_copy_n(first, count, d_first);
+		constexpr ForwardIt alloc_uninitialized_copy_n(InputIt first, Size count, ForwardIt d_first) const{
+			return ForwardIt{adl_uninitialized_copy_n(first, count, d_first)};
 		}
 		template<class ForwardIt, class Size>
-		ForwardIt alloc_uninitialized_default_construct_n(ForwardIt first, Size n) const{
-			return adl_uninitialized_default_construct_n(first, n);
+		constexpr ForwardIt alloc_uninitialized_default_construct_n(ForwardIt first, Size n) const{
+			return ForwardIt{adl_uninitialized_default_construct_n(first, n)};
 		}
 		template<class ForwardIt, class Size>
-		ForwardIt alloc_destroy_n(ForwardIt first, Size n) const{return destroy_n(first, n);}
+		constexpr ForwardIt alloc_destroy_n(ForwardIt first, Size n) const{return ForwardIt{destroy_n(first, n)};}
 	};
 }
 
