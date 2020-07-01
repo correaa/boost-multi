@@ -1,71 +1,29 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x -lcudart -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0x -lcudart -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_PTR_HPP
 #define BOOST_MULTI_MEMORY_ADAPTORS_CUDA_PTR_HPP
-
-#ifndef HD
-#if defined(__CUDACC__)
-#define HD __host__ __device__
-#else
-#define HD 
-#endif
-#endif
 
 #include "../../adaptors/cuda/clib.hpp"
 #include "../../adaptors/cuda/error.hpp"
 #include "../../../array_ref.hpp"
 #include "../../../complex.hpp" // adl_conj
 
+#include "../../../config/DEPRECATED.hpp"
+
 #include<cassert> // debug
 #include<utility> // exchange
 
 #ifndef _DISABLE_CUDA_SLOW
 #ifdef NDEBUG
-#define SLOW deprecated("WARNING: slow memory operation")
+#define SLOW DEPRECATED("WARNING: slow memory operation")
 #else
 #define SLOW
 #endif
 #else
 #define SLOW
 #endif
-
-#if not defined(__INTEL_COMPILER)
-#define BEGIN_NO_DEPRECATED \
-\
-_Pragma("GCC diagnostic push") \
-_Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"") \
-\
-
-#else
-#define BEGIN_NO_DEPRECATED \
-_Pragma("warning push") \
-_Pragma("warning disable 1786") \
-
-#endif
-
-#if not defined(__INTEL_COMPILER)
-#define END_NO_DEPRECATED \
-\
-_Pragma("GCC diagnostic pop") \
-\
-
-#else
-#define END_NO_DEPRECATED \
-\
-_Pragma("warning pop") \
-\
-
-#endif
-
-#define BEGIN_CUDA_SLOW BEGIN_NO_DEPRECATED
-#define END_CUDA_SLOW   END_NO_DEPRECATED
-
-#define NO_DEPRECATED(ExpR) \
-	BEGIN_NO_DEPRECATED \
-	ExpR \
-	END_NO_DEPRECATED
 
 #define CUDA_SLOW(ExpR) NO_DEPRECATED(ExpR)
 
@@ -76,10 +34,16 @@ template<class T> struct ref;
 
 template<typename T, typename Ptr = T*> struct ptr;
 
-#if 1
+namespace managed{template<typename T, typename RawPtr> struct ptr;}
+
 template<typename RawPtr>
-struct ptr<void const, RawPtr>{ // used by memcpy
+struct ptr<void const, RawPtr>{
+	using pointer = ptr;
+	using element_type = void const;
+//	using difference_type = void;//typename std::pointer_traits<impl_t>::difference_type;
+protected:
 	using raw_pointer = RawPtr;
+	template<class, class> friend struct managed::ptr;
 private:
 	raw_pointer rp_;
 	template<typename, typename> friend struct ptr;
@@ -92,21 +56,11 @@ public:
 	template<class Other, typename = decltype(raw_pointer{std::declval<Other const&>().rp_})>
 	ptr(Other const& o) : rp_{o.rp_}{}
 	ptr& operator=(ptr const&) = default;
-
-	using pointer = ptr;
-	using element_type = typename std::pointer_traits<raw_pointer>::element_type;
-	using difference_type = void;//typename std::pointer_traits<impl_t>::difference_type;
 	explicit operator bool() const{return rp_;}
-//	explicit operator impl_t&()&{return impl_;}
 	bool operator==(ptr const& other) const{return rp_==other.rp_;}
 	bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
 	friend ptr to_address(ptr const& p){return p;}
 };
-#endif
-
-namespace managed{
-	template<typename T, typename RawPtr> struct ptr;
-}
 
 template<class T> class allocator;
 
@@ -121,9 +75,8 @@ protected:
 	friend ptr<void> malloc(size_t);
 	friend void free();
 	friend ptr<void> memset(ptr<void> dest, int ch, std::size_t byte_count);
-	template<class TT, class RRawPtr> friend struct managed::ptr;
+	template<class, class> friend struct managed::ptr;
 private:
-//	ptr(ptr<void const> const& p) : rp_{const_cast<void*>(p.rp_)}{}
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 	template<class, class> friend struct ptr;
 	ptr(raw_pointer rp) : rp_{rp}{}
@@ -162,8 +115,6 @@ protected:
 	template<typename, typename> friend struct ptr;
 	template<typename> friend struct ref;
 
-//	template<class TT, typename = typename std::enable_if<not std::is_const<TT>{}>::type> 
-//	ptr(ptr<TT const> const& p) : rp_{const_cast<T*>(p.rp_)}{}
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 	friend struct managed::ptr<T, RawPtr>;
 public:
@@ -195,54 +146,38 @@ public:
 	auto operator!=(ptr<Other> const& other) const
 	->decltype(rp_!=other.rp_){
 		return rp_!=other.rp_;}
+
 	using element_type    = typename raw_pointer_traits::element_type;
 	using difference_type = typename raw_pointer_traits::difference_type;
 	using size_type       = difference_type;
 	using value_type      = T;
 
-	using pointer = ptr<T, RawPtr>;//<T>;
+	using pointer = ptr<T, RawPtr>;
 	using iterator_category = typename std::iterator_traits<raw_pointer>::iterator_category;
 	explicit constexpr operator bool() const{return rp_;}
 	explicit constexpr operator void const*() const{return rp_;}
 	template<class TT=T, typename = decltype(static_cast<TT*>(raw_pointer{}))>
 	explicit constexpr operator TT*() const{return static_cast<TT*>(rp_);}
-//	using void_C_type = typename std::conditional<std::is_const<typename std::pointer_traits<RawPtr>::element_type>{}, void const, void>::type;
-//	explicit constexpr operator typename raw_pointer_traits::template rebind<void_C_type>() const{return {rp_};}
 	ptr& operator++(){++rp_; return *this;}
 	ptr& operator--(){--rp_; return *this;}
 	ptr  operator++(int){auto tmp = *this; ++(*this); return tmp;}
 	ptr  operator--(int){auto tmp = *this; --(*this); return tmp;}
-	ptr& operator+=(typename ptr::difference_type n) /*HD*/{rp_+=n; return *this;}
-	ptr& operator-=(typename ptr::difference_type n) /*HD*/{rp_-=n; return *this;}
-//	friend bool operator==(ptr const& s, ptr const& t){return s.impl_==t.impl_;}
-//	friend bool operator!=(ptr const& s, ptr const& t){return s.impl_!=t.impl_;}
-	constexpr ptr operator+(typename ptr::difference_type n) const {return ptr{rp_ + n};}
-	constexpr ptr operator-(typename ptr::difference_type n) const /*HD*/{return ptr{rp_ - n};}
+	constexpr ptr& operator+=(difference_type n){rp_+=n; return *this;}
+	constexpr ptr& operator-=(difference_type n){rp_-=n; return *this;}
+	constexpr ptr operator+(difference_type n) const{return ptr{rp_ + n};}
+	constexpr ptr operator-(difference_type n) const{return ptr{rp_ - n};}
 	using reference = ref<element_type>;
-//#ifdef __NVCC__
-//	#ifndef __CUDA_ARCH__
-//		__host__   constexpr reference operator*() const{return {*this};}
-//	#else
-//		__device__ constexpr reference operator*() const{return *rp_; }
-//	#endif
-//#else
-	constexpr reference operator*() const /*__host__ __device__*/ { return {*this}; }
-//  __device__ reference operator*() const{return *rp_;}
-//#endif
-	reference operator[](difference_type n) const __host__ __device__{return *((*this)+n);}
-	friend ptr to_address(ptr const& p){return p;}
-	difference_type operator-(ptr const& o) const /*HD*/{return rp_-o.rp_;}
+	constexpr reference operator*() const{ return {*this}; }
+	constexpr reference operator[](difference_type n) const{return *((*this)+n);}
+	friend constexpr ptr to_address(ptr const& p){return p;}
+	constexpr difference_type operator-(ptr const& o) const{return rp_-o.rp_;}
 	operator ptr<void>(){return {rp_};}
 	auto get() const{return rp_;}
-//	#ifdef __CUDA_ARCH__
-	explicit operator raw_pointer() const /*HD*/{return rp_;}
-//	#else
-//	explicit operator raw_pointer() const HD{return rp_;}
-//	#endif
-	raw_pointer raw_pointer_cast() const /*HD*/{return this->rp_;}
-	friend raw_pointer raw_pointer_cast(ptr const& self) /*HD*/{return self.rp_;}
+	explicit constexpr operator raw_pointer() const{return rp_;}
+	constexpr raw_pointer raw_pointer_cast() const{return this->rp_;}
+	friend constexpr raw_pointer raw_pointer_cast(ptr const& self){return self.rp_;}
 	template<class PM>
-	/*HD*/ auto operator->*(PM&& pm) const
+	constexpr auto operator->*(PM&& pm) const
 	->decltype(ref<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{ptr<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{&(rp_->*std::forward<PM>(pm))}}){
 		return ref<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{ptr<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{&(rp_->*std::forward<PM>(pm))}};}
 public:
@@ -703,13 +638,6 @@ public:
 	}
 #endif
 #endif
-//	[[SLOW]]
-//	operator T const&()&& HD{return *(this->rp_);}
-//	operator T&&()&& HD{return std::move(*(this->rp_));}
-//	operator T const&() const& HD{return *(this->rp_);}
-//	operator T&()& HD{return *(this->rp_);}
-//	#else
-
 	template<class Other, typename = decltype(std::declval<T&>()+=std::declval<Other&&>())>
 	__host__ __device__
 	ref& operator+=(Other&& o)&&{std::move(*this).skeleton()+=o; return *this;}
@@ -725,11 +653,6 @@ private:
 	END_CUDA_SLOW
 	}
 public:
-#ifdef __NVCC__
-#define DEPRECATED(MsG)	__attribute__((deprecated))
-#else
-#define	DEPRECATED(MsG) [[deprecated(MsG)]]
-#endif
 
 	template<class Ref>
 #if __NVCC__
