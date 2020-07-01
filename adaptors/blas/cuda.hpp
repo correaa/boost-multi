@@ -1,4 +1,4 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 exit;$CXX $0 -o $0x `pkg-config --libs blas` -lcudart -lcublas&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
@@ -11,6 +11,8 @@ exit;$CXX $0 -o $0x `pkg-config --libs blas` -lcudart -lcublas&&$0x&&rm $0x;exit
 #include "../../memory/adaptors/cuda/managed/allocator.hpp"
 
 #include<cublas_v2.h>
+
+#include<thrust/complex.h>
 
 #define DECLRETURN(ExpR) ->decltype(ExpR){return ExpR;}
 #define JUSTRETURN(ExpR)                 {return ExpR;}
@@ -281,6 +283,9 @@ auto translate(std::complex<float> const * t){return reinterpret_cast<cublas::co
 auto translate(std::complex<float>       * t){return reinterpret_cast<cublas::complex<float>       *>(t);}	
 auto translate(std::complex<double> const* t){return reinterpret_cast<cublas::complex<double> const*>(t);}	
 auto translate(std::complex<double>      * t){return reinterpret_cast<cublas::complex<double>      *>(t);}
+
+auto translate(thrust::complex<double> const* t){return reinterpret_cast<cublas::complex<double> const*>(t);}	
+auto translate(thrust::complex<double>      * t){return reinterpret_cast<cublas::complex<double>      *>(t);}
 
 template<class T> auto translate(memory::cuda::ptr<T>          p) DECLRETURN(translate(raw_pointer_cast(p)))
 template<class T> auto translate(memory::cuda::managed::ptr<T> p) DECLRETURN(translate(raw_pointer_cast(p)))
