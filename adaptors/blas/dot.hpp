@@ -1,5 +1,5 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x `pkg-config --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x;exit
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+$CXXX $CXXFLAGS $0 -o $0x `pkg-config --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -24,11 +24,11 @@ auto dot_base_aux(A&& a){return underlying(base(a));}
 
 using core::dot;
 
-template<class X1D, class Y1D, class R, std::enable_if_t<not is_complex<X1D>{}, int> =0>
+template<class X1D, class Y1D, class R, std::enable_if_t<not is_complex_array<X1D>{}, int> =0>
 auto dot(X1D const& x, Y1D const& y, R&& r){
 	return dot(size(x), base(x), stride(x), base(y), stride(y), &r), std::forward<R>(r);}
 
-template<class X1D, class Y1D, class R, std::enable_if_t<    is_complex<X1D>{}, int> =0>
+template<class X1D, class Y1D, class R, std::enable_if_t<    is_complex_array<X1D>{}, int> =0>
 auto dot(X1D const& x, Y1D const& y, R&& r){
 
 	auto base_x = dot_base_aux(x);
@@ -72,6 +72,8 @@ auto dot(X1D const& x, Y1D const& y){
 
 #include<cassert>
 #include<numeric> // inner_product
+
+#include<thrust/complex.h>
 
 namespace multi = boost::multi;
 namespace blas = multi::blas;
@@ -154,8 +156,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex){
 		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}, std::plus<>{}, [](auto a, auto b){return a*conj(b);}) );
 	}
 	{
-		complex c = blas::dot(blas::C(A[1]), A[2]);
-		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}, std::plus<>{}, [](auto a, auto b){return conj(a)*b;}) );
+	//	complex c = blas::dot(blas::C(A[1]), A[2]);
+	//	BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}, std::plus<>{}, [](auto a, auto b){return conj(a)*b;}) );
 	}
 	{
 //		complex c = blas::dot(blas::C(A[1]), blas::C(A[2]));

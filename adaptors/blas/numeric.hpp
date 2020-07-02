@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -10,15 +10,7 @@ $CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #include "../../array_ref.hpp"
 #include "../../complex.hpp"
 
-//#include<complex>
-
-#if not defined(HD)
-#if defined(__CUDACC__)
-#define HD __host__ __device__
-#else
-#define HD
-#endif
-#endif
+#include "numeric/is_complex.hpp"
 
 namespace boost{
 namespace multi{
@@ -28,6 +20,11 @@ template<class T> struct Complex_{T real; T imag;};
 
 template<class A, typename T=typename std::decay_t<A>::element_type::value_type, typename C_=Complex_<T>>
 auto real_aux(A&& a, std::complex<T> const&)
+->decltype(std::forward<A>(a).template reinterpret_array_cast<C_>().template member_cast<T>(&C_::real)){
+	return std::forward<A>(a).template reinterpret_array_cast<C_>().template member_cast<T>(&C_::real);}
+	
+template<class A, typename Complex, typename T=typename std::decay_t<A>::element_type::value_type, typename C_=Complex_<T>, class=std::enable_if_t<blas::numeric::is_complex_of<Complex, T>::value>>
+auto real_aux(A&& a, Complex const&)
 ->decltype(std::forward<A>(a).template reinterpret_array_cast<C_>().template member_cast<T>(&C_::real)){
 	return std::forward<A>(a).template reinterpret_array_cast<C_>().template member_cast<T>(&C_::real);}
 
@@ -43,6 +40,12 @@ auto real(A&& a)
 
 template<class A, typename T=typename std::decay_t<A>::element_type::value_type, typename C_=Complex_<T>>
 auto imag_aux(A&& a, std::complex<T> const&)
+->decltype(std::forward<A>(a).template reinterpret_array_cast<C_>().template member_cast<T>(&C_::imag)){
+	return std::forward<A>(a).template reinterpret_array_cast<C_>().template member_cast<T>(&C_::imag);}
+	
+template<class A, class Complex, typename T=typename std::decay_t<A>::element_type::value_type, typename C_=Complex_<T>, class=std::enable_if_t<blas::numeric::is_complex_of<Complex, T>::value>
+>
+auto imag_aux(A&& a, Complex const&)
 ->decltype(std::forward<A>(a).template reinterpret_array_cast<C_>().template member_cast<T>(&C_::imag)){
 	return std::forward<A>(a).template reinterpret_array_cast<C_>().template member_cast<T>(&C_::imag);}
 
@@ -158,7 +161,7 @@ public:
 	constexpr auto operator*() const {return reference{*it_, f_};}
 	bool operator==(involuter const& o) const{return it_==o.it_;}
 	bool operator!=(involuter const& o) const{return it_!=o.it_;}
-	involuter& operator+=(typename involuter::difference_type n) HD{it_+=n; return *this;}
+	constexpr involuter& operator+=(typename involuter::difference_type n){it_+=n; return *this;}
 	constexpr auto operator+(typename involuter::difference_type n) const{return involuter{it_+n, f_};}
 //	decltype(auto) operator->() const{
 //		return &const_cast<reference&>(reinterpret_cast<reference const&>(*this));
@@ -168,7 +171,7 @@ public:
 	auto operator-(involuter const& other) const{return it_-other.it_;}
 	explicit operator bool() const{return it_;}
 	using underlying_type = It;
-	friend underlying_type underlying(involuter const& self) HD{return self.it_;}
+	friend constexpr underlying_type underlying(involuter const& self){return self.it_;}
 	constexpr explicit operator It() const {return underlying(*this);}
 	template<class Itt, class FF> friend auto get_allocator(involuter<Itt, FF> const&);
 	friend auto default_allocator_of(involuter const& s){
@@ -232,11 +235,21 @@ template<class It> It make_conjugater(conjugater<It> it){return underlying(it);}
 template<class T> auto imag(involuted<T, conjugate> const& s){return s.decay().imag();}
 template<class T> auto real(involuted<T, conjugate> const& s){return s.decay().real();}
 
-template<class A = void> struct is_complex{
-	template<class T> static auto _(T const& t) -> decltype(imag(*t), std::true_type());
-	                  static auto _(...       ) ->                    std::false_type  ;
-	constexpr operator bool() const{return decltype(_(base(std::declval<A>()))){};}
-	template<class AA> constexpr auto operator()(AA&&){return _(base(std::declval<A>()));}
+template<class T> auto has_imag_fun_aux(T const& t)->decltype(imag(t), std::true_type {});
+                  auto has_imag_fun_aux(...       )->decltype(         std::false_type{});
+template<class T> struct has_imag_fun : decltype(has_imag_fun_aux(std::declval<T>())){};
+
+
+template<class T> auto has_imag_mem_aux(T const& t)->decltype(t.imag(), std::true_type {});
+                  auto has_imag_mem_aux(...       )->decltype(         std::false_type{});
+template<class T> struct has_imag_mem : decltype(has_imag_mem_aux(std::declval<T>())){};
+
+template<class T> struct has_imag : std::integral_constant<bool, (has_imag_fun<T>{} or has_imag_mem<T>{})>{};
+
+template<class A = void> struct is_complex_array{
+	template<class T> static auto _(T const& t) -> has_imag<T>;
+	constexpr operator bool() const{return decltype(_(*base(std::declval<A>()))){};}
+	template<class AA> constexpr auto operator()(AA&&){return _(*base(std::declval<A>()));}
 };
 
 template<class A = void> struct is_conjugated{
@@ -272,7 +285,8 @@ auto default_allocator_of(blas::involuter<It, F, Reference> it){
 }
 
 namespace std{
-	template<> struct is_convertible<boost::multi::blas::Complex_<double> *, std::complex<double> *> : std::true_type{};
+	template<> struct is_convertible<boost::multi::blas::Complex_<double>*, std::complex<double>*> : std::true_type{};
+	template<class T> struct is_convertible<boost::multi::blas::Complex_<double>*, T*> : boost::multi::blas::numeric::is_complex_of<T, double>{};
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -289,6 +303,8 @@ namespace std{
 
 #include "../../array.hpp"
 #include "../../utility.hpp"
+
+#include<thrust/complex.h>
 
 //#include "../../adaptors/cuda.hpp"
 
@@ -307,9 +323,9 @@ template<class M> decltype(auto) print(M const& C){
 	return cout<<std::endl;
 }
 
-using complex = std::complex<double>; constexpr complex I{0, 1};
-
 BOOST_AUTO_TEST_CASE(multi_blas_numeric_real_imag_part){
+
+	using complex = thrust::complex<double>; complex const I{0, 1};
 
 	multi::array<double, 2> A = {
 		{1., 3., 4.}, 
@@ -342,16 +358,16 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_real_imag_part){
 	BOOST_REQUIRE( imag(B) == Bimag );
 
 	BOOST_REQUIRE( B[1][0] == 8. + 2.*I );
-	BOOST_REQUIRE( imag(B[1][0]) == 2. );
+	BOOST_REQUIRE( B[1][0].imag() == 2. );
 // 	using multi::blas::hermitized;
 //	BOOST_REQUIRE( hermitized(B)[0][1] == 8. - 2.*I );
 //	BOOST_REQUIRE( imag(hermitized(B)[0][1]) == -2. );
 	
 }
 
-template<class T> void what(T&&) = delete;
-
 BOOST_AUTO_TEST_CASE(multi_blas_numeric_real_conjugated){
+
+	using complex = std::complex<double>; complex const I{0, 1};
 
 	multi::array<complex, 2> B = {
 		{1. - 3.*I, 6. + 2.*I},
@@ -374,7 +390,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_real_conjugated){
 
 	BOOST_REQUIRE( *BdataC == 1. + 3.*I );
 
-	static_assert(    multi::blas::is_complex<decltype(B)>{}, "!");
+	static_assert(    multi::blas::is_complex_array<multi::array<thrust::complex<double>, 2>>{}, "!");
+	static_assert(    multi::blas::is_complex_array<decltype(B)>{}, "!");
 	static_assert(not multi::blas::is_conjugated<decltype(B)>{}, "!");
 
 	auto&& Bconj = multi::blas::conj(B);
@@ -382,18 +399,19 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_real_conjugated){
 
 	BOOST_REQUIRE( Bconj[0][0] == 1. + 3.*I );
 	BOOST_TEST_REQUIRE( imag(*base(Bconj)) == +3 );
+
 //	BOOST_TEST_REQUIRE( base(Bconj)->imag() == +3 );
 	BOOST_REQUIRE( rotated(Bconj)[1][0] == Bconj[0][1] );
 
 //	BOOST_REQUIRE( base(Bconj) == -3.*I );
-	static_assert(multi::blas::is_complex<decltype(Bconj)>{}, "!");
+	static_assert(multi::blas::is_complex_array<decltype(Bconj)>{}, "!");
 
 	BOOST_REQUIRE( conj(Bconj) == B );
+#if 0
 	BOOST_REQUIRE( base(conj(Bconj)) == base(B) );
-
 	BOOST_REQUIRE( base(conj(Bconj))->imag() == -3. );
 //	BOOST_REQUIRE( base(conjugated(Bconj))->imag() == -3. );
-
+#endif
 }
 
 #if 0

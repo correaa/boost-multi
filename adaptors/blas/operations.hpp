@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x `pkg-config --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0x `pkg-config --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE(m){
 }
 
 BOOST_AUTO_TEST_CASE(is_complex_array_test){
-	static_assert(multi::blas::is_complex<multi::array<std::complex<double>, 2>>{}, "!");
+	static_assert(multi::blas::is_complex_array<multi::array<std::complex<double>, 2>>{}, "!");
 }
 
 #if 0

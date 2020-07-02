@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x -lboost_unit_test_framework `pkg-config --libs blas` \
+$CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework `pkg-config --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -liomp5` \
 -lboost_timer &&$0x&&rm $0x; exit
 #endif
@@ -38,7 +38,7 @@ auto base_aux(A&& a)
 
 using core::herk;
 
-template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr, std::enable_if_t<is_complex<C2D>{}, int> =0>
+template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr, std::enable_if_t<is_complex_array<C2D>{}, int> =0>
 auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c)
 ->decltype(herk('\0', '\0',size(c), size(a), alpha, base_aux(a), stride(a.rotated()), beta, base_aux(c), stride(c)), std::forward<C2D>(c))
 {
@@ -73,7 +73,7 @@ auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c)
 	return std::forward<C2D>(c);
 }
 
-template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr, std::enable_if_t<not is_complex<C2D>{}, int> =0>
+template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr, std::enable_if_t<not is_complex_array<C2D>{}, int> =0>
 auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c)
 ->decltype(syrk(c_side, alpha, a, beta, std::forward<C2D>(c))){
 	return syrk(c_side, alpha, a, beta, std::forward<C2D>(c));}

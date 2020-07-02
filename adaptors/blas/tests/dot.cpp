@@ -15,6 +15,13 @@ $CXX $0 -o $0x `pkg-config --libs blas` -lcudart -lcublas -lboost_unit_test_fram
 #include "../../../adaptors/cuda.hpp"
 #include "../../../complex.hpp"
 
+#include<type_traits>
+#include<thrust/complex.h>
+namespace std{
+	template<> struct is_trivially_constructible<thrust::complex<double>, thrust::complex<double>> : std::true_type{};
+	template<> struct is_trivially_assignable<thrust::complex<double>&, thrust::complex<double>> : std::true_type{};
+}
+
 #include<complex>
 #include<cassert>
 #include<numeric>
@@ -70,8 +77,8 @@ BOOST_AUTO_TEST_CASE(blas_dot){
 		BOOST_REQUIRE( blas::C(bcu)[1] == 6. - 6.*I );
 		{
 			cuda::array<complex, 0> ccu;
-			static_assert( multi::blas::is_complex<multi::array<complex, 1>>{}, "!" );
-			static_assert( multi::blas::is_complex<cuda::array<complex, 1>>{}, "!" );
+			static_assert( multi::blas::is_complex_array<multi::array<complex, 1>>{}, "!" );
+			static_assert( multi::blas::is_complex_array<cuda::array<complex, 1>>{}, "!" );
 			blas::dot(acu, blas::C(bcu), ccu);
 			BOOST_REQUIRE( ccu() == 121. - 43.*I );
 		}
@@ -105,5 +112,42 @@ BOOST_AUTO_TEST_CASE(blas_dot){
 			BOOST_REQUIRE( cmcu[0] == complex(121., -43.) );
 		}
 	}
+	{
+		using complex = std::complex<double>; complex const I{0, 1};
+		cuda::array<complex, 1> const acu = {1. + I, 2. + 3.*I, 3. + 2.*I, 4. - 9.*I};
+		cuda::array<complex, 1> const bcu = {5. + 2.*I, 6. + 6.*I, 7. + 2.*I, 8. - 3.*I};
+		{
+			cuda::array<complex, 0> ccu;
+			blas::dot(acu, bcu, ccu);
+			BOOST_REQUIRE( ccu() == 19. - 27.*I );
+		}
+	}
+	{
+		using complex = thrust::complex<double>; complex const I{0, 1};
+		cuda::managed::array<complex, 1> const acu = {1. + I, 2. + 3.*I, 3. + 2.*I, 4. - 9.*I};
+		cuda::managed::array<complex, 1> const bcu = {5. + 2.*I, 6. + 6.*I, 7. + 2.*I, 8. - 3.*I};
+		{
+			cuda::managed::array<complex, 0> ccu;
+			blas::dot(acu, bcu, ccu);
+			BOOST_REQUIRE( ccu() == 19. - 27.*I );
+		}
+	}
 }
+
+#if 0
+BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_thrust_complex){
+	namespace blas = multi::blas;
+
+	using complex = thrust::complex<double>; complex const I{0, 1};
+	multi::array<complex, 2> const A = {
+		{1. +    I,  2. + 3.*I,  3.+2.*I,  4.-9.*I},
+		{5. + 2.*I,  6. + 6.*I,  7.+2.*I,  8.-3.*I},
+		{9. + 1.*I, 10. + 9.*I, 11.+1.*I, 12.+2.*I}
+	};
+	{
+	//	complex c; blas::dot(A[1], A[2], c);
+	//	BOOST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}) );
+	}
+}
+#endif
 
