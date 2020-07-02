@@ -43,12 +43,12 @@ struct imag_t;
 template<class ValueType = double>
 struct complex{
 	using value_type = ValueType;
-	value_type real;
-	value_type imag;
+	value_type re;
+	value_type im;
 	complex() = default;
-	complex(value_type real) : real{real}, imag{value_type{0}}{}
-	complex(value_type real, value_type imag) : real{real}, imag{imag}{}
-	complex(std::complex<ValueType> const& other) : real{other.real()}, imag{other.imag()}{}
+	constexpr complex(value_type real) : re{real}, im{value_type{0}}{}
+	constexpr complex(value_type real, value_type imag) : re{real}, im{imag}{}
+	constexpr complex(std::complex<ValueType> const& other) : re{other.real()}, im{other.imag()}{}
 /*	friend value_type const& real(complex const& c){return c.real;}
 	friend value_type      & real(complex      & c){return c.real;}
 	friend value_type const& imag(complex const& c){return c.imag;}
@@ -61,7 +61,7 @@ struct complex{
 			std::is_assignable<typename T::value_type&, decltype(std::declval<T>().imag())>{}, int
 		> =0
 	>
-	operator T const&() const&{return reinterpret_cast<T const&>(*this);}
+	constexpr operator T const&() const&{return reinterpret_cast<T const&>(*this);}
 	template<
 		class T,
 		std::enable_if_t<
@@ -70,11 +70,28 @@ struct complex{
 			std::is_assignable<typename T::value_type&, decltype(std::declval<T>().imag())>{}, int
 		> =0
 	>
-	operator T&()&{return reinterpret_cast<T const&>(*this);}
-	std::complex<value_type> const& std() const&{return reinterpret_cast<std::complex<value_type> const&>(*this);}
-	std::complex<value_type>& std()&{return reinterpret_cast<std::complex<value_type>&>(*this);}
-	friend auto abs(complex const& self){return abs(self.std());}
-	friend complex operator-(complex const& self, complex const& other){return self.std() - other.std();}
+	constexpr operator T&()&{return reinterpret_cast<T const&>(*this);}
+	constexpr std::complex<value_type> const& std() const&{return reinterpret_cast<std::complex<value_type> const&>(*this);}
+	constexpr std::complex<value_type>      & std()      &{return reinterpret_cast<std::complex<value_type>      &>(*this);}
+	friend constexpr auto abs(complex const& self){return abs(self.std());}
+	friend constexpr complex operator-(complex const& self, complex const& other){return self.std() - other.std();}
+	constexpr value_type& real()&{return re;}
+	constexpr value_type const& real() const&{return re;}
+//	friend constexpr value_type& real(complex& self){return self.re;}
+//	friend constexpr value_type const& real(complex const& self){return self.re;}
+
+	constexpr value_type& imag()&{return im;}
+	constexpr value_type const& imag() const&{return im;}
+//	friend constexpr value_type& imag(complex& self){return self.im;}
+//	friend constexpr value_type const& imag(complex const& self){return self.im;}
+	
+	template<class Real> constexpr auto operator+=(Real const& other)&->decltype(re += other, *this){return re += other, *this;}
+	template<class Real> constexpr auto operator-=(Real const& other)&->decltype(re -= other, *this){return re -= other, *this;}
+	template<class Real> constexpr auto operator*=(Real const& other)&->decltype(re *= other, im *= other, *this){return re *= other, im *= other, *this;}
+	template<class Real> constexpr auto operator/=(Real const& other)&->decltype(re /= other, im /= other, *this){return re /= other, im /= other, *this;}
+
+	template<class Complex> constexpr auto operator+=(Complex const& other)&->decltype(re += other.re, im += other.im, *this){return re += other.re, im += other.im, *this;}
+	template<class Complex> constexpr auto operator-=(Complex const& other)&->decltype(re -= other.re, im -= other.im, *this){return re -= other.re, im -= other.im, *this;}
 };
 
 struct real_t{
@@ -103,8 +120,8 @@ struct real_t{
 struct imag_t{
 	template<class Array, typename E = typename std::decay_t<Array>::element, typename ValueType = typename E::value_type> 
 	auto operator()(Array&& a) const
-	->decltype(std::forward<Array>(a).template reinterpret_array_cast<complex<ValueType>>().template member_array_cast<ValueType>(&complex<ValueType>::imag)){
-		return std::forward<Array>(a).template reinterpret_array_cast<complex<ValueType>>().template member_array_cast<ValueType>(&complex<ValueType>::imag);}
+	->decltype(std::forward<Array>(a).template reinterpret_array_cast<complex<ValueType>>().template member_cast<ValueType>(&complex<ValueType>::imag)){
+		return std::forward<Array>(a).template reinterpret_array_cast<complex<ValueType>>().template member_cast<ValueType>(&complex<ValueType>::imag);}
 	template<class T, typename ValueType = typename std::decay_t<T>::value_type, 
 		std::enable_if_t<
 			sizeof(T)==2*sizeof(ValueType) and 
@@ -144,8 +161,8 @@ decltype(auto) member_array_cast(Array&& a, imag_t const*){
 }
 */
 
-static real_t const real __attribute__((unused)) ;
-static imag_t const imag __attribute__((unused)) ;
+static constexpr real_t real MAYBE_UNUSED;
+static constexpr imag_t imag MAYBE_UNUSED;
 
 }}
 
@@ -170,7 +187,7 @@ int main(){
 	static_assert( std::is_trivially_copy_constructible<std::complex<double>>{}, "!");
 	static_assert( std::is_trivially_assignable<std::complex<double>&, std::complex<double> const>{}, "!");
 
-	using complex = std::complex<double>;
+	using complex = multi::complex<double>;
 
 	multi::array<complex, 2> A = {
 		{ {1.,2.}, {3.,4.} },
@@ -178,25 +195,25 @@ int main(){
 	};
 
 	{
-		auto&& Areal = multi::member_array_cast<double>(A, &multi::complex<double>::real);
-		auto&& Aimag = multi::member_array_cast<double>(A, &multi::complex<double>::imag);
+		auto&& Areal = A.member_cast<double>(&multi::complex<double>::re);
+		auto&& Aimag = A.member_cast<double>(&multi::complex<double>::im);
 
 		assert( Areal[1][0] == 22. );
 		assert( Aimag[1][0] == 33. );
 	}
 	{
-		auto&& Areal = multi::member_array_cast<double>(A, &multi::complex<double>::real);
-		auto&& Aimag = multi::member_array_cast<double>(A, &multi::complex<double>::imag);
+		auto&& Areal = A.member_cast<double>(&multi::complex<double>::re);
+		auto&& Aimag = A.member_cast<double>(&multi::complex<double>::im);
 
 		assert( Areal[1][0] == 22. );
 		assert( Aimag[1][0] == 33. );
 	}
 	{
-		auto&& Areal = multi::real(A); // multi::real(A);
-		auto&& Aimag = multi::imag(A); // multi::real(A);
+//		auto&& Areal = multi::real(A); // multi::real(A);
+//		auto&& Aimag = multi::imag(A); // multi::real(A);
 
-		assert( &Areal[1][0] == &multi::real(A[1][0]) );
-		assert( &Aimag[1][0] == &multi::imag(A[1][0]) );
+//		assert( &Areal[1][0] == &multi::real(A[1][0]) );
+//		assert( &Aimag[1][0] == &multi::imag(A[1][0]) );
 	}
 }
 
