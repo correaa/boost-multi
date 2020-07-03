@@ -185,6 +185,10 @@ public:
 	friend allocator<std::decay_t<T>> default_allocator_of(ptr const&){return {};}
 };
 
+template<class T>
+[[deprecated("experimental function, it might be removed soon")]]
+T* raw_pointer_cast(T* p){return p;}
+
 template<class T> allocator<T> get_allocator(ptr<T> const&){return {};}
 
 template<
