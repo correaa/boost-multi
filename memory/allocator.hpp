@@ -73,12 +73,7 @@ public:
 #include "../memory/monotonic.hpp"
 #include<boost/align/is_aligned.hpp>
 
-#include<vector>
-#include<iostream>
-#include<complex>
-
 namespace multi = boost::multi;
-using std::cout;
 
 BOOST_AUTO_TEST_CASE(multi_memory_allocator){
 
