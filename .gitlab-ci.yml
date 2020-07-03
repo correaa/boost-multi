@@ -179,6 +179,8 @@ cmake:
       - make -j
       - make test -j
 
+#      - export CXX="clang++     -x c++  -Wall -Wextra -Wpedantic -Ofast -lcudart -lfftw3 -lcublas -lcufft -lboost_timer -lboost_unit_test_framework `pkg-config --libs blas` "
+
 blas&fft:
     stage: test
     script:
@@ -187,7 +189,9 @@ blas&fft:
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev libboost-timer-dev libtbb-dev libboost-serialization-dev libboost-iostreams-dev librange-v3-dev valgrind
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang pkg-config libblas-dev libblas64-dev libfftw3-dev nvidia-cuda-toolkit
       - ln --symbolic --force . ../multi
-      - export CXX="clang++     -x c++  -Wall -Wextra -Wpedantic -Ofast -lcudart -lfftw3 -lcublas -lcufft -lboost_timer -lboost_unit_test_framework `pkg-config --libs blas` "
+      - export CXXX="clang++ -x c++"
+      - export CXXFLAGS="-Wall -Wextra -Wpedantic -Ofast -lcudart -lfftw3 -lcublas -lcufft -lboost_timer -lboost_unit_test_framework `pkg-config --libs blas`"
+      - export CXX="${CXXX} ${CXXFLAGS}"
       - $CXX --version
       - cd adaptors/blas
       - for a in ./*.hpp; do echo $a; sh $a || exit; echo "\n"; done;
@@ -209,7 +213,9 @@ blas&fftGPU:
     stage: test
     script:
       - export PATH=/usr/local/cuda/bin:$PATH
-      - export CXX="clang++     -x c++  `#-Wall -Wextra -Wpedantic` -Ofast -L/usr/local/cuda/lib64 -I/usr/local/cuda/include -lcudart -lfftw3 -lcublas -lcufft -lboost_timer -lboost_unit_test_framework `pkg-config --libs blas` "
+      - export CXXX="clang++ -x c++"
+      - export CXXFLAGS="`#-Wall -Wextra -Wpedantic` -Ofast -L/usr/local/cuda/lib64 -I/usr/local/cuda/include -lcudart -lfftw3 -lcublas -lcufft -lboost_timer -lboost_unit_test_framework `pkg-config --libs blas` "
+      - export CXX="${CXXX} ${CXXFLAGS}"
       - $CXX --version
       - cd adaptors/blas
       - for a in ./*.hpp; do echo $a; sh $a || exit; echo "\n"; done;
