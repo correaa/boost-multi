@@ -186,7 +186,7 @@ public:
 };
 
 template<class T>
-[[deprecated("experimental function, it might be removed soon")]]
+DEPRECATED("experimental function, it might be removed soon https://gitlab.com/correaa/boost-multi/-/issues/91")
 T* raw_pointer_cast(T* p){return p;}
 
 template<class T> allocator<T> get_allocator(ptr<T> const&){return {};}
