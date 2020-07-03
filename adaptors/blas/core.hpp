@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x `pkg-config --libs blas`&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0x `pkg-config --libs blas`&&$0x&&rm $0x;exit
 #endif
 //(for a in `find tests/ -name '*.cpp'`; do sh $a || break; done); exit
 
@@ -168,14 +168,15 @@ namespace blas{
 
 template<class T> struct complex_ptr{
 	std::complex<T>* impl_;
-	template<class TT, std::enable_if_t<sizeof(*TT{})==sizeof(TT{}->real())+sizeof(TT{}->imag()), int> =0>
+	template<class TT, std::enable_if_t<sizeof(*TT{})==sizeof(std::complex<T>) and sizeof(*TT{})==sizeof(TT{}->real())+sizeof(TT{}->imag()), int> =0>
 	complex_ptr(TT tt) : impl_{reinterpret_cast<std::complex<T>*>(tt)}{}
 	operator std::complex<T>*() const{return impl_;}
+	std::complex<T>& operator*() const{return *impl_;}
 };
 
 template<class T> struct complex_const_ptr{
 	std::complex<T> const* impl_;
-	template<class TT, std::enable_if_t<sizeof(*TT{})==sizeof(TT{}->real())+sizeof(TT{}->imag()), int> =0>
+	template<class TT, std::enable_if_t<sizeof(*TT{})==sizeof(std::complex<T>) and sizeof(*TT{})==sizeof(TT{}->real())+sizeof(TT{}->imag()), int> =0>
 	complex_const_ptr(TT tt) : impl_{reinterpret_cast<std::complex<T> const*>(tt)}{}
 	operator std::complex<T> const*() const{return impl_;}
 };
@@ -205,7 +206,7 @@ using v = void;
 #define xscal(XX, TA, TX) template<class S> TX* scal (S n, TA* a, TX      *x, S incx                                              ){BLAS(XX##scal)(BC(n), *a, x, BC(incx)             ); return x+n*incx;}
 #define xcopy(T)          template<class S> v   copy (S n,       T const *x, S incx, T       *y, S incy                          ){BLAS( T##copy)(BC(n),    x, BC(incx), y, BC(incy));                 }
 #define xaxpy(T)          template<class S> T*  axpy (S n, T  a, T const *x, S incx, T       *y, S incy                          ){BLAS( T##axpy)(BC(n), a, x, BC(incx), y, BC(incy)); return y+n*incy;}
-#define xdot(R, TT, T)    template<class S> v   dot  (S n,       T const *x, S incx, T const *y, S incy, R* r                    ){*r = BLAS(TT##dot )(BC(n),    x, BC(incx), y, BC(incy));                 }
+#define xdot(R, TT, T)    template<class S> v   dot  (S n,       T const* x, S incx, T const* y, S incy, R* r                    ){*r = BLAS(TT##dot )(BC(n),    x, BC(incx), y, BC(incy));                 }
 
 xrotg(s, s)    xrotg(d, d) //MKL extension xrotg(c, s); xrotg(z, d);
 xrotmg(s)      xrotmg(d)
@@ -241,11 +242,17 @@ template<class S, class T> T dot(S n, T const* x, S incx, T const* y, S incy){
 
 #ifndef CBLAS_H
 //#define xdotu(T) template<class S> v dotu(S n, T const* x, S incx, T const* y, S incy, T* r){*r = BLAS(T##dotu)(BC(n), x, BC(incx), y, BC(incy));}
-#define xdotu(T) template<class S> v dotu(S n, T const* x, S incx, T const* y, S incy, T* r){*r = (T)(BLAS(T##dotu)(BC(n), x, BC(incx), y, BC(incy)));}
-#define xdotc(T) template<class S> v dotc(S n, T const* x, S incx, T const* y, S incy, T* r){*r = (T)(BLAS(T##dotc)(BC(n), x, BC(incx), y, BC(incy)));}
+#define xdotu(T) template<class S> v dotu(S n, add_const_ptr_t<T> x, S incx, add_const_ptr_t<T> y, S incy, add_ptr_t<T> r){*r = (T)(BLAS(T##dotu)(BC(n), x, BC(incx), y, BC(incy)));}
+#define xdotc(T) template<class S> v dotc(S n, add_const_ptr_t<T> x, S incx, add_const_ptr_t<T> y, S incy, add_ptr_t<T> r){*r = (T)(BLAS(T##dotc)(BC(n), x, BC(incx), y, BC(incy)));}
 namespace core{
-xdotu(c) xdotu(z)
-xdotc(c) xdotc(z)
+	xdotu(c) xdotu(z)
+	xdotc(c) xdotc(z)
+	
+//template<template<class> class Complex, class T, class S> v dotu(S n, Complex<T> const* x, S incx, Complex<T> const* y, S incy, Complex<T>* r){*r = (Complex<T>)(BLAS(zdotu)(BC(n), (std::complex<T> const*)x, BC(incx), (std::complex<T> const*)y, BC(incy)));}
+
+//template<template<class> class Complex, class T, class S> v dotc(S n, Complex<T> const* x, S incx, Complex<T> const* y, S incy, Complex<T>* r){*r = (Complex<T>)(BLAS(zdotc)(BC(n), (std::complex<T> const*)x, BC(incx), (std::complex<T> const*)y, BC(incy)));}
+
+
 }
 //                 template<class S> z dot(S n,  c const *x, S incx, c const *y, S incy){return dotc(n, x, incx, y, incy);}
 //                 template<class S> z dot(S n,  z const *x, S incx, z const *y, S incy){return dotc(n, x, incx, y, incy);}
@@ -253,11 +260,11 @@ xdotc(c) xdotc(z)
 #undef xdotu
 #undef xdotc
 #else
-#define xdotu(T) template<class S> v dotu(S n, T const* x, S incx, T const* y, S incy, T* r){BLAS(T##dotu_sub)(BC(n), x, BC(incx), y, BC(incy), r);}
-#define xdotc(T) template<class S> v dotc(S n, T const* x, S incx, T const* y, S incy, T* r){BLAS(T##dotc_sub)(BC(n), x, BC(incx), y, BC(incy), r);}
+#define xdotu(T) template<class S> v dotu(S n, add_const_ptr_t<T> x, S incx, add_const_ptr_t<T> y, S incy, add_ptr_t<T> r){BLAS(T##dotu_sub)(BC(n), x, BC(incx), y, BC(incy), r);}
+#define xdotc(T) template<class S> v dotc(S n, add_const_ptr_t<T> x, S incx, add_const_ptr_t<T> y, S incy, add_ptr_t<T> r){BLAS(T##dotc_sub)(BC(n), x, BC(incx), y, BC(incy), r);}
 namespace core{
-xdotu(c) xdotu(z)
-xdotc(c) xdotc(z)
+	xdotu(c) xdotu(z)
+	xdotc(c) xdotc(z)
 }
 #undef xdotu
 #undef xdotc
