@@ -46,15 +46,12 @@ auto nrm2(Arr1D const& x, Alloc const& alloc = {}){
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
-#include<boost/mpl/list.hpp>
 
 #include "../../array.hpp"
 
 #include<thrust/complex.h>
 
-#include<boost/mp11/list.hpp>
-#include<boost/mp11/algorithm.hpp>
-#include<boost/mp11/utility.hpp>
+#include<boost/mpl/list.hpp>
 
 namespace multi = boost::multi;
 
