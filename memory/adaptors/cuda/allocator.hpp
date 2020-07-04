@@ -104,6 +104,11 @@ public:
 	template<class Ptr, class Size, class V = typename Ptr::element_type>//, std::enable_if_t<typename Ptr::element_type> >
 	auto alloc_uninitialized_value_construct_n(Ptr p, Size n)
 	DECLRETURN(uninitialized_value_construct_n(p, n))
+	
+	template<class Ptr, typename Size>
+	auto alloc_uninitialized_default_construct_n(Ptr p, Size n)
+	DECLRETURN(uninitialized_default_construct_n(p, n))
+
 	template<class Ptr, class Size, class V, std::enable_if_t<std::is_trivially_copy_constructible<V>{}, int> =0>// = typename Ptr::element_type>
 	Ptr alloc_uninitialized_fill_n(Ptr p, Size n, V const& v){
 		return uninitialized_fill_n(p, n, v);}
