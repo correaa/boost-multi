@@ -7,6 +7,7 @@ $CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #define BOOST_MULTI_MEMORY_ALLOCATOR_HPP
 
 #include "../detail/memory.hpp"
+#include "../config/NODISCARD.hpp"
 
 #include<cassert>
 
@@ -48,6 +49,7 @@ public:
 	bool operator==(allocator const& o) const{return mp_ == o.mp_;}
 	bool operator!=(allocator const& o) const{return mp_ != o.mp_;}
 	using void_pointer = typename std::pointer_traits<decltype(std::declval<memory_type*>()->allocate(0, 0))>::template rebind<void>;
+	NODISCARD("because otherwise it will generate a memory leak")
 	pointer allocate(size_type n){
 		return static_cast<pointer>(static_cast<void_pointer>(mp_->allocate(n*sizeof(value_type)/*, alignof(T)*/)));
 	}
