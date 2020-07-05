@@ -16,13 +16,13 @@ $CXXX $CXXFLAGS $0 -o $0x -lcudart -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #include<utility> // exchange
 
 #ifndef _DISABLE_CUDA_SLOW
-#ifdef NDEBUG
-#define SLOW DEPRECATED("WARNING: slow memory operation")
+	#ifdef NDEBUG
+		#define SLOW DEPRECATED("WARNING: slow memory operation")
+	#else
+		#define SLOW
+	#endif
 #else
-#define SLOW
-#endif
-#else
-#define SLOW
+	#define SLOW
 #endif
 
 #define CUDA_SLOW(ExpR) NO_DEPRECATED(ExpR)
@@ -379,92 +379,6 @@ public:
 	}	
 #endif
 
-#if 0
-#if defined(__clang__)
-	decltype(auto) operator=(ref const& other) && __device__ {return operator=(static_cast<T const&>(other));}
-	decltype(auto) operator=(ref&  other) && __device__ {return operator=(static_cast<T&>(other));}
-//	decltype(auto) operator=(ref&& other) &  __device__{return operator=(static_cast<T const&>(std::move(other)));}
-//	decltype(auto) operator=(ref&& other) && __device__{return operator=(static_cast<T const&>(std::move(other)));}
-#endif
-	ref&& operator=(ref&& other) && __host__{
-		static_assert( std::is_trivially_copyable<value_type>{}, "!");
-		auto s=cudaMemcpy(pimpl_.rp_, other.pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToDevice); (void)s; assert(s==cudaSuccess);
-		return std::move(*this);
-	}
-#if not defined(__clang__)
-	[[deprecated("WARNING: slow memory operation")]]
-	ref&& operator=(value_type const& t) && HD {
-		#ifdef __CUDA_ARCH__
-			*(pimpl_.rp_) = t;
-		//	assert(0);
-		#else
-		if(std::is_trivially_copy_assignable<T>{}){
-			/*[[maybe_unused]]*/ cudaError_t s= cudaMemcpy(pimpl_.rp_, std::addressof(t), sizeof(T), cudaMemcpyHostToDevice);
-		//	assert(s == cudaSuccess); (void)s;
-			if( s != cudaSuccess ) throw std::runtime_error( cudaGetErrorString(s) );
-		}else{
-			char buff[sizeof(T)];
-			/*[[maybe_unused]]*/ cudaError_t s1 = cudaMemcpy(buff, pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToHost); 
-			assert(s1 == cudaSuccess); (void)s1;
-			reinterpret_cast<T&>(buff) = t;
-			/*[[maybe_unused]]*/ cudaError_t s2 = cudaMemcpy(pimpl_.rp_, buff, sizeof(T), cudaMemcpyHostToDevice); 
-			assert(s2 == cudaSuccess); (void)s2;
-		}
-		#endif
-		return std::move(*this);
-	}
-	#ifndef __CUDA_ARCH__
-	[[deprecated("WARNING: slow memory operation")]]
-	#else
-	#endif
-	decltype(auto) operator=(value_type const& t) & HD{
-		#pragma GCC diagnostic push
-		#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-		return std::move(std::move(*this) = t);
-		#pragma GCC diagnostic pop
-	}
-#else // this is clang
-	template<class ValueType, 
-		std::enable_if_t<std::is_assignable<T&, decltype(value_type{std::declval<ValueType>()})>{}, int> = 0
-	>
-	[[deprecated("WARNING: slow cuda memory operation")]]
-	ref&& operator=(ValueType const& t) && __host__ {
-		static_assert( std::is_trivially_copy_assignable<T>{}, "!" );
-	//	if(std::is_trivially_copy_assignable<T>{}){
-		//	value_type const& tt = t;
-			cudaError_t s= cudaMemcpy(pimpl_.rp_, std::addressof(t), sizeof(T), cudaMemcpyHostToDevice);
-		//	assert(s == cudaSuccess); (void)s;
-			if( s != cudaSuccess ) throw std::runtime_error( cudaGetErrorString(s) );
-	//	}else{
-	//		char buff[sizeof(T)];
-	//		/*[[maybe_unused]]*/ cudaError_t s1 = cudaMemcpy(buff, pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToHost); 
-	//		assert(s1 == cudaSuccess); (void)s1;
-	//		reinterpret_cast<std::decay_t<T>&>(buff) = t;
-	//		/*[[maybe_unused]]*/ cudaError_t s2 = cudaMemcpy(pimpl_.rp_, buff, sizeof(T), cudaMemcpyHostToDevice); 
-	//		assert(s2 == cudaSuccess); (void)s2;
-	//	}
-		return std::move(*this);
-	}
-	[[deprecated("WARNING: slow memory operation")]]
-	decltype(auto) operator=(value_type const& t) & __host__{
-		#pragma clang diagnostic push
-		#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-		return std::move(std::move(*this) = t);
-		#pragma clang diagnostic pop
-	}
-	#if defined(__CUDA__)
-	ref&& operator=(value_type const& t) && __device__ {
-		*(pimpl_.rp_) = t;
-		return std::move(*this);
-	}
-	ref& operator=(value_type const& t) & __device__ {
-		*(pimpl_.rp_) = t;
-		return *this;
-	}
-	#endif
-#endif
-#endif
-
 #if defined(__clang__)
 #if defined(__CUDA__) //&& !defined(__CUDA_ARCH__)
 	operator T()&& __device__{return *(pimpl_.rp_);}
@@ -560,18 +474,6 @@ public:
 #endif
 #if 1
 
-#if 0
-	template<class Other> 
-	[[deprecated("WARNING: slow memory operation")]]
-	auto operator==(Other const& other)&&
-#if __CUDA_ARCH__
-	->decltype(*(pimpl_.rp_)==other){
-		return *(pimpl_.rp_)==other;}
-#else
-	->decltype(static_cast<T const&>(std::move(*this))==other){
-		return static_cast<T const&>(std::move(*this))==other;}
-#endif
-#endif
 
 #if defined(__clang__)
 #if defined(__CUDA__) && defined(__CUDA_ARCH__)
