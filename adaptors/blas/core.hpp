@@ -1,4 +1,4 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 $CXXX $CXXFLAGS $0 -o $0x `pkg-config --libs blas`&&$0x&&rm $0x;exit
 #endif
 //(for a in `find tests/ -name '*.cpp'`; do sh $a || break; done); exit
@@ -48,8 +48,8 @@ extern "C"{
 
 static_assert(sizeof(INT)==32/8 or sizeof(INT)==64/8, "please set _BLAS_INT to int32_t or int64_t");
 
-#define xROTG(T1, T2)     v BLAS(   T1##rotg)(T1 const*, T1 const*, T2*, T1*)
-#define xROTMG(T)         v BLAS(   T##rotmg)(T*, T*, T*, T const&, T(&param)[5])
+#define xROTG(T1, T2)     v BLAS(   T1##rotg)(                           T1 const*, T1 const*, T2*, T1*)
+#define xROTMG(T)         v BLAS(   T##rotmg)(                           T*, T*, T*, T const&, T(&param)[5])
 #define xROT(TT, T, S)    v BLAS(  TT##rot  )(N,              T       *x, INCX, T       *y, INCY, S const&, S const&)
 #define xROTM(T)          v BLAS(   T##rotm )(N, T* x, INCX, T* y, INCY, T const(&p)[5])
 #define xSWAP(T)          v BLAS(   T##swap )(N,              T       *x, INCX, T       *y, INCY)
@@ -87,11 +87,11 @@ IxAMAX(s); IxAMAX(d); IxAMAX(c); IxAMAX(z);
 #define UPLO const char& uplo
 #define DIAG const char& diag
 
-#define xGEMV(T) void BLAS(T##gemv)(TRANS, NR, NC, T const& a, T const* A, LDA, T const* X, INCX, T const& beta, T*       Y, INCY)
-#define xGER(T)  void BLAS(T##ger )(       NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA)
-#define xGERU(T) void BLAS(T##geru)(       NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA)
-#define xGERC(T) void BLAS(T##gerc)(       NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA)
-#define xTRSV(T) void BLAS(T##trsv)(UPLO, TRANS, DIAG, N, T const* A, LDA, T* X, INCX)
+#define xGEMV(T) void BLAS(T##gemv)(      TRANS,       NR, NC, T const& a, T const* A, LDA, T const* X, INCX, T const& beta, T*       Y, INCY           )
+#define xGER(T)  void BLAS(T##ger )(                   NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA)
+#define xGERU(T) void BLAS(T##geru)(                   NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA)
+#define xGERC(T) void BLAS(T##gerc)(                   NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA)
+#define xTRSV(T) void BLAS(T##trsv)(UPLO, TRANS, DIAG, N,                  T const* A, LDA, T* X      , INCX                                            )
 
 xGEMV(s); xGEMV(d); xGEMV(c); xGEMV(z);
 xGER(s); xGER(d);
@@ -107,10 +107,11 @@ xTRSV(s); xTRSV(d); xTRSV(c); xTRSV(z);
 
 #define SIDE const char& side
 
-#define xGEMM(T)     void BLAS(T##gemm)(TRANSA, TRANSB, NR, NC, NK, T const& a, T const* A, LDA, T const* B, LDB, T const& b, T const* CC, LDC)
-#define xSYRK(T)     void BLAS(T##syrk)(UPLO, TRANSA, NR, NK, T const& a, T const* A, LDA, T const& b, T* CC, LDC) 
-#define xHERK(TT, T) void BLAS(T##herk)(UPLO, TRANSA, NR, NK, TT const& a, T const* A, LDA, TT const& b, T* CC, LDC) 
-#define xTRSM(T) void BLAS(T##trsm)(SIDE, UPLO, TRANSA, DIAG, NR, NK, T const& a, T const* A, LDA, T const* B, LDB) 
+#define xGEMM(T)     void BLAS(T##gemm)(            TRANSA, TRANSB,       NR, NC, NK, T  const& a, T const* A, LDA, T const* B, LDB, T  const& b     , T const* CC, LDC)
+#define xSYRK(T)     void BLAS(T##syrk)(      UPLO, TRANSA,               NR, NK,     T  const& a, T const* A, LDA,                  T  const& b     , T*       CC, LDC)
+#define xHERK(TT, T) void BLAS(T##herk)(      UPLO, TRANSA,               NR, NK,     TT const& a, T const* A, LDA,                  TT const& b     , T*       CC, LDC)
+#define xTRSM(T)     void BLAS(T##trsm)(SIDE, UPLO, TRANSA,         DIAG, NR, NK,     T  const& a, T const* A, LDA,                  T  const* B, LDB                  )
+
 xGEMM(s); xGEMM(d); xGEMM(c)   ; xGEMM(z)   ;
 xSYRK(s); xSYRK(d); xSYRK(c)   ; xSYRK(z)   ;
                     xHERK(s, c); xHERK(d, z);
@@ -198,15 +199,15 @@ using v = void;
 
 #define BC(x) [](auto xx){assert(xx>=std::numeric_limits<INT>::min() and xx<std::numeric_limits<INT>::max()); return xx;}(x)
 
-#define xrotg(T1, T2)                       v   rotg (T1 const& a, T1 const& b, T2& cc, T1& ss                                   ){BLAS(T1##rotg )(const_cast<T1*>(&a), const_cast<T1*>(&b), &cc, &ss);}
-#define xrotmg(T)                           v   rotmg(T& d1, T& d2, T& A, T const& B, T(&p)[5]                                   ){BLAS(T##rotmg )(&d1, &d2, &A, B, p);}
-#define xrot(T, TT, CS)   template<class S> v   rot  (S n,       T       *x, S incx, T       *y, S incy, CS const& c, CS const& s){BLAS(TT##rot )(BC(n),    x, BC(incx), y, BC(incy), c, s);}
-#define xrotm(T)          template<class S> v   rotm (S n,       T       *x, S incx, T       *y, S incy, T const(&p)[5]          ){BLAS( T##rotm)(BC(n),    x, BC(incx), y, BC(incy), p);              }
-#define xswap(T)          template<class S> v   swap (S n,       T       *x, S incx, T       *y, S incy                          ){BLAS( T##swap)(BC(n),    x, BC(incx), y, BC(incy));                 }
-#define xscal(XX, TA, TX) template<class S> TX* scal (S n, TA* a, TX      *x, S incx                                              ){BLAS(XX##scal)(BC(n), *a, x, BC(incx)             ); return x+n*incx;}
-#define xcopy(T)          template<class S> v   copy (S n,       T const *x, S incx, T       *y, S incy                          ){BLAS( T##copy)(BC(n),    x, BC(incx), y, BC(incy));                 }
-#define xaxpy(T)          template<class S> T*  axpy (S n, T  a, T const *x, S incx, T       *y, S incy                          ){BLAS( T##axpy)(BC(n), a, x, BC(incx), y, BC(incy)); return y+n*incy;}
-#define xdot(R, TT, T)    template<class S> v   dot  (S n,       T const* x, S incx, T const* y, S incy, R* r                    ){*r = BLAS(TT##dot )(BC(n),    x, BC(incx), y, BC(incy));                 }
+#define xrotg(T1, T2)                       v   rotg (T1 const& a, T1 const& b, T2& cc, T1& ss                                   ){BLAS(T1##rotg )(const_cast<T1*>(&a), const_cast<T1*>(&b), &cc, &ss); }
+#define xrotmg(T)                           v   rotmg(T& d1, T& d2, T& A, T const& B, T(&p)[5]                                   ){BLAS(T##rotmg )(&d1, &d2, &A, B, p);                                 }
+#define xrot(T, TT, CS)   template<class S> v   rot  (S n,       T       *x, S incx, T       *y, S incy, CS const& c, CS const& s){BLAS(TT##rot )(BC(n),    x, BC(incx), y, BC(incy), c, s);            }
+#define xrotm(T)          template<class S> v   rotm (S n,       T       *x, S incx, T       *y, S incy, T const(&p)[5]          ){BLAS( T##rotm)(BC(n),    x, BC(incx), y, BC(incy), p);               }
+#define xswap(T)          template<class S> v   swap (S n,       T       *x, S incx, T       *y, S incy                          ){BLAS( T##swap)(BC(n),    x, BC(incx), y, BC(incy));                  }
+#define xscal(XX, TA, TX) template<class S> TX* scal (S n, TA* a, TX      *x, S incx                                             ){BLAS(XX##scal)(BC(n), *a, x, BC(incx)             ); return x+n*incx;}
+#define xcopy(T)          template<class S> v   copy (S n,       T const *x, S incx, T       *y, S incy                          ){BLAS( T##copy)(BC(n),    x, BC(incx), y, BC(incy));                  }
+#define xaxpy(T)          template<class S> T*  axpy (S n, T  a, T const *x, S incx, T       *y, S incy                          ){BLAS( T##axpy)(BC(n), a, x, BC(incx), y, BC(incy)); return y+n*incy; }
+#define xdot(R, TT, T)    template<class S> v   dot  (S n,       T const* x, S incx, T const* y, S incy, R* r                    ){*r = BLAS(TT##dot )(BC(n),    x, BC(incx), y, BC(incy));             }
 
 xrotg(s, s)    xrotg(d, d) //MKL extension xrotg(c, s); xrotg(z, d);
 xrotmg(s)      xrotmg(d)
@@ -241,21 +242,13 @@ template<class S, class T> T dot(S n, T const* x, S incx, T const* y, S incy){
 #undef xdot
 
 #ifndef CBLAS_H
-//#define xdotu(T) template<class S> v dotu(S n, T const* x, S incx, T const* y, S incy, T* r){*r = BLAS(T##dotu)(BC(n), x, BC(incx), y, BC(incy));}
+
 #define xdotu(T) template<class S> v dotu(S n, add_const_ptr_t<T> x, S incx, add_const_ptr_t<T> y, S incy, add_ptr_t<T> r){*r = (T)(BLAS(T##dotu)(BC(n), x, BC(incx), y, BC(incy)));}
 #define xdotc(T) template<class S> v dotc(S n, add_const_ptr_t<T> x, S incx, add_const_ptr_t<T> y, S incy, add_ptr_t<T> r){*r = (T)(BLAS(T##dotc)(BC(n), x, BC(incx), y, BC(incy)));}
 namespace core{
 	xdotu(c) xdotu(z)
 	xdotc(c) xdotc(z)
-	
-//template<template<class> class Complex, class T, class S> v dotu(S n, Complex<T> const* x, S incx, Complex<T> const* y, S incy, Complex<T>* r){*r = (Complex<T>)(BLAS(zdotu)(BC(n), (std::complex<T> const*)x, BC(incx), (std::complex<T> const*)y, BC(incy)));}
-
-//template<template<class> class Complex, class T, class S> v dotc(S n, Complex<T> const* x, S incx, Complex<T> const* y, S incy, Complex<T>* r){*r = (Complex<T>)(BLAS(zdotc)(BC(n), (std::complex<T> const*)x, BC(incx), (std::complex<T> const*)y, BC(incy)));}
-
-
 }
-//                 template<class S> z dot(S n,  c const *x, S incx, c const *y, S incy){return dotc(n, x, incx, y, incy);}
-//                 template<class S> z dot(S n,  z const *x, S incx, z const *y, S incy){return dotc(n, x, incx, y, incy);}
 
 #undef xdotu
 #undef xdotc
@@ -360,19 +353,10 @@ xtrsm(s) xtrsm(d) xtrsm(c) xtrsm(z)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#if not __INCLUDE_LEVEL__ // _TEST_MULTI_ADAPTORS_BLAS_CORE
+#if not __INCLUDE_LEVEL__
 
 #include "../../array.hpp"
 #include "../../utility.hpp"
-
-#include<complex>
-#include<cassert>
-#include<iostream>
-#include<numeric>
-#include<algorithm>
-
-using std::cout;
-namespace multi = boost::multi;
 
 int main(){}
 
