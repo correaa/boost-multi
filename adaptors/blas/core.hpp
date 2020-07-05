@@ -48,6 +48,8 @@ extern "C"{
 
 static_assert(sizeof(INT)==32/8 or sizeof(INT)==64/8, "please set _BLAS_INT to int32_t or int64_t");
 
+// TODO indent declarations like here https://www.netlib.org/lapack/lug/node145.html
+
 #define xROTG(T1, T2)     v BLAS(   T1##rotg)(                           T1 const*, T1 const*, T2*, T1*)
 #define xROTMG(T)         v BLAS(   T##rotmg)(                           T*, T*, T*, T const&, T(&param)[5])
 #define xROT(TT, T, S)    v BLAS(  TT##rot  )(N,              T       *x, INCX, T       *y, INCY, S const&, S const&)
@@ -199,15 +201,15 @@ using v = void;
 
 #define BC(x) [](auto xx){assert(xx>=std::numeric_limits<INT>::min() and xx<std::numeric_limits<INT>::max()); return xx;}(x)
 
-#define xrotg(T1, T2)                       v   rotg (T1 const& a, T1 const& b, T2& cc, T1& ss                                   ){BLAS(T1##rotg )(const_cast<T1*>(&a), const_cast<T1*>(&b), &cc, &ss); }
-#define xrotmg(T)                           v   rotmg(T& d1, T& d2, T& A, T const& B, T(&p)[5]                                   ){BLAS(T##rotmg )(&d1, &d2, &A, B, p);                                 }
-#define xrot(T, TT, CS)   template<class S> v   rot  (S n,       T       *x, S incx, T       *y, S incy, CS const& c, CS const& s){BLAS(TT##rot )(BC(n),    x, BC(incx), y, BC(incy), c, s);            }
-#define xrotm(T)          template<class S> v   rotm (S n,       T       *x, S incx, T       *y, S incy, T const(&p)[5]          ){BLAS( T##rotm)(BC(n),    x, BC(incx), y, BC(incy), p);               }
-#define xswap(T)          template<class S> v   swap (S n,       T       *x, S incx, T       *y, S incy                          ){BLAS( T##swap)(BC(n),    x, BC(incx), y, BC(incy));                  }
-#define xscal(XX, TA, TX) template<class S> TX* scal (S n, TA* a, TX      *x, S incx                                             ){BLAS(XX##scal)(BC(n), *a, x, BC(incx)             ); return x+n*incx;}
-#define xcopy(T)          template<class S> v   copy (S n,       T const *x, S incx, T       *y, S incy                          ){BLAS( T##copy)(BC(n),    x, BC(incx), y, BC(incy));                  }
-#define xaxpy(T)          template<class S> T*  axpy (S n, T  a, T const *x, S incx, T       *y, S incy                          ){BLAS( T##axpy)(BC(n), a, x, BC(incx), y, BC(incy)); return y+n*incy; }
-#define xdot(R, TT, T)    template<class S> v   dot  (S n,       T const* x, S incx, T const* y, S incy, R* r                    ){*r = BLAS(TT##dot )(BC(n),    x, BC(incx), y, BC(incy));             }
+#define xrotg(T1, T2)                       v   rotg (T1 const& a, T1 const& b, T2& cc, T1& ss                                   ){     BLAS(T1##rotg )(const_cast<T1*>(&a), const_cast<T1*>(&b), &cc, &ss);  }
+#define xrotmg(T)                           v   rotmg(T& d1, T& d2, T& A, T const& B, T(&p)[5]                                   ){     BLAS( T##rotmg)(&d1, &d2, &A, B, p);                                  }
+#define xrot(T, TT, CS)   template<class S> v   rot  (S n,       T       *x, S incx, T       *y, S incy, CS const& c, CS const& s){     BLAS(TT##rot  )(BC(n),    x, BC(incx), y, BC(incy), c, s);            }
+#define xrotm(T)          template<class S> v   rotm (S n,       T       *x, S incx, T       *y, S incy, T const(&p)[5]          ){     BLAS( T##rotm )(BC(n),    x, BC(incx), y, BC(incy), p);               }
+#define xswap(T)          template<class S> v   swap (S n,       T       *x, S incx, T       *y, S incy                          ){     BLAS( T##swap )(BC(n),    x, BC(incx), y, BC(incy));                  }
+#define xscal(XX, TA, TX) template<class S> TX* scal (S n, TA* a, TX      *x, S incx                                             ){     BLAS(XX##scal )(BC(n), *a, x, BC(incx)             ); return x+n*incx;}
+#define xcopy(T)          template<class S> v   copy (S n,       T const *x, S incx, T       *y, S incy                          ){     BLAS( T##copy )(BC(n),    x, BC(incx), y, BC(incy));                  }
+#define xaxpy(T)          template<class S> T*  axpy (S n, T  a, T const *x, S incx, T       *y, S incy                          ){     BLAS( T##axpy )(BC(n), a, x, BC(incx), y, BC(incy)); return y+n*incy; }
+#define xdot(R, TT, T)    template<class S> v   dot  (S n,       T const* x, S incx, T const* y, S incy, R* r                    ){*r = BLAS(TT##dot  )(BC(n),    x, BC(incx), y, BC(incy));                  }
 
 xrotg(s, s)    xrotg(d, d) //MKL extension xrotg(c, s); xrotg(z, d);
 xrotmg(s)      xrotmg(d)
@@ -216,11 +218,11 @@ xrotm(s)       xrotm(d)
 xswap(s)       xswap(d)       xswap(c)       xswap(z)
 
 namespace core{
-xscal(s, s, s) xscal(d, d, d) xscal(c, c, c) xscal(z, z, z) xscal(zd, d, z) xscal(cs, s, c)
-xcopy(s)       xcopy(d)       xcopy(c)       xcopy(z)
+	xscal(s, s, s) xscal(d, d, d) xscal(c, c, c) xscal(z, z, z) xscal(zd, d, z) xscal(cs, s, c)
+	xcopy(s)       xcopy(d)       xcopy(c)       xcopy(z)
 
-xdot(s, s, s)  xdot(d, d, d)                                xdot(d, ds, s)
-xaxpy(s)       xaxpy(d)       xaxpy(c)       xaxpy(z)
+	xdot(s, s, s)  xdot(d, d, d)                                xdot(d, ds, s)
+	xaxpy(s)       xaxpy(d)       xaxpy(c)       xaxpy(z)
 }
 
 template<class R, class S, class T> R dot(S n, T const* x, S incx, T const* y, S incy){
@@ -245,6 +247,7 @@ template<class S, class T> T dot(S n, T const* x, S incx, T const* y, S incy){
 
 #define xdotu(T) template<class S> v dotu(S n, add_const_ptr_t<T> x, S incx, add_const_ptr_t<T> y, S incy, add_ptr_t<T> r){*r = (T)(BLAS(T##dotu)(BC(n), x, BC(incx), y, BC(incy)));}
 #define xdotc(T) template<class S> v dotc(S n, add_const_ptr_t<T> x, S incx, add_const_ptr_t<T> y, S incy, add_ptr_t<T> r){*r = (T)(BLAS(T##dotc)(BC(n), x, BC(incx), y, BC(incy)));}
+
 namespace core{
 	xdotu(c) xdotu(z)
 	xdotc(c) xdotc(z)
@@ -264,7 +267,7 @@ namespace core{
 #endif
 
 namespace core{
-template<class S> s dot(S n, s const& b, s const* x, S incx, s const* y, S incy){return BLAS(sdsdot)(BC(n), b, x, BC(incx), y, BC(incy));}
+	template<class S> s dot(S n, s const& b, s const* x, S incx, s const* y, S incy){return BLAS(sdsdot)(BC(n), b, x, BC(incx), y, BC(incy));}
 
 //template<class S> void dot(S n, s const& b, s const* x, S incx, s const* y, S incy, s* result){*result = BLAS(sdsdot)(BC(n), b, x, BC(incx), y, BC(incy));}
 
@@ -289,11 +292,12 @@ namespace core{
 ///////////////////////////////////////////////////////////////////////////////
 // LEVEL2
 #define xgemv(T) template<class C, class S> v gemv(C trans, S m, S n, T const& a, T const* A, S lda, T const* X, S incx, T beta, T*       Y, S incy             ){BLAS(T##gemv)(trans, BC(m), BC(n), a, A, BC(lda), X, BC(incx), beta, Y, BC(incy)            );}
-#define xger(T)  template<         class S> v ger(          S m, S n, T const& a,                    T const* X, S incx,         T const* Y, S incy, T* A, S lda){BLAS(T##ger )(       BC(m), BC(n), a,             X, BC(incx),       Y, BC(incy), A, BC(lda));}
-                 template<         class S> v ger(          S m, S n, c const& a,                    c const* X, S incx,         c const* Y, S incy, c* A, S lda){BLAS(cgeru  )(       BC(m), BC(n), a,             X, BC(incx),       Y, BC(incy), A, BC(lda));}
-                 template<         class S> v ger(          S m, S n, z const& a,                    z const* X, S incx,         z const* Y, S incy, z* A, S lda){BLAS(zgeru  )(       BC(m), BC(n), a,             X, BC(incx),       Y, BC(incy), A, BC(lda));}
+#define xger(T)  template<         class S> v ger (         S m, S n, T const& a,                    T const* X, S incx,         T const* Y, S incy, T* A, S lda){BLAS(T##ger )(       BC(m), BC(n), a,             X, BC(incx),       Y, BC(incy), A, BC(lda));}
+                 template<         class S> v ger (         S m, S n, c const& a,                    c const* X, S incx,         c const* Y, S incy, c* A, S lda){BLAS(cgeru  )(       BC(m), BC(n), a,             X, BC(incx),       Y, BC(incy), A, BC(lda));}
+                 template<         class S> v ger (         S m, S n, z const& a,                    z const* X, S incx,         z const* Y, S incy, z* A, S lda){BLAS(zgeru  )(       BC(m), BC(n), a,             X, BC(incx),       Y, BC(incy), A, BC(lda));}
 #define xgeru(T) template<         class S> v geru(         S m, S n, T const& a,                    T const* X, S incx,         T const* Y, S incy, T* A, S lda){BLAS(T##geru)(       BC(m), BC(n), a,             X, BC(incx),       Y, BC(incy), A, BC(lda));}
 #define xgerc(T) template<         class S> v gerc(         S m, S n, T const& a,                    T const* X, S incx,         T const* Y, S incy, T* A, S lda){BLAS(T##gerc)(       BC(m), BC(n), a,             X, BC(incx),       Y, BC(incy), A, BC(lda));}
+
 xgemv(s) xgemv(d) xgemv(c) xgemv(z)
 xger(s)   xger(d)
                   xgeru(c) xgeru(z)
@@ -305,13 +309,13 @@ struct blas2{
 //	static v trsv(char ulA, char transA, char di, S m, T const* A, S lda, T* X, S incx) = delete;
 };
 
-template<> struct blas2<s>{template<class... As> static v trsv(As... as){BLAS(strsv)(as...);}};
-template<> struct blas2<d>{template<class... As> static v trsv(As... as){BLAS(dtrsv)(as...);}};
-template<> struct blas2<c>{template<class... As> static v trsv(As... as){BLAS(ctrsv)(as...);}};
+template<> struct blas2<s>{template<class... As> static v    trsv(As... as)                              {BLAS(strsv)(as...);}};
+template<> struct blas2<d>{template<class... As> static v    trsv(As... as)                              {BLAS(dtrsv)(as...);}};
+template<> struct blas2<c>{template<class... As> static v    trsv(As... as)                              {BLAS(ctrsv)(as...);}};
 template<> struct blas2<z>{template<class... As> static auto trsv(As... as)->decltype(BLAS(ztrsv)(as...)){BLAS(ztrsv)(as...);}};
 
 namespace core{
-template<typename TconstP, typename TP, typename S=std::size_t, typename C=char> v trsv(C ulA, C transA, C diA, S n, TconstP A, S lda, TP X, S incx){blas2<std::decay_t<typename std::pointer_traits<TP>::element_type>>::trsv(ulA, transA, diA, n, A, lda, X, incx);}
+	template<typename TconstP, typename TP, typename S=std::size_t, typename C=char> v trsv(C ulA, C transA, C diA, S n, TconstP A, S lda, TP X, S incx){blas2<std::decay_t<typename std::pointer_traits<TP>::element_type>>::trsv(ulA, transA, diA, n, A, lda, X, incx);}
 }
 
 #undef xgemv
@@ -331,15 +335,15 @@ template<class C, class S> v gemm(C transA, C transB, S m, S n, S k, T const* a,
 	assert(ldc >= std::max(1l, m)); \
 	BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), *a, A, BC(lda), B, BC(ldb), *beta, CC, BC(ldc));\
 }
-#define xsyrk(T) template<class UL, class C, class S> v syrk(UL ul, C transA, S n, S k, T alpha, T const* A, S lda, T beta, T* CC, S ldc){BLAS(T##syrk)(ul, transA, BC(n), BC(k), alpha, A, BC(lda), beta, CC, BC(ldc));}
-#define xherk(T) template<class UL, class C, class S, class Real> v herk(UL ul, C transA, S n, S k, Real alpha, T const* A, S lda, Real beta, T* CC, S ldc){BLAS(T##herk)(ul, transA, BC(n), BC(k), alpha, A, BC(lda), beta, CC, BC(ldc));}
-#define xtrsm(T) template<class C, class UL, class Di, class S> v trsm(C side, UL ul, C transA, Di di, S m, S n, T alpha, T const* A, S lda, T* B, S ldb){BLAS(T##trsm)(side, ul, transA, di, BC(m), BC(n), alpha, A, lda, B, ldb);}
+#define xsyrk(T) template<class UL, class C, class S>             v syrk(        UL ul, C transA,             S n, S k, T    alpha, T const* A, S lda,             T    beta, T* CC, S ldc){BLAS(T##syrk)(      ul, transA,            BC(n), BC(k), alpha, A, BC(lda),        beta, CC, BC(ldc));}
+#define xherk(T) template<class UL, class C, class S, class Real> v herk(        UL ul, C transA,             S n, S k, Real alpha, T const* A, S lda,             Real beta, T* CC, S ldc){BLAS(T##herk)(      ul, transA,            BC(n), BC(k), alpha, A, BC(lda),        beta, CC, BC(ldc));}
+#define xtrsm(T) template<class C, class UL, class Di, class S>   v trsm(C side, UL ul, C transA, Di di, S m, S n,      T    alpha, T const* A, S lda, T* B, S ldb                        ){BLAS(T##trsm)(side, ul, transA, di, BC(m), BC(n),        alpha, A,    lda , B, ldb                  );}
 
 namespace core{
-xgemm(s) xgemm(d) xgemm(c) xgemm(z)
-xsyrk(s) xsyrk(d) xsyrk(c) xsyrk(z)
-                  xherk(c) xherk(z)
-xtrsm(s) xtrsm(d) xtrsm(c) xtrsm(z)
+	xgemm(s) xgemm(d) xgemm(c) xgemm(z)
+	xsyrk(s) xsyrk(d) xsyrk(c) xsyrk(z)
+		              xherk(c) xherk(z)
+	xtrsm(s) xtrsm(d) xtrsm(c) xtrsm(z)
 }
 
 #undef xgemm
