@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-$CXX $0 -o $0x -lcudart -lboost_unit_test_framework -lboost_timer&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0x -lcudart -lboost_unit_test_framework -lboost_timer&&$0x&&rm $0x;exit
 #endif
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_ALGORITHM_HPP
 #define BOOST_MULTI_MEMORY_ADAPTORS_CUDA_ALGORITHM_HPP
@@ -157,7 +157,13 @@ auto copy(iterator<T1, 1, managed::ptr<Q1...>> first, iterator<T1, 1, managed::p
 
 #endif
 
-template<class T1, class T1P, class Size, class T2, class T2P, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
+#define ENABLE_IF class=std::enable_if_t
+
+template<class T1, class T1P, class Size, class T2, class T2P, 
+//	std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}, int> =0
+	ENABLE_IF<std::is_trivially_assignable<T2&, T1>{}>
+//	typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>
+>
 auto copy_n(array_iterator<T1, 1, ptr<T1P>> first, Size count, array_iterator<T1, 1, ptr<T1P>> result)
 ->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count){
 	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count;}
