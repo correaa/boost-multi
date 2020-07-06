@@ -85,27 +85,11 @@ BOOST_AUTO_TEST_CASE(range_assignment){
 }
 }
 
-//template<class Array> decltype(auto) rearranged(Array&& arr){
-//	return std::forward<Array>(arr).unrotated().partitioned(2).transposed().rotated();
-//}
-
 BOOST_AUTO_TEST_CASE(rearranged_assignment){
 	multi::array<double, 4> tmp({14, 14, 7, 4});
 	multi::array<double, 5> src({2, 14, 14, 7, 2}); src[0][1][2][3][1] = 99.;
 
-//	BOOST_REQUIRE( extensions(rearranged(tmp)) == extensions(src) );
-
 	BOOST_REQUIRE( extensions(tmp.unrotated().partitioned(2).transposed().rotated()) == extensions(src) );
-//	tmp.unrotated().partitioned(2).transposed().rotated() = src;
-
-//	rearranged(tmp) = src;
-//	BOOST_REQUIRE( rearranged(tmp) == src );
-//	BOOST_REQUIRE( rearranged(tmp) == ~(tmp>>1).partitioned(2)<<1 );
-
-//	auto rearranged2 = [](auto&& arr){return std::forward<decltype(arr)>(arr).unrotated().partitioned(2).transposed().rotated();};
-//	rearranged2(tmp) = src;	
-	tmp.unrotated().partitioned(2).transposed().rotated() = src;
-//	(~((tmp>>1)|2))<<1 = src;
 }
 
 BOOST_AUTO_TEST_CASE(rvalue_assignments){
