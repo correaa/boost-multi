@@ -48,6 +48,7 @@ auto nrm2(Arr1D const& x, Alloc const& alloc = {}){
 
 
 #include "../../array.hpp"
+#include "../../complex.hpp"
 
 #include<thrust/complex.h>
 
@@ -114,7 +115,8 @@ BOOST_AUTO_TEST_CASE(multi_adaptor_multi_nrm2_complex_real_case_thrust){
 BOOST_AUTO_TEST_CASE(multi_adaptor_multi_nrm2_complex_real_case_types){
 	boost::mpl::for_each<boost::mpl::list<
 		std   ::complex<double>, 
-		thrust::complex<double>
+		thrust::complex<double>//,
+	//	boost::multi::complex<double> // TODO make this work
 	>>([](auto cplx){
 		multi::array<decltype(cplx), 2> const cA = {
 			{1.,  2.,  3.,  4.},
