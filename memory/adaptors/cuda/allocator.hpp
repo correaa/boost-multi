@@ -1,5 +1,5 @@
-#ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
-$CXX $0 -o $0x -lcudart&&$0x&&rm $0x;exit
+#ifdef COMPILATION// -*- indent-tabs-mode:t;c-basic-offset:4;tab-width:4; -*-
+$CXXX $CXXFLAGS $0 -o $0x -lcudart -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2020
 
@@ -178,7 +178,10 @@ public:
 
 }
 
-#if not __INCLUDE_LEVEL__ // def _TEST_MULTI_MEMORY_CUDA_ALLOCATOR
+#if not __INCLUDE_LEVEL__
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi memory allocator"
+#define BOOST_TEST_DYN_LINK
+#include<boost/test/unit_test.hpp>
 
 #include<memory>
 #include<iostream>
@@ -196,113 +199,12 @@ template<class T> void add_one(T&& t){std::forward<T>(t) += 1.;}
 template<class T> void what(T&&) = delete;
 using std::cout;
 
-int main(){
+BOOST_AUTO_TEST_CASE(multi_memory_allocator){
 	{
 		multi::static_array<double, 1> A(32, double{}); A[17] = 3.;
 		multi::static_array<double, 1, cuda::allocator<double>> A_gpu = A;
-		assert( A_gpu[17] == 3 );
+		BOOST_REQUIRE( A_gpu[17] == 3 );
 	}
-#if 0
-	{
-		multi::static_array<double, 1, cuda::managed::allocator<double>> A_mgpu = A;
-		assert( A_mgpu[17] == 3 );
-		
-		multi::static_array<double, 1, cuda::managed::allocator<double>> AA_mgpu = A_gpu;
-		assert( A_mgpu[17] == 3 );
-	}
-	{
-		multi::static_array<double, 1> A(32, double{}); A[17] = 3.;
-		multi::static_array<double, 1, cuda::allocator<double>> A_gpu = A;
-		assert( A_gpu[17] == 3 );
-
-		multi::static_array<double, 1, cuda::managed::allocator<double>> A_mgpu = A;
-		assert( A_mgpu[17] == 3 );
-		
-		multi::static_array<double, 1, cuda::managed::allocator<double>> AA_mgpu = A_gpu;
-		assert( A_mgpu[17] == 3 );
-	}
-	{
-		multi::array<double, 1> A(32, double{}); A[17] = 3.;
-		multi::array<double, 1, cuda::allocator<double>> A_gpu = A;
-		assert( A_gpu[17] == 3 );
-
-		multi::array<double, 1, cuda::managed::allocator<double>> A_mgpu = A;
-		assert( A_mgpu[17] == 3 );
-		
-		multi::array<double, 1, cuda::managed::allocator<double>> AA_mgpu = A_gpu;
-		assert( A_mgpu[17] == 3 );
-	}
-	{
-		multi::array<double, 2> A_cpu({32, 64}, double{}); A_cpu[17][22] = 3.;
-		multi::array<double, 2, cuda::allocator<double>> A_gpu = A_cpu;
-		assert( A_gpu[17][22] == 3 );
-
-		multi::array<double, 2, cuda::managed::allocator<double>> A_mgpu = A_cpu;
-		assert( A_mgpu[17][22] == 3 );
-		
-		multi::array<double, 2, cuda::managed::allocator<double>> AA_mgpu = A_gpu;
-		assert( AA_mgpu[17][22] == 3 );
-	}
-	{
-		multi::static_array<double, 1> A1(32, double{}); A1[17] = 3.;
-		multi::static_array<double, 1, cuda::managed::allocator<double>> A1_gpu = A1;
-		assert( A1_gpu[17] == 3 );
-	}
-	{
-		multi::array<double, 1> A1(32, double{}); A1[17] = 3.;
-		multi::array<double, 1, cuda::allocator<double>> A1_gpu = A1;
-		assert( A1_gpu[17] == 3 );
-	}
-	{
-		multi::static_array<double, 2> A2({32, 64}, double{}); A2[2][4] = 8.;
-		multi::static_array<double, 2, cuda::allocator<double>> A2_gpu = A2;
-		assert( A2_gpu[2][4] == 8. );
-	}
-	{
-		multi::array<double, 2> A2({32, 64}, double{}); A2[2][4] = 8.;
-		multi::static_array<double, 2, cuda::allocator<double>> A2_gpu = A2;
-		assert( A2_gpu[2][4] == 8. );
-	}
-	{
-		multi::array<double, 2> A2({32, 64}, double{}); A2[2][4] = 8.;
-		multi::array<double, 2, cuda::allocator<double>> A2_gpu = A2;
-		assert( A2_gpu[2][4] == 8. );
-	}
-	{
-		multi::array<double, 2> A2({32, 8000000}, double{}); A2[2][4] = 8.;
-		multi::array<double, 2, cuda::allocator<double>> A2_gpu = A2;
-		int s; std::cin >> s;
-		assert( A2_gpu[2][4] == 8. );
-	}
-	{
-		static_assert(std::is_same<std::allocator_traits<cuda::allocator<double>>::difference_type, std::ptrdiff_t>{}, "!");
-		static_assert(std::is_same<std::allocator_traits<cuda::allocator<double>>::pointer, cuda::ptr<double>>{}, "!");
-		static_assert(
-			std::is_same<
-				std::allocator_traits<cuda::allocator<int>>::rebind_alloc<double>,
-				cuda::allocator<double>
-			>{}, "!"
-		);
-		cuda::allocator<double> calloc;
-		assert(calloc == calloc);
-		cuda::ptr<double> p = calloc.allocate(100);
-		CUDA_SLOW( p[33] = 123.; )
-		CUDA_SLOW( p[99] = 321.; )
-		CUDA_SLOW( p[33]+=1; );
-		double p33 = p[33];
-		assert( p33 == 124. );
-		assert( p[33] == 124. );
-		assert( p[99] == 321. );
-		CUDA_SLOW( swap(p[33], p[99]); )
-		assert( p[99] == 124. );
-		assert( p[33] == 321. );
-		std::cout << p[33] << std::endl;
-		calloc.deallocate(p, 100);
-		p = nullptr;
-		cout<<"n_alloc/dealloc "<< cuda::allocation_counter::n_allocations <<"/"<< cuda::allocation_counter::n_deallocations <<"\n"
-			<<"bytes_alloc/dealloc "<< cuda::allocation_counter::bytes_allocated <<"/"<< cuda::allocation_counter::bytes_deallocated <<"\n";
-	}
-#endif
 }
 #endif
 #endif
