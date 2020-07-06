@@ -61,23 +61,27 @@ template<class T, class V> struct is_complex_of : std::integral_constant<bool, r
 
 #include<thrust/complex.h>
 
+#include "../../../complex.hpp"
+#include "boost/mpl/list.hpp"
+
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(multi_blas_is_complex){
 	namespace numeric = multi::blas::numeric;
-	static_assert( numeric::is_complex<std::complex<double>>{}, "!");
-	static_assert( numeric::is_complex<thrust::complex<double>>{}, "!");
-	static_assert( not numeric::is_complex<double>{}, "!");
 
-	static_assert( numeric::is_complex<std::complex<float>>{}, "!");
-	static_assert( numeric::is_complex<thrust::complex<float>>{}, "!");
-	static_assert( not numeric::is_complex<float>{}, "!");
+	boost::mpl::for_each<boost::mpl::list<double, float, long double>>([](auto f){
+		using F = decltype(f);
+		static_assert( not numeric::is_complex<F>{}, "!");
 
-	static_assert( numeric::is_complex<std::complex<long double>>{}, "!");
-	static_assert( numeric::is_complex<thrust::complex<long double>>{}, "!");
-	static_assert( not numeric::is_complex<long double>{}, "!");
+		static_assert( numeric::is_complex<std::complex<F>>{}, "!");
+		static_assert( numeric::is_complex<thrust::complex<F>>{}, "!");
+		static_assert( numeric::is_complex<multi::complex<F>>{}, "!");
 
-	static_assert( numeric::is_complex_of<std::complex<double>, double>{}, "!");
+		static_assert( numeric::is_complex_of<std::complex<F>, F>{}, "!");
+		static_assert( not numeric::is_complex_of<F, F>{}, "!");
+	});
+
+
 	static_assert( not numeric::is_complex_of<std::complex<double>, float>{}, "!");
 	static_assert( not numeric::is_complex_of<double, float>{}, "!");
 	
