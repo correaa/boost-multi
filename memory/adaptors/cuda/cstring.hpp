@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x -lcudart -lboost_unit_test_framework -lboost_timer&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0x -lcudart -lboost_unit_test_framework -lboost_timer&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -17,17 +17,6 @@ namespace boost{
 namespace multi{
 namespace memory{
 namespace cuda{
-
-/*template<class CudaFunction>
-auto call_dynamic(CudaFunction f, std::string name = "cudaFunction"){
-	return [=](auto... args)->decltype(f(args...), void()){
-		std::cerr << "calling " + name << std::endl;
-		auto s = static_cast<Cuda::error>(f(args...));
-		if(s != Cuda::error::success) throw std::system_error{make_error_code(s), "cannot call cuda function "};
-	};
-}
-#define CUDA_(FunctionPostfix) ::boost::multi::memory::cuda::call_dynamic(cuda##FunctionPostfix, "cuda"#FunctionPostfix)
-*/
 
 #if __cpp_nontype_template_parameter_auto>=201606
 template<auto CudaFunction>
@@ -49,7 +38,6 @@ auto call_static(std::string name = ""){
 }
 
 #define CUDA(FunctionPostfix) ::boost::multi::memory::cuda::call_static<decltype(&cuda##FunctionPostfix), cuda##FunctionPostfix>(#FunctionPostfix)
-
 
 namespace memcpy_{
 //https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__TYPES.html#group__CUDART__TYPES_1g18fa99055ee694244a270e4d5101e95b
@@ -90,7 +78,7 @@ auto memcpy2D(VoidPDst dst, std::size_t dpitch, VoidPCSrc src, std::size_t spitc
 
 }}}}
 
-#if not __INCLUDE_LEVEL__ // _TEST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING
+#if not __INCLUDE_LEVEL__
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUDA cstring"
 #define BOOST_TEST_DYN_LINK
@@ -127,6 +115,7 @@ BOOST_AUTO_TEST_CASE(multi_memory_cuda_cstring){
 
 	double a = 5.;
 	BOOST_REQUIRE(a == 5.);
+
 }
 #endif
 #endif
