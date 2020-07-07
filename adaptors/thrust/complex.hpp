@@ -10,13 +10,13 @@ $CXXX $CXXFLAGS $0 -o $0x&&$0x&&rm $0x;exit
 #include<thrust/complex.h>
 
 namespace std{
-	template<class T> struct is_trivially_copy_constructible<thrust::complex<T>> : std::true_type{};
-	template<class T> struct is_trivially_constructible<thrust::complex<T>, thrust::complex<T>> : std::true_type{};
-	
-	template<class T> struct is_trivially_assignable<thrust::complex<T>&, thrust::complex<T>> : std::true_type{};
-	template<class T> struct is_trivially_assignable<thrust::complex<T>&, thrust::complex<T> const> : std::true_type{};
+	template<class T> struct is_trivially_copy_constructible<thrust::complex<T>                    > : std::true_type{};
+	template<class T> struct is_trivially_constructible     <thrust::complex<T>, thrust::complex<T>> : std::true_type{};
+
+	template<class T> struct is_trivially_assignable<thrust::complex<T>&, thrust::complex<T>>        : std::true_type{};
+	template<class T> struct is_trivially_assignable<thrust::complex<T>&, thrust::complex<T> const > : std::true_type{};
 	template<class T> struct is_trivially_assignable<thrust::complex<T>&, thrust::complex<T> const&> : std::true_type{};
-	template<class T> struct is_trivially_assignable<thrust::complex<T>&, thrust::complex<T> &> : std::true_type{};			
+	template<class T> struct is_trivially_assignable<thrust::complex<T>&, thrust::complex<T>      &> : std::true_type{};			
 
 // this one is controversional because it changes the behavior of initialization of values in multi (even in the cpu)
 	template<class T> struct is_trivially_default_constructible<thrust::complex<T>> : is_trivially_default_constructible<T>{};
