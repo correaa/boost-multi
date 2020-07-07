@@ -41,8 +41,8 @@ int main(){
 	static_assert( std::is_trivially_assignable<complex&, complex>{} , "!");
 
 	multi::array<complex, 2> A = {
-		{ {1.,2.}, {3.,4.} },
-		{ {22.,33.}, {5.,9.} }
+		{ { 1., 2.}, { 3., 4.} },
+		{ {22.,33.}, { 5., 9.} }
 	};
 }
 
