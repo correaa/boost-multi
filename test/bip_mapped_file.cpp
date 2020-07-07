@@ -1,55 +1,47 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x -lpthread -lstdc++fs&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0x -lstdc++fs -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
-#include<cassert>
-#include<numeric> // iota
-#include<iostream>
-#include<experimental/filesystem> // remove_all c++17
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi interacting with Boost Interprocess"
+#define BOOST_TEST_DYN_LINK
+#include<boost/test/unit_test.hpp>
 
 #include <boost/interprocess/managed_mapped_file.hpp>
 
-#if defined(__clang__) && defined(__CUDA__)
-namespace std{
-	template<class T, class Long, class ULong, int N>
-	struct pointer_traits<boost::interprocess::offset_ptr<T, Long, ULong, N>>{
-		using pointer = boost::interprocess::offset_ptr<T, Long, ULong, N>;
-		using element_type = T;
-		using difference_type = std::ptrdiff_t;
-		template<class U> using rebind = typename boost::interprocess::offset_ptr<U, Long, ULong, N>;
-	//	static pointer pointer_to(element_type& e) noexcept{return std::addressof(e);}
-	};
-}
-#endif
+#include<set>
+#include<experimental/filesystem> // remove_all c++17
 
 namespace bip = boost::interprocess;
 
 using manager = bip::managed_mapped_file;
 
+using std::experimental::filesystem::path;
+using std::experimental::filesystem::remove;
+
 template<class T> using mallocator = bip::allocator<T, manager::segment_manager>;
 static auto get_allocator(manager& m){return m.get_segment_manager();}
-static void mremove(std::experimental::filesystem::path f){std::experimental::filesystem::remove(f);}
+static void mremove(path f){remove(f);}
 
-//static std::string candidates(manager& m){
-//	std::string ret = "  candidates are:\n";
-//	for(auto it = get_allocator(m)->named_begin(); it != get_allocator(m)->named_end(); ++it)
-//		ret += '\t'+std::string(it->name(), it->name_length()) +'\n';
-//	return ret;
-//}
+std::set<std::string> candidates(manager& m){
+	std::set<std::string> ret;
+	for(auto it = get_allocator(m)->named_begin(); it != get_allocator(m)->named_end(); ++it)
+		ret.insert(std::string(it->name(), it->name_length()));
+	return ret;
+}
 
 #include "../array.hpp"
+
+#include<numeric> // iota
 
 namespace multi = boost::multi;
 
 template<class T, multi::dimensionality_type D> 
 using marray = multi::array<T, D, mallocator<T>>;
 
-using std::tuple;
+BOOST_AUTO_TEST_CASE(multi_test_bip){
 
-int main(){
-
-std::experimental::filesystem::path file = "bip_mapped_file.bin";
+path file = "bip_mapped_file.bin";
 mremove(file);
 {
 	manager m{bip::create_only, file.c_str(), 1 << 25};
@@ -69,25 +61,33 @@ mremove(file);
 {
 	manager m{bip::open_only, file.c_str()};
 
-	auto&& arr1d = 
-		*m.find<marray<int, 1>>("arr1d").first; assert(std::addressof(arr1d));
-	auto&& arr2d = 
-		*m.find<marray<double, 2>>("arr2d").first; assert(std::addressof(arr2d));
-	auto&& arr3d = 
-		*m.find<marray<unsigned, 3>>("arr3d").first; assert(std::addressof(arr3d));
+	auto s = candidates(m);
+	BOOST_REQUIRE( s.find("arr1d") != s.end() );
+	BOOST_REQUIRE( s.find("arr2d") != s.end() );
+	BOOST_REQUIRE( s.find("arr3d") != s.end() );
 
-	assert( arr1d[5] == 99 );
-	assert( arr1d[3] == 33 );
+	auto&& arr1d = *m.find<marray<int, 1>>("arr1d").first; 
+	BOOST_REQUIRE(std::addressof(arr1d));
+	
+	auto&& arr2d = *m.find<marray<double, 2>>("arr2d").first; 
+	BOOST_REQUIRE(std::addressof(arr2d));
+	
+	auto&& arr3d = *m.find<marray<unsigned, 3>>("arr3d").first; 
+	BOOST_REQUIRE(std::addressof(arr3d));
 
-	assert( arr2d[7][8] == 0. );
-	assert( arr2d[4][5] == 45.001 );
+	BOOST_REQUIRE( arr1d[5] == 99 );
+	BOOST_REQUIRE( arr1d[3] == 33 );
 
-	assert( arr3d[6][7][3] == 103 );
+	BOOST_REQUIRE( arr2d[7][8] == 0. );
+	BOOST_REQUIRE( arr2d[4][5] == 45.001 );
 
-	m.destroy<marray<int, 1>>("arr1d");//	eliminate<marray<int, 1>>(m, "arr1d"); 
-	m.destroy<marray<double, 2>>("arr2d");//	eliminate<marray<double, 2>>(m, "arr2d");
-	m.destroy<marray<unsigned, 3>>("arr3d");//	eliminate<marray<unsigned, 3>>(m, "arr3d");
+	BOOST_REQUIRE( arr3d[6][7][3] == 103 );
+
+	m.destroy<marray<int, 1>>("arr1d");
+	m.destroy<marray<double, 2>>("arr2d");
+	m.destroy<marray<unsigned, 3>>("arr3d");
 }
 mremove(file);
+
 }
 
