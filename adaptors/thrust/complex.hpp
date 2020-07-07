@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0x&&$0x&&rm $0x;exit
 #endif
 // © Alfredo Correa 2020
 
