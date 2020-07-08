@@ -78,15 +78,21 @@ public:
 } adl_fill_n;
 
 
-constexpr class equal_t{
+constexpr class adl_equal_fn__{
 	template<         class...As> constexpr auto _(priority<1>,      As...as) const DECLRETURN(   std::equal(as...))
 #ifdef THRUST_VERSION
-//		template<         class...As> constexpr auto _(priority<2>,      As...as) const DECLRETURN(thrust::equal(as...))
+//	template<         class...As> constexpr auto _(priority<2>,      As...as) const DECLRETURN(thrust::equal(as...))
 #endif
+#ifndef THRUST_VERSION
 	template<         class...As> constexpr auto _(priority<3>,      As...as) const DECLRETURN(        equal(as...))
+#endif
 	template<class T, class...As> constexpr auto _(priority<4>, T t, As...as) const DECLRETURN(      t.equal(as...))
 public:
 	template<class...As> constexpr auto operator()(As...as) const DECLRETURN(_(priority<4>{}, as...))
+#ifdef THRUST_VERSION
+	template<class It, class...As, class=std::enable_if_t<(It::dimensionality > 1)> > 
+	                     constexpr auto operator()(It begin, As... as) const DECLRETURN(_(priority<1>{}, begin, as...))
+#endif
 } adl_equal;
 
 	MAYBE_UNUSED constexpr class{
