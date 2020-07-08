@@ -108,15 +108,9 @@ BOOST_AUTO_TEST_CASE(iterator_semantics){
 
 	multi::array<double, 3> A =
 		{
-			{
-				{ 1.2,  1.1}, { 2.4, 1.}
-			},
-			{
-				{11.2,  3.0}, {34.4, 4.}
-			},
-			{
-				{ 1.2,  1.1}, { 2.4, 1.}
-			}
+			{{ 1.2,  1.1}, { 2.4, 1.}},
+			{{11.2,  3.0}, {34.4, 4.}},
+			{{ 1.2,  1.1}, { 2.4, 1.}}
 		}
 	;
 
@@ -141,6 +135,27 @@ BOOST_AUTO_TEST_CASE(iterator_semantics){
 	BOOST_REQUIRE( cit == it3 );
 
 	BOOST_REQUIRE((begin(A) == multi::array<double, 3>::iterator{rend(A)}));
+
+}
+
+BOOST_AUTO_TEST_CASE(iterator_arrow_operator){
+
+	multi::array<std::string, 2> A = {
+		{"00", "01"},
+		{"10", "11"},
+		{"20", "21"}
+	};
+	
+	BOOST_REQUIRE( A[1][0] == "10" );
+
+	BOOST_REQUIRE( std::is_sorted(begin(A), end(A)) );
+	BOOST_REQUIRE( std::is_sorted(begin(A.rotated()), end(A.rotated())) );
+	
+	BOOST_REQUIRE( begin(A)->size() == 2 );
+	BOOST_REQUIRE( begin( A.rotated() )->size() == 3 );
+	
+	BOOST_REQUIRE( &(begin( A           )->operator[](1)) == &(A[0][1]) );
+	BOOST_REQUIRE( &(begin( A.rotated() )->operator[](1)) == &(A[1][0]) );
 
 }
 
