@@ -346,18 +346,17 @@ public:
 	friend constexpr auto dimensionality(basic_array const& self){return self.dimensionality;}
 	using typename types::reference;
 
-	auto get_allocator() const{
+	using default_allocator_type = typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type;
+
+	default_allocator_type get_allocator() const{
 		using multi::get_allocator;
 		return get_allocator(this->base());
 	}
 	
-	using default_allocator_type = typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type;
-	
-	friend auto get_allocator(basic_array const& self){return self.get_allocator();}
+	friend default_allocator_type get_allocator(basic_array const& self){return self.get_allocator();}
 //	using decay_type = array<typename types::element, D, decltype(default_allocator_of(std::declval<ElementPtr>()))>;
 	template<class P>
-	static auto get_allocator_(P const& p)
-	->decltype(multi::default_allocator_of(p)){
+	static default_allocator_type get_allocator_(P const& p){
 	//	using multi::default_allocator_of;
 		return multi::default_allocator_of(p);
 	}
@@ -897,8 +896,11 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout> :
 {
 	using types = array_types<T, dimensionality_type{1}, ElementPtr, Layout>;
 	using types::types;
-	auto get_allocator() const{return default_allocator_of(basic_array::base());}
-	friend auto get_allocator(basic_array const& self){return self.get_allocator();}
+	
+	using default_allocator_type = typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type;
+
+	default_allocator_type get_allocator() const{return default_allocator_of(basic_array::base());}
+	friend default_allocator_type get_allocator(basic_array const& self){return self.get_allocator();}
 	using decay_type = array<typename types::element, dimensionality_type{1}, typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type>;
 	       decay_type decay()           const&      {return decay_type{*this};}
 	friend decay_type decay(basic_array const& self){return self.decay();}
@@ -944,8 +946,8 @@ protected:
 	template<class, dimensionality_type D, class, class>
 	friend struct array_iterator;
 public:
-	using default_allocator_type = typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type;
-	friend constexpr auto dimensionality(basic_array const& self){return self.dimensionality;}
+//	using default_allocator_type = typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type;
+	friend constexpr dimensionality_type dimensionality(basic_array const& self){return self.dimensionality;}
 	template<class BasicArray, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<BasicArray>>{}>, typename = decltype(types(std::declval<BasicArray&&>()))> 
 	constexpr basic_array(BasicArray&& other) : types{std::forward<BasicArray>(other)}{}
 	basic_array_ptr<basic_array, Layout> operator&() const{
