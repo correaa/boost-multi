@@ -148,11 +148,11 @@ BOOST_AUTO_TEST_CASE(iterator_arrow_operator){
 	
 	BOOST_REQUIRE( A[1][0] == "10" );
 
-	BOOST_REQUIRE( std::is_sorted(begin(A), end(A)) );
-	BOOST_REQUIRE( std::is_sorted(begin(A.rotated()), end(A.rotated())) );
+	BOOST_REQUIRE( std::is_sorted(begin(A), end(A)) ); // sorted by rows
+	BOOST_REQUIRE( std::is_sorted(begin(A.rotated()), end(A.rotated())) ); // sorted by cols
 	
-	BOOST_REQUIRE( begin(A)->size() == 2 );
-	BOOST_REQUIRE( begin( A.rotated() )->size() == 3 );
+	BOOST_REQUIRE( begin( A           )->size() == A[0].size() );
+	BOOST_REQUIRE( begin( A.rotated() )->size() == A.size() );
 	
 	BOOST_REQUIRE( &(begin( A           )->operator[](1)) == &(A[0][1]) );
 	BOOST_REQUIRE( &(begin( A.rotated() )->operator[](1)) == &(A[1][0]) );
