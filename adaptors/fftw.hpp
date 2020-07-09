@@ -442,7 +442,7 @@ decltype(auto) rotate(multi::array<T, D, Args...>& i, int = 1){
 	return i;
 }
 
-template<typename In, multi::dimensionality_type D = In::dimensionality, class R=typename In::decay_type>
+template<typename In, dimensionality_type D = In::dimensionality, class R=typename In::decay_type>
 NODISCARD("when first argument is const")
 auto dft(std::array<bool, +D> which, In const& i, sign s)
 ->std::decay_t<decltype(fftw::dft(which, i, R(extensions(i), get_allocator(i)), s))>{
@@ -487,20 +487,6 @@ auto dft_forward(A const& a)
 template<typename... A> auto            dft_backward(A&&... a)
 ->decltype(dft(std::forward<A>(a)..., fftw::backward)){
 	return dft(std::forward<A>(a)..., fftw::backward);}
-
-#if 0
-template<typename T, typename... As> 
-decltype(auto) dft_forward(As&... as, std::initializer_list<T> il){
-	return dft_forward(std::forward<As>(as)..., multi::array<T, 1>(il));}
-
-template<typename T, typename... As> decltype(auto) dft_forward(std::initializer_list<T> il){
-	return dft_forward(multi::array<T, 1>(il));}
-
-template<typename T, typename... As> decltype(auto) dft_forward(As&... as, std::initializer_list<std::initializer_list<T>> il){return dft_forward(std::forward<As>(as)..., multi::array<T, 2>(il));}
-
-template<typename T, typename... As> decltype(auto) dft_backward(As&... as, std::initializer_list<T> il){return dft_backward(std::forward<As>(as)..., multi::array<T, 1>(il));}
-template<typename T, typename... As> decltype(auto) dft_backward(As&... as, std::initializer_list<std::initializer_list<T>> il){return dft_backward(std::forward<As>(as)..., multi::array<T, 2>(il));}
-#endif
 
 template<class In> In&& dft_inplace(In&& i, sign s){
 	fftw::plan{i, i, (int)s}();//(i, i); 
