@@ -1,21 +1,17 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x &&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0x &&$0x&&rm $0x;exit
 #endif
 
 #ifndef MULTI_INDEX_RANGE_HPP
 #define MULTI_INDEX_RANGE_HPP
 
-#if defined(__CUDACC__)
-#define BOOST_RESULT_OF_USE_TR1_WITH_DECLTYPE_FALLBACK
-#endif
-
 #include "../config/MAYBE_UNUSED.hpp"
 
-//#include<boost/serialization/nvp.hpp>
 #include<limits> // numeric_limits
 #include<iterator> // std::random_iterator_tag // std::reverse_iterator
 
 #if 0
+//#include<boost/serialization/nvp.hpp>
 namespace boost{
 namespace serialization{
 	template<class> struct nvp;
@@ -222,6 +218,7 @@ struct extension_t : public range<IndexType, IndexTypeLast>{
 		if(self.first() == 0) return os <<"["<< self.last() <<"]";
 		return os << static_cast<range<IndexType> const&>(self);
 	}
+	IndexType start() const{return this->first();}
 	friend constexpr auto operator==(extension_t const& a, extension_t const& b){return static_cast<range<IndexType> const&>(a)==static_cast<range<IndexType> const&>(b);}
 	friend constexpr auto operator!=(extension_t const& a, extension_t const& b){return not(a==b);}
 };
@@ -236,11 +233,7 @@ auto make_extension_t(IndexTypeLast l){return make_extension_t(IndexTypeLast{0},
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#if not __INCLUDE_LEVEL__ // -D_TEST_MULTI_INDEX_RANGE
-//#include <boost/spirit/include/karma.hpp>
-
-//#include<range/v3/begin_end.hpp>
-//#include<range/v3/utility/concepts.hpp>
+#if not __INCLUDE_LEVEL__
 
 #include <boost/hana/integral_constant.hpp>
 #include <boost/iterator/transform_iterator.hpp>
@@ -326,22 +319,6 @@ int main(int, char*[]){
 		boost::make_transform_iterator(r.end()  , f)
 	);
 	assert( v[1] == 7 );
-}
-{
-//	multi::extension_t<> x(10);
-//	assert( size(x) == 10 );
-//	auto b = begin(x);
-//	ranges::begin(x);
-//	ranges::end(x);
-//	static_assert( ranges::forward_iterator< std::decay_t<decltype(b)> > , "!"); // error: static assertion failed
-}
-{
-//	assert( *begin(multi::range{5, 10}) == 5 );
-//	auto b = begin(multi::range{5, 10});
-//	assert( *ranges::begin(evoke(multi::range{5, 10})) == 5 );
-//	assert( *ranges::rbegin(evoke(multi::range{5, 10})) == 9 );
-//	std::iterator_traits<multi::range<std::ptrdiff_t>::iterator>::pointer s;
-//	static_assert( ranges::forward_iterator< std::decay_t<decltype(b)> > ); // error: static assertion failed
 }
 {
 	using namespace hana::literals; // contains the _c suffix
