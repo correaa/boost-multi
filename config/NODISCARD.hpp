@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x &&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0x &&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -35,10 +35,23 @@ $CXX $0 -o $0x &&$0x&&rm $0x;exit
 #endif
 #endif
 
-#if not __INCLUDE_LEVEL__ // _TEST_MULTI_CONFIG_NODISCARD
+#ifndef NODISCARD_CLASS
+	#if (__has_cpp_attribute(nodiscard) && not defined(__NVCC__))
+		#if (__has_cpp_attribute(nodiscard)>=201907)
+			#define NODISCARD_CLASS(MsG) [[nodiscard(MsG)]]
+		#else
+			#define NODISCARD_CLASS(MsG) [[nodiscard]]
+		#endif
+	#else
+		#define NODISCARD_CLASS(MsG)
+	#endif
+#endif
+
+#if not __INCLUDE_LEVEL__
+
+#include "../config/MAYBE_UNUSED.hpp"
 
 NODISCARD("because...") int f(){return 5;}
-//[[nodiscard]] int g(){return 5;} // ok in g++ -std=c++14
 
 struct A{
 	NODISCARD("because...")
@@ -46,12 +59,18 @@ struct A{
 	int ff(){return 5.;}
 };
 
+struct NODISCARD_CLASS("because...") B{};
+
+B create_B(){return B{};}
+
 int main(){
 	int i; 
 	i = f(); // ok
 //	f();  // warning
 	++i;
 	(void)i;
+	
+	MAYBE_UNUSED auto b = create_B();
 }
 #endif
 #endif
