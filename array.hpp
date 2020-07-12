@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0x&&$0x&&rm $0x;exit
 #endif
 //  © Alfredo A. Correa 2018-2019
 
@@ -42,6 +42,11 @@ protected:
 public:
 	allocator_type get_allocator() const{return alloc_;}
 	friend allocator_type get_allocator(array_allocator const& s){return s.get_allocator();}
+};
+
+template<class T, class Ptr = T*> struct move_ptr : std::move_iterator<Ptr>{
+	using std::move_iterator<Ptr>::move_iterator;
+	explicit operator Ptr() const{return std::move_iterator<Ptr>::base();}
 };
 
 // static_array is not a value type because it doesn't define assignment for static_arrays of different extensions
@@ -90,7 +95,7 @@ public:
 	using typename ref::difference_type;
 	static_array(typename static_array::allocator_type const& a) : array_alloc{a}{}
 protected:
-	static_array(static_array&& other, typename static_array::allocator_type const& a)                           //6b
+	static_array(static_array&& other, typename static_array::allocator_type const& a) noexcept     //6b
 	:	array_alloc{a},
 		ref{other.base_, other.extensions()}
 	{
@@ -98,8 +103,26 @@ protected:
 		other.base_ = nullptr;
 	}
 public:
-//	using ref::operator==;
-//	template<class Array> auto operator==(Array const& other) const{return ref::operator==(other);}
+	static_array(
+		basic_array<typename static_array::element, static_array::dimensionality, multi::move_ptr<typename static_array::element, typename static_array::element_ptr>>&& other, 
+		typename static_array::allocator_type const& a = {}
+	) noexcept : 
+		array_alloc{a},
+		ref{
+			other.layout()==typename static_array::layout_t(other.extensions())?
+				other.base_.base():
+				array_alloc::allocate(other.num_elements())
+			,
+			other.extensions()
+		}
+	{
+		if(other.base_.base() != static_array::base_)
+			recursive<D>::alloc_uninitialized_copy(static_array::alloc(), 
+				other.template static_array_cast<typename static_array::element, typename static_array::element_ptr>().begin(), 
+				other.template static_array_cast<typename static_array::element, typename static_array::element_ptr>().end()  , 
+				this->begin()
+			);
+	}
 	template<class Array>//, std::enable_if_t<std::is_same<Array, basic_array>{}, int> =0> 
 	bool operator==(Array&& o) const&{
 		return std::move(modify(*this)).ref::operator==(std::forward<Array>(o));
@@ -704,6 +727,19 @@ public:
 	friend auto data_elements(array const& self){return self.data_elements();}
 	friend auto data_elements(array      & self){return self.data_elements();}
 	friend auto data_elements(array     && self){return std::move(self).data_elements();}
+	
+	NODISCARD("cannot discard a moved array")
+	basic_array<typename array::element, array::dimensionality, multi::move_ptr<typename array::element> >
+	move() &{
+		basic_array<typename array::element, array::dimensionality, multi::move_ptr<typename array::element> >
+		ret = multi::static_array_cast<typename array::element, multi::move_ptr<typename array::element>>(*this);
+		layout_t<array::dimensionality>::operator=({});
+		return ret;
+	}
+	NODISCARD("cannot discard a moved array")
+	friend 	
+	basic_array<typename array::element, array::dimensionality, multi::move_ptr<typename array::element> >
+	move(array& self){return self.move();}
 
 //	explicit	
 //	array(array const& other)                                              // 5a
@@ -712,31 +748,6 @@ public:
 //	}
 //	explicit
 //s	using static_::static_array;
-#if 0
-	template<
-		class Array, 
-		typename=std::enable_if_t<not std::is_constructible<typename array::extensions_type, Array>{}>,//, 
-		typename=std::enable_if_t<not std::is_base_of<array, Array>{}>,
-		typename=std::enable_if_t<multi::rank<std::remove_reference_t<Array>>{}()>=1>//,
-	//	typename=decltype(typename array::element{std::declval<typename array_traits<Array>::element const&>()})
-	>	array(Array const& o, typename array::allocator_type const& a = {})
-	:	static_(o, a){
-	//	using std::begin; using std::end;
-	//	uninitialized_copy(alloc(), begin(o), end(o), ref::begin());
-	}
-#endif
-#if 0
-	template<
-		class Array, 
-		typename=std::enable_if_t<not std::is_constructible<typename array::extensions_type, std::decay_t<Array>>{}>,//, 
-		typename=std::enable_if_t<not std::is_same<array, Array>{}>,
-		typename=std::enable_if_t<not std::is_same<static_, Array>{}>,
-		typename=std::enable_if_t<multi::rank<std::remove_reference_t<Array>>{}()>=1>,
-		typename=decltype(typename array::element{std::declval<typename array_traits<Array>::element const&>()})
-	//	typename = decltype(ref{typename alloc_traits::allocate(num_elements(std::declval<Array&&>())), extensions(std::declval<Array&&>())}) 
-	>
-	array(Array const& o, typename array::allocator_type const& a = {}) : static_{o, a}{}
-#endif
 //	template<class Array> array(Array const& arr) : static_{arr}{}
 //	using static_::static_;
 //	template<class... As>
@@ -818,6 +829,11 @@ public:
 #else
 	array& operator=(array o) noexcept{return swap(o), *this;}
 #endif
+	array& operator=(basic_array<T, D, multi::move_ptr<typename array::element, typename array::element_ptr>>& other){
+		if(other.layout() != this->layout()) return array::operator=(other.template static_array_cast<typename array::element, typename array::element_ptr>());
+		if(this->base_ != other.base_) other.base_ = nullptr;
+		return *this;
+	}
 	friend void swap(array& a, array& b){a.swap(b);}
 	void assign(typename array::extensions_type x, typename array::element const& e){
 		if(array::extensions()==x){
@@ -1074,6 +1090,8 @@ struct A{
 	double const* p;
 	A(std::initializer_list<double> il){ p = &*(il.begin() + 1); };
 };
+
+template<class T> void what(T&&) = delete;
 
 int main(){
 

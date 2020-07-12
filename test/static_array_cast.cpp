@@ -129,5 +129,8 @@ BOOST_AUTO_TEST_CASE(static_array_cast){
 	assert( mA == mA_ref );
 }
 
+	double d = 5.;
+	std::move_iterator<double*> di{&d};
+//	double* dp = reinterpret_cast<double*&>(di);
 }
 

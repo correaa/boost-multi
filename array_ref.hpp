@@ -28,6 +28,18 @@ $CXXX $CXXFLAGS $0 -o $0x&&$0x&&rm $0x&&(rm -rf test/build&&mkdir -p test/build&
 #include<algorithm> // copy_n
 #include<cstring> // for memset in reinterpret_cast
 #include<functional> // invoke
+#include<memory> // pointer_traits
+
+namespace std{
+	template<class T>
+	struct pointer_traits<std::move_iterator<T*>> : std::pointer_traits<T*>{
+		template<class U> using rebind = 
+			std::conditional_t<std::is_const<U>{}, 
+				U*,
+				std::pointer_traits<std::move_iterator<U*>>
+			>;
+	};
+}
 
 namespace boost{
 namespace multi{
@@ -73,7 +85,8 @@ struct array_types : Layout{
 	//	typename std::pointer_traits<element_const_ptr>::reference   // this seems more correct but it doesn't work with cuda fancy reference
 	>::type;
 
-	constexpr element_ptr base() const{return base_;} //	element_const_ptr cbase() const{return base();}
+	constexpr element_ptr base() const{return base_;}
+	constexpr element_ptr& mbase() const{return base_;}
 	friend element_ptr base(array_types const& s){return s.base();}
 	constexpr layout_t const& layout() const{return *this;}
 	friend layout_t const& layout(array_types const& s){return s.layout();}
@@ -463,7 +476,6 @@ public:
 	friend decltype(auto) transposed(basic_array const& self){return self.transposed();}
 	friend decltype(auto) operator~(basic_array const& self){return self.transposed();}
 
-	
 	basic_array rotated()&{
 		typename types::layout_t new_layout = *this; new_layout.rotate();
 		return basic_array{new_layout, types::base_};
@@ -843,7 +855,7 @@ private:
 		return (other.data_ - data_)/stride_;
 	}
 public:
-	constexpr element_ptr data() const{return data_;} 
+	[[deprecated("use base for iterator")]] constexpr element_ptr data() const{return data_;}
 	constexpr element_ptr base()              const&   {return   data_;} friend
 	constexpr element_ptr base(array_iterator const& s){return s.data_;}
 	constexpr stride_type stride()              const&   {return   stride_;} friend
@@ -1202,7 +1214,7 @@ constexpr decltype(auto) static_array_cast(Array&& a, Args&&... args){
 }
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*>
-struct array_ref : 
+struct NODISCARD_CLASS("!") array_ref : 
 //TODO	multi::partially_ordered2<array_ref<T, D, ElementPtr>, void>,
 	basic_array<T, D, ElementPtr>
 {
@@ -1215,7 +1227,6 @@ public:
 #if __INTEL_COMPILER or __cplusplus < 201703L
 	array_ref(array_ref&&) = default;
 #endif
-//	[[deprecated]]
 	constexpr array_ref(typename array_ref::element_ptr p, typename array_ref::extensions_type e = {}) noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
 
@@ -1225,17 +1236,8 @@ public:
 	template<class TT, std::size_t N>
 	constexpr array_ref(TT(&t)[N]) : basic_array<T, D, ElementPtr>{data_elements(t), extensions(t)}{}
 
-//	constexpr array_ref(typename array_ref::element_ptr p, std::initializer_list<index_extension> il) noexcept
-//		: array_ref(p, detail::to_tuple<D, index_extension>(il)){}
-//	template<class Extension>//, typename = decltype(array_ref(std::array<Extension, D>{}, allocator_type{}, std::make_index_sequence<D>{}))>
-//	constexpr array_ref(typename array_ref::element_ptr p, std::array<Extension, D> const& x) 
-//		: array_ref(p, x, std::make_index_sequence<D>{}){}
-//	using basic_array<T, D, ElementPtr>::operator[];
 	using basic_array<T, D, ElementPtr>::operator=;
 	using basic_array<T, D, ElementPtr>::operator==;
-//	using basic_array<T, D, ElementPtr>::operator<;
-//	using basic_array<T, D, ElementPtr>::operator>;
-//	template<class ArrayRef> explicit array_ref(ArrayRef&& a) : array_ref(a.data(), extensions(a)){}
 private:
 	template<class It> auto copy_elements(It first){
 		return adl_copy_n(first, array_ref::num_elements(), array_ref::data_elements());
@@ -1244,7 +1246,7 @@ private:
 		return adl_equal(first, first + this->num_elements(), this->data_elements());
 	}
 	template<class TT, std::size_t N> using const_carr = TT const[N];
-	template<class TT, std::size_t N> using carr = TT[N];
+	template<class TT, std::size_t N> using carr       = TT      [N];
 public:
 	template<class TT, std::size_t N, std::enable_if_t<std::is_same<typename array_ref::element_type, std::decay_t<std::remove_all_extents_t<const_carr<TT, N>>>>{}, int> =0>
 	operator const_carr<TT, N>&() const&{assert(extensions(*(const_carr<TT, N>*)this)==this->extensions());
@@ -1294,6 +1296,7 @@ public:
 		return static_cast<typename array_ref::decay_type const&>(*this);
 	}
 	friend typename array_ref::decay_type const& decay(array_ref const& s){return s.decay();}
+
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int v){
 	//	using boost::serialization::make_nvp;

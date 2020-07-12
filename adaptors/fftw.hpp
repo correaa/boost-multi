@@ -392,11 +392,6 @@ auto dft(In const& i, Out&& o, int s)
 ->decltype(fftw::plan{i, o, s}(), std::forward<Out>(o)){
 	return fftw::plan{i, o, s}(), std::forward<Out>(o);}
 
-template<class In, class Out, std::size_t = std::decay_t<In>::dimensionality>
-Out&& transpose(In const& i, Out&& o){
-	return dft(i, std::forward<Out>(o), fftw::none);
-}
-
 using std::decay_t;
 
 template<class In, class Out, std::size_t D=In::dimensionality>
@@ -427,12 +422,6 @@ NODISCARD("when first argument is const")
 auto dft(In const& i, sign s)
 ->std::decay_t<decltype(dft(i, R(extensions(i), get_allocator(i)), s))>{
 	return dft(i, R(extensions(i), get_allocator(i)), s);}
-
-template<typename In, class R=typename In::decay_type>
-NODISCARD("when first argument is const")
-R transpose(In const& i){
-	return transpose(i, R(extensions(i), get_allocator(i)));
-}
 
 template<typename T, dimensionality_type D, class... Args>
 decltype(auto) rotate(multi::array<T, D, Args...>& i, int = 1){
@@ -493,9 +482,43 @@ template<class In> In&& dft_inplace(In&& i, sign s){
 	return std::forward<In>(i);
 }
 
+template<class In, class Out, dimensionality_type D = In::dimensionality>
+auto copy(In const& i, Out&& o)
+->decltype(dft(std::array<bool, D>{}, i, std::forward<Out>(o), fftw::forward)){
+	return dft(std::array<bool, D>{}, i, std::forward<Out>(o), fftw::forward);}
+
+template<typename In, class R=typename In::decay_type>
+NODISCARD("when argument is const")
+R copy(In const& i)
+{//->decltype(copy(i, R(extensions(i), get_allocator(i))), R()){
+	return copy(i, R(extensions(i), get_allocator(i)));}
+	
+template<typename In, class R=typename std::decay_t<In>::decay_type>
+auto move(In&& in){
+	if(in.is_compact()){
+		multi::array_ref<typename In::element, In::dimensionality, typename In::element_ptr> ref(
+			in.base(), extensions(in)
+		);
+		copy(in, ref);
+		return R(
+			multi::array_ref<typename In::element, In::dimensionality_type, std::move_iterator<typename In::element_ptr>>(std::make_move_iterator(in.mbase()), ((in.mbase()=0), extensions(ref)))
+		);
+	}else return copy(std::forward<In>(in));
 }
 
-}}
+template<typename T, dimensionality_type D, class P, class R=typename multi::array<T, D>>
+R copy(multi::basic_array<T, D, multi::move_ptr<T, P>>&& a){
+	if(a.is_compact()){
+		return 
+			fftw::copy(
+				a.template static_array_cast<T, T*>(), 
+				multi::array_ref<T, D, T*>(a.base().base(), a.extensions())
+			).template static_array_cast<T, multi::move_ptr<T>>()
+		;
+	}else return fftw::copy(a.template static_array_cast<T, P>());
+}
+
+}}}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -848,8 +871,9 @@ BOOST_AUTO_TEST_CASE(fftw_2D_transposition_square_inplace){
 	};
 	BOOST_REQUIRE( in[1][0] == 21. );
 
-	multi::fftw::transpose(in, rotated(in));
-//	BOOST_REQUIRE( in[1][0] == 12. );
+	multi::fftw::copy(in, rotated(in));
+	BOOST_TEST( in[0][1].real() == 21. );
+	BOOST_TEST( in[0][1].imag() ==  0. );
 }
 
 #endif
