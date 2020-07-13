@@ -88,8 +88,8 @@ struct array_types : Layout{
 	constexpr element_ptr base() const{return base_;}
 	constexpr element_ptr& mbase() const{return base_;}
 	friend element_ptr base(array_types const& s){return s.base();}
-	constexpr layout_t const& layout() const{return *this;}
-	friend layout_t const& layout(array_types const& s){return s.layout();}
+	       constexpr layout_t layout(          ) const&   {return *this;}
+	friend constexpr layout_t layout(array_types const& s){return s.layout();}
 	element_ptr            origin() const{return base_+Layout::origin();} //	element_const_ptr     corigin() const{return origin();}
 	friend decltype(auto)  origin(array_types const& s){return s.origin();} //	friend decltype(auto) corigin(array_types const& s){return s.corigin();}
 protected:
@@ -322,7 +322,6 @@ struct basic_array :
 	friend struct basic_array<typename types::element, typename Layout::rank{} + 1, typename types::element_ptr&>;
 	using types::layout;
 	using layout_type = Layout;
-	constexpr layout_type layout() const{return array_types<T, D, ElementPtr, Layout>::layout();}
 	using basic_const_array = basic_array<T, D, 
 		typename std::pointer_traits<ElementPtr>::template rebind<typename basic_array::element_type const>,
 	//	typename multi::iterator_traits<ElementPtr>::rebind_const, 
