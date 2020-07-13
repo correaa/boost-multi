@@ -519,16 +519,23 @@ R copy(multi::basic_array<T, D, multi::move_ptr<T, P>>&& a){
 }
 
 template<class Array>
-Array& transpose(Array& a){
-	multi::array_ref<typename Array::element, Array::dimensionality, typename Array::element_ptr> r(
-		a.base(), extensions(a)
-	);
-	auto l = a.layout();
-	l.transpose();
-	a.reshape(l.extensions());
-	fftw::copy(r.transposed(), a);
-	return a;
+auto transpose(Array& a)
+->decltype(fftw::copy(transposed(a), a.reshape(extensions(layout(a).transpose())))){
+	multi::array_ref<typename Array::element, Array::dimensionality, typename Array::element_ptr> r(a.base(), extensions(a));
+	return fftw::copy(r.transposed(), a.reshape(layout(a).transpose().extensions()));
 }
+
+
+#if 0
+// TODO investigate why this doesn't work as expected
+template<class Array>
+auto rotate(Array& a)
+->decltype(fftw::copy(rotated(a), a.reshape(extensions(layout(a).transpose())))){
+	multi::array_ref<typename Array::element, Array::dimensionality, typename Array::element_ptr> r(a.base(), extensions(a));
+	auto&& ro = r.rotated();
+	return fftw::copy(ro, a.reshape(layout(a).rotate().extensions()));
+}
+#endif
 
 }}}
 

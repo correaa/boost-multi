@@ -14,17 +14,17 @@ $CXXX $CXXFLAGS -Ofast $0 -o $0x -DHAVE_FFTW3_THREADS -lfftw3 -lfftw3_threads -l
 
 namespace multi = boost::multi;
 
+using complex = std::complex<double>; complex const I{0, 1};
+
 BOOST_AUTO_TEST_CASE(fftw_transpose){
 
 	multi::fftw::initialize_threads();
-
-	using complex = std::complex<double>;
 
 	{
 		auto const in = []{
 			multi::array<complex, 2> ret({8192, 8192});
 			std::generate(ret.data_elements(), ret.data_elements() + ret.num_elements(), 
-				[](){return complex{std::rand()*1./RAND_MAX, std::rand()*1./RAND_MAX};}
+				[](){return std::rand()*1./RAND_MAX + std::rand()*1./RAND_MAX*I;}
 			);
 			std::cout<<"memory size "<< ret.num_elements()*sizeof(complex)/1e6 <<" MB\n";
 			return ret;
@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(fftw_transpose){
 			auto p = out.data_elements();
 			{
 				boost::timer::auto_cpu_timer t{"fftw trans mve 1 thread  %ws wall, CPU (%p%)\n"};
-				multi::fftw::transpose(out);
+				multi::fftw::transpose( out );
 				BOOST_REQUIRE( out.data_elements() == p );
 				BOOST_REQUIRE( out[35][79] == in[79][35] );
 			}
