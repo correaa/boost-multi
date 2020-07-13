@@ -468,13 +468,11 @@ public:
 		new_layout.sub_.nelems_/=s;
 		return basic_array<T, D+1, ElementPtr>{new_layout, types::base_};
 	}
-	decltype(auto) transposed() const&{
-		typename types::layout_t new_layout = *this;
-		new_layout.transpose();
-		return basic_array<T, D, ElementPtr>{new_layout, types::base_};
+	basic_array<T, D, ElementPtr> transposed() const&{
+		typename types::layout_t new_layout = *this; return {new_layout.transpose(), types::base_};
 	}
-	friend decltype(auto) transposed(basic_array const& self){return self.transposed();}
-	friend decltype(auto) operator~(basic_array const& self){return self.transposed();}
+	friend basic_array<T, D, ElementPtr> transposed(basic_array const& self){return self.transposed();}
+	friend basic_array<T, D, ElementPtr> operator~ (basic_array const& self){return self.transposed();}
 
 	basic_array rotated()&{
 		typename types::layout_t new_layout = *this; new_layout.rotate();

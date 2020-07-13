@@ -518,6 +518,18 @@ R copy(multi::basic_array<T, D, multi::move_ptr<T, P>>&& a){
 	}else return fftw::copy(a.template static_array_cast<T, P>());
 }
 
+template<class Array>
+Array& transpose(Array& a){
+	multi::array_ref<typename Array::element, Array::dimensionality, typename Array::element_ptr> r(
+		a.base(), extensions(a)
+	);
+	auto l = a.layout();
+	l.transpose();
+	a.reshape(l.extensions());
+	fftw::copy(r.transposed(), a);
+	return a;
+}
+
 }}}
 
 ////////////////////////////////////////////////////////////////////////////////

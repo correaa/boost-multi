@@ -716,10 +716,11 @@ public:
 	using typename static_::value_type;
 	array() = default;
 	array(array const&) = default;
-	void reshape(typename array::extensions_type x) &{
+	array& reshape(typename array::extensions_type x) &{
 		typename array::layout_t new_layout{x};
 		assert( new_layout.num_elements() == this->num_elements() );
 		static_cast<typename array::layout_t&>(*this)=new_layout;
+		return *this;
 	}
 	using static_::clear;
 	friend void clear(array& self) noexcept{self.clear();}
