@@ -3,24 +3,13 @@ $CXX $0 -o $0x -lboost_unit_test_framework&&$0x &&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi allocators"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi array reference"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
 #include "../array_ref.hpp"
-#include "../array.hpp"
 
-#include<algorithm>
-//#include<cassert>
-#include<iostream>
-#include<cmath>
-#include<vector>
-#include<list>
-#include<numeric> //iota
-
-using std::cout; using std::cerr;
 namespace multi = boost::multi;
-
 
 BOOST_AUTO_TEST_CASE(array_ref_from_carray){
 
@@ -31,26 +20,27 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray){
 		{15, 16, 17, 18, 19}
 	};
 
-	multi::array_ptr<double, 2> map = &a;
+	multi::array_ptr<double, 2> map = &a; // double (*)[4][5]
+	BOOST_REQUIRE( &map->operator[](1)[1] == &a[1][1] );
+	BOOST_REQUIRE( (&a)[0][1][1] == 6. );
+	
 	multi::array_ref<double, 2>&& mar = *map;
 
-	BOOST_REQUIRE( mar[1][1] == 6. );
+	BOOST_REQUIRE( &mar[1][1] == &a[1][1] );
 
 	mar[1][1] = 9.;
-	BOOST_REQUIRE( mar[1][1] == 9. );
-	BOOST_REQUIRE( a[1][1] == 9. );
+	BOOST_REQUIRE( &mar[1][1] == &a[1][1] );
 
 	double const(&a_const)[4][5] = a;
 	BOOST_REQUIRE( &a_const[1][1] == &a[1][1] );
 
 	BOOST_REQUIRE( mar(2, {1, 3}).dimensionality == 1 );
+	BOOST_REQUIRE( dimensionality(mar(2, {1, 3})) == 1 );
+
 	BOOST_REQUIRE( size(mar(2, {1, 3})) == 2 );
-	BOOST_REQUIRE( mar(2, {1, 3})[1] == 12. );
+	BOOST_REQUIRE( &mar(2, {1, 3})[1] == &a[2][2] );
 
-	
 }
-
-template<class T> void what(T&&) = delete;
 
 //BOOST_AUTO_TEST_CASE(array_from_iterator_range){
 //	std::vector<double> v(20);
