@@ -13,7 +13,11 @@ $CXXX $CXXFLAGS $0 -o $0x &&$0x&&rm $0x;exit
 #ifndef NODISCARD
 #if (__has_cpp_attribute(nodiscard)) && (__cplusplus>=201703L)
 	#if (__has_cpp_attribute(nodiscard)>=201907) && (__cplusplus>=201703L)
-		#define nodiscard_(MsG) nodiscard(MsG)
+		#if defined(__clang__) and (__cplusplus < 202002L)
+			#define nodiscard_(MsG) nodiscard
+		#else
+			#define nodiscard_(MsG) nodiscard(MsG)
+		#endif
 	#else
 		#define nodiscard_(MsG) nodiscard
 	#endif
@@ -33,6 +37,7 @@ $CXXX $CXXFLAGS $0 -o $0x &&$0x&&rm $0x;exit
 #if defined(__NVCC__)
 	#define NODISCARD(MsG)
 #endif
+
 #endif
 
 #ifndef NODISCARD_CLASS
