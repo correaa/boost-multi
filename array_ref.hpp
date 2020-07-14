@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-$CXXX $CXXFLAGS $0 -o $0x&&$0x&&rm $0x&&(rm -rf test/build&&mkdir -p test/build&&cd test/build&&time cmake ..&&make -j&&time ctest -j); exit
+$CXXX $CXXFLAGS $0 -o $0x&&$0x&&rm $0x&&(rm -rf test/build&&mkdir -p test/build&&cd test/build&&time cmake ..&&make -j 8&&time ctest -j 8); exit
 #endif
 // © Alfredo Correa 2018-2020
 
@@ -468,13 +468,13 @@ public:
 		new_layout.sub_.nelems_/=s;
 		return basic_array<T, D+1, ElementPtr>{new_layout, types::base_};
 	}
-	basic_array<T, D, ElementPtr> transposed() const&{
+	basic_array transposed() const&{
 		typename types::layout_t new_layout = *this;
 		new_layout.transpose();
 		return {new_layout, types::base_};
 	}
-	friend decltype(auto) transposed(basic_array const& self){return self.transposed();}
-	friend decltype(auto) operator~(basic_array const& self){return self.transposed();}
+	friend basic_array transposed(basic_array const& s){return s.transposed();}
+	friend basic_array operator~ (basic_array const& s){return s.transposed();}
 
 	basic_array rotated()&{
 		typename types::layout_t new_layout = *this; new_layout.rotate();
