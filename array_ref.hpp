@@ -653,7 +653,6 @@ public:
 		assign(il.begin(), il.end());
 	}
 
-
 	template<class A>//, typename = std::enable_if_t<not std::is_same<basic_array, std::decay_t<A>>{}>>
 	basic_array& operator=(A&& o)&{
 		assert(this->extension() == o.extension());
@@ -1006,9 +1005,9 @@ public:
 	auto range(index_range const& ir) &&{return std::move(*this).sliced(ir.front(), ir.last());}
 	auto range(index_range const& ir) const&{return sliced(ir.front(), ir.last());}
 
-	basic_array operator()()&&{return std::move(*this);}
-	basic_array operator()()&{return *this;}
 	basic_const_array operator()() const&{return {this->layout(), this->base()};}
+	basic_array       operator()()     &&{return std::move(*this);}
+	basic_array       operator()()      &{return           *this ;}
 
 	auto operator()(index_range const& ir) &{return range(ir);}
 	auto operator()(index_range const& ir) &&{return std::move(*this).range(ir);}
@@ -1055,21 +1054,21 @@ public:
 	using const_iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_const_ptr>;
 	using reverse_iterator = std::reverse_iterator<iterator>;
 
-	constexpr iterator begin()&           {return {this->base_, this->stride_};}
-	constexpr iterator begin()&&          {return begin();}
 	constexpr const_iterator begin()const&{return iterator{this->base_, this->stride_};}
+	constexpr       iterator begin()     &{return {this->base_, this->stride_};}
+	constexpr       iterator begin()    &&{return begin();}
 
-	constexpr iterator end  ()&{return {basic_array::base_ + types::nelems_, basic_array::stride_};}
-	constexpr iterator end  ()&&{return end();}
 	constexpr const_iterator end  ()const&{return iterator{basic_array::base_ + types::nelems_, basic_array::stride_};}
+	constexpr       iterator end  ()     &{return {basic_array::base_ + types::nelems_, basic_array::stride_};}
+	constexpr       iterator end  ()    &&{return end();}
 
-	friend iterator begin(basic_array      & s){return s.begin();}
-	friend iterator begin(basic_array     && s){return std::move(s).begin();}
 	friend const_iterator begin(basic_array const& s){return s.begin();}
+	friend       iterator begin(basic_array      & s){return s.begin();}
+	friend       iterator begin(basic_array     && s){return std::move(s).begin();}
 
-	friend iterator end(basic_array      & s){return s.end();}
-	friend iterator end(basic_array     && s){return std::move(s).end();}
-	friend const_iterator end(basic_array const& s){return s.end();}
+	friend const_iterator end(basic_array const& s){return           s .end();}
+	friend       iterator end(basic_array      & s){return           s .end();}
+	friend       iterator end(basic_array     && s){return std::move(s).end();}
 
 	template<class It> auto assign(It f)&& //	->decltype(adl::copy_n(f, this->size(), begin(std::move(*this))), void()){
 	->decltype(adl_copy_n(f, this->size(), std::declval<iterator>()), void()){
