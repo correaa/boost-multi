@@ -613,15 +613,15 @@ public:
 		return {types::base_ + l(l.size()), l.sub_, l.stride_};
 	}
 
-	constexpr iterator  begin()&{return {types::base_          , sub_, stride_};}
-	constexpr iterator  end  ()&{return {types::base_ + nelems_, sub_, stride_};}
-	friend iterator begin(basic_array& self){return self.begin();}
-	friend iterator end  (basic_array& self){return self.end()  ;}
+	       constexpr iterator begin()          &{return {types::base_          , sub_, stride_};}
+	       constexpr iterator end  ()          &{return {types::base_ + nelems_, sub_, stride_};}
+	friend constexpr iterator begin(basic_array& self){return self.begin();}
+	friend constexpr iterator end  (basic_array& self){return self.end  ();}
 
-	constexpr iterator  begin()&&{return begin();}
-	constexpr iterator  end  ()&&{return end();}
-	friend iterator begin(basic_array&& self){return std::move(self).begin();}
-	friend iterator end  (basic_array&& self){return std::move(self).end()  ;}
+	       constexpr iterator begin()          &&   {return              begin();}
+	       constexpr iterator end  ()          &&   {return              end()  ;}
+	friend constexpr iterator begin(basic_array&& s){return std::move(s).begin();}
+	friend constexpr iterator end  (basic_array&& s){return std::move(s).end()  ;}
 
 	constexpr const_iterator  begin() const&{return {types::base_          , sub_, stride_};}
 	constexpr const_iterator  end  () const&{return {types::base_ + nelems_, sub_, stride_};}
