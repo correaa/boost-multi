@@ -36,9 +36,9 @@ $CXXX $CXXFLAGS $0 -o $0x &&$0x&&rm $0x;exit
 #endif
 
 #ifndef NODISCARD_CLASS
-	#if (__has_cpp_attribute(nodiscard) && not defined(__NVCC__))
+	#if (__has_cpp_attribute(nodiscard) and not defined(__NVCC__) and not defined(__clang__))
 		#if (__has_cpp_attribute(nodiscard)>=201907)
-			#define NODISCARD_CLASS(MsG) [[nodiscard(MsG)]]
+			#define NODISCARD_CLASS(MsG) NODISCARD(
 		#else
 			#define NODISCARD_CLASS(MsG) [[nodiscard]]
 		#endif
