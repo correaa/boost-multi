@@ -58,7 +58,6 @@ struct array_types : Layout{
 	constexpr static dimensionality_type dimensionality = D;
 	using element_ptr = ElementPtr;
 	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element_type const>; //multi::const_iterator<ElementPtr>; 
-//	using element_const_ptr = typename multi::iterator_traits<ElementPtr>::rebind_const;
 	using layout_t = Layout;
 	using value_type = typename std::conditional<
 		(dimensionality>1),
@@ -69,7 +68,6 @@ struct array_types : Layout{
 			element
 		>::type
 	>::type;
-//	using decay_type = array<element, dimensionality, decltype(basic_array::get_allocator())>;//typename pointer_traits<element_ptr>::default_allocator_type>;
 	using reference = typename std::conditional<(dimensionality > 1), 
 		basic_array<element, dimensionality-1, element_ptr>,
 		typename std::conditional<(dimensionality == 1), 
@@ -254,7 +252,6 @@ private:
 	//	assert( stride_ == other.stride_ and stride_ != 0 and (other.base_ - base_)%stride_ == 0 and layout() == other.layout() );
 		return (other.ptr_.base_ - ptr_.base_)/stride_;
 	}
-//	friend class boost::iterator_core_access;
 public:
 	constexpr element_ptr base(              )const&   {return ptr_.base_;} friend 
 	constexpr element_ptr base(array_iterator const& s){return s.base();}
@@ -370,14 +367,9 @@ public:
 //	using decay_type = array<typename types::element, D, decltype(default_allocator_of(std::declval<ElementPtr>()))>;
 	template<class P>
 	static default_allocator_type get_allocator_(P const& p){
-	//	using multi::default_allocator_of;
 		return multi::default_allocator_of(p);
 	}
 	using decay_type = array<typename types::element_type, D, typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type>;//get_allocator_(std::declval<ElementPtr>()))>;
-//	decay_type 
-//	auto
-//	static decay_type remake(std::initializer_list<typename basic_array::value_type> il){return decay_type(il);}
-//	template<class... As> static auto remake(As&&... as) -> decay_type{return decay_type(std::forward<As>(as)...);}
 	template<class Archive>
 	auto serialize(Archive& ar, unsigned int /*file version*/){
 		std::for_each(this->begin(), this->end(), [&](auto&& e){ar & multi::archive_traits<Archive>::make_nvp("item", e);});
@@ -468,10 +460,8 @@ public:
 		new_layout.sub_.nelems_/=s;
 		return basic_array<T, D+1, ElementPtr>{new_layout, types::base_};
 	}
-	basic_array transposed() const&{
-		typename types::layout_t new_layout = *this;
-		new_layout.transpose();
-		return {new_layout, types::base_};
+	basic_array transposed() const&{//	typename types::layout_t new_layout = *this;
+		return {this->layout().transpose(), types::base_};
 	}
 	friend basic_array transposed(basic_array const& s){return s.transposed();}
 	friend basic_array operator~ (basic_array const& s){return s.transposed();}
@@ -534,12 +524,12 @@ public:
 		return {new_layout, types::base_};
 	}
 
-	decltype(auto) operator<<(dimensionality_type i) &{return rotated(i);}
-	decltype(auto) operator>>(dimensionality_type i) &{return unrotated(i);}
-	decltype(auto) operator<<(dimensionality_type i) &&{return std::move(*this).rotated(i);}
-	decltype(auto) operator>>(dimensionality_type i) &&{return std::move(*this).unrotated(i);}
-	decltype(auto) operator<<(dimensionality_type i) const&{return rotated(i);}
-	decltype(auto) operator>>(dimensionality_type i) const&{return unrotated(i);}
+	decltype(auto) operator<<(dimensionality_type i)      &{return                    rotated(i);}
+	decltype(auto) operator>>(dimensionality_type i)      &{return                  unrotated(i);}
+	decltype(auto) operator<<(dimensionality_type i)     &&{return std::move(*this).  rotated(i);}
+	decltype(auto) operator>>(dimensionality_type i)     &&{return std::move(*this).unrotated(i);}
+	decltype(auto) operator<<(dimensionality_type i) const&{return                    rotated(i);}
+	decltype(auto) operator>>(dimensionality_type i) const&{return                  unrotated(i);}
 
 	decltype(auto) operator|(typename basic_array::size_type n) &{return partitioned(n);}
 	decltype(auto) operator|(typename basic_array::size_type n) &&{return std::move(*this).partitioned(n);}
