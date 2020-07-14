@@ -154,8 +154,8 @@ struct basic_array_ptr :
 	constexpr basic_array_ptr(typename Ref::element_ptr p, Layout l) : Ref{l, p}{}
 	template<typename T, dimensionality_type D, typename ElementPtr, class LLayout>
 	friend struct basic_array;
-	       typename basic_array_ptr::element_ref base()               const&   {return this->base_;}
-	friend typename basic_array_ptr::element_ref base(basic_array_ptr const& s){return s.base();}
+	       auto base() const{return this->base_;}
+	friend auto base(basic_array_ptr const& self){return self.base();}
 	using Ref::base_;
 	using Ref::layout;
 	constexpr bool operator==(basic_array_ptr const& o) const{return base_==o.base_ and layout()==o.layout();}
@@ -163,15 +163,13 @@ struct basic_array_ptr :
 
 	template<class O> constexpr bool operator==(O const& o) const{return base()==o->base() and layout() == o->layout();}
 	template<class O> constexpr bool operator!=(O const& o) const{return not ((*this)==o);}
-	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> 
-	friend constexpr bool operator==(O const& o, basic_array_ptr const& s){return s==o;}
-	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> 
-	friend constexpr bool operator!=(O const& o, basic_array_ptr const& s){return not(o==s);}
+	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> friend constexpr bool operator==(O const& o, basic_array_ptr const& s){return s==o;}
+	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> friend constexpr bool operator!=(O const& o, basic_array_ptr const& s){return not(o==s);}
 protected:
-	constexpr void increment(){base_ += Ref::nelems();}
-	constexpr void decrement(){base_ -= Ref::nelems();}
-	constexpr void advance(difference_type n){base_ += Ref::nelems()*n;}
-	constexpr difference_type distance_to(basic_array_ptr const& other) const{
+	void increment(){base_ += Ref::nelems();}
+	void decrement(){base_ -= Ref::nelems();}
+	void advance(difference_type n){base_ += Ref::nelems()*n;}
+	difference_type distance_to(basic_array_ptr const& other) const{
 		assert( Ref::nelems() == other.Ref::nelems() and Ref::nelems() != 0 );
 		assert( (other.base_ - base_)%Ref::nelems() == 0); 
 		assert( layout() == other.layout() );
@@ -1198,7 +1196,7 @@ constexpr decltype(auto) static_array_cast(Array&& a, Args&&... args){
 }
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*>
-struct array_ref : 
+struct NODISCARD_CLASS("!") array_ref : 
 //TODO	multi::partially_ordered2<array_ref<T, D, ElementPtr>, void>,
 	basic_array<T, D, ElementPtr>
 {
