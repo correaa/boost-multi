@@ -1054,11 +1054,11 @@ public:
 	using const_iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_const_ptr>;
 	using reverse_iterator = std::reverse_iterator<iterator>;
 
-	constexpr const_iterator begin()const&{return iterator{this->base_, this->stride_};}
+	constexpr const_iterator begin()const&{return {this->base_, this->stride_};}
 	constexpr       iterator begin()     &{return {this->base_, this->stride_};}
 	constexpr       iterator begin()    &&{return begin();}
 
-	constexpr const_iterator end  ()const&{return iterator{basic_array::base_ + types::nelems_, basic_array::stride_};}
+	constexpr const_iterator end  ()const&{return {basic_array::base_ + types::nelems_, basic_array::stride_};}
 	constexpr       iterator end  ()     &{return {basic_array::base_ + types::nelems_, basic_array::stride_};}
 	constexpr       iterator end  ()    &&{return end();}
 
