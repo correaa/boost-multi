@@ -539,9 +539,6 @@ public:
 	basic_array       operator()() &&    {return this->operator()();}
 	basic_const_array operator()() const&{return {this->layout(), this->base()};}
 
-//	decltype(auto) operator()(index_range a) &     {return range(a);}
-//	decltype(auto) operator()(index_range a) &&    {return std::move(*this).range(a);}
-//	decltype(auto) operator()(index_range a) const&{return range(a);}
 public:
 	template<typename, dimensionality_type, typename, class> friend struct basic_array;
 	basic_array       paren() &     {return *this;}
@@ -644,13 +641,6 @@ public:
 	template<class It> void assign(It first, It last)&{//assert( this->size() == std::distance(first, last) );
 		adl_copy(first, last, this->begin());
 	}
-//	template<class It> auto assign(It first)&&
-//	->decltype(adl_copy_n(first, this->size(), this->begin()), first + this->size(), void()){
-//		return adl_copy_n(first, this->size(), this->begin()), first + this->size();}
-
-//	template<class It> void assign(It first) &&
-//	->decltype(adl::copy_n(first, this->size(), this->begin())){
-//		return adl::copy_n(first, this->size(), this->begin()), ;}
 	template<class Range> auto assign(Range&& r) &&
 	->decltype(this->assign(adl_begin(std::forward<Range>(r)), adl_end(std::forward<Range>(r)))){
 		return this->assign(adl_begin(std::forward<Range>(r)), adl_end(std::forward<Range>(r)));}
@@ -666,7 +656,6 @@ public:
 
 	template<class A>//, typename = std::enable_if_t<not std::is_same<basic_array, std::decay_t<A>>{}>>
 	basic_array& operator=(A&& o)&{
-	//	assert(extension(*this) == extension(o));
 		assert(this->extension() == o.extension());
 		this->assign(adl_begin(std::forward<A>(o)), adl_end(std::forward<A>(o)));
 		return *this;
@@ -677,13 +666,7 @@ public:
 	} // TODO leave only r-value version?
 	template<class TT, class... As>
 	basic_array&& operator=(basic_array<TT, D, As...> const& o)&&{return std::move(this->operator=(o));}
-//	template<class TT, class... As>
-//	basic_array&& operator=(basic_array<TT, D, As...>&& o)&& = delete;//{return std::move(this->operator=(o));}
-
-//		this->assign(o.begin(), o.end());//, *this; // TODO improve performance by rotating	
-//		return std::move(*this);//.operator=(o);
-//	}
-	basic_array& operator=(basic_array const& o) &{assert( this->extension() == o.extension() ); // TODO make sfinae-friendly
+	basic_array&  operator=(basic_array               const& o) &{assert( this->extension() == o.extension() ); // TODO make sfinae-friendly
 		return this->assign(o.begin(), o.end() ), *this;
 	}
 	basic_array&& operator=(basic_array const& o) &&{assert( this->extension() == o.extension() ); // TODO make sfinae-friendly
