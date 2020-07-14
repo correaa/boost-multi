@@ -91,8 +91,8 @@ BOOST_AUTO_TEST_CASE(fftw_transpose){
 			multi::array<complex, 2> out = in;
 			{
 				boost::timer::auto_cpu_timer t{"transposition with loop   %ws wall, CPU (%p%)\n"};
-				for(auto i = 0l; i != out.size(); ++i)
-					for(auto j = 0l; j != i; ++j)
+				for(auto i: extension(out)) 
+					for(auto j = 0l; j != i; ++j) 
 						std::swap(out[i][j], out[j][i]);
 				BOOST_REQUIRE( out[35][79] == in[79][35] );
 			}
