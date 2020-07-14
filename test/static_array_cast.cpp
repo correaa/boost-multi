@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX -DBOOST_TEST_DYN_LINK $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS -DBOOST_TEST_DYN_LINK $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -8,8 +8,6 @@ $CXX -DBOOST_TEST_DYN_LINK $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;ex
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi static array cast"
 #include<boost/test/unit_test.hpp>
 
-#include<complex>
-#include<iostream>
 #include<numeric>
 
 namespace multi = boost::multi;
@@ -24,17 +22,16 @@ public:
 	using decay_type =std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
 	explicit involuted(Ref r, Involution f) : r_{std::forward<Ref>(r)}, f_{f}{}
 	explicit involuted(Ref r) : r_{std::forward<Ref>(r)}, f_{}{}
-	involuted& operator=(involuted const& other)=delete;
+	constexpr involuted& operator=(involuted const& other)=delete;
 	involuted(involuted const&) = default;
 	involuted(involuted&&) noexcept = default;
-	operator decay_type() const&{return f_(r_);}
-	decltype(auto) operator&()&&{return involuter<decltype(&std::declval<Ref>()), Involution>{&r_, f_};}
+	constexpr operator decay_type() const&{return f_(r_);}
+	constexpr decltype(auto) operator&()&&{return involuter<decltype(&std::declval<Ref>()), Involution>{&r_, f_};}
 	template<class DecayType>
-	auto operator=(DecayType&& other)&
+	constexpr auto operator=(DecayType&& other)&
 	->decltype(r_=f_(std::forward<DecayType>(other)), *this){
 		return r_=f_(std::forward<DecayType>(other)), *this;}
-	involuted& operator=(involuted&& other) = default;
-	~involuted() = default;
+	constexpr involuted& operator=(involuted&& other) = default;
 };
 
 template<class It, class F>
@@ -46,20 +43,20 @@ public:
 	using pointer = involuter<typename std::iterator_traits<It>::pointer, F>;
 	using element_type = typename std::pointer_traits<It>::element_type;
 	using difference_type = typename std::pointer_traits<It>::difference_type;
-	template <class U> using rebind = involuter<typename std::pointer_traits<It>::template rebind<U>, F>;
+	template<class U> using rebind = involuter<typename std::pointer_traits<It>::template rebind<U>, F>;
 	using reference = involuted<typename std::iterator_traits<It>::reference, F>;
 	using value_type = typename std::iterator_traits<It>::value_type;
 	using iterator_category = typename std::iterator_traits<It>::iterator_category;
-	explicit involuter(It it, F f) : it_{std::move(it)}, f_{std::move(f)}{}
-	explicit involuter(It it) : it_{std::move(it)}, f_{}{}
+	explicit constexpr involuter(It it, F f) : it_{std::move(it)}, f_{std::move(f)}{}
+	explicit constexpr involuter(It it) : it_{std::move(it)}, f_{}{}
 	involuter(involuter const& other) = default;
 	template<class Other> involuter(involuter<Other, F> const& o) : it_{o.it_}, f_{o.f_}{}
-	auto operator*() const{return reference{*it_, f_};}
-	bool operator==(involuter const& o) const{return it_==o.it_;}
-	bool operator!=(involuter const& o) const{return it_!=o.it_;}
-	involuter& operator+=(typename involuter::difference_type n){it_+=n; return *this;}
-	auto operator+(typename involuter::difference_type n) const{return involuter{it_+n, f_};}
-	pointer operator->() const{return {&*it_, f_};}
+	constexpr auto operator*() const{return reference{*it_, f_};}
+	constexpr bool operator==(involuter const& o) const{return it_==o.it_;}
+	constexpr bool operator!=(involuter const& o) const{return it_!=o.it_;}
+	constexpr involuter& operator+=(typename involuter::difference_type n){it_+=n; return *this;}
+	constexpr auto operator+(typename involuter::difference_type n) const{return involuter{it_+n, f_};}
+	constexpr pointer operator->() const{return {&*it_, f_};}
 };
 
 template<class Ref> using negated = involuted<Ref, std::negate<>>;
@@ -118,7 +115,7 @@ BOOST_AUTO_TEST_CASE(static_array_cast){
 	multi::array<double, 2> mA(exts);
 	std::transform(begin(elements(A)), end(elements(A)), begin(elements(mA)), std::negate<>{});
 
-	auto&& mA_ref = A.template static_array_cast<double, negater<double*>>();
+	auto&& mA_ref = A.static_array_cast<double, negater<double*>>();
 	BOOST_REQUIRE( mA_ref[1][1] == mA[1][1] );
 	BOOST_REQUIRE( mA[1][1] == mA_ref[1][1] );
 	BOOST_REQUIRE( std::equal(begin(mA[1]), end(mA[1]), begin(mA_ref[1])) );
