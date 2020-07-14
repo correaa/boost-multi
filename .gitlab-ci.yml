@@ -54,7 +54,7 @@ gcc:
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet g++
       - ln --symbolic --force . ../multi
-      - export CXX="g++     -x c++  -Wall -Wextra -Wpedantic -Ofast -pthread "
+      - export CXX="g++     -x c++  -Wall -Wextra -Wpedantic -Werror -Ofast -pthread "
       - $CXX --version
       - cd test
       - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
@@ -80,7 +80,7 @@ clang:
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev libboost-timer-dev libtbb-dev libboost-serialization-dev libboost-iostreams-dev librange-v3-dev valgrind
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang
       - ln --symbolic --force . ../multi
-      - export CXX="clang++ -x c++ -Wall -Wextra -Wpedantic -Wmove -Ofast -pthread"
+      - export CXX="clang++ -x c++ -Wall -Wextra -Wpedantic -Werror -Wmove -Ofast -pthread"
       - $CXX --version
       - cd test
       - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
