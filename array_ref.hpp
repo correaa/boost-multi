@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-$CXXX $CXXFLAGS $0 -o $0x&&$0x&&rm $0x&&(rm -rf test/build&&mkdir -p test/build&&cd test/build&&time cmake ..&&make -j 8&&time ctest -j 8); exit
+$CXXX $CXXFLAGS $0 -o $0x&&$0x&&rm $0x&&(rm -rf test/build&&mkdir -p test/build&&cd test/build&&time cmake ..&&make -j 8&&time ctest -j 8);exit
 #endif
 // © Alfredo Correa 2018-2020
 
@@ -17,18 +17,16 @@ $CXXX $CXXFLAGS $0 -o $0x&&$0x&&rm $0x&&(rm -rf test/build&&mkdir -p test/build&
 #include "./detail/types.hpp"     // dimensionality_type
 #include "./detail/operators.hpp" // random_iterable
 #include "./detail/memory.hpp"    // pointer_traits
-//#include "./utility/const_iterator.hpp"
 
 #include "./config/NODISCARD.hpp"
 #include "./config/DELETE.hpp"
 
 //#include<iostream> // debug
-//#include<boost/pointer_cast.hpp>
 
-#include<algorithm> // copy_n
-#include<cstring> // for memset in reinterpret_cast
+#include<algorithm>  // copy_n
+#include<cstring>    // for memset in reinterpret_cast
 #include<functional> // invoke
-#include<memory> // pointer_traits
+#include<memory>     // pointer_traits
 
 namespace std{
 	template<class T>
