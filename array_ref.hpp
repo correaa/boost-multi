@@ -1062,13 +1062,13 @@ public:
 	constexpr       iterator end  ()     &{return {basic_array::base_ + types::nelems_, basic_array::stride_};}
 	constexpr       iterator end  ()    &&{return end();}
 
-	friend const_iterator begin(basic_array const& s){return s.begin();}
-	friend       iterator begin(basic_array      & s){return s.begin();}
+	friend const_iterator begin(basic_array const& s){return           s .begin();}
+	friend       iterator begin(basic_array      & s){return           s .begin();}
 	friend       iterator begin(basic_array     && s){return std::move(s).begin();}
 
-	friend const_iterator end(basic_array const& s){return           s .end();}
-	friend       iterator end(basic_array      & s){return           s .end();}
-	friend       iterator end(basic_array     && s){return std::move(s).end();}
+	friend const_iterator end  (basic_array const& s){return           s .end();}
+	friend       iterator end  (basic_array      & s){return           s .end();}
+	friend       iterator end  (basic_array     && s){return std::move(s).end();}
 
 	template<class It> auto assign(It f)&& //	->decltype(adl::copy_n(f, this->size(), begin(std::move(*this))), void()){
 	->decltype(adl_copy_n(f, this->size(), std::declval<iterator>()), void()){
@@ -1078,17 +1078,6 @@ public:
 	constexpr bool operator==(Array const& o) const&{ // TODO assert extensions are equal?
 		return (this->extension()==extension(o)) and adl_equal(this->begin(), this->end(), adl_begin(o));
 	}
-
-//	constexpr bool operator==(basic_array const& other) const&{
-//		return (this->extension()==extension(std::move(modify(other))))
-//			and adl_equal(std::move(*this).begin(), std::move(*this).end(), std::move(modify(other)).begin());
-//		return this->operator==<basic_array>(std::move(other));
-//	}
-//	constexpr bool operator==(basic_array&& other)&&{
-//		return (basic_array::extension()==extension(std::move(other))) 
-//			and adl_equal(std::move(*this).begin(), std::move(*this).end(), adl::begin(std::move(other)));
-//		return this->operator==<basic_array>(std::move(other));
-//	}
 	bool operator<(basic_array const& o) const&{return lexicographical_compare(*this, o);}//operator< <basic_array const&>(o);}
 	template<class Array> void swap(Array&& o)&&{{using multi::extension; assert(this->extension() == extension(o));}
 		adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
