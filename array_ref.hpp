@@ -1198,7 +1198,7 @@ constexpr decltype(auto) static_array_cast(Array&& a, Args&&... args){
 }
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*>
-struct NODISCARD_CLASS("!") array_ref : 
+struct array_ref : 
 //TODO	multi::partially_ordered2<array_ref<T, D, ElementPtr>, void>,
 	basic_array<T, D, ElementPtr>
 {
