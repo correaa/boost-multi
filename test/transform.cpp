@@ -1,31 +1,21 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x&&$0x&&rm $0x;exit
+$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi transformed array"
+#define BOOST_TEST_DYN_LINK
+#include<boost/test/unit_test.hpp>
+
 #include "../array.hpp"
-//#include "../config/MAYBE_UNUSED.hpp"
 
 #include<complex>
-#include<iostream>
 #include<boost/iterator/transform_iterator.hpp> //might need -DBOOST_RESULT_OF_USE_DECLTYPE
-
-//auto inverse(decltype(neg)){return [](auto&& x){return -x;};}
-//auto bconj = [](auto const& x){using std::conj; return conj(x);};
-//auto inverse(decltype(bconj)){return [](auto const& x){using std::conj; return conj(x);};}
 
 namespace test{
 	auto neg = [](auto const& x){return -x;};
 
 	template<class It, class F> class involuter; 
 }
-
-#if 0
-#if __has_cpp_attribute(no_unique_address)>=201803
-#define CPP_NO_UNIQUE_ADDRESS [[no_unique_address]]
-#else
-#define CPP_NO_UNIQUE_ADDRESS
-#endif
-#endif
 
 namespace test{
 
@@ -191,41 +181,34 @@ struct A{
 	A(A&&)=delete;
 };
 
-
 }
 
+BOOST_AUTO_TEST_CASE(transformed_array){
 
-
-int main(){
 	namespace multi = boost::multi;
-	using std::cout;
-	using std::endl;
-
 	{
 		using complex = std::complex<double>;
 		complex c{1., 2.};
+
 		auto&& z = test::conjd<complex&>{c};
-		cout<< z << std::endl;
+		BOOST_REQUIRE(( z == complex{1., -2.} ));
+
 		auto pz = &z;
-		cout << real(*pz) <<' '<< imag(*pz) << std::endl;
-		cout << pz->real() << std::endl;
-		cout << pz->imag() << std::endl;
+		BOOST_REQUIRE( real(*pz)  ==  1. );
+		BOOST_REQUIRE( imag(*pz)  == -2. );
+		BOOST_REQUIRE( pz->real() ==  1. );
+		BOOST_REQUIRE( pz->imag() == -2. );
 	}
 	{
 		double a = 5;
 		double& b = a; assert( b == 5 );
+
 		auto&& c = test::involuted<double&, decltype(test::neg)>(a, test::neg);
-		assert( c == -5. );
-		c = 10.; assert( c == 10. );
-		assert( a = -10. );
-		
-	//	double&& aa = 5.;
-	//	auto neg_fun = [](auto const& x){return -x;};
-	//	auto m5 = involuted<double const&, decltype(neg_fun)>(5., neg_fun);
-	//	m5 = 4.;
-	//	std::cout << m5 << std::endl;
-	//	assert( m5 == -5. );
-	//	c = m5;
+		BOOST_REQUIRE( c == -5. );
+
+		c = 10.; 
+		BOOST_REQUIRE( c == 10. );
+		BOOST_REQUIRE( a = -10. );
 	}
 
 #if 0
@@ -255,115 +238,116 @@ int main(){
 //	d2DA[0][0] = 4.;
 //	assert( d2DA == d2DB );
 
-{
-	multi::array<double, 1> A = { 0,  1,  2,  3,  4};
-	auto&& A_ref = A.template static_array_cast<double, double const*>();
-	assert( A_ref[2] == A[2] );
-//	assert( mA_ref == mA );
-//	assert( mA_ref[1][1] == mA[1][1] );
-//	assert( mA_ref[1] == mA[1] );
-//	assert( mA_ref == mA ); 
-}
-
-{
-	multi::array<double, 1> A = { 0,  1,  2,  3,  4};
-	multi::array<double, 1> mA = { -0,  -1,  -2,  -3, -4};
-	auto&& mA_ref = A.template static_array_cast<double, test::negater<double*>>();
-	assert( mA_ref[2] == mA[2] );
-//	assert( mA_ref == mA );
-//	assert( mA_ref[1][1] == mA[1][1] );
-//	assert( mA_ref[1] == mA[1] );
-//	assert( mA_ref == mA ); 
-}
-{
-	multi::array<double, 2> A = {
-		{ 0,  1,  2,  3,  4}, 
-		{ 5,  6,  7,  8,  9}, 
-		{10, 11, 12, 13, 14}, 
-		{15, 16, 17, 18, 19}
-	};
-	multi::array<double, 2> mA = {
-		{ -0,  -1,  -2,  -3, -4}, 
-		{ -5,  -6,  -7,  -8, -9}, 
-		{-10, -11, -12, -13, -14}, 
-		{-15, -16, -17, -18, -19}
-	};
-	auto&& mA_ref = A.template static_array_cast<double, test::negater<double*>>();
-	assert( mA_ref[1][1] == mA[1][1] );
-//	assert( mA_ref[1] == mA[1] );
-//	assert( mA_ref == mA ); 
-}
-
-{
-#if __cpp_deduction_guides
-	double Z[4][5] {
-		{ 0,  1,  2,  3,  4}, 
-		{ 5,  6,  7,  8,  9}, 
-		{10, 11, 12, 13, 14}, 
-		{15, 16, 17, 18, 19}
-	};
-	auto d2DC = multi::make_array_ref(test::involuter<double*, decltype(test::neg)>{&Z[0][0], test::neg}, {4, 5});
-//	multi::array_ref d2DC{bitransformer<decltype(neg), decltype(&Z[0][0])>{&Z[0][0], neg}, {4, 5}};
-	cout<< d2DC[1][1] <<'\n';
-	d2DC[1][1] = -66;
-	cout<< d2DC[1][1] <<'\n';
-	assert( Z[1][1] == 66 );
-#endif
+	{
+		multi::array<double, 1> A = { 0,  1,  2,  3,  4};
+		auto&& A_ref = A.static_array_cast<double, double const*>();
+		BOOST_REQUIRE( A_ref[2] == A[2] );
+	//	assert( mA_ref == mA );
+	//	assert( mA_ref[1][1] == mA[1][1] );
+	//	assert( mA_ref[1] == mA[1] );
+	//	assert( mA_ref == mA ); 
+	}
 
 	{
-		using complex = std::complex<double>;
-		multi::array<complex, 2> d2D = {
-			{ {0, 3}, {1, 9}, {2, 4},  3,  4}, 
-			{  5    , {6, 3}, {7, 5},  8,  9}, 
-			{ {1, 4}, {9, 1}, 12    , 13, 14}, 
-			{  15   ,  16   , 17    , 18, 19}
-		};
-
-	//	using multi::reinterpret_array_cast;
-		auto&& d2Dreal = d2D.template reinterpret_array_cast<double>();
-		assert( d2Dreal[2][1] == 9. );
-		d2Dreal[2][1] = 12.;
-		assert( d2D[2][1] == complex(12., 1.) ); 
-
-		auto&& d2DrealT = rotated(d2D).template reinterpret_array_cast<double>();
-		assert( d2DrealT[2][1] == 7. );
-
-		multi::array<double, 2> d2real_copy = d2D.template reinterpret_array_cast<double>();//d2Dreal;
-
-	//	using multi::static_array_cast;
-	//	auto&& d2Dreal2 = static_array_cast<double, indirect_real<>>(d2D);
-	//	assert( d2Dreal2[2][1] == 12. );
-#if 0
-		struct indirect_imag{
-			std::complex<double>* underlying; using element_type = double;
-			indirect_imag(std::complex<double>* underlying) : underlying{underlying}{}
-			indirect_imag operator+(std::ptrdiff_t n) const{return {underlying + n};}
-			double& operator*() const{return reinterpret_cast<double(&)[2]>(*underlying)[1];}
-			operator double*() const{return &(*(*this));}
-			using difference_type = std::ptrdiff_t;
-			using value_type = double;
-			using pointer = double*;
-			using reference = double&;
-			using iterator_category = std::random_access_iterator_tag;
-		};
-		auto&& d2imag2 = static_array_cast<double, indirect_imag>(d2D);
-		assert( d2imag2[2][1] == 1. );
-		double* p = d2imag2.base();
-		assert( *p == 3 );
-#endif
+		multi::array<double, 1> A = { 0,  1,  2,  3,  4};
+		multi::array<double, 1> mA = { -0,  -1,  -2,  -3, -4};
+		auto&& mA_ref = A.static_array_cast<double, test::negater<double*>>();
+		BOOST_REQUIRE( mA_ref[2] == mA[2] );
+	//	assert( mA_ref == mA );
+	//	assert( mA_ref[1][1] == mA[1][1] );
+	//	assert( mA_ref[1] == mA[1] );
+	//	assert( mA_ref == mA ); 
 	}
 	{
-		using complex = std::complex<double>;
-		constexpr auto const I = complex{0., 1.};
-		multi::array<complex, 2> A = {
-			{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
-			{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
+		multi::array<double, 2> A = {
+			{ 0,  1,  2,  3,  4}, 
+			{ 5,  6,  7,  8,  9}, 
+			{10, 11, 12, 13, 14}, 
+			{15, 16, 17, 18, 19}
 		};
-	//	[[maybe_unused]] 
-		auto Aconj = A.template static_array_cast<complex, test::conjr<complex*>>();
-		assert( Aconj[1][2] == conj(A[1][2]) );
+		multi::array<double, 2> mA = {
+			{ -0,  -1,  -2,  -3, -4}, 
+			{ -5,  -6,  -7,  -8, -9}, 
+			{-10, -11, -12, -13, -14}, 
+			{-15, -16, -17, -18, -19}
+		};
+		auto&& mA_ref = A.static_array_cast<double, test::negater<double*>>();
+		BOOST_REQUIRE( mA_ref[1][1] == mA[1][1] );
+	//	assert( mA_ref[1] == mA[1] );
+	//	assert( mA_ref == mA ); 
 	}
-}
+
+	{
+	#if __cpp_deduction_guides
+		double Z[4][5] {
+			{ 0,  1,  2,  3,  4}, 
+			{ 5,  6,  7,  8,  9}, 
+			{10, 11, 12, 13, 14}, 
+			{15, 16, 17, 18, 19}
+		};
+		auto d2DC = multi::make_array_ref(test::involuter<double*, decltype(test::neg)>{&Z[0][0], test::neg}, {4, 5});
+	//	multi::array_ref d2DC{bitransformer<decltype(neg), decltype(&Z[0][0])>{&Z[0][0], neg}, {4, 5}};
+		cout<< d2DC[1][1] <<'\n';
+		d2DC[1][1] = -66;
+		cout<< d2DC[1][1] <<'\n';
+		BOOST_REQUIRE( Z[1][1] == 66 );
+	#endif
+
+		{
+			using complex = std::complex<double>;
+			multi::array<complex, 2> d2D = {
+				{ {0, 3}, {1, 9}, {2, 4},  3,  4}, 
+				{  5    , {6, 3}, {7, 5},  8,  9}, 
+				{ {1, 4}, {9, 1}, 12    , 13, 14}, 
+				{  15   ,  16   , 17    , 18, 19}
+			};
+
+		//	using multi::reinterpret_array_cast;
+			auto&& d2Dreal = d2D.reinterpret_array_cast<double>();
+			BOOST_REQUIRE( d2Dreal[2][1] == 9. );
+
+			d2Dreal[2][1] = 12.;
+			BOOST_REQUIRE( d2D[2][1] == complex(12., 1.) ); 
+
+			auto&& d2DrealT = rotated(d2D).reinterpret_array_cast<double>();
+			BOOST_REQUIRE( d2DrealT[2][1] == 7. );
+
+			multi::array<double, 2> d2real_copy = d2D.template reinterpret_array_cast<double>();//d2Dreal;
+
+		//	using multi::static_array_cast;
+		//	auto&& d2Dreal2 = static_array_cast<double, indirect_real<>>(d2D);
+		//	assert( d2Dreal2[2][1] == 12. );
+	#if 0
+			struct indirect_imag{
+				std::complex<double>* underlying; using element_type = double;
+				indirect_imag(std::complex<double>* underlying) : underlying{underlying}{}
+				indirect_imag operator+(std::ptrdiff_t n) const{return {underlying + n};}
+				double& operator*() const{return reinterpret_cast<double(&)[2]>(*underlying)[1];}
+				operator double*() const{return &(*(*this));}
+				using difference_type = std::ptrdiff_t;
+				using value_type = double;
+				using pointer = double*;
+				using reference = double&;
+				using iterator_category = std::random_access_iterator_tag;
+			};
+			auto&& d2imag2 = static_array_cast<double, indirect_imag>(d2D);
+			assert( d2imag2[2][1] == 1. );
+			double* p = d2imag2.base();
+			assert( *p == 3 );
+	#endif
+		}
+		{
+			using complex = std::complex<double>;
+			constexpr auto const I = complex{0., 1.};
+			multi::array<complex, 2> A = {
+				{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
+				{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
+			};
+		//	[[maybe_unused]] 
+			auto Aconj = A.static_array_cast<complex, test::conjr<complex*>>();
+			BOOST_REQUIRE( Aconj[1][2] == conj(A[1][2]) );
+		}
+	}
 
 }
 
