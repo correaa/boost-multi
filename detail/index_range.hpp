@@ -47,18 +47,18 @@ class iterator_facade{
 	constexpr self_type&       self()      {return static_cast<self_type&      >(*this);}
 	constexpr self_type const& self() const{return static_cast<self_type const&>(*this);}
 public:
-	using value_type = ValueType;
-	using reference = Reference;
-	using pointer = Pointer;
-	using difference_type = DifferenceType;
+	using value_type        = ValueType;
+	using reference         = Reference;
+	using pointer           = Pointer;
+	using difference_type   = DifferenceType;
 	using iterator_category = AccessCategory;
 	constexpr auto operator==(self_type const& o) const{return o==self();}
 	constexpr auto operator!=(self_type const& o) const{return not(o==self());}
-	constexpr self_type operator+(difference_type n) const{self_type r = self(); r += n; return r;}
-	constexpr self_type operator-(difference_type n) const{self_type r = self(); r -= n; return r;}
+	       constexpr self_type operator+(difference_type n) const{self_type r = self(); r += n; return r;}
+	       constexpr self_type operator-(difference_type n) const{self_type r = self(); r -= n; return r;}
 	friend constexpr self_type operator+(difference_type n, self_type const& s){return s + n;}
-	friend self_type operator++(self_type& s, int){self_type r = s; ++s; return r;}
-	friend self_type operator--(self_type& s, int){self_type r = s; --s; return r;}
+	friend constexpr self_type operator++(self_type& s, int){self_type r = s; ++s; return r;}
+	friend constexpr self_type operator--(self_type& s, int){self_type r = s; --s; return r;}
 };
 
 //class iterator_core_access{};
@@ -80,13 +80,13 @@ public:
 		ar & multi::archive_traits<std::decay_t<Archive>>::make_nvp("first", first_);//BOOST_SERIALIZATION_NVP(first); !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! if you get an error here you need to include the adators/serialization/xml_archive.hpp !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
 		ar & multi::archive_traits<std::decay_t<Archive>>::make_nvp("last", last_);//BOOST_SERIALIZATION_NVP(last);
 	}
-	using value_type = IndexType;
+	using value_type      = IndexType;
 	using difference_type = decltype(IndexTypeLast{} - IndexType{});// std::make_signed_t<value_type>;
-	using size_type = difference_type;
+	using size_type       = difference_type;
 	using const_reference = value_type const;
-	using reference = const_reference;
-	using const_pointer = value_type;
-	using pointer = value_type;
+	using reference       = const_reference;
+	using const_pointer   = value_type;
+	using pointer         = value_type;
 	constexpr range() = default;
 	template<class Range, typename = std::enable_if_t<std::is_same<std::decay_t<Range>, value_type>{}> >
 	constexpr range(Range&& o) : first_{std::forward<Range>(o).first()}, last_{std::forward<Range>(o).last()}{}
