@@ -286,10 +286,8 @@ BOOST_AUTO_TEST_CASE(transformed_array){
 			{15, 16, 17, 18, 19}
 		};
 		auto d2DC = multi::make_array_ref(test::involuter<double*, decltype(test::neg)>{&Z[0][0], test::neg}, {4, 5});
-	//	multi::array_ref d2DC{bitransformer<decltype(neg), decltype(&Z[0][0])>{&Z[0][0], neg}, {4, 5}};
-		cout<< d2DC[1][1] <<'\n';
+
 		d2DC[1][1] = -66;
-		cout<< d2DC[1][1] <<'\n';
 		BOOST_REQUIRE( Z[1][1] == 66 );
 	#endif
 
