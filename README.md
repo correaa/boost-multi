@@ -484,6 +484,11 @@ int main(){
 
 # Interoperability
 
+## STL (Standard Template Library)
+
+The fundamental goal of the library is that the arrays and iterators can be used with STL algorithms out-of-the-box with a reasonable efficiency.
+The most dramatic example of this is that `std::sort` works with array as it is shown in a previous example.
+
 Along with STL itself, the library tries to interact with other existing C++ libraries.
 
 ## Range v3
