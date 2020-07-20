@@ -97,6 +97,17 @@ decltype(auto) print_1D(M const& C){
 	return cout<<std::endl;
 }
 
+BOOST_AUTO_TEST_CASE(multi_blas_dot_1d_real){
+
+	multi::array<float, 1> V = {1., 2., 3.};
+	multi::array<float, 1> W = {1., 2., 3.};
+	
+	using blas::dot;
+	assert( 14. == dot(V, W) );
+	assert( dot(V, W) == 14. );
+
+}
+
 BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_real){
 	multi::array<double, 2> const cA = {
 		{1.,  2.,  3.,  4.},
