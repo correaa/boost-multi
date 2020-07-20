@@ -80,7 +80,7 @@ clang:
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang
       - ln --symbolic --force . ../multi
-      - export CXX="clang++ -x c++ -Wall -Wextra -Wpedantic -Werror -Wmove -Ofast -pthread"
+      - export CXX="clang++ -x c++ -Wall -Wextra -Wpedantic -Werror -Wmove -O3 -pthread"
       - $CXX --version
       - cd test
       - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
