@@ -656,7 +656,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_identity, *boost::unit_test::tolerance(0.0001)){
 		{ 3. - 1.*I, 8. + 7.*I, 2. + 1.*I},
 		{ 31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
 	};
-	auto fwd = multi::fftw::dft(in, fftw::forward);
+	auto fwd = multi::fftw::dft({}, in, fftw::forward);
 	BOOST_REQUIRE( fwd == in );
 }
 
