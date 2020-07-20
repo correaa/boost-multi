@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x -lboost_unit_test_framework&&$0x &&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework&&$0x &&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -8,6 +8,9 @@ $CXX $0 -o $0x -lboost_unit_test_framework&&$0x &&rm $0x;exit
 #include<boost/test/unit_test.hpp>
 
 #include "../array_ref.hpp"
+#include "../array.hpp"
+
+#include<boost/multi_array.hpp>
 
 namespace multi = boost::multi;
 
@@ -39,6 +42,122 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray){
 
 	BOOST_REQUIRE( size(mar(2, {1, 3})) == 2 );
 	BOOST_REQUIRE( &mar(2, {1, 3})[1] == &a[2][2] );
+
+}
+
+BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed){
+	std::string (&&a)[5] = {"a", "b", "c", "d", "e"};
+
+	multi::Array<std::string(&)[1]> mar = *multi::Array<std::string(*)[1]>(&a);
+	BOOST_REQUIRE( &mar[1] == &a[1] );
+	BOOST_REQUIRE( sizes(mar.reindexed(1)) == sizes(mar) );
+	auto diff = &(mar.reindexed(1)[1]) - &mar[0];
+	BOOST_TEST_REQUIRE( diff == 0 );
+	
+	BOOST_REQUIRE( &mar.blocked(2, 4)[2] == &mar[2] );
+	for(auto i : extension(mar.stenciled({2, 4})))
+		BOOST_REQUIRE( &mar.stenciled({2, 4})[i] == &mar[i] );
+}
+
+BOOST_AUTO_TEST_CASE(array_ref_reindexed){
+
+	double (&&a)[4][5] = {
+		{ 0,  1,  2,  3,  4}, 
+		{ 5,  6,  7,  8,  9}, 
+		{10, 11, 12, 13, 14}, 
+		{15, 16, 17, 18, 19}
+	};
+
+	multi::Array<double(&)[2]> mar = *multi::Array<double(*)[2]>(&a);
+
+	BOOST_REQUIRE( &mar[1][1] == &a[1][1] );
+	BOOST_REQUIRE( size(mar.reindexed(1)) == size(mar) );
+	BOOST_REQUIRE( size(mar[0].reindexed(1)) == size(mar[0]) );
+	
+	boost::multi_array_ref<double, 2> MAR(&a[0][0], boost::extents[4][5]);
+	MAR.reindex(1);
+	BOOST_REQUIRE( MAR.index_bases()[1] == 1 );
+
+	BOOST_REQUIRE( sizes(mar.reindexed(1)) == sizes(mar) );
+	BOOST_TEST_REQUIRE( &mar.reindexed(1)[1][0] == &mar[0][0] );
+
+	BOOST_REQUIRE( sizes(mar[0].reindexed(1)) == sizes(mar[0]) );
+	BOOST_REQUIRE( mar[0].reindexed(1).extension().start () == mar[0].extension().start () + 1 );
+	BOOST_REQUIRE( mar[0].reindexed(1).extension().finish() == mar[0].extension().finish() + 1 );
+
+	auto diff = &mar[0].reindexed(1)[1] - &mar[0][0];
+	BOOST_TEST_REQUIRE( diff == 0 );
+	
+//	BOOST_REQUIRE( &(((mar<<1).reindexed(2)>>1).reindexed(1))[1][2] == &mar[0][0] );
+	BOOST_REQUIRE( &mar.reindexed(1, 2)[1][2] == &mar[0][0] );
+	
+	BOOST_REQUIRE( &mar.reindexed(1)({1, 5})[1][0] == &mar[0][0] );
+	
+	BOOST_REQUIRE( sizes(mar.stenciled({2, 4})) == std::make_tuple(2, 5) );
+	BOOST_REQUIRE( &mar.stenciled({2, 4})[2][0] == &mar[2][0] );
+	BOOST_REQUIRE( &mar.stenciled({2, 4}, {1, 3})[2][1] == &mar[2][1] );
+
+}
+
+BOOST_AUTO_TEST_CASE(array_ref_with_stencil){
+
+	double a[4][5] = {
+		{ 0,  1,  2,  3,  4}, 
+		{ 5,  6,  7,  8,  9}, 
+		{10, 11, 12, 13, 14}, 
+		{15, 16, 17, 18, 19}
+	};
+	auto const& mar = *multi::Array<double(*)[2]>(&a);
+
+	multi::Array<double[2]> s = {
+		{ 0, +1,  0},
+		{+1, -4, +1},
+		{ 0, +1,  0}
+	};
+	auto const& st = s.reindexed(-1, -1);
+	
+	multi::array<double, 2> gy(extensions(mar), 0.);
+
+	{
+		auto xs = extensions(mar);
+		for(auto i = std::get<0>(xs).start()+1; i != std::get<0>(xs).finish()-1; ++i)
+			for(auto j = std::get<1>(xs).start()+1; j != std::get<1>(xs).finish()-1; ++j){
+				auto xt = extensions(st);
+				for(auto b: std::get<0>(xt))
+					for(auto d: std::get<1>(xt))
+						gy[i][j] += st[b][d]*a[i + b][j + d];
+			}
+	}
+}
+
+
+BOOST_AUTO_TEST_CASE(array_ref_1D){
+
+	std::string (&&a)[5] = {"a", "b", "c", "d", "e"};
+
+	multi::Array<std::string(&)[1]> mar = *multi::Array<std::string(*)[1]>(&a);
+	for(auto i: extension(mar)) std::cout<< i <<": "<< mar[i] <<", ";
+	std::cout<<std::endl;
+	
+	BOOST_TEST(  extension(mar).first() == 0 );
+	BOOST_TEST(  extension(mar).last()  == 5 );
+
+	auto&& mar1 = mar.reindexed(1);
+
+	BOOST_REQUIRE( extension(mar1).size() == extension(mar).size() );
+
+	BOOST_REQUIRE( mar1.extension() == extension(mar1) );
+	BOOST_TEST(  extension(mar1).first() == 1 );
+	BOOST_TEST(  mar1.extension().first() == 1 );
+	BOOST_TEST(  mar1.extension().last()  == 6 );
+	BOOST_TEST( *extension(mar1).begin() == 1 );
+	for(auto i: extension(mar1)) std::cout<< i <<": "<< mar1[i] <<", ";
+
+	BOOST_REQUIRE( size(mar1) == size(mar) );
+	BOOST_TEST( mar1.layout().extension().start() == 1 );
+//	BOOST_TEST( extension(mar1).start() == 1 );
+	BOOST_REQUIRE( &mar1[1] == &a[0] );
+	BOOST_REQUIRE( mar1.base() == &a[0] );
 
 }
 

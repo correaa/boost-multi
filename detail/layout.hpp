@@ -194,8 +194,9 @@ public:
 	constexpr size_type size(dimensionality_type d) const{
 		return d==0?nelems_/stride_:throw 0; // assert(d == 0 and stride_ != 0 and nelems_%stride_ == 0);
 	}
+	layout_t& reindex(index i){offset_ = i*stride_; return *this;}
 	constexpr auto base_size() const{return nelems_;}
-	auto is_compact() const{return base_size() == num_elements();}
+	       auto is_compact() const{return base_size() == num_elements();}
 	friend auto is_compact(layout_t const& self){return self.is_compact();}
 public:
 	constexpr auto stride(dimensionality_type d = 0) const{assert(!d); (void)d; return stride_;}
@@ -215,8 +216,8 @@ public:
 	friend constexpr bool is_empty(layout_t const& s){return s.is_empty();}
 	       constexpr bool    empty()        const    {return is_empty();}
 
-	constexpr index_extension extension() const{return {offset_/stride_, (offset_+nelems_)/stride_};}
-	friend constexpr auto extension(layout_t const& self){return self.extension();}
+	       constexpr index_extension extension()        const&   {return {offset_/stride_, (offset_+nelems_)/stride_};}
+	friend constexpr index_extension extension(layout_t const& s){return s.extension();}
 	constexpr auto extension(dimensionality_type d) const{
 		return d==0?index_extension{offset_/stride_, (offset_ + nelems_)/stride_}:throw 0;
 	}
@@ -353,6 +354,7 @@ public:
 	}
 	constexpr bool operator!=(layout_t const& o) const{return not((*this)==o);}
 public:
+	layout_t& reindex(index i){offset_ = i*stride_; return *this;}
 	constexpr size_type num_elements() const{return size()*sub_.num_elements();}
 	friend size_type num_elements(layout_t const& s){return s.num_elements();}
 
@@ -388,20 +390,17 @@ public:
 	template<class T = void>
 	constexpr auto sizes_as() const{return detail::to_array<T>(sizes());}
 public:
-	constexpr index_extension extension() const{
+	constexpr index_extension extension()        const&{
 		if(not nelems_) return {};
-		assert(stride_);
-		return {offset_/stride_, (offset_ + nelems_)/stride_};
+		assert(stride_); return {offset_/stride_, (offset_ + nelems_)/stride_};
 	}
-	friend auto extension(layout_t const& self){return self.extension();}
+	friend constexpr index_extension extension(layout_t const& s){return s.extension();}
 	constexpr index_extension extension_aux() const{
 		assert(stride_ != 0 and nelems_%stride_ == 0);
 		return {offset_/stride_, (offset_ + nelems_)/stride_};
 	}
 	template<dimensionality_type DD = 0>
-	constexpr index_extension extension(dimensionality_type d) const{
-		return d?sub_.extension(d-1):extension();
-	}
+	constexpr index_extension extension(dimensionality_type d) const{return d?sub_.extension(d-1):extension();}
 	constexpr extensions_type extensions() const{return tuple_cat(std::make_tuple(extension()), sub_.extensions().base());}
 	friend constexpr extensions_type extensions(layout_t const& self){return self.extensions();}
 	void extensions_aux(index_extension* it) const{
@@ -570,8 +569,35 @@ BOOST_AUTO_TEST_CASE(continued){
 	multi::layout_t<1> L;
 	assert( size(L) == 0 );
 }{
+	multi::layout_t<1> L({{0, 10}});
+	assert( size(L) == 10 );
+	assert( extension(L).start () ==  0 );
+	assert( extension(L).finish() == 10 );
+
+	L.reindex(1);
+	assert( size(L) == 10 );
+	assert( extension(L).start () ==  1 );
+	assert( extension(L).finish() == 11 );
+}{
 	multi::layout_t<2> L;
 	assert( size(L) == 0 );
+}{
+	multi::layout_t<2> L({{0, 10}, {0, 20}});
+	assert( size(L) == 10 );
+	assert( extension(L).start () ==  0 );
+	assert( extension(L).finish() == 10 );
+	
+	L.reindex(1);
+	assert( extension(L).start () ==  1 );
+	assert( extension(L).finish() == 11 );
+
+	L.rotate().reindex(3).unrotate();
+	BOOST_TEST_REQUIRE( extension(L).start () ==  1 );
+	BOOST_TEST_REQUIRE( extension(L).finish() == 11 );
+
+	BOOST_TEST_REQUIRE( std::get<0>(extensions(L)).start () == 1 );
+	BOOST_TEST_REQUIRE( std::get<1>(extensions(L)).start () == 3 );
+	BOOST_TEST_REQUIRE( std::get<1>(extensions(L)).finish() == 23 );
 }{
 	multi::layout_t<3> L;
 	assert( size(L) == 0 );

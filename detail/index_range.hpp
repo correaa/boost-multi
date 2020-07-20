@@ -218,7 +218,8 @@ struct extension_t : public range<IndexType, IndexTypeLast>{
 		if(self.first() == 0) return os <<"["<< self.last() <<"]";
 		return os << static_cast<range<IndexType> const&>(self);
 	}
-	IndexType start() const{return this->first();}
+	IndexType start () const{return this->first();}
+	IndexType finish() const{return this->last ();}
 	friend constexpr auto operator==(extension_t const& a, extension_t const& b){return static_cast<range<IndexType> const&>(a)==static_cast<range<IndexType> const&>(b);}
 	friend constexpr auto operator!=(extension_t const& a, extension_t const& b){return not(a==b);}
 };

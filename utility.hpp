@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2018-2020
 
@@ -244,11 +244,6 @@ constexpr auto data_elements(T(&t)[N]) noexcept{return data_elements(t[0]);}
 //template<class T, std::size_t N>
 //constexpr auto data(const T(&t)[N]) noexcept{return data(t[0]);}
 
-template<class Container>
-auto extension(Container const& c) // TODO consider "extent"
-->decltype(multi::extension_t<std::make_signed_t<decltype(size(c))>>(0, size(c))){
-	return multi::extension_t<std::make_signed_t<decltype(size(c))>>(0, size(c));}
-
 template<class T>
 auto has_dimensionality_aux(T const& t)->decltype(t.dimensionality(), std::true_type {});
 inline auto has_dimensionality_aux(...)->decltype(                    std::false_type{});
@@ -354,6 +349,16 @@ template<class T>
 constexpr auto corigin(const T& t){return &t;}
 template<class T, std::size_t N>
 constexpr auto corigin(const T(&t)[N]) noexcept{return corigin(t[0]);}
+
+template<class T, typename = decltype(std::declval<T>().extension())>
+       std::true_type  has_extension_aux(T const&);
+inline std::false_type has_extension_aux(...     );
+template<class T> struct has_extension : decltype(has_extension_aux(std::declval<T>())){};
+
+template<class Container, class=std::enable_if_t<not has_extension<Container>{}>>
+auto extension(Container const& c) // TODO consider "extent"
+->decltype(multi::extension_t<std::make_signed_t<decltype(size(c))>>(0, size(c))){
+	return multi::extension_t<std::make_signed_t<decltype(size(c))>>(0, size(c));}
 
 template<class T, typename = decltype(std::declval<T>().extensions())>
        std::true_type  has_extensions_aux(T const&);
