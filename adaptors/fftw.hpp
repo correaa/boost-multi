@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXXX $CXXFLAGS $0 -o $0x `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS -g $0 -o $0x `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2018-2020
 
@@ -350,6 +350,10 @@ public:
 		fftw_flops(impl_.get(), &r.add, &r.mul, &r.fma);
 		return r;
 	}
+	std::string string_print() const{
+		return std::unique_ptr<char>{fftw_sprint_plan(impl_.get())}.get();
+	}
+	friend std::ostream& operator<<(std::ostream& os, plan const& p){return os<<p.string_print()<<'\n';}
 #if HAVE_FFTW3_THREADS
 public:
 	static void make_thread_safe(){
@@ -395,7 +399,7 @@ auto dft(In const& i, Out&& o, int s)
 using std::decay_t;
 
 template<class In, class Out, std::size_t D=In::dimensionality>
-auto dft(std::array<bool, D> which, In const& i, Out&& o, sign s)
+auto dft(std::array<bool, +D> which, In const& i, Out&& o, sign s)
 ->decltype(plan{which, i, o, s}(), std::forward<Out>(o)){
 	return plan{which, i, o, s}(), std::forward<Out>(o);}
 
@@ -443,7 +447,7 @@ auto dft(std::array<bool, +D> which, In&& i, sign s)
 	return dft(which, i, i, s), std::forward<In>(i);}
 
 template<typename In, std::size_t D = In::dimensionality, class R=typename In::decay_type>
-void dft(std::array<bool, D> which, In const& i) = delete;
+void dft(std::array<bool, +D> which, In const& i) = delete;
 
 template<dimensionality_type Rank /*not deduced*/, typename In, class R=typename In::decay_type>
 NODISCARD("when second argument is const")
@@ -461,7 +465,13 @@ NODISCARD("when input argument is read only")
 auto dft_forward(BoolArray which, A const& a)
 ->decltype(fftw::dft(which, a, fftw::forward)){
 	return fftw::dft(which, a, fftw::forward);}
-	
+
+template<class A, multi::dimensionality_type D = A::dimensionality>
+NODISCARD("when input argument is read only")
+auto dft_forward(std::array<bool, +D> which, A const& a)
+->decltype(fftw::dft(which, a, fftw::forward)){
+	return fftw::dft(which, a, fftw::forward);}
+
 template<class A, class O, multi::dimensionality_type D = A::dimensionality>
 auto dft_forward(std::array<bool, +D> which, A const& a, O&& o)
 ->decltype(fftw::dft(which, a, std::forward<O>(o), fftw::forward)){
@@ -646,8 +656,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_identity, *boost::unit_test::tolerance(0.0001)){
 		{ 3. - 1.*I, 8. + 7.*I, 2. + 1.*I},
 		{ 31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
 	};
-	auto fwd = multi::fftw::dft(in, fftw::none);
-//	auto fwd = multi::fftw::dft<0>(in, multi::fftw::none);
+	auto fwd = multi::fftw::dft(in, fftw::forward);
 	BOOST_REQUIRE( fwd == in );
 }
 
