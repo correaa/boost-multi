@@ -190,7 +190,7 @@ blas&fft:
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang pkg-config libblas-dev libblas64-dev libfftw3-dev nvidia-cuda-toolkit
       - ln --symbolic --force . ../multi
       - export CXXX="clang++ -x c++"
-      - export CXXFLAGS="-Wall -Wextra -Wpedantic -Ofast -lcudart -lfftw3 -lcublas -lcufft -lboost_timer -lboost_unit_test_framework `pkg-config --libs blas`"
+      - export CXXFLAGS="-Wall -Wextra -Wpedantic -O3 -lcudart -lfftw3 -lcublas -lcufft -lboost_timer -lboost_unit_test_framework `pkg-config --libs blas`"
       - export CXX="${CXXX} ${CXXFLAGS}"
       - $CXX --version
       - cd adaptors/blas
