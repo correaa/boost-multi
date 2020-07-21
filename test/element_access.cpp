@@ -1,11 +1,12 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXX $0 -o $0x -DMULTI_ACCESS_NDEBUG -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2018-2020
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi element access"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
+#include <boost/test/execution_monitor.hpp>  // for boost::execution_exception
 
 #include "../array.hpp"
 
@@ -18,6 +19,14 @@ $CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 namespace multi = boost::multi;
 
 template<class T> void what(T&&) = delete;
+
+BOOST_AUTO_TEST_CASE(verify_assert){
+	multi::array<double, 1> arr(10);
+//	arr[10];
+//	BOOST_CHECK_THROW( arr[10],
+//		boost::execution_exception
+//	);
+}
 
 BOOST_AUTO_TEST_CASE(multi_tests_element_access_with_tuple){
 	multi::array<double, 2> m({3, 3}, 44.);

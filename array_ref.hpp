@@ -20,6 +20,7 @@ $CXXX $CXXFLAGS $0 -o $0x&&$0x&&rm $0x&&(rm -rf test/build&&mkdir -p test/build&
 
 #include "./config/NODISCARD.hpp"
 #include "./config/DELETE.hpp"
+#include "./config/ASSERT.hpp"
 
 //#include<iostream> // debug
 
@@ -383,15 +384,15 @@ public:
 #endif
 	friend auto operator+(basic_array const& self){return self.decay();}
 
-	constexpr typename types::const_reference operator[](index i) const&{ assert( this->extension().contains(i) );
+	constexpr typename types::const_reference operator[](index i) const&{MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
 		typename types::element_const_ptr new_base = typename types::element_ptr(this->base()) + std::ptrdiff_t{Layout::operator()(i)};
 		return typename types::const_reference(this->layout().sub_, new_base);
 	}
-	constexpr typename types::reference       operator[](index i) &&{ assert( this->extension().contains(i) && "out of bounds" );
+	constexpr typename types::reference       operator[](index i) &&{MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
 		typename types::element_ptr new_base = typename types::element_ptr(this->base()) + std::ptrdiff_t{Layout::operator()(i)};
 		return typename types::reference(this->layout().sub_, new_base);
 	}
-	constexpr typename types::reference       operator[](index i) &{ assert( this->extension().contains(i) && "out of bounds" );
+	constexpr typename types::reference       operator[](index i) &{MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
 		typename types::element_ptr new_base = typename types::element_ptr(this->base()) + std::ptrdiff_t{Layout::operator()(i)};
 		return typename types::reference(this->layout().sub_, new_base);
 	}
@@ -1025,10 +1026,10 @@ public:
 	template<class TT, dimensionality_type DD, class... As>
 	basic_array&& operator=(basic_array const& o)&&{return std::move(this->operator=(o));} 	// TODO make sfinae friendly
 
-	constexpr typename basic_array::const_reference operator[](index i) const&{assert( this->extension().contains(i) );
+	constexpr typename basic_array::const_reference operator[](index i) const&{MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
 		return *(this->base() + Layout::operator()(i)); // in C++17 this is allowed even with syntethic references
 	}
-	constexpr typename basic_array::      reference operator[](index i)      &{assert(this->extension().contains(i));
+	constexpr typename basic_array::      reference operator[](index i)      &{MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"\nout of bounds");;
 		return *(this->base() + Layout::operator()(i));
 	}
 	constexpr typename basic_array::reference operator[](index i)&&{return this->operator[](i);}
