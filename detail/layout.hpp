@@ -171,6 +171,7 @@ public:
 //	constexpr layout_t(std::initializer_list<index_extension> il) noexcept : layout_t{multi::detail::to_tuple<1, typename layout_t::index_extension>(il)}{}
 //	constexpr layout_t(std::initializer_list<index> il) noexcept : layout_t{multi::detail::to_tuple<1, typename layout_t::index_extension>(il)}{}
 #endif
+#if 0
 	template<class Extensions, typename = decltype(std::get<0>(Extensions{}).size())>
 	constexpr layout_t(Extensions const& e)
 	: 
@@ -180,7 +181,9 @@ public:
 		//	ie.size()
 	//	}{
 		nelems_{std::get<0>(e).size()}{
+		assert(0);
 	}
+#endif
 	constexpr auto offset() const{return offset_;}
 	friend constexpr index offset(layout_t const& self){return self.offset();}
 	constexpr auto offset(dimensionality_type d) const{assert(d==0); (void)d; return offset_;}
@@ -316,21 +319,27 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 	layout_t(
 		sub_type sub, stride_type stride, offset_type offset, nelems_type nelems
 	) : sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems}{}
+#if 0
 	constexpr 
 	layout_t(index_extension const& ie, layout_t<D-1> const& s) : 
 		sub_{s},
 		stride_{1},//ie.size()*sub_.num_elements()!=0?sub_.size()*sub_.stride():1}, // use .size for nvcc
-		offset_{sub_.offset_ + ie.first()*sub_.stride()},
+		offset_{sub_.offset_ + ie.first()*stride_}, 
 		nelems_{ie.size()*sub_.num_elements()}                             // use .size fort
-	{}
+	{
+		assert(0);
+	}
+#endif
 	layout_t() = default;//: sub{}, stride_{1}, offset_{0}, nelems_{0}{} // needs stride != 0 for things to work well in partially formed state
 //	constexpr 
 	layout_t(extensions_type const& e) :// = {}) : 
 		sub_{detail::tail(e)}, 
 		stride_{sub_.size()*sub_.stride()},//std::get<0>(e).size()*sub_.num_elements()!=0?sub_.size()*sub_.stride():1}, 
-		offset_{sub_.offset_ + std::get<0>(e).first()*sub_.stride()}, 
+		offset_{std::get<0>(e).first()*stride_}, //sub_.offset_ + std::get<0>(e).first()*sub_.stride()}, //sub_.stride()  offset_ = i*stride_}, 
 		nelems_{std::get<0>(e).size()*sub_.num_elements()} 
-	{}//assert(0);}
+	{
+	//	reindex(std::get<0>(e).first());
+	}
 #if(defined(__INTEL_COMPILER) and (__INTEL_COMPILER < 1900)) or (defined(__GNUC) && (__GNUC<6))
 	constexpr 
 	layout_t(std::array<index_extension, D> x) noexcept :
@@ -355,6 +364,8 @@ public:
 	constexpr bool operator!=(layout_t const& o) const{return not((*this)==o);}
 public:
 	layout_t& reindex(index i){offset_ = i*stride_; return *this;}
+	template<class... Idx>
+	layout_t& reindex(index i, Idx... is){reindex(i).rotate().reindex(is...).unrotate(); return *this;}
 	constexpr size_type num_elements() const{return size()*sub_.num_elements();}
 	friend size_type num_elements(layout_t const& s){return s.num_elements();}
 
@@ -489,6 +500,28 @@ namespace std{
 #include "../array.hpp"
 
 namespace multi = boost::multi;
+
+template<class T> void what(T&&) = delete;
+
+BOOST_AUTO_TEST_CASE(multi_layout_with_offset){
+	{
+		multi::layout_t<1> l1(multi::iextension(2, 5));
+		BOOST_TEST( l1.extension().start()  == 2 );
+		BOOST_TEST( l1.extension().finish() == 5 );
+	}
+	{
+		boost::multi::layout_t<2, long>::extensions_type_ x = {multi::iextension(2, 5), multi::iextension(0, 5)};
+		multi::layout_t<2> l2(x);
+		BOOST_TEST( l2.extension().start()  == std::get<0>(x).start()  );
+		BOOST_TEST( l2.extension().finish() == std::get<0>(x).finish() );
+	}
+	{
+		multi::layout_t<2> l2({multi::iextension(0, 3), multi::iextension(2, 7)});
+	//	BOOST_TEST( l2.sub_.extension().start() == 2 );
+		BOOST_TEST( std::get<1>(l2.extensions()).start()  == 2 );
+		BOOST_TEST( std::get<1>(l2.extensions()).finish() == 7 );
+	}
+}
 
 BOOST_AUTO_TEST_CASE(multi_layout){
 //	auto t = std::make_tuple(1.,2.,3.);

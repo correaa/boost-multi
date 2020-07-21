@@ -171,7 +171,7 @@ public:
 //	auto uninitialized_fill(typename static_array::element const& e){
 //		return adl_alloc_uninitialized_fill_n(this->alloc(), this->base_, this->num_elements(), e);
 //	}
-	static_array(typename static_array::extensions_type const& x, typename static_array::element const& e) : //2
+	static_array(typename static_array::extensions_type x, typename static_array::element const& e) : //2
 		array_alloc{}, ref(array_alloc::allocate(typename static_array::layout_t{x}.num_elements()), x)
 	{
 		array_alloc::uninitialized_fill_n(this->base(), this->num_elements(), e);
@@ -201,7 +201,7 @@ public:
 		decltype(adl_copy(std::declval<multi::basic_array<TT, D, Args...> const&>().begin(), std::declval<multi::basic_array<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
 	>
 	static_array(multi::basic_array<TT, D, Args...> const& o, typename static_array::allocator_type const& a = {})
-	: static_array(extensions(o), a) // TODO: should be uninitialized_copy
+	: static_array(o.extensions(), a) // TODO: should be uninitialized_copy
 	{
 		adl_copy(o.begin(), o.end(), this->begin()); // TODO: should be uninitialized_copy, and recursive
 	}
@@ -212,7 +212,7 @@ public:
 //	}
 	template<class TT, class... Args>
 	static_array(array_ref<TT, D, Args...>&& o)
-	: array_alloc{}, ref{array_alloc::allocate(num_elements(o)), extensions(o)}{
+	: array_alloc{}, ref{array_alloc::allocate(o.num_elements()), o.extensions()}{
 		static_array::uninitialized_copy_elements(std::move(o).data_elements());
 	}
 	static_array(static_array const& o, typename static_array::allocator_type const& a) //5b
@@ -249,6 +249,16 @@ protected:
 		this->destroy();
 		deallocate();
 		layout_t<D>::operator=({});
+	}
+	template<class... Ts>
+	constexpr static_array&& reindex(Ts... a)&&{
+		static_array::layout_t::reindex(a...);
+		return std::move(*this);
+	}
+	template<class... Ts>
+	constexpr static_array& reindex(Ts... a)&{
+		static_array::layout_t::reindex(a...);
+		return *this;
 	}
 public:
 	static_array() = default;
@@ -887,6 +897,8 @@ public:
 		tmp.intersection_assign_(*this);
 		swap(tmp);
 	}
+	template<class... Ts> constexpr array&& reindex(Ts... a)&&{array::layout_t::reindex(a...); return std::move(*this);}
+	template<class... Ts> constexpr array&  reindex(Ts... a)& {array::layout_t::reindex(a...); return           *this ;}
 	~array() = default;
 };
 

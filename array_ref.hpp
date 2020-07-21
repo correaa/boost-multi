@@ -724,9 +724,9 @@ public:
 	template<class Array> void swap(basic_array const& s, Array&& a){s.swap(a);}
 	template<class Array> void swap(Array&& a, basic_array const& s){s.swap(a);}
 	template<class Array>//, std::enable_if_t<std::is_same<Array, basic_array>{}, int> =0> 
-	bool operator==(Array const& o) const&{
-		return (this->extension()==o.extension()) and adl_equal(this->begin(), this->end(), adl_begin(o));
-	}
+	auto operator==(Array const& o) const&
+	->decltype((this->extension()==o.extension()) and adl_equal(this->begin(), this->end(), adl_begin(o))){
+		return (this->extension()==o.extension()) and adl_equal(this->begin(), this->end(), adl_begin(o));}
 	template<class Array> bool operator!=(Array const& o) const&{return not((*this)==o);}
 	template<class TT, class... As>
 	bool operator==(basic_array<TT, D, As...> const& o) const&{
@@ -1025,10 +1025,10 @@ public:
 	template<class TT, dimensionality_type DD, class... As>
 	basic_array&& operator=(basic_array const& o)&&{return std::move(this->operator=(o));} 	// TODO make sfinae friendly
 
-	typename basic_array::const_reference operator[](index i) const&{assert( this->extension().contains(i) );
+	constexpr typename basic_array::const_reference operator[](index i) const&{assert( this->extension().contains(i) );
 		return *(this->base() + Layout::operator()(i)); // in C++17 this is allowed even with syntethic references
 	}
-	constexpr typename basic_array::reference operator[](index i)&{//assert(this->extension().contains(i));
+	constexpr typename basic_array::      reference operator[](index i)      &{assert(this->extension().contains(i));
 		return *(this->base() + Layout::operator()(i));
 	}
 	constexpr typename basic_array::reference operator[](index i)&&{return this->operator[](i);}
