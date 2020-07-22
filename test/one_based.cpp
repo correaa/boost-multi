@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x -lboost_unit_test_framework&&$0x --report_level=detailed&&rm $0x;exit
+$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo Correa 2019-2020
 
@@ -49,9 +49,12 @@ BOOST_AUTO_TEST_CASE(one_based_2D){
 	Af[1][1] = 1.;
 	Af[2][2] = 2.;
 	Af[3][3] = 3.;
+	Af[10][20] = 99.;
 
 	BOOST_REQUIRE( Af[1][1] = 1. );
+	BOOST_REQUIRE( Af[10][20] == 99. );
 	BOOST_REQUIRE( *Af.data_elements() == 1. );
+	BOOST_REQUIRE( Af.data_elements()[Af.num_elements()-1] == 99. );
 	BOOST_REQUIRE( size(Af) == 10 );
 	BOOST_REQUIRE( extension(Af).start()  ==  1 );
 	BOOST_REQUIRE( extension(Af).finish() == 11 );
@@ -62,7 +65,8 @@ BOOST_AUTO_TEST_CASE(one_based_2D){
 	B[0][0] = 1.;
 	B[1][1] = 2.;
 	B[2][2] = 3.;
-
+	B[9][19] = 99.;
+	
 	BOOST_REQUIRE( size(B) == 10 );
 	BOOST_REQUIRE( B != Af );
 	BOOST_REQUIRE( std::equal(begin(Af.reindexed(0, 0)), end(Af.reindexed(0, 0)), begin(B)) );
@@ -71,5 +75,9 @@ BOOST_AUTO_TEST_CASE(one_based_2D){
 	
 	BOOST_REQUIRE( Af.reindexed(0, 0) == B );
 
+	B = Af;
+	BOOST_REQUIRE( B[1][1] = 1. );
+	BOOST_REQUIRE( B[10][20] == 99. );
+	BOOST_REQUIRE( B == Af );
 }
 
