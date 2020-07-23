@@ -46,7 +46,6 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos){
 
 	using v3d = std::array<double, 3>;
 
-#if 0
 	struct particles_SoA{
 		multi::array<double,2> masses; 
 		multi::array<v3d,2> positions;
@@ -54,6 +53,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos){
 		reference operator()(int i, int j){return {masses[i][j], positions[i][j]};}
 	};
 
+#if 0
 	struct particle{
 		double mass;
 		v3d position alignas(2*sizeof(double));  // __attribute__((aligned(2*sizeof(double))))
