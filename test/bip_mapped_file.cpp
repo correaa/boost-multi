@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $CXXFLAGS $0 -o $0x -lstdc++fs -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXX $CXXFLAGS $0 -o $0x -lstdc++fs -lboost_unit_test_framework&&valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 --gen-suppressions=all $0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -56,7 +56,7 @@ mremove(file);
 	arr2d[4][5] = 45.001;
 	std::iota(arr3d[6][7].begin(), arr3d[6][7].end(), 100);
 
-	m.flush();
+//	m.flush(); // this produces uninitialized access in icpc 19.1 and might not be necessary
 }
 {
 	manager m{bip::open_only, file.c_str()};
