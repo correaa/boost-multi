@@ -195,7 +195,7 @@ cmake-valgrind:
       - cd build
       - cmake ..
       - make -j
-      - make test -j
+      - ctest --output-on-failure
 
 #      - export CXX="clang++     -x c++  -Wall -Wextra -Wpedantic -Ofast -lcudart -lfftw3 -lcublas -lcufft -lboost_timer -lboost_unit_test_framework `pkg-config --libs blas` "
 
