@@ -185,7 +185,7 @@ cmake-valgrind:
       - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
       - apt update --quiet
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet c++ cmake make valgrind
+      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet g++ cmake make valgrind
       - ln --symbolic --force . ../multi
       - export CXX="c++ -g "
       - export VALGRIND="valgrind"
