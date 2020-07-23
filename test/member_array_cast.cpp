@@ -44,7 +44,7 @@ decltype(auto) Imag(Array&& a){
 BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos){
 
 	BOOST_REQUIRE(true);
-#if 0
+
 	using v3d = std::array<double, 3>;
 
 	struct particles_SoA{
@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos){
 
 	particle p11 = SoA(1, 1); 
 	BOOST_REQUIRE(p11.mass == 99. );
-#endif
+
 }
 
 #if 0
