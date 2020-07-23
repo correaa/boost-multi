@@ -114,14 +114,11 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee){
 
 BOOST_AUTO_TEST_CASE(member_array_cast_complex){
 
-#if 0
 	using complex = std::complex<double>;
 	multi::array<complex, 2> A = {
 		{ { 1.,  2.}, {  3.,  4.} },
 		{ {22., 33.}, {  5.,  9.} }
 	};
-#endif
-#if 0
 	struct Complex{
 		double real;
 		double imag;
@@ -165,6 +162,6 @@ BOOST_AUTO_TEST_CASE(member_array_cast_complex){
 		auto&& Areal = Real(A);
 		BOOST_REQUIRE( Areal[1][1] == 5. );
 	}
-#endif
+
 }
 
