@@ -12,13 +12,14 @@ $CXX -O3 $0 -o $0x -DBOOST_TEST_DYN_LINK -lboost_unit_test_framework&&$0x&&rm $0
 
 #include "../array.hpp"
 
-#include "../complex.hpp"
+//#include "../complex.hpp"
 
 namespace multi = boost::multi;
 
 namespace boost{
 namespace multi{
 
+#if 0
 namespace{
 	struct priority_0{}; struct priority_1 : priority_0{};
 	template<class Array, typename E = typename std::decay_t<Array>::element, typename R = decltype(std::real(E{}))>
@@ -39,6 +40,7 @@ decltype(auto) Imag(Array&& a){
 	return std::forward<Array>(a).template reinterpret_array_cast<C>().template member_cast<I>(&C::imag);
 //	return member_array_cast<I>(reinterpret_array_cast<C>(a), &C::imag);
 }
+#endif
 
 }}
 
