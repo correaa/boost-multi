@@ -17,7 +17,7 @@ namespace multi = boost::multi;
 namespace boost{
 namespace multi{
 
-#if 0
+#if 1
 namespace{
 	struct priority_0{}; struct priority_1 : priority_0{};
 	template<class Array, typename E = typename std::decay_t<Array>::element, typename R = decltype(std::real(E{}))>
