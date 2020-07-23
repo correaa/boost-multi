@@ -82,7 +82,6 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos){
 
 }
 
-#if 0
 BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee){
 
 	struct employee{
@@ -112,7 +111,6 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee){
 	BOOST_REQUIRE( base(d2D_names) != base(d2D_names_copy) );
 
 }
-#endif
 
 BOOST_AUTO_TEST_CASE(member_array_cast_complex){
 
