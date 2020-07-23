@@ -46,6 +46,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos){
 
 	using v3d = std::array<double, 3>;
 
+#if 0
 	struct particles_SoA{
 		multi::array<double,2> masses; 
 		multi::array<v3d,2> positions;
@@ -78,6 +79,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos){
 
 	particle p11 = SoA(1, 1); 
 	BOOST_REQUIRE(p11.mass == 99. );
+#endif
 }
 
 #if 0
@@ -119,6 +121,8 @@ BOOST_AUTO_TEST_CASE(member_array_cast_complex){
 		{ { 1.,  2.}, {  3.,  4.} },
 		{ {22., 33.}, {  5.,  9.} }
 	};
+
+#if 0
 	struct Complex{
 		double real;
 		double imag;
@@ -162,5 +166,6 @@ BOOST_AUTO_TEST_CASE(member_array_cast_complex){
 		auto&& Areal = Real(A);
 		BOOST_REQUIRE( Areal[1][1] == 5. );
 	}
+#endif
 }
 
