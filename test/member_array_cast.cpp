@@ -4,11 +4,8 @@ $CXX -O3 $0 -o $0x -DBOOST_TEST_DYN_LINK -lboost_unit_test_framework&&$0x&&rm $0
 //  © Alfredo A. Correa 2018-2020
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi member cast"
-#ifdef BOOST_TEST_DYN_LINK
+#define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
-#else
-#include<boost/test/included/unit_test.hpp>
-#endif
 
 #include "../array.hpp"
 
