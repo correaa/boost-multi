@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX -g $0 -o $0x -lboost_unit_test_framework&&valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 $0x&&rm $0x;exit
+$CXX -g $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi rotate"
