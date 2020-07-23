@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x -DBOOST_TEST_DYN_LINK -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXX -O3 $0 -o $0x -DBOOST_TEST_DYN_LINK -lboost_unit_test_framework&&valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 $0x&&rm $0x;exit
 #endif
 //  © Alfredo A. Correa 2018-2020
 
@@ -80,7 +80,10 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos){
 	particle p11 = SoA(1, 1); 
 	BOOST_REQUIRE(p11.mass == 99. );
 }
-{
+
+#if 0
+BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee){
+
 	struct employee{
 		std::string name;
 		short salary;
@@ -108,7 +111,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos){
 	BOOST_REQUIRE( base(d2D_names) != base(d2D_names_copy) );
 
 }
-}
+#endif
 
 BOOST_AUTO_TEST_CASE(member_array_cast_complex){
 
