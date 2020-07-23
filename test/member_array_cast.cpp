@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX -O3 $0 -o $0x -DBOOST_TEST_DYN_LINK -lboost_unit_test_framework&&valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 $0x&&rm $0x;exit
+$CXX -O3 $0 -o $0x -DBOOST_TEST_DYN_LINK -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 //  © Alfredo A. Correa 2018-2020
 
@@ -43,7 +43,6 @@ decltype(auto) Imag(Array&& a){
 }}
 
 BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos){
-{
 
 	using v3d = std::array<double, 3>;
 
