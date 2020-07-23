@@ -10,6 +10,7 @@ $CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #include "../array.hpp"
 
 //#include "../complex.hpp"
+#include<complex>
 
 namespace multi = boost::multi;
 
