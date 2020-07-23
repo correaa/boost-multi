@@ -132,7 +132,20 @@ clang-asan:
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang
       - ln --symbolic --force . ../multi
-      - export CXX="clang++ -fsanitize=undefined -fsanitize=address -fsanitize=memory -g -x c++ -Wall -Wextra -Wpedantic -Werror -Wmove -O3 -pthread"
+      - export CXX="clang++ -fsanitize=undefined -fsanitize=address -g -x c++ -Wall -Wextra -Wpedantic -Werror -Wmove -O3 -pthread"
+      - $CXX --version
+      - cd test
+      - for a in ./*.cpp; do echo $a; sh $a || exit 1; echo "\n"; done;
+
+clang-msan:
+    stage: test
+    script:
+      - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
+      - apt update --quiet
+      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev
+      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang
+      - ln --symbolic --force . ../multi
+      - export CXX="clang++ -fsanitize=undefined -fsanitize=memory -g -x c++ -Wall -Wextra -Wpedantic -Werror -Wmove -O3 -pthread"
       - $CXX --version
       - cd test
       - for a in ./*.cpp; do echo $a; sh $a || exit 1; echo "\n"; done;
