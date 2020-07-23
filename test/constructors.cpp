@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXX $0 -o $0x -lboost_unit_test_framework&&valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 $0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -50,6 +50,21 @@ BOOST_AUTO_TEST_CASE(multi_constructors_1d){
 	//	BOOST_REQUIRE( size(A)==10 );
 	//	BOOST_REQUIRE( A[5]== double{} );
 		#endif
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_constructor_1D){
+	{
+		std::size_t size = 1;
+		multi::array<std::size_t, 1> A(size, 99);
+	}
+	{
+		std::size_t size = 10;
+		multi::array<std::size_t, 1> A(size, 99);
+	}
+	{
+		std::size_t size = 0;
+		multi::array<std::size_t, 1> A(size, 99);
 	}
 }
 
