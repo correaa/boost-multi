@@ -187,7 +187,7 @@ cmake-valgrind:
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev
       - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang cmake make valgrind
       - ln --symbolic --force . ../multi
-      - export CXX="clang++"
+      - export CXX="clang++ -g -O3 "
       - export VALGRIND="valgrind"
       - $CXX --version
       - cd test
