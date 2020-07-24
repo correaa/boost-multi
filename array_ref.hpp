@@ -407,7 +407,7 @@ public:
 	template<class Tp = std::tuple<>, typename = std::enable_if_t<std::tuple_size<std::decay_t<Tp>>::value==0> >
 	decltype(auto) operator[](Tp&&) const{return *this;}
 	using typename types::index;
-	basic_array reindexed(typename basic_array::index first)&&{
+	basic_const_array reindexed(typename basic_array::index first) const&{
 		typename types::layout_t new_layout = *this;
 		new_layout.reindex(first);
 		return {new_layout, types::base_};				
@@ -417,8 +417,17 @@ public:
 		new_layout.reindex(first);
 		return {new_layout, types::base_};				
 	}
+	basic_array reindexed(typename basic_array::index first)&&{
+		typename types::layout_t new_layout = *this;
+		new_layout.reindex(first);
+		return {new_layout, types::base_};				
+	}
 	template<class... Indexes>
-	basic_array reindexed(typename basic_array::index first, Indexes... idxs)&{
+	basic_const_array reindexed(typename basic_array::index first, Indexes... idxs) const&{
+		return ((reindexed(first)<<1).reindexed(idxs...))>>1;
+	}
+	template<class... Indexes>
+	basic_array reindexed(typename basic_array::index first, Indexes... idxs) &{
 		return ((reindexed(first)<<1).reindexed(idxs...))>>1;
 	}
 	template<class... Indexes>
@@ -1261,6 +1270,9 @@ public:
 #if __INTEL_COMPILER or __cplusplus < 201703L
 	array_ref(array_ref&&) = default;
 #endif
+	template<class OtherPtr, class=std::enable_if_t<not std::is_same<OtherPtr, ElementPtr>{}>>
+	array_ref(array_ref<T, D, OtherPtr>&& other)
+		: basic_array<T, D, ElementPtr>{other.layout(), ElementPtr{other.base()}}{}
 	constexpr array_ref(typename array_ref::element_ptr p, typename array_ref::extensions_type e = {}) noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
 

@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo Correa 2019-2020
 
@@ -79,5 +79,29 @@ BOOST_AUTO_TEST_CASE(one_based_2D){
 	BOOST_REQUIRE( B[1][1] = 1. );
 	BOOST_REQUIRE( B[10][20] == 99. );
 	BOOST_REQUIRE( B == Af );
+}
+
+BOOST_AUTO_TEST_CASE(one_base_2D_ref){
+	
+	double A[3][5] = {
+		{ 1.,  2.,  3.,  4.,  5.},
+		{ 6.,  7.,  8.,  9., 10.},
+		{11., 12., 13., 14., 15.}
+	};
+	
+	multi::array_ref<double, 2> const& Ar = *multi::array_ptr<double, 2>(&A[0][0], {3, 5});
+	BOOST_REQUIRE( &Ar[1][3] == &A[1][3] );
+
+	multi::array_ref<double, 2> const& Ar2 = *multi::array_ptr<double, 2>(&A[0][0], {{1, 1+3}, {1, 1+5}});
+	BOOST_REQUIRE( sizes(Ar) == sizes(Ar2) );
+	BOOST_REQUIRE( &Ar2[1][1] == &A[0][0] );
+	BOOST_REQUIRE( &Ar2[2][4] == &A[1][3] );
+	
+	BOOST_REQUIRE( Ar2 != Ar );
+	BOOST_REQUIRE( extensions(Ar2.reindexed(0, 0)) == extensions(Ar) );
+	BOOST_REQUIRE( Ar2.reindexed(0, 0) == Ar );
+	
+	static_assert( not std::is_assignable<decltype(Ar2.reindexed(0, 0)[0][0]), double>{}, "!" );
+
 }
 
