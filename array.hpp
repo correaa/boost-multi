@@ -124,9 +124,10 @@ public:
 			);
 	}
 	template<class Array>//, std::enable_if_t<std::is_same<Array, basic_array>{}, int> =0> 
-	bool operator==(Array&& o) const&{
-		return std::move(modify(*this)).ref::operator==(std::forward<Array>(o));
-	}
+	auto operator==(Array&& o) const&
+	->decltype(std::move(modify(*this)).ref::operator==(std::forward<Array>(o))){
+		return std::move(modify(*this)).ref::operator==(std::forward<Array>(o));}
+
 	auto operator==(static_array const& o) const&{return std::move(modify(*this)).ref::operator==(std::move(modify(o)));}
 	template<class It, typename = typename std::iterator_traits<std::decay_t<It>>::difference_type>//edecltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>      
 	// analogous to std::vector::vector (5) https://en.cppreference.com/w/cpp/container/vector/vector
