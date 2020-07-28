@@ -189,7 +189,7 @@ int mpi3::main(int, char*[], mpi3::communicator world){
 	
 	using multi::fftw::dft_forward;
 
-	dft_forward(A, A);
+	dft_forward(A , A );
 	dft_forward(A2, A2);
 
 	{
