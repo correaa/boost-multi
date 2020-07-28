@@ -1394,7 +1394,7 @@ struct array_ptr : basic_array_ptr<basic_array<T, D, Ptr>, typename array_ref<T,
 //	using basic_ptr::basic_ptr;//array_ptr<array_ref<T, D, Ptr>, typename array_ref<T, D, Ptr>::layout_t>::basic_array_ptr;
 public:
 	array_ptr(Ptr p, index_extensions<D> x) : basic_ptr(p, multi::layout_t<D>{x}){}
-	array_ptr(std::nullptr_t n) : basic_ptr(nullptr, multi::layout_t<D>{}){}
+	array_ptr(std::nullptr_t) : basic_ptr(nullptr, multi::layout_t<D>{}){}
 	template<class TT, std::size_t N>
 	constexpr array_ptr(TT(*t)[N]) : basic_ptr(data_elements(*t), layout(*t)){}
 	array_ref<T, D, Ptr> operator*() const{
