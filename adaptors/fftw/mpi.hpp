@@ -1,6 +1,6 @@
 #if COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-#ln -sf $0 $0.cpp;mpicxx -g -I$HOME/prj/alf $0.cpp -o $0x -lfftw3 -lfftw3_mpi&&time mpirun -n 4 $0x&&rm $0x $0.cpp;exit
- ln -sf $0 $0.cpp;mpicxx -g -I$HOME/prj/alf $0.cpp -o $0x -lfftw3 -lfftw3_mpi&&time mpirun -n 4 valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --suppressions=$HOME/prj/alf/boost/mpi3/test/communicator_main.cpp.openmpi.supp --error-exitcode=1 $0x&&rm $0x $0.cpp;exit
+ ln -sf $0 $0.cpp;mpicxx -g -I$HOME/prj/alf $0.cpp -o $0x -lfftw3 -lfftw3_mpi&&time mpirun -n 4 $0x&&rm $0x $0.cpp;exit
+#ln -sf $0 $0.cpp;mpicxx -g -I$HOME/prj/alf $0.cpp -o $0x -lfftw3 -lfftw3_mpi&&time mpirun -n 4 valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --suppressions=$HOME/prj/alf/boost/mpi3/test/communicator_main.cpp.openmpi.supp --error-exitcode=1 $0x&&rm $0x $0.cpp;exit
 #endif
 // © Alfredo A. Correa 2020
 // apt-get install libfftw3-mpi-dev
@@ -51,17 +51,18 @@ struct array<T, multi::dimensionality_type{2}, Alloc>{
 	array_ptr<T, 2, typename std::allocator_traits<Alloc>::pointer> local_ptr_;
 	ptrdiff_t                                                       n0_;
 
-	static typename std::allocator_traits<Alloc>::size_type local_count_2d(multi::extensions_type_<2> ext, boost::mpi3::communicator const& comm){
+	static std::pair<typename std::allocator_traits<Alloc>::size_type, multi::extensions_type_<2>> 
+	local_2d(multi::extensions_type_<2> ext, boost::mpi3::communicator const& comm){
 		ptrdiff_t local_n0, local_0_start;
 		auto count = fftw_mpi_local_size_2d(std::get<0>(ext).size(), std::get<1>(ext).size(), comm.get(), &local_n0, &local_0_start);
 		assert( count >= local_n0*std::get<1>(ext).size() );
-		return count;
+		return {count, {{local_0_start, local_0_start + local_n0}, std::get<1>(ext)}};
 	}
-	static multi::extensions_type_<2> local_extension_2d(multi::extensions_type_<2> ext, boost::mpi3::communicator const& comm){
-		ptrdiff_t local_n0, local_0_start;
-		auto count = fftw_mpi_local_size_2d(std::get<0>(ext).size(), std::get<1>(ext).size(), comm.get(), &local_n0, &local_0_start);
-		assert( count >= local_n0*std::get<1>(ext).size() );
-		return {{local_0_start, local_0_start + local_n0}, std::get<1>(ext)};
+	static auto local_count_2d(multi::extensions_type_<2> ext, boost::mpi3::communicator const& comm){
+		return local_2d(ext, comm).first;
+	}
+	static auto local_extension_2d(multi::extensions_type_<2> ext, boost::mpi3::communicator const& comm){
+		return local_2d(ext, comm).second;
 	}
 	array(multi::extensions_type_<2> ext, bmpi3::communicator comm = mpi3::environment::self(), Alloc alloc = {}) :
 		comm_{std::move(comm)},
@@ -80,7 +81,9 @@ struct array<T, multi::dimensionality_type{2}, Alloc>{
 		local_count_{other.local_count_},
 		local_ptr_  {alloc_.allocate(local_count_), local_extension_2d(other.extensions(), comm_)},
 		n0_{multi::layout_t<2>(other.extensions()).size()}
-	{}
+	{
+		local_stencil() = other.local_stencil();
+	}
 	array(array&& other) :
 		comm_       {std::move(other.comm_)},
 		alloc_      {std::move(other.alloc_)},
@@ -91,7 +94,6 @@ struct array<T, multi::dimensionality_type{2}, Alloc>{
 	explicit array(multi::array<T, 2> const& other, bmpi3::communicator comm = mpi3::environment::self(), Alloc alloc = {}) :
 		array(other.extensions(), comm, alloc)
 	{
-	//	static_assert(std::is_trivially_default_constructible<element_type>{}, "!");
 		local_stencil() = other.stenciled(std::get<0>(local_stencil().extensions()), std::get<1>(local_stencil().extensions()));
 	}
 	bool empty() const{return extensions().num_elements();}
