@@ -15,30 +15,28 @@ namespace multi = boost::multi;
 int mpi3::main(int, char*[], mpi3::communicator world){
 	multi::fftw::mpi::environment fenv;
 
-	multi::fftw::mpi::array<std::complex<double>, 2> A({41, 321}, world);
+	multi::fftw::mpi::array<std::complex<double>, 2> G({41, 321}, world);
 
 	{
-		auto x = A.local().extensions();
+		auto x = G.local_stencil().extensions();
 		for(auto i : std::get<0>(x))
 			for(auto j : std::get<1>(x))
-				A.local()[i][j] = std::complex<double>(i + j, i + 2*j);
+				G.local_stencil()[i][j] = std::complex<double>(i + j, i + 2*j);
 	}
 	
-	multi::array<std::complex<double>, 2> A2 = A;
-	assert( A2 == A );
-
-	A = A2;
+	multi::array<std::complex<double>, 2> L = G; // world replicas
+	assert( L == G );
 	
 	using multi::fftw::dft_forward;
 
-	dft_forward(A , A );
-	dft_forward(A2, A2);
+	dft_forward(L, L); // dft in replicas
+	dft_forward(G, G);
 
 	{
-		auto x = A.local().extensions();
+		auto x = G.local_stencil().extensions();
 		for(auto i : std::get<0>(x))
 			for(auto j : std::get<1>(x))
-				assert(std::abs(A.local()[i][j] - A2[i][j]) < 1e-8 );
+				if(not(std::abs(G.local_stencil()[i][j] - L[i][j]) < 1e-8)) std::cout<< std::abs(G.local_stencil()[i][j] - L[i][j]) << std::endl;
 	}
 	return 0;
 }

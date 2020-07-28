@@ -1,5 +1,6 @@
 #if COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXXX $CXXFLAGS -I$HOME/prj/alf `mpic++ -showme:compile|sed 's/-pthread/ /g'` $0 -o $0x `mpic++ -showme:link|sed 's/-pthread/ /g'` -lfftw3 -lfftw3_mpi &&time mpirun -n 4 $0x&&rm $0x;exit
+#ln -sf $0 $0.cpp;mpicxx -g -I$HOME/prj/alf $0.cpp -o $0x -lfftw3 -lfftw3_mpi&&time mpirun -n 4 $0x&&rm $0x $0.cpp;exit
+ ln -sf $0 $0.cpp;mpicxx -g -I$HOME/prj/alf $0.cpp -o $0x -lfftw3 -lfftw3_mpi&&time mpirun -n 4 valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --suppressions=$HOME/prj/alf/boost/mpi3/test/communicator_main.cpp.openmpi.supp --error-exitcode=1 $0x&&rm $0x $0.cpp;exit
 #endif
 // © Alfredo A. Correa 2020
 // apt-get install libfftw3-mpi-dev
@@ -10,6 +11,8 @@ $CXXX $CXXFLAGS -I$HOME/prj/alf `mpic++ -showme:compile|sed 's/-pthread/ /g'` $0
 
 #include<boost/mpi3/communicator.hpp>
 #include<boost/mpi3/environment.hpp>
+
+#include "../fftw.hpp"
 
 #include <fftw3-mpi.h>
 
@@ -44,12 +47,11 @@ struct array<T, multi::dimensionality_type{2}, Alloc>{
 	mutable bmpi3::communicator comm_;
 	Alloc           alloc_;
 
-	ptrdiff_t       local_count_;
-	T*              local_data_;
-	array_ptr<T, 2> local_ptr_;
-	ptrdiff_t       n0_;
+	typename std::allocator_traits<Alloc>::size_type                local_count_;
+	array_ptr<T, 2, typename std::allocator_traits<Alloc>::pointer> local_ptr_;
+	ptrdiff_t                                                       n0_;
 
-	static auto local_count_2d(multi::extensions_type_<2> ext, boost::mpi3::communicator const& comm){
+	static typename std::allocator_traits<Alloc>::size_type local_count_2d(multi::extensions_type_<2> ext, boost::mpi3::communicator const& comm){
 		ptrdiff_t local_n0, local_0_start;
 		auto count = fftw_mpi_local_size_2d(std::get<0>(ext).size(), std::get<1>(ext).size(), comm.get(), &local_n0, &local_0_start);
 		assert( count >= local_n0*std::get<1>(ext).size() );
@@ -65,8 +67,7 @@ struct array<T, multi::dimensionality_type{2}, Alloc>{
 		comm_{std::move(comm)},
 		alloc_{alloc},
 		local_count_{local_count_2d(ext, comm_)},
-		local_data_ {local_count_?alloc_.allocate(local_count_):nullptr},
-		local_ptr_  {local_data_, local_extension_2d(ext, comm_)},
+		local_ptr_  {alloc_.allocate(local_count_), local_extension_2d(ext, comm_)},
 		n0_{multi::layout_t<2>(ext).size()}
 	{
 		if(not std::is_trivially_default_constructible<element_type>{})
@@ -74,40 +75,38 @@ struct array<T, multi::dimensionality_type{2}, Alloc>{
 	}
 	bmpi3::communicator& comm() const&{return comm_;}
 	array(array const& other) :
-		comm_{other.comm_},
-		alloc_{other.alloc_},
+		comm_       {other.comm_},
+		alloc_      {other.alloc_},
 		local_count_{other.local_count_},
-		local_data_ {local_count_?alloc_.allocate(local_count_):nullptr},
-		local_ptr_  {local_data_, local_extension_2d(other.extensions(), comm_)},
+		local_ptr_  {alloc_.allocate(local_count_), local_extension_2d(other.extensions(), comm_)},
 		n0_{multi::layout_t<2>(other.extensions()).size()}
 	{}
 	array(array&& other) :
-		comm_{std::move(other.comm_)},
-		alloc_{std::move(other.alloc_)},
+		comm_       {std::move(other.comm_)},
+		alloc_      {std::move(other.alloc_)},
 		local_count_{std::exchange(other.local_count_, 0)},
-		local_data_ {std::exchange(other.local_data_, nullptr)},
-		local_ptr_  {local_data_, local_extension_2d(other.extensions(), comm_)},
-		n0_{std::exchange(other.n0_, 0)}
+		local_ptr_  {std::exchange(other.local_ptr_, nullptr)},
+		n0_{multi::layout_t<2>(other.extensions()).size()}
 	{}
 	explicit array(multi::array<T, 2> const& other, bmpi3::communicator comm = mpi3::environment::self(), Alloc alloc = {}) :
 		array(other.extensions(), comm, alloc)
 	{
 	//	static_assert(std::is_trivially_default_constructible<element_type>{}, "!");
-		local() = other.stenciled(std::get<0>(local().extensions()), std::get<1>(local().extensions()));
+		local_stencil() = other.stenciled(std::get<0>(local_stencil().extensions()), std::get<1>(local_stencil().extensions()));
 	}
 	bool empty() const{return extensions().num_elements();}
-	array_ref <T, 2> local()            &{return *local_ptr_;}
-	array_cref<T, 2> local()       const&{return *local_ptr_;}
+	array_ref <T, 2> local_stencil()      &{return *local_ptr_;}
+	array_cref<T, 2> local_stencil() const&{return *local_ptr_;}
 	ptrdiff_t        local_count() const&{return  local_count_;}
-	multi::extensions_type_<2> extensions() const&{return {n0_, std::get<1>(local().extensions())};}
+	multi::extensions_type_<2> extensions() const&{return {n0_, std::get<1>(local_stencil().extensions())};}
 	ptrdiff_t num_elements() const&{return multi::layout_t<2>(extensions()).num_elements();}
 	operator multi::array<T, 2>() const&{ static_assert( std::is_trivially_copy_assignable<T>{}, "!" );
 		multi::array<T, 2> ret(extensions(), alloc_);
-		comm_.all_gatherv_n(local().data_elements(), local().num_elements(), ret.data_elements());
+		comm_.all_gatherv_n(local_stencil().data_elements(), local_stencil().num_elements(), ret.data_elements());
 		return ret;
 	}
 	array& operator=(multi::array<T, 2> const& other) &{
-		if(other.extensions() == extensions()) local() = other.stenciled(std::get<0>(local().extensions()), std::get<1>(local().extensions()));
+		if(other.extensions() == extensions()) local_stencil() = other.stenciled(std::get<0>(local_stencil().extensions()), std::get<1>(local_stencil().extensions()));
 		else{
 			array tmp{other};
 			std::swap(*this, tmp);
@@ -116,35 +115,39 @@ struct array<T, multi::dimensionality_type{2}, Alloc>{
 	}
 	bool operator==(multi::array<T, 2> const& other) const&{
 		if(other.extensions() != extensions()) return false;
-		return comm_&=(local() == other.stenciled(std::get<0>(local().extensions()), std::get<1>(local().extensions())));
+		return comm_&=(local_stencil() == other.stenciled(std::get<0>(local_stencil().extensions()), std::get<1>(local_stencil().extensions())));
 	}
 	friend bool operator==(multi::array<T, 2> const& other, array const& self){
 		return self.operator==(other);
 	}
 	bool operator==(array<T, 2> const& other) const&{assert(comm_==other.comm_);
-		return comm_&=(local() == other.local());
+		return comm_&=(local_stencil() == other.local_stencil());
 	}
 	array& operator=(array const& other)&{
 		if(other.extensions() == this->extensions() and other.comm_ == other.comm_)
-			local() = other.local();
+			local_stencil() = other.local_stencil();
 		else assert(0);
 		return *this;
 	}
-	~array() noexcept{if(local_count_) alloc_.deallocate(local_data_, local_count_);}
+	~array() noexcept{alloc_.deallocate(local_stencil().data_elements(), local_count_);}
 };
 
-array<std::complex<double>, 2>& dft_forward(array<std::complex<double>, 2> const& A, array<std::complex<double>, 2>& B){
+array<std::complex<double>, 2>& dft(array<std::complex<double>, 2> const& A, array<std::complex<double>, 2>& B, fftw::sign s){
 	assert( A.extensions() == B.extensions() );
 	assert( A.comm() == B.comm() );
 	fftw_plan p = fftw_mpi_plan_dft_2d(
 		std::get<0>(A.extensions()).size(), std::get<1>(A.extensions()).size(), 
-		(fftw_complex *)A.local().data_elements(), (fftw_complex *)A.local().data_elements(), 
+		(fftw_complex *)A.local_stencil().data_elements(), (fftw_complex *)B.local_stencil().data_elements(), 
 		A.comm().get(),
-		FFTW_FORWARD, FFTW_ESTIMATE
+		s, FFTW_ESTIMATE
 	);
 	fftw_execute(p);
 	fftw_destroy_plan(p);
 	return B;
+}
+
+array<std::complex<double>, 2>& dft_forward(array<std::complex<double>, 2> const& A, array<std::complex<double>, 2>& B){
+	return dft(A, B, fftw::forward);
 }
 
 array<std::complex<double>, 2> dft_forward(array<std::complex<double>,2> const& A){
@@ -166,40 +169,21 @@ namespace multi = boost::multi;
 int mpi3::main(int, char*[], mpi3::communicator world){
 	multi::fftw::mpi::environment fenv;
 
-	multi::fftw::mpi::array<std::complex<double>, 2> A({41, 321}, world);//{10, 10125, 345}, world);
+	multi::fftw::mpi::array<std::complex<double>, 2> A({41, 321}, world);
 
 	mpi3::ostream os{world};
 	os<< "global sizes" << std::get<0>(A.extensions()) <<'x'<< std::get<1>(A.extensions()) <<' '<< A.num_elements() <<std::endl;
-	os<< A.local().extension() <<'x'<< std::get<1>(A.local().extensions()) <<"\t#="<< A.local().num_elements() <<" allocated "<< A.local_count() <<std::endl;
+	os<< A.local_stencil().extension() <<'x'<< std::get<1>(A.local_stencil().extensions()) <<"\t#="<< A.local_stencil().num_elements() <<" allocated "<< A.local_count() <<std::endl;
 
 	{
-		auto x = A.local().extensions();
+		auto x = A.local_stencil().extensions();
 		for(auto i : std::get<0>(x))
 			for(auto j : std::get<1>(x))
-				A.local()[i][j] = std::complex<double>(i + j, i + 2*j);
+				A.local_stencil()[i][j] = std::complex<double>(i + j, i + 2*j + 1)/std::abs(std::complex<double>(i + j, i + 2*j + 1));
 	}
 	
 	multi::array<std::complex<double>, 2> A2 = A;
 	assert( A2 == A );
-	
-	multi::fftw::mpi::array<std::complex<double>, 2> B(A2, world);
-	assert( B == A );
-
-	{
-		auto x = A2.extensions();
-		for(auto i : std::get<0>(x))
-			for(auto j : std::get<1>(x))
-				assert( A2[i][j] == std::complex<double>(i + j, i + 2*j) );
-	}
-	
-	{
-		auto x = A2.extensions();
-		for(auto i : std::get<0>(x))
-			for(auto j : std::get<1>(x))
-				A2[i][j] = std::complex<double>(i*j, i - 2*j) ;
-	}
-
-	A = A2;
 	
 	using multi::fftw::dft_forward;
 
@@ -207,14 +191,15 @@ int mpi3::main(int, char*[], mpi3::communicator world){
 	dft_forward(A2, A2);
 
 	{
-		auto x = A.local().extensions();
+		auto x = A.local_stencil().extensions();
 		for(auto i : std::get<0>(x))
 			for(auto j : std::get<1>(x))
-				if(not( std::abs(A.local()[i][j] - A2[i][j]) < 1e-8 )){
-					std::cout << A.local()[i][j] - A2[i][j] <<' '<< std::abs(A.local()[i][j] - A2[i][j]) << std::endl;
+				if(not( std::abs(A.local_stencil()[i][j] - A2[i][j]) < 1e-12 )){
+					std::cout << A.local_stencil()[i][j] - A2[i][j] <<' '<< std::abs(A.local_stencil()[i][j] - A2[i][j]) << std::endl;
 				}
 	}
 	return 0;
 }
 #endif
+
 
