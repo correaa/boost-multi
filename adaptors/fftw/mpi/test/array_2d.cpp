@@ -21,7 +21,7 @@ int mpi3::main(int, char*[], mpi3::communicator world){
 		auto x = G.local_stencil().extensions();
 		for(auto i : std::get<0>(x))
 			for(auto j : std::get<1>(x))
-				G.local_stencil()[i][j] = std::complex<double>(i + j, i + 2*j);
+				G.local_cutout()[i][j] = std::complex<double>(i + j, i + 2*j);
 	}
 	
 	multi::array<std::complex<double>, 2> L = G; // world replicas
@@ -36,7 +36,7 @@ int mpi3::main(int, char*[], mpi3::communicator world){
 		auto x = G.local_stencil().extensions();
 		for(auto i : std::get<0>(x))
 			for(auto j : std::get<1>(x))
-				if(not(std::abs(G.local_stencil()[i][j] - L[i][j]) < 1e-8)) std::cout<< std::abs(G.local_stencil()[i][j] - L[i][j]) << std::endl;
+				if(not(std::abs(G.local_cutout()[i][j] - L[i][j]) < 1e-8)) std::cout<< std::abs(G.local_cutout()[i][j] - L[i][j]) << std::endl;
 	}
 	return 0;
 }
