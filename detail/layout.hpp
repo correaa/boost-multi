@@ -287,6 +287,7 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 		friend typename layout_t<D + 1>::extensions_type_ operator*(index_extension const& ie, extensions_type_ const& self){
 			return {std::tuple_cat(std::make_tuple(ie), self.base())};
 		}
+		explicit operator bool() const{return not layout_t{*this}.empty();}
 		template<class Archive, std::size_t... I>
 		void serialize_impl(Archive& ar, std::index_sequence<I...>){
 		//	using boost::serialization::make_nvp;
@@ -523,6 +524,8 @@ BOOST_AUTO_TEST_CASE(multi_layout_with_offset){
 	}
 }
 
+template<class T> void whats(T&&) = delete;
+
 BOOST_AUTO_TEST_CASE(multi_layout){
 //	auto t = std::make_tuple(1.,2.,3.);
 //	auto u = multi::detail::reverse(t);
@@ -538,6 +541,8 @@ BOOST_AUTO_TEST_CASE(multi_layout){
 	multi::iextensions<0> x{};
 	multi::layout_t<0> L(x);
 }{  multi::layout_t<1> L{}; assert( dimensionality(L)==1 and num_elements(L) == 0 and size(L) == 0 and size(extension(L))==0 and stride(L)!=0 and is_empty(L) );
+	multi::iextensions<2> x(2, 3);
+	whats( multi::iextensions<2>(2, 5).operator bool() );
 }{
 	multi::layout_t<2> L({2, 10}); 
 	assert( dimensionality(L)==2 );

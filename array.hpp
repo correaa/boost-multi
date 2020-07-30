@@ -1135,6 +1135,7 @@ int main(){
 		assert( size(rotated(A)) == 1 );
 		assert( stride(A) == 1 );
 		assert( stride(rotated(A)) == 1 );
+		assert( A.extensions() );
 	}
 	{
 		multi::array<double, 1> A = {1};
