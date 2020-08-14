@@ -11,7 +11,7 @@ $CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #include "../config/NODISCARD.hpp"
 
 #include<type_traits> // make_signed_t
-
+#include<iostream>
 #include<limits>
 
 namespace boost{
@@ -151,6 +151,7 @@ public:
 		template<class Archive>
 		void serialize(Archive& ar, unsigned){ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<0>(*this));}
 		static constexpr dimensionality_type dimensionality = 1;
+		friend std::ostream& operator<<(std::ostream& os, extensions_type_ const& s){return os<<'x'<< std::get<0>(s);}
 	};
 	using extensions_type = extensions_type_;
 	using strides_type = std::tuple<index>;
@@ -298,6 +299,14 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 		template<class Archive>
 		void serialize(Archive& ar, unsigned){
 			serialize_impl(ar, std::make_index_sequence<D>{});
+		}
+		template<std::size_t I, std::size_t... Is>
+		friend void print_impl(std::ostream& os, std::index_sequence<I, Is...>, extensions_type_ const& self){
+			os<<std::get<I>(self);
+			(void)std::initializer_list<int>{(os<<'x'<<std::get<Is>(self), 0)...};
+		}
+		friend std::ostream& operator<<(std::ostream& os, extensions_type_ const& self){
+			print_impl(os, std::make_index_sequence<D>{}, self); return os;
 		}
 		static constexpr dimensionality_type dimensionality = D;
 	private:
@@ -481,13 +490,21 @@ constexpr auto sizes_as(Layout const& self)
 
 }}
 
+//#if defined(__cpp_structured_bindings) and (__cpp_structured_bindings >=201606)
 namespace std{
 	template<> struct tuple_size<boost::multi::extensions_type_<0>> : std::integral_constant<boost::multi::dimensionality_type, 0>{};
 	template<> struct tuple_size<boost::multi::extensions_type_<1>> : std::integral_constant<boost::multi::dimensionality_type, 1>{};
 	template<> struct tuple_size<boost::multi::extensions_type_<2>> : std::integral_constant<boost::multi::dimensionality_type, 2>{};
 	template<> struct tuple_size<boost::multi::extensions_type_<3>> : std::integral_constant<boost::multi::dimensionality_type, 3>{};
 	template<> struct tuple_size<boost::multi::extensions_type_<4>> : std::integral_constant<boost::multi::dimensionality_type, 4>{};
+	
+	template<std::size_t I> struct tuple_element<I, boost::multi::extensions_type_<0>>{using type = boost::multi::iextension;};
+	template<std::size_t I> struct tuple_element<I, boost::multi::extensions_type_<1>>{using type = boost::multi::iextension;};
+	template<std::size_t I> struct tuple_element<I, boost::multi::extensions_type_<2>>{using type = boost::multi::iextension;};
+	template<std::size_t I> struct tuple_element<I, boost::multi::extensions_type_<3>>{using type = boost::multi::iextension;};
+	template<std::size_t I> struct tuple_element<I, boost::multi::extensions_type_<4>>{using type = boost::multi::iextension;};
 }
+//#endif
 
 #if not __INCLUDE_LEVEL__ // _TEST_MULTI_LAYOUT
 
@@ -541,8 +558,6 @@ BOOST_AUTO_TEST_CASE(multi_layout){
 	multi::iextensions<0> x{};
 	multi::layout_t<0> L(x);
 }{  multi::layout_t<1> L{}; assert( dimensionality(L)==1 and num_elements(L) == 0 and size(L) == 0 and size(extension(L))==0 and stride(L)!=0 and is_empty(L) );
-	multi::iextensions<2> x(2, 3);
-	whats( multi::iextensions<2>(2, 5).operator bool() );
 }{
 	multi::layout_t<2> L({2, 10}); 
 	assert( dimensionality(L)==2 );
