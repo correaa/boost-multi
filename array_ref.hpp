@@ -128,6 +128,7 @@ struct basic_array_ptr :
 	using pointer = Ref const*;
 	using element_type = typename Ref::decay_type;
 	using difference_type = typename Layout::difference_type;
+	using element_ptr = typename Ref::element_ptr;
 
 	using value_type = element_type;
 	using reference = Ref const&;
@@ -208,6 +209,7 @@ struct array_iterator :
 	multi::affine<array_iterator<Element, D, Ptr, Ref>, multi::difference_type>,
 	multi::totally_ordered2<array_iterator<Element, D, Ptr, Ref>, void>
 {
+	constexpr static dimensionality_type dimensionality = D;
 	using difference_type = typename layout_t<D>::difference_type;
 	using value_type = typename Ref::decay_type;
 	using pointer = Ref*;
@@ -220,6 +222,9 @@ struct array_iterator :
 	using element = typename Ref::element;
 	using element_ptr = typename Ref::element_ptr;
 	using stride_type = index;
+	
+	
+	
 	constexpr array_iterator(std::nullptr_t p = nullptr) : ptr_{p}, stride_{1}{}//Ref{p}{}
 	template<class, dimensionality_type, class, class> friend struct array_iterator;
 	template<class Other, typename = decltype(typename Ref::types::element_ptr{typename Other::element_ptr{}})> 
@@ -864,6 +869,8 @@ struct array_iterator<Element, 1, Ptr, Ref> :
 {
 	using affine = multi::affine<array_iterator<Element, 1, Ptr, Ref>, multi::difference_type>;
 	using difference_type = typename affine::difference_type;
+	using size_type = difference_type;
+	constexpr static dimensionality_type dimensionality = 1;
 
 	array_iterator() = default;
 	array_iterator(array_iterator const& other) = default;
@@ -1274,7 +1281,9 @@ constexpr decltype(auto) static_array_cast(Array&& a, Args&&... args){
 }
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*>
-struct NODISCARD_CLASS("!") array_ref : 
+struct 
+// NODISCARD_CLASS("!")  // not working on gcc10
+array_ref : 
 //TODO	multi::partially_ordered2<array_ref<T, D, ElementPtr>, void>,
 	basic_array<T, D, ElementPtr>
 {
@@ -1324,9 +1333,9 @@ public:
 		return array_ref::copy_elements(o.data_elements()), std::move(*this);
 	}
 	template<typename TT, dimensionality_type DD = D, class... As>
-	array_ref&& operator=(array_ref<TT, DD, As...> const& o)&&{assert(this->extensions() == o.extensions());
-		return adl_copy_n(o.data(), o.num_elements(), this->data()), std::move(*this);
-	}
+	auto operator=(array_ref<TT, DD, As...> const& o)&&
+	->decltype(adl_copy_n(o.data_elements(), o.num_elements(), array_ref::data_elements()), std::move(*this)){assert(this->extensions() == o.extensions());
+		return adl_copy_n(o.data_elements(), o.num_elements(), array_ref::data_elements()), std::move(*this);}
 	
 	using  elements_type = array_ref<typename array_ref::element_type, 1, typename array_ref::element_ptr      >;
 	using celements_type = array_ref<typename array_ref::element_type, 1, typename array_ref::element_const_ptr>;
@@ -1390,16 +1399,12 @@ using array_mref = array_ref<
 template<class T, dimensionality_type D, typename Ptr = T*>
 struct array_ptr : basic_array_ptr<basic_array<T, D, Ptr>, typename array_ref<T, D, Ptr>::layout_t>{
 	using basic_ptr = basic_array_ptr<basic_array<T, D, Ptr>, typename array_ref<T, D, Ptr>::layout_t>;
-//	using basic_ptr = basic_array_ptr<array_ref<T, D, Ptr>, typename array_ref<T, D, Ptr>::layout_t>;
-//	using basic_ptr::basic_ptr;//array_ptr<array_ref<T, D, Ptr>, typename array_ref<T, D, Ptr>::layout_t>::basic_array_ptr;
 public:
-	array_ptr(Ptr p, index_extensions<D> x) : basic_ptr(p, multi::layout_t<D>{x}){}
-	array_ptr(std::nullptr_t) : basic_ptr(nullptr, multi::layout_t<D>{}){}
+	array_ptr(typename array_ptr::element_ptr p, index_extensions<D> x) : basic_ptr(p, multi::layout_t<D>{x}){}
+	array_ptr(std::nullptr_t = nullptr) : basic_ptr(nullptr, multi::layout_t<D>{}){}
 	template<class TT, std::size_t N>
 	constexpr array_ptr(TT(*t)[N]) : basic_ptr(data_elements(*t), layout(*t)){}
-	array_ref<T, D, Ptr> operator*() const{
-		return {this->base(), (*this)->extensions()};//multi::layout_t<D>{x}};
-	}
+	array_ref<T, D, typename array_ptr::element_ptr> operator*() const{return {this->base(), (*this)->extensions()};}
 };
 
 template<class TT, std::size_t N>
