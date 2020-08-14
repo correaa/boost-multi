@@ -309,7 +309,7 @@ public:
 	friend auto data_elements(static_array const& self){return self.data_elements();}
 	friend auto data_elements(static_array      & self){return self.data_elements();}
 	friend auto data_elements(static_array     && self){return std::move(self).data_elements();}
-
+  
 	constexpr typename static_array::element_ptr       base()      {return ref::base();}
 	constexpr typename static_array::element_const_ptr base() const{return typename static_array::element_const_ptr{ref::base()};}
 	friend typename static_array::element_ptr       base(static_array&       s){return s.base();}

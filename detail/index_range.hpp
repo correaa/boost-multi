@@ -113,6 +113,7 @@ public:
 		using difference_type = std::ptrdiff_t;
 		const_iterator() = default;
 		constexpr auto operator==(const_iterator const& y) const{return curr_ == y.curr_;}
+		constexpr auto operator!=(const_iterator const& y) const{return curr_ != y.curr_;}
 		constexpr auto operator<(const_iterator const& y) const{return curr_ < y.curr_;}
 		constexpr const_iterator& operator++(){++curr_; return *this;}
 		constexpr const_iterator& operator--(){--curr_; return *this;}
@@ -220,6 +221,7 @@ struct extension_t : public range<IndexType, IndexTypeLast>{
 	}
 	IndexType start () const{return this->first();}
 	IndexType finish() const{return this->last ();}
+	explicit operator bool() const{return this->size();}
 	friend constexpr auto operator==(extension_t const& a, extension_t const& b){return static_cast<range<IndexType> const&>(a)==static_cast<range<IndexType> const&>(b);}
 	friend constexpr auto operator!=(extension_t const& a, extension_t const& b){return not(a==b);}
 };
