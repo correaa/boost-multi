@@ -181,9 +181,9 @@ public:
 	static auto copy_n(
 		managed::ptr<T1, A1...> first, Size count, 
 		managed::ptr<T2, A2...> result
-	){
-		return adl_copy_n(cuda::ptr<T1>(first), count, cuda::ptr<T2>(result)), result + count;
-	}
+	)
+	->decltype(adl_copy_n(cuda::ptr<T1>(first), count, cuda::ptr<T2>(result)), result + count){
+		return adl_copy_n(cuda::ptr<T1>(first), count, cuda::ptr<T2>(result)), result + count;}
 
 };
 
