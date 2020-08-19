@@ -1,4 +1,4 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
+#ifdef COMPILATION//-*- indent-tabs-mode:t;c-basic-offset:4;tab-width:4; -*-
 $CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 #ifndef MULTI_LAYOUT_HPP
@@ -16,7 +16,6 @@ $CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 
 namespace boost{
 namespace multi{
-
 namespace detail{
 
 template<typename T, typename... As>
