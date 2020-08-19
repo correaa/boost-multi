@@ -59,29 +59,24 @@ void test_2D(mpi3::communicator& comm){
 void test_2D_complex(mpi3::communicator& comm){
 
 	using complex = std::complex<double>;
-	auto const v = []{
-		multi::array<complex, 2> v({4, 5});
-		if(auto x = v.extensions())
-			for(auto i: std::get<0>(x))
-				for(auto j: std::get<1>(x))
-					v[i][j] = std::complex<double>(i, j);
-		return v;
-	}();
+	
+	multi::array<complex, 2> v({4, 5}); using std::get;
+	if(auto x = v.extensions())
+		for(auto i: get<0>(x))
+			for(auto j: get<1>(x))
+				v[i][j] = complex(i, j);
 
 	switch(comm.rank()){
 		case 0:
-			comm.send(begin(v), end(v), 1);
-			return;
+			comm.send(begin(v), end(v), 1); break;
 		case 1:
 			multi::array<complex, 2> w(extensions(v), 99.);
 			comm.receive(begin(w), end(w), 0); 
 			assert( w[2][3] == std::complex<double>(2., 3.) );
-			return;
+			break;
 	}
-	assert(0);
 
 }
-
 
 void test_3D(mpi3::communicator& comm){
 
