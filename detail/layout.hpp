@@ -10,6 +10,8 @@ $CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #include "../detail/operators.hpp"
 #include "../config/NODISCARD.hpp"
 
+#include<boost/serialization/nvp.hpp>
+
 #include<type_traits> // make_signed_t
 #include<iostream>
 #include<limits>
@@ -268,8 +270,8 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 		void serialize_impl(Archive& ar, std::index_sequence<I...>){
 		//	using boost::serialization::make_nvp;
 		//	(void)std::initializer_list<int>{(ar & make_nvp("extension", std::get<I>(*this)),0)...};
-			(void)std::initializer_list<int>{(ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<I>(*this)),0)...};
-		//	(void)std::initializer_list<int>{(ar & boost::serialization::nvp<std::remove_reference_t<decltype(std::get<I>(*this))> >{"extension", std::get<I>(*this)},0)...};
+		//	(void)std::initializer_list<int>{(ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<I>(*this)),0)...};
+			(void)std::initializer_list<int>{(ar & boost::serialization::make_nvp("item", std::get<I>(*this)),0)...};
 		}
 		template<class Archive>
 		void serialize(Archive& ar, unsigned){

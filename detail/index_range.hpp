@@ -1,4 +1,4 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
+#ifdef COMPILATION// -*- indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil -*-
 $CXXX $CXXFLAGS $0 -o $0x &&$0x&&rm $0x;exit
 #endif
 
@@ -10,8 +10,9 @@ $CXXX $CXXFLAGS $0 -o $0x &&$0x&&rm $0x;exit
 #include<limits> // numeric_limits
 #include<iterator> // std::random_iterator_tag // std::reverse_iterator
 
+#include<boost/serialization/nvp.hpp>
+
 #if 0
-//#include<boost/serialization/nvp.hpp>
 namespace boost{
 namespace serialization{
 	template<class> struct nvp;
@@ -75,10 +76,10 @@ class range{
 public:
 	template<class Archive>
 	void serialize(Archive& ar, unsigned){
-//		ar & boost::serialization::make_nvp("first", first_);//BOOST_SERIALIZATION_NVP(first);
-//		ar & boost::serialization::make_nvp("last", last_);//BOOST_SERIALIZATION_NVP(last);
-		ar & multi::archive_traits<std::decay_t<Archive>>::make_nvp("first", first_);//BOOST_SERIALIZATION_NVP(first); !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! if you get an error here you need to include the adators/serialization/xml_archive.hpp !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
-		ar & multi::archive_traits<std::decay_t<Archive>>::make_nvp("last", last_);//BOOST_SERIALIZATION_NVP(last);
+	//	auto& first = first_; ar & BOOST_SERIALIZATION_NVP(first);
+	//	auto& last  = last_;  ar & BOOST_SERIALIZATION_NVP(last);
+		ar & multi::archive_traits<std::decay_t<Archive>>::make_nvp("first", first_);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! if you get an error here you need to include the adators/serialization/xml_archive.hpp !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+		ar & multi::archive_traits<std::decay_t<Archive>>::make_nvp("last" , last_ );
 	}
 	using value_type      = IndexType;
 	using difference_type = decltype(IndexTypeLast{} - IndexType{});// std::make_signed_t<value_type>;
