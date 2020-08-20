@@ -1162,8 +1162,8 @@ public:
 	decltype(auto) operator<<(dimensionality_type i) const{return rotated(i);}
 	decltype(auto) operator>>(dimensionality_type i) const{return unrotated(i);}
 
-	using iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_ptr, typename types::reference>;
-	using const_iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_const_ptr>;
+	using         iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_ptr      , typename types::reference>;
+	using   const_iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_const_ptr>;
 	using reverse_iterator = std::reverse_iterator<iterator>;
 
 	constexpr const_iterator begin()const&{return {this->base_, this->stride_};}
