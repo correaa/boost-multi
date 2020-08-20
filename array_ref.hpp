@@ -376,7 +376,10 @@ public:
 	using decay_type = array<typename types::element_type, D, typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type>;//get_allocator_(std::declval<ElementPtr>()))>;
 	template<class Archive>
 	auto serialize(Archive& ar, unsigned int /*file version*/){
-		std::for_each(this->begin(), this->end(), [&](auto&& e){ar & multi::archive_traits<Archive>::make_nvp("item", e);});
+		std::for_each(this->begin(), this->end(), [&](auto&& item){
+			ar & multi::archive_traits<Archive>::make_nvp("item", item);
+		//	ar & BOOST_SERIALIZATION_NVP(item);
+		});
 	}
 
 	decay_type decay() const{
@@ -1051,7 +1054,10 @@ public:
 	}
 	template<class Archive>
 	auto serialize(Archive& ar, unsigned){
-		std::for_each(this->begin(), this->end(),[&](auto&& e){ar& multi::archive_traits<Archive>::make_nvp("item",e);});
+		std::for_each(this->begin(), this->end(), [&](auto&& item){
+			ar & multi::archive_traits<Archive>::make_nvp("item", item);
+		//	ar & BOOST_SERIALIZATION_NVP(item);
+		});
 	}
 	basic_array& operator=(basic_array const& o)&{assert(this->extension() == o.extension()); 	// TODO make sfinae friendly
 		return this->assign(o.begin(), o.end()), *this; // TODO improve performance by rotating
@@ -1332,11 +1338,17 @@ public:
 	array_ref&& operator=(array_ref const& o) &&{assert(this->num_elements()==o.num_elements());
 		return array_ref::copy_elements(o.data_elements()), std::move(*this);
 	}
-	template<typename TT, dimensionality_type DD = D, class... As>
-	auto operator=(array_ref<TT, DD, As...> const& o)&&
-	->decltype(adl_copy_n(o.data_elements(), o.num_elements(), array_ref::data_elements()), std::move(*this)){assert(this->extensions() == o.extensions());
-		return adl_copy_n(o.data_elements(), o.num_elements(), array_ref::data_elements()), std::move(*this);}
-	
+
+//  this creates problems with nvcc
+//	template<typename TT, dimensionality_type DD = D, class... As>
+//	auto operator=(array_ref<TT, DD, As...> const& o)&&
+//	->decltype(adl_copy_n(o.data_elements(), o.num_elements(), array_ref::data_elements()), std::move(*this)){assert(this->extensions() == o.extensions());
+//		return adl_copy_n(o.data_elements(), o.num_elements(), array_ref::data_elements()), std::move(*this);}
+	template<typename TT, class... As, class=std::enable_if_t<std::is_assignable<typename array_ref::element_type&, TT>{}> >
+	array_ref&& operator=(array_ref<TT, array_ref::dimensionality, As...> const& o)&&{assert(this->extensions() == o.extensions());
+		return adl_copy_n(o.data(), o.num_elements(), this->data()), std::move(*this);
+	}
+
 	using  elements_type = array_ref<typename array_ref::element_type, 1, typename array_ref::element_ptr      >;
 	using celements_type = array_ref<typename array_ref::element_type, 1, typename array_ref::element_const_ptr>;
 
