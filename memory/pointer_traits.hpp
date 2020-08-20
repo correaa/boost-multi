@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2020
 
@@ -7,6 +7,7 @@ $CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #define MULTI_POINTER_TRAITS_HPP
 
 #include<memory> 
+#include<type_traits> // std::conditional
 
 namespace boost{
 namespace multi{
@@ -44,7 +45,7 @@ default_allocator_of(P const& p){return pointer_traits<P>::default_allocator_of(
 //	using default_allocator_type = std::allocator<typename std::iterator_traits<Pointer>::value_type>;
 //};
 
-template<std::size_t I> struct Priority : std::conditional_t<I==0, std::true_type, struct Priority<I-1>>{}; 
+template<std::size_t I> struct Priority : std::conditional<I==0, std::true_type, struct Priority<I-1>>::type{}; 
 
 template<class Pointer> std::allocator<typename std::iterator_traits<Pointer>::value_type> dat_aux(Priority<0>, Pointer);
 template<class T> std::allocator<typename std::iterator_traits<T*>::value_type> dat_aux(Priority<1>, T*);
