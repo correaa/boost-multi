@@ -358,7 +358,7 @@ public:
   #endif
 #else
 	template<class TT>
-	[[deprecated("because it implies slow memory access, suround code with CUDA_SLOW")]]
+	[[SLOW]]  //	[[deprecated("because it implies slow memory access, suround code with CUDA_SLOW")]]
 	__host__ auto operator=(TT&& t) && 
 	->decltype(*pimpl_.rp_ = std::forward<TT>(t), std::move(*this)){	//	assert(0);
 		static_assert(std::is_trivially_assignable<T&, TT&&>{}, "!");
@@ -370,7 +370,7 @@ public:
 #endif
 #else
 	template<class TT>
-	[[deprecated("because it implies slow memory access, suround code with CUDA_SLOW")]]
+	[[SLOW]] //	[[deprecated("because it implies slow memory access, suround code with CUDA_SLOW")]]
 	auto operator=(TT&& t) && 
 	->decltype(*pimpl_.rp_ = std::forward<TT>(t), std::move(*this)){	//	assert(0);
 		static_assert(std::is_trivially_assignable<T&, TT&&>{}, "!");
