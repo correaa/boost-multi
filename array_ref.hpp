@@ -444,11 +444,15 @@ public:
 	}
 
 	basic_const_array sliced(index first, index last) const&{
+		MULTI_ACCESS_ASSERT(this->extension().contains(first )&&"out of bounds");
+		MULTI_ACCESS_ASSERT(this->extension().contains(last-1)&&"out of bounds");
 		typename types::layout_t new_layout = *this;
 		(new_layout.nelems_/=Layout::size())*=(last - first);
 		return {new_layout, types::base_ + Layout::operator()(first)};
 	}
 	basic_array sliced(index first, index last)&{
+		MULTI_ACCESS_ASSERT(this->extension().contains(first )&&"out of bounds");
+		MULTI_ACCESS_ASSERT(this->extension().contains(last-1)&&"out of bounds");
 		typename types::layout_t new_layout = *this;
 		(new_layout.nelems_/=Layout::size())*=(last - first);
 		return {new_layout, types::base_ + Layout::operator()(first)};
@@ -965,7 +969,8 @@ struct basic_array<T, dimensionality_type{0}, ElementPtr, Layout> :
 	operator element_ref()&&{return *(this->base_);}
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int){
-		ar & multi::archive_traits<Archive>::make_nvp("element", *(this->base_));
+		ar & multi::archive_traits<Archive>::make_nvp("item", *(this->base_));
+	//	ar & BOOST_SERIALIZATION_NVP(item);
 	}
 };
 
