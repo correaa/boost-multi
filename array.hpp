@@ -717,7 +717,7 @@ public:
 	}
 	friend
 #if not defined(__NVCC__)
-	NODISCARD("cannot discard a moved array")
+//	NODISCARD("cannot discard a moved array")
 #endif
 	basic_array<typename array::element, array::dimensionality, multi::move_ptr<typename array::element> >
 	move(array& self){return self.move();}
