@@ -443,19 +443,28 @@ public:
 		return ((std::move(*this).reindexed(first)<<1).reindexed(idxs...))>>1;
 	}
 
-	basic_const_array sliced(index first, index last) const&{
+private:
+	basic_array sliced_aux(index first, index last) const&{
 		MULTI_ACCESS_ASSERT(this->extension().contains(first )&&"out of bounds");
 		MULTI_ACCESS_ASSERT(this->extension().contains(last-1)&&"out of bounds");
 		typename types::layout_t new_layout = *this;
 		(new_layout.nelems_/=Layout::size())*=(last - first);
 		return {new_layout, types::base_ + Layout::operator()(first)};
 	}
-	basic_array sliced(index first, index last)&{
-		MULTI_ACCESS_ASSERT(this->extension().contains(first )&&"out of bounds");
-		MULTI_ACCESS_ASSERT(this->extension().contains(last-1)&&"out of bounds");
-		typename types::layout_t new_layout = *this;
-		(new_layout.nelems_/=Layout::size())*=(last - first);
-		return {new_layout, types::base_ + Layout::operator()(first)};
+public:
+	basic_const_array sliced(index first, index last) const&{return sliced_aux(first, last);
+	//	MULTI_ACCESS_ASSERT(this->extension().contains(first )&&"out of bounds");
+	//	MULTI_ACCESS_ASSERT(this->extension().contains(last-1)&&"out of bounds");
+	//	typename types::layout_t new_layout = *this;
+	//	(new_layout.nelems_/=Layout::size())*=(last - first);
+	//	return {new_layout, types::base_ + Layout::operator()(first)};
+	}
+	basic_array       sliced(index first, index last)      &{return sliced_aux(first, last);
+	//	MULTI_ACCESS_ASSERT(this->extension().contains(first )&&"out of bounds");
+	//	MULTI_ACCESS_ASSERT(this->extension().contains(last-1)&&"out of bounds");
+	//	typename types::layout_t new_layout = *this;
+	//	(new_layout.nelems_/=Layout::size())*=(last - first);
+	//	return {new_layout, types::base_ + Layout::operator()(first)};
 	}
 	basic_array sliced(index first, index last) &&{return sliced(first, last);}
 
