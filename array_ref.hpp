@@ -442,9 +442,8 @@ public:
 	basic_array reindexed(typename basic_array::index first, Indexes... idxs)&&{
 		return ((std::move(*this).reindexed(first)<<1).reindexed(idxs...))>>1;
 	}
-
 private:
-	basic_array sliced_aux(index first, index last) const&{
+	basic_array sliced_mutable(index first, index last) const&{
 		MULTI_ACCESS_ASSERT(this->extension().contains(first )&&"out of bounds");
 		MULTI_ACCESS_ASSERT(this->extension().contains(last-1)&&"out of bounds");
 		typename types::layout_t new_layout = *this;
@@ -452,21 +451,9 @@ private:
 		return {new_layout, types::base_ + Layout::operator()(first)};
 	}
 public:
-	basic_const_array sliced(index first, index last) const&{return sliced_aux(first, last);
-	//	MULTI_ACCESS_ASSERT(this->extension().contains(first )&&"out of bounds");
-	//	MULTI_ACCESS_ASSERT(this->extension().contains(last-1)&&"out of bounds");
-	//	typename types::layout_t new_layout = *this;
-	//	(new_layout.nelems_/=Layout::size())*=(last - first);
-	//	return {new_layout, types::base_ + Layout::operator()(first)};
-	}
-	basic_array       sliced(index first, index last)      &{return sliced_aux(first, last);
-	//	MULTI_ACCESS_ASSERT(this->extension().contains(first )&&"out of bounds");
-	//	MULTI_ACCESS_ASSERT(this->extension().contains(last-1)&&"out of bounds");
-	//	typename types::layout_t new_layout = *this;
-	//	(new_layout.nelems_/=Layout::size())*=(last - first);
-	//	return {new_layout, types::base_ + Layout::operator()(first)};
-	}
-	basic_array sliced(index first, index last) &&{return sliced(first, last);}
+	basic_const_array sliced(index first, index last) const&{return sliced_mutable(first, last);}
+	basic_array       sliced(index first, index last)      &{return sliced_mutable(first, last);}
+	basic_array       sliced(index first, index last)     &&{return sliced_mutable(first, last);}
 
 	basic_const_array blocked(typename basic_array::index first, typename basic_array::index last) const&{return sliced(first, last).reindexed(first);}
 	basic_array blocked(typename basic_array::index first, typename basic_array::index last)&{return sliced(first, last).reindexed(first);}
