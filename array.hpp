@@ -438,7 +438,7 @@ public:
 	friend constexpr const_iterator cbegin(static_array const& self){return self.cbegin();}
 	friend constexpr const_iterator cend(static_array const& self){return self.cend();}
 
-	static_array& operator=(static_array const& other) &{
+	constexpr static_array& operator=(static_array const& other) &{
 		assert( extensions(other) == static_array::extensions() );
 		return adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements()), *this;
 	}
@@ -684,8 +684,8 @@ public:
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int version){
 		auto extensions = this->extensions();
-		ar & multi::archive_traits<Archive>::make_nvp("extensions", extensions);
-	//	ar & BOOST_SERIALIZATION_NVP(extensions);
+	//	ar & multi::archive_traits<Archive>::make_nvp("extensions", extensions);
+		ar & BOOST_SERIALIZATION_NVP(extensions);
 		if(extensions != this->extensions()){clear(); this->reextent(extensions);}
 		assert(extensions == this->extensions());
 		static_::serialize(ar, version);
@@ -715,8 +715,10 @@ public:
 		layout_t<array::dimensionality>::operator=({});
 		return ret;
 	}
+	friend
+#if not defined(__NVCC__)
 	NODISCARD("cannot discard a moved array")
-	friend 	
+#endif
 	basic_array<typename array::element, array::dimensionality, multi::move_ptr<typename array::element> >
 	move(array& self){return self.move();}
 
@@ -742,7 +744,7 @@ public:
 		static_cast<typename array::layout_t&>(*this) = exchange(static_cast<typename array::layout_t&>(other), {});
 		return *this;
 	}
-	array& operator=(array const& o){
+	constexpr array& operator=(array const& o){
 		if(array::extensions() == o.extensions()) static_::operator=(o);
 		else operator=(array{o});
 		return *this;
