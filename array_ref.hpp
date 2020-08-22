@@ -332,6 +332,10 @@ struct basic_array :
 protected:
 	using types::types;
 	template<typename, dimensionality_type, class Alloc> friend struct static_array;
+
+	template<typename ElementPtr2, class=std::enable_if_t<not std::is_same<ElementPtr2, ElementPtr>{}> >
+	basic_array(basic_array<T, D, ElementPtr2, Layout> const& other) : basic_array{other.layout(), other.base()}{}
+
 	basic_array(basic_array const&) = default;
 	template<class, class> friend struct basic_array_ptr;
 #if __cplusplus >= 201703L
