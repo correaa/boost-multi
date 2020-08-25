@@ -1,6 +1,7 @@
 #ifdef COMPILATION// -*- indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil -*-
 $CXXX $CXXFLAGS $0 -o $0x &&$0x&&rm $0x;exit
 #endif
+// © Alfredo Correa 2018-2020
 
 #ifndef MULTI_INDEX_RANGE_HPP
 #define MULTI_INDEX_RANGE_HPP
@@ -9,6 +10,7 @@ $CXXX $CXXFLAGS $0 -o $0x &&$0x&&rm $0x;exit
 
 #include<limits> // numeric_limits
 #include<iterator> // std::random_iterator_tag // std::reverse_iterator
+#include<iostream> //TODO separate io to another header
 
 #include<boost/serialization/nvp.hpp>
 
@@ -74,12 +76,12 @@ class range{
 	IndexType first_ = {};
 	IndexTypeLast last_ = first_;
 public:
-	template<class Archive>
-	void serialize(Archive& ar, unsigned){
+	template<class Ar>
+	void serialize(Ar& ar, unsigned){
 	//	auto& first = first_; ar & BOOST_SERIALIZATION_NVP(first);
 	//	auto& last  = last_;  ar & BOOST_SERIALIZATION_NVP(last);
-		ar & multi::archive_traits<std::decay_t<Archive>>::make_nvp("first", first_);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! if you get an error here you need to include the adators/serialization/xml_archive.hpp !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
-		ar & multi::archive_traits<std::decay_t<Archive>>::make_nvp("last" , last_ );
+		ar & multi::archive_traits<std::decay_t<Ar>>::make_nvp("first", first_);//!!!!!!!!!!!!!!!!!!!!!! if you get an error here you need to include the adators/serialization/xml_archive.hpp !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+		ar & multi::archive_traits<std::decay_t<Ar>>::make_nvp("last" , last_ );
 	}
 	using value_type      = IndexType;
 	using difference_type = decltype(IndexTypeLast{} - IndexType{});// std::make_signed_t<value_type>;
