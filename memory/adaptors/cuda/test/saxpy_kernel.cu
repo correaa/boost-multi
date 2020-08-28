@@ -40,8 +40,7 @@ namespace multi = boost::multi;
 
 int main(){
 
-	int N = 1<<29; // 1<<20 == 1048576
-	std::cout<< N <<std::endl;
+	int N = 1<<20; // 1<<20 == 1048576
 
 	multi::array<float, 1> x(N, 1.f);
 	multi::array<float, 1> y(N, 2.f);
