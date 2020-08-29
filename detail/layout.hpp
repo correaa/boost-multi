@@ -259,7 +259,7 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 		extensions_type_() = default;
 		template<class Array, typename = decltype(std::get<D-1>(std::declval<Array>()))> 
 		constexpr extensions_type_(Array const& t) : extensions_type_(t, std::make_index_sequence<static_cast<std::size_t>(D)>{}){}
-		extensions_type_(index_extension const& ie, typename layout_t<D-1>::extensions_type_ const& other) : extensions_type_(std::tuple_cat(std::make_tuple(ie), other.base())){}
+		constexpr extensions_type_(index_extension const& ie, typename layout_t<D-1>::extensions_type_ const& other) : extensions_type_(std::tuple_cat(std::make_tuple(ie), other.base())){}
 		base_ const& base() const{return *this;}
 		friend decltype(auto) base(extensions_type_ const& s){return s.base();}
 		friend typename layout_t<D + 1>::extensions_type_ operator*(index_extension const& ie, extensions_type_ const& self){
