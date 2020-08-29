@@ -1539,15 +1539,13 @@ auto ref(Array&& arr)->reference_wrapper<decltype(arr())>{;
 
 template<class Array>
 auto ref(Array const& arr)->reference_wrapper<decltype(arr())>{;
-	return {std::forward<Array>(arr)()};
+	return {arr()};
 }
 
 template<class Array>
 auto ref(Array& arr)->reference_wrapper<decltype(arr())>{;
-	return {std::forward<Array>(arr)()};
+	return {arr()};
 }
-
-
 
 }}
 
