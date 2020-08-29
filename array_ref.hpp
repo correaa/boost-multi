@@ -318,9 +318,9 @@ struct reference_wrapper : ArrayRef{
 	using type = ArrayRef;
 public:
 	constexpr reference_wrapper(ArrayRef const& a) : ArrayRef{a}{}
-	template<class Array> friend auto ref(Array&& arr)->reference_wrapper<decltype(arr())>;
-	template<class Array> friend auto ref(Array const& arr)->reference_wrapper<decltype(arr())>;
-	template<class Array> friend auto ref(Array& arr)->reference_wrapper<decltype(arr())>;
+//	template<class Array> friend auto ref(Array&& arr)->reference_wrapper<decltype(arr())>;
+//	template<class Array> friend auto ref(Array const& arr)->reference_wrapper<decltype(arr())>;
+//	template<class Array> friend auto ref(Array& arr)->reference_wrapper<decltype(arr())>;
 public:
 	constexpr reference_wrapper(reference_wrapper const&) = default;
 //	using ArrayRef::operator[];
