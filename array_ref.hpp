@@ -1532,20 +1532,9 @@ public:
 		return const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator[](std::forward<As>(as)...);}
 };
 
-template<class Array>
-auto ref(Array&& arr)->reference_wrapper<decltype(arr())>{;
-	return {std::forward<Array>(arr)()};
-}
-
-template<class Array>
-auto ref(Array const& arr)->reference_wrapper<decltype(arr())>{;
-	return {arr()};
-}
-
-template<class Array>
-auto ref(Array& arr)->reference_wrapper<decltype(arr())>{;
-	return {arr()};
-}
+template<typename T, dimensionality_type D, class... As> auto ref(basic_array<T, D, As...>&       arr)->reference_wrapper<decltype(          arr ())>{return {          arr()};}
+template<typename T, dimensionality_type D, class... As> auto ref(basic_array<T, D, As...> const& arr)->reference_wrapper<decltype(          arr ())>{return {          arr()};}
+template<typename T, dimensionality_type D, class... As> auto ref(basic_array<T, D, As...>&&      arr)->reference_wrapper<decltype(std::move(arr)())>{return {std::move(arr)()};}
 
 }}
 
