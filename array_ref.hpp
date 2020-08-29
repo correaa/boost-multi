@@ -1514,14 +1514,18 @@ operator/(RandomAccessIterator data, multi::iextensions<D> x){return {data, x};}
 template<class ArrayRef>
 struct reference_wrapper : ArrayRef{
 	using type = ArrayRef;
+private:
 	constexpr reference_wrapper(ArrayRef const& a) : ArrayRef{a}{}
+	template<class Array> friend auto ref(Array&& arr)->reference_wrapper<decltype(arr())>;
+public:
 	constexpr reference_wrapper(reference_wrapper const&) = default;
-	using ArrayRef::operator[];
+//	using ArrayRef::operator[];
 	template<class A>
-	constexpr decltype(auto) operator[](A&& a) const
-//	->decltype(const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator[](std::forward<A>(a))){
-	{	return const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator[](std::forward<A>(a));}
-	template<class... As> constexpr auto operator()(As&&... as) const
+	constexpr auto operator[](A&& a) const
+	->decltype(const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator[](std::forward<A>(a))){
+		return const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator[](std::forward<A>(a));}
+	template<class... As> 
+	constexpr auto operator()(As&&... as) const
 	->decltype(const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator()(std::forward<As>(as)...)){
 		return const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator[](std::forward<As>(as)...);}
 };
