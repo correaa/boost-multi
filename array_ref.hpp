@@ -408,9 +408,9 @@ public:
 		});
 	}
 
-	friend reference_wrapper<basic_array> ref(basic_array& arr){return {arr};}
-	friend reference_wrapper<basic_array> ref(basic_array&& arr){return {std::move(arr)};}
-	friend reference_wrapper<basic_array> ref(basic_array const& arr){return {arr};}
+	friend reference_wrapper<basic_array> Ref(basic_array& arr){return {arr};}
+	friend reference_wrapper<basic_array> Ref(basic_array&& arr){return {std::move(arr)};}
+	friend reference_wrapper<basic_array> Ref(basic_array const& arr){return {arr};}
 
 	decay_type decay() const{
 		decay_type ret = std::move(modify(*this));
@@ -1042,9 +1042,9 @@ public:
 		return a.template reinterpret_array_cast<T2, typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>();
 	}
 	
-	friend reference_wrapper<basic_array> ref(basic_array& arr){return {arr};}
-	friend reference_wrapper<basic_array> ref(basic_array&& arr){return {std::move(arr)};}
-	friend reference_wrapper<basic_array> ref(basic_array const& arr){return {arr};}
+	friend reference_wrapper<basic_array> Ref(basic_array& arr){return {arr};}
+	friend reference_wrapper<basic_array> Ref(basic_array&& arr){return {std::move(arr)};}
+	friend reference_wrapper<basic_array> Ref(basic_array const& arr){return {arr};}
 
 #if __cplusplus >= 201703L
 #if __INTEL_COMPILER
@@ -1540,6 +1540,23 @@ template<class TD, class Second =
 template<class RandomAccessIterator, dimensionality_type D>
 multi::array_ptr<typename std::iterator_traits<RandomAccessIterator>::value_type, D, RandomAccessIterator>
 operator/(RandomAccessIterator data, multi::iextensions<D> x){return {data, x};}
+
+#if 0
+template<class Array>
+auto ref(Array&& arr)->reference_wrapper<decltype(arr())>{;
+	return {std::forward<Array>(arr)()};
+}
+
+template<class Array>
+auto ref(Array const& arr)->reference_wrapper<decltype(arr())>{;
+	return {arr()};
+}
+
+template<class Array>
+auto ref(Array& arr)->reference_wrapper<decltype(arr())>{;
+	return {arr()};
+}
+#endif
 
 }}
 
