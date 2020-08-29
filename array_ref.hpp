@@ -312,6 +312,28 @@ struct biiterator :
 	using iterator_category = std::random_access_iterator_tag;
 };
 
+// this class (and function) should be used only in special cases when one needs to pass references as copyable variables (e.g. cuda kernel captured)
+template<class ArrayRef>
+struct reference_wrapper : ArrayRef{
+	using type = ArrayRef;
+private:
+	constexpr reference_wrapper(ArrayRef const& a) : ArrayRef{a}{}
+	template<class Array> friend auto ref(Array&& arr)->reference_wrapper<decltype(arr())>;
+	template<class Array> friend auto ref(Array const& arr)->reference_wrapper<decltype(arr())>;
+	template<class Array> friend auto ref(Array& arr)->reference_wrapper<decltype(arr())>;
+public:
+	constexpr reference_wrapper(reference_wrapper const&) = default;
+//	using ArrayRef::operator[];
+	template<class A>
+	constexpr auto operator[](A&& a) const
+	->decltype(const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator[](std::forward<A>(a))){
+		return const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator[](std::forward<A>(a));}
+	template<class... As> 
+	constexpr auto operator()(As&&... as) const
+	->decltype(const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator()(std::forward<As>(as)...)){
+		return const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator[](std::forward<As>(as)...);}
+};
+
 template<typename T, dimensionality_type D, typename ElementPtr, class Layout /*= layout_t<D>*/ >
 struct basic_array : 
 	multi::partially_ordered2<basic_array<T, D, ElementPtr, Layout>, void>,
@@ -385,6 +407,10 @@ public:
 		//	ar & BOOST_SERIALIZATION_NVP(item);
 		});
 	}
+
+	friend reference_wrapper<basic_array> ref(basic_array& arr){return {arr};}
+	friend reference_wrapper<basic_array> ref(basic_array&& arr){return {std::move(arr)};}
+	friend reference_wrapper<basic_array> ref(basic_array const& arr){return {arr};}
 
 	decay_type decay() const{
 		decay_type ret = std::move(modify(*this));
@@ -1015,6 +1041,11 @@ public:
 	template<class T2> friend auto reinterpret_array_cast(basic_array const& a){
 		return a.template reinterpret_array_cast<T2, typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>();
 	}
+	
+	friend reference_wrapper<basic_array> ref(basic_array& arr){return {arr};}
+	friend reference_wrapper<basic_array> ref(basic_array&& arr){return {std::move(arr)};}
+	friend reference_wrapper<basic_array> ref(basic_array const& arr){return {arr};}
+
 #if __cplusplus >= 201703L
 #if __INTEL_COMPILER
 public: // bug in icc c++17 return from function non copyable non moveable
@@ -1510,35 +1541,20 @@ template<class RandomAccessIterator, dimensionality_type D>
 multi::array_ptr<typename std::iterator_traits<RandomAccessIterator>::value_type, D, RandomAccessIterator>
 operator/(RandomAccessIterator data, multi::iextensions<D> x){return {data, x};}
 
-// this class (and function) should be used only in special cases when one needs to pass references as copyable variables (e.g. cuda kernel captured)
-template<class ArrayRef>
-struct reference_wrapper : ArrayRef{
-	using type = ArrayRef;
-private:
-	constexpr reference_wrapper(ArrayRef const& a) : ArrayRef{a}{}
-//	template<class Array> friend auto ref(Array&& arr)->reference_wrapper<decltype(arr())>;
-//	template<class Array> friend auto ref(Array const& arr)->reference_wrapper<decltype(arr())>;
-//	template<class Array> friend auto ref(Array& arr)->reference_wrapper<decltype(arr())>;
-	template<typename T, dimensionality_type D, class... As> friend auto ref(basic_array<T, D, As...>&       arr)->reference_wrapper<decltype(          arr ())>;
-	template<typename T, dimensionality_type D, class... As> friend auto ref(basic_array<T, D, As...> const& arr)->reference_wrapper<decltype(          arr ())>;
-	template<typename T, dimensionality_type D, class... As> friend auto ref(basic_array<T, D, As...>&&      arr)->reference_wrapper<decltype(std::move(arr)())>;
+template<class Array>
+auto ref(Array&& arr)->reference_wrapper<decltype(arr())>{;
+	return {std::forward<Array>(arr)()};
+}
 
-public:
-	constexpr reference_wrapper(reference_wrapper const&) = default;
-//	using ArrayRef::operator[];
-	template<class A>
-	constexpr auto operator[](A&& a) const
-	->decltype(const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator[](std::forward<A>(a))){
-		return const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator[](std::forward<A>(a));}
-	template<class... As> 
-	constexpr auto operator()(As&&... as) const
-	->decltype(const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator()(std::forward<As>(as)...)){
-		return const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator[](std::forward<As>(as)...);}
-};
+template<class Array>
+auto ref(Array const& arr)->reference_wrapper<decltype(arr())>{;
+	return {arr()};
+}
 
-template<typename T, dimensionality_type D, class... As> auto ref(basic_array<T, D, As...>&       arr)->reference_wrapper<decltype(          arr ())>{return {          arr()};}
-template<typename T, dimensionality_type D, class... As> auto ref(basic_array<T, D, As...> const& arr)->reference_wrapper<decltype(          arr ())>{return {          arr()};}
-template<typename T, dimensionality_type D, class... As> auto ref(basic_array<T, D, As...>&&      arr)->reference_wrapper<decltype(std::move(arr)())>{return {std::move(arr)()};}
+template<class Array>
+auto ref(Array& arr)->reference_wrapper<decltype(arr())>{;
+	return {arr()};
+}
 
 }}
 
