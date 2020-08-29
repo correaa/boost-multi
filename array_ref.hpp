@@ -1516,9 +1516,13 @@ struct reference_wrapper : ArrayRef{
 	using type = ArrayRef;
 private:
 	constexpr reference_wrapper(ArrayRef const& a) : ArrayRef{a}{}
-	template<class Array> friend auto ref(Array&& arr)->reference_wrapper<decltype(arr())>;
-	template<class Array> friend auto ref(Array const& arr)->reference_wrapper<decltype(arr())>;
-	template<class Array> friend auto ref(Array& arr)->reference_wrapper<decltype(arr())>;
+//	template<class Array> friend auto ref(Array&& arr)->reference_wrapper<decltype(arr())>;
+//	template<class Array> friend auto ref(Array const& arr)->reference_wrapper<decltype(arr())>;
+//	template<class Array> friend auto ref(Array& arr)->reference_wrapper<decltype(arr())>;
+	template<typename T, dimensionality_type D, class... As> friend auto ref(basic_array<T, D, As...>&       arr)->reference_wrapper<decltype(          arr ())>;
+	template<typename T, dimensionality_type D, class... As> friend auto ref(basic_array<T, D, As...> const& arr)->reference_wrapper<decltype(          arr ())>;
+	template<typename T, dimensionality_type D, class... As> friend auto ref(basic_array<T, D, As...>&&      arr)->reference_wrapper<decltype(std::move(arr)())>;
+
 public:
 	constexpr reference_wrapper(reference_wrapper const&) = default;
 //	using ArrayRef::operator[];
