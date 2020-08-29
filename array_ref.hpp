@@ -1005,9 +1005,9 @@ protected:
 protected:
 	template<class TT, dimensionality_type DD, typename EP, class LLayout> friend struct basic_array;
 	template<class TT, dimensionality_type DD, class Alloc> friend struct static_array;
-	basic_array(basic_array const&) = default;
 	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
 	friend decltype(auto) static_array_cast(basic_array<TT, DD, PP> const&);
+	basic_array(basic_array const&) = default;
 public:
 	template<class T2> friend auto reinterpret_array_cast(basic_array&& a){
 		return std::move(a).template reinterpret_array_cast<T2, typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>();
@@ -1509,6 +1509,24 @@ template<class TD, class Second =
 template<class RandomAccessIterator, dimensionality_type D>
 multi::array_ptr<typename std::iterator_traits<RandomAccessIterator>::value_type, D, RandomAccessIterator>
 operator/(RandomAccessIterator data, multi::iextensions<D> x){return {data, x};}
+
+template<class ArrayRef>
+struct reference_wrapper : ArrayRef{
+	using type = ArrayRef;
+	constexpr reference_wrapper(ArrayRef const& a) : ArrayRef{a}{}
+	constexpr reference_wrapper(reference_wrapper const&) = default;
+	template<class A> constexpr auto operator[](A&& a) const
+	->decltype(const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator[](std::forward<A>(a))){
+		return const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator[](std::forward<A>(a));}
+	template<class... As> constexpr auto operator()(As&&... as) const
+	->decltype(const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator()(std::forward<As>(as)...)){
+		return const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator[](std::forward<As>(as)...);}
+};
+
+template<class Array>
+auto ref(Array&& arr)->reference_wrapper<decltype(arr())>{;
+	return {std::forward<Array>(arr)()};
+}
 
 }}
 
