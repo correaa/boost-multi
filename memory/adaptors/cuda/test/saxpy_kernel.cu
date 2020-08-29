@@ -57,8 +57,8 @@ int main(){
 
 	run(
 		Dx.size(), 
-		[a, DyP = &Dy(), DxP = &Dx()] __device__ (int i){
-			(*DyP)[i] = a*(*DxP)[i] + (*DyP)[i];
+		[a, Dy=ref(Dy), Dx=ref(Dx)] __device__ (int i){
+			Dy[i] = a*Dx[i] + Dy[i];
 		}
 	);
 
