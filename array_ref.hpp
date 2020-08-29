@@ -1510,13 +1510,15 @@ template<class RandomAccessIterator, dimensionality_type D>
 multi::array_ptr<typename std::iterator_traits<RandomAccessIterator>::value_type, D, RandomAccessIterator>
 operator/(RandomAccessIterator data, multi::iextensions<D> x){return {data, x};}
 
+// this class (and function) should be used only in special cases when one needs to pass references as copyable variables (e.g. cuda kernel captured)
 template<class ArrayRef>
 struct reference_wrapper : ArrayRef{
 	using type = ArrayRef;
 	constexpr reference_wrapper(ArrayRef const& a) : ArrayRef{a}{}
 	constexpr reference_wrapper(reference_wrapper const&) = default;
-	template<class A> 
-	constexpr auto operator[](A&& a) const
+	using ArrayRef::operator[];
+	template<class A>
+	constexpr decltype(auto) operator[](A&& a) const
 //	->decltype(const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator[](std::forward<A>(a))){
 	{	return const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator[](std::forward<A>(a));}
 	template<class... As> constexpr auto operator()(As&&... as) const
