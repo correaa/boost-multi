@@ -1515,9 +1515,10 @@ struct reference_wrapper : ArrayRef{
 	using type = ArrayRef;
 	constexpr reference_wrapper(ArrayRef const& a) : ArrayRef{a}{}
 	constexpr reference_wrapper(reference_wrapper const&) = default;
-	template<class A> constexpr auto operator[](A&& a) const
-	->decltype(const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator[](std::forward<A>(a))){
-		return const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator[](std::forward<A>(a));}
+	template<class A> 
+	constexpr auto operator[](A&& a) const
+//	->decltype(const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator[](std::forward<A>(a))){
+	{	return const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator[](std::forward<A>(a));}
 	template<class... As> constexpr auto operator()(As&&... as) const
 	->decltype(const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator()(std::forward<As>(as)...)){
 		return const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator[](std::forward<As>(as)...);}
