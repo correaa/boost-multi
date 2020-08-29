@@ -41,7 +41,6 @@ noexcept
 #endif
 
 namespace boost{
-
 namespace multi{
 
 template<class Self, typename ValueType, class AccessCategory, typename Reference = ValueType&,  typename DifferenceType = typename std::pointer_traits<ValueType*>::difference_type, typename Pointer = ValueType*>
@@ -55,7 +54,7 @@ public:
 	using pointer           = Pointer;
 	using difference_type   = DifferenceType;
 	using iterator_category = AccessCategory;
-	constexpr auto operator==(self_type const& o) const{return o==self();}
+	constexpr auto operator==(self_type const& o) const{return     o==self() ;}
 	constexpr auto operator!=(self_type const& o) const{return not(o==self());}
 	       constexpr self_type operator+(difference_type n) const{self_type r = self(); r += n; return r;}
 	       constexpr self_type operator-(difference_type n) const{self_type r = self(); r -= n; return r;}
@@ -63,11 +62,6 @@ public:
 	friend constexpr self_type operator++(self_type& s, int){self_type r = s; ++s; return r;}
 	friend constexpr self_type operator--(self_type& s, int){self_type r = s; --s; return r;}
 };
-
-//class iterator_core_access{};
-}
-
-namespace multi{
 
 template<class T> struct archive_traits;
 
