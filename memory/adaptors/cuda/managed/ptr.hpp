@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXXX $CXXFLAGS $0 -o $0x -lcudart&&$0x&&rm $0x;exit
+/usr/local/cuda/bin/nvcc -x cu -std=c++17 $0 -o $0x -lcudart&&$0x&&rm $0x;exit
 #endif
 
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_PTR_HPP
@@ -23,20 +23,6 @@ $CXXX $CXXFLAGS $0 -o $0x -lcudart&&$0x&&rm $0x;exit
 #else
 #define SLOW
 #endif
-
-#ifndef HD
-#ifdef __CUDA_ARCH__
-#define HD __host__ __device__
-#else
-#define HD
-#endif
-#endif
-
-namespace boost{
-namespace serialization{
-	template<class T> class array_wrapper;
-	template<class T, class S> const array_wrapper<T> make_array(T* t, S s);
-}}
 
 namespace boost{namespace multi{
 namespace memory{namespace cuda{
@@ -159,7 +145,7 @@ public:
 	ptr  operator++(int){auto tmp = *this; ++(*this); return tmp;} // remove
 	ptr  operator--(int){auto tmp = *this; --(*this); return tmp;} // remove
 	constexpr ptr& operator+=(typename ptr::difference_type n){(this->rp_)+=n; return *this;} // remove
-	constexpr ptr& operator-=(typename ptr::difference_type n) HD{(this->rp_)-=n; return *this;} // remove
+	constexpr ptr& operator-=(typename ptr::difference_type n){(this->rp_)-=n; return *this;} // remove
 	constexpr ptr operator+(typename ptr::difference_type n) const{return ptr{(this->rp_) + n};} // remove
 	constexpr ptr operator-(typename ptr::difference_type n) const{return (*this) + (-n);} // remove
 	using reference = typename std::pointer_traits<raw_pointer>::element_type&;//ref<element_type>;
