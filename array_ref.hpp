@@ -1549,20 +1549,14 @@ auto ref(Array const& arr)->reference_wrapper<decltype(arr())>{;
 }
 #endif
 
-template<class T, dimensionality_type D, class... As>
-auto ref(basic_array<T, D, As...>& arr)->reference_wrapper<decltype(arr())>{;
-	return {arr()};
-}
+template<class T, dimensionality_type D, class... As> auto ref(basic_array<T, D, As...> const& arr)->reference_wrapper<decltype(arr())>{return {arr()};}
+template<class T, dimensionality_type D, class... As> auto ref(basic_array<T, D, As...>      & arr)->reference_wrapper<decltype(arr())>{return {arr()};}
+template<class T, dimensionality_type D, class... As> auto ref(basic_array<T, D, As...>     && arr)->reference_wrapper<decltype(arr())>{return {arr()};}
 
-template<class T, dimensionality_type D, class... As>
-auto ref(array_ref<T, D, As...>& arr)->reference_wrapper<decltype(arr())>{;
-	return {arr()};
-}
+template<class T, dimensionality_type D, class... As> auto ref(array_ref<T, D, As...>& arr)->reference_wrapper<decltype(arr())>{return {arr()};}
 
-template<class T, dimensionality_type D, class... As>
-auto ref(array<T, D, As...>& arr)->reference_wrapper<decltype(arr())>{;
-	return {arr()};
-}
+template<class T, dimensionality_type D, class... As> auto ref(array<T, D, As...>      & arr)->reference_wrapper<decltype(arr())>{return {arr()};}
+template<class T, dimensionality_type D, class... As> auto ref(array<T, D, As...> const& arr)->reference_wrapper<decltype(arr())>{return {arr()};}
 
 }}
 
