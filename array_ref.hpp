@@ -411,6 +411,7 @@ public:
 //	reference_wrapper<basic_array> ref() &{return {*this};}
 //	reference_wrapper<basic_array> ref() &&{return {std::move(*this)};}
 	reference_wrapper<basic_array> ref() const&{return {*this};}
+	friend reference_wrapper<basic_array> ref(basic_array const& self){return {self};}
 
 	decay_type decay() const{
 		decay_type ret = std::move(modify(*this));
@@ -1045,7 +1046,7 @@ public:
 //	reference_wrapper<basic_array> ref() &{return {*this};}
 //	reference_wrapper<basic_array> ref() &&{return {std::move(*this)};}
 	reference_wrapper<basic_array> ref() const&{return {*this};}
-
+	friend reference_wrapper<basic_array> ref(basic_array const& self){return {self};}
 #if __cplusplus >= 201703L
 #if __INTEL_COMPILER
 public: // bug in icc c++17 return from function non copyable non moveable
