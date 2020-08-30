@@ -423,18 +423,16 @@ public:
 #endif
 	friend auto operator+(basic_array const& self){return self.decay();}
 
-	constexpr typename types::const_reference operator[](index i) const&{MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
-		typename types::element_const_ptr new_base = typename types::element_ptr(this->base()) + std::ptrdiff_t{Layout::operator()(i)};
-		return typename types::const_reference(this->layout().sub_, new_base);
+private:
+	constexpr typename basic_array::reference bracket_aux(index i) const&{MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
+		typename basic_array::element_ptr new_base = typename types::element_ptr(this->base()) + std::ptrdiff_t{Layout::operator()(i)};
+		return typename basic_array::reference{this->layout().sub_, new_base};
 	}
-	constexpr typename types::reference       operator[](index i) &&{MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
-		typename types::element_ptr new_base = typename types::element_ptr(this->base()) + std::ptrdiff_t{Layout::operator()(i)};
-		return typename types::reference(this->layout().sub_, new_base);
-	}
-	constexpr typename types::reference       operator[](index i) &{MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
-		typename types::element_ptr new_base = typename types::element_ptr(this->base()) + std::ptrdiff_t{Layout::operator()(i)};
-		return typename types::reference(this->layout().sub_, new_base);
-	}
+public:
+	constexpr typename basic_array::const_reference operator[](index i) const&{return bracket_aux(i);}
+	constexpr typename basic_array::      reference operator[](index i) &&    {return bracket_aux(i);}
+	constexpr typename basic_array::      reference operator[](index i) &     {return bracket_aux(i);}
+
 	template<class Tp = std::array<index, static_cast<std::size_t>(D)>, typename = std::enable_if_t<(std::tuple_size<std::decay_t<Tp>>{}>1)> >
 	auto operator[](Tp&& t) const
 	->decltype(operator[](std::get<0>(t))[detail::tuple_tail(t)]){
@@ -1102,11 +1100,17 @@ public:
 	template<class TT, dimensionality_type DD, class... As>
 	basic_array&& operator=(basic_array const& o)&&{return std::move(this->operator=(o));} 	// TODO make sfinae friendly
 
-	constexpr typename basic_array::const_reference operator[](index i) const&{MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
-		return *(this->base() + Layout::operator()(i)); // in C++17 this is allowed even with syntethic references
-	}
-	constexpr typename basic_array::      reference operator[](index i)      &{MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"\nout of bounds");;
+private:
+	constexpr typename basic_array::reference bracket_aux(index i) const&{ MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
 		return *(this->base() + Layout::operator()(i));
+	}
+public:
+	constexpr typename basic_array::const_reference operator[](index i) const&{//MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
+		return bracket_aux(i);
+	//	return *(this->base() + Layout::operator()(i)); // in C++17 this is allowed even with syntethic references
+	}
+	constexpr typename basic_array::      reference operator[](index i)      &{//MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"\nout of bounds");;
+		return bracket_aux(i);//*(this->base() + Layout::operator()(i));
 	}
 	constexpr typename basic_array::reference operator[](index i)&&{return this->operator[](i);}
 
