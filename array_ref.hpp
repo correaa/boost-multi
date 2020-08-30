@@ -324,10 +324,11 @@ public:
 public:
 	constexpr reference_wrapper(reference_wrapper const&) = default;
 	constexpr typename ArrayRef::reference operator[](typename ArrayRef::index i) const&{return ArrayRef::bracket_aux(i);}
-	template<class... As> 
-	constexpr auto operator()(As&&... as) const
-	->decltype(const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator()(std::forward<As>(as)...)){
-		return const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator[](std::forward<As>(as)...);}
+
+//	template<class... As> 
+//	constexpr auto operator()(As&&... as) const
+//	->decltype(const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator()(std::forward<As>(as)...)){
+//		return const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator[](std::forward<As>(as)...);}
 };
 
 template<typename T, dimensionality_type D, typename ElementPtr, class Layout /*= layout_t<D>*/ >
@@ -1546,12 +1547,22 @@ template<class Array>
 auto ref(Array const& arr)->reference_wrapper<decltype(arr())>{;
 	return {arr()};
 }
+#endif
 
-template<class Array>
-auto ref(Array& arr)->reference_wrapper<decltype(arr())>{;
+template<class T, dimensionality_type D, class... As>
+auto ref(basic_array<T, D, As...>& arr)->reference_wrapper<decltype(arr())>{;
 	return {arr()};
 }
-#endif
+
+template<class T, dimensionality_type D, class... As>
+auto ref(array_ref<T, D, As...>& arr)->reference_wrapper<decltype(arr())>{;
+	return {arr()};
+}
+
+template<class T, dimensionality_type D, class... As>
+auto ref(array<T, D, As...>& arr)->reference_wrapper<decltype(arr())>{;
+	return {arr()};
+}
 
 }}
 
