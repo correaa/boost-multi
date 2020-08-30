@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(multi_test_non_constness_reference){
 	BOOST_REQUIRE( m({0, 3}, 1).dimensionality == 1 );
 	BOOST_REQUIRE( size(m.sliced(0, 3)) == 3 );
 
-	BOOST_REQUIRE( size(m.range({0, 3}).rotated().paren(1l).unrotated()) == 3 );
+	BOOST_REQUIRE( size(m.range({0, 3}).rotated()(1l).unrotated()) == 3 );
 	BOOST_REQUIRE( size(m(multi::index_range{0, 3}, 1)) == 3 );
 
 //	BOOST_REQUIRE( size(m({0, 3}, 1)) == 3 );
