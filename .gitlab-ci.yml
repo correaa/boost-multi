@@ -243,9 +243,10 @@ blas&fftGPU:
       - cuda_gpu
     stage: test
     script:
-      - export PATH=/usr/local/cuda/bin:$PATH
+      - export PATH=/usr/local/cuda-11.0/bin:$PATH #export PATH=/usr/local/cuda/bin:$PATH
+      - export LD_LIBRARY_PATH=/usr/local/cuda-11.0/lib64:$LD_LIBRARY_PATH
       - export CXXX="clang++ -x c++"
-      - export CXXFLAGS="`#-Wall -Wextra -Wpedantic` -Ofast -Wl,-rpath=/usr/local/cuda/lib64 -L/usr/local/cuda/lib64 -I/usr/local/cuda/include -lcudart -lfftw3 -lcublas -lcufft -lboost_timer -lboost_unit_test_framework `pkg-config --libs blas` "
+      - export CXXFLAGS="`#-Wall -Wextra -Wpedantic` -Ofast -Wl,-rpath=/usr/local/cuda/lib64 -L/usr/local/cuda-11.0/lib64 -I/usr/local/cuda-11.0/include -lcudart -lfftw3 -lcublas -lcufft -lboost_timer -lboost_unit_test_framework `pkg-config --libs blas` "
       - export CXX="${CXXX} ${CXXFLAGS}"
       - $CXX --version
       - cd adaptors/blas
