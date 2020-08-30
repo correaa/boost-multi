@@ -408,9 +408,9 @@ public:
 		});
 	}
 
-	friend reference_wrapper<basic_array> Ref(basic_array& arr){return {arr};}
-	friend reference_wrapper<basic_array> Ref(basic_array&& arr){return {std::move(arr)};}
-	friend reference_wrapper<basic_array> Ref(basic_array const& arr){return {arr};}
+//	reference_wrapper<basic_array> ref() &{return {*this};}
+//	reference_wrapper<basic_array> ref() &&{return {std::move(*this)};}
+	reference_wrapper<basic_array> ref() const&{return {*this};}
 
 	decay_type decay() const{
 		decay_type ret = std::move(modify(*this));
@@ -1042,9 +1042,9 @@ public:
 		return a.template reinterpret_array_cast<T2, typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>();
 	}
 	
-	friend reference_wrapper<basic_array> Ref(basic_array& arr){return {arr};}
-	friend reference_wrapper<basic_array> Ref(basic_array&& arr){return {std::move(arr)};}
-	friend reference_wrapper<basic_array> Ref(basic_array const& arr){return {arr};}
+//	reference_wrapper<basic_array> ref() &{return {*this};}
+//	reference_wrapper<basic_array> ref() &&{return {std::move(*this)};}
+	reference_wrapper<basic_array> ref() const&{return {*this};}
 
 #if __cplusplus >= 201703L
 #if __INTEL_COMPILER
