@@ -423,7 +423,7 @@ public:
 #endif
 	friend auto operator+(basic_array const& self){return self.decay();}
 
-private:
+protected:
 	constexpr typename basic_array::reference bracket_aux(index i) const&{MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
 		return {this->layout().sub_, this->base() + Layout::operator()(i)};
 	}
@@ -1099,7 +1099,7 @@ public:
 	template<class TT, dimensionality_type DD, class... As>
 	basic_array&& operator=(basic_array const& o)&&{return std::move(this->operator=(o));} 	// TODO make sfinae friendly
 
-private:
+protected:
 	constexpr typename basic_array::reference bracket_aux(index i) const&{ MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
 		return *(this->base() + Layout::operator()(i));
 	}
