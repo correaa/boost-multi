@@ -173,11 +173,10 @@ public:
 
 };
 
-template<class T, class S> const boost::serialization::array_wrapper<T> make_array(ptr<T> t, S s){
-	using boost::serialization::make_array;
-	return make_array(raw_pointer_cast(t), s);
-}
-
+//template<class T, class S> const boost::serialization::array_wrapper<T> make_array(ptr<T> t, S s){
+//	using boost::serialization::make_array;
+//	return make_array(raw_pointer_cast(t), s);
+//}
 
 }
 
