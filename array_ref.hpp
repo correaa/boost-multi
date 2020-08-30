@@ -323,11 +323,7 @@ public:
 //	template<class Array> friend auto ref(Array& arr)->reference_wrapper<decltype(arr())>;
 public:
 	constexpr reference_wrapper(reference_wrapper const&) = default;
-//	using ArrayRef::operator[];
-	template<class A>
-	constexpr auto operator[](A&& a) const
-	->decltype(const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator[](std::forward<A>(a))){
-		return const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator[](std::forward<A>(a));}
+	constexpr typename ArrayRef::reference operator[](typename ArrayRef::index i) const&{return ArrayRef::bracket_aux(i);}
 	template<class... As> 
 	constexpr auto operator()(As&&... as) const
 	->decltype(const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator()(std::forward<As>(as)...)){
@@ -1140,12 +1136,12 @@ public:
 		(new_layout.nelems_/=Layout::size())*=(last - first);
 		return {new_layout, types::base_ + Layout::operator()(first)};		
 	}
-	basic_array strided(typename types::index s) const{
+	constexpr basic_array strided(typename types::index s) const{
 		typename types::layout_t new_layout = this->layout();
 		new_layout.stride_*=s;
 		return {new_layout, types::base_};//+ Layout::operator()(this->extension().front())};
 	}
-	basic_array sliced(typename types::index first, typename types::index last, typename types::index stride) const{
+	constexpr basic_array sliced(typename types::index first, typename types::index last, typename types::index stride) const{
 		return sliced(first, last).strided(stride);
 	}
 	auto range(index_range const& ir)      &{return sliced(ir.front(), ir.last());}
