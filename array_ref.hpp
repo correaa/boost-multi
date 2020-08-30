@@ -325,10 +325,11 @@ public:
 	constexpr reference_wrapper(reference_wrapper const&) = default;
 	constexpr typename ArrayRef::reference operator[](typename ArrayRef::index i) const&{return ArrayRef::bracket_aux(i);}
 
-//	template<class... As> 
-//	constexpr auto operator()(As&&... as) const
-//	->decltype(const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator()(std::forward<As>(as)...)){
-//		return const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).operator[](std::forward<As>(as)...);}
+	template<class... As>
+	constexpr auto operator()(As&&... as) const&
+	->decltype(ArrayRef::paren(std::forward<As>(as)...)){
+		return ArrayRef::paren(std::forward<As>(as)...);}
+
 };
 
 template<typename T, dimensionality_type D, typename ElementPtr, class Layout /*= layout_t<D>*/ >
