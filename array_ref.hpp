@@ -425,8 +425,7 @@ public:
 
 private:
 	constexpr typename basic_array::reference bracket_aux(index i) const&{MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
-		typename basic_array::element_ptr new_base = typename types::element_ptr(this->base()) + std::ptrdiff_t{Layout::operator()(i)};
-		return typename basic_array::reference{this->layout().sub_, new_base};
+		return {this->layout().sub_, this->base() + Layout::operator()(i)};
 	}
 public:
 	constexpr typename basic_array::const_reference operator[](index i) const&{return bracket_aux(i);}
@@ -1105,14 +1104,9 @@ private:
 		return *(this->base() + Layout::operator()(i));
 	}
 public:
-	constexpr typename basic_array::const_reference operator[](index i) const&{//MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
-		return bracket_aux(i);
-	//	return *(this->base() + Layout::operator()(i)); // in C++17 this is allowed even with syntethic references
-	}
-	constexpr typename basic_array::      reference operator[](index i)      &{//MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"\nout of bounds");;
-		return bracket_aux(i);//*(this->base() + Layout::operator()(i));
-	}
-	constexpr typename basic_array::reference operator[](index i)&&{return this->operator[](i);}
+	constexpr typename basic_array::const_reference operator[](index i) const&{return bracket_aux(i);}
+	constexpr typename basic_array::      reference operator[](index i)      &{return bracket_aux(i);}
+	constexpr typename basic_array::      reference operator[](index i)     &&{return bracket_aux(i);}
 
 	template<class Tuple, typename = std::enable_if_t<(std::tuple_size<std::decay_t<Tuple>>{}>1) > >
 	constexpr auto operator[](Tuple&& t) const
