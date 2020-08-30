@@ -782,7 +782,7 @@ public:
 
 	template<class It>
 	array& assign(It first, It last){using std::next; using std::all_of;
-		if(adl_distance(first, last) == array::size()) static_::ref::assign(first, last);
+		if(adl_distance(first, last) == array::size()) static_::ref_base::assign(first, last);
 		else                                           this->operator=(array(first, last));
 		return *this;
 	}
