@@ -30,13 +30,13 @@ namespace cuda{
 	template<class T, multi::dimensionality_type D>
 	using static_array = multi::static_array<T, D, cuda::allocator<T>>;
 
-	template<class T> decltype(auto) ref(T&& t){return multi::ref(std::forward<T>(t));}
+	template<class T> auto ref(T&& t){return multi::ref(std::forward<T>(t));}
 
-	template<class T> decltype(auto) Ref(T& t){return multi::ref(t);}
-	template<class T> decltype(auto) Ref(T&& t) = delete;
-	template<class T> decltype(auto) Ref(T const&& t) = delete;
+	template<class T> auto Ref(T& t){return multi::ref(t);}
+	template<class T> auto Ref(T&& t) = delete;
+	template<class T> auto Ref(T const&& t) = delete;
 
-#define CUDA_BYREF(VaR) VaR=boost::multi::cuda::Ref(VaR)
+#define MULTI_CUDA_BYREF(VaR) VaR=boost::multi::cuda::Ref(VaR)
 
 	template<class A> auto raw_array_cast(A&& a)
 	->decltype(std::forward<A>(a).template static_array_cast<typename A::element_type, decltype(raw_pointer_cast(base(std::forward<A>(a))))>()){
