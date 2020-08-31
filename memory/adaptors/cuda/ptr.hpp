@@ -47,19 +47,19 @@ protected:
 private:
 	raw_pointer rp_;
 	template<typename, typename> friend struct ptr;
-	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
-	ptr(raw_pointer rp) : rp_{rp}{}
+	template<class TT> friend constexpr ptr<TT> const_pointer_cast(ptr<TT const> const&);
+	constexpr ptr(raw_pointer rp) : rp_{rp}{}
 public:
-	ptr() = default;
-	ptr(ptr const&) = default;
-	ptr(std::nullptr_t n) : rp_{n}{}
+	constexpr ptr() = default;
+	constexpr ptr(ptr const&) = default;
+	constexpr ptr(std::nullptr_t n) : rp_{n}{}
 	template<class Other, typename = decltype(raw_pointer{std::declval<Other const&>().rp_})>
-	ptr(Other const& o) : rp_{o.rp_}{}
+	constexpr ptr(Other const& o) : rp_{o.rp_}{}
 	ptr& operator=(ptr const&) = default;
-	explicit operator bool() const{return rp_;}
-	bool operator==(ptr const& other) const{return rp_==other.rp_;}
-	bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
-	friend ptr to_address(ptr const& p){return p;}
+	explicit constexpr operator bool() const{return rp_;}
+	constexpr bool operator==(ptr const& other) const{return rp_==other.rp_;}
+	constexpr bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
+	friend constexpr ptr to_address(ptr const& p){return p;}
 };
 
 template<class T> class allocator;
@@ -79,28 +79,28 @@ protected:
 private:
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 	template<class, class> friend struct ptr;
-	ptr(raw_pointer rp) : rp_{rp}{}
-	operator raw_pointer() const{return rp_;}
+	constexpr ptr(raw_pointer rp) : rp_{rp}{}
+	constexpr operator raw_pointer() const{return rp_;}
 	friend ptr<void> malloc(std::size_t);
 	friend void free(ptr<void>);
 public:
-	ptr() = default;
-	ptr(ptr const& other) : rp_{other.rp_}{}//= default;
-	ptr(std::nullptr_t n) : rp_{n}{}
+	constexpr ptr() = default;
+	constexpr ptr(ptr const& other) : rp_{other.rp_}{}//= default;
+	constexpr ptr(std::nullptr_t n) : rp_{n}{}
 	template<class Other, typename = decltype(raw_pointer{std::declval<Other const&>().rp_})>
-	ptr(Other const& o) : rp_{o.rp_}{}
+	constexpr ptr(Other const& o) : rp_{o.rp_}{}
 	ptr& operator=(ptr const&) = default;
-	bool operator==(ptr const& other) const{return rp_==other.rp_;}
-	bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
+	constexpr bool operator==(ptr const& other) const{return rp_==other.rp_;}
+	constexpr bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
 
 	using pointer = ptr<T>;
 	using element_type    = typename std::pointer_traits<raw_pointer>::element_type;
 	using difference_type = typename std::pointer_traits<raw_pointer>::difference_type;
 	template<class U> using rebind = ptr<U, typename std::pointer_traits<raw_pointer>::template rebind<U>>;
 //	using default_allocator_type = typename cuda::allocator<typename std::iterator_traits<raw_pointer>::value_type>;
-	explicit operator bool() const{return rp_;}
+	constexpr explicit operator bool() const{return rp_;}
 //	explicit operator raw_pointer&()&{return impl_;}
-	friend ptr to_address(ptr const& p){return p;}
+	friend constexpr ptr to_address(ptr const& p){return p;}
 };
 
 template<typename T, typename RawPtr>
@@ -115,7 +115,7 @@ protected:
 	template<typename, typename> friend struct ptr;
 	template<typename> friend struct ref;
 
-	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
+	template<class TT> friend constexpr ptr<TT> const_pointer_cast(ptr<TT const> const&);
 	friend struct managed::ptr<T, RawPtr>;
 public:
 	template<class U> using rebind = ptr<U, typename std::pointer_traits<raw_pointer>::template rebind<U>>;
