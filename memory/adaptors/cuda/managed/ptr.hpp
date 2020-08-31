@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-/usr/local/cuda/bin/nvcc -x cu -std=c++17 $0 -o $0x -lcudart&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS -L/usr/local/cuda/lib64 -I/usr/local/cuda/include -std=c++14 $0 -o $0x -lcudart&&$0x&&rm $0x;exit
 #endif
 
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_PTR_HPP
@@ -108,8 +108,9 @@ protected:
 public:
 	template<class U> using rebind = ptr<U, typename std::pointer_traits<RawPtr>::template rebind<U>>;
 //	explicit ptr(cuda::ptr<T, RawPtr> const& other) : rp_{other.rp_}{}
-	template<class Other, typename = std::enable_if_t<std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{}>>
-	/*explicit(false)*/ constexpr ptr(ptr<Other> const& o) : cuda::ptr<T, RawPtr>{static_cast<raw_pointer>(o.rp_)}{}
+	constexpr ptr() = default;
+	template<class Other, typename = std::enable_if_t<std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{}>> /*explicit(false)*/
+	constexpr ptr(ptr<Other> const& o) : cuda::ptr<T, RawPtr>{static_cast<raw_pointer>(o.rp_)}{}
 	template<class Other, typename = std::enable_if_t<not std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{}>, typename = decltype(static_cast<raw_pointer>(std::declval<ptr<Other>>().rp_))>
 	explicit/*(true)*/ constexpr ptr(ptr<Other> const& o, void** = 0) : cuda::ptr<T, RawPtr>{static_cast<raw_pointer>(o.rp_)}{}
 //	template<class Other, typename = std::enable_if_t<std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{}>>
@@ -120,7 +121,7 @@ public:
 		assert(other.rp_!=nullptr or Cuda::pointer::type(other.rp_) == cudaMemoryTypeManaged);
 	}
 	constexpr explicit ptr(raw_pointer p) : cuda::ptr<T, RawPtr>{p}{}//Cuda::pointer::is_device(p);}
-//	ptr() = default;
+//	constexpr ptr() = default;
 //	ptr(ptr const&) = default;
 	constexpr ptr(std::nullptr_t n) : cuda::ptr<T, RawPtr>{n}{}
 //	ptr& operator=(ptr const&) = default;
@@ -229,6 +230,10 @@ std::string gpuonly_overload(cuda::ptr<double>){return "gpu";}
 
 int main(){
 
+	{
+		using T = double;
+		cuda::managed::ptr<T> p; (void)p;
+	}
 
 	f();
 	using T = double; static_assert( sizeof(cuda::managed::ptr<T>) == sizeof(T*) , "!");
