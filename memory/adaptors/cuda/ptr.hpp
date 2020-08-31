@@ -115,7 +115,7 @@ protected:
 	template<typename, typename> friend struct ptr;
 	template<typename> friend struct ref;
 
-	template<class TT> friend constexpr ptr<TT> const_pointer_cast(ptr<TT const> const&);
+	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 	friend struct managed::ptr<T, RawPtr>;
 public:
 	template<class U> using rebind = ptr<U, typename std::pointer_traits<raw_pointer>::template rebind<U>>;
