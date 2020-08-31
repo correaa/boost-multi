@@ -108,7 +108,7 @@ protected:
 public:
 	template<class U> using rebind = ptr<U, typename std::pointer_traits<RawPtr>::template rebind<U>>;
 //	explicit ptr(cuda::ptr<T, RawPtr> const& other) : rp_{other.rp_}{}
-	constexpr ptr() = default;
+	constexpr ptr() : cuda::ptr<T, RawPtr>{}{}
 	template<class Other, typename = std::enable_if_t<std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{}>> /*explicit(false)*/
 	constexpr ptr(ptr<Other> const& o) : cuda::ptr<T, RawPtr>{static_cast<raw_pointer>(o.rp_)}{}
 	template<class Other, typename = std::enable_if_t<not std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{}>, typename = decltype(static_cast<raw_pointer>(std::declval<ptr<Other>>().rp_))>
