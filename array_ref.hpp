@@ -119,11 +119,11 @@ public://TODO find why this needs to be public and not protected or friend
 template<class Ref, class Layout>
 struct basic_array_ptr : 
 	private Ref,
-	boost::multi::iterator_facade<
+	multi::iterator_facade<
 		basic_array_ptr<Ref, Layout>, void, std::random_access_iterator_tag, 
 		Ref const&, typename Layout::difference_type
 	>,
-	boost::multi::totally_ordered2<basic_array_ptr<Ref, Layout>, void>
+	multi::totally_ordered2<basic_array_ptr<Ref, Layout>, void>
 {
 	using pointer = Ref const*;
 	using element_type = typename Ref::decay_type;

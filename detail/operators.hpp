@@ -43,16 +43,13 @@ struct partially_ordered2<T, void>{
 	friend bool operator>=(const U& x, const T& y){return (y < x) or (y == x);}
 };
 
-template<class T, class V, class B = empty_base> struct totally_ordered2;
+template<class T, class V, class B> struct totally_ordered2;
 
-template<class T, class B>
-struct totally_ordered2<T, void, B> : B{
-	template<class U>
-	friend auto operator<=(const T& x, const U& y){return (x < y) or (x == y);}
-	template<class U>
-	friend auto operator>=(const T& x, const U& y){return (y < x) or (x == y);}
-	template<class U>
-	friend auto operator>(const T& x, const U& y){return y < x;}
+template<class T>
+struct totally_ordered2<T, void>{
+	template<class U> friend constexpr auto operator> (const T& x, const U& y){return  y < x;             }
+	template<class U> friend constexpr auto operator<=(const T& x, const U& y){return (x < y) or (x == y);}
+	template<class U> friend constexpr auto operator>=(const T& x, const U& y){return (y < x) or (x == y);}
 };
 
 template<class T>
