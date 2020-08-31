@@ -176,19 +176,16 @@ public:
 };
 
 template<class New, class T, class RawPtr>
-typename std::pointer_traits::rebind<managed::ptr<T, RawPtr>> 
-reinterpret_pointer_cast(managed::ptr<T, RawPtr> const& r) noexcept{
-	typename std::pointer_traits::rebind<managed::ptr<T, RawPtr>>{
+auto
+reinterpret_pointer_cast(managed::ptr<T, RawPtr> const& r) noexcept
+->  typename std::pointer_traits<managed::ptr<T, RawPtr>>::template rebind<New>
+{
+	typename std::pointer_traits<managed::ptr<T, RawPtr>>::template rebind<New>{
 		reinterpret_cast<
-			typename std::pointer_traits::rebind<managed::ptr<T, RawPtr>>::raw_pointer
-		>{r.raw_pointer_cast()}
+			typename std::pointer_traits<managed::ptr<T, RawPtr>>::template rebind<New>::raw_pointer
+		>(r.raw_pointer_cast())
 	};
 }
-
-//template<class T, class S> const boost::serialization::array_wrapper<T> make_array(ptr<T> t, S s){
-//	using boost::serialization::make_array;
-//	return make_array(raw_pointer_cast(t), s);
-//}
 
 }
 
