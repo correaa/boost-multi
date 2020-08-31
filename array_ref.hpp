@@ -25,7 +25,7 @@ $CXXX $CXXFLAGS $0 -o $0x&&$0x&&rm $0x&&(rm -rf test/build&&mkdir -p test/build&
 //#include<iostream> // debug
 
 #include<algorithm>  // copy_n
-#include<cstring>    // for memset in reinterpret_cast
+//#include<cstring>    // for memset in reinterpret_cast
 #include<functional> // invoke
 #include<memory>     // pointer_traits
 
@@ -1274,7 +1274,8 @@ public:
 //			this->layout().scale(sizeof(T)/sizeof(T2));
 		static_assert( sizeof(P2) == sizeof(typename basic_array::element_ptr), "reinterpret on equal size?");
 		auto const thisbase = this->base();
-		P2 new_base; std::memcpy(&new_base, &thisbase, sizeof(P2)); //reinterpret_cast<P2 const&>(thisbase) // TODO find a better way, fancy pointers wouldn't need reinterpret_cast
+		P2 new_base = multi::reinterpret_pointer_cast<T2>(thisbase);
+	//	P2 new_base; std::memcpy(&new_base, &thisbase, sizeof(P2)); //reinterpret_cast<P2 const&>(thisbase) // TODO find a better way, fancy pointers wouldn't need reinterpret_cast
 		return {this->layout().scale(sizeof(T)/sizeof(T2)), new_base};
 	}
 	
