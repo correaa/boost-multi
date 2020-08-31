@@ -1,5 +1,5 @@
 #if defined(COMPILATION)
-$CXX $0 -o $0x&&$0x&&rm $0x $0.cpp;exit
+$CXXX $CXXFLAGS $0 -o $0x&&$0x&&rm $0x;exit
 #endif
 #ifndef BOOST_MULTI_DETAIL_OPERATORS_HPP
 #define BOOST_MULTI_DETAIL_OPERATORS_HPP
@@ -43,7 +43,7 @@ struct partially_ordered2<T, void>{
 	friend bool operator>=(const U& x, const T& y){return (y < x) or (y == x);}
 };
 
-template<class T, class V, class B> struct totally_ordered2;
+template<class T, class V> struct totally_ordered2;
 
 template<class T>
 struct totally_ordered2<T, void>{

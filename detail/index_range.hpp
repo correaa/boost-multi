@@ -54,6 +54,8 @@ public:
 	using pointer           = Pointer;
 	using difference_type   = DifferenceType;
 	using iterator_category = AccessCategory;
+	constexpr iterator_facade() = default;
+	constexpr iterator_facade(iterator_facade const&) = default;
 	constexpr auto operator==(self_type const& o) const{return     o==self() ;}
 	constexpr auto operator!=(self_type const& o) const{return not(o==self());}
 	       constexpr self_type operator+(difference_type n) const{self_type r = self(); r += n; return r;}
