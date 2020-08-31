@@ -126,7 +126,7 @@ public:
 	explicit/*(true)*/ constexpr ptr(ptr<Other> const& o, void** = 0) : rp_{static_cast<raw_pointer>(o.rp_)}{}
 	explicit constexpr ptr(raw_pointer rp)  : rp_{rp}{}
 
-	template<class TT> friend auto reinterpret_pointer_cast(ptr p)
+	template<class TT> friend constexpr auto reinterpret_pointer_cast(ptr p)
 	->decltype(ptr<TT>{reinterpret_cast<TT*>(std::declval<raw_pointer>())}){
 		return ptr<TT>{reinterpret_cast<TT*>(p.rp_)};}
 
@@ -139,11 +139,11 @@ public:
 	constexpr bool operator==(ptr const& other) const{return rp_==other.rp_;}
 	constexpr bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
 	template<class Other>
-	auto operator==(ptr<Other> const& other) const
+	constexpr auto operator==(ptr<Other> const& other) const
 	->decltype(rp_==other.rp_){
 		return rp_==other.rp_;}
 	template<class Other>
-	auto operator!=(ptr<Other> const& other) const
+	constexpr auto operator!=(ptr<Other> const& other) const
 	->decltype(rp_!=other.rp_){
 		return rp_!=other.rp_;}
 
@@ -158,10 +158,10 @@ public:
 	explicit constexpr operator void const*() const{return rp_;}
 	template<class TT=T, typename = decltype(static_cast<TT*>(raw_pointer{}))>
 	explicit constexpr operator TT*() const{return static_cast<TT*>(rp_);}
-	ptr& operator++(){++rp_; return *this;}
-	ptr& operator--(){--rp_; return *this;}
-	ptr  operator++(int){auto tmp = *this; ++(*this); return tmp;}
-	ptr  operator--(int){auto tmp = *this; --(*this); return tmp;}
+	constexpr ptr& operator++(){++rp_; return *this;}
+	constexpr ptr& operator--(){--rp_; return *this;}
+	constexpr ptr  operator++(int){auto tmp = *this; ++(*this); return tmp;}
+	constexpr ptr  operator--(int){auto tmp = *this; --(*this); return tmp;}
 	constexpr ptr& operator+=(difference_type n){rp_+=n; return *this;}
 	constexpr ptr& operator-=(difference_type n){rp_-=n; return *this;}
 	constexpr ptr operator+(difference_type n) const{return ptr{rp_ + n};}
@@ -171,8 +171,8 @@ public:
 	constexpr reference operator[](difference_type n) const{return *((*this)+n);}
 	friend constexpr ptr to_address(ptr const& p){return p;}
 	constexpr difference_type operator-(ptr const& o) const{return rp_-o.rp_;}
-	operator ptr<void>(){return {rp_};}
-	auto get() const{return rp_;}
+	constexpr operator ptr<void>(){return {rp_};}
+	constexpr auto get() const{return rp_;}
 	explicit constexpr operator raw_pointer() const{return rp_;}
 	constexpr raw_pointer raw_pointer_cast() const{return this->rp_;}
 	friend constexpr raw_pointer raw_pointer_cast(ptr const& self){return self.rp_;}
@@ -181,13 +181,13 @@ public:
 	->decltype(ref<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{ptr<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{&(rp_->*std::forward<PM>(pm))}}){
 		return ref<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{ptr<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{&(rp_->*std::forward<PM>(pm))}};}
 public:
-	friend allocator<std::decay_t<T>> get_allocator(ptr const&){return {};}
-	friend allocator<std::decay_t<T>> default_allocator_of(ptr const&){return {};}
+	friend constexpr allocator<std::decay_t<T>> get_allocator(ptr const&){return {};}
+	friend constexpr allocator<std::decay_t<T>> default_allocator_of(ptr const&){return {};}
 };
 
 template<class T>
 DEPRECATED("experimental function, it might be removed soon https://gitlab.com/correaa/boost-multi/-/issues/91")
-T* raw_pointer_cast(T* p){return p;}
+constexpr T* raw_pointer_cast(T* p){return p;}
 
 template<class T> allocator<T> get_allocator(ptr<T> const&){return {};}
 
