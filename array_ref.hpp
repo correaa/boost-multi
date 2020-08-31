@@ -1274,6 +1274,7 @@ public:
 //			this->layout().scale(sizeof(T)/sizeof(T2));
 		static_assert( sizeof(P2) == sizeof(typename basic_array::element_ptr), "reinterpret on equal size?");
 	//	auto const thisbase = this->base();
+		using boost::multi::reinterpret_pointer_cast;
 		P2 new_base = reinterpret_pointer_cast<T2>(this->base());
 	//	P2 new_base; std::memcpy(&new_base, &thisbase, sizeof(P2)); //reinterpret_cast<P2 const&>(thisbase) // TODO find a better way, fancy pointers wouldn't need reinterpret_cast
 		return {this->layout().scale(sizeof(T)/sizeof(T2)), new_base};
