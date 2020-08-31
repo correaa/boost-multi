@@ -142,42 +142,42 @@ struct basic_array_ptr :
 	template<class Array, typename = decltype(typename Ref::element_ptr{typename Array::element_ptr{}})> 
 	constexpr basic_array_ptr(Array const& o) : Ref{o->layout(), o->base()}{}//, stride_{o.stride_}{}
 	constexpr basic_array_ptr(basic_array_ptr const& o) : Ref{static_cast<Layout const&>(o), o.base_}{}//, stride_{o.stride_}{}
-	basic_array_ptr& operator=(basic_array_ptr const& other){
+	constexpr basic_array_ptr& operator=(basic_array_ptr const& other){
 		this->base_ = other.base_;
 		static_cast<Layout&>(*this) = other;
 		return *this;
 	}
-	explicit operator bool() const{return this->base_;}
+	constexpr explicit operator bool() const{return this->base_;}
 	constexpr Ref  operator* () const{return *this;}
 	constexpr Ref* operator->() const{return  const_cast<basic_array_ptr*>(this);}
 	constexpr Ref* operator->(){return  this;}
 	constexpr Ref        operator[](difference_type n) const{return *(*this + n);}
 //	template<class O> bool operator==(O const& o) const{return equal(o);}
-	bool operator<(basic_array_ptr const& o) const{return distance_to(o) > 0;}
+	constexpr bool operator<(basic_array_ptr const& o) const{return distance_to(o) > 0;}
 	constexpr basic_array_ptr(typename Ref::element_ptr p, Layout l) : Ref{l, p}{}
 	template<typename T, dimensionality_type D, typename ElementPtr, class LLayout>
 	friend struct basic_array;
-	auto base() const{return this->base_;}
-	friend auto base(basic_array_ptr const& self){return self.base();}
+	constexpr typename basic_array_ptr::element_ptr base() const{return this->base_;}
+	friend constexpr auto base(basic_array_ptr const& self){return self.base();}
 	using Ref::base_;
 	using Ref::layout;
-	bool operator==(basic_array_ptr const& o) const{return base_==o.base_ and layout()==o.layout();}
+	constexpr bool operator==(basic_array_ptr const& o) const{return base_==o.base_ and layout()==o.layout();}
 	template<class O> constexpr bool operator==(O const& o) const{return base()==o->base() and layout() == o->layout();}
 	template<class O> constexpr bool operator!=(O const& o) const{return not ((*this)==o);}
 	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> friend constexpr bool operator==(O const& o, basic_array_ptr const& s){return s==o;}
 	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> friend constexpr bool operator!=(O const& o, basic_array_ptr const& s){return not(o==s);}
 protected:
-	void increment(){base_ += Ref::nelems();}
-	void decrement(){base_ -= Ref::nelems();}
-	void advance(difference_type n){base_ += Ref::nelems()*n;}
-	difference_type distance_to(basic_array_ptr const& other) const{
+	constexpr void increment(){base_ += Ref::nelems();}
+	constexpr void decrement(){base_ -= Ref::nelems();}
+	constexpr void advance(difference_type n){base_ += Ref::nelems()*n;}
+	constexpr difference_type distance_to(basic_array_ptr const& other) const{
 		assert( Ref::nelems() == other.Ref::nelems() and Ref::nelems() != 0 );
 		assert( (other.base_ - base_)%Ref::nelems() == 0); 
 		assert( layout() == other.layout() );
 		return (other.base_ - base_)/Ref::nelems();
 	}
 public:
-	basic_array_ptr& operator+=(difference_type n){advance(n); return *this;}
+	constexpr basic_array_ptr& operator+=(difference_type n){advance(n); return *this;}
 };
 
 template<class Element, dimensionality_type D, typename Ptr, class Ref 
@@ -326,9 +326,12 @@ public:
 	constexpr typename ArrayRef::reference operator[](typename ArrayRef::index i) const&{return ArrayRef::bracket_aux(i);}
 
 	template<class... As>
+	constexpr ArrayRef& operator()() const&{return const_cast<reference_wrapper&>(*this);}
+	
+	template<class... As>
 	constexpr auto operator()(As&&... as) const&
-	->decltype(ArrayRef::paren(std::forward<As>(as)...)){
-		return ArrayRef::paren(std::forward<As>(as)...);}
+	->decltype(std::declval<ArrayRef&>().paren(std::forward<As>(as)...)){
+		return const_cast<ArrayRef&>(static_cast<ArrayRef const&>(*this)).paren(std::forward<As>(as)...);}
 
 };
 
