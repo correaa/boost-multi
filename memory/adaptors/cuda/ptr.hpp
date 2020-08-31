@@ -132,10 +132,10 @@ public:
 
 	template<class Other, typename = decltype(static_cast<raw_pointer>(std::declval<Other const&>().rp_))> 
 	explicit constexpr ptr(Other const& o) : rp_{static_cast<raw_pointer>(o.rp_)}{}
-	ptr() = default;
-	ptr(ptr const&) = default;
+	constexpr ptr() = default;
+	constexpr ptr(ptr const&) = default;
 	constexpr ptr(std::nullptr_t nu) : rp_{nu}{}
-	ptr& operator=(ptr const&) = default;
+	constexpr ptr& operator=(ptr const&) = default;
 	constexpr bool operator==(ptr const& other) const{return rp_==other.rp_;}
 	constexpr bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
 	template<class Other>
@@ -164,8 +164,8 @@ public:
 	constexpr ptr  operator--(int){auto tmp = *this; --(*this); return tmp;}
 	constexpr ptr& operator+=(difference_type n){rp_+=n; return *this;}
 	constexpr ptr& operator-=(difference_type n){rp_-=n; return *this;}
-	constexpr ptr operator+(difference_type n) const{return ptr{rp_ + n};}
-	constexpr ptr operator-(difference_type n) const{return ptr{rp_ - n};}
+	constexpr ptr  operator+(difference_type n) const{return ptr{rp_ + n};}
+	constexpr ptr  operator-(difference_type n) const{return ptr{rp_ - n};}
 	using reference = ref<element_type>;
 	constexpr reference operator*() const{ return {*this}; }
 	constexpr reference operator[](difference_type n) const{return *((*this)+n);}
@@ -189,7 +189,7 @@ template<class T>
 DEPRECATED("experimental function, it might be removed soon https://gitlab.com/correaa/boost-multi/-/issues/91")
 constexpr T* raw_pointer_cast(T* p){return p;}
 
-template<class T> allocator<T> get_allocator(ptr<T> const&){return {};}
+template<class T> constexpr allocator<T> get_allocator(ptr<T> const&){return {};}
 
 template<
 	class InputIt, class Size, class... T, class ForwardIt = ptr<T...>,
@@ -197,12 +197,12 @@ template<
 	typename ForwardV = typename std::pointer_traits<ForwardIt>::element_type, 
 	std::enable_if_t<std::is_trivially_constructible<ForwardV, InputV>{}, int> =0
 >
-ForwardIt uninitialized_copy_n(InputIt f, Size n, ptr<T...> d){
+constexpr ForwardIt uninitialized_copy_n(InputIt f, Size n, ptr<T...> d){
 	return memcpy(d, f, n*sizeof(ForwardV)) + n;
 }
 
 template<class It, typename Size, class T2, class Q2, typename T = typename std::iterator_traits<It>::value_type, typename = std::enable_if_t<std::is_trivially_constructible<T2, T>{}>>
-auto uninitialized_copy_n(It first, Size count, boost::multi::iterator<T2, 1, ptr<Q2>> result)
+constexpr auto uninitialized_copy_n(It first, Size count, boost::multi::iterator<T2, 1, ptr<Q2>> result)
 //->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), first, sizeof(T)*stride(first), sizeof(T), count), result + count){
 {	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T)*stride(first), sizeof(T), count), result + count;}
 
@@ -218,7 +218,6 @@ auto uninitialized_move_n(ptr<T1...> first, Size n, ptr<T2...> dest){
 }
 //->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), first, sizeof(T)*stride(first), sizeof(T), count), result + count){
 //{	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T)*stride(first), sizeof(T), count), result + count;}
-
 
 #if 0
 template<
