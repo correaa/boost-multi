@@ -9,6 +9,7 @@ $CXXX $CXXFLAGS -L/usr/local/cuda/lib64 -I/usr/local/cuda/include -std=c++14 $0 
 #include<iterator> // random_access_iterator_tag
 
 #include<type_traits> // is_const
+#include<memory>  // std::pointer_traits
 
 #include "../../cuda/ptr.hpp"
 
@@ -38,24 +39,24 @@ struct ptr<void const, RawPtr>{
 	raw_pointer rp_;
 	template<typename, typename> friend struct ptr;
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
-	ptr(raw_pointer rp) : rp_{rp}{}
+	constexpr ptr(raw_pointer rp) : rp_{rp}{}
 public:
-	ptr() = default;
-	ptr(ptr const&) = default;
-	ptr(std::nullptr_t n) : rp_{n}{}
+	constexpr ptr() = default;
+	constexpr ptr(ptr const&) = default;
+	constexpr ptr(std::nullptr_t n) : rp_{n}{}
 	template<class Other, typename = decltype(raw_pointer{std::declval<Other const&>().rp_})>
-	ptr(Other const& o) : rp_{o.rp_}{}
+	constexpr ptr(Other const& o) : rp_{o.rp_}{}
 	ptr& operator=(ptr const&) = default;
 
 	using pointer = ptr<T>;
 	using element_type = typename std::pointer_traits<raw_pointer>::element_type;
 	using difference_type = void;//typename std::pointer_traits<impl_t>::difference_type;
-	explicit operator bool() const{return rp_;}
+	explicit constexpr operator bool() const{return rp_;}
 //	explicit operator raw_pointer&()&{return rp_;}
-	bool operator==(ptr const& other) const{return rp_==other.rp_;}
-	bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
-	friend ptr to_address(ptr const& p){return p;}
-	void operator*() const = delete;
+	constexpr bool operator==(ptr const& other) const{return rp_==other.rp_;}
+	constexpr bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
+	friend constexpr ptr to_address(ptr const& p){return p;}
+	constexpr void operator*() const = delete;
 	template<class U> using rebind = ptr<U, typename std::pointer_traits<raw_pointer>::template rebind<U>>;
 };
 
@@ -68,15 +69,15 @@ protected:
 	using raw_pointer = RawPtr;
 	raw_pointer rp_;
 private:
-	ptr(ptr<void const> const& p) : rp_{const_cast<void*>(p.rp_)}{}
+	constexpr ptr(ptr<void const> const& p) : rp_{const_cast<void*>(p.rp_)}{}
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 	template<class, class> friend struct ptr;
 	template<class> friend class allocator;
 public:
-	template<class Other> ptr(ptr<Other> const& p) : rp_{p.rp_}{}
-	explicit ptr(raw_pointer rp) : rp_{rp}{}
-	ptr() = default;
-	ptr(ptr const& p) = default;
+	template<class Other> constexpr ptr(ptr<Other> const& p) : rp_{p.rp_}{}
+	constexpr explicit ptr(raw_pointer rp) : rp_{rp}{}
+	constexpr ptr() = default;
+	constexpr ptr(ptr const& p) = default;
 	ptr(std::nullptr_t n) : rp_{n}{}
 	template<class Other, typename = decltype(raw_pointer{std::declval<Other const&>().impl_})>
 	ptr(Other const& o) : rp_{o.rp_}{}
@@ -173,6 +174,16 @@ public:
 		return adl_copy_n(cuda::ptr<T1>(first), count, cuda::ptr<T2>(result)), result + count;}
 
 };
+
+template<class New, class T, class RawPtr>
+typename std::pointer_traits::rebind<managed::ptr<T, RawPtr>> 
+reinterpret_pointer_cast(managed::ptr<T, RawPtr> const& r) noexcept{
+	typename std::pointer_traits::rebind<managed::ptr<T, RawPtr>>{
+		reinterpret_cast<
+			typename std::pointer_traits::rebind<managed::ptr<T, RawPtr>>::raw_pointer
+		>{r.raw_pointer_cast()}
+	};
+}
 
 //template<class T, class S> const boost::serialization::array_wrapper<T> make_array(ptr<T> t, S s){
 //	using boost::serialization::make_array;
