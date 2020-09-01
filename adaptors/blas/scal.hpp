@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x `pkg-config --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0x `pkg-config --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -14,10 +14,10 @@ namespace blas{
 
 using core::scal;
 
-template<class X1D> // don't do this: ", typename Elem = typename X1D::element_type>"
+template<class X1D>//, don't do this: ", typename Elem = typename X1D::element_type>"
 auto scal(typename std::decay_t<X1D>::element_type a, X1D&& m)
-->decltype(scal(size(m), &a, base(m), stride(m)), std::forward<X1D>(m)){
-	return scal(size(m), &a, base(m), stride(m)), std::forward<X1D>(m);}
+->decltype(scal(m.size( ), &a, base(m), stride(m)), std::forward<X1D>(m)){ // intel cannot auto deduce size(m) for some reason
+	return scal(  size(m), &a, base(m), stride(m)), std::forward<X1D>(m);}
 
 template<class X1D>//, typename Elem = typename X1D::element_type>
 NODISCARD("because last argument is const")
@@ -38,6 +38,17 @@ typename X1D::decay_type scal(typename X1D::element_type a, X1D const& m){
 namespace multi = boost::multi;
 namespace blas = multi::blas;
 
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_scal_size_0){
+	multi::array<double, 1> x;
+	BOOST_REQUIRE( x.empty() );
+	
+	blas::scal(2., x);
+	BOOST_REQUIRE( x.empty() );
+	
+	multi::array<double, 1> y = blas::scal(2., std::as_const(x));
+	BOOST_REQUIRE( y.empty() );
+}
+
 BOOST_AUTO_TEST_CASE(multi_blas_scal_real){
 	{
 		multi::array<double, 2> A = {
@@ -46,7 +57,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_scal_real){
 			{9., 10., 11., 12.}
 		};
 
-		auto S = blas::scal(2., rotated(A)[1]);
+		auto S = blas::scal(2., rotated(A)[1]).decay();
 
 		BOOST_REQUIRE( A[2][1] == 20 );
 		BOOST_REQUIRE( S[0] == 4 );

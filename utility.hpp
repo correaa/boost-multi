@@ -83,7 +83,7 @@ auto reinterpret_pointer_cast(U* other)
 	return reinterpret_cast<T*>(other);}
 
 template <class T, std::size_t N>
-constexpr auto size(const T(&)[N]) noexcept{return multi::size_type{N};}
+constexpr multi::size_type size(const T(&)[N]) noexcept{return multi::size_type{N};}
 
 template<class T, typename = typename T::get_allocator>
 std::true_type has_get_allocator_aux(T const&);
