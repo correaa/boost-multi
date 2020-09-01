@@ -45,7 +45,8 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_scal_size_0){
 	blas::scal(2., x);
 	BOOST_REQUIRE( x.empty() );
 	
-	multi::array<double, 1> y = blas::scal(2., std::as_const(x));
+	auto const& x_asconst = x;
+	multi::array<double, 1> y = blas::scal(2., x_asconst);
 	BOOST_REQUIRE( y.empty() );
 }
 
