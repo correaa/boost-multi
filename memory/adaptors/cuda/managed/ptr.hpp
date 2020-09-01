@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXXX $CXXFLAGS -L/usr/local/cuda/lib64 -I/usr/local/cuda/include -std=c++14 $0 -o $0x -lcudart&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS -L/usr/local/cuda/lib64 -I/usr/local/cuda/include $0 -o $0x -lcudart&&$0x&&rm $0x;exit
 #endif
 
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_PTR_HPP
@@ -180,7 +180,7 @@ auto
 reinterpret_pointer_cast(managed::ptr<T, RawPtr> const& r) noexcept
 ->  typename std::pointer_traits<managed::ptr<T, RawPtr>>::template rebind<New>
 {
-	typename std::pointer_traits<managed::ptr<T, RawPtr>>::template rebind<New>{
+	return typename std::pointer_traits<managed::ptr<T, RawPtr>>::template rebind<New>{
 		reinterpret_cast<
 			typename std::pointer_traits<managed::ptr<T, RawPtr>>::template rebind<New>::raw_pointer
 		>(r.raw_pointer_cast())
@@ -240,7 +240,7 @@ int main(){
 
 	{
 		using T = double;
-		cuda::managed::ptr<T> p; (void)p;
+		[[maybe_unused]] cuda::managed::ptr<T> p; (void)p;
 	}
 
 	f();
