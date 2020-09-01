@@ -134,7 +134,8 @@ struct basic_array_ptr :
 	using reference = Ref const&;
 	using iterator_category = std::random_access_iterator_tag;
 
-	constexpr basic_array_ptr(std::nullptr_t p = nullptr) : Ref{p}{} // TODO remove default argument, add default ctor
+	constexpr basic_array_ptr() : Ref{nullptr}{}
+	constexpr basic_array_ptr(std::nullptr_t p) : Ref{p}{}
 	template<class, class> friend struct basic_array_ptr;
 	constexpr basic_array_ptr(typename Ref::element_ptr p, layout_t<Ref::dimensionality-1> l) : Ref{l, p}{}
 	constexpr basic_array_ptr(typename Ref::element_ptr p, index_extensions<Ref::dimensionality> e) : Ref{p, e}{}
