@@ -1081,8 +1081,8 @@ public:
 		return adl_copy(other.begin(), other.end(), this->begin()), std::move(*this);
 	}
 	template<class TT, class... As>//, DELETE((not std::is_assignable<typename basic_array::reference, typename basic_array<TT, 1, As...>::reference>{}))>
-	constexpr basic_array&  operator=(basic_array<TT, 1, As...> const& other)&{assert(this->extensions() == other.extensions());
-		return adl_copy(other.begin(), other.end(), this->begin()), std::move(*this);
+	constexpr basic_array& operator=(basic_array<TT, 1, As...> const& other)&{assert(this->extensions() == other.extensions());
+		return adl_copy(other.begin(), other.end(), this->begin()), *this; // TODO make function&&
 	}
 	template<class Archive>
 	auto serialize(Archive& ar, unsigned){
