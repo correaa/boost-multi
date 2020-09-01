@@ -142,7 +142,7 @@ struct basic_array_ptr :
 
 	template<class Array, typename = decltype(typename Ref::element_ptr{typename Array::element_ptr{}})> 
 	constexpr basic_array_ptr(Array const& o) : Ref{o->layout(), o->base()}{}//, stride_{o.stride_}{}
-	constexpr basic_array_ptr(basic_array_ptr const& o) : Ref{static_cast<Layout const&>(o), o.base_}{}//, stride_{o.stride_}{}
+	constexpr basic_array_ptr(basic_array_ptr const& o) = default;//: Ref{static_cast<Layout const&>(o), o.base_}{}//, stride_{o.stride_}{}
 	constexpr basic_array_ptr& operator=(basic_array_ptr const& other){
 		this->base_ = other.base_;
 		static_cast<Layout&>(*this) = other;
