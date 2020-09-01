@@ -355,10 +355,7 @@ auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
 					std::rotate(which.begin(), which.begin()+d_min, which.end());
 					dft(which, i<<d_min, o<<d_min, s);
 				}else{
-					std::clog<<"                 warning: needs loops! (loop size "<< (i<<d_min).size() <<")\n";
-					std::clog<<"                 internal case "; std::copy(which.begin(), which.end(), std::ostream_iterator<bool>{std::clog,", "}); std::clog<<"\n";
 					if(base(i) == base(o) and i.layout() != o.layout()){
-						std::clog<<"                 and needs an internal copy!";
 						auto tmp = +i;
 						for(auto idx : extension(i)) cufft::dft(tail, tmp[idx], o[idx], s);
 					}else for(auto idx : extension(i)) cufft::dft(tail, i[idx], o[idx], s);
