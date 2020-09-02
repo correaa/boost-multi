@@ -259,4 +259,25 @@ blas&fftGPU:
       - sh ./fftw.hpp
       - sh ./fft.hpp
 
+blas&fftGPU-10:
+    stage: build
+    tags:
+      - cuda_gpu
+    stage: test
+    script:
+      - export PATH=/usr/local/cuda-10.0/bin:$PATH #export PATH=/usr/local/cuda/bin:$PATH
+      - export LD_LIBRARY_PATH=/usr/local/cuda-10.0/lib64:$LD_LIBRARY_PATH
+      - export CXXX="clang++ -x c++"
+      - export CXXFLAGS="`#-Wall -Wextra -Wpedantic` -Ofast -Wl,-rpath=/usr/local/cuda-10.0/lib64 -L/usr/local/cuda-10.0/lib64 -I/usr/local/cuda-10.0/include -lcudart -lfftw3 -lcublas -lcufft -lboost_timer -lboost_unit_test_framework `pkg-config --libs blas` "
+      - export CXX="${CXXX} ${CXXFLAGS}"
+      - $CXX --version
+      - cd adaptors/blas
+      - for a in ./*.hpp; do echo $a; sh $a || exit; echo "\n"; done;
+      - cd tests
+      - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
+      - cd ..
+      - cd ../..
+      - cd adaptors
+      - sh ./fftw.hpp
+      - sh ./fft.hpp
 
