@@ -165,13 +165,13 @@ public:
 	using default_allocator_type = allocator<std::decay_t<T>>;
 	constexpr default_allocator_type default_allocator() const{return {};}
 
-	template<class T1, class... A1, class Size, class T2, class... A2>//, std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}, int> =0>
-	static constexpr auto copy_n(
+	template<class T1, class... A1, class Size, class T2, class... A2>
+	static constexpr managed::ptr<T2, A2...> copy_n(
 		managed::ptr<T1, A1...> first, Size count, 
 		managed::ptr<T2, A2...> result
-	)
-	->decltype(adl_copy_n(cuda::ptr<T1>(first), count, cuda::ptr<T2>(result)), result + count){
-		return adl_copy_n(cuda::ptr<T1>(first), count, cuda::ptr<T2>(result)), result + count;}
+	){
+		return adl_copy_n(cuda::ptr<T1>(first), count, cuda::ptr<T2>(result)), result + count;
+	}
 
 };
 
