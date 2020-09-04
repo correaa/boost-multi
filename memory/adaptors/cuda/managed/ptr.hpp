@@ -141,7 +141,7 @@ public:
 //	template<class PM>
 //	decltype(auto) operator->*(PM pm) const{return *ptr<std::decay_t<decltype(rp_->*pm)>, decltype(&(rp_->*pm))>{&(rp_->*pm)};}
 	explicit constexpr operator typename std::pointer_traits<raw_pointer>::template rebind<void>() const{return typename std::pointer_traits<raw_pointer>::template rebind<void>{this->rp_};}
-	explicit operator typename std::pointer_traits<raw_pointer>::template rebind<void const>() const{return typename std::pointer_traits<raw_pointer>::template rebind<void const>{this->rp_};}
+	explicit constexpr operator typename std::pointer_traits<raw_pointer>::template rebind<void const>() const{return typename std::pointer_traits<raw_pointer>::template rebind<void const>{this->rp_};}
 	constexpr ptr& operator++(){++(this->rp_); return *this;} // remove
 	constexpr ptr& operator--(){--(this->rp_); return *this;} // remove
 	ptr  operator++(int){auto tmp = *this; ++(*this); return tmp;} // remove
