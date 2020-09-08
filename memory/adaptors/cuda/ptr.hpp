@@ -17,9 +17,9 @@
 
 #ifndef _DISABLE_CUDA_SLOW
 	#ifdef NDEBUG
-		#define SLOW DEPRECATED("WARNING: slow memory operation")
-	#else
 		#define SLOW
+	#else
+		#define SLOW DEPRECATED("WARNING: slow memory operation")
 	#endif
 #else
 	#define SLOW
