@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x `pkg-config --libs blas lapack` -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0x `pkg-config --libs blas lapack` -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2020
 
@@ -45,8 +45,7 @@ template<class Array2D, class Array1D>
 NODISCARD("because input array is const, output gives eigenvectors")
 typename Array2D::decay_type syev(blas::filling uplo, Array2D const& a, Array1D&& w){
 	auto ret = a.decay();
-	auto l = syev(uplo, ret, std::forward<Array1D>(w));
-	if(size(l) != size(a)) assert(0); // failed
+	if(syev(uplo, ret, std::forward<Array1D>(w)).size() != a.size()) assert(0); // failed
 	return ret;
 }
 

@@ -361,7 +361,7 @@ protected:
 	basic_array(basic_array const&) = default;
 	template<class, class> friend struct basic_array_ptr;
 #if __cplusplus >= 201703L
-#if __INTEL_COMPILER
+#if defined(__INTEL_COMPILER)
 public:
 #else
 protected:
