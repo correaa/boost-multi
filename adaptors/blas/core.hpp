@@ -345,7 +345,7 @@ template<class C, class S> v gemm(C transA, C transB, S m, S n, S k, T const* a,
 namespace core{
 	xgemm(s) xgemm(d) xgemm(c) xgemm(z)
 	xsyrk(s) xsyrk(d) xsyrk(c) xsyrk(z)
-		              xherk(c) xherk(z)
+	                  xherk(c) xherk(z)
 	xtrsm(s) xtrsm(d) xtrsm(c) xtrsm(z)
 }
 
