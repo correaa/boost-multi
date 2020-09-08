@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX -std=c++14 $0 -o $0x -DMULTI_ACCESS_NDEBUG -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0x -DMULTI_ACCESS_NDEBUG -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2018-2020
 
@@ -106,6 +106,11 @@ BOOST_AUTO_TEST_CASE(multi_test_non_constness_reference){
 BOOST_AUTO_TEST_CASE(multi_structured_binding_for_extensions){
 
 #if __cpp_structured_bindings
+	multi::array<std::string, 2> A = 
+		{{"a", "b", "c", "d", "e"},
+		 {"f", "g", "h", "f", "g"},
+		 {"h", "i", "j", "k", "l"}}
+	;
 	{
 		auto [is, js] = extensions(A); 
 		for(auto i : is)
