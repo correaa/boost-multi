@@ -8,10 +8,10 @@ $CXXX $CXXFLAGS -DMULTI_NDEBUG_ACCESS $0 -o $0x &&$0x&&rm $0x;exit
 
 #include<cassert>
 
-#ifdef MULTI_ACCESS_NDEBUG
-#define MULTI_ACCESS_ASSERT(Expr)
+#if defined(MULTI_ACCESS_NDEBUG)
+	#define MULTI_ACCESS_ASSERT(Expr)
 #else
-#define MULTI_ACCESS_ASSERT(Expr) assert(Expr)
+	#define MULTI_ACCESS_ASSERT(Expr) assert(Expr)
 #endif
 
 #if not __INCLUDE_LEVEL__
