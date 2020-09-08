@@ -9,7 +9,7 @@ $CXXX $CXXFLAGS -DMULTI_NDEBUG_ACCESS $0 -o $0x &&$0x&&rm $0x;exit
 #include<cassert>
 
 #if defined(MULTI_ACCESS_NDEBUG)
-	#define MULTI_ACCESS_ASSERT(Expr)
+	#define MULTI_ACCESS_ASSERT(Expr) ((void)0)
 #else
 	#define MULTI_ACCESS_ASSERT(Expr) assert(Expr)
 #endif
