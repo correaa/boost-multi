@@ -14,10 +14,7 @@ $CXXX $CXXFLAGS $0 -o $0x `pkg-config --libs blas`&&$0x&&rm $0x;exit
 #include<iostream> // debug
 #include<cassert>
 #include<complex>
-
-#include<cstdint> // int64_t
-#include<cinttypes> // std::int32/64_t
-
+#include<stdint.h> // int64_t
 #include<limits> // numeric_limits
 
 #ifdef CBLAS_H
@@ -38,11 +35,11 @@ extern "C"{
 #define C _Complex s
 #define Z _Complex d
 #if(_BLAS_INT==32)
-#define INT std::int32_t
+#define INT int32_t
 #elif(_BLAS_INT==64)
-#define INT int64_t // std::int64_t // std gives an error with gcc in CI
+#define INT int64_t
 #else
-#define INT int32_t // std::int32_t // 32bit safe? pesimistic?
+#define INT int32_t // 32bit safe? pesimistic?
 #endif
 #define INTEGER INT const&
 #define N INTEGER n
@@ -345,7 +342,7 @@ template<class C, class S> v gemm(C transA, C transB, S m, S n, S k, T const* a,
 namespace core{
 	xgemm(s) xgemm(d) xgemm(c) xgemm(z)
 	xsyrk(s) xsyrk(d) xsyrk(c) xsyrk(z)
-	                  xherk(c) xherk(z)
+		              xherk(c) xherk(z)
 	xtrsm(s) xtrsm(d) xtrsm(c) xtrsm(z)
 }
 

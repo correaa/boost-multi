@@ -1,7 +1,6 @@
-#ifdef COMPILATION// -*- indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil -*-
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
 $CXXX $CXXFLAGS $0 -o $0x &&$0x&&rm $0x;exit
 #endif
-// © Alfredo Correa 2018-2020
 
 #ifndef MULTI_INDEX_RANGE_HPP
 #define MULTI_INDEX_RANGE_HPP
@@ -10,11 +9,10 @@ $CXXX $CXXFLAGS $0 -o $0x &&$0x&&rm $0x;exit
 
 #include<limits> // numeric_limits
 #include<iterator> // std::random_iterator_tag // std::reverse_iterator
-#include<iostream> //TODO separate io to another header
-
-#include<boost/serialization/nvp.hpp>
+#include<iostream>
 
 #if 0
+//#include<boost/serialization/nvp.hpp>
 namespace boost{
 namespace serialization{
 	template<class> struct nvp;
@@ -41,6 +39,7 @@ noexcept
 #endif
 
 namespace boost{
+
 namespace multi{
 
 template<class Self, typename ValueType, class AccessCategory, typename Reference = ValueType&,  typename DifferenceType = typename std::pointer_traits<ValueType*>::difference_type, typename Pointer = ValueType*>
@@ -54,7 +53,7 @@ public:
 	using pointer           = Pointer;
 	using difference_type   = DifferenceType;
 	using iterator_category = AccessCategory;
-	constexpr auto operator==(self_type const& o) const{return     o==self() ;}
+	constexpr auto operator==(self_type const& o) const{return o==self();}
 	constexpr auto operator!=(self_type const& o) const{return not(o==self());}
 	       constexpr self_type operator+(difference_type n) const{self_type r = self(); r += n; return r;}
 	       constexpr self_type operator-(difference_type n) const{self_type r = self(); r -= n; return r;}
@@ -63,6 +62,11 @@ public:
 	friend constexpr self_type operator--(self_type& s, int){self_type r = s; --s; return r;}
 };
 
+//class iterator_core_access{};
+}
+
+namespace multi{
+
 template<class T> struct archive_traits;
 
 template<typename IndexType = std::true_type, typename IndexTypeLast = IndexType>
@@ -70,12 +74,12 @@ class range{
 	IndexType first_ = {};
 	IndexTypeLast last_ = first_;
 public:
-	template<class Ar>
-	void serialize(Ar& ar, unsigned){
-	//	auto& first = first_; ar & BOOST_SERIALIZATION_NVP(first);
-	//	auto& last  = last_;  ar & BOOST_SERIALIZATION_NVP(last);
-		ar & multi::archive_traits<std::decay_t<Ar>>::make_nvp("first", first_);//!!!!!!!!!!!!!!!!!!!!!! if you get an error here you need to include the adators/serialization/xml_archive.hpp !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
-		ar & multi::archive_traits<std::decay_t<Ar>>::make_nvp("last" , last_ );
+	template<class Archive>
+	void serialize(Archive& ar, unsigned){
+//		ar & boost::serialization::make_nvp("first", first_);//BOOST_SERIALIZATION_NVP(first);
+//		ar & boost::serialization::make_nvp("last", last_);//BOOST_SERIALIZATION_NVP(last);
+		ar & multi::archive_traits<std::decay_t<Archive>>::make_nvp("first", first_);//BOOST_SERIALIZATION_NVP(first); !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! if you get an error here you need to include the adators/serialization/xml_archive.hpp !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
+		ar & multi::archive_traits<std::decay_t<Archive>>::make_nvp("last", last_);//BOOST_SERIALIZATION_NVP(last);
 	}
 	using value_type      = IndexType;
 	using difference_type = decltype(IndexTypeLast{} - IndexType{});// std::make_signed_t<value_type>;
@@ -110,7 +114,6 @@ public:
 		using difference_type = std::ptrdiff_t;
 		const_iterator() = default;
 		constexpr auto operator==(const_iterator const& y) const{return curr_ == y.curr_;}
-		constexpr auto operator!=(const_iterator const& y) const{return curr_ != y.curr_;}
 		constexpr auto operator<(const_iterator const& y) const{return curr_ < y.curr_;}
 		constexpr const_iterator& operator++(){++curr_; return *this;}
 		constexpr const_iterator& operator--(){--curr_; return *this;}
@@ -218,7 +221,6 @@ struct extension_t : public range<IndexType, IndexTypeLast>{
 	}
 	IndexType start () const{return this->first();}
 	IndexType finish() const{return this->last ();}
-	explicit operator bool() const{return this->size();}
 	friend constexpr auto operator==(extension_t const& a, extension_t const& b){return static_cast<range<IndexType> const&>(a)==static_cast<range<IndexType> const&>(b);}
 	friend constexpr auto operator!=(extension_t const& a, extension_t const& b){return not(a==b);}
 };

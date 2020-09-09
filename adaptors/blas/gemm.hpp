@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework \
+$CXX $0 -o $0x -lboost_unit_test_framework \
 `pkg-config --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core` \
 &&$0x&&rm $0x;exit
@@ -39,9 +39,6 @@ C2D&& gemm(typename std::decay_t<C2D>::element_type alpha, A2D const& a, B2D con
 	assert( size(rotated(a)) == size(b) );
 	assert( size(c) == size(a) );
 	assert( size(rotated(b)) == size(rotated(c)) );
-	
-	if(c.empty()) return std::forward<C2D>(c);
-	
 	auto base_a = gemm_base_aux(a);
 	auto base_b = gemm_base_aux(b);
 	auto base_c = gemm_base_aux(c);
@@ -379,21 +376,6 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_2x3_3x1){
 		gemm(1., rotated(ar), b, 0., rotated(c)); // c⸆=ab, c⸆=b⸆a⸆
 		BOOST_REQUIRE( c[0][1] == 101 );
 	}
-}
-
-BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_0x0){
-	multi::array<double, 2> const a;
-	multi::array<double, 2> const b;
-	BOOST_REQUIRE( a.empty() );
-
-	multi::array<double, 2> c;
-
-	using multi::blas::gemm;
-	gemm(1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
-	BOOST_REQUIRE( c.empty() );
-
-	auto c2 = gemm(a, b);
-	BOOST_REQUIRE( c2.empty() );
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_1x3_3x1){

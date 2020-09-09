@@ -48,12 +48,13 @@ int main(){
 	multi::array<complex, 2, cuda::managed::allocator<complex>> phi2({set_size, basis_size}, 1.);
 	
 	multi::array<complex, 1, cuda::managed::allocator<complex>> overlap(set_size);
-	
+
+#if 0 // using iterators	
 	auto phi1_p = begin(phi1);
 	auto phi2_p = begin(phi2);
 	
 	auto overlap_p = begin(overlap);
-	
+
 	run(set_size, 
 		[phi1_p, phi2_p, overlap_p, basis_size] __device__ (int ist){
 			complex a = 0.;
@@ -65,7 +66,29 @@ int main(){
 			overlap_p[ist] = a;
 		}
 	);
-	
+#endif
+#if 0
+	run(set_size, 
+		[phi1_p = begin(phi1), phi2_p = begin(phi2), overlap_p = begin(overlap), basis_size] __device__ (int ist){
+			complex a = 0.;
+			for(int ip = 0; ip < basis_size; ip++){
+				auto p1 = phi1_p[ist][ip];
+				auto p2 = phi2_p[ist][ip];
+				a += conj(p1)*p2;
+			}
+			overlap_p[ist] = a;
+		}
+	);
+#endif
+
+	run(set_size, 
+		[phi1_p = &phi1(), phi2_p = &phi2(), overlap_p = &overlap()] __device__ (int ist){
+			(*overlap_p)[ist] = 0;
+			for(int ip = 0; ip < overlap_p->size(); ip++)
+				(*overlap_p)[ist] += conj((*phi1_p)[ist][ip])*(*phi2_p)[ist][ip];
+		}
+	);
+
 	assert( overlap[21] == double(basis_size) );
 	
 #if 0	

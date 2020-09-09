@@ -34,9 +34,9 @@ $CXXX $CXXFLAGS $0 -o $0x &&$0x&&rm $0x;exit
 	#define NODISCARD(MsG)
 #endif
 
-//#if defined(__NVCC__) and not defined(NODISCARD)
-//	#define NODISCARD(MsG)
-//#endif
+#if defined(__NVCC__)
+	#define NODISCARD(MsG)
+#endif
 
 #endif
 

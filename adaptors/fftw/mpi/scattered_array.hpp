@@ -452,6 +452,22 @@ int mpi3::main(int, char*[], mpi3::environment& menv){
 				S.local_cutout()[i][j] = T(i, j);//std::complex<double>(i + j, i + 2*j + 1)/std::abs(std::complex<double>(i + j, i + 2*j + 1));
 
 	mpi::gathered_array<T, 2> G = S.gather();
+	G.local_cutout();
+
+	assert( G.extensions() == {14, 19} );
+	if(world.rank() == 0){
+		assert( G.extensions() == {14, 19} );
+		assert( G.local_cutout().extensions() == {14, 19} );
+	}
+	if(world.rank() != 0){
+		assert( G.extensions() == {14, 19} );
+		assert( G.local_cutout().extensions() == {0, 0} );
+	}
+
+	multi::array<T, 2> A = S.gather();
+	if(world.rank() == 0) assert( A.extensions() == {14, 19} );
+	if(world.rank() != 0) assert( A.empty() );
+		
 	world.barrier();
 	if(world.root()){
 		std::cout<<"-------------\n";
@@ -466,7 +482,8 @@ int mpi3::main(int, char*[], mpi3::environment& menv){
 	mpi::scattered_array<T, 2> S2 = G.scatter();
 
 	assert( S2 == S );
-		
+
+
 	mpi::gathered_array<T, 2> G2 = S2.gather();
 	
 	if(world.root()){

@@ -47,20 +47,22 @@ namespace adl{ \
 } \
 }}
 
+//BOOST_MULTI_DEFINE_ADL(copy_n);
+//BOOST_MULTI_DEFINE_ADL(fill_n);
+
+
 namespace boost{namespace multi{
 
 MAYBE_UNUSED static constexpr class adl_copy_n_t{
-	template<class... As>          constexpr auto _(priority<0>,        As&&... as) const{return                   std::copy_n              (std::forward<As>(as)...);}
+	template<class... As>          auto _(priority<0>,        As&&... as) const{return                   std::copy_n              (std::forward<As>(as)...);}
 #if defined(__NVCC__) or (defined(__clang__) && defined(__CUDA__))
-	template<class... As> 		   constexpr auto _(priority<1>,        As&&... as) const DECLRETURN(           thrust::copy_n              (std::forward<As>(as)...))
+	template<class... As> 		   auto _(priority<1>,        As&&... as) const DECLRETURN(           thrust::copy_n              (std::forward<As>(as)...))
 #endif
-#if not defined(__NVCC__)
-	template<class... As>          constexpr auto _(priority<2>,        As&&... as) const DECLRETURN(                   copy_n              (std::forward<As>(as)...))
-#endif
-	template<class T, class... As> constexpr auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(std::decay_t<T>::  copy_n(std::forward<T>(t), std::forward<As>(as)...))
-	template<class T, class... As> constexpr auto _(priority<5>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).copy_n              (std::forward<As>(as)...))
+	template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   copy_n              (std::forward<As>(as)...))
+	template<class T, class... As> auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(std::decay_t<T>::  copy_n(std::forward<T>(t), std::forward<As>(as)...))
+	template<class T, class... As> auto _(priority<5>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).copy_n              (std::forward<As>(as)...))
 public:
-	template<class... As> constexpr auto operator()(As&&... as) const DECLRETURN(_(priority<5>{}, std::forward<As>(as)...))
+	template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<5>{}, std::forward<As>(as)...))
 } adl_copy_n;
 
 MAYBE_UNUSED static constexpr class adl_fill_n_t{

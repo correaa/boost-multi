@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-/usr/local/cuda/bin/nvcc -x cu $0 -o $0x -lcudart -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0x -lcudart -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_PTR_HPP
@@ -17,9 +17,9 @@
 
 #ifndef _DISABLE_CUDA_SLOW
 	#ifdef NDEBUG
-		#define SLOW
-	#else
 		#define SLOW DEPRECATED("WARNING: slow memory operation")
+	#else
+		#define SLOW
 	#endif
 #else
 	#define SLOW
@@ -47,19 +47,19 @@ protected:
 private:
 	raw_pointer rp_;
 	template<typename, typename> friend struct ptr;
-	template<class TT> friend constexpr ptr<TT> const_pointer_cast(ptr<TT const> const&);
-	constexpr ptr(raw_pointer rp) : rp_{rp}{}
+	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
+	ptr(raw_pointer rp) : rp_{rp}{}
 public:
-	constexpr ptr() = default;
-	constexpr ptr(ptr const&) = default;
-	constexpr ptr(std::nullptr_t n) : rp_{n}{}
+	ptr() = default;
+	ptr(ptr const&) = default;
+	ptr(std::nullptr_t n) : rp_{n}{}
 	template<class Other, typename = decltype(raw_pointer{std::declval<Other const&>().rp_})>
-	constexpr ptr(Other const& o) : rp_{o.rp_}{}
+	ptr(Other const& o) : rp_{o.rp_}{}
 	ptr& operator=(ptr const&) = default;
-	explicit constexpr operator bool() const{return rp_;}
-	constexpr bool operator==(ptr const& other) const{return rp_==other.rp_;}
-	constexpr bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
-	friend constexpr ptr to_address(ptr const& p){return p;}
+	explicit operator bool() const{return rp_;}
+	bool operator==(ptr const& other) const{return rp_==other.rp_;}
+	bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
+	friend ptr to_address(ptr const& p){return p;}
 };
 
 template<class T> class allocator;
@@ -79,28 +79,28 @@ protected:
 private:
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 	template<class, class> friend struct ptr;
-	constexpr ptr(raw_pointer rp) : rp_{rp}{}
-	constexpr operator raw_pointer() const{return rp_;}
+	ptr(raw_pointer rp) : rp_{rp}{}
+	operator raw_pointer() const{return rp_;}
 	friend ptr<void> malloc(std::size_t);
 	friend void free(ptr<void>);
 public:
-	constexpr ptr() = default;
-	constexpr ptr(ptr const& other) : rp_{other.rp_}{}//= default;
-	constexpr ptr(std::nullptr_t n) : rp_{n}{}
+	ptr() = default;
+	ptr(ptr const& other) : rp_{other.rp_}{}//= default;
+	ptr(std::nullptr_t n) : rp_{n}{}
 	template<class Other, typename = decltype(raw_pointer{std::declval<Other const&>().rp_})>
-	constexpr ptr(Other const& o) : rp_{o.rp_}{}
+	ptr(Other const& o) : rp_{o.rp_}{}
 	ptr& operator=(ptr const&) = default;
-	constexpr bool operator==(ptr const& other) const{return rp_==other.rp_;}
-	constexpr bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
+	bool operator==(ptr const& other) const{return rp_==other.rp_;}
+	bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
 
 	using pointer = ptr<T>;
 	using element_type    = typename std::pointer_traits<raw_pointer>::element_type;
 	using difference_type = typename std::pointer_traits<raw_pointer>::difference_type;
 	template<class U> using rebind = ptr<U, typename std::pointer_traits<raw_pointer>::template rebind<U>>;
 //	using default_allocator_type = typename cuda::allocator<typename std::iterator_traits<raw_pointer>::value_type>;
-	constexpr explicit operator bool() const{return rp_;}
+	explicit operator bool() const{return rp_;}
 //	explicit operator raw_pointer&()&{return impl_;}
-	friend constexpr ptr to_address(ptr const& p){return p;}
+	friend ptr to_address(ptr const& p){return p;}
 };
 
 template<typename T, typename RawPtr>
@@ -126,24 +126,24 @@ public:
 	explicit/*(true)*/ constexpr ptr(ptr<Other> const& o, void** = 0) : rp_{static_cast<raw_pointer>(o.rp_)}{}
 	explicit constexpr ptr(raw_pointer rp)  : rp_{rp}{}
 
-	template<class TT> friend constexpr auto reinterpret_pointer_cast(ptr p)
+	template<class TT> friend auto reinterpret_pointer_cast(ptr p)
 	->decltype(ptr<TT>{reinterpret_cast<TT*>(std::declval<raw_pointer>())}){
 		return ptr<TT>{reinterpret_cast<TT*>(p.rp_)};}
 
 	template<class Other, typename = decltype(static_cast<raw_pointer>(std::declval<Other const&>().rp_))> 
 	explicit constexpr ptr(Other const& o) : rp_{static_cast<raw_pointer>(o.rp_)}{}
-	constexpr ptr() = default;
-	constexpr ptr(ptr const&) = default;
+	ptr() = default;
+	ptr(ptr const&) = default;
 	constexpr ptr(std::nullptr_t nu) : rp_{nu}{}
-	constexpr ptr& operator=(ptr const&) = default;
+	ptr& operator=(ptr const&) = default;
 	constexpr bool operator==(ptr const& other) const{return rp_==other.rp_;}
 	constexpr bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
 	template<class Other>
-	constexpr auto operator==(ptr<Other> const& other) const
+	auto operator==(ptr<Other> const& other) const
 	->decltype(rp_==other.rp_){
 		return rp_==other.rp_;}
 	template<class Other>
-	constexpr auto operator!=(ptr<Other> const& other) const
+	auto operator!=(ptr<Other> const& other) const
 	->decltype(rp_!=other.rp_){
 		return rp_!=other.rp_;}
 
@@ -158,21 +158,21 @@ public:
 	explicit constexpr operator void const*() const{return rp_;}
 	template<class TT=T, typename = decltype(static_cast<TT*>(raw_pointer{}))>
 	explicit constexpr operator TT*() const{return static_cast<TT*>(rp_);}
-	constexpr ptr& operator++(){++rp_; return *this;}
-	constexpr ptr& operator--(){--rp_; return *this;}
-	constexpr ptr  operator++(int){auto tmp = *this; ++(*this); return tmp;}
-	constexpr ptr  operator--(int){auto tmp = *this; --(*this); return tmp;}
+	ptr& operator++(){++rp_; return *this;}
+	ptr& operator--(){--rp_; return *this;}
+	ptr  operator++(int){auto tmp = *this; ++(*this); return tmp;}
+	ptr  operator--(int){auto tmp = *this; --(*this); return tmp;}
 	constexpr ptr& operator+=(difference_type n){rp_+=n; return *this;}
 	constexpr ptr& operator-=(difference_type n){rp_-=n; return *this;}
-	constexpr ptr  operator+(difference_type n) const{return ptr{rp_ + n};}
-	constexpr ptr  operator-(difference_type n) const{return ptr{rp_ - n};}
+	constexpr ptr operator+(difference_type n) const{return ptr{rp_ + n};}
+	constexpr ptr operator-(difference_type n) const{return ptr{rp_ - n};}
 	using reference = ref<element_type>;
 	constexpr reference operator*() const{ return {*this}; }
 	constexpr reference operator[](difference_type n) const{return *((*this)+n);}
 	friend constexpr ptr to_address(ptr const& p){return p;}
 	constexpr difference_type operator-(ptr const& o) const{return rp_-o.rp_;}
-	constexpr operator ptr<void>(){return {rp_};}
-	constexpr auto get() const{return rp_;}
+	operator ptr<void>(){return {rp_};}
+	auto get() const{return rp_;}
 	explicit constexpr operator raw_pointer() const{return rp_;}
 	constexpr raw_pointer raw_pointer_cast() const{return this->rp_;}
 	friend constexpr raw_pointer raw_pointer_cast(ptr const& self){return self.rp_;}
@@ -181,15 +181,15 @@ public:
 	->decltype(ref<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{ptr<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{&(rp_->*std::forward<PM>(pm))}}){
 		return ref<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{ptr<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{&(rp_->*std::forward<PM>(pm))}};}
 public:
-	friend constexpr allocator<std::decay_t<T>> get_allocator(ptr const&){return {};}
-	friend constexpr allocator<std::decay_t<T>> default_allocator_of(ptr const&){return {};}
+	friend allocator<std::decay_t<T>> get_allocator(ptr const&){return {};}
+	friend allocator<std::decay_t<T>> default_allocator_of(ptr const&){return {};}
 };
 
 template<class T>
 DEPRECATED("experimental function, it might be removed soon https://gitlab.com/correaa/boost-multi/-/issues/91")
-constexpr T* raw_pointer_cast(T* p){return p;}
+T* raw_pointer_cast(T* p){return p;}
 
-template<class T> constexpr allocator<T> get_allocator(ptr<T> const&){return {};}
+template<class T> allocator<T> get_allocator(ptr<T> const&){return {};}
 
 template<
 	class InputIt, class Size, class... T, class ForwardIt = ptr<T...>,
@@ -197,12 +197,12 @@ template<
 	typename ForwardV = typename std::pointer_traits<ForwardIt>::element_type, 
 	std::enable_if_t<std::is_trivially_constructible<ForwardV, InputV>{}, int> =0
 >
-constexpr ForwardIt uninitialized_copy_n(InputIt f, Size n, ptr<T...> d){
+ForwardIt uninitialized_copy_n(InputIt f, Size n, ptr<T...> d){
 	return memcpy(d, f, n*sizeof(ForwardV)) + n;
 }
 
 template<class It, typename Size, class T2, class Q2, typename T = typename std::iterator_traits<It>::value_type, typename = std::enable_if_t<std::is_trivially_constructible<T2, T>{}>>
-constexpr auto uninitialized_copy_n(It first, Size count, boost::multi::iterator<T2, 1, ptr<Q2>> result)
+auto uninitialized_copy_n(It first, Size count, boost::multi::iterator<T2, 1, ptr<Q2>> result)
 //->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), first, sizeof(T)*stride(first), sizeof(T), count), result + count){
 {	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T)*stride(first), sizeof(T), count), result + count;}
 
@@ -218,6 +218,7 @@ auto uninitialized_move_n(ptr<T1...> first, Size n, ptr<T2...> dest){
 }
 //->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), first, sizeof(T)*stride(first), sizeof(T), count), result + count){
 //{	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T)*stride(first), sizeof(T), count), result + count;}
+
 
 #if 0
 template<
@@ -357,7 +358,7 @@ public:
   #endif
 #else
 	template<class TT>
-	[[SLOW]]  //	[[deprecated("because it implies slow memory access, suround code with CUDA_SLOW")]]
+	[[deprecated("because it implies slow memory access, suround code with CUDA_SLOW")]]
 	__host__ auto operator=(TT&& t) && 
 	->decltype(*pimpl_.rp_ = std::forward<TT>(t), std::move(*this)){	//	assert(0);
 		static_assert(std::is_trivially_assignable<T&, TT&&>{}, "!");
@@ -369,7 +370,7 @@ public:
 #endif
 #else
 	template<class TT>
-	[[SLOW]] //	[[deprecated("because it implies slow memory access, suround code with CUDA_SLOW")]]
+	[[deprecated("because it implies slow memory access, suround code with CUDA_SLOW")]]
 	auto operator=(TT&& t) && 
 	->decltype(*pimpl_.rp_ = std::forward<TT>(t), std::move(*this)){	//	assert(0);
 		static_assert(std::is_trivially_assignable<T&, TT&&>{}, "!");

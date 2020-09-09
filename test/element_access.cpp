@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $CXXFLAGS $0 -o $0x -DMULTI_ACCESS_NDEBUG -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXX $0 -o $0x -DMULTI_ACCESS_NDEBUG -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2018-2020
 
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(multi_test_non_constness_reference){
 	BOOST_REQUIRE( m({0, 3}, 1).dimensionality == 1 );
 	BOOST_REQUIRE( size(m.sliced(0, 3)) == 3 );
 
-	BOOST_REQUIRE( size(m.range({0, 3}).rotated()(1l).unrotated()) == 3 );
+	BOOST_REQUIRE( size(m.range({0, 3}).rotated().paren(1l).unrotated()) == 3 );
 	BOOST_REQUIRE( size(m(multi::index_range{0, 3}, 1)) == 3 );
 
 //	BOOST_REQUIRE( size(m({0, 3}, 1)) == 3 );
@@ -103,24 +103,6 @@ BOOST_AUTO_TEST_CASE(multi_test_non_constness_reference){
 //	BOOST_REQUIRE( m({0, 3}, 1)[1] == 66. );
 }
 
-BOOST_AUTO_TEST_CASE(multi_structured_binding_for_extensions){
-
-#if __cpp_structured_bindings
-	multi::array<std::string, 2> A = 
-		{{"a", "b", "c", "d", "e"},
-		 {"f", "g", "h", "f", "g"},
-		 {"h", "i", "j", "k", "l"}}
-	;
-	{
-		auto [is, js] = extensions(A); 
-		for(auto i : is)
-			for(auto j : js)
-				BOOST_REQUIRE(A[i][j]==A[i][j]);
-	}
-#endif
-
-}
-
 BOOST_AUTO_TEST_CASE(multi_test_stencil){
 
 	multi::array<std::string, 2> A = 
@@ -129,22 +111,22 @@ BOOST_AUTO_TEST_CASE(multi_test_stencil){
 		 {"h", "i", "j", "k", "l"}}
 	;
 	
-	BOOST_REQUIRE( A                          .size()              == 3       );
-	BOOST_REQUIRE( A                          .num_elements()      == 3*5     );
-	BOOST_REQUIRE( A                          [1][2]               == "h"     );
+	BOOST_REQUIRE(      size(A) == 3                                           );
+	BOOST_REQUIRE(           A.num_elements() == 3*5                           );
+	BOOST_REQUIRE(           A[1][2] == "h"                                    );
 
-	BOOST_REQUIRE( A          ({1, 3}, {2, 5}).size()              == 2       );
-	BOOST_REQUIRE( A          ({1, 3}, {2, 5}).extension().start() == 0       );
-	BOOST_REQUIRE( A          ({1, 3}, {2, 5}).num_elements()      == 2*3     );
-	BOOST_REQUIRE( A          ({1, 3}, {2, 5}).num_elements()      == 2*3     );
-	BOOST_REQUIRE( A          ({1, 3}, {2, 5})[0][0]               == "h"     );
-	BOOST_REQUIRE(&A          ({1, 3}, {2, 5})[0][0]               == &A[1][2]);
+	BOOST_REQUIRE(      size(A          ({1, 3}, {2, 5})) == 2                 );
+	BOOST_REQUIRE( extension(A          ({1, 3}, {2, 5})).start() == 0         );
+	BOOST_REQUIRE(           A          ({1, 3}, {2, 5}).num_elements() == 2*3 );
+	BOOST_REQUIRE(           A          ({1, 3}, {2, 5}).num_elements() == 2*3 );
+	BOOST_REQUIRE(           A          ({1, 3}, {2, 5})[0][0] == "h"          );
+	BOOST_REQUIRE(          &A          ({1, 3}, {2, 5})[0][0] == &A[1][2]     );
 
-	BOOST_REQUIRE( A.stenciled({1, 3}, {2, 5}).size()              == 2       );
-	BOOST_REQUIRE( A.stenciled({1, 3}, {2, 5}).extension().start() == 1       );
-	BOOST_REQUIRE( A.stenciled({1, 3}, {2, 5}).num_elements()      == 2*3     );
-	BOOST_REQUIRE( A.stenciled({1, 3}, {2, 5})[1][2]               == "h"     ); 
-	BOOST_REQUIRE(&A.stenciled({1, 3}, {2, 5})[1][2]               == &A[1][2]);
+	BOOST_REQUIRE(      size(A.stenciled({1, 3}, {2, 5})) == 2                 );
+	BOOST_REQUIRE( extension(A.stenciled({1, 3}, {2, 5})).start() == 1         );
+	BOOST_REQUIRE(           A.stenciled({1, 3}, {2, 5}).num_elements() == 2*3 );
+	BOOST_REQUIRE(           A.stenciled({1, 3}, {2, 5}) [1][2] == "h"         ); 
+	BOOST_REQUIRE(          &A.stenciled({1, 3}, {2, 5}) [1][2] == &A[1][2]    );
 
 }
 

@@ -1,5 +1,5 @@
-#ifdef COMPILATION// -*- indent-tabs-mode:t;c-basic-offset:4;tab-width:4 -*-
-$CXXX $CXXFLAGS $0 -o $0x -I/usr/local/cuda/include -L/usr/local/cuda/lib64 -lcudart -lboost_unit_test_framework -lboost_timer -ldl&&$0x&&rm $0x;exit
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
+$CXX $0 -o $0x -lcudart -lboost_unit_test_framework -lboost_timer -ldl&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -30,13 +30,9 @@ namespace cuda{
 	template<class T, multi::dimensionality_type D>
 	using static_array = multi::static_array<T, D, cuda::allocator<T>>;
 
-	template<class T> auto ref(T&& t){return multi::ref(std::forward<T>(t));}
-
-	template<class T> auto Ref(T& t){return multi::ref(t);}
-	template<class T> auto Ref(T&& t) = delete;
-	template<class T> auto Ref(T const&& t) = delete;
-
-#define MULTI_CUDA_BYREF(VaR) VaR=boost::multi::cuda::Ref(VaR)
+//	template<class A> auto raw_array_cast(A&& a)
+//	->decltype(static_array_cast<typename A::element_type, decltype(raw_pointer_cast(base(std::forward<A>(a))))>(std::forward<A>(a))){
+//		return static_array_cast<typename A::element_type, decltype(raw_pointer_cast(base(std::forward<A>(a))))>(std::forward<A>(a));}
 
 	template<class A> auto raw_array_cast(A&& a)
 	->decltype(std::forward<A>(a).template static_array_cast<typename A::element_type, decltype(raw_pointer_cast(base(std::forward<A>(a))))>()){
