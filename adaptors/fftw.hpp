@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXXX $CXXFLAGS -g $0 -o $0x `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS -I/usr/local/cuda/include -g $0 -o $0x `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2018-2020
 
@@ -219,7 +219,7 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, unsigned fla
 		inembed[i]=istrides[i-1]/istrides[i]; //	assert( inembed[i] <= ion[i] );
 	}
 
-	return ::fftw_plan_many_dft(
+	auto ret = ::fftw_plan_many_dft(
 		/*int rank*/ ion.size(), 
 		/*const int* n*/ ion.data(),
 		/*int howmany*/ last - first,
@@ -233,6 +233,8 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, unsigned fla
 		/*int odist*/ stride(d_first),
 		/*int*/ sign, /*unsigned*/ flags
 	);
+	assert(ret);
+	return ret;
 }
 
 template<
@@ -250,22 +252,22 @@ fftw_plan fftw_plan_dft(std::array<bool, +D> which, In&& in, Out&& out, int sign
 	assert(sizes(in) == sizes(out));
 
 	using multi::strides;
-	auto ion      = to_array<ptrdiff_t>(sizes  (in ));
-	auto istrides = to_array<ptrdiff_t>(strides(in ));
-	auto ostrides = to_array<ptrdiff_t>(strides(out));
+	auto ion      = to_array<ptrdiff_t>(in.sizes());
+	auto istrides = to_array<ptrdiff_t>(in.strides());
+	auto ostrides = to_array<ptrdiff_t>(out.strides());
 	std::array<fftw_iodim64, D> dims   ; auto l_dims = dims.begin();
 	std::array<fftw_iodim64, D> howmany; auto l_howmany = howmany.begin();
 	for(int i = 0; i != D; ++i)
 		(which[i]?*l_dims++:*l_howmany++) = fftw_iodim64{ion[i], istrides[i], ostrides[i]};
-	assert(base(in)); assert(base(out)); assert(extensions(in) == extensions(out)); 
+	assert(in.base()); assert(out.base()); assert( in.extensions() == out.extensions() ); 
 	assert( (sign == -1) or (sign == +1) );
 	fftw_plan ret = fftw_plan_guru64_dft(
 		/*int rank*/ sign?(l_dims - dims.begin()):0, 
 		/*const fftw_iodim64 *dims*/ dims.data(), 
 		/*int howmany_rank*/ l_howmany - howmany.begin(),
 		/*const fftw_iodim *howmany_dims*/ howmany.data(), //nullptr, //howmany_dims.data(), //;//nullptr,
-		/*fftw_complex *in*/ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(/*static_cast<std::complex<double> const *>*/(base(in)))), 
-		/*fftw_complex *out*/ reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double> *>*/(base(out))),
+		/*fftw_complex *in*/ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(/*static_cast<std::complex<double> const *>*/(in.base()))), 
+		/*fftw_complex *out*/ reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double> *>*/(out.base())),
 		sign, flags// | FFTW_ESTIMATE
 	);
 	assert(ret);
