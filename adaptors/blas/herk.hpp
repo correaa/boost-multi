@@ -40,12 +40,12 @@ using core::herk;
 
 template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr, std::enable_if_t<is_complex_array<C2D>{}, int> =0>
 auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c)
-->decltype(herk('\0', '\0',size(c), size(a), alpha, base_aux(a), stride(a.rotated()), beta, base_aux(c), stride(c)), std::forward<C2D>(c))
+->decltype(herk('\0', '\0', c.size(), a.size(), alpha, base_aux(a), stride(a.rotated()), beta, base_aux(c), stride(c)), std::forward<C2D>(c))
 {
-	assert( size(a) == size(c) );
-	assert( size(c) == size(rotated(c)) );
+	assert( a.size() == c.size() );
+	assert( c.size() == rotated(c).size() );
+	if(c.size()==0) return std::forward<C2D>(c);
 	if(is_conjugated<C2D>{}){herk(flip(c_side), alpha, a, beta, hermitized(c)); return std::forward<C2D>(c);}
-	if(size(c)==0) return std::forward<C2D>(c);
 	{
 		auto base_a = base_aux(a);
 		auto base_c = base_aux(c); //  static_assert( not is_conjugated<C2D>{}, "!" );
