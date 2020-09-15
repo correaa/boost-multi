@@ -85,19 +85,6 @@ clang:
       - cd test
       - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
 
-clang8:
-    stage: test
-    script:
-      - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
-      - apt update --quiet
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang-8
-      - ln --symbolic --force . ../multi
-      - export CXX="clang++-8 -x c++ -Wall -Wextra -Wpedantic -Werror -Wmove -O3 -pthread"
-      - $CXX --version
-      - cd test
-      - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
-
 clangX:
     stage: test
     script:
