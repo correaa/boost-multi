@@ -27,7 +27,7 @@ __attribute__((used))
 #endif
 int TV_ttf_display_type(boost::multi::array<TT, 1> const* mad1P){
 	if(not mad1P->empty()){
-		char  tname [ 128 ];
+		char tname[128];
 		snprintf(tname, sizeof(tname), "%s[%ld]", boost::typeindex::type_id<TT>().pretty_name().c_str(), (long)mad1P->size());//, (long)mad1P->stride());
 		int result = TV_ttf_add_row("elements", tname, mad1P->origin());
 		if (result != 0){
@@ -44,7 +44,7 @@ __attribute__((used))
 #endif
 int TV_ttf_display_type(boost::multi::array<TT, 2> const* mad2P){
 	if(not mad2P->empty()){
-		char  bname [ 128 ] = "value_type";
+		char tname[128];
 		using std::get;
 		snprintf(tname, sizeof(tname), "%s[%ld][%ld]", boost::typeindex::type_id<TT>().pretty_name().c_str(), (long)get<0>(mad2P->sizes()), (long)get<1>(mad2P->sizes()));//, (long)mad1P->stride());
 		int result = TV_ttf_add_row("elements", tname, mad2P->origin());
@@ -63,7 +63,7 @@ __attribute__((used))
 #endif
 int TV_ttf_display_type(boost::multi::basic_array<TT, 1> const* mad2P){
 	boost::multi::array<TT, 1> const value = *mad2P;
-	return TV_ttf_display_type(&value);
+	return TV_ttf_display_type(std::addressof(value));
 }
 
 template<class TT>
@@ -72,7 +72,7 @@ __attribute__((used))
 #endif
 int TV_ttf_display_type(boost::multi::basic_array<TT, 2> const* mad2P){
 	boost::multi::array<TT, 2> const value = *mad2P;
-	return TV_ttf_display_type(&value);
+	return TV_ttf_display_type(std::addressof(value));
 }
 
 template int TV_ttf_display_type<double              >(boost::multi::array<double              , 1> const*);
@@ -102,9 +102,6 @@ template int TV_ttf_display_type<std::complex<double>>(boost::multi::basic_array
 template int TV_ttf_display_type<std::complex<float> >(boost::multi::basic_array<std::complex<float> , 2> const*);
 template int TV_ttf_display_type<int                 >(boost::multi::basic_array<int                 , 2> const*);
 template int TV_ttf_display_type<long                >(boost::multi::basic_array<long                , 2> const*);
-
-#endif
-#endif
 
 #if not __INCLUDE_LEVEL__
 
