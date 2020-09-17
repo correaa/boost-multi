@@ -563,6 +563,10 @@ int main(){
 }
 ```
 
+## TotalView
+
+TotalView visual debugger can display arrays in human-readable form. To use it, simply #include "multi/adaptors/totalview.hpp".
+
 # Technical points
 
 ### What's up with the multiple bracket notation? 
