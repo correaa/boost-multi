@@ -260,7 +260,14 @@ template<class A = void> struct is_conjugated{
 };
 
 template<class A, class D = std::decay_t<A>, typename Elem=typename D::element_type, typename Ptr=typename D::element_ptr,
-	std::enable_if_t<not is_conjugated<A>{}, int> =0>
+	std::enable_if_t<not is_complex_array<A>{}, int> =0>
+A&& conj(A&& a){
+//	return multi::static_array_cast<Elem, conjugater<Ptr>>(a);
+	return std::forward<A>(a);
+}
+
+template<class A, class D = std::decay_t<A>, typename Elem=typename D::element_type, typename Ptr=typename D::element_ptr,
+	std::enable_if_t<not is_conjugated<A>{} and is_complex_array<A>{}, int> =0>
 decltype(auto) conj(A&& a){
 //	return multi::static_array_cast<Elem, conjugater<Ptr>>(a);
 	return std::forward<A>(a).template static_array_cast<Elem, conjugater<Ptr>>();
@@ -304,7 +311,7 @@ namespace std{
 #include "../../array.hpp"
 #include "../../utility.hpp"
 
-#include<thrust/complex.h>
+//#include<thrust/complex.h>
 
 //#include "../../adaptors/cuda.hpp"
 
@@ -325,7 +332,7 @@ template<class M> decltype(auto) print(M const& C){
 
 BOOST_AUTO_TEST_CASE(multi_blas_numeric_real_imag_part){
 
-	using complex = thrust::complex<double>; complex const I{0, 1};
+	using complex = std::complex<double>; complex const I{0, 1};
 
 	multi::array<double, 2> A = {
 		{1., 3., 4.}, 
@@ -390,7 +397,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_real_conjugated){
 
 	BOOST_REQUIRE( *BdataC == 1. + 3.*I );
 
-	static_assert(    multi::blas::is_complex_array<multi::array<thrust::complex<double>, 2>>{}, "!");
+//	static_assert(    multi::blas::is_complex_array<multi::array<thrust::complex<double>, 2>>{}, "!");
 	static_assert(    multi::blas::is_complex_array<decltype(B)>{}, "!");
 	static_assert(not multi::blas::is_conjugated<decltype(B)>{}, "!");
 
@@ -412,6 +419,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_real_conjugated){
 	BOOST_REQUIRE( base(conj(Bconj))->imag() == -3. );
 //	BOOST_REQUIRE( base(conjugated(Bconj))->imag() == -3. );
 #endif
+
+	BOOST_REQUIRE( multi::blas::conj(B)[1][0] == std::conj(B[1][0]) );
 }
 
 #if 0
