@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x -lboost_unit_test_framework \
+$CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework \
 `pkg-config --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core` \
 &&$0x&&rm $0x;exit
@@ -810,6 +810,41 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_automatic){
 		blas::gemm(1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
 		BOOST_REQUIRE( c[1][2] == complex(112, 12) );
 	}
+}
+
+BOOST_AUTO_TEST_CASE(submatrix_result_issue_97){
+	multi::array<complex, 2> mat({3, 2});
+	complex const I{0, 1};
+
+	mat = multi::array<complex, 2>{
+		{2. + 3.*I, 2. + 1.*I},
+		{4. + 2.*I, 2. + 4.*I},
+		{7. + 1.*I, 1. + 5.*I}
+	};
+	
+	multi::array<complex, 2> vec({3, 1}, -2.0);
+	
+	vec = multi::array<complex, 2>{
+		{1. + 2.*I},
+		{2. + 1.*I},
+		{9. + 2.*I}
+	};
+	
+	using multi::blas::hermitized;
+	
+	auto olap1 = multi::blas::gemm(hermitized(mat), vec);
+	std::cout<< olap1[0][0] <<std::endl; // ok
+	std::cout<< olap1[1][0] <<std::endl; // ok
+	std::cout<<std::endl;
+	
+	auto olap2 = multi::blas::gemm(hermitized(mat({0, 3}, {0, 2})), vec); //this one gives the wrong result	
+	std::cout<< olap2[0][0] <<std::endl; // ok
+	std::cout<< olap2[1][0] <<std::endl; // ok
+	std::cout<<std::endl;
+
+	multi::array<complex, 2> mat2 = mat({0, 3}, {0, 1});
+	auto olap3 = multi::blas::gemm(hermitized(mat2), vec);
+	std::cout<< olap3[0][0] <<std::endl; // ok
 }
 
 #endif
