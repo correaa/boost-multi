@@ -837,6 +837,7 @@ BOOST_AUTO_TEST_CASE(submatrix_result_issue_97){
 	std::cout<< olap1[1][0] <<std::endl; // ok
 	std::cout<<std::endl;
 	
+	BOOST_REQUIRE( mat({0, 3}, {0, 2}) == mat );
 	auto olap2 = multi::blas::gemm(hermitized(mat({0, 3}, {0, 2})), vec); //this one gives the wrong result	
 	std::cout<< olap2[0][0] <<std::endl; // ok
 	std::cout<< olap2[1][0] <<std::endl; // ok
