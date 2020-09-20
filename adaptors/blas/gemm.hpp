@@ -97,7 +97,15 @@ auto gemm(AA a, A2D const& A, B2D const& B){
 	return gemm(a, A, B, 0., C2D({size(A), size(rotated(B))}, get_allocator(A)));
 }
 
-template<class A2D, class B2D> auto gemm(A2D const& A, B2D const& B){return gemm(1., A, B);}
+template<class A2D, class B2D> 
+auto gemm(A2D const& A, B2D const& B)
+->decltype(gemm(1., A, B)){
+	return gemm(1., A, B);}
+
+template<class A2D, class B2D> 
+auto operator*(A2D const& A, B2D const& B)
+->std::decay_t<decltype(gemm(1., A, B))>{
+	return gemm(1., A, B);}
 
 }}}
 
@@ -811,27 +819,25 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_automatic){
 }
 
 BOOST_AUTO_TEST_CASE(submatrix_result_issue_97){
-	multi::array<complex, 2> mat({3, 2});
-
-	mat = multi::array<complex, 2>{
+	multi::array<complex, 2> mat = {
 		{2. + 3.*I, 2. + 1.*I},
 		{4. + 2.*I, 2. + 4.*I},
 		{7. + 1.*I, 1. + 5.*I}
 	};
 	
-	multi::array<complex, 2> vec({3, 1}, -2.0);
-	
-	vec = multi::array<complex, 2>{
+	multi::array<complex, 2> vec = {
 		{1. + 2.*I},
 		{2. + 1.*I},
 		{9. + 2.*I}
 	};
 	
+
+	multi::array<complex, 2> mat2 = mat({0, 3}, {0, 1});
+	BOOST_REQUIRE( mat2 == mat({0, 3}, {0, 1}) );
+
+	using multi::blas::gemm;
 	using multi::blas::hermitized;
 
-	auto mat2 = +mat({0, 3}, {0, 1});
-	BOOST_REQUIRE( mat2 == mat({0, 3}, {0, 1}) );
-	using multi::blas::gemm;
 //	BOOST_REQUIRE( gemm(hermitized(mat({0, 3}, {0, 1})), vec)[0][0] == 83. + 6.*I ); // case not implemented in blas
 	BOOST_REQUIRE( gemm(hermitized(mat2               ), vec)[0][0] == 83. + 6.*I );
 }
