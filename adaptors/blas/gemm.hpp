@@ -61,8 +61,8 @@ C2D&& gemm(typename std::decay_t<C2D>::element_type alpha, A2D const& a, B2D con
 				gemm(is_conjugated<A2D>{}?'C':'T', is_conjugated<B2D>{}?'C':'T', size(c   ), size(rotated(b)), size(rotated(a)), &alpha, base_a, stride(a   ), base_b, stride(b   ), &beta, base_c, stride(rotated(c)));
 			}else if(!is_c_ordering(a) and  is_c_ordering(b)){
 				if(is_conjugated<A2D>{} and size(a)==1){
-					assert((~a).stride()==1); // if fails, this case is not implemented by blas
-					gemm('C', is_conjugated<B2D>{}?'C':'T', size(c   ), size(rotated(b)), size(rotated(a)), &alpha, base_a, size(rotated(a)), base_b, stride(b   ), &beta, base_c, stride(rotated(c)));
+					if((~a).stride()==1) gemm('C', is_conjugated<B2D>{}?'C':'T', size(c   ), size(rotated(b)), size(rotated(a)), &alpha, base_a, size(rotated(a)), base_b, stride(b   ), &beta, base_c, stride(rotated(c)));
+					else                 assert(0); // case not implemented by blas
 				}else{
 					assert(not is_conjugated<A2D>{});
 					gemm('N', is_conjugated<B2D>{}?'C':'T', size(c   ), size(rotated(b)), size(rotated(a)), &alpha, base_a, stride(rotated(a)), base_b, stride(b   ), &beta, base_c, stride(rotated(c)));
@@ -132,8 +132,6 @@ template<class M> decltype(auto) print(M const& C){
 }
 
 using complex = std::complex<double>; complex const I{0,1};
-
-#if 0
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_square){
 	namespace blas = multi::blas;
@@ -811,7 +809,6 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_automatic){
 		BOOST_REQUIRE( c[1][2] == complex(112, 12) );
 	}
 }
-#endif
 
 BOOST_AUTO_TEST_CASE(submatrix_result_issue_97){
 	multi::array<complex, 2> mat({3, 2});
