@@ -103,6 +103,7 @@ BOOST_AUTO_TEST_CASE(rvalue_assignments){
 
 }
 
+#if 0 // this is difficult to test portably because self-move-assigment is a warning
 BOOST_AUTO_TEST_CASE(self_assigment){
 	multi::array<double, 1> A = {1., 2., 3.};
 	A = std::move(A);
@@ -113,6 +114,7 @@ BOOST_AUTO_TEST_CASE(self_assigment){
 	B = std::move(B);
 	BOOST_REQUIRE( B.empty() );
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(assignments){
 	{
