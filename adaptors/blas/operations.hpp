@@ -37,17 +37,44 @@ decltype(auto) hermitized(A&& a){return conjugated_transposed(std::forward<A>(a)
 template<class A>
 decltype(auto) transposed(A&& a){return rotated(std::forward<A>(a));}
 
-template<class A, std::enable_if_t<std::decay_t<A>::dimensionality == 2, int> =0> 
-[[deprecated("use blas::H instead of blas::C for hermitized matrices to avoid confusions")]]
-decltype(auto) C(A&& a){return hermitized(std::forward<A>(a));}
-template<class A, std::enable_if_t<std::decay_t<A>::dimensionality == 2, int> =0>
-decltype(auto) H(A&& a){return hermitized(std::forward<A>(a));}
+//template<class A, std::enable_if_t<std::decay_t<A>::dimensionality == 2, int> =0>
+//decltype(auto) H(A&& a){return hermitized(std::forward<A>(a));}
+
+namespace operators{
+
+MAYBE_UNUSED constexpr static struct {
+	template<class A, std::enable_if_t<std::decay_t<A>::dimensionality == 2, int> =0>
+	decltype(auto) operator()(A&& a) const{return hermitized(std::forward<A>(a));}
+	template<class A, std::enable_if_t<std::decay_t<A>::dimensionality == 1, int> =0>
+	[[deprecated("use blas::C instead of blas::H for conjugated vectors to avoid confusions")]]
+	decltype(auto) operator()(A&& a) const{return blas::conj(std::forward<A>(a));}
+} H;
+
+template<class A, class Op>
+auto operator^(A&& a, Op op)
+->decltype(op(std::forward<A>(a))){
+	return op(std::forward<A>(a));}
+}
+
+using operators::H;
 
 template<class A, std::enable_if_t<std::decay_t<A>::dimensionality == 1, int> =0> 
 decltype(auto) C(A&& a){return blas::conj(std::forward<A>(a));}
-template<class A, std::enable_if_t<std::decay_t<A>::dimensionality == 1, int> =0>
-[[deprecated("use blas::C instead of blas::H for conjugated vectors to avoid confusions")]]
-decltype(auto) H(A&& a){return blas::conj(std::forward<A>(a));}
+template<class A, std::enable_if_t<std::decay_t<A>::dimensionality == 2, int> =0> 
+decltype(auto) C(A&& a){return hermitized(std::forward<A>(a));}
+
+namespace operators{
+
+	template<class A>
+	auto operator*(A&& a)
+	->decltype(blas::conj(std::forward<A>(a))){
+		return blas::conj(std::forward<A>(a));}
+
+}
+
+//template<class A, std::enable_if_t<std::decay_t<A>::dimensionality == 1, int> =0>
+//[[deprecated("use blas::C instead of blas::H for conjugated vectors to avoid confusions")]]
+//decltype(auto) H(A&& a){return blas::conj(std::forward<A>(a));}
 
 template<class A> decltype(auto) T(A&& a){return transposed(std::forward<A>(a));}
 template<class A> decltype(auto) N(A&& a){return identity  (std::forward<A>(a));}
@@ -95,6 +122,13 @@ BOOST_AUTO_TEST_CASE(m){
 
 	static_assert( not blas::is_conjugated<decltype(blas::T(A))>{}, "!" );
 	BOOST_REQUIRE( blas::T(A)[0][1] == A[1][0] );
+
+	using namespace blas::operators;
+	BOOST_REQUIRE( (*~A)[0][1] == conj(A[1][0]) );
+	BOOST_REQUIRE( (~*A)[0][1] == conj(A[1][0]) );
+	BOOST_REQUIRE( ( ~A)[0][1] ==      A[1][0]  );
+	BOOST_REQUIRE( ( *A)[0][1] == conj(A[0][1]) );
+
 }
 
 BOOST_AUTO_TEST_CASE(is_complex_array_test){
