@@ -1,6 +1,7 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXXX $CXXFLAGS $0 -o $0x -lcudart&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0x `pkg-config --cflags --libs cudart-11.0`&&$0x&&rm $0x;exit
 #endif
+// © Alfredo A. Correa 2019-2020
 
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_PTR_HPP
 #define BOOST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_PTR_HPP
@@ -184,7 +185,8 @@ public:
 	){
 		return adl_copy_n(cuda::ptr<T1>(first), count, cuda::ptr<T2>(result)), result + count;
 	}
-
+public:
+	friend allocator<std::decay_t<T>> default_allocator_of(ptr const&){return {};}
 };
 
 template<class T, class S> const boost::serialization::array_wrapper<T> make_array(ptr<T> t, S s){
@@ -241,6 +243,8 @@ std::string cpugpu_overload(cuda::ptr<double>){return "gpu";}
 std::string cpuonly_overload(double*){return "cpu";}
 
 std::string gpuonly_overload(cuda::ptr<double>){return "gpu";}
+
+template<class T> void what(T&&) = delete;
 
 int main(){
 
