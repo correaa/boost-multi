@@ -39,7 +39,8 @@ template<class A, std::enable_if_t<    is_conjugated<A>{}, int> =0>
 auto gemm_base_aux(A&& a){return underlying(base(a));}
 
 template<class A, class B, class C>
-C&& gemm(typename A::element alpha, A const& a, B const& b, typename A::element beta, C&& c){
+auto gemm(typename A::element alpha, A const& a, B const& b, typename A::element beta, C&& c)
+->decltype(gemm('N', 'T', size(~c), size(a), size(b), &alpha, gemm_base_aux(b), stride( b), gemm_base_aux(a), stride(~a), &beta, gemm_base_aux(c), size(b)) , std::forward<C>(c)){
 
 	if(c.is_empty()){
 		assert(a.is_empty() and b.is_empty());
@@ -61,7 +62,7 @@ C&& gemm(typename A::element alpha, A const& a, B const& b, typename A::element 
 	     if(stride(c)==1 and stride(~c)!=1) blas::gemm(alpha, ~b, ~a, beta, ~c);
 	else if(is_conjugated<C>{}) blas::gemm(conj(alpha), conj(a), conj(b), conj(beta), conj(c));
 	else{
-		/* */ if(stride(~a)==1 and stride(~b)==1 and not is_conjugated<A>{} and not is_conjugated<B>{}){
+		;;;;; if(stride(~a)==1 and stride(~b)==1 and not is_conjugated<A>{} and not is_conjugated<B>{}){
 			if(size(a)==1) gemm('N', 'N', size(~c), size(a), size(b), &alpha, base_b, stride( b), base_a, size(b)   , &beta, base_c, size(b)  );
 			else           gemm('N', 'N', size(~c), size(a), size(b), &alpha, base_b, stride( b), base_a, stride( a), &beta, base_c, stride(c));
 		}else if(stride( a)==1 and stride(~b)==1 and     is_conjugated<A>{} and not is_conjugated<B>{}) gemm('N', 'C', size(~c), size(a), size(b), &alpha, base_b, stride( b), base_a, stride(~a), &beta, base_c, stride(c));
