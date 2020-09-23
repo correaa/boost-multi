@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXX -DNDEBUG $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -101,6 +101,17 @@ BOOST_AUTO_TEST_CASE(rvalue_assignments){
 	auto linear2 = [&]{return multi::array_ptr<complex, 1>(v2.data(), 200);};
 	*linear2() = *linear1();
 
+}
+
+BOOST_AUTO_TEST_CASE(self_assigment){
+	multi::array<double, 1> A = {1., 2., 3.};
+	A = std::move(A);
+	std::cout << A[0] << std::endl;
+	BOOST_REQUIRE( A.empty() );
+
+	multi::array<double, 2> B = {{1., 2., 3.},{2.,3.,4.}};
+	B = std::move(B);
+	BOOST_REQUIRE( B.empty() );
 }
 
 BOOST_AUTO_TEST_CASE(assignments){
