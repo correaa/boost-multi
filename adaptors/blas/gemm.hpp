@@ -17,6 +17,7 @@ $CXXX $CXXFLAGS -g -O0 $0 -o $0x -lboost_unit_test_framework \
 #include "../blas/gemv.hpp"
 
 #include "../../config/NODISCARD.hpp"
+#include "../../config/MARK.hpp"
 
 namespace boost{
 namespace multi{
@@ -41,6 +42,8 @@ auto gemm_base_aux(A&& a){return underlying(base(a));}
 template<class A, class B, class C>
 auto gemm(typename A::element alpha, A const& a, B const& b, typename A::element beta, C&& c)
 ->decltype(gemm('N', 'T', size(~c), size(a), size(b), &alpha, gemm_base_aux(b), stride( b), gemm_base_aux(a), stride(~a), &beta, gemm_base_aux(c), size(b)) , std::forward<C>(c)){
+
+	MULTI_MARK_SCOPE("multi::blas::gemm");
 
 	if(c.is_empty()){
 		assert(a.is_empty() and b.is_empty());

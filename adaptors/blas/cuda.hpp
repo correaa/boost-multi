@@ -6,6 +6,9 @@ $CXXX $CXXFLAGS $0 -o $0x `pkg-config --cflags --libs cudart-11.0 cublas-11.0 bl
 #ifndef MULTI_ADAPTORS_BLAS_CUDA_HPP
 #define MULTI_ADAPTORS_BLAS_CUDA_HPP
 
+#include "../blas/../../config/MARK.hpp"
+
+
 #include "../../memory/adaptors/cuda/ptr.hpp"
 #include "../../memory/adaptors/cuda/managed/ptr.hpp"
 #include "../../memory/adaptors/cuda/managed/allocator.hpp"
@@ -79,6 +82,7 @@ auto cublas_call(CublasFunction f){
 //#define CUBLAS_(FunctionPostfix) boost::multi::cublas_call(cublas##FunctionPostfix)
 
 #define CUBLAS_CALL(CodE) \
+	MULTI_MARK_SCOPE("multi::cublas "#CodE); \
 	auto s = static_cast<enum cublas_error>(CodE); \
 	if( s != cublas_error::success ) throw std::system_error{make_error_code(s), "cannot call cublas function "#CodE };
 
@@ -304,7 +308,7 @@ auto translate(char O)->cublasOperation_t{
 
 struct context : std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>{
 	context()  : std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>(
-		[]{cublasHandle_t h; cublasCreate(&h); return h;}(), &cublasDestroy
+		[]{MULTI_MARK_SCOPE("multi::cublas::create context"); cublasHandle_t h; cublasCreate(&h); return h;}(), &cublasDestroy
 	){}
 	int version() const{
 		int ret; cublasGetVersion(get(), &ret); return ret;
