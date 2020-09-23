@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_real_complex){
 		multi::array<complex, 1> const Y3 = {214.02, 106.43, 188.37};
 		
 		using namespace blas::operators;
-		BOOST_REQUIRE( ((Y - Y3)^2)  == 0 );
+		BOOST_TEST_REQUIRE( ((Y - Y3)^2)  == 0. , boost::test_tools::tolerance(1e-13) );
 	
 	}
 }
