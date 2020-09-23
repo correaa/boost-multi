@@ -52,9 +52,19 @@ auto alloc_dot(X1D const& x, Y1D const& y, Alloc const& alloc){
 }
 
 template<class X1D, class Y1D>
-NODISCARD("when last argument is read-only")
+NODISCARD("pure function")
 auto dot(X1D const& x, Y1D const& y){
 	return alloc_dot(x, y, common(get_allocator(x), get_allocator(y)));
+}
+
+namespace operators{
+
+	template<class X1D, class Y1D>
+	NODISCARD("no side effect")
+	auto operator,(X1D const& x, Y1D const& y)
+	->decltype(dot(x, y)){
+		return dot(x, y);}
+
 }
 
 }}}
@@ -103,8 +113,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_1d_real){
 	multi::array<float, 1> W = {1., 2., 3.};
 	
 	using blas::dot;
-	assert( 14. == dot(V, W) );
-	assert( dot(V, W) == 14. );
+	BOOST_REQUIRE( 14. == dot(V, W) );
+	BOOST_REQUIRE( dot(V, W) == 14. );
 
 }
 
@@ -192,9 +202,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex){
 //		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}, std::plus<>{}, [](auto a, auto b){return conj(a)*conj(b);}) );
 	}
 }
-
-template<class T>
-void what(T&&) = delete;
 
 BOOST_AUTO_TEST_CASE(inq_case){
 	multi::array<double, 1> v1(10, +1.0);
