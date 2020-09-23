@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-exit;$CXX $0 -o $0x `pkg-config --libs blas` -lcudart -lcublas&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0x `pkg-config --cflags --libs cudart-11.0 cublas-11.0 blas` -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -41,16 +41,16 @@ enum class cublas_error : typename std::underlying_type<cublasStatus_t>::type{
 
 std::string inline cublas_string(enum cublas_error err){ //https://stackoverflow.com/questions/13041399/equivalent-of-cudageterrorstring-for-cublas
 	switch(err){
-		case cublas_error::success              : return "CUBLAS_STATUS_SUCCESS";
-		case cublas_error::not_initialized      : return "CUBLAS_STATUS_NOT_INITIALIZED";
-		case cublas_error::allocation_failed    : return "CUBLAS_STATUS_ALLOC_FAILED";
-		case cublas_error::invalid_value        : return "CUBLAS_STATUS_INVALID_VALUE";
-		case cublas_error::architecture_mismatch: return "CUBLAS_STATUS_ARCH_MISMATCH";
-		case cublas_error::mapping_error        : return "CUBLAS_STATUS_MAPPING_ERROR";
-		case cublas_error::execution_failed     : return "CUBLAS_STATUS_EXECUTION_FAILED";
-		case cublas_error::internal_error       : return "CUBLAS_STATUS_INTERNAL_ERROR";
-		case cublas_error::not_supported        : return "CUBLAS_STATUS_NOT_SUPPORTED";
-		case cublas_error::license_error        : return "CUBLAS_STATUS_LICENSE_ERROR";
+	case cublas_error::success              : return "CUBLAS_STATUS_SUCCESS";
+	case cublas_error::not_initialized      : return "CUBLAS_STATUS_NOT_INITIALIZED";
+	case cublas_error::allocation_failed    : return "CUBLAS_STATUS_ALLOC_FAILED";
+	case cublas_error::invalid_value        : return "CUBLAS_STATUS_INVALID_VALUE";
+	case cublas_error::architecture_mismatch: return "CUBLAS_STATUS_ARCH_MISMATCH";
+	case cublas_error::mapping_error        : return "CUBLAS_STATUS_MAPPING_ERROR";
+	case cublas_error::execution_failed     : return "CUBLAS_STATUS_EXECUTION_FAILED";
+	case cublas_error::internal_error       : return "CUBLAS_STATUS_INTERNAL_ERROR";
+	case cublas_error::not_supported        : return "CUBLAS_STATUS_NOT_SUPPORTED";
+	case cublas_error::license_error        : return "CUBLAS_STATUS_LICENSE_ERROR";
 	}
 	return "cublas status <unknown>";
 }
@@ -372,7 +372,7 @@ auto asum(S n, cuda::ptr<ComplexTconst> x, S incx){
 
 template<class...As> auto copy(As... as) DECLRETURN(cublas::context{}.copy(as...))
 template<class...As> auto scal(As... as) DECLRETURN(cublas::context{}.scal(as...))
-template<class...As> auto dot (As... as) DECLRETURN(cublas::context{}.dot (as...))
+//template<class...As> auto dot (As... as) DECLRETURN(cublas::context{}.dot (as...))
 template<class...As> auto dotu(As... as) DECLRETURN(cublas::context{}.dotu(as...))
 template<class...As> auto dotc(As... as) DECLRETURN(cublas::context{}.dotc(as...))
 template<class...As> auto nrm2(As... as) DECLRETURN(cublas::context{}.nrm2(as...))
@@ -464,7 +464,7 @@ using cuda::iamax;
 using cuda::asum;
 using cuda::copy;
 using cuda::scal;
-using cuda::dot;
+//using cuda::dot;
 using cuda::dotu;
 using cuda::dotc;
 using cuda::nrm2;
@@ -490,16 +490,67 @@ auto trsm(Side /*cublasSideMode_t*/ side, /*cublasFillMode_t*/ Fill uplo, /*cubl
 
 #if not __INCLUDE_LEVEL__ // _TEST_MULTI_ADAPTORS_BLAS_CUDA
 
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS"
+#define BOOST_TEST_DYN_LINK
+#include<boost/test/unit_test.hpp>
+
 #include "../../array.hpp"
 #include "../../utility.hpp"
+
+#include "../../adaptors/cuda.hpp"
+#include "../../adaptors/blas.hpp"
+#include "../../adaptors/blas/cuda.hpp"
+
 #include<cassert>
 
 namespace multi = boost::multi;
 
-int main(){
-//	multi::cublas::context c;
-//	assert( c.version() >= 10100 );
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_cuda_version){
+	multi::cublas::context c;
+	BOOST_REQUIRE( c.version() >= 10100 );
 }
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_cuda_iamax){
+	using complex = std::complex<double>;
+	complex const I{0,1};
+	{
+		multi::array<complex, 1> const A = {1. + 2.*I, 2., 3. + 3.*I, 4.};
+		using multi::blas::iamax;
+		BOOST_REQUIRE( iamax(A) == 2 );
+	}
+	{
+		multi::cuda::array<complex, 1> const A = {1. + 2.*I, 2., 3. + 3.*I, 4.};
+		using multi::blas::iamax;
+		BOOST_REQUIRE( iamax(A) == 2 );
+	}
+	{
+		multi::cuda::managed::array<complex, 1> const A = {1. + 2.*I, 2., 3. + 3.*I, 4.};
+		using multi::blas::iamax;
+		BOOST_REQUIRE( iamax(A) == 2 );
+	}
+}
+
+template<class T> void what(T&&) = delete;
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_cuda_dot){
+	using complex = std::complex<double>;
+	complex const I{0,1};
+	multi::array<complex, 1> const A = {1. + 2.*I, 2., 3. + 3.*I, 4.};
+	multi::array<complex, 1> const B = {2. + 3.*I, 4., 5. + 6.*I, 7.};
+	namespace blas = multi::blas;
+
+	{
+		multi::cuda::array<complex, 1> const A_gpu = A, B_gpu = B;
+		using blas::dot;
+		BOOST_REQUIRE( dot(blas::C(A_gpu), B_gpu) == dot(blas::C(A), B) );
+	}
+	{
+		multi::cuda::managed::array<complex, 1> const A_mng = A, B_mng = B;
+		using blas::dot;
+		BOOST_REQUIRE( dot(blas::C(A_mng), A_mng) == dot(blas::C(A), A) );
+	}
+}
+
 
 #endif
 #endif
