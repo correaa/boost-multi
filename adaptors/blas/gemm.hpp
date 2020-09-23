@@ -61,7 +61,6 @@ C&& gemm(typename A::element alpha, A const& a, B const& b, typename A::element 
 	     if(stride(c)==1 and stride(~c)!=1) blas::gemm(alpha, ~b, ~a, beta, ~c);
 	else if(is_conjugated<C>{}) blas::gemm(conj(alpha), conj(a), conj(b), conj(beta), conj(c));
 	else{
-	
 		/* */ if(stride(~a)==1 and stride(~b)==1 and not is_conjugated<A>{} and not is_conjugated<B>{}){
 			if(size(a)==1) gemm('N', 'N', size(~c), size(a), size(b), &alpha, base_b, stride( b), base_a, size(b)   , &beta, base_c, size(b)  );
 			else           gemm('N', 'N', size(~c), size(a), size(b), &alpha, base_b, stride( b), base_a, stride( a), &beta, base_c, stride(c));
@@ -933,7 +932,7 @@ BOOST_AUTO_TEST_CASE(submatrix_result_issue_97){
 	BOOST_TEST( gemm(hermitized(M({0, 3}, {0, 1})), V)[0][0] == 83. + 6.*I );
 
 	using namespace multi::blas::operators;
-	BOOST_REQUIRE( ((*~M)*V)[0][0] == 83. + 6.*I );
+	BOOST_REQUIRE( (hermitized(M)*V)[0][0] == 83. + 6.*I );
 }
 
 #endif
