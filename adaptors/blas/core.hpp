@@ -298,10 +298,13 @@ namespace core{
 #define xgeru(T) template<         class S> v geru(         S m, S n, T const& a,                    T const* X, S incx,         T const* Y, S incy, T* A, S lda){BLAS(T##geru)(       BC(m), BC(n), a,             X, BC(incx),       Y, BC(incy), A, BC(lda));}
 #define xgerc(T) template<         class S> v gerc(         S m, S n, T const& a,                    T const* X, S incx,         T const* Y, S incy, T* A, S lda){BLAS(T##gerc)(       BC(m), BC(n), a,             X, BC(incx),       Y, BC(incy), A, BC(lda));}
 
+namespace core{
+
 xgemv(s) xgemv(d) xgemv(c) xgemv(z)
 xger(s)   xger(d)
                   xgeru(c) xgeru(z)
                   xgerc(c) xgerc(z)
+}
 
 template<class T> 
 struct blas2{
@@ -326,14 +329,12 @@ namespace core{
 ///////////////////////////////////////////////////////////////////////////////
 // LEVEL 3
 #define xgemm(T) \
-template<class C, class S> v gemm(C transA, C transB, S m, S n, S k, T const* a, T const* A, S lda, T const* B, S ldb, T const* beta, T* CC, S ldc){ \
-	if(transA == 'N' or transA == 'n') {assert(lda >= std::max(1l, m));} else {assert(lda >= std::max(1l, k));} \
-	assert(ldb >= std::max(1l, transB=='N'?k:n)); \
-	/*if(transB == 'N' or transB == 'n') {std::cerr<<"ldb,k,n,m ="<< ldb <<','<<k<<','<<n<<','<<m<<std::endl;*/ \
-		/*if(ldb==1 and n==1) return gemv(transA, m, k, a, A, lda, B, S{1}, beta, CC, S{1});*/ \
-		/*assert(ldb >= std::max(1l, k));} else {std::cerr<<"ldb ="<< ldb <<std::endl; assert(ldb >= std::max(1l, n));}*/ \
-	assert(ldc >= std::max(1l, m)); \
-	BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), *a, A, BC(lda), B, BC(ldb), *beta, CC, BC(ldc));\
+template<class C, class S>                                                                                                \
+v gemm(C transA, C transB, S m, S n, S k, T const* a, T const* A, S lda, T const* B, S ldb, T const* beta, T* CC, S ldc){ \
+	if(transA =='N' or transA =='n') assert(lda >= std::max(1l, m)); else assert(lda >= std::max(1l, k));                 \
+	if(transB =='N' or transB =='n') assert(ldb >= std::max(1l, k)); else assert(ldb >= std::max(1l, n));                 \
+	                                 assert(ldc >= std::max(1l, m));                                                      \
+	BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), *a, A, BC(lda), B, BC(ldb), *beta, CC, BC(ldc));                   \
 }
 #define xsyrk(T) template<class UL, class C, class S>             v syrk(        UL ul, C transA,             S n, S k, T    alpha, T const* A, S lda,             T    beta, T* CC, S ldc){BLAS(T##syrk)(      ul, transA,            BC(n), BC(k), alpha, A, BC(lda),        beta, CC, BC(ldc));}
 #define xherk(T) template<class UL, class C, class S, class Real> v herk(        UL ul, C transA,             S n, S k, Real alpha, T const* A, S lda,             Real beta, T* CC, S ldc){BLAS(T##herk)(      ul, transA,            BC(n), BC(k), alpha, A, BC(lda),        beta, CC, BC(ldc));}

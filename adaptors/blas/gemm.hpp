@@ -1,5 +1,5 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXXX $CXXFLAGS -g -O1 $0 -o $0x -lboost_unit_test_framework \
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+$CXXX $CXXFLAGS -g -O0 $0 -o $0x -lboost_unit_test_framework \
 `pkg-config --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core` \
 &&$0x&&rm $0x;exit
@@ -10,8 +10,11 @@ $CXXX $CXXFLAGS -g -O1 $0 -o $0x -lboost_unit_test_framework \
 #define MULTI_ADAPTORS_BLAS_GEMM_HPP
 
 #include "../blas/core.hpp"
+
 #include "../blas/numeric.hpp"
 #include "../blas/operations.hpp"
+
+#include "../blas/gemv.hpp"
 
 #include "../../config/NODISCARD.hpp"
 
@@ -20,6 +23,7 @@ namespace multi{
 namespace blas{
 
 using multi::blas::core::gemm;
+using multi::blas::core::gemv;
 
 template<class M> bool is_c_ordering(M const& m){
 	return stride(rotated(m))==1 and size(m)!=1;
@@ -34,60 +38,50 @@ auto gemm_base_aux(A&& a){return base(a);}
 template<class A, std::enable_if_t<    is_conjugated<A>{}, int> =0>
 auto gemm_base_aux(A&& a){return underlying(base(a));}
 
-template<class A2D, class B2D, class C2D>
-C2D&& gemm(typename std::decay_t<C2D>::element_type alpha, A2D const& a, B2D const& b, typename std::decay_t<C2D>::element_type beta, C2D&& c){
-	assert( size(rotated(a)) == size(b) );
-	assert( size(c) == size(a) );
-	assert( size(rotated(b)) == size(rotated(c)) );
+template<class A, class B, class C>
+C&& gemm(typename A::element alpha, A const& a, B const& b, typename A::element beta, C&& c){
+
+	if(c.is_empty()){
+		assert(a.is_empty() and b.is_empty());
+		return std::forward<C>(c);
+	}
+
+	assert( size(~a) == size( b) );
+	assert( size( a) == size( c) );
+	assert( size(~b) == size(~c) );
+	
 	auto base_a = gemm_base_aux(a);
 	auto base_b = gemm_base_aux(b);
 	auto base_c = gemm_base_aux(c);
 
-	if(is_conjugated<C2D>{}) blas::gemm(conj(alpha), conj(a), conj(b), conj(beta), conj(c));
+	assert( stride(a)==1 or stride(~a)==1 );
+	assert( stride(b)==1 or stride(~b)==1 );
+	assert( stride(c)==1 or stride(~c)==1 );
+	
+	     if(stride(c)==1 and stride(~c)!=1) blas::gemm(alpha, ~b, ~a, beta, ~c);
+	else if(is_conjugated<C>{}) blas::gemm(conj(alpha), conj(a), conj(b), conj(beta), conj(c));
 	else{
-		if(is_c_ordering(c)){//gemm(alpha, transposed(b), transposed(a), beta, transposed(c));
-			      if(    is_c_ordering(a) and     is_c_ordering(b)){
-				assert(!is_conjugated<A2D>{} and !is_conjugated<B2D>{});
-				gemm('N', 'N', size(rotated(c)), size(a   ), size(b   ), &alpha, base_b, stride(b   ), base_a, stride(a   ), &beta, base_c, stride(c   ));
-			}else if(not is_c_ordering(a) and     is_c_ordering(b)){
-				assert(!is_conjugated<B2D>{});
-				gemm('N', is_conjugated<A2D>{}?'C':'T', size(rotated(c)), size(a   ), size(b   ), &alpha, base_b, stride(b   ), base_a, stride(rotated(a)), &beta, base_c, stride(c   ));
-			}else if( is_c_ordering(a) and !is_c_ordering(b)){
-				assert(!is_conjugated<A2D>{});
-				gemm(is_conjugated<B2D>{}?'C':'T', 'N', size(rotated(c)), size(a   ), size(b   ), &alpha, base_b, stride(rotated(b)), base_a, stride(a   ), &beta, base_c, stride(c   ));
-			}else if(!is_c_ordering(a) and !is_c_ordering(b)){gemm(is_conjugated<B2D>{}?'C':'T', is_conjugated<A2D>{}?'C':'T', size(rotated(c)), size(a   ), size(b   ), &alpha, base_b, stride(rotated(b)), base_a, stride(rotated(a)), &beta, base_c, stride(c   ));}
-		}else{
-			      if( is_c_ordering(a) and  is_c_ordering(b)){
-				gemm(is_conjugated<A2D>{}?'C':'T', is_conjugated<B2D>{}?'C':'T', size(c   ), size(rotated(b)), size(rotated(a)), &alpha, base_a, stride(a   ), base_b, stride(b   ), &beta, base_c, stride(rotated(c)));
-			}else if(!is_c_ordering(a) and  is_c_ordering(b)){
-				if(is_conjugated<A2D>{} and size(a)==1){
-					if((~a).stride()==1) gemm('C', is_conjugated<B2D>{}?'C':'T', size(c   ), size(rotated(b)), size(rotated(a)), &alpha, base_a, size(rotated(a)), base_b, stride(b   ), &beta, base_c, stride(rotated(c)));
-					else                 assert(0); // case not implemented by blas
-				}else{
-					assert(not is_conjugated<A2D>{});
-					gemm('N', is_conjugated<B2D>{}?'C':'T', size(c   ), size(rotated(b)), size(rotated(a)), &alpha, base_a, stride(rotated(a)), base_b, stride(b   ), &beta, base_c, stride(rotated(c)));
-				}
-			}
-			else if( is_c_ordering(a) and !is_c_ordering(b)){
-				if(is_conjugated<B2D>{} and size(rotated(b))==1){
-					gemm(is_conjugated<A2D>{}?'C':'T', 'C', size(c   ), size(rotated(b)), size(rotated(a)), &alpha, base_a, stride(a   ), base_b, size(rotated(b)), &beta, base_c, stride(rotated(c)));
-				}else{
-					assert(not is_conjugated<B2D>{});
-					gemm(is_conjugated<A2D>{}?'C':'T', 'N', size(c   ), size(rotated(b)), size(rotated(a)), &alpha, base_a, stride(a   ), base_b, stride(rotated(b)), &beta, base_c, stride(rotated(c)));
-				}
-			}else if(!is_c_ordering(a) and !is_c_ordering(b)){
-				      if(not is_conjugated<A2D>{} and is_conjugated<B2D>{} and size(rotated(b))==1){
-					gemm('N', 'C', size(c   ), size(rotated(b)), size(rotated(a)), &alpha, base_a, stride(rotated(a)), base_b, stride(b), &beta, base_c, stride(rotated(c)));
-				}else if(is_conjugated<A2D>{} and size(a)==1 and is_conjugated<B2D>{} and size(rotated(b))==1){
-					gemm('C', 'C', size(c   ), size(rotated(b)), size(rotated(a)), &alpha, base_a, size(rotated(a)), base_b, stride(b), &beta, base_c, stride(rotated(c)));
-				}else{
-					assert(not is_conjugated<A2D>{}); assert(not is_conjugated<B2D>{});
-					gemm('N', 'N', size(c   ), size(rotated(b)), size(rotated(a)), &alpha, base_a, stride(rotated(a)), base_b, stride(rotated(b)), &beta, base_c, stride(rotated(c)));
-				}
-			}
+	
+		/* */ if(stride(~a)==1 and stride(~b)==1 and not is_conjugated<A>{} and not is_conjugated<B>{}){
+			if(size(a)==1) gemm('N', 'N', size(~c), size(a), size(b), &alpha, base_b, stride( b), base_a, size(b)   , &beta, base_c, size(b)  );
+			else           gemm('N', 'N', size(~c), size(a), size(b), &alpha, base_b, stride( b), base_a, stride( a), &beta, base_c, stride(c));
+		}else if(stride( a)==1 and stride(~b)==1 and     is_conjugated<A>{} and not is_conjugated<B>{}) gemm('N', 'C', size(~c), size(a), size(b), &alpha, base_b, stride( b), base_a, stride(~a), &beta, base_c, stride(c));
+		else if(stride( a)==1 and stride(~b)==1 and not is_conjugated<A>{} and not is_conjugated<B>{}){
+			if(size(a)==1) gemm('N', 'T', size(~c), size(a), size(b), &alpha, base_b, stride( b), base_a, stride(~a), &beta, base_c, size(b));
+			else           gemm('N', 'T', size(~c), size(a), size(b), &alpha, base_b, stride( b), base_a, stride(~a), &beta, base_c, stride(c));
 		}
+		else if(stride(~a)==1 and stride( b)==1 and not is_conjugated<A>{} and     is_conjugated<B>{}) gemm('C', 'N', size(~c), size(a), size(b), &alpha, base_b, stride(~b), base_a, stride( a), &beta, base_c, stride(c));
+		else if(stride( a)==1 and stride( b)==1 and     is_conjugated<A>{} and     is_conjugated<B>{}) gemm('C', 'C', size(~c), size(a), size(b), &alpha, base_b, stride(~b), base_a, stride(~a), &beta, base_c, stride(c));
+		else if(stride( a)==1 and stride( b)==1 and not is_conjugated<A>{} and     is_conjugated<B>{}) gemm('C', 'T', size(~c), size(a), size(b), &alpha, base_b, stride(~b), base_a, stride(~a), &beta, base_c, stride(c));
+		else if(stride(~a)==1 and stride( b)==1 and not is_conjugated<A>{} and not is_conjugated<B>{}){
+			if(size(a)==1) gemm('T', 'N', size(~c), size(a), size(b), &alpha, base_b, stride(~b), base_a, size(b)   , &beta, base_c, stride(c));
+			else           gemm('T', 'N', size(~c), size(a), size(b), &alpha, base_b, stride(~b), base_a, stride( a), &beta, base_c, stride(c));
+		}
+		else if(stride( a)==1 and stride( b)==1 and     is_conjugated<A>{} and not is_conjugated<B>{}) gemm('T', 'C', size(~c), size(a), size(b), &alpha, base_b, stride(~b), base_a, stride(~a), &beta, base_c, stride(c));
+		else if(stride( a)==1 and stride( b)==1 and not is_conjugated<A>{} and not is_conjugated<B>{}) gemm('T', 'T', size(~c), size(a), size(b), &alpha, base_b, stride(~b), base_a, stride(~a), &beta, base_c, stride(c));
+		else                                                                                           assert(0&&" case not implemented in blas");
 	}
-	return std::forward<C2D>(c);
+	return std::forward<C>(c);
 }
 
 template<class AA, class A2D, class B2D, class C2D = typename A2D::decay_type>
@@ -102,10 +96,12 @@ auto gemm(A2D const& A, B2D const& B)
 ->decltype(gemm(1., A, B)){
 	return gemm(1., A, B);}
 
-template<class A2D, class B2D> 
-auto operator*(A2D const& A, B2D const& B)
-->std::decay_t<decltype(gemm(1., A, B))>{
-	return gemm(1., A, B);}
+namespace operators{
+	template<class A2D, class B2D> 
+	auto operator*(A2D const& A, B2D const& B)
+	->decltype(gemm(1., A, B)){
+		return gemm(1., A, B);}
+}
 
 }}}
 
@@ -117,8 +113,6 @@ auto operator*(A2D const& A, B2D const& B)
 
 #include "../../array.hpp"
 #include "../../utility.hpp"
-
-#include <boost/timer/timer.hpp>
 
 #include<complex>
 #include<cassert>
@@ -147,7 +141,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_square){
 		{ 1, 3},
 		{ 9, 7},
 	};
-	multi::array<double, 2> const b = {	
+	multi::array<double, 2> const b = {
 		{ 11, 12},
 		{  7, 19},
 	};
@@ -158,26 +152,25 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_square){
 	}
 	{
 		multi::array<double, 2> c({2, 2});
-		blas::gemm(1., blas::T(a), b, 0., c); // c=a⸆b, c⸆=b⸆a
+		blas::gemm(1., ~a,  b, 0.,  c); // c=a⸆b, c⸆=b⸆a
 		BOOST_REQUIRE(( c[1][1] == 169 and c[1][0] == 82 ));
 	}
 	{
 		multi::array<double, 2> c({2, 2});
-		blas::gemm(1., a, blas::T(b), 0., c); // c=ab⸆, c⸆=ba⸆
-		BOOST_REQUIRE( c[1][0] == 183 );		
+		blas::gemm(1.,  a, ~b, 0.,  c); // c=ab⸆, c⸆=ba⸆
+		BOOST_REQUIRE( c[1][0] == 183 );
 	}
 	{
 		multi::array<double, 2> c({2, 2});
-		blas::gemm(1., blas::T(a), blas::T(b), 0., c); // c=a⸆b⸆, c⸆=ba
-		BOOST_REQUIRE( c[1][0] == 117 );		
+		blas::gemm(1., ~a, ~b, 0.,  c); // c=a⸆b⸆, c⸆=ba
+		BOOST_REQUIRE( c[1][0] == 117 );
 	}
 	{
 		multi::array<double, 2> c({2, 2});
-		blas::gemm(1., blas::T(a), blas::T(b), 0., blas::T(c)); // c⸆=a⸆b⸆, c=ba
+		blas::gemm(1., ~a, ~b, 0., ~c); // c⸆=a⸆b⸆, c=ba
 		BOOST_REQUIRE( c[0][1] == 117 );
 	}
 }
-
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare){
 	namespace blas = multi::blas;
@@ -185,7 +178,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare){
 		{ 1, 3, 1},
 		{ 9, 7, 1},
 	};
-	multi::array<double, 2> const b = {	
+	multi::array<double, 2> const b = {
 		{ 11, 12, 1},
 		{  7, 19, 1},
 		{  1,  1, 1}
@@ -206,7 +199,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_nh){
 	};
 	{
 		multi::array<complex, 2> c({2, 2});
-		blas::gemm(1., a, blas::H(a), 0., c); // c=aa†, c†=aa†
+		blas::gemm(1., a, blas::hermitized(a), 0., c); // c=aa†, c†=aa†
 		BOOST_TEST_REQUIRE( c[1][0] == 7.-10.*I );
 		BOOST_TEST_REQUIRE( c[0][1] == 7.+10.*I );
 	}
@@ -251,19 +244,19 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_3x1_3x1_bisbis){
 	}
 }
 
-
-
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_empty){
 	multi::array<double, 2> const a({0, 5});
-	BOOST_REQUIRE( size(a) == 0 );
-	BOOST_REQUIRE( size(rotated(a)) == 5 );
-	BOOST_REQUIRE( a.empty() );
-//	assert( rotated(a).empty() );
-	multi::array<double, 2> const b;
+	BOOST_REQUIRE( size( a) == 0 );
+	BOOST_REQUIRE( size(~a) == 5 );
+	BOOST_REQUIRE( a.is_empty() );
+	multi::array<double, 2> const b({5, 0});
+	BOOST_REQUIRE( size( b) == 0 );
+	BOOST_REQUIRE( size(~b) == 0 );
+	BOOST_REQUIRE( b.is_empty() );
 	{
-		multi::array<double, 2> c;//({3, 2});
+		multi::array<double, 2> c;
 		using multi::blas::gemm;
-//		gemm(1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
+		gemm(1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
 	}
 }
 
@@ -286,14 +279,14 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare2){
 	{
 		multi::array<double, 2> c({2, 3});
 		using multi::blas::gemm;
-		gemm(1., a, b, 0., rotated(c)); // c=ab, c⸆=b⸆a⸆
+		gemm(1., a, b, 0., ~c); // c=ab, c⸆=b⸆a⸆
 		BOOST_REQUIRE( c[1][2] == 31 );		
 	}
 	{
-		auto ar = rotated(a).decay();
+		auto ar = +~a;
 		multi::array<double, 2> c({3, 2});
 		using multi::blas::gemm;
-		gemm(1., rotated(ar), b, 0., c); // c=ab, c⸆=b⸆a⸆
+		gemm(1., ~ar, b, 0., c); // c=ab, c⸆=b⸆a⸆
 		BOOST_REQUIRE( c[2][1] == 31 );		
 	}
 	{
@@ -311,7 +304,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_2x3_3x2){
 		{ 9, 4},
 		{ 1, 5}
 	};
-	multi::array<double, 2> const b = {	
+	multi::array<double, 2> const b = {
 		{ 11, 12},
 		{  7, 19},
 		{  8, 1 }
@@ -319,9 +312,9 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_2x3_3x2){
 	{
 		multi::array<double, 2> c({2, 2});
 		using multi::blas::gemm;
-		gemm(1., rotated(a), b, 0., c); // c=a⸆b, c⸆=b⸆a
+		gemm(1., ~a, b, 0.,  c); // c=a⸆b, c⸆=b⸆a
 		BOOST_REQUIRE( c[1][0] == 101 );
-		gemm(1., rotated(a), b, 0., rotated(c)); // c=a⸆b, c⸆=b⸆a
+		gemm(1., ~a, b, 0., ~c); // c=a⸆b, c⸆=b⸆a
 		BOOST_REQUIRE( c[0][1] == 101 );
 	}
 }
@@ -330,32 +323,143 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_1x3_3x2){
 	multi::array<double, 2> const a = {
 		{1, 9, 1}
 	};
-	multi::array<double, 2> const b = {	
+	BOOST_TEST_REQUIRE( stride(~a) == 1 );
+	BOOST_TEST_REQUIRE( stride( a) == 3 );
+	multi::array<double, 2> const b = {
 		{ 11, 12},
 		{  7, 19},
 		{  8, 1 }
 	};
 	{
-		multi::array<double, 2> c({1, 2});
+		multi::array<double, 2> c({size(a), size(~b)});
 		using multi::blas::gemm;
 		gemm(1., a, b, 0., c); // c=a⸆b, c⸆=b⸆a
 		BOOST_REQUIRE( c[0][1] == 184 );
 	}
 	{
-		multi::array<double, 2> c({2, 1});
-		auto ar = rotated(a).decay();
+		auto ar = +~a;
 		using multi::blas::gemm;
-		gemm(1., rotated(ar), b, 0., rotated(c)); // c=a⸆b, c⸆=b⸆a
+		multi::array<double, 2> c({size(~b), size(~ar)});
+		gemm(1., ~ar, b, 0., ~c); // c=a⸆b, c⸆=b⸆a
 		BOOST_REQUIRE( c[1][0] == 184 );
 	}
 }
 
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complexreal_1x3_3x2){
+	multi::array<complex, 2> const a = {
+		{1, 9, 1}
+	};
+	BOOST_TEST_REQUIRE( stride(~a) == 1 );
+	BOOST_TEST_REQUIRE( stride( a) == 3 );
+	multi::array<complex, 2> const b = {
+		{ 11, 12},
+		{  7, 19},
+		{  8, 1 }
+	};
+	{
+		multi::array<complex, 2> c({size(a), size(~b)});
+		using multi::blas::gemm;
+		gemm(1., a, b, 0., c); // c=a⸆b, c⸆=b⸆a
+		BOOST_REQUIRE( c[0][1] == 184. );
+	}
+	{
+		auto ar = +~a;
+		using multi::blas::gemm;
+		multi::array<complex, 2> c({size(~b), size(~ar)});
+		gemm(1., ~ar, b, 0., ~c); // c=a⸆b, c⸆=b⸆a
+		BOOST_REQUIRE( c[1][0] == 184. );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_1x3_part_3x2){
+	multi::array<double, 2> const a = {
+		{1, 9, 1},
+		{3, 3, 3}
+	};
+	BOOST_TEST_REQUIRE( stride(~a) == 1 );
+	BOOST_TEST_REQUIRE( stride( a) == 3 );
+	multi::array<double, 2> const b = {
+		{ 11, 12},
+		{  7, 19},
+		{  8, 1 }
+	};
+	{
+		multi::array<double, 2> c({size(a({0, 1})), size(~b)});
+		using multi::blas::gemm;
+		gemm(1., a({0, 1}), b, 0., c); // c=a⸆b, c⸆=b⸆a
+		BOOST_REQUIRE( c[0][1] == 184 );
+	}
+	{
+		auto ar = +~a;
+		using multi::blas::gemm;
+		multi::array<double, 2> c({size(~b), size(~ar(extension(ar), {0, 1}))});
+		gemm(1., ~(ar(extension(ar), {0, 1})), b, 0., ~c); // c=a⸆b, c⸆=b⸆a
+		BOOST_REQUIRE( c[1][0] == 184 );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complexreal_1x3_part_3x2){
+	multi::array<complex, 2> const a = {
+		{1., 9., 1.},
+		{3., 3., 3.}
+	};
+	BOOST_TEST_REQUIRE( stride(~a) == 1 );
+	BOOST_TEST_REQUIRE( stride( a) == 3 );
+	multi::array<complex, 2> const b = {
+		{ 11., 12.},
+		{  7., 19.},
+		{  8.,  1.}
+	};
+	{
+		multi::array<complex, 2> c({size(a({0, 1})), size(~b)});
+		using multi::blas::gemm;
+		gemm(1., a({0, 1}), b, 0., c); // c=a⸆b, c⸆=b⸆a
+		BOOST_REQUIRE( c[0][1] == 184. );
+	}
+	{
+		auto ar = +~a;
+		using multi::blas::gemm;
+		multi::array<complex, 2> c({size(~b), size(~ar(extension(ar), {0, 1}))});
+		gemm(1., ~(ar(extension(ar), {0, 1})), b, 0., ~c); // c=a⸆b, c⸆=b⸆a
+		BOOST_REQUIRE( c[1][0] == 184. );
+	}
+}
+
+
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_2x3_3x1){
+	multi::array<double, 2> const a = {
+		{1, 9, 1},
+		{3, 3, 3}
+	};
+	BOOST_TEST_REQUIRE( stride(~a) == 1 );
+	BOOST_TEST_REQUIRE( stride( a) == 3 );
+	multi::array<double, 2> const b = {
+		{ 11},
+		{  7},
+		{  8}
+	};
+	{
+		multi::array<double, 2> c({size(a), size(~b)});
+		using multi::blas::gemm;
+		gemm(1., a, b, 0., c); // c=a⸆b, c⸆=b⸆a
+		BOOST_REQUIRE( c[0][0] == 82 );
+		BOOST_REQUIRE( c[1][0] == 78 );
+	}
+	{
+		auto ar = +~a;
+		using multi::blas::gemm;
+		multi::array<double, 2> c({size(~b), size(~ar(extension(ar), {0, 1}))});
+		gemm(1., ~(ar(extension(ar), {0, 1})), b, 0., ~c); // c=a⸆b, c⸆=b⸆a
+		BOOST_REQUIRE( c[0][0] == 82 );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_2x3_3x1_bis){
 	multi::array<double, 2> const a = {
 		{1, 9, 1},
 		{3, 4, 5}
 	};
-	multi::array<double, 2> const b = {	
+	multi::array<double, 2> const b = {
 		{ 11},
 		{  7},
 		{  8}
@@ -364,22 +468,22 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_2x3_3x1){
 	{
 		multi::array<double, 2> c({1, 2});
 		using multi::blas::gemm;
-		gemm(1., a, b, 0., rotated(c)); // c⸆=ab, c=b⸆a⸆
-		BOOST_REQUIRE( rotated(c)[1][0] == 101 );
-		BOOST_REQUIRE( c[0][1] == 101 );
+		gemm(1., a, b, 0., ~c); // c⸆=ab, c=b⸆a⸆
+		BOOST_REQUIRE( (~c)[0][0] ==  82 );
+		BOOST_REQUIRE( (~c)[1][0] == 101 );
 	}
 	{
 		multi::array<double, 2> c({2, 1});
 		using multi::blas::gemm;
 		gemm(1., a, b, 0., c); // c⸆=ab, c=b⸆a⸆
-		BOOST_REQUIRE( rotated(c)[0][1] == 101 );
-		BOOST_REQUIRE( c[1][0] == 101 );
+		BOOST_REQUIRE( (~c)[0][1] == 101 );
+		BOOST_REQUIRE(   c [1][0] == 101 );
 	}
 	{
 		multi::array<double, 2> c({1, 2});
-		auto ar = rotated(a).decay();
+		auto ar = +~a;
 		using multi::blas::gemm;
-		gemm(1., rotated(ar), b, 0., rotated(c)); // c⸆=ab, c⸆=b⸆a⸆
+		gemm(1., ~ar, b, 0., ~c); // c⸆=ab, c⸆=b⸆a⸆
 		BOOST_REQUIRE( c[0][1] == 101 );
 	}
 }
@@ -393,30 +497,27 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_1x3_3x1){
 		{  7},
 		{  8}
 	};
+	using multi::blas::gemm;
 	{
 		multi::array<double, 2> c({1, 1});
-		using multi::blas::gemm;
 		gemm(1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
 		BOOST_REQUIRE( c[0][0] == 82 );
 	}
 	{
 		multi::array<double, 2> c({1, 1});
-		auto ar = rotated(a).decay();
-		using multi::blas::gemm;
-		gemm(1., rotated(ar), b, 0., c); // c=ab, c⸆=ba
+		auto ar = +~a;
+		gemm(1., ~ar, b, 0., c); // c=ab, c⸆=ba
 		BOOST_REQUIRE( c[0][0] == 82 );
 	}
 	{
 		multi::array<double, 2> c({1, 1});
-		auto br = rotated(b).decay();
-		using multi::blas::gemm;
-		gemm(1., a, rotated(br), 0., c);
+		auto br = +~b;
+		gemm(1., a, ~br, 0., c);
 		BOOST_REQUIRE( c[0][0] == 82 );
 	}
 	{
 		multi::array<double, 2> c({1, 1});
-		auto br = rotated(b).decay();
-		using multi::blas::gemm;
+		auto br = +~b;
 		using multi::blas::hermitized;
 		gemm(1., a, hermitized(br), 0., c);
 		BOOST_REQUIRE( c[0][0] == 82 );
@@ -424,43 +525,35 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_1x3_3x1){
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_square){
-	using complex = std::complex<double>; complex const I{0,1};
 	multi::array<complex, 2> const a = {
 		{ 1.+3.*I, 3.+2.*I},
 		{ 9.+1.*I, 7.+1.*I},
 	};
-	multi::array<complex, 2> const b = {	
+	multi::array<complex, 2> const b = {
 		{11.+2.*I, 12.+4.*I},
 		{ 7.+1.*I, 19.-9.*I},
 	};
+	using multi::blas::gemm;
 	{
 		multi::array<complex, 2> c({2, 2});
-		using multi::blas::gemm;
 		gemm(1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
 		BOOST_REQUIRE( c[1][0] == 145. + 43.*I );
 	}
 	{
 		multi::array<complex, 2> c({2, 2});
-		using multi::blas::transposed;
-		using multi::blas::gemm;
-		gemm(1., transposed(a), b, 0., c); // c=a⸆b, c⸆=b⸆a
+		gemm(1., ~a, b, 0., c); // c=a⸆b, c⸆=b⸆a
 		BOOST_REQUIRE(( c[1][1] == 170.-8.*I and c[1][0] == 77.+42.*I ));
 	}
 	{
 		multi::array<complex, 2> c({2, 2});
-		using multi::blas::transposed;
-		using multi::blas::gemm;
-		gemm(1., a, transposed(b), 0., c); // c=ab⸆, c⸆=ba⸆
-		BOOST_REQUIRE( c[1][0] == 177.+69.*I );		
+		gemm(1., a, ~b, 0., c); // c=ab⸆, c⸆=ba⸆
+		BOOST_REQUIRE( c[1][0] == 177.+69.*I );
 	}
 	{
 		multi::array<complex, 2> c({2, 2});
-//		using multi::blas::transposed;
-//		using multi::blas::gemm;
-//		gemm(1., transposed(a), transposed(b), 0., c); // c=a⸆b⸆, c⸆=ba
 		using namespace multi::blas;
 		gemm(1., T(a), T(b), 0., c); // c=a⸆b⸆, c⸆=ba
-		BOOST_REQUIRE( c[1][0] == 109. + 68.*I );		
+		BOOST_REQUIRE( c[1][0] == 109. + 68.*I );
 	}
 	{
 		multi::array<complex, 2> c({2, 2});
@@ -472,55 +565,53 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_square){
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_1x3_3x1){
-	using complex = std::complex<double>; complex const I{0,1};
+	using complex = std::complex<double>; complex const I{0, 1};
 	multi::array<complex, 2> const a = {
 		{1. + 2.*I, 9. - 1.*I, 1. + 1.*I}
 	};
-	multi::array<complex, 2> const b = {	
+	multi::array<complex, 2> const b = {
 		{ 11. - 2.*I},
 		{  7. - 3.*I},
 		{  8. - 1.*I}
 	};
+	using multi::blas::gemm;
 	{
 		multi::array<complex, 2> c({1, 1});
-		using multi::blas::gemm;
 		gemm(1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
 		BOOST_REQUIRE( c[0][0] == 84.-7.*I );
 	}
 	{
 		multi::array<complex, 2> c({1, 1});
-		auto ar = rotated(a).decay();
-		using multi::blas::gemm;
-		gemm(1., rotated(ar), b, 0., c); // c=ab, c⸆=ba
+		auto ar = +~a;
+		gemm(1., ~ar, b, 0., c); // c=ab, c⸆=ba
 		BOOST_REQUIRE( c[0][0] == 84.-7.*I );
 	}
 	{
 		multi::array<complex, 2> c({1, 1});
-		auto br = rotated(b).decay();
+		auto br = +~b;
 		using multi::blas::gemm;
-		gemm(1., a, rotated(br), 0., c);
+		gemm(1., a, ~br, 0., c);
 		BOOST_REQUIRE( c[0][0] == 84.-7.*I );
 	}
 	{
 		multi::array<complex, 2> c({1, 1});
-		auto br = rotated(b).decay();
-		using multi::blas::gemm;
+		auto br = +~b;
 		using multi::blas::hermitized;
-	//	gemm(1., a, hermitized(br), 0., rotated(c));
-	//	BOOST_REQUIRE( c[0][0] == 84.-7.*I );
+		gemm(1., a, hermitized(br), 0., ~c);
+		BOOST_TEST_REQUIRE( c[0][0] == 80. + 53.*I );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_hermitized_square){
-	namespace blas = multi::blas;
 	multi::array<complex, 2> const a = {
 		{ 1.+3.*I, 3.+2.*I},
 		{ 9.+1.*I, 7.+1.*I},
 	};
-	multi::array<complex, 2> const b = {	
+	multi::array<complex, 2> const b = {
 		{11.+2.*I, 12.+4.*I},
 		{ 7.+1.*I, 19.-9.*I},
 	};
+	namespace blas = multi::blas;
 	{
 		multi::array<complex, 2> c({2, 2});
 		blas::gemm(1., a, b, 0., c); // c=ab, c†=b†a†
@@ -544,17 +635,16 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_hermitized_square){
 	{
 		multi::array<complex, 2> c({2, 2});
 		blas::gemm(1., a, blas::H(b), 0., c); // c=ab†, c†=ba†
-		BOOST_REQUIRE( c[1][0] == 189. - 23.*I );		
+		BOOST_REQUIRE( c[1][0] == 189. - 23.*I );
 	}
 	{
 		multi::array<complex, 2> c({2, 2});
 		blas::gemm(1., blas::H(a), blas::H(b), 0., c); // c=a†b†, c†=ba
-		BOOST_REQUIRE( c[1][0] == 109. - 68.*I);		
+		BOOST_REQUIRE( c[1][0] == 109. - 68.*I);
 	}
 	{
-		multi::array<complex, 2> c({2, 2});
-	//	blas::gemm(1., hermitized(a), hermitized(b), 0., rotated(c)); // c⸆=a†b†, c=b*a*
-	//	print(rotated(c));
+	//	multi::array<complex, 2> c({2, 2});
+	//n	blas::gemm(1., blas::hermitized(a), blas::hermitized(b), 0., ~c); // c⸆=a†b†, c=b*a*
 	//	BOOST_REQUIRE( c[0][1] == 109. - 68.*I );
 	}
 }
@@ -566,7 +656,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_3x1_3x1){
 		{9. - 1.*I},
 		{1. + 1.*I}
 	};
-	multi::array<complex, 2> const b = {	
+	multi::array<complex, 2> const b = {
 		{ 11. - 2.*I},
 		{  7. - 3.*I},
 		{  8. - 1.*I}
@@ -578,19 +668,20 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_3x1_3x1){
 	}
 	{
 		multi::array<complex, 2> c({1, 1});
-		multi::array<complex, 2> ha = blas::hermitized(a);
+		auto ha = +blas::hermitized(a);
 		blas::gemm(1., ha, b, 0., c);
 		BOOST_REQUIRE( c[0][0] == 80.-53.*I );
 		blas::gemm(1., blas::H(b), a, 0., c);
 		BOOST_REQUIRE( c[0][0] == 80.+53.*I );
 	}
 }
+
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_1x3_3x2){
 	namespace blas = multi::blas;
 	multi::array<complex, 2> const a = {
 		{1. + 2.*I, 9. - 1.*I, 1. + 1.*I}
 	};
-	multi::array<complex, 2> const b = {	
+	multi::array<complex, 2> const b = {
 		{ 11. - 2.*I, 5. + 2.*I},
 		{  7. - 3.*I, 2. + 1.*I},
 		{  8. - 1.*I, 1. + 1.*I}
@@ -601,30 +692,30 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_1x3_3x2){
 		BOOST_REQUIRE( c[0][1] == 20.+21.*I );
 	}
 	{
-		auto ar = rotated(a).decay();
+		auto ar = +~a;
 		multi::array<complex, 2> c({1, 2});
 		blas::gemm(1., blas::H(ar), b, 0., c); // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[0][1] == 28.+3.*I );		
+		BOOST_REQUIRE( c[0][1] == 28.+3.*I );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_3x1_3x2){
-	namespace blas = multi::blas;
 	multi::array<complex, 2> const a = {
 		{1. + 2.*I}, 
 		{9. - 1.*I}, 
 		{1. + 1.*I}
 	};
-	multi::array<complex, 2> const b = {	
+	multi::array<complex, 2> const b = {
 		{ 11. - 2.*I, 5. + 2.*I},
 		{  7. - 3.*I, 2. + 1.*I},
 		{  8. - 1.*I, 1. + 1.*I}
 	};
+	namespace blas = multi::blas;
 	{
-		auto ar = rotated(a).decay();
+		auto ar = +~a;
 		multi::array<complex, 2> c({1, 2});
 		blas::gemm(1., blas::H(a), b, 0., c); // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[0][1] == 28.+3.*I );		
+		BOOST_REQUIRE( c[0][1] == 28.+3.*I );
 	}
 }
 
@@ -635,16 +726,16 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_3x2_3x2){
 		{9. - 1.*I, 9. + 1.*I}, 
 		{1. + 1.*I, 2. + 2.*I}
 	};
-	multi::array<complex, 2> const b = {	
+	multi::array<complex, 2> const b = {
 		{ 11. - 2.*I, 5. + 2.*I},
 		{  7. - 3.*I, 2. + 1.*I},
 		{  8. - 1.*I, 1. + 1.*I}
 	};
 	{
-		auto ar = rotated(a).decay();
+		auto ar = +~a;
 		multi::array<complex, 2> c({2, 2});
 		blas::gemm(1., blas::H(a), b, 0., c); // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[1][0] == 125.-84.*I );		
+		BOOST_REQUIRE( c[1][0] == 125.-84.*I );
 	}
 }
 
@@ -655,16 +746,16 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_3x2_3x1){
 		{9. - 1.*I, 9. + 1.*I}, 
 		{1. + 1.*I, 2. + 2.*I}
 	};
-	multi::array<complex, 2> const b = {	
+	multi::array<complex, 2> const b = {
 		{ 11. - 2.*I},
 		{  7. - 3.*I},
 		{  8. - 1.*I}
 	};
 	{
-		auto ar = rotated(a).decay();
+		auto ar = +~a;
 		multi::array<complex, 2> c({2, 1});
 		blas::gemm(1., blas::H(a), b, 0., c); // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[1][0] == 125.-84.*I );		
+		BOOST_REQUIRE( c[1][0] == 125.-84.*I );
 	}
 }
 
@@ -675,7 +766,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_3x1_3x1_bis){
 		{9. - 1.*I}, 
 		{1. + 1.*I}
 	};
-	multi::array<complex, 2> const b = {	
+	multi::array<complex, 2> const b = {
 		{ 11. - 2.*I},
 		{  7. - 3.*I},
 		{  8. - 1.*I}
@@ -684,7 +775,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_3x1_3x1_bis){
 		auto ar = rotated(a).decay();
 		multi::array<complex, 2> c({1, 1});
 		blas::gemm(1., blas::H(a), b, 0., c); // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[0][0] == 80.-53.*I );		
+		BOOST_REQUIRE( c[0][0] == 80. - 53.*I );
 	}
 }
 
@@ -694,7 +785,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_square_automatic){
 		{ 1., 3.},
 		{ 9., 7.},
 	};
-	multi::array<double, 2> const b = {	
+	multi::array<double, 2> const b = {
 		{ 11., 12.},
 		{  7., 19.},
 	};
@@ -739,15 +830,15 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_automatic){
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_square_automatic){
-	namespace blas = multi::blas;
 	multi::array<complex, 2> const a = {
 		{ 1. + 2.*I, 3. - 3.*I},
 		{ 9. + 1.*I, 7. + 4.*I},
 	};
-	multi::array<complex, 2> const b = {	
+	multi::array<complex, 2> const b = {
 		{ 11. + 1.*I, 12. + 1.*I},
 		{  7. + 8.*I, 19. - 2.*I},
 	};
+	namespace blas = multi::blas;
 	{
 		multi::array<complex, 2> c({2, 2});
 		blas::gemm(1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
@@ -819,27 +910,30 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_automatic){
 }
 
 BOOST_AUTO_TEST_CASE(submatrix_result_issue_97){
-	multi::array<complex, 2> mat = {
-		{2. + 3.*I, 2. + 1.*I},
-		{4. + 2.*I, 2. + 4.*I},
-		{7. + 1.*I, 1. + 5.*I}
+	multi::array<complex, 2> M = {
+		{2. + 3.*I, 2. + 1.*I, 1. + 2.*I},
+		{4. + 2.*I, 2. + 4.*I, 3. + 1.*I},
+		{7. + 1.*I, 1. + 5.*I, 0. + 3.*I}
 	};
 	
-	multi::array<complex, 2> vec = {
+	multi::array<complex, 2> V = {
 		{1. + 2.*I},
 		{2. + 1.*I},
 		{9. + 2.*I}
 	};
 	
-
-	multi::array<complex, 2> mat2 = mat({0, 3}, {0, 1});
-	BOOST_REQUIRE( mat2 == mat({0, 3}, {0, 1}) );
-
 	using multi::blas::gemm;
 	using multi::blas::hermitized;
+	using std::get;
+	
+	auto M2 = +M({0, 3}, {0, 1});
+	BOOST_REQUIRE( M2 == M({0, 3}, {0, 1}) );
+	
+	BOOST_TEST( gemm(hermitized(M2               ), V)[0][0] == 83. + 6.*I );
+	BOOST_TEST( gemm(hermitized(M({0, 3}, {0, 1})), V)[0][0] == 83. + 6.*I );
 
-//	BOOST_REQUIRE( gemm(hermitized(mat({0, 3}, {0, 1})), vec)[0][0] == 83. + 6.*I ); // case not implemented in blas
-	BOOST_REQUIRE( gemm(hermitized(mat2               ), vec)[0][0] == 83. + 6.*I );
+	using namespace multi::blas::operators;
+	BOOST_REQUIRE( ((*~M)*V)[0][0] == 83. + 6.*I );
 }
 
 #endif
