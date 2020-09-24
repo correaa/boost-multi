@@ -18,7 +18,7 @@ using core::axpy;
 template<class T, class It1, class Size, class OutIt>
 auto axpy_n(T alpha, It1 f, Size n, OutIt d)
 ->decltype(axpy(n, alpha, base(f), stride(f), base(d), stride(d)), d + n){
-	return axpy(n, alpha, base(f), stride(d), base(d), stride(d)), d + n;}
+	return axpy(n, alpha, base(f), stride(f), base(d), stride(d)), d + n;}
 
 template<class T, class It1, class OutIt>
 auto axpy(T alpha, It1 first, It1 last, OutIt d_first)
@@ -28,14 +28,15 @@ auto axpy(T alpha, It1 first, It1 last, OutIt d_first)
 using std::begin;
 using std::end;
 
-template<class T, class X1D, class Y1D>
-auto axpy(T alpha, X1D const& x, Y1D&& y)
+template<class X1D, class Y1D, typename = decltype( std::declval<Y1D&&>()[0] = 0. )>
+auto axpy(typename X1D::element alpha, X1D const& x, Y1D&& y)
 ->decltype(axpy_n(alpha, x.begin(), x.size(), y.begin()), std::forward<Y1D>(y)){assert(size(x)==size(y)); // intel doesn't like ADL in deduced/sfinaed return types
-	return axpy_n(alpha, begin(x), size(x), begin(y)), std::forward<Y1D>(y);}
+	return axpy_n(alpha, begin(x), size(x), begin(y)), std::forward<Y1D>(y);
+}
 
-template<class T, class X1D, class Y1D>//, class = std::enable_if_t<not std::is_assignable<decltype(std::declval<Y1D const&>()[0]), decltype(std::declval<Y1D const&>()[0])>{}> >
+template<class X1D, class Y1D>
 NODISCARD("because input is read-only")
-auto axpy(T alpha, X1D const& x, Y1D const& y)
+auto axpy(typename X1D::element alpha, X1D const& x, Y1D const& y)
 ->std::decay_t<decltype(axpy(alpha, x, typename array_traits<Y1D>::decay_type{y}))>{
 	return axpy(alpha, x, typename array_traits<Y1D>::decay_type{y});}
 
@@ -53,8 +54,8 @@ namespace operators{
 	template<class X1D, class Y1D> auto operator+=(X1D&& x, Y1D const& other) DECLRETURN(axpy(+1., other, std::forward<X1D>(x)))
 	template<class X1D, class Y1D> auto operator-=(X1D&& x, Y1D const& other) DECLRETURN(axpy(-1., other, std::forward<X1D>(x)))
 
-	template<class X1D, class Y1D> auto operator+(X1D const& x, Y1D const& y)->std::decay_t<decltype(x.decay())>{return x.decay()+=y;}
-	template<class X1D, class Y1D> auto operator-(X1D const& x, Y1D const& y)->std::decay_t<decltype(x.decay())>{return x.decay()-=y;}
+	template<class X1D, class Y1D> auto operator+(X1D const& x, Y1D const& y)->std::decay_t<decltype(x.decay())>{auto X=x.decay(); X+=y; return X;}
+	template<class X1D, class Y1D> auto operator-(X1D const& x, Y1D const& y)->std::decay_t<decltype(x.decay())>{auto X=x.decay(); X-=y; return X;}
 
 }
 
@@ -120,17 +121,30 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_double_const){
 	BOOST_REQUIRE( y_mut[1] == 4.*01. + 11. );
 }
 
-/*
-BOOST_AUTO_TEST_CASE(multi_blas_axpy_carray){
-	double const x[] = {00., 01., 02.};
-	double const y[] = {10., 11., 12.};
-	auto const y_cpy = blas::axpy(4., x, y);
-	BOOST_REQUIRE( y_cpy[1] == 4.*01. + 11. );
+BOOST_AUTO_TEST_CASE(multi_blas_axpy_operator_minus){
 
-	double const(&y_ref)[3] = y_cpy;
-	BOOST_REQUIRE( y_ref[1] == 4.*01. + 11. );
-	BOOST_REQUIRE( &y_ref[1] == &y_cpy[1] );
-}*/
+	using complex = std::complex<double>;
+	multi::array<complex, 1> const x = {10., 11., 12., 13.};
+	multi::array<complex, 1> const y = x;
+	
+	using namespace blas::operators;
+	BOOST_REQUIRE( (x - y)[0] == 0. );
+	BOOST_REQUIRE( (y - x)[0] == 0. );
+	
+	BOOST_REQUIRE( (x - (y+y))[0] == -x[0] );
+	BOOST_REQUIRE( ((x+x) - y)[0] == +x[0] );
+	
+	multi::array<complex, 2> A = {{1., 2.}, {3., 4.}};
+	multi::array<complex, 1> B = {1., 2.};
+	BOOST_REQUIRE( (A[0] - B)[0] == 0. );
+	BOOST_REQUIRE( (A[0] - B)[1] == 0. );
+
+	multi::array<complex, 1> X = {10., 11., 12., 13.};
+	multi::array<complex, 1> Y = {10., 11., 12., 13.};
+	X -= Y;
+	BOOST_REQUIRE( X[0] == 0. );
+
+}
 
 #endif
 #endif
