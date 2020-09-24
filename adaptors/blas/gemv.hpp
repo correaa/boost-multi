@@ -67,7 +67,9 @@ auto gemv(A2D const& A, X1D const& x){
 	return gemv(A, x, get_allocator(x));
 }
 
-template<class A2D, class X1D> auto operator%(A2D const& A, X1D const& x) DECLRETURN(gemv(A, x))
+namespace operators{
+	template<class A2D, class X1D> auto operator%(A2D const& A, X1D const& x) DECLRETURN(gemv(A, x))
+}
 
 }}}
 
@@ -83,12 +85,14 @@ template<class A2D, class X1D> auto operator%(A2D const& A, X1D const& x) DECLRE
 #include "../blas/dot.hpp"
 #include "../blas/axpy.hpp"
 #include "../blas/nrm2.hpp"
+#include "../blas/gemm.hpp"
 
 #include<complex>
 #include<cassert>
 #include<iostream>
 #include<numeric>
 #include<algorithm>
+#include<random>
 
 using std::cout;
 namespace multi = boost::multi;
@@ -187,6 +191,31 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_complex){
 	BOOST_REQUIRE( blas::gemv(*M, X) == (multi::array<complex, 1>{26. - 15.*I, 45. - 3.*I, 22. - 23.*I}) );
 	
 //	BOOST_REQUIRE( blas::gemv(~*M, X) == (multi::array<complex, 1>{83. + 6.*I, 31. - 46.*I, 18. - 26.*I}) ); // not supported by blas
+
+}
+
+BOOST_AUTO_TEST_CASE(multi_blas_gemv_temporary){
+
+	using complex = std::complex<double>;
+	
+	multi::array<complex, 2> const A = {
+		{1., 0., 0.}, 
+		{0., 1., 0.},
+		{0., 0., 1.}
+	};
+	
+	auto const B = []{
+		multi::array<complex, 2> B({3, 3});
+		auto rand = [d=std::normal_distribution<>{}, g=std::mt19937{}]()mutable{return complex{d(g), d(g)};};
+		std::generate(B.elements().begin(), B.elements().end(), rand);
+		return B;
+	}();
+	
+	namespace blas = multi::blas;
+	
+	using namespace blas::operators;
+	BOOST_TEST( ( (A%(~B)[0] - ( ~(A*B)  )[0])^2) == 0. );
+	BOOST_TEST( ( (A%(~B)[0] - ((~B)*(~A))[0])^2) == 0. );
 
 }
 
