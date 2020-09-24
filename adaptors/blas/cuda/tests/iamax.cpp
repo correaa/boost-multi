@@ -1,5 +1,5 @@
 #ifdef COMPILATION_INSTRUCTIONS
-nvcc -x cu`#$CXX` $0 -o $0x  `pkg-config --libs blas` -Wno-deprecated-declarations -lcudart -lcublas -lboost_unit_test_framework&&$0x&&rm $0x; exit
+$CXXX $CXXFLAGS $0 -o $0x  `pkg-config --libs blas` -Wno-deprecated-declarations `pkg-config --cflags --libs cudart-11.0 cublas-11.0 blas` -lboost_unit_test_framework&&$0x&&rm $0x; exit
 #endif
 // © Alfredo A. Correa 2019
 
