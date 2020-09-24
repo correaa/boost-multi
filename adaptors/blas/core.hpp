@@ -304,6 +304,7 @@ xgemv(s) xgemv(d) xgemv(c) xgemv(z)
 xger(s)   xger(d)
                   xgeru(c) xgeru(z)
                   xgerc(c) xgerc(z)
+                  
 }
 
 template<class T> 
@@ -328,11 +329,12 @@ namespace core{
 
 ///////////////////////////////////////////////////////////////////////////////
 // LEVEL 3
+
 #define xgemm(T) \
 template<class C, class S>                                                                                                \
 v gemm(C transA, C transB, S m, S n, S k, T const* a, T const* A, S lda, T const* B, S ldb, T const* beta, T* CC, S ldc){ \
-	if(transA =='N' or transA =='n') assert(lda >= std::max(1l, m)); else assert(lda >= std::max(1l, k));                 \
-	if(transB =='N' or transB =='n') assert(ldb >= std::max(1l, k)); else assert(ldb >= std::max(1l, n));                 \
+	if(transA =='N') assert(lda >= std::max(1l, m)); else assert(lda >= std::max(1l, k));                                 \
+	if(transB =='N') assert(ldb >= std::max(1l, k)); else assert(ldb >= std::max(1l, n));                                 \
 	                                 assert(ldc >= std::max(1l, m));                                                      \
 	BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), *a, A, BC(lda), B, BC(ldb), *beta, CC, BC(ldc));                   \
 }
@@ -354,7 +356,18 @@ namespace core{
 
 #undef BC
 
-}}}
+struct context{
+	template<class... As>
+	auto gemm(As&&... as) const
+	->decltype(core::gemm(std::forward<As>(as)...)){
+		return core::gemm(std::forward<As>(as)...);}
+};
+
+template<class T> blas::context default_context_of(T*){return {};}
+
+}
+
+}}
 
 ///////////////////////////////////////////////////////////////////////////////
 
