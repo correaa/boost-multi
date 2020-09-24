@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-$CXXX $CXXFLAGS -g -O0 $0 -o $0x -lboost_unit_test_framework \
+$CXXX $CXXFLAGS -O3 $0 -o $0x -lboost_unit_test_framework -lboost_timer \
 `pkg-config --libs blas` \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core` \
 &&$0x&&rm $0x;exit
@@ -39,11 +39,12 @@ auto gemm_base_aux(A&& a){return base(a);}
 template<class A, std::enable_if_t<    is_conjugated<A>{}, int> =0>
 auto gemm_base_aux(A&& a){return underlying(base(a));}
 
-template<class A, class B, class C>
-auto gemm(typename A::element alpha, A const& a, B const& b, typename A::element beta, C&& c)
-->decltype(gemm('N', 'T', size(~c), size(a), size(b), &alpha, gemm_base_aux(b), stride( b), gemm_base_aux(a), stride(~a), &beta, gemm_base_aux(c), size(b)) , std::forward<C>(c)){
+template<class Context, class A, class B, class C>
+C&& gemm(Context& ctx, typename A::element alpha, A const& a, B const& b, typename A::element beta, C&& c)
+//->decltype(ctx.gemm('N', 'T', size(~c), size(a), size(b), &alpha, gemm_base_aux(b), stride( b), gemm_base_aux(a), stride(~a), &beta, gemm_base_aux(c), size(b)) , std::forward<C>(c))
+{
 
-	MULTI_MARK_SCOPE("multi::blas::gemm");
+	MULTI_MARK_SCOPE("multi::blas::gemm with context");
 
 	if(c.is_empty()){
 		assert(a.is_empty() and b.is_empty());
@@ -62,42 +63,62 @@ auto gemm(typename A::element alpha, A const& a, B const& b, typename A::element
 	assert( stride(b)==1 or stride(~b)==1 );
 	assert( stride(c)==1 or stride(~c)==1 );
 	
-	     if(stride(c)==1 and stride(~c)!=1) blas::gemm(alpha, ~b, ~a, beta, ~c);
-	else if(is_conjugated<C>{}) blas::gemm(conj(alpha), conj(a), conj(b), conj(beta), conj(c));
+	     if(stride(c)==1 and stride(~c)!=1) blas::gemm(ctx, alpha, ~b, ~a, beta, ~c);
+	else if(is_conjugated<C>{}) blas::gemm(ctx, conj(alpha), conj(a), conj(b), conj(beta), conj(c));
 	else{
 		;;;;; if(stride(~a)==1 and stride(~b)==1 and not is_conjugated<A>{} and not is_conjugated<B>{}){
-			if(size(a)==1) gemm('N', 'N', size(~c), size(a), size(b), &alpha, base_b, stride( b), base_a, size(b)   , &beta, base_c, size(b)  );
-			else           gemm('N', 'N', size(~c), size(a), size(b), &alpha, base_b, stride( b), base_a, stride( a), &beta, base_c, stride(c));
-		}else if(stride( a)==1 and stride(~b)==1 and     is_conjugated<A>{} and not is_conjugated<B>{}) gemm('N', 'C', size(~c), size(a), size(b), &alpha, base_b, stride( b), base_a, stride(~a), &beta, base_c, stride(c));
+			if(size(a)==1) ctx.gemm('N', 'N', size(~c), size(a), size(b), &alpha, base_b, stride( b), base_a, size(b)   , &beta, base_c, size(b)  );
+			else           ctx.gemm('N', 'N', size(~c), size(a), size(b), &alpha, base_b, stride( b), base_a, stride( a), &beta, base_c, stride(c));
+		}else if(stride( a)==1 and stride(~b)==1 and     is_conjugated<A>{} and not is_conjugated<B>{}) ctx.gemm('N', 'C', size(~c), size(a), size(b), &alpha, base_b, stride( b), base_a, stride(~a), &beta, base_c, stride(c));
 		else if(stride( a)==1 and stride(~b)==1 and not is_conjugated<A>{} and not is_conjugated<B>{}){
-			if(size(a)==1) gemm('N', 'T', size(~c), size(a), size(b), &alpha, base_b, stride( b), base_a, stride(~a), &beta, base_c, size(b));
-			else           gemm('N', 'T', size(~c), size(a), size(b), &alpha, base_b, stride( b), base_a, stride(~a), &beta, base_c, stride(c));
+			if(size(a)==1) ctx.gemm('N', 'T', size(~c), size(a), size(b), &alpha, base_b, stride( b), base_a, stride(~a), &beta, base_c, size(b));
+			else           ctx.gemm('N', 'T', size(~c), size(a), size(b), &alpha, base_b, stride( b), base_a, stride(~a), &beta, base_c, stride(c));
 		}
-		else if(stride(~a)==1 and stride( b)==1 and not is_conjugated<A>{} and     is_conjugated<B>{}) gemm('C', 'N', size(~c), size(a), size(b), &alpha, base_b, stride(~b), base_a, stride( a), &beta, base_c, stride(c));
-		else if(stride( a)==1 and stride( b)==1 and     is_conjugated<A>{} and     is_conjugated<B>{}) gemm('C', 'C', size(~c), size(a), size(b), &alpha, base_b, stride(~b), base_a, stride(~a), &beta, base_c, stride(c));
-		else if(stride( a)==1 and stride( b)==1 and not is_conjugated<A>{} and     is_conjugated<B>{}) gemm('C', 'T', size(~c), size(a), size(b), &alpha, base_b, stride(~b), base_a, stride(~a), &beta, base_c, stride(c));
+		else if(stride(~a)==1 and stride( b)==1 and not is_conjugated<A>{} and     is_conjugated<B>{}) ctx.gemm('C', 'N', size(~c), size(a), size(b), &alpha, base_b, stride(~b), base_a, stride( a), &beta, base_c, stride(c));
+		else if(stride( a)==1 and stride( b)==1 and     is_conjugated<A>{} and     is_conjugated<B>{}) ctx.gemm('C', 'C', size(~c), size(a), size(b), &alpha, base_b, stride(~b), base_a, stride(~a), &beta, base_c, stride(c));
+		else if(stride( a)==1 and stride( b)==1 and not is_conjugated<A>{} and     is_conjugated<B>{}) ctx.gemm('C', 'T', size(~c), size(a), size(b), &alpha, base_b, stride(~b), base_a, stride(~a), &beta, base_c, stride(c));
 		else if(stride(~a)==1 and stride( b)==1 and not is_conjugated<A>{} and not is_conjugated<B>{}){
-			if(size(a)==1) gemm('T', 'N', size(~c), size(a), size(b), &alpha, base_b, stride(~b), base_a, size(b)   , &beta, base_c, stride(c));
-			else           gemm('T', 'N', size(~c), size(a), size(b), &alpha, base_b, stride(~b), base_a, stride( a), &beta, base_c, stride(c));
+			if(size(a)==1) ctx.gemm('T', 'N', size(~c), size(a), size(b), &alpha, base_b, stride(~b), base_a, size(b)   , &beta, base_c, stride(c));
+			else           ctx.gemm('T', 'N', size(~c), size(a), size(b), &alpha, base_b, stride(~b), base_a, stride( a), &beta, base_c, stride(c));
 		}
-		else if(stride( a)==1 and stride( b)==1 and     is_conjugated<A>{} and not is_conjugated<B>{}) gemm('T', 'C', size(~c), size(a), size(b), &alpha, base_b, stride(~b), base_a, stride(~a), &beta, base_c, stride(c));
-		else if(stride( a)==1 and stride( b)==1 and not is_conjugated<A>{} and not is_conjugated<B>{}) gemm('T', 'T', size(~c), size(a), size(b), &alpha, base_b, stride(~b), base_a, stride(~a), &beta, base_c, stride(c));
+		else if(stride( a)==1 and stride( b)==1 and     is_conjugated<A>{} and not is_conjugated<B>{}) ctx.gemm('T', 'C', size(~c), size(a), size(b), &alpha, base_b, stride(~b), base_a, stride(~a), &beta, base_c, stride(c));
+		else if(stride( a)==1 and stride( b)==1 and not is_conjugated<A>{} and not is_conjugated<B>{}) ctx.gemm('T', 'T', size(~c), size(a), size(b), &alpha, base_b, stride(~b), base_a, stride(~a), &beta, base_c, stride(c));
 		else                                                                                           assert(0&&" case not implemented in blas");
 	}
 	return std::forward<C>(c);
 }
 
-template<class AA, class A2D, class B2D, class C2D = typename A2D::decay_type>
+template<class A, class B, class C>
+C&& gemm(typename A::element alpha, A const& a, B const& b, typename A::element beta, C&& c){
+//->decltype(gemm('N', 'T', size(~c), size(a), size(b), &alpha, gemm_base_aux(b), stride( b), gemm_base_aux(a), stride(~a), &beta, gemm_base_aux(c), size(b)) , std::forward<C>(c)){
+	auto ctx = default_context_of(gemm_base_aux(a)); // ADL
+	return gemm(ctx, alpha, a, b, beta, std::forward<C>(c));
+}
+
+template<class A2D, class B2D, class C2D = typename A2D::decay_type>
 NODISCARD("because input arguments are const")
-auto gemm(AA a, A2D const& A, B2D const& B){
+auto gemm(typename A2D::element a, A2D const& A, B2D const& B){
 	assert(get_allocator(A) == get_allocator(B));
 	return gemm(a, A, B, 0., C2D({size(A), size(rotated(B))}, get_allocator(A)));
+}
+
+template<class Context, class A2D, class B2D, class C2D = typename A2D::decay_type>
+NODISCARD("because input arguments are const")
+auto gemm(Context&& ctx, typename A2D::element a, A2D const& A, B2D const& B)
+->std::decay_t<decltype(gemm(std::forward<Context>(ctx), a, A, B, 0., C2D({size(A), size(rotated(B))}, get_allocator(A))))>{
+	assert(get_allocator(A) == get_allocator(B));
+	return gemm(std::forward<Context>(ctx), a, A, B, 0., C2D({size(A), size(rotated(B))}, get_allocator(A)));
 }
 
 template<class A2D, class B2D> 
 auto gemm(A2D const& A, B2D const& B)
 ->decltype(gemm(1., A, B)){
 	return gemm(1., A, B);}
+
+template<class Context, class A2D, class B2D> 
+auto gemm(Context&& ctx, A2D const& A, B2D const& B)
+->decltype(gemm(std::forward<Context>(ctx), 1., A, B)){
+	return gemm(std::forward<Context>(ctx), 1., A, B);}
 
 namespace operators{
 	template<class A2D, class B2D> 
@@ -122,6 +143,13 @@ namespace operators{
 #include<iostream>
 #include<numeric>
 #include<algorithm>
+#include<random>
+
+#include <boost/timer/timer.hpp>
+
+#include "../blas/axpy.hpp"
+#include "../blas/dot.hpp"
+#include "../blas/nrm2.hpp"
 
 namespace multi = boost::multi;
 
@@ -900,7 +928,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_automatic){
 		{ 1. + 2.*I, 3. - 3.*I, 1.-9.*I},
 		{ 9. + 1.*I, 7. + 4.*I, 1.-8.*I},
 	};
-	multi::array<complex, 2> const b = {	
+	multi::array<complex, 2> const b = {
 		{ 11.+1.*I, 12.+1.*I, 4.+1.*I, 8.-2.*I},
 		{  7.+8.*I, 19.-2.*I, 2.+1.*I, 7.+1.*I},
 		{  5.+1.*I,  3.-1.*I, 3.+8.*I, 1.+1.*I}
@@ -938,6 +966,101 @@ BOOST_AUTO_TEST_CASE(submatrix_result_issue_97){
 	using namespace multi::blas::operators;
 	BOOST_REQUIRE( (hermitized(M)*V)[0][0] == 83. + 6.*I );
 }
+
+BOOST_AUTO_TEST_CASE(blas_context_gemm){
+
+	auto rand = [d=std::normal_distribution<>{}, g=std::mt19937{}]()mutable{return complex{d(g), d(g)};};
+
+	multi::array<complex, 2> A({30, 40});
+	multi::array<complex, 2> B({40, 50});
+	
+	std::generate(A.elements().begin(), A.elements().end(), rand);
+	std::generate(B.elements().begin(), B.elements().end(), rand);
+
+	namespace blas = multi::blas;
+	auto C = blas::gemm(A, B);
+
+	using namespace multi::blas::operators;
+
+	{
+		auto sum = 0.;
+		for(auto i : extension(~C))
+			sum += blas::nrm2((~C)[i] - blas::gemv(A, (~B)[i]))();
+
+		BOOST_TEST_REQUIRE(sum == 0, boost::test_tools::tolerance(1e-12));
+	}
+	
+	BOOST_TEST_REQUIRE( std::inner_product(
+		begin(~C), end(~C), begin(~B), 0., std::plus<>{}, [&A](auto const& Ccol, auto const& Bcol){
+			return multi::blas::nrm2( Ccol - multi::blas::gemv(A, Bcol) );
+	}) == 0. , boost::test_tools::tolerance(1e-12) );
+
+	BOOST_TEST_REQUIRE( std::equal(
+		begin(~C), end(~C), begin(~B), [&A](auto const& Ccol, auto const& Bcol){
+			return multi::blas::nrm2( Ccol - multi::blas::gemv(A, Bcol) ) < 1e-12;
+		}
+	) );
+
+	blas::context ctxt;
+	auto C2 = gemm(ctxt, A, B);
+	
+	BOOST_TEST_REQUIRE( std::equal(
+		begin(C), end(C), begin(C2), [](auto const& crow, auto const& c2row){return ((crow - c2row)^2) < 1e-13;}
+	) );
+
+}
+
+#if 1
+BOOST_AUTO_TEST_CASE(blas_gemm_timing){
+
+	multi::array<complex, 2> A({1000, 2000});
+	multi::array<complex, 2> B({2000, 3000});
+	multi::array<complex, 2> C({size(A), size(~B)});
+	multi::array<complex, 2> C2(extensions(C), complex{NAN, NAN});
+	multi::array<complex, 2> C3(extensions(C), complex{NAN, NAN});
+	multi::array<complex, 2> C4(extensions(C), complex{NAN, NAN});
+	A[99][99] = B[11][22] = C[33][44] = 1.0;
+	std::cerr<< "memory " << (A.num_elements()+ B.num_elements() + C.num_elements())*sizeof(complex)/1e6 <<" MB"<<std::endl;
+	
+	{
+		boost::timer::auto_cpu_timer t;
+		auto rand = [d=std::uniform_real_distribution<>{0., 10.}, g=std::mt19937{}]() mutable{return complex{d(g), d(g)};};
+		std::generate(A.elements().begin(), A.elements().end(), rand);
+		std::generate(B.elements().begin(), B.elements().end(), rand);
+	}
+	namespace blas = multi::blas;
+	{
+		boost::timer::auto_cpu_timer t; // 0.237581s
+		C = blas::gemm(A, B);
+	}
+	{
+		boost::timer::auto_cpu_timer t; // 4.516157s
+		for(auto i : extension(~B)) (~C2)[i] = blas::gemv(A, (~B)[i]);
+	}
+	{
+		boost::timer::auto_cpu_timer t; // 4.516157s
+		for(auto i : extension(A)) C2[i] = blas::gemv(~B, A[i]);
+	}
+	{
+		boost::timer::auto_cpu_timer t; // 32.705804s
+		for(auto i:extension(A)) for(auto j:extension(~B)) C3[i][j] = blas::dot(A[i], (~B)[j]);
+	}
+	using namespace blas::operators;
+
+	BOOST_TEST_REQUIRE( std::equal(
+		begin(C), end(C), begin(C2), [](auto const& crow, auto const& c2row){
+			return ((crow - c2row)^2) < 1e-13;
+		}
+	) );
+
+	BOOST_TEST_REQUIRE( std::equal(
+		begin(C), end(C), begin(C3), [](auto const& crow, auto const& c3row){
+			return ((crow - c3row)^2) < 1e-13;
+		}
+	) );
+
+}
+#endif
 
 #endif
 #endif
