@@ -377,7 +377,7 @@ template<class T> boost::multi::cublas::context default_context_of(memory::cuda:
 }
 
 namespace memory{namespace cuda{
-	using boost::multi::blas::default_allocator_of; // to please nvcc 'default_context_of' should be declared prior to the call site or in namespace 'boost::multi::memory::cuda'
+	using boost::multi::blas::default_context_of; // to please nvcc 'default_context_of' should be declared prior to the call site or in namespace 'boost::multi::memory::cuda'
 }}
 
 }}
