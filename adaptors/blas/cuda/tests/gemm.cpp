@@ -11,9 +11,9 @@ $CXXX $CXXFLAGS $0 -o $0x `pkg-config --cflags --libs cudart-11.0 cublas-11.0 bl
 //#include"boost/log/trivial.hpp"
 //#define MULTI_MARK_SCOPE(MsG) BOOST_LOG_TRIVIAL(trace)<<MsG
 
-#include "../../../../adaptors/cuda.hpp"
 #include "../../../../adaptors/blas/cuda.hpp"
 #include "../../../../adaptors/blas.hpp"
+#include "../../../../adaptors/cuda.hpp"
 
 #include<random>
 
