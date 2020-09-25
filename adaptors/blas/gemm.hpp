@@ -91,6 +91,7 @@ C&& gemm(Context& ctx, typename A::element alpha, A const& a, B const& b, typena
 template<class A, class B, class C>
 C&& gemm(typename A::element alpha, A const& a, B const& b, typename A::element beta, C&& c){
 //->decltype(gemm('N', 'T', size(~c), size(a), size(b), &alpha, gemm_base_aux(b), stride( b), gemm_base_aux(a), stride(~a), &beta, gemm_base_aux(c), size(b)) , std::forward<C>(c)){
+	using multi::blas::default_allocator_of;
 	auto ctx = default_context_of(gemm_base_aux(a)); // ADL
 	return gemm(ctx, alpha, a, b, beta, std::forward<C>(c));
 }
