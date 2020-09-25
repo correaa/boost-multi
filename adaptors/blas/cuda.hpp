@@ -322,6 +322,7 @@ struct context : std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decl
 	int version() const{
 		int ret; cublasGetVersion(get(), &ret); return ret;
 	}
+	context(context&& other) noexcept = default;
 	~context() noexcept = default;
 // 2.4.7. cublasGetPointerMode()
 	auto get_pointer_mode() const{
