@@ -212,9 +212,9 @@ blas&fft:
       - export CXX="${CXXX} ${CXXFLAGS}"
       - $CXX --version
       - cd adaptors/blas
-      - for a in ./*.hpp; do echo $a; $CXX $a || exit; echo "\n"; done;
+      - for a in ./*.hpp; do echo $a; $CXX $a || exit; done;
       - cd tests
-      - for a in ./*.cpp; do echo $a; $CXX $a || exit; echo "\n"; done;
+      - for a in ./*.cpp; do echo $a; $CXX $a || exit; done;
       - cd ..
       - cd ../..
       - cd adaptors
