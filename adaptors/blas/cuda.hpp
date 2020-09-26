@@ -14,6 +14,8 @@ $CXXX $CXXFLAGS -include"boost/log/trivial.hpp" -D'MULTI_MARK_SCOPE(MsG)=BOOST_L
 
 #include<cublas_v2.h>
 
+#include "../cublas/error.hpp"
+
 #include<thrust/complex.h>
 
 #define DECLRETURN(ExpR) ->decltype(ExpR){return ExpR;}
@@ -25,70 +27,11 @@ $CXXX $CXXFLAGS -include"boost/log/trivial.hpp" -D'MULTI_MARK_SCOPE(MsG)=BOOST_L
 
 #include<system_error>
 
-namespace boost{
-namespace multi{
-
-enum class cublas_error : typename std::underlying_type<cublasStatus_t>::type{
-	success               = CUBLAS_STATUS_SUCCESS,
-	not_initialized       = CUBLAS_STATUS_NOT_INITIALIZED,
-	allocation_failed     = CUBLAS_STATUS_ALLOC_FAILED,
-	invalid_value         = CUBLAS_STATUS_INVALID_VALUE,
-	architecture_mismatch = CUBLAS_STATUS_ARCH_MISMATCH,
-	mapping_error         = CUBLAS_STATUS_MAPPING_ERROR,
-	execution_failed      = CUBLAS_STATUS_EXECUTION_FAILED,
-	internal_error        = CUBLAS_STATUS_INTERNAL_ERROR,
-	not_supported         = CUBLAS_STATUS_NOT_SUPPORTED,
-	license_error         = CUBLAS_STATUS_LICENSE_ERROR
-};
-
-std::string inline cublas_string(enum cublas_error err){ //https://stackoverflow.com/questions/13041399/equivalent-of-cudageterrorstring-for-cublas
-	switch(err){
-	case cublas_error::success              : return "CUBLAS_STATUS_SUCCESS";
-	case cublas_error::not_initialized      : return "CUBLAS_STATUS_NOT_INITIALIZED";
-	case cublas_error::allocation_failed    : return "CUBLAS_STATUS_ALLOC_FAILED";
-	case cublas_error::invalid_value        : return "CUBLAS_STATUS_INVALID_VALUE";
-	case cublas_error::architecture_mismatch: return "CUBLAS_STATUS_ARCH_MISMATCH";
-	case cublas_error::mapping_error        : return "CUBLAS_STATUS_MAPPING_ERROR";
-	case cublas_error::execution_failed     : return "CUBLAS_STATUS_EXECUTION_FAILED";
-	case cublas_error::internal_error       : return "CUBLAS_STATUS_INTERNAL_ERROR";
-	case cublas_error::not_supported        : return "CUBLAS_STATUS_NOT_SUPPORTED";
-	case cublas_error::license_error        : return "CUBLAS_STATUS_LICENSE_ERROR";
-	}
-	return "cublas status <unknown>";
-}
-
-struct cublas_error_category : std::error_category{
-	char const* name() const noexcept override{return "cublas wrapper";}
-	std::string message(int err) const override{return cublas_string(static_cast<enum cublas_error>(err));}
-	static error_category& instance(){static cublas_error_category instance; return instance;}
-};
-
-inline std::error_code make_error_code(cublas_error err) noexcept{
-	return std::error_code(int(err), cublas_error_category::instance());
-}
-
-/*
-template<class CublasFunction>
-auto cublas_call(CublasFunction f){
-	return [=](auto... args){
-		auto s = static_cast<enum cublas_error>(f(args...));
-		if( s != cublas_error::success ) throw std::system_error{make_error_code(s), "cannot call cublas function "};
-#ifdef _MULTI_CUBLAS_ALWAYS_SYNC
-		cudaDeviceSynchronize();
-#endif
-	};
-}*/
-//#define CUBLAS_(FunctionPostfix) boost::multi::cublas_call(cublas##FunctionPostfix)
-
 #define CUBLAS_CALL(CodE) \
 	MULTI_MARK_SCOPE("multi::cublas "#CodE); \
-	auto s = static_cast<enum cublas_error>(CodE); \
+	auto s = static_cast<enum cublas::error>(CodE); \
 	cudaDeviceSynchronize(); /*TODO make this more specific to mananged ptr and specific handle*/ \
-	if( s != cublas_error::success ) throw std::system_error{make_error_code(s), "cannot call cublas function "#CodE };
-
-}}
-
-namespace std{template<> struct is_error_code_enum<::boost::multi::cublas_error> : true_type{};}
+	if(s != cublas::error::success) throw std::system_error{make_error_code(s), "cannot call cublas function "#CodE };
 
 cublasStatus_t cublasZdot (cublasHandle_t handle, int n,
                            const double2          *x, int incx,
