@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXXX $CXXFLAGS -I/usr/local/cuda/include -g $0 -o $0x `pkg-config --libs fftw3` -lboost_timer -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0x$OXX `pkg-config --cflags --libs fftw3 cuda-11.0` -lboost_timer -lboost_unit_test_framework&&$0x$OXX&&rm $0x$OXX;exit
 #endif
 // © Alfredo A. Correa 2018-2020
 
@@ -255,22 +255,29 @@ fftw_plan fftw_plan_dft(std::array<bool, +D> which, In&& in, Out&& out, int sign
 	auto ion      = to_array<ptrdiff_t>(in.sizes());
 	auto istrides = to_array<ptrdiff_t>(in.strides());
 	auto ostrides = to_array<ptrdiff_t>(out.strides());
-	std::array<fftw_iodim64, D> dims   ; auto l_dims = dims.begin();
-	std::array<fftw_iodim64, D> howmany; auto l_howmany = howmany.begin();
-	for(int i = 0; i != D; ++i)
-		(which[i]?*l_dims++:*l_howmany++) = fftw_iodim64{ion[i], istrides[i], ostrides[i]};
+
+	std::array<fftw_iodim64, D> dims   ; 
+	auto l_dims = dims.begin();
+
+	std::array<fftw_iodim64, D> howmany; 
+	auto l_howmany = howmany.begin();
+
+	for(int i=0; i!=D; ++i) *(which[i]?l_dims:l_howmany)++ = {ion[i], istrides[i], ostrides[i]};
+
+	assert( D == l_dims - dims.begin() + l_howmany - howmany.begin() );
 	assert(in.base()); assert(out.base()); assert( in.extensions() == out.extensions() ); 
 	assert( (sign == -1) or (sign == +1) );
 	fftw_plan ret = fftw_plan_guru64_dft(
-		/*int rank*/ sign?(l_dims - dims.begin()):0, 
-		/*const fftw_iodim64 *dims*/ dims.data(), 
+		/*int rank*/ l_dims - dims.begin(),
+		/*const fftw_iodim64 *dims*/ dims.data(),
 		/*int howmany_rank*/ l_howmany - howmany.begin(),
 		/*const fftw_iodim *howmany_dims*/ howmany.data(), //nullptr, //howmany_dims.data(), //;//nullptr,
 		/*fftw_complex *in*/ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(/*static_cast<std::complex<double> const *>*/(in.base()))), 
 		/*fftw_complex *out*/ reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double> *>*/(out.base())),
 		sign, flags// | FFTW_ESTIMATE
 	);
-	assert(ret);
+	assert(ret &&"fftw lib returned a null plan, if you are using MKL check the limitations of their fftw interface"); 
+	//https://software.intel.com/content/www/us/en/develop/documentation/mkl-developer-reference-c/top/appendix-d-fftw-interface-to-intel-math-kernel-library/fftw3-interface-to-intel-math-kernel-library/using-fftw3-wrappers.html
 	return ret;
 }
 
@@ -905,6 +912,22 @@ BOOST_AUTO_TEST_CASE(fftw_2D_transposition_square_inplace){
 	BOOST_TEST( in[0][1].real() == 21. );
 	BOOST_TEST( in[0][1].imag() ==  0. );
 }
+
+BOOST_AUTO_TEST_CASE(fftw_4D_inq_poisson){
+
+	multi::array<complex, 4> const in = []{
+		multi::array<complex, 4> in({50, 100, 137, 1}); 
+		std::iota(data_elements(in), data_elements(in)+num_elements(in), 1.2);
+		return in;
+	}();
+	
+	multi::array<complex, 4> out(extensions(in));
+	multi::fftw::dft({0, 1, 1, 0}, in, out);
+
+	BOOST_TEST( power(in) == power(out)/std::get<1>(sizes(out))/std::get<2>(sizes(out)) );
+
+}
+
 
 #endif
 #endif
