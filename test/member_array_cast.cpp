@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXX $CXXFLAGS $0 -o $0x$OXX -lboost_unit_test_framework&&$0x$OXX -x 0&&rm $0x$OXX;exit
 #endif
 //  © Alfredo A. Correa 2018-2020
 
@@ -9,42 +9,11 @@ $CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 
 #include "../array.hpp"
 
-//#include "../complex.hpp"
 #include<complex>
 
 namespace multi = boost::multi;
 
-namespace boost{
-namespace multi{
-
-#if 1
-namespace{
-	struct priority_0{}; struct priority_1 : priority_0{};
-	template<class Array, typename E = typename std::decay_t<Array>::element, typename R = decltype(std::real(E{}))>
-	decltype(auto) real_(Array&& a, priority_0){return a;}
-	template<class Array, typename E = typename std::decay_t<Array>::element, typename R = decltype(std::real(E{})), typename I = decltype(E{}.imag())>
-	decltype(auto) real_(Array&& a, priority_1){
-		struct C{R real; I imag;}; static_assert(sizeof(E) == sizeof(C), "!");
-		return std::forward<Array>(a).template reinterpret_array_cast<C>().template member_cast<R>(&C::real);
-	//	return member_array_cast<R>(reinterpret_array_cast<C>(a), &C::real);
-	}
-}
-
-template<class Array> decltype(auto) Real(Array&& a){return real_(a, priority_1{});}
-
-template<class Array, typename E = typename std::decay_t<Array>::element, typename R = decltype(std::real(E{})), typename I = decltype(E{}.imag())>
-decltype(auto) Imag(Array&& a){
-	struct C{R real; I imag;}; static_assert(sizeof(E) == sizeof(C), "!");
-	return std::forward<Array>(a).template reinterpret_array_cast<C>().template member_cast<I>(&C::imag);
-//	return member_array_cast<I>(reinterpret_array_cast<C>(a), &C::imag);
-}
-#endif
-
-}}
-
 BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos){
-
-	BOOST_REQUIRE(true);
 
 	using v3d = std::array<double, 3>;
 
@@ -55,6 +24,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos){
 		reference operator()(int i, int j){return {masses[i][j], positions[i][j]};}
 	};
 
+	// some members might need explicit padding to work well with member_cast
 	struct particle{
 		double mass;
 		v3d position alignas(2*sizeof(double));  // __attribute__((aligned(2*sizeof(double))))
@@ -111,6 +81,23 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee){
 	BOOST_REQUIRE( d2D_names == d2D_names_copy );
 	BOOST_REQUIRE( base(d2D_names) != base(d2D_names_copy) );
 
+}
+
+struct priority_0{}; struct priority_1 : priority_0{};
+template<class Array, typename E = typename std::decay_t<Array>::element, typename R = decltype(std::real(E{}))>
+decltype(auto) real_(Array&& a, priority_0){return a;}
+template<class Array, typename E = typename std::decay_t<Array>::element, typename R = decltype(std::real(E{})), typename I = decltype(E{}.imag())>
+decltype(auto) real_(Array&& a, priority_1){
+	struct C{R real; I imag;}; static_assert(sizeof(E) == sizeof(C), "!");
+	return std::forward<Array>(a).template reinterpret_array_cast<C>().template member_cast<R>(&C::real);
+}
+
+template<class Array> decltype(auto) Real(Array&& a){return real_(a, priority_1{});}
+
+template<class Array, typename E = typename std::decay_t<Array>::element, typename R = decltype(std::real(E{})), typename I = decltype(E{}.imag())>
+decltype(auto) Imag(Array&& a){
+	struct C{R real; I imag;}; static_assert(sizeof(E) == sizeof(C), "!");
+	return std::forward<Array>(a).template reinterpret_array_cast<C>().template member_cast<I>(&C::imag);
 }
 
 BOOST_AUTO_TEST_CASE(member_array_cast_complex){
