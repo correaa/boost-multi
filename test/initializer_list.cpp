@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-echo $OXX; $CXXX $CXXFLAGS $0 -o $0x$OXX -lboost_unit_test_framework&&$0x$OXX -x 0&&rm $0x$OXX;exit
+$CXX $CXXFLAGS $0 -o $0x$OXX -lboost_unit_test_framework&&$0x$OXX -x 0&&rm $0x$OXX;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
