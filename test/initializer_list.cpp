@@ -85,10 +85,10 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_array){
 //#if not defined (__GNUG__)
 #if defined(__INTEL_COMPILER) or (defined(__clang__) and (__clang_major__ >= 10))  // doesn't work on gcc
 	{
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wc99-designator"
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc99-designator"
 		double const a[] = { [8] = 8., 9., 10. };
-#pragma clang diagnostic pop
+#pragma GCC diagnostic pop
 		multi::array<double, 1> A = a;
 		BOOST_REQUIRE( A.size() == 11 );
 		BOOST_REQUIRE( A[9] == 9. );
