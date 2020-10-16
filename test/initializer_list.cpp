@@ -61,8 +61,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d){
 		BOOST_REQUIRE(( A == multi::array<double, 1>{1.2, 3.4, 5.6} ));
 		BOOST_REQUIRE(( A == decltype(A){1.2, 3.4, 5.6} ));
 		BOOST_REQUIRE(( A == decltype(A)::decay_type({1.2, 3.4, 5.6}) ));
-	//	BOOST_REQUIRE(( A == A.remake({1.2, 3.4, 5.6}) ));
-	//	BOOST_REQUIRE(( A == A.remake{1.2, 3.4, 5.6} )); // doesn't work
+		BOOST_REQUIRE(( A == decltype(+A)({1.2, 3.4, 5.6}) ));
 	}
 	{
 	#if __cpp_deduction_guides
@@ -70,7 +69,6 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d){
 		BOOST_REQUIRE( size(A) == 3 );
 		BOOST_REQUIRE( A[2] == 5.6 );
 		BOOST_REQUIRE(( A == multi::array({1.2, 3.4, 5.6}) ));
-	//	BOOST_REQUIRE(( A == A.remake({1.2, 3.4, 5.6}) ));
 	#endif
 	}
 	{
@@ -99,54 +97,32 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_array){
 #endif
 }
 
-#if 0
-{ // TODO not working, add a constructor for static_array
-//#pragma GCC diagnostic push
-//#pragma GCC diagnostic ignored "-Wpedantic"
-//	multi::static_array<double, 1> const A = (double[3])// warning: ISO C++ forbids compound-literals [-Wpedantic]
-//		{1.1, 2.2, 3.3}
-//	;
-//#pragma GCC diagnostic pop
-//	assert( size(A)==3 and A[1] == 2.2 );
+BOOST_AUTO_TEST_CASE(multi_initialize_from_carray_1d){
+	{ // TODO not working, add a constructor for static_array
+		multi::static_array<double, 1> const A = (double const[3])// warning: ISO C++ forbids compound-literals [-Wpedantic]
+			{1.1, 2.2, 3.3}
+		;
+		BOOST_REQUIRE( size(A)==3 and A[1] == 2.2 );
+	}
+	{
+		multi::array A = (double const[])// warning: ISO C++ forbids compound-literals [-Wpedantic]
+			{1.1, 2.2, 3.3}
+		;
+		BOOST_REQUIRE( size(A)==3 and A[1] == 2.2 );
+	}
+	{
+		std::array<double, 3> a = {1.1, 2.2, 3.3};
+		multi::array<double, 1> const A(begin(a), end(a));
+		BOOST_REQUIRE(( A == decltype(+A){1.1, 2.2, 3.3} ));
+	}
+	{
+	#if __cpp_deduction_guides
+		std::array a = {1.1, 2.2, 3.3};
+		multi::array<double, 1> const A(begin(a), end(a));
+		assert(( A == decltype(+A){1.1, 2.2, 3.3} ));
+	#endif
+	}
 }
-{ // TODO not working, ditto
-//#pragma GCC diagnostic push
-//#pragma GCC diagnostic ignored "-Wpedantic"
-//	multi::static_array<double, 1> const A = (double[])// warning: ISO C++ forbids compound-literals [-Wpedantic]
-//		{1.1, 2.2, 3.3}
-//	;
-//#pragma GCC diagnostic pop
-//	assert( size(A)==3 and A[1] == 2.2 );
-}
-{ // TODO not working, ditto
-//#pragma GCC diagnostic push
-//#pragma GCC diagnostic ignored "-Wpedantic"
-//	multi::array 
-//#if not __cpp_deduction_guides
-//		<double, 1>
-//#endif
-//const A = 
-//(double[])// warning: ISO C++ forbids compound-literals [-Wpedantic]
-//		{1.1, 2.2, 3.3}
-//	;
-//#pragma GCC diagnostic pop
-//	assert( size(A)==3 and A[1] == 2.2 );
-//#endif
-}
-{
-	std::array<double, 3> a = {1.1, 2.2, 3.3};
-	multi::array<double, 1> const A(begin(a), end(a));
-	BOOST_REQUIRE(( A == decltype(A){1.1, 2.2, 3.3} ));
-}
-{
-#if __cpp_deduction_guides
-	std::array a = {1.1, 2.2, 3.3};
-	multi::array<double, 1> const A(begin(a), end(a));
-	assert(( A == decltype(A){1.1, 2.2, 3.3} ));
-#endif
-}
-}
-#endif
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d){
 	{
