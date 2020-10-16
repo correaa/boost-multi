@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d){
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_array){
 //#if not defined (__GNUG__)
-#if defined(__INTEL_COMPILER) or defined(__clang__) // doesn't work on gcc
+#if defined(__INTEL_COMPILER) or (defined(__clang__) and (__clang_major__ >= 10))  // doesn't work on gcc
 	{
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wc99-designator"
@@ -104,9 +104,12 @@ BOOST_AUTO_TEST_CASE(multi_initialize_from_carray_1d){
 		BOOST_REQUIRE( size(A)==3 and A[1] == 2.2 );
 	}
 	{
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc99-extensions"
 		multi::array A = (double const[])// warning: ISO C++ forbids compound-literals [-Wpedantic]
 			{1.1, 2.2, 3.3}
 		;
+#pragma GCC diagnostic pop
 		BOOST_REQUIRE( size(A)==3 and A[1] == 2.2 );
 	}
 	{
