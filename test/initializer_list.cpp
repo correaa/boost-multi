@@ -4,9 +4,7 @@ echo $OXX; $CXX $CXXFLAGS $0 -o $0x$OXX -lboost_unit_test_framework&&$0x$OXX -x 
 // © Alfredo A. Correa 2019-2020
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi initializer_list"
-#ifndef __INTEL_COMPILER
 #define BOOST_TEST_DYN_LINK
-#endif
 #include<boost/test/unit_test.hpp>
 
 #include "../array.hpp"
