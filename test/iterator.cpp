@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXX $CXXFLAGS $0 -o $0$X -lboost_unit_test_framework&&$0$X -x 0&&rm $0$X;exit
 #endif
 // © Alfredo A. Correa 2018-2020
 
@@ -36,12 +36,25 @@ BOOST_AUTO_TEST_CASE(iterator_1d){
 	}
 }
 
+template<class T> void what() = delete;
+template<class T> void what(T&&) = delete;
+
 BOOST_AUTO_TEST_CASE(iterator_2d){
 	{
 		multi::array<double, 2> A({120, 140}, 99.); 
 		BOOST_REQUIRE( size(A) == 120 );
 		BOOST_REQUIRE( cbegin(A) < cend(A) );
 		BOOST_REQUIRE( cend(A) - cbegin(A) == size(A) );
+
+		using iter = multi::array<double, 2>::iterator;
+		static_assert( std::is_same< iter::element   , double >{}, "!");
+		static_assert( std::is_same< iter::value_type, multi::array<double, 1> >{}, "!");
+		static_assert( std::is_same< iter::reference, multi::basic_array<double, 1>&&>{}, "!");
+
+		using citer = multi::array<double, 2>::const_iterator;
+		static_assert( std::is_same< citer::element   , double >{}, "!");
+		static_assert( std::is_same< citer::value_type, multi::array<double, 1> >{}, "!");
+		static_assert( std::is_same< citer::reference, multi::basic_array<double, 1, double const*>&&>{}, "!");
 	}
 	{
 		std::vector<double> v(10000);
