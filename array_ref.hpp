@@ -336,9 +336,10 @@ public:
 #else
 protected:
 #endif
-basic_array(basic_array&&) = default; // if you need to generate a copy you can't use `auto` here, use `decay`.
+	basic_array(basic_array&&) = default; // if you need to generate a copy you can't use `auto` here, use `decay`.
 #else
-public   : basic_array(basic_array&&) = default; // in C++ < 17 this is necessary to return references from functions
+public: 
+	basic_array(basic_array&&) = default; // in C++ < 17 this is necessary to return references from functions
 #endif
 public:
 
@@ -509,6 +510,32 @@ public:
 		return basic_array<T, D-1, ElementPtr>{new_layout, types::base_};
 	}
 	friend auto flatted(basic_array const& self){return self.flatted();}
+
+	NODISCARD("because it has no side-effect")
+	auto diagonal()&&{return this->diagonal();}
+	NODISCARD("because it has no side-effect")
+	basic_array<T, D-1, typename basic_array::element_ptr> diagonal()&{
+		auto L = std::min(std::get<0>(this->sizes()), std::get<1>(this->sizes()));
+		multi::layout_t<D-1> new_layout{(*this)({0, L}, {0, L}).layout().sub_};
+		new_layout.nelems_ += (*this)({0, L}, {0, L}).layout().nelems_;
+		new_layout.stride_ += (*this)({0, L}, {0, L}).layout().stride_;
+		return {new_layout, types::base_};
+	}
+	NODISCARD("because it has no side-effect")
+	basic_array<T, D-1, typename basic_array::element_const_ptr> diagonal() const&{
+		auto L = std::min(std::get<0>(this->sizes()), std::get<1>(this->sizes()));
+		multi::layout_t<D-1> new_layout{(*this)({0, L}, {0, L}).layout().sub_};
+		new_layout.nelems_ += (*this)({0, L}, {0, L}).layout().nelems_;
+		new_layout.stride_ += (*this)({0, L}, {0, L}).layout().stride_;
+		return {new_layout, types::base_};
+	}
+	NODISCARD("because it has no side-effect")
+	friend auto diagonal(basic_array const& self){return           self .diagonal();}
+	NODISCARD("because it has no side-effect")
+	friend auto diagonal(basic_array&       self){return           self .diagonal();}
+	NODISCARD("because it has no side-effect")
+	friend auto diagonal(basic_array&&      self){return std::move(self).diagonal();}
+
 	template<typename Size>
 	auto partitioned(Size const& s) const{
 		assert(s!=0);
@@ -954,6 +981,7 @@ struct basic_array<T, dimensionality_type{0}, ElementPtr, Layout> :
 	using decay_type = typename types::element;
 	element_ref operator()() const&{return *(this->base_);}
 	operator element_ref()&&{return *(this->base_);}
+	operator typename basic_array::element_type() const&{return *(this->base_);}
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int){
 		ar & multi::archive_traits<Archive>::make_nvp("element", *(this->base_));
@@ -995,6 +1023,7 @@ protected:
 	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
 	friend decltype(auto) static_array_cast(basic_array<TT, DD, PP> const&);
 public:
+	friend decay_type operator+(basic_array const& self){return self.decay();}
 	template<class T2> friend auto reinterpret_array_cast(basic_array&& a){
 		return std::move(a).template reinterpret_array_cast<T2, typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>();
 	}
@@ -1002,12 +1031,12 @@ public:
 		return a.template reinterpret_array_cast<T2, typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>();
 	}
 #if __cplusplus >= 201703L
-#if __INTEL_COMPILER
+#if defined(__INTEL_COMPILER) or defined(__NVCC__)
 public: // bug in icc c++17 return from function non copyable non moveable
 #else
 protected:
 #endif
-	basic_array(basic_array&&) = default; // if you need to generate a copy you can't use `auto` here, use `decay` or `aut&&`.
+	basic_array(basic_array&&) = default; // if you need to generate a copy you can't use `auto` here, use `decay` or `auto&&`.
 #else
 public:
 	basic_array(basic_array&&) = default; // in C++ < 17 this is necessary to return references from functions
@@ -1503,7 +1532,7 @@ operator/(RandomAccessIterator data, multi::iextensions<D> x){return {data, x};}
 ////////////////////////////////////////////////////////////////////////////////
 
 
-#if not __INCLUDE_LEVEL__ // _TEST_BOOST_MULTI_ARRAY_REF
+#if not __INCLUDE_LEVEL__ and not defined(__PGI)
 
 #include<cassert>
 
