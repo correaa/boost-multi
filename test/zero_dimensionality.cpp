@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 #endif
 // © Alfredo Correa 2019-2020
 
@@ -15,6 +15,8 @@ $CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #include<complex>
 
 namespace multi = boost::multi;
+
+template<class T> void what(T&&) = delete;
 
 BOOST_AUTO_TEST_CASE(zero_dimensionality){
 	{
@@ -60,6 +62,35 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality){
 	{
 		multi::array<std::complex<double>, 0> a = std::complex<double>{1., 2.};
 		assert( num_elements(a) == 1 );
+	}
+	{
+		double d = 2.;
+		multi::array_ref<double, 0> ar0(&d, {});
+		double dd = ar0;
+		BOOST_REQUIRE( dd == d );
+
+		multi::array_ptr<double, 1> ap1(&d, 1);
+		BOOST_REQUIRE( ap1->base() == &d );
+		BOOST_REQUIRE( (*ap1).base() == &d );
+		
+		multi::array_ptr<double, 0> ap0 = &d;
+
+		BOOST_REQUIRE( ap0 == &d );
+		BOOST_REQUIRE( ap0 != &dd );
+		BOOST_REQUIRE( ap0->base() == &d );
+		BOOST_REQUIRE( (*ap0).base() == &d );
+
+		multi::array_ptr<double, 0> ap0dd = &dd;
+		BOOST_REQUIRE( ap0dd != ap0 );
+		BOOST_REQUIRE( *ap0 == *ap0dd );
+		double d3 = 3.;
+		BOOST_REQUIRE(( *multi::array_ptr<double, 0>{&d3} == 3. ));
+		BOOST_REQUIRE(( &multi::array_ref<double, 0>{&d3} == multi::array_ptr<double, 0>{&d3} ));
+
+		#if __cpp_deduction_guides
+		BOOST_REQUIRE(( *multi::array_ptr{&d3} == 3. ));
+		BOOST_REQUIRE(( multi::array_ptr{&d3} == multi::array_ptr<double, 0>(&d3, {}) ));
+		#endif
 	}
 #if 0
 	{

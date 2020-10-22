@@ -1432,6 +1432,17 @@ public:
 	}
 };
 
+template<class T, typename Ptr>
+class array_ptr<T, 0, Ptr>{
+	mutable multi::array_ref<T, 0, Ptr> Ref_;
+public:
+	array_ptr(Ptr p, index_extensions<0> x = {}) : Ref_(p, x){}
+//	operator bool() const{return Ref_.base();}
+	operator Ptr () const{return Ref_.base();}
+	constexpr multi::array_ref<T, 0, Ptr>& operator* () const{return                Ref_ ;}
+	constexpr multi::array_ref<T, 0, Ptr>* operator->() const{return std::addressof(Ref_);}
+};
+
 template<class TT, std::size_t N>
 // auto operator&(TT(&t)[N]){ // c++ cannot overload & for primitive types
 auto addressof(TT(&t)[N]){
@@ -1462,6 +1473,10 @@ template<class P> auto make_array_ref(P p, index_extensions<5> x){return make_ar
 //#endif
 
 #if __cpp_deduction_guides
+
+template<class It, typename V = typename std::iterator_traits<It>::value_type> // pointer_traits doesn't have ::value_type
+array_ptr(It, index_extensions<0> = {})->array_ptr<V, 0, It>;
+
 template<class It, typename V = typename std::iterator_traits<It>::value_type>
 array_ptr(It, index_extensions<1>)->array_ptr<V, 1, It>;
 template<class It, typename V = typename std::iterator_traits<It>::value_type>
@@ -1532,7 +1547,7 @@ operator/(RandomAccessIterator data, multi::iextensions<D> x){return {data, x};}
 ////////////////////////////////////////////////////////////////////////////////
 
 
-#if not __INCLUDE_LEVEL__ and not defined(__PGI)
+#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 
 #include<cassert>
 
