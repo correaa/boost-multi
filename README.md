@@ -73,23 +73,31 @@ std::array<double, 2> A = {
 };
 ```
 
-The size is automatically deduced; the first dimension are the "rows" above.
+The size is automatically deduced; the first dimension are the (two) "rows" above.
 
 ```cpp
 assert( A.size()==2 );
 assert( std::get<1>(A.sizes()) == 3 );
 ```
 
-Arrays can be copied, or moved, and compared. Copies are independent.
+The value of an array can be copied, moved, and compared.
+Copies are equal but independent.
 ```cpp
 std::array<double, 2> B = A;
-assert( B[0][1] == A[0][1] );
-assert( &B[0][1] == &A[0][1] );
 assert( extensions(B) == extensions(A) );
+assert(  B[0][1] ==  A[0][1] );
+assert( &B[0][1] != &A[0][1] );
 assert( B == A );
 ```
 
-Arrays can be passed by value or by reference, most of the time they should be passed through generic parameters,
+Array can be initialized by the size alone, in which case the element values are default constructed:
+
+```cpp
+std::array<double, 3> C({3, 4, 5}); // 3*4*5 = 60 elements
+```
+
+Arrays can be passed by value or by reference, most of the time they should be passed through generic parameters.
+Most useful function work on the concept of array rather than on a concrete type.
 
 ```cpp
 template<class ArrayDouble2D> // instead of the over specific argument std::array<double, 2>
@@ -98,10 +106,10 @@ double const& element_1_1(ArrayDouble2D const& m){return m[1][1];}
 assert( element_1_1(A) == A[1][1] );
 ```
 
-In this way the functions can be called on blocks of larger matrices.
+These generic function arguments that are not intended to be modified are passed by `const&`; otherwise pass by forward-reference `&&`.
+In this way the functions can be called on subblocks of larger matrices.
 
 ```cpp
-std::array<double, 3> C3D;
 assert( &element_1_1(C3D[0]) == &C3D[0][1][1] );
 ```
 
@@ -591,7 +599,7 @@ As a result, these two loops lead to the [same machine code](https://godbolt.org
 ```
 
 Incidentally, the library also supports parenthesis notation with multiple indices `A(i, j, k)` for element or partial access, but it does so for accidental reasons as part of a more general syntax to generate sub-blocks.
-In any case `A(i, j, k)` is expanded to `A[i][j][k]` internally in the library when `i, j, k` are integer indices. 
+In any case `A(i, j, k)` is expanded to `A[i][j][k]` internally in the library when `i, j, k` are normal integer indices.
 Additionally, array coordinates can be directly stored in tuple-like data structures, allowing this functional syntax:
 
 ```cpp
