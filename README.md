@@ -28,7 +28,7 @@ Some features:
 
 ## Installation and Tests
 
-`Multi` doesn't require instalation, single file `#include<multi/array.hpp>` is enough to use the full library.
+`Multi` doesn't require instalation, single file `#include<multi/array.hpp>` is enough to use the full core library.
 `Multi`'s _only_ dependecy is the standard C++ library.
 
 It is important to compile programs that use the library with a decent level of optimization (e.g. `-O2`) to avoid slowdown if indiviudual element-access is intensively used.
