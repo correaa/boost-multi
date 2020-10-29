@@ -9,6 +9,8 @@ $CXX $CXXFLAGS $0 -o $0x$X -lboost_unit_test_framework&&$0x$X -x 0&&rm $0x$X;exi
 
 #include<iostream>
 #include<vector>
+#include<numeric>
+
 #include "../array.hpp"
 
 namespace multi = boost::multi;
@@ -50,11 +52,13 @@ BOOST_AUTO_TEST_CASE(iterator_2d){
 		static_assert( std::is_same< iter::element   , double >{}, "!");
 		static_assert( std::is_same< iter::value_type, multi::array<double, 1> >{}, "!");
 		static_assert( std::is_same< iter::reference, multi::basic_array<double, 1>&&>{}, "!");
+		static_assert( std::is_same< iter::element_ptr, double*>{}, "!");
 
 		using citer = multi::array<double, 2>::const_iterator;
 		static_assert( std::is_same< citer::element   , double >{}, "!");
 		static_assert( std::is_same< citer::value_type, multi::array<double, 1> >{}, "!");
 		static_assert( std::is_same< citer::reference, multi::basic_array<double, 1, double const*>&&>{}, "!");
+		static_assert( std::is_same< citer::element_ptr, double const* >{}, "!");
 	}
 	{
 		std::vector<double> v(10000);
@@ -170,5 +174,15 @@ BOOST_AUTO_TEST_CASE(iterator_arrow_operator){
 	BOOST_REQUIRE( &(begin( A           )->operator[](1)) == &(A[0][1]) );
 	BOOST_REQUIRE( &(begin( A.rotated() )->operator[](1)) == &(A[1][0]) );
 
+}
+
+BOOST_AUTO_TEST_CASE(index_range){
+	auto&& r = multi::index_range{0, 5}; // semiopen interval
+
+	std::copy(begin(r), end(r), std::ostream_iterator<multi::index>{std::cout, ","}); // prints 0, 1, 2, 3, 4,
+
+	BOOST_REQUIRE( std::reduce(begin(r), end(r)) == r.size()*(r.size()-1)/2 );
+
+	BOOST_REQUIRE( std::transform_reduce(begin(r), end(r), 0, std::plus{}, [](auto e){return e*e*e;}) > 0 ); // sum of cubes
 }
 
