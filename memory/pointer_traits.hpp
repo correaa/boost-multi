@@ -1,48 +1,16 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 #endif
 // © Alfredo A. Correa 2020
 
 #ifndef MULTI_POINTER_TRAITS_HPP
 #define MULTI_POINTER_TRAITS_HPP
 
-#include<memory> 
+#include<memory>
+#include<type_traits> // std::conditional_t
 
 namespace boost{
 namespace multi{
-
-#if 0
-template<class T, typename = decltype(std::declval<T const&>().default_allocator())>
-std::true_type           has_default_allocator_aux(T const&);
-std::false_type          has_default_allocator_aux(...);
-template<class T> struct has_default_allocator : decltype(has_default_allocator_aux(std::declval<T>())){};
-
-template<class Pointer, class T = void> struct pointer_traits;
-
-template<class P>
-struct pointer_traits<P, std::enable_if_t<has_default_allocator<P>{}> > : std::pointer_traits<P>{
-	static auto default_allocator_of(typename pointer_traits::pointer const& p){return p.default_allocator();}
-	using default_allocator_type = decltype(std::declval<P const&>().default_allocator());
-};
-template<class P>
-struct pointer_traits<P, std::enable_if_t<not has_default_allocator<P>{}> > : std::pointer_traits<P>{
-//	using default_allocator_type = std::allocator<std::decay_t<typename std::iterator_traits<P>::value_type> >;
-	using default_allocator_type = std::allocator<std::decay_t<typename std::pointer_traits<P>::element_type> >;
-	static default_allocator_type default_allocator_of(typename pointer_traits::pointer const&){return {};}
-};
-
-template<class P>
-typename pointer_traits<P>::default_allocator_type 
-default_allocator_of(P const& p){return pointer_traits<P>::default_allocator_of(p);}
-#endif
-
-//template<
-//	class Pointer//,
-//	class DefaultAllocator = void//typename Pointer::default_allocator_type
-//>
-//struct pointer_traits;//{
-//	using default_allocator_type = std::allocator<typename std::iterator_traits<Pointer>::value_type>;
-//};
 
 template<std::size_t I> struct Priority : std::conditional_t<I==0, std::true_type, struct Priority<I-1>>{}; 
 
@@ -55,13 +23,9 @@ struct pointer_traits/*, typename Pointer::default_allocator_type>*/ : std::poin
 	using default_allocator_type = decltype(dat_aux(Priority<2>{}, std::declval<Pointer>()));
 };
 
-//template<class T> struct pointer_traits<T*> : std::pointer_traits<T*>{
-//	using default_allocator_type = std::allocator<typename std::iterator_traits<T*>::value_type>;
-//};
-
 }}
 
-#if not __INCLUDE_LEVEL__ // TEST BELOW
+#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 
 #define BOOST_TEST_DYN_LINK 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi memory pointer traits"
