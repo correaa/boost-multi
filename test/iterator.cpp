@@ -179,8 +179,8 @@ BOOST_AUTO_TEST_CASE(index_range_iteration){
 	std::copy(begin(r), end(r), std::ostream_iterator<int>{out, ","});
 	BOOST_REQUIRE( out.str() == "0,1,2,3,4," );
 
-	BOOST_REQUIRE( std::reduce(begin(r), end(r)) == r.size()*(r.size()-1)/2 );
+	BOOST_REQUIRE( std::accumulate(begin(r), end(r), 0) == r.size()*(r.size()-1)/2 );
 
-	BOOST_REQUIRE( std::transform_reduce(begin(r), end(r), 0, std::plus<>{}, [](auto e){return e*e*e;}) > 0 ); // sum of cubes
+	BOOST_REQUIRE( std::accumulate(begin(r), end(r), 0, [](auto&& acc, auto const& e){return acc + e*e*e;}) > 0 ); // sum of cubes
 }
 
