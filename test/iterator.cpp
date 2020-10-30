@@ -3,7 +3,7 @@ $CXX $CXXFLAGS $0 -o $0x$X -lboost_unit_test_framework&&$0x$X -x 0&&rm $0x$X;exi
 #endif
 // © Alfredo A. Correa 2018-2020
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi allocators"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi iterators"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
@@ -15,8 +15,7 @@ $CXX $CXXFLAGS $0 -o $0x$X -lboost_unit_test_framework&&$0x$X -x 0&&rm $0x$X;exi
 
 namespace multi = boost::multi;
 
-template<class MA>
-decltype(auto) take(MA&& ma){return ma[0];}
+template<class MA> decltype(auto) take(MA&& ma){return ma[0];}
 
 BOOST_AUTO_TEST_CASE(iterator_1d){
 	{
@@ -28,6 +27,7 @@ BOOST_AUTO_TEST_CASE(iterator_1d){
 		multi::array<double, 1>::const_iterator cb = cbegin(A);
 		multi::array<double, 1>::iterator b = begin(A);
 		BOOST_REQUIRE( cb == b );
+
 		multi::array<double, 1>::const_iterator cb2 = begin(A);
 		BOOST_REQUIRE( cb2 == cb );
 	}
@@ -37,9 +37,6 @@ BOOST_AUTO_TEST_CASE(iterator_1d){
 		BOOST_REQUIRE( begin(A) < end(A) );
 	}
 }
-
-template<class T> void what() = delete;
-template<class T> void what(T&&) = delete;
 
 BOOST_AUTO_TEST_CASE(iterator_2d){
 	{
@@ -176,13 +173,14 @@ BOOST_AUTO_TEST_CASE(iterator_arrow_operator){
 
 }
 
-BOOST_AUTO_TEST_CASE(index_range){
-	auto&& r = multi::index_range{0, 5}; // semiopen interval
-
-	std::copy(begin(r), end(r), std::ostream_iterator<multi::index>{std::cout, ","}); // prints 0, 1, 2, 3, 4,
+BOOST_AUTO_TEST_CASE(index_range_iteration){
+	multi::index_range r{0, 5}; // semiopen interval
+	std::ostringstream out;
+	std::copy(begin(r), end(r), std::ostream_iterator<int>{out, ","});
+	BOOST_REQUIRE( out.str() == "0,1,2,3,4," );
 
 	BOOST_REQUIRE( std::reduce(begin(r), end(r)) == r.size()*(r.size()-1)/2 );
 
-	BOOST_REQUIRE( std::transform_reduce(begin(r), end(r), 0, std::plus{}, [](auto e){return e*e*e;}) > 0 ); // sum of cubes
+	BOOST_REQUIRE( std::transform_reduce(begin(r), end(r), 0, std::plus<>{}, [](auto e){return e*e*e;}) > 0 ); // sum of cubes
 }
 
