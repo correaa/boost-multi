@@ -26,6 +26,8 @@ Some features:
 
 (Do not confuse this library with Boost.MultiArray or Boost.MultiIndex.)
 
+
+## Contents
 [[_TOC_]]
 
 ## Installation and Tests
