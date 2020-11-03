@@ -588,7 +588,7 @@ For example, this code ends up with `buffer` containing the string `"aaaabbbbbb 
 ```cpp
 #include<pmr>
 ...
-	char buffer[12] = {}; // a small buffer on the stack or an allocation
+	char buffer[13] = "____________"; // a small buffer on the stack or an allocation
 	std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};
 
 	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> A({2, 2}, 'a', &pool);
@@ -599,8 +599,8 @@ The library comes with its own customized (non-polymorphic) memory resources if,
 The headers to include are
 
 ```cpp
-#include<multi/memory/monotonic.hpp> // monotonic 
-#include<multi/memory/stack.hpp>
+#include<.multi/memory/monotonic.hpp> // multi::memory::monotonic<char*> : no memory reclaim
+#include<multi/memory/stack.hpp>      // multi::memory::stack<char*>     : FIFO memory reclaim
 ```
 
 # Technical points
