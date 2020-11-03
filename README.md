@@ -26,6 +26,8 @@ Some features:
 
 (Do not confuse this library with Boost.MultiArray or Boost.MultiIndex.)
 
+[[_TOC_]]
+
 ## Installation and Tests
 
 `Multi` doesn't require instalation, single file `#include<multi/array.hpp>` is enough to use the full core library.
