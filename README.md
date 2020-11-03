@@ -581,8 +581,8 @@ TotalView visual debugger can display arrays in human-readable form. To use it, 
 
 ## Memory Resources
 
-The library allows using C++17's polymorphic memory resources which allows using preallocated buffers. 
-This can be used to use stack memory or to minimize the number of allocations.
+The library is compatible with C++17's polymorphic memory resources which allows using preallocated buffers. 
+This enables the use stack memory or in order to minimize the number of allocations.
 For example, this code ends up with `buffer` containing the string `"aaaabbbbbb  "`.
 
 ```cpp
@@ -595,7 +595,7 @@ For example, this code ends up with `buffer` containing the string `"aaaabbbbbb 
 	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> B({3, 2}, 'b', &pool);
 ```
 
-The library comes with its own customic (non-polymorphic) memory resources if for any reasons the standard PMRs are not sufficient.
+The library comes with its own customized (non-polymorphic) memory resources if, for any reason, the standard PMRs are not sufficient.
 The headers to include are
 
 ```cpp
