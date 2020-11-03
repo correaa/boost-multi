@@ -596,7 +596,7 @@ For example, this code ends up with `buffer` containing the string `"aaaabbbbbb 
 ```
 
 The library comes with its own customized (non-polymorphic) memory resources if, for any reason, the standard PMRs are not sufficient.
-The headers to include are
+The headers to include are:
 
 ```cpp
 #include<.multi/memory/monotonic.hpp> // multi::memory::monotonic<char*> : no memory reclaim
@@ -614,7 +614,7 @@ Moreover, this goes against [historical recommendations](https://isocpp.org/wiki
 It turns out that [modern compilers with a fair level of optimization (`-O2`)](https://godbolt.org/z/3fYd5c) can elide these temporary objects, so that `A[i][j][k]` generates identical assembly code as `A.base() + i*stride1 + j*stride2 + k*stride3` (+offsets not shown).
 
 In a subsequent optimization, constant indices can have their "partial stride" computation removed from loops. 
-As a result, these two loops lead to the [same machine code](https://godbolt.org/z/p_ELwQ):
+As a result, these two loops lead to the [same machine code](https://godbolt.org/z/z1se74):
 
 ```cpp
     for(int j = 0; j != nj; ++j)
