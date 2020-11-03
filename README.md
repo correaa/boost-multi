@@ -1,7 +1,7 @@
 <!--
 (pandoc `#--from gfm` --to html --standalone --metadata title=" " $0 > $0.html) && firefox --new-window $0.html; sleep 5; rm $0.html; exit
 -->
-# [Boost.]Multi {:.no_toc}
+# [Boost.]Multi
 
 (not an official Boost library)
 
@@ -578,6 +578,30 @@ int main(){
 ## TotalView
 
 TotalView visual debugger can display arrays in human-readable form. To use it, simply #include "multi/adaptors/totalview.hpp".
+
+## Memory Resources
+
+The library allows using C++17's polymorphic memory resources which allows using preallocated buffers. 
+This can be used to use stack memory or to minimize the number of allocations.
+For example, this code ends up with `buffer` containing the string `"aaaabbbbbb  "`.
+
+```cpp
+#include<pmr>
+...
+	char buffer[12] = {}; // a small buffer on the stack or an allocation
+	std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};
+
+	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> A({2, 2}, 'a', &pool);
+	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> B({3, 2}, 'b', &pool);
+```
+
+The library comes with its own customic (non-polymorphic) memory resources if for any reasons the standard PMRs are not sufficient.
+The headers to include are
+
+```cpp
+#include<multi/memory/monotonic.hpp> // monotonic 
+#include<multi/memory/stack.hpp>
+```
 
 # Technical points
 
