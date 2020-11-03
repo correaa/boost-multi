@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX -DNDEBUG $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
+echo $X; $CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -7,34 +7,33 @@ $CXX -DNDEBUG $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
+#include<complex>
+
 #include "../array.hpp"
 
-#include<boost/iterator/transform_iterator.hpp>
-#include<boost/functional/hash.hpp>
+//#include<boost/iterator/transform_iterator.hpp>
+
 
 namespace multi = boost::multi;
 
 multi::array_ref<double, 2> make_ref(double* p){return {p, {5, 7}};}
 
+BOOST_AUTO_TEST_CASE(multi_copy_move){
+	multi::array<double, 2> A({3, 3}, 0.);
+	multi::array<double, 2> B = A;//identy();//multi::array<double, 2>({3, 3}, 0.);// = eye<double>({3, 
+	BOOST_REQUIRE( A == B );
+
+	auto A_data = A.data_elements();
+	multi::array<double, 2> C = std::move(A);
+	BOOST_REQUIRE( is_empty(A) );
+	BOOST_REQUIRE( A_data = C.data_elements() );
+	
+	multi::array<double, 2> D(std::move(B));
+	BOOST_REQUIRE( is_empty(B) );
+}
+
+#if 1
 BOOST_AUTO_TEST_CASE(range_assignment){
-{
-	auto r = multi::make_range(5, 10);
-	auto f = [](auto x){return x+1;};
-	std::vector<double> v(
-		boost::make_transform_iterator(r.begin(), f), 
-		boost::make_transform_iterator(r.end()  , f)
-	);
-	BOOST_REQUIRE( v[1] == 7 );
-}
-{
-	auto r = multi::make_range(5, 10);
-	auto f = [](auto x){return x+1;};
-	multi::array<double, 1> v(
-		boost::make_transform_iterator(r.begin(), f), 
-		boost::make_transform_iterator(r.end()  , f)
-	);
-	BOOST_REQUIRE( v[1] == 7 );
-}
 {
 	auto r = multi::make_extension_t(10l);
 	multi::array<double, 1> v(r.begin(), r.end());
@@ -42,46 +41,10 @@ BOOST_AUTO_TEST_CASE(range_assignment){
 	BOOST_REQUIRE( v[1] = 10 );
 }
 {
-	auto r = multi::make_extension_t(10l);
-	auto f = [](auto x){
-		std::size_t seed = 1234;
-	//	boost::hash_combine(seed, );
-		seed ^= boost::hash<multi::index>{}(x) + 0x9e3779b9 + (seed<<6) + (seed>>2);
-		return seed/(double)std::numeric_limits<std::size_t>::max();
-	};
-	multi::array<double, 1> v(
-		boost::make_transform_iterator(r.begin(), f), 
-		boost::make_transform_iterator(r.end()  , f)
-	);
-
-	std::cerr << std::hash<std::size_t>{}(13) << std::endl;
-	std::size_t seed = 12349l;
-	//	boost::hash_combine(seed, );
-//	seed ^= boost::hash<std::size_t>{}(13) + 0x9e3779b9 + (seed<<6) + (seed>>2);
-	boost::hash_combine(seed, 13);
-
-	BOOST_REQUIRE( v.size() == r.size() );
-	BOOST_REQUIRE( v[1] >= 0. );
-	BOOST_REQUIRE( v[1] < 1.  );
-	BOOST_REQUIRE( std::all_of(begin(v), end(v), [](auto x){
-		return x >= 0. and x < 1.;
-	}) );
-}
-{
 	multi::array<double, 1> v(10);
 	auto r = extension(v);
 	v.assign(r.begin(), r.end());
 	BOOST_REQUIRE( v[1] == 1 );
-}
-{
-	multi::array<double, 1> v(10);
-	auto r = extension(v);
-	auto f = [](auto x){return x*2;};
-	v.assign(
-		boost::make_transform_iterator(r.begin(), f),
-		boost::make_transform_iterator(r.end()  , f)
-	);
-	BOOST_REQUIRE( v[1] == 2 );
 }
 }
 
@@ -103,7 +66,7 @@ BOOST_AUTO_TEST_CASE(rvalue_assignments){
 
 }
 
-#if 0 // self-move-assigment is a standard warning in clang
+#if 0 // self-move-assigment is a standard warning in clang (-Wmove)
 BOOST_AUTO_TEST_CASE(self_assigment){
 	multi::array<double, 1> A = {1., 2., 3.};
 	A = std::move(A);
@@ -146,4 +109,20 @@ BOOST_AUTO_TEST_CASE(assignments){
 		BOOST_REQUIRE( v[9] == 33. );
 	}
 }
+
+template<class T, class Allocator = std::allocator<T> > // T must be specified, double, complex<double>
+multi::array<T, 2, Allocator> eye(multi::iextensions<2> ie, Allocator alloc = {}){
+	multi::array<T, 2, Allocator> ret(ie, 0., alloc);
+	ret.diagonal().fill(1.);
+	return ret;
+}
+
+BOOST_AUTO_TEST_CASE(assigment_temporary){
+	multi::array<double, 2> Id = eye<double>({3, 3});
+	BOOST_REQUIRE( Id == eye<double>({3, 3}) );
+	BOOST_REQUIRE( Id[1][1] == 1 );
+	BOOST_REQUIRE( Id[1][0] == 0 );
+}
+
+#endif
 
