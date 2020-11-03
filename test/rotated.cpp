@@ -54,6 +54,7 @@ BOOST_AUTO_TEST_CASE(multi_rotate_4d_op){
 }
 
 BOOST_AUTO_TEST_CASE(multi_rotate){
+{
 	double a[4][5] {
 		{ 0,  1,  2,  3,  4}, 
 		{ 5,  6,  7,  8,  9}, 
@@ -69,56 +70,57 @@ BOOST_AUTO_TEST_CASE(multi_rotate){
 	BOOST_REQUIRE( B[1][2] == 7  );
 	BOOST_REQUIRE( (B <<1) == (A <<1) );
 	BOOST_REQUIRE( (B<<1)[2][1] == 7 );
+}
+{
+	multi::array<double, 2> A = {
+		{00, 01},
+		{10, 11}
+	};
+	BOOST_REQUIRE(       A[1][0] == 10 );
+	BOOST_REQUIRE( (A <<1)[0][1] == 10 );
+	BOOST_REQUIRE( &     A[1][0] == &(A <<1)[0][1] );
 
-	{
-		multi::array<double, 2> a = {
-			{00, 01},
-			{10, 11}
-		};
-		BOOST_REQUIRE(       a[1][0] == 10 );
-		BOOST_REQUIRE( (a <<1)[0][1] == 10 );
-		BOOST_REQUIRE( &     a[1][0] == &(a <<1)[0][1] );
+	BOOST_REQUIRE( A.transposed()[0][1] == 10 );
+	BOOST_REQUIRE( transposed(A)[0][1] == 10 );
+	BOOST_REQUIRE( (~A)[0][1] == 10 );
+	BOOST_REQUIRE( &A[1][0] == &A.transposed()[0][1] );
 
-		BOOST_REQUIRE( a.transposed()[0][1] == 10 );
-		BOOST_REQUIRE( transposed(a)[0][1] == 10 );
-		BOOST_REQUIRE( (~a)[0][1] == 10 );
-		BOOST_REQUIRE( &a[1][0] == &a.transposed()[0][1] );
+	(A<<1)[0][1] = 100;
+	BOOST_REQUIRE( A[1][0] == 100 );
+}
+{
+	multi::array<double, 3> A({11, 13, 17});
+	BOOST_REQUIRE( & A[3][5][7] == &   A.transposed()[5][3][7] );
+	BOOST_REQUIRE( & A[3][5][7] == & transposed(A)   [5][3][7] );
+	BOOST_REQUIRE( & A[3][5][7] == & (~A)            [5][3][7] );
+	BOOST_REQUIRE( & A[3][5][7] == &   A[3].transposed()[7][5] );
+	BOOST_REQUIRE( & A[3][5][7] == & (~A[3])            [7][5] );
 
-		(a<<1)[0][1] = 100;
-		BOOST_REQUIRE( a[1][0] == 100 );
-	}
-	{
-		multi::array<double, 3> a({11, 13, 17});
-		BOOST_REQUIRE( &a[3][5][7] == &a.transposed()[5][3][7] );
-		BOOST_REQUIRE( &a[3][5][7] == &transposed(a)[5][3][7] );
-		BOOST_REQUIRE( &a[3][5][7] == &(~a)[5][3][7] );
-		BOOST_REQUIRE( & a[3][5][7] == & a[3].transposed()[7][5] );	
-		BOOST_REQUIRE( & a[3][5][7] == & (~a[3])[7][5] );
+	BOOST_REQUIRE( & A[3][5] == & (~A)[5][3] );
 
-		BOOST_REQUIRE( & a[3][5] == & (~a)[5][3] );
+	BOOST_REQUIRE( & ~~A          == & A      );
+	BOOST_REQUIRE( &  (A <<3)     == & A      );
+	BOOST_REQUIRE( &   A          == & (A<<3) );
+	BOOST_REQUIRE( &  (A <<1)     != & A      );
+	BOOST_REQUIRE( &  (A >>1 <<1) == & A      );
 
-		BOOST_REQUIRE( &~~a == &a );
-		BOOST_REQUIRE( &(a <<3) == &a);
-		BOOST_REQUIRE( &a == &(a<<3) );
-		BOOST_REQUIRE( &(a <<1) != &a);
-		BOOST_REQUIRE( &(a >>1 <<1) == &a );
+	std::iota(A.data_elements(), A.data_elements() + A.num_elements(), 0.1);
+	BOOST_REQUIRE( ~~A == A );
+	BOOST_REQUIRE( (A >>1 <<1) == A );
+}
+{
+	multi::array<double, 2> const A = {
+		{00, 01},
+		{10, 11}
+	};
+	BOOST_REQUIRE( (A<<1)[0][1] == 10 );
+	BOOST_REQUIRE( &(A<<1)[1][0] == &A[0][1] );
+	BOOST_REQUIRE( &(~A)[1][0] == &A[0][1] );
+}
+{
+	multi::array<double, 3> const A({3, 5, 7});
+}
 
-		std::iota(a.data_elements(), a.data_elements() + a.num_elements(), 0.1);
-		BOOST_REQUIRE( ~~a == a );
-		BOOST_REQUIRE( (a >>1 <<1) == a );
-	}
-	{
-		multi::array<double, 2> const a = {
-			{00, 01},
-			{10, 11}
-		};
-		BOOST_REQUIRE( (a<<1)[0][1] == 10 );
-		BOOST_REQUIRE( &(a<<1)[1][0] == &a[0][1] );
-		BOOST_REQUIRE( &(~a)[1][0] == &a[0][1] );
-	}
-	{
-		multi::array<double, 3> const A({3, 5, 7});
-	}
 }
 
 BOOST_AUTO_TEST_CASE(multi_transposed){
