@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX -g $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 #endif
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi rotate"
@@ -119,5 +119,16 @@ BOOST_AUTO_TEST_CASE(multi_rotate){
 	{
 		multi::array<double, 3> const A({3, 5, 7});
 	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_transposed){
+	multi::array<double, 2> const M = {
+		{ 9., 24., 30., 9.},
+		{ 4., 10., 12., 7.},
+		{14., 16., 36., 1.}
+	};
+	multi::array<double, 2> const MT1 =  M.transposed();
+	multi::array<double, 2> const MT2 = ~M;
+	BOOST_REQUIRE( MT1 == MT2 );
 }
 
