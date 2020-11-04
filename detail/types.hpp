@@ -148,10 +148,12 @@ auto contains(index_extensions<D> const& ie, Tuple const& tp){
 
 }}
 
+#if defined(__cpp_structured_bindings) and __cpp_structured_bindings>=201606
 namespace std{ // this is for structured binding
 	template<boost::multi::dimensionality_type D> struct tuple_size<boost::multi::iextensions<D>> : std::integral_constant<size_t, D> { };
 	template<size_t N, boost::multi::dimensionality_type D> struct tuple_element<N, boost::multi::iextensions<D>> : tuple_element<N, typename boost::multi::iextensions<D>::base_>{};
 }
+#endif
 
 #if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 
