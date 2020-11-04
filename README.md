@@ -589,9 +589,9 @@ For example, this code ends up with `buffer` containing the string `"aaaabbbbbb 
 #include<pmr>
 int main(){
 	char buffer[13] = "____________"; // a small buffer on the stack
-	std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};
+	std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)}; // or multi::memory::monotonic<char*>
 
-	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> A({2, 2}, 'a', &pool);
+	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> A({2, 2}, 'a', &pool); // or multi::memory::monotonic_allocator<double>
 	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> B({3, 2}, 'b', &pool);
 }
 ```
@@ -601,7 +601,7 @@ The headers to include are:
 
 ```cpp
 #include<multi/memory/monotonic.hpp> // multi::memory::monotonic<char*> : no memory reclaim
-#include<multi/memory/stack.hpp>      // multi::memory::stack<char*>     : FIFO memory reclaim
+#include<multi/memory/stack.hpp>     // multi::memory::stack<char*>     : FIFO memory reclaim
 ```
 
 # Technical points
