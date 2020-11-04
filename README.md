@@ -582,24 +582,25 @@ TotalView visual debugger can display arrays in human-readable form. To use it, 
 ## Memory Resources
 
 The library is compatible with C++17's polymorphic memory resources which allows using preallocated buffers. 
-This enables the use stack memory or in order to minimize the number of allocations.
+This enables the use of stack memory or in order to reduce the number of allocations.
 For example, this code ends up with `buffer` containing the string `"aaaabbbbbb  "`.
 
 ```cpp
 #include<pmr>
-...
-	char buffer[13] = "____________"; // a small buffer on the stack or an allocation
+int main(){
+	char buffer[13] = "____________"; // a small buffer on the stack
 	std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};
 
 	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> A({2, 2}, 'a', &pool);
 	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> B({3, 2}, 'b', &pool);
+}
 ```
 
-The library comes with its own customized (non-polymorphic) memory resources if, for any reason, the standard PMRs are not sufficient.
+The library comes with its own customized (non-polymorphic) memory resources if, for any reason, the standard PMRs are not sufficiently general.
 The headers to include are:
 
 ```cpp
-#include<.multi/memory/monotonic.hpp> // multi::memory::monotonic<char*> : no memory reclaim
+#include<multi/memory/monotonic.hpp> // multi::memory::monotonic<char*> : no memory reclaim
 #include<multi/memory/stack.hpp>      // multi::memory::stack<char*>     : FIFO memory reclaim
 ```
 
