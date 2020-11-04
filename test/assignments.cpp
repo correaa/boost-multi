@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-echo $X; $CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
+$CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -10,9 +10,6 @@ echo $X; $CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X
 #include<complex>
 
 #include "../array.hpp"
-
-//#include<boost/iterator/transform_iterator.hpp>
-
 
 namespace multi = boost::multi;
 
