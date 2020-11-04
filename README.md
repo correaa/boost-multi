@@ -494,7 +494,7 @@ int main(){
 }
 ```
 
-# Interoperability
+# Interoperability with other software
 
 ## STL (Standard Template Library)
 
@@ -577,7 +577,8 @@ int main(){
 
 ## TotalView
 
-TotalView visual debugger can display arrays in human-readable form. To use it, simply #include "multi/adaptors/totalview.hpp".
+TotalView visual debugger (commercial) can display arrays in human-readable form (for simple types, like `double` or `std::complex`).
+To use it, simply `#include "multi/adaptors/totalview.hpp"` and link to the TotalView libraries, compile and run the code with the debugger.
 
 ## Memory Resources
 
