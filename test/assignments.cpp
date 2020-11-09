@@ -15,6 +15,35 @@ namespace multi = boost::multi;
 
 multi::array_ref<double, 2> make_ref(double* p){return {p, {5, 7}};}
 
+BOOST_AUTO_TEST_CASE(equality_1D){
+	multi::array<double, 1> A = {1., 2., 3.};
+	multi::array<double, 1> B = {1., 2., 3.};
+	BOOST_REQUIRE( A == B );
+	BOOST_REQUIRE( not (A != B) );
+
+	BOOST_REQUIRE( A() == B() );
+	BOOST_REQUIRE( not (A() != B()) );
+}
+
+BOOST_AUTO_TEST_CASE(equality_2D){
+	multi::array<double, 2> A = {
+		{1., 2., 3.},
+		{4., 5., 6.}
+	};
+	multi::array<double, 2> B = {
+		{1., 2., 3.},
+		{4., 5., 6.}
+	};
+	BOOST_REQUIRE( A == B );
+	BOOST_REQUIRE( not (A != B) );
+
+	BOOST_REQUIRE( A() == B() );
+	BOOST_REQUIRE( not (A() != B()) );
+	
+	BOOST_REQUIRE( A[0] == B[0] );
+	BOOST_REQUIRE( not (A[0] != B[0]) );
+}
+
 BOOST_AUTO_TEST_CASE(multi_copy_move){
 	multi::array<double, 2> A({3, 3}, 0.);
 	multi::array<double, 2> B = A;//identy();//multi::array<double, 2>({3, 3}, 0.);// = eye<double>({3, 
