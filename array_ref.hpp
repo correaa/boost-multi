@@ -529,11 +529,8 @@ public:
 		new_layout.stride_ += (*this)({0, L}, {0, L}).layout().stride_;
 		return {new_layout, types::base_};
 	}
-	NODISCARD("because it has no side-effect")
 	friend auto diagonal(basic_array const& self){return           self .diagonal();}
-	NODISCARD("because it has no side-effect")
 	friend auto diagonal(basic_array&       self){return           self .diagonal();}
-	NODISCARD("because it has no side-effect")
 	friend auto diagonal(basic_array&&      self){return std::move(self).diagonal();}
 
 	template<typename Size>
@@ -1314,7 +1311,7 @@ protected:
 	[[deprecated("references are not copyable, use &&")]]
 	array_ref(array_ref const&) = default; // don't try to use `auto` for references, use `auto&&` or explicit value type
 public:
-#if __INTEL_COMPILER or __cplusplus < 201703L
+#if defined(__INTEL_COMPILER) or __cplusplus < 201703L
 	array_ref(array_ref&&) = default;
 #endif
 	template<class OtherPtr, class=std::enable_if_t<not std::is_same<OtherPtr, ElementPtr>{}>>

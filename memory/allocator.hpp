@@ -11,7 +11,7 @@ $CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 
 #include<cassert>
 
-#if(__cpp_lib_memory_resource>=201603L)
+#if defined(__cpp_lib_memory_resource) and __cpp_lib_memory_resource>=201603L
 #include<memory_resource>
 #endif
 

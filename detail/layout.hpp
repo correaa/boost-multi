@@ -541,8 +541,8 @@ BOOST_AUTO_TEST_CASE(multi_layout){
 	multi::iextensions<0> x{};
 	multi::layout_t<0> L(x);
 }{  multi::layout_t<1> L{}; assert( dimensionality(L)==1 and num_elements(L) == 0 and size(L) == 0 and size(extension(L))==0 and stride(L)!=0 and is_empty(L) );
-	multi::iextensions<2> x(2, 3);
-	whats( multi::iextensions<2>(2, 5).operator bool() );
+//	multi::iextensions<2> x(2, 3);
+//	whats( multi::iextensions<2>(2, 5).operator bool() ); // TODO add operator bool to iextensions<2>
 }{
 	multi::layout_t<2> L({2, 10}); 
 	assert( dimensionality(L)==2 );
