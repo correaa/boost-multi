@@ -145,7 +145,7 @@ nvcc:
     script:
 #      - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
       - apt update --quiet
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev
+      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev cmake make
 #      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet g++ nvidia-cuda-toolkit 
       - ln --symbolic --force . ../multi
       - export CXX="nvcc -std=c++14 -use_fast_math -lpthread -D_REENTRANT -DBOOST_PP_VARIADICS=1 --expt-relaxed-constexpr -DBOOST_PP_VARIADICS=1 -x cu --compiler-options=-std=c++14,-Wall,-Wextra,-O3"
