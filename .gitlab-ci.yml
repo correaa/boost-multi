@@ -34,8 +34,8 @@
 #      - DEBIAN_FRONTEND=noninteractive apt-get update
 #      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet g++-7
 
-image: debian:stable-backports
-#debian:testing
+image: debian:testing
+#debian:stable-backports
 
 variables:
   CXX: "c++"
