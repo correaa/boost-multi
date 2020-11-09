@@ -139,7 +139,8 @@ clang-asan:
 #      - for a in ./*.cpp; do echo $a; sh $a || exit 1; echo "\n"; done;
 
 nvcc:
-    image: debian:stable-backports
+    image: nvidia/cuda:11.1.0-devel-ubuntu18.04
+    #debian:stable-backports
     stage: test
     script:
       - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
