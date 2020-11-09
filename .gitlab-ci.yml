@@ -139,7 +139,7 @@ clang-asan:
 #      - for a in ./*.cpp; do echo $a; sh $a || exit 1; echo "\n"; done;
 
 nvcc:
-    image: nvidia/cuda
+    image: nvidia/cuda:11.0-devel-ubi8
     #debian:stable-backports
     stage: test
     script:
