@@ -154,7 +154,7 @@ nvcc:
       - cd test
       - mkdir build
       - cd build
-      - cmake .. -DCMAKE_CXX_COMPILER="nvcc" -DCMAKE_LINKER="nvcc" -DCMAKE_CXX_FLAGS="-x cu -std=c++14 -use_fast_math -lpthread -D_REENTRANT -DBOOST_PP_VARIADICS=1 --expt-relaxed-constexpr -DBOOST_PP_VARIADICS=1 -x cu --compiler-options=-std=c++14,-Wall,-Wextra,-O3" -DCMAKE_CXX_LINK_FLAGS="-std=c++14 -lpthread --compiler-options=-std=c++14"
+      - cmake .. -DCMAKE_CXX_COMPILER="`which nvcc` -x cu" -DCMAKE_LINKER="`which nvcc`" -DCMAKE_CXX_FLAGS="-std=c++14 -use_fast_math -lpthread -D_REENTRANT -DBOOST_PP_VARIADICS=1 --expt-relaxed-constexpr -DBOOST_PP_VARIADICS=1 -x cu --compiler-options=-std=c++14,-Wall,-Wextra,-O3" -DCMAKE_CXX_LINK_FLAGS="-std=c++14 -lpthread --compiler-options=-std=c++14"
       - make -j
       - ctest --output-on-failure
       - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
