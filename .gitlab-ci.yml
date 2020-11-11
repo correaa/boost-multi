@@ -109,20 +109,20 @@ clang++-asan:
     - export ASAN_OPTIONS="halt_on_error=1 detect_leaks=1"
     - ctest --output-on-failure
 
-clang++-msan:
-  stage: test
-  script:
-    - export CXX="clang++"
-    - export CXXFLAGS="-fsanitize=undefined -fsanitize=memory -fno-omit-frame-pointer"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet clang cmake make libboost-test-dev
-    - ln --symbolic --force . ../multi
-    - $CXX --version
-    - cd test
-    - mkdir build && cd build
-    - cmake ..
-    - cmake --build . --verbose
-    - export ASAN_OPTIONS="halt_on_error=1 detect_leaks=1"
-    - ctest --output-on-failure
+#clang++-msan:
+#  stage: test
+#  script:
+#    - export CXX="clang++"
+#    - export CXXFLAGS="-fsanitize=undefined -fsanitize=memory -fsanitize-memory-track-origins -fno-omit-frame-pointer"
+#    - apt-get update && apt-get install --no-install-recommends -y --quiet clang cmake make libboost-test-dev
+#    - ln --symbolic --force . ../multi
+#    - $CXX --version
+#    - cd test
+#    - mkdir build && cd build
+#    - cmake ..
+#    - cmake --build . --verbose
+#    - export ASAN_OPTIONS="halt_on_error=1 detect_leaks=1"
+#    - ctest --output-on-failure
 
 clang++-10:
   stage: test
