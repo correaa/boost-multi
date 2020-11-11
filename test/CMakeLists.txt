@@ -11,7 +11,6 @@ cmake_minimum_required(VERSION 3.11)
 project(boost-multi-test VERSION 0.1 LANGUAGES CXX)
 
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
-find_package(Threads REQUIRED)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -39,6 +38,11 @@ foreach(TEST_FILE ${TEST_SRCS})
   target_include_directories(${TEST_EXE} PRIVATE ${Boost_INCLUDE_DIRS})
   target_link_libraries     (${TEST_EXE} PRIVATE ${Boost_LIBRARIES})# ${pthread_LIBRARIES})# stdc++fs)
   target_link_directories   (${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
+  target_compile_options    (${TEST_EXE} PRIVATE
+     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
+          -Wall -Wextra -Wpedantic>
+     $<$<CXX_COMPILER_ID:MSVC>:
+          /W4>)
   add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
 endforeach()
 
