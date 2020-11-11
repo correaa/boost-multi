@@ -191,12 +191,28 @@ icpc:
     tags:
       - intel_compiler
     script:
-      - export PATH=/usr/local/cuda/bin:$PATH
-      - . /opt/intel/system_studio_2020/bin/compilervars.sh intel64 
-      - export CXX="icpc -fopenmp -std=c++14 -diag-disable=remark -x c++ -Wall -Wextra  -Wall -Wextra -Warray-bounds -Wchar-subscripts -Wcomment -Wenum-compare -Wformat -Wuninitialized -Wmaybe-uninitialized -Wmain -Wnarrowing -Wnonnull -Wparentheses -Wpointer-sign -Wreorder -Wreturn-type -Wsign-compare -Wsequence-point -Wtrigraphs -Wunused-function -Wunused-but-set-variable -Wunused-variable -Wwrite-strings -Werror -diag-error:3846 -Ofast -ldl -pthread "
+      - . /opt/intel/system_studio_2020/bin/compilervars.sh intel64
+      - export CXX="icpc"
       - $CXX --version
       - cd test
-      - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
+      - mkdir build && cd build
+      - cmake ..
+      - cmake --build . --verbose -j 10
+      - ctest --output-on-failure
+
+icpc-std17:
+    stage: test
+    tags:
+      - intel_compiler
+    script:
+      - . /opt/intel/system_studio_2020/bin/compilervars.sh intel64
+      - export CXX="icpc"
+      - $CXX --version
+      - cd test
+      - mkdir build && cd build
+      - cmake .. -DCMAKE_CXX_STANDARD=17
+      - cmake --build . --verbose -j 10
+      - ctest --output-on-failure
 
 cmake:
     stage: test
