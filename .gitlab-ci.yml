@@ -150,8 +150,34 @@ cuda:
       - cmake --build . --verbose
       - ctest --output-on-failure
 
+cuda-std17:
+    image: nvidia/cuda
+    stage: test
+    script:
+      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev
+      - ln --symbolic --force . ../multi
+      - nvcc --version
+      - cd test
+      - mkdir build && cd build
+      - cmake .. -DCMAKE_CXX_STANDARD=17 -DENABLE_CUDA=1
+      - cmake --build . --verbose
+      - ctest --output-on-failure
+
 cuda11.0:
     image: nvidia/cuda:11.0-devel-ubuntu20.04
+    stage: test
+    script:
+      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev
+      - ln --symbolic --force . ../multi
+      - nvcc --version
+      - cd test
+      - mkdir build && cd build
+      - cmake .. -DENABLE_CUDA=1
+      - cmake --build . --verbose
+      - ctest --output-on-failure
+
+cuda10.0:
+    image: nvidia/cuda:10.1-devel-ubuntu18.04
     stage: test
     script:
       - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev
