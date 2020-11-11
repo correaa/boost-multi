@@ -3,8 +3,8 @@ $CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 #endif
 // © Alfredo Correa 2019-2020
 
-#define BOOST_TEST_DYN_LINK 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi zero dimensionality"
+#define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
 #include<iostream>
