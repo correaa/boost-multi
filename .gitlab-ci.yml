@@ -200,7 +200,7 @@ icpc:
       - cd test
       - mkdir build && cd build
       - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-      - cmake --build . -j 10
+      - cmake --build .
       - ctest --output-on-failure
 
 icpc-std17:
@@ -214,7 +214,7 @@ icpc-std17:
       - cd test
       - mkdir build && cd build
       - cmake .. -DCMAKE_CXX_STANDARD=17 -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-      - cmake --build . -j 10
+      - cmake --build .
       - ctest --output-on-failure
 
 blas&fft:
