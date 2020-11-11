@@ -1,45 +1,7 @@
 # -*-indent-tabs-mode:nil;c-basic-offset:2;tab-width:4;-*-
-# This file is a template, and might need editing before it works on your project.
-
-#variables:
-#  # Please edit to your GitLab project
-#  REPO_NAME: gitlab.com/namespace/project
-
-# The problem is that to be able to use go get, one needs to put
-# the repository in the $GOPATH. So for example if your gitlab domain
-# is gitlab.com, and that your repository is namespace/project, and
-# the default GOPATH being /go, then you'd need to have your
-# repository in /go/src/gitlab.com/namespace/project
-# Thus, making a symbolic link corrects this.
-#before_script:
-#  - mkdir -p $GOPATH/src/$(dirname $REPO_NAME)
-#  - ln -svf $CI_PROJECT_DIR $GOPATH/src/$REPO_NAME
-#  - cd $GOPATH/src/$REPO_NAME
-#    - apt upgrade -y --quiet
-# nvidia-cuda-dev  nvidia-smi
-#      - sh ./array_ptr.cpp
-#      - sh ./array_ref.cpp
-#      - sh ./sort.cpp
-#      - sh ./comparisons.cpp
-#      - sh ./constructors.cpp
-#      - sh ./initializer_list.cpp
-#      - sh ./layout.cpp
-#      - sh ./fill.cpp
-#      - sh ./rotated.cpp
-#      - sh ./allocator.cpp
-#      - sh ./reextent.cpp
-
-#      - DEBIAN_FRONTEND=noninteractive apt install --assume-yes  build-essential 
-#      - DEBIAN_FRONTEND=noninteractive apt-get update
-#      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet g++-7
+# © Alfredo A. Correa 2018-2020
 
 image: debian:testing
-#debian:stable-backports
-
-#variables:
-#  CXX: "c++"
-#  DOCKER_DRIVER: overlay2
-#before_script:
 
 g++:
   stage: test
@@ -119,6 +81,19 @@ clang++:
     - cmake --build . --verbose
     - ctest --output-on-failure
 
+clang++-std17:
+  stage: test
+  script:
+    - export CXX="clang++"
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang cmake make libboost-test-dev
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - cd test
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_CXX_STANDARD=17
+    - cmake --build . --verbose
+    - ctest --output-on-failure
+
 clang++-asan:
   stage: test
   script:
@@ -131,6 +106,22 @@ clang++-asan:
     - mkdir build && cd build
     - cmake ..
     - cmake --build . --verbose
+    - export ASAN_OPTIONS="halt_on_error=1 detect_leaks=1"
+    - ctest --output-on-failure
+
+clang++-msan:
+  stage: test
+  script:
+    - export CXX="clang++"
+    - export CXXFLAGS="-fsanitize=undefined -fsanitize=memory -fno-omit-frame-pointer"
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang cmake make libboost-test-dev
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - cd test
+    - mkdir build && cd build
+    - cmake ..
+    - cmake --build . --verbose
+    - export ASAN_OPTIONS="halt_on_error=1 detect_leaks=1"
     - ctest --output-on-failure
 
 clang++-10:
@@ -146,53 +137,25 @@ clang++-10:
     - cmake --build . --verbose
     - ctest --output-on-failure
 
-clangX-17:
-    stage: test
-    script:
-      - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
-      - apt update --quiet
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang-10
-      - ln --symbolic --force . ../multi
-      - export CXX="clang++-10 -std=c++17 -x c++ -Wall -Wextra -Wpedantic -Werror -Wmove -Ofast -pthread"
-      - $CXX --version
-      - cd test
-      - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
-
-clang-asan:
-    stage: test
-    script:
-      - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
-      - apt update --quiet
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang
-      - ln --symbolic --force . ../multi
-      - export CXX="clang++ -fsanitize=undefined -fsanitize=address -g -x c++ -Wall -Wextra -Wpedantic -Werror -Wmove -O3 -pthread"
-      - $CXX --version
-      - cd test
-      - for a in ./*.cpp; do echo $a; sh $a || exit 1; echo "\n"; done;
-
-#clang-msan: # not working with Boost.Test
-#    stage: test
-#    script:
-#      - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
-#      - apt update --quiet
-#      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev
-#      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang
-#      - ln --symbolic --force . ../multi
-#      - export CXX="clang++ -fsanitize=undefined -fsanitize=memory -g -x c++ -Wall -Wextra -Wpedantic -Werror -Wmove -O3 -pthread"
-#      - $CXX --version
-#      - cd test
-#      - for a in ./*.cpp; do echo $a; sh $a || exit 1; echo "\n"; done;
-
-nvidia/cuda:
-    image: nvidia/cuda #:11.0-devel-ubuntu20.04
-    #debian:stable-backports
+cuda:
+    image: nvidia/cuda
     stage: test
     script:
       - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev
       - ln --symbolic --force . ../multi
-#      - export CXX="nvcc -std=c++14 -use_fast_math -lpthread -D_REENTRANT -DBOOST_PP_VARIADICS=1 --expt-relaxed-constexpr -DBOOST_PP_VARIADICS=1 -x cu --compiler-options=-std=c++14,-Wall,-Wextra,-O3"
+      - nvcc --version
+      - cd test
+      - mkdir build && cd build
+      - cmake .. -DENABLE_CUDA=1
+      - cmake --build . --verbose
+      - ctest --output-on-failure
+
+cuda11.0:
+    image: nvidia/cuda:11.0-devel-ubuntu20.04
+    stage: test
+    script:
+      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev
+      - ln --symbolic --force . ../multi
       - nvcc --version
       - cd test
       - mkdir build && cd build
@@ -245,26 +208,6 @@ cmake:
       - make -j
       - ctest --output-on-failure
 
-cmake-valgrind:
-    stage: test
-    script:
-      - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
-      - apt update --quiet
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet g++ cmake make valgrind
-      - ln --symbolic --force . ../multi
-      - export CXX="c++ -g "
-      - export VALGRIND="valgrind"
-      - $CXX --version
-      - cd test
-      - mkdir build
-      - cd build
-      - cmake ..
-      - make -j
-      - ctest --output-on-failure
-
-#      - export CXX="clang++     -x c++  -Wall -Wextra -Wpedantic -Ofast -lcudart -lfftw3 -lcublas -lcufft -lboost_timer -lboost_unit_test_framework `pkg-config --libs blas` "
-
 blas&fft:
     stage: test
     script:
@@ -286,9 +229,6 @@ blas&fft:
       - cd adaptors
       - sh ./fftw.hpp
       - $CXX fft.hpp
-
-#      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang pkg-config libblas-dev libblas64-dev libfftw3-dev nvidia-cuda-toolkit
-#      - ln --symbolic --force . ../multi 
 
 blas&fftGPU-11:
     stage: build
