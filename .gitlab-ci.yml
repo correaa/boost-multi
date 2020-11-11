@@ -1,5 +1,5 @@
 # -*-indent-tabs-mode:nil;c-basic-offset:2;tab-width:4;-*-
-# © Alfredo A. Correa 2018-2020
+# © Alfredo A. Correa 2020
 
 image: debian:testing
 
