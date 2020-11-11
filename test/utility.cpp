@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(test_utility_1d){
 //	BOOST_REQUIRE( multi::size(varr) == size(marr) );
 //	BOOST_REQUIRE( size(Marr) == size(marr) );
 	BOOST_REQUIRE( size(carr) == size(marr) );
-	BOOST_REQUIRE( size(aarr) == size(marr) );
+	BOOST_REQUIRE( static_cast<multi::size_type>(size(aarr)) == size(marr) );
 
 	BOOST_REQUIRE( carr[7] == marr[7] );
 	BOOST_REQUIRE( Marr[7] == marr[7] );
