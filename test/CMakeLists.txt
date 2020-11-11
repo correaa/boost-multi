@@ -43,7 +43,7 @@ foreach(TEST_FILE ${TEST_SRCS})
        -Werror -Wall -Wextra -Wconversion -Wpedantic -Wshadow -Wdouble-promotion -Wformat-truncation -Wundef -fno-common
        $<$<CXX_COMPILER_ID:GNU>:
           -fstack-usage>
-       $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>:
+       $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
           -Wmove>
        $<$<CXX_COMPILER_ID:MSVC>:
           /W4>)
