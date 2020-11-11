@@ -6,7 +6,7 @@
   ctest -j --output-on-error [-T memcheck]
   exit
 #]=]
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.10)
 
 project(boost-multi-test VERSION 0.1 LANGUAGES CXX)
 
