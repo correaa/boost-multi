@@ -930,27 +930,27 @@ public:
 
 
 template<class T, class A=std::allocator<T>> array(T[]                  , A={})->array<T,1,A>;
-template<class Array, class A=std::allocator<typename multi::array_traits<Array>::element>> array(Array            , A={})->array<typename multi::array_traits<Array>::element, 1, A>;
+template<class Array, class A=std::allocator<typename multi::array_traits<Array>::element>, class=std::enable_if_t<is_allocator<A>{}>> array(Array            , A={})->array<typename multi::array_traits<Array>::element, 1, A>;
 
-template<dimensionality_type D, class T, typename = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<D>, T)->array<T, D, std::allocator<T>>;
-	template<class T, typename = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<0>, T)->array<T,0, std::allocator<T>>;
-	template<class T, typename = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<1>, T)->array<T,1, std::allocator<T>>;
-	template<class T, typename = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<2>, T)->array<T,2, std::allocator<T>>;
-	template<class T, typename = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<3>, T)->array<T,3, std::allocator<T>>;
-	template<class T, typename = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<4>, T)->array<T,4, std::allocator<T>>;
-	template<class T, typename = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<5>, T)->array<T,5, std::allocator<T>>;
+template<dimensionality_type D, class T, class=std::enable_if_t<not is_allocator<T>{}> > array(iextensions<D>, T)->array<T, D, std::allocator<T>>;
+	template<class T, class=std::enable_if_t<not is_allocator<T>{}> > array(iextensions<0>, T)->array<T,0, std::allocator<T>>;
+	template<class T, class=std::enable_if_t<not is_allocator<T>{}> > array(iextensions<1>, T)->array<T,1, std::allocator<T>>;
+	template<class T, class=std::enable_if_t<not is_allocator<T>{}> > array(iextensions<2>, T)->array<T,2, std::allocator<T>>;
+	template<class T, class=std::enable_if_t<not is_allocator<T>{}> > array(iextensions<3>, T)->array<T,3, std::allocator<T>>;
+	template<class T, class=std::enable_if_t<not is_allocator<T>{}> > array(iextensions<4>, T)->array<T,4, std::allocator<T>>;
+	template<class T, class=std::enable_if_t<not is_allocator<T>{}> > array(iextensions<5>, T)->array<T,5, std::allocator<T>>;
 
 template<dimensionality_type D, class T, class A, typename = std::enable_if_t<std::is_same<typename std::allocator_traits<A>::value_type, T>{}> > static_array(iextensions<D>, T, A)->static_array<T, D, A>;
 	template<class T, class A, typename = std::enable_if_t<std::is_same<typename std::allocator_traits<A>::value_type, T>{}>> static_array(T, A)->static_array<T, 0, A>;
 //	template<class T, class A, typename = std::enable_if_t<not is_allocator<T>{}> > static_array(iextensions<1>, T, A = {})->static_array<T, 1, A>;
 
-template<dimensionality_type D, class A, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<D>, A)->array<T, D, A>;
-	template<class A, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<0>, A)->array<T, 0, A>;
-	template<class A, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<1>, A)->array<T, 1, A>;
-	template<class A, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<2>, A)->array<T, 2, A>;
-	template<class A, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<3>, A)->array<T, 3, A>;
-	template<class A, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<4>, A)->array<T, 4, A>;
-	template<class A, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<5>, A)->array<T, 5, A>;
+template<dimensionality_type D, class A, class=std::enable_if_t<is_allocator<A>{}>, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<D>, A)->array<T, D, A>;
+	template<class A, class=std::enable_if_t<is_allocator<A>{}>, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<0>, A)->array<T, 0, A>;
+	template<class A, class=std::enable_if_t<is_allocator<A>{}>, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<1>, A)->array<T, 1, A>;
+	template<class A, class=std::enable_if_t<is_allocator<A>{}>, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<2>, A)->array<T, 2, A>;
+	template<class A, class=std::enable_if_t<is_allocator<A>{}>, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<3>, A)->array<T, 3, A>;
+	template<class A, class=std::enable_if_t<is_allocator<A>{}>, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<4>, A)->array<T, 4, A>;
+	template<class A, class=std::enable_if_t<is_allocator<A>{}>, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<5>, A)->array<T, 5, A>;
 
 
 
