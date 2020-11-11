@@ -201,7 +201,8 @@ BOOST_AUTO_TEST_CASE(transformed_array){
 	}
 	{
 		double a = 5;
-		double& b = a; assert( b == 5 );
+		double& b = a;
+		BOOST_REQUIRE( b == 5 );
 
 		auto&& c = test::involuted<double&, decltype(test::neg)>(a, test::neg);
 		BOOST_REQUIRE( c == -5. );
