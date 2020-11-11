@@ -71,9 +71,9 @@ g++-8:
 clang++:
   stage: test
   script:
-    - apt-get update && apt-get install --no-install-recommends -y clang cmake make libboost-test-dev
-    - ln --symbolic --force . ../multi
     - export CXX="clang++"
+    - apt-get update && apt-get install --no-install-recommends -y clang++ cmake make libboost-test-dev
+    - ln --symbolic --force . ../multi
     - $CXX --version
     - cd test
     - mkdir build && cd build
