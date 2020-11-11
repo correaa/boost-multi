@@ -42,9 +42,9 @@ variables:
 
 #before_script:
 
-#stages:
-#    - build
-#    - test
+stages:
+  - build
+  - test
 
 g++:
   stage: build
