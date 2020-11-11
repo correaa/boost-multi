@@ -119,6 +119,19 @@ clang++:
     - cmake --build . --verbose
     - ctest --output-on-failure
 
+clang++-asan:
+  stage: test
+  script:
+    - export CXX="clang++"
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang cmake make libboost-test-dev
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - cd test
+    - mkdir build && cd build
+    - cmake .. -DCTEST_MEMORYCHECK_TYPE="AddressSanitizer" -DCTEST_MEMORYCHECK_SANITIZER_OPTIONS-="verbosity=1:symbolize=1:abort_on_error=1:detect_leaks=1"
+    - cmake --build . --verbose
+    - ctest --output-on-failure
+
 clang++-10:
   stage: test
   script:
