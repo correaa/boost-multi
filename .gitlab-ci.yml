@@ -84,7 +84,7 @@ memcheck:
   stage: test
   script:
     - export CXX="g++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX valgrind cmake make libboost-test-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - cd test
