@@ -141,6 +141,7 @@ cuda:
     image: nvidia/cuda
     stage: test
     script:
+      - export DEBIAN_FRONTEND=noninteractive
       - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev
       - ln --symbolic --force . ../multi
       - nvcc --version
@@ -154,6 +155,7 @@ cuda-std17:
     image: nvidia/cuda
     stage: test
     script:
+      - export DEBIAN_FRONTEND=noninteractive
       - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev
       - ln --symbolic --force . ../multi
       - nvcc --version
@@ -167,6 +169,7 @@ cuda11.0:
     image: nvidia/cuda:11.0-devel-ubuntu20.04
     stage: test
     script:
+      - export DEBIAN_FRONTEND=noninteractive
       - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev
       - ln --symbolic --force . ../multi
       - nvcc --version
