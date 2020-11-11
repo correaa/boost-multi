@@ -49,7 +49,7 @@ variables:
 gcc_build:
   stage: build
   script:
-    - apt-get update && apt-get install -y cmake make libboost-test-dev
+    - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev
     - ln --symbolic --force . ../multi
     - cd test
     - mkdir build
