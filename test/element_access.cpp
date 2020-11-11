@@ -10,7 +10,7 @@ $CXX $0 -o $0x -DMULTI_ACCESS_NDEBUG -lboost_unit_test_framework&&$0x&&rm $0x;ex
 
 #include "../array.hpp"
 
-#if __cpp_lib_apply>=201603
+#if defined( __cpp_lib_apply) and __cpp_lib_apply>=201603
 #include<tuple> // apply
 #else
 #include<experimental/tuple>
@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_element_access_with_tuple){
 	BOOST_REQUIRE( &m(p[0], p[1]) == &m[p[0]][p[1]] );
 
 	using std::
-#if not(__cpp_lib_apply>=201603)
+#if not defined(__cpp_lib_apply) or not(__cpp_lib_apply>=201603)
 		experimental::
 #endif
 		apply;

@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee){
 		short salary;
 		std::size_t age;
 		char padding_[9];
-		employee(std::string name, short salary, std::size_t age) : name{name}, salary{salary}, age{age}{}
+		employee(std::string name_, short salary_, std::size_t age_) : name{name_}, salary{salary_}, age{age_}{}
 	};
 
 	multi::array<employee, 1> d1D = { {"Al"  , 1430, 35}, {"Bob"  , 3212, 34} }; 
@@ -101,7 +101,7 @@ decltype(auto) Imag(Array&& a){
 }
 
 BOOST_AUTO_TEST_CASE(member_array_cast_complex){
-
+{
 	using complex = std::complex<double>;
 	multi::array<complex, 2> A = {
 		{ { 1.,  2.}, {  3.,  4.} },
@@ -133,23 +133,24 @@ BOOST_AUTO_TEST_CASE(member_array_cast_complex){
 		BOOST_REQUIRE( Aimag[1][0] == 33. and std::get<1>(strides(Aimag)) == 2 );
 		Areal[1][0] = 888.;
 	}
-	{
-		multi::array<double, 2> A = {
-			{  1., 3.},
-			{ 22., 5.}
-		};
-		auto&& Areal = Real(A);
-		BOOST_REQUIRE( Areal[1][1] == 5. );
-		Areal[1][1] = 55.;
-	}
-	{
-		multi::array<double, 2> const A = {
-			{  1., 3.},
-			{ 22., 5.}
-		};
-		auto&& Areal = Real(A);
-		BOOST_REQUIRE( Areal[1][1] == 5. );
-	}
+}
+{
+	multi::array<double, 2> A = {
+		{  1., 3.},
+		{ 22., 5.}
+	};
+	auto&& Areal = Real(A);
+	BOOST_REQUIRE( Areal[1][1] == 5. );
+	Areal[1][1] = 55.;
+}
+{
+	multi::array<double, 2> const A = {
+		{  1., 3.},
+		{ 22., 5.}
+	};
+	auto&& Areal = Real(A);
+	BOOST_REQUIRE( Areal[1][1] == 5. );
+}
 
 }
 

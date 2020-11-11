@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality){
 		BOOST_REQUIRE(( *multi::array_ptr<double, 0>{&d3} == 3. ));
 		BOOST_REQUIRE(( &multi::array_ref<double, 0>{&d3} == multi::array_ptr<double, 0>{&d3} ));
 
-		#if __cpp_deduction_guides
+		#if defined(__cpp_deduction_guides)
 		BOOST_REQUIRE(( *multi::array_ptr{&d3} == 3. ));
 		BOOST_REQUIRE(( multi::array_ptr{&d3} == multi::array_ptr<double, 0>(&d3, {}) ));
 		#endif

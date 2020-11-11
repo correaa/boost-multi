@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays)
 
 	std::vector<multi::array<double, 2>> ua(3);
 	for(std::size_t i = 0; i != ua.size(); ++i)
-		ua[i] = multi::array<double, 2>({i, i}, i);
+		ua[i] = multi::array<double, 2>({i, i}, static_cast<double>(i));
 
 	BOOST_REQUIRE( ua == va );
 }

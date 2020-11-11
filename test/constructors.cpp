@@ -45,11 +45,11 @@ BOOST_AUTO_TEST_CASE(multi_constructors_1d){
 		BOOST_REQUIRE( A[5]== double{} );
 	}
 	{
-		#if __cpp_deduction_guides
-	//	multi::array A(10, double{}); 
-	//	BOOST_REQUIRE( size(A)==10 );
-	//	BOOST_REQUIRE( A[5]== double{} );
-		#endif
+	#if defined(__cpp_deduction_guides)
+		multi::array A(10, double{}); 
+		BOOST_REQUIRE( size(A)==10 );
+		BOOST_REQUIRE( A[5]== double{} );
+	#endif
 	}
 }
 
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE(multi_constructors){
 	};;
 	multi::array_ptr<double, 2> ap(&a[0][0], {4, 5});
 	multi::array_ptr
-#if not __cpp_deduction_guides
+#if not defined(__cpp_deduction_guides)
 		<double, 2, double const*>
 #endif
 		bp(&b[0][0], {4, 5})
