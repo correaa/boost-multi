@@ -42,11 +42,12 @@ variables:
 
 #before_script:
 
-stages:
-    - build
-    - test
+#stages:
+#    - build
+#    - test
 
-build:
+gcc_build:
+  stage: build
   script:
     - ln --symbolic --force . ../multi
     - cd test
@@ -55,26 +56,11 @@ build:
     - cmake ..
     - make
 
-test:
+gcc-test:
+  stage: test
   script:
     - cd test/build
     - ctest
-
-gcc:
-    stage: build
-    script:
-      - ln --symbolic --force . ../multi
-      - cd test
-      - mkdir build
-      - cd build
-      - cmake ..
-      - make
-
-gcc:
-    stage: test
-    script:
-      - cd test/build
-      - ctest
 
 gcc8:
     stage: test
