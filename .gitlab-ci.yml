@@ -55,6 +55,19 @@ g++-std17:
     - cmake --build . --verbose
     - ctest --output-on-failure
 
+g++-release:
+  stage: test
+  script:
+    - export CXX="g++"
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - cd test
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Release
+    - cmake --build . --verbose
+    - ctest --output-on-failure
+
 memcheck:
   stage: test
   script:
