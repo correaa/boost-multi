@@ -1,3 +1,5 @@
+# -*-indent-tabs-mode:nil;c-basic-offset:2;tab-width:4;autowrap:nil;-*-
+# © Alfredo A. Correa 2020
 #[=[Multi Test suite can be run like this:
   mkdir -p build
   cd build
@@ -18,6 +20,8 @@ endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(CMAKE_VERBOSE_MAKEFILE ON)
+
 if(ENABLE_CUDA)
 	enable_language(CUDA)
 	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
@@ -36,9 +40,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 	set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
   endif()
   target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
-  target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})# "BOOST_ALL_DYN_LINK")
   target_include_directories(${TEST_EXE} PRIVATE ${Boost_INCLUDE_DIRS})
-  target_link_libraries     (${TEST_EXE} PRIVATE ${Boost_LIBRARIES})# ${pthread_LIBRARIES})# stdc++fs)
+  target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})# "BOOST_ALL_DYN_LINK")
+  target_link_libraries     (${TEST_EXE} PRIVATE${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})# ${pthread_LIBRARIES})# stdc++fs)
   target_link_directories   (${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
   if(NOT ENABLE_CUDA)
     target_compile_options  (${TEST_EXE} PRIVATE
@@ -48,7 +52,7 @@ foreach(TEST_FILE ${TEST_SRCS})
        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
           -Wpedantic -Wdouble-promotion -Wmove>
        $<$<CXX_COMPILER_ID:Intel>:
-                                        -wd161 -diag-disable=remark -Warray-bounds -Wchar-subscripts -Wcomment -Wenum-compare -Wformat -Wuninitialized -Wmaybe-uninitialized -Wmain -Wnarrowing -Wnonnull -Wparentheses -Wpointer-sign -Wreorder -Wreturn-type -Wsign-compare -Wsequence-point -Wtrigraphs -Wunused-function -Wunused-but-set-variable -Wunused-variable -Wwrite-strings -Werror -diag-error:3846
+              -DBOOST_UNIT_TEST_FRAMEWORK_DYN_LINK                          -wd161 -diag-disable=remark -Warray-bounds -Wchar-subscripts -Wcomment -Wenum-compare -Wformat -Wuninitialized -Wmaybe-uninitialized -Wmain -Wnarrowing -Wnonnull -Wparentheses -Wpointer-sign -Wreorder -Wreturn-type -Wsign-compare -Wsequence-point -Wtrigraphs -Wunused-function -Wunused-but-set-variable -Wunused-variable -Wwrite-strings -Werror -diag-error:3846 
        >
        $<$<CXX_COMPILER_ID:MSVC>:
           /W4>)
