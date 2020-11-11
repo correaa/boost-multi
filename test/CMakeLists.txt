@@ -17,8 +17,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(ENABLE_CUDA)
-enable_language(CUDA)
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
+	enable_language(CUDA)
+	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
 endif()
 #SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}  -ftemplate-backtrace-limit=0; --cudart;   static;  -O4 ; --expt-relaxed-constexpr; -fmad=true; --expt-extended-lambda;--relocatable-device-code=false; -Xptxas -dlcm=ca;-Xptxas --opt-level=4 )
 
@@ -41,7 +41,7 @@ foreach(TEST_FILE ${TEST_SRCS})
   if(NOT ENABLE_CUDA)
     target_compile_options  (${TEST_EXE} PRIVATE
        -Werror -Wall -Wextra -Wconversion -Wpedantic -Wshadow -Wdouble-promotion -Wformat-truncation -Wundef -fno-common
-       $<$<CXX_COMPILER_ID:GNU>>:
+       $<$<CXX_COMPILER_ID:GNU>:
           -fstack-usage>
        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>:
           -Wmove>
