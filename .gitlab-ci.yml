@@ -42,28 +42,45 @@ variables:
 
 #before_script:
 
-stages:
-  - build
-  - test
-
-g++-build:
-  stage: build
+g++:
+  stage: test
   script:
     - apt-get update && apt-get install --no-install-recommends -y g++ cmake make libboost-test-dev
     - ln --symbolic --force . ../multi
+    - export CXX="g++"
+    - $CXX --version
     - cd test
-    - mkdir build
-    - cd build
+    - mkdir build && cd build
     - cmake ..
-    - cmake --build .
-    - ctest
+    - cmake --build . --verbose
+    - ctest --output-on-failure
 
-g++-test:
+g++-8:
   stage: test
   script:
-    - cd test/build
-    - ctest
-    
+    - apt-get update && apt-get install --no-install-recommends -y g++-8 cmake make libboost-test-dev
+    - ln --symbolic --force . ../multi
+    - export CXX="g++"
+    - $CXX --version
+    - cd test
+    - mkdir build && cd build
+    - cmake ..
+    - cmake --build . --verbose
+    - ctest --output-on-failure
+
+clang++:
+  stage: test
+  script:
+    - apt-get update && apt-get install --no-install-recommends -y clang cmake make libboost-test-dev
+    - ln --symbolic --force . ../multi
+    - export CXX="clang++"
+    - $CXX --version
+    - cd test
+    - mkdir build && cd build
+    - cmake ..
+    - cmake --build .
+    - ctest --output-on-failure
+
 gcc8:
     stage: test
     script:
