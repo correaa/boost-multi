@@ -13,8 +13,6 @@ project(boost-multi-test VERSION 0.1 LANGUAGES CXX)
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 find_package(Threads REQUIRED)
 
-set(CMAKE_VERBOSE_MAKEFILE ON)
-
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)

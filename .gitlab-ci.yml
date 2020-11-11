@@ -46,7 +46,7 @@ variables:
 #    - build
 #    - test
 
-gcc_build:
+g++:
   stage: build
   script:
     - apt-get update && apt-get install --no-install-recommends -y g++ cmake make libboost-test-dev
@@ -55,14 +55,13 @@ gcc_build:
     - mkdir build
     - cd build
     - cmake ..
-    - make
-
-gcc-test:
+    - cmake --build .
+    - ctest
   stage: test
   script:
     - cd test/build
     - ctest
-
+    
 gcc8:
     stage: test
     script:
