@@ -158,24 +158,19 @@ clang-asan:
 #      - cd test
 #      - for a in ./*.cpp; do echo $a; sh $a || exit 1; echo "\n"; done;
 
-nvcc11.0:
-    image: nvidia/cuda:11.0-devel-ubuntu20.04
+nvidia/cuda:
+    image: nvidia/cuda #:11.0-devel-ubuntu20.04
     #debian:stable-backports
     stage: test
     script:
-#      - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
-      - apt update --quiet
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev cmake make
-#      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet g++ nvidia-cuda-toolkit 
+      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev
       - ln --symbolic --force . ../multi
 #      - export CXX="nvcc -std=c++14 -use_fast_math -lpthread -D_REENTRANT -DBOOST_PP_VARIADICS=1 --expt-relaxed-constexpr -DBOOST_PP_VARIADICS=1 -x cu --compiler-options=-std=c++14,-Wall,-Wextra,-O3"
-      - $CXX --version
-      - g++ --version
+      - nvcc --version
       - cd test
-      - mkdir build
-      - cd build
+      - mkdir build && cd build
       - cmake .. -DENABLE_CUDA=1
-      - make -j
+      - cmake --build . --verbose
       - ctest --output-on-failure
 
 icpc:
