@@ -123,7 +123,7 @@ clang++-asan:
   stage: test
   script:
     - export CXX="clang++"
-    - export CXXFLAGS="-fsanitize=address -fno-omit-frame-pointer"
+    - export CXXFLAGS="-fsanitize=undefined -fsanitize=address -fno-omit-frame-pointer"
     - apt-get update && apt-get install --no-install-recommends -y --quiet clang cmake make libboost-test-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
