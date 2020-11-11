@@ -106,6 +106,19 @@ clang++:
     - cmake --build . --verbose
     - ctest --output-on-failure
 
+clang++-8:
+  stage: test
+  script:
+    - export CXX="clang++-8"
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang-8 cmake make libboost-test-dev
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - cd test
+    - mkdir build && cd build
+    - cmake ..
+    - cmake --build . --verbose
+    - ctest --output-on-failure
+
 clang++-10:
   stage: test
   script:
@@ -118,19 +131,6 @@ clang++-10:
     - cmake ..
     - cmake --build . --verbose
     - ctest --output-on-failure
-
-clangX:
-    stage: test
-    script:
-      - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
-      - apt update --quiet
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang-10
-      - ln --symbolic --force . ../multi
-      - export CXX="clang++-10 -x c++ -Wall -Wextra -Wpedantic -Werror -Wmove -Ofast -pthread"
-      - $CXX --version
-      - cd test
-      - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
 
 clangX-17:
     stage: test
