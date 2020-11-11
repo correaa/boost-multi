@@ -68,11 +68,24 @@ g++-8:
     - cmake --build . --verbose
     - ctest --output-on-failure
 
+g++-9:
+  stage: test
+  script:
+    - export CXX="g++-9"
+    - apt-get update && apt-get install --no-install-recommends -y $CXX cmake make libboost-test-dev
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - cd test
+    - mkdir build && cd build
+    - cmake ..
+    - cmake --build . --verbose
+    - ctest --output-on-failure
+
 clang++:
   stage: test
   script:
     - export CXX="clang++"
-    - apt-get update && apt-get install --no-install-recommends -y clang++ cmake make libboost-test-dev
+    - apt-get update && apt-get install --no-install-recommends -y clang cmake make libboost-test-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - cd test
