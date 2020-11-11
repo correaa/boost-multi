@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 #endif
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi transformed array"
@@ -29,7 +29,7 @@ template<class Ref, class Involution>
 class involuted{
 protected:
 	Ref r_;
-	NO_UNIQUE_ADDRESS Involution f_;
+	MULTI_NO_UNIQUE_ADDRESS Involution f_;
 public:
 	using decay_type =std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
 	explicit involuted(Ref r) : involuted(
@@ -70,7 +70,7 @@ public:
 	template<class Any> friend auto operator<<(Any&& a, involuted const& self)->decltype(a << std::declval<decay_type>()){return a << self.operator decay_type();}
 };
 
-#if __cpp_deduction_guides
+#if defined(__cpp_deduction_guides)
 template<class T, class F> involuted(T&&, F)->involuted<T const, F>;
 //template<class T, class F> involuted(T&, F)->involuted<T&, F>;
 //template<class T, class F> involuted(T const&, F)->involuted<T const&, F>;
@@ -79,7 +79,7 @@ template<class T, class F> involuted(T&&, F)->involuted<T const, F>;
 template<class It, class F>
 class involuter{//: public std::iterator_traits<It>{
 	It it_;
-	NO_UNIQUE_ADDRESS F f_;
+	MULTI_NO_UNIQUE_ADDRESS F f_;
 public:
 	template<class T> using rebind = involuter<typename std::pointer_traits<It>::template rebind<T>, F>;
 	using reference = involuted<typename std::iterator_traits<It>::reference, F>;
@@ -122,7 +122,7 @@ template<class ComplexRef> struct conjd : test::involuted<ComplexRef, decltype(:
 #pragma GCC diagnostic pop
 #endif
 
-#if __cpp_deduction_guides
+#if defined(__cpp_deduction_guides)
 template<class T> conjd(T&&)->conjd<T>;
 #endif
 
@@ -278,14 +278,14 @@ BOOST_AUTO_TEST_CASE(transformed_array){
 	}
 
 	{
-	#if __cpp_deduction_guides
+	#if defined(__cpp_deduction_guides)
 		double Z[4][5] {
 			{ 0,  1,  2,  3,  4}, 
 			{ 5,  6,  7,  8,  9}, 
 			{10, 11, 12, 13, 14}, 
 			{15, 16, 17, 18, 19}
 		};
-		auto d2DC = multi::make_array_ref(test::involuter<double*, decltype(test::neg)>{&Z[0][0], test::neg}, {4, 5});
+		auto&& d2DC = multi::make_array_ref(test::involuter<double*, decltype(test::neg)>{&Z[0][0], test::neg}, {4, 5});
 
 		d2DC[1][1] = -66;
 		BOOST_REQUIRE( Z[1][1] == 66 );

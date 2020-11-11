@@ -1,9 +1,9 @@
 #[=[Multi Test suite can be run like this:
   mkdir -p build
   cd build
-  cmake ..
+  cmake .. [-DENABLE_CUDA=1]
   make -j
-  make test -j
+  ctest -j --output-on-error [-T memcheck]
   exit
 #]=]
 cmake_minimum_required(VERSION 3.11)
@@ -15,6 +15,16 @@ find_package(Threads REQUIRED)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+if(ENABLE_CUDA)
+enable_language(CUDA)
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
+endif()
+#SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}  -ftemplate-backtrace-limit=0; --cudart;   static;  -O4 ; --expt-relaxed-constexpr; -fmad=true; --expt-extended-lambda;--relocatable-device-code=false; -Xptxas -dlcm=ca;-Xptxas --opt-level=4 )
+
 enable_testing()
 include(CTest)
 
@@ -23,23 +33,14 @@ file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 foreach(TEST_FILE ${TEST_SRCS})
   SET(TEST_EXE "${TEST_FILE}x")
   add_executable            (${TEST_EXE} ${TEST_FILE})
-  set_target_properties     (${TEST_EXE} PROPERTIES LANGUAGES CXX)
-  target_compile_features   (${TEST_EXE} PRIVATE cxx_std_14)
-  target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS} "BOOST_ALL_DYN_LINK")
+  if(ENABLE_CUDA)
+	set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
+  endif()
+  target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
+  target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})# "BOOST_ALL_DYN_LINK")
   target_include_directories(${TEST_EXE} PRIVATE ${Boost_INCLUDE_DIRS})
-  target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS} "BOOST_ALL_DYN_LINK")
-  target_link_libraries     (${TEST_EXE} ${Boost_LIBRARIES} ${pthread_LIBRARIES} stdc++fs)
-  target_link_directories   (${TEST_EXE} PUBLIC ${Boost_LIBRARY_DIRS})
-  if(DEFINED ENV{VALGRIND})
-    add_test(NAME ${TEST_EXE} COMMAND valgrind --leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=1 ./${TEST_EXE})
-  else()
-    add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
-  endif()
-  if(THREADS_HAVE_PTHREAD_ARG)
-    target_compile_options(${TEST_EXE} PUBLIC "-pthread")
-  endif()
-  if(CMAKE_THREAD_LIBS_INIT)
-    target_link_libraries(${TEST_EXE} "${CMAKE_THREAD_LIBS_INIT}")
-  endif()
+  target_link_libraries     (${TEST_EXE} PRIVATE ${Boost_LIBRARIES})# ${pthread_LIBRARIES})# stdc++fs)
+  target_link_directories   (${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
+  add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
 endforeach()
 

@@ -1308,12 +1308,15 @@ struct array_ref :
 protected:
 	constexpr array_ref() noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{}, nullptr}{}
+#if __cplusplus >= 201703L and not defined(__INTEL_COMPILER)
+protected: 
 	[[deprecated("references are not copyable, use &&")]]
 	array_ref(array_ref const&) = default; // don't try to use `auto` for references, use `auto&&` or explicit value type
+#else
 public:
-#if defined(__INTEL_COMPILER) or __cplusplus < 201703L
-	array_ref(array_ref&&) = default;
+	array_ref(array_ref const&) = default;
 #endif
+public:
 	template<class OtherPtr, class=std::enable_if_t<not std::is_same<OtherPtr, ElementPtr>{}>>
 	array_ref(array_ref<T, D, OtherPtr>&& other)
 		: basic_array<T, D, ElementPtr>{other.layout(), ElementPtr{other.base()}}{}
@@ -1469,7 +1472,7 @@ template<class P> auto make_array_ref(P p, index_extensions<5> x){return make_ar
 //auto make_array_ref(P p, std::initializer_list<index> il){return make_array_ref(p, detail::to_tuple<D, index_extension>(il));}
 //#endif
 
-#if __cpp_deduction_guides
+#if defined(__cpp_deduction_guides)
 
 template<class It, typename V = typename std::iterator_traits<It>::value_type> // pointer_traits doesn't have ::value_type
 array_ptr(It, index_extensions<0> = {})->array_ptr<V, 0, It>;

@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
+$CXXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -8,6 +8,7 @@ $CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 #include<boost/test/unit_test.hpp>
 
 #include "../array.hpp"
+#include "../config/NO_UNIQUE_ADDRESS.hpp"
 
 #include<numeric>
 
@@ -18,7 +19,7 @@ template<class It, class F> class involuter;
 template<class Ref, class Involution>
 class involuted{
 	Ref r_;
-	NO_UNIQUE_ADDRESS Involution f_;
+	MULTI_NO_UNIQUE_ADDRESS Involution f_;
 public:
 	using decay_type = std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
 	involuted(Ref r, Involution f) : r_{std::forward<Ref>(r)}, f_{f}{}
@@ -38,7 +39,7 @@ public:
 template<class It, class F>
 class involuter{
 	It it_;
-	NO_UNIQUE_ADDRESS F f_;
+	MULTI_NO_UNIQUE_ADDRESS F f_;
 	template<class, class> friend class involuter;
 public:
 	using pointer           = involuter<typename std::iterator_traits<It>::pointer, F>;

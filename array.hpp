@@ -7,7 +7,7 @@ $CXXX $CXXFLAGS $0 -o $0x&&$0x&&rm $0x;exit
 #define BOOST_MULTI_ARRAY_HPP
 
 #include "./array_ref.hpp"
-#include "./config/no_unique_address.hpp"
+#include "./config/NO_UNIQUE_ADDRESS.hpp"
 
 #include "./memory/allocator.hpp"
 #include "./detail/memory.hpp"
@@ -21,7 +21,7 @@ namespace multi{
 template<class Allocator> struct array_allocator{
 	using allocator_type = Allocator;
 protected:
-	NO_UNIQUE_ADDRESS allocator_type alloc_;
+	MULTI_NO_UNIQUE_ADDRESS allocator_type alloc_;
 	allocator_type& alloc(){return alloc_;}
 	array_allocator(allocator_type const& a = {}) : alloc_{a}{}
 	typename std::allocator_traits<allocator_type>::pointer 
@@ -901,7 +901,7 @@ public:
 	~array() = default;
 };
 
-#if __cpp_deduction_guides
+#if defined(__cpp_deduction_guides)
 // clang cannot recognize templated-using, so don't replace IL<IL<T>> by IL2<T>, etc
 //#ifndef __clang__
 //template<class T, dimensionality_type D, class A=std::allocator<T>> static_array(multi::initializer_list_t<T, D>, A={})->static_array<T, D, A>;

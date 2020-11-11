@@ -1,5 +1,6 @@
 #ifdef COMPILATION_INSTRUCTIONS
-$CXXX $0 -o $0x&&$0x&&rm $0x;exit
+echo $CXXX $CXXFLAGS
+$CXXX $CXXFLAGS $0 -o $0.$X&&$0.$X&&rm $0.$X;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -10,11 +11,10 @@ $CXXX $0 -o $0x&&$0x&&rm $0x;exit
 #define __has_cpp_attribute(name) 0
 #endif
 
-#if __has_cpp_attribute(no_unique_address) >=201803
-	#define NO_UNIQUE_ADDRESS [[no_unique_address]]
-	#define no_unique_address_ no_unique_address
+#if __has_cpp_attribute(no_unique_address) >=201803 and not defined(__NVCC__)
+	#define MULTI_NO_UNIQUE_ADDRESS [[no_unique_address]]
 #else
-	#define NO_UNIQUE_ADDRESS
+	#define MULTI_NO_UNIQUE_ADDRESS
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -22,17 +22,17 @@ $CXXX $0 -o $0x&&$0x&&rm $0x;exit
 
 class A{};
 
-class B{
-	NO_UNIQUE_ADDRESS A x;
+struct B{
+	MULTI_NO_UNIQUE_ADDRESS A x;
 	double y;
 };
 
 int main(){
-//#if __INTEL_COMPILER
-//	static_assert( sizeof(B) != sizeof(double) , "may fail with no unique feauture"); // for example fails with clang++-8
-//#else
-//	static_assert( sizeof(B) != sizeof(double) , "may fail with no unique feauture"); // for example fails with clang++-8
-//#endif
+#if not defined(__INTEL_COMPILER) and not defined(__NVCC__)
+	static_assert( sizeof(B) == sizeof(double) , "!");
+#endif
+	B b;
+	double& by = b.y; (void)by;
 }
 #endif
 #endif
