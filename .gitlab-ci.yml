@@ -106,19 +106,6 @@ clang++:
     - cmake --build . --verbose
     - ctest --output-on-failure
 
-clang++-8:
-  stage: test
-  script:
-    - export CXX="clang++-8"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet clang-8 cmake make libboost-test-dev
-    - ln --symbolic --force . ../multi
-    - $CXX --version
-    - cd test
-    - mkdir build && cd build
-    - cmake ..
-    - cmake --build . --verbose
-    - ctest --output-on-failure
-
 clang++-10:
   stage: test
   script:
