@@ -46,6 +46,20 @@ stages:
     - build
     - test
 
+build:
+  script:
+    - ln --symbolic --force . ../multi
+    - cd test
+    - mkdir build
+    - cd build
+    - cmake ..
+    - make
+
+test:
+  script:
+    - cd test/build
+    - ctest
+
 gcc:
     stage: build
     script:
