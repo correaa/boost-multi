@@ -42,11 +42,14 @@ foreach(TEST_FILE ${TEST_SRCS})
   target_link_directories   (${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
   if(NOT ENABLE_CUDA)
     target_compile_options  (${TEST_EXE} PRIVATE
-       -Werror -Wall -Wextra -Wpedantic -Wshadow -Wdouble-promotion -Wundef -fno-common
+       -Werror -Wall -Wextra  -Wundef -fno-common -Wshadow
        $<$<CXX_COMPILER_ID:GNU>:
-          -Wconversion -Wformat-truncation -fstack-usage>
+          -Wpedantic -Wdouble-promotion -Wconversion -Wformat-truncation -fstack-usage>
        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
-          -Wmove>
+          -Wpedantic -Wdouble-promotion -Wmove>
+       $<$<CXX_COMPILER_ID:Intel>:
+                                        -wd161 -diag-disable=remark -Warray-bounds -Wchar-subscripts -Wcomment -Wenum-compare -Wformat -Wuninitialized -Wmaybe-uninitialized -Wmain -Wnarrowing -Wnonnull -Wparentheses -Wpointer-sign -Wreorder -Wreturn-type -Wsign-compare -Wsequence-point -Wtrigraphs -Wunused-function -Wunused-but-set-variable -Wunused-variable -Wwrite-strings -Werror -diag-error:3846
+       >
        $<$<CXX_COMPILER_ID:MSVC>:
           /W4>)
   endif()
