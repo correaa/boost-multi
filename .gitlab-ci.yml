@@ -45,9 +45,9 @@ variables:
 g++:
   stage: test
   script:
-    - apt-get update && apt-get install --no-install-recommends -y g++ cmake make libboost-test-dev
-    - ln --symbolic --force . ../multi
     - export CXX="g++"
+    - apt-get update && apt-get install --no-install-recommends -y $CXX cmake make libboost-test-dev
+    - ln --symbolic --force . ../multi
     - $CXX --version
     - cd test
     - mkdir build && cd build
@@ -58,9 +58,9 @@ g++:
 g++-8:
   stage: test
   script:
-    - apt-get update && apt-get install --no-install-recommends -y g++-8 cmake make libboost-test-dev
+    - export CXX="g++-8"
+    - apt-get update && apt-get install --no-install-recommends -y $CXX cmake make libboost-test-dev
     - ln --symbolic --force . ../multi
-    - export CXX="g++"
     - $CXX --version
     - cd test
     - mkdir build && cd build
