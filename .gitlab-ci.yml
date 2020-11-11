@@ -199,8 +199,8 @@ icpc:
       - $CXX --version
       - cd test
       - mkdir build && cd build
-      - cmake ..
-      - cmake --build . --verbose -j 10
+      - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+      - cmake --build . -j 10
       - ctest --output-on-failure
 
 icpc-std17:
@@ -213,25 +213,8 @@ icpc-std17:
       - $CXX --version
       - cd test
       - mkdir build && cd build
-      - cmake .. -DCMAKE_CXX_STANDARD=17
-      - cmake --build . --verbose -j 10
-      - ctest --output-on-failure
-
-cmake:
-    stage: test
-    script:
-      - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
-      - apt update --quiet
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang cmake make
-      - ln --symbolic --force . ../multi
-      - export CXX="clang++"
-      - $CXX --version
-      - cd test
-      - mkdir build
-      - cd build
-      - cmake ..
-      - make -j
+      - cmake .. -DCMAKE_CXX_STANDARD=17 -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+      - cmake --build . -j 10
       - ctest --output-on-failure
 
 blas&fft:
