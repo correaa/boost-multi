@@ -80,6 +80,19 @@ g++-9:
     - cmake --build . --verbose
     - ctest --output-on-failure
 
+memcheck:
+  stage: test
+  script:
+    - export CXX="g++"
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - cd test
+    - mkdir build && cd build
+    - cmake ..
+    - cmake --build . --verbose
+    - ctest -T memcheck --output-on-failure
+
 clang++:
   stage: test
   script:
