@@ -46,7 +46,7 @@ stages:
   - build
   - test
 
-g++:
+g++-build:
   stage: build
   script:
     - apt-get update && apt-get install --no-install-recommends -y g++ cmake make libboost-test-dev
@@ -57,6 +57,8 @@ g++:
     - cmake ..
     - cmake --build .
     - ctest
+
+g++-test:
   stage: test
   script:
     - cd test/build
