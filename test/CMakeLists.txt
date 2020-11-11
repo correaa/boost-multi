@@ -40,7 +40,7 @@ foreach(TEST_FILE ${TEST_SRCS})
   target_link_directories   (${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
   if(NOT ENABLE_CUDA)
     target_compile_options  (${TEST_EXE} PRIVATE
-       $<$<OR:$<CXX_C OMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
+       $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:
             -Werror -Wall -Wextra -Wconversion -Wsign-conversion -Wpedantic -Wshadow -Wdouble-promotion -Wformat-truncation -Wundef -fno-common -fstack-usage>
        $<$<CXX_COMPILER_ID:MSVC>:
           /W4>)
