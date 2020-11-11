@@ -36,17 +36,16 @@
 image: debian:testing
 #debian:stable-backports
 
-variables:
-  CXX: "c++"
-  DOCKER_DRIVER: overlay2
-
+#variables:
+#  CXX: "c++"
+#  DOCKER_DRIVER: overlay2
 #before_script:
 
 g++:
   stage: test
   script:
     - export CXX="g++"
-    - apt-get update && apt-get install --no-install-recommends -y $CXX cmake make libboost-test-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet$CXX cmake make libboost-test-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - cd test
@@ -59,7 +58,7 @@ g++-8:
   stage: test
   script:
     - export CXX="g++-8"
-    - apt-get update && apt-get install --no-install-recommends -y $CXX cmake make libboost-test-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - cd test
@@ -72,7 +71,7 @@ g++-9:
   stage: test
   script:
     - export CXX="g++-9"
-    - apt-get update && apt-get install --no-install-recommends -y $CXX cmake make libboost-test-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - cd test
@@ -85,40 +84,27 @@ clang++:
   stage: test
   script:
     - export CXX="clang++"
-    - apt-get update && apt-get install --no-install-recommends -y clang cmake make libboost-test-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang cmake make libboost-test-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - cd test
     - mkdir build && cd build
     - cmake ..
-    - cmake --build .
+    - cmake --build . --verbose
     - ctest --output-on-failure
 
-gcc8:
-    stage: test
-    script:
-      - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
-      - apt update --quiet
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet g++-8
-      - ln --symbolic --force . ../multi
-      - export CXX="g++-8     -x c++  -Wall -Wextra -Wpedantic -Werror -Ofast -pthread "
-      - $CXX --version
-      - cd test
-      - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
-
-clang:
-    stage: test
-    script:
-      - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
-      - apt update --quiet
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev
-      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang
-      - ln --symbolic --force . ../multi
-      - export CXX="clang++ -x c++ -Wall -Wextra -Wpedantic -Werror -Wmove -O3 -pthread"
-      - $CXX --version
-      - cd test
-      - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
+clang++-10:
+  stage: test
+  script:
+    - export CXX="clang++-10"
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang-10 cmake make libboost-test-dev
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - cd test
+    - mkdir build && cd build
+    - cmake ..
+    - cmake --build . --verbose
+    - ctest --output-on-failure
 
 clangX:
     stage: test
