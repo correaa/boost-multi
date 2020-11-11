@@ -192,6 +192,19 @@ cuda11.0:
 #      - cmake --build . --verbose
 #      - ctest --output-on-failure
 
+g++-runner:
+    stage: test
+    tags:
+      - intel_compiler
+    script:
+      - export CXX="g++"
+      - $CXX --version
+      - cd test
+      - mkdir build && cd build
+      - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+      - cmake --build .
+      - ctest --output-on-failure
+
 icpc:
     stage: test
     tags:
