@@ -144,7 +144,7 @@ cuda:
     stage: test
     script:
       - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev
+      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev
       - ln --symbolic --force . ../multi
       - nvcc --version
       - mkdir build && cd build
@@ -157,7 +157,7 @@ cuda-std17:
     stage: test
     script:
       - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev
+      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev
       - ln --symbolic --force . ../multi
       - nvcc --version
       - mkdir build && cd build
@@ -170,7 +170,7 @@ cuda11.0:
     stage: test
     script:
       - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev
+      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev
       - ln --symbolic --force . ../multi
       - nvcc --version
       - mkdir build && cd build
