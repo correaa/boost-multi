@@ -203,19 +203,6 @@ cuda11.0:
       - cmake --build . --verbose
       - ctest --output-on-failure
 
-#cuda10.0:
-#    image: nvidia/cuda:10.1-devel-ubuntu20.04
-#    stage: test
-#    script:
-#      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev
-#      - ln --symbolic --force . ../multi
-#      - nvcc --version
-#      - cd test
-#      - mkdir build && cd build
-#      - cmake .. -DENABLE_CUDA=1
-#      - cmake --build . --verbose
-#      - ctest --output-on-failure
-
 g++-runner:
     stage: test
     tags:
