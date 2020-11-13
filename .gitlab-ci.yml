@@ -15,7 +15,7 @@ g++:
     - cmake --build . --verbose
     - ctest --output-on-failure
 
-g++-7:
+g++-7-std17:
   stage: test
   image: debian:stable-backports
   script:
@@ -25,7 +25,7 @@ g++-7:
     - $CXX --version
     - mkdir build && cd build
     - cmake ..
-    - cmake --build .
+    - cmake --build . -DCMAKE_CXX_STANDARD=17
     - ctest --output-on-failure
 
 g++-8:
