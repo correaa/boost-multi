@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -117,7 +117,7 @@ public:
 		return adl_imag(self.operator decay_type());}
 };
 
-#if __cpp_deduction_guides
+#if defined(__cpp_deduction_guides)
 template<class T, class F> involuted(T&&, F)->involuted<T const, F>;
 //template<class T, class F> involuted(T&, F)->involuted<T&, F>;
 //template<class T, class F> involuted(T const&, F)->involuted<T const&, F>;
@@ -130,8 +130,8 @@ template<class It, class F>
 auto get_allocator(involuter<It, F> const& s);
 
 template<class It, class F>
-auto default_allocator_of(involuter<It, F> const& s){
-	return default_allocator_of(s.it_);
+auto default_allocator_of(involuter<It, F> const& iv){
+	return default_allocator_of(iv.it_);
 }
 
 template<class It, class F, class Reference>
@@ -174,21 +174,21 @@ public:
 	friend constexpr underlying_type underlying(involuter const& self){return self.it_;}
 	constexpr explicit operator It() const {return underlying(*this);}
 	template<class Itt, class FF> friend auto get_allocator(involuter<Itt, FF> const&);
-	friend auto default_allocator_of(involuter const& s){
+	friend auto default_allocator_of(involuter const& inv){
 		using multi::default_allocator_of;
-		return default_allocator_of(s.it_);
+		return default_allocator_of(inv.it_);
 	}
 	using default_allocator_type = typename multi::pointer_traits<It>::default_allocator_type;
-	friend auto get_allocator(involuter const& s){
+	friend auto get_allocator(involuter const& inv){
 		using boost::multi::get_allocator;
-		return get_allocator(s.it_);
+		return get_allocator(inv.it_);
 	}
 };
 
 template<class It, class F>
-auto get_allocator(involuter<It, F> const& s){
+auto get_allocator(involuter<It, F> const& inv){
 	using multi::get_allocator;
-	return get_allocator(s.it_);
+	return get_allocator(inv.it_);
 }
 
 template<class Ref> using negated = involuted<Ref, std::negate<>>;
@@ -232,8 +232,8 @@ template<class It> using conjugater = involuter<It, conjugate>;//, conjugated<ty
 template<class It> auto make_conjugater(It it){return conjugater<It>{it};}
 template<class It> It make_conjugater(conjugater<It> it){return underlying(it);}
 
-template<class T> auto imag(involuted<T, conjugate> const& s){return s.decay().imag();}
-template<class T> auto real(involuted<T, conjugate> const& s){return s.decay().real();}
+template<class T> auto imag(involuted<T, conjugate> const& inv){return inv.decay().imag();}
+template<class T> auto real(involuted<T, conjugate> const& inv){return inv.decay().real();}
 
 template<class T> auto has_imag_fun_aux(T const& t)->decltype(imag(t), std::true_type {});
                   auto has_imag_fun_aux(...       )->decltype(         std::false_type{});
