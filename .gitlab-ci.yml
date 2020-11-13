@@ -24,8 +24,8 @@ g++-7-std17:
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
-    - cmake ..
-    - cmake --build . -DCMAKE_CXX_STANDARD=17
+    - cmake .. -DCMAKE_CXX_STANDARD=17
+    - cmake --build .
     - ctest --output-on-failure
 
 g++-8:
@@ -73,18 +73,6 @@ g++-release:
     - $CXX --version
     - mkdir build && cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Release
-    - cmake --build . --verbose
-    - ctest --output-on-failure
-
-g++-blas64:
-  stage: test
-  script:
-    - export CXX="g++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libblas64-dev
-    - ln --symbolic --force . ../multi
-    - $CXX --version
-    - mkdir build && cd build
-    - cmake ..
     - cmake --build . --verbose
     - ctest --output-on-failure
 
