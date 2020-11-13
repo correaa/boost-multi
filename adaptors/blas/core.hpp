@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-$CXXX $CXXFLAGS $0 -o $0x `pkg-config --libs blas`&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0.$X `pkg-config --libs blas`&&$0.$X&&rm $0.$X;exit
 #endif
 //(for a in `find tests/ -name '*.cpp'`; do sh $a || break; done); exit
 
@@ -24,23 +24,34 @@ $CXXX $CXXFLAGS $0 -o $0x `pkg-config --libs blas`&&$0x&&rm $0x;exit
 extern "C"{
 
 #ifndef _BLAS_INT
-#define _BLAS_INT __INTPTR_WIDTH__
+#if defined(__INTPTR_WIDTH__)
+	#define _BLAS_INT __INTPTR_WIDTH__
+#endif
 #endif
 
 #define s float
 #define d double
 #define c std::complex<s>
 #define z std::complex<d>
-#define v void 
-#define C _Complex s
-#define Z _Complex d
-#if(_BLAS_INT==32)
-#define INT int32_t
-#elif(_BLAS_INT==64)
-#define INT int64_t
+#define v void
+
+typedef struct { float real, imag; } Complex_float;
+typedef struct { double real, imag; } Complex_double;
+#define C Complex_float // _Complex s
+#define Z Complex_double // _Complex d
+
+#if defined(_BLAS_INT)
+	#if   _BLAS_INT==32
+		#define INT int32_t
+	#elif _BLAS_INT==64
+		#define INT int64_t
+	#else
+		#define INT int32_t // 32bit safe? pesimistic?
+	#endif
 #else
-#define INT int32_t // 32bit safe? pesimistic?
+	#define INT int32_t // 32bit safe? pesimistic?
 #endif
+
 #define INTEGER INT const&
 #define N INTEGER n
 #define INCX INTEGER incx
@@ -62,7 +73,7 @@ static_assert(sizeof(INT)==32/8 or sizeof(INT)==64/8, "please set _BLAS_INT to i
 #define xDOTU(R, T)       R BLAS(   T##dotu )(N,              T const *x, INCX, T const *y, INCY)
 #define xDOTC(R, T)       R BLAS(   T##dotc )(N,              T const *x, INCX, T const *y, INCY)
 #define xxDOT(TT, T)      T BLAS(  TT##dot  )(N,  T const& a, T const *x, INCX, T const *y, INCY)
-#define xNRM2(R, TT, T)   R BLAS(  TT##nrm2 )(N,              T const *x, INCX                  )   
+#define xNRM2(R, TT, T)   R BLAS(  TT##nrm2 )(N,              T const *x, INCX                  )
 #define xASUM(R, TT, T)   R BLAS(  TT##asum )(N,              T const *x, INCX                  )
 #define IxAMAX(T)       INT BLAS(i##T##amax )(N,              T const* x, INCX                  )
 
@@ -193,17 +204,19 @@ template<class T> struct add_const_ptr<std::complex<T>>{using type = complex_con
 template<class T> using add_ptr_t = typename add_ptr<T>::type;
 template<class T> using add_const_ptr_t = typename add_const_ptr<T>::type;
 
-using s = float;
-using d = double;
-using c = std::complex<s>;
-using z = std::complex<d>;
-using v = void;
+namespace{
+	using s = float;
+	using d = double;
+	using c = std::complex<s>;
+	using z = std::complex<d>;
+	using v = void;
+}
 
 #define BC(x) [](auto xx){assert(xx>=std::numeric_limits<INT>::min() and xx<std::numeric_limits<INT>::max()); return xx;}(x)
 
 #define xrotg(T1, T2)                       v   rotg (T1 const& a, T1 const& b, T2& cc, T1& ss                                   ){     BLAS(T1##rotg )(const_cast<T1*>(&a), const_cast<T1*>(&b), &cc, &ss);  }
 #define xrotmg(T)                           v   rotmg(T& d1, T& d2, T& A, T const& B, T(&p)[5]                                   ){     BLAS( T##rotmg)(&d1, &d2, &A, B, p);                                  }
-#define xrot(T, TT, CS)   template<class S> v   rot  (S n,       T       *x, S incx, T       *y, S incy, CS const& c, CS const& s){     BLAS(TT##rot  )(BC(n),    x, BC(incx), y, BC(incy), c, s);            }
+#define xrot(T, TT, CS)   template<class S> v   rot  (S n,       T       *x, S incx, T       *y, S incy, CS const& cos, CS const& sin){     BLAS(TT##rot  )(BC(n),    x, BC(incx), y, BC(incy), cos, sin);    }
 #define xrotm(T)          template<class S> v   rotm (S n,       T       *x, S incx, T       *y, S incy, T const(&p)[5]          ){     BLAS( T##rotm )(BC(n),    x, BC(incx), y, BC(incy), p);               }
 #define xswap(T)          template<class S> v   swap (S n,       T       *x, S incx, T       *y, S incy                          ){     BLAS( T##swap )(BC(n),    x, BC(incx), y, BC(incy));                  }
 #define xscal(XX, TA, TX) template<class S> TX* scal (S n, TA* a, TX      *x, S incx                                             ){     BLAS(XX##scal )(BC(n), *a, x, BC(incx)             ); return x+n*incx;}
