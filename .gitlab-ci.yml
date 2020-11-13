@@ -63,6 +63,18 @@ g++-release:
     - cmake --build . --verbose
     - ctest --output-on-failure
 
+g++-openblas:
+  stage: test
+  script:
+    - export CXX="g++"
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libopenblas-dev
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - mkdir build && cd build
+    - cmake ..
+    - cmake --build . --verbose
+    - ctest --output-on-failure
+
 memcheck:
   stage: test
   script:
