@@ -7,7 +7,7 @@ g++:
   stage: test
   script:
     - export CXX="g++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libblas-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
@@ -19,7 +19,7 @@ g++-8:
   stage: test
   script:
     - export CXX="g++-8"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libblas-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
@@ -31,7 +31,7 @@ g++-9:
   stage: test
   script:
     - export CXX="g++-9"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libblas-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
@@ -43,7 +43,7 @@ g++-std17:
   stage: test
   script:
     - export CXX="g++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libblas-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
@@ -55,7 +55,7 @@ g++-release:
   stage: test
   script:
     - export CXX="g++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libblas-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
@@ -67,7 +67,7 @@ memcheck:
   stage: test
   script:
     - export CXX="g++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX valgrind cmake make libboost-test-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX valgrind cmake make libboost-test-dev libblas-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
@@ -79,7 +79,7 @@ clang++:
   stage: test
   script:
     - export CXX="clang++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet clang cmake make libboost-test-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libblas-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
@@ -91,7 +91,7 @@ clang++-std17:
   stage: test
   script:
     - export CXX="clang++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet clang cmake make libboost-test-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libblas-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
@@ -104,7 +104,7 @@ clang++-asan:
   script:
     - export CXX="clang++"
     - export CXXFLAGS="-fsanitize=undefined -fsanitize=address -fno-omit-frame-pointer"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet clang cmake make libboost-test-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libblas-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
@@ -131,7 +131,7 @@ clang++-10:
   stage: test
   script:
     - export CXX="clang++-10"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet clang-10 cmake make libboost-test-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang-10 cmake make libboost-test-dev libblas-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
