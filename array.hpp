@@ -1,6 +1,10 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXXX $CXXFLAGS $0 -o $0x&&$0x&&rm $0x;exit
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+echo $X
+[ ! -d build.$X ] && (mkdir build.$X && cd build.$X && cmake ..)
+cd build.$X && make -j && ctest -j
+exit
 #endif
+// $CXXX $CXXFLAGS $0 -o $0.$X&&$0.$X&&rm $0.$X;exit
 //  © Alfredo A. Correa 2018-2019
 
 #ifndef BOOST_MULTI_ARRAY_HPP 
@@ -129,23 +133,25 @@ public:
 		return std::move(modify(*this)).ref::operator==(std::forward<Array>(o));}
 
 	auto operator==(static_array const& o) const&{return std::move(modify(*this)).ref::operator==(std::move(modify(o)));}
-	template<class It, typename = typename std::iterator_traits<std::decay_t<It>>::difference_type>//edecltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>      
+	template<class It, class=typename std::iterator_traits<std::decay_t<It>>::difference_type>//edecltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>      
 	// analogous to std::vector::vector (5) https://en.cppreference.com/w/cpp/container/vector/vector
 	static_array(It first, It last, typename static_array::allocator_type const& a = {}) : 
 		array_alloc{a},
 		ref{
-			array_alloc::allocate(typename static_array::layout_t{index_extension(std::distance(first, last))*multi::extensions(*first)}.num_elements()), 
-			index_extension(std::distance(first, last))*multi::extensions(*first)
+			array_alloc::allocate(typename static_array::layout_t{index_extension(adl_distance(first, last))*multi::extensions(*first)}.num_elements()), 
+			index_extension(adl_distance(first, last))*multi::extensions(*first)
 		}
 	{
-		recursive<D>::alloc_uninitialized_copy(static_array::alloc(), first, last, this->begin());//std::move(*this).ref::begin());
+		recursive<D>::alloc_uninitialized_copy(static_array::alloc(), first, last, this->begin());
 //		adl::uninitialized_copy(first, last, ref::begin());
-//		using std::uninitialized_copy; uninitialized_copy(first, last, ref::begin());
 	}
-//	template<class TT, typename = decltype(extension_t{std::decltype<TT>()})>
-//	static std::true_type is_array_(std::array<TT, D>);
-//	static std::false_type is_array_(...);
-//	template<class TT> struct is_array_of_extensions : decltype(is_array_(std::declval<TT>())){};
+
+	template<
+		class Range, class=std::enable_if_t<not std::is_base_of<static_array, std::decay_t<Range>>{}>, 
+		class=decltype(static_array(std::declval<Range&&>().begin(), std::declval<Range&&>().end())),
+		class=std::enable_if_t<not is_basic_array<Range>{}>// TODO add is_assignable<value_type> check
+	>
+	static_array(Range&& rng) : static_array(std::forward<Range>(rng).begin(), std::forward<Range>(rng).end()){}
 
 	template<class TT> 
 	auto uninitialized_fill_elements(TT const& value){
@@ -925,10 +931,6 @@ public:
 #undef IL
 //#endif
 
-//template<class T> 
-//array(std::initializer_list<std::initializer_list<double>>                )->array<double, 2, std::allocator<double>>; 
-
-
 template<class T, class A=std::allocator<T>> array(T[]                  , A={})->array<T,1,A>;
 template<class Array, class A=std::allocator<typename multi::array_traits<Array>::element>, class=std::enable_if_t<is_allocator<A>{}>> array(Array            , A={})->array<typename multi::array_traits<Array>::element, 1, A>;
 
@@ -952,11 +954,8 @@ template<dimensionality_type D, class A, class=std::enable_if_t<is_allocator<A>{
 	template<class A, class=std::enable_if_t<is_allocator<A>{}>, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<4>, A)->array<T, 4, A>;
 	template<class A, class=std::enable_if_t<is_allocator<A>{}>, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<5>, A)->array<T, 5, A>;
 
-
-
 	template<class T> array(iextensions<0>, T)->array<T, 0>;
-	template<class T> array(iextensions<1>, T)->array<T, 1>;
-		template<class T> array(multi::size_type, T)->array<T, 1>;
+	template<class T> array(iextensions<1>, T)->array<T, 1>; template<class T> array(multi::size_type, T)->array<T, 1>;
 	template<class T> array(iextensions<2>, T)->array<T, 2>;
 	template<class T> array(iextensions<3>, T)->array<T, 3>;
 
@@ -981,42 +980,6 @@ struct array_traits<T[N], void, void>{
 	using element = std::remove_all_extents_t<T[N]>;
 	using decay_type = multi::array<T, 1>;
 };
-#if 0
-template<class Archive, class T, boost::multi::dimensionality_type D, class... Args>
-auto serialize(Archive& ar, array_ref<T, D, Args...>& self, unsigned) 
-->decltype(ar & boost::serialization::make_nvp(nullptr, boost::serialization::make_array(data_elements(self), num_elements(self))),void()){
-	auto x = extensions(self);
-	ar & boost::serialization::make_nvp("extensions", x);
-	assert( x == extensions(self) );// {clear(self); self.reextent(x);}
-	ar & boost::serialization::make_nvp("data", boost::serialization::make_array(data_elements(self), num_elements(self)));
-}
-
-template<class Archive, class T, dimensionality_type D, class... Args>
-auto serialize_aux(Archive& ar, multi::array<T, D, Args...>& self, unsigned) 
-->decltype(ar & boost::serialization::make_nvp(nullptr, boost::serialization::make_array(data_elements(self), num_elements(self))),void()){
-	auto x = extensions(self);
-	ar & boost::serialization::make_nvp("extensions", x);
-	if(x != extensions(self)){clear(self); self.reextent(x);}
-	ar & boost::serialization::make_nvp("data", boost::serialization::make_array(data_elements(self), num_elements(self)));
-}
-
-template<class Archive, class T, dimensionality_type D, class... Args>
-auto serialize(Archive& ar, multi::array<T, D, Args...>& self, unsigned version)
-->decltype(serialize_aux(ar, self, version)){
-	return serialize_aux(ar, self, version);}
-
-template<class Archive, class T, dimensionality_type D, class... Args>
-auto serialize(Archive& ar, basic_array<T, D, Args...>& self, unsigned version)
-->decltype(serialize_aux(ar, std::declval<array<T, D>&>(), version), void())
-{
-	if(Archive::is_saving()) serialize(ar, multi::array<T, D>{self}, version);
-	else{
-		boost::multi::array<T, D> tmp(extensions(self));
-		serialize(ar, tmp, version); assert( extensions(self) == extensions(tmp) );
-		self = tmp;
-	}
-}
-#endif
 
 }}
 
@@ -1025,13 +988,8 @@ auto serialize(Archive& ar, basic_array<T, D, Args...>& self, unsigned version)
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
 
-#if not __INCLUDE_LEVEL__ // _TEST_BOOST_MULTI_ARRAY
+#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 
 #include<cassert>
 #include<numeric> // iota
@@ -1042,6 +1000,7 @@ auto serialize(Archive& ar, basic_array<T, D, Args...>& self, unsigned version)
 #include <random>
 #include <boost/timer/timer.hpp>
 #include<boost/multi_array.hpp>
+
 using std::cout;
 namespace multi = boost::multi;
 
@@ -1058,8 +1017,8 @@ void solve(Matrix& m, Vector& y){
 		for(auto r2 = r + 1; r2 != msize; ++r2){ //	auto mr2 = m[r2]; //	auto const mr2r = mr2[r]; // m[r2][r] = 0;
 			auto mr2 = m[r2];
 			auto const& mr2r = mr2[r];
-			auto const& mr = m[r];
-			for(auto c = r + 1; c != msize; ++c) mr2[c] -= mr2r*mr[c];
+			auto const& mr_cr = m[r];
+			for(auto c = r + 1; c != msize; ++c) mr2[c] -= mr2r*mr_cr[c];
 			y[r2] -= mr2r*yr;
 		}
 	}
