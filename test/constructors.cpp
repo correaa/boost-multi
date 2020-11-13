@@ -1,5 +1,6 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
+echo $X
+$CXXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -23,6 +24,10 @@ struct multiplies_bind1st{
 	multiplies_bind1st(multi::array<complex, 2>&& m) : m_(std::move(m)){}
 	multi::array<complex, 2> m_;
 };
+
+BOOST_AUTO_TEST_CASE(multi_construct_1d){
+	multi::array<double, 1> A(multi::array<double, 1>::extensions_type{10}, 1.);
+}
 
 BOOST_AUTO_TEST_CASE(multi_constructors_inqnvcc_bug){
 	multi::array<complex, 2> m({10, 10});
@@ -107,8 +112,8 @@ BOOST_AUTO_TEST_CASE(multi_constructors){
 	multi::array<double, 3> D1(std::tuple<multi::size_type, multi::size_type, multi::size_type>{4, 5, 6}, 8.);
 	multi::array<double, 3> D2(std::tuple<multi::size_type, multi::size_type, multi::size_type>{4, 5, 6});
 
-	multi::array<double, 3> E(std::array<multi::size_type, 3>{4, 5, 6}); assert(size(E)==4);
-	multi::array<double, 3> E2(std::array<int, 3>{4, 5, 6}); assert(size(E)==4);
+	multi::array<double, 3> E({4, 5, 6}); assert(size(E)==4);
+	multi::array<double, 3> E2({4, 5, 6}); assert(size(E)==4);
 
 }
 {

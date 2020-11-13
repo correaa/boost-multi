@@ -113,12 +113,12 @@ BOOST_AUTO_TEST_CASE(static_array_cast){
 	BOOST_REQUIRE( mA == mA_ref );
 }
 {
-	constexpr std::array<int, 2> exts = {4, 5};
+//	constexpr std::array<int, 2> exts = {4, 5};
 
-	multi::array<double, 2> A(exts);
+	multi::array<double, 2> A({4, 5});
 	std::iota(begin(elements(A)), end(elements(A)), 0.);
 
-	multi::array<double, 2> mA(exts);
+	multi::array<double, 2> mA({4, 5});
 	std::transform(begin(elements(A)), end(elements(A)), begin(elements(mA)), std::negate<>{});
 
 	auto&& mA_ref = A.static_array_cast<double, negater<double*>>();
