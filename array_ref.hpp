@@ -1533,6 +1533,12 @@ template<class RandomAccessIterator, dimensionality_type D>
 multi::array_ptr<typename std::iterator_traits<RandomAccessIterator>::value_type, D, RandomAccessIterator>
 operator/(RandomAccessIterator data, multi::iextensions<D> x){return {data, x};}
 
+template<class T, dimensionality_type D, class... Ts>
+std::true_type  is_basic_array_aux(basic_array<T, D, Ts...> const&);
+std::false_type is_basic_array_aux(...);
+
+template<class A> struct is_basic_array: decltype(is_basic_array_aux(std::declval<A>())){};
+
 }}
 
 ////////////////////////////////////////////////////////////////////////////////
