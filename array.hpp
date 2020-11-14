@@ -1,7 +1,7 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 echo $X
 [ ! -d build.$X ] && (mkdir build.$X && cd build.$X && cmake ..)
-cd build.$X && make -j && ctest -j
+cd build.$X && make -j && ctest -j --output-on-failure
 exit
 #endif
 // $CXXX $CXXFLAGS $0 -o $0.$X&&$0.$X&&rm $0.$X;exit
