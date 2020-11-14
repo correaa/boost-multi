@@ -148,8 +148,8 @@ public:
 
 	template<
 		class Range, class=std::enable_if_t<not std::is_base_of<static_array, std::decay_t<Range>>{}>, 
-		class=decltype(static_array(std::declval<Range&&>().begin(), std::declval<Range&&>().end())),
-		class=std::enable_if_t<not is_basic_array<Range>{}>// TODO add is_assignable<value_type> check
+		class=decltype(/*static_array*/(std::declval<Range&&>().begin(), std::declval<Range&&>().end())), // instantiation of static_array here gives a compiler error in 11.0
+		class=std::enable_if_t<not is_basic_array<Range&&>{}>// TODO add is_assignable<value_type> check
 	>
 	static_array(Range&& rng) : static_array(std::forward<Range>(rng).begin(), std::forward<Range>(rng).end()){}
 
