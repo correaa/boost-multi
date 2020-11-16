@@ -1,12 +1,9 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x `pkg-config --libs blas` -lcudart -lcublas -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0.$X `pkg-config --libs blas` -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 #endif
 
 #include "../../blas.hpp"
-#include "../../blas/cuda.hpp"
-
 #include "../../../array.hpp"
-#include "../../../adaptors/cuda.hpp"
 
 #include<complex>
 #include<cassert>
@@ -15,8 +12,8 @@ $CXX $0 -o $0x `pkg-config --libs blas` -lcudart -lcublas -lboost_unit_test_fram
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
-using std::cout;
 namespace multi = boost::multi;
+namespace blas = multi::blas;
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_copy_real){
 	namespace blas = multi::blas;
@@ -37,7 +34,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_copy_real){
 	BOOST_REQUIRE( A[1][3] == 8. );
 	BOOST_REQUIRE( A[2][3] == 8. );
 
-	auto AR3 = blas::copy(rotated(A)[3]); // dcopy
+	multi::array<double, 1> AR3 = blas::copy(rotated(A)[3]); // dcopy
 	BOOST_REQUIRE( AR3[1] == A[1][3] );
 }
 
@@ -53,31 +50,72 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_copy_complex){
 	blas::copy(A[0], A[2]);
 	BOOST_REQUIRE( A[0][2] == 3. + 5.*I );
 }
-BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_copy_cuda_complex){
-	namespace cuda = multi::cuda;
-	namespace blas = multi::blas;
-	cuda::array<complex, 2> A = {
-		{1. + 3.*I,  2. + 4.*I,  3. + 5.*I,  4. + 6.*I},
-		{5.,  6.,  7.,  8.},
-		{9., 10., 11., 12.}
-	};
+//BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_copy_cuda_complex){
+//	namespace cuda = multi::cuda;
+//	namespace blas = multi::blas;
+//	cuda::array<complex, 2> A = {
+//		{1. + 3.*I,  2. + 4.*I,  3. + 5.*I,  4. + 6.*I},
+//		{5.,  6.,  7.,  8.},
+//		{9., 10., 11., 12.}
+//	};
 
-	blas::copy(A[0], A[2]);
-	BOOST_REQUIRE( A[0][2] == 3. + 5.*I );
-	BOOST_REQUIRE( A[2][2] == 3. + 5.*I );
+//	blas::copy(A[0], A[2]);
+//	BOOST_REQUIRE( A[0][2] == 3. + 5.*I );
+//	BOOST_REQUIRE( A[2][2] == 3. + 5.*I );
+//}
+
+//BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_copy_cuda_managed_complex){
+//	namespace cuda = multi::cuda;
+//	namespace blas = multi::blas;
+
+//	cuda::managed::array<complex, 2> A = {
+//		{1. + 3.*I,  2. + 4.*I,  3. + 5.*I,  4. + 6.*I},
+//		{5.,  6.,  7.,  8.},
+//		{9., 10., 11., 12.}
+//	};
+//	blas::copy(A[0], A[2]);
+//	BOOST_REQUIRE( A[0][2] == 3. + 5.*I );
+//	BOOST_REQUIRE( A[2][2] == 3. + 5.*I );
+//}
+
+BOOST_AUTO_TEST_CASE(multi_blas_copy){
+	multi::array<double, 1> const A = {1., 2., 3., 4.};
+	multi::array<double, 1> B = {5., 6., 7., 8.};
+	blas::copy(A, B);
+	BOOST_REQUIRE( B == A );
+	
+	B = blas::copy(A);
+	BOOST_REQUIRE( B == A );
 }
 
-BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_copy_cuda_managed_complex){
-	namespace cuda = multi::cuda;
-	namespace blas = multi::blas;
+BOOST_AUTO_TEST_CASE(multi_blas_copy_complex){
+	multi::array<std::complex<double>, 1> const A = {1., 2., 3., 4.};
+	multi::array<std::complex<double>, 1> B = {5., 6., 7., 8.};
+	blas::copy(A, B);
+	BOOST_REQUIRE( B == A );
+	
+	B = blas::copy(A);
+	BOOST_REQUIRE( B == A );
+}
 
-	cuda::managed::array<complex, 2> A = {
-		{1. + 3.*I,  2. + 4.*I,  3. + 5.*I,  4. + 6.*I},
-		{5.,  6.,  7.,  8.},
-		{9., 10., 11., 12.}
+BOOST_AUTO_TEST_CASE(multi_blas_copy_context){
+	multi::array<double, 1> const A = {1., 2., 3., 4.};
+	multi::array<double, 1> B = {5., 6., 7., 8.};
+	blas::context ctx;
+	blas::copy(ctx, A, B);
+	BOOST_REQUIRE( B == A );
+
+	B = blas::copy(ctx, A);
+}
+
+BOOST_AUTO_TEST_CASE(multi_blas_copy_row){
+	multi::array<double, 2> const A = {
+		{1., 2., 3.},
+		{4., 5., 6.},
+		{7., 8., 9.}
 	};
-	blas::copy(A[0], A[2]);
-	BOOST_REQUIRE( A[0][2] == 3. + 5.*I );
-	BOOST_REQUIRE( A[2][2] == 3. + 5.*I );
+	multi::array<double, 1> B(3);
+	blas::copy(rotated(A)[0], B);
+	BOOST_REQUIRE( B == rotated(A)[0] );
 }
 
