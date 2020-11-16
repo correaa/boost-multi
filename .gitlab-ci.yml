@@ -165,6 +165,7 @@ clang++-10:
     - ctest --output-on-failure
 
 clang++-11:
+  image: pauldreik/llvm-11
   stage: test
   script:
     - export CXX="clang++-11"
