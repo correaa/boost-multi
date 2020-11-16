@@ -1,7 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x -lboost_unit_test_framework `pkg-config --cflags --libs blas` \
-`#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_sequential -lmkl_core` \
--lboost_timer &&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework `pkg-config --cflags --libs blas` -lboost_timer&&$0.$X&&rm $0.$X;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -19,11 +17,9 @@ $CXX $0 -o $0x -lboost_unit_test_framework `pkg-config --cflags --libs blas` \
 namespace boost{
 namespace multi{namespace blas{
 
-enum class DIAG : char{U='U', N='N'};
-
 enum class diagonal : char{
-	unit = static_cast<char>(DIAG::U),
-	non_unit = static_cast<char>(DIAG::N), general = non_unit
+	unit = 'U', 
+	non_unit = 'N', general = non_unit
 };
 
 template<class A, std::enable_if_t<not is_conjugated<A>{}, int> =0> 
@@ -37,7 +33,7 @@ using core::trsm;
 template<class A2D, class B2D>
 auto trsm_move(filling a_nonz, diagonal a_diag, typename A2D::element_type alpha, A2D const& a, B2D&& b, side s = side::left)
 ->decltype(
-	trsm('R', static_cast<char>(+a_nonz), 'N', static_cast<char>(a_diag), size(rotated(b)), size(b), alpha, trsm_base_aux(a), stride(a)         , trsm_base_aux(b), stride(b))
+	trsm('R', static_cast<char>(+a_nonz), 'N', static_cast<char>(a_diag), size(rotated(b)), b.size(), alpha, trsm_base_aux(a), stride(a)         , trsm_base_aux(b), b.stride())
 	, 
 	std::forward<B2D>(b)
 )
@@ -124,7 +120,7 @@ auto trsm(filling a_nonz, A2D const& a, B2D const& b)
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi.BLAS trsm"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
-#include<boost/test/floating_point_comparison.hpp>
+#include<boost/test/tools/floating_point_comparison.hpp>
 
 #include "../blas/gemm.hpp"
 
