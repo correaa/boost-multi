@@ -25,7 +25,7 @@ link_libraries(${BLAS_LIBRARIES})
 include_directories(${TEST_EXE} PRIVATE ${BLAS_INCLUDE_DIRS})
 
 if(NOT DEFINED CMAKE_CXX_STANDARD)
-	set(CMAKE_CXX_STANDARD 14)
+	set(CMAKE_CXX_STANDARD 17)
 endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -40,6 +40,7 @@ include(CTest)
 
 #file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 set(TEST_SRCS
+  copy.cpp
   gemv.cpp
 )
 
@@ -58,7 +59,7 @@ foreach(TEST_FILE ${TEST_SRCS})
     target_compile_options  (${TEST_EXE} PRIVATE
        -Werror -Wall -Wextra  -Wundef -fno-common -Wshadow
        $<$<CXX_COMPILER_ID:GNU>:
-          -Wpedantic -Wdouble-promotion -Wconversion -Wformat-truncation -fstack-usage>
+          -Wpedantic -Wdouble-promotion -Wformat-truncation -fstack-usage>#-Wconversion
        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
           -Wpedantic -Wdouble-promotion -Wmove>
        $<$<CXX_COMPILER_ID:Intel>:
