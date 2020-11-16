@@ -184,6 +184,7 @@ template<class T> struct complex_ptr{
 	std::complex<T>* impl_;
 	template<class TT, class=std::enable_if_t<sizeof(*TT{})==sizeof(std::complex<T>) and sizeof(*TT{})==sizeof(TT{}->real())+sizeof(TT{}->imag())>>
 	complex_ptr(TT tt) : impl_{reinterpret_cast<std::complex<T>*>(tt)}{}
+	complex_ptr(complex_ptr const&) = delete;
 	operator std::complex<T>*() const{return impl_;}
 	std::complex<T>& operator*() const{return *impl_;}
 };
@@ -192,6 +193,7 @@ template<class T> struct complex_const_ptr{
 	std::complex<T> const* impl_;
 	template<class TT, class=std::enable_if_t<sizeof(*TT{})==sizeof(std::complex<T>) and sizeof(*TT{})==sizeof(TT{}->real())+sizeof(TT{}->imag())>>
 	complex_const_ptr(TT tt) : impl_{reinterpret_cast<std::complex<T> const*>(tt)}{}
+	complex_const_ptr(complex_const_ptr const&) = delete;
 	operator std::complex<T> const*() const{return impl_;}
 };
 
@@ -236,6 +238,9 @@ namespace core{
 
 	xdot(s, s, s)  xdot(d, d, d)                                xdot(d, ds, s)
 	xaxpy(s)       xaxpy(d)       xaxpy(c)       xaxpy(z)
+	
+	template<class S> void copy(S n, complex_const_ptr<double> x, S incx, complex_ptr<double> y, S incy){return copy(n, &*x, incx, &*y, incy);}
+	template<class S> void copy(S n, complex_const_ptr<float > x, S incx, complex_ptr<float > y, S incy){return copy(n, &*x, incx, &*y, incy);}
 }
 
 template<class R, class S, class T> R dot(S n, T const* x, S incx, T const* y, S incy){
@@ -375,6 +380,13 @@ struct context{
 	->decltype(core::gemm(std::forward<As>(as)...)){
 		return core::gemm(std::forward<As>(as)...);}
 };
+
+namespace core{
+template<class Context, class... As>
+auto copy(Context&&, As... as)
+->decltype(core::copy(as...)){
+	return core::copy(as...);}
+}
 
 template<class T> blas::context default_context_of(T*){return {};}
 
