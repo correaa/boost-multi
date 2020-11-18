@@ -35,13 +35,28 @@ if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
 endif()
 
+find_package(CUDA)
+
+if (CUDA_FOUND)
+    message("CUDA found")
+    INCLUDE_DIRECTORIES(${CUDA_INCLUDE_DIRS})
+else()
+    message("CUDA not found")
+endif()
+
 enable_testing()
 include(CTest)
+
+configure_file("config.hpp.in" ${CMAKE_BINARY_DIR}/config.hpp)
+
+include_directories(${CMAKE_BINARY_DIR})
 
 #file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 set(TEST_SRCS
   copy.cpp
   gemv.cpp
+  scal.cpp
+  traits.cpp
 )
 
 foreach(TEST_FILE ${TEST_SRCS})
@@ -57,11 +72,11 @@ foreach(TEST_FILE ${TEST_SRCS})
   target_link_directories   (${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
   if(NOT ENABLE_CUDA)
     target_compile_options  (${TEST_EXE} PRIVATE
-       -Werror -Wall -Wextra  -Wundef -fno-common -Wshadow
+       -Werror -Wall -Wextra -fno-common
        $<$<CXX_COMPILER_ID:GNU>:
-          -Wpedantic -Wdouble-promotion -Wformat-truncation -fstack-usage>#-Wconversion
+          -Wpedantic -Wformat-truncation -fstack-usage>#-Wconversion
        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
-          -Wpedantic -Wdouble-promotion -Wmove>
+          -Wpedantic -Wmove>
        $<$<CXX_COMPILER_ID:Intel>:
                                         -wd161 -diag-disable=remark -Warray-bounds -Wchar-subscripts -Wcomment -Wenum-compare -Wformat -Wuninitialized -Wmaybe-uninitialized -Wmain -Wnarrowing -Wnonnull -Wparentheses -Wpointer-sign -Wreorder -Wreturn-type -Wsign-compare -Wsequence-point -Wtrigraphs -Wunused-function -Wunused-but-set-variable -Wunused-variable -Wwrite-strings -Werror -diag-error:3846
        >
