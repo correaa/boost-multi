@@ -19,12 +19,12 @@ using core::copy;
 template<class It, typename Size, class OutIt>
 auto copy_n(It first, Size n, OutIt d_first)
 ->decltype(copy(n, first.base(), first.stride(), d_first.base(), d_first.stride()), d_first + n){
-	return copy(n, base(first ), stride(first ), base(d_first ), stride(d_first )), d_first + n;}
+	return copy(n, first.base(), first.stride(), d_first.base(), d_first.stride()), d_first + n;}
 
 template<class Context, class It, typename Size, class OutIt, class=std::enable_if_t<blas::is_context<Context>{}> >
 auto copy_n(Context&& ctxt, It first, Size n, OutIt d_first)
 ->decltype(copy(std::forward<Context>(ctxt), n, first.base(), first.stride(), d_first.base(), d_first.stride()), d_first + n){
-	return copy(std::forward<Context>(ctxt), n, base(first ), stride(first ), base(d_first ), stride(d_first) ), d_first + n;}
+	return copy(std::forward<Context>(ctxt), n, first.base(), first.stride(), d_first.base(), d_first.stride()), d_first + n;}
 
 template<class It, class OutIt>
 auto copy(It first, It last, OutIt d_first)
