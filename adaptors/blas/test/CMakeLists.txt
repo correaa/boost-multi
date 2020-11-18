@@ -35,7 +35,7 @@ if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
 endif()
 
-find_package(CUDA)
+find_package(CUDA QUIET)
 
 if (CUDA_FOUND)
     message("CUDA found")
