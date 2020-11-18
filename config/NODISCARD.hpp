@@ -21,7 +21,7 @@ $CXXX $CXXFLAGS $0 -o $0.$X &&$0.$X&&rm $0.$X;exit
 		#define NODISCARD(MsG) [[nodiscard]]
 	#endif
 #elif __has_cpp_attribute(gnu::warn_unused_result)
-	#define NODISCARD(MsG) [[gnu::warn_unused_result(MsG)]]
+	#define NODISCARD(MsG) [[gnu::warn_unused_result]]
 #else
 	#define NODISCARD(MsG)
 #endif
