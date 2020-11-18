@@ -1,6 +1,4 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX -DBOOST_STACKTRACE_USE_ADDR2LINE $0 -o $0x -lboost_unit_test_framework -lcudart -lcublas&&$0x&&rm $0x;exit
-#endif
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
 // © Alfredo A. Correa 2019-2020
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS scal"
@@ -50,11 +48,15 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_real){
 	};
 	BOOST_REQUIRE( A[0][2] == 3. and A[2][2] == 11. );
 
+	BOOST_REQUIRE(  blas::scal(1., A[2]) ==  A[2] );
+	BOOST_REQUIRE( &blas::scal(1., A[2]) == &A[2] );
+	BOOST_REQUIRE( +blas::scal(1., A[2]) ==  A[2] );
+
+	blas::scal(2., A[2]);
+	BOOST_REQUIRE( A[0][2] == 3. and A[2][2] == 11.*2. );
+
 	BOOST_REQUIRE( &blas::scal(1., A[2]) == &A[2] );
 
-	auto&& A2 = blas::scal(2., A[2]);
-	BOOST_REQUIRE( &A2 == &A[2] );
-	BOOST_REQUIRE( A[0][2] == 3. and A[2][2] == 11.*2. );
 }
 
 //BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_complex_real_case){
