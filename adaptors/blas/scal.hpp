@@ -5,9 +5,8 @@
 #define MULTI_ADAPTORS_BLAS_SCAL_HPP
 
 #include "../blas/core.hpp"
-#include "../../config/NODISCARD.hpp"
 
-namespace boost
+namespace boost{
 namespace multi::blas{
 
 using core::scal;
