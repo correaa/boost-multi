@@ -699,7 +699,11 @@ private:
 public:
 	using reverse_iterator = basic_reverse_iterator<iterator>;
 	using ptr = basic_array_ptr<basic_array, Layout>;
-	ptr operator&() &&{return {this->base_, this->layout()};}
+
+//	ptr operator&() const&{return {this->base_, this->layout()};}
+	ptr operator&() &&    {return {this->base_, this->layout()};}
+//	ptr operator&() &     {return {this->base_, this->layout()};}
+
 	constexpr iterator begin(dimensionality_type d) &&{
 		Layout l = static_cast<Layout const&>(*this); l.rotate(d);
 		return {types::base_ + l(0       ), l.sub_, l.stride_};
@@ -1049,9 +1053,9 @@ public:
 	friend constexpr dimensionality_type dimensionality(basic_array const& self){return self.dimensionality;}
 	template<class BasicArray, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<BasicArray>>{}>, typename = decltype(types(std::declval<BasicArray&&>()))> 
 	constexpr basic_array(BasicArray&& other) : types{std::forward<BasicArray>(other)}{}
-	basic_array_ptr<basic_array, Layout> operator&() const{
-		return {this->base_, this->layout()};
-	}
+//	basic_array_ptr<basic_array, Layout> operator&() const&{return {this->base_, this->layout()};}
+	basic_array_ptr<basic_array, Layout> operator&() &&{return {this->base_, this->layout()};}
+//	basic_array_ptr<basic_array, Layout> operator&() &{return {this->base_, this->layout()};}
 	void assign(std::initializer_list<typename basic_array::value_type> il) const{assert( il.size() == static_cast<std::size_t>(this->size()) );
 		assign(il.begin(), il.end());
 	}
