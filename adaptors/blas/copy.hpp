@@ -1,7 +1,4 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-echo $X $CXXX $CXXFLAGS
-$CXXX $CXXFLAGS `pkg-config --cflags cuda-11.0` $0 -o $0.$X `pkg-config --libs openblas` -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
-#endif
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // © Alfredo A. Correa 2020
 
 #ifndef MULTI_ADAPTORS_BLAS_COPY_HPP
@@ -12,9 +9,10 @@ $CXXX $CXXFLAGS `pkg-config --cflags cuda-11.0` $0 -o $0.$X `pkg-config --libs o
 
 #include "../../config/NODISCARD.hpp"
 
+#include<type_traits>
+
 namespace boost{
-namespace multi{
-namespace blas{
+namespace multi::blas{
 
 using core::copy;
 
@@ -23,10 +21,20 @@ auto copy_n(It first, Size n, OutIt d_first)
 ->decltype(copy(n, base(first), stride(first), base(d_first), stride(d_first)), d_first + n){
 	return copy(n, base(first), stride(first), base(d_first), stride(d_first)), d_first + n;}
 
-template<class Context, class It, typename Size, class OutIt>
+template<class Context, class It, typename Size, class OutIt, class=std::enable_if_t<blas::is_context<Context>{}> >
 auto copy_n(Context&& ctxt, It first, Size n, OutIt d_first)
 ->decltype(copy(std::forward<Context>(ctxt), n, base(first), stride(first), base(d_first), stride(d_first)), d_first + n){
 	return copy(std::forward<Context>(ctxt), n, base(first), stride(first), base(d_first), stride(d_first)), d_first + n;}
+
+template<class It, class OutIt>
+auto copy(It first, It last, OutIt d_first)
+->decltype(copy_n(first, last - first, d_first)){
+	return copy_n(first, last - first, d_first);}
+
+template<class Context, class It, class OutIt, class=std::enable_if_t<blas::is_context<Context>{}>>
+auto copy(Context&& ctxt, It first, It last, OutIt d_first)
+->decltype(copy_n(std::forward<Context>(ctxt), first, last - first, d_first)){
+	return copy_n(std::forward<Context>(ctxt), first, last - first, d_first);}
 
 template<class X1D, class Y1D>
 auto copy(X1D const& x, Y1D&& y)
@@ -105,19 +113,13 @@ auto copy(A const& a) // need to specify templates (instead of deduced for intel
 ->decltype(copy<typename A::decay_type, typename A::const_iterator>(a.begin(), a.end())){
 	return copy<typename A::decay_type, typename A::const_iterator>(a.begin(), a.end());}
 
-template<class Context, class A> NODISCARD()
+template<class Context, class A, class=std::enable_if_t<blas::is_context<Context>{}>> NODISCARD()
 auto copy(Context&& ctxt, A const& a)
 ->decltype(copy<typename A::decay_type, Context, typename A::const_iterator>(std::forward<Context>(ctxt), a.begin(), a.end())){
 	return copy<typename A::decay_type, Context, typename A::const_iterator>(std::forward<Context>(ctxt), a.begin(), a.end());}
 
-}}}
+}
+}
 
-#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
-
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi blas copy"
-#define BOOST_TEST_DYN_LINK
-#include<boost/test/unit_test.hpp>
-
-#endif
 #endif
 
