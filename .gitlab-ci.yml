@@ -15,7 +15,7 @@ image: debian:testing
 #    - cmake --build . --verbose
 #    - ctest --output-on-failure
 
-g++-latest-release:
+g++-current-release:
   stage: test
   script:
     - export CXX="g++"
@@ -100,7 +100,7 @@ memcheck:
     - cmake --build . --verbose
     - ctest -T memcheck --output-on-failure
 
-clang++:
+clang++-current:
   stage: test
   script:
     - export CXX="clang++"
@@ -112,7 +112,7 @@ clang++:
     - cmake --build . --verbose
     - ctest --output-on-failure
 
-clang++-std17:
+clang++-current-std17:
   stage: test
   script:
     - export CXX="clang++"
@@ -163,7 +163,20 @@ clang++-10:
 #    - cmake --build .
 #    - ctest --output-on-failure
 
-cuda:
+clang++-11-release:
+  image: pauldreik/llvm-11
+  stage: test
+  script:
+    - export CXX="clang++-11"
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang-11 cmake make libboost-test-dev libblas-dev
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Release
+    - cmake --build .
+    - ctest --output-on-failure
+
+cuda-current:
     image: nvidia/cuda
     stage: test
     script:
@@ -176,7 +189,7 @@ cuda:
       - cmake --build . --verbose
       - ctest --output-on-failure
 
-cuda-std17:
+cuda-current-std17:
     image: nvidia/cuda
     stage: test
     script:
@@ -189,7 +202,7 @@ cuda-std17:
       - cmake --build . --verbose
       - ctest --output-on-failure
 
-cuda11.0:
+cuda-11.0:
     image: nvidia/cuda:11.0-devel-ubuntu20.04
     stage: test
     script:
