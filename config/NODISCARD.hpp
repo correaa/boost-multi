@@ -15,7 +15,7 @@ $CXXX $CXXFLAGS $0 -o $0.$X &&$0.$X&&rm $0.$X;exit
 #if defined(__NVCC__)
 	#define NODISCARD(MsG)
 #elif (__has_cpp_attribute(nodiscard))
-	#if (__has_cpp_attribute(nodiscard)>=201907)
+	#if (__has_cpp_attribute(nodiscard)>=201907) and (__cplusplus>=201703L)
 		#define NODISCARD(MsG) [[nodiscard(MsG)]]
 	#else
 		#define NODISCARD(MsG) [[nodiscard]]
