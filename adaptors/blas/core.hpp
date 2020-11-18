@@ -16,6 +16,9 @@ $CXXX $CXXFLAGS $0 -o $0.$X `pkg-config --libs blas`&&$0.$X&&rm $0.$X;exit
 #include<complex>
 #include<stdint.h> // int64_t
 #include<limits> // numeric_limits
+#include<type_traits>
+
+#include "../blas/traits.hpp"
 
 #ifdef CBLAS_H
 #define BLAS(NamE) cblas_##NamE
@@ -51,6 +54,10 @@ typedef struct { double real, imag; } Complex_double;
 #else
 	#define INT int32_t // 32bit safe? pesimistic?
 #endif
+
+namespace core{
+	using size_t = INT;
+}
 
 #define INTEGER INT const&
 #define N INTEGER n
@@ -185,7 +192,7 @@ template<class T> struct complex_ptr{
 	template<class TT, class=std::enable_if_t<sizeof(*TT{})==sizeof(std::complex<T>) and sizeof(*TT{})==sizeof(TT{}->real())+sizeof(TT{}->imag())>>
 	complex_ptr(TT tt) : impl_{reinterpret_cast<std::complex<T>*>(tt)}{}
 	complex_ptr(complex_ptr const&) = delete;
-	operator std::complex<T>*() const{return impl_;}
+	operator std::complex<T>*() const{return   impl_;}
 	std::complex<T>& operator*() const{return *impl_;}
 };
 
@@ -195,6 +202,7 @@ template<class T> struct complex_const_ptr{
 	complex_const_ptr(TT tt) : impl_{reinterpret_cast<std::complex<T> const*>(tt)}{}
 	complex_const_ptr(complex_const_ptr const&) = delete;
 	operator std::complex<T> const*() const{return impl_;}
+	std::complex<T> const& operator*() const{return *impl_;}
 };
 
 template<class T> struct add_ptr{using type = T*;};
@@ -221,8 +229,8 @@ namespace{
 #define xrot(T, TT, CS)   template<class S> v   rot  (S n,       T       *x, S incx, T       *y, S incy, CS const& cos, CS const& sin){     BLAS(TT##rot  )(BC(n),    x, BC(incx), y, BC(incy), cos, sin);    }
 #define xrotm(T)          template<class S> v   rotm (S n,       T       *x, S incx, T       *y, S incy, T const(&p)[5]          ){     BLAS( T##rotm )(BC(n),    x, BC(incx), y, BC(incy), p);               }
 #define xswap(T)          template<class S> v   swap (S n,       T       *x, S incx, T       *y, S incy                          ){     BLAS( T##swap )(BC(n),    x, BC(incx), y, BC(incy));                  }
-#define xscal(XX, TA, TX) template<class S> TX* scal (S n, TA* a, TX      *x, S incx                                             ){     BLAS(XX##scal )(BC(n), *a, x, BC(incx)             ); return x+n*incx;}
-#define xcopy(T)          template<class S> v   copy (S n,       T const *x, S incx, T       *y, S incy                          ){     BLAS( T##copy )(BC(n),    x, BC(incx), y, BC(incy));                  }
+#define xscal(XX, TA, TX) TX* scal (INT n, TA const* a, TX       *x, INT incx                                                    ){     BLAS(XX##scal )(BC(n), *a, x, BC(incx)             ); return x+n*incx;}
+//#define xcopy(T)          v   copy (INT n,              T  const *x, INT incx, T       *y, INT incy                              ){     BLAS( T##copy )(BC(n),    x, BC(incx), y, BC(incy));                  }
 #define xaxpy(T)          template<class S> T*  axpy (S n, T  a, T const *x, S incx, T       *y, S incy                          ){     BLAS( T##axpy )(BC(n), a, x, BC(incx), y, BC(incy)); return y+n*incy; }
 #define xdot(R, TT, T)    template<class S> v   dot  (S n,       T const* x, S incx, T const* y, S incy, R* r                    ){*r = BLAS(TT##dot  )(BC(n),    x, BC(incx), y, BC(incy));                  }
 
@@ -234,13 +242,16 @@ xswap(s)       xswap(d)       xswap(c)       xswap(z)
 
 namespace core{
 	xscal(s, s, s) xscal(d, d, d) xscal(c, c, c) xscal(z, z, z) xscal(zd, d, z) xscal(cs, s, c)
-	xcopy(s)       xcopy(d)       xcopy(c)       xcopy(z)
+
+	using std::enable_if_t;
+	using std::is_assignable;
+	template<class SX, class SY, enable_if_t<is_s<SX>{} and is_s<SY>{} and is_assignable<SY&, SX&>{},int> =0> void copy(size_t n, SX* x, size_t incx, SY* y, size_t incy){BLAS(scopy)(n, (             float   const*)(x), incx, (             float  *)(y), incy);}
+	template<class DX, class DY, enable_if_t<is_d<DX>{} and is_d<DY>{} and is_assignable<DY&, DX&>{},int> =0> void copy(size_t n, DX* x, size_t incx, DY* y, size_t incy){BLAS(dcopy)(n, (             double  const*)(x), incx, (             double *)(y), incy);}
+	template<class CX, class CY, enable_if_t<is_c<CX>{} and is_c<CY>{} and is_assignable<CY&, CX&>{},int> =0> void copy(size_t n, CX* x, size_t incx, CY* y, size_t incy){BLAS(ccopy)(n, (std::complex<float > const*)(x), incx, (std::complex<float >*)(y), incy);}
+	template<class ZX, class ZY, enable_if_t<is_z<ZX>{} and is_z<ZY>{} and is_assignable<ZY&, ZX&>{},int> =0> void copy(size_t n, ZX* x, size_t incx, ZY* y, size_t incy){BLAS(zcopy)(n, (std::complex<double> const*)(x), incx, (std::complex<double>*)(y), incy);}
 
 	xdot(s, s, s)  xdot(d, d, d)                                xdot(d, ds, s)
 	xaxpy(s)       xaxpy(d)       xaxpy(c)       xaxpy(z)
-	
-	template<class S> void copy(S n, complex_const_ptr<double> x, S incx, complex_ptr<double> y, S incy){return copy(n, &*x, incx, &*y, incy);}
-	template<class S> void copy(S n, complex_const_ptr<float > x, S incx, complex_ptr<float > y, S incy){return copy(n, &*x, incx, &*y, incy);}
 }
 
 template<class R, class S, class T> R dot(S n, T const* x, S incx, T const* y, S incy){
@@ -380,6 +391,14 @@ struct context{
 	->decltype(core::gemm(std::forward<As>(as)...)){
 		return core::gemm(std::forward<As>(as)...);}
 };
+
+template<class Context> struct is_context : std::false_type{};
+template<> struct is_context<context> : std::true_type{};
+template<> struct is_context<context&&> : std::true_type{};
+template<> struct is_context<context&> : std::true_type{};
+template<> struct is_context<context const&> : std::true_type{};
+
+template<> struct is_context<void*&> : std::true_type{};
 
 namespace core{
 template<class Context, class... As>
