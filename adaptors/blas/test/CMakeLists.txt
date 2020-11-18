@@ -24,9 +24,7 @@ find_path(BLAS_INCLUDE_DIRS cblas.h
 link_libraries(${BLAS_LIBRARIES})
 include_directories(${TEST_EXE} PRIVATE ${BLAS_INCLUDE_DIRS})
 
-if(NOT DEFINED CMAKE_CXX_STANDARD)
-	set(CMAKE_CXX_STANDARD 17)
-endif()
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -65,6 +63,7 @@ foreach(TEST_FILE ${TEST_SRCS})
   if(ENABLE_CUDA OR DEFINED CXXCUDA)
     set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
   endif()
+# target_compile_features   (${TEST_EXE} PUBLIC cxx_std_17) 
   target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
   target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
   target_include_directories(${TEST_EXE} PRIVATE ${Boost_INCLUDE_DIRS})

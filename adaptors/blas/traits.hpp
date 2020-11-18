@@ -37,4 +37,5 @@ namespace multi::blas{
 }
 
 }
+#endif
 
