@@ -228,7 +228,7 @@ constexpr BidirIt alloc_destroy_n(Alloc& a, BidirIt first, Size n){
 	return first;
 }
 
-MAYBE_UNUSED constexpr class adl_uninitialized_copy_fn__{
+MAYBE_UNUSED constexpr class{
 	template<class... As>          constexpr auto _(priority<1>,        As&&... as) const DECLRETURN(              std::uninitialized_copy(std::forward<As>(as)...))
 	template<class... As>          constexpr auto _(priority<2>,        As&&... as) const DECLRETURN(                   uninitialized_copy(std::forward<As>(as)...))
 	template<class T, class... As> constexpr auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::decay_t<T>  ::uninitialized_copy(std::forward<T>(t), std::forward<As>(as)...))
