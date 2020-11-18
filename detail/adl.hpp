@@ -95,17 +95,17 @@ public:
 #endif
 } adl_equal;
 
-	MAYBE_UNUSED constexpr class{
-		template<         class... As> auto _(priority<1>,       As&... as) const DECLRETURN(              std::copy(   as...))
+MAYBE_UNUSED constexpr class adl_copy_fn__{
+	template<         class... As> constexpr auto _(priority<1>,       As&... as) const DECLRETURN(              std::copy(   as...))
 #if defined(__NVCC__) or (defined(__clang__) && defined(__CUDA__))
-		template<class... As> 		   auto _(priority<2>,       As&... as) const DECLRETURN(           thrust::copy(   as...))
+	template<class... As> 		   constexpr auto _(priority<2>,       As&... as) const DECLRETURN(           thrust::copy(   as...))
 #endif
-		template<         class... As> auto _(priority<3>,       As&... as) const DECLRETURN(                   copy(   as...))
-		template<class T, class... As> auto _(priority<4>, T& t, As&... as) const DECLRETURN(  std::decay_t<T>::copy(t, as...))
-		template<class T, class... As> auto _(priority<4>, T& t, As&... as) const DECLRETURN(std::forward<T>(t).copy(   as...))
-	public:
-		template<class... As> auto operator()(As&&... as) const DECLRETURN( _(priority<6>{}, as...) ) \
-	} adl_copy;
+	template<         class... As> constexpr auto _(priority<3>,       As&... as) const DECLRETURN(                   copy(   as...))
+	template<class T, class... As> constexpr auto _(priority<4>, T& t, As&... as) const DECLRETURN(  std::decay_t<T>::copy(t, as...))
+	template<class T, class... As> constexpr auto _(priority<5>, T& t, As&... as) const DECLRETURN(std::forward<T>(t).copy(   as...))
+public:
+	template<class... As> constexpr auto operator()(As&&... as) const DECLRETURN( _(priority<5>{}, as...) ) \
+} adl_copy;
 
 namespace adl{ \
 	namespace custom{template<class...> struct fill_t;} __attribute__((unused))
