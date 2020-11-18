@@ -14,12 +14,12 @@
 namespace multi = boost::multi;
 namespace blas = multi::blas;
 
-//BOOST_AUTO_TEST_CASE(multi_blas_copy_n){
-//	multi::array<double, 1> const A = {1., 2., 3., 4.};
-//	multi::array<double, 1> B = {5., 6., 7., 8.};
-//	blas::copy_n(A.begin(), A.size(), B.begin());
-//	BOOST_REQUIRE( B == A );
-//}
+BOOST_AUTO_TEST_CASE(multi_blas_copy_n){
+	multi::array<double, 1> const A = {1., 2., 3., 4.};
+	multi::array<double, 1> B = {5., 6., 7., 8.};
+	blas::copy_n(A.begin(), A.size(), B.begin());
+	BOOST_REQUIRE( B == A );
+}
 
 //BOOST_AUTO_TEST_CASE(multi_blas_copy_it){
 //	multi::array<double, 1> const A = {1., 2., 3., 4.};
