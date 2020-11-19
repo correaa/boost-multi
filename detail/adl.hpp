@@ -362,7 +362,8 @@ auto alloc_uninitialized_fill_n(Alloc& a, ForwardIt first, Size n, T const& v)
 
 }}
 
-namespace boost{namespace multi{
+namespace boost{
+namespace multi{
 
 MAYBE_UNUSED constexpr class adl_distance_fn__{
 	template<class... As>          constexpr auto _(priority<1>,        As&&... as) const DECLRETURN(              std::distance(std::forward<As>(as)...))
@@ -409,7 +410,8 @@ public:
 	template<class... As> constexpr	auto operator()(As&&... as) const DECLRETURN(_(priority<5>{}, std::forward<As>(as)...))
 } adl_lexicographical_compare;
 
-}}
+}
+}
 
 namespace boost{namespace multi{ \
 namespace adl{ \
