@@ -17,8 +17,6 @@ $CXXX $CXXFLAGS $0 -o $0.$X -DBOOST_TEST_DYN_LINK -lboost_unit_test_framework&&$
 #include "../detail/memory.hpp"
 #include "../config/MAYBE_UNUSED.hpp"
 
-#include<iostream> // debug
-
 #if defined(__NVCC__) or (defined(__clang__) && defined(__CUDA__))
 #include<thrust/copy.h>
 #include<thrust/equal.h>
@@ -366,7 +364,7 @@ auto alloc_uninitialized_fill_n(Alloc& a, ForwardIt first, Size n, T const& v)
 
 namespace boost{namespace multi{
 
-MAYBE_UNUSED constexpr class adl_distance_t{
+MAYBE_UNUSED constexpr class adl_distance_fn__{
 	template<class... As>          constexpr auto _(priority<1>,        As&&... as) const DECLRETURN(              std::distance(std::forward<As>(as)...))
 	template<class... As>          constexpr auto _(priority<2>,        As&&... as) const DECLRETURN(                   distance(std::forward<As>(as)...))
 	template<class T, class... As> constexpr auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(  std::decay_t<T>::distance(std::forward<T>(t), std::forward<As>(as)...))
@@ -375,20 +373,22 @@ public:
 	template<class... As> constexpr auto operator()(As&&... as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
 } adl_distance;
 
-MAYBE_UNUSED constexpr class{
-	template<class... As>          auto _(priority<1>,        As&&... as) const DECLRETURN(              std::begin(std::forward<As>(as)...))
-	template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   begin(std::forward<As>(as)...))
-	template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).begin(std::forward<As>(as)...))
-public:
-	template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<3>{}, std::forward<As>(as)...))
-} adl_begin;
-
-MAYBE_UNUSED constexpr class{
-	template<class... As>          auto _(priority<1>,        As&&... as) const DECLRETURN(              std::end(std::forward<As>(as)...))
-	template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   end(std::forward<As>(as)...))
-	template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).end(std::forward<As>(as)...))
+MAYBE_UNUSED constexpr class adl_begin_fn__{
+	template<class... As>          constexpr auto _(priority<1>,        As&&... as) const DECLRETURN(              std::begin(std::forward<As>(as)...))
+	template<class... As>          constexpr auto _(priority<2>,        As&&... as) const DECLRETURN(                   begin(std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(  std::decay_t<T>::begin(std::forward<T>(t), std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).begin(std::forward<As>(as)...))
 public:
 	template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
+} adl_begin;
+
+MAYBE_UNUSED constexpr class adl_end_fn__{
+	template<class... As>          constexpr auto _(priority<1>,        As&&... as) const DECLRETURN(              std::end(std::forward<As>(as)...))
+	template<class... As>          constexpr auto _(priority<2>,        As&&... as) const DECLRETURN(                   end(std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(  std::decay_t<T>::end(std::forward<T>(t), std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).end(std::forward<As>(as)...))
+public:
+	template<class... As> constexpr auto operator()(As&&... as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
 } adl_end;
 
 MAYBE_UNUSED constexpr class{
@@ -543,5 +543,4 @@ BOOST_AUTO_TEST_CASE(multi_detail_adl){
 }
 #endif
 #endif
-
 
