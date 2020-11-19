@@ -4,6 +4,8 @@ set(CMAKE_CXX_STANDARD 14)
 
 add_library(${PROJECT_NAME} INTERFACE)
 
+set_property(GLOBAL PROPERTY RULE_MESSAGES OFF)
+
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake") 
 
 #configure_file(config.h.in config.h)
