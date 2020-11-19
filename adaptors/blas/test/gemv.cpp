@@ -85,10 +85,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv, *utf::tolerance(0.0001)){
 	}
 }
 
-BOOST_AUTO_TEST_CASE(multi_blas_gemv_produce_leak){
-	double* p = new double[10000000]; p+=1;
-}
-
 BOOST_AUTO_TEST_CASE(multi_blas_gemv_real){
 	namespace blas = multi::blas;
 
