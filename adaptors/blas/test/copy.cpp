@@ -30,12 +30,16 @@ BOOST_AUTO_TEST_CASE(multi_blas_copy_it){
 
 BOOST_AUTO_TEST_CASE(multi_blas_copy){
 	multi::array<double, 1> const A = {1., 2., 3., 4.};
-	multi::array<double, 1> B = {5., 6., 7., 8.};
-	blas::copy(A, B); // Segmentation fault in clang-11
-	BOOST_REQUIRE( B == A );
-
-//	B = blas::copy(A);
-//	BOOST_REQUIRE( B == A );
+	{
+		multi::array<double, 1> B = {5., 6., 7., 8.};
+		blas::copy(A, B); // Segmentation fault in clang-11
+		BOOST_REQUIRE( B == A );
+	}
+	{
+		multi::array<double, 1> B = {5., 6., 7., 8.};
+		B = blas::copy(A);
+		BOOST_REQUIRE( B == A );
+	}
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_copy_real){
@@ -45,12 +49,12 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_copy_real){
 		{5.,  6.,  7.,  8.},
 		{9., 10., 11., 12.}
 	};
-	BOOST_REQUIRE( A[0][2] == 3. );
+	BOOST_REQUIRE( A[0][2] ==  3. );
 	BOOST_REQUIRE( A[2][2] == 11. );
 
 	blas::copy(A[0], A[2]);
-	BOOST_REQUIRE( A[0][2] == 3. );
-	BOOST_REQUIRE( A[2][2] == 3. );
+	BOOST_REQUIRE( A[0][2] ==  3. );
+	BOOST_REQUIRE( A[2][2] ==  3. );
 
 //	multi::blas::copy(begin(A[1]), end(A[1]), begin(A[2])); // dcopy
 	blas::copy( A[1]({0, size(A[1])}), A[2]({0, size(A[1])}) );
@@ -85,12 +89,17 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_copy_complex){
 
 BOOST_AUTO_TEST_CASE(multi_blas_copy_context){
 	multi::array<double, 1> const A = {1., 2., 3., 4.};
-	multi::array<double, 1> B = {5., 6., 7., 8.};
 	blas::context ctx;
-	blas::copy(ctx, A, B);
-	BOOST_REQUIRE( B == A );
-
-	B = blas::copy(ctx, A);
+	{
+		multi::array<double, 1> B = {5., 6., 7., 8.};
+		blas::copy(ctx, A, B);
+		BOOST_REQUIRE( A == B );
+	}
+	{
+		multi::array<double, 1> B = {5., 6., 7., 8.};
+		B = blas::copy(ctx, A);
+		BOOST_REQUIRE( A == B );
+	}
 }
 
 #if CUDA_FOUND
