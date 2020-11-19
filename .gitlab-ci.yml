@@ -147,7 +147,7 @@ clang++-10:
     - $CXX --version
     - mkdir build && cd build
     - cmake ..
-    - cmake --build . --parallel 2 --verbose
+    - cmake --build . --verbose
     - ctest --output-on-failure
 
 #clang++-11:
