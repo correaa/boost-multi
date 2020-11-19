@@ -86,6 +86,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv, *utf::tolerance(0.0001)){
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_gemv_real){
+
+
 	namespace blas = multi::blas;
 
 	using std::abs;
