@@ -391,12 +391,13 @@ public:
 	template<class... As> constexpr auto operator()(As&&... as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
 } adl_end;
 
-MAYBE_UNUSED constexpr class{
-	template<class... As>          auto _(priority<1>,        As&&... as) const DECLRETURN(              std::swap_ranges(std::forward<As>(as)...))
-	template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   swap_ranges(std::forward<As>(as)...))
-	template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).swap_ranges(std::forward<As>(as)...))
+MAYBE_UNUSED constexpr class adl_swap_ranges_fn__{
+	template<class... As>          constexpr auto _(priority<1>,        As&&... as) const DECLRETURN(              std::swap_ranges(std::forward<As>(as)...))
+	template<class... As>          constexpr auto _(priority<2>,        As&&... as) const DECLRETURN(                   swap_ranges(std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(  std::decay_t<T>::swap_ranges(std::forward<T>(t), std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).swap_ranges(std::forward<As>(as)...))
 public:
-	template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
+	template<class... As> constexpr auto operator()(As&&... as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
 } adl_swap_ranges;
 
 MAYBE_UNUSED constexpr class{
