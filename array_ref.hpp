@@ -412,17 +412,17 @@ public:
 	basic_const_array reindexed(typename basic_array::index first) const&{
 		typename types::layout_t new_layout = *this;
 		new_layout.reindex(first);
-		return {new_layout, types::base_};				
+		return {new_layout, types::base_};
 	}
 	basic_array reindexed(typename basic_array::index first)&{
 		typename types::layout_t new_layout = *this;
 		new_layout.reindex(first);
-		return {new_layout, types::base_};				
+		return {new_layout, types::base_};
 	}
 	basic_array reindexed(typename basic_array::index first)&&{
 		typename types::layout_t new_layout = *this;
 		new_layout.reindex(first);
-		return {new_layout, types::base_};				
+		return {new_layout, types::base_};
 	}
 	template<class... Indexes>
 	basic_const_array reindexed(typename basic_array::index first, Indexes... idxs) const&{
@@ -753,12 +753,11 @@ public:
 		assign(il.begin(), il.end());
 	}
 
-	template<class A>//, typename = std::enable_if_t<not std::is_same<basic_array, std::decay_t<A>>{}>>
-	basic_array& operator=(A&& o)&{
-		assert(this->extension() == o.extension());
-		this->assign(adl_begin(std::forward<A>(o)), adl_end(std::forward<A>(o)));
-		return *this;
-	}
+	template<class Range>
+	auto operator=(Range&& r)&&
+	->decltype(assign(adl_begin(std::forward<Range>(r)), adl_end(std::forward<Range>(r))), std::declval<basic_array&&>()){assert(this->extension() == r.extension());
+		return assign(adl_begin(std::forward<Range>(r)), adl_end(std::forward<Range>(r))), std::move(*this);}
+
 	template<class TT, class... As>
 	basic_array& operator=(basic_array<TT, D, As...> const& o)&{assert(this->extension() == o.extension());
 		return this->assign(o.begin(), o.end()), *this; // TODO improve performance by rotating
@@ -868,6 +867,28 @@ public:
 	basic_array<std::decay_t<T2>, D, P2> const_array_cast()&&{
 		return {this->layout(), const_cast<P2>(this->base())};
 	}
+	
+	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
+	basic_array<T2, D + 1, P2> reinterpret_array_cast(size_type n) &{
+		static_assert( sizeof(T)%sizeof(T2) == 0,
+			"error: reinterpret_array_cast is limited to integral stride values");
+		assert( sizeof(T) == sizeof(T2)*n );
+		return { 
+			layout_t<D+1>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n}.rotate(), 
+			static_cast<P2>(static_cast<void*>(this->base()))
+		};
+	}
+	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2 const> >
+	basic_array<T2, D + 1, P2> reinterpret_array_cast(size_type n) const&{
+		static_assert( sizeof(T)%sizeof(T2) == 0,
+			"error: reinterpret_array_cast is limited to integral stride values");
+		assert( sizeof(T) == sizeof(T2)*n );
+		return { 
+			layout_t<D+1>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n}.rotate(), 
+			static_cast<P2>(static_cast<void*>(this->base()))
+		};
+	}
+
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -965,6 +986,13 @@ struct basic_array<T, dimensionality_type{0}, ElementPtr, Layout> :
 	->decltype(adl_equal(&e, &e + 1, this->base_)){
 		return adl_equal(&e, &e + 1, this->base_);}
 	template<class TT> auto operator!=(TT const& e) const&->decltype(!operator==(e)){return !operator==(e);}
+	
+	template<class Range0>
+	basic_array& operator=(Range0&& r)&{
+	//	*this->base_ = std::forward<Range0>(r); 
+		adl_copy_n(&r, 1, this->base_);
+		return *this;
+	}
 #if 0
 	template<class TT, class=decltype(std::declval<TT>()==std::declval<typename basic_array::element>())>
 	friend auto operator==(TT const& e, basic_array const& self)
