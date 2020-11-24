@@ -247,49 +247,48 @@ BOOST_AUTO_TEST_CASE(inq_case){
 	BOOST_REQUIRE( d_doub == d_arr );
 }
 
+//BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex){
+//	namespace blas = multi::blas;
 
-BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex){
-	namespace blas = multi::blas;
-
-	using complex = std::complex<double>; complex const I{0, 1};
-	multi::array<complex, 2> const A = {
-		{1. +    I,  2. + 3.*I,  3.+2.*I,  4.-9.*I},
-		{5. + 2.*I,  6. + 6.*I,  7.+2.*I,  8.-3.*I},
-		{9. + 1.*I, 10. + 9.*I, 11.+1.*I, 12.+2.*I}
-	};
-	{
-		complex c; blas::dot(A[1], A[2], c);
-		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}) );
-	}
-	{
-		complex c = blas::dot(A[1], A[2]);
-		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}) );
-	}
-	{
-		complex c = blas::dot(A[1], blas::C(A[2]));
-		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}, std::plus<>{}, [](auto a, auto b){return a*conj(b);}) );
-	}
-	{
-		complex c = blas::dot(blas::C(A[1]), A[2]);
-		BOOST_TEST_REQUIRE( c == inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}, std::plus<>{}, [](auto a, auto b){return conj(a)*b;}) );
-	}
-	{
-		complex c = blas::dot(blas::conj(A[1]), A[2]);
-		BOOST_TEST_REQUIRE( c == inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}, std::plus<>{}, [](auto a, auto b){return conj(a)*b;}) );
-	}
+//	using complex = std::complex<double>; complex const I{0, 1};
+//	multi::array<complex, 2> const A = {
+//		{1. +    I,  2. + 3.*I,  3.+2.*I,  4.-9.*I},
+//		{5. + 2.*I,  6. + 6.*I,  7.+2.*I,  8.-3.*I},
+//		{9. + 1.*I, 10. + 9.*I, 11.+1.*I, 12.+2.*I}
+//	};
 //	{
-//		complex c = blas::dot(blas::C(A[1]), blas::C(A[2]));
-//		BOOST_TEST_REQUIRE( c == inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}, std::plus<>{}, [](auto a, auto b){return conj(a)*conj(b);}) );
+//		complex c; blas::dot(A[1], A[2], c);
+//		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}) );
 //	}
-	{
-		complex c = blas::dot(blas::C(A[1]), A[2]);
-		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}, std::plus<>{}, [](auto a, auto b){return conj(a)*b;}) );
-	}
 //	{
-//		complex c = blas::dot(blas::C(A[1]), blas::C(A[2]));
-//		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}, std::plus<>{}, [](auto a, auto b){return conj(a)*conj(b);}) );
+//		complex c = blas::dot(A[1], A[2]);
+//		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}) );
 //	}
-}
+//	{
+//		complex c = blas::dot(A[1], blas::C(A[2]));
+//		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}, std::plus<>{}, [](auto a, auto b){return a*conj(b);}) );
+//	}
+//	{
+//		complex c = blas::dot(blas::C(A[1]), A[2]);
+//		BOOST_TEST_REQUIRE( c == inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}, std::plus<>{}, [](auto a, auto b){return conj(a)*b;}) );
+//	}
+//	{
+//		complex c = blas::dot(blas::conj(A[1]), A[2]);
+//		BOOST_TEST_REQUIRE( c == inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}, std::plus<>{}, [](auto a, auto b){return conj(a)*b;}) );
+//	}
+////	{
+////		complex c = blas::dot(blas::C(A[1]), blas::C(A[2]));
+////		BOOST_TEST_REQUIRE( c == inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}, std::plus<>{}, [](auto a, auto b){return conj(a)*conj(b);}) );
+////	}
+//	{
+//		complex c = blas::dot(blas::C(A[1]), A[2]);
+//		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}, std::plus<>{}, [](auto a, auto b){return conj(a)*b;}) );
+//	}
+////	{
+////		complex c = blas::dot(blas::C(A[1]), blas::C(A[2]));
+////		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}, std::plus<>{}, [](auto a, auto b){return conj(a)*conj(b);}) );
+////	}
+//}
 
 #include "config.hpp" // cuda found
 #if defined(CUDA_FOUND) and CUDA_FOUND
