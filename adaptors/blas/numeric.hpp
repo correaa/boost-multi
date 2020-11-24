@@ -252,6 +252,8 @@ template<class A = void> struct is_complex_array{
 	template<class AA> constexpr auto operator()(AA&&){return _(*base(std::declval<A>()));}
 };
 
+template<class V> struct is_complex : has_imag<V>{};
+
 template<class A = void> struct is_conjugated{
 	template<class It> static std::true_type  _(conjugater<It> a);
 	                   static std::false_type _(...             );
