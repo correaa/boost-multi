@@ -53,7 +53,7 @@ public:
 	friend constexpr auto uninitialized_copy_n(dot_ptr first, Size2 count, ItOut d_first)
 	->decltype(blas::dot_n(std::declval<ItX>(), Size{}      , std::declval<ItY>(), d_first), d_first + count){assert(count == 1);
 		return blas::dot_n(first.x_first_     , first.count_, first.y_first_     , d_first), d_first + count;}
-//	->decltype(copy_n(first, count, d_first)){
+//	->decltype(copy_n(first, count, d_first)){ // nvcc is not detecting friend copy_n
 //		return copy_n(first, count, d_first);}
 };
 
