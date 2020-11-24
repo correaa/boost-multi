@@ -415,9 +415,25 @@ struct context{
 		return core::gemv(as...);}
 
 	template<class... As>
-	auto gemm(As&&... as) const
+	static auto gemm(As&&... as)
 	->decltype(core::gemm(std::forward<As>(as)...)){
 		return core::gemm(std::forward<As>(as)...);}
+
+	template<class... As>
+	static auto dot(As&&... as)
+	->decltype(core::dot(std::forward<As>(as)...)){
+		return core::dot(std::forward<As>(as)...);}
+
+	template<class... As>
+	static auto dotc(As&&... as)
+	->decltype(core::dotc(std::forward<As>(as)...)){
+		return core::dotc(std::forward<As>(as)...);}
+
+	template<class... As>
+	static auto dotu(As&&... as)
+	->decltype(core::dotu(std::forward<As>(as)...)){
+		return core::dotu(std::forward<As>(as)...);}
+
 };
 
 template<class Context> struct is_context : std::false_type{};

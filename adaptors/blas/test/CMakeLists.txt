@@ -9,7 +9,7 @@
 #]=]
 cmake_minimum_required(VERSION 3.11)
 
-set(CMAKE_VERBOSE_MAKEFILE OFF)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 project(boost-multi-adaptors-blas-test VERSION 0.1 LANGUAGES CXX)
 
@@ -52,6 +52,7 @@ include_directories(${CMAKE_BINARY_DIR})
 
 #file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 set(TEST_SRCS
+  dot.cpp
   copy.cpp
   gemv.cpp
   scal.cpp

@@ -145,6 +145,19 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_strided){
 	BOOST_REQUIRE( d == d2 );
 }
 
+BOOST_AUTO_TEST_CASE(multi_blas_dot_strided_context){
+	multi::array<double, 2> const CA = {
+		{1.,  2.,  3.,  4.},
+		{5.,  6.,  7.,  8.},
+		{9., 10., 11., 12.}
+	};
+	double d = std::numeric_limits<double>::quiet_NaN();
+	blas::dot_n(blas::context{}, begin(CA[1]), size(CA[1]), begin(CA[2]), &d);
+	BOOST_REQUIRE( d == std::inner_product(begin(CA[1]), begin(CA[2]), end(CA[1]), 0.) );
+
+	double d2 = blas::dot(CA[1], CA[2]);
+	BOOST_REQUIRE( d == d2 );
+}
 
 BOOST_AUTO_TEST_CASE(multi_blas_dot_1d_real){
 
@@ -283,6 +296,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex_thrust){
 		{5. + 2.*I,  6. + 6.*I,  7.+2.*I,  8.-3.*I},
 		{9. + 1.*I, 10. + 9.*I, 11.+1.*I, 12.+2.*I}
 	};
+	{
+		complex c; blas::dot(blas::context{}, A[1], A[2], c);
+		BOOST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}) );
+	}
 	{
 		complex c; blas::dot(A[1], A[2], c);
 		BOOST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}) );
