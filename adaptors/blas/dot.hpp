@@ -51,8 +51,10 @@ public:
 
 	template<class ItOut, class Size2>
 	friend constexpr auto uninitialized_copy_n(dot_ptr first, Size2 count, ItOut d_first)
-	->decltype(copy_n(first, count, d_first)){
-		return copy_n(first, count, d_first);}
+	->decltype(blas::dot_n(std::declval<ItX>(), Size{}      , std::declval<ItY>(), d_first), d_first + count){assert(count == 1);
+		return blas::dot_n(first.x_first_     , first.count_, first.y_first_     , d_first), d_first + count;}
+//	->decltype(copy_n(first, count, d_first)){
+//		return copy_n(first, count, d_first);}
 };
 
 template<class X, class Y, class Ptr = dot_ptr<typename X::const_iterator, typename X::size_type, typename Y::const_iterator>>
