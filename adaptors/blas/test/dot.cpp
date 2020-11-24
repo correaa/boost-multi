@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(blas_dot){
 	using complex = std::complex<double>; complex const I{0, 1};
 	{
 		multi::array<complex, 1> const A = {I, 2.*I, 3.*I};
-		BOOST_REQUIRE( +blas::dot(A, A) == std::inner_product(begin(A), end(A), begin(A), std::complex<double>(0)) );
+		BOOST_TEST( +blas::dot(A, A) == std::inner_product(begin(A), end(A), begin(A), complex{0.}) );
 	}
 	{
 		multi::array<complex, 1> const A = {I, 1. + 2.*I, 3.*I};
