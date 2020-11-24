@@ -38,8 +38,9 @@ extern "C"{
 #define z std::complex<d>
 #define v void
 
-typedef struct { float real, imag; } Complex_float;
+typedef struct { float  real, imag; } Complex_float ;
 typedef struct { double real, imag; } Complex_double;
+
 #define C Complex_float // _Complex s
 #define Z Complex_double // _Complex d
 
@@ -217,8 +218,8 @@ template<class T> using add_const_ptr_t = typename add_const_ptr<T>::type;
 namespace{
 	using s = float;
 	using d = double;
-	using c = std::complex<s>;
-	using z = std::complex<d>;
+	using c = std::complex<s>; using C = Complex_float ;
+	using z = std::complex<d>; using Z = Complex_double;
 	using v = void;
 }
 
@@ -274,23 +275,30 @@ template<class S, class T> T dot(S n, T const* x, S incx, T const* y, S incy){
 
 #ifndef CBLAS_H
 
-#define xdotu(T) template<class S> v dotu(S n, add_const_ptr_t<T> x, S incx, add_const_ptr_t<T> y, S incy, add_ptr_t<T> r){*r = (T)(BLAS(T##dotu)(BC(n), x, BC(incx), y, BC(incy)));}
-#define xdotc(T) template<class S> v dotc(S n, add_const_ptr_t<T> x, S incx, add_const_ptr_t<T> y, S incy, add_ptr_t<T> r){*r = (T)(BLAS(T##dotc)(BC(n), x, BC(incx), y, BC(incy)));}
-
 namespace core{
-	xdotu(c) xdotu(z)
-	xdotc(c) xdotc(z)
+
+using std::enable_if_t;
+using std::is_assignable;
+
+template<class X, class Y, class R, enable_if_t<is_c<X>{} and is_c<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){*(Complex_float *)r = BLAS(cdotu)(n, (c const*)x, incx, (c const*)y, incy);}
+template<class X, class Y, class R, enable_if_t<is_z<X>{} and is_z<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){*(Complex_double*)r = BLAS(zdotu)(n, (z const*)x, incx, (z const*)y, incy);}
+
+template<class X, class Y, class R, enable_if_t<is_c<X>{} and is_c<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotc(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){*(Complex_float *)r = BLAS(cdotc)(n, (c const*)x, incx, (c const*)y, incy);}
+template<class X, class Y, class R, enable_if_t<is_z<X>{} and is_z<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotc(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){*(Complex_double*)r = BLAS(zdotc)(n, (z const*)x, incx, (z const*)y, incy);}
+
 }
 
-#undef xdotu
-#undef xdotc
 #else
+
+// TODO: make cblas version
 #define xdotu(T) template<class S> v dotu(S n, add_const_ptr_t<T> x, S incx, add_const_ptr_t<T> y, S incy, add_ptr_t<T> r){BLAS(T##dotu_sub)(BC(n), x, BC(incx), y, BC(incy), r);}
 #define xdotc(T) template<class S> v dotc(S n, add_const_ptr_t<T> x, S incx, add_const_ptr_t<T> y, S incy, add_ptr_t<T> r){BLAS(T##dotc_sub)(BC(n), x, BC(incx), y, BC(incy), r);}
+
 namespace core{
 	xdotu(c) xdotu(z)
 	xdotc(c) xdotc(z)
 }
+
 #undef xdotu
 #undef xdotc
 #endif
@@ -329,11 +337,26 @@ namespace core{
 
 namespace core{
 
-xgemv(s) xgemv(d) xgemv(c) xgemv(z)
+//xgemv(s) xgemv(d) xgemv(c) xgemv(z)
 xger(s)   xger(d)
                   xgeru(c) xgeru(z)
                   xgerc(c) xgerc(z)
-                  
+
+
+using std::enable_if_t;
+using std::is_assignable;
+
+template<class A, class M, class X, class B, class Y, enable_if_t<is_s<M>{} and is_s<X>{} and is_s<Y>{} and is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const& a, M* ma, size_t lda, X* x, size_t incx, B b, Y* y, size_t incy){BLAS(sgemv)(trans, m, n, a, (s const*)ma, lda, (s const*)x, incx, b, (s*)y, incy);}
+template<class A, class M, class X, class B, class Y, enable_if_t<is_d<M>{} and is_d<X>{} and is_d<Y>{} and is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const& a, M* ma, size_t lda, X* x, size_t incx, B b, Y* y, size_t incy){BLAS(dgemv)(trans, m, n, a, (d const*)ma, lda, (d const*)x, incx, b, (d*)y, incy);}
+template<class A, class M, class X, class B, class Y, enable_if_t<is_c<M>{} and is_c<X>{} and is_c<Y>{} and is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const& a, M* ma, size_t lda, X* x, size_t incx, B b, Y* y, size_t incy){BLAS(cgemv)(trans, m, n, a, (c const*)ma, lda, (c const*)x, incx, b, (c*)y, incy);}
+template<class A, class M, class X, class B, class Y, enable_if_t<is_z<M>{} and is_z<X>{} and is_z<Y>{} and is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const& a, M* ma, size_t lda, X* x, size_t incx, B b, Y* y, size_t incy){BLAS(zgemv)(trans, m, n, a, (z const*)ma, lda, (z const*)x, incx, b, (z*)y, incy);}
+
+//template<class SX, class SY, enable_if_t<is_s<SX>{} and is_s<SY>{} and is_assignable<SY&, SX&>{},int> =0> void copy(size_t n, SX* x, size_t incx, SY* y, size_t incy){BLAS(scopy)(n, (             float   const*)(x), incx, (             float  *)(y), incy);}
+//template<class DX, class DY, enable_if_t<is_d<DX>{} and is_d<DY>{} and is_assignable<DY&, DX&>{},int> =0> void copy(size_t n, DX* x, size_t incx, DY* y, size_t incy){BLAS(dcopy)(n, (             double  const*)(x), incx, (             double *)(y), incy);}
+//template<class CX, class CY, enable_if_t<is_c<CX>{} and is_c<CY>{} and is_assignable<CY&, CX&>{},int> =0> void copy(size_t n, CX* x, size_t incx, CY* y, size_t incy){BLAS(ccopy)(n, (std::complex<float > const*)(x), incx, (std::complex<float >*)(y), incy);}
+//template<class ZX, class ZY, enable_if_t<is_z<ZX>{} and is_z<ZY>{} and is_assignable<ZY&, ZX&>{},int> =0> void copy(size_t n, ZX* x, size_t incx, ZY* y, size_t incy){BLAS(zcopy)(n, (std::complex<double> const*)(x), incx, (std::complex<double>*)(y), incy);}
+
+
 }
 
 template<class T> 
@@ -386,6 +409,11 @@ namespace core{
 #undef BC
 
 struct context{
+	template<class... As>
+	static auto gemv(As... as)
+	->decltype(core::gemv(as...)){
+		return core::gemv(as...);}
+
 	template<class... As>
 	auto gemm(As&&... as) const
 	->decltype(core::gemm(std::forward<As>(as)...)){
