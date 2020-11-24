@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_copy){
 	multi::array<double, 1> const A = {1., 2., 3., 4.};
 	{
 		multi::array<double, 1> B = {5., 6., 7., 8.};
-		blas::copy(A, B); // Segmentation fault in clang-11
+		blas::copy(A, B); // segmentation fault in clang-11
 		BOOST_REQUIRE( B == A );
 	}
 	{
@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_copy_context){
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_copy_thrust){
 
-	multi::array<thrust::complex<double>, 1> const a(10);
+	multi::array<thrust::complex<double>, 1> const a(10, thrust::complex<double>{});
 	multi::array<thrust::complex<double>, 1> b(10);
 	blas::copy(a, b);
 
@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_text_copy_interop){
 
 	static_assert( std::is_convertible<std::complex<double>, thrust::complex<double>>{} );
 	static_assert( std::is_convertible<thrust::complex<double>, std::complex<double>>{} );
-	multi::array<std::complex<double>, 1> a(10);
+	multi::array<std::complex<double>, 1> a(10, std::complex<double>{});
 	multi::array<thrust::complex<double>, 1> b(10);
 	blas::copy(a, b);
 
