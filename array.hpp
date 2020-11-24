@@ -73,7 +73,7 @@ protected:
 	using alloc_traits = typename std::allocator_traits<typename static_array::allocator_type>;
 	using ref = array_ref<T, D, typename std::allocator_traits<typename std::allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
 	auto uninitialized_value_construct(){
-		return adl::alloc_uninitialized_value_construct_n(static_array::alloc(), this->base_, this->num_elements());
+		return adl_alloc_uninitialized_value_construct_n(static_array::alloc(), this->base_, this->num_elements());
 	}
 	auto uninitialized_default_construct(){
 	//	return std::uninitialized_default_construct_n(this->base_, this->num_elements());
@@ -499,6 +499,11 @@ protected:
 public:
 //	using ref::operator==;
 	using ref::operator!=;
+
+	template<class Range0, class = decltype(adl_uninitialized_copy_n(&std::declval<Range0&>(), 1, std::declval<typename static_array::element_ptr&>()))>
+	static_array(Range0&& r) : ref(static_array::allocate(typename static_array::layout_t{}.num_elements()), {}){
+		adl_uninitialized_copy_n(&r, 1, this->base());
+	}
 	static_array(typename static_array::extensions_type x, typename static_array::element const& e, typename static_array::allocator_type const& a) : //2
 		array_alloc{a}, 
 		ref(static_array::allocate(typename static_array::layout_t{x}.num_elements()), x)
