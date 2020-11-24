@@ -18,11 +18,14 @@ using core::gemv;
 template<class Context, class A, class MIt, class Size, class XIt, class B, class YIt>
 auto gemv_n(Context&& ctxt, A a, MIt m_first, Size count, XIt x_first, B b, YIt y_first){
 	assert(m_first->stride()==1 or m_first.stride()==1); // blas doesn't implement this case
+	assert( x_first.base() != y_first.base() ); 
 	if constexpr(not is_conjugated<MIt>{}){
+		assert( y_first.base() !=            m_first.base()  );
 		;;;; if(m_first .stride()==1) std::forward<Context>(ctxt).gemv('N', count, m_first->size(), a, m_first.base()            , m_first->stride(), x_first.base(), x_first.stride(), b, y_first.base(), y_first.stride());
 		else if(m_first->stride()==1) std::forward<Context>(ctxt).gemv('T', m_first->size(), count, a, m_first.base()            , m_first. stride(), x_first.base(), x_first.stride(), b, y_first.base(), y_first.stride());
 		else                          assert(0);
 	}else{
+		assert( y_first.base() != underlying(m_first.base()) );
 		;;;; if(m_first->stride()==1) std::forward<Context>(ctxt).gemv('C', m_first->size(), count, a, underlying(m_first.base()), m_first. stride(), x_first.base(), x_first.stride(), b, y_first.base(), y_first.stride());
 		else if(m_first. stride()==1) assert(0); // not implemented in blas (use cblas?)
 		else                          assert(0); // not implemented in blas
