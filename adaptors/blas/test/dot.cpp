@@ -28,39 +28,39 @@ BOOST_AUTO_TEST_CASE(blas_dot_context){
 }
 
 BOOST_AUTO_TEST_CASE(blas_dot){
-	multi::array<float, 1> const A = {1.,2.,3.};
-	multi::array<float, 1> const B = {1.,2.,3.};
-	{
-		float f = blas::dot(A, B); // uses cast operator decay
-		BOOST_REQUIRE( f == std::inner_product(begin(A), end(A), begin(B), 0.f) );
-	}
-	{
-		float f2;
-		*multi::array_ptr<float, 0>(&f2, {}) = blas::dot(A, B); // uses custom copy
-		BOOST_REQUIRE( f2 == std::inner_product(begin(A), end(A), begin(B), 0.f) );
-	}
-	{
-		multi::array<float, 0> F = blas::dot(A, B);
-		BOOST_REQUIRE( F() == std::inner_product(begin(A), end(A), begin(B), 0.f) );
-	}
+//	multi::array<float, 1> const A = {1.,2.,3.};
+//	multi::array<float, 1> const B = {1.,2.,3.};
+//	{
+//		float f = blas::dot(A, B); // uses cast operator decay
+//		BOOST_REQUIRE( f == std::inner_product(begin(A), end(A), begin(B), 0.f) );
+//	}
+//	{
+//		float f2;
+//		*multi::array_ptr<float, 0>(&f2, {}) = blas::dot(A, B); // uses custom copy
+//		BOOST_REQUIRE( f2 == std::inner_product(begin(A), end(A), begin(B), 0.f) );
+//	}
+//	{
+//		multi::array<float, 0> F = blas::dot(A, B);
+//		BOOST_REQUIRE( F() == std::inner_product(begin(A), end(A), begin(B), 0.f) );
+//	}
 
-	using complex = std::complex<double>; complex const I{0, 1};
-	{
-		multi::array<complex, 1> const A = {I, 2.*I, 3.*I};
-		BOOST_TEST( blas::dot(A, A).decay() == std::inner_product(begin(A), end(A), begin(A), complex{0.}) );
-	}
-	{
-		multi::array<complex, 1> const A = {I, 1. + 2.*I, 3.*I};
-		multi::array<complex, 1> const B = {I, 1. + 2.*I, 3.*I};
+//	using complex = std::complex<double>; complex const I{0, 1};
+//	{
+//		multi::array<complex, 1> const A = {I, 2.*I, 3.*I};
+//		BOOST_TEST( blas::dot(A, A).decay() == std::inner_product(begin(A), end(A), begin(A), complex{0.}) );
+//	}
+//	{
+//		multi::array<complex, 1> const A = {I, 1. + 2.*I, 3.*I};
+//		multi::array<complex, 1> const B = {I, 1. + 2.*I, 3.*I};
 
-		BOOST_TEST( blas::dot(A, B).decay() == std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto&& a, auto&& b){return a*b;}) );
-//		BOOST_REQUIRE(
-//			std::inner_product(begin(A), end(A), begin(        B ), std::complex<double>{0.}, std::plus<>{}, [](auto&& a, auto&& b){return a*std::conj(b);}) 
-//			==s
-//			std::inner_product(begin(A), end(A), begin(blas::C(B)), std::complex<double>{0.}, std::plus<>{}, [](auto&& a, auto&& b){return a*b;}) 
-//		);
-		BOOST_REQUIRE( blas::dot(A, blas::C(B)).decay() == std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto&& a, auto&& b){return a*std::conj(b);}) );
-	}
+//		BOOST_TEST( blas::dot(A, B).decay() == std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto&& a, auto&& b){return a*b;}) );
+////		BOOST_REQUIRE(
+////			std::inner_product(begin(A), end(A), begin(        B ), std::complex<double>{0.}, std::plus<>{}, [](auto&& a, auto&& b){return a*std::conj(b);}) 
+////			==s
+////			std::inner_product(begin(A), end(A), begin(blas::C(B)), std::complex<double>{0.}, std::plus<>{}, [](auto&& a, auto&& b){return a*b;}) 
+////		);
+//		BOOST_REQUIRE( blas::dot(A, blas::C(B)).decay() == std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto&& a, auto&& b){return a*std::conj(b);}) );
+//	}
 //	{
 //		multi::array<complex, 1> const a = {1. + I, 2. + 3.*I, 3. + 2.*I, 4. - 9.*I};
 //		multi::array<complex, 1> const b = {5. + 2.*I, 6. + 6.*I, 7. + 2.*I, 8. - 3.*I};
