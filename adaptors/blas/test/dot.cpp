@@ -61,15 +61,15 @@ BOOST_AUTO_TEST_CASE(blas_dot){
 //		);
 		BOOST_REQUIRE( +blas::dot(A, blas::C(B)) == std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto&& a, auto&& b){return a*std::conj(b);}) );
 	}
-	{
-		multi::array<complex, 1> const a = {1. + I, 2. + 3.*I, 3. + 2.*I, 4. - 9.*I};
-		multi::array<complex, 1> const b = {5. + 2.*I, 6. + 6.*I, 7. + 2.*I, 8. - 3.*I};
-		{
-			multi::array<complex, 0> c({}, complex{});
-			blas::dot(a, b, c);
-			BOOST_TEST( c() == 19. - 27.*I );
-		}
-	}
+//	{
+//		multi::array<complex, 1> const a = {1. + I, 2. + 3.*I, 3. + 2.*I, 4. - 9.*I};
+//		multi::array<complex, 1> const b = {5. + 2.*I, 6. + 6.*I, 7. + 2.*I, 8. - 3.*I};
+//		{
+//			multi::array<complex, 0> c({}, complex{});
+//			blas::dot(a, b, c);
+//			BOOST_TEST( c() == 19. - 27.*I );
+//		}
+//	}
 //	{
 //		cuda::array<complex, 1> const acu = {1. + I, 2. + 3.*I, 3. + 2.*I, 4. - 9.*I};
 //		cuda::array<complex, 1> const bcu = {5. + 2.*I, 6. + 6.*I, 7. + 2.*I, 8. - 3.*I};
