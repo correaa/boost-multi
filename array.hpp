@@ -477,7 +477,7 @@ public:
 protected:
 	using alloc_traits = typename std::allocator_traits<typename static_array::allocator_type>;
 	using ref = array_ref<T, 0, typename std::allocator_traits<typename std::allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
-	auto uninitialized_value_construct(){return adl::alloc_uninitialized_value_construct_n(static_array::alloc(), this->base_, this->num_elements());}
+	auto uninitialized_value_construct(){return adl_alloc_uninitialized_value_construct_n(static_array::alloc(), this->base_, this->num_elements());}
 	template<typename It> auto uninitialized_copy(It first){return adl_alloc_uninitialized_copy_n(this->alloc(), first, this->num_elements(), this->data_elements());}
 	template<typename It>
 	auto uninitialized_move(It first){
