@@ -413,30 +413,25 @@ public:
 }
 }
 
-namespace boost{namespace multi{ \
-namespace adl{ \
-	namespace custom{template<class...> struct alloc_uninitialized_value_construct_n_t;}
-	MAYBE_UNUSED constexpr class alloc_uninitialized_value_construct_n_t{ \
-/*		template<class... As> [[deprecated]] auto _(priority<0>,        As&&... as) const = delete;*/ \
-		template<class... As>          auto _(priority<1>,        As&&... as) const{return xtd::                  alloc_uninitialized_value_construct_n(std::forward<As>(as)...);} // TODO: use boost? 
-		template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   alloc_uninitialized_value_construct_n(std::forward<As>(as)...))
-		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).alloc_uninitialized_value_construct_n(std::forward<As>(as)...))
-//		template<class... As>          auto _(priority<4>,        As&&... as) const DECLRETURN(custom::           alloc_uninitialized_value_construct_n_t<As&&...>::_(std::forward<As>(as)...))
-	public:
-		template<class... As> auto operator()(As&&... as) const{return (_(priority<4>{}, std::forward<As>(as)...));}
-	} alloc_uninitialized_value_construct_n; \
-} \
-}}
+namespace boost{namespace multi{
 
-namespace boost{namespace multi{ \
-	__attribute__((unused)) 
-	static constexpr class adl_alloc_uninitialized_default_construct_n_t{
-		template<class... As>          auto _(priority<1>,        As&&... as) const{return xtd::                  alloc_uninitialized_default_construct_n              (std::forward<As>(as)...);} // TODO: use boost? 
-		template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   alloc_uninitialized_default_construct_n              (std::forward<As>(as)...))
-		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).alloc_uninitialized_default_construct_n              (std::forward<As>(as)...))
-	public:
-		template<class... As> auto operator()(As&&... as) const{return (_(priority<4>{}, std::forward<As>(as)...));}
-	} adl_alloc_uninitialized_default_construct_n; \
+static constexpr class adl_alloc_uninitialized_value_construct_n_fn__{
+	template<class... As>          auto _(priority<1>,        As&&... as) const DECLRETURN(              xtd::alloc_uninitialized_value_construct_n(std::forward<As>(as)...)) // TODO: use boost?
+	template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   alloc_uninitialized_value_construct_n(std::forward<As>(as)...))
+	template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(  std::decay_t<T>::alloc_uninitialized_value_construct_n(std::forward<T>(t), std::forward<As>(as)...))
+	template<class T, class... As> auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).alloc_uninitialized_value_construct_n(std::forward<As>(as)...))
+public:
+	template<class... As> constexpr auto operator()(As&&... as) const{return (_(priority<4>{}, std::forward<As>(as)...));}
+} alloc_uninitialized_value_construct_n;
+
+__attribute__((unused)) 
+static constexpr class adl_alloc_uninitialized_default_construct_n_t{
+	template<class... As>          auto _(priority<1>,        As&&... as) const{return xtd::                  alloc_uninitialized_default_construct_n              (std::forward<As>(as)...);} // TODO: use boost? 
+	template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   alloc_uninitialized_default_construct_n              (std::forward<As>(as)...))
+	template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).alloc_uninitialized_default_construct_n              (std::forward<As>(as)...))
+public:
+	template<class... As> auto operator()(As&&... as) const{return (_(priority<4>{}, std::forward<As>(as)...));}
+} adl_alloc_uninitialized_default_construct_n; \
 
 MAYBE_UNUSED constexpr class adl_uninitialized_default_construct_n_t{
 		template<class... As>          auto _(priority<1>,        As&&... as) const{return            xtd::uninitialized_default_construct_n              (std::forward<As>(as)...);}
