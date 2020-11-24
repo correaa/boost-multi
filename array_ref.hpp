@@ -990,8 +990,7 @@ struct basic_array<T, dimensionality_type{0}, ElementPtr, Layout> :
 	template<class Range0>
 	basic_array& operator=(Range0&& r)&{
 	//	*this->base_ = std::forward<Range0>(r); 
-		adl_copy_n(&r, 1, this->base_);
-		return *this;
+		return adl_copy_n(&r, 1, this->base_), *this;
 	}
 #if 0
 	template<class TT, class=decltype(std::declval<TT>()==std::declval<typename basic_array::element>())>

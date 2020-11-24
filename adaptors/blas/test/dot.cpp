@@ -212,6 +212,34 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_real){
 	}
 }
 
+BOOST_AUTO_TEST_CASE(inq_case){
+	multi::array<double, 1> v1(10, +1.0);
+	multi::array<double, 1> v2(10, -1.0);
+
+	using blas::dot;
+	using blas::hermitized;
+	using blas::conj;
+	
+	auto a = dot(v1, v2);
+	auto b = dot(hermitized(v1), v2);
+	
+	BOOST_REQUIRE(a == b);
+	
+	auto c = dot(blas::conj(v1), v2); // conjugation doesn't do anything for real array
+	BOOST_REQUIRE(c == a);
+	
+	auto d_arr = dot(blas::C(v1), v2);
+	BOOST_REQUIRE(d_arr == a);
+	
+	static_assert( not std::is_same<decltype(d_arr), double>{}, "!" );
+
+	using blas::C;
+	double d_doub = dot(C(v1), v2);
+	
+	BOOST_REQUIRE( d_doub == d_arr );
+}
+
+
 BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex){
 	namespace blas = multi::blas;
 
@@ -253,33 +281,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex){
 //		complex c = blas::dot(blas::C(A[1]), blas::C(A[2]));
 //		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}, std::plus<>{}, [](auto a, auto b){return conj(a)*conj(b);}) );
 //	}
-}
-
-BOOST_AUTO_TEST_CASE(inq_case){
-	multi::array<double, 1> v1(10, +1.0);
-	multi::array<double, 1> v2(10, -1.0);
-
-	using blas::dot;
-	using blas::hermitized;
-	using blas::conj;
-	
-	auto a = dot(v1, v2);
-	auto b = dot(hermitized(v1), v2);
-	
-	BOOST_REQUIRE(a == b);
-	
-	auto c = dot(blas::conj(v1), v2); // conjugation doesn't do anything for real array
-	BOOST_REQUIRE(c == a);
-	
-	auto d_arr = dot(blas::C(v1), v2);
-	BOOST_REQUIRE(d_arr == a);
-	
-	static_assert( not std::is_same<decltype(d_arr), double>{}, "!" );
-
-	using blas::C;
-	double d_doub = dot(C(v1), v2);
-	
-	BOOST_REQUIRE( d_doub == d_arr );
 }
 
 #include "config.hpp" // cuda found

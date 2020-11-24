@@ -198,7 +198,7 @@ public:
 //	template<class Allocator, typename = std::enable_if_t<std::is_same<Allocator, allocator_type>{}> >
 //	explicit 
 // analgous to std::vector::vector ((4)) https://en.cppreference.com/w/cpp/container/vector/vector
-	static_array(typename static_array::extensions_type x, typename static_array::allocator_type const& a = typename static_array::allocator_type{}) :
+	explicit static_array(typename static_array::extensions_type x, typename static_array::allocator_type const& a = typename static_array::allocator_type{}) :
 		array_alloc{a}, ref{array_alloc::allocate(typename static_array::layout_t{x}.num_elements()), x}
 	{
 		if(not std::is_trivially_default_constructible<typename static_array::element_type>{})
@@ -511,27 +511,27 @@ public:
 		uninitialized_fill(e);
 	}
 	static_array(typename static_array::element_type const& e, typename static_array::allocator_type const& a)
-	:	static_array(typename static_array::extensions_type{}, e, a){}
+		: static_array(typename static_array::extensions_type{}, e, a){}
 	auto uninitialized_fill(typename static_array::element const& e){array_alloc::uninitialized_fill_n(this->base_, this->num_elements(), e);}
-//		return adl::alloc_uninitialized_fill_n(this->alloc(), this->base_, this->num_elements(), e);
-//	}
 	static_array(typename static_array::extensions_type const& x, typename static_array::element const& e)  //2
-	:	array_alloc{}, ref(static_array::allocate(typename static_array::layout_t{x}.num_elements()), x){
+		: array_alloc{}, ref(static_array::allocate(typename static_array::layout_t{x}.num_elements()), x)
+	{
 		uninitialized_fill(e);
 	}
-	static_array() : static_array(multi::iextensions<0>{}){}
-	static_array(typename static_array::element const& e)  //2
-	:	static_array(multi::iextensions<0>{}, e){}
 
-//	explicit static_array(typename static_array::index n, typename static_array::value_type const& v, typename static_array::allocator_type const& a = {})
-//	: 	static_array(typename static_array::index_extension(n), v, a){}
+	static_array() : static_array(multi::iextensions<0>{}){}
+
+	static_array(typename static_array::element const& e)  //2
+		: static_array(multi::iextensions<0>{}, e)
+	{}
+
 	template<class ValueType, typename = std::enable_if_t<std::is_same<ValueType, typename static_array::value_type>{}>> 
 	explicit static_array(typename static_array::index_extension const& e, ValueType const& v, typename static_array::allocator_type const& a = {}) //3
-	: static_array(e*extensions(v), a){
+		: static_array(e*extensions(v), a)
+	{
 		using std::fill; fill(this->begin(), this->end(), v);
 	}
-//	template<class Allocator, typename = std::enable_if_t<std::is_same<Allocator, allocator_type>{}> >
-//	explicit 
+
 	static_array(typename static_array::extensions_type const& x, typename static_array::allocator_type const& a) //3
 	: array_alloc{a}, ref{static_array::allocate(typename static_array::layout_t{x}.num_elements()), x}{
 	//	assert(0);
