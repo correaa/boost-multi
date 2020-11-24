@@ -75,7 +75,8 @@ struct dot_ref : private Ptr{
 	using decay_type = decltype(typename X::value_type{}*typename Y::value_type{});
 	dot_ref(Context&& ctxt, X const& x, Y const& y) : Ptr{std::forward<Context>(ctxt), begin(x), size(x), begin(y)}{assert(size(x)==size(y));}
 	constexpr Ptr const& operator&() const&{return *this;}
-	operator decay_type() const{decay_type r; copy_n(&*this, 1, &r); return r;}
+	auto     decay()      const&{decay_type r; copy_n(&*this, 1, &r); return r;}
+	operator decay_type() const&{decay_type r; copy_n(&*this, 1, &r); return r;}
 	friend auto operator+(dot_ref const& me){return me.operator decay_type();}
 };
 
