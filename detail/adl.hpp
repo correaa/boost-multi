@@ -401,19 +401,14 @@ public:
 	template<class... As> constexpr auto operator()(As&&... as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
 } adl_swap_ranges;
 
-MAYBE_UNUSED constexpr class adl_lexicographical_compare_fn__{
+static constexpr class adl_lexicographical_compare_fn__{
 	template<class... As>          constexpr auto _(priority<1>,        As&&... as) const DECLRETURN(              std::lexicographical_compare(std::forward<As>(as)...))
 	template<class... As>          constexpr auto _(priority<2>,        As&&... as) const DECLRETURN(                   lexicographical_compare(std::forward<As>(as)...))
 	template<class T, class... As> constexpr auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(  std::decay_t<T>::lexicographical_compare(std::forward<T>(t), std::forward<As>(as)...))
 	template<class T, class... As> constexpr auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).lexicographical_compare(std::forward<As>(as)...))
 public:
-	template<class... As> constexpr	auto operator()(As&&... as) const DECLRETURN(_(priority<5>{}, std::forward<As>(as)...))
+	template<class... As> constexpr	auto operator()(As&&... as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
 } adl_lexicographical_compare;
-
-}
-}
-
-namespace boost{namespace multi{
 
 static constexpr class adl_alloc_uninitialized_value_construct_n_fn__{
 	template<class... As>          auto _(priority<1>,        As&&... as) const DECLRETURN(              xtd::alloc_uninitialized_value_construct_n(std::forward<As>(as)...)) // TODO: use boost?
