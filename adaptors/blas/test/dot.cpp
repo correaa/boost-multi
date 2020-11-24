@@ -51,7 +51,15 @@ BOOST_AUTO_TEST_CASE(blas_dot){
 	}
 	{
 		multi::array<complex, 1> const A = {I, 1. + 2.*I, 3.*I};
-		BOOST_REQUIRE( +blas::dot(A, blas::C(A)) == std::inner_product(begin(A), end(A), begin(A), std::complex<double>(0), std::plus<>{}, [](auto&& a, auto&& b){return a*std::conj(b);}) );
+		multi::array<complex, 1> const B = {I, 1. + 2.*I, 3.*I};
+
+		BOOST_REQUIRE( +blas::dot(A, B) == std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto&& a, auto&& b){return a*b;}) );
+//		BOOST_REQUIRE(
+//			std::inner_product(begin(A), end(A), begin(        B ), std::complex<double>{0.}, std::plus<>{}, [](auto&& a, auto&& b){return a*std::conj(b);}) 
+//			==s
+//			std::inner_product(begin(A), end(A), begin(blas::C(B)), std::complex<double>{0.}, std::plus<>{}, [](auto&& a, auto&& b){return a*b;}) 
+//		);
+		BOOST_REQUIRE( +blas::dot(A, blas::C(B)) == std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto&& a, auto&& b){return a*std::conj(b);}) );
 	}
 	{
 		multi::array<complex, 1> const a = {1. + I, 2. + 3.*I, 3. + 2.*I, 4. - 9.*I};
