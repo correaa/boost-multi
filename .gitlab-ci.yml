@@ -211,7 +211,7 @@ g++-runner:
       - $CXX --version
       - mkdir build && cd build
       - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-      - cmake --build .
+      - cmake --build . -j 12
       - ctest --output-on-failure
 
 icpc-nomkl-runner:
@@ -223,7 +223,7 @@ icpc-nomkl-runner:
       - $CXX --version
       - mkdir build && cd build
       - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-      - cmake --build .
+      - cmake --build . -j 12
       - ctest --output-on-failure
 
 icpc-runner:
@@ -236,7 +236,7 @@ icpc-runner:
       - $CXX --version
       - mkdir build && cd build
       - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-      - cmake --build .
+      - cmake --build . -j 12
       - ctest --output-on-failure
 
 icpc-memcheck-runner:
@@ -249,7 +249,7 @@ icpc-memcheck-runner:
       - $CXX --version
       - mkdir build && cd build
       - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-      - cmake --build .
+      - cmake --build . -j 12
       - ctest -T memcheck --output-on-failure
 
 icpc-std17-runner:
@@ -262,7 +262,7 @@ icpc-std17-runner:
       - $CXX --version
       - mkdir build && cd build
       - cmake .. -DCMAKE_CXX_STANDARD=17 -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-      - cmake --build .
+      - cmake --build . -j 12
       - ctest --output-on-failure
 
 #blas&fft:
