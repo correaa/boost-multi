@@ -298,28 +298,59 @@ BOOST_AUTO_TEST_CASE(inq_case){
 BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex_thrust){
 	namespace blas = multi::blas;
 
-	using complex = thrust::complex<double>; complex const I{0, 1};
+	using complex = std::complex<double>; complex const I{0, 1};
 	multi::array<complex, 2> const A = {
 		{1. +    I,  2. + 3.*I,  3.+2.*I,  4.-9.*I},
 		{5. + 2.*I,  6. + 6.*I,  7.+2.*I,  8.-3.*I},
 		{9. + 1.*I, 10. + 9.*I, 11.+1.*I, 12.+2.*I}
 	};
 	{
-		complex c; blas::dot(blas::context{}, A[1], A[2], c);
-		BOOST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}) );
+		complex c;
+		blas::core::dotu(size(A[1]), A[1].base(), A[1].stride(), A[2].base(), A[2].stride(), &c);
+		auto inner = std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.});
+		BOOST_TEST( c.real() == inner.real() );
+		BOOST_TEST( c.imag() == inner.imag() );
+	}
+	{
+		complex c;
+		blas::context{}.dotu(size(A[1]), A[1].base(), A[1].stride(), A[2].base(), A[2].stride(), &c);
+		auto inner = std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.});
+		BOOST_TEST( c.real() == inner.real() );
+		BOOST_TEST( c.imag() == inner.imag() );
+	}
+	{
+		complex c;
+		blas::dot_n(begin(A[1]), size(A[1]), begin(A[2]), &c);
+		auto inner = std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.});
+		BOOST_TEST( c == inner );
+	}
+	{
+		complex c;
+		blas::dot(A[1], A[2], c);
+		auto inner = std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.});
+		BOOST_TEST( c == inner );
+	}
+	{
+		complex c = blas::dot(A[1], A[2]);
+		auto inner = std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.});
+		BOOST_TEST( c == inner );
+	}
+	{
+		auto inner = std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.});
+		BOOST_TEST( +blas::dot(A[1], A[2]) == inner );
 	}
 	{
 		complex c; blas::dot(A[1], A[2], c);
 		BOOST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}) );
 	}
-	{
-		complex c = blas::dot(A[1], A[2]);
-		BOOST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}) );
-	}
-	{
-		complex c = blas::dot(A[1], blas::C(A[2]));
-		BOOST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}, std::plus<>{}, [](auto a, auto b){return a*conj(b);}) );
-	}
+//	{
+//		complex c = blas::dot(A[1], A[2]);
+//		BOOST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}) );
+//	}
+//	{
+//		complex c = blas::dot(A[1], blas::C(A[2]));
+//		BOOST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}, std::plus<>{}, [](auto a, auto b){return a*conj(b);}) );
+//	}
 }
 #endif
 

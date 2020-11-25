@@ -19,6 +19,7 @@ $CXXX $CXXFLAGS $0 -o $0.$X `pkg-config --libs blas`&&$0.$X&&rm $0.$X;exit
 #include<type_traits>
 
 #include "../blas/traits.hpp"
+#include "./mkl_config.hpp"
 
 #ifdef CBLAS_H
 #define BLAS(NamE) cblas_##NamE
@@ -78,12 +79,16 @@ static_assert(sizeof(INT)==32/8 or sizeof(INT)==64/8, "please set _BLAS_INT to i
 #define xCOPY(T)          v BLAS(   T##copy )(N,              T const *x, INCX, T       *y, INCY) 
 #define xAXPY(T)          v BLAS(   T##axpy )(N,  T const& a, T const *x, INCX, T       *y, INCY)
 #define xDOT(R, TT, T)    R BLAS(  TT##dot  )(N,              T const *x, INCX, T const *y, INCY)
-#define xDOTU(R, T)       R BLAS(   T##dotu )(N,              T const *x, INCX, T const *y, INCY)
-#define xDOTC(R, T)       R BLAS(   T##dotc )(N,              T const *x, INCX, T const *y, INCY)
-#define xxDOT(TT, T)      T BLAS(  TT##dot  )(N,  T const& a, T const *x, INCX, T const *y, INCY)
-#define xNRM2(R, TT, T)   R BLAS(  TT##nrm2 )(N,              T const *x, INCX                  )
-#define xASUM(R, TT, T)   R BLAS(  TT##asum )(N,              T const *x, INCX                  )
-#define IxAMAX(T)       INT BLAS(i##T##amax )(N,              T const* x, INCX                  )
+#if defined(FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID) && FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID
+#define xDOTU(R, T)       v BLAS(   T##dotu )(R*, N,              T const *x, INCX, T const *y, INCY)
+#else
+#define xDOTU(R, T)       R BLAS(   T##dotu )(    N,              T const *x, INCX, T const *y, INCY)
+#endif
+#define xDOTC(R, T)       R BLAS(   T##dotc )(    N,              T const *x, INCX, T const *y, INCY)
+#define xxDOT(TT, T)      T BLAS(  TT##dot  )(    N,  T const& a, T const *x, INCX, T const *y, INCY)
+#define xNRM2(R, TT, T)   R BLAS(  TT##nrm2 )(    N,              T const *x, INCX                  )
+#define xASUM(R, TT, T)   R BLAS(  TT##asum )(    N,              T const *x, INCX                  )
+#define IxAMAX(T)       INT BLAS(i##T##amax )(    N,              T const* x, INCX                  )
 
 xROTG(s, s)   ; xROTG(d,d)    ;// MKL extension xROTG(c, s); xROTG(z, d);
 xROTMG(s)     ; xROTMG(d)     ;
@@ -94,8 +99,11 @@ xSCAL(s, s, s); xSCAL(d, d, d); xSCAL(c, c, c); xSCAL(z, z, z); xSCAL(zd, d, z);
 xCOPY(s)      ; xCOPY(d)      ; xCOPY(c)      ; xCOPY(z)      ;
 xAXPY(s)      ; xAXPY(d)      ; xAXPY(c)      ; xAXPY(z)      ;
 xDOT(s, s, s); xDOT(d, d, d);                                   xDOT(d, ds, s);
-xDOTU(C, c); xDOTU(Z, z); 
-xDOTC(C, c); xDOTC(Z, z); 
+
+xDOTU(C, c); xDOTU(Z, z);
+//xDOTU(c, c); xDOTU(z, z);
+
+xDOTC(C, c); xDOTC(Z, z);
 xxDOT(sds, s);
 xNRM2(s, s, s); xNRM2(d, d, d); xNRM2(s, sc, c); xNRM2(d, dz, z);
 xASUM(s, s, s); xASUM(d, d, d); xASUM(s, sc, c); xASUM(d, dz, z);
@@ -280,11 +288,17 @@ namespace core{
 using std::enable_if_t;
 using std::is_assignable;
 
-template<class X, class Y, class R, enable_if_t<is_c<X>{} and is_c<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){*(Complex_float *)r = BLAS(cdotu)(n, (c const*)x, incx, (c const*)y, incy);}
-template<class X, class Y, class R, enable_if_t<is_z<X>{} and is_z<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){*(Complex_double*)r = BLAS(zdotu)(n, (z const*)x, incx, (z const*)y, incy);}
-
-template<class X, class Y, class R, enable_if_t<is_c<X>{} and is_c<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotc(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){*(Complex_float *)r = BLAS(cdotc)(n, (c const*)x, incx, (c const*)y, incy);}
-template<class X, class Y, class R, enable_if_t<is_z<X>{} and is_z<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotc(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){*(Complex_double*)r = BLAS(zdotc)(n, (z const*)x, incx, (z const*)y, incy);}
+#if defined(FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID) && FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID
+template<class X, class Y, class R, enable_if_t<is_c<X>{} and is_c<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(cdotu)((Complex_float *)r, n, (c const*)x, incx, (c const*)y, incy);}
+template<class X, class Y, class R, enable_if_t<is_z<X>{} and is_z<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(zdotu)((Complex_double*)r, n, (z const*)x, incx, (z const*)y, incy);}
+template<class X, class Y, class R, enable_if_t<is_c<X>{} and is_c<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotc(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(cdotc)((Complex_float *)r, n, (c const*)x, incx, (c const*)y, incy);}
+template<class X, class Y, class R, enable_if_t<is_z<X>{} and is_z<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotc(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(zdotc)((Complex_double*)r, n, (z const*)x, incx, (z const*)y, incy);}
+#else
+template<class X, class Y, class R, enable_if_t<is_c<X>{} and is_c<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){*(Complex_float *)r = (Complex_float  const&)BLAS(cdotu)(n, (c const*)x, incx, (c const*)y, incy);}
+template<class X, class Y, class R, enable_if_t<is_z<X>{} and is_z<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){*(Complex_double*)r = (Complex_double const&)BLAS(zdotu)(n, (z const*)x, incx, (z const*)y, incy);}
+template<class X, class Y, class R, enable_if_t<is_c<X>{} and is_c<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotc(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){*(Complex_float *)r = (Complex_float  const&)BLAS(cdotc)(n, (c const*)x, incx, (c const*)y, incy);}
+template<class X, class Y, class R, enable_if_t<is_z<X>{} and is_z<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotc(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){*(Complex_double*)r = (Complex_double const&)BLAS(zdotc)(n, (z const*)x, incx, (z const*)y, incy);}
+#endif
 
 }
 
