@@ -23,7 +23,6 @@ if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	enable_language(CUDA)
 	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
 endif()
-#SET(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS}  -ftemplate-backtrace-limit=0; --cudart;   static;  -O4 ; --expt-relaxed-constexpr; -fmad=true; --expt-extended-lambda;--relocatable-device-code=false; -Xptxas -dlcm=ca;-Xptxas --opt-level=4 )
 
 enable_testing()
 include(CTest)
@@ -43,7 +42,7 @@ foreach(TEST_FILE ${TEST_SRCS})
   target_link_directories   (${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
   if(NOT ENABLE_CUDA)
     target_compile_options  (${TEST_EXE} PRIVATE
-      -Werror -Wall -Wextra  -Wundef -fno-common -Wshadow -Wfatal-errors
+      -Werror -Wall -Wextra  -Wundef -fno-common -Wshadow #-Wfatal-errors
       $<$<CXX_COMPILER_ID:GNU>:
         -Wpedantic -Wdouble-promotion -Wconversion -Wformat-truncation -fstack-usage>
       $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
