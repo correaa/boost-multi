@@ -134,6 +134,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_real_complex){
 	}
 }
 
+#if 0
 #if CUDA_FOUND
 #include<thrust/complex.h>
 BOOST_AUTO_TEST_CASE(multi_blas_gemv_real_complex_thrust){
@@ -160,6 +161,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_real_complex_thrust){
 	}
 
 }
+#endif
 #endif
 
 BOOST_AUTO_TEST_CASE(multi_blas_gemv_complex){
@@ -198,17 +200,19 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_temporary){
 	};
 	
 	auto const B = []{
-		auto _ = multi::array<complex, 2>({3, 3});
+		multi::array<complex, 2> _({3, 3});
 		auto rand = [d=std::normal_distribution<>{}, g=std::mt19937{}]()mutable{return complex{d(g), d(g)};};
 		std::generate(_.elements().begin(), _.elements().end(), rand);
 		return _;
 	}();
 	
-	namespace blas = multi::blas;
-	
-	using namespace blas::operators;
-	BOOST_TEST( ( (A%(~B)[0] - ( ~(A*B)  )[0])^2) == 0. );
-	BOOST_TEST( ( (A%(~B)[0] - ((~B)*(~A))[0])^2) == 0. );
+//	BOOST_TEST( (+std::gemv(A, (~B)[0])[1] == ~
+//	
+//	namespace blas = multi::blas;
+//	
+//	using namespace blas::operators;
+//	BOOST_TEST( ( (A%(~B)[0] - ( ~(A*B)  )[0])^2) == 0. );
+//	BOOST_TEST( ( (A%(~B)[0] - ((~B)*(~A))[0])^2) == 0. );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_gemv_context, *utf::tolerance(0.0001)){
