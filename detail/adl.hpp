@@ -383,7 +383,7 @@ public:
 	template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
 } adl_begin;
 
-MAYBE_UNUSED constexpr class adl_end_fn__{
+static constexpr class adl_end_fn__{
 	template<class... As>          constexpr auto _(priority<1>,        As&&... as) const DECLRETURN(              std::end(std::forward<As>(as)...))
 	template<class... As>          constexpr auto _(priority<2>,        As&&... as) const DECLRETURN(                   end(std::forward<As>(as)...))
 	template<class T, class... As> constexpr auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(  std::decay_t<T>::end(std::forward<T>(t), std::forward<As>(as)...))
