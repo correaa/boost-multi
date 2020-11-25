@@ -134,7 +134,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_real_complex){
 	}
 }
 
-#if 0
 #if CUDA_FOUND
 #include<thrust/complex.h>
 BOOST_AUTO_TEST_CASE(multi_blas_gemv_real_complex_thrust){
@@ -161,7 +160,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_real_complex_thrust){
 	}
 
 }
-#endif
 #endif
 
 BOOST_AUTO_TEST_CASE(multi_blas_gemv_complex){
