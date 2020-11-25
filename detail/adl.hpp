@@ -365,7 +365,7 @@ auto alloc_uninitialized_fill_n(Alloc& a, ForwardIt first, Size n, T const& v)
 namespace boost{
 namespace multi{
 
-MAYBE_UNUSED constexpr class adl_distance_fn__{
+static constexpr class adl_distance_fn__{
 	template<class... As>          constexpr auto _(priority<1>,        As&&... as) const DECLRETURN(              std::distance(std::forward<As>(as)...))
 	template<class... As>          constexpr auto _(priority<2>,        As&&... as) const DECLRETURN(                   distance(std::forward<As>(as)...))
 	template<class T, class... As> constexpr auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(  std::decay_t<T>::distance(std::forward<T>(t), std::forward<As>(as)...))
@@ -374,7 +374,7 @@ public:
 	template<class... As> constexpr auto operator()(As&&... as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
 } adl_distance;
 
-MAYBE_UNUSED constexpr class adl_begin_fn__{
+static constexpr class adl_begin_fn__{
 	template<class... As>          constexpr auto _(priority<1>,        As&&... as) const DECLRETURN(              std::begin(std::forward<As>(as)...))
 	template<class... As>          constexpr auto _(priority<2>,        As&&... as) const DECLRETURN(                   begin(std::forward<As>(as)...))
 	template<class T, class... As> constexpr auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(  std::decay_t<T>::begin(std::forward<T>(t), std::forward<As>(as)...))
