@@ -224,6 +224,7 @@ icpc-nomkl-runner:
       - mkdir build && cd build
       - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
       - cmake --build . -j 12
+      - export MKL_VERBOSE=1
       - ctest --output-on-failure
 
 icpc-runner:
@@ -237,6 +238,7 @@ icpc-runner:
       - mkdir build && cd build
       - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
       - cmake --build . -j 12
+      - export MKL_VERBOSE=1
       - ctest --output-on-failure
 
 icpc-memcheck-runner:
@@ -250,6 +252,7 @@ icpc-memcheck-runner:
       - mkdir build && cd build
       - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
       - cmake --build . -j 12
+      - export MKL_VERBOSE=1
       - ctest -T memcheck --output-on-failure
 
 icpc-std17-runner:
@@ -263,6 +266,7 @@ icpc-std17-runner:
       - mkdir build && cd build
       - cmake .. -DCMAKE_CXX_STANDARD=17 -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
       - cmake --build . -j 12
+      - export MKL_VERBOSE=1
       - ctest --output-on-failure
 
 #blas&fft:
@@ -270,7 +274,7 @@ icpc-std17-runner:
 #    script:
 #      - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
 #      - apt update --quiet
-#      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet libboost-test-dev libboost-timer-dev libtbb-dev libboost-serialization-dev libboost-iostreams-dev librange-v3-dev valgrind
+#      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends -f-assume-yes --quiet libboost-test-dev libboost-timer-dev libtbb-dev libboost-serialization-dev libboost-iostreams-dev librange-v3-dev valgrind
 #      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang pkg-config libblas-dev libblas64-dev libfftw3-dev nvidia-cuda-toolkit
 #      - ln --symbolic --force . ../multi
 #      - export CXXX="clang++ -x c++"
