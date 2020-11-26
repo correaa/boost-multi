@@ -16,18 +16,16 @@ namespace multi = boost::multi;
 namespace blas = multi::blas;
 
 BOOST_AUTO_TEST_CASE(multi_blas_axpy_real){
-	{
-		multi::array<double, 2> A = {
-			{1.,  2.,  3.,  4.},
-			{5.,  6.,  7.,  8.},
-			{9., 10., 11., 12.}
-		};
-		auto const AC = A;
-		multi::array<double, 1> const B = A[2];
+	multi::array<double, 2> A = {
+		{1.,  2.,  3.,  4.},
+		{5.,  6.,  7.,  8.},
+		{9., 10., 11., 12.}
+	};
+	auto const AC = A;
+	multi::array<double, 1> const B = A[2];
 
-		blas::axpy(2., B, A[1]); // daxpy
-		BOOST_REQUIRE( A[1][2] == 2.*B[2] + AC[1][2] );
-	}
+	blas::axpy(2., B, A[1]); // daxpy
+	BOOST_REQUIRE( A[1][2] == 2.*B[2] + AC[1][2] );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_axpy_double){
@@ -67,17 +65,43 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex){
 	}
 }
 
-BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex_const){
+BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex_as_operator_plus_equal){
 	using complex = std::complex<double>;
-	multi::array<complex, 1> const x = {00., 01., 02.};
-	multi::array<complex, 1> const y = {10., 11., 12., 13.};
+	multi::array<complex, 2> A = {
+		{1.,  2.,  3.,  4.},
+		{5.,  6.,  7.,  8.},
+		{9., 10., 11., 12.}
+	};
+	auto const AC = A;
+	multi::array<complex, 1> const B = A[2];
+	A[1] += blas::axpy(2., B); // zaxpy (2. is promoted to 2+I*0 internally and automatically)
+	BOOST_REQUIRE( A[1][2] == 2.*B[2] + AC[1][2] );
+}
 
-	multi::array<complex, 1> const y_cpy = blas::axpy( 4., x, y({0, 3}) );
-	BOOST_REQUIRE( y_cpy[1] == 4.*01. + 11. );
-	
-	multi::array<complex, 1> y_mut = {10., 11., 12., 13.};
-	blas::axpy( 4., x, y_mut({0, 3}) );
-	BOOST_REQUIRE( y_mut[1] == 4.*01. + 11. );
+BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex_as_operator_minus_equal){
+	using complex = std::complex<double>;
+	multi::array<complex, 2> A = {
+		{1.,  2.,  3.,  4.},
+		{5.,  6.,  7.,  8.},
+		{9., 10., 11., 12.}
+	};
+	auto const AC = A;
+	multi::array<complex, 1> const B = A[2];
+	A[1] -= blas::axpy(2., B); // zaxpy (2. is promoted to 2+I*0 internally and automatically)
+	BOOST_REQUIRE( A[1][2] == -2.*B[2] + AC[1][2] );
+}
+
+BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex_context){
+	using complex = std::complex<double>;
+	multi::array<complex, 2> A = {
+		{1.,  2.,  3.,  4.},
+		{5.,  6.,  7.,  8.},
+		{9., 10., 11., 12.}
+	};
+	auto const AC = A;
+	multi::array<complex, 1> const B = A[2];
+	blas::axpy(blas::context{}, 2., B, A[1]); // zaxpy (2. is promoted to 2+I*0 internally and automatically)
+	BOOST_REQUIRE( A[1][2] == 2.*B[2] + AC[1][2] );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_axpy_operator_minus){

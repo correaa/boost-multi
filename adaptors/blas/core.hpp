@@ -240,7 +240,7 @@ namespace{
 #define xswap(T)          template<class S> v   swap (S n,       T       *x, S incx, T       *y, S incy                          ){     BLAS( T##swap )(BC(n),    x, BC(incx), y, BC(incy));                  }
 #define xscal(XX, TA, TX) TX* scal (INT n, TA const* a, TX       *x, INT incx                                                    ){     BLAS(XX##scal )(BC(n), *a, x, BC(incx)             ); return x+n*incx;}
 //#define xcopy(T)          v   copy (INT n,              T  const *x, INT incx, T       *y, INT incy                              ){     BLAS( T##copy )(BC(n),    x, BC(incx), y, BC(incy));                  }
-#define xaxpy(T)          template<class S> T*  axpy (S n, T  a, T const *x, S incx, T       *y, S incy                          ){     BLAS( T##axpy )(BC(n), a, x, BC(incx), y, BC(incy)); return y+n*incy; }
+//#define xaxpy(T)          template<class S> T*  axpy (S n, T  a, T const *x, S incx, T       *y, S incy                          ){     BLAS( T##axpy )(BC(n), a, x, BC(incx), y, BC(incy)); return y+n*incy; }
 #define xdot(R, TT, T)    template<class S> v   dot  (S n,       T const* x, S incx, T const* y, S incy, R* r                    ){*r = BLAS(TT##dot  )(BC(n),    x, BC(incx), y, BC(incy));                  }
 
 xrotg(s, s)    xrotg(d, d) //MKL extension xrotg(c, s); xrotg(z, d);
@@ -250,17 +250,27 @@ xrotm(s)       xrotm(d)
 xswap(s)       xswap(d)       xswap(c)       xswap(z)
 
 namespace core{
-	xscal(s, s, s) xscal(d, d, d) xscal(c, c, c) xscal(z, z, z) xscal(zd, d, z) xscal(cs, s, c)
 
-	using std::enable_if_t;
-	using std::is_assignable;
-	template<class SX, class SY, enable_if_t<is_s<SX>{} and is_s<SY>{} and is_assignable<SY&, SX&>{},int> =0> void copy(size_t n, SX* x, size_t incx, SY* y, size_t incy){BLAS(scopy)(n, (             float   const*)(x), incx, (             float  *)(y), incy);}
-	template<class DX, class DY, enable_if_t<is_d<DX>{} and is_d<DY>{} and is_assignable<DY&, DX&>{},int> =0> void copy(size_t n, DX* x, size_t incx, DY* y, size_t incy){BLAS(dcopy)(n, (             double  const*)(x), incx, (             double *)(y), incy);}
-	template<class CX, class CY, enable_if_t<is_c<CX>{} and is_c<CY>{} and is_assignable<CY&, CX&>{},int> =0> void copy(size_t n, CX* x, size_t incx, CY* y, size_t incy){BLAS(ccopy)(n, (std::complex<float > const*)(x), incx, (std::complex<float >*)(y), incy);}
-	template<class ZX, class ZY, enable_if_t<is_z<ZX>{} and is_z<ZY>{} and is_assignable<ZY&, ZX&>{},int> =0> void copy(size_t n, ZX* x, size_t incx, ZY* y, size_t incy){BLAS(zcopy)(n, (std::complex<double> const*)(x), incx, (std::complex<double>*)(y), incy);}
+xscal(s, s, s) xscal(d, d, d) xscal(c, c, c) xscal(z, z, z) xscal(zd, d, z) xscal(cs, s, c)
 
-	xdot(s, s, s)  xdot(d, d, d)                                xdot(d, ds, s)
-	xaxpy(s)       xaxpy(d)       xaxpy(c)       xaxpy(z)
+using std::enable_if_t;
+using std::is_assignable;
+template<class SX, class SY, enable_if_t<is_s<SX>{} and is_s<SY>{} and is_assignable<SY&, SX&>{},int> =0> void copy(size_t n, SX* x, size_t incx, SY* y, size_t incy){BLAS(scopy)(n, (             float   const*)(x), incx, (             float  *)(y), incy);}
+template<class DX, class DY, enable_if_t<is_d<DX>{} and is_d<DY>{} and is_assignable<DY&, DX&>{},int> =0> void copy(size_t n, DX* x, size_t incx, DY* y, size_t incy){BLAS(dcopy)(n, (             double  const*)(x), incx, (             double *)(y), incy);}
+template<class CX, class CY, enable_if_t<is_c<CX>{} and is_c<CY>{} and is_assignable<CY&, CX&>{},int> =0> void copy(size_t n, CX* x, size_t incx, CY* y, size_t incy){BLAS(ccopy)(n, (std::complex<float > const*)(x), incx, (std::complex<float >*)(y), incy);}
+template<class ZX, class ZY, enable_if_t<is_z<ZX>{} and is_z<ZY>{} and is_assignable<ZY&, ZX&>{},int> =0> void copy(size_t n, ZX* x, size_t incx, ZY* y, size_t incy){BLAS(zcopy)(n, (std::complex<double> const*)(x), incx, (std::complex<double>*)(y), incy);}
+
+xdot(s, s, s)  xdot(d, d, d)                                xdot(d, ds, s)
+
+#define xaxpy(T) \
+template<class A, class SX, class SY, enable_if_t<is_##T<SX>{} and is_##T<SY>{} and is_assignable<SY&, decltype(A{}*SX{})>{}, int> =0> void axpy(size_t n, A a, SX* x, size_t incx, SY* y, size_t incy){BLAS(T##axpy)(n, a, (T const*)(x), incx, (T*)(y), incy);}
+xaxpy(s)       xaxpy(d)       xaxpy(c)       xaxpy(z)
+#undef  xaxpy
+//template<class A, class SX, class SY, enable_if_t<is_s<SX>{} and is_s<SY>{} and is_assignable<SY&, decltype(A{}*SX{})>{}, int> =0> void axpy(size_t n, A a, SX* x, size_t incx, SY* y, size_t incy){BLAS(saxpy)(n, a, (s const*)(x), incx, (s*)(y), incy);}
+//template<class A, class DX, class DY, enable_if_t<is_d<DX>{} and is_d<DY>{} and is_assignable<DY&, decltype(A{}*DX{})>{}, int> =0> void axpy(size_t n, A a, DX* x, size_t incx, DY* y, size_t incy){BLAS(daxpy)(n, a, (d const*)(x), incx, (d*)(y), incy);}
+//template<class A, class CX, class CY, enable_if_t<is_c<CX>{} and is_c<CY>{} and is_assignable<CY&, decltype(A{}*CX{})>{}, int> =0> void axpy(size_t n, A a, CX* x, size_t incx, CY* y, size_t incy){BLAS(caxpy)(n, a, (c const*)(x), incx, (c*)(y), incy);}
+//template<class A, class ZX, class ZY, enable_if_t<is_z<ZX>{} and is_z<ZY>{} and is_assignable<ZY&, decltype(A{}*ZX{})>{}, int> =0> void axpy(size_t n, A a, ZX* x, size_t incx, ZY* y, size_t incy){BLAS(zaxpy)(n, a, (z const*)(x), incx, (z*)(y), incy);}
+
 }
 
 template<class R, class S, class T> R dot(S n, T const* x, S incx, T const* y, S incy){
@@ -423,6 +433,11 @@ namespace core{
 #undef BC
 
 struct context{
+	template<class... As>
+	static auto axpy(As... as)
+	->decltype(core::axpy(as...)){
+		return core::axpy(as...);}
+
 	template<class... As>
 	static auto gemv(As... as)
 	->decltype(core::gemv(as...)){

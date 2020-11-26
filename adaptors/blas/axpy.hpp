@@ -20,13 +20,10 @@ auto axpy_n(T alpha, It1 first, Size n, OutIt d_first)
 ->decltype(axpy(n, alpha, base(first), stride(first), base(d_first), stride(d_first)), d_first + n){
 	return axpy(n, alpha, base(first), stride(first), base(d_first), stride(d_first)), d_first + n;}
 
-template<class T, class It1, class OutIt>
-auto axpy(T alpha, It1 first, It1 last, OutIt d_first)
-->decltype(axpy_n(alpha, first, last - first, d_first)){
-	return axpy_n(alpha, first, last - first, d_first);}
-
-using std::begin;
-using std::end;
+template<class Context, class T, class It1, class Size, class OutIt, class=std::enable_if_t<is_context<Context>{}>>
+auto axpy_n(Context&& ctxt, T alpha, It1 first, Size n, OutIt d_first)
+->decltype(std::forward<Context>(ctxt).axpy(n, alpha, base(first), stride(first), base(d_first), stride(d_first)), d_first + n){
+	return std::forward<Context>(ctxt).axpy(n, alpha, base(first), stride(first), base(d_first), stride(d_first)), d_first + n;}
 
 template<class X1D, class Y1D, typename = decltype( std::declval<Y1D&&>()[0] = 0. )>
 auto axpy(typename X1D::element alpha, X1D const& x, Y1D&& y)
@@ -34,20 +31,57 @@ auto axpy(typename X1D::element alpha, X1D const& x, Y1D&& y)
 	return axpy_n(alpha, begin(x), size(x), begin(y)), std::forward<Y1D>(y);
 }
 
-template<class X1D, class Y1D>
-NODISCARD("because input is read-only")
-auto axpy(typename X1D::element alpha, X1D const& x, Y1D const& y)
-->std::decay_t<decltype(axpy(alpha, x, typename array_traits<Y1D>::decay_type{y}))>{
-	return axpy(alpha, x, typename array_traits<Y1D>::decay_type{y});}
+template<class Context, class X1D, class Y1D, typename = decltype( std::declval<Y1D&&>()[0] = 0. )>
+auto axpy(Context&& ctxt, typename X1D::element alpha, X1D const& x, Y1D&& y)
+->decltype(axpy_n(std::forward<Context>(ctxt), alpha, x.begin( ), x.size( ), y.begin( )), std::forward<Y1D>(y)){assert(size(x)==size(y)); // intel doesn't like ADL in deduced/sfinaed return types
+	return axpy_n(std::forward<Context>(ctxt), alpha,   begin(x),   size(x),   begin(y)), std::forward<Y1D>(y);
+}
+
+//template<class X1D, class Y1D>
+//NODISCARD("because input is read-only")
+//auto axpy(typename X1D::element alpha, X1D const& x, Y1D const& y)
+//->std::decay_t<decltype(axpy(alpha, x, typename array_traits<Y1D>::decay_type{y}))>{
+//	return axpy(alpha, x, typename array_traits<Y1D>::decay_type{y});}
 
 template<class X1D, class Y1D>
 Y1D&& axpy(X1D const& x, Y1D&& y){return axpy(+1., x, std::forward<Y1D>(y));}
 
-template<class T, class X1D, class Y1D>
-NODISCARD("because input is read-only")
-auto axpy(X1D const& x, Y1D const& y){
-	return axpy(x, typename array_traits<Y1D>::decay_type{y});
-}
+template<class Context, class X1D, class Y1D, std::enable_if_t<is_context<Context>{}> >
+Y1D&& axpy(Context&& ctxt, X1D const& x, Y1D&& y){return axpy(std::forward<Context>(ctxt), +1., x, std::forward<Y1D>(y));}
+
+//template<class T, class X1D, class Y1D>
+//NODISCARD("because input is read-only")
+//auto axpy(X1D const& x, Y1D const& y){
+//	return axpy(x, typename array_traits<Y1D>::decay_type{y});
+//}
+
+template<class Context, class Scale, class ItX>
+class axpy_range{
+	Context ctxt_;
+	Scale alpha_;
+	ItX x_begin_;
+	ItX x_end_  ;
+public:
+	axpy_range(axpy_range const&) = delete;
+	axpy_range(Context ctxt, Scale alpha, ItX x_first, ItX x_last)
+		: ctxt_{ctxt}, alpha_{alpha}, x_begin_{x_first}, x_end_{x_last}{}
+	template<class Other>
+	friend Other&& operator+=(Other&& other, axpy_range const& self){
+		blas::axpy_n(std::forward<Context>(self.ctxt_), +self.alpha_, self.x_begin_, self.x_end_ - self.x_begin_, other.begin());
+		return std::forward<Other>(other);
+	}
+	template<class Other>
+	friend Other&& operator-=(Other&& other, axpy_range const& self){
+		blas::axpy_n(std::forward<Context>(self.ctxt_), -self.alpha_, self.x_begin_, self.x_end_ - self.x_begin_, other.begin());
+		return std::forward<Other>(other);
+	}
+};
+
+template<class Context, class Scale, class X, class=std::enable_if_t<is_context<Context>{}>>
+axpy_range<Context, Scale, typename X::const_iterator> axpy(Context&& ctxt, Scale a, X const& x){return {std::forward<Context>(ctxt), a, begin(x), end(x)};}
+
+template<class Scale, class X>
+axpy_range<blas::context const&, Scale, typename X::const_iterator> axpy(Scale a, X const& x){return {blas::context{}, a, begin(x), end(x)};}
 
 namespace operators{
 
