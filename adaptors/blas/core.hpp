@@ -58,6 +58,7 @@ typedef struct { double real, imag; } Complex_double;
 
 namespace core{
 	using size_t = INT;
+	using ssize_t = std::make_signed_t<size_t>;
 }
 
 #define INTEGER INT const&
@@ -406,26 +407,31 @@ namespace core{
 ///////////////////////////////////////////////////////////////////////////////
 // LEVEL 3
 
-#define xgemm(T) \
-template<class C, class S>                                                                                                \
-v gemm(C transA, C transB, S m, S n, S k, T const* a, T const* A, S lda, T const* B, S ldb, T const* beta, T* CC, S ldc){ \
-	if(transA =='N') assert(lda >= std::max(1l, m)); else assert(lda >= std::max(1l, k));                                 \
-	if(transB =='N') assert(ldb >= std::max(1l, k)); else assert(ldb >= std::max(1l, n));                                 \
-	                                 assert(ldc >= std::max(1l, m));                                                      \
-	BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), *a, A, BC(lda), B, BC(ldb), *beta, CC, BC(ldc));                   \
-}
 #define xsyrk(T) template<class UL, class C, class S>             v syrk(        UL ul, C transA,             S n, S k, T    alpha, T const* A, S lda,             T    beta, T* CC, S ldc){BLAS(T##syrk)(      ul, transA,            BC(n), BC(k), alpha, A, BC(lda),        beta, CC, BC(ldc));}
 #define xherk(T) template<class UL, class C, class S, class Real> v herk(        UL ul, C transA,             S n, S k, Real alpha, T const* A, S lda,             Real beta, T* CC, S ldc){BLAS(T##herk)(      ul, transA,            BC(n), BC(k), alpha, A, BC(lda),        beta, CC, BC(ldc));}
 #define xtrsm(T) template<class C, class UL, class Di, class S>   v trsm(C side, UL ul, C transA, Di di, S m, S n,      T    alpha, T const* A, S lda, T* B, S ldb                        ){BLAS(T##trsm)(side, ul, transA, di, BC(m), BC(n),        alpha, A,    lda , B, ldb                  );}
 
 namespace core{
-	xgemm(s) xgemm(d) xgemm(c) xgemm(z)
-	xsyrk(s) xsyrk(d) xsyrk(c) xsyrk(z)
-		              xherk(c) xherk(z)
-	xtrsm(s) xtrsm(d) xtrsm(c) xtrsm(z)
+
+#define xgemm(T) \
+template<class ALPHA, class AA, class BB, class BETA, class CC, std::enable_if_t<is_##T<AA>{} and is_##T<BB>{} and is_##T<CC>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{})>{}, int> =0 > \
+v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AA* aa, ssize_t lda, BB* bb, ssize_t ldb, BETA const* beta, CC* cc, ssize_t ldc){ \
+	using std::max;                                                                                                                                                     \
+	if(transA =='N') assert(lda >= max(1l, m)); else assert(lda >= max(1l, k));                                                                                         \
+	if(transB =='N') assert(ldb >= max(1l, k)); else assert(ldb >= max(1l, n));                                                                                         \
+	assert(ldc >= max(1l, m));                                                                                                                                          \
+	if(*beta != 0.) assert((is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{} + BETA{}*CC{})>{}));                                                                          \
+	BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), *(T const*)alpha, (T const*)aa, BC(lda), (T const*)bb, BC(ldb), *(T const*)beta, (T*)cc, BC(ldc));               \
+}
+xgemm(s) xgemm(d) xgemm(c) xgemm(z)
+#undef xgemm
+
+xsyrk(s) xsyrk(d) xsyrk(c) xsyrk(z)
+	              xherk(c) xherk(z)
+xtrsm(s) xtrsm(d) xtrsm(c) xtrsm(z)
+
 }
 
-#undef xgemm
 #undef xsyrk
 #undef xherk
 #undef xtrsm
