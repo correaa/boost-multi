@@ -1,18 +1,11 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX -D_MULTI_CUBLAS_ALWAYS_SYNC $0 -o $0x `pkg-config --libs blas` -lcudart -lcublas -lboost_unit_test_framework&&$0x&&rm $0x; exit
-#endif
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
 // © Alfredo A. Correa 2019-2020
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS gemm"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
-//#include "../../../memory/adaptors/cuda/managed/ptr.hpp"
-
-//#include "../../../adaptors/blas.hpp"
-//#include "../../../adaptors/blas/cuda.hpp"
-
-//#include "../../../adaptors/cuda.hpp"
+#include "config.hpp"
 
 #include "../../../adaptors/blas/gemm.hpp"
 #include "../../../array.hpp"
@@ -188,6 +181,23 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_nh){
 		BOOST_TEST_REQUIRE( c[0][1] == 7.+10.*I );
 	}
 }
+
+#if CUDA_FOUND
+#include<thrust/complex.h>
+BOOST_AUTO_TEST_CASE(multi_blas_gemm_nh_thrust){
+	using complex = thrust::complex<double>; complex const I{0, 1};
+	multi::array<complex, 2> const a = {
+		{1.-2.*I, 9.-1.*I},
+		{2.+3.*I, 1.-2.*I}
+	};
+	{
+		multi::array<complex, 2> c({2, 2});
+		blas::gemm(1., a, blas::hermitized(a), 0., c); // c=aa†, c†=aa†
+		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
+		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
+	}
+}
+#endif
 
 BOOST_AUTO_TEST_CASE(multi_blas_gemm_elongated){
 	using complex = std::complex<double>; complex const I{0,1};
