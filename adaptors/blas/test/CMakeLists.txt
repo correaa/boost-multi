@@ -56,6 +56,7 @@ set(TEST_SRCS
   dot.cpp
   copy.cpp
   gemv.cpp
+  gemm.cpp
   scal.cpp
   traits.cpp
 )
