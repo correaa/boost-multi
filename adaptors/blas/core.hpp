@@ -419,6 +419,8 @@ v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* a
 	using std::max;                                                                                                                                                     \
 	if(transA =='N') assert(lda >= max(1l, m)); else assert(lda >= max(1l, k));                                                                                         \
 	if(transB =='N') assert(ldb >= max(1l, k)); else assert(ldb >= max(1l, n));                                                                                         \
+	assert( aa != cc );                                                                                                                                                 \
+	assert( bb != cc );                                                                                                                                                 \
 	assert(ldc >= max(1l, m));                                                                                                                                          \
 	if(*beta != 0.) assert((is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{} + BETA{}*CC{})>{}));                                                                          \
 	BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), *(T const*)alpha, (T const*)aa, BC(lda), (T const*)bb, BC(ldb), *(T const*)beta, (T*)cc, BC(ldc));               \
