@@ -252,7 +252,7 @@ icpc-memcheck-runner:
       - mkdir build && cd build
       - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
       - cmake --build . -j 12
-      - ctest -T memcheck --output-on-failure
+      - ctest -T memcheck --output-on-failure || (cat build/Testing/Temporary/MemoryChecker.*.log && exit 0)
 
 icpc-std17-runner:
     stage: test
