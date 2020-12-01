@@ -3,17 +3,17 @@
 
 image: debian:testing
 
-#g++-latest:
-#  stage: test
-#  script:
-#    - export CXX="g++"
-#    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libblas-dev
-#    - ln --symbolic --force . ../multi
-#    - $CXX --version
-#    - mkdir build && cd build
-#    - cmake ..
-#    - cmake --build . --verbose
-#    - ctest --output-on-failure
+g++-latest:
+  stage: test
+  script:
+    - export CXX="g++"
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libblas-dev
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - mkdir build && cd build
+    - cmake ..
+    - cmake --build . --verbose
+    - ctest --output-on-failure
 
 g++-current-release:
   stage: test
@@ -150,18 +150,18 @@ clang++-10:
     - cmake --build . --verbose -- --quiet --no-print-directory
     - ctest --output-on-failure
 
-clang++-11:
-  image: pauldreik/llvm-11
-  stage: test
-  script:
-    - export CXX="clang++-11"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet clang-11 cmake make libboost-test-dev libblas-dev
-    - ln --symbolic --force . ../multi
-    - $CXX --version
-    - mkdir build && cd build
-    - cmake ..
-    - cmake --build .
-    - ctest --output-on-failure
+#clang++-11:
+#  image: pauldreik/llvm-11
+#  stage: test
+#  script:
+#    - export CXX="clang++-11"
+#    - apt-get update && apt-get install --no-install-recommends -y --quiet clang-11 cmake make libboost-test-dev libblas-dev
+#    - ln --symbolic --force . ../multi
+#    - $CXX --version
+#    - mkdir build && cd build
+#    - cmake ..
+#    - cmake --build .
+#    - ctest --output-on-failure
 
 cuda-current:
     image: nvidia/cuda
