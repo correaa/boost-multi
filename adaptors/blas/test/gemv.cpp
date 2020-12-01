@@ -28,6 +28,14 @@ namespace blas = multi::blas;
 
 template<class T> void what(T&&) = delete;
 
+template<class M, class VI, class VO>
+void MV(M const& m, VI const& x, VO&& y){
+	std::transform(
+		begin(m), end(m), begin(y),
+		[&x](auto&& row){return std::inner_product(begin(row), end(row), begin(x), 0.);}
+	);
+}
+
 BOOST_AUTO_TEST_CASE(multi_blas_gemv, *utf::tolerance(0.0001)){
 
 	multi::array<double, 2> const M = {
@@ -54,6 +62,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv, *utf::tolerance(0.0001)){
 		auto mv = blas::gemv(1., M, v);
 		copy_n(mv.begin(), mv.size(), w.begin());
 		BOOST_TEST( w[1] == 91.3 );
+		
+		multi::array<double, 1> w2(size(M));
+		MV(M, v, w2);
+		BOOST_TEST( w2 == w );
 	}
 	{
 		multi::array<double, 1> w(size(M));
@@ -171,18 +183,16 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_complex){
 	multi::array<complex, 2> const M = {{2. + 3.*I, 2. + 1.*I, 1. + 2.*I}, {4. + 2.*I, 2. + 4.*I, 3. + 1.*I}, 
  {7. + 1.*I, 1. + 5.*I, 0. + 3.*I}};
 	multi::array<complex, 1> const X = {1. + 2.*I, 2. + 1.*I, 9. + 2.*I};
-	using namespace blas::operators;
 	BOOST_REQUIRE(( +blas::gemv(1., M, X) == multi::array<complex, 1>{4. + 31.*I, 25. + 35.*I, -4. + 53.*I} ));
 	
 	auto MT = +~M;
 	BOOST_REQUIRE(( +blas::gemv(1., ~MT, X) == multi::array<complex, 1>{4. + 31.*I, 25. + 35.*I, -4. + 53.*I} ));
 	
-	auto MH = +*~M;
+//	auto MH = +*~M;
 	BOOST_REQUIRE( +blas::gemv(1., ~M, X) == (multi::array<complex, 1>{63. + 38.*I, -1. + 62.*I, -4. + 36.*I}) );
 	BOOST_REQUIRE( +blas::gemv(1., ~M, X) == +blas::gemv(1., MT, X) );// == multi::array<complex, 1>{4. + 31.*I, 25. + 35.*I, -4. + 53.*I} ));
 	
-	BOOST_REQUIRE( +blas::gemv(1., *M, X) == (multi::array<complex, 1>{26. - 15.*I, 45. - 3.*I, 22. - 23.*I}) );
-	
+//	BOOST_REQUIRE( +blas::gemv(1., *M, X) == (multi::array<complex, 1>{26. - 15.*I, 45. - 3.*I, 22. - 23.*I}) );
 //	BOOST_REQUIRE( +blas::gemv(1., ~*M, X) == (multi::array<complex, 1>{83. + 6.*I, 31. - 46.*I, 18. - 26.*I}) ); // not supported by blas
 
 }
