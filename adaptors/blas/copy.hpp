@@ -93,6 +93,7 @@ public:
 	constexpr difference_type size() const{return end_ - begin_;}
 	constexpr auto begin() const{return iterator{ctxp_, begin_};}
 	constexpr auto end()   const{return iterator{ctxp_, end_  };}
+	constexpr typename decay_type::extensions_type extensions() const{return {size()};}
 	template<class Other, class=decltype(Other(std::declval<iterator>(), std::declval<iterator>()))>
 	operator Other() const{return Other(begin(), end());}
 	friend auto operator+(copy_range const& s){return s.operator decay_type();}
