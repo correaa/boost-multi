@@ -259,6 +259,9 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d){
 		;
 		BOOST_REQUIRE( A[1][1][0] == 34.4 and A[1][1][1] == 4.   );
 	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string){
 	{
 		using std::string;
 		multi::array<string, 3> B3 = {
