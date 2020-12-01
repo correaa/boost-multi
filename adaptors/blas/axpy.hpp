@@ -1,6 +1,4 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXXX $CXXFLAGS $0 -o $0x `pkg-config --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x;exit
-#endif
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // © Alfredo Correa 2019-2020
 
 #ifndef MULTI_ADAPTORS_BLAS_AXPY_HPP
@@ -37,59 +35,51 @@ auto axpy(Context&& ctxt, typename X1D::element alpha, X1D const& x, Y1D&& y)
 	return axpy_n(std::forward<Context>(ctxt), alpha,   begin(x),   size(x),   begin(y)), std::forward<Y1D>(y);
 }
 
-//template<class X1D, class Y1D>
-//NODISCARD("because input is read-only")
-//auto axpy(typename X1D::element alpha, X1D const& x, Y1D const& y)
-//->std::decay_t<decltype(axpy(alpha, x, typename array_traits<Y1D>::decay_type{y}))>{
-//	return axpy(alpha, x, typename array_traits<Y1D>::decay_type{y});}
-
 template<class X1D, class Y1D>
 Y1D&& axpy(X1D const& x, Y1D&& y){return axpy(+1., x, std::forward<Y1D>(y));}
 
 template<class Context, class X1D, class Y1D, std::enable_if_t<is_context<Context>{}> >
 Y1D&& axpy(Context&& ctxt, X1D const& x, Y1D&& y){return axpy(std::forward<Context>(ctxt), +1., x, std::forward<Y1D>(y));}
 
-//template<class T, class X1D, class Y1D>
-//NODISCARD("because input is read-only")
-//auto axpy(X1D const& x, Y1D const& y){
-//	return axpy(x, typename array_traits<Y1D>::decay_type{y});
-//}
-
 template<class Context, class Scale, class ItX>
 class axpy_range{
 	Context ctxt_;
 	Scale alpha_;
 	ItX x_begin_;
-	ItX x_end_  ;
+	size_type count_;
 public:
 	axpy_range(axpy_range const&) = delete;
 	axpy_range(Context ctxt, Scale alpha, ItX x_first, ItX x_last)
-		: ctxt_{ctxt}, alpha_{alpha}, x_begin_{x_first}, x_end_{x_last}{}
+		: ctxt_{ctxt}, alpha_{alpha}, x_begin_{x_first}, count_{x_last - x_first}{}
 	template<class Other>
 	friend Other&& operator+=(Other&& other, axpy_range const& self){
-		blas::axpy_n(std::forward<Context>(self.ctxt_), +self.alpha_, self.x_begin_, self.x_end_ - self.x_begin_, other.begin());
+		assert(other.size() == self.count_);
+		blas::axpy_n(std::forward<Context>(self.ctxt_), +self.alpha_, self.x_begin_, self.count_, other.begin());
 		return std::forward<Other>(other);
 	}
 	template<class Other>
 	friend Other&& operator-=(Other&& other, axpy_range const& self){
-		blas::axpy_n(std::forward<Context>(self.ctxt_), -self.alpha_, self.x_begin_, self.x_end_ - self.x_begin_, other.begin());
+		assert(other.size() == self.count_);
+		blas::axpy_n(std::forward<Context>(self.ctxt_), -self.alpha_, self.x_begin_, self.count_, other.begin());
 		return std::forward<Other>(other);
 	}
+	axpy_range& operator*=(Scale s)&{alpha_ *= s;}
 };
 
 template<class Context, class Scale, class X, class=std::enable_if_t<is_context<Context>{}>>
-axpy_range<Context, Scale, typename X::const_iterator> axpy(Context&& ctxt, Scale a, X const& x){return {std::forward<Context>(ctxt), a, begin(x), end(x)};}
+axpy_range<Context, Scale, typename X::const_iterator> axpy(Context&& ctxt, Scale a, X const& x){
+	return {std::forward<Context>(ctxt), a, begin(x), end(x)};}
 
 template<class Scale, class X>
 axpy_range<blas::context const&, Scale, typename X::const_iterator> axpy(Scale a, X const& x){return {blas::context{}, a, begin(x), end(x)};}
 
 namespace operators{
 
-	template<class X1D, class Y1D> auto operator+=(X1D&& x, Y1D const& other) DECLRETURN(axpy(+1., other, std::forward<X1D>(x)))
-	template<class X1D, class Y1D> auto operator-=(X1D&& x, Y1D const& other) DECLRETURN(axpy(-1., other, std::forward<X1D>(x)))
+template<class X1D, class Y1D> auto operator+=(X1D&& x, Y1D const& other) DECLRETURN(axpy(+1., other, std::forward<X1D>(x)))
+template<class X1D, class Y1D> auto operator-=(X1D&& x, Y1D const& other) DECLRETURN(axpy(-1., other, std::forward<X1D>(x)))
 
-	template<class X1D, class Y1D> auto operator+(X1D const& x, Y1D const& y)->std::decay_t<decltype(x.decay())>{auto X=x.decay(); X+=y; return X;}
-	template<class X1D, class Y1D> auto operator-(X1D const& x, Y1D const& y)->std::decay_t<decltype(x.decay())>{auto X=x.decay(); X-=y; return X;}
+template<class X1D, class Y1D> auto operator+(X1D const& x, Y1D const& y)->std::decay_t<decltype(x.decay())>{auto X=x.decay(); X+=y; return X;}
+template<class X1D, class Y1D> auto operator-(X1D const& x, Y1D const& y)->std::decay_t<decltype(x.decay())>{auto X=x.decay(); X-=y; return X;}
 
 }
 
