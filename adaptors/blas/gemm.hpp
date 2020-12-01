@@ -72,7 +72,7 @@ auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a
 			else if(a_count==1)                    {std::forward<Context>(ctxt).gemm('N', 'T', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first->stride());}
 			else                                   {std::forward<Context>(ctxt).gemm('N', 'T', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first.stride() , &beta, base(c_first), c_first->stride());}
 		}else if(a_first->stride()==1 and b_first. stride()==1 and c_first->stride()==1){
-			if  (a_count==1)        {assert(0); std::forward<Context>(ctxt).gemm('T', 'N', a_count, c_first->size(), a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first.stride());}
+			if  (a_count==1)        {std::forward<Context>(ctxt).gemm('T', 'N', a_count, c_first->size(), a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first.stride());}
 			else                    {std::forward<Context>(ctxt).gemm('T', 'N', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first.stride(), &beta, base(c_first), c_first.stride());}
 		}else if(a_first. stride()==1 and b_first.stride( )==1 and c_first. stride()==1){
 		                            {std::forward<Context>(ctxt).gemm('N', 'N', c_first->size(), a_count, a_first->size(), &alpha, base(a_first), a_first->stride(), base(b_first), b_first->stride(), &beta, base(c_first), c_first->stride());}
@@ -84,11 +84,9 @@ auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a
 		                            {std::forward<Context>(ctxt).gemm('N', 'C', c_first->size(), a_count, a_first->size(), &alpha, underlying(base(b_first)), b_first. stride(), base(a_first), a_first. stride(), &beta, base(c_first), c_first.stride());}
 		}else if(a_first->stride()==1 and b_first. stride()==1 and c_first->stride()==1){
 			if  (a_count==1)        {std::forward<Context>(ctxt).gemm('C', 'N', a_count, c_first->size(), a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first.stride());}
-			else                    {std::forward<Context>(ctxt).gemm('C', 'N', a_count, c_first->size(), a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first.stride() , &beta, base(c_first), c_first.stride());}
+			else                    {std::forward<Context>(ctxt).gemm('C', 'N', c_first->size(), a_count, a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first.stride(), &beta, base(c_first), c_first.stride());}
 		}else if(a_first->stride()==1 and b_first. stride()==1 and c_first. stride()==1){
 		                            {std::forward<Context>(ctxt).gemm('C', 'N', c_first->size(), a_count, a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first. stride(), &beta, base(c_first), c_first->stride());}
-		}else if(a_first->stride()==1 and b_first. stride()==1 and c_first->stride()==1){
-		                            {}//std::forward<Context>(ctxt).gemm('N', 'C', a_count, c_first->size(), a_first->size(), &alpha, base(a_first), a_first. stride(), underlying(base(b_first)), b_first->stride(), &beta, base(c_first), c_first. stride());}
 		}else if(a_first. stride()==1 and b_first. stride()==1 and c_first. stride()==1){
 		                            {std::forward<Context>(ctxt).gemm('C', 'T', c_first->size(), a_count, a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first->stride(), &beta, base(c_first), c_first->stride());}
 		}else if(a_first. stride()==1 and b_first. stride()==1 and c_first->stride()==1){
@@ -138,7 +136,7 @@ C&& gemm(Context&& ctx, typename A::element alpha, A const& a, B const& b, typen
 //	}
 
 	if constexpr(is_conjugated<C>{}) blas::gemm(std::forward<Context>(ctx), conj(alpha), conj(a), conj(b), conj(beta), conj(c));
-	else                             blas::gemm_n(std::forward<Context>(ctx), alpha, begin(a), size(a), begin(b), beta, begin(c));
+	else{                             blas::gemm_n(std::forward<Context>(ctx), alpha, begin(a), size(a), begin(b), beta, begin(c));
 //		;;;;; if constexpr(!is_conjugated<A>{} and !is_conjugated<B>{}){
 //			;;;;; if(stride(~a)==1 and stride(~b)==1){
 //				if(size(a)==1){std::forward<Context>(ctx).gemm('N', 'N', size(~c), size(a), size(b), &alpha, base(b), stride( b), base(a), size(b)   , &beta, base(c), size(b)  );}
@@ -164,7 +162,7 @@ C&& gemm(Context&& ctx, typename A::element alpha, A const& a, B const& b, typen
 //			;;;; if(stride( a)==1 and stride( b)==1){std::forward<Context>(ctx).gemm('C', 'C', size(~c), size(a), size(b), &alpha, underlying(base(b)), stride(~b), underlying(base(a)), stride(~a), &beta, base(c), stride(c));}
 //			else assert(0&&"case not implemented in blas");
 //		}
-//	}
+	}
 	return std::forward<C>(c);
 }
 
