@@ -88,8 +88,6 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_tuple_as_extra_dimension){
 	}
 }
 
-
-
 template<class T> struct Complex_{T real; T imag; T const& re() const{return real;}};
 
 BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast){
@@ -120,6 +118,23 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast){
 //	multi::array<double, 2> C = A.template reinterpret_array_cast<double, 2>();
 //	multi::array<double, 2> C = reinterpret_array_cast<double>(A, 2);
 
+}
+
+BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_realcomplex){
+	using complex = std::complex<double>;
+{
+	complex c{1, 2};
+	auto pC = reinterpret_cast<double(*)[2]>(&c);
+	(*pC)[0] = 11;
+	BOOST_REQUIRE(real(c)==11);
+}
+{
+	multi::array<complex, 1> A(10); 
+	auto&& A2 = A.reinterpret_array_cast<double>(2);
+	A2[8][0] = 1000.;
+	A2[8][1] = 2000.;
+	BOOST_REQUIRE( A[8] == std::complex<double>(1000., 2000.) );
+}
 }
 
 #if 0
