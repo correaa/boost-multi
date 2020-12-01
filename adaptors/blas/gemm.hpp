@@ -11,6 +11,7 @@ $CXXX $CXXFLAGS -O3 $0 -o $0x -lboost_unit_test_framework -lboost_timer \
 
 #include "../blas/core.hpp"
 
+
 #include "../blas/numeric.hpp"
 #include "../blas/operations.hpp"
 
@@ -19,15 +20,34 @@ $CXXX $CXXFLAGS -O3 $0 -o $0x -lboost_unit_test_framework -lboost_timer \
 #include "../../config/NODISCARD.hpp"
 #include "../../config/MARK.hpp"
 
+//#include "../../utility.hpp" // TODO include extensions only
+
 namespace boost{
 namespace multi{
 namespace blas{
 
 using core::gemm;
 
+template<class It>
+auto xbase_aux(It const& it, std::true_type const&)
+->decltype(underlying(base(it))){
+	return underlying(base(it));}
+
+template<class It>
+auto xbase_aux(It const& it, std::false_type const&)
+->decltype(base(it)){
+	return base(it);}
+
+template<class It>
+auto xbase(It const& it)
+->decltype(xbase_aux(it, std::integral_constant<bool, is_conjugated<It>{}>{})){
+	return xbase_aux(it, std::integral_constant<bool, is_conjugated<It>{}>{});}
+
 template<class Context, class It2DA, class Size, class It2DB, class It2DC>
-It2DC gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a_count, It2DB b_first, typename It2DA::element beta, It2DC c_first){
-	if(a_count == 0) return c_first;
+auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a_count, It2DB b_first, typename It2DA::element beta, It2DC c_first)
+->decltype(std::forward<Context>(ctxt).gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, xbase(b_first), b_first->size()  , xbase(a_first), a_first->size(), &beta, base(c_first), c_first->size()  ), It2DC{})
+{
+	if(a_count != 0){
 	assert( b_first->size() == c_first->size() );
 	assert( a_first.stride()==1 or a_first->stride()==1 );
 	assert( b_first.stride()==1 or b_first->stride()==1 );
@@ -83,6 +103,7 @@ It2DC gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size 
 		;;;;; if(a_first. stride()==1 and b_first. stride()==1 and c_first->stride()==1){
 		                            {std::forward<Context>(ctxt).gemm('C', 'C', a_count, c_first->size(), a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), underlying(base(a_first)), a_first->stride(), &beta, base(c_first), c_first. stride());}
 		}else assert(0);
+	}
 	}
 	return c_first + a_count;
 }
@@ -155,63 +176,132 @@ C&& gemm(typename A::element alpha, A const& a, B const& b, typename A::element 
 	return gemm(blas::context{}, alpha, a, b, beta, std::forward<C>(c));
 }
 
-template<class A2D, class B2D, class C2D = typename A2D::decay_type>
-NODISCARD("because input arguments are const")
-auto gemm(typename A2D::element a, A2D const& A, B2D const& B){
-	assert(get_allocator(A) == get_allocator(B));
-	return gemm(a, A, B, 0., C2D({size(A), size(rotated(B))}, get_allocator(A)));
-}
-
-template<class Context, class A2D, class B2D, class C2D = typename A2D::decay_type>
-NODISCARD("because input arguments are const")
-auto gemm(Context&& ctx, typename A2D::element a, A2D const& A, B2D const& B)
-->std::decay_t<decltype(gemm(std::forward<Context>(ctx), a, A, B, 0., C2D({size(A), size(rotated(B))}, get_allocator(A))))>{
-	assert(get_allocator(A) == get_allocator(B));
-	return gemm(std::forward<Context>(ctx), a, A, B, 0., C2D({size(A), size(rotated(B))}, get_allocator(A)));
-}
-
-template<class A2D, class B2D> 
-auto gemm(A2D const& A, B2D const& B)
-->decltype(gemm(1., A, B)){
-	return gemm(1., A, B);}
-
-template<class Context, class A2D, class B2D, class = std::enable_if_t<blas::is_context<Context>{}> > 
-auto gemm(Context&& ctx, A2D const& A, B2D const& B)
-->decltype(gemm(std::forward<Context>(ctx), 1., A, B)){
-	return gemm(std::forward<Context>(ctx), 1., A, B);}
-
-//template<class Scalar, class It>
-//class gemm_iterator{
-//	Scalar s_;
-//public:
-//	template<class ItOut, class Size>
-//	ItOut copy_n(gemm_iterator const&, Size count, ItOut){
-//		blas::gemm_n(
-//	}
-//};
-
-//template<class Scalar, class ItA, class ItB>
-//class gemm_range{
-//	Scalar s_;
-//	ItA a_begin_;
-//	ItA a_end_;
-//	ItB b_begin_;
-//	gemm_range(Scalar s, ItA b_first, ItA a_last) : s_{s}, a_begin_{a_first}, a_end_{a_last}, b_begin_{b_first}{}
-//	using iterator = gemm_iterator<Scalar, It>;
-//	iterator begin() const;
-//	iterator end() const;
-//};
-
-//template<class A2D, class B2D>
-//gemm_range gemm(A2D const& a, B2D const& b){
-//	gemm_range(begin(a), end(a), begin(b));
+//template<class A2D, class B2D, class C2D = typename A2D::decay_type>
+//NODISCARD("because input arguments are const")
+//auto gemm(typename A2D::element a, A2D const& A, B2D const& B){
+//	assert(get_allocator(A) == get_allocator(B));
+//	return gemm(a, A, B, 0., C2D({size(A), size(rotated(B))}, get_allocator(A)));
 //}
+
+//template<class Context, class A2D, class B2D, class C2D = typename A2D::decay_type>
+//NODISCARD("because input arguments are const")
+//auto gemm(Context&& ctx, typename A2D::element a, A2D const& A, B2D const& B)
+//->std::decay_t<decltype(gemm(std::forward<Context>(ctx), a, A, B, 0., C2D({size(A), size(rotated(B))}, get_allocator(A))))>{
+//	assert(get_allocator(A) == get_allocator(B));
+//	return gemm(std::forward<Context>(ctx), a, A, B, 0., C2D({size(A), size(rotated(B))}, get_allocator(A)));
+//}
+
+//template<class A2D, class B2D> 
+//auto gemm(A2D const& A, B2D const& B)
+//->decltype(gemm(1., A, B)){
+//	return gemm(1., A, B);}
+
+//template<class Context, class A2D, class B2D, class = std::enable_if_t<blas::is_context<Context>{}> > 
+//auto gemm(Context&& ctx, A2D const& A, B2D const& B)
+//->decltype(gemm(std::forward<Context>(ctx), 1., A, B)){
+//	return gemm(std::forward<Context>(ctx), 1., A, B);}
+
+template<class ContextPtr, class Scalar, class ItA, class ItB, class DecayType>
+class gemm_range;
+
+template<class Ext>
+struct gemm_reference{
+	Ext x;
+	Ext const& extensions() const{return x;}
+	friend Ext const& extensions(gemm_reference const& self){return self.extensions();}
+};
+
+template<class ContextPtr, class Scalar, class ItA, class ItB>
+class gemm_iterator{
+	ContextPtr ctxtp_;
+	Scalar s_;
+	ItA a_it_;
+	ItB b_begin_;
+	gemm_iterator(ContextPtr ctxtp, Scalar s, ItA a_it, ItB b_begin) : ctxtp_{ctxtp}, s_{s}, a_it_{a_it}, b_begin_{b_begin}{}
+	template<class ContextPtr2, class Scalar2, class ItA2, class ItB2, class DecayType2>
+	friend class gemm_range;
+public:
+	gemm_iterator(gemm_iterator const&) = default;
+	using difference_type = typename std::iterator_traits<ItA>::difference_type;
+	using value_type = typename std::iterator_traits<ItA>::value_type;
+	using pointer = void;
+	using reference = void;
+	using iterator_category = std::random_access_iterator_tag;
+//	using iterator_category = std::output_iterator_tag;
+//	friend difference_type distance(gemv_iterator const& a, gemv_iterator const& b){assert(a.v_first_ == b.v_first_);
+//		return b.m_it_ - a.m_it_;
+//	}
+	friend difference_type operator-(gemm_iterator const& a, gemm_iterator const& b){assert(a.b_begin_ == b.b_begin_);
+		return a.a_it_ - b.a_it_;
+	}
+	friend bool operator==(gemm_iterator const& a, gemm_iterator const& b){return a.a_it_ == b.a_it_;}
+	friend bool operator!=(gemm_iterator const& a, gemm_iterator const& b){return a.a_it_ != b.a_it_;}
+
+	template<class ItOut> 
+	friend auto copy(gemm_iterator const& first, gemm_iterator const& last, ItOut d_first)
+	->decltype(blas::gemm_n(*std::declval<ContextPtr>(), std::declval<Scalar>(), std::declval<ItA>(), std::declval<ItA>() - std::declval<ItA>(), std::declval<ItB>(), 0., d_first)){assert( first.s_ == last.s_ );
+		return blas::gemm_n(*first.ctxtp_              , first.s_              , first.a_it_        , last.a_it_ - first.a_it_                 , first.b_begin_     , 0., d_first);}
+
+	template<class ItOut>
+	friend ItOut uninitialized_copy(gemm_iterator const& first, gemm_iterator const& last, ItOut const& d_first){
+		assert( first.s_ == last.s_ );
+		return blas::gemm_n(*first.ctxtp_, first.s_, first.a_it_, last.a_it_ - first.a_it_, first.b_begin_, 0., d_first);
+	}
+//	template<class Alloc, class ItOut>
+//	friend ItOut alloc_uninitialized_copy(Alloc&&, gemm_iterator first, gemm_iterator last, ItOut d_first){
+//		assert( first.s_ == last.s_ );
+//		return blas::gemm_n(*first.ctxtp_, first.s_, first.a_it_, last.a_it_ - first.a_it_, first.b_begin_, 0., d_first);
+//	}
+	template<class ItOut, class Size>
+	friend ItOut uninitialized_copy_n(gemm_iterator const&, Size, ItOut){
+		assert(0);
+	}
+	void ff() const{}
+	template<class Alloc, class OutIt>
+	OutIt alloc_uninitialized_copy2(Alloc&&, gemm_iterator, OutIt d_first) const{assert(0); return d_first;}
+	gemm_reference<decltype(b_begin_->extensions())> operator*() const{return {b_begin_->extensions()};}
+};
+
+template<class ContextPtr, class Scalar, class ItA, class ItB, class DecayType>
+class gemm_range{
+	ContextPtr ctxtp_;
+	Scalar s_;
+	ItA a_begin_;
+	ItA a_end_;
+	ItB b_begin_;
+public:
+	gemm_range(gemm_range const&) = delete;
+	gemm_range(ContextPtr ctxtp, Scalar s, ItA a_first, ItA a_last, ItB b_first) : ctxtp_{ctxtp}, s_{s}, a_begin_{a_first}, a_end_{a_last}, b_begin_{b_first}{}
+	using iterator = gemm_iterator<ContextPtr, Scalar, ItA, ItB>;
+	using decay_type = DecayType;
+	using size_type = typename decay_type::size_type;
+	iterator begin() const{return {ctxtp_, s_, a_begin_, b_begin_};}
+	iterator end()   const{return {ctxtp_, s_, a_end_  , b_begin_};}
+	friend auto begin(gemm_range const& self){return self.begin();}
+	friend auto end  (gemm_range const& self){return self.end  ();}
+	size_type size() const{return a_end_ - a_begin_;}
+	typename decay_type::extensions_type extensions() const{return size()*b_begin_->extensions();}
+	friend auto extensions(gemm_range const& self){return self.extensions();}
+	operator decay_type() const{return decay_type{*this};}
+	decay_type operator+() const{return *this;}
+};
+
+template<class ContextPtr, class Scalar, class A2D, class B2D, class=std::enable_if_t<is_context<decltype(*ContextPtr{})>{}> >
+gemm_range<ContextPtr, Scalar, typename A2D::const_iterator, typename B2D::const_iterator, typename A2D::decay_type/*B2D*/> 
+gemm(ContextPtr ctxtp, Scalar s, A2D const& a, B2D const& b){
+	return {ctxtp, s, begin(a), end(a), begin(b)};
+}
+
+template<               class Scalar, class A2D, class B2D> 
+auto gemm(                Scalar s, A2D const& a, B2D const& b){
+	return blas::gemm<blas::context*>(nullptr, s, a, b);
+}
 
 namespace operators{
 	template<class A2D, class B2D> 
 	auto operator*(A2D const& A, B2D const& B)
-	->decltype(gemm(1., A, B)){
-		return gemm(1., A, B);}
+	->decltype(+blas::gemm(1., A, B)){
+		return +blas::gemm(1., A, B);}
 }
 
 }}}
