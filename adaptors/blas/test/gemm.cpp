@@ -987,6 +987,21 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_hermitized_square){
 	}
 	{
 		multi::array<complex, 2> c({2, 2});
+		c = blas::gemm(1., a, blas::H(b)); // c=ab†, c†=ba†
+		BOOST_REQUIRE( c[1][0] == 189. - 23.*I );
+	}
+	{
+		multi::array<complex, 2> c = blas::gemm(1., a, blas::H(b)); // c=ab†, c†=ba†
+		BOOST_REQUIRE( size(c) == 2 );
+		BOOST_REQUIRE( c[1][0] == 189. - 23.*I );
+	}
+	{
+		auto c = multi::array<complex, 2>(blas::gemm(1., a, blas::H(b))); // c=ab†, c†=ba†
+		BOOST_REQUIRE( size(c) == 2 );
+		BOOST_REQUIRE( c[1][0] == 189. - 23.*I );
+	}
+	{
+		multi::array<complex, 2> c({2, 2});
 		blas::gemm_n(1., begin(a), size(a), begin(blas::H(b)), 0., begin(c)); // c=ab†, c†=ba†
 		BOOST_REQUIRE( c[1][0] == 189. - 23.*I );
 	}
@@ -1006,7 +1021,6 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_hermitized_square){
 //		BOOST_REQUIRE( c[0][1] == 109. - 68.*I );
 //	}
 }
-
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_3x1_3x1){
 	using complex = std::complex<double>; complex const I{0, 1};
@@ -1552,7 +1566,6 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_real_nonsquare_hermitized_
 		BOOST_TEST( real(c[1][2]) == 5.3 );
 	}
 }
-
 
 #if 0
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_hermitized_second_gpu, *utf::tolerance(0.00001)){
