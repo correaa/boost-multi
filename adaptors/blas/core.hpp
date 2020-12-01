@@ -440,7 +440,7 @@ xtrsm(s) xtrsm(d) xtrsm(c) xtrsm(z)
 
 #undef BC
 
-struct context{
+struct context{ // stateless (and thread safe)
 	template<class... As>
 	static auto axpy(As... as)
 	->decltype(core::axpy(as...)){
