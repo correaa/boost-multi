@@ -738,9 +738,10 @@ public:
 	template<class It> void assign(It first, It last)&&{//assert( this->size() == std::distance(first, last) );
 		adl_copy(first, last, std::move(*this).begin());
 	}
-	template<class It> void assign(It first, It last)&{//assert( this->size() == std::distance(first, last) );
-		adl_copy(first, last, this->begin());
-	}
+	template<class It> auto assign(It first, It last)&
+	->decltype(adl_copy(first, last, std::declval<basic_array&>().begin()), void()){//assert( this->size() == std::distance(first, last) );
+	           adl_copy(first, last, this->begin()                        );        }
+
 	template<class Range> auto assign(Range&& r) &&
 	->decltype(this->assign(adl_begin(std::forward<Range>(r)), adl_end(std::forward<Range>(r)))){
 		return this->assign(adl_begin(std::forward<Range>(r)), adl_end(std::forward<Range>(r)));}
@@ -754,8 +755,8 @@ public:
 	}
 
 	template<class Range>
-	auto operator=(Range&& r)&&
-	->decltype(assign(adl_begin(std::forward<Range>(r)), adl_end(std::forward<Range>(r))), std::declval<basic_array&&>()){assert(this->extension() == r.extension());
+	auto operator=(Range&& r)&& // check that you LHS is not read-only
+	->decltype(assign(adl_begin(std::forward<Range>(r)), adl_end(std::forward<Range>(r))), std::declval<basic_array&&>()){assert(this->size() == r.size());
 		return assign(adl_begin(std::forward<Range>(r)), adl_end(std::forward<Range>(r))), std::move(*this);}
 
 	template<class TT, class... As>
@@ -1093,14 +1094,6 @@ public:
 	template<class It> 
 	basic_array&& assign(It first, It last)&&{return std::move(assign(first, last));}
 
-	template<class TT, class... As>//, DELETE((not std::is_assignable<typename basic_array::reference, typename basic_array<TT, 1, As...>::reference>{}))>
-	basic_array&& operator=(basic_array<TT, 1, As...> const& other)&&{assert(this->extensions() == other.extensions());
-		return adl_copy(other.begin(), other.end(), this->begin()), std::move(*this);
-	}
-	template<class TT, class... As>//, DELETE((not std::is_assignable<typename basic_array::reference, typename basic_array<TT, 1, As...>::reference>{}))>
-	basic_array&  operator=(basic_array<TT, 1, As...> const& other)&{assert(this->extensions() == other.extensions());
-		return adl_copy(other.begin(), other.end(), this->begin()), std::move(*this);
-	}
 	template<class Archive>
 	auto serialize(Archive& ar, unsigned){
 		std::for_each(this->begin(), this->end(),[&](auto&& e){ar& multi::archive_traits<Archive>::make_nvp("item",e);});
@@ -1220,13 +1213,23 @@ public:
 	constexpr       iterator end  ()     &{return {basic_array::base_ + types::nelems_, basic_array::stride_};}
 	constexpr       iterator end  ()    &&{return end();}
 
-	friend const_iterator begin(basic_array const& s){return           s .begin();}
-	friend       iterator begin(basic_array      & s){return           s .begin();}
-	friend       iterator begin(basic_array     && s){return std::move(s).begin();}
+	friend constexpr const_iterator begin(basic_array const& s){return           s .begin();}
+	friend constexpr      iterator begin(basic_array      & s){return           s .begin();}
+	friend constexpr      iterator begin(basic_array     && s){return std::move(s).begin();}
 
 	friend const_iterator end  (basic_array const& s){return           s .end();}
 	friend       iterator end  (basic_array      & s){return           s .end();}
 	friend       iterator end  (basic_array     && s){return std::move(s).end();}
+
+	template<class TT, class... As>//, DELETE((not std::is_assignable<typename basic_array::reference, typename basic_array<TT, 1, As...>::reference>{}))>
+	auto operator=(basic_array<TT, 1, As...> const& other)&&
+	->decltype(adl_copy(other.begin(), other.end(), std::declval<iterator>()), std::declval<basic_array&&>()){assert(this->extensions() == other.extensions());
+		return adl_copy(other.begin(), other.end(), this->begin()                                 ), std::move(*this);             }
+
+	template<class TT, class... As>//, DELETE((not std::is_assignable<typename basic_array::reference, typename basic_array<TT, 1, As...>::reference>{}))>
+	basic_array&  operator=(basic_array<TT, 1, As...> const& other)&{assert(this->extensions() == other.extensions());
+		return adl_copy(other.begin(), other.end(), this->begin()), std::move(*this);
+	}
 
 	template<class It> auto assign(It f)&& //	->decltype(adl::copy_n(f, this->size(), begin(std::move(*this))), void()){
 	->decltype(adl_copy_n(f, this->size(), std::declval<iterator>()), void()){
@@ -1236,6 +1239,7 @@ public:
 	constexpr bool operator==(Array const& o) const&{ // TODO assert extensions are equal?
 		return (this->extension()==extension(o)) and adl_equal(this->begin(), this->end(), adl_begin(o));
 	}
+	
 	bool operator<(basic_array const& o) const&{return lexicographical_compare(*this, o);}//operator< <basic_array const&>(o);}
 	template<class Array> void swap(Array&& o)&&{assert(this->extension() == o.extension());
 		adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
@@ -1415,7 +1419,8 @@ public:
 	       constexpr typename array_ref::element_ptr data()         const&   {return array_ref::base_;} 
 	friend constexpr typename array_ref::element_ptr data(array_ref const& s){return s.data();}
 
-	constexpr typename array_ref::decay_type const& operator*() const&{return *this;}
+	constexpr typename array_ref::decay_type const& operator*() const&{return static_cast<typename array_ref::decay_type const&>(*this);}
+//	constexpr typename array_ref::decay_type const& operator*() const&{return *this;}
 	
 	typename array_ref::decay_type const& decay() const&{
 		return static_cast<typename array_ref::decay_type const&>(*this);
@@ -1570,6 +1575,19 @@ std::true_type  is_basic_array_aux(basic_array<T, D, Ts...> const&);
 std::false_type is_basic_array_aux(...);
 
 template<class A> struct is_basic_array: decltype(is_basic_array_aux(std::declval<A>())){};
+
+template<class In, class T, dimensionality_type N, class TP, class... Args, class=std::enable_if_t<(N>1)>, class=decltype(adl_begin(*In{}), adl_end(*In{}))>
+auto uninitialized_copy
+// require N>1 (this is important because it forces calling placement new on the pointer
+(In first, In last, multi::array_iterator<T, N, TP, Args...> dest){
+	using std::begin; using std::end;
+	while(first!=last){
+		adl_uninitialized_copy(adl_begin(*first), adl_end(*first), adl_begin(*dest));
+		++first;
+		++dest;
+	}
+	return dest;
+}
 
 }}
 
