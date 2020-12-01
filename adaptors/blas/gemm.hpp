@@ -268,7 +268,7 @@ public:
 	size_type size() const{return a_end_ - a_begin_;}
 	typename decay_type::extensions_type extensions() const{return size()*b_begin_->extensions();}
 	friend auto extensions(gemm_range const& self){return self.extensions();}
-	operator decay_type() const{return decay_type{*this};}
+//	operator decay_type() const{return decay_type(*this);} // do not use curly { }
 	decay_type operator+() const{return *this;}
 };
 
