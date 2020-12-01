@@ -243,22 +243,10 @@ public:
 		return blas::gemm_n(*first.ctxtp_              , first.s_              , first.a_it_        , last.a_it_ - first.a_it_                 , first.b_begin_     , 0., d_first);}
 
 	template<class ItOut>
-	friend ItOut uninitialized_copy(gemm_iterator const& first, gemm_iterator const& last, ItOut const& d_first){
-		assert( first.s_ == last.s_ );
-		return blas::gemm_n(*first.ctxtp_, first.s_, first.a_it_, last.a_it_ - first.a_it_, first.b_begin_, 0., d_first);
-	}
-//	template<class Alloc, class ItOut>
-//	friend ItOut alloc_uninitialized_copy(Alloc&&, gemm_iterator first, gemm_iterator last, ItOut d_first){
-//		assert( first.s_ == last.s_ );
-//		return blas::gemm_n(*first.ctxtp_, first.s_, first.a_it_, last.a_it_ - first.a_it_, first.b_begin_, 0., d_first);
-//	}
-	template<class ItOut, class Size>
-	friend ItOut uninitialized_copy_n(gemm_iterator const&, Size, ItOut){
-		assert(0);
-	}
-	void ff() const{}
-	template<class Alloc, class OutIt>
-	OutIt alloc_uninitialized_copy2(Alloc&&, gemm_iterator, OutIt d_first) const{assert(0); return d_first;}
+	friend auto uninitialized_copy(gemm_iterator const& first, gemm_iterator const& last, ItOut const& d_first)
+	->decltype(copy(first, last, d_first)){
+		return copy(first, last, d_first);}
+
 	gemm_reference<decltype(b_begin_->extensions())> operator*() const{return {b_begin_->extensions()};}
 };
 
