@@ -54,10 +54,18 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_complex_to_real_extra_dimensio
 BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_tuple_as_extra_dimension){
 	using vector3 = std::array<double, 3>;
 //	using vector3 = std::tuple<double, double, double>; // for tuples reinterpret_array_cast is implementation dependent!!
+
+	vector3 v;
+	BOOST_REQUIRE( &reinterpret_cast<double(&)[3]>(v)[1] == &std::get<1>(v) );
 	{
 		multi::array<vector3, 1> A(10);
 		BOOST_REQUIRE( &A.reinterpret_array_cast<double>(3)[2][1] == &std::get<1>(A[2]) );
 	}
+	{
+		multi::array<vector3, 2> A({10, 20});
+		BOOST_REQUIRE( &A.reinterpret_array_cast<double>(3)[5][7][2] == &std::get<2>(A[5][7]) );
+	}
+
 	{
 		multi::array<vector3, 2> const A({4, 5}, vector3{1., 2., 3.});
 
