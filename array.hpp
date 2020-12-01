@@ -127,12 +127,18 @@ public:
 				this->begin()
 			);
 	}
-	template<class Array>//, std::enable_if_t<std::is_same<Array, basic_array>{}, int> =0> 
-	auto operator==(Array&& o) const&
-	->decltype(std::move(modify(*this)).ref::operator==(std::forward<Array>(o))){
-		return std::move(modify(*this)).ref::operator==(std::forward<Array>(o));}
+//	template<class Array>//, std::enable_if_t<std::is_same<Array, basic_array>{}, int> =0> 
+//	auto operator==(Array&& o) const&
+//	->decltype(std::move(modify(*this)).ref::operator==(std::forward<Array>(o))){
+//		return std::move(modify(*this)).ref::operator==(std::forward<Array>(o));}
 
-	auto operator==(static_array const& o) const&{return std::move(modify(*this)).ref::operator==(std::move(modify(o)));}
+//	auto operator==(static_array const& o) const&{return std::move(modify(*this)).ref::operator==(std::move(modify(o)));}
+
+	template<class TT, class... Args>
+	bool operator==(basic_array<TT, D, Args...> const& other) const{
+		return ref::operator==(other);
+	}
+
 	template<class It, class=typename std::iterator_traits<std::decay_t<It>>::difference_type>//edecltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>      
 	// analogous to std::vector::vector (5) https://en.cppreference.com/w/cpp/container/vector/vector
 	static_array(It first, It last, typename static_array::allocator_type const& a = {}) : 
@@ -142,7 +148,8 @@ public:
 			index_extension(adl_distance(first, last))*multi::extensions(*first)
 		}
 	{
-		recursive<D>::alloc_uninitialized_copy(static_array::alloc(), first, last, this->begin());
+//		recursive<D>::alloc_uninitialized_copy(static_array::alloc(), first, last, this->begin());
+		adl_alloc_uninitialized_copy(static_array::alloc(), first, last, ref::begin());
 //		adl::uninitialized_copy(first, last, ref::begin());
 	}
 
@@ -204,7 +211,7 @@ public:
 		if(not std::is_trivially_default_constructible<typename static_array::element_type>{})
 			uninitialized_default_construct();
 	}
-	template<class TT, class... Args, typename = 
+	template<class TT, class... Args, class= 
 		decltype(adl_copy(std::declval<multi::basic_array<TT, D, Args...> const&>().begin(), std::declval<multi::basic_array<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
 	>
 	static_array(multi::basic_array<TT, D, Args...> const& o, typename static_array::allocator_type const& a = {})
@@ -234,11 +241,7 @@ public:
 //	: array_alloc{o.get_allocator()}, ref{array_alloc::allocate(num_elements(o)), extensions(o)}{
 //		array_alloc::uninitialized_move_elements(data_elements(o));
 //	}
-	constexpr static_array(
-		std::initializer_list<typename static_array::value_type> mil
-	) : static_array(mil.begin(), mil.end()){
-	//	if(static_array::dimensionality == 1 and mil.size() == 1) assert(0);
-	}
+	constexpr static_array(std::initializer_list<typename static_array::value_type> mil) : static_array(mil.begin(), mil.end()){}
 	static_array(
 		std::initializer_list<typename static_array::value_type> mil, 
 		typename static_array::allocator_type const& a
@@ -497,7 +500,7 @@ protected:
 		other.ref::layout_t::operator=({});
 	}
 public:
-//	using ref::operator==;
+	using ref::operator==;
 	using ref::operator!=;
 
 	template<class Range0, class = decltype(adl_uninitialized_copy_n(&std::declval<Range0&>(), 1, std::declval<typename static_array::element_ptr&>()))>
@@ -696,7 +699,7 @@ public:
 		return this->template static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>();
 	//	return static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
 	}
-
+	
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int version){
 //		auto extensions = this->extensions();
@@ -850,6 +853,11 @@ public:
 #else
 	array& operator=(array o) noexcept{return swap(o), *this;}
 #endif
+	template<class Range, class=std::enable_if_t<not std::is_base_of<array, std::decay_t<Range>>{}> >
+	auto operator=(Range&& o) // check that LHS is not read-only
+	->decltype(                                         static_::operator=(o)                     , std::declval<array&>()){
+		return ((array::extensions() == o.extensions())?static_::operator=(o):operator=(array(o))), *this                 ;}
+
 	array& operator=(basic_array<T, D, multi::move_ptr<typename array::element, typename array::element_ptr>>& other){
 		if(other.layout() != this->layout()) return array::operator=(other.template static_array_cast<typename array::element, typename array::element_ptr>());
 		if(this->base_ != other.base_) other.base_ = nullptr;
@@ -897,6 +905,12 @@ public:
 	->decltype(assign(adl_begin(r), adl_end(r))){
 		return assign(adl_begin(r), adl_end(r));}
 	array& operator=(std::initializer_list<typename array::value_type> il){assign(il.begin(), il.end()); return *this;}
+
+	template<class TT, class... Args>
+	bool operator==(basic_array<TT, D, Args...> const& other) const{
+		return static_::operator==(other);
+	}
+
 	void reextent(typename array::extensions_type const& e){
 		array tmp(e, this->get_allocator());
 		tmp.intersection_assign_(*this);
@@ -909,7 +923,7 @@ public:
 	}
 	template<class... Ts> constexpr array&& reindex(Ts... a)&&{array::layout_t::reindex(a...); return std::move(*this);}
 	template<class... Ts> constexpr array&  reindex(Ts... a)& {array::layout_t::reindex(a...); return           *this ;}
-	~array() = default;
+	~array() noexcept = default;
 };
 
 #if defined(__cpp_deduction_guides)
