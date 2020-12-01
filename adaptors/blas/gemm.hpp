@@ -244,8 +244,8 @@ public:
 
 	template<class ItOut>
 	friend auto uninitialized_copy(gemm_iterator const& first, gemm_iterator const& last, ItOut const& d_first)
-	->decltype(copy(first, last, d_first)){
-		return copy(first, last, d_first);}
+	->decltype(blas::gemm_n(*std::declval<ContextPtr>(), std::declval<Scalar>(), std::declval<ItA>(), std::declval<ItA>() - std::declval<ItA>(), std::declval<ItB>(), 0., d_first)){assert( first.s_ == last.s_ );
+		return blas::gemm_n(*first.ctxtp_              , first.s_              , first.a_it_        , last.a_it_ - first.a_it_                 , first.b_begin_     , 0., d_first);}
 
 	gemm_reference<decltype(b_begin_->extensions())> operator*() const{return {b_begin_->extensions()};}
 };
