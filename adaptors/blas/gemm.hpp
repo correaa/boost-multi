@@ -46,7 +46,7 @@ auto xbase(It const& it)
 template<class Context, class It2DA, class Size, class It2DB, class It2DC>
 auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a_count, It2DB b_first, typename It2DA::element beta, It2DC c_first)
 ->decltype(std::forward<Context>(ctxt).gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, xbase(b_first), b_first->size()  , xbase(a_first), a_first->size(), &beta, base(c_first), c_first->size()  ), It2DC{})
-{
+try{
 	if(a_count != 0){
 	assert( b_first->size() == c_first->size() );
 	assert( a_first.stride()==1 or a_first->stride()==1 );
@@ -104,6 +104,14 @@ auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a
 	}
 	}
 	return c_first + a_count;
+}catch(std::logic_error& e){
+	throw std::logic_error(
+		"couldn't do gemm of layout ac"+std::to_string(a_count)
+		+" ast"+std::to_string(a_first.stride())+","+std::to_string(a_first->stride())+" asz"+std::to_string(a_first->size())
+		+" bst"+std::to_string(b_first.stride())+","+std::to_string(b_first->stride())+" bsz"+std::to_string(a_first->size())
+		+" cst"+std::to_string(c_first.stride())+","+std::to_string(c_first->stride())+" csz"+std::to_string(a_first->size())
+		+"because " + e.what()
+	);
 }
 
 template<class It2DA, class Size, class It2DB, class It2DC, class Context = blas::context> // TODO automatic deduction of context
