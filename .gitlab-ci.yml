@@ -15,6 +15,18 @@ g++-latest:
     - cmake --build . --verbose
     - ctest --output-on-failure
 
+g++-latest-std20:
+  stage: test
+  script:
+    - export CXX="g++"
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libblas-dev
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_CXX_STANDARD=20
+    - cmake --build . --verbose
+    - ctest --output-on-failure
+
 g++-current-release:
   stage: test
   script:
