@@ -951,7 +951,8 @@ public:
 //#endif
 
 template<class T, class A=std::allocator<T>> array(T[]                  , A={})->array<T,1,A>;
-template<class Array, class A=std::allocator<typename multi::array_traits<Array>::element>, class=std::enable_if_t<is_allocator<A>{}>> array(Array            , A={})->array<typename multi::array_traits<Array>::element, 1, A>;
+
+//template<class Array, class E = typename multi::array_traits<Array>::element, class A=std::allocator<E>, class=std::enable_if_t<is_allocator<A>{}>> array(Array            , A={})->array<typename multi::array_traits<Array>::element, 1, A>;
 
 template<dimensionality_type D, class T, class=std::enable_if_t<not is_allocator<T>{}> > array(iextensions<D>, T)->array<T, D, std::allocator<T>>;
 	template<class T, class=std::enable_if_t<not is_allocator<T>{}> > array(iextensions<0>, T)->array<T,0, std::allocator<T>>;
@@ -983,6 +984,9 @@ template<class T, class MR, class A=memory::allocator<T, MR>> array(iextensions<
 template<class T, class MR, class A=memory::allocator<T, MR>> array(iextensions<3>, T, MR*)->array<T, 3, A>;
 template<class T, class MR, class A=memory::allocator<T, MR>> array(iextensions<4>, T, MR*)->array<T, 4, A>;
 template<class T, class MR, class A=memory::allocator<T, MR>> array(iextensions<5>, T, MR*)->array<T, 5, A>;
+
+template<class MatrixRef, class DT = typename MatrixRef::decay_type, class T = typename DT::element, dimensionality_type D = DT::dimensionality, class Alloc = typename DT::allocator_type>
+array(MatrixRef)->array<T, D, Alloc>;
 
 template<typename T, dimensionality_type D, typename P> array(basic_array<T, D, P>)->array<T, D>;
 #endif
