@@ -20,6 +20,20 @@ $CXXX $CXXFLAGS $0 -o $0.$X `pkg-config --libs blas`&&$0.$X&&rm $0.$X;exit
 
 #include "../blas/traits.hpp"
 
+#if 0
+	#define MULTI_ASSERT1(ExpR)              assert       (ExpR)
+	#define MULTI_ASSERT2(ExpR, DescriptioN) MULTI_ASSERT1(ExpR && ##DescriptioN)
+#else
+	#if not defined(NDEBUG)
+		#include<stdexcept>
+		#define MULTI_ASSERT1(ExpR)              (void)((ExpR)?0:throw std::logic_error(__FILE__ + std::to_string(__LINE__) + "Logic assertion `" #ExpR "' failed."))
+		#define MULTI_ASSERT2(ExpR, DescriptioN) (void)((ExpR)?0:throw std::DescriptioN(__FILE__ + std::to_string(__LINE__) + "Logic assertion `" #ExpR "' failed."))
+	#else
+		#define MULTI_ASSERT1(ExpR)              assert(ExpR)
+		#define MULTI_ASSERT2(ExpR, DescriptioN) assert(EXpR)
+	#endif
+#endif
+
 #ifdef CBLAS_H
 #define BLAS(NamE) cblas_##NamE
 #else
@@ -417,12 +431,12 @@ namespace core{
 template<class ALPHA, class AA, class BB, class BETA, class CC, std::enable_if_t<is_##T<AA>{} and is_##T<BB>{} and is_##T<CC>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{})>{}, int> =0 > \
 v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AA* aa, ssize_t lda, BB* bb, ssize_t ldb, BETA const* beta, CC* cc, ssize_t ldc){ \
 	using std::max;                                                                                                                                                     \
-	if(transA =='N') assert(lda >= max(1l, m)); else assert(lda >= max(1l, k));                                                                                         \
-	if(transB =='N') assert(ldb >= max(1l, k)); else assert(ldb >= max(1l, n));                                                                                         \
-	assert( aa != cc );                                                                                                                                                 \
-	assert( bb != cc );                                                                                                                                                 \
-	assert(ldc >= max(1l, m));                                                                                                                                          \
-	if(*beta != 0.) assert((is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{} + BETA{}*CC{})>{}));                                                                          \
+	if(transA =='N') MULTI_ASSERT1(lda >= max(1l, m)); else MULTI_ASSERT1(lda >= max(1l, k));                                                                                         \
+	if(transB =='N') MULTI_ASSERT1(ldb >= max(1l, k)); else MULTI_ASSERT1(ldb >= max(1l, n));                                                                                         \
+	MULTI_ASSERT1( aa != cc );                                                                                                                                                 \
+	MULTI_ASSERT1( bb != cc );                                                                                                                                                 \
+	MULTI_ASSERT1(ldc >= max(1l, m));                                                                                                                                          \
+	if(*beta != 0.) MULTI_ASSERT1((is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{} + BETA{}*CC{})>{}));                                                                          \
 	BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), *(T const*)alpha, (T const*)aa, BC(lda), (T const*)bb, BC(ldb), *(T const*)beta, (T*)cc, BC(ldc));               \
 }
 xgemm(s) xgemm(d) xgemm(c) xgemm(z)
