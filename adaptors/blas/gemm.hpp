@@ -245,13 +245,27 @@ public:
 
 	template<class ItOut> 
 	friend auto copy(gemm_iterator const& first, gemm_iterator const& last, ItOut d_first)
-	->decltype(blas::gemm_n(*std::declval<ContextPtr>(), std::declval<Scalar>(), std::declval<ItA>(), std::declval<ItA>() - std::declval<ItA>(), std::declval<ItB>(), 0., d_first)){assert( first.s_ == last.s_ );
-		return blas::gemm_n(*first.ctxtp_              , first.s_              , first.a_it_        , last.a_it_ - first.a_it_                 , first.b_begin_     , 0., d_first);}
+	->decltype(blas::gemm_n(*std::declval<ContextPtr>(), std::declval<Scalar>(), std::declval<ItA>(), std::declval<ItA>() - std::declval<ItA>(), std::declval<ItB>(), 0., d_first)) try{assert( first.s_ == last.s_ );
+		return blas::gemm_n(*first.ctxtp_              , first.s_              , first.a_it_        , last.a_it_ - first.a_it_                 , first.b_begin_     , 0., d_first);
+	}catch(std::exception const& e){
+		throw std::logic_error(
+			"in " + std::string(__PRETTY_FUNCTION__) + "\nCouldn't decay product of arrays of size " + std::to_string(last - first) +"x"+ std::to_string(first.a_it_->size()) + " and " + 
+			std::to_string(first.a_it_->size())+ "x" +std::to_string(first.b_begin_->size()) + " into " + std::to_string(last - first) +"x" + std::to_string(first.b_begin_->size()) +
+			"\nbecause\n"+e.what()
+		);
+	}
 
 	template<class ItOut>
 	friend auto uninitialized_copy(gemm_iterator const& first, gemm_iterator const& last, ItOut const& d_first)
-	->decltype(blas::gemm_n(*std::declval<ContextPtr>(), std::declval<Scalar>(), std::declval<ItA>(), std::declval<ItA>() - std::declval<ItA>(), std::declval<ItB>(), 0., d_first)){assert( first.s_ == last.s_ );
-		return blas::gemm_n(*first.ctxtp_              , first.s_              , first.a_it_        , last.a_it_ - first.a_it_                 , first.b_begin_     , 0., d_first);}
+	->decltype(blas::gemm_n(*std::declval<ContextPtr>(), std::declval<Scalar>(), std::declval<ItA>(), std::declval<ItA>() - std::declval<ItA>(), std::declval<ItB>(), 0., d_first)) try{assert( first.s_ == last.s_ );
+		return blas::gemm_n(*first.ctxtp_              , first.s_              , first.a_it_        , last.a_it_ - first.a_it_                 , first.b_begin_     , 0., d_first);
+	}catch(std::exception const& e){
+		throw std::logic_error(
+			"in " + std::string(__PRETTY_FUNCTION__) + "\nCouldn't decay product of arrays of size " + std::to_string(last - first) +"x"+ std::to_string(first.a_it_->size()) + " and " + 
+			std::to_string(first.a_it_->size())+ "x" +std::to_string(first.b_begin_->size()) + " into " + std::to_string(last - first) +"x" + std::to_string(first.b_begin_->size()) +
+			"\nbecause\n"+e.what()
+		);
+	}
 
 	gemm_reference<decltype(b_begin_->extensions())> operator*() const{return {b_begin_->extensions()};}
 };
@@ -277,14 +291,7 @@ public:
 	typename decay_type::extensions_type extensions() const{return size()*b_begin_->extensions();}
 	friend auto extensions(gemm_range const& self){return self.extensions();}
 //	operator decay_type() const{return decay_type(*this);} // do not use curly { }
-	decay_type operator+() const try{return *this;}
-	catch(std::exception const& e){
-		throw std::logic_error(
-			"in " + std::string(__PRETTY_FUNCTION__) + "\nCouldn't decay product of arrays of size " + std::to_string(size()) +"x"+ std::to_string(a_begin_->size()) + " and " + 
-			std::to_string(a_begin_->size())+ "x" +std::to_string(b_begin_->size()) + " into " + std::to_string(size()) +"x" + std::to_string(b_begin_->size()) +
-			"\nbecause\n"+e.what()
-		);
-	}
+	decay_type operator+() const{return *this;}
 };
 
 template<class ContextPtr, class Scalar, class A2D, class B2D, class=std::enable_if_t<is_context<decltype(*ContextPtr{})>{}> >
