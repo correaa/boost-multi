@@ -106,11 +106,11 @@ try{
 	return c_first + a_count;
 }catch(std::logic_error& e){
 	throw std::logic_error(
-		"couldn't do gemm of layout ac"+std::to_string(a_count)
-		+" ast"+std::to_string(a_first.stride())+","+std::to_string(a_first->stride())+" asz"+std::to_string(a_first->size())
-		+" bst"+std::to_string(b_first.stride())+","+std::to_string(b_first->stride())+" bsz"+std::to_string(a_first->size())
-		+" cst"+std::to_string(c_first.stride())+","+std::to_string(c_first->stride())+" csz"+std::to_string(a_first->size())
-		+"because " + e.what()
+		"couldn't do "+std::string(__PRETTY_FUNCTION__)+" of layout a_count="+std::to_string(a_count)
+		+" a_strides="+std::to_string(a_first.stride())+","+std::to_string(a_first->stride())+" a->size="+std::to_string(a_first->size())
+		+" b_strides="+std::to_string(b_first.stride())+","+std::to_string(b_first->stride())+" b->size="+std::to_string(a_first->size())
+		+" c_strides="+std::to_string(c_first.stride())+","+std::to_string(c_first->stride())+" c->size="+std::to_string(a_first->size())
+		+" because " + e.what()
 	);
 }
 
