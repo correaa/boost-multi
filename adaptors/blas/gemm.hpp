@@ -55,8 +55,8 @@ try{
 
 	;;;;; if constexpr(!is_conjugated<It2DA>{} and !is_conjugated<It2DB>{}){
 		;;;;; if(a_first->stride()==1 and b_first->stride()==1 and c_first->stride()==1){
-			;;;; if  (a_count==1 and b_first->size()==1){std::forward<Context>(ctxt).gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->size()  , base(a_first), a_first->size() , &beta, base(c_first), c_first->size()  );}
-			else if  (a_count==1)                       {std::forward<Context>(ctxt).gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first->size()  );}
+			;;;; if( a_count==1 and b_first->size()==1 ){std::forward<Context>(ctxt).gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->size()  , base(a_first), a_first->size() , &beta, base(c_first), c_first->size()  );}
+			else if( a_count==1                        ){std::forward<Context>(ctxt).gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first->size()  );}
 			else                                        {std::forward<Context>(ctxt).gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), base(a_first), a_first. stride(), &beta, base(c_first), c_first. stride());}
 		}else if(a_first->stride()==1 and b_first->stride()==1 and c_first. stride()==1){
 			if  (a_count==1)        {std::forward<Context>(ctxt).gemm('T', 'T', a_count, b_first->size(), a_first->size(), &alpha, base(a_first), a_first. stride(), base(b_first), b_first->size() , &beta, base(c_first), a_first->size()  );}
@@ -81,7 +81,8 @@ try{
 		}else assert(0);
 	}else if constexpr(!is_conjugated<It2DA>{} and  is_conjugated<It2DB>{}){
 		;;;;; if(a_first->stride()==1 and b_first->stride()==1 and c_first->stride()==1){
-		                            {std::forward<Context>(ctxt).gemm('N', 'C', c_first->size(), a_count, a_first->size(), &alpha, underlying(base(b_first)), b_first. stride(), base(a_first), a_first. stride(), &beta, base(c_first), c_first.stride());}
+			if(b_first->size()==1)  {std::forward<Context>(ctxt).gemm('N', 'C', c_first->size(), a_count, a_first->size(), &alpha, underlying(base(b_first)), b_first. stride(), base(a_first), a_count          , &beta, base(c_first), c_first.stride());}
+			else                    {std::forward<Context>(ctxt).gemm('N', 'C', c_first->size(), a_count, a_first->size(), &alpha, underlying(base(b_first)), b_first. stride(), base(a_first), a_first. stride(), &beta, base(c_first), c_first.stride());}
 		}else if(a_first->stride()==1 and b_first. stride()==1 and c_first->stride()==1){
 			if  (a_count==1)        {std::forward<Context>(ctxt).gemm('C', 'N', a_count, c_first->size(), a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first.stride());}
 			else                    {std::forward<Context>(ctxt).gemm('C', 'N', c_first->size(), a_count, a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first.stride(), &beta, base(c_first), c_first.stride());}

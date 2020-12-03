@@ -1569,6 +1569,27 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_real_nonsquare_hermitized_
 	}
 }
 
+BOOST_AUTO_TEST_CASE(blas_gemm_1xn_complex){
+	using complex = std::complex<double>;
+	multi::array<complex, 2> const a({1, 100}, 1.);
+	multi::array<complex, 2> const b({1, 100}, 1.);
+
+	multi::array<complex, 2> c({1, 1}, 999.);
+	blas::gemm_n(1., begin(a), size(a), begin(blas::H(b)), 0., begin(c));
+	BOOST_REQUIRE( c[0][0] == 100. );
+}
+
+BOOST_AUTO_TEST_CASE(blas_gemm_nx1_times_1x1_complex_inq_hydrogen_case){
+	using complex = std::complex<double>;
+	multi::array<complex, 2> const a({100, 1}, 2.);
+	multi::array<complex, 2> const b({1,   1}, 3.);
+
+	multi::array<complex, 2> c({100, 1}, 999.);
+	blas::gemm_n(1., begin(a), size(a), begin(blas::H(b)), 0., begin(c));
+	BOOST_REQUIRE( c[0][0] == 6. );
+	BOOST_REQUIRE( c[1][0] == 6. );
+}
+
 BOOST_AUTO_TEST_CASE(blas_gemm_inq_case){ // https://gitlab.com/correaa/boost-multi/-/issues/97
 
 	using complex = std::complex<double>;
