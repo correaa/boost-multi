@@ -52,12 +52,12 @@ BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex){
 }
 
 BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex_C){
-	using complex = std::complex<double>;
-	multi::array<complex, 1> const A = {1.,2.,3.};
-	multi::array<complex, 1> const B = {1.,2.,3.};
+	using complex = std::complex<double>; complex const I{0., 1.};
+	multi::array<complex, 1> const A = {1.,2., 3.};
+	multi::array<complex, 1> const B = {1.,2. + 2.*I, 3.};
 	complex C;
 	blas::dot(blas::C(A), B, C);
-	BOOST_REQUIRE( C == std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto& a, auto& b){return a*std::conj(b);}) );
+	BOOST_TEST( C == std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto& a, auto& b){return conj(a)*b;}) );
 }
 
 BOOST_AUTO_TEST_CASE(blas_dot){
