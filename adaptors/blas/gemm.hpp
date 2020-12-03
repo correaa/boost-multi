@@ -277,7 +277,14 @@ public:
 	typename decay_type::extensions_type extensions() const{return size()*b_begin_->extensions();}
 	friend auto extensions(gemm_range const& self){return self.extensions();}
 //	operator decay_type() const{return decay_type(*this);} // do not use curly { }
-	decay_type operator+() const{return *this;}
+	decay_type operator+() const try{return *this;}
+	catch(std::exception const& e){
+		throw std::logic_error(
+			"in " + std::string(__PRETTY_FUNCTION__) + "\nCouldn't decay product of arrays of size " + std::to_string(size()) +"x"+ std::to_string(a_begin_->size()) + " and " + 
+			std::to_string(a_begin_->size())+ "x" +std::to_string(b_begin_->size()) + " into " + std::to_string(size()) +"x" + std::to_string(b_begin_->size()) +
+			"\nbecause\n"+e.what()
+		);
+	}
 };
 
 template<class ContextPtr, class Scalar, class A2D, class B2D, class=std::enable_if_t<is_context<decltype(*ContextPtr{})>{}> >
