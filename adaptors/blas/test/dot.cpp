@@ -27,6 +27,39 @@ BOOST_AUTO_TEST_CASE(blas_dot_context){
 	BOOST_REQUIRE( C == std::inner_product(begin(A), end(A), begin(B), 0.f) );
 }
 
+BOOST_AUTO_TEST_CASE(blas_dot_no_context){
+	multi::array<float, 1> const A = {1.,2.,3.};
+	multi::array<float, 1> const B = {1.,2.,3.};
+	auto C = +blas::dot(A, B);
+	BOOST_REQUIRE( C == std::inner_product(begin(A), end(A), begin(B), 0.f) );
+}
+
+BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param){
+	multi::array<float, 1> const A = {1.,2.,3.};
+	multi::array<float, 1> const B = {1.,2.,3.};
+	float C;
+	blas::dot(A, B, C);
+	BOOST_REQUIRE( C == std::inner_product(begin(A), end(A), begin(B), 0.f) );
+}
+
+BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex){
+	using complex = std::complex<double>;
+	multi::array<complex, 1> const A = {1.,2.,3.};
+	multi::array<complex, 1> const B = {1.,2.,3.};
+	complex C;
+	blas::dot(A, B, C);
+	BOOST_REQUIRE( C == std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto& a, auto& b){return a*std::conj(b);}) );
+}
+
+BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex_C){
+	using complex = std::complex<double>;
+	multi::array<complex, 1> const A = {1.,2.,3.};
+	multi::array<complex, 1> const B = {1.,2.,3.};
+	complex C;
+	blas::dot(blas::C(A), B, C);
+	BOOST_REQUIRE( C == std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto& a, auto& b){return a*std::conj(b);}) );
+}
+
 BOOST_AUTO_TEST_CASE(blas_dot){
 //	multi::array<float, 1> const A = {1.,2.,3.};
 //	multi::array<float, 1> const B = {1.,2.,3.};
