@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex_C){
 	BOOST_TEST( C == std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto& a, auto& b){return conj(a)*b;}) );
 }
 
-#ifdef CUDA_FOUND
+#if defined(CUDA_FOUND) and CUDA_FOUND
 #include<thrust/complex.h>
 BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex_C_thrust){
 	using complex = thrust::complex<double>; complex const I{0., 1.};
