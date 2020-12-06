@@ -35,7 +35,7 @@ g++-current-release:
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Release
+    - CXXFLAGS="-fno-peephole2" cmake .. -DCMAKE_BUILD_TYPE=Release
     - cmake --build . --verbose
     - ctest --output-on-failure
 
