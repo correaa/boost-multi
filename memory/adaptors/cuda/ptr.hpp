@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXXX $CXXFLAGS $0 -o $0x -lcudart -lboost_unit_test_framework&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0.$X `pkg-config --cflags --libs cudart-11.0` -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 #endif
 
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_PTR_HPP
@@ -663,6 +663,7 @@ CUDA_SLOW(
 BOOST_AUTO_TEST_CASE(ptr_conversion){
 	cuda::ptr<double> p = nullptr;
 	cuda::ptr<double const> pc = p; (void)pc;
+	static_assert(not std::is_convertible<cuda::ptr<double>, double*>{});
 }
 
 template<class T> struct Complex_{T real; T imag;};

@@ -1,5 +1,5 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXXX $CXXFLAGS $0 -o $0x `pkg-config --cflags --libs cudart-11.0`&&$0x&&rm $0x;exit
+$CXXX $CXXFLAGS $0 -o $0.$X `pkg-config --cflags --libs cudart-11.0`&&$0.$X&&rm $0.$X;exit
 #endif
 // © Alfredo A. Correa 2019-2020
 
@@ -302,6 +302,9 @@ int main(){
 	//	cuda::ptr<double> pp = p;
 //		std::reinterpret_pointer_cast<double*>(pp);
 	//	cuda::managed::ptr<double> ppp{pp};
+	}
+	{
+		static_assert(std::is_convertible<cuda::managed::ptr<double>, double*>{});
 	}
 	{
 		auto p = static_cast<cuda::managed::ptr<T>>(cuda::managed::malloc(n*sizeof(T)));
