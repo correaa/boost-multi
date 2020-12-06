@@ -16,7 +16,7 @@ $CXXX $CXXFLAGS $0 -o $0.$X `pkg-config --libs blas`&&$0.$X&&rm $0.$X;exit
 #include<complex>
 #include<stdint.h> // int64_t
 #include<limits> // numeric_limits
-#include<type_traits>
+#include<type_traits> // is_convertible
 
 #include "../blas/traits.hpp"
 
@@ -27,8 +27,8 @@ $CXXX $CXXFLAGS $0 -o $0.$X `pkg-config --libs blas`&&$0.$X&&rm $0.$X;exit
 	#if not defined(NDEBUG)
 		#include<stdexcept>
 		#include<string>
-		#define MULTI_ASSERT1(ExpR)              (void)((ExpR)?0:throw std::logic_error("\n" __FILE__ ":"+std::to_string(__LINE__)+"\n"+std::string(__PRETTY_FUNCTION__)+"\nLogic assertion `" #ExpR "' failed."))
-		#define MULTI_ASSERT2(ExpR, DescriptioN) (void)((ExpR)?0:throw std::DescriptioN("\n" __FILE__ ":"+std::to_string(__LINE__)+"\n"+std::string(__PRETTY_FUNCTION__)+"\nLogic assertion `" #ExpR "' failed."))
+		#define MULTI_ASSERT1(ExpR)              (void)((ExpR)?0:throw std::logic_error("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(__PRETTY_FUNCTION__)+"\nLogic assertion `" #ExpR "' failed."))
+		#define MULTI_ASSERT2(ExpR, DescriptioN) (void)((ExpR)?0:throw std::DescriptioN("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(__PRETTY_FUNCTION__)+"\nLogic assertion `" #ExpR "' failed."))
 	#else
 		#define MULTI_ASSERT1(ExpR)              assert(ExpR)
 		#define MULTI_ASSERT2(ExpR, DescriptioN) assert(EXpR)
@@ -428,9 +428,17 @@ namespace core{
 
 namespace core{
 
+using std::is_convertible_v;
+using std::pointer_traits;
+using std::enable_if_t;
+
 #define xgemm(T) \
-template<class ALPHA, class AA, class BB, class BETA, class CC, std::enable_if_t<is_##T<AA>{} and is_##T<BB>{} and is_##T<CC>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{})>{}, int> =0 > \
-v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AA* aa, ssize_t lda, BB* bb, ssize_t ldb, BETA const* beta, CC* cc, ssize_t ldc){ \
+template<class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BBP, class BB = typename pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename pointer_traits<CCP>::element_type, \
+enable_if_t< \
+	is_##T<AA>{} and is_##T<BB>{} and is_##T<CC>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{})>{} and \
+	is_convertible_v<AAP, AA*> and is_convertible_v<BBP, BB*> and is_convertible_v<CCP, CC*> \
+, int> =0 > \
+v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc){ \
 	using std::max;                                                                                                                                                     \
 	if(transA =='N') MULTI_ASSERT1(lda >= max(1l, m)); else MULTI_ASSERT1(lda >= max(1l, k));                                                                                         \
 	if(transB =='N') MULTI_ASSERT1(ldb >= max(1l, k)); else MULTI_ASSERT1(ldb >= max(1l, n));                                                                                         \
@@ -438,7 +446,7 @@ v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* a
 	MULTI_ASSERT1( bb != cc );                                                                                                                                                 \
 	MULTI_ASSERT1(ldc >= max(1l, m));                                                                                                                                          \
 	if(*beta != 0.) MULTI_ASSERT1((is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{} + BETA{}*CC{})>{}));                                                                          \
-	BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), *(T const*)alpha, (T const*)aa, BC(lda), (T const*)bb, BC(ldb), *(T const*)beta, (T*)cc, BC(ldc));               \
+	BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), *(T const*)alpha, (T const*)static_cast<AA*>(aa), BC(lda), (T const*)static_cast<BB*>(bb), BC(ldb), *(T const*)beta, (T*)static_cast<CC*>(cc), BC(ldc));               \
 }
 xgemm(s) xgemm(d) xgemm(c) xgemm(z)
 #undef xgemm
