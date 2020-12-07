@@ -222,6 +222,7 @@ g++-runner:
       - export CXX="g++"
       - $CXX --version
       - mkdir build && cd build
+      - cmake --version
       - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
       - cmake --build . -j 12
       - ctest --output-on-failure
