@@ -27,7 +27,7 @@ g++-latest-std20:
     - cmake --build . --verbose
     - ctest --output-on-failure
 
-g++-current-release:
+g++-current-debug:
   stage: test
   script:
     - export CXX="g++"
@@ -35,7 +35,7 @@ g++-current-release:
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
-    - CXXFLAGS="-O0" cmake .. -DCMAKE_BUILD_TYPE=Release
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug
     - cmake --build . --verbose
     - ctest --output-on-failure
 
