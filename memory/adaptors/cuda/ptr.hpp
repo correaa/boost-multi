@@ -651,6 +651,7 @@ CUDA_SLOW(
 		BOOST_REQUIRE( CUDA_SLOW( *p == 99. ) );
 		BOOST_REQUIRE( *p != 11. );
 		cuda::free(p);
+		
 		cuda::ptr<T> P = nullptr; 
 		BOOST_REQUIRE( P == nullptr );
 		ptr<void> pv = p; (void)pv;

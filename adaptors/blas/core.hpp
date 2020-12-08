@@ -440,8 +440,8 @@ enable_if_t< \
 , int> =0 > \
 v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc){ \
 	using std::max;                                                                                                                                                     \
-	if(transA =='N') MULTI_ASSERT1(lda >= max(1l, m)); else MULTI_ASSERT1(lda >= max(1l, k));                                                                                         \
-	if(transB =='N') MULTI_ASSERT1(ldb >= max(1l, k)); else MULTI_ASSERT1(ldb >= max(1l, n));                                                                                         \
+	if(transA =='N') MULTI_ASSERT1(lda >= max(1l, m)); else MULTI_ASSERT1(lda >= max(1l, k));                                                                           \
+	if(transB =='N') MULTI_ASSERT1(ldb >= max(1l, k)); else MULTI_ASSERT1(ldb >= max(1l, n));                                                                           \
 	MULTI_ASSERT1( aa != cc );                                                                                                                                                 \
 	MULTI_ASSERT1( bb != cc );                                                                                                                                                 \
 	MULTI_ASSERT1(ldc >= max(1l, m));                                                                                                                                          \
@@ -511,7 +511,8 @@ auto copy(Context&&, As... as)
 	return core::copy(as...);}
 }
 
-template<class T> blas::context default_context_of(T*){return {};}
+template<class TPtr, std::enable_if_t<std::is_convertible<TPtr, typename std::pointer_traits<TPtr>::element_type*>{}, int> =0> 
+blas::context* default_context_of(TPtr const&){return {};}
 
 }
 

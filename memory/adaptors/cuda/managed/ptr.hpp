@@ -202,7 +202,7 @@ template<class T, class S> const boost::serialization::array_wrapper<T> make_arr
 
 #undef SLOW
 
-#if not __INCLUDE_LEVEL__ // def _TEST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_PTR
+#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 
 #include "../../cuda/managed/clib.hpp" // cuda::malloc
 #include "../../cuda/managed/malloc.hpp"
