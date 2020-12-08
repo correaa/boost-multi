@@ -278,8 +278,17 @@ template<class ZX, class ZY, enable_if_t<is_z<ZX>{} and is_z<ZY>{} and is_assign
 
 xdot(s, s, s)  xdot(d, d, d)                                xdot(d, ds, s)
 
+using std::pointer_traits;
+using std::enable_if_t;
+using std::is_convertible_v;
+
 #define xaxpy(T) \
-template<class A, class SX, class SY, enable_if_t<is_##T<SX>{} and is_##T<SY>{} and is_assignable<SY&, decltype(A{}*SX{})>{}, int> =0> void axpy(size_t n, A a, SX* x, size_t incx, SY* y, size_t incy){BLAS(T##axpy)(n, a, (T const*)(x), incx, (T*)(y), incy);}
+template<class A, class SXP, class SX = typename pointer_traits<SXP>::element_type, class SYP, class SY = typename pointer_traits<SYP>::element_type, enable_if_t< \
+	is_##T<SX>{} and is_##T<SY>{} and is_assignable<SY&, decltype(A{}*SX{})>{} \
+	and is_convertible_v<SXP, SX*> and is_convertible_v<SYP, SY*> \
+, int> =0> \
+void axpy(size_t n, A a, SXP x, size_t incx, SYP y, size_t incy){BLAS(T##axpy)(n, a, (T const*)static_cast<SX*>(x), incx, (T*)static_cast<SY*>(y), incy);}
+
 xaxpy(s)       xaxpy(d)       xaxpy(c)       xaxpy(z)
 #undef  xaxpy
 //template<class A, class SX, class SY, enable_if_t<is_s<SX>{} and is_s<SY>{} and is_assignable<SY&, decltype(A{}*SX{})>{}, int> =0> void axpy(size_t n, A a, SX* x, size_t incx, SY* y, size_t incy){BLAS(saxpy)(n, a, (s const*)(x), incx, (s*)(y), incy);}
