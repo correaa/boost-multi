@@ -132,22 +132,22 @@ auto uninitialized_copy_n(It first, Size n, ptr<T> d_first)
 
 template<class T1, class Q1, typename Size, class T2, class Q2, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
 auto copy_n(iterator<T1, 1, Q1*> first, Size count, iterator<T2, 1, ptr<Q2>> result)
-->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first ), sizeof(T1), count), result + count){
+->decltype(memcpy2D(result.base(), sizeof(T2)*stride(result), first.base(), sizeof(T1)*stride(first ), sizeof(T1), count), result + count){
 	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first ), sizeof(T1), count), result + count;}
 
 template<class T1, class Q1, typename Size, class T2, class Q2, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
 auto copy_n(iterator<T1, 1, ptr<Q1>> first, Size count, iterator<T2, 1, Q2*> result)
-->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result+count){
+->decltype(memcpy2D(result.base(), sizeof(T2)*stride(result), first.base(), sizeof(T1)*stride(first), sizeof(T1), count), result+count){
 	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result+count;}
 
 template<class T1, class Q1, typename Size, class T2, class Q2, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
 auto copy_n(iterator<T1, 1, ptr<Q1>> first, Size count, iterator<T2, 1, ptr<Q2>> result)
-->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count){
+->decltype(memcpy2D(result.base(), sizeof(T2)*stride(result), first.base(), sizeof(T1)*stride(first), sizeof(T1), count), result + count){
 	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count;}
 
 template<class T1, class... Q1, typename Size, class T2, class... Q2, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
 auto copy_n(iterator<T1, 1, managed::ptr<Q1...>> first, Size count, iterator<T2, 1, managed::ptr<Q2...>> result)
-->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count){
+->decltype(memcpy2D(result.base(), sizeof(T2)*stride(result), first.base(), sizeof(T1)*stride(first), sizeof(T1), count), result + count){
 	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count;}
 
 template<class T1, class... Q1, class T2, class... Q2, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
@@ -165,13 +165,13 @@ template<class T1, class T1P, class Size, class T2, class T2P,
 //	typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>
 >
 auto copy_n(array_iterator<T1, 1, ptr<T1P>> first, Size count, array_iterator<T1, 1, ptr<T1P>> result)
-->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count){
-	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count;}
+//->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count)
+{	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count;}
 
 template<class T1, class T1P, class T2, class T2P>
 auto copy(array_iterator<T1, 1, cuda::ptr<T1P>> first, array_iterator<T1, 1, cuda::ptr<T1P>> last, array_iterator<T2, 1, cuda::ptr<T2P>> result)
-->decltype(cuda::copy_n(first, last - first, result)){
-	return cuda::copy_n(first, last - first, result);}
+//->decltype(cuda::copy_n(first, last - first, result))
+{	return cuda::copy_n(first, last - first, result);}
 
 //template<class T1, class P1, class T2, class P2>
 //auto copy(array_iterator<T1, 1, cuda::ptr<P1 >> first, array_iterator<T1, 1, cuda::ptr<P1 >> last, array_iterator<T2, 1, cuda::ptr<P2>> result){
@@ -230,8 +230,12 @@ auto copy_n(
 	array_iterator<T1, 1, managed::ptr<T1const, A1...>> first, Size count,
 	array_iterator<T2, 1, managed::ptr<T2const, A2...>> d_first
 )
-->decltype(cuda::copy_n(array_iterator<T1, 1, cuda::ptr<T1const, A1...>>(first), count, array_iterator<T2, 1, cuda::ptr<T2const, A2...>>(d_first)), d_first + count){
-	return cuda::copy_n(array_iterator<T1, 1, cuda::ptr<T1const, A1...>>(first), count, array_iterator<T2, 1, cuda::ptr<T2const, A2...>>(d_first)), d_first + count;}
+//->decltype(cuda::copy_n(array_iterator<T1, 1, cuda::ptr<T1const, A1...>>(first), count, array_iterator<T2, 1, cuda::ptr<T2const, A2...>>(d_first)), d_first + count){
+//{	return cuda::copy_n(array_iterator<T1, 1, cuda::ptr<T1const, A1...>>(first), count, array_iterator<T2, 1, cuda::ptr<T2const, A2...>>(d_first)), d_first + count;}
+{
+	static_assert( std::is_trivially_assignable_v<T2&, T1> );
+	return memcpy2D(base(d_first), sizeof(T2)*stride(d_first), base(first), sizeof(T1)*stride(first), sizeof(T1), count), d_first+count;
+}
 
 template<class T1, class T1const, class... A1, class T2, class T2const, class... A2>
 auto copy(
