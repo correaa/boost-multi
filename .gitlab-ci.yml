@@ -163,7 +163,7 @@ clang++-10:
     - cmake --build . --verbose -- --quiet --no-print-directory
     - ctest --output-on-failure
 
-clang++-11-std17:
+clang++-11:
   image: pauldreik/llvm-11
   stage: test
   script:
@@ -172,7 +172,7 @@ clang++-11-std17:
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
-    - cmake .. -DCMAKE_CXX_STANDARD=17
+    - cmake ..
     - cmake --build .
     - ctest --output-on-failure
 
