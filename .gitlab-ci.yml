@@ -27,6 +27,7 @@ g++-latest-std20:
     - cmake --build . --verbose
     - ctest --output-on-failure
 
+# TODO investigate bug in GCC with -DCMAKE_BUILD_TYPE=Release
 g++-current-debug:
   stage: test
   script:
