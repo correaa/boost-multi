@@ -14,8 +14,8 @@ $CXX $0 -o $0x -lcudart -lcufft `pkg-config --libs fftw3` -lboost_unit_test_fram
 
 #include<numeric>
 
-#include<experimental/tuple>
-#include<experimental/array>
+#include<tuple> // std::apply
+#include<array>
 
 #include<vector>
 
@@ -151,10 +151,10 @@ public:
 		assert( CUFFT_FORWARD == s or CUFFT_INVERSE == s or s == 0 );
 		assert( sizes(i) == sizes(o) );
 
-		using std::experimental::apply;// using std::experimental::make_array;
-		auto ion      = apply([](auto... t){return std::array< size_type, D>{static_cast< size_type>(t)...};}, sizes  (i));
-		auto istrides = apply([](auto... t){return std::array<ssize_type, D>{static_cast<ssize_type>(t)...};}, strides(i));
-		auto ostrides = apply([](auto... t){return std::array<ssize_type, D>{static_cast<ssize_type>(t)...};}, strides(o));
+//		using std::experimental::apply;// using std::experimental::make_array;
+		auto ion      = std::apply([](auto... t){return std::array< size_type, D>{static_cast< size_type>(t)...};}, sizes  (i));
+		auto istrides = std::apply([](auto... t){return std::array<ssize_type, D>{static_cast<ssize_type>(t)...};}, strides(i));
+		auto ostrides = std::apply([](auto... t){return std::array<ssize_type, D>{static_cast<ssize_type>(t)...};}, strides(o));
 
 		std::array<std::tuple<int, int, int>, I::dimensionality> ssn;
 		for(std::size_t i = 0; i != ssn.size(); ++i) ssn[i] = std::make_tuple(istrides[i], ostrides[i], ion[i]);
@@ -217,13 +217,12 @@ public:
 #endif
 	{
 		assert( CUFFT_FORWARD == sign or CUFFT_INVERSE == sign or sign == 0 );
-		using namespace std::experimental; //using std::apply;
 		assert(sizes(*first)==sizes(*d_first));
-		auto ion      = apply([](auto... t){return std::array< size_type, D>{static_cast< size_type>(t)...};}, sizes  (*  first));
+		auto ion      = std::apply([](auto... t){return std::array< size_type, D>{static_cast< size_type>(t)...};}, sizes  (*  first));
 
 		assert(strides(*first) == strides(*last));
-		auto istrides = apply([](auto... t){return std::array<ssize_type, D>{static_cast<ssize_type>(t)...};}, strides(*  first));
-		auto ostrides = apply([](auto... t){return std::array<ssize_type, D>{static_cast<ssize_type>(t)...};}, strides(*d_first));
+		auto istrides = std::apply([](auto... t){return std::array<ssize_type, D>{static_cast<ssize_type>(t)...};}, strides(*  first));
+		auto ostrides = std::apply([](auto... t){return std::array<ssize_type, D>{static_cast<ssize_type>(t)...};}, strides(*d_first));
 
 		std::array<std::tuple<int, int, int>, std::decay_t<decltype(*It1{})>::dimensionality> ssn;
 		for(std::size_t i = 0; i != ssn.size(); ++i) ssn[i] = std::make_tuple(istrides[i], ostrides[i], ion[i]);
