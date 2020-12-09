@@ -59,7 +59,7 @@ set(TEST_SRCS
   gemm.cpp
   scal.cpp
   traits.cpp
-#  trsm.cpp
+  trsm.cpp
 )
 
 foreach(TEST_FILE ${TEST_SRCS})

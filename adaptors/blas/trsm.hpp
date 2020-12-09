@@ -31,12 +31,12 @@ auto trsm_base_aux(A&& a){return underlying(base(a));}
 using core::trsm;
 
 template<class A2D, class B2D>
-auto trsm_move(filling a_nonz, diagonal a_diag, typename A2D::element_type alpha, A2D const& a, B2D&& b, side s = side::left)
-->decltype(
-	trsm('R', static_cast<char>(+a_nonz), 'N', static_cast<char>(a_diag), size(rotated(b)), b.size(), alpha, trsm_base_aux(a), stride(a)         , trsm_base_aux(b), b.stride())
-	, 
-	std::forward<B2D>(b)
-)
+decltype(auto) trsm_move(filling a_nonz, diagonal a_diag, typename A2D::element_type alpha, A2D const& a, B2D&& b, side s = side::left)
+//->decltype(
+//	trsm('R', 'X', 'N', 'D', size(rotated(b)), b.size(), alpha, trsm_base_aux(a), stride(a)         , trsm_base_aux(b), b.stride())
+//	,
+//	std::forward<B2D>(b)
+//)
 {
 	if(s==side::left) assert( size(rotated(a)) == size(b) );
 	else              assert( size(rotated(b)) == size(a) );
@@ -82,36 +82,36 @@ auto trsm(filling a_nonz, diagonal a_diag, AA alpha, A2D const& a, B2D&& b)
 	return std::forward<B2D>(b);
 }
 
-template<typename AA, class A2D, class B2D>
-NODISCARD("because last argument is const")
-auto trsm(filling a_nonz, diagonal a_diag, AA alpha, A2D const& a, B2D const& b){
-	auto bcpy = decay(b);
-	return trsm_move(a_nonz, a_diag, alpha, a, bcpy);
-}
+//template<typename AA, class A2D, class B2D>
+//NODISCARD("because last argument is const")
+//auto trsm(filling a_nonz, diagonal a_diag, AA alpha, A2D const& a, B2D const& b){
+//	auto bcpy = decay(b);
+//	return trsm_move(a_nonz, a_diag, alpha, a, bcpy);
+//}
 
 template<class AA, class A2D, class B2D>
 auto trsm(filling a_nonz, AA alpha, A2D const& a, B2D&& b)
 ->decltype(trsm(a_nonz, diagonal::general, alpha, a, std::forward<B2D>(b))){
 	return trsm(a_nonz, diagonal::general, alpha, a, std::forward<B2D>(b));}
 
-template<class AA, class A2D, class B2D>
-NODISCARD("because input argument is const")
-auto trsm(filling a_nonz, AA alpha, A2D const& a, B2D const& b)
-->decltype(trsm(a_nonz, diagonal::general, alpha, a, std::forward<B2D>(b))){
-	return trsm(a_nonz, diagonal::general, alpha, a, std::forward<B2D>(b));}
+//template<class AA, class A2D, class B2D>
+//NODISCARD("because input argument is const")
+//auto trsm(filling a_nonz, AA alpha, A2D const& a, B2D const& b)
+//->decltype(trsm(a_nonz, diagonal::general, alpha, a, std::forward<B2D>(b))){
+//	return trsm(a_nonz, diagonal::general, alpha, a, std::forward<B2D>(b));}
 
 template<class A2D, class B2D, class T = typename A2D::element_type>
 auto trsm(filling a_nonz, A2D const& a, B2D&& b)
 ->decltype(trsm(a_nonz, T{1.}, a, std::forward<B2D>(b))){
 	return trsm(a_nonz, T{1.}, a, std::forward<B2D>(b));}
 
-template<class A2D, class B2D, class T = typename A2D::element_type>
-NODISCARD("because last argument is const")
-auto trsm(filling a_nonz, A2D const& a, B2D const& b)
-//	return true;
-//}
-->decltype(trsm(a_nonz, T{1.}, a, std::forward<B2D>(b))){
-	return trsm(a_nonz, T{1.}, a, std::forward<B2D>(b));}
+//template<class A2D, class B2D, class T = typename A2D::element_type>
+//NODISCARD("because last argument is const")
+//auto trsm(filling a_nonz, A2D const& a, B2D const& b)
+////	return true;
+////}
+//->decltype(trsm(a_nonz, T{1.}, a, std::forward<B2D>(b))){
+//	return trsm(a_nonz, T{1.}, a, std::forward<B2D>(b));}
 
 }}}
 

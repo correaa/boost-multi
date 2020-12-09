@@ -89,14 +89,14 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column_cpu, *utf::tolerance(0.00001
 		{NAN       ,  7. + 4.*I,  1. + 8.*I},
 		{NAN       , NAN       ,  8. + 2.*I}
 	};
-	multi::array<complex, 2> const B = {
+	multi::array<complex, 2> B = {
 		{1. - 9.*I},
 		{2. - 2.*I},
 		{3. + 1.*I}
 	};
-	auto C = blas::trsm(blas::filling::lower, 2.+1.*I, blas::H(A), B); // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
-	BOOST_TEST_REQUIRE( real(C[2][0]) == -4.16471 );
-	BOOST_TEST_REQUIRE( imag(C[2][0]) ==  8.25882 );
+	blas::trsm(blas::filling::lower, 2.+1.*I, blas::H(A), B); // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
+	BOOST_TEST_REQUIRE( real(B[2][0]) == -4.16471 );
+	BOOST_TEST_REQUIRE( imag(B[2][0]) ==  8.25882 );
 }
 
 //BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column_cuda, *utf::tolerance(0.00001)){
