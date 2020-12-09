@@ -390,14 +390,14 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex_thrust){
 		complex c; blas::dot(A[1], A[2], c);
 		BOOST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}) );
 	}
-//	{
-//		complex c = blas::dot(A[1], A[2]);
-//		BOOST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}) );
-//	}
-//	{
-//		complex c = blas::dot(A[1], blas::C(A[2]));
-//		BOOST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}, std::plus<>{}, [](auto a, auto b){return a*conj(b);}) );
-//	}
+	{
+		complex c = blas::dot(A[1], A[2]);
+		BOOST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}) );
+	}
+	{
+		complex c = blas::dot(A[1], blas::C(A[2]));
+		BOOST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}, std::plus<>{}, [](auto a, auto b){return a*conj(b);}) );
+	}
 }
 #endif
 
