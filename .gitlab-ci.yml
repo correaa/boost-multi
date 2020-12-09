@@ -124,11 +124,11 @@ memcheck:
     - cmake --build . --verbose
     - ctest -T memcheck --output-on-failure
 
-clang++-current:
+clang++-9:
   stage: test
   script:
     - export CXX="clang++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libblas-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang-9 cmake make libboost-test-dev libblas-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
@@ -136,11 +136,11 @@ clang++-current:
     - cmake --build . --verbose
     - ctest --output-on-failure
 
-clang++-current-std17:
+clang++-9-std17:
   stage: test
   script:
     - export CXX="clang++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libblas-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang-9 cmake make libboost-test-dev libblas-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
@@ -148,12 +148,12 @@ clang++-current-std17:
     - cmake --build . --verbose
     - ctest --output-on-failure
 
-clang++-asan:
+clang++-9-asan:
   stage: test
   script:
     - export CXX="clang++"
     - export CXXFLAGS="-fsanitize=undefined -fsanitize=address -fno-omit-frame-pointer"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libblas-dev llvm
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang-9 cmake make libboost-test-dev libblas-dev llvm
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
