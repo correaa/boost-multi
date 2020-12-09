@@ -303,6 +303,7 @@ gemm(ContextPtr ctxtp, Scalar s, A2D const& a, B2D const& b){
 
 //#pragma warning (disable:1011)
 //#pragma diag_suppress 0117 //"implicit_return_from_non_void_function"
+//#pragma diag_suppress 940 //"implicit_return_from_non_void_function"
 template<               class Scalar, class A2D, class B2D> 
 auto gemm(                Scalar s, A2D const& a, B2D const& b){
 	;;;; if constexpr(not is_conjugated<A2D>{})
