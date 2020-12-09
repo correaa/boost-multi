@@ -127,7 +127,7 @@ memcheck:
 clang++-9:
   stage: test
   script:
-    - export CXX="clang++"
+    - export CXX="clang++-9"
     - apt-get update && apt-get install --no-install-recommends -y --quiet clang-9 cmake make libboost-test-dev libblas-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
@@ -139,7 +139,7 @@ clang++-9:
 clang++-9-std17:
   stage: test
   script:
-    - export CXX="clang++"
+    - export CXX="clang++-9"
     - apt-get update && apt-get install --no-install-recommends -y --quiet clang-9 cmake make libboost-test-dev libblas-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
@@ -151,7 +151,7 @@ clang++-9-std17:
 clang++-9-asan:
   stage: test
   script:
-    - export CXX="clang++"
+    - export CXX="clang++-9"
     - export CXXFLAGS="-fsanitize=undefined -fsanitize=address -fno-omit-frame-pointer"
     - apt-get update && apt-get install --no-install-recommends -y --quiet clang-9 cmake make libboost-test-dev libblas-dev llvm
     - ln --symbolic --force . ../multi
