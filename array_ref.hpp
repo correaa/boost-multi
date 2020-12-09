@@ -1344,14 +1344,23 @@ struct array_ref :
 protected:
 	constexpr array_ref() noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{}, nullptr}{}
-#if __cplusplus >= 201703L and not defined(__INTEL_COMPILER)
-protected: 
-	[[deprecated("references are not copyable, use &&")]]
+//#if __cplusplus >= 201703L and not defined(__INTEL_COMPILER)
+//protected: 
+//	[[deprecated("references are not copyable, use &&")]]
+//	array_ref(array_ref const&) = default; // don't try to use `auto` for references, use `auto&&` or explicit value type
+//#else
+//public:
+//	array_ref(array_ref const&) = default;
+//#endif
+//#if defined(__NVCC__)
+//	array_ref(array_ref const&) = default;
+//	array_ref(array_ref&&) = default;
+//#endif
+protected:
+	[[deprecated("references are not copyable, use auto&&")]]
 	array_ref(array_ref const&) = default; // don't try to use `auto` for references, use `auto&&` or explicit value type
-#else
 public:
-	array_ref(array_ref const&) = default;
-#endif
+	array_ref(array_ref&&) = default; // this needs to be public in c++14
 public:
 	template<class OtherPtr, class=std::enable_if_t<not std::is_same<OtherPtr, ElementPtr>{}>>
 	array_ref(array_ref<T, D, OtherPtr>&& other)
@@ -1470,14 +1479,16 @@ public:
 };
 
 template<class T, typename Ptr>
-class array_ptr<T, 0, Ptr>{
-	mutable multi::array_ref<T, 0, Ptr> Ref_;
+class array_ptr<T, 0, Ptr> : multi::array_ref<T, 0, Ptr>{// Ref_;
 public:
-	array_ptr(Ptr p, index_extensions<0> x = {}) : Ref_(p, x){}
+//	array_ptr(array_ptr&&) : Ref_{
+	array_ptr(Ptr p, index_extensions<0> x = {}) : multi::array_ref<T, 0, Ptr>(p, x){}
 //	operator bool() const{return Ref_.base();}
-	operator Ptr () const{return Ref_.base();}
-	constexpr multi::array_ref<T, 0, Ptr>& operator* () const{return                Ref_ ;}
-	constexpr multi::array_ref<T, 0, Ptr>* operator->() const{return std::addressof(Ref_);}
+	explicit operator Ptr () const{return this->base();}
+	friend bool operator==(array_ptr const& self, array_ptr const& other){return self.base() == other.base();}
+	friend bool operator!=(array_ptr const& self, array_ptr const& other){return self.base() != other.base();}
+	constexpr multi::array_ref<T, 0, Ptr>& operator* () const{return const_cast<array_ptr&>(*this);}//               Ref_ ;}
+	constexpr multi::array_ref<T, 0, Ptr>* operator->() const{return const_cast<array_ptr*>(this);}//std::addressof(Ref_);}
 };
 
 template<class TT, std::size_t N>
