@@ -30,7 +30,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	enable_language(CUDA)
-	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"")
+	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")# -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"")
 endif()
 
 find_package(CUDA QUIET)
@@ -59,6 +59,7 @@ set(TEST_SRCS
   gemm.cpp
   scal.cpp
   traits.cpp
+#  trsm.cpp
 )
 
 foreach(TEST_FILE ${TEST_SRCS})
