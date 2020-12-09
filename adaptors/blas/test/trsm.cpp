@@ -7,12 +7,12 @@ $CXX $0 -o $0x -lcudart -lcublas `pkg-config --libs blas` -lboost_unit_test_fram
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
-#include "../../../memory/adaptors/cuda/managed/ptr.hpp"
+//#include "../../../memory/adaptors/cuda/managed/ptr.hpp"
 
 #include "../../../adaptors/blas.hpp"
-#include "../../../adaptors/blas/cuda.hpp"
+//#include "../../../adaptors/blas/cuda.hpp"
 
-#include "../../../adaptors/cuda.hpp"
+//#include "../../../adaptors/cuda.hpp"
 #include "../../../array.hpp"
 
 namespace multi = boost::multi;
@@ -99,24 +99,24 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column_cpu, *utf::tolerance(0.00001
 	BOOST_TEST_REQUIRE( imag(C[2][0]) ==  8.25882 );
 }
 
-BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column_cuda, *utf::tolerance(0.00001)){
-	namespace cuda = multi::cuda;
-	cuda::array<complex, 2> A = {
-		{ 1.,  3.,  4.},
-		{NAN,  7.,  1.},
-		{NAN, NAN,  8.}
-	};
-//	multi::cuda::array<complex, 2> const B = {
-//		{1.},
-//		{2.},
-//		{3.}
+//BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column_cuda, *utf::tolerance(0.00001)){
+//	namespace cuda = multi::cuda;
+//	cuda::array<complex, 2> A = {
+//		{ 1.,  3.,  4.},
+//		{NAN,  7.,  1.},
+//		{NAN, NAN,  8.}
 //	};
-	namespace blas = multi::blas;
-//	auto Bcpy = blas::trsm(blas::filling::upper, 1., A, B); // B ⬅ α Inv[A].B, B† ⬅ B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
-//	multi::array<complex, 2> Bcpu = Bcpy;
-//	BOOST_TEST_REQUIRE( std::real(Bcpu[2][0]) == 0.375 );
-//	BOOST_TEST_REQUIRE( std::imag(Bcpu[2][0]) == 0.    );
-}
+////	multi::cuda::array<complex, 2> const B = {
+////		{1.},
+////		{2.},
+////		{3.}
+////	};
+//	namespace blas = multi::blas;
+////	auto Bcpy = blas::trsm(blas::filling::upper, 1., A, B); // B ⬅ α Inv[A].B, B† ⬅ B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
+////	multi::array<complex, 2> Bcpu = Bcpy;
+////	BOOST_TEST_REQUIRE( std::real(Bcpu[2][0]) == 0.375 );
+////	BOOST_TEST_REQUIRE( std::imag(Bcpu[2][0]) == 0.    );
+//}
 
 #if 0
 

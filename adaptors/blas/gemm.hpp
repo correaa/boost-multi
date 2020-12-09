@@ -301,10 +301,8 @@ gemm(ContextPtr ctxtp, Scalar s, A2D const& a, B2D const& b){
 	return {ctxtp, s, begin(a), end(a), begin(b)};
 }
 
-#if defined(__NVCC__)
-#pragma push
-#pragma diag_suppress 0117 //"implicit_return_from_non_void_function"
-#endif
+//#pragma warning (disable:1011)
+//#pragma diag_suppress 0117 //"implicit_return_from_non_void_function"
 template<               class Scalar, class A2D, class B2D> 
 auto gemm(                Scalar s, A2D const& a, B2D const& b){
 	;;;; if constexpr(not is_conjugated<A2D>{})
@@ -312,9 +310,6 @@ auto gemm(                Scalar s, A2D const& a, B2D const& b){
 	else if constexpr(    is_conjugated<A2D>{})
 		return blas::gemm(blas::default_context_of(underlying(a.base())), s, a, b);
 }
-#if defined(__NVCC__)
-#pragma pop
-#endif
 
 namespace operators{
 	template<class A2D, class B2D> 
