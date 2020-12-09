@@ -27,7 +27,6 @@ g++-latest-std20:
     - cmake --build . --verbose
     - ctest --output-on-failure
 
-# TODO investigate bug in GCC with -DCMAKE_BUILD_TYPE=Release
 g++-current-debug:
   stage: test
   script:
@@ -37,6 +36,18 @@ g++-current-debug:
     - $CXX --version
     - mkdir build && cd build
     - cmake .. -DCMAKE_BUILD_TYPE=Debug
+    - cmake --build . --verbose
+    - ctest --output-on-failure
+    
+g++-current-release:
+  stage: test
+  script:
+    - export CXX="g++"
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libblas-dev
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Release
     - cmake --build . --verbose
     - ctest --output-on-failure
 
