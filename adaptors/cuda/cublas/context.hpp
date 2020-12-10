@@ -28,14 +28,53 @@ public:
 		default : assert(0);
 		}
 		return cublasOperation_t{};
-	}()}
-	{}
+	}()}{}
 	operator cublasOperation_t() const{return impl_;}
+};
+
+class side{
+	cublasSideMode_t impl_;
+public:
+	side(char trans) : impl_{[=]{
+		switch(trans){
+		case 'L': return CUBLAS_SIDE_LEFT;
+		case 'R': return CUBLAS_SIDE_RIGHT;
+		}
+		assert(0); return cublasSideMode_t{};
+	}()}{}
+	operator cublasSideMode_t() const{return impl_;}
+};
+
+class filling{
+	cublasFillMode_t impl_;
+public:
+	filling(char trans) : impl_{[=]{
+		switch(trans){
+		case 'L': return CUBLAS_FILL_MODE_LOWER;
+		case 'U': return CUBLAS_FILL_MODE_UPPER;
+		}
+		assert(0); return cublasFillMode_t{};
+	}()}{}
+	operator cublasFillMode_t() const{return impl_;}
+};
+
+class diagonal{
+	cublasDiagType_t impl_;
+public:
+	diagonal(char trans) : impl_{[=]{
+		switch(trans){
+		case 'N': return CUBLAS_DIAG_NON_UNIT;
+		case 'U': return CUBLAS_DIAG_UNIT;
+		}
+		assert(0); return cublasDiagType_t{};
+	}()}{}
+	operator cublasDiagType_t() const{return impl_;}
 };
 
 using blas::is_z;
 using blas::is_d;
 using std::is_assignable;
+using std::is_convertible_v;
 
 template<class Derived>
 struct basic_context{
@@ -43,12 +82,21 @@ struct basic_context{
 	static int version(){int ret; cublas::call<cublasGetVersion>(nullptr, &ret); return ret;}
 	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename std::pointer_traits<CCP>::element_type,
 		std::enable_if_t<
-		is_z<AA>{} and is_z<BB>{} and is_z<CC>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{})>{} and
-		std::is_convertible_v<AAP, memory::cuda::ptr<AA>> and std::is_convertible_v<BBP, memory::cuda::ptr<BB>> and std::is_convertible_v<CCP, memory::cuda::ptr<CC>>
-		, int> =0 
+			is_z<AA>{} and is_z<BB>{} and is_z<CC>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{})>{} and
+			std::is_convertible_v<AAP, memory::cuda::ptr<AA>> and std::is_convertible_v<BBP, memory::cuda::ptr<BB>> and std::is_convertible_v<CCP, memory::cuda::ptr<CC>>
+		,int> =0
 	>
 	void gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc){
 		cublas::call<cublasZgemm>(static_cast<Derived&>(*this).get(), cublas::operation{transA}, cublas::operation{transB}, m, n, k, (cuDoubleComplex const*)alpha, (cuDoubleComplex const*)raw_pointer_cast(aa), lda, (cuDoubleComplex const*)raw_pointer_cast(bb), ldb, (cuDoubleComplex const*)beta, (cuDoubleComplex*)raw_pointer_cast(cc), ldc);
+	}
+	template<class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BBP, class BB = typename pointer_traits<BBP>::element_type,
+		std::enable_if_t<
+			is_z<AA>{} and is_z<BB>{} and is_assignable<BB&, decltype(AA{}*BB{}/ALPHA{})>{} and is_assignable<BB&, decltype(ALPHA{}*BB{}/AA{})>{} and 
+			is_convertible_v<AAP, memory::cuda::ptr<AA>> and is_convertible_v<BBP, memory::cuda::ptr<BB>>
+		,int> =0
+	>
+	void trsm(char side, char ul, char transA, char diag, ssize_t m, ssize_t n, ALPHA alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb){
+		cublas::call<cublasZtrsm>(static_cast<Derived&>(*this).get(), cublas::side{side}, cublas::filling{ul}, cublas::operation{transA}, cublas::diagonal{diag}, m, n, (cuDoubleComplex const*)&alpha, (cuDoubleComplex const*)raw_pointer_cast(aa), lda, (cuDoubleComplex*)raw_pointer_cast(bb), ldb);
 	}
 };
 
@@ -60,23 +108,18 @@ public:
 	static int version(){int ret; cublas::call<cublasGetVersion>(nullptr, &ret); return ret;}
 };
 
-class synchronized_context : unsynchronized_context{
-	mutable std::mutex mutex_;
-public:
-	template<class... Args> auto gemm(Args... args) const
-	->decltype(unsynchronized_context::gemm(args...)){
-		std::scoped_lock lock{mutex_};
-		return unsynchronized_context::gemm(args...);}
-};
-
 class global_context{
 	static unsynchronized_context& get_instance(){
 		static unsynchronized_context ctxt;
 		return ctxt;
 	};
+public:
 	template<class... Args> auto gemm(Args... args) const
 	->decltype(get_instance().gemm(args...)){
 		return get_instance().gemm(args...);}
+	template<class... Args> auto trsm(Args... args) const
+	->decltype(get_instance().trsm(args...)){
+		return get_instance().trsm(args...);}
 };
 
 struct context{
