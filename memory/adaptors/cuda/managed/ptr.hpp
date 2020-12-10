@@ -167,7 +167,10 @@ public:
 	using reference = typename std::pointer_traits<raw_pointer>::element_type&;//ref<element_type>;
 //	[[SLOW]] 
 //	[[deprecated]] 
-	constexpr reference operator*() const{return *(this->rp_);}
+	constexpr reference operator*() const{
+		cudaDeviceSynchronize();
+		return *(this->rp_);
+	}
 	constexpr reference operator[](difference_type n){return *((*this)+n);}
 	friend inline ptr to_address(ptr const& p){return p;}
 	constexpr typename ptr::difference_type operator-(ptr const& other) const{return (this->rp_)-other.rp_;}
