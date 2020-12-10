@@ -434,7 +434,6 @@ namespace core{
 
 #define xsyrk(T) template<class UL, class C, class S>             v syrk(        UL ul, C transA,             S n, S k, T    alpha, T const* A, S lda,             T    beta, T* CC, S ldc){BLAS(T##syrk)(      ul, transA,            BC(n), BC(k), alpha, A, BC(lda),        beta, CC, BC(ldc));}
 #define xherk(T) template<class UL, class C, class S, class Real> v herk(        UL ul, C transA,             S n, S k, Real alpha, T const* A, S lda,             Real beta, T* CC, S ldc){BLAS(T##herk)(      ul, transA,            BC(n), BC(k), alpha, A, BC(lda),        beta, CC, BC(ldc));}
-#define xtrsm(T) template<class C, class UL, class Di, class S>   v trsm(C side, UL ul, C transA, Di di, S m, S n,      T    alpha, T const* A, S lda, T* B, S ldb                        ){BLAS(T##trsm)(side, ul, transA, di, BC(m), BC(n),        alpha, A,    lda , B, ldb                  );}
 
 namespace core{
 
@@ -454,16 +453,35 @@ v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* a
 	if(transB =='N') MULTI_ASSERT1(ldb >= max(1l, k)); else MULTI_ASSERT1(ldb >= max(1l, n));                                                                           \
 	MULTI_ASSERT1( aa != cc );                                                                                                                                                 \
 	MULTI_ASSERT1( bb != cc );                                                                                                                                                 \
-	MULTI_ASSERT1(ldc >= max(1l, m));                                                                                                                                          \
+	MULTI_ASSERT1(ldc >= max(ssize_t{1}, m));                                                                                                                                          \
 	if(*beta != 0.) MULTI_ASSERT1((is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{} + BETA{}*CC{})>{}));                                                                          \
 	BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), *(T const*)alpha, (T const*)static_cast<AA*>(aa), BC(lda), (T const*)static_cast<BB*>(bb), BC(ldb), *(T const*)beta, (T*)static_cast<CC*>(cc), BC(ldc));               \
 }
 xgemm(s) xgemm(d) xgemm(c) xgemm(z)
 #undef xgemm
 
+#define xtrsm(T) \
+template<class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BBP, class BB = typename pointer_traits<BBP>::element_type, \
+enable_if_t< \
+	is_##T<AA>{} and is_##T<BB>{} and is_assignable<BB&, decltype(AA{}*BB{}/ALPHA{})>{} and is_assignable<BB&, decltype(ALPHA{}*BB{}/AA{})>{} and \
+	is_convertible_v<AAP, AA*> and is_convertible_v<BBP, BB*> \
+,int> =0> \
+v trsm(char side, char ul, char transA, char diag, ssize_t m, ssize_t n, ALPHA alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb){ \
+	assert( side   == 'L' or side    == 'R' ); \
+	assert( ul     == 'U' or ul     == 'L' ); \
+	assert( transA == 'N' or transA == 'T' or transA == 'C' ); \
+	assert( diag     == 'U' or diag     == 'N' ); \
+	assert( m >= 0 and n >= 0 ); \
+	using std::max; \
+	if(side == 'L') assert(lda >= max(ssize_t{1}, m)); else if(side == 'R') assert( lda >= max(ssize_t{1}, n) ); \
+	assert( ldb >= max(ssize_t{1}, m) ); \
+	BLAS(T##trsm)(side, ul, transA, diag, BC(m), BC(n), alpha, (T const*)static_cast<AA*>(aa), BC(lda), (T*)static_cast<BB*>(bb), BC(ldb)); \
+}
+xtrsm(s) xtrsm(d) xtrsm(c) xtrsm(z)
+#undef xtrsm
+
 xsyrk(s) xsyrk(d) xsyrk(c) xsyrk(z)
 	              xherk(c) xherk(z)
-xtrsm(s) xtrsm(d) xtrsm(c) xtrsm(z)
 
 }
 
@@ -503,6 +521,11 @@ struct context{ // stateless (and thread safe)
 	static auto dotu(As&&... as)
 	->decltype(core::dotu(std::forward<As>(as)...)){
 		return core::dotu(std::forward<As>(as)...);}
+
+	template<class... As>
+	static auto trsm(As&&... as)
+	->decltype(core::trsm(std::forward<As>(as)...)){
+		return core::trsm(std::forward<As>(as)...);}
 
 };
 

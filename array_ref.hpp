@@ -336,7 +336,7 @@ public:
 #else
 protected:
 #endif
-	basic_array(basic_array&&) = default; // if you need to generate a copy you can't use `auto` here, use `decay`.
+	basic_array(basic_array&&) = default; // if you need to generate a copy you can't use `auto` here, use `decay`. maybe you want to return `decltype(auto)`.
 #else
 public: 
 	basic_array(basic_array&&) = default; // in C++ < 17 this is necessary to return references from functions

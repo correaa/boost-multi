@@ -3,7 +3,7 @@ $CXX $0 -o $0x -lcudart -lcublas `pkg-config --libs blas` -lboost_unit_test_fram
 #endif
 // © Alfredo A. Correa 2019-2020
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS trsm"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS trsm"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
@@ -15,6 +15,8 @@ $CXX $0 -o $0x -lcudart -lcublas `pkg-config --libs blas` -lboost_unit_test_fram
 
 //#include "../../../adaptors/cuda.hpp"
 #include "../../../array.hpp"
+
+#include <config.hpp>
 
 namespace multi = boost::multi;
 
@@ -400,6 +402,47 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_1x1_check, *utf::tolerance(0.00001)
 	}
 }
 
+#if defined(CUDA_FOUND) and CUDA_FOUND
+#include<thrust/complex.h>
+
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_thrust_nonsquare_default_diagonal_hermitized_gemm_check, *utf::tolerance(0.00001)){
+	namespace blas = multi::blas;
+	using complex = thrust::complex<double>; complex const I{0, 1};
+	multi::array<complex, 2> const A = {
+		{ 1. + 4.*I,  3.      ,  4.- 10.*I},
+		{ 0.       ,  7.- 3.*I,  1.       },
+		{ 0.       ,  0.      ,  8.-  2.*I}
+	};
+	{
+		{
+			multi::array<complex, 2> B = {
+				{1. + 1.*I, 5. + 3.*I},
+				{2. + 1.*I, 9. + 3.*I},
+				{3. + 1.*I, 1. - 1.*I},
+			};
+			auto S = blas::trsm(blas::side::left, blas::filling::lower, 1., blas::H(A), B); // S = A⁻¹†.B, S† = B†.A⁻¹
+			BOOST_TEST( S[2][1].real() == 1.71608  );
+		}
+		{
+			multi::array<complex, 2> B = {
+				{1. + 1.*I, 2. + 1.*I, 3. + 1.*I},
+				{5. + 3.*I, 9. + 3.*I, 1. - 1.*I}
+			};
+			auto S =+ blas::trsm(blas::side::left, blas::filling::upper, 1., A, blas::H(B)); // S = A⁻¹B†, S†=B.A⁻¹†, S=(B.A⁻¹)†, B <- S†, B <- B.A⁻¹†
+			BOOST_TEST( S[2][1].imag() == +0.147059 );
+			BOOST_TEST( B[1][2].imag() == -0.147059 );
+		}
+		{
+			multi::array<complex, 2> B = {
+				{1. + 1.*I, 2. + 1.*I, 3. + 1.*I},
+				{5. + 3.*I, 9. + 3.*I, 1. - 1.*I}
+			};
+			auto S =+ blas::trsm(blas::side::left, blas::filling::upper, 2., A, blas::H(B)); // S = A⁻¹B†, S†=B.A⁻¹†, S=(B.A⁻¹)†, B <- S†, B <- B.A⁻¹†
+			BOOST_TEST( S[2][1].imag() == +0.147059*2. );
+			BOOST_TEST( B[1][2].imag() == -0.147059*2. );
+		}
+	}
+}
 //BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column_cuda, *utf::tolerance(0.00001)){
 //	namespace cuda = multi::cuda;
 //	cuda::array<complex, 2> A = {
@@ -418,6 +461,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_1x1_check, *utf::tolerance(0.00001)
 ////	BOOST_TEST_REQUIRE( std::real(Bcpu[2][0]) == 0.375 );
 ////	BOOST_TEST_REQUIRE( std::imag(Bcpu[2][0]) == 0.    );
 //}
+#endif
 
 #if 0
 
