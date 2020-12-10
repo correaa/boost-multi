@@ -170,7 +170,7 @@ public:
 //	[[SLOW]] 
 //	[[deprecated]] 
 	constexpr reference operator*() const{
-		cudaDeviceSynchronize();
+//		cudaDeviceSynchronize();
 		return *(this->rp_);
 	}
 	constexpr reference operator[](difference_type n){return *((*this)+n);}
