@@ -15,6 +15,8 @@ $CXXX $CXXFLAGS $0 -o $0.$X `pkg-config --cflags --libs cudart-11.0`&&$0.$X&&rm 
 
 #include "../../../../detail/memory.hpp"
 
+#include<cuda_runtime.h> // cudaDeviceSynchronize
+
 #ifndef _DISABLE_CUDA_SLOW
 #ifdef NDEBUG
 #define SLOW deprecated("because it implies a slow element access to GPU memory")
