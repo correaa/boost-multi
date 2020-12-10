@@ -8,6 +8,7 @@
 #include "../managed/ptr.hpp"
 #include "../../../../adaptors/cuda.hpp"
 #include "../../../../adaptors/blas/gemm.hpp"
+#include "../../../../adaptors/blas/trsm.hpp"
 
 #include<random>
 
@@ -80,5 +81,44 @@ BOOST_AUTO_TEST_CASE(multi_cuda_mngd_ptr_call_gemm){
 //		BOOST_REQUIRE( c[1][2] == complex(112, 12) );
 //		BOOST_REQUIRE( b[1][2] == 2.+1.*I );
 //	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitized_gemm_check_managed_ptr, *utf::tolerance(0.00001)){
+	using complex = std::complex<double>; complex const I{0, 1};
+	multi::cuda::managed::array<complex, 2> const A = {
+		{ 1. + 4.*I,  3.,  4.- 10.*I},
+		{ 0.,  7.- 3.*I,  1.},
+		{ 0.,  0.,  8.- 2.*I}
+	};
+	namespace blas = multi::blas;
+	{
+		{
+			multi::cuda::managed::array<complex, 2> B = {
+				{1. + 1.*I, 5. + 3.*I},
+				{2. + 1.*I, 9. + 3.*I},
+				{3. + 1.*I, 1. - 1.*I},
+			};
+			blas::trsm(blas::side::left, blas::filling::lower, 1., blas::H(A), B); // S = A⁻¹†.B, S† = B†.A⁻¹
+			BOOST_TEST( real(B[2][1]) == 1.71608  );
+		}
+		{
+			multi::cuda::managed::array<complex, 2> B = {
+				{1. + 1.*I, 2. + 1.*I, 3. + 1.*I},
+				{5. + 3.*I, 9. + 3.*I, 1. - 1.*I}
+			};
+			auto const S =+ blas::trsm(blas::side::left, blas::filling::upper, 1., A, blas::H(B)); // S = A⁻¹B†, S†=B.A⁻¹†, S=(B.A⁻¹)†, B <- S†, B <- B.A⁻¹†
+			BOOST_TEST( imag(S[2][1]) == +0.147059 );
+			BOOST_TEST( imag(B[1][2]) == -0.147059 );
+		}
+		{
+			multi::cuda::managed::array<complex, 2> B = {
+				{1. + 1.*I, 2. + 1.*I, 3. + 1.*I},
+				{5. + 3.*I, 9. + 3.*I, 1. - 1.*I}
+			};
+			auto const S =+ blas::trsm(blas::side::left, blas::filling::upper, 2., A, blas::H(B)); // S = A⁻¹B†, S†=B.A⁻¹†, S=(B.A⁻¹)†, B <- S†, B <- B.A⁻¹†
+			BOOST_TEST( imag(S[2][1]) == +0.147059*2. );
+			BOOST_TEST( imag(B[1][2]) == -0.147059*2. );
+		}
+	}
 }
 
