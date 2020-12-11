@@ -233,7 +233,7 @@ auto copy_n(
 //->decltype(cuda::copy_n(array_iterator<T1, 1, cuda::ptr<T1const, A1...>>(first), count, array_iterator<T2, 1, cuda::ptr<T2const, A2...>>(d_first)), d_first + count){
 //{	return cuda::copy_n(array_iterator<T1, 1, cuda::ptr<T1const, A1...>>(first), count, array_iterator<T2, 1, cuda::ptr<T2const, A2...>>(d_first)), d_first + count;}
 {
-	static_assert( std::is_trivially_assignable_v<T2&, T1> );
+//	static_assert( std::is_trivially_assignable_v<T2&, T1> );
 	return memcpy2D(base(d_first), sizeof(T2)*stride(d_first), base(first), sizeof(T1)*stride(first), sizeof(T1), count), d_first+count;
 }
 
