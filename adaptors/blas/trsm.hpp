@@ -23,7 +23,7 @@ enum class diagonal : char{
 using core::trsm;
 
 template<class Context, class A2D, class B2D>
-decltype(auto) trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, blas::diagonal a_diag, typename A2D::element_type alpha, A2D const& a, B2D&& b){
+decltype(auto) trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, blas::diagonal a_diag, typename A2D::element_type alpha, A2D const& a, B2D&& b) try{
 	;;;; if(a_side == blas::side::left ) assert(size(~a) >= size( b));
 	else if(a_side == blas::side::right) assert(size( a) >= size(~b));
 
@@ -60,6 +60,14 @@ decltype(auto) trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, bla
 		#undef CTXT
 	}
 	return std::forward<B2D>(b);
+}catch(std::logic_error& le){
+	using std::to_string;
+	throw std::logic_error{
+		"couldn't do "+std::string(__PRETTY_FUNCTION__)+" of layout a_side="+ (char)a_side +" a_fill="+ (char)a_fill +" a_diag="+(char)a_diag+" alpha=xx"
+		+" a_strides="+to_string(stride(a))+","+to_string(stride(~a))+" a_sizes="+to_string(size(a)) +","+to_string(size(~a))
+		+" b_strides="+to_string(stride(b))+","+to_string(stride(~b))+" a_sizes="+to_string(size(b)) +","+to_string(size(~b))
+		+" because " + le.what()
+	};
 }
 
 template<class A2D, class B2D>
