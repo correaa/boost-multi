@@ -218,6 +218,28 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column_cpu, *utf::tolerance(0.00001
 	BOOST_TEST_REQUIRE( imag(B[2][0]) ==  8.25882 );
 }
 
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case, *utf::tolerance(0.00001)){
+	namespace blas = multi::blas;
+	multi::array<double, 2> const A = {{2.,},};
+	{
+		multi::array<double, 2> B = {{1., 2., 3.},};
+		auto const B_cpy = B;
+		blas::trsm(blas::side::left, blas::filling::lower, 1., A, B);
+		BOOST_REQUIRE( B[0][1] == B_cpy[0][1]/A[0][0] );
+	}
+	{
+		multi::array<double, 2> B = {
+			{1.}, 
+			{2.}, 
+			{3.},
+		};
+		auto const B_cpy = B;
+		blas::trsm(blas::side::left, blas::filling::lower, 1., A, blas::T(B));
+		BOOST_REQUIRE( blas::T(B)[0][1] == blas::T(B_cpy)[0][1]/A[0][0] );
+	}
+
+}
+
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare, *utf::tolerance(0.00001)){
 	namespace blas = multi::blas;
 	multi::array<double, 2> const A = {
