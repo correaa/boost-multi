@@ -1590,6 +1590,16 @@ BOOST_AUTO_TEST_CASE(blas_gemm_nx1_times_1x1_complex_inq_hydrogen_case){
 	BOOST_REQUIRE( c[1][0] == 6. );
 }
 
+BOOST_AUTO_TEST_CASE(blas_gemm_nx1_times_1x1_1x1_complex_inq_hydrogen_case){
+	using complex = std::complex<double>;
+	multi::array<complex, 2> const a({1, 1}, 2.);
+	multi::array<complex, 2> const b({1, 1}, 3.);
+
+	multi::array<complex, 2> c({1, 1}, 999.);
+	c = blas::gemm(1., a, b);
+	BOOST_REQUIRE( c[0][0] == 6. );
+}
+
 BOOST_AUTO_TEST_CASE(blas_gemm_inq_case){ // https://gitlab.com/correaa/boost-multi/-/issues/97
 
 	using complex = std::complex<double>;
