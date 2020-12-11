@@ -471,10 +471,10 @@ v trsm(char side, char ul, char transA, char diag, ssize_t m, ssize_t n, ALPHA a
 	assert( ul     == 'U' or ul     == 'L' ); \
 	assert( transA == 'N' or transA == 'T' or transA == 'C' ); \
 	assert( diag     == 'U' or diag     == 'N' ); \
-	assert( m >= 0 and n >= 0 ); \
+	MULTI_ASSERT1( m >= 0 and n >= 0 ); \
 	using std::max; \
-	if(side == 'L') assert(lda >= max(ssize_t{1}, m)); else if(side == 'R') assert( lda >= max(ssize_t{1}, n) ); \
-	assert( ldb >= max(ssize_t{1}, m) ); \
+	if(side == 'L') MULTI_ASSERT1(lda >= max(ssize_t{1}, m)); else if(side == 'R') assert( lda >= max(ssize_t{1}, n) ); \
+	MULTI_ASSERT1( ldb >= max(ssize_t{1}, m) ); \
 	BLAS(T##trsm)(side, ul, transA, diag, BC(m), BC(n), alpha, (T const*)static_cast<AA*>(aa), BC(lda), (T*)static_cast<BB*>(bb), BC(ldb)); \
 }
 xtrsm(s) xtrsm(d) xtrsm(c) xtrsm(z)
