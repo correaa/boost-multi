@@ -33,9 +33,9 @@ decltype(auto) trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, bla
 	if(size(b)!=0){
 		#define CTXT std::forward<Context>(ctxt)
 		;;;; if constexpr(not is_conjugated<A2D>{} and not is_conjugated<B2D>{}){
-			;;;; if(stride(~a)==1 and stride(~b)==1) CTXT->trsm((char)swap(a_side), (char)+a_fill, 'N', (char)a_diag, size(~b), size( b),      alpha ,            base(a) , stride( a),            base(b) , stride( b));
+			;;;; if(stride( a)==1 and stride( b)==1) CTXT->trsm((char)    (a_side), (char)-a_fill, 'N', (char)a_diag, size( b), size(~b),      alpha ,            base(a) , stride(~a),            base(b) , stride(~b));
+			else if(stride(~a)==1 and stride(~b)==1) CTXT->trsm((char)swap(a_side), (char)+a_fill, 'N', (char)a_diag, size(~b), size( b),      alpha ,            base(a) , stride( a),            base(b) , stride( b));
 			else if(stride( a)==1 and stride(~b)==1) CTXT->trsm((char)swap(a_side), (char)-a_fill, 'T', (char)a_diag, size(~b), size( b),      alpha ,            base(a) , stride(~a),            base(b) , stride( b));
-			else if(stride( a)==1 and stride( b)==1) CTXT->trsm((char)    (a_side), (char)-a_fill, 'N', (char)a_diag, size( b), size(~b),      alpha ,            base(a) , stride(~a),            base(b) , stride(~b));
 			else if(stride(~a)==1 and stride( b)==1) CTXT->trsm((char)    (a_side), (char)+a_fill, 'T', (char)a_diag, size( b), size(~b),      alpha ,            base(a) , stride( a),            base(b) , stride(~b));
 			else assert(0 && "not implemented in blas");
 		}else if constexpr(   is_conjugated<A2D>{} and not is_conjugated<B2D>{}){
