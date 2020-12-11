@@ -83,7 +83,44 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section){
 	BOOST_REQUIRE( A != B );
 	BOOST_REQUIRE( A({0, 2}, {0, 2}) == B({0, 2}, {0, 2}) );
 	BOOST_REQUIRE( A[1][1] == 96. );
-
 }
+}
+
+BOOST_AUTO_TEST_CASE(subrange_assignment){
+	multi::array<double, 2> const A = {
+		{1., 2., 3., 4.},
+		{5., 6., 7., 8.},
+		{9., 0., 1., 2.},
+		{3., 4., 5., 6.}
+	};
+	{
+		multi::array<double, 2> B = {
+			{9., 9., 9.},
+			{9., 9., 9.},
+			{9., 9., 9.}
+		};
+		B({0, 3}, {0, 3}) = A({0, 3}, {0, 3});
+		BOOST_REQUIRE( B[1][2] == A[1][2] );
+	}
+	{
+		multi::array<double, 2> B = {
+			{9., 9., 9.},
+			{9., 9., 9.},
+			{9., 9., 9.}
+		};
+		B() = A({0, 3}, {0, 3});
+		BOOST_REQUIRE( B[1][2] == A[1][2] );
+		BOOST_REQUIRE( B() == A({0, 3}, {0, 3}) );
+	}
+	{
+		multi::array<double, 2> B = {
+			{9., 9., 9.},
+			{9., 9., 9.},
+			{9., 9., 9.}
+		};
+		B = A({0, 3}, {0, 3});
+		BOOST_REQUIRE( B[1][2] == A[1][2] );
+		BOOST_REQUIRE( B == A({0, 3}, {0, 3}) );
+	}
 }
 
