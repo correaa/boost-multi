@@ -108,20 +108,6 @@ public:
 	static int version(){int ret; cublas::call<cublasGetVersion>(nullptr, &ret); return ret;}
 };
 
-class global_context{
-	static unsynchronized_context& get_instance(){
-		static unsynchronized_context ctxt;
-		return ctxt;
-	};
-public:
-	template<class... Args> auto gemm(Args... args) const
-	->decltype(get_instance().gemm(args...)){
-		return get_instance().gemm(args...);}
-	template<class... Args> auto trsm(Args... args) const
-	->decltype(get_instance().trsm(args...)){
-		return get_instance().trsm(args...);}
-};
-
 struct context{
 	static unsynchronized_context& get_instance(){
 		thread_local unsynchronized_context ctxt;
