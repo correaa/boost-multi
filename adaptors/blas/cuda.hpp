@@ -14,8 +14,6 @@ $CXXX $CXXFLAGS -include"boost/log/trivial.hpp" -D'MULTI_MARK_SCOPE(MsG)=BOOST_L
 
 #include<cublas_v2.h>
 
-#include "../cublas/error.hpp"
-
 #include<thrust/complex.h>
 
 #define DECLRETURN(ExpR) ->decltype(ExpR){return ExpR;}
