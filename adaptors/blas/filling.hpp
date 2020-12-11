@@ -14,15 +14,9 @@ namespace boost{
 namespace multi{
 namespace blas{
 
-//enum class uplo  : char{L='L', U='U'};
-//enum uplo : char{
-//	L = 'U',
-//	U = 'L'
-//};
-
 enum class filling : char{
-	lower = 'U', //static_cast<char>(uplo::U),
-	upper = 'L'  //static_cast<char>(uplo::L)
+	lower = 'U',
+	upper = 'L' 
 };
 
 MAYBE_UNUSED static constexpr filling U = filling::upper;

@@ -1,7 +1,7 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
 $CXXX $CXXFLAGS $0 -o $0.$X `pkg-config --libs blas` -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 #endif
-// © Alfredo A. Correa 2019
+// © Alfredo A. Correa 2019-2020
 
 #ifndef MULTI_ADAPTORS_BLAS_SIDE_HPP
 #define MULTI_ADAPTORS_BLAS_SIDE_HPP
@@ -17,8 +17,10 @@ namespace blas{
 //enum class SIDE : char{L='L', R='R'};
 
 enum side : char{
-	left = 'R', right = 'L',
-	pre_multiply = 'R', post_multiply = 'L'
+	left  = 'L', 
+	right = 'R'//,
+//	pre_multiply = 'R', 
+//	post_multiply = 'L'
 };
 
 side swap(side s){
