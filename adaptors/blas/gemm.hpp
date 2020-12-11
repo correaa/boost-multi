@@ -108,13 +108,14 @@ try{
 	}
 	return c_first + a_count;
 }catch(std::logic_error& e){
-	throw std::logic_error(
+	using std::to_string;
+	throw std::logic_error{
 		"couldn't do "+std::string(__PRETTY_FUNCTION__)+" of layout a_count="+std::to_string(a_count)
-		+" a_strides="+std::to_string(a_first.stride())+","+std::to_string(a_first->stride())+" a->size="+std::to_string(a_first->size())
-		+" b_strides="+std::to_string(b_first.stride())+","+std::to_string(b_first->stride())+" b->size="+std::to_string(a_first->size())
-		+" c_strides="+std::to_string(c_first.stride())+","+std::to_string(c_first->stride())+" c->size="+std::to_string(a_first->size())
+		+" a_strides="+to_string(a_first.stride())+","+to_string(a_first->stride())+" a->size="+to_string(a_first->size())
+		+" b_strides="+to_string(b_first.stride())+","+to_string(b_first->stride())+" b->size="+to_string(b_first->size())
+		+" c_strides="+to_string(c_first.stride())+","+to_string(c_first->stride())+" c->size="+to_string(c_first->size())
 		+" because " + e.what()
-	);
+	};
 }
 
 template<class It2DA, class Size, class It2DB, class It2DC, class Context = blas::context> // TODO automatic deduction of context
