@@ -64,8 +64,8 @@ decltype(auto) trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, bla
 	using std::to_string;
 	throw std::logic_error{
 		"couldn't do "+std::string(__PRETTY_FUNCTION__)+" of layout a_side="+ (char)a_side +" a_fill="+ (char)a_fill +" a_diag="+(char)a_diag+" alpha=xx"
-		+" a_strides="+to_string(stride(a))+","+to_string(stride(~a))+" a_sizes="+to_string(size(a)) +","+to_string(size(~a))
-		+" b_strides="+to_string(stride(b))+","+to_string(stride(~b))+" a_sizes="+to_string(size(b)) +","+to_string(size(~b))
+		+" a_conj="+ to_string(is_conjugated<A2D>{}) +" a_strides="+to_string(stride(a)) +","+ to_string(stride(~a))+" a_sizes="+to_string(size(a)) +","+ to_string(size(~a))
+		+" b_conj="+ to_string(is_conjugated<B2D>{}) +" b_strides="+to_string(stride(b)) +","+ to_string(stride(~b))+" b_sizes="+to_string(size(b)) +","+ to_string(size(~b))
 		+" because " + le.what()
 	};
 }
