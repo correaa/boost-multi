@@ -312,16 +312,16 @@ struct context : std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decl
 namespace boost{
 namespace multi{
 
-namespace blas{
+//namespace blas{
 
-template<class T> boost::multi::cublas::context default_context_of(memory::cuda::ptr<T>){return {};}
-template<class T> boost::multi::cublas::context default_context_of(memory::cuda::managed::ptr<T>){return {};}
+//template<class T> boost::multi::cublas::context default_context_of(memory::cuda::ptr<T>){return {};}
+//template<class T> boost::multi::cublas::context default_context_of(memory::cuda::managed::ptr<T>){return {};}
 
-}
+//}
 
-namespace memory{namespace cuda{
-	using boost::multi::blas::default_context_of; // to please nvcc 'default_context_of' should be declared prior to the call site or in namespace 'boost::multi::memory::cuda'
-}}
+//namespace memory{namespace cuda{
+//	using boost::multi::blas::default_context_of; // to please nvcc 'default_context_of' should be declared prior to the call site or in namespace 'boost::multi::memory::cuda'
+//}}
 
 }}
 
