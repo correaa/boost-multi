@@ -76,8 +76,29 @@ using blas::is_d;
 using std::is_assignable;
 using std::is_convertible_v;
 
-template<class Derived>
-struct basic_context{
+//template<class Derived>
+//struct basic_context{
+//};
+
+//class unsynchronized_context : std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>, public basic_context<unsynchronized_context>{
+//	using pimpl_ = std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>;
+//public:
+//	using std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>::get;
+//	unsynchronized_context() : pimpl_{[]{cublasHandle_t h; cublasCreate(&h); return h;}(), &cublasDestroy}{}
+//	static int version(){int ret; cublas::call<cublasGetVersion>(nullptr, &ret); return ret;}
+//	using basic_context<unsynchronized_context>::gemm;
+//	using basic_context<unsynchronized_context>::trsm;
+//};
+
+class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>{
+	using pimpl_t = std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>;
+public:
+	using pimpl_t::get;
+	static context& get_instance(){
+		thread_local context ctxt;
+		return ctxt;
+	};
+	context() : pimpl_t{[]{cublasHandle_t h; cublasCreate(&h); return h;}(), &cublasDestroy}{}
 	using ssize_t = int;
 	static int version(){int ret; cublas::call<cublasGetVersion>(nullptr, &ret); return ret;}
 	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename std::pointer_traits<CCP>::element_type,
@@ -87,7 +108,16 @@ struct basic_context{
 		,int> =0
 	>
 	void gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc){
-		cublas::call<cublasZgemm>(static_cast<Derived&>(*this).get(), cublas::operation{transA}, cublas::operation{transB}, m, n, k, (cuDoubleComplex const*)alpha, (cuDoubleComplex const*)raw_pointer_cast(aa), lda, (cuDoubleComplex const*)raw_pointer_cast(bb), ldb, (cuDoubleComplex const*)beta, (cuDoubleComplex*)raw_pointer_cast(cc), ldc);
+		cublas::call<cublasZgemm>(this->get(), cublas::operation{transA}, cublas::operation{transB}, m, n, k, (cuDoubleComplex const*)alpha, (cuDoubleComplex const*)raw_pointer_cast(aa), lda, (cuDoubleComplex const*)raw_pointer_cast(bb), ldb, (cuDoubleComplex const*)beta, (cuDoubleComplex*)raw_pointer_cast(cc), ldc);
+	}
+	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename std::pointer_traits<CCP>::element_type,
+		std::enable_if_t<
+			is_d<AA>{} and is_d<BB>{} and is_d<CC>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{})>{} and
+			std::is_convertible_v<AAP, memory::cuda::ptr<AA>> and std::is_convertible_v<BBP, memory::cuda::ptr<BB>> and std::is_convertible_v<CCP, memory::cuda::ptr<CC>>
+		,int> =0
+	>
+	void gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc){
+		cublas::call<cublasDgemm>(this->get(), cublas::operation{transA}, cublas::operation{transB}, m, n, k, (double const*)alpha, (double const*)raw_pointer_cast(aa), lda, (double const*)raw_pointer_cast(bb), ldb, (double const*)beta, (double*)raw_pointer_cast(cc), ldc);
 	}
 	template<class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BBP, class BB = typename pointer_traits<BBP>::element_type,
 		std::enable_if_t<
@@ -96,27 +126,8 @@ struct basic_context{
 		,int> =0
 	>
 	void trsm(char side, char ul, char transA, char diag, ssize_t m, ssize_t n, ALPHA alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb){
-		cublas::call<cublasZtrsm>(static_cast<Derived&>(*this).get(), cublas::side{side}, cublas::filling{ul}, cublas::operation{transA}, cublas::diagonal{diag}, m, n, (cuDoubleComplex const*)&alpha, (cuDoubleComplex const*)raw_pointer_cast(aa), lda, (cuDoubleComplex*)raw_pointer_cast(bb), ldb);
+		cublas::call<cublasZtrsm>(this->get(), cublas::side{side}, cublas::filling{ul}, cublas::operation{transA}, cublas::diagonal{diag}, m, n, (cuDoubleComplex const*)&alpha, (cuDoubleComplex const*)raw_pointer_cast(aa), lda, (cuDoubleComplex*)raw_pointer_cast(bb), ldb);
 	}
-};
-
-class unsynchronized_context : std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>, public basic_context<unsynchronized_context>{
-	using pimpl_ = std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>;
-public:
-	using std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>::get;
-	unsynchronized_context() : pimpl_{[]{cublasHandle_t h; cublasCreate(&h); return h;}(), &cublasDestroy}{}
-	static int version(){int ret; cublas::call<cublasGetVersion>(nullptr, &ret); return ret;}
-};
-
-struct context{
-	static unsynchronized_context& get_instance(){
-		thread_local unsynchronized_context ctxt;
-		return ctxt;
-	};
-	static int version(){int ret; cublas::call<cublasGetVersion>(nullptr, &ret); return ret;}
-	template<class... Args> auto gemm(Args... args) const
-//	->decltype(get_instance().gemm(args...))
-	{	return get_instance().gemm(args...);}
 };
 
 }
@@ -124,20 +135,17 @@ struct context{
 
 namespace boost::multi::blas{
 
-	template<> struct is_context<boost::multi::cuda::cublas::unsynchronized_context > : std::true_type{};
-	template<> struct is_context<boost::multi::cuda::cublas::unsynchronized_context&> : std::true_type{};
-
 	template<> struct is_context<boost::multi::cuda::cublas::context > : std::true_type{};
 	template<> struct is_context<boost::multi::cuda::cublas::context&> : std::true_type{};
 
 	template<class Ptr, class T = typename std::pointer_traits<Ptr>::element_type, std::enable_if_t<std::is_convertible<Ptr, multi::memory::cuda::ptr<T>>{}, int> =0>
-	boost::multi::cuda::cublas::unsynchronized_context* default_context_of(Ptr const&){
+	boost::multi::cuda::cublas::context* default_context_of(Ptr const&){
 		namespace multi = boost::multi;
 		return &multi::cuda::cublas::context::get_instance();
 	}
 
 	template<class T>
-	boost::multi::cuda::cublas::unsynchronized_context* default_context_of(boost::multi::memory::cuda::managed::ptr<T> const&){
+	boost::multi::cuda::cublas::context* default_context_of(boost::multi::memory::cuda::managed::ptr<T> const&){
 		namespace multi = boost::multi;
 		return &multi::cuda::cublas::context::get_instance();
 	}
