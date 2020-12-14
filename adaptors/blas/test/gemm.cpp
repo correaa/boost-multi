@@ -1664,7 +1664,7 @@ BOOST_AUTO_TEST_CASE(blas_gemm_inq_case){ // https://gitlab.com/correaa/boost-mu
 
 	{
 		auto olap1 =+ blas::gemm(1., blas::H(mat)                 , vec);
-		auto olap2 =+ blas::gemm(1., blas::H(mat({0, 10}, {0, 1})), vec); //this one gives the wrong result
+		auto olap2 =+ blas::gemm(1., blas::H(mat({0, 10}, {0, 1})), vec);
 
 		multi::array<complex, 2> mat2 = mat({0, 10}, {0, 1});
 		auto olap3 =+ blas::gemm(1., blas::H(mat2), vec);
