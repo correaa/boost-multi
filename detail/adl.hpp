@@ -92,7 +92,7 @@ public:
 constexpr class adl_copy_fn__{
 	template<class InputIt, class OutputIt, 
 		class=std::enable_if_t<std::is_assignable<typename std::iterator_traits<OutputIt>::reference, typename std::iterator_traits<InputIt>::reference>{}>
-	>//, class=decltype(*OutputIt{} = *InputIt{})>
+	>
 	                               constexpr auto _(priority<1>, InputIt first, InputIt last, OutputIt d_first)
 	                                                                                const DECLRETURN(              std::copy(first, last, d_first))
 #if defined(__NVCC__) or (defined(__clang__) && defined(__CUDA__))
