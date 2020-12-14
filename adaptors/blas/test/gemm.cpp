@@ -265,10 +265,14 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_automatic, *utf::to
 		blas::gemm_n(0.1, begin(a), size(a), begin(b), 0., begin(c)); // c=ab, c⸆=b⸆a⸆
 		BOOST_TEST_REQUIRE( c[1][2] == 5.3 );
 	}
-//	{
-//		auto c = +blas::gemm(0.1, a, b); // c=ab, c⸆=b⸆a⸆
-//		BOOST_TEST_REQUIRE( c[1][2] == 5.3 );
-//	}
+	{
+		auto c =+ blas::gemm(0.1, a, b); // c=ab, c⸆=b⸆a⸆
+		BOOST_TEST_REQUIRE( c[1][2] == 5.3 );
+	}
+	{
+		multi::array c = blas::gemm(0.1, a, b);
+		BOOST_TEST_REQUIRE( c[1][2] == 5.3 );
+	}
 }
 
 namespace utf = boost::unit_test;
@@ -279,6 +283,33 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_nh){//, * utf::timeout(2)){
 		{1.-2.*I, 9.-1.*I},
 		{2.+3.*I, 1.-2.*I}
 	};
+	{
+		auto c =+ blas::gemm(1., a, blas::H(a)); // c=aa†, c†=aa†
+		BOOST_TEST_REQUIRE( c[1][0] == 7.-10.*I );
+		BOOST_TEST_REQUIRE( c[0][1] == 7.+10.*I );
+	}
+	{
+		multi::array c = blas::gemm(1., a, blas::H(a)); // c=aa†, c†=aa†
+		BOOST_TEST_REQUIRE( c[1][0] == 7.-10.*I );
+		BOOST_TEST_REQUIRE( c[0][1] == 7.+10.*I );
+	}
+	{
+		multi::array<complex, 2> c = blas::gemm(1., a, blas::H(a)); // c=aa†, c†=aa†
+		BOOST_TEST_REQUIRE( c[1][0] == 7.-10.*I );
+		BOOST_TEST_REQUIRE( c[0][1] == 7.+10.*I );
+	}
+	{
+		multi::array<complex, 2> c({2, 2}, 9999.);
+		c = blas::gemm(1., a, blas::H(a)); // c=aa†, c†=aa†
+		BOOST_TEST_REQUIRE( c[1][0] == 7.-10.*I );
+		BOOST_TEST_REQUIRE( c[0][1] == 7.+10.*I );
+	}
+	{
+		multi::array<complex, 2> c({2, 2}, 9999.);
+		c() = blas::gemm(1., a, blas::H(a)); // c=aa†, c†=aa†
+		BOOST_TEST_REQUIRE( c[1][0] == 7.-10.*I );
+		BOOST_TEST_REQUIRE( c[0][1] == 7.+10.*I );
+	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
 		blas::gemm(1., a, blas::H(a), 0., c); // c=aa†, c†=aa†
@@ -301,6 +332,27 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_nh_thrust){
 		{1.-2.*I, 9.-1.*I},
 		{2.+3.*I, 1.-2.*I}
 	};
+	{
+		auto c =+ blas::gemm(1., a, blas::hermitized(a)); // c=aa†, c†=aa†
+		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
+		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
+	}
+	{
+		multi::array c = blas::gemm(1., a, blas::hermitized(a)); // c=aa†, c†=aa†
+		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
+		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
+	}
+	{
+		multi::array<complex, 2> c = blas::gemm(1., a, blas::hermitized(a)); // c=aa†, c†=aa†
+		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
+		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
+	}
+	{
+		multi::array<complex, 2> c({2, 2});
+		c = blas::gemm(1., a, blas::hermitized(a)); // c=aa†, c†=aa†
+		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
+		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
+	}
 	{
 		multi::array<complex, 2> c({2, 2});
 		blas::gemm(1., a, blas::hermitized(a), 0., c); // c=aa†, c†=aa†
