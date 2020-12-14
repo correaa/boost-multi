@@ -477,6 +477,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_thrust_nonsquare_default_diagonal_h
 			};
 			auto S = blas::trsm(blas::side::left, blas::filling::lower, 1., blas::H(A), B); // S = A⁻¹†.B, S† = B†.A⁻¹
 			BOOST_TEST( S[2][1].real() == 1.71608  );
+			BOOST_REQUIRE( S == B );
 		}
 		{
 			multi::array<complex, 2> B = {
@@ -484,8 +485,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_thrust_nonsquare_default_diagonal_h
 				{5. + 3.*I, 9. + 3.*I, 1. - 1.*I}
 			};
 			auto S =+ blas::trsm(blas::side::left, blas::filling::upper, 1., A, blas::H(B)); // S = A⁻¹B†, S†=B.A⁻¹†, S=(B.A⁻¹)†, B <- S†, B <- B.A⁻¹†
-			BOOST_TEST( S[2][1].imag() == +0.147059 );
 			BOOST_TEST( B[1][2].imag() == -0.147059 );
+			BOOST_REQUIRE( S == blas::H(B) );
 		}
 		{
 			multi::array<complex, 2> B = {
@@ -493,8 +494,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_thrust_nonsquare_default_diagonal_h
 				{5. + 3.*I, 9. + 3.*I, 1. - 1.*I}
 			};
 			auto S =+ blas::trsm(blas::side::left, blas::filling::upper, 2., A, blas::H(B)); // S = A⁻¹B†, S†=B.A⁻¹†, S=(B.A⁻¹)†, B <- S†, B <- B.A⁻¹†
-			BOOST_TEST( S[2][1].imag() == +0.147059*2. );
 			BOOST_TEST( B[1][2].imag() == -0.147059*2. );
+			BOOST_REQUIRE( S == blas::H(B) );
 		}
 	}
 }
