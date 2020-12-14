@@ -298,7 +298,7 @@ public:
 
 	struct skeleton_t{
 		char buff[sizeof(T)]; T* p_;
-		[[SLOW]] 
+		SLOW
 		skeleton_t(T* p) /*HD*/ : p_{p}{
 			#if __CUDA_ARCH__
 			#else
@@ -420,7 +420,8 @@ public:
 #if __CUDA_ARCH__
 	operator T()&& __device__{return *(pimpl_.rp_);}
 #else
-	[[SLOW]] operator T()&& __host__{
+	SLOW 
+	operator T()&& __host__{
 		char buff[sizeof(T)];
 		{cudaError_t s = cudaMemcpy(buff, pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToHost); assert(s == cudaSuccess); (void)s;}
 		return std::move(reinterpret_cast<T&>(buff));
@@ -441,7 +442,8 @@ public:
 #if __CUDA_ARCH__
 	operator T() const& __device__{return *(pimpl_.rp_);}
 #else
-	[[SLOW]] operator T() const& __host__{
+	SLOW
+	operator T() const& __host__{
 		char buff[sizeof(T)];
 		{
 			auto e = static_cast<Cuda::error>(cudaMemcpy(buff, pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToHost));
@@ -522,7 +524,7 @@ public:
 #endif
 	}
 	template<class Other, typename = std::enable_if_t<not std::is_same<T, Other>{}> >
-	[[SLOW]]
+	SLOW
 	bool operator==(ref<Other>&& other)&&{
 //#pragma message ("Warning goes here")
 		char buff1[sizeof(T)];
@@ -535,7 +537,8 @@ public:
 		return reinterpret_cast<T const&>(buff1)==reinterpret_cast<Other const&>(buff2);
 	}
 #if 1
-	[[SLOW]] bool operator==(ref const& other) &&{
+	SLOW
+	bool operator==(ref const& other) &&{
 		char buff1[sizeof(T)];
 		{/*[[maybe_unused]]*/ cudaError_t s1 = cudaMemcpy(buff1, pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToHost); assert(s1 == cudaSuccess); (void)s1;}
 		char buff2[sizeof(T)];
