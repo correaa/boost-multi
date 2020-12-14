@@ -3,13 +3,15 @@
 
 #include "../cublas/error.hpp"
 
+#include<cuda_runtime.h> // cudaDeviceSynchronize
+
 namespace boost{
 namespace multi::cuda::cublas{
 
-template<auto F, class... Args> // needs C++17
+template<auto Function, class... Args> // needs C++17
 void call(Args... args){
-	auto e = static_cast<enum cublas::error>(F(args...));
-	if(e != cublas::error::success) throw std::system_error{e, "cannot call function " + std::string{__PRETTY_FUNCTION__}};
+	auto e = static_cast<enum cublas::error>(Function(args...));
+	if(e != cublas::error::success) throw std::system_error{e, "cannot call function "+ std::string{__PRETTY_FUNCTION__}};
 	cudaDeviceSynchronize();
 }
 
@@ -18,3 +20,4 @@ void call(Args... args){
 }
 }
 #endif
+
