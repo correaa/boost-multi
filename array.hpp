@@ -211,8 +211,9 @@ public:
 		if(not std::is_trivially_default_constructible<typename static_array::element_type>{})
 			uninitialized_default_construct();
 	}
-	template<class TT, class... Args, class= 
-		decltype(adl_copy(std::declval<multi::basic_array<TT, D, Args...> const&>().begin(), std::declval<multi::basic_array<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
+	template<class TT, class... Args, 
+		class=std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::basic_array<TT, D, Args...>::element>{}>,
+		class=decltype(adl_copy(std::declval<multi::basic_array<TT, D, Args...> const&>().begin(), std::declval<multi::basic_array<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
 	>
 	static_array(multi::basic_array<TT, D, Args...> const& o, typename static_array::allocator_type const& a = {})
 	: static_array(o.extensions(), a) // TODO: should be uninitialized_copy

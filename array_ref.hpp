@@ -57,6 +57,7 @@ struct array_types : Layout{
 	constexpr static dimensionality_type dimensionality = D;
 	using element_ptr = ElementPtr;
 	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element_type const>; //multi::const_iterator<ElementPtr>; 
+	using element_ref = typename std::iterator_traits<element_ptr>::reference;
 	using layout_t = Layout;
 	using value_type = typename std::conditional<
 		(dimensionality>1),
