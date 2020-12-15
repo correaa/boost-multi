@@ -342,6 +342,12 @@ private:
 		return *this;
 	}
 public:
+	template<class TT, std::enable_if_t<std::is_trivially_assignable<T&, TT>{}, int> =0>
+	[[deprecated]]
+	ref&& operator=(ref<TT> const& other) &&{
+		cudaError_t s = cudaMemcpy(pimpl_.rp_, other.pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToDevice); assert(s==cudaSuccess); (void)s;
+		return std::move(*this);
+	}
 #if __CUDA__
 #ifdef __NVCC__
   #ifndef __CUDA_ARCH__
@@ -369,11 +375,10 @@ public:
 	__device__ ref&& operator=(TT&& t) &&{*pimpl_.rp_ = std::forward<TT>(t); return std::move(*this);}
 #endif
 #else
-	template<class TT>
-	[[deprecated("because it implies slow memory access, suround code with CUDA_SLOW")]]
-	auto operator=(TT&& t) && 
-	->decltype(*pimpl_.rp_ = std::forward<TT>(t), std::move(*this)){	//	assert(0);
-		static_assert(std::is_trivially_assignable<T&, TT&&>{}, "!");
+	template<class TT, class=std::enable_if_t<std::is_trivially_assignable<T&, TT>{}> >
+	SLOW
+	ref&& operator=(TT const& t) &&{
+		static_assert(std::is_trivially_assignable<T&, TT&>{});
 		cudaError_t s=cudaMemcpy(pimpl_.rp_, std::addressof(t), sizeof(T), cudaMemcpyHostToDevice);assert(s==cudaSuccess);(void)s;
 		return std::move(*this);
 	}	
