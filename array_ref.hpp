@@ -867,10 +867,10 @@ public:
 	basic_array<std::decay_t<T2>, D, P2> reinterpret_array_cast()&{
 		static_assert( sizeof(T)%sizeof(T2)== 0, 
 			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
-		auto thisbase = this->base();
+		using void_ptr = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<void>;
 		return {
 			this->layout().scale(sizeof(T)/sizeof(T2)), 
-			static_cast<P2>(static_cast<void*>(thisbase))
+			static_cast<P2>(static_cast<void_ptr>(this->base()))
 		};
 	}
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
