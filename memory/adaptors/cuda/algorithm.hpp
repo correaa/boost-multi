@@ -10,12 +10,7 @@ $CXXX $CXXFLAGS $0 -o $0x -lcudart -lboost_unit_test_framework -lboost_timer&&$0
 
 #include "../cuda/error.hpp"
 
-#include<complex> //TODO remove
-
-//#if __INTEL_COMPILER
-//_Pragma("warning disable 2196") // suppress warning #2196: routine is both "inline" and "noinline"
-//#endif
-//#include <boost/stacktrace.hpp> // compile with -rdynamic -g -ldl -no-pie?? -fno-pie??
+#include<complex> //TODO remove, handle complex_fix instead?
 
 namespace boost{namespace multi{
 namespace memory{namespace cuda{
@@ -85,6 +80,7 @@ memory::cuda::ptr<T> fill_n(array_iterator<T, 1, ptr<TT>> const first, Size coun
 	return first + count;
 }
 
+// TODO fix traits std::complex instead
 template<class T1, typename Size, class T2, std::enable_if_t<std::is_same<std::decay_t<T1>, T2>{},int> =0>
 ptr<std::complex<T2>> copy_n(ptr<T1> first, Size count, ptr<std::complex<T2>> result){
 	fill_n(result, count, std::complex<T2>{0});
