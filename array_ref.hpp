@@ -756,16 +756,27 @@ public:
 	}
 
 	template<class Range>
-	auto operator=(Range&& r)&& // check that you LHS is not read-only
-	->decltype(assign(adl_begin(std::forward<Range>(r)), adl_end(std::forward<Range>(r))), std::declval<basic_array&&>()){assert(this->size() == r.size());
-		return assign(adl_begin(std::forward<Range>(r)), adl_end(std::forward<Range>(r))), std::move(*this);}
+	auto operator=(Range const& r)&& // check that you LHS is not read-only
+	->decltype(assign(adl_begin(r), adl_end(r)), std::declval<basic_array&&>()){assert(this->size() == r.size());
+		return assign(adl_begin(r), adl_end(r)), std::move(*this);}
 
 	template<class TT, class... As>
-	basic_array& operator=(basic_array<TT, D, As...> const& o)&{assert(this->extension() == o.extension());
+	basic_array& operator=(basic_array<TT, D, As...> const& o)&{
+		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()){
+			adl_copy_n(o.base(), o.num_elements(), this->base());
+			return *this;
+		}
+		if(o.stride() < (~o).stride()){
+			~(*this) = ~o;
+			return *this;
+		}
 		return this->assign(o.begin(), o.end()), *this; // TODO improve performance by rotating
-	} // TODO leave only r-value version?
+	}
+	template<class TT, class... As>
+	basic_array&& operator=(basic_array<TT, D, As...>&& o)&&{return std::move(basic_array::operator=(std::move(o)));}
 	template<class TT, class... As>
 	basic_array&& operator=(basic_array<TT, D, As...> const& o)&&{return std::move(this->operator=(o));}
+
 	basic_array&  operator=(basic_array               const& o) &{assert( this->extension() == o.extension() ); // TODO make sfinae-friendly
 		return this->assign(o.begin(), o.end() ), *this;
 	}
