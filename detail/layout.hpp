@@ -303,6 +303,12 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 	private:
 		template<class Array, std::size_t... I, typename = decltype(base_{std::get<I>(std::declval<Array const&>())...})> constexpr extensions_type_(Array const& t, std::index_sequence<I...>) : base_{std::get<I>(t)...}{}
 	//	template<class T, std::size_t N, std::size_t... I> extensions_type_(std::array<T, N> const& t, std::index_sequence<I...>) : extensions_type_{std::get<I>(t)...}{}
+		static size_type multiply_fold(){return 1;}
+		static size_type multiply_fold(size_type const& a0){return a0;}
+		template<class...As> static size_type multiply_fold(size_type const& a0, As const&...as){return a0*multiply_fold(as...);}
+		template<std::size_t... I> size_type num_elements_impl(std::index_sequence<I...>) const{return multiply_fold(std::get<I>(*this).size()...);}
+	public:
+		size_type num_elements() const{return num_elements_impl(std::make_index_sequence<D>{});}
 	};
 	using extensions_type = extensions_type_;
 	using strides_type    = decltype(tuple_cat(std::make_tuple(std::declval<index>()), std::declval<typename sub_type::strides_type>()));
