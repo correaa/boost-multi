@@ -398,7 +398,7 @@ public:
 		return *reinterpret_cast<T*>(&ret);
 	}
 #else
-	[[SLOW]] operator T()&&{
+	SLOW operator T()&&{
 		char buff[sizeof(T)];
 		cudaError_t s = cudaMemcpy(buff, pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToHost);
 		switch(s){
@@ -409,7 +409,7 @@ public:
 		}
 		return std::move(reinterpret_cast<T&>(buff));
 	}
-	[[SLOW]] operator T() const&{
+	SLOW operator T() const&{
 		char buff[sizeof(T)];
 		cudaError_t s = cudaMemcpy(buff, pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToHost);
 		switch(s){
