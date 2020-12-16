@@ -113,10 +113,10 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed){
 	BOOST_REQUIRE( &mar.stenciled({2, 4})[2][0] == &mar[2][0] );
 	BOOST_REQUIRE( &mar.stenciled({2, 4}, {1, 3})[2][1] == &mar[2][1] );
 
-	BOOST_REQUIRE( &mar[0][0] == mar.origin() );
-	BOOST_REQUIRE( mar.base() == mar.origin() );
+//	BOOST_REQUIRE( &mar[0][0] == mar.origin() ); // origin changed meaning in on 2020/Dec/16
+//	BOOST_REQUIRE( mar.base() == mar.origin() );
 
-	BOOST_REQUIRE( mar.stenciled({2, 4}).origin() == mar.origin() );
+//	BOOST_REQUIRE( mar.stenciled({2, 4}).origin() == mar.origin() ); // origin changed meaning in on 2020/Dec/16
 	BOOST_REQUIRE( mar.stenciled({2, 4}).base()   != mar.base()   );
 
 	BOOST_REQUIRE( &mar.stenciled({2, 4})[2][0] == mar.stenciled({2, 4}).base() );
@@ -181,7 +181,7 @@ BOOST_AUTO_TEST_CASE(array_ref_with_stencil){
 	};
 	auto const& st = s.reindexed(-1, -1);
 	
-	BOOST_REQUIRE( &st[ 0][ 0] == st.origin() );
+//	BOOST_REQUIRE( &st[ 0][ 0] == st.origin() ); // origin changed meaning in on 2020/Dec/16
 	BOOST_REQUIRE( &st[-1][-1] == st.base() );
 	
 	multi::array<double, 2> gy(extensions(mar), 0.);
