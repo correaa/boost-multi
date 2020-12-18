@@ -214,14 +214,15 @@ template<class Alloc> struct alloc_destroy_elem_t{
 	{	return std::allocator_traits<Alloc>::destroy(*palloc_, std::addressof(p));}
 };
 
-template<class Alloc, class BidirIt, class Size>
-constexpr BidirIt alloc_destroy_n(Alloc& a, BidirIt first, Size n){	
+template<class BidirIt, class Size, class T = typename std::iterator_traits<BidirIt>::value_type>
+constexpr auto destroy_n(BidirIt first, Size n)
+->std::decay_t<decltype(std::addressof(*(first-1)), first)>{
 //	first += (n-1); // nullptr case gives UB here
 //	for (; n > 0; --first, --n)
 //		std::allocator_traits<Alloc>::destroy(a, std::addressof(*first));
 	first += n;
 	for (; n != 0; --first, --n)
-		std::allocator_traits<Alloc>::destroy(a, std::addressof(*(first-1)));
+		std::addressof(*(first-1))->~T();
 	return first;
 }
 
@@ -445,13 +446,23 @@ public:
 
 namespace boost{namespace multi{
 
-constexpr class alloc_reverse_destroy_n_fn__ {
-	template<class... As>          auto _(priority<1>,        As&&... as) const DECLRETURN(multi::            alloc_destroy_n              (std::forward<As>(as)...)) // TODO: use boost?
-	template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   alloc_destroy_n              (std::forward<As>(as)...))
-	template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::decay_t<T>::alloc_destroy_n(std::forward<T>(t), std::forward<As>(as)...))
-	template<class T, class... As> auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).alloc_destroy_n              (std::forward<As>(as)...))
+constexpr class destroy_n_fn__ {
+	template<class... As>          constexpr auto _(priority<1>,        As&&... as) const DECLRETURN(            multi::destroy_n              (std::forward<As>(as)...))
+	template<class... As>          constexpr auto _(priority<2>,        As&&... as) const DECLRETURN(                   destroy_n              (std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(  std::decay_t<T>::destroy_n(std::forward<T>(t), std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).destroy_n              (std::forward<As>(as)...))
 public:
 	template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
+} adl_destroy_n;
+
+constexpr class alloc_destroy_n_fn__ {
+	template<class T, class... As> constexpr auto _(priority<1>, T&&  , As&&... as) const DECLRETURN(                     adl_destroy_n(                    std::forward<As>(as)...))
+//	template<class... As>          constexpr auto _(priority<2>,        As&&... as) const DECLRETURN(            multi::alloc_destroy_n(                    std::forward<As>(as)...))
+	template<class... As>          constexpr auto _(priority<3>,        As&&... as) const DECLRETURN(                   alloc_destroy_n(                    std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(  std::decay_t<T>::alloc_destroy_n(std::forward<T>(t), std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<5>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).alloc_destroy_n(                    std::forward<As>(as)...))
+public:
+	template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<5>{}, std::forward<As>(as)...))
 } adl_alloc_destroy_n;
 
 constexpr class adl_alloc_uninitialized_copy_fn__ {
@@ -479,12 +490,21 @@ public:
 	template<class... As> auto operator()(As&&... as) const{return _(priority<3>{}, std::forward<As>(as)...);} \
 } adl_alloc_uninitialized_move_n;
 
-MAYBE_UNUSED static constexpr class alloc_uninitialized_fill_n_fn__ {
-	template<class... As>          auto _(priority<1>,        As&&... as) const{return (                 xtd::alloc_uninitialized_fill_n(std::forward<As>(as)...));}
-	template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                    alloc_uninitialized_fill_n(std::forward<As>(as)...))
-	template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN( std::forward<T>(t).alloc_uninitialized_fill_n(std::forward<As>(as)...))
+constexpr class uninitialized_fill_n_fn__ {
+	template<class... As>          constexpr auto _(priority<1>,        As&&... as) const DECLRETURN(               std::uninitialized_fill_n(std::forward<As>(as)...))
+	template<class... As>          constexpr auto _(priority<2>,        As&&... as) const DECLRETURN(                    uninitialized_fill_n(std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<3>, T&& t, As&&... as) const DECLRETURN( std::forward<T>(t).uninitialized_fill_n(std::forward<As>(as)...))
 public:
-	template<class T1, class... As> auto operator()(T1&& t1, As&&... as) const DECLRETURN(_(priority<4>{}, t1, std::forward<As>(as)...))
+	template<class T1, class... As> constexpr auto operator()(T1&& t1, As&&... as) const DECLRETURN(_(priority<3>{}, t1, std::forward<As>(as)...))
+} adl_uninitialized_fill_n;
+
+constexpr class alloc_uninitialized_fill_n_fn__ {
+	template<class T, class... As> constexpr auto _(priority<1>, T&&  , As&&... as) const DECLRETURN(                      adl_uninitialized_fill_n(std::forward<As>(as)...))
+	template<class... As>          constexpr auto _(priority<2>,        As&&... as) const DECLRETURN(               xtd::alloc_uninitialized_fill_n(std::forward<As>(as)...))
+	template<class... As>          constexpr auto _(priority<3>,        As&&... as) const DECLRETURN(                    alloc_uninitialized_fill_n(std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<4>, T&& t, As&&... as) const DECLRETURN( std::forward<T>(t).alloc_uninitialized_fill_n(std::forward<As>(as)...))
+public:
+	template<class T1, class... As> constexpr auto operator()(T1&& t1, As&&... as) const DECLRETURN(_(priority<4>{}, t1, std::forward<As>(as)...))
 } adl_alloc_uninitialized_fill_n;
 
 template<dimensionality_type N>
