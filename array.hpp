@@ -82,7 +82,9 @@ protected:
 	template<typename It> auto uninitialized_copy_elements(It first){
 		return array_alloc::uninitialized_copy_n(first, this->num_elements(), this->data());
 	}
-	void destroy(){array_alloc::destroy_n(this->data_elements(), this->num_elements());}
+	void destroy_aux(std::false_type){array_alloc::destroy_n(this->data_elements(), this->num_elements());}
+	void destroy_aux(std::true_type ){}
+	void destroy(){destroy_aux(std::is_trivially_destructible<typename static_array::element>{});}
 	void allocate(){this->base_ = array_alloc::allocate(static_array::num_elements());}
 public:
 	using value_type = typename std::conditional<
@@ -446,7 +448,7 @@ public:
 	constexpr const_iterator cend() const{return end();}
 
 	friend constexpr const_iterator cbegin(static_array const& self){return self.cbegin();}
-	friend constexpr const_iterator cend(static_array const& self){return self.cend();}
+	friend constexpr const_iterator cend  (static_array const& self){return self.cend()  ;}
 
 	static_array& operator=(static_array const& other) &{
 		assert( extensions(other) == static_array::extensions() );
