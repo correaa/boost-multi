@@ -93,21 +93,21 @@ BOOST_AUTO_TEST_CASE(test_utility_2d){
 		{20, 21, 22, 23, 24, 25, 26, 27, 28, 29},
 	};
 	multi::array_ref<double, 2> marr(&carr[0][0], {3, 10});
-	boost::multi_array_ref<double, 2> Marr(&carr[0][0], boost::extents[3][10]);
+//	boost::multi_array_ref<double, 2> Marr(&carr[0][0], boost::extents[3][10]);
 
 	using multi::size;
 	BOOST_REQUIRE( size(carr) == size(marr) );
  //	BOOST_REQUIRE( size(Marr) == size(marr) );
 
 	BOOST_REQUIRE( carr[1][7] == marr[1][7] );
-	BOOST_REQUIRE( Marr[1][7] == marr[1][7] );
+//	BOOST_REQUIRE( Marr[1][7] == marr[1][7] );
 
 	BOOST_REQUIRE( &carr[1][7] == &marr[1][7] );
-	BOOST_REQUIRE( &Marr[1][7] == &marr[1][7] );
+//	BOOST_REQUIRE( &Marr[1][7] == &marr[1][7] );
 
 	using multi::num_elements;
 	BOOST_REQUIRE( num_elements(carr) == num_elements(marr) );
-	BOOST_REQUIRE( num_elements(Marr) == num_elements(marr) );
+//	BOOST_REQUIRE( num_elements(Marr) == num_elements(marr) );
 
 //	static_assert( multi::has_data<decltype(Marr)>{}, "!"); // TODO make array_traits 
 //	static_assert( multi::has_num_elements<decltype(Marr)>{}, "!");
@@ -118,7 +118,4 @@ BOOST_AUTO_TEST_CASE(test_utility_2d){
 //	BOOST_REQUIRE( data_elements(Marr) == data_elements(marr) );
 
 }
-
-
-
 
