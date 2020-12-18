@@ -89,10 +89,6 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed){
 	BOOST_REQUIRE( &mar[1][1] == &a[1][1] );
 	BOOST_REQUIRE( size(mar.reindexed(1)) == size(mar) );
 	BOOST_REQUIRE( size(mar[0].reindexed(1)) == size(mar[0]) );
-	
-	boost::multi_array_ref<double, 2> MAR(&a[0][0], boost::extents[4][5]);
-	MAR.reindex(1);
-	BOOST_REQUIRE( MAR.index_bases()[1] == 1 );
 
 	BOOST_REQUIRE( sizes(mar.reindexed(1)) == sizes(mar) );
 	BOOST_TEST_REQUIRE( &mar.reindexed(1)[1][0] == &mar[0][0] );
