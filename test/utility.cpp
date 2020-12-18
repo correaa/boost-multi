@@ -19,6 +19,7 @@ $CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 
 #include<fstream>
 #include<experimental/filesystem>
+#include<numeric> // iota
 
 namespace multi = boost::multi;
 namespace fs = std::experimental::filesystem;
@@ -27,7 +28,7 @@ BOOST_AUTO_TEST_CASE(test_utility_1d){
 
 	double carr[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
 	multi::array_ref<double, 1> marr(&carr[0], 10);
-	boost::multi_array_ref<double, 1> Marr(&carr[0], boost::extents[10]);
+//	boost::multi_array_ref<double, 1> Marr(&carr[0], boost::extents[10]);
 	std::vector<double> varr(10); std::iota(begin(varr), end(varr), 0);
 	std::array<double, 10> aarr; std::iota(begin(aarr), end(aarr), 0);
 
@@ -77,10 +78,10 @@ BOOST_AUTO_TEST_CASE(test_utility_1d){
 	BOOST_REQUIRE( *(end(Marr)-1) == *(end(marr)-1) );
 	BOOST_REQUIRE( *(end(carr)-1) == *(end(marr)-1) );
 
-	using std::equal;
-	BOOST_REQUIRE( equal(begin(varr), end(varr), begin(marr), end(marr)) );
-	BOOST_REQUIRE( equal(begin(Marr), end(Marr), begin(marr), end(marr)) );
-	BOOST_REQUIRE( equal(begin(carr), end(carr), begin(marr), end(marr)) );
+//	using std::equal;
+//	BOOST_REQUIRE( equal(begin(varr), end(varr), begin(marr), end(marr)) );
+//	BOOST_REQUIRE( equal(begin(Marr), end(Marr), begin(marr), end(marr)) );
+//	BOOST_REQUIRE( equal(begin(carr), end(carr), begin(marr), end(marr)) );
 
 }
 
