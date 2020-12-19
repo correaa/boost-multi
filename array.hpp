@@ -299,8 +299,8 @@ public:
 		>::type
 	//	typename pointer_traits<typename static_array::element_ptr>::element_type const&
 	>::type;
-	using iterator = multi::array_iterator<T, static_array::dimensionality, typename static_array::element_ptr, reference>;
-	using const_iterator = multi::array_iterator<T, static_array::dimensionality, typename static_array::element_const_ptr, const_reference>;
+	using       iterator = multi::array_iterator<T, static_array::dimensionality, typename static_array::element_ptr      >;//, reference>;
+	using const_iterator = multi::array_iterator<T, static_array::dimensionality, typename static_array::element_const_ptr>;//, const_reference>;
 //	reference
 //	      reference operator[](index i)     &&{return std::move(*this).ref::operator[](i);}
 //	      reference operator[](index i)      &{return ref::operator[](i);}
