@@ -85,7 +85,7 @@ template<class A2D, class B2D>
 decltype(auto) trsm(blas::side a_side, blas::filling a_fill, typename A2D::element_type alpha, A2D const& a, B2D&& b){
 	if constexpr(not is_conjugated<A2D>{}) return trsm(default_context_of(           a.base() ), a_side, a_fill, alpha, a, std::forward<B2D>(b));
 	else                                   return trsm(default_context_of(underlying(a.base())), a_side, a_fill, alpha, a, std::forward<B2D>(b));
-}
+} // EDG based compilers (e.g. nvcc) need option: -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\""
 
 }}
 
