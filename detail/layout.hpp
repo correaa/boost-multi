@@ -84,6 +84,82 @@ struct f_tag{};
 
 template<dimensionality_type D, typename SSize=multi::size_type> struct layout_t;
 
+template<dimensionality_type D> struct extensions_t;
+
+template<> struct extensions_t<0> :
+		std::tuple<>{
+typedef std::tuple<> base_;
+	static constexpr dimensionality_type dimensionality = 0;
+	using nelems_type = index;
+	using std::tuple<>::tuple;
+	extensions_t(base_ const& b) : base_(b){}
+	extensions_t() = default;
+	constexpr base_ const& base() const{return *this;}
+	friend constexpr decltype(auto) base(extensions_t const& s){return s.base();}
+	constexpr operator nelems_type() const{return 1;}
+	template<class Archive> void serialize(Archive&, unsigned){}
+	friend base_ operator%(nelems_type n, extensions_t const&){assert(n < 1); (void)n;
+		return {};
+	}
+};
+
+template<> struct extensions_t<1> : 
+		std::tuple<multi::index_extension>{
+typedef std::tuple<multi::index_extension> base_;
+	static constexpr dimensionality_type dimensionality = 1;
+	using nelems_type = index;
+	using index_extension = multi::index_extension;
+	using std::tuple<index_extension>::tuple;
+	extensions_t(index_extension const& ie) : base_{ie}{}
+	extensions_t() = default;
+	constexpr base_ const& base() const{return *this;}
+	constexpr extensions_t(std::tuple<index_extension> const& t) : std::tuple<index_extension>(t){}
+	friend constexpr decltype(auto) base(extensions_t const& s){return s.base();}
+	template<class Archive> void serialize(Archive& ar, unsigned){ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<0>(*this));}
+	constexpr friend base_ operator%(nelems_type n, extensions_t const& self){assert(n < std::get<0>(self).size()); (void)self;
+		return base_{n};
+	}
+};
+
+template<dimensionality_type D>
+struct extensions_t : 
+		std::decay_t<decltype(tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename extensions_t<D-1>::base_>()))>{
+typedef std::decay_t<decltype(tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename extensions_t<D-1>::base_>()))> base_;
+	using base_::base_;
+	static constexpr dimensionality_type dimensionality = D;
+	extensions_t() = default;
+	template<class Array, typename = decltype(std::get<D-1>(std::declval<Array>()))> 
+	constexpr extensions_t(Array const& t) : extensions_t(t, std::make_index_sequence<static_cast<std::size_t>(D)>{}){}
+	extensions_t(index_extension const& ie, typename layout_t<D-1>::extensions_type_ const& other) : extensions_t(std::tuple_cat(std::make_tuple(ie), other.base())){}
+	base_ const& base() const{return *this;}
+	friend decltype(auto) base(extensions_t const& s){return s.base();}
+	friend typename layout_t<D + 1>::extensions_type_ operator*(index_extension const& ie, extensions_t const& self){
+		return {std::tuple_cat(std::make_tuple(ie), self.base())};
+	}
+	explicit operator bool() const{return not layout_t<D>{*this}.empty();}
+	template<class Archive, std::size_t... I>
+	void serialize_impl(Archive& ar, std::index_sequence<I...>){
+	//	using boost::serialization::make_nvp;
+	//	(void)std::initializer_list<int>{(ar & make_nvp("extension", std::get<I>(*this)),0)...};
+		(void)std::initializer_list<int>{(ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<I>(*this)),0)...};
+	//	(void)std::initializer_list<int>{(ar & boost::serialization::nvp<std::remove_reference_t<decltype(std::get<I>(*this))> >{"extension", std::get<I>(*this)},0)...};
+	}
+	template<class Archive>
+	void serialize(Archive& ar, unsigned){
+		serialize_impl(ar, std::make_index_sequence<D>{});
+	}
+private:
+	template<class Array, std::size_t... I, typename = decltype(base_{std::get<I>(std::declval<Array const&>())...})> 
+	constexpr extensions_t(Array const& t, std::index_sequence<I...>) : base_{std::get<I>(t)...}{}
+//	template<class T, std::size_t N, std::size_t... I> extensions_type_(std::array<T, N> const& t, std::index_sequence<I...>) : extensions_type_{std::get<I>(t)...}{}
+	static constexpr size_type multiply_fold(){return 1;}
+	static constexpr size_type multiply_fold(size_type const& a0){return a0;}
+	template<class...As> static constexpr size_type multiply_fold(size_type const& a0, As const&...as){return a0*multiply_fold(as...);}
+	template<std::size_t... I> constexpr size_type num_elements_impl(std::index_sequence<I...>) const{return multiply_fold(std::get<I>(*this).size()...);}
+public:
+	constexpr size_type num_elements() const{return num_elements_impl(std::make_index_sequence<D>{});}
+};
+
 template<typename SSize>
 struct layout_t<dimensionality_type{0}, SSize>{
 	using size_type = SSize;
@@ -101,19 +177,20 @@ struct layout_t<dimensionality_type{0}, SSize>{
 	nelems_type nelems_ = 1;//std::numeric_limits<nelems_type>::max(); // 1
 	void* stride_ = nullptr;
 	void* sub = nullptr;
-	struct extensions_type_ : std::tuple<>{
-		using std::tuple<>::tuple;
-		using base_ = std::tuple<>;
-		extensions_type_(base_ const& b) : base_(b){}
-		extensions_type_() = default;
-		base_ const& base() const{return *this;}
-		friend decltype(auto) base(extensions_type_ const& s){return s.base();}
-		operator nelems_type() const{return 1;}
-		template<class Archive> void serialize(Archive&, unsigned){}
-		static constexpr dimensionality_type dimensionality = 0;
-	};
-	constexpr layout_t(extensions_type_ const& = {}){}// : nelems_{1}{}
+	using extensions_type_ = extensions_t<0>;
+//	struct extensions_type_ : std::tuple<>{
+//		using std::tuple<>::tuple;
+//		using base_ = std::tuple<>;
+//		extensions_type_(base_ const& b) : base_(b){}
+//		extensions_type_() = default;
+//		base_ const& base() const{return *this;}
+//		friend decltype(auto) base(extensions_type_ const& s){return s.base();}
+//		operator nelems_type() const{return 1;}
+//		template<class Archive> void serialize(Archive&, unsigned){}
+//		static constexpr dimensionality_type dimensionality = 0;
+//	};
 	using extensions_type = extensions_type_;
+	constexpr layout_t(extensions_type_ const& = {}){}// : nelems_{1}{}
 	constexpr extensions_type extensions() const{return extensions_type{};}
 	friend constexpr auto extensions(layout_t const& self){return self.extensions();}
 	constexpr auto sizes() const{return std::tuple<>{};}
@@ -140,18 +217,19 @@ public:
 	stride_type stride_ = 1;//std::numeric_limits<stride_type>::max(); 
 	offset_type offset_ = 0; 
 	nelems_type nelems_ = 0;
-	struct extensions_type_ : std::tuple<index_extension>{
-		using std::tuple<index_extension>::tuple;
-		using base_ = std::tuple<index_extension>;
-		extensions_type_(index_extension const& ie) : base_{ie}{}
-		extensions_type_() = default;
-		base_ const& base() const{return *this;}
-		extensions_type_(std::tuple<index_extension> const& t) : std::tuple<index_extension>(t){}
-		friend decltype(auto) base(extensions_type_ const& s){return s.base();}
-		template<class Archive>
-		void serialize(Archive& ar, unsigned){ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<0>(*this));}
-		static constexpr dimensionality_type dimensionality = 1;
-	};
+	using extensions_type_ = extensions_t<1>;
+//	struct extensions_type_ : std::tuple<index_extension>{
+//		using std::tuple<index_extension>::tuple;
+//		using base_ = std::tuple<index_extension>;
+//		extensions_type_(index_extension const& ie) : base_{ie}{}
+//		extensions_type_() = default;
+//		base_ const& base() const{return *this;}
+//		extensions_type_(std::tuple<index_extension> const& t) : std::tuple<index_extension>(t){}
+//		friend decltype(auto) base(extensions_type_ const& s){return s.base();}
+//		template<class Archive>
+//		void serialize(Archive& ar, unsigned){ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<0>(*this));}
+//		static constexpr dimensionality_type dimensionality = 1;
+//	};
 	using extensions_type = extensions_type_;
 	using strides_type = std::tuple<index>;
 	constexpr layout_t() = default;
@@ -273,43 +351,7 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 	stride_type stride_ = 1;//std::numeric_limits<stride_type>::max();
 	offset_type offset_ = 0;
 	nelems_type nelems_ = 0;
-	struct extensions_type_ 
-		: std::decay_t<decltype(tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename sub_type::extensions_type::base_>()))>
-	{
-		using base_ = std::decay_t<decltype(tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename sub_type::extensions_type::base_>()))>;
-		using base_::base_;
-		extensions_type_() = default;
-		template<class Array, typename = decltype(std::get<D-1>(std::declval<Array>()))> 
-		constexpr extensions_type_(Array const& t) : extensions_type_(t, std::make_index_sequence<static_cast<std::size_t>(D)>{}){}
-		extensions_type_(index_extension const& ie, typename layout_t<D-1>::extensions_type_ const& other) : extensions_type_(std::tuple_cat(std::make_tuple(ie), other.base())){}
-		base_ const& base() const{return *this;}
-		friend decltype(auto) base(extensions_type_ const& s){return s.base();}
-		friend typename layout_t<D + 1>::extensions_type_ operator*(index_extension const& ie, extensions_type_ const& self){
-			return {std::tuple_cat(std::make_tuple(ie), self.base())};
-		}
-		explicit operator bool() const{return not layout_t{*this}.empty();}
-		template<class Archive, std::size_t... I>
-		void serialize_impl(Archive& ar, std::index_sequence<I...>){
-		//	using boost::serialization::make_nvp;
-		//	(void)std::initializer_list<int>{(ar & make_nvp("extension", std::get<I>(*this)),0)...};
-			(void)std::initializer_list<int>{(ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<I>(*this)),0)...};
-		//	(void)std::initializer_list<int>{(ar & boost::serialization::nvp<std::remove_reference_t<decltype(std::get<I>(*this))> >{"extension", std::get<I>(*this)},0)...};
-		}
-		template<class Archive>
-		void serialize(Archive& ar, unsigned){
-			serialize_impl(ar, std::make_index_sequence<D>{});
-		}
-		static constexpr dimensionality_type dimensionality = D;
-	private:
-		template<class Array, std::size_t... I, typename = decltype(base_{std::get<I>(std::declval<Array const&>())...})> constexpr extensions_type_(Array const& t, std::index_sequence<I...>) : base_{std::get<I>(t)...}{}
-	//	template<class T, std::size_t N, std::size_t... I> extensions_type_(std::array<T, N> const& t, std::index_sequence<I...>) : extensions_type_{std::get<I>(t)...}{}
-		static size_type multiply_fold(){return 1;}
-		static size_type multiply_fold(size_type const& a0){return a0;}
-		template<class...As> static size_type multiply_fold(size_type const& a0, As const&...as){return a0*multiply_fold(as...);}
-		template<std::size_t... I> size_type num_elements_impl(std::index_sequence<I...>) const{return multiply_fold(std::get<I>(*this).size()...);}
-	public:
-		size_type num_elements() const{return num_elements_impl(std::make_index_sequence<D>{});}
-	};
+	using extensions_type_ = extensions_t<D>;
 	using extensions_type = extensions_type_;
 	using strides_type    = decltype(tuple_cat(std::make_tuple(std::declval<index>()), std::declval<typename sub_type::strides_type>()));
 //	using extensions_type = typename detail::repeat<index_extension, D>::type;
