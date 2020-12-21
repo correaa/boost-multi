@@ -220,23 +220,6 @@ public:
 	constexpr layout_t(stride_type stride, offset_type offset, nelems_type nelems) : 
 		stride_{stride}, offset_{offset}, nelems_{nelems}
 	{}
-#if defined(__INTEL_COMPILER)
-//	constexpr layout_t(std::initializer_list<index_extension> il) noexcept : layout_t{multi::detail::to_tuple<1, typename layout_t::index_extension>(il)}{}
-//	constexpr layout_t(std::initializer_list<index> il) noexcept : layout_t{multi::detail::to_tuple<1, typename layout_t::index_extension>(il)}{}
-#endif
-#if 0
-	template<class Extensions, typename = decltype(std::get<0>(Extensions{}).size())>
-	constexpr layout_t(Extensions const& e)
-	: 
-	//	stride_{std::get<0>(e).size()<=1?std::numeric_limits<stride_type>::max():1},
-	//	nelems_{
-		//	std::get<0>(e).size()<=1?std::get<0>(e).size()*std::numeric_limits<stride_type>::max():std::get<0>(e).size()
-		//	ie.size()
-	//	}{
-		nelems_{std::get<0>(e).size()}{
-		assert(0);
-	}
-#endif
 	constexpr auto offset() const{return offset_;}
 	friend constexpr index offset(layout_t const& self){return self.offset();}
 	constexpr auto offset(dimensionality_type d) const{assert(d==0); (void)d; return offset_;}
