@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv, *utf::tolerance(0.0001)){
 		multi::array<double, 1>       w(size(M));
 		blas::gemv_n(1., begin(M), size(M), begin(v), 0., begin(w));
 		BOOST_TEST( w[1] == 91.3 );
-		BOOST_REQUIRE( w[2] == +blas::dot(M[2], v) );
+		BOOST_TEST( w[2] == +blas::dot(M[2], v) );
 	}
 	{
 		multi::array<double, 1>       w(size(M));
@@ -109,6 +109,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_real){
 	{
 		auto Y = +blas::gemv(1., M, X);
 		BOOST_TEST( Y[0] == +blas::dot(M[0], X) );
+		BOOST_TEST( Y[1] == +blas::dot(M[1], X) );
+		BOOST_TEST( Y[2] == +blas::dot(M[2], X) );
 		BOOST_REQUIRE(std::equal(begin(Y), end(Y), begin(M), [&X](auto&& y, auto&& m){return y==blas::dot(m, X);}));
 	}
 	{
