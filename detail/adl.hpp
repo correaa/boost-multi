@@ -226,7 +226,18 @@ constexpr auto destroy_n(BidirIt first, Size n)
 	return first;
 }
 
-static //inline
+template<class Alloc, class BidirIt, class Size, class T = typename std::iterator_traits<BidirIt>::value_type>
+constexpr auto alloc_destroy_n(Alloc& a, BidirIt first, Size n)
+->std::decay_t<decltype(std::addressof(*(first-1)), first)>{
+//	first += (n-1); // nullptr case gives UB here
+//	for (; n > 0; --first, --n)
+//		std::allocator_traits<Alloc>::destroy(a, std::addressof(*first));
+	first += n;
+	for (; n != 0; --first, --n)
+		std::allocator_traits<Alloc>::destroy(a, std::addressof(*(first-1)));
+	return first;
+}
+
 constexpr class adl_uninitialized_copy_fn__{
 	template<class InIt, class FwdIt, class=decltype(std::addressof(*FwdIt{}))> // sfinae friendy std::uninitialized_copy
 	                               constexpr auto _(priority<1>, InIt f, InIt l, FwdIt d) const DECLRETURN(              std::uninitialized_copy(f, l, d))
@@ -456,11 +467,11 @@ public:
 } adl_destroy_n;
 
 constexpr class alloc_destroy_n_fn__ {
-	template<class T, class... As> constexpr auto _(priority<1>, T&&  , As&&... as) const DECLRETURN(                     adl_destroy_n(                    std::forward<As>(as)...))
-//	template<class... As>          constexpr auto _(priority<2>,        As&&... as) const DECLRETURN(            multi::alloc_destroy_n(                    std::forward<As>(as)...))
-	template<class... As>          constexpr auto _(priority<3>,        As&&... as) const DECLRETURN(                   alloc_destroy_n(                    std::forward<As>(as)...))
-	template<class T, class... As> constexpr auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(  std::decay_t<T>::alloc_destroy_n(std::forward<T>(t), std::forward<As>(as)...))
-	template<class T, class... As> constexpr auto _(priority<5>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).alloc_destroy_n(                    std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<1>, T&&  , As&&... as) const DECLRETURN(                     adl_destroy_n              (std::forward<As>(as)...))
+	template<class... As>          constexpr auto _(priority<2>,        As&&... as) const DECLRETURN(multi::            alloc_destroy_n              (std::forward<As>(as)...)) // TODO: use boost?
+	template<class... As>          constexpr auto _(priority<3>,        As&&... as) const DECLRETURN(                   alloc_destroy_n              (std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(std::decay_t<T>::alloc_destroy_n(std::forward<T>(t), std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<5>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).alloc_destroy_n              (std::forward<As>(as)...))
 public:
 	template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<5>{}, std::forward<As>(as)...))
 } adl_alloc_destroy_n;
