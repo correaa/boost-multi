@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv, *utf::tolerance(0.0001)){
 	}
 }
 
-BOOST_AUTO_TEST_CASE(multi_blas_gemv_real){
+BOOST_AUTO_TEST_CASE(multi_blas_gemv_real, *utf::tolerance(0.0001)){
 	namespace blas = multi::blas;
 
 	using std::abs;
@@ -111,7 +111,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_real){
 		BOOST_TEST( Y[0] == +blas::dot(M[0], X) );
 		BOOST_TEST( Y[1] == +blas::dot(M[1], X) );
 		BOOST_TEST( Y[2] == +blas::dot(M[2], X) );
-		BOOST_REQUIRE(std::equal(begin(Y), end(Y), begin(M), [&X](auto&& y, auto&& m){return y==blas::dot(m, X);}));
 	}
 	{
 		multi::array<double, 1> const a = {1., 2., 3.};
