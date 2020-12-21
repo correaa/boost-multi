@@ -87,11 +87,11 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed){
 	multi::Array<double(&)[2]> mar = *multi::Array<double(*)[2]>(&a);
 
 	BOOST_REQUIRE( &mar[1][1] == &a[1][1] );
-	BOOST_REQUIRE( size(mar.reindexed(1)) == size(mar) );
+	BOOST_REQUIRE( size(mar   .reindexed(1)) == size(mar) );
 	BOOST_REQUIRE( size(mar[0].reindexed(1)) == size(mar[0]) );
 
 	BOOST_REQUIRE( sizes(mar.reindexed(1)) == sizes(mar) );
-	BOOST_TEST_REQUIRE( &mar.reindexed(1)[1][0] == &mar[0][0] );
+	BOOST_REQUIRE( &mar.reindexed(1)[1][0] == &mar[0][0] );
 
 	BOOST_REQUIRE( sizes(mar[0].reindexed(1)) == sizes(mar[0]) );
 	BOOST_REQUIRE( mar[0].reindexed(1).extension().start () == mar[0].extension().start () + 1 );
@@ -217,13 +217,11 @@ BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset){
 
 	auto x = aref.extensions();
 	BOOST_REQUIRE( std::get<0>(x) == multi::iextension(1, 3) );
-	BOOST_TEST_REQUIRE( std::get<1>(x).start()  == 1 );
-	BOOST_TEST_REQUIRE( std::get<1>(x).finish() == 4 );
+	BOOST_REQUIRE( std::get<1>(x).start()  == 1 );
+	BOOST_REQUIRE( std::get<1>(x).finish() == 4 );
 	BOOST_REQUIRE( std::get<1>(x) == multi::iextension(1, 4) );
 	BOOST_REQUIRE( x == decltype(x)(multi::iextension(1, 3), multi::iextension(1, 4)) );
 
-
-//	std::cout<<"sasas "<< aref.extension() << std::endl;
 	BOOST_REQUIRE( &aref[1][1] == &v[0] );
 }
 
@@ -232,8 +230,6 @@ BOOST_AUTO_TEST_CASE(array_2D_with_offset){
 
 	BOOST_TEST( a.extension().start() == 1 );
 	BOOST_TEST( a.extension().finish() == 3 );
-
-//	BOOST_REQUIRE( &aref[1][0] == &v[3] );
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_1D){
