@@ -394,49 +394,49 @@ public:
 #endif
 #endif
 //	using const_reverse_iterator = basic_reverse_iterator<const_iterator>;
-	auto rotated(dimensionality_type d = 1) const&{
+	constexpr auto rotated(dimensionality_type d = 1) const&{
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate(d);
 		return basic_array<T, D, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
-	auto rotated(dimensionality_type d = 1)&{
+	constexpr auto rotated(dimensionality_type d = 1)&{
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate(d);
 		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
 	}
-	auto rotated(dimensionality_type d = 1)&&{
+	constexpr auto rotated(dimensionality_type d = 1)&&{
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate(d);
 		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
 	}
 //	friend decltype(auto) rotated(static_array const& self){return self.rotated();}
 //	template<class Array, typename = std::enable_if_t<std::is_same<static_array, std::decay_t<Array>>{}> > 
-	friend decltype(auto) rotated(static_array& self){return self.rotated();}
-	friend decltype(auto) rotated(static_array const& self){return self.rotated();}
+	friend constexpr decltype(auto) rotated(static_array&       s){return s.rotated();}
+	friend constexpr decltype(auto) rotated(static_array const& s){return s.rotated();}
 
-	auto unrotated(dimensionality_type d = 1) const&{
+	constexpr auto unrotated(dimensionality_type d = 1) const&{
 		typename static_array::layout_t new_layout = *this;
 		new_layout.unrotate(d);
 		return basic_array<T, D, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
-	auto unrotated(dimensionality_type d = 1)&{
+	constexpr auto unrotated(dimensionality_type d = 1)&{
 		typename static_array::layout_t new_layout = *this;
 		new_layout.unrotate(d);
 		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
 	}
-	friend decltype(auto) unrotated(static_array& self){return self.unrotated();}
-	friend decltype(auto) unrotated(static_array const& self){return self.unrotated();}
+	friend constexpr decltype(auto) unrotated(static_array& self){return self.unrotated();}
+	friend constexpr decltype(auto) unrotated(static_array const& self){return self.unrotated();}
 
-	decltype(auto) operator<<(dimensionality_type d){return rotated(d);}
-	decltype(auto) operator>>(dimensionality_type d){return unrotated(d);}
-	decltype(auto) operator<<(dimensionality_type d) const{return rotated(d);}
-	decltype(auto) operator>>(dimensionality_type d) const{return unrotated(d);}
+	constexpr decltype(auto) operator<<(dimensionality_type d)      {return   rotated(d);}
+	constexpr decltype(auto) operator>>(dimensionality_type d)      {return unrotated(d);}
+	constexpr decltype(auto) operator<<(dimensionality_type d) const{return   rotated(d);}
+	constexpr decltype(auto) operator>>(dimensionality_type d) const{return unrotated(d);}
 
 	constexpr typename static_array::iterator begin(){return std::move(*this).ref::begin();}
 	constexpr typename static_array::iterator end()  {return std::move(*this).ref::end()  ;}
 
-	friend typename static_array::iterator begin(static_array& self){return self.begin();}
-	friend typename static_array::iterator end  (static_array& self){return self.end()  ;}
+	friend constexpr typename static_array::iterator begin(static_array& self){return self.begin();}
+	friend constexpr typename static_array::iterator end  (static_array& self){return self.end()  ;}
 
 	constexpr const_iterator begin() const{return typename static_array::const_iterator{const_cast<static_array&&>(*this).ref::begin()};}
 	constexpr const_iterator end()   const{return const_cast<static_array&&>(*this).ref::end();}
@@ -450,19 +450,19 @@ public:
 	friend constexpr const_iterator cbegin(static_array const& self){return self.cbegin();}
 	friend constexpr const_iterator cend  (static_array const& self){return self.cend()  ;}
 
-	static_array& operator=(static_array const& other) &{
+	constexpr static_array& operator=(static_array const& other) &{
 		assert( extensions(other) == static_array::extensions() );
 		return adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements()), *this;
 	}
 	template<class TT, class... As>
-	static_array& operator=(static_array<TT, static_array::dimensionality, As...> const& other)&{assert( extensions(other) == static_array::extensions() );
+	constexpr static_array& operator=(static_array<TT, static_array::dimensionality, As...> const& other)&{assert( extensions(other) == static_array::extensions() );
 		return adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements()), *this;
 	}
 //	template<class... As>
 //	static_array operator=(static_array<static_array::value_type, static_array::dimensionality, As...> const& o){assert( extensions(o) == static_array::extensions() );
 //		return adl::copy_elements(o.data_elements()), *this;
 //	}
-	operator basic_array<typename static_array::value_type, static_array::dimensionality, typename static_array::element_const_ptr, typename static_array::layout_t>()&{
+	constexpr operator basic_array<typename static_array::value_type, static_array::dimensionality, typename static_array::element_const_ptr, typename static_array::layout_t>()&{
 		return this->template static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
 //		return static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
 	}
@@ -494,9 +494,9 @@ public:
 	using typename ref::value_type;
 	using typename ref::size_type;
 	using typename ref::difference_type;
-	static_array(allocator_type const& a) : array_alloc{a}{}
+	constexpr static_array(allocator_type const& a) : array_alloc{a}{}
 protected:
-	static_array(static_array&& other, allocator_type const& a)                           //6b
+	constexpr static_array(static_array&& other, allocator_type const& a)                           //6b
 	:	array_alloc{a},
 		ref{other.base_, other.extensions()}
 	{
@@ -611,10 +611,10 @@ public:
 	friend constexpr typename static_array::element_ptr       base(static_array&       s){return s.base();}
 	friend constexpr typename static_array::element_const_ptr base(static_array const& s){return s.base();}
 
-	typename static_array::element_ptr       origin()      {return ref::origin();}
-	typename static_array::element_const_ptr origin() const{return ref::origin();}
-	friend typename static_array::element_ptr       origin(static_array&       s){return s.origin();}
-	friend typename static_array::element_const_ptr origin(static_array const& s){return s.origin();}
+	constexpr typename static_array::element_ptr       origin()      {return ref::origin();}
+	constexpr typename static_array::element_const_ptr origin() const{return ref::origin();}
+	friend constexpr typename static_array::element_ptr       origin(static_array&       s){return s.origin();}
+	friend constexpr typename static_array::element_const_ptr origin(static_array const& s){return s.origin();}
 
 //	template<class... Args> decltype(auto) operator()(Args const&... args)&{return ref::operator()(args...);}
 //	template<class... Args> decltype(auto) operator()(Args const&... args) const&{return ref::operator()(args...);}
@@ -625,16 +625,16 @@ public:
 //	operator typename static_array::element_type() const{return *(this->base_);}
 //	using ref::operator();	
 //	operator typename static_array::element_ref() const& = delete;//{return *(this->base_);}
-	operator typename std::iterator_traits<typename static_array::element_const_ptr>::reference() const&{
+	constexpr operator typename std::iterator_traits<typename static_array::element_const_ptr>::reference() const&{
 		return *(this->base_);
 	}
-	operator typename std::add_rvalue_reference<typename std::iterator_traits<typename static_array::element_ptr>::reference>::type()&&{
+	constexpr operator typename std::add_rvalue_reference<typename std::iterator_traits<typename static_array::element_ptr>::reference>::type()&&{
 		return *(this->base_);
 	}
-	operator typename std::iterator_traits<typename static_array::element_ptr>::reference()&{
+	constexpr operator typename std::iterator_traits<typename static_array::element_ptr>::reference()&{
 		return *(this->base_);
 	}
-	explicit operator typename std::iterator_traits<typename static_array::element_const_ptr>::value_type(){
+	constexpr explicit operator typename std::iterator_traits<typename static_array::element_const_ptr>::value_type(){
 		return *(this->base_);
 	}
 //	basic_array<T, D, typename static_array::element_ptr> 
@@ -652,53 +652,53 @@ public:
 
 
 //	using const_reverse_iterator = basic_reverse_iterator<const_iterator>;
-	auto rotated(dimensionality_type d = 1) const&{
+	constexpr auto rotated(dimensionality_type d = 1) const&{
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate(d);
 		return basic_array<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
-	auto rotated(dimensionality_type d = 1)&{
+	constexpr auto rotated(dimensionality_type d = 1)&{
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate(d);
 		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
 	}
-	auto rotated(dimensionality_type d = 1)&&{
+	constexpr auto rotated(dimensionality_type d = 1)&&{
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate(d);
 		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
 	}
 //	friend decltype(auto) rotated(static_array const& self){return self.rotated();}
 //	template<class Array, typename = std::enable_if_t<std::is_same<static_array, std::decay_t<Array>>{}> > 
-	friend decltype(auto) rotated(static_array& self){return self.rotated();}
-	friend decltype(auto) rotated(static_array const& self){return self.rotated();}
+	friend constexpr decltype(auto) rotated(static_array&       s){return s.rotated();}
+	friend constexpr decltype(auto) rotated(static_array const& s){return s.rotated();}
 
-	auto unrotated(dimensionality_type d = 1) const&{
+	constexpr auto unrotated(dimensionality_type d = 1) const&{
 		typename static_array::layout_t new_layout = *this;
 		new_layout.unrotate(d);
 		return basic_array<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
-	auto unrotated(dimensionality_type d = 1)&{
+	constexpr auto unrotated(dimensionality_type d = 1)&{
 		typename static_array::layout_t new_layout = *this;
 		new_layout.unrotate(d);
 		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
 	}
-	friend decltype(auto) unrotated(static_array& self){return self.unrotated();}
-	friend decltype(auto) unrotated(static_array const& self){return self.unrotated();}
+	friend constexpr decltype(auto) unrotated(static_array& self){return self.unrotated();}
+	friend constexpr decltype(auto) unrotated(static_array const& self){return self.unrotated();}
 
-	decltype(auto) operator<<(dimensionality_type d){return rotated(d);}
-	decltype(auto) operator>>(dimensionality_type d){return unrotated(d);}
-	decltype(auto) operator<<(dimensionality_type d) const{return rotated(d);}
-	decltype(auto) operator>>(dimensionality_type d) const{return unrotated(d);}
+	constexpr decltype(auto) operator<<(dimensionality_type d){return rotated(d);}
+	constexpr decltype(auto) operator>>(dimensionality_type d){return unrotated(d);}
+	constexpr decltype(auto) operator<<(dimensionality_type d) const{return rotated(d);}
+	constexpr decltype(auto) operator>>(dimensionality_type d) const{return unrotated(d);}
 
-	static_array& operator=(static_array const& other)&{assert( extensions(other) == static_array::extensions() );
+	constexpr static_array& operator=(static_array const& other)&{assert( extensions(other) == static_array::extensions() );
 		return adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements()), *this;
 	}
 	template<class TT, class... As>
-	static_array& operator=(static_array<TT, static_array::dimensionality, As...> const& other)&{assert( extensions(other) == static_array::extensions() );
+	constexpr static_array& operator=(static_array<TT, static_array::dimensionality, As...> const& other)&{assert( extensions(other) == static_array::extensions() );
 		return adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements()), *this;
 	}
 
-	operator basic_array<typename static_array::value_type, static_array::dimensionality, typename static_array::element_const_ptr, typename static_array::layout_t>()&{
+	constexpr operator basic_array<typename static_array::value_type, static_array::dimensionality, typename static_array::element_const_ptr, typename static_array::layout_t>()&{
 		return this->template static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>();
 	//	return static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
 	}
