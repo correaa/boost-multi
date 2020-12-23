@@ -41,7 +41,9 @@ BOOST_AUTO_TEST_CASE(multi_tests_element_access_with_tuple){
 #endif
 		apply;
 	BOOST_REQUIRE( &m[p[0]][p[1]] == &apply(m, p) );
-
+	
+	BOOST_TEST( &m[p[0]][p[1]] == &m(p[0], p[1]) );
+	BOOST_TEST( &m(p[0], p[1]) == &m.apply(p) );
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_extension_with_tuple){
