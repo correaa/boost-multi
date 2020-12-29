@@ -99,7 +99,7 @@ typedef std::tuple<> base_;
 	constexpr operator nelems_type() const{return 1;}
 	template<class Archive> void serialize(Archive&, unsigned){}
 	constexpr size_type num_elements() const{return 1;}
-	constexpr std::tuple<> from_linear(nelems_type) const{//assert(n < num_elements()); (void)n;
+	constexpr std::tuple<> from_linear(nelems_type n) const{assert(n < num_elements()); (void)n;
 		return {};
 	}
 	friend constexpr std::tuple<> operator%(nelems_type n, extensions_t const& s){return s.from_linear(n);}
@@ -118,11 +118,11 @@ typedef std::tuple<multi::index_extension> base_;
 	constexpr extensions_t(std::tuple<index_extension> const& t) : std::tuple<index_extension>(t){}
 	friend constexpr decltype(auto) base(extensions_t const& s){return s.base();}
 	template<class Archive> void serialize(Archive& ar, unsigned){ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<0>(*this));}
-	constexpr std::tuple<multi::index> from_linear(nelems_type n) const{//assert(n < std::get<0>(*this).size());
+	constexpr size_type num_elements() const{return std::get<0>(*this).size();}
+	constexpr std::tuple<multi::index> from_linear(nelems_type n) const{assert(n < num_elements());
 		return {n};
 	}
 	friend constexpr std::tuple<multi::index> operator%(nelems_type n, extensions_t const& s){return s.from_linear(n);}
-	constexpr size_type num_elements() const{return std::get<0>(*this).size();}
 };
 
 template<dimensionality_type D>
@@ -150,8 +150,8 @@ typedef std::decay_t<decltype(tuple_cat(std::make_tuple(std::declval<index_exten
 	//	(void)std::initializer_list<int>{(ar & boost::serialization::nvp<std::remove_reference_t<decltype(std::get<I>(*this))> >{"extension", std::get<I>(*this)},0)...};
 	}
 	constexpr auto from_linear(nelems_type n) const{
-		auto sub_extensions = extensions_t<D-1>(detail::tuple_tail(*this));
-		auto sub_num_elements = sub_extensions.num_elements();
+		auto const sub_extensions = extensions_t<D-1>(detail::tuple_tail(*this));
+		auto const sub_num_elements = sub_extensions.num_elements();
 		return tuple_cat(std::make_tuple(n/sub_num_elements), sub_extensions.from_linear(n%sub_num_elements));
 	}
 	friend constexpr auto operator%(nelems_type n, extensions_t const& s){return s.from_linear(n);}
@@ -335,33 +335,14 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 	constexpr layout_t(
 		sub_type sub, stride_type stride, offset_type offset, nelems_type nelems
 	) : sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems}{}
-#if 0
-	constexpr 
-	layout_t(index_extension const& ie, layout_t<D-1> const& s) : 
-		sub_{s},
-		stride_{1},//ie.size()*sub_.num_elements()!=0?sub_.size()*sub_.stride():1}, // use .size for nvcc
-		offset_{sub_.offset_ + ie.first()*stride_}, 
-		nelems_{ie.size()*sub_.num_elements()}                             // use .size fort
-	{
-		assert(0);
-	}
-#endif
-	layout_t() = default;//: sub{}, stride_{1}, offset_{0}, nelems_{0}{} // needs stride != 0 for things to work well in partially formed state
-//	constexpr 
-	constexpr layout_t(extensions_type const& e) :// = {}) : 
+	layout_t() = default;
+	layout_t(layout_t const&) = default;
+	constexpr layout_t(extensions_type const& e) :
 		sub_{detail::tail(e)}, 
 		stride_{sub_.size()*sub_.stride()},//std::get<0>(e).size()*sub_.num_elements()!=0?sub_.size()*sub_.stride():1}, 
 		offset_{std::get<0>(e).first()*stride_}, //sub_.offset_ + std::get<0>(e).first()*sub_.stride()}, //sub_.stride()  offset_ = i*stride_}, 
 		nelems_{std::get<0>(e).size()*sub_.num_elements()} 
-	{
-	//	reindex(std::get<0>(e).first());
-	}
-#if(defined(__INTEL_COMPILER) and (__INTEL_COMPILER < 1900)) or (defined(__GNUC) && (__GNUC<6))
-	constexpr 
-	layout_t(std::array<index_extension, D> x) noexcept :
-		layout_t{multi::detail::to_tuple<index_extension>(x)}
 	{}
-#endif
 	template<class StdArray, typename = std::enable_if_t<std::is_same<StdArray, std::array<index_extension, static_cast<std::size_t>(D)>>{}> >
 	constexpr 
 	layout_t(StdArray const& e) : 
