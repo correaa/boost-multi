@@ -94,7 +94,9 @@ namespace operators{
 		return dot(x, y);}
 }
 
-}}}
+}
+}
+}
 
 #endif
 
