@@ -177,7 +177,7 @@ clang++:
 clang++-11:
   stage: test
   script:
-    - export CXX="clang++"
+    - export CXX="clang++-11"
     - apt-get update && apt-get install --no-install-recommends -y --quiet clang-11 cmake make libboost-test-dev libblas-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
