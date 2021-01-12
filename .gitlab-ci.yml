@@ -162,32 +162,20 @@ clang++-9-asan:
     - export ASAN_OPTIONS="halt_on_error=1 detect_leaks=1"
     - ctest --output-on-failure
 
-clang++:
-  stage: test
-  script:
-    - export CXX="clang++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libblas-dev
-    - ln --symbolic --force . ../multi
-    - $CXX --version
-    - mkdir build && cd build
-    - cmake ..
-    - cmake --build . --verbose -- --quiet --no-print-directory
-    - ctest --output-on-failure
-
-clang++-11:
-  stage: test
-  script:
-    - export CXX="clang++-11"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet clang-11 cmake make libboost-test-dev libblas-dev
-    - ln --symbolic --force . ../multi
-    - $CXX --version
-    - mkdir build && cd build
-    - cmake ..
-    - cmake --build . --verbose -- --quiet --no-print-directory
-    - ctest --output-on-failure
+# clang 10 and clang 11 have a bug when compiling in c++17 mode
+#clang++:
+#  stage: test
+#  script:
+#    - export CXX="clang++"
+#    - apt-get update && apt-get install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libblas-dev
+#    - ln --symbolic --force . ../multi
+#    - $CXX --version
+#    - mkdir build && cd build
+#    - cmake ..
+#    - cmake --build . --verbose -- --quiet --no-print-directory
+#    - ctest --output-on-failure
 
 #clang++-11:
-#  image: pauldreik/llvm-11
 #  stage: test
 #  script:
 #    - export CXX="clang++-11"
@@ -196,7 +184,7 @@ clang++-11:
 #    - $CXX --version
 #    - mkdir build && cd build
 #    - cmake ..
-#    - cmake --build .
+#    - cmake --build . --verbose -- --quiet --no-print-directory
 #    - ctest --output-on-failure
 
 cuda-current:
