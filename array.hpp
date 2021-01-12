@@ -25,7 +25,7 @@ namespace multi{
 template<class Allocator> struct array_allocator{
 	using allocator_type = Allocator;
 protected:
-	MULTI_NO_UNIQUE_ADDRESS 
+//	MULTI_NO_UNIQUE_ADDRESS 
 	allocator_type alloc_;
 	allocator_type& alloc(){return alloc_;}
 	array_allocator(allocator_type const& a = {}) : alloc_{a}{}

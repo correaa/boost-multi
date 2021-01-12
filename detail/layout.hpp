@@ -225,7 +225,7 @@ public:
 	stride_type stride_ = 1;//std::numeric_limits<stride_type>::max(); 
 	offset_type offset_ = 0; 
 	nelems_type nelems_ = 0;
-	MULTI_NO_UNIQUE_ADDRESS 
+//	MULTI_NO_UNIQUE_ADDRESS 
 	sub_type    sub_    = {};
 	using extensions_type = extensions_t<1>;
 	using strides_type = std::tuple<index>;

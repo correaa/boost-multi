@@ -15,7 +15,7 @@ namespace multi = boost::multi;
 
 multi::array_ref<double, 2> make_ref(double* p){return {p, {5, 7}};}
 
-template<class T> void what() = delete;
+template<class T> void what(T&&) = delete;
 
 BOOST_AUTO_TEST_CASE(equality_1D){
 	multi::array<double, 1> const A = {1., 2., 3., 4.};
@@ -25,8 +25,10 @@ BOOST_AUTO_TEST_CASE(equality_1D){
 
 	BOOST_REQUIRE( A() == B() );
 	BOOST_REQUIRE( not (A() != B()) );
+	
+	
 
-	static_assert( std::is_same<decltype(A({1, 2}))::decay_type, multi::array<double, 1>>{}, "!");
+	static_assert( std::is_same<std::decay_t<decltype(A({1, 2}))>::decay_type, multi::array<double, 1>>{}, "!");
 }
 
 BOOST_AUTO_TEST_CASE(equality_2D){
