@@ -44,6 +44,59 @@ constexpr bool operator!=(U const& other, equality_comparable2<T> const& self){
 	return self.self() != other;
 }
 
+
+template<class Self, 
+	class Iterator  = typename Self::iterator , class ConstIterator  = typename Self::const_iterator ,
+	class Reference = typename Self::reference, class ConstReference = typename Self::const_reference
+>
+class container_interface{
+	using self_type = Self;
+	self_type const& self() const&{return static_cast<self_type const&>(*this);}
+protected:
+	using const_iterator = ConstIterator;
+	using       iterator =      Iterator;
+
+	using const_reference = ConstReference;
+	using       reference =      Reference;
+
+	constexpr const_iterator begin() const&{return self().begin_();}
+	constexpr       iterator begin()      &{return self().begin_();}
+	constexpr       iterator begin()     &&{return self().begin_();}
+
+	template<class S, Self* = nullptr> friend constexpr auto begin(S&& s){return std::forward<S>(s).begin();}
+
+	constexpr const_iterator end() const&{return self().end_();}
+	constexpr       iterator end()      &{return self().end_();}
+	constexpr       iterator end()     &&{return self().end_();}
+
+	template<class S, Self* = nullptr> friend constexpr auto end(S&& s){return std::forward<S>(s).end();}
+	
+	using size_type = typename std::iterator_traits<iterator>::difference_type;
+	constexpr size_type size() const{return std::distance(begin(), end());}
+	friend constexpr size_type size(self_type const& s){return s.size();}
+	
+	using difference_type = typename std::iterator_traits<iterator>::difference_type;
+	
+	constexpr bool is_empty() const{return size();}
+	friend constexpr size_type is_empty(self_type const& s){return s.is_empty();}
+
+	decltype(auto) front() const&{return *self().begin();}
+	decltype(auto) front()     &&{return *std::move(self()).begin();}
+	decltype(auto) front()      &{return *self().begin();}
+	
+	template<class S, Self* = nullptr> friend constexpr decltype(auto) front(S&& s){return std::forward<S>(s).front();}
+
+	decltype(auto) back() const&{return *std::prev(self().end());}
+	decltype(auto) back()     &&{return *std::prev(std::move(self()).end());}
+	decltype(auto) back()      &{return *std::prev(self().end());}
+	
+	template<class S, Self* = nullptr> friend constexpr decltype(auto) back(S&& s){return std::forward<S>(s).back();}
+
+	constexpr const_reference operator[](index i) const&{return self().at_(i);}
+	constexpr       reference operator[](index i)      &{return self().at_(i);}
+	constexpr       reference operator[](index i)     &&{return self().at_(i);}
+};
+
 //template<class Self>
 //class equality_comparable{
 //	Self const& self() const{return static_cast<Self const&>(*this);}
