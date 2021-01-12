@@ -11,7 +11,8 @@
 #include "numeric/is_complex.hpp"
 
 namespace boost{
-namespace multi::blas{
+namespace multi{
+namespace blas{
 
 template<class T> struct Complex_{T real; T imag;};
 
@@ -266,7 +267,7 @@ auto default_allocator_of(multi::blas::involuter<It, F, Reference> it){
 	return multi::default_allocator_of(underlying(it));
 }
 
-}
+}}
 
 namespace std{
 	template<> struct is_convertible<boost::multi::blas::Complex_<double>*, std::complex<double>*> : std::true_type{};
