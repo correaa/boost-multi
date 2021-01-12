@@ -19,14 +19,14 @@ template<class T> void what(T&&) = delete;
 
 BOOST_AUTO_TEST_CASE(equality_1D){
 	multi::array<double, 1> const A = {1., 2., 3., 4.};
+	BOOST_REQUIRE( A.num_elements() == 4 );
+
 	multi::array<double, 1> const B = {1., 2., 3., 4.};
 	BOOST_REQUIRE( A == B );
 	BOOST_REQUIRE( not (A != B) );
 
 	BOOST_REQUIRE( A() == B() );
 	BOOST_REQUIRE( not (A() != B()) );
-	
-	
 
 	static_assert( std::is_same<std::decay_t<decltype(A({1, 2}))>::decay_type, multi::array<double, 1>>{}, "!");
 }
@@ -36,6 +36,8 @@ BOOST_AUTO_TEST_CASE(equality_2D){
 		{1., 2., 3.},
 		{4., 5., 6.}
 	};
+	BOOST_REQUIRE( A.num_elements() == 6 );
+	
 	multi::array<double, 2> const B = {
 		{1., 2., 3.},
 		{4., 5., 6.}

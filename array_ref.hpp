@@ -271,6 +271,9 @@ public:
 	constexpr auto extensions() const&{return layout_.extensions();}
 	
 	constexpr layout_type layout() const{return layout_;}
+	constexpr auto num_elements() const{return layout_.num_elements();}
+	friend constexpr auto num_elements(basic_array const& self){return self.num_elements();}
+
 private:
 	// TODO return array_ptr<T, 0>
 	constexpr ptr addressof_() const&{return base_;}
@@ -398,6 +401,9 @@ public:
 	constexpr auto stride()     const{return layout_.stride();}
 	friend constexpr auto stride(basic_array const& self){return self.stride();}
 
+	constexpr auto num_elements() const{return layout_.num_elements();}
+	friend constexpr auto num_elements(basic_array const& self){return self.num_elements();}
+	
 	constexpr size_type size() const{return container_interface_::size();}
 
 	using container_interface_::is_empty;
@@ -742,9 +748,11 @@ public:
 	constexpr auto sizes()      const{return layout_.sizes();}
 	constexpr auto is_empty()   const{return layout_.is_empty();}
 	constexpr auto stride()     const{return layout_.stride();}
+	constexpr auto num_elements() const{return layout_.num_elements();}
 
 	friend constexpr auto size  (basic_array const& self){return self.size()  ;}
 	friend constexpr auto stride(basic_array const& self){return self.stride();}
+	friend constexpr auto num_elements(basic_array const& self){return self.num_elements();}
 
 	using basic_const_array = basic_array<
 		T, 
@@ -1307,7 +1315,6 @@ public:
 	array_ref(array_ref&&) = default; // this needs to be public in c++14
 	using basic_array<T, D, ElementPtr>::operator=;
 public:
-	auto num_elements()  const&{return this->layout_.num_elements();}
 	auto  data_elements() const&{return this->base();}
 	auto  data_elements()     &&{return this->base();}
 	auto  data_elements()      &{return this->base();}
@@ -1354,7 +1361,7 @@ public:
 	using celements_type = array_ref<typename array_ref::element, 1, typename array_ref::element_cptr>;
 
 private:
-	constexpr  elements_type elements_()        const&{return {this->base_, num_elements()};}
+	constexpr  elements_type elements_() const{return {this->base_, this->num_elements()};}
 public:
 	constexpr  elements_type elements() &     {return elements_();}
 	constexpr  elements_type elements() &&    {return elements_();}
