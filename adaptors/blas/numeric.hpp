@@ -21,16 +21,16 @@ template<
 	class=std::enable_if_t<blas::numeric::is_complex_of<Complex, T>::value>
 >
 auto real(A&& a)
-->decltype(std::forward<A>(a).template reinterpret_array_cast<Complex_<T>>().template member_cast<T>(&Complex_<T>::real)){
-	return std::forward<A>(a).template reinterpret_array_cast<Complex_<T>>().template member_cast<T>(&Complex_<T>::real);}
+->decltype(std::forward<A>(a).template reinterpret_array_cast<Complex_<T>>().template member_array_cast<T>(&Complex_<T>::real)){
+	return std::forward<A>(a).template reinterpret_array_cast<Complex_<T>>().template member_array_cast<T>(&Complex_<T>::real);}
 
 template<
 	class A, class Complex = typename std::decay_t<A>::element, typename T=typename Complex::value_type,
 	class=std::enable_if_t<blas::numeric::is_complex_of<Complex, T>::value>
 >
 auto imag(A&& a)
-->decltype(std::forward<A>(a).template reinterpret_array_cast<Complex_<T>>().template member_cast<T>(&Complex_<T>::imag)){
-	return std::forward<A>(a).template reinterpret_array_cast<Complex_<T>>().template member_cast<T>(&Complex_<T>::imag);}
+->decltype(std::forward<A>(a).template reinterpret_array_cast<Complex_<T>>().template member_array_cast<T>(&Complex_<T>::imag)){
+	return std::forward<A>(a).template reinterpret_array_cast<Complex_<T>>().template member_array_cast<T>(&Complex_<T>::imag);}
 
 template<class Ref, class Involution> class involuted;
 
