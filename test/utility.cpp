@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(test_utility_1d){
 //	BOOST_REQUIRE( data_elements(varr) != data_elements(marr) ); // TODO: compat with std::vector
 
 
-	BOOST_REQUIRE( *begin(varr) == *begin(marr) );
+	BOOST_REQUIRE( *varr.begin() == *marr.begin() );
 	using std::begin;
 //	BOOST_REQUIRE( *begin(Marr) == *begin(marr) );
 	BOOST_REQUIRE( *begin(carr) == *begin(marr) );
@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(test_utility_1d){
 //	BOOST_REQUIRE( *(rend(Marr)-1) == *(rend(marr)-1) );
 //	BOOST_REQUIRE( *(rend(carr)-1) == *(rend(marr)-1) );
 
-	BOOST_REQUIRE( *(end(varr)-1) == *(end(marr)-1) );
+	BOOST_REQUIRE( *(varr.end()-1) == *(marr.end()-1) );
 	using std::end;
 //	BOOST_REQUIRE( *(end(Marr)-1) == *(end(marr)-1) );
 	BOOST_REQUIRE( *(end(carr)-1) == *(end(marr)-1) );

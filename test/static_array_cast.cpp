@@ -50,7 +50,7 @@ public:
 	using reference         = involuted<typename std::iterator_traits<It>::reference, F>;
 	using value_type        = typename std::iterator_traits<It>::value_type;
 	using iterator_category = typename std::iterator_traits<It>::iterator_category;
-	explicit constexpr involuter(It it) : it_{std::move(it)}, f_{}{}
+	explicit constexpr involuter(It it = {}) : it_{std::move(it)}, f_{}{}
 	constexpr involuter(It it, F f) : it_{std::move(it)}, f_{std::move(f)}{}
 	involuter(involuter const& other) = default;
 	template<class Other> involuter(involuter<Other, F> const& o) : it_{o.it_}, f_{o.f_}{}
@@ -59,11 +59,14 @@ public:
 	constexpr bool       operator!=(involuter const& o) const{return it_!=o.it_;}
 	constexpr involuter& operator+=(typename involuter::difference_type n){it_+=n; return *this;}
 	constexpr involuter  operator+(typename involuter::difference_type n) const{return {it_+n, f_};}
+	friend constexpr typename involuter::difference_type operator-(involuter const& a, involuter const& b){return a.it_ - b.it_;}
 	constexpr pointer    operator->() const{return {&*it_, f_};}
 };
 
 template<class Ref> using negated = involuted<Ref, std::negate<>>;
-template<class It>  using negater = involuter<It, std::negate<>>;
+template<class It > using negater = involuter<It , std::negate<>>;
+
+template<class T> void what(T&&) = delete;
 
 BOOST_AUTO_TEST_CASE(static_array_cast){
 {
@@ -81,20 +84,22 @@ BOOST_AUTO_TEST_CASE(static_array_cast){
 	BOOST_REQUIRE( m5 == -5. );
 }
 {
-	multi::array<double, 1> A = { 0,  1,  2,  3,  4};
-	auto&& A_ref = A.static_array_cast<double, double const*>();
+	multi::array<double, 1> A = { 0.,  1.,  2.,  3.,  4.};
+	
+	auto&& A_ref = A.static_array_cast<double>();
+
 	BOOST_REQUIRE( &A_ref[2] == &A    [2] );
 	BOOST_REQUIRE( &A    [2] == &A_ref[2] );
 
-	BOOST_REQUIRE( std::equal(begin(A_ref), end(A_ref), begin(A)) );
+	BOOST_REQUIRE( std::equal(A_ref.begin(), A_ref.end(), A.begin()) );
 	BOOST_REQUIRE( A_ref == A     );
 	BOOST_REQUIRE( A     == A_ref );
 }
 {
 	multi::array<double, 2> A({2, 5});
-	std::iota(data_elements(A), data_elements(A) + num_elements(A), 0.);
+	std::iota(A.data_elements(), A.data_elements() + A.num_elements(), 0.);
 
-	auto&& A_ref = A.static_array_cast<double, double const*>();
+	auto&& A_ref = A.protect();
 	BOOST_REQUIRE( A_ref[1][1] == A[1][1] );
 	BOOST_REQUIRE( std::equal(begin(A_ref[1]), end(A_ref[1]), begin(A[1])) );
 	BOOST_REQUIRE( A_ref[1] == A[1] );
@@ -105,7 +110,8 @@ BOOST_AUTO_TEST_CASE(static_array_cast){
 {
 	multi::array<double, 1> A = { 0,  1,  2,  3,  4};
 	multi::array<double, 1> mA = { -0,  -1,  -2,  -3, -4};
-	auto&& mA_ref = multi::static_array_cast<double, involuter<double*, std::negate<>>>(A);
+	auto&& mA_ref = A.static_array_cast<double, involuter<double*, std::negate<>> >();
+//	auto&& mA_ref = multi::static_array_cast<double, involuter<double*, std::negate<>>>(A);
 	BOOST_REQUIRE( mA_ref[2] == mA    [2] );
 	BOOST_REQUIRE( mA    [2] == mA_ref[2] );
 	BOOST_REQUIRE( std::equal(begin(mA_ref), end(mA_ref), begin(mA)) );

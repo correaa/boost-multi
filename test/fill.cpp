@@ -51,11 +51,11 @@ BOOST_AUTO_TEST_CASE(fill_1d){
 		static_assert( std::is_same<std::iterator_traits<decltype(begin(d1D))>::value_type, double>{}, "!");
 
 		using std::copy;
-		copy(begin(extension(d1D)), end(extension(d1D)), begin(d1D));
+		copy(begin(d1D.extension()), end(d1D.extension()), begin(d1D));
 		BOOST_REQUIRE( d1D[0] == 0. );
 		BOOST_REQUIRE( d1D[1] == 1. );
 		BOOST_REQUIRE( d1D[9] == 9. );
-		
+
 //		auto f = [](auto e){return e + 1;};
 //		copy(
 //			boost::make_transform_iterator(begin(extension(d1D)), f), 
@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(fill_1d){
 //		BOOST_REQUIRE( d1D[1] == 2. );
 //		BOOST_REQUIRE( d1D[9] == 10. );
 
-		d1D.assign(extension(d1D));
+		d1D.assign(d1D.extension().begin());
 		BOOST_REQUIRE( d1D[0] == 0. );
 		BOOST_REQUIRE( d1D[1] == 1. );
 		BOOST_REQUIRE( d1D[9] == 9. );
@@ -149,14 +149,14 @@ BOOST_AUTO_TEST_CASE(fill_1d){
 		multi::array<double, 1> d1D(10);
 		BOOST_REQUIRE( size(d1D) == 10 );
 
-		d1D.assign(begin(extension(d1D)), end(extension(d1D)));
+		d1D.assign(begin(d1D.extension()), end(d1D.extension()));
 		BOOST_REQUIRE( d1D[0] == 0. );
 		BOOST_REQUIRE( d1D[1] == 1. );
-		BOOST_REQUIRE( d1D[9] == 9. );		
+		BOOST_REQUIRE( d1D[9] == 9. );
 	}
 	{
 		multi::array<double, 1> d1D(10);
-		d1D.assign(extension(d1D));
+		d1D.assign(d1D.extension().begin());
 		BOOST_REQUIRE( d1D[0] == 0. );
 		BOOST_REQUIRE( d1D[1] == 1. );
 		BOOST_REQUIRE( d1D[9] == 9. );
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE(fill_1d){
 BOOST_AUTO_TEST_CASE(fill_member){
 	namespace multi = boost::multi;
 	multi::array<double, 1> d1D = {1., 2., 3., 4.};
-	d1D.fill(42.);
+	d1D.assign(42.);
 
 	multi::array<double, 2> d2D = {
 		{150., 16., 17., 18., 19.}, 
@@ -181,7 +181,7 @@ BOOST_AUTO_TEST_CASE(fill_member){
 	BOOST_REQUIRE( &*d2D.elements().end() == d2D.data_elements() + d2D.num_elements() );
 //	std::fill( d2D.elements().begin(), d2D.elements().end() , 99. );
 //	multi::adl_fill_n( d2D.elements().begin(), d2D.elements().size(), 99. );
-	d2D.elements().fill(99.);
+	d2D.elements().assign(99.);
 
 	BOOST_REQUIRE( d2D[1][1] == 99. );
 }

@@ -39,6 +39,22 @@ struct X{
 	double b;
 };
 
+
+template<class T, class Ptr = T*>
+class span{ // https://en.cppreference.com/w/cpp/container/span
+	Ptr ptr_;
+	typename std::pointer_traits<Ptr>::difference_type length_;
+public:
+	using pointer = Ptr;
+	using difference_type = typename std::pointer_traits<pointer>::difference_type;
+	using size_type = difference_type;
+	using value_type = std::remove_cv_t<T>;
+	span(pointer first, size_type count) : ptr_{first}, length_{count}{}
+	span(pointer first, pointer last) : ptr_{first}, length_{last - first}{}
+	pointer data() const{return ptr_;}
+	size_type size() const{return length_;}
+};
+
 BOOST_AUTO_TEST_CASE(test_minimalistic_ptr){
 
 //	int X::* s = &X::a1; // gives warning
@@ -48,14 +64,20 @@ BOOST_AUTO_TEST_CASE(test_minimalistic_ptr){
 //	X X::*ss = &X::X; 
 
 	double* buffer = new double[100];
-	multi::array_ptr<double, 2, minimalistic::ptr<double> > CCP(minimalistic::ptr<double>{buffer}, {10, 10});
-	(*CCP)[2]; // requires operator+ 
-	(*CCP)[1][1]; // requires operator*
-	(*CCP)[1][1] = 9;
-	BOOST_REQUIRE((*CCP)[1][1] == 9);
+	
+	auto&& C = multi::ref(span<double>(buffer, 100)).partitioned(10);
 
-	auto&& CC2 = CCP->template static_array_cast<double, minimalistic::ptr2<double>>();
-	BOOST_REQUIRE( &CC2[1][1] == &(*CCP)[1][1] );
+	C[2]; // requires operator+ 
+
+	buffer[10 + 1] = 99.;
+	BOOST_REQUIRE( C[1][1] == 99. ); // C[1][1]; // requires operator*
+
+	C[1][1] = 88.;
+	BOOST_REQUIRE(C[1][1] == 88.);
+
+	auto&& C2 = C.template static_array_cast<double, minimalistic::ptr2<double>>();
+	BOOST_REQUIRE( &C2[1][1] == &C[1][1] );
+
 	delete[] buffer;
 
 }

@@ -73,7 +73,7 @@ public:
 
 
 constexpr class adl_equal_fn__{
-	template<         class...As> constexpr auto _(priority<1>,      As...as) const DECLRETURN(   std::equal(as...))
+	template<         class...As> constexpr auto _(priority<1>,      As...as) const JUSTRETURN(   std::equal(as...))
 #ifdef THRUST_VERSION
 //	template<         class...As> constexpr auto _(priority<2>,      As...as) const DECLRETURN(thrust::equal(as...))
 #endif
@@ -487,7 +487,7 @@ constexpr class alloc_uninitialized_copy_n_fn__ {
 	template<class... As>          constexpr auto _(priority<2>,        As&&... as) const DECLRETURN(                   alloc_uninitialized_copy_n(std::forward<As>(as)...))
 	template<class T, class... As> constexpr auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).alloc_uninitialized_copy_n(std::forward<As>(as)...))
 public:
-	template<class... As> constexpr auto operator()(As&&... as) const{return _(priority<3>{}, std::forward<As>(as)...);} \
+	template<class... As> constexpr auto operator()(As&&... as) const DECLRETURN(_(priority<3>{}, std::forward<As>(as)...)) \
 } adl_alloc_uninitialized_copy_n;
 
 constexpr class alloc_uninitialized_move_n_fn__ {
