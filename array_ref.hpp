@@ -401,6 +401,9 @@ public:
 	constexpr auto stride()     const{return layout_.stride();}
 	friend constexpr auto stride(basic_array const& self){return self.stride();}
 
+	constexpr auto strides()     const{return layout_.strides();}
+	friend constexpr auto strides(basic_array const& self){return self.strides();}
+
 	constexpr auto num_elements() const{return layout_.num_elements();}
 	friend constexpr auto num_elements(basic_array const& self){return self.num_elements();}
 	
@@ -748,12 +751,13 @@ public:
 	constexpr auto sizes()      const{return layout_.sizes();}
 	constexpr auto is_empty()   const{return layout_.is_empty();}
 	constexpr auto stride()     const{return layout_.stride();}
+	constexpr auto strides()     const{return layout_.strides();}
 	constexpr auto num_elements() const{return layout_.num_elements();}
 
 	friend constexpr auto size  (basic_array const& self){return self.size()  ;}
 	friend constexpr auto stride(basic_array const& self){return self.stride();}
 	friend constexpr auto num_elements(basic_array const& self){return self.num_elements();}
-
+	friend constexpr auto strides(basic_array const& self){return self.strides();}
 	using basic_const_array = basic_array<
 		T, 
 		D, 
