@@ -21,15 +21,25 @@ template<class T> struct ptr : std::iterator_traits<T*>{ // minimalistic pointer
 	using default_allocator_type = std::allocator<T>;
 };
 
-template<class T> struct ptr2 : std::iterator_traits<T*>{ // minimalistic pointer
+template<class T> class ptr2 : public std::iterator_traits<T*>{ // minimalistic pointer
 	T* impl_;
-	ptr2(T* impl) : impl_{impl}{}
-	explicit ptr2(ptr<T> p) : impl_{p.impl_}{} 
+	friend class ptr2<T const>;
+public:
+	ptr2() = default;
+	ptr2(std::nullptr_t n) : impl_{n}{}
+	explicit ptr2(T* impl) : impl_{impl}{}
+	template<class Other, decltype(multi::implicit_cast<T*>(std::declval<Other const&>().impl_))* =nullptr>
+	ptr2(Other const& other) : impl_{other.impl_}{}
 	typename ptr2::reference operator*() const{return *impl_;}
 	auto operator+(typename ptr2::difference_type n) const{return ptr2{impl_ + n};}
+	template<class O> bool operator==(O const& o) const{return impl_ == o.impl_;}
+	template<class O> bool operator!=(O const& o) const{return impl_ != o.impl_;}
 //	T& operator[](std::ptrdiff_t n) const{return impl_[n];} // optional
 	using default_allocator_type = std::allocator<T>;
 };
+
+static_assert(     std::is_convertible<ptr2<double>, ptr2<double const>>{}, "!");
+static_assert( not std::is_convertible<ptr2<double const>, ptr2<double>>{}, "!");
 
 }
 
@@ -61,7 +71,14 @@ BOOST_AUTO_TEST_CASE(test_minimalistic_ptr){
 //	X x{1, 2.5, 1.2};
 //	assert( x.*s == x.a1 );
 
-//	X X::*ss = &X::X; 
+//	X X::*ss = &X::X;
+	double d = 5;
+	minimalistic::ptr2<double> p{&d};
+	minimalistic::ptr2<double const> pc = p;
+	minimalistic::ptr2<double const> pc2{&d};
+	pc = pc2;
+	
+	BOOST_REQUIRE( pc == p );
 
 	double* buffer = new double[100];
 	
