@@ -14,7 +14,7 @@ $CXX $0 -o $0x -lfftw3 -lboost_unit_test_framework -lboost_timer&&$0x&&rm $0x;ex
 #include<complex>
 #include<chrono>
 
-#include<thrust/complex.h>
+//#include<thrust/complex.h>
 
 namespace multi = boost::multi;
 
