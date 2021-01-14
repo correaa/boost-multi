@@ -48,11 +48,6 @@ public:
 	friend allocator_type get_allocator(array_allocator const& s){return s.get_allocator();}
 };
 
-template<class T, class Ptr = T*> struct move_ptr : std::move_iterator<Ptr>{
-	using std::move_iterator<Ptr>::move_iterator;
-	explicit operator Ptr() const{return std::move_iterator<Ptr>::base();}
-};
-
 // static_array is not a value type because it doesn't define assignment for static_arrays of different extensions
 template<class T, dimensionality_type D, class Alloc = std::allocator<T>>
 struct static_array : 
@@ -283,31 +278,31 @@ protected:
 public:
 	static_array() = default;
 	~static_array() noexcept{destroy(); deallocate();}
-	using element_const_ptr = typename std::pointer_traits<typename static_array::element_ptr>::template rebind<typename static_array::element const>;
-	using element_move_ptr  = std::move_iterator<typename static_array::element_ptr>;
-	using reference = typename std::conditional<
-		(D > 1), 
-		basic_array<typename static_array::element, D-1, typename static_array::element_ptr>, 
-		typename std::conditional<
-			D == 1,
-			typename std::iterator_traits<typename static_array::element_ptr>::reference,
-			void
-		>::type
-	//	typename pointer_traits<typename static_array::element_ptr>::element_type&
-	>::type;
-	using const_reference = typename std::conditional<
-		(D > 1), 
-		basic_array<typename static_array::element, D-1, typename static_array::element_const_ptr>, // TODO should be const_reference, but doesn't work witn rangev3
-		typename std::conditional<
-			D == 1,
-			decltype(*std::declval<typename static_array::element_const_ptr>()),
-		//	typename std::iterator_traits<typename static_array::element_const_ptr>::reference,
-			void
-		>::type
-	//	typename pointer_traits<typename static_array::element_ptr>::element_type const&
-	>::type;
-	using       iterator = multi::array_iterator<T, D, typename static_array::element_ptr      >;//, reference>;
-	using const_iterator = multi::array_iterator<T, D, typename static_array::element_const_ptr>;//, const_reference>;
+//	using element_const_ptr = typename std::pointer_traits<typename static_array::element_ptr>::template rebind<typename static_array::element const>;
+//	using element_move_ptr  = std::move_iterator<typename static_array::element_ptr>;
+//	using reference = typename std::conditional<
+//		(D > 1), 
+//		basic_array<typename static_array::element, D-1, typename static_array::element_ptr>, 
+//		typename std::conditional<
+//			D == 1,
+//			typename std::iterator_traits<typename static_array::element_ptr>::reference,
+//			void
+//		>::type
+//	//	typename pointer_traits<typename static_array::element_ptr>::element_type&
+//	>::type;
+//	using const_reference = typename std::conditional<
+//		(D > 1), 
+//		basic_array<typename static_array::element, D-1, typename static_array::element_const_ptr>, // TODO should be const_reference, but doesn't work witn rangev3
+//		typename std::conditional<
+//			D == 1,
+//			decltype(*std::declval<typename static_array::element_const_ptr>()),
+//		//	typename std::iterator_traits<typename static_array::element_const_ptr>::reference,
+//			void
+//		>::type
+//	//	typename pointer_traits<typename static_array::element_ptr>::element_type const&
+//	>::type;
+//	using       iterator = multi::array_iterator<T, D, typename static_array::element_ptr      >;//, reference>;
+//	using const_iterator = multi::array_iterator<T, D, typename static_array::element_const_ptr>;//, const_reference>;
 //	reference
 //	      reference operator[](index i)     &&{return std::move(*this).ref::operator[](i);}
 //	      reference operator[](index i)      &{return ref::operator[](i);}
@@ -331,10 +326,10 @@ public:
 //	friend typename static_array::element_ptr       base(static_array&       s){return s.base();}
 //	friend typename static_array::element_const_ptr base(static_array const& s){return s.base();}
 
-	typename static_array::element_ptr       origin()      {return ref::origin();}
-	typename static_array::element_const_ptr origin() const{return ref::origin();}
-	friend typename static_array::element_ptr       origin(static_array&       s){return s.origin();}
-	friend typename static_array::element_const_ptr origin(static_array const& s){return s.origin();}
+//	typename static_array::element_ptr       origin()      {return ref::origin();}
+//	typename static_array::element_const_ptr origin() const{return ref::origin();}
+//	friend typename static_array::element_ptr       origin(static_array&       s){return s.origin();}
+//	friend typename static_array::element_const_ptr origin(static_array const& s){return s.origin();}
 
 //	template<class... Args> decltype(auto) operator()(Args const&... args)&{return ref::operator()(args...);}
 //	template<class... Args> decltype(auto) operator()(Args const&... args) const&{return ref::operator()(args...);}
@@ -404,23 +399,23 @@ public:
 //	constexpr decltype(auto) operator<<(dimensionality_type d) const{return   rotated(d);}
 //	constexpr decltype(auto) operator>>(dimensionality_type d) const{return unrotated(d);}
 
-	constexpr typename static_array::iterator begin(){return std::move(*this).ref::begin();}
-	constexpr typename static_array::iterator end()  {return std::move(*this).ref::end()  ;}
+//	constexpr typename static_array::iterator begin(){return std::move(*this).ref::begin();}
+//	constexpr typename static_array::iterator end()  {return std::move(*this).ref::end()  ;}
 
-	friend constexpr typename static_array::iterator begin(static_array& self){return self.begin();}
-	friend constexpr typename static_array::iterator end  (static_array& self){return self.end()  ;}
+//	friend constexpr typename static_array::iterator begin(static_array& self){return self.begin();}
+//	friend constexpr typename static_array::iterator end  (static_array& self){return self.end()  ;}
 
-	constexpr const_iterator begin() const{return typename static_array::const_iterator{const_cast<static_array&&>(*this).ref::begin()};}
-	constexpr const_iterator end()   const{return const_cast<static_array&&>(*this).ref::end();}
+//	constexpr const_iterator begin() const{return typename static_array::const_iterator{const_cast<static_array&&>(*this).ref::begin()};}
+//	constexpr const_iterator end()   const{return const_cast<static_array&&>(*this).ref::end();}
 
 //	friend typename static_array::iterator begin(static_array const& self){return self.begin();}
 //	friend typename static_array::iterator end  (static_array const& self){return self.end()  ;}
 
-	constexpr const_iterator cbegin() const{return begin();}
-	constexpr const_iterator cend() const{return end();}
+//	constexpr const_iterator cbegin() const{return this->begin();}
+//	constexpr const_iterator cend()   const{return this->end()  ;}
 
-	friend constexpr const_iterator cbegin(static_array const& self){return self.cbegin();}
-	friend constexpr const_iterator cend  (static_array const& self){return self.cend()  ;}
+//	friend constexpr auto cbegin(static_array const& self){return self.cbegin();}
+//	friend constexpr auto cend  (static_array const& self){return self.cend()  ;}
 
 	constexpr static_array& operator=(static_array const& other) &{
 		assert( extensions(other) == static_array::extensions() );
@@ -434,10 +429,10 @@ public:
 //	static_array operator=(static_array<static_array::value_type, static_array::dimensionality, As...> const& o){assert( extensions(o) == static_array::extensions() );
 //		return adl::copy_elements(o.data_elements()), *this;
 //	}
-	constexpr operator basic_array<typename static_array::value_type, D, typename static_array::element_const_ptr, typename static_array::layout_type>()&{
-		return this->template static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
+//	constexpr operator basic_array<typename static_array::value_type, D, typename static_array::element_const_ptr, typename static_array::layout_type>()&{
+//		return this->template static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
 //		return static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
-	}
+//	}
 };
 
 template<class T, class Alloc>
@@ -832,11 +827,11 @@ public:
 	->decltype(                                         static_::operator=(o)                     , std::declval<array&>()){
 		return ((array::extensions() == o.extensions())?static_::operator=(o):operator=(array(o))), *this                 ;}
 
-	array& operator=(basic_array<T, D, multi::move_ptr<typename array::element, typename array::element_ptr>>& other){
-		if(other.layout() != this->layout()) return array::operator=(other.template static_array_cast<typename array::element, typename array::element_ptr>());
-		if(this->base_ != other.base_) other.base_ = nullptr;
-		return *this;
-	}
+//	array& operator=(basic_array<T, D, multi::move_ptr<typename array::element, typename array::element_ptr>>& other){
+//		if(other.layout() != this->layout()) return array::operator=(other.template static_array_cast<typename array::element, typename array::element_ptr>());
+//		if(this->base_ != other.base_) other.base_ = nullptr;
+//		return *this;
+//	}
 	friend void swap(array& a, array& b){a.swap(b);}
 
 	using static_::assign;

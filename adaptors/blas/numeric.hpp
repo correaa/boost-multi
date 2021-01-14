@@ -127,12 +127,12 @@ public:
 
 	involuter() = default;
 	explicit involuter(It it, F f = {}) : it_{std::move(it)}, f_{std::move(f)}{}
-	involuter(involuter const& other) = default;
-//	template<class Other, > constexpr involuter(Other const& other) : it_{other.it_}, f_{other.f_}{}
 
-	template<class Other, decltype(implicit_cast<It>(typename Other::underlying_type{}))* =nullptr> 
+//	involuter(involuter const& other) = default;
+//	template<class Other, > constexpr involuter(Other const& other) : it_{other.it_}, f_{other.f_}{}
+	template<class Other, decltype(implicit_cast<It>(std::declval<typename Other::underlying_type const&>()))* =nullptr> 
 	         constexpr involuter(Other const& o) : it_{o.it_}, f_{o.f_}{}
-	template<class Other, decltype(explicit_cast<It>(typename Other::underlying_type{}))* =nullptr> 
+	template<class Other, decltype(explicit_cast<It>(std::declval<typename Other::underlying_type const&>()))* =nullptr> 
 	explicit constexpr involuter(Other const& o) : it_(o.it_), f_{o.f_}{}
 
 	constexpr auto operator*() const {return reference{*it_, f_};}
@@ -205,6 +205,9 @@ public:
 template<class Ref> using conjugated = involuted<Ref, conjugate>;
 
 template<class It> using conjugater = involuter<It, conjugate>;//, conjugated<typename std::iterator_traits<It>::reference> >;
+
+static_assert(     std::is_convertible<conjugater<double*>, conjugater<double const*>>{}, "!");
+static_assert( not std::is_convertible<conjugater<double const*>, conjugater<double*>>{}, "!");
 
 template<class It> auto make_conjugater(It it){return conjugater<It>{it};}
 template<class It> It make_conjugater(conjugater<It> it){return underlying(it);}

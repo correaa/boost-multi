@@ -46,8 +46,10 @@ constexpr bool operator!=(U const& other, equality_comparable2<T> const& self){
 
 
 template<class Self, 
-	class Iterator  = typename Self::iterator , class ConstIterator  = typename Self::const_iterator ,
-	class Reference = typename Self::reference, class ConstReference = typename Self::const_reference
+	class      Iterator,
+	class ConstIterator,
+	class      Reference, 
+	class ConstReference
 >
 class container_interface{
 	using self_type = Self;
@@ -55,6 +57,8 @@ class container_interface{
 protected:
 	using const_iterator = ConstIterator;
 	using       iterator =      Iterator;
+	
+		static_assert( std::is_convertible<Iterator, ConstIterator>::value, "!" );
 
 	using const_reference = ConstReference;
 	using       reference =      Reference;
