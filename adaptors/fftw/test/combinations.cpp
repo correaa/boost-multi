@@ -33,7 +33,9 @@ BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001)){
 	using complex = std::complex<double>;
 
 	auto const in = []{
-		multi::array<complex, 4> ret({32, 90, 98, 96});
+	//	multi::array<complex, 4> ret({32, 90, 98, 96});
+		multi::array<complex, 4> ret({16, 45, 49, 48});
+
 		std::generate(ret.data_elements(), ret.data_elements() + ret.num_elements(), 
 			[](){return complex{std::rand()*1./RAND_MAX, std::rand()*1./RAND_MAX};}
 		);
@@ -92,7 +94,7 @@ BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001)){
 			auto in_rw = in;
 			boost::timer::auto_cpu_timer t{"cpu_move %ws wall, CPU (%p%)\n"}; 
 			auto out_cpy = multi::fftw::dft_forward(c, std::move(in_rw));
-			BOOST_REQUIRE( in_rw.empty() );
+			BOOST_REQUIRE( in_rw.is_empty() );
 			BOOST_TEST( abs( out_cpy[5][4][3][1] - out[5][4][3][1] ) == 0. );
 		}
 	}
@@ -102,7 +104,9 @@ BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark, *boost::unit_test::disabled() ){
 	using complex = std::complex<double>;
 	namespace fftw = multi::fftw;
 
-	auto x = multi::array<complex, 4>::extensions_type({64, 128, 128, 128});
+//	auto x = multi::array<complex, 4>::extensions_type({64, 128, 128, 128});
+	auto x = multi::array<complex, 4>::extensions_type({32, 64, 64, 96});
+
 	multi::array<complex, 4> in(x);
 	std::iota(in.data_elements(), in.data_elements() + in.num_elements(), 1.2);
 
