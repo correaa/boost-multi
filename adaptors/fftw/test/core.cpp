@@ -1,6 +1,4 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXXX $CXXFLAGS -O3 $0 -o $0x -DHAVE_FFTW3_THREADS -lfftw3 -lfftw3_threads -lboost_unit_test_framework -lboost_timer&&$0x&&rm $0x;exit
-#endif
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
 // © Alfredo A. Correa 2020-2021
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW transpose"
@@ -15,7 +13,7 @@ $CXXX $CXXFLAGS -O3 $0 -o $0x -DHAVE_FFTW3_THREADS -lfftw3 -lfftw3_threads -lboo
 #include<chrono>
 #include<random>
 
-#include<thrust/complex.h>
+//#include<thrust/complex.h> // TODO make lib work with thrust complex
 
 namespace{
 
