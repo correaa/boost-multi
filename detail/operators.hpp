@@ -61,6 +61,7 @@ protected:
 	using const_reference = ConstReference;
 	using       reference =      Reference;
 
+public:
 	constexpr const_iterator begin() const&{return self().begin_();}
 	constexpr       iterator begin()      &{return self().begin_();}
 	constexpr       iterator begin()     &&{return self().begin_();}
@@ -72,7 +73,8 @@ protected:
 	constexpr       iterator end()     &&{return self().end_();}
 
 	template<class S, Self* =nullptr> friend constexpr auto end(S&& s){return std::forward<S>(s).end();}
-	
+
+public:
 	constexpr const_iterator cbegin() const{return begin();}
 	constexpr const_iterator cend  () const{return end  ();}
 
@@ -80,6 +82,7 @@ protected:
 	template<class S, Self* =nullptr> friend constexpr auto cbegin(S&& s){return s.cbegin();}
 	template<class S, Self* =nullptr> friend constexpr auto cend  (S&& s){return s.cend();}
 
+protected:
 	using size_type = typename std::iterator_traits<iterator>::difference_type;
 	constexpr size_type size() const{return std::distance(begin(), end());}
 	friend constexpr size_type size(self_type const& s){return s.size();}

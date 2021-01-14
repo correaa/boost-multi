@@ -508,7 +508,7 @@ public:
 	template<class S, basic_array* =nullptr>
 	friend constexpr auto unrotated(S&& s, dimensionality_type d = 1){return std::forward<S>(s).rotated(d);}
 
-	template<class It> bool equal(It first) const{return adl_equal(this->begin(), end(), first);}
+	template<class It> bool equal(It first) const{return adl_equal(begin(), end(), first);}
 
 	template<class BasicArray>
 	constexpr auto operator==(BasicArray const& other) const{
