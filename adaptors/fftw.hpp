@@ -244,8 +244,8 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, unsigned fla
 
 template<
 	class In, class Out, dimensionality_type D = std::decay_t<In>::rank_v,
-	class=std::enable_if_t<D==std::decay_t<Out>::rank_v>,
-	class=decltype(reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double> *>*/(base(std::declval<Out&>()))))
+	class=std::enable_if_t<std::decay_t<In>::rank_v==std::decay_t<Out>::rank_v>,
+	class=decltype(reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double> *>*/(std::declval<Out&>().base())))
 >
 fftw_plan fftw_plan_dft(std::array<bool, +D> which, In&& in, Out&& out, int sign, unsigned flags = FFTW_ESTIMATE){
 	static_assert( sizeof(*base(in )) == sizeof((*base(in )).real()) + sizeof((*base(in)).imag()) and sizeof(*base(in)) == sizeof(fftw_complex), 
@@ -410,15 +410,15 @@ enum strategy: decltype(FFTW_ESTIMATE){ estimate = FFTW_ESTIMATE, measure = FFTW
 
 template<class In, class Out>
 auto dft(In const& i, Out&& o, int s)
-->decltype(fftw::plan{i, o, s}(), std::forward<Out>(o)){
-	return fftw::plan{i, o, s}(), std::forward<Out>(o);}
+->decltype(fftw::plan{i, std::forward<Out>(o), s}(), std::forward<Out>(o)){
+	return fftw::plan{i, std::forward<Out>(o), s}(), std::forward<Out>(o);}
 
 using std::decay_t;
 
 template<class In, class Out, std::size_t D=In::rank_v>
 auto dft(std::array<bool, +D> which, In const& i, Out&& o, sign s)
-->decltype(plan{which, i, o, s}(), std::forward<Out>(o)){
-	return plan{which, i, o, s}(), std::forward<Out>(o);}
+->decltype(plan{which, i, std::forward<Out>(o), s}(), std::forward<Out>(o)){
+	return plan{which, i, std::forward<Out>(o), s}(), std::forward<Out>(o);}
 
 template<typename In, class Out, dimensionality_type D=In::rank_v, dimensionality_type=std::decay_t<Out>::rank_v>
 auto dft(std::array<sign, +D> w, In const& i, Out&& o){
