@@ -151,7 +151,8 @@ public:
 		basic_array<element, D-1, element_ptr> ret{*sum};
 		return ret;
 	}
-	template<class O> constexpr bool operator==(O const& o) const{return equal(o);}
+	template<class O> constexpr bool operator==(O const& o) const{return ptr_==o.ptr_ and stride_==o.stride_;}
+
 	constexpr array_iterator(
 		typename basic_array<element, D-1, element_ptr>::element_ptr const& p, 
 		typename basic_array<element, D-1, element_ptr>::layout_type const& l, 
@@ -169,20 +170,7 @@ private:
 	constexpr decltype(auto) apply_impl(Tuple const& t, std::index_sequence<I...>) const{return this->operator()(std::get<I>(t)...);}
 public:
 	template<typename Tuple> constexpr decltype(auto) apply(Tuple const& t) const{return apply_impl(t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
-	constexpr bool operator==(array_iterator const& other) const{assert(stride_ == other.stride_);
-		return ptr_ == other.ptr_;
-	}
-	constexpr bool operator!=(array_iterator const& other) const{return not operator==(other);}
 
-private:
-	constexpr bool equal(array_iterator const& o) const{return ptr_==o.ptr_ and stride_==o.stride_;}//base_==o.base_ && stride_==o.stride_ && ptr_.layout()==o.ptr_.layout();}
-	constexpr difference_type distance_to(array_iterator const& other) const{
-		assert( stride_ == other.stride_); assert( stride_ != 0 );
-	//	assert( this->stride()==stride(other) and this->stride() );// and (base(other.ptr_) - base(this->ptr_))%stride_ == 0
-	//	assert( stride_ == other.stride_ and stride_ != 0 and (other.ptr_.base_-ptr_.base_)%stride_ == 0 and ptr_.layout() == other.ptr_.layout() );
-	//	assert( stride_ == other.stride_ and stride_ != 0 and (other.base_ - base_)%stride_ == 0 and layout() == other.layout() );
-		return (other.ptr_->base_ - ptr_->base_)/stride_;
-	}
 public:
 	constexpr array_iterator& operator+=(difference_type n){ptr_->base_ += stride_*n; return *this;}
 	constexpr array_iterator& operator-=(difference_type n){return operator+=(-n);}
@@ -198,7 +186,7 @@ public:
 		assert(stride_ != 0);
 		return (0 < stride_)?(ptr_->base_ < s.ptr_->base_):(s.ptr_->base_ < ptr_->base_);
 	}
-public:
+
 	       constexpr element_ptr base()              const    {return ptr_->base();}
 	friend constexpr element_ptr base(array_iterator const& s){return s.base();}
 	       constexpr stride_type stride()              const    {return   stride_;}

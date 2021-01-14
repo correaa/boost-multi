@@ -46,6 +46,7 @@ BOOST_AUTO_TEST_CASE(iterator_2d){
 		BOOST_REQUIRE( size(A) == 120 );
 		BOOST_REQUIRE( cbegin(A) < cend(A) );
 		BOOST_REQUIRE( cend(A) - cbegin(A) == size(A) );
+		BOOST_REQUIRE( begin(A) == cbegin(A) );
 
 		using iter = multi::array<double, 2>::iterator;
 		static_assert( std::is_same< iter::value_type::element   , double >{}, "!");
