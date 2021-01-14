@@ -324,7 +324,8 @@ class basic_array<T, dimensionality_type(1), ElementPtr, Layout> :
 	public container_interface<basic_array<T, dimensionality_type(1), ElementPtr, Layout>, 
 		typename multi::array_iterator<T, 1, ElementPtr                                                        >, 
 		typename multi::array_iterator<T, 1, typename std::pointer_traits<ElementPtr>::template rebind<T const>>, 
-		typename std::iterator_traits<ElementPtr>::reference, typename std::iterator_traits<typename std::pointer_traits<ElementPtr>::template rebind<T const>>::reference
+		typename std::iterator_traits<ElementPtr                                                        >::reference, 
+		typename std::iterator_traits<typename std::pointer_traits<ElementPtr>::template rebind<T const>>::reference
 	>
 {
 	using container_interface_ 
@@ -1220,9 +1221,12 @@ template<class Element, typename Ptr>
 class array_iterator<Element, 1, Ptr> :
 	public totally_ordered2<array_iterator<Element, 1, Ptr>>
 {
+
 	using element = Element;
 	using element_ptr = Ptr;
 	using stride_type = typename std::pointer_traits<element_ptr>::difference_type;
+	
+	static_assert( std::is_convertible<element_ptr, typename std::pointer_traits<element_ptr>::template rebind<element const>>{}, "!" );
 
 	element_ptr base_;// = nullptr;
 	stride_type stride_;
