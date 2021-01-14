@@ -30,6 +30,9 @@ namespace managed{
 		using value_type = T;
 		using pointer = managed::ptr<T>;
 		using size_type = ::size_t; // as specified by CudaMalloc
+		
+		template <class U> struct rebind{using other = allocator<U>;};
+		
 		pointer allocate(typename allocator::size_type n, const void* = 0){
 			if(n == 0) return pointer{nullptr};
 			auto ret = static_cast<pointer>(cuda::managed::malloc(n*sizeof(T)));
