@@ -521,8 +521,8 @@ public:
 	template<class It> constexpr auto assign(It other) &{return adl_copy_n(other, size(), begin());}
 	template<class It> constexpr auto assign(It other)&&{return assign(other);}
 
-	constexpr void assign(value_type const& v) &{adl_fill_n(begin(), size(), v);}
-	constexpr void assign(value_type const& v)&&{assign(v);}
+	constexpr void fill(value_type const& v) &{adl_fill_n(begin(), size(), v);}
+	constexpr void fill(value_type const& v)&&{fill(v);}
 
 	template<class BasicArray>
 	constexpr basic_array& operator=(BasicArray const& o)&{assert(this->extension() == o.extension());

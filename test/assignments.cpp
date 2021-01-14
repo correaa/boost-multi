@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE(assignments){
 template<class T, class Allocator = std::allocator<T> > // T must be specified, double, complex<double>
 multi::array<T, 2, Allocator> eye(multi::iextensions<2> ie, Allocator alloc = {}){
 	multi::array<T, 2, Allocator> ret(ie, 0., alloc);
-	ret.diagonal().assign(1.);
+	ret.diagonal().fill(1.);
 	return ret;
 }
 
