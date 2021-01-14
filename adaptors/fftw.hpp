@@ -410,8 +410,8 @@ enum strategy: decltype(FFTW_ESTIMATE){ estimate = FFTW_ESTIMATE, measure = FFTW
 
 template<class In, class Out>
 auto dft(In const& i, Out&& o, int s)
-//->decltype(fftw::plan{i, o, s}(), std::forward<Out>(o)){
-{	return fftw::plan{i, o, s}(), std::forward<Out>(o);}
+->decltype(fftw::plan{i, o, s}(), std::forward<Out>(o)){
+	return fftw::plan{i, o, s}(), std::forward<Out>(o);}
 
 using std::decay_t;
 

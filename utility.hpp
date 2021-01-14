@@ -74,8 +74,8 @@ constexpr auto size(Container const& con)
 //->decltype(t.size()){
 //	return t.size();}
 
-template<class Pointer, std::enable_if_t<std::is_pointer<Pointer>{}, int> =0> constexpr std::ptrdiff_t stride(Pointer){return 1;}
-template<class Pointer, std::enable_if_t<std::is_pointer<Pointer>{}, int> =0> constexpr Pointer base(Pointer d){return d;}
+//template<class Pointer, std::enable_if_t<std::is_pointer<Pointer>{}, int> =0> constexpr std::ptrdiff_t stride(Pointer){return 1;}
+//template<class Pointer, std::enable_if_t<std::is_pointer<Pointer>{}, int> =0> constexpr Pointer base(Pointer d){return d;}
 
 template<class T, class U>
 auto reinterpret_pointer_cast(U* other)
@@ -314,11 +314,11 @@ template<class T, std::size_t N>
 constexpr auto base(T(*&t)[N]) noexcept{return base(*t);}
 //reinterpret_cast<std::remove_all_extents_t<T[N]>*>(&t);}
 
-template<class T, typename = std::enable_if_t<not std::is_array<T>{}> >
-constexpr auto base(T const* t) noexcept{return t;}
+//template<class T, typename = std::enable_if_t<not std::is_array<T>{}> >
+//constexpr auto base(T const* t) noexcept{return t;}
 
-template<class T, typename = std::enable_if_t<not std::is_array<T>{}> >
-constexpr auto base(T* t) noexcept{return t;}
+//template<class T, typename = std::enable_if_t<not std::is_array<T>{}> >
+//constexpr auto base(T* t) noexcept{return t;}
 
 //template<class T, typename = std::enable_if_t<not std::is_array<T>{}> > 
 //constexpr std::ptrdiff_t stride(T*&/*t*/) noexcept{
