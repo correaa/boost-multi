@@ -811,13 +811,13 @@ public:
 		clear();
 		this->layout_ = exchange(other.layout_, {});
 		this->base_ = exchange(other.base_, nullptr);
-		if(std::allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment::value) this->alloc() = std::move(other.alloc());
+		if(std::allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment::value) this->alloc_ = std::move(other.alloc_);
 		return *this;
 	}
 	array& operator=(array const& o){
 		if(array::extensions() == o.extensions()){
 			static_::operator=(o);
-			if(std::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment::value) this->alloc() = o.alloc();
+			if(std::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment::value) this->alloc_ = o.alloc_;
 		}else{
 			if(std::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment::value) operator=(array{o});
 			else assert(0); //TODO
