@@ -8,6 +8,7 @@ $CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 #include<boost/test/unit_test.hpp>
 
 #include<complex>
+#include<numeric>
 
 #include "../array.hpp"
 
@@ -121,9 +122,13 @@ BOOST_AUTO_TEST_CASE(assignments){
 	{
 		std::vector<double> v(5*7, 99.);
 		multi::array<double, 2> A({5, 7}, 33.);
+		
+		std::iota( A.data_elements(A), A.data_elements(A) + A.num_elements(), 0. );
+		BOOST_REQUIRE( A[0][3] == 3. );
 
 //		std::copy(A.begin(), A.end(), multi::ref(v).partitioned(5).begin());
-		multi::ref(v).partitioned(5) = A;// = A;
+		multi::ref(v).partitioned(5) = A;
+		BOOST_REQUIRE( multi::ref(v).partitioned(5) == A );
 //		multi::ref(v).partitioned(5) = A;
 //		multi::array_ref<double, 2>(v.data(), {5, 7}) = A;
 
