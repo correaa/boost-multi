@@ -1319,9 +1319,9 @@ public:
 	array_ref(array_ref&&) = default; // this needs to be public in c++14
 	using basic_array<T, D, ElementPtr>::operator=;
 public:
-	auto  data_elements() const&{return this->base();}
-	auto  data_elements()     &&{return this->base();}
-	auto  data_elements()      &{return this->base();}
+	auto  data_elements() const&{return this-> base();}
+	auto  data_elements()     &&{return this-> base();}
+	auto  data_elements()      &{return this-> base();}
 	auto cdata_elements() const&{return this->cbase();}
 
 	template<class S> auto data_elements(S&& s){return std::forward<S>(s).data_elements();}
