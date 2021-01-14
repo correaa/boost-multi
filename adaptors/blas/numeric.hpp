@@ -274,7 +274,10 @@ auto default_allocator_of(multi::blas::involuter<It, F, Reference> it){
 
 namespace std{
 	template<> struct is_convertible<boost::multi::blas::Complex_<double>*, std::complex<double>*> : std::true_type{};
-	template<class T> struct is_convertible<boost::multi::blas::Complex_<double>*, T*> : boost::multi::blas::numeric::is_complex_of<T, double>{};
+	template<class T> struct is_convertible<boost::multi::blas::Complex_<double>*, T*> : boost::multi::blas::numeric::is_complex_of<std::decay_t<T>, double>{};
+
+	template<> struct is_convertible<boost::multi::blas::Complex_<double>*, boost::multi::blas::Complex_<double> const*> : std::true_type{};
+	template<> struct is_convertible<boost::multi::blas::Complex_<double>*, boost::multi::blas::Complex_<double>*> : std::true_type{};
 }
 
 #endif
