@@ -604,7 +604,7 @@ public:
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2      >, class Element = element, class PM = T2 std::decay_t<Element>::*> constexpr auto member_array_cast(PM pm)      &{return member_array_cast_<T2, P2>(pm);}
 
 private:
-	constexpr ptr addressof_() const&{return {layout(), base_};}
+	constexpr auto addressof_() const&{return ptr{layout(), base_};}
 public:
 	constexpr cptr operator&() const&{return addressof_();}
 	constexpr  ptr operator&()      &{return addressof_();}
