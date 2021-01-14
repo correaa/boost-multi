@@ -1092,8 +1092,8 @@ public:
 	template<typename Tuple> constexpr decltype(auto) apply(Tuple const& t)     &&{return apply_impl(t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
 	template<typename Tuple> constexpr decltype(auto) apply(Tuple const& t)      &{return apply_impl(t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
 
-	constexpr ptr addressof() &&{return {layout(), base_};}
-	constexpr ptr operator&() &&{return {layout(), base_};}
+	constexpr auto addressof() &&{return ptr{layout(), base_};}
+	constexpr auto operator&() &&{return ptr{layout(), base_};}
 
 	using       iterator = array_iterator<typename basic_array::element, D, typename basic_array::element_ptr >;//, typename types::reference      >;
 	using const_iterator = array_iterator<typename basic_array::element, D, typename basic_array::element_cptr>;//, typename types::const_reference>;
