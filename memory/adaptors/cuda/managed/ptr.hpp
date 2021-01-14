@@ -127,6 +127,7 @@ protected:
 //	ptr(ptr<TT const> const& p) : rp_{const_cast<T*>(p.impl_)}{}
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 public:
+	template<class U> using rebind = ptr<U, typename std::pointer_traits<raw_pointer>::template rebind<U>>;
 //	template<class U> using rebind = ptr<U, typename std::pointer_traits<RawPtr>::template rebind<U>>;
 //	explicit ptr(cuda::ptr<T, RawPtr> const& other) : rp_{other.rp_}{}
 //	template<class Other, typename = std::enable_if_t<std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{}>>
