@@ -59,7 +59,7 @@ namespace managed{
 		}		
 		template<class InputIt, class Size, class ForwardIt>
 		constexpr ForwardIt alloc_uninitialized_copy_n(InputIt first, Size count, ForwardIt d_first) const{
-			return ForwardIt{adl_uninitialized_copy_n(first, count, d_first)};
+			return adl_uninitialized_copy_n(first, count, d_first);
 		}
 		template<class ForwardIt, class Size>
 		constexpr ForwardIt alloc_uninitialized_default_construct_n(ForwardIt first, Size n) const{

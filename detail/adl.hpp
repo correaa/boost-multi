@@ -84,7 +84,7 @@ constexpr class adl_equal_fn__{
 public:
 	template<class...As> constexpr auto operator()(As...as) const DECLRETURN(_(priority<4>{}, as...))
 #ifdef THRUST_VERSION
-	template<class It, class...As, class=std::enable_if_t<(It::dimensionality > 1)> > 
+	template<class It, class...As, class=std::enable_if_t<(It::rank_v > 1)> > 
 	                     constexpr auto operator()(It begin, As... as) const DECLRETURN(_(priority<1>{}, begin, as...))
 #endif
 } adl_equal;

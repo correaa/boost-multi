@@ -139,15 +139,15 @@ public:
 	using ssize_type = int;
 
 	template<class I, class O, //std::enable_if_t<(I::dimensionality < 4), int> =0,
-		dimensionality_type D = I::dimensionality,  
-		typename = decltype(raw_pointer_cast(base(std::declval<I const&>())), reinterpret_cast<complex_type*      >(raw_pointer_cast(base(std::declval<O&>()))))
+		dimensionality_type D = I::rank_v//, 
+	//	typename = decltype(raw_pointer_cast(base(std::declval<I const&>())), reinterpret_cast<complex_type*      >(raw_pointer_cast(base(std::declval<O&>()))))
 	>
 	plan(I const& i, O&& o, sign s) : 
-		idata_{                          reinterpret_cast<complex_type const*>(raw_pointer_cast(base(i))) },
-		odata_{const_cast<complex_type*>(reinterpret_cast<complex_type*      >(raw_pointer_cast(base(o))))},
+		idata_{                          reinterpret_cast<complex_type const*>(raw_pointer_cast(i.base())) },
+		odata_{const_cast<complex_type*>(reinterpret_cast<complex_type*      >(raw_pointer_cast(o.base())))},
 		direction_{s}
 	{
-		assert( I::dimensionality < 4 );
+		assert( I::rank_v < 4 );
 		assert( CUFFT_FORWARD == s or CUFFT_INVERSE == s or s == 0 );
 		assert( sizes(i) == sizes(o) );
 
@@ -156,7 +156,7 @@ public:
 		auto istrides = std::apply([](auto... t){return std::array<ssize_type, D>{static_cast<ssize_type>(t)...};}, strides(i));
 		auto ostrides = std::apply([](auto... t){return std::array<ssize_type, D>{static_cast<ssize_type>(t)...};}, strides(o));
 
-		std::array<std::tuple<int, int, int>, I::dimensionality> ssn;
+		std::array<std::tuple<int, int, int>, I::rank_v> ssn;
 		for(std::size_t i = 0; i != ssn.size(); ++i) ssn[i] = std::make_tuple(istrides[i], ostrides[i], ion[i]);
 		std::sort(ssn.begin(), ssn.end(), std::greater<>{});
 
@@ -179,8 +179,8 @@ public:
 		}
 
 		direction_ = s;
-		idata_ =                           reinterpret_cast<complex_type const*>(raw_pointer_cast(base(i))) ;
-		odata_ = const_cast<complex_type*>(reinterpret_cast<complex_type*      >(raw_pointer_cast(base(o))));
+		idata_ =                           reinterpret_cast<complex_type const*>(raw_pointer_cast(i.base())) ;
+		odata_ = const_cast<complex_type*>(reinterpret_cast<complex_type*      >(raw_pointer_cast(o.base())));
 
 		switch(::cufftPlanMany(
 			/*cufftHandle *plan*/ &h_, 
@@ -205,12 +205,12 @@ public:
 		}
 	}
 #ifndef __INTEL_COMPILER
-	template<class It1, class It2, dimensionality_type D = decltype(*It1{})::dimensionality>
+	template<class It1, class It2, dimensionality_type D = decltype(*It1{})::rank_v>
 	static auto many(It1 first, It1 last, It2 d_first, int sign = 0, unsigned = 0)
 	->std::decay_t<decltype(const_cast<complex_type*>(reinterpret_cast<complex_type*>(raw_pointer_cast(base(d_first)))), std::declval<plan>())>
 #else
 	template<class It1, class It2, 
-		dimensionality_type D = decltype(*It1{})::dimensionality, 
+		dimensionality_type D = decltype(*It1{})::rank_v, 
 		typename TT = decltype(const_cast<complex_type*>(reinterpret_cast<complex_type*>(It2{}.base().raw_pointer_cast())))
 	>
 	static auto many(It1 first, It1 last, It2 d_first, int sign = 0, unsigned = 0)
@@ -224,7 +224,7 @@ public:
 		auto istrides = std::apply([](auto... t){return std::array<ssize_type, D>{static_cast<ssize_type>(t)...};}, strides(*  first));
 		auto ostrides = std::apply([](auto... t){return std::array<ssize_type, D>{static_cast<ssize_type>(t)...};}, strides(*d_first));
 
-		std::array<std::tuple<int, int, int>, std::decay_t<decltype(*It1{})>::dimensionality> ssn;
+		std::array<std::tuple<int, int, int>, std::decay_t<decltype(*It1{})>::rank_v> ssn;
 		for(std::size_t i = 0; i != ssn.size(); ++i) ssn[i] = std::make_tuple(istrides[i], ostrides[i], ion[i]);
 		std::sort(ssn.begin(), ssn.end(), std::greater<>{});
 
@@ -290,11 +290,11 @@ public:
 thread_local int plan::tl_execute_count = 0;
 
 template<typename In, class Out>
-auto dft(In const& i, Out&& o, int s)
-->decltype(cufft::plan{i, o, s}(), std::forward<Out>(o)){
-	return cufft::plan{i, o, s}(), std::forward<Out>(o);}
+Out&& dft(In const& i, Out&& o, int s)
+//->decltype(cufft::plan{i, std::forward<Out>(o), s}(), std::forward<Out>(o)){
+{	return cufft::plan{i, std::forward<Out>(o), s}(), std::forward<Out>(o);}
 
-template<typename In, typename R = multi::array<typename In::element_type, In::dimensionality, decltype(get_allocator(std::declval<In>()))>>
+template<typename In, typename R = multi::array<typename In::element_type, In::rank_v, decltype(get_allocator(std::declval<In>()))>>
 NODISCARD("when first argument is const")
 R dft(In const& i, int s){
 	static_assert(std::is_trivially_default_constructible<typename In::element_type>{}, "!");
@@ -315,13 +315,13 @@ auto many_dft(It1 first, It1 last, It2 d_first, sign s)
 	return plan::many(first, last, d_first, s)(), d_first + (last - first);}
 #endif
 
-template<typename In, class Out,  std::size_t D = In::dimensionality, std::enable_if_t<(D==1), int> = 0>
+template<typename In, class Out,  std::size_t D = In::rank_v, std::enable_if_t<(D==1), int> = 0>
 Out&& dft(std::array<bool, D> which, In const& i, Out&& o, int s){
 	if(which[0]) return cufft::dft(i, std::forward<Out>(o), s);
 	else return std::forward<Out>(std::forward<Out>(o) = i);
 }
 
-template<typename In, class Out, std::size_t D = In::dimensionality, std::enable_if_t<(D>1), int> = 0> 
+template<typename In, class Out, std::size_t D = In::rank_v, std::enable_if_t<(D>1), int> = 0> 
 auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
 ->decltype(many_dft(i.begin(), i.end(), o.begin(), s),std::forward<Out>(o))
 {
@@ -337,7 +337,7 @@ auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
 		}
 	}else if(which[0]==false){
 		if(D==1 or std::none_of(begin(which)+1, end(which), [](auto e){return e;})){
-			if(base(o) != base(i)) std::forward<Out>(o) = i;
+			if(base(i) != base(o)) std::forward<Out>(o) = i;
 			else if(o.layout() != i.layout()) std::forward<Out>(o) = +i;
 		}
 //		if(D==1 or std::all_of(begin(which)+1, end(which), [](auto e){return e==false;})){
@@ -356,8 +356,8 @@ auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
 				}else{
 					if(base(i) == base(o) and i.layout() != o.layout()){
 						auto tmp = +i;
-						for(auto idx : extension(i)) cufft::dft(tail, tmp[idx], o[idx], s);
-					}else for(auto idx : extension(i)) cufft::dft(tail, i[idx], o[idx], s);
+						for(auto idx : i.extension()) cufft::dft(tail, tmp[idx], o[idx], s);
+					}else for(auto idx : i.extension()) cufft::dft(tail, i[idx], o[idx], s);
 				}
 			}
 		}
@@ -365,13 +365,13 @@ auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
 	return std::forward<Out>(o);
 }
 
-template<typename In,  std::size_t D = In::dimensionality>
+template<typename In,  std::size_t D = In::rank_v>
 NODISCARD("when passing a const argument")
 auto dft(std::array<bool, D> which, In const& i, int sign)->std::decay_t<decltype(
 dft(which, i, typename In::decay_type(extensions(i), get_allocator(i)), sign))>{return 
 dft(which, i, typename In::decay_type(extensions(i), get_allocator(i)), sign);}
 
-template<typename In,  std::size_t D = In::dimensionality>
+template<typename In,  std::size_t D = In::rank_v>
 auto dft(std::array<bool, D> which, In&& i, int sign)
 ->decltype(dft(which, i, i, sign), std::forward<In>(i)){
 	return dft(which, i, i, sign), std::forward<In>(i);}	

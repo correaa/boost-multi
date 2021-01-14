@@ -28,19 +28,19 @@ namespace multi{namespace blas{
 
 template<class A, std::enable_if_t<not is_conjugated<A>{}, int> =0> 
 auto base_aux(A&& a)
-->decltype(base(a)){
-	return base(a);}
+->decltype(a.base()){
+	return a.base();}
 
 template<class A, std::enable_if_t<    is_conjugated<A>{}, int> =0>
 auto base_aux(A&& a)
-->decltype(underlying(base(a))){
-	return underlying(base(a));}
+->decltype(underlying(a.base())){
+	return underlying(a.base());}
 
 using core::herk;
 
 template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr, std::enable_if_t<is_complex_array<C2D>{}, int> =0>
 auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c)
-->decltype(herk('\0', '\0', c.size(), a.size(), alpha, base_aux(a), stride(a.rotated()), beta, base_aux(c), stride(c)), std::forward<C2D>(c))
+->decltype(herk('\0', '\0', c.size(), a.size(), alpha, base_aux(a), a.rotated().stride(), beta, base_aux(c), c.stride()), std::forward<C2D>(c))
 {
 	assert( a.size() == c.size() );
 	assert( c.size() == rotated(c).size() );
@@ -125,7 +125,7 @@ auto herk(filling cs, AA alpha, A2D const& a)
 decltype(herk(cs, alpha, a, Ret({size(a), size(a)}, 0., get_allocator(a))))>{
 	return herk(cs, alpha, a, Ret({size(a), size(a)},
 #ifdef NDEBUG
-		numeric_limits<typename Ret::element_type>::quiet_NaN(),
+		numeric_limits<typename Ret::element>::quiet_NaN(),
 #endif	
 		get_allocator(a)
 	));

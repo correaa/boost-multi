@@ -56,7 +56,7 @@ protected:
 	using const_iterator = ConstIterator;
 	using       iterator =      Iterator;
 	
-		static_assert( std::is_convertible<Iterator, ConstIterator>::value, "!" );
+//		static_assert( std::is_convertible<Iterator, ConstIterator>::value, "!" );
 
 	using const_reference = ConstReference;
 	using       reference =      Reference;
