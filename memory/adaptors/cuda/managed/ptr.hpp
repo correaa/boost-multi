@@ -138,6 +138,8 @@ public:
 	template<class Other, decltype(explicit_cast(std::declval<Other const&>().rp_))* =nullptr>
 	explicit            constexpr ptr(ptr<Other> const& o) : cuda::ptr<T, RawPtr>{static_cast<raw_pointer>(o.rp_)}{}
 	
+	explicit constexpr ptr(ptr<void> const& o) : cuda::ptr<T, RawPtr>{static_cast<raw_pointer>(o.rp_)}{}
+
 	explicit constexpr ptr(void* vp) : cuda::ptr<T, RawPtr>{static_cast<raw_pointer>(vp)}{}
 //	template<class Other, typename = std::enable_if_t<std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{}>>
 //	ptr(ptr<Other> const& o) HD : rp_{static_cast<raw_pointer>(o.rp_)}{}
