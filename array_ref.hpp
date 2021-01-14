@@ -438,7 +438,7 @@ public:
 
 	constexpr element_cptr cbase() const{return base();}
 	template<class S, basic_array* =nullptr>
-	constexpr auto cbase(S&& s){return std::forward<S>(s).cbase();}
+	constexpr auto cbase(S const& s){return std::forward<S>(s).cbase();}
 
 private:
 	constexpr auto begin_() const{return iterator(base_                   , layout_.stride());}
@@ -1111,6 +1111,9 @@ public:
 
 	template<class S, basic_array* =nullptr> friend constexpr auto begin(S&& s){return std::forward<S>(s).begin();}
 
+	constexpr const_iterator cbegin() const{return begin();} // needs && vvvv to win over std::cbegin
+	template<class S, basic_array* =nullptr> friend constexpr auto cbegin(S&& s){return s.cbegin();}
+
 private:
 	constexpr iterator end_() const&{return {base_ + layout_.nelems_, layout_.sub_, layout_.stride_};}
 public:
@@ -1119,6 +1122,9 @@ public:
 	constexpr       iterator end()      &{return end_();}
 
 	template<class S, basic_array* =nullptr> friend constexpr auto end  (S&& s){return std::forward<S>(s).end()  ;}
+
+	constexpr const_iterator cend() const{return end();}
+	template<class S, basic_array* =nullptr> friend constexpr auto cend(S&& s){return s.cend();}
 
 protected:
 	template<class A> constexpr void intersection_assign_(A&& other)&{// using multi::extension

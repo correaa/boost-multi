@@ -46,10 +46,8 @@ constexpr bool operator!=(U const& other, equality_comparable2<T> const& self){
 
 
 template<class Self, 
-	class      Iterator,
-	class ConstIterator,
-	class      Reference, 
-	class ConstReference
+	class      Iterator , class ConstIterator,
+	class      Reference, class ConstReference
 >
 class container_interface{
 	using self_type = Self;
@@ -67,14 +65,21 @@ protected:
 	constexpr       iterator begin()      &{return self().begin_();}
 	constexpr       iterator begin()     &&{return self().begin_();}
 
-	template<class S, Self* = nullptr> friend constexpr auto begin(S&& s){return std::forward<S>(s).begin();}
+	template<class S, Self* =nullptr> friend constexpr auto begin(S&& s){return std::forward<S>(s).begin();}
 
 	constexpr const_iterator end() const&{return self().end_();}
 	constexpr       iterator end()      &{return self().end_();}
 	constexpr       iterator end()     &&{return self().end_();}
 
-	template<class S, Self* = nullptr> friend constexpr auto end(S&& s){return std::forward<S>(s).end();}
+	template<class S, Self* =nullptr> friend constexpr auto end(S&& s){return std::forward<S>(s).end();}
 	
+	constexpr const_iterator cbegin() const{return begin();}
+	constexpr const_iterator cend  () const{return end  ();}
+
+	//                                                             vvvvv needs && to win over std::cbegin
+	template<class S, Self* =nullptr> friend constexpr auto cbegin(S&& s){return s.cbegin();}
+	template<class S, Self* =nullptr> friend constexpr auto cend  (S&& s){return s.cend();}
+
 	using size_type = typename std::iterator_traits<iterator>::difference_type;
 	constexpr size_type size() const{return std::distance(begin(), end());}
 	friend constexpr size_type size(self_type const& s){return s.size();}
@@ -88,7 +93,7 @@ protected:
 	decltype(auto) front()     &&{return *std::move(self()).begin();}
 	decltype(auto) front()      &{return *self().begin();}
 	
-	template<class S, Self* = nullptr> friend constexpr decltype(auto) front(S&& s){return std::forward<S>(s).front();}
+	template<class S, Self* =nullptr> friend constexpr decltype(auto) front(S&& s){return std::forward<S>(s).front();}
 
 	decltype(auto) back() const&{return *std::prev(self().end());}
 	decltype(auto) back()     &&{return *std::prev(std::move(self()).end());}
