@@ -89,7 +89,7 @@ struct array_types : Layout{
 	//	typename std::pointer_traits<element_const_ptr>::reference   // this seems more correct but it doesn't work with cuda fancy reference
 	>::type;
 
-	constexpr element_ptr   base() const{return base_;}
+	HD constexpr element_ptr   base() const{return base_;}
 	constexpr element_ptr& mbase() const{return base_;}
 	friend constexpr element_ptr base(array_types const& s){return s.base();}
 	constexpr layout_t const& layout() const{return *this;}
@@ -245,10 +245,7 @@ struct array_iterator :
 	HD constexpr basic_array<element, D-1, element_ptr> operator*() const{/*assert(*this);*/ return {*ptr_};}//return *this;}
 	constexpr decltype(auto) operator->() const{/*assert(*this);*/ return ptr_;}//return this;}
 	HD constexpr array_iterator operator+(difference_type n) const{array_iterator ret{*this}; ret+=n; return ret;}
-	HD constexpr basic_array<element, D-1, element_ptr> operator[](difference_type n) const{
-		auto p = (*this) + n;
-		return *p;
-	}
+	HD constexpr basic_array<element, D-1, element_ptr> operator[](difference_type n) const{return *((*this) + n);}
 	template<class O> constexpr bool operator==(O const& o) const{return equal(o);}
 	constexpr bool operator<(array_iterator const& o) const{return distance_to(o) > 0;}
 	constexpr array_iterator(typename basic_array<element, D-1, element_ptr>::element_ptr p, layout_t<D-1> l, index stride) : /*Ref{l, p},*/
@@ -256,14 +253,16 @@ struct array_iterator :
 		stride_{stride}
 	{}
 	template<class, dimensionality_type, class, class> friend struct basic_array;
-	template<class... As> constexpr decltype(auto) operator()(index i, As... as) const{return this->operator[](i)(as...);}
-	                      constexpr decltype(auto) operator()(index i          ) const{return this->operator[](i)       ;}
+	template<class... As> HD constexpr decltype(auto) operator()(index i, As... as) const{
+		return this->operator[](i)(as...);
+	}
+	                      HD constexpr decltype(auto) operator()(index i          ) const{return this->operator[](i)       ;}
 
 private:
 	template<typename Tuple, std::size_t ... I> 
-	constexpr decltype(auto) apply_impl(Tuple const& t, std::index_sequence<I...>) const{return this->operator()(std::get<I>(t)...);}
+	HD constexpr decltype(auto) apply_impl(Tuple const& t, std::index_sequence<I...>) const{return this->operator()(std::get<I>(t)...);}
 public:
-	template<typename Tuple> constexpr decltype(auto) apply(Tuple const& t) const{return apply_impl(t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
+	template<typename Tuple> HD constexpr decltype(auto) apply(Tuple const& t) const{return apply_impl(t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
 private:
 	basic_array_ptr<basic_array<element, D-1, element_ptr>, layout_t<D-1>> ptr_;
 	stride_type stride_ = {1}; // nice non-zero default
@@ -398,25 +397,25 @@ public:
 	friend constexpr decay_type decay(basic_array const& s){return s.decay();}
 	friend decay_type operator+(basic_array const& s){return s.decay();}
 
-	constexpr typename types::const_reference operator[](index i) const&{//MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
+	HD constexpr typename types::const_reference operator[](index i) const&{//MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
 		return typename types::const_reference(this->layout().sub_, this->base() + Layout::operator()(i));
 	}
-	constexpr typename types::      reference operator[](index i) &&{//MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
+	HD constexpr typename types::      reference operator[](index i) &&{//MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
 		return typename types::      reference(this->layout().sub_, this->base() + Layout::operator()(i));
 	}
-	constexpr typename types::       reference operator[](index i) &{//MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
+	HD constexpr typename types::       reference operator[](index i) &{//MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
 		return typename types::reference(this->layout().sub_, this->base() + Layout::operator()(i));
 	}
 	template<class Tp = std::array<index, static_cast<std::size_t>(D)>, typename = std::enable_if_t<(std::tuple_size<std::decay_t<Tp>>{}>1)> >
-	constexpr auto operator[](Tp&& t) const
+	HD constexpr auto operator[](Tp&& t) const
 	->decltype(operator[](std::get<0>(t))[detail::tuple_tail(t)]){
 		return operator[](std::get<0>(t))[detail::tuple_tail(t)];}
 	template<class Tp, typename = std::enable_if_t<std::tuple_size<std::decay_t<Tp>>::value==1> >
-	constexpr auto operator[](Tp&& t) const
+	HD constexpr auto operator[](Tp&& t) const
 	->decltype(operator[](std::get<0>(t))){
 		return operator[](std::get<0>(t));}
 	template<class Tp = std::tuple<>, typename = std::enable_if_t<std::tuple_size<std::decay_t<Tp>>::value==0> >
-	constexpr decltype(auto) operator[](Tp&&) const{return *this;}
+	HD constexpr decltype(auto) operator[](Tp&&) const{return *this;}
 	using typename types::index;
 	constexpr basic_const_array reindexed(typename basic_array::index first) const&{
 		typename types::layout_t new_layout = *this;
@@ -485,15 +484,15 @@ public:
 	template<class... Xs>
 	constexpr basic_const_array stenciled(iextension x, iextension x1, iextension x2, iextension x3, Xs... xs)const&{return ((stenciled(x)<<1).stenciled(x1, x2, x3, xs...))>>1;}
 
-	decltype(auto) elements_at(size_type n) const&{assert(n < this->num_elements()); 
+	constexpr decltype(auto) elements_at(size_type n) const&{assert(n < this->num_elements()); 
 		auto const sub_num_elements = this->begin()->num_elements();
 		return operator[](n / sub_num_elements).elements_at(n % sub_num_elements);
 	}
-	decltype(auto) elements_at(size_type n) &&{assert(n < this->num_elements()); 
+	constexpr decltype(auto) elements_at(size_type n) &&{assert(n < this->num_elements()); 
 		auto const sub_num_elements = this->begin()->num_elements();
 		return operator[](n / sub_num_elements).elements_at(n % sub_num_elements);
 	}
-	decltype(auto) elements_at(size_type n) &{assert(n < this->num_elements()); 
+	constexpr decltype(auto) elements_at(size_type n) &{assert(n < this->num_elements()); 
 		auto const sub_num_elements = this->begin()->num_elements();
 		return operator[](n / sub_num_elements).elements_at(n % sub_num_elements);
 	}
@@ -636,9 +635,9 @@ public:
 	constexpr decltype(auto) operator|(typename basic_array::size_type n) &&{return std::move(*this).partitioned(n);}
 	constexpr decltype(auto) operator|(typename basic_array::size_type n) const&{return partitioned(n);}
 
-	constexpr basic_array       operator()() &     {return *this;}
-	constexpr basic_array       operator()() &&    {return this->operator()();}
-	constexpr basic_const_array operator()() const&{return {this->layout(), this->base()};}
+	HD constexpr basic_array       operator()() &     {return *this;}
+	HD constexpr basic_array       operator()() &&    {return this->operator()();}
+	HD constexpr basic_const_array operator()() const&{return {this->layout(), this->base()};}
 
 public:
 	template<typename, dimensionality_type, typename, class> friend struct basic_array;
@@ -646,35 +645,35 @@ public:
 	constexpr basic_array       paren() &&    {return this->operator()();}
 	constexpr basic_const_array paren() const&{return {this->layout(), this->base()};}
 
-	template<class... As> constexpr auto paren(index_range a, As... as) &     {return                  range(a).rotated().paren(as...).unrotated();}
-	template<class... As> constexpr auto paren(index_range a, As... as) &&    {return this->range(a).rotated().paren(as...).unrotated();}
-	template<class... As> constexpr auto paren(index_range a, As... as) const&{return                  range(a).rotated().paren(as...).unrotated();}
+	template<class... As> HD constexpr auto paren(index_range a, As... as) &     {return                  range(a).rotated().paren(as...).unrotated();}
+	template<class... As> HD constexpr auto paren(index_range a, As... as) &&    {return this->range(a).rotated().paren(as...).unrotated();}
+	template<class... As> HD constexpr auto paren(index_range a, As... as) const&{return                  range(a).rotated().paren(as...).unrotated();}
 
-	template<class... As> constexpr decltype(auto) paren(intersecting_range<index> inr, As... as) &     {return                  paren(intersection(this->extension(), inr), as...);}
-	template<class... As> constexpr decltype(auto) paren(intersecting_range<index> inr, As... as) &&    {return 				paren(intersection(this->extension(), inr), as...);}
-	template<class... As> constexpr decltype(auto) paren(intersecting_range<index> inr, As... as) const&{return                  paren(intersection(this->extension(), inr), as...);}
+	template<class... As> HD constexpr decltype(auto) paren(intersecting_range<index> inr, As... as) &     {return                  paren(intersection(this->extension(), inr), as...);}
+	template<class... As> HD constexpr decltype(auto) paren(intersecting_range<index> inr, As... as) &&    {return 				paren(intersection(this->extension(), inr), as...);}
+	template<class... As> HD constexpr decltype(auto) paren(intersecting_range<index> inr, As... as) const&{return                  paren(intersection(this->extension(), inr), as...);}
 
-	template<class... As> constexpr decltype(auto) paren(index i, As... as) &     {return                  operator[](i).paren(as...);}
-	template<class... As> constexpr decltype(auto) paren(index i, As... as) &&    {return                  operator[](i).paren(as...);}
-	template<class... As> constexpr decltype(auto) paren(index i, As... as) const&{return                  operator[](i).paren(as...);}
+	template<class... As> HD constexpr decltype(auto) paren(index i, As... as) &     {return                  operator[](i).paren(as...);}
+	template<class... As> HD constexpr decltype(auto) paren(index i, As... as) &&    {return                  operator[](i).paren(as...);}
+	template<class... As> HD constexpr decltype(auto) paren(index i, As... as) const&{return                  operator[](i).paren(as...);}
 public:
 
 	// the default template parameters below help interpret for {first, last} simple syntax as iranges
 	// do not remove default parameter = irange
-	template<class B1 = irange>                                                                       constexpr decltype(auto) operator()(B1 b1)                                const&{return paren(b1);}
-	template<class B1 = irange, class B2 = irange>                                                    constexpr decltype(auto) operator()(B1 b1, B2 b2)                         const&{return paren(b1, b2);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange>                                 constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3)                  const&{return paren(b1, b2, b3);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As> constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as) const&{return paren(b1, b2, b3, b4, as...);}
+	template<class B1 = irange>                                                                       HD constexpr decltype(auto) operator()(B1 b1)                                const&{return paren(b1);}
+	template<class B1 = irange, class B2 = irange>                                                    HD constexpr decltype(auto) operator()(B1 b1, B2 b2)                         const&{return paren(b1, b2);}
+	template<class B1 = irange, class B2 = irange, class B3 = irange>                                 HD constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3)                  const&{return paren(b1, b2, b3);}
+	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As> HD constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as) const&{return paren(b1, b2, b3, b4, as...);}
 
-	template<class B1 = irange>                                                                       constexpr decltype(auto) operator()(B1 b1)                                     &{return paren(b1);}
-	template<class B1 = irange, class B2 = irange>                                                    constexpr decltype(auto) operator()(B1 b1, B2 b2)                              &{return paren(b1, b2);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange>                                 constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3)                       &{return paren(b1, b2, b3);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As> constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as)      &{return paren(b1, b2, b3, b4, as...);}
+	template<class B1 = irange>                                                                       HD constexpr decltype(auto) operator()(B1 b1)                                     &{return paren(b1);}
+	template<class B1 = irange, class B2 = irange>                                                    HD constexpr decltype(auto) operator()(B1 b1, B2 b2)                              &{return paren(b1, b2);}
+	template<class B1 = irange, class B2 = irange, class B3 = irange>                                 HD constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3)                       &{return paren(b1, b2, b3);}
+	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As> HD constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as)      &{return paren(b1, b2, b3, b4, as...);}
 
-	template<class B1 = irange>                                                                       constexpr decltype(auto) operator()(B1 b1)                                    &&{return paren(b1);}
-	template<class B1 = irange, class B2 = irange>                                                    constexpr decltype(auto) operator()(B1 b1, B2 b2)                             &&{return this->paren(b1, b2);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange>                                 constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3)                      &&{return paren(b1, b2, b3);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As> constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as)     &&{return paren(b1, b2, b3, b4, as...);}
+	template<class B1 = irange>                                                                       HD constexpr decltype(auto) operator()(B1 b1)                                    &&{return paren(b1);}
+	template<class B1 = irange, class B2 = irange>                                                    HD constexpr decltype(auto) operator()(B1 b1, B2 b2)                             &&{return this->paren(b1, b2);}
+	template<class B1 = irange, class B2 = irange, class B3 = irange>                                 HD constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3)                      &&{return paren(b1, b2, b3);}
+	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As> HD constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as)     &&{return paren(b1, b2, b3, b4, as...);}
 
 //	template<class B1 = iextension>                                                                   decltype(auto) block(B1 b1)                                const&{return block_aux(b1);}
 //	template<class B1 = irange, class B2 = irange>                                                    decltype(auto) operator()(B1 b1, B2 b2)                         const&{return paren(b1, b2);}
@@ -1133,31 +1132,31 @@ public:
 	template<class TT, dimensionality_type DD, class... As>
 	constexpr basic_array&& operator=(basic_array const& o)&&{return std::move(this->operator=(o));} 	// TODO make sfinae friendly
 
-	constexpr typename basic_array::const_reference operator[](index i) const&{MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
+	HD constexpr typename basic_array::const_reference operator[](index i) const&{MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
 		return *(this->base() + Layout::operator()(i)); // in C++17 this is allowed even with syntethic references
 	}
-	constexpr typename basic_array::      reference operator[](index i)      &{//MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"\nout of bounds");;
+	HD constexpr typename basic_array::      reference operator[](index i)      &{//MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"\nout of bounds");;
 		return *(this->base() + Layout::operator()(i));
 	}
-	constexpr typename basic_array::reference operator[](index i)&&{return this->operator[](i);}
+	HD constexpr typename basic_array::reference operator[](index i)&&{return this->operator[](i);}
 
 	template<class Self, typename Tuple, std::size_t ... I> 
-	friend constexpr decltype(auto) apply_impl(Self&& self, Tuple const& t, std::index_sequence<I...>, basic_array* = 0){return std::forward<Self>(self)(std::get<I>(t)...);}
-	template<typename Tuple> constexpr decltype(auto) apply(Tuple const& t) const&{return apply_impl(          *this , t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
-	template<typename Tuple> constexpr decltype(auto) apply(Tuple const& t)     &&{return apply_impl(std::move(*this), t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
-	template<typename Tuple> constexpr decltype(auto) apply(Tuple const& t)      &{return apply_impl(          *this , t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
+	friend HD constexpr decltype(auto) apply_impl(Self&& self, Tuple const& t, std::index_sequence<I...>, basic_array* = 0){return std::forward<Self>(self)(std::get<I>(t)...);}
+	template<typename Tuple> HD constexpr decltype(auto) apply(Tuple const& t) const&{return apply_impl(          *this , t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
+	template<typename Tuple> HD constexpr decltype(auto) apply(Tuple const& t)     &&{return apply_impl(std::move(*this), t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
+	template<typename Tuple> HD constexpr decltype(auto) apply(Tuple const& t)      &{return apply_impl(          *this , t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
 
 	template<class Tuple, typename = std::enable_if_t<(std::tuple_size<std::decay_t<Tuple>>{}>1) > >
-	constexpr auto operator[](Tuple&& t) const
+	HD constexpr auto operator[](Tuple&& t) const
 	->decltype(operator[](std::get<0>(t))[detail::tuple_tail(t)]){
 		return operator[](std::get<0>(t))[detail::tuple_tail(t)];}
 	template<class Tuple, typename = std::enable_if_t<std::tuple_size<std::decay_t<Tuple>>{}==1> >
-	constexpr decltype(auto) operator[](Tuple&& t) const{return operator[](std::get<0>(t));}
-	constexpr decltype(auto) operator[](std::tuple<>) const{return *this;}
+	HD constexpr decltype(auto) operator[](Tuple&& t) const{return operator[](std::get<0>(t));}
+	HD constexpr decltype(auto) operator[](std::tuple<>) const{return *this;}
 
-	decltype(auto) elements_at(size_type n) const&{assert(n < this->num_elements()); return operator[](n);}
-	decltype(auto) elements_at(size_type n)     &&{assert(n < this->num_elements()); return operator[](n);}
-	decltype(auto) elements_at(size_type n)      &{assert(n < this->num_elements()); return operator[](n);}
+	HD constexpr decltype(auto) elements_at(size_type n) const&{assert(n < this->num_elements()); return operator[](n);}
+	HD constexpr decltype(auto) elements_at(size_type n)     &&{assert(n < this->num_elements()); return operator[](n);}
+	HD constexpr decltype(auto) elements_at(size_type n)      &{assert(n < this->num_elements()); return operator[](n);}
 
 	using typename types::index;
 	constexpr basic_array reindexed(typename basic_array::index first)&&{
@@ -1203,21 +1202,21 @@ public:
 	constexpr auto operator()(index_range const& ir) &&{return range(ir);}
 	constexpr auto operator()(index_range const& ir) const&{return range(ir);}
 
-	constexpr decltype(auto) operator()(index i) &     {return operator[](i);}
-	constexpr decltype(auto) operator()(index i) &&    {return operator[](i);}
-	constexpr decltype(auto) operator()(index i) const&{return operator[](i);}
+	HD constexpr decltype(auto) operator()(index i) &     {return operator[](i);}
+	HD constexpr decltype(auto) operator()(index i) &&    {return operator[](i);}
+	HD constexpr decltype(auto) operator()(index i) const&{return operator[](i);}
 
-	constexpr auto paren() &{return operator()();}
-	constexpr auto paren() &&{return operator()();}
-	constexpr auto paren() const&{return operator()();}
+	HD constexpr auto paren() &{return operator()();}
+	HD constexpr auto paren() &&{return operator()();}
+	HD constexpr auto paren() const&{return operator()();}
 
-	constexpr auto paren(index_range const& ir) &{return range(ir);}
-	constexpr auto paren(index_range const& ir) &&{return range(ir);}
-	constexpr auto paren(index_range const& ir) const&{return range(ir);}
+	HD constexpr auto paren(index_range const& ir) &{return range(ir);}
+	HD constexpr auto paren(index_range const& ir) &&{return range(ir);}
+	HD constexpr auto paren(index_range const& ir) const&{return range(ir);}
 
-	constexpr decltype(auto) paren(index i) &     {return operator[](i);}
-	constexpr decltype(auto) paren(index i) &&    {return operator[](i);}
-	constexpr decltype(auto) paren(index i) const&{return operator[](i);}
+	HD constexpr decltype(auto) paren(index i) &     {return operator[](i);}
+	HD constexpr decltype(auto) paren(index i) &&    {return operator[](i);}
+	HD constexpr decltype(auto) paren(index i) const&{return operator[](i);}
 
 	template<typename Size>
 	constexpr auto partitioned(Size const& s) const{
