@@ -188,7 +188,6 @@ copy_n(
 	static_assert( sizeof(first ) == sizeof(first_ ) );
 	static_assert( sizeof(result) == sizeof(result_) );
 	assert(first->extensions() == result->extensions());
-	assert(0);
 	thrust::for_each(
 		thrust::make_counting_iterator(0l), 
 		thrust::make_counting_iterator(count*first->num_elements()), 
@@ -212,7 +211,6 @@ copy_n(
 	static_assert( sizeof(first ) == sizeof(first_ ) );
 	static_assert( sizeof(result) == sizeof(result_) );
 	assert(first->extensions() == result->extensions());
-	assert(0);
 	thrust::for_each(
 		thrust::make_counting_iterator(0l), 
 		thrust::make_counting_iterator(count*first->num_elements()), 
@@ -236,7 +234,6 @@ copy_n(
 	static_assert( sizeof(first ) == sizeof(first_ ) );
 	static_assert( sizeof(result) == sizeof(result_) );
 	assert(first->extensions() == result->extensions());
-	assert(0);
 	thrust::for_each(
 		thrust::make_counting_iterator(0l), 
 		thrust::make_counting_iterator(count*first->num_elements()), 
