@@ -22,6 +22,12 @@ $CXXX $CXXFLAGS $0 -o $0x&&$0x&&rm $0x&&(rm -rf test/build&&mkdir -p test/build&
 #include "./config/DELETE.hpp"
 #include "./config/ASSERT.hpp"
 
+#if defined(__NVCC__)
+#define HD __host__ __device__
+#else
+#define HD
+#endif
+
 //#include<iostream> // debug
 
 #include<algorithm>  // copy_n
@@ -170,7 +176,7 @@ struct basic_array_ptr :
 	}
 	constexpr explicit operator bool() const{return this->base_;}
 	constexpr Ref  dereference() const{return Ref{this->layout(), this->base_};}
-	constexpr Ref  operator* () const{return *this;}
+	HD constexpr Ref  operator* () const{return Ref{*this};}
 	constexpr Ref* operator->() const{return  const_cast<basic_array_ptr*>(this);}
 	constexpr Ref* operator->(){return  this;}
 	constexpr Ref  operator[](difference_type n) const{return *(*this + n);}
@@ -236,9 +242,13 @@ struct array_iterator :
 	array_iterator(array_iterator const&) = default;
 	array_iterator& operator=(array_iterator const& other) = default;
 	explicit constexpr operator bool() const{return static_cast<bool>(ptr_.base_);}
-	constexpr basic_array<element, D-1, element_ptr> operator*() const{/*assert(*this);*/ return {*ptr_};}//return *this;}
+	HD constexpr basic_array<element, D-1, element_ptr> operator*() const{/*assert(*this);*/ return {*ptr_};}//return *this;}
 	constexpr decltype(auto) operator->() const{/*assert(*this);*/ return ptr_;}//return this;}
-	constexpr basic_array<element, D-1, element_ptr> operator[](difference_type n) const{return *(*this + n);}
+	HD constexpr array_iterator operator+(difference_type n) const{array_iterator ret{*this}; ret+=n; return ret;}
+	HD constexpr basic_array<element, D-1, element_ptr> operator[](difference_type n) const{
+		auto p = (*this) + n;
+		return *p;
+	}
 	template<class O> constexpr bool operator==(O const& o) const{return equal(o);}
 	constexpr bool operator<(array_iterator const& o) const{return distance_to(o) > 0;}
 	constexpr array_iterator(typename basic_array<element, D-1, element_ptr>::element_ptr p, layout_t<D-1> l, index stride) : /*Ref{l, p},*/
@@ -961,9 +971,9 @@ struct array_iterator<Element, 1, Ptr> ://, Ref> :
 	template<class EElement, typename PPtr, 
 		typename = decltype(_implicit_cast<Ptr>(std::declval<array_iterator<EElement, 1, PPtr>>().data_))
 	>
-	constexpr array_iterator(array_iterator<EElement, 1, PPtr> other) : data_{other.data_}, stride_{other.stride_}{} 
+	constexpr array_iterator(array_iterator<EElement, 1, PPtr> const& other) : data_{other.data_}, stride_{other.stride_}{} 
 	explicit constexpr operator bool() const{return static_cast<bool>(this->data_);}
-	constexpr typename std::iterator_traits<Ptr>::reference operator[](typename array_iterator::difference_type n) const{return *((*this) + n);}
+	HD constexpr typename std::iterator_traits<Ptr>::reference operator[](typename array_iterator::difference_type n) const{return *((*this) + n);}
 	constexpr Ptr operator->() const{return data_;}
 	using element = Element;
 	using element_ptr = Ptr;
@@ -975,12 +985,13 @@ struct array_iterator<Element, 1, Ptr> ://, Ref> :
 private:
 	friend struct basic_array<Element, 1, Ptr>;
 	element_ptr data_ = nullptr;
-	stride_type stride_;
+	stride_type stride_ = {1};
 	constexpr difference_type distance_to(array_iterator const& other) const{
 		assert(stride_==other.stride_ and (other.data_-data_)%stride_ == 0);
 		return (other.data_ - data_)/stride_;
 	}
 public:
+	HD constexpr array_iterator operator+(difference_type n) const{array_iterator ret{*this}; ret+=n; return ret;}
 	[[deprecated("use base for iterator")]] constexpr element_ptr data() const{return data_;}
 	// constexpr here creates problems with intel 19
 	       constexpr element_ptr base()              const&   {return data_;}
@@ -991,7 +1002,7 @@ public:
 	constexpr array_iterator& operator--(){data_-=stride_; return *this;}
 	constexpr bool operator==(array_iterator const& o) const{return data_== o.data_;}
 	constexpr bool operator!=(array_iterator const& o) const{return data_!= o.data_;}
-	constexpr typename std::iterator_traits<element_ptr>::reference operator*() const{return *data_;}
+	HD constexpr typename std::iterator_traits<element_ptr>::reference operator*() const{return *data_;}
 	constexpr difference_type operator-(array_iterator const& o) const{return -distance_to(o);}
 	constexpr array_iterator& operator+=(difference_type d){data_+=stride_*d; return *this;}
 	constexpr array_iterator& operator-=(difference_type d){data_-=stride_*d; return *this;}
