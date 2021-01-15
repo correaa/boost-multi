@@ -127,8 +127,8 @@ typedef std::tuple<multi::index_extension> base_;
 
 template<dimensionality_type D>
 struct extensions_t : 
-		std::decay_t<decltype(tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename extensions_t<D-1>::base_>()))>{
-typedef std::decay_t<decltype(tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename extensions_t<D-1>::base_>()))> base_;
+		std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename extensions_t<D-1>::base_>()))>{
+typedef std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename extensions_t<D-1>::base_>()))> base_;
 	using base_::base_;
 	static constexpr dimensionality_type dimensionality = D;
 	extensions_t() = default;
@@ -150,9 +150,9 @@ typedef std::decay_t<decltype(tuple_cat(std::make_tuple(std::declval<index_exten
 	//	(void)std::initializer_list<int>{(ar & boost::serialization::nvp<std::remove_reference_t<decltype(std::get<I>(*this))> >{"extension", std::get<I>(*this)},0)...};
 	}
 	constexpr auto from_linear(nelems_type n) const{
-		auto const sub_extensions = extensions_t<D-1>(detail::tuple_tail(*this));
+		auto const sub_extensions = extensions_t<D-1>(detail::tuple_tail(this->base()));
 		auto const sub_num_elements = sub_extensions.num_elements();
-		return tuple_cat(std::make_tuple(n/sub_num_elements), sub_extensions.from_linear(n%sub_num_elements));
+		return std::tuple_cat(std::make_tuple(n/sub_num_elements), sub_extensions.from_linear(n%sub_num_elements));
 	}
 	friend constexpr auto operator%(nelems_type n, extensions_t const& s){return s.from_linear(n);}
 	template<class Archive>
