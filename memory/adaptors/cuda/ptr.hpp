@@ -515,8 +515,8 @@ public:
 	}
 #endif
 
-	friend decltype(auto) raw_reference_cast(ref&& r){return *raw_pointer_cast(&r);}
-	friend auto raw_value_cast(ref&& r){return std::move(r).operator T();}
+	friend __host__ __device__ decltype(auto) raw_reference_cast(ref&& r){return *raw_pointer_cast(&r);}
+	friend __host__ __device__ auto raw_value_cast(ref&& r){return std::move(r).operator T();}
 	auto raw_value_cast()&&{return std::move(*this).operator T();}
 
 	template<class Other, typename = std::enable_if_t<not is_ref<Other>{}> > 

@@ -8,6 +8,10 @@ $CXXX $CXXFLAGS $0 -o $0x -lcudart -lboost_unit_test_framework -lboost_timer&&$0
 #include "../../../array_ref.hpp"
 #include "../../../detail/adl.hpp"
 
+#include <thrust/iterator/counting_iterator.h>
+#include <thrust/iterator/transform_iterator.h>
+#include <thrust/device_ptr.h>
+
 #include "../cuda/error.hpp"
 
 #include<complex> //TODO remove, handle complex_fix instead?
@@ -125,6 +129,135 @@ auto uninitialized_copy_n(It first, Size n, ptr<T> d_first)
 
 #if 1
 
+#if 1
+
+template<int A, int B, int C, int D> void what() = delete;
+
+template<class T1, class Q1, class Size, class T2, class Q2>
+constexpr array_iterator<T2, 1, ptr<Q2>> copy_n(
+	array_iterator<T1, 1, ptr<Q1>> first_ , Size count, 
+	array_iterator<T2, 1, ptr<Q2>> result_
+){
+	array_iterator<T1, 1, thrust::device_ptr<Q1>> first ; std::memcpy((void*)&first , (void const*)&first_ , sizeof(first_));
+	array_iterator<T2, 1, thrust::device_ptr<Q2>> result; std::memcpy((void*)&result, (void const*)&result_, sizeof(first_));
+	static_assert( sizeof(first ) == sizeof(first_ ) );
+	static_assert( sizeof(result) == sizeof(result_) );
+	thrust::for_each(
+		thrust::make_counting_iterator(0l), 
+		thrust::make_counting_iterator(count), 
+		[first, result, x = multi::extensions_t<1>(count)] __device__ (auto n){
+			std::tuple<index> i = x.from_linear(n);
+			result[std::get<0>(i)] = first[std::get<0>(i)];
+		}
+	);
+	return result_ + count;
+}
+
+template<class T1, class Q1, class Size, class T2, class Q2>
+constexpr 
+array_iterator<T2, 2, ptr<Q2>> 
+copy_n(
+	array_iterator<T1, 2, ptr<Q1>> first_ , Size count, 
+	array_iterator<T2, 2, ptr<Q2>> result_
+){
+	array_iterator<T1, 2, thrust::device_ptr<Q1>> first ; std::memcpy((void*)&first , (void const*)&first_ , sizeof(first_));
+	array_iterator<T2, 2, thrust::device_ptr<Q2>> result; std::memcpy((void*)&result, (void const*)&result_, sizeof(first_));
+	static_assert( sizeof(first ) == sizeof(first_ ) );
+	static_assert( sizeof(result) == sizeof(result_) );
+	assert(first->extensions() == result->extensions());
+	thrust::for_each(
+		thrust::make_counting_iterator(0l), 
+		thrust::make_counting_iterator(count*first->num_elements()), 
+		[first, count, result, x = first->extensions()] __device__ (auto n){
+			std::tuple<index, index> ij = (count*x).from_linear(n);
+			result[std::get<0>(ij)][std::get<1>(ij)] = first[std::get<0>(ij)][std::get<1>(ij)];
+		}
+	);
+	return result_ + count;
+}
+
+template<class T1, class Q1, class Size, class T2, class Q2>
+constexpr 
+array_iterator<T2, 3, ptr<Q2>> 
+copy_n(
+	array_iterator<T1, 3, ptr<Q1>> first_ , Size count, 
+	array_iterator<T2, 3, ptr<Q2>> result_
+){
+	array_iterator<T1, 3, thrust::device_ptr<Q1>> first ; std::memcpy((void*)&first , (void const*)&first_ , sizeof(first_));
+	array_iterator<T2, 3, thrust::device_ptr<Q2>> result; std::memcpy((void*)&result, (void const*)&result_, sizeof(first_));
+	static_assert( sizeof(first ) == sizeof(first_ ) );
+	static_assert( sizeof(result) == sizeof(result_) );
+	assert(first->extensions() == result->extensions());
+	assert(0);
+	thrust::for_each(
+		thrust::make_counting_iterator(0l), 
+		thrust::make_counting_iterator(count*first->num_elements()), 
+		[first, count, result, x = first->extensions()] __device__ (auto n){
+			auto const ijk = (count*x).from_linear(n);
+			result.apply(ijk) = first.apply(ijk);
+		}
+	);
+	return result_ + count;
+}
+
+template<class T1, class Q1, class Size, class T2, class Q2>
+constexpr 
+array_iterator<T2, 4, ptr<Q2>> 
+copy_n(
+	array_iterator<T1, 4, ptr<Q1>> first_ , Size count, 
+	array_iterator<T2, 4, ptr<Q2>> result_
+){
+	array_iterator<T1, 4, thrust::device_ptr<Q1>> first ; std::memcpy((void*)&first , (void const*)&first_ , sizeof(first_));
+	array_iterator<T2, 4, thrust::device_ptr<Q2>> result; std::memcpy((void*)&result, (void const*)&result_, sizeof(first_));
+	static_assert( sizeof(first ) == sizeof(first_ ) );
+	static_assert( sizeof(result) == sizeof(result_) );
+	assert(first->extensions() == result->extensions());
+	assert(0);
+	thrust::for_each(
+		thrust::make_counting_iterator(0l), 
+		thrust::make_counting_iterator(count*first->num_elements()), 
+		[first, count, result, x = first->extensions()] __device__ (auto n){
+			auto const ijk = (count*x).from_linear(n);
+			result.apply(ijk) = first.apply(ijk);
+		}
+	);
+	return result_ + count;
+}
+
+template<class T1, class Q1, class Size, class T2, class Q2>
+constexpr 
+array_iterator<T2, 5, ptr<Q2>> 
+copy_n(
+	array_iterator<T1, 5, ptr<Q1>> first_ , Size count, 
+	array_iterator<T2, 5, ptr<Q2>> result_
+){
+	array_iterator<T1, 5, thrust::device_ptr<Q1>> first ; std::memcpy((void*)&first , (void const*)&first_ , sizeof(first_));
+	array_iterator<T2, 5, thrust::device_ptr<Q2>> result; std::memcpy((void*)&result, (void const*)&result_, sizeof(first_));
+	static_assert( sizeof(first ) == sizeof(first_ ) );
+	static_assert( sizeof(result) == sizeof(result_) );
+	assert(first->extensions() == result->extensions());
+	assert(0);
+	thrust::for_each(
+		thrust::make_counting_iterator(0l), 
+		thrust::make_counting_iterator(count*first->num_elements()), 
+		[first, count, result, x = first->extensions()] __device__ (auto n){
+			auto const ijk = (count*x).from_linear(n);
+			result.apply(ijk) = first.apply(ijk);
+		}
+	);
+	return result_ + count;
+}
+
+
+template<class T1, class Q1, class Size, class T2, class Q2, multi::dimensionality_type D, std::enable_if_t<(D<=5), int>* =0>
+constexpr 
+array_iterator<T2, D, ptr<Q2>> 
+copy(
+	array_iterator<T1, D, ptr<Q1>> first_ , array_iterator<T1, D, ptr<Q1>> last_, 
+	array_iterator<T2, D, ptr<Q2>> result_
+){return copy_n(first_, last_ - first_, result_);}
+
+#endif
 
 template<class T1, class Q1, typename Size, class T2, class Q2, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
 auto copy_n(iterator<T1, 1, Q1*> first, Size count, iterator<T2, 1, ptr<Q2>> result)
@@ -136,10 +269,10 @@ auto copy_n(iterator<T1, 1, ptr<Q1>> first, Size count, iterator<T2, 1, Q2*> res
 ->decltype(memcpy2D(result.base(), sizeof(T2)*stride(result), first.base(), sizeof(T1)*stride(first), sizeof(T1), count), result+count){
 	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result+count;}
 
-template<class T1, class Q1, typename Size, class T2, class Q2, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
-auto copy_n(iterator<T1, 1, ptr<Q1>> first, Size count, iterator<T2, 1, ptr<Q2>> result)
-->decltype(memcpy2D(result.base(), sizeof(T2)*stride(result), first.base(), sizeof(T1)*stride(first), sizeof(T1), count), result + count){
-	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count;}
+//template<class T1, class Q1, typename Size, class T2, class Q2, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
+//auto copy_n(iterator<T1, 1, ptr<Q1>> first, Size count, iterator<T2, 1, ptr<Q2>> result)
+//->decltype(memcpy2D(result.base(), sizeof(T2)*stride(result), first.base(), sizeof(T1)*stride(first), sizeof(T1), count), result + count){assert(0);
+//	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count;}
 
 template<class T1, class... Q1, typename Size, class T2, class... Q2, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
 auto copy_n(iterator<T1, 1, managed::ptr<Q1...>> first, Size count, iterator<T2, 1, managed::ptr<Q2...>> result)
@@ -225,19 +358,84 @@ template<class T1, class T1const, class... A1, class Size, class T2, class T2con
 auto copy_n(
 	array_iterator<T1, 1, managed::ptr<T1const, A1...>> first, Size count,
 	array_iterator<T2, 1, managed::ptr<T2const, A2...>> d_first
-)
-//->decltype(cuda::copy_n(array_iterator<T1, 1, cuda::ptr<T1const, A1...>>(first), count, array_iterator<T2, 1, cuda::ptr<T2const, A2...>>(d_first)), d_first + count){
-//{	return cuda::copy_n(array_iterator<T1, 1, cuda::ptr<T1const, A1...>>(first), count, array_iterator<T2, 1, cuda::ptr<T2const, A2...>>(d_first)), d_first + count;}
-{
-//	static_assert( std::is_trivially_assignable_v<T2&, T1> );
-	return memcpy2D(base(d_first), sizeof(T2)*stride(d_first), base(first), sizeof(T1)*stride(first), sizeof(T1), count), d_first+count;
+){	
+	return cuda::copy_n(array_iterator<T1, 1, cuda::ptr<T1const, A1...>>(first), count, array_iterator<T2, 1, cuda::ptr<T2const, A2...>>(d_first)), d_first + count;
 }
+
+template<class T1, class T1const, class... A1, class Size, class T2, class T2const, class... A2>
+auto copy_n(
+	array_iterator<T1, 2, managed::ptr<T1const, A1...>> first, Size count,
+	array_iterator<T2, 2, managed::ptr<T2const, A2...>> d_first
+){	
+	return cuda::copy_n(array_iterator<T1, 2, cuda::ptr<T1const, A1...>>(first), count, array_iterator<T2, 2, cuda::ptr<T2const, A2...>>(d_first)), d_first + count;
+}
+
+template<class T1, class T1const, class... A1, class Size, class T2, class T2const, class... A2>
+auto copy_n(
+	array_iterator<T1, 3, managed::ptr<T1const, A1...>> first, Size count,
+	array_iterator<T2, 3, managed::ptr<T2const, A2...>> d_first
+){	
+	return cuda::copy_n(array_iterator<T1, 3, cuda::ptr<T1const, A1...>>(first), count, array_iterator<T2, 3, cuda::ptr<T2const, A2...>>(d_first)), d_first + count;
+}
+
+template<class T1, class T1const, class... A1, class Size, class T2, class T2const, class... A2>
+auto copy_n(
+	array_iterator<T1, 4, managed::ptr<T1const, A1...>> first, Size count,
+	array_iterator<T2, 4, managed::ptr<T2const, A2...>> d_first
+){	
+	return cuda::copy_n(array_iterator<T1, 4, cuda::ptr<T1const, A1...>>(first), count, array_iterator<T2, 4, cuda::ptr<T2const, A2...>>(d_first)), d_first + count;
+}
+
+template<class T1, class T1const, class... A1, class Size, class T2, class T2const, class... A2>
+auto copy_n(
+	array_iterator<T1, 5, managed::ptr<T1const, A1...>> first, Size count,
+	array_iterator<T2, 5, managed::ptr<T2const, A2...>> d_first
+){	
+	return cuda::copy_n(array_iterator<T1, 5, cuda::ptr<T1const, A1...>>(first), count, array_iterator<T2, 5, cuda::ptr<T2const, A2...>>(d_first)), d_first + count;
+}
+
 
 template<class T1, class T1const, class... A1, class T2, class T2const, class... A2>
 auto copy(
 	array_iterator<T1, 1, managed::ptr<T1const, A1...>> first,
 	array_iterator<T1, 1, managed::ptr<T1const, A1...>> last,
 	array_iterator<T2, 1, managed::ptr<T2const, A2...>> d_first
+){
+	return managed::copy_n(first, last - first, d_first);
+}
+
+template<class T1, class T1const, class... A1, class T2, class T2const, class... A2>
+auto copy(
+	array_iterator<T1, 2, managed::ptr<T1const, A1...>> first,
+	array_iterator<T1, 2, managed::ptr<T1const, A1...>> last,
+	array_iterator<T2, 2, managed::ptr<T2const, A2...>> d_first
+){
+	return managed::copy_n(first, last - first, d_first);
+}
+
+template<class T1, class T1const, class... A1, class T2, class T2const, class... A2>
+auto copy(
+	array_iterator<T1, 3, managed::ptr<T1const, A1...>> first,
+	array_iterator<T1, 3, managed::ptr<T1const, A1...>> last,
+	array_iterator<T2, 3, managed::ptr<T2const, A2...>> d_first
+){
+	return managed::copy_n(first, last - first, d_first);
+}
+
+template<class T1, class T1const, class... A1, class T2, class T2const, class... A2>
+auto copy(
+	array_iterator<T1, 4, managed::ptr<T1const, A1...>> first,
+	array_iterator<T1, 4, managed::ptr<T1const, A1...>> last,
+	array_iterator<T2, 4, managed::ptr<T2const, A2...>> d_first
+){
+	return managed::copy_n(first, last - first, d_first);
+}
+
+template<class T1, class T1const, class... A1, class T2, class T2const, class... A2>
+auto copy(
+	array_iterator<T1, 5, managed::ptr<T1const, A1...>> first,
+	array_iterator<T1, 5, managed::ptr<T1const, A1...>> last,
+	array_iterator<T2, 5, managed::ptr<T2const, A2...>> d_first
 ){
 	return managed::copy_n(first, last - first, d_first);
 }
