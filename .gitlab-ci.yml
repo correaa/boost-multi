@@ -191,8 +191,8 @@ clang++-10-kernel:
   image: kernelci/build-clang-10
   stage: test
   script:
-    - export CXX="clang++-11"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet clang-11 cmake make libboost-test-dev libblas-dev
+    - export CXX="clang++-10"
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang-10 cmake make libboost-test-dev libblas-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
@@ -213,8 +213,8 @@ clang++-11-kernel:
     - cmake --build .
     - ctest --output-on-failure
 
-cuda-current:
-    image: nvidia/cuda
+cuda-10.0:
+    image: nvidia/cuda:10.0-devel
     stage: test
     script:
       - export DEBIAN_FRONTEND=noninteractive
@@ -223,19 +223,6 @@ cuda-current:
       - nvcc --version
       - mkdir build && cd build
       - cmake .. -DENABLE_CUDA=1
-      - cmake --build . --verbose
-      - ctest --output-on-failure
-
-cuda-current-std17:
-    image: nvidia/cuda
-    stage: test
-    script:
-      - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev
-      - ln --symbolic --force . ../multi
-      - nvcc --version
-      - mkdir build && cd build
-      - cmake .. -DCMAKE_CXX_STANDARD=17 -DENABLE_CUDA=1
       - cmake --build . --verbose
       - ctest --output-on-failure
 
