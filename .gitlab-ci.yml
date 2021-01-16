@@ -214,7 +214,33 @@ cuda-current-std17:
       - ctest --output-on-failure
 
 cuda-11.0:
-    image: nvidia/cuda:11.0-devel-ubuntu20.04
+    image: nvidia/cuda:11.0-devel
+    stage: test
+    script:
+      - export DEBIAN_FRONTEND=noninteractive
+      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev
+      - ln --symbolic --force . ../multi
+      - nvcc --version
+      - mkdir build && cd build
+      - cmake .. -DENABLE_CUDA=1
+      - cmake --build . --verbose
+      - ctest --output-on-failure
+
+cuda-11.1:
+    image: nvidia/cuda:11.1-devel
+    stage: test
+    script:
+      - export DEBIAN_FRONTEND=noninteractive
+      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev
+      - ln --symbolic --force . ../multi
+      - nvcc --version
+      - mkdir build && cd build
+      - cmake .. -DENABLE_CUDA=1
+      - cmake --build . --verbose
+      - ctest --output-on-failure
+
+cuda-11.2:
+    image: nvidia/cuda:11.2-devel
     stage: test
     script:
       - export DEBIAN_FRONTEND=noninteractive
@@ -227,7 +253,33 @@ cuda-11.0:
       - ctest --output-on-failure
 
 cuda-11.0-std17:
-    image: nvidia/cuda:11.0-devel-ubuntu20.04
+    image: nvidia/cuda:11.0-devel
+    stage: test
+    script:
+      - export DEBIAN_FRONTEND=noninteractive
+      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev
+      - ln --symbolic --force . ../multi
+      - nvcc --version
+      - mkdir build && cd build
+      - cmake .. -DCMAKE_CXX_STANDARD=17 -DENABLE_CUDA=1
+      - cmake --build . --verbose
+      - ctest --output-on-failure
+
+cuda-11.1-std17:
+    image: nvidia/cuda:11.1-devel
+    stage: test
+    script:
+      - export DEBIAN_FRONTEND=noninteractive
+      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev
+      - ln --symbolic --force . ../multi
+      - nvcc --version
+      - mkdir build && cd build
+      - cmake .. -DCMAKE_CXX_STANDARD=17 -DENABLE_CUDA=1
+      - cmake --build . --verbose
+      - ctest --output-on-failure
+
+cuda-11.2-std17:
+    image: nvidia/cuda:11.2-devel
     stage: test
     script:
       - export DEBIAN_FRONTEND=noninteractive
