@@ -7,7 +7,7 @@
   ctest -j --output-on-error [-T memcheck]
   exit
 #]=]
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.11)
 
 if(EXISTS "CMakeLists.txt")
   message(FATAL_ERROR "You probably don't want to run CMake in a directory with CMakeLists.txt")
