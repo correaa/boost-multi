@@ -397,15 +397,17 @@ public:
 	friend constexpr decay_type decay(basic_array const& s){return s.decay();}
 	friend decay_type operator+(basic_array const& s){return s.decay();}
 
-	HD constexpr typename types::const_reference operator[](index i) const&{//MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
-		return typename types::const_reference(this->layout().sub_, this->base() + Layout::operator()(i));
+	using typename types::const_reference;
+
+private:
+	HD constexpr auto at_(index i) const{//MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
+		return reference(this->layout().sub_, this->base() + Layout::operator()(i));
 	}
-	HD constexpr typename types::      reference operator[](index i) &&{//MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
-		return typename types::      reference(this->layout().sub_, this->base() + Layout::operator()(i));
-	}
-	HD constexpr typename types::       reference operator[](index i) &{//MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
-		return typename types::reference(this->layout().sub_, this->base() + Layout::operator()(i));
-	}
+public:
+	HD constexpr const_reference operator[](index i) const&{return at_(i);}
+	HD constexpr       reference operator[](index i)     &&{return at_(i);}
+	HD constexpr       reference operator[](index i)      &{return at_(i);}
+
 	template<class Tp = std::array<index, static_cast<std::size_t>(D)>, typename = std::enable_if_t<(std::tuple_size<std::decay_t<Tp>>{}>1)> >
 	HD constexpr auto operator[](Tp&& t) const
 	->decltype(operator[](std::get<0>(t))[detail::tuple_tail(t)]){
