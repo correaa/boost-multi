@@ -205,7 +205,7 @@ clang++-11-kernel:
   stage: test
   script:
     - export CXX="clang++-11"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet clang-11 cmake make libboost-test-dev libblas-dev libfftw3-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang-11 cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
@@ -218,11 +218,12 @@ cuda-10.0:
     stage: test
     script:
       - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev libfftw3-dev gcc-8 g++-8
+      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev gcc-8 g++-8
       - ln --symbolic --force . ../multi
       - update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 8
       - update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 8
       - nvcc --version
+      - cd test
       - mkdir build && cd build
       - cmake .. -DENABLE_CUDA=1
       - cmake --build . --verbose
@@ -233,7 +234,7 @@ cuda-11.0:
     stage: test
     script:
       - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev libfftw3-dev
+      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
       - ln --symbolic --force . ../multi
       - nvcc --version
       - mkdir build && cd build
@@ -246,7 +247,7 @@ cuda-11.1:
     stage: test
     script:
       - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev libfftw3-dev
+      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
       - ln --symbolic --force . ../multi
       - nvcc --version
       - mkdir build && cd build
@@ -259,7 +260,7 @@ cuda-11.2:
     stage: test
     script:
       - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev libfftw3-dev
+      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
       - ln --symbolic --force . ../multi
       - nvcc --version
       - mkdir build && cd build
@@ -272,7 +273,7 @@ cuda-11.0-std17:
     stage: test
     script:
       - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev libfftw3-dev
+      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
       - ln --symbolic --force . ../multi
       - nvcc --version
       - mkdir build && cd build
@@ -285,7 +286,7 @@ cuda-11.1-std17:
     stage: test
     script:
       - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev libfftw3-dev
+      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
       - ln --symbolic --force . ../multi
       - nvcc --version
       - mkdir build && cd build
@@ -298,7 +299,7 @@ cuda-11.2-std17:
     stage: test
     script:
       - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev libfftw3-dev
+      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
       - ln --symbolic --force . ../multi
       - nvcc --version
       - mkdir build && cd build
