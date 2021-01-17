@@ -147,7 +147,7 @@ constexpr array_iterator<T2, 1, ptr<Q2>> copy_n(
 		thrust::make_counting_iterator(count), 
 		[first, result, x = multi::extensions_t<1>(count)] __device__ (auto n){
 			std::tuple<index> i = x.from_linear(n);
-			result[std::get<0>(i)] = first[std::get<0>(i)];
+			result[std::get<0>(i)] = T2(first[std::get<0>(i)]);
 		}
 	);
 	return result_ + count;
@@ -170,7 +170,7 @@ copy_n(
 		thrust::make_counting_iterator(count*first->num_elements()), 
 		[first, count, result, x = first->extensions()] __device__ (auto n){
 			std::tuple<index, index> ij = (count*x).from_linear(n);
-			result[std::get<0>(ij)][std::get<1>(ij)] = first[std::get<0>(ij)][std::get<1>(ij)];
+			result[std::get<0>(ij)][std::get<1>(ij)] = T2(first[std::get<0>(ij)][std::get<1>(ij)]);
 		}
 	);
 	return result_ + count;
@@ -193,7 +193,7 @@ copy_n(
 		thrust::make_counting_iterator(count*first->num_elements()), 
 		[first, count, result, x = first->extensions()] __device__ (auto n){
 			auto const ijk = (count*x).from_linear(n);
-			result.apply(ijk) = first.apply(ijk);
+			result.apply(ijk) = T2(first.apply(ijk));
 		}
 	);
 	return result_ + count;
@@ -216,7 +216,7 @@ copy_n(
 		thrust::make_counting_iterator(count*first->num_elements()), 
 		[first, count, result, x = first->extensions()] __device__ (auto n){
 			auto const ijk = (count*x).from_linear(n);
-			result.apply(ijk) = first.apply(ijk);
+			result.apply(ijk) = T2(first.apply(ijk));
 		}
 	);
 	return result_ + count;
@@ -239,7 +239,7 @@ copy_n(
 		thrust::make_counting_iterator(count*first->num_elements()), 
 		[first, count, result, x = first->extensions()] __device__ (auto n){
 			auto const ijk = (count*x).from_linear(n);
-			result.apply(ijk) = first.apply(ijk);
+			result.apply(ijk) = T2(first.apply(ijk));
 		}
 	);
 	return result_ + count;
