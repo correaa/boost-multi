@@ -214,7 +214,7 @@ clang++-11-kernel:
     - ctest --output-on-failure
 
 cuda-10.0:
-    image: nvidia/cuda:10.0-devel-ubuntu20.04
+    image: nvidia/cuda:10.0-devel-ubuntu18.04
     stage: test
     script:
       - export DEBIAN_FRONTEND=noninteractive
