@@ -42,21 +42,21 @@ protected:
 	Involution f_;
 public:
 	using decay_type =std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
-	explicit constexpr involuted(Ref r, Involution f = {}) : r_{std::forward<Ref>(r)}, f_{f}{}
+	constexpr explicit involuted(Ref r, Involution f = {}) : r_{std::forward<Ref>(r)}, f_{f}{}
 	involuted& operator=(involuted const& other)=delete;//{r_ = other.r_; return *this;}
 public:
 	involuted(involuted const&) = delete;
 	involuted(involuted&&) = default; // for C++14
-	decay_type decay() const&{return f_(r_);}
+	constexpr decay_type decay() const&{return f_(r_);}
 	constexpr operator decay_type() const&{return f_(r_);}
 	constexpr operator decay_type() &&{return f_(r_);}
-	decltype(auto) operator&()&&{return involuter<decltype(&std::declval<Ref>()), Involution>{&r_, f_};}
+	constexpr decltype(auto) operator&()&&{return involuter<decltype(&std::declval<Ref>()), Involution>{&r_, f_};}
 //	template<class DecayType>
 //	auto operator=(DecayType&& other)&&
 //	->decltype(r_=f_(std::forward<DecayType>(other)), *this){
 //		return r_=f_(std::forward<DecayType>(other)), *this;}
 	template<class DecayType>
-	auto operator=(DecayType&& other)&
+	constexpr auto operator=(DecayType&& other)&
 	->decltype(r_=f_(std::forward<DecayType>(other)), *this){
 		return r_=f_(std::forward<DecayType>(other)), *this;}
 //	template<class OtherRef>
@@ -64,31 +64,31 @@ public:
 //	->decltype(r_=f_==o.f_?std::forward<decltype(o.r_)>(o.r_):f_(o), *this){
 //		return r_=f_==o.f_?std::forward<decltype(o.r_)>(o.r_):f_(o), *this;}
 	template<class DecayType>
-	auto operator==(DecayType&& other) const
+	constexpr auto operator==(DecayType&& other) const
 	->decltype(this->operator decay_type()==other){
 		return this->operator decay_type()==other;}
 	template<class DecayType>
-	auto operator!=(DecayType&& other) const
+	constexpr auto operator!=(DecayType&& other) const
 	->decltype(this->operator decay_type()!=other){
 		return this->operator decay_type()!=other;}
 
-	friend auto operator==(decay_type const& other, involuted const& self){
+	friend constexpr auto operator==(decay_type const& other, involuted const& self){
 		return other == self.operator decay_type();}
 
 	template<class DecayType, std::enable_if_t<not std::is_base_of<involuted, DecayType>{}, int> =0>
-	friend auto operator==(DecayType&& other, involuted const& self){
+	friend constexpr auto operator==(DecayType&& other, involuted const& self){
 		return other == self.operator decay_type();}
 	template<class DecayType, std::enable_if_t<not std::is_base_of<involuted, DecayType>{}, int> =0>
-	friend auto operator!=(DecayType&& other, involuted const& self){
+	friend constexpr auto operator!=(DecayType&& other, involuted const& self){
 		return other != self.operator decay_type();}
 //	auto imag() const{return static_cast<decay_type>(*this).imag();}
-	template<class Any> friend Any& operator<<(Any&& a, involuted const& self)
+	template<class Any> friend constexpr Any& operator<<(Any&& a, involuted const& self)
 //	->decltype(a << self.operator decay_type())
 	{
 		return a << self.operator decay_type();}
-	auto conj() const&{return adl_conj(operator decay_type());}
+	constexpr auto conj() const&{return adl_conj(operator decay_type());}
 	template<class T = void*>
-	friend auto imag(involuted const& self, T = nullptr)
+	friend constexpr auto imag(involuted const& self, T = nullptr)
 	->decltype(adl_imag(std::declval<decay_type>())){
 		return adl_imag(self.operator decay_type());}
 };
@@ -125,14 +125,14 @@ public:
 	template<class U> using rebind = involuter<typename std::pointer_traits<It>::template rebind<U>, F>;
 
 	involuter() = default;
-	explicit involuter(It it, F f = {}) : it_{std::move(it)}, f_{std::move(f)}{}
+	constexpr explicit involuter(It it, F f = {}) : it_{std::move(it)}, f_{std::move(f)}{}
 	involuter(involuter const& other) = default;
 //	template<class Other, > constexpr involuter(Other const& other) : it_{other.it_}, f_{other.f_}{}
 
 	template<class Other, typename = decltype(_implicit_cast<It>(typename Other::underlying_type{}))> 
-	constexpr involuter(Other const& o) : it_{o.it_}, f_{o.f_}{}
+	constexpr          involuter(Other const& o) : it_{o.it_}, f_{o.f_}{}
 	template<class Other, typename = decltype(_explicit_cast<It>(typename Other::underlying_type{}))> 
-	explicit constexpr involuter(Other const& o, int = 0) : it_{o.it_}, f_{o.f_}{}
+	constexpr explicit involuter(Other const& o, int = 0) : it_{o.it_}, f_{o.f_}{}
 
 	constexpr auto operator*() const {return reference{*it_, f_};}
 	bool operator==(involuter const& o) const{return it_==o.it_;}
