@@ -774,22 +774,30 @@ public:
 	->decltype(adl_copy(first, last, std::declval<basic_array&>().begin()), void()){//assert( this->size() == std::distance(first, last) );
 	           adl_copy(first, last, this->begin()                        );        }
 
-	template<class Range> constexpr auto assign(Range&& r) &&
-	->decltype(this->assign(adl_begin(std::forward<Range>(r)), adl_end(std::forward<Range>(r)))){
-		return this->assign(adl_begin(std::forward<Range>(r)), adl_end(std::forward<Range>(r)));}
+	template<class It> constexpr void assign(It first) &{adl_copy_n(first, this->size(), begin());}
+	template<class It> constexpr void assign(It first)&&{return assign(first);}
 
-	template<class Range> constexpr auto assign(Range&& r) &
-	->decltype(this->assign(adl_begin(r), adl_end(r))){
-		return this->assign(adl_begin(r), adl_end(r));}
+//	template<class Range> constexpr auto assign(Range&& r) &&
+//	->decltype(this->assign(adl_begin(std::forward<Range>(r)), adl_end(std::forward<Range>(r)))){
+//		return this->assign(adl_begin(std::forward<Range>(r)), adl_end(std::forward<Range>(r)));}
 
-	constexpr void assign(std::initializer_list<typename basic_array::value_type> il) const{assert( il.size() == this->size() );
-		assign(il.begin(), il.end());
-	}
+//	template<class Range> constexpr auto assign(Range&& r) &
+//	->decltype(this->assign(adl_begin(r), adl_end(r))){
+//		return this->assign(adl_begin(r), adl_end(r));}
+
+//	constexpr void assign(std::initializer_list<typename basic_array::value_type> il) const{assert( il.size() == this->size() );
+//		assign(il.begin(), il.end());
+//	}
 
 	template<class Range>
-	constexpr auto operator=(Range const& r)&& // check that you LHS is not read-only
-	->decltype(assign(adl_begin(r), adl_end(r)), std::declval<basic_array&&>()){assert(this->size() == r.size());
-		return assign(adl_begin(r), adl_end(r)), std::move(*this);}
+	constexpr auto operator=(Range&& r)& // check that you LHS is not read-only
+	->decltype(assign(adl_begin(std::forward<Range>(r))), std::declval<basic_array&>()){assert(this->size() == r.size());
+		return assign(adl_begin(std::forward<Range>(r))),           *this ;}
+
+	template<class Range>
+	constexpr auto operator=(Range&& r)&&
+	->decltype(assign(adl_begin(std::forward<Range>(r))), std::declval<basic_array&&>()){assert(this->size() == r.size());
+		return assign(adl_begin(std::forward<Range>(r))), std::move(*this);}
 
 	template<class TT, class... As>
 	constexpr basic_array& operator=(basic_array<TT, D, As...> const& o)&{
