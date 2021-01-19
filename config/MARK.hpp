@@ -6,17 +6,23 @@ $CXXX $CXXFLAGS $0 -o $0x -include"boost/log/trivial.hpp" -D'MULTI_MARK_SCOPE(Ms
 #ifndef MULTI_CONFIG_MARK_HPP
 #define MULTI_CONFIG_MARK_HPP
 
-#ifndef MULTI_MARK_SCOPE
-#define MULTI_MARK_SCOPE(MsG) ((void)0)
+#ifndef CALI_CXX_MARK_SCOPE
+#define CALI_CXX_MARK_SCOPE(MsG) ((void)0)
 #endif
 
-#ifndef MULTI_MARK_FUNCTION
-#define MULTI_MARK_FUNCTION MULTI_MARK_SCOPE(__func__)
-#endif
+//#ifndef MULTI_MARK_SCOPE
+//#define MULTI_MARK_SCOPE(MsG) ((void)0)
+//#else
+//#define MULTI_MARK_SCOPE(MsG) CALI_CXX_MARK_SCOPE(MsG)
+//#endif
 
-#ifndef MULTI_MARK_PRETTY_FUNCTION
-#define MULTI_MARK_PRETTY_FUNCTION MULTI_MARK_SCOPE(__PRETTY_FUNCTION__)
-#endif
+//#ifndef MULTI_MARK_FUNCTION
+//#define MULTI_MARK_FUNCTION MULTI_MARK_SCOPE(__func__)
+//#endif
+
+//#ifndef MULTI_MARK_PRETTY_FUNCTION
+//#define MULTI_MARK_PRETTY_FUNCTION MULTI_MARK_SCOPE(__PRETTY_FUNCTION__)
+//#endif
 
 #if not __INCLUDE_LEVEL__
 

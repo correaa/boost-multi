@@ -21,6 +21,7 @@ $CXXX $CXXFLAGS $0 -o $0x&&$0x&&rm $0x&&(rm -rf test/build&&mkdir -p test/build&
 #include "./config/NODISCARD.hpp"
 #include "./config/DELETE.hpp"
 #include "./config/ASSERT.hpp"
+#include "./config/MARK.hpp"
 
 #if defined(__NVCC__)
 #define HD __host__ __device__
@@ -800,6 +801,7 @@ public:
 
 	template<class TT, class... As>
 	constexpr basic_array& operator=(basic_array<TT, D, As...> const& o)&{
+		CALI_CXX_MARK_SCOPE("multi basic nD assignemnt");
 		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()){
 			adl_copy_n(o.base(), o.num_elements(), this->base());
 			return *this;
@@ -816,6 +818,7 @@ public:
 	constexpr basic_array&& operator=(basic_array<TT, D, As...> const& o)&&{return std::move(this->operator=(o));}
 
 	constexpr basic_array&  operator=(basic_array               const& o) &{assert( this->extension() == o.extension() ); // TODO make sfinae-friendly
+		CALI_CXX_MARK_SCOPE("multi basic nD copy assignemnt ");
 		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()){
 			adl_copy_n(o.base(), o.num_elements(), this->base());
 			return *this;
@@ -1142,6 +1145,7 @@ public:
 		std::for_each(this->begin(), this->end(),[&](auto&& e){ar& multi::archive_traits<Archive>::make_nvp("item",e);});
 	}
 	constexpr basic_array& operator=(basic_array const& o)&{assert(this->extension() == o.extension()); 	// TODO make sfinae friendly
+		CALI_CXX_MARK_SCOPE("multi basic 1D assignemnt");
 		return this->assign(o.begin(), o.end()), *this; // TODO improve performance by rotating
 	} // TODO leave only r-value version?
 	template<class TT, dimensionality_type DD, class... As>
@@ -1277,10 +1281,12 @@ public:
 	template<class TT, class... As>//, DELETE((not std::is_assignable<typename basic_array::reference, typename basic_array<TT, 1, As...>::reference>{}))>
 	constexpr auto operator=(basic_array<TT, 1, As...> const& other)&&
 	->decltype(adl_copy(other.begin(), other.end(), std::declval<iterator>()), std::declval<basic_array&&>()){assert(this->extensions() == other.extensions());
+		CALI_CXX_MARK_SCOPE("multi basic 1D assignemnt");
 		return adl_copy(other.begin(), other.end(), this->begin()                                 ), std::move(*this);             }
 
 	template<class TT, class... As>//, DELETE((not std::is_assignable<typename basic_array::reference, typename basic_array<TT, 1, As...>::reference>{}))>
 	constexpr basic_array&  operator=(basic_array<TT, 1, As...> const& other)&{assert(this->extensions() == other.extensions());
+		CALI_CXX_MARK_SCOPE("multi basic 1D assignemnt");
 		return adl_copy(other.begin(), other.end(), this->begin()), *this;
 	}
 
@@ -1452,6 +1458,7 @@ public:
 	}
 	template<typename TT, dimensionality_type DD = D, class... As>
 	constexpr array_ref&& operator=(array_ref<TT, DD, As...> const& o)&&{assert(this->extensions() == o.extensions());
+		CALI_CXX_MARK_SCOPE("multi ref nD assignemnt");
 		return adl_copy_n(o.data(), o.num_elements(), this->data()), std::move(*this);
 	}
 	using  elements_type = array_ref<typename array_ref::element_type, 1, typename array_ref::element_ptr      >;
