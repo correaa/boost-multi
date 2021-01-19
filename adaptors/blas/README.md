@@ -12,7 +12,9 @@ The BLAS Adaptor provides an interface for BLAS-like libraries.
 ## Contents
 [[_TOC_]]
 
-## Numeric Arrays, Conjugation Real and Imaginary
+## Numeric Arrays, Conjugation Real and Imaginary parts
+
+This functions produce views (not copies) related to conjugation, real and imaginary parts.
 
 ```cpp
 	using complex = std::complex<double>; 
@@ -26,8 +28,13 @@ The BLAS Adaptor provides an interface for BLAS-like libraries.
 	namespace blas = multi::blas;
 
 	assert( blas::conj(B)[2][1] == std::conj(B[2][1]) );
-	assert( blas::hermitized(B)[2][1] == blas::conj(B)[1][2] );
+
 	assert( blas::transposed(B)[1][2] == B[2][1] );
+	assert( blas::T(B)[1][2] == B[2][1] );
+
+	assert( blas::hermitized(B)[2][1] == blas::conj(blas::transposed(B)) );
+	assert( blas::H(B)[2][1] == blas::C(blas::T(B)) );
+
 	assert( blas::real(B)[2][1] == std::real(B[2][1]) );
 	assert( blas::imag(B)[2][1] == std::imag(B[2][1]) );
 	
@@ -39,12 +46,31 @@ The BLAS Adaptor provides an interface for BLAS-like libraries.
 	assert( blas::real_doubled(B) == B_real_doubled );
 ```
 
+Usage:
+```cpp
+	multi::array<complex, 2> const a = {
+		{ 1., 3., 1.},
+		{ 9., 7., 1.},
+	};
+	multi::array<complex, 2> const b = {
+		{ 11.+1.*I, 12.+1.*I, 4.+1.*I, 8.-2.*I},
+		{  7.+8.*I, 19.-2.*I, 2.+1.*I, 7.+1.*I},
+		{  5.+1.*I,  3.-1.*I, 3.+8.*I, 1.+1.*I}
+	};
+	{
+		multi::array<double, 2> const a_real = {
+			{ 1., 3., 1.},
+			{ 9., 7., 1.},
+		};
+		multi::array<complex, 2> c({2, 4});
+		blas::real_doubled(c) = blas::gemm(1., a_real, blas::real_doubled(b));
+
+		assert( c[1][2] == complex(53, 24) );
+	}
+```
+
 ## Installation and Tests
 
-`Multi` doesn't require instalation, single file `#include<multi/array.hpp>` is enough to use the full core library.
-`Multi`'s _only_ dependecy is the standard C++ library.
+...
 
-It is important to compile programs that use the library with a decent level of optimization (e.g. `-O2`) to avoid slowdown if indiviudual element-access is intensively used.
-For example, when testing speed, please make sure that you are compiling in release mode (`-DNDEBUG`) and with optimizations (`-O3`), 
-if your test involves mathematical operations add arithmetic optimizations (`-Ofast`) to compare with Fortran code.
 

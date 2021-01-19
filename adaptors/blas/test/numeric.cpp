@@ -85,8 +85,13 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_decay){
 	multi::array<complex, 2> conjB = blas::conj(B);
 	
 	BOOST_REQUIRE( blas::conj(B)[2][1] == std::conj(B[2][1]) );
-	BOOST_REQUIRE( blas::hermitized(B)[2][1] == blas::conj(B)[1][2] );
+
 	BOOST_REQUIRE( blas::transposed(B)[1][2] == B[2][1] );
+	BOOST_REQUIRE( blas::transposed(B) == ~B );
+
+	BOOST_REQUIRE( blas::hermitized(B)[2][1] == blas::conj(B)[1][2] );
+	BOOST_REQUIRE( blas::hermitized(B)       == blas::conj(blas::transposed(B)) );
+
 	BOOST_REQUIRE( blas::real(B)[2][1] == std::real(B[2][1]) );
 	BOOST_REQUIRE( blas::imag(B)[2][1] == std::imag(B[2][1]) );
 
