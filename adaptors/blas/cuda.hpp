@@ -28,7 +28,7 @@ $CXXX $CXXFLAGS -include"boost/log/trivial.hpp" -D'MULTI_MARK_SCOPE(MsG)=BOOST_L
 #include<system_error>
 
 #define CUBLAS_CALL(CodE) \
-	MULTI_MARK_SCOPE("multi::cublas "#CodE); \
+	CALI_CXX_MARK_SCOPE("multi::cublas "#CodE); \
 	auto s = static_cast<enum boost::multi::cuda::cublas::error>(CodE); \
 	cudaDeviceSynchronize(); /*TODO make this more specific to mananged ptr and specific handle*/ \
 	if(s != boost::multi::cuda::cublas::error::success) throw std::system_error{boost::multi::cuda::cublas::make_error_code(s), "cannot call cublas function "#CodE };
@@ -127,13 +127,13 @@ template<> struct cublas1<void>{
 	template<class T> static cublasStatus_t copy (cublasHandle_t handle, int n, const T* x, int incx, T* y, int incy){return cublas1<T>::copy(handle, n, x, incx, y, incy);}
 // 2.5.6. cublas<t>dot() https://docs.nvidia.com/cuda/cublas/index.html#cublas-lt-t-gt-dot
 	template<class T> static auto dot(cublasHandle_t handle, int n, const T* x, int incx, const T* y, int incy, T* result)
-	->decltype(cublas1<T>::dot(handle, n, x, incx, y, incy, result)){MULTI_MARK_SCOPE("function dot");
+	->decltype(cublas1<T>::dot(handle, n, x, incx, y, incy, result)){CALI_CXX_MARK_SCOPE("function dot");
 		return cublas1<T>::dot(handle, n, x, incx, y, incy, result);}
 	template<class T> static auto dotu(cublasHandle_t handle, int n, const T* x, int incx, const T* y, int incy, T* result)
-	->decltype(cublas1<T>::dotu(handle, n, x, incx, y, incy, result)){MULTI_MARK_SCOPE("function dotu");
+	->decltype(cublas1<T>::dotu(handle, n, x, incx, y, incy, result)){CALI_CXX_MARK_SCOPE("function dotu");
 		return cublas1<T>::dotu(handle, n, x, incx, y, incy, result);}
 	template<class T> static auto dotc(cublasHandle_t handle, int n, const T* x, int incx, const T* y, int incy, T* result)
-	->decltype(cublas1<T>::dotc(handle, n, x, incx, y, incy, result)){MULTI_MARK_PRETTY_FUNCTION;
+	->decltype(cublas1<T>::dotc(handle, n, x, incx, y, incy, result)){CALI_CXX_MARK_SCOPE("function dotc");
 		return cublas1<T>::dotc(handle, n, x, incx, y, incy, result);}
 // 2.5.7. cublas<t>nrm2() https://docs.nvidia.com/cuda/cublas/index.html#cublas-lt-t-gt-nrm2
 	template<class T> static auto nrm2(cublasHandle_t handle, int n,
@@ -201,7 +201,7 @@ template<> struct cublas3<void>{
                            const T           *A, int lda,
                            const T           *B, int ldb,
                            const T           *beta,
-                           T           *C, int ldc){MULTI_MARK_PRETTY_FUNCTION; return cublas3<T>::gemm(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);}
+                           T           *C, int ldc){CALI_CXX_MARK_SCOPE("gemm"); return cublas3<T>::gemm(handle, transa, transb, m, n, k, alpha, A, lda, B, ldb, beta, C, ldc);}
 // 2.7.6. cublas<t>syrk() https://docs.nvidia.com/cuda/cublas/index.html#cublas-lt-t-gt-syrk
 	template<class T> static auto syrk(cublasHandle_t handle,
                            cublasFillMode_t uplo, cublasOperation_t trans,
@@ -260,7 +260,7 @@ auto translate(char O)->cublasOperation_t{
 
 struct context : std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>{
 	context()  : std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>(
-		[]{MULTI_MARK_SCOPE("multi::cublas::create context"); cublasHandle_t h; cublasCreate(&h); return h;}(), &cublasDestroy
+		[]{CALI_CXX_MARK_SCOPE("multi::cublas::create context"); cublasHandle_t h; cublasCreate(&h); return h;}(), &cublasDestroy
 	){}
 	int version() const{
 		int ret; cublasGetVersion(get(), &ret); return ret;
