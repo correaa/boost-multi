@@ -26,18 +26,19 @@ This functions produce views (not copies) related to conjugation, real and imagi
 	};
 
 	namespace blas = multi::blas;
+	multi::array<complex, 2> conjB = blas::conj(B);
 
 	assert( blas::conj(B)[2][1] == std::conj(B[2][1]) );
 
 	assert( blas::transposed(B)[1][2] == B[2][1] );
-	assert( blas::T(B)[1][2] == B[2][1] );
+	assert( blas::transposed(B) == ~B );
 
-	assert( blas::hermitized(B)[2][1] == blas::conj(blas::transposed(B)) );
-	assert( blas::H(B)[2][1] == blas::C(blas::T(B)) );
+	assert( blas::hermitized(B)[2][1] == blas::conj(B)[1][2] );
+	assert( blas::hermitized(B)       == blas::conj(blas::transposed(B)) );
 
 	assert( blas::real(B)[2][1] == std::real(B[2][1]) );
 	assert( blas::imag(B)[2][1] == std::imag(B[2][1]) );
-	
+
 	multi::array<double, 2> B_real_doubled = {
 		{ 1., -3., 6., 2.},
 		{ 8.,  2., 2., 4.},
@@ -48,29 +49,23 @@ This functions produce views (not copies) related to conjugation, real and imagi
 
 Usage:
 ```cpp
-	multi::array<complex, 2> const a = {
+	multi::array<double, 2> const a_real = {
 		{ 1., 3., 1.},
 		{ 9., 7., 1.},
 	};
+
 	multi::array<complex, 2> const b = {
 		{ 11.+1.*I, 12.+1.*I, 4.+1.*I, 8.-2.*I},
 		{  7.+8.*I, 19.-2.*I, 2.+1.*I, 7.+1.*I},
 		{  5.+1.*I,  3.-1.*I, 3.+8.*I, 1.+1.*I}
 	};
-	{
-		multi::array<double, 2> const a_real = {
-			{ 1., 3., 1.},
-			{ 9., 7., 1.},
-		};
-		multi::array<complex, 2> c({2, 4});
-		blas::real_doubled(c) = blas::gemm(1., a_real, blas::real_doubled(b));
 
-		assert( c[1][2] == complex(53, 24) );
-	}
+	multi::array<complex, 2> c({2, 4});
+
+	blas::real_doubled(c) = blas::gemm(1., a_real, blas::real_doubled(b)); // c = a_real*b
 ```
 
 ## Installation and Tests
 
 ...
-
 
