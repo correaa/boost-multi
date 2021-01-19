@@ -9,6 +9,7 @@
 
 #include "../../../array.hpp"
 #include "../../blas/numeric.hpp"
+#include "../../blas/operations.hpp"
 
 #include<complex>
 
@@ -166,6 +167,13 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_real_imag_part){
 
 	BOOST_REQUIRE( B[1][0] == 8. + 2.*I );
 	BOOST_REQUIRE( B[1][0].imag() == 2. );
+	
+	namespace blas = multi::blas;
+	
+	BOOST_REQUIRE( blas::hermitized(B)[1][2] == std::conj( B[2][1] ) );
+	
+	blas::hermitized(B)[1][2] = 20. + 30.*I;
+	BOOST_REQUIRE( B[2][1] == 20. - 30.*I );
 // 	using multi::blas::hermitized;
 //	BOOST_REQUIRE( hermitized(B)[0][1] == 8. - 2.*I );
 //	BOOST_REQUIRE( imag(hermitized(B)[0][1]) == -2. );
