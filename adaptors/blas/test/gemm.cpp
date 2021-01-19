@@ -24,7 +24,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_square_real){
 		{9, 7, 1},
 		{1, 2, 3}
 	};
-	multi::array<double, 2> const b = {	
+	multi::array<double, 2> const b = {
 		{11, 12, 4},
 		{ 7, 19, 1},
 		{11, 12, 4}
@@ -1430,6 +1430,48 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_automatic){
 		multi::array<complex, 2> c({2, 4});
 		blas::gemm_n(1., begin(a), size(a), begin(b), 0., begin(c)); // c=ab, c⸆=b⸆a⸆
 		BOOST_REQUIRE( c[1][2] == complex(112, 12) );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_realcomplex_complex_nonsquare_automatic){
+	using complex = std::complex<double>; complex const I{0, 1};
+	multi::array<complex, 2> const a = {
+		{ 1., 3., 1.},
+		{ 9., 7., 1.},
+	};
+	multi::array<complex, 2> const b = {
+		{ 11.+1.*I, 12.+1.*I, 4.+1.*I, 8.-2.*I},
+		{  7.+8.*I, 19.-2.*I, 2.+1.*I, 7.+1.*I},
+		{  5.+1.*I,  3.-1.*I, 3.+8.*I, 1.+1.*I}
+	};
+	{
+		multi::array<complex, 2> c = blas::gemm(1., a, b); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][2] == complex(53, 24) );
+	}
+	{
+		multi::array<complex, 2> c({2, 4});
+		c = blas::gemm(1., a, b); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][2] == complex(53, 24) );
+	}
+	{
+		multi::array<complex, 2> c({2, 4});
+		blas::gemm(1., a, b, 0., c); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][2] == complex(53, 24) );
+	}
+	{
+		multi::array<complex, 2> c({2, 4});
+		blas::gemm_n(1., begin(a), size(a), begin(b), 0., begin(c)); // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][2] == complex(53, 24) );
+	}
+	{
+		multi::array<double, 2> const a_real = {
+			{ 1., 3., 1.},
+			{ 9., 7., 1.},
+		};
+		multi::array<complex, 2> c({2, 4});
+		blas::real_doubled(c) = blas::gemm(1., a_real, blas::real_doubled(b));
+
+		BOOST_REQUIRE( c[1][2] == complex(53, 24) );
 	}
 }
 

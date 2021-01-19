@@ -16,7 +16,7 @@ namespace multi::blas{
 template<class T> struct Complex_{T real; T imag;};
 
 template<
-	class A, typename Complex = typename std::decay_t<A>::element_type, typename T=typename Complex::value_type,
+	class A, typename Complex = typename std::decay_t<A>::element, typename T=typename Complex::value_type,
 	class=std::enable_if_t<blas::numeric::is_complex_of<Complex, T>::value>
 >
 auto real(A&& a)
@@ -30,6 +30,13 @@ template<
 auto imag(A&& a)
 ->decltype(std::forward<A>(a).template reinterpret_array_cast<Complex_<T>>().template member_cast<T>(&Complex_<T>::imag)){
 	return std::forward<A>(a).template reinterpret_array_cast<Complex_<T>>().template member_cast<T>(&Complex_<T>::imag);}
+	
+template<class ComplexArr, class ComplexElem = typename std::decay_t<ComplexArr>::element, typename RealElem = typename ComplexElem::value_type,
+	class=std::enable_if_t<blas::numeric::is_complex_of<ComplexElem, RealElem>::value>
+>
+auto real_doubled(ComplexArr&& a){ // produces a real view of complex array with the last dimension duplicated and with interleaved real imaginary parts
+	return std::forward<ComplexArr>(a).template reinterpret_array_cast<RealElem>(2).rotated().flatted().unrotated();
+}
 
 template<class Ref, class Involution> class involuted;
 

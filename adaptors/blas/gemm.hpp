@@ -215,7 +215,7 @@ template<class ContextPtr, class Scalar, class ItA, class ItB, class DecayType>
 class gemm_range;
 
 template<class Ext>
-struct gemm_reference{
+struct gemm_reference{ // TODO implement this in terms of gemv_range
 	Ext x;
 	Ext const& extensions() const{return x;}
 	friend Ext const& extensions(gemm_reference const& self){return self.extensions();}
@@ -235,12 +235,8 @@ public:
 	using difference_type = typename std::iterator_traits<ItA>::difference_type;
 	using value_type = typename std::iterator_traits<ItA>::value_type;
 	using pointer = void;
-	using reference = void;
-	using iterator_category = std::random_access_iterator_tag;
-//	using iterator_category = std::output_iterator_tag;
-//	friend difference_type distance(gemv_iterator const& a, gemv_iterator const& b){assert(a.v_first_ == b.v_first_);
-//		return b.m_it_ - a.m_it_;
-//	}
+	using reference = gemm_reference<decltype(b_begin_->extensions())>;
+	using iterator_category = std::random_access_iterator_tag; // using iterator_category = std::output_iterator_tag;
 	friend difference_type operator-(gemm_iterator const& a, gemm_iterator const& b){assert(a.b_begin_ == b.b_begin_);
 		return a.a_it_ - b.a_it_;
 	}
@@ -248,30 +244,32 @@ public:
 	friend bool operator!=(gemm_iterator const& a, gemm_iterator const& b){return a.a_it_ != b.a_it_;}
 
 	template<class ItOut> 
-	friend auto copy(gemm_iterator const& first, gemm_iterator const& last, ItOut d_first)
-	->decltype(blas::gemm_n(*std::declval<ContextPtr>(), std::declval<Scalar>(), std::declval<ItA>(), std::declval<ItA>() - std::declval<ItA>(), std::declval<ItB>(), 0., d_first)) try{assert( first.s_ == last.s_ );
-		return blas::gemm_n(*first.ctxtp_              , first.s_              , first.a_it_        , last.a_it_ - first.a_it_                 , first.b_begin_     , 0., d_first);
+	friend auto copy_n(gemm_iterator const& first, difference_type count, ItOut d_first)
+	->decltype(blas::gemm_n(*std::declval<ContextPtr>(), std::declval<Scalar>(), std::declval<ItA>(), count, std::declval<ItB>(), 0., d_first)) try{
+		return blas::gemm_n(*first.ctxtp_              , first.s_              , first.a_it_        , count, first.b_begin_     , 0., d_first);
 	}catch(std::exception const& e){
 		throw std::logic_error(
-			"in " + std::string(__PRETTY_FUNCTION__) + "\nCouldn't decay product of arrays of size " + std::to_string(last - first) +"x"+ std::to_string(first.a_it_->size()) + " and " + 
-			std::to_string(first.a_it_->size())+ "x" +std::to_string(first.b_begin_->size()) + " into " + std::to_string(last - first) +"x" + std::to_string(first.b_begin_->size()) +
+			"in " + std::string(__PRETTY_FUNCTION__) + "\nCouldn't decay product of arrays of size " + std::to_string(count) +"x"+ std::to_string(first.a_it_->size()) + " and " + 
+			std::to_string(first.a_it_->size())+ "x" +std::to_string(first.b_begin_->size()) + " into " + std::to_string(count) +"x" + std::to_string(first.b_begin_->size()) +
 			"\nbecause\n"+e.what()
 		);
+	}
+	
+	template<class ItOut>
+	friend auto copy(gemm_iterator const& first, gemm_iterator const& last, ItOut d_first){assert(first.s_ == last.s_);
+		return copy_n(first, last - first, d_first);
 	}
 
 	template<class ItOut>
-	friend auto uninitialized_copy(gemm_iterator const& first, gemm_iterator const& last, ItOut const& d_first)
-	->decltype(blas::gemm_n(*std::declval<ContextPtr>(), std::declval<Scalar>(), std::declval<ItA>(), std::declval<ItA>() - std::declval<ItA>(), std::declval<ItB>(), 0., d_first)) try{assert( first.s_ == last.s_ );
-		return blas::gemm_n(*first.ctxtp_              , first.s_              , first.a_it_        , last.a_it_ - first.a_it_                 , first.b_begin_     , 0., d_first);
-	}catch(std::exception const& e){
-		throw std::logic_error(
-			"in " + std::string(__PRETTY_FUNCTION__) + "\nCouldn't decay product of arrays of size " + std::to_string(last - first) +"x"+ std::to_string(first.a_it_->size()) + " and " + 
-			std::to_string(first.a_it_->size())+ "x" +std::to_string(first.b_begin_->size()) + " into " + std::to_string(last - first) +"x" + std::to_string(first.b_begin_->size()) +
-			"\nbecause\n"+e.what()
-		);
+	friend auto uninitialized_copy_n(gemm_iterator const& first, difference_type count, ItOut d_first){
+		return copy_n(first, count, d_first);
 	}
 
-	gemm_reference<decltype(b_begin_->extensions())> operator*() const{return {b_begin_->extensions()};}
+	template<class ItOut>
+	friend auto uninitialized_copy(gemm_iterator const& first, gemm_iterator const& last, ItOut d_first){assert( first.s_ == last.s_ );
+		return uninitialized_copy_n(first, last - first, d_first);}
+
+	reference operator*() const{return {b_begin_->extensions()};}
 };
 
 template<class ContextPtr, class Scalar, class ItA, class ItB, class DecayType>
