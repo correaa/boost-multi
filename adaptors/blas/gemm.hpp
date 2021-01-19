@@ -234,9 +234,18 @@ public:
 	gemm_iterator(gemm_iterator const&) = default;
 	using difference_type = typename std::iterator_traits<ItA>::difference_type;
 	using value_type = typename std::iterator_traits<ItA>::value_type;
-	using pointer = void;
+	using pointer = void*;
 	using reference = gemm_reference<decltype(b_begin_->extensions())>;
-	using iterator_category = std::random_access_iterator_tag; // using iterator_category = std::output_iterator_tag;
+	using iterator_category = std::random_access_iterator_tag; // using iterator_category = std::input_iterator_tag;
+	
+	static_assert( std::is_base_of<std::random_access_iterator_tag, typename std::iterator_traits<gemm_iterator>::iterator_category>{} );
+	
+	gemm_iterator& operator+=(difference_type n){a_it_ += n; return *this;}
+	gemm_iterator& operator-=(difference_type n){a_it_ -= n; return *this;}
+
+	gemm_iterator& operator++(){return operator+=(1);} // required by random access concept requires even if not used explicitly
+	gemm_iterator& operator--(){return operator-=(1);}
+
 	friend difference_type operator-(gemm_iterator const& a, gemm_iterator const& b){assert(a.b_begin_ == b.b_begin_);
 		return a.a_it_ - b.a_it_;
 	}
