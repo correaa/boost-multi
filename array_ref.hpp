@@ -767,15 +767,14 @@ protected:
 	}
 	template<class A> constexpr void intersection_assign_(A&& o)&&{intersection_assign_(std::forward<A>(o));}
 public:
-	template<class It> constexpr void assign(It first, It last)&&{//assert( this->size() == std::distance(first, last) );
-		adl_copy(first, last, std::move(*this).begin());
-	}
-	template<class It> constexpr auto assign(It first, It last)&
-	->decltype(adl_copy(first, last, std::declval<basic_array&>().begin()), void()){//assert( this->size() == std::distance(first, last) );
-	           adl_copy(first, last, this->begin()                        );        }
 
-	template<class It> constexpr void assign(It first) &{adl_copy_n(first, this->size(), begin());}
-	template<class It> constexpr void assign(It first)&&{return assign(first);}
+	template<class It> constexpr It assign(It first) &{adl_copy_n(first, this->size(), begin()); std::advance(first, this->size()); return first;}
+	template<class It> constexpr It assign(It first)&&{return assign(first);}
+
+	template<class It> constexpr void assign(It first, It last) &{assert( this->size() == std::distance(first, last) );
+		assign(first);
+	}
+	template<class It> constexpr auto assign(It first, It last)&&{return assign(first, last);}
 
 //	template<class Range> constexpr auto assign(Range&& r) &&
 //	->decltype(this->assign(adl_begin(std::forward<Range>(r)), adl_end(std::forward<Range>(r)))){
@@ -801,14 +800,14 @@ public:
 
 	template<class TT, class... As>
 	constexpr basic_array& operator=(basic_array<TT, D, As...> const& o)&{
-//		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()){
-//			adl_copy_n(o.base(), o.num_elements(), this->base());
-//			return *this;
-//		}
-//		if(o.stride() < (~o).stride()){
-//			~(*this) = ~o;
-//			return *this;
-//		}
+		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()){
+			adl_copy_n(o.base(), o.num_elements(), this->base());
+			return *this;
+		}
+		if(o.stride() < (~o).stride()){
+			~(*this) = ~o;
+			return *this;
+		}
 		return this->assign(o.begin(), o.end()), *this;
 	}
 	template<class TT, class... As>
@@ -817,11 +816,17 @@ public:
 	constexpr basic_array&& operator=(basic_array<TT, D, As...> const& o)&&{return std::move(this->operator=(o));}
 
 	constexpr basic_array&  operator=(basic_array               const& o) &{assert( this->extension() == o.extension() ); // TODO make sfinae-friendly
-		return this->assign(o.begin(), o.end() ), *this;
+		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()){
+			adl_copy_n(o.base(), o.num_elements(), this->base());
+			return *this;
+		}
+		if(o.stride() < (~o).stride()){
+			~(*this) = ~o;
+			return *this;
+		}
+		return this->assign(o.begin(), o.end()), *this;
 	}
-	constexpr basic_array&& operator=(basic_array const& o) &&{assert( this->extension() == o.extension() ); // TODO make sfinae-friendly
-		return this->assign(o.begin(), o.end() ), std::move(*this);
-	}
+	constexpr basic_array&& operator=(basic_array const& o) &&{return std::move(operator=(o));}
 	template<class Array> void swap(Array&& o) &&{assert( std::move(*this).extension() == std::forward<Array>(o).extension() );
 		adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
 	}
