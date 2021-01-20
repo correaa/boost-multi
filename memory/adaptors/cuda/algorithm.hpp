@@ -6,6 +6,7 @@ $CXXX $CXXFLAGS $0 -o $0x -lcudart -lboost_unit_test_framework -lboost_timer&&$0
 
 #include          "../cuda/cstring.hpp"
 #include "../../../array_ref.hpp"
+#include "../../../config/MARK.hpp"
 #include "../../../detail/adl.hpp"
 
 #include <thrust/iterator/counting_iterator.h>
@@ -97,6 +98,7 @@ ptr<std::complex<T2>> copy_n(ptr<T1> first, Size count, ptr<std::complex<T2>> re
 
 template<class T1, class TT1, typename Size, class T2, std::enable_if_t<std::is_same<std::decay_t<T1>, T2>{},int> =0>
 auto copy_n(iterator<T1, 1, ptr<TT1>> first, Size count, iterator<std::complex<T2>, 1, ptr<std::complex<T2>>> result){
+	MULTI_MARK_SCOPE("cuda copy_n 1D complex destination");
 	if(stride(first) == 1 and stride(result)==1) copy_n(base(first), count, base(result));
 	else assert(0);
 	return result + count;
@@ -138,6 +140,7 @@ constexpr array_iterator<T2, 1, ptr<Q2>> copy_n(
 	array_iterator<T1, 1, ptr<Q1>> first_ , Size count, 
 	array_iterator<T2, 1, ptr<Q2>> result_
 ){
+	MULTI_MARK_SCOPE("cuda copy_n 1D");
 	array_iterator<T1, 1, thrust::device_ptr<Q1>> first ; std::memcpy((void*)&first , (void const*)&first_ , sizeof(first_));
 	array_iterator<T2, 1, thrust::device_ptr<Q2>> result; std::memcpy((void*)&result, (void const*)&result_, sizeof(first_));
 	static_assert( sizeof(first ) == sizeof(first_ ) );
@@ -160,6 +163,7 @@ copy_n(
 	array_iterator<T1, 2, ptr<Q1>> first_ , Size count, 
 	array_iterator<T2, 2, ptr<Q2>> result_
 ){
+	MULTI_MARK_SCOPE("cuda copy_n 2D");
 	array_iterator<T1, 2, thrust::device_ptr<Q1>> first ; std::memcpy((void*)&first , (void const*)&first_ , sizeof(first_));
 	array_iterator<T2, 2, thrust::device_ptr<Q2>> result; std::memcpy((void*)&result, (void const*)&result_, sizeof(first_));
 	static_assert( sizeof(first ) == sizeof(first_ ) );
@@ -183,6 +187,7 @@ copy_n(
 	array_iterator<T1, 3, ptr<Q1>> first_ , Size count, 
 	array_iterator<T2, 3, ptr<Q2>> result_
 ){
+	MULTI_MARK_SCOPE("cuda copy_n 3D");
 	array_iterator<T1, 3, thrust::device_ptr<Q1>> first ; std::memcpy((void*)&first , (void const*)&first_ , sizeof(first_));
 	array_iterator<T2, 3, thrust::device_ptr<Q2>> result; std::memcpy((void*)&result, (void const*)&result_, sizeof(first_));
 	static_assert( sizeof(first ) == sizeof(first_ ) );
@@ -206,6 +211,7 @@ copy_n(
 	array_iterator<T1, 4, ptr<Q1>> first_ , Size count, 
 	array_iterator<T2, 4, ptr<Q2>> result_
 ){
+	MULTI_MARK_SCOPE("cuda copy_n 4D");
 	array_iterator<T1, 4, thrust::device_ptr<Q1>> first ; std::memcpy((void*)&first , (void const*)&first_ , sizeof(first_));
 	array_iterator<T2, 4, thrust::device_ptr<Q2>> result; std::memcpy((void*)&result, (void const*)&result_, sizeof(first_));
 	static_assert( sizeof(first ) == sizeof(first_ ) );
@@ -229,6 +235,7 @@ copy_n(
 	array_iterator<T1, 5, ptr<Q1>> first_ , Size count, 
 	array_iterator<T2, 5, ptr<Q2>> result_
 ){
+	MULTI_MARK_SCOPE("cuda copy_n 5D");
 	array_iterator<T1, 5, thrust::device_ptr<Q1>> first ; std::memcpy((void*)&first , (void const*)&first_ , sizeof(first_));
 	array_iterator<T2, 5, thrust::device_ptr<Q2>> result; std::memcpy((void*)&result, (void const*)&result_, sizeof(first_));
 	static_assert( sizeof(first ) == sizeof(first_ ) );
@@ -259,11 +266,13 @@ copy(
 template<class T1, class Q1, typename Size, class T2, class Q2, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
 auto copy_n(iterator<T1, 1, Q1*> first, Size count, iterator<T2, 1, ptr<Q2>> result)
 ->decltype(memcpy2D(result.base(), sizeof(T2)*stride(result), first.base(), sizeof(T1)*stride(first ), sizeof(T1), count), result + count){
+	MULTI_MARK_SCOPE("cuda copy_n 1D cpu source gpu destination");
 	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first ), sizeof(T1), count), result + count;}
 
 template<class T1, class Q1, typename Size, class T2, class Q2, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
 auto copy_n(iterator<T1, 1, ptr<Q1>> first, Size count, iterator<T2, 1, Q2*> result)
 ->decltype(memcpy2D(result.base(), sizeof(T2)*stride(result), first.base(), sizeof(T1)*stride(first), sizeof(T1), count), result+count){
+	MULTI_MARK_SCOPE("cuda copy_n 1D gpu source cpu destination");
 	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result+count;}
 
 //template<class T1, class Q1, typename Size, class T2, class Q2, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
@@ -274,6 +283,7 @@ auto copy_n(iterator<T1, 1, ptr<Q1>> first, Size count, iterator<T2, 1, Q2*> res
 template<class T1, class... Q1, typename Size, class T2, class... Q2, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
 auto copy_n(iterator<T1, 1, managed::ptr<Q1...>> first, Size count, iterator<T2, 1, managed::ptr<Q2...>> result)
 ->decltype(memcpy2D(result.base(), sizeof(T2)*stride(result), first.base(), sizeof(T1)*stride(first), sizeof(T1), count), result + count){
+	MULTI_MARK_SCOPE("cuda copy_n 1D gpu managed source gpu managed destination");
 	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T1)*stride(first), sizeof(T1), count), result + count;}
 
 template<class T1, class... Q1, class T2, class... Q2, typename = std::enable_if_t<std::is_trivially_assignable<T2&, T1>{}>>
