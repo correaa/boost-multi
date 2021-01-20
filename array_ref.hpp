@@ -801,7 +801,6 @@ public:
 
 	template<class TT, class... As>
 	constexpr basic_array& operator=(basic_array<TT, D, As...> const& o)&{
-		CALI_CXX_MARK_SCOPE("multi basic nD assignemnt");
 		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()){
 			adl_copy_n(o.base(), o.num_elements(), this->base());
 			return *this;
@@ -818,7 +817,6 @@ public:
 	constexpr basic_array&& operator=(basic_array<TT, D, As...> const& o)&&{return std::move(this->operator=(o));}
 
 	constexpr basic_array&  operator=(basic_array               const& o) &{assert( this->extension() == o.extension() ); // TODO make sfinae-friendly
-		CALI_CXX_MARK_SCOPE("multi basic nD copy assignemnt ");
 		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()){
 			adl_copy_n(o.base(), o.num_elements(), this->base());
 			return *this;
@@ -1133,19 +1131,24 @@ public:
 	constexpr void assign(std::initializer_list<typename basic_array::value_type> il) const{assert( il.size() == static_cast<std::size_t>(this->size()) );
 		assign(il.begin(), il.end());
 	}
+	
 	template<class It> 
-	constexpr basic_array&  assign(It first, It last) &{assert( std::distance(first, last) == this->size() );
-		return adl_copy(first, last, this->begin()), *this;
+	constexpr It assign(It first) &{adl_copy_n(first, this->size(), this->begin()); std::advance(first, this->size()); return first;}
+	template<class It> 
+	constexpr It assign(It first)&&{return assign(first);}
+
+	template<class It>
+	constexpr void  assign(It first, It last) &{assert( std::distance(first, last) == this->size() );
+		assign(first);
 	}
 	template<class It> 
-	constexpr basic_array&& assign(It first, It last)&&{return std::move(assign(first, last));}
+	constexpr void assign(It first, It last)&&{assign(first, last);}
 
 	template<class Archive>
 	auto serialize(Archive& ar, unsigned){
 		std::for_each(this->begin(), this->end(),[&](auto&& e){ar& multi::archive_traits<Archive>::make_nvp("item",e);});
 	}
 	constexpr basic_array& operator=(basic_array const& o)&{assert(this->extension() == o.extension()); 	// TODO make sfinae friendly
-		CALI_CXX_MARK_SCOPE("multi basic 1D assignemnt");
 		return this->assign(o.begin(), o.end()), *this; // TODO improve performance by rotating
 	} // TODO leave only r-value version?
 	template<class TT, dimensionality_type DD, class... As>
@@ -1281,12 +1284,10 @@ public:
 	template<class TT, class... As>//, DELETE((not std::is_assignable<typename basic_array::reference, typename basic_array<TT, 1, As...>::reference>{}))>
 	constexpr auto operator=(basic_array<TT, 1, As...> const& other)&&
 	->decltype(adl_copy(other.begin(), other.end(), std::declval<iterator>()), std::declval<basic_array&&>()){assert(this->extensions() == other.extensions());
-		CALI_CXX_MARK_SCOPE("multi basic 1D assignemnt");
 		return adl_copy(other.begin(), other.end(), this->begin()                                 ), std::move(*this);             }
 
 	template<class TT, class... As>//, DELETE((not std::is_assignable<typename basic_array::reference, typename basic_array<TT, 1, As...>::reference>{}))>
 	constexpr basic_array&  operator=(basic_array<TT, 1, As...> const& other)&{assert(this->extensions() == other.extensions());
-		CALI_CXX_MARK_SCOPE("multi basic 1D assignemnt");
 		return adl_copy(other.begin(), other.end(), this->begin()), *this;
 	}
 
@@ -1458,15 +1459,17 @@ public:
 	}
 	template<typename TT, dimensionality_type DD = D, class... As>
 	constexpr array_ref&& operator=(array_ref<TT, DD, As...> const& o)&&{assert(this->extensions() == o.extensions());
-		CALI_CXX_MARK_SCOPE("multi ref nD assignemnt");
 		return adl_copy_n(o.data(), o.num_elements(), this->data()), std::move(*this);
 	}
 	using  elements_type = array_ref<typename array_ref::element_type, 1, typename array_ref::element_ptr      >;
 	using celements_type = array_ref<typename array_ref::element_type, 1, typename array_ref::element_const_ptr>;
 
-	constexpr  elements_type elements()         &     {return {array_ref::data(), array_ref::num_elements()};}
-	constexpr  elements_type elements()         &&    {return std::move(*this).elements();}
-	constexpr celements_type elements()         const&{return {array_ref::data(), array_ref::num_elements()};}
+private:
+	constexpr elements_type elements_() const{return {data_elements(), this->num_elements()};}
+public:
+	constexpr  elements_type elements()         &     {return elements_();}
+	constexpr  elements_type elements()         &&    {return elements_();}
+	constexpr celements_type elements()         const&{return elements_();}
 
 	friend constexpr elements_type elements(array_ref &      self){return           self . elements();}	
 	friend constexpr elements_type elements(array_ref &&     self){return std::move(self). elements();}
