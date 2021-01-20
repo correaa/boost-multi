@@ -789,18 +789,20 @@ public:
 //		assign(il.begin(), il.end());
 //	}
 
-	template<class Range>
-	constexpr auto operator=(Range&& r)& // check that you LHS is not read-only
+	template<class Range, class = std::enable_if_t<not std::is_base_of<basic_array, Range>{}> >
+//	constexpr
+	auto operator=(Range&& r)& // check that you LHS is not read-only
 	->decltype(assign(adl_begin(std::forward<Range>(r))), std::declval<basic_array&>()){assert(this->size() == r.size());
+		MULTI_MARK_SCOPE(std::string{"multi::operator= D="}+std::to_string(D)+" from range to "+typeid(T).name() );
 		return assign(adl_begin(std::forward<Range>(r))),           *this ;}
 
-	template<class Range>
-	constexpr auto operator=(Range&& r)&&
-	->decltype(assign(adl_begin(std::forward<Range>(r))), std::declval<basic_array&&>()){assert(this->size() == r.size());
-		return assign(adl_begin(std::forward<Range>(r))), std::move(*this);}
+	template<class Range, class = std::enable_if_t<not std::is_base_of<basic_array, Range>{}> >
+	constexpr auto operator=(Range&& r)&&{return std::move(operator=(std::forward<Range>(r)));}
 
 	template<class TT, class... As>
-	constexpr basic_array& operator=(basic_array<TT, D, As...> const& o)&{
+//	constexpr 
+	basic_array& operator=(basic_array<TT, D, As...> const& o)&{
+		MULTI_MARK_SCOPE(std::string{"multi::operator= "}+std::to_string(D)+" from "+typeid(TT).name()+" to "+typeid(T).name() );
 		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()){
 			adl_copy_n(o.base(), o.num_elements(), this->base());
 			return *this;
@@ -816,7 +818,9 @@ public:
 	template<class TT, class... As>
 	constexpr basic_array&& operator=(basic_array<TT, D, As...> const& o)&&{return std::move(this->operator=(o));}
 
-	constexpr basic_array&  operator=(basic_array               const& o) &{assert( this->extension() == o.extension() ); // TODO make sfinae-friendly
+//	constexpr 
+	basic_array&  operator=(basic_array               const& o) &{assert( this->extension() == o.extension() ); // TODO make sfinae-friendly
+		MULTI_MARK_SCOPE("multi::operator= D="+std::to_string(D)+" from "+typeid(T).name()+" to "+typeid(T).name() );
 		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()){
 			adl_copy_n(o.base(), o.num_elements(), this->base());
 			return *this;
@@ -1032,14 +1036,18 @@ struct basic_array<T, dimensionality_type{0}, ElementPtr, Layout> :
 {
 	using types = array_types<T, dimensionality_type{0}, ElementPtr, Layout>;
 	using types::types;
+	using element = typename types::element;
 	using element_ref = typename std::iterator_traits<typename basic_array::element_ptr>::reference;//decltype(*typename basic_array::element_ptr{});
 	using element_cref = typename std::iterator_traits<typename basic_array::element_const_ptr>::reference;
-	constexpr decltype(auto) operator=(typename basic_array::element_type const& e) &{
-		adl_copy_n(&e, 1, this->base_); return *this;
+//	constexpr 
+	basic_array& operator=(element const& e) &{
+		MULTI_MARK_SCOPE(std::string{"multi::operator= D=0 from "}+typeid(T).name()+" to "+typeid(T).name() );
+		adl_copy_n(&e, 1, this->base_); 
+		return *this;
 	}
-	constexpr decltype(auto) operator=(typename basic_array::element_type const& e) &&{return std::move(operator=(e));}
-	constexpr bool operator==(typename basic_array::element const& e) const&{return adl_equal(&e, &e + 1, this->base_);}
-	constexpr bool operator!=(typename basic_array::element const& e) const&{return not((*this)==e);}
+	constexpr basic_array&& operator=(element const& e) &&{return std::move(operator=(e));}
+	constexpr bool operator==(element const& e) const&{return adl_equal(&e, &e + 1, this->base_);}
+	constexpr bool operator!=(element const& e) const&{return not operator==(e);}
 
 	template<class TT, class=decltype(std::declval<typename basic_array::element>()==std::declval<TT>())>
 	constexpr auto operator==(TT const& e) const&
@@ -1148,7 +1156,9 @@ public:
 	auto serialize(Archive& ar, unsigned){
 		std::for_each(this->begin(), this->end(),[&](auto&& e){ar& multi::archive_traits<Archive>::make_nvp("item",e);});
 	}
-	constexpr basic_array& operator=(basic_array const& o)&{assert(this->extension() == o.extension()); 	// TODO make sfinae friendly
+//	constexpr 
+	basic_array& operator=(basic_array const& o)&{assert(this->extension() == o.extension()); 	// TODO make sfinae friendly
+		MULTI_MARK_SCOPE(std::string{"multi::operator= D=1 from "}+typeid(T).name()+" to "+typeid(T).name() );
 		return this->assign(o.begin(), o.end()), *this; // TODO improve performance by rotating
 	} // TODO leave only r-value version?
 	template<class TT, dimensionality_type DD, class... As>
@@ -1282,8 +1292,10 @@ public:
 	friend constexpr       iterator end  (basic_array     && s){return std::move(s).end();}
 
 	template<class TT, class... As>//, DELETE((not std::is_assignable<typename basic_array::reference, typename basic_array<TT, 1, As...>::reference>{}))>
-	constexpr auto operator=(basic_array<TT, 1, As...> const& other)&&
+//	constexpr 
+	auto operator=(basic_array<TT, 1, As...> const& other)&&
 	->decltype(adl_copy(other.begin(), other.end(), std::declval<iterator>()), std::declval<basic_array&&>()){assert(this->extensions() == other.extensions());
+		MULTI_MARK_SCOPE(std::string{"multi::operator= D=1 from "}+typeid(TT).name()+" to "+typeid(T).name() );
 		return adl_copy(other.begin(), other.end(), this->begin()                                 ), std::move(*this);             }
 
 	template<class TT, class... As>//, DELETE((not std::is_assignable<typename basic_array::reference, typename basic_array<TT, 1, As...>::reference>{}))>
@@ -1458,9 +1470,15 @@ public:
 		return array_ref::copy_elements(o.data_elements()), std::move(*this);
 	}
 	template<typename TT, dimensionality_type DD = D, class... As>
-	constexpr array_ref&& operator=(array_ref<TT, DD, As...> const& o)&&{assert(this->extensions() == o.extensions());
-		return adl_copy_n(o.data(), o.num_elements(), this->data()), std::move(*this);
+//	constexpr 
+	array_ref& operator=(array_ref<TT, DD, As...> const& o)&{assert(this->extensions() == o.extensions());
+		MULTI_MARK_SCOPE(std::string{"multi::operator= D="}+std::to_string(D)+" from "+typeid(TT).name()+" to "+typeid(T).name() );
+		adl_copy_n(o.data(), o.num_elements(), this->data());
+		return *this;
 	}
+	template<typename TT, dimensionality_type DD = D, class... As>
+	constexpr array_ref&& operator=(array_ref<TT, DD, As...> const& o)&&{return std::move(operator=(o));}
+
 	using  elements_type = array_ref<typename array_ref::element_type, 1, typename array_ref::element_ptr      >;
 	using celements_type = array_ref<typename array_ref::element_type, 1, typename array_ref::element_const_ptr>;
 
