@@ -1,13 +1,17 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
 $CXXX $CXXFLAGS $0 -o $0x -include"boost/log/trivial.hpp" -D'MULTI_MARK_SCOPE(MsG)=BOOST_LOG_TRIVIAL(trace)<<MsG' -DBOOST_LOG_DYN_LINK -lboost_log -lboost_thread -lboost_system -lboost_log_setup -lpthread &&$0x&&rm $0x;exit
 #endif
-// © Alfredo A. Correa 2020
+// © Alfredo A. Correa 2020-2021
 
-#ifndef MULTI_CONFIG_MARK_HPP
-#define MULTI_CONFIG_MARK_HPP
+//#ifndef MULTI_CONFIG_MARK_HPP
+//#define MULTI_CONFIG_MARK_HPP
 
-#ifndef CALI_CXX_MARK_SCOPE
-#define CALI_CXX_MARK_SCOPE(MsG) ((void)0)
+#ifndef MULTI_MARK_SCOPE
+#ifdef CALI_CXX_MARK_SCOPE
+#define MULTI_MARK_SCOPE(MsG) CALI_CXX_MARK_SCOPE(MsG)
+#else
+#define MULTI_MARK_SCOPE(MsG) ((void)0)
+#endif
 #endif
 
 //#ifndef MULTI_MARK_SCOPE
@@ -47,5 +51,5 @@ int main(){
 }
 
 #endif
-#endif
+//#endif
 
