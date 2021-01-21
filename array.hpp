@@ -888,7 +888,7 @@ public:
 	array& assign(It first, It last){using std::next; using std::all_of;
 	//	auto const s = adl::distance(first, last);
 		if(adl_distance(first, last) == array::size()){// and multi::extensions(*first) == multi::extensions(*array::begin())){
-			static_::ref::assign(first, last);
+			static_::ref::assign(first);
 		}else{
 			this->operator=(array(first, last));
 		/*
