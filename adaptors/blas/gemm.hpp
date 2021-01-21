@@ -305,6 +305,11 @@ public:
 	friend auto extensions(gemm_range const& self){return self.extensions();}
 //	operator decay_type() const{return decay_type(*this);} // do not use curly { }
 	decay_type operator+() const{return *this;}
+	template<class Arr>
+	friend Arr&& operator+=(Arr&& a, gemm_range const& gr){
+		blas::gemm_n(*gr.ctxtp_, gr.s_, gr.a_begin_, gr.a_end_ - gr.a_begin_, gr.b_begin_, 1., a.begin());
+		return std::forward<Arr>(a);
+	}
 };
 
 template<class ContextPtr, class Scalar, class A2D, class B2D, class=std::enable_if_t<is_context<decltype(*ContextPtr{})>{}> >
