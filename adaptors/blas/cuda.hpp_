@@ -30,7 +30,7 @@ $CXXX $CXXFLAGS -include"boost/log/trivial.hpp" -D'MULTI_MARK_SCOPE(MsG)=BOOST_L
 #include<system_error>
 
 #define CUBLAS_CALL(CodE) \
-	MULTI_MARK_SCOPE("multi::cublas "#CodE); \
+	MULTI_MARK_SCOPE("multi::cublas::"#CodE); \
 	auto s = static_cast<enum boost::multi::cuda::cublas::error>(CodE); \
 	cudaDeviceSynchronize(); /*TODO make this more specific to mananged ptr and specific handle*/ \
 	if(s != boost::multi::cuda::cublas::error::success) throw std::system_error{boost::multi::cuda::cublas::make_error_code(s), "cannot call cublas function "#CodE };
