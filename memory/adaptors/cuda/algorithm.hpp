@@ -136,7 +136,7 @@ auto uninitialized_copy_n(It first, Size n, ptr<T> d_first)
 template<int A, int B, int C, int D> void what() = delete;
 
 template<class T1, class Q1, class Size, class T2, class Q2>
-constexpr array_iterator<T2, 1, ptr<Q2>> copy_n(
+array_iterator<T2, 1, ptr<Q2>> copy_n(
 	array_iterator<T1, 1, ptr<Q1>> first_ , Size count, 
 	array_iterator<T2, 1, ptr<Q2>> result_
 ){
@@ -157,7 +157,6 @@ constexpr array_iterator<T2, 1, ptr<Q2>> copy_n(
 }
 
 template<class T1, class Q1, class Size, class T2, class Q2>
-constexpr 
 array_iterator<T2, 2, ptr<Q2>> 
 copy_n(
 	array_iterator<T1, 2, ptr<Q1>> first_ , Size count, 
@@ -181,7 +180,6 @@ copy_n(
 }
 
 template<class T1, class Q1, class Size, class T2, class Q2>
-constexpr 
 array_iterator<T2, 3, ptr<Q2>> 
 copy_n(
 	array_iterator<T1, 3, ptr<Q1>> first_ , Size count, 
@@ -205,7 +203,6 @@ copy_n(
 }
 
 template<class T1, class Q1, class Size, class T2, class Q2>
-constexpr 
 array_iterator<T2, 4, ptr<Q2>> 
 copy_n(
 	array_iterator<T1, 4, ptr<Q1>> first_ , Size count, 
@@ -229,7 +226,6 @@ copy_n(
 }
 
 template<class T1, class Q1, class Size, class T2, class Q2>
-constexpr 
 array_iterator<T2, 5, ptr<Q2>> 
 copy_n(
 	array_iterator<T1, 5, ptr<Q1>> first_ , Size count, 
