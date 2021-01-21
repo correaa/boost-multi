@@ -772,64 +772,48 @@ public:
 	template<class It> constexpr It assign(It first) &{adl_copy_n(first, this->size(), begin()); std::advance(first, this->size()); return first;}
 	template<class It> constexpr It assign(It first)&&{return assign(first);}
 
-	template<class It> constexpr void assign(It first, It last) &{assert( this->size() == std::distance(first, last) );
-		assign(first);
-	}
-	template<class It> constexpr auto assign(It first, It last)&&{return assign(first, last);}
-
-//	template<class Range> constexpr auto assign(Range&& r) &&
-//	->decltype(this->assign(adl_begin(std::forward<Range>(r)), adl_end(std::forward<Range>(r)))){
-//		return this->assign(adl_begin(std::forward<Range>(r)), adl_end(std::forward<Range>(r)));}
-
-//	template<class Range> constexpr auto assign(Range&& r) &
-//	->decltype(this->assign(adl_begin(r), adl_end(r))){
-//		return this->assign(adl_begin(r), adl_end(r));}
-
-//	constexpr void assign(std::initializer_list<typename basic_array::value_type> il) const{assert( il.size() == this->size() );
-//		assign(il.begin(), il.end());
-//	}
-
 	template<class Range, class = std::enable_if_t<not std::is_base_of<basic_array, Range>{}> >
 //	constexpr
-	auto operator=(Range&& r)& // check that you LHS is not read-only
-	->decltype(assign(adl_begin(std::forward<Range>(r))), std::declval<basic_array&>()){assert(this->size() == r.size());
+	auto operator=(Range const& r)& // check that you LHS is not read-only
+	->decltype(assign(adl_begin(r)), std::declval<basic_array&>()){assert(this->size() == r.size());
 		MULTI_MARK_SCOPE(std::string{"multi::operator= D="}+std::to_string(D)+" from range to "+typeid(T).name() );
-		return assign(adl_begin(std::forward<Range>(r))),           *this ;}
+		assign(adl_begin(r));
+		return *this;
+	}
 
 	template<class Range, class = std::enable_if_t<not std::is_base_of<basic_array, Range>{}> >
-	constexpr auto operator=(Range&& r)&&{return std::move(operator=(std::forward<Range>(r)));}
+	basic_array&& operator=(Range const& r)&&{return std::move(operator=(r));}
 
 	template<class TT, class... As>
 //	constexpr 
-	basic_array& operator=(basic_array<TT, D, As...> const& o)&{
+	basic_array& operator=(basic_array<TT, D, As...> const& o)&{assert( this->extension() == o.extension() );
 		MULTI_MARK_SCOPE(std::string{"multi::operator= "}+std::to_string(D)+" from "+typeid(TT).name()+" to "+typeid(T).name() );
 		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()){
 			adl_copy_n(o.base(), o.num_elements(), this->base());
-			return *this;
-		}
-		if(o.stride() < (~o).stride()){
+		}else if(o.stride() < (~o).stride()){
 			~(*this) = ~o;
-			return *this;
+		}else{
+			assign(o.begin());
 		}
-		return this->assign(o.begin(), o.end()), *this;
+		return *this;
 	}
 	template<class TT, class... As>
 	constexpr basic_array&& operator=(basic_array<TT, D, As...>&& o)&&{return std::move(basic_array::operator=(std::move(o)));}
+
 	template<class TT, class... As>
 	constexpr basic_array&& operator=(basic_array<TT, D, As...> const& o)&&{return std::move(this->operator=(o));}
 
 //	constexpr 
-	basic_array&  operator=(basic_array               const& o) &{assert( this->extension() == o.extension() ); // TODO make sfinae-friendly
+	basic_array&  operator=(basic_array               const& o) &{assert( this->extension() == o.extension() );
 		MULTI_MARK_SCOPE("multi::operator= D="+std::to_string(D)+" from "+typeid(T).name()+" to "+typeid(T).name() );
 		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()){
 			adl_copy_n(o.base(), o.num_elements(), this->base());
-			return *this;
-		}
-		if(o.stride() < (~o).stride()){
+		}else if(o.stride() < (~o).stride()){
 			~(*this) = ~o;
-			return *this;
+		}else{
+			assign(o.begin());
 		}
-		return this->assign(o.begin(), o.end()), *this;
+		return *this;
 	}
 	constexpr basic_array&& operator=(basic_array const& o) &&{return std::move(operator=(o));}
 	template<class Array> void swap(Array&& o) &&{assert( std::move(*this).extension() == std::forward<Array>(o).extension() );
@@ -940,6 +924,9 @@ public:
 			static_cast<P2>(static_cast<void*>(this->base()))
 		};
 	}
+	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
+	constexpr basic_array<T2, D + 1, P2> reinterpret_array_cast(size_type n) &&{return reinterpret_array_cast<T2, P2>(n);}
+
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2 const> >
 	constexpr basic_array<T2, D + 1, P2> reinterpret_array_cast(size_type n) const&{
 		static_assert( sizeof(T)%sizeof(T2) == 0,
