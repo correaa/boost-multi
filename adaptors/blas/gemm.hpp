@@ -45,7 +45,7 @@ auto xbase(It const& it)
 
 template<class Context, class It2DA, class Size, class It2DB, class It2DC>
 auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a_count, It2DB b_first, typename It2DA::element beta, It2DC c_first)
-->decltype(std::forward<Context>(ctxt).gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, xbase(b_first), b_first->size()  , xbase(a_first), a_first->size(), &beta, c_first.base(), c_first->size()  ), It2DC{})
+//->decltype(std::forward<Context>(ctxt).gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, xbase(b_first), b_first->size()  , xbase(a_first), a_first->size(), &beta, c_first.base(), c_first->size()  ), It2DC{})
 try{
 	assert( b_first->size() == c_first->size() );
 	assert( a_first.stride()==1 or a_first->stride()==1 );
@@ -245,6 +245,8 @@ public:
 
 	gemm_iterator& operator++(){return operator+=(1);} // required by random access concept requires even if not used explicitly
 	gemm_iterator& operator--(){return operator-=(1);}
+	
+	auto operator+(difference_type n) const{gemm_iterator ret{*this}; ret+=n; return ret;}
 
 	friend difference_type operator-(gemm_iterator const& a, gemm_iterator const& b){assert(a.b_begin_ == b.b_begin_);
 		return a.a_it_ - b.a_it_;
@@ -316,10 +318,13 @@ gemm(ContextPtr ctxtp, Scalar s, A2D const& a, B2D const& b){
 //#pragma diag_suppress 940 //"implicit_return_from_non_void_function"
 template<               class Scalar, class A2D, class B2D> 
 auto gemm(                Scalar s, A2D const& a, B2D const& b){
-	;;;; if constexpr(not is_conjugated<A2D>{})
-		return blas::gemm(blas::default_context_of(a.base()), s, a, b);
-	else if constexpr(    is_conjugated<A2D>{})
-		return blas::gemm(blas::default_context_of(underlying(a.base())), s, a, b);
+	;;;; if constexpr(not is_conjugated<A2D>{}){
+		auto ctxtp = blas::default_context_of(a.base());
+		return blas::gemm(ctxtp, s, a, b);
+	}else if constexpr(    is_conjugated<A2D>{}){
+		auto ctxtp = blas::default_context_of(underlying(a.base()));
+		return blas::gemm(ctxtp, s, a, b);
+	}
 }
 
 namespace operators{

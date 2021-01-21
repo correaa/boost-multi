@@ -1,9 +1,10 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo A. Correa 2020
+// © Alfredo A. Correa 2020-2021
 
 #ifndef MULTI_ADAPTORS_CUDA_CUBLAS_CONTEXT_HPP
 #define MULTI_ADAPTORS_CUDA_CUBLAS_CONTEXT_HPP
 
+#include "../../../config/MARK.hpp"
 #include "../../../adaptors/cuda/cublas/call.hpp"
 
 #include "../../../adaptors/blas/traits.hpp"
@@ -76,20 +77,6 @@ using blas::is_d;
 using std::is_assignable;
 using std::is_convertible_v;
 
-//template<class Derived>
-//struct basic_context{
-//};
-
-//class unsynchronized_context : std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>, public basic_context<unsynchronized_context>{
-//	using pimpl_ = std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>;
-//public:
-//	using std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>::get;
-//	unsynchronized_context() : pimpl_{[]{cublasHandle_t h; cublasCreate(&h); return h;}(), &cublasDestroy}{}
-//	static int version(){int ret; cublas::call<cublasGetVersion>(nullptr, &ret); return ret;}
-//	using basic_context<unsynchronized_context>::gemm;
-//	using basic_context<unsynchronized_context>::trsm;
-//};
-
 class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>{
 	using pimpl_t = std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>;
 public:
@@ -108,6 +95,7 @@ public:
 		,int> =0
 	>
 	void gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc){
+		MULTI_MARK_SCOPE("cublasZgemm");
 		cublas::call<cublasZgemm>(this->get(), cublas::operation{transA}, cublas::operation{transB}, m, n, k, (cuDoubleComplex const*)alpha, (cuDoubleComplex const*)raw_pointer_cast(aa), lda, (cuDoubleComplex const*)raw_pointer_cast(bb), ldb, (cuDoubleComplex const*)beta, (cuDoubleComplex*)raw_pointer_cast(cc), ldc);
 	}
 	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename std::pointer_traits<CCP>::element_type,

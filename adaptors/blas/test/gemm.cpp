@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_square_real){
 	}
 	{
 		multi::array<double, 2> c({size(a), size(~b)}, 9999);
-		blas::gemm_n(1., begin(a), size(a), begin(blas::T(b)), 0., begin(c));
+		blas::gemm_n(1., a.begin(), a.size(), blas::T(b).begin(), 0., c.begin());
 		BOOST_REQUIRE( c[2][1] == 48 );
 	}
 	{
