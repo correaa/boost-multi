@@ -449,7 +449,6 @@ enable_if_t< \
 , int> =0 > \
 v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc) \
 { \
-	static_assert( not sizeof(BETA) ); \
 	using std::max;                                                                                                                                                     \
 	if(transA =='N') MULTI_ASSERT1(lda >= max(1l, m)); else MULTI_ASSERT1(lda >= max(1l, k));                                                                           \
 	if(transB =='N') MULTI_ASSERT1(ldb >= max(1l, k)); else MULTI_ASSERT1(ldb >= max(1l, n));                                                                           \
