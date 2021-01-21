@@ -9,9 +9,10 @@ $CXXX $CXXFLAGS $0 -o $0x -lcudart -lboost_unit_test_framework -lboost_timer&&$0
 #include "../../../config/MARK.hpp"
 #include "../../../detail/adl.hpp"
 
+#include <thrust/device_ptr.h>
+#include <thrust/for_each.h>
 #include <thrust/iterator/counting_iterator.h>
 #include <thrust/iterator/transform_iterator.h>
-#include <thrust/device_ptr.h>
 
 #include "../cuda/error.hpp"
 
@@ -250,7 +251,6 @@ copy_n(
 
 
 template<class T1, class Q1, class Size, class T2, class Q2, multi::dimensionality_type D, std::enable_if_t<(D<=5), int>* =0>
-constexpr 
 array_iterator<T2, D, ptr<Q2>> 
 copy(
 	array_iterator<T1, D, ptr<Q1>> first_ , array_iterator<T1, D, ptr<Q1>> last_, 
