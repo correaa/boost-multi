@@ -149,7 +149,7 @@ array_iterator<T2, 1, ptr<Q2>> copy_n(
 	thrust::for_each(
 		thrust::make_counting_iterator(0l), 
 		thrust::make_counting_iterator(count), 
-		[first, result, x = multi::extensions_t<1>(count)] __device__ (auto n){
+		[first, result, x = multi::extensions_t<1>(count)] __device__ (auto n){ // requires --extended-lambda nvcc flag
 			std::tuple<index> i = x.from_linear(n);
 			result[std::get<0>(i)] = T2(first[std::get<0>(i)]);
 		}
