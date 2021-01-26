@@ -436,14 +436,27 @@ namespace core{
 
 #define xsyrk(T) template<class UL, class C, class S>             v syrk(        UL ul, C transA,             S n, S k, T    alpha, T const* A, S lda,             T    beta, T* CC, S ldc){\
 	MULTI_MARK_SCOPE("cpu_syrk"); BLAS(T##syrk)(      ul, transA,            BC(n), BC(k), alpha, A, BC(lda),        beta, CC, BC(ldc));}
-#define xherk(T) template<class UL, class C, class S, class Real> v herk(        UL ul, C transA,             S n, S k, Real alpha, T const* A, S lda,             Real beta, T* CC, S ldc){\
-	MULTI_MARK_SCOPE("cpu_herk"); BLAS(T##herk)(      ul, transA,            BC(n), BC(k), alpha, A, BC(lda),        beta, CC, BC(ldc));}
 
 namespace core{
 
 using std::is_convertible_v;
 using std::pointer_traits;
 using std::enable_if_t;
+using std::max;
+
+#define xherk(T) \
+template<class UL, class C, class S, class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BETA, class CCP, class CC = typename pointer_traits<CCP>::element_type, class Real = typename T::value_type,\
+enable_if_t< \
+	is_##T<AA>{} and is_##T<CC>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*AA{})>{} and \
+	is_convertible_v<AAP, AA*> and is_convertible_v<CCP, CC*> \
+, int> =0> \
+v herk(        UL ul, C transA,             S n, S k, ALPHA const* alpha, AAP aa, S lda,             BETA const* beta, CCP cc, S ldc) \
+/*=delete;*/ \
+{ \
+	if(transA == 'N' or transA == 'n') MULTI_ASSERT1( lda >= max(1l, n) ); else MULTI_ASSERT1( lda >= max(1l, k) ); \
+	MULTI_ASSERT1( ldc >= max(1l, n) ); \
+	MULTI_MARK_SCOPE("cpu_herk"); BLAS(T##herk)(      ul, transA,            BC(n), BC(k), *(Real const*)alpha, aa, BC(lda),        *(Real const*)beta, cc, BC(ldc)); \
+}
 
 #define xgemm(T) \
 template<class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BBP, class BB = typename pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename pointer_traits<CCP>::element_type, \
@@ -535,6 +548,10 @@ struct context{ // stateless (and thread safe)
 	->decltype(core::trsm(std::forward<As>(as)...)){
 		return core::trsm(std::forward<As>(as)...);}
 
+	template<class... As>
+	static auto herk(As&&... as)
+	->decltype(core::herk(std::forward<As>(as)...)){
+		return core::herk(std::forward<As>(as)...);}
 };
 
 template<class Context> struct is_context : std::false_type{};
