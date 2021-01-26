@@ -53,8 +53,9 @@ include_directories(${CMAKE_BINARY_DIR})
 #file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 set(TEST_SRCS
   axpy.cpp
-  dot.cpp
   copy.cpp
+  dot.cpp
+  herk.cpp
   gemv.cpp
   gemm.cpp
   numeric.cpp
