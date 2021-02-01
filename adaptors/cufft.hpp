@@ -323,12 +323,12 @@ Out&& dft(std::array<bool, D> which, In const& i, Out&& o, int s){
 
 template <class Array, std::size_t... Ns>
 constexpr auto array_tail_impl(Array const& t, std::index_sequence<Ns...>){
-   return std::array<typename Array::value_type, sizeof...(Ns)>{std::get<Ns + 1>(t))...};
+	return std::array<typename Array::value_type, std::tuple_size<Array>{} - 1>{std::get<Ns + 1>(t)...};
 }
 
 template<class Array>
 constexpr auto array_tail(Array const& t)
-->decltype(array_tail_impl(t, std::make_index_sequence<std::tuple_size<Array>{} - 1>())){//std::tuple<Ts...> t){
+->decltype(array_tail_impl(t, std::make_index_sequence<std::tuple_size<Array>{} - 1>())){
 	return array_tail_impl(t, std::make_index_sequence<std::tuple_size<Array>{} - 1>());}
 
 template<typename In, class Out, std::size_t D = In::dimensionality, std::enable_if_t<(D>1), int> = 0> 
