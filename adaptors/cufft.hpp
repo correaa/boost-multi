@@ -321,12 +321,22 @@ Out&& dft(std::array<bool, D> which, In const& i, Out&& o, int s){
 	else return std::forward<Out>(std::forward<Out>(o) = i);
 }
 
+template <class Array, std::size_t... Ns>
+constexpr auto array_tail_impl(Array const& t, std::index_sequence<Ns...>){
+   return std::array<typename Array::value_type, sizeof...(Ns)>{std::get<Ns + 1>(t))...};
+}
+
+template<class Array>
+constexpr auto array_tail(Array const& t)
+->decltype(array_tail_impl(t, std::make_index_sequence<std::tuple_size<Array>{} - 1>())){//std::tuple<Ts...> t){
+	return array_tail_impl(t, std::make_index_sequence<std::tuple_size<Array>{} - 1>());}
+
 template<typename In, class Out, std::size_t D = In::dimensionality, std::enable_if_t<(D>1), int> = 0> 
 auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
 ->decltype(many_dft(i.begin(), i.end(), o.begin(), s),std::forward<Out>(o))
 {
 	assert(extension(i) == extension(o));
-	std::array<bool, D-1> tail = reinterpret_cast<std::array<bool, D-1> const&>(which[1]);
+	std::array<bool, D-1> tail = array_tail(which);//reinterpret_cast<std::array<bool, D-1> const&>(which[1]);
 	auto ff = std::find(begin(which)+1, end(which), false);
 	if(which[0] == true){
 		if(ff==end(which)) cufft::dft(i, std::forward<Out>(o), s);
