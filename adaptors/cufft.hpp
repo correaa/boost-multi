@@ -358,12 +358,13 @@ auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
 			std::array<bool, D-1> tail = array_tail(which);
 			if(which.size() > 1 and which[1] == false and i.is_flattable() and o.is_flattable()) cufft::dft(tail, i.flatted(), o.flatted(), s);
 			else{
-				auto d_min = 0; auto n_min = size(i);
-				for(auto d = 0; d != D; ++d){if((size(i<<d) < n_min) and (tail[d]==false)){n_min = size(i<<d); d_min = d;}}
-				if(d_min!=0){
-					std::rotate(which.begin(), which.begin()+d_min, which.end());
-					dft(which, i<<d_min, o<<d_min, s);
-				}else{
+//				auto d_min = 0; auto n_min = size(i);
+//				for(auto d = 0; d != D; ++d){if((size(i<<d) < n_min) and (tail[d]==false)){n_min = size(i<<d); d_min = d;}}
+//				if(d_min!=0){
+//					std::rotate(which.begin(), which.begin()+d_min, which.end());
+//					dft(which, i<<d_min, o<<d_min, s);
+//				}else
+				{
 					if(base(i) == base(o) and i.layout() != o.layout()){
 						auto tmp = +i;
 						for(auto idx : extension(i)) cufft::dft(tail, tmp[idx], o[idx], s);
