@@ -24,7 +24,9 @@ using index               = std::make_signed_t<size_type>;
 using difference_type     = std::make_signed_t<index>;
 using index_range         = range<index>;
 using index_extension     = extension_t<index>;
-using dimensionality_type = index;
+
+using dimensionality_t    = size_type;
+using dimensionality_type = size_type;
 
 using iextension = index_extension;
 using irange     = index_range;
@@ -109,7 +111,8 @@ struct initializer_list<T, 1>{using type = std::initializer_list<T>;};
 template<typename T, dimensionality_type D>
 using initializer_list_t = typename initializer_list<T, D>::type;
 
-template<dimensionality_type D> using index_extensions = typename detail::repeat<index_extension, D>::type;
+template<dimensionality_t D> using sizes_t          = typename detail::repeat<size_t         , D>::type;
+template<dimensionality_t D> using index_extensions = typename detail::repeat<index_extension, D>::type;
 //template<dimensionality_type D> using iextensions = index_extensions<D>;
 
 template<dimensionality_type D> 

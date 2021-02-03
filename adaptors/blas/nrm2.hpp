@@ -45,7 +45,7 @@ auto nrm2(A1D const& x, float& r)
 
 template<
 	class A1D, typename T = double, //decltype(norm(std::declval<typename A1D::value_type>())), 
-	class Alloc = typename std::allocator_traits<typename A1D::default_allocator_type>::template rebind_alloc<T>
+	class Alloc = typename std::allocator_traits<typename multi::pointer_traits<typename A1D::element_ptr>::default_allocator_type>::template rebind_alloc<T>
 >
 NODISCARD("")
 auto nrm2(A1D const& x)

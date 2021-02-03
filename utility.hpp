@@ -74,8 +74,8 @@ constexpr auto size(Container const& con)
 //->decltype(t.size()){
 //	return t.size();}
 
-template<class Pointer, std::enable_if_t<std::is_pointer<Pointer>{}, int> =0> constexpr std::ptrdiff_t stride(Pointer){return 1;}
-template<class Pointer, std::enable_if_t<std::is_pointer<Pointer>{}, int> =0> constexpr Pointer base(Pointer d){return d;}
+//template<class Pointer, std::enable_if_t<std::is_pointer<Pointer>{}, int> =0> constexpr std::ptrdiff_t stride(Pointer){return 1;}
+//template<class Pointer, std::enable_if_t<std::is_pointer<Pointer>{}, int> =0> constexpr Pointer base(Pointer d){return d;}
 
 template<class T, class U>
 auto reinterpret_pointer_cast(U* other)
@@ -180,10 +180,10 @@ constexpr auto num_elements(A const& arr)
 ->std::make_signed_t<decltype(arr.size())>{
 	return arr.size();}
 
-template<class A, typename = std::enable_if_t<has_data_elements<A>{}> > 
-constexpr auto data_elements(A const& arr)
-->decltype(arr.data_elements()){
-	return arr.data_elements();}
+template<class A, typename = std::enable_if_t<has_data_elements<std::decay_t<A>>{}> > 
+constexpr auto data_elements(A&& arr)
+->decltype(std::forward<A>(arr).data_elements()){
+	return std::forward<A>(arr).data_elements();}
 
 //template<class A, typename = std::enable_if_t<(not has_data_elements<A>{}) and (has_data<A>{} and has_size<A>{})>>
 //constexpr auto data_elements(A&& arr)
@@ -314,11 +314,11 @@ template<class T, std::size_t N>
 constexpr auto base(T(*&t)[N]) noexcept{return base(*t);}
 //reinterpret_cast<std::remove_all_extents_t<T[N]>*>(&t);}
 
-template<class T, typename = std::enable_if_t<not std::is_array<T>{}> >
-constexpr auto base(T const* t) noexcept{return t;}
+//template<class T, typename = std::enable_if_t<not std::is_array<T>{}> >
+//constexpr auto base(T const* t) noexcept{return t;}
 
-template<class T, typename = std::enable_if_t<not std::is_array<T>{}> >
-constexpr auto base(T* t) noexcept{return t;}
+//template<class T, typename = std::enable_if_t<not std::is_array<T>{}> >
+//constexpr auto base(T* t) noexcept{return t;}
 
 //template<class T, typename = std::enable_if_t<not std::is_array<T>{}> > 
 //constexpr std::ptrdiff_t stride(T*&/*t*/) noexcept{
@@ -334,8 +334,8 @@ constexpr auto base(T* t) noexcept{return t;}
 //inline auto base(std::complex<double>& c){return &c;}
 //inline auto base(std::complex<float>& z){return &z;}
 
-template<class T, std::enable_if_t<std::is_pod<std::decay_t<T>>{}, int> = 0>
-auto base(T& t){return &t;}
+//template<class T, std::enable_if_t<std::is_pod<std::decay_t<T>>{}, int> = 0>
+//auto base(T& t){return &t;}
 
 //template<class T, std::enable_if_t<std::is_pod<std::decay_t<T>>{}, int> = 0>
 //auto stride(T& t) = delete;

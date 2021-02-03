@@ -9,6 +9,7 @@ $CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 
 #include "../detail/operators.hpp"
 #include "../config/NODISCARD.hpp"
+#include "../config/NO_UNIQUE_ADDRESS.hpp"
 
 #include<type_traits> // make_signed_t
 
@@ -51,7 +52,7 @@ constexpr std::array<TT, std::tuple_size<std::decay_t<Tuple>>{}> to_array_impl(
 ){
 	return {static_cast<TT>(std::get<I>(std::forward<Tuple>(t)))...};
 }
- 
+
 template<class T = void, class Tuple, class TT = std::conditional_t<std::is_same<T, void>{}, std::decay_t<decltype(std::get<0>(std::decay_t<Tuple>{}))>, T> >
 constexpr std::array<TT, std::tuple_size<std::decay_t<Tuple>>{}> 
 to_array(Tuple&& t){
@@ -182,12 +183,15 @@ struct layout_t<dimensionality_type{0}, SSize>{
 	using nelems_type=index;
 	using index_range = multi::range<index>;
 	using rank = std::integral_constant<dimensionality_type, 0>;
-	static constexpr dimensionality_type dimensionality = 0;
-	friend constexpr auto dimensionality(layout_t const& l){return l.dimensionality;}
+	static constexpr dimensionality_type dimensionality(){return rank{};}
+	friend constexpr dimensionality_type dimensionality(layout_t const& l){
+		return l.dimensionality();
+	}
+
 	using strides_type    = std::tuple<>;
-	nelems_type nelems_ = 1;//std::numeric_limits<nelems_type>::max(); // 1
-	void* stride_ = nullptr;
-	void* sub = nullptr;
+//	nelems_type nelems_ = 1;//std::numeric_limits<nelems_type>::max(); // 1
+//	void* stride_ = nullptr;
+//	void* sub = nullptr;
 	using extensions_type = extensions_t<0>;
 	constexpr layout_t(extensions_type const& = {}){}// : nelems_{1}{}
 	constexpr extensions_type extensions() const{return extensions_type{};}
@@ -195,10 +199,13 @@ struct layout_t<dimensionality_type{0}, SSize>{
 	constexpr auto sizes() const{return std::tuple<>{};}
 	friend constexpr auto sizes(layout_t const& s){return s.sizes();}
 	constexpr nelems_type num_elements() const{return 1;}//nelems_;}
+	constexpr bool operator==(layout_t const&) const{return true ;}
+	constexpr bool operator!=(layout_t const&) const{return false;}
 };
 
 template<typename SSize>
 struct layout_t<dimensionality_type{1}, SSize>{
+	using sub_type = layout_t<0>;
 	using size_type=SSize; 
 	using difference_type=std::make_signed_t<size_type>;
 	using index_extension = multi::index_extension;
@@ -208,14 +215,18 @@ struct layout_t<dimensionality_type{1}, SSize>{
 	using nelems_type=index;
 	using index_range = multi::range<index>;
 	using rank = std::integral_constant<dimensionality_type, 1>;
-	static constexpr dimensionality_type dimensionality = rank{};
-	friend constexpr auto dimensionality(layout_t const& l){return l.dimensionality;}
+	static constexpr dimensionality_type dimensionality(){return rank{};}
+	friend constexpr dimensionality_type dimensionality(layout_t const& l){
+		return l.dimensionality();
+	}
 	using sub_t = layout_t<dimensionality_type{0}, SSize>;
 protected:
 public:
 	stride_type stride_ = 1;//std::numeric_limits<stride_type>::max(); 
 	offset_type offset_ = 0; 
 	nelems_type nelems_ = 0;
+//	MULTI_NO_UNIQUE_ADDRESS 
+	sub_type    sub_    = {};
 	using extensions_type = extensions_t<1>;
 	using strides_type = std::tuple<index>;
 	layout_t() = default;
@@ -300,7 +311,9 @@ inline constexpr typename layout_t<1>::extensions_type operator*(layout_t<0>::in
 }
 
 template<dimensionality_type D, typename SSize>
-struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
+struct layout_t 
+	: multi::equality_comparable2<layout_t<D>>
+{
 	using dimensionality_type = multi::dimensionality_type;
 	using rank = std::integral_constant<dimensionality_type, D>;
 	static constexpr dimensionality_type dimensionality(){return rank{};}
@@ -316,7 +329,7 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 	using stride_type = index;
 	using offset_type = index;
 	using nelems_type = index;
- 	sub_type    sub_ = {};
+	sub_type    sub_ = {};
 	stride_type stride_ = 1;//std::numeric_limits<stride_type>::max();
 	offset_type offset_ = 0;
 	nelems_type nelems_ = 0;
@@ -395,8 +408,6 @@ public:
 	constexpr decltype(auto) shape() const{return sizes();}
 	friend constexpr decltype(auto) shape(layout_t const& self){return self.shape();}
 	constexpr auto sizes() const{return tuple_cat(std::make_tuple(size()), sub_.sizes());}
-	template<class T = void>
-	constexpr auto sizes_as() const{return detail::to_array<T>(sizes());}
 public:
 	constexpr index_extension extension()        const&{
 		if(not nelems_) return {};
@@ -458,9 +469,7 @@ public:
 		else return unrotate(D-r);
 		return *this;
 	}
-	constexpr layout_t scale(size_type s) const{
-		return layout_t{sub_.scale(s), stride_*s, offset_*s, nelems_*s};
-	}
+	constexpr layout_t scale(size_type s) const{return {sub_.scale(s), stride_*s, offset_*s, nelems_*s};}
 };
 
 inline constexpr typename layout_t<2>::extensions_type operator*(layout_t<1>::index_extension const& ie, layout_t<1>::extensions_type const& self){

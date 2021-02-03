@@ -44,8 +44,8 @@ auto xbase(It const& it)
 	return xbase_aux(it, std::integral_constant<bool, is_conjugated<It>{}>{});}
 
 template<class Context, class It2DA, class Size, class It2DB, class It2DC>
-auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a_count, It2DB b_first, typename It2DA::element beta, It2DC c_first)
-//->decltype(std::forward<Context>(ctxt).gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, xbase(b_first), b_first->size()  , xbase(a_first), a_first->size(), &beta, c_first.base(), c_first->size()  ), It2DC{})
+auto gemm_n(Context&& ctxt, typename It2DA::reference::element alpha, It2DA a_first, Size a_count, It2DB b_first, typename It2DA::reference::element beta, It2DC c_first)
+->decltype(std::forward<Context>(ctxt).gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, xbase(b_first), b_first->size()  , xbase(a_first), a_first->size(), &beta, c_first.base(), c_first->size()  ), It2DC{})
 try{
 	assert( b_first->size() == c_first->size() );
 	assert( a_first.stride()==1 or a_first->stride()==1 );
@@ -119,7 +119,7 @@ try{
 }
 
 template<class It2DA, class Size, class It2DB, class It2DC, class Context = blas::context> // TODO automatic deduction of context
-auto gemm_n(typename It2DA::element alpha, It2DA a_first, Size a_count, It2DB b_first, typename It2DA::element beta, It2DC c_first)
+auto gemm_n(typename It2DA::reference::element alpha, It2DA a_first, Size a_count, It2DB b_first, typename It2DA::reference::element beta, It2DC c_first)
 ->decltype(gemm_n(Context{}, alpha, a_first, a_count, b_first, beta, c_first)){
 	return gemm_n(Context{}, alpha, a_first, a_count, b_first, beta, c_first);}
 
@@ -265,15 +265,33 @@ public:
 			"\nbecause\n"+e.what()
 		);
 	}
-	
 	template<class ItOut>
-	friend auto copy(gemm_iterator const& first, gemm_iterator const& last, ItOut d_first){assert(first.s_ == last.s_);
-		return copy_n(first, last - first, d_first);
+	friend auto copy_n(gemm_iterator const& first, difference_type count, ItOut d_first)
+	->decltype(blas::gemm_n(*std::declval<ContextPtr>(), std::declval<Scalar>(), std::declval<ItA>(), count, std::declval<ItB>(), 0., d_first)) try{
+		return blas::gemm_n(*first.ctxtp_              , first.s_              , first.a_it_        , count, first.b_begin_     , 0., d_first);
+	}catch(std::exception const& e){
+		throw std::logic_error(
+			"in " + std::string(__PRETTY_FUNCTION__) + "\nCouldn't decay product of arrays of size " + std::to_string(count) +"x"+ std::to_string(first.a_it_->size()) + " and " + 
+			std::to_string(first.a_it_->size())+ "x" +std::to_string(first.b_begin_->size()) + " into " + std::to_string(count) +"x" + std::to_string(first.b_begin_->size()) +
+			"\nbecause\n"+e.what()
+		);
 	}
 
 	template<class ItOut>
 	friend auto uninitialized_copy_n(gemm_iterator const& first, difference_type count, ItOut d_first){
 		return copy_n(first, count, d_first);
+	}
+	
+	template<class ItOut>
+	friend auto uninitialized_copy_n(gemm_iterator const& first, difference_type count, ItOut const& d_first)
+	->decltype(blas::gemm_n(*std::declval<ContextPtr>(), std::declval<Scalar>(), std::declval<ItA>(), count, std::declval<ItB>(), 0., d_first)) try{
+		return blas::gemm_n(*first.ctxtp_              , first.s_              , first.a_it_        , count, first.b_begin_     , 0., d_first);
+	}catch(std::exception const& e){
+		throw std::logic_error(
+			"in " + std::string(__PRETTY_FUNCTION__) + "\nCouldn't decay product of arrays of size " + std::to_string(count) +"x"+ std::to_string(first.a_it_->size()) + " and " + 
+			std::to_string(first.a_it_->size())+ "x" +std::to_string(first.b_begin_->size()) + " into " + std::to_string(count) +"x" + std::to_string(first.b_begin_->size()) +
+			"\nbecause\n"+e.what()
+		);
 	}
 
 	template<class ItOut>
@@ -292,24 +310,22 @@ class gemm_range{
 	ItB b_begin_;
 public:
 	gemm_range(gemm_range const&) = delete;
-	gemm_range(ContextPtr ctxtp, Scalar s, ItA a_first, ItA a_last, ItB b_first) : ctxtp_{ctxtp}, s_{s}, a_begin_{a_first}, a_end_{a_last}, b_begin_{b_first}{}
+	constexpr gemm_range(ContextPtr ctxtp, Scalar s, ItA a_first, ItA a_last, ItB b_first) : ctxtp_{ctxtp}, s_{s}, a_begin_{a_first}, a_end_{a_last}, b_begin_{b_first}{}
 	using iterator = gemm_iterator<ContextPtr, Scalar, ItA, ItB>;
 	using decay_type = DecayType;
 	using size_type = typename decay_type::size_type;
-	iterator begin() const{return {ctxtp_, s_, a_begin_, b_begin_};}
-	iterator end()   const{return {ctxtp_, s_, a_end_  , b_begin_};}
-	friend auto begin(gemm_range const& self){return self.begin();}
-	friend auto end  (gemm_range const& self){return self.end  ();}
-	size_type size() const{return a_end_ - a_begin_;}
-	typename decay_type::extensions_type extensions() const{return size()*b_begin_->extensions();}
-	friend auto extensions(gemm_range const& self){return self.extensions();}
+	constexpr iterator begin() const{return {ctxtp_, s_, a_begin_, b_begin_};}
+	constexpr iterator end()   const{return {ctxtp_, s_, a_end_  , b_begin_};}
+	friend constexpr auto begin(gemm_range const& self){return self.begin();}
+	friend constexpr auto end  (gemm_range const& self){return self.end  ();}
+	constexpr size_type size() const{return a_end_ - a_begin_;}
+
+	constexpr typename decay_type::extensions_type extensions() const{return size()*b_begin_->extensions();}
+	friend constexpr auto extensions(gemm_range const& self){return self.extensions();}
+
+	constexpr auto extension() const{return typename decay_type::index_extension{size()};}
 //	operator decay_type() const{return decay_type(*this);} // do not use curly { }
-	decay_type operator+() const{return *this;}
-	template<class Arr>
-	friend Arr&& operator+=(Arr&& a, gemm_range const& gr){
-		blas::gemm_n(*gr.ctxtp_, gr.s_, gr.a_begin_, gr.a_end_ - gr.a_begin_, gr.b_begin_, 1., a.begin());
-		return std::forward<Arr>(a);
-	}
+	constexpr decay_type operator+() const{return *this;}
 };
 
 template<class ContextPtr, class Scalar, class A2D, class B2D, class=std::enable_if_t<is_context<decltype(*ContextPtr{})>{}> >

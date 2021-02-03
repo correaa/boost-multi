@@ -25,7 +25,8 @@ namespace multi{
 template<class Allocator> struct array_allocator{
 	using allocator_type = Allocator;
 protected:
-	MULTI_NO_UNIQUE_ADDRESS allocator_type alloc_;
+//	MULTI_NO_UNIQUE_ADDRESS 
+	allocator_type alloc_;
 	allocator_type& alloc(){return alloc_;}
 	array_allocator(allocator_type const& a = {}) : alloc_{a}{}
 	typename std::allocator_traits<allocator_type>::pointer 
@@ -39,18 +40,12 @@ protected:
 	auto uninitialized_copy_n(It first, size_type n, typename std::allocator_traits<allocator_type>::pointer data){
 		return adl_alloc_uninitialized_copy_n(alloc_, first, n, data);
 	}
-	template<typename It> 
-	auto destroy_n(It first, size_type n){
-		return adl_alloc_destroy_n(this->alloc(), first, n);
+	template<typename It> auto destroy_n(It first, size_type n){
+		return adl_alloc_destroy_n(alloc_, first, n);
 	}
 public:
 	allocator_type get_allocator() const{return alloc_;}
 	friend allocator_type get_allocator(array_allocator const& s){return s.get_allocator();}
-};
-
-template<class T, class Ptr = T*> struct move_ptr : std::move_iterator<Ptr>{
-	using std::move_iterator<Ptr>::move_iterator;
-	explicit operator Ptr() const{return std::move_iterator<Ptr>::base();}
 };
 
 // static_array is not a value type because it doesn't define assignment for static_arrays of different extensions
@@ -58,7 +53,7 @@ template<class T, dimensionality_type D, class Alloc = std::allocator<T>>
 struct static_array : 
 	protected array_allocator<Alloc>,
 	public array_ref<T, D, typename std::allocator_traits<typename array_allocator<Alloc>::allocator_type>::pointer>
-{
+{using ref=array_ref<T, D, typename std::allocator_traits<typename array_allocator<Alloc>::allocator_type>::pointer>;
 private:
 	using array_alloc = array_allocator<Alloc>;
 public:	
@@ -69,9 +64,12 @@ public:
 	using array_alloc::get_allocator;
 	using allocator_type = typename static_array::allocator_type;
 	using decay_type = array<T, D, Alloc>;
+
+//	auto num_elements() const&{return static_array::layout_.num_elements();}
 protected:
 	using alloc_traits = typename std::allocator_traits<typename static_array::allocator_type>;
-	using ref = array_ref<T, D, typename std::allocator_traits<typename std::allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
+//	using ref = array_ref<T, D, typename std::allocator_traits<typename array_allocator<Alloc>::allocator_type>::pointer>;
+//	using ref = array_ref<T, D, typename std::allocator_traits<typename std::allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
 	auto uninitialized_value_construct(){
 		return adl_alloc_uninitialized_value_construct_n(static_array::alloc(), this->base_, this->num_elements());
 	}
@@ -79,19 +77,21 @@ protected:
 	//	return std::uninitialized_default_construct_n(this->base_, this->num_elements());
 		return adl_alloc_uninitialized_default_construct_n(static_array::alloc(), this->base_, this->num_elements());
 	}
-	template<typename It> auto uninitialized_copy_elements(It first){
-		return array_alloc::uninitialized_copy_n(first, this->num_elements(), this->data());
+	template<typename It> auto uninitialized_assign_elements(It first){
+		return array_alloc::uninitialized_copy_n(first, this->num_elements(), this->data_elements());
 	}
+private:
 	void destroy_aux(std::false_type){array_alloc::destroy_n(this->data_elements(), this->num_elements());}
 	void destroy_aux(std::true_type ){}
+protected:
 	void destroy(){destroy_aux(std::is_trivially_destructible<typename static_array::element>{});}
-	void allocate(){this->base_ = array_alloc::allocate(static_array::num_elements());}
+	void allocate(){this->base_ = array_alloc::allocate(this->num_elements());}
 public:
 	using value_type = typename std::conditional<
-		(static_array::dimensionality>1),
-		array<typename static_array::element, static_array::dimensionality-1, allocator_type>, 
+		(D>1),
+		array<typename static_array::element, D-1, allocator_type>, 
 		typename std::conditional<
-			static_array::dimensionality == 1,
+			D == 1,
 			typename static_array::element,
 			typename static_array::element // TODO or void?
 		>::type
@@ -105,48 +105,50 @@ protected:
 	:	array_alloc{a},
 		ref{other.base_, other.extensions()}
 	{
-		other.ref::layout_t::operator=({});
-		other.base_ = nullptr;
+		other.layout_ = {};
+		other.base_ = nullptr; // TODO see if this is really necessary
 	}
 public:
-	static_array(
-		basic_array<typename static_array::element, static_array::dimensionality, multi::move_ptr<typename static_array::element, typename static_array::element_ptr>>&& other, 
-		typename static_array::allocator_type const& a = {}
-	) noexcept : 
-		array_alloc{a},
-		ref{
-			other.layout()==typename static_array::layout_t(other.extensions())?
-				other.base_.base():
-				array_alloc::allocate(other.num_elements())
-			,
-			other.extensions()
-		}
-	{
-		if(other.base_.base() != static_array::base_)
-			recursive<D>::alloc_uninitialized_copy(static_array::alloc(), 
-				other.template static_array_cast<typename static_array::element, typename static_array::element_ptr>().begin(), 
-				other.template static_array_cast<typename static_array::element, typename static_array::element_ptr>().end()  , 
-				this->begin()
-			);
-	}
+//	static_array(
+//		basic_array<typename static_array::element, D, multi::move_ptr<typename static_array::element, typename static_array::element_ptr>>&& other, 
+//		typename static_array::allocator_type const& a = {}
+//	) noexcept : 
+//		array_alloc{a},
+//		ref{
+//			other.layout()==typename static_array::layout_t(other.extensions())?
+//				other.base_.base():
+//				array_alloc::allocate(other.num_elements())
+//			,
+//			other.extensions()
+//		}
+//	{
+//		if(other.base_.base() != static_array::base_)
+//			recursive<D>::alloc_uninitialized_copy(static_array::alloc(), 
+//				other.template static_array_cast<typename static_array::element, typename static_array::element_ptr>().begin(), 
+//				other.template static_array_cast<typename static_array::element, typename static_array::element_ptr>().end()  , 
+//				this->begin()
+//			);
+//	}
 //	template<class Array>//, std::enable_if_t<std::is_same<Array, basic_array>{}, int> =0> 
 //	auto operator==(Array&& o) const&
 //	->decltype(std::move(modify(*this)).ref::operator==(std::forward<Array>(o))){
 //		return std::move(modify(*this)).ref::operator==(std::forward<Array>(o));}
 
-//	auto operator==(static_array const& o) const&{return std::move(modify(*this)).ref::operator==(std::move(modify(o)));}
+//	constexpr bool operator==(static_array const& other) const&{
+//		return static_array::extensions() == other.extensions() and adl_equal(static_array::data_elements(), static_array::data_elements() + static_array::num_elements(), other.data_elements());}
+//	constexpr bool operator!=(static_array const& other) const&{return not operator==(other);}
 
-	template<class TT, class... Args>
-	bool operator==(basic_array<TT, D, Args...> const& other) const{
-		return ref::operator==(other);
-	}
+//	template<class TT, class... Args>
+//	bool operator==(basic_array<TT, D, Args...> const& other) const{
+//		return ref::operator==(other);
+//	}
 
 	template<class It, class=typename std::iterator_traits<std::decay_t<It>>::difference_type>//edecltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>      
 	// analogous to std::vector::vector (5) https://en.cppreference.com/w/cpp/container/vector/vector
 	static_array(It first, It last, typename static_array::allocator_type const& a = {}) : 
 		array_alloc{a},
 		ref{
-			array_alloc::allocate(typename static_array::layout_t{index_extension(adl_distance(first, last))*multi::extensions(*first)}.num_elements()), 
+			array_alloc::allocate(typename static_array::layout_type{index_extension(adl_distance(first, last))*multi::extensions(*first)}.num_elements()), 
 			index_extension(adl_distance(first, last))*multi::extensions(*first)
 		}
 	{
@@ -177,7 +179,7 @@ public:
 	// analgous to std::vector::vector (3) https://en.cppreference.com/w/cpp/container/vector/vector
 	static_array(typename static_array::extensions_type x, typename static_array::element const& e, typename static_array::allocator_type const& a) : //2
 		array_alloc{a}, 
-		ref(array_alloc::allocate(typename static_array::layout_t{x}.num_elements()), x)
+		ref(array_alloc::allocate(typename static_array::layout_type{x}.num_elements()), x)
 	{
 		array_alloc::uninitialized_fill_n(this->data_elements(), this->num_elements(), e);
 	}
@@ -188,7 +190,7 @@ public:
 //		return adl_alloc_uninitialized_fill_n(this->alloc(), this->base_, this->num_elements(), e);
 //	}
 	static_array(typename static_array::extensions_type x, typename static_array::element const& e) : //2
-		array_alloc{}, ref(array_alloc::allocate(typename static_array::layout_t{x}.num_elements()), x)
+		array_alloc{}, ref(array_alloc::allocate(typename static_array::layout_type{x}.num_elements()), x)
 	{
 		array_alloc::uninitialized_fill_n(this->base(), this->num_elements(), e);
 	}
@@ -208,9 +210,9 @@ public:
 //	explicit 
 // analgous to std::vector::vector ((4)) https://en.cppreference.com/w/cpp/container/vector/vector
 	explicit static_array(typename static_array::extensions_type x, typename static_array::allocator_type const& a = typename static_array::allocator_type{}) :
-		array_alloc{a}, ref{array_alloc::allocate(typename static_array::layout_t{x}.num_elements()), x}
+		array_alloc{a}, ref{array_alloc::allocate(typename static_array::layout_type{x}.num_elements()), x}
 	{
-		if(not std::is_trivially_default_constructible<typename static_array::element_type>{})
+		if(not std::is_trivially_default_constructible<typename static_array::element>{})
 			uninitialized_default_construct();
 	}
 	template<class TT, class... Args, 
@@ -237,8 +239,8 @@ public:
 		uninitialized_copy_from(data(o));
 	}
 	static_array(static_array const& o)                                  //5b
-	: array_alloc{o.get_allocator()}, ref{array_alloc::allocate(num_elements(o)), extensions(o)}{
-		uninitialized_copy_elements(o.data_elements());
+	: array_alloc{o.get_allocator()}, ref{array_alloc::allocate(o.num_elements()), o.extensions()}{
+		uninitialized_assign_elements(o.data_elements());
 	}
 //	TODO static_array(static_array&& o)                                  //5b'
 //	: array_alloc{o.get_allocator()}, ref{array_alloc::allocate(num_elements(o)), extensions(o)}{
@@ -261,7 +263,7 @@ protected:
 	void clear() noexcept{
 		this->destroy();
 		deallocate();
-		layout_t<D>::operator=({});
+		this->layout_ = {};
 	}
 	template<class... Ts>
 	constexpr static_array&& reindex(Ts... a)&&{
@@ -276,61 +278,58 @@ protected:
 public:
 	static_array() = default;
 	~static_array() noexcept{destroy(); deallocate();}
-	using element_const_ptr = typename std::pointer_traits<typename static_array::element_ptr>::template rebind<typename static_array::element const>;
-	using element_move_ptr  = std::move_iterator<typename static_array::element_ptr>;
-	using reference = typename std::conditional<
-		(static_array::dimensionality > 1), 
-		basic_array<typename static_array::element, static_array::dimensionality-1, typename static_array::element_ptr>, 
-		typename std::conditional<
-			static_array::dimensionality == 1,
-			typename std::iterator_traits<typename static_array::element_ptr>::reference,
-			void
-		>::type
-	//	typename pointer_traits<typename static_array::element_ptr>::element_type&
-	>::type;
-	using const_reference = typename std::conditional<
-		(static_array::dimensionality > 1), 
-		basic_array<typename static_array::element, static_array::dimensionality-1, typename static_array::element_const_ptr>, // TODO should be const_reference, but doesn't work witn rangev3
-		typename std::conditional<
-			static_array::dimensionality == 1,
-			decltype(*std::declval<typename static_array::element_const_ptr>()),
-		//	typename std::iterator_traits<typename static_array::element_const_ptr>::reference,
-			void
-		>::type
-	//	typename pointer_traits<typename static_array::element_ptr>::element_type const&
-	>::type;
-	using       iterator = multi::array_iterator<T, static_array::dimensionality, typename static_array::element_ptr      >;//, reference>;
-	using const_iterator = multi::array_iterator<T, static_array::dimensionality, typename static_array::element_const_ptr>;//, const_reference>;
+//	using element_const_ptr = typename std::pointer_traits<typename static_array::element_ptr>::template rebind<typename static_array::element const>;
+//	using element_move_ptr  = std::move_iterator<typename static_array::element_ptr>;
+//	using reference = typename std::conditional<
+//		(D > 1), 
+//		basic_array<typename static_array::element, D-1, typename static_array::element_ptr>, 
+//		typename std::conditional<
+//			D == 1,
+//			typename std::iterator_traits<typename static_array::element_ptr>::reference,
+//			void
+//		>::type
+//	//	typename pointer_traits<typename static_array::element_ptr>::element_type&
+//	>::type;
+//	using const_reference = typename std::conditional<
+//		(D > 1), 
+//		basic_array<typename static_array::element, D-1, typename static_array::element_const_ptr>, // TODO should be const_reference, but doesn't work witn rangev3
+//		typename std::conditional<
+//			D == 1,
+//			decltype(*std::declval<typename static_array::element_const_ptr>()),
+//		//	typename std::iterator_traits<typename static_array::element_const_ptr>::reference,
+//			void
+//		>::type
+//	//	typename pointer_traits<typename static_array::element_ptr>::element_type const&
+//	>::type;
+//	using       iterator = multi::array_iterator<T, D, typename static_array::element_ptr      >;//, reference>;
+//	using const_iterator = multi::array_iterator<T, D, typename static_array::element_const_ptr>;//, const_reference>;
 //	reference
 //	      reference operator[](index i)     &&{return std::move(*this).ref::operator[](i);}
 //	      reference operator[](index i)      &{return ref::operator[](i);}
 //	const_reference operator[](index i) const&{return ref::operator[](i);}
 //	typename static_array::allocator_type get_allocator() const{return static_cast<typename static_array::allocator_type const&>(*this);}
 	friend typename static_array::allocator_type get_allocator(static_array const& self){return self.get_allocator();}
-	typename static_array::element_ptr data()       {
-		return ref::data();
-	}
-	constexpr auto data() const{return typename static_array::element_const_ptr{ref::data()};}
-	friend typename static_array::element_ptr       data(static_array&       s){return s.data();}
-	friend typename static_array::element_const_ptr data(static_array const& s){return s.data();}
 
-	element_const_ptr                   data_elements() const&{return this->base_;}
-	typename static_array::element_ptr  data_elements()      &{return this->base_;}
-	static_array::element_move_ptr      data_elements()     &&{return std::make_move_iterator(this->base_);}
+//	friend typename static_array::element_ptr       data(static_array&       s){return s.data();}
+//	friend typename static_array::element_const_ptr data(static_array const& s){return s.data();}
 
-	friend auto data_elements(static_array const& self){return self.data_elements();}
-	friend auto data_elements(static_array      & self){return self.data_elements();}
-	friend auto data_elements(static_array     && self){return std::move(self).data_elements();}
+//	element_const_ptr                   data_elements() const&{return this->base_;}
+//	typename static_array::element_ptr  data_elements()      &{return this->base_;}
+//	static_array::element_move_ptr      data_elements()     &&{return std::make_move_iterator(this->base_);}
 
-	constexpr typename static_array::element_ptr       base()      {return ref::base();}
-	constexpr typename static_array::element_const_ptr base() const{return typename static_array::element_const_ptr{ref::base()};}
-	friend typename static_array::element_ptr       base(static_array&       s){return s.base();}
-	friend typename static_array::element_const_ptr base(static_array const& s){return s.base();}
+//	friend auto data_elements(static_array const& self){return self.data_elements();}
+//	friend auto data_elements(static_array      & self){return self.data_elements();}
+//	friend auto data_elements(static_array     && self){return std::move(self).data_elements();}
 
-	typename static_array::element_ptr       origin()      {return ref::origin();}
-	typename static_array::element_const_ptr origin() const{return ref::origin();}
-	friend typename static_array::element_ptr       origin(static_array&       s){return s.origin();}
-	friend typename static_array::element_const_ptr origin(static_array const& s){return s.origin();}
+//	constexpr typename static_array::element_ptr       base()      {return ref::base();}
+//	constexpr typename static_array::element_const_ptr base() const{return typename static_array::element_const_ptr{ref::base()};}
+//	friend typename static_array::element_ptr       base(static_array&       s){return s.base();}
+//	friend typename static_array::element_const_ptr base(static_array const& s){return s.base();}
+
+//	typename static_array::element_ptr       origin()      {return ref::origin();}
+//	typename static_array::element_const_ptr origin() const{return ref::origin();}
+//	friend typename static_array::element_ptr       origin(static_array&       s){return s.origin();}
+//	friend typename static_array::element_const_ptr origin(static_array const& s){return s.origin();}
 
 //	template<class... Args> decltype(auto) operator()(Args const&... args)&{return ref::operator()(args...);}
 //	template<class... Args> decltype(auto) operator()(Args const&... args) const&{return ref::operator()(args...);}
@@ -394,78 +393,46 @@ public:
 #endif
 #endif
 //	using const_reverse_iterator = basic_reverse_iterator<const_iterator>;
-	constexpr auto rotated(dimensionality_type d = 1) const&{
-		typename static_array::layout_t new_layout = *this;
-		new_layout.rotate(d);
-		return basic_array<T, D, typename static_array::element_const_ptr>{new_layout, this->base_};
-	}
-	constexpr auto rotated(dimensionality_type d = 1)&{
-		typename static_array::layout_t new_layout = *this;
-		new_layout.rotate(d);
-		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
-	}
-	constexpr auto rotated(dimensionality_type d = 1)&&{
-		typename static_array::layout_t new_layout = *this;
-		new_layout.rotate(d);
-		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
-	}
-//	friend decltype(auto) rotated(static_array const& self){return self.rotated();}
-//	template<class Array, typename = std::enable_if_t<std::is_same<static_array, std::decay_t<Array>>{}> > 
-	friend constexpr decltype(auto) rotated(static_array&       s){return s.rotated();}
-	friend constexpr decltype(auto) rotated(static_array const& s){return s.rotated();}
 
-	constexpr auto unrotated(dimensionality_type d = 1) const&{
-		typename static_array::layout_t new_layout = *this;
-		new_layout.unrotate(d);
-		return basic_array<T, D, typename static_array::element_const_ptr>{new_layout, this->base_};
-	}
-	constexpr auto unrotated(dimensionality_type d = 1)&{
-		typename static_array::layout_t new_layout = *this;
-		new_layout.unrotate(d);
-		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
-	}
-	friend constexpr decltype(auto) unrotated(static_array& self){return self.unrotated();}
-	friend constexpr decltype(auto) unrotated(static_array const& self){return self.unrotated();}
+//	constexpr decltype(auto) operator<<(dimensionality_type d)      {return   rotated(d);}
+//	constexpr decltype(auto) operator>>(dimensionality_type d)      {return unrotated(d);}
+//	constexpr decltype(auto) operator<<(dimensionality_type d) const{return   rotated(d);}
+//	constexpr decltype(auto) operator>>(dimensionality_type d) const{return unrotated(d);}
 
-	constexpr decltype(auto) operator<<(dimensionality_type d)      {return   rotated(d);}
-	constexpr decltype(auto) operator>>(dimensionality_type d)      {return unrotated(d);}
-	constexpr decltype(auto) operator<<(dimensionality_type d) const{return   rotated(d);}
-	constexpr decltype(auto) operator>>(dimensionality_type d) const{return unrotated(d);}
+//	constexpr typename static_array::iterator begin(){return std::move(*this).ref::begin();}
+//	constexpr typename static_array::iterator end()  {return std::move(*this).ref::end()  ;}
 
-	constexpr typename static_array::iterator begin(){return std::move(*this).ref::begin();}
-	constexpr typename static_array::iterator end()  {return std::move(*this).ref::end()  ;}
+//	friend constexpr typename static_array::iterator begin(static_array& self){return self.begin();}
+//	friend constexpr typename static_array::iterator end  (static_array& self){return self.end()  ;}
 
-	friend constexpr typename static_array::iterator begin(static_array& self){return self.begin();}
-	friend constexpr typename static_array::iterator end  (static_array& self){return self.end()  ;}
-
-	constexpr const_iterator begin() const{return typename static_array::const_iterator{const_cast<static_array&&>(*this).ref::begin()};}
-	constexpr const_iterator end()   const{return const_cast<static_array&&>(*this).ref::end();}
+//	constexpr const_iterator begin() const{return typename static_array::const_iterator{const_cast<static_array&&>(*this).ref::begin()};}
+//	constexpr const_iterator end()   const{return const_cast<static_array&&>(*this).ref::end();}
 
 //	friend typename static_array::iterator begin(static_array const& self){return self.begin();}
 //	friend typename static_array::iterator end  (static_array const& self){return self.end()  ;}
 
-	constexpr const_iterator cbegin() const{return begin();}
-	constexpr const_iterator cend() const{return end();}
+//	constexpr const_iterator cbegin() const{return this->begin();}
+//	constexpr const_iterator cend()   const{return this->end()  ;}
 
-	friend constexpr const_iterator cbegin(static_array const& self){return self.cbegin();}
-	friend constexpr const_iterator cend  (static_array const& self){return self.cend()  ;}
+//	friend constexpr auto cbegin(static_array const& self){return self.cbegin();}
+//	friend constexpr auto cend  (static_array const& self){return self.cend()  ;}
 
 	constexpr static_array& operator=(static_array const& other) &{
 		assert( extensions(other) == static_array::extensions() );
 		return adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements()), *this;
 	}
 	template<class TT, class... As>
-	constexpr static_array& operator=(static_array<TT, static_array::dimensionality, As...> const& other)&{assert( extensions(other) == static_array::extensions() );
+	constexpr static_array& operator=(static_array<TT, D, As...> const& other)&{assert( extensions(other) == static_array::extensions() );
 		return adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements()), *this;
 	}
 //	template<class... As>
 //	static_array operator=(static_array<static_array::value_type, static_array::dimensionality, As...> const& o){assert( extensions(o) == static_array::extensions() );
 //		return adl::copy_elements(o.data_elements()), *this;
 //	}
-	constexpr operator basic_array<typename static_array::value_type, static_array::dimensionality, typename static_array::element_const_ptr, typename static_array::layout_t>()&{
-		return this->template static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
+//	constexpr operator basic_array<typename static_array::value_type, D, typename static_array::element_const_ptr, typename static_array::layout_type>()&{
+//		return this->template static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
 //		return static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
-	}
+//	}
 };
 
 template<class T, class Alloc>
@@ -492,8 +459,8 @@ protected:
 	void destroy(){array_alloc::destroy_n(this->data_elements(), this->num_elements());}
 public:
 	using typename ref::value_type;
-	using typename ref::size_type;
-	using typename ref::difference_type;
+//	using typename ref::size_type;
+//	using typename ref::difference_type;
 	constexpr static_array(allocator_type const& a) : array_alloc{a}{}
 protected:
 	constexpr static_array(static_array&& other, allocator_type const& a)                           //6b
@@ -504,19 +471,19 @@ protected:
 	}
 public:
 	using ref::operator==;
-	using ref::operator!=;
+//	using ref::operator!=;
 
 	template<class Range0, class = decltype(adl_uninitialized_copy_n(&std::declval<Range0&>(), 1, std::declval<typename static_array::element_ptr&>()))>
-	static_array(Range0&& r) : ref(static_array::allocate(typename static_array::layout_t{}.num_elements()), {}){
+	static_array(Range0&& r) : ref(static_array::allocate(typename static_array::layout_type{}.num_elements()), {}){
 		adl_uninitialized_copy_n(&r, 1, this->base());
 	}
 	static_array(typename static_array::extensions_type x, typename static_array::element const& e, allocator_type const& a) : //2
 		array_alloc{a}, 
-		ref(static_array::allocate(typename static_array::layout_t{x}.num_elements()), x)
+		ref(static_array::allocate(typename static_array::layout_type{x}.num_elements()), x)
 	{
 		uninitialized_fill(e);
 	}
-	static_array(typename static_array::element_type const& e, allocator_type const& a)
+	static_array(typename static_array::element const& e, allocator_type const& a)
 		: static_array(typename static_array::extensions_type{}, e, a){}
 	auto uninitialized_fill(typename static_array::element const& e){array_alloc::uninitialized_fill_n(this->base_, this->num_elements(), e);}
 	static_array(typename static_array::extensions_type const& x, typename static_array::element const& e)  //2
@@ -531,12 +498,12 @@ public:
 		: static_array(multi::iextensions<0>{}, e)
 	{}
 
-	template<class ValueType, typename = std::enable_if_t<std::is_same<ValueType, typename static_array::value_type>{}>> 
-	explicit static_array(typename static_array::index_extension const& e, ValueType const& v, allocator_type const& a = {}) //3
-		: static_array(e*extensions(v), a)
-	{
-		using std::fill; fill(this->begin(), this->end(), v);
-	}
+//	template<class ValueType, typename = std::enable_if_t<std::is_same<ValueType, typename static_array::value_type>{} and (D > 0)>>
+//	explicit static_array(typename static_array::index_extension const& e, ValueType const& v, allocator_type const& a = {}) //3
+//		: static_array(e*extensions(v), a)
+//	{
+//		using std::fill; fill(this->begin(), this->end(), v);
+//	}
 
 	static_array(typename static_array::extensions_type const& x, allocator_type const& a) //3
 	: array_alloc{a}, ref{static_array::allocate(typename static_array::layout_t{x}.num_elements()), x}{
@@ -605,11 +572,6 @@ public:
 	{return s.data_elements();}
 	friend constexpr typename static_array::element_const_ptr data(static_array const& s)
 	{return s.data_elements();}
-
-	       constexpr typename static_array::element_ptr       base()                 &   {return ref::base();}
-	       constexpr typename static_array::element_const_ptr base()            const&   {return ref::base();}
-	friend constexpr typename static_array::element_ptr       base(static_array&       s){return s.base();}
-	friend constexpr typename static_array::element_const_ptr base(static_array const& s){return s.base();}
 
 	constexpr typename static_array::element_ptr       origin()      {return ref::origin();}
 	constexpr typename static_array::element_const_ptr origin() const{return ref::origin();}
@@ -694,11 +656,11 @@ public:
 		return adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements()), *this;
 	}
 	template<class TT, class... As>
-	constexpr static_array& operator=(static_array<TT, static_array::dimensionality, As...> const& other)&{assert( extensions(other) == static_array::extensions() );
+	constexpr static_array& operator=(static_array<TT, 0, As...> const& other)&{assert( extensions(other) == static_array::extensions() );
 		return adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements()), *this;
 	}
 
-	constexpr operator basic_array<typename static_array::value_type, static_array::dimensionality, typename static_array::element_const_ptr, typename static_array::layout_t>()&{
+	constexpr operator basic_array<typename static_array::value_type, 0, typename static_array::element_const_ptr, typename static_array::layout_type>()&{
 		return this->template static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>();
 	//	return static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
 	}
@@ -727,7 +689,9 @@ struct array : static_array<T, D, Alloc>,
 	boost::multi::random_iterable<array<T, D, Alloc> >
 {
 	using static_ = static_array<T, D, Alloc>;
-	static_assert(std::is_same<typename array::alloc_traits::value_type, T>{} or std::is_same<typename array::alloc_traits::value_type, void>{}, "!");
+// TODO add constrain for template parameter vvvvvv
+//	static_assert(std::is_same<typename array::alloc_traits::value_type, T>{}, 
+//		"first template argument of array must be a value-type");// or std::is_same<typename array::alloc_traits::value_type, void>{}, "!");
 public:
 //	array_ptr<T, D, typename array::element_const_ptr> operator&() const&{return {this->base(), this->extensions()};}
 //	array_ptr<T, D, typename array::element_ptr> operator&() &{return {this->base(), this->extensions()};}
@@ -744,29 +708,29 @@ public:
 	using typename static_::value_type;
 	array() = default;
 	array(array const&) = default;
-	array& reshape(typename array::extensions_type x) &{
-		typename array::layout_t new_layout{x};
-		assert( new_layout.num_elements() == this->num_elements() );
-		static_cast<typename array::layout_t&>(*this)=new_layout;
+	constexpr array& reshape(typename array::extensions_type x) &{
+		typename array::layout_type new_{x};
+		assert( new_.num_elements() == this->num_elements() );
+		this->layout_ = new_;
 		return *this;
 	}
 	using static_::clear;
 	friend void clear(array& self) noexcept{self.clear();}
 
-	friend auto data_elements(array const& self){return self.data_elements();}
-	friend auto data_elements(array      & self){return self.data_elements();}
-	friend auto data_elements(array     && self){return std::move(self).data_elements();}
-	
-	basic_array<typename array::element, array::dimensionality, multi::move_ptr<typename array::element> >
-	move() &{
-		basic_array<typename array::element, array::dimensionality, multi::move_ptr<typename array::element> >
-		ret = multi::static_array_cast<typename array::element, multi::move_ptr<typename array::element>>(*this);
-		layout_t<array::dimensionality>::operator=({});
-		return ret;
-	}
-	friend 	
-	basic_array<typename array::element, array::dimensionality, multi::move_ptr<typename array::element> >
-	move(array& self){return self.move();}
+//	friend auto data_elements(array const& self){return self.data_elements();}
+//	friend auto data_elements(array      & self){return self.data_elements();}
+//	friend auto data_elements(array     && self){return std::move(self).data_elements();}
+
+//	basic_array<typename array::element, D, multi::move_ptr<typename array::element> >
+//	move() &{
+//		basic_array<typename array::element, array::dimensionality, multi::move_ptr<typename array::element> >
+//		ret = multi::static_array_cast<typename array::element, multi::move_ptr<typename array::element>>(*this);
+//		layout_t<array::dimensionality>::operator=({});
+//		return ret;
+//	}
+//	friend 	
+//	basic_array<typename array::element, D, multi::move_ptr<typename array::element> >
+//	move(array& self){return self.move();}
 
 //	explicit	
 //	array(array const& other)                                              // 5a
@@ -780,8 +744,8 @@ public:
 //	template<class... As>
 //	array(typename array::extensions_type x, As&&... as) : static_{x, std::forward<As>(as)...}{} //2
 //	array(array const& other) : static_{static_cast<static_ const&>(other)}{}
-	array(array&& o, typename array::allocator_type const& a) noexcept : static_{std::move(o), a}{}
-	array(array&& o) noexcept : array{std::move(o), o.get_allocator()}{}
+	constexpr array(array&& o, typename array::allocator_type const& a) noexcept : static_{std::move(o), a}{}
+	constexpr array(array&& o) noexcept : array{std::move(o), o.get_allocator()}{}
 	friend typename array::allocator_type get_allocator(array const& self){return self.get_allocator();}
 #if 0
 	template<class A//, typename = std::enable_if_t<not std::is_base_of<array, std::decay_t<A>>{}>,
@@ -832,42 +796,52 @@ public:
 #endif
 	void swap(array& other) noexcept{
 		using std::swap;
-		swap(this->alloc(), other.alloc());
+		swap(this->layout_, other.layout_);
 		swap(this->base_, other.base_);
-		swap(
-			static_cast<typename array::layout_t&>(*this), 
-			static_cast<typename array::layout_t&>(other)
-		);
+		if(std::allocator_traits<typename array::allocator_type>::propagate_on_container_swap::value) swap(this->alloc(), other.alloc());
 	}
 #ifndef NOEXCEPT_ASSIGNMENT
 	array& operator=(array&& other) noexcept{
 		using std::exchange;
 		clear();
+		this->layout_ = exchange(other.layout_, {});
 		this->base_ = exchange(other.base_, nullptr);
-		this->alloc() = std::move(other.alloc());
-		static_cast<typename array::layout_t&>(*this) = exchange(static_cast<typename array::layout_t&>(other), {});
+		if(std::allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment::value) this->alloc_ = std::move(other.alloc_);
 		return *this;
 	}
 	array& operator=(array const& o){
-		if(array::extensions() == o.extensions()) static_::operator=(o);
-		else operator=(array{o});
+		if(array::extensions() == o.extensions()){
+			static_::operator=(o);
+			if(std::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment::value) this->alloc_ = o.alloc_;
+		}else{
+			if(std::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment::value) operator=(array{o});
+			else assert(0); //TODO
+		}
 		return *this;
 	}
 #else
-	array& operator=(array o) noexcept{return swap(o), *this;}
+	constexpr array& operator=(array o) noexcept{return swap(o), *this;}
 #endif
 	template<class Range, class=std::enable_if_t<not std::is_base_of<array, std::decay_t<Range>>{}> >
-	auto operator=(Range&& o) // check that LHS is not read-only
+	constexpr auto operator=(Range&& o) // TODO check that LHS is not read-only for ADL
 	->decltype(                                         static_::operator=(o)                     , std::declval<array&>()){
 		return ((array::extensions() == o.extensions())?static_::operator=(o):operator=(array(o))), *this                 ;}
 
-	array& operator=(basic_array<T, D, multi::move_ptr<typename array::element, typename array::element_ptr>>& other){
-		if(other.layout() != this->layout()) return array::operator=(other.template static_array_cast<typename array::element, typename array::element_ptr>());
-		if(this->base_ != other.base_) other.base_ = nullptr;
-		return *this;
-	}
+//	array& operator=(basic_array<T, D, multi::move_ptr<typename array::element, typename array::element_ptr>>& other){
+//		if(other.layout() != this->layout()) return array::operator=(other.template static_array_cast<typename array::element, typename array::element_ptr>());
+//		if(this->base_ != other.base_) other.base_ = nullptr;
+//		return *this;
+//	}
 	friend void swap(array& a, array& b){a.swap(b);}
-	void assign(typename array::extensions_type x, typename array::element const& e){
+
+	using static_::assign;
+	constexpr void assign(size_type count, value_type const& value){
+		this->clear();
+		this->layout_ = count*extensions(value);
+		this->base_ = this->allocate();
+		static_::assign(value); // should be uninitialized_assign
+	}
+	constexpr void assign(typename array::extensions_type x, typename array::element const& e){
 		if(array::extensions()==x){
 			fill_n(this->base_, this->num_elements(), e);
 		}else{
@@ -878,6 +852,8 @@ public:
 		//	recursive_uninitialized_fill<dimensionality>(alloc(), begin(), end(), e);
 		}
 	}
+	
+	
 //	template<class It, class Size> It assign_n(It first, Size n){
 //		if(n == array::size() and multi::extensions(*first) == multi::extensions(*array::begin())){
 //			return static_::ref::assign(first);
@@ -885,7 +861,7 @@ public:
 //		this->
 //	}
 	template<class It>
-	array& assign(It first, It last){using std::next; using std::all_of;
+	constexpr array& assign(It first, It last){using std::next; using std::all_of;
 	//	auto const s = adl::distance(first, last);
 		if(adl_distance(first, last) == array::size()){// and multi::extensions(*first) == multi::extensions(*array::begin())){
 			static_::ref::assign(first);
@@ -904,15 +880,18 @@ public:
 		return *this;
 	}
 	void assign(std::initializer_list<typename array::value_type> il){assign(il.begin(), il.end());}
-	template<class Range> auto assign(Range&& r) &
-	->decltype(assign(adl_begin(r), adl_end(r))){
-		return assign(adl_begin(r), adl_end(r));}
-	array& operator=(std::initializer_list<typename array::value_type> il){assign(il.begin(), il.end()); return *this;}
 
-	template<class TT, class... Args>
-	bool operator==(basic_array<TT, D, Args...> const& other) const{
-		return static_::operator==(other);
-	}
+//	template<class Range> auto assign(Range&& r) &
+//	->decltype(assign(adl_begin(r), adl_end(r))){
+//		return assign(adl_begin(r), adl_end(r));}
+//	array& operator=(std::initializer_list<typename array::value_type> il){assign(il.begin(), il.end()); return *this;}
+
+	using static_::operator==;
+	template<class Array = array>
+	constexpr bool operator==(std::decay_t<Array> const& other) const&{
+		return array::extensions() == other.extensions() and adl_equal(array::data_elements(), array::data_elements() + array::num_elements(), other.data_elements());}
+	template<class Array = array>
+	constexpr bool operator!=(std::decay_t<Array> const& other) const&{return not operator==(other);}
 
 	void reextent(typename array::extensions_type const& e){
 		array tmp(e, this->get_allocator());
@@ -924,8 +903,9 @@ public:
 		tmp.intersection_assign_(*this);
 		swap(tmp);
 	}
-	template<class... Ts> constexpr array&& reindex(Ts... a)&&{array::layout_t::reindex(a...); return std::move(*this);}
-	template<class... Ts> constexpr array&  reindex(Ts... a)& {array::layout_t::reindex(a...); return           *this ;}
+	template<class... Ts> constexpr array&& reindex(Ts... a)&&{this->layout_.reindex(a...); return std::move(*this);}
+	template<class... Ts> constexpr array&  reindex(Ts... a)& {this->layout_.reindex(a...); return           *this ;}
+
 	~array() noexcept = default;
 };
 
@@ -947,7 +927,6 @@ public:
 	template<class T, class A=std::allocator<T>> array(IL<IL<IL<T>>>        , A={})->array<T,3,A>; 
 	template<class T, class A=std::allocator<T>> array(IL<IL<IL<IL<T>>>>    , A={})->array<T,4,A>; 
 	template<class T, class A=std::allocator<T>> array(IL<IL<IL<IL<IL<T>>>>>, A={})->array<T,5,A>;
-
 
 	template<class T> array(std::initializer_list<T>)->array<T, 1>; 
 #undef IL
@@ -988,7 +967,7 @@ template<class T, class MR, class A=memory::allocator<T, MR>> array(iextensions<
 template<class T, class MR, class A=memory::allocator<T, MR>> array(iextensions<4>, T, MR*)->array<T, 4, A>;
 template<class T, class MR, class A=memory::allocator<T, MR>> array(iextensions<5>, T, MR*)->array<T, 5, A>;
 
-template<class MatrixRef, class DT = typename MatrixRef::decay_type, class T = typename DT::element, dimensionality_type D = DT::dimensionality, class Alloc = typename DT::allocator_type>
+template<class MatrixRef, class DT = typename MatrixRef::decay_type, class T = typename DT::element, dimensionality_type D = DT::rank_v, class Alloc = typename DT::allocator_type>
 array(MatrixRef)->array<T, D, Alloc>;
 
 template<typename T, dimensionality_type D, typename P> array(basic_array<T, D, P>)->array<T, D>;

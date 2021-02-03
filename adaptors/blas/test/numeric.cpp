@@ -15,6 +15,14 @@
 
 namespace multi = boost::multi;
 
+template<class T> struct Co_{T real; T imag;};
+
+BOOST_AUTO_TEST_CASE(conversion){
+	static_assert( std::is_convertible<        std::complex <double>*, const         std::complex <double> *>{}, "!" );
+	static_assert( std::is_convertible<                  Co_<double>*, const Co_<double> *>{}, "!" );
+	static_assert( std::is_convertible<multi::blas::Complex_<double>*, const multi::blas::Complex_<double> *>{}, "!" );
+}
+
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_numeric_imag){
 	using complex = std::complex<double>; constexpr complex I{0, 1};
 
