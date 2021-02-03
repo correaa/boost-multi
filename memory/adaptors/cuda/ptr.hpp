@@ -48,18 +48,18 @@ private:
 	raw_pointer rp_;
 	template<typename, typename> friend struct ptr;
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
-	constexpr ptr(raw_pointer rp) : rp_{rp}{}
+	ptr(raw_pointer rp) : rp_{rp}{}
 public:
 	ptr() = default;
 	ptr(ptr const&) = default;
-	constexpr ptr(std::nullptr_t n) : rp_{n}{}
+	ptr(std::nullptr_t n) : rp_{n}{}
 	template<class Other, typename = decltype(raw_pointer{std::declval<Other const&>().rp_})>
-	constexpr ptr(Other const& o) : rp_{o.rp_}{}
+	ptr(Other const& o) : rp_{o.rp_}{}
 	ptr& operator=(ptr const&) = default;
-	constexpr explicit operator bool() const{return rp_;}
-	constexpr bool operator==(ptr const& other) const{return rp_==other.rp_;}
-	constexpr bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
-	friend constexpr ptr to_address(ptr const& p){return p;}
+	explicit operator bool() const{return rp_;}
+	bool operator==(ptr const& other) const{return rp_==other.rp_;}
+	bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
+	friend ptr to_address(ptr const& p){return p;}
 };
 
 template<class T> class allocator;
@@ -80,27 +80,27 @@ private:
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 	template<class, class> friend struct ptr;
 	ptr(raw_pointer rp) : rp_{rp}{}
-	constexpr operator raw_pointer() const{return rp_;}
+	operator raw_pointer() const{return rp_;}
 	friend ptr<void> malloc(std::size_t);
 	friend void free(ptr<void>);
 public:
 	ptr() = default;
-	constexpr ptr(ptr const& other) : rp_{other.rp_}{}//= default;
-	constexpr ptr(std::nullptr_t n) : rp_{n}{}
+	ptr(ptr const& other) : rp_{other.rp_}{}//= default;
+	ptr(std::nullptr_t n) : rp_{n}{}
 	template<class Other, typename = decltype(raw_pointer{std::declval<Other const&>().rp_})>
-	constexpr ptr(Other const& o) : rp_{o.rp_}{}
+	ptr(Other const& o) : rp_{o.rp_}{}
 	ptr& operator=(ptr const&) = default;
-	constexpr bool operator==(ptr const& other) const{return rp_==other.rp_;}
-	constexpr bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
+	bool operator==(ptr const& other) const{return rp_==other.rp_;}
+	bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
 
 	using pointer = ptr<T>;
 	using element_type    = typename std::pointer_traits<raw_pointer>::element_type;
 	using difference_type = typename std::pointer_traits<raw_pointer>::difference_type;
 	template<class U> using rebind = ptr<U, typename std::pointer_traits<raw_pointer>::template rebind<U>>;
 //	using default_allocator_type = typename cuda::allocator<typename std::iterator_traits<raw_pointer>::value_type>;
-	constexpr explicit operator bool() const{return rp_;}
+	explicit operator bool() const{return rp_;}
 //	explicit operator raw_pointer&()&{return impl_;}
-	friend constexpr ptr to_address(ptr const& p){return p;}
+	friend ptr to_address(ptr const& p){return p;}
 };
 
 template<typename T, typename RawPtr>
@@ -126,7 +126,7 @@ public:
 	explicit/*(true)*/ constexpr ptr(ptr<Other> const& o, void** = 0) : rp_{static_cast<raw_pointer>(o.rp_)}{}
 	explicit constexpr ptr(raw_pointer rp)  : rp_{rp}{}
 
-	template<class TT> friend constexpr auto reinterpret_pointer_cast(ptr p)
+	template<class TT> friend auto reinterpret_pointer_cast(ptr p)
 	->decltype(ptr<TT>{reinterpret_cast<TT*>(std::declval<raw_pointer>())}){
 		return ptr<TT>{reinterpret_cast<TT*>(p.rp_)};}
 
@@ -139,11 +139,11 @@ public:
 	constexpr bool operator==(ptr const& other) const{return rp_==other.rp_;}
 	constexpr bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
 	template<class Other>
-	constexpr auto operator==(ptr<Other> const& other) const
+	auto operator==(ptr<Other> const& other) const
 	->decltype(rp_==other.rp_){
 		return rp_==other.rp_;}
 	template<class Other>
-	constexpr auto operator!=(ptr<Other> const& other) const
+	auto operator!=(ptr<Other> const& other) const
 	->decltype(rp_!=other.rp_){
 		return rp_!=other.rp_;}
 
@@ -158,10 +158,10 @@ public:
 	explicit constexpr operator void const*() const{return rp_;}
 	template<class TT=T, typename = decltype(static_cast<TT*>(raw_pointer{}))>
 	explicit constexpr operator TT*() const{return static_cast<TT*>(rp_);}
-	constexpr ptr& operator++(){++rp_; return *this;}
-	constexpr ptr& operator--(){--rp_; return *this;}
-	constexpr ptr  operator++(int){auto tmp = *this; ++(*this); return tmp;}
-	constexpr ptr  operator--(int){auto tmp = *this; --(*this); return tmp;}
+	ptr& operator++(){++rp_; return *this;}
+	ptr& operator--(){--rp_; return *this;}
+	ptr  operator++(int){auto tmp = *this; ++(*this); return tmp;}
+	ptr  operator--(int){auto tmp = *this; --(*this); return tmp;}
 	constexpr ptr& operator+=(difference_type n){rp_+=n; return *this;}
 	constexpr ptr& operator-=(difference_type n){rp_-=n; return *this;}
 	constexpr ptr operator+(difference_type n) const{return ptr{rp_ + n};}
@@ -171,7 +171,7 @@ public:
 	constexpr reference operator[](difference_type n) const{return *((*this)+n);}
 	friend constexpr ptr to_address(ptr const& p){return p;}
 	constexpr difference_type operator-(ptr const& o) const{return rp_-o.rp_;}
-	constexpr operator ptr<void>(){return {rp_};}
+	operator ptr<void>(){return {rp_};}
 	auto get() const{return rp_;}
 	explicit constexpr operator raw_pointer() const{return rp_;}
 	constexpr raw_pointer raw_pointer_cast() const{return this->rp_;}
@@ -187,7 +187,7 @@ public:
 
 template<class T>
 DEPRECATED("experimental function, it might be removed soon https://gitlab.com/correaa/boost-multi/-/issues/91")
-constexpr T* raw_pointer_cast(T* p){return p;}
+T* raw_pointer_cast(T* p){return p;}
 
 template<class T> allocator<T> get_allocator(ptr<T> const&){return {};}
 
@@ -197,22 +197,22 @@ template<
 	typename ForwardV = typename std::pointer_traits<ForwardIt>::element_type, 
 	std::enable_if_t<std::is_trivially_constructible<ForwardV, InputV>{}, int> =0
 >
-constexpr ForwardIt uninitialized_copy_n(InputIt f, Size n, ptr<T...> d){
+ForwardIt uninitialized_copy_n(InputIt f, Size n, ptr<T...> d){
 	return memcpy(d, f, n*sizeof(ForwardV)) + n;
 }
 
 template<class It, typename Size, class T2, class Q2, typename T = typename std::iterator_traits<It>::value_type, typename = std::enable_if_t<std::is_trivially_constructible<T2, T>{}>>
-constexpr auto uninitialized_copy_n(It first, Size count, boost::multi::iterator<T2, 1, ptr<Q2>> result)
+auto uninitialized_copy_n(It first, Size count, boost::multi::iterator<T2, 1, ptr<Q2>> result)
 //->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), first, sizeof(T)*stride(first), sizeof(T), count), result + count){
 {	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T)*stride(first), sizeof(T), count), result + count;}
 
 template<class It, typename Size, class T2, class Q2, typename T = typename std::iterator_traits<It>::value_type, typename = std::enable_if_t<std::is_trivially_constructible<T2, T>{}>>
-constexpr auto uninitialized_move_n(It first, Size count, boost::multi::iterator<T2, 1, ptr<Q2>> result)
+auto uninitialized_move_n(It first, Size count, boost::multi::iterator<T2, 1, ptr<Q2>> result)
 //->decltype(memcpy2D(base(result), sizeof(T2)*stride(result), first, sizeof(T)*stride(first), sizeof(T), count), result + count){
 {	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T)*stride(first), sizeof(T), count), result + count;}
 
 template<class... T1, class Size, class... T2, class Element = typename std::pointer_traits<ptr<T1...>>::element_type>
-constexpr auto uninitialized_move_n(ptr<T1...> first, Size n, ptr<T2...> dest){
+auto uninitialized_move_n(ptr<T1...> first, Size n, ptr<T2...> dest){
 	assert(( std::is_trivially_constructible<Element, Element>{} ));
 	return memcpy(dest, first, n*sizeof(Element)) + n; // TODO, this is not correct whe InputIt is not a pointer
 }

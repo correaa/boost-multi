@@ -1,5 +1,6 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-// © Alfredo Correa 2018-2021
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
+$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
+#endif
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi reinterpret array"
 #define BOOST_TEST_DYN_LINK
@@ -14,18 +15,17 @@
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_struct_to_dimension){
-
-	struct vec3{double x, y, z;};
+	struct vec3{
+		double x, y, z;
+	};
 	multi::array<vec3, 1> A(100);
 	A[8] = {1., 2., 3.};
 	BOOST_REQUIRE( A[8].y == 2. );
-	BOOST_REQUIRE( A[8].y == 2. );
 
-	BOOST_TEST( &(A.reinterpret_array_cast<double>(3)[8][1]) == &(A[8].y) );
-	BOOST_TEST(   A.reinterpret_array_cast<double>(3)[8][1]  ==   A[8].y  );
+	BOOST_REQUIRE( A.reinterpret_array_cast<double>(3)[8][1] == A[8].y );
 
 	multi::array<double, 2> A2D = A.reinterpret_array_cast<double>(3);
-//	BOOST_REQUIRE( dimensionality(A2D) == dimensionality(A) + 1 );
+	BOOST_REQUIRE( dimensionality(A2D) == dimensionality(A) + 1 );
 	BOOST_REQUIRE( size(A2D) == size(A) );
 	BOOST_REQUIRE(  A2D[8][1] ==  A[8].y );
 	BOOST_REQUIRE( &A2D[8][1] != &A[8].y );
@@ -35,21 +35,18 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_struct_to_dimension){
 }
 
 BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_complex_to_real_extra_dimension){
-
 	using complex = std::complex<double>;
-	multi::array<complex, 1> const A(100, complex{1, 2});
-	BOOST_REQUIRE(  A.size() == 100 );
+	multi::array<complex, 1> A(100, complex{1, 2});
+	BOOST_REQUIRE(  size(A) == 100 );
 	BOOST_REQUIRE(( A[0] == complex{1, 2} ));
-
-	auto const& B = A.reinterpret_array_cast<double>();
-	BOOST_REQUIRE( B.extensions() == A.extensions() );
-
-	BOOST_TEST_REQUIRE( B[0] == 1 );
-	BOOST_TEST_REQUIRE( B[1] == 1 );
+	
+	multi::array<double, 1> B = A.reinterpret_array_cast<double>();
+	BOOST_REQUIRE( dimensionality(B) == dimensionality(A) );
+	BOOST_REQUIRE( B[0] == 1 and B[1] == 1 );
 
 	multi::array<double, 2> C = A.reinterpret_array_cast<double>(2);
 
-	BOOST_REQUIRE(( sizes(C) == multi::sizes_t<2>{100, 2} ));
+	BOOST_REQUIRE(( sizes(C)==decltype(sizes(C)){100, 2} ));
 	BOOST_REQUIRE( C[5][0] == real(A[5]) );
 	BOOST_REQUIRE( C[5][1] == imag(A[5]) );
 }
@@ -72,11 +69,11 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_tuple_as_extra_dimension){
 	{
 		multi::array<vector3, 2> const A({4, 5}, vector3{1., 2., 3.});
 
-		BOOST_REQUIRE(( A.reinterpret_array_cast<double>(3).extensions() == multi::extensions_t<3>{4, 5, 3} ));
-
-		BOOST_TEST(  A.reinterpret_array_cast<double>(3).size() == 4 );
-		BOOST_TEST(  A.reinterpret_array_cast<double>(3)[0].size() == 5 );
-		BOOST_TEST(  A.reinterpret_array_cast<double>(3)[0][0].size() == 3 );
+		BOOST_REQUIRE( dimensionality(A.reinterpret_array_cast<double>(3)) == 3 );
+		BOOST_REQUIRE( A.reinterpret_array_cast<double>(3).num_elements() == A.num_elements()*3 );
+		BOOST_TEST( A.reinterpret_array_cast<double>(3).size() == 4 );
+		BOOST_TEST( A.reinterpret_array_cast<double>(3)[0].size() == 5 );
+		BOOST_TEST( A.reinterpret_array_cast<double>(3)[0][0].size() == 3 );
 		BOOST_TEST( &A.reinterpret_array_cast<double>(3)[2][3][0] == &std::get<0>(A[2][3]) );
 		BOOST_TEST( &A.reinterpret_array_cast<double>(3)[2][3][1] == &std::get<1>(A[2][3]) );
 		BOOST_TEST( &A.reinterpret_array_cast<double>(3)[2][3][2] == &std::get<2>(A[2][3]) );

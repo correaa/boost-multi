@@ -59,7 +59,8 @@ BOOST_AUTO_TEST_CASE(layout){
 	BOOST_REQUIRE( B2[0].sliced(10, 20).size() == 10 );
 	BOOST_REQUIRE( size(B2[0].sliced(10, 20))  == 10 );
 
-	BOOST_REQUIRE( B2(0, {10, 20}).dimensionality()  == 1 );
+	BOOST_REQUIRE( B2(0, {10, 20}).dimensionality  == 1 );
+	BOOST_REQUIRE( dimensionality(B2(0, {10, 20})) == 1 );
 
 	BOOST_REQUIRE( size(B2(0, {10, 20})) == 10 );
 }
@@ -106,12 +107,11 @@ BOOST_AUTO_TEST_CASE(layout){
 	assert( layout(AA) == layout(A) );
 
 	using multi::stride;
-	BOOST_REQUIRE( AA.stride() == 20 );
-
-	static_assert( stride(A      ) == 20 , "!" );
-	static_assert( stride(A[0]   ) ==  5 , "!" );
-	static_assert( stride(A[1]   ) ==  5 , "!" );
-	static_assert( stride(A[0][0]) ==  1 , "!" );
+	BOOST_REQUIRE( stride(AA) == 20 );
+	static_assert( stride(A) == 20 , "!" );
+	static_assert( stride(A[0]) == 5 , "!" );
+	static_assert( stride(A[1]) == 5 , "!" );
+	static_assert( stride(A[0][0]) == 1 , "!" );
 //		assert( stride(A) == 20 );
 //		assert( stride(A[0]) == 20 );
 }
@@ -123,11 +123,8 @@ BOOST_AUTO_TEST_CASE(layout){
 	};
 	BOOST_REQUIRE( size(B2) == 3 );
 	BOOST_REQUIRE( size(rotated(B2)) == 1 ); BOOST_REQUIRE( size(B2[0]) == 1);
-// TODO vvvvv
-//	BOOST_REQUIRE( stride(B2) == 1 );
-//	BOOST_REQUIRE( stride(B2[0]) == 1 );
-	BOOST_REQUIRE( B2   .stride() == 1 );
-	BOOST_REQUIRE( B2[0].stride() == 1 );
+	BOOST_REQUIRE( stride(B2) == 1 );
+	BOOST_REQUIRE( stride(B2[0]) == 1 );
 
 }
 

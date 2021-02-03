@@ -19,8 +19,7 @@ BOOST_AUTO_TEST_CASE(array_cref_no_mention_type){
 
 	std::vector<double> v(20, 1.);// {1., 2.});
 
-	auto&& v2D = multi::ref(v).partitioned(4);
-//	auto&& v2D = *(v.data()/multi::iextensions<2>{4, 5});
+	auto&& v2D = *(v.data()/multi::iextensions<2>{4, 5});
 	BOOST_REQUIRE( &v[2] == &v2D[0][2] );
 	v2D[1][1] = 30.;
 
@@ -53,10 +52,7 @@ BOOST_AUTO_TEST_CASE(array_cref){
 	BOOST_REQUIRE( G2D == D2D );
 #endif
 	auto&& H2D = multi::make_array_ref<2>(dc.data(), {10, 10}); 
-	BOOST_REQUIRE( multi::ref(dc).partitioned(10) == H2D );
-	BOOST_REQUIRE( H2D() == multi::ref(dc).partitioned(10) );
-	BOOST_REQUIRE( H2D   == multi::ref(dc).partitioned(10) );
-//	BOOST_REQUIRE(( H2D == *(dc.data()/multi::iextensions<2>{10, 10}) ));
+	BOOST_REQUIRE(( H2D == *(dc.data()/multi::iextensions<2>{10, 10}) ));
 
 }
 

@@ -1,5 +1,4 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-// © Alfredo A. Correa 2019-2021
 
 #include "../../blas.hpp"
 #include "../../../array.hpp"

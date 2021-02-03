@@ -62,8 +62,8 @@ BOOST_AUTO_TEST_CASE(multi_test_constness_reference){
 	BOOST_REQUIRE( size( m(1, {0, 3}) ) == 3 );
 
 	BOOST_REQUIRE( m(1, {0, 3})[1] == 99. );
-	BOOST_REQUIRE( m({0, 3}, 1)[1] == 99. );
-	BOOST_REQUIRE( m.sliced(0, 3).size() == 3 );
+	BOOST_REQUIRE( m({0, 3}, 1).dimensionality == 1 );
+	BOOST_REQUIRE( size(m.sliced(0, 3)) == 3 );
 
 	BOOST_REQUIRE( m.range({0, 3}).rotated()[1].unrotated().size() == 3 );
 
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(multi_test_non_constness_reference){
 	static_assert(std::is_assignable<decltype(m(1, {0, 3})[1]), double>{}, "!");
 
 	BOOST_REQUIRE( m(1, {0, 3})[1] == 99. );
-//	BOOST_REQUIRE( m({0, 3}, 1).dimensionality == 1 );
+	BOOST_REQUIRE( m({0, 3}, 1).dimensionality == 1 );
 	BOOST_REQUIRE( size(m.sliced(0, 3)) == 3 );
 
 	BOOST_REQUIRE( size(m.range({0, 3}).rotated().paren(1l).unrotated()) == 3 );
@@ -118,35 +118,17 @@ BOOST_AUTO_TEST_CASE(multi_test_stencil){
 	BOOST_REQUIRE(           A[1][2] == "h"                                    );
 
 	BOOST_REQUIRE(      size(A          ({1, 3}, {2, 5})) == 2                 );
-// TODO have a free friend extension function
-//	BOOST_REQUIRE( extension(A          ({1, 3}, {2, 5})).start() == 0         );
-	BOOST_REQUIRE(           A          ({1, 3}, {2, 5}).extension().start() == 0         );
-
-	BOOST_REQUIRE(    A({1, 3}, {2, 5})  .size() == 2 );
-	BOOST_REQUIRE( (~(A({1, 3}, {2, 5}))).size() == 3 );
-
-	multi::extensions_t<2> x = {2, 3};
-	BOOST_REQUIRE( std::get<0>(x) == multi::iextension(0, 2) );
-	BOOST_REQUIRE( std::get<1>(x) == multi::iextension(0, 3) );
-
-	BOOST_REQUIRE(( std::get<0>(A          ({1, 3}, {2, 5}).extensions()) == multi::iextension(0, 2) ));
-	BOOST_REQUIRE(( std::get<1>(A          ({1, 3}, {2, 5}).extensions()) == multi::iextension(0, 3) ));
-
-	BOOST_REQUIRE(( std::get<0>(A          ({1, 3}, {2, 5}).extensions()) == multi::iextension(2) ));
-	BOOST_REQUIRE(( std::get<1>(A          ({1, 3}, {2, 5}).extensions()) == multi::iextension(3) ));
-
-	BOOST_REQUIRE(( A          ({1, 3}, {2, 5}).extensions() == multi::extensions_t<2>{2, 3} ));
-
+	BOOST_REQUIRE( extension(A          ({1, 3}, {2, 5})).start() == 0         );
+	BOOST_REQUIRE(           A          ({1, 3}, {2, 5}).num_elements() == 2*3 );
+	BOOST_REQUIRE(           A          ({1, 3}, {2, 5}).num_elements() == 2*3 );
 	BOOST_REQUIRE(           A          ({1, 3}, {2, 5})[0][0] == "h"          );
 	BOOST_REQUIRE(          &A          ({1, 3}, {2, 5})[0][0] == &A[1][2]     );
 
 	BOOST_REQUIRE(      size(A.stenciled({1, 3}, {2, 5})) == 2                 );
-// TODO
-//	BOOST_REQUIRE( extension(A.stenciled({1, 3}, {2, 5})).start() == 1         );
-	BOOST_REQUIRE(   A.stenciled({1, 3}, {2, 5}).extension().start() == 1 );
-//	BOOST_REQUIRE((  A.stenciled({1, 3}, {2, 5}).extensions() == multi::extensions_t<2>{2, 3} ));
-	BOOST_REQUIRE(   A.stenciled({1, 3}, {2, 5}) [1][2] == "h"            ); 
-	BOOST_REQUIRE(  &A.stenciled({1, 3}, {2, 5}) [1][2] == &A[1][2]       );
+	BOOST_REQUIRE( extension(A.stenciled({1, 3}, {2, 5})).start() == 1         );
+	BOOST_REQUIRE(           A.stenciled({1, 3}, {2, 5}).num_elements() == 2*3 );
+	BOOST_REQUIRE(           A.stenciled({1, 3}, {2, 5}) [1][2] == "h"         ); 
+	BOOST_REQUIRE(          &A.stenciled({1, 3}, {2, 5}) [1][2] == &A[1][2]    );
 
 }
 

@@ -17,9 +17,9 @@ BOOST_AUTO_TEST_CASE(multi_array_move){
 	std::vector<multi::array<double, 2> > Av(10, multi::array<double, 2>({4, 5}, 99.));
 	multi::array<double, 2> B(std::move(Av[0]), std::allocator<double>{});
 
-	BOOST_REQUIRE( Av[0].is_empty() );
-	BOOST_REQUIRE( size(B) == 4     );
-	BOOST_REQUIRE( B[1][2] == 99.   );
+	BOOST_REQUIRE( is_empty(Av[0]) );
+	BOOST_REQUIRE( size(B) == 4 );
+	BOOST_REQUIRE( B[1][2] == 99. );
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_move_into_vector){
@@ -30,9 +30,9 @@ BOOST_AUTO_TEST_CASE(multi_array_move_into_vector){
 	for(auto& v: Av) Bv.emplace_back(std::move(v));
 
 	BOOST_REQUIRE( size(Bv) == size(Av) );
-	BOOST_REQUIRE( Av[4].is_empty()     );
-	BOOST_REQUIRE( size(Bv[5]) == 4     );
-	BOOST_REQUIRE( Bv[5][1][2] == 99.   );
+	BOOST_REQUIRE( is_empty(Av[4]) );
+	BOOST_REQUIRE( size(Bv[5]) == 4 );
+	BOOST_REQUIRE( Bv[5][1][2] == 99. );
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_move_into_vector_reserve){
@@ -44,9 +44,9 @@ BOOST_AUTO_TEST_CASE(multi_array_move_into_vector_reserve){
 	for(auto& v: Av) Bv.emplace_back(std::move(v));
 
 	BOOST_REQUIRE( size(Bv) == size(Av) );
-	BOOST_REQUIRE( Av[4].is_empty()     );
-	BOOST_REQUIRE( size(Bv[5]) == 4     );
-	BOOST_REQUIRE( Bv[5][1][2] == 99.   );
+	BOOST_REQUIRE( is_empty(Av[4]) );
+	BOOST_REQUIRE( size(Bv[5]) == 4 );
+	BOOST_REQUIRE( Bv[5][1][2] == 99. );
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_move_into_vector_move){

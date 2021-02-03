@@ -197,13 +197,8 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, unsigned fla
 	auto istrides = to_array<int>(strides(*first));
 	auto ostrides = to_array<int>(strides(*d_first));
 
-	std::array< std::array<int, 3>, std::decay_t<decltype(*It1{})>::rank_v> ssn;
-//	std::array< std::tuple<int, int, int>, std::decay_t<decltype(*It1{})>::rank_v> ssn;
-	for(std::size_t i = 0; i != ssn.size(); ++i){
-		ssn[i] = {istrides[i], ostrides[i], ion[i]};
-	//	ssn[i] = std::make_tuple(istrides[i], ostrides[i], ion[i]);
-	}
-
+	std::array<std::array<int, 3>, std::decay_t<decltype(*It1{})>::rank::value> ssn;
+	for(std::size_t i = 0; i != ssn.size(); ++i) ssn[i] = {istrides[i], ostrides[i], ion[i]};
 	std::sort(ssn.begin(), ssn.end(), std::greater<>{});
 
 	for(std::size_t i = 0; i != ssn.size(); ++i){
@@ -243,9 +238,9 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, unsigned fla
 }
 
 template<
-	class In, class Out, dimensionality_type D = std::decay_t<In>::rank_v,
-	class=std::enable_if_t<std::decay_t<In>::rank_v==std::decay_t<Out>::rank_v>,
-	class=decltype(reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double> *>*/(std::declval<Out&>().base())))
+	class In, class Out, dimensionality_type D = std::decay_t<In>::dimensionality,
+	class=std::enable_if_t<D==std::decay_t<Out>::dimensionality>,
+	class=decltype(reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double> *>*/(base(std::declval<Out&>()))))
 >
 fftw_plan fftw_plan_dft(std::array<bool, +D> which, In&& in, Out&& out, int sign, unsigned flags = FFTW_ESTIMATE){
 	static_assert( sizeof(*base(in )) == sizeof((*base(in )).real()) + sizeof((*base(in)).imag()) and sizeof(*base(in)) == sizeof(fftw_complex), 
@@ -286,12 +281,12 @@ fftw_plan fftw_plan_dft(std::array<bool, +D> which, In&& in, Out&& out, int sign
 	return ret;
 }
 
-//template<class To, class From, std::enable_if_t<std::is_convertible<From, To>{},int> =0>
-//To implicit_cast(From&& f){return static_cast<To>(f);}
+template<class To, class From, std::enable_if_t<std::is_convertible<From, To>{},int> =0>
+To implicit_cast(From&& f){return static_cast<To>(f);}
 
-template<class In, class Out, dimensionality_type D = In::rank_v, typename = decltype(reinterpret_cast<fftw_complex*>(implicit_cast<std::complex<double>*>(std::declval<Out&>().base())))>
+template<class In, class Out, dimensionality_type D = In::dimensionality, typename = decltype(reinterpret_cast<fftw_complex*>(implicit_cast<std::complex<double>*>(base(std::declval<Out&>()))))>
 auto fftw_plan_dft(In const& in, Out&& out, int s, unsigned flags = FFTW_ESTIMATE){
-	static_assert( D == std::decay_t<Out>::rank_v , "!");
+	static_assert( D == std::decay_t<Out>::dimensionality , "!");
 	using multi::sizes; using multi::strides; assert(sizes(in) == sizes(out));
 	auto 
 		ion      = to_array<ptrdiff_t>(sizes(in)), 
@@ -305,8 +300,8 @@ auto fftw_plan_dft(In const& in, Out&& out, int s, unsigned flags = FFTW_ESTIMAT
 		/*const fftw_iodim64 *dims*/ dims.data(),
 		/*int howmany_rank*/ 0,
 		/*const fftw_iodim *howmany_dims*/ nullptr, //howmany_dims.data(), //;//nullptr,
-		/*fftw_complex *in*/ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(static_cast<std::complex<double> const*>(in.base()))), 
-		/*fftw_complex *out*/ reinterpret_cast<fftw_complex*>(implicit_cast<std::complex<double>*>(out.base())),
+		/*fftw_complex *in*/ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(static_cast<std::complex<double> const*>(base(in)))), 
+		/*fftw_complex *out*/ reinterpret_cast<fftw_complex*>(implicit_cast<std::complex<double>*>(base(out))),
 		s, flags
 	);
 	assert(ret);
@@ -342,10 +337,7 @@ public:
 	static auto many(As&&... as)
 	->std::decay_t<decltype(fftw_plan_many_dft(std::forward<As>(as)...) , std::declval<plan>())>
 	{
-		plan r;
-//		assert(0);
-		r.impl_.reset(fftw_plan_many_dft(std::forward<As>(as)...)); 
-		return r; // this produces a compilation error in icc++17
+		plan r; r.impl_.reset(fftw_plan_many_dft(std::forward<As>(as)...)); return r; // this produces a compilation error in icc++17
 	}
 
 private:
@@ -410,17 +402,17 @@ enum strategy: decltype(FFTW_ESTIMATE){ estimate = FFTW_ESTIMATE, measure = FFTW
 
 template<class In, class Out>
 auto dft(In const& i, Out&& o, int s)
-->decltype(fftw::plan{i, std::forward<Out>(o), s}(), std::forward<Out>(o)){
-	return fftw::plan{i, std::forward<Out>(o), s}(), std::forward<Out>(o);}
+->decltype(fftw::plan{i, o, s}(), std::forward<Out>(o)){
+	return fftw::plan{i, o, s}(), std::forward<Out>(o);}
 
 using std::decay_t;
 
-template<class In, class Out, std::size_t D=In::rank_v>
+template<class In, class Out, std::size_t D=In::dimensionality>
 auto dft(std::array<bool, +D> which, In const& i, Out&& o, sign s)
-->decltype(plan{which, i, std::forward<Out>(o), s}(), std::forward<Out>(o)){
-	return plan{which, i, std::forward<Out>(o), s}(), std::forward<Out>(o);}
+->decltype(plan{which, i, o, s}(), std::forward<Out>(o)){
+	return plan{which, i, o, s}(), std::forward<Out>(o);}
 
-template<typename In, class Out, dimensionality_type D=In::rank_v, dimensionality_type=std::decay_t<Out>::rank_v>
+template<typename In, class Out, dimensionality_type D=In::dimensionality, dimensionality_type=std::decay_t<Out>::dimensionality>
 auto dft(std::array<sign, +D> w, In const& i, Out&& o){
 	std::array<bool, D> fwd, /*non,*/ bwd;
 
@@ -441,8 +433,8 @@ auto many_dft(It1 first, It1 last, It2 d_first, int sign)
 template<typename In, class R=typename In::decay_type>
 NODISCARD("when first argument is const")
 auto dft(In const& i, sign s)
-->std::decay_t<decltype(dft(i, R(extensions(i)), s))>{
-	return dft(i, R(extensions(i)), s);}
+->std::decay_t<decltype(dft(i, R(extensions(i), get_allocator(i)), s))>{
+	return dft(i, R(extensions(i), get_allocator(i)), s);}
 
 template<typename T, dimensionality_type D, class... Args>
 decltype(auto) rotate(multi::array<T, D, Args...>& i, int = 1){
@@ -452,24 +444,24 @@ decltype(auto) rotate(multi::array<T, D, Args...>& i, int = 1){
 	return i;
 }
 
-template<typename In, dimensionality_type D = In::rank_v, class R=typename In::decay_type>
+template<typename In, dimensionality_type D = In::dimensionality, class R=typename In::decay_type>
 NODISCARD("when first argument is const")
 auto dft(std::array<bool, +D> which, In const& i, sign s)
 ->std::decay_t<decltype(fftw::dft(which, i, R(extensions(i), get_allocator(i)), s))>{
 	return fftw::dft(which, i, R(extensions(i), get_allocator(i)), s);}
 
-template<typename In, multi::dimensionality_type D = std::decay_t<In>::rank_v>
+template<typename In, multi::dimensionality_type D = std::decay_t<In>::dimensionality>
 auto dft(std::array<bool, +D> which, In&& i, sign s)
 ->decltype(dft(which, i, i, s), std::forward<In>(i)){
 	return dft(which, i, i, s), std::forward<In>(i);}
 
-template<typename In, std::size_t D = In::rank_v, class R=typename In::decay_type>
+template<typename In, std::size_t D = In::dimensionality, class R=typename In::decay_type>
 void dft(std::array<bool, +D> which, In const& i) = delete;
 
 template<dimensionality_type Rank /*not deduced*/, typename In, class R=typename In::decay_type>
 NODISCARD("when second argument is const")
 R dft(In const& i, sign s){
-	static_assert( Rank <= In::rank_v, "!" );
+	static_assert( Rank <= In::dimensionality, "!" );
 	return dft<Rank>(i, R(extensions(i), get_allocator(i)), s);
 }
 
@@ -483,13 +475,13 @@ auto dft_forward(BoolArray which, A const& a)
 ->decltype(fftw::dft(which, a, fftw::forward)){
 	return fftw::dft(which, a, fftw::forward);}
 
-template<class A, multi::dimensionality_type D = A::rank_v>
+template<class A, multi::dimensionality_type D = A::dimensionality>
 NODISCARD("when input argument is read only")
 auto dft_forward(std::array<bool, +D> which, A const& a)
 ->decltype(fftw::dft(which, a, fftw::forward)){
 	return fftw::dft(which, a, fftw::forward);}
 
-template<class A, class O, multi::dimensionality_type D = A::rank_v>
+template<class A, class O, multi::dimensionality_type D = A::dimensionality>
 auto dft_forward(std::array<bool, +D> which, A const& a, O&& o)
 ->decltype(fftw::dft(which, a, std::forward<O>(o), fftw::forward)){
 	return fftw::dft(which, a, std::forward<O>(o), fftw::forward);}
@@ -509,7 +501,7 @@ template<class In> In&& dft_inplace(In&& i, sign s){
 	return std::forward<In>(i);
 }
 
-template<class In, class Out, dimensionality_type D = In::rank_v>
+template<class In, class Out, dimensionality_type D = In::dimensionality>
 auto copy(In const& i, Out&& o)
 ->decltype(dft(std::array<bool, D>{}, i, std::forward<Out>(o), fftw::forward)){
 	return dft(std::array<bool, D>{}, i, std::forward<Out>(o), fftw::forward);}
@@ -523,7 +515,7 @@ R copy(In const& i)
 template<typename In, class R=typename std::decay_t<In>::decay_type>
 auto move(In&& in){
 	if(in.is_compact()){
-		multi::array_ref<typename In::element, In::rank_v, typename In::element_ptr> ref(
+		multi::array_ref<typename In::element, In::dimensionality, typename In::element_ptr> ref(
 			in.base(), extensions(in)
 		);
 		copy(in, ref);
@@ -548,7 +540,7 @@ R copy(multi::basic_array<T, D, multi::move_ptr<T, P>>&& a){
 template<class Array>
 auto transpose(Array& a)
 ->decltype(fftw::copy(transposed(a), a.reshape(extensions(layout(a).transpose())))){
-	multi::array_ref<typename Array::element, Array::rank_v, typename Array::element_ptr> r(a.base(), extensions(a));
+	multi::array_ref<typename Array::element, Array::dimensionality, typename Array::element_ptr> r(a.base(), extensions(a));
 	return fftw::copy(r.transposed(), a.reshape(layout(a).transpose().extensions()));
 }
 
@@ -591,7 +583,7 @@ namespace{
 
 	template<class M> auto power(M const& m)->decltype(std::norm(m)){return std::norm(m);}
 
-	template<class M, DELETE((M::rank_v < 1))> double power(M const& m){return accumulate(begin(m), end(m), 0., [](auto const& a, auto const& b){return a + power(b);});}
+	template<class M, DELETE((M::dimensionality < 1))> double power(M const& m){return accumulate(begin(m), end(m), 0., [](auto const& a, auto const& b){return a + power(b);});}
 
 	struct sum_power{
 		template<class A, class B> auto operator()(A const& a, B const& b) const{return a+power(b);}
@@ -825,7 +817,7 @@ BOOST_AUTO_TEST_CASE(fftw_1D_power){
 	multi::array<complex, 1> in(N, 0.); assert( size(in) == N );
 	std::iota(begin(in), end(in), 1.);
 	multi::array<complex, 1> out(extensions(in));
-	static_assert( in.dimensionality() == out.dimensionality(), "!");
+	static_assert(dimensionality(in)==dimensionality(out), "!");
 	auto p = multi::fftw_plan_dft(in, out, fftw::forward, FFTW_PRESERVE_INPUT);
 	fftw_execute(p); 
 	fftw_destroy_plan(p);
@@ -834,8 +826,8 @@ BOOST_AUTO_TEST_CASE(fftw_1D_power){
 
 BOOST_AUTO_TEST_CASE(fftw_2D_power){
 	multi::array<complex, 2> in({N, N});
-	std::iota(in.data_elements(), in.data_elements() + in.num_elements(), 1.2);
-	multi::array<complex, 2> out(in.extensions());
+	std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);
+	multi::array<complex, 2> out(extensions(in));
 	auto p = multi::fftw_plan_dft(in, out, fftw::forward, FFTW_PRESERVE_INPUT);
 	fftw_execute(p); fftw_destroy_plan(p);
 	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-12 );
@@ -843,8 +835,8 @@ BOOST_AUTO_TEST_CASE(fftw_2D_power){
 
 BOOST_AUTO_TEST_CASE(fftw_2D_power_plan){
 	multi::array<complex, 2> in({16, 16});
-	std::iota(in.data_elements(), in.data_elements() + in.num_elements(), 1.2);
-	multi::array<complex, 2> out(in.extensions());
+	std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);
+	multi::array<complex, 2> out(extensions(in));
 	multi::fftw::plan const p{in, out, fftw::forward, FFTW_PRESERVE_INPUT};
 	p(); //execute(p); //p.execute();
 	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-8 );
@@ -886,16 +878,14 @@ BOOST_AUTO_TEST_CASE(fftw_3D_power_in_place_over_ref_inplace){
 	multi::array<complex, 3> io({4, 4, 4}); std::iota(io.data_elements(), io.data_elements() + io.num_elements(), 1.2);
 	auto powerin = power(io);
 //	fftw::dft_inplace(multi::array_ref<complex, 3>(io.data(), io.extensions()), fftw::forward);
-//	fftw::dft_inplace(multi::array_ref<complex, 3>(data_elements(io), extensions(io)), fftw::forward);
-	fftw::dft_inplace(io(), fftw::forward);
+	fftw::dft_inplace(multi::array_ref<complex, 3>(data_elements(io), extensions(io)), fftw::forward);
 	BOOST_REQUIRE( powerin - power(io)/num_elements(io) < 1e-10 );
 }
 
 BOOST_AUTO_TEST_CASE(fftw_3D_power_out_of_place_over_ref){
-	multi::array<complex, 3> in({4, 4, 4}); 
-	std::iota(in.data_elements(), in.data_elements()+in.num_elements(), 1.2);
+	multi::array<complex, 3> in({4, 4, 4}); std::iota(data_elements(in), data_elements(in)+num_elements(in), 1.2);
 	multi::array<complex, 3> out({4, 4, 4});
-	out() = fftw::dft(in.protect(), fftw::forward);
+	multi::array_ref<complex, 3>(data_elements(out), extensions(out)) = fftw::dft(multi::array_cref<complex, 3>(data_elements(in), extensions(in)), fftw::forward);
 	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-10 );
 }
 

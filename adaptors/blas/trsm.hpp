@@ -23,7 +23,7 @@ enum class diagonal : char{
 using core::trsm;
 
 template<class Context, class A2D, class B2D>
-decltype(auto) trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, blas::diagonal a_diag, typename A2D::reference::element alpha, A2D const& a, B2D&& b) try{
+decltype(auto) trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, blas::diagonal a_diag, typename A2D::element_type alpha, A2D const& a, B2D&& b) try{
 	;;;; if(a_side == blas::side::left ) assert(size(~a) >= size( b));
 	else if(a_side == blas::side::right) assert(size( a) >= size(~b));
 
@@ -71,18 +71,18 @@ decltype(auto) trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, bla
 }
 
 template<class A2D, class B2D>
-decltype(auto) trsm(blas::side a_side, blas::filling a_fill, blas::diagonal a_diag, typename A2D::reference::element alpha, A2D const& a, B2D&& b){
+decltype(auto) trsm(blas::side a_side, blas::filling a_fill, blas::diagonal a_diag, typename A2D::element_type alpha, A2D const& a, B2D&& b){
 	if constexpr(not is_conjugated<A2D>{}) return trsm(default_context_of(           a.base() ), a_side, a_fill, a_diag, alpha, a, std::forward<B2D>(b));
 	else                                   return trsm(default_context_of(underlying(a.base())), a_side, a_fill, a_diag, alpha, a, std::forward<B2D>(b));
 }
 
 template<class Context, class A2D, class B2D>
-auto trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, typename A2D::reference::element alpha, A2D const& a, B2D&& b)
+auto trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, typename A2D::element_type alpha, A2D const& a, B2D&& b)
 ->decltype(trsm(std::forward<Context>(ctxt), a_side, a_fill, blas::diagonal::general, alpha, a, std::forward<B2D>(b))){
 	return trsm(std::forward<Context>(ctxt), a_side, a_fill, blas::diagonal::general, alpha, a, std::forward<B2D>(b));}
 
 template<class A2D, class B2D>
-auto trsm(blas::side a_side, blas::filling a_fill, typename A2D::reference::element alpha, A2D const& a, B2D&& b){
+decltype(auto) trsm(blas::side a_side, blas::filling a_fill, typename A2D::element_type alpha, A2D const& a, B2D&& b){
 	if constexpr(not is_conjugated<A2D>{}) return trsm(default_context_of(           a.base() ), a_side, a_fill, alpha, a, std::forward<B2D>(b));
 	else                                   return trsm(default_context_of(underlying(a.base())), a_side, a_fill, alpha, a, std::forward<B2D>(b));
 } // EDG based compilers (e.g. nvcc) need option: -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\""

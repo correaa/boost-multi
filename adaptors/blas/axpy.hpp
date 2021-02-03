@@ -26,7 +26,7 @@ auto axpy_n(Context&& ctxt, T alpha, It1 first, Size n, OutIt d_first)
 template<class X1D, class Y1D, typename = decltype( std::declval<Y1D&&>()[0] = 0. )>
 auto axpy(typename X1D::element alpha, X1D const& x, Y1D&& y)
 ->decltype(axpy_n(alpha, x.begin(), x.size(), y.begin()), std::forward<Y1D>(y)){assert(size(x)==size(y)); // intel doesn't like ADL in deduced/sfinaed return types
-	return axpy_n(alpha, x.begin(), x.size(), y.begin()), std::forward<Y1D>(y);
+	return axpy_n(alpha, begin(x), size(x), begin(y)), std::forward<Y1D>(y);
 }
 
 template<class Context, class X1D, class Y1D, typename = decltype( std::declval<Y1D&&>()[0] = 0. )>

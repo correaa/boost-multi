@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-// © Alfredo A. Correa 2020-2021
+// © Alfredo A. Correa 2020
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS gemv"
 #define BOOST_TEST_DYN_LINK
@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv, *utf::tolerance(0.0001)){
 		multi::array<double, 2> const MT = ~M;
 		blas::gemv_n(1., begin(~MT), size(~MT), begin(v), 0., begin(w));
 		BOOST_TEST( w[1] == 91.3 );
-		BOOST_TEST( w[2] == +blas::dot(M[2], v) );
+		BOOST_TEST( w[2] == +blas::dot(M[2], v));
 	}
 	{
 		multi::array<double, 1> w(size(M));

@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays){
 
 BOOST_AUTO_TEST_CASE(array1d_of_arrays2d){
 	multi::array<multi::array<double, 2>, 1> A(10, multi::array<double, 2>{});
-	for(auto i : A.extension()) A[i] = { {i, i}, static_cast<double>(i) };
+	for(auto i : extension(A)) A[i] = { {i, i}, static_cast<double>(i) };
 
 	BOOST_REQUIRE( size(A[0]) == 0 );
 	BOOST_REQUIRE( size(A[1]) == 1 );

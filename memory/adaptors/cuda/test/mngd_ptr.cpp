@@ -1,5 +1,5 @@
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuda managed ptr"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS gemm"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 

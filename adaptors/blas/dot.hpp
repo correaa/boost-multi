@@ -9,8 +9,7 @@
 #include "../blas/operations.hpp" // blas::C
 
 namespace boost{
-namespace multi{
-namespace blas{
+namespace multi::blas{
 
 using core::dot ;
 using core::dotu;
@@ -94,7 +93,6 @@ namespace operators{
 		return dot(x, y);}
 }
 
-}
 }
 }
 

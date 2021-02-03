@@ -142,7 +142,6 @@ public:
 	friend constexpr bool empty(range const& s){return s.empty();}
 	constexpr size_type size() const noexcept{return last_ - first_;}
 	friend constexpr size_type size(range const& s){return s.size();}
-	constexpr range<difference_type> extension() const{return {0, size()};}
 	friend std::ostream& operator<<(std::ostream& os, range const& s){
 		return s.empty()?os<<"[)":os <<"["<< s.first() <<", "<< s.last() <<")";
 	}
@@ -164,9 +163,9 @@ public:
 	constexpr auto count(K const& k) const{return contains(k);}
 	friend constexpr auto intersection(range const& r1, range const& r2){
 		using std::max; using std::min;
-		auto first  = max(r1.first(), r2.first()); 
-		auto last   = min(r1.last() , r2.last() );
-		auto first2 = min(first     , last      );  
+		auto first = max(r1.first(), r2.first()); 
+		auto last = min(r1.last(), r2.last());
+		auto first2 = min(first, last);  
 		return range<decltype(first2), decltype(last)>{first2, last};
 	}
 	constexpr auto contains(value_type const& v) const{return v>=first_ and v<last_;}//?true:false;}
@@ -202,10 +201,10 @@ public:
 	static constexpr intersecting_range all(){return {};}
 };
 
-MAYBE_UNUSED constexpr intersecting_range<> all = intersecting_range<>::all();
-MAYBE_UNUSED constexpr intersecting_range<> _   = all;
-MAYBE_UNUSED constexpr intersecting_range<> __  = all;
-MAYBE_UNUSED constexpr intersecting_range<> U   = all;
+MAYBE_UNUSED constexpr intersecting_range<> const all = intersecting_range<>::all();
+MAYBE_UNUSED constexpr intersecting_range<> const _   = all;
+MAYBE_UNUSED constexpr intersecting_range<> const __  = all;
+MAYBE_UNUSED constexpr intersecting_range<> const U   = all;
 
 template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
 struct extension_t : public range<IndexType, IndexTypeLast>{

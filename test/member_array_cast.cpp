@@ -1,4 +1,6 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
+$CXXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
+#endif
 //  © Alfredo A. Correa 2018-2020
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi member cast"
@@ -35,14 +37,14 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos){
 	multi::array<particle, 2> AoS({2, 2}); 
 	AoS[1][1] = particle{99., {1.,2.}};
 
-	auto&& masses = AoS.member_array_cast<double>(&particle::mass);
+	auto&& masses = AoS.member_cast<double>(&particle::mass);
 	BOOST_REQUIRE( size(masses) == 2 );
 	BOOST_REQUIRE( masses[1][1] == 99. );
 
 	multi::array<double, 2> masses_copy = masses;
 	particles_SoA SoA = {
-		AoS.member_array_cast<double>(&particle::mass), 
-		AoS.member_array_cast<v3d>(&particle::position)
+		AoS.member_cast<double>(&particle::mass), 
+		AoS.member_cast<v3d>(&particle::position)
 	};
 	BOOST_REQUIRE(SoA(1, 1).mass == 99. );
 
@@ -62,7 +64,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee){
 	};
 
 	multi::array<employee, 1> d1D = { {"Al"  , 1430, 35}, {"Bob"  , 3212, 34} }; 
-	auto&& d1D_names = d1D.member_array_cast<std::string>(&employee::name);
+	auto&& d1D_names = d1D.member_cast<std::string>(&employee::name);
 	BOOST_REQUIRE( size(d1D_names) == size(d1D) );
 	BOOST_REQUIRE(  d1D_names[1] ==  d1D[1].name );
 	BOOST_REQUIRE( &d1D_names[1] == &d1D[1].name );
@@ -71,7 +73,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee){
 		{ {"Al"  , 1430, 35}, {"Bob"  , 3212, 34} }, 
 		{ {"Carl", 1589, 32}, {"David", 2300, 38} }
 	};
-	auto&& d2D_names = d2D.member_array_cast<std::string>(&employee::name);
+	auto&& d2D_names = d2D.member_cast<std::string>(&employee::name);
 	BOOST_REQUIRE( size(d2D_names) == size(d2D) ); 
 	BOOST_REQUIRE( d2D_names[1][1] == "David" );
 

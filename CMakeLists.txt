@@ -21,5 +21,4 @@ include(CTest)
 
 add_subdirectory(test)
 add_subdirectory(adaptors/blas)
-add_subdirectory(adaptors/fftw)
 

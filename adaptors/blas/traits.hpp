@@ -8,8 +8,7 @@
 #include<type_traits>
 
 namespace boost{
-namespace multi{
-namespace blas{
+namespace multi::blas{
 
 	template<class F, class=std::enable_if_t<sizeof(F)==sizeof(float ) and std::is_convertible<decltype(std::declval<F&&>()/std::declval<F&&>()), float>{}  >>
 	std::true_type  is_s_aux(F&&);
@@ -35,8 +34,8 @@ namespace blas{
 
 	template<class Z> struct is_z : decltype(is_z_aux(std::declval<Z>())){using archetype = std::complex<double>;};
 
-}}}
+}
 
+}
 #endif
-
 
