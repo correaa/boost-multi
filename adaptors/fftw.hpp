@@ -215,7 +215,7 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, unsigned fla
 	int istride = istrides.back();
 	auto inembed = istrides; inembed.fill(0);
 	int ostride = ostrides.back();
-	auto onembed = ostrides; onembed.fill(0);	
+	auto onembed = ostrides; onembed.fill(0);
 	for(std::size_t i = 1; i != onembed.size(); ++i){
 		assert(ostrides[i-1] >= ostrides[i]); // otherwise ordering is incompatible
 		assert(ostrides[i-1]%ostrides[i]==0);

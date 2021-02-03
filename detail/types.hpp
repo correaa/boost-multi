@@ -87,8 +87,8 @@ constexpr auto tail_impl(std::index_sequence<Ns...> , Tuple&& t){
 }
 template<class Tuple>
 constexpr auto tail(Tuple const& t)
-->decltype(tail_impl(std::make_index_sequence<(static_size<Tuple>())-1>(), t)){
-	return tail_impl(std::make_index_sequence<(static_size<Tuple>())-1>(), t);}
+//->decltype(tail_impl(std::make_index_sequence<(static_size<Tuple>())-1>(), t)){
+{	return tail_impl(std::make_index_sequence<(static_size<Tuple>())-1>(), t);}
 //->decltype(tail_impl(std::make_index_sequence<(std::tuple_size<Tuple>{})-1>(), t)){
 //	return tail_impl(std::make_index_sequence<(std::tuple_size<Tuple>{})-1>(), t);}
 

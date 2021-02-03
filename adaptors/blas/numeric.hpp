@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo A. Correa 2019-2020
+// © Alfredo A. Correa 2019-2021
 
 #ifndef MULTI_ADAPTORS_BLAS_NUMERIC_HPP
 #define MULTI_ADAPTORS_BLAS_NUMERIC_HPP
@@ -43,7 +43,7 @@ protected:
 	Involution f_;
 public:
 	using decay_type =std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
-	explicit constexpr involuted(Ref r, Involution f = {}) : r_{std::forward<Ref>(r)}, f_{f}{}
+	constexpr explicit involuted(Ref r, Involution f = {}) : r_{std::forward<Ref>(r)}, f_{f}{}
 	involuted& operator=(involuted const& other)=delete;//{r_ = other.r_; return *this;}
 public:
 	involuted(involuted const&) = delete;
@@ -51,7 +51,7 @@ public:
 	constexpr decay_type decay() const&{return f_(r_);}
 	constexpr operator decay_type() const&{return f_(r_);}
 	constexpr operator decay_type() &&{return f_(r_);}
-	decltype(auto) operator&()&&{return involuter<decltype(&std::declval<Ref>()), Involution>{&r_, f_};}
+	constexpr decltype(auto) operator&()&&{return involuter<decltype(&std::declval<Ref>()), Involution>{&r_, f_};}
 //	template<class DecayType>
 //	auto operator=(DecayType&& other)&&
 //	->decltype(r_=f_(std::forward<DecayType>(other)), *this){

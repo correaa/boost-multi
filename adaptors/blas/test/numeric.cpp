@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-// © Alfredo A. Correa 2019-2020
+// © Alfredo A. Correa 2019-2021
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS numeric"
 #define BOOST_TEST_DYN_LINK
@@ -9,6 +9,7 @@
 
 #include "../../../array.hpp"
 #include "../../blas/numeric.hpp"
+#include "../../blas/operations.hpp"
 
 #include<complex>
 
@@ -83,13 +84,32 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_decay){
 	using complex = std::complex<double>; complex const I{0, 1};
 
 	multi::array<complex, 2> B = {
-		{1. - 3.*I, 6. + 2.*I},
-		{8. + 2.*I, 2. + 4.*I},
-		{2. - 1.*I, 1. + 1.*I}
+		{ 1. - 3.*I, 6. + 2.*I},
+		{ 8. + 2.*I, 2. + 4.*I},
+		{ 2. - 1.*I, 1. + 1.*I}
 	};
 
 	namespace blas = multi::blas;
 	multi::array<complex, 2> conjB = blas::conj(B);
+	
+	BOOST_REQUIRE( blas::conj(B)[2][1] == std::conj(B[2][1]) );
+
+	BOOST_REQUIRE( blas::transposed(B)[1][2] == B[2][1] );
+	BOOST_REQUIRE( blas::transposed(B) == ~B );
+
+	BOOST_REQUIRE( blas::hermitized(B)[2][1] == blas::conj(B)[1][2] );
+	BOOST_REQUIRE( blas::hermitized(B)       == blas::conj(blas::transposed(B)) );
+
+	BOOST_REQUIRE( blas::real(B)[2][1] == std::real(B[2][1]) );
+	BOOST_REQUIRE( blas::imag(B)[2][1] == std::imag(B[2][1]) );
+
+	multi::array<double, 2> B_real_doubled = {
+		{ 1., -3., 6., 2.},
+		{ 8.,  2., 2., 4.},
+		{ 2., -1., 1., 1.}
+	};
+	BOOST_REQUIRE( blas::real_doubled(B) == B_real_doubled );
+
 }
 
 #if defined(CUDA_FOUND) and CUDA_FOUND
@@ -107,6 +127,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_decay_thrust){
 
 	namespace blas = multi::blas;
 	multi::array<complex, 2> conjB = blas::conj(B);
+
 }
 #endif
 
@@ -174,6 +195,13 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_real_imag_part){
 
 	BOOST_REQUIRE( B[1][0] == 8. + 2.*I );
 	BOOST_REQUIRE( B[1][0].imag() == 2. );
+	
+	namespace blas = multi::blas;
+	
+	BOOST_REQUIRE( blas::hermitized(B)[1][2] == std::conj( B[2][1] ) );
+	
+	blas::hermitized(B)[1][2] = 20. + 30.*I;
+	BOOST_REQUIRE( B[2][1] == 20. - 30.*I );
 // 	using multi::blas::hermitized;
 //	BOOST_REQUIRE( hermitized(B)[0][1] == 8. - 2.*I );
 //	BOOST_REQUIRE( imag(hermitized(B)[0][1]) == -2. );

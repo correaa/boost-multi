@@ -20,6 +20,7 @@ $CXXX $CXXFLAGS $0 -o $0.$X `pkg-config --libs blas`&&$0.$X&&rm $0.$X;exit
 #include<cstring> // std::memcpy
 
 #include "../blas/traits.hpp"
+#include "../../config/MARK.hpp"
 
 #if 0
 	#define MULTI_ASSERT1(ExpR)              assert       (ExpR)
@@ -258,7 +259,8 @@ namespace{
 #define xscal(XX, TA, TX) TX* scal (INT n, TA const* a, TX       *x, INT incx                                                    ){     BLAS(XX##scal )(BC(n), *a, x, BC(incx)             ); return x+n*incx;}
 //#define xcopy(T)          v   copy (INT n,              T  const *x, INT incx, T       *y, INT incy                              ){     BLAS( T##copy )(BC(n),    x, BC(incx), y, BC(incy));                  }
 //#define xaxpy(T)          template<class S> T*  axpy (S n, T  a, T const *x, S incx, T       *y, S incy                          ){     BLAS( T##axpy )(BC(n), a, x, BC(incx), y, BC(incy)); return y+n*incy; }
-#define xdot(R, TT, T)    template<class S> v   dot  (S n,       T const* x, S incx, T const* y, S incy, R* r                    ){*r = BLAS(TT##dot  )(BC(n),    x, BC(incx), y, BC(incy));                  }
+#define xdot(R, TT, T)    template<class S> v   dot  (S n,       T const* x, S incx, T const* y, S incy, R* r                    ){\
+		MULTI_MARK_SCOPE("cpu_dot"); *r = BLAS(TT##dot  )(BC(n),    x, BC(incx), y, BC(incy));                  }
 
 xrotg(s, s)    xrotg(d, d) //MKL extension xrotg(c, s); xrotg(z, d);
 xrotmg(s)      xrotmg(d)
@@ -432,14 +434,29 @@ namespace core{
 ///////////////////////////////////////////////////////////////////////////////
 // LEVEL 3
 
-#define xsyrk(T) template<class UL, class C, class S>             v syrk(        UL ul, C transA,             S n, S k, T    alpha, T const* A, S lda,             T    beta, T* CC, S ldc){BLAS(T##syrk)(      ul, transA,            BC(n), BC(k), alpha, A, BC(lda),        beta, CC, BC(ldc));}
-#define xherk(T) template<class UL, class C, class S, class Real> v herk(        UL ul, C transA,             S n, S k, Real alpha, T const* A, S lda,             Real beta, T* CC, S ldc){BLAS(T##herk)(      ul, transA,            BC(n), BC(k), alpha, A, BC(lda),        beta, CC, BC(ldc));}
+#define xsyrk(T) template<class UL, class C, class S>             v syrk(        UL ul, C transA,             S n, S k, T    alpha, T const* A, S lda,             T    beta, T* CC, S ldc){\
+	MULTI_MARK_SCOPE("cpu_syrk"); BLAS(T##syrk)(      ul, transA,            BC(n), BC(k), alpha, A, BC(lda),        beta, CC, BC(ldc));}
 
 namespace core{
 
 using std::is_convertible;
 using std::pointer_traits;
 using std::enable_if_t;
+using std::max;
+
+#define xherk(T) \
+template<class UL, class C, class S, class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BETA, class CCP, class CC = typename pointer_traits<CCP>::element_type, class Real = typename T::value_type,\
+enable_if_t< \
+	is_##T<AA>{} and is_##T<CC>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*AA{})>{} and \
+	is_convertible_v<AAP, AA*> and is_convertible_v<CCP, CC*> \
+, int> =0> \
+v herk(        UL ul, C transA,             S n, S k, ALPHA const* alpha, AAP aa, S lda,             BETA const* beta, CCP cc, S ldc) \
+/*=delete;*/ \
+{ \
+	if(transA == 'N' or transA == 'n') MULTI_ASSERT1( lda >= max(1l, n) ); else MULTI_ASSERT1( lda >= max(1l, k) ); \
+	MULTI_ASSERT1( ldc >= max(1l, n) ); \
+	MULTI_MARK_SCOPE("cpu_herk"); BLAS(T##herk)(      ul, transA,            BC(n), BC(k), *(Real const*)alpha, aa, BC(lda),        *(Real const*)beta, cc, BC(ldc)); \
+}
 
 #define xgemm(T) \
 template<class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BBP, class BB = typename pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename pointer_traits<CCP>::element_type, \
@@ -447,7 +464,9 @@ enable_if_t< \
 	is_##T<AA>{} and is_##T<BB>{} and is_##T<CC>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{})>{} and \
 	is_convertible<AAP, AA*>{} and is_convertible<BBP, BB*>{} and is_convertible<CCP, CC*>{} \
 , int> =0 > \
-v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc){ \
+v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc) \
+{ \
+	MULTI_MARK_SCOPE("cpu_gemm");			                                                                                                                            \
 	using std::max;                                                                                                                                                     \
 	if(transA =='N') MULTI_ASSERT1(lda >= max(1l, m)); else MULTI_ASSERT1(lda >= max(1l, k));                                                                           \
 	if(transB =='N') MULTI_ASSERT1(ldb >= max(1l, k)); else MULTI_ASSERT1(ldb >= max(1l, n));                                                                           \
@@ -457,6 +476,7 @@ v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* a
 	if(*beta != 0.) MULTI_ASSERT1((is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{} + BETA{}*CC{})>{}));                                                                          \
 	BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), *(T const*)alpha, (T const*)static_cast<AA*>(aa), BC(lda), (T const*)static_cast<BB*>(bb), BC(ldb), *(T const*)beta, (T*)static_cast<CC*>(cc), BC(ldc));               \
 }
+
 xgemm(s) xgemm(d) xgemm(c) xgemm(z)
 #undef xgemm
 
@@ -467,6 +487,7 @@ enable_if_t< \
 	is_convertible<AAP, AA*>{} and is_convertible<BBP, BB*>{} \
 ,int> =0> \
 v trsm(char side, char ul, char transA, char diag, ssize_t m, ssize_t n, ALPHA alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb){ \
+	MULTI_MARK_SCOPE("cpu_trsm");											\
 	assert( side   == 'L' or side    == 'R' ); \
 	assert( ul     == 'U' or ul     == 'L' ); \
 	assert( transA == 'N' or transA == 'T' or transA == 'C' ); \
@@ -527,6 +548,10 @@ struct context{ // stateless (and thread safe)
 	->decltype(core::trsm(std::forward<As>(as)...)){
 		return core::trsm(std::forward<As>(as)...);}
 
+	template<class... As>
+	static auto herk(As&&... as)
+	->decltype(core::herk(std::forward<As>(as)...)){
+		return core::herk(std::forward<As>(as)...);}
 };
 
 template<class Context> struct is_context : std::false_type{};

@@ -1,9 +1,10 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo A. Correa 2020
+// © Alfredo A. Correa 2020-2021
 
 #ifndef MULTI_ADAPTORS_CUDA_CUBLAS_CONTEXT_HPP
 #define MULTI_ADAPTORS_CUDA_CUBLAS_CONTEXT_HPP
 
+#include "../../../config/MARK.hpp"
 #include "../../../adaptors/cuda/cublas/call.hpp"
 
 #include "../../../adaptors/blas/traits.hpp"
@@ -76,20 +77,6 @@ using blas::is_d;
 using std::is_assignable;
 using std::is_convertible_v;
 
-//template<class Derived>
-//struct basic_context{
-//};
-
-//class unsynchronized_context : std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>, public basic_context<unsynchronized_context>{
-//	using pimpl_ = std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>;
-//public:
-//	using std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>::get;
-//	unsynchronized_context() : pimpl_{[]{cublasHandle_t h; cublasCreate(&h); return h;}(), &cublasDestroy}{}
-//	static int version(){int ret; cublas::call<cublasGetVersion>(nullptr, &ret); return ret;}
-//	using basic_context<unsynchronized_context>::gemm;
-//	using basic_context<unsynchronized_context>::trsm;
-//};
-
 class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>{
 	using pimpl_t = std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>;
 public:
@@ -103,11 +90,12 @@ public:
 	static int version(){int ret; cublas::call<cublasGetVersion>(nullptr, &ret); return ret;}
 	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename std::pointer_traits<CCP>::element_type,
 		std::enable_if_t<
-			is_z<AA>{} and is_z<BB>{} and is_z<CC>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{})>{} and
+			is_z<AA>{} and is_z<BB>{} and is_z<CC>{} and is_z<ALPHA>{} and is_z<BETA>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{})>{} and
 			std::is_convertible_v<AAP, memory::cuda::ptr<AA>> and std::is_convertible_v<BBP, memory::cuda::ptr<BB>> and std::is_convertible_v<CCP, memory::cuda::ptr<CC>>
 		,int> =0
 	>
 	void gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc){
+		MULTI_MARK_SCOPE("cublasZgemm");
 		cublas::call<cublasZgemm>(this->get(), cublas::operation{transA}, cublas::operation{transB}, m, n, k, (cuDoubleComplex const*)alpha, (cuDoubleComplex const*)raw_pointer_cast(aa), lda, (cuDoubleComplex const*)raw_pointer_cast(bb), ldb, (cuDoubleComplex const*)beta, (cuDoubleComplex*)raw_pointer_cast(cc), ldc);
 	}
 	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename std::pointer_traits<CCP>::element_type,
@@ -117,6 +105,7 @@ public:
 		,int> =0
 	>
 	void gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc){
+		MULTI_MARK_SCOPE("cublasDgemm");
 		cublas::call<cublasDgemm>(this->get(), cublas::operation{transA}, cublas::operation{transB}, m, n, k, (double const*)alpha, (double const*)raw_pointer_cast(aa), lda, (double const*)raw_pointer_cast(bb), ldb, (double const*)beta, (double*)raw_pointer_cast(cc), ldc);
 	}
 	template<class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BBP, class BB = typename pointer_traits<BBP>::element_type,
@@ -128,6 +117,17 @@ public:
 	void trsm(char side, char ul, char transA, char diag, ssize_t m, ssize_t n, ALPHA alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb){
 		cublas::call<cublasZtrsm>(this->get(), cublas::side{side}, cublas::filling{ul}, cublas::operation{transA}, cublas::diagonal{diag}, m, n, (cuDoubleComplex const*)&alpha, (cuDoubleComplex const*)raw_pointer_cast(aa), lda, (cuDoubleComplex*)raw_pointer_cast(bb), ldb);
 	}
+//	template<class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BETA, class CCP, class CC = typename pointer_traits<CCP>::element_type,
+//		std::enable_if_t<
+//			is_z<AA>{} and is_z<CC>{} and is_d<ALPHA>{} and is_d<BETA>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*AA{})>{} and
+//			is_convertible_v<AAP, AA*> and is_convertible_v<CCP, CC*>
+//			, int
+//		> =0
+//	>
+//	void herk(char ul, char transA, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BETA const* beta, CCP cc, ssize_t ldc){
+//		MULTI_MARK_SCOPE("cublasZherk");
+//		cublas::call<cublasZherk>(this->get(), cublas::filling{ul}, cublas::operation{transA}, n, k, (double const*)&alpha, (cuDoubleComplex const*)raw_pointer_cast(aa), lda, (double const*)&beta, (cuDoubleComplex*)raw_pointer_cast(cc), ldc);
+//	}
 };
 
 }

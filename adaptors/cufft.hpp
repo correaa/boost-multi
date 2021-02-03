@@ -326,7 +326,6 @@ auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
 ->decltype(many_dft(i.begin(), i.end(), o.begin(), s),std::forward<Out>(o))
 {
 	assert(extension(i) == extension(o));
-	std::array<bool, D-1> tail = reinterpret_cast<std::array<bool, D-1> const&>(which[1]);
 	auto ff = std::find(begin(which)+1, end(which), false);
 	if(which[0] == true){
 		if(ff==end(which)) cufft::dft(i, std::forward<Out>(o), s);
@@ -346,14 +345,16 @@ auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
 //		}
 		else if(ff==end(which)) many_dft(i.begin(), i.end(), o.begin(), s);
 		else{
+			std::array<bool, D-1> tail = array_tail(which);
 			if(which.size() > 1 and which[1] == false and i.is_flattable() and o.is_flattable()) cufft::dft(tail, i.flatted(), o.flatted(), s);
 			else{
-				auto d_min = 0; auto n_min = size(i);
-				for(auto d = 0; d != D; ++d){if((size(i<<d) < n_min) and (tail[d]==false)){n_min = size(i<<d); d_min = d;}}
-				if(d_min!=0){
-					std::rotate(which.begin(), which.begin()+d_min, which.end());
-					dft(which, i<<d_min, o<<d_min, s);
-				}else{
+//				auto d_min = 0; auto n_min = size(i);
+//				for(auto d = 0; d != D; ++d){if((size(i<<d) < n_min) and (tail[d]==false)){n_min = size(i<<d); d_min = d;}}
+//				if(d_min!=0){
+//					std::rotate(which.begin(), which.begin()+d_min, which.end());
+//					dft(which, i<<d_min, o<<d_min, s);
+//				}else
+				{
 					if(base(i) == base(o) and i.layout() != o.layout()){
 						auto tmp = +i;
 						for(auto idx : i.extension()) cufft::dft(tail, tmp[idx], o[idx], s);

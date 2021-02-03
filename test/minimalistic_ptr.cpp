@@ -12,13 +12,16 @@ $CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 namespace multi = boost::multi;
 
 namespace minimalistic{
-template<class T> struct ptr : std::iterator_traits<T*>{ // minimalistic pointer
+
+template<class T> class ptr : public std::iterator_traits<T*>{ // minimalistic pointer
 	T* impl_;
-	ptr(T* impl) : impl_{impl}{}
-	typename ptr::reference operator*() const{return *impl_;}
-	auto operator+(typename ptr::difference_type n) const{return ptr{impl_ + n};}
+public:
+	constexpr explicit ptr(T* impl) : impl_{impl}{}
+	constexpr typename ptr::reference operator*() const{return *impl_;}
+	constexpr auto operator+(typename ptr::difference_type n) const {return ptr{impl_ + n};}
 //	T& operator[](std::ptrdiff_t n) const{return impl_[n];} // optional
 	using default_allocator_type = std::allocator<T>;
+	template<class> friend class ptr2;
 };
 
 template<class T> class ptr2 : public std::iterator_traits<T*>{ // minimalistic pointer
