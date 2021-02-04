@@ -342,7 +342,7 @@ auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
 		else{
 			auto n = ff - which.begin();
 			std::rotate(begin(which), ff, end(which));
-			dft(which, (i<<n), (o<<n), s);
+			dft(which, i<<n, o<<n, s);
 		}
 	}else if(which[0]==false){
 		if(D==1 or std::none_of(begin(which)+1, end(which), [](auto e){return e;})){
