@@ -367,7 +367,7 @@ auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
 				}else
 				{
 					if(base(i) == base(o) and i.layout() != o.layout()){
-						auto tmp = +i;
+						auto const tmp = +i;
 						for(auto idx : extension(i)) cufft::dft(tail, tmp[idx], o[idx], s);
 					}else for(auto idx : extension(i)) cufft::dft(tail, i[idx], o[idx], s);
 				}
