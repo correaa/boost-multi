@@ -83,13 +83,11 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray){
 	auto&& B = A.rotated()(encoded_3x2_range).partitioned(3).unrotated();
 
 	BOOST_REQUIRE( dimensionality(B) == 3 );
-	BOOST_TEST_REQUIRE( std::get<0>(sizes(B)) == 7 );
-	BOOST_TEST_REQUIRE( std::get<1>(sizes(B)) == 3 );
-	BOOST_TEST_REQUIRE( std::get<2>(sizes(B)) == 2 );
-	BOOST_TEST_REQUIRE( B[4].num_elements() == 3*2 );
+	BOOST_REQUIRE(( sizes(B) == decltype(sizes(B)){7, 3, 2} ));
+	BOOST_REQUIRE( B[4].num_elements() == 3*2 );
 
 	BOOST_REQUIRE( &B[4][1][0] == &A[4][4] );
-	BOOST_TEST_REQUIRE( B[4][1][0] == 4.10 );
+	BOOST_REQUIRE( B[4][1][0] == 4.10 );
 
 	BOOST_REQUIRE((
 		B[4] == multi::array<double, 2>{
