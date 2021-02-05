@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 enable_language(CUDA)
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -std=c++17 --extended-lambda --expt-relaxed-constexpr -Xcudafe \"--display_error_number --set_error_limit=2 --emit_warnings_as_errors --diag_suppress=implicit_return_from_non_void_function\"")
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -std=c++17 --extended-lambda --expt-relaxed-constexpr -Xcudafe \"--display_error_number --set_error_limit=2 --verbose_diagnostics --emit_warnings_as_errors --diag_suppress=implicit_return_from_non_void_function\"")
 
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 
