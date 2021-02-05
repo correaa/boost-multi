@@ -68,23 +68,26 @@ BOOST_AUTO_TEST_CASE(array_partitioned){
 
 BOOST_AUTO_TEST_CASE(array_encoded_subarray){
 
-	multi::array<double, 2> A = { // A[walker][encoded_property]
+	multi::array<double, 2> A = { // A[walker][encoded_property] // 7 walkers
 		{99, 99, 0.00, 0.01, 0.10, 0.11, 0.20, 0.21, 99},
 		{99, 99, 1.00, 1.01, 1.10, 1.11, 1.20, 1.21, 99},
 		{99, 99, 2.00, 2.01, 2.10, 2.11, 2.20, 2.21, 99},
 		{99, 99, 3.00, 3.01, 3.10, 3.11, 3.20, 3.21, 99},
 		{99, 99, 4.00, 4.01, 4.10, 4.11, 4.20, 4.21, 99},
 		{99, 99, 5.00, 5.01, 5.10, 5.11, 5.20, 5.21, 99},
+		{99, 99, 6.00, 6.01, 6.10, 6.11, 6.20, 6.21, 99},
 	};
 
-	multi::iextension const encoded_2x2_range = {2, 8};
-//	auto&& B = A(A.extension(), encoded_2x2_range).rotated().partitioned(2).unrotated();
-	auto&& B = A.rotated()(encoded_2x2_range).partitioned(3).unrotated();
+	multi::iextension const encoded_3x2_range = {2, 8};
+//	auto&& B = A(A.extension(), encoded_3x2_range).rotated().partitioned(3).unrotated();
+	auto&& B = A.rotated()(encoded_3x2_range).partitioned(3).unrotated();
 
 	BOOST_REQUIRE( dimensionality(B) == 3 );
-	BOOST_TEST_REQUIRE( std::get<0>(sizes(B)) == 6 );
+	BOOST_TEST_REQUIRE( std::get<0>(sizes(B)) == 7 );
 	BOOST_TEST_REQUIRE( std::get<1>(sizes(B)) == 3 );
 	BOOST_TEST_REQUIRE( std::get<2>(sizes(B)) == 2 );
+	BOOST_TEST_REQUIRE( B[4].num_elements() == 3*2 );
+
 	BOOST_REQUIRE( &B[4][1][0] == &A[4][4] );
 	BOOST_TEST_REQUIRE( B[4][1][0] == 4.10 );
 
