@@ -66,6 +66,38 @@ BOOST_AUTO_TEST_CASE(array_partitioned){
 	BOOST_REQUIRE( &A2.partitioned(1).rotated()[3][1][0] == &A2[3][1] );
 }
 
+BOOST_AUTO_TEST_CASE(array_encoded_subarray){
+
+	multi::array<double, 2> A = { // A[walker][encoded_property]
+		{99, 99, 0.00, 0.01, 0.10, 0.11, 99},
+		{99, 99, 1.00, 1.01, 1.10, 1.11, 99},
+		{99, 99, 2.00, 2.01, 2.10, 2.11, 99},
+		{99, 99, 3.00, 3.01, 3.10, 3.11, 99},
+		{99, 99, 4.00, 4.01, 4.10, 4.11, 99},
+		{99, 99, 5.00, 5.01, 5.10, 5.11, 99},
+	};
+
+	multi::iextension const encoded_2x2_range = {2, 6};
+//	auto&& B = A(A.extension(), encoded_2x2_range).rotated().partitioned(2).unrotated();
+	auto&& B = A.rotated()(encoded_2x2_range).partitioned(2).unrotated();
+
+	BOOST_REQUIRE( dimensionality(B) == 3 );
+	BOOST_TEST_REQUIRE( std::get<0>(sizes(B)) == 6 );
+	BOOST_REQUIRE( std::get<1>(sizes(B)) == 2 );
+	BOOST_REQUIRE( std::get<2>(sizes(B)) == 2 );
+	BOOST_REQUIRE( &B[4][1][0] == &A[4][4] );
+	BOOST_REQUIRE( B[4][1][0] == 4.10 );
+
+	BOOST_REQUIRE((
+		B[4] == multi::array<double, 2>{
+			{4.00, 4.01},
+			{4.10, 4.11}
+		}
+	));
+
+	B[4][1][0] = 1111.;
+	BOOST_REQUIRE( A[4][4] == 1111. );
+}
 
 BOOST_AUTO_TEST_CASE(array_partitioned_add_to_last){
 
