@@ -192,7 +192,7 @@ cuda-10.0:
     stage: test
     script:
       - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet gcc-8 cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
+      - apt-get update && apt-get install --no-install-recommends -y --quiet gcc-8 g++-8 cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
       - ln --symbolic --force . ../multi
       - update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 8
       - update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 8
