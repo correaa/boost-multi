@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray){
 		using raw_source_reference = decltype(std::declval<multi::array<double, 2>&>()[0]);
 		using internal_array_type = decltype(std::declval<raw_source_reference>()({2, 8}).partitioned(3));
 	public:
-		walker_ref(raw_source_reference row) 
+		walker_ref(raw_source_reference&& row) 
 			: prop1{row[0]}, prop2{row[1]}, slater_array{row({2, 8}).partitioned(3)}, prop3{row[8]}{}
 		double& prop1;
 		double& prop2;
