@@ -99,6 +99,22 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray){
 
 	B[4][1][0] = 1111.;
 	BOOST_REQUIRE( A[4][4] == 1111. );
+	
+	class walker_ref{
+		using raw_source_reference = decltype(std::declval<multi::array<double, 2>&>()[0]);
+		using internal_array_type = decltype(std::declval<raw_source_reference>()({2, 8}).partitioned(3));
+	public:
+		walker_ref(raw_source_reference row) 
+			: prop1{row[0]}, prop2{row[1]}, slater_array{row({2, 8}).partitioned(3)}, prop3{row[8]}{}
+		double& prop1;
+		double& prop2;
+		internal_array_type slater_array;
+		double& prop3;
+	};
+
+	walker_ref&& wr(A[5]);
+	
+	BOOST_REQUIRE( wr.slater_array[2][1] == 5.21 );
 }
 
 BOOST_AUTO_TEST_CASE(array_partitioned_add_to_last){
