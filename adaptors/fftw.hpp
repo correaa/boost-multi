@@ -359,10 +359,10 @@ public:
 		fftw_flops(impl_.get(), &r.add, &r.mul, &r.fma);
 		return r;
 	}
-	std::string string_print() const{
-		return std::unique_ptr<char>{fftw_sprint_plan(impl_.get())}.get();
-	}
-	friend std::ostream& operator<<(std::ostream& os, plan const& p){return os<<p.string_print()<<'\n';}
+	//std::string string_print() const{
+	//	return std::unique_ptr<char>{fftw_sprint_plan(impl_.get())}.get();
+	//}
+	//friend std::ostream& operator<<(std::ostream& os, plan const& p){return os<<p.string_print()<<'\n';}
 #if HAVE_FFTW3_THREADS
 public:
 	static void make_thread_safe(){
