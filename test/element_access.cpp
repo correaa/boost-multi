@@ -10,10 +10,12 @@ $CXX $0 -o $0x -DMULTI_ACCESS_NDEBUG -lboost_unit_test_framework&&$0x&&rm $0x;ex
 
 #include "../array.hpp"
 
+#if 0
 #if defined( __cpp_lib_apply) and __cpp_lib_apply>=201603
 #include<tuple> // apply
 #else
 #include<experimental/tuple>
+#endif
 #endif
 
 namespace multi = boost::multi;
@@ -35,13 +37,15 @@ BOOST_AUTO_TEST_CASE(multi_tests_element_access_with_tuple){
 	BOOST_REQUIRE( m[p[0]][p[1]] == m(1, 2) );
 	BOOST_REQUIRE( &m(p[0], p[1]) == &m[p[0]][p[1]] );
 
+#if 0
 	using std::
 #if not defined(__cpp_lib_apply) or not(__cpp_lib_apply>=201603)
 		experimental::
 #endif
 		apply;
 	BOOST_REQUIRE( &m[p[0]][p[1]] == &apply(m, p) );
-	
+#endif
+
 	BOOST_REQUIRE( &m[p[0]][p[1]] == &m(p[0], p[1]) );
 	BOOST_REQUIRE( &m(p[0], p[1]) == &m.apply(p) );
 }
