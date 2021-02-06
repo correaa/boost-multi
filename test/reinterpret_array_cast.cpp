@@ -71,17 +71,17 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_tuple_as_extra_dimension){
 
 		BOOST_REQUIRE( dimensionality(A.reinterpret_array_cast<double>(3)) == 3 );
 		BOOST_REQUIRE( A.reinterpret_array_cast<double>(3).num_elements() == A.num_elements()*3 );
-		BOOST_TEST( A.reinterpret_array_cast<double>(3).size() == 4 );
-		BOOST_TEST( A.reinterpret_array_cast<double>(3)[0].size() == 5 );
-		BOOST_TEST( A.reinterpret_array_cast<double>(3)[0][0].size() == 3 );
-		BOOST_TEST( &A.reinterpret_array_cast<double>(3)[2][3][0] == &std::get<0>(A[2][3]) );
-		BOOST_TEST( &A.reinterpret_array_cast<double>(3)[2][3][1] == &std::get<1>(A[2][3]) );
-		BOOST_TEST( &A.reinterpret_array_cast<double>(3)[2][3][2] == &std::get<2>(A[2][3]) );
+		BOOST_REQUIRE( A.reinterpret_array_cast<double>(3).size() == 4 );
+		BOOST_REQUIRE( A.reinterpret_array_cast<double>(3)[0].size() == 5 );
+		BOOST_REQUIRE( A.reinterpret_array_cast<double>(3)[0][0].size() == 3 );
+		BOOST_REQUIRE( &A.reinterpret_array_cast<double>(3)[2][3][0] == &std::get<0>(A[2][3]) );
+		BOOST_REQUIRE( &A.reinterpret_array_cast<double>(3)[2][3][1] == &std::get<1>(A[2][3]) );
+		BOOST_REQUIRE( &A.reinterpret_array_cast<double>(3)[2][3][2] == &std::get<2>(A[2][3]) );
 
 		multi::array<double, 3> const B = A.reinterpret_array_cast<double>(3);
-		BOOST_TEST( B[2][3][0] == std::get<0>(A[2][3]) );
-		BOOST_TEST( B[2][3][1] == std::get<1>(A[2][3]) );
-		BOOST_TEST( B[2][3][2] == std::get<2>(A[2][3]) );
+		BOOST_REQUIRE( B[2][3][0] == std::get<0>(A[2][3]) );
+		BOOST_REQUIRE( B[2][3][1] == std::get<1>(A[2][3]) );
+		BOOST_REQUIRE( B[2][3][2] == std::get<2>(A[2][3]) );
 
 		auto C = +A.reinterpret_array_cast<double>(3);
 		BOOST_REQUIRE( C == B );

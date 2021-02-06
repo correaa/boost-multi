@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex_C){
 	multi::array<complex, 1> const B = {1.,2. + 2.*I, 3.};
 	complex C;
 	blas::dot(blas::C(A), B, C);
-	BOOST_TEST( C == std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto& a, auto& b){return conj(a)*b;}) );
+	BOOST_REQUIRE( C == std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto& a, auto& b){return conj(a)*b;}) );
 }
 
 #if defined(CUDA_FOUND) and CUDA_FOUND
@@ -355,36 +355,36 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex_thrust){
 		complex c;
 		blas::core::dotu(size(A[1]), A[1].base(), A[1].stride(), A[2].base(), A[2].stride(), &c);
 		auto inner = std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.});
-		BOOST_TEST( c.real() == inner.real() );
-		BOOST_TEST( c.imag() == inner.imag() );
+		BOOST_REQUIRE( c.real() == inner.real() );
+		BOOST_REQUIRE( c.imag() == inner.imag() );
 	}
 	{
 		complex c;
 		blas::context{}.dotu(size(A[1]), A[1].base(), A[1].stride(), A[2].base(), A[2].stride(), &c);
 		auto inner = std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.});
-		BOOST_TEST( c.real() == inner.real() );
-		BOOST_TEST( c.imag() == inner.imag() );
+		BOOST_REQUIRE( c.real() == inner.real() );
+		BOOST_REQUIRE( c.imag() == inner.imag() );
 	}
 	{
 		complex c;
 		blas::dot_n(begin(A[1]), size(A[1]), begin(A[2]), &c);
 		auto inner = std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.});
-		BOOST_TEST( c == inner );
+		BOOST_REQUIRE( c == inner );
 	}
 	{
 		complex c;
 		blas::dot(A[1], A[2], c);
 		auto inner = std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.});
-		BOOST_TEST( c == inner );
+		BOOST_REQUIRE( c == inner );
 	}
 	{
 		complex c = blas::dot(A[1], A[2]);
 		auto inner = std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.});
-		BOOST_TEST( c == inner );
+		BOOST_REQUIRE( c == inner );
 	}
 	{
 		auto inner = std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0.});
-		BOOST_TEST( +blas::dot(A[1], A[2]) == inner );
+		BOOST_REQUIRE( +blas::dot(A[1], A[2]) == inner );
 	}
 	{
 		complex c; blas::dot(A[1], A[2], c);
