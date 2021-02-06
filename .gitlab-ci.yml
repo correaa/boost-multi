@@ -197,7 +197,7 @@ cuda-10.0:
       - nvcc --version
       - cd test
       - mkdir build && cd build
-      - cmake .. -DENABLE_CUDA=1 CUDA_NVCC_FLAGS="-ccbin /usr/bin/g++-8"
+      - cmake .. -DENABLE_CUDA=1 -DCUDA_NVCC_FLAGS="-ccbin /usr/bin/g++-8"
       - cmake --build . --verbose
       - ctest --output-on-failure
 
