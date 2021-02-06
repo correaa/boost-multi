@@ -323,7 +323,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare){//, *utf::tolerance(0.00001
 		auto const B_cpy =+ B;
 		blas::trsm(blas::side::left, blas::filling::upper, 1., A, B); // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
 		BOOST_REQUIRE_CLOSE( B[2][0] , 0.375 , 0.00001 );
-		BOOST_REQUIRE( (+blas::gemm(1., A_cpy, B))[1][0] == B_cpy[1][0] );
+		BOOST_REQUIRE_CLOSE( (+blas::gemm(1., A_cpy, B))[1][0] , B_cpy[1][0] , 0.00001 );
 	}
 	{
 		multi::array<double, 2> B = {
