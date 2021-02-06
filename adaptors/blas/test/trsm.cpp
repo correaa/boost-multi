@@ -1,7 +1,7 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 $CXX $0 -o $0x -lcudart -lcublas `pkg-config --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
-// © Alfredo A. Correa 2019-2020
+// © Alfredo A. Correa 2019-2021
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS trsm"
 #define BOOST_TEST_DYN_LINK
@@ -38,7 +38,7 @@ auto triangular(multi::blas::filling f, Matrix const& m){
 	return ret;
 }
 
-BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_0x0, *utf::tolerance(0.00001)){
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_0x0){//, *utf::tolerance(0.00001)){
 	namespace blas = multi::blas;
 	multi::array<double, 2> const A;
 	{
@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_0x0, *utf::tolerance(0.00001)){
 	}
 }
 
-BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_1x1, *utf::tolerance(0.00001)){
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_1x1){//, *utf::tolerance(0.00001)){
 	namespace blas = multi::blas;
 	multi::array<double, 2> const A = {
 		{10.,},
@@ -60,8 +60,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_1x1, *utf::tolerance(0.00001)){
 		auto const B_cpy = B;
 		blas::trsm(blas::side::left, blas::filling::upper, blas::diagonal::general, 1., A, B); 
 		// B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
-		BOOST_TEST( B[0][0] == (3./10.) );
-		BOOST_TEST( (+blas::gemm(1., A, B))[0][0] == B_cpy[0][0] );
+		BOOST_REQUIRE_CLOSE( B[0][0] , 3./10. , 0.00001 );
+		BOOST_REQUIRE_CLOSE( (+blas::gemm(1., A, B))[0][0] , B_cpy[0][0] , 0.00001 );
 	}
 	{
 		multi::array<double, 2> B = {
@@ -70,8 +70,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_1x1, *utf::tolerance(0.00001)){
 		auto const B_cpy = B;
 		// B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
 		blas::trsm(blas::side::left, blas::filling::upper, blas::diagonal::general, 2., A, B); 
-		BOOST_TEST( B[0][0] == 2.*3./10. );
-		BOOST_TEST( (+blas::gemm(1., A, B))[0][0] == 2.*B_cpy[0][0] );
+		BOOST_REQUIRE_CLOSE( B[0][0] , 2.*3./10. , 0.00001 );
+		BOOST_REQUIRE_CLOSE( (+blas::gemm(1., A, B))[0][0] , 2.*B_cpy[0][0] , 0.00001 );
 	}
 	{
 		multi::array<double, 2> B = {
@@ -80,14 +80,14 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_1x1, *utf::tolerance(0.00001)){
 		auto const B_cpy = B;
 		// B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
 		blas::trsm(blas::side::left, blas::filling::upper, blas::diagonal::general, 1., A, B);
-		BOOST_TEST( B[0][0] == 3./10. );
-		BOOST_TEST( B[0][1] == 4./10. );
-		BOOST_TEST( B[0][2] == 5./10. );
-		BOOST_TEST( (+blas::gemm(1., A, B))[0][1] == B_cpy[0][1] );
+		BOOST_REQUIRE_CLOSE( B[0][0] , 3./10. , 0.00001 );
+		BOOST_REQUIRE_CLOSE( B[0][1] , 4./10. , 0.00001 );
+		BOOST_REQUIRE_CLOSE( B[0][2] , 5./10. , 0.00001 );
+		BOOST_REQUIRE_CLOSE( (+blas::gemm(1., A, B))[0][1] , B_cpy[0][1] , 0.00001 );
 	}
 }
 
-BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square, *utf::tolerance(0.00001)){
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square){//, *utf::tolerance(0.00001)){
 	namespace blas = multi::blas;
 	multi::array<double, 2> const A = {
 		{     1.,      3.,  4.},
@@ -104,8 +104,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square, *utf::tolerance(0.00001)){
 		auto const B_cpy = B;
 		// B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
 		blas::trsm(blas::side::left, blas::filling::upper, 1., A, B); 
-		BOOST_TEST( B[1][2] == 0.107143 );
-		BOOST_TEST( (+blas::gemm(1., A_cpy, B))[1][2] == B_cpy[1][2] );
+		BOOST_REQUIRE_CLOSE( B[1][2] , 0.107143 , 0.001 );
+		BOOST_REQUIRE( (+blas::gemm(1., A_cpy, B))[1][2] == B_cpy[1][2] );
 	}
 	{
 		auto const AT =+ ~A;
@@ -117,8 +117,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square, *utf::tolerance(0.00001)){
 		};
 		auto const B_cpy = B;
 		blas::trsm(blas::side::left, blas::filling::upper, 1., blas::T(AT), B);
-		BOOST_TEST( B[1][2] == 0.107143 );
-		BOOST_TEST( (+blas::gemm(1., blas::T(AT_cpy), B))[1][2] == B_cpy[1][2] );
+		BOOST_REQUIRE_CLOSE( B[1][2] , 0.107143 , 0.001 );
+		BOOST_REQUIRE( (+blas::gemm(1., blas::T(AT_cpy), B))[1][2] == B_cpy[1][2] );
 	}
 	{
 		auto const AT =+ ~A;
@@ -130,8 +130,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square, *utf::tolerance(0.00001)){
 		};
 		auto BT =+ ~B;
 		blas::trsm(blas::side::left, blas::filling::upper, 1., blas::T(AT), blas::T(BT));
-		BOOST_TEST( blas::T(BT)[1][2] == 0.107143 );
-		BOOST_TEST( (+blas::gemm(1., blas::T(AT_cpy), blas::T(BT)))[1][2] == B[1][2] );
+		BOOST_REQUIRE_CLOSE( blas::T(BT)[1][2] , 0.107143 , 0.001 );
+		BOOST_REQUIRE( (+blas::gemm(1., blas::T(AT_cpy), blas::T(BT)))[1][2] == B[1][2] );
 	}
 	{
 		auto const AT =+ ~A;
@@ -142,11 +142,11 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square, *utf::tolerance(0.00001)){
 		};
 		auto BT =+ ~B;
 		blas::trsm(blas::side::left, blas::filling::upper, 1., A, blas::T(BT));
-		BOOST_TEST( (~BT)[1][2] == 0.107143 );
+		BOOST_REQUIRE_CLOSE( (~BT)[1][2] , 0.107143 , 0.001 );
 	}
 }
 
-BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex, *utf::tolerance(0.00001)){
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex){//, *utf::tolerance(0.00001)){
 	namespace blas = multi::blas;
 	using complex = std::complex<double>; complex const I{0, 1};
 	multi::array<complex, 2> const A = {
@@ -160,11 +160,11 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex, *utf::tolerance(0.00001)){
 		{3. + 1.*I, 4. + 8.*I, 2. + 7.*I}
 	};
 	blas::trsm(blas::side::left, blas::filling::lower, 2.+1.*I, blas::H(A), B); // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
-	BOOST_TEST_REQUIRE( real(B[1][2]) ==  2.33846 );
-	BOOST_TEST_REQUIRE( imag(B[1][2]) == -0.0923077 );
+	BOOST_REQUIRE_CLOSE( real(B[1][2]) ,  2.33846   , 0.0001 );
+	BOOST_REQUIRE_CLOSE( imag(B[1][2]) , -0.0923077 , 0.0001 );
 }
 
-BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_rectangular, *utf::tolerance(0.00001)){
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_rectangular){//, *utf::tolerance(0.00001)){
 	namespace blas = multi::blas;
 	using complex = std::complex<double>; complex const I{0, 1};
 	multi::array<complex, 2> const A = {
@@ -178,11 +178,11 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_rectangular, *utf::tolerance(0.0000
 		{3. + 1.*I, 4. + 8.*I}
 	};
 	blas::trsm(blas::side::left, blas::filling::lower, 2.+1.*I, blas::H(A), B); // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
-	BOOST_TEST_REQUIRE( real(B[2][0]) == -4.16471 );
-	BOOST_TEST_REQUIRE( imag(B[2][0]) ==  8.25882 );
+	BOOST_REQUIRE_CLOSE( real(B[2][0]) , -4.16471 , 0.0001 );
+	BOOST_REQUIRE_CLOSE( imag(B[2][0]) ,  8.25882 , 0.0001 );
 }
 
-BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column, *utf::tolerance(0.00001)){
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column){//, *utf::tolerance(0.00001)){
 	namespace blas = multi::blas;
 	using complex = std::complex<double>; complex const I{0, 1};
 	multi::array<complex, 2> const A = {
@@ -196,11 +196,11 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column, *utf::tolerance(0.00001)){
 		{3. + 1.*I}
 	};
 	blas::trsm(blas::side::left, blas::filling::lower, 2.+1.*I, blas::H(A), B); // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
-	BOOST_TEST_REQUIRE( real(B[2][0]) == -4.16471 );
-	BOOST_TEST_REQUIRE( imag(B[2][0]) ==  8.25882 );
+	BOOST_REQUIRE_CLOSE( real(B[2][0]) , -4.16471 , 0.0001);
+	BOOST_REQUIRE_CLOSE( imag(B[2][0]) ,  8.25882 , 0.0001);
 }
 
-BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column_cpu, *utf::tolerance(0.00001)){
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column_cpu){//, *utf::tolerance(0.00001)){
 	namespace blas = multi::blas;
 	using complex = std::complex<double>; complex const I{0, 1};
 	multi::array<complex, 2> const A = {
@@ -214,11 +214,11 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column_cpu, *utf::tolerance(0.00001
 		{3. + 1.*I}
 	};
 	blas::trsm(blas::side::left, blas::filling::lower, 2.+1.*I, blas::H(A), B); // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
-	BOOST_TEST_REQUIRE( real(B[2][0]) == -4.16471 );
-	BOOST_TEST_REQUIRE( imag(B[2][0]) ==  8.25882 );
+	BOOST_REQUIRE_CLOSE( real(B[2][0]) , -4.16471 , 0.0001 );
+	BOOST_REQUIRE_CLOSE( imag(B[2][0]) ,  8.25882 , 0.0001 );
 }
 
-BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_real, *utf::tolerance(0.00001)){
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_real){//, *utf::tolerance(0.00001)){
 	namespace blas = multi::blas;
 	multi::array<double, 2> const A = {{2.,},};
 	{
@@ -239,7 +239,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_real, *utf::tolerance(0.0
 	}
 }
 
-BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_complex, *utf::tolerance(0.00001)){
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_complex){//, *utf::tolerance(0.00001)){
 	namespace blas = multi::blas;
 	using complex = std::complex<double>;
 	multi::array<complex, 2> const A = {{2.,},};
@@ -273,7 +273,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_complex, *utf::tolerance(
 	BOOST_REQUIRE( B1 == B2 );
 }
 
-BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare, *utf::tolerance(0.00001)){
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare){//, *utf::tolerance(0.00001)){
 	namespace blas = multi::blas;
 	multi::array<double, 2> const A = {
 		{  1.,   3.,  4.},
@@ -291,14 +291,14 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare, *utf::tolerance(0.00001)){
 		multi::array<double, 2> BT =+ ~B;
 		BOOST_REQUIRE( BT == ~B );
 		blas::trsm(blas::side::left, blas::filling::upper, 1., A, B); // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
-		BOOST_TEST( B[1][2] == 0.107143 );
-		BOOST_TEST( (+blas::gemm(1., A_cpy, B))[1][2] == B_cpy[1][2] );
+		BOOST_REQUIRE_CLOSE( B[1][2] , 0.107143                              , 0.001);
+		BOOST_REQUIRE_CLOSE( (+blas::gemm(1., A_cpy, B))[1][2] , B_cpy[1][2] , 0.001);
 
 		auto const BT_cpy = BT;
 		blas::trsm(blas::side::left, blas::filling::upper, 1., A, blas::T(BT));
-		BOOST_TEST( blas::T(BT)[1][2] ==  0.107143 );
+		BOOST_REQUIRE_CLOSE( blas::T(BT)[1][2],  0.107143, 0.001 );
 
-		BOOST_TEST( (+blas::gemm(1., A_cpy, blas::T(BT)))[1][2] == blas::T(BT_cpy)[1][2] );
+		BOOST_REQUIRE_CLOSE( (+blas::gemm(1., A_cpy, blas::T(BT)))[1][2] , blas::T(BT_cpy)[1][2] , 0.00001 );
 	}
 	{
 		multi::array<double, 2> B = {
@@ -309,10 +309,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare, *utf::tolerance(0.00001)){
 		multi::array<double, 2> AT = ~A;
 		multi::array<double, 2> BT = ~B;
 		blas::trsm(blas::side::left, blas::filling::upper, 1., blas::T(AT), B); // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
-		BOOST_TEST( B[1][2] == 0.107143 );
+		BOOST_REQUIRE_CLOSE( B[1][2] , 0.107143 , 0.001 );
 
 		blas::trsm(blas::side::left, blas::filling::upper, 1., blas::T(AT), blas::T(BT));
-		BOOST_TEST( (~BT)[1][2] == 0.107143 );
+		BOOST_REQUIRE_CLOSE( (~BT)[1][2] , 0.107143, 0.001 );
 	}
 	{
 		multi::array<double, 2> B = {
@@ -322,8 +322,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare, *utf::tolerance(0.00001)){
 		};
 		auto const B_cpy =+ B;
 		blas::trsm(blas::side::left, blas::filling::upper, 1., A, B); // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
-		BOOST_TEST( B[2][0] == 0.375 );
-		BOOST_TEST( (+blas::gemm(1., A_cpy, B))[1][0] == B_cpy[1][0] );
+		BOOST_REQUIRE_CLOSE( B[2][0] , 0.375 , 0.00001 );
+		BOOST_REQUIRE( (+blas::gemm(1., A_cpy, B))[1][0] == B_cpy[1][0] );
 	}
 	{
 		multi::array<double, 2> B = {
@@ -333,8 +333,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare, *utf::tolerance(0.00001)){
 		};
 		auto const B_cpy =+ B;
 		blas::trsm(blas::side::left, blas::filling::upper, 1.2, A, B);
-		BOOST_TEST( (+blas::gemm(1., A_cpy, B))[1][0] == 1.2*B_cpy[1][0] );
-		BOOST_TEST( (+blas::gemm(1./1.2, A_cpy, B))[1][0] == B_cpy[1][0] );
+		BOOST_REQUIRE_CLOSE( (+blas::gemm(1., A_cpy, B))[1][0] , 1.2*B_cpy[1][0] , 0.00001 );
+		BOOST_REQUIRE_CLOSE( (+blas::gemm(1./1.2, A_cpy, B))[1][0] , B_cpy[1][0] , 0.00001 );
 	}
 	{
 		multi::array<double, 2> B = {
@@ -344,11 +344,11 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare, *utf::tolerance(0.00001)){
 		};
 		multi::array<double, 2> BT = rotated(B);
 		blas::trsm(blas::side::left, blas::filling::upper, 1., A, blas::T(BT));
-		BOOST_TEST( (~BT)[2][0] == 0.375 );
+		BOOST_REQUIRE_CLOSE( (~BT)[2][0] , 0.375 , 0.00001);
 	}
 }
 
-BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitized_gemm_check_no_const, *utf::tolerance(0.00001)){
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitized_gemm_check_no_const){//, *utf::tolerance(0.00001)){
 	namespace blas = multi::blas;
 	using complex = std::complex<double>; complex const I{0, 1};
 	multi::array<complex, 2> const A = {
@@ -364,10 +364,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitiz
 	using multi::blas::filling;
 	using multi::blas::hermitized;
 	blas::trsm(blas::side::left, blas::filling::upper, 1., A, blas::H(B)); // B†←A⁻¹.B†, B←B.A⁻¹†, B←(A⁻¹.B†)†
-	BOOST_TEST( imag(B[1][2]) == -0.147059 );
+	BOOST_REQUIRE_CLOSE( imag(B[1][2]) , -0.147059 , 0.001);
 }
 
-BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitized_gemm_check, *utf::tolerance(0.00001)){
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitized_gemm_check){//, *utf::tolerance(0.00001)){
 	using complex = std::complex<double>; complex const I{0, 1};
 	multi::array<complex, 2> const A = {
 		{ 1. + 4.*I,  3.,  4.- 10.*I},
@@ -383,7 +383,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitiz
 				{3. + 1.*I, 1. - 1.*I},
 			};
 			auto S = blas::trsm(blas::side::left, blas::filling::lower, 1., blas::H(A), B); // S = A⁻¹†.B, S† = B†.A⁻¹
-			BOOST_TEST( real(S[2][1]) == 1.71608  );
+			BOOST_REQUIRE_CLOSE( real(S[2][1]) , 1.71608 , 0.001 );
 		}
 		{
 			multi::array<complex, 2> B = {
@@ -391,8 +391,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitiz
 				{5. + 3.*I, 9. + 3.*I, 1. - 1.*I}
 			};
 			auto S =+ blas::trsm(blas::side::left, blas::filling::upper, 1., A, blas::H(B)); // S = A⁻¹B†, S†=B.A⁻¹†, S=(B.A⁻¹)†, B <- S†, B <- B.A⁻¹†
-			BOOST_TEST( imag(S[2][1]) == +0.147059 );
-			BOOST_TEST( imag(B[1][2]) == -0.147059 );
+			BOOST_REQUIRE_CLOSE( imag(S[2][1]) , +0.147059 , 0.001);
+			BOOST_REQUIRE_CLOSE( imag(B[1][2]) , -0.147059 , 0.001);
 		}
 		{
 			multi::array<complex, 2> B = {
@@ -400,13 +400,13 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitiz
 				{5. + 3.*I, 9. + 3.*I, 1. - 1.*I}
 			};
 			auto S =+ blas::trsm(blas::side::left, blas::filling::upper, 2., A, blas::H(B)); // S = A⁻¹B†, S†=B.A⁻¹†, S=(B.A⁻¹)†, B <- S†, B <- B.A⁻¹†
-			BOOST_TEST( imag(S[2][1]) == +0.147059*2. );
-			BOOST_TEST( imag(B[1][2]) == -0.147059*2. );
+			BOOST_REQUIRE_CLOSE( imag(S[2][1]) , +0.147059*2. , 0.001 );
+			BOOST_REQUIRE_CLOSE( imag(B[1][2]) , -0.147059*2. , 0.001 );
 		}
 	}
 }
 
-BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_1x1_check, *utf::tolerance(0.00001)){
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_1x1_check){//, *utf::tolerance(0.00001)){
 	namespace blas = multi::blas;
 	multi::array<double, 2> const A = {
 		{ 4.},
@@ -436,7 +436,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_1x1_check, *utf::tolerance(0.00001)){
 	}
 }
 
-BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_1x1_check, *utf::tolerance(0.00001)){
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_1x1_check){//, *utf::tolerance(0.00001)){
 	using complex = std::complex<double>; complex const I = complex{0, 1};
 	multi::array<complex, 2> const A = {
 		{ 4. + 2.*I},
@@ -449,18 +449,18 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_1x1_check, *utf::tolerance(0.00001)
 		auto const B_cpy =+ B;
 
 		blas::trsm(blas::side::left, blas::filling::upper, 3.+5.*I, A, B);
-		BOOST_TEST( real((+blas::gemm(1., A, B))[0][0]) == real((3.+5.*I)*B_cpy[0][0]) );
-		BOOST_TEST( imag((+blas::gemm(1., A, B))[0][0]) == imag((3.+5.*I)*B_cpy[0][0]) );
+		BOOST_REQUIRE_CLOSE( real((+blas::gemm(1., A, B))[0][0]) , real((3.+5.*I)*B_cpy[0][0]) , 0.00001 );
+		BOOST_REQUIRE_CLOSE( imag((+blas::gemm(1., A, B))[0][0]) , imag((3.+5.*I)*B_cpy[0][0]) , 0.00001 );
 
-		BOOST_TEST( real((+blas::gemm(1./(3.+5.*I), A, B))[0][0]) == real(B_cpy[0][0]) );
-		BOOST_TEST( imag((+blas::gemm(1./(3.+5.*I), A, B))[0][0]) == imag(B_cpy[0][0]) );
+		BOOST_REQUIRE_CLOSE( real((+blas::gemm(1./(3.+5.*I), A, B))[0][0]) , real(B_cpy[0][0]) , 0.00001 );
+		BOOST_REQUIRE_CLOSE( imag((+blas::gemm(1./(3.+5.*I), A, B))[0][0]) , imag(B_cpy[0][0]) , 0.00001 );
 	}
 }
 
 #if defined(CUDA_FOUND) and CUDA_FOUND
 #include<thrust/complex.h>
 
-BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_thrust_nonsquare_default_diagonal_hermitized_gemm_check, *utf::tolerance(0.00001)){
+BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_thrust_nonsquare_default_diagonal_hermitized_gemm_check){//, *utf::tolerance(0.00001)){
 	namespace blas = multi::blas;
 	using complex = thrust::complex<double>; complex const I{0, 1};
 	multi::array<complex, 2> const A = {
@@ -476,7 +476,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_thrust_nonsquare_default_diagonal_h
 				{3. + 1.*I, 1. - 1.*I},
 			};
 			auto S = blas::trsm(blas::side::left, blas::filling::lower, 1., blas::H(A), B); // S = A⁻¹†.B, S† = B†.A⁻¹
-			BOOST_TEST( S[2][1].real() == 1.71608  );
+			BOOST_REQUIRE_CLOSE( S[2][1].real() , 1.71608 , 0.001 );
 			BOOST_REQUIRE( S == B );
 		}
 		{
@@ -485,7 +485,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_thrust_nonsquare_default_diagonal_h
 				{5. + 3.*I, 9. + 3.*I, 1. - 1.*I}
 			};
 			auto S =+ blas::trsm(blas::side::left, blas::filling::upper, 1., A, blas::H(B)); // S = A⁻¹B†, S†=B.A⁻¹†, S=(B.A⁻¹)†, B <- S†, B <- B.A⁻¹†
-			BOOST_TEST( B[1][2].imag() == -0.147059 );
+			BOOST_REQUIRE_CLOSE( B[1][2].imag() , -0.147059 , 0.001 );
 			BOOST_REQUIRE( S == blas::H(B) );
 		}
 		{
@@ -494,7 +494,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_thrust_nonsquare_default_diagonal_h
 				{5. + 3.*I, 9. + 3.*I, 1. - 1.*I}
 			};
 			auto S =+ blas::trsm(blas::side::left, blas::filling::upper, 2., A, blas::H(B)); // S = A⁻¹B†, S†=B.A⁻¹†, S=(B.A⁻¹)†, B <- S†, B <- B.A⁻¹†
-			BOOST_TEST( B[1][2].imag() == -0.147059*2. );
+			BOOST_REQUIRE_CLOSE( B[1][2].imag() , -0.147059*2. , 0.001  );
 			BOOST_REQUIRE( S == blas::H(B) );
 		}
 	}
@@ -538,7 +538,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_column_cuda, *utf::tolerance(0.00001
 	using blas::filling;	
 	using blas::hermitized;
 	trsm(filling::upper, 1., A, B); // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
-	BOOST_TEST( B[2][0] == 0.375 );
+	BOOST_REQUIRE( B[2][0] == 0.375 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column_cuda2, *utf::tolerance(0.00001)){
@@ -557,8 +557,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column_cuda2, *utf::tolerance(0.000
 	using blas::hermitized;
 	trsm(filling::lower, 2.+1.*I, hermitized(A), B); // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
 	multi::array<complex, 2> Bcpu = B;
-	BOOST_TEST( real(Bcpu[2][0]) == -4.16471 );
-	BOOST_TEST( imag(Bcpu[2][0]) ==  8.25882 );
+	BOOST_REQUIRE( real(Bcpu[2][0]) == -4.16471 );
+	BOOST_REQUIRE( imag(Bcpu[2][0]) ==  8.25882 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_cuda_trsm_complex, *utf::tolerance(0.00001)){
@@ -598,4 +598,3 @@ BOOST_AUTO_TEST_CASE(multi_blas_cuda_managed_trsm_complex, *utf::tolerance(0.000
 	auto C = trsm(filling::lower, 2.+1.*I, hermitized(A), B); // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
 }
 #endif
-

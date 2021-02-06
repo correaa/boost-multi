@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_square_real){
 		assert( size( a) == size( c) );
 		assert( size(~b) == size(~c) );
 		blas::gemm_n(1., begin(a), size(a), begin(b), 0., begin(c));
-		BOOST_TEST( c[2][1] == 86 );
+		BOOST_REQUIRE( c[2][1] == 86 );
 	}
 	{
 		multi::array<double, 2> c({size(a), size(~b)}, 9999);
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_square_real){
 	{
 		multi::array<double, 2> c({size(a), size(~b)}, 9999);
 		blas::gemm_n(1., begin(blas::T(a)), size(blas::T(a)), begin(blas::T(b)), 0., begin(c));
-		BOOST_TEST( c[2][1] == 50 );
+		BOOST_REQUIRE( c[2][1] == 50 );
 	}
 	{
 		multi::array<double, 2> c({size(a), size(~b)}, 9999);
@@ -166,8 +166,8 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_square){
 		multi::array<double, 2> c({2, 2});
 		blas::context ctxt;
 		blas::gemm_n(ctxt, 1., begin(~a), size(~a), begin(b), 0., begin(~c));
-		BOOST_TEST( (~c)[1][1] == 169 );
-		BOOST_TEST( (~c)[1][0] ==  82 );
+		BOOST_REQUIRE( (~c)[1][1] == 169 );
+		BOOST_REQUIRE( (~c)[1][0] ==  82 );
 	}
 	{
 		multi::array<double, 2> c({2, 2});
@@ -188,7 +188,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_square){
 	{
 		multi::array<double, 2> c({2, 2});
 		blas::gemm_n(1., begin(a), size(a), begin(~b), 0., begin(~c)); // c=ab⸆, c⸆=ba⸆
-		BOOST_TEST( (~c)[1][0] == 183 );
+		BOOST_REQUIRE( (~c)[1][0] == 183 );
 	}
 	{
 		multi::array<double, 2> c({2, 2});
@@ -208,7 +208,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_square){
 	{
 		multi::array<double, 2> c({2, 2});
 		blas::gemm_n(1., begin(~a), size(~a), begin(~b), 0., begin(~c)); // c⸆=a⸆b⸆, c=ba
-		BOOST_TEST( c[0][1] == 117 );
+		BOOST_REQUIRE( c[0][1] == 117 );
 	}
 }
 
@@ -234,7 +234,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare){
 	}
 }
 
-BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_automatic, *utf::tolerance(0.00001)){
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_automatic){//, *utf::tolerance(0.00001)){
 	namespace blas = multi::blas;
 	multi::array<double, 2> const a = {
 		{ 1., 3., 1.},
@@ -258,20 +258,20 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_automatic, *utf::to
 	{
 		multi::array<double, 2> c({2, 4});
 		blas::gemm(0.1, a, b, 0., c); // c=ab, c⸆=b⸆a⸆
-		BOOST_TEST_REQUIRE( c[1][2] == 5.3 );
+		BOOST_REQUIRE_CLOSE( c[1][2] , 5.3 , 0.00001 );
 	}
 	{
 		multi::array<double, 2> c({2, 4});
 		blas::gemm_n(0.1, begin(a), size(a), begin(b), 0., begin(c)); // c=ab, c⸆=b⸆a⸆
-		BOOST_TEST_REQUIRE( c[1][2] == 5.3 );
+		BOOST_REQUIRE_CLOSE( c[1][2] , 5.3 , 0.00001 );
 	}
 	{
 		auto c =+ blas::gemm(0.1, a, b); // c=ab, c⸆=b⸆a⸆
-		BOOST_TEST_REQUIRE( c[1][2] == 5.3 );
+		BOOST_REQUIRE_CLOSE( c[1][2] , 5.3 , 0.00001 );
 	}
 	{
 		multi::array c = blas::gemm(0.1, a, b);
-		BOOST_TEST_REQUIRE( c[1][2] == 5.3 );
+		BOOST_REQUIRE_CLOSE( c[1][2] , 5.3 , 0.00001 );
 	}
 }
 
@@ -285,42 +285,42 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_nh){//, * utf::timeout(2)){
 	};
 	{
 		auto c =+ blas::gemm(1., a, blas::H(a)); // c=aa†, c†=aa†
-		BOOST_TEST_REQUIRE( c[1][0] == 7.-10.*I );
-		BOOST_TEST_REQUIRE( c[0][1] == 7.+10.*I );
+		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
+		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
 	}
 	{
 		multi::array c = blas::gemm(1., a, blas::H(a)); // c=aa†, c†=aa†
-		BOOST_TEST_REQUIRE( c[1][0] == 7.-10.*I );
-		BOOST_TEST_REQUIRE( c[0][1] == 7.+10.*I );
+		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
+		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
 	}
 	{
 		multi::array<complex, 2> c = blas::gemm(1., a, blas::H(a)); // c=aa†, c†=aa†
-		BOOST_TEST_REQUIRE( c[1][0] == 7.-10.*I );
-		BOOST_TEST_REQUIRE( c[0][1] == 7.+10.*I );
+		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
+		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
 		c = blas::gemm(1., a, blas::H(a)); // c=aa†, c†=aa†
-		BOOST_TEST_REQUIRE( c[1][0] == 7.-10.*I );
-		BOOST_TEST_REQUIRE( c[0][1] == 7.+10.*I );
+		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
+		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
 		c() = blas::gemm(1., a, blas::H(a)); // c=aa†, c†=aa†
-		BOOST_TEST_REQUIRE( c[1][0] == 7.-10.*I );
-		BOOST_TEST_REQUIRE( c[0][1] == 7.+10.*I );
+		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
+		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
 		blas::gemm(1., a, blas::H(a), 0., c); // c=aa†, c†=aa†
-		BOOST_TEST_REQUIRE( c[1][0] == 7.-10.*I );
-		BOOST_TEST_REQUIRE( c[0][1] == 7.+10.*I );
+		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
+		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
 		blas::gemm_n(1., begin(a), size(a), begin(blas::H(a)), 0., begin(c)); // c=aa†, c†=aa†
-		BOOST_TEST_REQUIRE( c[1][0] == 7.-10.*I );
-		BOOST_TEST_REQUIRE( c[0][1] == 7.+10.*I );
+		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
+		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
 	}
 }
 
@@ -549,8 +549,8 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_1x3_3x2){
 	multi::array<double, 2> const a = {
 		{1, 9, 1}
 	};
-	BOOST_TEST_REQUIRE( stride(~a) == 1 );
-	BOOST_TEST_REQUIRE( stride( a) == 3 );
+	BOOST_REQUIRE( stride(~a) == 1 );
+	BOOST_REQUIRE( stride( a) == 3 );
 	multi::array<double, 2> const b = {
 		{ 11, 12},
 		{  7, 19},
@@ -595,8 +595,8 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complexreal_1x3_3x2){
 	multi::array<complex, 2> const a = {
 		{1, 9, 1}
 	};
-	BOOST_TEST_REQUIRE( stride(~a) == 1 );
-	BOOST_TEST_REQUIRE( stride( a) == 3 );
+	BOOST_REQUIRE( stride(~a) == 1 );
+	BOOST_REQUIRE( stride( a) == 3 );
 	multi::array<complex, 2> const b = {
 		{ 11, 12},
 		{  7, 19},
@@ -631,8 +631,8 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_1x3_part_3x2){
 		{1, 9, 1},
 		{3, 3, 3}
 	};
-	BOOST_TEST_REQUIRE( stride(~a) == 1 );
-	BOOST_TEST_REQUIRE( stride( a) == 3 );
+	BOOST_REQUIRE( stride(~a) == 1 );
+	BOOST_REQUIRE( stride( a) == 3 );
 	multi::array<double, 2> const b = {
 		{ 11, 12},
 		{  7, 19},
@@ -668,8 +668,8 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complexreal_1x3_part_3x2){
 		{1., 9., 1.},
 		{3., 3., 3.}
 	};
-	BOOST_TEST_REQUIRE( stride(~a) == 1 );
-	BOOST_TEST_REQUIRE( stride( a) == 3 );
+	BOOST_REQUIRE( stride(~a) == 1 );
+	BOOST_REQUIRE( stride( a) == 3 );
 	multi::array<complex, 2> const b = {
 		{ 11., 12.},
 		{  7., 19.},
@@ -704,8 +704,8 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_2x3_3x1){
 		{1, 9, 1},
 		{3, 3, 3}
 	};
-	BOOST_TEST_REQUIRE( stride(~a) == 1 );
-	BOOST_TEST_REQUIRE( stride( a) == 3 );
+	BOOST_REQUIRE( stride(~a) == 1 );
+	BOOST_REQUIRE( stride( a) == 3 );
 	multi::array<double, 2> const b = {
 		{ 11},
 		{  7},
@@ -830,18 +830,18 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_1x3_3x1){
 		BOOST_REQUIRE( begin(c)->stride() == 1 );
 
 		auto br = +~b;
-	//	BOOST_TEST_REQUIRE( begin(br). stride() == 1 );
-		BOOST_TEST_REQUIRE( begin( br)->stride() == 1 );
+	//	BOOST_REQUIRE( begin(br). stride() == 1 );
+		BOOST_REQUIRE( begin( br)->stride() == 1 );
 
 		BOOST_REQUIRE(begin(a)->stride() == 1);
-		BOOST_TEST_REQUIRE( begin(~br). stride() == 1 );
-	//	BOOST_TEST_REQUIRE( begin(~br)->stride() == 1 );
+		BOOST_REQUIRE( begin(~br). stride() == 1 );
+	//	BOOST_REQUIRE( begin(~br)->stride() == 1 );
 		BOOST_REQUIRE(begin(c)->stride() == 1);
 		BOOST_REQUIRE(begin(c).stride() == 1);
 		BOOST_REQUIRE(size(a) == 1);
 
 		blas::gemm_n(1., begin(a), size(a), begin(~br), 0., begin(c));
-		BOOST_TEST_REQUIRE( c[0][0] == 82 );
+		BOOST_REQUIRE( c[0][0] == 82 );
 	}
 	{
 		multi::array<double, 2> c({1, 1});
@@ -968,13 +968,13 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_1x3_3x1){
 		multi::array<complex, 2> c({1, 1});
 		auto br = +~b;
 		blas::gemm(1., a, blas::H(br), 0., ~c);
-		BOOST_TEST_REQUIRE( c[0][0] == 80. + 53.*I );
+		BOOST_REQUIRE( c[0][0] == 80. + 53.*I );
 	}
 	{
 		multi::array<complex, 2> c({1, 1});
 		auto br = +~b;
 		blas::gemm_n(1., begin(a), size(a), begin(blas::H(br)), 0., begin(~c));
-		BOOST_TEST_REQUIRE( c[0][0] == 80. + 53.*I );
+		BOOST_REQUIRE( c[0][0] == 80. + 53.*I );
 	}
 }
 
@@ -1492,8 +1492,8 @@ BOOST_AUTO_TEST_CASE(submatrix_result_issue_97){
 	auto M2 = +M({0, 3}, {0, 1});
 	BOOST_REQUIRE( M2 == M({0, 3}, {0, 1}) );
 	
-//	BOOST_TEST( (+blas::gemm(1., blas::H(M2               ), V))[0][0] == 83. + 6.*I );
-//	BOOST_TEST( (+blas::gemm(1., blas::H(M({0, 3}, {0, 1})), V))[0][0] == 83. + 6.*I );
+//	BOOST_REQUIRE( (+blas::gemm(1., blas::H(M2               ), V))[0][0] == 83. + 6.*I );
+//	BOOST_REQUIRE( (+blas::gemm(1., blas::H(M({0, 3}, {0, 1})), V))[0][0] == 83. + 6.*I );
 
 //	using namespace multi::blas::operators;
 //	BOOST_REQUIRE( (+(blas::H(M)*V))[0][0] == 83. + 6.*I );
@@ -1519,15 +1519,15 @@ BOOST_AUTO_TEST_CASE(blas_context_gemm){
 //		for(auto i : extension(~C))
 //			sum += blas::nrm2((~C)[i] - blas::gemv(A, (~B)[i]))();
 
-//		BOOST_TEST_REQUIRE(sum == 0, boost::test_tools::tolerance(1e-12));
+//		BOOST_REQUIRE(sum == 0, boost::test_tools::tolerance(1e-12));
 //	}
 	
-//	BOOST_TEST_REQUIRE( std::inner_product(
+//	BOOST_REQUIRE( std::inner_product(
 //		begin(~C), end(~C), begin(~B), 0., std::plus<>{}, [&A](auto const& Ccol, auto const& Bcol){
 //			return multi::blas::nrm2( Ccol - multi::blas::gemv(A, Bcol) );
 //	}) == 0. , boost::test_tools::tolerance(1e-12) );
 
-//	BOOST_TEST_REQUIRE( std::equal(
+//	BOOST_REQUIRE( std::equal(
 //		begin(~C), end(~C), begin(~B), [&A](auto const& Ccol, auto const& Bcol){
 //			return multi::blas::nrm2( Ccol - multi::blas::gemv(A, Bcol) ) < 1e-12;
 //		}
@@ -1536,23 +1536,23 @@ BOOST_AUTO_TEST_CASE(blas_context_gemm){
 //	blas::context ctxt;
 //	auto C2 = +blas::gemm(&ctxt, 1., A, B);
 	
-//	BOOST_TEST_REQUIRE( std::equal(
+//	BOOST_REQUIRE( std::equal(
 //		begin(C), end(C), begin(C2), [](auto const& crow, auto const& c2row){return ((crow - c2row)^2) < 1e-13;}
 //	) );
 
 }
 
-BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_hermitized_second_gemm_range, *utf::tolerance(0.00001)){
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_hermitized_second_gemm_range){//, *utf::tolerance(0.00001)){
 	multi::array<double, 2> const a({2, 3}, 0.);
 	multi::array<double, 2> const b({4, 3}, 0.);
 	{
 		multi::array<double, 2> c({2, 4});
 		c() = blas::gemm(0.1, a, blas::H(b));
-		BOOST_TEST( c[1][2] == 0. );
+		BOOST_REQUIRE_CLOSE( c[1][2],  0., 0.00001 );
 	}
 	{
 		multi::array<double, 2> c = blas::gemm(0.1, a, blas::H(b)); // c=ab⸆, c⸆=ba⸆
-		BOOST_TEST( c[1][2] == 0. );
+		BOOST_REQUIRE( c[1][2] == 0. );
 	}
 	{
 		multi::array<double, 2> const a = {
@@ -1563,7 +1563,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_hermitized_second_g
 	}
 }
 
-BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_hermitized_second_gemm_range, *utf::tolerance(0.00001)){
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_hermitized_second_gemm_range){//, *utf::tolerance(0.00001)){
 	using complex = std::complex<double>;
 	multi::array<complex, 2> const a({2, 3}, 0.);
 	multi::array<complex, 2> const b({4, 3}, 0.);
@@ -1574,11 +1574,11 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_nonsquare_hermitized_secon
 	}
 	{
 		multi::array<complex, 2> c = blas::gemm(1., a, blas::H(b)); // c=ab⸆, c⸆=ba⸆
-		BOOST_TEST( c[1][2] == 0. );
+		BOOST_REQUIRE( c[1][2] == 0. );
 	}
 }
 
-BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_hermitized_second, *utf::tolerance(0.00001)){
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_hermitized_second){//, *utf::tolerance(0.00001)){
 	namespace blas = multi::blas;
 	multi::array<double, 2> const a = {
 		{1, 3, 1},
@@ -1603,12 +1603,12 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_hermitized_second, 
 	{
 		multi::array<double, 2> c({2, 4});
 		blas::gemm(0.1, a, blas::H(b), 0., c); // c=ab, c⸆=b⸆a⸆
-		BOOST_TEST( c[1][2] == 5.3 );
+		BOOST_REQUIRE_CLOSE( c[1][2] , 5.3 , 0.00001 );
 	}
 	{
 		multi::array<double, 2> c({2, 4});
 		blas::gemm_n(0.1, begin(a), size(a), begin(blas::H(b)), 0., begin(c)); // c=ab, c⸆=b⸆a⸆
-		BOOST_TEST( c[1][2] == 5.3 );
+		BOOST_REQUIRE_CLOSE( c[1][2] , 5.3 , 0.00001 );
 	}
 	{
 		multi::array<double, 2> c({2, 4});
@@ -1616,11 +1616,11 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_hermitized_second, 
 	}
 	{
 		multi::array<double, 2> c = blas::gemm(0.1, a, blas::H(b)); // c=ab⸆, c⸆=ba⸆
-		BOOST_TEST( c[1][2] == 5.3 );
+		BOOST_REQUIRE_CLOSE( c[1][2] , 5.3 , 0.00001 );
 	}
 }
 
-BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_real_nonsquare_hermitized_second, *utf::tolerance(0.00001)){
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_real_nonsquare_hermitized_second){//, *utf::tolerance(0.00001)){
 	namespace blas = multi::blas;
 	using complex = std::complex<double>;
 	multi::array<complex, 2> const a = {
@@ -1646,12 +1646,12 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_real_nonsquare_hermitized_
 	{
 		multi::array<complex, 2> c({2, 4});
 		blas::gemm(0.1, a, blas::H(b), 0., c); // c=ab, c⸆=b⸆a⸆
-		BOOST_TEST( real(c[1][2]) == 5.3 );
+		BOOST_REQUIRE_CLOSE( real(c[1][2]) , 5.3 , 0.00001 );
 	}
 	{
 		multi::array<complex, 2> c({2, 4});
 		blas::gemm_n(0.1, begin(a), size(a), begin(blas::H(b)), 0., begin(c)); // c=ab, c⸆=b⸆a⸆
-		BOOST_TEST( real(c[1][2]) == 5.3 );
+		BOOST_REQUIRE_CLOSE( real(c[1][2]) , 5.3 , 0.00001 );
 	}
 	{
 		multi::array<complex, 2> c({2, 4});
@@ -1659,7 +1659,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_real_nonsquare_hermitized_
 	}
 	{
 		multi::array<complex, 2> c = blas::gemm(0.1, a, blas::H(b)); // c=ab⸆, c⸆=ba⸆
-		BOOST_TEST( real(c[1][2]) == 5.3 );
+		BOOST_REQUIRE_CLOSE( real(c[1][2]) , 5.3 , 0.00001 );
 	}
 }
 
@@ -1717,13 +1717,13 @@ BOOST_AUTO_TEST_CASE(blas_gemm_inq_case){ // https://gitlab.com/correaa/boost-mu
 	{
 		multi::array<complex, 2> mat2 = mat({0, 3}, {0, 1});
 		auto olap3 =+ blas::gemm(1., blas::H(mat({0, 3}, {0, 1})), vec);
-		BOOST_TEST_REQUIRE( (+blas::gemm(1., blas::H(mat2), vec))[0][0] == (+blas::gemm(1., blas::H(mat({0, 3}, {0, 1})), vec))[0][0] );
+		BOOST_REQUIRE( (+blas::gemm(1., blas::H(mat2), vec))[0][0] == (+blas::gemm(1., blas::H(mat({0, 3}, {0, 1})), vec))[0][0] );
 	}
 
 }
 
 #if 0
-BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_hermitized_second_gpu, *utf::tolerance(0.00001)){
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_hermitized_second_gpu){//, *utf::tolerance(0.00001)){
 	namespace cuda = multi::cuda;
 	namespace blas = multi::blas;
 	cuda::array<double, 2> const a = {
@@ -1779,7 +1779,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_hermitized_second_g
 	}
 }
 
-BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_hermitized_second_managed, *utf::tolerance(0.00001)){
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_hermitized_second_managed){//, *utf::tolerance(0.00001)){
 	namespace cuda = multi::cuda;
 	namespace blas = multi::blas;
 	cuda::managed::array<double, 2> const a = {
@@ -1936,7 +1936,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_elongated){
 		multi::array<complex, 2> c({2, 2});
 		blas::gemm(1., b, a, 0., c); // c=ba, c⸆=a⸆b⸆
 		BOOST_REQUIRE( c[0][0] == b[0][0]*a[0][0] );
-		BOOST_TEST( c[1][1] == b[1][0]*a[0][1] );
+		BOOST_REQUIRE( c[1][1] == b[1][0]*a[0][1] );
 		auto const c_copy = blas::gemm(1., b, a);
 		BOOST_REQUIRE( c_copy == c );
 	}
@@ -2258,13 +2258,13 @@ BOOST_AUTO_TEST_CASE(blas_gemm_timing){
 	}
 	using namespace blas::operators;
 
-	BOOST_TEST_REQUIRE( std::equal(
+	BOOST_REQUIRE( std::equal(
 		begin(C), end(C), begin(C2), [](auto const& crow, auto const& c2row){
 			return ((crow - c2row)^2) < 1e-13;
 		}
 	) );
 
-	BOOST_TEST_REQUIRE( std::equal(
+	BOOST_REQUIRE( std::equal(
 		begin(C), end(C), begin(C3), [](auto const& crow, auto const& c3row){
 			return ((crow - c3row)^2) < 1e-13;
 		}
