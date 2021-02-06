@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_real){//, *utf::tolerance(0.0001)){
 	{
 		multi::array<double, 2> const MT = ~M;
 		using namespace blas::operators;
-		BOOST_REQUIRE_CLOSE( (((~+~M)%X - M%X)^2) , 0., 1e-13 );
+		BOOST_REQUIRE_SMALL( ((~+~M)%X - M%X)^2 , 1e-13 );
 	}
 }
 
