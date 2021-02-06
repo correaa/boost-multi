@@ -114,7 +114,11 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray){
 
 	walker_ref&& wr(A[5]);
 	
+	wr.prop1 = 88;
 	BOOST_REQUIRE( wr.slater_array[2][1] == 5.21 );
+
+	wr.slater_array[2][1] = 9999.;
+
 }
 
 BOOST_AUTO_TEST_CASE(array_partitioned_add_to_last){
