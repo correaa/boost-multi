@@ -175,7 +175,7 @@ clang++:
     - cmake --build . --verbose -- --quiet --no-print-directory
     - ctest --output-on-failure
 
-clang++:
+clang++-std17:
   stage: test
   script:
     - export CXX="clang++"
