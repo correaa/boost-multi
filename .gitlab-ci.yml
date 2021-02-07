@@ -195,9 +195,10 @@ cuda-10.0:
       - apt-get update && apt-get install --no-install-recommends -y --quiet gcc-8 g++-8 cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
       - ln --symbolic --force . ../multi
       - nvcc --version
+      - g++-8 --version
       - cd test
       - mkdir build && cd build
-      - cmake .. -DENABLE_CUDA=1 -DCUDA_NVCC_FLAGS="-ccbin /usr/bin/g++-8"
+      - cmake .. -DENABLE_CUDA=1 -DCUDA_NVCC_FLAGS="-ccbin=/usr/bin/g++-8"
       - cmake --build . --verbose
       - ctest --output-on-failure
 
