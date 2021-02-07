@@ -175,6 +175,18 @@ clang++:
     - cmake --build . --verbose -- --quiet --no-print-directory
     - ctest --output-on-failure
 
+clang++:
+  stage: test
+  script:
+    - export CXX="clang++"
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libblas-dev
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_CXX_STANDARD=17
+    - cmake --build . --verbose -- --quiet --no-print-directory
+    - ctest --output-on-failure
+
 clang++-11:
   stage: test
   script:
@@ -184,6 +196,18 @@ clang++-11:
     - $CXX --version
     - mkdir build && cd build
     - cmake ..
+    - cmake --build . --verbose -- --quiet --no-print-directory
+    - ctest --output-on-failure
+
+clang++-11-std17:
+  stage: test
+  script:
+    - export CXX="clang++-11"
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang-11 cmake make libboost-test-dev libblas-dev
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_CXX_STANDARD=17
     - cmake --build . --verbose -- --quiet --no-print-directory
     - ctest --output-on-failure
 
