@@ -187,20 +187,20 @@ clang++-11:
     - cmake --build . --verbose -- --quiet --no-print-directory
     - ctest --output-on-failure
 
-#cuda-10.0:
-#    image: vistart/cuda:10.2-ubuntu20.04
-#    stage: test
-#    script:
-#      - export DEBIAN_FRONTEND=noninteractive
-#      - apt-get update && apt-get install --no-install-recommends -y --quiet gcc-8 g++-8 cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
-#      - ln --symbolic --force . ../multi
-#      - nvcc --version
-#      - g++-8 --version
-#      - cd test
-#      - mkdir build && cd build
-#      - cmake -DENABLE_CUDA=1 -CMAKE_CUDA_FLAGS="-ccbin=g++-8" ..
-#      - cmake --build . --verbose
-#      - ctest --output-on-failure
+cuda-10.0:
+    image: vistart/cuda:10.2-ubuntu20.04
+    stage: test
+    script:
+      - export DEBIAN_FRONTEND=noninteractive
+      - apt-get update && apt-get install --no-install-recommends -y --quiet gcc-8 g++-8 cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
+      - ln --symbolic --force . ../multi
+      - nvcc --version
+      - g++-8 --version
+      - cd test
+      - mkdir build && cd build
+      - cmake -DENABLE_CUDA=1 -DCMAKE_CUDA_FLAGS="-ccbin=g++-8" ..
+      - cmake --build . --verbose
+      - ctest --output-on-failure
 
 cuda-11.0:
     image: nvidia/cuda:11.0-devel
