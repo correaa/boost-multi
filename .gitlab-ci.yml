@@ -198,7 +198,7 @@ cuda-10.0:
       - g++-8 --version
       - cd test
       - mkdir build && cd build
-      - cmake .. -DENABLE_CUDA=1 -CMAKE_CUDA_FLAGS="-ccbin=g++-8"
+      - cmake -DENABLE_CUDA=1 -CMAKE_CUDA_FLAGS="-ccbin=g++-8" ..
       - cmake --build . --verbose
       - ctest --output-on-failure
 
