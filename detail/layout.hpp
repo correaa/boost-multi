@@ -120,7 +120,7 @@ typedef std::tuple<multi::index_extension> base_;
 	template<class Archive> void serialize(Archive& ar, unsigned){ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<0>(*this));}
 	constexpr size_type num_elements() const{return std::get<0>(*this).size();}
 	constexpr std::tuple<multi::index> from_linear(nelems_type n) const{assert(n < num_elements());
-		return {n};
+		return std::tuple<multi::index>{n};
 	}
 	friend constexpr std::tuple<multi::index> operator%(nelems_type n, extensions_t const& s){return s.from_linear(n);}
 };

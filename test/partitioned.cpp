@@ -66,6 +66,28 @@ BOOST_AUTO_TEST_CASE(array_partitioned){
 	BOOST_REQUIRE( &A2.partitioned(1).rotated()[3][1][0] == &A2[3][1] );
 }
 
+template<class Ref> class propagate_const;
+
+template<class T> class propagate_const<T&>{
+	T& r_;
+public:
+	propagate_const(T& other) : r_{other}{}
+	propagate_const& operator=(propagate_const const&) = default;
+	propagate_const& operator=(T const& other){r_ = other; return *this;}
+	operator T const&() const noexcept{return r_;}
+	operator T      &()       noexcept{return r_;}
+};
+
+template<class T> class propagate_const<T const&>{
+	T const& r_;
+public:
+	propagate_const(T const& other) : r_{other}{}
+	propagate_const& operator=(propagate_const const&) = delete;
+	propagate_const& operator=(T const& other) = delete;
+	operator T const&() const noexcept{return r_;}
+};
+
+
 BOOST_AUTO_TEST_CASE(array_encoded_subarray){
 
 	multi::array<double, 2> A = { // A[walker][encoded_property] // 7 walkers
@@ -106,14 +128,14 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray){
 	public:
 		walker_ref(raw_source_reference&& row) 
 			: prop1{row[0]}, prop2{row[1]}, slater_array{row({2, 8}).partitioned(3)}, prop3{row[8]}{}
-		double& prop1;
-		double& prop2;
+		propagate_const<double&> prop1;
+		propagate_const<double&> prop2;
 		internal_array_type slater_array;
-		double& prop3;
+		propagate_const<double&> prop3;
 	};
 
 	walker_ref&& wr(A[5]);
-	
+
 	wr.prop1 = 88;
 	BOOST_REQUIRE( wr.slater_array[2][1] == 5.21 );
 

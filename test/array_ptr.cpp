@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr_equality){
 	BOOST_REQUIRE( &ac2 == &A[2] );
 }
 
-BOOST_AUTO_TEST_CASE(multi_array_ptr, *utf::timeout(2)){
+BOOST_AUTO_TEST_CASE(multi_array_ptr){
 	{
 		double a[4][5] = {
 			{ 0,  1,  2,  3,  4}, 
