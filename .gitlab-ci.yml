@@ -66,12 +66,11 @@ g++-7-std17:
 
 g++-8:
   stage: test
+  image: debian:stable-backports
   script:
-    - export CXX="g++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet g++-8 gcc-8 cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - export CXX="g++-8"
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
-    - update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 8
-    - update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 8
     - $CXX --version
     - mkdir build && cd build
     - cmake ..
