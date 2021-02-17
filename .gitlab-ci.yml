@@ -165,43 +165,66 @@ clang++-9-asan:
     - ctest --output-on-failure
 
 # clang 10 and clang 11 have a bug when compiling in c++17 mode
-#clang++:
-#  stage: test
-#  script:
-#    - export CXX="clang++"
-#    - apt-get update && apt-get install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libblas-dev
-#    - ln --symbolic --force . ../multi
-#    - $CXX --version
-#    - mkdir build && cd build
-#    - cmake ..
-#    - cmake --build . --verbose -- --quiet --no-print-directory
-#    - ctest --output-on-failure
+clang++:
+  stage: test
+  script:
+    - export CXX="clang++"
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libblas-dev
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - mkdir build && cd build
+    - cmake ..
+    - cmake --build . --verbose -- --quiet --no-print-directory
+    - ctest --output-on-failure
 
-#clang++-11:
-#  stage: test
-#  script:
-#    - export CXX="clang++-11"
-#    - apt-get update && apt-get install --no-install-recommends -y --quiet clang-11 cmake make libboost-test-dev libblas-dev
-#    - ln --symbolic --force . ../multi
-#    - $CXX --version
-#    - mkdir build && cd build
-#    - cmake ..
-#    - cmake --build . --verbose -- --quiet --no-print-directory
-#    - ctest --output-on-failure
+clang++-std17:
+  stage: test
+  script:
+    - export CXX="clang++"
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang cmake make libboost-test-dev libblas-dev
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_CXX_STANDARD=17
+    - cmake --build . --verbose -- --quiet --no-print-directory
+    - ctest --output-on-failure
+
+clang++-11:
+  stage: test
+  script:
+    - export CXX="clang++-11"
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang-11 cmake make libboost-test-dev libblas-dev
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - mkdir build && cd build
+    - cmake ..
+    - cmake --build . --verbose -- --quiet --no-print-directory
+    - ctest --output-on-failure
+
+clang++-11-std17:
+  stage: test
+  script:
+    - export CXX="clang++-11"
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang-11 cmake make libboost-test-dev libblas-dev
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_CXX_STANDARD=17
+    - cmake --build . --verbose -- --quiet --no-print-directory
+    - ctest --output-on-failure
 
 cuda-10.0:
     image: vistart/cuda:10.2-ubuntu20.04
     stage: test
     script:
       - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
+      - apt-get update && apt-get install --no-install-recommends -y --quiet gcc-8 g++-8 cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
       - ln --symbolic --force . ../multi
-      - update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 8
-      - update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 8
       - nvcc --version
+      - g++-8 --version
       - cd test
       - mkdir build && cd build
-      - cmake .. -DENABLE_CUDA=1
+      - cmake -DENABLE_CUDA=1 -DCMAKE_CUDA_FLAGS="-ccbin=g++-8" ..
       - cmake --build . --verbose
       - ctest --output-on-failure
 

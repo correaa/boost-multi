@@ -9,10 +9,12 @@ $CXX $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 
 #include "../array.hpp"
 
+#if 0
 #if __cplusplus>=201703L
 #include<tuple> // std::apply
 #else
 #include<experimental/tuple> // std::experimental::apply
+#endif
 #endif
 
 #include<numeric>
@@ -23,11 +25,12 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section){
 {
 	multi::array<double, 4> A({10, 20, 30, 40}, 99.);
 	std::iota(data_elements(A), data_elements(A) + num_elements(A), 0.);
-
+#if 0
 #if defined(__cpp_lib_apply) and __cpp_lib_apply>=201603
 	using std::apply;
 #else
 	using std::experimental::apply;
+#endif
 #endif
 	{
 		BOOST_REQUIRE( A({0, 10}, {0, 20}, {0, 30}, {0, 40}).dimensionality == 4 );
@@ -58,12 +61,14 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section){
 		auto&& sub = A({0, 5}, {0, 10}, {0, 15}, {0, 20});
 		BOOST_REQUIRE( &sub[1][2][3][4] == &A[1][2][3][4] );
 	}
+#if 0
 	{
 		BOOST_REQUIRE(  A[1][2][3][4] ==  A(1, 2, 3, 4) );
 		BOOST_REQUIRE( &A[1][2][3][4] == &A(1, 2, 3, 4) );
 		BOOST_REQUIRE( &A[1][2][3][4] == &apply(A, std::array<int, 4>{1, 2, 3, 4}) );
 		BOOST_REQUIRE( &A[1][2][3][4] == &apply(A, std::make_tuple(1, 2, 3, 4))    );
 	}
+#endif
 }
 {
 	multi::array<double, 2> A = {

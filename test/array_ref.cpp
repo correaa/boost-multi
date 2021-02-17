@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed){
 	BOOST_REQUIRE( &mar[1] == &a[1] );
 	BOOST_REQUIRE( sizes(mar.reindexed(1)) == sizes(mar) );
 	auto diff = &(mar.reindexed(1)[1]) - &mar[0];
-	BOOST_TEST_REQUIRE( diff == 0 );
+	BOOST_REQUIRE( diff == 0 );
 	
 	BOOST_REQUIRE( &mar.blocked(2, 4)[2] == &mar[2] );
 	for(auto i : extension(mar.stenciled({2, 4})))
@@ -60,7 +60,7 @@ BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed){
 		
 		
 	multi::array<std::string, 1> arr({{2, 7}}, "xx");
-	BOOST_TEST( size(arr) == 5 );
+	BOOST_REQUIRE( size(arr) == 5 );
 	BOOST_REQUIRE( extension(arr) == multi::iextension(2, 7) );
 	arr[2] = "a";
 	arr[3] = "b";
@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed){
 	BOOST_REQUIRE( std::equal(arr.begin(), arr.end(), mar.begin()) );
 	
 	auto arrB = multi::array<std::string, 1>({"a", "b", "c", "d", "e"}).reindex(2);
-	BOOST_TEST( size(arrB) == 5 );
+	BOOST_REQUIRE( size(arrB) == 5 );
 	BOOST_REQUIRE( arrB[2] == "a" );
 	BOOST_REQUIRE( arrB[6] == "e" );
 }
@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed){
 	BOOST_REQUIRE( mar[0].reindexed(1).extension().finish() == mar[0].extension().finish() + 1 );
 
 	auto diff = &mar[0].reindexed(1)[1] - &mar[0][0];
-	BOOST_TEST_REQUIRE( diff == 0 );
+	BOOST_REQUIRE( diff == 0 );
 	
 //	BOOST_REQUIRE( &(((mar<<1).reindexed(2)>>1).reindexed(1))[1][2] == &mar[0][0] );
 	BOOST_REQUIRE( &mar.reindexed(1, 2)[1][2] == &mar[0][0] );
@@ -150,8 +150,8 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed){
 		BOOST_REQUIRE( size(arrC) == 3 );
 		BOOST_REQUIRE( size(arrC) == size(arrB) );
 
-		BOOST_TEST( arrC.extension().start()  == 2 );
-		BOOST_TEST( arrC.extension().finish() == 5 );
+		BOOST_REQUIRE( arrC.extension().start()  == 2 );
+		BOOST_REQUIRE( arrC.extension().finish() == 5 );
 		
 		std::cout<< arrC.extension().start()<<"..."<< arrC.extension().finish() <<std::endl;
 	//	BOOST_REQUIRE( arrC[2][1] == "a" );
@@ -228,8 +228,8 @@ BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset){
 BOOST_AUTO_TEST_CASE(array_2D_with_offset){
 	multi::array<double, 2> a({multi::iextension(1, 3), multi::iextension(2, 5)}, 1.2);
 
-	BOOST_TEST( a.extension().start() == 1 );
-	BOOST_TEST( a.extension().finish() == 3 );
+	BOOST_REQUIRE( a.extension().start() == 1 );
+	BOOST_REQUIRE( a.extension().finish() == 3 );
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_1D){
@@ -240,23 +240,23 @@ BOOST_AUTO_TEST_CASE(array_ref_1D){
 	for(auto i: extension(mar)) std::cout<< i <<": "<< mar[i] <<", ";
 	std::cout<<std::endl;
 	
-	BOOST_TEST(  extension(mar).first() == 0 );
-	BOOST_TEST(  extension(mar).last()  == 5 );
+	BOOST_REQUIRE(  extension(mar).first() == 0 );
+	BOOST_REQUIRE(  extension(mar).last()  == 5 );
 
 	auto&& mar1 = mar.reindexed(1);
 
 	BOOST_REQUIRE( extension(mar1).size() == extension(mar).size() );
 
 	BOOST_REQUIRE( mar1.extension() == extension(mar1) );
-	BOOST_TEST(  extension(mar1).first() == 1 );
-	BOOST_TEST(  mar1.extension().first() == 1 );
-	BOOST_TEST(  mar1.extension().last()  == 6 );
-	BOOST_TEST( *extension(mar1).begin() == 1 );
+	BOOST_REQUIRE(  extension(mar1).first() == 1 );
+	BOOST_REQUIRE(  mar1.extension().first() == 1 );
+	BOOST_REQUIRE(  mar1.extension().last()  == 6 );
+	BOOST_REQUIRE( *extension(mar1).begin() == 1 );
 	for(auto i: extension(mar1)) std::cout<< i <<": "<< mar1[i] <<", ";
 
 	BOOST_REQUIRE( size(mar1) == size(mar) );
-	BOOST_TEST( mar1.layout().extension().start() == 1 );
-//	BOOST_TEST( extension(mar1).start() == 1 );
+	BOOST_REQUIRE( mar1.layout().extension().start() == 1 );
+//	BOOST_REQUIRE( extension(mar1).start() == 1 );
 	BOOST_REQUIRE( &mar1[1] == &a[0] );
 	BOOST_REQUIRE( mar1.base() == &a[0] );
 
