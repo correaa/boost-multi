@@ -74,7 +74,7 @@ g++-8:
     - $CXX --version
     - mkdir build && cd build
     - cmake ..
-    - cmake --build . --verbose
+    - cmake --build .
     - ctest --output-on-failure
 
 g++-9:
