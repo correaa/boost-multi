@@ -80,11 +80,6 @@ using std::is_convertible_v;
 class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>{
 	using pimpl_t = std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>;
 	cudaStream_t stream() const{cudaStream_t streamId; cublas::call<cublasGetStream>(this->get(), &streamId); return streamId;}
-	void synchronize(){
-	//	cudaError_t	e = cudaDeviceSynchronize();
-		cudaError_t e = cudaStreamSynchronize(stream());
-		if(e != cudaSuccess) throw std::runtime_error{"cannot synchronize stream in cublas context"};
-	}
 	template<auto Function, class... Args> // needs C++17
 	void sync_call(Args... args){
 		call<Function>(this->get(), args...);
@@ -99,6 +94,11 @@ public:
 	context() : pimpl_t{[]{cublasHandle_t h; cublasCreate(&h); return h;}(), &cublasDestroy}{}
 	using ssize_t = int;
 	static int version(){int ret; cublas::call<cublasGetVersion>(nullptr, &ret); return ret;}
+	void synchronize(){
+	//	cudaError_t	e = cudaDeviceSynchronize();
+		cudaError_t e = cudaStreamSynchronize(stream());
+		if(e != cudaSuccess) throw std::runtime_error{"cannot synchronize stream in cublas context"};
+	}
 	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename std::pointer_traits<CCP>::element_type,
 		std::enable_if_t<
 			is_z<AA>{} and is_z<BB>{} and is_z<CC>{} and is_z<ALPHA>{} and is_z<BETA>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{})>{} and
