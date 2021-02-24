@@ -31,12 +31,15 @@ namespace managed{
 		using pointer = managed::ptr<T>;
 		using size_type = ::size_t; // as specified by CudaMalloc
 		using const_void_pointer = managed::ptr<void const>;
-		pointer allocate(typename allocator::size_type n, const void* = 0){
+		pointer allocate(typename allocator::size_type n){
 			if(n == 0) return pointer{nullptr};
 			auto ret = static_cast<pointer>(cuda::managed::malloc(n*sizeof(T)));
 			if(!ret) throw bad_alloc{};
 			++allocator::n_allocations; allocator::bytes_allocated+=sizeof(T)*n;
 			return ret;
+		}
+		pointer allocate(typename allocator::size_type n, const_void_pointer){
+			return allocate(n);
 		}
 		void deallocate(pointer p, size_type){cuda::free(static_cast<managed::ptr<void>>(p));}
 		template<class P, class... Args>
