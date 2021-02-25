@@ -39,8 +39,7 @@ namespace managed{
 			return ret;
 		}
 		pointer allocate(typename allocator::size_type n, const_void_pointer hint){
-			cudaPointerAttributes attributes;
-			cudaError_t e = cudaPointerGetAttributes(&attributes, raw_pointer_cast(hint)); if(e != cudaSuccess) throw std::runtime_error{"cannot use hint"};
+			cudaPointerAttributes attributes; cudaError_t e = cudaPointerGetAttributes(&attributes, raw_pointer_cast(hint)); if(e != cudaSuccess) throw std::runtime_error{"cannot use hint"};
 			auto const ret = allocate(n);
 			switch(attributes.type){
 				case cudaMemoryTypeUnregistered: { //std::cout<< n << " cudaMemoryTypeUnregistered" << std::endl;
