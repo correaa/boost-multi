@@ -31,9 +31,9 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays){
 	BOOST_REQUIRE( va[2] [0][0] == 2 );
 
 	std::vector<multi::array<double, 2>> wa = {
-		multi::array<double, 2>({0, 0}, 0),
-		multi::array<double, 2>({1, 1}, 1),
-		multi::array<double, 2>({2, 2}, 2),
+		multi::array<double, 2>({0, 0}, 0.),
+		multi::array<double, 2>({1, 1}, 1.),
+		multi::array<double, 2>({2, 2}, 2.),
 	};
 	BOOST_REQUIRE( size(va) == size(wa) );
 	BOOST_REQUIRE( va == wa );
