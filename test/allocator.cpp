@@ -64,13 +64,33 @@ BOOST_AUTO_TEST_CASE(array_3d_of_array_2d){
 	BOOST_REQUIRE( AA[9][19][1][1][1] == 99. );
 }
 
-BOOST_AUTO_TEST_CASE(array_3d_with_hint){
+BOOST_AUTO_TEST_CASE(array_3d_with_hint_int){
+	multi::array<double, 2> const A({3, 4});
+	multi::array<int, 3> B({3, 4, 5}, A.cbase());
 
-	multi::array<int, 2> const A({3, 4});
-	multi::array<double, 3> B({3, 4, 5}, A.cbase());
-	B[1][2][3] = 4.;
+	B[1][2][3] = 4;
 	BOOST_REQUIRE( size(B) == 3 );
-	BOOST_REQUIRE( B[1][2][3] == 4. );
+	BOOST_REQUIRE( B[1][2][3] == 4 );
 
+	multi::array<int, 3> C({3, 4, 5}, 0);
+	BOOST_REQUIRE( size(C) == 3 );
+
+	multi::array<int, 3> D({3, 4, 5}, 99);
+	BOOST_REQUIRE( size(D) == 3 );
+}
+
+BOOST_AUTO_TEST_CASE(array_3d_with_hint_size_t){
+	multi::array<double, 2> const A({3, 4});
+	multi::array<size_t, 3> B({3, 4, 5}, A.cbase());
+
+	B[1][2][3] = 4;
+	BOOST_REQUIRE( size(B) == 3 );
+	BOOST_REQUIRE( B[1][2][3] == 4 );
+
+	multi::array<size_t, 3> C({3, 4, 5}, 0ul);
+	BOOST_REQUIRE( size(C) == 3 );
+
+	multi::array<size_t, 3> D({3, 4, 5}, 99);
+	BOOST_REQUIRE( size(D) == 3 );
 }
 
