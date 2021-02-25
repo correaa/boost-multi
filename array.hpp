@@ -32,6 +32,10 @@ protected:
 	allocate(typename std::allocator_traits<allocator_type>::size_type n){
 		return n?std::allocator_traits<allocator_type>::allocate(alloc_, n):nullptr;
 	}
+	typename std::allocator_traits<allocator_type>::pointer 
+	allocate(typename std::allocator_traits<allocator_type>::size_type n, typename std::allocator_traits<allocator_type>::const_void_pointer hint){
+		return n?std::allocator_traits<allocator_type>::allocate(alloc_, n, hint):nullptr;
+	}
 	auto uninitialized_fill_n(typename std::allocator_traits<allocator_type>::pointer base, typename std::allocator_traits<allocator_type>::size_type num_elements, typename std::allocator_traits<allocator_type>::value_type e){
 		return adl_alloc_uninitialized_fill_n(alloc_, base, num_elements, e);
 	}
@@ -192,6 +196,9 @@ public:
 	{
 		array_alloc::uninitialized_fill_n(this->base(), this->num_elements(), e);
 	}
+	explicit static_array(typename static_array::extensions_type x, typename std::allocator_traits<Alloc>::const_void_pointer hint) :
+		array_alloc{}, ref(array_alloc::allocate(typename static_array::layout_t{x}.num_elements(), hint), x)
+	{}
 //	template<class Elem, typename = std::enable_if_t<std::is_convertible<Elem, typename static_array::element>{} and D==0>>
 //	static_array(Elem const& e)  //2
 //	:	static_array(multi::iextensions<D>{}, e){}
