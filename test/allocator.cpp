@@ -65,8 +65,12 @@ BOOST_AUTO_TEST_CASE(array_3d_of_array_2d){
 }
 
 BOOST_AUTO_TEST_CASE(array_3d_with_hint){
-	multi::array<double, 3> AA({3, 4, 5}, nullptr);
-	BOOST_REQUIRE( size(AA) == 3 );
-}
 
+	multi::array<int, 2> const A({3, 4});
+	multi::array<double, 3> B({3, 4, 5}, A.cbase());
+	B[1][2][3] = 4.;
+	BOOST_REQUIRE( size(B) == 3 );
+	BOOST_REQUIRE( B[1][2][3] == 4. );
+
+}
 
