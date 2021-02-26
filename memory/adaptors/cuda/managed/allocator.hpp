@@ -11,11 +11,11 @@ $CXXX $CXXFLAGS $0 -o $0x -lcudart&&$0x&&rm $0x;exit
 #include "../../../adaptors/cuda/managed/clib.hpp" // cuda::malloc
 #include "../../../adaptors/cuda/managed/malloc.hpp"
 
-#include<new> // bad_alloc
 #include<cassert>
-#include<iostream> // debug
-
 #include<cstddef>
+#include<iostream> // debug
+#include<limits>
+#include<new> // bad_alloc
 
 namespace boost{namespace multi{
 namespace memory{namespace cuda{
@@ -23,7 +23,7 @@ namespace memory{namespace cuda{
 namespace managed{
 	struct bad_alloc : std::bad_alloc{};
 
-	template<class T=void>
+	template<class T, class PrefetchDevice>
 	class allocator : cuda::allocator<T>{
 		static_assert( std::is_same<T, std::decay_t<T>>{}, "!" );
 	public:
@@ -31,30 +31,38 @@ namespace managed{
 		using pointer = managed::ptr<T>;
 		using size_type = ::size_t; // as specified by CudaMalloc
 		using const_void_pointer = managed::ptr<void const>;
+		template<class TT> using rebind = managed::allocator<TT, PrefetchDevice>;
 		pointer allocate(typename allocator::size_type n){
 			if(n == 0) return pointer{nullptr};
 			auto ret = static_cast<pointer>(cuda::managed::malloc(n*sizeof(T)));
 			if(!ret) throw bad_alloc{};
+			if(PrefetchDevice::value != -99)
+				if(cudaMemPrefetchAsync(raw_pointer_cast(ret), n*sizeof(T), PrefetchDevice::value) != cudaSuccess) throw std::runtime_error{"cannot prefetch for some reason"};
 			++allocator::n_allocations; allocator::bytes_allocated+=sizeof(T)*n;
 			return ret;
 		}
 		pointer allocate(typename allocator::size_type n, const_void_pointer hint){
-			cudaPointerAttributes attributes; cudaError_t e = cudaPointerGetAttributes(&attributes, raw_pointer_cast(hint)); if(e != cudaSuccess) throw std::runtime_error{"cannot use hint"};
 			auto const ret = allocate(n);
-			switch(attributes.type){
-				case cudaMemoryTypeUnregistered: { //std::cout<< n << " cudaMemoryTypeUnregistered" << std::endl;
+			if(not hint){
+				if(cudaMemPrefetchAsync(raw_pointer_cast(ret), n*sizeof(T), /*device*/ 0) != cudaSuccess) throw std::runtime_error{"cannot prefetch"};
+				return ret;
+			}
+			cudaPointerAttributes attr; if(cudaPointerGetAttributes(&attr, raw_pointer_cast(hint))!=cudaSuccess) throw std::runtime_error{"cannot use attributes for hint"};
+			switch(attr.type){
+				case cudaMemoryTypeUnregistered:{//std::cout<< n <<" cudaMemoryTypeUnregistered"<< attr.device <<" "<< attr.device <<" cpuid:"<< cudaCpuDeviceId <<std::endl;
+					if(cudaMemPrefetchAsync(raw_pointer_cast(ret), n*sizeof(T), cudaCpuDeviceId) != cudaSuccess) throw std::runtime_error{"could not prefetch in managed memory"};
 					return ret;
 				}
-				case cudaMemoryTypeHost        : { //	std::cout<< n << " cudaMemoryTypeHost "<< attributes.device <<" "<< cudaCpuDeviceId <<std::endl;
-					auto e = cudaMemPrefetchAsync(raw_pointer_cast(ret), n*sizeof(T), cudaCpuDeviceId); if(e != cudaSuccess) throw std::runtime_error{"cannot prefetch"};
+				case cudaMemoryTypeHost        :{//std::cout<< n <<" cudaMemoryTypeHost "<< attr.device <<" "<< cudaCpuDeviceId <<std::endl;
+					if(cudaMemPrefetchAsync(raw_pointer_cast(ret), n*sizeof(T), cudaCpuDeviceId) != cudaSuccess) throw std::runtime_error{"could not prefetch in managed memory"};
 					return ret;
 				}
-				case  cudaMemoryTypeDevice     : { //	std::cout<< n << " cudaMemoryTypeDevice "<< attributes.device <<" "<< attributes.device <<std::endl;
-					auto e = cudaMemPrefetchAsync(raw_pointer_cast(ret), n*sizeof(T), attributes.device); if(e != cudaSuccess) throw std::runtime_error{"could nnot prefetch in device memory"};
+				case  cudaMemoryTypeDevice     :{//std::cout<< n <<" cudaMemoryTypeDevice "<< attributes.device <<" "<< attributes.device<<std::endl;
+					if(cudaMemPrefetchAsync(raw_pointer_cast(ret), n*sizeof(T), attr.device) != cudaSuccess) throw std::runtime_error{"could not prefetch in managed memory"};
 					return ret;
 				}
-				case  cudaMemoryTypeManaged    : { // std::cout<< n << " cudaMemoryTypeManaged "<< attributes.device <<" "<< attributes.device <<std::endl;
-					auto e = cudaMemPrefetchAsync(raw_pointer_cast(ret), n*sizeof(T), attributes.device /*or 0*/); if(e != cudaSuccess) throw std::runtime_error{"could not prefetch in managed memory"};
+				case  cudaMemoryTypeManaged    :{//std::cout<< n <<" cudaMemoryTypeManaged "<< attr.device <<" "<< attr.device <<std::endl;
+					if(cudaMemPrefetchAsync(raw_pointer_cast(ret), n*sizeof(T), attr.device /*0?*/) != cudaSuccess) throw std::runtime_error{"could not prefetch in managed memory"};
 					return ret;
 				}
 			}
