@@ -214,11 +214,11 @@ clang++-11:
 
 clang++-11-gcc9:
   stage: test
-  image: debian:stable-backports
+  image: vistart/cuda:10.2-ubuntu20.04
   script:
     - export CXX="clang++-11"
     - apt-get update 
-    - apt-get install --no-install-recommends -y --quiet gcc
+    - apt-get install --no-install-recommends -y --quiet gcc-9
     - apt-get install --no-install-recommends -y --quiet clang-11
     - apt-get install --no-install-recommends -y --quiet cmake
     - apt-get install --no-install-recommends -y --quiet make
