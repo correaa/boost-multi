@@ -202,6 +202,7 @@ clang++-11:
 
 clang++-11-gcc9:
   stage: test
+  image: debian:stable-backports
   script:
     - export CXX="clang++-11"
     - apt-get update 
