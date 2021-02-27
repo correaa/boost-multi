@@ -204,7 +204,13 @@ clang++-11-gcc9:
   stage: test
   script:
     - export CXX="clang++-11"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet gcc-9 clang-11 cmake make libboost-test-dev libblas-dev
+    - apt-get update 
+    - apt-get install --no-install-recommends -y --quiet gcc-9
+    - apt-get install --no-install-recommends -y --quiet clang-11
+    - apt-get install --no-install-recommends -y --quiet cmake
+    - apt-get install --no-install-recommends -y --quiet make
+    - apt-get install --no-install-recommends -y --quiet libboost-test-dev
+    - apt-get install --no-install-recommends -y --quiet libblas-dev
     - ln --symbolic --force . ../multi
     - $CXX -v
     - mkdir build && cd build
