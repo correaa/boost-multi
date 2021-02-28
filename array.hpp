@@ -71,7 +71,8 @@ public:
 	static_assert( std::is_same<typename std::allocator_traits<Alloc>::pointer, typename static_array::element_ptr>{}, 
 		"allocator pointer type must match array pointer type");
 	using array_alloc::get_allocator;
-	using allocator_type = typename static_array::allocator_type;
+	using typename array_allocator<Alloc>::allocator_type;
+//	using allocator_type = typename static_array::allocator_type;
 	using decay_type = array<T, D, Alloc>;
 protected:
 	using alloc_traits = typename std::allocator_traits<typename static_array::allocator_type>;
