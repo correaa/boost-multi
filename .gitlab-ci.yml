@@ -23,9 +23,8 @@ g++-cppcheck:
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
-    - cmake -DCMAKE_CXX_CPPCHECK:FILEPATH=cppcheck ..
+    - cmake -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;-D__align__;-DCUDARTAPI;--language=c++;--std=c++17;--error-exitcode=0" ..
     - cmake --build . --verbose
-    - ctest --output-on-failure
 
 g++-latest-std20:
   stage: test
