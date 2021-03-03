@@ -221,6 +221,13 @@ struct extension_t : public range<IndexType, IndexTypeLast>{
 	constexpr IndexType finish() const{return this->last ();}
 	friend constexpr auto operator==(extension_t const& a, extension_t const& b){return static_cast<range<IndexType> const&>(a)==static_cast<range<IndexType> const&>(b);}
 	friend constexpr auto operator!=(extension_t const& a, extension_t const& b){return not(a==b);}
+	friend constexpr auto intersection(extension_t const& r1, extension_t const& r2){
+		using std::max; using std::min;
+		auto f = max(r1.first(), r2.first()); 
+		auto l = min(r1.last() , r2.last() );
+		f = min(f, l);
+		return extension_t{f, l};
+	}
 };
 
 template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
