@@ -103,6 +103,7 @@ typedef std::tuple<> base_;
 		return {};
 	}
 	friend constexpr std::tuple<> operator%(nelems_type n, extensions_t const& s){return s.from_linear(n);}
+	friend constexpr extensions_t intersection(extensions_t const&, extensions_t const&){return {};}
 };
 
 template<> struct extensions_t<1> : 
@@ -123,6 +124,9 @@ typedef std::tuple<multi::index_extension> base_;
 		return std::tuple<multi::index>{n};
 	}
 	friend constexpr std::tuple<multi::index> operator%(nelems_type n, extensions_t const& s){return s.from_linear(n);}
+	friend constexpr auto intersection(extensions_t const& x1, extensions_t const& x2){
+		return extensions_t(std::tuple<index_extension>(intersection(std::get<0>(x1), std::get<0>(x2))));
+	}
 };
 
 template<dimensionality_type D>
@@ -169,6 +173,14 @@ private:
 	template<std::size_t... I> constexpr size_type num_elements_impl(std::index_sequence<I...>) const{return multiply_fold(std::get<I>(*this).size()...);}
 public:
 	constexpr size_type num_elements() const{return num_elements_impl(std::make_index_sequence<D>{});}
+	friend constexpr auto intersection(extensions_t const& x1, extensions_t const& x2){
+		return extensions_t(
+			std::tuple_cat(
+				std::tuple<index_extension>(intersection(std::get<0>(x1), std::get<0>(x2))),
+				intersection( extensions_t<D-1>(detail::tuple_tail(x1.base())), extensions_t<D-1>(detail::tuple_tail(x2.base())) ).base()
+			)
+		);
+	}
 };
 
 template<typename SSize>
