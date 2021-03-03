@@ -90,7 +90,7 @@ public:
 	using pointer         = value_type;
 	range() = default;
 	template<class Range, typename = std::enable_if_t<std::is_same<std::decay_t<Range>, value_type>{}> >
-	constexpr range(Range&& o) : first_{std::forward<Range>(o).first()}, last_{std::forward<Range>(o).last()}{}
+	constexpr explicit range(Range&& o) : first_{std::forward<Range>(o).first()}, last_{std::forward<Range>(o).last()}{}
 //	constexpr range(value_type const& fl) : first_{fl}, last_{fl + 1}{}
 //	constexpr range(value_type f, value_type l) : first_{f}, last_{l}{}
 	constexpr range(IndexType f, IndexTypeLast l) : first_{f}, last_{l}{}
@@ -221,7 +221,7 @@ struct extension_t : public range<IndexType, IndexTypeLast>{
 	constexpr IndexType finish() const{return this->last ();}
 	friend constexpr auto operator==(extension_t const& a, extension_t const& b){return static_cast<range<IndexType> const&>(a)==static_cast<range<IndexType> const&>(b);}
 	friend constexpr auto operator!=(extension_t const& a, extension_t const& b){return not(a==b);}
-	friend constexpr auto intersection(extension_t const& r1, extension_t const& r2){
+	friend constexpr extension_t intersection(extension_t const& r1, extension_t const& r2){
 		using std::max; using std::min;
 		auto f = max(r1.first(), r2.first()); 
 		auto l = min(r1.last() , r2.last() );
