@@ -124,7 +124,7 @@ typedef std::tuple<multi::index_extension> base_;
 		return std::tuple<multi::index>{n};
 	}
 	friend constexpr std::tuple<multi::index> operator%(nelems_type n, extensions_t const& s){return s.from_linear(n);}
-	friend constexpr auto intersection(extensions_t const& x1, extensions_t const& x2){
+	friend constexpr extensions_t intersection(extensions_t const& x1, extensions_t const& x2){
 		return extensions_t(std::tuple<index_extension>(intersection(std::get<0>(x1), std::get<0>(x2))));
 	}
 };
