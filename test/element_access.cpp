@@ -135,4 +135,18 @@ BOOST_AUTO_TEST_CASE(multi_test_stencil){
 	BOOST_REQUIRE(          &A.stenciled({1, 3}, {2, 5}) [1][2] == &A[1][2]    );
 
 }
+
+BOOST_AUTO_TEST_CASE(multi_extension_intersection){
+	multi::array<double, 1> A = {{2., 2., 2.}};
+	multi::array<double, 1> B = {{3., 3., 3., 3.}};
+
+	BOOST_REQUIRE( intersection( extension(A), extension(B) ).size() == 3 );
+	for(auto i : intersection( extension(A), extension(B) ) ){
+		B[i] += A[i];
+	}
+
+	BOOST_REQUIRE( B[2] == 5. );
+	BOOST_REQUIRE( B[3] == 3. );
+}
+
 #endif
