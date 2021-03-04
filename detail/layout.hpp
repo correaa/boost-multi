@@ -9,6 +9,7 @@ $CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 
 #include "../detail/operators.hpp"
 #include "../config/NODISCARD.hpp"
+#include "../config/ASSERT.hpp"
 
 #include<type_traits> // make_signed_t
 
@@ -250,6 +251,7 @@ public:
 	constexpr auto nelems(dimensionality_type d) const{return d==0?nelems_:throw 0;}
 	friend constexpr auto nelems(layout_t const& self){return self.nelems();}
 	constexpr size_type size() const{//assert(stride_!=0 and nelems_%stride_==0);
+		MULTI_ACCESS_ASSERT(stride_);
 		return nelems_/stride_;
 	}
 	friend constexpr auto size(layout_t const& self){return self.size();}
@@ -278,9 +280,13 @@ public:
 	friend constexpr bool is_empty(layout_t const& s){return s.is_empty();}
 	       constexpr bool    empty()        const    {return is_empty();}
 
-	       constexpr index_extension extension()        const&   {return {offset_/stride_, (offset_+nelems_)/stride_};}
-	friend constexpr index_extension extension(layout_t const& s){return s.extension();}
+	constexpr index_extension extension()        const&{
+		assert(stride_);
+		return {offset_/stride_, (offset_+nelems_)/stride_};
+	} friend
+	constexpr index_extension extension(layout_t const& s){return s.extension();}
 	constexpr auto extension(dimensionality_type d) const{
+		assert(stride_);
 		return d==0?index_extension{offset_/stride_, (offset_ + nelems_)/stride_}:throw 0;
 	}
 	constexpr extensions_type extensions() const{return extensions_type{extension()};}//std::make_tuple(extension());}
@@ -384,7 +390,7 @@ public:
 	       constexpr bool    empty()        const    {return is_empty();}
 	constexpr size_type size() const{
 		if(not nelems_) return 0;
-		assert(stride_);
+		MULTI_ACCESS_ASSERT(stride_);
 		return nelems_/stride_;
 	}
 	friend constexpr size_type size(layout_t const& l){return l.size();}
@@ -412,7 +418,8 @@ public:
 public:
 	constexpr index_extension extension()        const&{
 		if(not nelems_) return {};
-		assert(stride_); return {offset_/stride_, (offset_ + nelems_)/stride_};
+		assert(stride_); 
+		return {offset_/stride_, (offset_ + nelems_)/stride_};
 	}
 	friend constexpr index_extension extension(layout_t const& s){return s.extension();}
 	constexpr index_extension extension_aux() const{
