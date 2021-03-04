@@ -173,7 +173,7 @@ private:
 	template<std::size_t... I> constexpr size_type num_elements_impl(std::index_sequence<I...>) const{return multiply_fold(std::get<I>(*this).size()...);}
 public:
 	constexpr size_type num_elements() const{return num_elements_impl(std::make_index_sequence<D>{});}
-	friend constexpr auto intersection(extensions_t const& x1, extensions_t const& x2){
+	friend constexpr extensions_t intersection(extensions_t const& x1, extensions_t const& x2){
 		return extensions_t(
 			std::tuple_cat(
 				std::tuple<index_extension>(intersection(std::get<0>(x1), std::get<0>(x2))),
