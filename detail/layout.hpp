@@ -349,7 +349,7 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 	) : sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems}{}
 	layout_t() = default;
 	layout_t(layout_t const&) = default;
-	constexpr layout_t(extensions_type const& e) :
+	constexpr explicit layout_t(extensions_type const& e) :
 		sub_{detail::tail(e)}, 
 		stride_{sub_.size()*sub_.stride()},//std::get<0>(e).size()*sub_.num_elements()!=0?sub_.size()*sub_.stride():1}, 
 		offset_{std::get<0>(e).first()*stride_}, //sub_.offset_ + std::get<0>(e).first()*sub_.stride()}, //sub_.stride()  offset_ = i*stride_}, 
@@ -357,7 +357,7 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 	{}
 	template<class StdArray, typename = std::enable_if_t<std::is_same<StdArray, std::array<index_extension, static_cast<std::size_t>(D)>>{}> >
 	constexpr 
-	layout_t(StdArray const& e) : 
+	explicit layout_t(StdArray const& e) : 
 		sub_{detail::tail(e)}, 
 		stride_{1},//std::get<0>(e).size()*sub_.num_elements()!=0?sub_.size()*sub_.stride():1}, 
 		offset_{sub_.offset_ + std::get<0>(e).first()*sub_.stride()}, 
