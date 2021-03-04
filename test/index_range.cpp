@@ -110,8 +110,8 @@ BOOST_AUTO_TEST_CASE(multi_range_with_hana_literals){
 }
 
 BOOST_AUTO_TEST_CASE(multi_range_in_constexpr){
-	static_assert( multi::extension_t<int>{5} == 5 , "!");
-	static_assert(( multi::extension_t<int>{5, 12}.contains(10) ), "!");
+	BOOST_REQUIRE( multi::extension_t<int>{5} == 5 ); // this is not a constexpr in cuda 10
+	BOOST_REQUIRE(( multi::extension_t<int>{5, 12}.contains(10) ));
 //	static_assert(( multi::extension_t{integral_constant<int, 5>{}, integral_constant<int, 12>{}}.contains(10) ), "!");
 //	static_assert(( multi::extension_t{integral_constant<int, 5>{}, integral_constant<int, 12>{}}.contains(integral_constant<int, 10>{}) ), "!");
 
