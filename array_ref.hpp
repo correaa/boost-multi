@@ -449,17 +449,21 @@ public:
 	constexpr basic_array reindexed(typename basic_array::index first, Indexes... idxs)&&{
 		return ((std::move(*this).reindexed(first)<<1).reindexed(idxs...))>>1;
 	}
-	constexpr basic_const_array sliced(index first, index last) const&{
+private:
+	constexpr basic_array sliced_aux(index first, index last) const{
 		typename types::layout_t new_layout = *this;
-		(new_layout.nelems_/=Layout::size())*=(last - first);
+		if((this->size())==0){
+			assert(first == last);
+			new_layout.nelems_ = 0;
+		}else{
+			(new_layout.nelems_/=(this->size()))*=(last - first);
+		}
 		return {new_layout, types::base_ + Layout::operator()(first)};
 	}
-	constexpr basic_array sliced(index first, index last)&{
-		typename types::layout_t new_layout = *this;
-		(new_layout.nelems_/=Layout::size())*=(last - first);
-		return {new_layout, types::base_ + Layout::operator()(first)};
-	}
-	constexpr basic_array sliced(index first, index last) &&{return sliced(first, last);}
+public:
+	constexpr basic_const_array sliced(index first, index last) const&{return sliced_aux(first, last);}
+	constexpr basic_array       sliced(index first, index last)      &{return sliced_aux(first, last);}
+	constexpr basic_array       sliced(index first, index last)     &&{return sliced_aux(first, last);}
 
 	constexpr basic_const_array blocked(typename basic_array::index first, typename basic_array::index last) const&{return sliced(first, last).reindexed(first);}
 	constexpr basic_array blocked(typename basic_array::index first, typename basic_array::index last)&{return sliced(first, last).reindexed(first);}
@@ -763,12 +767,12 @@ public:
 	friend constexpr const_iterator begin(basic_array const& self){return self.begin();}
 	friend constexpr const_iterator end  (basic_array const& self){return self.end()  ;}
 
-protected:
-	template<class A> constexpr void intersection_assign_(A&& other)&{// using multi::extension
-		for(auto i : intersection(types::extension(), other.extension()))
-			operator[](i).intersection_assign_(std::forward<A>(other)[i]);
-	}
-	template<class A> constexpr void intersection_assign_(A&& o)&&{intersection_assign_(std::forward<A>(o));}
+//protected:
+//	template<class A> constexpr void intersection_assign_(A&& other)&{// using multi::extension
+//		for(auto i : intersection(types::extension(), other.extension()))
+//			operator[](i).intersection_assign_(std::forward<A>(other)[i]);
+//	}
+//	template<class A> constexpr void intersection_assign_(A&& o)&&{intersection_assign_(std::forward<A>(o));}
 public:
 
 	template<class It> constexpr It assign(It first) &{adl_copy_n(first, this->size(), begin()); std::advance(first, this->size()); return first;}
@@ -1190,27 +1194,40 @@ public:
 		new_layout.reindex(first);
 		return {new_layout, types::base_};
 	}
-	constexpr basic_array sliced(typename types::index first, typename types::index last)&{
-		typename types::layout_t new_layout = *this; 
-		(new_layout.nelems_/=Layout::size())*=(last - first);
-		return {new_layout, types::base_ + Layout::operator()(first)};		
+private:
+	constexpr basic_array sliced_aux(index first, index last) const{
+		typename types::layout_t new_layout = *this;
+		if(Layout::size()==0){
+			assert(first == last);
+			new_layout.nelems_ = 0;
+		}else{
+			(new_layout.nelems_/=Layout::size())*=(last - first);
+		}
+		return {new_layout, types::base_ + Layout::operator()(first)};
 	}
+public:
+	constexpr basic_const_array sliced(index first, index last) const&{return sliced_aux(first, last);}
+	constexpr basic_array       sliced(index first, index last)      &{return sliced_aux(first, last);}
+	constexpr basic_array       sliced(index first, index last)     &&{return sliced_aux(first, last);}
+
 	constexpr basic_array blocked(typename basic_array::index first, typename basic_array::index last)&{return sliced(first, last).reindexed(first);}
 	constexpr basic_array stenciled(typename basic_array::index_extension x){return blocked(x.start(), x.finish());}
-	constexpr basic_array sliced(typename types::index first, typename types::index last)&&{return sliced(first, last);}
-	constexpr basic_const_array sliced(typename types::index first, typename types::index last) const&{
-		typename types::layout_t new_layout = *this; 
-		(new_layout.nelems_/=Layout::size())*=(last - first);
-		return {new_layout, types::base_ + Layout::operator()(first)};		
-	}
+//	constexpr basic_array sliced(typename types::index first, typename types::index last)&&{return sliced(first, last);}
+//	constexpr basic_const_array sliced(typename types::index first, typename types::index last) const&{
+//		typename types::layout_t new_layout = *this; 
+//		(new_layout.nelems_/=Layout::size())*=(last - first);
+//		return {new_layout, types::base_ + Layout::operator()(first)};		
+//	}
 	constexpr basic_array strided(typename types::index s) const{
 		typename types::layout_t new_layout = this->layout();
 		new_layout.stride_*=s;
 		return {new_layout, types::base_};//+ Layout::operator()(this->extension().front())};
 	}
+
 	constexpr basic_array sliced(typename types::index first, typename types::index last, typename types::index stride) const{
 		return sliced(first, last).strided(stride);
 	}
+
 	constexpr auto range(index_range const& ir)      &{return sliced(ir.front(), ir.last());}
 	constexpr auto range(index_range const& ir)     &&{return std::move(*this).sliced(ir.front(), ir.last());}
 	constexpr auto range(index_range const& ir) const&{return sliced(ir.front(), ir.last());}
