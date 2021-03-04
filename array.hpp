@@ -922,14 +922,18 @@ public:
 		return static_::operator==(other);
 	}
 
-	void reextent(typename array::extensions_type const& e){
-		array tmp(e, this->get_allocator());
-		tmp.intersection_assign_(*this);
+	void reextent(typename array::extensions_type const& x){
+		if(x == this->extensions()) return;
+		array tmp(x, this->get_allocator());
+		auto const is = intersection(this->extensions(), x);
+		tmp.apply(is) = this->apply(is);
 		swap(tmp);
 	}
-	void reextent(typename array::extensions_type const& e, typename array::element const& v){
-		array tmp(e, v, this->get_allocator());//static_cast<Alloc const&>(*this));
-		tmp.intersection_assign_(*this);
+	void reextent(typename array::extensions_type const& x, typename array::element const& e){
+		if(x == this->extensions()) return;
+		array tmp(x, e, this->get_allocator());
+		auto const is = intersection(this->extensions(), x);
+		tmp.apply(is) = this->apply(is);
 		swap(tmp);
 	}
 	template<class... Ts> constexpr array&& reindex(Ts... a)&&{array::layout_t::reindex(a...); return std::move(*this);}
