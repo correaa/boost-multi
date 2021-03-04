@@ -107,7 +107,7 @@ public:
 		constexpr void advance(typename const_iterator::difference_type n){curr_+=n;}
 		constexpr bool equal(const_iterator const& y) const{return curr_ == y.curr_;}
 		constexpr auto distance_to(const_iterator const& z) const{return z.curr_-curr_;}
-		constexpr const_iterator(value_type current) : curr_(current){}
+		constexpr explicit const_iterator(value_type current) : curr_(current){}
 		friend class range;
 	 //   friend class boost::iterator_core_access;
 	public:
@@ -209,6 +209,7 @@ template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::d
 struct extension_t : public range<IndexType, IndexTypeLast>{
 	using range<IndexType, IndexTypeLast>::range;
 	constexpr extension_t(IndexType f, IndexTypeLast l) noexcept : range<IndexType, IndexTypeLast>{f, l}{}
+	// cppcheck-suppress noExplicitConstructor
 	constexpr extension_t(IndexType last) noexcept : range<IndexType, IndexTypeLast>(0, last){}
 	constexpr extension_t() noexcept : range<IndexType, IndexTypeLast>(){}
 	friend constexpr typename extension_t::size_type size(extension_t const& s){return s.size();}
