@@ -135,4 +135,52 @@ BOOST_AUTO_TEST_CASE(multi_test_stencil){
 	BOOST_REQUIRE(          &A.stenciled({1, 3}, {2, 5}) [1][2] == &A[1][2]    );
 
 }
+
+BOOST_AUTO_TEST_CASE(multi_extension_intersection){
+	multi::array<double, 1> A = {{2., 2., 2.}};
+	multi::array<double, 1> B = {{3., 3., 3., 3.}};
+
+	BOOST_REQUIRE( intersection( extension(A), extension(B) ).size() == 3 );
+	for(auto i : intersection( extension(A), extension(B) ) ){
+		B[i] += A[i];
+	}
+
+	BOOST_REQUIRE( B[2] == 5. );
+	BOOST_REQUIRE( B[3] == 3. );
+}
+
+BOOST_AUTO_TEST_CASE(multi_extensions_intersection){
+	multi::array<double, 2> A = {{2., 2., 2.}, {2., 2., 2.}};
+	multi::array<double, 2> B = {{3., 3., 3., 3.}, {3., 3., 3., 3.}, {3., 3., 3., 3.}} ;
+
+	BOOST_REQUIRE( extensions(A).num_elements() ==  6 );
+	BOOST_REQUIRE( extensions(B).num_elements() == 12 );
+	
+	auto is = intersection( extensions(A), extensions(B) );
+	BOOST_REQUIRE( is.num_elements() == 6 );
+
+	multi::array<double, 2> C(is);
+	C(std::get<0>(is), std::get<1>(is)) = A;
+	BOOST_REQUIRE( C == A );
+}
+
+BOOST_AUTO_TEST_CASE(multi_extensions_intersection_2){
+	multi::array<double, 2> A({80, 20}, 4.);
+	multi::array<double, 2> B({30, 70}, 8.);
+
+	BOOST_REQUIRE( extensions(A).num_elements() == 80*20 );
+	BOOST_REQUIRE( extensions(B).num_elements() == 30*70 );
+	
+	auto is = intersection( extensions(A), extensions(B) );
+	BOOST_REQUIRE( is.num_elements() == 30*20 );
+
+	multi::array<double, 2> C(is);
+	C(std::get<0>(is), std::get<1>(is)) = A(std::get<0>(is), std::get<1>(is));
+	BOOST_REQUIRE( C[16][17] == 4. );
+	
+	C(std::get<0>(is), std::get<1>(is)) = B(std::get<0>(is), std::get<1>(is));
+	BOOST_REQUIRE( C[16][17] == 8. );
+}
+
+
 #endif

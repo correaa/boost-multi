@@ -480,8 +480,6 @@ void f(T&& t){
 	std::cout<< dimensionality(t) <<'\n';
 }
 
-template<class T> void f();
-
 BOOST_AUTO_TEST_CASE(multi_utility_test){
 
 	static_assert( std::is_same<std::iterator_traits<double const*>::value_type, double>{}, "!");
