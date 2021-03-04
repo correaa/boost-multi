@@ -22,12 +22,13 @@ namespace multi = boost::multi;
 
 template<class T> void what(T&&) = delete;
 
-BOOST_AUTO_TEST_CASE(verify_assert){
+BOOST_AUTO_TEST_CASE(empty_intersection){
 	multi::array<double, 1> arr(10);
-//	arr[10];
-//	BOOST_CHECK_THROW( arr[10],
-//		boost::execution_exception
-//	);
+	multi::array<double, 1> arr2;
+
+	auto const is = intersection(arr.extension(), arr2.extension());
+	BOOST_REQUIRE( arr(is).size() == 0 );
+	arr2(is) = arr(is);
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_element_access_with_tuple){
