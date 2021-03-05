@@ -353,6 +353,9 @@ protected:
 	template<typename, dimensionality_type, class Alloc> friend struct static_array;
 	basic_array(basic_array const&) = default;
 	template<class, class> friend struct basic_array_ptr;
+public:
+	using typename types::element_ptr;
+	using typename types::element_const_ptr;
 //#if __cplusplus >= 201703L
 //#if defined(__INTEL_COMPILER) or defined(__NVCC__)
 //public:
@@ -561,14 +564,21 @@ public:
 	friend constexpr auto diagonal(basic_array&       self){return           self .diagonal();}
 	friend constexpr auto diagonal(basic_array&&      self){return std::move(self).diagonal();}
 
-	template<typename Size>
-	constexpr auto partitioned(Size const& s) const{
-		assert(s!=0);
+	using partitioned_type       = basic_array<T, D+1, element_ptr      >;
+	using partitioned_const_type = basic_array<T, D+1, element_const_ptr>;
+private:
+	constexpr partitioned_type partitioned_aux(size_type s) const{
+		assert(s != 0);
 		assert(this->layout().nelems_%s==0);
 		multi::layout_t<D+1> new_layout{this->layout(), this->layout().nelems_/s, 0, this->layout().nelems_};
 		new_layout.sub_.nelems_/=s;
-		return basic_array<T, D+1, ElementPtr>{new_layout, types::base_};
+		return {new_layout, types::base_};
 	}
+public:
+	constexpr partitioned_const_type partitioned(size_type s) const&{return partitioned_aux(s);}
+	constexpr partitioned_type       partitioned(size_type s)      &{return partitioned_aux(s);}
+	constexpr partitioned_type       partitioned(size_type s)     &&{return partitioned_aux(s);}
+	
 	constexpr basic_array transposed() const&{//	typename types::layout_t new_layout = *this;
 		return {this->layout().transpose(), types::base_};
 	}
@@ -1094,6 +1104,9 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout> :
 		typename std::pointer_traits<ElementPtr>::template rebind<typename basic_array::element_type const>,
 		Layout
 	>;
+	
+	using typename types::element_ptr;
+	using typename types::element_const_ptr;
 protected:
 	template<class A>
 	constexpr void intersection_assign_(A&& other)&{
@@ -1256,13 +1269,22 @@ public:
 	HD constexpr decltype(auto) paren(index i) &&    {return operator[](i);}
 	HD constexpr decltype(auto) paren(index i) const&{return operator[](i);}
 
-	template<typename Size>
-	constexpr auto partitioned(Size const& s) const{
+public:
+	using partitioned_type       = basic_array<T, 2, element_ptr      >;
+	using partitioned_const_type = basic_array<T, 2, element_const_ptr>;
+private:
+	constexpr partitioned_type partitioned_aux(size_type s) const{
+		assert( s != 0 );
 		assert( this->layout().nelems_%s==0 ); // TODO remove assert? truncate left over? (like mathematica)
 		multi::layout_t<2> new_layout{this->layout(), this->layout().nelems_/s, 0, this->layout().nelems_};
 		new_layout.sub_.nelems_/=s;
-		return basic_array<T, 2, ElementPtr>{new_layout, types::base_};
+		return {new_layout, types::base_};
 	}
+public:
+	constexpr partitioned_const_type partitioned(size_type s) const&{return partitioned_aux(s);}
+	constexpr partitioned_type       partitioned(size_type s)      &{return partitioned_aux(s);}
+	constexpr partitioned_type       partitioned(size_type s)     &&{return partitioned_aux(s);}
+	
 	friend constexpr decltype(auto)   rotated(basic_array const& s){return s.  rotated();}
 	friend constexpr decltype(auto) unrotated(basic_array const& s){return s.unrotated();}
 
