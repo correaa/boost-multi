@@ -311,6 +311,7 @@ public:
 	constexpr layout_t&   rotate(dimensionality_type = 1){return *this;}
 	constexpr layout_t& unrotate(dimensionality_type = 1){return *this;}
 	constexpr layout_t scale(size_type s) const{return {stride_*s, offset_*s, nelems_*s};}
+	constexpr layout_t& reverse(){return *this;}
 };
 
 inline constexpr typename layout_t<1>::extensions_type operator*(layout_t<0>::index_extension const& ie, layout_t<0>::extensions_type const&){
@@ -451,22 +452,13 @@ public:
 		swap(nelems_, sub_.nelems_);
 		return *this;
 	}
-	constexpr layout_t& rotate(){
-		using std::swap;
-		swap(stride_, sub_.stride_);
-		swap(offset_, sub_.offset_);
-		swap(nelems_, sub_.nelems_);
-		sub_.rotate();
+	constexpr layout_t& reverse(){
+		unrotate();
+		sub_.reverse();
 		return *this;
 	}
-	constexpr layout_t& unrotate(){
-		sub_.unrotate();
-		using std::swap;
-		swap(stride_, sub_.stride_);
-		swap(offset_, sub_.offset_);
-		swap(nelems_, sub_.nelems_);
-		return *this;
-	}
+	constexpr layout_t&   rotate(){transpose(); sub_.  rotate(); return *this;}
+	constexpr layout_t& unrotate(){sub_.unrotate(); transpose(); return *this;}
 	constexpr layout_t& rotate(dimensionality_type r){
 		if(r >= 0) while(r){rotate(); --r;}
 		else return rotate(D - r);
