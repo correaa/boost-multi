@@ -579,6 +579,25 @@ public:
 	constexpr partitioned_type       partitioned(size_type s)      &{return partitioned_aux(s);}
 	constexpr partitioned_type       partitioned(size_type s)     &&{return partitioned_aux(s);}
 	
+	friend constexpr partitioned_const_type partitioned(basic_array const& self, size_type s){return           self .partitioned(s);}
+	friend constexpr partitioned_type       partitioned(basic_array      & self, size_type s){return           self .partitioned(s);}
+	friend constexpr partitioned_type       partitioned(basic_array     && self, size_type s){return std::move(self).partitioned(s);}
+
+private:
+	constexpr basic_array reversed_aux() const{
+		auto new_layout = this->layout();
+		new_layout.reverse();
+		return {new_layout, types::base_};
+	}
+public:
+	constexpr basic_const_array reversed() const&{return reversed_aux();}
+	constexpr basic_array       reversed()      &{return reversed_aux();}
+	constexpr basic_array       reversed()     &&{return reversed_aux();}
+
+	friend constexpr basic_const_array reversed(basic_array const& s){return           s .reversed();}
+	friend constexpr basic_array       reversed(basic_array      & s){return           s .reversed();}
+	friend constexpr basic_array       reversed(basic_array     && s){return std::move(s).reversed();}
+
 	constexpr basic_array transposed() const&{//	typename types::layout_t new_layout = *this;
 		return {this->layout().transpose(), types::base_};
 	}
@@ -1285,6 +1304,21 @@ public:
 	constexpr partitioned_type       partitioned(size_type s)      &{return partitioned_aux(s);}
 	constexpr partitioned_type       partitioned(size_type s)     &&{return partitioned_aux(s);}
 	
+private:
+	constexpr basic_array reversed_aux() const{
+		auto new_layout = this->layout();
+		new_layout.reverse();
+		return {new_layout, types::base_};
+	}
+public:
+	constexpr basic_const_array reversed() const&{return reversed_aux();}
+	constexpr basic_array       reversed()      &{return reversed_aux();}
+	constexpr basic_array       reversed()     &&{return reversed_aux();}
+
+	friend constexpr basic_const_array reversed(basic_array const& s){return           s .reversed();}
+	friend constexpr basic_array       reversed(basic_array      & s){return           s .reversed();}
+	friend constexpr basic_array       reversed(basic_array     && s){return std::move(s).reversed();}
+
 	friend constexpr decltype(auto)   rotated(basic_array const& s){return s.  rotated();}
 	friend constexpr decltype(auto) unrotated(basic_array const& s){return s.unrotated();}
 
