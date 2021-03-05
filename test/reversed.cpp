@@ -21,9 +21,9 @@ BOOST_AUTO_TEST_CASE(multi_reversed_3d){
 }
 
 template<class Array>
-auto flatted_last(Array&& arr)
-//->decltype(reversed(flatted(transposed(reversed(std::forward<Array>(arr)))))){
-{	return reversed(flatted(transposed(reversed(std::forward<Array>(arr)))));}
+auto flatted_last(Array&& arr){
+	return reversed(flatted(transposed(reversed(std::forward<Array>(arr)))));
+}
 
 template<class Array>
 auto partitioned_last(Array&& arr, std::size_t n){
