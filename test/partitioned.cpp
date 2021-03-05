@@ -21,6 +21,8 @@ BOOST_AUTO_TEST_CASE(array_partitioned_1d){
 	BOOST_REQUIRE( size(A2_ref)==2 );
 	BOOST_REQUIRE( size(A2_ref[0])==3 );
 	BOOST_REQUIRE( &A2_ref[1][0] == &A1[3] );
+	
+	BOOST_REQUIRE(( A2_ref == multi::array<double, 2>{ {0, 1, 2}, {3, 4, 5} } ));
 }
 
 BOOST_AUTO_TEST_CASE(array_partitioned_2d){
