@@ -172,7 +172,7 @@ struct basic_array_ptr :
 //	constexpr basic_array_ptr(basic_array_ptr const& o) : Ref{static_cast<Layout const&>(o), o.base_}{}//, stride_{o.stride_}{}
 	basic_array_ptr(basic_array_ptr&& o) = default;//: Ref{static_cast<Layout const&>(o), o.base_}{}//, stride_{o.stride_}{}
 	basic_array_ptr(basic_array_ptr const& o) = default;//: Ref{static_cast<Layout const&>(o), o.base_}{}//, stride_{o.stride_}{}
-	constexpr basic_array_ptr& operator=(basic_array_ptr const& other){
+	basic_array_ptr& operator=(basic_array_ptr const& other){
 		this->base_ = other.base_;
 		static_cast<Layout&>(*this) = other;
 		return *this;
@@ -211,6 +211,13 @@ public:
 	constexpr basic_array_ptr& operator+=(difference_type n){advance(n); return *this;}
 };
 
+
+template<class To, class From, std::enable_if_t<std::is_convertible<From, To>{},int> =0>
+constexpr To _implicit_cast(From&& f){return static_cast<To>(f);}
+
+template<class To, class From, std::enable_if_t<std::is_constructible<To, From>{} and not std::is_convertible<From, To>{},int> =0>
+constexpr To _explicit_cast(From&& f){return static_cast<To>(f);}
+
 template<class Element, dimensionality_type D, typename ElementPtr>
 struct array_iterator;
 
@@ -236,20 +243,35 @@ struct array_iterator :
 	using iterator_category = std::random_access_iterator_tag;
 
 	using rank = std::integral_constant<dimensionality_type, D>;
-
+	
+	using ptr_type = basic_array_ptr<basic_array<element, D-1, element_ptr>, layout_t<D-1>>;
 	using stride_type = index;
+
 	constexpr array_iterator(std::nullptr_t p = nullptr) : ptr_{p}, stride_{1}{}//Ref{p}{}
 	template<class, dimensionality_type, class> friend struct array_iterator;
-	template<class Other, typename = decltype(typename basic_array<element, D-1, element_ptr>::types::element_ptr{typename Other::element_ptr{}})> 
-	constexpr array_iterator(Other const& o) : /*Ref{o.layout(), o.base()},*/ ptr_{o.ptr_.base_, o.ptr_.layout()}, stride_{o.stride_}{}
+//	template<class Other, typename = decltype(typename basic_array<element, D-1, element_ptr>::types::element_ptr{typename Other::element_ptr{}})> 
+//	constexpr array_iterator(Other const& o) : /*Ref{o.layout(), o.base()},*/ ptr_{o.ptr_.base_, o.ptr_.layout()}, stride_{o.stride_}{}
+
+	template<class EElement, typename PPtr, 
+		decltype(_implicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().ptr_.base()))* = nullptr // .base() (instead of .base_) is needed due to a bug in nvcc 11.1 not seeing the friend declaration?
+	>
+	constexpr          array_iterator(array_iterator<EElement, D, PPtr> const& o) : ptr_{o.ptr_.base_, o.ptr_.layout()}, stride_{o.stride_}{} // TODO refactor basic_array_ptr to not depend on Ref template parameter
+	template<class EElement, typename PPtr, 
+		decltype(_explicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().ptr_.base()))* = nullptr
+	>
+	constexpr explicit array_iterator(array_iterator<EElement, D, PPtr> const& o) : ptr_{o.ptr_.base_, o.ptr_.layout()}, stride_{o.stride_}{} 
+
 	array_iterator(array_iterator const&) = default;
 	array_iterator& operator=(array_iterator const& other) = default;
+
 	explicit constexpr operator bool() const{return static_cast<bool>(ptr_.base_);}
 	HD constexpr basic_array<element, D-1, element_ptr> operator*() const{/*assert(*this);*/ return {*ptr_};}//return *this;}
 	constexpr decltype(auto) operator->() const{/*assert(*this);*/ return ptr_;}//return this;}
 	HD constexpr array_iterator operator+(difference_type n) const{array_iterator ret{*this}; ret+=n; return ret;}
 	HD constexpr basic_array<element, D-1, element_ptr> operator[](difference_type n) const{return *((*this) + n);}
-	template<class O> constexpr bool operator==(O const& o) const{return equal(o);}
+
+	constexpr bool operator==(array_iterator const& o) const{return ptr_==o.ptr_ and stride_==o.stride_ and ptr_.layout() == o.ptr_.layout();}
+//	template<class O> constexpr bool operator==(O const& o) const{return equal(o);}
 	constexpr bool operator<(array_iterator const& o) const{return distance_to(o) > 0;}
 	constexpr array_iterator(typename basic_array<element, D-1, element_ptr>::element_ptr p, layout_t<D-1> l, index stride) : /*Ref{l, p},*/
 		ptr_{p, l}, 
@@ -267,7 +289,7 @@ private:
 public:
 	template<typename Tuple> HD constexpr decltype(auto) apply(Tuple const& t) const{return apply_impl(t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
 private:
-	basic_array_ptr<basic_array<element, D-1, element_ptr>, layout_t<D-1>> ptr_;
+	ptr_type ptr_;
 	stride_type stride_ = {1}; // nice non-zero default
 	constexpr bool equal(array_iterator const& o) const{return ptr_==o.ptr_ and stride_==o.stride_;}//base_==o.base_ && stride_==o.stride_ && ptr_.layout()==o.ptr_.layout();}
 	constexpr void decrement(){ptr_.base_ -= stride_;}
@@ -286,7 +308,7 @@ public:
 	friend constexpr stride_type stride(array_iterator const& s){return s.stride_;}
 	constexpr array_iterator& operator++(){ptr_.base_ += stride_; return *this;}
 	constexpr array_iterator& operator--(){decrement(); return *this;}
-	constexpr bool operator==(array_iterator const& o) const{return equal(o);}
+
 	friend constexpr difference_type operator-(array_iterator const& self, array_iterator const& other){
 		assert(self.stride_ == other.stride_); assert(self.stride_ != 0);
 		return (self.ptr_.base_ - other.ptr_.base_)/self.stride_;
@@ -751,7 +773,7 @@ private:
 		boost::multi::totally_ordered2<basic_reverse_iterator<Iterator>, void>
 	{
 		template<class O, typename = decltype(std::reverse_iterator<Iterator>{base(std::declval<O const&>())})>
-		constexpr basic_reverse_iterator(O const& o) : std::reverse_iterator<Iterator>{base(o)}{}
+		constexpr explicit basic_reverse_iterator(O const& o) : std::reverse_iterator<Iterator>{base(o)}{}
 		constexpr basic_reverse_iterator() : std::reverse_iterator<Iterator>{}{}
 		constexpr explicit basic_reverse_iterator(Iterator it) : std::reverse_iterator<Iterator>(std::prev(it)){}
 		constexpr explicit operator Iterator() const{auto ret = this->base(); if(ret!=Iterator{}) return ++ret; else return Iterator{};}
@@ -781,28 +803,30 @@ public:
 		return {types::base_ + l(l.size()), l.sub_, l.stride_};
 	}
 
-	       constexpr iterator begin()          &{return {types::base_          , sub_, stride_};}
-	       constexpr iterator end  ()          &{return {types::base_ + nelems_, sub_, stride_};}
-	friend constexpr iterator begin(basic_array& self){return self.begin();}
-	friend constexpr iterator end  (basic_array& self){return self.end  ();}
+private:
+	constexpr iterator begin_aux() const{return {types::base_          , sub_, stride_};}
+	constexpr iterator end_aux()   const{return {types::base_ + nelems_, sub_, stride_};}
 
-	       constexpr iterator begin()          &&   {return              begin();}
-	       constexpr iterator end  ()          &&   {return              end()  ;}
+public:
+	constexpr iterator begin()          &{return begin_aux();}
+	constexpr iterator end  ()          &{return end_aux()  ;}
+	friend constexpr iterator begin(basic_array& s){return s.begin();}
+	friend constexpr iterator end  (basic_array& s){return s.end  ();}
+
+	constexpr iterator begin()          &&   {return              begin();}
+	constexpr iterator end  ()          &&   {return              end()  ;}
 	friend constexpr iterator begin(basic_array&& s){return std::move(s).begin();}
 	friend constexpr iterator end  (basic_array&& s){return std::move(s).end()  ;}
 
-	constexpr const_iterator  begin() const&{return {types::base_          , sub_, stride_};}
-	constexpr const_iterator  end  () const&{return {types::base_ + nelems_, sub_, stride_};}
-	friend constexpr const_iterator begin(basic_array const& self){return self.begin();}
-	friend constexpr const_iterator end  (basic_array const& self){return self.end()  ;}
-
-//protected:
-//	template<class A> constexpr void intersection_assign_(A&& other)&{// using multi::extension
-//		for(auto i : intersection(types::extension(), other.extension()))
-//			operator[](i).intersection_assign_(std::forward<A>(other)[i]);
-//	}
-//	template<class A> constexpr void intersection_assign_(A&& o)&&{intersection_assign_(std::forward<A>(o));}
-public:
+	constexpr const_iterator begin()           const&{return begin_aux();}
+	constexpr const_iterator end  ()           const&{return end_aux()  ;}
+	friend constexpr const_iterator begin(basic_array const& s){return s.begin();}
+	friend constexpr const_iterator end  (basic_array const& s){return s.end()  ;}
+	
+	constexpr const_iterator cbegin() const{return begin();}
+	constexpr const_iterator cend()   const{return end()  ;}
+	friend constexpr auto cbegin(basic_array const& s){return s.cbegin();}
+	friend constexpr auto cend  (basic_array const& s){return s.cend()  ;}
 
 	template<class It> constexpr It assign(It first) &{adl_copy_n(first, this->size(), begin()); std::advance(first, this->size()); return first;}
 	template<class It> constexpr It assign(It first)&&{return assign(first);}
@@ -978,12 +1002,6 @@ public:
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-template<class To, class From, std::enable_if_t<std::is_convertible<From, To>{},int> =0>
-constexpr To _implicit_cast(From&& f){return static_cast<To>(f);}
-
-template<class To, class From, std::enable_if_t<std::is_constructible<To, From>{} and not std::is_convertible<From, To>{},int> =0>
-constexpr To _explicit_cast(From&& f){return static_cast<To>(f);}
-
 template<class Element, typename Ptr>//, typename Ref>
 struct array_iterator<Element, 1, Ptr> ://, Ref> : 
 	boost::multi::iterator_facade<
@@ -1001,14 +1019,16 @@ struct array_iterator<Element, 1, Ptr> ://, Ref> :
 
 	array_iterator() = default;
 	array_iterator(array_iterator const&) = default;
-	template<class Other, typename = decltype(_implicit_cast<Ptr>(typename Other::pointer{}))> 
-	constexpr array_iterator(Other const& o) : data_{o.data_}, stride_{o.stride_}{}
-	template<class Other, typename = decltype(_explicit_cast<Ptr>(typename Other::pointer{}))> 
-	explicit constexpr array_iterator(Other const& o, int = 0) : data_{o.data_}, stride_{o.stride_}{}
+
+	template<class Other, decltype(_implicit_cast<Ptr>(typename Other::pointer{}))* = nullptr>
+	// cppcheck-suppress[noExplicitConstructor] because underlying pointer is implicitly convertible
+	constexpr           array_iterator(Other const& o) : data_{o.data_}, stride_{o.stride_}{}
+	template<class Other, decltype(_explicit_cast<Ptr>(typename Other::pointer{}))* = nullptr> 
+	constexpr explicit array_iterator(Other const& o) : data_{o.data_}, stride_{o.stride_}{}
 
 	template<class, dimensionality_type, class> friend struct array_iterator;
-	constexpr array_iterator(std::nullptr_t nu)  : data_{nu}, stride_{1}{}
-	constexpr array_iterator(Ptr const& p) : data_{p}, stride_{1}{}
+	constexpr explicit array_iterator(std::nullptr_t nu)  : data_{nu}, stride_{1}{}
+	constexpr explicit array_iterator(Ptr const& p) : data_{p}, stride_{1}{}
 	template<class EElement, typename PPtr, 
 		typename = decltype(_implicit_cast<Ptr>(std::declval<array_iterator<EElement, 1, PPtr>>().data_))
 	>
@@ -1078,9 +1098,10 @@ struct basic_array<T, dimensionality_type{0}, ElementPtr, Layout> :
 	template<class TT> constexpr auto operator!=(TT const& e) const&->decltype(!operator==(e)){return !operator==(e);}
 	
 	template<class Range0>
-	constexpr basic_array& operator=(Range0&& r)&{
+	basic_array& operator=(Range0&& r)&{
 	//	*this->base_ = std::forward<Range0>(r); 
-		return adl_copy_n(&r, 1, this->base_), *this;
+		adl_copy_n(&r, 1, this->base_);
+		return *this;
 	}
 	
 	element_cref elements_at(size_type n) const&{assert(n < this->num_elements()); return *(this->base_);}
@@ -1181,10 +1202,10 @@ public:
 	auto serialize(Archive& ar, unsigned){
 		std::for_each(this->begin(), this->end(),[&](auto&& e){ar& multi::archive_traits<Archive>::make_nvp("item",e);});
 	}
-//	constexpr 
 	basic_array& operator=(basic_array const& o)&{assert(this->extension() == o.extension()); 	// TODO make sfinae friendly
 		MULTI_MARK_SCOPE(std::string{"multi::operator= D=1 from "}+typeid(T).name()+" to "+typeid(T).name() );
-		return this->assign(o.begin(), o.end()), *this; // TODO improve performance by rotating
+		this->assign(o.begin(), o.end()); // TODO improve performance by rotating
+		return *this;
 	} // TODO leave only r-value version?
 	template<class TT, dimensionality_type DD, class... As>
 	constexpr basic_array&& operator=(basic_array const& o)&&{return std::move(this->operator=(o));} 	// TODO make sfinae friendly
@@ -1361,8 +1382,9 @@ public:
 		return adl_copy(other.begin(), other.end(), this->begin()                                 ), std::move(*this);             }
 
 	template<class TT, class... As>//, DELETE((not std::is_assignable<typename basic_array::reference, typename basic_array<TT, 1, As...>::reference>{}))>
-	constexpr basic_array&  operator=(basic_array<TT, 1, As...> const& other)&{assert(this->extensions() == other.extensions());
-		return adl_copy(other.begin(), other.end(), this->begin()), *this;
+	basic_array&  operator=(basic_array<TT, 1, As...> const& other)&{assert(this->extensions() == other.extensions());
+		adl_copy(other.begin(), other.end(), this->begin());
+		return *this;
 	}
 
 	template<class It> constexpr auto assign(It f)&& //	->decltype(adl::copy_n(f, this->size(), begin(std::move(*this))), void()){
@@ -1742,6 +1764,23 @@ constexpr auto uninitialized_copy
 	}
 	return dest;
 }
+
+}}
+
+namespace boost{
+namespace multi{
+
+// begin and end for forwarding reference are needed in this namespace 
+// to overwrite the behavior of std::begin and std::end 
+// which take rvalue-references as const-references.
+
+template<class T> auto begin(T&& t)
+->decltype(std::forward<T>(t).begin()){
+	return std::forward<T>(t).begin();}
+
+template<class T> auto end(T&& t)
+->decltype(std::forward<T>(t).end()){
+	return std::forward<T>(t).end();}
 
 }}
 

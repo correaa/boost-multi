@@ -58,7 +58,8 @@ public:
 	explicit constexpr involuter(It it) : it_{std::move(it)}, f_{}{}
 	constexpr involuter(It it, F f) : it_{std::move(it)}, f_{std::move(f)}{}
 	involuter(involuter const& other) = default;
-	template<class Other> involuter(involuter<Other, F> const& o) : it_{o.it_}, f_{o.f_}{}
+	template<class Other> // this is needed to make involuter<T> implicitly convertible to involuter<T const>
+	involuter(involuter<Other, F> const& o) : it_{o.it_}, f_{o.f_}{}
 	constexpr auto       operator*() const{return reference{*it_, f_};}
 	constexpr bool       operator==(involuter const& o) const{return it_==o.it_;}
 	constexpr bool       operator!=(involuter const& o) const{return it_!=o.it_;}
