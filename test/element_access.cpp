@@ -1,7 +1,5 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x -DMULTI_ACCESS_NDEBUG -lboost_unit_test_framework&&$0x&&rm $0x;exit
-#endif
-// © Alfredo A. Correa 2018-2020
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
+// © Alfredo A. Correa 2018-2021
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi element access"
 #define BOOST_TEST_DYN_LINK
@@ -9,14 +7,6 @@ $CXX $0 -o $0x -DMULTI_ACCESS_NDEBUG -lboost_unit_test_framework&&$0x&&rm $0x;ex
 #include <boost/test/execution_monitor.hpp>  // for boost::execution_exception
 
 #include "../array.hpp"
-
-#if 0
-#if defined( __cpp_lib_apply) and __cpp_lib_apply>=201603
-#include<tuple> // apply
-#else
-#include<experimental/tuple>
-#endif
-#endif
 
 namespace multi = boost::multi;
 
