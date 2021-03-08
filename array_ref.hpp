@@ -1063,8 +1063,10 @@ public:
 	constexpr stride_type stride(array_iterator const& s){return s.stride_;}
 	constexpr array_iterator& operator++(){data_+=stride_; return *this;}
 	constexpr array_iterator& operator--(){data_-=stride_; return *this;}
-	constexpr bool operator==(array_iterator const& o) const{return data_== o.data_;}
-	constexpr bool operator!=(array_iterator const& o) const{return data_!= o.data_;}
+//	constexpr bool operator==(array_iterator const& o) const{return data_== o.data_;}
+//	constexpr bool operator!=(array_iterator const& o) const{return data_!= o.data_;}
+	friend constexpr bool operator==(array_iterator const& a, array_iterator const& b){return a.data_ == b.data_;}
+	friend constexpr bool operator!=(array_iterator const& a, array_iterator const& b){return not(a==b);}
 	HD constexpr typename std::iterator_traits<element_ptr>::reference operator*() const{return *data_;}
 	constexpr difference_type operator-(array_iterator const& o) const{return -distance_to(o);}
 	constexpr array_iterator& operator+=(difference_type d){data_+=stride_*d; return *this;}
@@ -1360,13 +1362,17 @@ public:
 	using const_iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_const_ptr>;
 	using reverse_iterator = std::reverse_iterator<iterator>;
 
-	constexpr const_iterator begin()const&{return {this->base_, this->stride_};}
-	constexpr       iterator begin()     &{return {this->base_, this->stride_};}
-	constexpr       iterator begin()    &&{return begin();}
+private:
+	constexpr       iterator begin_aux() const{return {this->base_                 , this->stride_};}
+	constexpr       iterator end_aux  () const{return {this->base_ + types::nelems_, this->stride_};}
+public:
+	constexpr const_iterator begin()const&{return begin_aux();}
+	constexpr       iterator begin()     &{return begin_aux();}
+	constexpr       iterator begin()    &&{return begin_aux();}
 
-	constexpr const_iterator end  ()const&{return {basic_array::base_ + types::nelems_, basic_array::stride_};}
-	constexpr       iterator end  ()     &{return {basic_array::base_ + types::nelems_, basic_array::stride_};}
-	constexpr       iterator end  ()    &&{return end();}
+	constexpr const_iterator end  ()const&{return end_aux();}
+	constexpr       iterator end  ()     &{return end_aux();}
+	constexpr       iterator end  ()    &&{return end_aux();}
 
 	friend constexpr const_iterator begin(basic_array const& s){return           s .begin();}
 	friend constexpr       iterator begin(basic_array      & s){return           s .begin();}
@@ -1375,6 +1381,12 @@ public:
 	friend constexpr const_iterator end  (basic_array const& s){return           s .end();}
 	friend constexpr       iterator end  (basic_array      & s){return           s .end();}
 	friend constexpr       iterator end  (basic_array     && s){return std::move(s).end();}
+
+	constexpr const_iterator cbegin() const{return begin();}
+	constexpr const_iterator cend  () const{return end()  ;}
+
+	friend constexpr auto cbegin(basic_array const& s){return s.cbegin();}
+	friend constexpr auto cend  (basic_array const& s){return s.cend()  ;}
 
 	template<class TT, class... As>//, DELETE((not std::is_assignable<typename basic_array::reference, typename basic_array<TT, 1, As...>::reference>{}))>
 //	constexpr 
