@@ -137,6 +137,22 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_realcomplex){
 }
 }
 
+BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_pair_to_complex){
+	using complex = std::complex<double>;
+	using pair    = std::pair<double, double>;
+	multi::array<complex, 2> A({10, 10}, complex{3., 4.});
+
+	multi::array<complex, 2> const& Aconst = A;
+	auto&& A_block = Aconst({0, 5}, {0, 5});
+	
+	auto&& Apair_block = A_block.reinterpret_array_cast<pair const>(); // const is important
+	
+	BOOST_REQUIRE( (void const*)&Apair_block[1][2] == (void*)&A[1][2] );
+	
+	auto&& Adoubles_block = A_block.reinterpret_array_cast<double const>(2);
+	BOOST_REQUIRE( (void const*)&Adoubles_block[1][2][0] == (void*)&A[1][2] );
+}
+
 #if 0
 {
 	multi::cuda::managed::array<std::complex<double>, 1> A(10);
