@@ -391,7 +391,7 @@ inq-g++-latest:
     - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX git cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
-    - git clone --recurse-submodules --remote-submodules git@gitlab.com:npneq/inq.git
+    - git clone --recurse-submodules --remote-submodules https://gitlab.com/npneq/inq.git
     - cd inq
     - mkdir build && cd build
     - ../configure --prefix=$HOME
