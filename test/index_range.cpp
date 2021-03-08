@@ -63,7 +63,7 @@ struct integral_constant : private hana::integral_constant<Integral, n>{
 	friend constexpr auto operator-(integral_constant const&, integral_constant<Integral, n2> const&){
 		return integral_constant<Integral, hana::integral_constant<Integral, n>::value - n2>{};
 	}
-	constexpr integral_constant& operator=(Integral other){logic_assert(other == n, "!"); return *this;}
+	constexpr integral_constant& operator=(Integral other){assert(other == n); return *this;}
 	friend constexpr auto operator>=(Integral const& a, integral_constant const&){return a >= n;}
 	friend constexpr auto operator<(Integral const& a, integral_constant const&){return a < n;}
 };
