@@ -1647,7 +1647,7 @@ template<class T, typename Ptr>
 class array_ptr<T, 0, Ptr> : multi::array_ref<T, 0, Ptr>{// Ref_;
 public:
 //	array_ptr(array_ptr&&) : Ref_{
-	constexpr array_ptr(Ptr p, typename multi::array_ref<T, 0, Ptr>::extensions_type x = {}) : multi::array_ref<T, 0, Ptr>(p, x){}
+	constexpr explicit array_ptr(Ptr p, typename multi::array_ref<T, 0, Ptr>::extensions_type x = {}) : multi::array_ref<T, 0, Ptr>(p, x){}
 //	operator bool() const{return Ref_.base();}
 	constexpr explicit operator Ptr () const{return this->base();}
 	friend constexpr bool operator==(array_ptr const& self, array_ptr const& other){return self.base() == other.base();}
