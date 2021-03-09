@@ -396,7 +396,7 @@ inq-g++-latest:
     - cd ../..
     - mkdir build && cd build
     - CXX=mpic++ ../configure --prefix=$HOME
-    - make
+    - make -j 2
     - make install
     - ctest -j 2 --output-on-failure
 
