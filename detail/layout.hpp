@@ -93,7 +93,6 @@ typedef std::tuple<> base_;
 	static constexpr dimensionality_type dimensionality = 0;
 	using nelems_type = index;
 	using std::tuple<>::tuple;
-	constexpr extensions_t(base_ const& b) : base_(b){}
 	extensions_t() = default;
 	constexpr base_ const& base() const{return *this;}
 	friend constexpr decltype(auto) base(extensions_t const& s){return s.base();}
