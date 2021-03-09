@@ -387,15 +387,18 @@ g++-cppcheck:
 inq-g++-latest:
   stage: test
   script:
-    - apt-get update && apt-get install --no-install-recommends -y --quiet libopenmpi-dev openmpi-bin liblapack-dev libboost-serialization-dev gfortran git ca-certificates g++ cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libopenmpi-dev gfortran g++ cmake make git ca-certificates libboost-test-dev libboost-timer-dev 
     - ln --symbolic --force . ../multi
     - git clone --recurse-submodules --remote-submodules https://gitlab.com/npneq/inq.git
     - cd inq
+    - cd external_libs/multi
+    - git checkout $CI_COMMIT_BRANCH
+    - cd ../..
     - mkdir build && cd build
     - CXX=mpic++ ../configure --prefix=$HOME
     - make
     - make install
-    - ctest --output-on-failure
+    - ctest -j 2 --output-on-failure
 #    - mkdir build && cd build
 #    - cmake ..
 #    - cmake --build . --verbose
