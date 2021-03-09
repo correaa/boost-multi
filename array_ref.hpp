@@ -981,21 +981,24 @@ public:
 	}
 	
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
-	constexpr basic_array<T2, D + 1, P2> reinterpret_array_cast(size_type n) &{
+	constexpr basic_array<std::decay_t<T2>, D + 1, P2> reinterpret_array_cast(size_type n) &{
 		static_assert( sizeof(T)%sizeof(T2) == 0,
 			"error: reinterpret_array_cast is limited to integral stride values");
 		assert( sizeof(T) == sizeof(T2)*n );
+		auto const thisbase = this->base();
+		P2 new_base; std::memcpy((void*)&new_base, (void const*)&thisbase, sizeof(P2)); //reinterpret_cast<P2 const&>(thisbase) // TODO find a better way, fancy pointers wouldn't need reinterpret_cast
 		return { 
 			layout_t<D+1>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n}.rotate(), 
-			reinterpret_cast<P2>(this->base())
+			new_base
+		//	reinterpret_cast<P2>(this->base())
 		//	static_cast<P2>(static_cast<void*>(this->base()))
 		};
 	}
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
-	constexpr basic_array<T2, D + 1, P2> reinterpret_array_cast(size_type n) &&{return reinterpret_array_cast<T2, P2>(n);}
+	constexpr basic_array<std::decay_t<T2>, D + 1, P2> reinterpret_array_cast(size_type n) &&{return reinterpret_array_cast<T2, P2>(n);}
 
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2 const> >
-	constexpr basic_array<T2, D + 1, P2> reinterpret_array_cast(size_type n) const&{
+	constexpr basic_array<std::decay_t<T2>, D + 1, P2> reinterpret_array_cast(size_type n) const&{
 		static_assert( sizeof(T)%sizeof(T2) == 0,
 			"error: reinterpret_array_cast is limited to integral stride values");
 		assert( sizeof(T) == sizeof(T2)*n );
@@ -1069,8 +1072,10 @@ public:
 	constexpr stride_type stride(array_iterator const& s){return s.stride_;}
 	constexpr array_iterator& operator++(){data_+=stride_; return *this;}
 	constexpr array_iterator& operator--(){data_-=stride_; return *this;}
-	constexpr bool operator==(array_iterator const& o) const{return data_== o.data_;}
-	constexpr bool operator!=(array_iterator const& o) const{return data_!= o.data_;}
+//	constexpr bool operator==(array_iterator const& o) const{return data_== o.data_;}
+//	constexpr bool operator!=(array_iterator const& o) const{return data_!= o.data_;}
+	friend constexpr bool operator==(array_iterator const& a, array_iterator const& b){return a.data_ == b.data_;}
+	friend constexpr bool operator!=(array_iterator const& a, array_iterator const& b){return not(a==b);}
 	HD constexpr typename std::iterator_traits<element_ptr>::reference operator*() const{return *data_;}
 	constexpr difference_type operator-(array_iterator const& o) const{return -distance_to(o);}
 	constexpr array_iterator& operator+=(difference_type d){data_+=stride_*d; return *this;}
@@ -1228,7 +1233,7 @@ public:
 
 	template<class Self, typename Tuple, std::size_t ... I> 
 	friend HD constexpr decltype(auto) apply_impl(Self&& self, Tuple const& t, std::index_sequence<I...>, basic_array* = 0){return std::forward<Self>(self)(std::get<I>(t)...);}
-	template<typename Tuple> HD constexpr decltype(auto) apply(Tuple const& t) const&{return apply_impl(          *this , t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
+	template<typename Tuple> HD constexpr decltype(auto) apply(Tuple const& t) const&{return apply_impl(          *this , t, std::make_index_sequence<std::tuple_size<Tuple>::value>());} // TODO tuple_size_v in C++17
 	template<typename Tuple> HD constexpr decltype(auto) apply(Tuple const& t)     &&{return apply_impl(std::move(*this), t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
 	template<typename Tuple> HD constexpr decltype(auto) apply(Tuple const& t)      &{return apply_impl(          *this , t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
 
@@ -1366,13 +1371,17 @@ public:
 	using const_iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_const_ptr>;
 	using reverse_iterator = std::reverse_iterator<iterator>;
 
-	constexpr const_iterator begin()const&{return {this->base_, this->stride_};}
-	constexpr       iterator begin()     &{return {this->base_, this->stride_};}
-	constexpr       iterator begin()    &&{return begin();}
+private:
+	constexpr       iterator begin_aux() const{return {this->base_                 , this->stride_};}
+	constexpr       iterator end_aux  () const{return {this->base_ + types::nelems_, this->stride_};}
+public:
+	constexpr const_iterator begin()const&{return begin_aux();}
+	constexpr       iterator begin()     &{return begin_aux();}
+	constexpr       iterator begin()    &&{return begin_aux();}
 
-	constexpr const_iterator end  ()const&{return {basic_array::base_ + types::nelems_, basic_array::stride_};}
-	constexpr       iterator end  ()     &{return {basic_array::base_ + types::nelems_, basic_array::stride_};}
-	constexpr       iterator end  ()    &&{return end();}
+	constexpr const_iterator end  ()const&{return end_aux();}
+	constexpr       iterator end  ()     &{return end_aux();}
+	constexpr       iterator end  ()    &&{return end_aux();}
 
 	friend constexpr const_iterator begin(basic_array const& s){return           s .begin();}
 	friend constexpr       iterator begin(basic_array      & s){return           s .begin();}
@@ -1381,6 +1390,12 @@ public:
 	friend constexpr const_iterator end  (basic_array const& s){return           s .end();}
 	friend constexpr       iterator end  (basic_array      & s){return           s .end();}
 	friend constexpr       iterator end  (basic_array     && s){return std::move(s).end();}
+
+	constexpr const_iterator cbegin() const{return begin();}
+	constexpr const_iterator cend  () const{return end()  ;}
+
+	friend constexpr auto cbegin(basic_array const& s){return s.cbegin();}
+	friend constexpr auto cend  (basic_array const& s){return s.cend()  ;}
 
 	template<class TT, class... As>//, DELETE((not std::is_assignable<typename basic_array::reference, typename basic_array<TT, 1, As...>::reference>{}))>
 //	constexpr 
@@ -1450,7 +1465,7 @@ public:
 #endif
 	}
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
-	basic_array<T2, 1, P2> reinterpret_array_cast() const&{
+	basic_array<std::decay_t<T2>, 1, P2> reinterpret_array_cast() const&{
 		static_assert( sizeof(T)%sizeof(T2)== 0, "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
 //			this->layout().scale(sizeof(T)/sizeof(T2));
 		static_assert( sizeof(P2) == sizeof(typename basic_array::element_ptr), "reinterpret on equal size?");
