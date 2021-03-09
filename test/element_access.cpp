@@ -19,6 +19,8 @@ BOOST_AUTO_TEST_CASE(empty_intersection){
 	auto const is = intersection(arr.extension(), arr2.extension());
 	BOOST_REQUIRE( arr(is).size() == 0 );
 	arr2(is) = arr(is);
+	
+	BOOST_REQUIRE( arr2(is) == arr(is) );
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_element_access_with_tuple){

@@ -113,10 +113,12 @@ typedef std::tuple<multi::index_extension> base_;
 	using nelems_type = index;
 	using index_extension = multi::index_extension;
 	using std::tuple<index_extension>::tuple;
+	// cppcheck-suppress noExplicitConstructor ; because one wants to interpret a single number as a range from 0
 	constexpr extensions_t(index_extension const& ie) : base_{ie}{}
 	extensions_t() = default;
 	constexpr base_ const& base() const{return *this;}
-	constexpr extensions_t(std::tuple<index_extension> const& t) : std::tuple<index_extension>(t){}
+	// cppcheck-suppress noExplicitConstructor ; I don't know why TODO
+	constexpr extensions_t(base_ const& t) : std::tuple<index_extension>(t){}
 	friend constexpr decltype(auto) base(extensions_t const& s){return s.base();}
 	template<class Archive> void serialize(Archive& ar, unsigned){ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<0>(*this));}
 	constexpr size_type num_elements() const{return std::get<0>(*this).size();}
@@ -316,7 +318,7 @@ public:
 };
 
 inline constexpr typename layout_t<1>::extensions_type operator*(layout_t<0>::index_extension const& ie, layout_t<0>::extensions_type const&){
-	return std::make_tuple(ie);
+	return typename layout_t<1>::extensions_type{std::make_tuple(ie)};
 }
 
 template<dimensionality_type D, typename SSize>

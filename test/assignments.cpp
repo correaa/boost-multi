@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(multi_copy_move){
 	auto A_data = A.data_elements();
 	multi::array<double, 2> C = std::move(A);
 	BOOST_REQUIRE( is_empty(A) );
-	BOOST_REQUIRE( A_data = C.data_elements() );
+	BOOST_REQUIRE( A_data == C.data_elements() );
 	
 	multi::array<double, 2> D(std::move(B));
 	BOOST_REQUIRE( is_empty(B) );
