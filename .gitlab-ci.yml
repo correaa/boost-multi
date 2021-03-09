@@ -3,17 +3,17 @@
 
 image: debian:testing
 
-#g++-latest:
-#  stage: test
-#  script:
-#    - export CXX="g++"
-#    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
-#    - ln --symbolic --force . ../multi
-#    - $CXX --version
-#    - mkdir build && cd build
-#    - cmake ..
-#    - cmake --build . --verbose
-#    - ctest --output-on-failure
+g++-latest:
+  stage: test
+  script:
+    - export CXX="g++"
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - mkdir build && cd build
+    - cmake ..
+    - cmake --build . --verbose
+    - ctest --output-on-failure
 
 #g++-latest-std20:
 #  stage: test
@@ -388,7 +388,7 @@ inq-g++-latest:
   stage: test
   script:
     - export CXX="g++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet libopenmpi-dev liblapack-dev libboost-serialization-dev gfortran git ca-certificates $CXX cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet libopenmpi-dev openmpi-bin liblapack-dev libboost-serialization-dev gfortran git ca-certificates $CXX cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - git clone --recurse-submodules --remote-submodules https://gitlab.com/npneq/inq.git
