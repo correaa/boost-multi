@@ -389,7 +389,6 @@ inq-g++-latest:
   script:
     - apt-get update && apt-get install --no-install-recommends -y --quiet libopenmpi-dev openmpi-bin liblapack-dev libboost-serialization-dev gfortran git ca-certificates g++ cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
-    - $CXX --version
     - git clone --recurse-submodules --remote-submodules https://gitlab.com/npneq/inq.git
     - cd inq
     - mkdir build && cd build
