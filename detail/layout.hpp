@@ -207,6 +207,8 @@ struct layout_t<dimensionality_type{0}, SSize>{
 	constexpr auto sizes() const{return std::tuple<>{};}
 	friend constexpr auto sizes(layout_t const& s){return s.sizes();}
 	constexpr nelems_type num_elements() const{return 1;}//nelems_;}
+	constexpr bool operator==(layout_t const&) const{return true ;}
+	constexpr bool operator!=(layout_t const&) const{return false;}
 };
 
 template<typename SSize>
