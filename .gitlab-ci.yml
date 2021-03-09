@@ -15,17 +15,6 @@ g++-latest:
     - cmake --build . --verbose
     - ctest --output-on-failure
 
-g++-cppcheck:
-  stage: test
-  script:
-    - export CXX="g++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev cppcheck
-    - ln --symbolic --force . ../multi
-    - $CXX --version
-    - mkdir build && cd build
-    - cmake -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--inline-suppr;-D__align__;-DCUDARTAPI;--language=c++;--std=c++17;--error-exitcode=0" ..
-    - cmake --build . --verbose
-
 g++-latest-std20:
   stage: test
   script:
@@ -383,6 +372,38 @@ icpc-std17-runner:
       - cmake --build . -j 12
       - export MKL_VERBOSE=1
       - ctest --output-on-failure
+
+g++-cppcheck:
+  stage: test
+  script:
+    - export CXX="g++"
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev cppcheck
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - mkdir build && cd build
+    - cmake -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--inline-suppr;-D__align__;-DCUDARTAPI;--language=c++;--std=c++17;--error-exitcode=0" ..
+    - cmake --build . --verbose
+
+inq-g++-latest:
+  stage: test
+  script:
+    - apt-get update && apt-get install --no-install-recommends -y --quiet libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libopenmpi-dev gfortran g++ cmake make git ca-certificates libboost-test-dev libboost-timer-dev 
+    - ln --symbolic --force . ../multi
+    - git clone --recurse-submodules --remote-submodules https://gitlab.com/npneq/inq.git
+    - cd inq
+    - cd external_libs/multi
+    - git checkout $CI_COMMIT_BRANCH
+    - cd ../..
+    - mkdir build && cd build
+    - CXX=mpic++ ../configure --prefix=$HOME
+    - make
+    - make install
+    - ctest -j 2 --output-on-failure
+
+#    - mkdir build && cd build
+#    - cmake ..
+#    - cmake --build . --verbose
+#    - ctest --output-on-failure
 
 #blas&fft:
 #    stage: test

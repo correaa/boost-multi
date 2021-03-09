@@ -90,6 +90,7 @@ public:
 	using pointer         = value_type;
 	range() = default;
 	template<class Range, typename = std::enable_if_t<std::is_same<std::decay_t<Range>, value_type>{}> >
+	// cppcheck-suppress internalAstError ; because bug in cppcheck
 	constexpr explicit range(Range&& o) : first_{std::forward<Range>(o).first()}, last_{std::forward<Range>(o).last()}{}
 //	constexpr range(value_type const& fl) : first_{fl}, last_{fl + 1}{}
 //	constexpr range(value_type f, value_type l) : first_{f}, last_{l}{}

@@ -93,7 +93,6 @@ typedef std::tuple<> base_;
 	static constexpr dimensionality_type dimensionality = 0;
 	using nelems_type = index;
 	using std::tuple<>::tuple;
-	constexpr extensions_t(base_ const& b) : base_(b){}
 	extensions_t() = default;
 	constexpr base_ const& base() const{return *this;}
 	friend constexpr decltype(auto) base(extensions_t const& s){return s.base();}
@@ -114,10 +113,12 @@ typedef std::tuple<multi::index_extension> base_;
 	using nelems_type = index;
 	using index_extension = multi::index_extension;
 	using std::tuple<index_extension>::tuple;
+	// cppcheck-suppress noExplicitConstructor ; because one wants to interpret a single number as a range from 0
 	constexpr extensions_t(index_extension const& ie) : base_{ie}{}
 	extensions_t() = default;
 	constexpr base_ const& base() const{return *this;}
-	constexpr extensions_t(std::tuple<index_extension> const& t) : std::tuple<index_extension>(t){}
+	// cppcheck-suppress noExplicitConstructor ; I don't know why TODO
+	constexpr extensions_t(base_ const& t) : std::tuple<index_extension>(t){}
 	friend constexpr decltype(auto) base(extensions_t const& s){return s.base();}
 	template<class Archive> void serialize(Archive& ar, unsigned){ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<0>(*this));}
 	constexpr size_type num_elements() const{return std::get<0>(*this).size();}
@@ -208,6 +209,8 @@ struct layout_t<dimensionality_type{0}, SSize>{
 	constexpr auto sizes() const{return std::tuple<>{};}
 	friend constexpr auto sizes(layout_t const& s){return s.sizes();}
 	constexpr nelems_type num_elements() const{return 1;}//nelems_;}
+	constexpr bool operator==(layout_t const&) const{return true ;}
+	constexpr bool operator!=(layout_t const&) const{return false;}
 };
 
 template<typename SSize>
@@ -240,7 +243,7 @@ public:
 //			ie.size()<=1?ie.size()*std::numeric_limits<stride_type>::max():ie.size()
 			ie.size()
 		}{}
-	constexpr layout_t(extensions_type e) : layout_t(std::get<0>(e), {}){}
+	constexpr explicit layout_t(extensions_type e) : layout_t(std::get<0>(e), {}){}
 	constexpr layout_t(stride_type stride, offset_type offset, nelems_type nelems) : 
 		stride_{stride}, offset_{offset}, nelems_{nelems}
 	{}
@@ -254,7 +257,7 @@ public:
 		MULTI_ACCESS_ASSERT(stride_);
 		return nelems_/stride_;
 	}
-	friend constexpr auto size(layout_t const& self){return self.size();}
+	friend constexpr size_type size(layout_t const& self){return self.size();}
 	constexpr size_type size(dimensionality_type d) const{
 		return d==0?nelems_/stride_:throw 0; // assert(d == 0 and stride_ != 0 and nelems_%stride_ == 0);
 	}
@@ -315,7 +318,7 @@ public:
 };
 
 inline constexpr typename layout_t<1>::extensions_type operator*(layout_t<0>::index_extension const& ie, layout_t<0>::extensions_type const&){
-	return std::make_tuple(ie);
+	return typename layout_t<1>::extensions_type{std::make_tuple(ie)};
 }
 
 template<dimensionality_type D, typename SSize>

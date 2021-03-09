@@ -57,6 +57,12 @@ struct basic_array;
 
 template<typename T, dimensionality_type D, class A = std::allocator<T>> struct array;
 
+template<class To, class From, std::enable_if_t<std::is_convertible<From, To>{},int> =0>
+constexpr To _implicit_cast(From&& f){return static_cast<To>(f);}
+
+template<class To, class From, std::enable_if_t<std::is_constructible<To, From>{} and not std::is_convertible<From, To>{},int> =0>
+constexpr To _explicit_cast(From&& f){return static_cast<To>(f);}
+
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>>
 struct array_types : Layout{
 	using element = T;
@@ -102,7 +108,7 @@ struct array_types : Layout{
 protected:
 	using derived = basic_array<T, D, ElementPtr, Layout>;
 	element_ptr base_;
-	constexpr array_types(std::nullptr_t np) : Layout{}, base_{np}{}
+	constexpr explicit array_types(std::nullptr_t np) : Layout{}, base_{np}{}
 public:
 	array_types() = default;
 //#if defined(__NVCC__) 
@@ -113,9 +119,16 @@ public:
 //	template<class T2, class P2, class Array> friend decltype(auto) static_array_cast(Array&&);
 public://TODO find why this needs to be public and not protected or friend
 	template<class ArrayTypes, typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>
-		, typename = decltype(element_ptr{std::declval<ArrayTypes const&>().base_})
-	>
+		, decltype(_implicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
+	> // cppcheck-suppress noExplicitConstructor ; because underlying pointers are implicitly convertible
 	constexpr array_types(ArrayTypes const& a) : Layout{a}, base_{a.base_}{}
+	template<class ArrayTypes, typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>
+		, decltype(_explicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
+	>
+	constexpr explicit array_types(ArrayTypes const& a) : Layout{a}, base_{a.base_}{}
+
+
+
 	template<typename ElementPtr2, 
 		typename = decltype(Layout{std::declval<array_types<T, D, ElementPtr2, Layout> const&>().layout()}),
 		typename = decltype(element_ptr{std::declval<array_types<T, D, ElementPtr2, Layout> const&>().base_})
@@ -210,13 +223,6 @@ protected:
 public:
 	constexpr basic_array_ptr& operator+=(difference_type n){advance(n); return *this;}
 };
-
-
-template<class To, class From, std::enable_if_t<std::is_convertible<From, To>{},int> =0>
-constexpr To _implicit_cast(From&& f){return static_cast<To>(f);}
-
-template<class To, class From, std::enable_if_t<std::is_constructible<To, From>{} and not std::is_convertible<From, To>{},int> =0>
-constexpr To _explicit_cast(From&& f){return static_cast<To>(f);}
 
 template<class Element, dimensionality_type D, typename ElementPtr>
 struct array_iterator;
@@ -1026,7 +1032,7 @@ struct array_iterator<Element, 1, Ptr> ://, Ref> :
 	array_iterator(array_iterator const&) = default;
 
 	template<class Other, decltype(_implicit_cast<Ptr>(typename Other::pointer{}))* = nullptr>
-	// cppcheck-suppress[noExplicitConstructor] because underlying pointer is implicitly convertible
+	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
 	constexpr           array_iterator(Other const& o) : data_{o.data_}, stride_{o.stride_}{}
 	template<class Other, decltype(_explicit_cast<Ptr>(typename Other::pointer{}))* = nullptr> 
 	constexpr explicit array_iterator(Other const& o) : data_{o.data_}, stride_{o.stride_}{}
@@ -1184,8 +1190,8 @@ protected:
 public:
 //	using default_allocator_type = typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type;
 	friend constexpr dimensionality_type dimensionality(basic_array const& self){return self.dimensionality;}
-	template<class BasicArray, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<BasicArray>>{}>, typename = decltype(types(std::declval<BasicArray&&>()))> 
-	constexpr basic_array(BasicArray&& other) : types{std::forward<BasicArray>(other)}{}
+//	template<class BasicArray, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<BasicArray>>{}>, typename = decltype(types(std::declval<BasicArray&&>()))>
+//	constexpr basic_array(BasicArray&& other) : types{std::forward<BasicArray>(other)}{}
 //	basic_array_ptr<basic_array, Layout> operator&() const&{return {this->base_, this->layout()};}
 	constexpr basic_array_ptr<basic_array, Layout> operator&() &&{return {this->base_, this->layout()};}
 //	basic_array_ptr<basic_array, Layout> operator&() &{return {this->base_, this->layout()};}
@@ -1537,13 +1543,13 @@ public:
 	template<class OtherPtr, class=std::enable_if_t<not std::is_same<OtherPtr, ElementPtr>{}>>
 	constexpr array_ref(array_ref<T, D, OtherPtr>&& other)
 		: basic_array<T, D, ElementPtr>{other.layout(), ElementPtr{other.base()}}{}
-	constexpr array_ref(typename array_ref::element_ptr p, typename array_ref::extensions_type e = {}) noexcept
+	constexpr explicit array_ref(typename array_ref::element_ptr p, typename array_ref::extensions_type e = {}) noexcept // TODO eliminate this ctor
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
 
 	constexpr array_ref(typename array_ref::extensions_type e, typename array_ref::element_ptr p) noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
 
-	template<class TT, std::size_t N> // doesn't work with gcc, (needs *array_ptr)
+	template<class TT, std::size_t N> // cppcheck-suppress noExplicitConstructor ; because a reference to c-array can be represented as an array_ref
 	constexpr array_ref(TT(&t)[N]) : array_ref((typename array_ref::element_ptr)&t, extensions(t)){}
 
 	using basic_array<T, D, ElementPtr>::operator=;
@@ -1584,7 +1590,7 @@ public:
 	using celements_type = array_ref<typename array_ref::element_type, 1, typename array_ref::element_const_ptr>;
 
 private:
-	constexpr elements_type elements_() const{return {data_elements(), this->num_elements()};}
+	constexpr elements_type elements_() const{return elements_type{data_elements(), this->num_elements()};}
 public:
 	constexpr  elements_type elements()         &     {return elements_();}
 	constexpr  elements_type elements()         &&    {return elements_();}
@@ -1650,11 +1656,12 @@ struct array_ptr : basic_array_ptr<basic_array<T, D, Ptr>, typename array_ref<T,
 //	using basic_ptr::basic_ptr;//array_ptr<array_ref<T, D, Ptr>, typename array_ref<T, D, Ptr>::layout_t>::basic_array_ptr;
 public:
 	constexpr array_ptr(Ptr p, index_extensions<D> x) : basic_ptr(p, multi::layout_t<D>{x}){}
+	// cppcheck-suppress noExplicitConstructor ; because array_ptr can represent a null
 	constexpr array_ptr(std::nullptr_t) : basic_ptr(nullptr, multi::layout_t<D>{}){}
-	template<class TT, std::size_t N>
+	template<class TT, std::size_t N> // cppcheck-suppress noExplicitConstructor ; because array_ptr can represent a pointer to a c-array
 	constexpr array_ptr(TT(*t)[N]) : basic_ptr(data_elements(*t), layout(*t)){}
 	constexpr array_ref<T, D, Ptr> operator*() const{
-		return {this->base(), (*this)->extensions()};//multi::layout_t<D>{x}};
+		return array_ref<T, D, Ptr>{this->base(), (*this)->extensions()};//multi::layout_t<D>{x}};
 	}
 };
 
@@ -1662,7 +1669,7 @@ template<class T, typename Ptr>
 class array_ptr<T, 0, Ptr> : multi::array_ref<T, 0, Ptr>{// Ref_;
 public:
 //	array_ptr(array_ptr&&) : Ref_{
-	constexpr array_ptr(Ptr p, index_extensions<0> x = {}) : multi::array_ref<T, 0, Ptr>(p, x){}
+	constexpr explicit array_ptr(Ptr p, typename multi::array_ref<T, 0, Ptr>::extensions_type x = {}) : multi::array_ref<T, 0, Ptr>(p, x){}
 //	operator bool() const{return Ref_.base();}
 	constexpr explicit operator Ptr () const{return this->base();}
 	friend constexpr bool operator==(array_ptr const& self, array_ptr const& other){return self.base() == other.base();}
@@ -1683,9 +1690,9 @@ template<class T, dimensionality_type D, typename Ptr = T*>
 using array_cptr = array_ptr<T, D, 	typename std::pointer_traits<Ptr>::template rebind<T const>>;
 
 template<dimensionality_type D, class P>
-constexpr
-array_ref<typename std::iterator_traits<P>::value_type, D, P> 
-make_array_ref(P p, index_extensions<D> x){return {p, x};}
+constexpr auto make_array_ref(P p, index_extensions<D> x){
+	return array_ref<typename std::iterator_traits<P>::value_type, D, P>(p, x);
+}
 
 template<class P> auto make_array_ref(P p, index_extensions<1> x){return make_array_ref<1>(p, x);}
 template<class P> auto make_array_ref(P p, index_extensions<2> x){return make_array_ref<2>(p, x);}
