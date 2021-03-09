@@ -37,12 +37,6 @@ public:
 
 }
 
-struct X{
-	int a1;
-	double a2;
-	double b;
-};
-
 BOOST_AUTO_TEST_CASE(test_minimalistic_ptr){
 
 //	int X::* s = &X::a1; // gives warning
