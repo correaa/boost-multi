@@ -230,8 +230,12 @@ public:
 	{
 		adl_copy(o.begin(), o.end(), this->begin()); // TODO: should be uninitialized_copy, and recursive
 	}
-
-	template<class TT, class... Args> // cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
+//	template<class TT, class... Args>
+//	static_array(static_array<TT, D, Args...> const& o)
+//	: array_alloc{}, ref{array_alloc::allocate(num_elements(o)), extensions(o)}{
+//		static_array::uninitialized_copy_elements(o.data_elements());
+//	}
+	template<class TT, class... Args>
 	static_array(array_ref<TT, D, Args...>&& o)
 	: array_alloc{}, ref{array_alloc::allocate(o.num_elements()), o.extensions()}{
 		static_array::uninitialized_copy_elements(std::move(o).data_elements());
@@ -248,15 +252,16 @@ public:
 //	: array_alloc{o.get_allocator()}, ref{array_alloc::allocate(num_elements(o)), extensions(o)}{
 //		array_alloc::uninitialized_move_elements(data_elements(o));
 //	}
-	// cppcheck-suppress noExplicitConstructor ; to allow assigment-like construction of nested arrays
+	// cppcheck noExplicitConstructor ; to allow assigment-like construction of nested arrays
 	constexpr static_array(std::initializer_list<typename static_array::value_type> mil) : static_array(mil.begin(), mil.end()){}
 	static_array(
 		std::initializer_list<typename static_array::value_type> mil, 
 		typename static_array::allocator_type const& a
 	) : static_array(mil.begin(), mil.end(), a){}
-
-	template<class TT, std::size_t N>
-	constexpr explicit static_array(TT(&array)[N]) : static_array(std::begin(array), std::end(array)){}
+//	template<std::size_t N>
+//	static_array(static_array::value_type const(&array)[N]) : static_array(std::begin(array), std::end(array)){}
+	template<class TT, std::size_t N> // cppcheck noExplicitConstructor ; to allow assigment-like construction from c-arrays
+	constexpr static_array(TT(&array)[N]) : static_array(std::begin(array), std::end(array)){}
 	template<class It> static auto distance(It a, It b){using std::distance; return distance(a, b);}
 protected:
 	void deallocate(){
