@@ -241,7 +241,7 @@ public:
 //			ie.size()<=1?ie.size()*std::numeric_limits<stride_type>::max():ie.size()
 			ie.size()
 		}{}
-	constexpr layout_t(extensions_type e) : layout_t(std::get<0>(e), {}){}
+	constexpr explicit layout_t(extensions_type e) : layout_t(std::get<0>(e), {}){}
 	constexpr layout_t(stride_type stride, offset_type offset, nelems_type nelems) : 
 		stride_{stride}, offset_{offset}, nelems_{nelems}
 	{}
@@ -255,7 +255,7 @@ public:
 		MULTI_ACCESS_ASSERT(stride_);
 		return nelems_/stride_;
 	}
-	friend constexpr auto size(layout_t const& self){return self.size();}
+	friend constexpr size_type size(layout_t const& self){return self.size();}
 	constexpr size_type size(dimensionality_type d) const{
 		return d==0?nelems_/stride_:throw 0; // assert(d == 0 and stride_ != 0 and nelems_%stride_ == 0);
 	}
