@@ -547,6 +547,7 @@ public:
 		using std::copy; copy(other.begin(), other.end(), this->begin());
 	}
 	template<class TT, class... Args>
+	// cppcheck-suppress[noExplicitConstructor] because static_array can represent an array_ref in general
 	static_array(array_ref<TT, 0, Args...> const& other)
 	:	array_alloc{}, ref{static_array::allocate(other.num_elements()), extensions(other)}{
 		uninitialized_copy_(other.data());
