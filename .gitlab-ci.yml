@@ -396,9 +396,9 @@ inq-g++-latest:
     - cd ../..
     - mkdir build && cd build
     - CXX=mpic++ ../configure --prefix=$HOME
-    - make -j 2
+    - make
     - make install
-    - ctest -j 2 --output-on-failure
+    - ctest --output-on-failure
     
 inq-nvcc-ompi:
   stage: test
@@ -406,7 +406,6 @@ inq-nvcc-ompi:
     - intel_compiler
   script:
     - export PREFIX=`mktemp -d`
-    - nvcc -V
     - git clone --recurse-submodules --remote-submodules https://gitlab.com/npneq/inq.git
     - cd inq
     - cd external_libs/multi
@@ -417,6 +416,7 @@ inq-nvcc-ompi:
     - export CUDAFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -std=c++17 -DFMT_USE_UDL_TEMPLATE=0 -D_DISABLE_CUDA_SLOW -O3 --gpu-architecture sm_70 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -Ofast,-std=c++17,-Wall,-Wfatal-errors"
     - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
     - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
+    - $CUDACXX -V
     - ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda
     - make -j8
     - make -j8 install
