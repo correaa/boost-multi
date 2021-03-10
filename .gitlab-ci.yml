@@ -345,7 +345,7 @@ inq-cuda-11.2-compileonly:
       - cd ../..
       - mkdir build && cd build
       - export CUDACXX=/usr/local/cuda/bin/nvcc
-      - export CUDAFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -std=c++17 -DFMT_USE_UDL_TEMPLATE=0 -D_DISABLE_CUDA_SLOW -G --gpu-architecture sm_70 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -std=c++17,-Wall,-Wfatal-errors"
+      - export CUDAFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -std=c++17 -DFMT_USE_UDL_TEMPLATE=0 -D_DISABLE_CUDA_SLOW -O0 --gpu-architecture sm_70 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -std=c++17,-O0,-Wall,-Wfatal-errors"
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
       - $CUDACXX -V
