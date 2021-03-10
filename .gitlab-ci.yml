@@ -350,7 +350,7 @@ inq-cuda-11.2-compileonly:
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
       - $CUDACXX -V
       - ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda
-      - make
+      - make silicon
 
 #g++-runner:
 #    stage: test
