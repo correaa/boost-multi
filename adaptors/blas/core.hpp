@@ -98,15 +98,15 @@ static_assert(sizeof(INT)==32/8 or sizeof(INT)==64/8, "please set _BLAS_INT to i
 #define xDOT(R, TT, T)    R BLAS(  TT##dot  )(N,              T const *x, INCX, T const *y, INCY)
 #if defined(RETURN_BY_STACK) || (defined(FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID) && FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID)
 #define xDOTU(R, T)       v BLAS(   T##dotu )(R*, N,              T const *x, INCX, T const *y, INCY)
-#define xDOTC(R, T)       v BLAS(   T##dotc )(R*, N,              T const *x, INCX, T const *y, INCY)
+#define xDOTC(R, T)       v    T##dotc ##_ (R*, N,              T const *x, INCX, T const *y, INCY)
 #else
-#define xDOTU(R, T)       R BLAS(   T##dotu )(    N,              T const *x, INCX, T const *y, INCY)
-#define xDOTC(R, T)       R BLAS(   T##dotc )(    N,              T const *x, INCX, T const *y, INCY)
+#define xDOTU(R, T)       R    T ##dotu##_ (    N,              T const *x, INCX, T const *y, INCY)
+#define xDOTC(R, T)       R    T ##dotc##_ (    N,              T const *x, INCX, T const *y, INCY)
 #endif
-#define xxDOT(TT, T)      T BLAS(  TT##dot  )(    N,  T const& a, T const *x, INCX, T const *y, INCY)
-#define xNRM2(R, TT, T)   R BLAS(  TT##nrm2 )(    N,              T const *x, INCX                  )
-#define xASUM(R, TT, T)   R BLAS(  TT##asum )(    N,              T const *x, INCX                  )
-#define IxAMAX(T)       INT BLAS(i##T##amax )(    N,              T const* x, INCX                  )
+#define xxDOT(TT, T)      T    TT##dot ##_ (    N,  T const& a, T const *x, INCX, T const *y, INCY)
+#define xNRM2(R, TT, T)   R    TT##nrm2##_ (    N,              T const *x, INCX                  )
+#define xASUM(R, TT, T)   R    TT##asum##_ (    N,              T const *x, INCX                  )
+#define IxAMAX(T)       INT i##T ##amax##_ (    N,              T const* x, INCX                  )
 
 xROTG(s, s)   ; xROTG(d,d)    ;// MKL extension xROTG(c, s); xROTG(z, d);
 xROTMG(s)     ; xROTMG(d)     ;
@@ -134,11 +134,11 @@ IxAMAX(s); IxAMAX(d); IxAMAX(c); IxAMAX(z);
 #define UPLO const char& uplo
 #define DIAG const char& diag
 
-#define xGEMV(T) void BLAS(T##gemv)(      TRANS,       NR, NC, T const& a, T const* A, LDA, T const* X, INCX, T const& beta, T*       Y, INCY           )
-#define xGER(T)  void BLAS(T##ger )(                   NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA)
-#define xGERU(T) void BLAS(T##geru)(                   NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA)
-#define xGERC(T) void BLAS(T##gerc)(                   NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA)
-#define xTRSV(T) void BLAS(T##trsv)(UPLO, TRANS, DIAG, N,                  T const* A, LDA, T* X      , INCX                                            )
+#define xGEMV(T) void  T## gemv ##_ (      TRANS,       NR, NC, T const& a, T const* A, LDA, T const* X, INCX, T const& beta, T*       Y, INCY           )
+#define xGER(T)  void  T## ger  ##_ (                   NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA)
+#define xGERU(T) void  T## geru ##_ (                   NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA)
+#define xGERC(T) void  T## gerc ##_ (                   NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA)
+#define xTRSV(T) void  T## trsv ##_ (UPLO, TRANS, DIAG, N,                  T const* A, LDA, T* X      , INCX                                            )
 
 xGEMV(s); xGEMV(d); xGEMV(c); xGEMV(z);
 xGER(s); xGER(d);
