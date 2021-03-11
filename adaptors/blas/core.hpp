@@ -154,10 +154,10 @@ xTRSV(s); xTRSV(d); xTRSV(c); xTRSV(z);
 
 #define SIDE const char& side
 
-#define xGEMM(T)     void BLAS(T##gemm)(            TRANSA, TRANSB,       NR, NC, NK, T  const& a, T const* A, LDA, T const* B, LDB, T  const& b     , T const* CC, LDC)
-#define xSYRK(T)     void BLAS(T##syrk)(      UPLO, TRANSA,               NR, NK,     T  const& a, T const* A, LDA,                  T  const& b     , T*       CC, LDC)
-#define xHERK(TT, T) void BLAS(T##herk)(      UPLO, TRANSA,               NR, NK,     TT const& a, T const* A, LDA,                  TT const& b     , T*       CC, LDC)
-#define xTRSM(T)     void BLAS(T##trsm)(SIDE, UPLO, TRANSA,         DIAG, NR, NK,     T  const& a, T const* A, LDA,                  T  const* B, LDB                  )
+#define xGEMM(T)     void T ##gemm ##_ (            TRANSA, TRANSB,       NR, NC, NK, T  const& a, T const* A, LDA, T const* B, LDB, T  const& b     , T const* CC, LDC)
+#define xSYRK(T)     void T ##syrk ##_ (      UPLO, TRANSA,               NR, NK,     T  const& a, T const* A, LDA,                  T  const& b     , T*       CC, LDC)
+#define xHERK(TT, T) void T ##herk ##_ (      UPLO, TRANSA,               NR, NK,     TT const& a, T const* A, LDA,                  TT const& b     , T*       CC, LDC)
+#define xTRSM(T)     void T ##trsm ##_ (SIDE, UPLO, TRANSA,         DIAG, NR, NK,     T  const& a, T const* A, LDA,                  T  const* B, LDB                  )
 
 xGEMM(s); xGEMM(d); xGEMM(c)   ; xGEMM(z)   ;
 xSYRK(s); xSYRK(d); xSYRK(c)   ; xSYRK(z)   ;
