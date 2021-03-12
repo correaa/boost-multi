@@ -49,6 +49,12 @@ BOOST_AUTO_TEST_CASE(array_reextent_1d){
 //	BOOST_REQUIRE( A[19] == 0. ); // impossible to know by sometimes 0.
 }
 
+BOOST_AUTO_TEST_CASE(array_reextent_0D){
+	multi::array<double, 0> A({}, 4.);
+	A.reextent(A.extensions());
+	BOOST_REQUIRE( *A.data_elements() == 4. );
+}
+
 BOOST_AUTO_TEST_CASE(array_reextent_1d_with_initialization){
 	multi::array<double, 1> A({10}, 4.);
 	BOOST_REQUIRE( size(A) == 10 );
