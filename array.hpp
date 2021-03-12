@@ -711,6 +711,7 @@ struct array<T, dimensionality_type{0}, Alloc>
 {
 	using static_ = static_array<T, 0, Alloc>;
 	using static_::static_;
+	void reextent(typename array::extensions_type const&){}
 };
 
 template<class T, dimensionality_type D, class Alloc>
