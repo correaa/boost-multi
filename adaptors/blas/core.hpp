@@ -217,7 +217,7 @@ namespace blas{
 template<class T> struct complex_ptr{
 	std::complex<T>* impl_;
 	template<class TT, class=std::enable_if_t<sizeof(*TT{})==sizeof(std::complex<T>) and sizeof(*TT{})==sizeof(TT{}->real())+sizeof(TT{}->imag())>>
-	complex_ptr(TT tt) : impl_{reinterpret_cast<std::complex<T>*>(tt)}{}
+	explicit complex_ptr(TT tt) : impl_{reinterpret_cast<std::complex<T>*>(tt)}{}
 	complex_ptr(complex_ptr const&) = delete;
 	operator std::complex<T>*() const{return   impl_;}
 	std::complex<T>& operator*() const{return *impl_;}
@@ -226,7 +226,7 @@ template<class T> struct complex_ptr{
 template<class T> struct complex_const_ptr{
 	std::complex<T> const* impl_;
 	template<class TT, class=std::enable_if_t<sizeof(*TT{})==sizeof(std::complex<T>) and sizeof(*TT{})==sizeof(TT{}->real())+sizeof(TT{}->imag())>>
-	complex_const_ptr(TT tt) : impl_{reinterpret_cast<std::complex<T> const*>(tt)}{}
+	explicit complex_const_ptr(TT tt) : impl_{reinterpret_cast<std::complex<T> const*>(tt)}{}
 	complex_const_ptr(complex_const_ptr const&) = delete;
 	operator std::complex<T> const*() const{return impl_;}
 	std::complex<T> const& operator*() const{return *impl_;}
