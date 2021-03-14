@@ -225,6 +225,18 @@ clang++-11-std17:
     - cmake .. -DCMAKE_CXX_STANDARD=17
     - cmake --build . --verbose -- --quiet --no-print-directory
     - ctest --output-on-failure
+    
+icc:
+    image: meteocima/dkr-intel
+    stage: test
+    script:
+      - export CXX="icpc"
+      - ln --symbolic --force . ../multi
+      - $CXX -v
+      - mkdir build && cd build
+      - cmake ..
+      - cmake --build . --verbose -- --quiet --no-print-directory
+      - ctest --output-on-failure
 
 cuda-10.0:
     image: vistart/cuda:10.2-ubuntu20.04
