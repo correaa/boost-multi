@@ -259,9 +259,8 @@ public:
 		std::initializer_list<typename static_array<T, D>::value_type> mil, 
 		typename static_array::allocator_type const& a
 	) : static_array(static_array<T, D>(mil.begin(), mil.end()), a){}
-//	template<std::size_t N>
-//	static_array(static_array::value_type const(&array)[N]) : static_array(std::begin(array), std::end(array)){}
-	template<class TT, std::size_t N> // cppcheck-suppress noExplicitConstructor ; to allow assigment-like construction from c-arrays
+	template<class TT, std::size_t N> 
+	// cppcheck-suppress noExplicitConstructor ; to allow assigment-like construction from c-arrays
 	constexpr static_array(TT(&array)[N]) : static_array(std::begin(array), std::end(array)){}
 	template<class It> static auto distance(It a, It b){using std::distance; return distance(a, b);}
 protected:
