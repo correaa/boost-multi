@@ -1069,7 +1069,7 @@ private:
 	}
 public:
 	HD constexpr array_iterator operator+(difference_type n) const{array_iterator ret{*this}; ret+=n; return ret;}
-	[[deprecated("use base for iterator")]] constexpr element_ptr data() const{return data_;}
+	[[deprecated("use base() for iterator")]] constexpr element_ptr data() const{return data_;}
 	// constexpr here creates problems with intel 19
 	       constexpr element_ptr base()              const&   {return data_;}
 	friend constexpr element_ptr base(array_iterator const& s){return s.base();}
@@ -1594,7 +1594,7 @@ public:
 //	constexpr 
 	array_ref& operator=(array_ref<TT, DD, As...> const& o)&{assert(this->extensions() == o.extensions());
 		MULTI_MARK_SCOPE(std::string{"multi::operator= D="}+std::to_string(D)+" from "+typeid(TT).name()+" to "+typeid(T).name() );
-		adl_copy_n(o.data(), o.num_elements(), this->data());
+		adl_copy_n(o.data_elements(), o.num_elements(), this->data_elements());
 		return *this;
 	}
 	template<typename TT, dimensionality_type DD = D, class... As>
@@ -1604,17 +1604,17 @@ public:
 	using celements_type = array_ref<typename array_ref::element_type, 1, typename array_ref::element_const_ptr>;
 
 private:
-	constexpr elements_type elements_() const{return elements_type{data_elements(), this->num_elements()};}
+	constexpr elements_type elements_() const{return elements_type{this->data_elements(), this->num_elements()};}
 public:
 	constexpr  elements_type elements()         &     {return elements_();}
 	constexpr  elements_type elements()         &&    {return elements_();}
 	constexpr celements_type elements()         const&{return elements_();}
 
-	friend constexpr elements_type elements(array_ref &      self){return           self . elements();}	
-	friend constexpr elements_type elements(array_ref &&     self){return std::move(self). elements();}
+	friend constexpr  elements_type elements(array_ref &      self){return           self . elements();}
+	friend constexpr  elements_type elements(array_ref &&     self){return std::move(self). elements();}
 	friend constexpr celements_type elements(array_ref const& self){return           self . elements();}
 
-	       constexpr celements_type celements()         const&   {return {array_ref::data(), array_ref::num_elements()};}
+	       constexpr celements_type celements()         const&   {return {array_ref::data_elements(), array_ref::num_elements()};}
 	friend constexpr celements_type celements(array_ref const& s){return s.celements();}
 	
 	template<typename TT, dimensionality_type DD = D, class... As>
@@ -1625,10 +1625,12 @@ public:
 	       constexpr typename array_ref::element_ptr data_elements()        &&   {return array_ref::base_;}
 	friend constexpr typename array_ref::element_ptr data_elements(array_ref&& s){return std::move(s).data_elements();}
 
-	       constexpr typename array_ref::element_ptr data()         const&   {return array_ref::base_;} 
-	friend constexpr typename array_ref::element_ptr data(array_ref const& s){return s.data();}
+	[[deprecated("use ::data_elements()")]]
+	       constexpr typename array_ref::element_ptr data()         const&   {return data_elements();}//array_ref::base_;} 
+	[[deprecated("use data_elements()")]] 
+	friend constexpr typename array_ref::element_ptr data(array_ref const& s){return s.data_elements();}
 
-	constexpr typename array_ref::decay_type const& operator*() const&{return static_cast<typename array_ref::decay_type const&>(*this);}
+//	constexpr typename array_ref::decay_type const& operator*() const&{return static_cast<typename array_ref::decay_type const&>(*this);}
 //	constexpr typename array_ref::decay_type const& operator*() const&{return *this;}
 	
 	constexpr typename array_ref::decay_type const& decay() const&{
