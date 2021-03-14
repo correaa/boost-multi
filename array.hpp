@@ -545,12 +545,12 @@ public:
 	template<class TT, class... Args> // cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
 	static_array(array_ref<TT, 0, Args...> const& other)
 	:	array_alloc{}, ref{static_array::allocate(other.num_elements()), extensions(other)}{
-		uninitialized_copy_(other.data());
+		uninitialized_copy_(other.data_elements());
 	}
 	static_array(static_array const& other, allocator_type const& a)                      //5b
 	:	array_alloc{a}, ref{static_array::allocate(other.num_elements()), extensions(other)}{
 	//	assert(0);
-		uninitialized_copy_(other.data());
+		uninitialized_copy_(other.data_elements());
 	}
 	static_array(static_array const& o) :                                  //5b
 		array_alloc{o.get_allocator()}, 
