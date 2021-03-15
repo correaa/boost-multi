@@ -230,6 +230,7 @@ icc:
     image: meteocima/dkr-intel
     stage: test
     script:
+      - ls /opt/intel/
       - export CXX="/opt/intel/system_studio_2020/bin/icpc"
       - ln --symbolic --force . ../multi
       - $CXX -v
