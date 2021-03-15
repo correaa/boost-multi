@@ -497,12 +497,24 @@ protected:
 public:
 	using ref::operator==;
 	using ref::operator!=;
-
-	template<class Range0, class = decltype(adl_uninitialized_copy_n(&std::declval<Range0&>(), 1, std::declval<typename static_array::element_ptr&>()))>
+	
+	template<class TT, 
+		std::enable_if_t<std::is_constructible<T, TT>{}, int>* = nullptr, 
+		class = decltype(adl_uninitialized_copy_n(&std::declval<TT&>(), 1, std::declval<typename static_array::element_ptr&>()))
+	>
 	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions
-	static_array(Range0&& r) : ref(static_array::allocate(typename static_array::layout_t{}.num_elements()), {}){
-		adl_uninitialized_copy_n(&r, 1, this->base());
+	static_array(TT&& tt) : ref(static_array::allocate(typename static_array::layout_t{}.num_elements()), {}){
+		adl_uninitialized_copy_n(&tt, 1, this->base());
 	}
+//	template<class Range0, 
+//		std::enable_if_t<std::is_constructible<typename static_array::element, typename Range0::element>{}, int>* = nullptr, 
+//		class = decltype(adl_uninitialized_copy_n(&std::declval<Range0&>(), 1, std::declval<typename static_array::element_ptr&>()))
+//	>
+////	template<class Range0, class = decltype(adl_uninitialized_copy_n(&std::declval<Range0&>(), 1, std::declval<typename static_array::element_ptr&>()))>
+//	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions
+//	static_array(Range0&& r) : ref(static_array::allocate(typename static_array::layout_t{}.num_elements()), {}){
+//		adl_uninitialized_copy_n(&r, 1, this->base());
+//	}
 	static_array(typename static_array::extensions_type x, typename static_array::element const& e, allocator_type const& a) : //2
 		array_alloc{a}, 
 		ref(static_array::allocate(typename static_array::layout_t{x}.num_elements()), x)
