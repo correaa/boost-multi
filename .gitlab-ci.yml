@@ -236,6 +236,7 @@ icc:
       - ls /opt/intel/parallel_studio_xe_2020/bin/
       - ls /opt/intel/parallel_studio_xe_2020/compilers_and_libraries_2020/
       - export CXX="/opt/intel/bin/icpc"
+      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev
       - ln --symbolic --force . ../multi
       - $CXX -v
       - mkdir build && cd build
