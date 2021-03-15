@@ -1563,7 +1563,8 @@ public:
 	constexpr array_ref(typename array_ref::extensions_type e, typename array_ref::element_ptr p) noexcept
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
 
-	template<class TT, std::size_t N> // cppcheck-suppress noExplicitConstructor ; because a reference to c-array can be represented as an array_ref
+	template<class TT, std::size_t N> 
+	// cppcheck-suppress noExplicitConstructor ; because a reference to c-array can be represented as an array_ref
 	constexpr array_ref(TT(&t)[N]) : array_ref((typename array_ref::element_ptr)&t, extensions(t)){}
 
 	using basic_array<T, D, ElementPtr>::operator=;
@@ -1674,7 +1675,8 @@ public:
 	constexpr array_ptr(Ptr p, index_extensions<D> x) : basic_ptr(p, multi::layout_t<D>{x}){}
 	// cppcheck-suppress noExplicitConstructor ; because array_ptr can represent a null
 	constexpr array_ptr(std::nullptr_t) : basic_ptr(nullptr, multi::layout_t<D>{}){}
-	template<class TT, std::size_t N> // cppcheck-suppress noExplicitConstructor ; because array_ptr can represent a pointer to a c-array
+	template<class TT, std::size_t N> 
+	// cppcheck-suppress noExplicitConstructor ; because array_ptr can represent a pointer to a c-array
 	constexpr array_ptr(TT(*t)[N]) : basic_ptr(data_elements(*t), layout(*t)){}
 	constexpr array_ref<T, D, Ptr> operator*() const{
 		return array_ref<T, D, Ptr>{this->base(), (*this)->extensions()};//multi::layout_t<D>{x}};
