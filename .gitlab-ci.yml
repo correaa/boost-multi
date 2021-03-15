@@ -328,7 +328,7 @@ g++-cppcheck:
     - $CXX --version
     - cppcheck --version
     - mkdir build && cd build
-    - cmake -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--inline-suppr;-D__align__;-DCUDARTAPI;--language=c++;--std=c++17;--error-exitcode=0" ..
+    - cmake -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--inline-suppr;-D__align__;-DCUDARTAPI;--language=c++;--std=c++17;--error-exitcode=0" ..
     - cmake --build . --verbose
 
 inq-g++-latest:
