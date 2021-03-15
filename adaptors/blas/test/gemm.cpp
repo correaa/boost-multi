@@ -1173,13 +1173,11 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_3x1_3x2){
 		{  8. - 1.*I, 1. + 1.*I}
 	};
 	{
-		auto ar = +~a;
 		multi::array<complex, 2> c({1, 2});
 		blas::gemm(1., blas::H(a), b, 0., c); // c=ab, c⸆=b⸆a⸆
 		BOOST_REQUIRE( c[0][1] == 28.+3.*I );
 	}
 	{
-		auto ar = +~a;
 		multi::array<complex, 2> c({1, 2});
 		blas::gemm_n(1., begin(blas::H(a)), size(blas::H(a)), begin(b), 0., begin(c)); // c=ab, c⸆=b⸆a⸆
 		BOOST_REQUIRE( c[0][1] == 28.+3.*I );
