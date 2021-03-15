@@ -134,7 +134,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square){//, *utf::tolerance(0.00001)){
 		BOOST_REQUIRE( (+blas::gemm(1., blas::T(AT_cpy), blas::T(BT)))[1][2] == B[1][2] );
 	}
 	{
-		auto const AT =+ ~A;
+	//	auto const AT =+ ~A;
 		multi::array<double, 2> const B = {
 			{1., 3., 4.},
 			{2., 7., 1.},
