@@ -260,9 +260,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_complex){//, *utf::tolera
 		{3.},
 	};
 	{
-		auto const B_cpy = B1;
+	//	auto const B_cpy = B1;
 		blas::trsm(blas::side::left, blas::filling::lower, 1., A, blas::H(B1));
-	//	BOOST_REQUIRE( (+blas::gemm(1., A, blas::H(B)))[0][1] == blas::H(B_cpy)[0][1] );
+	//	BOOST_REQUIRE( (+blas::gemm(1., A, blas::H(B1)))[0][1] == blas::H(B_cpy)[0][1] );
 	}
 	{
 		auto const B_cpy = B2;
