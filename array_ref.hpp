@@ -120,7 +120,8 @@ public:
 public://TODO find why this needs to be public and not protected or friend
 	template<class ArrayTypes, typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>
 		, decltype(_implicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
-	> // cppcheck-suppress noExplicitConstructor ; because underlying pointers are implicitly convertible
+	>
+	// cppcheck-suppress noExplicitConstructor ; because underlying pointers are implicitly convertible
 	constexpr array_types(ArrayTypes const& a) : Layout{a}, base_{a.base_}{}
 	template<class ArrayTypes, typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>
 		, decltype(_explicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
