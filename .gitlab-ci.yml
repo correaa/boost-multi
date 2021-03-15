@@ -237,6 +237,7 @@ icc:
       - mkdir build && cd build
       - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
       - cmake --build . -- --quiet --no-print-directory
+      - export MKL_VERBOSE=1
       - ctest --output-on-failure
 
 cuda-10.0:
