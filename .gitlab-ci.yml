@@ -226,17 +226,62 @@ clang++-11-std17:
     - cmake --build . --verbose -- --quiet --no-print-directory
     - ctest --output-on-failure
     
-icc-mkl:
+icc:
     image: meteocima/dkr-intel
     stage: test
     script:
       - . /opt/intel/bin/compilervars.sh intel64
       - export CXX="icpc"
-      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev
+      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev
       - ln --symbolic --force . ../multi
       - $CXX -v
       - mkdir build && cd build
       - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+      - cmake --build . -- --quiet --no-print-directory
+      - export MKL_VERBOSE=1
+      - ctest --output-on-failure
+
+icc-nomkl:
+    image: meteocima/dkr-intel
+    stage: test
+    script:
+      - . /opt/intel/bin/compilervars.sh intel64
+      - export CXX="/opt/intel/bin/"
+      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev liblapack-dev libfftw3-dev
+      - ln --symbolic --force . ../multi
+      - $CXX -v
+      - mkdir build && cd build
+      - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+      - cmake --build . -- --quiet --no-print-directory
+      - export MKL_VERBOSE=1
+      - ctest --output-on-failure
+      
+icc-memcheck:
+    image: meteocima/dkr-intel
+    stage: test
+    script:
+      - . /opt/intel/bin/compilervars.sh intel64
+      - export CXX="icpc"
+      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev
+      - ln --symbolic --force . ../multi
+      - $CXX -v
+      - mkdir build && cd build
+      - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+      - cmake --build . -- --quiet --no-print-directory
+      - export MKL_VERBOSE=1
+      - ctest -T memcheck --output-on-failure || (cat Testing/Temporary/MemoryChecker.*.log && exit 0)
+
+icc-std17:
+    image: meteocima/dkr-intel
+    stage: test
+    script:
+      - . /opt/intel/bin/compilervars.sh intel64
+      - export CXX="icpc"
+      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev
+      - ln --symbolic --force . ../multi
+      - $CXX -v
+      - mkdir build && cd build
+      - cmake .. -DCMAKE_CXX_STANDARD=17 -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
       - cmake --build . -- --quiet --no-print-directory
       - export MKL_VERBOSE=1
       - ctest --output-on-failure
@@ -381,59 +426,59 @@ g++-runner:
       - cmake --build . -j 12
       - ctest --output-on-failure
 
-icpc-nomkl-runner:
-    stage: test
-    tags:
-      - intel_compiler
-    script:
-      - export CXX="/opt/intel/system_studio_2020/bin/icpc"
-      - $CXX --version
-      - mkdir build && cd build
-      - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-      - cmake --build . -j 12
-      - export MKL_VERBOSE=1
-      - ctest --output-on-failure
+#icpc-nomkl-runner:
+#    stage: test
+#    tags:
+#      - intel_compiler
+#    script:
+#      - export CXX="/opt/intel/system_studio_2020/bin/icpc"
+#      - $CXX --version
+#      - mkdir build && cd build
+#      - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+#      - cmake --build . -j 12
+#      - export MKL_VERBOSE=1
+#      - ctest --output-on-failure
 
-icpc-runner:
-    stage: test
-    tags:
-      - intel_compiler
-    script:
-      - . /opt/intel/system_studio_2020/bin/compilervars.sh intel64
-      - export CXX="icpc"
-      - $CXX --version
-      - mkdir build && cd build
-      - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-      - cmake --build . -j 12
-      - export MKL_VERBOSE=1
-      - ctest --output-on-failure
+#icpc-runner:
+#    stage: test
+#    tags:
+#      - intel_compiler
+#    script:
+#      - . /opt/intel/system_studio_2020/bin/compilervars.sh intel64
+#      - export CXX="icpc"
+#      - $CXX --version
+#      - mkdir build && cd build
+#      - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+#      - cmake --build . -j 12
+#      - export MKL_VERBOSE=1
+#      - ctest --output-on-failure
 
-icpc-memcheck-runner:
-    stage: test
-    tags:
-      - intel_compiler
-    script:
-      - . /opt/intel/system_studio_2020/bin/compilervars.sh intel64
-      - export CXX="icpc"
-      - $CXX --version
-      - mkdir build && cd build
-      - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-      - cmake --build . -j 12
-      - ctest -T memcheck --output-on-failure || (cat Testing/Temporary/MemoryChecker.*.log && exit 0)
+#icpc-memcheck-runner:
+#    stage: test
+#    tags:
+#      - intel_compiler
+#    script:
+#      - . /opt/intel/system_studio_2020/bin/compilervars.sh intel64
+#      - export CXX="icpc"
+#      - $CXX --version
+#      - mkdir build && cd build
+#      - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+#      - cmake --build . -j 12
+#      - ctest -T memcheck --output-on-failure || (cat Testing/Temporary/MemoryChecker.*.log && exit 0)
 
-icpc-std17-runner:
-    stage: test
-    tags:
-      - intel_compiler
-    script:
-      - . /opt/intel/system_studio_2020/bin/compilervars.sh intel64
-      - export CXX="icpc"
-      - $CXX --version
-      - mkdir build && cd build
-      - cmake .. -DCMAKE_CXX_STANDARD=17 -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-      - cmake --build . -j 12
-      - export MKL_VERBOSE=1
-      - ctest --output-on-failure
+#icpc-std17-runner:
+#    stage: test
+#    tags:
+#      - intel_compiler
+#    script:
+#      - . /opt/intel/system_studio_2020/bin/compilervars.sh intel64
+#      - export CXX="icpc"
+#      - $CXX --version
+#      - mkdir build && cd build
+#      - cmake .. -DCMAKE_CXX_STANDARD=17 -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+#      - cmake --build . -j 12
+#      - export MKL_VERBOSE=1
+#      - ctest --output-on-failure
 
 inq-nvcc-ompi:
   stage: test
