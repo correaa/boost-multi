@@ -241,7 +241,7 @@ icc:
       - $CXX -v
       - mkdir build && cd build
       - cmake ..
-      - cmake --build . --verbose -- --quiet --no-print-directory
+      - cmake --build . -- --quiet --no-print-directory
       - ctest --output-on-failure
 
 cuda-10.0:
