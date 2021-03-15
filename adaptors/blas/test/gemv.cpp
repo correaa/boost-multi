@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_real){//, *utf::tolerance(0.0001)){
 		BOOST_REQUIRE( dot[0] == blas::dot(a, b) );
 	}
 	{
-		multi::array<double, 2> const MT = ~M;
+	//	multi::array<double, 2> const MT = ~M;
 		using namespace blas::operators;
 		BOOST_REQUIRE_SMALL( ((~+~M)%X - M%X)^2 , 1e-13 );
 	}
@@ -143,7 +143,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_real_complex){
 		multi::array<complex, 1> const Y3 = {214.02, 106.43, 188.37};
 		
 		using namespace blas::operators;
-		//	BOOST_REQUIRE_CLOSE( ((Y - Y3)^2)  ,  0. , 1e-13);
+		BOOST_REQUIRE_CLOSE( std::abs(blas::nrm2(Y - Y3))  ,  0. , 1e-13);
+	//	BOOST_REQUIRE_CLOSE( ((Y - Y3)^2)  ,  0. , 1e-13);
 	}
 }
 
