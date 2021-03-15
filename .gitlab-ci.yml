@@ -226,11 +226,13 @@ clang++-11-std17:
     - cmake --build . --verbose -- --quiet --no-print-directory
     - ctest --output-on-failure
     
-icc:
+icc-mkl:
     image: meteocima/dkr-intel
     stage: test
     script:
-      - export CXX="/opt/intel/bin/icpc"
+      - cat /opt/intel/parallel_studio_xe_2020/bin/compilervars.sh
+      - . /opt/intel/parallel_studio_xe_2020/bin/compilervars.sh intel64
+      - export CXX="icpc"
       - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev
       - ln --symbolic --force . ../multi
       - $CXX -v
