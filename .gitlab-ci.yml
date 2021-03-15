@@ -7,12 +7,12 @@ g++-latest:
   stage: test
   script:
     - export CXX="g++"
-    - apt-get -qq -o Dpkg::Use-Pty=0 update && apt-get -qq -o Dpkg::Use-Pty=0 install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
     - cmake ..
-    - cmake --build . --verbose
+    - cmake --build .
     - ctest --output-on-failure
 
 g++-latest-std20:
