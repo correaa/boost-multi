@@ -165,15 +165,17 @@ public:
 		class Range, class=std::enable_if_t<not std::is_base_of<static_array, std::decay_t<Range>>{}>, 
 		class=decltype(/*static_array*/(std::declval<Range&&>().begin(), std::declval<Range&&>().end())), // instantiation of static_array here gives a compiler error in 11.0
 		class=std::enable_if_t<not is_basic_array<Range&&>{}>// TODO add is_assignable<value_type> check
-	> // cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions
+	> 
+	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions
 	static_array(Range&& rng) : static_array(std::forward<Range>(rng).begin(), std::forward<Range>(rng).end()){}
 
 	template<class TT> 
 	auto uninitialized_fill_elements(TT const& value){
 		return array_alloc::uninitialized_fill_n(this->data_elements(), this->num_elements(), value);
 	}
-	
-	template<class TT, class... As> // cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
+
+	template<class TT, class... As> 
+	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
 	static_array(array_ref<TT, D, As...> const& other, typename static_array::allocator_type const& a = {}) :
 		array_alloc{a},
 		ref{array_alloc::allocate(other.num_elements()), other.extensions()}
@@ -223,18 +225,16 @@ public:
 	template<class TT, class... Args, 
 		class=std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::basic_array<TT, D, Args...>::element>{}>,
 		class=decltype(adl_copy(std::declval<multi::basic_array<TT, D, Args...> const&>().begin(), std::declval<multi::basic_array<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
-	> // cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
+	>
+	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
 	static_array(multi::basic_array<TT, D, Args...> const& o, typename static_array::allocator_type const& a = {})
 	: static_array(o.extensions(), a) // TODO: should be uninitialized_copy
 	{
 		adl_copy(o.begin(), o.end(), this->begin()); // TODO: should be uninitialized_copy, and recursive
 	}
-//	template<class TT, class... Args>
-//	static_array(static_array<TT, D, Args...> const& o)
-//	: array_alloc{}, ref{array_alloc::allocate(num_elements(o)), extensions(o)}{
-//		static_array::uninitialized_copy_elements(o.data_elements());
-//	}
-	template<class TT, class... Args> // cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
+
+	template<class TT, class... Args>
+	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
 	static_array(array_ref<TT, D, Args...>&& o)
 	: array_alloc{}, ref{array_alloc::allocate(o.num_elements()), o.extensions()}{
 		static_array::uninitialized_copy_elements(std::move(o).data_elements());
@@ -535,13 +535,15 @@ public:
 	: array_alloc{a}, ref{static_array::allocate(typename static_array::layout_t{x}.num_elements()), x}{
 		if(not std::is_trivially_default_constructible<typename static_array::element>{}) uninitialized_value_construct();
 	}
-	template<class TT, class... Args> // cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
+	template<class TT, class... Args> 
+	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
 	static_array(multi::basic_array<TT, 0, Args...> const& other, allocator_type const& a = {})
 		: array_alloc{a}, ref(static_array::allocate(other.num_elements()), extensions(other))
 	{
 		using std::copy; copy(other.begin(), other.end(), this->begin());
 	}
-	template<class TT, class... Args> // cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
+	template<class TT, class... Args> 
+	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
 	static_array(array_ref<TT, 0, Args...> const& other)
 	:	array_alloc{}, ref{static_array::allocate(other.num_elements()), extensions(other)}{
 		uninitialized_copy_(other.data_elements());
