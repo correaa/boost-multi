@@ -232,7 +232,7 @@ icc:
     script:
       - . /opt/intel/bin/compilervars.sh intel64
       - export CXX="icpc"
-      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev
+      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev liblapack-dev libfftw3-dev
       - ln --symbolic --force . ../multi
       - $CXX -v
       - mkdir build && cd build
@@ -261,7 +261,7 @@ icc-memcheck:
     script:
       - . /opt/intel/bin/compilervars.sh intel64
       - export CXX="icpc"
-      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev
+      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev liblapack-dev libfftw3-dev
       - ln --symbolic --force . ../multi
       - $CXX -v
       - mkdir build && cd build
@@ -276,7 +276,7 @@ icc-std17:
     script:
       - . /opt/intel/bin/compilervars.sh intel64
       - export CXX="icpc"
-      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev
+      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev liblapack-dev libfftw3-dev
       - ln --symbolic --force . ../multi
       - $CXX -v
       - mkdir build && cd build
