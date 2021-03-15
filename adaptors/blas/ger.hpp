@@ -137,7 +137,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_ger){
 	//	a = {{2., 3.}, {1., 4.}, {1., 0.}}; GER[1, {1., 2., 5.}, {-2., 1.}, a]; Print[a] : {{0., 4.}, {-3., 6.}, {-9., 5.}}
 	//	assert( A[1][1] == 6. );
 	}
-	return;
 	{
 		multi::array<double, 2> A = {
 			{0., 0.},
