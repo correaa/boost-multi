@@ -369,13 +369,13 @@ g++-cppcheck:
   stage: test
   script:
     - export CXX="g++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev cppcheck
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev cppcheck
     - ln --symbolic --force . ../multi
     - $CXX --version
     - cppcheck --version
     - mkdir build && cd build
-    - cmake -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--inline-suppr;-D__align__;-DCUDARTAPI;--language=c++;--std=c++17;--error-exitcode=666" ..
-    - cmake --build . --verbose
+    - cmake -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--suppress=missingInclude;--inline-suppr;-D__align__;-DCUDARTAPI;--language=c++;--std=c++17;--error-exitcode=666" ..
+    - cmake --build .
 
 inq-g++-latest:
   stage: test
