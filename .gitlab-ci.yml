@@ -233,6 +233,7 @@ icc:
       - ls /opt/intel/
       - ls /opt/intel/bin/
       - ls /opt/intel/parallel_studio_xe_2020/
+      - ls /opt/intel/parallel_studio_xe_2020/bin/
       - export CXX="/opt/intel/parallel_studio_xe_2020/bin/icpc"
       - ln --symbolic --force . ../multi
       - $CXX -v
