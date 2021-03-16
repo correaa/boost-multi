@@ -36,7 +36,7 @@ public:
 	using typename std::iterator_traits<T*>::reference;
 	using typename std::iterator_traits<T*>::difference_type;
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): operator* used because this class simulates a pointer, trailing return helps
-	constexpr auto operator*() -> reference const{return *impl_;}
+	constexpr auto operator*() const -> reference {return *impl_;}
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, cppcoreguidelines-pro-bounds-pointer-arithmetic): operator+ is overloaded to simulate a pointer
 	constexpr auto operator+(typename ptr2::difference_type n) const{return ptr2{impl_ + n};}
 //	T& operator[](std::ptrdiff_t n) const{return impl_[n];} // optional
