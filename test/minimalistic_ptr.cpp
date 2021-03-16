@@ -17,9 +17,13 @@ template<class T> class ptr : public std::iterator_traits<T*>{ // minimalistic p
 	T* impl_;
 public:
 	constexpr explicit ptr(T* impl) : impl_{impl}{}
-	constexpr typename ptr::reference operator*() const{return *impl_;}
-	constexpr auto operator+(typename ptr::difference_type n) const {return ptr{impl_ + n};}
-//	T& operator[](std::ptrdiff_t n) const{return impl_[n];} // optional
+	using typename std::iterator_traits<T*>::reference;
+	using typename std::iterator_traits<T*>::difference_type;
+	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): operator* used because this class simulates a pointer, trailing return helps
+	constexpr auto operator*() const -> reference {return *impl_;} 
+	// NOLINTNEXTLINE(fuchsia-overloaded-operator, cppcoreguidelines-pro-bounds-pointer-arithmetic): operator+ is overloaded to simulate a pointer
+	constexpr auto operator+(difference_type n) const {return ptr{impl_ + n};}
+//	T& operator[](difference_type n) const{return impl_[n];} // optional
 	using default_allocator_type = std::allocator<T>;
 	template<class> friend class ptr2;
 };
@@ -29,7 +33,11 @@ template<class T> class ptr2 : public std::iterator_traits<T*>{ // minimalistic 
 public:
 	constexpr explicit ptr2(T* impl) : impl_{impl}{}
 	constexpr explicit ptr2(ptr<T> p) : impl_{p.impl_}{} 
-	constexpr typename ptr2::reference operator*() const{return *impl_;}
+	using typename std::iterator_traits<T*>::reference;
+	using typename std::iterator_traits<T*>::difference_type;
+	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): operator* used because this class simulates a pointer, trailing return helps
+	constexpr auto operator*() -> reference const{return *impl_;}
+	// NOLINTNEXTLINE(fuchsia-overloaded-operator, cppcoreguidelines-pro-bounds-pointer-arithmetic): operator+ is overloaded to simulate a pointer
 	constexpr auto operator+(typename ptr2::difference_type n) const{return ptr2{impl_ + n};}
 //	T& operator[](std::ptrdiff_t n) const{return impl_[n];} // optional
 	using default_allocator_type = std::allocator<T>;
