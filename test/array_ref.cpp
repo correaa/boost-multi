@@ -7,8 +7,8 @@ $CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X $@&&rm $0.$X;exit
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
-#include "../array_ref.hpp"
 #include "../array.hpp"
+#include "../array_ref.hpp"
 
 #include<boost/multi_array.hpp>
 
