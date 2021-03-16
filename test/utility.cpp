@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(test_utility_1d){
 
 BOOST_AUTO_TEST_CASE(test_utility_2d){
 
-	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,-warnings-as-errors): to test library
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): to test library
 	double carr[3][10] = {
 		{ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.},
 		{10., 11., 12., 13., 14., 15., 16., 17., 18., 19.},
