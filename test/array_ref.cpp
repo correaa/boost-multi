@@ -234,9 +234,9 @@ BOOST_AUTO_TEST_CASE(array_2D_with_offset){
 
 BOOST_AUTO_TEST_CASE(array_ref_1D){
 
-	std::string (&&a)[5] = {"a", "b", "c", "d", "e"};
+	std::array<std::string, 5> a = {"a", "b", "c", "d", "e"};
 
-	multi::array_ref<std::string, 1>&& mar = *multi::array_ptr<std::string, 1>(&a);
+	multi::array_ref<std::string, 1>&& mar = *multi::array_ptr<std::string, 1>{&a};
 //	multi::Array<std::string(&)[1]> mar = *multi::Array<std::string(*)[1]>(&a);
 
 	BOOST_REQUIRE(  extension(mar).first() == 0 );
