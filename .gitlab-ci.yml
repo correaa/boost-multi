@@ -180,7 +180,7 @@ clang++-tidy:
   stage: test
   script:
     - export CXX="clang++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet clang clang-tidy cmake make libboost-test-dev libblas-dev libblas-dev liblapack-dev libfftw3-dev
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang clang-tidy cmake make libboost-test-dev libblas-dev libblas-dev liblapack-dev libfftw3-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - clang-tidy --version
