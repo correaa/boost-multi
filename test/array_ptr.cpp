@@ -11,6 +11,7 @@ $CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 
 namespace multi = boost::multi;
 
+// NOLINTNEXTLINE(fuchsia-trailing-return): trailing return helps readability
 template<class T> auto fwd_array(T&& t)->T&&{return std::forward<T>(t);}
 
 BOOST_AUTO_TEST_CASE(multi_array_ptr_equality){
