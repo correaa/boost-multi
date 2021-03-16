@@ -3,8 +3,8 @@ $CXX $0 -o $0x&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2018-2020
 
-#include<iostream>
 #include<cassert>
+#include<iostream>
 
 namespace fancy{
 
@@ -20,12 +20,17 @@ public:
 	using iterator_category = std::random_access_iterator_tag;
 	ptr() = default;//ptr(ptr const=default; ptr& operator=(ptr const&)=default;
 	explicit ptr(std::nullptr_t){}
-	template<class Other> explicit ptr(ptr<Other> const&){}
-	reference operator*() const{return reference{&value};}
-	ptr operator+(difference_type) const{return *this;}
-	ptr& operator+=(difference_type){return *this;}
-	ptr& operator++(){return operator+=(1);}
-	friend difference_type operator-(ptr const&, ptr const&){return 0;}
+	template<class Other> explicit ptr(ptr<Other> const& /*unused*/){}
+	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
+	auto operator*() const -> reference {return reference{&value};}
+	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
+	auto operator+(difference_type /*unused*/) const -> ptr{return *this;}
+	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
+	auto operator+=(difference_type /*unused*/) -> ptr&{return *this;}
+	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
+	auto operator++() -> ptr& {return operator+=(1);}
+	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
+	friend auto operator-(ptr const&, ptr const&) -> difference_type{return 0;}
 	bool operator==(ptr const&) const{return true;}
 	bool operator!=(ptr const&) const{return false;}
 //	explicit operator T*() const{return &value;}
