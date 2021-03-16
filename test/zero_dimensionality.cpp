@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality){
 	}
 	{
 		multi::array<std::complex<double>, 0> a = std::complex<double>{1., 2.};
-		assert( num_elements(a) == 1 );
+		BOOST_REQUIRE( num_elements(a) == 1 );
 	}
 	{
 		double d = 2.;
