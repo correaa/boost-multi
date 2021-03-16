@@ -26,7 +26,7 @@ public:
 	constexpr explicit involuted(Ref r) : r_{std::forward<Ref>(r)}, f_{}{}
 	involuted(involuted const&) = default;
 	involuted(involuted&&) noexcept = default;
-	constexpr auto operator=(involuted const& other) -> involuted& =delete;
+	constexpr auto operator=(involuted const& other) = delete;
 	~involuted() = default;
 	constexpr operator decay_type() const&{return f_(r_);}
 	constexpr decltype(auto) operator&()&&{return involuter<decltype(&std::declval<Ref>()), Involution>{&r_, f_};}
