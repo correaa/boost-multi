@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_CASE(empty_intersection){
 	multi::array<double, 1> arr2;
 
 	auto const is = intersection(arr.extension(), arr2.extension());
-	BOOST_REQUIRE( arr(is).size() == 0 );
+	BOOST_REQUIRE( arr(is).is_empty() );
 	arr2(is) = arr(is);
 	
 	BOOST_REQUIRE( arr2(is) == arr(is) );
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(multi_test_non_constness_reference){
 	BOOST_REQUIRE( m({0, 3}, 1).dimensionality == 1 );
 	BOOST_REQUIRE( size(m.sliced(0, 3)) == 3 );
 
-	BOOST_REQUIRE( size(m.range({0, 3}).rotated().paren(1l).unrotated()) == 3 );
+	BOOST_REQUIRE( size(m.range({0, 3}).rotated().paren(1L).unrotated()) == 3 );
 	BOOST_REQUIRE( size(m(multi::index_range{0, 3}, 1)) == 3 );
 
 //	BOOST_REQUIRE( size(m({0, 3}, 1)) == 3 );
