@@ -236,10 +236,9 @@ BOOST_AUTO_TEST_CASE(array_ref_1D){
 
 	std::string (&&a)[5] = {"a", "b", "c", "d", "e"};
 
-	multi::Array<std::string(&)[1]> mar = *multi::Array<std::string(*)[1]>(&a);
-	for(auto i: extension(mar)) std::cout<< i <<": "<< mar[i] <<", ";
-	std::cout<<std::endl;
-	
+	multi::array_ref<std::string, 1>&& mar = *multi::array_ptr<std::string, 1>(&a);
+//	multi::Array<std::string(&)[1]> mar = *multi::Array<std::string(*)[1]>(&a);
+
 	BOOST_REQUIRE(  extension(mar).first() == 0 );
 	BOOST_REQUIRE(  extension(mar).last()  == 5 );
 
@@ -252,7 +251,6 @@ BOOST_AUTO_TEST_CASE(array_ref_1D){
 	BOOST_REQUIRE(  mar1.extension().first() == 1 );
 	BOOST_REQUIRE(  mar1.extension().last()  == 6 );
 	BOOST_REQUIRE( *extension(mar1).begin() == 1 );
-	for(auto i: extension(mar1)) std::cout<< i <<": "<< mar1[i] <<", ";
 
 	BOOST_REQUIRE( size(mar1) == size(mar) );
 	BOOST_REQUIRE( mar1.layout().extension().start() == 1 );
