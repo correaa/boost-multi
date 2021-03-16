@@ -209,8 +209,8 @@ template<class T, std::size_t N> struct num_elements_t<T(&)[N]>: num_elements_t<
 template<class T, std::size_t N>
 constexpr auto num_elements(const T(&/*t*/)[N]) noexcept{return num_elements_t<T[N]>{};}
 
-template<class T, size_t N>
-constexpr size_type num_elements(std::array<T, N>){return N*num_elements_t<T>{};}
+//template<class T, size_t N>
+//constexpr size_type num_elements(std::array<T, N>){return N*num_elements_t<T>{};}
 
 template<class Vector>
 constexpr auto num_elements(Vector const& v, std::enable_if_t<std::is_same<typename Vector::pointer, decltype(std::declval<Vector>().data())>{}, int> =0)
@@ -240,6 +240,22 @@ constexpr auto data(T(&t)[N]) noexcept{return data(t[0]);}
 
 template<class T, std::size_t N>
 constexpr auto data_elements(T(&t)[N]) noexcept{return data_elements(t[0]);}
+
+template<class T, std::size_t N> constexpr auto data_elements(std::array<T, N>&       arr) noexcept{return arr.data();}
+template<class T, std::size_t M, std::size_t N> constexpr auto data_elements(std::array<std::array<T, M>, N>& arr) noexcept{return data_elements(arr[0]);}
+
+template<class T, std::size_t N> constexpr auto data_elements(std::array<T, N> const&       arr) noexcept{return arr.data();}
+template<class T, std::size_t M, std::size_t N> constexpr auto data_elements(std::array<std::array<T, M>, N> const& arr) noexcept{return data_elements(arr[0]);}
+
+template<class T, std::size_t N> constexpr std::ptrdiff_t num_elements(std::array<T, N> const& /*unused*/) noexcept{return N;}
+template<class T, std::size_t M, std::size_t N> 
+constexpr std::ptrdiff_t num_elements(std::array<std::array<T, M>, N> const& arr){return N*num_elements(arr[0]);}
+
+template<class T, std::size_t N> 
+constexpr dimensionality_type dimensionality(std::array<T, N> const& /*unused*/){return 1;}
+
+template<class T, std::size_t M, std::size_t N> 
+constexpr dimensionality_type dimensionality(std::array<std::array<T, M>, N> const& arr){return 1 + dimensionality(arr[0]);}
 
 //template<class T, std::size_t N>
 //constexpr auto data(const T(&t)[N]) noexcept{return data(t[0]);}
