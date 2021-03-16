@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(assignments){
 		BOOST_REQUIRE( not is_empty(A) );
 
 		multi::array<double, 1> V;
-		BOOST_REQUIRE( V.empty() );
+		BOOST_REQUIRE( V.is_empty() );
 	}
 	{
 		std::vector<double> v(5*7, 99.), w(5*7, 33.);
