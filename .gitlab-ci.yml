@@ -180,9 +180,10 @@ clang++-tidy:
   stage: test
   script:
     - export CXX="clang++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet clang clang-tidy cmake make libboost-test-dev libblas-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang clang-tidy cmake make libboost-test-dev libblas-dev libblas-dev liblapack-dev libfftw3-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
+    - clang-tidy --version
     - mkdir build && cd build
     - cmake .. -DCMAKE_CXX_CLANG_TIDY="clang-tidy;-checks=*,-fuchsia-default-arguments-calls,-fuchsia-statically-constructed-objects,-cppcoreguidelines-pro-type-vararg,-hicpp-vararg,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-cppcoreguidelines-macro-usage,-cert-err58-cpp;--warnings-as-errors=*"
     - cmake --build . --verbose -- --quiet --no-print-directory
