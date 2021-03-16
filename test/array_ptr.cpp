@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr){
 				{15., 16., 17., 18., 19.}
 			}
 		};
-		std::array<std::array<double, 5>, 4> b;
+		std::array<std::array<double, 5>, 4> b{};
 
 		multi::array_ptr<double, 2> aP{&a};
 		BOOST_REQUIRE( aP->extensions() == multi::extensions(a) );
