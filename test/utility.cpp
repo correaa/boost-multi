@@ -24,6 +24,81 @@ $CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 
 namespace multi = boost::multi;
 
+BOOST_AUTO_TEST_CASE(std_array_extensions_3d){
+	std::array<std::array<std::array<double, 5>, 4>, 3> arr = {};
+
+	static_assert( std::is_same<typename multi::array_traits<decltype(arr)>::element, double>{}, "!" );
+
+	using multi::dimensionality;
+	BOOST_REQUIRE( dimensionality(arr) == 3 );
+
+	using multi::extension;
+	BOOST_REQUIRE( extension(arr) == 3 );
+
+	using multi::extensions;
+	BOOST_REQUIRE(( extensions(arr) == decltype(extensions(arr)){3, 4, 5} ));
+
+	using multi::data_elements;
+	BOOST_REQUIRE( data_elements(arr) == &arr[0][0][0] );
+
+	using multi::num_elements;
+	BOOST_REQUIRE( num_elements(arr) == 60 );
+	
+	multi::array<double, 3> marr({3, 4, 5});
+	using multi::layout;
+	BOOST_REQUIRE( layout(arr) == layout(marr) );
+	
+	BOOST_REQUIRE( extensions(arr) == extensions(marr) );
+}
+
+BOOST_AUTO_TEST_CASE(std_array_extensions_2d){
+	std::array<std::array<double, 4>, 3> arr = {};
+
+	static_assert( std::is_same<typename multi::array_traits<decltype(arr)>::element, double>{}, "!" );
+
+	using multi::dimensionality;
+	BOOST_REQUIRE( dimensionality(arr) == 2 );
+	
+	using multi::extension;
+	BOOST_REQUIRE( extension(arr) == 3 );
+
+	using multi::extensions;
+	BOOST_REQUIRE(( extensions(arr) == decltype(extensions(arr)){3, 4} ));
+
+	using multi::data_elements;
+	BOOST_REQUIRE( data_elements(arr) == &arr[0][0] );
+
+	using multi::num_elements;
+	BOOST_REQUIRE( num_elements(arr) == 12 );
+	
+	multi::array<double, 2> marr({3, 4});
+	using multi::layout;
+	BOOST_REQUIRE( layout(arr) == layout(marr) );
+	
+	BOOST_REQUIRE( extensions(arr) == extensions(marr) );
+}
+
+BOOST_AUTO_TEST_CASE(std_array_extensions_1d){
+	std::array<double, 4> arr = {};
+
+	static_assert( std::is_same<typename multi::array_traits<decltype(arr)>::element, double>{}, "!" );
+
+	using multi::dimensionality;
+	BOOST_REQUIRE( dimensionality(arr) == 1 );
+
+	using multi::extension;
+	BOOST_REQUIRE( extension(arr) == 4 );
+
+	using multi::extensions;
+	BOOST_REQUIRE(( extensions(arr) == decltype(extensions(arr)){4} ));
+
+	using multi::data_elements;
+	BOOST_REQUIRE( data_elements(arr) == &arr[0] );
+
+	using multi::num_elements;
+	BOOST_REQUIRE( num_elements(arr) == 4 );
+}
+
 BOOST_AUTO_TEST_CASE(test_utility_1d){
 
 	std::array<double, 10> carr = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9.};
@@ -87,11 +162,12 @@ BOOST_AUTO_TEST_CASE(test_utility_1d){
 
 BOOST_AUTO_TEST_CASE(test_utility_2d){
 
-	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): to test library
-	double carr[3][10] = {
-		{ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.},
-		{10., 11., 12., 13., 14., 15., 16., 17., 18., 19.},
-		{20., 21., 22., 23., 24., 25., 26., 27., 28., 29.},
+	std::array<std::array<double, 10>, 3> carr{
+		{
+			{ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.},
+			{10., 11., 12., 13., 14., 15., 16., 17., 18., 19.},
+			{20., 21., 22., 23., 24., 25., 26., 27., 28., 29.},
+		}
 	};
 	multi::array_ref<double, 2> marr(&carr[0][0], {3, 10});
 //	boost::multi_array_ref<double, 2> Marr(&carr[0][0], boost::extents[3][10]);
