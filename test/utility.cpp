@@ -8,29 +8,29 @@ $CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 #include<boost/test/unit_test.hpp>
 
 #include "../array.hpp"
-#include<boost/multi_array.hpp>
 
-#include<boost/archive/xml_oarchive.hpp>
+
 #include<boost/archive/xml_iarchive.hpp>
+#include<boost/archive/xml_oarchive.hpp>
+
+#include<boost/multi_array.hpp>
 
 #include<boost/serialization/binary_object.hpp>
 
 #include "../adaptors/serialization/xml_archive.hpp"
 
 #include<fstream>
-#include<experimental/filesystem>
 #include<numeric> // iota
 
 namespace multi = boost::multi;
-namespace fs = std::experimental::filesystem;
 
 BOOST_AUTO_TEST_CASE(test_utility_1d){
 
-	double carr[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+	std::array<double, 10> carr = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9.};
 	multi::array_ref<double, 1> marr(&carr[0], 10);
 //	boost::multi_array_ref<double, 1> Marr(&carr[0], boost::extents[10]);
 	std::vector<double> varr(10); std::iota(begin(varr), end(varr), 0);
-	std::array<double, 10> aarr; std::iota(begin(aarr), end(aarr), 0);
+	std::array<double, 10> aarr{}; std::iota(begin(aarr), end(aarr), 0);
 
 	BOOST_REQUIRE( size(marr) == 10 );
 	using multi::size;
@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(test_utility_1d){
 //	static_assert( not multi::has_data_elements<decltype(Marr)>{}, "!");
 
 	using multi::data_elements;
-	BOOST_REQUIRE( data_elements(carr) == data_elements(marr) );
+	BOOST_REQUIRE( carr.data() == data_elements(marr) );
 //	BOOST_REQUIRE( data_elements(Marr) == data_elements(marr) );
 //	BOOST_REQUIRE( data_elements(varr) != data_elements(marr) ); // TODO: compat with std::vector
 
@@ -87,10 +87,11 @@ BOOST_AUTO_TEST_CASE(test_utility_1d){
 
 BOOST_AUTO_TEST_CASE(test_utility_2d){
 
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,-warnings-as-errors): to test library
 	double carr[3][10] = {
-		{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
-		{10, 11, 12, 13, 14, 15, 16, 17, 18, 19},
-		{20, 21, 22, 23, 24, 25, 26, 27, 28, 29},
+		{ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.},
+		{10., 11., 12., 13., 14., 15., 16., 17., 18., 19.},
+		{20., 21., 22., 23., 24., 25., 26., 27., 28., 29.},
 	};
 	multi::array_ref<double, 2> marr(&carr[0][0], {3, 10});
 //	boost::multi_array_ref<double, 2> Marr(&carr[0][0], boost::extents[3][10]);
