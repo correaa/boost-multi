@@ -11,19 +11,25 @@ $CXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 
 //#include "../../multi/memory/stack.hpp" //TODO test custom allocator
 
-#include<vector>
 #include<complex>
 #include<iostream>
 #include<scoped_allocator>
+#include<vector>
 
 namespace multi = boost::multi;
-using std::cout;
 
 BOOST_AUTO_TEST_CASE(std_vector_of_arrays){
 	std::vector<multi::array<double, 2>> va;
 
 //	for(int i = 0; i != 3; ++i) va.emplace_back(multi::index_extensions<2>{i, i}, i); // segfaults nvcc 11.0
-	for(int i = 0; i != 3; ++i) va.emplace_back(multi::array<double, 2>(multi::index_extensions<2>{i, i}, i));
+//	for(int i = 0; i != 3; ++i){
+//		va.emplace_back(multi::array<double, 2>(multi::index_extensions<2>{i, i}, i));
+//	}
+	std::transform(
+		begin(multi::iextension(3)), end(multi::iextension(3)),
+		std::back_inserter(va),
+		[](auto i){return multi::array<double, 2>({i, i}, static_cast<double>(i));}
+	);
 	BOOST_REQUIRE( size(va[0]) == 0 );
 	BOOST_REQUIRE( size(va[1]) == 1 );
 	BOOST_REQUIRE( size(va[2]) == 2 );
@@ -39,15 +45,19 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays){
 	BOOST_REQUIRE( va == wa );
 
 	std::vector<multi::array<double, 2>> ua(3);
-	for(std::size_t i = 0; i != ua.size(); ++i)
-		ua[i] = multi::array<double, 2>({i, i}, static_cast<double>(i));
-
+	std::transform(
+		begin(multi::iextension(ua.size())), end(multi::iextension(ua.size())), begin(ua), 
+		[](auto i){return multi::array<double, 2>({i, i}, static_cast<double>(i));}
+	);
 	BOOST_REQUIRE( ua == va );
 }
 
 BOOST_AUTO_TEST_CASE(array1d_of_arrays2d){
 	multi::array<multi::array<double, 2>, 1> A(10, multi::array<double, 2>{});
-	for(auto i : extension(A)) A[i] = { {i, i}, static_cast<double>(i) };
+	std::transform(
+		begin(extension(A)), end(extension(A)), begin(A), 
+		[](auto i){return multi::array<double, 2>({i, i}, static_cast<double>(i));}
+	);
 
 	BOOST_REQUIRE( size(A[0]) == 0 );
 	BOOST_REQUIRE( size(A[1]) == 1 );
