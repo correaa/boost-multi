@@ -8,14 +8,15 @@ $CXXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 
 #include "../array.hpp"
 
-#include<complex>
 #include<boost/iterator/transform_iterator.hpp> //might need -DBOOST_RESULT_OF_USE_DECLTYPE
+
+#include<complex>
 
 namespace test{
 	auto neg = [](auto const& x){return -x;};
 
 	template<class It, class F> class involuter; 
-}
+} // namespace test
 
 namespace test{
 
