@@ -69,7 +69,7 @@ struct array_types : Layout{
 	using element_type = element; // this follows more closely https://en.cppreference.com/w/cpp/memory/pointer_traits
 	constexpr static dimensionality_type dimensionality = D;
 	using element_ptr = ElementPtr;
-	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element_type const>; //multi::const_iterator<ElementPtr>; 
+	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element const>; //multi::const_iterator<ElementPtr>; 
 	using element_ref = typename std::iterator_traits<element_ptr>::reference;
 	using layout_t = Layout;
 	using value_type = typename std::conditional<
@@ -93,6 +93,7 @@ struct array_types : Layout{
 		basic_array<element, dimensionality-1, element_const_ptr>,
 	//	decltype(*std::declval<element_const_ptr>())&
 		typename std::iterator_traits<element_const_ptr>::reference
+	//	std::add_lvalue_reference_t<std::add_const_t<std::remove_reference_t<typename std::iterator_traits<element_ptr>::reference>>>
 	//	typename std::pointer_traits<element_const_ptr>::reference   // this seems more correct but it doesn't work with cuda fancy reference
 	>::type;
 
