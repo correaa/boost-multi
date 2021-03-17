@@ -92,10 +92,10 @@ template<class It>  using negater = involuter<It , std::negate<>>;
 
 class basic_conjugate_t{
 	template<int N> struct prio : std::conditional_t<N!=0, prio<N-1>, std::true_type>{};
-	template<class T> static auto _(prio<0>, T const& t) DECLRETURN(std::conj(t))
-	template<class T> static auto _(prio<1>, T const& t) DECLRETURN(     conj(t))
-	template<class T> static auto _(prio<2>, T const& t) DECLRETURN(  T::conj(t))
-	template<class T> static auto _(prio<3>, T const& t) DECLRETURN(   t.conj( ))
+	template<class T> static auto _(prio<0>/**/, T const& t) DECLRETURN(std::conj(t))
+	template<class T> static auto _(prio<1>/**/, T const& t) DECLRETURN(     conj(t))
+	template<class T> static auto _(prio<2>/**/, T const& t) DECLRETURN(  T::conj(t))
+	template<class T> static auto _(prio<3>/**/, T const& t) DECLRETURN(   t.conj( ))
 public:
 	template<class T> static auto _(T const& t) DECLRETURN(_(prio<3>{}, t))
 } basic_conjugate;
