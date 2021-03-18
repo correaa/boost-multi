@@ -1418,10 +1418,12 @@ public:
 	auto operator=(basic_array<TT, 1, As...> const& other)&&
 	->decltype(adl_copy(other.begin(), other.end(), std::declval<iterator>()), std::declval<basic_array&&>()){assert(this->extensions() == other.extensions());
 		MULTI_MARK_SCOPE(std::string{"multi::operator= D=1 from "}+typeid(TT).name()+" to "+typeid(T).name() );
+		if(this->is_empty()) return std::move(*this);
 		return adl_copy(other.begin(), other.end(), this->begin()                                 ), std::move(*this);             }
 
 	template<class TT, class... As>//, DELETE((not std::is_assignable<typename basic_array::reference, typename basic_array<TT, 1, As...>::reference>{}))>
 	basic_array&  operator=(basic_array<TT, 1, As...> const& other)&{assert(this->extensions() == other.extensions());
+		if(this->is_empty()) return *this;
 		adl_copy(other.begin(), other.end(), this->begin());
 		return *this;
 	}
