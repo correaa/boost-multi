@@ -1640,10 +1640,10 @@ public:
 
 	template<class Dummy = void, std::enable_if_t<(D != 1) and sizeof(Dummy*), int*> = 0>
 	[[deprecated("use ::data_elements()")]]
-	       constexpr typename array_ref::element_ptr data(Dummy*/**/ = nullptr) const& {return data_elements();}//array_ref::base_;} 
+	       constexpr typename array_ref::element_ptr data() const& {return data_elements();}//array_ref::base_;} 
 
 	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int*> = 0>
-	       constexpr typename array_ref::element_ptr data(Dummy*/**/ = nullptr) const& {return data_elements();}//array_ref::base_;} 
+	       constexpr typename array_ref::element_ptr data() const& {return data_elements();}//array_ref::base_;} 
 
 #if not defined(__NVCC__)
 	[[deprecated("use data_elements()")]] 
