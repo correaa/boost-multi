@@ -400,7 +400,9 @@ qmcpack-g++:
     - cd qmcpack
     - git config --global user.email "alfredo.correa@gmail.com"
     - git config --global user.name "Alfredo Correa"
-    - git subtree pull --squash -P -X theirs external_codes/boost_multi/multi https://gitlab.com/correaa/boost-multi.git $CI_COMMIT_BRANCH
+    - git rm external_codes/boost_multi/multi
+    - git commit
+    - git subtree add --squash -P external_codes/boost_multi/multi https://gitlab.com/correaa/boost-multi.git $CI_COMMIT_BRANCH
     - cd build
     - cmake -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DQMC_MIXED_PRECISION=1 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-Werror" ..
     - make
