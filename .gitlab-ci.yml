@@ -395,7 +395,7 @@ g++-cppcheck:
 qmcpack-g++:
   stage: test
   script:
-    - apt-get update && apt-get install --no-install-recommends -y --quiet libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libopenmpi-dev gfortran g++ cmake make git ca-certificates     python3 libxml2-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libopenmpi-dev gfortran g++ cmake make git ca-certificates     python3 libxml2-dev libhdf5-dev
     - git clone https://github.com/QMCPACK/qmcpack.git
     - cd qmcpack
     - git config --global user.email "alfredo.correa@gmail.com"
