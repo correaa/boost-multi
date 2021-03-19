@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE(layout){
 
 	multi::array<double, 3> AA({3, 4, 5});
 	using multi::layout;
-	assert( layout(AA) == layout(A) );
+	BOOST_REQUIRE( layout(AA) == layout(A) );
 
 	using multi::stride;
 	BOOST_REQUIRE( stride(AA) == 20 );
