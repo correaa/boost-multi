@@ -16,8 +16,6 @@
 namespace multi = boost::multi;
 namespace blas = multi::blas;
 
-namespace utf = boost::unit_test;
-
 BOOST_AUTO_TEST_CASE(multi_blas_gemm_square_real){
 	multi::array<double, 2> const a = {
 		{1, 3, 4},

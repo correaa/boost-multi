@@ -53,12 +53,12 @@ BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed){
 	BOOST_REQUIRE( sizes(mar.reindexed(1)) == sizes(mar) );
 	auto diff = &(mar.reindexed(1)[1]) - &mar[0];
 	BOOST_REQUIRE( diff == 0 );
-	
+
 	BOOST_REQUIRE( &mar.blocked(2, 4)[2] == &mar[2] );
-	for(auto i : extension(mar.stenciled({2, 4})))
+	for(auto i : extension(mar.stenciled({2, 4}))){
 		BOOST_REQUIRE( &mar.stenciled({2, 4})[i] == &mar[i] );
-		
-		
+	}
+
 	multi::array<std::string, 1> arr({{2, 7}}, std::string{"xx"});
 	BOOST_REQUIRE( size(arr) == 5 );
 	BOOST_REQUIRE( extension(arr) == multi::iextension(2, 7) );
@@ -73,6 +73,22 @@ BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed){
 	BOOST_REQUIRE( size(arrB) == 5 );
 	BOOST_REQUIRE( arrB[2] == "a" );
 	BOOST_REQUIRE( arrB[6] == "e" );
+}
+
+BOOST_AUTO_TEST_CASE(array_ref_of_nested_std_array_reindexed){
+
+	std::array<std::array<double, 5>, 4> a = {
+		{
+			{ 0,  1,  2,  3,  4}, 
+			{ 5,  6,  7,  8,  9}, 
+			{10, 11, 12, 13, 14}, 
+			{15, 16, 17, 18, 19}
+		}
+	};
+
+	multi::Array<double(&)[2]> mar = *multi::Array<double(*)[2]>(&a);
+
+	BOOST_REQUIRE( &mar[1][1] == &a[1][1] );
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_reindexed){
@@ -187,9 +203,11 @@ BOOST_AUTO_TEST_CASE(array_ref_with_stencil){
 		for(auto i = std::get<0>(xs).start()+1; i != std::get<0>(xs).finish()-1; ++i)
 			for(auto j = std::get<1>(xs).start()+1; j != std::get<1>(xs).finish()-1; ++j){
 				auto xt = extensions(st);
-				for(auto b: std::get<0>(xt))
-					for(auto d: std::get<1>(xt))
+				for(auto b: std::get<0>(xt)){
+					for(auto d: std::get<1>(xt)){
 						gy[i][j] += st[b][d]*a[i + b][j + d];
+					}
+				}
 			}
 	}
 

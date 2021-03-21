@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee){
 		std::string name;
 		short salary;
 		std::size_t age;
-		char padding_[9];
+		std::array<char, 9> padding_;
 		employee(std::string name_, short salary_, std::size_t age_) : name{std::move(name_)}, salary{salary_}, age{age_}, padding_{}{}
 	};
 
