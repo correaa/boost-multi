@@ -24,15 +24,18 @@ template<class It, class F> class involuter;
 
 template<class Ref, class Involution>
 class involuted{
-protected:
 	Ref r_;
 	MULTI_NO_UNIQUE_ADDRESS Involution f_;
+protected:
+	decltype(auto) underlying() const&{return r_;}
+	decltype(auto) underlying() &&{return r_;}
+	decltype(auto) underlying() &{return r_;}
 public:
 	using decay_type = std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
 	constexpr involuted(Ref r, Involution f) : r_{std::forward<Ref>(r)}, f_{f}{}
 	constexpr explicit involuted(Ref r) : r_{std::forward<Ref>(r)}, f_{}{}
 	involuted(involuted const&) = default;
-	involuted(involuted&&)      = default;
+	involuted(involuted&&) noexcept = default;
 	constexpr involuted& operator=(involuted const& other)=delete;
 	constexpr operator decay_type() const{return f_(r_);}
 	constexpr auto operator&()&&{return involuter<decltype(&std::declval<Ref>()), Involution>{&r_, f_};}
@@ -72,7 +75,7 @@ public:
 	constexpr bool       operator==(involuter const& o) const{return it_==o.it_;}
 	constexpr bool       operator!=(involuter const& o) const{return it_!=o.it_;}
 	constexpr involuter& operator+=(typename involuter::difference_type n){it_+=n; return *this;}
-	constexpr involuter  operator+(typename involuter::difference_type n) const{return {it_+n, f_};}
+	constexpr auto operator+(typename involuter::difference_type n) const -> involuter{return {it_+n, f_};}
 	constexpr pointer    operator->() const{return {&*it_, f_};}
 };
 
@@ -112,8 +115,8 @@ struct conjugate<> : private basic_conjugate_t{
 #endif
 template<class ComplexRef> struct conjd : test::involuted<ComplexRef, conjugate<>>{
 	explicit conjd(ComplexRef r) : test::involuted<ComplexRef, conjugate<>>(r){}
-	decltype(auto) real() const{return this->r_.real();}
-	decltype(auto) imag() const{return negated<decltype(this->r_.imag())>(this->r_.imag());}//-this->r_.imag();}//negated<std::decay_t<decltype(this->r_.imag())>>(this->r_.imag());} 
+	decltype(auto) real() const{return this->underlying().real();}
+	decltype(auto) imag() const{return negated<decltype(this->underlying().imag())>(this->underlying().imag());}//-this->r_.imag();}//negated<std::decay_t<decltype(this->r_.imag())>>(this->r_.imag());} 
 	friend decltype(auto) real(conjd const& self){using std::real; return real(static_cast<typename conjd::decay_type>(self));}
 	friend decltype(auto) imag(conjd const& self){using std::imag; return imag(static_cast<typename conjd::decay_type>(self));}
 };
@@ -162,11 +165,12 @@ struct bitransformer{
 #endif
 
 template<class P = std::complex<double>*>
-struct indirect_real{// : std::iterator_traits<typename std::pointer_traits<P>::element_type::value_type*>{
+class indirect_real{// : std::iterator_traits<typename std::pointer_traits<P>::element_type::value_type*>{
 	P impl_;
+public:
 	explicit indirect_real(P const& p) : impl_{p}{}
 	auto operator+(std::ptrdiff_t n) const{return indirect_real{impl_ + n};}
-	double& operator*() const{return reinterpret_cast<double(&)[2]>(*impl_)[0];}
+	auto operator*() const -> double&{return reinterpret_cast<std::array<double, 2>&>(*impl_)[0];}
 
 	using difference_type = std::ptrdiff_t;
 	using value_type = typename std::iterator_traits<P>::value_type;
@@ -178,9 +182,10 @@ struct indirect_real{// : std::iterator_traits<typename std::pointer_traits<P>::
 struct A{
 	A(A const&)=delete;
 	A(A&&)=delete;
+	~A() = default;
 };
 
-}
+} // namespace test
 
 BOOST_AUTO_TEST_CASE(transformed_array){
 
