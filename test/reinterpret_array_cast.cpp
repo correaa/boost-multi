@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_realcomplex){
 }
 {
 	complex c{1, 2};
-	auto *pC = reinterpret_cast<double(*)[2]>(&c);
+	auto *pC = reinterpret_cast<double(*)[2]>(&c); // NOLINT(cppcoreguidelines-avoid-c-arrays, hicpp-avoid-c-arrays, modernize-avoid-c-arrays): test purposes
 	(*pC)[0] = 11;
 	BOOST_REQUIRE( pC );
 	BOOST_REQUIRE(real(c)==11);
