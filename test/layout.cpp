@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(layout){
 	BOOST_REQUIRE(( extension(DA) == multi::irange{0, 50} ));
 }
 {
-	std::array<std::array<std::array<double, 50>, 50>, 50> DA;
+	std::array<std::array<std::array<double, 50>, 50>, 50> DA{};
 	using multi::size;
 	BOOST_REQUIRE( size(DA) == 50 );
 
