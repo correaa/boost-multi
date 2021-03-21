@@ -70,13 +70,14 @@ public:
 	explicit constexpr involuter(It it) : it_{std::move(it)}, f_{}{}
 	constexpr involuter(It it, F f) : it_{std::move(it)}, f_{std::move(f)}{}
 	involuter(involuter const& other) = default;
-	template<class Other> involuter(involuter<Other, F> const& o) : it_{o.it_}, f_{o.f_}{}
+	template<class Other> 
+	explicit involuter(involuter<Other, F> const& o) : it_{o.it_}, f_{o.f_}{}
 	constexpr auto       operator*() const{return reference{*it_, f_};}
 	constexpr bool       operator==(involuter const& o) const{return it_==o.it_;}
 	constexpr bool       operator!=(involuter const& o) const{return it_!=o.it_;}
 	constexpr involuter& operator+=(typename involuter::difference_type n){it_+=n; return *this;}
-	constexpr auto operator+(typename involuter::difference_type n) const -> involuter{return {it_+n, f_};}
-	constexpr pointer    operator->() const{return {&*it_, f_};}
+	constexpr auto operator+(typename involuter::difference_type n) const{return involuter{it_+n, f_};}
+	constexpr auto operator->() const{return pointer{&*it_, f_};}
 };
 
 #if defined(__cpp_deduction_guides)
@@ -182,6 +183,7 @@ public:
 struct A{
 	A(A const&)=delete;
 	A(A&&)=delete;
+	A& operator=(A const&) = delete;
 	~A() = default;
 };
 

@@ -151,20 +151,21 @@ BOOST_AUTO_TEST_CASE(array_partitioned_add_to_last){
 
 	multi::array<double, 3>	A3 = {
 		{
-			{  0,  1,  2,  3,  4,  5}, 
-			{  6,  7,  8,  9, 10, 11}, 
-			{ 12, 13, 14, 15, 16, 17}, 
-			{ 18, 19, 20, 21, 22, 23}, 
+			{  0.,  1.,  2.,  3.,  4.,  5.}, 
+			{  6.,  7.,  8.,  9., 10., 11.}, 
+			{ 12., 13., 14., 15., 16., 17.}, 
+			{ 18., 19., 20., 21., 22., 23.}, 
 		},
 		{
-			{  0,  1,  2,  3,  4,  5}, 
-			{  6,  7,  8,  9, 10, 11}, 
-			{ 12, 13, 14, 15, 16, 17}, 
-			{ 18, 19, 20, 21, 22, 23}, 
+			{  0.,  1.,  2.,  3.,  4.,  5.}, 
+			{  6.,  7.,  8.,  9., 10., 11.}, 
+			{ 12., 13., 14., 15., 16., 17.}, 
+			{ 18., 19., 20., 21., 22., 23.}, 
 		}
 	};
 
-	auto strides = std::experimental::apply([](auto... e){return std::array<long, sizeof...(e)>{long{e}...};}, A3.strides());
+	using std::experimental::apply;
+	auto strides = apply([](auto... e){return std::array<std::ptrdiff_t, sizeof...(e)>{e...};}, A3.strides());
 //	auto const strides = std::apply([](auto... e){return std::array{long{e}...};}, A3.strides());
 
 	BOOST_REQUIRE( std::is_sorted(strides.rbegin(), strides.rend()) and A3.num_elements() == A3.nelems() ); // contiguous c-ordering

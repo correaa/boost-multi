@@ -13,26 +13,32 @@ $CXXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 
 namespace multi = boost::multi;
 
+using v3d = std::array<double, 3>;
+
+// some members might need explicit padding to work well with member_cast
+struct particle{
+	double mass;
+	v3d position alignas(2*sizeof(double));  // __attribute__((aligned(2*sizeof(double))))
+	particle() = default;
+	particle(double m, v3d v) : mass{m}, position{v}{}
+	particle(particle const&) = default;
+	// cppcheck-suppress noExplicitConstructor ; particle can represent a particle-reference
+	template<class Particle> particle(Particle&& r) : mass{r.mass}, position{r.position}{}
+};
+
 BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos){
 
-	using v3d = std::array<double, 3>;
-
-	struct particles_SoA{
-		multi::array<double,2> masses; 
-		multi::array<v3d,2> positions;
+	class particles_SoA{
+		multi::array<double,2> masses_; 
+		multi::array<v3d,2> positions_;
+	public:
+		// cppcheck-suppress noExplicitConstructor ; particles_SoA can represent a particles' AoS
+		particles_SoA(multi::array<particle, 2> const& AoS) : 
+			masses_   (AoS.member_cast<double>(&particle::mass    )),
+			positions_(AoS.member_cast<v3d   >(&particle::position))
+		{}
 		struct reference{double& mass; v3d& position ;};
-		reference operator()(int i, int j){return {masses[i][j], positions[i][j]};}
-	};
-
-	// some members might need explicit padding to work well with member_cast
-	struct particle{
-		double mass;
-		v3d position alignas(2*sizeof(double));  // __attribute__((aligned(2*sizeof(double))))
-		particle() = default;
-		particle(double m, v3d v) : mass{m}, position{v}{}
-		particle(particle const&) = default;
-		// cppcheck-suppress noExplicitConstructor ; particle can represent a particle-reference
-		particle(particles_SoA::reference&& r) : mass{r.mass}, position{r.position}{}
+		auto operator()(int i, int j) -> reference{return {masses_[i][j], positions_[i][j]};}
 	};
 
 	multi::array<particle, 2> AoS({2, 2}); 
@@ -45,10 +51,8 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos){
 	multi::array<double, 2> masses_copy = masses;
 	BOOST_REQUIRE( &masses_copy[1][1] != &masses[1][1] );
 	
-	particles_SoA SoA = {
-		AoS.member_cast<double>(&particle::mass), 
-		AoS.member_cast<v3d>(&particle::position)
-	};
+	particles_SoA SoA{AoS};
+
 	BOOST_REQUIRE(SoA(1, 1).mass == 99. );
 
 	particle p11 = SoA(1, 1); 

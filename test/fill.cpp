@@ -30,13 +30,13 @@ class fnv1a_t{
 	std::size_t h = 14695981039346656037U; // offset
 public:
 	using result_type = std::size_t;
-	static constexpr auto min() -> result_type{return std::numeric_limits<std::size_t>::min();}
-	static constexpr auto max() -> result_type{return std::numeric_limits<std::size_t>::max();}
+	static constexpr auto min(){return std::numeric_limits<result_type>::min();}
+	static constexpr auto max(){return std::numeric_limits<result_type>::max();}
 	void operator()(void const* key, std::size_t len) noexcept{h = fnv1a(key, len, h);}
 	template<class T, std::enable_if_t<std::is_fundamental<T>{}, int> = 0>
-	auto operator()(T const& t) noexcept -> fnv1a_t& {operator()(&t, sizeof(t)); return *this;}
+	decltype(auto) operator()(T const& t) noexcept{operator()(&t, sizeof(t)); return *this;}
 //	result_type operator()() && noexcept{return h;}
-	auto operator()() const& noexcept -> result_type{return h;}
+	auto operator()() const& noexcept{return h;}
 //	explicit operator result_type() && noexcept{return h;}
 	explicit operator result_type() const& noexcept{return h;}
 };

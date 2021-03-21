@@ -132,6 +132,30 @@ BOOST_AUTO_TEST_CASE(layout){
 //		assert( stride(A[0]) == 20 );
 }
 {
+	std::array<std::array<std::array<double, 5>, 4>, 3> A = {};
+	using multi::dimensionality;
+	static_assert(dimensionality(A)==3, "!");
+	using multi::extensions;
+	auto xA = extensions(A);
+	using std::get;
+	BOOST_REQUIRE( size(get<0>(xA)) == 3 );
+	BOOST_REQUIRE( size(get<1>(xA)) == 4 );
+	BOOST_REQUIRE( size(get<2>(xA)) == 5 );
+
+	multi::array<double, 3> AA({3, 4, 5});
+	using multi::layout;
+	BOOST_REQUIRE( layout(AA) == layout(A) );
+
+	using multi::stride;
+	BOOST_REQUIRE( stride(AA) == 20 );
+	static_assert( stride(A) == 20 , "!" );
+	BOOST_REQUIRE( stride(A[0]) == 5 );
+	BOOST_REQUIRE( stride(A[1]) == 5 );
+	BOOST_REQUIRE( stride(A[0][0]) == 1 );
+//		assert( stride(A) == 20 );
+//		assert( stride(A[0]) == 20 );
+}
+{
 	multi::array<double, 2> B2 = {
 		{1.},
 		{2.},
