@@ -403,10 +403,11 @@ qmcpack-g++:
     - git rm -r external_codes/boost_multi/multi && git commit -m "remove multi subtree"
     - git subtree add --squash -P external_codes/boost_multi/multi https://gitlab.com/correaa/boost-multi.git $CI_COMMIT_BRANCH
     - cd build
-    - cmake -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DBUILD_PPCONVERT=1 -DQMC_MIXED_PRECISION=1 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-Werror" ..
-    - make
-    - ctest -R afqmc     --output-on-failure
+    - cmake -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DBUILD_PPCONVERT=1 -DQMC_MIXED_PRECISION=1 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_MPIEXEC_PREFLAGS="--allow-run-as-root" ..
+    - make ppconvert
     - ctest -R ppconvert --output-on-failure
+    - make afqmc deterministic-unit_test_afqmc_matrix deterministic-unit_test_afqmc_numerics deterministic-unit_test_afqmc_slaterdeterminantoperations deterministic-unit_test_afqmc_walkers deterministic-unit_test_afqmc_hamiltonians_ham_chol deterministic-unit_test_afqmc_wfn_factory_ham_chol_wfn_rhf deterministic-unit_test_afqmc_phmsd deterministic-unit_test_afqmc_prop_factory_ham_chol_wfn_rhf deterministic-unit_test_afqmc_estimators_ham_chol_wfn_rhf
+    - ctest -R afqmc     --output-on-failure
 
 inq-g++-latest:
   stage: test
