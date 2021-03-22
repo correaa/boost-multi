@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray){
 
 	multi::array_ptr<double, 2> map = &a;
 	BOOST_REQUIRE( &map->operator[](1)[1] == &a[1][1] );
-	BOOST_REQUIRE( (&a)[0][1][1] == 6. );
+	BOOST_REQUIRE( (*&a)[1][1] == 6. );
 	
 	multi::array_ref<double, 2>&& mar = *map;
 
