@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(layout){
 	BOOST_REQUIRE( size(A3[0][0]) == 53); BOOST_REQUIRE( A3[0][0].size() == 53 );
 }
 {
-	//NOLINTNEXLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): testing feature
+	//NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): testing feature
 	double DA[50][50][50];
 	using multi::size;
 	BOOST_REQUIRE( size(DA) == 50 );
@@ -101,13 +101,18 @@ BOOST_AUTO_TEST_CASE(layout){
 	
 	BOOST_REQUIRE( &B2copy[1][1] != &B2({0,2}, {0,2})[1][1] );
 
-	decltype(B2({0,2}, {0,2})) B2blk[2][2] = 
-		{{B2({0,2}, {0,2}), B2({0, 2}, {2, 4})},
-		 {B2({2,4}, {0,2}), B2({2, 4}, {2, 4})}};
-	std::cout << B2blk[1][1][1][1] << std::endl;
+	std::array<std::array<decltype(B2({0,2}, {0,2})), 2>, 2> B2blk = {
+//	decltype(B2({0,2}, {0,2})) B2blk[2][2] = 
+		{
+			{B2({0,2}, {0,2}), B2({0, 2}, {2, 4})},
+			{B2({2,4}, {0,2}), B2({2, 4}, {2, 4})}
+		}
+	};
+
 	BOOST_REQUIRE( &B2blk[1][1][1][1] == &B2[3][3] );
 }
 {
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, hicpp-avoid-c-arrays,-warnings-as-errors, modernize-avoid-c-arrays,-warnings-as-errors): test
 	double A[3][4][5] = {};
 	using multi::dimensionality;
 	static_assert(dimensionality(A)==3, "!");
