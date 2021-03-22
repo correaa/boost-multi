@@ -17,13 +17,17 @@ $CXX $CXXFLAGS $0 -lm -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #include <boost/iterator/transform_iterator.hpp>
 
 // from Howard Hinnart hash
-auto fnv1a(void const* key, std::size_t len, std::size_t h = 14695981039346656037U) noexcept -> std::size_t{
+auto fnv1a(void const* key, std::size_t len, std::size_t h) noexcept{
 	auto const *p = static_cast<unsigned char const*>(key);
-	unsigned char const* const e = p + len;
-	for(; p < e; ++p){
+	unsigned char const* const e = p + len; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): low level
+	for(; p < e; ++p){ // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): low level
 		h = (h ^ *p) * 1099511628211U; // prime
 	}
 	return h;
+}
+
+auto fnv1a(void const* key, std::size_t len) noexcept{
+	return fnv1a(key, len, 14695981039346656037U);
 }
 
 class fnv1a_t{
