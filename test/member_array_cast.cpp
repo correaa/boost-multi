@@ -15,34 +15,55 @@ namespace multi = boost::multi;
 
 using v3d = std::array<double, 3>;
 
-// some members might need explicit padding to work well with member_cast
-struct particle{
-	double mass;
-	v3d position alignas(2*sizeof(double));  // __attribute__((aligned(2*sizeof(double))))
-	particle() = default;
-	particle(double m, v3d v) : mass{m}, position{v}{}
-	particle(particle const&) = default;
-	// cppcheck-suppress noExplicitConstructor ; particle can represent a particle-reference
-	template<class Particle> particle(Particle&& r) : mass{r.mass}, position{r.position}{}
-};
+template<class T> void what(T&&) = delete;
 
 BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos){
+
+	// some members might need explicit padding to work well with member_cast
+	struct particle{
+		double mass;
+		v3d position alignas(2*sizeof(double));  // __attribute__((aligned(2*sizeof(double))))
+	};
 
 	class particles_SoA{
 		multi::array<double,2> masses_; 
 		multi::array<v3d,2> positions_;
 	public:
 		// cppcheck-suppress noExplicitConstructor ; particles_SoA can represent a particles' AoS
-		particles_SoA(multi::array<particle, 2> const& AoS) : 
+		particles_SoA(multi::array<particle, 2> const& AoS) : //NOLINT(
 			masses_   (AoS.member_cast<double>(&particle::mass    )),
 			positions_(AoS.member_cast<v3d   >(&particle::position))
 		{}
-		struct reference{double& mass; v3d& position ;};
-		auto operator()(int i, int j) -> reference{return {masses_[i][j], positions_[i][j]};}
+		struct reference{
+			double& mass;  // NOLINT(misc-non-private-member-variables-in-classes): exposed by design
+			v3d& position; // NOLINT(misc-non-private-member-variables-in-classes): exposed by design
+			operator particle() const{return {mass, position};} // NOLINT(google-explicit-constructor, hicpp-explicit-conversions): allow equal assignment
+			auto operator+() const{return operator particle();}
+		#if __cplusplus <= 201402L
+		private:
+			friend class particles_SoA;
+			reference(reference const&) = default;
+			reference(reference&&) = default;
+		public:
+			// NOLINTNEXTLINE(cert-oop54-cpp, fuchsia-trailing-return): simulate reference
+			auto operator=(reference const& other) -> reference& { 
+				std::tie(mass, position) = std::tie(other.mass, other.position);
+				return *this;
+			}
+			// NOLINTNEXTLINE(fuchsia-trailing-return): simulate reference
+			auto operator=(reference&& other) noexcept -> reference&{operator=(other); return *this;}
+			~reference() noexcept = default;
+		#endif
+			auto operator==(reference const& other){return std::tie(mass, position) == std::tie(other.mass, other.position);}
+			auto operator!=(reference const& other){return std::tie(mass, position) == std::tie(other.mass, other.position);}
+		};
+		auto operator()(int i, int j){
+			return reference{masses_[i][j], positions_[i][j]};
+		}
 	};
 
 	multi::array<particle, 2> AoS({2, 2}); 
-	AoS[1][1] = particle{99., {1.,2.}};
+	AoS[1][1] = particle{99., v3d{1., 2.}};
 
 	auto&& masses = AoS.member_cast<double>(&particle::mass);
 	BOOST_REQUIRE( size(masses) == 2 );
@@ -54,21 +75,31 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos){
 	particles_SoA SoA{AoS};
 
 	BOOST_REQUIRE(SoA(1, 1).mass == 99. );
-
+	
 	particle p11 = SoA(1, 1); 
 	BOOST_REQUIRE(p11.mass == 99. );
+	
+	auto autop11 = +SoA(1, 1);
+	BOOST_REQUIRE(autop11.mass == 99. );
+
+	SoA(1, 1).mass = 88;
+	BOOST_REQUIRE(SoA(1, 1).mass == 88. );
+
+	SoA(1, 1) = SoA(0, 0);
+	BOOST_REQUIRE(SoA(1, 1).mass == SoA(0, 0).mass );
+	BOOST_REQUIRE(SoA(1, 1) == SoA(0, 0) );
 
 }
 
-BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee){
+struct alignas(32) employee{
+	std::string name;
+	int16_t salary;
+	std::size_t age;
+//	private:
+//	char padding_[9];// std::array<char, 9> padding_; // use alignment or padding to allow member_cast
+};
 
-	struct employee{
-		std::string name;
-		short salary;
-		std::size_t age;
-		std::array<char, 9> padding_;
-		employee(std::string name_, short salary_, std::size_t age_) : name{std::move(name_)}, salary{salary_}, age{age_}, padding_{}{}
-	};
+BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee){
 
 	multi::array<employee, 1> d1D = { {"Al"  , 1430, 35}, {"Bob"  , 3212, 34} }; 
 	auto&& d1D_names = d1D.member_cast<std::string>(&employee::name);
@@ -80,6 +111,10 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee){
 		{ {"Al"  , 1430, 35}, {"Bob"  , 3212, 34} }, 
 		{ {"Carl", 1589, 32}, {"David", 2300, 38} }
 	};
+	BOOST_REQUIRE( d2D[0][0].name == "Al" );
+	BOOST_REQUIRE( d2D[0][0].salary == 1430 );
+	BOOST_REQUIRE( d2D[0][0].age == 35 );
+	
 	auto&& d2D_names = d2D.member_cast<std::string>(&employee::name);
 	BOOST_REQUIRE( size(d2D_names) == size(d2D) ); 
 	BOOST_REQUIRE( d2D_names[1][1] == "David" );
