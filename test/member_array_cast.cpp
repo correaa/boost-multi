@@ -92,9 +92,9 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos){
 }
 
 struct alignas(32) employee{
-	std::string name;
-	int16_t salary;
-	std::size_t age;
+	std::string name = {};
+	int16_t salary = {};
+	std::size_t age = {};
 //	private:
 //	char padding_[9];// std::array<char, 9> padding_; // use alignment or padding to allow member_cast
 };
