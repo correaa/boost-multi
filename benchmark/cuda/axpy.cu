@@ -80,7 +80,7 @@ BENCHMARK(BM_axpy_cpu_transform);
 static void BM_axpy_gpu_legacy(benchmark::State& state){
 
 	using T = double;
-	using alloc = thrust::system::cuda::allocator<double>;
+	using alloc = thrust::cuda::allocator<double>;
 	multi::array<T, 2, alloc> const X({1<<27, 2}, 1.);
 	multi::array<T, 2, alloc>       Y(extensions(X), 1.);
 
@@ -100,7 +100,7 @@ BENCHMARK(BM_axpy_gpu_legacy);
 static void BM_axpy_gpu_multi_kernel(benchmark::State& state){
 
 	using T = double;
-	using alloc = thrust::system::cuda::allocator<double>;
+	using alloc = thrust::cuda::allocator<double>;
 	multi::array<T, 2, alloc> const X({1<<27, 2}, 1.);
 	multi::array<T, 2, alloc>       Y(extensions(X), 1.);
 
@@ -120,7 +120,7 @@ BENCHMARK(BM_axpy_gpu_multi_kernel);
 static void BM_axpy_gpu_multi_thrust(benchmark::State& state){
 
 	using T = double;
-	using alloc = thrust::system::cuda::allocator<double>;
+	using alloc = thrust::cuda::allocator<double>;
 	multi::array<T, 2, alloc> const X({1<<27, 2}, 1.);
 	multi::array<T, 2, alloc>       Y(extensions(X), 1.);
 
