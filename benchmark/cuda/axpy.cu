@@ -2,12 +2,25 @@
 sudo cpupower frequency-set --governor performance; cmake -DCMAKE_CUDA_COMPILER=/usr/local/cuda-11.1/bin/nvcc -DCMAKE_BUILD_TYPE=Release .. && make $0.x && ctest ; exit
 #endif // © Alfredo A. Correa 2021
 
+#include <multi/array.hpp>
+
+namespace thrust{
+	template<class It> struct iterator_system;
+
+	template<class T, class Pointer>
+	struct iterator_system<boost::multi::array_iterator<T, 1, Pointer>>{
+		using type = typename thrust::iterator_system<Pointer>::type;
+	};
+
+	template<class T, boost::multi::dimensionality_type D, class Pointer>
+	struct iterator_system<boost::multi::array_iterator<T, D, Pointer>>{
+		using type = typename thrust::iterator_system<typename boost::multi::array_iterator<T, D, Pointer>::element_ptr>::type;
+	};
+}
+
 #include <benchmark/benchmark.h>
 
 #include <thrust/system/cuda/memory.h>
-#include <thrust/system/cuda/execution_policy.h>
-
-#include <multi/array.hpp>
 
 #include<execution>
 #include<numeric>
@@ -51,11 +64,21 @@ Y&& axpy_gpu_multi_kernel(T alpha, X const& x, Y&& y){
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-template<class T, class X, class Y>
-Y&& axpy_gpu_multi_thrust(T alpha, X const& x, Y&& y){
-	thrust::transform(thrust::cuda::par, begin(x), end(x), begin(y), begin(y), [alpha] __device__ (auto a, auto b){return alpha*a + b;} );
+
+struct AXPY{
+template<class T, class XV, class YV>
+struct t{
+	T alpha_;
+	constexpr auto operator()(XV const& a, YV const& b) const{return alpha_*a + b;}
+};
+
+template<class T, class X, class Y, class XV = typename X::element_type, class YV = typename std::decay_t<Y>::element_type>
+static Y&& gpu_multi_thrust(T alpha, X const& x, Y&& y){
+	using thrust::transform;
+	transform(begin(x), end(x), begin(y), begin(y), t<T, XV, YV>{alpha});//[alpha] (XV const& a, YV const& b){return alpha*a + b;} );
 	return std::forward<Y>(y);
 }
+};
 
 static void BM_axpy_cpu_transform(benchmark::State& state){
 
@@ -128,7 +151,7 @@ static void BM_axpy_gpu_multi_thrust(benchmark::State& state){
 	auto&& y = (~Y)[0];
 
 	for(auto _ : state){
-		axpy_gpu_multi_thrust(2.0, x, y);
+		AXPY::gpu_multi_thrust(2.0, x, y);
 		cudaDeviceSynchronize(); benchmark::DoNotOptimize(base(y)); benchmark::ClobberMemory();
 	}
 
