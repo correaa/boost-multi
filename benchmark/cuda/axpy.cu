@@ -53,7 +53,7 @@ Y&& axpy_gpu_multi_kernel(T alpha, X const& x, Y&& y){
 ////////////////////////////////////////////////////////////////////////////////
 template<class T, class X, class Y>
 Y&& axpy_gpu_multi_thrust(T alpha, X const& x, Y&& y){
-	thrust::transform(thrust::cuda::par, begin(x), end(x), begin(y), begin(y), [alpha] __device__ (auto a, auto b){return a + alpha*b;} );
+	thrust::transform(thrust::cuda::par, begin(x), end(x), begin(y), begin(y), [alpha] __device__ (auto a, auto b){return alpha*a + b;} );
 	return std::forward<Y>(y);
 }
 
