@@ -57,7 +57,6 @@ Y&& axpy_gpu_multi_thrust(T alpha, X const& x, Y&& y){
 	return std::forward<Y>(y);
 }
 
-
 static void BM_axpy_cpu_transform(benchmark::State& state){
 
 	using T = double;
