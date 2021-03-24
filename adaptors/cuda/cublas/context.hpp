@@ -106,8 +106,12 @@ public:
 	//	std::enable_if_t<is_d<X>{} and is_d<Y>{} and is_assignable<Y&, ALPHA{}*X{} + Y{}>{} and is_convertible_v<XP, thrust::cuda::pointer<X>> and is_convertible_v<YP, thrust::cuda::pointer<Y>>, int> = 0
 	>
 	void axpy(ssize_t n, ALPHA const* alpha, XP x, ssize_t incx, YP y, ssize_t incy){
-		if(true) throw;
-		sync_call<cublasDaxpy>(n, alpha, x, incx, y, incy);
+		sync_call<cublasDaxpy>(
+			n, 
+			(double const*)alpha, 
+			(double const*)raw_pointer_cast(x), incx, 
+			(double*)raw_pointer_cast(y), incy
+		);
 	}
 	
 	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename std::pointer_traits<CCP>::element_type,

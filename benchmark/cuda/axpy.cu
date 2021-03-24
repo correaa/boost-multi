@@ -3,6 +3,8 @@ sudo cpupower frequency-set --governor performance; cmake -DCMAKE_CUDA_COMPILER=
 #endif // © Alfredo A. Correa 2021
 
 #include <multi/array.hpp>
+#include <multi/adaptors/blas/axpy.hpp>
+#include <multi/adaptors/cuda/cublas/context.hpp>
 
 namespace thrust{
 	template<class It> struct iterator_system;
@@ -26,6 +28,19 @@ namespace thrust{
 #include<numeric>
 
 namespace multi = boost::multi;
+
+////////////////////////////////////////////////////////////////////////////////
+template<class T, class X, class Y>
+Y&& axpy_cpu_blas(T alpha, X const& x, Y&& y){
+	return multi::blas::axpy(alpha, x, std::forward<Y>(y));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+template<class T, class X, class Y>
+Y&& axpy_gpu_cublas(T alpha, X const& x, Y&& y){
+	multi::cuda::cublas::context ctxt;
+	return multi::blas::axpy(ctxt, alpha, x, std::forward<Y>(y));
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 template<class T, class X, class Y>
@@ -99,6 +114,46 @@ static void BM_axpy_cpu_transform(benchmark::State& state){
 	state.SetItemsProcessed(state.iterations()*size(x)             );
 }
 BENCHMARK(BM_axpy_cpu_transform);
+
+static void BM_axpy_cpu_blas(benchmark::State& state){
+
+	using T = double;
+	using alloc = std::allocator<double>;
+	multi::array<T, 2, alloc> const X({1<<27, 2}, 1.);
+	multi::array<T, 2, alloc>       Y(extensions(X), 1.);
+
+	auto&& x = (~X)[0];
+	auto&& y = (~Y)[0];
+
+	for(auto _ : state){
+		axpy_cpu_blas(2.0, x, y);
+		benchmark::DoNotOptimize(base(y)); benchmark::ClobberMemory();
+	}
+
+	state.SetBytesProcessed(state.iterations()*size(x)*2.*sizeof(T));
+	state.SetItemsProcessed(state.iterations()*size(x)             );
+}
+BENCHMARK(BM_axpy_cpu_blas);
+
+static void BM_axpy_gpu_cublas(benchmark::State& state){
+
+	using T = double;
+	using alloc = thrust::cuda::allocator<double>;
+	multi::array<T, 2, alloc> const X({1<<27, 2}, 1.);
+	multi::array<T, 2, alloc>       Y(extensions(X), 1.);
+
+	auto&& x = (~X)[0];
+	auto&& y = (~Y)[0];
+
+	for(auto _ : state){
+		axpy_gpu_cublas(2.0, x, y);
+		benchmark::DoNotOptimize(base(y)); benchmark::ClobberMemory();
+	}
+
+	state.SetBytesProcessed(state.iterations()*size(x)*2.*sizeof(T));
+	state.SetItemsProcessed(state.iterations()*size(x)             );
+}
+BENCHMARK(BM_axpy_gpu_cublas);
 
 static void BM_axpy_gpu_legacy(benchmark::State& state){
 
