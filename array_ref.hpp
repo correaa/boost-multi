@@ -1078,7 +1078,7 @@ public:
 	[[deprecated("use base() for iterator")]] constexpr element_ptr data() const{return data_;}
 	       constexpr element_ptr base()              const&   {return data_;}
 	friend 
-#ifndef __INTEL_COMPILER
+#if not((defined(__INTEL_COMPILER) and (__INTEL_COMPILER < 1911)) or defined(__NVCC__))
 	constexpr // this generates a problem with intel compiler 19 "a constexpr function cannot have a nonliteral return type"
 #endif
 	element_ptr base(array_iterator const& s){return s.base();}
