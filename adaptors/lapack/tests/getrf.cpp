@@ -117,6 +117,93 @@ BOOST_AUTO_TEST_CASE(lapack_getrf){
 
 }
 
+BOOST_AUTO_TEST_CASE(lapack_getrf_two_column){
+
+	multi::array<double, 2> const Aconst = {
+		{ 6.80, -6.05, -0.45, 8.32, -9.67},
+		{-2.11, -3.30,  2.58, 2.71, -5.14},
+		{ 5.66,  5.36, -2.70, 4.35, -7.26},
+		{ 5.97, -4.44,  0.27,-7.17,  6.08},
+		{ 8.23,  1.08,  9.04, 2.14, -6.87}
+	};
+
+	multi::array<double, 2> Bconst = {
+		{ 4.02, -1.56},
+		{ 6.19,  4.00},
+		{-8.22, -8.67},
+		{-7.57,  1.75},
+		{-3.03,  2.86}
+	};
+
+	multi::array<multi::lapack::index, 1> P({5}, 0.);
+
+	auto A = Aconst;
+	auto B = Bconst;
+	
+	auto AT = +~A;
+	auto BT = +~B;
+
+	auto lu_solve = [](auto&& Aio, auto&& Po, auto&& Bio){ // solve A.X = B; put result in B
+		auto AT = +~Aio;
+		auto BT = +~Bio;
+
+		auto const& LU = multi::lapack::getrf(~AT, Po); 
+		assert( LU.size() == Po.size() );
+		multi::lapack::getrs(LU, std::as_const(Po), ~BT);
+
+		Bio = ~BT;
+		Aio = ~AT;
+	};
+	lu_solve(~AT, P, ~BT);
+
+	using multi::blas::operators::operator*;
+	BOOST_REQUIRE_CLOSE( (Aconst*(~BT))[2][1] , Bconst[2][1] , 1e-10);
+	BOOST_REQUIRE_CLOSE( (Aconst*(~BT))[2][0] , Bconst[2][0] , 1e-10);
+
+}
+
+BOOST_AUTO_TEST_CASE(lapack_getrf_one_column){
+
+	multi::array<double, 2> const Aconst = {
+		{ 6.80, -6.05, -0.45, 8.32, -9.67},
+		{-2.11, -3.30,  2.58, 2.71, -5.14},
+		{ 5.66,  5.36, -2.70, 4.35, -7.26},
+		{ 5.97, -4.44,  0.27,-7.17,  6.08},
+		{ 8.23,  1.08,  9.04, 2.14, -6.87}
+	};
+
+	multi::array<double, 2> Bconst = {
+		{ 4.02},
+		{ 6.19},
+		{-8.22},
+		{-7.57},
+		{-3.03}
+	};
+
+	multi::array<multi::lapack::index, 1> P({5}, 0.);
+
+	auto A = Aconst;
+	auto B = Bconst;
+	
+	auto lu_solve = [](auto&& Aio, auto&& Po, auto&& Bio){ // solve A.X = B; put result in B
+		auto AT = +~Aio;
+		auto BT = +~Bio;
+
+		auto const& LU = multi::lapack::getrf(~AT, Po); 
+		assert( LU.size() == Po.size() );
+		multi::lapack::getrs(LU, std::as_const(Po), ~BT);
+
+		Bio = ~BT;
+		Aio = ~AT;
+	};
+	lu_solve(A, P, B);
+
+	using multi::blas::operators::operator*;
+	BOOST_REQUIRE_CLOSE( (Aconst*B)[1][0] , Bconst[1][0] , 1e-10);
+	BOOST_REQUIRE_CLOSE( (Aconst*B)[1][0] , Bconst[1][0] , 1e-10);
+
+}
+
 BOOST_AUTO_TEST_CASE(lapack_getrf_one_vector){
 
 	multi::array<double, 2> const Aconst = {
