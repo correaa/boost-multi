@@ -35,6 +35,7 @@ template<class Context, class LU, class IPIV, class B>
 void getrs(Context&& ctxt, LU const& lu, IPIV const& ipiv, B&& b){
 	assert( size(lu) == size(~lu) );
 	assert( stride(lu) == 1 );
+	assert( size(ipiv) >= size(lu) );
 //	assert( stride(ipiv) == 1 );
 	assert( stride(b) == 1 );
 	std::forward<Context>(ctxt).getrs('N', size(lu), size(~b), base(lu), stride(~lu), ipiv.data(), base(b), stride(~b));
