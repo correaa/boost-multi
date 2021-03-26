@@ -40,11 +40,25 @@ void getrs(Context&& ctxt, LU const& lu, IPIV const& ipiv, B&& b){
 	std::forward<Context>(ctxt).getrs('N', size(lu), size(~b), base(lu), stride(~lu), ipiv.data(), base(b), stride(~b));
 }
 
+template<class Context, class LU, class IPIV, class V>
+void getrs_one(Context&& ctxt, LU const& lu, IPIV const& ipiv, V&& b){
+	assert( size(lu) == size(~lu) );
+	assert( stride(lu) == 1 );
+//	assert( stride(ipiv) == 1 );
+	assert( stride(b) == 1 );
+	std::forward<Context>(ctxt).getrs('N', size(lu), 1, base(lu), stride(~lu), ipiv.data(), base(b), size(lu));
+}
+
+
 template<class A, class IPIV>
 auto getrf(A&& a, IPIV&& ipiv){return getrf(::lapack::context{}, std::forward<A>(a), std::forward<IPIV>(ipiv));}
 
 template<class LU, class IPIV, class B>
 void getrs(LU const& lu, IPIV const& ipiv, B&& b){return getrs(::lapack::context{}, lu, ipiv, std::forward<B>(b));}
+
+template<class LU, class IPIV, class B>
+void getrs_one(LU const& lu, IPIV const& ipiv, B&& b){return getrs_one(::lapack::context{}, lu, ipiv, std::forward<B>(b));}
+
 
 }}}
 

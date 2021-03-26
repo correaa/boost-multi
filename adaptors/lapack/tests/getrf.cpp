@@ -8,6 +8,7 @@
 #include<multi/array.hpp>
 #include<multi/adaptors/lapack/getrf.hpp>
 #include<multi/adaptors/blas/gemm.hpp>
+#include<multi/adaptors/blas/gemv.hpp>
 
 namespace multi = boost::multi;
 
@@ -113,6 +114,41 @@ BOOST_AUTO_TEST_CASE(lapack_getrf){
 
 	using multi::blas::operators::operator*;
 	BOOST_REQUIRE_CLOSE( (Aconst*(~BT))[1][2] , Bconst[1][2] , 1e-10);
+
+}
+
+BOOST_AUTO_TEST_CASE(lapack_getrf_one_vector){
+
+	multi::array<double, 2> const Aconst = {
+		{ 6.80, -6.05, -0.45, 8.32, -9.67},
+		{-2.11, -3.30,  2.58, 2.71, -5.14},
+		{ 5.66,  5.36, -2.70, 4.35, -7.26},
+		{ 5.97, -4.44,  0.27,-7.17,  6.08},
+		{ 8.23,  1.08,  9.04, 2.14, -6.87}
+	};
+
+	multi::array<double, 1> Vconst = {4.02, 6.19, -8.22, -7.57, -3.03};
+
+	multi::array<multi::lapack::index, 1> P({5}, 0.);
+
+	auto A = Aconst;
+	auto V = Vconst;
+
+	auto lu_solve_one = [](auto&& Aio, auto&& Po, auto&& V){ // solve A.X = B; put result in B
+		auto AT = +~Aio;
+	//	auto BT = +~Bio;
+
+		auto const& LU = multi::lapack::getrf(~AT, Po); 
+		assert( LU.size() == Po.size() );
+		multi::lapack::getrs_one(LU, std::as_const(Po), V);
+
+	//	Bio = ~BT;
+		Aio = ~AT;
+	};
+	lu_solve_one(A, P, V);
+
+	using multi::blas::operators::operator%;
+	BOOST_REQUIRE_CLOSE( (Aconst%V)[2] , Vconst[2] , 1e-10);
 
 }
 
