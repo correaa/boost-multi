@@ -51,9 +51,12 @@ g++-current-codecov:
     - cmake --build . --verbose
     - ctest --output-on-failure -T Test -T Coverage
     - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
+  coverage: '/Percentage Coverage: (\d+.\d+%)$/'
   artifacts:
     name: ${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}
     expire_in: 2 days
+    paths: 
+      - build
     reports:
       cobertura: build/coverage.xml
 
