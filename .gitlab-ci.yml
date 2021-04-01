@@ -43,7 +43,7 @@ g++-current-codecov:
   stage: test
   script:
     - export CXX="g++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev curl
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
