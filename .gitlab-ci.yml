@@ -1,7 +1,10 @@
 # -*-indent-tabs-mode:nil;c-basic-offset:2;tab-width:4;-*-
-# © Alfredo A. Correa 2020
+# © Alfredo A. Correa 2020-2021
 
 image: debian:testing
+
+variables:
+  CODECOV_TOKEN: "999feb5b-a599-4d02-b9c5-46d977247f3a"
 
 g++-latest:
   stage: test
@@ -50,7 +53,7 @@ g++-current-codecov:
     - CXXFLAGS="-coverage"   cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXE_LINKER_FLAGS="-coverage -lgcov" -DCMAKE_BUILD_TYPE=Debug
     - cmake --build . --verbose
     - ctest --output-on-failure -T Test -T Coverage
-    - export CODECOV_TOKEN='999feb5b-a599-4d02-b9c5-46d977247f3a'
+    - curl -s https://codecov.io/bash
     - bash <(curl -s https://codecov.io/bash)
 
 g++-current-release:
