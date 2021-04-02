@@ -3,6 +3,10 @@ project(multi VERSION 0.76.0
 	DESCRIPTION "A header only C++ library that provides multidimensional array access to contiguous or regularly contiguous memory (or ranges)."
 	HOMEPAGE_URL "https://gitlab.com/correaa/boost-multi"
 	LANGUAGES CXX)
+	
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(GNUInstallDirs)
 
