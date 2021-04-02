@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.11)
 project(multi VERSION 0.76.0
 	DESCRIPTION "A header only C++ library that provides multidimensional array access to contiguous or regularly contiguous memory (or ranges)."
-	HOMEPAGE_URL "https://gitlab.com/correaa/boost-multi")
+	HOMEPAGE_URL "https://gitlab.com/correaa/boost-multi"
+	LANGUAGES CXX)
 
 include(GNUInstallDirs)
 
