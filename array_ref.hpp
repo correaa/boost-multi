@@ -904,7 +904,10 @@ public:
 	constexpr auto operator==(Array const& o) const&
 	->decltype((this->extension()==o.extension()) and adl_equal(this->begin(), this->end(), adl_begin(o))){
 		return (this->extension()==o.extension()) and adl_equal(this->begin(), this->end(), adl_begin(o));}
-	template<class Array> constexpr bool operator!=(Array const& o) const&{return not((*this)==o);}
+	constexpr auto operator!=(Array const& o) const&
+	->decltype(not (this->extension()==o.extension()) and adl_equal(this->begin(), this->end(), adl_begin(o))){
+		return not (this->extension()==o.extension()) and adl_equal(this->begin(), this->end(), adl_begin(o));}
+
 	template<class TT, class... As>
 	constexpr bool operator==(basic_array<TT, D, As...> const& o) const&{
 		return (this->extension()==o.extension()) and adl_equal(this->begin(), this->end(), adl_begin(o));		
