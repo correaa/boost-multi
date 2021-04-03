@@ -900,10 +900,11 @@ public:
 	friend constexpr void swap(basic_array&& a, basic_array&& b){std::move(a).swap(std::move(b));}
 	template<class Array> constexpr void swap(basic_array const& s, Array&& a){s.swap(a);}
 	template<class Array> constexpr void swap(Array&& a, basic_array const& s){s.swap(a);}
-	template<class Array>//, std::enable_if_t<std::is_same<Array, basic_array>{}, int> =0> 
+	template<class Array>
 	constexpr auto operator==(Array const& o) const&
 	->decltype((this->extension()==o.extension()) and adl_equal(this->begin(), this->end(), adl_begin(o))){
 		return (this->extension()==o.extension()) and adl_equal(this->begin(), this->end(), adl_begin(o));}
+	template<class Array>
 	constexpr auto operator!=(Array const& o) const&
 	->decltype(not (this->extension()==o.extension()) and adl_equal(this->begin(), this->end(), adl_begin(o))){
 		return not (this->extension()==o.extension()) and adl_equal(this->begin(), this->end(), adl_begin(o));}
