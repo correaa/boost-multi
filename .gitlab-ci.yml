@@ -14,8 +14,7 @@ g++-latest:
     - cmake ..
     - cmake --build .
     - ctest --output-on-failure
-    - cmake --target test --output-on-failure
-    - cmake --target install
+    - make install
 
 g++-latest-std20:
   stage: test
