@@ -142,10 +142,8 @@ public:
 
 //	auto operator==(static_array const& o) const&{return std::move(modify(*this)).ref::operator==(std::move(modify(o)));}
 
-	template<class TT, class... Args>
-	bool operator==(basic_array<TT, D, Args...> const& other) const{
-		return ref::operator==(other);
-	}
+	template<class TT, class... Args> bool operator==(basic_array<TT, D, Args...> const& other) const{return ref::operator==(other);}
+	template<class TT, class... Args> bool operator!=(basic_array<TT, D, Args...> const& other) const{return ref::operator!=(other);}
 
 	template<class It, class=typename std::iterator_traits<std::decay_t<It>>::difference_type>//edecltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>      
 	// analogous to std::vector::vector (5) https://en.cppreference.com/w/cpp/container/vector/vector
@@ -923,10 +921,8 @@ public:
 		return assign(adl_begin(r), adl_end(r));}
 	array& operator=(std::initializer_list<typename array::value_type> il){assign(il.begin(), il.end()); return *this;}
 
-	template<class TT, class... Args>
-	bool operator==(basic_array<TT, D, Args...> const& other) const{
-		return static_::operator==(other);
-	}
+//	template<class TT, class... Args> bool operator==(basic_array<TT, D, Args...> const& other) const{return static_::operator==(other);}
+//	template<class TT, class... Args> bool operator!=(basic_array<TT, D, Args...> const& other) const{return not operator==(other);}
 
 	void reextent(typename array::extensions_type const& x){
 		if(x == this->extensions()) return;
@@ -960,14 +956,20 @@ public:
 	template<class T, class A=std::allocator<T>> static_array(IL<IL<IL<IL<T>>>>    , A={})->static_array<T,4,A>; 
 	template<class T, class A=std::allocator<T>> static_array(IL<IL<IL<IL<IL<T>>>>>, A={})->static_array<T,5,A>;
 
-//	template<class T, class A=std::allocator<T>> array(IL<T>                , A={})->array<T,1,A>; 
-	template<class T, class A=std::allocator<T>> array(IL<IL<T>>            , A={})->array<T,2,A>;
-	template<class T, class A=std::allocator<T>> array(IL<IL<IL<T>>>        , A={})->array<T,3,A>; 
-	template<class T, class A=std::allocator<T>> array(IL<IL<IL<IL<T>>>>    , A={})->array<T,4,A>; 
-	template<class T, class A=std::allocator<T>> array(IL<IL<IL<IL<IL<T>>>>>, A={})->array<T,5,A>;
+//	template<class T> array(std::initializer_list<T>)->array<T, 1>; 
 
+	template<class T> array(IL<T>                )->array<T,1>; 
+	template<class T> array(IL<IL<T>>            )->array<T,2>;
+	template<class T> array(IL<IL<IL<T>>>        )->array<T,3>; 
+	template<class T> array(IL<IL<IL<IL<T>>>>    )->array<T,4>; 
+	template<class T> array(IL<IL<IL<IL<IL<T>>>>>)->array<T,5>;
 
-	template<class T> array(std::initializer_list<T>)->array<T, 1>; 
+	template<class T, class A> array(IL<T>                , A)->array<T,1,A>; 
+	template<class T, class A> array(IL<IL<T>>            , A)->array<T,2,A>;
+	template<class T, class A> array(IL<IL<IL<T>>>        , A)->array<T,3,A>; 
+	template<class T, class A> array(IL<IL<IL<IL<T>>>>    , A)->array<T,4,A>; 
+	template<class T, class A> array(IL<IL<IL<IL<IL<T>>>>>, A)->array<T,5,A>;
+
 #undef IL
 //#endif
 
