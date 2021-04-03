@@ -313,7 +313,7 @@ constexpr auto base(T* t) noexcept{return t;}
 //inline auto base(std::complex<double>& c){return &c;}
 //inline auto base(std::complex<float>& z){return &z;}
 
-template<class T, std::enable_if_t<std::is_pod<std::decay_t<T>>{}, int> = 0>
+template<class T, std::enable_if_t<std::is_standard_layout<T>{} and std::is_trivial<T>{}, int> = 0>
 auto base(T& t){return &t;}
 
 //template<class T, std::enable_if_t<std::is_pod<std::decay_t<T>>{}, int> = 0>
