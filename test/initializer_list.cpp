@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(multi_initialize_from_carray_1d){
 	}
 	{
 #if defined(__cpp_deduction_guides)
-		multi::array A = {1.1, 2.2, 3.3}; // warning: ISO C++ forbids compound-literals [-Wpedantic]
+		multi::array A = {{1.1, 2.2, 3.3}};
 		BOOST_REQUIRE( size(A)==3 and A[1] == 2.2 );
 #endif
 	}
