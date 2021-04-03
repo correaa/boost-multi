@@ -142,10 +142,8 @@ public:
 
 //	auto operator==(static_array const& o) const&{return std::move(modify(*this)).ref::operator==(std::move(modify(o)));}
 
-	template<class TT, class... Args>
-	bool operator==(basic_array<TT, D, Args...> const& other) const{
-		return ref::operator==(other);
-	}
+	template<class TT, class... Args> bool operator==(basic_array<TT, D, Args...> const& other) const{return ref::operator==(other);}
+	template<class TT, class... Args> bool operator!=(basic_array<TT, D, Args...> const& other) const{return ref::operator!=(other);}
 
 	template<class It, class=typename std::iterator_traits<std::decay_t<It>>::difference_type>//edecltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>      
 	// analogous to std::vector::vector (5) https://en.cppreference.com/w/cpp/container/vector/vector

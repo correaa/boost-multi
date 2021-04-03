@@ -200,6 +200,12 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d){
 				{15.2, 32.4}
 			}
 		));
+		BOOST_REQUIRE(not( A != multi::array<double, 2>{
+				{ 1.2,  2.4},
+				{11.2, 34.4},
+				{15.2, 32.4}
+			}
+		));
 		BOOST_REQUIRE(( 
 			A == decltype(A){
 				{ 1.2,  2.4},
