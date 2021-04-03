@@ -1440,8 +1440,8 @@ public:
 		return adl_copy_n(f, this->size(), std::move(*this).begin()), void();}
 
 	template<typename Array>
-	constexpr bool operator==(Array const& o) const&
-	->decltype((this->extension()==extension(o)) and adl_equal(this->begin(), this->end(), adl_begin(o))){ // TODO assert extensions are equal?
+	constexpr auto operator==(Array const& o) const& -> bool{
+//	->decltype((this->extension()==extension(o)) and adl_equal(typename basic_array::const_iterator{}, typename basic_array::const_iterator{}, adl_begin(o))){ // TODO assert extensions are equal?
 		return (this->extension()==extension(o)) and adl_equal(this->begin(), this->end(), adl_begin(o));}
 	
 	constexpr bool operator<(basic_array const& o) const&{return lexicographical_compare(*this, o);}//operator< <basic_array const&>(o);}
