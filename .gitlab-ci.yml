@@ -56,6 +56,7 @@ g++-current-codecov:
     - lcov --remove coverage.info '/usr/*' --output-file coverage.info 
     - lcov --list coverage.info
     - wget https://codecov.io/bash -o cc
+    - cat cc
     - bash cc -t 999feb5b-a599-4d02-b9c5-46d977247f3a || echo "Codecov did not collect coverage reports"
   coverage: /^\s*lines:\s*\d+.\d+\%/
   artifacts:
