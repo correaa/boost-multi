@@ -960,14 +960,20 @@ public:
 	template<class T, class A=std::allocator<T>> static_array(IL<IL<IL<IL<T>>>>    , A={})->static_array<T,4,A>; 
 	template<class T, class A=std::allocator<T>> static_array(IL<IL<IL<IL<IL<T>>>>>, A={})->static_array<T,5,A>;
 
-//	template<class T, class A=std::allocator<T>> array(IL<T>                , A={})->array<T,1,A>; 
-	template<class T, class A=std::allocator<T>> array(IL<IL<T>>            , A={})->array<T,2,A>;
-	template<class T, class A=std::allocator<T>> array(IL<IL<IL<T>>>        , A={})->array<T,3,A>; 
-	template<class T, class A=std::allocator<T>> array(IL<IL<IL<IL<T>>>>    , A={})->array<T,4,A>; 
-	template<class T, class A=std::allocator<T>> array(IL<IL<IL<IL<IL<T>>>>>, A={})->array<T,5,A>;
+//	template<class T> array(std::initializer_list<T>)->array<T, 1>; 
 
+	template<class T> array(IL<T>                )->array<T,1>; 
+	template<class T> array(IL<IL<T>>            )->array<T,2>;
+	template<class T> array(IL<IL<IL<T>>>        )->array<T,3>; 
+	template<class T> array(IL<IL<IL<IL<T>>>>    )->array<T,4>; 
+	template<class T> array(IL<IL<IL<IL<IL<T>>>>>)->array<T,5>;
 
-	template<class T> array(std::initializer_list<T>)->array<T, 1>; 
+	template<class T, class A> array(IL<T>                , A)->array<T,1,A>; 
+	template<class T, class A> array(IL<IL<T>>            , A)->array<T,2,A>;
+	template<class T, class A> array(IL<IL<IL<T>>>        , A)->array<T,3,A>; 
+	template<class T, class A> array(IL<IL<IL<IL<T>>>>    , A)->array<T,4,A>; 
+	template<class T, class A> array(IL<IL<IL<IL<IL<T>>>>>, A)->array<T,5,A>;
+
 #undef IL
 //#endif
 
