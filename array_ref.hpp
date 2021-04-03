@@ -1439,10 +1439,10 @@ public:
 	->decltype(adl_copy_n(f, this->size(), std::declval<iterator>()), void()){
 		return adl_copy_n(f, this->size(), std::move(*this).begin()), void();}
 
-	template<typename Array>//, typename = std::enable_if_t<not std::is_base_of<basic_array, Array>{}> >
-	constexpr bool operator==(Array const& o) const&{ // TODO assert extensions are equal?
-		return (this->extension()==extension(o)) and adl_equal(this->begin(), this->end(), adl_begin(o));
-	}
+	template<typename Array>
+	constexpr bool operator==(Array const& o) const&
+	->decltype((this->extension()==extension(o)) and adl_equal(this->begin(), this->end(), adl_begin(o))){ // TODO assert extensions are equal?
+		return (this->extension()==extension(o)) and adl_equal(this->begin(), this->end(), adl_begin(o));}
 	
 	constexpr bool operator<(basic_array const& o) const&{return lexicographical_compare(*this, o);}//operator< <basic_array const&>(o);}
 	template<class Array> constexpr void swap(Array&& o)&&{assert(this->extension() == o.extension());
