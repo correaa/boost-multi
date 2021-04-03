@@ -924,7 +924,7 @@ public:
 	array& operator=(std::initializer_list<typename array::value_type> il){assign(il.begin(), il.end()); return *this;}
 
 	template<class TT, class... Args> bool operator==(basic_array<TT, D, Args...> const& other) const{return static_::operator==(other);}
-	template<class TT, class... Args> bool operator!=(basic_array<TT, D, Args...> const& other) const{return static_::operator!=(other);}
+	template<class TT, class... Args> bool operator!=(basic_array<TT, D, Args...> const& other) const{return not operator==(other);}
 
 	void reextent(typename array::extensions_type const& x){
 		if(x == this->extensions()) return;
