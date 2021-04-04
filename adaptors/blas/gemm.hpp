@@ -82,8 +82,8 @@ try{
 			}else assert(0);
 		}else if constexpr(!is_conjugated<It2DA>{} and  is_conjugated<It2DB>{}){
 			;;;;; if(a_first->stride()==1 and b_first->stride()==1 and c_first->stride()==1){
-				if(b_first->size()==1)  {CTXT.gemm('N', 'C', c_first->size(), a_count, a_first->size(), &alpha, underlying(base(b_first)), b_first. stride(), base(a_first), a_count          , &beta, base(c_first), c_first.stride());}
-				else                    {CTXT.gemm('N', 'C', c_first->size(), a_count, a_first->size(), &alpha, underlying(base(b_first)), b_first. stride(), base(a_first), a_first. stride(), &beta, base(c_first), c_first.stride());}
+				if(b_first->size()==1)  {CTXT.gemm('C', 'N', c_first->size(), a_count, a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first.stride());}
+				else                    {CTXT.gemm('C', 'N', c_first->size(), a_count, a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first.stride());}
 			}else if(a_first->stride()==1 and b_first. stride()==1 and c_first->stride()==1){
 				if  (a_count==1)        {CTXT.gemm('C', 'N', a_count, c_first->size(), a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first.stride());}
 				else                    {CTXT.gemm('C', 'N', c_first->size(), a_count, a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first.stride(), &beta, base(c_first), c_first.stride());}

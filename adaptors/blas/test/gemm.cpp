@@ -129,6 +129,22 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_square_real){
 	}
 }
 
+//BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_codecov){
+//	using complex = std::complex<double>; complex const I{0, 1};
+//	multi::array<complex, 2> const a = {
+//		{ 3. - 4.*I},
+//		{ 7. + 5.*I},
+//	};
+//	multi::array<complex, 2> const b = {
+//		{ 11. + 2.*I},
+//		{  7. + 1.*I},
+//	};
+//	multi::array<complex, 2> c({2, 2});
+//	blas::gemm(1., a, blas::H(b), 0., c);
+//	BOOST_TEST_REQUIRE( c[0][1] == 17. - 31.*I );
+//	BOOST_TEST_REQUIRE( c[1][0] == 87. + 41.*I );
+//}
+
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_square){
 	multi::array<double, 2> const a = {
 		{  1,  3},
@@ -1661,14 +1677,47 @@ BOOST_AUTO_TEST_CASE(blas_gemm_1xn_complex){
 }
 
 BOOST_AUTO_TEST_CASE(blas_gemm_nx1_times_1x1_complex_inq_hydrogen_case){
-	using complex = std::complex<double>;
-	multi::array<complex, 2> const a({100, 1}, 2.);
-	multi::array<complex, 2> const b({1,   1}, 3.);
+	using complex = std::complex<double>; complex const I{0, 1};
+	multi::array<complex, 2> const a({3, 1}, 2. + 1.*I);
+	multi::array<complex, 2> const b({1,   1}, 3. + 4.*I);
 
-	multi::array<complex, 2> c({100, 1}, 999.);
+	multi::array<complex, 2> c({3, 1}, 999.);
 	blas::gemm_n(1., begin(a), size(a), begin(blas::H(b)), 0., begin(c));
-	BOOST_REQUIRE( c[0][0] == 6. );
-	BOOST_REQUIRE( c[1][0] == 6. );
+	BOOST_TEST_REQUIRE( c[0][0] == (2. + 1.*I)*std::conj(3. + 4.*I) );
+	BOOST_TEST_REQUIRE( c[1][0] == (2. + 1.*I)*std::conj(3. + 4.*I) );
+	BOOST_TEST_REQUIRE( c[2][0] == (2. + 1.*I)*std::conj(3. + 4.*I) );
+}
+
+BOOST_AUTO_TEST_CASE(blas_gemm_nx1_times_1x1_complex_inq_hydrogen_case_no_n_interface){
+	using complex = std::complex<double>; complex const I{0, 1};
+	multi::array<complex, 2> const a({3 , 1}, 2. + 1.*I);
+	multi::array<complex, 2> const b({10, 1}, 3. + 4.*I);
+
+	multi::array<complex, 2> c({3, 10}, 999.);
+	blas::gemm(1., a, blas::H(b), 0., c);
+	BOOST_TEST_REQUIRE( c[0][0] == (2. + 1.*I)*std::conj(3. + 4.*I)  );
+	BOOST_TEST_REQUIRE( c[1][0] == (2. + 1.*I)*std::conj(3. + 4.*I)  );
+	BOOST_TEST_REQUIRE( c[0][1] == (2. + 1.*I)*std::conj(3. + 4.*I)  );
+}
+
+BOOST_AUTO_TEST_CASE(blas_gemm_nx1_times_1x1_1x1_complex_inq_hydrogen_case_complex_value_hermitized){
+	using complex = std::complex<double>; complex const I{0, 1};
+	multi::array<complex, 2> const a({1, 1}, 2. + 1.*I);
+	multi::array<complex, 2> const b({1, 1}, 3. + 4.*I);
+
+	multi::array<complex, 2> c({1, 1}, 999.);
+	c = blas::gemm(1., a, blas::H(b));
+	BOOST_REQUIRE( c[0][0] == (2. + 1.*I)*std::conj(3. + 4.*I) );
+}
+
+BOOST_AUTO_TEST_CASE(blas_gemm_nx1_times_1x1_1x1_complex_inq_hydrogen_case_complex_value){
+	using complex = std::complex<double>; complex const I{0, 1};
+	multi::array<complex, 2> const a({1, 1}, 2. + 1.*I);
+	multi::array<complex, 2> const b({1, 1}, 3. + 4.*I);
+
+	multi::array<complex, 2> c({1, 1}, 999.);
+	c = blas::gemm(1., a, b);
+	BOOST_REQUIRE( c[0][0] == (2. + 1.*I)*(3. + 4.*I) );
 }
 
 BOOST_AUTO_TEST_CASE(blas_gemm_nx1_times_1x1_1x1_complex_inq_hydrogen_case){
