@@ -1,15 +1,14 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-// © Alfredo A. Correa 2019-2020
+// © Alfredo A. Correa 2019-2021
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS gemm"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
 #include "../../../adaptors/blas/gemm.hpp"
+#include "../../../array.hpp"
 
 #include "config.hpp"
-
-#include "../../../array.hpp"
 
 #include<random>
 
@@ -1679,7 +1678,7 @@ BOOST_AUTO_TEST_CASE(blas_gemm_1xn_complex){
 BOOST_AUTO_TEST_CASE(blas_gemm_nx1_times_1x1_complex_inq_hydrogen_case){
 	using complex = std::complex<double>; complex const I{0, 1};
 	multi::array<complex, 2> const a({3, 1}, 2. + 1.*I);
-	multi::array<complex, 2> const b({1,   1}, 3. + 4.*I);
+	multi::array<complex, 2> const b({1, 1}, 3. + 4.*I);
 
 	multi::array<complex, 2> c({3, 1}, 999.);
 	blas::gemm_n(1., begin(a), size(a), begin(blas::H(b)), 0., begin(c));
@@ -1732,9 +1731,9 @@ BOOST_AUTO_TEST_CASE(blas_gemm_nx1_times_1x1_1x1_complex_inq_hydrogen_case){
 
 BOOST_AUTO_TEST_CASE(blas_gemm_inq_case){ // https://gitlab.com/correaa/boost-multi/-/issues/97
 
-	using complex = std::complex<double>;
-	multi::array<complex, 2> mat({10, 2},  1.0);
-	multi::array<complex, 2> vec({10, 1}, -2.0);
+	using complex = std::complex<double>; complex const I{0, 1};
+	multi::array<complex, 2> mat({10, 2},  1.0 + 3.*I);
+	multi::array<complex, 2> vec({10, 1}, -2.0 + 4.*I);
 
 	mat({0, 10}, {1, 2}) = vec;
 	
@@ -1744,6 +1743,10 @@ BOOST_AUTO_TEST_CASE(blas_gemm_inq_case){ // https://gitlab.com/correaa/boost-mu
 		auto olap1 =+ blas::gemm(1., blas::H(mat)                 , vec);
 		auto olap2 =+ blas::gemm(1., blas::H(mat({0, 10}, {0, 1})), vec);
 
+		BOOST_REQUIRE( blas::H(mat)[1].size() == (~vec)[0].size() );
+		BOOST_REQUIRE( blas::dot(blas::H(mat)[0], (~vec)[0]) == olap1[0][0] );
+		BOOST_REQUIRE( std::inner_product(blas::H(mat)[0].begin(), blas::H(mat)[0].end(), (~vec)[0].begin(), complex{0}) == olap1[0][0] );
+		
 		multi::array<complex, 2> mat2 = mat({0, 10}, {0, 1});
 		auto olap3 =+ blas::gemm(1., blas::H(mat2), vec);
 
