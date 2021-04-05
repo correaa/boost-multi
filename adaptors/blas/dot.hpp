@@ -78,6 +78,16 @@ struct dot_ref : private Ptr{
 	decay_type decay() const{decay_type r; copy_n(operator&(), 1, &r); return r;}
 	operator decay_type() const{return decay();}
 	decay_type operator+() const{return decay();}
+	bool operator==(dot_ref const& other) const{return decay() == other.decay();}
+	bool operator!=(dot_ref const& other) const{return decay() != other.decay();}
+	template<class Other>
+	auto operator==(Other const& other) const
+	->decltype(decay()==other){
+		return decay()==other;}
+	template<class Other>
+	auto operator!=(Other const& other) const
+	->decltype(decay()!=other){
+		return decay()!=other;}
 };
 
 template<class Context, class X, class Y> [[nodiscard]] 
