@@ -231,13 +231,17 @@ gemm(ContextPtr ctxtp, Scalar s, A2D const& a, B2D const& b){
 	return {ctxtp, s, begin(a), end(a), begin(b)};
 }
 
+//#pragma warning (disable:1011)
+//#pragma diag_suppress 0117 //"implicit_return_from_non_void_function"
+//#pragma diag_suppress 940 //"implicit_return_from_non_void_function"
+// -Xcudafe "--diag_suppress=implicit_return_from_non_void_function"
 template<               class Scalar, class A2D, class B2D> 
 auto gemm(                Scalar s, A2D const& a, B2D const& b){
-	;;;; if constexpr(not is_conjugated<A2D>{}){
-		auto ctxtp = blas::default_context_of(a.base());
-		return blas::gemm(ctxtp, s, a, b);
-	}else if constexpr(    is_conjugated<A2D>{}){
+	if constexpr(is_conjugated<A2D>{}){
 		auto ctxtp = blas::default_context_of(underlying(a.base()));
+		return blas::gemm(ctxtp, s, a, b);
+	}else{
+		auto ctxtp = blas::default_context_of(a.base());
 		return blas::gemm(ctxtp, s, a, b);
 	}
 }
