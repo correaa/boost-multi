@@ -21,24 +21,57 @@ namespace boost{namespace multi{
 namespace memory{namespace cuda{
 
 namespace managed{
+
+	auto & cache(){
+		static std::unordered_multimap<size_type, managed::ptr<void>> map;
+		return map;
+	}
+
+	void cache_put(size_type size, managed::ptr<void> loc){
+		std::cout << "Put " << size << std::endl;
+		cache().insert(std::pair(size, loc));
+	}
+
+	auto cache_get(size_type size){
+		managed::ptr<void> loc;
+		std::cout << "Get " << size << " cache size " << cache().size();
+		auto pos = cache().find(size);
+		if(pos != cache().end()){
+			loc = pos->second;
+			cache().erase(pos);
+			std::cout << " match!" << std::endl;
+		} else {
+			loc = nullptr;
+			std::cout << " fail" << std::endl;			
+		}
+		return loc;
+	}
+
 	struct bad_alloc : std::bad_alloc{};
 
 	template<class T, class PrefetchDevice>
 	class allocator : cuda::allocator<T>{
 		static_assert( std::is_same<T, std::decay_t<T>>{}, "!" );
+		
 	public:
 		using value_type = T;
 		using pointer = managed::ptr<T>;
 		using size_type = ::size_t; // as specified by CudaMalloc
 		using const_void_pointer = managed::ptr<void const>;
 		template<class TT> using rebind = managed::allocator<TT, PrefetchDevice>;
+
 		pointer allocate(typename allocator::size_type n){
+			MULTI_MARK_SCOPE("allocate");			
 			if(n == 0) return pointer{nullptr};
-			auto ret = static_cast<pointer>(cuda::managed::malloc(n*sizeof(T)));
-			if(!ret) throw bad_alloc{};
+
+			auto ret = static_cast<pointer>(cache_get(n*sizeof(T)));
+			if(ret == pointer{nullptr}){
+				ret = static_cast<pointer>(cuda::managed::malloc(n*sizeof(T)));
+				if(!ret) throw bad_alloc{};
+				++allocator::n_allocations; allocator::bytes_allocated+=sizeof(T)*n;
+			}
 			if(PrefetchDevice::value != -99)
 				if(cudaMemPrefetchAsync(raw_pointer_cast(ret), n*sizeof(T), PrefetchDevice::value) != cudaSuccess) throw std::runtime_error{"cannot prefetch for some reason"};
-			++allocator::n_allocations; allocator::bytes_allocated+=sizeof(T)*n;
 			return ret;
 		}
 		pointer allocate(typename allocator::size_type n, const_void_pointer hint){
@@ -68,7 +101,15 @@ namespace managed{
 			}
 			return ret;
 		}
-		void deallocate(pointer p, size_type){cuda::managed::free(static_cast<managed::ptr<void>>(p));}
+		void deallocate(pointer p, size_type n){
+			MULTI_MARK_SCOPE("deallocate");
+			static int count = 0;
+			if(count++%2000000000 == 0){
+				cuda::managed::free(static_cast<managed::ptr<void>>(p));
+			} else {
+				cache_put(n*sizeof(T), static_cast<managed::ptr<void>>(p));
+			}
+		}
 		template<class P, class... Args>
 		void construct(P p, Args&&... args){
 			::new(p.rp_) T(std::forward<Args>(args)...);
