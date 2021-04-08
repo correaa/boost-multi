@@ -16,46 +16,56 @@ $CXXX $CXXFLAGS $0 -o $0x -lcudart&&$0x&&rm $0x;exit
 #include<iostream> // debug
 #include<limits>
 #include<new> // bad_alloc
+#include <list>
+#include <unordered_map>
 
 namespace boost{namespace multi{
 namespace memory{namespace cuda{
 
 namespace managed{
 
+	template <typename PointerType>
 	class allocator_cache {
-		std::unordered_multimap<size_t, managed::ptr<void>> map_;
+		std::list<PointerType> blocks_;
+		std::unordered_multimap<size_t, typename decltype(blocks_)::iterator> map_;
 
 	public:
 		
-		auto put(size_t size, managed::ptr<void> loc){
-			if(map_.size() > 100){
+		auto put(size_t size, PointerType loc){
+			/*			if(map_.size() > 100){
 				for(auto it = map_.begin(); it != map_.end(); ++it){
 					cuda::managed::free(static_cast<managed::ptr<void>>(it->second));
 				}
 				map_.clear();
-			}
-			map_.insert(std::pair(size, loc));
+				}*/
+			blocks_.emplace_front(loc);
+			map_.insert(std::pair(size, blocks_.begin()));
+			assert(map_.size() == blocks_.size());
+			
 			return true;
 		}
 
-		auto get(size_t size){
-			managed::ptr<void> loc;
+		PointerType get(size_t size){
+			PointerType loc;
 			//		std::cout << "Get " << size << " cache size " << cache().map_.size();
 			auto pos = map_.find(size);
 			if(pos != map_.end()){
-				loc = pos->second;
+				auto block_pos = pos->second;
+				loc = *block_pos;
+				blocks_.erase(block_pos);
 				map_.erase(pos);
 				//			std::cout << " match!" << std::endl;
 			} else {
 				loc = nullptr;
 				//			std::cout << " fail" << std::endl;			
 			}
+			assert(map_.size() == blocks_.size());
 			return loc;
 		}
 	};
 
 	auto & cache(){
-		static allocator_cache alloc_cache;
+		static allocator_cache<managed::ptr<void>> alloc_cache;
 		return alloc_cache;
 	}
 
