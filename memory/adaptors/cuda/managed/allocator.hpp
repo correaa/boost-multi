@@ -22,39 +22,41 @@ namespace memory{namespace cuda{
 
 namespace managed{
 
-	struct allocator_cache {
-		std::unordered_multimap<size_type, managed::ptr<void>> map;
+	class allocator_cache {
+		std::unordered_multimap<size_t, managed::ptr<void>> map_;
+
+	public:
+		
+		auto put(size_t size, managed::ptr<void> loc){
+			if(map_.size() > 100){
+				for(auto it = map_.begin(); it != map_.end(); ++it){
+					cuda::managed::free(static_cast<managed::ptr<void>>(it->second));
+				}
+				map_.clear();
+			}
+			map_.insert(std::pair(size, loc));
+			return true;
+		}
+
+		auto get(size_t size){
+			managed::ptr<void> loc;
+			//		std::cout << "Get " << size << " cache size " << cache().map_.size();
+			auto pos = map_.find(size);
+			if(pos != map_.end()){
+				loc = pos->second;
+				map_.erase(pos);
+				//			std::cout << " match!" << std::endl;
+			} else {
+				loc = nullptr;
+				//			std::cout << " fail" << std::endl;			
+			}
+			return loc;
+		}
 	};
 
 	auto & cache(){
 		static allocator_cache alloc_cache;
 		return alloc_cache;
-	}
-
-	auto cache_put(size_type size, managed::ptr<void> loc){
-		if(cache().map.size() > 100){
-			for(auto it = cache().map.begin(); it != cache().map.end(); ++it){
-				cuda::managed::free(static_cast<managed::ptr<void>>(it->second));
-			}
-			cache().map.clear();
-		}
-		cache().map.insert(std::pair(size, loc));
-		return true;
-	}
-
-	auto cache_get(size_type size){
-		managed::ptr<void> loc;
-		//		std::cout << "Get " << size << " cache size " << cache().map.size();
-		auto pos = cache().map.find(size);
-		if(pos != cache().map.end()){
-			loc = pos->second;
-			cache().map.erase(pos);
-			//			std::cout << " match!" << std::endl;
-		} else {
-			loc = nullptr;
-			//			std::cout << " fail" << std::endl;			
-		}
-		return loc;
 	}
 
 	struct bad_alloc : std::bad_alloc{};
@@ -74,7 +76,7 @@ namespace managed{
 			MULTI_MARK_SCOPE("allocate");			
 			if(n == 0) return pointer{nullptr};
 
-			auto ret = static_cast<pointer>(cache_get(n*sizeof(T)));
+			auto ret = static_cast<pointer>(cache().get(n*sizeof(T)));
 			if(ret == pointer{nullptr}){
 				ret = static_cast<pointer>(cuda::managed::malloc(n*sizeof(T)));
 				if(!ret) throw bad_alloc{};
@@ -113,7 +115,7 @@ namespace managed{
 		}
 		void deallocate(pointer p, size_type n){
 			MULTI_MARK_SCOPE("deallocate");
-			if(not cache_put(n*sizeof(T), static_cast<managed::ptr<void>>(p))){
+			if(not cache().put(n*sizeof(T), static_cast<managed::ptr<void>>(p))){
 				cuda::managed::free(static_cast<managed::ptr<void>>(p));
 			}
 		}
