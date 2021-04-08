@@ -1,7 +1,5 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
-#endif
-// © Alfredo A. Correa 2018-2020
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
+// © Alfredo A. Correa 2018-2021
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi minimalistic pointer"
 #define BOOST_TEST_DYN_LINK
@@ -57,7 +55,7 @@ BOOST_AUTO_TEST_CASE(test_minimalistic_ptr){
 	(*CCP)[1][1] = 9;
 	BOOST_REQUIRE( &(*CCP)[1][1] == &buffer[11] );
 
-	auto&& CC2 = CCP->template static_array_cast<double, minimalistic::ptr2<double>>();
+	auto&& CC2 = CCP->static_array_cast<double, minimalistic::ptr2<double>>();
 	BOOST_REQUIRE( &CC2[1][1] == &(*CCP)[1][1] );
 
 }
