@@ -20,7 +20,8 @@ template<class T> class ptr : public std::iterator_traits<T*>{ // minimalistic p
 public:
 	ptr() = default;
 	constexpr explicit ptr(T* impl) : impl_{impl}{}
-	template<class U, class = std::enable_if_t<std::is_convertible<U*, T*>{}> > // cppcheck-suppress noExplicitConstructor
+	template<class U, class = std::enable_if_t<std::is_convertible<U*, T*>{}> >
+	// cppcheck-suppress noExplicitConstructor
 	ptr(ptr<U> const& other) : impl_{other.impl_}{} // NOLINT(google-explicit-constructor, hicpp-explicit-conversions): ptr<T> -> ptr<T const>
 	using typename std::iterator_traits<T*>::reference;
 	using typename std::iterator_traits<T*>::difference_type;
@@ -38,7 +39,8 @@ template<class T> class ptr2 : public std::iterator_traits<T*>{ // minimalistic 
 public:
 	constexpr explicit ptr2(T* impl) : impl_{impl}{}
 	constexpr explicit ptr2(ptr<T> const& p) : impl_{p.impl_}{} 
-	template<class U, class = std::enable_if_t<std::is_convertible<U*, T*>{}> > // cppcheck-suppress noExplicitConstructor
+	template<class U, class = std::enable_if_t<std::is_convertible<U*, T*>{}> >
+	// cppcheck-suppress noExplicitConstructor
 	ptr2(ptr2<U> const& other) : impl_{other.impl_}{} // NOLINT(google-explicit-constructor, hicpp-explicit-conversions): ptr<T> -> ptr<T const>
 	using typename std::iterator_traits<T*>::reference;
 	using typename std::iterator_traits<T*>::difference_type;
