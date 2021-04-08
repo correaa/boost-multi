@@ -22,29 +22,33 @@ namespace memory{namespace cuda{
 
 namespace managed{
 
+	struct allocator_cache {
+		std::unordered_multimap<size_type, managed::ptr<void>> map;
+	};
+
 	auto & cache(){
-		static std::unordered_multimap<size_type, managed::ptr<void>> map;
-		return map;
+		static allocator_cache alloc_cache;
+		return alloc_cache;
 	}
 
 	auto cache_put(size_type size, managed::ptr<void> loc){
-		if(cache().size() > 100){
-			for(auto it = cache().begin(); it != cache().end(); ++it){
+		if(cache().map.size() > 100){
+			for(auto it = cache().map.begin(); it != cache().map.end(); ++it){
 				cuda::managed::free(static_cast<managed::ptr<void>>(it->second));
 			}
-			cache().clear();
+			cache().map.clear();
 		}
-		cache().insert(std::pair(size, loc));
+		cache().map.insert(std::pair(size, loc));
 		return true;
 	}
 
 	auto cache_get(size_type size){
 		managed::ptr<void> loc;
-		//		std::cout << "Get " << size << " cache size " << cache().size();
-		auto pos = cache().find(size);
-		if(pos != cache().end()){
+		//		std::cout << "Get " << size << " cache size " << cache().map.size();
+		auto pos = cache().map.find(size);
+		if(pos != cache().map.end()){
 			loc = pos->second;
-			cache().erase(pos);
+			cache().map.erase(pos);
 			//			std::cout << " match!" << std::endl;
 		} else {
 			loc = nullptr;
