@@ -27,22 +27,28 @@ namespace managed{
 		return map;
 	}
 
-	void cache_put(size_type size, managed::ptr<void> loc){
-		std::cout << "Put " << size << std::endl;
+	auto cache_put(size_type size, managed::ptr<void> loc){
+		if(cache().size() > 100){
+			for(auto it = cache().begin(); it != cache().end(); ++it){
+				cuda::managed::free(static_cast<managed::ptr<void>>(it->second));
+			}
+			cache().clear();
+		}
 		cache().insert(std::pair(size, loc));
+		return true;
 	}
 
 	auto cache_get(size_type size){
 		managed::ptr<void> loc;
-		std::cout << "Get " << size << " cache size " << cache().size();
+		//		std::cout << "Get " << size << " cache size " << cache().size();
 		auto pos = cache().find(size);
 		if(pos != cache().end()){
 			loc = pos->second;
 			cache().erase(pos);
-			std::cout << " match!" << std::endl;
+			//			std::cout << " match!" << std::endl;
 		} else {
 			loc = nullptr;
-			std::cout << " fail" << std::endl;			
+			//			std::cout << " fail" << std::endl;			
 		}
 		return loc;
 	}
@@ -103,11 +109,8 @@ namespace managed{
 		}
 		void deallocate(pointer p, size_type n){
 			MULTI_MARK_SCOPE("deallocate");
-			static int count = 0;
-			if(count++%2000000000 == 0){
+			if(not cache_put(n*sizeof(T), static_cast<managed::ptr<void>>(p))){
 				cuda::managed::free(static_cast<managed::ptr<void>>(p));
-			} else {
-				cache_put(n*sizeof(T), static_cast<managed::ptr<void>>(p));
 			}
 		}
 		template<class P, class... Args>
