@@ -26,18 +26,23 @@ namespace managed{
 
 	template <typename PointerType>
 	class allocator_cache {
+		static const unsigned max_size = 50;
 		std::list<PointerType> blocks_;
 		std::unordered_multimap<size_t, typename decltype(blocks_)::iterator> map_;
 
 	public:
 		
 		auto put(size_t size, PointerType loc){
-			/*			if(map_.size() > 100){
+			if(map_.size() > max_size){
+				cuda::managed::free(blocks_.back());
 				for(auto it = map_.begin(); it != map_.end(); ++it){
-					cuda::managed::free(static_cast<managed::ptr<void>>(it->second));
-				}
-				map_.clear();
-				}*/
+					if(it->second == --blocks_.end()) {
+						map_.erase(it);
+						break;
+					}
+				};
+				blocks_.pop_back();
+			}
 			blocks_.emplace_front(loc);
 			map_.insert(std::pair(size, blocks_.begin()));
 			assert(map_.size() == blocks_.size());
