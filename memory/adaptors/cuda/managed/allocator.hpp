@@ -41,7 +41,8 @@ namespace managed{
 		auto put(size_t size, PointerType loc){
 			if(map_.size() > max_size){
 				cuda::managed::free(blocks_.back().loc);
-				for(auto it = map_.begin(); it != map_.end(); ++it){
+				auto range = map_.equal_range(blocks_.back().size);
+				for(auto it = range.first; it != range.second; ++it){
 					if(it->second == --blocks_.end()) {
 						map_.erase(it);
 						break;
@@ -58,17 +59,14 @@ namespace managed{
 
 		PointerType get(size_t size){
 			PointerType loc;
-			//		std::cout << "Get " << size << " cache size " << cache().map_.size();
 			auto pos = map_.find(size);
 			if(pos != map_.end()){
 				auto block_pos = pos->second;
 				loc = block_pos->loc;
 				blocks_.erase(block_pos);
 				map_.erase(pos);
-				//			std::cout << " match!" << std::endl;
 			} else {
 				loc = nullptr;
-				//			std::cout << " fail" << std::endl;			
 			}
 			assert(map_.size() == blocks_.size());
 			return loc;
