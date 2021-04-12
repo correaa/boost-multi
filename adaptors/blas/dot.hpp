@@ -18,12 +18,12 @@ using core::dotc;
 template<class Context, class XIt, class Size, class YIt, class RPtr>
 auto dot_n(Context&& ctxt, XIt x_first, Size count, YIt y_first, RPtr rp){
 	if constexpr(is_complex<typename XIt::value_type>{}){
-		;;;; if constexpr (!is_conjugated<XIt>{} and !is_conjugated<YIt>{}) std::forward<Context>(ctxt).dotu(count,            base(x_first) , stride(x_first), base(y_first), stride(y_first), rp);
-		else if constexpr (!is_conjugated<XIt>{} and  is_conjugated<YIt>{}) std::forward<Context>(ctxt).dotc(count, underlying(base(y_first)), stride(y_first), base(x_first), stride(x_first), rp);
-		else if constexpr ( is_conjugated<XIt>{} and !is_conjugated<YIt>{}) std::forward<Context>(ctxt).dotc(count, underlying(base(x_first)), stride(x_first), base(y_first), stride(y_first), rp);
+		;;;; if constexpr (!is_conjugated<XIt>{} and !is_conjugated<YIt>{}) std::forward<Context>(ctxt)->dotu(count,            base(x_first) , stride(x_first), base(y_first), stride(y_first), rp);
+		else if constexpr (!is_conjugated<XIt>{} and  is_conjugated<YIt>{}) std::forward<Context>(ctxt)->dotc(count, underlying(base(y_first)), stride(y_first), base(x_first), stride(x_first), rp);
+		else if constexpr ( is_conjugated<XIt>{} and !is_conjugated<YIt>{}) std::forward<Context>(ctxt)->dotc(count, underlying(base(x_first)), stride(x_first), base(y_first), stride(y_first), rp);
 		else if constexpr ( is_conjugated<XIt>{} and  is_conjugated<YIt>{}) static_assert(!sizeof(XIt*), "not implemented in blas");
 	}else{
-                                                                            std::forward<Context>(ctxt).dot (count,            base(x_first) , stride(x_first), base(y_first), stride(y_first), rp);
+                                                                            std::forward<Context>(ctxt)->dot (count,            base(x_first) , stride(x_first), base(y_first), stride(y_first), rp);
 	}
 	struct{XIt x_last; YIt y_last;} ret{x_first + count, y_first + count};
 	return ret;
@@ -93,8 +93,19 @@ struct dot_ref : private Ptr{
 template<class Context, class X, class Y> [[nodiscard]] 
 dot_ref<Context, X, Y> dot(Context&& ctxt, X const& x, Y const& y){return {std::forward<Context>(ctxt), x, y};}
 
-template<class X, class Y> [[nodiscard]] 
-dot_ref<blas::context, X, Y> dot(X const& x, Y const& y){return {blas::context{}, x, y};}
+//template<class X, class Y> [[nodiscard]] 
+//dot_ref<blas::context, X, Y> dot(X const& x, Y const& y){return {blas::context{}, x, y};}
+
+template<class X, class Y> [[nodiscard]]
+auto dot(X const& x, Y const& y){
+	if constexpr(is_conjugated<X>{}){
+		auto ctxtp = blas::default_context_of(underlying(x.base()));
+		return blas::dot(ctxtp, x, y);
+	}else{
+		auto ctxtp = blas::default_context_of(x.base());
+		return blas::dot(ctxtp, x, y);
+	}
+}
 
 namespace operators{
 	template<class X1D, class Y1D> [[nodiscard]]
