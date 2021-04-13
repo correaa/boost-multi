@@ -89,7 +89,7 @@ struct dot_ref : private Ptr{
 	constexpr Ptr const& operator&() const&{return *this;}
 	decay_type decay() const{decay_type r; copy_n(operator&(), 1, &r); return r;}
 	operator decay_type() const&{return decay();}
-#ifndef __CUDACC__
+#if not defined(__CUDACC__) or not defined(__INTEL_COMPILER)
 	friend auto operator*(decay_type const& lhs, dot_ref const& self){return lhs*self.decay();}
 #endif
 	decay_type operator+() const{return decay();}
