@@ -176,7 +176,7 @@ clang++-9-asan:
   stage: test
   script:
     - export CXX="clang++-9"
-    - export ASAN_SYMBOLIZER_PATH=/usr/bin/llvm-symbolizer-9
+    - export ASAN_SYMBOLIZER_PATH=/usr/lib/llvm-9/bin/llvm-symbolizer
     - export CXXFLAGS="-fsanitize=undefined -fsanitize=address -fno-omit-frame-pointer"
     - apt-get update && apt-get install --no-install-recommends -y --quiet clang-9 cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev llvm
     - ln --symbolic --force . ../multi
