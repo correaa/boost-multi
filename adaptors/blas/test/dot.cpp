@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE(blas_dot_context){
 	multi::array<float, 1> const A = {1.,2.,3.};
 	multi::array<float, 1> const B = {1.,2.,3.};
 	blas::context ctxt;
-	auto C = +blas::dot(ctxt, A, B);
+	auto C = +blas::dot(&ctxt, A, B);
 	BOOST_REQUIRE( C == std::inner_product(begin(A), end(A), begin(B), 0.F) );
 }
 
@@ -207,7 +207,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_strided_context){
 		{9., 10., 11., 12.}
 	};
 	double d = std::numeric_limits<double>::quiet_NaN();
-	blas::dot_n(blas::context{}, begin(CA[1]), size(CA[1]), begin(CA[2]), &d);
+	blas::context ctxt;
+	blas::dot_n(&ctxt, begin(CA[1]), size(CA[1]), begin(CA[2]), &d);
 	BOOST_REQUIRE( d == std::inner_product(begin(CA[1]), begin(CA[2]), end(CA[1]), 0.) );
 
 	double d2 = blas::dot(CA[1], CA[2]);
