@@ -154,7 +154,11 @@ public:
 	using iterator_category = typename std::iterator_traits<raw_pointer>::iterator_category; //	using iterator_concept  = typename std::iterator_traits<impl_t>::iterator_concept;
 	explicit constexpr operator bool() const{return this->rp_;}
 //	bool operator not() const{return !rp_;}
-	constexpr operator raw_pointer()const&{return this->rp_;} // do not =delete
+	constexpr 
+#ifndef MULTI_ALLOW_IMPLICIT_CPU_CONVERSION
+	explicit
+#endif
+	operator raw_pointer()const&{return this->rp_;} // do not =delete
 	constexpr operator ptr<void>() const{return ptr<void>{this->rp_};}
 //	template<class PM>
 //	decltype(auto) operator->*(PM pm) const{return *ptr<std::decay_t<decltype(rp_->*pm)>, decltype(&(rp_->*pm))>{&(rp_->*pm)};}
