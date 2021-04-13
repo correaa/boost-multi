@@ -40,6 +40,18 @@ g++-current-debug:
     - cmake --build . --verbose
     - ctest --output-on-failure
 
+g++-current-asan:
+  stage: test
+  script:
+    - export CXX="g++"
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - mkdir build && cd build
+    - CXXFLAGS="-fsanitize=address" cmake .. -DCMAKE_BUILD_TYPE=Debug
+    - cmake --build . --verbose
+    - ctest --output-on-failure
+
 g++-current-codecov:
   stage: test
   script:
