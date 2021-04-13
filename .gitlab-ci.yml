@@ -559,6 +559,7 @@ inq-nvcc-ompi:
     - intel_compiler
   script:
     - export PREFIX=`mktemp -d`
+    - rm -rf ../multi
     - ln --symbolic --force . ../multi
     - git clone --recurse-submodules --remote-submodules https://gitlab.com/npneq/inq.git
     - cd inq
