@@ -30,9 +30,15 @@ auto dot_n(Context&& ctxt, XIt x_first, Size count, YIt y_first, RPtr rp){
 }
 
 template<class XIt, class Size, class YIt, class RPtr>
-auto dot_n(XIt x_first, Size count, YIt y_first, RPtr rp)
-->decltype(dot_n(blas::context{}, x_first, count, y_first, rp)){
-	return dot_n(blas::context{}, x_first, count, y_first, rp);}
+auto dot_n(XIt x_first, Size count, YIt y_first, RPtr rp){//->decltype(dot_n(blas::context{}, x_first, count, y_first, rp)){
+	if constexpr(is_conjugated<XIt>{}){
+		auto ctxtp = blas::default_context_of(underlying(x_first.base()));
+		return dot_n(ctxtp, x_first, count, y_first, rp);
+	}else{
+		auto ctxtp = blas::default_context_of(x_first.base());
+		return dot_n(ctxtp, x_first, count, y_first, rp);
+	}
+}
 
 template<class Context, class X1D, class Y1D, class R>
 R&& dot(Context&& ctxt, X1D const& x, Y1D const& y, R&& r){
@@ -43,7 +49,13 @@ R&& dot(Context&& ctxt, X1D const& x, Y1D const& y, R&& r){
 template<class X1D, class Y1D, class R>
 R&& dot(X1D const& x, Y1D const& y, R&& r){
 	assert( size(x) == size(y) );
-	return blas::dot_n(blas::context{}, begin(x), size(x), begin(y), &r), std::forward<R>(r);
+	if constexpr(is_conjugated<X1D>{}){
+		auto ctxtp = blas::default_context_of(underlying(x.base()));
+		return blas::dot(ctxtp, x, y, r);
+	}else{
+		auto ctxtp = blas::default_context_of(x.base());
+		return blas::dot(ctxtp, x, y, r);
+	}
 }
 
 template<class Context, class ItX, class Size, class ItY>
