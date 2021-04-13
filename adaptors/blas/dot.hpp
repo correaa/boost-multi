@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo A. Correa 2019-2020
+// © Alfredo A. Correa 2019-2021
 
 #ifndef MULTI_ADAPTORS_BLAS_DOT_HPP
 #define MULTI_ADAPTORS_BLAS_DOT_HPP
@@ -88,7 +88,8 @@ struct dot_ref : private Ptr{
 	dot_ref(ContextPtr ctxt, X const& x, Y const& y) : Ptr{ctxt, begin(x), size(x), begin(y)}{assert(size(x)==size(y));}
 	constexpr Ptr const& operator&() const&{return *this;}
 	decay_type decay() const{decay_type r; copy_n(operator&(), 1, &r); return r;}
-	operator decay_type() const{return decay();}
+	operator decay_type() const&{return decay();}
+	friend auto operator*(decay_type const& lhs, dot_ref const& self){return lhs*self.decay();}
 	decay_type operator+() const{return decay();}
 	bool operator==(dot_ref const& other) const{return decay() == other.decay();}
 	bool operator!=(dot_ref const& other) const{return decay() != other.decay();}
