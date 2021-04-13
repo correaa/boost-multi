@@ -40,6 +40,18 @@ g++-current-debug:
     - cmake --build . --verbose
     - ctest --output-on-failure
 
+g++-current-asan:
+  stage: test
+  script:
+    - export CXX="g++"
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - mkdir build && cd build
+    - CXXFLAGS="-fsanitize=address" cmake .. -DCMAKE_BUILD_TYPE=Debug
+    - cmake --build . --verbose
+    - ctest --output-on-failure
+
 g++-current-codecov:
   stage: test
   script:
@@ -176,8 +188,9 @@ clang++-9-asan:
   stage: test
   script:
     - export CXX="clang++-9"
+    - export ASAN_SYMBOLIZER_PATH=/usr/lib/llvm-9/bin/llvm-symbolizer
     - export CXXFLAGS="-fsanitize=undefined -fsanitize=address -fno-omit-frame-pointer"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet clang-9 cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev llvm
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang-9 llvm-9 cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev llvm
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
@@ -423,7 +436,7 @@ qmcpack-g++:
     - cd qmcpack
     - git config --global user.email "alfredo.correa@gmail.com" && git config --global user.name "Alfredo Correa"
     - git rm -r external_codes/boost_multi/multi && git commit -m "remove multi subtree"
-    - git subtree add --squash -P external_codes/boost_multi/multi https://gitlab.com/correaa/boost-multi.git $CI_COMMIT_BRANCH
+    - git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL $CI_COMMIT_BRANCH # e.g. https://gitlab.com/correaa/boost-multi.git
     - cd build
     - cmake -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DBUILD_PPCONVERT=1 -DQMC_MIXED_PRECISION=1 -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="-Werror" -DMPIEXEC_PREFLAGS="--allow-run-as-root;--bind-to;none" ..
     - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
@@ -440,7 +453,7 @@ qmcpack-cuda-11.2-compileonly:
       - cd qmcpack
       - git config --global user.email "alfredo.correa@gmail.com" && git config --global user.name "Alfredo Correa"
       - git rm -r external_codes/boost_multi/multi && git commit -m "remove multi subtree"
-      - git subtree add --squash -P external_codes/boost_multi/multi https://gitlab.com/correaa/boost-multi.git $CI_COMMIT_BRANCH
+      - git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL $CI_COMMIT_BRANCH # e.g. https://gitlab.com/correaa/boost-multi.git
       - cd build
       - cmake -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DBUILD_PPCONVERT=1 -DQMC_CXX_STANDARD=17 -DENABLE_CUDA=1 ..
       - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
