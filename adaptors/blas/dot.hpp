@@ -58,34 +58,34 @@ R&& dot(X1D const& x, Y1D const& y, R&& r){
 	}
 }
 
-template<class Context, class ItX, class Size, class ItY>
+template<class ContextPtr, class ItX, class Size, class ItY>
 class dot_ptr{
-	Context ctxt_ = {};
+	ContextPtr ctxt_;
 	ItX  x_first_;
 	Size count_;
 	ItY  y_first_;
 protected:
-	dot_ptr(Context&& ctxt, ItX x_first, Size count, ItY y_first) : ctxt_{std::forward<Context>(ctxt)}, x_first_{x_first}, count_{count}, y_first_{y_first}{}
+	dot_ptr(ContextPtr ctxt, ItX x_first, Size count, ItY y_first) : ctxt_{ctxt}, x_first_{x_first}, count_{count}, y_first_{y_first}{}
 public:
 	dot_ptr(dot_ptr const&) = default;
 	template<class ItOut, class Size2>
 	friend constexpr auto copy_n(dot_ptr first, [[maybe_unused]] Size2 count, ItOut d_first)
-	->decltype(blas::dot_n(std::declval<Context>(), std::declval<ItX>(), Size{}      , std::declval<ItY>(), d_first), d_first + count){assert(count == 1);
-		return blas::dot_n(first.ctxt_            , first.x_first_     , first.count_, first.y_first_     , d_first), d_first + count;}
+	->decltype(blas::dot_n(std::declval<ContextPtr>(), std::declval<ItX>(), Size{}      , std::declval<ItY>(), d_first), d_first + count){assert(count == 1);
+		return blas::dot_n(first.ctxt_               , first.x_first_     , first.count_, first.y_first_     , d_first), d_first + count;}
 
 	template<class ItOut, class Size2>
 	friend constexpr auto uninitialized_copy_n(dot_ptr first, Size2 count, ItOut d_first)
-	->decltype(blas::dot_n(std::declval<Context>(), std::declval<ItX>(), Size{}      , std::declval<ItY>(), d_first), d_first + count){assert(count == 1);
+	->decltype(blas::dot_n(std::declval<ContextPtr>(), std::declval<ItX>(), Size{}      , std::declval<ItY>(), d_first), d_first + count){assert(count == 1);
 		return blas::dot_n(first.ctxt_            , first.x_first_     , first.count_, first.y_first_     , d_first), d_first + count;}
 //	->decltype(copy_n(first, count, d_first)){ // nvcc is not detecting friend copy_n
 //		return copy_n(first, count, d_first);}
 };
 
-template<class Context, class X, class Y, class Ptr = dot_ptr<Context, typename X::const_iterator, typename X::size_type, typename Y::const_iterator>>
+template<class ContextPtr, class X, class Y, class Ptr = dot_ptr<ContextPtr, typename X::const_iterator, typename X::size_type, typename Y::const_iterator>>
 struct dot_ref : private Ptr{
 	dot_ref(dot_ref const&) = delete;
 	using decay_type = decltype(typename X::value_type{}*typename Y::value_type{});
-	dot_ref(Context&& ctxt, X const& x, Y const& y) : Ptr{std::forward<Context>(ctxt), begin(x), size(x), begin(y)}{assert(size(x)==size(y));}
+	dot_ref(ContextPtr ctxt, X const& x, Y const& y) : Ptr{ctxt, begin(x), size(x), begin(y)}{assert(size(x)==size(y));}
 	constexpr Ptr const& operator&() const&{return *this;}
 	decay_type decay() const{decay_type r; copy_n(operator&(), 1, &r); return r;}
 	operator decay_type() const{return decay();}
@@ -103,7 +103,7 @@ struct dot_ref : private Ptr{
 };
 
 template<class Context, class X, class Y> [[nodiscard]] 
-dot_ref<Context, X, Y> dot(Context&& ctxt, X const& x, Y const& y){return {std::forward<Context>(ctxt), x, y};}
+dot_ref<Context, X, Y> dot(Context const& ctxt, X const& x, Y const& y){return {ctxt, x, y};}
 
 //template<class X, class Y> [[nodiscard]] 
 //dot_ref<blas::context, X, Y> dot(X const& x, Y const& y){return {blas::context{}, x, y};}
