@@ -762,8 +762,11 @@ public:
 		static_cast<typename array::layout_t&>(*this)=new_layout;
 		return *this;
 	}
-	using static_::clear;
-	friend void clear(array& self) noexcept{self.clear();}
+	array& clear() noexcept{
+		static_::clear();
+		return *this;
+	}
+	friend array& clear(array& self) noexcept{return self.clear();}
 
 	friend auto data_elements(array const& self){return self.data_elements();}
 	friend auto data_elements(array      & self){return self.data_elements();}
