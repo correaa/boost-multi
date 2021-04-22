@@ -748,11 +748,10 @@ public:
 	}
 #ifndef NOEXCEPT_ASSIGNMENT
 	array& operator=(array&& other) noexcept{
-		using std::exchange;
 		clear();
-		this->base_ = exchange(other.base_, nullptr);
+		this->base_ = std::exchange(other.base_, nullptr);
 		this->alloc() = std::move(other.alloc());
-		static_cast<typename array::layout_t&>(*this) = exchange(static_cast<typename array::layout_t&>(other), {});
+		static_cast<typename array::layout_t&>(*this) = std::exchange(static_cast<typename array::layout_t&>(other), {});
 		return *this;
 	}
 	array& operator=(array const& o){
@@ -776,13 +775,12 @@ public:
 	friend void swap(array& a, array& b){a.swap(b);}
 	void assign(typename array::extensions_type x, typename array::element const& e){
 		if(array::extensions()==x){
-			fill_n(this->base_, this->num_elements(), e);
+			adl_fill_n(this->base_, this->num_elements(), e);
 		}else{
 			this->clear();
 			this->layout_t<D>::operator=(layout_t<D>{x});
-			this->base_ = this->allocate();
-			uninitialized_fill_n(e);
-		//	recursive_uninitialized_fill<dimensionality>(alloc(), begin(), end(), e);
+			this->base_ = this->static_::array_alloc::allocate(this->num_elements());
+			adl_alloc_uninitialized_fill_n(this->alloc(), this->base_, this->num_elements(), e); //	recursive_uninitialized_fill<dimensionality>(alloc(), begin(), end(), e);
 		}
 	}
 
