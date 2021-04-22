@@ -802,7 +802,7 @@ public:
 	array& operator=(std::initializer_list<typename array::value_type> il){assign(il.begin(), il.end()); return *this;}
 
 	array& reextent(typename array::extensions_type const& x){
-		if(x == this->extensions()) return;
+		if(x == this->extensions()) return *this;
 #if 0
 		array tmp(x, this->get_allocator()); // TODO opportunity missed to use hint allocation
 		auto const is = intersection(this->extensions(), x);
