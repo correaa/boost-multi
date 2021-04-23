@@ -1,7 +1,5 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-$CXXX $CXXFLAGS $0 -o $0.$X -DBOOST_TEST_DYN_LINK -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
-#endif
-// © Alfredo A. Correa 2020
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// © Alfredo A. Correa 2020-2021
 
 #ifndef MULTI_DETAIL_ADL_HPP
 #define MULTI_DETAIL_ADL_HPP
@@ -540,36 +538,5 @@ template<> struct recursive<1>{
 
 }}
 
-
-//BOOST_MULTI_DEFINE_ADL(lexicographical_compare);
-//BOOST_MULTI_DEFINE_ADL(swap_ranges);
-
-//BOOST_MULTI_DEFINE_ADL(begin);
-//BOOST_MULTI_DEFINE_ADL(end);
-
-#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
-
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi ADL"
-#ifdef BOOST_TEST_DYN_LINK
-#include<boost/test/unit_test.hpp>
-#else
-#include<boost/test/included/unit_test.hpp>
-#endif
-
-namespace multi = boost::multi;
-
-BOOST_AUTO_TEST_CASE(multi_detail_adl){
-
-	std::vector<double> v{1., 2., 3.};
-	std::vector<double> w(3);
-
-	multi::adl_copy_n(v.data(), 3, w.data());
-
-	BOOST_REQUIRE(
-		multi::adl_equal(v.data(), v.data()+v.size(), w.data())
-	);
-
-}
-#endif
 #endif
 

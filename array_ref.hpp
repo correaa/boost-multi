@@ -139,28 +139,6 @@ public://TODO find why this needs to be public and not protected or friend
 	template<class T2, dimensionality_type D2, class E2, class L2> friend struct array_types;
 };
 
-//template<class T, dimensionality_type D, class ElementPtr = T*>
-//struct BasicArrayPtr{
-//	using element_ptr = ElementPtr;
-//	static constexpr dimensionality_type dimensionality = D;
-//	using reference = basic_array<T, D, ElementPtr>;
-//private:
-//	using layout_type = layout_t<dimensionality>;
-//	element_ptr base_;
-//	layout_type layout_;
-//	constexpr BasicArrayPtr(element_ptr base, layout_type layout) : base_{base}, layout_{layout}{}
-//	template<class, dimensionality_type, class, class> friend struct basic_array;
-//public:
-//	BasicArrayPtr() = default;
-//	constexpr BasicArrayPtr(BasicArrayPtr const& o) : base_{o.base_}, layout_{o.layout_}{}
-//	constexpr BasicArrayPtr(std::nullptr_t p) : base_{p}{}
-//	constexpr BasicArrayPtr& operator=(BasicArrayPtr const&) = default;
-//	constexpr bool operator==(BasicArrayPtr const& o) const{return base_==o.base_ and layout_==o.layout_;}
-//	constexpr bool operator!=(BasicArrayPtr const& o) const{return base_!=o.base_ or  layout_!=o.layout_;}
-//	constexpr explicit operator bool() const{return base_;}
-//	constexpr reference Dereference() const{return {layout_, base_};}
-//};
-
 template<class Ref, class Layout>
 struct basic_array_ptr : 
 	private Ref,

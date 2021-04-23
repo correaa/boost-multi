@@ -209,6 +209,7 @@ struct layout_t<dimensionality_type{0}, SSize>{
 	constexpr extensions_type extensions() const{return extensions_type{};}
 	friend constexpr auto extensions(layout_t const& self){return self.extensions();}
 	constexpr auto sizes() const{return std::tuple<>{};}
+	constexpr bool is_empty() const{return false;}
 	friend constexpr auto sizes(layout_t const& s){return s.sizes();}
 	constexpr nelems_type num_elements() const{return 1;}//nelems_;}
 	constexpr bool operator==(layout_t const&) const{return true ;}
