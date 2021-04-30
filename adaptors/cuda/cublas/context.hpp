@@ -97,8 +97,8 @@ public:
 	using ssize_t = int;
 	static int version(){int ret; cublas::call<cublasGetVersion>(nullptr, &ret); return ret;}
 	void synchronize(){
-	//	cudaError_t	e = cudaDeviceSynchronize();
-		cudaError_t e = cudaStreamSynchronize(stream());
+		cudaError_t	e = cudaDeviceSynchronize();
+		//cudaError_t e = cudaStreamSynchronize(stream());
 		if(e != cudaSuccess) throw std::runtime_error{"cannot synchronize stream in cublas context"};
 	}
 	template<class ALPHA, class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, 
