@@ -238,11 +238,11 @@ public:
 		static_array::uninitialized_copy_elements(std::move(o).data_elements());
 	}
 	static_array(static_array const& o, typename static_array::allocator_type const& a) //5b
-	: array_alloc{a}, ref{static_array::allocate(num_elements(o), o.data_elements()), extensions(o)}{
-		uninitialized_copy_from(data(o));
+	: array_alloc{a}, ref{static_array::allocate(o.num_elements(), o.data_elements()), extensions(o)}{
+		uninitialized_copy_elements(o.data_elements());
 	}
 	static_array(static_array const& o)                                  //5b
-	: array_alloc{o.get_allocator()}, ref{array_alloc::allocate(num_elements(o), o.data_elements()), extensions(o)}{
+	: array_alloc{o.get_allocator()}, ref{array_alloc::allocate(o.num_elements(), o.data_elements()), extensions(o)}{
 		uninitialized_copy_elements(o.data_elements());
 	}
 //	TODO static_array(static_array&& o)                                  //5b'
