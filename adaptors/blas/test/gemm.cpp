@@ -1378,6 +1378,14 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_square_automatic){
 		multi::array<complex, 2> c({2, 2});
 		blas::gemm(1., a, blas::H(b), 0., c); // c=ab†, c†=ba†
 		BOOST_REQUIRE( c[1][0] == complex(188, 43) and c[1][1] == complex(196, 25) );
+		auto c2 =+ blas::gemm(1., a, blas::H(b));
+		BOOST_REQUIRE( c2 == c );
+	}
+	{
+		multi::array<complex, 2> c({2, 2});
+		blas::gemm(0.1, a, blas::H(b), 0., c); // c=ab†, c†=ba†
+		auto const c2 =+ blas::gemm(0.1, a, blas::H(b));
+		BOOST_REQUIRE( c2 == c );
 	}
 	{
 		multi::array<complex, 2> c({2, 2});
