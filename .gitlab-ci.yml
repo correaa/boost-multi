@@ -489,7 +489,7 @@ inq-cuda-11.2-compileonly:
       - git checkout $CI_COMMIT_BRANCH
       - cd ../..
       - mkdir build && cd build
-      - $CUDACXX -V
+      - /usr/local/cuda/bin/nvcc -V
       - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=7.0
       - make silicon
 
