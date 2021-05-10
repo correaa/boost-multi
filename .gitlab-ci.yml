@@ -516,7 +516,8 @@ icpc-nomkl-runner:
     tags:
       - intel_compiler
     script:
-      - export CXX="/opt/intel/system_studio_2020/bin/icpc"
+      - ls -all /opt/intel/oneapi/compiler/2021.2.0/linux/bin
+      - export CXX="/opt/intel/oneapi/compiler/2021.2.0/linux/bin/intel64/icpc"
       - $CXX --version
       - mkdir build && cd build
       - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
