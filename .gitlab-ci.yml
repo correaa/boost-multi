@@ -493,7 +493,7 @@ inq-cuda-11.2-compileonly:
       - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
       - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
       - $CUDACXX -V
-      - ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda
+      - ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --passthru -DCMAKE_CUDA_ARCHITECTURES=7.0
       - make silicon
 
 g++-codecov-runner:
