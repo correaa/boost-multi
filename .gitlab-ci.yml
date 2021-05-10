@@ -529,7 +529,8 @@ icpc-runner:
     tags:
       - intel_compiler
     script:
-      - . /opt/intel/system_studio_2020/bin/compilervars.sh intel64
+      - . /opt/intel/oneapi/setvars.sh --help #      - . /opt/intel/system_studio_2020/bin/compilervars.sh intel64
+      - . /opt/intel/oneapi/setvars.sh intel64
       - export CXX="icpc"
       - $CXX --version
       - mkdir build && cd build
