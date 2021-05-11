@@ -498,7 +498,6 @@ inq-cuda-11.2-compileonly:
       - apt-get update && apt-get install --no-install-recommends -y --quiet libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libopenmpi-dev gfortran g++ pkg-config cmake make git ca-certificates
       - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
       - cd inq
-      - git checkout cmake_include_mpi_directories
       - cd external_libs/multi
       - git fetch
       - git checkout $CI_COMMIT_BRANCH
