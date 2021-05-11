@@ -695,17 +695,17 @@ private:
 	constexpr basic_array       paren_() &&    {return this->operator()();}
 	constexpr basic_const_array paren_() const&{return {this->layout(), this->base()};}
 
-	template<class... As> HD constexpr auto paren_(index_range a, As... as) &     {return                  range(a).rotated().paren_(as...).unrotated();}
-	template<class... As> HD constexpr auto paren_(index_range a, As... as) &&    {return this->range(a).rotated().paren_(as...).unrotated();}
-	template<class... As> HD constexpr auto paren_(index_range a, As... as) const&{return                  range(a).rotated().paren_(as...).unrotated();}
+	template<class... As> HD constexpr auto paren_(index_range a, As... as) &     {return range(a).rotated().paren_(as...).unrotated();}
+	template<class... As> HD constexpr auto paren_(index_range a, As... as) &&    {return range(a).rotated().paren_(as...).unrotated();}
+	template<class... As> HD constexpr auto paren_(index_range a, As... as) const&{return range(a).rotated().paren_(as...).unrotated();}
 
-	template<class... As> HD constexpr decltype(auto) paren_(intersecting_range<index> inr, As... as) &     {return                  paren_(intersection(this->extension(), inr), as...);}
-	template<class... As> HD constexpr decltype(auto) paren_(intersecting_range<index> inr, As... as) &&    {return 				paren_(intersection(this->extension(), inr), as...);}
-	template<class... As> HD constexpr decltype(auto) paren_(intersecting_range<index> inr, As... as) const&{return                  paren_(intersection(this->extension(), inr), as...);}
+	template<class... As> HD constexpr decltype(auto) paren_(intersecting_range<index> inr, As... as) &     {return paren_(intersection(this->extension(), inr), as...);}
+	template<class... As> HD constexpr decltype(auto) paren_(intersecting_range<index> inr, As... as) &&    {return paren_(intersection(this->extension(), inr), as...);}
+	template<class... As> HD constexpr decltype(auto) paren_(intersecting_range<index> inr, As... as) const&{return paren_(intersection(this->extension(), inr), as...);}
 
-	template<class... As> HD constexpr decltype(auto) paren_(index i, As... as) &     {return                  operator[](i).paren_(as...);}
-	template<class... As> HD constexpr decltype(auto) paren_(index i, As... as) &&    {return                  operator[](i).paren_(as...);}
-	template<class... As> HD constexpr decltype(auto) paren_(index i, As... as) const&{return                  operator[](i).paren_(as...);}
+	template<class... As> HD constexpr decltype(auto) paren_(index i, As... as) &     {return operator[](i).paren_(as...);}
+	template<class... As> HD constexpr decltype(auto) paren_(index i, As... as) &&    {return operator[](i).paren_(as...);}
+	template<class... As> HD constexpr decltype(auto) paren_(index i, As... as) const&{return operator[](i).paren_(as...);}
 
 public:
 	// the default template parameters below help interpret for {first, last} simple syntax as iranges
@@ -1328,7 +1328,6 @@ public:
 	constexpr decltype(auto) operator()(intersecting_range<index> const& ir)     &&{return std::move(*this).paren_(ir);}
 	constexpr decltype(auto) operator()(intersecting_range<index> const& ir) const&{return                  paren_(ir);}
 
-
 	template<class... Args>
 	constexpr auto operator()(Args&&... args) &
 	->decltype(paren(*this, std::forward<Args>(args)...)){
@@ -1419,7 +1418,7 @@ public:
 	friend constexpr auto cbegin(basic_array const& s){return s.cbegin();}
 	friend constexpr auto cend  (basic_array const& s){return s.cend()  ;}
 
-	template<class TT, class... As>//, DELETE((not std::is_assignable<typename basic_array::reference, typename basic_array<TT, 1, As...>::reference>{}))>
+	template<class TT, class... As>
 //	constexpr 
 	auto operator=(basic_array<TT, 1, As...> const& other)&&
 	->decltype(adl_copy(other.begin(), other.end(), std::declval<iterator>()), std::declval<basic_array&&>()){assert(this->extensions() == other.extensions());
@@ -1440,9 +1439,9 @@ public:
 
 	template<typename Array>
 	constexpr auto operator==(Array const& o) const& -> bool{
-//	->decltype((this->extension()==extension(o)) and adl_equal(typename basic_array::const_iterator{}, typename basic_array::const_iterator{}, adl_begin(o))){ // TODO assert extensions are equal?
-		return (this->extension()==extension(o)) and adl_equal(this->begin(), this->end(), adl_begin(o));}
-	
+		return (this->extension()==extension(o)) and adl_equal(this->begin(), this->end(), adl_begin(o));
+	}
+
 	constexpr bool operator<(basic_array const& o) const&{return lexicographical_compare(*this, o);}//operator< <basic_array const&>(o);}
 	template<class Array> constexpr void swap(Array&& o)&&{assert(this->extension() == o.extension());
 		adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));

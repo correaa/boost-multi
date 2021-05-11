@@ -16,9 +16,9 @@ namespace testB{
 	struct B{};
 
 	template<class Array> decltype(auto) paren(Array&& arr, B const&/*unused*/){
-		return arr(0);
+		return std::forward<Array>(arr)(0);
 	}
-}
+} // namespace testB
 
 BOOST_AUTO_TEST_CASE(overload_paren){
 	multi::array<double, 1> arr(10);
