@@ -689,41 +689,41 @@ public:
 	HD constexpr basic_array       operator()() &&    {return this->operator()();}
 	HD constexpr basic_const_array operator()() const&{return {this->layout(), this->base()};}
 
-public:
+private:
 	template<typename, dimensionality_type, typename, class> friend struct basic_array;
-	constexpr basic_array       paren() &     {return *this;}
-	constexpr basic_array       paren() &&    {return this->operator()();}
-	constexpr basic_const_array paren() const&{return {this->layout(), this->base()};}
+	constexpr basic_array       paren_() &     {return *this;}
+	constexpr basic_array       paren_() &&    {return this->operator()();}
+	constexpr basic_const_array paren_() const&{return {this->layout(), this->base()};}
 
-	template<class... As> HD constexpr auto paren(index_range a, As... as) &     {return                  range(a).rotated().paren(as...).unrotated();}
-	template<class... As> HD constexpr auto paren(index_range a, As... as) &&    {return this->range(a).rotated().paren(as...).unrotated();}
-	template<class... As> HD constexpr auto paren(index_range a, As... as) const&{return                  range(a).rotated().paren(as...).unrotated();}
+	template<class... As> HD constexpr auto paren_(index_range a, As... as) &     {return                  range(a).rotated().paren_(as...).unrotated();}
+	template<class... As> HD constexpr auto paren_(index_range a, As... as) &&    {return this->range(a).rotated().paren_(as...).unrotated();}
+	template<class... As> HD constexpr auto paren_(index_range a, As... as) const&{return                  range(a).rotated().paren_(as...).unrotated();}
 
-	template<class... As> HD constexpr decltype(auto) paren(intersecting_range<index> inr, As... as) &     {return                  paren(intersection(this->extension(), inr), as...);}
-	template<class... As> HD constexpr decltype(auto) paren(intersecting_range<index> inr, As... as) &&    {return 				paren(intersection(this->extension(), inr), as...);}
-	template<class... As> HD constexpr decltype(auto) paren(intersecting_range<index> inr, As... as) const&{return                  paren(intersection(this->extension(), inr), as...);}
+	template<class... As> HD constexpr decltype(auto) paren_(intersecting_range<index> inr, As... as) &     {return                  paren_(intersection(this->extension(), inr), as...);}
+	template<class... As> HD constexpr decltype(auto) paren_(intersecting_range<index> inr, As... as) &&    {return 				paren_(intersection(this->extension(), inr), as...);}
+	template<class... As> HD constexpr decltype(auto) paren_(intersecting_range<index> inr, As... as) const&{return                  paren_(intersection(this->extension(), inr), as...);}
 
-	template<class... As> HD constexpr decltype(auto) paren(index i, As... as) &     {return                  operator[](i).paren(as...);}
-	template<class... As> HD constexpr decltype(auto) paren(index i, As... as) &&    {return                  operator[](i).paren(as...);}
-	template<class... As> HD constexpr decltype(auto) paren(index i, As... as) const&{return                  operator[](i).paren(as...);}
+	template<class... As> HD constexpr decltype(auto) paren_(index i, As... as) &     {return                  operator[](i).paren_(as...);}
+	template<class... As> HD constexpr decltype(auto) paren_(index i, As... as) &&    {return                  operator[](i).paren_(as...);}
+	template<class... As> HD constexpr decltype(auto) paren_(index i, As... as) const&{return                  operator[](i).paren_(as...);}
+
 public:
-
 	// the default template parameters below help interpret for {first, last} simple syntax as iranges
 	// do not remove default parameter = irange
-	template<class B1 = irange>                                                                       HD constexpr decltype(auto) operator()(B1 b1)                                const&{return paren(b1);}
-	template<class B1 = irange, class B2 = irange>                                                    HD constexpr decltype(auto) operator()(B1 b1, B2 b2)                         const&{return paren(b1, b2);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange>                                 HD constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3)                  const&{return paren(b1, b2, b3);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As> HD constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as) const&{return paren(b1, b2, b3, b4, as...);}
+	template<class B1 = irange>                                                                       HD constexpr decltype(auto) operator()(B1 b1)                                const&{return paren_(b1);}
+	template<class B1 = irange, class B2 = irange>                                                    HD constexpr decltype(auto) operator()(B1 b1, B2 b2)                         const&{return paren_(b1, b2);}
+	template<class B1 = irange, class B2 = irange, class B3 = irange>                                 HD constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3)                  const&{return paren_(b1, b2, b3);}
+	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As> HD constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as) const&{return paren_(b1, b2, b3, b4, as...);}
 
-	template<class B1 = irange>                                                                       HD constexpr decltype(auto) operator()(B1 b1)                                     &{return paren(b1);}
-	template<class B1 = irange, class B2 = irange>                                                    HD constexpr decltype(auto) operator()(B1 b1, B2 b2)                              &{return paren(b1, b2);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange>                                 HD constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3)                       &{return paren(b1, b2, b3);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As> HD constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as)      &{return paren(b1, b2, b3, b4, as...);}
+	template<class B1 = irange>                                                                       HD constexpr decltype(auto) operator()(B1 b1)                                     &{return paren_(b1);}
+	template<class B1 = irange, class B2 = irange>                                                    HD constexpr decltype(auto) operator()(B1 b1, B2 b2)                              &{return paren_(b1, b2);}
+	template<class B1 = irange, class B2 = irange, class B3 = irange>                                 HD constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3)                       &{return paren_(b1, b2, b3);}
+	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As> HD constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as)      &{return paren_(b1, b2, b3, b4, as...);}
 
-	template<class B1 = irange>                                                                       HD constexpr decltype(auto) operator()(B1 b1)                                    &&{return paren(b1);}
-	template<class B1 = irange, class B2 = irange>                                                    HD constexpr decltype(auto) operator()(B1 b1, B2 b2)                             &&{return this->paren(b1, b2);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange>                                 HD constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3)                      &&{return paren(b1, b2, b3);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As> HD constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as)     &&{return paren(b1, b2, b3, b4, as...);}
+	template<class B1 = irange>                                                                       HD constexpr decltype(auto) operator()(B1 b1)                                    &&{return paren_(b1);}
+	template<class B1 = irange, class B2 = irange>                                                    HD constexpr decltype(auto) operator()(B1 b1, B2 b2)                             &&{return paren_(b1, b2);}
+	template<class B1 = irange, class B2 = irange, class B3 = irange>                                 HD constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3)                      &&{return paren_(b1, b2, b3);}
+	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As> HD constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as)     &&{return paren_(b1, b2, b3, b4, as...);}
 
 //	template<class B1 = iextension>                                                                   decltype(auto) block(B1 b1)                                const&{return block_aux(b1);}
 //	template<class B1 = irange, class B2 = irange>                                                    decltype(auto) operator()(B1 b1, B2 b2)                         const&{return paren(b1, b2);}
@@ -1306,26 +1306,43 @@ public:
 	HD constexpr decltype(auto) operator()(index i) &&    {return std::move(*this).operator[](i);}
 	HD constexpr decltype(auto) operator()(index i) const&{return                  operator[](i);}
 
-	HD constexpr auto paren() &{return operator()();}
-	HD constexpr auto paren() &&{return operator()();}
-	HD constexpr auto paren() const&{return operator()();}
+private:
+	HD constexpr auto paren_() &{return operator()();}
+	HD constexpr auto paren_() &&{return operator()();}
+	HD constexpr auto paren_() const&{return operator()();}
 
-	HD constexpr auto paren(index_range const& ir) &{return range(ir);}
-	HD constexpr auto paren(index_range const& ir) &&{return range(ir);}
-	HD constexpr auto paren(index_range const& ir) const&{return range(ir);}
+	HD constexpr auto paren_(index_range const& ir) &{return range(ir);}
+	HD constexpr auto paren_(index_range const& ir) &&{return range(ir);}
+	HD constexpr auto paren_(index_range const& ir) const&{return range(ir);}
 
-	HD constexpr decltype(auto) paren(index i) &     {return operator[](i);}
-	HD constexpr decltype(auto) paren(index i) &&    {return operator[](i);}
-	HD constexpr decltype(auto) paren(index i) const&{return operator[](i);}
+	HD constexpr decltype(auto) paren_(index i) &     {return operator[](i);}
+	HD constexpr decltype(auto) paren_(index i) &&    {return operator[](i);}
+	HD constexpr decltype(auto) paren_(index i) const&{return operator[](i);}
 
-	constexpr decltype(auto) paren(intersecting_range<index> inr) &     {return                  paren(intersection(this->extension(), inr));}
-	constexpr decltype(auto) paren(intersecting_range<index> inr) &&    {return std::move(*this).paren(intersection(this->extension(), inr));}
-	constexpr decltype(auto) paren(intersecting_range<index> inr) const&{return                  paren(intersection(this->extension(), inr));}
+	constexpr decltype(auto) paren_(intersecting_range<index> const& inr) &     {return                  paren_(intersection(this->extension(), inr));}
+	constexpr decltype(auto) paren_(intersecting_range<index> const& inr) &&    {return std::move(*this).paren_(intersection(this->extension(), inr));}
+	constexpr decltype(auto) paren_(intersecting_range<index> const& inr) const&{return                  paren_(intersection(this->extension(), inr));}
 
-	constexpr decltype(auto) operator()(intersecting_range<index> const& ir)      &{return                  paren(ir);}
-	constexpr decltype(auto) operator()(intersecting_range<index> const& ir)     &&{return std::move(*this).paren(ir);}
-	constexpr decltype(auto) operator()(intersecting_range<index> const& ir) const&{return                  paren(ir);}
+public:
+	constexpr decltype(auto) operator()(intersecting_range<index> const& ir)      &{return                  paren_(ir);}
+	constexpr decltype(auto) operator()(intersecting_range<index> const& ir)     &&{return std::move(*this).paren_(ir);}
+	constexpr decltype(auto) operator()(intersecting_range<index> const& ir) const&{return                  paren_(ir);}
 
+
+	template<class... Args>
+	constexpr auto operator()(Args&&... args) &
+	->decltype(paren(*this, std::forward<Args>(args)...)){
+		return paren(*this, std::forward<Args>(args)...);}
+
+	template<class... Args>
+	constexpr auto operator()(Args&&... args) &&
+	->decltype(paren(std::move(*this), std::forward<Args>(args)...)){
+		return paren(std::move(*this), std::forward<Args>(args)...);}
+
+	template<class... Args>
+	constexpr auto operator()(Args&&... args) const&
+	->decltype(paren(*this, std::forward<Args>(args)...)){
+		return paren(*this, std::forward<Args>(args)...);}
 
 public:
 	using partitioned_type       = basic_array<T, 2, element_ptr      >;
