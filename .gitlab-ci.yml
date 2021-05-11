@@ -276,21 +276,20 @@ clang++-11-std17:
     - cmake --build . --verbose -- --quiet --no-print-directory
     - ctest --output-on-failure
 
-oneapi:
-    image: intel/oneapi-hpckit:devel-ubuntu18.04
-    stage: test
-    script:
-      - . /opt/intel/oneapi/setvars.sh
-      - export CXX="icpc"
-      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev liblapack-dev libfftw3-dev
-      - ln --symbolic --force . ../multi
-      - $CXX -v
-      - mkdir build && cd build
-      - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-      - cmake --build . -- --quiet --no-print-directory
-      - export MKL_VERBOSE=1
-      - ctest --output-on-failure
-
+#oneapi: # this makes CI run out of space
+#    image: intel/oneapi-hpckit:devel-ubuntu18.04
+#    stage: test
+#    script:
+#      - . /opt/intel/oneapi/setvars.sh
+#      - export CXX="icpc"
+#      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev liblapack-dev libfftw3-dev
+#      - ln --symbolic --force . ../multi
+#      - $CXX -v
+#      - mkdir build && cd build
+#      - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+#      - cmake --build . -- --quiet --no-print-directory
+#      - export MKL_VERBOSE=1
+#      - ctest --output-on-failure
 
 #icc:
 #    image: meteocima/dkr-intel
