@@ -1318,14 +1318,29 @@ public:
 	HD constexpr decltype(auto) paren(index i) &&    {return operator[](i);}
 	HD constexpr decltype(auto) paren(index i) const&{return operator[](i);}
 
-	constexpr decltype(auto) paren(intersecting_range<index> inr) &     {return                  paren(intersection(this->extension(), inr));}
-	constexpr decltype(auto) paren(intersecting_range<index> inr) &&    {return std::move(*this).paren(intersection(this->extension(), inr));}
-	constexpr decltype(auto) paren(intersecting_range<index> inr) const&{return                  paren(intersection(this->extension(), inr));}
+	constexpr decltype(auto) paren(intersecting_range<index> const& inr) &     {return                  paren(intersection(this->extension(), inr));}
+	constexpr decltype(auto) paren(intersecting_range<index> const& inr) &&    {return std::move(*this).paren(intersection(this->extension(), inr));}
+	constexpr decltype(auto) paren(intersecting_range<index> const& inr) const&{return                  paren(intersection(this->extension(), inr));}
 
 	constexpr decltype(auto) operator()(intersecting_range<index> const& ir)      &{return                  paren(ir);}
 	constexpr decltype(auto) operator()(intersecting_range<index> const& ir)     &&{return std::move(*this).paren(ir);}
 	constexpr decltype(auto) operator()(intersecting_range<index> const& ir) const&{return                  paren(ir);}
 
+
+	template<class... Args>
+	constexpr auto operator()(Args&&... args) &
+	->decltype(paren(std::forward<Args>(args)...)){
+		return paren(std::forward<Args>(args)...);}
+
+	template<class... Args>
+	constexpr auto operator()(Args&&... args) &&
+	->decltype(paren(std::forward<Args>(args)...)){
+		return paren(std::forward<Args>(args)...);}
+
+	template<class... Args>
+	constexpr auto operator()(Args&&... args) const&
+	->decltype(paren(std::forward<Args>(args)...)){
+		return paren(std::forward<Args>(args)...);}
 
 public:
 	using partitioned_type       = basic_array<T, 2, element_ptr      >;
