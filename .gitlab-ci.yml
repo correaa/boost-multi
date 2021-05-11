@@ -275,7 +275,22 @@ clang++-11-std17:
     - cmake .. -DCMAKE_CXX_STANDARD=17
     - cmake --build . --verbose -- --quiet --no-print-directory
     - ctest --output-on-failure
-    
+
+#oneapi: # this makes CI run out of space
+#    image: intel/oneapi-hpckit:devel-ubuntu18.04
+#    stage: test
+#    script:
+#      - . /opt/intel/oneapi/setvars.sh
+#      - export CXX="icpc"
+#      - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev liblapack-dev libfftw3-dev
+#      - ln --symbolic --force . ../multi
+#      - $CXX -v
+#      - mkdir build && cd build
+#      - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+#      - cmake --build . -- --quiet --no-print-directory
+#      - export MKL_VERBOSE=1
+#      - ctest --output-on-failure
+
 #icc:
 #    image: meteocima/dkr-intel
 #    stage: test
@@ -466,6 +481,7 @@ inq-g++-latest:
     - git clone --recurse-submodules --remote-submodules https://gitlab.com/npneq/inq.git
     - cd inq
     - cd external_libs/multi
+    - git fetch
     - git checkout $CI_COMMIT_BRANCH
     - cd ../..
     - mkdir build && cd build
@@ -483,15 +499,12 @@ inq-cuda-11.2-compileonly:
       - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
       - cd inq
       - cd external_libs/multi
+      - git fetch
       - git checkout $CI_COMMIT_BRANCH
       - cd ../..
       - mkdir build && cd build
-      - export CUDACXX=/usr/local/cuda/bin/nvcc
-      - export CUDAFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -std=c++17 -DFMT_USE_UDL_TEMPLATE=0 -D_DISABLE_CUDA_SLOW -O0 --gpu-architecture sm_70 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -std=c++17,-O0,-Wall,-Wfatal-errors"
-      - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
-      - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
-      - $CUDACXX -V
-      - ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda
+      - /usr/local/cuda/bin/nvcc -V
+      - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=7.0
       - make silicon
 
 g++-codecov-runner:
@@ -516,7 +529,7 @@ icpc-nomkl-runner:
     tags:
       - intel_compiler
     script:
-      - export CXX="/opt/intel/system_studio_2020/bin/icpc"
+      - export CXX="/opt/intel/oneapi/compiler/2021.2.0/linux/bin/intel64/icpc"
       - $CXX --version
       - mkdir build && cd build
       - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
@@ -529,7 +542,7 @@ icpc-runner:
     tags:
       - intel_compiler
     script:
-      - . /opt/intel/system_studio_2020/bin/compilervars.sh intel64
+      - . /opt/intel/oneapi/setvars.sh
       - export CXX="icpc"
       - $CXX --version
       - mkdir build && cd build
