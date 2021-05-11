@@ -277,7 +277,7 @@ clang++-11-std17:
     - ctest --output-on-failure
 
 oneapi:
-    image: intel/oneapi-hpckit
+    image: intel/oneapi-hpckit:devel-ubuntu18.04
     stage: test
     script:
       - . /opt/intel/oneapi/setvars.sh
