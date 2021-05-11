@@ -1329,18 +1329,33 @@ public:
 
 	template<class... Args>
 	constexpr auto operator()(Args&&... args) &
-	->decltype(paren(std::forward<Args>(args)...)){
-		return paren(std::forward<Args>(args)...);}
+	->decltype(paren(*this, std::forward<Args>(args)...)){
+		return paren(*this, std::forward<Args>(args)...);}
 
 	template<class... Args>
 	constexpr auto operator()(Args&&... args) &&
-	->decltype(paren(std::forward<Args>(args)...)){
-		return paren(std::forward<Args>(args)...);}
+	->decltype(paren(std::move(*this), std::forward<Args>(args)...)){
+		return paren(std::move(*this), std::forward<Args>(args)...);}
 
 	template<class... Args>
 	constexpr auto operator()(Args&&... args) const&
-	->decltype(paren(std::forward<Args>(args)...)){
-		return paren(std::forward<Args>(args)...);}
+	->decltype(paren(*this, std::forward<Args>(args)...)){
+		return paren(*this, std::forward<Args>(args)...);}
+
+	template<class... Args>
+	constexpr auto operator()(Args&&... args) &
+	->decltype(this->paren(std::forward<Args>(args)...)){
+		return this->paren(std::forward<Args>(args)...);}
+
+	template<class... Args>
+	constexpr auto operator()(Args&&... args) &&
+	->decltype(this->paren(std::forward<Args>(args)...)){
+		return this->paren(std::forward<Args>(args)...);}
+
+	template<class... Args>
+	constexpr auto operator()(Args&&... args) const&
+	->decltype(this->paren(std::forward<Args>(args)...)){
+		return this->paren(std::forward<Args>(args)...);}
 
 public:
 	using partitioned_type       = basic_array<T, 2, element_ptr      >;
