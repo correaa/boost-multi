@@ -29,8 +29,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos){
 		multi::array<double,2> masses_; 
 		multi::array<v3d,2> positions_;
 	public:
-		// cppcheck-suppress noExplicitConstructor ; particles_SoA can represent a particles' AoS
-		particles_SoA(multi::array<particle, 2> const& AoS) : //NOLINT(
+		particles_SoA(multi::array<particle, 2> const& AoS) : // NOLINT(google-explicit-constructor, hicpp-explicit-conversions): particle_SoA can represent a particles' AoS
 			masses_   (AoS.member_cast<double>(&particle::mass    )),
 			positions_(AoS.member_cast<v3d   >(&particle::position))
 		{}
