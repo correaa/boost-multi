@@ -15,7 +15,8 @@ endif()
 
 project(boost-multi-test VERSION 0.1 LANGUAGES CXX)
 
-find_package(Boost REQUIRED COMPONENTS unit_test_framework)
+find_package(Boost REQUIRED)# COMPONENTS unit_test_framework)
+link_libraries("-lboost_unit_test_framework")
 
 if(NOT DEFINED CMAKE_CXX_STANDARD)
 	set(CMAKE_CXX_STANDARD 14)
@@ -46,13 +47,15 @@ foreach(TEST_FILE ${TEST_SRCS})
   target_link_directories   (${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
   if(NOT ENABLE_CUDA)
     target_compile_options  (${TEST_EXE} PRIVATE
-      -Werror -Wall -Wextra -Wundef -fno-common -Wshadow #-Wfatal-errors
-      $<$<CXX_COMPILER_ID:GNU>:
-        -Wpedantic -Wdouble-promotion -Wconversion -Wformat-truncation -fstack-usage>
-      $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
-        -Wpedantic -Wdouble-promotion -Wmove>
-      $<$<CXX_COMPILER_ID:Intel>:
-                    -wd161 -diag-disable=remark -Warray-bounds -Wchar-subscripts -Wcomment -Wenum-compare -Wformat -Wuninitialized -Wmaybe-uninitialized -Wmain -Wnarrowing -Wnonnull -Wparentheses -Wpointer-sign -Wreorder -Wsign-compare -Wsequence-point -Wtrigraphs -Wunused-function -Wunused-but-set-variable -Wunused-variable -Wwrite-strings -Werror -diag-error:3846>
+       -Werror -Wall -Wextra
+       $<$<CXX_COMPILER_ID:GNU>:
+                             -Wpedantic -Wformat-truncation> #-Wconversion 
+       $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+                             -Wpedantic -Wmove>
+       $<$<CXX_COMPILER_ID:Intel>:
+                                                         -wd161 -diag-disable=remark -Warray-bounds -Wchar-subscripts -Wcomment -Wenum-compare -Wformat -Wuninitialized -Wmaybe-uninitialized -Wmain -Wnarrowing -Wnonnull -Wparentheses -Wpointer-sign -Wreorder -Wno-return-type -Wsign-compare -Wsequence-point -Wtrigraphs -Wunused-function -Wunused-but-set-variable -Wunused-variable -Wwrite-strings -diag-error:3846>
+       $<$<CXX_COMPILER_ID:PGI>:
+                                                         --diag_suppress=implicit_return_from_non_void_function>
        $<$<CXX_COMPILER_ID:MSVC>:
           /W4>)
   endif()
