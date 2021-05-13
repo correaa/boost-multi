@@ -63,8 +63,8 @@ constexpr To _implicit_cast(From&& f){return static_cast<To>(f);}
 template<class To, class From, std::enable_if_t<std::is_constructible<To, From>{} and not std::is_convertible<From, To>{},int> =0>
 constexpr To _explicit_cast(From&& f){return static_cast<To>(f);}
 
-template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>>
-struct array_types : Layout{
+template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D> >
+struct array_types : Layout{ // cppcheck-suppress syntaxError ; false positive in cppcheck
 	using element = T;
 	using element_type = element; // this follows more closely https://en.cppreference.com/w/cpp/memory/pointer_traits
 	constexpr static dimensionality_type dimensionality = D;
@@ -1049,7 +1049,7 @@ struct array_iterator<Element, 1, Ptr> ://, Ref> :
 	constexpr array_iterator(Ptr d, typename basic_array<Element, 1, Ptr>::index s) : data_{d}, stride_{s}{} // TODO make explicit?
 private:
 	friend struct basic_array<Element, 1, Ptr>;
-	element_ptr data_ = nullptr;
+	element_ptr data_{nullptr}; // TODO consider uninitialized pointer
 	stride_type stride_ = {1};
 	constexpr difference_type distance_to(array_iterator const& other) const{
 		assert(stride_==other.stride_ and (other.data_-data_)%stride_ == 0);
@@ -1564,7 +1564,7 @@ public:
 	array_ref(array_ref&&) = default; // this needs to be public in c++14
 public:
 	template<class OtherPtr, class=std::enable_if_t<not std::is_same<OtherPtr, ElementPtr>{}>>
-	constexpr array_ref(array_ref<T, D, OtherPtr>&& other)
+	constexpr explicit array_ref(array_ref<T, D, OtherPtr>&& other)
 		: basic_array<T, D, ElementPtr>{other.layout(), ElementPtr{other.base()}}{}
 	constexpr explicit array_ref(typename array_ref::element_ptr p, typename array_ref::extensions_type e = {}) noexcept // TODO eliminate this ctor
 		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}

@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo Correa 2019-2020
+// © Alfredo Correa 2019-2021
 
 #ifndef MULTI_ADAPTORS_BLAS_AXPY_HPP
 #define MULTI_ADAPTORS_BLAS_AXPY_HPP

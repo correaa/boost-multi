@@ -24,7 +24,7 @@ $CXX $0 -o $0x &&$0x&&rm $0x;exit
 #define MAYBE_UNUSED MULTI_MAYBE_UNUSED
 #endif
 
-#if not __INCLUDE_LEVEL__ // _TEST_MULTI_CONFIG_NODISCARD
+#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 
 int main(){
 	// cppcheck-suppress unusedVariable

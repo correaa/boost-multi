@@ -83,7 +83,7 @@ template<class A> decltype(auto) N(A&& a){return identity  (std::forward<A>(a));
 
 }
 
-#if not __INCLUDE_LEVEL__
+#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi blas operations"
 #define BOOST_TEST_DYN_LINK

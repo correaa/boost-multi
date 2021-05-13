@@ -439,7 +439,7 @@ g++-cppcheck:
     - $CXX --version
     - cppcheck --version
     - mkdir build && cd build
-    - cmake -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--suppress=unmatchedSuppression;--suppress=missingInclude;--inline-suppr;-D__align__;-DCUDARTAPI;--language=c++;--std=c++17;--error-exitcode=666" ..
+    - cmake -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--suppress=unmatchedSuppression;--suppress=missingInclude;--suppress=syntaxError;--inline-suppr;-D__align__;-DCUDARTAPI;--language=c++;--std=c++17;--error-exitcode=666" ..
     - cmake --build .
     - ctest --output-on-failure
 

@@ -13,33 +13,38 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 
 project(boost-multi-adaptors-blas-test VERSION 0.1 LANGUAGES CXX)
 
-find_package(Boost REQUIRED COMPONENTS unit_test_framework)
-
-find_package(BLAS REQUIRED)
-find_path(BLAS_INCLUDE_DIRS cblas.h
-  /usr/include
-  /usr/local/include
-  $ENV{BLAS_HOME}/include)
-
-link_libraries(${BLAS_LIBRARIES})
-include_directories(${TEST_EXE} PRIVATE ${BLAS_INCLUDE_DIRS})
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "PGI")
+  find_package(Boost REQUIRED COMPONENTS unit_test_framework)
+  link_libraries("-lboost_unit_test_framework")
+
+  find_package(BLAS REQUIRED)
+  find_path(BLAS_INCLUDE_DIRS cblas.h
+    /usr/include
+    /usr/local/include
+    $ENV{BLAS_HOME}/include)
+  include_directories(${TEST_EXE} PRIVATE ${BLAS_INCLUDE_DIRS})
+  link_libraries(${BLAS_LIBRARIES})
+else()
+  find_package(Boost REQUIRED) # cmake cannot detect this component with pgi compiler
+  link_libraries("-lboost_unit_test_framework")
+
+  link_libraries("-lblas") # cmake cannot detect BLAS with pgi/nvc++ but it ships with its own version
+endif()
+
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	enable_language(CUDA)
 	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"")
-endif()
-
 find_package(CUDA QUIET)
-
-if (CUDA_FOUND)
-    message("CUDA found")
-    include_directories(${CUDA_INCLUDE_DIRS})
-else()
-    message("CUDA not found")
+  if (CUDA_FOUND)
+      message("CUDA found")
+      include_directories(${CUDA_INCLUDE_DIRS})
+  else()
+      message("CUDA not found")
+  endif()
 endif()
 
 enable_testing()
@@ -79,14 +84,15 @@ foreach(TEST_FILE ${TEST_SRCS})
   target_link_directories   (${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
   if(NOT ENABLE_CUDA)
     target_compile_options  (${TEST_EXE} PRIVATE
-       -Werror -Wall -Wextra -fno-common
+       -Werror -Wall
        $<$<CXX_COMPILER_ID:GNU>:
-          -Wpedantic -Wformat-truncation -fstack-usage>#-Wconversion
+                             -Wextra -Wpedantic -Wformat-truncation> #-Wconversion 
        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
-          -Wpedantic -Wmove>
+                             -Wextra -Wpedantic -Wmove>
        $<$<CXX_COMPILER_ID:Intel>:
-                                        -wd161 -diag-disable=remark -Warray-bounds -Wchar-subscripts -Wcomment -Wenum-compare -Wformat -Wuninitialized -Wmaybe-uninitialized -Wmain -Wnarrowing -Wnonnull -Wparentheses -Wpointer-sign -Wreorder -Wno-return-type -Wsign-compare -Wsequence-point -Wtrigraphs -Wunused-function -Wunused-but-set-variable -Wunused-variable -Wwrite-strings -Werror -diag-error:3846
-       >
+                             -Wextra                            -wd161 -diag-disable=remark -Warray-bounds -Wchar-subscripts -Wcomment -Wenum-compare -Wformat -Wuninitialized -Wmaybe-uninitialized -Wmain -Wnarrowing -Wnonnull -Wparentheses -Wpointer-sign -Wreorder -Wno-return-type -Wsign-compare -Wsequence-point -Wtrigraphs -Wunused-function -Wunused-but-set-variable -Wunused-variable -Wwrite-strings -diag-error:3846>
+       $<$<CXX_COMPILER_ID:PGI>: #PGI 20  doesn't recognize the -Wextra option
+                                                         --diag_suppress=implicit_return_from_non_void_function>
        $<$<CXX_COMPILER_ID:MSVC>:
           /W4>)
   endif()

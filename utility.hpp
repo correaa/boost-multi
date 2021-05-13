@@ -518,7 +518,7 @@ namespace serialization{
 //	}
 }}
 
-#if not __INCLUDE_LEVEL__ // TEST BELOW
+#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 
 #define BOOST_TEST_DYN_LINK 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi zero dimensionality"

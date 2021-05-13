@@ -1294,7 +1294,8 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_square_automatic){
 	{
 		multi::array<double, 2> c({2, 2});
 		blas::gemm(1., blas::T(a), b, 0., c); // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE(( c[1][1] == 169. and c[1][0] == 82. ));
+		BOOST_REQUIRE( c[1][1] == 169. );
+		BOOST_REQUIRE( c[1][0] ==  82. );
 	}
 	{
 		multi::array<double, 2> c({2, 2});

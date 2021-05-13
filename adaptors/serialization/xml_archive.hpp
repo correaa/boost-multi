@@ -23,7 +23,7 @@ struct archive_traits<boost::archive::xml_iarchive>{
 
 }}
 
-#if not __INCLUDE_LEVEL__
+#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi adaptor serialization xml_archive"
 #define BOOST_TEST_DYN_LINK

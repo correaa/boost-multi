@@ -304,7 +304,7 @@ template<> struct uninitialized_fill_aux<1>{template<class Alloc, class O, class
 
 }}
 
-#if not __INCLUDE_LEVEL__ // _TEST_BOOST_MULTI_DETAIL_MEMORY
+#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 
 #include<vector>
 

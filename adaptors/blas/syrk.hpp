@@ -4,7 +4,7 @@ $CXX $0 -o $0x -lboost_unit_test_framework -lboost_timer \
 `#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -liomp5` \
 &&$0x&&rm $0x;exit
 #endif
-// © Alfredo A. Correa 2019-2020
+// © Alfredo A. Correa 2019-2021
 
 #ifndef MULTI_ADAPTORS_BLAS_SYRK_HPP
 #define MULTI_ADAPTORS_BLAS_SYRK_HPP
@@ -60,7 +60,7 @@ auto syrk(A2D const& A)
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-#if not __INCLUDE_LEVEL__ // _TEST_MULTI_ADAPTORS_BLAS_SYRK
+#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS syrk"
 #define BOOST_TEST_DYN_LINK
