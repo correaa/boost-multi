@@ -695,10 +695,10 @@ public:
 //	array_ptr<T, D, typename array::element_ptr> operator&() && = delete;
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int version){
-		auto extensions = this->extensions();
-		ar & multi::archive_traits<Archive>::make_nvp("extensions", extensions);
-		if(extensions != this->extensions()){clear(); this->reextent(extensions);}
-		assert(extensions == this->extensions());
+		auto x = this->extensions();
+		ar & multi::archive_traits<Archive>::make_nvp("extensions", x);
+		if(x != this->extensions()){clear(); this->reextent(x);}
+		assert(x == this->extensions());
 		static_::serialize(ar, version);
 	}
 	using static_::static_;
