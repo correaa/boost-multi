@@ -47,14 +47,14 @@ foreach(TEST_FILE ${TEST_SRCS})
   target_link_directories   (${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
   if(NOT ENABLE_CUDA)
     target_compile_options  (${TEST_EXE} PRIVATE
-       -Werror -Wall -Wextra
+       -Werror -Wall
        $<$<CXX_COMPILER_ID:GNU>:
-                             -Wpedantic -Wformat-truncation> #-Wconversion 
+                             -Wextra -Wpedantic -Wformat-truncation> #-Wconversion 
        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
-                             -Wpedantic -Wmove>
+                             -Wextra -Wpedantic -Wmove>
        $<$<CXX_COMPILER_ID:Intel>:
-                                                         -wd161 -diag-disable=remark -Warray-bounds -Wchar-subscripts -Wcomment -Wenum-compare -Wformat -Wuninitialized -Wmaybe-uninitialized -Wmain -Wnarrowing -Wnonnull -Wparentheses -Wpointer-sign -Wreorder -Wno-return-type -Wsign-compare -Wsequence-point -Wtrigraphs -Wunused-function -Wunused-but-set-variable -Wunused-variable -Wwrite-strings -diag-error:3846>
-       $<$<CXX_COMPILER_ID:PGI>:
+                             -Wextra                            -wd161 -diag-disable=remark -Warray-bounds -Wchar-subscripts -Wcomment -Wenum-compare -Wformat -Wuninitialized -Wmaybe-uninitialized -Wmain -Wnarrowing -Wnonnull -Wparentheses -Wpointer-sign -Wreorder -Wno-return-type -Wsign-compare -Wsequence-point -Wtrigraphs -Wunused-function -Wunused-but-set-variable -Wunused-variable -Wwrite-strings -diag-error:3846>
+       $<$<CXX_COMPILER_ID:PGI>: #PGI 20  doesn't recognize the -Wextra option
                                                          --diag_suppress=implicit_return_from_non_void_function>
        $<$<CXX_COMPILER_ID:MSVC>:
           /W4>)
