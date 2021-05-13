@@ -588,7 +588,7 @@ blas::context* default_context_of(TPtr const&){return {};}
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#if not __INCLUDE_LEVEL__
+#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 
 #include "../../array.hpp"
 #include "../../utility.hpp"

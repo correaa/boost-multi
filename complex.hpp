@@ -174,9 +174,9 @@ namespace std{
 		is_trivially_default_constructible<T>{};
 }
 
-#if not __INCLUDE_LEVEL__ // _TEST_MULTI_COMPLEX
+#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 
-#include<cassert>
+#include<cassert>c
 #include<complex>
 #include "array.hpp"
 

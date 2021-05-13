@@ -14,7 +14,7 @@
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////
-#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__ // _TEST_MULTI_CONFIG_NO_UNIQUE_ADDRESS
+#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 
 class A{};
 

@@ -83,7 +83,7 @@ filling detect_triangular(A2D const& A){
 
 }
 
-#if not __INCLUDE_LEVEL__ // _TEST_MULTI_ADAPTORS_BLAS_FILLING
+#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi adaptors side"
 #define BOOST_TEST_DYN_LINK

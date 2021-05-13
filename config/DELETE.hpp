@@ -17,7 +17,7 @@ template<bool B = false, class T = int> using disable_if = typename disable_if_i
 
 #define DELETE(ConD) boost::multi::disable_if<ConD> =0
 
-#if not __INCLUDE_LEVEL__ // _TEST_MULTI_CONFIG_NODISCARD
+#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 
 int main(){
 }
