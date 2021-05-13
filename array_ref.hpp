@@ -1049,7 +1049,7 @@ struct array_iterator<Element, 1, Ptr> ://, Ref> :
 	constexpr array_iterator(Ptr d, typename basic_array<Element, 1, Ptr>::index s) : data_{d}, stride_{s}{} // TODO make explicit?
 private:
 	friend struct basic_array<Element, 1, Ptr>;
-	element_ptr data_ = nullptr;
+	element_ptr data_{nullptr}; // TODO consider uninitialized pointer
 	stride_type stride_ = {1};
 	constexpr difference_type distance_to(array_iterator const& other) const{
 		assert(stride_==other.stride_ and (other.data_-data_)%stride_ == 0);
