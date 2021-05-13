@@ -55,7 +55,7 @@ make -j
 make test -j
 ```
 
-The code is developed on `clang` (10.0), `gcc` (9.3) and `nvcc` 11 compilers, and [tested regularly ](https://gitlab.com/correaa/boost-multi/pipelines) with clang 9.0, NVCC 10.1, Intel (19.1), and PGI(nvc++) 20.7 compilers.
+The code is developed on `clang` (10.0), `gcc` (9.3) and `nvcc` 11 compilers, and [tested regularly ](https://gitlab.com/correaa/boost-multi/pipelines) with clang 9.0, NVCC 10.1, Intel (19.1), and PGI(nvc++ 20.7-21.3) compilers.
 For detailed compilation instructions of test see the Continuous Integration (CI) definition file https://gitlab.com/correaa/boost-multi/-/blob/master/.gitlab-ci.yml
 
 ## Types
