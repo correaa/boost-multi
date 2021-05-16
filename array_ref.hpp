@@ -711,19 +711,19 @@ public:
 	// the default template parameters below help interpret for {first, last} simple syntax as iranges
 	// do not remove default parameter = irange
 	template<class B1 = irange>                                                                       HD constexpr decltype(auto) operator()(B1 b1)                                const&{return paren_(b1);}
-	template<class B1 = irange, class B2 = irange>                                                    HD constexpr decltype(auto) operator()(B1 b1, B2 b2)                         const&{return paren_(b1, b2);}
+	template<class B1 = irange, class B2 = irange>                                                    HD constexpr auto operator()(B1 b1, B2 b2)                         const& ->decltype(paren_(b1, b2)){return paren_(b1, b2);}
 	template<class B1 = irange, class B2 = irange, class B3 = irange>                                 HD constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3)                  const&{return paren_(b1, b2, b3);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As> HD constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as) const&{return paren_(b1, b2, b3, b4, as...);}
+	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As> HD constexpr auto operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as) const& ->decltype(paren_(b1, b2, b3, b4, as...)){return paren_(b1, b2, b3, b4, as...);}
 
 	template<class B1 = irange>                                                                       HD constexpr decltype(auto) operator()(B1 b1)                                     &{return paren_(b1);}
-	template<class B1 = irange, class B2 = irange>                                                    HD constexpr decltype(auto) operator()(B1 b1, B2 b2)                              &{return paren_(b1, b2);}
+	template<class B1 = irange, class B2 = irange>                                                    HD constexpr auto operator()(B1 b1, B2 b2)                              & ->decltype(paren_(b1, b2)){return paren_(b1, b2);}
 	template<class B1 = irange, class B2 = irange, class B3 = irange>                                 HD constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3)                       &{return paren_(b1, b2, b3);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As> HD constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as)      &{return paren_(b1, b2, b3, b4, as...);}
+	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As> HD constexpr auto operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as)      & -> decltype(paren_(b1, b2, b3, b4, as...)){return paren_(b1, b2, b3, b4, as...);}
 
-	template<class B1 = irange>                                                                       HD constexpr decltype(auto) operator()(B1 b1)                                    &&{return paren_(b1);}
-	template<class B1 = irange, class B2 = irange>                                                    HD constexpr decltype(auto) operator()(B1 b1, B2 b2)                             &&{return paren_(b1, b2);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange>                                 HD constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3)                      &&{return paren_(b1, b2, b3);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As> HD constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as)     &&{return paren_(b1, b2, b3, b4, as...);}
+	template<class B1 = irange>                                                                       HD constexpr decltype(auto) operator()(B1 b1)                                    &&{return std::move(*this).paren_(b1);}
+	template<class B1 = irange, class B2 = irange>                                                    HD constexpr auto operator()(B1 b1, B2 b2)                             && ->decltype(std::declval<basic_array&&>().paren_(b1, b2)){return std::move(*this).paren_(b1, b2);}
+	template<class B1 = irange, class B2 = irange, class B3 = irange>                                 HD constexpr decltype(auto) operator()(B1 b1, B2 b2, B3 b3)                      &&{return std::move(*this).paren_(b1, b2, b3);}
+	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As> HD constexpr auto operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as)     &&->decltype(std::declval<basic_array&&>().paren_(b1, b2, b3, b4, as...)){return std::move(*this).paren_(b1, b2, b3, b4, as...);}
 
 //	template<class B1 = iextension>                                                                   decltype(auto) block(B1 b1)                                const&{return block_aux(b1);}
 //	template<class B1 = irange, class B2 = irange>                                                    decltype(auto) operator()(B1 b1, B2 b2)                         const&{return paren(b1, b2);}
@@ -739,6 +739,21 @@ public:
 //	template<class B1 = irange, class B2 = irange>                                                    decltype(auto) operator()(B1 b1, B2 b2)                         &&{return std::move(*this).paren(b1, b2);}
 //	template<class B1 = irange, class B2 = irange, class B3 = irange>                                 decltype(auto) operator()(B1 b1, B2 b2, B3 b3)                  &&{return std::move(*this).paren(b1, b2, b3);}
 //	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As> decltype(auto) operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as) &&{return std::move(*this).paren(b1, b2, b3, b4, as...);}
+
+	template<class... Args>
+	constexpr auto operator()(Args&&... args) &
+	->decltype(paren(*this, std::forward<Args>(args)...)){
+		return paren(*this, std::forward<Args>(args)...);}
+
+	template<class... Args>
+	constexpr auto operator()(Args&&... args) &&
+	->decltype(paren(std::move(*this), std::forward<Args>(args)...)){
+		return paren(std::move(*this), std::forward<Args>(args)...);}
+
+	template<class... Args>
+	constexpr auto operator()(Args&&... args) const&
+	->decltype(paren(*this, std::forward<Args>(args)...)){
+		return paren(*this, std::forward<Args>(args)...);}
 
 private:
 	template<typename Tuple, std::size_t ... I> constexpr decltype(auto) apply_impl(Tuple const& t, std::index_sequence<I...>) const&{return this->operator()(std::get<I>(t)...);}
