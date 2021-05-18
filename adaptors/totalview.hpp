@@ -26,7 +26,7 @@ template<class TT>
 __attribute__((used))
 #endif
 int TV_ttf_display_type(boost::multi::array<TT, 1> const* mad1P){
-	if(not mad1P->empty()){
+	if(not mad1P->is_empty()){
 		char tname[128];
 		snprintf(tname, sizeof(tname), "%s[%ld]", boost::typeindex::type_id<TT>().pretty_name().c_str(), (long)mad1P->size());//, (long)mad1P->stride());
 		int result = TV_ttf_add_row("elements", tname, mad1P->origin());
@@ -43,7 +43,7 @@ template<class TT>
 __attribute__((used))
 #endif
 int TV_ttf_display_type(boost::multi::array<TT, 2> const* mad2P){
-	if(not mad2P->empty()){
+	if(not mad2P->is_empty()){
 		char tname[128];
 		using std::get;
 		snprintf(tname, sizeof(tname), "%s[%ld][%ld]", boost::typeindex::type_id<TT>().pretty_name().c_str(), (long)get<0>(mad2P->sizes()), (long)get<1>(mad2P->sizes()));//, (long)mad1P->stride());
