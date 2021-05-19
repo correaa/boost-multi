@@ -112,7 +112,7 @@ template int TV_ttf_display_type<std::complex<float> >(boost::multi::basic_array
 template int TV_ttf_display_type<int                 >(boost::multi::basic_array<int                 , 2> const*);
 template int TV_ttf_display_type<long                >(boost::multi::basic_array<long                , 2> const*);
 
-#if not __INCLUDE_LEVEL__
+#if defined(__INCLUDE_LEVEL__) and (not __INCLUDE_LEVEL__)
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi TotalView adaptor"
 #define BOOST_TEST_DYN_LINK
