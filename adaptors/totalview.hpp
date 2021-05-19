@@ -1,7 +1,7 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
 $CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
-// © Alfredo A. Correa 2020
+// © Alfredo A. Correa 2020-2021
 
 #ifndef MULTI_ADAPTORS_TOTALVIEW_HPP
 #define MULTI_ADAPTORS_TOTALVIEW_HPP
@@ -21,6 +21,17 @@ $CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 
 #include<boost/type_index.hpp>
 
+template<typename T> constexpr char const* pretty_name = "unknown";
+
+template<> constexpr char const* pretty_name<double> = "double";
+template<> constexpr char const* pretty_name<float > = "float";
+
+template<> constexpr char const* pretty_name<std::complex<double>> = "std::complex<double>";
+template<> constexpr char const* pretty_name<std::complex<float> > = "std::complex<float>";
+
+template<> constexpr char const* pretty_name<long> = "long";
+template<> constexpr char const* pretty_name<int > = "int";
+
 template<class TT>
 #ifdef __GCC__
 __attribute__((used))
@@ -28,7 +39,7 @@ __attribute__((used))
 int TV_ttf_display_type(boost::multi::array<TT, 1> const* mad1P){
 	if(not mad1P->is_empty()){
 		char tname[128];
-		snprintf(tname, sizeof(tname), "%s[%ld]", boost::typeindex::type_id<TT>().pretty_name().c_str(), (long)mad1P->size());//, (long)mad1P->stride());
+		snprintf(tname, sizeof(tname), "%s[%ld]", pretty_name<TT>, (long)mad1P->size());//, (long)mad1P->stride());
 		int result = TV_ttf_add_row("elements", tname, mad1P->origin());
 		if (result != 0){
 			fprintf(stderr, "TV_ttf_add_row returned error %d\n", result);
@@ -46,7 +57,7 @@ int TV_ttf_display_type(boost::multi::array<TT, 2> const* mad2P){
 	if(not mad2P->is_empty()){
 		char tname[128];
 		using std::get;
-		snprintf(tname, sizeof(tname), "%s[%ld][%ld]", boost::typeindex::type_id<TT>().pretty_name().c_str(), (long)get<0>(mad2P->sizes()), (long)get<1>(mad2P->sizes()));//, (long)mad1P->stride());
+		snprintf(tname, sizeof(tname), "%s[%ld][%ld]", pretty_name<TT>, (long)get<0>(mad2P->sizes()), (long)get<1>(mad2P->sizes()));//, (long)mad1P->stride());
 		int result = TV_ttf_add_row("elements", tname, mad2P->origin());
 
 		if (result != 0){
