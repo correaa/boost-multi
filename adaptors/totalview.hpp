@@ -19,8 +19,6 @@ $CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 // ^^^^^^^^^^^ this can produce problemas later with linking
 // https://docs.roguewave.com/totalview/2018.1/html/index.html#page/Reference_Guide%2FCompilingAndLinkingTV_data_display.html%23ww1738654
 
-#include<boost/type_index.hpp>
-
 template<typename T> constexpr char const* pretty_name = "unknown";
 
 template<> constexpr char const* pretty_name<double> = "double";
