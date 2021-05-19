@@ -6,6 +6,8 @@ $CXX $0 -o $0x -lcudart -lcufft `pkg-config --libs fftw3` -lboost_unit_test_fram
 #ifndef MULTI_ADAPTORS_CUFFTW_HPP
 #define MULTI_ADAPTORS_CUFFTW_HPP
 
+#include "../config/MARK.hpp"
+
 #include "../adaptors/../utility.hpp"
 #include "../adaptors/../array.hpp"
 #include "../adaptors/../config/NODISCARD.hpp"
@@ -147,6 +149,7 @@ public:
 	template<class I, class O>
 	void execute_dft(I&& i, O&& o) const{execute_dft(std::forward<I>(i), std::forward<O>(o), direction_);}
 	~plan() noexcept{
+		MULTI_MARK_SCOPE("cufft plan dtor");
 	//	if(h_) cufftDestroy(h_);
 	}
 	using size_type = int;
@@ -161,6 +164,8 @@ public:
 		odata_{const_cast<complex_type*>(reinterpret_cast<complex_type*      >(raw_pointer_cast(base(o))))},
 		direction_{s}
 	{
+		MULTI_MARK_SCOPE("cufft plan ctor");
+
 		assert( I::dimensionality < 4 );
 		assert( CUFFT_FORWARD == s or CUFFT_INVERSE == s or s == 0 );
 		assert( sizes(i) == sizes(o) );
@@ -235,6 +240,8 @@ public:
 	static auto many(It1 first, It1 last, It2 d_first, int sign = 0, unsigned = 0)
 #endif
 	{
+		MULTI_MARK_SCOPE("cufft plan many factory");
+
 		assert( CUFFT_FORWARD == sign or CUFFT_INVERSE == sign or sign == 0 );
 		assert( sizes(*first) == sizes(*d_first) );
 
@@ -392,12 +399,14 @@ auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
 				if( d_min!=0 ){
 					std::rotate(which.begin(), which.begin()+d_min, which.end());
 					dft(which, i<<d_min, o<<d_min, s);
-				}else
-				{
+				}else{
 					if(base(i) == base(o) and i.layout() != o.layout()){
 						auto const tmp = +i;
 						for(auto idx : extension(i)) cufft::dft(tail, tmp[idx], o[idx], s);
-					}else for(auto idx : extension(i)) cufft::dft(tail, i[idx], o[idx], s);
+					}else for(auto idx : extension(i)){
+						MULTI_MARK_SCOPE("cufft inner loop");
+						cufft::dft(tail, i[idx], o[idx], s);
+					}
 				}
 			}
 		}
