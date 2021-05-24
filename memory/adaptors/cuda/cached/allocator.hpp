@@ -92,7 +92,8 @@ namespace cached{
 		template<class TT> using rebind = cached::allocator<TT, PrefetchDevice>;
 
 		pointer allocate(typename allocator::size_type n){
-			MULTI_MARK_SCOPE("allocate");			
+			MULTI_MARK_SCOPE("cuda::cached::allocate");
+
 			if(n == 0) return pointer{nullptr};
 
 			auto ret = static_cast<pointer>(cache().get(n*sizeof(T)));
@@ -133,7 +134,8 @@ namespace cached{
 			return ret;
 		}
 		void deallocate(pointer p, size_type n){
-			MULTI_MARK_SCOPE("deallocate");
+			MULTI_MARK_SCOPE("cuda::cached::deallocate");
+
 			if(not cache().put(n*sizeof(T), static_cast<cached::ptr<void>>(p))){
 				cuda::cached::free(static_cast<cached::ptr<void>>(p));
 			}
