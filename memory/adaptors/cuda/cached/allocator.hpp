@@ -36,12 +36,19 @@ namespace cached{
 		static const unsigned max_size = 50;
 		std::list<block> blocks_;
 		std::unordered_multimap<size_t, typename decltype(blocks_)::iterator> map_;
+		size_t mem_used;
 
 	public:
+
+		allocator_cache():
+			mem_used(0)
+		{
+		}
 		
 		auto put(size_t size, PointerType loc){
 			if(map_.size() > max_size){
 				cuda::cached::free(blocks_.back().loc);
+				mem_used -= blocks_.back().size;
 				auto range = map_.equal_range(blocks_.back().size);
 				for(auto it = range.first; it != range.second; ++it){
 					if(it->second == --blocks_.end()) {
@@ -54,7 +61,8 @@ namespace cached{
 			blocks_.emplace_front(block{size, loc});
 			map_.emplace(size, blocks_.begin());
 			assert(map_.size() == blocks_.size());
-			
+			mem_used += size;
+
 			return true;
 		}
 
@@ -66,6 +74,7 @@ namespace cached{
 				loc = block_pos->loc;
 				blocks_.erase(block_pos);
 				map_.erase(pos);
+				mem_used -= size;
 			} else {
 				loc = nullptr;
 			}
