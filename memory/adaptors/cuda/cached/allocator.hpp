@@ -52,7 +52,7 @@ namespace cached{
 				blocks_.pop_back();
 			}
 			blocks_.emplace_front(block{size, loc});
-			map_.insert(std::make_pair(size, blocks_.begin()));
+			map_.emplace(size, blocks_.begin());
 			assert(map_.size() == blocks_.size());
 			
 			return true;
