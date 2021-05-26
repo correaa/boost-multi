@@ -16,8 +16,9 @@ $CXXX $CXXFLAGS $0 -o $0x -lcudart&&$0x&&rm $0x;exit
 #include<iostream> // debug
 #include<limits>
 #include<new> // bad_alloc
-#include <list>
-#include <unordered_map>
+#include<list>
+#include<unordered_map>
+#include<utility> // pair
 
 namespace boost{namespace multi{
 namespace memory{namespace cuda{
@@ -51,7 +52,7 @@ namespace cached{
 				blocks_.pop_back();
 			}
 			blocks_.emplace_front(block{size, loc});
-			map_.insert(std::pair(size, blocks_.begin()));
+			map_.insert(std::make_pair(size, blocks_.begin()));
 			assert(map_.size() == blocks_.size());
 			
 			return true;
