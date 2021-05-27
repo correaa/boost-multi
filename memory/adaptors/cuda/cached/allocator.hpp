@@ -18,7 +18,6 @@ $CXXX $CXXFLAGS $0 -o $0x -lcudart&&$0x&&rm $0x;exit
 #include<new> // bad_alloc
 #include<list>
 #include<unordered_map>
-#include<utility> // pair
 
 namespace boost{namespace multi{
 namespace memory{namespace cuda{
@@ -33,7 +32,8 @@ namespace cached{
 			PointerType loc;
 		};
 		
-		static const unsigned max_size = 50;
+		static const size_t max_size = 4ul*1024ul*1024ul*1024ul;
+		static const unsigned max_entries = 200;
 		std::list<block> blocks_;
 		std::unordered_multimap<size_t, typename decltype(blocks_)::iterator> map_;
 		size_t mem_used;
@@ -46,7 +46,12 @@ namespace cached{
 		}
 		
 		auto put(size_t size, PointerType loc){
-			if(map_.size() > max_size){
+
+			if(size >= max_size) return false;
+			
+			while(size + mem_used > max_size or map_.size() >= max_entries){
+				assert(map_.size() > 0);
+				
 				cuda::cached::free(blocks_.back().loc);
 				mem_used -= blocks_.back().size;
 				auto range = map_.equal_range(blocks_.back().size);
