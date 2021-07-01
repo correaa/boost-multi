@@ -590,12 +590,8 @@ inq-nvcc-ompi:
     - git checkout $CI_COMMIT_BRANCH
     - cd ../..
     - mkdir build && cd build
-    - export CUDACXX=/usr/local/cuda/bin/nvcc
-    - export CUDAFLAGS="$(for x in `mpic++ --showme:incdirs`; do echo -n -I$x" " ; done) -std=c++17 -DFMT_USE_UDL_TEMPLATE=0 -D_DISABLE_CUDA_SLOW -O3 --gpu-architecture sm_70 --expt-relaxed-constexpr --expt-extended-lambda --Werror=cross-execution-space-call --compiler-options -Ofast,-std=c++17,-Wall,-Wfatal-errors"
-    - export LDFLAGS=$(for x in `mpic++ --showme:libdirs`; do echo -n -L$x" " ; done)
-    - export LIBS=$(for x in `mpic++ --showme:libs`; do echo -n -l$x" " ; done)
-    - $CUDACXX -V
-    - ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda
+    - /usr/local/cuda/bin/nvcc -V
+    - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --disable-debug --with-cuda-prefix=/usr/local/cuda
     - make -j4
     - make -j4 install
     - ctest --output-on-failure --timeout 600
