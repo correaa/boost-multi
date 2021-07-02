@@ -42,29 +42,29 @@ BOOST_AUTO_TEST_CASE(fftw_transpose){
 			}
 			BOOST_REQUIRE( out == ~in );
 		}
-		{
-			multi::array<complex, 2> out = in;
-			auto p = out.data_elements();
-			{
-				boost::timer::auto_cpu_timer t{"fftw trans mve 1 thread  %ws wall, CPU (%p%)\n"};
-				out = multi::fftw::copy( transposed( move(out) ) );
-				BOOST_REQUIRE( out.data_elements() == p );
-				BOOST_REQUIRE( out[35][79] == in[79][35] );
-			}
-			BOOST_REQUIRE( out == ~in );
-		}
+//		{
+//			multi::array<complex, 2> out = in;
+//			auto p = out.data_elements();
+//			{
+//				boost::timer::auto_cpu_timer t{"fftw trans mve 1 thread  %ws wall, CPU (%p%)\n"};
+//				out = multi::fftw::copy( transposed( move(out) ) );
+//				BOOST_REQUIRE( out.data_elements() == p );
+//				BOOST_REQUIRE( out[35][79] == in[79][35] );
+//			}
+//			BOOST_REQUIRE( out == ~in );
+//		}
 	//	multi::fftw::plan::with_nthreads(2);
-		{
-			multi::array<complex, 2> out = in;
-			auto p = out.data_elements();
-			{
-				boost::timer::auto_cpu_timer t{"fftw trans mve 2 thread  %ws wall, CPU (%p%)\n"};
-				out = multi::fftw::copy( ~move(out) );
-				BOOST_REQUIRE( out.data_elements() == p );
-				BOOST_REQUIRE( out[35][79] == in[79][35] );
-			}
-			BOOST_REQUIRE( out == ~in );
-		}
+//		{
+//			multi::array<complex, 2> out = in;
+//			auto p = out.data_elements();
+//			{
+//				boost::timer::auto_cpu_timer t{"fftw trans mve 2 thread  %ws wall, CPU (%p%)\n"};
+//				out = multi::fftw::copy( ~move(out) );
+//				BOOST_REQUIRE( out.data_elements() == p );
+//				BOOST_REQUIRE( out[35][79] == in[79][35] );
+//			}
+//			BOOST_REQUIRE( out == ~in );
+//		}
 	//	multi::fftw::plan::with_nthreads(4);
 		{
 			multi::array<complex, 2> out = in;
