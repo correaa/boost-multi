@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(fftw_transpose){
 			std::cout<<"memory size "<< ret.num_elements()*sizeof(complex)/1e6 <<" MB\n";
 			return ret;
 		}();
-		multi::fftw::plan::with_nthreads(1);
+	//	multi::fftw::plan::with_nthreads(1);
 		{
 			multi::array<complex, 2> out = in;
 			auto p = out.data_elements();
@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(fftw_transpose){
 			}
 			BOOST_REQUIRE( out == ~in );
 		}
-		multi::fftw::plan::with_nthreads(2);
+	//	multi::fftw::plan::with_nthreads(2);
 		{
 			multi::array<complex, 2> out = in;
 			auto p = out.data_elements();
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(fftw_transpose){
 			}
 			BOOST_REQUIRE( out == ~in );
 		}
-		multi::fftw::plan::with_nthreads(4);
+	//	multi::fftw::plan::with_nthreads(4);
 		{
 			multi::array<complex, 2> out = in;
 			auto p = out.data_elements();

@@ -94,7 +94,6 @@ BOOST_AUTO_TEST_CASE(fftw_2D_identity_2, *boost::unit_test::tolerance(0.0001)){
 	};
 	multi::array<complex, 2> out(extensions(in));
 	multi::fftw::dft({false, false}, in, out, fftw::forward); // out = in;
-	BOOST_REQUIRE( power(in) == power(out) );
 	BOOST_REQUIRE( out == in );
 }
 

@@ -17,7 +17,7 @@ namespace multi = boost::multi;
 BOOST_AUTO_TEST_CASE(fftw_transpose){
 
 //	multi::fftw::initialize_threads();
-	multi::fftw::plan::with_nthreads(1);
+//	multi::fftw::plan::with_nthreads(1);
 
 	using complex = std::complex<double>;
 
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(fftw_transpose){
 				BOOST_REQUIRE( out[35][79] == in[79][35] );
 			}
 		}
-		multi::fftw::plan::with_nthreads(2);
+//		multi::fftw::plan::with_nthreads(2);
 		{
 			multi::array<complex, 2> out = in;
 			auto p = out.data_elements();
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE(fftw_transpose){
 				BOOST_REQUIRE( out[35][79] == in[79][35] );
 			}
 		}
-		multi::fftw::plan::with_nthreads(3);
+//		multi::fftw::plan::with_nthreads(3);
 		{
 			multi::array<complex, 2> out = in;
 			auto p = out.data_elements();
@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(fftw_transpose){
 				BOOST_REQUIRE( out[35][79] == in[79][35] );
 			}
 		}
-		multi::fftw::plan::with_nthreads(4);
+//		multi::fftw::plan::with_nthreads(4);
 		{
 			multi::array<complex, 2> out = in;
 			auto p = out.data_elements();
