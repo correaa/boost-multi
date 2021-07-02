@@ -28,12 +28,13 @@ struct watch : private std::chrono::high_resolution_clock{
 	}
 };
 
-BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001)){
+BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001) ){
 
 	using complex = std::complex<double>;
 
 	auto const in = []{
-		multi::array<complex, 4> ret({32, 90, 98, 96});
+	//	multi::array<complex, 4> ret({32, 90, 98, 96});
+		multi::array<complex, 4> ret({10 , 11 , 12 , 13 });
 		std::generate(ret.data_elements(), ret.data_elements() + ret.num_elements(), 
 			[](){return complex{std::rand()*1./RAND_MAX, std::rand()*1./RAND_MAX};}
 		);

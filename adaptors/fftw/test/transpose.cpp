@@ -24,7 +24,8 @@ BOOST_AUTO_TEST_CASE(fftw_transpose){
 
 	{
 		auto const in = []{
-			multi::array<complex, 2> ret({10137, 9973});
+		//	multi::array<complex, 2> ret({10137, 9973});
+			multi::array<complex, 2> ret({1013, 997});
 			std::generate(ret.data_elements(), ret.data_elements() + ret.num_elements(), 
 				[](){return complex{std::rand()*1./RAND_MAX, std::rand()*1./RAND_MAX};}
 			);
