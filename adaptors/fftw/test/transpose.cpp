@@ -84,38 +84,38 @@ BOOST_AUTO_TEST_CASE(fftw_transpose){
 //				BOOST_REQUIRE( out2[35][79] == in[79][35] );
 //			}
 //		}
-		{
-			multi::array<complex, 2> out = in;
-			auto p = out.data_elements();
-			{
-				boost::timer::auto_cpu_timer t{"fftw transpose 2 threads %ws wall, CPU (%p%)\n"};
-				out = multi::fftw::copy( ~move(out) );
-				BOOST_REQUIRE( out.data_elements() == p );
-				BOOST_REQUIRE( out[35][79] == in[79][35] );
-			}
-		}
+//		{
+//			multi::array<complex, 2> out = in;
+//			auto p = out.data_elements();
+//			{
+//				boost::timer::auto_cpu_timer t{"fftw transpose 2 threads %ws wall, CPU (%p%)\n"};
+//				out = multi::fftw::copy( ~move(out) );
+//				BOOST_REQUIRE( out.data_elements() == p );
+//				BOOST_REQUIRE( out[35][79] == in[79][35] );
+//			}
+//		}
 //		multi::fftw::plan::with_nthreads(3);
-		{
-			multi::array<complex, 2> out = in;
-			auto p = out.data_elements();
-			{
-				boost::timer::auto_cpu_timer t{"fftw transpose 3 threads %ws wall, CPU (%p%)\n"};
-				out = multi::fftw::copy( ~move(out) );
-				BOOST_REQUIRE( out.data_elements() == p );
-				BOOST_REQUIRE( out[35][79] == in[79][35] );
-			}
-		}
+//		{
+//			multi::array<complex, 2> out = in;
+//			auto p = out.data_elements();
+//			{
+//				boost::timer::auto_cpu_timer t{"fftw transpose 3 threads %ws wall, CPU (%p%)\n"};
+//				out = multi::fftw::copy( ~move(out) );
+//				BOOST_REQUIRE( out.data_elements() == p );
+//				BOOST_REQUIRE( out[35][79] == in[79][35] );
+//			}
+//		}
 //		multi::fftw::plan::with_nthreads(4);
-		{
-			multi::array<complex, 2> out = in;
-			auto p = out.data_elements();
-			{
-				boost::timer::auto_cpu_timer t{"fftw transpose 4 threads %ws wall, CPU (%p%)\n"};
-				out = multi::fftw::copy( ~move(out) );
-				BOOST_REQUIRE( out.data_elements() == p );
-				BOOST_REQUIRE( out[35][79] == in[79][35] );
-			}
-		}
+//		{
+//			multi::array<complex, 2> out = in;
+//			auto p = out.data_elements();
+//			{
+//				boost::timer::auto_cpu_timer t{"fftw transpose 4 threads %ws wall, CPU (%p%)\n"};
+//				out = multi::fftw::copy( ~move(out) );
+//				BOOST_REQUIRE( out.data_elements() == p );
+//				BOOST_REQUIRE( out[35][79] == in[79][35] );
+//			}
+//		}
 	}
 }
 
