@@ -1144,7 +1144,7 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout> :
 	using default_allocator_type = typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type;
 
 	constexpr default_allocator_type get_allocator() const{return default_allocator_of(basic_array::base());}
-	friend constexpr default_allocator_type get_allocator(basic_array const& self){return self.get_allocator();}
+	friend default_allocator_type get_allocator(basic_array const& self){return self.get_allocator();}
 	using decay_type = array<typename types::element, dimensionality_type{1}, typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type>;
 	       constexpr decay_type decay()           const&      {return decay_type{*this};}
 	friend constexpr decay_type decay(basic_array const& self){return self.decay();}
