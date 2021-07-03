@@ -393,7 +393,7 @@ public:
 		using multi::get_allocator;
 		return get_allocator(this->base());
 	}
-	
+
 	friend default_allocator_type get_allocator(basic_array const& s){return s.get_allocator();}
 	template<class P>
 	static constexpr default_allocator_type get_allocator_(P const& p){
