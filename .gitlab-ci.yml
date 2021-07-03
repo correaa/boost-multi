@@ -204,7 +204,7 @@ clang++:
   stage: test
   script:
     - export CXX="clang++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet clang pkg-config cmake make libboost-test-dev libblas-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang pkg-config cmake make libboost-test-dev libblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
