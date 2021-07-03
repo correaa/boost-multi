@@ -7,7 +7,7 @@ g++-latest:
   stage: test
   script:
     - export CXX="g++"
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
@@ -20,7 +20,7 @@ g++-latest-std20:
   stage: test
   script:
     - export CXX="g++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
@@ -32,7 +32,7 @@ g++-current-debug:
   stage: test
   script:
     - export CXX="g++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
@@ -44,7 +44,7 @@ g++-current-asan:
   stage: test
   script:
     - export CXX="g++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
@@ -56,7 +56,7 @@ g++-current-codecov:
   stage: test
   script:
     - export CXX="g++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev curl gcovr lcov
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev curl gcovr lcov
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
@@ -78,7 +78,7 @@ g++-current-release:
   stage: test
   script:
     - export CXX="g++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
@@ -91,7 +91,7 @@ g++-7-std17:
   image: debian:stable-backports
   script:
     - export CXX="g++-7"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
@@ -104,7 +104,7 @@ g++-8:
   image: debian:stable-backports
   script:
     - export CXX="g++-8"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
@@ -116,7 +116,7 @@ g++-9:
   stage: test
   script:
     - export CXX="g++-9"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
