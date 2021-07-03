@@ -3,7 +3,7 @@ $CXX $0 -o $0x -lfftw3 -lboost_unit_test_framework -lboost_timer&&$0x&&rm $0x;ex
 #endif
 // © Alfredo A. Correa 2020
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW adaptor (cpu) with thrust complex"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW adaptor"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
@@ -13,8 +13,6 @@ $CXX $0 -o $0x -lfftw3 -lboost_unit_test_framework -lboost_timer&&$0x&&rm $0x;ex
 
 #include<complex>
 #include<chrono>
-
-#include<thrust/complex.h>
 
 namespace multi = boost::multi;
 
