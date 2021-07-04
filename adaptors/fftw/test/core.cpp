@@ -65,8 +65,8 @@ template<class T> struct randomizer<std::complex<T>>{
 };
 
 struct fftw_fixture : fftw::environment{
-	void setup(){} 
-	void teardown(){}//fftw_cleanup();}
+//	void setup(){}
+//	void teardown(){}//fftw_cleanup();}
 };
 
 BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE(fftw_3D){
 	using complex = std::complex<double>; // TODO(correaa) make it work with thrust
 	multi::array<complex, 3> in({10, 10, 10});
 	in[2][3][4] = 99.;
-	auto fwd = multi::fftw::dft(in, fftw::forward);
+	multi::fftw::dft_forward(in);
 	BOOST_REQUIRE(in[2][3][4] == 99.);
 }
 
@@ -132,8 +132,6 @@ BOOST_AUTO_TEST_CASE(fftw_2D, *boost::unit_test::tolerance(0.0001)){
 
 	multi::array<complex, 1> const in0 = {1. + 2.*I, 9. - 1.*I, 2. + 4.*I};
 
-	auto b = multi::fftw::dft_forward(in0);
-	auto a = multi::fftw::dft_forward(in[0]);
 	BOOST_REQUIRE( fftw::dft_forward(in[0]) == fftw::dft_forward(in0) );
 }
 
