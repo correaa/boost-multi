@@ -539,7 +539,7 @@ icpc-runner:
 
 
 oneapi:
-    image: intel/oneapi-hpckit
+    image: intel/oneapi-basekit
     stage: test
     script:
         - . /opt/intel/oneapi/setvars.sh
