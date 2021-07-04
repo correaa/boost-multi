@@ -405,12 +405,12 @@ Pointer-like random access types can be used as substitutes of built-in pointers
 
 ```cpp
 namespace minimal{
-    template<class T> class ptr{ // minimalistic pointer
-    	T* impl_;
-    	T& operator*() const{return *impl_;}
-    	auto operator+(std::ptrdiff_t n) const{return ptr{impl_ + n};}
-    //	operator[], operator+=, etc are optional but not necessary
-    };
+	template<class T> class ptr{ // minimalistic pointer
+		T* impl_;
+		T& operator*() const{return *impl_;}
+		auto operator+(std::ptrdiff_t n) const{return ptr{impl_ + n};}
+	//	operator[], operator+=, etc are optional but not necessary
+	};
 }
 
 int main(){

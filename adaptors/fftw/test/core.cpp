@@ -5,10 +5,9 @@
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
-#include "../../../array.hpp"
 #include "../../../adaptors/../complex.hpp"
-
 #include "../../../adaptors/fftw.hpp"
+#include "../../../array.hpp"
 
 #include<chrono>
 #include<random>
@@ -24,25 +23,33 @@ namespace{
 
 	template<class M> auto power(M const& m)->decltype(std::norm(m)){return std::norm(m);}
 
-	template<class M, DELETE((M::rank_v < 1))> double power(M const& m){return accumulate(begin(m), end(m), 0., [](auto const& a, auto const& b){return a + power(b);});}
+	template<class M, DELETE((M::rank_v < 1))> auto power(M const& m){
+		return accumulate(begin(m), end(m), 0., [](auto const& a, auto const& b){return a + power(b);});
+	}
 
 	struct sum_power{
 		template<class A, class B> auto operator()(A const& a, B const& b) const{return a+power(b);}
 	};
 
 	MAYBE_UNUSED constexpr int N = 16;
-}
+} // namespace
 
-struct watch : private std::chrono::high_resolution_clock{
-	std::string label_; time_point  start_;
-	watch(std::string label ="") : label_{label}, start_{now()}{}
+class watch : private std::chrono::high_resolution_clock{
+	std::string label; 
+	time_point start = now();
+public:
+	explicit watch(std::string label) : label{std::move(label)}{}
+	watch(watch const&) = delete;
+	watch(watch&&) = default;
+	auto operator=(watch const&) = delete;
+	auto operator=(watch&&) -> watch& = default; // NOLINT(fuchsia-trailing-return):
 	~watch(){
-		std::cerr<< label_<<": "<< std::chrono::duration<double>(now() - start_).count() <<" sec"<<std::endl;
+		std::cerr<< label<<": "<< std::chrono::duration<double>(now() - start).count() <<" sec"<<std::endl;
 	}
 };
 
 template<class T> struct randomizer{
-	template<class M> void operator()(M&& m) const{for(auto&& e:m) operator()(e);}
+	template<class M> void operator()(M&& m) const{for(auto&& e:m){operator()(e);}}
 	void operator()(T& e) const{
 		static std::random_device r; static std::mt19937 g{r()}; static std::normal_distribution<T> d;
 		e = d(g);
@@ -50,7 +57,7 @@ template<class T> struct randomizer{
 };
 
 template<class T> struct randomizer<std::complex<T>>{
-	template<class M> void operator()(M&& m) const{for(auto&& e:m) operator()(e);}
+	template<class M> void operator()(M&& m) const{for(auto&& e:m){operator()(e);}}
 	void operator()(std::complex<T>& e) const{
 		static std::random_device r; static std::mt19937 g{r()}; static std::normal_distribution<T> d;
 		e = std::complex<T>(d(g), d(g));
@@ -58,17 +65,17 @@ template<class T> struct randomizer<std::complex<T>>{
 };
 
 struct fftw_fixture : fftw::environment{
-	void setup(){} 
-	void teardown(){}//fftw_cleanup();}
+//	void setup(){}
+//	void teardown(){}//fftw_cleanup();}
 };
 
 BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
 
 BOOST_AUTO_TEST_CASE(fftw_3D){
-	using complex = std::complex<double>; //TODO make it work with thrust
+	using complex = std::complex<double>; // TODO(correaa) make it work with thrust
 	multi::array<complex, 3> in({10, 10, 10});
 	in[2][3][4] = 99.;
-	auto fwd = multi::fftw::dft(in, fftw::forward);
+	multi::fftw::dft_forward(in);
 	BOOST_REQUIRE(in[2][3][4] == 99.);
 }
 
@@ -94,7 +101,6 @@ BOOST_AUTO_TEST_CASE(fftw_2D_identity_2, *boost::unit_test::tolerance(0.0001)){
 	};
 	multi::array<complex, 2> out(extensions(in));
 	multi::fftw::dft({false, false}, in, out, fftw::forward); // out = in;
-	BOOST_REQUIRE( power(in) == power(out) );
 	BOOST_REQUIRE( out == in );
 }
 
@@ -126,8 +132,6 @@ BOOST_AUTO_TEST_CASE(fftw_2D, *boost::unit_test::tolerance(0.0001)){
 
 	multi::array<complex, 1> const in0 = {1. + 2.*I, 9. - 1.*I, 2. + 4.*I};
 
-	auto b = multi::fftw::dft_forward(in0);
-	auto a = multi::fftw::dft_forward(in[0]);
 	BOOST_REQUIRE( fftw::dft_forward(in[0]) == fftw::dft_forward(in0) );
 }
 

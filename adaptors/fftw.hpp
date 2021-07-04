@@ -264,7 +264,7 @@ fftw_plan fftw_plan_dft(std::array<bool, +D> which, In&& in, Out&& out, int sign
 
 	for(int i=0; i!=D; ++i) *(which[i]?l_dims:l_howmany)++ = {ion[i], istrides[i], ostrides[i]};
 
-	assert( D == l_dims - dims.begin() + l_howmany - howmany.begin() );
+//	assert( D == l_dims - dims.begin() - l_howmany + howmany.begin() );
 	assert(in.base()); assert(out.base()); assert( in.extensions() == out.extensions() ); 
 	assert( (sign == -1) or (sign == +1) );
 	fftw_plan ret = fftw_plan_guru64_dft(
@@ -330,7 +330,8 @@ public:
 	plan(plan&&) = default;
 	template<typename... As, 
 		typename = decltype(fftw_plan_dft(std::declval<As&&>()...))
-	> plan(As&&... as) : impl_{fftw_plan_dft(std::forward<As>(as)...), &fftw_destroy_plan}{
+	> 
+	explicit plan(As&&... as) : impl_{fftw_plan_dft(std::forward<As>(as)...), &fftw_destroy_plan}{
 		assert(impl_);
 	}
 	template<typename... As>
@@ -487,8 +488,7 @@ auto dft_forward(std::array<bool, +D> which, A const& a, O&& o)
 	return fftw::dft(which, a, std::forward<O>(o), fftw::forward);}
 
 template<typename A>
-NODISCARD("when input argument is read only")
-auto dft_forward(A const& a)
+NODISCARD("when input argument is read only") auto dft_forward(A const& a)
 ->decltype(fftw::dft(a, fftw::forward)){
 	return fftw::dft(a, fftw::forward);}
 
@@ -592,11 +592,17 @@ namespace{
 	MAYBE_UNUSED constexpr int N = 16;
 }
 
-struct watch : private std::chrono::high_resolution_clock{
-	std::string label_; time_point  start_;
-	watch(std::string label ="") : label_{label}, start_{now()}{}
+class watch : private std::chrono::high_resolution_clock{
+	std::string label; 
+	time_point start = now();
+public:
+	explicit watch(std::string label) : label{std::move(label)}{}
+	watch(watch const&) = delete;
+	watch(watch&&) = default;
+	auto operator=(watch const&) = delete;
+	auto operator=(watch&&) -> watch& = default; // NOLINT(fuchsia-trailing-return):
 	~watch(){
-		std::cerr<< label_<<": "<< std::chrono::duration<double>(now() - start_).count() <<" sec"<<std::endl;
+		std::cerr<< label<<": "<< std::chrono::duration<double>(now() - start).count() <<" sec"<<std::endl;
 	}
 };
 
@@ -627,8 +633,9 @@ BOOST_AUTO_TEST_CASE(fftw_3D){
 	using complex = std::complex<double>; //TODO make it work with thrust
 	multi::array<complex, 3> in({10, 10, 10});
 	in[2][3][4] = 99.;
-	auto fwd = multi::fftw::dft(in, fftw::forward);
+	auto const& fwd = multi::fftw::dft(in, fftw::forward);
 	BOOST_REQUIRE(in[2][3][4] == 99.);
+	BOOST_REQUIRE(&fwd == &in);
 }
 
 BOOST_AUTO_TEST_CASE(fftw_1D_const){
@@ -685,8 +692,8 @@ BOOST_AUTO_TEST_CASE(fftw_2D, *boost::unit_test::tolerance(0.0001)){
 
 	multi::array<complex, 1> const in0 = {1. + 2.*I, 9. - 1.*I, 2. + 4.*I};
 
-	auto b = multi::fftw::dft_forward(in0);
-	auto a = multi::fftw::dft_forward(in[0]);
+	multi::fftw::dft_forward(in0);
+	multi::fftw::dft_forward(in[0]);
 	BOOST_REQUIRE( fftw::dft_forward(in[0]) == fftw::dft_forward(in0) );
 }
 
@@ -801,16 +808,17 @@ BOOST_AUTO_TEST_CASE(cufft_many_2D){
 	multi::array<complex, 3> out(extensions(in));
 	multi::fftw::many_dft((in<<1).begin(), (in<<1).end(), (out<<1).begin(), multi::fftw::forward);
 
-	multi::array<complex, 3> out2(extensions(in));	
-	multi::fftw::dft({true, false, true}, in, out2, multi::fftw::forward);
+	multi::array<complex, 3> out2(extensions(in));
+	multi::fftw::dft_forward({true, false, true}, in, out2);
 	BOOST_REQUIRE( out == out2 );
 }
 
 BOOST_AUTO_TEST_CASE(fftw_5D){
 	multi::array<complex, 5> in({4, 5, 6, 7, 8});
 	in[2][3][4][5][6] = 99.;
-	auto fwd = multi::fftw::dft(in, fftw::forward);
+	auto const& fwd = multi::fftw::dft(in, fftw::forward);
 	BOOST_REQUIRE(in[2][3][4][5][6] == 99.);
+	BOOST_REQUIRE(&fwd == &in);
 }
 
 BOOST_AUTO_TEST_CASE(fftw_1D_power){

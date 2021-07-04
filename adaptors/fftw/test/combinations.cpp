@@ -3,7 +3,7 @@ $CXX $0 -o $0x -lfftw3 -lboost_unit_test_framework -lboost_timer&&$0x&&rm $0x;ex
 #endif
 // © Alfredo A. Correa 2020
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW adaptor (cpu) with thrust complex"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW adaptor"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
@@ -11,35 +11,43 @@ $CXX $0 -o $0x -lfftw3 -lboost_unit_test_framework -lboost_timer&&$0x&&rm $0x;ex
 
 #include "../../fftw.hpp"
 
-#include<complex>
 #include<chrono>
-
-#include<thrust/complex.h>
+#include<complex>
+#include<random>
 
 namespace multi = boost::multi;
 
 namespace utf = boost::unit_test::framework;
 
-struct watch : private std::chrono::high_resolution_clock{
-	std::string label_; time_point  start_;
-	watch(std::string label ="") : label_{label}, start_{now()}{}
+class watch : private std::chrono::high_resolution_clock{
+	std::string label; 
+	time_point start = now();
+public:
+	explicit watch(std::string label) : label{std::move(label)}{}
+	watch(watch const&) = delete;
+	watch(watch&&) = default;
+	auto operator=(watch const&) = delete;
+	auto operator=(watch&&) -> watch& = default; // NOLINT(fuchsia-trailing-return):
 	~watch(){
-		std::cerr<< label_<<": "<< std::chrono::duration<double>(now() - start_).count() <<" sec"<<std::endl;
+		std::cerr<< label<<": "<< std::chrono::duration<double>(now() - start).count() <<" sec"<<std::endl;
 	}
 };
 
-BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001)){
+BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001) ){
 
 	using complex = std::complex<double>;
 
 	auto const in = []{
-		multi::array<complex, 4> ret({32, 90, 98, 96});
+	//	multi::array<complex, 4> ret({32, 90, 98, 96});
+		multi::array<complex, 4> ret({10 , 11 , 12 , 13 });
 		std::generate(ret.data_elements(), ret.data_elements() + ret.num_elements(), 
-			[](){return complex{std::rand()*1./RAND_MAX, std::rand()*1./RAND_MAX};}
+			[eng = std::default_random_engine{std::random_device{}()}, uniform_01 = std::uniform_real_distribution<>{}]() mutable{
+				return complex{uniform_01(eng), uniform_01(eng)};
+			}
 		);
 		return ret;
 	}();
-	std::cout<<"memory size "<< in.num_elements()*sizeof(complex)/1e6 <<" MB\n";
+//	std::cout<<"memory size "<< in.num_elements()*sizeof(complex)/1e6 <<" MB\n";
 
 	std::vector<std::array<bool, 4>> cases = {
 		{false, true , true , true }, 
@@ -92,7 +100,7 @@ BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001)){
 			auto in_rw = in;
 			boost::timer::auto_cpu_timer t{"cpu_move %ws wall, CPU (%p%)\n"}; 
 			auto out_cpy = multi::fftw::dft_forward(c, std::move(in_rw));
-			BOOST_REQUIRE( in_rw.empty() );
+		//	BOOST_REQUIRE( in_rw.empty() );
 			BOOST_TEST( abs( out_cpy[5][4][3][1] - out[5][4][3][1] ) == 0. );
 		}
 	}
