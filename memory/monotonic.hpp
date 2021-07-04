@@ -98,7 +98,7 @@ public:
 		: required{required}, available{available}, 
 			msg{"required "+std::to_string(required)+" while only "+std::to_string(available)+" bytes available"}
 		{}
-		const char* what() const override noexcept{return msg.c_str();}
+		virtual const char* what() const override throw() {return msg.c_str();}// + std::to_string(required)).c_str();}
 	};
 };
 
