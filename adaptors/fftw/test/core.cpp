@@ -174,6 +174,40 @@ BOOST_AUTO_TEST_CASE(fftw_2D_many, *boost::unit_test::tolerance(0.0001)){
 	BOOST_REQUIRE( dft_forward(in[0]) == out[0] );
 }
 
+BOOST_AUTO_TEST_CASE(fftw_1D_const_forward){
+	multi::array<complex, 1> const in = {1. + 2.*I, 2. + 3. *I, 4. + 5.*I, 5. + 6.*I};
+
+	auto fwd = multi::fftw::dft_forward(in); // Fourier[in, FourierParameters -> {1, -1}]
+	BOOST_REQUIRE( size(fwd) == size(in) );
+	BOOST_REQUIRE( fwd[2] == -2. - 2.*I  );
+	BOOST_REQUIRE( in[1]  == +2. + 3.*I  );
+
+	auto bwd = multi::fftw::dft_forward(in); // InverseFourier[in, FourierParameters -> {-1, -1}]
+	BOOST_REQUIRE( bwd[2] == -2. - 2.*I  );
+}
+
+BOOST_AUTO_TEST_CASE(fftw_1D_const_sign){
+	multi::array<complex, 1> const in = {1. + 2.*I, 2. + 3. *I, 4. + 5.*I, 5. + 6.*I};
+
+	auto const fwd = multi::fftw::dft(in, +1); // Fourier[in, FourierParameters -> {1, -1}]
+	BOOST_REQUIRE( size(fwd) == size(in) );
+	BOOST_REQUIRE( fwd[2] == -2. - 2.*I  );
+}
+
+BOOST_AUTO_TEST_CASE(fftw_1D_const_copy_by_false){
+	multi::array<complex, 1> const in = {1. + 2.*I, 2. + 3. *I, 4. + 5.*I, 5. + 6.*I};
+
+	auto const out = multi::fftw::dft({false}, in, +1);
+	BOOST_REQUIRE( out == in );
+}
+
+BOOST_AUTO_TEST_CASE(fftw_1D_const_copy_by_false_forward){
+	multi::array<complex, 1> const in = {1. + 2.*I, 2. + 3. *I, 4. + 5.*I, 5. + 6.*I};
+
+	auto const out = multi::fftw::dft_forward({false}, in);
+	BOOST_REQUIRE( out == in );
+}
+
 //BOOST_AUTO_TEST_CASE(fftw_many1_from_2){
 //	multi::array<complex, 2> in({3, 10}); randomizer<complex>{}(in);
 //	multi::array<complex, 2> out({3, 10});
