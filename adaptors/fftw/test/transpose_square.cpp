@@ -26,17 +26,17 @@ BOOST_AUTO_TEST_CASE(fftw_transpose){
 		//	multi::array<complex, 2> ret({8192, 8192});
 			multi::array<complex, 2> ret({819, 819});
 			std::generate(ret.data_elements(), ret.data_elements() + ret.num_elements(), 
-				[eng = std::default_random_engine{}, uniform_01 = std::uniform_real_distribution<double>{}]() mutable{
+				[eng = std::default_random_engine{std::random_device{}()}, uniform_01 = std::uniform_real_distribution<>{}]() mutable{
 					return complex{uniform_01(eng), uniform_01(eng)};
 				}
 			);
-			std::cout<<"memory size "<< ret.num_elements()*sizeof(complex)/1e6 <<" MB\n";
+		//	std::cout<<"memory size "<< ret.num_elements()*sizeof(complex)/1e6 <<" MB\n";
 			return ret;
 		}();
 	//	multi::fftw::plan::with_nthreads(1);
 		{
 			multi::array<complex, 2> out = in;
-			auto p = out.data_elements();
+			auto* p = out.data_elements();
 			{
 				boost::timer::auto_cpu_timer t{"fftw trans mve 1 thread  %ws wall, CPU (%p%)\n"};
 				multi::fftw::transpose( out );
@@ -95,9 +95,11 @@ BOOST_AUTO_TEST_CASE(fftw_transpose){
 			multi::array<complex, 2> out = in;
 			{
 				boost::timer::auto_cpu_timer t{"transposition with loop   %ws wall, CPU (%p%)\n"};
-				for(auto i: extension(out))
-					for(auto j = 0l; j != i; ++j)
+				for(auto i: extension(out)){
+					for(auto j = 0; j != i; ++j){
 						std::swap(out[i][j], out[j][i]);
+					}
+				}
 				BOOST_REQUIRE( out[35][79] == in[79][35] );
 			}
 			BOOST_REQUIRE( out == ~in );
@@ -106,9 +108,11 @@ BOOST_AUTO_TEST_CASE(fftw_transpose){
 			multi::array<complex, 2> out = in;
 			{
 				boost::timer::auto_cpu_timer t{"transposition with loop 2 %ws wall, CPU (%p%)\n"};
-				for(auto i = 0l; i != out.size(); ++i)
-					for(auto j = i + 1; j != out.size(); ++j)
+				for(auto i = 0; i != out.size(); ++i){
+					for(auto j = i + 1; j != out.size(); ++j){
 						std::swap(out[i][j], out[j][i]);
+					}
+				}
 				BOOST_REQUIRE( out[35][79] == in[79][35] );
 			}
 			BOOST_REQUIRE( out == ~in );
