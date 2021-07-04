@@ -11,10 +11,11 @@ $CXXX $CXXFLAGS -Ofast $0 -o $0x -DHAVE_FFTW3_THREADS -lfftw3 -lfftw3_threads -l
 #include "../../fftw.hpp"
 
 #include<complex>
+#include<random>
 
 namespace multi = boost::multi;
 
-using complex = std::complex<double>; complex const I{0, 1};
+using complex = std::complex<double>;
 
 BOOST_AUTO_TEST_CASE(fftw_transpose){
 
@@ -25,7 +26,9 @@ BOOST_AUTO_TEST_CASE(fftw_transpose){
 		//	multi::array<complex, 2> ret({8192, 8192});
 			multi::array<complex, 2> ret({819, 819});
 			std::generate(ret.data_elements(), ret.data_elements() + ret.num_elements(), 
-				[](){return std::rand()*1./RAND_MAX + std::rand()*1./RAND_MAX*I;}
+				[eng = std::default_random_engine{}, uniform_01 = std::uniform_real_distribution<double>{}]() mutable{
+					return complex{uniform_01(eng), uniform_01(eng)};
+				}
 			);
 			std::cout<<"memory size "<< ret.num_elements()*sizeof(complex)/1e6 <<" MB\n";
 			return ret;

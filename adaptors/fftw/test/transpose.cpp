@@ -11,6 +11,7 @@ $CXXX $CXXFLAGS -O3 $0 -o $0x -DHAVE_FFTW3_THREADS -lfftw3 -lfftw3_threads -lboo
 #include "../../fftw.hpp"
 
 #include<complex>
+#include<random>
 
 namespace multi = boost::multi;
 
@@ -27,7 +28,9 @@ BOOST_AUTO_TEST_CASE(fftw_transpose){
 		//	multi::array<complex, 2> ret({10137, 9973});
 			multi::array<complex, 2> ret({1013, 997});
 			std::generate(ret.data_elements(), ret.data_elements() + ret.num_elements(), 
-				[](){return complex{std::rand()*1./RAND_MAX, std::rand()*1./RAND_MAX};}
+				[eng = std::default_random_engine{}, uniform_01 = std::uniform_real_distribution<double>{}]() mutable{
+					return complex{uniform_01(eng), uniform_01(eng)};
+				}
 			);
 			std::cout<<"memory size "<< ret.num_elements()*sizeof(complex)/1e6 <<" MB\n";
 			return ret;
@@ -54,7 +57,7 @@ BOOST_AUTO_TEST_CASE(fftw_transpose){
 //		}
 		{
 			multi::array<complex, 2> out = in;
-			auto p = out.data_elements();
+			auto* p = out.data_elements();
 			{
 				boost::timer::auto_cpu_timer t{"fftw transpose fun thread  %ws wall, CPU (%p%)\n"};
 				multi::fftw::transpose( out );
