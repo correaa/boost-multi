@@ -23,7 +23,7 @@ namespace{
 
 	template<class M> auto power(M const& m)->decltype(std::norm(m)){return std::norm(m);}
 
-	template<class M, DELETE((M::rank_v < 1))> auto power(M const& m){
+	template<class M, DELETE((M::dimensionality < 1))> auto power(M const& m){
 		return accumulate(begin(m), end(m), 0., [](auto const& a, auto const& b){return a + power(b);});
 	}
 
@@ -212,201 +212,200 @@ BOOST_AUTO_TEST_CASE(fftw_1D_const_copy_by_false_forward){
 	BOOST_REQUIRE( out == in );
 }
 
-//BOOST_AUTO_TEST_CASE(fftw_many1_from_2){
-//	multi::array<complex, 2> in({3, 10}); randomizer<complex>{}(in);
-//	multi::array<complex, 2> out({3, 10});
-//	fftw::dft({false, true}, in, out, fftw::forward);
+BOOST_AUTO_TEST_CASE(fftw_many1_from_2){
+	multi::array<complex, 2> in({3, 10}); randomizer<complex>{}(in);
+	multi::array<complex, 2> out({3, 10});
+	fftw::dft({false, true}, in, out, fftw::forward);
 
-//	multi::array<complex, 2> out2({3, 10});
-//	for(int i = 0; i!=size(in); ++i)
-//		fftw::dft(in[i], out2[i], fftw::forward);
+	multi::array<complex, 2> out2({3, 10});
+	for(int i = 0; i!=size(in); ++i){
+		fftw::dft_forward(in[i], out2[i]);
+	}
 
-//	BOOST_REQUIRE(out2 == out);
-//}
+	BOOST_REQUIRE(out2 == out);
+}
 
-//BOOST_AUTO_TEST_CASE(fftw_many2_from_3){
-//	multi::array<complex, 3> in({3, 5, 6}); randomizer<complex>{}(in);
-//	multi::array<complex, 3> out({3, 5, 6});
-//	fftw::dft({false, true, true}, in, out, FFTW_FORWARD);
+BOOST_AUTO_TEST_CASE(fftw_many2_from_3){
+	multi::array<complex, 3> in({3, 5, 6}); randomizer<complex>{}(in);
+	multi::array<complex, 3> out({3, 5, 6});
+	fftw::dft_forward({false, true, true}, in, out);
 
-//	multi::array<complex, 3> out2({3, 5, 6});
-//	for(int i = 0; i!=size(in); ++i)
-//		fftw::dft(in[i], out2[i], FFTW_FORWARD);
+	multi::array<complex, 3> out2({3, 5, 6});
+	for(int i = 0; i!=size(in); ++i){
+		fftw::dft_forward(in[i], out2[i]);
+	}
 
-//	BOOST_REQUIRE(out2 == out);
-//}
+	BOOST_REQUIRE(out2 == out);
+}
 
-//BOOST_AUTO_TEST_CASE(fftw_many2_from_2){
-//	multi::array<complex, 2> in({5, 6}); randomizer<complex>{}(in);
-//	multi::array<complex, 2> out({5, 6});
-//	fftw::dft({true, true}, in, out, FFTW_FORWARD);
+BOOST_AUTO_TEST_CASE(fftw_many2_from_2){
+	multi::array<complex, 2> in({5, 6}); randomizer<complex>{}(in);
+	multi::array<complex, 2> out({5, 6});
+	fftw::dft({true, true}, in, out, FFTW_FORWARD);
 
-//	multi::array<complex, 2> out2({5, 6});
-//	fftw::dft(in, out2, FFTW_FORWARD);
-//	BOOST_REQUIRE(out2 == out);
-//}
+	multi::array<complex, 2> out2({5, 6});
+	fftw::dft(in, out2, FFTW_FORWARD);
+	BOOST_REQUIRE(out2 == out);
+}
 
-//BOOST_AUTO_TEST_CASE(fftw_4D){
-//	multi::array<complex, 4> const in = []{
-//		multi::array<complex, 4> in({10, 10, 10, 10}); in[2][3][4][5] = 99.; return in;
-//	}();
-//	auto fwd = multi::fftw::dft({true, true, true, true}, in, fftw::forward);
-//	BOOST_REQUIRE(in[2][3][4][5] == 99.);
-//}
+BOOST_AUTO_TEST_CASE(fftw_4D){
+	multi::array<complex, 4> const in = []{
+		multi::array<complex, 4> in({10, 10, 10, 10}); in[2][3][4][5] = 99.; return in;
+	}();
+	auto fwd = multi::fftw::dft({true, true, true, true}, in, fftw::forward);
+	BOOST_REQUIRE(in[2][3][4][5] == 99.);
+}
 
-//BOOST_AUTO_TEST_CASE(fftw_4D_many){
+BOOST_AUTO_TEST_CASE(fftw_4D_many){
 
-//	auto const in = []{
-//		multi::array<complex, 4> in({97, 95, 101, 10}, 0.); 
-//		in[2][3][4][5] = 99.; return in;
-//	}();
-//	auto fwd = multi::fftw::dft({true, true, true, false}, in, fftw::forward);
-//	BOOST_REQUIRE( in[2][3][4][5] == 99. );
+	auto const in = []{
+		multi::array<complex, 4> in({97, 95, 101, 10}, 0.); 
+		in[2][3][4][5] = 99.; return in;
+	}();
+	auto fwd = multi::fftw::dft({true, true, true, false}, in, fftw::forward);
+	BOOST_REQUIRE( in[2][3][4][5] == 99. );
 
-//	multi::array<complex, 4> out(extensions(in));
-//	multi::fftw::many_dft(begin(unrotated(in)), end(unrotated(in)), begin(unrotated(out)), fftw::forward);
-//	BOOST_REQUIRE( out == fwd );
+	multi::array<complex, 4> out(extensions(in));
+	multi::fftw::many_dft(begin(unrotated(in)), end(unrotated(in)), begin(unrotated(out)), fftw::forward);
+	BOOST_REQUIRE( out == fwd );
 
-//}
+}
 
-//BOOST_AUTO_TEST_CASE(cufft_many_2D){
-//	auto const in = []{
-//		multi::array<complex, 3> ret({10, 10, 10});
-//		std::generate(ret.data_elements(), ret.data_elements() + ret.num_elements(), 
-//			[](){return complex{std::rand()*1./RAND_MAX, std::rand()*1./RAND_MAX};}
-//		);
-//		return ret;
-//	}();
-//	multi::array<complex, 3> out(extensions(in));
-//	multi::fftw::many_dft((in<<1).begin(), (in<<1).end(), (out<<1).begin(), multi::fftw::forward);
+BOOST_AUTO_TEST_CASE(cufft_many_2D){
+	auto const in = []{
+		multi::array<complex, 3> ret({10, 10, 10});
+		std::generate(ret.data_elements(), ret.data_elements() + ret.num_elements(), 
+			[eng = std::default_random_engine{std::random_device{}()}, uniform_01 = std::uniform_real_distribution<>{}]() mutable{
+				return complex{uniform_01(eng), uniform_01(eng)};
+			}
+		);
+		return ret;
+	}();
+	multi::array<complex, 3> out(extensions(in));
+	multi::fftw::many_dft((in<<1).begin(), (in<<1).end(), (out<<1).begin(), multi::fftw::forward);
 
-//	multi::array<complex, 3> out2(extensions(in));	
-//	multi::fftw::dft({true, false, true}, in, out2, multi::fftw::forward);
-//	BOOST_REQUIRE( out == out2 );
-//}
+	multi::array<complex, 3> out2(extensions(in));
+	multi::fftw::dft_forward({true, false, true}, in, out2);
+	BOOST_REQUIRE( out == out2 );
+}
 
-//BOOST_AUTO_TEST_CASE(fftw_5D){
-//	multi::array<complex, 5> in({4, 5, 6, 7, 8});
-//	in[2][3][4][5][6] = 99.;
-//	auto fwd = multi::fftw::dft(in, fftw::forward);
-//	BOOST_REQUIRE(in[2][3][4][5][6] == 99.);
-//}
+BOOST_AUTO_TEST_CASE(fftw_5D){
+	multi::array<complex, 5> in({4, 5, 6, 7, 8});
+	in[2][3][4][5][6] = 99.;
+	auto fwd = multi::fftw::dft(in, fftw::forward);
+	BOOST_REQUIRE(in[2][3][4][5][6] == 99.);
+}
 
-//BOOST_AUTO_TEST_CASE(fftw_1D_power){
-//	multi::array<complex, 1> in(N, 0.); assert( size(in) == N );
-//	std::iota(begin(in), end(in), 1.);
-//	multi::array<complex, 1> out(extensions(in));
-//	static_assert( in.dimensionality() == out.dimensionality(), "!");
-//	auto p = multi::fftw_plan_dft(in, out, fftw::forward, FFTW_PRESERVE_INPUT);
-//	fftw_execute(p); 
-//	fftw_destroy_plan(p);
-//	BOOST_REQUIRE( (power(in) - power(out)/num_elements(out)) < 1e-17 );
-//}
+BOOST_AUTO_TEST_CASE(fftw_2D_power_plan){
+	multi::array<complex, 2> in({16, 16});
+	std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
+	multi::array<complex, 2> out(extensions(in));
+	multi::fftw::plan const p{in, out, fftw::forward, static_cast<unsigned>(fftw::preserve_input)};
+	p(); //execute(p); //p.execute();
+	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-8 );
+}
 
-//BOOST_AUTO_TEST_CASE(fftw_2D_power){
-//	multi::array<complex, 2> in({N, N});
-//	std::iota(in.data_elements(), in.data_elements() + in.num_elements(), 1.2);
-//	multi::array<complex, 2> out(in.extensions());
-//	auto p = multi::fftw_plan_dft(in, out, fftw::forward, FFTW_PRESERVE_INPUT);
-//	fftw_execute(p); fftw_destroy_plan(p);
-//	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-12 );
-//}
+BOOST_AUTO_TEST_CASE(fftw_2D_power_dft){
+	multi::array<complex, 2> in({16, 16}); 
+	std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
+	multi::array<complex, 2> out(extensions(in));
+	multi::fftw::dft_forward(in, out);
+	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-8 );
+}
 
-//BOOST_AUTO_TEST_CASE(fftw_2D_power_plan){
-//	multi::array<complex, 2> in({16, 16});
-//	std::iota(in.data_elements(), in.data_elements() + in.num_elements(), 1.2);
-//	multi::array<complex, 2> out(in.extensions());
-//	multi::fftw::plan const p{in, out, fftw::forward, FFTW_PRESERVE_INPUT};
-//	p(); //execute(p); //p.execute();
-//	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-8 );
-//}
+BOOST_AUTO_TEST_CASE(fftw_2D_power_dft_out){
+	multi::array<complex, 2> in({16, 16}); 
+	std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
+	auto out = multi::fftw::dft(in, fftw::forward);
+	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-8 );
+}
 
-//BOOST_AUTO_TEST_CASE(fftw_2D_power_dft){
-//	multi::array<complex, 2> in({16, 16}); 
-//	std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);
-//	multi::array<complex, 2> out(extensions(in));
-//	multi::fftw::dft(in, out, fftw::forward);
-//	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-8 );
-//}
+BOOST_AUTO_TEST_CASE(fftw_2D_power_dft_out_default){
+	multi::array<complex, 2> in({16, 16}); 
+	std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
+	auto out = multi::fftw::dft(in, fftw::forward);
+	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-8 );
+}
 
-//BOOST_AUTO_TEST_CASE(fftw_2D_power_dft_out){
-//	multi::array<complex, 2> in({16, 16}); std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);
-//	auto out = multi::fftw::dft(in, fftw::forward);
-//	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-8 );
-//}
+BOOST_AUTO_TEST_CASE(fftw_3D_power){
+	multi::array<complex, 3> in({4, 4, 4}); std::iota(in.data_elements(), in.data_elements() + in.num_elements(), 1.2);
+	multi::array<complex, 3> out = fftw::dft(in, fftw::forward);
+	BOOST_REQUIRE( std::abs(power(in) - power(out)/num_elements(out)) < 1e-10 );
+}
 
-//BOOST_AUTO_TEST_CASE(fftw_2D_power_dft_out_default){
-//	multi::array<complex, 2> in({16, 16}); std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2);
-//	auto out = multi::fftw::dft(in, fftw::forward);
-//	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-8 );
-//}
+BOOST_AUTO_TEST_CASE(fftw_3D_power_in_place){
+	multi::array<complex, 3> io({4, 4, 4}); std::iota(io.data_elements(), io.data_elements() + io.num_elements(), 1.2);
+	auto powerin = power(io);
+	fftw::dft_inplace(io, fftw::forward);
+	BOOST_REQUIRE( powerin - power(io)/num_elements(io) < 1e-10 );
+}
 
-//BOOST_AUTO_TEST_CASE(fftw_3D_power){
-//	multi::array<complex, 3> in({4, 4, 4}); std::iota(in.data_elements(), in.data_elements() + in.num_elements(), 1.2);
-//	multi::array<complex, 3> out = fftw::dft(in, fftw::forward);
-//	BOOST_REQUIRE( std::abs(power(in) - power(out)/num_elements(out)) < 1e-10 );
-//}
+BOOST_AUTO_TEST_CASE(fftw_3D_power_in_place_over_ref_inplace){
+	multi::array<complex, 3> io({4, 4, 4}); 
+	std::iota(io.data_elements(), io.data_elements() + io.num_elements(), 1.2); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
+	auto const powerin = power(io);
+//	fftw::dft_inplace(multi::array_ref<complex, 3>(io.data(), io.extensions()), fftw::forward);
+	fftw::dft_inplace(multi::array_ref<complex, 3>(data_elements(io), extensions(io)), fftw::forward);
+	BOOST_REQUIRE( powerin - power(io)/num_elements(io) < 1e-10 );
+}
 
-//BOOST_AUTO_TEST_CASE(fftw_3D_power_in_place){
-//	multi::array<complex, 3> io({4, 4, 4}); std::iota(io.data_elements(), io.data_elements() + io.num_elements(), 1.2);
-//	auto powerin = power(io);
-//	fftw::dft_inplace(io, fftw::forward);
-//	BOOST_REQUIRE( powerin - power(io)/num_elements(io) < 1e-10 );
-//}
+BOOST_AUTO_TEST_CASE(fftw_3D_power_out_of_place_over_ref){
+	multi::array<complex, 3> in({4, 4, 4}); 
+	std::iota(data_elements(in), data_elements(in)+num_elements(in), 1.2); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
+	multi::array<complex, 3> out({4, 4, 4});
+	multi::array_ref<complex, 3>(data_elements(out), extensions(out)) = fftw::dft(multi::array_cref<complex, 3>(data_elements(in), extensions(in)), fftw::forward);
+	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-10 );
+}
 
-//BOOST_AUTO_TEST_CASE(fftw_3D_power_in_place_over_ref_inplace){
-//	multi::array<complex, 3> io({4, 4, 4}); std::iota(io.data_elements(), io.data_elements() + io.num_elements(), 1.2);
-//	auto powerin = power(io);
-////	fftw::dft_inplace(multi::array_ref<complex, 3>(io.data(), io.extensions()), fftw::forward);
-////	fftw::dft_inplace(multi::array_ref<complex, 3>(data_elements(io), extensions(io)), fftw::forward);
-//	fftw::dft_inplace(io(), fftw::forward);
-//	BOOST_REQUIRE( powerin - power(io)/num_elements(io) < 1e-10 );
-//}
+BOOST_AUTO_TEST_CASE(fftw_3D_power_out_of_place_over_temporary){
+	double powerin = NAN;
+	auto f = [&](){
+		multi::array<complex, 3> in({4, 4, 4}); 
+		std::iota(data_elements(in), data_elements(in)+num_elements(in), 1.2); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
+		powerin = power(in);
+		return in;
+	};
+	auto out = fftw::dft(f(), fftw::forward);
+	BOOST_REQUIRE( std::abs(powerin - power(out)/num_elements(out)) < 1e-10 );
+}
 
-//BOOST_AUTO_TEST_CASE(fftw_3D_power_out_of_place_over_ref){
-//	multi::array<complex, 3> in({4, 4, 4}); 
-//	std::iota(in.data_elements(), in.data_elements()+in.num_elements(), 1.2);
-//	multi::array<complex, 3> out({4, 4, 4});
-//	out() = fftw::dft(in.protect(), fftw::forward);
-//	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-10 );
-//}
+BOOST_AUTO_TEST_CASE(fftw_2D_transposition_square_inplace){
+	multi::array<complex, 2> in = {
+		{11., 12.},
+		{21., 22.}
+	};
+	BOOST_REQUIRE( in[1][0] == 21. );
 
-//BOOST_AUTO_TEST_CASE(fftw_3D_power_out_of_place_over_temporary){
-//	double powerin;
-//	auto f = [&](){
-//		multi::array<complex, 3> in({4, 4, 4}); 
-//		std::iota(data_elements(in), data_elements(in)+num_elements(in), 1.2);
-//		powerin = power(in);
-//		return in;
-//	};
-//	auto out = fftw::dft(f(), fftw::forward);
-//	BOOST_REQUIRE( std::abs(powerin - power(out)/num_elements(out)) < 1e-10 );
-//}
+	multi::fftw::copy(in, rotated(in));
+	BOOST_TEST( in[0][1].real() == 21. );
+	BOOST_TEST( in[0][1].imag() ==  0. );
+}
 
-//BOOST_AUTO_TEST_CASE(fftw_2D_transposition_square_inplace){
-//	multi::array<complex, 2> in = {
-//		{11., 12.},
-//		{21., 22.}
-//	};
-//	BOOST_REQUIRE( in[1][0] == 21. );
+BOOST_AUTO_TEST_CASE(fftw_4D_inq_poisson){
 
-//	multi::fftw::copy(in, rotated(in));
-//	BOOST_TEST( in[0][1].real() == 21. );
-//	BOOST_TEST( in[0][1].imag() ==  0. );
-//}
+	multi::array<complex, 4> const in = []{
+		multi::array<complex, 4> in({50, 100, 137, 1}); 
+		std::iota(data_elements(in), data_elements(in)+num_elements(in), 1.2); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
+		return in;
+	}();
+	
+	multi::array<complex, 4> out(extensions(in));
+	multi::fftw::dft({0, 1, 1, 0}, in, out);
 
-//BOOST_AUTO_TEST_CASE(fftw_4D_inq_poisson){
+	BOOST_TEST( power(in) == power(out)/std::get<1>(sizes(out))/std::get<2>(sizes(out)) , boost::test_tools::tolerance(1e-10) );
 
-//	multi::array<complex, 4> const in = []{
-//		multi::array<complex, 4> in({50, 100, 137, 1}); 
-//		std::iota(data_elements(in), data_elements(in)+num_elements(in), 1.2);
-//		return in;
-//	}();
-//	
-//	multi::array<complex, 4> out(extensions(in));
-//	multi::fftw::dft({0, 1, 1, 0}, in, out);
+}
 
-//	BOOST_TEST( power(in) == power(out)/std::get<1>(sizes(out))/std::get<2>(sizes(out)) , boost::test_tools::tolerance(1e-10) );
+BOOST_AUTO_TEST_CASE(fftw_1D_power){
+	multi::array<complex, 1> in(N, 0.); 
+	BOOST_REQUIRE( size(in) == N );
 
-//}
+	std::iota(begin(in), end(in), 1.);
+	multi::array<complex, 1> out(extensions(in));
+
+	auto* p = multi::fftw_plan_dft(in, out, fftw::forward, fftw::preserve_input);
+	fftw_execute(p); 
+	fftw_destroy_plan(p);
+	BOOST_REQUIRE( (power(in) - power(out)/num_elements(out)) < 1e-17 );
+}
 
