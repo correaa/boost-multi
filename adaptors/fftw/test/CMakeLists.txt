@@ -17,9 +17,11 @@ project(boost-multi-adaptors-fftw-test VERSION 0.1 LANGUAGES CXX)
 
 find_package(Boost REQUIRED COMPONENTS unit_test_framework timer)
 
-find_package(FFTW REQUIRED COMPONENTS DOUBLE_LIB)
-include_directories(${FFTW_INCLUDE_DIRS})
-link_libraries(${FFTW_LIBRARIES})
+find_package(PkgConfig REQUIRED)
+pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
+include_directories(PkgConfig::FFTW)
+link_libraries(PkgConfig::FFTW)
+#cmake_print_properties(TARGETS PkgConfig::FFTW PROPERTIES INTERFACE_LINK_LIBRARIES INTERFACE_INCLUDE_DIRECTORIES)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

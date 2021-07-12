@@ -200,7 +200,8 @@ struct layout_t<dimensionality_type{0}, SSize>{
 	using rank = std::integral_constant<dimensionality_type, 0>;
 	static constexpr dimensionality_type dimensionality = 0;
 	friend constexpr auto dimensionality(layout_t const& l){return l.dimensionality;}
-	using strides_type    = std::tuple<>;
+	using strides_type  = std::tuple<>;
+	using sizes_type    = std::tuple<>;
 	nelems_type nelems_ = 1;//std::numeric_limits<nelems_type>::max(); // 1
 	void* stride_ = nullptr;
 	void* sub = nullptr;
@@ -236,7 +237,8 @@ public:
 	offset_type offset_ = 0; 
 	nelems_type nelems_ = 0;
 	using extensions_type = extensions_t<1>;
-	using strides_type = std::tuple<index>;
+	using strides_type = std::tuple<stride_type>;
+	using sizes_type = std::tuple<size_type>;
 	layout_t() = default;
 	layout_t(layout_t const&) = default;
 	constexpr layout_t(index_extension ie, layout_t<0> const&) :
@@ -348,6 +350,7 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 	nelems_type nelems_ = 0;
 	using extensions_type = extensions_t<D>;
 	using strides_type    = decltype(tuple_cat(std::make_tuple(std::declval<index>()), std::declval<typename sub_type::strides_type>()));
+	using sizes_type      = decltype(tuple_cat(std::make_tuple(std::declval<size_type>()), std::declval<typename sub_type::sizes_type>()));
 //	using extensions_type = typename detail::repeat<index_extension, D>::type;
 //	using extensions_io_type = std::array<index_extension, D>;
 	constexpr auto operator()(index i) const{return i*stride_ - offset_;}
@@ -394,7 +397,7 @@ public:
 
 	       constexpr bool is_empty()        const    {return not nelems_;}
 	friend constexpr bool is_empty(layout_t const& s){return s.is_empty();}
-	NODISCARD(".empty means .is_empty") [[deprecated("use is_empty()")]]
+	NODISCARD(".empty() means .is_empty()")
 	       constexpr bool    empty()        const    {return is_empty();}
 	constexpr size_type size() const{
 		if(not nelems_) return 0;

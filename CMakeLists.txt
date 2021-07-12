@@ -57,6 +57,7 @@ install(DIRECTORY ${PROJECT_SOURCE_DIR}/detail DESTINATION include/multi)
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/adaptors DESTINATION include/multi)
 
 add_subdirectory(adaptors/blas)
+add_subdirectory(adaptors/fftw)
 
 #to install this project:
 #cmake .. -DCMAKE_INSTALL_PREFIX:PATH=$HOME

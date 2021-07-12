@@ -393,8 +393,8 @@ public:
 		using multi::get_allocator;
 		return get_allocator(this->base());
 	}
-	
-	friend constexpr default_allocator_type get_allocator(basic_array const& s){return s.get_allocator();}
+
+	friend default_allocator_type get_allocator(basic_array const& s){return s.get_allocator();}
 	template<class P>
 	static constexpr default_allocator_type get_allocator_(P const& p){
 		return multi::default_allocator_of(p);
@@ -851,7 +851,7 @@ public:
 	template<class TT, class... As>
 //	constexpr 
 	basic_array& operator=(basic_array<TT, D, As...> const& o)&{assert( this->extension() == o.extension() );
-		MULTI_MARK_SCOPE(std::string{"multi::operator= "}+std::to_string(D)+" from "+typeid(TT).name()+" to "+typeid(T).name() );
+		MULTI_MARK_SCOPE( std::string{"multi::operator= (D="}+std::to_string(D)+") from "+typeid(TT).name()+" to "+typeid(T).name() );
 		if(this->is_empty()) return *this;
 		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()){
 			adl_copy_n(o.base(), o.num_elements(), this->base());
@@ -874,7 +874,7 @@ public:
 
 //	constexpr 
 	basic_array&  operator=(basic_array               const& o) &{assert( this->extension() == o.extension() );
-		MULTI_MARK_SCOPE("multi::operator= D="+std::to_string(D)+" from "+typeid(T).name()+" to "+typeid(T).name() );
+		MULTI_MARK_SCOPE("multi::operator= [D="+std::to_string(D)+"] from "+typeid(T).name()+" to "+typeid(T).name() );
 		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()){
 			adl_copy_n(o.base(), o.num_elements(), this->base());
 		}else if(o.stride() < (~o).stride()){
@@ -1159,7 +1159,7 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout> :
 	using default_allocator_type = typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type;
 
 	constexpr default_allocator_type get_allocator() const{return default_allocator_of(basic_array::base());}
-	friend constexpr default_allocator_type get_allocator(basic_array const& self){return self.get_allocator();}
+	friend default_allocator_type get_allocator(basic_array const& self){return self.get_allocator();}
 	using decay_type = array<typename types::element, dimensionality_type{1}, typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type>;
 	       constexpr decay_type decay()           const&      {return decay_type{*this};}
 	friend constexpr decay_type decay(basic_array const& self){return self.decay();}
