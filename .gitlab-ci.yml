@@ -464,14 +464,14 @@ inq-g++-latest:
   stage: test
   script:
     - apt-get update && apt-get install --no-install-recommends -y --quiet libblas-dev liblapack-dev libfftw3-dev libboost-filesystem-dev libboost-serialization-dev libopenmpi-dev gfortran g++ pkg-config pkg-config cmake make git ca-certificates
-    - git clone --recurse-submodules --remote-submodules https://gitlab.com/npneq/inq.git
+    - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
     - cd inq
     - cd external_libs/multi
     - git fetch
     - git checkout $CI_COMMIT_BRANCH
     - cd ../..
     - mkdir build && cd build
-    - CXX=mpic++ ../configure --prefix=$HOME
+    - ../configure --prefix=$HOME
     - make
     - make install
     - ctest --output-on-failure
