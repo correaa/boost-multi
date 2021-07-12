@@ -471,7 +471,7 @@ inq-g++-latest:
     - git checkout $CI_COMMIT_BRANCH
     - cd ../..
     - mkdir build && cd build
-    - CXX=mpic++ ../configure --prefix=$HOME
+    - ../configure --prefix=$HOME
     - make
     - make install
     - ctest --output-on-failure
