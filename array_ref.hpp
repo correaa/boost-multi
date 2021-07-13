@@ -577,7 +577,7 @@ public:
 private:
 	constexpr partitioned_type partitioned_aux(size_type s) const{
 		assert(s != 0);
-		assert(this->layout().nelems_%s==0);
+		assert(this->layout().nelems_%s==0); // if you get an assertion here it means that you are partitioning an array with an incommunsurate partition
 		multi::layout_t<D+1> new_layout{this->layout(), this->layout().nelems_/s, 0, this->layout().nelems_};
 		new_layout.sub_.nelems_/=s;
 		return {new_layout, types::base_};
