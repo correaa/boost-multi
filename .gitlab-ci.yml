@@ -502,8 +502,8 @@ inq-g++-latest:
     - make install
     - ctest --output-on-failure
     
-inq-cuda-11.2-compileonly:
-    image: nvidia/cuda:11.2.0-devel
+inq-cuda-11.4-compileonly:
+    image: nvidia/cuda:11.4.0-devel
     stage: test
     script:
       - export DEBIAN_FRONTEND=noninteractive
