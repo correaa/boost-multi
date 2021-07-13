@@ -8,7 +8,7 @@
 #include "../../../adaptors/blas/gemm.hpp"
 #include "../../../array.hpp"
 
-#include "config.hpp"
+//#include "config.hpp"
 
 #include<random>
 
@@ -282,10 +282,12 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_automatic){//, *utf
 		auto c =+ blas::gemm(0.1, a, b); // c=ab, c⸆=b⸆a⸆
 		BOOST_REQUIRE_CLOSE( c[1][2] , 5.3 , 0.00001 );
 	}
+#if((not defined(__CUDACC_VER_MAJOR__)) or ((__CUDACC_VER_MAJOR__ != 11) or (__CUDACC_VER_MINOR__ != 3))) // bug in nvcc 11.3
 	{
 		multi::array c = blas::gemm(0.1, a, b);
 		BOOST_REQUIRE_CLOSE( c[1][2] , 5.3 , 0.00001 );
 	}
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_gemm_nh){
@@ -299,11 +301,13 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_nh){
 		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
 		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
 	}
+#if((not defined(__CUDACC_VER_MAJOR__)) or ((__CUDACC_VER_MAJOR__ != 11) or (__CUDACC_VER_MINOR__ != 3))) // bug in nvcc 11.3
 	{
 		multi::array c = blas::gemm(1., a, blas::H(a)); // c=aa†, c†=aa†
 		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
 		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
 	}
+#endif
 	{
 		multi::array<complex, 2> c = blas::gemm(1., a, blas::H(a)); // c=aa†, c†=aa†
 		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
@@ -335,6 +339,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_nh){
 	}
 }
 
+#if 1
 #if CUDA_FOUND
 #include<thrust/complex.h>
 BOOST_AUTO_TEST_CASE(multi_blas_gemm_nh_thrust){
@@ -348,11 +353,13 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_nh_thrust){
 		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
 		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
 	}
+#if((not defined(__CUDACC_VER_MAJOR__)) or ((__CUDACC_VER_MAJOR__ != 11) or (__CUDACC_VER_MINOR__ != 3))) // bug in nvcc 11.3
 	{
 		multi::array c = blas::gemm(1., a, blas::hermitized(a)); // c=aa†, c†=aa†
 		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
 		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
 	}
+#endif
 	{
 		multi::array<complex, 2> c = blas::gemm(1., a, blas::hermitized(a)); // c=aa†, c†=aa†
 		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
@@ -1053,11 +1060,13 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_hermitized_square){
 		BOOST_REQUIRE( size(c) == 2 );
 		BOOST_REQUIRE( c[1][0] == 189. - 23.*I );
 	}
+#if((not defined(__CUDACC_VER_MAJOR__)) or ((__CUDACC_VER_MAJOR__ != 11) or (__CUDACC_VER_MINOR__ != 3))) // bug in nvcc 11.3
 	{
 		multi::array c = blas::gemm(1., a, blas::H(b)); // CTAD
 		BOOST_REQUIRE( size(c) == 2 );
 		BOOST_REQUIRE( c[1][0] == 189. - 23.*I );
 	}
+#endif
 	{
 		auto c = multi::array<complex, 2>(blas::gemm(1., a, blas::H(b))); // c=ab†, c†=ba†
 		BOOST_REQUIRE( size(c) == 2 );
@@ -2319,5 +2328,6 @@ BOOST_AUTO_TEST_CASE(blas_gemm_timing){
 	) );
 
 }
+#endif
 #endif
 
