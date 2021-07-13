@@ -9,7 +9,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "PGI")
+if((NOT CMAKE_CXX_COMPILER_ID STREQUAL "PGI") AND (NOT DART_COMPILER_NAME STREQUAL "nvcc"))
   set(BLA_VENDOR Intel10_64lp)
   find_package(BLAS)
   if(BLAS_FOUND) # in some systems with MKL, regular BLAS headers need to be found for it to work
@@ -19,6 +19,11 @@ if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "PGI")
     message("Multi/BLAS: MKL environment not detected, looking for other BLAS")
     unset(BLA_VENDOR)
     find_package(BLAS REQUIRED)
+    find_path(BLAS_INCLUDE_DIRS cblas.h
+      /usr/include
+      /usr/local/include
+      $ENV{BLAS_HOME}/include
+    )
   endif()
 
   find_path(BLAS_INCLUDE_DIRS cblas.h
@@ -28,8 +33,11 @@ if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "PGI")
 
   link_libraries(${BLAS_LIBRARIES})
 else()
-  add_definitions(-DRETURN_BY_STACK)
   link_libraries("-lblas") # cmake cannot detect BLAS with pgi/nvc++ but it ships with its own version
+endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "PGI")
+  add_definitions(-DRETURN_BY_STACK)
 endif()
 
 include_directories(${CMAKE_BINARY_DIR})

@@ -17,7 +17,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "PGI")
+if((NOT CMAKE_CXX_COMPILER_ID STREQUAL "PGI") AND (NOT DART_COMPILER_NAME STREQUAL "nvcc"))
   find_package(Boost REQUIRED COMPONENTS unit_test_framework)
   link_libraries("-lboost_unit_test_framework")
 
@@ -33,6 +33,10 @@ else()
   link_libraries("-lboost_unit_test_framework")
 
   link_libraries("-lblas") # cmake cannot detect BLAS with pgi/nvc++ but it ships with its own version
+endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "PGI")
+  add_definitions(-DRETURN_BY_STACK)
 endif()
 
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
@@ -82,7 +86,7 @@ foreach(TEST_FILE ${TEST_SRCS})
   target_include_directories(${TEST_EXE} PRIVATE ${Boost_INCLUDE_DIRS})
   target_link_libraries     (${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
   target_link_directories   (${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
-  if(NOT ENABLE_CUDA)
+  if(NOT ENABLE_CUDA AND (NOT DART_COMPILER_NAME STREQUAL "nvcc"))
     target_compile_options  (${TEST_EXE} PRIVATE
        -Werror -Wall
        $<$<CXX_COMPILER_ID:GNU>:

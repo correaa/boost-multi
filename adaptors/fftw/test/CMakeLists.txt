@@ -15,7 +15,11 @@ set(CMAKE_VERBOSE_MAKEFILE ON)
 
 project(boost-multi-adaptors-fftw-test VERSION 0.1 LANGUAGES CXX)
 
-find_package(Boost REQUIRED COMPONENTS unit_test_framework timer)
+if((NOT CMAKE_CXX_COMPILER_ID STREQUAL "PGI") AND (NOT DART_COMPILER_NAME STREQUAL "nvcc"))
+  find_package(Boost REQUIRED COMPONENTS unit_test_framework timer)
+else()
+  link_libraries("-lboost_unit_test_framework -lboost_timer")
+endif()
 
 find_package(PkgConfig REQUIRED)
 pkg_search_module(FFTW REQUIRED fftw3 IMPORTED_TARGET)
@@ -72,13 +76,13 @@ foreach(TEST_FILE ${TEST_SRCS})
   target_include_directories(${TEST_EXE} PRIVATE ${Boost_INCLUDE_DIRS})
   target_link_libraries     (${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
   target_link_directories   (${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
-  if(NOT ENABLE_CUDA)
+  if((NOT ENABLE_CUDA) AND (NOT DART_COMPILER_NAME STREQUAL "nvcc"))
     target_compile_options  (${TEST_EXE} PRIVATE
-       -Werror -Wall -Wextra -fno-common
+       -Werror -Wall -Wextra
        $<$<CXX_COMPILER_ID:GNU>:
-          -Wpedantic -Wformat-truncation -fstack-usage>#-Wconversion
+           -fno-common -Wpedantic -Wformat-truncation -fstack-usage>#-Wconversion
        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
-          -Wpedantic -Wmove>
+           -fno-common -Wpedantic -Wmove>
        $<$<CXX_COMPILER_ID:Intel>:
                                         -wd161 -diag-disable=remark -Warray-bounds -Wchar-subscripts -Wcomment -Wenum-compare -Wformat -Wuninitialized -Wmaybe-uninitialized -Wmain -Wnarrowing -Wnonnull -Wparentheses -Wpointer-sign -Wreorder -Wno-return-type -Wsign-compare -Wsequence-point -Wtrigraphs -Wunused-function -Wunused-but-set-variable -Wunused-variable -Wwrite-strings -Werror -diag-error:3846
        >

@@ -45,13 +45,15 @@ BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param){
 	BOOST_REQUIRE( C == std::inner_product(begin(A), end(A), begin(B), 0.F) );
 }
 
-BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex){
+BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex){ // if you get a segfaut here, your system may require -DRETURN_BY_STACK
 	using complex = std::complex<double>;
 	multi::array<complex, 1> const A = {1.,2.,3.};
 	multi::array<complex, 1> const B = {1.,2.,3.};
 	complex C;
 	blas::dot(A, B, C);
-	BOOST_REQUIRE( C == std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto const& a, auto const& b){return a*std::conj(b);}) );
+	BOOST_REQUIRE_EQUAL( real(C) , real(std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto const& a, auto const& b){return a*std::conj(b);})) );
+	BOOST_REQUIRE_EQUAL( imag(C) , imag(std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto const& a, auto const& b){return a*std::conj(b);})) );
+
 }
 
 BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex_C){

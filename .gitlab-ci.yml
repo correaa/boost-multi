@@ -415,6 +415,32 @@ cuda-11.2-std17:
       - cmake --build . --verbose
       - ctest --output-on-failure
 
+cuda-11.3-std17:
+    image: nvidia/cuda:11.3.0-devel
+    stage: test
+    script:
+      - export DEBIAN_FRONTEND=noninteractive
+      - apt-get update && apt-get install --no-install-recommends -y --quiet pkg-config cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
+      - ln --symbolic --force . ../multi
+      - nvcc --version
+      - mkdir build && cd build
+      - cmake .. -DCMAKE_CXX_STANDARD=17 -DENABLE_CUDA=1
+      - cmake --build . --verbose
+      - ctest --output-on-failure
+
+cuda-11.4-std17:
+    image: nvidia/cuda:11.4.0-devel
+    stage: test
+    script:
+      - export DEBIAN_FRONTEND=noninteractive
+      - apt-get update && apt-get install --no-install-recommends -y --quiet pkg-config cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
+      - ln --symbolic --force . ../multi
+      - nvcc --version
+      - mkdir build && cd build
+      - cmake .. -DCMAKE_CXX_STANDARD=17 -DENABLE_CUDA=1
+      - cmake --build . --verbose
+      - ctest --output-on-failure
+
 g++-cppcheck:
   stage: test
   script:
@@ -476,8 +502,8 @@ inq-g++-latest:
     - make install
     - ctest --output-on-failure
     
-inq-cuda-11.2-compileonly:
-    image: nvidia/cuda:11.2.0-devel
+inq-cuda-11.4-compileonly:
+    image: nvidia/cuda:11.4.0-devel
     stage: test
     script:
       - export DEBIAN_FRONTEND=noninteractive

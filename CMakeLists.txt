@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.11) # for reference: Ubuntu 20.04 ships cmake 3.16.3, Fedora 31 ships cmake 3.17.4, (Gitlab CI) debian:stable-backports ships cmake 3.13.4, debian:testing ships 3.18.4
-message("CMake version ${CMAKE_VERSION}")
+message("CMake version: ${CMAKE_VERSION}")
+message("current build directory: ${CMAKE_CURRENT_BINARY_DIR}")
 
 project(multi VERSION 0.76.0
 	DESCRIPTION "A header only C++ library that provides multidimensional array access to contiguous or regularly contiguous memory (or ranges)."
