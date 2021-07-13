@@ -136,3 +136,9 @@ BOOST_AUTO_TEST_CASE(multi_transposed){
 	BOOST_REQUIRE( MT1 == MT2 );
 }
 
+BOOST_AUTO_TEST_CASE(miguel){
+	multi::array<double, 2> G2D({41, 35});
+	auto const& G3D = G2D.rotated().partitioned(7).sliced(0, 3).unrotated();
+	BOOST_REQUIRE( &G3D[0][0][0] == &G2D[0][0] );
+}
+
