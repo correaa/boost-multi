@@ -1,20 +1,21 @@
 #!/bin/bash 
 # -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 
+(mkdir -p build.g++-std17    && cd build.g++-std17    && CXX=g++                                 cmake .. -DCMAKE_CXX_STANDARD=17      && make -j 12 && ctest -j 12 --output-on-failure) || exit
+(mkdir -p build.nvccu-11.0-std17   && cd build.nvccu-11.0-std17   && CUDACXX="/opt/nvidia/hpc_sdk/Linux_x86_64/21.5/cuda/11.0/bin/nvcc" cmake .. -DCMAKE_CXX_STANDARD=17 -DENABLE_CUDA=1 && make -j 10 && ctest -j 10 --output-on-failure) || exit
 (mkdir -p build.g++.debug    && cd build.g++.debug    && CXX=g++                                 cmake .. -DCMAKE_BUILD_TYPE=Debug     && make -j 12 && ctest -j 12 --output-on-failure) || exit
 (mkdir -p build.g++.codecov  && cd build.g++.codecov  && CXX=g++ CXXFLAGS="-coverage"            cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXE_LINKER_FLAGS="-coverage -lgcov"   && make -j 12 && ctest -j 12 --output-on-failure -T Test -T Coverage) || exit
 (mkdir -p build.g++          && cd build.g++          && CXX=g++                                 cmake ..                              && make -j 12 && ctest -j 12 --output-on-failure) || exit
 (mkdir -p build.g++.memchk   && cd build.g++.memchk   && CXX=g++                                 cmake ..                              && make -j 12 && ctest -T memcheck -j 12 --output-on-failure) || exit
 (mkdir -p build.g++-8        && cd build.g++-8        && CXX=g++-8                               cmake ..                              && make -j 12 && ctest -j 12 --output-on-failure) || exit
-(mkdir -p build.g++-std17    && cd build.g++-std17    && CXX=g++                                 cmake .. -DCMAKE_CXX_STANDARD=17      && make -j 12 && ctest -j 12 --output-on-failure) || exit
 (mkdir -p build.clang++      && cd build.clang++      && CXX=clang++                             cmake ..                              && make -j 12 && ctest -j 12 --output-on-failure) || exit
 (mkdir -p build.clang++-11   && cd build.clang++-11   && CXX=clang++-11                          cmake ..                              && make -j 12 && ctest -j 12 --output-on-failure) || exit
 (mkdir -p build.g++.asan     && cd build.g++.asan     && CXX=g++     CXXFLAGS="-fsanitize=address"                      cmake .. -D CMAKE_BUILD_TYPE=Debug && make -j 12 && ctest -j 12 --output-on-failure) || exit
 (mkdir -p build.clang++.asan && cd build.clang++.asan && CXX=clang++ CXXFLAGS="-fsanitize=undefined -fsanitize=address" cmake .. -D CMAKE_BUILD_TYPE=Debug && make -j 12 && ASAN_OPTIONS="halt_on_error=1 detect_leaks=1" ctest -j 12 --output-on-failure) || exit
 (mkdir -p build.nvc++215     && cd build.nvc++215     && CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/21.5/compilers/bin/nvc++  cmake .. && make -j 12 && ctest --output-on-failure) || exit
-(mkdir -p build.nvc++207     && cd build.nvc++207     && CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/20.7/compilers/bin/nvc++  cmake .. && make -j 12 && ctest --output-on-failure) || exit
-(mkdir -p build.nvcc-11.3    && cd build.nvcc-11.3    && CXX    ="/opt/nvidia/hpc_sdk/Linux_x86_64/21.5/cuda/11.3/bin/nvcc" cmake ..                              && make -j 10 && ctest -j 10 --output-on-failure) || exit
-(mkdir -p build.nvccu-11.0   && cd build.nvccu-11.0   && CUDACXX="/opt/nvidia/hpc_sdk/Linux_x86_64/21.5/cuda/11.0/bin/nvcc" cmake .. -DENABLE_CUDA=1              && make -j 10 && ctest -j 10 --output-on-failure) || exit
+#(mkdir -p build.nvc++207     && cd build.nvc++207     && CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/20.7/compilers/bin/nvc++  cmake .. && make -j 12 && ctest --output-on-failure) || exit
+(mkdir -p build.nvcc-11.3    && cd build.nvcc-11.3    && CXX="/opt/nvidia/hpc_sdk/Linux_x86_64/21.5/cuda/11.3/bin/nvcc" cmake ..                              && make -j 10 && ctest -j 10 --output-on-failure) || exit
+(mkdir -p build.nvccu-11.0   && cd build.nvccu-11.0   && CUDACXX="/opt/nvidia/hpc_sdk/Linux_x86_64/21.5/cuda/11.0/bin/nvcc" cmake .. -DENABLE_CUDA=1 && make -j 10 && ctest -j 10 --output-on-failure) || exit
 (mkdir -p build.nvccu-11.2   && cd build.nvccu-11.2   && CUDACXX="/opt/nvidia/hpc_sdk/Linux_x86_64/21.3/cuda/11.2/bin/nvcc" cmake .. -DENABLE_CUDA=1 && make -j 10 && ctest -j 10 --output-on-failure) || exit
 (mkdir -p build.nvccu-11.3   && cd build.nvccu-11.3   && CUDACXX="/opt/nvidia/hpc_sdk/Linux_x86_64/21.5/cuda/11.3/bin/nvcc" cmake .. -DENABLE_CUDA=1 && make -j 10 && ctest -j 10 --output-on-failure) || exit
 #
