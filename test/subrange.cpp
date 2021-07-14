@@ -17,7 +17,7 @@ $CXX $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 #endif
 #endif
 
-#include<numeric>
+#include<numeric> // iota
 
 namespace multi = boost::multi;
 
@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section){
 
 		BOOST_REQUIRE( A( 5, 6, {0, 30}, {0, 40}).dimensionality == 2 );
 		BOOST_REQUIRE( A({0, 10}, 6, 15, {0, 40}).dimensionality == 2 );
-		BOOST_REQUIRE( A({0, 10}, {0, 30},15, 20).dimensionality == 2 );
+		BOOST_REQUIRE( A({0, 10}, {0, 20},15, 20).dimensionality == 2 );
 	}
 	{
 		auto&& all = A({0, 10}, {0, 20}, {0, 30}, {0, 40});
