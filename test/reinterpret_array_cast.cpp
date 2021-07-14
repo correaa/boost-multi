@@ -1,6 +1,7 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
 $CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
+// © Alfredo A. Correa 2018-2021
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi reinterpret array"
 #define BOOST_TEST_DYN_LINK
@@ -156,12 +157,18 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_pair_to_complex){
 	multi::array<complex, 2> const& Aconst = A;
 	auto&& A_block = Aconst({0, 5}, {0, 5});
 
-	auto&& Apair_block = A_block.template reinterpret_array_cast<pair const>(); // const is important // cppcheck needs `template`
+	auto&& Apair_block = A_block.reinterpret_array_cast<pair const>(); // const is important // cppcheck needs `template`
 	
 	BOOST_REQUIRE( (void const*)&Apair_block[1][2] == (void*)&A[1][2] );
 	
 	auto&& Adoubles_block = A_block.reinterpret_array_cast<double const>(2);
 	BOOST_REQUIRE( (void const*)&Adoubles_block[1][2][0] == (void*)&A[1][2] );
+}
+
+BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_pointer){
+	multi::array<double, 2> A({10, 10}, 5.);
+	auto&& Acast = A.reinterpret_array_cast<double, double const*>();
+	static_assert( std::is_same<decltype(Acast[1][2]), double const&>{}, "!" );
 }
 
 #if 0
