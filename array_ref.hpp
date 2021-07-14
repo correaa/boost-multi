@@ -98,7 +98,7 @@ struct array_types : Layout{ // cppcheck-suppress syntaxError ; false positive i
 	>::type;
 
 	HD constexpr element_ptr        base() const{return base_;}
-       constexpr element_const_ptr cbase() const{return base_;}
+	   constexpr element_const_ptr cbase() const{return base_;}
 
 	constexpr element_ptr& mbase() const{return base_;}
 	friend element_ptr base(array_types const& s){return s.base();}
@@ -462,13 +462,10 @@ public:
 	}
 private:
 	constexpr basic_array sliced_aux(index first, index last) const{
+		MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(first   ))&&"sliced first out of bounds");
+		MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(last - 1))&&"sliced last  out of bounds");
 		typename types::layout_t new_layout = *this;
-		if((this->size())==0){
-			assert(first == last);
-			new_layout.nelems_ = 0;
-		}else{
-			(new_layout.nelems_/=(this->size()))*=(last - first);
-		}
+		new_layout.nelems_ = this->stride_*(last - first);
 		return {new_layout, types::base_ + Layout::operator()(first)};
 	}
 public:
@@ -477,7 +474,7 @@ public:
 	constexpr basic_array       sliced(index first, index last)     &&{return sliced_aux(first, last);}
 
 	constexpr basic_const_array blocked(typename basic_array::index first, typename basic_array::index last) const&{return sliced(first, last).reindexed(first);}
-	constexpr basic_array blocked(typename basic_array::index first, typename basic_array::index last)&{return sliced(first, last).reindexed(first);}
+	constexpr basic_array       blocked(typename basic_array::index first, typename basic_array::index last)      &{return sliced(first, last).reindexed(first);}
 
 	using iextension = typename basic_array::index_extension;
 	NODISCARD("no side effects")
