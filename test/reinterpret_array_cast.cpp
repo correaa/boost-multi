@@ -167,8 +167,11 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_pair_to_complex){
 
 BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_pointer){
 	multi::array<double, 2> A({10, 10}, 5.);
-	auto&& Acast = A.reinterpret_array_cast<double, double const*>();
-	static_assert( std::is_same<decltype(Acast[1][2]), double const&>{}, "!" );
+
+	auto&& Aconstcast = A.reinterpret_array_cast<double, double const*>();
+	static_assert( std::is_same<decltype(Aconstcast[1][2]), double const&>{}, "!" );
+
+//	auto&& Acast = Aconstcast.reinterpret_array_cast<double, double*>(); // does not work as it should
 }
 
 #if 0
