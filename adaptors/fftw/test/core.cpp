@@ -406,6 +406,6 @@ BOOST_AUTO_TEST_CASE(fftw_1D_power){
 	auto* p = multi::fftw_plan_dft(in, out, fftw::forward, fftw::preserve_input);
 	fftw_execute(p); 
 	fftw_destroy_plan(p);
-	BOOST_TEST( power(in) == power(out)/num_elements(out), boost::test_tools::tolerance(1e-18) );
+	BOOST_TEST( power(in) == power(out)/num_elements(out), boost::test_tools::tolerance(1e-17) );
 }
 
