@@ -44,6 +44,9 @@ BOOST_AUTO_TEST_CASE(multi_array_sliced){
 	BOOST_REQUIRE( A[1].sliced(0,  0).is_empty() );
 	BOOST_REQUIRE( A[1].sliced(1,  1).is_empty() );
 	BOOST_REQUIRE( A[1].sliced(0, 20).size() == 20 );
+
+	BOOST_REQUIRE(  (A << 1).sliced(0, 5)[1][2][3][4] ==  (A << 1)[1][2][3][4] );
+	BOOST_REQUIRE( &(A << 1).sliced(0, 5)[1][2][3][4] == &(A << 1)[1][2][3][4] );
 }
 #if 0
 #if 0
