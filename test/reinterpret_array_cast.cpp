@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_pair_to_complex){
 	multi::array<complex, 2> const& Aconst = A;
 	auto&& A_block = Aconst({0, 5}, {0, 5});
 
-	auto&& Apair_block = A_block.reinterpret_array_cast<pair const>(); // const is important // cppcheck needs `template`
+	auto&& Apair_block = A_block.template reinterpret_array_cast<pair const>(); // const is important // cppcheck needs `template`
 	
 	BOOST_REQUIRE( (void const*)&Apair_block[1][2] == (void*)&A[1][2] );
 	
