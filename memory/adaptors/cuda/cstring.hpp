@@ -18,7 +18,7 @@ namespace multi{
 namespace memory{
 namespace cuda{
 #if (__cpp_nontype_template_parameter_auto>=201606) or defined(__NVCC__)
-template<auto CudaFunction, class... Args>
+template<auto CudaFunction, class... Args> // requires c++17
 void call(Args&&... args){
 	auto s = static_cast<Cuda::error>(CudaFunction(args...));
 	if( s != Cuda::error::success ) throw std::system_error{make_error_code(s), "cannot call cuda function "};
