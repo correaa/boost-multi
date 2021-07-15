@@ -281,15 +281,15 @@ struct ref{
 	using raw_reference = value_type&;
 private:
 	pointer pimpl_;
-	constexpr ref(pointer const& p) /*HD*/ : pimpl_{p}{}
+	constexpr ref(pointer const& p) : pimpl_{p}{}
 	template<class TT> friend struct ref;
 public:
 	constexpr ref(T& t) : pimpl_{&t}{}
 //	ref(T& t) HD : pimpl_{&t}{}
 	template<class Other, typename = decltype(implicit_cast<pointer>(std::declval<ref<Other>>().pimpl_))>
-	/*explicit(false)*/ ref(ref<Other>&& o) /*HD*/ : pimpl_{implicit_cast<pointer>(std::move(o).pimpl_)}{}
+	/*explicit(false)*/ constexpr ref(ref<Other>&& o) /*HD*/ : pimpl_{implicit_cast<pointer>(std::move(o).pimpl_)}{}
 	template<class Other, typename = std::enable_if_t<not std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>())>, pointer>{}>>
-	explicit/*(true)*/ ref(ref<Other> const& o, void** = 0) /*HD*/ : pimpl_{static_cast<pointer>(o)}{}
+	explicit/*(true) */ constexpr ref(ref<Other> const& o, void** = 0) /*HD*/ : pimpl_{static_cast<pointer>(o)}{}
 	template<class TT, class PP> friend struct ptr;
 //	typename pointer::raw_pointer operator&() & __device__{return pimpl_.rp_;}
 //	typename pointer::raw_pointer operator&() const& __device__{return pimpl_.rp_;}
