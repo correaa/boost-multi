@@ -76,9 +76,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_decay){
 	using complex = std::complex<double>; complex const I{0, 1};
 
 	multi::array<complex, 2> B = {
-		{ 1. - 3.*I, 6. + 2.*I},
-		{ 8. + 2.*I, 2. + 4.*I},
-		{ 2. - 1.*I, 1. + 1.*I}
+		{ 1. - 3.*I, 6. + 2.*I, 9. + 3.*I},
+		{ 8. + 2.*I, 2. + 4.*I, 9. + 3.*I},
+		{ 2. - 1.*I, 1. + 1.*I, 9. + 3.*I},
+		{ 9. + 3.*I, 9. + 3.*I, 9. + 3.*I}
 	};
 
 	namespace blas = multi::blas;
@@ -97,11 +98,13 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_decay){
 	BOOST_REQUIRE( blas::imag(B)[2][1] == std::imag(B[2][1]) );
 
 	multi::array<double, 2> B_real_doubled = {
-		{ 1., -3., 6., 2.},
-		{ 8.,  2., 2., 4.},
-		{ 2., -1., 1., 1.}
+		{ 1., -3., 6., 2., 9., 3.},
+		{ 8.,  2., 2., 4., 9., 3.},
+		{ 2., -1., 1., 1., 9., 3.},
+		{ 9.,  3., 9., 3., 9., 3.}
 	};
-	BOOST_REQUIRE( blas::real_doubled(B) == B_real_doubled );
+	BOOST_REQUIRE( sizes(blas::real_doubled(B)) == sizes(B_real_doubled) );
+	BOOST_REQUIRE(       blas::real_doubled(B)  ==       B_real_doubled  );
 
 }
 
