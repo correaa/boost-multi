@@ -753,10 +753,15 @@ public:
 		);
 	}
 #ifndef NOEXCEPT_ASSIGNMENT
+private:
+	static void move_if(std::true_type,  typename array::allocator_type&& source, typename array::allocator_type& dest){dest = std::move(source);}
+	static void move_if(std::false_type, typename array::allocator_type&&       , typename array::allocator_type&     ){}
+public:
 	array& operator=(array&& other) noexcept{
 		clear();
-		this->base_ = std::exchange(other.base_, nullptr);
-		this->alloc() = std::move(other.alloc());
+		this->base_ = std::exchange(other.base_, nullptr); // final null assigment shouldn't be necessary?
+		move_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment{}, std::move(other.alloc_), this->alloc_);
+	//	this->alloc_ = std::move(other.alloc_);
 		static_cast<typename array::layout_t&>(*this) = std::exchange(static_cast<typename array::layout_t&>(other), {});
 		return *this;
 	}

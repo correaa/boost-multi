@@ -20,6 +20,7 @@ int main() {
 	multi::pmr::array<char, 2> A({2, 2}, 'a', &pool);
 	multi::pmr::array<char, 2> B({3, 2}, 'b', &pool);
 
+	assert( A.get_allocator() == B.get_allocator() );
 	assert( buffer == std::string{"aaaabbbbbb__"} );
 
 	try{
