@@ -19,6 +19,12 @@ exit
 
 #include<memory>
 
+#if(__cplusplus >= 201703L)
+#if((not defined(__GNUG__)) or __GNUG__ > 8)
+#include<memory_resource>
+#endif
+#endif
+
 namespace boost{
 namespace multi{
 
@@ -237,10 +243,10 @@ public:
 	: array_alloc{}, ref{array_alloc::allocate(o.num_elements()), o.extensions()}{
 		static_array::uninitialized_copy_elements(std::move(o).data_elements());
 	}
-	static_array(static_array const& o, typename static_array::allocator_type const& a) //5b
-	: array_alloc{a}, ref{static_array::allocate(o.num_elements(), o.data_elements()), extensions(o)}{
-		uninitialized_copy_elements(o.data_elements());
-	}
+//	static_array(static_array const& o, typename static_array::allocator_type const& a) //5b
+//	: array_alloc{a}, ref{static_array::allocate(o.num_elements(), o.data_elements()), extensions(o)}{
+//		uninitialized_copy_elements(o.data_elements());
+//	}
 	static_array(static_array const& o)                                  //5b
 	: array_alloc{o.get_allocator()}, ref{array_alloc::allocate(o.num_elements(), o.data_elements()), extensions(o)}{
 		uninitialized_copy_elements(o.data_elements());
@@ -754,9 +760,22 @@ public:
 		static_cast<typename array::layout_t&>(*this) = std::exchange(static_cast<typename array::layout_t&>(other), {});
 		return *this;
 	}
-	array& operator=(array const& o){
-		if(array::extensions() == o.extensions()) static_::operator=(o);
-		else operator=(array{o}); // calls operator=(array&&)
+private:
+	static void copy_if(std::true_type , typename array::allocator_type const& source, typename array::allocator_type& dest){dest = source;}
+	static void copy_if(std::false_type, typename array::allocator_type const&       , typename array::allocator_type&     ){}
+public:
+	array& operator=(array const& other){
+		if(array::extensions() == other.extensions()){
+			copy_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment{}, other.alloc_, this->alloc_);
+			static_::operator=(other);
+		}else{
+			clear();
+			copy_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment{}, other.alloc_, this->alloc_);
+			static_cast<typename array::layout_t&>(*this) = static_cast<typename array::layout_t const&>(other);
+			array::allocate();
+			array::uninitialized_copy_elements(other.data_elements());
+		//	operator=(array{other}); // calls operator=(array&&)
+		}
 		return *this;
 	}
 #else
@@ -927,6 +946,18 @@ struct array_traits<T[N], void, void>{
 };
 
 }}
+
+//#if(__cplusplus >= 201703L)
+#if(__cpp_lib_memory_resource >= 201603)
+namespace boost{
+namespace multi{
+namespace pmr{
+
+template <class T, boost::multi::dimensionality_type D>
+using array = boost::multi::array<T, D, std::pmr::polymorphic_allocator<T>>;
+
+}}}
+#endif
 
 #endif
 
