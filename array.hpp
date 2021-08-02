@@ -5,7 +5,7 @@ cd build.$X && make -j && ctest -j --output-on-failure
 exit
 #endif
 // $CXXX $CXXFLAGS $0 -o $0.$X&&$0.$X&&rm $0.$X;exit
-//  © Alfredo A. Correa 2018-2019
+//  © Alfredo A. Correa 2018-2021
 
 #ifndef BOOST_MULTI_ARRAY_HPP 
 #define BOOST_MULTI_ARRAY_HPP
@@ -742,10 +742,13 @@ public:
 	array(array&& o) noexcept : array{std::move(o), o.get_allocator()}{}
 
 	friend typename array::allocator_type get_allocator(array const& self){return self.get_allocator();}
-
+private:
+	static void swap_if(std::true_type , typename array::allocator_type& source, typename array::allocator_type& dest){using std::swap; swap(dest, source);}
+	static void swap_if(std::false_type, typename array::allocator_type&       , typename array::allocator_type&     ){}
+public:
 	void swap(array& other) noexcept{
 		using std::swap;
-		swap(this->alloc(), other.alloc());
+		swap_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_swap{}, this->alloc_, other.alloc_);
 		swap(this->base_, other.base_);
 		swap(
 			static_cast<typename array::layout_t&>(*this), 

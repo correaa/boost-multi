@@ -34,8 +34,24 @@ int main() {
 		std::data(buffer), std::size(buffer), 
 		std::pmr::null_memory_resource()
 	};
-	multi::pmr::array<char, 2> D({2, 2}, &pool2);
-	D = A;
-	assert(D.get_allocator() != A.get_allocator() );
+	{
+		multi::pmr::array<char, 2> D({2, 2}, &pool2);
+		D = A;
+		assert(D.get_allocator() != A.get_allocator() );
+	}
+	{
+		multi::pmr::array<char, 2> D(&pool2);
+		D = std::move(A);
+		assert(D.get_allocator() != A.get_allocator() );
+		assert(D[1][1] == 'a');
+		assert(A.is_empty());
+	}
+	{
+		multi::pmr::array<char, 2> D(&pool2);
+		std::swap(D, B);
+		assert(( D.get_allocator() == multi::pmr::array<char, 2>::allocator_type{&pool2} ));
+		assert( B.is_empty() );
+	}
+
 }
 
