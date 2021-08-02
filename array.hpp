@@ -5,7 +5,7 @@ cd build.$X && make -j && ctest -j --output-on-failure
 exit
 #endif
 // $CXXX $CXXFLAGS $0 -o $0.$X&&$0.$X&&rm $0.$X;exit
-//  © Alfredo A. Correa 2018-2019
+//  © Alfredo A. Correa 2018-2021
 
 #ifndef BOOST_MULTI_ARRAY_HPP 
 #define BOOST_MULTI_ARRAY_HPP
@@ -18,6 +18,12 @@ exit
 #include "./detail/adl.hpp"
 
 #include<memory>
+
+#if(__cplusplus >= 201703L)
+#if((not defined(__GNUG__)) or __GNUG__ > 8)
+#include<memory_resource>
+#endif
+#endif
 
 namespace boost{
 namespace multi{
@@ -237,12 +243,14 @@ public:
 	: array_alloc{}, ref{array_alloc::allocate(o.num_elements()), o.extensions()}{
 		static_array::uninitialized_copy_elements(std::move(o).data_elements());
 	}
-	static_array(static_array const& o, typename static_array::allocator_type const& a) //5b
-	: array_alloc{a}, ref{static_array::allocate(o.num_elements(), o.data_elements()), extensions(o)}{
-		uninitialized_copy_elements(o.data_elements());
-	}
-	static_array(static_array const& o)                                  //5b
-	: array_alloc{o.get_allocator()}, ref{array_alloc::allocate(o.num_elements(), o.data_elements()), extensions(o)}{
+//	static_array(static_array const& o, typename static_array::allocator_type const& a) //5b
+//	: array_alloc{a}, ref{static_array::allocate(o.num_elements(), o.data_elements()), extensions(o)}{
+//		uninitialized_copy_elements(o.data_elements());
+//	}
+	static_array(static_array const& o) :                                 //5b
+		array_alloc{std::allocator_traits<Alloc>::select_on_container_copy_construction(o.alloc_)}, 
+		ref{array_alloc::allocate(o.num_elements(), o.data_elements()), extensions(o)}
+	{
 		uninitialized_copy_elements(o.data_elements());
 	}
 //	TODO static_array(static_array&& o)                                  //5b'
@@ -736,10 +744,13 @@ public:
 	array(array&& o) noexcept : array{std::move(o), o.get_allocator()}{}
 
 	friend typename array::allocator_type get_allocator(array const& self){return self.get_allocator();}
-
+private:
+	static void swap_if(std::true_type , typename array::allocator_type& source, typename array::allocator_type& dest){using std::swap; swap(dest, source);}
+	static void swap_if(std::false_type, typename array::allocator_type&       , typename array::allocator_type&     ){}
+public:
 	void swap(array& other) noexcept{
 		using std::swap;
-		swap(this->alloc(), other.alloc());
+		swap_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_swap{}, this->alloc_, other.alloc_);
 		swap(this->base_, other.base_);
 		swap(
 			static_cast<typename array::layout_t&>(*this), 
@@ -747,16 +758,34 @@ public:
 		);
 	}
 #ifndef NOEXCEPT_ASSIGNMENT
+private:
+	static void move_if(std::true_type,  typename array::allocator_type&& source, typename array::allocator_type& dest){dest = std::move(source);}
+	static void move_if(std::false_type, typename array::allocator_type&&       , typename array::allocator_type&     ){}
+public:
 	array& operator=(array&& other) noexcept{
 		clear();
-		this->base_ = std::exchange(other.base_, nullptr);
-		this->alloc() = std::move(other.alloc());
+		this->base_ = std::exchange(other.base_, nullptr); // final null assigment shouldn't be necessary?
+		move_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment{}, std::move(other.alloc_), this->alloc_);
+	//	this->alloc_ = std::move(other.alloc_);
 		static_cast<typename array::layout_t&>(*this) = std::exchange(static_cast<typename array::layout_t&>(other), {});
 		return *this;
 	}
-	array& operator=(array const& o){
-		if(array::extensions() == o.extensions()) static_::operator=(o);
-		else operator=(array{o}); // calls operator=(array&&)
+private:
+	static void copy_if(std::true_type , typename array::allocator_type const& source, typename array::allocator_type& dest){dest = source;}
+	static void copy_if(std::false_type, typename array::allocator_type const&       , typename array::allocator_type&     ){}
+public:
+	array& operator=(array const& other){
+		if(array::extensions() == other.extensions()){
+			copy_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment{}, other.alloc_, this->alloc_);
+			static_::operator=(other);
+		}else{
+			clear();
+			copy_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment{}, other.alloc_, this->alloc_);
+			static_cast<typename array::layout_t&>(*this) = static_cast<typename array::layout_t const&>(other);
+			array::allocate();
+			array::uninitialized_copy_elements(other.data_elements());
+		//	operator=(array{other}); // calls operator=(array&&)
+		}
 		return *this;
 	}
 #else
@@ -927,6 +956,18 @@ struct array_traits<T[N], void, void>{
 };
 
 }}
+
+//#if(__cplusplus >= 201703L)
+#if(__cpp_lib_memory_resource >= 201603)
+namespace boost{
+namespace multi{
+namespace pmr{
+
+template <class T, boost::multi::dimensionality_type D>
+using array = boost::multi::array<T, D, std::pmr::polymorphic_allocator<T>>;
+
+}}}
+#endif
 
 #endif
 
