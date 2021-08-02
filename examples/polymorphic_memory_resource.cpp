@@ -35,6 +35,10 @@ int main() {
 		std::pmr::null_memory_resource()
 	};
 	{
+		multi::pmr::array<char, 2> D = A;
+		assert(D.get_allocator() != A.get_allocator() );
+	}
+	{
 		multi::pmr::array<char, 2> D({2, 2}, &pool2);
 		D = A;
 		assert(D.get_allocator() != A.get_allocator() );

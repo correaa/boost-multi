@@ -247,8 +247,10 @@ public:
 //	: array_alloc{a}, ref{static_array::allocate(o.num_elements(), o.data_elements()), extensions(o)}{
 //		uninitialized_copy_elements(o.data_elements());
 //	}
-	static_array(static_array const& o)                                  //5b
-	: array_alloc{o.get_allocator()}, ref{array_alloc::allocate(o.num_elements(), o.data_elements()), extensions(o)}{
+	static_array(static_array const& o) :                                 //5b
+		array_alloc{std::allocator_traits<Alloc>::select_on_container_copy_construction(o.alloc_)}, 
+		ref{array_alloc::allocate(o.num_elements(), o.data_elements()), extensions(o)}
+	{
 		uninitialized_copy_elements(o.data_elements());
 	}
 //	TODO static_array(static_array&& o)                                  //5b'
