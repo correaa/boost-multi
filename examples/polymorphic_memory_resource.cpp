@@ -11,6 +11,8 @@ ${CXX:-c++} -std=c++17 $CXXFLAGS $0 -o $0x&&$0x&&rm $0x;exit
 namespace multi = boost::multi;
 
 int main() {
+	static_assert( sizeof(multi::array<char, 2>) < sizeof(multi::pmr::array<char, 2>) , "!");
+
 	char buffer[13] = "____________"; // a small buffer on the stack or an allocation
 	std::pmr::monotonic_buffer_resource pool{
 		std::data(buffer), std::size(buffer), 
