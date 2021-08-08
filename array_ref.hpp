@@ -1626,7 +1626,7 @@ public:
 	using celements_type = array_ref<typename array_ref::element_type, 1, typename array_ref::element_const_ptr>;
 
 private:
-	constexpr elements_type elements_() const{return elements_type{this->data_elements(), this->num_elements()};}
+	constexpr elements_type elements_() const{return elements_type{this->data_elements(), typename elements_type::extensions_type{multi::iextension{this->num_elements()}}};}
 public:
 	constexpr  elements_type elements()         &     {return elements_();}
 	constexpr  elements_type elements()         &&    {return elements_();}

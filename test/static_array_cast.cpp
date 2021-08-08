@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE(static_array_cast){
 //	constexpr std::array<int, 2> exts = {4, 5};
 
 	multi::array<double, 2> A({4, 5});
-	std::iota(begin(elements(A)), end(elements(A)), 0.);
+	std::iota(elements(A).begin(), elements(A).end(), 0.);
 
 	multi::array<double, 2> mA({4, 5});
 	std::transform(begin(elements(A)), end(elements(A)), begin(elements(mA)), std::negate<>{});

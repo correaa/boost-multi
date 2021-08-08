@@ -159,8 +159,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_real){
 }
 
 BOOST_AUTO_TEST_CASE(inq_case){
-	multi::array<double, 1> v1(10, +1.0);
-	multi::array<double, 1> v2(10, -1.0);
+	multi::array<double, 1> v1(multi::extensions_t<1>{multi::iextension{10}}, +1.0);
+	multi::array<double, 1> v2(multi::extensions_t<1>{multi::iextension{10}}, -1.0);
 
 	using blas::dot;
 	using blas::hermitized;

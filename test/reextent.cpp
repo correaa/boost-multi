@@ -39,11 +39,11 @@ BOOST_AUTO_TEST_CASE(array_reextent){
 }
 
 BOOST_AUTO_TEST_CASE(array_reextent_1d){
-	multi::array<double, 1> A({10}, 4.);
+	multi::array<double, 1> A(multi::extensions_t<1>{multi::iextension{10}}, 4.);
 	BOOST_REQUIRE( size(A) == 10 );
 	BOOST_REQUIRE( A[9] == 4. );
 
-	A.reextent({20});
+	A.reextent(multi::extensions_t<1>{multi::iextension{20}});
 	BOOST_REQUIRE( size(A) == 20 );
 	BOOST_REQUIRE( A[9] == 4. );
 //	BOOST_REQUIRE( A[19] == 0. ); // impossible to know by sometimes 0.
@@ -56,11 +56,11 @@ BOOST_AUTO_TEST_CASE(array_reextent_0D){
 }
 
 BOOST_AUTO_TEST_CASE(array_reextent_1d_with_initialization){
-	multi::array<double, 1> A({10}, 4.);
+	multi::array<double, 1> A(multi::extensions_t<1>{multi::iextension{10}}, 4.);
 	BOOST_REQUIRE( size(A) == 10 );
 	BOOST_REQUIRE( A[9] == 4. );
 
-	A.reextent({20}, 8.);
+	A.reextent(multi::extensions_t<1>{multi::iextension{20}}, 8.);
 	BOOST_REQUIRE( size(A) == 20 );
 	BOOST_REQUIRE( A[9] == 4. );
 	BOOST_REQUIRE( A[19] == 8. );

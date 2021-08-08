@@ -115,7 +115,7 @@ typedef std::tuple<multi::index_extension> base_;
 	using nelems_type = index;
 	using index_extension = multi::index_extension;
 	using std::tuple<index_extension>::tuple;
-	// cppcheck-suppress noExplicitConstructor ; because one wants to interpret a single number as a range from 0
+	// cppcheck-suppress noExplicitConstructor ; I don't know why TODO
 	constexpr extensions_t(index_extension const& ie) : base_{ie}{}
 	extensions_t() = default;
 	constexpr base_ const& base() const{return *this;}

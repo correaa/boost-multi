@@ -19,7 +19,7 @@ template<class MA> auto take(MA&& ma)->decltype(ma[0]){return ma[0];}
 
 BOOST_AUTO_TEST_CASE(iterator_1d){
 	{
-		multi::array<double, 1> A(100, 99.); 
+		multi::array<double, 1> A(multi::extensions_t<1>{multi::iextension{100}}, 99.); 
 		BOOST_REQUIRE( size(A) == 100 );
 		BOOST_REQUIRE( begin(A) < end(A) );
 		BOOST_REQUIRE( end(A) - begin(A) == size(A) );
@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(iterator_1d){
 		BOOST_REQUIRE( cb2 == cb );
 	}
 	{
-		multi::array<double, 1> A({100}, 99.); 
+		multi::array<double, 1> A(multi::extensions_t<1>{multi::iextension{100}}, 99.); 
 		BOOST_REQUIRE( size(A) == 100 );
 		BOOST_REQUIRE( begin(A) < end(A) );
 		
@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(iterator_1d){
 		BOOST_REQUIRE( b == cbb );
 	}
 	
-	*begin( multi::array<double, 1>(10, 99.) ) = 44.;
+	*begin( multi::array<double, 1>(multi::extensions_t<1>{multi::iextension{10}}, 99.) ) = 44.;
 }
 
 BOOST_AUTO_TEST_CASE(iterator_2d){
