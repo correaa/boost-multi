@@ -402,7 +402,7 @@ cuda-11.1-std17:
       - cmake --build . --verbose
       - ctest --output-on-failure
 
-cuda-11.2-std17:
+cuda-11.2-std14:
     image: nvidia/cuda:11.2.0-devel
     stage: test
     script:
