@@ -41,8 +41,10 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays){
 	BOOST_REQUIRE( va == wa );
 
 	std::vector<multi::array<double, 2>> ua(3);
+	auto x = multi::iextension(static_cast<multi::size_type>(ua.size()));
 	std::transform(
-		begin(multi::iextension(ua.size())), end(multi::iextension(ua.size())), begin(ua), 
+		begin(x), end(x), 
+		begin(ua), 
 		[](auto i){return multi::array<double, 2>({i, i}, static_cast<double>(i));}
 	);
 	BOOST_REQUIRE( ua == va );

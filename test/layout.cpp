@@ -26,7 +26,8 @@ BOOST_AUTO_TEST_CASE(linearize){
 	BOOST_REQUIRE( p == std::make_tuple(1, 1, 25) );
 }
 
-BOOST_AUTO_TEST_CASE(layout){
+BOOST_AUTO_TEST_CASE(layout)
+{
 {	
 	multi::array<double, 3> A3(
 #if defined(__INTEL_COMPILER) or (defined(__GNUC__) and (__GNUC__ < 6))

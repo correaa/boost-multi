@@ -11,7 +11,8 @@ $CXX $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 
 #include<complex>
 
-BOOST_AUTO_TEST_CASE(comparisons){
+BOOST_AUTO_TEST_CASE(comparisons)
+{
 	namespace multi = boost::multi;
 
 	using complex = std::complex<double>;

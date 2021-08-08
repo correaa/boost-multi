@@ -18,6 +18,7 @@ $CXXX $CXXFLAGS $0 -o $0$X&&$0$X&&rm $0$X;exit
 namespace boost{
 namespace multi{
 
+using size_t = std::make_signed_t<std::size_t>;
 using size_type = std::make_signed_t<std::size_t>;
 
 using index               = std::make_signed_t<size_type>;

@@ -15,7 +15,7 @@ $CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X $@&&rm $0.$X;exit
 
 namespace multi = boost::multi;
 
-template<class MA> decltype(auto) take(MA&& ma){return ma[0];}
+template<class MA> auto take(MA&& ma)->decltype(ma[0]){return ma[0];}
 
 BOOST_AUTO_TEST_CASE(iterator_1d){
 	{
