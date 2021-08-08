@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_double){
 
 	using complex = std::complex<double>; complex const I = {0, 1};
 	multi::array<complex, 1> AC = {1. + 2.*I, 3. + 4.*I, 4. - 8.*I};
-	multi::array<complex, 1> BC(size(AC), complex{0.});
+	multi::array<complex, 1> BC(extensions(AC), complex{0.});
 	
 	blas::axpy(+1., blas::real(AC), blas::real(BC));
 	blas::axpy(-1., blas::imag(AC), blas::imag(BC));

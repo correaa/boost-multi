@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(range_assignment){
 	BOOST_REQUIRE( v[1] = 10 );
 }
 {
-	multi::array<double, 1> v(10);
+	multi::array<double, 1> v(multi::extensions_t<1>{multi::iextension{10}});
 	auto r = extension(v);
 	v.assign(r.begin(), r.end());
 	BOOST_REQUIRE( v[1] == 1 );

@@ -42,30 +42,30 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv){//, *utf::tolerance(0.0001)){
 	};
 	multi::array<double, 1> const v = {1.1, 2.1, 3.1, 4.1};
 	{
-		multi::array<double, 1>       w(size(M));
+		multi::array<double, 1>       w(multi::extensions_t<1>{multi::iextension{size(M)}});
 		blas::gemv_n(1., begin(M), size(M), begin(v), 0., begin(w));
 		BOOST_REQUIRE_CLOSE( w[1] , 91.3                , 0.0001 );
 		BOOST_REQUIRE_CLOSE( w[2] , +blas::dot(M[2], v) , 0.0001 );
 	}
 	{
-		multi::array<double, 1>       w(size(M));
+		multi::array<double, 1>       w(multi::extensions_t<1>{multi::iextension{size(M)}});
 		multi::array<double, 2> const MT = ~M;
 		blas::gemv_n(1., begin(~MT), size(~MT), begin(v), 0., begin(w));
 		BOOST_REQUIRE_CLOSE( w[1] , 91.3               , 0.0001 );
 		BOOST_REQUIRE_CLOSE( w[2] , +blas::dot(M[2], v), 0.0001 );
 	}
 	{
-		multi::array<double, 1> w(size(M));
+		multi::array<double, 1>       w(multi::extensions_t<1>{multi::iextension{size(M)}});
 		auto mv = blas::gemv(1., M, v);
 		copy_n(mv.begin(), mv.size(), w.begin());
 		BOOST_REQUIRE_CLOSE( w[1] , 91.3 , 0.00001 );
 		
-		multi::array<double, 1> w2(size(M));
+		multi::array<double, 1> w2(multi::extensions_t<1>{multi::iextension{size(M)}});
 		MV(M, v, w2);
 		BOOST_REQUIRE_CLOSE( w2[0] , w[0], 0.00001 );
 	}
 	{
-		multi::array<double, 1> w(size(M));
+		multi::array<double, 1>       w(multi::extensions_t<1>{multi::iextension{size(M)}});
 		w = blas::gemv(1., M, v);
 		BOOST_REQUIRE_CLOSE( w[1] , 91.3 , 0.00001 );
 	}
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv){//, *utf::tolerance(0.0001)){
 		BOOST_REQUIRE_CLOSE( w[1] , 91.3 , 0.00001 );
 	}
 	{
-		multi::array<double, 1> w(size(M), 0.);
+		multi::array<double, 1>       w(multi::extensions_t<1>{multi::iextension{size(M)}}, 0.);
 		w += blas::gemv(1., M, v);
 		BOOST_REQUIRE_CLOSE( w[1] , 91.3 , 0.00001 );
 	}
@@ -236,26 +236,26 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_context){//, *utf::tolerance(0.0001)){
 	
 	blas::context ctxt;
 	{
-		multi::array<double, 1>       w(size(M));
+		multi::array<double, 1>       w(multi::extensions_t<1>{multi::iextension{size(M)}});
 		blas::gemv_n(ctxt, 1., begin(M), size(M), begin(v), 0., begin(w));
 		BOOST_REQUIRE_CLOSE( w[1] , 91.3 , 0.0001 );
 		BOOST_REQUIRE_CLOSE( w[2] , +blas::dot(M[2], v) , 0.0001 );
 	}
 	{
-		multi::array<double, 1>       w(size(M));
+		multi::array<double, 1>       w(multi::extensions_t<1>{multi::iextension{size(M)}});
 		multi::array<double, 2> const MT = ~M;
 		blas::gemv_n(ctxt, 1., begin(~MT), size(~MT), begin(v), 0., begin(w));
 		BOOST_REQUIRE_CLOSE( w[1] , 91.3 , 0.00001 );
 		BOOST_REQUIRE_CLOSE( w[2] , +blas::dot(M[2], v) , 0.00001 );
 	}
 	{
-		multi::array<double, 1> w(size(M));
+		multi::array<double, 1>       w(multi::extensions_t<1>{multi::iextension{size(M)}});
 		auto&& mv = blas::gemv(ctxt, 1., M, v);
 		copy_n(mv.begin(), mv.size(), w.begin());
 		BOOST_REQUIRE_CLOSE( w[1] , 91.3 , 0.00001 );
 	}
 	{
-		multi::array<double, 1> w(size(M));
+		multi::array<double, 1>       w(multi::extensions_t<1>{multi::iextension{size(M)}});
 		w = blas::gemv(ctxt, 1., M, v);
 		BOOST_REQUIRE_CLOSE( w[1] , 91.3 , 0.00001 );
 	}
@@ -264,7 +264,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_context){//, *utf::tolerance(0.0001)){
 		BOOST_REQUIRE_CLOSE( w[1] , 91.3 , 0.00001 );
 	}
 	{
-		multi::array<double, 1> w(size(M), 0.);
+		multi::array<double, 1>       w(multi::extensions_t<1>{multi::iextension{size(M)}}, 0.);
 		w += blas::gemv(ctxt, 1., M, v);
 		BOOST_REQUIRE_CLOSE( w[1] , 91.3, 0.00001 );
 	}

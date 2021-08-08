@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality){
 	{
 		std::vector<double> v1 = {1., 2., 3.};
 
-		multi::array_ref<double, 1> m1(v1.data(), 3);
+		multi::array_ref<double, 1> m1(v1.data(), multi::extensions_t<1>{multi::iextension{3}});
 		BOOST_REQUIRE( size(m1) == 3 );
 		BOOST_REQUIRE( &m1[1] == &v1[1] );
 		BOOST_REQUIRE( num_elements(m1) == 3 );

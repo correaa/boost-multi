@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE(one_based_1D){
 	BOOST_REQUIRE( extension(Af).start() == 1 );
 	BOOST_REQUIRE( extension(Af).finish() == 11 );
 
-	auto Af1 = multi::array<double, 1>(10, 0.).reindex(1);
+	auto Af1 = multi::array<double, 1>(multi::extensions_t<1>{multi::iextension{10}}, 0.).reindex(1);
 
 	BOOST_REQUIRE( size(Af1) == 10 );
 	BOOST_REQUIRE( Af1[10] == 0. );

@@ -21,13 +21,13 @@ namespace testB{
 } // namespace testB
 
 BOOST_AUTO_TEST_CASE(overload_paren){
-	multi::array<double, 1> arr(10);
+	multi::array<double, 1> arr({10});
 	testB::B zero;
 	BOOST_REQUIRE( &arr(0) == &arr(zero) );
 }
 
 BOOST_AUTO_TEST_CASE(empty_intersection){
-	multi::array<double, 1> arr(10);
+	multi::array<double, 1> arr({10});
 	multi::array<double, 1> arr2;
 
 	auto const is = intersection(arr.extension(), arr2.extension());

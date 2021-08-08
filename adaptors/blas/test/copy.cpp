@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_copy_row){
 		{4., 5., 6.},
 		{7., 8., 9.}
 	};
-	multi::array<double, 1> B(3);
+	multi::array<double, 1> B(multi::extensions_t<1>{multi::iextension{3}});
 	blas::copy(rotated(A)[0], B);
 	BOOST_REQUIRE( B == rotated(A)[0] );
 }
@@ -109,8 +109,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_copy_context){
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_copy_thrust){
 
-	multi::array<thrust::complex<double>, 1> const a(10, thrust::complex<double>{});
-	multi::array<thrust::complex<double>, 1> b(10);
+	multi::array<thrust::complex<double>, 1> const a(multi::extensions_t<1>{multi::iextension{10}}, thrust::complex<double>{});
+	multi::array<thrust::complex<double>, 1> b(multi::extensions_t<1>{multi::iextension{10}});
 	blas::copy(a, b);
 
 	BOOST_REQUIRE( a == b );
@@ -120,8 +120,8 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_text_copy_interop){
 
 	static_assert( std::is_convertible<std::complex<double>, thrust::complex<double>>{} );
 	static_assert( std::is_convertible<thrust::complex<double>, std::complex<double>>{} );
-	multi::array<std::complex<double>, 1> a(10, std::complex<double>{});
-	multi::array<thrust::complex<double>, 1> b(10);
+	multi::array<std::complex<double>, 1> a(multi::extensions_t<1>{multi::iextension{10}}, std::complex<double>{});
+	multi::array<thrust::complex<double>, 1> b(multi::extensions_t<1>{multi::iextension{10}});
 	blas::copy(a, b);
 
 	BOOST_REQUIRE( a == b );

@@ -27,7 +27,8 @@ private:
 };
 
 BOOST_AUTO_TEST_CASE(multi_construct_1d){
-	multi::static_array<double, 1> A(multi::array<double, 1>::extensions_type{10}, 1.);
+	multi::static_array<double, 1> A(multi::extensions_t<1>{multi::iextension{10}}, 1.);
+//	multi::static_array<double, 1> A(multi::array<double, 1>::extensions_type{10}, 1.);
 	BOOST_REQUIRE( size(A) == 10 );
 	BOOST_REQUIRE( A[1] == 1. );
 }
@@ -39,16 +40,16 @@ BOOST_AUTO_TEST_CASE(multi_constructors_inqnvcc_bug){
 
 BOOST_AUTO_TEST_CASE(multi_constructors_1d){
 	{
-		multi::array<double, 1> A(10); 
+		multi::array<double, 1> A(multi::extensions_t<1>{multi::iextension{10}});
 		BOOST_REQUIRE( size(A)==10 );
 	}
 	{
-		multi::array<double, 1> A(10, double{}); 
+		multi::array<double, 1> A(multi::extensions_t<1>{multi::iextension{10}}, double{});
 		BOOST_REQUIRE( size(A)==10 );
 		BOOST_REQUIRE( A[5]== double{} );
 	}
 	{
-		multi::array<double, 1> A(10, double{}); 
+		multi::array<double, 1> A(multi::extensions_t<1>{multi::iextension{10}}, double{}); 
 		BOOST_REQUIRE( size(A)==10 );
 		BOOST_REQUIRE( A[5]== double{} );
 	}

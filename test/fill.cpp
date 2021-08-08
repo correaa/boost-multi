@@ -50,7 +50,7 @@ std::random_device r;
 BOOST_AUTO_TEST_CASE(fill_1d){
 	namespace multi = boost::multi;
 	{
-		multi::array<double, 1> d1D(10);
+		multi::array<double, 1> d1D(multi::extensions_t<1>{multi::iextension{10}});
 		static_assert( std::is_same<std::iterator_traits<decltype(begin(d1D))>::value_type, double>{}, "!");
 
 		using std::copy;
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE(fill_1d){
 		BOOST_REQUIRE( d1D[9] == 9. );
 	}
 	{
-		multi::array<double, 1> d1D(10);
+		multi::array<double, 1> d1D(multi::extensions_t<1>{multi::iextension{10}});
 		BOOST_REQUIRE( size(d1D) == 10 );
 
 		d1D.assign(begin(extension(d1D)), end(extension(d1D)));
@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE(fill_1d){
 		BOOST_REQUIRE( d1D[9] == 9. );		
 	}
 	{
-		multi::array<double, 1> d1D(10);
+		multi::array<double, 1> d1D(multi::extensions_t<1>{multi::iextension{10}});
 		d1D.assign(extension(d1D));
 		BOOST_REQUIRE( d1D[0] == 0. );
 		BOOST_REQUIRE( d1D[1] == 1. );

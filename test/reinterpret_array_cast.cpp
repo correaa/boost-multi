@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_struct_to_dimension){
 	struct vec3{
 		double x, y, z;
 	};
-	multi::array<vec3, 1> A(100);
+	multi::array<vec3, 1> A(multi::extensions_t<1>{multi::iextension{100}});
 	A[8] = {1., 2., 3.};
 	BOOST_REQUIRE( A[8].y == 2. );
 
@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_struct_to_dimension){
 
 BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_complex_to_real_extra_dimension){
 	using complex = std::complex<double>;
-	multi::array<complex, 1> A(100, complex{1, 2});
+	multi::array<complex, 1> A(multi::extensions_t<1>{multi::iextension{100}}, complex{1, 2});
 	BOOST_REQUIRE(  size(A) == 100 );
 	BOOST_REQUIRE(( A[0] == complex{1, 2} ));
 	
@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_tuple_as_extra_dimension){
 	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast, cppcoreguidelines-avoid-c-arrays, hicpp-avoid-c-arrays, modernize-avoid-c-arrays): test
 	BOOST_REQUIRE( &reinterpret_cast<double(&)[3]>(v)[1] == &std::get<1>(v) ); 
 	{
-		multi::array<vector3, 1> A(10);
+		multi::array<vector3, 1> A(multi::extensions_t<1>{multi::iextension{10}});
 		BOOST_REQUIRE( &A.reinterpret_array_cast<double>(3)[2][1] == &std::get<1>(A[2]) );
 	}
 	{
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast){
 	BOOST_REQUIRE(real(c)==11);
 }
 {
-	multi::array<std::complex<double>, 1> A(10); 
+	multi::array<std::complex<double>, 1> A(multi::extensions_t<1>{multi::iextension{10}}); 
 	std::iota( begin(A), end(A), 1.);
 	BOOST_REQUIRE( A[8] == 9. );
 	auto&& A2 = A.reinterpret_array_cast<Complex_<double>>();
@@ -141,7 +141,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_realcomplex){
 	BOOST_REQUIRE(real(c)==11);
 }
 {
-	multi::array<complex, 1> A(10); 
+	multi::array<complex, 1> A(multi::extensions_t<1>{multi::iextension{10}});
 	auto&& A2 = A.reinterpret_array_cast<double>(2);
 	A2[8][0] = 1000.;
 	A2[8][1] = 2000.;
