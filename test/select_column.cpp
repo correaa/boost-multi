@@ -20,7 +20,8 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section_1D){
 	BOOST_REQUIRE( A( multi::all < 2 )[1] == 1. );
 }
 
-BOOST_AUTO_TEST_CASE(multi_array_range_section){
+BOOST_AUTO_TEST_CASE(multi_array_range_section)
+{
 	multi::array<double, 2> A = {
 		{00., 01., 02.},
 		{10., 11., 12.},

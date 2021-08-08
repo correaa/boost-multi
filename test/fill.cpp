@@ -38,7 +38,7 @@ public:
 	static constexpr auto max(){return std::numeric_limits<result_type>::max();}
 	void operator()(void const* key, std::size_t len) noexcept{h = fnv1a(key, len, h);}
 	template<class T, std::enable_if_t<std::is_fundamental<T>{}, int> = 0>
-	decltype(auto) operator()(T const& t) noexcept{operator()(&t, sizeof(t)); return *this;}
+	auto operator()(T const& t) noexcept -> decltype(auto){operator()(&t, sizeof(t)); return *this;}
 //	result_type operator()() && noexcept{return h;}
 	auto operator()() const& noexcept{return h;}
 //	explicit operator result_type() && noexcept{return h;}

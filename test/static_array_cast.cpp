@@ -1,4 +1,4 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 $CXXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 #endif
 // © Alfredo A. Correa 2019-2020
@@ -31,7 +31,7 @@ public:
 	// NOLINTNEXTLINE(google-explicit-constructor, hicpp-explicit-conversions): simulates a reference
 	constexpr operator decay_type() const&{return f_(r_);}
 	// NOLINTNEXTLINE(google-runtime-operator,-warnings-as-errors): simulates reference
-	constexpr decltype(auto) operator&()&&{return involuter<decltype(&std::declval<Ref>()), Involution>{&r_, f_};}
+	constexpr auto operator&()&& -> decltype(auto){return involuter<decltype(&std::declval<Ref>()), Involution>{&r_, f_};}
 	// NOLINTNEXTLINE(fuchsia-trailing-return,-warnings-as-errors): trailing return helps reading
 	template<class DecayType> constexpr auto operator=(DecayType&& other)& -> involuted&{r_=f_(std::forward<DecayType>(other)); return *this;}
 	// NOLINTNEXTLINE(fuchsia-trailing-return,-warnings-as-errors): trailing return helps reading
@@ -67,7 +67,7 @@ public:
 	constexpr auto operator*() const{return reference{*it_, f_};}
 	constexpr auto operator==(involuter const& o) const{return it_==o.it_;}
 	constexpr auto operator!=(involuter const& o) const{return it_!=o.it_;}
-	constexpr decltype(auto) operator+=(typename involuter::difference_type n){it_+=n; return *this;}
+	constexpr auto operator+=(typename involuter::difference_type n) -> decltype(auto){it_+=n; return *this;}
 	constexpr auto operator+(typename involuter::difference_type n) const{return involuter{it_+n, f_};}
 	constexpr auto operator->() const{return pointer{&*it_, f_};}
 //	~involuter() = default;

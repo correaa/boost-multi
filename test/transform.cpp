@@ -1,4 +1,4 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 $CXXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 #endif
 
@@ -15,7 +15,7 @@ $CXXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 namespace test{
 	constexpr struct neg_t {
 		template<class T>
-		constexpr decltype(auto) operator()(T const& x) const{return -x;}
+		constexpr auto operator()(T const& x) const -> decltype(-x){return -x;}
 	} neg;
 } // namespace test
 
@@ -27,7 +27,7 @@ template<class Involution, class Ref>
 class involuted{
 	Ref r_;
 	template<class Involuted, std::enable_if_t<std::is_base_of<involuted, std::decay_t<Involuted>>{}, int> =0>
-	friend decltype(auto) underlying(Involuted&& self){return self.r_;}
+	friend auto underlying(Involuted&& self) ->decltype(self.r_){return self.r_;}
 public:
 	using decay_type = std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
 	constexpr involuted(Involution /*stateless*/, Ref r) : r_{std::forward<Ref>(r)}{}
@@ -75,7 +75,7 @@ public:
 	constexpr auto operator*() const{return reference{Involution{}, *it_};}
 	constexpr auto operator==(involuter const& o) const{return it_==o.it_;}
 	constexpr auto operator!=(involuter const& o) const{return it_!=o.it_;}
-	constexpr decltype(auto) operator+=(typename involuter::difference_type n){it_+=n; return *this;}
+	constexpr auto operator+=(typename involuter::difference_type n) -> decltype(*this){it_+=n; return *this;}
 	constexpr auto operator+(typename involuter::difference_type n) const{return involuter{it_+n};}
 	constexpr auto operator->() const{return pointer{&*it_};}
 };
@@ -116,10 +116,10 @@ struct conjugate<> : private basic_conjugate_t{
 #endif
 template<class ComplexRef> struct conjd : test::involuted<conjugate<>, ComplexRef>{
 	explicit conjd(ComplexRef r) : test::involuted<conjugate<>, ComplexRef>(conjugate<>{}, r){}
-	decltype(auto) real() const{return underlying(*this).real();}
+	auto real() const{return underlying(*this).real();}
 	auto imag() const{return negated<decltype(underlying(std::declval<test::involuted<conjugate<>, ComplexRef> const&>()).imag())>{std::negate<>{}, underlying(*this).imag()};}
-	friend decltype(auto) real(conjd const& self){using std::real; return real(static_cast<typename conjd::decay_type>(self));}
-	friend decltype(auto) imag(conjd const& self){using std::imag; return imag(static_cast<typename conjd::decay_type>(self));}
+	friend auto real(conjd const& self) -> decltype(auto){using std::real; return real(static_cast<typename conjd::decay_type>(self));}
+	friend auto imag(conjd const& self) -> decltype(auto){using std::imag; return imag(static_cast<typename conjd::decay_type>(self));}
 };
 #if defined(__NVCC__)
 #pragma GCC diagnostic pop
@@ -138,7 +138,7 @@ public:
 	explicit indirect_real(P const& p) : impl_{p}{}
 	auto operator+(std::ptrdiff_t n) const{return indirect_real{impl_ + n};}
 	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast): extra real part as reference
-	decltype(auto) operator*() const{return reinterpret_cast<std::array<double, 2>&>(*impl_)[0];}
+	auto operator*() const -> decltype(auto){return reinterpret_cast<std::array<double, 2>&>(*impl_)[0];}
 
 	using difference_type = std::ptrdiff_t;
 	using value_type = typename std::iterator_traits<P>::value_type;

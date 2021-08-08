@@ -1,4 +1,4 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // © Alfredo A. Correa 2018-2021
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi element access"
@@ -15,7 +15,7 @@ template<class T> void what(T&&) = delete;
 namespace testB{
 	struct B{};
 
-	template<class Array> decltype(auto) paren(Array&& arr, B const&/*unused*/){
+	template<class Array> auto paren(Array&& arr, B const&/*unused*/) -> decltype(auto){
 		return std::forward<Array>(arr)(0);
 	}
 } // namespace testB
