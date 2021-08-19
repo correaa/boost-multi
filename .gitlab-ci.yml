@@ -86,31 +86,31 @@ g++-current-release:
     - cmake --build . --verbose
     - ctest --output-on-failure
 
-g++-7-std17:
-  stage: test
-  image: vistart/cuda:10.2-ubuntu20.04
-  script:
-    - export CXX="g++-7"
-    - DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
-    - ln --symbolic --force . ../multi
-    - $CXX --version
-    - mkdir build && cd build
-    - cmake .. -DCMAKE_CXX_STANDARD=17
-    - cmake --build .
-    - ctest --output-on-failure
+#g++-7-std17:
+#  stage: test
+#  image: vistart/cuda:10.2-ubuntu20.04
+#  script:
+#    - export CXX="g++-7"
+#    - DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
+#    - ln --symbolic --force . ../multi
+#    - $CXX --version
+#    - mkdir build && cd build
+#    - cmake .. -DCMAKE_CXX_STANDARD=17
+#    - cmake --build .
+#    - ctest --output-on-failure
 
-g++-8:
-  stage: test
-  image: vistart/cuda:10.2-ubuntu20.04
-  script:
-    - export CXX="g++-8"
-    - DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
-    - ln --symbolic --force . ../multi
-    - $CXX --version
-    - mkdir build && cd build
-    - cmake ..
-    - cmake --build .
-    - ctest --output-on-failure
+#g++-8:
+#  stage: test
+#  image: vistart/cuda:10.2-ubuntu20.04
+#  script:
+#    - export CXX="g++-8"
+#    - DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
+#    - ln --symbolic --force . ../multi
+#    - $CXX --version
+#    - mkdir build && cd build
+#    - cmake ..
+#    - cmake --build .
+#    - ctest --output-on-failure
 
 g++-9:
   stage: test
