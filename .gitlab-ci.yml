@@ -88,10 +88,10 @@ g++-current-release:
 
 g++-7-std17:
   stage: test
-  image: debian:stable-backports
+  image: vistart/cuda:10.2-ubuntu20.04
   script:
     - export CXX="g++-7"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
@@ -101,10 +101,10 @@ g++-7-std17:
 
 g++-8:
   stage: test
-  image: debian:stable-backports
+  image: vistart/cuda:10.2-ubuntu20.04
   script:
     - export CXX="g++-8"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
