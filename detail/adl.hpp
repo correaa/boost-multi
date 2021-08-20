@@ -287,7 +287,7 @@ constexpr class adl_uninitialized_copy_n_fn__{
 	template<class T, class... As> constexpr auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::decay_t<T>::  uninitialized_copy_n(std::forward<T>(t), std::forward<As>(as)...))
 	template<class T, class... As> constexpr auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).uninitialized_copy_n(std::forward<As>(as)...))
 public:
-	template<class... As> constexpr auto operator()(As&&... as) const{return _(priority<4>{}, std::forward<As>(as)...);}
+	template<class... As> constexpr auto operator()(As&&... as) const{return _(priority<4>{}, std::forward<As>(as)...);} // TODO(correaa) this might trigger a compiler crash with g++ 7.5 because of operator&() && overloads
 } adl_uninitialized_copy_n;
 
 MAYBE_UNUSED static constexpr class adl_uninitialized_move_n_fn__{

@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE(iterator_1d){
 		BOOST_REQUIRE( size(A) == 100 );
 		BOOST_REQUIRE( begin(A) < end(A) );
 		BOOST_REQUIRE( end(A) - begin(A) == size(A) );
-		
+
 		multi::array<double, 1>::const_iterator cb = cbegin(A);
 		multi::array<double, 1>::iterator b = begin(A);
 		BOOST_REQUIRE( cb == b );
@@ -35,13 +35,13 @@ BOOST_AUTO_TEST_CASE(iterator_1d){
 		multi::array<double, 1> A(multi::extensions_t<1>{multi::iextension{100}}, 99.); 
 		BOOST_REQUIRE( size(A) == 100 );
 		BOOST_REQUIRE( begin(A) < end(A) );
-		
+
 		auto b = A.begin();
 		multi::array<double, 1>::const_iterator cbb = b;
 		BOOST_REQUIRE( cbb == b );
 		BOOST_REQUIRE( b == cbb );
 	}
-	
+
 	*begin( multi::array<double, 1>(multi::extensions_t<1>{multi::iextension{10}}, 99.) ) = 44.;
 }
 
@@ -157,6 +157,16 @@ BOOST_AUTO_TEST_CASE(iterator_semantics){
 
 	BOOST_REQUIRE(( begin(A) == multi::array<double, 3>::iterator(rend(A)) ));
 
+	BOOST_REQUIRE( &A[0][2][1] == &begin(A)[0][2][1] );
+
+	auto&& Aref = multi::ref(begin(A), end(A));
+	BOOST_REQUIRE( &A[0][2][1] == &Aref[0][2][1] );
+	BOOST_REQUIRE( A.base() == Aref.base() );
+	BOOST_TEST( A.layout().stride() == Aref.layout().stride());
+	BOOST_TEST( A.layout().offset() == Aref.layout().offset());
+	BOOST_TEST( A.layout().nelems() == Aref.layout().nelems());
+	BOOST_REQUIRE( A.layout() == Aref.layout() );
+	BOOST_REQUIRE( &multi::ref(begin(A), end(A)) == &A );
 }
 
 BOOST_AUTO_TEST_CASE(iterator_arrow_operator){
@@ -166,15 +176,15 @@ BOOST_AUTO_TEST_CASE(iterator_arrow_operator){
 		{"10", "11"},
 		{"20", "21"}
 	};
-	
+
 	BOOST_REQUIRE( A[1][0] == "10" );
 
 	BOOST_REQUIRE( std::is_sorted(begin(A), end(A)) ); // sorted by rows
 	BOOST_REQUIRE( std::is_sorted(begin(A.rotated()), end(A.rotated())) ); // sorted by cols
-	
+
 	BOOST_REQUIRE( begin( A           )->size() == A[0].size() );
 	BOOST_REQUIRE( begin( A.rotated() )->size() == A.size() );
-	
+
 	BOOST_REQUIRE( &(begin( A           )->operator[](1)) == &(A[0][1]) );
 	BOOST_REQUIRE( &(begin( A.rotated() )->operator[](1)) == &(A[1][0]) );
 
