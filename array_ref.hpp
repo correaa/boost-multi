@@ -229,14 +229,14 @@ struct array_iterator :
 	using iterator_category = std::random_access_iterator_tag;
 
 	using rank = std::integral_constant<dimensionality_type, D>;
-	
+
 	using ptr_type = basic_array_ptr<basic_array<element, D-1, element_ptr>, layout_t<D-1>>;
 	using stride_type = index;
 
-	constexpr array_iterator(std::nullptr_t p = nullptr) : ptr_{p}, stride_{1}{}//Ref{p}{}
+	explicit constexpr array_iterator(std::nullptr_t p) : ptr_{p}, stride_{1}{}
+	constexpr array_iterator() : array_iterator{nullptr}{}
+
 	template<class, dimensionality_type, class> friend struct array_iterator;
-//	template<class Other, typename = decltype(typename basic_array<element, D-1, element_ptr>::types::element_ptr{typename Other::element_ptr{}})> 
-//	constexpr array_iterator(Other const& o) : /*Ref{o.layout(), o.base()},*/ ptr_{o.ptr_.base_, o.ptr_.layout()}, stride_{o.stride_}{}
 
 	template<class EElement, typename PPtr, 
 		decltype(_implicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().ptr_.base()))* = nullptr // .base() (instead of .base_) is needed due to a bug in nvcc 11.1 not seeing the friend declaration?
