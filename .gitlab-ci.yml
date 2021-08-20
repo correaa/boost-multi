@@ -470,6 +470,7 @@ g++-cppcheck:
 qmcpack-g++:
   stage: test
   script:
+    - echo $CI_PRE_CLONE_SCRIPT
     - export DEBIAN_FRONTEND=noninteractive
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libopenmpi-dev gfortran g++ pkg-config cmake make git ca-certificates numdiff python3 python3-numpy python3-h5py python3-mpi4py python3-scipy libxml2-dev libhdf5-dev
     - git clone https://github.com/QMCPACK/qmcpack.git
