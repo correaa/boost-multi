@@ -810,7 +810,7 @@ public:
 
 	constexpr auto addressof() &&{return ptr{this->base_, this->layout()};}
 
-//	constexpr auto operator&()     &&{return       ptr{this->base_, this->layout()};} // gives compiler crash in g++-7 (Ubuntu 7.5.0-6ubuntu4) 7.5.0
+	constexpr auto operator&()     &&{return       ptr{this->base_, this->layout()};} // gives compiler crash in g++-7 (Ubuntu 7.5.0-6ubuntu4) 7.5.0
 //	constexpr auto operator&()      &{return       ptr{this->base_, this->layout()};}
 //	constexpr auto operator&() const&{return const_ptr{this->base_, this->layout()};}
 
