@@ -342,6 +342,12 @@ struct biiterator :
 	using iterator_category = std::random_access_iterator_tag;
 };
 
+template<class It>
+auto ref(It begin, It end)
+->multi::basic_array<typename It::element, It::dimensionality, typename It::element_ptr>{
+	return multi::basic_array<typename It::element, It::dimensionality, typename It::element_ptr>{begin, end};
+}
+
 template<typename T, dimensionality_type D, typename ElementPtr, class Layout>
 struct basic_array : 
 	multi::partially_ordered2<basic_array<T, D, ElementPtr, Layout>, void>,
@@ -583,7 +589,7 @@ public:
 	constexpr partitioned_const_type partitioned(size_type s) const&{return partitioned_aux(s);}
 	constexpr partitioned_type       partitioned(size_type s)      &{return partitioned_aux(s);}
 	constexpr partitioned_type       partitioned(size_type s)     &&{return partitioned_aux(s);}
-	
+
 	friend constexpr partitioned_const_type partitioned(basic_array const& self, size_type s){return           self .partitioned(s);}
 	friend constexpr partitioned_type       partitioned(basic_array      & self, size_type s){return           self .partitioned(s);}
 	friend constexpr partitioned_type       partitioned(basic_array     && self, size_type s){return std::move(self).partitioned(s);}
@@ -777,6 +783,7 @@ private:
 		assert(begin.stride() == end.stride());
 		assert(begin->layout() == end->layout());
 	}
+	template<class It> friend auto ref(It begin, It end) ->multi::basic_array<typename It::element, It::dimensionality, typename It::element_ptr>;
 
 	template<class Iterator>
 	struct basic_reverse_iterator : 
@@ -974,7 +981,7 @@ public:
 			static_cast<P2>(static_cast<void*>(thisbase))
 		};
 	}
-	
+
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
 	constexpr basic_array<std::decay_t<T2>, D, P2> reinterpret_array_cast()&{
 		static_assert( sizeof(T)%sizeof(T2)== 0, 
@@ -993,7 +1000,7 @@ public:
 	constexpr basic_array<std::decay_t<T2>, D, P2> const_array_cast()&&{
 		return {this->layout(), const_cast<P2>(this->base())};
 	}
-	
+
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
 	constexpr basic_array<std::decay_t<T2>, D + 1, P2> reinterpret_array_cast(size_type n) &{
 		static_assert( sizeof(T)%sizeof(T2) == 0,
@@ -1129,14 +1136,14 @@ struct basic_array<T, dimensionality_type{0}, ElementPtr, Layout> :
 	->decltype(adl_equal(&e, &e + 1, this->base_)){
 		return adl_equal(&e, &e + 1, this->base_);}
 	template<class TT> constexpr auto operator!=(TT const& e) const&->decltype(!operator==(e)){return !operator==(e);}
-	
+
 	template<class Range0>
 	basic_array& operator=(Range0&& r)&{
 	//	*this->base_ = std::forward<Range0>(r); 
 		adl_copy_n(&r, 1, this->base_);
 		return *this;
 	}
-	
+
 	element_cref elements_at(size_type n) const&{assert(n < this->num_elements()); return *(this->base_);}
 	element_ref  elements_at(size_type n)     &&{assert(n < this->num_elements()); return *(this->base_);}
 	element_ref  elements_at(size_type n)      &{assert(n < this->num_elements()); return *(this->base_);}
@@ -1164,7 +1171,7 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout> :
 {
 	using types = array_types<T, dimensionality_type{1}, ElementPtr, Layout>;
 	using types::types;
-	
+
 	using default_allocator_type = typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type;
 
 	constexpr default_allocator_type get_allocator() const{return default_allocator_of(basic_array::base());}
@@ -1177,7 +1184,7 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout> :
 		typename std::pointer_traits<ElementPtr>::template rebind<typename basic_array::element_type const>,
 		Layout
 	>;
-	
+
 	using typename types::element_ptr;
 	using typename types::element_const_ptr;
 protected:
