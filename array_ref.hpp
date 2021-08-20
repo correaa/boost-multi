@@ -259,7 +259,7 @@ struct array_iterator :
 	constexpr bool operator==(array_iterator const& o) const{return ptr_==o.ptr_ and stride_==o.stride_ and ptr_.layout() == o.ptr_.layout();}
 //	template<class O> constexpr bool operator==(O const& o) const{return equal(o);}
 	constexpr bool operator<(array_iterator const& o) const{return distance_to(o) > 0;}
-	constexpr array_iterator(typename basic_array<element, D-1, element_ptr>::element_ptr p, layout_t<D-1> l, index stride) : /*Ref{l, p},*/
+	explicit constexpr array_iterator(typename basic_array<element, D-1, element_ptr>::element_ptr p, layout_t<D-1> l, index stride) :
 		ptr_{p, l}, 
 		stride_{stride}
 	{}
@@ -812,8 +812,8 @@ public:
 	}
 
 private:
-	constexpr iterator begin_aux() const{return {types::base_          , sub_, stride_};}
-	constexpr iterator end_aux()   const{return {types::base_ + nelems_, sub_, stride_};}
+	constexpr auto begin_aux() const{return iterator{types::base_          , sub_, stride_};}
+	constexpr auto end_aux()   const{return iterator{types::base_ + nelems_, sub_, stride_};}
 
 public:
 	constexpr iterator begin()          &{return begin_aux();}
@@ -830,7 +830,7 @@ public:
 	constexpr const_iterator end  ()           const&{return end_aux()  ;}
 	friend constexpr const_iterator begin(basic_array const& s){return s.begin();}
 	friend constexpr const_iterator end  (basic_array const& s){return s.end()  ;}
-	
+
 	constexpr const_iterator cbegin() const{return begin();}
 	constexpr const_iterator cend()   const{return end()  ;}
 	friend constexpr auto cbegin(basic_array const& s){return s.cbegin();}
@@ -1066,7 +1066,7 @@ struct array_iterator<Element, 1, Ptr> ://, Ref> :
 	using stride_type = multi::index;
 	using rank = std::integral_constant<dimensionality_type, 1>;
 	constexpr bool operator<(array_iterator const& o) const{return distance_to(o) > 0;}
-	constexpr array_iterator(Ptr d, typename basic_array<Element, 1, Ptr>::index s) : data_{d}, stride_{s}{} // TODO make explicit?
+	explicit constexpr array_iterator(Ptr d, typename basic_array<Element, 1, Ptr>::index s) : data_{d}, stride_{s}{} // TODO make explicit?
 private:
 	friend struct basic_array<Element, 1, Ptr>;
 	element_ptr data_{nullptr}; // TODO consider uninitialized pointer
@@ -1413,8 +1413,8 @@ public:
 	using reverse_iterator = std::reverse_iterator<iterator>;
 
 private:
-	constexpr       iterator begin_aux() const{return {this->base_                 , this->stride_};}
-	constexpr       iterator end_aux  () const{return {this->base_ + types::nelems_, this->stride_};}
+	constexpr       auto begin_aux() const{return iterator{this->base_                 , this->stride_};}
+	constexpr       auto end_aux  () const{return iterator{this->base_ + types::nelems_, this->stride_};}
 public:
 	constexpr const_iterator begin()const&{return begin_aux();}
 	constexpr       iterator begin()     &{return begin_aux();}
