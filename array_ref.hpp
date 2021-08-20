@@ -769,6 +769,7 @@ public:
 	using       iterator = array_iterator<typename types::element, D, typename types::element_ptr      >;//, typename types::reference      >;
 	using const_iterator = array_iterator<typename types::element, D, typename types::element_const_ptr>;//, typename types::const_reference>;
 private:
+
 	template<class Iterator>
 	struct basic_reverse_iterator : 
 		std::reverse_iterator<Iterator>,
