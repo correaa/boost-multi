@@ -809,8 +809,9 @@ public:
 
 //	ptr operator&() const&{return {this->base_, this->layout()};}
 //	constexpr BasicArrayPtr<typename basic_array::element, basic_array::dimensionality, typename basic_array::element_ptr> 
-	constexpr ptr addressof() &&{return {this->base_, this->layout()};}
-	constexpr ptr operator&() &&{return {this->base_, this->layout()};}
+	constexpr auto addressof() &&{return ptr{this->base_, this->layout()};}
+	constexpr auto operator&() &&{return ptr{this->base_, this->layout()};}
+	constexpr auto operator&()  &{return ptr{this->base_, this->layout()};}
 //	ptr operator&() &     {return {this->base_, this->layout()};}
 
 	constexpr iterator begin(dimensionality_type d) &&{

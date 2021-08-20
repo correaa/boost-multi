@@ -460,7 +460,8 @@ struct static_array<T, dimensionality_type{0}, Alloc> :
 {
 private:
 	using array_alloc = array_allocator<Alloc>;
-public:	
+public:
+	static_array* operator&() && = delete;
 	static_assert( std::is_same<typename std::allocator_traits<Alloc>::value_type, typename static_array::element>{}, 
 		"allocator value type must match array value type");
 	using array_alloc::get_allocator;
@@ -670,7 +671,7 @@ public:
 		return this->template static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>();
 	//	return static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
 	}
-	
+
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int version){
 //		auto extensions = this->extensions();
@@ -698,9 +699,6 @@ struct array : static_array<T, D, Alloc>,
 	using static_ = static_array<T, D, Alloc>;
 	static_assert(std::is_same<typename array::alloc_traits::value_type, T>{} or std::is_same<typename array::alloc_traits::value_type, void>{}, "!");
 public:
-//	array_ptr<T, D, typename array::element_const_ptr> operator&() const&{return {this->base(), this->extensions()};}
-//	array_ptr<T, D, typename array::element_ptr> operator&() &{return {this->base(), this->extensions()};}
-//	array_ptr<T, D, typename array::element_ptr> operator&() && = delete;
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int version){
 		auto x = this->extensions();
