@@ -1024,6 +1024,8 @@ public:
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
+template<class Element, typename Ptr> struct array_iterator<Element, 0, Ptr>{};
+
 template<class Element, typename Ptr>//, typename Ref>
 struct array_iterator<Element, 1, Ptr> ://, Ref> : 
 	boost::multi::iterator_facade<
