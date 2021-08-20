@@ -532,12 +532,12 @@ R copy(In const& i)
 template<typename In, class R=typename std::decay_t<In>::decay_type>
 auto move(In&& in){
 	if(in.is_compact()){
-		multi::array_ref<typename In::element, In::dimensionality, typename In::element_ptr> ref(
+		multi::array_ref<typename In::element, In::dimensionality, typename In::element_ptr> Ref(
 			in.base(), extensions(in)
 		);
-		copy(in, ref);
+		copy(in, Ref);
 		return R(
-			multi::array_ref<typename In::element, In::dimensionality_type, std::move_iterator<typename In::element_ptr>>(std::make_move_iterator(in.mbase()), ((in.mbase()=0), extensions(ref)))
+			multi::array_ref<typename In::element, In::dimensionality_type, std::move_iterator<typename In::element_ptr>>(std::make_move_iterator(in.mbase()), ((in.mbase()=0), extensions(Ref)))
 		);
 	}else return copy(std::forward<In>(in));
 }
