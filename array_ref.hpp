@@ -806,12 +806,13 @@ private:
 public:
 	using reverse_iterator = basic_reverse_iterator<iterator>;
 	using ptr = basic_array_ptr<basic_array, Layout>;
-
+	using const_ptr = basic_array_ptr<basic_const_array, Layout>;
 //	ptr operator&() const&{return {this->base_, this->layout()};}
 //	constexpr BasicArrayPtr<typename basic_array::element, basic_array::dimensionality, typename basic_array::element_ptr> 
 	constexpr auto addressof() &&{return ptr{this->base_, this->layout()};}
 	constexpr auto operator&() &&{return ptr{this->base_, this->layout()};}
 	constexpr auto operator&()  &{return ptr{this->base_, this->layout()};}
+	constexpr auto operator&() const&{return const_ptr{this->base_, this->layout()};}
 //	ptr operator&() &     {return {this->base_, this->layout()};}
 
 	constexpr iterator begin(dimensionality_type d) &&{
