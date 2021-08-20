@@ -693,9 +693,9 @@ struct array<T, dimensionality_type{0}, Alloc>
 	using static_::static_;
 	void reextent(typename array::extensions_type const&){}
 
-	array      * operator&()     && = delete;
-	array      * operator&()      &{return this;}
-	array const* operator&() const&{return this;}
+//	array      * operator&()     && = delete;
+//	array      * operator&()      &{return this;}
+//	array const* operator&() const&{return this;}
 };
 
 template<class T, dimensionality_type D, class Alloc>
@@ -705,9 +705,9 @@ struct array : static_array<T, D, Alloc>,
 	using static_ = static_array<T, D, Alloc>;
 	static_assert(std::is_same<typename array::alloc_traits::value_type, T>{} or std::is_same<typename array::alloc_traits::value_type, void>{}, "!");
 public:
-	array      * operator&()     && = delete;
-	array      * operator&()      &{return this;}
-	array const* operator&() const&{return this;}
+//	array      * operator&()     && = delete;
+//	array      * operator&()      &{return this;}
+//	array const* operator&() const&{return this;}
 
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int version){
@@ -736,7 +736,7 @@ public:
 	friend auto data_elements(array const& self){return self.data_elements();}
 	friend auto data_elements(array      & self){return self.data_elements();}
 	friend auto data_elements(array     && self){return std::move(self).data_elements();}
-	
+
 	basic_array<typename array::element, array::dimensionality, multi::move_ptr<typename array::element> >
 	move() &{
 		basic_array<typename array::element, array::dimensionality, multi::move_ptr<typename array::element> >

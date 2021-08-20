@@ -807,13 +807,12 @@ public:
 	using reverse_iterator = basic_reverse_iterator<iterator>;
 	using ptr = basic_array_ptr<basic_array, Layout>;
 	using const_ptr = basic_array_ptr<basic_const_array, Layout>;
-//	ptr operator&() const&{return {this->base_, this->layout()};}
-//	constexpr BasicArrayPtr<typename basic_array::element, basic_array::dimensionality, typename basic_array::element_ptr> 
+
 	constexpr auto addressof() &&{return ptr{this->base_, this->layout()};}
-	constexpr auto operator&() &&{return ptr{this->base_, this->layout()};}
-	constexpr auto operator&()  &{return ptr{this->base_, this->layout()};}
-	constexpr auto operator&() const&{return const_ptr{this->base_, this->layout()};}
-//	ptr operator&() &     {return {this->base_, this->layout()};}
+
+//	constexpr auto operator&()     &&{return       ptr{this->base_, this->layout()};} // gives compiler crash in g++-7 (Ubuntu 7.5.0-6ubuntu4) 7.5.0
+//	constexpr auto operator&()      &{return       ptr{this->base_, this->layout()};}
+//	constexpr auto operator&() const&{return const_ptr{this->base_, this->layout()};}
 
 	constexpr iterator begin(dimensionality_type d) &&{
 		Layout l = static_cast<Layout const&>(*this); l.rotate(d);
@@ -920,7 +919,7 @@ public:
 
 	template<class TT, class... As>
 	constexpr bool operator==(basic_array<TT, D, As...> const& o) const&{
-		return (this->extension()==o.extension()) and adl_equal(this->begin(), this->end(), adl_begin(o));		
+		return (this->extension()==o.extension()) and adl_equal(this->begin(), this->end(), adl_begin(o));
 	}
 	template<class It>
 	constexpr bool equal(It begin) const&{
@@ -1228,7 +1227,7 @@ public:
 	constexpr void assign(std::initializer_list<typename basic_array::value_type> il) const{assert( il.size() == static_cast<std::size_t>(this->size()) );
 		assign(il.begin(), il.end());
 	}
-	
+
 	template<class It> 
 	constexpr It assign(It first) &{adl_copy_n(first, this->size(), this->begin()); std::advance(first, this->size()); return first;}
 	template<class It> 
@@ -1312,7 +1311,7 @@ public:
 //	constexpr basic_const_array sliced(typename types::index first, typename types::index last) const&{
 //		typename types::layout_t new_layout = *this; 
 //		(new_layout.nelems_/=Layout::size())*=(last - first);
-//		return {new_layout, types::base_ + Layout::operator()(first)};		
+//		return {new_layout, types::base_ + Layout::operator()(first)};
 //	}
 	constexpr basic_array strided(typename types::index s) const{
 		typename types::layout_t new_layout = this->layout();
@@ -1392,7 +1391,7 @@ public:
 	constexpr partitioned_const_type partitioned(size_type s) const&{return partitioned_aux(s);}
 	constexpr partitioned_type       partitioned(size_type s)      &{return partitioned_aux(s);}
 	constexpr partitioned_type       partitioned(size_type s)     &&{return partitioned_aux(s);}
-	
+
 private:
 	constexpr basic_array reversed_aux() const{
 		auto new_layout = this->layout();
@@ -1530,13 +1529,13 @@ public:
 		P2 new_base; std::memcpy((void*)&new_base, (void const*)&thisbase, sizeof(P2)); //reinterpret_cast<P2 const&>(thisbase) // TODO find a better way, fancy pointers wouldn't need reinterpret_cast
 		return {this->layout().scale(sizeof(T)/sizeof(T2)), new_base};
 	}
-	
+
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2 const> >
 	constexpr basic_array<std::decay_t<T2>, 2, P2> reinterpret_array_cast(size_type n) const&{
 		static_assert( sizeof(T)%sizeof(T2)== 0, 
 			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
 	//	assert( sizeof(T )%(sizeof(T2)*n)== 0 );
-		auto thisbase = this->base();		
+		auto thisbase = this->base();
 		return basic_array<std::decay_t<T2>, 2, P2>{
 			layout_t<2>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n}, 
 			static_cast<P2>(static_cast<void*>(thisbase))
@@ -1547,7 +1546,7 @@ public:
 		static_assert( sizeof(T)%sizeof(T2)== 0, 
 			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
 	//	assert( sizeof(T )%(sizeof(T2)*n)== 0 );
-		auto thisbase = this->base();		
+		auto thisbase = this->base();
 		return basic_array<std::decay_t<T2>, 2, P2>{
 			layout_t<2>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n}, 
 			static_cast<P2>(static_cast<void*>(thisbase))
@@ -1663,7 +1662,7 @@ public:
 
 	       constexpr celements_type celements()         const&   {return {array_ref::data_elements(), array_ref::num_elements()};}
 	friend constexpr celements_type celements(array_ref const& s){return s.celements();}
-	
+
 	template<typename TT, dimensionality_type DD = D, class... As>
 	constexpr bool operator==(array_ref<TT, DD, As...>&& o) const&{
 		if( this->extensions() != o.extensions() ) return false; // TODO, or assert?
@@ -1712,7 +1711,7 @@ public:
 
 //	constexpr typename array_ref::decay_type const& operator*() const&{return static_cast<typename array_ref::decay_type const&>(*this);}
 //	constexpr typename array_ref::decay_type const& operator*() const&{return *this;}
-	
+
 	constexpr typename array_ref::decay_type const& decay() const&{
 		return static_cast<typename array_ref::decay_type const&>(*this);
 	}
@@ -1963,7 +1962,7 @@ int main(){
 		auto const& A2 = A.sliced(0, 3).rotated()[1].sliced(0, 2).unrotated();
 		assert( multi::rank<std::decay_t<decltype(A2)>>{} == 2 and num_elements(A2) == 6 );
 		assert( std::get<0>(sizes(A2)) == 3 and std::get<1>(sizes(A2)) == 2 );
-		
+
 		auto const& A3 = A({0, 3}, 1, {0, 2});
 		assert( multi::rank<std::decay_t<decltype(A3)>>{} == 2 and num_elements(A3) == 6 );
 	}
