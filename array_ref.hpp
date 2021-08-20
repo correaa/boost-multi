@@ -228,6 +228,7 @@ struct array_iterator :
 //	using element_type = typename Ref::value_type;
 	using iterator_category = std::random_access_iterator_tag;
 
+	constexpr static dimensionality_type dimensionality = D;
 	using rank = std::integral_constant<dimensionality_type, D>;
 
 	using ptr_type = basic_array_ptr<basic_array<element, D-1, element_ptr>, layout_t<D-1>>;
