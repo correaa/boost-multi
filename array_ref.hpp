@@ -1113,6 +1113,7 @@ struct basic_array<T, dimensionality_type{0}, ElementPtr, Layout> :
 	using element = typename types::element;
 	using element_ref = typename std::iterator_traits<typename basic_array::element_ptr>::reference;//decltype(*typename basic_array::element_ptr{});
 	using element_cref = typename std::iterator_traits<typename basic_array::element_const_ptr>::reference;
+	using iterator = array_iterator<T, 0, ElementPtr>;
 //	constexpr 
 	basic_array& operator=(element const& e) &{
 		MULTI_MARK_SCOPE(std::string{"multi::operator= D=0 from "}+typeid(T).name()+" to "+typeid(T).name() );
