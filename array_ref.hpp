@@ -769,11 +769,14 @@ public:
 	using       iterator = array_iterator<typename types::element, D, typename types::element_ptr      >;//, typename types::reference      >;
 	using const_iterator = array_iterator<typename types::element, D, typename types::element_const_ptr>;//, typename types::const_reference>;
 private:
-//	explicit constexpr basic_array(iterator begin, iterator end)
-//	: basic_array(layout_type{begin->layout(), begin.stride(), 0, begin.stride()*(end - begin)}, begin.base()){
-//		assert(begin.stride() == end.stride());
-//		assert(begin->layout() == end->layout());
-//	}
+	explicit constexpr basic_array(iterator begin, iterator end) :
+	basic_array{
+		layout_type{begin->layout(), begin.stride(), 0, begin.stride()*(end - begin)}, 
+		begin.base()
+	}{
+		assert(begin.stride() == end.stride());
+		assert(begin->layout() == end->layout());
+	}
 
 	template<class Iterator>
 	struct basic_reverse_iterator : 
@@ -1577,6 +1580,9 @@ protected:
 //	array_ref(array_ref const&) = default;
 //	array_ref(array_ref&&) = default;
 //#endif
+	using iterator = typename basic_array<T, D, ElementPtr>::iterator;
+private:
+	array_ref(iterator, iterator) = delete;
 protected:
 	[[deprecated("references are not copyable, use auto&&")]]
 	array_ref(array_ref const&) = default; // don't try to use `auto` for references, use `auto&&` or explicit value type
