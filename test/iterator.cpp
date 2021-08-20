@@ -169,7 +169,6 @@ BOOST_AUTO_TEST_CASE(iterator_semantics){
 	BOOST_REQUIRE( (&Aref).operator==(&A) );
 	BOOST_REQUIRE( &Aref == &A );
 	BOOST_REQUIRE( &A == &Aref );
-
 }
 
 BOOST_AUTO_TEST_CASE(iterator_arrow_operator){
