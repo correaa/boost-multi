@@ -2,12 +2,13 @@
 #define MULTI_DETAIL_INDEX_RANGE_HPP
 // © Alfredo A. Correa 2018-2021
 
+#include "../config/MAYBE_UNUSED.hpp"
+
 #include<iostream> // TODO(correaa) remove, add include in qmcp
 
 #include<iterator> // std::random_iterator_tag // std::reverse_iterator
 #include<limits> // numeric_limits
 
-#include "../config/MAYBE_UNUSED.hpp"
 
 namespace boost{
 namespace multi{
