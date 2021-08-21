@@ -29,6 +29,8 @@ namespace multi = boost::multi;
 //	BOOST_REQUIRE( std::data(A) == &A[0][0] );
 //}
 
+// TODO(correaa) add test for reinterpret_pointer_cast
+
 BOOST_AUTO_TEST_CASE(std_array_extensions_3d){
 	std::array<std::array<std::array<double, 5>, 4>, 3> arr = {};
 
@@ -63,7 +65,7 @@ BOOST_AUTO_TEST_CASE(std_array_extensions_2d){
 
 	using multi::dimensionality;
 	BOOST_REQUIRE( dimensionality(arr) == 2 );
-	
+
 	using multi::extension;
 	BOOST_REQUIRE( extension(arr) == 3 );
 
@@ -75,11 +77,11 @@ BOOST_AUTO_TEST_CASE(std_array_extensions_2d){
 
 	using multi::num_elements;
 	BOOST_REQUIRE( num_elements(arr) == 12 );
-	
+
 	multi::array<double, 2> marr({3, 4});
 	using multi::layout;
 	BOOST_REQUIRE( layout(arr) == layout(marr) );
-	
+
 	BOOST_REQUIRE( extensions(arr) == extensions(marr) );
 }
 
