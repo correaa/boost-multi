@@ -211,19 +211,23 @@ struct extension_t : public range<IndexType, IndexTypeLast>{
 	using range<IndexType, IndexTypeLast>::range;
 	constexpr extension_t(IndexType f, IndexTypeLast l) noexcept : range<IndexType, IndexTypeLast>{f, l}{}
 	// cppcheck-suppress noExplicitConstructor
-	constexpr extension_t(IndexType last) noexcept : range<IndexType, IndexTypeLast>(0, last){}
+	constexpr extension_t(IndexType last) noexcept : range<IndexType, IndexTypeLast>(0, last){} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) because syntax convenience
 	constexpr extension_t() noexcept : range<IndexType, IndexTypeLast>(){}
-	friend constexpr typename extension_t::size_type size(extension_t const& s){return s.size();}
-	friend std::ostream& operator<<(std::ostream& os, extension_t const& self){
-		if(self.empty()) return os << static_cast<range<IndexType> const&>(self);
-		if(self.first() == 0) return os <<"["<< self.last() <<"]";
+	friend constexpr auto size(extension_t const& s) -> typename extension_t::size_type{return s.size();}
+	friend auto operator<<(std::ostream& os, extension_t const& self) -> std::ostream&{
+		if(self.empty()){
+			return os << static_cast<range<IndexType> const&>(self);
+		}
+		if(self.first() == 0){
+			return os <<"["<< self.last() <<"]";
+		}
 		return os << static_cast<range<IndexType> const&>(self);
 	}
-	constexpr IndexType start () const{return this->first();}
-	constexpr IndexType finish() const{return this->last ();}
+	constexpr auto start () const -> IndexType{return this->first();}
+	constexpr auto finish() const -> IndexType{return this->last ();}
 	friend constexpr auto operator==(extension_t const& a, extension_t const& b){return static_cast<range<IndexType> const&>(a)==static_cast<range<IndexType> const&>(b);}
 	friend constexpr auto operator!=(extension_t const& a, extension_t const& b){return not(a==b);}
-	friend constexpr extension_t intersection(extension_t const& r1, extension_t const& r2){
+	friend constexpr auto intersection(extension_t const& r1, extension_t const& r2) -> extension_t{
 		using std::max; using std::min;
 		auto f = max(r1.first(), r2.first()); 
 		auto l = min(r1.last() , r2.last() );
@@ -233,12 +237,13 @@ struct extension_t : public range<IndexType, IndexTypeLast>{
 };
 
 template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
-constexpr extension_t<IndexType, IndexTypeLast> make_extension_t(IndexType f, IndexTypeLast l){return {f, l};}
+constexpr auto make_extension_t(IndexType f, IndexTypeLast l) -> extension_t<IndexType, IndexTypeLast>{return {f, l};}
 
 template<class IndexTypeLast = std::ptrdiff_t>
 constexpr auto make_extension_t(IndexTypeLast l){return make_extension_t(IndexTypeLast{0}, l);}
 
-}}
+} // end namespace multi
+} // end namespace boost
 
 ////////////////////////////////////////////////////////////////////////////////
 
