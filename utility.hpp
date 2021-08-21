@@ -59,8 +59,7 @@ constexpr auto base(Pointer d) -> Pointer {return d;}
 
 template<class T, class U>
 auto reinterpret_pointer_cast(U* other)
-->decltype(reinterpret_cast<T*>(other)){
-	return reinterpret_cast<T*>(other);}
+->decltype(reinterpret_cast<T*>(other)){return reinterpret_cast<T*>(other);} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : unavoidalbe implementation?
 
 template <class T, std::size_t N>
 constexpr auto size(const T(&/*t*/)[N]) noexcept{return multi::size_type{N};} // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
