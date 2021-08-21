@@ -1,10 +1,11 @@
-#ifndef MULTI_DETAIL_INDEX_RANGE_HPP
+#ifndef MULTI_DETAIL_INDEX_RANGE_HPP // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 #define MULTI_DETAIL_INDEX_RANGE_HPP
 // © Alfredo A. Correa 2018-2021
 
+#include<iostream> // TODO(correaa) remove, add include in qmcp
+
 #include<iterator> // std::random_iterator_tag // std::reverse_iterator
 #include<limits> // numeric_limits
-#include<iostream> // TODO(correaa) remove, add include in qmcp
 
 #include "../config/MAYBE_UNUSED.hpp"
 
