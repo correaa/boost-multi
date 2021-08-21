@@ -146,19 +146,21 @@ public:
 	friend std::ostream& operator<<(std::ostream& os, range const& s){
 		return s.empty()?os<<"[)":os <<"["<< s.first() <<", "<< s.last() <<")";
 	}
-	friend constexpr const_iterator begin(range const& self){return self.begin();}
-	friend constexpr const_iterator end(range const& self){return self.end();}
-//	constexpr range& operator=(range const&) = default;
+	friend constexpr auto begin(range const& self) -> const_iterator{return self.begin();}
+	friend constexpr auto end  (range const& self) -> const_iterator{return self.end()  ;}
+
 	friend constexpr auto operator==(range const& a, range const& b){
 		return (a.empty() and b.empty()) or (a.first_==b.first_ and a.last_==b.last_);
 	}
-	friend constexpr bool operator!=(range const& r1, range const& r2){return not(r1 == r2);}
-	constexpr range::const_iterator find(value_type const& value) const{
-		if(value >= last_ or value < first_) return end();
+	friend constexpr auto operator!=(range const& r1, range const& r2) -> bool{return not(r1 == r2);}
+	constexpr auto find(value_type const& value) const -> range::const_iterator{
+		if(value >= last_ or value < first_){
+			return end();
+		}
 		return begin() + (value - front());
 	}
 	template<class K>
-	constexpr bool contains(K const& k) const{return (k>=first_) and (k<last_);}
+	constexpr auto contains(K const& k) const -> bool{return (k>=first_) and (k<last_);}
 	template<class K>
 	constexpr auto count(K const& k) const{return contains(k);}
 	friend constexpr auto intersection(range const& r1, range const& r2){
@@ -172,7 +174,7 @@ public:
 };
 
 template<class IndexType = std::true_type, typename IndexTypeLast = IndexType>
-constexpr range<IndexType, IndexTypeLast> make_range(IndexType first, IndexTypeLast last){
+constexpr auto make_range(IndexType first, IndexTypeLast last) -> range<IndexType, IndexTypeLast>{
 	return {first, last};
 }
 
@@ -181,7 +183,7 @@ class intersecting_range{
 	range<IndexType> impl_{std::numeric_limits<IndexType>::min(), std::numeric_limits<IndexType>::max()};
 	intersecting_range() = default;
 //	constexpr intersecting_range(IndexType first, IndexType last) = delete;//: impl_{first, last}{}
-	static constexpr intersecting_range make(IndexType first, IndexType last){
+	static constexpr auto make(IndexType first, IndexType last) -> intersecting_range{
 		intersecting_range ret; ret.impl_ = range<IndexType>{first, last}; return ret;
 	}
 	friend constexpr auto intersection(intersecting_range const& self, range<IndexType> const& other){
@@ -197,13 +199,13 @@ class intersecting_range{
 		return intersecting_range::make(first, self.impl_.last());
 	}
 public:
-	constexpr intersecting_range const& operator*() const&{return *this;}
-	static constexpr intersecting_range all(){return {};}
+	constexpr auto operator*() const& -> intersecting_range const&{return *this;}
+	static constexpr auto all() -> intersecting_range{return {};}
 };
 
 MAYBE_UNUSED constexpr intersecting_range<> const all = intersecting_range<>::all();
 MAYBE_UNUSED constexpr intersecting_range<> const _   = all;
-MAYBE_UNUSED constexpr intersecting_range<> const __  = all;
+//MAYBE_UNUSED constexpr intersecting_range<> const __  = all; // __ is a reserved identifyer (bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
 MAYBE_UNUSED constexpr intersecting_range<> const U   = all;
 
 template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
