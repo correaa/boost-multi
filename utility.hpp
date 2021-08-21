@@ -99,7 +99,7 @@ auto to_address(T* const& t)
 ->decltype(t){
 	return t;}
 
-template<class Archive> struct archive_traits{ // TODO implemente a poors man nvp that works with boost serialization, is it possible?
+template<class Archive> struct archive_traits{ // TODO(correaa) implement a poors man nvp that works with boost serialization, is it possible?
 	template<class T>
 	static constexpr T& make_nvp(char const* /*name*/, T& v){return v;}
 };
@@ -339,7 +339,7 @@ inline std::false_type has_extension_aux(...     );
 template<class T> struct has_extension : decltype(has_extension_aux(std::declval<T>())){};
 
 template<class Container, class=std::enable_if_t<not has_extension<Container>{}>>
-auto extension(Container const& c) // TODO consider "extent"
+auto extension(Container const& c) // TODO(correaa) consider "extent"
 ->decltype(multi::extension_t<std::make_signed_t<decltype(size(c))>>(0, size(c))){
 	return multi::extension_t<std::make_signed_t<decltype(size(c))>>(0, size(c));}
 
