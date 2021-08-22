@@ -52,7 +52,7 @@ class range{
 	IndexTypeLast last_ = first_;
 public:
 	template<class Archive>
-	auto serialize(Archive& ar, unsigned /*version*/) -> void{
+	void serialize(Archive& ar, unsigned /*version*/){
 		ar & multi::archive_traits<std::decay_t<Archive>>::make_nvp("first", first_);
 		ar & multi::archive_traits<std::decay_t<Archive>>::make_nvp("last" , last_ );
 //		ar & boost::serialization::make_nvp("last", last_);//BOOST_SERIALIZATION_NVP(last);
@@ -79,8 +79,9 @@ public:
 	{
 		typename const_iterator::value_type curr_;
 		constexpr auto dereference() const -> typename const_iterator::reference{return curr_;}
-		constexpr auto increment() -> void {++curr_;} void decrement(){--curr_;}
-		constexpr auto advance(typename const_iterator::difference_type n) -> void{curr_+=n;}
+		constexpr void increment(){++curr_;} 
+		constexpr void decrement(){--curr_;}
+		constexpr void advance(typename const_iterator::difference_type n){curr_+=n;}
 		constexpr auto equal(const_iterator const& y) const -> bool{return curr_ == y.curr_;}
 		constexpr auto distance_to(const_iterator const& z) const -> difference_type{return z.curr_-curr_;}
 		constexpr explicit const_iterator(value_type current) : curr_(current){}
