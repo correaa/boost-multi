@@ -603,7 +603,7 @@ public:
 	friend constexpr auto origin(static_array      & s) -> typename static_array::element_ptr       {return    s.origin();}
 	friend constexpr auto origin(static_array const& s) -> typename static_array::element_const_ptr {return    s.origin();}
 
-	constexpr operator typename std::iterator_traits<typename static_array::element_const_ptr>::reference() const&{
+	constexpr explicit operator typename std::iterator_traits<typename static_array::element_const_ptr>::reference() const&{
 		return *(this->base_);
 	}
 	constexpr explicit operator typename std::add_rvalue_reference<typename std::iterator_traits<typename static_array::element_ptr>::reference>::type()&&{
@@ -612,9 +612,12 @@ public:
 	constexpr explicit operator typename std::iterator_traits<typename static_array::element_ptr>::reference()&{
 		return *(this->base_);
 	}
-	constexpr explicit operator typename std::iterator_traits<typename static_array::element_const_ptr>::value_type(){
-		return *(this->base_);
-	}
+//	constexpr explicit operator typename std::iterator_traits<typename static_array::element_const_ptr>::value_type() &&{
+//		return *(this->base_);
+//	}
+//	constexpr explicit operator typename std::iterator_traits<typename static_array::element_const_ptr>::value_type() &{
+//		return *(this->base_);
+//	}
 
 	constexpr auto rotated(dimensionality_type d) const&{
 		typename static_array::layout_t new_layout = *this;
