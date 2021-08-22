@@ -462,9 +462,9 @@ struct static_array<T, dimensionality_type{0}, Alloc> :
 private:
 	using array_alloc = array_allocator<Alloc>;
 public:
-	static_array      * operator&()     && = delete;
-//	static_array      * operator&()      &{return this;}
-//	static_array const* operator&() const&{return this;}
+	auto operator&()     && -> static_array      * = delete; // NOLINT(google-runtime-operator) : delete to avoid taking address of temporary
+//	auto operator&()      & -> static_array      * {return this;}
+//	auto operator&() const& -> static_array const* {return this;}
 	static_assert( std::is_same<typename std::allocator_traits<Alloc>::value_type, typename static_array::element>{}, 
 		"allocator value type must match array value type");
 	using array_alloc::get_allocator;
@@ -495,15 +495,18 @@ public:
 	using ref::operator==;
 	using ref::operator!=;
 
-	template<class TT, 
-		std::enable_if_t<std::is_constructible<T, TT>{}, int> = 0,
-		class = std::enable_if_t<not std::is_same<static_array, std::decay_t<TT>>{}>, // lints (bugprone-forwarding-reference-overload) warning
-		class = decltype(adl_uninitialized_copy_n(&std::declval<TT&>(), 1, std::declval<typename static_array::element_ptr&>()))
-	>
-	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions
-	explicit static_array(TT&& tt) : ref(static_array::allocate(typename static_array::layout_t{}.num_elements()), {}){
-		adl_uninitialized_copy_n(&tt, 1, this->base());
-	}
+//	template<class T, 
+//		std::enable_if_t<std::is_constructible<T, TT>{}, int> = 0,
+//	//	class = std::enable_if_t<not std::is_same<static_array, std::decay_t<TT>>{}>, // lints (bugprone-forwarding-reference-overload) warning
+//		class = decltype(adl_uninitialized_copy_n(&std::declval<TT&>(), 1, std::declval<typename static_array::element_ptr&>()))
+//	>
+//	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions
+//	explicit static_array(T const& t) : ref(static_array::allocate(typename static_array::layout_t{}.num_elements()), {}){
+//		adl_uninitialized_copy_n(&t, 1, this->base());
+//	}
+//	explicit static_array(T const& t) : ref(static_array::allocate(typename static_array::layout_t{}.num_elements()), {}){
+//		adl_uninitialized_copy_n(&t, 1, this->base());
+//	}
 	static_array(typename static_array::extensions_type x, typename static_array::element const& e, allocator_type const& a) : //2
 		array_alloc{a}, 
 		ref(static_array::allocate(typename static_array::layout_t{x}.num_elements()), x)
@@ -697,10 +700,16 @@ public:
 
 	constexpr auto operator=(static_array const& other) -> static_array&{
 		assert( extensions(other) == static_array::extensions() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
-		if(this == &other){return *this;} // (cert-oop54-cpp) : handle self-assignment properly
+		if(this == &other){return *this;} // lints (cert-oop54-cpp) : handle self-assignment properly
 		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
 		return *this;
 	}
+	constexpr auto operator=(static_array&& other) noexcept -> static_array&{
+		assert( extensions(other) == static_array::extensions() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
+		adl_move(other.data_elements(), other.data_elements() + other.num_elements(), this->data_elements()); // there is no std::move_n algorithm
+		return *this;
+	}
+
 	template<class TT, class... As, class = std::enable_if_t<std::is_assignable<typename static_array::element_ref, TT>{}> >
 	auto operator=(static_array<TT, static_array::dimensionality, As...> const& other)& -> static_array&{
 		assert( extensions(other) == static_array::extensions() );
