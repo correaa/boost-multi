@@ -675,7 +675,7 @@ public:
 	}
 
 	template<class Archive>
-	auto serialize(Archive& ar, const unsigned int version){
+	void serialize(Archive& ar, const unsigned int version){
 //		auto extensions = this->extensions();
 //		using boost::serialization::make_nvp;
 //		ar & make_nvp("extensions", extensions);
@@ -691,23 +691,28 @@ struct array<T, dimensionality_type{0}, Alloc>
 {
 	using static_ = static_array<T, 0, Alloc>;
 	using static_::static_;
-	void reextent(typename array::extensions_type const&){}
+	auto reextent(typename array::extensions_type const& /*empty_extensions*/) -> array&{
+		return *this;
+	}
 
-	array      * operator&()     && = delete;
-//	array      * operator&()      &{return this;}
-//	array const* operator&() const&{return this;}
+	auto operator&()     && -> array      * = delete; // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
+//	auto operator&()      & -> array      *{return this;}
+//	auto operator&() const& -> array const*{return this;}
 };
 
 template<class T, dimensionality_type D, class Alloc>
 struct array : static_array<T, D, Alloc>,
-	boost::multi::random_iterable<array<T, D, Alloc> >
+	boost::multi::random_iterable<array<T, D, Alloc>>
 {
 	using static_ = static_array<T, D, Alloc>;
-	static_assert(std::is_same<typename array::alloc_traits::value_type, T>{} or std::is_same<typename array::alloc_traits::value_type, void>{}, "!");
+	static_assert(
+		   std::is_same<typename array::alloc_traits::value_type, T   >{}
+		or std::is_same<typename array::alloc_traits::value_type, void>{}, "!"
+	);
 public:
-	array      * operator&()     && = delete;
-//	array      * operator&()      &{return this;}
-//	array const* operator&() const&{return this;}
+	auto operator&()     && -> array      * = delete; // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
+//	auto operator&()      & -> array      *{return this;}
+//	auto operator&() const& -> array const*{return this;}
 
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int version){
@@ -721,40 +726,42 @@ public:
 	using typename static_::value_type;
 	array() = default;
 	array(array const&) = default;
-	array& reshape(typename array::extensions_type x) &{
+	auto reshape(typename array::extensions_type x) & -> array&{
 		typename array::layout_t new_layout{x};
 		assert( new_layout.num_elements() == this->num_elements() );
 		static_cast<typename array::layout_t&>(*this)=new_layout;
 		return *this;
 	}
-	array& clear() noexcept{
+	auto clear() noexcept -> array&{
 		static_::clear();
 		return *this;
 	}
-	friend array& clear(array& self) noexcept{return self.clear();}
+	friend auto clear(array& self) noexcept -> array& {return self.clear();}
 
 	friend auto data_elements(array const& self){return self.data_elements();}
 	friend auto data_elements(array      & self){return self.data_elements();}
 	friend auto data_elements(array     && self){return std::move(self).data_elements();}
 
-	basic_array<typename array::element, array::dimensionality, multi::move_ptr<typename array::element> >
-	move() &{
+	auto move() & -> basic_array<typename array::element, array::dimensionality, multi::move_ptr<typename array::element> >{
 		basic_array<typename array::element, array::dimensionality, multi::move_ptr<typename array::element> >
 		ret = multi::static_array_cast<typename array::element, multi::move_ptr<typename array::element>>(*this);
 		layout_t<array::dimensionality>::operator=({});
 		return ret;
 	}
-	friend 	
-	basic_array<typename array::element, array::dimensionality, multi::move_ptr<typename array::element> >
-	move(array& self){return self.move();}
+	friend auto move(array& self) -> basic_array<typename array::element, array::dimensionality, multi::move_ptr<typename array::element> >{
+		return self.move();
+	}
 
 	array(array&& o, typename array::allocator_type const& a) noexcept : static_{std::move(o), a}{}
 	array(array&& o) noexcept : array{std::move(o), o.get_allocator()}{}
 
-	friend typename array::allocator_type get_allocator(array const& self){return self.get_allocator();}
+	friend auto get_allocator(array const& self) -> typename array::allocator_type{return self.get_allocator();}
 private:
-	static void swap_if(std::true_type , typename array::allocator_type& source, typename array::allocator_type& dest){using std::swap; swap(dest, source);}
-	static void swap_if(std::false_type, typename array::allocator_type&       , typename array::allocator_type&     ){}
+	static void swap_if(std::false_type/*false*/, typename array::allocator_type&/*source*/, typename array::allocator_type&/*dest*/){}
+	static void swap_if(std::true_type /*true */, typename array::allocator_type&  source  , typename array::allocator_type&  dest  ){
+		using std::swap; 
+		swap(dest, source);
+	}
 public:
 	void swap(array& other) noexcept{
 		using std::swap;
@@ -767,10 +774,10 @@ public:
 	}
 #ifndef NOEXCEPT_ASSIGNMENT
 private:
-	static void move_if(std::true_type,  typename array::allocator_type&& source, typename array::allocator_type& dest){dest = std::move(source);}
-	static void move_if(std::false_type, typename array::allocator_type&&       , typename array::allocator_type&     ){}
+	static void move_if(std::true_type /*true */, typename array::allocator_type&&  source  , typename array::allocator_type&  dest  ){dest = std::move(source);}
+	static void move_if(std::false_type/*false*/, typename array::allocator_type&&/*source*/, typename array::allocator_type&/*dest*/){}
 public:
-	array& operator=(array&& other) noexcept{
+	auto operator=(array&& other) noexcept -> array&{
 		clear();
 		this->base_ = std::exchange(other.base_, nullptr); // final null assigment shouldn't be necessary?
 		move_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment{}, std::move(other.alloc_), this->alloc_);
@@ -779,11 +786,14 @@ public:
 		return *this;
 	}
 private:
-	static void copy_if(std::true_type , typename array::allocator_type const& source, typename array::allocator_type& dest){dest = source;}
-	static void copy_if(std::false_type, typename array::allocator_type const&       , typename array::allocator_type&     ){}
+	static void copy_if(std::false_type/*false*/, typename array::allocator_type const&/*source*/, typename array::allocator_type&/*dest*/){}
+	static void copy_if(std::true_type /*true */, typename array::allocator_type const&  source  , typename array::allocator_type&  dest  ){
+		dest = source;
+	}
 public:
-	array& operator=(array const& other){
+	auto operator=(array const& other) -> array& {
 		if(array::extensions() == other.extensions()){
+			if(this == &other){return *this;} // required by cert-oop54-cpp
 			copy_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment{}, other.alloc_, this->alloc_);
 			static_::operator=(other);
 		}else{
@@ -797,16 +807,30 @@ public:
 		return *this;
 	}
 #else
-	array& operator=(array o) noexcept{return swap(o), *this;}
+	auto operator=(array o) noexcept -> array& {return swap(o), *this;}
 #endif
-	template<class Range, class=std::enable_if_t<not std::is_base_of<array, std::decay_t<Range>>{}> >
-	auto operator=(Range&& o) // check that LHS is not read-only
-	->decltype(                                         static_::operator=(o)                     , std::declval<array&>()){
-		return ((array::extensions() == o.extensions())?static_::operator=(o):operator=(array(o))), *this                 ;}
+	template<
+		class Range, class=std::enable_if_t<not std::is_base_of<array, std::decay_t<Range>>{}>,
+		class = decltype(std::declval<static_&>().operator=(std::declval<Range&&>()))
+	>
+	auto operator=(Range&& o) // TODO(correaa) : check that LHS is not read-only
+	->array&{
+		if(array::extensions() == o.extensions()){
+			static_::operator=(o);
+		}else{
+			operator=(array(o));
+		}
+		return *this;
+	}
 
-	array& operator=(basic_array<T, D, multi::move_ptr<typename array::element, typename array::element_ptr>>& other){
-		if(other.layout() != this->layout()) return array::operator=(other.template static_array_cast<typename array::element, typename array::element_ptr>());
-		if(this->base_ != other.base_) other.base_ = nullptr;
+	auto operator=(basic_array<T, D, multi::move_ptr<typename array::element, typename array::element_ptr>>& other) -> array&{
+		if(other.layout() != this->layout()){
+			array::operator=(other.template static_array_cast<typename array::element, typename array::element_ptr>());
+			return *this;
+		}
+		if(this->base_ != other.base_){
+			other.base_ = nullptr;
+		}
 		return *this;
 	}
 	friend void swap(array& a, array& b){a.swap(b);}
@@ -822,7 +846,8 @@ public:
 	}
 
 	template<class It>
-	array& assign(It first, It last){using std::next; using std::all_of;
+	auto assign(It first, It last) -> array& {
+		using std::next; using std::all_of;
 		if(adl_distance(first, last) == array::size()){// and multi::extensions(*first) == multi::extensions(*array::begin())){
 			static_::ref::assign(first);
 		}else{
@@ -831,13 +856,19 @@ public:
 		return *this;
 	}
 	void assign(std::initializer_list<typename array::value_type> il){assign(il.begin(), il.end());}
+
 	template<class Range> auto assign(Range&& r) &
 	->decltype(assign(adl_begin(r), adl_end(r))){
 		return assign(adl_begin(r), adl_end(r));}
-	array& operator=(std::initializer_list<typename array::value_type> il){assign(il.begin(), il.end()); return *this;}
 
-	array& reextent(typename array::extensions_type const& x){
-		if(x == this->extensions()) return *this;
+	auto operator=(std::initializer_list<typename array::value_type> il) -> array& {
+		assign(il.begin(), il.end()); return *this;
+	}
+
+	auto reextent(typename array::extensions_type const& x) -> array& {
+		if(x == this->extensions()){
+			return *this;
+		}
 #if 0
 		array tmp(x, this->get_allocator()); // TODO opportunity missed to use hint allocation
 		auto const is = intersection(this->extensions(), x);
@@ -845,9 +876,11 @@ public:
 		swap(tmp);
 #else
 		auto&& tmp = typename array::ref{this->static_::array_alloc::allocate(typename array::layout_t{x}.num_elements(), this->data_elements()), x};
-		if(not std::is_trivially_default_constructible<typename array::element>{}) adl_alloc_uninitialized_value_construct_n(this->alloc(), tmp.data_elements(), tmp.num_elements());
+		if(not std::is_trivially_default_constructible<typename array::element>{}){
+			adl_alloc_uninitialized_value_construct_n(this->alloc(), tmp.data_elements(), tmp.num_elements());
+		}
 		auto const is = intersection(this->extensions(), x);
-		tmp.apply(is) = this->apply(is); // TODO: use (and implement) `.move();`
+		tmp.apply(is) = this->apply(is); // TODO(correaa) : use (and implement) `.move();`
 		this->destroy();
 		this->deallocate();
 		this->base_ = tmp.base();
@@ -855,8 +888,10 @@ public:
 #endif
 		return *this;
 	}
-	array& reextent(typename array::extensions_type const& x, typename array::element const& e){
-		if(x == this->extensions()) return *this;
+	auto reextent(typename array::extensions_type const& x, typename array::element const& e) -> array&{
+		if(x == this->extensions()){
+			return *this;
+		}
 #if 0
 		array tmp(x, e, this->get_allocator()); // TODO opportunity missed to use hint allocation
 		auto const is = intersection(this->extensions(), x);
@@ -869,14 +904,14 @@ public:
 		tmp.apply(is) = this->apply(is);
 		this->destroy();
 		this->deallocate();
-		this->base_ = tmp.base(); // TODO: use (and implement) `.move();`
+		this->base_ = tmp.base(); // TODO(correaa) : use (and implement) `.move();`
 		(*this).array::layout_t::operator=(tmp.layout());
 #endif
 		return *this;
 	}
-	template<class... Ts> constexpr array&& reindex(Ts... a)&&{array::layout_t::reindex(a...); return std::move(*this);}
-	template<class... Ts> constexpr array&  reindex(Ts... a)& {array::layout_t::reindex(a...); return           *this ;}
-	~array() noexcept = default;
+	template<class... Ts> constexpr auto reindex(Ts... a)&& -> array&& {array::layout_t::reindex(a...); return std::move(*this);}
+	template<class... Ts> constexpr auto reindex(Ts... a) & -> array & {array::layout_t::reindex(a...); return           *this ;}
+	~array() = default;
 };
 
 #if defined(__cpp_deduction_guides)
@@ -951,19 +986,17 @@ template<typename T, dimensionality_type D, typename P> array(basic_array<T, D, 
 #endif
 
 template <class T, std::size_t N>
-multi::array<typename std::remove_all_extents<T[N]>::type, std::rank<T[N]>{}> 
-decay(const T(&t)[N]) noexcept{
-	return multi::array_cref<typename std::remove_all_extents<T[N]>::type, std::rank<T[N]>{}>(data_elements(t), extensions(t));
-}
+auto decay(const T(&t)[N]) noexcept -> multi::array<typename std::remove_all_extents<T[N]>::type, std::rank<T[N]>{}>{return multi::array_cref<typename std::remove_all_extents<T[N]>::type, std::rank<T[N]>{}>(data_elements(t), extensions(t));} // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 
 template<class T, size_t N>
-struct array_traits<T[N], void, void>{
+struct array_traits<T[N], void, void>{ // // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 	using reference = T&;
-	using element = std::remove_all_extents_t<T[N]>;
+	using element = std::remove_all_extents_t<T[N]>; // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 	using decay_type = multi::array<T, 1>;
 };
 
-}}
+} // end namespace multi
+} // end namespace boost
 
 //#if(__cplusplus >= 201703L)
 #if(__cpp_lib_memory_resource >= 201603)
