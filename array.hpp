@@ -590,23 +590,18 @@ public:
 		deallocate();
 	}
 	using element_const_ptr = typename std::pointer_traits<typename static_array::element_ptr>::template rebind<typename static_array::element const>;
+
 	friend allocator_type get_allocator(static_array const& self){return self.get_allocator();}
 
-	// TODO find how to use `deprecated` with nvcc
-//	friend constexpr typename static_array::element_ptr       data(static_array&       s)
-//	{return s.data_elements();}
-//	friend constexpr typename static_array::element_const_ptr data(static_array const& s)
-//	{return s.data_elements();}
+	       constexpr auto base()                 &    -> typename static_array::element_ptr      {return ref::base();}
+	       constexpr auto base()            const&    -> typename static_array::element_const_ptr{return ref::base();}
+	friend constexpr auto base(static_array      & s) -> typename static_array::element_ptr      {return    s.base();}
+	friend constexpr auto base(static_array const& s) -> typename static_array::element_const_ptr{return    s.base();}
 
-	       constexpr typename static_array::element_ptr       base()                 &   {return ref::base();}
-	       constexpr typename static_array::element_const_ptr base()            const&   {return ref::base();}
-	friend constexpr typename static_array::element_ptr       base(static_array&       s){return s.base();}
-	friend constexpr typename static_array::element_const_ptr base(static_array const& s){return s.base();}
-
-	constexpr typename static_array::element_ptr       origin()      {return ref::origin();}
-	constexpr typename static_array::element_const_ptr origin() const{return ref::origin();}
-	friend constexpr typename static_array::element_ptr       origin(static_array&       s){return s.origin();}
-	friend constexpr typename static_array::element_const_ptr origin(static_array const& s){return s.origin();}
+	       constexpr auto origin()                 &    -> typename static_array::element_ptr       {return ref::origin();}
+	       constexpr auto origin()            const&    -> typename static_array::element_const_ptr {return ref::origin();}
+	friend constexpr auto origin(static_array      & s) -> typename static_array::element_ptr       {return    s.origin();}
+	friend constexpr auto origin(static_array const& s) -> typename static_array::element_const_ptr {return    s.origin();}
 
 	constexpr operator typename std::iterator_traits<typename static_array::element_const_ptr>::reference() const&{
 		return *(this->base_);
@@ -614,7 +609,7 @@ public:
 	constexpr explicit operator typename std::add_rvalue_reference<typename std::iterator_traits<typename static_array::element_ptr>::reference>::type()&&{
 		return *(this->base_);
 	}
-	constexpr operator typename std::iterator_traits<typename static_array::element_ptr>::reference()&{
+	constexpr explicit operator typename std::iterator_traits<typename static_array::element_ptr>::reference()&{
 		return *(this->base_);
 	}
 	constexpr explicit operator typename std::iterator_traits<typename static_array::element_const_ptr>::value_type(){
