@@ -455,20 +455,23 @@ public:
 };
 
 template<class T, class Alloc>
-struct static_array<T, dimensionality_type{0}, Alloc> : 
+struct static_array<T, dimensionality_type{0}, Alloc> : // NOLINT(fuchsia-multiple-inheritance) : design
 	protected array_allocator<Alloc>,
 	public array_ref<T, 0, typename std::allocator_traits<typename array_allocator<Alloc>::allocator_type>::pointer>
 {
+	static_assert( std::is_same<typename std::allocator_traits<Alloc>::value_type, typename static_array::element>{},
+		"allocator value type must match array value type");
+
 private:
 	using array_alloc = array_allocator<Alloc>;
 public:
 	auto operator&()     && -> static_array      * = delete; // NOLINT(google-runtime-operator) : delete to avoid taking address of temporary
-//	auto operator&()      & -> static_array      * {return this;}
-//	auto operator&() const& -> static_array const* {return this;}
-	static_assert( std::is_same<typename std::allocator_traits<Alloc>::value_type, typename static_array::element>{}, 
-		"allocator value type must match array value type");
+	auto operator&()      & -> static_array      * {return this;} // NOLINT(google-runtime-operator) : override from base
+	auto operator&() const& -> static_array const* {return this;} // NOLINT(google-runtime-operator) : override from base
+
 	using array_alloc::get_allocator;
 	using allocator_type = typename static_array::allocator_type;
+
 protected:
 	using alloc_traits = typename std::allocator_traits<allocator_type>;
 	using ref = array_ref<T, 0, typename std::allocator_traits<typename std::allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
