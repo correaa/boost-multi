@@ -411,36 +411,41 @@ public:
 		new_layout.rotate(d);
 		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
 	}
-//	friend decltype(auto) rotated(static_array const& self){return self.rotated();}
-//	template<class Array, typename = std::enable_if_t<std::is_same<static_array, std::decay_t<Array>>{}> > 
-	friend constexpr decltype(auto) rotated(static_array&       s){return s.rotated();}
-	friend constexpr decltype(auto) rotated(static_array const& s){return s.rotated();}
 
-	constexpr auto unrotated(dimensionality_type d = 1) const&{
+	friend constexpr auto rotated(static_array&       s) -> decltype(auto) {return s.rotated();}
+	friend constexpr auto rotated(static_array const& s) -> decltype(auto) {return s.rotated();}
+
+	constexpr auto unrotated(dimensionality_type d) const&{
 		typename static_array::layout_t new_layout = *this;
 		new_layout.unrotate(d);
 		return basic_array<T, D, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
-	constexpr auto unrotated(dimensionality_type d = 1)&{
+	constexpr auto unrotated(dimensionality_type d)&{
 		typename static_array::layout_t new_layout = *this;
 		new_layout.unrotate(d);
 		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
 	}
-	friend constexpr decltype(auto) unrotated(static_array& self){return self.unrotated();}
-	friend constexpr decltype(auto) unrotated(static_array const& self){return self.unrotated();}
 
-	constexpr decltype(auto) operator<<(dimensionality_type d)      {return   rotated(d);}
-	constexpr decltype(auto) operator>>(dimensionality_type d)      {return unrotated(d);}
-	constexpr decltype(auto) operator<<(dimensionality_type d) const{return   rotated(d);}
-	constexpr decltype(auto) operator>>(dimensionality_type d) const{return unrotated(d);}
+	constexpr auto unrotated() const&{return unrotated(1);}
+	constexpr auto unrotated()      &{return unrotated(1);}
 
-	static_array& operator=(static_array const& other) &{
+	friend constexpr auto unrotated(static_array      & self) -> decltype(auto){return self.unrotated();}
+	friend constexpr auto unrotated(static_array const& self) -> decltype(auto){return self.unrotated();}
+
+	constexpr auto operator<<(dimensionality_type d)       -> decltype(auto){return   rotated(d);}
+	constexpr auto operator>>(dimensionality_type d)       -> decltype(auto){return unrotated(d);}
+	constexpr auto operator<<(dimensionality_type d) const -> decltype(auto){return   rotated(d);}
+	constexpr auto operator>>(dimensionality_type d) const -> decltype(auto){return unrotated(d);}
+
+	auto operator=(static_array const& other) & -> static_array&{
 		assert( extensions(other) == static_array::extensions() );
+		if(this == &other){return *this;} // lints (cert-oop54-cpp) : handle self-assignment properly
 		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
 		return *this;
 	}
 	template<class TT, class... As>
-	static_array& operator=(static_array<TT, static_array::dimensionality, As...> const& other)&{assert( extensions(other) == static_array::extensions() );
+	auto operator=(static_array<TT, static_array::dimensionality, As...> const& other)& -> static_array&{
+		assert( extensions(other) == static_array::extensions() );
 		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
 		return *this;
 	}
