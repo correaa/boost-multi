@@ -67,7 +67,8 @@ template<class T, class Ptr = T*> struct move_ptr : std::move_iterator<Ptr>{
 template<class T, dimensionality_type D, class Alloc = std::allocator<T>>
 struct static_array : 
 	protected array_allocator<Alloc>,
-	public array_ref<T, D, typename std::allocator_traits<typename array_allocator<Alloc>::allocator_type>::pointer>
+	public array_ref<T, D, typename std::allocator_traits<typename array_allocator<Alloc>::allocator_type>::pointer>,
+	boost::multi::random_iterable<static_array<T, D, Alloc>>
 {
 protected:
 	using array_alloc = array_allocator<Alloc>;
@@ -589,87 +590,111 @@ public:
 		deallocate();
 	}
 	using element_const_ptr = typename std::pointer_traits<typename static_array::element_ptr>::template rebind<typename static_array::element const>;
+
 	friend allocator_type get_allocator(static_array const& self){return self.get_allocator();}
 
-	// TODO find how to use `deprecated` with nvcc
-//	friend constexpr typename static_array::element_ptr       data(static_array&       s)
-//	{return s.data_elements();}
-//	friend constexpr typename static_array::element_const_ptr data(static_array const& s)
-//	{return s.data_elements();}
+	       constexpr auto base()                 &    -> typename static_array::element_ptr      {return ref::base();}
+	       constexpr auto base()            const&    -> typename static_array::element_const_ptr{return ref::base();}
+	friend constexpr auto base(static_array      & s) -> typename static_array::element_ptr      {return    s.base();}
+	friend constexpr auto base(static_array const& s) -> typename static_array::element_const_ptr{return    s.base();}
 
-	       constexpr typename static_array::element_ptr       base()                 &   {return ref::base();}
-	       constexpr typename static_array::element_const_ptr base()            const&   {return ref::base();}
-	friend constexpr typename static_array::element_ptr       base(static_array&       s){return s.base();}
-	friend constexpr typename static_array::element_const_ptr base(static_array const& s){return s.base();}
-
-	constexpr typename static_array::element_ptr       origin()      {return ref::origin();}
-	constexpr typename static_array::element_const_ptr origin() const{return ref::origin();}
-	friend constexpr typename static_array::element_ptr       origin(static_array&       s){return s.origin();}
-	friend constexpr typename static_array::element_const_ptr origin(static_array const& s){return s.origin();}
+	       constexpr auto origin()                 &    -> typename static_array::element_ptr       {return ref::origin();}
+	       constexpr auto origin()            const&    -> typename static_array::element_const_ptr {return ref::origin();}
+	friend constexpr auto origin(static_array      & s) -> typename static_array::element_ptr       {return    s.origin();}
+	friend constexpr auto origin(static_array const& s) -> typename static_array::element_const_ptr {return    s.origin();}
 
 	constexpr operator typename std::iterator_traits<typename static_array::element_const_ptr>::reference() const&{
 		return *(this->base_);
 	}
-	constexpr operator typename std::add_rvalue_reference<typename std::iterator_traits<typename static_array::element_ptr>::reference>::type()&&{
+	constexpr explicit operator typename std::add_rvalue_reference<typename std::iterator_traits<typename static_array::element_ptr>::reference>::type()&&{
 		return *(this->base_);
 	}
-	constexpr operator typename std::iterator_traits<typename static_array::element_ptr>::reference()&{
+	constexpr explicit operator typename std::iterator_traits<typename static_array::element_ptr>::reference()&{
 		return *(this->base_);
 	}
 	constexpr explicit operator typename std::iterator_traits<typename static_array::element_const_ptr>::value_type(){
 		return *(this->base_);
 	}
 
-//	using const_reverse_iterator = basic_reverse_iterator<const_iterator>;
-	constexpr auto rotated(dimensionality_type d = 1) const&{
+	constexpr auto rotated(dimensionality_type d) const&{
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate(d);
 		return basic_array<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
-	constexpr auto rotated(dimensionality_type d = 1)&{
+	constexpr auto rotated() const&{
 		typename static_array::layout_t new_layout = *this;
-		new_layout.rotate(d);
-		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
+		new_layout.rotate();
+		return basic_array<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
-	constexpr auto rotated(dimensionality_type d = 1)&&{
-		typename static_array::layout_t new_layout = *this;
-		new_layout.rotate(d);
-		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
-	}
-//	friend decltype(auto) rotated(static_array const& self){return self.rotated();}
-//	template<class Array, typename = std::enable_if_t<std::is_same<static_array, std::decay_t<Array>>{}> > 
-	friend constexpr decltype(auto) rotated(static_array&       s){return s.rotated();}
-	friend constexpr decltype(auto) rotated(static_array const& s){return s.rotated();}
 
-	constexpr auto unrotated(dimensionality_type d = 1) const&{
+	constexpr auto rotated(dimensionality_type d)&{
+		typename static_array::layout_t new_layout = *this;
+		new_layout.rotate(d);
+		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
+	}
+	constexpr auto rotated()&{
+		typename static_array::layout_t new_layout = *this;
+		new_layout.rotate();
+		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
+	}
+
+	constexpr auto rotated(dimensionality_type d)&&{
+		typename static_array::layout_t new_layout = *this;
+		new_layout.rotate(d);
+		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
+	}
+	constexpr auto rotated()&&{
+		typename static_array::layout_t new_layout = *this;
+		new_layout.rotate();
+		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
+	}
+
+	friend constexpr auto rotated(static_array&       s) -> decltype(auto){return s.rotated();}
+	friend constexpr auto rotated(static_array const& s) -> decltype(auto){return s.rotated();}
+
+	constexpr auto unrotated(dimensionality_type d) const&{
 		typename static_array::layout_t new_layout = *this;
 		new_layout.unrotate(d);
 		return basic_array<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
-	constexpr auto unrotated(dimensionality_type d = 1)&{
+	constexpr auto unrotated() const&{
+		typename static_array::layout_t new_layout = *this;
+		new_layout.unrotate();
+		return basic_array<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
+	}
+	constexpr auto unrotated(dimensionality_type d)&{
 		typename static_array::layout_t new_layout = *this;
 		new_layout.unrotate(d);
 		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
 	}
-	friend constexpr decltype(auto) unrotated(static_array& self){return self.unrotated();}
-	friend constexpr decltype(auto) unrotated(static_array const& self){return self.unrotated();}
+	constexpr auto unrotated()&{
+		typename static_array::layout_t new_layout = *this;
+		new_layout.unrotate();
+		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
+	}
+	friend constexpr auto unrotated(static_array      & self) -> decltype(auto){return self.unrotated();}
+	friend constexpr auto unrotated(static_array const& self) -> decltype(auto){return self.unrotated();}
 
-	constexpr decltype(auto) operator<<(dimensionality_type d){return rotated(d);}
-	constexpr decltype(auto) operator>>(dimensionality_type d){return unrotated(d);}
-	constexpr decltype(auto) operator<<(dimensionality_type d) const{return rotated(d);}
-	constexpr decltype(auto) operator>>(dimensionality_type d) const{return unrotated(d);}
+	constexpr auto operator<<(dimensionality_type d)       -> decltype(auto){return   rotated(d);}
+	constexpr auto operator>>(dimensionality_type d)       -> decltype(auto){return unrotated(d);}
 
-	static_array& operator=(static_array const& other){assert( extensions(other) == static_array::extensions() );
+	constexpr auto operator<<(dimensionality_type d) const -> decltype(auto){return   rotated(d);}
+	constexpr auto operator>>(dimensionality_type d) const -> decltype(auto){return unrotated(d);}
+
+	constexpr auto operator=(static_array const& other) -> static_array&{
+		assert( extensions(other) == static_array::extensions() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
+		if(this == &other){return *this;} // (cert-oop54-cpp) : handle self-assignment properly
 		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
 		return *this;
 	}
-	template<class TT, class... As>
-	constexpr static_array& operator=(static_array<TT, static_array::dimensionality, As...> const& other)&{assert( extensions(other) == static_array::extensions() );
+	template<class TT, class... As, class = std::enable_if_t<std::is_assignable<typename static_array::element_ref, TT>{}> >
+	auto operator=(static_array<TT, static_array::dimensionality, As...> const& other)& -> static_array&{
+		assert( extensions(other) == static_array::extensions() );
 		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
 		return *this;
 	}
 
-	constexpr operator basic_array<typename static_array::value_type, static_array::dimensionality, typename static_array::element_const_ptr, typename static_array::layout_t>()&{
+	explicit constexpr operator basic_array<typename static_array::value_type, static_array::dimensionality, typename static_array::element_const_ptr, typename static_array::layout_t>()&{
 		return this->template static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>();
 	//	return static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
 	}
@@ -701,8 +726,8 @@ struct array<T, dimensionality_type{0}, Alloc>
 };
 
 template<class T, dimensionality_type D, class Alloc>
-struct array : static_array<T, D, Alloc>,
-	boost::multi::random_iterable<array<T, D, Alloc>>
+struct array :
+	static_array<T, D, Alloc>
 {
 	using static_ = static_array<T, D, Alloc>;
 	static_assert(
