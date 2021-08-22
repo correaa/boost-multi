@@ -39,7 +39,7 @@ namespace adl{ \
 		template<class... As>          auto _(priority<4>,        As&&... as) const DECLRETURN(custom::FuN##_t<As&&...>::_(std::forward<As>(as)...)) \
 	public: \
 		template<class... As> auto operator()(As&&... as) const->decltype(_(priority<4>{}, std::forward<As>(as)...)){return _(priority<4>{}, std::forward<As>(as)...);} \
-	} FuN; \
+	} (FuN); \
 } \
 }}
 
@@ -428,7 +428,7 @@ public:
 } adl_lexicographical_compare;
 
 constexpr class adl_alloc_uninitialized_value_construct_n_fn__{
-	template<class... As>          constexpr auto _(priority<1>,        As&&... as) const DECLRETURN(              xtd::alloc_uninitialized_value_construct_n(std::forward<As>(as)...)) // TODO: use boost?
+	template<class... As>          constexpr auto _(priority<1>,        As&&... as) const DECLRETURN(              xtd::alloc_uninitialized_value_construct_n(std::forward<As>(as)...)) // TODO(correaa) use boost alloc_X functions?
 	template<class... As>          constexpr auto _(priority<2>,        As&&... as) const DECLRETURN(                   alloc_uninitialized_value_construct_n(std::forward<As>(as)...))
 	template<class T, class... As> constexpr auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(  std::decay_t<T>::alloc_uninitialized_value_construct_n(std::forward<T>(t), std::forward<As>(as)...))
 	template<class T, class... As> constexpr auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).alloc_uninitialized_value_construct_n(std::forward<As>(as)...))
@@ -437,7 +437,7 @@ public:
 } adl_alloc_uninitialized_value_construct_n;
 
 constexpr class adl_alloc_uninitialized_default_construct_n_t{
-	template<class... As>          constexpr auto _(priority<1>,        As&&... as) const DECLRETURN(              xtd::alloc_uninitialized_default_construct_n(                    std::forward<As>(as)...)) // TODO: use boost?
+	template<class... As>          constexpr auto _(priority<1>,        As&&... as) const DECLRETURN(              xtd::alloc_uninitialized_default_construct_n(                    std::forward<As>(as)...)) // TODO(correaa) use boost alloc_X functions?
 	template<class... As>          constexpr auto _(priority<2>,        As&&... as) const DECLRETURN(                   alloc_uninitialized_default_construct_n(                    std::forward<As>(as)...))
 	template<class T, class... As> constexpr auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(  std::decay_t<T>::alloc_uninitialized_default_construct_n(std::forward<T>(t), std::forward<As>(as)...))
 	template<class T, class... As> constexpr auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).alloc_uninitialized_default_construct_n(                    std::forward<As>(as)...))
@@ -464,9 +464,9 @@ public:
 
 constexpr class alloc_destroy_n_fn__ {
 	template<class T, class... As> constexpr auto _(priority<1>, T&&  , As&&... as) const DECLRETURN(                     adl_destroy_n              (std::forward<As>(as)...))
-	template<class... As>          constexpr auto _(priority<2>,        As&&... as) const DECLRETURN(multi::            alloc_destroy_n              (std::forward<As>(as)...)) // TODO: use boost?
+	template<class... As>          constexpr auto _(priority<2>,        As&&... as) const DECLRETURN(multi::            alloc_destroy_n              (std::forward<As>(as)...)) // TODO(correaa) use boost alloc_X functions?
 	template<class... As>          constexpr auto _(priority<3>,        As&&... as) const DECLRETURN(                   alloc_destroy_n              (std::forward<As>(as)...))
-	template<class T, class... As> constexpr auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(std::decay_t<T>::alloc_destroy_n(std::forward<T>(t), std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(std::decay_t<T>::  alloc_destroy_n(std::forward<T>(t), std::forward<As>(as)...))
 	template<class T, class... As> constexpr auto _(priority<5>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).alloc_destroy_n              (std::forward<As>(as)...))
 public:
 	template<class... As> constexpr auto operator()(As&&... as) const DECLRETURN(_(priority<5>{}, std::forward<As>(as)...))
