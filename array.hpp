@@ -494,7 +494,7 @@ protected:
 public:
 	using ref::operator==;
 	using ref::operator!=;
-	
+
 	template<class TT, 
 		std::enable_if_t<std::is_constructible<T, TT>{}, int>* = nullptr, 
 		class = decltype(adl_uninitialized_copy_n(&std::declval<TT&>(), 1, std::declval<typename static_array::element_ptr&>()))
@@ -503,15 +503,6 @@ public:
 	static_array(TT&& tt) : ref(static_array::allocate(typename static_array::layout_t{}.num_elements()), {}){
 		adl_uninitialized_copy_n(&tt, 1, this->base());
 	}
-//	template<class Range0, 
-//		std::enable_if_t<std::is_constructible<typename static_array::element, typename Range0::element>{}, int>* = nullptr, 
-//		class = decltype(adl_uninitialized_copy_n(&std::declval<Range0&>(), 1, std::declval<typename static_array::element_ptr&>()))
-//	>
-////	template<class Range0, class = decltype(adl_uninitialized_copy_n(&std::declval<Range0&>(), 1, std::declval<typename static_array::element_ptr&>()))>
-//	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions
-//	static_array(Range0&& r) : ref(static_array::allocate(typename static_array::layout_t{}.num_elements()), {}){
-//		adl_uninitialized_copy_n(&r, 1, this->base());
-//	}
 	static_array(typename static_array::extensions_type x, typename static_array::element const& e, allocator_type const& a) : //2
 		array_alloc{a}, 
 		ref(static_array::allocate(typename static_array::layout_t{x}.num_elements()), x)
@@ -552,14 +543,13 @@ public:
 		using std::copy; copy(other.begin(), other.end(), this->begin());
 	}
 	template<class TT, class... Args> 
-	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
-	static_array(array_ref<TT, 0, Args...> const& other)
+	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented by class
+	explicit static_array(array_ref<TT, 0, Args...> const& other)
 	:	array_alloc{}, ref{static_array::allocate(other.num_elements()), extensions(other)}{
 		uninitialized_copy_(other.data_elements());
 	}
 	static_array(static_array const& other, allocator_type const& a)                      //5b
 	:	array_alloc{a}, ref{static_array::allocate(other.num_elements()), extensions(other)}{
-	//	assert(0);
 		uninitialized_copy_(other.data_elements());
 	}
 	static_array(static_array const& o) :                                  //5b
@@ -568,16 +558,18 @@ public:
 	{
 		uninitialized_copy(o.data_elements());
 	}
-	static_array(static_array&& o) :       // it is private because it is a valid operation for derived classes //5b
+	static_array(static_array&& o) noexcept :   // it is private because it is a valid operation for derived classes //5b
 		array_alloc{o.get_allocator()}, 
 		ref{static_array::allocate(o.num_elements(), o.data_elements()), o.extensions()}
 	{
-		uninitialized_move(o.data_elements()); // TODO: uninitialized_move?
+		uninitialized_move(o.data_elements());
 	}
 	template<class It> static auto distance(It a, It b){using std::distance; return distance(a, b);}
 protected:
-	void deallocate(){ // TODO move this to array_allocator
-		if(this->num_elements()) alloc_traits::deallocate(this->alloc(), this->base_, static_cast<typename alloc_traits::size_type>(this->num_elements()));
+	void deallocate(){ // TODO(correaa) : move this to array_allocator
+		if(this->num_elements()){
+			alloc_traits::deallocate(this->alloc(), this->base_, static_cast<typename alloc_traits::size_type>(this->num_elements()));
+		}
 	}
 	void clear() noexcept{
 		this->destroy();
@@ -591,7 +583,7 @@ public:
 	}
 	using element_const_ptr = typename std::pointer_traits<typename static_array::element_ptr>::template rebind<typename static_array::element const>;
 
-	friend allocator_type get_allocator(static_array const& self){return self.get_allocator();}
+	friend auto get_allocator(static_array const& self) -> allocator_type {return self.get_allocator();}
 
 	       constexpr auto base()                 &    -> typename static_array::element_ptr      {return ref::base();}
 	       constexpr auto base()            const&    -> typename static_array::element_const_ptr{return ref::base();}
@@ -612,12 +604,6 @@ public:
 	constexpr explicit operator typename std::iterator_traits<typename static_array::element_ptr>::reference()&{
 		return *(this->base_);
 	}
-//	constexpr explicit operator typename std::iterator_traits<typename static_array::element_const_ptr>::value_type() &&{
-//		return *(this->base_);
-//	}
-//	constexpr explicit operator typename std::iterator_traits<typename static_array::element_const_ptr>::value_type() &{
-//		return *(this->base_);
-//	}
 
 	constexpr auto rotated(dimensionality_type d) const&{
 		typename static_array::layout_t new_layout = *this;
