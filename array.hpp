@@ -444,13 +444,8 @@ public:
 		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
 		return *this;
 	}
-//	template<class... As>
-//	static_array operator=(static_array<static_array::value_type, static_array::dimensionality, As...> const& o){assert( extensions(o) == static_array::extensions() );
-//		return adl::copy_elements(o.data_elements()), *this;
-//	}
-	constexpr operator basic_array<typename static_array::value_type, static_array::dimensionality, typename static_array::element_const_ptr, typename static_array::layout_t>()&{
+	constexpr explicit operator basic_array<typename static_array::value_type, static_array::dimensionality, typename static_array::element_const_ptr, typename static_array::layout_t>()&{
 		return this->template static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
-//		return static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
 	}
 };
 
@@ -720,7 +715,7 @@ public:
 		return *this;
 	}
 
-	explicit constexpr operator basic_array<typename static_array::value_type, static_array::dimensionality, typename static_array::element_const_ptr, typename static_array::layout_t>()&{
+	constexpr explicit operator basic_array<typename static_array::value_type, static_array::dimensionality, typename static_array::element_const_ptr, typename static_array::layout_t>()&{
 		return this->template static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>();
 	//	return static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
 	}
