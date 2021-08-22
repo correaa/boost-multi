@@ -110,17 +110,16 @@ struct affine : addable2<T, Difference>, subtractable2<T, Difference>{
 
 template<class T>
 struct random_iterable{
-	constexpr auto rbegin(){return typename T::reverse_iterator{static_cast<T&>(*this).end  ()};}
-	constexpr auto rend  (){return typename T::reverse_iterator{static_cast<T&>(*this).begin()};}
-	friend 
-	auto rbegin(T& s){return static_cast<random_iterable&>(s).rbegin();}
-	friend
-	auto rend  (T& s){return static_cast<random_iterable&>(s).rend  ();}
+	       constexpr auto rbegin()&   {return typename T::reverse_iterator{static_cast<T&>(*this).end  ()};}
+	       constexpr auto rend  ()&   {return typename T::reverse_iterator{static_cast<T&>(*this).begin()};}
 
-	constexpr decltype(auto) cfront() const{return static_cast<T const&>(*this).front();}
-	constexpr decltype(auto) cback()  const{return static_cast<T const&>(*this).back() ;}
-	friend constexpr auto cfront(T const& s){return s.cfront();}
-	friend constexpr auto cback (T const& s){return s.cback() ;}
+	friend /*constexpr*/ auto rbegin(T& s){return static_cast<random_iterable&>(s).rbegin();}
+	friend /*constexpr*/ auto rend  (T& s){return static_cast<random_iterable&>(s).rend  ();}
+
+	       constexpr decltype(auto) cfront() const&   {return static_cast<T const&>(*this).front();}
+	       constexpr decltype(auto) cback()  const&   {return static_cast<T const&>(*this).back() ;}
+	friend constexpr decltype(auto) cfront(T const& s){return s.cfront();}
+	friend constexpr decltype(auto) cback (T const& s){return s.cback() ;}
 };
 
 #if 0
