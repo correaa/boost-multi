@@ -46,16 +46,28 @@ namespace adl{ \
 namespace boost{namespace multi{
 
 constexpr class adl_copy_n_t{
-	template<class... As>          constexpr auto _(priority<0>,        As&&... as) const DECLRETURN(              std::copy_n              (std::forward<As>(as)...)) // it is important to terminate with SFINAE
+	template<class... As>          constexpr auto _(priority<0>,        As&&... as) const DECLRETURN(              std::copy_n(                    std::forward<As>(as)...))
 #if defined(__NVCC__)
-	template<class... As> 		   constexpr auto _(priority<1>,        As&&... as) const DECLRETURN(           thrust::copy_n              (std::forward<As>(as)...))
+	template<class... As> 		   constexpr auto _(priority<1>,        As&&... as) const DECLRETURN(           thrust::copy_n(                    std::forward<As>(as)...))
 #endif
-	template<class... As>          constexpr auto _(priority<2>,        As&&... as) const DECLRETURN(                   copy_n              (std::forward<As>(as)...))
+	template<class... As>          constexpr auto _(priority<2>,        As&&... as) const DECLRETURN(                   copy_n(                    std::forward<As>(as)...))
 	template<class T, class... As> constexpr auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::decay_t<T>::  copy_n(std::forward<T>(t), std::forward<As>(as)...))
-	template<class T, class... As> constexpr auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).copy_n              (std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).copy_n(                    std::forward<As>(as)...))
 public:
 	template<class... As> constexpr auto operator()(As&&... as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
 } adl_copy_n;
+
+constexpr class adl_move_t{
+	template<class... As>           constexpr auto _(priority<0>,                    As&&... as) const DECLRETURN(              std::move(                    std::forward<As>(as)...))
+#if defined(__NVCC__) // there is no thrust::move algorithm
+	template<class It, class... As> constexpr auto _(priority<1>, It first, It last, As&&... as) const DECLRETURN(           thrust::copy(std::make_move_iterator(first), std::make_move_iterator(last), std::forward<As>(as)...))
+#endif
+	template<class... As>           constexpr auto _(priority<2>,                    As&&... as) const DECLRETURN(                   move(                    std::forward<As>(as)...))
+	template<class T, class... As>  constexpr auto _(priority<3>, T&& t,             As&&... as) const DECLRETURN(std::decay_t<T>::  move(std::forward<T>(t), std::forward<As>(as)...))
+	template<class T, class... As>  constexpr auto _(priority<4>, T&& t,             As&&... as) const DECLRETURN(std::forward<T>(t).move(                    std::forward<As>(as)...))
+public:
+	template<class... As> constexpr auto operator()(As&&... as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
+} adl_move;
 
 constexpr class adl_fill_n_t{
 	template<         class... As> constexpr auto _(priority<0>,        As&&... as) const DECLRETURN(              std::fill_n              (std::forward<As>(as)...))
