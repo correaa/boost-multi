@@ -396,21 +396,26 @@ public:
 #endif
 #endif
 //	using const_reverse_iterator = basic_reverse_iterator<const_iterator>;
-	constexpr auto rotated(dimensionality_type d = 1) const&{
+
+	constexpr auto rotated(dimensionality_type d) const&{
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate(d);
 		return basic_array<T, D, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
-	constexpr auto rotated(dimensionality_type d = 1)&{
+	constexpr auto rotated(dimensionality_type d)&{
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate(d);
 		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
 	}
-	constexpr auto rotated(dimensionality_type d = 1)&&{
+	constexpr auto rotated(dimensionality_type d)&&{
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate(d);
 		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
 	}
+
+	constexpr auto rotated() const&{return std::move(*this).rotated(1);}
+	constexpr auto rotated()      &{return std::move(*this).rotated(1);}
+	constexpr auto rotated()     &&{return std::move(*this).rotated(1);}
 
 	friend constexpr auto rotated(static_array&       s) -> decltype(auto) {return s.rotated();}
 	friend constexpr auto rotated(static_array const& s) -> decltype(auto) {return s.rotated();}
