@@ -1234,7 +1234,7 @@ public:
 	constexpr It assign(It first)&&{return assign(first);}
 
 	template<class It>
-	constexpr void  assign(It first, It last) &{assert( std::distance(first, last) == this->size() );
+	constexpr void  assign(It first, It last) &{assert( std::distance(first, last) == this->size() ); (void)last;
 		assign(first);
 	}
 	template<class It> 
