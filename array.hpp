@@ -316,87 +316,30 @@ public:
 	using const_iterator = multi::array_iterator<T, static_array::dimensionality, typename static_array::element_const_ptr>;//, const_reference>;
 	friend typename static_array::allocator_type get_allocator(static_array const& self){return self.get_allocator();}
 
-	element_const_ptr                   data_elements() const&{return this->base_;}
-	typename static_array::element_ptr  data_elements()      &{return this->base_;}
-	static_array::element_move_ptr      data_elements()     &&{return std::make_move_iterator(this->base_);}
+	       constexpr auto data_elements()            const& ->                        element_const_ptr{return this->base_;}
+	       constexpr auto data_elements()                 & -> typename static_array::element_ptr      {return this->base_;}
+	       constexpr auto data_elements()                && -> typename static_array::element_move_ptr {return std::make_move_iterator(this->base_);}
+	friend constexpr auto data_elements(static_array const& s){return           s .data_elements();}
+	friend constexpr auto data_elements(static_array      & s){return           s .data_elements();}
+	friend constexpr auto data_elements(static_array     && s){return std::move(s).data_elements();}
 
-	friend auto data_elements(static_array const& s){return           s .data_elements();}
-	friend auto data_elements(static_array      & s){return           s .data_elements();}
-	friend auto data_elements(static_array     && s){return std::move(s).data_elements();}
+	       constexpr auto base()                 &    -> typename static_array::element_ptr      {return ref::base();}
+	       constexpr auto base()            const&    -> typename static_array::element_const_ptr{return typename static_array::element_const_ptr{ref::base()};}
+	friend constexpr auto base(static_array      & s) -> typename static_array::element_ptr      {return s.base();}
+	friend constexpr auto base(static_array const& s) -> typename static_array::element_const_ptr{return s.base();}
 
-	constexpr typename static_array::element_ptr       base()      {return ref::base();}
-	constexpr typename static_array::element_const_ptr base() const{return typename static_array::element_const_ptr{ref::base()};}
-	friend typename static_array::element_ptr       base(static_array&       s){return s.base();}
-	friend typename static_array::element_const_ptr base(static_array const& s){return s.base();}
+	       auto origin()                 &    -> typename static_array::element_ptr      {return ref::origin();}
+	       auto origin()            const&    -> typename static_array::element_const_ptr{return ref::origin();}
+	friend auto origin(static_array      & s) -> typename static_array::element_ptr      {return s.origin();}
+	friend auto origin(static_array const& s) -> typename static_array::element_const_ptr{return s.origin();}
 
-	typename static_array::element_ptr       origin()      {return ref::origin();}
-	typename static_array::element_const_ptr origin() const{return ref::origin();}
-	friend typename static_array::element_ptr       origin(static_array&       s){return s.origin();}
-	friend typename static_array::element_const_ptr origin(static_array const& s){return s.origin();}
-
-//	template<class... Args> decltype(auto) operator()(Args const&... args)&{return ref::operator()(args...);}
-//	template<class... Args> decltype(auto) operator()(Args const&... args) const&{return ref::operator()(args...);}
-//	using ref::operator();
-
-//	basic_array<T, D, typename static_array::element_ptr> 
-//	decltype(auto) operator()() &{
-//		this->template static_array_cast<typename static_array::element_type>();
-	//	return static_array_cast<typename static_array::element_type>(*this);//(std::forward<Ts>(t)...);
-	//	return ref::operator()();
-	//	return *this;
-//	}
-//	basic_array<T, D, typename static_array::element_const_ptr> operator()() const&{
-//		this->template static_array_cast<typename static_array::element_type>();
-	//	return static_array_cast<typename static_array::element_type const>(*this);
-	//	return basic_array<T, D, typename static_array::element_const_ptr>{this->layout(), this->base_};
-//	}
-//	template<class... Ts> decltype(auto) operator()(Ts&&... t) &     {assert(0); return ref::operator()(std::forward<Ts>(t)...);}
-//	template<class... Ts> decltype(auto) operator()(Ts&&... t) &&    {return std::move(*this).ref::operator()(std::forward<Ts>(t)...);}
-//	template<class... Ts> decltype(auto) operator()(Ts&&... t) const&{return ref::operator()(std::forward<Ts>(t)...);}
-
-//	template<class... Ts> decltype(auto) operator()(Ts&&... t) const{return static_array_cast<typename static_array::element_type const>(*this)(std::forward<Ts>(t)...);}
-
-#if 0
-	template<class... As> decltype(auto) paren(index a, As... as) &     {return ref::paren(a, std::forward<As>(as)...);}
-	template<class... As> decltype(auto) paren(index a, As... as) && = delete;//{return ref::operator()(a, std::forward<As>(as)...);}
-	template<class... As> decltype(auto) paren(index a, As... as) const&{return ref::paren(a, std::forward<As>(as)...);}
-
-	template<class... As> decltype(auto) paren(index_range a, As... as) &{return ref::paren(a, std::forward<As>(as)...);}
-	template<class... As> decltype(auto) paren(index_range a, As... as) && = delete;//{return ref::operator()(a, std::forward<As>(as)...);}
-	template<class... As> decltype(auto) paren(index_range a, As... as) const&{return ref::paren(a, std::forward<As>(as)...);}
-
-	decltype(auto) operator()(index i) & {return operator[](i);}
-	decltype(auto) operator()(index i) && {return std::move(*this).operator[](i);}
-	decltype(auto) operator()(index i) const& {return operator[](i);}
-//#define SARRAY1(A1) auto operator()(A1 a1) const{return operator()<>(a1);}
-#define SARRAY2(A1, A2)	\
-	auto operator()(A1 a1, A2 a2) const& JUSTRETURN(paren<A2>(a1, a2)) \
-	auto operator()(A1 a1, A2 a2) && = delete;/*     JUSTRETURN(std::move(*this).static_array::template paren<A2>(a1, a2))*/ \
-	auto operator()(A1 a1, A2 a2) &      JUSTRETURN(paren<A2>(a1, a2))  
-	SARRAY2(index, index ); SARRAY2(irange, index );
-	SARRAY2(index, irange); SARRAY2(irange, irange);
-#undef SARRAY2
-#if 0
-#define SARRAY3(A1, A2, A3) auto operator()(A1 a1, A2 a2, A3 a3) const{return operator()<A2, A3>(a1, a2, a3);} auto operator()(A1 a1, A2 a2, A3 a3){return operator()<A2, A3>(a1, a2, a3);}
-	SARRAY3(index, index , index ); SARRAY3(irange, index , index );
-	SARRAY3(index, index , irange); SARRAY3(irange, index , irange);
-	SARRAY3(index, irange, index ); SARRAY3(irange, irange, index );
-	SARRAY3(index, irange, irange); SARRAY3(irange, irange, irange);
-#undef SARRAY3
-#define SARRAY4(A1, A2, A3, A4) auto operator()(A1 a1, A2 a2, A3 a3, A4 a4) const{return operator()<A2, A3, A4>(a1, a2, a3, a4);} auto operator()(A1 a1, A2 a2, A3 a3, A4 a4) {return operator()<A2, A3, A4>(a1, a2, a3, a4);}
-	SARRAY4(index, index, index , index ); SARRAY4(index, irange, index , index );
-	SARRAY4(index, index, index , irange); SARRAY4(index, irange, index , irange);
-	SARRAY4(index, index, irange, index ); SARRAY4(index, irange, irange, index );
-	SARRAY4(index, index, irange, irange); SARRAY4(index, irange, irange, irange);
-	SARRAY4(irange, index, index , index ); SARRAY4(irange, irange, index , index );
-	SARRAY4(irange, index, index , irange); SARRAY4(irange, irange, index , irange);
-	SARRAY4(irange, index, irange, index ); SARRAY4(irange, irange, irange, index );
-	SARRAY4(irange, index, irange, irange); SARRAY4(irange, irange, irange, irange);
-#undef SARRAY4
-#endif
-#endif
-//	using const_reverse_iterator = basic_reverse_iterator<const_iterator>;
-
+private:
+	constexpr auto rotated_aux(dimensionality_type d) const&{
+		typename static_array::layout_t new_layout = *this;
+		new_layout.rotate(d);
+		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
+	}
+public:
 	constexpr auto rotated(dimensionality_type d) const&{
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate(d);
