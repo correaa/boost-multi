@@ -235,12 +235,12 @@ public:
 	static_array(multi::basic_array<TT, D, Args...> const& o, typename static_array::allocator_type const& a = {})
 	: static_array(o.extensions(), a) // TODO: should be uninitialized_copy
 	{
-		adl_copy(o.begin(), o.end(), this->begin()); // TODO: should be uninitialized_copy, and recursive
+		adl_uninitialized_copy(o.begin(), o.end(), this->begin());
 	}
 
 	template<class TT, class... Args>
 	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
-	static_array(array_ref<TT, D, Args...>&& o)
+	explicit static_array(array_ref<TT, D, Args...>&& o)
 	: array_alloc{}, ref{array_alloc::allocate(o.num_elements()), o.extensions()}{
 		static_array::uninitialized_copy_elements(std::move(o).data_elements());
 	}
@@ -268,11 +268,16 @@ public:
 	) : static_array(static_array<T, D>(mil.begin(), mil.end()), a){}
 	template<class TT, std::size_t N> 
 	// cppcheck-suppress noExplicitConstructor ; to allow assigment-like construction from c-arrays
-	constexpr static_array(TT(&array)[N]) : static_array(std::begin(array), std::end(array)){}
-	template<class It> static auto distance(It a, It b){using std::distance; return distance(a, b);}
+	constexpr explicit static_array(TT(&array)[N]) : static_array(std::begin(array), std::end(array)){} // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backward compatibility
+	template<class It> static auto distance(It a, It b){
+		using std::distance; 
+		return distance(a, b);
+	}
 protected:
 	void deallocate(){
-		if(this->num_elements()) alloc_traits::deallocate(this->alloc(), this->base_, static_cast<typename alloc_traits::size_type>(this->num_elements()));
+		if(this->num_elements()){
+			alloc_traits::deallocate(this->alloc(), this->base_, static_cast<typename alloc_traits::size_type>(this->num_elements()));
+		}
 	}
 	void clear() noexcept{
 		this->destroy();
@@ -280,20 +285,19 @@ protected:
 		layout_t<D>::operator=({});
 	}
 	template<class... Ts>
-	constexpr static_array&& reindex(Ts... a)&&{
-		static_array::layout_t::reindex(a...);
-		return std::move(*this);
-	}
-	template<class... Ts>
-	constexpr static_array& reindex(Ts... a)&{
+	constexpr auto reindex(Ts... a)& -> static_array&{
 		static_array::layout_t::reindex(a...);
 		return *this;
 	}
+	template<class... Ts>
+	constexpr auto reindex(Ts... a)&& -> static_array&&{return std::move(reindex(a...));}
 public:
 	static_array() = default;
 	~static_array() noexcept{destroy(); deallocate();}
+
 	using element_const_ptr = typename std::pointer_traits<typename static_array::element_ptr>::template rebind<typename static_array::element const>;
 	using element_move_ptr  = std::move_iterator<typename static_array::element_ptr>;
+
 	using reference = typename std::conditional<
 		(static_array::dimensionality > 1), 
 		basic_array<typename static_array::element, static_array::dimensionality-1, typename static_array::element_ptr>, 
@@ -305,16 +309,18 @@ public:
 	>::type;
 	using const_reference = typename std::conditional<
 		(static_array::dimensionality > 1), 
-		basic_array<typename static_array::element, static_array::dimensionality-1, typename static_array::element_const_ptr>, // TODO should be const_reference, but doesn't work witn rangev3
+		basic_array<typename static_array::element, static_array::dimensionality-1, typename static_array::element_const_ptr>, // TODO(correaa) should be const_reference, but doesn't work witn rangev3?
 		typename std::conditional<
 			static_array::dimensionality == 1,
 			decltype(*std::declval<typename static_array::element_const_ptr>()),
 			void
 		>::type
 	>::type;
-	using       iterator = multi::array_iterator<T, static_array::dimensionality, typename static_array::element_ptr      >;//, reference>;
-	using const_iterator = multi::array_iterator<T, static_array::dimensionality, typename static_array::element_const_ptr>;//, const_reference>;
-	friend typename static_array::allocator_type get_allocator(static_array const& self){return self.get_allocator();}
+
+	using       iterator = multi::array_iterator<T, static_array::dimensionality, typename static_array::element_ptr      >;
+	using const_iterator = multi::array_iterator<T, static_array::dimensionality, typename static_array::element_const_ptr>;
+
+	friend auto get_allocator(static_array const& self) -> typename static_array::allocator_type{return self.get_allocator();}
 
 	       constexpr auto data_elements()            const& ->                        element_const_ptr{return this->base_;}
 	       constexpr auto data_elements()                 & -> typename static_array::element_ptr      {return this->base_;}
@@ -328,10 +334,10 @@ public:
 	friend constexpr auto base(static_array      & s) -> typename static_array::element_ptr      {return s.base();}
 	friend constexpr auto base(static_array const& s) -> typename static_array::element_const_ptr{return s.base();}
 
-	       auto origin()                 &    -> typename static_array::element_ptr      {return ref::origin();}
-	       auto origin()            const&    -> typename static_array::element_const_ptr{return ref::origin();}
-	friend auto origin(static_array      & s) -> typename static_array::element_ptr      {return s.origin();}
-	friend auto origin(static_array const& s) -> typename static_array::element_const_ptr{return s.origin();}
+	       constexpr auto origin()                 &    -> typename static_array::element_ptr      {return ref::origin();}
+	       constexpr auto origin()            const&    -> typename static_array::element_const_ptr{return ref::origin();}
+	friend constexpr auto origin(static_array      & s) -> typename static_array::element_ptr      {return    s.origin();}
+	friend constexpr auto origin(static_array const& s) -> typename static_array::element_const_ptr{return    s.origin();}
 
 private:
 	constexpr auto rotated_aux(dimensionality_type d) const&{
