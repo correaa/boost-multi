@@ -397,6 +397,11 @@ public:
 	constexpr auto operator<<(dimensionality_type d) const -> decltype(auto){return   rotated(d);}
 	constexpr auto operator>>(dimensionality_type d) const -> decltype(auto){return unrotated(d);}
 
+	template<class TT, class... Args>
+	auto operator=(multi::basic_array<TT, D, Args...> const& other) -> static_array&{
+		ref::operator=(other); // TODO(correaa) : protect for self assigment
+		return *this;
+	}
 	auto operator=(static_array const& other) & -> static_array&{
 		assert( extensions(other) == static_array::extensions() );
 		if(this == &other){return *this;} // lints (cert-oop54-cpp) : handle self-assignment properly
@@ -830,6 +835,16 @@ public:
 			static_::operator=(o);
 		}else{
 			operator=(array(o));
+		}
+		return *this;
+	}
+
+	template<class TT, class... Args>
+	auto operator=(multi::basic_array<TT, D, Args...> const& other) -> array&{
+		if(array::extensions() == other.extensions()){
+			static_::operator=(other); // TODO(correaa) : protect for self assigment
+		}else{
+			operator=(array(other));
 		}
 		return *this;
 	}
