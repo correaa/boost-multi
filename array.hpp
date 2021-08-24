@@ -231,12 +231,18 @@ public:
 		class=std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::basic_array<TT, D, Args...>::element>{}>,
 		class=decltype(adl_copy(std::declval<multi::basic_array<TT, D, Args...> const&>().begin(), std::declval<multi::basic_array<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
 	>
-	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
-	static_array(multi::basic_array<TT, D, Args...> const& o, typename static_array::allocator_type const& a = {})
-	: static_array(o.extensions(), a) // TODO: should be uninitialized_copy
+	static_array(multi::basic_array<TT, D, Args...> const& o, typename static_array::allocator_type const& a)
+	: static_array(o.extensions(), a)
 	{
-		adl_uninitialized_copy(o.begin(), o.end(), this->begin());
+		adl_uninitialized_copy(o.begin(), o.end(), this->begin()); // TODO(correaa): call this conditionally on T properties
 	}
+
+	template<class TT, class... Args, 
+		class=std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::basic_array<TT, D, Args...>::element>{}>,
+		class=decltype(adl_copy(std::declval<multi::basic_array<TT, D, Args...> const&>().begin(), std::declval<multi::basic_array<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
+	>
+	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
+	static_array(multi::basic_array<TT, D, Args...> const& o) : static_array(o, typename static_array::allocator_type{}){}
 
 	template<class TT, class... Args>
 	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
