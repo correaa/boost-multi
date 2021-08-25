@@ -154,25 +154,28 @@ public:
 
 	template<class It, class=typename std::iterator_traits<std::decay_t<It>>::difference_type>//edecltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>      
 	// analogous to std::vector::vector (5) https://en.cppreference.com/w/cpp/container/vector/vector
-	static_array(It first, It last, typename static_array::allocator_type const& a = {}) : 
+	static_array(It first, It last, typename static_array::allocator_type const& a) :
 		array_alloc{a},
 		ref{
 			array_alloc::allocate(typename static_array::layout_t{index_extension(adl_distance(first, last))*multi::extensions(*first)}.num_elements()), 
 			index_extension(adl_distance(first, last))*multi::extensions(*first)
 		}
 	{
-//		recursive<D>::alloc_uninitialized_copy(static_array::alloc(), first, last, this->begin());
 		adl_alloc_uninitialized_copy(static_array::alloc(), first, last, ref::begin());
-//		adl::uninitialized_copy(first, last, ref::begin());
 	}
+	template<class It, class=typename std::iterator_traits<std::decay_t<It>>::difference_type>//edecltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>      
+	// analogous to std::vector::vector (5) https://en.cppreference.com/w/cpp/container/vector/vector
+	static_array(It first, It last) : static_array(first, last, typename static_array::allocator_type{}){}
 
 	template<
 		class Range, class=std::enable_if_t<not std::is_base_of<static_array, std::decay_t<Range>>{}>, 
-		class=decltype(/*static_array*/(std::declval<Range&&>().begin(), std::declval<Range&&>().end())), // instantiation of static_array here gives a compiler error in 11.0
+		class=decltype(/*static_array*/(std::declval<Range&&>().begin(), std::declval<Range&&>().end())), // instantiation of static_array here gives a compiler error in 11.0, partially defined type?
 		class=std::enable_if_t<not is_basic_array<Range&&>{}>
 	>
 	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions
-	static_array(Range&& rng) : static_array(std::forward<Range>(rng).begin(), std::forward<Range>(rng).end()){}
+	static_array(Range&& rng) : // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
+		static_array(std::forward<Range>(rng).begin(), std::forward<Range>(rng).end())
+	{}
 
 	template<class TT> 
 	auto uninitialized_fill_elements(TT const& value){
