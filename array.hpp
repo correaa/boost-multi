@@ -26,10 +26,12 @@ namespace multi{
 template<class Allocator> 
 struct array_allocator{
 	using allocator_type = Allocator;
-//private:
+private:
 	MULTI_NO_UNIQUE_ADDRESS allocator_type alloc_;
 protected:
-	auto alloc() -> allocator_type&{return alloc_;}
+	auto alloc()      & -> allocator_type&{return alloc_;}
+	auto alloc() const& -> allocator_type const&{return alloc_;}
+
 	array_allocator() = default;
 	explicit array_allocator(allocator_type const& a) : alloc_{a}{}
 	auto allocate(typename std::allocator_traits<allocator_type>::size_type n) 
@@ -262,7 +264,7 @@ public:
 //		uninitialized_copy_elements(o.data_elements());
 //	}
 	static_array(static_array const& o) :                                 //5b
-		array_alloc{std::allocator_traits<Alloc>::select_on_container_copy_construction(o.alloc_)}, 
+		array_alloc{std::allocator_traits<Alloc>::select_on_container_copy_construction(o.alloc())}, 
 		ref{array_alloc::allocate(o.num_elements(), o.data_elements()), extensions(o)}
 	{
 		uninitialized_copy_elements(o.data_elements());
@@ -822,11 +824,11 @@ public:
 	auto operator=(array const& other) -> array& {
 		if(array::extensions() == other.extensions()){
 			if(this == &other){return *this;} // required by cert-oop54-cpp
-			copy_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment{}, other.alloc_, this->alloc_);
+			copy_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment{}, other.alloc(), this->alloc());
 			static_::operator=(other);
 		}else{
 			clear();
-			copy_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment{}, other.alloc_, this->alloc_);
+			copy_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment{}, other.alloc(), this->alloc());
 			static_cast<typename array::layout_t&>(*this) = static_cast<typename array::layout_t const&>(other);
 			array::allocate();
 			array::uninitialized_copy_elements(other.data_elements());
