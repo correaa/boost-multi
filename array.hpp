@@ -169,16 +169,17 @@ public:
 	template<
 		class Range, class=std::enable_if_t<not std::is_base_of<static_array, std::decay_t<Range>>{}>, 
 		class=decltype(/*static_array*/(std::declval<Range&&>().begin(), std::declval<Range&&>().end())), // instantiation of static_array here gives a compiler error in 11.0
-		class=std::enable_if_t<not is_basic_array<Range&&>{}>// TODO add is_assignable<value_type> check
-	> 
+		class=std::enable_if_t<not is_basic_array<Range&&>{}>
+	>
 	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions
-	static_array(Range&& rng) : static_array(std::forward<Range>(rng).begin(), std::forward<Range>(rng).end()){}
+	explicit static_array(Range&& rng) : static_array(std::forward<Range>(rng).begin(), std::forward<Range>(rng).end()){}
 
 	template<class TT> 
 	auto uninitialized_fill_elements(TT const& value){
 		return array_alloc::uninitialized_fill_n(this->data_elements(), this->num_elements(), value);
 	}
 
+	// vvv TODO(correaa) : check if really necessary
 	template<class TT, class... As> 
 	static_array(array_ref<TT, D, As...> const& other, typename static_array::allocator_type const& a) :
 		array_alloc{a},
@@ -188,7 +189,8 @@ public:
 	}
 	template<class TT, class... As> 
 	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
-	explicit static_array(array_ref<TT, D, As...> const& other) : static_array(other, typename static_array::allocator_type{}){} // google-explicit-constructor,hicpp-explicit-conversions
+	static_array(array_ref<TT, D, As...> const& other) : static_array(other, typename static_array::allocator_type{}){} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
+	// ^^^ TODO(correaa) : check if really necessary
 
 	static_array(typename static_array::extensions_type x, typename static_array::element const& e, typename static_array::allocator_type const& a) : //2
 		array_alloc{a}, 
