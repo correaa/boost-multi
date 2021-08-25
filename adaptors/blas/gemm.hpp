@@ -217,7 +217,7 @@ public:
 	typename decay_type::extensions_type extensions() const{return size()*b_begin_->extensions();}
 	friend auto extensions(gemm_range const& self){return self.extensions();}
 //	operator decay_type() const{return decay_type(*this);} // do not use curly { }
-	auto operator+() const{return decay_type{*this};}
+	decay_type operator+() const{return *this;}
 	template<class Arr>
 	friend Arr&& operator+=(Arr&& a, gemm_range const& gr){
 		blas::gemm_n(*gr.ctxtp_, gr.s_, gr.a_begin_, gr.a_end_ - gr.a_begin_, gr.b_begin_, 1., a.begin());
