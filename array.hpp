@@ -100,13 +100,9 @@ protected:
 	void allocate(){this->base_ = array_alloc::allocate(static_array::num_elements());}
 public:
 	using value_type = typename std::conditional<
-		(static_array::dimensionality>1),
+		(static_array::dimensionality > 1), // this parenthesis is needed
 		array<typename static_array::element, static_array::dimensionality-1, allocator_type>, 
-		typename std::conditional<
-			static_array::dimensionality == 1,
-			typename static_array::element,
-			typename static_array::element // TODO or void?
-		>::type
+		typename static_array::element
 	>::type;
 
 	using typename ref::size_type;
@@ -114,39 +110,43 @@ public:
 	explicit static_array(typename static_array::allocator_type const& a) : array_alloc{a}{}
 protected:
 	static_array(static_array&& other, typename static_array::allocator_type const& a) noexcept     //6b
-	:	array_alloc{a},
+	:	array_alloc{a}, // TODO(correaa) : handle allocation propagation here
 		ref{other.base_, other.extensions()}
 	{
 		other.ref::layout_t::operator=({});
 		other.base_ = nullptr;
 	}
-public:
-	static_array(
-		basic_array<typename static_array::element, static_array::dimensionality, multi::move_ptr<typename static_array::element, typename static_array::element_ptr>>&& other, 
-		typename static_array::allocator_type const& a
-	) noexcept : 
-		array_alloc{a},
-		ref{
-			other.layout()==typename static_array::layout_t(other.extensions())?
-				other.base_.base():
-				array_alloc::allocate(other.num_elements())
-			,
-			other.extensions()
-		}
-	{
-		if(other.base_.base() != static_array::base_)
-			recursive<D>::alloc_uninitialized_copy(static_array::alloc(), 
-				other.template static_array_cast<typename static_array::element, typename static_array::element_ptr>().begin(), 
-				other.template static_array_cast<typename static_array::element, typename static_array::element_ptr>().end()  , 
-				this->begin()
-			);
-	}
-	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
-	static_array(
-		basic_array<typename static_array::element, static_array::dimensionality, multi::move_ptr<typename static_array::element, typename static_array::element_ptr>>&& other
-	) noexcept : 
-		static_array(std::move(other), typename static_array::allocator_type{})
+	static_array(static_array&& other) noexcept : 
+		static_array(std::move(other), typename static_array::allocator_type{})      //6b
 	{}
+public:
+//	static_array(
+//		basic_array<typename static_array::element, static_array::dimensionality, multi::move_ptr<typename static_array::element, typename static_array::element_ptr>>&& other, 
+//		typename static_array::allocator_type const& a
+//	) noexcept : 
+//		array_alloc{a},
+//		ref{
+//			other.layout()==typename static_array::layout_t(other.extensions())?
+//				other.base_.base():
+//				array_alloc::allocate(other.num_elements())
+//			,
+//			other.extensions()
+//		}
+//	{
+//		if(other.base_.base() != static_array::base_)
+//			recursive<D>::alloc_uninitialized_copy(static_array::alloc(), 
+//				other.template static_array_cast<typename static_array::element, typename static_array::element_ptr>().begin(), 
+//				other.template static_array_cast<typename static_array::element, typename static_array::element_ptr>().end()  , 
+//				this->begin()
+//			);
+//	}
+//	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
+//	explicit static_array(
+//		basic_array<typename static_array::element, static_array::dimensionality, multi::move_ptr<typename static_array::element, typename static_array::element_ptr>>&& other
+//	) noexcept : 
+//		static_array(std::move(other), typename static_array::allocator_type{})
+//	{}
+//	// ^^^^ TODO(correaa) : check if it is really necessary
 
 	template<class TT, class... Args> auto operator==(basic_array<TT, D, Args...> const& other) const -> bool {return ref::operator==(other);}
 	template<class TT, class... Args> auto operator!=(basic_array<TT, D, Args...> const& other) const -> bool {return ref::operator!=(other);}
