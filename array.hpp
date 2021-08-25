@@ -795,7 +795,7 @@ private:
 public:
 	void swap(array& other) noexcept{
 		using std::swap;
-		swap_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_swap{}, this->alloc_, other.alloc_);
+		swap_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_swap{}, this->alloc(), other.alloc());
 		swap(this->base_, other.base_);
 		swap(
 			static_cast<typename array::layout_t&>(*this), 
