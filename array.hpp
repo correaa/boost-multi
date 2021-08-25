@@ -180,13 +180,15 @@ public:
 	}
 
 	template<class TT, class... As> 
-	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
-	static_array(array_ref<TT, D, As...> const& other, typename static_array::allocator_type const& a = {}) :
+	static_array(array_ref<TT, D, As...> const& other, typename static_array::allocator_type const& a) :
 		array_alloc{a},
 		ref{array_alloc::allocate(other.num_elements()), other.extensions()}
 	{
 		adl_alloc_uninitialized_copy_n(static_array::alloc(), other.data_elements(), other.num_elements(), this->data_elements());
 	}
+	template<class TT, class... As> 
+	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
+	static_array(array_ref<TT, D, As...> const& other) : static_array(other, typename static_array::allocator_type{}){}
 
 	static_array(typename static_array::extensions_type x, typename static_array::element const& e, typename static_array::allocator_type const& a) : //2
 		array_alloc{a}, 
@@ -206,12 +208,7 @@ public:
 	explicit static_array(typename static_array::extensions_type x, typename std::allocator_traits<Alloc>::const_void_pointer hint) :
 		array_alloc{}, ref(array_alloc::allocate(typename static_array::layout_t{x}.num_elements(), hint), x)
 	{}
-//	template<class Elem, typename = std::enable_if_t<std::is_convertible<Elem, typename static_array::element>{} and D==0>>
-//	static_array(Elem const& e)  //2
-//	:	static_array(multi::iextensions<D>{}, e){}
 
-//	explicit static_array(typename static_array::index n, typename static_array::value_type const& v, typename static_array::allocator_type const& a = {})
-//	: 	static_array(typename static_array::index_extension(n), v, a){}
 	template<class ValueType, typename = std::enable_if_t<std::is_same<ValueType, typename static_array::value_type>{}>>
 	explicit static_array(typename static_array::index_extension const& e, ValueType const& v, typename static_array::allocator_type const& a) //3
 	= delete;
@@ -219,11 +216,6 @@ public:
 	explicit static_array(typename static_array::index_extension const& e, ValueType const& v) //3
 	= delete;
 
-//	: static_array(e*extensions(v), a) {
-//		adl::fill(this->begin(), this->end(), v); // TODO this should be alloc_unintialized_fill
-//	}
-//	template<class Allocator, typename = std::enable_if_t<std::is_same<Allocator, allocator_type>{}> >
-//	explicit 
 // analgous to std::vector::vector ((4)) https://en.cppreference.com/w/cpp/container/vector/vector
 	explicit static_array(typename static_array::extensions_type x, typename static_array::allocator_type const& a) :
 		array_alloc{a}, ref{array_alloc::allocate(typename static_array::layout_t{x}.num_elements()), x}
