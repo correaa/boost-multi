@@ -388,7 +388,7 @@ BOOST_AUTO_TEST_CASE(fftw_4D_inq_poisson){
 		std::iota(data_elements(in), data_elements(in)+num_elements(in), 1.2); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 		return in;
 	}();
-	
+
 	multi::array<complex, 4> out(extensions(in));
 	multi::fftw::dft({0, 1, 1, 0}, in, out);
 
@@ -406,6 +406,6 @@ BOOST_AUTO_TEST_CASE(fftw_1D_power){
 	auto* p = multi::fftw_plan_dft(in, out, fftw::forward, fftw::preserve_input);
 	fftw_execute(p); 
 	fftw_destroy_plan(p);
-	BOOST_TEST( power(in) == power(out)/num_elements(out), boost::test_tools::tolerance(1e-17) );
+	BOOST_TEST( power(in) == power(out)/num_elements(out), boost::test_tools::tolerance(1e-16) );
 }
 

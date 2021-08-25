@@ -111,11 +111,7 @@ public:
 	iterator end()   const{return {alpha_, m_end_  , v_first_, ctxt_};}
 	size_type size() const{return end() - begin();}
 	typename decay_type::extensions_type extensions() const{return typename decay_type::extensions_type{{0, size()}};}
-	decay_type decay() const{
-		decay_type ret; 
-		ret = *this;
-		return ret;
-	}
+	auto decay() const{return decay_type{*this};}
 	friend auto operator+(gemv_range const& self){return self.decay();}
 	template<class V>
 	friend V&& operator+=(V&& v, gemv_range const& s){

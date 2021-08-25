@@ -412,7 +412,7 @@ public:
 		std::for_each(this->begin(), this->end(), [&](auto&& e){ar & multi::archive_traits<Archive>::make_nvp("item", e);});
 	}
 	constexpr decay_type decay() const{
-		decay_type ret = std::move(modify(*this));
+		decay_type ret{std::move(modify(*this))};
 		return ret;
 	}
 	friend constexpr decay_type decay(basic_array const& s){return s.decay();}
@@ -1234,7 +1234,7 @@ public:
 	constexpr It assign(It first)&&{return assign(first);}
 
 	template<class It>
-	constexpr void  assign(It first, It last) &{assert( std::distance(first, last) == this->size() );
+	constexpr void  assign(It first, It last) &{assert( std::distance(first, last) == this->size() ); (void)last;
 		assign(first);
 	}
 	template<class It> 
