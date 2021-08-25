@@ -188,7 +188,7 @@ public:
 	}
 	template<class TT, class... As> 
 	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
-	static_array(array_ref<TT, D, As...> const& other) : static_array(other, typename static_array::allocator_type{}){}
+	explicit static_array(array_ref<TT, D, As...> const& other) : static_array(other, typename static_array::allocator_type{}){} // google-explicit-constructor,hicpp-explicit-conversions
 
 	static_array(typename static_array::extensions_type x, typename static_array::element const& e, typename static_array::allocator_type const& a) : //2
 		array_alloc{a}, 
