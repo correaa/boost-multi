@@ -121,10 +121,9 @@ protected:
 		other.base_ = nullptr;
 	}
 public:
-	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
 	static_array(
 		basic_array<typename static_array::element, static_array::dimensionality, multi::move_ptr<typename static_array::element, typename static_array::element_ptr>>&& other, 
-		typename static_array::allocator_type const& a = {}
+		typename static_array::allocator_type const& a
 	) noexcept : 
 		array_alloc{a},
 		ref{
@@ -142,15 +141,15 @@ public:
 				this->begin()
 			);
 	}
-//	template<class Array>//, std::enable_if_t<std::is_same<Array, basic_array>{}, int> =0> 
-//	auto operator==(Array&& o) const&
-//	->decltype(std::move(modify(*this)).ref::operator==(std::forward<Array>(o))){
-//		return std::move(modify(*this)).ref::operator==(std::forward<Array>(o));}
+	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
+	static_array(
+		basic_array<typename static_array::element, static_array::dimensionality, multi::move_ptr<typename static_array::element, typename static_array::element_ptr>>&& other
+	) noexcept : 
+		static_array(std::move(other), typename static_array::allocator_type{})
+	{}
 
-//	auto operator==(static_array const& o) const&{return std::move(modify(*this)).ref::operator==(std::move(modify(o)));}
-
-	template<class TT, class... Args> bool operator==(basic_array<TT, D, Args...> const& other) const{return ref::operator==(other);}
-	template<class TT, class... Args> bool operator!=(basic_array<TT, D, Args...> const& other) const{return ref::operator!=(other);}
+	template<class TT, class... Args> auto operator==(basic_array<TT, D, Args...> const& other) const -> bool {return ref::operator==(other);}
+	template<class TT, class... Args> auto operator!=(basic_array<TT, D, Args...> const& other) const -> bool {return ref::operator!=(other);}
 
 	template<class It, class=typename std::iterator_traits<std::decay_t<It>>::difference_type>//edecltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>      
 	// analogous to std::vector::vector (5) https://en.cppreference.com/w/cpp/container/vector/vector
