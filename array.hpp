@@ -221,12 +221,17 @@ public:
 //	template<class Allocator, typename = std::enable_if_t<std::is_same<Allocator, allocator_type>{}> >
 //	explicit 
 // analgous to std::vector::vector ((4)) https://en.cppreference.com/w/cpp/container/vector/vector
-	explicit static_array(typename static_array::extensions_type x, typename static_array::allocator_type const& a = typename static_array::allocator_type{}) :
+	explicit static_array(typename static_array::extensions_type x, typename static_array::allocator_type const& a) :
 		array_alloc{a}, ref{array_alloc::allocate(typename static_array::layout_t{x}.num_elements()), x}
 	{
-		if(not std::is_trivially_default_constructible<typename static_array::element_type>{})
-			uninitialized_default_construct();
+		if(not std::is_trivially_default_constructible<typename static_array::element_type>{}){
+			uninitialized_default_construct(); // TODO(correaa) : make if constexpr (effectively)
+		}
 	}
+	explicit static_array(typename static_array::extensions_type x) : 
+		static_array(x, typename static_array::allocator_type{})
+	{}
+
 	template<class TT, class... Args, 
 		class=std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::basic_array<TT, D, Args...>::element>{}>,
 		class=decltype(adl_copy(std::declval<multi::basic_array<TT, D, Args...> const&>().begin(), std::declval<multi::basic_array<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
@@ -242,7 +247,9 @@ public:
 		class=decltype(adl_copy(std::declval<multi::basic_array<TT, D, Args...> const&>().begin(), std::declval<multi::basic_array<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
 	>
 	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
-	static_array(multi::basic_array<TT, D, Args...> const& o) : static_array(o, typename static_array::allocator_type{}){}
+	static_array(multi::basic_array<TT, D, Args...> const& o) : // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
+		static_array(o, typename static_array::allocator_type{})
+	{}
 
 	template<class TT, class... Args>
 	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
