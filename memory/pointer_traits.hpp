@@ -23,7 +23,8 @@ struct pointer_traits/*, typename Pointer::default_allocator_type>*/ : std::poin
 	using default_allocator_type = decltype(dat_aux(Priority<2>{}, std::declval<Pointer>()));
 };
 
-}}
+} // end namespace multi
+} // end namespace boost
 
 #if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 

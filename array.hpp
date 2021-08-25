@@ -7,9 +7,10 @@
 #include "./array_ref.hpp"
 #include "./config/NO_UNIQUE_ADDRESS.hpp"
 
-#include "./memory/allocator.hpp"
-#include "./detail/memory.hpp"
 #include "./detail/adl.hpp"
+#include "./detail/memory.hpp"
+
+#include "./memory/allocator.hpp"
 
 #include<memory>
 
@@ -25,9 +26,10 @@ namespace multi{
 template<class Allocator> 
 struct array_allocator{
 	using allocator_type = Allocator;
-protected:
+//private:
 	MULTI_NO_UNIQUE_ADDRESS allocator_type alloc_;
-	allocator_type& alloc(){return alloc_;}
+protected:
+	auto alloc() -> allocator_type&{return alloc_;}
 	array_allocator() = default;
 	explicit array_allocator(allocator_type const& a) : alloc_{a}{}
 	auto allocate(typename std::allocator_traits<allocator_type>::size_type n) 
@@ -806,7 +808,7 @@ public:
 	auto operator=(array&& other) noexcept -> array&{
 		clear();
 		this->base_ = std::exchange(other.base_, nullptr); // final null assigment shouldn't be necessary?
-		move_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment{}, std::move(other.alloc_), this->alloc_);
+		move_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment{}, std::move(other.alloc()), this->alloc());
 	//	this->alloc_ = std::move(other.alloc_);
 		static_cast<typename array::layout_t&>(*this) = std::exchange(static_cast<typename array::layout_t&>(other), {});
 		return *this;
