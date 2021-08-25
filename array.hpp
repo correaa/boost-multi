@@ -172,7 +172,7 @@ public:
 		class=std::enable_if_t<not is_basic_array<Range&&>{}>
 	>
 	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions
-	explicit static_array(Range&& rng) : static_array(std::forward<Range>(rng).begin(), std::forward<Range>(rng).end()){}
+	static_array(Range&& rng) : static_array(std::forward<Range>(rng).begin(), std::forward<Range>(rng).end()){}
 
 	template<class TT> 
 	auto uninitialized_fill_elements(TT const& value){
