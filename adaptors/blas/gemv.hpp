@@ -112,7 +112,9 @@ public:
 	size_type size() const{return end() - begin();}
 	typename decay_type::extensions_type extensions() const{return typename decay_type::extensions_type{{0, size()}};}
 	decay_type decay() const{
-		return decay_type{*this};
+		decay_type ret;
+		ret = *this;
+		return ret;
 	}
 	friend auto operator+(gemv_range const& self){return self.decay();}
 	template<class V>
