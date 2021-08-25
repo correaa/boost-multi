@@ -213,8 +213,12 @@ public:
 //	explicit static_array(typename static_array::index n, typename static_array::value_type const& v, typename static_array::allocator_type const& a = {})
 //	: 	static_array(typename static_array::index_extension(n), v, a){}
 	template<class ValueType, typename = std::enable_if_t<std::is_same<ValueType, typename static_array::value_type>{}>>
-	explicit static_array(typename static_array::index_extension const& e, ValueType const& v, typename static_array::allocator_type const& a = {}) //3
+	explicit static_array(typename static_array::index_extension const& e, ValueType const& v, typename static_array::allocator_type const& a) //3
 	= delete;
+	template<class ValueType, typename = std::enable_if_t<std::is_same<ValueType, typename static_array::value_type>{}>>
+	explicit static_array(typename static_array::index_extension const& e, ValueType const& v) //3
+	= delete;
+
 //	: static_array(e*extensions(v), a) {
 //		adl::fill(this->begin(), this->end(), v); // TODO this should be alloc_unintialized_fill
 //	}
