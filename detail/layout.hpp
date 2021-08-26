@@ -231,18 +231,20 @@ struct layout_t<dimensionality_type{1}, SSize>{
 	static constexpr dimensionality_type dimensionality = rank{};
 	friend constexpr auto dimensionality(layout_t const& l){return l.dimensionality;}
 	using sub_t = layout_t<dimensionality_type{0}, SSize>;
-protected:
-public:
+
+private:
 	stride_type stride_ = 1;//std::numeric_limits<stride_type>::max(); 
 	offset_type offset_ = 0; 
 	nelems_type nelems_ = 0;
+
+public:
 	using extensions_type = extensions_t<1>;
 	using strides_type = std::tuple<stride_type>;
 	using sizes_type = std::tuple<size_type>;
 	layout_t() = default;
-	layout_t(layout_t const&) = default;
-	constexpr layout_t(index_extension ie, layout_t<0> const&) :
-		stride_{1},
+//	layout_t(layout_t const&) = default;
+	constexpr layout_t(index_extension ie, layout_t<0> const& /*nil*/) :
+	//	stride_{1},
 		offset_{ie.first()},
 		nelems_{
 //			ie.size()<=1?ie.size()*std::numeric_limits<stride_type>::max():ie.size()
@@ -252,37 +254,45 @@ public:
 	constexpr layout_t(stride_type stride, offset_type offset, nelems_type nelems) : 
 		stride_{stride}, offset_{offset}, nelems_{nelems}
 	{}
-	constexpr auto offset() const{return offset_;}
-	friend constexpr index offset(layout_t const& self){return self.offset();}
+
+	       constexpr auto offset()        const&    -> offset_type{return offset_;}
+	friend constexpr auto offset(layout_t const& s) -> offset_type{return s.offset();}
+
 	constexpr auto offset(dimensionality_type d) const{assert(d==0); (void)d; return offset_;}
 
 	constexpr auto nelems()      & -> nelems_type      &{return nelems_;}
 	constexpr auto nelems() const& -> nelems_type const&{return nelems_;}
 
-	constexpr auto nelems(dimensionality_type d) const{return d==0?nelems_:throw 0;}
+	constexpr auto nelems(dimensionality_type d) const{
+		assert( d == 0 ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
+		return nelems_;
+	}
 
 	friend constexpr auto nelems(layout_t const& self){return self.nelems();}
-	constexpr size_type size() const{//assert(stride_!=0 and nelems_%stride_==0);
-		MULTI_ACCESS_ASSERT(stride_);
+
+	friend constexpr auto size(layout_t const& s) -> size_type{return s.size();}
+	       constexpr auto size()        const&    -> size_type{//assert(stride_!=0 and nelems_%stride_==0);
+		MULTI_ACCESS_ASSERT(stride_); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
 		return nelems_/stride_;
 	}
-	friend constexpr size_type size(layout_t const& self){return self.size();}
-	constexpr size_type size(dimensionality_type d) const{
-		return d==0?nelems_/stride_:throw 0; // assert(d == 0 and stride_ != 0 and nelems_%stride_ == 0);
+	constexpr auto size(dimensionality_type d) const -> size_type{
+		assert( d == 0 ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
+		return nelems_/stride_;
 	}
-	constexpr layout_t& reindex(index i){offset_ = i*stride_; return *this;}
+	constexpr auto reindex(index i) -> layout_t&{offset_ = i*stride_; return *this;}
 	constexpr auto base_size() const{return nelems_;}
 	       constexpr auto is_compact() const{return base_size() == num_elements();}
 	friend constexpr auto is_compact(layout_t const& self){return self.is_compact();}
-public:
+
 	constexpr auto stride()      & -> stride_type      &{return stride_;}
 	constexpr auto stride() const& -> stride_type const&{return stride_;}
 	constexpr auto stride(dimensionality_type d) const{assert(!d); (void)d; return stride_;}
 
-	friend constexpr index stride(layout_t const& self){return self.stride();}
-public:
-	constexpr auto strides() const{return std::make_tuple(stride());}
-	friend constexpr auto strides(layout_t const& self){return self.strides();}
+	friend constexpr auto stride(layout_t const& self) -> index{return self.stride();}
+
+	       constexpr auto strides()        const&   {return std::make_tuple(stride());}
+	friend constexpr auto strides(layout_t const& s){return s.strides();}
+
 	constexpr auto sizes() const{return std::make_tuple(size());}
 
 	template<class T=void> constexpr auto sizes_as() const{return detail::to_array<T>(sizes());}
@@ -301,7 +311,7 @@ public:
 
 	friend constexpr auto extension(layout_t const& s) -> index_extension{return s.extension();}
 	       constexpr auto extension()        const&    -> index_extension{
-		assert(stride_); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay) : normal in constexpr function
+		assert(stride_); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
 		return {offset_/stride_, (offset_+nelems_)/stride_};
 	} 
 	constexpr auto extension(dimensionality_type d) const{
