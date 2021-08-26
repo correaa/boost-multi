@@ -4,13 +4,13 @@ $CXX $0 -o $0x&&$0x&&rm -f $0x; exit
 #ifndef BOOST_MULTI_DETAIL_MEMORY_HPP
 #define BOOST_MULTI_DETAIL_MEMORY_HPP
 
-#include "layout.hpp"
-#include "../utility.hpp"
-#include<memory>
-#include<algorithm> // copy_n
 #include "../detail/adl.hpp"
+#include "../utility.hpp"
 
-//#include<boost/core/alloc_construct.hpp>
+#include "layout.hpp"
+
+#include<algorithm> // copy_n
+#include<memory>
 
 namespace boost{
 namespace multi{
@@ -30,7 +30,7 @@ struct allocator_traits : std::allocator_traits<Alloc>{
 		return a.destroy(p);}
 };
 
-}
+} // end namespace memory
 
 using memory::allocator_traits;
 //using memory::to_address;
