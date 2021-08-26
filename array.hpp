@@ -1,10 +1,4 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-echo $X
-[ ! -d build.$X ] && (mkdir build.$X && cd build.$X && cmake ..)
-cd build.$X && make -j && ctest -j --output-on-failure
-exit
-#endif
-// $CXXX $CXXFLAGS $0 -o $0.$X&&$0.$X&&rm $0.$X;exit
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 //  © Alfredo A. Correa 2018-2021
 
 #ifndef BOOST_MULTI_ARRAY_HPP 
@@ -13,9 +7,10 @@ exit
 #include "./array_ref.hpp"
 #include "./config/NO_UNIQUE_ADDRESS.hpp"
 
-#include "./memory/allocator.hpp"
-#include "./detail/memory.hpp"
 #include "./detail/adl.hpp"
+#include "./detail/memory.hpp"
+
+#include "./memory/allocator.hpp"
 
 #include<memory>
 
@@ -28,34 +23,39 @@ exit
 namespace boost{
 namespace multi{
 
-template<class Allocator> struct array_allocator{
+template<class Allocator> 
+struct array_allocator{
 	using allocator_type = Allocator;
-protected:
+private:
 	MULTI_NO_UNIQUE_ADDRESS allocator_type alloc_;
-	allocator_type& alloc(){return alloc_;}
-	array_allocator(allocator_type const& a = {}) : alloc_{a}{}
-	typename std::allocator_traits<allocator_type>::pointer 
-	allocate(typename std::allocator_traits<allocator_type>::size_type n){
+protected:
+	auto alloc()      & -> allocator_type&{return alloc_;}
+	auto alloc() const& -> allocator_type const&{return alloc_;}
+
+	array_allocator() = default;
+	explicit array_allocator(allocator_type const& a) : alloc_{a}{}
+	auto allocate(typename std::allocator_traits<allocator_type>::size_type n) 
+		-> typename std::allocator_traits<allocator_type>::pointer
+	{
 		return n?std::allocator_traits<allocator_type>::allocate(alloc_, n):nullptr;
 	}
-	typename std::allocator_traits<allocator_type>::pointer 
-	allocate(typename std::allocator_traits<allocator_type>::size_type n, typename std::allocator_traits<allocator_type>::const_void_pointer hint){
+	auto allocate(typename std::allocator_traits<allocator_type>::size_type n, typename std::allocator_traits<allocator_type>::const_void_pointer hint)
+		-> typename std::allocator_traits<allocator_type>::pointer
+	{
 		return n?std::allocator_traits<allocator_type>::allocate(alloc_, n, hint):nullptr;
 	}
 	auto uninitialized_fill_n(typename std::allocator_traits<allocator_type>::pointer base, typename std::allocator_traits<allocator_type>::size_type num_elements, typename std::allocator_traits<allocator_type>::value_type e){
 		return adl_alloc_uninitialized_fill_n(alloc_, base, num_elements, e);
 	}
-	template<typename It> 
+	template<typename It> // TODO(correaa) : should it be a template?
 	auto uninitialized_copy_n(It first, size_type n, typename std::allocator_traits<allocator_type>::pointer data){
 		return adl_alloc_uninitialized_copy_n(alloc_, first, n, data);
 	}
-	template<typename It> 
-	auto destroy_n(It first, size_type n){
-		return adl_alloc_destroy_n(this->alloc(), first, n);
-	}
+	template<typename It> // TODO(correaa) : should it be a template?
+	auto destroy_n(It first, size_type n){return adl_alloc_destroy_n(this->alloc(), first, n);}
 public:
-	allocator_type get_allocator() const{return alloc_;}
-	friend allocator_type get_allocator(array_allocator const& s){return s.get_allocator();}
+	       auto get_allocator()               const&    -> allocator_type{return alloc_;}
+	friend auto get_allocator(array_allocator const& s) -> allocator_type{return s.get_allocator();}
 };
 
 template<class T, class Ptr = T*> struct move_ptr : std::move_iterator<Ptr>{
@@ -65,7 +65,7 @@ template<class T, class Ptr = T*> struct move_ptr : std::move_iterator<Ptr>{
 
 // static_array is not a value type because it doesn't define assignment for static_arrays of different extensions
 template<class T, dimensionality_type D, class Alloc = std::allocator<T>>
-struct static_array : 
+struct static_array : // NOLINT(fuchsia-multiple-inheritance) : multiple inheritance used for composition
 	protected array_allocator<Alloc>,
 	public array_ref<T, D, typename std::allocator_traits<typename array_allocator<Alloc>::allocator_type>::pointer>,
 	boost::multi::random_iterable<static_array<T, D, Alloc>>
@@ -94,9 +94,11 @@ protected:
 	template<typename It> auto uninitialized_copy_elements(It first){
 		return array_alloc::uninitialized_copy_n(first, this->num_elements(), this->data_elements());
 	}
-	void destroy_aux(std::false_type){array_alloc::destroy_n(this->data_elements(), this->num_elements());}
-	void destroy_aux(std::true_type ){}
-	void destroy(){destroy_aux(std::is_trivially_destructible<typename static_array::element>{});}
+
+	void destroy_if_not(std::true_type /*true */ ){}
+	void destroy_if_not(std::false_type/*false*/){array_alloc::destroy_n(this->data_elements(), this->num_elements());}
+	void destroy(){destroy_if_not(std::is_trivially_destructible<typename static_array::element>{});}
+
 	void allocate(){this->base_ = array_alloc::allocate(static_array::num_elements());}
 public:
 	using value_type = typename std::conditional<
@@ -262,7 +264,7 @@ public:
 //		uninitialized_copy_elements(o.data_elements());
 //	}
 	static_array(static_array const& o) :                                 //5b
-		array_alloc{std::allocator_traits<Alloc>::select_on_container_copy_construction(o.alloc_)}, 
+		array_alloc{std::allocator_traits<Alloc>::select_on_container_copy_construction(o.alloc())}, 
 		ref{array_alloc::allocate(o.num_elements(), o.data_elements()), extensions(o)}
 	{
 		uninitialized_copy_elements(o.data_elements());
@@ -413,6 +415,11 @@ public:
 		assert( extensions(other) == static_array::extensions() );
 		if(this == &other){return *this;} // lints (cert-oop54-cpp) : handle self-assignment properly
 		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
+		return *this;
+	}
+	constexpr auto operator=(static_array&& other) noexcept -> static_array&{ // lints  (cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+		assert( extensions(other) == static_array::extensions() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
+		adl_move(other.data_elements(), other.data_elements() + other.num_elements(), this->data_elements()); // there is no std::move_n algorithm
 		return *this;
 	}
 	template<class TT, class... As>
@@ -788,7 +795,7 @@ private:
 public:
 	void swap(array& other) noexcept{
 		using std::swap;
-		swap_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_swap{}, this->alloc_, other.alloc_);
+		swap_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_swap{}, this->alloc(), other.alloc());
 		swap(this->base_, other.base_);
 		swap(
 			static_cast<typename array::layout_t&>(*this), 
@@ -803,7 +810,7 @@ public:
 	auto operator=(array&& other) noexcept -> array&{
 		clear();
 		this->base_ = std::exchange(other.base_, nullptr); // final null assigment shouldn't be necessary?
-		move_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment{}, std::move(other.alloc_), this->alloc_);
+		move_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment{}, std::move(other.alloc()), this->alloc());
 	//	this->alloc_ = std::move(other.alloc_);
 		static_cast<typename array::layout_t&>(*this) = std::exchange(static_cast<typename array::layout_t&>(other), {});
 		return *this;
@@ -817,11 +824,11 @@ public:
 	auto operator=(array const& other) -> array& {
 		if(array::extensions() == other.extensions()){
 			if(this == &other){return *this;} // required by cert-oop54-cpp
-			copy_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment{}, other.alloc_, this->alloc_);
+			copy_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment{}, other.alloc(), this->alloc());
 			static_::operator=(other);
 		}else{
 			clear();
-			copy_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment{}, other.alloc_, this->alloc_);
+			copy_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment{}, other.alloc(), this->alloc());
 			static_cast<typename array::layout_t&>(*this) = static_cast<typename array::layout_t const&>(other);
 			array::allocate();
 			array::uninitialized_copy_elements(other.data_elements());
