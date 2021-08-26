@@ -1294,9 +1294,9 @@ private:
 		typename types::layout_t new_layout = *this;
 		if(Layout::size()==0){
 			assert(first == last);
-			new_layout.nelems_ = 0;
+			new_layout.nelems() = 0; // TODO(correaa) : don't use mutation
 		}else{
-			(new_layout.nelems_/=Layout::size())*=(last - first);
+			(new_layout.nelems() /= Layout::size())*=(last - first);
 		}
 		return {new_layout, types::base_ + Layout::operator()(first)};
 	}
@@ -1382,9 +1382,9 @@ public:
 private:
 	constexpr partitioned_type partitioned_aux(size_type s) const{
 		assert( s != 0 );
-		assert( this->layout().nelems_%s==0 ); // TODO remove assert? truncate left over? (like mathematica)
-		multi::layout_t<2> new_layout{this->layout(), this->layout().nelems_/s, 0, this->layout().nelems_};
-		new_layout.sub().nelems_ /= s; // TODO(correaa) : don't use mutation
+		assert( (this->layout().nelems() %s) == 0 ); // TODO remove assert? truncate left over? (like mathematica)
+		multi::layout_t<2> new_layout{this->layout(), this->layout().nelems()/s, 0, this->layout().nelems()};
+		new_layout.sub().nelems() /= s; // TODO(correaa) : don't use mutation
 		return {new_layout, types::base_};
 	}
 public:
@@ -1426,8 +1426,8 @@ public:
 	using reverse_iterator = std::reverse_iterator<iterator>;
 
 private:
-	constexpr       auto begin_aux() const{return iterator{this->base_                 , this->stride_};}
-	constexpr       auto end_aux  () const{return iterator{this->base_ + types::nelems_, this->stride_};}
+	constexpr       auto begin_aux() const{return iterator{this->base_                 , this->stride()};}
+	constexpr       auto end_aux  () const{return iterator{this->base_ + types::nelems(), this->stride()};}
 public:
 	constexpr const_iterator begin()const&{return begin_aux();}
 	constexpr       iterator begin()     &{return begin_aux();}
@@ -1772,8 +1772,8 @@ public:
 	constexpr explicit array_ptr(Ptr p, typename multi::array_ref<T, 0, Ptr>::extensions_type x = {}) : multi::array_ref<T, 0, Ptr>(p, x){}
 //	operator bool() const{return Ref_.base();}
 	constexpr explicit operator Ptr () const{return this->base();}
-	friend constexpr bool operator==(array_ptr const& self, array_ptr const& other){return self.base() == other.base();}
-	friend constexpr bool operator!=(array_ptr const& self, array_ptr const& other){return self.base() != other.base();}
+	friend constexpr auto operator==(array_ptr const& self, array_ptr const& other) -> bool{return self.base() == other.base();}
+	friend constexpr auto operator!=(array_ptr const& self, array_ptr const& other) -> bool{return self.base() != other.base();}
 	constexpr multi::array_ref<T, 0, Ptr>& operator* () const{return const_cast<array_ptr&>(*this);}//               Ref_ ;}
 	constexpr multi::array_ref<T, 0, Ptr>* operator->() const{return const_cast<array_ptr*>(this);}//std::addressof(Ref_);}
 };
