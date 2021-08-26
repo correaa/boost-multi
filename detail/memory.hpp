@@ -42,17 +42,17 @@ using memory::allocator_traits;
 //template<class T> constexpr T* to_address(T* p) noexcept{return p;}
 
 //https://en.cppreference.com/w/cpp/memory/destroy
-template<class Alloc, class ForwardIt, typename = std::enable_if_t<!(has_rank<ForwardIt>{})>>//, typename = std::enable_if_t<typename ForwardIt::rank{} == 1> >//, typename AT = typename std::allocator_traits<Alloc> >
+template<class Alloc, class ForwardIt, std::enable_if_t<!(has_rank<ForwardIt>{}), int> =0>//, typename = std::enable_if_t<typename ForwardIt::rank{} == 1> >//, typename AT = typename std::allocator_traits<Alloc> >
 void destroy(Alloc& a, ForwardIt f, ForwardIt l){
-	for(; f != l; ++f) allocator_traits<Alloc>::destroy(a, std::addressof(*f));
+	for(; f != l; ++f){allocator_traits<Alloc>::destroy(a, std::addressof(*f));}
 }
 
-template<class Alloc, class ForwardIt, typename = std::enable_if_t<has_rank<ForwardIt>{} and typename ForwardIt::rank{} == 1>>//, typename = std::enable_if_t<typename ForwardIt::rank{} == 1> >//, typename AT = typename std::allocator_traits<Alloc> >
-void destroy(Alloc& a, ForwardIt first, ForwardIt last, double* = 0){
+template<class Alloc, class ForwardIt, std::enable_if_t<has_rank<ForwardIt>{} and typename ForwardIt::rank{} == 1, int> =0>//, typename = std::enable_if_t<typename ForwardIt::rank{} == 1> >//, typename AT = typename std::allocator_traits<Alloc> >
+void destroy(Alloc& a, ForwardIt first, ForwardIt last){
 	//	using multi::to_address;
-	for(; first != last; ++first) a.destroy(to_address(first)); //	AT::destroy(a, to_address(first)); //	AT::destroy(a, addressof(*first)); // a.destroy(addressof(*first));
+	for(; first != last; ++first){a.destroy(to_address(first));} //	AT::destroy(a, to_address(first)); //	AT::destroy(a, addressof(*first)); // a.destroy(addressof(*first));
 }
-template<class Alloc, class ForwardIt, typename = std::enable_if_t<has_rank<ForwardIt>{} and typename ForwardIt::rank{} != 1>>//, typename AT = typename std::allocator_traits<Alloc> >
+template<class Alloc, class ForwardIt, std::enable_if_t<has_rank<ForwardIt>{} and typename ForwardIt::rank{} != 1, int> =0>//, typename AT = typename std::allocator_traits<Alloc> >
 void destroy(Alloc& a, ForwardIt first, ForwardIt last){
 	for(; first != last; ++first){destroy(a, begin(*first), end(*first));}
 }
