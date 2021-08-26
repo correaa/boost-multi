@@ -53,21 +53,22 @@ void destroy(Alloc& a, ForwardIt first, ForwardIt last, double* = 0){
 	for(; first != last; ++first) a.destroy(to_address(first)); //	AT::destroy(a, to_address(first)); //	AT::destroy(a, addressof(*first)); // a.destroy(addressof(*first));
 }
 template<class Alloc, class ForwardIt, typename = std::enable_if_t<has_rank<ForwardIt>{} and typename ForwardIt::rank{} != 1>>//, typename AT = typename std::allocator_traits<Alloc> >
-void destroy(Alloc& a, ForwardIt first, ForwardIt last, void* = 0){
-	for(; first != last; ++first) destroy(a, begin(*first), end(*first));
+void destroy(Alloc& a, ForwardIt first, ForwardIt last){
+	for(; first != last; ++first){destroy(a, begin(*first), end(*first));}
 }
 
 template<class Alloc, class InputIt, class Size, class ForwardIt>//, typename AT = std::allocator_traits<Alloc> >
-ForwardIt uninitialized_move_n(Alloc& a, InputIt f, Size n, ForwardIt d){
+auto uninitialized_move_n(Alloc& a, InputIt f, Size n, ForwardIt d) -> ForwardIt{
 	ForwardIt c = d;
 //	using std::addressof;
 	try{
-		for(; n > 0; ++f, ++c, --n)
+		for(; n > 0; ++f, ++c, --n){
 		//	alloc_construct(a, to_address(c), std::move(*f));
 			a.construct(std::addressof(*c), std::move(*f));
 		//	AT::construct(a, to_address(c), *f);
 		//	AT::construct(a, addressof(*c), *f);
 		//	a.construct(addressof(*c), *f);
+		}
 		return c;
 	}catch(...){destroy(a, d, c); throw;}
 }
