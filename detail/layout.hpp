@@ -255,8 +255,12 @@ public:
 	constexpr auto offset() const{return offset_;}
 	friend constexpr index offset(layout_t const& self){return self.offset();}
 	constexpr auto offset(dimensionality_type d) const{assert(d==0); (void)d; return offset_;}
-	constexpr auto nelems() const{return nelems_;}
+
+	constexpr auto nelems()      & -> nelems_type      &{return nelems_;}
+	constexpr auto nelems() const& -> nelems_type const&{return nelems_;}
+
 	constexpr auto nelems(dimensionality_type d) const{return d==0?nelems_:throw 0;}
+
 	friend constexpr auto nelems(layout_t const& self){return self.nelems();}
 	constexpr size_type size() const{//assert(stride_!=0 and nelems_%stride_==0);
 		MULTI_ACCESS_ASSERT(stride_);
@@ -271,59 +275,79 @@ public:
 	       constexpr auto is_compact() const{return base_size() == num_elements();}
 	friend constexpr auto is_compact(layout_t const& self){return self.is_compact();}
 public:
-	constexpr auto stride(dimensionality_type d = 0) const{assert(!d); (void)d; return stride_;}
+	constexpr auto stride()      & -> stride_type      &{return stride_;}
+	constexpr auto stride() const& -> stride_type const&{return stride_;}
+	constexpr auto stride(dimensionality_type d) const{assert(!d); (void)d; return stride_;}
+
 	friend constexpr index stride(layout_t const& self){return self.stride();}
 public:
 	constexpr auto strides() const{return std::make_tuple(stride());}
 	friend constexpr auto strides(layout_t const& self){return self.strides();}
 	constexpr auto sizes() const{return std::make_tuple(size());}
+
 	template<class T=void> constexpr auto sizes_as() const{return detail::to_array<T>(sizes());}
+
 	constexpr auto offsets() const{return std::make_tuple(offset());}
 	constexpr auto nelemss() const{return std::make_tuple(nelems_);}
-	constexpr size_type num_elements() const{return this->size();}
-	friend constexpr size_type num_elements(layout_t const& s){return s.num_elements();}
-//	constexpr bool empty() const{return nelems_ == 0;}
-//	friend constexpr bool empty(layout_t const& s){return s.empty();}
-	       constexpr bool is_empty()        const    {return not nelems_;}
-	friend constexpr bool is_empty(layout_t const& s){return s.is_empty();}
-	[[deprecated("use ::is_empty()")]]
-	       constexpr bool    empty()        const    {return is_empty();}
 
-	constexpr index_extension extension()        const&{
-		assert(stride_);
+	       constexpr auto num_elements()        const&    -> size_type{return this->size();}
+	friend constexpr auto num_elements(layout_t const& s) -> size_type{return s.num_elements();}
+
+	       constexpr auto is_empty()        const     -> bool{return not nelems_;}
+	friend constexpr auto is_empty(layout_t const& s) -> bool{return s.is_empty();}
+
+	[[deprecated("use ::is_empty()")]]
+	       constexpr auto    empty()        const -> bool{return is_empty();}
+
+	friend constexpr auto extension(layout_t const& s) -> index_extension{return s.extension();}
+	       constexpr auto extension()        const&    -> index_extension{
+		assert(stride_); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay) : normal in constexpr function
 		return {offset_/stride_, (offset_+nelems_)/stride_};
-	} friend
-	constexpr index_extension extension(layout_t const& s){return s.extension();}
+	} 
 	constexpr auto extension(dimensionality_type d) const{
 		assert(stride_);
-		return d==0?index_extension{offset_/stride_, (offset_ + nelems_)/stride_}:throw 0;
+		assert(d == 0);
+		return index_extension{offset_/stride_, (offset_ + nelems_)/stride_};
 	}
-	constexpr extensions_type extensions() const{return extensions_type{extension()};}//std::make_tuple(extension());}
-	friend constexpr extensions_type extensions(layout_t const& self){return self.extensions();}
+	       constexpr auto extensions()        const&       -> extensions_type{return extensions_type{extension()};}//std::make_tuple(extension());}
+	friend constexpr auto extensions(layout_t const& self) -> extensions_type{return self.extensions();}
+
 private:
-	friend struct layout_t<2u>;
+	friend struct layout_t<2U>;
 	void constexpr strides_aux(size_type* it) const{*it = stride();}
 	void constexpr sizes_aux(size_type* it) const{*it = size();}
 	void constexpr offsets_aux(index* it) const{*it = offset();}
 	void constexpr extensions_aux(index_extension* it) const{*it = extension();}
+
 public:
-	constexpr auto operator()(index i) const{return i*stride_ - offset_;}
-	constexpr std::ptrdiff_t at(index i) const{return offset_ + i*stride_;}
-	constexpr std::ptrdiff_t operator[](index i) const{return at(i);}
+	constexpr auto operator()(index i) const{return i*stride_ - offset_;} // TODO(correaa) : check this
+	constexpr auto at(        index i) const -> std::ptrdiff_t{return offset_ + i*stride_;}
+	constexpr auto operator[](index i) const -> std::ptrdiff_t{return at(i);}
+
 	constexpr auto origin() const{return -offset_;}
-	constexpr bool operator==(layout_t const& other) const{
+
+	constexpr auto operator!=(layout_t const& other) const -> bool{return not(*this==other);}
+	constexpr auto operator==(layout_t const& other) const -> bool{
 		return stride_==other.stride_ and offset_==other.offset_ and nelems_==other.nelems_;
 	}
-	constexpr bool operator!=(layout_t const& other) const{return not(*this==other);}
+
 	template<typename Size>
-	constexpr layout_t& partition(Size const&){return *this;}
-	constexpr layout_t&   rotate(dimensionality_type = 1){return *this;}
-	constexpr layout_t& unrotate(dimensionality_type = 1){return *this;}
-	constexpr layout_t scale(size_type s) const{return {stride_*s, offset_*s, nelems_*s};}
-	constexpr layout_t& reverse(){return *this;}
+	constexpr auto partition(Size const& /*unused*/) -> layout_t&{return *this;}
+
+	constexpr auto   rotate() -> layout_t&{return *this;}
+	constexpr auto   rotate(dimensionality_type /*one*/) -> layout_t&{return *this;}
+
+	constexpr auto unrotate() -> layout_t&{return *this;}
+	constexpr auto unrotate(dimensionality_type /*one*/) -> layout_t&{return *this;}
+
+	constexpr auto scale(size_type s) const -> layout_t{return {stride_*s, offset_*s, nelems_*s};}
+	constexpr auto reverse() -> layout_t&{return *this;}
 };
 
-inline constexpr typename layout_t<1>::extensions_type operator*(layout_t<0>::index_extension const& ie, layout_t<0>::extensions_type const&){
+inline constexpr auto
+operator*(layout_t<0>::index_extension const& ie, layout_t<0>::extensions_type const& /*zero*/)
+-> typename layout_t<1>::extensions_type
+{
 	return typename layout_t<1>::extensions_type{std::make_tuple(ie)};
 }
 
@@ -331,8 +355,8 @@ template<dimensionality_type D, typename SSize>
 struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 	using dimensionality_type = multi::dimensionality_type;
 	using rank = std::integral_constant<dimensionality_type, D>;
-	static constexpr dimensionality_type dimensionality(){return rank{};}
-	friend constexpr dimensionality_type dimensionality(layout_t const& l){
+	static constexpr auto dimensionality()                  -> dimensionality_type{return rank{};}
+	friend constexpr auto dimensionality(layout_t const& l) -> dimensionality_type{
 		return l.dimensionality();
 	}
 	using sub_type = layout_t<D-1>;
@@ -344,10 +368,15 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 	using stride_type = index;
 	using offset_type = index;
 	using nelems_type = index;
+
+private:
  	sub_type    sub_ = {};
 	stride_type stride_ = 1;//std::numeric_limits<stride_type>::max();
 	offset_type offset_ = 0;
 	nelems_type nelems_ = 0;
+	template<dimensionality_type, typename> friend struct layout_t;
+
+public:
 	using extensions_type = extensions_t<D>;
 	using strides_type    = decltype(tuple_cat(std::make_tuple(std::declval<index>()), std::declval<typename sub_type::strides_type>()));
 	using sizes_type      = decltype(tuple_cat(std::make_tuple(std::declval<size_type>()), std::declval<typename sub_type::sizes_type>()));
@@ -355,12 +384,12 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 //	using extensions_io_type = std::array<index_extension, D>;
 	constexpr auto operator()(index i) const{return i*stride_ - offset_;}
 	constexpr auto origin() const{return sub_.origin() - offset_;}
-	constexpr sub_type at(index i) const{//assert( this->extension().contains(i) ); see why it gives false positives
+	constexpr auto at(index i) const -> sub_type{//assert( this->extension().contains(i) ); see why it gives false positives
 		auto ret = sub_;
 		ret.offset_ += offset_ + i*stride_;
 		return ret;
 	}
-	constexpr sub_type operator[](index i) const{return at(i);}
+	constexpr auto operator[](index i) const -> sub_type{return at(i);}
 	constexpr layout_t(
 		sub_type sub, stride_type stride, offset_type offset, nelems_type nelems
 	) : sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems}{}
@@ -371,19 +400,23 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 		offset_{std::get<0>(e).first()*stride_}, //sub_.offset_ + std::get<0>(e).first()*sub_.stride()}, //sub_.stride()  offset_ = i*stride_}, 
 		nelems_{std::get<0>(e).size()*sub_.num_elements()} 
 	{}
-	template<class StdArray, typename = std::enable_if_t<std::is_same<StdArray, std::array<index_extension, static_cast<std::size_t>(D)>>{}> >
-	constexpr explicit layout_t(StdArray const& e) : 
-		sub_{detail::tail(e)}, 
-		stride_{1},//std::get<0>(e).size()*sub_.num_elements()!=0?sub_.size()*sub_.stride():1}, 
-		offset_{sub_.offset_ + std::get<0>(e).first()*sub_.stride()}, 
-		nelems_{std::get<0>(e).size()*sub_.num_elements()}
-	{}
-	       constexpr auto nelems()        const&    -> index{return   nelems_;}
-	friend constexpr auto nelems(layout_t const& s) -> index{return s.nelems();}
+//	template<class StdArray, typename = std::enable_if_t<std::is_same<StdArray, std::array<index_extension, static_cast<std::size_t>(D)>>{}> >
+//	constexpr explicit layout_t(StdArray const& e) : 
+//		sub_{detail::tail(e)}, 
+//		stride_{1},//std::get<0>(e).size()*sub_.num_elements()!=0?sub_.size()*sub_.stride():1}, 
+//		offset_{sub_.offset_ + std::get<0>(e).first()*sub_.stride()}, 
+//		nelems_{std::get<0>(e).size()*sub_.num_elements()}
+//	{}
+	       constexpr auto sub()             &    -> sub_type&{return sub_;}
+	       constexpr auto sub()        const&    -> sub_type const&{return sub_;}
+	friend constexpr auto sub(layout_t const& s) -> sub_type const&{return s.sub();}
+
+	       constexpr auto nelems()             &    -> nelems_type      &{return   nelems_;}
+	       constexpr auto nelems()        const&    -> nelems_type const&{return   nelems_;}
+	friend constexpr auto nelems(layout_t const& s) -> nelems_type const&{return s.nelems();}
 
 	constexpr auto nelems(dimensionality_type d) const{return (d!=0)?sub_.nelems(d-1):nelems_;}
 
-public:
 	constexpr auto operator!=(layout_t const& o) const -> bool{return not((*this)==o);}
 	constexpr auto operator==(layout_t const& o) const -> bool{
 		return sub_==o.sub_ and stride_==o.stride_ and offset_==o.offset_ and nelems_==o.nelems_;
@@ -411,7 +444,8 @@ public:
 
 	       constexpr auto size(dimensionality_type d) const -> size_type{return (d!=0)?sub_.size(d-1):size();}
 
-	constexpr auto stride() const -> index{return stride_;}
+	constexpr auto stride()      & -> stride_type      &{return stride_;}
+	constexpr auto stride() const& -> stride_type const&{return stride_;}
 
 	       constexpr auto stride(dimensionality_type d) const& -> index{return (d!=0)?sub_.stride(d-1):stride();}
 	friend constexpr auto stride(layout_t const& s) -> index{return s.stride();}

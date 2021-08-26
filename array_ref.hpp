@@ -422,7 +422,7 @@ public:
 
 private:
 	HD constexpr auto at_(index i) const{//MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
-		return reference(this->layout().sub_, this->base() + Layout::operator()(i));
+		return reference(this->layout().sub(), this->base() + Layout::operator()(i));
 	}
 public:
 	HD constexpr const_reference operator[](index i) const&{return at_(i);}
@@ -472,7 +472,7 @@ private:
 		MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(first   ))&&"sliced first out of bounds");
 		MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(last - 1))&&"sliced last  out of bounds");
 		typename types::layout_t new_layout = *this;
-		new_layout.nelems_ = this->stride_*(last - first);
+		new_layout.nelems() = this->stride()*(last - first); // TODO(correaa) : reconstruct layout instead of mutating it
 		return {new_layout, types::base_ + Layout::operator()(first)};
 	}
 public:
@@ -545,11 +545,11 @@ public:
 		};
 	}
 	friend constexpr decltype(auto) flattened(basic_array&& self){return std::move(self).flattened();}
-	constexpr bool is_flattable() const{return this->stride() == this->layout().sub_.nelems_;}
+	constexpr bool is_flattable() const{return this->stride() == this->layout().sub().nelems();}
 	constexpr auto flatted() const{
 		assert(is_flattable() && "flatted doesn't work for all layouts!");//this->nelems());
-		multi::layout_t<D-1> new_layout{this->layout().sub_};
-		new_layout.nelems_*=this->size();
+		multi::layout_t<D-1> new_layout{this->layout().sub()};
+		new_layout.nelems() *= this->size(); // TODO(correaa) : use immutable layout
 		return basic_array<T, D-1, ElementPtr>{new_layout, types::base_};
 	}
 	friend constexpr auto flatted(basic_array const& self){return self.flatted();}
@@ -559,9 +559,9 @@ public:
 	NODISCARD("because it has no side-effect")
 	constexpr basic_array<T, D-1, typename basic_array::element_ptr> diagonal()&{
 		auto L = std::min(std::get<0>(this->sizes()), std::get<1>(this->sizes()));
-		multi::layout_t<D-1> new_layout{(*this)({0, L}, {0, L}).layout().sub_};
-		new_layout.nelems_ += (*this)({0, L}, {0, L}).layout().nelems_;
-		new_layout.stride_ += (*this)({0, L}, {0, L}).layout().stride_;
+		multi::layout_t<D-1> new_layout{(*this)({0, L}, {0, L}).layout().sub()};
+		new_layout.nelems() += (*this)({0, L}, {0, L}).layout().nelems(); // TODO(correaa) : don't use mutation
+		new_layout.stride() += (*this)({0, L}, {0, L}).layout().stride(); // TODO(correaa) : don't use mutation
 		return {new_layout, types::base_};
 	}
 	NODISCARD("because it has no side-effect")
@@ -581,9 +581,9 @@ public:
 private:
 	constexpr partitioned_type partitioned_aux(size_type s) const{
 		assert(s != 0);
-		assert(this->layout().nelems_%s==0); // if you get an assertion here it means that you are partitioning an array with an incommunsurate partition
-		multi::layout_t<D+1> new_layout{this->layout(), this->layout().nelems_/s, 0, this->layout().nelems_};
-		new_layout.sub_.nelems_/=s;
+		assert( (this->layout().nelems() % s) == 0); // if you get an assertion here it means that you are partitioning an array with an incommunsurate partition
+		multi::layout_t<D+1> new_layout{this->layout(), this->layout().nelems()/s, 0, this->layout().nelems()};
+		new_layout.sub().nelems() /= s;
 		return {new_layout, types::base_};
 	}
 public:
@@ -768,10 +768,10 @@ public:
 	template<typename Tuple> constexpr decltype(auto) apply(Tuple const& t)     &&{return apply_impl(t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
 	template<typename Tuple> constexpr decltype(auto) apply(Tuple const& t)      &{return apply_impl(t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
 
-private:
-	using Layout::nelems_;
-	using Layout::stride_;
-	using Layout::sub_;
+//private:
+	using Layout::nelems;
+	using Layout::stride;
+	using Layout::sub;
 public:
 	using       iterator = array_iterator<typename types::element, D, typename types::element_ptr      >;//, typename types::reference      >;
 	using const_iterator = array_iterator<typename types::element, D, typename types::element_const_ptr>;//, typename types::const_reference>;
@@ -824,8 +824,8 @@ public:
 	}
 
 private:
-	constexpr auto begin_aux() const{return iterator{types::base_          , sub_, stride_};}
-	constexpr auto end_aux()   const{return iterator{types::base_ + nelems_, sub_, stride_};}
+	constexpr auto begin_aux() const{return iterator{types::base_           , sub(), stride()};}
+	constexpr auto end_aux()   const{return iterator{types::base_ + nelems(), sub(), stride()};}
 
 public:
 	constexpr iterator begin()          &{return begin_aux();}
@@ -1384,7 +1384,7 @@ private:
 		assert( s != 0 );
 		assert( this->layout().nelems_%s==0 ); // TODO remove assert? truncate left over? (like mathematica)
 		multi::layout_t<2> new_layout{this->layout(), this->layout().nelems_/s, 0, this->layout().nelems_};
-		new_layout.sub_.nelems_/=s;
+		new_layout.sub().nelems_ /= s; // TODO(correaa) : don't use mutation
 		return {new_layout, types::base_};
 	}
 public:
