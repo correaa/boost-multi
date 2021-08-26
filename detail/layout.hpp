@@ -174,10 +174,10 @@ private:
 	static constexpr size_type multiply_fold(){return 1;}
 	static constexpr size_type multiply_fold(size_type const& a0){return a0;}
 	template<class...As> static constexpr size_type multiply_fold(size_type const& a0, As const&...as){return a0*multiply_fold(as...);}
-	template<std::size_t... I> constexpr size_type num_elements_impl(std::index_sequence<I...>) const{return multiply_fold(std::get<I>(*this).size()...);}
+	template<std::size_t... I> constexpr auto num_elements_impl(std::index_sequence<I...>) const -> size_type{return multiply_fold(std::get<I>(*this).size()...);}
 public:
-	constexpr size_type num_elements() const{return num_elements_impl(std::make_index_sequence<D>{});}
-	friend constexpr extensions_t intersection(extensions_t const& x1, extensions_t const& x2){
+	constexpr auto num_elements() const -> size_type{return num_elements_impl(std::make_index_sequence<D>{});}
+	friend constexpr auto intersection(extensions_t const& x1, extensions_t const& x2) -> extensions_t{
 		return extensions_t(
 			std::tuple_cat(
 				std::tuple<index_extension>(intersection(std::get<0>(x1), std::get<0>(x2))),
