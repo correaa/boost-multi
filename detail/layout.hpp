@@ -164,16 +164,15 @@ typedef std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<index_
 	}
 	friend constexpr auto operator%(nelems_type n, extensions_t const& s){return s.from_linear(n);}
 	template<class Archive>
-	void serialize(Archive& ar, unsigned){
+	void serialize(Archive& ar, unsigned /*version*/){
 		serialize_impl(ar, std::make_index_sequence<D>{});
 	}
 private:
 	template<class Array, std::size_t... I, typename = decltype(base_{std::get<I>(std::declval<Array const&>())...})> 
-	constexpr extensions_t(Array const& t, std::index_sequence<I...>) : base_{std::get<I>(t)...}{}
-//	template<class T, std::size_t N, std::size_t... I> extensions_type_(std::array<T, N> const& t, std::index_sequence<I...>) : extensions_type_{std::get<I>(t)...}{}
-	static constexpr size_type multiply_fold(){return 1;}
-	static constexpr size_type multiply_fold(size_type const& a0){return a0;}
-	template<class...As> static constexpr size_type multiply_fold(size_type const& a0, As const&...as){return a0*multiply_fold(as...);}
+	constexpr extensions_t(Array const& t, std::index_sequence<I...> /*012*/) : base_{std::get<I>(t)...}{}
+	static constexpr auto multiply_fold() -> size_type{return 1;}
+	static constexpr auto multiply_fold(size_type const& a0) -> size_type{return a0;}
+	template<class...As> static constexpr auto multiply_fold(size_type const& a0, As const&...as) -> size_type{return a0*multiply_fold(as...);}
 	template<std::size_t... I> constexpr auto num_elements_impl(std::index_sequence<I...>) const -> size_type{return multiply_fold(std::get<I>(*this).size()...);}
 public:
 	constexpr auto num_elements() const -> size_type{return num_elements_impl(std::make_index_sequence<D>{});}
@@ -275,7 +274,7 @@ public:
 	constexpr auto nelems() const& -> nelems_type const&{return nelems_;}
 
 	constexpr auto nelems(dimensionality_type d) const{
-		assert( d == 0 ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
+		assert( d == 0 ); (void)d; // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
 		return nelems_;
 	}
 
@@ -287,7 +286,7 @@ public:
 		return nelems_/stride_;
 	}
 	constexpr auto size(dimensionality_type d) const -> size_type{
-		assert( d == 0 ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
+		assert( d == 0 ); (void)d; // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
 		return nelems_/stride_;
 	}
 	constexpr auto reindex(index i) -> layout_t&{offset_ = i*stride_; return *this;}
