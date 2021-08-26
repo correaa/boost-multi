@@ -128,7 +128,7 @@ MIt alloc_uninitialized_copy(Alloc& a, InputIt f, InputIt l, MIt const& d){
 
 namespace xtd{
 template<class Alloc, class InputIt, class MIt, typename = std::enable_if_t<!has_rank<MIt>{}> >
-auto alloc_uninitialized_copy(Alloc& a, InputIt f, InputIt l, MIt d, double* = nullptr) -> MIt{
+auto alloc_uninitialized_copy(Alloc& a, InputIt f, InputIt l, MIt d) -> MIt{
 	MIt current = d;
 //	using multi::to_address;
 	try{
