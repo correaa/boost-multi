@@ -202,19 +202,30 @@ struct layout_t<dimensionality_type{0}, SSize>{
 	friend constexpr auto dimensionality(layout_t const& l){return l.dimensionality;}
 	using strides_type  = std::tuple<>;
 	using sizes_type    = std::tuple<>;
+
+private:
 	nelems_type nelems_ = 1;//std::numeric_limits<nelems_type>::max(); // 1
 	void* stride_ = nullptr;
 	void* sub = nullptr;
+
+public:
 	using extensions_type = extensions_t<0>;
-	constexpr layout_t(extensions_type const& = {}){}// : nelems_{1}{}
-	constexpr extensions_type extensions() const{return extensions_type{};}
+	explicit constexpr layout_t(extensions_type const& /*nil*/){}// : nelems_{1}{}
+	constexpr layout_t() : layout_t{extensions_type{}}{}// : nelems_{1}{}
+
+	constexpr auto extensions() const -> extensions_type{return extensions_type{};}
 	friend constexpr auto extensions(layout_t const& self){return self.extensions();}
 	constexpr auto sizes() const{return std::tuple<>{};}
-	constexpr bool is_empty() const{return false;}
+
+	[[deprecated]]
+	constexpr auto is_empty() const -> bool{return false;}
+	constexpr auto    empty() const -> bool{return false;}
+
 	friend constexpr auto sizes(layout_t const& s){return s.sizes();}
-	constexpr nelems_type num_elements() const{return 1;}//nelems_;}
-	constexpr bool operator==(layout_t const&) const{return true ;}
-	constexpr bool operator!=(layout_t const&) const{return false;}
+	constexpr auto num_elements() const -> nelems_type{return 1;}
+
+	constexpr auto operator==(layout_t const& /*stateless*/) const -> bool{return true ;}
+	constexpr auto operator!=(layout_t const& /*stateless*/) const -> bool{return false;}
 };
 
 template<typename SSize>
