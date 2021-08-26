@@ -144,14 +144,16 @@ typedef std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<index_
 	template<class Array, typename = decltype(std::get<D-1>(std::declval<Array>()))> 
 	constexpr extensions_t(Array const& t) : extensions_t(t, std::make_index_sequence<static_cast<std::size_t>(D)>{}){}
 	constexpr extensions_t(index_extension const& ie, typename layout_t<D-1>::extensions_type const& other) : extensions_t(std::tuple_cat(std::make_tuple(ie), other.base())){}
-	constexpr base_ const& base() const{return *this;}
-	friend constexpr decltype(auto) base(extensions_t const& s){return s.base();}
-	friend constexpr typename layout_t<D + 1>::extensions_type operator*(index_extension const& ie, extensions_t const& self){
+
+	       constexpr auto base()            const&    -> base_ const&{return *this;}
+	friend constexpr auto base(extensions_t const& s) -> base_ const&{return s.base();}
+
+	friend constexpr auto operator*(index_extension const& ie, extensions_t const& self) -> typename layout_t<D + 1>::extensions_type{
 		return {std::tuple_cat(std::make_tuple(ie), self.base())};
 	}
 	constexpr explicit operator bool() const{return not layout_t<D>{*this}.empty();}
 	template<class Archive, std::size_t... I>
-	void serialize_impl(Archive& ar, std::index_sequence<I...>){
+	void serialize_impl(Archive& ar, std::index_sequence<I...> /*012*/){
 	//	using boost::serialization::make_nvp;
 	//	(void)std::initializer_list<int>{(ar & make_nvp("extension", std::get<I>(*this)),0)...};
 		(void)std::initializer_list<int>{(ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<I>(*this)),0)...};
@@ -173,7 +175,7 @@ private:
 	static constexpr auto multiply_fold() -> size_type{return 1;}
 	static constexpr auto multiply_fold(size_type const& a0) -> size_type{return a0;}
 	template<class...As> static constexpr auto multiply_fold(size_type const& a0, As const&...as) -> size_type{return a0*multiply_fold(as...);}
-	template<std::size_t... I> constexpr auto num_elements_impl(std::index_sequence<I...>) const -> size_type{return multiply_fold(std::get<I>(*this).size()...);}
+	template<std::size_t... I> constexpr auto num_elements_impl(std::index_sequence<I...> /*012*/) const -> size_type{return multiply_fold(std::get<I>(*this).size()...);}
 public:
 	constexpr auto num_elements() const -> size_type{return num_elements_impl(std::make_index_sequence<D>{});}
 	friend constexpr auto intersection(extensions_t const& x1, extensions_t const& x2) -> extensions_t{
@@ -326,7 +328,7 @@ public:
 	} 
 	constexpr auto extension(dimensionality_type d) const{
 		assert(stride_);
-		assert(d == 0);
+		assert(d == 0); (void)d;
 		return index_extension{offset_/stride_, (offset_ + nelems_)/stride_};
 	}
 	       constexpr auto extensions()        const&       -> extensions_type{return extensions_type{extension()};}//std::make_tuple(extension());}
