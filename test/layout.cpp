@@ -429,24 +429,16 @@ BOOST_AUTO_TEST_CASE(continued){
 	BOOST_REQUIRE( size(L) == 10   );
 	BOOST_REQUIRE( stride(L) == 20 );
 	BOOST_REQUIRE( offset(L) == 0 );
-//	auto Lr = L.rotate();
-//	BOOST_REQUIRE( extension(L).first() == 0 );
-//	BOOST_REQUIRE( extension(L).last() == 10 );
 }
 {
 	multi::layout_t<2> L( {{8, 18}, {0, 20}} );
 	BOOST_REQUIRE( size(L) == 10 );
 	BOOST_REQUIRE( stride(L) == 20 );
-//	std::cout << extension(L).first() << std::endl;
-//	BOOST_REQUIRE( extension(L).first() == 8 );
-//	BOOST_REQUIRE( extension(L).last() == 18 );
 }
 {
 	multi::layout_t<3> L({{0, 3}, {0, 5}, {10, 17}}); 
 	BOOST_REQUIRE( stride(L) == 5*7 );
-	BOOST_REQUIRE( stride(L.sub_.sub_) == 1 );
-//	BOOST_REQUIRE( offset(L.sub_.sub_) == 10 );
-//	BOOST_REQUIRE( nelems(L) == 10*20*30 );
+	BOOST_REQUIRE( stride(L.sub().sub()) == 1 );
 }
 {
 	multi::layout_t<3> L({{0, 10}, {0, 20}, {0, 30}}); 
@@ -457,8 +449,6 @@ BOOST_AUTO_TEST_CASE(continued){
 {
 	multi::layout_t<3> L({{10, 20}, {10, 30}, {10, 40}}); 
 	BOOST_REQUIRE( stride(L) == 20*30 );
-//	BOOST_REQUIRE( offset(L) == 0 );
-//	BOOST_REQUIRE( nelems(L) == 10*20*30 );
 }
 {
 	std::tuple<int, int, int> ttt = {1,2,3};
