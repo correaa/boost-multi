@@ -365,7 +365,6 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 		sub_type sub, stride_type stride, offset_type offset, nelems_type nelems
 	) : sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems}{}
 	layout_t() = default;
-//	layout_t(layout_t const&) = default;
 	constexpr explicit layout_t(extensions_type const& e) :
 		sub_{detail::tail(e)}, 
 		stride_{sub_.size()*sub_.stride()},//std::get<0>(e).size()*sub_.num_elements()!=0?sub_.size()*sub_.stride():1}, 
@@ -373,81 +372,93 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 		nelems_{std::get<0>(e).size()*sub_.num_elements()} 
 	{}
 	template<class StdArray, typename = std::enable_if_t<std::is_same<StdArray, std::array<index_extension, static_cast<std::size_t>(D)>>{}> >
-	constexpr 
-	explicit layout_t(StdArray const& e) : 
+	constexpr explicit layout_t(StdArray const& e) : 
 		sub_{detail::tail(e)}, 
 		stride_{1},//std::get<0>(e).size()*sub_.num_elements()!=0?sub_.size()*sub_.stride():1}, 
 		offset_{sub_.offset_ + std::get<0>(e).first()*sub_.stride()}, 
 		nelems_{std::get<0>(e).size()*sub_.num_elements()}
 	{}
-	constexpr index nelems() const{return nelems_;}
-	friend constexpr index nelems(layout_t const& self){return self.nelems();}
-	constexpr auto nelems(dimensionality_type d) const{return d?sub_.nelems(d-1):nelems_;}
+	       constexpr auto nelems()        const&    -> index{return   nelems_;}
+	friend constexpr auto nelems(layout_t const& s) -> index{return s.nelems();}
+
+	constexpr auto nelems(dimensionality_type d) const{return (d!=0)?sub_.nelems(d-1):nelems_;}
+
 public:
-	constexpr bool operator==(layout_t const& o) const{
+	constexpr auto operator!=(layout_t const& o) const -> bool{return not((*this)==o);}
+	constexpr auto operator==(layout_t const& o) const -> bool{
 		return sub_==o.sub_ and stride_==o.stride_ and offset_==o.offset_ and nelems_==o.nelems_;
 	}
-	constexpr bool operator!=(layout_t const& o) const{return not((*this)==o);}
-public:
-	constexpr layout_t& reindex(index i){offset_ = i*stride_; return *this;}
-	template<class... Idx>
-	constexpr layout_t& reindex(index i, Idx... is){reindex(i).rotate().reindex(is...).unrotate(); return *this;}
-	constexpr size_type num_elements() const{return size()*sub_.num_elements();}
-	friend size_type num_elements(layout_t const& s){return s.num_elements();}
 
-	       constexpr bool is_empty()        const    {return not nelems_;}
-	friend constexpr bool is_empty(layout_t const& s){return s.is_empty();}
+	constexpr auto reindex(index i) -> layout_t&{offset_ = i*stride_; return *this;}
+	template<class... Idx>
+	constexpr auto reindex(index i, Idx... is) -> layout_t&{reindex(i).rotate().reindex(is...).unrotate(); return *this;}
+
+	       constexpr auto num_elements()        const&    -> size_type{return size()*sub_.num_elements();}
+	friend constexpr auto num_elements(layout_t const& s) -> size_type{return s.num_elements();}
+
+	       constexpr auto is_empty()        const     -> bool{return nelems_ == 0;}
+	friend constexpr auto is_empty(layout_t const& s) -> bool{return s.is_empty();}
+
 	NODISCARD(".empty() means .is_empty()")
-	       constexpr bool    empty()        const    {return is_empty();}
-	constexpr size_type size() const{
-		if(not nelems_) return 0;
-		MULTI_ACCESS_ASSERT(stride_);
+	       constexpr auto    empty()        const -> bool{return is_empty();}
+
+	friend constexpr auto size(layout_t const& l) -> size_type{return l.size();}
+	       constexpr auto size()        const&    -> size_type{
+		if(nelems_ == 0){return 0;}
+		MULTI_ACCESS_ASSERT(stride_); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		return nelems_/stride_;
 	}
-	friend constexpr size_type size(layout_t const& l){return l.size();}
-	constexpr size_type size(dimensionality_type d) const{return d?sub_.size(d-1):size();}
 
-	constexpr index stride() const{return stride_;}
-	constexpr index stride(dimensionality_type d) const{return d?sub_.stride(d-1):stride();}
-	friend constexpr index stride(layout_t const& self){return self.stride();}
-	constexpr strides_type strides() const{return tuple_cat(std::make_tuple(stride()), sub_.strides());}
-	friend constexpr strides_type strides(layout_t const& self){return self.strides();}
-	constexpr index offset() const{return offset_;}
-	constexpr index offset(dimensionality_type d) const{return d?sub_.offset(d-1):offset_;}
-	friend constexpr index offset(layout_t const& self){return self.offset();}
+	       constexpr auto size(dimensionality_type d) const -> size_type{return (d!=0)?sub_.size(d-1):size();}
+
+	constexpr auto stride() const -> index{return stride_;}
+
+	       constexpr auto stride(dimensionality_type d) const& -> index{return (d!=0)?sub_.stride(d-1):stride();}
+	friend constexpr auto stride(layout_t const& s) -> index{return s.stride();}
+
+	       constexpr auto strides()        const&    -> strides_type{return tuple_cat(std::make_tuple(stride()), sub_.strides());}
+	friend constexpr auto strides(layout_t const& s) -> strides_type{return s.strides();}
+
+	constexpr auto offset(dimensionality_type d) const -> index{return (d!=0)?sub_.offset(d-1):offset_;}
+	       constexpr auto offset() const -> index {return offset_;}
+	friend constexpr auto offset(layout_t const& self) -> index{return self.offset();}
 	constexpr auto offsets() const{return tuple_cat(std::make_tuple(offset()), sub_.offsets());}
 	constexpr auto nelemss() const{return tuple_cat(std::make_tuple(nelems()), sub_.nelemss());}
 
 	constexpr auto base_size() const{using std::max; return max(nelems_, sub_.base_size());}
-	constexpr auto is_compact() const{return base_size() == num_elements();}
-	friend constexpr auto is_compact(layout_t const& self){return self.is_compact();}
-	constexpr decltype(auto) shape() const{return sizes();}
-	friend constexpr decltype(auto) shape(layout_t const& self){return self.shape();}
+
+	       constexpr auto is_compact()        const&   {return base_size() == num_elements();}
+	friend constexpr auto is_compact(layout_t const& s){return s.is_compact();}
+
+	       constexpr auto shape()        const&    -> decltype(auto){return   sizes();}
+	friend constexpr auto shape(layout_t const& s) -> decltype(auto){return s.shape();}
+
 	constexpr auto sizes() const{return tuple_cat(std::make_tuple(size()), sub_.sizes());}
 	template<class T = void>
 	constexpr auto sizes_as() const{return detail::to_array<T>(sizes());}
-public:
-	constexpr index_extension extension()        const&{
-		if(not nelems_) return {};
+
+	friend constexpr auto extension(layout_t const& s) -> index_extension{return s.extension();}
+	       constexpr auto extension()        const&    -> index_extension{
+		if(nelems_ == 0){return {};}
 		assert(stride_); 
 		return {offset_/stride_, (offset_ + nelems_)/stride_};
 	}
-	friend constexpr index_extension extension(layout_t const& s){return s.extension();}
-	constexpr index_extension extension_aux() const{
+
+	constexpr auto extension_aux() const -> index_extension{
 		assert(stride_ != 0 and nelems_%stride_ == 0);
 		return {offset_/stride_, (offset_ + nelems_)/stride_};
 	}
 	template<dimensionality_type DD = 0>
-	constexpr index_extension extension(dimensionality_type d) const{return d?sub_.extension(d-1):extension();}
-	constexpr extensions_type extensions() const{return tuple_cat(std::make_tuple(extension()), sub_.extensions().base());}
-	friend constexpr extensions_type extensions(layout_t const& self){return self.extensions();}
-	constexpr void extensions_aux(index_extension* it) const{
-		*it = extension();
-		++it;
-		sub_.extensions_aux(it);
-	}
+	constexpr auto extension(dimensionality_type d) const -> index_extension{return d?sub_.extension(d-1):extension();}
+	constexpr auto extensions() const -> extensions_type{return tuple_cat(std::make_tuple(extension()), sub_.extensions().base());}
+	friend constexpr auto extensions(layout_t const& self) -> extensions_type{return self.extensions();}
+//	constexpr void extensions_aux(index_extension* it) const{
+//		*it = extension();
+//		++it;
+//		sub_.extensions_aux(it);
+//	}
 	template<typename Size>
-	constexpr layout_t& partition(Size const& s){
+	constexpr auto partition(Size const& s) -> layout_t&{
 		using std::swap;
 		stride_ *= s;
 	//	offset
@@ -455,36 +466,43 @@ public:
 		sub_.partition(s);
 		return *this;
 	}
-	constexpr layout_t& transpose(){
+	constexpr auto transpose() -> layout_t&{
 		using std::swap;
 		swap(stride_, sub_.stride_);
 		swap(offset_, sub_.offset_);
 		swap(nelems_, sub_.nelems_);
 		return *this;
 	}
-	constexpr layout_t& reverse(){
+	constexpr auto reverse() -> layout_t&{
 		unrotate();
 		sub_.reverse();
 		return *this;
 	}
-	constexpr layout_t&   rotate(){transpose(); sub_.  rotate(); return *this;}
-	constexpr layout_t& unrotate(){sub_.unrotate(); transpose(); return *this;}
-	constexpr layout_t& rotate(dimensionality_type r){
-		if(r >= 0) while(r){rotate(); --r;}
-		else return rotate(D - r);
+	constexpr auto   rotate() -> layout_t&{transpose(); sub_.  rotate(); return *this;}
+	constexpr auto unrotate() -> layout_t&{sub_.unrotate(); transpose(); return *this;}
+
+	constexpr auto   rotate(dimensionality_type r) -> layout_t&{
+		if(r >= 0){
+			while(r != 0){rotate(); --r;}
+		}else{
+			return rotate(D - r);
+		}
 		return *this;
 	}
-	constexpr layout_t& unrotate(dimensionality_type r){
-		if(r >= 0) while(r){unrotate(); --r;}
-		else return unrotate(D-r);
+	constexpr auto unrotate(dimensionality_type r) -> layout_t&{
+		if(r >= 0){
+			while(r != 0){unrotate(); --r;}
+		}else{
+			return unrotate(D-r);
+		}
 		return *this;
 	}
-	constexpr layout_t scale(size_type s) const{
+	constexpr auto scale(size_type s) const{
 		return layout_t{sub_.scale(s), stride_*s, offset_*s, nelems_*s};
 	}
 };
 
-inline constexpr typename layout_t<2>::extensions_type operator*(layout_t<1>::index_extension const& ie, layout_t<1>::extensions_type const& self){
+inline constexpr auto operator*(layout_t<1>::index_extension const& ie, layout_t<1>::extensions_type const& self){
 	return layout_t<2>::extensions_type(ie, self);
 }
 
@@ -496,7 +514,8 @@ constexpr auto sizes_as(Layout const& self)
 ->decltype(self.template sizes_as<T>()){
 	return self.template sizes_as<T>();}
 
-}}
+} // end namespace multi
+} // end namespace boost
 
 namespace std{
 	template<> struct tuple_size<boost::multi::extensions_t<0>> : std::integral_constant<boost::multi::dimensionality_type, 0>{};
@@ -504,7 +523,7 @@ namespace std{
 	template<> struct tuple_size<boost::multi::extensions_t<2>> : std::integral_constant<boost::multi::dimensionality_type, 2>{};
 	template<> struct tuple_size<boost::multi::extensions_t<3>> : std::integral_constant<boost::multi::dimensionality_type, 3>{};
 	template<> struct tuple_size<boost::multi::extensions_t<4>> : std::integral_constant<boost::multi::dimensionality_type, 4>{};
-}
+} // end namespace std
 
 #endif
 

@@ -4,13 +4,13 @@ $CXX $0 -o $0x&&$0x&&rm -f $0x; exit
 #ifndef BOOST_MULTI_DETAIL_MEMORY_HPP
 #define BOOST_MULTI_DETAIL_MEMORY_HPP
 
-#include "layout.hpp"
-#include "../utility.hpp"
-#include<memory>
-#include<algorithm> // copy_n
 #include "../detail/adl.hpp"
+#include "../utility.hpp"
 
-//#include<boost/core/alloc_construct.hpp>
+#include "layout.hpp"
+
+#include<algorithm> // copy_n
+#include<memory>
 
 namespace boost{
 namespace multi{
@@ -30,7 +30,7 @@ struct allocator_traits : std::allocator_traits<Alloc>{
 		return a.destroy(p);}
 };
 
-}
+} // end namespace memory
 
 using memory::allocator_traits;
 //using memory::to_address;
@@ -42,43 +42,45 @@ using memory::allocator_traits;
 //template<class T> constexpr T* to_address(T* p) noexcept{return p;}
 
 //https://en.cppreference.com/w/cpp/memory/destroy
-template<class Alloc, class ForwardIt, typename = std::enable_if_t<!(has_rank<ForwardIt>{})>>//, typename = std::enable_if_t<typename ForwardIt::rank{} == 1> >//, typename AT = typename std::allocator_traits<Alloc> >
+template<class Alloc, class ForwardIt, std::enable_if_t<!(has_rank<ForwardIt>{}), int> =0>//, typename = std::enable_if_t<typename ForwardIt::rank{} == 1> >//, typename AT = typename std::allocator_traits<Alloc> >
 void destroy(Alloc& a, ForwardIt f, ForwardIt l){
-	for(; f != l; ++f) allocator_traits<Alloc>::destroy(a, std::addressof(*f));
+	for(; f != l; ++f){allocator_traits<Alloc>::destroy(a, std::addressof(*f));}
 }
 
-template<class Alloc, class ForwardIt, typename = std::enable_if_t<has_rank<ForwardIt>{} and typename ForwardIt::rank{} == 1>>//, typename = std::enable_if_t<typename ForwardIt::rank{} == 1> >//, typename AT = typename std::allocator_traits<Alloc> >
-void destroy(Alloc& a, ForwardIt first, ForwardIt last, double* = 0){
+template<class Alloc, class ForwardIt, std::enable_if_t<has_rank<ForwardIt>{} and typename ForwardIt::rank{} == 1, int> =0>//, typename = std::enable_if_t<typename ForwardIt::rank{} == 1> >//, typename AT = typename std::allocator_traits<Alloc> >
+void destroy(Alloc& a, ForwardIt first, ForwardIt last){
 	//	using multi::to_address;
-	for(; first != last; ++first) a.destroy(to_address(first)); //	AT::destroy(a, to_address(first)); //	AT::destroy(a, addressof(*first)); // a.destroy(addressof(*first));
+	for(; first != last; ++first){a.destroy(to_address(first));} //	AT::destroy(a, to_address(first)); //	AT::destroy(a, addressof(*first)); // a.destroy(addressof(*first));
 }
-template<class Alloc, class ForwardIt, typename = std::enable_if_t<has_rank<ForwardIt>{} and typename ForwardIt::rank{} != 1>>//, typename AT = typename std::allocator_traits<Alloc> >
-void destroy(Alloc& a, ForwardIt first, ForwardIt last, void* = 0){
-	for(; first != last; ++first) destroy(a, begin(*first), end(*first));
+template<class Alloc, class ForwardIt, std::enable_if_t<has_rank<ForwardIt>{} and typename ForwardIt::rank{} != 1, int> =0>//, typename AT = typename std::allocator_traits<Alloc> >
+void destroy(Alloc& a, ForwardIt first, ForwardIt last){
+	for(; first != last; ++first){destroy(a, begin(*first), end(*first));}
 }
 
 template<class Alloc, class InputIt, class Size, class ForwardIt>//, typename AT = std::allocator_traits<Alloc> >
-ForwardIt uninitialized_move_n(Alloc& a, InputIt f, Size n, ForwardIt d){
+auto uninitialized_move_n(Alloc& a, InputIt f, Size n, ForwardIt d) -> ForwardIt{
 	ForwardIt c = d;
 //	using std::addressof;
 	try{
-		for(; n > 0; ++f, ++c, --n)
+		for(; n > 0; ++f, ++c, --n){
 		//	alloc_construct(a, to_address(c), std::move(*f));
 			a.construct(std::addressof(*c), std::move(*f));
 		//	AT::construct(a, to_address(c), *f);
 		//	AT::construct(a, addressof(*c), *f);
 		//	a.construct(addressof(*c), *f);
+		}
 		return c;
 	}catch(...){destroy(a, d, c); throw;}
 }
 
 template<class Alloc, class ForwardIt, class Size>//, class AT = typename std::allocator_traits<Alloc> >
-ForwardIt uninitialized_default_construct_n(Alloc& a, ForwardIt first, Size n){
+auto uninitialized_default_construct_n(Alloc& a, ForwardIt first, Size n) -> ForwardIt{
 	ForwardIt current = first;
 	try{
-		for(; n > 0; ++current, --n)
+		for(; n > 0; ++current, --n){
 		//	allocator_traits<Alloc>::construct(a, to_address(current));
 			a.construct(to_address(current));
+		}
 		return current;
 	}catch(...){destroy(a, first, current); throw;}
 }
@@ -87,11 +89,12 @@ template<class Alloc, class ForwardIt, class Size,
 	typename T = typename std::iterator_traits<ForwardIt>::value_type,
 	typename = std::enable_if_t<not std::is_trivially_default_constructible<T>{}> 
 >
-ForwardIt uninitialized_value_construct_n(Alloc& a, ForwardIt first, Size n){
+auto uninitialized_value_construct_n(Alloc& a, ForwardIt first, Size n) -> ForwardIt{
 	ForwardIt current = first; // using std::addressof;
 	try{
-		for(; n > 0; ++current, --n)
+		for(; n > 0; ++current, --n){
 			allocator_traits<Alloc>::construct(a, to_address(current), T());
+		}
 		//	a.construct(to_address(current), T()); //	a.construct(std::pointer_traits<Ptr>::pointer_to(*current), T()); //	AT::construct(a, to_address(current), T()); //	AT::construct(a, addressof(*current), T()); //	a.construct(addressof(*current), T());
 		return current;
 	}catch(...){destroy(a, first, current); throw;}
@@ -126,15 +129,15 @@ MIt alloc_uninitialized_copy(Alloc& a, InputIt f, InputIt l, MIt const& d){
 
 namespace xtd{
 template<class Alloc, class InputIt, class MIt, typename = std::enable_if_t<!has_rank<MIt>{}> >
-MIt alloc_uninitialized_copy(Alloc& a, InputIt f, InputIt l, MIt d, double* = 0){
+auto alloc_uninitialized_copy(Alloc& a, InputIt f, InputIt l, MIt d) -> MIt{
 	MIt current = d;
 //	using multi::to_address;
 	try{
-		for(; f != l; ++f, ++current) a.construct(to_address(current), *f);
+		for(; f != l; ++f, ++current){a.construct(to_address(current), *f);}
 		return current;
 	}catch(...){destroy(a, d, current); throw;}
 }
-}
+} // end namespace xtd
 
 // https://en.cppreference.com/w/cpp/memory/destroy_at
 template<class Alloc, class T, typename AT = std::allocator_traits<Alloc> >
@@ -164,10 +167,11 @@ ForwardIt alloc_uninitialized_default_construct_n(Alloc& a, ForwardIt first, Siz
 
 // https://en.cppreference.com/w/cpp/memory/destroy_n
 template<class Alloc, class ForwardIt, class Size>//, typename AT = typename std::allocator_traits<Alloc> >
-ForwardIt destroy_n(Alloc& a, ForwardIt first, Size n){
+auto destroy_n(Alloc& a, ForwardIt first, Size n) -> ForwardIt {
 //	using std::addressof;
-	for(; n > 0; ++first, --n)
+	for(; n > 0; ++first, --n){
 		allocator_traits<Alloc>::destroy(a, to_address(first));
+	}
 	//	a.destroy(to_address(first));
 	//	AT::destroy(a, addressof(*first));
 	//	a.destroy(addressof(*first));
@@ -183,7 +187,6 @@ ForwardIt destroy_n(Alloc& a, ForwardIt first, Size n){
 //}
 
 template<class AA> class is_allocator{
-	static std::false_type aux(...     );
 	template<
 		class A, 
 		class P = typename A::pointer, class S = typename A::size_type,
@@ -192,16 +195,12 @@ template<class AA> class is_allocator{
 			std::declval<A&>().deallocate(P{std::declval<A&>().allocate(std::declval<S>())}, std::declval<S>())
 		)
 	>
-	static std::true_type  aux(A const&);
+	static auto  aux(A const&) -> std::true_type ;
+	static auto  aux(...     ) -> std::false_type;
 public:
 	static bool const value = decltype(aux(std::declval<AA>()))::value;
-	constexpr operator bool() const{return value;}
+	constexpr explicit operator bool() const{return value;}
 };
-
-}}
-
-namespace boost{
-namespace multi{
 
 /*
 template<class Alloc, class It1, class T, class Ptr, class Ref>
@@ -268,8 +267,9 @@ struct recursive_fill_aux{
 	template<class Out, class T>
 	static auto call(Out first, Out last, T const& value){
 		using std::begin; using std::end;
-		for(; first != last; ++first)
+		for(; first != last; ++first){
 			recursive_fill<N-1>(begin(*first), end(*first), value); // (*first).begin() instead of first->begin() to make it work with T[][]
+		}
 	}
 };
 
@@ -302,7 +302,8 @@ template<> struct uninitialized_fill_aux<1>{template<class Alloc, class O, class
 };
 #endif
 
-}}
+} // end namespace multi
+} // end namespace boost
 
 #if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 

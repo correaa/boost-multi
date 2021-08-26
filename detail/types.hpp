@@ -6,13 +6,12 @@ $CXXX $CXXFLAGS $0 -o $0$X&&$0$X&&rm $0$X;exit
 #ifndef MULTI_DETAIL_TYPES_HPP
 #define MULTI_DETAIL_TYPES_HPP
 
-//#include "detail.hpp"
 #include "index_range.hpp"
 
-#include<tuple> // make_tuple
 #include<array>
 #include<cassert>
 #include<cstddef>
+#include<tuple> // make_tuple
 #include<type_traits> // make_signed_t
 
 namespace boost{
@@ -66,11 +65,11 @@ template<class Array>
 using array_size = decltype(array_size_impl(std::declval<const Array&>()));
 
 template<class Array>
-constexpr auto static_size() -> decltype(array_size<Array>::value){
+constexpr auto static_size() -> std::decay_t<decltype(array_size<Array>::value)>{
 	return array_size<Array>::value;
 }
 template<class Array>
-constexpr auto static_size(Array const&) -> decltype(static_size<Array>()){
+constexpr auto static_size(Array const& /*unused*/) -> decltype(static_size<Array>()){
 	return static_size<Array>();
 }
 
@@ -81,8 +80,8 @@ constexpr auto head(Tuple&& t)
 	return std::get<0>(std::forward<Tuple>(t));}
 
 template<typename Tuple, std::size_t... Ns>
-constexpr auto tail_impl(std::index_sequence<Ns...> , Tuple&& t){
-	return std::make_tuple(std::get<Ns+1u>(std::forward<Tuple>(t))...);
+constexpr auto tail_impl(std::index_sequence<Ns...> /*unused*/, Tuple&& t){
+	return std::make_tuple(std::get<Ns+1U>(std::forward<Tuple>(t))...);
 }
 template<class Tuple>
 constexpr auto tail(Tuple const& t)
@@ -91,14 +90,14 @@ constexpr auto tail(Tuple const& t)
 //->decltype(tail_impl(std::make_index_sequence<(std::tuple_size<Tuple>{})-1>(), t)){
 //	return tail_impl(std::make_index_sequence<(std::tuple_size<Tuple>{})-1>(), t);}
 
-template<typename T, std::size_t N>
-constexpr std::array<T, N-1> tail(std::array<T, N> const& a){
-	std::array<T, N-1> ret;
-	std::copy(a.begin() + 1, a.end(), ret.begin());
-	return ret;
-}
+//template<typename T, std::size_t N>
+//constexpr auto tail(std::array<T, N> const& a) -> std::array<T, N-1>{
+//	std::array<T, N-1> ret;
+//	std::copy(a.begin() + 1, a.end(), ret.begin());
+//	return ret;
+//}
 
-}
+} // end namespace detail
 
 template<typename T, dimensionality_type D>
 struct initializer_list{
@@ -118,11 +117,11 @@ struct iextensions :       detail::repeat<index_extension, D>::type{
 	using base_ = typename detail::repeat<index_extension, D>::type;
 	static constexpr dimensionality_type dimensionality = D;
 	using base_::base_;
-	constexpr base_ const& base() const{return *this;}
-	friend constexpr decltype(auto) base(iextensions const& s){return s.base();}
+	constexpr auto base() const -> base_ const&{return *this;}
+	friend constexpr auto base(iextensions const& s) -> decltype(auto){return s.base();}
 private:
 	template <class T, size_t... Is> 
-	constexpr iextensions(std::array<T, static_cast<std::size_t>(D)> const& arr, std::index_sequence<Is...>) : iextensions{arr[Is]...}{}
+	constexpr iextensions(std::array<T, static_cast<std::size_t>(D)> const& arr, std::index_sequence<Is...> /**/) : iextensions{arr[Is]...}{}
 };
 
 #if defined(__cpp_deduction_guides) and __cpp_deduction_guides >= 201703
@@ -136,7 +135,8 @@ constexpr auto contains(index_extensions<D> const& ie, Tuple const& tp){
 	return contains(head(ie), head(tp)) and contains(tail(ie), tail(tp));
 }
 
-}}
+} // end namespace multi
+} // end namespace boost
 
 #if defined(__cpp_structured_bindings) and __cpp_structured_bindings>=201606
 namespace std{ // this is for structured binding
