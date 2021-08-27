@@ -171,7 +171,7 @@ int main(){
 	assert( x[0] == 0 );
 	assert( x[1] == 1 );
 	assert( x[9] == 9 );
-	
+
 	auto b = begin(x);
 	assert( b[0] == x[0] );
 	assert( b[1] == x[1] );

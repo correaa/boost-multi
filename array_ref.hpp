@@ -1750,7 +1750,7 @@ struct array_ptr : basic_array_ptr<basic_array<T, D, Ptr>, typename array_ref<T,
 //	using basic_ptr = basic_array_ptr<array_ref<T, D, Ptr>, typename array_ref<T, D, Ptr>::layout_t>;
 //	using basic_ptr::basic_ptr;//array_ptr<array_ref<T, D, Ptr>, typename array_ref<T, D, Ptr>::layout_t>::basic_array_ptr;
 public:
-	constexpr array_ptr(Ptr p, index_extensions<D> x) : basic_ptr(p, multi::layout_t<D>{x}){}
+	constexpr array_ptr(Ptr p, multi::extensions_t<D> x) : basic_ptr(p, multi::layout_t<D>{x}){}
 	// cppcheck-suppress noExplicitConstructor ; because array_ptr can represent a null
 	constexpr array_ptr(std::nullptr_t) : basic_ptr(nullptr, multi::layout_t<D>{}){}
 	template<class TT, std::size_t N> 
@@ -1790,15 +1790,15 @@ template<class T, dimensionality_type D, typename Ptr = T*>
 using array_cptr = array_ptr<T, D, 	typename std::pointer_traits<Ptr>::template rebind<T const>>;
 
 template<dimensionality_type D, class P>
-constexpr auto make_array_ref(P p, index_extensions<D> x){
+constexpr auto make_array_ref(P p, multi::extensions_t<D> x){
 	return array_ref<typename std::iterator_traits<P>::value_type, D, P>(p, x);
 }
 
-template<class P> auto make_array_ref(P p, index_extensions<1> x){return make_array_ref<1>(p, x);}
-template<class P> auto make_array_ref(P p, index_extensions<2> x){return make_array_ref<2>(p, x);}
-template<class P> auto make_array_ref(P p, index_extensions<3> x){return make_array_ref<3>(p, x);}
-template<class P> auto make_array_ref(P p, index_extensions<4> x){return make_array_ref<4>(p, x);}
-template<class P> auto make_array_ref(P p, index_extensions<5> x){return make_array_ref<5>(p, x);}
+template<class P> auto make_array_ref(P p, extensions_t<1> x){return make_array_ref<1>(p, x);}
+template<class P> auto make_array_ref(P p, extensions_t<2> x){return make_array_ref<2>(p, x);}
+template<class P> auto make_array_ref(P p, extensions_t<3> x){return make_array_ref<3>(p, x);}
+template<class P> auto make_array_ref(P p, extensions_t<4> x){return make_array_ref<4>(p, x);}
+template<class P> auto make_array_ref(P p, extensions_t<5> x){return make_array_ref<5>(p, x);}
 
 //In ICC you need to specify the dimensionality in make_array_ref<D>
 //#if defined(__INTEL_COMPILER)
@@ -1868,7 +1868,7 @@ template<class TD, class Second =
 template<class RandomAccessIterator, dimensionality_type D>
 constexpr
 multi::array_ptr<typename std::iterator_traits<RandomAccessIterator>::value_type, D, RandomAccessIterator>
-operator/(RandomAccessIterator data, multi::iextensions<D> x){return {data, x};}
+operator/(RandomAccessIterator data, multi::extensions_t<D> x){return {data, x};}
 
 template<class T, dimensionality_type D, class... Ts>
 constexpr std::true_type  is_basic_array_aux(basic_array<T, D, Ts...> const&);

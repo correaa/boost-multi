@@ -1,4 +1,4 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
+#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 $CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 #ifndef MULTI_LAYOUT_HPP
@@ -14,6 +14,7 @@ $CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #include<type_traits> // make_signed_t
 
 #include<limits>
+#include<tuple> // apply
 
 namespace boost{
 namespace multi{
@@ -135,21 +136,21 @@ typedef std::tuple<multi::index_extension> base_;
 
 template<dimensionality_type D>
 struct extensions_t : 
-		std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename extensions_t<D-1>::base_>()))>{
-typedef std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename extensions_t<D-1>::base_>()))> base_;
+		      std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename extensions_t<D-1>::base_>()))>{
+using base_ = std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename extensions_t<D-1>::base_>()))>;
 	using base_::base_;
 	static constexpr dimensionality_type dimensionality = D;
 	extensions_t() = default;
 	using nelems_type = multi::index;
 	template<class Array, typename = decltype(std::get<D-1>(std::declval<Array>()))> 
-	constexpr extensions_t(Array const& t) : extensions_t(t, std::make_index_sequence<static_cast<std::size_t>(D)>{}){}
+	constexpr explicit extensions_t(Array const& t) : extensions_t(t, std::make_index_sequence<static_cast<std::size_t>(D)>{}){}
 	constexpr extensions_t(index_extension const& ie, typename layout_t<D-1>::extensions_type const& other) : extensions_t(std::tuple_cat(std::make_tuple(ie), other.base())){}
 
 	       constexpr auto base()            const&    -> base_ const&{return *this;}
 	friend constexpr auto base(extensions_t const& s) -> base_ const&{return s.base();}
 
 	friend constexpr auto operator*(index_extension const& ie, extensions_t const& self) -> typename layout_t<D + 1>::extensions_type{
-		return {std::tuple_cat(std::make_tuple(ie), self.base())};
+		return typename layout_t<D + 1>::extensions_type{std::tuple_cat(std::make_tuple(ie), self.base())};
 	}
 	constexpr explicit operator bool() const{return not layout_t<D>{*this}.empty();}
 	template<class Archive, std::size_t... I>
@@ -398,12 +399,29 @@ private:
 	nelems_type nelems_ = 0;
 	template<dimensionality_type, typename> friend struct layout_t;
 
+template <class F, class Tuple, std::size_t... I>
+static constexpr decltype(auto) apply_impl(F&& f, Tuple&& t, std::index_sequence<I...>)
+{
+    // This implementation is valid since C++20 (via P1065R2)
+    // In C++17, a constexpr counterpart of std::invoke is actually needed here
+    return std::forward<F>(f)(std::get<I>(std::forward<Tuple>(t))...);
+}
+
+template <class F, class Tuple>
+static constexpr decltype(auto) std_apply(F&& f, Tuple&& t)
+{
+    return apply_impl(
+        std::forward<F>(f), std::forward<Tuple>(t),
+        std::make_index_sequence<std::tuple_size<std::remove_reference_t<Tuple>>::value>{});
+}
+
 public:
 	using extensions_type = extensions_t<D>;
 	using strides_type    = decltype(tuple_cat(std::make_tuple(std::declval<index>()), std::declval<typename sub_type::strides_type>()));
 	using sizes_type      = decltype(tuple_cat(std::make_tuple(std::declval<size_type>()), std::declval<typename sub_type::sizes_type>()));
 //	using extensions_type = typename detail::repeat<index_extension, D>::type;
 //	using extensions_io_type = std::array<index_extension, D>;
+
 	constexpr auto operator()(index i) const{return i*stride_ - offset_;}
 	constexpr auto origin() const{return sub_.origin() - offset_;}
 	constexpr auto at(index i) const -> sub_type{//assert( this->extension().contains(i) ); see why it gives false positives
@@ -416,14 +434,17 @@ public:
 		sub_type sub, stride_type stride, offset_type offset, nelems_type nelems
 	) : sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems}{}
 	layout_t() = default;
+	constexpr layout_t(std::array<int, D> const& x) : layout_t{extensions_type{x}}{}
+//	constexpr explicit layout_t(typename detail::repeat<index_extension, D>::type x) : layout_t{extensions_type{x}}{}
 	constexpr explicit layout_t(extensions_type const& e) :
-		sub_{detail::tail(e)}, 
+		sub_(std_apply([](auto... e){return multi::extensions_t<D-1>{e...};}, detail::tail(e))),
 		stride_{sub_.size()*sub_.stride()},//std::get<0>(e).size()*sub_.num_elements()!=0?sub_.size()*sub_.stride():1}, 
-		offset_{std::get<0>(e).first()*stride_}, //sub_.offset_ + std::get<0>(e).first()*sub_.stride()}, //sub_.stride()  offset_ = i*stride_}, 
-		nelems_{std::get<0>(e).size()*sub_.num_elements()} 
-	{}
+		offset_{std::get<0>(e).first()*stride_} //sub_.offset_ + std::get<0>(e).first()*sub_.stride()}, //sub_.stride()  offset_ = i*stride_}, 
+	{
+		nelems_ = std::get<0>(e).size()*(sub().num_elements());
+	}
 //	template<class StdArray, typename = std::enable_if_t<std::is_same<StdArray, std::array<index_extension, static_cast<std::size_t>(D)>>{}> >
-//	constexpr explicit layout_t(StdArray const& e) : 
+//	constexpr layout_t(StdArray const& e) : 
 //		sub_{detail::tail(e)}, 
 //		stride_{1},//std::get<0>(e).size()*sub_.num_elements()!=0?sub_.size()*sub_.stride():1}, 
 //		offset_{sub_.offset_ + std::get<0>(e).first()*sub_.stride()}, 
@@ -506,7 +527,7 @@ public:
 	}
 	template<dimensionality_type DD = 0>
 	constexpr auto extension(dimensionality_type d) const -> index_extension{return d?sub_.extension(d-1):extension();}
-	constexpr auto extensions() const -> extensions_type{return tuple_cat(std::make_tuple(extension()), sub_.extensions().base());}
+	constexpr auto extensions() const -> extensions_type{return extensions_type{tuple_cat(std::make_tuple(extension()), sub_.extensions().base())};}
 	friend constexpr auto extensions(layout_t const& self) -> extensions_type{return self.extensions();}
 //	constexpr void extensions_aux(index_extension* it) const{
 //		*it = extension();

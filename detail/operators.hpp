@@ -19,7 +19,7 @@ struct equality_comparable2<T, void, B> : B{
 //	template<class U, typename = std::enable_if_t<not std::is_same<U, T>{}> >
 //	friend bool operator!=(const U& y, const T& x){return not (x == y);}
 	template<class U, typename = std::enable_if_t<not std::is_base_of<T, U>{}>> 
-	friend constexpr bool operator!=(const T& y, const U& x){return not(y==x);}
+	friend constexpr auto operator!=(const T& y, const U& x) -> bool{return not(y==x);}
 };
 
 template<class T, class V> struct partially_ordered2;
@@ -27,18 +27,18 @@ template<class T, class V> struct partially_ordered2;
 template <class T>
 struct partially_ordered2<T, void>{
 	template<class U, typename = std::enable_if_t<not std::is_base_of<T, U>{}>>
-	friend constexpr bool operator>(const U& x, const T& y){return y < x;}
+	friend constexpr auto operator>(const U& x, const T& y) -> bool{return y < x;}
 	template<class U, typename = std::enable_if_t<not std::is_base_of<T, U>{}>>
-	friend constexpr bool operator<(const U& x, const T& y){return y > x;}
+	friend constexpr auto operator<(const U& x, const T& y) -> bool{return y > x;}
 
 	template<class U>
-	friend constexpr bool operator<=(T&& x, U&& y){return (std::forward<T>(x) < std::forward<T>(y)) or (std::forward<T>(x) == std::forward<T>(y));}
+	friend constexpr auto operator<=(T&& x, U&& y) -> bool{return (std::forward<T>(x) < std::forward<T>(y)) or (std::forward<T>(x) == std::forward<T>(y));}
 	template<class U, typename = std::enable_if_t<not std::is_base_of<T, U>{}>>
-	friend constexpr bool operator<=(const U& x, const T& y){return (y > x) or (y == x);}
+	friend constexpr auto operator<=(const U& x, const T& y) -> bool{return (y > x) or (y == x);}
 	template<class U>
-	friend constexpr bool operator>=(const T& x, const U& y){return (x > y) or (x == y);}
+	friend constexpr auto operator>=(const T& x, const U& y) -> bool{return (x > y) or (x == y);}
 	template<class U, typename = std ::enable_if_t<not std::is_base_of<T, U>{}>>
-	friend constexpr bool operator>=(const U& x, const T& y){return (y < x) or (y == x);}
+	friend constexpr auto operator>=(const U& x, const T& y) -> bool{return (y < x) or (y == x);}
 };
 
 template<class T, class V, class B = empty_base> struct totally_ordered2;
@@ -50,7 +50,7 @@ struct totally_ordered2<T, void, B> : B{
 	template<class U>
 	friend constexpr auto operator>=(const T& x, const U& y){return (y < x) or (x == y);}
 	template<class U>
-	friend constexpr auto operator>(const T& x, const U& y){return y < x;}
+	friend constexpr auto operator> (const T& x, const U& y){return y < x;}
 };
 
 template<class T>
@@ -69,13 +69,13 @@ struct weakly_decrementable{
 template<class T>
 struct incrementable : weakly_incrementable<T>{
 	template<class U, typename = std::enable_if_t<not std::is_base_of<T, U>{}>>
-	friend constexpr T operator++(U& self, int){T tmp{self}; ++self; return tmp;}
+	friend constexpr auto operator++(U& self, int) -> T{T tmp{self}; ++self; return tmp;}
 };
 
 template<class T>
 struct decrementable : weakly_decrementable<T>{
 	template<class U, typename = std::enable_if_t<not std::is_base_of<T, U>{}>>
-	friend constexpr T operator--(U& self, int){T tmp{self}; --self; return tmp;}
+	friend constexpr auto operator--(U& self, int) -> T{T tmp{self}; --self; return tmp;}
 };
 
 template<class T>
@@ -84,23 +84,23 @@ struct steppable : incrementable<T>, decrementable<T>{};
 template<class T, class Reference>
 struct dereferenceable{
 	using reference = Reference;
-	friend constexpr reference operator*(dereferenceable const& t){return *static_cast<T const&>(t);}
+	friend constexpr auto operator*(dereferenceable const& t) -> reference{return *static_cast<T const&>(t);}
 };
 
 template<class T, class D>
 struct addable2{
 	using difference_type = D;
 	template<class TT, typename = std::enable_if_t<std::is_base_of<T, TT>{}> >
-	friend constexpr T operator+(TT&& t, difference_type const& d){T tmp{std::forward<TT>(t)}; tmp+=d; return tmp;}
+	friend constexpr auto operator+(TT&& t, difference_type const& d) -> T{T tmp{std::forward<TT>(t)}; tmp+=d; return tmp;}
 	template<class TT, typename = std::enable_if_t<std::is_base_of<T, TT>{}> >
-	friend constexpr T operator+(difference_type const& d, TT&& t) {return std::forward<TT>(t) + d;}
+	friend constexpr auto operator+(difference_type const& d, TT&& t) -> T {return std::forward<TT>(t) + d;}
 };
 
 template<class T, class D>
 struct subtractable2{
 	using difference_type = D;
 	template<class TT, class = T>
-	friend T operator-(TT&& t, difference_type const& d){T tmp{std::forward<TT>(t)}; tmp-=d; return tmp;}
+	friend auto operator-(TT&& t, difference_type const& d) -> T {T tmp{std::forward<TT>(t)}; tmp-=d; return tmp;}
 };
 
 template<class T, class Difference>
@@ -116,10 +116,10 @@ struct random_iterable{
 	friend /*constexpr*/ auto rbegin(T& s){return static_cast<random_iterable&>(s).rbegin();}
 	friend /*constexpr*/ auto rend  (T& s){return static_cast<random_iterable&>(s).rend  ();}
 
-	       constexpr decltype(auto) cfront() const&   {return static_cast<T const&>(*this).front();}
-	       constexpr decltype(auto) cback()  const&   {return static_cast<T const&>(*this).back() ;}
-	friend constexpr decltype(auto) cfront(T const& s){return s.cfront();}
-	friend constexpr decltype(auto) cback (T const& s){return s.cback() ;}
+	       constexpr auto cfront() const&    -> decltype(auto){return static_cast<T const&>(*this).front();}
+	       constexpr auto cback () const&    -> decltype(auto){return static_cast<T const&>(*this).back() ;}
+	friend constexpr auto cfront(T const& s) -> decltype(auto){return s.cfront();}
+	friend constexpr auto cback (T const& s) -> decltype(auto){return s.cback() ;}
 };
 
 #if 0
@@ -160,7 +160,8 @@ struct random_iterable : B{
 //template<class T, class B>
 //typename T::const_iterator cend(random_iterable<T, B> const& c){return c.cend();}
 
-}}
+} // end namespace multi
+} // end namespace boost
 
 #endif
 
