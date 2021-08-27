@@ -79,3 +79,15 @@ BOOST_AUTO_TEST_CASE(array_reextent_2d){
 	BOOST_REQUIRE( A[11][22] = 9. );
 }
 
+BOOST_AUTO_TEST_CASE(array_reextent_2d_array){
+	multi::array<double, 2> A({10, 20}, 4.);
+	BOOST_REQUIRE( A[1][2] == 4. );
+
+	A.clear();
+	BOOST_REQUIRE( num_elements(A) == 0 );
+	BOOST_REQUIRE( size(A) == 0 );
+
+//	std::array<long long unsigned, 2> x = {{20, 30}};
+//	A.reextent(x);
+}
+
