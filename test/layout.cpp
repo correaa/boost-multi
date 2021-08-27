@@ -315,9 +315,9 @@ BOOST_AUTO_TEST_CASE(continued){
  	multi::layout_t<3> L(multi::layout_t<3>::extensions_type{{0, 10}, {0, 10}, {0, 10}}); 
  	BOOST_REQUIRE( num_elements(L) == 1000);
 }
-{	multi::layout_t<3> L(std::make_tuple(multi::iextension{0, 10}, multi::iextension{0, 10}, multi::iextension{0, 10})); BOOST_REQUIRE(L.num_elements() == 1000);
-}{	multi::layout_t<3> L(std::make_tuple(multi::iextension{10}, multi::iextension{10}, multi::iextension{10})); BOOST_REQUIRE( num_elements(L) == 1000);
-}{	multi::layout_t<3> L(std::make_tuple(10, 10, multi::iextension{10})); BOOST_REQUIRE( num_elements(L) == 1000 );
+{	multi::layout_t<3> L({multi::iextension{0, 10}, multi::iextension{0, 10}, multi::iextension{0, 10}}); BOOST_REQUIRE(L.num_elements() == 1000);
+}{	multi::layout_t<3> L({multi::iextension{10}, multi::iextension{10}, multi::iextension{10}}); BOOST_REQUIRE( num_elements(L) == 1000);
+}{	multi::layout_t<3> L({10, 10, multi::iextension{10}}); BOOST_REQUIRE( num_elements(L) == 1000 );
 }{
 	multi::layout_t<1> L;
 	BOOST_REQUIRE( size(L) == 0 );
