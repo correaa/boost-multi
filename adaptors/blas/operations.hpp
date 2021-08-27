@@ -58,9 +58,9 @@ auto operator^(A&& a, Op op)
 
 using operators::H;
 
-template<class A, std::enable_if_t<typename std::decay_t<A>::rank{} == 1, int> =0> 
+template<class A, std::enable_if_t<std::decay_t<A>::rank_v == 1, int> =0> 
 decltype(auto) C(A&& a){return blas::conj(std::forward<A>(a));}
-template<class A, std::enable_if_t<typename std::decay_t<A>::rank{} == 2, int> =0> 
+template<class A, std::enable_if_t<std::decay_t<A>::rank_v == 2, int> =0> 
 decltype(auto) C(A&& a){return hermitized(std::forward<A>(a));}
 
 namespace operators{
