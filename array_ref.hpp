@@ -360,8 +360,6 @@ struct basic_array :
 	basic_array() = default;
 	constexpr basic_array(layout_type const& layout, ElementPtr const& p) : array_types<T, D, ElementPtr, Layout>{layout, p}{}
 
-	static constexpr dimensionality_type rank_v = D;
-	using rank = std::integral_constant<dimensionality_type, D>;
 protected:
 	using types::types;
 	template<typename, dimensionality_type, class Alloc> friend struct static_array;
