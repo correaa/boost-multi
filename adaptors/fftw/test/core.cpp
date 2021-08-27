@@ -23,7 +23,7 @@ namespace{
 
 	template<class M> auto power(M const& m)->decltype(std::norm(m)){return std::norm(m);}
 
-	template<class M, DELETE((M::dimensionality < 1))> auto power(M const& m){
+	template<class M, DELETE((typename M::rank{} < 1))> auto power(M const& m){
 		return accumulate(begin(m), end(m), 0., [](auto const& a, auto const& b){return a + power(b);});
 	}
 
@@ -401,11 +401,13 @@ BOOST_AUTO_TEST_CASE(fftw_1D_power){
 	BOOST_REQUIRE( size(in) == N );
 
 	std::iota(begin(in), end(in), 1.);
+	BOOST_TEST_REQUIRE( power(in) == 1496. );
+
 	multi::array<complex, 1> out(extensions(in));
 
 	auto* p = multi::fftw_plan_dft(in, out, fftw::forward, fftw::preserve_input);
 	fftw_execute(p); 
 	fftw_destroy_plan(p);
-	BOOST_TEST( power(in) == power(out)/num_elements(out), boost::test_tools::tolerance(1e-16) );
+	BOOST_TEST( power(in) == power(out)/num_elements(out), boost::test_tools::tolerance(1e-15) );
 }
 

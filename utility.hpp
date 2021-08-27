@@ -186,21 +186,21 @@ constexpr auto data_elements(T(&t)[N]) noexcept{return data_elements(t[0]);} // 
 //constexpr auto data(const T(&t)[N]) noexcept{return data(t[0]);}
 
 template<class T>
-auto has_dimensionality_aux(T const& t)->decltype(t.dimensionality(), std::true_type {});
-inline auto has_dimensionality_aux(...)->decltype(                    std::false_type{});
+       auto has_dimensionality_aux(T const& t)->decltype(t.dimensionality(), std::true_type {});
+inline auto has_dimensionality_aux(...       )->decltype(                    std::false_type{});
 template<class T> struct has_dimensionality : decltype(has_dimensionality_aux(std::declval<T>())){};
 
-template<class Container, typename = std::enable_if_t<has_dimensionality<Container>{}> >
+template<class Container, std::enable_if_t<has_dimensionality<Container>{}, int> =0>
 constexpr auto dimensionality(Container const& con)
 ->decltype(con.dimensionality()){
 	return con.dimensionality();}
 
 template<class T>
-auto has_dimensionaliy_member_aux(T const& t)->decltype((size_t(t.dimensionality), std::true_type{}));
-inline auto has_dimensionaliy_member_aux(...       )->decltype(                          std::false_type{});
+       auto has_dimensionaliy_member_aux(T const& t)->decltype((size_t(t.dimensionality()), std::true_type{}));
+inline auto has_dimensionaliy_member_aux(...       )->decltype(                             std::false_type{});
 template<class T> struct has_dimensionality_member : decltype(has_dimensionaliy_member_aux(std::declval<T>())){};
 
-template<class C> constexpr auto dimensionality(C const& c)->decltype(c.dimensionality){return c.dimensionality;}
+//template<class C> constexpr auto dimensionality(C const& c)->decltype(c.dimensionality()){return c.dimensionality();}
 
 template<class T, typename = std::enable_if_t<not has_dimensionality_member<T>{}>>
 constexpr auto dimensionality(T const&/*, void* = nullptr*/){return 0;}
@@ -357,7 +357,8 @@ namespace multi{
 
 template<class T, std::size_t N>
 struct array_traits<std::array<T, N>>{
-	static constexpr dimensionality_type dimensionality = 1;
+	static constexpr auto dimensionality() -> dimensionality_type{return 1;}
+
 	using reference = T&;
 	using value_type = std::decay_t<T>;
 	using pointer = T*;
@@ -368,7 +369,8 @@ struct array_traits<std::array<T, N>>{
 
 template<class T, std::size_t N, std::size_t M>
 struct array_traits<std::array<std::array<T, M>, N>>{
-	static constexpr dimensionality_type dimensionality = 1 + array_traits<std::array<T, M>>::dimensionality;
+	static constexpr auto dimensionality() -> dimensionality_type{return 1 + array_traits<std::array<T, M>>::dimensionality();}
+
 	using reference = std::array<T, M>&;
 	using value_type = std::array<std::decay_t<T>, M>;
 	using pointer = std::array<T, M>*;
@@ -428,7 +430,7 @@ constexpr auto stride(std::array<std::array<T, N>, M> const& arr){
 
 template<class T, std::size_t N>
 constexpr auto layout(std::array<T, N> const& arr){
-	return multi::layout_t<multi::array_traits<std::array<T, N>>::dimensionality>{multi::extensions(arr)};
+	return multi::layout_t<multi::array_traits<std::array<T, N>>::dimensionality()>{multi::extensions(arr)};
 }
 
 } // end namespace multi

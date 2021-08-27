@@ -3,13 +3,14 @@ $CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 #ifndef MULTI_LAYOUT_HPP
 #define MULTI_LAYOUT_HPP
-// © Alfredo A. Correa 2018-2020
+// © Alfredo A. Correa 2018-2021
 
 #include "types.hpp"
 
-#include "../detail/operators.hpp"
-#include "../config/NODISCARD.hpp"
 #include "../config/ASSERT.hpp"
+#include "../config/NODISCARD.hpp"
+
+#include "../detail/operators.hpp"
 
 #include<type_traits> // make_signed_t
 
@@ -27,7 +28,7 @@ inline constexpr void construct_from_initializer_list(T* p, As&&... as){
 }
 
 template<class To, class From, size_t... I>
-constexpr auto to_tuple_impl(std::initializer_list<From> il, std::index_sequence<I...>){
+constexpr auto to_tuple_impl(std::initializer_list<From> il, std::index_sequence<I...>/*012*/){
 	(void)il;
 	return std::make_tuple(To{il.begin()[I]}...);
 }
@@ -38,7 +39,7 @@ constexpr auto to_tuple_impl(std::initializer_list<From> il, std::index_sequence
 //}
 
 template<class To, class From, size_t... I>
-constexpr auto to_tuple_impl(std::array<From, sizeof...(I)> arr, std::index_sequence<I...>){
+constexpr auto to_tuple_impl(std::array<From, sizeof...(I)> arr, std::index_sequence<I...>/*012*/){
 	return std::make_tuple(To{std::get<I>(arr)}...);
 }
 
@@ -48,25 +49,24 @@ constexpr auto to_tuple(std::array<From, N> arr){
 }
 
 template <class TT, class Tuple, std::size_t... I>
-constexpr std::array<TT, std::tuple_size<std::decay_t<Tuple>>{}> to_array_impl(
-	Tuple&& t, std::index_sequence<I...>
-){
+constexpr auto to_array_impl(
+	Tuple&& t, std::index_sequence<I...> /*012*/
+) -> std::array<TT, std::tuple_size<std::decay_t<Tuple>>{}>{
 	return {static_cast<TT>(std::get<I>(std::forward<Tuple>(t)))...};
 }
- 
+
 template<class T = void, class Tuple, class TT = std::conditional_t<std::is_same<T, void>{}, std::decay_t<decltype(std::get<0>(std::decay_t<Tuple>{}))>, T> >
-constexpr std::array<TT, std::tuple_size<std::decay_t<Tuple>>{}> 
-to_array(Tuple&& t){
+constexpr auto to_array(Tuple&& t) -> std::array<TT, std::tuple_size<std::decay_t<Tuple>>{}>{
 	return 
 		to_array_impl<TT>(
 			std::forward<Tuple>(t),
-			std::make_index_sequence<std::tuple_size<std::remove_reference_t<Tuple>>{}>{}	
+			std::make_index_sequence<std::tuple_size<std::remove_reference_t<Tuple>>{}>{}
 		)
 	;
 }
 
 template <class Tuple, std::size_t... Ns>
-constexpr auto tuple_tail_impl(Tuple&& t, std::index_sequence<Ns...>){
+constexpr auto tuple_tail_impl(Tuple&& t, std::index_sequence<Ns...> /*012*/){
    return std::forward_as_tuple(std::forward<decltype(std::get<Ns + 1>(t))>(std::get<Ns + 1>(t))...);
 }
 
@@ -75,9 +75,10 @@ constexpr auto tuple_tail(Tuple&& t)
 ->decltype(tuple_tail_impl(t, std::make_index_sequence<std::tuple_size<std::decay_t<Tuple>>{} - 1>())){//std::tuple<Ts...> t){
 	return tuple_tail_impl(t, std::make_index_sequence<std::tuple_size<std::decay_t<Tuple>>{} - 1>());}
 
-}
+} // end namespace detail
 
-}}
+} // end namespace multi
+} // end namespace boost
 
 namespace boost{
 namespace multi{
@@ -90,46 +91,54 @@ template<dimensionality_type D> struct extensions_t;
 
 template<> struct extensions_t<0> :
 		std::tuple<>{
-typedef std::tuple<> base_;
-	static constexpr dimensionality_type dimensionality = 0;
+	using base_ = std::tuple<>;
+	static constexpr auto dimensionality() -> dimensionality_type{return 0;}
+	using rank = std::integral_constant<dimensionality_type, 0>;
+
 	using nelems_type = index;
 	using std::tuple<>::tuple;
 	// cppcheck-suppress noExplicitConstructor ; why is it not taking the inheredited constructor above?
-	extensions_t(std::tuple<> const& t) : std::tuple<>{t}{}
+	explicit extensions_t(std::tuple<> const& t) : std::tuple<>{t}{}
 	extensions_t() = default;
-	constexpr base_ const& base() const{return *this;}
-	friend constexpr decltype(auto) base(extensions_t const& s){return s.base();}
-	constexpr operator nelems_type() const{return 1;}
-	template<class Archive> void serialize(Archive&, unsigned){}
-	constexpr size_type num_elements() const{return 1;}
-	constexpr std::tuple<> from_linear(nelems_type n) const{assert(n < num_elements()); (void)n;
+	constexpr auto base() const -> base_ const&{return *this;}
+	friend constexpr auto base(extensions_t const& s) -> decltype(auto){return s.base();}
+//	constexpr operator nelems_type() const{return 1;}
+	template<class Archive> void serialize(Archive&/*ar*/, unsigned /*version*/){}
+	static constexpr auto num_elements() -> size_type{return 1;}
+	static constexpr auto from_linear(nelems_type n) -> std::tuple<>{
+		assert(n < num_elements()); (void)n; // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : constexpr function
 		return {};
 	}
-	friend constexpr std::tuple<> operator%(nelems_type n, extensions_t const& s){return s.from_linear(n);}
-	friend constexpr extensions_t intersection(extensions_t const&, extensions_t const&){return {};}
+	friend constexpr auto operator%(nelems_type n, extensions_t const& /*s*/) -> std::tuple<>{return /*s.*/from_linear(n);}
+	friend constexpr auto intersection(extensions_t const& /*x1*/, extensions_t const& /*x2*/) -> extensions_t{return {};}
 };
 
 template<> struct extensions_t<1> : 
-		std::tuple<multi::index_extension>{
-typedef std::tuple<multi::index_extension> base_;
-	static constexpr dimensionality_type dimensionality = 1;
+		std::tuple<multi::index_extension>
+{
+	using base_ = std::tuple<multi::index_extension>;
+	static constexpr auto dimensionality() -> dimensionality_type{return 1;}
+//	using rank = std::integral_constant<dimensionality_type,
 	using nelems_type = index;
 	using index_extension = multi::index_extension;
 	using std::tuple<index_extension>::tuple;
-	// cppcheck-suppress noExplicitConstructor ; I don't know why TODO
-	constexpr extensions_t(index_extension const& ie) : base_{ie}{}
+	// cppcheck-suppress noExplicitConstructor ; to 
+//	constexpr extensions_t(index_extension const& ie) : base_{ie}{}
 	extensions_t() = default;
-	constexpr base_ const& base() const{return *this;}
+	constexpr auto base() const -> base_ const&{return *this;}
 	// cppcheck-suppress noExplicitConstructor ; I don't know why TODO
-	constexpr extensions_t(base_ const& t) : std::tuple<index_extension>(t){}
-	friend constexpr decltype(auto) base(extensions_t const& s){return s.base();}
-	template<class Archive> void serialize(Archive& ar, unsigned){ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<0>(*this));}
-	constexpr size_type num_elements() const{return std::get<0>(*this).size();}
-	constexpr std::tuple<multi::index> from_linear(nelems_type n) const{assert(n < num_elements());
+	constexpr explicit extensions_t(base_ const& t) : std::tuple<index_extension>(t){}
+	friend constexpr auto base(extensions_t const& s) -> decltype(auto){return s.base();}
+	template<class Archive> void serialize(Archive& ar, unsigned /*version*/){
+		ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<0>(*this));
+	}
+	constexpr auto num_elements() const -> size_type{return std::get<0>(*this).size();}
+	constexpr auto from_linear(nelems_type n) const{
+		assert(n < num_elements()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
 		return std::tuple<multi::index>{n};
 	}
-	friend constexpr std::tuple<multi::index> operator%(nelems_type n, extensions_t const& s){return s.from_linear(n);}
-	friend extensions_t intersection(extensions_t const& x1, extensions_t const& x2){
+	friend constexpr auto operator%(nelems_type n, extensions_t const& s) -> std::tuple<multi::index>{return s.from_linear(n);}
+	friend auto intersection(extensions_t const& x1, extensions_t const& x2){
 		return extensions_t(std::tuple<index_extension>(intersection(std::get<0>(x1), std::get<0>(x2))));
 	}
 };
@@ -139,7 +148,8 @@ struct extensions_t :
 		      std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename extensions_t<D-1>::base_>()))>{
 using base_ = std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename extensions_t<D-1>::base_>()))>;
 	using base_::base_;
-	static constexpr dimensionality_type dimensionality = D;
+	static constexpr auto dimensionality() -> dimensionality_type {return D;}
+
 	extensions_t() = default;
 	using nelems_type = multi::index;
 	template<class Array, typename = decltype(std::get<D-1>(std::declval<Array>()))> 
@@ -202,7 +212,7 @@ struct layout_t<dimensionality_type{0}, SSize>{
 	using nelems_type=index;
 	using index_range = multi::range<index>;
 	using rank = std::integral_constant<dimensionality_type, 0>;
-	static constexpr dimensionality_type dimensionality = 0;
+	static constexpr auto dimensionality() -> dimensionality_type{return  0;}
 	friend constexpr auto dimensionality(layout_t const& l){return l.dimensionality;}
 	using strides_type  = std::tuple<>;
 	using sizes_type    = std::tuple<>;
@@ -243,7 +253,8 @@ struct layout_t<dimensionality_type{1}, SSize>{
 	using nelems_type=index;
 	using index_range = multi::range<index>;
 	using rank = std::integral_constant<dimensionality_type, 1>;
-	static constexpr dimensionality_type dimensionality = rank{};
+	static constexpr auto dimensionality() -> dimensionality_type{return 1;}
+
 	friend constexpr auto dimensionality(layout_t const& l){return l.dimensionality;}
 	using sub_t = layout_t<dimensionality_type{0}, SSize>;
 
@@ -402,7 +413,7 @@ private:
 	template<dimensionality_type, typename> friend struct layout_t;
 
 template <class F, class Tuple, std::size_t... I>
-static constexpr decltype(auto) apply_impl(F&& f, Tuple&& t, std::index_sequence<I...>)
+static constexpr auto apply_impl(F&& f, Tuple&& t, std::index_sequence<I...> /*012*/) -> decltype(auto)
 {
     // This implementation is valid since C++20 (via P1065R2)
     // In C++17, a constexpr counterpart of std::invoke is actually needed here
@@ -410,7 +421,7 @@ static constexpr decltype(auto) apply_impl(F&& f, Tuple&& t, std::index_sequence
 }
 
 template <class F, class Tuple>
-static constexpr decltype(auto) std_apply(F&& f, Tuple&& t)
+static constexpr auto std_apply(F&& f, Tuple&& t) -> decltype(auto)
 {
     return apply_impl(
         std::forward<F>(f), std::forward<Tuple>(t),

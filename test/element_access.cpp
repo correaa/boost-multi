@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(multi_test_constness_reference){
 	BOOST_REQUIRE( size( m(1, {0, 3}) ) == 3 );
 
 	BOOST_REQUIRE( m(1, {0, 3})[1] == 99. );
-	BOOST_REQUIRE( m({0, 3}, 1).dimensionality == 1 );
+	BOOST_REQUIRE( m({0, 3}, 1).dimensionality() == 1 );
 	BOOST_REQUIRE( size(m.sliced(0, 3)) == 3 );
 
 	BOOST_REQUIRE( m.range({0, 3}).rotated()[1].unrotated().size() == 3 );
@@ -94,7 +94,7 @@ BOOST_AUTO_TEST_CASE(multi_test_non_constness_reference){
 	static_assert(std::is_assignable<decltype(m(1, {0, 3})[1]), double>{}, "!");
 
 	BOOST_REQUIRE( m(1, {0, 3})[1] == 99. );
-	BOOST_REQUIRE( m({0, 3}, 1).dimensionality == 1 );
+	BOOST_REQUIRE( m({0, 3}, 1).dimensionality() == 1 );
 	BOOST_REQUIRE( size(m.sliced(0, 3)) == 3 );
 
 	BOOST_REQUIRE( size(m.range({0, 3}).rotated()(1L).unrotated()) == 3 );

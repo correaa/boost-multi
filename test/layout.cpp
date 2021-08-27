@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE(layout)
 	BOOST_REQUIRE( B2[0].sliced(10, 20).size() == 10 );
 	BOOST_REQUIRE( size(B2[0].sliced(10, 20))  == 10 );
 
-	BOOST_REQUIRE( B2(0, {10, 20}).dimensionality  == 1 );
+	BOOST_REQUIRE( B2(0, {10, 20}).dimensionality()  == 1 );
 	BOOST_REQUIRE( dimensionality(B2(0, {10, 20})) == 1 );
 
 	BOOST_REQUIRE( size(B2(0, {10, 20})) == 10 );
@@ -214,14 +214,14 @@ BOOST_AUTO_TEST_CASE(multi_layout){
 //	assert( std::get<1>(u) == 2 );
  {
 	multi::layout_t<0> L; 
-	BOOST_REQUIRE( dimensionality(L)==0 );
+	BOOST_REQUIRE( L.dimensionality()==0 );
 	BOOST_REQUIRE( num_elements(L) == 1 );
 }{
 	multi::iextensions<0> x{};
 	multi::layout_t<0> L(x);
-	(void)L;
+	BOOST_REQUIRE(L.num_elements() == 1);
 }{  multi::layout_t<1> L{}; 
-	BOOST_REQUIRE( dimensionality(L)==1 );
+	BOOST_REQUIRE( L.dimensionality() ==1 );
 	BOOST_REQUIRE( num_elements(L) == 0 );
 	BOOST_REQUIRE( size(L) == 0 );
 	BOOST_REQUIRE( size(extension(L))==0 );
@@ -239,13 +239,13 @@ BOOST_AUTO_TEST_CASE(multi_layout){
 	BOOST_REQUIRE( not is_empty(L) );
 }{
 	multi::layout_t<1> L(multi::iextensions<1>{20});
-	BOOST_REQUIRE( dimensionality(L)==1 );
+	BOOST_REQUIRE( L.dimensionality() ==1 );
 	BOOST_REQUIRE( num_elements(L) == 20 );
 	BOOST_REQUIRE( size(L) == 20 );
 	BOOST_REQUIRE( stride(L) == 1 );
 }{
 	multi::layout_t<1> L(multi::iextensions<1>{1});
-	BOOST_REQUIRE( dimensionality(L)==1 );
+	BOOST_REQUIRE( L.dimensionality() ==1 );
 	BOOST_REQUIRE( num_elements(L) == 1 );
 	BOOST_REQUIRE( size(L) == 1 );
 	BOOST_REQUIRE( stride(L) == 1 );

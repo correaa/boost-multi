@@ -67,30 +67,31 @@ template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layo
 struct array_types : Layout{ // cppcheck-suppress syntaxError ; false positive in cppcheck
 	using element = T;
 	using element_type = element; // this follows more closely https://en.cppreference.com/w/cpp/memory/pointer_traits
-	constexpr static dimensionality_type dimensionality = D;
+//	using Layout::dimensionality;
+//	constexpr static dimensionality_type dimensionality = D;
 	using element_ptr = ElementPtr;
 	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element const>; //multi::const_iterator<ElementPtr>; 
 	using element_ref = typename std::iterator_traits<element_ptr>::reference;
 	using layout_t = Layout;
 	using value_type = typename std::conditional<
-		(dimensionality>1),
-		array<element, dimensionality-1, typename multi::pointer_traits<element_ptr>::default_allocator_type>, 
+		(D>1),
+		array<element, D-1, typename multi::pointer_traits<element_ptr>::default_allocator_type>, 
 		typename std::conditional<
-			dimensionality == 1,
+			D == 1,
 			element,
 			element
 		>::type
 	>::type;
-	using reference = typename std::conditional<(dimensionality > 1), 
-		basic_array<element, dimensionality-1, element_ptr>,
-		typename std::conditional<(dimensionality == 1), 
+	using reference = typename std::conditional<(D > 1), 
+		basic_array<element, D-1, element_ptr>,
+		typename std::conditional<(D == 1), 
 			  typename std::iterator_traits<element_ptr>::reference   // this seems more correct but it doesn't work with cuda fancy reference
 			, typename std::iterator_traits<element_ptr>::reference
 		>::type
 	>::type;
 
-	using const_reference = typename std::conditional<(dimensionality > 1), 
-		basic_array<element, dimensionality-1, element_const_ptr>,
+	using const_reference = typename std::conditional<(D > 1), 
+		basic_array<element, D-1, element_const_ptr>,
 	//	decltype(*std::declval<element_const_ptr>())&
 		typename std::iterator_traits<element_const_ptr>::reference
 	//	std::add_lvalue_reference_t<std::add_const_t<std::remove_reference_t<typename std::iterator_traits<element_ptr>::reference>>>
@@ -157,8 +158,8 @@ struct basic_array_ptr :
 
 	constexpr basic_array_ptr(std::nullptr_t p = nullptr) : Ref{p}{} // TODO remove default argument, add default ctor
 	template<class, class> friend struct basic_array_ptr;
-	constexpr basic_array_ptr(typename Ref::element_ptr p, layout_t<Ref::dimensionality-1> l) : Ref{l, p}{}
-	constexpr basic_array_ptr(typename Ref::element_ptr p, index_extensions<Ref::dimensionality> e) : Ref{p, e}{}
+	constexpr basic_array_ptr(typename Ref::element_ptr p, layout_t<typename Ref::rank{}-1> l) : Ref{l, p}{}
+	constexpr basic_array_ptr(typename Ref::element_ptr p, index_extensions<typename Ref::rank{}> e) : Ref{p, e}{}
 
 //	template<class Array, typename = decltype(typename Ref::element_ptr{typename Array::element_ptr{}})> 
 //	constexpr basic_array_ptr(Array const& o) : Ref{o->layout(), o->base()}{}//, stride_{o.stride_}{}
@@ -228,7 +229,7 @@ struct array_iterator :
 //	using element_type = typename Ref::value_type;
 	using iterator_category = std::random_access_iterator_tag;
 
-	constexpr static dimensionality_type dimensionality = D;
+	constexpr static dimensionality_type rank_v = D;
 	using rank = std::integral_constant<dimensionality_type, D>;
 
 	using ptr_type = basic_array_ptr<basic_array<element, D-1, element_ptr>, layout_t<D-1>>;
@@ -345,8 +346,9 @@ struct biiterator :
 
 template<class It>
 auto ref(It begin, It end)
-->multi::basic_array<typename It::element, It::dimensionality, typename It::element_ptr>{
-	return multi::basic_array<typename It::element, It::dimensionality, typename It::element_ptr>{begin, end};
+//->multi::basic_array<typename It::element, typename It::rank{}, typename It::element_ptr>
+{
+	return multi::basic_array<typename It::element, typename It::rank{}, typename It::element_ptr>{begin, end};
 }
 
 template<typename T, dimensionality_type D, typename ElementPtr, class Layout>
@@ -363,6 +365,9 @@ struct basic_array :
 	using basic_const_array = basic_array<T, D, typename std::pointer_traits<ElementPtr>::template rebind<typename basic_array::element_type const>, Layout>;
 	basic_array() = default;
 	constexpr basic_array(layout_type const& layout, ElementPtr const& p) : array_types<T, D, ElementPtr, Layout>{layout, p}{}
+
+	static constexpr dimensionality_type rank_v = D;
+	using rank = std::integral_constant<dimensionality_type, D>;
 protected:
 	using types::types;
 	template<typename, dimensionality_type, class Alloc> friend struct static_array;
@@ -391,7 +396,7 @@ public:
 	template<class T2> friend constexpr auto reinterpret_array_cast(basic_array const& a){
 		return a.template reinterpret_array_cast<T2, typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>();
 	}
-	friend constexpr auto dimensionality(basic_array const& self){return self.dimensionality;}
+	friend constexpr auto dimensionality(basic_array const& self){return self.dimensionality();}
 	using typename types::reference;
 
 	using default_allocator_type = typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type;
@@ -784,7 +789,7 @@ private:
 		assert(begin.stride() == end.stride());
 		assert(begin->layout() == end->layout());
 	}
-	template<class It> friend auto ref(It begin, It end) ->multi::basic_array<typename It::element, It::dimensionality, typename It::element_ptr>;
+	template<class It> friend auto ref(It begin, It end);// ->multi::basic_array<typename It::element, typename It::rank{}, typename It::element_ptr>;
 
 	template<class Iterator>
 	struct basic_reverse_iterator : 
@@ -1076,7 +1081,10 @@ struct array_iterator<Element, 1, Ptr> ://, Ref> :
 	using element_ptr = Ptr;
 	using pointer = element_ptr;
 	using stride_type = multi::index;
-	using rank = std::integral_constant<dimensionality_type, 1>;
+
+	static constexpr dimensionality_type rank_v = 1;
+	using rank = std::integral_constant<dimensionality_type, rank_v>;
+
 	constexpr bool operator<(array_iterator const& o) const{return distance_to(o) > 0;}
 	explicit constexpr array_iterator(Ptr d, typename basic_array<Element, 1, Ptr>::index s) : data_{d}, stride_{s}{} // TODO make explicit?
 private:
@@ -1171,6 +1179,9 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout> :
 	multi::random_iterable<basic_array<T, dimensionality_type(1), ElementPtr, Layout> >,
 	array_types<T, dimensionality_type(1), ElementPtr, Layout>
 {
+	static constexpr dimensionality_type rank_v = 1;
+	using rank = std::integral_constant<dimensionality_type, rank_v>;
+
 	using types = array_types<T, dimensionality_type{1}, ElementPtr, Layout>;
 	using types::types;
 
@@ -1218,7 +1229,7 @@ protected:
 	template<class, dimensionality_type D, class> friend struct array_iterator;
 public:
 //	using default_allocator_type = typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type;
-	friend constexpr dimensionality_type dimensionality(basic_array const& self){return self.dimensionality;}
+	friend constexpr auto dimensionality(basic_array const& self) -> dimensionality_type{return self.dimensionality();}
 //	template<class BasicArray, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<BasicArray>>{}>, typename = decltype(types(std::declval<BasicArray&&>()))>
 //	constexpr basic_array(BasicArray&& other) : types{std::forward<BasicArray>(other)}{}
 //	basic_array_ptr<basic_array, Layout> operator&() const&{return {this->base_, this->layout()};}

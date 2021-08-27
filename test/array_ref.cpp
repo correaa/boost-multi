@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray){
 	multi::array_ptr<double, 2> map = &a;
 	BOOST_REQUIRE( &map->operator[](1)[1] == &a[1][1] );
 	BOOST_REQUIRE( (*&a)[1][1] == 6. );
-	
+
 	multi::array_ref<double, 2>&& mar = *map;
 
 	BOOST_REQUIRE( &mar[1][1] == &a[1][1] );
@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray){
 //	double const(&a_const)[4][5] = a;
 	BOOST_REQUIRE( &a_const[1][1] == &a[1][1] );
 
-	BOOST_REQUIRE( mar(2, {1, 3}).dimensionality == 1 );
+	BOOST_REQUIRE( mar(2, {1, 3}).dimensionality() == 1 );
 	BOOST_REQUIRE( dimensionality(mar(2, {1, 3})) == 1 );
 
 	BOOST_REQUIRE( size(mar(2, {1, 3})) == 2 );
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed){
 	arr[5] = "d";
 	arr[6] = "e";
 	BOOST_REQUIRE( std::equal(arr.begin(), arr.end(), mar.begin()) );
-	
+
 	auto arrB = multi::array<std::string, 1>({"a", "b", "c", "d", "e"}).reindex(2);
 	BOOST_REQUIRE( size(arrB) == 5 );
 	BOOST_REQUIRE( arrB[2] == "a" );

@@ -102,8 +102,8 @@ protected:
 	void allocate(){this->base_ = array_alloc::allocate(static_array::num_elements());}
 public:
 	using value_type = typename std::conditional<
-		(static_array::dimensionality > 1), // this parenthesis is needed
-		array<typename static_array::element, static_array::dimensionality-1, allocator_type>, 
+		(D > 1), // this parenthesis is needed
+		array<typename static_array::element, D-1, allocator_type>, 
 		typename static_array::element
 	>::type;
 
@@ -314,26 +314,26 @@ public:
 	using element_move_ptr  = std::move_iterator<typename static_array::element_ptr>;
 
 	using reference = typename std::conditional<
-		(static_array::dimensionality > 1), 
-		basic_array<typename static_array::element, static_array::dimensionality-1, typename static_array::element_ptr>, 
+		(D > 1), 
+		basic_array<typename static_array::element, D-1, typename static_array::element_ptr>, 
 		typename std::conditional<
-			static_array::dimensionality == 1,
+			D == 1,
 			typename std::iterator_traits<typename static_array::element_ptr>::reference,
 			void
 		>::type
 	>::type;
 	using const_reference = typename std::conditional<
-		(static_array::dimensionality > 1), 
-		basic_array<typename static_array::element, static_array::dimensionality-1, typename static_array::element_const_ptr>, // TODO(correaa) should be const_reference, but doesn't work witn rangev3?
+		(D > 1), 
+		basic_array<typename static_array::element, D-1, typename static_array::element_const_ptr>, // TODO(correaa) should be const_reference, but doesn't work witn rangev3?
 		typename std::conditional<
-			static_array::dimensionality == 1,
+			D == 1,
 			decltype(*std::declval<typename static_array::element_const_ptr>()),
 			void
 		>::type
 	>::type;
 
-	using       iterator = multi::array_iterator<T, static_array::dimensionality, typename static_array::element_ptr      >;
-	using const_iterator = multi::array_iterator<T, static_array::dimensionality, typename static_array::element_const_ptr>;
+	using       iterator = multi::array_iterator<T, D, typename static_array::element_ptr      >;
+	using const_iterator = multi::array_iterator<T, D, typename static_array::element_const_ptr>;
 
 	friend auto get_allocator(static_array const& self) -> typename static_array::allocator_type{return self.get_allocator();}
 
@@ -423,12 +423,12 @@ public:
 		return *this;
 	}
 	template<class TT, class... As>
-	auto operator=(static_array<TT, static_array::dimensionality, As...> const& other)& -> static_array&{
+	auto operator=(static_array<TT, D, As...> const& other)& -> static_array&{
 		assert( extensions(other) == static_array::extensions() );
 		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
 		return *this;
 	}
-	constexpr explicit operator basic_array<typename static_array::value_type, static_array::dimensionality, typename static_array::element_const_ptr, typename static_array::layout_t>()&{
+	constexpr explicit operator basic_array<typename static_array::value_type, D, typename static_array::element_const_ptr, typename static_array::layout_t>()&{
 		return this->template static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
 	}
 };
@@ -693,13 +693,13 @@ public:
 	}
 
 	template<class TT, class... As, class = std::enable_if_t<std::is_assignable<typename static_array::element_ref, TT>{}> >
-	auto operator=(static_array<TT, static_array::dimensionality, As...> const& other)& -> static_array&{
+	auto operator=(static_array<TT, 0, As...> const& other)& -> static_array&{
 		assert( extensions(other) == static_array::extensions() );
 		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
 		return *this;
 	}
 
-	constexpr explicit operator basic_array<typename static_array::value_type, static_array::dimensionality, typename static_array::element_const_ptr, typename static_array::layout_t>()&{
+	constexpr explicit operator basic_array<typename static_array::value_type, 0, typename static_array::element_const_ptr, typename static_array::layout_t>()&{
 		return this->template static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>();
 	//	return static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
 	}
@@ -772,13 +772,13 @@ public:
 	friend auto data_elements(array      & self){return self.data_elements();}
 	friend auto data_elements(array     && self){return std::move(self).data_elements();}
 
-	auto move() & -> basic_array<typename array::element, array::dimensionality, multi::move_ptr<typename array::element> >{
-		basic_array<typename array::element, array::dimensionality, multi::move_ptr<typename array::element> >
+	auto move() & -> basic_array<typename array::element, D, multi::move_ptr<typename array::element> >{
+		basic_array<typename array::element, D, multi::move_ptr<typename array::element> >
 		ret = multi::static_array_cast<typename array::element, multi::move_ptr<typename array::element>>(*this);
-		layout_t<array::dimensionality>::operator=({});
+		layout_t<D>::operator=({});
 		return ret;
 	}
-	friend auto move(array& self) -> basic_array<typename array::element, array::dimensionality, multi::move_ptr<typename array::element> >{
+	friend auto move(array& self) -> basic_array<typename array::element, D, multi::move_ptr<typename array::element> >{
 		return self.move();
 	}
 
@@ -1013,13 +1013,13 @@ template<dimensionality_type D, class A, class=std::enable_if_t<is_allocator<A>{
 	template<class T> array(iextensions<2>, T)->array<T, 2>;
 	template<class T> array(iextensions<3>, T)->array<T, 3>;
 
-template<class T, class MR, class A=memory::allocator<T, MR>> array(iextensions<1>, T, MR*)->array<T, 1, A>;
-template<class T, class MR, class A=memory::allocator<T, MR>> array(iextensions<2>, T, MR*)->array<T, 2, A>;
-template<class T, class MR, class A=memory::allocator<T, MR>> array(iextensions<3>, T, MR*)->array<T, 3, A>;
-template<class T, class MR, class A=memory::allocator<T, MR>> array(iextensions<4>, T, MR*)->array<T, 4, A>;
-template<class T, class MR, class A=memory::allocator<T, MR>> array(iextensions<5>, T, MR*)->array<T, 5, A>;
+template<class T, class MR, class A=memory::allocator<T, MR>> array(extensions_t<1>, T, MR*)->array<T, 1, A>;
+template<class T, class MR, class A=memory::allocator<T, MR>> array(extensions_t<2>, T, MR*)->array<T, 2, A>;
+template<class T, class MR, class A=memory::allocator<T, MR>> array(extensions_t<3>, T, MR*)->array<T, 3, A>;
+template<class T, class MR, class A=memory::allocator<T, MR>> array(extensions_t<4>, T, MR*)->array<T, 4, A>;
+template<class T, class MR, class A=memory::allocator<T, MR>> array(extensions_t<5>, T, MR*)->array<T, 5, A>;
 
-template<class MatrixRef, class DT = typename MatrixRef::decay_type, class T = typename DT::element, dimensionality_type D = DT::dimensionality, class Alloc = typename DT::allocator_type>
+template<class MatrixRef, class DT = typename MatrixRef::decay_type, class T = typename DT::element, dimensionality_type D = typename DT::rank{}, class Alloc = typename DT::allocator_type>
 array(MatrixRef)->array<T, D, Alloc>;
 
 template<typename T, dimensionality_type D, typename P> array(basic_array<T, D, P>)->array<T, D>;

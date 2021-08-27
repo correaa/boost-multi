@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(array_cref){
 	multi::array_ref<complex, 2> A2D(d.data(), multi::extensions_t<2>{10, 10});
 	multi::array_ref<complex, 2, complex*> B2D(d.data(), {10, 10});
 
-	static_assert( multi::array_ref<complex, 2>::dimensionality == 2 , "!" );
+	static_assert( multi::array_ref<complex, 2>::rank::value == 2 , "!" );
 
 	BOOST_REQUIRE( &A2D[3][4] == &B2D[3][4] );
 	

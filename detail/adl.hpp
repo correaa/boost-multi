@@ -20,9 +20,9 @@
 #include<thrust/equal.h>
 #endif
 
-namespace boost{namespace multi{
+namespace boost{
+namespace multi{
 	template<std::size_t I> struct priority : std::conditional_t<I==0, std::true_type, struct priority<I-1>>{}; 
-}}
 
 #define DECLRETURN(ExpR) ->decltype(ExpR){return ExpR;}
 #define JUSTRETURN(ExpR)                 {return ExpR;}
@@ -42,8 +42,6 @@ namespace adl{ \
 	} (FuN); \
 } \
 }}
-
-namespace boost{namespace multi{
 
 constexpr class adl_copy_n_t{
 	template<class... As>          constexpr auto _(priority<0>,        As&&... as) const DECLRETURN(              std::copy_n(                    std::forward<As>(as)...))
@@ -126,9 +124,6 @@ namespace adl{ \
 		template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<5>{}, std::forward<As>(as)...)) \
 	} fill; \
 } \
-}}
-
-namespace boost{namespace multi{
 
 template<class Alloc> 
 struct alloc_construct_elem_t{
@@ -389,11 +384,6 @@ auto alloc_uninitialized_fill_n(Alloc& a, ForwardIt first, Size n, T const& v)
 }
 }
 
-}}
-
-namespace boost{
-namespace multi{
-
 constexpr class adl_distance_fn__{
 	template<class... As>          constexpr auto _(priority<1>,        As&&... as) const DECLRETURN(              std::distance(std::forward<As>(as)...))
 	template<class... As>          constexpr auto _(priority<2>,        As&&... as) const DECLRETURN(                   distance(std::forward<As>(as)...))
@@ -548,7 +538,8 @@ template<> struct recursive<1>{
 	}
 };
 
-}}
+} // end namespace multi
+} // end namespace boost
 
 #endif
 
