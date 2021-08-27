@@ -219,6 +219,7 @@ BOOST_AUTO_TEST_CASE(multi_layout){
 }{
 	multi::iextensions<0> x{};
 	multi::layout_t<0> L(x);
+	(void)L;
 }{  multi::layout_t<1> L{}; 
 	BOOST_REQUIRE( dimensionality(L)==1 );
 	BOOST_REQUIRE( num_elements(L) == 0 );
