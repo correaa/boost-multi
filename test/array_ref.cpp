@@ -39,8 +39,7 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray){
 //	double const(&a_const)[4][5] = a;
 	BOOST_REQUIRE( &a_const[1][1] == &a[1][1] );
 
-	BOOST_REQUIRE( mar(2, {1, 3}).dimensionality() == 1 );
-	BOOST_REQUIRE( dimensionality(mar(2, {1, 3})) == 1 );
+	static_assert( decltype(mar(2, {1, 3}))::rank_v == 1 , "!");
 
 	BOOST_REQUIRE( size(mar(2, {1, 3})) == 2 );
 	BOOST_REQUIRE( &mar(2, {1, 3})[1] == &a[2][2] );

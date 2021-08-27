@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(multi_test_constness_reference){
 	BOOST_REQUIRE( size( m(1, {0, 3}) ) == 3 );
 
 	BOOST_REQUIRE( m(1, {0, 3})[1] == 99. );
-	BOOST_REQUIRE( m({0, 3}, 1).dimensionality() == 1 );
+	static_assert( decltype( m({0, 3}, 1) )::rank_v == 1 , "!");
 	BOOST_REQUIRE( size(m.sliced(0, 3)) == 3 );
 
 	BOOST_REQUIRE( m.range({0, 3}).rotated()[1].unrotated().size() == 3 );
@@ -93,15 +93,15 @@ BOOST_AUTO_TEST_CASE(multi_test_non_constness_reference){
 	BOOST_REQUIRE( size( m(1, {0, 3}) ) == 3 );
 	static_assert(std::is_assignable<decltype(m(1, {0, 3})[1]), double>{}, "!");
 
+	static_assert( decltype( m({0, 3}, 1) )::rank_v == 1 , "!");
 	BOOST_REQUIRE( m(1, {0, 3})[1] == 99. );
-	BOOST_REQUIRE( m({0, 3}, 1).dimensionality() == 1 );
 	BOOST_REQUIRE( size(m.sliced(0, 3)) == 3 );
 
 	BOOST_REQUIRE( size(m.range({0, 3}).rotated()(1L).unrotated()) == 3 );
 	BOOST_REQUIRE( size(m(multi::index_range{0, 3}, 1)) == 3 );
 
 //	BOOST_REQUIRE( size(m({0, 3}, 1)) == 3 );
- 
+
 	BOOST_REQUIRE( m({0, 3}, {0, 3})[1][1] == 99. );
 
 	m(1, {0, 3})[1] = 88.; 
@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE(multi_test_stencil){
 		 {"f", "g", "h", "f", "g"},
 		 {"h", "i", "j", "k", "l"}}
 	;
-	
+
 	BOOST_REQUIRE(      size(A) == 3                                           );
 	BOOST_REQUIRE(           A.num_elements() == 3*5                           );
 	BOOST_REQUIRE(           A[1][2] == "h"                                    );
@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE(multi_extensions_intersection){
 
 	BOOST_REQUIRE( extensions(A).num_elements() ==  6 );
 	BOOST_REQUIRE( extensions(B).num_elements() == 12 );
-	
+
 	auto is = intersection( extensions(A), extensions(B) );
 	BOOST_REQUIRE( is.num_elements() == 6 );
 
@@ -175,17 +175,18 @@ BOOST_AUTO_TEST_CASE(multi_extensions_intersection_2){
 
 	BOOST_REQUIRE( extensions(A).num_elements() == 80*20 );
 	BOOST_REQUIRE( extensions(B).num_elements() == 30*70 );
-	
+
 	auto is = intersection( extensions(A), extensions(B) );
 	BOOST_REQUIRE( is.num_elements() == 30*20 );
 
 	multi::array<double, 2> C(is);
 	C(std::get<0>(is), std::get<1>(is)) = A(std::get<0>(is), std::get<1>(is));
 	BOOST_REQUIRE( C[16][17] == 4. );
-	
+
 	C(std::get<0>(is), std::get<1>(is)) = B(std::get<0>(is), std::get<1>(is));
 	BOOST_REQUIRE( C[16][17] == 8. );
 }
 
 
 #endif
+

@@ -182,22 +182,19 @@ constexpr auto data(T(&t)[N]) noexcept{return data(t[0]);} // NOLINT(cppcoreguid
 template<class T, std::size_t N>
 constexpr auto data_elements(T(&t)[N]) noexcept{return data_elements(t[0]);} // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 
-//template<class T, std::size_t N>
-//constexpr auto data(const T(&t)[N]) noexcept{return data(t[0]);}
-
 template<class T>
-       auto has_dimensionality_aux(T const& t)->decltype(t.dimensionality(), std::true_type {});
-inline auto has_dimensionality_aux(...       )->decltype(                    std::false_type{});
+       auto has_dimensionality_aux(T const& t)->decltype(T::rank_v, std::true_type {});
+inline auto has_dimensionality_aux(...       )->decltype(           std::false_type{});
 template<class T> struct has_dimensionality : decltype(has_dimensionality_aux(std::declval<T>())){};
 
 template<class Container, std::enable_if_t<has_dimensionality<Container>{}, int> =0>
-constexpr auto dimensionality(Container const& con)
-->decltype(con.dimensionality()){
-	return con.dimensionality();}
+constexpr auto dimensionality(Container const& /*container*/)
+->decltype(Container::rank_v){
+	return Container::rank_v;}
 
 template<class T>
-       auto has_dimensionaliy_member_aux(T const& t)->decltype((size_t(t.dimensionality()), std::true_type{}));
-inline auto has_dimensionaliy_member_aux(...       )->decltype(                             std::false_type{});
+       auto has_dimensionaliy_member_aux(T const& t)->decltype((size_t(T::rank_v), std::true_type{}));
+inline auto has_dimensionaliy_member_aux(...       )->decltype(                    std::false_type{});
 template<class T> struct has_dimensionality_member : decltype(has_dimensionaliy_member_aux(std::declval<T>())){};
 
 //template<class C> constexpr auto dimensionality(C const& c)->decltype(c.dimensionality()){return c.dimensionality();}

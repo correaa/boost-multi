@@ -92,7 +92,9 @@ template<dimensionality_type D> struct extensions_t;
 template<> struct extensions_t<0> :
 		std::tuple<>{
 	using base_ = std::tuple<>;
-	static constexpr auto dimensionality() -> dimensionality_type{return 0;}
+	[[deprecated]] static constexpr dimensionality_type dimensionality = 0;
+//	static constexpr auto dimensionality() -> dimensionality_type{return 0;}
+
 	using rank = std::integral_constant<dimensionality_type, 0>;
 
 	using nelems_type = index;
@@ -117,7 +119,9 @@ template<> struct extensions_t<1> :
 		std::tuple<multi::index_extension>
 {
 	using base_ = std::tuple<multi::index_extension>;
-	static constexpr auto dimensionality() -> dimensionality_type{return 1;}
+
+	[[deprecated]] static constexpr auto dimensionality = 1;
+//	static constexpr auto dimensionality() -> dimensionality_type{return 1;}
 //	using rank = std::integral_constant<dimensionality_type,
 	using nelems_type = index;
 	using index_extension = multi::index_extension;
@@ -148,7 +152,8 @@ struct extensions_t :
 		      std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename extensions_t<D-1>::base_>()))>{
 using base_ = std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename extensions_t<D-1>::base_>()))>;
 	using base_::base_;
-	static constexpr auto dimensionality() -> dimensionality_type {return D;}
+	[[deprecated]] static constexpr dimensionality_type dimensionality = D;
+//	static constexpr auto dimensionality() -> dimensionality_type {return D;}
 
 	extensions_t() = default;
 	using nelems_type = multi::index;
@@ -211,9 +216,15 @@ struct layout_t<dimensionality_type{0}, SSize>{
 	using offset_type=index;
 	using nelems_type=index;
 	using index_range = multi::range<index>;
-	using rank = std::integral_constant<dimensionality_type, 0>;
-	static constexpr auto dimensionality() -> dimensionality_type{return  0;}
-	friend constexpr auto dimensionality(layout_t const& l){return l.dimensionality;}
+
+	static constexpr dimensionality_type rank_v = 0;
+	using rank = std::integral_constant<dimensionality_type, rank_v>;
+
+
+	[[deprecated]] static constexpr dimensionality_type dimensionality = 0;
+//	static constexpr auto dimensionality() -> dimensionality_type{return  0;}
+	friend constexpr auto dimensionality(layout_t const&/*unused*/){return 0;}
+
 	using strides_type  = std::tuple<>;
 	using sizes_type    = std::tuple<>;
 
@@ -252,12 +263,16 @@ struct layout_t<dimensionality_type{1}, SSize>{
 	using offset_type=index; 
 	using nelems_type=index;
 	using index_range = multi::range<index>;
-	using rank = std::integral_constant<dimensionality_type, 1>;
-	static constexpr auto dimensionality() -> dimensionality_type{return 1;}
 
-	friend constexpr auto dimensionality(layout_t const& l){return l.dimensionality;}
+	static constexpr dimensionality_type rank_v = 1;
+	using rank = std::integral_constant<dimensionality_type, rank_v>;
+
+	static constexpr dimensionality_type dimensionality = 1;
+//	static constexpr auto dimensionality() -> dimensionality_type{return 1;}
+
+	friend constexpr auto dimensionality(layout_t const& /*self*/){return 1;}
+
 	using sub_t = layout_t<dimensionality_type{0}, SSize>;
-
 private:
 	stride_type stride_ = 1;//std::numeric_limits<stride_type>::max(); 
 	offset_type offset_ = 0; 
@@ -390,11 +405,15 @@ operator*(layout_t<0>::index_extension const& ie, layout_t<0>::extensions_type c
 template<dimensionality_type D, typename SSize>
 struct layout_t : multi::equality_comparable2<layout_t<D>, void>{
 	using dimensionality_type = multi::dimensionality_type;
-	using rank = std::integral_constant<dimensionality_type, D>;
-	static constexpr auto dimensionality()                  -> dimensionality_type{return rank{};}
-	friend constexpr auto dimensionality(layout_t const& l) -> dimensionality_type{
-		return l.dimensionality();
-	}
+
+	static constexpr dimensionality_type rank_v = D;
+	using rank = std::integral_constant<dimensionality_type, rank_v>;
+
+	[[deprecated]] static constexpr dimensionality_type dimensionality = D;
+//	static constexpr auto dimensionality()                  -> dimensionality_type{return rank{};}
+
+	friend constexpr auto dimensionality(layout_t const& /*unused*/) -> dimensionality_type{return D;}
+
 	using sub_type = layout_t<D-1>;
 	using size_type = multi::size_type;
 	using index = multi::index;

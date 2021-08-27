@@ -3,10 +3,6 @@ $CXXX $CXXFLAGS $0 -o $0x&&$0x&&rm $0x&&(rm -rf test/build&&mkdir -p test/build&
 #endif
 // © Alfredo Correa 2018-2020
 
-//#if (defined(__clang__) and defined(__CUDA__)) or defined(__NVCC__)
-//#define BOOST_RESULT_OF_USE_TR1_WITH_DECLTYPE_FALLBACK // see comments https://www.boost.org/doc/libs/1_72_0/boost/utility/result_of.hpp
-//#endif
-
 #ifndef BOOST_MULTI_ARRAY_REF_HPP
 #define BOOST_MULTI_ARRAY_REF_HPP
 
@@ -130,13 +126,11 @@ public://TODO find why this needs to be public and not protected or friend
 	>
 	constexpr explicit array_types(ArrayTypes const& a) : Layout{a}, base_{a.base_}{}
 
-
-
 	template<typename ElementPtr2, 
 		typename = decltype(Layout{std::declval<array_types<T, D, ElementPtr2, Layout> const&>().layout()}),
 		typename = decltype(element_ptr{std::declval<array_types<T, D, ElementPtr2, Layout> const&>().base_})
 	>
-	constexpr array_types(array_types<T, D, ElementPtr2, Layout> const& other) : Layout{other.layout()}, base_{other.base_}{}
+	constexpr explicit array_types(array_types<T, D, ElementPtr2, Layout> const& other) : Layout{other.layout()}, base_{other.base_}{}
 	template<class T2, dimensionality_type D2, class E2, class L2> friend struct array_types;
 };
 
@@ -396,7 +390,7 @@ public:
 	template<class T2> friend constexpr auto reinterpret_array_cast(basic_array const& a){
 		return a.template reinterpret_array_cast<T2, typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>();
 	}
-	friend constexpr auto dimensionality(basic_array const& self){return self.dimensionality();}
+	friend constexpr auto dimensionality(basic_array const& /*self*/){return D;}
 	using typename types::reference;
 
 	using default_allocator_type = typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type;
@@ -1229,7 +1223,7 @@ protected:
 	template<class, dimensionality_type D, class> friend struct array_iterator;
 public:
 //	using default_allocator_type = typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type;
-	friend constexpr auto dimensionality(basic_array const& self) -> dimensionality_type{return self.dimensionality();}
+	friend constexpr auto dimensionality(basic_array const&/*self*/) -> dimensionality_type{return 1;}
 //	template<class BasicArray, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<BasicArray>>{}>, typename = decltype(types(std::declval<BasicArray&&>()))>
 //	constexpr basic_array(BasicArray&& other) : types{std::forward<BasicArray>(other)}{}
 //	basic_array_ptr<basic_array, Layout> operator&() const&{return {this->base_, this->layout()};}
