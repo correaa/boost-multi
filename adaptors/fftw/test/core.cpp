@@ -23,7 +23,7 @@ namespace{
 
 	template<class M> auto power(M const& m)->decltype(std::norm(m)){return std::norm(m);}
 
-	template<class M, DELETE((typename M::rank{} < 1))> auto power(M const& m){
+	template<class M, DELETE((M::rank_v < 1))> auto power(M const& m){
 		return accumulate(begin(m), end(m), 0., [](auto const& a, auto const& b){return a + power(b);});
 	}
 
