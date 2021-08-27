@@ -112,6 +112,7 @@ using initializer_list_t = typename initializer_list<T, D>::type;
 template<dimensionality_type D> using index_extensions = typename detail::repeat<index_extension, D>::type;
 //template<dimensionality_type D> using iextensions = index_extensions<D>;
 
+#if 0
 template<dimensionality_type D> 
 struct iextensions :       detail::repeat<index_extension, D>::type{
 	using base_ = typename detail::repeat<index_extension, D>::type;
@@ -123,10 +124,11 @@ private:
 	template <class T, size_t... Is> 
 	constexpr iextensions(std::array<T, static_cast<std::size_t>(D)> const& arr, std::index_sequence<Is...> /**/) : iextensions{arr[Is]...}{}
 };
-
-#if defined(__cpp_deduction_guides) and __cpp_deduction_guides >= 201703
-template<class... Args> iextensions(Args...) -> iextensions<sizeof...(Args)>;
 #endif
+
+//#if defined(__cpp_deduction_guides) and __cpp_deduction_guides >= 201703
+//template<class... Args> iextensions(Args...) -> iextensions<sizeof...(Args)>;
+//#endif
 
 template<dimensionality_type D, class Tuple>
 constexpr auto contains(index_extensions<D> const& ie, Tuple const& tp){
@@ -138,12 +140,12 @@ constexpr auto contains(index_extensions<D> const& ie, Tuple const& tp){
 } // end namespace multi
 } // end namespace boost
 
-#if defined(__cpp_structured_bindings) and __cpp_structured_bindings>=201606
-namespace std{ // this is for structured binding
-	template<boost::multi::dimensionality_type D> struct tuple_size<boost::multi::iextensions<D>> : std::integral_constant<size_t, D> { };
-	template<size_t N, boost::multi::dimensionality_type D> struct tuple_element<N, boost::multi::iextensions<D>> : tuple_element<N, typename boost::multi::iextensions<D>::base_>{};
-}
-#endif
+//#if defined(__cpp_structured_bindings) and __cpp_structured_bindings>=201606
+//namespace std{ // this is for structured binding
+//	template<boost::multi::dimensionality_type D> struct tuple_size<boost::multi::iextensions<D>> : std::integral_constant<size_t, D> { };
+//	template<size_t N, boost::multi::dimensionality_type D> struct tuple_element<N, boost::multi::iextensions<D>> : tuple_element<N, typename boost::multi::iextensions<D>::base_>{};
+//}
+//#endif
 
 #if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 

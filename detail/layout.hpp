@@ -189,6 +189,8 @@ public:
 	}
 };
 
+template<dimensionality_type D> using iextensions = extensions_t<D>;
+
 template<typename SSize>
 struct layout_t<dimensionality_type{0}, SSize>{
 	using size_type = SSize;
