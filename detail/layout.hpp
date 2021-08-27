@@ -434,7 +434,7 @@ public:
 		sub_type sub, stride_type stride, offset_type offset, nelems_type nelems
 	) : sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems}{}
 	layout_t() = default;
-	constexpr layout_t(std::array<int, D> const& x) : layout_t{extensions_type{x}}{}
+//	constexpr layout_t(std::array<int, D> const& x) : layout_t{extensions_type{x}}{}
 //	constexpr explicit layout_t(typename detail::repeat<index_extension, D>::type x) : layout_t{extensions_type{x}}{}
 	constexpr explicit layout_t(extensions_type const& e) :
 		sub_(std_apply([](auto... e){return multi::extensions_t<D-1>{e...};}, detail::tail(e))),
