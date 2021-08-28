@@ -220,10 +220,10 @@ struct extension_t : public range<IndexType, IndexTypeLast>{
 	friend constexpr auto operator!=(extension_t const& a, extension_t const& b){return not(a==b);}
 	friend constexpr auto intersection(extension_t const& r1, extension_t const& r2) -> extension_t{
 		using std::max; using std::min;
-		auto f = max(r1.first(), r2.first()); 
-		auto l = min(r1.last() , r2.last() );
-		f = min(f, l);
-		return extension_t{f, l};
+		auto first = max(r1.first(), r2.first()); 
+		auto const last  = min(r1.last() , r2.last() );
+		first = min(first, last);
+		return extension_t{first, last};
 	}
 };
 
