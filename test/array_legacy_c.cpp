@@ -86,3 +86,13 @@ BOOST_AUTO_TEST_CASE(array_legacy_c){
 
 }
 
+auto f2(multi::array_ref<double, 1>&& R) -> double&{
+	return R[2];
+}
+
+BOOST_AUTO_TEST_CASE(array_legacy_c_2){
+	double A[5] = {150, 16, 17, 18, 19};
+	BOOST_REQUIRE( &f2(A) == &A[2] );
+
+}
+
