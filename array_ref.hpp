@@ -94,8 +94,8 @@ struct array_types : Layout{ // cppcheck-suppress syntaxError ; false positive i
 	//	typename std::pointer_traits<element_const_ptr>::reference   // this seems more correct but it doesn't work with cuda fancy reference
 	>::type;
 
-	HD constexpr element_ptr        base() const{return base_;}
-	   constexpr element_const_ptr cbase() const{return base_;}
+	HD constexpr auto  base() const -> element_ptr      {return base_;}
+	   constexpr auto cbase() const -> element_const_ptr{return base_;}
 
 	constexpr element_ptr& mbase() const{return base_;}
 	friend element_ptr base(array_types const& s){return s.base();}
@@ -1705,20 +1705,16 @@ public:
 	__attribute__((deprecated))
 #endif
 	friend constexpr typename array_ref::element_ptr data(array_ref& s){return s.data_elements();}
-#if not defined(__NVCC__)
+
 	[[deprecated("use data_elements()")]] 
-#else
-	__attribute__((deprecated))
-#endif
-	friend constexpr typename array_ref::element_ptr data(array_ref&& s){return std::move(s).data_elements();}
+	friend constexpr auto data(array_ref&& s) -> typename array_ref::element_ptr{
+		return std::move(s).data_elements();
+	}
 
-//	constexpr typename array_ref::decay_type const& operator*() const&{return static_cast<typename array_ref::decay_type const&>(*this);}
-//	constexpr typename array_ref::decay_type const& operator*() const&{return *this;}
-
-	constexpr typename array_ref::decay_type const& decay() const&{
+	constexpr auto decay() const& -> typename array_ref::decay_type const&{
 		return static_cast<typename array_ref::decay_type const&>(*this);
 	}
-	friend constexpr typename array_ref::decay_type const& decay(array_ref const& s){return s.decay();}
+	friend constexpr auto decay(array_ref const& s) -> typename array_ref::decay_type const&{return s.decay();}
 
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int v){
@@ -1755,15 +1751,19 @@ struct array_ptr : basic_array_ptr<basic_array<T, D, Ptr>, typename array_ref<T,
 public:
 	constexpr array_ptr(Ptr p, multi::extensions_t<D> x) : basic_ptr(p, multi::layout_t<D>{x}){}
 	// cppcheck-suppress noExplicitConstructor ; because array_ptr can represent a null
-	constexpr array_ptr(std::nullptr_t) : basic_ptr(nullptr, multi::layout_t<D>{}){}
+	constexpr array_ptr(std::nullptr_t) : basic_ptr(nullptr, multi::layout_t<D>{}){} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : because array_ptr can represent a null
 	template<class TT, std::size_t N> 
-	// cppcheck-suppress noExplicitConstructor ; because array_ptr can represent a pointer to a c-array
-	constexpr array_ptr(TT(*t)[N]) : basic_ptr(data_elements(*t), layout(*t)){}
+	// cppcheck-suppress noExplicitConstructor ; allow terse syntax also array_ptr can represent a pointer to a c-array
+	constexpr array_ptr( // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : allow terse syntax also array_ptr can represent a pointer to a c-array
+		TT(*t)[N] // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
+	) : 
+		basic_ptr(data_elements(*t), layout(*t))
+	{}
 	template<class TT, std::size_t N>
 	constexpr explicit array_ptr(std::array<TT, N>* p) :basic_ptr(data_elements(*p), layout(*p)){}
 	template<class TT, std::size_t N>
 	constexpr explicit array_ptr(std::array<TT, N> const* p) :basic_ptr(data_elements(*p), layout(*p)){}
-	constexpr array_ref<T, D, Ptr> operator*() const{
+	constexpr auto operator*() const -> array_ref<T, D, Ptr>{
 		return array_ref<T, D, Ptr>{this->base(), (*this)->extensions()};//multi::layout_t<D>{x}};
 	}
 };
@@ -1771,21 +1771,18 @@ public:
 template<class T, typename Ptr>
 class array_ptr<T, 0, Ptr> : multi::array_ref<T, 0, Ptr>{// Ref_;
 public:
-//	array_ptr(array_ptr&&) : Ref_{
-	constexpr explicit array_ptr(Ptr p, typename multi::array_ref<T, 0, Ptr>::extensions_type x = {}) : multi::array_ref<T, 0, Ptr>(p, x){}
-//	operator bool() const{return Ref_.base();}
+	constexpr explicit array_ptr(Ptr p, typename multi::array_ref<T, 0, Ptr>::extensions_type x) : multi::array_ref<T, 0, Ptr>(p, x){}
+	constexpr explicit array_ptr(Ptr p) : array_ptr(p, typename multi::array_ref<T, 0, Ptr>::extensions_type{}){}
+	constexpr explicit operator bool() const{return this->base();}
 	constexpr explicit operator Ptr () const{return this->base();}
 	friend constexpr auto operator==(array_ptr const& self, array_ptr const& other) -> bool{return self.base() == other.base();}
 	friend constexpr auto operator!=(array_ptr const& self, array_ptr const& other) -> bool{return self.base() != other.base();}
-	constexpr multi::array_ref<T, 0, Ptr>& operator* () const{return const_cast<array_ptr&>(*this);}//               Ref_ ;}
-	constexpr multi::array_ref<T, 0, Ptr>* operator->() const{return const_cast<array_ptr*>(this);}//std::addressof(Ref_);}
+	constexpr auto operator* () const -> multi::array_ref<T, 0, Ptr>&{return const_cast<array_ptr&>(*this);} // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) : find a way to avoid using const_cast
+	constexpr auto operator->() const -> multi::array_ref<T, 0, Ptr>*{return const_cast<array_ptr*>( this);} // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) : find a way to avoid using const_cast
 };
 
 template<class TT, std::size_t N>
-// auto operator&(TT(&t)[N]){ // c++ cannot overload & for primitive types
-constexpr auto addressof(TT(&t)[N]){
-	return array_ptr<
-		std::decay_t<std::remove_all_extents_t<TT[N]>>, std::rank<TT[N]>{}, std::remove_all_extents_t<TT[N]>*
+constexpr auto addressof(TT(&t)[N]){return array_ptr<std::decay_t<std::remove_all_extents_t<TT[N]>>, std::rank<TT[N]>{}, std::remove_all_extents_t<TT[N]>* // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
 	>(&t);
 }
 
@@ -1840,25 +1837,22 @@ template<class It> array_ref(It, index_extensions<5>)->array_ref<typename std::i
 template<class It, class Tuple> array_ref(It, Tuple)->array_ref<typename std::iterator_traits<It>::value_type, std::tuple_size<Tuple>::value, It>;
 #endif
 
-#if 1
+// TODO(correaa) move to utility
 template<class T, std::size_t N>
-constexpr auto rotated(const T(&t)[N]) noexcept{ // TODO move to utility
-	return multi::array_ref<std::remove_all_extents<T[N]>, std::rank<T[N]>{}, decltype(base(t))>(
+constexpr auto rotated(const T(&t)[N]) noexcept{return multi::array_ref<std::remove_all_extents<T[N]>, std::rank<T[N]>{}, decltype(base(t))>( // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
 		base(t), extensions(t)
 	).rotated();
 }
 template<class T, std::size_t N>
-constexpr auto rotated(T(&t)[N]) noexcept{
-	return multi::array_ref<std::remove_all_extents<T[N]>, std::rank<T[N]>{}, decltype(base(t))>(
+constexpr auto rotated(T(&t)[N]) noexcept{return multi::array_ref<std::remove_all_extents<T[N]>, std::rank<T[N]>{}, decltype(base(t))>( // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
 		base(t), extensions(t)
 	).rotated();
 }
-#endif
 
 template<class TD, class Ptr> struct Array_aux;
-template<class T, std::size_t D, class Ptr> struct Array_aux<T   [D], Ptr>{using type = array    <T, D, Ptr>  ;};
-template<class T, std::size_t D, class Ptr> struct Array_aux<T(&)[D], Ptr>{using type = array_ref<T, D, Ptr>&&;};
-template<class T, std::size_t D, class Ptr> struct Array_aux<T(*)[D], Ptr>{using type = array_ptr<T, D, Ptr>  ;};
+template<class T, std::size_t D, class Ptr> struct Array_aux<T   [D], Ptr>{using type = array    <T, D, Ptr>  ;}; // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : enable syntax
+template<class T, std::size_t D, class Ptr> struct Array_aux<T(&)[D], Ptr>{using type = array_ref<T, D, Ptr>&&;}; // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : enable syntax
+template<class T, std::size_t D, class Ptr> struct Array_aux<T(*)[D], Ptr>{using type = array_ptr<T, D, Ptr>  ;}; // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : enable syntax
 
 template<class TD, class Second = 
 	std::conditional_t<
@@ -1869,13 +1863,13 @@ template<class TD, class Second =
 > using Array = typename Array_aux<TD, Second>::type;
 
 template<class RandomAccessIterator, dimensionality_type D>
-constexpr
-multi::array_ptr<typename std::iterator_traits<RandomAccessIterator>::value_type, D, RandomAccessIterator>
-operator/(RandomAccessIterator data, multi::extensions_t<D> x){return {data, x};}
+constexpr auto operator/(RandomAccessIterator data, multi::extensions_t<D> x)
+-> multi::array_ptr<typename std::iterator_traits<RandomAccessIterator>::value_type, D, RandomAccessIterator>
+{return {data, x};}
 
 template<class T, dimensionality_type D, class... Ts>
-constexpr std::true_type  is_basic_array_aux(basic_array<T, D, Ts...> const&);
-constexpr std::false_type is_basic_array_aux(...);
+constexpr auto is_basic_array_aux(basic_array<T, D, Ts...> const&) -> std::true_type;
+constexpr auto is_basic_array_aux(...                            ) -> std::false_type;
 
 template<class A> struct is_basic_array: decltype(is_basic_array_aux(std::declval<A>())){};
 
@@ -1892,11 +1886,6 @@ constexpr auto uninitialized_copy
 	return dest;
 }
 
-}}
-
-namespace boost{
-namespace multi{
-
 // begin and end for forwarding reference are needed in this namespace 
 // to overwrite the behavior of std::begin and std::end 
 // which take rvalue-references as const-references.
@@ -1909,7 +1898,8 @@ template<class T> auto end(T&& t)
 ->decltype(std::forward<T>(t).end()){
 	return std::forward<T>(t).end();}
 
-}}
+} // end namespace multi
+} // end namespace boost
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
