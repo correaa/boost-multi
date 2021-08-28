@@ -8,17 +8,17 @@
 #include<type_traits> // std::conditional_t
 #include<utility>
 
-#include<memory>    // uninitialized_copy, etc
-#include<algorithm> // std::copy, std::copy_n, std::equal, etc
-#include<iterator>  // begin, end
-
-#include "../detail/memory.hpp"
 #include "../config/MAYBE_UNUSED.hpp"
+#include "../detail/memory.hpp"
 
 #if defined(__NVCC__)
 #include<thrust/copy.h>
 #include<thrust/equal.h>
 #endif
+
+#include<algorithm> // std::copy, std::copy_n, std::equal, etc
+#include<iterator>  // begin, end
+#include<memory>    // uninitialized_copy, etc
 
 namespace boost{
 namespace multi{
@@ -44,51 +44,50 @@ namespace adl{ \
 }}
 
 constexpr class adl_copy_n_t{
-	template<class... As>          constexpr auto _(priority<0>,        As&&... as) const DECLRETURN(              std::copy_n(                    std::forward<As>(as)...))
+	template<class... As>          constexpr auto _(priority<0>/**/,        As&&... as) const DECLRETURN(              std::copy_n(                    std::forward<As>(as)...))
 #if defined(__NVCC__)
-	template<class... As> 		   constexpr auto _(priority<1>,        As&&... as) const DECLRETURN(           thrust::copy_n(                    std::forward<As>(as)...))
+	template<class... As> 		   constexpr auto _(priority<1>/**/,        As&&... as) const DECLRETURN(           thrust::copy_n(                    std::forward<As>(as)...))
 #endif
-	template<class... As>          constexpr auto _(priority<2>,        As&&... as) const DECLRETURN(                   copy_n(                    std::forward<As>(as)...))
-	template<class T, class... As> constexpr auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::decay_t<T>::  copy_n(std::forward<T>(t), std::forward<As>(as)...))
-	template<class T, class... As> constexpr auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).copy_n(                    std::forward<As>(as)...))
+	template<class... As>          constexpr auto _(priority<2>/**/,        As&&... as) const DECLRETURN(                   copy_n(                    std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& t, As&&... as) const DECLRETURN(std::decay_t<T>::  copy_n(std::forward<T>(t), std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).copy_n(                    std::forward<As>(as)...))
 public:
 	template<class... As> constexpr auto operator()(As&&... as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
 } adl_copy_n;
 
 constexpr class adl_move_t{
-	template<class... As>           constexpr auto _(priority<0>,                    As&&... as) const DECLRETURN(              std::move(                    std::forward<As>(as)...))
+	template<class... As>           constexpr auto _(priority<0>/**/,                    As&&... as) const DECLRETURN(              std::move(                    std::forward<As>(as)...))
 #if defined(__NVCC__) // there is no thrust::move algorithm
-	template<class It, class... As> constexpr auto _(priority<1>, It first, It last, As&&... as) const DECLRETURN(           thrust::copy(std::make_move_iterator(first), std::make_move_iterator(last), std::forward<As>(as)...))
+	template<class It, class... As> constexpr auto _(priority<1>/**/, It first, It last, As&&... as) const DECLRETURN(           thrust::copy(std::make_move_iterator(first), std::make_move_iterator(last), std::forward<As>(as)...))
 #endif
-	template<class... As>           constexpr auto _(priority<2>,                    As&&... as) const DECLRETURN(                   move(                    std::forward<As>(as)...))
-	template<class T, class... As>  constexpr auto _(priority<3>, T&& t,             As&&... as) const DECLRETURN(std::decay_t<T>::  move(std::forward<T>(t), std::forward<As>(as)...))
-	template<class T, class... As>  constexpr auto _(priority<4>, T&& t,             As&&... as) const DECLRETURN(std::forward<T>(t).move(                    std::forward<As>(as)...))
+	template<class... As>           constexpr auto _(priority<2>/**/,                    As&&... as) const DECLRETURN(                   move(                    std::forward<As>(as)...))
+	template<class T, class... As>  constexpr auto _(priority<3>/**/, T&& t,             As&&... as) const DECLRETURN(std::decay_t<T>::  move(std::forward<T>(t), std::forward<As>(as)...))
+	template<class T, class... As>  constexpr auto _(priority<4>/**/, T&& t,             As&&... as) const DECLRETURN(std::forward<T>(t).move(                    std::forward<As>(as)...))
 public:
 	template<class... As> constexpr auto operator()(As&&... as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
 } adl_move;
 
 constexpr class adl_fill_n_t{
-	template<         class... As> constexpr auto _(priority<0>,        As&&... as) const DECLRETURN(              std::fill_n              (std::forward<As>(as)...))
+	template<         class... As> constexpr auto _(priority<0>/**/,        As&&... as) const DECLRETURN(              std::fill_n              (std::forward<As>(as)...))
 #if defined(__NVCC__)
-	template<         class... As> constexpr auto _(priority<1>,        As&&... as) const DECLRETURN(           thrust::fill_n              (std::forward<As>(as)...))
+	template<         class... As> constexpr auto _(priority<1>/**/,        As&&... as) const DECLRETURN(           thrust::fill_n              (std::forward<As>(as)...))
 #endif
-	template<         class... As> constexpr auto _(priority<2>,        As&&... as) const DECLRETURN(                   fill_n              (std::forward<As>(as)...))
-	template<class T, class... As> constexpr auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::decay_t<T>::  fill_n(std::forward<T>(t), std::forward<As>(as)...))
-	template<class T, class... As> constexpr auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).fill_n              (std::forward<As>(as)...))
+	template<         class... As> constexpr auto _(priority<2>/**/,        As&&... as) const DECLRETURN(                   fill_n              (std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& t, As&&... as) const DECLRETURN(std::decay_t<T>::  fill_n(std::forward<T>(t), std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).fill_n              (std::forward<As>(as)...))
 public:
 	template<class... As> constexpr auto operator()(As&&... as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
 } adl_fill_n;
 
-
-constexpr class adl_equal_fn__{
-	template<         class...As> constexpr auto _(priority<1>,      As...as) const DECLRETURN(   std::equal(as...))
+constexpr class adl_equal_t{
+	template<         class...As> constexpr auto _(priority<1>/**/,      As...as) const DECLRETURN(   std::equal(as...))
 #ifdef THRUST_VERSION
 //	template<         class...As> constexpr auto _(priority<2>,      As...as) const DECLRETURN(thrust::equal(as...))
 #endif
 #ifndef THRUST_VERSION
-	template<         class...As> constexpr auto _(priority<3>,      As...as) const DECLRETURN(        equal(as...))
+	template<         class...As> constexpr auto _(priority<3>/**/,      As...as) const DECLRETURN(        equal(as...))
 #endif
-	template<class T, class...As> constexpr auto _(priority<4>, T t, As...as) const DECLRETURN(      t.equal(as...))
+	template<class T, class...As> constexpr auto _(priority<4>/**/, T t, As...as) const DECLRETURN(      t.equal(as...))
 public:
 	template<class...As> constexpr auto operator()(As...as) const DECLRETURN(_(priority<4>{}, as...))
 #ifdef THRUST_VERSION
@@ -97,33 +96,33 @@ public:
 #endif
 } adl_equal;
 
-constexpr class adl_copy_fn__{
+constexpr class adl_copy_t{
 	template<class InputIt, class OutputIt, 
 		class=std::enable_if_t<std::is_assignable<typename std::iterator_traits<OutputIt>::reference, typename std::iterator_traits<InputIt>::reference>{}>
 	>
-	                               constexpr auto _(priority<1>, InputIt first, InputIt last, OutputIt d_first)
+	                               constexpr auto _(priority<1>/**/, InputIt first, InputIt last, OutputIt d_first)
 	                                                                                const DECLRETURN(              std::copy(first, last, d_first))
 #if defined(__NVCC__)
-	template<class... As> 		   constexpr auto _(priority<2>,        As&&... as) const DECLRETURN(           thrust::copy(std::forward<As>(as)...))
+	template<class... As> 		   constexpr auto _(priority<2>/**/,        As&&... as) const DECLRETURN(           thrust::copy(std::forward<As>(as)...))
 #endif
-	template<         class... As> constexpr auto _(priority<3>,        As&&... as) const DECLRETURN(                   copy(std::forward<As>(as)...))
-	template<class T, class... As> constexpr auto _(priority<4>, T&& t, As&&... as) const DECLRETURN(  std::decay_t<T>::copy(std::forward<T>(t), std::forward<As>(as)...))
-	template<class T, class... As> constexpr auto _(priority<5>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).copy(std::forward<As>(as)...))
+	template<         class... As> constexpr auto _(priority<3>/**/,        As&&... as) const DECLRETURN(                   copy(std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& t, As&&... as) const DECLRETURN(  std::decay_t<T>::copy(std::forward<T>(t), std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<5>/**/, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).copy(std::forward<As>(as)...))
 public:
 	template<class... As> constexpr auto operator()(As&&... as) const DECLRETURN( _(priority<5>{}, std::forward<As>(as)...) ) \
 } adl_copy;
 
-namespace adl{ \
-	namespace custom{template<class...> struct fill_t;} __attribute__((unused))
+namespace adl{
+	namespace custom{template<class...> struct fill_t;} // __attribute__((unused))
 	static constexpr class fill_t{ \
-		template<class... As>          auto _(priority<1>,        As&&... as) const DECLRETURN(              std::fill              (std::forward<As>(as)...)) \
-		template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   fill              (std::forward<As>(as)...)) \
-		template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).fill              (std::forward<As>(as)...)) \
-		template<class... As>          auto _(priority<4>,        As&&... as) const DECLRETURN(custom::           fill_t<As&&...>::_(std::forward<As>(as)...)) \
-	public: \
-		template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<5>{}, std::forward<As>(as)...)) \
-	} fill; \
-} \
+		template<class... As>          auto _(priority<1>/**/,        As&&... as) const DECLRETURN(              std::fill              (std::forward<As>(as)...))
+		template<class... As>          auto _(priority<2>/**/,        As&&... as) const DECLRETURN(                   fill              (std::forward<As>(as)...))
+		template<class T, class... As> auto _(priority<3>/**/, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).fill              (std::forward<As>(as)...))
+		template<class... As>          auto _(priority<4>/**/,        As&&... as) const DECLRETURN(custom::           fill_t<As&&...>::_(std::forward<As>(as)...))
+	public:
+		template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<5>{}, std::forward<As>(as)...))
+	} fill;
+} // end namespace adl
 
 template<class Alloc> 
 struct alloc_construct_elem_t{
@@ -142,38 +141,42 @@ template<class T> // this one goes last!!!
 constexpr auto to_address(const T& p) noexcept;
 
 template<class T> 
-constexpr auto _to_address(priority<0>, const T& p) noexcept
+constexpr auto _to_address(priority<0>/**/, const T& p) noexcept
 ->decltype(to_address(p.operator->())){
 	return to_address(p.operator->());}
 
 template<class T>
-constexpr auto _to_address(priority<1>, const T& p) noexcept
+constexpr auto _to_address(priority<1>/**/, const T& p) noexcept
 ->decltype(std::pointer_traits<T>::to_address(p)){
 	return std::pointer_traits<T>::to_address(p);}
 
 template<class T, std::enable_if_t<std::is_pointer<T>{}, int> = 0>
-constexpr T _to_address(priority<2>, T const& p) noexcept{
+constexpr auto _to_address(priority<2>/**/, T const& p) noexcept -> T{
     static_assert(!std::is_function<T>{}, "!");
     return p;
 }
 
 template<class T> // this one goes last!!!
 constexpr auto to_address(const T& p) noexcept
-->decltype(_to_address(priority<2>{}, p))
+->decltype(_to_address(priority<2>{}/**/, p))
 {
 	return _to_address(priority<2>{}, p);}
 
 template<class Alloc, class ForwardIt, class Size, typename Value = typename std::iterator_traits<ForwardIt>::value_type>
-ForwardIt alloc_uninitialized_value_construct_n(Alloc& alloc, ForwardIt first, Size n)
+auto alloc_uninitialized_value_construct_n(Alloc& alloc, ForwardIt first, Size n) -> ForwardIt
 //->std::decay_t<decltype(std::allocator_traits<Alloc>::construct(alloc, std::addressof(*first), Value()), first)>
 {
 	ForwardIt current = first;
 	try{
-		for (; n > 0 ; ++current, --n) std::allocator_traits<Alloc>::construct(alloc, std::addressof(*current), Value()); // !!!!!!!!!!!!!! if you are using std::complex type consider making complex default constructible (e.g. by type traits)
+		for (; n > 0 ; ++current, --n){
+			std::allocator_traits<Alloc>::construct(alloc, std::addressof(*current), Value()); // !!!!!!!!!!!!!! if you are using std::complex type consider making complex default constructible (e.g. by type traits)
+		}
 		//	::new (static_cast<void*>(std::addressof(*current))) Value();
 		return current;
 	}catch(...){
-		for(; current != first; ++first) std::allocator_traits<Alloc>::destroy(alloc, std::addressof(*first));
+		for(; current != first; ++first){
+			std::allocator_traits<Alloc>::destroy(alloc, std::addressof(*first));
+		}
 		throw;
 	}
 }
@@ -183,13 +186,17 @@ auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size
 ->std::decay_t<decltype(std::allocator_traits<Alloc>::construct(alloc, std::addressof(*first)), first)>
 {
 	ForwardIt curr = first;
-	if(std::is_trivially_default_constructible<T>{}) std::advance(curr, n);
+	if(std::is_trivially_default_constructible<T>{}){std::advance(curr, n);}
 	else{
 		using _ = std::allocator_traits<Alloc>;
 		try{
-			for(;n > 0; ++curr, --n) _::construct(alloc, std::addressof(*curr));
+			for(;n > 0; ++curr, --n){
+				_::construct(alloc, std::addressof(*curr));
+			}
 		}catch(...){
-			for(;curr!=first; ++first) _::destroy(alloc, std::addressof(*first));
+			for(;curr!=first; ++first){
+				_::destroy(alloc, std::addressof(*first));
+			}
 			throw;
 		}
 	}
@@ -197,7 +204,7 @@ auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size
 }
 
 template<class ForwardIt, class Size>
-ForwardIt uninitialized_default_construct_n( ForwardIt first, Size n ){
+auto uninitialized_default_construct_n( ForwardIt first, Size n ) -> ForwardIt{
     using T = typename std::iterator_traits<ForwardIt>::value_type;
     ForwardIt current = first;
     try {
@@ -211,7 +218,7 @@ ForwardIt uninitialized_default_construct_n( ForwardIt first, Size n ){
     }
 }
 
-}
+} // end namespace xtd
 
 template<class Alloc> struct alloc_destroy_elem_t{
 	Alloc* palloc_;
@@ -240,12 +247,13 @@ constexpr auto alloc_destroy_n(Alloc& a, BidirIt first, Size n)
 //	for (; n > 0; --first, --n)
 //		std::allocator_traits<Alloc>::destroy(a, std::addressof(*first));
 	first += n;
-	for (; n != 0; --first, --n)
+	for (; n != 0; --first, --n){
 		std::allocator_traits<Alloc>::destroy(a, std::addressof(*(first-1)));
+	}
 	return first;
 }
 
-constexpr class adl_uninitialized_copy_fn__{
+constexpr class adl_uninitialized_copy_t{
 	template<class InIt, class FwdIt, class=decltype(std::addressof(*FwdIt{}))> // sfinae friendy std::uninitialized_copy
 	                               constexpr auto _(priority<1>/**/, InIt f, InIt l, FwdIt d) const DECLRETURN(              std::uninitialized_copy(f, l, d))
 	template<class... As>          constexpr auto _(priority<2>/**/,        As&&... as)       const DECLRETURN(                   uninitialized_copy(std::forward<As>(as)...))
