@@ -154,10 +154,10 @@ public:
 	template<class K> constexpr auto count   (K const& k) const -> value_type{return contains(k);}
 	friend constexpr auto intersection(range const& r1, range const& r2){
 		using std::max; using std::min;
-		auto f = max(r1.first(), r2.first()); 
-		auto l = min(r1.last() , r2.last() );
-		f = min(f, l);
-		return range<decltype(f), decltype(l)>{f, l};
+		auto new_first = max(r1.first(), r2.first()); 
+		auto new_last  = min(r1.last() , r2.last() );
+		new_first = min(new_first, new_last);
+		return range<decltype(new_first), decltype(new_last)>{new_first, new_last};
 	}
 	constexpr auto contains(value_type const& v) const{return v>=first_ and v<last_;}//?true:false;}
 };
@@ -220,7 +220,7 @@ struct extension_t : public range<IndexType, IndexTypeLast>{
 	friend constexpr auto operator!=(extension_t const& a, extension_t const& b){return not(a==b);}
 	friend constexpr auto intersection(extension_t const& r1, extension_t const& r2) -> extension_t{
 		using std::max; using std::min;
-		auto first = max(r1.first(), r2.first()); 
+		auto       first = max(r1.first(), r2.first()); 
 		auto const last  = min(r1.last() , r2.last() );
 		first = min(first, last);
 		return extension_t{first, last};
