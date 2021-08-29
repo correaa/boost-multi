@@ -796,10 +796,10 @@ private:
 		constexpr explicit basic_reverse_iterator(Iterator it) : std::reverse_iterator<Iterator>(std::prev(it)){}
 		constexpr explicit operator Iterator() const{auto ret = this->base(); if(ret!=Iterator{}) return ++ret; else return Iterator{};}
 		constexpr explicit operator bool() const{return bool(this->base());}
-		constexpr bool operator==(basic_reverse_iterator const& other) const{return (this->base() == other.base());}
-		constexpr typename Iterator::reference operator*() const{return this->current;}
-		constexpr typename Iterator::pointer operator->() const{return &this->current;}
-		constexpr typename Iterator::reference operator[](typename Iterator::difference_type n) const{return *(this->current - n);}
+		constexpr auto operator==(basic_reverse_iterator const& other) const -> bool{return (this->base() == other.base());}
+		constexpr auto operator*()  const -> typename Iterator::reference{return this->current;}
+		constexpr auto operator->() const -> typename Iterator::pointer  {return &this->current;}
+		constexpr auto operator[](typename Iterator::difference_type n) const -> typename Iterator::reference{return *(this->current - n);}
 		constexpr bool operator<(basic_reverse_iterator const& o) const{return o.base() < this->base();}
 	};
 public:
@@ -809,7 +809,7 @@ public:
 
 	constexpr auto addressof() &&{return ptr{this->base_, this->layout()};}
 
-	constexpr auto operator&()     &&{return       ptr{this->base_, this->layout()};} // gives compiler crash in g++-7 (Ubuntu 7.5.0-6ubuntu4) 7.5.0
+	constexpr auto operator&()     &&{return       ptr{this->base_, this->layout()};} // NOLINT(google-runtime-operator) // gives compiler crash in g++-7 (Ubuntu 7.5.0-6ubuntu4) 7.5.0
 //	constexpr auto operator&()      &{return       ptr{this->base_, this->layout()};}
 //	constexpr auto operator&() const&{return const_ptr{this->base_, this->layout()};}
 
