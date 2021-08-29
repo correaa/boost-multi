@@ -860,13 +860,14 @@ public:
 	}
 
 	template<class Range, class = std::enable_if_t<not std::is_base_of<basic_array, Range>{}> >
-	basic_array&& operator=(Range const& r)&&{return std::move(operator=(r));}
+	auto operator=(Range const& r)&& -> basic_array&&{return std::move(operator=(r));}
 
 	template<class TT, class... As>
 //	constexpr 
-	basic_array& operator=(basic_array<TT, D, As...> const& o)&{assert( this->extension() == o.extension() );
+	auto operator=(basic_array<TT, D, As...> const& o)& -> basic_array&{
+		assert( this->extension() == o.extension() );
 		MULTI_MARK_SCOPE( std::string{"multi::operator= (D="}+std::to_string(D)+") from "+typeid(TT).name()+" to "+typeid(T).name() );
-		if(this->is_empty()) return *this;
+		if(this->is_empty()){return *this;}
 		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()){
 			adl_copy_n(o.base(), o.num_elements(), this->base());
 		}else if(o.stride() < (~o).stride()){
@@ -938,8 +939,8 @@ private:
 		);
 	}
 public:
-	template<class O> constexpr bool operator<(O&& o)&&{return lexicographical_compare(std::move(*this), std::move(o));}
-	template<class O> constexpr bool operator>(O&& o)&&{return lexicographical_compare(std::move(o), std::move(*this));}
+	template<class O> constexpr auto operator<(O&& o)&& -> bool{return lexicographical_compare(std::move(*this), std::forward<O>(o));}
+	template<class O> constexpr auto operator>(O&& o)&& -> bool{return lexicographical_compare(std::forward<O>(o), std::move(*this));}
 
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
 	constexpr basic_array<T2, D, P2> static_array_cast() const{
@@ -950,7 +951,7 @@ public:
 		class Element = typename basic_array::element,
 		class PM = T2 Element::*
 	>
-	constexpr basic_array<T2, D, P2> member_cast(PM pm) const&{
+	constexpr auto member_cast(PM pm) const& -> basic_array<T2, D, P2>{
 		static_assert(sizeof(T)%sizeof(T2) == 0, 
 			"array_member_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements");
 	//	return {this->layout().scale(sizeof(T)/sizeof(T2)), &(this->base_->*pm)};
@@ -960,7 +961,7 @@ public:
 		class Element = typename basic_array::element,
 		class PM = T2 Element::*
 	>
-	constexpr basic_array<T2, D, P2> member_cast(PM pm) &{
+	constexpr auto member_cast(PM pm) & -> basic_array<T2, D, P2>{
 		static_assert(sizeof(T)%sizeof(T2) == 0, 
 			"array_member_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements");
 	//	return {this->layout().scale(sizeof(T)/sizeof(T2)), &(this->base_->*pm)};
@@ -970,7 +971,9 @@ public:
 		class Element = typename basic_array::element,
 		class PM = T2 Element::*
 	>
-	constexpr basic_array<T2, D, P2> member_cast(PM pm) &&{return this->member_cast<T2, P2, Element, PM>(pm);}
+	constexpr auto member_cast(PM pm) && -> basic_array<T2, D, P2>{
+		return this->member_cast<T2, P2, Element, PM>(pm);
+	}
 
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2 const> >
 	constexpr auto reinterpret_array_cast() const& -> basic_array<std::decay_t<T2>, D, P2>{
@@ -1188,12 +1191,15 @@ struct basic_array<T, dimensionality_type{0}, ElementPtr, Layout> :
 	constexpr auto operator!=(basic_array const& o) const& -> bool{return not operator==(o);}
 	constexpr auto operator==(basic_array const& o) const& -> bool{return adl_equal(o.base_, o.base_ + 1, this->base_);}
 
-	constexpr auto operator&() const -> typename basic_array::element_ptr{return this->base_;} // (google-runtime-operator)
+//	constexpr auto operator&() const -> typename basic_array::element_ptr{return this->base_;} // (google-runtime-operator)
 	using decay_type = typename types::element;
 
 	constexpr auto operator()() const& -> element_ref{return *(this->base_);}
 
-	constexpr operator element_ref()                            &&{return *(this->base_);}
+	constexpr operator element_ref ()                            &&{return *(this->base_);}
+	constexpr operator element_ref ()                             &{return *(this->base_);}
+	constexpr operator element_cref()                        const&{return *(this->base_);}
+
 	constexpr operator typename basic_array::element_type() const&{return *(this->base_);}
 
 	template<class Archive>
