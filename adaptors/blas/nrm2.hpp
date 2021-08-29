@@ -63,10 +63,10 @@ auto nrm2(A1D const& x, AllocR const& alloc)
 
 namespace operators{
 	using std::norm;
-	template<class A1D>//decltype(norm(std::declval<typename A1D::value_type>()))> 
+	template<class A1D, class Real = decltype(norm(std::declval<typename A1D::value_type>()))>//decltype(norm(std::declval<typename A1D::value_type>()))> 
 	NODISCARD("") auto operator^(A1D const& a, int n)
-	->decltype(std::pow(blas::nrm2(a), n)){
-		return std::pow(blas::nrm2(a), n);}
+	->decltype(std::pow(Real{blas::nrm2(a)}, n)){
+		return std::pow(Real{blas::nrm2(a)}, n);}
 }
 
 }}}

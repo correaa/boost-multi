@@ -21,6 +21,7 @@ class iterator_facade{
 	using self_type = Self;
 	constexpr auto self()      & -> self_type      &{return static_cast<self_type      &>(*this);}
 	constexpr auto self() const& -> self_type const&{return static_cast<self_type const&>(*this);}
+
 public:
 	using value_type        = ValueType;
 	using reference         = Reference;

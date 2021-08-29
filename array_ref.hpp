@@ -899,7 +899,7 @@ public:
 		}
 		return *this;
 	}
-	constexpr basic_array&& operator=(basic_array const& o) &&{return std::move(operator=(o));}
+	constexpr auto operator=(basic_array const& o) && -> basic_array&&{return std::move(operator=(o));}
 	template<class Array> void swap(Array&& o) &&{assert( std::move(*this).extension() == std::forward<Array>(o).extension() );
 		adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
 	}
@@ -918,11 +918,11 @@ public:
 		return not (this->extension()==o.extension() and adl_equal(this->begin(), this->end(), adl_begin(o)));}
 
 	template<class TT, class... As>
-	constexpr bool operator==(basic_array<TT, D, As...> const& o) const&{
+	constexpr auto operator==(basic_array<TT, D, As...> const& o) const& -> bool{
 		return (this->extension()==o.extension()) and adl_equal(this->begin(), this->end(), adl_begin(o));
 	}
 	template<class It>
-	constexpr bool equal(It begin) const&{
+	constexpr auto equal(It begin) const& -> bool{
 		return adl_equal(
 			std::move(modify(*this)).begin(), 
 			std::move(modify(*this)).end(),
@@ -930,9 +930,9 @@ public:
 		);
 	}
 private:
-	friend constexpr bool lexicographical_compare(basic_array&& a1, basic_array&& a2){
-		if(a1.extension().first() > a2.extension().first()) return true;
-		if(a1.extension().first() < a2.extension().first()) return false;
+	friend constexpr auto lexicographical_compare(basic_array&& a1, basic_array&& a2) -> bool{
+		if(a1.extension().first() > a2.extension().first()){return true ;}
+		if(a1.extension().first() < a2.extension().first()){return false;}
 		return adl_lexicographical_compare(
 			std::move(a1).begin(), std::move(a1).end(), 
 			std::move(a2).begin(), std::move(a2).end()
@@ -943,7 +943,7 @@ public:
 	template<class O> constexpr auto operator>(O&& o)&& -> bool{return lexicographical_compare(std::forward<O>(o), std::move(*this));}
 
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
-	constexpr basic_array<T2, D, P2> static_array_cast() const{
+	constexpr auto static_array_cast() const -> basic_array<T2, D, P2>{
 		P2 p2{this->base_};
 		return basic_array<T2, D, P2>{this->layout(), p2};
 	}
@@ -1057,8 +1057,7 @@ struct array_iterator<Element, 1, Ptr> :
 	using difference_type = typename affine::difference_type;
 
 	array_iterator() = default;
-	array_iterator(array_iterator const&) = default;
-
+//	array_iterator(array_iterator const&) = default;
 
 	template<class Other, decltype(_implicit_cast<Ptr>(typename Other::pointer{}))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
@@ -1196,11 +1195,11 @@ struct basic_array<T, dimensionality_type{0}, ElementPtr, Layout> :
 
 	constexpr auto operator()() const& -> element_ref{return *(this->base_);}
 
-	constexpr operator element_ref ()                            &&{return *(this->base_);}
-	constexpr operator element_ref ()                             &{return *(this->base_);}
-	constexpr operator element_cref()                        const&{return *(this->base_);}
+	constexpr operator element_ref ()                            &&{return *(this->base_);} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
+	constexpr operator element_ref ()                             &{return *(this->base_);} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
+	constexpr operator element_cref()                        const&{return *(this->base_);} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 
-	constexpr operator typename basic_array::element_type() const&{return *(this->base_);}
+	constexpr operator typename basic_array::element_type() const&{return *(this->base_);} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax, like double const n2 = blas::nrm2(Y - Y3);
 
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int /*version*/){
