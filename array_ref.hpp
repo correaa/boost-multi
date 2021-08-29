@@ -860,7 +860,12 @@ public:
 	}
 
 	template<class Range, class = std::enable_if_t<not std::is_base_of<basic_array, Range>{}> >
-	auto operator=(Range const& r)&& -> basic_array&&{return std::move(operator=(r));}
+	auto operator=(Range const& r)&& 
+	-> basic_array& // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+	{
+		operator=(r);
+		return *this;
+	}
 
 	template<class TT, class... As>
 //	constexpr 
@@ -878,17 +883,26 @@ public:
 		return *this;
 	}
 	template<class TT, class... As>
-	constexpr basic_array&& operator=(basic_array<TT, D, As...>&& o)&&{
+	constexpr auto operator=(basic_array<TT, D, As...>&& o)&& 
+	-> basic_array& // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+	{
 		assert( this->extensions() == o.extensions() );
-		if(this->is_empty()) return std::move(*this);
-		return std::move(basic_array::operator=(std::move(o)));
+		if(this->is_empty()){return *this;}
+		basic_array::operator=(std::move(o));
+		return *this; // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	}
 
 	template<class TT, class... As>
-	constexpr basic_array&& operator=(basic_array<TT, D, As...> const& o)&&{return std::move(this->operator=(o));}
+	constexpr auto operator=(basic_array<TT, D, As...> const& o)&& 
+	-> basic_array&{ // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+		operator=(o);
+		return *this; // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+	}
 
 //	constexpr 
-	basic_array&  operator=(basic_array               const& o) &{assert( this->extension() == o.extension() );
+	auto operator=(basic_array               const& o) & -> basic_array&{
+		if(this == &o){return *this;} // lints(cert-oop54-cpp)
+		assert( this->extension() == o.extension() );
 		MULTI_MARK_SCOPE("multi::operator= [D="+std::to_string(D)+"] from "+typeid(T).name()+" to "+typeid(T).name() );
 		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()){
 			adl_copy_n(o.base(), o.num_elements(), this->base());
@@ -899,7 +913,14 @@ public:
 		}
 		return *this;
 	}
-	constexpr auto operator=(basic_array const& o) && -> basic_array&&{return std::move(operator=(o));}
+	constexpr auto operator=(basic_array const& o) &&
+	-> basic_array& // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+	{
+		if(this == &o){return *this;} // lints(cert-oop54-cpp)
+		operator=(o);
+		return *this; // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+	}
+
 	template<class Array> void swap(Array&& o) &&{assert( std::move(*this).extension() == std::forward<Array>(o).extension() );
 		adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
 	}
