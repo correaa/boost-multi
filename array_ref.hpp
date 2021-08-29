@@ -832,30 +832,36 @@ public:
 	friend constexpr auto begin(basic_array& s) -> iterator{return s.begin();}
 	friend constexpr auto end  (basic_array& s) -> iterator{return s.end  ();}
 
-	constexpr iterator begin()          &&   {return              begin();}
-	constexpr iterator end  ()          &&   {return              end()  ;}
-	friend constexpr iterator begin(basic_array&& s){return std::move(s).begin();}
-	friend constexpr iterator end  (basic_array&& s){return std::move(s).end()  ;}
+	       constexpr auto begin()          &&    -> iterator{return              begin();}
+	       constexpr auto end  ()          &&    -> iterator{return              end()  ;}
+	friend constexpr auto begin(basic_array&& s) -> iterator{return std::move(s).begin();}
+	friend constexpr auto end  (basic_array&& s) -> iterator{return std::move(s).end()  ;}
 
-	constexpr const_iterator begin()           const&{return begin_aux();}
-	constexpr const_iterator end  ()           const&{return end_aux()  ;}
-	friend constexpr const_iterator begin(basic_array const& s){return s.begin();}
-	friend constexpr const_iterator end  (basic_array const& s){return s.end()  ;}
+	       constexpr auto begin()           const&    -> const_iterator{return begin_aux();}
+	       constexpr auto end  ()           const&    -> const_iterator{return end_aux()  ;}
+	friend constexpr auto begin(basic_array const& s) -> const_iterator{return s.begin();}
+	friend constexpr auto end  (basic_array const& s) -> const_iterator{return s.end()  ;}
 
-	constexpr const_iterator cbegin() const{return begin();}
-	constexpr const_iterator cend()   const{return end()  ;}
+	       constexpr auto cbegin()           const& -> const_iterator{return begin();}
+	       constexpr auto cend()             const& -> const_iterator{return end()  ;}
 	friend constexpr auto cbegin(basic_array const& s){return s.cbegin();}
 	friend constexpr auto cend  (basic_array const& s){return s.cend()  ;}
 
-	template<class It> constexpr It assign(It first) &{adl_copy_n(first, this->size(), begin()); std::advance(first, this->size()); return first;}
-	template<class It> constexpr It assign(It first)&&{return assign(first);}
+	template<class It> constexpr auto assign(It first) & -> It{adl_copy_n(first, this->size(), begin()); std::advance(first, this->size()); return first;}
+	template<class It> constexpr auto assign(It first)&& -> It{return assign(first);}
 
-	template<class Range, class = std::enable_if_t<not std::is_base_of<basic_array, Range>{}> >
+	template<
+		class Range, 
+		class = std::enable_if_t<not std::is_base_of<basic_array, Range>{}>,
+		class = decltype(adl_copy_n(adl_begin(std::declval<Range const&>()), std::declval<typename basic_array::size_type>(), std::declval<typename basic_array::iterator>()))
+	>
 //	constexpr
 	auto operator=(Range const& r)& // check that you LHS is not read-only
-	->decltype(assign(adl_begin(r)), std::declval<basic_array&>()){assert(this->size() == r.size());
+	-> basic_array& // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+	{
+		assert(this->size() == r.size());
 		MULTI_MARK_SCOPE(std::string{"multi::operator= D="}+std::to_string(D)+" from range to "+typeid(T).name() );
-		assign(adl_begin(r));
+		adl_copy_n(adl_begin(r), this->size(), begin());
 		return *this;
 	}
 
