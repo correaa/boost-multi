@@ -492,59 +492,66 @@ public:
 	constexpr basic_array stenciled(iextension x, iextension x1, iextension x2, iextension x3, Xs... xs)&{return ((stenciled(x)<<1).stenciled(x1, x2, x3, xs...))>>1;}
 
 	NODISCARD("no side effects")
-	constexpr basic_array stenciled(iextension x)                                             &&{return blocked(x.start(), x.finish());}
-	constexpr basic_array stenciled(iextension x, iextension x1)                              &&{return ((stenciled(x)<<1).stenciled(x1))>>1;}
-	constexpr basic_array stenciled(iextension x, iextension x1, iextension x2)               &&{return ((stenciled(x)<<1).stenciled(x1, x2))>>1;}
-	constexpr basic_array stenciled(iextension x, iextension x1, iextension x2, iextension x3)&&{return ((stenciled(x)<<1).stenciled(x1, x2, x3))>>1;}
+	constexpr auto stenciled(iextension x)                                             && -> basic_array{return blocked(x.start(), x.finish());}
+	constexpr auto stenciled(iextension x, iextension x1)                              && -> basic_array{return ((stenciled(x)<<1).stenciled(x1))>>1;}
+	constexpr auto stenciled(iextension x, iextension x1, iextension x2)               && -> basic_array{return ((stenciled(x)<<1).stenciled(x1, x2))>>1;}
+	constexpr auto stenciled(iextension x, iextension x1, iextension x2, iextension x3)&& -> basic_array{return ((stenciled(x)<<1).stenciled(x1, x2, x3))>>1;}
 	template<class... Xs>
-	constexpr basic_array stenciled(iextension x, iextension x1, iextension x2, iextension x3, Xs... xs)&&{return ((stenciled(x)<<1).stenciled(x1, x2, x3, xs...))>>1;}
+	constexpr auto stenciled(iextension x, iextension x1, iextension x2, iextension x3, Xs... xs)&& -> basic_array{return ((stenciled(x)<<1).stenciled(x1, x2, x3, xs...))>>1;}
 
 	NODISCARD("no side effects")
-	constexpr basic_const_array stenciled(iextension x)                                             const&{return blocked(x.start(), x.finish());}
-	constexpr basic_const_array stenciled(iextension x, iextension x1)                              const&{return ((stenciled(x)<<1).stenciled(x1))>>1;}
-	constexpr basic_const_array stenciled(iextension x, iextension x1, iextension x2)               const&{return ((stenciled(x)<<1).stenciled(x1, x2))>>1;}
-	constexpr basic_const_array stenciled(iextension x, iextension x1, iextension x2, iextension x3)const&{return ((stenciled(x)<<1).stenciled(x1, x2, x3))>>1;}
+	constexpr auto stenciled(iextension x)                                             const& -> basic_const_array{return blocked(x.start(), x.finish());}
+	constexpr auto stenciled(iextension x, iextension x1)                              const& -> basic_const_array{return ((stenciled(x)<<1).stenciled(x1))>>1;}
+	constexpr auto stenciled(iextension x, iextension x1, iextension x2)               const& -> basic_const_array{return ((stenciled(x)<<1).stenciled(x1, x2))>>1;}
+	constexpr auto stenciled(iextension x, iextension x1, iextension x2, iextension x3)const& -> basic_const_array{return ((stenciled(x)<<1).stenciled(x1, x2, x3))>>1;}
+
 	template<class... Xs>
-	constexpr basic_const_array stenciled(iextension x, iextension x1, iextension x2, iextension x3, Xs... xs)const&{return ((stenciled(x)<<1).stenciled(x1, x2, x3, xs...))>>1;}
-
-	constexpr decltype(auto) elements_at(size_type n) const&{assert(n < this->num_elements()); 
-		auto const sub_num_elements = this->begin()->num_elements();
-		return operator[](n / sub_num_elements).elements_at(n % sub_num_elements);
-	}
-	constexpr decltype(auto) elements_at(size_type n) &&{assert(n < this->num_elements()); 
-		auto const sub_num_elements = this->begin()->num_elements();
-		return operator[](n / sub_num_elements).elements_at(n % sub_num_elements);
-	}
-	constexpr decltype(auto) elements_at(size_type n) &{assert(n < this->num_elements()); 
-		auto const sub_num_elements = this->begin()->num_elements();
-		return operator[](n / sub_num_elements).elements_at(n % sub_num_elements);
+	constexpr auto stenciled(iextension x, iextension x1, iextension x2, iextension x3, Xs... xs)const& -> basic_const_array{
+		return ((stenciled(x)<<1).stenciled(x1, x2, x3, xs...))>>1;
 	}
 
-	constexpr basic_array strided(typename types::index s) const{
+	constexpr auto elements_at(size_type n) const& -> decltype(auto){
+		assert(n < this->num_elements()); 
+		auto const sub_num_elements = this->begin()->num_elements();
+		return operator[](n / sub_num_elements).elements_at(n % sub_num_elements);
+	}
+	constexpr auto elements_at(size_type n) && -> decltype(auto){
+		assert(n < this->num_elements()); 
+		auto const sub_num_elements = this->begin()->num_elements();
+		return operator[](n / sub_num_elements).elements_at(n % sub_num_elements);
+	}
+	constexpr auto elements_at(size_type n) & -> decltype(auto){
+		assert(n < this->num_elements()); 
+		auto const sub_num_elements = this->begin()->num_elements();
+		return operator[](n / sub_num_elements).elements_at(n % sub_num_elements);
+	}
+
+	constexpr auto strided(typename types::index s) const -> basic_array{
 		typename types::layout_t new_layout = *this; 
 		new_layout.stride_*=s;
 		return {new_layout, types::base_};
 	}
-	constexpr basic_array sliced(typename types::index first, typename types::index last, typename types::index stride) const{
+	constexpr auto sliced(typename types::index first, typename types::index last, typename types::index stride) const -> basic_array{
 		return sliced(first, last).strided(stride);
 	}
 	using index_range = typename basic_array::index_range;
-	constexpr decltype(auto) range(index_range ir) &     {return sliced(ir.front(), ir.front() + ir.size());}
-	constexpr decltype(auto) range(index_range ir) &&    {return range(ir);}
-	constexpr decltype(auto) range(index_range ir) const&{return sliced(ir.front(), ir.front() + ir.size());}
+
+	constexpr auto range(index_range ir)      & -> decltype(auto){return sliced(ir.front(), ir.front() + ir.size());}
+	constexpr auto range(index_range ir)     && -> decltype(auto){return range(ir);}
+	constexpr auto range(index_range ir) const& -> decltype(auto){return sliced(ir.front(), ir.front() + ir.size());}
 
 	constexpr auto range(typename types::index_range const& ir, dimensionality_type n) const{
 		return rotated(n).range(ir).rotated(-n);
 	}
-	constexpr decltype(auto) flattened()&&{
+	constexpr auto flattened()&& -> decltype(auto){
 		multi::biiterator<std::decay_t<decltype(std::move(*this).begin())>> biit{std::move(*this).begin(), 0, size(*(std::move(*this).begin()))};
 		return basic_array<typename std::iterator_traits<decltype(biit)>::value_type, 1, decltype(biit)>{
 			multi::layout_t<1>(1, 0, this->size()*size(*(std::move(*this).begin()))),
 			biit
 		};
 	}
-	friend constexpr decltype(auto) flattened(basic_array&& self){return std::move(self).flattened();}
-	constexpr bool is_flattable() const{return this->stride() == this->layout().sub().nelems();}
+	friend constexpr auto flattened(basic_array&& self) -> decltype(auto){return std::move(self).flattened();}
+	constexpr auto is_flattable() const -> bool{return this->stride() == this->layout().sub().nelems();}
 	constexpr auto flatted() const{
 		assert(is_flattable() && "flatted doesn't work for all layouts!");//this->nelems());
 		multi::layout_t<D-1> new_layout{this->layout().sub()};
@@ -556,7 +563,7 @@ public:
 	NODISCARD("because it has no side-effect")
 	constexpr auto diagonal()&&{return this->diagonal();}
 	NODISCARD("because it has no side-effect")
-	constexpr basic_array<T, D-1, typename basic_array::element_ptr> diagonal()&{
+	constexpr auto diagonal()& -> basic_array<T, D-1, typename basic_array::element_ptr>{
 		auto L = std::min(std::get<0>(this->sizes()), std::get<1>(this->sizes()));
 		multi::layout_t<D-1> new_layout{(*this)({0, L}, {0, L}).layout().sub()};
 		new_layout.nelems() += (*this)({0, L}, {0, L}).layout().nelems(); // TODO(correaa) : don't use mutation
@@ -564,7 +571,7 @@ public:
 		return {new_layout, types::base_};
 	}
 	NODISCARD("because it has no side-effect")
-	constexpr basic_array<T, D-1, typename basic_array::element_const_ptr> diagonal() const&{
+	constexpr auto diagonal() const& -> basic_array<T, D-1, typename basic_array::element_const_ptr>{
 		auto L = std::min(std::get<0>(this->sizes()), std::get<1>(this->sizes()));
 		multi::layout_t<D-1> new_layout{(*this)({0, L}, {0, L}).layout().sub_};
 		new_layout.nelems_ += (*this)({0, L}, {0, L}).layout().nelems_;
@@ -577,34 +584,35 @@ public:
 
 	using partitioned_type       = basic_array<T, D+1, element_ptr      >;
 	using partitioned_const_type = basic_array<T, D+1, element_const_ptr>;
+
 private:
-	constexpr partitioned_type partitioned_aux(size_type s) const{
+	constexpr auto partitioned_aux(size_type s) const -> partitioned_type{
 		assert(s != 0);
 		assert( (this->layout().nelems() % s) == 0); // if you get an assertion here it means that you are partitioning an array with an incommunsurate partition
 		multi::layout_t<D+1> new_layout{this->layout(), this->layout().nelems()/s, 0, this->layout().nelems()};
 		new_layout.sub().nelems() /= s;
 		return {new_layout, types::base_};
 	}
-public:
-	constexpr partitioned_const_type partitioned(size_type s) const&{return partitioned_aux(s);}
-	constexpr partitioned_type       partitioned(size_type s)      &{return partitioned_aux(s);}
-	constexpr partitioned_type       partitioned(size_type s)     &&{return partitioned_aux(s);}
 
-	friend constexpr partitioned_const_type partitioned(basic_array const& self, size_type s){return           self .partitioned(s);}
-	friend constexpr partitioned_type       partitioned(basic_array      & self, size_type s){return           self .partitioned(s);}
-	friend constexpr partitioned_type       partitioned(basic_array     && self, size_type s){return std::move(self).partitioned(s);}
+public:
+	       constexpr auto partitioned(size_type s) const& -> partitioned_const_type{return partitioned_aux(s);}
+	       constexpr auto partitioned(size_type s)      & -> partitioned_type{return partitioned_aux(s);}
+	       constexpr auto partitioned(size_type s)     && -> partitioned_type{return partitioned_aux(s);}
+	friend constexpr auto partitioned(basic_array const& self, size_type s) -> partitioned_const_type{return           self .partitioned(s);}
+	friend constexpr auto partitioned(basic_array      & self, size_type s) -> partitioned_type      {return           self .partitioned(s);}
+	friend constexpr auto partitioned(basic_array     && self, size_type s) -> partitioned_type      {return std::move(self).partitioned(s);}
 
 private:
-	constexpr basic_array reversed_aux() const{
+	constexpr auto reversed_aux() const -> basic_array{
 		auto new_layout = this->layout();
 		new_layout.reverse();
 		return {new_layout, types::base_};
 	}
-public:
-	constexpr auto reversed() const& -> basic_const_array{return reversed_aux();}
-	constexpr auto reversed()      & -> basic_array      {return reversed_aux();}
-	constexpr auto reversed()     && -> basic_array      {return reversed_aux();}
 
+public:
+	       constexpr auto reversed()           const&    -> basic_const_array{return reversed_aux();}
+	       constexpr auto reversed()                &    -> basic_array      {return reversed_aux();}
+	       constexpr auto reversed()               &&    -> basic_array      {return reversed_aux();}
 	friend constexpr auto reversed(basic_array const& s) -> basic_const_array{return           s .reversed();}
 	friend constexpr auto reversed(basic_array      & s) -> basic_array      {return           s .reversed();}
 	friend constexpr auto reversed(basic_array     && s) -> basic_array      {return std::move(s).reversed();}
