@@ -373,6 +373,7 @@ public:
 	using typename types::element_const_ptr;
 
 	~basic_array() = default; // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+//	auto operator=(basic_array&& other) -> basic_array& = default; // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
 //	auto operator=(basic_array&& other) noexcept // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
 //	-> basic_array&{ // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 //		operator=(other); // needselement by elements copy
@@ -910,9 +911,17 @@ public:
 	{
 		assert( this->extensions() == o.extensions() );
 		if(this->is_empty()){return *this;}
-		basic_array::operator=(std::move(o));
+		basic_array::operator=(o);//std::move(o));
 		return *this; // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	}
+//	constexpr auto operator=(basic_array&& o)&& // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+//	-> basic_array& // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+//	{
+//		assert( this->extensions() == o.extensions() );
+//		if(this->is_empty()){return *this;}
+//		basic_array::operator=(o);
+//		return *this; // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+//	}
 
 	template<class TT, class... As>
 	constexpr auto operator=(basic_array<TT, D, As...> const& o)&& 
