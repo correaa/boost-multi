@@ -489,7 +489,7 @@ public:
 	constexpr basic_array stenciled(iextension x, iextension x1, iextension x2)               &{return ((stenciled(x)<<1).stenciled(x1, x2))>>1;}
 	constexpr basic_array stenciled(iextension x, iextension x1, iextension x2, iextension x3)&{return ((stenciled(x)<<1).stenciled(x1, x2, x3))>>1;}
 	template<class... Xs>
-	constexpr basic_array stenciled(iextension x, iextension x1, iextension x2, iextension x3, Xs... xs)&{return ((stenciled(x)<<1).stenciled(x1, x2, x3, xs...))>>1;}
+	constexpr auto stenciled(iextension x, iextension x1, iextension x2, iextension x3, Xs... xs)& -> basic_array{return ((stenciled(x)<<1).stenciled(x1, x2, x3, xs...))>>1;}
 
 	NODISCARD("no side effects")
 	constexpr auto stenciled(iextension x)                                             && -> basic_array{return blocked(x.start(), x.finish());}
