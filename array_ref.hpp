@@ -439,7 +439,8 @@ public:
 	template<class Tp = std::tuple<>, typename = std::enable_if_t<std::tuple_size<std::decay_t<Tp>>::value==0> >
 	HD constexpr decltype(auto) operator[](Tp&&) const{return *this;}
 	using typename types::index;
-	constexpr basic_const_array reindexed(typename basic_array::index first) const&{
+
+	constexpr auto reindexed(typename basic_array::index first) const& -> basic_const_array{
 		typename types::layout_t new_layout = *this;
 		new_layout.reindex(first);
 		return {new_layout, types::base_};
@@ -449,45 +450,47 @@ public:
 		new_layout.reindex(first);
 		return {new_layout, types::base_};
 	}
-	constexpr basic_array reindexed(typename basic_array::index first)&&{
+	constexpr auto reindexed(typename basic_array::index first)&& -> basic_array{
 		typename types::layout_t new_layout = *this;
 		new_layout.reindex(first);
 		return {new_layout, types::base_};
 	}
 	template<class... Indexes>
-	constexpr basic_const_array reindexed(typename basic_array::index first, Indexes... idxs) const&{
+	constexpr auto reindexed(typename basic_array::index first, Indexes... idxs) const& -> basic_const_array{
 		return ((reindexed(first)<<1).reindexed(idxs...))>>1;
 	}
 	template<class... Indexes>
-	constexpr basic_array reindexed(typename basic_array::index first, Indexes... idxs) &{
+	constexpr auto reindexed(typename basic_array::index first, Indexes... idxs) & -> basic_array{
 		return ((reindexed(first)<<1).reindexed(idxs...))>>1;
 	}
 	template<class... Indexes>
-	constexpr basic_array reindexed(typename basic_array::index first, Indexes... idxs)&&{
+	constexpr auto reindexed(typename basic_array::index first, Indexes... idxs)&& -> basic_array{
 		return ((std::move(*this).reindexed(first)<<1).reindexed(idxs...))>>1;
 	}
 private:
-	constexpr basic_array sliced_aux(index first, index last) const{
+	constexpr auto sliced_aux(index first, index last) const -> basic_array{
 		MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(first   ))&&"sliced first out of bounds");
 		MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(last - 1))&&"sliced last  out of bounds");
 		typename types::layout_t new_layout = *this;
 		new_layout.nelems() = this->stride()*(last - first); // TODO(correaa) : reconstruct layout instead of mutating it
 		return {new_layout, types::base_ + Layout::operator()(first)};
 	}
-public:
-	constexpr basic_const_array sliced(index first, index last) const&{return sliced_aux(first, last);}
-	constexpr basic_array       sliced(index first, index last)      &{return sliced_aux(first, last);}
-	constexpr basic_array       sliced(index first, index last)     &&{return sliced_aux(first, last);}
 
-	constexpr basic_const_array blocked(typename basic_array::index first, typename basic_array::index last) const&{return sliced(first, last).reindexed(first);}
-	constexpr basic_array       blocked(typename basic_array::index first, typename basic_array::index last)      &{return sliced(first, last).reindexed(first);}
+public:
+	constexpr auto sliced(index first, index last) const& -> basic_const_array{return sliced_aux(first, last);}
+	constexpr auto sliced(index first, index last)      & -> basic_array      {return sliced_aux(first, last);}
+	constexpr auto sliced(index first, index last)     && -> basic_array      {return sliced_aux(first, last);}
+
+	constexpr auto blocked(typename basic_array::index first, typename basic_array::index last) const& -> basic_const_array{return sliced(first, last).reindexed(first);}
+	constexpr auto blocked(typename basic_array::index first, typename basic_array::index last)      & -> basic_array      {return sliced(first, last).reindexed(first);}
 
 	using iextension = typename basic_array::index_extension;
+
 	NODISCARD("no side effects")
-	constexpr basic_array stenciled(iextension x)                                             &{return blocked(x.start(), x.finish());}
-	constexpr basic_array stenciled(iextension x, iextension x1)                              &{return ((stenciled(x)<<1).stenciled(x1))>>1;}
-	constexpr basic_array stenciled(iextension x, iextension x1, iextension x2)               &{return ((stenciled(x)<<1).stenciled(x1, x2))>>1;}
-	constexpr basic_array stenciled(iextension x, iextension x1, iextension x2, iextension x3)&{return ((stenciled(x)<<1).stenciled(x1, x2, x3))>>1;}
+	constexpr auto stenciled(iextension x)                                             & -> basic_array{return blocked(x.start(), x.finish());}
+	constexpr auto stenciled(iextension x, iextension x1)                              & -> basic_array{return ((stenciled(x)<<1).stenciled(x1))>>1;}
+	constexpr auto stenciled(iextension x, iextension x1, iextension x2)               & -> basic_array{return ((stenciled(x)<<1).stenciled(x1, x2))>>1;}
+	constexpr auto stenciled(iextension x, iextension x1, iextension x2, iextension x3)& -> basic_array{return ((stenciled(x)<<1).stenciled(x1, x2, x3))>>1;}
 	template<class... Xs>
 	constexpr auto stenciled(iextension x, iextension x1, iextension x2, iextension x3, Xs... xs)& -> basic_array{return ((stenciled(x)<<1).stenciled(x1, x2, x3, xs...))>>1;}
 
