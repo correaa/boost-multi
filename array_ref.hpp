@@ -423,10 +423,11 @@ private:
 	HD constexpr auto at_(index i) const{//MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
 		return reference(this->layout().sub(), this->base() + Layout::operator()(i));
 	}
+
 public:
-	HD constexpr const_reference operator[](index i) const&{return at_(i);}
-	HD constexpr       reference operator[](index i)     &&{return at_(i);}
-	HD constexpr       reference operator[](index i)      &{return at_(i);}
+	HD constexpr auto operator[](index i) const& -> const_reference{return at_(i);}
+	HD constexpr auto operator[](index i)     && ->       reference{return at_(i);}
+	HD constexpr auto operator[](index i)      & ->       reference{return at_(i);}
 
 	template<class Tp = std::array<index, static_cast<std::size_t>(D)>, typename = std::enable_if_t<(std::tuple_size<std::decay_t<Tp>>{}>1)> >
 	HD constexpr auto operator[](Tp&& t) const
@@ -437,7 +438,7 @@ public:
 	->decltype(operator[](std::get<0>(t))){
 		return operator[](std::get<0>(t));}
 	template<class Tp = std::tuple<>, typename = std::enable_if_t<std::tuple_size<std::decay_t<Tp>>::value==0> >
-	HD constexpr decltype(auto) operator[](Tp&&) const{return *this;}
+	HD constexpr auto operator[](Tp&&) const -> basic_const_array{return *this;}
 	using typename types::index;
 
 	constexpr auto reindexed(typename basic_array::index first) const& -> basic_const_array{
@@ -445,12 +446,12 @@ public:
 		new_layout.reindex(first);
 		return {new_layout, types::base_};
 	}
-	constexpr basic_array reindexed(typename basic_array::index first)&{
+	constexpr auto reindexed(typename basic_array::index first)& -> basic_array{
 		typename types::layout_t new_layout = *this;
 		new_layout.reindex(first);
 		return {new_layout, types::base_};
 	}
-	constexpr auto reindexed(typename basic_array::index first)&& -> basic_array{
+	constexpr auto reindexed(typename basic_array::index first)&& -> basic_array {
 		typename types::layout_t new_layout = *this;
 		new_layout.reindex(first);
 		return {new_layout, types::base_};
