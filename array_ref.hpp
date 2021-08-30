@@ -138,12 +138,19 @@ public://TODO find why this needs to be public and not protected or friend
 
 template<class Ref, class Layout>
 struct basic_array_ptr : 
-	private Ref,
+	private Ref, // TODO(correaa) : remove inheritance from Ref??
 	boost::multi::iterator_facade<
 		basic_array_ptr<Ref, Layout>, void, std::random_access_iterator_tag, 
 		Ref const&, typename Layout::difference_type
 	>//, boost::multi::totally_ordered2<basic_array_ptr<Ref, Layout>, void>
 {
+	~basic_array_ptr() = default; // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+	auto operator=(basic_array_ptr&& other) // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+	noexcept // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
+	-> basic_array_ptr&{
+		operator=(other);
+		return *this; // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+	}
 	using pointer = Ref const*;
 	using element_type = typename Ref::decay_type;
 	using difference_type = typename Layout::difference_type;
@@ -152,17 +159,18 @@ struct basic_array_ptr :
 	using reference = Ref;// const&;
 	using iterator_category = std::random_access_iterator_tag;
 
-	constexpr basic_array_ptr(std::nullptr_t p = nullptr) : Ref{p}{} // TODO remove default argument, add default ctor
+	constexpr explicit basic_array_ptr(std::nullptr_t p) : Ref{p}{}
+	constexpr basic_array_ptr() : basic_array_ptr{nullptr}{}
+
 	template<class, class> friend struct basic_array_ptr;
+
 	constexpr basic_array_ptr(typename Ref::element_ptr p, layout_t<typename Ref::rank{}-1> l) : Ref{l, p}{}
 	constexpr basic_array_ptr(typename Ref::element_ptr p, index_extensions<typename Ref::rank{}> e) : Ref{p, e}{}
 
-//	template<class Array, typename = decltype(typename Ref::element_ptr{typename Array::element_ptr{}})> 
-//	constexpr basic_array_ptr(Array const& o) : Ref{o->layout(), o->base()}{}//, stride_{o.stride_}{}
-//	constexpr basic_array_ptr(basic_array_ptr const& o) : Ref{static_cast<Layout const&>(o), o.base_}{}//, stride_{o.stride_}{}
-	basic_array_ptr(basic_array_ptr&& o) = default;//: Ref{static_cast<Layout const&>(o), o.base_}{}//, stride_{o.stride_}{}
-	basic_array_ptr(basic_array_ptr const& o) = default;//: Ref{static_cast<Layout const&>(o), o.base_}{}//, stride_{o.stride_}{}
+	basic_array_ptr(basic_array_ptr&&) noexcept = default;//: Ref{static_cast<Layout const&>(o), o.base_}{}//, stride_{o.stride_}{}
+	basic_array_ptr(basic_array_ptr const&) = default;//: Ref{static_cast<Layout const&>(o), o.base_}{}//, stride_{o.stride_}{}
 	auto operator=(basic_array_ptr const& other) -> basic_array_ptr&{
+		if(this == &other){return *this;} // lints(cert-oop54-cpp)
 		this->base_ = other.base_;
 		static_cast<Layout&>(*this) = other;
 		return *this;
@@ -173,7 +181,7 @@ struct basic_array_ptr :
 
 	HD constexpr auto  operator* () const -> Ref{return Ref{*this};}
 
-	constexpr auto operator->() const -> Ref*{return  const_cast<basic_array_ptr*>(this);}
+	constexpr auto operator->() const -> Ref*{return  const_cast<basic_array_ptr*>(this);} // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) find a better way without const_cast
 	constexpr auto operator->()       -> Ref*{return  this;}
 
 	constexpr auto  operator[](difference_type n) const -> Ref {return *(*this + n);}
