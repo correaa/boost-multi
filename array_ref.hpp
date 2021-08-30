@@ -198,7 +198,7 @@ protected:
 		return (other.base_ - base_)/Ref::nelems();
 	}
 public:
-	constexpr basic_array_ptr& operator+=(difference_type n){advance(n); return *this;}
+	constexpr auto operator+=(difference_type n) -> basic_array_ptr&{advance(n); return *this;}
 };
 
 template<class Element, dimensionality_type D, typename ElementPtr>
@@ -231,67 +231,73 @@ struct array_iterator :
 	using ptr_type = basic_array_ptr<basic_array<element, D-1, element_ptr>, layout_t<D-1>>;
 	using stride_type = index;
 
-	explicit constexpr array_iterator(std::nullptr_t p) : ptr_{p}, stride_{1}{}
+	explicit constexpr array_iterator(std::nullptr_t p) : ptr_{p}/*, stride_{1}*/{}
 	constexpr array_iterator() : array_iterator{nullptr}{}
 
 	template<class, dimensionality_type, class> friend struct array_iterator;
 
 	template<class EElement, typename PPtr, 
-		decltype(_implicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().ptr_.base()))* = nullptr // .base() (instead of .base_) is needed due to a bug in nvcc 11.1 not seeing the friend declaration?
-	>
-	constexpr          array_iterator(array_iterator<EElement, D, PPtr> const& o) : ptr_{o.ptr_.base_, o.ptr_.layout()}, stride_{o.stride_}{} // TODO refactor basic_array_ptr to not depend on Ref template parameter
-	template<class EElement, typename PPtr, 
 		decltype(_explicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().ptr_.base()))* = nullptr
 	>
-	constexpr explicit array_iterator(array_iterator<EElement, D, PPtr> const& o) : ptr_{o.ptr_.base_, o.ptr_.layout()}, stride_{o.stride_}{} 
+	constexpr explicit array_iterator(array_iterator<EElement, D, PPtr> const& o) : ptr_{o.ptr_.base_, o.ptr_.layout()}, stride_{o.stride_}{}
+	template<class EElement, typename PPtr, 
+		decltype(_implicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().ptr_.base()))* = nullptr // .base() (instead of .base_) is needed due to a bug in nvcc 11.1 not seeing the friend declaration?
+	>
+	constexpr/*implct*/array_iterator(array_iterator<EElement, D, PPtr> const& o) : ptr_{o.ptr_.base_, o.ptr_.layout()}, stride_{o.stride_}{} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : inherit implicitness of pointer
+	// ^^^ TODO(correaa) : implement implcit in terms of explicit? be careful of infinite recursion
 
 	array_iterator(array_iterator const&) = default;
-	array_iterator& operator=(array_iterator const& other) = default;
+	auto operator=(array_iterator const& other) -> array_iterator& = default;
 
 	explicit constexpr operator bool() const{return static_cast<bool>(ptr_.base_);}
-	HD constexpr basic_array<element, D-1, element_ptr> operator*() const{/*assert(*this);*/ return {*ptr_};}//return *this;}
-	constexpr decltype(auto) operator->() const{/*assert(*this);*/ return ptr_;}//return this;}
-	HD constexpr array_iterator operator+(difference_type n) const{array_iterator ret{*this}; ret+=n; return ret;}
-	HD constexpr basic_array<element, D-1, element_ptr> operator[](difference_type n) const{return *((*this) + n);}
+	HD constexpr auto operator*() const -> basic_array<element, D-1, element_ptr>{/*assert(*this);*/ return {*ptr_};}//return *this;}
 
-	constexpr bool operator==(array_iterator const& o) const{return ptr_==o.ptr_ and stride_==o.stride_ and ptr_.layout() == o.ptr_.layout();}
-//	template<class O> constexpr bool operator==(O const& o) const{return equal(o);}
-	constexpr bool operator<(array_iterator const& o) const{return distance_to(o) > 0;}
+	constexpr auto operator->() const -> decltype(auto){/*assert(*this);*/ return ptr_;}//return this;}
+
+	HD constexpr auto operator+ (difference_type n) const -> array_iterator{array_iterator ret{*this}; ret+=n; return ret;}
+	HD constexpr auto operator[](difference_type n) const -> basic_array<element, D-1, element_ptr>{return *((*this) + n);}
+
+	constexpr auto operator==(array_iterator const& o) const -> bool{return ptr_==o.ptr_ and stride_==o.stride_ and ptr_.layout() == o.ptr_.layout();}
+	constexpr auto operator< (array_iterator const& o) const -> bool{return distance_to(o) > 0;}
+
 	explicit constexpr array_iterator(typename basic_array<element, D-1, element_ptr>::element_ptr p, layout_t<D-1> l, index stride) :
 		ptr_{p, l}, 
 		stride_{stride}
 	{}
+
 	template<class, dimensionality_type, class, class> friend struct basic_array;
-	template<class... As> HD constexpr decltype(auto) operator()(index i, As... as) const{
-		return this->operator[](i)(as...);
-	}
-	                      HD constexpr decltype(auto) operator()(index i          ) const{return this->operator[](i)       ;}
+
+	template<class... As>
+	HD constexpr auto operator()(index i, As... as) const -> decltype(auto){return this->operator[](i)(as...);}
+	HD constexpr auto operator()(index i          ) const -> decltype(auto){return this->operator[](i)       ;}
 
 private:
 	template<typename Tuple, std::size_t ... I> 
-	HD constexpr decltype(auto) apply_impl(Tuple const& t, std::index_sequence<I...>) const{return this->operator()(std::get<I>(t)...);}
+	HD constexpr auto apply_impl(Tuple const& t, std::index_sequence<I...>/*012*/) const -> decltype(auto){
+		return this->operator()(std::get<I>(t)...);
+	}
+
 public:
-	template<typename Tuple> HD constexpr decltype(auto) apply(Tuple const& t) const{return apply_impl(t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
+	template<typename Tuple> HD constexpr auto apply(Tuple const& t) const -> decltype(auto){return apply_impl(t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
+
 private:
 	ptr_type ptr_;
 	stride_type stride_ = {1}; // nice non-zero default
-	constexpr bool equal(array_iterator const& o) const{return ptr_==o.ptr_ and stride_==o.stride_;}//base_==o.base_ && stride_==o.stride_ && ptr_.layout()==o.ptr_.layout();}
+
+	constexpr auto equal(array_iterator const& o) const -> bool{return ptr_==o.ptr_ and stride_==o.stride_;}//base_==o.base_ && stride_==o.stride_ && ptr_.layout()==o.ptr_.layout();}
 	constexpr void decrement(){ptr_.base_ -= stride_;}
 	constexpr void advance(difference_type n){ptr_.base_ += stride_*n;}
-	constexpr difference_type distance_to(array_iterator const& other) const{
+	constexpr auto distance_to(array_iterator const& other) const -> difference_type{
 		assert( stride_ == other.stride_); assert( stride_ != 0 );
-	//	assert( this->stride()==stride(other) and this->stride() );// and (base(other.ptr_) - base(this->ptr_))%stride_ == 0
-	//	assert( stride_ == other.stride_ and stride_ != 0 and (other.ptr_.base_-ptr_.base_)%stride_ == 0 and ptr_.layout() == other.ptr_.layout() );
-	//	assert( stride_ == other.stride_ and stride_ != 0 and (other.base_ - base_)%stride_ == 0 and layout() == other.layout() );
 		return (other.ptr_.base_ - ptr_.base_)/stride_;
 	}
 
 public:
-	       constexpr element_ptr base()              const&   {return ptr_.base_;}
-	friend constexpr element_ptr base(array_iterator const& s){return s.base();}
+	       constexpr auto base()              const&    -> element_ptr{return ptr_.base_;}
+	friend constexpr auto base(array_iterator const& s) -> element_ptr{return s.base();}
 
-	       constexpr stride_type stride()              const&   {return   stride_;}
-	friend constexpr stride_type stride(array_iterator const& s){return s.stride_;}
+	       constexpr auto stride()              const&    -> stride_type{return   stride_;}
+	friend constexpr auto stride(array_iterator const& s) -> stride_type{return s.stride_;}
 
 	constexpr auto operator++() -> array_iterator&{ptr_.base_ += stride_; return *this;}
 	constexpr auto operator--() -> array_iterator&{decrement(); return *this;}
