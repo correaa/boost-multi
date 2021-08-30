@@ -372,6 +372,13 @@ public:
 	using typename types::element_ptr;
 	using typename types::element_const_ptr;
 
+	~basic_array() = default; // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+	auto operator=(basic_array&& other) noexcept // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
+	-> basic_array&{ // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+		operator=(other); // needs element by elements copy
+		return *this; // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+	}
+
 	basic_array(basic_array&&) // in C++ < 17 this is necessary to return references from functions
 		noexcept = default // lints(readability-redundant-access-specifiers)
 	;
