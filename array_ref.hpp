@@ -601,40 +601,40 @@ private:
 		return {new_layout, types::base_};
 	}
 public:
-	constexpr basic_const_array reversed() const&{return reversed_aux();}
-	constexpr basic_array       reversed()      &{return reversed_aux();}
-	constexpr basic_array       reversed()     &&{return reversed_aux();}
+	constexpr auto reversed() const& -> basic_const_array{return reversed_aux();}
+	constexpr auto reversed()      & -> basic_array      {return reversed_aux();}
+	constexpr auto reversed()     && -> basic_array      {return reversed_aux();}
 
-	friend constexpr basic_const_array reversed(basic_array const& s){return           s .reversed();}
-	friend constexpr basic_array       reversed(basic_array      & s){return           s .reversed();}
-	friend constexpr basic_array       reversed(basic_array     && s){return std::move(s).reversed();}
+	friend constexpr auto reversed(basic_array const& s) -> basic_const_array{return           s .reversed();}
+	friend constexpr auto reversed(basic_array      & s) -> basic_array      {return           s .reversed();}
+	friend constexpr auto reversed(basic_array     && s) -> basic_array      {return std::move(s).reversed();}
 
-	constexpr basic_array transposed() const&{//	typename types::layout_t new_layout = *this;
+	constexpr auto transposed() const& -> basic_array{
 		return {this->layout().transpose(), types::base_};
 	}
-	friend constexpr basic_array transposed(basic_array const& s){return s.transposed();}
+	friend constexpr auto transposed(basic_array const& s) -> basic_array{return s.transposed();}
 	friend 
 #if not((defined(__INTEL_COMPILER) and (__INTEL_COMPILER < 1911)) or defined(__NVCC__))
-	constexpr 
+	constexpr
 #endif
-	basic_array operator~ (basic_array const& s){return s.transposed();}
+	auto operator~ (basic_array const& s) -> basic_array{return s.transposed();}
 
-	constexpr basic_array rotated()&{
+	constexpr auto rotated()& -> basic_array{
 		typename types::layout_t new_layout = *this; new_layout.rotate();
 		return basic_array{new_layout, types::base_};
 	}
-	constexpr basic_array rotated()&&{
+	constexpr auto rotated()&& -> basic_array{
 		typename types::layout_t new_layout = *this; new_layout.rotate();
 		return basic_array{new_layout, types::base_};
 	}
-	constexpr basic_const_array rotated() const&{
+	constexpr auto rotated() const& -> basic_const_array{
 		typename types::layout_t new_layout = *this; new_layout.rotate();
 		typename basic_const_array::element_ptr new_base_{types::base_};
 		return basic_const_array{new_layout, new_base_};
 	}
-	friend constexpr basic_const_array rotated(basic_array const&  self){return self.rotated();}
-	friend constexpr basic_array       rotated(basic_array      && self){return std::move(self).rotated();}
-	friend constexpr basic_array       rotated(basic_array      &  self){return self.rotated();}
+	friend constexpr auto rotated(basic_array const&  self) -> basic_const_array{return self.rotated();}
+	friend constexpr auto rotated(basic_array      && self) -> basic_array      {return std::move(self).rotated();}
+	friend constexpr auto rotated(basic_array      &  self) -> basic_array      {return self.rotated();}
 
 	constexpr auto unrotated() &{
 		typename types::layout_t new_layout = *this; 
@@ -653,25 +653,25 @@ public:
 	}
 	friend constexpr auto unrotated(basic_array const& self){return self.unrotated();}
 
-	constexpr basic_array rotated(dimensionality_type i) &{
+	constexpr auto rotated(dimensionality_type i) & -> basic_array{
 		typename types::layout_t new_layout = *this; 
 		new_layout.rotate(i);
 		return {new_layout, types::base_};
 	}
-	constexpr basic_array       rotated(dimensionality_type i) &&{return rotated(i);}
-	constexpr basic_const_array rotated(dimensionality_type i) const&{
+	constexpr auto rotated(dimensionality_type i) && -> basic_array{return rotated(i);}
+	constexpr auto rotated(dimensionality_type i) const& -> basic_const_array{
 		typename types::layout_t new_layout = *this; 
 		new_layout.rotate(i);
 		return {new_layout, types::base_};
 	}
 
-	constexpr basic_array unrotated(dimensionality_type i) &{
+	constexpr auto unrotated(dimensionality_type i) & -> basic_array{
 		typename types::layout_t new_layout = *this; 
 		new_layout.unrotate(i);
 		return {new_layout, types::base_};
 	}
-	constexpr basic_array       unrotated(dimensionality_type i) &&{return unrotated(i);}
-	constexpr basic_const_array unrotated(dimensionality_type i) const&{
+	constexpr auto unrotated(dimensionality_type i)     && -> basic_array      {return unrotated(i);}
+	constexpr auto unrotated(dimensionality_type i) const& -> basic_const_array{
 		typename types::layout_t new_layout = *this; 
 		new_layout.unrotate(i);
 		return {new_layout, types::base_};
