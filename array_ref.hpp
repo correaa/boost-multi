@@ -162,36 +162,49 @@ struct basic_array_ptr :
 //	constexpr basic_array_ptr(basic_array_ptr const& o) : Ref{static_cast<Layout const&>(o), o.base_}{}//, stride_{o.stride_}{}
 	basic_array_ptr(basic_array_ptr&& o) = default;//: Ref{static_cast<Layout const&>(o), o.base_}{}//, stride_{o.stride_}{}
 	basic_array_ptr(basic_array_ptr const& o) = default;//: Ref{static_cast<Layout const&>(o), o.base_}{}//, stride_{o.stride_}{}
-	basic_array_ptr& operator=(basic_array_ptr const& other){
+	auto operator=(basic_array_ptr const& other) -> basic_array_ptr&{
 		this->base_ = other.base_;
 		static_cast<Layout&>(*this) = other;
 		return *this;
 	}
 	constexpr explicit operator bool() const{return this->base_;}
-	constexpr Ref  dereference() const{return Ref{this->layout(), this->base_};}
-	HD constexpr Ref  operator* () const{return Ref{*this};}
-	constexpr Ref* operator->() const{return  const_cast<basic_array_ptr*>(this);}
-	constexpr Ref* operator->(){return  this;}
-	constexpr Ref  operator[](difference_type n) const{return *(*this + n);}
-//	template<class O> bool operator==(O const& o) const{return equal(o);}
-	constexpr bool operator<(basic_array_ptr const& o) const{return distance_to(o) > 0;}
+
+	constexpr auto  dereference() const -> Ref{return Ref{this->layout(), this->base_};}
+
+	HD constexpr auto  operator* () const -> Ref{return Ref{*this};}
+
+	constexpr auto operator->() const -> Ref*{return  const_cast<basic_array_ptr*>(this);}
+	constexpr auto operator->()       -> Ref*{return  this;}
+
+	constexpr auto  operator[](difference_type n) const -> Ref {return *(*this + n);}
+
+	constexpr auto operator<(basic_array_ptr const& o) const -> bool{return distance_to(o) > 0;}
+
 	constexpr basic_array_ptr(typename Ref::element_ptr p, Layout const& l) : Ref{l, p}{}
+
 	template<typename T, dimensionality_type D, typename ElementPtr, class LLayout>
 	friend struct basic_array;
+
 	constexpr auto base() const{return this->base_;}
+
 	friend constexpr auto base(basic_array_ptr const& self){return self.base();}
+
 	using Ref::base_;
 	using Ref::layout;
-	constexpr bool operator==(basic_array_ptr const& o) const{return base_==o.base_ and layout()==o.layout();}
-	template<class O> constexpr bool operator==(O const& o) const{return base()==o->base() and layout() == o->layout();}
-	template<class O> constexpr bool operator!=(O const& o) const{return not ((*this)==o);}
-	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> friend constexpr bool operator==(O const& o, basic_array_ptr const& s){return s.operator==(o);}
-	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> friend constexpr bool operator!=(O const& o, basic_array_ptr const& s){return not(o==s);}
+
+	constexpr auto operator==(basic_array_ptr const& o) const -> bool{return base_==o.base_ and layout()==o.layout();}
+
+	template<class O> constexpr auto operator==(O const& o) const -> bool{return base()==o->base() and layout() == o->layout();}
+	template<class O> constexpr auto operator!=(O const& o) const -> bool{return not ((*this)==o);}
+
+	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> friend constexpr auto operator==(O const& o, basic_array_ptr const& s) -> bool{return s.operator==(o);}
+	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> friend constexpr auto operator!=(O const& o, basic_array_ptr const& s) -> bool{return not(o==s);}
+
 protected:
 	constexpr void increment(){base_ += Ref::nelems();}
 	constexpr void decrement(){base_ -= Ref::nelems();}
 	constexpr void advance(difference_type n){base_ += Ref::nelems()*n;}
-	constexpr difference_type distance_to(basic_array_ptr const& other) const{
+	constexpr auto distance_to(basic_array_ptr const& other) const -> difference_type{
 		assert( Ref::nelems() == other.Ref::nelems() and Ref::nelems() != 0 );
 		assert( (other.base_ - base_)%Ref::nelems() == 0); 
 		assert( layout() == other.layout() );
@@ -215,6 +228,13 @@ struct array_iterator :
 	multi::affine<array_iterator<Element, D, ElementPtr>, multi::difference_type>,
 	multi::totally_ordered2<array_iterator<Element, D, ElementPtr>, void>
 {
+	~array_iterator() = default; // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+	auto operator=(array_iterator&&) // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+	noexcept // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
+	-> array_iterator& = default;
+	array_iterator(array_iterator&&) noexcept // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
+	= default; // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+
 	using difference_type = typename layout_t<D>::difference_type;
 	using element = Element;//typename Ref::element;
 	using element_ptr = ElementPtr;//typename Ref::element_ptr;
