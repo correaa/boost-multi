@@ -319,7 +319,7 @@ struct biiterator :
 	biiterator() = default;
 	biiterator(biiterator const& other) = default;// : me{other.me}, pos{other.pos}, stride{other.stride}{}
 	constexpr biiterator(It me, std::ptrdiff_t pos, std::ptrdiff_t stride) : me_{me}, pos_{pos}, stride_{stride}{}
-	constexpr decltype(auto) operator++(){
+	constexpr auto operator++() -> decltype(auto){
 		++pos_;
 		if(pos_==stride_){
 			++me_;
@@ -327,9 +327,9 @@ struct biiterator :
 		}
 		return *this;
 	}
-	constexpr bool operator==(biiterator const& o) const{return me_==o.me_ and pos_==o.pos_;}
-	constexpr biiterator& operator+=(multi::difference_type n){me_ += n/stride_; pos_ += n%stride_; return *this;}
-	constexpr decltype(auto) operator*() const{
+	constexpr auto operator==(biiterator const& o) const -> bool{return me_==o.me_ and pos_==o.pos_;}
+	constexpr auto operator+=(multi::difference_type n) -> biiterator&{me_ += n/stride_; pos_ += n%stride_; return *this;}
+	constexpr auto operator*() const -> decltype(auto){
 		auto meb = std::move(*me_).begin();
 		return meb[pos_];
 	}
@@ -357,8 +357,9 @@ struct basic_array :
 	friend struct basic_array<typename types::element, typename Layout::rank{} + 1, typename types::element_ptr&>;
 	using types::layout;
 	using layout_type = Layout;
-	constexpr layout_type layout() const{return array_types<T, D, ElementPtr, Layout>::layout();}
+	constexpr auto layout() const -> layout_type{return array_types<T, D, ElementPtr, Layout>::layout();}
 	using basic_const_array = basic_array<T, D, typename std::pointer_traits<ElementPtr>::template rebind<typename basic_array::element_type const>, Layout>;
+
 	basic_array() = default;
 	constexpr basic_array(layout_type const& layout, ElementPtr const& p) : array_types<T, D, ElementPtr, Layout>{layout, p}{}
 
@@ -370,20 +371,11 @@ protected:
 public:
 	using typename types::element_ptr;
 	using typename types::element_const_ptr;
-//#if __cplusplus >= 201703L
-//#if defined(__INTEL_COMPILER) or defined(__NVCC__)
-//public:
-//#else
-//protected:
-//#endif
-//	constexpr basic_array(basic_array&&) = default; // if you need to generate a copy you can't use `auto` here, use `decay`. maybe you want to return `decltype(auto)`.
-//#else
-//public: 
-//	constexpr basic_array(basic_array&&) = default; // in C++ < 17 this is necessary to return references from functions
-//#endif
-public:
-	basic_array(basic_array&&) = default; // in C++ < 17 this is necessary to return references from functions
-public:
+
+	basic_array(basic_array&&) // in C++ < 17 this is necessary to return references from functions
+		noexcept = default // lints(readability-redundant-access-specifiers)
+	;
+
 	template<class T2> friend constexpr auto reinterpret_array_cast(basic_array&& a){
 		return std::move(a).template reinterpret_array_cast<T2, typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>();
 	}
@@ -395,27 +387,27 @@ public:
 
 	using default_allocator_type = typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type;
 
-	constexpr default_allocator_type get_allocator() const{
+	constexpr auto get_allocator() const -> default_allocator_type{
 		using multi::get_allocator;
 		return get_allocator(this->base());
 	}
 
-	friend default_allocator_type get_allocator(basic_array const& s){return s.get_allocator();}
+	friend auto get_allocator(basic_array const& s) -> default_allocator_type{return s.get_allocator();}
 	template<class P>
-	static constexpr default_allocator_type get_allocator_(P const& p){
+	static constexpr auto get_allocator_(P const& p) -> default_allocator_type{
 		return multi::default_allocator_of(p);
 	}
 	using decay_type = array<typename types::element_type, D, typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type>;//get_allocator_(std::declval<ElementPtr>()))>;
 	template<class Archive>
-	auto serialize(Archive& ar, unsigned int /*file version*/){
+	auto serialize(Archive& ar, unsigned int /*version*/){
 		std::for_each(this->begin(), this->end(), [&](auto&& e){ar & multi::archive_traits<Archive>::make_nvp("item", e);});
 	}
-	constexpr decay_type decay() const{
+	constexpr auto decay() const -> decay_type{
 		decay_type ret{std::move(modify(*this))};
 		return ret;
 	}
-	friend constexpr decay_type decay(basic_array const& s){return s.decay();}
-	friend decay_type operator+(basic_array const& s){return s.decay();}
+	friend constexpr auto decay    (basic_array const& s) -> decay_type{return s.decay();}
+	friend           auto operator+(basic_array const& s) -> decay_type{return s.decay();}
 
 	using typename types::const_reference;
 
@@ -438,7 +430,7 @@ public:
 	->decltype(operator[](std::get<0>(t))){
 		return operator[](std::get<0>(t));}
 	template<class Tp = std::tuple<>, typename = std::enable_if_t<std::tuple_size<std::decay_t<Tp>>::value==0> >
-	HD constexpr auto operator[](Tp&&) const -> basic_const_array{return *this;}
+	HD constexpr auto operator[](Tp&& /*empty*/) const -> basic_const_array{return *this;}
 	using typename types::index;
 
 	constexpr auto reindexed(typename basic_array::index first) const& -> basic_const_array{
