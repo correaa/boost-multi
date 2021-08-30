@@ -914,14 +914,15 @@ public:
 		basic_array::operator=(o);//std::move(o));
 		return *this; // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	}
-//	constexpr auto operator=(basic_array&& o)&& // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-//	-> basic_array& // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-//	{
-//		assert( this->extensions() == o.extensions() );
-//		if(this->is_empty()){return *this;}
-//		basic_array::operator=(o);
-//		return *this; // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-//	}
+	constexpr auto operator=(basic_array&& o)&& // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+	noexcept // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
+	-> basic_array& // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+	{
+		assert( this->extensions() == o.extensions() );
+		if(this->is_empty()){return *this;}
+		basic_array::operator=(o);
+		return *this; // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+	}
 
 	template<class TT, class... As>
 	constexpr auto operator=(basic_array<TT, D, As...> const& o)&& 
