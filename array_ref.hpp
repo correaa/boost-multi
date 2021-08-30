@@ -342,9 +342,9 @@ struct biiterator :
 
 template<class It>
 auto ref(It begin, It end)
-//->multi::basic_array<typename It::element, typename It::rank{}, typename It::element_ptr>
+->multi::basic_array<typename It::element, It::rank_v, typename It::element_ptr>
 {
-	return multi::basic_array<typename It::element, typename It::rank{}, typename It::element_ptr>{begin, end};
+	return multi::basic_array<typename It::element, It::rank_v, typename It::element_ptr>{begin, end};
 }
 
 template<typename T, dimensionality_type D, typename ElementPtr, class Layout>
@@ -759,21 +759,21 @@ public:
 		return paren(*this, std::forward<Args>(args)...);}
 
 private:
-	template<typename Tuple, std::size_t ... I> constexpr decltype(auto) apply_impl(Tuple const& t, std::index_sequence<I...>) const&{return this->operator()(std::get<I>(t)...);}
-	template<typename Tuple, std::size_t ... I> constexpr decltype(auto) apply_impl(Tuple const& t, std::index_sequence<I...>)      &{return this->operator()(std::get<I>(t)...);}
-	template<typename Tuple, std::size_t ... I> constexpr decltype(auto) apply_impl(Tuple const& t, std::index_sequence<I...>)     &&{return std::move(*this).operator()(std::get<I>(t)...);}
+	template<typename Tuple, std::size_t ... I> constexpr auto apply_impl(Tuple const& t, std::index_sequence<I...>/*012*/) const& -> decltype(auto){return            this->operator()(std::get<I>(t)...);}
+	template<typename Tuple, std::size_t ... I> constexpr auto apply_impl(Tuple const& t, std::index_sequence<I...>/*012*/)      & -> decltype(auto){return            this->operator()(std::get<I>(t)...);}
+	template<typename Tuple, std::size_t ... I> constexpr auto apply_impl(Tuple const& t, std::index_sequence<I...>/*012*/)     && -> decltype(auto){return std::move(*this).operator()(std::get<I>(t)...);}
 public:
-	template<typename Tuple> constexpr decltype(auto) apply(Tuple const& t) const&{return apply_impl(t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
-	template<typename Tuple> constexpr decltype(auto) apply(Tuple const& t)     &&{return apply_impl(t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
-	template<typename Tuple> constexpr decltype(auto) apply(Tuple const& t)      &{return apply_impl(t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
+	template<typename Tuple> constexpr auto apply(Tuple const& t) const& -> decltype(auto){return apply_impl(t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
+	template<typename Tuple> constexpr auto apply(Tuple const& t)     && -> decltype(auto){return apply_impl(t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
+	template<typename Tuple> constexpr auto apply(Tuple const& t)      & -> decltype(auto){return apply_impl(t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
 
-//private:
 	using Layout::nelems;
 	using Layout::stride;
 	using Layout::sub;
-public:
+
 	using       iterator = array_iterator<typename types::element, D, typename types::element_ptr      >;//, typename types::reference      >;
 	using const_iterator = array_iterator<typename types::element, D, typename types::element_const_ptr>;//, typename types::const_reference>;
+
 private:
 	explicit constexpr basic_array(iterator begin, iterator end) :
 	basic_array{
@@ -783,7 +783,7 @@ private:
 		assert(begin.stride() == end.stride());
 		assert(begin->layout() == end->layout());
 	}
-	template<class It> friend auto ref(It begin, It end);// ->multi::basic_array<typename It::element, typename It::rank{}, typename It::element_ptr>;
+	template<class It> friend auto ref(It begin, It end) -> multi::basic_array<typename It::element, It::rank_v, typename It::element_ptr>;
 
 	template<class Iterator>
 	struct basic_reverse_iterator : 
@@ -794,13 +794,17 @@ private:
 		constexpr explicit basic_reverse_iterator(O const& o) : std::reverse_iterator<Iterator>{base(o)}{}
 		constexpr basic_reverse_iterator() : std::reverse_iterator<Iterator>{}{}
 		constexpr explicit basic_reverse_iterator(Iterator it) : std::reverse_iterator<Iterator>(std::prev(it)){}
-		constexpr explicit operator Iterator() const{auto ret = this->base(); if(ret!=Iterator{}) return ++ret; else return Iterator{};}
+		constexpr explicit operator Iterator() const{
+			auto ret = this->base();
+			if(ret!=Iterator{}){return ++ret;}
+			return Iterator{};
+		}
 		constexpr explicit operator bool() const{return bool(this->base());}
 		constexpr auto operator==(basic_reverse_iterator const& other) const -> bool{return (this->base() == other.base());}
 		constexpr auto operator*()  const -> typename Iterator::reference{return this->current;}
 		constexpr auto operator->() const -> typename Iterator::pointer  {return &this->current;}
 		constexpr auto operator[](typename Iterator::difference_type n) const -> typename Iterator::reference{return *(this->current - n);}
-		constexpr bool operator<(basic_reverse_iterator const& o) const{return o.base() < this->base();}
+		constexpr auto operator<(basic_reverse_iterator const& o) const -> bool{return o.base() < this->base();}
 	};
 public:
 	using reverse_iterator = basic_reverse_iterator<iterator>;
