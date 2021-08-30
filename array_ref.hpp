@@ -285,20 +285,24 @@ private:
 	//	assert( stride_ == other.stride_ and stride_ != 0 and (other.base_ - base_)%stride_ == 0 and layout() == other.layout() );
 		return (other.ptr_.base_ - ptr_.base_)/stride_;
 	}
+
 public:
 	       constexpr element_ptr base()              const&   {return ptr_.base_;}
 	friend constexpr element_ptr base(array_iterator const& s){return s.base();}
+
 	       constexpr stride_type stride()              const&   {return   stride_;}
 	friend constexpr stride_type stride(array_iterator const& s){return s.stride_;}
-	constexpr array_iterator& operator++(){ptr_.base_ += stride_; return *this;}
-	constexpr array_iterator& operator--(){decrement(); return *this;}
 
-	friend constexpr difference_type operator-(array_iterator const& self, array_iterator const& other){
-		assert(self.stride_ == other.stride_); assert(self.stride_ != 0);
+	constexpr auto operator++() -> array_iterator&{ptr_.base_ += stride_; return *this;}
+	constexpr auto operator--() -> array_iterator&{decrement(); return *this;}
+
+	friend constexpr auto operator-(array_iterator const& self, array_iterator const& other) -> difference_type{
+		assert(self.stride_ == other.stride_); 
+		assert(self.stride_ != 0);
 		return (self.ptr_.base_ - other.ptr_.base_)/self.stride_;
 	}
-	constexpr array_iterator& operator+=(difference_type d){advance(+d); return *this;}
-	constexpr array_iterator& operator-=(difference_type d){advance(-d); return *this;}
+	constexpr auto operator+=(difference_type d) -> array_iterator&{advance(+d); return *this;}
+	constexpr auto operator-=(difference_type d) -> array_iterator&{advance(-d); return *this;}
 };
 
 template<class It>
@@ -313,11 +317,15 @@ struct biiterator :
 	multi::incrementable<biiterator<It>>,
 	multi::totally_ordered2<biiterator<It>, void>
 {
-	It me_;
-	std::ptrdiff_t pos_;
-	std::ptrdiff_t stride_;
-	biiterator() = default;
-	biiterator(biiterator const& other) = default;// : me{other.me}, pos{other.pos}, stride{other.stride}{}
+private:
+	It me_ = {};
+	std::ptrdiff_t pos_ = 0;
+	std::ptrdiff_t stride_ = 1;
+
+public:
+//	biiterator() = default;
+//	biiterator(biiterator const& other) = default;// : me{other.me}, pos{other.pos}, stride{other.stride}{}
+
 	constexpr biiterator(It me, std::ptrdiff_t pos, std::ptrdiff_t stride) : me_{me}, pos_{pos}, stride_{stride}{}
 	constexpr auto operator++() -> decltype(auto){
 		++pos_;
@@ -911,11 +919,11 @@ public:
 	{
 		assert( this->extensions() == o.extensions() );
 		if(this->is_empty()){return *this;}
-		basic_array::operator=(o);//std::move(o));
+		basic_array::operator=(o);
 		return *this; // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	}
 	constexpr auto operator=(basic_array&& o)&& // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-	noexcept // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
+	noexcept // lints(hicpp-noexcept-move,performance-noexcept-move-constructor) // TODO(correaa) : make conditionally noexcept
 	-> basic_array& // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	{
 		assert( this->extensions() == o.extensions() );
