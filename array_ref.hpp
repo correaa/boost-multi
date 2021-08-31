@@ -939,32 +939,33 @@ public:
 	template<class TT, class... As>
 //	constexpr 
 	auto operator=(basic_array<TT, D, As...> const& o)& -> basic_array&{
-		assert( this->extension() == o.extension() );
+		assert( this->extension() == o.extension() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		MULTI_MARK_SCOPE( std::string{"multi::operator= (D="}+std::to_string(D)+") from "+typeid(TT).name()+" to "+typeid(T).name() );
 		if(this->is_empty()){return *this;}
 		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()){
 			adl_copy_n(o.base(), o.num_elements(), this->base());
 		}else if(o.stride() < (~o).stride()){
-			~(*this) = ~o;
+		//	~(*this) = ~o; // vvv lints(misc-no-recursion)
+			adl_copy_n( (~o).begin(), (~o).size(), (~(*this)).begin() );
 		}else{
 			assign(o.begin());
 		}
 		return *this;
 	}
-	template<class TT, class... As>
-	constexpr auto operator=(basic_array<TT, D, As...>&& o)&& 
-	-> basic_array& // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-	{
-		assert( this->extensions() == o.extensions() );
-		if(this->is_empty()){return *this;}
-		basic_array::operator=(o);
-		return *this; // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-	}
+//	template<class TT, class... As>
+//	constexpr auto operator=(basic_array<TT, D, As...>&& o)&& 
+//	-> basic_array& // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+//	{
+//		assert( this->extensions() == o.extensions() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+//		if(this->is_empty()){return *this;}
+//		basic_array::operator=(o);
+//		return *this; // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+//	}
 	constexpr auto operator=(basic_array&& o)&& // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 	noexcept // lints(hicpp-noexcept-move,performance-noexcept-move-constructor) // TODO(correaa) : make conditionally noexcept
 	-> basic_array& // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	{
-		assert( this->extensions() == o.extensions() );
+		assert( this->extensions() == o.extensions() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		if(this->is_empty()){return *this;}
 		basic_array::operator=(o);
 		return *this; // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
@@ -980,12 +981,13 @@ public:
 //	constexpr 
 	auto operator=(basic_array               const& o) & -> basic_array&{
 		if(this == &o){return *this;} // lints(cert-oop54-cpp)
-		assert( this->extension() == o.extension() );
+		assert( this->extension() == o.extension() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		MULTI_MARK_SCOPE("multi::operator= [D="+std::to_string(D)+"] from "+typeid(T).name()+" to "+typeid(T).name() );
 		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()){
 			adl_copy_n(o.base(), o.num_elements(), this->base());
 		}else if(o.stride() < (~o).stride()){
-			~(*this) = ~o;
+		//	~(*this) = ~o; // vvv lints(misc-no-recursion)
+			adl_copy_n( (~o).begin(), (~o).size(), (~(*this)).begin() );
 		}else{
 			assign(o.begin());
 		}
@@ -1205,7 +1207,7 @@ private:
 	stride_type stride_ = {1};
 
 	constexpr auto distance_to(array_iterator const& other) const -> difference_type{
-		assert(stride_==other.stride_ and (other.data_-data_)%stride_ == 0);
+		assert(stride_==other.stride_ and (other.data_-data_)%stride_ == 0); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		return (other.data_ - data_)/stride_;
 	}
 
@@ -1664,7 +1666,7 @@ public:
 	)>
 //	constexpr 
 	auto operator=(basic_array<TT, 1, As...> const& other)&& -> basic_array&{
-		assert( this->extensions() == other.extensions() );
+		assert( this->extensions() == other.extensions() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		MULTI_MARK_SCOPE(std::string{"multi::operator= D=1 from "}+typeid(TT).name()+" to "+typeid(T).name() );
 		if(this->is_empty()){return *this;}
 		adl_copy(other.begin(), other.end(), this->begin());
