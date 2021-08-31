@@ -336,7 +336,7 @@ public:
 
 	friend constexpr auto operator-(array_iterator const& self, array_iterator const& other) -> difference_type{
 		assert(self.stride_ == other.stride_); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		assert(self.stride_ != 0);
+		assert(self.stride_ != 0);             // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		return (self.ptr_.base_ - other.ptr_.base_)/self.stride_;
 	}
 	constexpr auto operator+=(difference_type d) -> array_iterator&{advance(+d); return *this;}
