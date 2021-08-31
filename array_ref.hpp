@@ -9,16 +9,16 @@ $CXXX $CXXFLAGS $0 -o $0x&&$0x&&rm $0x&&(rm -rf test/build&&mkdir -p test/build&
 #include "./memory/pointer_traits.hpp"
 #include "utility.hpp" 
 
-#include "./detail/layout.hpp"
-#include "./detail/types.hpp"     // dimensionality_type
-#include "./detail/operators.hpp" // random_iterable
-#include "./detail/memory.hpp"    // pointer_traits
-
-#include "./config/NODISCARD.hpp"
+#include "./config/ASSERT.hpp"
 #include "./config/DELETE.hpp"
 #include "./config/DEPRECATED.hpp"
-#include "./config/ASSERT.hpp"
 #include "./config/MARK.hpp"
+#include "./config/NODISCARD.hpp"
+
+#include "./detail/layout.hpp"
+#include "./detail/memory.hpp"    // pointer_traits
+#include "./detail/operators.hpp" // random_iterable
+#include "./detail/types.hpp"     // dimensionality_type
 
 #if defined(__NVCC__)
 #define HD __host__ __device__
@@ -38,17 +38,18 @@ namespace std{
 	template<class T>
 	struct pointer_traits<std::move_iterator<T*>> : std::pointer_traits<T*>{
 		template<class U> using rebind = 
-			std::conditional_t<std::is_const<U>{}, 
+			std::conditional_t<
+				std::is_const<U>{}, 
 				U*,
 				std::pointer_traits<std::move_iterator<U*>>
 			>;
 	};
-}
+} // end namespace std
 
 namespace boost{
 namespace multi{
 
-template<class T> T& modify(T const& t){return const_cast<T&>(t);}
+template<class T> auto modify(T const& t) -> T&{return const_cast<T&>(t);} // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) see what is this used for
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>> 
 struct basic_array;
@@ -56,10 +57,10 @@ struct basic_array;
 template<typename T, dimensionality_type D, class A = std::allocator<T>> struct array;
 
 template<class To, class From, std::enable_if_t<std::is_convertible<From, To>{},int> =0>
-constexpr To _implicit_cast(From&& f){return static_cast<To>(f);}
+constexpr auto _implicit_cast(From&& f) -> To{return static_cast<To>(f);}
 
 template<class To, class From, std::enable_if_t<std::is_constructible<To, From>{} and not std::is_convertible<From, To>{},int> =0>
-constexpr To _explicit_cast(From&& f){return static_cast<To>(f);}
+constexpr auto _explicit_cast(From&& f) -> To{return static_cast<To>(f);}
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D> >
 struct array_types : Layout{ // cppcheck-suppress syntaxError ; false positive in cppcheck
@@ -1022,7 +1023,7 @@ public:
 	template<class It>
 	constexpr auto equal(It begin) const& -> bool{
 		return adl_equal(
-			std::move(modify(*this)).begin(), 
+			std::move(modify(*this)).begin(), // TODO(correaa) : what is this?
 			std::move(modify(*this)).end(),
 			begin
 		);
