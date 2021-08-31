@@ -498,7 +498,7 @@ public:
 		return {new_layout, types::base_};
 	}
 	constexpr auto reindexed(typename basic_array::index first)&& -> basic_array {
-		typename types::layout_t new_layout = *this;
+		typename types::layout_t new_layout = this->layout();
 		new_layout.reindex(first);
 		return {new_layout, types::base_};
 	}
@@ -1423,7 +1423,7 @@ public:
 	}
 
 	constexpr auto operator[](index i) const& -> typename basic_array::const_reference{
-		MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
+		MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds"); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		return *(this->base() + Layout::operator()(i)); // in C++17 this is allowed even with syntethic references
 	}
 	constexpr auto operator[](index i) & -> typename basic_array::      reference{
@@ -1471,9 +1471,9 @@ public:
 
 private:
 	constexpr auto sliced_aux(index first, index last) const -> basic_array{
-		typename types::layout_t new_layout = *this;
-		if(Layout::size()==0){
-			assert(first == last);
+		typename types::layout_t new_layout = this->layout();
+		if(this->is_empty()){
+			assert(first == last); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 			new_layout.nelems() = 0; // TODO(correaa) : don't use mutation
 		}else{
 			(new_layout.nelems() /= Layout::size())*=(last - first);
