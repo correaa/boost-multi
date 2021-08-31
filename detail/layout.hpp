@@ -591,19 +591,21 @@ public:
 	constexpr auto unrotate() -> layout_t&{sub_.unrotate(); transpose(); return *this;}
 
 	constexpr auto   rotate(dimensionality_type r) -> layout_t&{
-		if(r >= 0){
-			while(r != 0){rotate(); --r;}
-		}else{
-			return rotate(D - r);
-		}
+		assert( r >= 0 );
+		while(r != 0){rotate(); --r;}
+	//	if(r >= 0){
+	//	}else{
+	//		return rotate(D - r);
+	//	}
 		return *this;
 	}
 	constexpr auto unrotate(dimensionality_type r) -> layout_t&{
-		if(r >= 0){
-			while(r != 0){unrotate(); --r;}
-		}else{
-			return unrotate(D-r);
-		}
+		assert( r >= 0 );
+		while(r != 0){unrotate(); --r;}
+	//	if(r >= 0){
+	//	}else{
+	//		return unrotate(D-r);
+	//	}
 		return *this;
 	}
 	constexpr auto scale(size_type s) const{
