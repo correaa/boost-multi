@@ -549,7 +549,7 @@ public:
 	friend constexpr auto extension(layout_t const& s) -> index_extension{return s.extension();}
 	       constexpr auto extension()        const&    -> index_extension{
 		if(nelems_ == 0){return {};}
-		assert(stride_); 
+		assert(stride_); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		return {offset_/stride_, (offset_ + nelems_)/stride_};
 	}
 
