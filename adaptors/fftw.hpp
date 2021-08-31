@@ -269,17 +269,17 @@ auto fftw_plan_dft(std::array<bool, +D> which, In&& in, Out&& out, int sign, uns
 	assert(sizes(in) == sizes(out));
 
 	using multi::strides;
-	auto ion      = to_array<ptrdiff_t>(in.sizes());
-	auto istrides = to_array<ptrdiff_t>(in.strides());
+	auto ion      = to_array<ptrdiff_t>(in.sizes()   );
+	auto istrides = to_array<ptrdiff_t>(in.strides() );
 	auto ostrides = to_array<ptrdiff_t>(out.strides());
 
-	std::array<fftw_iodim64, D> dims   ; 
+	std::array<fftw_iodim64, D> dims;
 	auto l_dims = dims.begin();
 
-	std::array<fftw_iodim64, D> howmany; 
+	std::array<fftw_iodim64, D> howmany;
 	auto l_howmany = howmany.begin();
 
-	for(int i=0; i!=D; ++i) *(which[i]?l_dims:l_howmany)++ = {ion[i], istrides[i], ostrides[i]};
+	for(int i=0; i!=D; ++i){*(which[i]?l_dims:l_howmany)++ = {ion[i], istrides[i], ostrides[i]};}
 
 //	assert( D == l_dims - dims.begin() - l_howmany + howmany.begin() );
 	assert(in.base()); assert(out.base()); assert( in.extensions() == out.extensions() ); 
@@ -378,17 +378,22 @@ private:
 	}
 	template<class I, class O> void execute(I&& i, O&& o) const{execute_dft(std::forward<I>(i), std::forward<O>(o));}
 	friend void execute(plan const& p){p.execute();}
+
 public:
-	plan& operator=(plan&&) = default;
-	plan& operator=(plan const&) = delete;//default;
-	void operator()() const{execute();} // http://www.fftw.org/fftw3_doc/Thread-safety.html#Thread-safety
-	template<class I, class O> void operator()(I&& i, O&& o) const{return execute(std::forward<I>(i), std::forward<O>(o));}
-	double cost() const{return fftw_cost(impl_.get());}
-	auto flops() const{
+	auto operator=(plan&&) -> plan& = default;
+	auto operator=(plan const&) -> plan& = delete;
+
+	template<class I, class O> 
+	void operator()(I&& i, O&& o) const{execute(std::forward<I>(i), std::forward<O>(o));}
+	void operator()()             const{execute();} // http://www.fftw.org/fftw3_doc/Thread-safety.html#Thread-safety
+	
+	[[nodiscard]] double cost() const{return fftw_cost(impl_.get());}
+	[[nodiscard]] auto flops() const{
 		struct{double add; double mul; double fma; operator double() const{return add + mul + 2*fma;}} r;
 		fftw_flops(impl_.get(), &r.add, &r.mul, &r.fma);
 		return r;
 	}
+
 	//std::string string_print() const{
 	//	return std::unique_ptr<char>{fftw_sprint_plan(impl_.get())}.get();
 	//}
