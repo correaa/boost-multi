@@ -603,7 +603,7 @@ public:
 	friend constexpr auto flattened(basic_array&& self) -> decltype(auto){return std::move(self).flattened();}
 	constexpr auto is_flattable() const -> bool{return this->stride() == this->layout().sub().nelems();}
 	constexpr auto flatted() const{
-		assert(is_flattable() && "flatted doesn't work for all layouts!");//this->nelems());
+		assert(is_flattable() && "flatted doesn't work for all layouts!"); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		multi::layout_t<D-1> new_layout{this->layout().sub()};
 		new_layout.nelems() *= this->size(); // TODO(correaa) : use immutable layout
 		return basic_array<T, D-1, ElementPtr>{new_layout, types::base_};

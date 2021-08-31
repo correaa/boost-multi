@@ -367,12 +367,12 @@ public:
 		return basic_array<T, D, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
 	constexpr auto rotated(dimensionality_type d)&{
-		typename static_array::layout_t new_layout = *this;
+		typename static_array::layout_t new_layout = this->layout();
 		new_layout.rotate(d);
 		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
 	}
 	constexpr auto rotated(dimensionality_type d)&&{
-		typename static_array::layout_t new_layout = *this;
+		typename static_array::layout_t new_layout = this->layout();
 		new_layout.rotate(d);
 		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
 	}
