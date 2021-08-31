@@ -591,7 +591,7 @@ public:
 	constexpr auto unrotate() -> layout_t&{sub_.unrotate(); transpose(); return *this;}
 
 	constexpr auto   rotate(dimensionality_type r) -> layout_t&{
-		assert( r >= 0 );
+		assert( r >= 0 ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		while(r != 0){rotate(); --r;}
 	//	if(r >= 0){
 	//	}else{
@@ -600,7 +600,7 @@ public:
 		return *this;
 	}
 	constexpr auto unrotate(dimensionality_type r) -> layout_t&{
-		assert( r >= 0 );
+		assert( r >= 0 ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		while(r != 0){unrotate(); --r;}
 	//	if(r >= 0){
 	//	}else{
@@ -616,9 +616,6 @@ public:
 inline constexpr auto operator*(layout_t<1>::index_extension const& ie, layout_t<1>::extensions_type const& self){
 	return layout_t<2>::extensions_type(ie, self);
 }
-
-//template<dimensionality_type D>
-//using extensions_type_ = typename layout_t<D>::extensions_type;
 
 template<class T, class Layout>
 constexpr auto sizes_as(Layout const& self)
