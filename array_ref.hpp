@@ -176,7 +176,7 @@ struct basic_array_ptr : // NOLINT(fuchsia-multiple-inheritance) : to allow mixi
 	auto operator=(basic_array_ptr const& other) -> basic_array_ptr&{
 		if(this == &other){return *this;} // lints(cert-oop54-cpp)
 		this->base_ = other.base_;
-		static_cast<Layout&>(*this) = other;
+		static_cast<Layout&>(*this) = other.layout();
 		return *this;
 	}
 	constexpr explicit operator bool() const{return this->base_;}
@@ -320,7 +320,7 @@ private:
 	constexpr void decrement(){ptr_.base_ -= stride_;}
 	constexpr void advance(difference_type n){ptr_.base_ += stride_*n;}
 	constexpr auto distance_to(array_iterator const& other) const -> difference_type{
-		assert( stride_ == other.stride_); assert( stride_ != 0 );
+		assert( stride_ == other.stride_); assert( stride_ != 0 ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		return (other.ptr_.base_ - ptr_.base_)/stride_;
 	}
 
@@ -1034,12 +1034,12 @@ public:
 		);
 	}
 private:
-	friend constexpr auto lexicographical_compare(basic_array&& a1, basic_array&& a2) -> bool{
+	friend constexpr auto lexicographical_compare(basic_array const& a1, basic_array const& a2) -> bool{
 		if(a1.extension().first() > a2.extension().first()){return true ;}
 		if(a1.extension().first() < a2.extension().first()){return false;}
 		return adl_lexicographical_compare(
-			std::move(a1).begin(), std::move(a1).end(), 
-			std::move(a2).begin(), std::move(a2).end()
+			a1.begin(), a1.end(), 
+			a2.begin(), a2.end()
 		);
 	}
 public:
@@ -1684,7 +1684,7 @@ public:
 		return *this;
 	}
 
-	template<class It> constexpr auto assign(It f)&& //	->decltype(adl::copy_n(f, this->size(), begin(std::move(*this))), void()){
+	template<class It> constexpr auto assign(It f)&&
 	->decltype(adl_copy_n(f, this->size(), std::declval<iterator>()), void()){
 		return adl_copy_n(f, this->size(), std::move(*this).begin()), void();}
 
@@ -1694,7 +1694,8 @@ public:
 	}
 
 	constexpr auto operator<(basic_array const& o) const& -> bool{return lexicographical_compare(*this, o);}//operator< <basic_array const&>(o);}
-	template<class Array> constexpr void swap(Array&& o)&&{assert(this->extension() == o.extension());
+	template<class Array> constexpr void swap(Array&& o)&&{
+		assert(this->extension() == o.extension()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
 	}
 	template<class A> constexpr void swap(A&& o)&{return swap(std::forward<A>(o));}
