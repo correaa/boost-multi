@@ -103,12 +103,15 @@ struct array_types : Layout{ // cppcheck-suppress syntaxError ; false positive i
 	friend element_ptr base(array_types const& s){return s.base();}
 	constexpr layout_t const& layout() const{return *this;}
 	friend constexpr layout_t const& layout(array_types const& s){return s.layout();}
-	constexpr element_ptr            origin() const{return base_+Layout::origin();} //	element_const_ptr     corigin() const{return origin();}
-	friend constexpr decltype(auto)  origin(array_types const& s){return s.origin();} //	friend decltype(auto) corigin(array_types const& s){return s.corigin();}
+
+	       constexpr auto origin()           const&    -> decltype(auto){return base_+Layout::origin();}
+	friend constexpr auto origin(array_types const& s) -> decltype(auto){return s.origin();}
+
 protected:
 	using derived = basic_array<T, D, ElementPtr, Layout>;
 	element_ptr base_;
 	constexpr explicit array_types(std::nullptr_t np) : Layout{}, base_{np}{}
+
 public:
 	array_types() = default;
 //#if defined(__NVCC__) 
@@ -117,16 +120,17 @@ public:
 	constexpr array_types(layout_t const& l, element_ptr const& data): Layout{l}, base_{data}{}
 	array_types(array_types const&) = default;
 //	template<class T2, class P2, class Array> friend decltype(auto) static_array_cast(Array&&);
-public://TODO find why this needs to be public and not protected or friend
-	template<class ArrayTypes, typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>
-		, decltype(_implicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
-	>
-	// cppcheck-suppress noExplicitConstructor ; because underlying pointers are implicitly convertible
-	constexpr array_types(ArrayTypes const& a) : Layout{a}, base_{a.base_}{}
+protected://TODO(correaa) find why this needs to be public and not protected or friend
 	template<class ArrayTypes, typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>
 		, decltype(_explicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
 	>
 	constexpr explicit array_types(ArrayTypes const& a) : Layout{a}, base_{a.base_}{}
+	template<class ArrayTypes, typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>
+		, decltype(_implicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
+	>
+	// cppcheck-suppress noExplicitConstructor ; because underlying pointers are implicitly convertible
+	constexpr/*implct*/array_types(ArrayTypes const& a) : Layout{a}, base_{a.base_}{} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : inherit behavior of underlying pointer
+	// ^^^ TODO(correaa) : call explicit from implicit, careful with infinite recursion
 
 	template<typename ElementPtr2, 
 		typename = decltype(Layout{std::declval<array_types<T, D, ElementPtr2, Layout> const&>().layout()}),
@@ -137,7 +141,7 @@ public://TODO find why this needs to be public and not protected or friend
 };
 
 template<class Ref, class Layout>
-struct basic_array_ptr : 
+struct basic_array_ptr : // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CRTP
 	private Ref, // TODO(correaa) : remove inheritance from Ref??
 	boost::multi::iterator_facade<
 		basic_array_ptr<Ref, Layout>, void, std::random_access_iterator_tag, 
