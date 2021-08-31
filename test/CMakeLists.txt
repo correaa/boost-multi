@@ -50,7 +50,7 @@ foreach(TEST_FILE ${TEST_SRCS})
     target_compile_options  (${TEST_EXE} PRIVATE
        -Werror -Wall
        $<$<CXX_COMPILER_ID:GNU>:
-                             -Wextra -Wpedantic -Wformat-truncation> #-Wconversion 
+                             -Wextra -Wpedantic -Wuninitialized -Wformat-truncation> #-Wconversion 
        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
                              -Wextra -Wpedantic -Wmove>
        $<$<CXX_COMPILER_ID:Intel>:
