@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo A. Correa 2019-2020
+// © Alfredo A. Correa 2019-2021
 
 #ifndef MULTI_ADAPTORS_BLAS_TRAITS_HPP
 #define MULTI_ADAPTORS_BLAS_TRAITS_HPP
@@ -34,8 +34,8 @@ namespace multi::blas{
 
 	template<class Z> struct is_z : decltype(is_z_aux(std::declval<Z>())){using archetype = std::complex<double>;};
 
-}
+} // end namespace multi::blas
 
-}
+} // end namespace boost
 #endif
 
