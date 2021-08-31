@@ -700,7 +700,7 @@ public:
 		return basic_array<T, D, ElementPtr>{new_layout, types::base_};
 	}
 	constexpr auto unrotated() &&{
-		typename types::layout_t new_layout = *this; 
+		typename types::layout_t new_layout = this->layout();
 		new_layout.unrotate();
 		return basic_array<T, D, ElementPtr>{new_layout, types::base_};
 	}
