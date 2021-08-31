@@ -90,26 +90,24 @@ struct array_types : Layout{ // cppcheck-suppress syntaxError ; false positive i
 
 	using const_reference = typename std::conditional<(D > 1), 
 		basic_array<element, D-1, element_const_ptr>,
-	//	decltype(*std::declval<element_const_ptr>())&
 		typename std::iterator_traits<element_const_ptr>::reference
-	//	std::add_lvalue_reference_t<std::add_const_t<std::remove_reference_t<typename std::iterator_traits<element_ptr>::reference>>>
-	//	typename std::pointer_traits<element_const_ptr>::reference   // this seems more correct but it doesn't work with cuda fancy reference
 	>::type;
 
 	HD constexpr auto  base() const -> element_ptr      {return base_;}
 	   constexpr auto cbase() const -> element_const_ptr{return base_;}
 
-	constexpr element_ptr& mbase() const{return base_;}
-	friend element_ptr base(array_types const& s){return s.base();}
-	constexpr layout_t const& layout() const{return *this;}
-	friend constexpr layout_t const& layout(array_types const& s){return s.layout();}
+	       constexpr auto mbase()           const&    -> element_ptr&{return base_;}
+	friend           auto  base(array_types const& s) -> element_ptr {return s.base();}
+
+	       constexpr auto layout() const               -> layout_t const&{return *this;}
+	friend constexpr auto layout(array_types const& s) -> layout_t const&{return s.layout();}
 
 	       constexpr auto origin()           const&    -> decltype(auto){return base_+Layout::origin();}
 	friend constexpr auto origin(array_types const& s) -> decltype(auto){return s.origin();}
 
 protected:
 	using derived = basic_array<T, D, ElementPtr, Layout>;
-	element_ptr base_;
+	element_ptr base_; // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes) : TODO(correaa) try to make it private, [static_]array needs mutation
 	constexpr explicit array_types(std::nullptr_t np) : Layout{}, base_{np}{}
 
 public:
@@ -118,7 +116,8 @@ public:
 //	__host__ __device__ // TODO check why this is necessary (nvcc 11), removing this gives a, trivial_device_copy D->H failed: cudaErrorLaunchFailure: unspecified launch failure
 //#endif
 	constexpr array_types(layout_t const& l, element_ptr const& data): Layout{l}, base_{data}{}
-	array_types(array_types const&) = default;
+
+//	array_types(array_types const&) = default;
 //	template<class T2, class P2, class Array> friend decltype(auto) static_array_cast(Array&&);
 protected://TODO(correaa) find why this needs to be public and not protected or friend
 	template<class ArrayTypes, typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>
