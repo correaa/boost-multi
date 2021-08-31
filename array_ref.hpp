@@ -94,10 +94,10 @@ struct array_types : Layout{ // cppcheck-suppress syntaxError ; false positive i
 		typename std::iterator_traits<element_const_ptr>::reference
 	>::type;
 
-	HD constexpr auto  base() const -> element_ptr      {return base_;}
-	   constexpr auto cbase() const -> element_const_ptr{return base_;}
+	NODISCARD("") HD constexpr auto  base() const -> element_ptr      {return base_;}
+	NODISCARD("")    constexpr auto cbase() const -> element_const_ptr{return base_;}
 
-	       constexpr auto mbase()           const&    -> element_ptr&{return base_;}
+	NODISCARD("")    constexpr auto mbase()           const&    -> element_ptr&{return base_;}
 	friend           auto  base(array_types const& s) -> element_ptr {return s.base();}
 
 	       constexpr auto layout() const               -> layout_t const&{return *this;}
@@ -925,7 +925,7 @@ public:
 	auto operator=(Range const& r)& // check that you LHS is not read-only
 	-> basic_array& // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	{
-		assert(this->size() == r.size());
+		assert(this->size() == r.size()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		MULTI_MARK_SCOPE(std::string{"multi::operator= D="}+std::to_string(D)+" from range to "+typeid(T).name() );
 		adl_copy_n(adl_begin(r), this->size(), begin());
 		return *this;
@@ -1004,7 +1004,8 @@ public:
 		return *this; // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	}
 
-	template<class Array> void swap(Array&& o) &&{assert( std::move(*this).extension() == std::forward<Array>(o).extension() );
+	template<class Array> void swap(Array&& o) &&{
+		assert( std::move(*this).extension() == std::forward<Array>(o).extension() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
 	}
 	template<class A> constexpr void swap(A&& o) &{return swap(std::forward<A>(o));}
