@@ -1130,7 +1130,7 @@ public:
 	constexpr auto reinterpret_array_cast(size_type n) const& -> basic_array<std::decay_t<T2>, D + 1, P2>{
 		static_assert( sizeof(T)%sizeof(T2) == 0,
 			"error: reinterpret_array_cast is limited to integral stride values");
-		assert( sizeof(T) == sizeof(T2)*n );
+		assert( sizeof(T) == sizeof(T2)*n ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : checck implicit size compatibility
 		return { 
 			layout_t<D+1>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n}.rotate(), 
 			static_cast<P2>(static_cast<void*>(this->base()))
@@ -1147,13 +1147,13 @@ template<class Element, typename Ptr> struct array_iterator<Element, 0, Ptr>{};
 template<class Element, typename Ptr>
 struct array_iterator<Element, 1, Ptr> :
 	boost::multi::iterator_facade<
-		array_iterator<Element, 1, Ptr>, 
-		Element, std::random_access_iterator_tag, 
+		array_iterator<Element, 1, Ptr>,
+		Element, std::random_access_iterator_tag,
 		typename std::iterator_traits<Ptr>::reference, multi::difference_type
 	>,
-	multi::affine<array_iterator<Element, 1, Ptr>, multi::difference_type>,
-	multi::decrementable<array_iterator<Element, 1, Ptr>>,
-	multi::incrementable<array_iterator<Element, 1, Ptr>>,
+	multi::affine          <array_iterator<Element, 1, Ptr>, multi::difference_type>,
+	multi::decrementable   <array_iterator<Element, 1, Ptr>>,
+	multi::incrementable   <array_iterator<Element, 1, Ptr>>,
 	multi::totally_ordered2<array_iterator<Element, 1, Ptr>, void>
 {
 	using affine = multi::affine<array_iterator<Element, 1, Ptr>, multi::difference_type>;
@@ -1742,7 +1742,7 @@ public:
 //			this->layout().scale(sizeof(T)/sizeof(T2));
 		static_assert( sizeof(P2) == sizeof(typename basic_array::element_ptr), "reinterpret on equal size pointers?"); // NOLINT(bugprone-sizeof-expression) : check that pointers (not pointees) are the same size
 		typename basic_array::element_ptr const thisbase = this->base();
-		P2 new_base; std::memcpy(static_cast<void*>(&new_base), static_cast<void const*>(&thisbase), sizeof(P2)); //reinterpret_cast<P2 const&>(thisbase) // TODO(correaa) : find a better way, fancy pointers wouldn't need reinterpret_cast
+		P2 new_base; std::memcpy(static_cast<void*>(&new_base), static_cast<void const*>(&thisbase), sizeof(P2)); // NOLINT(bugprone-sizeof-expression) : take size of pointer not pointee // TODO(correaa) : find a better way, fancy pointers wouldn't need reinterpret_cast
 		return {this->layout().scale(sizeof(T)/sizeof(T2)), new_base};
 	}
 
