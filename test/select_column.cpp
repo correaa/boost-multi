@@ -1,7 +1,7 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
 $CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 #endif
-// © Alfredo A. Correa 2018-2020
+// © Alfredo A. Correa 2018-2021
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi select range"
 #define BOOST_TEST_DYN_LINK
@@ -20,14 +20,18 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section_1D){
 	BOOST_REQUIRE( A( multi::all < 2 )[1] == 1. );
 }
 
-BOOST_AUTO_TEST_CASE(multi_array_range_section)
+BOOST_AUTO_TEST_CASE(multi_array_range_section_part1)
 {
+
 	multi::array<double, 2> A = {
 		{00., 01., 02.},
 		{10., 11., 12.},
 		{20., 21., 22.},
 		{30., 31., 32.},
 	};
+
+	using multi::_;
+	using multi::U;
 
 	BOOST_REQUIRE( size( A( multi::all, 2) ) == size(A) );
 	BOOST_REQUIRE( size( A( multi::_ , 2) ) == size(A) );
@@ -44,14 +48,26 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section)
 	BOOST_REQUIRE( size( A(1<=multi::_  , 2) ) == 3 );
 	BOOST_REQUIRE( size( A(1<=multi::_<3, 2) ) == 2 );
 
-	using multi::_;
-
 	BOOST_REQUIRE( size( A(   _  , 2) ) == 4 );
 	BOOST_REQUIRE( size( A(   _<2, 2) ) == 2 );
 	BOOST_REQUIRE( size( A(1<=_  , 2) ) == 3 );
 	BOOST_REQUIRE( size( A(1<=_<3, 2) ) == 2 );
 
+}
+
+BOOST_AUTO_TEST_CASE(multi_array_range_section_part2)
+{
+
+	multi::array<double, 2> A = {
+		{00., 01., 02.},
+		{10., 11., 12.},
+		{20., 21., 22.},
+		{30., 31., 32.},
+	};
+
+	using multi::_;
 	using multi::U;
+
 	BOOST_REQUIRE( size( A(_, 2) ) == size(A) );
 	BOOST_REQUIRE( size( A(*_, 2) ) == size(A) );
 
