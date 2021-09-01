@@ -33,25 +33,25 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section_part1)
 	using multi::_;
 	using multi::U;
 
-	BOOST_REQUIRE( size( A( multi::all, 2) ) == size(A) );
-	BOOST_REQUIRE( size( A( multi::_ , 2) ) == size(A) );
-	BOOST_REQUIRE( size( A( *multi::_ , 2) ) == size(A) );
-	BOOST_REQUIRE( size( A( multi::U , 2) ) == size(A) );
+	BOOST_REQUIRE( size( A(    multi::all   , 2) ) == size(A) );
+	BOOST_REQUIRE( size( A(    multi::_     , 2) ) == size(A) );
+	BOOST_REQUIRE( size( A(   *multi::_     , 2) ) == size(A) );
+	BOOST_REQUIRE( size( A(    multi::U     , 2) ) == size(A) );
 
-	BOOST_REQUIRE( size( A(   multi::all  , 2) ) == 4 );
-	BOOST_REQUIRE( size( A(   multi::all<2, 2) ) == 2 );
-	BOOST_REQUIRE( size( A(1<=multi::all  , 2) ) == 3 );
-	BOOST_REQUIRE( size( A(1<=multi::all<3, 2) ) == 2 );
+	BOOST_REQUIRE( size( A(    multi::all   , 2) ) == 4 );
+	BOOST_REQUIRE( size( A(    multi::all<2 , 2) ) == 2 );
+	BOOST_REQUIRE( size( A( 1<=multi::all   , 2) ) == 3 );
+	BOOST_REQUIRE( size( A( 1<=multi::all<3 , 2) ) == 2 );
 
-	BOOST_REQUIRE( size( A(   multi::_  , 2) ) == 4 );
-	BOOST_REQUIRE( size( A(   multi::_<2, 2) ) == 2 );
-	BOOST_REQUIRE( size( A(1<=multi::_  , 2) ) == 3 );
-	BOOST_REQUIRE( size( A(1<=multi::_<3, 2) ) == 2 );
+	BOOST_REQUIRE( size( A(    multi::_     , 2) ) == 4 );
+	BOOST_REQUIRE( size( A(    multi::_<2   , 2) ) == 2 );
+	BOOST_REQUIRE( size( A( 1<=multi::_     , 2) ) == 3 );
+	BOOST_REQUIRE( size( A( 1<=multi::_<3   , 2) ) == 2 );
 
-	BOOST_REQUIRE( size( A(   _  , 2) ) == 4 );
-	BOOST_REQUIRE( size( A(   _<2, 2) ) == 2 );
-	BOOST_REQUIRE( size( A(1<=_  , 2) ) == 3 );
-	BOOST_REQUIRE( size( A(1<=_<3, 2) ) == 2 );
+	BOOST_REQUIRE( size( A(           _     , 2) ) == 4 );
+	BOOST_REQUIRE( size( A(           _<2   , 2) ) == 2 );
+	BOOST_REQUIRE( size( A(        1<=_     , 2) ) == 3 );
+	BOOST_REQUIRE( size( A(        1<=_<3   , 2) ) == 2 );
 
 }
 
@@ -68,23 +68,23 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section_part2)
 	using multi::_;
 	using multi::U;
 
-	BOOST_REQUIRE( size( A(_, 2) ) == size(A) );
-	BOOST_REQUIRE( size( A(*_, 2) ) == size(A) );
+	BOOST_REQUIRE( size( A(    _    , 2) ) == size(A) );
+	BOOST_REQUIRE( size( A(   *_    , 2) ) == size(A) );
 
-	BOOST_REQUIRE( size( A(_<2, 2) ) == 2 );
-	BOOST_REQUIRE( size( A(*_<2, 2) ) == 2 );
-	BOOST_REQUIRE( size( A(U<2, 2) ) == 2 );
+	BOOST_REQUIRE( size( A(    _<2  , 2) ) == 2 );
+	BOOST_REQUIRE( size( A(   *_<2  , 2) ) == 2 );
+	BOOST_REQUIRE( size( A(    U<2  , 2) ) == 2 );
 
-	BOOST_REQUIRE( size( A(1<=_, 2) ) == 3 );
-	BOOST_REQUIRE( size( A(1<=*_, 2) ) == 3 );
-	BOOST_REQUIRE( size( A(1<=U, 2) ) == 3 );
+	BOOST_REQUIRE( size( A( 1<=_    , 2) ) == 3 );
+	BOOST_REQUIRE( size( A( 1<=*_   , 2) ) == 3 );
+	BOOST_REQUIRE( size( A( 1<=U    , 2) ) == 3 );
 
-	BOOST_REQUIRE( size( A(1<=_<3, 2) ) == 2 );
-	BOOST_REQUIRE( size( A(1<=*_<3, 2) ) == 2 );
-	BOOST_REQUIRE( size( A(1<=U<3, 2) ) == 2 );
+	BOOST_REQUIRE( size( A( 1<= _<3 , 2) ) == 2 );
+	BOOST_REQUIRE( size( A( 1<=*_<3 , 2) ) == 2 );
+	BOOST_REQUIRE( size( A( 1<= U<3 , 2) ) == 2 );
 
-	BOOST_REQUIRE( size( A(*_<2, 2) ) == 2 );
-	BOOST_REQUIRE( size( A(U<2, 2) ) == 2 );
+	BOOST_REQUIRE( size( A(    *_<2 , 2) ) == 2 );
+	BOOST_REQUIRE( size( A(     U<2 , 2) ) == 2 );
 
 	BOOST_REQUIRE( size( A(A.extension(), 2) ) == size(A) );
 
