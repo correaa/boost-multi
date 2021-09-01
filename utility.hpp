@@ -189,7 +189,7 @@ template<class T> struct has_dimensionality : decltype(has_dimensionality_aux(st
 
 template<class Container, std::enable_if_t<has_dimensionality<Container>{}, int> =0>
 constexpr auto dimensionality(Container const& /*container*/)
-->decltype(Container::rank_v){
+->std::decay_t<decltype(Container::rank_v)>{
 	return Container::rank_v;}
 
 template<class T>
@@ -271,9 +271,10 @@ inline auto has_extensions_aux(...     ) -> std::false_type;
 template<class T> struct has_extensions : decltype(has_extensions_aux(std::declval<T>())){};
 
 template<class T, typename = std::enable_if_t<has_extensions<T>{}> >
-auto extensions(T const& t)
-->decltype(t.extensions()){
-	return t.extensions();}
+NODISCARD("") auto extensions(T const& t)
+->std::decay_t<decltype(t.extensions())>{
+	return t.extensions();
+}
 
 template<class T, typename = std::enable_if_t<not has_extensions<T>{}> >
 constexpr auto extensions(T const& /*unused*/) -> multi::layout_t<0>::extensions_type{return {};}

@@ -362,7 +362,7 @@ private:
 	}
 public:
 	constexpr auto rotated(dimensionality_type d) const&{
-		typename static_array::layout_t new_layout = *this;
+		typename static_array::layout_t new_layout = this->layout();
 		new_layout.rotate(d);
 		return basic_array<T, D, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
@@ -385,12 +385,12 @@ public:
 	friend constexpr auto rotated(static_array const& s) -> decltype(auto) {return s.rotated();}
 
 	constexpr auto unrotated(dimensionality_type d) const&{
-		typename static_array::layout_t new_layout = *this;
+		typename static_array::layout_t new_layout = this->layout();
 		new_layout.unrotate(d);
 		return basic_array<T, D, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
 	constexpr auto unrotated(dimensionality_type d)&{
-		typename static_array::layout_t new_layout = *this;
+		typename static_array::layout_t new_layout = this->layout();
 		new_layout.unrotate(d);
 		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
 	}
@@ -564,7 +564,7 @@ public:
 	}
 	static_array(static_array const& o) :                                  //5b
 		array_alloc{o.get_allocator()}, 
-		ref{static_array::allocate(o.num_elements(), o.data_elements()), o.extensions()}
+		ref{static_array::allocate(o.num_elements(), o.data_elements()), {} }
 	{
 		uninitialized_copy(o.data_elements());
 	}
@@ -686,8 +686,13 @@ public:
 		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
 		return *this;
 	}
+
+private:
+	constexpr bool equal_extensions_if(std::true_type  /*true */, static_array const& other   ){return this->extensions() == extensions(other);}
+	constexpr bool equal_extensions_if(std::false_type /*false*/, static_array const&/*other*/){return true;}
+public:
 	constexpr auto operator=(static_array&& other) noexcept -> static_array&{
-		assert( extensions(other) == static_array::extensions() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
+		assert( equal_extensions_if(std::integral_constant<bool, (static_array::rank_v != 0)>{}, other) ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
 		adl_move(other.data_elements(), other.data_elements() + other.num_elements(), this->data_elements()); // there is no std::move_n algorithm
 		return *this;
 	}

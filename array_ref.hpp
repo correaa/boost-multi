@@ -488,12 +488,12 @@ public:
 	using typename types::index;
 
 	constexpr auto reindexed(typename basic_array::index first) const& -> basic_const_array{
-		typename types::layout_t new_layout = *this;
+		typename types::layout_t new_layout = this->layout();
 		new_layout.reindex(first);
 		return {new_layout, types::base_};
 	}
 	constexpr auto reindexed(typename basic_array::index first)& -> basic_array{
-		typename types::layout_t new_layout = *this;
+		typename types::layout_t new_layout = this->layout();
 		new_layout.reindex(first);
 		return {new_layout, types::base_};
 	}
@@ -637,7 +637,7 @@ public:
 
 private:
 	constexpr auto partitioned_aux(size_type s) const -> partitioned_type{
-		assert(s != 0);
+		assert(s != 0); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		assert( (this->layout().nelems() % s) == 0); // if you get an assertion here it means that you are partitioning an array with an incommunsurate partition
 		multi::layout_t<D+1> new_layout{this->layout(), this->layout().nelems()/s, 0, this->layout().nelems()};
 		new_layout.sub().nelems() /= s;
@@ -1096,7 +1096,7 @@ public:
 		static_assert( sizeof(T)%sizeof(T2)== 0, 
 			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
 		return {
-			this->layout().scale(sizeof(T)/sizeof(T2)),
+			this->layout().scale(sizeof(T)/sizeof(T2)), // NOLINT(bugprone-sizeof-expression) : sizes are compatible according to static assert above
 			reinterpret_cast<P2>(this->base()) // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : TODO(correaa) use customized multi/std::reinterpret_pointer_cast
 		//	static_cast<P2>(static_cast<void*>(static_cast<void_ptr>(this->base())))
 		};
@@ -1115,7 +1115,7 @@ public:
 	constexpr auto reinterpret_array_cast(size_type n) & -> basic_array<std::decay_t<T2>, D + 1, P2>{
 		static_assert( sizeof(T)%sizeof(T2) == 0,
 			"error: reinterpret_array_cast is limited to integral stride values");
-		assert( sizeof(T) == sizeof(T2)*n );
+		assert( sizeof(T) == sizeof(T2)*n ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		auto const thisbase = this->base();
 		P2 new_base; std::memcpy(static_cast<void*>(&new_base), static_cast<void const*>(&thisbase), sizeof(P2)); //reinterpret_cast<P2 const&>(thisbase) // TODO find a better way, fancy pointers wouldn't need reinterpret_cast
 		return { 
@@ -1400,7 +1400,8 @@ public:
 	template<class It> 
 	constexpr auto assign(It first)&& -> It{return assign(first);}
 	template<class It>
-	constexpr void assign(It first, It last) &{assert( std::distance(first, last) == this->size() ); (void)last;
+	constexpr void assign(It first, It last) &{
+		assert( std::distance(first, last) == this->size() ); (void)last; // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		assign(first);
 	}
 	template<class It> 
@@ -1460,12 +1461,12 @@ public:
 	using typename types::index;
 
 	constexpr auto reindexed(typename basic_array::index first)&& -> basic_array{
-		typename types::layout_t new_layout = *this;
+		typename types::layout_t new_layout = this->layout();
 		new_layout.reindex(first);
 		return {new_layout, types::base_};
 	}
 	constexpr auto reindexed(typename basic_array::index first)& -> basic_array{
-		typename types::layout_t new_layout = *this;
+		typename types::layout_t new_layout = this->layout();
 		new_layout.reindex(first);
 		return {new_layout, types::base_};
 	}
@@ -1731,7 +1732,7 @@ public:
 			"array_member_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements");
 #if defined(__GNUC__) and (not defined(__INTEL_COMPILER))
 		auto&& r1 = (*((typename basic_array::element_type*)(basic_array::base_))).*pm;//->*pm; // NOLINT(google-readability-casting) : alternative for GCC/NVCC
-		auto p1 = &r1; auto p2 = reinterpret_cast<P2&>(p1); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : TODO(correaa) : find a better way
+		auto* p1 = &r1; P2 p2 = reinterpret_cast<P2&>(p1); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : TODO(correaa) : find a better way
 		return {this->layout().scale(sizeof(T)/sizeof(T2)), p2};
 #else
 		return {this->layout().scale(sizeof(T)/sizeof(T2)), static_cast<P2>(&(this->base_->*pm))}; // this crashes nvcc 11.2-11.4 and some? gcc compiler
@@ -1741,8 +1742,8 @@ public:
 	auto reinterpret_array_cast() const& -> basic_array<std::decay_t<T2>, 1, P2>{
 		static_assert( sizeof(T)%sizeof(T2)== 0, "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
 //			this->layout().scale(sizeof(T)/sizeof(T2));
-		static_assert( sizeof(P2) == sizeof(typename basic_array::element_ptr), "reinterpret on equal size?");
-		auto const thisbase = this->base();
+		static_assert( sizeof(P2) == sizeof(typename basic_array::element_ptr), "reinterpret on equal size pointers?"); // NOLINT(bugprone-sizeof-expression) : check that pointers (not pointees) are the same size
+		typename basic_array::element_ptr const thisbase = this->base();
 		P2 new_base; std::memcpy(static_cast<void*>(&new_base), static_cast<void const*>(&thisbase), sizeof(P2)); //reinterpret_cast<P2 const&>(thisbase) // TODO(correaa) : find a better way, fancy pointers wouldn't need reinterpret_cast
 		return {this->layout().scale(sizeof(T)/sizeof(T2)), new_base};
 	}
@@ -1883,7 +1884,7 @@ public:
 	template<typename TT, dimensionality_type DD = D, class... As>
 //	constexpr 
 	auto operator=(array_ref<TT, DD, As...> const& o)& -> array_ref&{
-		assert(this->extensions() == o.extensions());
+		assert(this->extensions() == o.extensions()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		MULTI_MARK_SCOPE(std::string{"multi::operator= D="}+std::to_string(D)+" from "+typeid(TT).name()+" to "+typeid(T).name() );
 		adl_copy_n(o.data_elements(), o.num_elements(), this->data_elements());
 		return *this;
