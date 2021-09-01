@@ -842,8 +842,8 @@ private:
 		layout_type{begin->layout(), begin.stride(), 0, begin.stride()*(end - begin)}, 
 		begin.base()
 	}{
-		assert(begin.stride() == end.stride());
-		assert(begin->layout() == end->layout());
+		assert(begin.stride() == end.stride()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		assert(begin->layout() == end->layout()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	}
 	friend auto ref<iterator>(iterator begin, iterator end) -> multi::basic_array<typename iterator::element, iterator::rank_v, typename iterator::element_ptr>;
 
@@ -1119,10 +1119,8 @@ public:
 		auto const thisbase = this->base();
 		P2 new_base; std::memcpy(static_cast<void*>(&new_base), static_cast<void const*>(&thisbase), sizeof(P2)); //reinterpret_cast<P2 const&>(thisbase) // TODO find a better way, fancy pointers wouldn't need reinterpret_cast
 		return { 
-			layout_t<D+1>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n}.rotate(), 
+			layout_t<D+1>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n}.rotate(), // NOLINT(bugprone-sizeof-expression) T and T2 are size compatible (see static_assert above)
 			new_base
-		//	reinterpret_cast<P2>(this->base())
-		//	static_cast<P2>(static_cast<void*>(this->base()))
 		};
 	}
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
@@ -1413,7 +1411,7 @@ public:
 	}
 	auto operator=(basic_array const& o)& -> basic_array&{ // TODO(correaa) : make sfinae friendly
 		if(this == &o){return *this;}
-		assert(this->extension() == o.extension());
+		assert(this->extension() == o.extension()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		MULTI_MARK_SCOPE(std::string{"multi::operator= D=1 from "}+typeid(T).name()+" to "+typeid(T).name() );
 		this->assign(o.begin(), o.end()); // TODO(correaa) : improve performance by rotating
 		return *this;
@@ -1563,8 +1561,8 @@ public:
 	using partitioned_const_type = basic_array<T, 2, element_const_ptr>;
 private:
 	constexpr auto partitioned_aux(size_type s) const -> partitioned_type{
-		assert( s != 0 );
-		assert( (this->layout().nelems() %s) == 0 ); // TODO(correaa) remove assert? truncate left over? (like mathematica)
+		assert( s != 0 ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		assert( (this->layout().nelems() %s) == 0 ); // TODO(correaa) remove assert? truncate left over? (like mathematica) // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		multi::layout_t<2> new_layout{this->layout(), this->layout().nelems()/s, 0, this->layout().nelems()};
 		new_layout.sub().nelems() /= s; // TODO(correaa) : don't use mutation
 		return {new_layout, types::base_};
@@ -1766,7 +1764,7 @@ public:
 		static_assert( sizeof(T)%sizeof(T2)== 0, 
 			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
 	//	assert( sizeof(T )%(sizeof(T2)*n)== 0 );
-		typename basic_array::element_ptr thisbase = this->base();
+		typename basic_array::element_ptr const thisbase = this->base();
 		return basic_array<std::decay_t<T2>, 2, P2>{
 			layout_t<2>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n}, 
 			static_cast<P2>(static_cast<void*>(thisbase))
@@ -1872,7 +1870,7 @@ public:
 
 	constexpr auto operator=(array_ref const& other) & -> array_ref&{
 		if(this == &other){return *this;} // lints(cert-oop54-cpp)
-		assert(this->num_elements() == other.num_elements());
+		assert(this->num_elements() == other.num_elements()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		array_ref::copy_elements(other.data_elements());
 		return *this;
 	}
