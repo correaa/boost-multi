@@ -170,7 +170,7 @@ public:
 
 	template<
 		class Range, class=std::enable_if_t<not std::is_base_of<static_array, std::decay_t<Range>>{}>, 
-		class=decltype(/*static_array*/((void)std::declval<Range&&>().begin(), (void)std::declval<Range&&>().end())), // instantiation of static_array here gives a compiler error in 11.0, partially defined type?
+		class=decltype(/*static_array*/((void)(std::declval<Range&&>().begin()), (void)(std::declval<Range&&>().end()))), // instantiation of static_array here gives a compiler error in 11.0, partially defined type?
 		class=std::enable_if_t<not is_basic_array<Range&&>{}>
 	>
 	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions
