@@ -81,7 +81,7 @@ namespace core{
 #define INCX INTEGER incx
 #define INCY INTEGER incy
 
-static_assert(sizeof(INT)==32/8 or sizeof(INT)==64/8, "please set _BLAS_INT to std::int32_t or std::int64_t");
+static_assert(sizeof(INT)==32/8 or sizeof(INT)==64/8, "please set _BLAS_INT to int32_t or int64_t");
 
 // TODO indent declarations like here https://www.netlib.org/lapack/lug/node145.html
 
