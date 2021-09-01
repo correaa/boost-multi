@@ -3,6 +3,7 @@
 // © Alfredo A. Correa 2018-2021
 
 #include "../config/MAYBE_UNUSED.hpp"
+#include "../config/NODISCARD.hpp"
 
 #include<iostream> // TODO(correaa) remove, add include in qmcp
 
@@ -19,8 +20,8 @@ template<
 >
 class iterator_facade{
 	using self_type = Self;
-	constexpr auto self()      & -> self_type      &{return static_cast<self_type      &>(*this);}
-	constexpr auto self() const& -> self_type const&{return static_cast<self_type const&>(*this);}
+	NODISCARD("") constexpr auto self()      & -> self_type      &{return static_cast<self_type      &>(*this);}
+	NODISCARD("") constexpr auto self() const& -> self_type const&{return static_cast<self_type const&>(*this);}
 
 public:
 	using value_type        = ValueType;
@@ -108,31 +109,31 @@ public:
 	using reverse_iterator = std::reverse_iterator<iterator>;
 	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-	constexpr auto first() const -> const_reference{return first_;}
-	constexpr auto last()  const -> const_reference{return last_;}
+	NODISCARD("") constexpr auto first() const -> const_reference{return first_;}
+	NODISCARD("") constexpr auto last()  const -> const_reference{return last_;}
 
 	constexpr auto operator[](difference_type p) const -> const_reference{return first() + p;}
 
-	constexpr auto front() const -> const_reference{return first();}
-	constexpr auto back()  const -> const_reference{return last() - 1;}
+	NODISCARD("") constexpr auto front() const -> const_reference{return first();}
+	NODISCARD("") constexpr auto back()  const -> const_reference{return last() - 1;}
 
-	constexpr auto cbegin() const{return const_iterator{first_};}
-	constexpr auto cend()   const{return const_iterator{last_};}
+	NODISCARD("") constexpr auto cbegin() const{return const_iterator{first_};}
+	NODISCARD("") constexpr auto cend()   const{return const_iterator{last_};}
 
-	constexpr auto rbegin() const{return reverse_iterator{end()};}
-	constexpr auto rend()   const{return reverse_iterator{begin()};}
+	NODISCARD("") constexpr auto rbegin() const{return reverse_iterator{end()};}
+	NODISCARD("") constexpr auto rend()   const{return reverse_iterator{begin()};}
 
-	constexpr auto begin() const -> const_iterator{return cbegin();}
-	constexpr auto end()   const -> const_iterator{return cend();}
+	NODISCARD("") constexpr auto begin() const -> const_iterator{return cbegin();}
+	NODISCARD("") constexpr auto end()   const -> const_iterator{return cend();}
 
-	       constexpr auto is_empty()     const&    noexcept -> bool{return first_ == last_;}
-	friend constexpr auto is_empty(range const& s) noexcept -> bool{return s.is_empty();}
+	       NODISCARD("") constexpr auto is_empty()     const&    noexcept -> bool{return first_ == last_;}
+	friend               constexpr auto is_empty(range const& s) noexcept -> bool{return s.is_empty();}
 
-	       constexpr auto empty()     const&    noexcept -> bool{return is_empty();}
-	friend constexpr auto empty(range const& s) noexcept -> bool{return s.empty();}
+	       NODISCARD("") constexpr auto empty()     const&    noexcept -> bool{return is_empty();}
+	friend               constexpr auto empty(range const& s) noexcept -> bool{return s.empty();}
 
-	       constexpr auto size()     const&    noexcept -> size_type{return last_ - first_;}
-	friend constexpr auto size(range const& s) noexcept -> size_type{return s.size();}
+	       NODISCARD("") constexpr auto size()     const&    noexcept -> size_type{return last_ - first_;}
+	friend               constexpr auto size(range const& s) noexcept -> size_type{return s.size();}
 
 	friend auto operator<<(std::ostream& os, range const& s) -> std::ostream&{
 		return s.empty()?os<<"[)":os <<"["<< s.first() <<", "<< s.last() <<")";
@@ -145,14 +146,14 @@ public:
 	}
 	friend constexpr auto operator!=(range const& r1, range const& r2) -> bool{return not(r1 == r2);}
 
-	constexpr auto find(value_type const& value) const -> range::const_iterator{
+	NODISCARD("") constexpr auto find(value_type const& value) const -> range::const_iterator{
 		if(value >= last_ or value < first_){
 			return end();
 		}
 		return begin() + (value - front());
 	}
-	template<class K> constexpr auto contains(K const& k) const -> bool{return (k>=first_) and (k<last_);}
-	template<class K> constexpr auto count   (K const& k) const -> value_type{return contains(k);}
+	template<class K> NODISCARD("") constexpr auto contains(K const& k) const -> bool{return (k>=first_) and (k<last_);}
+	template<class K>               constexpr auto count   (K const& k) const -> value_type{return contains(k);}
 	friend constexpr auto intersection(range const& r1, range const& r2){
 		using std::max; using std::min;
 		auto new_first = max(r1.first(), r2.first()); 
@@ -160,7 +161,7 @@ public:
 		new_first = min(new_first, new_last);
 		return range<decltype(new_first), decltype(new_last)>{new_first, new_last};
 	}
-	constexpr auto contains(value_type const& v) const{return v>=first_ and v<last_;}//?true:false;}
+	NODISCARD("") constexpr auto contains(value_type const& v) const{return v>=first_ and v<last_;}//?true:false;}
 };
 
 template<class IndexType = std::true_type, typename IndexTypeLast = IndexType>
@@ -215,8 +216,8 @@ struct extension_t : public range<IndexType, IndexTypeLast>{
 		}
 		return os << static_cast<range<IndexType> const&>(self);
 	}
-	constexpr auto start () const -> IndexType{return this->first();}
-	constexpr auto finish() const -> IndexType{return this->last ();}
+	NODISCARD("") constexpr auto start () const -> IndexType{return this->first();}
+	NODISCARD("") constexpr auto finish() const -> IndexType{return this->last ();}
 	friend constexpr auto operator==(extension_t const& a, extension_t const& b){return static_cast<range<IndexType> const&>(a)==static_cast<range<IndexType> const&>(b);}
 	friend constexpr auto operator!=(extension_t const& a, extension_t const& b){return not(a==b);}
 	friend constexpr auto intersection(extension_t const& r1, extension_t const& r2) -> extension_t{
