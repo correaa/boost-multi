@@ -1,20 +1,15 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-$CXXX $CXXFLAGS $0 -o $0.$X `pkg-config --libs blas`&&$0.$X&&rm $0.$X;exit
-#endif
-//(for a in `find tests/ -name '*.cpp'`; do sh $a || break; done); exit
+#ifndef MULTI_ADAPTORS_BLAS_CORE_HPP // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+#define MULTI_ADAPTORS_BLAS_CORE_HPP
+// © Alfredo A. Correa 2019-2021
 
 // https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
-// © Alfredo A. Correa 2019-2020
-
-#ifndef MULTI_ADAPTORS_BLAS_CORE_HPP
-#define MULTI_ADAPTORS_BLAS_CORE_HPP
 
 //#include <cblas/cblas.h> // consider being replaceable by cblas.h
 
 #include<iostream> // debug
 #include<cassert>
 #include<complex>
-#include<stdint.h> // int64_t
+#include<cstdint> // int64_t
 #include<limits> // numeric_limits
 #include<type_traits> // is_convertible
 #include<cstring> // std::memcpy
@@ -66,14 +61,14 @@ using Complex_double = struct { double real, imag; };
 
 #if defined(_BLAS_INT)
 	#if   _BLAS_INT==32
-		#define INT int32_t
+		#define INT std::int32_t
 	#elif _BLAS_INT==64
-		#define INT int64_t
+		#define INT std::int64_t
 	#else
-		#define INT int32_t // 32bit safe? pesimistic?
+		#define INT std::int32_t // 32bit safe? pesimistic?
 	#endif
 #else
-	#define INT int32_t // 32bit safe? pesimistic?
+	#define INT std::int32_t // 32bit safe? pesimistic?
 #endif
 
 namespace core{
@@ -86,7 +81,7 @@ namespace core{
 #define INCX INTEGER incx
 #define INCY INTEGER incy
 
-static_assert(sizeof(INT)==32/8 or sizeof(INT)==64/8, "please set _BLAS_INT to int32_t or int64_t");
+static_assert(sizeof(INT)==32/8 or sizeof(INT)==64/8, "please set _BLAS_INT to std::int32_t or std::int64_t");
 
 // TODO indent declarations like here https://www.netlib.org/lapack/lug/node145.html
 
@@ -586,17 +581,8 @@ blas::context* default_context_of(TPtr const&){return {};}
 
 }
 
-}}
+}
+}
 
-///////////////////////////////////////////////////////////////////////////////
-
-#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
-
-#include "../../array.hpp"
-#include "../../utility.hpp"
-
-int main(){}
-
-#endif
 #endif
 
