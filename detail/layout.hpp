@@ -301,7 +301,10 @@ public:
 	       NODISCARD("") constexpr auto offset()        const&    -> offset_type{return offset_;}
 	friend               constexpr auto offset(layout_t const& s) -> offset_type{return s.offset();}
 
-	NODISCARD("") constexpr auto offset(dimensionality_type d) const{assert(d==0); (void)d; return offset_;}
+	NODISCARD("") constexpr auto offset(dimensionality_type d) const{
+		assert(d==0); (void)d; // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		return offset_;
+	}
 
 	constexpr auto nelems()      & -> nelems_type      &{return nelems_;}
 	constexpr auto nelems() const& -> nelems_type const&{return nelems_;}
