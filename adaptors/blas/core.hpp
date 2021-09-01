@@ -61,14 +61,14 @@ using Complex_double = struct { double real, imag; };
 
 #if defined(_BLAS_INT)
 	#if   _BLAS_INT==32
-		#define INT std::int32_t
+		#define INT int32_t
 	#elif _BLAS_INT==64
-		#define INT std::int64_t
+		#define INT int64_t
 	#else
-		#define INT std::int32_t // 32bit safe? pesimistic?
+		#define INT int32_t // 32bit safe? pesimistic?
 	#endif
 #else
-	#define INT std::int32_t // 32bit safe? pesimistic?
+	#define INT int32_t // 32bit safe? pesimistic?
 #endif
 
 namespace core{
