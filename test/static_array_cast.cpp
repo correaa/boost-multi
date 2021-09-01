@@ -80,8 +80,7 @@ template<class T, class F> involuted(T&&, F)->involuted<T const, F>;
 template<class Ref> using negated = involuted<Ref, std::negate<>>;
 template<class It>  using negater = involuter<It, std::negate<>>;
 
-BOOST_AUTO_TEST_CASE(static_array_cast){
-{
+BOOST_AUTO_TEST_CASE(multi_array_involution){
 	double a = 5;
 
 	auto&& c = involuted<double&, std::negate<>>(a);
@@ -93,6 +92,8 @@ BOOST_AUTO_TEST_CASE(static_array_cast){
 	auto m5 = involuted<double, std::negate<>>(5.);
 	BOOST_REQUIRE( m5 == -5. );
 }
+
+BOOST_AUTO_TEST_CASE(static_array_cast){
 {
 	multi::array<double, 1> A = { 0,  1,  2,  3,  4};
 	auto&& A_ref = A.static_array_cast<double, double const*>();
