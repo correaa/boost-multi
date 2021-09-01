@@ -103,8 +103,8 @@ auto common(T1 const& t1, T2 const& t2) -> Ret{
 	return t1==t2?t1:Ret{};}
 
 template<class T>
-       auto has_num_elements_aux(T const& t)->decltype(t.num_elements(), std::true_type {});
-inline auto has_num_elements_aux(...       )->decltype(                  std::false_type{});
+       auto has_num_elements_aux(T const& t)->decltype((void)t.num_elements(), std::true_type {});
+inline auto has_num_elements_aux(...       )->decltype(                        std::false_type{});
 template<class T> struct has_num_elements : decltype(has_num_elements_aux(std::declval<T>())){};
 
 template<class A, typename = std::enable_if_t<has_num_elements<A>{}> > 
