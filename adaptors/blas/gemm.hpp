@@ -253,7 +253,9 @@ namespace operators{
 		return +blas::gemm(1., A, B);}
 }
 
-}}}
+} // end namespace blas
+} // end namespace multi
+} // end namespace boost
 
 #endif
 

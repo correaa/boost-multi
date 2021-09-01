@@ -29,8 +29,8 @@ struct array_allocator{
 private:
 	MULTI_NO_UNIQUE_ADDRESS allocator_type alloc_;
 protected:
-	auto alloc()      & -> allocator_type&{return alloc_;}
-	auto alloc() const& -> allocator_type const&{return alloc_;}
+	              auto alloc()      & -> allocator_type&{return alloc_;}
+	NODISCARD("") auto alloc() const& -> allocator_type const&{return alloc_;}
 
 	array_allocator() = default;
 	explicit array_allocator(allocator_type const& a) : alloc_{a}{}
@@ -54,8 +54,8 @@ protected:
 	template<typename It> // TODO(correaa) : should it be a template?
 	auto destroy_n(It first, size_type n){return adl_alloc_destroy_n(this->alloc(), first, n);}
 public:
-	       auto get_allocator()               const&    -> allocator_type{return alloc_;}
-	friend auto get_allocator(array_allocator const& s) -> allocator_type{return s.get_allocator();}
+	       NODISCARD("") auto get_allocator()               const&    -> allocator_type{return alloc_;}
+	friend               auto get_allocator(array_allocator const& s) -> allocator_type{return s.get_allocator();}
 };
 
 template<class T, class Ptr = T*> struct move_ptr : std::move_iterator<Ptr>{
@@ -337,22 +337,22 @@ public:
 
 	friend auto get_allocator(static_array const& self) -> typename static_array::allocator_type{return self.get_allocator();}
 
-	       constexpr auto data_elements()            const& ->                        element_const_ptr{return this->base_;}
-	       constexpr auto data_elements()                 & -> typename static_array::element_ptr      {return this->base_;}
-	       constexpr auto data_elements()                && -> typename static_array::element_move_ptr {return std::make_move_iterator(this->base_);}
-	friend constexpr auto data_elements(static_array const& s){return           s .data_elements();}
-	friend constexpr auto data_elements(static_array      & s){return           s .data_elements();}
-	friend constexpr auto data_elements(static_array     && s){return std::move(s).data_elements();}
+	       NODISCARD("") constexpr auto data_elements()            const& ->                        element_const_ptr{return this->base_;}
+	                     constexpr auto data_elements()                 & -> typename static_array::element_ptr      {return this->base_;}
+	                     constexpr auto data_elements()                && -> typename static_array::element_move_ptr {return std::make_move_iterator(this->base_);}
+	friend               constexpr auto data_elements(static_array const& s){return           s .data_elements();}
+	friend               constexpr auto data_elements(static_array      & s){return           s .data_elements();}
+	friend               constexpr auto data_elements(static_array     && s){return std::move(s).data_elements();}
 
-	       constexpr auto base()                 &    -> typename static_array::element_ptr      {return ref::base();}
-	       constexpr auto base()            const&    -> typename static_array::element_const_ptr{return typename static_array::element_const_ptr{ref::base()};}
-	friend constexpr auto base(static_array      & s) -> typename static_array::element_ptr      {return s.base();}
-	friend constexpr auto base(static_array const& s) -> typename static_array::element_const_ptr{return s.base();}
+	                     constexpr auto base()                 &    -> typename static_array::element_ptr      {return ref::base();}
+	       NODISCARD("") constexpr auto base()            const&    -> typename static_array::element_const_ptr{return typename static_array::element_const_ptr{ref::base()};}
+	friend               constexpr auto base(static_array      & s) -> typename static_array::element_ptr      {return s.base();}
+	friend               constexpr auto base(static_array const& s) -> typename static_array::element_const_ptr{return s.base();}
 
-	       constexpr auto origin()                 &    -> typename static_array::element_ptr      {return ref::origin();}
-	       constexpr auto origin()            const&    -> typename static_array::element_const_ptr{return ref::origin();}
-	friend constexpr auto origin(static_array      & s) -> typename static_array::element_ptr      {return    s.origin();}
-	friend constexpr auto origin(static_array const& s) -> typename static_array::element_const_ptr{return    s.origin();}
+	                     constexpr auto origin()                 &    -> typename static_array::element_ptr      {return ref::origin();}
+	       NODISCARD("") constexpr auto origin()            const&    -> typename static_array::element_const_ptr{return ref::origin();}
+	friend               constexpr auto origin(static_array      & s) -> typename static_array::element_ptr      {return    s.origin();}
+	friend               constexpr auto origin(static_array const& s) -> typename static_array::element_const_ptr{return    s.origin();}
 
 private:
 	constexpr auto rotated_aux(dimensionality_type d) const&{
@@ -994,7 +994,7 @@ public:
 #undef IL
 //#endif
 
-template<class T, class A=std::allocator<T>> array(T[]                  , A={})->array<T,1,A>;
+template<class T, class A=std::allocator<T>> array(T[], A={})->array<T, 1, A>; // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 
 //template<class Array, class E = typename multi::array_traits<Array>::element, class A=std::allocator<E>, class=std::enable_if_t<is_allocator<A>{}>> array(Array            , A={})->array<typename multi::array_traits<Array>::element, 1, A>;
 

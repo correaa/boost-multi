@@ -11,7 +11,7 @@ $CXXX $CXXFLAGS $0 -o $0x&&$0x&&rm $0x&&(rm -rf test/build&&mkdir -p test/build&
 
 #include "./config/ASSERT.hpp"
 #include "./config/DELETE.hpp"
-#include "./config/DEPRECATED.hpp"
+//#include "./config/DEPRECATED.hpp"
 #include "./config/MARK.hpp"
 #include "./config/NODISCARD.hpp"
 
@@ -1116,7 +1116,7 @@ public:
 		static_assert( sizeof(T)%sizeof(T2) == 0,
 			"error: reinterpret_array_cast is limited to integral stride values");
 		assert( sizeof(T) == sizeof(T2)*n ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		auto const thisbase = this->base();
+		typename basic_array::element_ptr const thisbase = this->base();
 		P2 new_base; std::memcpy(static_cast<void*>(&new_base), static_cast<void const*>(&thisbase), sizeof(P2)); //reinterpret_cast<P2 const&>(thisbase) // TODO find a better way, fancy pointers wouldn't need reinterpret_cast
 		return { 
 			layout_t<D+1>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n}.rotate(), // NOLINT(bugprone-sizeof-expression) T and T2 are size compatible (see static_assert above)
@@ -1939,14 +1939,11 @@ public:
 	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int*> = nullptr> constexpr auto data()     &&{return data_elements();}
 	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int*> = nullptr> constexpr auto data()      &{return data_elements();}
 
-	DEPRECATED("use data_elements()")
-	friend constexpr auto data(array_ref const& s) -> typename array_ref::element_ptr{return s.data_elements();}
+	friend/*[[deprecated("use data_elements()")]]*/constexpr auto data(array_ref const& s) -> typename array_ref::element_ptr{return s.data_elements();}
 
-	DEPRECATED("use data_elements()")
-	friend constexpr auto data(array_ref& s) -> typename array_ref::element_ptr{return s.data_elements();}
+	friend/*[[deprecated("use data_elements()")]]*/constexpr auto data(array_ref& s) -> typename array_ref::element_ptr{return s.data_elements();}
 
-	DEPRECATED("use data_elements()")
-	friend constexpr auto data(array_ref&& s) -> typename array_ref::element_ptr{
+	friend/*[[deprecated("use data_elements()")]]*/constexpr auto data(array_ref&& s) -> typename array_ref::element_ptr{
 		return std::move(s).data_elements();
 	}
 

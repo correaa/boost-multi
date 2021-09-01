@@ -10,18 +10,12 @@ $CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework `pkg-config --libs blas` \
 
 #include "../blas/core.hpp"
 #include "../blas/copy.hpp" 
-//#include "../blas/scal.hpp" 
+#include "../blas/filling.hpp"
+#include "../blas/operations.hpp"
+#include "../blas/side.hpp"
 #include "../blas/syrk.hpp" // fallback to real case
 
-#include "../blas/side.hpp"
-#include "../blas/filling.hpp"
-
-#include "../blas/operations.hpp"
-
 #include "../../config/NODISCARD.hpp"
-
-//#include<iostream> //debug
-//#include<type_traits> // void_t
 
 namespace boost{
 namespace multi{namespace blas{

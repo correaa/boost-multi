@@ -98,7 +98,9 @@ A2D geru(T alpha, X1D const& x, Y1D const& y, A2D&& A){
 	return A;
 }
 
-}}}
+} // end namespace blas
+} // end namespace multi
+} // end namespace boost
 
 #if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 

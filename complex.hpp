@@ -14,25 +14,25 @@ namespace boost{
 namespace multi{
 
 constexpr class adl_conj_fn__{
-	template<class... As>          auto _(priority<1>,        As&&... as) const JUSTRETURN(              std::conj(std::forward<As>(as)...))
-	template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   conj(std::forward<As>(as)...))
-	template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).conj(std::forward<As>(as)...))
+	template<class... As>          auto _(priority<1>/**/,        As&&... as) const JUSTRETURN(              std::conj(std::forward<As>(as)...))
+	template<class... As>          auto _(priority<2>/**/,        As&&... as) const DECLRETURN(                   conj(std::forward<As>(as)...))
+	template<class T, class... As> auto _(priority<3>/**/, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).conj(std::forward<As>(as)...))
 public:
 	template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<3>{}, std::forward<As>(as)...))
 } adl_conj;
 
 constexpr class adl_real_fn__{
-	template<class... As>          auto _(priority<1>,        As&&... as) const DECLRETURN(              std::real(std::forward<As>(as)...))
-	template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   real(std::forward<As>(as)...))
-	template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).real(std::forward<As>(as)...))
+	template<class... As>          auto _(priority<1>/**/,        As&&... as) const DECLRETURN(              std::real(std::forward<As>(as)...))
+	template<class... As>          auto _(priority<2>/**/,        As&&... as) const DECLRETURN(                   real(std::forward<As>(as)...))
+	template<class T, class... As> auto _(priority<3>/**/, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).real(std::forward<As>(as)...))
 public:
 	template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<3>{}, std::forward<As>(as)...))
 } adl_real;
 
 constexpr class adl_imag_fn__{
-	template<class... As>          auto _(priority<1>,        As&&... as) const DECLRETURN(              std::imag(std::forward<As>(as)...))
-	template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   imag(std::forward<As>(as)...))
-	template<class T, class... As> auto _(priority<3>, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).imag(std::forward<As>(as)...))
+	template<class... As>          auto _(priority<1>/**/,        As&&... as) const DECLRETURN(              std::imag(std::forward<As>(as)...))
+	template<class... As>          auto _(priority<2>/**/,        As&&... as) const DECLRETURN(                   imag(std::forward<As>(as)...))
+	template<class T, class... As> auto _(priority<3>/**/, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).imag(std::forward<As>(as)...))
 public:
 	template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<3>{}, std::forward<As>(as)...))
 } adl_imag;

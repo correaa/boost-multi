@@ -332,7 +332,10 @@ public:
 
 	              constexpr auto stride()      & -> stride_type      &{return stride_;}
 	              constexpr auto stride() const& -> stride_type const&{return stride_;}
-	NODISCARD("") constexpr auto stride(dimensionality_type d) const{assert(!d); (void)d; return stride_;}
+	NODISCARD("") constexpr auto stride(dimensionality_type d) const{
+		assert(d == 0); (void)d; // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
+		return stride_;
+	}
 
 	friend constexpr auto stride(layout_t const& self) -> index{return self.stride();}
 
