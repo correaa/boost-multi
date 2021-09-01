@@ -102,7 +102,7 @@ template<> struct extensions_t<0> :
 	// cppcheck-suppress noExplicitConstructor ; why is it not taking the inheredited constructor above?
 	explicit extensions_t(std::tuple<> const& t) : std::tuple<>{t}{}
 	extensions_t() = default;
-	constexpr auto base() const -> base_ const&{return *this;}
+	NODISCARD("") constexpr auto base() const -> base_ const&{return *this;}
 	friend constexpr auto base(extensions_t const& s) -> decltype(auto){return s.base();}
 //	constexpr operator nelems_type() const{return 1;}
 	template<class Archive> void serialize(Archive&/*ar*/, unsigned /*version*/){}
@@ -113,6 +113,8 @@ template<> struct extensions_t<0> :
 	}
 	friend constexpr auto operator%(nelems_type n, extensions_t const& /*s*/) -> std::tuple<>{return /*s.*/from_linear(n);}
 	friend constexpr auto intersection(extensions_t const& /*x1*/, extensions_t const& /*x2*/) -> extensions_t{return {};}
+//	constexpr auto operator==([[maybe_unused]] extensions_t const& other) -> bool{return true ;}
+//	constexpr auto operator!=([[maybe_unused]] extensions_t const& other) -> bool{return false;}
 };
 
 template<> struct extensions_t<1> : 
@@ -129,15 +131,15 @@ template<> struct extensions_t<1> :
 	// cppcheck-suppress noExplicitConstructor ; to 
 //	constexpr extensions_t(index_extension const& ie) : base_{ie}{}
 	extensions_t() = default;
-	constexpr auto base() const -> base_ const&{return *this;}
+	NODISCARD("") constexpr auto base() const -> base_ const&{return *this;}
 	// cppcheck-suppress noExplicitConstructor ; I don't know why TODO
 	constexpr explicit extensions_t(base_ const& t) : std::tuple<index_extension>(t){}
 	friend constexpr auto base(extensions_t const& s) -> decltype(auto){return s.base();}
 	template<class Archive> void serialize(Archive& ar, unsigned /*version*/){
 		ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<0>(*this));
 	}
-	constexpr auto num_elements() const -> size_type{return std::get<0>(*this).size();}
-	constexpr auto from_linear(nelems_type n) const{
+	NODISCARD("") constexpr auto num_elements() const -> size_type{return std::get<0>(*this).size();}
+	NODISCARD("") constexpr auto from_linear(nelems_type n) const{
 		assert(n < num_elements()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
 		return std::tuple<multi::index>{n};
 	}
@@ -161,8 +163,8 @@ using base_ = std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<
 	constexpr explicit extensions_t(Array const& t) : extensions_t(t, std::make_index_sequence<static_cast<std::size_t>(D)>{}){}
 	constexpr extensions_t(index_extension const& ie, typename layout_t<D-1>::extensions_type const& other) : extensions_t(std::tuple_cat(std::make_tuple(ie), other.base())){}
 
-	       constexpr auto base()            const&    -> base_ const&{return *this;}
-	friend constexpr auto base(extensions_t const& s) -> base_ const&{return s.base();}
+	       NODISCARD("") constexpr auto base()            const&    -> base_ const&{return *this;}
+	friend               constexpr auto base(extensions_t const& s) -> base_ const&{return s.base();}
 
 	friend constexpr auto operator*(index_extension const& ie, extensions_t const& self) -> typename layout_t<D + 1>::extensions_type{
 		return typename layout_t<D + 1>::extensions_type{std::tuple_cat(std::make_tuple(ie), self.base())};
@@ -238,16 +240,16 @@ public:
 	explicit constexpr layout_t(extensions_type const& /*nil*/){}// : nelems_{1}{}
 	constexpr layout_t() : layout_t{extensions_type{}}{}// : nelems_{1}{}
 
-	constexpr auto extensions() const -> extensions_type{return extensions_type{};}
+	NODISCARD("") constexpr auto extensions() const -> extensions_type{return extensions_type{};}
 	friend constexpr auto extensions(layout_t const& self){return self.extensions();}
-	constexpr auto sizes() const{return std::tuple<>{};}
+	NODISCARD("") constexpr auto sizes() const{return std::tuple<>{};}
 
 	[[deprecated]]
-	constexpr auto is_empty() const -> bool{return false;}
-	constexpr auto    empty() const -> bool{return false;}
+	NODISCARD("") constexpr auto    empty() const -> bool{return false;}
+	NODISCARD("") constexpr auto is_empty() const -> bool{return false;}
 
 	friend constexpr auto sizes(layout_t const& s){return s.sizes();}
-	constexpr auto num_elements() const -> nelems_type{return 1;}
+	NODISCARD("") constexpr auto num_elements() const -> nelems_type{return 1;}
 
 	constexpr auto operator==(layout_t const& /*stateless*/) const -> bool{return true ;}
 	constexpr auto operator!=(layout_t const& /*stateless*/) const -> bool{return false;}
@@ -296,10 +298,10 @@ public:
 		stride_{stride}, offset_{offset}, nelems_{nelems}
 	{}
 
-	       constexpr auto offset()        const&    -> offset_type{return offset_;}
-	friend constexpr auto offset(layout_t const& s) -> offset_type{return s.offset();}
+	       NODISCARD("") constexpr auto offset()        const&    -> offset_type{return offset_;}
+	friend               constexpr auto offset(layout_t const& s) -> offset_type{return s.offset();}
 
-	constexpr auto offset(dimensionality_type d) const{assert(d==0); (void)d; return offset_;}
+	NODISCARD("") constexpr auto offset(dimensionality_type d) const{assert(d==0); (void)d; return offset_;}
 
 	constexpr auto nelems()      & -> nelems_type      &{return nelems_;}
 	constexpr auto nelems() const& -> nelems_type const&{return nelems_;}
@@ -325,18 +327,18 @@ public:
 	       constexpr auto is_compact() const{return base_size() == num_elements();}
 	friend constexpr auto is_compact(layout_t const& self){return self.is_compact();}
 
-	constexpr auto stride()      & -> stride_type      &{return stride_;}
-	constexpr auto stride() const& -> stride_type const&{return stride_;}
-	constexpr auto stride(dimensionality_type d) const{assert(!d); (void)d; return stride_;}
+	              constexpr auto stride()      & -> stride_type      &{return stride_;}
+	              constexpr auto stride() const& -> stride_type const&{return stride_;}
+	NODISCARD("") constexpr auto stride(dimensionality_type d) const{assert(!d); (void)d; return stride_;}
 
 	friend constexpr auto stride(layout_t const& self) -> index{return self.stride();}
 
-	       constexpr auto strides()        const&   {return std::make_tuple(stride());}
-	friend constexpr auto strides(layout_t const& s){return s.strides();}
+	       NODISCARD("") constexpr auto strides()        const&   {return std::make_tuple(stride());}
+	friend               constexpr auto strides(layout_t const& s){return s.strides();}
 
 	constexpr auto sizes() const{return std::make_tuple(size());}
 
-	template<class T=void> constexpr auto sizes_as() const{return detail::to_array<T>(sizes());}
+	template<class T=void> [[deprecated]] NODISCARD("") constexpr auto sizes_as() const{return detail::to_array<T>(sizes());}
 
 	constexpr auto offsets() const{return std::make_tuple(offset());}
 	constexpr auto nelemss() const{return std::make_tuple(nelems_);}
@@ -356,8 +358,8 @@ public:
 		return {offset_/stride_, (offset_+nelems_)/stride_};
 	} 
 	constexpr auto extension(dimensionality_type d) const{
-		assert(stride_);
-		assert(d == 0); (void)d;
+		assert(stride_); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		assert(d == 0); (void)d; // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		return index_extension{offset_/stride_, (offset_ + nelems_)/stride_};
 	}
 	       constexpr auto extensions()        const&       -> extensions_type{return extensions_type{extension()};}//std::make_tuple(extension());}
@@ -456,7 +458,7 @@ public:
 
 	constexpr auto operator()(index i) const{return i*stride_ - offset_;}
 	constexpr auto origin() const{return sub_.origin() - offset_;}
-	constexpr auto at(index i) const -> sub_type{//assert( this->extension().contains(i) ); see why it gives false positives
+	NODISCARD("") constexpr auto at(index i) const -> sub_type{//assert( this->extension().contains(i) ); see why it gives false positives
 		auto ret = sub_;
 		ret.offset_ += offset_ + i*stride_;
 		return ret;
@@ -482,9 +484,9 @@ public:
 //		offset_{sub_.offset_ + std::get<0>(e).first()*sub_.stride()}, 
 //		nelems_{std::get<0>(e).size()*sub_.num_elements()}
 //	{}
-	       constexpr auto sub()             &    -> sub_type&{return sub_;}
-	       constexpr auto sub()        const&    -> sub_type const&{return sub_;}
-	friend constexpr auto sub(layout_t const& s) -> sub_type const&{return s.sub();}
+	                     constexpr auto sub()             &    -> sub_type&{return sub_;}
+	       NODISCARD("") constexpr auto sub()        const&    -> sub_type const&{return sub_;}
+	friend               constexpr auto sub(layout_t const& s) -> sub_type const&{return s.sub();}
 
 	       constexpr auto nelems()             &    -> nelems_type      &{return   nelems_;}
 	       constexpr auto nelems()        const&    -> nelems_type const&{return   nelems_;}

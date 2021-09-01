@@ -688,8 +688,8 @@ public:
 	}
 
 private:
-	constexpr bool equal_extensions_if(std::true_type  /*true */, static_array const& other   ){return this->extensions() == extensions(other);}
-	constexpr bool equal_extensions_if(std::false_type /*false*/, static_array const&/*other*/){return true;}
+	constexpr auto equal_extensions_if(std::true_type  /*true */, static_array const& other   ) -> bool{return this->extensions() == extensions(other);}
+	constexpr auto equal_extensions_if(std::false_type /*false*/, static_array const&/*other*/) -> bool{return true;}
 public:
 	constexpr auto operator=(static_array&& other) noexcept -> static_array&{
 		assert( equal_extensions_if(std::integral_constant<bool, (static_array::rank_v != 0)>{}, other) ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert

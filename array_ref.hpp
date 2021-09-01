@@ -638,7 +638,7 @@ public:
 private:
 	constexpr auto partitioned_aux(size_type s) const -> partitioned_type{
 		assert(s != 0); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		assert( (this->layout().nelems() % s) == 0); // if you get an assertion here it means that you are partitioning an array with an incommunsurate partition
+		assert( (this->layout().nelems() % s) == 0); // if you get an assertion here it means that you are partitioning an array with an incommunsurate partition // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : : normal in a constexpr function
 		multi::layout_t<D+1> new_layout{this->layout(), this->layout().nelems()/s, 0, this->layout().nelems()};
 		new_layout.sub().nelems() /= s;
 		return {new_layout, types::base_};
@@ -1766,7 +1766,7 @@ public:
 		static_assert( sizeof(T)%sizeof(T2)== 0, 
 			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
 	//	assert( sizeof(T )%(sizeof(T2)*n)== 0 );
-		auto thisbase = this->base();
+		typename basic_array::element_ptr thisbase = this->base();
 		return basic_array<std::decay_t<T2>, 2, P2>{
 			layout_t<2>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n}, 
 			static_cast<P2>(static_cast<void*>(thisbase))
@@ -1854,7 +1854,7 @@ public:
 	constexpr array_ref( // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax and because a reference to c-array can be represented as an array_ref
 		TT(&t)[N] // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
 	) : 
-		array_ref(t, extensions(t))
+		array_ref(static_cast<typename array_ref::element_ptr>(t), extensions(t))
 	{}
 
 	using basic_array<T, D, ElementPtr>::operator=;
