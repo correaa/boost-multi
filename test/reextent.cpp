@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(array_reextent_1d){
 
 BOOST_AUTO_TEST_CASE(array_reextent_0D){
 	multi::array<double, 0> A({}, 4.);
-	A.reextent(A.extensions());
+//	A.reextent(A.extensions()); // TODO(correaa) : fix unused for D = 0
 	BOOST_REQUIRE( *A.data_elements() == 4. );
 }
 
