@@ -16,12 +16,12 @@ namespace blas{
 using core::gemm;
 
 template<class It>
-auto xbase_aux(It const& it, std::true_type const&)
+auto xbase_aux(It const& it, std::true_type const& /*true */)
 ->decltype(underlying(base(it))){
 	return underlying(base(it));}
 
 template<class It>
-auto xbase_aux(It const& it, std::false_type const&)
+auto xbase_aux(It const& it, std::false_type const& /*false*/)
 ->decltype(base(it)){
 	return base(it);}
 
@@ -31,7 +31,7 @@ auto xbase(It const& it)
 	return xbase_aux(it, std::integral_constant<bool, is_conjugated<It>{}>{});}
 
 template<class Context, class It2DA, class Size, class It2DB, class It2DC>
-auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a_count, It2DB b_first, typename It2DA::element beta, It2DC c_first)
+auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a_count, It2DB b_first, typename It2DA::element beta, It2DC c_first) // NOLINT(readability-function-cognitive-complexity) : 125
 //->decltype(std::forward<Context>(ctxt).gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, xbase(b_first), b_first->size()  , xbase(a_first), a_first->size(), &beta, c_first.base(), c_first->size()  ), It2DC{})
 try{
 	assert( b_first->size() == c_first->size() );
@@ -41,8 +41,8 @@ try{
 
 	if(a_count != 0){
 		#define CTXT std::forward<Context>(ctxt)
-		;;;;; if constexpr(!is_conjugated<It2DA>{} and !is_conjugated<It2DB>{}){
-			;;;;; if(a_first->stride()==1 and b_first->stride()==1 and c_first->stride()==1){
+		if constexpr      (!is_conjugated<It2DA>{} and !is_conjugated<It2DB>{}){
+			if      (a_first->stride()==1 and b_first->stride()==1 and c_first->stride()==1){
 				;;;; if( a_count==1 and b_first->size()==1 ){CTXT.gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->size()  , base(a_first), a_first->size() , &beta, base(c_first), c_first->size()  );}
 				else if( a_count==1                        ){CTXT.gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first->size()  );}
 				else                                        {CTXT.gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), base(a_first), a_first. stride(), &beta, base(c_first), c_first. stride());}
