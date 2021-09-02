@@ -63,9 +63,11 @@ namespace operators{
 	NODISCARD("") auto operator^(A1D const& a, int n)
 	->decltype(std::pow(Real{blas::nrm2(a)}, n)){
 		return std::pow(Real{blas::nrm2(a)}, n);}
-}
+} // end namespace operators
 
-}}}
+} // end namespace blas
+} // end namespace multi
+} // end namespace boost
 
 #if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 
