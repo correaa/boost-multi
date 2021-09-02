@@ -123,8 +123,8 @@ auto has_data_elements_aux(...  )->decltype(                   std::false_type{}
 template<class T> struct has_data_elements : decltype(has_data_elements_aux(std::declval<T>())){};
 
 template<class T>
-auto has_data_aux(T&& t)->decltype(t.data_elements(), std::true_type {});
-auto has_data_aux(...  )->decltype(                   std::false_type{});
+auto has_data_aux(T&& t)->decltype(t.data_elements() + 1, std::true_type {});
+auto has_data_aux(...  )->decltype(                       std::false_type{});
 template<class T> struct has_data : decltype(has_data_aux(std::declval<T>())){};
 
 template<class A, typename = std::enable_if_t<not has_num_elements<A>{} and has_size<A>{} and has_data<A>{}> >
