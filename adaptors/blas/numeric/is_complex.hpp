@@ -51,7 +51,8 @@ template<class T, class V> struct imag_is : decltype(imag_is_aux<V>(std::declval
 
 template<class T, class V> struct is_complex_of : std::integral_constant<bool, real_is<T, V>::value and imag_is<T, V>::value>{};
 
-}}}}
+}}}
+} // end namespace boost
 
 #if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 

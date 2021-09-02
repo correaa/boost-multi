@@ -41,7 +41,7 @@ public:
 template<class A> auto scal(A const& a){return scal_range<A>{a};}
 
 }
-}
+} // end namespace boost
 
 #endif
 

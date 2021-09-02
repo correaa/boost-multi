@@ -386,12 +386,17 @@ public:
 	template<class I, class O> 
 	void operator()(I&& i, O&& o) const{execute(std::forward<I>(i), std::forward<O>(o));}
 	void operator()()             const{execute();} // http://www.fftw.org/fftw3_doc/Thread-safety.html#Thread-safety
-	
+
 	[[nodiscard]] double cost() const{return fftw_cost(impl_.get());}
 	[[nodiscard]] auto flops() const{
-		struct{double add; double mul; double fma; operator double() const{return add + mul + 2*fma;}} r;
-		fftw_flops(impl_.get(), &r.add, &r.mul, &r.fma);
-		return r;
+		struct{
+			double add;
+			double mul;
+			double fma;
+			explicit operator double() const{return add + mul + 2*fma;}
+		} ret;
+		fftw_flops(impl_.get(), &ret.add, &ret.mul, &ret.fma);
+		return ret;
 	}
 
 	//std::string string_print() const{
@@ -416,7 +421,7 @@ private:
 	static bool initialized_threads_;
 #else
 	static constexpr bool is_thread_safe(){return false;}
-	static constexpr bool nthreads(){return 1;}
+	static constexpr bool nthreads(){return true;}
 	static constexpr auto with_nthreads() -> int{return 1;}
 #endif
 };
@@ -449,7 +454,9 @@ auto dft(std::array<bool, +D> which, In const& i, Out&& o, sign s)
 
 template<typename In, class Out, dimensionality_type D=In::rank_v, dimensionality_type=std::decay_t<Out>::rank_v>
 auto dft(std::array<sign, +D> w, In const& i, Out&& o){
-	std::array<bool, D> fwd, /*non,*/ bwd;
+	std::array<bool, D> fwd;
+//	std::array<bool, D> non;
+	std::array<bool, D> bwd;
 
 	std::transform(begin(w), end(w), begin(fwd), [](auto e){return e==FFTW_FORWARD;});
 	dft(fwd, i, o, fftw::forward);
@@ -495,7 +502,7 @@ void dft(std::array<bool, +D> which, In const& i) = delete;
 
 template<dimensionality_type Rank /*not deduced*/, typename In, class R=typename In::decay_type>
 NODISCARD("when second argument is const")
-R dft(In const& i, sign s){
+auto dft(In const& i, sign s) -> R{
 	static_assert( Rank <= In::rank_v, "!" );
 	return dft<Rank>(i, R(extensions(i), get_allocator(i)), s);
 }
@@ -531,7 +538,7 @@ template<typename... A> auto            dft_backward(A&&... a)
 	return dft(std::forward<A>(a)..., fftw::backward);}
 
 template<class In> auto dft_inplace(In&& i, sign s) -> In&&{
-	fftw::plan{i, i, (int)s}();//(i, i); 
+	fftw::plan{i, i, static_cast<int>(s)}();//(i, i); 
 	return std::forward<In>(i);
 }
 
