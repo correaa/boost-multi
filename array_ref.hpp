@@ -1904,16 +1904,16 @@ private:
 		};
 	}
 public:
-	       constexpr auto  elements()              &       ->  elements_type{return elements_aux();}
-	       constexpr auto  elements()             &&       ->  elements_type{return elements_aux();}
-	       constexpr auto  elements()         const&       -> celements_type{return elements_aux();}
+	                     constexpr auto  elements()              &       ->  elements_type{return elements_aux();}
+	                     constexpr auto  elements()             &&       ->  elements_type{return elements_aux();}
+	       NODISCARD("") constexpr auto  elements()         const&       -> celements_type{return elements_aux();}
 
 	friend constexpr auto  elements(array_ref      & self) ->  elements_type{return           self . elements();}
 	friend constexpr auto  elements(array_ref     && self) ->  elements_type{return std::move(self). elements();}
 	friend constexpr auto  elements(array_ref const& self) -> celements_type{return           self . elements();}
 
-	       constexpr auto celements()         const&       -> celements_type{return {array_ref::data_elements(), array_ref::num_elements()};}
-	friend constexpr auto celements(array_ref const& self) -> celements_type{return self.celements();}
+	       NODISCARD("") constexpr auto celements()         const&       -> celements_type{return {array_ref::data_elements(), array_ref::num_elements()};}
+	friend               constexpr auto celements(array_ref const& self) -> celements_type{return self.celements();}
 
 	template<typename TT, dimensionality_type DD = D, class... As>
 	constexpr auto operator==(array_ref<TT, DD, As...>&& o) const& -> bool{
@@ -1931,13 +1931,13 @@ public:
 //	template<class Dummy = void, std::enable_if_t<(D != 1) and sizeof(Dummy*), int*> = 0>
 //	[[deprecated("use ::data_elements()")]] typename static_array::element_ptr data() &{return ref::data_elements();}
 
-	template<class Dummy = void, std::enable_if_t<(D != 1) and sizeof(Dummy*), int*> = nullptr> [[deprecated("use ::data_elements()")]] constexpr auto data() const&{return data_elements();}
+	template<class Dummy = void, std::enable_if_t<(D != 1) and sizeof(Dummy*), int*> = nullptr> [[deprecated("use ::data_elements()")]] NODISCARD("") constexpr auto data() const&{return data_elements();}
 	template<class Dummy = void, std::enable_if_t<(D != 1) and sizeof(Dummy*), int*> = nullptr> [[deprecated("use ::data_elements()")]] constexpr auto data()     &&{return data_elements();}
 	template<class Dummy = void, std::enable_if_t<(D != 1) and sizeof(Dummy*), int*> = nullptr> [[deprecated("use ::data_elements()")]] constexpr auto data()      &{return data_elements();}
 
-	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int*> = nullptr> constexpr auto data() const&{return data_elements();}
-	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int*> = nullptr> constexpr auto data()     &&{return data_elements();}
-	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int*> = nullptr> constexpr auto data()      &{return data_elements();}
+	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int*> = nullptr> NODISCARD("") constexpr auto data() const&{return data_elements();}
+	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int*> = nullptr> NODISCARD("") constexpr auto data()     &&{return data_elements();}
+	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int*> = nullptr> NODISCARD("") constexpr auto data()      &{return data_elements();}
 
 	friend/*[[deprecated("use data_elements()")]]*/constexpr auto data(array_ref const& s) -> typename array_ref::element_ptr{return s.data_elements();}
 
@@ -1947,7 +1947,7 @@ public:
 		return std::move(s).data_elements();
 	}
 
-	constexpr auto decay() const& -> typename array_ref::decay_type const&{
+	NODISCARD("") constexpr auto decay() const& -> typename array_ref::decay_type const&{
 		return static_cast<typename array_ref::decay_type const&>(*this);
 	}
 	friend constexpr auto decay(array_ref const& s) -> typename array_ref::decay_type const&{return s.decay();}
@@ -2047,7 +2047,10 @@ template<class P> auto make_array_ref(P p, extensions_t<5> x){return make_array_
 #if defined(__cpp_deduction_guides)
 
 template<class It, typename V = typename std::iterator_traits<It>::value_type> // pointer_traits doesn't have ::value_type
-array_ptr(It, index_extensions<0> = {})->array_ptr<V, 0, It>;
+array_ptr(It)->array_ptr<V, 0, It>;
+
+template<class It, typename V = typename std::iterator_traits<It>::value_type> // pointer_traits doesn't have ::value_type
+array_ptr(It, index_extensions<0>)->array_ptr<V, 0, It>;
 
 template<class It, typename V = typename std::iterator_traits<It>::value_type>
 array_ptr(It, index_extensions<1>)->array_ptr<V, 1, It>;
@@ -2056,8 +2059,7 @@ array_ptr(It, index_extensions<2>)->array_ptr<V, 2, It>;
 template<class It, typename V = typename std::iterator_traits<It>::value_type>
 array_ptr(It, index_extensions<3>)->array_ptr<V, 3, It>;
 
-template<class T, std::size_t N, typename V = typename std::remove_all_extents<T[N]>::type, std::size_t D = std::rank<T[N]>{}>
-array_ptr(T(*)[N])->array_ptr<V, D>;
+template<class T, std::size_t N, typename V = typename std::remove_all_extents<T[N]>::type, std::size_t D = std::rank<T[N]>{}> array_ptr(T(*)[N])->array_ptr<V, D>; // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
 
 //#if not defined(__clang__)
 //template<class It, dimensionality_type D, typename V = typename std::iterator_traits<It>::value_type>
