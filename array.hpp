@@ -971,11 +971,18 @@ public:
 //template<class T, dimensionality_type D, class A=std::allocator<T>> array(multi::initializer_list_t<T, D>, A={})->array<T, D, A>;
 //#else
 #define IL std::initializer_list
-	template<class T, class A=std::allocator<T>> static_array(IL<T>                , A={})->static_array<T,1,A>; 
-	template<class T, class A=std::allocator<T>> static_array(IL<IL<T>>            , A={})->static_array<T,2,A>;
-	template<class T, class A=std::allocator<T>> static_array(IL<IL<IL<T>>>        , A={})->static_array<T,3,A>; 
-	template<class T, class A=std::allocator<T>> static_array(IL<IL<IL<IL<T>>>>    , A={})->static_array<T,4,A>; 
-	template<class T, class A=std::allocator<T>> static_array(IL<IL<IL<IL<IL<T>>>>>, A={})->static_array<T,5,A>;
+	template<class T, class A=std::allocator<T>> static_array(IL<T>                , A)->static_array<T, 1, A>; 
+	template<class T, class A=std::allocator<T>> static_array(IL<IL<T>>            , A)->static_array<T, 2, A>;
+	template<class T, class A=std::allocator<T>> static_array(IL<IL<IL<T>>>        , A)->static_array<T, 3, A>; 
+	template<class T, class A=std::allocator<T>> static_array(IL<IL<IL<IL<T>>>>    , A)->static_array<T, 4, A>; 
+	template<class T, class A=std::allocator<T>> static_array(IL<IL<IL<IL<IL<T>>>>>, A)->static_array<T, 5, A>;
+
+	template<class T> static_array(IL<T>                )->static_array<T, 1>; 
+	template<class T> static_array(IL<IL<T>>            )->static_array<T, 2>;
+	template<class T> static_array(IL<IL<IL<T>>>        )->static_array<T, 3>; 
+	template<class T> static_array(IL<IL<IL<IL<T>>>>    )->static_array<T, 4>; 
+	template<class T> static_array(IL<IL<IL<IL<IL<T>>>>>)->static_array<T, 5>;
+
 
 //	template<class T> array(std::initializer_list<T>)->array<T, 1>; 
 
@@ -1057,7 +1064,9 @@ namespace pmr{
 template <class T, boost::multi::dimensionality_type D>
 using array = boost::multi::array<T, D, std::pmr::polymorphic_allocator<T>>;
 
-}}}
+} // end namespace pmr
+} // end namespace multi
+} // end namespace boost
 #endif
 
 #endif
