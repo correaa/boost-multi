@@ -1724,7 +1724,7 @@ public:
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>,
 		class Element = typename basic_array::element,
 		class PM = T2 std::decay_t<Element>::*
-	>
+	> NODISCARD("")
 	constexpr auto member_cast(PM pm) const -> basic_array<T2, 1, P2>{
 		static_assert(sizeof(T)%sizeof(T2) == 0, 
 			"array_member_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements");
@@ -1737,7 +1737,7 @@ public:
 #endif
 	}
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
-	auto reinterpret_array_cast() const& -> basic_array<std::decay_t<T2>, 1, P2>{
+	NODISCARD("") auto reinterpret_array_cast() const& -> basic_array<std::decay_t<T2>, 1, P2>{
 		static_assert( sizeof(T)%sizeof(T2)== 0, "error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
 //			this->layout().scale(sizeof(T)/sizeof(T2));
 		static_assert( sizeof(P2) == sizeof(typename basic_array::element_ptr), "reinterpret on equal size pointers?"); // NOLINT(bugprone-sizeof-expression) : check that pointers (not pointees) are the same size
@@ -1866,7 +1866,7 @@ private:
 	}
 
 public:
-	constexpr auto data_elements() const& -> typename array_ref::element_ptr{return array_ref::base_;}
+	NODISCARD("") constexpr auto data_elements() const& -> typename array_ref::element_ptr{return array_ref::base_;}
 
 	constexpr auto operator=(array_ref const& other) & -> array_ref&{
 		if(this == &other){return *this;} // lints(cert-oop54-cpp)
@@ -1897,7 +1897,7 @@ public:
 	using celements_type = array_ref<typename array_ref::element_type, 1, typename array_ref::element_const_ptr>;
 
 private:
-	constexpr auto elements_aux() const{
+	NODISCARD("") constexpr auto elements_aux() const{
 		return elements_type{
 			this->data_elements(), 
 			typename elements_type::extensions_type{multi::iextension{this->num_elements()}}
