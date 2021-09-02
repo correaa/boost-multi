@@ -159,6 +159,9 @@ BOOST_AUTO_TEST_CASE(iterator_semantics){
 
 	BOOST_REQUIRE( &A[0][2][1] == &begin(A)[0][2][1] );
 
+	static_assert( decltype(begin(A))::rank_v == 3 , "!" );
+	static_assert( decltype(begin(A))::rank{} == 3 , "!" );
+
 	auto&& Aref = multi::ref(begin(A), end(A));
 	BOOST_REQUIRE( &A[0][2][1] == &Aref[0][2][1] );
 	BOOST_REQUIRE( A.base() == Aref.base() );

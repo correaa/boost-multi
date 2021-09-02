@@ -16,12 +16,12 @@ namespace blas{
 using core::gemm;
 
 template<class It>
-auto xbase_aux(It const& it, std::true_type const&)
+auto xbase_aux(It const& it, std::true_type const& /*true */)
 ->decltype(underlying(base(it))){
 	return underlying(base(it));}
 
 template<class It>
-auto xbase_aux(It const& it, std::false_type const&)
+auto xbase_aux(It const& it, std::false_type const& /*false*/)
 ->decltype(base(it)){
 	return base(it);}
 
@@ -31,7 +31,7 @@ auto xbase(It const& it)
 	return xbase_aux(it, std::integral_constant<bool, is_conjugated<It>{}>{});}
 
 template<class Context, class It2DA, class Size, class It2DB, class It2DC>
-auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a_count, It2DB b_first, typename It2DA::element beta, It2DC c_first)
+auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a_count, It2DB b_first, typename It2DA::element beta, It2DC c_first) // NOLINT(readability-function-cognitive-complexity) : 125
 //->decltype(std::forward<Context>(ctxt).gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, xbase(b_first), b_first->size()  , xbase(a_first), a_first->size(), &beta, c_first.base(), c_first->size()  ), It2DC{})
 try{
 	assert( b_first->size() == c_first->size() );
@@ -41,8 +41,8 @@ try{
 
 	if(a_count != 0){
 		#define CTXT std::forward<Context>(ctxt)
-		;;;;; if constexpr(!is_conjugated<It2DA>{} and !is_conjugated<It2DB>{}){
-			;;;;; if(a_first->stride()==1 and b_first->stride()==1 and c_first->stride()==1){
+		if constexpr      (!is_conjugated<It2DA>{} and !is_conjugated<It2DB>{}){
+			if      (a_first->stride()==1 and b_first->stride()==1 and c_first->stride()==1){
 				;;;; if( a_count==1 and b_first->size()==1 ){CTXT.gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->size()  , base(a_first), a_first->size() , &beta, base(c_first), c_first->size()  );}
 				else if( a_count==1                        ){CTXT.gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first->size()  );}
 				else                                        {CTXT.gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), base(a_first), a_first. stride(), &beta, base(c_first), c_first. stride());}
@@ -111,7 +111,7 @@ auto gemm_n(typename It2DA::element alpha, It2DA a_first, Size a_count, It2DB b_
 	return gemm_n(Context{}, alpha, a_first, a_count, b_first, beta, c_first);}
 
 template<class Context, class A, class B, class C>
-C&& gemm(Context&& ctx, typename A::element alpha, A const& a, B const& b, typename A::element beta, C&& c){
+auto gemm(Context&& ctx, typename A::element alpha, A const& a, B const& b, typename A::element beta, C&& c) -> C&&{
 	assert( size( a) == size( c) );
 	if(not a.is_empty()) assert( size(~a) == size( b) );
 	if constexpr(is_conjugated<C>{}){blas::gemm  (std::forward<Context>(ctx), conj(alpha), conj(a),           conj(b) , conj(beta), conj(c) );}
@@ -120,7 +120,7 @@ C&& gemm(Context&& ctx, typename A::element alpha, A const& a, B const& b, typen
 }
 
 template<class A, class B, class C>
-C&& gemm(typename A::element alpha, A const& a, B const& b, typename A::element beta, C&& c){
+auto gemm(typename A::element alpha, A const& a, B const& b, typename A::element beta, C&& c) -> C&&{
 	return gemm(blas::context{}, alpha, a, b, beta, std::forward<C>(c));
 }
 
@@ -143,29 +143,33 @@ class gemm_iterator{
 	gemm_iterator(ContextPtr ctxtp, Scalar s, ItA a_it, ItB b_begin) : ctxtp_{ctxtp}, s_{s}, a_it_{a_it}, b_begin_{b_begin}{}
 	template<class ContextPtr2, class Scalar2, class ItA2, class ItB2, class DecayType2>
 	friend class gemm_range;
+
 public:
 	gemm_iterator(gemm_iterator const&) = default;
+	~gemm_iterator() = default;
+
 	using difference_type = typename std::iterator_traits<ItA>::difference_type;
 	using value_type = typename std::iterator_traits<ItA>::value_type;
 	using pointer = void*;
 	using reference = gemm_reference<decltype(b_begin_->extensions())>;
 	using iterator_category = std::random_access_iterator_tag; // using iterator_category = std::input_iterator_tag;
-	
-	static_assert( std::is_base_of<std::random_access_iterator_tag, typename std::iterator_traits<gemm_iterator>::iterator_category>{} );
-	
-	gemm_iterator& operator+=(difference_type n){a_it_ += n; return *this;}
-	gemm_iterator& operator-=(difference_type n){a_it_ -= n; return *this;}
 
-	gemm_iterator& operator++(){return operator+=(1);} // required by random access concept requires even if not used explicitly
-	gemm_iterator& operator--(){return operator-=(1);}
-	
+	static_assert( std::is_base_of<std::random_access_iterator_tag, typename std::iterator_traits<gemm_iterator>::iterator_category>{} );
+
+	auto operator+=(difference_type n) -> gemm_iterator&{a_it_ += n; return *this;}
+	auto operator-=(difference_type n) -> gemm_iterator&{a_it_ -= n; return *this;}
+
+	auto operator++() -> gemm_iterator&{return operator+=(1);} // required by random access concept requires even if not used explicitly
+	auto operator--() -> gemm_iterator&{return operator-=(1);}
+
 	auto operator+(difference_type n) const{gemm_iterator ret{*this}; ret+=n; return ret;}
 
-	friend difference_type operator-(gemm_iterator const& a, gemm_iterator const& b){assert(a.b_begin_ == b.b_begin_);
+	friend auto operator-(gemm_iterator const& a, gemm_iterator const& b) -> difference_type{
+		assert(a.b_begin_ == b.b_begin_);
 		return a.a_it_ - b.a_it_;
 	}
-	friend bool operator==(gemm_iterator const& a, gemm_iterator const& b){return a.a_it_ == b.a_it_;}
-	friend bool operator!=(gemm_iterator const& a, gemm_iterator const& b){return a.a_it_ != b.a_it_;}
+	friend auto operator==(gemm_iterator const& a, gemm_iterator const& b) -> bool{return a.a_it_ == b.a_it_;}
+	friend auto operator!=(gemm_iterator const& a, gemm_iterator const& b) -> bool{return a.a_it_ != b.a_it_;}
 
 	template<class ItOut> 
 	friend auto copy_n(gemm_iterator const& first, difference_type count, ItOut d_first)
@@ -178,7 +182,7 @@ public:
 			"\nbecause\n"+e.what()
 		);
 	}
-	
+
 	template<class ItOut>
 	friend auto copy(gemm_iterator const& first, gemm_iterator const& last, ItOut d_first){assert(first.s_ == last.s_);
 		return copy_n(first, last - first, d_first);
@@ -193,7 +197,7 @@ public:
 	friend auto uninitialized_copy(gemm_iterator const& first, gemm_iterator const& last, ItOut d_first){assert( first.s_ == last.s_ );
 		return uninitialized_copy_n(first, last - first, d_first);}
 
-	reference operator*() const{return {b_begin_->extensions()};}
+	auto operator*() const -> reference{return {b_begin_->extensions()};}
 };
 
 template<class ContextPtr, class Scalar, class ItA, class ItB, class DecayType>
@@ -203,31 +207,41 @@ class gemm_range{
 	ItA a_begin_;
 	ItA a_end_;
 	ItB b_begin_;
+
 public:
 	gemm_range(gemm_range const&) = delete;
+	gemm_range(gemm_range&&) = delete;
+	auto operator=(gemm_range const&) -> gemm_range& = delete;
+	auto operator=(gemm_range&&) -> gemm_range& = delete;
+	~gemm_range() = default;
+
 	gemm_range(ContextPtr ctxtp, Scalar s, ItA a_first, ItA a_last, ItB b_first) : ctxtp_{ctxtp}, s_{s}, a_begin_{a_first}, a_end_{a_last}, b_begin_{b_first}{}
+
 	using iterator = gemm_iterator<ContextPtr, Scalar, ItA, ItB>;
 	using decay_type = DecayType;
 	using size_type = typename decay_type::size_type;
-	iterator begin() const{return {ctxtp_, s_, a_begin_, b_begin_};}
-	iterator end()   const{return {ctxtp_, s_, a_end_  , b_begin_};}
+
+	       auto begin()          const& -> iterator{return {ctxtp_, s_, a_begin_, b_begin_};}
+	       auto end()            const& -> iterator{return {ctxtp_, s_, a_end_  , b_begin_};}
 	friend auto begin(gemm_range const& self){return self.begin();}
 	friend auto end  (gemm_range const& self){return self.end  ();}
-	size_type size() const{return a_end_ - a_begin_;}
-	typename decay_type::extensions_type extensions() const{return size()*b_begin_->extensions();}
+
+	auto size() const -> size_type{return a_end_ - a_begin_;}
+	auto extensions() const -> typename decay_type::extensions_type{return size()*b_begin_->extensions();}
 	friend auto extensions(gemm_range const& self){return self.extensions();}
 //	operator decay_type() const{return decay_type(*this);} // do not use curly { }
-	decay_type operator+() const{return *this;} // TODO(correaa) : investigate why return decay_type{*this} doesn't work
+	auto operator+() const -> decay_type{return *this;} // TODO(correaa) : investigate why return decay_type{*this} doesn't work
 	template<class Arr>
-	friend Arr&& operator+=(Arr&& a, gemm_range const& gr){
+	friend auto operator+=(Arr&& a, gemm_range const& gr) -> Arr&&{
 		blas::gemm_n(*gr.ctxtp_, gr.s_, gr.a_begin_, gr.a_end_ - gr.a_begin_, gr.b_begin_, 1., a.begin());
 		return std::forward<Arr>(a);
 	}
 };
 
 template<class ContextPtr, class Scalar, class A2D, class B2D, class=std::enable_if_t<is_context<decltype(*ContextPtr{})>{}> >
-gemm_range<ContextPtr, Scalar, typename A2D::const_iterator, typename B2D::const_iterator, typename A2D::decay_type/*B2D*/> 
-gemm(ContextPtr ctxtp, Scalar s, A2D const& a, B2D const& b){
+auto gemm(ContextPtr ctxtp, Scalar s, A2D const& a, B2D const& b)
+->gemm_range<ContextPtr, Scalar, typename A2D::const_iterator, typename B2D::const_iterator, typename A2D::decay_type/*B2D*/> 
+{
 	return {ctxtp, s, begin(a), end(a), begin(b)};
 }
 
@@ -251,9 +265,11 @@ namespace operators{
 	auto operator*(A2D const& A, B2D const& B)
 	->decltype(+blas::gemm(1., A, B)){
 		return +blas::gemm(1., A, B);}
-}
+} // end namespace operators
 
-}}}
+} // end namespace blas
+} // end namespace multi
+} // end namespace boost
 
 #endif
 

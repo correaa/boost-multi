@@ -31,7 +31,9 @@ auto iamax(X1D const& x)
 
 template<class X1D> auto amax(X1D const& x){return begin(x) + iamax(x);}
 
-}}}
+} // end namespace blas
+} // end namespace multi
+} // end namespace boost
 
 #if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 

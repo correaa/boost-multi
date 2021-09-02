@@ -71,7 +71,10 @@ axpy_range<Context, Scale, typename X::const_iterator> axpy(Context&& ctxt, Scal
 	return {std::forward<Context>(ctxt), a, begin(x), end(x)};}
 
 template<class Scale, class X>
-axpy_range<blas::context const&, Scale, typename X::const_iterator> axpy(Scale a, X const& x){return {blas::context{}, a, begin(x), end(x)};}
+auto axpy(Scale a, X const& x)
+-> axpy_range<blas::context const&, Scale, typename X::const_iterator>{
+	return {blas::context{}, a, begin(x), end(x)};
+}
 
 namespace operators{
 

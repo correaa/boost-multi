@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE(multi_array_sliced){
 	multi::array<double, 4> A({10, 20, 30, 40}, 99.);
 	std::iota(A.elements().begin(), A.elements().end(), 0.);
 
-	BOOST_REQUIRE( dimensionality(A.sliced(0, 5)) == dimensionality(A) );
+	static_assert( decltype( A.sliced(0, 5) )::rank_v == decltype(A)::rank_v , "!"); //NOLINT(misc-redundant-expression)
 
 	BOOST_REQUIRE(  A.sliced(0, 5)[1][2][3][4] ==  A[1][2][3][4] );
 	BOOST_REQUIRE( &A.sliced(0, 5)[1][2][3][4] == &A[1][2][3][4] );

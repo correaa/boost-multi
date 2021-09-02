@@ -1,20 +1,15 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-$CXXX $CXXFLAGS $0 -o $0.$X `pkg-config --libs blas`&&$0.$X&&rm $0.$X;exit
-#endif
-//(for a in `find tests/ -name '*.cpp'`; do sh $a || break; done); exit
+#ifndef MULTI_ADAPTORS_BLAS_CORE_HPP // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+#define MULTI_ADAPTORS_BLAS_CORE_HPP
+// © Alfredo A. Correa 2019-2021
 
 // https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
-// © Alfredo A. Correa 2019-2020
-
-#ifndef MULTI_ADAPTORS_BLAS_CORE_HPP
-#define MULTI_ADAPTORS_BLAS_CORE_HPP
 
 //#include <cblas/cblas.h> // consider being replaceable by cblas.h
 
 #include<iostream> // debug
 #include<cassert>
 #include<complex>
-#include<stdint.h> // int64_t
+#include<cstdint> // int64_t
 #include<limits> // numeric_limits
 #include<type_traits> // is_convertible
 #include<cstring> // std::memcpy
@@ -55,8 +50,11 @@ extern "C"{
 #define z std::complex<d>
 #define v void
 
-typedef struct { float  real, imag; } Complex_float ;
-typedef struct { double real, imag; } Complex_double;
+
+using Complex_float  = struct { float  real, imag; };
+using Complex_double = struct { double real, imag; };
+//typedef struct { float  real, imag; } Complex_float ;
+//typedef struct { double real, imag; } Complex_double;
 
 #define C Complex_float // _Complex s
 #define Z Complex_double // _Complex d
@@ -76,7 +74,7 @@ typedef struct { double real, imag; } Complex_double;
 namespace core{
 	using size_t = INT;
 	using ssize_t = std::make_signed_t<size_t>;
-}
+} // end namespace core
 
 #define INTEGER INT const&
 #define N INTEGER n
@@ -95,14 +93,14 @@ static_assert(sizeof(INT)==32/8 or sizeof(INT)==64/8, "please set _BLAS_INT to i
 #define xSCAL(TT, TA, TX) v TT##scal##_ (N, TA const& a, TX      *x, INCX                  )
 #define xCOPY(T)          v T ##copy##_ (N,              T const *x, INCX, T       *y, INCY) 
 #define xAXPY(T)          v T ##axpy##_ (N,  T const* a, T const *x, INCX, T       *y, INCY)
-#define xDOT(R, TT, T)    R BLAS(  TT##dot  )(N,              T const *x, INCX, T const *y, INCY)
+#define xDOT(R, TT, T)    auto BLAS(  TT##dot  )(N,              T const *x, INCX, T const *y, INCY) -> R
 // PGI/NVC++ compiler uses a blas version that needs -DRETURN_BY_STACK
 #if defined(RETURN_BY_STACK) || (defined(FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID) && FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID)
 #define xDOTU(R, T)       v BLAS(   T##dotu )(R*, N,              T const *x, INCX, T const *y, INCY)
 #define xDOTC(R, T)       v    T##dotc ##_ (R*, N,              T const *x, INCX, T const *y, INCY)
 #else
-#define xDOTU(R, T)       R    T ##dotu##_ (    N,              T const *x, INCX, T const *y, INCY)
-#define xDOTC(R, T)       R    T ##dotc##_ (    N,              T const *x, INCX, T const *y, INCY)
+#define xDOTU(R, T)       auto    T ##dotu##_ (    N,              T const *x, INCX, T const *y, INCY) -> R
+#define xDOTC(R, T)       auto    T ##dotc##_ (    N,              T const *x, INCX, T const *y, INCY) -> R
 #endif
 #define xxDOT(TT, T)      T    TT##dot ##_ (    N,  T const& a, T const *x, INCX, T const *y, INCY)
 #define xNRM2(R, TT, T)   R    TT##nrm2##_ (    N,              T const *x, INCX                  )
@@ -252,12 +250,12 @@ namespace{
 
 #define BC(x) [](auto xx){assert(xx>=std::numeric_limits<INT>::min() and xx<std::numeric_limits<INT>::max()); return xx;}(x)
 
-#define xrotg(T1, T2)                       v   rotg (T1 const& a, T1 const& b, T2& cc, T1& ss                                   ){     BLAS(T1##rotg )(const_cast<T1*>(&a), const_cast<T1*>(&b), &cc, &ss);  }
-#define xrotmg(T)                           v   rotmg(T& d1, T& d2, T& A, T const& B, T(&p)[5]                                   ){     BLAS( T##rotmg)(&d1, &d2, &A, B, p);                                  }
+#define xrotg(T1, T2)                       v   rotg (T1 const& a, T1 const& b, T2& cc, T1& ss                                       ){     BLAS(T1##rotg )(const_cast<T1*>(&a), const_cast<T1*>(&b), &cc, &ss);  }
+#define xrotmg(T)                           v   rotmg(T& d1, T& d2, T& A, T const& B, T(&p)[5]                                       ){     BLAS( T##rotmg)(&d1, &d2, &A, B, p);                                  }
 #define xrot(T, TT, CS)   template<class S> v   rot  (S n,       T       *x, S incx, T       *y, S incy, CS const& cos, CS const& sin){     BLAS(TT##rot  )(BC(n),    x, BC(incx), y, BC(incy), cos, sin);    }
-#define xrotm(T)          template<class S> v   rotm (S n,       T       *x, S incx, T       *y, S incy, T const(&p)[5]          ){     BLAS( T##rotm )(BC(n),    x, BC(incx), y, BC(incy), p);               }
-#define xswap(T)          template<class S> v   swap (S n,       T       *x, S incx, T       *y, S incy                          ){     BLAS( T##swap )(BC(n),    x, BC(incx), y, BC(incy));                  }
-#define xscal(XX, TA, TX) TX* scal (INT n, TA const* a, TX       *x, INT incx                                                    ){     BLAS(XX##scal )(BC(n), *a, x, BC(incx)             ); return x+n*incx;}
+#define xrotm(T)          template<class S> v   rotm (S n,       T       *x, S incx, T       *y, S incy, T const(&p)[5]              ){     BLAS( T##rotm )(BC(n),    x, BC(incx), y, BC(incy), p);               }
+#define xswap(T)          template<class S> v   swap (S n,       T       *x, S incx, T       *y, S incy                              ){     BLAS( T##swap )(BC(n),    x, BC(incx), y, BC(incy));                  }
+#define xscal(XX, TA, TX) template<class S> TX* scal (INT n, TA const* a, TX       *x, S incx                                        ){     BLAS(XX##scal )(BC(n), *a, x, BC(incx)             ); return x+n*incx;}
 //#define xcopy(T)          v   copy (INT n,              T  const *x, INT incx, T       *y, INT incy                              ){     BLAS( T##copy )(BC(n),    x, BC(incx), y, BC(incy));                  }
 //#define xaxpy(T)          template<class S> T*  axpy (S n, T  a, T const *x, S incx, T       *y, S incy                          ){     BLAS( T##axpy )(BC(n), a, x, BC(incx), y, BC(incy)); return y+n*incy; }
 #define xdot(R, TT, T)    template<class S> v   dot  (S n,       T const* x, S incx, T const* y, S incy, R* r                    ){\
@@ -300,7 +298,7 @@ xaxpy(s)       xaxpy(d)       xaxpy(c)       xaxpy(z)
 //template<class A, class CX, class CY, enable_if_t<is_c<CX>{} and is_c<CY>{} and is_assignable<CY&, decltype(A{}*CX{})>{}, int> =0> void axpy(size_t n, A a, CX* x, size_t incx, CY* y, size_t incy){BLAS(caxpy)(n, a, (c const*)(x), incx, (c*)(y), incy);}
 //template<class A, class ZX, class ZY, enable_if_t<is_z<ZX>{} and is_z<ZY>{} and is_assignable<ZY&, decltype(A{}*ZX{})>{}, int> =0> void axpy(size_t n, A a, ZX* x, size_t incx, ZY* y, size_t incy){BLAS(zaxpy)(n, a, (z const*)(x), incx, (z*)(y), incy);}
 
-}
+} // end namespace core
 
 template<class R, class S, class T> R dot(S n, T const* x, S incx, T const* y, S incy){
 	R ret;
@@ -332,8 +330,8 @@ using std::is_assignable;
 template<class X, class Y, class R, enable_if_t<is_c<X>{} and is_c<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(cdotu)((Complex_float *)r, n, (c const*)x, incx, (c const*)y, incy);}
 template<class X, class Y, class R, enable_if_t<is_z<X>{} and is_z<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(zdotu)((Complex_double*)r, n, (z const*)x, incx, (z const*)y, incy);}
 
-template<class X, class Y, class R, enable_if_t<is_c<X>{} and is_c<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotc(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(cdotc)((Complex_float *)r, n, (c const*)x, incx, (c const*)y, incy);}
-template<class X, class Y, class R, enable_if_t<is_z<X>{} and is_z<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotc(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(zdotc)((Complex_double*)r, n, (z const*)x, incx, (z const*)y, incy);}
+template<class X, class Y, class R, enable_if_t<is_c<X>{} and is_c<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotc(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(cdotc)(reinterpret_cast<Complex_float *>(r), n, (c const*)x, incx, (c const*)y, incy);}
+template<class X, class Y, class R, enable_if_t<is_z<X>{} and is_z<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotc(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(zdotc)(reinterpret_cast<Complex_double*>(r), n, (z const*)x, incx, (z const*)y, incy);} // NOLINT(ppcoreguidelines-pro-type-reinterpret-cast) : adapt types
 #else
 template<class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_c<X>{} and is_c<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, XP x, size_t incx, YP y, size_t incy, RP r){auto rr = BLAS(cdotu)(n, (c const*)static_cast<X*>(x), incx, (c const*)static_cast<Y*>(y), incy); std::memcpy(reinterpret_cast<float (*)[2]>(static_cast<R*>(r)), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*r));}
 template<class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_z<X>{} and is_z<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, XP x, size_t incx, YP y, size_t incy, RP r){auto rr = BLAS(zdotu)(n, (z const*)static_cast<X*>(x), incx, (z const*)static_cast<Y*>(y), incy); std::memcpy(reinterpret_cast<double(*)[2]>(static_cast<R*>(r)), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*r));}
@@ -361,14 +359,14 @@ namespace core{
 	template<class S> s dot(S n, s const& b, s const* x, S incx, s const* y, S incy){return BLAS(sdsdot)(BC(n), b, x, BC(incx), y, BC(incy));}
 
 //template<class S> void dot(S n, s const& b, s const* x, S incx, s const* y, S incy, s* result){*result = BLAS(sdsdot)(BC(n), b, x, BC(incx), y, BC(incy));}
-
-}
+} // end namespace core
 
 //#define xnrm2(R, T, TT) template<class S>    v nrm2 (S n, add_const_ptr_t<T> x, S incx, R* r){*r = BLAS(TT##nrm2  )(BC(n), x, BC(incx));}
 
 #define xasum(T, TT)    template<class S> auto asum (S n, T const* x, S incx){return BLAS(TT##asum  )(BC(n), x, BC(incx));}
 #define ixamax(T)       template<class S> auto iamax(S n, T const* x, S incx){return BLAS(i##T##amax)(BC(n), x, BC(incx)) - 1;}
 xasum(s, s)    xasum(d, d)                        xasum (c, sc)                  xasum(z, dz)
+
 namespace core{
 //	xnrm2(s, s, s) xnrm2(d, d, d)  xnrm2(s, c, sc) xnrm2(d, z, dz)
 
@@ -378,11 +376,10 @@ template<class XP, class X = typename std::pointer_traits<XP>::element_type, cla
 template<class XP, class X = typename std::pointer_traits<XP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_c<X>{} and is_s<R>{} and std::is_assignable<R&, decltype(std::norm(X{}))>{}, int> =0> void nrm2(size_t n, XP x, size_t incx, RP r){auto rr = BLAS(scnrm2)(n, (c const*)static_cast<X*>(x), incx); std::memcpy((s*)static_cast<R*>(r), &rr, sizeof(s));}
 template<class XP, class X = typename std::pointer_traits<XP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_z<X>{} and is_d<R>{} and std::is_assignable<R&, decltype(std::norm(X{}))>{}, int> =0> void nrm2(size_t n, XP x, size_t incx, RP r){auto rr = BLAS(dznrm2)(n, (z const*)static_cast<X*>(x), incx); std::memcpy((s*)static_cast<R*>(r), &rr, sizeof(d));}
 
-
 //	template<class S>    v nrm2 (S n, typename add_const_ptr<std::complex<double>>::type x, S incx, d* r){*r = BLAS(dznrm2  )(BC(n), x, BC(incx));}
-	
 	ixamax(s)      ixamax(d)       ixamax(c)       ixamax(z)
-}
+} // end namespace core
+
 #undef xnrm2
 #undef xasum
 #undef ixamax
@@ -584,17 +581,8 @@ blas::context* default_context_of(TPtr const&){return {};}
 
 }
 
-}}
+}
+}
 
-///////////////////////////////////////////////////////////////////////////////
-
-#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
-
-#include "../../array.hpp"
-#include "../../utility.hpp"
-
-int main(){}
-
-#endif
 #endif
 

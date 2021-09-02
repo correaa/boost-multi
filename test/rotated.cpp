@@ -51,8 +51,8 @@ BOOST_AUTO_TEST_CASE(multi_rotate_4d_op){
 	BOOST_REQUIRE( &original[0][1][2][3] == &unrotd2[2][3][0][1] );
 }
 
-BOOST_AUTO_TEST_CASE(multi_rotate){
-{
+BOOST_AUTO_TEST_CASE(multi_rotate_part1){
+
 	std::array<std::array<double, 5>, 4> a = {
 		{
 			{ 0,  1,  2,  3,  4}, 
@@ -72,7 +72,10 @@ BOOST_AUTO_TEST_CASE(multi_rotate){
 	BOOST_REQUIRE( B[1][2] == 7  );
 	BOOST_REQUIRE( (B <<1) == (A <<1) );
 	BOOST_REQUIRE( (B<<1)[2][1] == 7 );
+
 }
+
+BOOST_AUTO_TEST_CASE(multi_rotate){
 {
 	multi::array<double, 2> A = {
 		{00, 01},

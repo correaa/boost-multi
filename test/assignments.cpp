@@ -139,17 +139,17 @@ BOOST_AUTO_TEST_CASE(assignments){
 }
 
 template<class T, class Allocator>
-auto eye(multi::iextensions<2> ie, Allocator alloc){
+auto eye(multi::extensions_t<2> ie, Allocator alloc){
 	multi::array<T, 2, Allocator> ret(ie, 0., alloc);
 	ret.diagonal().fill(1.);
 	return ret;
 }
 
 template<class T>
-auto eye(multi::iextensions<2> ie){return eye<T>(ie, std::allocator<T>{});}
+auto eye(multi::extensions_t<2> ie){return eye<T>(ie, std::allocator<T>{});}
 
 BOOST_AUTO_TEST_CASE(assigment_temporary){
-	multi::array<double, 2> Id = eye<double>({3, 3});
+	multi::array<double, 2> Id = eye<double>( multi::extensions_t<2>({3, 3}) );
 	BOOST_REQUIRE( Id == eye<double>({3, 3}) );
 	BOOST_REQUIRE( Id[1][1] == 1 );
 	BOOST_REQUIRE( Id[1][0] == 0 );

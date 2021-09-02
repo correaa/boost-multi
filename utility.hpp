@@ -103,8 +103,8 @@ auto common(T1 const& t1, T2 const& t2) -> Ret{
 	return t1==t2?t1:Ret{};}
 
 template<class T>
-       auto has_num_elements_aux(T const& t)->decltype(t.num_elements(), std::true_type {});
-inline auto has_num_elements_aux(...       )->decltype(                  std::false_type{});
+       auto has_num_elements_aux(T const& t)->decltype(std::declval<T const&>().num_elements() + 1, std::true_type {});
+inline auto has_num_elements_aux(...       )->decltype(                                             std::false_type{});
 template<class T> struct has_num_elements : decltype(has_num_elements_aux(std::declval<T>())){};
 
 template<class A, typename = std::enable_if_t<has_num_elements<A>{}> > 
@@ -118,13 +118,13 @@ inline auto has_size_aux(...       )->decltype(                  std::false_type
 template<class T> struct has_size : decltype(has_size_aux(std::declval<T>())){};
 
 template<class T>
-auto has_data_elements_aux(T&& t)->decltype(t.data_elements(), std::true_type {});
-auto has_data_elements_aux(...  )->decltype(                   std::false_type{});
+auto has_data_elements_aux(T&& t)->decltype(t.data_elements() + 1, std::true_type {});
+auto has_data_elements_aux(...  )->decltype(                       std::false_type{});
 template<class T> struct has_data_elements : decltype(has_data_elements_aux(std::declval<T>())){};
 
 template<class T>
-auto has_data_aux(T&& t)->decltype(t.data_elements(), std::true_type {});
-auto has_data_aux(...  )->decltype(                   std::false_type{});
+auto has_data_aux(T&& t)->decltype(t.data_elements() + 1, std::true_type {});
+auto has_data_aux(...  )->decltype(                       std::false_type{});
 template<class T> struct has_data : decltype(has_data_aux(std::declval<T>())){};
 
 template<class A, typename = std::enable_if_t<not has_num_elements<A>{} and has_size<A>{} and has_data<A>{}> >
@@ -182,25 +182,22 @@ constexpr auto data(T(&t)[N]) noexcept{return data(t[0]);} // NOLINT(cppcoreguid
 template<class T, std::size_t N>
 constexpr auto data_elements(T(&t)[N]) noexcept{return data_elements(t[0]);} // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 
-//template<class T, std::size_t N>
-//constexpr auto data(const T(&t)[N]) noexcept{return data(t[0]);}
-
 template<class T>
-auto has_dimensionality_aux(T const& t)->decltype(t.dimensionality(), std::true_type {});
-inline auto has_dimensionality_aux(...)->decltype(                    std::false_type{});
+       auto has_dimensionality_aux(T const& t)->decltype(T::rank_v, std::true_type {});
+inline auto has_dimensionality_aux(...       )->decltype(           std::false_type{});
 template<class T> struct has_dimensionality : decltype(has_dimensionality_aux(std::declval<T>())){};
 
-template<class Container, typename = std::enable_if_t<has_dimensionality<Container>{}> >
-constexpr auto dimensionality(Container const& con)
-->decltype(con.dimensionality()){
-	return con.dimensionality();}
+template<class Container, std::enable_if_t<has_dimensionality<Container>{}, int> =0>
+constexpr auto dimensionality(Container const& /*container*/)
+->std::decay_t<decltype(Container::rank_v)>{
+	return Container::rank_v;}
 
 template<class T>
-auto has_dimensionaliy_member_aux(T const& t)->decltype((size_t(t.dimensionality), std::true_type{}));
-inline auto has_dimensionaliy_member_aux(...       )->decltype(                          std::false_type{});
+       auto has_dimensionaliy_member_aux(T const& t)->decltype((size_t(T::rank_v), std::true_type{}));
+inline auto has_dimensionaliy_member_aux(...       )->decltype(                    std::false_type{});
 template<class T> struct has_dimensionality_member : decltype(has_dimensionaliy_member_aux(std::declval<T>())){};
 
-template<class C> constexpr auto dimensionality(C const& c)->decltype(c.dimensionality){return c.dimensionality;}
+//template<class C> constexpr auto dimensionality(C const& c)->decltype(c.dimensionality()){return c.dimensionality();}
 
 template<class T, typename = std::enable_if_t<not has_dimensionality_member<T>{}>>
 constexpr auto dimensionality(T const&/*, void* = nullptr*/){return 0;}
@@ -274,9 +271,10 @@ inline auto has_extensions_aux(...     ) -> std::false_type;
 template<class T> struct has_extensions : decltype(has_extensions_aux(std::declval<T>())){};
 
 template<class T, typename = std::enable_if_t<has_extensions<T>{}> >
-auto extensions(T const& t)
-->decltype(t.extensions()){
-	return t.extensions();}
+NODISCARD("") auto extensions(T const& t)
+->std::decay_t<decltype(t.extensions())>{
+	return t.extensions();
+}
 
 template<class T, typename = std::enable_if_t<not has_extensions<T>{}> >
 constexpr auto extensions(T const& /*unused*/) -> multi::layout_t<0>::extensions_type{return {};}
@@ -357,7 +355,8 @@ namespace multi{
 
 template<class T, std::size_t N>
 struct array_traits<std::array<T, N>>{
-	static constexpr dimensionality_type dimensionality = 1;
+	static constexpr auto dimensionality() -> dimensionality_type{return 1;}
+
 	using reference = T&;
 	using value_type = std::decay_t<T>;
 	using pointer = T*;
@@ -368,7 +367,8 @@ struct array_traits<std::array<T, N>>{
 
 template<class T, std::size_t N, std::size_t M>
 struct array_traits<std::array<std::array<T, M>, N>>{
-	static constexpr dimensionality_type dimensionality = 1 + array_traits<std::array<T, M>>::dimensionality;
+	static constexpr auto dimensionality() -> dimensionality_type{return 1 + array_traits<std::array<T, M>>::dimensionality();}
+
 	using reference = std::array<T, M>&;
 	using value_type = std::array<std::decay_t<T>, M>;
 	using pointer = std::array<T, M>*;
@@ -428,7 +428,7 @@ constexpr auto stride(std::array<std::array<T, N>, M> const& arr){
 
 template<class T, std::size_t N>
 constexpr auto layout(std::array<T, N> const& arr){
-	return multi::layout_t<multi::array_traits<std::array<T, N>>::dimensionality>{multi::extensions(arr)};
+	return multi::layout_t<multi::array_traits<std::array<T, N>>::dimensionality()>{multi::extensions(arr)};
 }
 
 } // end namespace multi

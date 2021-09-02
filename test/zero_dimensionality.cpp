@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality){
 		BOOST_REQUIRE( &m1[1] == &v1[1] );
 		BOOST_REQUIRE( num_elements(m1) == 3 );
 
-		multi::array_ref<double, 0> m0(v1.data());
+		multi::array_ref<double, 0> m0(v1.data(), {});
 //		BOOST_REQUIRE(( &m0 == multi::array_ptr<double, 0>(v1.data(), {}) ));
 		BOOST_REQUIRE( data_elements(m0) == v1.data() );
 		BOOST_REQUIRE( num_elements(m0) == 1 );
@@ -66,14 +66,14 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality){
 	{
 		double d = 2.;
 		multi::array_ref<double, 0> ar0(&d, {});
-		double dd = ar0;
+		double dd{ar0};
 		BOOST_REQUIRE( dd == d );
 
 		multi::array_ptr<double, 1> ap1(&d, 1);
 		BOOST_REQUIRE( ap1->base() == &d );
 		BOOST_REQUIRE( (*ap1).base() == &d );
 
-		multi::array_ptr<double, 0> ap0{&d};
+		multi::array_ptr<double, 0> ap0(&d, {});
 
 		BOOST_REQUIRE(( ap0 == multi::array_ptr<double, 0>(&d, {}) ));
 		BOOST_REQUIRE(( ap0 != multi::array_ptr<double, 0>(&dd, {}) ));
@@ -88,8 +88,8 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality){
 //		BOOST_REQUIRE(( &multi::array_ref<double, 0>(&d3, {}) == multi::array_ptr<double, 0>(&d3, {}) ));
 
 		#if defined(__cpp_deduction_guides)
-		BOOST_REQUIRE(( *multi::array_ptr{&d3} == 3. ));
-		BOOST_REQUIRE(( multi::array_ptr{&d3} == multi::array_ptr<double, 0>(&d3, {}) ));
+		BOOST_REQUIRE(( *multi::array_ptr{&d3, multi::extensions_t<0>{}} == 3. ));
+		BOOST_REQUIRE((  multi::array_ptr{&d3, multi::extensions_t<0>{}} == multi::array_ptr<double, 0>(&d3, {}) ));
 		#endif
 	}
 #if 0

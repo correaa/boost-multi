@@ -34,15 +34,15 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section){
 #endif
 #endif
 	{
-		BOOST_REQUIRE( A({0, 10}, {0, 20}, {0, 30}, {0, 40}).dimensionality == 4 );
-		BOOST_REQUIRE( A( 5, {0, 20}, {0, 30}, {0, 40}).dimensionality == 3 );
-		BOOST_REQUIRE( A({0, 10}, 10, {0, 30}, {0, 40}).dimensionality == 3 );
-		BOOST_REQUIRE( A({0, 10}, {0, 20}, 15, {0, 40}).dimensionality == 3 );
-		BOOST_REQUIRE( A({0, 10}, {0, 20}, {0, 30}, 20).dimensionality == 3 );
+		static_assert( decltype( A({0, 10}, {0, 20}, {0, 30}, {0, 40}) )::rank_v == 4 , "!");
+		static_assert( decltype( A(      5, {0, 20}, {0, 30}, {0, 40}) )::rank_v == 3 , "!");
+		static_assert( decltype( A({0, 10},      10, {0, 30}, {0, 40}) )::rank_v == 3 , "!");
+		static_assert( decltype( A({0, 10}, {0, 20},      15, {0, 40}) )::rank_v == 3 , "!");
+		static_assert( decltype( A({0, 10}, {0, 20}, {0, 30},      20) )::rank_v == 3 , "!");
 
-		BOOST_REQUIRE( A( 5, 6, {0, 30}, {0, 40}).dimensionality == 2 );
-		BOOST_REQUIRE( A({0, 10}, 6, 15, {0, 40}).dimensionality == 2 );
-		BOOST_REQUIRE( A({0, 10}, {0, 20},15, 20).dimensionality == 2 );
+		static_assert( decltype( A(      5,       6, {0, 30}, {0, 40}) )::rank_v == 2 , "!");
+		static_assert( decltype( A({0, 10},       6,      15, {0, 40}) )::rank_v == 2 , "!");
+		static_assert( decltype( A({0, 10}, {0, 20},      15,      20) )::rank_v == 2 , "!");
 	}
 	{
 		auto&& all = A({0, 10}, {0, 20}, {0, 30}, {0, 40});

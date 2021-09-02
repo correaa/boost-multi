@@ -43,9 +43,9 @@ decltype(auto) transposed(A&& a){return rotated(std::forward<A>(a));}
 namespace operators{
 
 MAYBE_UNUSED constexpr static struct {
-	template<class A, std::enable_if_t<std::decay_t<A>::dimensionality == 2, int> =0>
+	template<class A, std::enable_if_t<std::decay_t<A>::rank_v == 2, int> =0>
 	decltype(auto) operator()(A&& a) const{return hermitized(std::forward<A>(a));}
-	template<class A, std::enable_if_t<std::decay_t<A>::dimensionality == 1, int> =0>
+	template<class A, std::enable_if_t<std::decay_t<A>::rank_v == 1, int> =0>
 	[[deprecated("use blas::C instead of blas::H for conjugated vectors to avoid confusions")]]
 	decltype(auto) operator()(A&& a) const{return blas::conj(std::forward<A>(a));}
 } H;
@@ -58,9 +58,9 @@ auto operator^(A&& a, Op op)
 
 using operators::H;
 
-template<class A, std::enable_if_t<std::decay_t<A>::dimensionality == 1, int> =0> 
+template<class A, std::enable_if_t<std::decay_t<A>::rank_v == 1, int> =0> 
 decltype(auto) C(A&& a){return blas::conj(std::forward<A>(a));}
-template<class A, std::enable_if_t<std::decay_t<A>::dimensionality == 2, int> =0> 
+template<class A, std::enable_if_t<std::decay_t<A>::rank_v == 2, int> =0> 
 decltype(auto) C(A&& a){return hermitized(std::forward<A>(a));}
 
 namespace operators{
