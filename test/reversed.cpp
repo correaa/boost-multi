@@ -13,9 +13,9 @@ namespace multi = boost::multi;
 BOOST_AUTO_TEST_CASE(multi_reversed_3d){
 
 	multi::array<double, 3> A({30, 40, 50});
-	
+
 	BOOST_TEST_REQUIRE( A.reversed().size() == 50 );
-	
+
 	BOOST_REQUIRE( & A.reversed()[3][5][7] == &A[7][5][3] );
 
 }
@@ -33,9 +33,9 @@ auto partitioned_last(Array&& arr, std::size_t n){
 BOOST_AUTO_TEST_CASE(multi_reversed_4d){
 
 	multi::array<double, 4> A({13, 5, 7, 11});
-	
+
 	BOOST_TEST_REQUIRE( A.reversed().size() == 11 );
-	
+
 	BOOST_REQUIRE( &A.reversed()[1][2][3][4] == &A[4][3][2][1] );
 
 	BOOST_REQUIRE( sizes(A.reversed().transposed().flatted().reversed()) == std::make_tuple(13, 5, 77) );
@@ -51,9 +51,9 @@ BOOST_AUTO_TEST_CASE(multi_reversed_4d){
 BOOST_AUTO_TEST_CASE(multi_reversed_4d_partition_last){
 
 	multi::array<double, 4> A({11, 5, 7, 12});
-	
+
 	BOOST_TEST_REQUIRE( A.reversed().size() == 12 );
-	
+
 	BOOST_REQUIRE( & A.reversed()[1][2][3][4] == &A[4][3][2][1] );
 
 	BOOST_REQUIRE( & A.reversed().partitioned(3).transposed().reversed()[1][2][3][0][1] == & A[1][2][3][1] );

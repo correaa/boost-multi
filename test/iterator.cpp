@@ -55,13 +55,13 @@ BOOST_AUTO_TEST_CASE(iterator_2d){
 		using iter = multi::array<double, 2>::iterator;
 		static_assert( std::is_same< iter::element   , double >{}, "!");
 		static_assert( std::is_same< iter::value_type, multi::array<double, 1> >{}, "!");
-		static_assert( std::is_same< iter::reference, multi::basic_array<double, 1>&&>{}, "!");
+		static_assert( std::is_same< iter::reference, multi::basic_array<double, 1>>{}, "!");
 		static_assert( std::is_same< iter::element_ptr, double*>{}, "!");
 
 		using citer = multi::array<double, 2>::const_iterator;
 		static_assert( std::is_same< citer::element   , double >{}, "!");
 		static_assert( std::is_same< citer::value_type, multi::array<double, 1> >{}, "!");
-		static_assert( std::is_same< citer::reference, multi::basic_array<double, 1, double const*>&&>{}, "!");
+		static_assert( std::is_same< citer::reference, multi::basic_array<double, 1, double const*>>{}, "!");
 		static_assert( std::is_same< citer::element_ptr, double const* >{}, "!");
 	}
 	{
@@ -202,5 +202,29 @@ BOOST_AUTO_TEST_CASE(index_range_iteration){
 	BOOST_REQUIRE( std::accumulate(begin(r), end(r), 0) == r.size()*(r.size()-1)/2 );
 
 	BOOST_REQUIRE( std::accumulate(begin(r), end(r), 0, [](auto&& acc, auto const& e){return acc + e*e*e;}) > 0 ); // sum of cubes
+}
+
+BOOST_AUTO_TEST_CASE(multi_reverse_iterator_1D){
+	multi::array<double, 1> V(100, 66.);
+	BOOST_REQUIRE( &V[99] == &*std::make_reverse_iterator(V.end()) );
+
+	auto rbegin = std::make_reverse_iterator(V.end());
+	rbegin += 100;
+	multi::array<double, 1>::iterator begin{rbegin.base()};
+	BOOST_REQUIRE( begin  == V.begin() );
+}
+
+BOOST_AUTO_TEST_CASE(multi_reverse_iterator_2D){
+	multi::array<double, 2> A = 
+		{
+			{  1.,   2.},
+			{ 10.,  20.},
+			{100., 200.}
+		}
+	;
+	BOOST_REQUIRE( (*A.begin())[1] == 2. );
+	auto rbegin = std::make_reverse_iterator(A.end());
+
+	BOOST_TEST( (*rbegin)[1] == 200. );
 }
 

@@ -130,8 +130,8 @@ class gemm_range;
 template<class Ext>
 struct gemm_reference{ // TODO implement this in terms of gemv_range
 	Ext x;
-	Ext const& extensions() const{return x;}
-	friend Ext const& extensions(gemm_reference const& self){return self.extensions();}
+	auto extensions() const -> Ext const&{return x;}
+	friend auto extensions(gemm_reference const& self) -> Ext const&{return self.extensions();}
 };
 
 template<class ContextPtr, class Scalar, class ItA, class ItB>
