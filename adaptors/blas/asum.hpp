@@ -2,7 +2,7 @@
 $CXXX $CXXFLAGS $0 -o $0x `pkg-config --cflags --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #endif
 // © Alfredo A. Correa 2019-2021
-// TODO make it work with thrust complex
+// TODO(correaa) : make it work with thrust complex
 
 #ifndef MULTI_ADAPTORS_BLAS_ASUM_HPP
 #define MULTI_ADAPTORS_BLAS_ASUM_HPP
@@ -31,8 +31,9 @@ auto asum(X1D const& x)
 ->decltype(asum(begin(x), end(x))){assert( not offset(x) );
 	return asum(begin(x), end(x));}
 
-}}
-}
+} // end namespace blas
+} // end namespace multi
+} // end namespace boost
 
 #if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 
