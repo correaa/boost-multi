@@ -43,7 +43,7 @@ try{
 		#define CTXT std::forward<Context>(ctxt)
 		if constexpr      (!is_conjugated<It2DA>{} and !is_conjugated<It2DB>{}){
 			if      (a_first->stride()==1 and b_first->stride()==1 and c_first->stride()==1){
-				;;;; if( a_count==1 and b_first->size()==1 ){CTXT.gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->size()  , base(a_first), a_first->size() , &beta, base(c_first), c_first->size()  );}
+				if     ( a_count==1 and b_first->size()==1 ){CTXT.gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->size()  , base(a_first), a_first->size() , &beta, base(c_first), c_first->size()  );}
 				else if( a_count==1                        ){CTXT.gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first->size()  );}
 				else                                        {CTXT.gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), base(a_first), a_first. stride(), &beta, base(c_first), c_first. stride());}
 			}else if(a_first->stride()==1 and b_first->stride()==1 and c_first. stride()==1){
@@ -56,7 +56,7 @@ try{
 				if  (a_count==1)        {CTXT.gemm('N', 'T', a_count, b_first->size(), a_first->size(), &alpha, base(a_first), a_first->stride(), base(b_first), a_first->size()  , &beta, base(c_first), b_first->size()  );}
 				else                    {CTXT.gemm('N', 'T', a_count, b_first->size(), a_first->size(), &alpha, base(a_first), a_first->stride(), base(b_first), b_first. stride(), &beta, base(c_first), c_first->stride());}
 			}else if(a_first->stride()==1 and b_first.stride()==1 and c_first. stride()==1){
-				;;;; if(a_count==1 and b_first->size()){CTXT.gemm('N', 'N', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->size()  , base(a_first), a_first->size()  , &beta, base(c_first), c_first->stride());}
+				if     (a_count==1 and b_first->size()){CTXT.gemm('N', 'N', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->size()  , base(a_first), a_first->size()  , &beta, base(c_first), c_first->stride());}
 				else if(a_count==1)                    {CTXT.gemm('N', 'T', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first->stride());}
 				else                                   {CTXT.gemm('N', 'T', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first.stride() , &beta, base(c_first), c_first->stride());}
 			}else if(a_first->stride()==1 and b_first. stride()==1 and c_first->stride()==1){
@@ -66,11 +66,12 @@ try{
 				                        {CTXT.gemm('N', 'N', c_first->size(), a_count, a_first->size(), &alpha, base(a_first), a_first->stride(), base(b_first), b_first->stride(), &beta, base(c_first), c_first->stride());}
 			}else if(a_first. stride()==1 and b_first.stride( )==1 and c_first->stride()==1){
 				                        {CTXT.gemm('T', 'T', a_count, c_first->size(), a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first->stride(), &beta, base(c_first), c_first. stride());}
-			}else assert(0);
+			}else{assert(0);}
 		}else if constexpr(!is_conjugated<It2DA>{} and  is_conjugated<It2DB>{}){
-			;;;;; if(a_first->stride()==1 and b_first->stride()==1 and c_first->stride()==1){
-				if(b_first->size()==1)  {CTXT.gemm('C', 'N', c_first->size(), a_count, a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first.stride());}
-				else                    {CTXT.gemm('C', 'N', c_first->size(), a_count, a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first.stride());}
+			if      (a_first->stride()==1 and b_first->stride()==1 and c_first->stride()==1){
+			// TODO(correaa) : check why these two branches are identical
+			/*	if(b_first->size()==1)*/{CTXT.gemm('C', 'N', c_first->size(), a_count, a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first.stride());}
+			/*	else                    {CTXT.gemm('C', 'N', c_first->size(), a_count, a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first.stride());}*/
 			}else if(a_first->stride()==1 and b_first. stride()==1 and c_first->stride()==1){
 				if  (a_count==1)        {CTXT.gemm('C', 'N', a_count, c_first->size(), a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first.stride());}
 				else                    {CTXT.gemm('C', 'N', c_first->size(), a_count, a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first.stride(), &beta, base(c_first), c_first.stride());}
@@ -80,16 +81,16 @@ try{
 				                        {CTXT.gemm('C', 'T', c_first->size(), a_count, a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first->stride(), &beta, base(c_first), c_first->stride());}
 			}else if(a_first. stride()==1 and b_first. stride()==1 and c_first->stride()==1){
 				                        {CTXT.gemm('C', 'T', a_count, c_first->size(), a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first->stride(), &beta, base(c_first), c_first. stride());}
-			}else assert(0);
+			}else{assert(0);}
 		}else if constexpr( is_conjugated<It2DA>{} and !is_conjugated<It2DB>{}){
-			;;;;; if(a_first. stride()==1 and b_first->stride()==1 and c_first->stride()==1){
+			if      (a_first. stride()==1 and b_first->stride()==1 and c_first->stride()==1){
 				if  (a_count==1)        {CTXT.gemm('N', 'C', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), underlying(base(a_first)), a_first->stride(), &beta, base(c_first), a_first->size()  );}
 				else                    {CTXT.gemm('N', 'C', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), underlying(base(a_first)), a_first->stride(), &beta, base(c_first), c_first.stride());}
-			}else assert(0);
+			}else                       {assert(0);}
 		}else if constexpr( is_conjugated<It2DA>{} and  is_conjugated<It2DB>{}){
-			;;;;; if(a_first. stride()==1 and b_first. stride()==1 and c_first->stride()==1){
+			if      (a_first. stride()==1 and b_first. stride()==1 and c_first->stride()==1){
 				                        {CTXT.gemm('C', 'C', a_count, c_first->size(), a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), underlying(base(a_first)), a_first->stride(), &beta, base(c_first), c_first. stride());}
-			}else assert(0);
+			}else                       {assert(0);}
 		}
 		#undef CTXT
 	}
@@ -105,7 +106,7 @@ try{
 	};
 }
 
-template<class It2DA, class Size, class It2DB, class It2DC, class Context = blas::context> // TODO automatic deduction of context
+template<class It2DA, class Size, class It2DB, class It2DC, class Context = blas::context> // TODO(correaa) automatic deduction of context
 auto gemm_n(typename It2DA::element alpha, It2DA a_first, Size a_count, It2DB b_first, typename It2DA::element beta, It2DC c_first)
 ->decltype(gemm_n(Context{}, alpha, a_first, a_count, b_first, beta, c_first)){
 	return gemm_n(Context{}, alpha, a_first, a_count, b_first, beta, c_first);}
@@ -113,7 +114,7 @@ auto gemm_n(typename It2DA::element alpha, It2DA a_first, Size a_count, It2DB b_
 template<class Context, class A, class B, class C>
 auto gemm(Context&& ctx, typename A::element alpha, A const& a, B const& b, typename A::element beta, C&& c) -> C&&{
 	assert( size( a) == size( c) );
-	if(not a.is_empty()) assert( size(~a) == size( b) );
+	if(not a.is_empty()){assert( size(~a) == size( b) );}
 	if constexpr(is_conjugated<C>{}){blas::gemm  (std::forward<Context>(ctx), conj(alpha), conj(a),           conj(b) , conj(beta), conj(c) );}
 	else                            {blas::gemm_n(std::forward<Context>(ctx),      alpha , begin(a), size(a), begin(b),      beta , begin(c));}
 	return std::forward<C>(c);
@@ -128,8 +129,10 @@ template<class ContextPtr, class Scalar, class ItA, class ItB, class DecayType>
 class gemm_range;
 
 template<class Ext>
-struct gemm_reference{ // TODO implement this in terms of gemv_range
+class gemm_reference{ // TODO(correaa) implement this in terms of gemv_range
 	Ext x;
+public:
+	explicit gemm_reference(Ext x_) : x{std::move(x_)}{}
 	auto extensions() const -> Ext const&{return x;}
 	friend auto extensions(gemm_reference const& self) -> Ext const&{return self.extensions();}
 };
@@ -146,7 +149,10 @@ class gemm_iterator{
 
 public:
 	gemm_iterator(gemm_iterator const&) = default;
+	gemm_iterator(gemm_iterator&&) noexcept = default;
 	~gemm_iterator() = default;
+	auto operator=(gemm_iterator&&) -> gemm_iterator& = delete;
+	auto operator=(gemm_iterator const&) -> gemm_iterator& = delete;
 
 	using difference_type = typename std::iterator_traits<ItA>::difference_type;
 	using value_type = typename std::iterator_traits<ItA>::value_type;
@@ -197,7 +203,7 @@ public:
 	friend auto uninitialized_copy(gemm_iterator const& first, gemm_iterator const& last, ItOut d_first){assert( first.s_ == last.s_ );
 		return uninitialized_copy_n(first, last - first, d_first);}
 
-	auto operator*() const -> reference{return {b_begin_->extensions()};}
+	auto operator*() const{return reference{b_begin_->extensions()};}
 };
 
 template<class ContextPtr, class Scalar, class ItA, class ItB, class DecayType>
