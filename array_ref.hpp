@@ -253,7 +253,7 @@ struct array_iterator :
 	using value_type = typename basic_array<element, D-1, element_ptr>::decay_type;
 
 	using pointer   = basic_array<element, D-1, element_ptr>*;
-	using reference = basic_array<element, D-1, element_ptr>&&;//Ref const&;
+	using reference = basic_array<element, D-1, element_ptr>;//&&;//Ref const&;
 //	using element_type = typename Ref::value_type;
 	using iterator_category = std::random_access_iterator_tag;
 
@@ -1162,10 +1162,10 @@ struct array_iterator<Element, 1, Ptr> :
 	array_iterator() = default;
 //	array_iterator(array_iterator const&) = default;
 
-	template<class Other, decltype(_implicit_cast<Ptr>(typename Other::pointer{}))* = nullptr>
+	template<class Other, decltype(_implicit_cast<Ptr>(typename Other::pointer{}))* = nullptr, decltype(std::declval<Other const&>().data_)* = nullptr>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
 	constexpr/*implct*/array_iterator(Other const& o) : data_{o.data_}, stride_{o.stride_}{} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to reproduce the implicitness of the argument
-	template<class Other, decltype(_explicit_cast<Ptr>(typename Other::pointer{}))* = nullptr> 
+	template<class Other, decltype(_explicit_cast<Ptr>(typename Other::pointer{}))* = nullptr, decltype(std::declval<Other const&>().data_)* = nullptr>
 	constexpr explicit array_iterator(Other const& o) : data_{o.data_}, stride_{o.stride_}{}
 
 	template<class, dimensionality_type, class> friend struct array_iterator;
