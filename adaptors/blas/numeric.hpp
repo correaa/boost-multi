@@ -230,11 +230,15 @@ template<class T> struct has_imag_mem : decltype(has_imag_mem_aux(std::declval<T
 
 template<class T> struct has_imag : std::integral_constant<bool, (has_imag_fun<T>{} or has_imag_mem<T>{})>{};
 
-template<class A = void> struct is_complex_array{// : std::integral_constant<bool, (has_imag_fun<A>{} or has_imag_mem<A>{})>{
-	template<class T> static auto _(T const& t) -> has_imag<T>;
-	constexpr operator bool() const{return decltype(_(*base(std::declval<A>()))){};}
-	template<class AA> constexpr auto operator()(AA&& /*unused*/){return _(*base(std::declval<A>()));}
-};
+template<class A = void> 
+struct is_complex_array : has_imag<std::decay_t<decltype(*base(std::declval<A>()))>>{};
+//	template<class T> static auto _(T const& t) -> has_imag<T>;
+//	constexpr explicit operator bool()      &{return decltype(_(*base(std::declval<A>()))){};}
+//	constexpr explicit operator bool()     &&{return decltype(_(*base(std::declval<A>()))){};}
+//	constexpr operator bool() const&{return decltype(_(*base(std::declval<A>()))){};}
+//	static constexpr bool value = decltype(_(*base(std::declval<A>()))){};
+//	template<class AA> constexpr auto operator()(AA&& /*unused*/){return _(*base(std::declval<A>()));}
+//};
 
 template<class V> struct is_complex : has_imag<V>{};
 
