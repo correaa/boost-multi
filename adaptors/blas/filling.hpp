@@ -1,10 +1,6 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXXX $CXXFLAGS $0 -o $0x `pkg-config --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x;exit
-#endif
-// © Alfredo A. Correa 2019-2020
-
-#ifndef MULTI_ADAPTORS_BLAS_FILLING_HPP
+#ifndef MULTI_ADAPTORS_BLAS_FILLING_HPP// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 #define MULTI_ADAPTORS_BLAS_FILLING_HPP
+// © Alfredo A. Correa 2019-2021
 
 #include "../../array_ref.hpp"
 
@@ -83,42 +79,5 @@ auto detect_triangular(A2D const& A) -> filling{
 } // end namespace blas
 } // end namespace multi
 } // end namespace boost
-
-#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
-
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi adaptors side"
-#define BOOST_TEST_DYN_LINK
-#include<boost/test/unit_test.hpp>
-
-#include "../../array.hpp"
-#include "../../utility.hpp"
-#include "../blas/nrm2.hpp"
-
-#include<complex>
-#include<cassert>
-#include<iostream>
-#include<numeric>
-#include<algorithm>
-
-using std::cout;
-
-template<class M> 
-decltype(auto) print(M const& C){
-	using boost::multi::size;
-	for(int i = 0; i != size(C); ++i){
-		for(int j = 0; j != size(C[i]); ++j) cout<< C[i][j] <<' ';
-		cout<<std::endl;
-	}
-	return cout<<"---"<<std::endl;
-}
-
-namespace multi = boost::multi;
-using complex = std::complex<double>;
-
-BOOST_AUTO_TEST_CASE(multi_adaptors_blas_side){
-	return;
-}
-
-#endif
 #endif
 
