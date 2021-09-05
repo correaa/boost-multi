@@ -92,8 +92,9 @@ public:
 	{
 		return a << self.operator decay_type();}
 	constexpr auto conj() const&{return adl_conj(operator decay_type());}
+
 	template<class T = void*>
-	friend constexpr auto imag(involuted const& self, T = nullptr)
+	friend constexpr auto imag(involuted const& self)
 	->decltype(adl_imag(std::declval<decay_type>())){
 		return adl_imag(self.operator decay_type());}
 };
@@ -108,7 +109,7 @@ template<class T, class F> involuted(T&&, F)->involuted<T const, F>;
 //class involuter;
 
 template<class It, class F>
-auto get_allocator(involuter<It, F> const& s);
+auto get_allocator(involuter<It, F> const& inv);
 
 template<class It, class F>
 auto default_allocator_of(involuter<It, F> const& iv){
@@ -116,10 +117,11 @@ auto default_allocator_of(involuter<It, F> const& iv){
 }
 
 template<class It, class F, class Reference>
-class involuter{// : public std::iterator_traits<It>{
+class involuter{
 	It it_; // [[no_unique_address]] 
 	F f_;
 	template<class, class, class> friend class involuter;
+
 public:
 	using difference_type = typename std::iterator_traits<It>::difference_type;
 	using value_type 	  = typename std::iterator_traits<It>::value_type;
@@ -130,13 +132,16 @@ public:
 	template<class U> using rebind = involuter<typename std::pointer_traits<It>::template rebind<U>, F>;
 
 	involuter() = default;
-	constexpr explicit involuter(It it, F f = {}) : it_{std::move(it)}, f_{std::move(f)}{}
-	involuter(involuter const& other) = default;
-//	template<class Other, > constexpr involuter(Other const& other) : it_{other.it_}, f_{other.f_}{}
+//	~involuter() = default;
+
+	constexpr explicit involuter(It it)      : it_{std::move(it)}, f_{}{}
+	constexpr explicit involuter(It it, F f) : it_{std::move(it)}, f_{std::move(f)}{}
+
+//	involuter(involuter const& other) = default;
 
 	template<class Other, decltype(_implicit_cast<It>(typename Other::underlying_type{}))* = nullptr> 
 	// cppcheck-suppress noExplicitConstructor
-	constexpr          involuter(Other const& o) : it_{o.it_}, f_{o.f_}{}
+	constexpr/*implct*/involuter(Other const& o) : it_{o.it_}, f_{o.f_}{} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : inherit implicit conversion of underlying type
 	template<class Other, decltype(_explicit_cast<It>(typename Other::underlying_type{}))* = nullptr> 
 	constexpr explicit involuter(Other const& o) : it_{o.it_}, f_{o.f_}{}
 
