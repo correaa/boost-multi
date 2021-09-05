@@ -60,14 +60,19 @@ public:
 	constexpr operator decay_type() &&{return f_(r_);}
 	constexpr auto operator*(decay_type const& other) const{return f_(r_)*other;}
 	constexpr decltype(auto) operator&()&&{return involuter<decltype(&std::declval<Ref>()), Involution>{&r_, f_};}
-	template<class DecayType>
-	constexpr auto operator=(DecayType&& other)&
-	->decltype(r_=f_(std::forward<DecayType>(other)), *this){
-		return r_=f_(std::forward<DecayType>(other)), *this;}
-	template<class DecayType>
-	constexpr auto operator=(DecayType&& other)&&
-	->decltype(r_=f_(std::forward<DecayType>(other)), *this){
-		return r_=f_(std::forward<DecayType>(other)), *this;}
+
+	template<class DecayType, class = decltype(std::declval<Ref&>() = (std::declval<Involution&>())(std::declval<DecayType&&>()))>
+	constexpr auto operator=(DecayType&& other)& -> involuted&{
+		r_=f_(std::forward<DecayType>(other));
+		return *this;
+	}
+
+	template<class DecayType, class = decltype(std::declval<Ref&>() = (std::declval<Involution&>())(std::declval<DecayType&&>()))>
+	constexpr auto operator=(DecayType&& other)&& -> involuted&{
+		r_=f_(std::forward<DecayType>(other));
+		return *this;
+	}
+
 	template<class DecayType>
 	constexpr auto operator==(DecayType&& other) const
 	->decltype(this->operator decay_type()==other){
@@ -87,7 +92,7 @@ public:
 	friend constexpr auto operator!=(DecayType&& other, involuted const& self){
 		return other != self.operator decay_type();}
 //	auto imag() const{return static_cast<decay_type>(*this).imag();}
-	template<class Any> friend constexpr Any& operator<<(Any&& a, involuted const& self)
+	template<class Any> friend constexpr auto operator<<(Any&& a, involuted const& self) -> Any&
 //	->decltype(a << self.operator decay_type())
 	{
 		return a << self.operator decay_type();}
