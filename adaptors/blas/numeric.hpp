@@ -55,11 +55,15 @@ public:
 	involuted(involuted const&) = delete;
 	involuted(involuted&&) = default; // for C++14
 	constexpr decay_type decay() const&{return f_(r_);}
-	constexpr operator decay_type() &{return f_(r_);}
-	constexpr operator decay_type() const&{return f_(r_);}
-	constexpr operator decay_type() &&{return f_(r_);}
+
+	constexpr explicit operator decay_type()      &{return f_(r_);}
+	constexpr explicit operator decay_type() const&{return f_(r_);}
+	constexpr explicit operator decay_type()     &&{return f_(r_);}
+
 	constexpr auto operator*(decay_type const& other) const{return f_(r_)*other;}
-	constexpr decltype(auto) operator&()&&{return involuter<decltype(&std::declval<Ref>()), Involution>{&r_, f_};}
+	constexpr auto operator&()&& -> decltype(auto){ // NOLINT(google-runtime-operator) : reference-like object
+		return involuter<decltype(&std::declval<Ref>()), Involution>{&r_, f_};
+	}
 
 	template<class DecayType, class = decltype(std::declval<Ref&>() = (std::declval<Involution&>())(std::declval<DecayType&&>()))>
 	constexpr auto operator=(DecayType&& other)& -> involuted&{
