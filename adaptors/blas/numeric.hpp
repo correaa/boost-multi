@@ -4,9 +4,10 @@
 #ifndef MULTI_ADAPTORS_BLAS_NUMERIC_HPP
 #define MULTI_ADAPTORS_BLAS_NUMERIC_HPP
 
-#include "../../memory/pointer_traits.hpp"
 #include "../../array_ref.hpp"
 #include "../../complex.hpp"
+
+#include "../../memory/pointer_traits.hpp"
 
 #include "numeric/is_complex.hpp"
 
@@ -44,17 +45,26 @@ template<class It, class F, class Reference = involuted<typename std::iterator_t
 
 template<class Ref, class Involution>
 class involuted{
-protected:
 	Ref r_; // [[no_unique_address]] 
 	Involution f_;
+
 public:
 	using decay_type =std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
-	constexpr explicit involuted(Ref r, Involution f = {}) : r_{std::forward<Ref>(r)}, f_{f}{}
-	involuted& operator=(involuted const& other)=delete;//{r_ = other.r_; return *this;}
-public:
+
+	constexpr explicit involuted(Ref r, Involution f) : r_{std::forward<Ref>(r)}, f_{f}{}
+	constexpr explicit involuted(Ref r) : r_{std::forward<Ref>(r)}, f_{}{}
+
+	auto operator=(involuted const& other) -> involuted& = delete;
+
+	~involuted() = default;
 	involuted(involuted const&) = delete;
-	involuted(involuted&&) = default; // for C++14
-	constexpr decay_type decay() const&{return f_(r_);}
+	involuted(involuted&&) noexcept = default; // for C++14
+	auto operator=(involuted&& other) noexcept -> involuted&{
+		r_ = std::move(other.r_);
+		return *this;
+	}
+
+	constexpr auto decay() const& -> decay_type{return f_(r_);}
 
 	constexpr explicit operator decay_type()      &{return f_(r_);}
 	constexpr explicit operator decay_type() const&{return f_(r_);}
