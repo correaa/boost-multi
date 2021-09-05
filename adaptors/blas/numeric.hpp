@@ -134,18 +134,18 @@ public:
 	involuter(involuter const& other) = default;
 //	template<class Other, > constexpr involuter(Other const& other) : it_{other.it_}, f_{other.f_}{}
 
-	template<class Other, typename = decltype(_implicit_cast<It>(typename Other::underlying_type{}))> 
+	template<class Other, decltype(_implicit_cast<It>(typename Other::underlying_type{}))* = nullptr> 
 	// cppcheck-suppress noExplicitConstructor
 	constexpr          involuter(Other const& o) : it_{o.it_}, f_{o.f_}{}
-	template<class Other, typename = decltype(_explicit_cast<It>(typename Other::underlying_type{}))> 
-	constexpr explicit involuter(Other const& o, int = 0) : it_{o.it_}, f_{o.f_}{}
+	template<class Other, decltype(_explicit_cast<It>(typename Other::underlying_type{}))* = nullptr> 
+	constexpr explicit involuter(Other const& o) : it_{o.it_}, f_{o.f_}{}
 
 	constexpr auto operator*() const {return reference{*it_, f_};}
 
 	auto operator==(involuter const& o) const -> bool{return it_==o.it_;}
 	auto operator!=(involuter const& o) const -> bool{return it_!=o.it_;}
 
-	constexpr involuter& operator+=(typename involuter::difference_type n){it_+=n; return *this;}
+	constexpr auto operator+=(typename involuter::difference_type n) -> involuter&{it_+=n; return *this;}
 	constexpr auto operator+(typename involuter::difference_type n) const{return involuter{it_+n, f_};}
 	auto operator-(involuter const& other) const{return it_ - other.it_;}
 	explicit operator bool() const{return it_;}
@@ -176,7 +176,7 @@ template<class It>  using negater = involuter<It, std::negate<>>;
 #if 1
 struct conjugate{
 	template<class T>
-	decltype(auto) operator()(T&& a) const{
+	auto operator()(T&& a) const -> decltype(auto){
 	//	using std::conj; /*for doubles?*/ 
 	//	using std::conj;
 	//	std::complex<double> A = static_cast<std::complex<double>>(a);
@@ -206,10 +206,10 @@ template<class T> struct has_imag_mem : decltype(has_imag_mem_aux(std::declval<T
 
 template<class T> struct has_imag : std::integral_constant<bool, (has_imag_fun<T>{} or has_imag_mem<T>{})>{};
 
-template<class A = void> struct is_complex_array{
+template<class A = void> struct is_complex_array{// : std::integral_constant<bool, (has_imag_fun<A>{} or has_imag_mem<A>{})>{
 	template<class T> static auto _(T const& t) -> has_imag<T>;
 	constexpr operator bool() const{return decltype(_(*base(std::declval<A>()))){};}
-//	template<class AA> constexpr auto operator()(AA&& /*unused*/){return _(*base(std::declval<AA>()));}
+	template<class AA> constexpr auto operator()(AA&& /*unused*/){return _(*base(std::declval<A>()));}
 };
 
 template<class V> struct is_complex : has_imag<V>{};
