@@ -6,9 +6,10 @@ $CXXX $CXXFLAGS $0 -o $0x `pkg-config --libs blas` -lboost_unit_test_framework&&
 #ifndef MULTI_ADAPTORS_BLAS_FILLING_HPP
 #define MULTI_ADAPTORS_BLAS_FILLING_HPP
 
+#include "../../array_ref.hpp"
+
 #include    "../blas/core.hpp"
 #include    "../blas/operations.hpp"
-#include "../../array_ref.hpp"
 
 namespace boost{
 namespace multi{
@@ -22,53 +23,53 @@ enum class filling : char{
 MAYBE_UNUSED static constexpr filling U = filling::upper;
 MAYBE_UNUSED static constexpr filling L = filling::lower;
 
-filling flip(filling side){
+inline auto flip(filling side) -> filling{
 	switch(side){
 		case filling::lower: return filling::upper;
 		case filling::upper: return filling::lower;
 	} __builtin_unreachable();
 }
 
-filling operator-(filling side){return flip(side);}
-filling operator+(filling side){return side;}
+inline auto operator-(filling side) -> filling{return flip(side);}
+inline auto operator+(filling side) -> filling{return side;}
 
 template<class A2D, std::enable_if_t<is_conjugated<A2D>{}, int> =0>
-filling detect_triangular_aux(A2D const& A, std::false_type){
+auto detect_triangular_aux(A2D const& A, std::false_type /*false*/) -> filling{
 	{
 		for(auto i = size(A); i != 0; --i){
 			auto const asum_up = blas::asum(begin(A[i-1])+i, end(A[i-1]));
-			if(asum_up!=asum_up) return filling::lower;
-			else if(asum_up!=0.) return filling::upper;
+			if(asum_up !=asum_up){return filling::lower;}
+			if(asum_up !=0.     ){return filling::upper;}
 
 			auto const asum_lo = blas::asum(begin(rotated(A)[i-1])+i, end(rotated(A)[i-1]));
-			if(asum_lo!=asum_lo) return filling::upper;
-			else if(asum_lo!=0.) return filling::lower;
+			if(asum_lo != asum_lo){return filling::upper;}
+			if(asum_lo != 0.     ){return filling::lower;}
 		}
 	}
 	return filling::lower;
 }
 
 template<class A2D>
-filling detect_triangular(A2D const& A);
+auto detect_triangular(A2D const& A) -> filling;
 
 template<class A2D, std::enable_if_t<is_conjugated<A2D>{}, int> =0>
-filling detect_triangular_aux(A2D const& A){
+auto detect_triangular_aux(A2D const& A) -> filling{
 	return flip(detect_triangular(hermitized(A)));
 }
 
 template<class A2D>
-filling detect_triangular(A2D const& A){
+auto detect_triangular(A2D const& A) -> filling{
 #if defined(__cpp_if_constexpr)
 	if constexpr(not is_conjugated<A2D>{}){
 		using blas::asum;
 		for(auto i = size(A); i != 0; --i){
 			auto const asum_up = asum(A[i-1]({i, A[i-1].size()}));
-			if(asum_up!=asum_up) return filling::lower;
-			else if(asum_up!=0.) return filling::upper;
+			if(asum_up!=asum_up){return filling::lower;}
+			if(asum_up!=0.     ){return filling::upper;}
 
 			auto const asum_lo = asum(rotated(A)[i-1]({i, rotated(A)[i-1].size()}));
-			if(asum_lo!=asum_lo) return filling::upper;
-			else if(asum_lo!=0.) return filling::lower;
+			if(asum_lo!=asum_lo){return filling::upper;}
+			if(asum_lo!=0.     ){return filling::lower;}
 		}
 	}else{
 		return flip(detect_triangular(hermitized(A)));
@@ -79,9 +80,9 @@ filling detect_triangular(A2D const& A){
 #endif
 }
 
-}}
-
-}
+} // end namespace blas
+} // end namespace multi
+} // end namespace boost
 
 #if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 
