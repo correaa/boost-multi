@@ -19,8 +19,8 @@ namespace multi{namespace blas{
 using core::syrk;
 
 template<typename AA, typename BB, class A2D, class C2D>
-auto syrk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c)
-->decltype(syrk('\0', '\0', size(c), size(a), alpha, base(a), stride(rotated(a)), beta, base(c), stride(c)), std::forward<C2D>(c)){
+auto syrk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c){
+//->decltype(syrk('\0', '\0', size(c), size(a), alpha, base(a), stride(rotated(a)), beta, base(c), stride(c)), std::forward<C2D>(c)){
 	assert( size(c) == size(rotated(c)) );
 	if(stride(a)==1){
 		if(stride(c)==1){syrk(flip(c_side)==filling::upper?'L':'U', 'N', size(c), size(a         ), alpha, base(a), stride(rotated(a)), beta, base(c), stride(rotated(c)));}
