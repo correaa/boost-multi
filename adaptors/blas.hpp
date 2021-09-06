@@ -12,7 +12,7 @@ $CXXX $CXXFLAGS $0 -o $0x `pkg-config --libs blas` -lboost_unit_test_framework&&
 #include "../adaptors/blas/dot.hpp"
 #include "../adaptors/blas/gemm.hpp"
 #include "../adaptors/blas/gemv.hpp"
-#include "../adaptors/blas/ger.hpp"
+//#include "../adaptors/blas/ger.hpp"
 #include "../adaptors/blas/herk.hpp"
 #include "../adaptors/blas/iamax.hpp"
 #include "../adaptors/blas/nrm2.hpp"
