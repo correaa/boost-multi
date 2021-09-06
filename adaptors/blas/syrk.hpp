@@ -23,11 +23,11 @@ auto syrk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c){
 //->decltype(syrk('\0', '\0', size(c), size(a), alpha, base(a), stride(rotated(a)), beta, base(c), stride(c)), std::forward<C2D>(c)){
 	assert( size(c) == size(rotated(c)) );
 	if(stride(a)==1){
-		if(stride(c)==1){syrk(flip(c_side)==filling::upper?'L':'U', 'N', size(c), size(a         ), alpha, base(a), stride(rotated(a)), beta, base(c), stride(rotated(c)));}
-		else            {syrk(c_side      ==filling::upper?'L':'U', 'N', size(c), size(rotated(a)), alpha, base(a), stride(rotated(a)), beta, base(c), stride(        c ));}
+		if(stride(c)==1){syrk(flip(c_side)==filling::upper?'L':'U', 'N', size(c), size(a         ), &alpha, base(a), stride(rotated(a)), &beta, base(c), stride(rotated(c)));}
+		else            {syrk(c_side      ==filling::upper?'L':'U', 'N', size(c), size(rotated(a)), &alpha, base(a), stride(rotated(a)), &beta, base(c), stride(        c ));}
 	}else{
-		if(stride(c)==1){syrk(flip(c_side)==filling::upper?'L':'U', 'T', size(c), size(rotated(a)), alpha, base(a), stride(a), beta, base(c), stride(rotated(c)));}
-		else            {syrk(c_side      ==filling::upper?'L':'U', 'T', size(c), size(rotated(a)), alpha, base(a), stride(a), beta, base(c), stride(        c ));}
+		if(stride(c)==1){syrk(flip(c_side)==filling::upper?'L':'U', 'T', size(c), size(rotated(a)), &alpha, base(a), stride(a), &beta, base(c), stride(rotated(c)));}
+		else            {syrk(c_side      ==filling::upper?'L':'U', 'T', size(c), size(rotated(a)), &alpha, base(a), stride(a), &beta, base(c), stride(        c ));}
 	}
 	return std::forward<C2D>(c);
 }
