@@ -91,8 +91,8 @@ static_assert(sizeof(INT)==32/8 or sizeof(INT)==64/8, "please set _BLAS_INT to i
 #define xROTM(T)          v BLAS(   T##rotm )(N, T* x, INCX, T* y, INCY, T const(&p)[5])
 #define xSWAP(T)          v T ##swap##_ (N,              T       *x, INCX, T       *y, INCY)
 #define xSCAL(TT, TA, TX) v TT##scal##_ (N, TA const& a, TX      *x, INCX                  )
-#define xCOPY(T)          v T ##copy##_ (N,              T const *x, INCX, T       *y, INCY) 
-#define xAXPY(T)          v T ##axpy##_ (N,  T const* a, T const *x, INCX, T       *y, INCY)
+#define xCOPY(T)          v T ##copy##_ (N,              T const *x, INCX, T       *y, INCY)               // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xAXPY(T)          v T ##axpy##_ (N,  T const* a, T const *x, INCX, T       *y, INCY)               // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
 #define xDOT(R, TT, T)    auto BLAS(  TT##dot  )(N,              T const *x, INCX, T const *y, INCY) -> R
 // PGI/NVC++ compiler uses a blas version that needs -DRETURN_BY_STACK
 #if defined(RETURN_BY_STACK) || (defined(FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID) && FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID)
@@ -133,11 +133,11 @@ IxAMAX(s); IxAMAX(d); IxAMAX(c); IxAMAX(z);
 #define UPLO const char& uplo
 #define DIAG const char& diag
 
-#define xGEMV(T) void  T## gemv ##_ (      TRANS,       NR, NC, T const& a, T const* A, LDA, T const* X, INCX, T const& beta, T*       Y, INCY           )
-#define xGER(T)  void  T## ger  ##_ (                   NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA)
-#define xGERU(T) void  T## geru ##_ (                   NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA)
-#define xGERC(T) void  T## gerc ##_ (                   NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA)
-#define xTRSV(T) void  T## trsv ##_ (UPLO, TRANS, DIAG, N,                  T const* A, LDA, T* X      , INCX                                            )
+#define xGEMV(T) void  T## gemv ##_ (      TRANS,       NR, NC, T const& a, T const* A, LDA, T const* X, INCX, T const& beta, T*       Y, INCY           ) // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xGER(T)  void  T## ger  ##_ (                   NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA) // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xGERU(T) void  T## geru ##_ (                   NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA) // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xGERC(T) void  T## gerc ##_ (                   NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA) // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xTRSV(T) void  T## trsv ##_ (UPLO, TRANS, DIAG, N,                  T const* A, LDA, T* X      , INCX                                            ) // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
 
 xGEMV(s); xGEMV(d); xGEMV(c); xGEMV(z);
 xGER(s); xGER(d);
@@ -154,8 +154,8 @@ xTRSV(s); xTRSV(d); xTRSV(c); xTRSV(z);
 #define SIDE const char& side
 
 #define xGEMM(T)     void T ##gemm ##_ (            TRANSA, TRANSB,       NR, NC, NK, T  const& a, T const* A, LDA, T const* B, LDB, T  const& b     , T const* CC, LDC)
-#define xSYRK(T)     void T ##syrk ##_ (      UPLO, TRANSA,               NR, NK,     T  const& a, T const* A, LDA,                  T  const& b     , T*       CC, LDC)
-#define xHERK(TT, T) void T ##herk ##_ (      UPLO, TRANSA,               NR, NK,     TT const& a, T const* A, LDA,                  TT const& b     , T*       CC, LDC)
+#define xSYRK(T)     void T ##syrk ##_ (      UPLO, TRANSA,               NR, NK,     T  const& a, T const* A, LDA,                  T  const& b     , T*       CC, LDC) // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xHERK(TT, T) void T ##herk ##_ (      UPLO, TRANSA,               NR, NK,     TT const& a, T const* A, LDA,                  TT const& b     , T*       CC, LDC) // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
 #define xTRSM(T)     void T ##trsm ##_ (SIDE, UPLO, TRANSA,         DIAG, NR, NK,     T  const& a, T const* A, LDA,                  T  const* B, LDB                  )
 
 xGEMM(s); xGEMM(d); xGEMM(c)   ; xGEMM(z)   ;
@@ -250,12 +250,12 @@ namespace{
 
 #define BC(x) [](auto xx){assert(xx>=std::numeric_limits<INT>::min() and xx<std::numeric_limits<INT>::max()); return xx;}(x)
 
-#define xrotg(T1, T2)                       v   rotg (T1 const& a, T1 const& b, T2& cc, T1& ss                                       ){     BLAS(T1##rotg )(const_cast<T1*>(&a), const_cast<T1*>(&b), &cc, &ss);  }
-#define xrotmg(T)                           v   rotmg(T& d1, T& d2, T& A, T const& B, T(&p)[5]                                       ){     BLAS( T##rotmg)(&d1, &d2, &A, B, p);                                  }
-#define xrot(T, TT, CS)   template<class S> v   rot  (S n,       T       *x, S incx, T       *y, S incy, CS const& cos, CS const& sin){     BLAS(TT##rot  )(BC(n),    x, BC(incx), y, BC(incy), cos, sin);    }
-#define xrotm(T)          template<class S> v   rotm (S n,       T       *x, S incx, T       *y, S incy, T const(&p)[5]              ){     BLAS( T##rotm )(BC(n),    x, BC(incx), y, BC(incy), p);               }
-#define xswap(T)          template<class S> v   swap (S n,       T       *x, S incx, T       *y, S incy                              ){     BLAS( T##swap )(BC(n),    x, BC(incx), y, BC(incy));                  }
-#define xscal(XX, TA, TX) template<class S> TX* scal (INT n, TA const* a, TX       *x, S incx                                        ){     BLAS(XX##scal )(BC(n), *a, x, BC(incx)             ); return x+n*incx;}
+//#define xrotg(T1, T2)                       v   rotg (T1 const& a, T1 const& b, T2& cc, T1& ss                                       ){     BLAS(T1##rotg )(const_cast<T1*>(&a), const_cast<T1*>(&b), &cc, &ss);  }
+//#define xrotmg(T)                           v   rotmg(T& d1, T& d2, T& A, T const& B, T(&p)[5]                                       ){     BLAS( T##rotmg)(&d1, &d2, &A, B, p);                                  }
+//#define xrot(T, TT, CS)   template<class S> v   rot  (S n,       T       *x, S incx, T       *y, S incy, CS const& cos, CS const& sin){     BLAS(TT##rot  )(BC(n),    x, BC(incx), y, BC(incy), cos, sin);    }
+//#define xrotm(T)          template<class S> v   rotm (S n,       T       *x, S incx, T       *y, S incy, T const(&p)[5]              ){     BLAS( T##rotm )(BC(n),    x, BC(incx), y, BC(incy), p);               }
+//#define xswap(T)          template<class S> v   swap (S n,       T       *x, S incx, T       *y, S incy                              ){     BLAS( T##swap )(BC(n),    x, BC(incx), y, BC(incy));                  }
+//#define xscal(XX, TA, TX) template<class S> TX* scal (INT n, TA const* a, TX       *x, S incx                                        ){     BLAS(XX##scal )(BC(n), *a, x, BC(incx)             ); return x+n*incx;}
 //#define xcopy(T)          v   copy (INT n,              T  const *x, INT incx, T       *y, INT incy                              ){     BLAS( T##copy )(BC(n),    x, BC(incx), y, BC(incy));                  }
 //#define xaxpy(T)          template<class S> T*  axpy (S n, T  a, T const *x, S incx, T       *y, S incy                          ){     BLAS( T##axpy )(BC(n), a, x, BC(incx), y, BC(incy)); return y+n*incy; }
 #if 0
@@ -263,23 +263,34 @@ namespace{
 		MULTI_MARK_SCOPE("cpu_dot"); *r = BLAS(TT##dot  )(BC(n),    x, BC(incx), y, BC(incy));                  }
 #endif
 
-xrotg(s, s)    xrotg(d, d) //MKL extension xrotg(c, s); xrotg(z, d);
-xrotmg(s)      xrotmg(d)
-xrot(s, s, s)  xrot(d, d, d)  xrot(c, cs, s) xrot(z, zd, d)
-xrotm(s)       xrotm(d)
-xswap(s)       xswap(d)       xswap(c)       xswap(z)
+//xrotg(s, s)    xrotg(d, d) //MKL extension xrotg(c, s); xrotg(z, d);
+//xrotmg(s)      xrotmg(d)
+//xrot(s, s, s)  xrot(d, d, d)  xrot(c, cs, s) xrot(z, zd, d)
+//xrotm(s)       xrotm(d)
+//xswap(s)       xswap(d)       xswap(c)       xswap(z)
 
 namespace core{
 
-xscal(s, s, s) xscal(d, d, d) xscal(c, c, c) xscal(z, z, z) xscal(zd, d, z) xscal(cs, s, c)
+//xscal(s, s, s) xscal(d, d, d) xscal(c, c, c) xscal(z, z, z) xscal(zd, d, z) xscal(cs, s, c)
 
 using std::enable_if_t;
 using std::is_assignable;
+
+template<class SXP, class SYP, class SX = typename std::pointer_traits<SXP>::element_type, class SY = typename std::pointer_traits<SYP>::element_type, enable_if_t<is_s<SX>{} and is_s<SY>{} and is_assignable<SY&, SX&>{},int> =0> void swap(size_t n, SX* x, size_t incx, SY* y, size_t incy){BLAS(sswap)(n, (             float  *)(x), incx, (             float  *)(y), incy);}
+template<class DXP, class DYP, class DX = typename std::pointer_traits<DXP>::element_type, class DY = typename std::pointer_traits<DYP>::element_type, enable_if_t<is_d<DX>{} and is_d<DY>{} and is_assignable<DY&, DX&>{},int> =0> void swap(size_t n, DX* x, size_t incx, DY* y, size_t incy){BLAS(dswap)(n, (             double *)(x), incx, (             double *)(y), incy);}
+template<class CXP, class CYP, class CX = typename std::pointer_traits<CXP>::element_type, class CY = typename std::pointer_traits<CYP>::element_type, enable_if_t<is_c<CX>{} and is_c<CY>{} and is_assignable<CY&, CX&>{},int> =0> void swap(size_t n, CX* x, size_t incx, CY* y, size_t incy){BLAS(cswap)(n, (std::complex<float >*)(x), incx, (std::complex<float >*)(y), incy);}
+template<class ZXP, class ZYP, class ZX = typename std::pointer_traits<ZXP>::element_type, class ZY = typename std::pointer_traits<ZYP>::element_type, enable_if_t<is_z<ZX>{} and is_z<ZY>{} and is_assignable<ZY&, ZX&>{},int> =0> void swap(size_t n, ZX* x, size_t incx, ZY* y, size_t incy){BLAS(zswap)(n, (std::complex<double>*)(x), incx, (std::complex<double>*)(y), incy);}
 
 template<class SX, class SY, enable_if_t<is_s<SX>{} and is_s<SY>{} and is_assignable<SY&, SX&>{},int> =0> void copy(size_t n, SX* x, size_t incx, SY* y, size_t incy){BLAS(scopy)(n, (             float   const*)(x), incx, (             float  *)(y), incy);}
 template<class DX, class DY, enable_if_t<is_d<DX>{} and is_d<DY>{} and is_assignable<DY&, DX&>{},int> =0> void copy(size_t n, DX* x, size_t incx, DY* y, size_t incy){BLAS(dcopy)(n, (             double  const*)(x), incx, (             double *)(y), incy);}
 template<class CX, class CY, enable_if_t<is_c<CX>{} and is_c<CY>{} and is_assignable<CY&, CX&>{},int> =0> void copy(size_t n, CX* x, size_t incx, CY* y, size_t incy){BLAS(ccopy)(n, (std::complex<float > const*)(x), incx, (std::complex<float >*)(y), incy);}
 template<class ZX, class ZY, enable_if_t<is_z<ZX>{} and is_z<ZY>{} and is_assignable<ZY&, ZX&>{},int> =0> void copy(size_t n, ZX* x, size_t incx, ZY* y, size_t incy){BLAS(zcopy)(n, (std::complex<double> const*)(x), incx, (std::complex<double>*)(y), incy);}
+
+// TODO(correaa) : add mixed-type scal (zdscal, csscal)
+template<class ALPHAP, class SXP, class SX = typename std::pointer_traits<SXP>::element_type, class ALPHA = typename std::pointer_traits<ALPHAP>::element_type, enable_if_t<is_s<SX>{} and is_s<ALPHA>{} and is_assignable<SX&, decltype(*ALPHAP{}*SX{})>{}>* = nullptr> void scal(size_t n, ALPHAP a, SXP xp, ptrdiff_t incx){BLAS(sscal)(n, *(             float   const*)a, (             float  *)xp, incx);}
+template<class ALPHAP, class DXP, class DX = typename std::pointer_traits<DXP>::element_type, class ALPHA = typename std::pointer_traits<ALPHAP>::element_type, enable_if_t<is_d<DX>{} and is_d<ALPHA>{} and is_assignable<DX&, decltype(*ALPHAP{}*DX{})>{}>* = nullptr> void scal(size_t n, ALPHAP a, DXP xp, ptrdiff_t incx){BLAS(dscal)(n, *(             double  const*)a, (             double *)xp, incx);}
+template<class ALPHAP, class CXP, class CX = typename std::pointer_traits<CXP>::element_type, class ALPHA = typename std::pointer_traits<ALPHAP>::element_type, enable_if_t<is_c<CX>{} and is_c<ALPHA>{} and is_assignable<CX&, decltype(*ALPHAP{}*CX{})>{}>* = nullptr> void scal(size_t n, ALPHAP a, CXP xp, ptrdiff_t incx){BLAS(cscal)(n, *(std::complex<float > const*)a, (std::complex<float >*)xp, incx);}
+template<class ALPHAP, class ZXP, class ZX = typename std::pointer_traits<ZXP>::element_type, class ALPHA = typename std::pointer_traits<ALPHAP>::element_type, enable_if_t<is_z<ZX>{} and is_z<ALPHA>{} and is_assignable<ZX&, decltype(*ALPHAP{}*ZX{})>{}>* = nullptr> void scal(size_t n, ALPHAP a, ZXP xp, ptrdiff_t incx){BLAS(zscal)(n, *(std::complex<double> const*)a, (std::complex<double>*)xp, incx);}
 
 //xdot(s, s, s)  xdot(d, d, d)                                xdot(d, ds, s)
 
