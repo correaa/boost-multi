@@ -258,8 +258,10 @@ namespace{
 #define xscal(XX, TA, TX) template<class S> TX* scal (INT n, TA const* a, TX       *x, S incx                                        ){     BLAS(XX##scal )(BC(n), *a, x, BC(incx)             ); return x+n*incx;}
 //#define xcopy(T)          v   copy (INT n,              T  const *x, INT incx, T       *y, INT incy                              ){     BLAS( T##copy )(BC(n),    x, BC(incx), y, BC(incy));                  }
 //#define xaxpy(T)          template<class S> T*  axpy (S n, T  a, T const *x, S incx, T       *y, S incy                          ){     BLAS( T##axpy )(BC(n), a, x, BC(incx), y, BC(incy)); return y+n*incy; }
+#if 0
 #define xdot(R, TT, T)    template<class S> v   dot  (S n,       T const* x, S incx, T const* y, S incy, R* r                    ){\
 		MULTI_MARK_SCOPE("cpu_dot"); *r = BLAS(TT##dot  )(BC(n),    x, BC(incx), y, BC(incy));                  }
+#endif
 
 xrotg(s, s)    xrotg(d, d) //MKL extension xrotg(c, s); xrotg(z, d);
 xrotmg(s)      xrotmg(d)
@@ -273,12 +275,15 @@ xscal(s, s, s) xscal(d, d, d) xscal(c, c, c) xscal(z, z, z) xscal(zd, d, z) xsca
 
 using std::enable_if_t;
 using std::is_assignable;
+
 template<class SX, class SY, enable_if_t<is_s<SX>{} and is_s<SY>{} and is_assignable<SY&, SX&>{},int> =0> void copy(size_t n, SX* x, size_t incx, SY* y, size_t incy){BLAS(scopy)(n, (             float   const*)(x), incx, (             float  *)(y), incy);}
 template<class DX, class DY, enable_if_t<is_d<DX>{} and is_d<DY>{} and is_assignable<DY&, DX&>{},int> =0> void copy(size_t n, DX* x, size_t incx, DY* y, size_t incy){BLAS(dcopy)(n, (             double  const*)(x), incx, (             double *)(y), incy);}
 template<class CX, class CY, enable_if_t<is_c<CX>{} and is_c<CY>{} and is_assignable<CY&, CX&>{},int> =0> void copy(size_t n, CX* x, size_t incx, CY* y, size_t incy){BLAS(ccopy)(n, (std::complex<float > const*)(x), incx, (std::complex<float >*)(y), incy);}
 template<class ZX, class ZY, enable_if_t<is_z<ZX>{} and is_z<ZY>{} and is_assignable<ZY&, ZX&>{},int> =0> void copy(size_t n, ZX* x, size_t incx, ZY* y, size_t incy){BLAS(zcopy)(n, (std::complex<double> const*)(x), incx, (std::complex<double>*)(y), incy);}
 
-xdot(s, s, s)  xdot(d, d, d)                                xdot(d, ds, s)
+//xdot(s, s, s)  xdot(d, d, d)                                xdot(d, ds, s)
+
+//template<class SXP, class SYP, class SRP, enable_if_t<is_s<SX>{} and is_s<SY>{} and is_assignable<SY&, SX&>{}>* = nullptr> void dot(size_t n, SXP xp, ptrdiff_t incx, SYP yp, ptrdiff_t incy, RP rp
 
 using std::pointer_traits;
 using std::enable_if_t;
@@ -300,15 +305,15 @@ xaxpy(s)       xaxpy(d)       xaxpy(c)       xaxpy(z)
 
 } // end namespace core
 
-template<class R, class S, class T> R dot(S n, T const* x, S incx, T const* y, S incy){
-	R ret;
-	dot(n, x, incx, y, incy, &ret);
-	return ret;
-}
+//template<class R, class S, class T> R dot(S n, T const* x, S incx, T const* y, S incy){
+//	R ret;
+//	dot(n, x, incx, y, incy, &ret);
+//	return ret;
+//}
 
-template<class S, class T> T dot(S n, T const* x, S incx, T const* y, S incy){
-	return dot<T, S, T>(n, x, incx, y, incy);
-}
+//template<class S, class T> T dot(S n, T const* x, S incx, T const* y, S incy){
+//	return dot<T, S, T>(n, x, incx, y, incy);
+//}
 
 #undef xrotg
 #undef xrot
@@ -327,12 +332,18 @@ using std::is_assignable;
 
 // PGI/NVC++ compiler uses a blas version that needs -DRETURN_BY_STACK
 #if defined(RETURN_BY_STACK) || (defined(FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID) && FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID)
+template<class X, class Y, class R, enable_if_t<is_s<X>{} and is_s<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(sdot )((float *)r, n, (s const*)x, incx, (s const*)y, incy);}
+template<class X, class Y, class R, enable_if_t<is_d<X>{} and is_d<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(ddot )((double*)r, n, (d const*)x, incx, (d const*)y, incy);}
+
 template<class X, class Y, class R, enable_if_t<is_c<X>{} and is_c<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(cdotu)((Complex_float *)r, n, (c const*)x, incx, (c const*)y, incy);}
 template<class X, class Y, class R, enable_if_t<is_z<X>{} and is_z<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(zdotu)((Complex_double*)r, n, (z const*)x, incx, (z const*)y, incy);}
 
 template<class X, class Y, class R, enable_if_t<is_c<X>{} and is_c<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotc(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(cdotc)(reinterpret_cast<Complex_float *>(r), n, (c const*)x, incx, (c const*)y, incy);}
 template<class X, class Y, class R, enable_if_t<is_z<X>{} and is_z<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotc(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(zdotc)(reinterpret_cast<Complex_double*>(r), n, (z const*)x, incx, (z const*)y, incy);} // NOLINT(ppcoreguidelines-pro-type-reinterpret-cast) : adapt types
 #else
+template<class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_s<X>{} and is_s<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dot (size_t n, XP x, size_t incx, YP y, size_t incy, RP r){auto rr = BLAS(sdot )(n, (s const*)static_cast<X*>(x), incx, (s const*)static_cast<Y*>(y), incy); std::memcpy(reinterpret_cast<float *>(static_cast<R*>(r)), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*r));}
+template<class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_d<X>{} and is_d<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dot (size_t n, XP x, size_t incx, YP y, size_t incy, RP r){auto rr = BLAS(ddot )(n, (d const*)static_cast<X*>(x), incx, (d const*)static_cast<Y*>(y), incy); std::memcpy(reinterpret_cast<double*>(static_cast<R*>(r)), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*r));}
+
 template<class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_c<X>{} and is_c<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, XP x, size_t incx, YP y, size_t incy, RP r){auto rr = BLAS(cdotu)(n, (c const*)static_cast<X*>(x), incx, (c const*)static_cast<Y*>(y), incy); std::memcpy(reinterpret_cast<float (*)[2]>(static_cast<R*>(r)), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*r));}
 template<class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_z<X>{} and is_z<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, XP x, size_t incx, YP y, size_t incy, RP r){auto rr = BLAS(zdotu)(n, (z const*)static_cast<X*>(x), incx, (z const*)static_cast<Y*>(y), incy); std::memcpy(reinterpret_cast<double(*)[2]>(static_cast<R*>(r)), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*r));}
 
@@ -387,7 +398,7 @@ template<class XP, class X = typename std::pointer_traits<XP>::element_type, cla
 
 ///////////////////////////////////////////////////////////////////////////////
 // LEVEL2
-#define xgemv(T) template<class C, class S> v gemv(C trans, S m, S n, T const& a, T const* A, S lda, T const* X, S incx, T beta, T*       Y, S incy             ){BLAS(T##gemv)(trans, BC(m), BC(n), a, A, BC(lda), X, BC(incx), beta, Y, BC(incy)            );}
+//#define xgemv(T) template<class C, class S> v gemv(C trans, S m, S n, T const& a, T const* A, S lda, T const* X, S incx, T beta, T*       Y, S incy             ){BLAS(T##gemv)(trans, BC(m), BC(n), a, A, BC(lda), X, BC(incx), beta, Y, BC(incy)            );}
 //#define xger(T)  template<         class S> v ger (         S m, S n, T const& a,                    T const* X, S incx,         T const* Y, S incy, T* A, S lda){BLAS(T##ger )(       BC(m), BC(n), a,             X, BC(incx),       Y, BC(incy), A, BC(lda));}
 //                 template<         class S> v ger (         S m, S n, c const& a,                    c const* X, S incx,         c const* Y, S incy, c* A, S lda){BLAS(cgeru  )(       BC(m), BC(n), a,             X, BC(incx),       Y, BC(incy), A, BC(lda));}
 //                template<         class S> v ger (         S m, S n, z const& a,                    z const* X, S incx,         z const* Y, S incy, z* A, S lda){BLAS(zgeru  )(       BC(m), BC(n), a,             X, BC(incx),       Y, BC(incy), A, BC(lda));}
@@ -433,7 +444,7 @@ namespace core{
 	template<typename TconstP, typename TP, typename S=std::size_t, typename C=char> v trsv(C ulA, C transA, C diA, S n, TconstP A, S lda, TP X, S incx){blas2<std::decay_t<typename std::pointer_traits<TP>::element_type>>::trsv(ulA, transA, diA, n, A, lda, X, incx);}
 }
 
-#undef xgemv
+//#undef xgemv
 #undef xger
 #undef xgeru
 #undef xgerc
