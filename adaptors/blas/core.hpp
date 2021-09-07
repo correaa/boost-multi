@@ -6,16 +6,17 @@
 
 //#include <cblas/cblas.h> // consider being replaceable by cblas.h
 
-#include<iostream> // debug
+//#include<iostream> // debug
 #include<cassert>
 #include<complex>
 #include<cstdint> // int64_t
+#include<cstring> // std::memcpy
 #include<limits> // numeric_limits
 #include<type_traits> // is_convertible
-#include<cstring> // std::memcpy
+
+#include "../../config/MARK.hpp"
 
 #include "../blas/traits.hpp"
-#include "../../config/MARK.hpp"
 
 #if 0
 	#define MULTI_ASSERT1(ExpR)              assert       (ExpR)
@@ -38,9 +39,9 @@
 #define BLAS(NamE) NamE##_
 extern "C"{
 
-#ifndef _BLAS_INT
+#ifndef MULTI_BLAS_INT
 #if defined(__INTPTR_WIDTH__)
-	#define _BLAS_INT __INTPTR_WIDTH__
+	#define MULTI_BLAS_INT __INTPTR_WIDTH__
 #endif
 #endif
 
@@ -59,10 +60,10 @@ using Complex_double = struct { double real, imag; };
 #define C Complex_float // _Complex s
 #define Z Complex_double // _Complex d
 
-#if defined(_BLAS_INT)
-	#if   _BLAS_INT==32
+#if defined(MULTI_BLAS_INT)
+	#if   MULTI_BLAS_INT==32
 		#define INT int32_t
-	#elif _BLAS_INT==64
+	#elif MULTI_BLAS_INT==64
 		#define INT int64_t
 	#else
 		#define INT int32_t // 32bit safe? pesimistic?
@@ -81,7 +82,7 @@ namespace core{
 #define INCX INTEGER incx
 #define INCY INTEGER incy
 
-static_assert(sizeof(INT)==32/8 or sizeof(INT)==64/8, "please set _BLAS_INT to int32_t or int64_t");
+static_assert(sizeof(INT)==32/8 or sizeof(INT)==64/8, "please set MULTI_BLAS_INT to int32_t or int64_t");
 
 // TODO(correaa) indent declarations like here https://www.netlib.org/lapack/lug/node145.html
 
@@ -102,10 +103,10 @@ static_assert(sizeof(INT)==32/8 or sizeof(INT)==64/8, "please set _BLAS_INT to i
 #define xDOTU(R, T)       auto    T ##dotu##_ (    N,              T const *x, INCX, T const *y, INCY) -> R
 #define xDOTC(R, T)       auto    T ##dotc##_ (    N,              T const *x, INCX, T const *y, INCY) -> R
 #endif
-#define xxDOT(TT, T)      T    TT##dot ##_ (    N,  T const& a, T const *x, INCX, T const *y, INCY)
-#define xNRM2(R, TT, T)   R    TT##nrm2##_ (    N,              T const *x, INCX                  )
-#define xASUM(R, TT, T)   R    TT##asum##_ (    N,              T const *x, INCX                  )
-#define IxAMAX(T)       INT i##T ##amax##_ (    N,              T const* x, INCX                  )
+#define xxDOT(TT, T)    auto    TT##dot ##_ (    N,  T const& a, T const *x, INCX, T const *y, INCY) -> T
+#define xNRM2(R, TT, T) auto    TT##nrm2##_ (    N,              T const *x, INCX                  ) -> R
+#define xASUM(R, TT, T) auto    TT##asum##_ (    N,              T const *x, INCX                  ) -> R
+#define IxAMAX(T)       auto i##T ##amax##_ (    N,              T const* x, INCX                  ) -> INT
 
 xROTG(s, s)   ; xROTG(d,d)    ;// MKL extension xROTG(c, s); xROTG(z, d);
 xROTMG(s)     ; xROTMG(d)     ;
@@ -213,42 +214,42 @@ namespace boost{
 namespace multi{
 namespace blas{
 
-template<class T> struct complex_ptr{
-	std::complex<T>* impl_;
-	template<class TT, class=std::enable_if_t<sizeof(*TT{})==sizeof(std::complex<T>) and sizeof(*TT{})==sizeof(TT{}->real())+sizeof(TT{}->imag())>>
-	explicit complex_ptr(TT tt) : impl_{reinterpret_cast<std::complex<T>*>(tt)}{}
-	complex_ptr(complex_ptr const&) = delete;
-	operator std::complex<T>*() const{return   impl_;}
-	std::complex<T>& operator*() const{return *impl_;}
-};
+//template<class T> struct complex_ptr{
+//	std::complex<T>* impl_;
+//	template<class TT, class=std::enable_if_t<sizeof(*TT{})==sizeof(std::complex<T>) and sizeof(*TT{})==sizeof(TT{}->real())+sizeof(TT{}->imag())>>
+//	explicit complex_ptr(TT tt) : impl_{reinterpret_cast<std::complex<T>*>(tt)}{}
+//	complex_ptr(complex_ptr const&) = delete;
+//	operator std::complex<T>*() const{return   impl_;}
+//	std::complex<T>& operator*() const{return *impl_;}
+//};
 
-template<class T> struct complex_const_ptr{
-	std::complex<T> const* impl_;
-	template<class TT, class=std::enable_if_t<sizeof(*TT{})==sizeof(std::complex<T>) and sizeof(*TT{})==sizeof(TT{}->real())+sizeof(TT{}->imag())>>
-	explicit complex_const_ptr(TT tt) : impl_{reinterpret_cast<std::complex<T> const*>(tt)}{}
-	complex_const_ptr(complex_const_ptr const&) = delete;
-	operator std::complex<T> const*() const{return impl_;}
-	std::complex<T> const& operator*() const{return *impl_;}
-};
+//template<class T> struct complex_const_ptr{
+//	std::complex<T> const* impl_;
+//	template<class TT, class=std::enable_if_t<sizeof(*TT{})==sizeof(std::complex<T>) and sizeof(*TT{})==sizeof(TT{}->real())+sizeof(TT{}->imag())>>
+//	explicit complex_const_ptr(TT tt) : impl_{reinterpret_cast<std::complex<T> const*>(tt)}{} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+//	complex_const_ptr(complex_const_ptr const&) = delete;
+//	explicit operator std::complex<T> const*() const{return impl_;}
+//	auto operator*() const -> std::complex<T> const&{return *impl_;}
+//};
 
-template<class T> struct add_ptr{using type = T*;};
-template<class T> struct add_const_ptr{using type = T const*;};
+//template<class T> struct add_ptr{using type = T*;};
+//template<class T> struct add_const_ptr{using type = T const*;};
 
-template<class T> struct add_ptr<std::complex<T>>{using type = complex_ptr<T>;};
-template<class T> struct add_const_ptr<std::complex<T>>{using type = complex_const_ptr<T>;};
+//template<class T> struct add_ptr<std::complex<T>>{using type = complex_ptr<T>;};
+//template<class T> struct add_const_ptr<std::complex<T>>{using type = complex_const_ptr<T>;};
 
-template<class T> using add_ptr_t = typename add_ptr<T>::type;
-template<class T> using add_const_ptr_t = typename add_const_ptr<T>::type;
+//template<class T> using add_ptr_t = typename add_ptr<T>::type;
+//template<class T> using add_const_ptr_t = typename add_const_ptr<T>::type;
 
-namespace types{
+//namespace t{
 	using s = float;
 	using d = double;
-	using c = std::complex<s>; using C = Complex_float ;
-	using z = std::complex<d>; using Z = Complex_double;
+	using c = std::complex<s>; //using C = Complex_float ;
+	using z = std::complex<d>; //using Z = Complex_double;
 	using v = void;
-} // end namespace types
+//} // end namespace types
 
-using namespace types;
+//using namespace types;
 
 #define BC(x) [](auto xx){assert(xx>=std::numeric_limits<INT>::min() and xx<std::numeric_limits<INT>::max()); return xx;}(x)
 
