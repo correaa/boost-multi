@@ -83,16 +83,16 @@ namespace core{
 
 static_assert(sizeof(INT)==32/8 or sizeof(INT)==64/8, "please set _BLAS_INT to int32_t or int64_t");
 
-// TODO indent declarations like here https://www.netlib.org/lapack/lug/node145.html
+// TODO(correaa) indent declarations like here https://www.netlib.org/lapack/lug/node145.html
 
-#define xROTG(T1, T2)     v BLAS(   T1##rotg)(                           T1 const*, T1 const*, T2*, T1*)
-#define xROTMG(T)         v BLAS(   T##rotmg)(                           T*, T*, T*, T const&, T(&param)[5])
-#define xROT(TT, T, S)    v BLAS(  TT##rot  )(N,              T       *x, INCX, T       *y, INCY, S const&, S const&)
-#define xROTM(T)          v BLAS(   T##rotm )(N, T* x, INCX, T* y, INCY, T const(&p)[5])
-#define xSWAP(T)          v T ##swap##_ (N,              T       *x, INCX, T       *y, INCY)
-#define xSCAL(TT, TA, TX) v TT##scal##_ (N, TA const& a, TX      *x, INCX                  )
-#define xCOPY(T)          v T ##copy##_ (N,              T const *x, INCX, T       *y, INCY)               // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
-#define xAXPY(T)          v T ##axpy##_ (N,  T const* a, T const *x, INCX, T       *y, INCY)               // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xROTG(T1, T2)     v BLAS(   T1##rotg)(                           T1 const*, T1 const*, T2*, T1*)              // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xROTMG(T)         v BLAS(   T##rotmg)(                           T*, T*, T*, T const&, T(&param)[5])          // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xROT(TT, T, S)    v BLAS(  TT##rot  )(N,              T       *x, INCX, T       *y, INCY, S const&, S const&) // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xROTM(T)          v BLAS(   T##rotm )(N, T* x, INCX, T* y, INCY, T const(&p)[5])                              // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xSWAP(T)          v T ##swap##_ (N,              T       *x, INCX, T       *y, INCY)                          // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xSCAL(TT, TA, TX) v TT##scal##_ (N, TA const& a, TX      *x, INCX                  )                          // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xCOPY(T)          v T ##copy##_ (N,              T const *x, INCX, T       *y, INCY)                          // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xAXPY(T)          v T ##axpy##_ (N,  T const* a, T const *x, INCX, T       *y, INCY)                          // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
 #define xDOT(R, TT, T)    auto BLAS(  TT##dot  )(N,              T const *x, INCX, T const *y, INCY) -> R
 // PGI/NVC++ compiler uses a blas version that needs -DRETURN_BY_STACK
 #if defined(RETURN_BY_STACK) || (defined(FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID) && FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID)
