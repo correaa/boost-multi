@@ -70,8 +70,10 @@ public:
 //	dot_ptr(dot_ptr const&) = default;
 	template<class ItOut, class Size2>
 	friend constexpr auto copy_n(dot_ptr first, [[maybe_unused]] Size2 count, ItOut d_first)
-	->decltype(blas::dot_n(std::declval<ContextPtr>(), std::declval<ItX>(), Size{}      , std::declval<ItY>(), d_first), d_first + count){assert(count == 1);
-		return blas::dot_n(first.ctxt_               , first.x_first_     , first.count_, first.y_first_     , d_first), d_first + count;}
+	->decltype(blas::dot_n(std::declval<ContextPtr>(), std::declval<ItX>(), Size{}      , std::declval<ItY>(), d_first), d_first + count){
+		assert(count == 1); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+		return blas::dot_n(first.ctxt_               , first.x_first_     , first.count_, first.y_first_     , d_first), d_first + count;
+	}
 
 	template<class ItOut, class Size2>
 	friend constexpr auto uninitialized_copy_n(dot_ptr first, Size2 count, ItOut d_first)
@@ -85,7 +87,9 @@ template<class ContextPtr, class X, class Y, class Ptr = dot_ptr<ContextPtr, typ
 struct dot_ref : private Ptr{
 //	dot_ref(dot_ref const&) = delete;
 	using decay_type = decltype(typename X::value_type{}*typename Y::value_type{});
-	dot_ref(ContextPtr ctxt, X const& x, Y const& y) : Ptr{ctxt, begin(x), size(x), begin(y)}{assert(size(x)==size(y));}
+	dot_ref(ContextPtr ctxt, X const& x, Y const& y) : Ptr{ctxt, begin(x), size(x), begin(y)}{
+		assert(( size(x) == size(y) ));
+	}
 	constexpr auto operator&() const& -> Ptr const&{return *this;} // NOLINT(google-runtime-operator) : reference type
 	auto decay() const& -> decay_type{decay_type r; copy_n(operator&(), 1, &r); return r;}
 	operator decay_type()       const&{return decay();} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,hicpp-explicit-conversion) : to allow terse syntax

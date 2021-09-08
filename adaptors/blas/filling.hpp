@@ -34,12 +34,12 @@ auto detect_triangular_aux(A2D const& A, std::false_type /*false*/) -> filling{
 	{
 		for(auto i = size(A); i != 0; --i){
 			auto const asum_up = blas::asum(begin(A[i-1])+i, end(A[i-1]));
-			if(asum_up !=asum_up){return filling::lower;}
-			if(asum_up !=0.     ){return filling::upper;}
+			if(std::isnan(asum_up)){return filling::lower;}
+			if(asum_up !=0.       ){return filling::upper;}
 
 			auto const asum_lo = blas::asum(begin(rotated(A)[i-1])+i, end(rotated(A)[i-1]));
-			if(asum_lo != asum_lo){return filling::upper;}
-			if(asum_lo != 0.     ){return filling::lower;}
+			if(std::isnan(asum_lo)){return filling::upper;}
+			if(asum_lo != 0.      ){return filling::lower;}
 		}
 	}
 	return filling::lower;
@@ -60,17 +60,17 @@ auto detect_triangular(A2D const& A) -> filling{
 		using blas::asum;
 		for(auto i = size(A); i != 0; --i){
 			auto const asum_up = asum(A[i-1]({i, A[i-1].size()}));
-			if(asum_up!=asum_up){return filling::lower;}
-			if(asum_up!=0.     ){return filling::upper;}
+			if(std::isnan(asum_up)){return filling::lower;}
+			if(asum_up!=0.        ){return filling::upper;}
 
 			auto const asum_lo = asum(rotated(A)[i-1]({i, rotated(A)[i-1].size()}));
-			if(asum_lo!=asum_lo){return filling::upper;}
-			if(asum_lo!=0.     ){return filling::lower;}
+			if(std::isnan(asum_lo)){return filling::upper;}
+			if(asum_lo != 0.      ){return filling::lower;}
 		}
+		return filling::lower;
 	}else{
 		return flip(detect_triangular(hermitized(A)));
 	}
-	return filling::lower;
 #else
 	return detect_triangular_aux(A);//, is_conjugated<A2D>{});//std::integral_constant<bool, not is_hermitized<A2D>()>{});
 #endif

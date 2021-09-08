@@ -36,13 +36,16 @@ auto copy(Context&& ctxt, It first, It last, OutIt d_first)
 
 template<class X1D, class Y1D>
 auto copy(X1D const& x, Y1D&& y)
-->decltype(blas::copy_n(x.begin(), x.size(), y.begin()), std::forward<Y1D>(y)){assert(x.size()==y.size());
+->decltype(blas::copy_n(x.begin(), x.size(), y.begin()), std::forward<Y1D>(y)){
+	assert( (x.size() == y.size()) ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : assert
 	return blas::copy_n(x.begin(), x.size(), y.begin()), std::forward<Y1D>(y);}
 
 template<class Context, class X1D, class Y1D>
 auto copy(Context&& ctxt, X1D const& x, Y1D&& y)
-->decltype(blas::copy_n(std::forward<Context>(ctxt), x.begin(), x.size(), y.begin()), std::forward<Y1D>(y)){assert(x.size()==y.size());
-	return blas::copy_n(std::forward<Context>(ctxt), x.begin(), x.size(), y.begin()), std::forward<Y1D>(y);}
+->decltype(blas::copy_n(std::forward<Context>(ctxt), x.begin(), x.size(), y.begin()), std::forward<Y1D>(y)){
+	assert(x.size()==y.size()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr assert
+	return blas::copy_n(std::forward<Context>(ctxt), x.begin(), x.size(), y.begin()), std::forward<Y1D>(y);
+}
 
 template<class ContextPtr, class It1D>
 class copy_iterator{
@@ -71,8 +74,9 @@ public:
 	friend constexpr auto uninitialized_copy(copy_iterator first, copy_iterator last, It1DOut d_first) -> It1DOut{
 		return copy_n(first, distance(first, last), d_first);
 	}
-	friend constexpr auto distance(copy_iterator const& a, copy_iterator const& b) -> difference_type{assert(stride(b.it_) == stride(a.it_));
-		return b.it_-a.it_;
+	friend constexpr auto distance(copy_iterator const& a, copy_iterator const& b) -> difference_type{
+		assert(stride(b.it_) == stride(a.it_)); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr assert
+		return b.it_ - a.it_;
 	}
 	constexpr auto operator*() const -> value_type{return *it_;}
 };
