@@ -34,10 +34,10 @@ template<class Context, class It2DA, class Size, class It2DB, class It2DC>
 auto gemm_n(Context&& ctxt, typename It2DA::element alpha, It2DA a_first, Size a_count, It2DB b_first, typename It2DA::element beta, It2DC c_first) // NOLINT(readability-function-cognitive-complexity) : 125
 //->decltype(std::forward<Context>(ctxt).gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, xbase(b_first), b_first->size()  , xbase(a_first), a_first->size(), &beta, c_first.base(), c_first->size()  ), It2DC{})
 try{
-	assert( b_first->size() == c_first->size() );
-	assert( a_first.stride()==1 or a_first->stride()==1 );
-	assert( b_first.stride()==1 or b_first->stride()==1 );
-	assert( c_first.stride()==1 or c_first->stride()==1 );
+	assert( b_first->size() == c_first->size() );          // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+	assert( a_first.stride()==1 or a_first->stride()==1 ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+	assert( b_first.stride()==1 or b_first->stride()==1 ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+	assert( c_first.stride()==1 or c_first->stride()==1 ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
 	if(a_count != 0){
 		#define CTXT std::forward<Context>(ctxt)
@@ -66,7 +66,7 @@ try{
 				                        {CTXT.gemm('N', 'N', c_first->size(), a_count, a_first->size(), &alpha, base(a_first), a_first->stride(), base(b_first), b_first->stride(), &beta, base(c_first), c_first->stride());}
 			}else if(a_first. stride()==1 and b_first.stride( )==1 and c_first->stride()==1){
 				                        {CTXT.gemm('T', 'T', a_count, c_first->size(), a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first->stride(), &beta, base(c_first), c_first. stride());}
-			}else{assert(0);}
+			}else{assert(0);}  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 		}else if constexpr(!is_conjugated<It2DA>{} and  is_conjugated<It2DB>{}){
 			if      (a_first->stride()==1 and b_first->stride()==1 and c_first->stride()==1){
 			// TODO(correaa) : check why these two branches are identical
@@ -81,7 +81,7 @@ try{
 				                        {CTXT.gemm('C', 'T', c_first->size(), a_count, a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first->stride(), &beta, base(c_first), c_first->stride());}
 			}else if(a_first. stride()==1 and b_first. stride()==1 and c_first->stride()==1){
 				                        {CTXT.gemm('C', 'T', a_count, c_first->size(), a_first->size(), &alpha, underlying(base(b_first)), b_first->stride(), base(a_first), a_first->stride(), &beta, base(c_first), c_first. stride());}
-			}else{assert(0);}
+			}else{assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 		}else if constexpr( is_conjugated<It2DA>{} and !is_conjugated<It2DB>{}){
 			if      (a_first. stride()==1 and b_first->stride()==1 and c_first->stride()==1){
 				if  (a_count==1)        {CTXT.gemm('N', 'C', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), underlying(base(a_first)), a_first->stride(), &beta, base(c_first), a_first->size()  );}
@@ -98,7 +98,7 @@ try{
 }catch(std::logic_error& e){
 	using std::to_string;
 	throw std::logic_error{
-		"couldn't do "+std::string(__PRETTY_FUNCTION__)+" of layout a_count="+std::to_string(a_count)
+		"couldn't do "+std::string(__PRETTY_FUNCTION__)+" of layout a_count="+std::to_string(a_count) // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 		+" a_strides="+to_string(a_first.stride())+","+to_string(a_first->stride())+" a->size="+to_string(a_first->size())
 		+" b_strides="+to_string(b_first.stride())+","+to_string(b_first->stride())+" b->size="+to_string(b_first->size())
 		+" c_strides="+to_string(c_first.stride())+","+to_string(c_first->stride())+" c->size="+to_string(c_first->size())
@@ -143,7 +143,7 @@ class gemm_iterator{
 	Scalar s_;
 	ItA a_it_;
 	ItB b_begin_;
-	gemm_iterator(ContextPtr ctxtp, Scalar s, ItA a_it, ItB b_begin) : ctxtp_{ctxtp}, s_{s}, a_it_{a_it}, b_begin_{b_begin}{}
+	gemm_iterator(ContextPtr ctxtp, Scalar s, ItA a_it, ItB b_begin) : ctxtp_{ctxtp}, s_{s}, a_it_{std::move(a_it)}, b_begin_{std::move(b_begin)}{}
 	template<class ContextPtr2, class Scalar2, class ItA2, class ItB2, class DecayType2>
 	friend class gemm_range;
 
@@ -171,7 +171,7 @@ public:
 	auto operator+(difference_type n) const{gemm_iterator ret{*this}; ret+=n; return ret;}
 
 	friend auto operator-(gemm_iterator const& a, gemm_iterator const& b) -> difference_type{
-		assert(a.b_begin_ == b.b_begin_);
+		assert(a.b_begin_ == b.b_begin_); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 		return a.a_it_ - b.a_it_;
 	}
 	friend auto operator==(gemm_iterator const& a, gemm_iterator const& b) -> bool{return a.a_it_ == b.a_it_;}
@@ -183,7 +183,7 @@ public:
 		return blas::gemm_n(*first.ctxtp_              , first.s_              , first.a_it_        , count, first.b_begin_     , 0., d_first);
 	}catch(std::exception const& e){
 		throw std::logic_error(
-			"in " + std::string(__PRETTY_FUNCTION__) + "\nCouldn't decay product of arrays of size " + std::to_string(count) +"x"+ std::to_string(first.a_it_->size()) + " and " + 
+			std::string{"in "} + __PRETTY_FUNCTION__ + "\nCouldn't decay product of arrays of size " + std::to_string(count) +"x"+ std::to_string(first.a_it_->size()) + " and " + // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 			std::to_string(first.a_it_->size())+ "x" +std::to_string(first.b_begin_->size()) + " into " + std::to_string(count) +"x" + std::to_string(first.b_begin_->size()) +
 			"\nbecause\n"+e.what()
 		);
@@ -200,8 +200,10 @@ public:
 	}
 
 	template<class ItOut>
-	friend auto uninitialized_copy(gemm_iterator const& first, gemm_iterator const& last, ItOut d_first){assert( first.s_ == last.s_ );
-		return uninitialized_copy_n(first, last - first, d_first);}
+	friend auto uninitialized_copy(gemm_iterator const& first, gemm_iterator const& last, ItOut d_first){
+		assert( first.s_ == last.s_ ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+		return uninitialized_copy_n(first, last - first, d_first);
+	}
 
 	auto operator*() const{return reference{b_begin_->extensions()};}
 };
@@ -221,7 +223,9 @@ public:
 	auto operator=(gemm_range&&) -> gemm_range& = delete;
 	~gemm_range() = default;
 
-	gemm_range(ContextPtr ctxtp, Scalar s, ItA const& a_first, ItA const& a_last, ItB const& b_first) : ctxtp_{ctxtp}, s_{s}, a_begin_{a_first}, a_end_{a_last}, b_begin_{b_first}{}
+	gemm_range(ContextPtr ctxtp, Scalar s, ItA a_first, ItA a_last, ItB b_first) : 
+		ctxtp_{ctxtp}, s_{s}, a_begin_{std::move(a_first)}, a_end_{std::move(a_last)}, b_begin_{std::move(b_first)}
+	{}
 
 	using iterator = gemm_iterator<ContextPtr, Scalar, ItA, ItB>;
 	using decay_type = DecayType;

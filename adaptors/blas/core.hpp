@@ -25,7 +25,7 @@
 	#if not defined(NDEBUG)
 		#include<stdexcept>
 		#include<string>
-		#define MULTI_ASSERT1(ExpR)              (void)((ExpR)?0:throw std::logic_error("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(__PRETTY_FUNCTION__)+"\nLogic assertion `" #ExpR "' failed."))
+		#define MULTI_ASSERT1(ExpR)              (void)((ExpR)?0:throw std::logic_error("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(__PRETTY_FUNCTION__)+"\nLogic assertion `" #ExpR "' failed.")) /*NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/
 		#define MULTI_ASSERT2(ExpR, DescriptioN) (void)((ExpR)?0:throw std::DescriptioN("\n" __FILE__ ":"+std::to_string(__LINE__)+"::\n"+std::string(__PRETTY_FUNCTION__)+"\nLogic assertion `" #ExpR "' failed."))
 	#else
 		#define MULTI_ASSERT1(ExpR)              assert(ExpR)
@@ -251,7 +251,7 @@ namespace blas{
 
 //using namespace types;
 
-#define BC(x) [](auto xx){assert(xx>=std::numeric_limits<INT>::min() and xx<std::numeric_limits<INT>::max()); return xx;}(x)
+#define BC(x) [](auto xx){assert(xx>=std::numeric_limits<INT>::min() and xx<std::numeric_limits<INT>::max()); return xx;}(x) /*NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/
 
 //#define xrotg(T1, T2)                       v   rotg (T1 const& a, T1 const& b, T2& cc, T1& ss                                       ){     BLAS(T1##rotg )(const_cast<T1*>(&a), const_cast<T1*>(&b), &cc, &ss);  }
 //#define xrotmg(T)                           v   rotmg(T& d1, T& d2, T& A, T const& B, T(&p)[5]                                       ){     BLAS( T##rotmg)(&d1, &d2, &A, B, p);                                  }
@@ -503,8 +503,8 @@ enable_if_t< \
 v herk(        UL ul, C transA,             S n, S k, ALPHA const* alpha, AAP aa, S lda,             BETA const* beta, CCP cc, S ldc) \
 /*=delete;*/ \
 { \
-	if(transA == 'N' or transA == 'n') MULTI_ASSERT1( lda >= max(1L, n) ); else MULTI_ASSERT1( lda >= max(1L, k) ); \
-	MULTI_ASSERT1( ldc >= max(1L, n) ); \
+	if(transA == 'N' or transA == 'n'){MULTI_ASSERT1( lda >= max(1L, n) );}else{MULTI_ASSERT1( lda >= max(1L, k) );} /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/ \
+	MULTI_ASSERT1( ldc >= max(1L, n) ); /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/ \
 	MULTI_MARK_SCOPE("cpu_herk"); \
 	BLAS(T##herk)(      ul, transA,            BC(n), BC(k), *(Real const*)alpha, aa, BC(lda),        *(Real const*)beta, cc, BC(ldc)); \
 }
@@ -519,8 +519,8 @@ v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* a
 { \
 	MULTI_MARK_SCOPE("cpu_gemm");			                                                                                                                            \
 	using std::max;                                                                                                                                                     \
-	if(transA =='N') MULTI_ASSERT1(lda >= max(1L, m)); else MULTI_ASSERT1(lda >= max(1L, k));                                                                           \
-	if(transB =='N') MULTI_ASSERT1(ldb >= max(1L, k)); else MULTI_ASSERT1(ldb >= max(1L, n));                                                                           \
+	if(transA =='N'){MULTI_ASSERT1(lda >= max(1L, m));}else{MULTI_ASSERT1(lda >= max(1L, k));}                                                                           \
+	if(transB =='N'){MULTI_ASSERT1(ldb >= max(1L, k));}else{MULTI_ASSERT1(ldb >= max(1L, n));}                                                                           \
 	MULTI_ASSERT1( aa != cc );                                                                                                                                                 \
 	MULTI_ASSERT1( bb != cc );                                                                                                                                                 \
 	MULTI_ASSERT1(ldc >= max(ssize_t{1}, m));                                                                                                                                          \
@@ -539,13 +539,13 @@ enable_if_t< \
 ,int> =0> \
 v trsm(char side, char ul, char transA, char diag, ssize_t m, ssize_t n, ALPHA alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb){ \
 	MULTI_MARK_SCOPE("cpu_trsm");											\
-	assert( side   == 'L' or side    == 'R' ); \
-	assert( ul     == 'U' or ul     == 'L' ); \
-	assert( transA == 'N' or transA == 'T' or transA == 'C' ); \
-	assert( diag     == 'U' or diag     == 'N' ); \
+	assert( side   == 'L' or side   == 'R' );                  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/  \
+	assert( ul     == 'U' or ul     == 'L' );                  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/  \
+	assert( transA == 'N' or transA == 'T' or transA == 'C' ); /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/  \
+	assert( diag     == 'U' or diag     == 'N' );              /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/  \
 	MULTI_ASSERT1( m >= 0 and n >= 0 ); \
 	using std::max; \
-	if(side == 'L') MULTI_ASSERT1(lda >= max(ssize_t{1}, m)); else if(side == 'R') assert( lda >= max(ssize_t{1}, n) ); \
+	if(side == 'L'){MULTI_ASSERT1(lda >= max(ssize_t{1}, m));}else if(side == 'R'){assert( lda >= max(ssize_t{1}, n) );}   /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/  \
 	MULTI_ASSERT1( ldb >= max(ssize_t{1}, m) ); \
 	BLAS(T##trsm)(side, ul, transA, diag, BC(m), BC(n), alpha, (T const*)static_cast<AA*>(aa), BC(lda), (T*)static_cast<BB*>(bb), BC(ldb)); \
 }
