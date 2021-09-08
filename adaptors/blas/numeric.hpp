@@ -124,11 +124,14 @@ template<class T, class F> involuted(T&&, F)->involuted<T const, F>;
 //template<class T, class F> involuted(T const&, F)->involuted<T const&, F>;
 #endif
 
-//template<class It, class F>
-//class involuter;
+template<class It, class F, class Reference>
+class involuter;
 
-template<class It, class F>
-auto get_allocator(involuter<It, F> const& inv);
+//template<class It, class F>
+//auto get_allocator(involuter<It, F> const& inv){
+//	using multi::get_allocator;
+//	return get_allocator(inv.it_);
+//}
 
 template<class It, class F>
 auto default_allocator_of(involuter<It, F> const& iv){
@@ -176,7 +179,7 @@ public:
 	using underlying_type = It;
 	friend constexpr auto underlying(involuter const& self) -> underlying_type{return self.it_;}
 	constexpr explicit operator It() const {return underlying(*this);}
-	template<class Itt, class FF> friend auto get_allocator(involuter<Itt, FF> const&);
+//	friend auto get_allocator(involuter const& self){return get_allocator(self.it_);}
 	friend auto default_allocator_of(involuter const& inv){
 		using multi::default_allocator_of;
 		return default_allocator_of(inv.it_);
@@ -187,12 +190,6 @@ public:
 		return get_allocator(inv.it_);
 	}
 };
-
-template<class It, class F>
-auto get_allocator(involuter<It, F> const& inv){
-	using multi::get_allocator;
-	return get_allocator(inv.it_);
-}
 
 template<class Ref> using negated = involuted<Ref, std::negate<>>;
 template<class It>  using negater = involuter<It, std::negate<>>;

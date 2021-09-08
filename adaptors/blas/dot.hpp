@@ -42,13 +42,13 @@ auto dot_n(XIt x_first, Size count, YIt y_first, RPtr rp){//->decltype(dot_n(bla
 
 template<class Context, class X1D, class Y1D, class R>
 auto dot(Context&& ctxt, X1D const& x, Y1D const& y, R&& r) -> R&&{
-	assert( size(x) == size(y) );
+	assert( size(x) == size(y) ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	return blas::dot_n(std::forward<Context>(ctxt), begin(x), size(x), begin(y), &r), std::forward<R>(r);
 }
 
 template<class X1D, class Y1D, class R>
 auto dot(X1D const& x, Y1D const& y, R&& r) -> R&&{
-	assert( size(x) == size(y) );
+	assert( size(x) == size(y) ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	if constexpr(is_conjugated<X1D>{}){
 		auto ctxtp = blas::default_context_of(underlying(x.base()));
 		return blas::dot(ctxtp, x, y, r);
@@ -88,7 +88,7 @@ struct dot_ref : private Ptr{
 //	dot_ref(dot_ref const&) = delete;
 	using decay_type = decltype(typename X::value_type{}*typename Y::value_type{});
 	dot_ref(ContextPtr ctxt, X const& x, Y const& y) : Ptr{ctxt, begin(x), size(x), begin(y)}{
-		assert(( size(x) == size(y) ));
+		assert(( size(x) == size(y) )); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	}
 	constexpr auto operator&() const& -> Ptr const&{return *this;} // NOLINT(google-runtime-operator) : reference type
 	auto decay() const& -> decay_type{decay_type r; copy_n(operator&(), 1, &r); return r;}

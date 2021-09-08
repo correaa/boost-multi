@@ -221,7 +221,7 @@ public:
 	auto operator=(gemm_range&&) -> gemm_range& = delete;
 	~gemm_range() = default;
 
-	gemm_range(ContextPtr ctxtp, Scalar s, ItA a_first, ItA a_last, ItB b_first) : ctxtp_{ctxtp}, s_{s}, a_begin_{a_first}, a_end_{a_last}, b_begin_{b_first}{}
+	gemm_range(ContextPtr ctxtp, Scalar s, ItA const& a_first, ItA const& a_last, ItB const& b_first) : ctxtp_{ctxtp}, s_{s}, a_begin_{a_first}, a_end_{a_last}, b_begin_{b_first}{}
 
 	using iterator = gemm_iterator<ContextPtr, Scalar, ItA, ItB>;
 	using decay_type = DecayType;

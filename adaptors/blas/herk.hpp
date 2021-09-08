@@ -37,8 +37,8 @@ template<class AA, class BB, class A2D, class C2D, class = typename A2D::element
 auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) -> C2D&& // NOLINT(readability-function-cognitive-complexity) : 74
 //->decltype(herk('\0', '\0', c.size(), a.size(), &alpha, base_aux(a), stride(a.rotated()), &beta, base_aux(c), stride(c)), std::forward<C2D>(c))
 {
-	assert( a.size() == c.size() );
-	assert( c.size() == rotated(c).size() );
+	assert( a.size() == c.size() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+	assert( c.size() == rotated(c).size() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	if(c.size()==0){return std::forward<C2D>(c);}
 	if constexpr(is_conjugated<C2D>{}){herk(flip(c_side), alpha, a, beta, hermitized(c)); return std::forward<C2D>(c);}
 	{
@@ -50,21 +50,21 @@ auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) -> C2D&& // 
 			if     (stride(a)==1 and stride(c)!=1){herk(c_side==filling::upper?'L':'U', 'N', size(c), size(rotated(a)), &alpha, base_a, stride(rotated(a)), &beta, base_c, stride(c));}
 			else if(stride(a)==1 and stride(c)==1){
 				if(size(a)==1)                    {herk(c_side==filling::upper?'L':'U', 'N', size(c), size(rotated(a)), &alpha, base_a, stride(rotated(a)), &beta, base_c, stride(c));}
-				else                              {assert(0);}
+				else                              {assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 			}
 			else if(stride(a)!=1 and stride(c)==1){herk(c_side==filling::upper?'U':'L', 'C', size(c), size(rotated(a)), &alpha, base_a, stride(        a ), &beta, base_c, stride(rotated(c)));}
 			else if(stride(a)!=1 and stride(c)!=1){herk(c_side==filling::upper?'L':'U', 'C', size(c), size(rotated(a)), &alpha, base_a, stride(        a ), &beta, base_c, stride(        c ));}
-			else                                  {assert(0);}
+			else                                  {assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 		}else{
 		//	auto& ctxt = *blas::default_context_of(           a.base() );
 			if     (stride(a)!=1 and stride(c)!=1){herk(c_side==filling::upper?'L':'U', 'C', size(c), size(rotated(a)), &alpha, base_a, stride(        a ), &beta, base_c, stride(c));}
 			else if(stride(a)!=1 and stride(c)==1){
 				if(size(a)==1)                     {herk(c_side==filling::upper?'L':'U', 'N', size(c), size(rotated(a)), &alpha, base_a, stride(rotated(a)), &beta, base_c, stride(rotated(c)));}
-				else                               {assert(0);}
+				else                               {assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 			}
-			else if(stride(a)==1 and stride(c)!=1){assert(0);}//case not implemented, herk(c_side==filling::upper?'L':'U', 'N', size(c), size(rotated(a)), alpha, base_a, stride(rotated(a)), beta, base(c), stride(c)); 
+			else if(stride(a)==1 and stride(c)!=1){assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 			else if(stride(a)==1 and stride(c)==1){herk(c_side==filling::upper?'U':'L', 'N', size(c), size(rotated(a)), &alpha, base_a, stride(rotated(a)), &beta, base_c, stride(rotated(c)));}
-			else                                  {assert(0);}
+			else                                  {assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 		}
 	}
 	return std::forward<C2D>(c);
