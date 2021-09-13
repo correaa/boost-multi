@@ -32,8 +32,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
-	enable_language(CUDA)
-	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"")
+
+  enable_language(CUDA)
+  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"")
+
+  include(FindCUDA/select_compute_arch)
+  CUDA_DETECT_INSTALLED_GPUS(INSTALLED_GPU_CCS_1)
+  string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
+  string(REPLACE " " ";" INSTALLED_GPU_CCS_3 "${INSTALLED_GPU_CCS_2}")
+  string(REPLACE "." "" CUDA_ARCH_LIST "${INSTALLED_GPU_CCS_3}")
+  SET(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
+
 endif()
 
 find_package(CUDA QUIET)
@@ -68,6 +77,7 @@ foreach(TEST_FILE ${TEST_SRCS})
   add_executable            (${TEST_EXE} ${TEST_FILE})
   if(ENABLE_CUDA OR DEFINED CXXCUDA)
     set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
+    set_property(TARGET ${TEST_EXE} PROPERTY "${CUDA_ARCH_LIST}")
     target_compile_options  (${TEST_EXE} PRIVATE -std=c++17)
   endif()
 #  target_compile_features   (${TEST_EXE} PUBLIC cxx_std_17) 
