@@ -43,7 +43,7 @@ constexpr auto to_tuple_impl(std::array<From, sizeof...(I)> arr, std::index_sequ
 	return std::make_tuple(To{std::get<I>(arr)}...);
 }
 
-template<class To, size_t N, class From>
+template<class To, std::size_t N, class From>
 constexpr auto to_tuple(std::array<From, N> arr){
 	return to_tuple_impl<To, From>(arr, std::make_index_sequence<N>());
 }
@@ -185,7 +185,7 @@ using base_ = std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<
 	friend constexpr auto operator%(nelems_type n, extensions_t const& s){return s.from_linear(n);}
 	template<class Archive>
 	void serialize(Archive& ar, unsigned /*version*/){
-		serialize_impl(ar, std::make_index_sequence<D>{});
+		serialize_impl(ar, std::make_index_sequence<static_cast<std::size_t>(D)>{});
 	}
 private:
 	template<class Array, std::size_t... I, typename = decltype(base_{std::get<I>(std::declval<Array const&>())...})> 
@@ -195,7 +195,7 @@ private:
 	template<class...As> static constexpr auto multiply_fold(size_type const& a0, As const&...as) -> size_type{return a0*multiply_fold(as...);}
 	template<std::size_t... I> constexpr auto num_elements_impl(std::index_sequence<I...> /*012*/) const -> size_type{return multiply_fold(std::get<I>(*this).size()...);}
 public:
-	constexpr auto num_elements() const -> size_type{return num_elements_impl(std::make_index_sequence<D>{});}
+	constexpr auto num_elements() const -> size_type{return num_elements_impl(std::make_index_sequence<static_cast<std::size_t>(D)>{});}
 	friend constexpr auto intersection(extensions_t const& x1, extensions_t const& x2) -> extensions_t{
 		return extensions_t(
 			std::tuple_cat(
@@ -476,12 +476,12 @@ public:
 	layout_t() = default;
 //	constexpr layout_t(std::array<int, D> const& x) : layout_t{extensions_type{x}}{}
 //	constexpr explicit layout_t(typename detail::repeat<index_extension, D>::type x) : layout_t{extensions_type{x}}{}
-	constexpr explicit layout_t(extensions_type const& e) :
-		sub_(std_apply([](auto... e){return multi::extensions_t<D-1>{e...};}, detail::tail(e))),
+	constexpr explicit layout_t(extensions_type const& x) :
+		sub_(std_apply([](auto... e){return multi::extensions_t<D-1>{e...};}, detail::tail(x))),
 		stride_{sub_.size()*sub_.stride()},//std::get<0>(e).size()*sub_.num_elements()!=0?sub_.size()*sub_.stride():1}, 
-		offset_{std::get<0>(e).first()*stride_} //sub_.offset_ + std::get<0>(e).first()*sub_.stride()}, //sub_.stride()  offset_ = i*stride_}, 
+		offset_{std::get<0>(x).first()*stride_} //sub_.offset_ + std::get<0>(e).first()*sub_.stride()}, //sub_.stride()  offset_ = i*stride_}, 
 	{
-		nelems_ = std::get<0>(e).size()*(sub().num_elements());
+		nelems_ = std::get<0>(x).size()*(sub().num_elements());
 	}
 //	template<class StdArray, typename = std::enable_if_t<std::is_same<StdArray, std::array<index_extension, static_cast<std::size_t>(D)>>{}> >
 //	constexpr layout_t(StdArray const& e) : 
