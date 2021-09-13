@@ -82,7 +82,7 @@ public:
 		return copy(first, last, result);
 	}
 	gemv_iterator(Scalar alpha, It2D m_it, It1D v_first, Context ctxt) 
-		: alpha_{alpha}, m_it_{m_it}, v_first_{v_first}, ctxt_{ctxt}{}
+		: alpha_{alpha}, m_it_{std::move(m_it)}, v_first_{std::move(v_first)}, ctxt_{ctxt}{}
 	auto operator*() const -> value_type{return 0.;}
 };
 
@@ -101,11 +101,11 @@ public:
 	auto operator=(gemv_range&&) = delete;
 
 	gemv_range(Scalar alpha, It2D m_first, It2D m_last, It1D v_first) 
-		: alpha_{alpha}, m_begin_{m_first}, m_end_{m_last}, v_first_{v_first}{
+		: alpha_{alpha}, m_begin_{std::move(m_first)}, m_end_{std::move(m_last)}, v_first_{std::move(v_first)}{
 		assert(m_begin_.stride() == m_end_.stride());
 	}
 	gemv_range(Context&& ctxt, Scalar alpha, It2D m_first, It2D m_last, It1D v_first) 
-		: alpha_{alpha}, m_begin_{m_first}, m_end_{m_last}, v_first_{v_first}, ctxt_{std::forward<Context>(ctxt)}{
+		: alpha_{alpha}, m_begin_{std::move(m_first)}, m_end_{std::move(m_last)}, v_first_{std::move(v_first)}, ctxt_{std::forward<Context>(ctxt)}{
 		assert(m_begin_.stride() == m_end_.stride());
 	}
 	using iterator = gemv_iterator<Scalar, It2D, It1D, Context>;
