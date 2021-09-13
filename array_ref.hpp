@@ -2092,7 +2092,7 @@ template<class T, std::size_t D, class Ptr> struct Array_aux<T   [D], Ptr>{using
 template<class T, std::size_t D, class Ptr> struct Array_aux<T(&)[D], Ptr>{using type = array_ref<T, D, Ptr>&&;}; // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : enable syntax
 template<class T, std::size_t D, class Ptr> struct Array_aux<T(*)[D], Ptr>{using type = array_ptr<T, D, Ptr>  ;}; // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : enable syntax
 
-template<class TD, class Second = 
+template<class TD, class Second =
 	std::conditional_t<
 		std::is_reference<TD>{} or std::is_pointer<TD>{}, 
 		std::add_pointer_t<std::remove_all_extents_t<std::remove_reference_t<std::remove_pointer_t<TD>>>>,
@@ -2138,6 +2138,16 @@ template<class T> auto end(T&& t)
 
 } // end namespace multi
 } // end namespace boost
+
+
+//namespace thrust{
+//	template<class InputIterator> struct iterator_system;
+
+//	template<class T, boost::multi::dimensionality_type D, class Ptr> 
+//	struct iterator_system<boost::multi::array_iterator<T, D, Ptr>>{
+//		using type = thrust::iterator_system<Ptr>;
+//	};
+//}
 
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
