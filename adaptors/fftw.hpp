@@ -9,9 +9,6 @@ $CXXX $CXXFLAGS $0 -o $0x$OXX `pkg-config --cflags --libs fftw3 cuda-11.0` -lboo
 #include "../adaptors/../array.hpp"
 #include "../adaptors/../config/NODISCARD.hpp"
 
-
-#include "../detail/tuple_zip.hpp"
-
 #include<algorithm> // sort
 #include<complex>
 #include<numeric> // accumulate
@@ -210,69 +207,36 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, fftw::flags 
 	static_assert( sizeof(*base(d_first)) == sizeof(real(*base(d_first))) + sizeof(imag(*base(d_first))) and sizeof(*base(d_first)) == sizeof(fftw_complex), 
 		"output must have complex pod layout");
 
-	assert( sizes(*first)==sizes(*d_first) );
-//	auto ion      = std::apply([](auto... e){return std::array{static_cast<int>(e)...};}, sizes  (*first  )); // auto ion      = to_array<int>(sizes(*first));
+	assert(sizes(*first)==sizes(*d_first));
+	auto ion      = to_array<int>(sizes(*first));
 
 	assert(strides(*first) == strides(*last));
-//	auto istrides = std::apply([](auto... e){return std::array{static_cast<int>(e)...};}, strides(*first  ));
-//	auto ostrides = std::apply([](auto... e){return std::array{static_cast<int>(e)...};}, strides(*d_first));
+	auto istrides = to_array<int>(strides(*first));
+	auto ostrides = to_array<int>(strides(*d_first));
 
-	auto const ssn_tuple = multi::detail::tuple_zip(strides(*first  ), strides(*d_first), sizes(*first));
-	auto ssn = std::apply([](auto... e){return std::array{
-		std::make_tuple(static_cast<int>(std::get<0>(e)), static_cast<int>(std::get<1>(e)), static_cast<int>(std::get<2>(e)))...
-	};}, ssn_tuple);
-//	auto 
-
-//	std::array<std::array<int, 3>, std::decay_t<decltype(*It1{})>::rank::value> ssn{};
-//	for(std::size_t i = 0; i != ssn.size(); ++i){
-//		ssn[i] = {istrides[i], ostrides[i], ion[i]};
-//	}
+	std::array<std::array<int, 3>, std::decay_t<decltype(*It1{})>::rank::value> ssn;
+	for(std::size_t i = 0; i != ssn.size(); ++i){
+		ssn[i] = {istrides[i], ostrides[i], ion[i]};
+	}
 	std::sort(ssn.begin(), ssn.end(), std::greater<>{});
 
-	auto const istrides = [&](){
-		std::array<int, std::decay_t<decltype(*It1{})>::rank::value> istrides{};
-		std::transform(ssn.begin(), ssn.end(), istrides.begin(), [](auto e){return std::get<0>(e);});
-		return istrides;
-	}();
-
-	auto const ostrides = [&](){
-		std::array<int, std::decay_t<decltype(*It1{})>::rank::value> ostrides{};
-		std::transform(ssn.begin(), ssn.end(), ostrides.begin(), [](auto e){return std::get<1>(e);});
-		return ostrides;
-	}();
-	assert( std::is_sorted(ostrides.begin(), ostrides.end(), std::greater<>{}) ); // otherwise ordering is incompatible
-
-	auto const ion      = [&](){
-		std::array<int, std::decay_t<decltype(*It1{})>::rank::value> ion     {};
-		std::transform(ssn.begin(), ssn.end(), ion     .begin(), [](auto e){return std::get<2>(e);});
-		return ion;
-	}();
-
-//	for(std::size_t i = 0; i != ssn.size(); ++i){
-//		istrides[i] = std::get<0>(ssn[i]);
-//		ostrides[i] = std::get<1>(ssn[i]);
-//		ion[i]      = std::get<2>(ssn[i]);
-//	}
-	std::array<int, std::decay_t<decltype(*It1{})>::rank::value + 1> inembed{};
-//	for(std::size_t i = 1; i != istrides.size(); ++i){
-//		assert(istrides[i-1]%istrides[i]==0);
-//		inembed[i] = istrides[i-1]/istrides[i];
-//	}
-//	for(std::size_t i = istrides.size() - 1; i != 0; --i){
-//	//	assert(istrides[i-1]%istrides[i]==0);
-//		inembed[i] = istrides[i-1]/istrides[i];
-//	}
-
-	std::adjacent_difference(
-		istrides.rbegin(), istrides.rend(), inembed.rbegin(), [](auto a, auto b){assert(a%b == 0); return a/b;}
-	);
-
-	std::array<int, std::decay_t<decltype(*It1{})>::rank::value> onembed{};
-	for(std::size_t i = 1; i != ostrides.size(); ++i){
-	//	assert(ostrides[i-1]%ostrides[i]==0);
-		onembed[i] = ostrides[i-1]/ostrides[i];
+	for(std::size_t i = 0; i != ssn.size(); ++i){
+		istrides[i] = std::get<0>(ssn[i]);
+		ostrides[i] = std::get<1>(ssn[i]);
+		ion[i]      = std::get<2>(ssn[i]);
 	}
 
+	int istride = istrides.back();
+	auto inembed = istrides; inembed.fill(0);
+	int ostride = ostrides.back();
+	auto onembed = ostrides; onembed.fill(0);
+	for(std::size_t i = 1; i != onembed.size(); ++i){
+		assert(ostrides[i-1] >= ostrides[i]); // otherwise ordering is incompatible
+		assert(ostrides[i-1]%ostrides[i]==0);
+		onembed[i]=ostrides[i-1]/ostrides[i]; //	assert( onembed[i] <= ion[i] );
+		assert(istrides[i-1]%istrides[i]==0);
+		inembed[i]=istrides[i-1]/istrides[i]; //	assert( inembed[i] <= ion[i] );
+	}
 
 	auto ret = ::fftw_plan_many_dft(
 		/*int rank*/ ion.size(), 
@@ -280,11 +244,11 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, fftw::flags 
 		/*int howmany*/ last - first,
 		/*fftw_complex * in */ reinterpret_cast<fftw_complex*>(const_cast<std::complex<double>*>(static_cast<std::complex<double> const*>(base(first)))),   // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast) input data
 		/*const int *inembed*/ inembed.data(),
-		/*int istride*/ istrides.back(),
+		/*int*/ istride, 
 		/*int idist*/ stride(first),
 		/*fftw_complex * out */ reinterpret_cast<fftw_complex*>(static_cast<std::complex<double>*>(base(d_first))), // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) adapt types
 		/*const int *onembed*/ onembed.data(),
-		/*int ostride*/ ostrides.back(), 
+		/*int*/ ostride, 
 		/*int odist*/ stride(d_first),
 		/*int*/ sign, /*unsigned*/ static_cast<unsigned>(flags)
 	);
@@ -310,60 +274,29 @@ auto fftw_plan_dft(std::array<bool, +D> which, In&& in, Out&& out, int sign, fft
 	static_assert( sizeof(*base(out)) == sizeof((*base(out)).real()) + sizeof((*base(in)).imag()) and sizeof(*base(out)) == sizeof(fftw_complex), 
 		"output must have complex pod layout" );
 
-	assert(in.sizes() == out.sizes());
+	using multi::sizes;
+	assert(sizes(in) == sizes(out));
 
-	auto const sizes_tuple   = in.sizes();
-	auto const istride_tuple = in.strides();
-	auto const ostride_tuple = out.strides();
-
-	auto which_iodims = std::apply([](auto... e){
-		return std::array{
-			std::pair{
-				std::get<0>(e),
-				fftw_iodim64{std::get<1>(e), std::get<2>(e), std::get<3>(e)}
-			}...
-		};
-	}, boost::multi::detail::tuple_zip(which, sizes_tuple, istride_tuple, ostride_tuple));
-	auto p = std::stable_partition(which_iodims.begin(), which_iodims.end(), [](auto e){return std::get<0>(e);});
+	using multi::strides;
+	auto const ion      = to_array<ptrdiff_t>(in.sizes()   );
+	auto const istrides = to_array<ptrdiff_t>(in.strides() );
+	auto const ostrides = to_array<ptrdiff_t>(out.strides());
 
 	std::array<fftw_iodim64, D> dims{};
-	auto const dims_end         = std::transform(which_iodims.begin(), p,         dims.begin(), [](auto e){return e.second;});
+	auto l_dims = dims.begin();
 
-	std::array<fftw_iodim64, D> howmany_dims{};
-	auto const howmany_dims_end = std::transform(p, which_iodims.end()  , howmany_dims.begin(), [](auto e){return e.second;});
+	std::array<fftw_iodim64, D> howmany{};
+	auto l_howmany = howmany.begin();
 
-//	auto const ion      = std::apply([](auto...e){return std::array{e...};}, in .sizes  ());
-//	auto const istrides = std::apply([](auto...e){return std::array{e...};}, in .strides());
-//	auto const ostrides = std::apply([](auto...e){return std::array{e...};}, out.strides());
-
-//	std::array<fftw_iodim64, D> dims{};
-//	auto l_dims = dims.begin();
-
-//	std::array<fftw_iodim64, D> howmany{};
-//	auto l_howmany = howmany.begin();
-
-//	std::for_each(
-//		which.begin(), which.end(), 
-//		[&, i = 0](auto e) mutable{
-//			if(e){
-//				*l_dims    = {ion[i], istrides[i], ostrides[i]};
-//				++l_dims;
-//			}else{
-//				*l_howmany = {ion[i], istrides[i], ostrides[i]};
-//				++l_howmany;
-//			}
-//			++i;
-//		}
-//	);
-//	for(int i=0; i != D; ++i){
-//		if(which[i]){
-//			*l_dims    = {ion[i], istrides[i], ostrides[i]};
-//			++l_dims;
-//		}else{
-//			*l_howmany = {ion[i], istrides[i], ostrides[i]};
-//			++l_howmany;
-//		}
-//	}
+	for(int i=0; i != D; ++i){
+		if(which[i]){
+			*l_dims    = {ion[i], istrides[i], ostrides[i]};
+			++l_dims;
+		}else{
+			*l_howmany = {ion[i], istrides[i], ostrides[i]};
+			++l_howmany;
+		}
+	}
 
 	assert( in .base() );
 	assert( out.base() );
@@ -373,10 +306,10 @@ auto fftw_plan_dft(std::array<bool, +D> which, In&& in, Out&& out, int sign, fft
 	assert( (sign == -1) or (sign == +1) );
 
 	fftw_plan ret = fftw_plan_guru64_dft(
-		/*int rank*/ dims_end - dims.begin(), //p - which_iodims.begin(), //l_dims - dims.begin(),
+		/*int rank*/ l_dims - dims.begin(),
 		/*const fftw_iodim64 *dims*/ dims.data(),
-		/*int howmany_rank*/ howmany_dims_end - howmany_dims.begin(), //which_iodims.endl_howmany - howmany.begin(),
-		/*const fftw_iodim *howmany_dims*/ howmany_dims.data(), //howmany.data(), //nullptr, //howmany_dims.data(), //;//nullptr,
+		/*int howmany_rank*/ l_howmany - howmany.begin(),
+		/*const fftw_iodim *howmany_dims*/ howmany.data(), //nullptr, //howmany_dims.data(), //;//nullptr,
 		/*fftw_complex *in*/ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(/*static_cast<std::complex<double> const *>*/(in.base()))), // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast) FFTW is taken as non-const while it is really not touched
 		/*fftw_complex *out*/ reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double> *>*/(out.base())), // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 		sign, static_cast<unsigned>(flags) // | FFTW_ESTIMATE
