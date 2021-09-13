@@ -254,17 +254,37 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, fftw::flags 
 //		ion[i]      = std::get<2>(ssn[i]);
 //	}
 
-	int istride = istrides.back();
-	auto inembed = istrides; inembed.fill(0);
-	int ostride = ostrides.back();
-	auto onembed = ostrides; onembed.fill(0);
-	for(std::size_t i = 1; i != onembed.size(); ++i){
-		assert(ostrides[i-1] >= ostrides[i]); // otherwise ordering is incompatible
-		assert(ostrides[i-1]%ostrides[i]==0);
-		onembed[i]=ostrides[i-1]/ostrides[i]; //	assert( onembed[i] <= ion[i] );
-		assert(istrides[i-1]%istrides[i]==0);
-		inembed[i]=istrides[i-1]/istrides[i]; //	assert( inembed[i] <= ion[i] );
+	std::array<int, std::decay_t<decltype(*It1{})>::rank::value + 1> inembed{};
+//	for(std::size_t i = 1; i != istrides.size(); ++i){
+//		assert(istrides[i-1]%istrides[i]==0);
+//		inembed[i] = istrides[i-1]/istrides[i];
+//	}
+//	for(std::size_t i = istrides.size() - 1; i != 0; --i){
+//	//	assert(istrides[i-1]%istrides[i]==0);
+//		inembed[i] = istrides[i-1]/istrides[i];
+//	}
+
+	std::adjacent_difference(
+		istrides.rbegin(), istrides.rend(), inembed.rbegin(), [](auto a, auto b){assert(a%b == 0); return a/b;}
+	);
+
+	std::array<int, std::decay_t<decltype(*It1{})>::rank::value> onembed{};
+	for(std::size_t i = 1; i != ostrides.size(); ++i){
+	//	assert(ostrides[i-1]%ostrides[i]==0);
+		onembed[i] = ostrides[i-1]/ostrides[i];
 	}
+
+//	int istride = istrides.back();
+//	auto inembed = istrides; inembed.fill(0);
+//	int ostride = ostrides.back();
+//	auto onembed = ostrides; onembed.fill(0);
+//	for(std::size_t i = 1; i != onembed.size(); ++i){
+//		assert(ostrides[i-1] >= ostrides[i]); // otherwise ordering is incompatible
+//		assert(ostrides[i-1]%ostrides[i]==0);
+//		onembed[i]=ostrides[i-1]/ostrides[i]; //	assert( onembed[i] <= ion[i] );
+//		assert(istrides[i-1]%istrides[i]==0);
+//		inembed[i]=istrides[i-1]/istrides[i]; //	assert( inembed[i] <= ion[i] );
+//	}
 
 	auto ret = ::fftw_plan_many_dft(
 		/*int rank*/ ion.size(), 
@@ -272,11 +292,11 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, fftw::flags 
 		/*int howmany*/ last - first,
 		/*fftw_complex * in */ reinterpret_cast<fftw_complex*>(const_cast<std::complex<double>*>(static_cast<std::complex<double> const*>(base(first)))),   // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast) input data
 		/*const int *inembed*/ inembed.data(),
-		/*int*/ istride, 
+		/*int istride*/ istrides.back(), 
 		/*int idist*/ stride(first),
 		/*fftw_complex * out */ reinterpret_cast<fftw_complex*>(static_cast<std::complex<double>*>(base(d_first))), // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) adapt types
 		/*const int *onembed*/ onembed.data(),
-		/*int*/ ostride, 
+		/*int ostride*/ ostrides.back(), 
 		/*int odist*/ stride(d_first),
 		/*int*/ sign, /*unsigned*/ static_cast<unsigned>(flags)
 	);
