@@ -47,7 +47,7 @@ template<typename T> struct rank : decltype(rank_aux(std::declval<T>())){};
 template<class Container>
 constexpr auto size(Container const& con)
 ->std::make_signed_t<decltype(con.size())>{
-	return con.size();}
+	return static_cast<std::make_signed_t<decltype(con.size())>>(con.size());}
 #else
 #endif
 
@@ -110,7 +110,7 @@ template<class T> struct has_num_elements : decltype(has_num_elements_aux(std::d
 template<class A, typename = std::enable_if_t<has_num_elements<A>{}> > 
 constexpr auto num_elements(A const& arr)
 ->std::make_signed_t<decltype(arr.num_elements())>{
-	return arr.num_elements();}
+	return static_cast<std::make_signed_t<decltype(arr.num_elements())>>(arr.num_elements());}
 
 template<class T>
 auto has_size_aux(T const& t)->decltype(t.size(), std::true_type {});
@@ -144,9 +144,9 @@ auto data(T& t){return &t;}
 template<class T, typename = std::enable_if_t<not std::is_array<T>{} and not has_data_elements<T>{} and not has_data<T>{}>>
 constexpr auto data_elements(T& t){return &t;}
 
-template<class A> struct num_elements_t: std::integral_constant<size_type, 1>{};
+template<class A> struct num_elements_t: std::integral_constant<std::ptrdiff_t, 1>{};
 
-template<class T, std::size_t N> struct num_elements_t<T[N]>: std::integral_constant<size_type, (N*num_elements_t<T>{})>{};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+template<class T, std::size_t N> struct num_elements_t<T[N]>: std::integral_constant<std::ptrdiff_t, (N*num_elements_t<T>{})>{};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 
 template<class T, std::size_t N> struct num_elements_t<T(&)[N]>: num_elements_t<T[N]>{};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 
@@ -156,7 +156,7 @@ constexpr auto num_elements(const T(&/*t*/)[N]) noexcept{return num_elements_t<T
 template<class Vector>
 constexpr auto num_elements(Vector const& v, std::enable_if_t<std::is_same<typename Vector::pointer, decltype(std::declval<Vector>().data())>{}, int> =0) // NOLINT(fuchsia-default-arguments-declarations,hicpp-named-parameter,readability-named-parameter) : special sfinae trick
 ->std::make_signed_t<decltype(v.size())>{
-	return v.size();}
+	return static_cast<std::make_signed_t<decltype(v.size())>>(v.size());}
 
 template<class Vector, typename = std::enable_if_t<std::is_same<typename Vector::pointer, decltype(std::declval<Vector>().data())>{}> >
 auto data_elements(Vector const& v)
@@ -261,8 +261,8 @@ template<class T> struct has_extension : decltype(has_extension_aux(std::declval
 
 template<class Container, class=std::enable_if_t<not has_extension<Container>{}>>
 auto extension(Container const& c) // TODO(correaa) consider "extent"
-->decltype(multi::extension_t<std::make_signed_t<decltype(size(c))>>(0, size(c))){
-	return multi::extension_t<std::make_signed_t<decltype(size(c))>>(0, size(c));}
+->decltype(multi::extension_t<std::make_signed_t<decltype(size(c))>>(0, static_cast<std::make_signed_t<decltype(size(c))>>(size(c)))){
+	return multi::extension_t<std::make_signed_t<decltype(size(c))>>(0, static_cast<std::make_signed_t<decltype(size(c))>>(size(c)));}
 
 template<class T, typename = decltype(std::declval<T>().extensions())>
        auto has_extensions_aux(T const&) -> std::true_type ;
@@ -279,7 +279,7 @@ NODISCARD("") auto extensions(T const& t)
 template<class T, typename = std::enable_if_t<not has_extensions<T>{}> >
 constexpr auto extensions(T const& /*unused*/) -> multi::layout_t<0>::extensions_type{return {};}
 
-template<class T, size_t N>
+template<class T, std::size_t N>
 constexpr auto extensions(T(&t)[N]){ // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 	return index_extension(N)*extensions(t[0]);
 }
@@ -390,7 +390,7 @@ constexpr auto data_elements(std::array<std::array<T, M>, N>&& arr) noexcept{ret
 template<class T, std::size_t N> constexpr auto num_elements(std::array<T, N> const& /*unused*/) noexcept -> std::ptrdiff_t{return N;}
 
 template<class T, std::size_t M, std::size_t N> 
-constexpr auto num_elements(std::array<std::array<T, M>, N> const& arr) -> std::ptrdiff_t{return N*num_elements(arr[0]);}
+constexpr auto num_elements(std::array<std::array<T, M>, N> const& arr) -> std::ptrdiff_t{return static_cast<std::ptrdiff_t>(N)*num_elements(arr[0]);}
 
 template<class T, std::size_t N>
 constexpr auto dimensionality(std::array<T, N> const& /*unused*/) -> dimensionality_type{return 1;}
