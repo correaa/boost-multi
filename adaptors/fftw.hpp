@@ -297,8 +297,8 @@ auto fftw_plan_dft(std::array<bool, +D> which, In&& in, Out&& out, int sign, fft
 	auto const ostride_tuple = out.strides();
 
 	auto which_iodims = std::apply([](auto... e){
-		return std::array{
-			std::pair{
+		return std::array<std::pair<bool, fftw_iodim64>, sizeof...(e)>{
+			std::pair<bool, fftw_iodim64>{
 				std::get<0>(e),
 				fftw_iodim64{std::get<1>(e), std::get<2>(e), std::get<3>(e)}
 			}...
@@ -384,12 +384,14 @@ auto fftw_plan_dft(In const& in, Out&& out, int s, fftw::flags flags){
 	static_assert( D == std::decay_t<Out>::rank_v , "!");
 	using multi::sizes; using multi::strides; assert(sizes(in) == sizes(out));
 
-	auto ion      = to_array<ptrdiff_t>(sizes(in));
-	auto istrides = to_array<ptrdiff_t>(strides(in));
-	auto ostrides = to_array<ptrdiff_t>(strides(out));
+	assert( in.sizes() == out.sizes() );
 
-	std::array<fftw_iodim64, D> dims;
-	for(int i=0; i!=D; ++i){dims[i] = {ion[i], istrides[i], ostrides[i]};} // TODO(correaa) : use std::apply
+	auto const dims = std::apply([](auto... e){
+		return std::array<fftw_iodim64, sizeof...(e)>{
+			fftw_iodim64{std::get<0>(e), std::get<1>(e), std::get<2>(e)}
+			...
+		};
+	}, boost::multi::detail::tuple_zip(in.sizes(), in.strides(), out.strides()));
 
 	auto ret = fftw_plan_guru64_dft(
 		/*int rank*/ s?D:0,
@@ -533,9 +535,9 @@ auto dft(std::array<bool, +D> which, In const& i, Out&& o, sign s)
 
 template<typename In, class Out, dimensionality_type D=In::rank_v, dimensionality_type=std::decay_t<Out>::rank_v>
 auto dft(std::array<sign, +D> w, In const& i, Out&& o){
-	std::array<bool, D> fwd;
+	std::array<bool, D> fwd{};
 //	std::array<bool, D> non;
-	std::array<bool, D> bwd;
+	std::array<bool, D> bwd{};
 
 	std::transform(begin(w), end(w), begin(fwd), [](auto e){return e==FFTW_FORWARD;});
 	dft(fwd, i, o, fftw::forward);
