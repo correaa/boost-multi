@@ -40,7 +40,7 @@ namespace detail{
 //}
 
 template<class Tuple1, std::size_t... indices>
-auto tuple_zip_impl1(Tuple1&& t1, std::index_sequence<indices...> /*012*/){
+auto tuple_zip_impl(Tuple1&& t1, std::index_sequence<indices...> /*012*/){
 	return 
 		std::make_tuple(
 			std::make_tuple(
@@ -51,7 +51,7 @@ auto tuple_zip_impl1(Tuple1&& t1, std::index_sequence<indices...> /*012*/){
 }
 
 template<class Tuple1, class Tuple2, std::size_t... indices>
-auto tuple_zip_impl2(Tuple1&& t1, Tuple2&& t2, std::index_sequence<indices...> /*012*/){
+auto tuple_zip_impl(Tuple1&& t1, Tuple2&& t2, std::index_sequence<indices...> /*012*/){
 	return 
 		std::make_tuple(
 			std::make_tuple(
@@ -63,7 +63,7 @@ auto tuple_zip_impl2(Tuple1&& t1, Tuple2&& t2, std::index_sequence<indices...> /
 }
 
 template<class Tuple1, class Tuple2, class Tuple3, std::size_t... indices>
-auto tuple_zip_impl3(Tuple1&& t1, Tuple2&& t2, Tuple3&& t3, std::index_sequence<indices...> /*012*/){
+auto tuple_zip_impl(Tuple1&& t1, Tuple2&& t2, Tuple3&& t3, std::index_sequence<indices...> /*012*/){
 	return 
 		std::make_tuple(
 			std::make_tuple(
@@ -76,7 +76,7 @@ auto tuple_zip_impl3(Tuple1&& t1, Tuple2&& t2, Tuple3&& t3, std::index_sequence<
 }
 
 template<class Tuple1, class Tuple2, class Tuple3, class Tuple4, std::size_t... indices>
-auto tuple_zip_impl4(Tuple1&& t1, Tuple2&& t2, Tuple3&& t3, Tuple4&& t4, std::index_sequence<indices...> /*012*/){
+auto tuple_zip_impl(Tuple1&& t1, Tuple2&& t2, Tuple3&& t3, Tuple4&& t4, std::index_sequence<indices...> /*012*/){
 	return 
 		std::make_tuple(
 			std::make_tuple(
@@ -89,38 +89,46 @@ auto tuple_zip_impl4(Tuple1&& t1, Tuple2&& t2, Tuple3&& t3, Tuple4&& t4, std::in
 	;
 }
 
-template<class Tuple1>
-auto tuple_zip(Tuple1&& t1){
-	return detail::tuple_zip_impl1(
-		std::forward<Tuple1>(t1),
+template<class Tuple1, class... Tuples>
+auto tuple_zip(Tuple1&& t1, Tuples&&... ts){
+	return detail::tuple_zip_impl(
+		std::forward<Tuple1>(t1), std::forward<Tuples>(ts)...,
 		std::make_index_sequence<std::tuple_size<typename std::decay<Tuple1>::type>::value>()
 	);
 }
 
-template<class Tuple1, class Tuple2>
-auto tuple_zip(Tuple1&& t1, Tuple2&& t2){
-	return detail::tuple_zip_impl2(
-		std::forward<Tuple1>(t1), std::forward<Tuple2>(t2),
-		std::make_index_sequence<std::tuple_size<typename std::decay<Tuple1>::type>::value>()
-	);
-}
+//template<class Tuple1>
+//auto tuple_zip(Tuple1&& t1){
+//	return detail::tuple_zip_impl1(
+//		std::forward<Tuple1>(t1),
+//		std::make_index_sequence<std::tuple_size<typename std::decay<Tuple1>::type>::value>()
+//	);
+//}
 
-template<class Tuple1, class Tuple2, class Tuple3>
-auto tuple_zip(Tuple1&& t1, Tuple2&& t2, Tuple3&& t3){
-	return detail::tuple_zip_impl3(
-		std::forward<Tuple1>(t1), std::forward<Tuple2>(t2), std::forward<Tuple3>(t3),
-		std::make_index_sequence<std::tuple_size<typename std::decay<Tuple1>::type>::value>()
-	);
-}
+//template<class Tuple1, class Tuple2>
+//auto tuple_zip(Tuple1&& t1, Tuple2&& t2){
+//	return detail::tuple_zip_impl2(
+//		std::forward<Tuple1>(t1), std::forward<Tuple2>(t2),
+//		std::make_index_sequence<std::tuple_size<typename std::decay<Tuple1>::type>::value>()
+//	);
+//}
+
+//template<class Tuple1, class Tuple2, class Tuple3>
+//auto tuple_zip(Tuple1&& t1, Tuple2&& t2, Tuple3&& t3){
+//	return detail::tuple_zip_impl3(
+//		std::forward<Tuple1>(t1), std::forward<Tuple2>(t2), std::forward<Tuple3>(t3),
+//		std::make_index_sequence<std::tuple_size<typename std::decay<Tuple1>::type>::value>()
+//	);
+//}
 
 
-template<class Tuple1, class Tuple2, class Tuple3, class Tuple4>
-auto tuple_zip(Tuple1&& t1, Tuple2&& t2, Tuple3&& t3, Tuple4&& t4){
-	return detail::tuple_zip_impl4(
-		std::forward<Tuple1>(t1), std::forward<Tuple2>(t2), std::forward<Tuple3>(t3), std::forward<Tuple4>(t4),
-		std::make_index_sequence<std::tuple_size<typename std::decay<Tuple1>::type>::value>()
-	);
-}
+//template<class Tuple1, class Tuple2, class Tuple3, class Tuple4>
+//auto tuple_zip(Tuple1&& t1, Tuple2&& t2, Tuple3&& t3, Tuple4&& t4){
+//	return detail::tuple_zip_impl4(
+//		std::forward<Tuple1>(t1), std::forward<Tuple2>(t2), std::forward<Tuple3>(t3), std::forward<Tuple4>(t4),
+//		std::make_index_sequence<std::tuple_size<typename std::decay<Tuple1>::type>::value>()
+//	);
+//}
 
 } // end namespace detail
 } // end namespace multi
