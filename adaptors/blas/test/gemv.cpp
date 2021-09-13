@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_real_complex_thrust){
 		double const a = 1.1;
 		double const b = 1.2;
 		blas::gemv(a, M, X, b, Y); // y = a*M*x + b*y
-		
+
 		multi::array<complex, 1> const Y3 = {214.02, 106.43, 188.37};
 	}
 	{
