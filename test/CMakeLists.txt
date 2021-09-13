@@ -48,9 +48,9 @@ foreach(TEST_FILE ${TEST_SRCS})
   target_link_directories   (${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
   if(NOT ENABLE_CUDA AND (NOT DART_COMPILER_NAME STREQUAL "nvcc"))
     target_compile_options  (${TEST_EXE} PRIVATE
-       -Werror -Wall
+       -Werror -Wall -Wshadow -Wsign-conversion -Wold-style-cast -Wcast-align -Wunused -Wnon-virtual-dtor -Woverloaded-virtual -Wcast-qual -Wconversion -Wnull-dereference -Wformat=2
        $<$<CXX_COMPILER_ID:GNU>:
-                             -Wextra -Wpedantic -Wuninitialized -Wformat-truncation> #-Wconversion 
+                             -Wextra -Wpedantic -Wuninitialized -Wformat-truncation -Wdouble-promotion -Wmisleading-indentation -Wduplicated-cond -Wduplicated-branches -Wlogical-op> #-Wconversion 
        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
                              -Wextra -Wpedantic -Wmove>
        $<$<CXX_COMPILER_ID:Intel>:
@@ -58,7 +58,7 @@ foreach(TEST_FILE ${TEST_SRCS})
        $<$<CXX_COMPILER_ID:PGI>: #PGI 20  doesn't recognize the -Wextra option
                                                          --diag_suppress=implicit_return_from_non_void_function>
        $<$<CXX_COMPILER_ID:MSVC>:
-          /W4>)
+          /WX /W4>)
   endif()
   add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
 endforeach()
