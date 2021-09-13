@@ -1344,6 +1344,19 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_square_automatic){
 		blas::gemm_n(1., begin(a), size(a), begin(blas::T(b)), 0., begin(c)); // c=ab⸆, c⸆=ba⸆
 		BOOST_REQUIRE( c[1][0] == complex(178, 75) );
 	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_square_automatic_part2){
+	using complex = std::complex<double>; complex const I{0, 1};
+	multi::array<complex, 2> const a = {
+		{ 1. + 2.*I, 3. - 3.*I},
+		{ 9. + 1.*I, 7. + 4.*I},
+	};
+	multi::array<complex, 2> const b = {
+		{ 11. + 1.*I, 12. + 1.*I},
+		{  7. + 8.*I, 19. - 2.*I},
+	};
+	namespace blas = multi::blas;
 	{
 		multi::array<complex, 2> c({2, 2});
 		blas::gemm(1., blas::T(a), b, 0., c); // c=a⸆b, c⸆=b⸆a
@@ -1379,6 +1392,19 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_square_automatic){
 		blas::gemm(1., blas::H(a), b, 0., c); // c=a†b, c†=b†a
 		BOOST_REQUIRE( c[1][0] == complex(111, 64) and c[1][1] == complex(158, -51) );
 	}
+}
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_square_automatic_part3){
+	using complex = std::complex<double>; complex const I{0, 1};
+	multi::array<complex, 2> const a = {
+		{ 1. + 2.*I, 3. - 3.*I},
+		{ 9. + 1.*I, 7. + 4.*I},
+	};
+	multi::array<complex, 2> const b = {
+		{ 11. + 1.*I, 12. + 1.*I},
+		{  7. + 8.*I, 19. - 2.*I},
+	};
+	namespace blas = multi::blas;
 	{
 		multi::array<complex, 2> c({2, 2});
 		blas::gemm_n(1., begin(blas::H(a)), size(blas::H(a)), begin(b), 0., begin(c)); // c=a†b, c†=b†a
