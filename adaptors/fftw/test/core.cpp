@@ -300,7 +300,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_power_plan){
 	multi::array<complex, 2> in({16, 16});
 	std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 	multi::array<complex, 2> out(extensions(in));
-	multi::fftw::plan const p{in, out, fftw::forward, static_cast<unsigned>(fftw::preserve_input)};
+	multi::fftw::plan const p{in, out, fftw::forward, fftw::preserve_input};
 	p(); //execute(p); //p.execute();
 	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-8 );
 }
