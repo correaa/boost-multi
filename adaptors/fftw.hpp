@@ -515,7 +515,7 @@ int plan::nthreads_ = (initialize_threads(), with_nthreads());
 using sign = int;
 constexpr sign forward = FFTW_FORWARD;
 constexpr sign none = 0;
-constexpr sign backward = FFTW_BACKWARD; 
+constexpr sign backward = FFTW_BACKWARD;
 
 static_assert( forward != none and none != backward and backward != forward, "!");
 
@@ -535,13 +535,13 @@ auto dft(std::array<bool, +D> which, In const& i, Out&& o, sign s)
 
 template<typename In, class Out, dimensionality_type D=In::rank_v, dimensionality_type=std::decay_t<Out>::rank_v>
 auto dft(std::array<sign, +D> w, In const& i, Out&& o){
-	std::array<bool, D> fwd{};
 //	std::array<bool, D> non;
-	std::array<bool, D> bwd{};
 
+	std::array<bool, D> fwd{};
 	std::transform(begin(w), end(w), begin(fwd), [](auto e){return e==FFTW_FORWARD;});
 	dft(fwd, i, o, fftw::forward);
 
+	std::array<bool, D> bwd{};
 	std::transform(begin(w), end(w), begin(bwd), [](auto e){return e==FFTW_BACKWARD;}); 
 	if(std::accumulate(begin(bwd), end(bwd), false)){dft(bwd, o, o, FFTW_BACKWARD);}
 
