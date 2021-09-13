@@ -221,8 +221,7 @@ clang++-tidy:
     - $CXX --version
     - clang-tidy --version
     - mkdir build && cd build
-    - clang-tidy -checks=*,-fuchsia-default-arguments-calls,-fuchsia-statically-constructed-objects,-cppcoreguidelines-pro-type-vararg,-hicpp-vararg,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-cppcoreguidelines-macro-usage,-cppcoreguidelines-avoid-non-const-global-variables,-llvmlibc-implementation-in-namespace,-llvmlibc-callee-namespace,-llvmlibc-restrict-system-libc-headers,-cert-err58-cpp --warnings-as-errors=* --list-checks
-    - cmake .. -DCMAKE_CXX_CLANG_TIDY="clang-tidy;-header-filter=.;-checks=*,-readability-magic-numbers,-modernize-use-nodiscard,-altera-struct-pack-align,-cert-err58-cpp,-cppcoreguidelines-avoid-non-const-global-variables,-cppcoreguidelines-macro-usage,-cppcoreguidelines-pro-type-vararg,-cppcoreguidelines-avoid-magic-numbers,-fuchsia-default-arguments-calls,-fuchsia-trailing-return,-fuchsia-statically-constructed-objects,-fuchsia-overloaded-operator,-hicpp-vararg,-llvm-header-guard,-llvmlibc-restrict-system-libc-headers,-llvmlibc-implementation-in-namespace,-llvmlibc-callee-namespace;--warnings-as-errors=*"
+    - cmake .. -DCMAKE_CXX_CLANG_TIDY="clang-tidy"
     - cmake --build . --verbose -- --quiet --no-print-directory
     - ctest --output-on-failure
 
