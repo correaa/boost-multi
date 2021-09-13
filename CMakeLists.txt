@@ -24,7 +24,7 @@ target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_14)
 
 enable_testing()
 find_program(MEMORYCHECK_COMMAND valgrind)
-set(MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --error-exitcode=1")
+set(MEMORYCHECK_COMMAND_OPTIONS "--show-reachable=yes --trace-children=yes --track-origins=yes --leak-check=full --error-exitcode=1")
 include(CTest)
 add_subdirectory(test)
 
