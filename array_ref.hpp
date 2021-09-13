@@ -1303,7 +1303,10 @@ struct basic_array<T, dimensionality_type{0}, ElementPtr, Layout> :
 	constexpr operator element_ref ()                             &{return *(this->base_);} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 	constexpr operator element_cref()                        const&{return *(this->base_);} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 
-//	constexpr operator typename basic_array::element_type() const&{return *(this->base_);} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax, like double const n2 = blas::nrm2(Y - Y3);
+//	constexpr          operator typename basic_array::element_type()     &&{return std::move(*(this->base_));} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax, like double const n2 = blas::nrm2(Y - Y3);
+//	constexpr explicit operator typename basic_array::element_type()      &{return           *(this->base_) ;} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax, like double const n2 = blas::nrm2(Y - Y3);
+//	constexpr explicit operator typename basic_array::element_type() const&{return           *(this->base_) ;} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax, like double const n2 = blas::nrm2(Y - Y3);
+
 
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int /*version*/){
