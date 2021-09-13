@@ -581,8 +581,8 @@ public:
 		new_layout.stride_*=s;
 		return {new_layout, types::base_};
 	}
-	constexpr auto sliced(typename types::index first, typename types::index last, typename types::index stride) const -> basic_array{
-		return sliced(first, last).strided(stride);
+	constexpr auto sliced(typename types::index first, typename types::index last, typename types::index stride_) const -> basic_array{
+		return sliced(first, last).strided(stride_);
 	}
 	using index_range = typename basic_array::index_range;
 
@@ -1112,10 +1112,11 @@ public:
 	}
 
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
-	constexpr auto reinterpret_array_cast(size_type n) & -> basic_array<std::decay_t<T2>, D + 1, P2>{
+	constexpr auto reinterpret_array_cast(multi::size_type n) & -> basic_array<std::decay_t<T2>, D + 1, P2>{
 		static_assert( sizeof(T)%sizeof(T2) == 0,
 			"error: reinterpret_array_cast is limited to integral stride values");
-		assert( sizeof(T) == sizeof(T2)*n ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		assert( n > 0 );
+		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(n) ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		typename basic_array::element_ptr const thisbase = this->base();
 		P2 new_base; std::memcpy(static_cast<void*>(&new_base), static_cast<void const*>(&thisbase), sizeof(P2)); //reinterpret_cast<P2 const&>(thisbase) // TODO find a better way, fancy pointers wouldn't need reinterpret_cast
 		return { 
@@ -1124,13 +1125,13 @@ public:
 		};
 	}
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
-	constexpr auto reinterpret_array_cast(size_type n)     && -> basic_array<std::decay_t<T2>, D + 1, P2>{return reinterpret_array_cast<T2, P2>(n);}
+	constexpr auto reinterpret_array_cast(multi::size_type n)     && -> basic_array<std::decay_t<T2>, D + 1, P2>{return reinterpret_array_cast<T2, P2>(n);}
 
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2 const> >
 	constexpr auto reinterpret_array_cast(size_type n) const& -> basic_array<std::decay_t<T2>, D + 1, P2>{
 		static_assert( sizeof(T)%sizeof(T2) == 0,
 			"error: reinterpret_array_cast is limited to integral stride values");
-		assert( sizeof(T) == sizeof(T2)*n ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : checck implicit size compatibility
+		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(n) ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : checck implicit size compatibility
 		return { 
 			layout_t<D+1>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n}.rotate(), 
 			static_cast<P2>(static_cast<void*>(this->base()))
@@ -1302,7 +1303,7 @@ struct basic_array<T, dimensionality_type{0}, ElementPtr, Layout> :
 	constexpr operator element_ref ()                             &{return *(this->base_);} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 	constexpr operator element_cref()                        const&{return *(this->base_);} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 
-	constexpr operator typename basic_array::element_type() const&{return *(this->base_);} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax, like double const n2 = blas::nrm2(Y - Y3);
+//	constexpr operator typename basic_array::element_type() const&{return *(this->base_);} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax, like double const n2 = blas::nrm2(Y - Y3);
 
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int /*version*/){
@@ -1729,7 +1730,7 @@ public:
 		static_assert(sizeof(T)%sizeof(T2) == 0, 
 			"array_member_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements");
 #if defined(__GNUC__) and (not defined(__INTEL_COMPILER))
-		auto&& r1 = (*((typename basic_array::element_type*)(basic_array::base_))).*pm;//->*pm; // NOLINT(google-readability-casting) : alternative for GCC/NVCC
+		auto&& r1 = (*(reinterpret_cast<typename basic_array::element_type* const&>(basic_array::base_))).*pm;//->*pm; // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : reinterpret is what the function does. alternative for GCC/NVCC
 		auto* p1 = &r1; P2 p2 = reinterpret_cast<P2&>(p1); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : TODO(correaa) : find a better way
 		return {this->layout().scale(sizeof(T)/sizeof(T2)), p2};
 #else
@@ -2059,7 +2060,7 @@ array_ptr(It, index_extensions<2>)->array_ptr<V, 2, It>;
 template<class It, typename V = typename std::iterator_traits<It>::value_type>
 array_ptr(It, index_extensions<3>)->array_ptr<V, 3, It>;
 
-template<class T, std::size_t N, typename V = typename std::remove_all_extents<T[N]>::type, std::size_t D = std::rank<T[N]>{}> array_ptr(T(*)[N])->array_ptr<V, D>; // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
+template<class T, std::size_t N, typename V = typename std::remove_all_extents<T[N]>::type, std::size_t D = std::rank<T[N]>{}> array_ptr(T(*)[N])->array_ptr<V, static_cast<multi::dimensionality_type>(D)>; // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
 
 //#if not defined(__clang__)
 //template<class It, dimensionality_type D, typename V = typename std::iterator_traits<It>::value_type>
@@ -2088,9 +2089,9 @@ constexpr auto rotated(T(&t)[N]) noexcept{return multi::array_ref<std::remove_al
 }
 
 template<class TD, class Ptr> struct Array_aux;
-template<class T, std::size_t D, class Ptr> struct Array_aux<T   [D], Ptr>{using type = array    <T, D, Ptr>  ;}; // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : enable syntax
-template<class T, std::size_t D, class Ptr> struct Array_aux<T(&)[D], Ptr>{using type = array_ref<T, D, Ptr>&&;}; // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : enable syntax
-template<class T, std::size_t D, class Ptr> struct Array_aux<T(*)[D], Ptr>{using type = array_ptr<T, D, Ptr>  ;}; // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : enable syntax
+template<class T, std::size_t D, class Ptr> struct Array_aux<T   [D], Ptr>{using type = array    <T, static_cast<multi::dimensionality_type>(D), Ptr>  ;}; // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : enable syntax
+template<class T, std::size_t D, class Ptr> struct Array_aux<T(&)[D], Ptr>{using type = array_ref<T, static_cast<multi::dimensionality_type>(D), Ptr>&&;}; // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : enable syntax
+template<class T, std::size_t D, class Ptr> struct Array_aux<T(*)[D], Ptr>{using type = array_ptr<T, static_cast<multi::dimensionality_type>(D), Ptr>  ;}; // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : enable syntax
 
 template<class TD, class Second =
 	std::conditional_t<
