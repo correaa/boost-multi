@@ -221,8 +221,7 @@ clang++-tidy:
     - $CXX --version
     - clang-tidy --version
     - mkdir build && cd build
-    - clang-tidy -checks=*,-fuchsia-default-arguments-calls,-fuchsia-statically-constructed-objects,-cppcoreguidelines-pro-type-vararg,-hicpp-vararg,-cppcoreguidelines-avoid-magic-numbers,-readability-magic-numbers,-cppcoreguidelines-macro-usage,-cppcoreguidelines-avoid-non-const-global-variables,-llvmlibc-implementation-in-namespace,-llvmlibc-callee-namespace,-llvmlibc-restrict-system-libc-headers,-cert-err58-cpp --warnings-as-errors=* --list-checks
-    - cmake .. -DCMAKE_CXX_CLANG_TIDY="clang-tidy;-header-filter=.;-checks=*,-readability-magic-numbers,-modernize-use-nodiscard,-altera-struct-pack-align,-cert-err58-cpp,-cppcoreguidelines-avoid-non-const-global-variables,-cppcoreguidelines-macro-usage,-cppcoreguidelines-pro-type-vararg,-cppcoreguidelines-avoid-magic-numbers,-fuchsia-default-arguments-calls,-fuchsia-trailing-return,-fuchsia-statically-constructed-objects,-fuchsia-overloaded-operator,-hicpp-vararg,-llvm-header-guard,-llvmlibc-restrict-system-libc-headers,-llvmlibc-implementation-in-namespace,-llvmlibc-callee-namespace;--warnings-as-errors=-"
+    - cmake .. -DCMAKE_CXX_CLANG_TIDY="clang-tidy"
     - cmake --build . --verbose -- --quiet --no-print-directory
     - ctest --output-on-failure
 
@@ -585,7 +584,7 @@ icpc-runner: # image: intel/oneapi-basekit
       - ctest --output-on-failure
 
 #oneapi: # WARNING: Failed to pull image with policy "always": failed to register layer: Error processing tar file(exit status 1): write /opt/intel/oneapi/mkl/2021.1-beta08/lib/intel64/libmkl_pgi_thread.a: no space left on device (manager.go:205:310s)
-#    image: intel/oneapi-basekit
+#    image: intel/oneapi
 #    stage: test
 #    script:
 #        - . /opt/intel/oneapi/setvars.sh

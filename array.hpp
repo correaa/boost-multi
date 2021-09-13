@@ -158,7 +158,7 @@ public:
 	static_array(It first, It last, typename static_array::allocator_type const& a) :
 		array_alloc{a},
 		ref{
-			array_alloc::allocate(typename static_array::layout_t{index_extension(adl_distance(first, last))*multi::extensions(*first)}.num_elements()), 
+			array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{index_extension(adl_distance(first, last))*multi::extensions(*first)}.num_elements())),
 			index_extension(adl_distance(first, last))*multi::extensions(*first)
 		}
 	{
@@ -198,21 +198,21 @@ public:
 
 	static_array(typename static_array::extensions_type x, typename static_array::element const& e, typename static_array::allocator_type const& a) : //2
 		array_alloc{a}, 
-		ref(array_alloc::allocate(typename static_array::layout_t{x}.num_elements()), x)
+		ref(array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{x}.num_elements())), x)
 	{
-		array_alloc::uninitialized_fill_n(this->data_elements(), this->num_elements(), e);
+		array_alloc::uninitialized_fill_n(this->data_elements(), static_cast<typename std::allocator_traits<allocator_type>::size_type>(this->num_elements()), e);
 	}
 	template<class Element, std::enable_if_t<std::is_convertible<Element, typename static_array::element>{} and D==0, int> = 0>
 	explicit static_array(Element const& e, typename static_array::allocator_type const& a) :
 		static_array(typename static_array::extensions_type{}, e, a){}
 
 	static_array(typename static_array::extensions_type x, typename static_array::element const& e) : //2
-		array_alloc{}, ref(array_alloc::allocate(typename static_array::layout_t{x}.num_elements()), x)
+		array_alloc{}, ref(array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{x}.num_elements())), x)
 	{
-		array_alloc::uninitialized_fill_n(this->base(), this->num_elements(), e);
+		array_alloc::uninitialized_fill_n(this->base(), static_cast<typename std::allocator_traits<allocator_type>::size_type>(this->num_elements()), e);
 	}
 	explicit static_array(typename static_array::extensions_type x, typename std::allocator_traits<Alloc>::const_void_pointer hint) :
-		array_alloc{}, ref(array_alloc::allocate(typename static_array::layout_t{x}.num_elements(), hint), x)
+		array_alloc{}, ref(array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{x}.num_elements()), hint), x)
 	{}
 
 	template<class ValueType, typename = std::enable_if_t<std::is_same<ValueType, typename static_array::value_type>{}>>
@@ -224,7 +224,7 @@ public:
 
 // analgous to std::vector::vector ((4)) https://en.cppreference.com/w/cpp/container/vector/vector
 	explicit static_array(typename static_array::extensions_type x, typename static_array::allocator_type const& a) :
-		array_alloc{a}, ref{array_alloc::allocate(typename static_array::layout_t{x}.num_elements()), x}
+		array_alloc{a}, ref{array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{x}.num_elements())), x}
 	{
 		if(not std::is_trivially_default_constructible<typename static_array::element_type>{}){
 			uninitialized_default_construct(); // TODO(correaa) : make if constexpr (effectively)
@@ -265,7 +265,7 @@ public:
 //	}
 	static_array(static_array const& o) :                                 //5b
 		array_alloc{std::allocator_traits<Alloc>::select_on_container_copy_construction(o.alloc())}, 
-		ref{array_alloc::allocate(o.num_elements(), o.data_elements()), extensions(o)}
+		ref{array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(o.num_elements()), o.data_elements()), extensions(o)}
 	{
 		uninitialized_copy_elements(o.data_elements());
 	}
@@ -497,9 +497,9 @@ public:
 	}
 	static_array(typename static_array::element_type const& e, allocator_type const& a)
 		: static_array(typename static_array::extensions_type{}, e, a){}
-	auto uninitialized_fill(typename static_array::element const& e){array_alloc::uninitialized_fill_n(this->base_, this->num_elements(), e);}
+	auto uninitialized_fill(typename static_array::element const& e){array_alloc::uninitialized_fill_n(this->base_, static_cast<typename std::allocator_traits<allocator_type>::size_type>(this->num_elements()), e);}
 	static_array(typename static_array::extensions_type const& x, typename static_array::element const& e)  //2
-		: array_alloc{}, ref(static_array::allocate(typename static_array::layout_t{x}.num_elements()), x)
+		: array_alloc{}, ref(static_array::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{x}.num_elements())), x)
 	{
 		uninitialized_fill(e);
 	}
@@ -570,7 +570,7 @@ public:
 	}
 	static_array(static_array&& o) noexcept :   // it is private because it is a valid operation for derived classes //5b
 		array_alloc{o.get_allocator()}, 
-		ref{static_array::allocate(o.num_elements(), o.data_elements()), o.extensions()}
+		ref{static_array::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(o.num_elements()), o.data_elements()), o.extensions()}
 	{
 		uninitialized_move(o.data_elements());
 	}
@@ -912,7 +912,7 @@ public:
 	}
 
 	template<class IE>
-	[[deprecated]] auto reextent(std::array<IE/*index_extension*/, D> e) -> decltype(auto){
+	[[deprecated]] auto reextent(std::array<IE/*index_extension*/, static_cast<std::size_t>(D)> e) -> decltype(auto){
 		return reextent(typename array::extensions_type{e});
 	}
 	auto reextent(typename array::extensions_type const& x) -> array& {
@@ -925,7 +925,7 @@ public:
 		tmp.apply(is) = this->apply(is);
 		swap(tmp);
 #else
-		auto&& tmp = typename array::ref{this->static_::array_alloc::allocate(typename array::layout_t{x}.num_elements(), this->data_elements()), x};
+		auto&& tmp = typename array::ref{this->static_::array_alloc::allocate(static_cast<typename std::allocator_traits<typename array::allocator_type>::size_type>(typename array::layout_t{x}.num_elements()), this->data_elements()), x};
 		if(not std::is_trivially_default_constructible<typename array::element>{}){
 			adl_alloc_uninitialized_value_construct_n(this->alloc(), tmp.data_elements(), tmp.num_elements());
 		}
@@ -948,8 +948,8 @@ public:
 		tmp.apply(is) = this->apply(is);
 		swap(tmp);
 #else // implementation with hint
-		auto&& tmp = typename array::ref{this->static_::array_alloc::allocate(typename array::layout_t{x}.num_elements(), this->data_elements()), x};
-		this->uninitialized_fill_n(tmp.data_elements(), tmp.num_elements(), e);
+		auto&& tmp = typename array::ref{this->static_::array_alloc::allocate(static_cast<typename std::allocator_traits<typename array::allocator_type>::size_type>(typename array::layout_t{x}.num_elements()), this->data_elements()), x};
+		this->uninitialized_fill_n(tmp.data_elements(), static_cast<typename std::allocator_traits<typename array::allocator_type>::size_type>(tmp.num_elements()), e);
 		auto const is = intersection(this->extensions(), x);
 		tmp.apply(is) = this->apply(is);
 		this->destroy();
@@ -1001,7 +1001,8 @@ public:
 #undef IL
 //#endif
 
-template<class T, class A=std::allocator<T>> array(T[], A={})->array<T, 1, A>; // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+template<class T>              array(T[]       )->array<T, 1, std::allocator<T>>; // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+template<class T, class Alloc> array(T[], Alloc)->array<T, 1, Alloc            >; // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 
 //template<class Array, class E = typename multi::array_traits<Array>::element, class A=std::allocator<E>, class=std::enable_if_t<is_allocator<A>{}>> array(Array            , A={})->array<typename multi::array_traits<Array>::element, 1, A>;
 
@@ -1045,7 +1046,7 @@ template<typename T, dimensionality_type D, typename P> array(basic_array<T, D, 
 template <class T, std::size_t N>
 auto decay(const T(&t)[N]) noexcept -> multi::array<typename std::remove_all_extents<T[N]>::type, std::rank<T[N]>{}>{return multi::array_cref<typename std::remove_all_extents<T[N]>::type, std::rank<T[N]>{}>(data_elements(t), extensions(t));} // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 
-template<class T, size_t N>
+template<class T, std::size_t N>
 struct array_traits<T[N], void, void>{ // // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 	using reference = T&;
 	using element = std::remove_all_extents_t<T[N]>; // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility

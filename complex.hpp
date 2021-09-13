@@ -13,7 +13,7 @@ $CXX $0 -o $0x&&$0x&&rm $0x;exit
 namespace boost{
 namespace multi{
 
-constexpr class adl_conj_fn__{
+constexpr class adl_conj_t{
 	template<class... As>          auto _(priority<1>/**/,        As&&... as) const JUSTRETURN(              std::conj(std::forward<As>(as)...))
 	template<class... As>          auto _(priority<2>/**/,        As&&... as) const DECLRETURN(                   conj(std::forward<As>(as)...))
 	template<class T, class... As> auto _(priority<3>/**/, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).conj(std::forward<As>(as)...))
@@ -21,7 +21,7 @@ public:
 	template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<3>{}, std::forward<As>(as)...))
 } adl_conj;
 
-constexpr class adl_real_fn__{
+constexpr class adl_real_t{
 	template<class... As>          auto _(priority<1>/**/,        As&&... as) const DECLRETURN(              std::real(std::forward<As>(as)...))
 	template<class... As>          auto _(priority<2>/**/,        As&&... as) const DECLRETURN(                   real(std::forward<As>(as)...))
 	template<class T, class... As> auto _(priority<3>/**/, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).real(std::forward<As>(as)...))
@@ -29,7 +29,7 @@ public:
 	template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<3>{}, std::forward<As>(as)...))
 } adl_real;
 
-constexpr class adl_imag_fn__{
+constexpr class adl_imag_t{
 	template<class... As>          auto _(priority<1>/**/,        As&&... as) const DECLRETURN(              std::imag(std::forward<As>(as)...))
 	template<class... As>          auto _(priority<2>/**/,        As&&... as) const DECLRETURN(                   imag(std::forward<As>(as)...))
 	template<class T, class... As> auto _(priority<3>/**/, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).imag(std::forward<As>(as)...))
@@ -43,18 +43,21 @@ struct imag_t;
 template<class ValueType = double>
 struct complex{
 	using value_type = ValueType;
+
+private:
 	value_type re;
 	value_type im;
+
+public:
 	complex() = default;
+
 	// cppcheck-suppress noExplicitConstructor ; a real is a special complex without loss
-	constexpr complex(value_type real) : re{real}, im{value_type{0}}{}
+	constexpr explicit complex(value_type real) : re{real}, im{value_type{0}}{}
 	constexpr complex(value_type real, value_type imag) : re{real}, im{imag}{}
+
 	// cppcheck-suppress noExplicitConstructor ; can be copied from standard type
-	constexpr complex(std::complex<ValueType> const& other) : re{other.real()}, im{other.imag()}{}
-/*	friend value_type const& real(complex const& c){return c.real;}
-	friend value_type      & real(complex      & c){return c.real;}
-	friend value_type const& imag(complex const& c){return c.imag;}
-	friend value_type      & imag(complex      & c){return c.imag;}*/
+	constexpr explicit complex(std::complex<ValueType> const& other) : re{other.real()}, im{other.imag()}{}
+
 	template<
 		class T,
 		std::enable_if_t<
@@ -63,7 +66,9 @@ struct complex{
 			std::is_assignable<typename T::value_type&, decltype(std::declval<T>().imag())>{}, int
 		> =0
 	>
-	constexpr operator T const&() const&{return reinterpret_cast<T const&>(*this);}
+	constexpr explicit operator T const&() const&{
+		return reinterpret_cast<T const&>(*this); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+	}
 	template<
 		class T,
 		std::enable_if_t<
@@ -72,21 +77,28 @@ struct complex{
 			std::is_assignable<typename T::value_type&, decltype(std::declval<T>().imag())>{}, int
 		> =0
 	>
-	constexpr operator T&()&{return reinterpret_cast<T const&>(*this);}
-	constexpr std::complex<value_type> const& std() const&{return reinterpret_cast<std::complex<value_type> const&>(*this);}
-	constexpr std::complex<value_type>      & std()      &{return reinterpret_cast<std::complex<value_type>      &>(*this);}
+	constexpr explicit operator T&()&{return reinterpret_cast<T const&>(*this);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+
+	constexpr auto std() const& -> std::complex<value_type> const&{
+		return reinterpret_cast<std::complex<value_type> const&>(*this); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+	}
+	constexpr auto std()      & -> std::complex<value_type>      &{
+		return reinterpret_cast<std::complex<value_type>      &>(*this);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+	}
+
 	friend constexpr auto abs(complex const& self){return abs(self.std());}
-	friend constexpr complex operator-(complex const& self, complex const& other){return self.std() - other.std();}
-	constexpr value_type& real()&{return re;}
-	constexpr value_type const& real() const&{return re;}
+	friend constexpr auto operator-(complex const& self, complex const& other) -> complex{return self.std() - other.std();}
+
+	constexpr auto real()      & -> value_type      &{return re;}
+	constexpr auto real() const& -> value_type const&{return re;}
 //	friend constexpr value_type& real(complex& self){return self.re;}
 //	friend constexpr value_type const& real(complex const& self){return self.re;}
 
-	constexpr value_type& imag()&{return im;}
-	constexpr value_type const& imag() const&{return im;}
+	constexpr auto imag()      & -> value_type      &{return im;}
+	constexpr auto imag() const& -> value_type const&{return im;}
 //	friend constexpr value_type& imag(complex& self){return self.im;}
 //	friend constexpr value_type const& imag(complex const& self){return self.im;}
-	
+
 	template<class Real> constexpr auto operator+=(Real const& other)&->decltype(re += other, *this){return re += other, *this;}
 	template<class Real> constexpr auto operator-=(Real const& other)&->decltype(re -= other, *this){return re -= other, *this;}
 	template<class Real> constexpr auto operator*=(Real const& other)&->decltype(re *= other, im *= other, *this){return re *= other, im *= other, *this;}
@@ -108,7 +120,7 @@ struct real_t{
 			std::is_assignable<ValueType&, decltype(imag(std::declval<T>()))>{}, int
 		> =0
 	>
-	ValueType& operator()(T& t) const{return reinterpret_cast<multi::complex<ValueType>&>(t).real;}
+	auto operator()(T& t) const -> ValueType&{return reinterpret_cast<multi::complex<ValueType>&>(t).real;} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : TODO(correaa) : t[0]
 	template<class T, typename ValueType = typename std::decay_t<T>::value_type,
 		std::enable_if_t<
 			sizeof(T)==2*sizeof(ValueType) and 
@@ -116,7 +128,9 @@ struct real_t{
 			std::is_assignable<ValueType&, decltype(imag(std::declval<T>()))>{}, int
 		> =0
 	>
-	ValueType const& operator()(T const& t) const{return reinterpret_cast<multi::complex<ValueType> const&>(t).real;}
+	auto operator()(T const& t) const -> ValueType const&{
+		return reinterpret_cast<multi::complex<ValueType> const&>(t).real; // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : TODO(correaa) : t[0]
+	}
 };
 
 struct imag_t{
@@ -131,7 +145,9 @@ struct imag_t{
 			std::is_assignable<ValueType&, decltype(imag(std::declval<T>()))>{}, int
 		> =0
 	>
-	ValueType& operator()(T& t) const{return reinterpret_cast<multi::complex<ValueType>&>(t).imag;}
+	auto operator()(T& t) const -> ValueType&{
+		return reinterpret_cast<multi::complex<ValueType>&>(t).imag; // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : TODO(correaa) : t[1]
+	}
 	template<class T, typename ValueType = typename std::decay_t<T>::value_type,
 		std::enable_if_t<
 			sizeof(T)==2*sizeof(ValueType) and 
@@ -139,7 +155,9 @@ struct imag_t{
 			std::is_assignable<ValueType&, decltype(imag(std::declval<T>()))>{}, int
 		> =0
 	>
-	ValueType const& operator()(T const& t) const{return reinterpret_cast<multi::complex<ValueType> const&>(t).imag;}
+	auto operator()(T const& t) const -> ValueType const&{
+		return reinterpret_cast<multi::complex<ValueType> const&>(t).imag; // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : TODO(correaa) : t[1] 
+	}
 };
 
 /*
@@ -166,13 +184,14 @@ decltype(auto) member_array_cast(Array&& a, imag_t const*){
 static constexpr real_t real MAYBE_UNUSED;
 static constexpr imag_t imag MAYBE_UNUSED;
 
-}}
+} // end namespace multi
+} // end namespace boost
 
 namespace std{
 	template<class T>
 	struct is_trivially_default_constructible<std::complex<T>> : 
 		is_trivially_default_constructible<T>{};
-}
+} // end namespace std
 
 #if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 

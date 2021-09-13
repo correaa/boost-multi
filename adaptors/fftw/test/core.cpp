@@ -1,18 +1,18 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // © Alfredo A. Correa 2020-2021
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW transpose"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
-#include "../../../adaptors/../complex.hpp"
+//#include "../../../adaptors/../complex.hpp"
 #include "../../../adaptors/fftw.hpp"
 #include "../../../array.hpp"
 
 #include<chrono>
 #include<random>
 
-//#include<thrust/complex.h> // TODO make lib work with thrust complex
+//#include<thrust/complex.h> // TODO(correaa) make lib work with thrust complex
 
 namespace{
 
@@ -300,7 +300,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_power_plan){
 	multi::array<complex, 2> in({16, 16});
 	std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 	multi::array<complex, 2> out(extensions(in));
-	multi::fftw::plan const p{in, out, fftw::forward, static_cast<unsigned>(fftw::preserve_input)};
+	multi::fftw::plan const p{in, out, fftw::forward, fftw::preserve_input};
 	p(); //execute(p); //p.execute();
 	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-8 );
 }

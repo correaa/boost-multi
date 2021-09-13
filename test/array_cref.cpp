@@ -1,29 +1,17 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
-#endif
-// © Alfredo A. Correa 2019-2020
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// © Alfredo A. Correa 2019-2021
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi References"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
-#include "../array.hpp"
+#include "../array_ref.hpp"
 
 #include<complex>
 #include<vector>
 
 namespace multi = boost::multi;
 using complex = std::complex<double>;
-
-BOOST_AUTO_TEST_CASE(array_cref_no_mention_type){
-
-//	std::vector<double> v(20, 1.);// {1., 2.});
-
-//	auto&& v2D = *(v.data()/multi::iextensions<2>{4, 5});
-//	BOOST_REQUIRE( &v[2] == &v2D[0][2] );
-//	v2D[1][1] = 30.;
-
-}
 
 BOOST_AUTO_TEST_CASE(array_cref){
 

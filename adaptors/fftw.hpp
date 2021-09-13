@@ -9,6 +9,9 @@ $CXXX $CXXFLAGS $0 -o $0x$OXX `pkg-config --cflags --libs fftw3 cuda-11.0` -lboo
 #include "../adaptors/../array.hpp"
 #include "../adaptors/../config/NODISCARD.hpp"
 
+
+#include "../detail/tuple_zip.hpp"
+
 #include<algorithm> // sort
 #include<complex>
 #include<numeric> // accumulate
@@ -31,12 +34,12 @@ template<class T> constexpr std::add_const_t<T>& as_const(T& t) noexcept{return 
 #endif
 
 struct flags{
-	using underlying_type = decltype(FFTW_PRESERVE_INPUT);
+	using underlying_type = decltype(FFTW_PRESERVE_INPUT); // NOLINT(hicpp-signed-bitwise) : macro definition in external library
 private:
 	underlying_type underlying_;
 public:
 	constexpr explicit flags(underlying_type underlying) : underlying_{underlying}{}
-	constexpr        operator underlying_type() const{return underlying_;}
+	constexpr explicit operator underlying_type() const{return underlying_;}
 	friend constexpr auto operator|(flags f1, flags f2){return flags{f1.underlying_ | f2.underlying_};}
 };
 
@@ -46,7 +49,7 @@ constexpr flags preserve_input{FFTW_PRESERVE_INPUT}; // NOLINT(hicpp-signed-bitw
 
 // // NOLINT(): this is a defect in FFTW https://github.com/FFTW/fftw3/issues/246
 
-}
+} // end namespace fftw
 
 #if 0
 template<typename Size>
@@ -199,100 +202,166 @@ template<class T> constexpr auto _constx(T&&t) -> std::remove_reference_t<T>{ret
 
 template<typename It1, class It2, std::enable_if_t<std::is_pointer<decltype(base(It2{}))>{} or std::is_convertible<decltype(base(It2{})), std::complex<double>*>{}, int> = 0
 >
-auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, unsigned flags = FFTW_ESTIMATE)
-->decltype(reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double>*>*/(base(d_first))), fftw_plan{}){
+auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, fftw::flags flags)
+->decltype(reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double>*>*/(base(d_first))), fftw_plan{}){ // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : interact with legacy code
 
 	static_assert( sizeof(*base(  first)) == sizeof(real(*base(  first))) + sizeof(imag(*base(  first))) and sizeof(*base(  first)) == sizeof(fftw_complex), 
 		"input  must have complex pod layout" );
 	static_assert( sizeof(*base(d_first)) == sizeof(real(*base(d_first))) + sizeof(imag(*base(d_first))) and sizeof(*base(d_first)) == sizeof(fftw_complex), 
 		"output must have complex pod layout");
 
-	assert(sizes(*first)==sizes(*d_first));
-	auto ion      = to_array<int>(sizes(*first));
-
 	assert(strides(*first) == strides(*last));
-	auto istrides = to_array<int>(strides(*first));
-	auto ostrides = to_array<int>(strides(*d_first));
+	assert(sizes(*first)==sizes(*d_first));
 
-	std::array<std::array<int, 3>, std::decay_t<decltype(*It1{})>::rank::value> ssn;
-	for(std::size_t i = 0; i != ssn.size(); ++i) ssn[i] = {istrides[i], ostrides[i], ion[i]};
+	auto const ssn_tuple = multi::detail::tuple_zip(strides(*first  ), strides(*d_first), sizes(*first));
+	auto ssn = std::apply([](auto... e){return std::array<std::tuple<int, int, int>, sizeof...(e)>{
+		std::make_tuple(static_cast<int>(std::get<0>(e)), static_cast<int>(std::get<1>(e)), static_cast<int>(std::get<2>(e)))...
+	};}, ssn_tuple);
 	std::sort(ssn.begin(), ssn.end(), std::greater<>{});
 
-	for(std::size_t i = 0; i != ssn.size(); ++i){
-		istrides[i] = std::get<0>(ssn[i]);
-		ostrides[i] = std::get<1>(ssn[i]);
-		ion[i]      = std::get<2>(ssn[i]);
-	}
+	auto const istrides = [&](){
+		std::array<int, std::decay_t<decltype(*It1{})>::rank::value> istrides{};
+		std::transform(ssn.begin(), ssn.end(), istrides.begin(), [](auto e){return std::get<0>(e);});
+		return istrides;
+	}();
 
-	int istride = istrides.back();
-	auto inembed = istrides; inembed.fill(0);
-	int ostride = ostrides.back();
-	auto onembed = ostrides; onembed.fill(0);
-	for(std::size_t i = 1; i != onembed.size(); ++i){
-		assert(ostrides[i-1] >= ostrides[i]); // otherwise ordering is incompatible
-		assert(ostrides[i-1]%ostrides[i]==0);
-		onembed[i]=ostrides[i-1]/ostrides[i]; //	assert( onembed[i] <= ion[i] );
-		assert(istrides[i-1]%istrides[i]==0);
-		inembed[i]=istrides[i-1]/istrides[i]; //	assert( inembed[i] <= ion[i] );
-	}
+	auto const ostrides = [&](){
+		std::array<int, std::decay_t<decltype(*It1{})>::rank::value> ostrides{};
+		std::transform(ssn.begin(), ssn.end(), ostrides.begin(), [](auto e){return std::get<1>(e);});
+		return ostrides;
+	}();
+	assert( std::is_sorted(ostrides.begin(), ostrides.end(), std::greater<>{}) ); // otherwise ordering is incompatible
+
+	auto const ion      = [&](){
+		std::array<int, std::decay_t<decltype(*It1{})>::rank::value> ion     {};
+		std::transform(ssn.begin(), ssn.end(), ion     .begin(), [](auto e){return std::get<2>(e);});
+		return ion;
+	}();
+
+	auto const inembed = [&](){
+		std::array<int, std::decay_t<decltype(*It1{})>::rank::value + 1> inembed{};
+		std::adjacent_difference(
+			istrides.rbegin(), istrides.rend(), inembed.rbegin(), [](auto a, auto b){assert(a%b == 0); return a/b;}
+		);
+		return inembed;
+	}();
+
+	auto const onembed = [&](){
+		std::array<int, std::decay_t<decltype(*It1{})>::rank::value + 1> onembed{};
+		std::adjacent_difference(
+			ostrides.rbegin(), ostrides.rend(), onembed.rbegin(), [](auto a, auto b){assert(a%b == 0); return a/b;}
+		);
+		return onembed;
+	}();
 
 	auto ret = ::fftw_plan_many_dft(
-		/*int rank*/ ion.size(), 
+		/*int rank*/ ion.size(),
 		/*const int* n*/ ion.data(),
 		/*int howmany*/ last - first,
 		/*fftw_complex * in */ reinterpret_cast<fftw_complex*>(const_cast<std::complex<double>*>(static_cast<std::complex<double> const*>(base(first)))),   // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast) input data
 		/*const int *inembed*/ inembed.data(),
-		/*int*/ istride, 
+		/*int istride*/ istrides.back(),
 		/*int idist*/ stride(first),
 		/*fftw_complex * out */ reinterpret_cast<fftw_complex*>(static_cast<std::complex<double>*>(base(d_first))), // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) adapt types
 		/*const int *onembed*/ onembed.data(),
-		/*int*/ ostride, 
+		/*int ostride*/ ostrides.back(),
 		/*int odist*/ stride(d_first),
-		/*int*/ sign, /*unsigned*/ flags
+		/*int*/ sign, /*unsigned*/ static_cast<unsigned>(flags)
 	);
-	assert(ret);
+	assert(ret); // if you get null here it could be because your library doesn't support this fftw call mode
 	return ret;
+}
+
+template<typename It1, class It2, std::enable_if_t<std::is_pointer<decltype(base(It2{}))>{} or std::is_convertible<decltype(base(It2{})), std::complex<double>*>{}, int> = 0
+>
+auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign)
+->decltype(reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double>*>*/(base(d_first))), fftw_plan{}){ // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : interact with legacy code
+	return fftw_plan_many_dft(first, last, d_first, sign, fftw::estimate);
 }
 
 template<
 	class In, class Out, dimensionality_type D = std::decay_t<In>::rank_v,
 	class=std::enable_if_t<D==std::decay_t<Out>::rank_v>,
-	class=decltype(reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double> *>*/(base(std::declval<Out&>()))))
+	class=decltype(reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double> *>*/(base(std::declval<Out&>())))) // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : interact with legacy code
 >
-auto fftw_plan_dft(std::array<bool, +D> which, In&& in, Out&& out, int sign, unsigned flags) -> fftw_plan{
+auto fftw_plan_dft(std::array<bool, +D> which, In&& in, Out&& out, int sign, fftw::flags flags) -> fftw_plan{
 	static_assert( sizeof(*base(in )) == sizeof((*base(in )).real()) + sizeof((*base(in)).imag()) and sizeof(*base(in)) == sizeof(fftw_complex), 
 		"input must have complex pod layout" );
 	static_assert( sizeof(*base(out)) == sizeof((*base(out)).real()) + sizeof((*base(in)).imag()) and sizeof(*base(out)) == sizeof(fftw_complex), 
 		"output must have complex pod layout" );
 
-	using multi::sizes;
-	assert(sizes(in) == sizes(out));
+	assert(in.sizes() == out.sizes());
 
-	using multi::strides;
-	auto ion      = to_array<ptrdiff_t>(in.sizes()   );
-	auto istrides = to_array<ptrdiff_t>(in.strides() );
-	auto ostrides = to_array<ptrdiff_t>(out.strides());
+	auto const sizes_tuple   = in.sizes();
+	auto const istride_tuple = in.strides();
+	auto const ostride_tuple = out.strides();
 
-	std::array<fftw_iodim64, D> dims;
-	auto l_dims = dims.begin();
+	auto which_iodims = std::apply([](auto... e){
+		return std::array<std::pair<bool, fftw_iodim64>, sizeof...(e)>{
+			std::pair<bool, fftw_iodim64>{
+				std::get<0>(e),
+				fftw_iodim64{std::get<1>(e), std::get<2>(e), std::get<3>(e)}
+			}...
+		};
+	}, boost::multi::detail::tuple_zip(which, sizes_tuple, istride_tuple, ostride_tuple));
+	auto p = std::stable_partition(which_iodims.begin(), which_iodims.end(), [](auto e){return std::get<0>(e);});
 
-	std::array<fftw_iodim64, D> howmany;
-	auto l_howmany = howmany.begin();
+	std::array<fftw_iodim64, D> dims{};
+	auto const dims_end         = std::transform(which_iodims.begin(), p,         dims.begin(), [](auto e){return e.second;});
 
-	for(int i=0; i!=D; ++i){*(which[i]?l_dims:l_howmany)++ = {ion[i], istrides[i], ostrides[i]};}
+	std::array<fftw_iodim64, D> howmany_dims{};
+	auto const howmany_dims_end = std::transform(p, which_iodims.end()  , howmany_dims.begin(), [](auto e){return e.second;});
 
-//	assert( D == l_dims - dims.begin() - l_howmany + howmany.begin() );
-	assert(in.base()); assert(out.base()); assert( in.extensions() == out.extensions() ); 
+//	auto const ion      = std::apply([](auto...e){return std::array{e...};}, in .sizes  ());
+//	auto const istrides = std::apply([](auto...e){return std::array{e...};}, in .strides());
+//	auto const ostrides = std::apply([](auto...e){return std::array{e...};}, out.strides());
+
+//	std::array<fftw_iodim64, D> dims{};
+//	auto l_dims = dims.begin();
+
+//	std::array<fftw_iodim64, D> howmany{};
+//	auto l_howmany = howmany.begin();
+
+//	std::for_each(
+//		which.begin(), which.end(), 
+//		[&, i = 0](auto e) mutable{
+//			if(e){
+//				*l_dims    = {ion[i], istrides[i], ostrides[i]};
+//				++l_dims;
+//			}else{
+//				*l_howmany = {ion[i], istrides[i], ostrides[i]};
+//				++l_howmany;
+//			}
+//			++i;
+//		}
+//	);
+//	for(int i=0; i != D; ++i){
+//		if(which[i]){
+//			*l_dims    = {ion[i], istrides[i], ostrides[i]};
+//			++l_dims;
+//		}else{
+//			*l_howmany = {ion[i], istrides[i], ostrides[i]};
+//			++l_howmany;
+//		}
+//	}
+
+	assert( in .base() );
+	assert( out.base() );
+
+	assert( in.extensions() == out.extensions() );
+
 	assert( (sign == -1) or (sign == +1) );
+
 	fftw_plan ret = fftw_plan_guru64_dft(
-		/*int rank*/ l_dims - dims.begin(),
+		/*int rank*/ dims_end - dims.begin(), //p - which_iodims.begin(), //l_dims - dims.begin(),
 		/*const fftw_iodim64 *dims*/ dims.data(),
-		/*int howmany_rank*/ l_howmany - howmany.begin(),
-		/*const fftw_iodim *howmany_dims*/ howmany.data(), //nullptr, //howmany_dims.data(), //;//nullptr,
+		/*int howmany_rank*/ howmany_dims_end - howmany_dims.begin(), //which_iodims.endl_howmany - howmany.begin(),
+		/*const fftw_iodim *howmany_dims*/ howmany_dims.data(), //howmany.data(), //nullptr, //howmany_dims.data(), //;//nullptr,
 		/*fftw_complex *in*/ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(/*static_cast<std::complex<double> const *>*/(in.base()))), // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast) FFTW is taken as non-const while it is really not touched
 		/*fftw_complex *out*/ reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double> *>*/(out.base())), // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-		sign, flags// | FFTW_ESTIMATE
+		sign, static_cast<unsigned>(flags) // | FFTW_ESTIMATE
 	);
+
 	assert(ret &&"fftw lib returned a null plan, if you are using MKL check the limitations of their fftw interface"); 
 	//https://software.intel.com/content/www/us/en/develop/documentation/mkl-developer-reference-c/top/appendix-d-fftw-interface-to-intel-math-kernel-library/fftw3-interface-to-intel-math-kernel-library/using-fftw3-wrappers.html
 	return ret;
@@ -301,39 +370,47 @@ auto fftw_plan_dft(std::array<bool, +D> which, In&& in, Out&& out, int sign, uns
 template<
 	class In, class Out, dimensionality_type D = std::decay_t<In>::rank_v,
 	class=std::enable_if_t<D==std::decay_t<Out>::rank_v>,
-	class=decltype(reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double> *>*/(base(std::declval<Out&>()))))
+	class=decltype(reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double> *>*/(base(std::declval<Out&>())))) // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : interact with legacy code
 >
 auto fftw_plan_dft(std::array<bool, +D> which, In&& in, Out&& out, int sign) -> fftw_plan{
-	return fftw_plan_dft(which, std::forward<In>(in), std::forward<Out>(out), sign, FFTW_ESTIMATE);
+	return fftw_plan_dft(which, std::forward<In>(in), std::forward<Out>(out), sign, fftw::estimate);
 }
 
 template<class To, class From, std::enable_if_t<std::is_convertible<From, To>{},int> =0>
 auto implicit_cast(From&& f) -> To{return static_cast<To>(f);} // TODO(correaa) : move implcit_cast to multi utility or detail
 
-template<class In, class Out, dimensionality_type D = In::rank_v, typename = decltype(reinterpret_cast<fftw_complex*>(implicit_cast<std::complex<double>*>(base(std::declval<Out&>()))))>
-auto fftw_plan_dft(In const& in, Out&& out, int s, unsigned flags = FFTW_ESTIMATE){
+template<class In, class Out, dimensionality_type D = In::rank_v, typename = decltype(reinterpret_cast<fftw_complex*>(implicit_cast<std::complex<double>*>(base(std::declval<Out&>()))))> // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : interact with legacy code
+auto fftw_plan_dft(In const& in, Out&& out, int s, fftw::flags flags){
 	static_assert( D == std::decay_t<Out>::rank_v , "!");
 	using multi::sizes; using multi::strides; assert(sizes(in) == sizes(out));
 
-	auto ion      = to_array<ptrdiff_t>(sizes(in));
-	auto istrides = to_array<ptrdiff_t>(strides(in));
-	auto ostrides = to_array<ptrdiff_t>(strides(out));
+	assert( in.sizes() == out.sizes() );
 
-	std::array<fftw_iodim64, D> dims;
-	for(int i=0; i!=D; ++i){dims[i] = {ion[i], istrides[i], ostrides[i]};} // TODO(correaa) : use std::apply
+	auto const dims = std::apply([](auto... e){
+		return std::array<fftw_iodim64, sizeof...(e)>{
+			fftw_iodim64{std::get<0>(e), std::get<1>(e), std::get<2>(e)}
+			...
+		};
+	}, boost::multi::detail::tuple_zip(in.sizes(), in.strides(), out.strides()));
 
 	auto ret = fftw_plan_guru64_dft(
 		/*int rank*/ s?D:0,
 		/*const fftw_iodim64 *dims*/ dims.data(),
 		/*int howmany_rank*/ 0,
 		/*const fftw_iodim *howmany_dims*/ nullptr, //howmany_dims.data(), //;//nullptr,
-		/*fftw_complex *in*/ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(static_cast<std::complex<double> const*>(base(in)))), 
-		/*fftw_complex *out*/ reinterpret_cast<fftw_complex*>(implicit_cast<std::complex<double>*>(base(out))),
-		s, flags
+		/*fftw_complex *in*/ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(static_cast<std::complex<double> const*>(base(in)))), // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) : interact with legacy code
+		/*fftw_complex *out*/ reinterpret_cast<fftw_complex*>(implicit_cast<std::complex<double>*>(base(out))), // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : interact with legacy code
+		s, static_cast<unsigned>(flags)
 	);
 	assert(ret);
 	return ret;
 }
+
+template<class In, class Out, dimensionality_type D = In::rank_v, typename = decltype(reinterpret_cast<fftw_complex*>(implicit_cast<std::complex<double>*>(base(std::declval<Out&>()))))> // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : interact with legacy code
+auto fftw_plan_dft(In const& in, Out&& out, int s){
+	return fftw_plan_dft(in, out, s, fftw::estimate);
+}
+
 
 namespace fftw{
 
@@ -348,6 +425,9 @@ inline void cleanup(){fftw_cleanup();}
 struct environment{
 	environment() = default;
 	environment(environment const&) = delete;
+	environment(environment&&) = delete;
+	auto operator=(environment const&) = delete;
+	auto operator=(environment&&) = delete;
 	~environment(){cleanup();}
 };
 
@@ -357,9 +437,10 @@ class plan{
 public:
 	plan(plan const&) = delete;//default;
 	plan(plan&&) = default;
+	~plan() = default;
 	template<typename... As, 
 		typename = decltype(fftw_plan_dft(std::declval<As&&>()...))
-	> 
+	>
 	explicit plan(As&&... as) : impl_{fftw_plan_dft(std::forward<As>(as)...), &fftw_destroy_plan}{
 		assert(impl_);
 	}
@@ -374,7 +455,7 @@ private:
 	void execute() const{fftw_execute(impl_.get());} //TODO(correaa): remove const
 	template<class I, class O>
 	void execute_dft(I&& i, O&& o) const{
-		::fftw_execute_dft(impl_.get(), const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(static_cast<std::complex<double> const*>(base(i)))), reinterpret_cast<fftw_complex*>(static_cast<std::complex<double>*>(base(o))));
+		::fftw_execute_dft(impl_.get(), const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(static_cast<std::complex<double> const*>(base(i)))), reinterpret_cast<fftw_complex*>(static_cast<std::complex<double>*>(base(o)))); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) : to interface with legacy fftw
 	}
 	template<class I, class O> void execute(I&& i, O&& o) const{execute_dft(std::forward<I>(i), std::forward<O>(o));}
 	friend void execute(plan const& p){p.execute();}
@@ -387,14 +468,14 @@ public:
 	void operator()(I&& i, O&& o) const{execute(std::forward<I>(i), std::forward<O>(o));}
 	void operator()()             const{execute();} // http://www.fftw.org/fftw3_doc/Thread-safety.html#Thread-safety
 
-	[[nodiscard]] double cost() const{return fftw_cost(impl_.get());}
+	[[nodiscard]] auto cost() const -> double{return fftw_cost(impl_.get());}
 	[[nodiscard]] auto flops() const{
-		struct{
-			double add;
-			double mul;
-			double fma;
-			explicit operator double() const{return add + mul + 2*fma;}
-		} ret;
+		struct ret_t{
+			double add = 0.;
+			double mul = 0.;
+			double fma = 0.;
+		//	explicit operator double() const{return add + mul + 2*fma;}
+		} ret{};
 		fftw_flops(impl_.get(), &ret.add, &ret.mul, &ret.fma);
 		return ret;
 	}
@@ -420,8 +501,8 @@ private:
 	static int nthreads_;
 	static bool initialized_threads_;
 #else
-	static constexpr bool is_thread_safe(){return false;}
-	static constexpr bool nthreads(){return true;}
+	static constexpr auto is_thread_safe() -> bool{return false;}
+	static constexpr auto nthreads() -> bool{return true;}
 	static constexpr auto with_nthreads() -> int{return 1;}
 #endif
 };
@@ -434,7 +515,7 @@ int plan::nthreads_ = (initialize_threads(), with_nthreads());
 using sign = int;
 constexpr sign forward = FFTW_FORWARD;
 constexpr sign none = 0;
-constexpr sign backward = FFTW_BACKWARD; 
+constexpr sign backward = FFTW_BACKWARD;
 
 static_assert( forward != none and none != backward and backward != forward, "!");
 
@@ -454,13 +535,13 @@ auto dft(std::array<bool, +D> which, In const& i, Out&& o, sign s)
 
 template<typename In, class Out, dimensionality_type D=In::rank_v, dimensionality_type=std::decay_t<Out>::rank_v>
 auto dft(std::array<sign, +D> w, In const& i, Out&& o){
-	std::array<bool, D> fwd;
 //	std::array<bool, D> non;
-	std::array<bool, D> bwd;
 
+	std::array<bool, D> fwd{};
 	std::transform(begin(w), end(w), begin(fwd), [](auto e){return e==FFTW_FORWARD;});
 	dft(fwd, i, o, fftw::forward);
 
+	std::array<bool, D> bwd{};
 	std::transform(begin(w), end(w), begin(bwd), [](auto e){return e==FFTW_BACKWARD;}); 
 	if(std::accumulate(begin(bwd), end(bwd), false)){dft(bwd, o, o, FFTW_BACKWARD);}
 
@@ -479,7 +560,7 @@ auto dft(In const& i, sign s)
 	return dft(i, R(extensions(i), get_allocator(i)), s);}
 
 template<typename T, dimensionality_type D, class... Args>
-decltype(auto) rotate(multi::array<T, D, Args...>& i){
+auto rotate(multi::array<T, D, Args...>& i) -> decltype(auto){
 	multi::array_ref<T, D, typename multi::array<T, D, Args...>::element_ptr> before(data_elements(i), extensions(i));
 	i.reshape(extensions(rotated(before) ));
 	fftw::dft(before, i, fftw::none);
@@ -549,7 +630,7 @@ auto copy(In const& i, Out&& o)
 
 template<typename In, class R=typename In::decay_type>
 NODISCARD("when argument is const")
-R copy(In const& i)
+auto copy(In const& i) -> R
 {//->decltype(copy(i, R(extensions(i), get_allocator(i))), R()){
 	return copy(i, R(extensions(i), get_allocator(i)));}
 

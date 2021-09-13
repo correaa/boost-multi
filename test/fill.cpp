@@ -1,6 +1,5 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $CXXFLAGS $0 -lm -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
-#endif
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// © Alfredo A. Correa 2019-2021
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi fill"
 #define BOOST_TEST_DYN_LINK
@@ -8,13 +7,9 @@ $CXX $CXXFLAGS $0 -lm -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 
 #include "../array.hpp"
 
-#include<cstddef>
-#include<iostream>  //cout
 #include<limits>
 #include<random>
 #include<type_traits> // enable_if_t
-
-#include <boost/iterator/transform_iterator.hpp>
 
 // from Howard Hinnart hash
 auto fnv1a(void const* key, std::size_t len, std::size_t h) noexcept{
@@ -58,7 +53,7 @@ BOOST_AUTO_TEST_CASE(fill_1d){
 		BOOST_REQUIRE( d1D[0] == 0. );
 		BOOST_REQUIRE( d1D[1] == 1. );
 		BOOST_REQUIRE( d1D[9] == 9. );
-		
+
 //		auto f = [](auto e){return e + 1;};
 //		copy(
 //			boost::make_transform_iterator(begin(extension(d1D)), f), 
@@ -133,7 +128,6 @@ BOOST_AUTO_TEST_CASE(fill_1d){
 //		BOOST_REQUIRE( d1D[1] >= -10. and d1D[1] <   10. ); 
 //		for(auto i : extension(d1D)) std::cout << d1D[i] << std::endl;
 	}
-	std::cout << "====\n";
 	{
 //		multi::array<double, 1> d1D(10);
 //		d1D.assign(extension(d1D)|ranges::views::transform([h=h(e())](auto i){return urd{-10, 10}(fnv1a_t{h}(i));}));

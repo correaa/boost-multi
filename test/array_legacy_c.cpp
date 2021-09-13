@@ -1,6 +1,5 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
-#endif
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// © Alfredo A. Correa 2019-2021
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi legacy adaptor example"
 #define BOOST_TEST_DYN_LINK
@@ -10,7 +9,6 @@ $CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 
 #include<complex>
 #include<iostream>
-#include<vector>
 
 namespace multi = boost::multi;
 

@@ -1,14 +1,11 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x&&$0x&&rm $0x;exit
-#endif
-// © Alfredo A. Correa 2018-2020
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// © Alfredo A. Correa 2018-2021
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi constructors"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
-#include<cassert>
-#include<iostream>
+#include "../array_ref.hpp"
 
 namespace fancy{
 
@@ -50,8 +47,6 @@ public:
 };
 template<> double ptr<double>::value = 42.;
 template<> double ptr<double const>::value = 42.;
-
-template<class T> struct ref;
 
 template<class T> struct ref{
 private:
@@ -104,8 +99,6 @@ auto copy_n(ptr<T1> /*first*/, Size /*count*/, ptr<T2> result){
 // multi-fancy glue, where should this be? 
 // In boost/multi/adaptors/MyFancyApaptor.hpp if anything, or in user code if it is very specialized
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#include "../array.hpp"
 
 namespace boost{
 namespace multi{

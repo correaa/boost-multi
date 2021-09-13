@@ -1,7 +1,5 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X $@&&rm $0.$X;exit
-#endif
-// © Alfredo A. Correa 2019-2020
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// © Alfredo A. Correa 2019-2021
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi array reference"
 #define BOOST_TEST_DYN_LINK
@@ -9,8 +7,6 @@ $CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X $@&&rm $0.$X;exit
 
 #include "../array.hpp"
 #include "../array_ref.hpp"
-
-#include<boost/multi_array.hpp>
 
 namespace multi = boost::multi;
 

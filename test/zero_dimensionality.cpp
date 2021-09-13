@@ -1,13 +1,11 @@
 #ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
 $CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 #endif
-// © Alfredo Correa 2019-2020
+// © Alfredo Correa 2019-2021
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi zero dimensionality"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
-
-#include<iostream>
 
 #include "../array.hpp"
 //#include "../adaptors/cuda.hpp"
@@ -65,8 +63,10 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality){
 //	}
 	{
 		double d = 2.;
-		multi::array_ref<double, 0> ar0(&d, {});
-		double dd{ar0};
+	//	multi::array_ref<double, 0> ar0(&d, {});
+	//	double dd{ar0};
+		double dd{multi::array_ref<double, 0>(&d, {})};
+
 		BOOST_REQUIRE( dd == d );
 
 		multi::array_ptr<double, 1> ap1(&d, 1);

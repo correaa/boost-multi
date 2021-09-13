@@ -158,11 +158,10 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_pair_to_complex){
 	auto&& A_block = Aconst({0, 5}, {0, 5});
 
 	auto const& Apair_block = A_block.template reinterpret_array_cast<pair const>(); // const is important // cppcheck 1.90 needs `template` to avoid internal bug
-	
-	BOOST_REQUIRE( (void const*)&Apair_block[1][2] == (void*)&A[1][2] );
-	
+	BOOST_REQUIRE( &Apair_block[1][2] == static_cast<void*>(&A[1][2]) );
+
 	auto&& Adoubles_block = A_block.reinterpret_array_cast<double const>(2);
-	BOOST_REQUIRE( (void const*)&Adoubles_block[1][2][0] == (void*)&A[1][2] );
+	BOOST_REQUIRE( &Adoubles_block[1][2][0] == static_cast<void*>(&A[1][2]) );
 }
 
 BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_pointer){

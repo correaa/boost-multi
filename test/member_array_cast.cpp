@@ -1,7 +1,5 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
-#endif
-//  © Alfredo A. Correa 2018-2020
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+//  © Alfredo A. Correa 2018-2021
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi member cast"
 #define BOOST_TEST_DYN_LINK
@@ -9,13 +7,9 @@ $CXXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 
 #include "../array.hpp"
 
-#include<complex>
-
 namespace multi = boost::multi;
 
 using v3d = std::array<double, 3>;
-
-template<class T> void what(T&&) = delete;
 
 BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos){
 

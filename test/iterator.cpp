@@ -1,7 +1,5 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X $@&&rm $0.$X;exit
-#endif
-// © Alfredo A. Correa 2018-2020
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// © Alfredo A. Correa 2018-2021
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi iterators"
 #define BOOST_TEST_DYN_LINK
@@ -9,7 +7,6 @@ $CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X $@&&rm $0.$X;exit
 
 #include "../array.hpp"
 
-#include<iostream>
 #include<numeric>
 #include<vector>
 

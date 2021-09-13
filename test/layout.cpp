@@ -8,7 +8,8 @@
 #include "../array.hpp"
 #include "../utility.hpp"
 
-#include<iostream>
+#include "../detail/tuple_zip.hpp"
+
 #include<tuple>
 
 namespace multi = boost::multi;
@@ -475,5 +476,13 @@ BOOST_AUTO_TEST_CASE(continued){
 	BOOST_REQUIRE(arrr[1] == 2);
 }
 
+}
+
+BOOST_AUTO_TEST_CASE(tuple_zip_test){
+	auto t1 = std::make_tuple( 1,  2,  3);
+	auto t2 = std::make_tuple(10, 20, 30);
+	auto t3 = std::make_tuple(std::string{"10"}, std::string{"20"}, std::string{"30"});
+	auto t123 = boost::multi::detail::tuple_zip(t1, t2, t3);
+	BOOST_REQUIRE( std::get<2>(std::get<0>(t123)) == std::string{"10"} );
 }
 
