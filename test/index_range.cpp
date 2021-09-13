@@ -1,22 +1,17 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x -DMULTI_ACCESS_NDEBUG -lboost_unit_test_framework&&$0x&&rm $0x;exit
-#endif
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // © Alfredo A. Correa 2021
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi element access"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
-#include "../array.hpp"
+#include "../array_ref.hpp"
 
 #include <boost/hana/integral_constant.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 
-#include<cassert>
-#include<iostream>
-#include<vector>
-
 namespace hana = boost::hana;
+namespace multi = boost::multi;
 
 ////https://stackoverflow.com/a/35110453/225186
 //template<class T>constexpr std::remove_reference_t<T> const_aux(T&&t){return t;}
@@ -63,8 +58,6 @@ struct integral_constant : private hana::integral_constant<Integral, n>{
 	friend constexpr auto operator>=(Integral const& a, integral_constant const&/*self*/){return a >= n;}
 	friend constexpr auto operator<(Integral const& a, integral_constant const&/*self*/){return a < n;}
 };
-
-namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(multi_range){
 

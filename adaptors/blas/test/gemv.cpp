@@ -10,7 +10,6 @@
 #include "../../../adaptors/blas/gemv.hpp"
 #include "../../../array.hpp"
 
-#include "../../../array.hpp"
 #include "../../../utility.hpp"
 
 #include "../../blas/axpy.hpp"

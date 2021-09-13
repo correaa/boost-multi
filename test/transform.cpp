@@ -1,6 +1,5 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-$CXXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
-#endif
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// © Alfredo Correa 2019-2021
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi transformed array"
 #define BOOST_TEST_DYN_LINK
@@ -8,7 +7,7 @@ $CXXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 
 #include "../array.hpp"
 
-#include<boost/iterator/transform_iterator.hpp> //might need -DBOOST_RESULT_OF_USE_DECLTYPE
+//#include<boost/iterator/transform_iterator.hpp> //might need -DBOOST_RESULT_OF_USE_DECLTYPE
 
 #include<complex>
 
@@ -17,7 +16,7 @@ namespace test{
 		template<class T>
 		constexpr auto operator()(T const& x) const -> decltype(-x){return -x;}
 	} neg;
-} // namespace test
+} // end namespace test
 
 namespace test{
 

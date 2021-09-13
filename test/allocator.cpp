@@ -1,7 +1,5 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
-#endif
-// © Alfredo A. Correa 2018-2020
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// © Alfredo A. Correa 2019-2021
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi allocators"
 #define BOOST_TEST_DYN_LINK
@@ -9,11 +7,8 @@ $CXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 
 #include "../array.hpp"
 
-//#include "../../multi/memory/stack.hpp" //TODO test custom allocator
+//#include "../../multi/memory/stack.hpp" //TODO(correaa) test custom allocator
 
-#include<complex>
-#include<iostream>
-#include<scoped_allocator>
 #include<vector>
 
 namespace multi = boost::multi;

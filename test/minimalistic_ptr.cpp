@@ -1,4 +1,4 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // © Alfredo A. Correa 2018-2021
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi minimalistic pointer"
@@ -7,7 +7,7 @@
 
 #include<array>
 
-#include "../array.hpp"
+#include "../array_ref.hpp"
 
 namespace multi = boost::multi;
 
@@ -53,8 +53,6 @@ public:
 };
 
 } // namespace minimalistic
-
-template<class T> void what();
 
 BOOST_AUTO_TEST_CASE(test_minimalistic_ptr){
 

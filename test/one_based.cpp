@@ -1,16 +1,11 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-// © Alfredo Correa 2019-2020
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// © Alfredo Correa 2019-2021
 
 #define BOOST_TEST_DYN_LINK 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi one-based"
 #include<boost/test/unit_test.hpp>
 
-#include<iostream>
-
 #include "../array.hpp"
-//#include "../adaptors/cuda.hpp"
-
-#include<complex>
 
 namespace multi = boost::multi;
 

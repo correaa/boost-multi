@@ -1,18 +1,18 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // © Alfredo A. Correa 2020-2021
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW transpose"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
-#include "../../../adaptors/../complex.hpp"
+//#include "../../../adaptors/../complex.hpp"
 #include "../../../adaptors/fftw.hpp"
 #include "../../../array.hpp"
 
 #include<chrono>
 #include<random>
 
-//#include<thrust/complex.h> // TODO make lib work with thrust complex
+//#include<thrust/complex.h> // TODO(correaa) make lib work with thrust complex
 
 namespace{
 

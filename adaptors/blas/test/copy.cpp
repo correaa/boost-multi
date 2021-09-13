@@ -1,15 +1,17 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-
-#include "../../blas.hpp"
-#include "../../../array.hpp"
-
-#include<complex>
-
-#include "config.hpp"
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// © Alfredo A. Correa 2019-2021
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS copy"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
+
+#include "../../../array.hpp"
+
+#include "../../blas/copy.hpp"
+
+#include<complex>
+
+#include "config.hpp"
 
 namespace multi = boost::multi;
 namespace blas = multi::blas;

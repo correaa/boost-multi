@@ -10,7 +10,6 @@
 
 #include "../detail/tuple_zip.hpp"
 
-#include<iostream>
 #include<tuple>
 
 namespace multi = boost::multi;
