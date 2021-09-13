@@ -26,7 +26,7 @@ auto flatted_last(Array&& arr){
 }
 
 template<class Array>
-auto partitioned_last(Array&& arr, std::size_t n){
+auto partitioned_last(Array&& arr, multi::size_type n){
 	return reversed(transposed(partitioned(reversed(std::forward<Array>(arr)), n)));
 }
 

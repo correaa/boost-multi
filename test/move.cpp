@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(multi_array_move){
 
 BOOST_AUTO_TEST_CASE(multi_array_move_into_vector){
 	std::vector<multi::array<double, 2> > Av(10, multi::array<double, 2>({4, 5}, 99.));
-	std::vector<multi::array<double, 2> > Bv; Bv.reserve(size(Av));
+	std::vector<multi::array<double, 2> > Bv; Bv.reserve(Av.size());
 
 	std::move( begin(Av), end(Av), std::back_inserter(Bv) );
 
