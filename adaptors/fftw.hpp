@@ -210,23 +210,13 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, fftw::flags 
 	static_assert( sizeof(*base(d_first)) == sizeof(real(*base(d_first))) + sizeof(imag(*base(d_first))) and sizeof(*base(d_first)) == sizeof(fftw_complex), 
 		"output must have complex pod layout");
 
-	assert(sizes(*first)==sizes(*d_first));
-//	auto ion      = to_array<int>(sizes(*first));
-
 	assert(strides(*first) == strides(*last));
-//	auto istrides = to_array<int>(strides(*first));
-//	auto ostrides = to_array<int>(strides(*d_first));
+	assert(sizes(*first)==sizes(*d_first));
 
 	auto const ssn_tuple = multi::detail::tuple_zip(strides(*first  ), strides(*d_first), sizes(*first));
 	auto ssn = std::apply([](auto... e){return std::array<std::tuple<int, int, int>, sizeof...(e)>{
 		std::make_tuple(static_cast<int>(std::get<0>(e)), static_cast<int>(std::get<1>(e)), static_cast<int>(std::get<2>(e)))...
 	};}, ssn_tuple);
-//	auto 
-
-//	std::array<std::array<int, 3>, std::decay_t<decltype(*It1{})>::rank::value> ssn{};
-//	for(std::size_t i = 0; i != ssn.size(); ++i){
-//		ssn[i] = {istrides[i], ostrides[i], ion[i]};
-//	}
 	std::sort(ssn.begin(), ssn.end(), std::greater<>{});
 
 	auto const istrides = [&](){
@@ -248,43 +238,21 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, fftw::flags 
 		return ion;
 	}();
 
-//	for(std::size_t i = 0; i != ssn.size(); ++i){
-//		istrides[i] = std::get<0>(ssn[i]);
-//		ostrides[i] = std::get<1>(ssn[i]);
-//		ion[i]      = std::get<2>(ssn[i]);
-//	}
+	auto const inembed = [&](){
+		std::array<int, std::decay_t<decltype(*It1{})>::rank::value + 1> inembed{};
+		std::adjacent_difference(
+			istrides.rbegin(), istrides.rend(), inembed.rbegin(), [](auto a, auto b){assert(a%b == 0); return a/b;}
+		);
+		return inembed;
+	}();
 
-	std::array<int, std::decay_t<decltype(*It1{})>::rank::value + 1> inembed{};
-//	for(std::size_t i = 1; i != istrides.size(); ++i){
-//		assert(istrides[i-1]%istrides[i]==0);
-//		inembed[i] = istrides[i-1]/istrides[i];
-//	}
-//	for(std::size_t i = istrides.size() - 1; i != 0; --i){
-//	//	assert(istrides[i-1]%istrides[i]==0);
-//		inembed[i] = istrides[i-1]/istrides[i];
-//	}
-
-	std::adjacent_difference(
-		istrides.rbegin(), istrides.rend(), inembed.rbegin(), [](auto a, auto b){assert(a%b == 0); return a/b;}
-	);
-
-	std::array<int, std::decay_t<decltype(*It1{})>::rank::value> onembed{};
-	for(std::size_t i = 1; i != ostrides.size(); ++i){
-	//	assert(ostrides[i-1]%ostrides[i]==0);
-		onembed[i] = ostrides[i-1]/ostrides[i];
-	}
-
-//	int istride = istrides.back();
-//	auto inembed = istrides; inembed.fill(0);
-//	int ostride = ostrides.back();
-//	auto onembed = ostrides; onembed.fill(0);
-//	for(std::size_t i = 1; i != onembed.size(); ++i){
-//		assert(ostrides[i-1] >= ostrides[i]); // otherwise ordering is incompatible
-//		assert(ostrides[i-1]%ostrides[i]==0);
-//		onembed[i]=ostrides[i-1]/ostrides[i]; //	assert( onembed[i] <= ion[i] );
-//		assert(istrides[i-1]%istrides[i]==0);
-//		inembed[i]=istrides[i-1]/istrides[i]; //	assert( inembed[i] <= ion[i] );
-//	}
+	auto const onembed = [&](){
+		std::array<int, std::decay_t<decltype(*It1{})>::rank::value + 1> onembed{};
+		std::adjacent_difference(
+			ostrides.rbegin(), ostrides.rend(), onembed.rbegin(), [](auto a, auto b){assert(a%b == 0); return a/b;}
+		);
+		return onembed;
+	}();
 
 	auto ret = ::fftw_plan_many_dft(
 		/*int rank*/ ion.size(), 
@@ -300,7 +268,7 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, fftw::flags 
 		/*int odist*/ stride(d_first),
 		/*int*/ sign, /*unsigned*/ static_cast<unsigned>(flags)
 	);
-	assert(ret);
+	assert(ret); // if you get null here it could be because your library doesn't support this fftw call mode
 	return ret;
 }
 
