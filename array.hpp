@@ -1001,7 +1001,8 @@ public:
 #undef IL
 //#endif
 
-template<class T, class A=std::allocator<T>> array(T[], A={})->array<T, 1, A>; // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+template<class T>              array(T[]       )->array<T, 1, std::allocator<T>>; // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+template<class T, class Alloc> array(T[], Alloc)->array<T, 1, Alloc            >; // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 
 //template<class Array, class E = typename multi::array_traits<Array>::element, class A=std::allocator<E>, class=std::enable_if_t<is_allocator<A>{}>> array(Array            , A={})->array<typename multi::array_traits<Array>::element, 1, A>;
 
