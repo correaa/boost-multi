@@ -218,7 +218,7 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, fftw::flags 
 	auto ostrides = to_array<int>(strides(*d_first));
 
 	auto const ssn_tuple = multi::detail::tuple_zip(strides(*first  ), strides(*d_first), sizes(*first));
-	auto ssn = std::apply([](auto... e){return std::array{
+	auto ssn = std::apply([](auto... e){return std::array<std::tuple<int, int, int>, sizeof...(e)>{
 		std::make_tuple(static_cast<int>(std::get<0>(e)), static_cast<int>(std::get<1>(e)), static_cast<int>(std::get<2>(e)))...
 	};}, ssn_tuple);
 //	auto 
