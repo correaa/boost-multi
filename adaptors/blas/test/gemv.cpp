@@ -139,11 +139,11 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_real_complex){
 		double const a = 1.1;
 		double const b = 1.2;
 		blas::gemv(a, M, X, b, Y); // y = a*M*x + b*y
-		
+
 		multi::array<complex, 1> const Y3 = {214.02, 106.43, 188.37};
-		
+
 		using blas::operators::operator-;
-		double const n2 = blas::nrm2(Y - Y3);
+		double const n2{blas::nrm2(Y - Y3)};
 		BOOST_REQUIRE_SMALL( n2 , 1e-13);
 	}
 }
