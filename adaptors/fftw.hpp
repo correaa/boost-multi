@@ -217,6 +217,7 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, fftw::flags 
 	auto istrides = to_array<int>(strides(*first));
 	auto ostrides = to_array<int>(strides(*d_first));
 
+	auto const ssn_tuple = multi::detail::tuple_zip(strides(*first  ), strides(*d_first), sizes(*first)); (void)ssn_tuple;
 	std::array<std::array<int, 3>, std::decay_t<decltype(*It1{})>::rank::value> ssn;
 	for(std::size_t i = 0; i != ssn.size(); ++i){
 		ssn[i] = {istrides[i], ostrides[i], ion[i]};
