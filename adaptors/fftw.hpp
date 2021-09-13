@@ -217,11 +217,16 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, fftw::flags 
 	auto istrides = to_array<int>(strides(*first));
 	auto ostrides = to_array<int>(strides(*d_first));
 
-	auto const ssn_tuple = multi::detail::tuple_zip(strides(*first  ), strides(*d_first), sizes(*first)); (void)ssn_tuple;
-	std::array<std::array<int, 3>, std::decay_t<decltype(*It1{})>::rank::value> ssn;
-	for(std::size_t i = 0; i != ssn.size(); ++i){
-		ssn[i] = {istrides[i], ostrides[i], ion[i]};
-	}
+	auto const ssn_tuple = multi::detail::tuple_zip(strides(*first  ), strides(*d_first), sizes(*first));
+	auto ssn = std::apply([](auto... e){return std::array{
+		std::make_tuple(static_cast<int>(std::get<0>(e)), static_cast<int>(std::get<1>(e)), static_cast<int>(std::get<2>(e)))...
+	};}, ssn_tuple);
+//	auto 
+
+//	std::array<std::array<int, 3>, std::decay_t<decltype(*It1{})>::rank::value> ssn{};
+//	for(std::size_t i = 0; i != ssn.size(); ++i){
+//		ssn[i] = {istrides[i], ostrides[i], ion[i]};
+//	}
 	std::sort(ssn.begin(), ssn.end(), std::greater<>{});
 
 	for(std::size_t i = 0; i != ssn.size(); ++i){
