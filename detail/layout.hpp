@@ -512,11 +512,11 @@ public:
 	       constexpr auto num_elements()        const&    -> size_type{return size()*sub_.num_elements();}
 	friend constexpr auto num_elements(layout_t const& s) -> size_type{return s.num_elements();}
 
-	       constexpr auto is_empty()        const     -> bool{return nelems_ == 0;}
-	friend constexpr auto is_empty(layout_t const& s) -> bool{return s.is_empty();}
+	       constexpr auto is_empty()        const    {return nelems_ == 0;}
+	friend constexpr auto is_empty(layout_t const& s){return s.is_empty();}
 
 	NODISCARD(".empty() means .is_empty()")
-	       constexpr auto    empty()        const -> bool{return is_empty();}
+	       constexpr auto    empty()        const{return is_empty();}
 
 	friend constexpr auto size(layout_t const& l) -> size_type{return l.size();}
 	       constexpr auto size()        const&    -> size_type{
