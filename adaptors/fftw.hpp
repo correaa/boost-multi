@@ -9,6 +9,9 @@ $CXXX $CXXFLAGS $0 -o $0x$OXX `pkg-config --cflags --libs fftw3 cuda-11.0` -lboo
 #include "../adaptors/../array.hpp"
 #include "../adaptors/../config/NODISCARD.hpp"
 
+
+#include "../detail/tuple_zip.hpp"
+
 #include<algorithm> // sort
 #include<complex>
 #include<numeric> // accumulate
