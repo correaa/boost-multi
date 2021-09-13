@@ -211,11 +211,11 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, fftw::flags 
 		"output must have complex pod layout");
 
 	assert(sizes(*first)==sizes(*d_first));
-	auto ion      = to_array<int>(sizes(*first));
+//	auto ion      = to_array<int>(sizes(*first));
 
 	assert(strides(*first) == strides(*last));
-	auto istrides = to_array<int>(strides(*first));
-	auto ostrides = to_array<int>(strides(*d_first));
+//	auto istrides = to_array<int>(strides(*first));
+//	auto ostrides = to_array<int>(strides(*d_first));
 
 	auto const ssn_tuple = multi::detail::tuple_zip(strides(*first  ), strides(*d_first), sizes(*first));
 	auto ssn = std::apply([](auto... e){return std::array<std::tuple<int, int, int>, sizeof...(e)>{
@@ -229,11 +229,30 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, fftw::flags 
 //	}
 	std::sort(ssn.begin(), ssn.end(), std::greater<>{});
 
-	for(std::size_t i = 0; i != ssn.size(); ++i){
-		istrides[i] = std::get<0>(ssn[i]);
-		ostrides[i] = std::get<1>(ssn[i]);
-		ion[i]      = std::get<2>(ssn[i]);
-	}
+	auto const istrides = [&](){
+		std::array<int, std::decay_t<decltype(*It1{})>::rank::value> istrides{};
+		std::transform(ssn.begin(), ssn.end(), istrides.begin(), [](auto e){return std::get<0>(e);});
+		return istrides;
+	}();
+
+	auto const ostrides = [&](){
+		std::array<int, std::decay_t<decltype(*It1{})>::rank::value> ostrides{};
+		std::transform(ssn.begin(), ssn.end(), ostrides.begin(), [](auto e){return std::get<1>(e);});
+		return ostrides;
+	}();
+	assert( std::is_sorted(ostrides.begin(), ostrides.end(), std::greater<>{}) ); // otherwise ordering is incompatible
+
+	auto const ion      = [&](){
+		std::array<int, std::decay_t<decltype(*It1{})>::rank::value> ion     {};
+		std::transform(ssn.begin(), ssn.end(), ion     .begin(), [](auto e){return std::get<2>(e);});
+		return ion;
+	}();
+
+//	for(std::size_t i = 0; i != ssn.size(); ++i){
+//		istrides[i] = std::get<0>(ssn[i]);
+//		ostrides[i] = std::get<1>(ssn[i]);
+//		ion[i]      = std::get<2>(ssn[i]);
+//	}
 
 	int istride = istrides.back();
 	auto inembed = istrides; inembed.fill(0);
