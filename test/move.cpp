@@ -12,7 +12,7 @@ $CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 
 namespace multi = boost::multi;
 
-BOOST_AUTO_TEST_CASE(multi_swap){
+BOOST_AUTO_TEST_CASE(multi_swap) {
 	multi::array<double, 2> A({3,  5}, 99.);
 	multi::array<double, 2> B({7, 11}, 88.);
 	swap(A, B);
@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE(multi_swap){
 	BOOST_REQUIRE( B[1][2] == 99. );
 }
 
-BOOST_AUTO_TEST_CASE(multi_std_swap){
+BOOST_AUTO_TEST_CASE(multi_std_swap) {
 	multi::array<double, 2> A({3,  5}, 99.);
 	multi::array<double, 2> B({7, 11}, 88.);
 	using std::swap;
@@ -31,7 +31,7 @@ BOOST_AUTO_TEST_CASE(multi_std_swap){
 	BOOST_REQUIRE( B[1][2] == 99. );
 }
 
-BOOST_AUTO_TEST_CASE(multi_array_clear){
+BOOST_AUTO_TEST_CASE(multi_array_clear) {
 	multi::array<double, 2> A({10, 10}, 99.);
 	A.clear();
 	BOOST_REQUIRE(A.is_empty());
@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(multi_array_clear){
 	BOOST_REQUIRE(A[15][15] == 88.);
 }
 
-BOOST_AUTO_TEST_CASE(multi_array_move){
+BOOST_AUTO_TEST_CASE(multi_array_move) {
 	std::vector<multi::array<double, 2> > Av(10, multi::array<double, 2>({4, 5}, 99.));
 	multi::array<double, 2> B(std::move(Av[0]), std::allocator<double>{});
 
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(multi_array_move){
 	BOOST_REQUIRE( B[1][2] == 99. );
 }
 
-BOOST_AUTO_TEST_CASE(multi_array_move_into_vector){
+BOOST_AUTO_TEST_CASE(multi_array_move_into_vector) {
 	std::vector<multi::array<double, 2> > Av(10, multi::array<double, 2>({4, 5}, 99.));
 	std::vector<multi::array<double, 2> > Bv; Bv.reserve(Av.size());
 
@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(multi_array_move_into_vector){
 	BOOST_REQUIRE( Bv[5][1][2] == 99. );
 }
 
-BOOST_AUTO_TEST_CASE(multi_array_move_into_vector_reserve){
+BOOST_AUTO_TEST_CASE(multi_array_move_into_vector_reserve) {
 	std::vector<multi::array<double, 2> > Av(10, multi::array<double, 2>({4, 5}, 99.));
 	std::vector<multi::array<double, 2> > Bv; Bv.reserve(Av.size());
 
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE(multi_array_move_into_vector_reserve){
 	BOOST_REQUIRE( Bv[5][1][2] == 99. );
 }
 
-BOOST_AUTO_TEST_CASE(multi_array_move_into_vector_move){
+BOOST_AUTO_TEST_CASE(multi_array_move_into_vector_move) {
 	std::vector<multi::array<double, 2> > Av(10, multi::array<double, 2>({4, 5}, 99.));
 	std::vector<multi::array<double, 2> > Bv = std::move(Av);
 

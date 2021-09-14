@@ -17,15 +17,12 @@ namespace multi = boost::multi;
 
 using complex = std::complex<double>;
 
-BOOST_AUTO_TEST_CASE(fftw_transpose){
-
+BOOST_AUTO_TEST_CASE(fftw_transpose) {
 	multi::fftw::initialize_threads();
-
-	{
-		auto const in = []{
-		//	multi::array<complex, 2> ret({8192, 8192});
+	 {
+		auto const in = [] {
 			multi::array<complex, 2> ret({819, 819});
-			std::generate(ret.data_elements(), ret.data_elements() + ret.num_elements(), 
+			std::generate(ret.data_elements(), ret.data_elements() + ret.num_elements(),
 				[eng = std::default_random_engine{std::random_device{}()}, uniform_01 = std::uniform_real_distribution<>{}]() mutable{
 					return complex{uniform_01(eng), uniform_01(eng)};
 				}
@@ -34,10 +31,10 @@ BOOST_AUTO_TEST_CASE(fftw_transpose){
 			return ret;
 		}();
 	//	multi::fftw::plan::with_nthreads(1);
-		{
+		 {
 			multi::array<complex, 2> out = in;
 			auto* p = out.data_elements();
-			{
+			 {
 				boost::timer::auto_cpu_timer t{"fftw trans mve 1 thread  %ws wall, CPU (%p%)\n"};
 				multi::fftw::transpose( out );
 				BOOST_REQUIRE( out.data_elements() == p );
@@ -83,7 +80,7 @@ BOOST_AUTO_TEST_CASE(fftw_transpose){
 		{
 			multi::array<complex, 2> out = in;
 			multi::array<complex, 2> aux(extensions(out));
-			{
+			 {
 				boost::timer::auto_cpu_timer t{"auxiliary copy           %ws wall, CPU (%p%)\n"};
 				aux = ~out;
 				out = std::move(aux);
@@ -93,10 +90,10 @@ BOOST_AUTO_TEST_CASE(fftw_transpose){
 		}
 		{
 			multi::array<complex, 2> out = in;
-			{
+			 {
 				boost::timer::auto_cpu_timer t{"transposition with loop   %ws wall, CPU (%p%)\n"};
-				for(auto i: extension(out)){
-					for(auto j = 0; j != i; ++j){
+				for(auto i : extension(out)) {
+					for(auto j = 0; j != i; ++j) {
 						std::swap(out[i][j], out[j][i]);
 					}
 				}
@@ -104,12 +101,12 @@ BOOST_AUTO_TEST_CASE(fftw_transpose){
 			}
 			BOOST_REQUIRE( out == ~in );
 		}
-		{
+		 {
 			multi::array<complex, 2> out = in;
-			{
+			 {
 				boost::timer::auto_cpu_timer t{"transposition with loop 2 %ws wall, CPU (%p%)\n"};
-				for(auto i = 0; i != out.size(); ++i){
-					for(auto j = i + 1; j != out.size(); ++j){
+				for(auto i = 0; i != out.size(); ++i) {
+					for(auto j = i + 1; j != out.size(); ++j) {
 						std::swap(out[i][j], out[j][i]);
 					}
 				}

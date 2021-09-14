@@ -13,13 +13,13 @@ $CXX $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 
 namespace multi = boost::multi;
 
-BOOST_AUTO_TEST_CASE(multi_array_sliced_empty){
+BOOST_AUTO_TEST_CASE(multi_array_sliced_empty) {
 	multi::array<double, 2> A({0, 0}, 99.);
 	BOOST_REQUIRE( A.sliced(0, 0).is_empty() );
 	BOOST_REQUIRE( A.sliced(1, 1).is_empty() );
 }
 
-BOOST_AUTO_TEST_CASE(multi_array_sliced){
+BOOST_AUTO_TEST_CASE(multi_array_sliced) {
 	multi::array<double, 4> A({10, 20, 30, 40}, 99.);
 	std::iota(A.elements().begin(), A.elements().end(), 0.);
 
@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(multi_array_sliced){
 
 	BOOST_REQUIRE(  A.sliced(0, 5)[1] ==  A[1] );
 	BOOST_REQUIRE( &A.sliced(0, 5)[1] == &A[1] );
-	
+
 	BOOST_REQUIRE( A.sliced(0,  0).is_empty() );
 	BOOST_REQUIRE( A.sliced(1,  1).is_empty() );
 	BOOST_REQUIRE( A.sliced(0, 10).size() == 10 );
@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(multi_array_sliced){
 
 	BOOST_REQUIRE(  A[1].sliced(0, 5)[2] ==  A[1][2] );
 	BOOST_REQUIRE( &A[1].sliced(0, 5)[2] == &A[1][2] );
-	
+
 	BOOST_REQUIRE( A[1].sliced(0,  0).is_empty() );
 	BOOST_REQUIRE( A[1].sliced(1,  1).is_empty() );
 	BOOST_REQUIRE( A[1].sliced(0, 20).size() == 20 );
