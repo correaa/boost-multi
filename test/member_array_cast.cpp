@@ -15,7 +15,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 // some members might need explicit padding to work well with member_cast
 struct particle{
 	double mass;
-	v3d position alignas(2*sizeof(double));  // __attribute__((aligned(2*sizeof(double))))
+	v3d position alignas(2*sizeof(double));  //  __attribute__((aligned(2*sizeof(double))))
 };
 
 class particles_SoA{
@@ -23,7 +23,7 @@ class particles_SoA{
 	multi::array<v3d, 2> positions_;
 
  public:
-	particles_SoA(multi::array<particle, 2> const& AoS) : // NOLINT(runtime/explicit) NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : particle_SoA can represent a particles' AoS
+	particles_SoA(multi::array<particle, 2> const& AoS) : // NOLINT(runtime/explicit,google-explicit-constructor,hicpp-explicit-conversions) : particle_SoA can represent a particles' AoS
 		masses_   (AoS.member_cast<double>(&particle::mass    )),
 		positions_(AoS.member_cast<v3d   >(&particle::position)) {}
 	struct reference{
