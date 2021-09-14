@@ -225,6 +225,20 @@ clang++-tidy:
     - cmake --build . --verbose -- --quiet --no-print-directory
     - ctest --output-on-failure
 
+g++-cpplint:
+  stage: test
+  script:
+    - export CXX="g++"
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang clang-tidy pkg-config cmake make libboost-test-dev libboost-timer-dev libblas-dev libblas-dev liblapack-dev libfftw3-dev python3-pip
+    - pip install cpplint
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - cpplint --version
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_CXX_CPPLINT="cpplint;--filter=-whitespace/tab,-whitespace/parens,-whitespace/operators,-readability/alt_tokens,-build/include_order,-whitespace/line_length,-whitespace/semicolon,-legal/copyright,-whitespace/comments,-readability/nolint"
+    - cmake --build . --verbose -- --quiet --no-print-directory
+    - ctest --output-on-failure
+
 clang++-std17:
   stage: test
   script:
