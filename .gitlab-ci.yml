@@ -151,7 +151,7 @@ g++-current-release:
 g++-openblas:
   stage: test
   script:
-    - export CXX="g++-9"
+    - export CXX="g++"
     - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libopenblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
@@ -241,7 +241,7 @@ g++-cpplint:
   stage: test
   script:
     - export CXX="g++"
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang clang-tidy pkg-config cmake make libboost-test-dev libboost-timer-dev libblas-dev libblas-dev liblapack-dev libfftw3-dev python3-pip
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libblas-dev libblas-dev liblapack-dev libfftw3-dev python3-pip
     - pip install cpplint
     - ln --symbolic --force . ../multi
     - $CXX --version
