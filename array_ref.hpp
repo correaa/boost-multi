@@ -32,7 +32,8 @@ $CXXX $CXXFLAGS $0 -o $0x&&$0x&&rm $0x&&(rm -rf test/build&&mkdir -p test/build&
 #include<cstring>    // for memset in reinterpret_cast
 #include<functional> // invoke
 #include<iterator> // next
-#include<memory>     // pointer_traits
+#include<memory>   // for pointer_traits
+#include<utility>  // for forward
 
 namespace std{
 	template<class T>
@@ -483,8 +484,12 @@ public:
 	HD constexpr auto operator[](Tp&& t) const
 	->decltype(operator[](std::get<0>(t))){
 		return operator[](std::get<0>(t));}
-	template<class Tp = std::tuple<>, typename = std::enable_if_t<std::tuple_size<std::decay_t<Tp>>::value==0> >
-	HD constexpr auto operator[](Tp&& /*empty*/) const -> basic_const_array{return *this;}
+
+	template<class Tuple, std::enable_if_t<std::tuple_size<std::decay_t<Tuple>>::value==0, int> = 0>
+	constexpr auto operator[](Tuple const& /*no indices*/) const -> basic_const_array {
+		return *this;
+	}
+
 	using typename types::index;
 
 	constexpr auto reindexed(typename basic_array::index first) const& -> basic_const_array{
@@ -943,7 +948,7 @@ public:
 //	constexpr 
 	auto operator=(basic_array<TT, D, As...> const& o)& -> basic_array&{
 		assert( this->extension() == o.extension() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		MULTI_MARK_SCOPE( std::string{"multi::operator= (D="}+std::to_string(D)+") from "+typeid(TT).name()+" to "+typeid(T).name() );
+	//	MULTI_MARK_SCOPE( std::string{"multi::operator= (D="}+std::to_string(D)+") from "+typeid(TT).name()+" to "+typeid(T).name() );
 		if(this->is_empty()){return *this;}
 		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()){
 			adl_copy_n(o.base(), o.num_elements(), this->base());
@@ -1261,7 +1266,7 @@ struct basic_array<T, dimensionality_type{0}, ElementPtr, Layout> :
 
 //	constexpr 
 	auto operator=(element const& e) & -> basic_array&{
-		MULTI_MARK_SCOPE(std::string{"multi::operator= D=0 from "}+typeid(T).name()+" to "+typeid(T).name() );
+	//	MULTI_MARK_SCOPE(std::string{"multi::operator= D=0 from "}+typeid(T).name()+" to "+typeid(T).name() );
 		adl_copy_n(&e, 1, this->base_); 
 		return *this;
 	}
@@ -1416,7 +1421,7 @@ public:
 	auto operator=(basic_array const& o)& -> basic_array&{ // TODO(correaa) : make sfinae friendly
 		if(this == &o){return *this;}
 		assert(this->extension() == o.extension()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		MULTI_MARK_SCOPE(std::string{"multi::operator= D=1 from "}+typeid(T).name()+" to "+typeid(T).name() );
+	//	MULTI_MARK_SCOPE(std::string{"multi::operator= D=1 from "}+typeid(T).name()+" to "+typeid(T).name() );
 		this->assign(o.begin(), o.end()); // TODO(correaa) : improve performance by rotating
 		return *this;
 	}
@@ -1451,9 +1456,10 @@ public:
 	->decltype(operator[](std::get<0>(t))[detail::tuple_tail(t)]){
 		return operator[](std::get<0>(t))[detail::tuple_tail(t)];}
 
-	template<class Tuple, typename = std::enable_if_t<std::tuple_size<std::decay_t<Tuple>>{}==1> >
-	HD constexpr auto operator[](Tuple&&      t        ) const -> decltype(auto){return operator[](std::get<0>(t));}
-	HD constexpr auto operator[](std::tuple<> /*empty*/) const -> decltype(auto){return *this;}
+	template<class Tuple, std::enable_if_t<std::tuple_size<std::decay_t<Tuple>>{}==1, int> = 0>
+	HD constexpr auto operator[](Tuple const& indices  ) const -> decltype(auto) {return operator[](std::get<0>(indices));}
+	template<class Tuple, std::enable_if_t<std::tuple_size<std::decay_t<Tuple>>{}==0>* = nullptr>
+	HD constexpr auto operator[](Tuple const& /*empty*/) const -> decltype(auto) {return *this;}
 
 	HD constexpr auto elements_at(size_type n) const& -> decltype(auto){assert(n < this->num_elements()); return operator[](n);}
 	HD constexpr auto elements_at(size_type n)     && -> decltype(auto){assert(n < this->num_elements()); return operator[](n);}
@@ -1674,7 +1680,7 @@ public:
 //	constexpr 
 	auto operator=(basic_array<TT, 1, As...> const& other)&& -> basic_array&{
 		assert( this->extensions() == other.extensions() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		MULTI_MARK_SCOPE(std::string{"multi::operator= D=1 from "}+typeid(TT).name()+" to "+typeid(T).name() );
+	//	MULTI_MARK_SCOPE(std::string{"multi::operator= D=1 from "}+typeid(TT).name()+" to "+typeid(T).name() ); // this is not the place for benchmark, benchmark implementations
 		if(this->is_empty()){return *this;}
 		adl_copy(other.begin(), other.end(), this->begin());
 		return *this;
@@ -1886,8 +1892,8 @@ public:
 	template<typename TT, dimensionality_type DD = D, class... As>
 //	constexpr 
 	auto operator=(array_ref<TT, DD, As...> const& o)& -> array_ref&{
-		assert(this->extensions() == o.extensions()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		MULTI_MARK_SCOPE(std::string{"multi::operator= D="}+std::to_string(D)+" from "+typeid(TT).name()+" to "+typeid(T).name() );
+		assert( this->extensions() == o.extensions() );
+	//	MULTI_MARK_SCOPE(std::string{"multi::operator= D="}+std::to_string(D)+" from "+typeid(TT).name()+" to "+typeid(T).name() );
 		adl_copy_n(o.data_elements(), o.num_elements(), this->data_elements());
 		return *this;
 	}
@@ -2142,77 +2148,5 @@ template<class T> auto end(T&& t)
 
 } // end namespace multi
 } // end namespace boost
-
-
-//namespace thrust{
-//	template<class InputIterator> struct iterator_system;
-
-//	template<class T, boost::multi::dimensionality_type D, class Ptr> 
-//	struct iterator_system<boost::multi::array_iterator<T, D, Ptr>>{
-//		using type = thrust::iterator_system<Ptr>;
-//	};
-//}
-
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
-
-#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
-
-#include<cassert>
-
-namespace multi = boost::multi;
-
-int main(){
-
-	{
-		double a[4][5] = {{1.,2.},{2.,3.}};
-		multi::array_ref<double, 2> A(&a[0][0], {4, 5});
-		multi::array_ref<double, 2, double const*> B(&a[0][0], {4, 5});
-		multi::array_ref<double const, 2> C(&a[0][0], {4, 5});
-		multi::array_cref<double, 2> D(&a[0][0], {4, 5});
-		A[1][1] = 2.;
-
-		double d[4][5] = {{1.,2.},{2.,3.}};
-
-		auto dd = (double const(&)[4][5])(d);
-		assert( &(dd[1][2]) == &(d[1][2]) );
-		assert(( & A[1].static_array_cast<double, double const*>()[1] == &A[1][1] ));
-		assert(( &multi::static_array_cast<double, double const*>(A[1])[1] == &A[1][1] ));
-	}
-	{
-		double const d2D[4][5] = {{1.,2.},{2.,3.}};
-		multi::array_ref<double, 2, const double*> d2Rce(&d2D[0][0], {4, 5});
-		assert( &d2Rce[2][3] == &d2D[2][3] );
-		assert( d2Rce.size() == 4 );
-		assert( num_elements(d2Rce) == 20 );
-	}
-	{
-		std::string const dc3D[4][2][3] = {
-			{{"A0a", "A0b", "A0c"}, {"A1a", "A1b", "A1c"}},
-			{{"B0a", "B0b", "B0c"}, {"B1a", "B1b", "B1c"}},
-			{{"C0a", "C0b", "C0c"}, {"C1a", "C1b", "C1c"}}, 
-			{{"D0a", "D0b", "D0c"}, {"D1a", "D1b", "D1c"}}, 
-		};
-		multi::array_cref<std::string, 3> A(&dc3D[0][0][0], {4, 2, 3});
-		assert( num_elements(A) == 24 and A[2][1][1] == "C1b" );
-		auto const& A2 = A.sliced(0, 3).rotated()[1].sliced(0, 2).unrotated();
-		assert( multi::rank<std::decay_t<decltype(A2)>>{} == 2 and num_elements(A2) == 6 );
-		assert( std::get<0>(sizes(A2)) == 3 and std::get<1>(sizes(A2)) == 2 );
-
-		auto const& A3 = A({0, 3}, 1, {0, 2});
-		assert( multi::rank<std::decay_t<decltype(A3)>>{} == 2 and num_elements(A3) == 6 );
-	}
-}
-
-#endif
 #endif
 
