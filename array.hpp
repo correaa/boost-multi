@@ -161,8 +161,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		class = decltype(/*static_array*/(std::declval<Range&&>().begin() - std::declval<Range&&>().end())),  // instantiation of static_array here gives a compiler error in 11.0, partially defined type?
 		class = std::enable_if_t<not is_basic_array<Range&&>{}>
 	>
-	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions
-	static_array(Range&& rng)  // NOLINT(runtime/explicit) NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
+	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions // NOLINTNEXTLINE(runtime/explicit)
+	static_array(Range&& rng)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 	: static_array(std::forward<Range>(rng).begin(), std::forward<Range>(rng).end()) {}
 
 	template<class TT>
@@ -179,8 +179,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
 	template<class TT, class... As>
-	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
-	static_array(array_ref<TT, D, As...> const& other) : static_array(other, typename static_array::allocator_type{}) {}  // NOLINT(runtime/explicit) NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
+	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented  // NOLINTNEXTLINE(runtime/explicit)
+	static_array(array_ref<TT, D, As...> const& other) : static_array(other, typename static_array::allocator_type{}) {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 	// ^^^ TODO(correaa) : check if really necessary
 
 	static_array(typename static_array::extensions_type x, typename static_array::element const& e, typename static_array::allocator_type const& a)  // 2
@@ -232,8 +232,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::basic_array<TT, D, Args...>::element>{}>,
 		class = decltype(adl_copy(std::declval<multi::basic_array<TT, D, Args...> const&>().begin(), std::declval<multi::basic_array<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
 	>
-	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
-	static_array(multi::basic_array<TT, D, Args...> const& o)  // NOLINT(runtime/explicit) NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
+	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented  // NOLINTNEXTLINE(runtime/explicit)
+	static_array(multi::basic_array<TT, D, Args...> const& o)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 	: static_array(o, typename static_array::allocator_type{}) {}
 
 	template<class TT, class... Args>
@@ -433,9 +433,12 @@ struct static_array<T, dimensionality_type{0}, Alloc>  // NOLINT(fuchsia-multipl
 	using array_alloc = array_allocator<Alloc>;
 
  public:
-	auto operator&()     && -> static_array      * = delete;       // NOLINT(runtime/operator) NOLINT(google-runtime-operator) : delete to avoid taking address of temporary
-	auto operator&()      & -> static_array      * {return this;}  // NOLINT(runtime/operator) NOLINT(google-runtime-operator) : override from base
-	auto operator&() const& -> static_array const* {return this;}  // NOLINT(runtime/operator) NOLINT(google-runtime-operator) : override from base
+	// NOLINTNEXTLINE(runtime/operator)
+	auto operator&()     && -> static_array      * = delete;       // NOLINT(google-runtime-operator) : delete to avoid taking address of temporary
+	// NOLINTNEXTLINE(runtime/operator)
+	auto operator&()      & -> static_array      * {return this;}  // NOLINT(google-runtime-operator) : override from base
+	// NOLINTNEXTLINE(runtime/operator)
+	auto operator&() const& -> static_array const* {return this;}  // NOLINT(google-runtime-operator) : override from base
 
 	using array_alloc::get_allocator;
 	using allocator_type = typename static_array::allocator_type;
@@ -711,7 +714,8 @@ struct array<T, dimensionality_type{0}, Alloc> : static_array<T, 0, Alloc>{
 		return *this;
 	}
 
-	auto operator&()     && -> array      * = delete;  // NOLINT(runtime/operator)  NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
+	// NOLINTNEXTLINE(runtime/operator)
+	auto operator&()     && -> array      * = delete;  // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
 	// auto operator&()      & -> array      *{return this;}
 	// auto operator&() const& -> array const*{return this;}
 };
@@ -725,7 +729,8 @@ struct array : static_array<T, D, Alloc>{
 	);
 
  public:
-	auto operator&()     && -> array      * = delete;  // NOLINT(runtime/operator) NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
+	// NOLINTNEXTLINE(runtime/operator)
+	auto operator&()     && -> array      * = delete;  // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
 	//  auto operator&()      & -> array      *{return this;}
 	//  auto operator&() const& -> array const*{return this;}
 
