@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
 		{15., 16., 17., 18., 19.}
 	};
 
-	multi::array_ptr<double, 2> map = &a;
+	multi::array_ptr<double, 2> map{&a};
 	BOOST_REQUIRE( &map->operator[](1)[1] == &a[1][1] );
 	BOOST_REQUIRE( (*&a)[1][1] == 6. );
 
@@ -274,16 +274,17 @@ BOOST_AUTO_TEST_CASE(array_ref_1D) {
 
 BOOST_AUTO_TEST_CASE(array_ref_original_tests){
 	{
-		double a[4][5] = {{1.,2.},{2.,3.}};
+		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test legacy type
+		double a[4][5] = {{1., 2.}, {2., 3.}};
 		multi::array_ref<double, 2> A(&a[0][0], {4, 5});
 		multi::array_ref<double, 2, double const*> B(&a[0][0], {4, 5});
 		multi::array_ref<double const, 2> C(&a[0][0], {4, 5});
 		multi::array_cref<double, 2> D(&a[0][0], {4, 5});
 		A[1][1] = 2.;
 
-		double d[4][5] = {{1.,2.},{2.,3.}};
+		double d[4][5] = {{1., 2.}, {2., 3.}};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test legacy type
 
-		auto dd = const_cast<double const(&)[4][5]>(d);
+		double const(&dd)[4][5] = const_cast<double const(&)[4][5]>(d);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test legacy type
 		BOOST_REQUIRE( &(dd[1][2]) == &(d[1][2]) );
 		BOOST_REQUIRE(( & A[1].static_array_cast<double, double const*>()[1] == &A[1][1] ));
 		BOOST_REQUIRE(( &multi::static_array_cast<double, double const*>(A[1])[1] == &A[1][1] ));

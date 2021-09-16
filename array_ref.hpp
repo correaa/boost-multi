@@ -1997,11 +1997,10 @@ struct array_ptr
 
 	constexpr array_ptr(Ptr p, multi::extensions_t<D> x) : basic_ptr{p, multi::layout_t<D>{x}} {}
 
-	// cppcheck-suppress noExplicitConstructor ; because array_ptr can represent a null // NOLINTNEXTLINE(runtime/explicit)
-	constexpr array_ptr(std::nullptr_t p) : array_ptr{p, multi::extensions_t<D>{}} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : because array_ptr can represent a null
+	constexpr explicit array_ptr(std::nullptr_t p) : array_ptr{p, multi::extensions_t<D>{}} {}
 
-	template<typename CArray>  // NOLINTNEXTLINE(runtime/explicit) : allow terse syntax also array_ptr can represent a pointer to a c-array
-	constexpr array_ptr(CArray* p) : array_ptr{data_elements(*p), extensions(*p)} {}
+	template<typename CArray>
+	constexpr explicit array_ptr(CArray* p) : array_ptr{data_elements(*p), extensions(*p)} {}
 
 	constexpr auto operator*() const {
 		return array_ref<T, D, Ptr>{this->base(), (*this)->extensions()};
