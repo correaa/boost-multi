@@ -1957,27 +1957,29 @@ public:
 		return std::move(s).data_elements();
 	}
 
-	NODISCARD("") constexpr auto decay() const& -> typename array_ref::decay_type const&{
-		return static_cast<typename array_ref::decay_type const&>(*this);
-	}
-	friend constexpr auto decay(array_ref const& s) -> typename array_ref::decay_type const&{return s.decay();}
+	using decay_type = typename array_ref::decay_type;
+
+	NODISCARD("") 
+	       constexpr auto decay()         const&    -> decay_type const&{return static_cast<decay_type const&>(*this);}
+	friend constexpr auto decay(array_ref const& s) -> decltype(auto) {return s.decay();}
 
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int v){
-	//	using boost::serialization::make_nvp;
-//		if(this->num_elements() < (2<<8) ) 
+//  TODO(correaa) : consider small and large implementations
+//  	using boost::serialization::make_nvp;
+//  	if(this->num_elements() < (2<<8) )
 			basic_array<T, D, ElementPtr>::serialize(ar, v);
-//		else{
-		//	using boost::serialization::make_binary_object;
-		//	using boost::serialization::make_array;
-//			if(std::is_trivially_copy_assignable<typename array_ref::element>{})
-//				ar & multi::archive_traits<Archive>::make_nvp("binary_data", multi::archive_traits<Archive>::make_binary_object(this->data(), sizeof(typename array_ref::element)*this->num_elements())); //#include<boost/serialization/binary_object.hpp>
-//			else ar & multi::archive_traits<Archive>::make_nvp("data", multi::archive_traits<Archive>::make_array(this->data(), this->num_elements()));
-//		}
+//  	else{
+//  		using boost::serialization::make_binary_object;
+//  		using boost::serialization::make_array;
+//  		if(std::is_trivially_copy_assignable<typename array_ref::element>{})
+//  			ar & multi::archive_traits<Archive>::make_nvp("binary_data", multi::archive_traits<Archive>::make_binary_object(this->data(), sizeof(typename array_ref::element)*this->num_elements())); //#include<boost/serialization/binary_object.hpp>
+//  		else ar & multi::archive_traits<Archive>::make_nvp("data", multi::archive_traits<Archive>::make_array(this->data(), this->num_elements()));
+//  	}
 	}
 };
 
-template<class T, dimensionality_type D, class Ptr = T*> 
+template<class T, dimensionality_type D, class Ptr = T*>
 using array_cref = array_ref<
 	std::decay_t<T>, D,
 	typename std::pointer_traits<Ptr>::template rebind<T const>
