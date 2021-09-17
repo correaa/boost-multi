@@ -1230,88 +1230,86 @@ public:
 #if not((defined(__INTEL_COMPILER) and (__INTEL_COMPILER < 1911)) or defined(__NVCC__))
 	constexpr // this generates a problem with intel compiler 19 "a constexpr function cannot have a nonliteral return type"
 #endif
-	auto base(array_iterator const& s) -> element_ptr{return s.base();}
+	auto base(array_iterator const& s) -> element_ptr {return s.base();}
 
-	       constexpr auto stride()              const&    -> stride_type{return   stride_;}
-	friend constexpr auto stride(array_iterator const& s) -> stride_type{return s.stride_;}
+	       constexpr auto stride()              const&    -> stride_type {return   stride_;}
+	friend constexpr auto stride(array_iterator const& s) -> stride_type {return s.stride_;}
 
-	constexpr auto operator++() -> array_iterator&{data_+=stride_; return *this;}
-	constexpr auto operator--() -> array_iterator&{data_-=stride_; return *this;}
+	constexpr auto operator++() -> array_iterator& {data_+=stride_; return *this;}
+	constexpr auto operator--() -> array_iterator& {data_-=stride_; return *this;}
 
-	friend constexpr auto operator==(array_iterator const& a, array_iterator const& b) -> bool{return a.data_ == b.data_;}
-	friend constexpr auto operator!=(array_iterator const& a, array_iterator const& b) -> bool{return not(a==b);}
+	friend constexpr auto operator==(array_iterator const& a, array_iterator const& b) -> bool {return    (a.data_ == b.data_);}
+	friend constexpr auto operator!=(array_iterator const& a, array_iterator const& b) -> bool {return not(a.data_ == b.data_);}
 
-	HD constexpr auto operator*() const -> typename std::iterator_traits<element_ptr>::reference{return *data_;}
+	HD constexpr auto operator*() const -> typename std::iterator_traits<element_ptr>::reference {return *data_;}
 
-	constexpr auto operator-(array_iterator const& o) const -> difference_type{return -distance_to(o);}
+	constexpr auto operator-(array_iterator const& o) const -> difference_type {return -distance_to(o);}
 
-	constexpr auto operator+=(difference_type d) -> array_iterator&{data_+=stride_*d; return *this;}
-	constexpr auto operator-=(difference_type d) -> array_iterator&{data_-=stride_*d; return *this;}
+	constexpr auto operator+=(difference_type d) -> array_iterator& {data_+=stride_*d; return *this;}
+	constexpr auto operator-=(difference_type d) -> array_iterator& {data_-=stride_*d; return *this;}
 };
 
 template<class Element, dimensionality_type D, typename... Ts>
 using iterator = array_iterator<Element, D, Ts...>;
 
 template<typename T, typename ElementPtr, class Layout>
-struct basic_array<T, dimensionality_type{0}, ElementPtr, Layout> :
-	array_types<T, dimensionality_type(0), ElementPtr, Layout>
-{
+struct basic_array<T, dimensionality_type{0}, ElementPtr, Layout>
+: array_types<T, dimensionality_type(0), ElementPtr, Layout> {
 	using types = array_types<T, dimensionality_type{0}, ElementPtr, Layout>;
 	using types::types;
 
-	using element = typename types::element;
-	using element_ref = typename std::iterator_traits<typename basic_array::element_ptr>::reference;//decltype(*typename basic_array::element_ptr{});
+	using element      = typename types::element;
+	using element_ref  = typename std::iterator_traits<typename basic_array::element_ptr>::reference;//decltype(*typename basic_array::element_ptr{});
 	using element_cref = typename std::iterator_traits<typename basic_array::element_const_ptr>::reference;
 	using iterator = array_iterator<T, 0, ElementPtr>;
 
-//	constexpr 
-	auto operator=(element const& e) & -> basic_array&{
+//	constexpr
+	auto operator=(element const& e) & -> basic_array& {
 	//	MULTI_MARK_SCOPE(std::string{"multi::operator= D=0 from "}+typeid(T).name()+" to "+typeid(T).name() );
 		adl_copy_n(&e, 1, this->base_); 
 		return *this;
 	}
-	constexpr auto operator= (element const& e) && -> basic_array&{
+	constexpr auto operator= (element const& e) && -> basic_array& {
 		operator=(e);
 		return *this; // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	}
 
-	constexpr auto operator==(element const& e) const& -> bool{return adl_equal(&e, std::next(&e), this->base_);}
-	constexpr auto operator!=(element const& e) const& -> bool{return not operator==(e);}
+	constexpr auto operator==(element const& e) const& -> bool {return adl_equal(&e, std::next(&e), this->base_);}
+	constexpr auto operator!=(element const& e) const& -> bool {return not operator==(e);}
 
 	template<class TT, class=decltype(std::declval<typename basic_array::element>()==std::declval<TT>())>
 	constexpr auto operator==(TT const& e) const&
-	->decltype(adl_equal(&e, std::next(&e), this->base_)){
-		return adl_equal(&e, std::next(&e), this->base_);}
+	->decltype(adl_equal(&e, std::next(&e), this->base_)) {
+		return adl_equal(&e, std::next(&e), this->base_); }
+
 	template<class TT>
-	constexpr auto operator!=(TT const& e) const&->decltype(!operator==(e)){return !operator==(e);}
+	constexpr auto operator!=(TT const& e) const&->decltype(!operator==(e)) {return !operator==(e);}
 
 	template<class Range0>
-	auto operator=(Range0&& r)& -> basic_array&{
-	//	*this->base_ = std::forward<Range0>(r); 
+	auto operator=(Range0&& r)& -> basic_array& {
 		adl_copy_n(&r, 1, this->base_);
 		return *this;
 	}
 
 	auto elements_at(size_type n) const& -> element_cref{assert(n < this->num_elements()); return *(this->base_);}
-	auto elements_at(size_type n)     && -> element_ref{assert(n < this->num_elements()); return *(this->base_);}
-	auto elements_at(size_type n)      & -> element_ref{assert(n < this->num_elements()); return *(this->base_);}
+	auto elements_at(size_type n)     && -> element_ref {assert(n < this->num_elements()); return *(this->base_);}
+	auto elements_at(size_type n)      & -> element_ref {assert(n < this->num_elements()); return *(this->base_);}
 
-	constexpr auto operator!=(basic_array const& o) const& -> bool{return not operator==(o);}
-	constexpr auto operator==(basic_array const& o) const& -> bool{return adl_equal(o.base_, o.base_ + 1, this->base_);}
+	constexpr auto operator!=(basic_array const& o) const& -> bool {return not adl_equal(o.base_, o.base_ + 1, this->base_);}
+	constexpr auto operator==(basic_array const& o) const& -> bool {return     adl_equal(o.base_, o.base_ + 1, this->base_);}
 
-//	constexpr auto operator&() const -> typename basic_array::element_ptr{return this->base_;} // (google-runtime-operator)
+//  constexpr auto operator&() const -> typename basic_array::element_ptr{return this->base_;} // (google-runtime-operator)
 	using decay_type = typename types::element;
 
 	constexpr auto operator()() const& -> element_ref{return *(this->base_);}
 
-	constexpr operator element_ref ()                            &&{return *(this->base_);} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
-	constexpr operator element_ref ()                             &{return *(this->base_);} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
-	constexpr operator element_cref()                        const&{return *(this->base_);} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
+	constexpr operator element_ref ()                            && {return *(this->base_);} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
+	constexpr operator element_ref ()                             & {return *(this->base_);} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
+	constexpr operator element_cref()                        const& {return *(this->base_);} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 
 //	constexpr          operator typename basic_array::element_type()     &&{return std::move(*(this->base_));} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax, like double const n2 = blas::nrm2(Y - Y3);
 //	constexpr explicit operator typename basic_array::element_type()      &{return           *(this->base_) ;} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax, like double const n2 = blas::nrm2(Y - Y3);
 //	constexpr explicit operator typename basic_array::element_type() const&{return           *(this->base_) ;} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax, like double const n2 = blas::nrm2(Y - Y3);
-
 
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int /*version*/){
