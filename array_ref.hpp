@@ -873,50 +873,51 @@ private:
 		constexpr auto operator[](typename Iterator::difference_type n) const -> typename Iterator::reference{return *(this->current - n);}
 		constexpr auto operator<(basic_reverse_iterator const& o) const -> bool{return o.base() < this->base();}
 	};
-public:
+
+ public:
 	using reverse_iterator = basic_reverse_iterator<iterator>;
 	using ptr = basic_array_ptr<basic_array, Layout>;
 	using const_ptr = basic_array_ptr<basic_const_array, Layout>;
 
 	constexpr auto addressof() &&{return ptr{this->base_, this->layout()};}
 
-	constexpr auto operator&()     &&{return       ptr{this->base_, this->layout()};} // NOLINT(google-runtime-operator) // gives compiler crash in g++-7 (Ubuntu 7.5.0-6ubuntu4) 7.5.0
-//	constexpr auto operator&()      &{return       ptr{this->base_, this->layout()};}
-//	constexpr auto operator&() const&{return const_ptr{this->base_, this->layout()};}
+	constexpr auto operator&()     && {return       ptr {this->base_, this->layout()};}  // NOLINT(google-runtime-operator) // gives compiler crash in g++-7 (Ubuntu 7.5.0-6ubuntu4) 7.5.0
+//	constexpr auto operator&()      & {return       ptr {this->base_, this->layout()};}
+//	constexpr auto operator&() const& {return const_ptr {this->base_, this->layout()};}
 
-	constexpr auto begin(dimensionality_type d) && -> iterator{
+	constexpr auto begin(dimensionality_type d) && -> iterator {
 		Layout l = static_cast<Layout const&>(*this); l.rotate(d);
 		return {types::base_ + l(0       ), l.sub_, l.stride_};
 	}
-	constexpr auto end(dimensionality_type d) && -> iterator{
+	constexpr auto end(dimensionality_type d) && -> iterator {
 		Layout l = static_cast<Layout const&>(*this); l.rotate(d);
 		return {types::base_ + l(l.size()), l.sub_, l.stride_};
 	}
 
-private:
-	constexpr auto begin_aux() const{return iterator{types::base_           , sub(), stride()};}
-	constexpr auto end_aux()   const{return iterator{types::base_ + nelems(), sub(), stride()};}
+ private:
+	constexpr auto begin_aux() const{return iterator {types::base_           , sub(), stride()};}
+	constexpr auto end_aux()   const{return iterator {types::base_ + nelems(), sub(), stride()};}
 
-public:
-	       constexpr auto begin()          &    -> iterator{return begin_aux();}
-	       constexpr auto end  ()          &    -> iterator{return end_aux()  ;}
-	friend constexpr auto begin(basic_array& s) -> iterator{return s.begin();}
-	friend constexpr auto end  (basic_array& s) -> iterator{return s.end  ();}
+ public:
+	       constexpr auto begin()          &    -> iterator {return begin_aux();}
+	       constexpr auto end  ()          &    -> iterator {return end_aux()  ;}
+	friend constexpr auto begin(basic_array& s) -> iterator {return s.begin();}
+	friend constexpr auto end  (basic_array& s) -> iterator {return s.end  ();}
 
-	       constexpr auto begin()          &&    -> iterator{return              begin();}
-	       constexpr auto end  ()          &&    -> iterator{return              end()  ;}
-	friend constexpr auto begin(basic_array&& s) -> iterator{return std::move(s).begin();}
-	friend constexpr auto end  (basic_array&& s) -> iterator{return std::move(s).end()  ;}
+	       constexpr auto begin()          &&    -> iterator {return              begin();}
+	       constexpr auto end  ()          &&    -> iterator {return              end()  ;}
+	friend constexpr auto begin(basic_array&& s) -> iterator {return std::move(s).begin();}
+	friend constexpr auto end  (basic_array&& s) -> iterator {return std::move(s).end()  ;}
 
-	       constexpr auto begin()           const&    -> const_iterator{return begin_aux();}
-	       constexpr auto end  ()           const&    -> const_iterator{return end_aux()  ;}
-	friend constexpr auto begin(basic_array const& s) -> const_iterator{return s.begin();}
-	friend constexpr auto end  (basic_array const& s) -> const_iterator{return s.end()  ;}
+	       constexpr auto begin()           const&    -> const_iterator {return begin_aux();}
+	       constexpr auto end  ()           const&    -> const_iterator {return end_aux()  ;}
+	friend constexpr auto begin(basic_array const& s) -> const_iterator {return s.begin();}
+	friend constexpr auto end  (basic_array const& s) -> const_iterator {return s.end()  ;}
 
 	       constexpr auto cbegin()           const& -> const_iterator{return begin();}
 	       constexpr auto cend()             const& -> const_iterator{return end()  ;}
-	friend constexpr auto cbegin(basic_array const& s){return s.cbegin();}
-	friend constexpr auto cend  (basic_array const& s){return s.cend()  ;}
+	friend constexpr auto cbegin(basic_array const& s) {return s.cbegin();}
+	friend constexpr auto cend  (basic_array const& s) {return s.cend()  ;}
 
 	template<class It> constexpr auto assign(It first) & -> It{adl_copy_n(first, this->size(), begin()); std::advance(first, this->size()); return first;}
 	template<class It> constexpr auto assign(It first)&& -> It{return assign(first);}
@@ -928,8 +929,7 @@ public:
 	>
 //	constexpr
 	auto operator=(Range const& r)& // check that you LHS is not read-only
-	-> basic_array& // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-	{
+	-> basic_array& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 		assert(this->size() == r.size()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	//	MULTI_MARK_SCOPE(std::string{"multi::operator= D="}+std::to_string(D)+" from range to "+typeid(T).name() );
 		adl_copy_n(adl_begin(r), this->size(), begin());
@@ -938,52 +938,42 @@ public:
 
 	template<class Range, class = std::enable_if_t<not std::is_base_of<basic_array, Range>{}> >
 	auto operator=(Range const& r)&& 
-	-> basic_array& // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-	{
+	-> basic_array&  {// lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 		operator=(r);
 		return *this;
 	}
 
 	template<class TT, class... As>
-//	constexpr 
+//	constexpr
 	auto operator=(basic_array<TT, D, As...> const& o)& -> basic_array&{
 		assert( this->extension() == o.extension() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	//	MULTI_MARK_SCOPE( std::string{"multi::operator= (D="}+std::to_string(D)+") from "+typeid(TT).name()+" to "+typeid(T).name() );
-		if(this->is_empty()){return *this;}
-		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()){
+		if(this->is_empty()) {return *this;}
+		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()) {
 			adl_copy_n(o.base(), o.num_elements(), this->base());
-		}else if(o.stride() < (~o).stride()){
-		//	~(*this) = ~o; // vvv lints(misc-no-recursion)
+		} else if(o.stride() < (~o).stride()) {
 			adl_copy_n( (~o).begin(), (~o).size(), (~(*this)).begin() );
-		}else{
+		} else {
 			assign(o.begin());
 		}
 		return *this;
 	}
-//	template<class TT, class... As>
-//	constexpr auto operator=(basic_array<TT, D, As...>&& o)&& 
-//	-> basic_array& // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-//	{
-//		assert( this->extensions() == o.extensions() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-//		if(this->is_empty()){return *this;}
-//		basic_array::operator=(o);
-//		return *this; // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-//	}
-	constexpr auto operator=(basic_array&& o)&& // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-	noexcept // lints(hicpp-noexcept-move,performance-noexcept-move-constructor) // TODO(correaa) : make conditionally noexcept
-	-> basic_array& // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+
+	constexpr auto operator=(basic_array&& o)&&  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+	noexcept  // lints(hicpp-noexcept-move,performance-noexcept-move-constructor) // TODO(correaa) : make conditionally noexcept
+	-> basic_array&  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	{
 		assert( this->extensions() == o.extensions() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		if(this->is_empty()){return *this;}
 		basic_array::operator=(o);
-		return *this; // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	}
 
 	template<class TT, class... As>
 	constexpr auto operator=(basic_array<TT, D, As...> const& o)&& 
-	-> basic_array&{ // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+	-> basic_array&{  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 		operator=(o);
-		return *this; // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	}
 
 //	constexpr 
@@ -1001,134 +991,150 @@ public:
 		}
 		return *this;
 	}
+
 	constexpr auto operator=(basic_array const& o) &&
-	-> basic_array& // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-	{
+	-> basic_array& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 		if(this == &o){return *this;} // lints(cert-oop54-cpp)
 		operator=(o);
-		return *this; // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	}
 
-	template<class Array> void swap(Array&& o) &&{
+	template<class Array> void swap(Array&& o) && {
 		assert( std::move(*this).extension() == std::forward<Array>(o).extension() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
 	}
-	template<class A> constexpr void swap(A&& o) &{return swap(std::forward<A>(o));}
+	template<class A> constexpr void swap(A&& o) & {return swap(std::forward<A>(o));}
 
-	friend constexpr void swap(basic_array&& a, basic_array&& b){std::move(a).swap(std::move(b));}
-	template<class Array> constexpr void swap(basic_array const& s, Array&& a){s.swap(a);}
-	template<class Array> constexpr void swap(Array&& a, basic_array const& s){s.swap(a);}
+	friend constexpr void swap(basic_array&& a, basic_array&& b) {std::move(a).swap(std::move(b));}
+
+	template<class Array> constexpr void swap(basic_array const& s, Array&& a) {s.swap(a);}
+	template<class Array> constexpr void swap(Array&& a, basic_array const& s) {s.swap(a);}
+
 	template<class Array>
 	constexpr auto operator==(Array const& o) const&
-	->decltype(this->extension()==o.extension() and adl_equal(this->begin(), this->end(), adl_begin(o))){
-		return this->extension()==o.extension() and adl_equal(this->begin(), this->end(), adl_begin(o));}
+	->decltype(this->extension()==o.extension() and adl_equal(this->begin(), this->end(), adl_begin(o))) {
+		return this->extension()==o.extension() and adl_equal(this->begin(), this->end(), adl_begin(o)); }
+
 	template<class Array>
 	constexpr auto operator!=(Array const& o) const&
-	->decltype(not (this->extension()==o.extension() and adl_equal(this->begin(), this->end(), adl_begin(o)))){
-		return not (this->extension()==o.extension() and adl_equal(this->begin(), this->end(), adl_begin(o)));}
+	->decltype(not (this->extension()==o.extension() and adl_equal(this->begin(), this->end(), adl_begin(o)))) {
+		return not (this->extension()==o.extension() and adl_equal(this->begin(), this->end(), adl_begin(o))); }
 
 	template<class TT, class... As>
-	constexpr auto operator==(basic_array<TT, D, As...> const& o) const& -> bool{
+	constexpr auto operator==(basic_array<TT, D, As...> const& o) const& -> bool {
 		return (this->extension()==o.extension()) and adl_equal(this->begin(), this->end(), adl_begin(o));
 	}
+
 	template<class It>
-	constexpr auto equal(It begin) const& -> bool{
+	constexpr auto equal(It begin) const& -> bool {
 		return adl_equal(
 			std::move(modify(*this)).begin(), // TODO(correaa) : what is this?
 			std::move(modify(*this)).end(),
 			begin
 		);
 	}
-private:
-	friend constexpr auto lexicographical_compare(basic_array const& a1, basic_array const& a2) -> bool{
-		if(a1.extension().first() > a2.extension().first()){return true ;}
-		if(a1.extension().first() < a2.extension().first()){return false;}
+
+ private:
+	friend constexpr auto lexicographical_compare(basic_array const& a1, basic_array const& a2) -> bool {
+		if(a1.extension().first() > a2.extension().first()) {return true ;}
+		if(a1.extension().first() < a2.extension().first()) {return false;}
 		return adl_lexicographical_compare(
-			a1.begin(), a1.end(), 
+			a1.begin(), a1.end(),
 			a2.begin(), a2.end()
 		);
 	}
-public:
-	template<class O> constexpr auto operator<(O&& o)&& -> bool{return lexicographical_compare(std::move(*this), std::forward<O>(o));}
-	template<class O> constexpr auto operator>(O&& o)&& -> bool{return lexicographical_compare(std::forward<O>(o), std::move(*this));}
+
+ public:
+	template<class O> constexpr auto operator<(O&& o)&& -> bool {return lexicographical_compare(std::move(*this), std::forward<O>(o));}
+	template<class O> constexpr auto operator>(O&& o)&& -> bool {return lexicographical_compare(std::forward<O>(o), std::move(*this));}
 
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
-	constexpr auto static_array_cast() const -> basic_array<T2, D, P2>{
+	constexpr auto static_array_cast() const -> basic_array<T2, D, P2> {
 		P2 p2{this->base_};
 		return basic_array<T2, D, P2>{this->layout(), p2};
 	}
-	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2 const>,
+
+	template<
+		class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2 const>,
 		class Element = typename basic_array::element,
 		class PM = T2 Element::*
 	>
-	constexpr auto member_cast(PM pm) const& -> basic_array<T2, D, P2>{
-		static_assert(sizeof(T)%sizeof(T2) == 0, 
+	constexpr auto member_cast(PM pm) const& -> basic_array<T2, D, P2> {
+		static_assert(sizeof(T)%sizeof(T2) == 0,
 			"array_member_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements");
-	//	return {this->layout().scale(sizeof(T)/sizeof(T2)), &(this->base_->*pm)};
+
 		return basic_array<T2, D, P2>{this->layout().scale(sizeof(T)/sizeof(T2)), static_cast<P2>(&(this->base_->*pm))};
 	}
-	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>,
+
+	template<
+		class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>,
 		class Element = typename basic_array::element,
 		class PM = T2 Element::*
 	>
-	constexpr auto member_cast(PM pm) & -> basic_array<T2, D, P2>{
-		static_assert(sizeof(T)%sizeof(T2) == 0, 
+	constexpr auto member_cast(PM pm) & -> basic_array<T2, D, P2> {
+		static_assert(sizeof(T)%sizeof(T2) == 0,
 			"array_member_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements");
-	//	return {this->layout().scale(sizeof(T)/sizeof(T2)), &(this->base_->*pm)};
+
 		return basic_array<T2, D, P2>{this->layout().scale(sizeof(T)/sizeof(T2)), static_cast<P2>(&(this->base_->*pm))};
 	}
-	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>,
+
+	template<
+		class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>,
 		class Element = typename basic_array::element,
 		class PM = T2 Element::*
 	>
-	constexpr auto member_cast(PM pm) && -> basic_array<T2, D, P2>{
+	constexpr auto member_cast(PM pm) && -> basic_array<T2, D, P2> {
 		return this->member_cast<T2, P2, Element, PM>(pm);
 	}
 
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2 const> >
-	constexpr auto reinterpret_array_cast() const& -> basic_array<std::decay_t<T2>, D, P2>{
-		static_assert( sizeof(T)%sizeof(T2)== 0, 
+	constexpr auto reinterpret_array_cast() const& -> basic_array<std::decay_t<T2>, D, P2> {
+		static_assert( sizeof(T)%sizeof(T2)== 0,
 			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
+
 		auto thisbase = this->base();
 		return {
 			this->layout().scale(sizeof(T)/sizeof(T2)),
-			static_cast<P2>(static_cast<void*>(thisbase)) // TODO(correaa) : use true reinterpret_cast
+			static_cast<P2>(static_cast<void*>(thisbase))  // TODO(correaa) : use true reinterpret_cast
 		};
 	}
 
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
-	constexpr auto reinterpret_array_cast()& -> basic_array<std::decay_t<T2>, D, P2>{
-		static_assert( sizeof(T)%sizeof(T2)== 0, 
+	constexpr auto reinterpret_array_cast()& -> basic_array<std::decay_t<T2>, D, P2> {
+		static_assert( sizeof(T)%sizeof(T2)== 0,
 			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
+
 		return {
-			this->layout().scale(sizeof(T)/sizeof(T2)), // NOLINT(bugprone-sizeof-expression) : sizes are compatible according to static assert above
-			reinterpret_cast<P2>(this->base()) // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : TODO(correaa) use customized multi/std::reinterpret_pointer_cast
-		//	static_cast<P2>(static_cast<void*>(static_cast<void_ptr>(this->base())))
+			this->layout().scale(sizeof(T)/sizeof(T2)),  // NOLINT(bugprone-sizeof-expression) : sizes are compatible according to static assert above
+			reinterpret_cast<P2>(this->base())  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : TODO(correaa) use customized multi/std::reinterpret_pointer_cast
 		};
 	}
+
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
-	constexpr auto reinterpret_array_cast()&& ->  basic_array<std::decay_t<T2>, D, P2>{
+	constexpr auto reinterpret_array_cast()&& ->  basic_array<std::decay_t<T2>, D, P2> {
 		return this->template reinterpret_array_cast<T2, P2>();
 	}
 
 	template<class T2 = std::remove_const_t<T>, class P2 = T2*>
-	constexpr auto const_array_cast()&&{
-		return basic_array<std::decay_t<T2>, D, P2>{this->layout(), const_cast<P2>(this->base())}; // NOLINT(cppcoreguidelines-pro-type-const-cast) : to implement consts cast
+	constexpr auto const_array_cast()&& {
+		return basic_array<std::decay_t<T2>, D, P2>{this->layout(), const_cast<P2>(this->base())};  // NOLINT(cppcoreguidelines-pro-type-const-cast) : to implement consts cast
 	}
 
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
-	constexpr auto reinterpret_array_cast(multi::size_type n) & -> basic_array<std::decay_t<T2>, D + 1, P2>{
+	constexpr auto reinterpret_array_cast(multi::size_type n) & -> basic_array<std::decay_t<T2>, D + 1, P2> {
 		static_assert( sizeof(T)%sizeof(T2) == 0,
 			"error: reinterpret_array_cast is limited to integral stride values");
+
 		assert( n > 0 );
-		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(n) ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(n) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		typename basic_array::element_ptr const thisbase = this->base();
-		P2 new_base; std::memcpy(static_cast<void*>(&new_base), static_cast<void const*>(&thisbase), sizeof(P2)); //reinterpret_cast<P2 const&>(thisbase) // TODO find a better way, fancy pointers wouldn't need reinterpret_cast
-		return { 
-			layout_t<D+1>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n}.rotate(), // NOLINT(bugprone-sizeof-expression) T and T2 are size compatible (see static_assert above)
+		P2 new_base; std::memcpy(static_cast<void*>(&new_base), static_cast<void const*>(&thisbase), sizeof(P2));  // reinterpret_cast<P2 const&>(thisbase) // TODO find a better way, fancy pointers wouldn't need reinterpret_cast
+		return {
+			layout_t<D+1>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n}.rotate(),  // NOLINT(bugprone-sizeof-expression) T and T2 are size compatible (see static_assert above)
 			new_base
 		};
 	}
+
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
 	constexpr auto reinterpret_array_cast(multi::size_type n)     && -> basic_array<std::decay_t<T2>, D + 1, P2>{return reinterpret_array_cast<T2, P2>(n);}
 
@@ -1138,7 +1144,7 @@ public:
 			"error: reinterpret_array_cast is limited to integral stride values");
 
 		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(n) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : checck implicit size compatibility
-		return { 
+		return {
 			layout_t<D+1>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n}.rotate(),
 			static_cast<P2>(static_cast<void*>(this->base()))
 		};
@@ -1158,7 +1164,6 @@ struct array_iterator<Element, 1, Ptr>
 , multi::decrementable   <array_iterator<Element, 1, Ptr>>
 , multi::incrementable   <array_iterator<Element, 1, Ptr>>
 , multi::totally_ordered2<array_iterator<Element, 1, Ptr>, void> {
-
 	using affine = multi::affine<array_iterator<Element, 1, Ptr>, multi::difference_type>;
 	using difference_type = typename affine::difference_type;
 
