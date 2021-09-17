@@ -67,140 +67,151 @@ template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layo
 struct array_types : Layout{ // cppcheck-suppress syntaxError ; false positive in cppcheck
 	using element = T;
 	using element_type = element; // this follows more closely https://en.cppreference.com/w/cpp/memory/pointer_traits
-//	using Layout::dimensionality;
-//	constexpr static dimensionality_type dimensionality = D;
 	using element_ptr = ElementPtr;
-	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element const>; //multi::const_iterator<ElementPtr>; 
+	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element const>;
 	using element_ref = typename std::iterator_traits<element_ptr>::reference;
+
 	using layout_t = Layout;
+
 	using value_type = typename std::conditional<
 		(D>1),
-		array<element, D-1, typename multi::pointer_traits<element_ptr>::default_allocator_type>, 
+		array<element, D-1, typename multi::pointer_traits<element_ptr>::default_allocator_type>,
 		typename std::conditional<
 			D == 1,
 			element,
 			element
 		>::type
 	>::type;
-	using reference = typename std::conditional<(D > 1), 
+
+	using reference = typename std::conditional<
+		(D > 1),
 		basic_array<element, D-1, element_ptr>,
-		typename std::conditional<(D == 1), 
+		typename std::conditional<(D == 1),
 			  typename std::iterator_traits<element_ptr>::reference   // this seems more correct but it doesn't work with cuda fancy reference
 			, typename std::iterator_traits<element_ptr>::reference
 		>::type
 	>::type;
 
-	using const_reference = typename std::conditional<(D > 1), 
+	using const_reference = typename std::conditional<
+		(D > 1),
 		basic_array<element, D-1, element_const_ptr>,
 		typename std::iterator_traits<element_const_ptr>::reference
 	>::type;
 
-	NODISCARD("") HD constexpr auto  base() const -> element_ptr      {return base_;}
-	NODISCARD("")    constexpr auto cbase() const -> element_const_ptr{return base_;}
+	NODISCARD("") HD constexpr auto  base() const -> element_ptr       {return base_;}
+	NODISCARD("")    constexpr auto cbase() const -> element_const_ptr {return base_;}
 
-	NODISCARD("")    constexpr auto mbase()           const&    -> element_ptr&{return base_;}
-	friend           auto  base(array_types const& s) -> element_ptr {return s.base();}
+	NODISCARD("")    constexpr auto mbase() const&    -> element_ptr& {return base_;}
 
-	       constexpr auto layout() const               -> layout_t const&{return *this;}
-	friend constexpr auto layout(array_types const& s) -> layout_t const&{return s.layout();}
+	friend           auto  base(array_types const& s) -> element_ptr  {return s.base();}
 
-	       constexpr auto origin()           const&    -> decltype(auto){return base_+Layout::origin();}
-	friend constexpr auto origin(array_types const& s) -> decltype(auto){return s.origin();}
+	       constexpr auto layout() const               -> layout_t const& {return *this;}
+	friend constexpr auto layout(array_types const& s) -> layout_t const& {return s.layout();}
 
-protected:
+	       constexpr auto origin()           const&    -> decltype(auto) {return base_+Layout::origin();}
+	friend constexpr auto origin(array_types const& s) -> decltype(auto) {return s.origin();}
+
+ protected:
 	using derived = basic_array<T, D, ElementPtr, Layout>;
-	element_ptr base_; // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes) : TODO(correaa) try to make it private, [static_]array needs mutation
-	constexpr explicit array_types(std::nullptr_t np) : Layout{}, base_{np}{}
+	element_ptr base_;  // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes) : TODO(correaa) try to make it private, [static_]array needs mutation
+	constexpr explicit array_types(std::nullptr_t np) : Layout{}, base_{np} {}
 
-public:
+ public:
 	array_types() = default;
-//#if defined(__NVCC__) 
-//	__host__ __device__ // TODO check why this is necessary (nvcc 11), removing this gives a, trivial_device_copy D->H failed: cudaErrorLaunchFailure: unspecified launch failure
-//#endif
-	constexpr array_types(layout_t const& l, element_ptr const& data): Layout{l}, base_{data}{}
 
-//	array_types(array_types const&) = default;
-//	template<class T2, class P2, class Array> friend decltype(auto) static_array_cast(Array&&);
-protected://TODO(correaa) find why this needs to be public and not protected or friend
+//  #if defined(__NVCC__)
+//  	__host__ __device__ // TODO check why this is necessary (nvcc 11), removing this gives a, trivial_device_copy D->H failed: cudaErrorLaunchFailure: unspecified launch failure
+//  #endif
+	constexpr array_types(layout_t const& l, element_ptr const& data)
+	: Layout{l}, base_{data} {}
+
+ protected:  // TODO(correaa) : find why this needs to be public and not protected or friend
 	template<class ArrayTypes, typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>
 		, decltype(_explicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
 	>
-	constexpr explicit array_types(ArrayTypes const& a) : Layout{a.layout()}, base_{a.base_}{}
-	template<class ArrayTypes, typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>
-		, decltype(_implicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
+	constexpr explicit array_types(ArrayTypes const& a) : Layout{a.layout()}, base_{a.base_} {}
+
+	template<
+		class ArrayTypes,
+		typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>,
+		decltype(_implicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointers are implicitly convertible
-	constexpr/*implct*/array_types(ArrayTypes const& a) : Layout{a.layout()}, base_{a.base_}{} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : inherit behavior of underlying pointer
+	constexpr/*implct*/array_types(ArrayTypes const& a)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : inherit behavior of underlying pointer
+	: Layout{a.layout()}, base_{a.base_} {}
 	// ^^^ TODO(correaa) : call explicit from implicit, careful with infinite recursion
 
-	template<typename ElementPtr2, 
+	template<
+		typename ElementPtr2,
 		typename = decltype(Layout{std::declval<array_types<T, D, ElementPtr2, Layout> const&>().layout()}),
 		typename = decltype(element_ptr{std::declval<array_types<T, D, ElementPtr2, Layout> const&>().base_})
 	>
-	constexpr explicit array_types(array_types<T, D, ElementPtr2, Layout> const& other) : Layout{other.layout()}, base_{other.base_}{}
+	constexpr explicit array_types(array_types<T, D, ElementPtr2, Layout> const& other)
+	: Layout{other.layout()}, base_{other.base_} {}
+
 	template<class T2, dimensionality_type D2, class E2, class L2> friend struct array_types;
 };
 
 template<class Ref, class Layout>
-struct basic_array_ptr : // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CRTP
-	private Ref, // TODO(correaa) : remove inheritance from Ref??
-	boost::multi::iterator_facade<
-		basic_array_ptr<Ref, Layout>, void, std::random_access_iterator_tag, 
-		Ref const&, typename Layout::difference_type
-	>//, boost::multi::totally_ordered2<basic_array_ptr<Ref, Layout>, void>
-{
-	~basic_array_ptr() = default; // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-	auto operator=(basic_array_ptr&& other) // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-	noexcept // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
-	-> basic_array_ptr&{
+struct basic_array_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin CRTP
+: private Ref  // TODO(correaa) : remove inheritance from Ref??
+, boost::multi::iterator_facade<
+	basic_array_ptr<Ref, Layout>, void, std::random_access_iterator_tag,
+	Ref const&, typename Layout::difference_type
+> {  //, boost::multi::totally_ordered2<basic_array_ptr<Ref, Layout>, void>
+	~basic_array_ptr() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+	auto operator=(basic_array_ptr&& other)  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+	noexcept  // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
+	-> basic_array_ptr& {
 		operator=(other);
-		return *this; // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	}
 	using pointer = Ref const*;
 	using element_type = typename Ref::decay_type;
 	using difference_type = typename Layout::difference_type;
 
 	using value_type = element_type;
-	using reference = Ref;// const&;
+	using reference = Ref;
 	using iterator_category = std::random_access_iterator_tag;
 
-	constexpr explicit basic_array_ptr(std::nullptr_t p) : Ref{p}{}
-	constexpr basic_array_ptr() : basic_array_ptr{nullptr}{}
+	constexpr explicit basic_array_ptr(std::nullptr_t p) : Ref{p} {}
+	constexpr basic_array_ptr() : basic_array_ptr{nullptr} {}
 
 	template<class, class> friend struct basic_array_ptr;
 
-	constexpr basic_array_ptr(typename Ref::element_ptr p, layout_t<typename Ref::rank{}-1> l) : Ref{l, p}{}
-	constexpr basic_array_ptr(typename Ref::element_ptr p, index_extensions<typename Ref::rank{}> e) : Ref{p, e}{}
+	constexpr basic_array_ptr(typename Ref::element_ptr p, layout_t<typename Ref::rank{}-1> l) : Ref{l, p} {}
+	constexpr basic_array_ptr(typename Ref::element_ptr p, index_extensions<typename Ref::rank{}> e) : Ref{p, e} {}
 
-	basic_array_ptr(basic_array_ptr&&) noexcept = default;//: Ref{static_cast<Layout const&>(o), o.base_}{}//, stride_{o.stride_}{}
-	basic_array_ptr(basic_array_ptr const&) = default;//: Ref{static_cast<Layout const&>(o), o.base_}{}//, stride_{o.stride_}{}
-	auto operator=(basic_array_ptr const& other) -> basic_array_ptr&{
-		if(this == &other){return *this;} // lints(cert-oop54-cpp)
+	basic_array_ptr(basic_array_ptr      &&) noexcept = default;
+	basic_array_ptr(basic_array_ptr const& )          = default;
+
+	auto operator=(basic_array_ptr const& other) -> basic_array_ptr& {
+		if(this == &other) {return *this;}  // lints(cert-oop54-cpp)
 		this->base_ = other.base_;
 		static_cast<Layout&>(*this) = other.layout();
 		return *this;
 	}
-	constexpr explicit operator bool() const{return this->base_;}
+	constexpr explicit operator bool() const {return this->base_;}
 
-	constexpr auto  dereference() const -> Ref{return Ref{this->layout(), this->base_};}
+	constexpr auto  dereference() const -> Ref {return Ref{this->layout(), this->base_};}
 
 	HD constexpr auto  operator* () const -> Ref{return Ref{*this};}
 
-	constexpr auto operator->() const -> Ref*{return  const_cast<basic_array_ptr*>(this);} // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) find a better way without const_cast
-	constexpr auto operator->()       -> Ref*{return  this;}
+	constexpr auto operator->() const -> Ref* {return  const_cast<basic_array_ptr*>(this);}  // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) find a better way without const_cast
+	constexpr auto operator->()       -> Ref* {return  this;}
 
 	constexpr auto  operator[](difference_type n) const -> Ref {return *(*this + n);}
 
 	constexpr auto operator<(basic_array_ptr const& o) const -> bool{return distance_to(o) > 0;}
 
-	constexpr basic_array_ptr(typename Ref::element_ptr p, Layout const& l) : Ref{l, p}{}
+	constexpr basic_array_ptr(typename Ref::element_ptr p, Layout const& l) : Ref{l, p} {}
 
 	template<typename T, dimensionality_type D, typename ElementPtr, class LLayout>
 	friend struct basic_array;
 
-	constexpr auto base() const{return this->base_;}
+	constexpr auto base() const {return this->base_;}
 
-	friend constexpr auto base(basic_array_ptr const& self){return self.base();}
+	friend constexpr auto base(basic_array_ptr const& self) {return self.base();}
 
 	using Ref::base_;
 	using Ref::layout;
@@ -282,8 +293,8 @@ struct array_iterator
 	template<class EElement, typename PPtr,
 		decltype(_implicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().ptr_.base()))* = nullptr
 	>
-	constexpr/*implct*/array_iterator(array_iterator<EElement, D, PPtr> const& o)
-	: ptr_{o.ptr_.base_, o.ptr_.layout()}, stride_{o.stride_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : inherit implicitness of pointer
+	constexpr/*implct*/array_iterator(array_iterator<EElement, D, PPtr> const& o)   // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : propagate implicitness of pointer
+	: ptr_{o.ptr_.base_, o.ptr_.layout()}, stride_{o.stride_} {}
 	// ^^^ TODO(correaa) : implement implcit in terms of explicit? be careful of infinite recursion
 
 	array_iterator(array_iterator const&) = default;
