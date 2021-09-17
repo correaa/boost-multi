@@ -11,14 +11,13 @@ $CXXX $CXXFLAGS $0 -o $0x&&$0x&&rm $0x&&(rm -rf test/build&&mkdir -p test/build&
 
 #include "./config/ASSERT.hpp"
 #include "./config/DELETE.hpp"
-//#include "./config/DEPRECATED.hpp"
 #include "./config/MARK.hpp"
 #include "./config/NODISCARD.hpp"
 
 #include "./detail/layout.hpp"
-#include "./detail/memory.hpp"    // pointer_traits
-#include "./detail/operators.hpp" // random_iterable
-#include "./detail/types.hpp"     // dimensionality_type
+#include "./detail/memory.hpp"     // pointer_traits
+#include "./detail/operators.hpp"  // random_iterable
+#include "./detail/types.hpp"      // dimensionality_type
 
 #if defined(__NVCC__)
 #define HD __host__ __device__
@@ -26,47 +25,45 @@ $CXXX $CXXFLAGS $0 -o $0x&&$0x&&rm $0x&&(rm -rf test/build&&mkdir -p test/build&
 #define HD
 #endif
 
-//#include<iostream> // debug
+#include<algorithm>   // fpr copy_n
+#include<cstring>     // for memset in reinterpret_cast
+#include<functional>  // for invoke
+#include<iterator>    // for next
+#include<memory>      // for pointer_traits
+#include<utility>     // for forward
 
-#include<algorithm>  // copy_n
-#include<cstring>    // for memset in reinterpret_cast
-#include<functional> // invoke
-#include<iterator> // next
-#include<memory>   // for pointer_traits
-#include<utility>  // for forward
-
-namespace std{
+namespace std {
 	template<class T>
-	struct pointer_traits<std::move_iterator<T*>> : std::pointer_traits<T*>{
-		template<class U> using rebind = 
+	struct pointer_traits<std::move_iterator<T*>> : std::pointer_traits<T*> {
+		template<class U> using rebind =
 			std::conditional_t<
-				std::is_const<U>{}, 
+				std::is_const<U>{},
 				U*,
 				std::pointer_traits<std::move_iterator<U*>>
 			>;
 	};
-} // end namespace std
+}  // end namespace std
 
-namespace boost{
-namespace multi{
+namespace boost {
+namespace multi {
 
-template<class T> auto modify(T const& t) -> T&{return const_cast<T&>(t);} // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) see what is this used for
+template<class T> auto modify(T const& t) -> T& {return const_cast<T&>(t);}  // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) see what is this used for
 
-template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>> 
+template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>>
 struct basic_array;
 
 template<typename T, dimensionality_type D, class A = std::allocator<T>> struct array;
 
-template<class To, class From, std::enable_if_t<std::is_convertible<From, To>{},int> =0>
-constexpr auto _implicit_cast(From&& f) -> To{return static_cast<To>(f);}
+template<class To, class From, std::enable_if_t<std::is_convertible<From, To>{}, int> = 0>
+constexpr auto _implicit_cast(From&& f) -> To {return static_cast<To>(f);}
 
-template<class To, class From, std::enable_if_t<std::is_constructible<To, From>{} and not std::is_convertible<From, To>{},int> =0>
-constexpr auto _explicit_cast(From&& f) -> To{return static_cast<To>(f);}
+template<class To, class From, std::enable_if_t<std::is_constructible<To, From>{} and not std::is_convertible<From, To>{}, int> = 0>
+constexpr auto _explicit_cast(From&& f) -> To {return static_cast<To>(f);}
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D> >
-struct array_types : Layout{ // cppcheck-suppress syntaxError ; false positive in cppcheck
+struct array_types : Layout{  // cppcheck-suppress syntaxError ; false positive in cppcheck
 	using element = T;
-	using element_type = element; // this follows more closely https://en.cppreference.com/w/cpp/memory/pointer_traits
+	using element_type = element;  // this follows more closely https://en.cppreference.com/w/cpp/memory/pointer_traits
 	using element_ptr = ElementPtr;
 	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element const>;
 	using element_ref = typename std::iterator_traits<element_ptr>::reference;
@@ -74,22 +71,15 @@ struct array_types : Layout{ // cppcheck-suppress syntaxError ; false positive i
 	using layout_t = Layout;
 
 	using value_type = typename std::conditional<
-		(D>1),
+		(D > 1),
 		array<element, D-1, typename multi::pointer_traits<element_ptr>::default_allocator_type>,
-		typename std::conditional<
-			D == 1,
-			element,
-			element
-		>::type
+		element
 	>::type;
 
 	using reference = typename std::conditional<
 		(D > 1),
 		basic_array<element, D-1, element_ptr>,
-		typename std::conditional<(D == 1),
-			  typename std::iterator_traits<element_ptr>::reference   // this seems more correct but it doesn't work with cuda fancy reference
-			, typename std::iterator_traits<element_ptr>::reference
-		>::type
+		typename std::iterator_traits<element_ptr>::reference
 	>::type;
 
 	using const_reference = typename std::conditional<
