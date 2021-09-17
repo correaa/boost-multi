@@ -1761,137 +1761,126 @@ public:
 	//	assert( sizeof(T )%(sizeof(T2)*n)== 0 );
 		auto thisbase = this->base();
 		return basic_array<std::decay_t<T2>, 2, P2>{
-			layout_t<2>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n}, 
+			layout_t<2>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n},
 			static_cast<P2>(static_cast<void*>(thisbase))
 		}.rotated();
 	}
 
 	// TODO(correaa) : rename to reinterpret_pointer_cast?
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
-	constexpr auto reinterpret_array_cast(size_type n)& -> basic_array<std::decay_t<T2>, 2, P2>{
-		static_assert( sizeof(T)%sizeof(T2)== 0, 
+	constexpr auto reinterpret_array_cast(size_type n)& -> basic_array<std::decay_t<T2>, 2, P2> {
+		static_assert( sizeof(T)%sizeof(T2)== 0,
 			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
-	//	assert( sizeof(T )%(sizeof(T2)*n)== 0 );
+	//  assert( sizeof(T )%(sizeof(T2)*n)== 0 );
 		typename basic_array::element_ptr const thisbase = this->base();
 		return basic_array<std::decay_t<T2>, 2, P2>{
-			layout_t<2>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n}, 
+			layout_t<2>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n},
 			static_cast<P2>(static_cast<void*>(thisbase))
 		}.rotated();
 	}
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
-	constexpr auto reinterpret_array_cast(size_type n)&& -> basic_array<std::decay_t<T2>, 2, P2>{
+	constexpr auto reinterpret_array_cast(size_type n)&& -> basic_array<std::decay_t<T2>, 2, P2> {
 		return this->reinterpret_array_cast(n);
 	}
 
 	template<class TT = typename basic_array::element_type>
-	constexpr auto fill(TT const& value)& -> decltype(auto){
+	constexpr auto fill(TT const& value)& -> decltype(auto) {
 		return adl_fill_n(this->begin(), this->size(), value), *this;
 	}
-	constexpr auto fill()& -> decltype(auto){return fill(typename basic_array::element_type{});}
+	constexpr auto fill()& -> decltype(auto) {return fill(typename basic_array::element_type{});}
 
 	template<class TT = typename basic_array::element_type>
-	constexpr auto fill(TT const& value)&& -> decltype(auto){return std::move(this->fill(value));}
-	constexpr auto fill()&& -> decltype(auto){
+	constexpr auto fill(TT const& value)&& -> decltype(auto) {return std::move(this->fill(value));}
+	constexpr auto fill()&& -> decltype(auto) {
 		return std::move(*this).fill(typename basic_array::element_type{});
 	}
 };
 
 template<class T2, class P2, class Array, class... Args>
-constexpr auto static_array_cast(Array&& a, Args&&... args) -> decltype(auto){
+constexpr auto static_array_cast(Array&& a, Args&&... args) -> decltype(auto) {
 	return a.template static_array_cast<T2, P2>(std::forward<Args>(args)...);
 }
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*>
-struct array_ref : 
-//TODO(correaa) : inheredit from multi::partially_ordered2<array_ref<T, D, ElementPtr>, void>?
-	basic_array<T, D, ElementPtr>
-{
-	~array_ref() = default; // lints(cppcoreguidelines-special-member-functions)
+struct array_ref
+// TODO(correaa) : inheredit from multi::partially_ordered2<array_ref<T, D, ElementPtr>, void>?
+: basic_array<T, D, ElementPtr> {
+	~array_ref() = default;  // lints(cppcoreguidelines-special-member-functions)
 
-#if not defined(__NVCC__) // crashes nvcc 11.3 !!!!
-	constexpr auto operator=(array_ref&& other) // lints(cppcoreguidelines-special-member-functions)
-	noexcept(std::is_nothrow_copy_assignable<T>{}) // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
-	-> array_ref&{
-		operator=(other); // array_refs do not rebind! elements must be copied
-		return *this; // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+#if not defined(__NVCC__)  // crashes nvcc 11.3 !!!!
+	constexpr auto operator=(array_ref&& other)  // lints(cppcoreguidelines-special-member-functions)
+	noexcept(std::is_nothrow_copy_assignable<T>{})  // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
+	-> array_ref& {
+		operator=(other);  // array_refs do not rebind! elements must be copied
+		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	}
 #else
-//	constexpr auto operator=(array_ref&&);
+//  constexpr auto operator=(array_ref&&);
 #endif
 
-protected:
+ protected:
 	constexpr array_ref() noexcept
-		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{}, nullptr}{}
-//#if __cplusplus >= 201703L and not defined(__INTEL_COMPILER)
-//protected: 
-//	[[deprecated("references are not copyable, use &&")]]
-//	array_ref(array_ref const&) = default; // don't try to use `auto` for references, use `auto&&` or explicit value type
-//#else
-//public:
-//	array_ref(array_ref const&) = default;
-//#endif
-//#if defined(__NVCC__)
-//	array_ref(array_ref const&) = default;
-//	array_ref(array_ref&&) = default;
-//#endif
+	: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{}, nullptr} {}
+
 	using iterator = typename basic_array<T, D, ElementPtr>::iterator;
 
-public: // lints(hicpp-use-equals-delete,modernize-use-equals-delete)
+ public:  // lints(hicpp-use-equals-delete,modernize-use-equals-delete)
 	array_ref(iterator, iterator) = delete;
 
-protected:
+ protected:
 	[[deprecated("references are not copyable, use auto&&")]]
-	array_ref(array_ref const&) = default; // don't try to use `auto` for references, use `auto&&` or explicit value type
+	array_ref(array_ref const&) = default;  // don't try to use `auto` for references, use `auto&&` or explicit value type
 
-public:
-	array_ref(array_ref&&) noexcept = default; // this needs to be public in c++14
-	template<class OtherPtr, class=std::enable_if_t<not std::is_same<OtherPtr, ElementPtr>{}>>
+ public:
+	array_ref(array_ref&&) noexcept = default;  // this needs to be public in c++14
+
+	template<class OtherPtr, class=std::enable_if_t<not std::is_same<OtherPtr, ElementPtr>{}> >
 	constexpr explicit array_ref(array_ref<T, D, OtherPtr>&& other)
-		: basic_array<T, D, ElementPtr>{other.layout(), ElementPtr{other.base()}}{}
-	constexpr explicit array_ref(typename array_ref::element_ptr p, typename array_ref::extensions_type e) noexcept // TODO(correa) eliminate this ctor
-		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}
-	{}
+	: basic_array<T, D, ElementPtr>{other.layout(), ElementPtr{other.base()}} {}
+
+	constexpr explicit array_ref(typename array_ref::element_ptr p, typename array_ref::extensions_type e) noexcept  // TODO(correa) eliminate this ctor
+	: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p} {}
 
 	constexpr array_ref(typename array_ref::extensions_type e, typename array_ref::element_ptr p) noexcept
-		: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p}{}
+	: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p} {}
 
-	template<class TT, std::size_t N> 
+	template<class TT, std::size_t N>
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax and because a reference to c-array can be represented as an array_ref
-	constexpr array_ref( // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax and because a reference to c-array can be represented as an array_ref
-		TT(&t)[N] // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
-	) : 
-		array_ref(static_cast<typename array_ref::element_ptr>(t), extensions(t))
-	{}
+	constexpr array_ref(  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax and because a reference to c-array can be represented as an array_ref
+		TT(&t)[N]  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
+	)
+	: array_ref(static_cast<typename array_ref::element_ptr>(t), extensions(t)) {}
 
 	using basic_array<T, D, ElementPtr>::operator=;
 	using basic_array<T, D, ElementPtr>::operator==;
-private:
-	template<class It> constexpr auto copy_elements(It first){
+
+ private:
+	template<class It> constexpr auto copy_elements(It first) {
 		return adl_copy_n(first, array_ref::num_elements(), array_ref::data_elements());
 	}
-	template<class It> constexpr auto equal_elements(It first) const{
+	template<class It> constexpr auto equal_elements(It first) const {
 		return adl_equal(first, first + this->num_elements(), this->data_elements());
 	}
 
-public:
+ public:
 	NODISCARD("")
-	constexpr auto data_elements() const& -> typename array_ref::element_ptr{return array_ref::base_;}
+	constexpr auto data_elements() const& -> typename array_ref::element_ptr {return array_ref::base_;}
 
-	constexpr auto operator=(array_ref const& other) & -> array_ref&{
-		if(this == &other){return *this;}  // lints(cert-oop54-cpp)
-		assert(this->num_elements() == other.num_elements()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+	constexpr auto operator=(array_ref const& other) & -> array_ref& {
+		if(this == &other) {return *this;}  // lints(cert-oop54-cpp)
+		assert(this->num_elements() == other.num_elements());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		array_ref::copy_elements(other.data_elements());
 		return *this;
 	}
 	constexpr auto operator=(array_ref const& other) && -> array_ref& {
-		if(this == &other){return *this;}  // lints(cert-oop54-cpp)
+		if(this == &other) {return *this;}  // lints(cert-oop54-cpp)
 		operator=(other);
 		return *this;
 	}
 
 	template<typename TT, dimensionality_type DD = D, class... As>
 //  constexpr
-	auto operator=(array_ref<TT, DD, As...> const& o)& -> array_ref&{
+	auto operator=(array_ref<TT, DD, As...> const& o)& -> array_ref& {
 		assert( this->extensions() == o.extensions() );
 	//  MULTI_MARK_SCOPE(std::string{"multi::operator= D="}+std::to_string(D)+" from "+typeid(TT).name()+" to "+typeid(T).name() );
 		adl_copy_n(o.data_elements(), o.num_elements(), this->data_elements());
