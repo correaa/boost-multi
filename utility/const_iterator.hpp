@@ -22,7 +22,7 @@ struct reference_traits<T&>{
 template<class Iter>
 class const_iterator : Iter{
 // see notes in https://en.cppreference.com/w/cpp/iterator/move_iterator
-public:
+ public:
 	using base_type = Iter;
 	using iterator_type = Iter;
 	using iterator_category = typename std::iterator_traits<Iter>::iterator_category;
@@ -31,12 +31,11 @@ public:
 	using difference_type = typename std::iterator_traits<Iter>::difference_type;
 	using pointer = Iter;
 	using reference = typename multi::reference_traits<typename std::iterator_traits<Iter>::reference>::rebind_const;
-private:
-//	iterator_type x_; // current
-public:
-	constexpr const_iterator() = default;                            //(1)
-	constexpr /*explicit*/ const_iterator(iterator_type x) : Iter{x}{} //(2)
-	template<class U>                                                //(3)
+
+ public:
+	constexpr const_iterator() = default;                                 // (1)
+	constexpr /*explicit*/ const_iterator(iterator_type x) : Iter{x}{}    // (2)
+	template<class U>                                                     // (3)
 	constexpr const_iterator(const_iterator<U> const& o) : Iter{o.base()}{}
 	template<class U> 
 	constexpr const_iterator& operator=(const_iterator<U> const& o){
@@ -102,7 +101,7 @@ struct iterator_traits<T*> : std::iterator_traits<T*>{
 
 }}
 
-#if not __INCLUDE_LEVEL__ // TEST BELOW
+#if not __INCLUDE_LEVEL__  // TEST BELOW
 
 #define BOOST_TEST_MODULE test const_iterator
 #ifdef BOOST_TEST_DYN_LINK
@@ -111,9 +110,11 @@ struct iterator_traits<T*> : std::iterator_traits<T*>{
 #include<boost/test/included/unit_test.hpp>
 #endif
 
+#include<vector>
+
 namespace multi = boost::multi;
 
-BOOST_AUTO_TEST_CASE(sematics){
+BOOST_AUTO_TEST_CASE(sematics) {
 	std::vector<int> v(5, 9);
 	std::vector<int>::iterator it = v.begin();
 	*it += 1;
