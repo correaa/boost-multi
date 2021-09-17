@@ -1874,69 +1874,70 @@ private:
 	}
 
 public:
-	NODISCARD("") constexpr auto data_elements() const& -> typename array_ref::element_ptr{return array_ref::base_;}
+	NODISCARD("")
+	constexpr auto data_elements() const& -> typename array_ref::element_ptr{return array_ref::base_;}
 
 	constexpr auto operator=(array_ref const& other) & -> array_ref&{
-		if(this == &other){return *this;} // lints(cert-oop54-cpp)
+		if(this == &other){return *this;}  // lints(cert-oop54-cpp)
 		assert(this->num_elements() == other.num_elements()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		array_ref::copy_elements(other.data_elements());
 		return *this;
 	}
-	constexpr auto operator=(array_ref const& other) && -> array_ref&{
-		if(this == &other){return *this;} // lints(cert-oop54-cpp)
+	constexpr auto operator=(array_ref const& other) && -> array_ref& {
+		if(this == &other){return *this;}  // lints(cert-oop54-cpp)
 		operator=(other);
 		return *this;
 	}
+
 	template<typename TT, dimensionality_type DD = D, class... As>
-//	constexpr 
+//  constexpr
 	auto operator=(array_ref<TT, DD, As...> const& o)& -> array_ref&{
 		assert( this->extensions() == o.extensions() );
-	//	MULTI_MARK_SCOPE(std::string{"multi::operator= D="}+std::to_string(D)+" from "+typeid(TT).name()+" to "+typeid(T).name() );
+	//  MULTI_MARK_SCOPE(std::string{"multi::operator= D="}+std::to_string(D)+" from "+typeid(TT).name()+" to "+typeid(T).name() );
 		adl_copy_n(o.data_elements(), o.num_elements(), this->data_elements());
 		return *this;
 	}
+
 	template<typename TT, dimensionality_type DD = D, class... As>
-	constexpr auto operator=(array_ref<TT, DD, As...> const& o)&& -> array_ref&{
+	constexpr auto operator=(array_ref<TT, DD, As...> const& o)&& -> array_ref& {
 		this->operator=(o);
-		return *this; // lints (cppcoreguidelines-c-copy-assignment-signature)
+		return *this;  // lints (cppcoreguidelines-c-copy-assignment-signature)
 	}
 
 	using  elements_type = array_ref<typename array_ref::element_type, 1, typename array_ref::element_ptr      >;
 	using celements_type = array_ref<typename array_ref::element_type, 1, typename array_ref::element_const_ptr>;
 
-private:
-	NODISCARD("") constexpr auto elements_aux() const{
+ private:
+	NODISCARD("")
+	constexpr auto elements_aux() const {
 		return elements_type{
-			this->data_elements(), 
+			this->data_elements(),
 			typename elements_type::extensions_type{multi::iextension{this->num_elements()}}
 		};
 	}
 
  public:
-	                     constexpr auto  elements()              &       ->  elements_type{return elements_aux();}
-	                     constexpr auto  elements()             &&       ->  elements_type{return elements_aux();}
-	       NODISCARD("") constexpr auto  elements()         const&       -> celements_type{return elements_aux();}
+	NODISCARD("")
+	       constexpr auto  elements()         const&       -> celements_type {return elements_aux();}
+	       constexpr auto  elements()              &       ->  elements_type {return elements_aux();}
+	       constexpr auto  elements()             &&       ->  elements_type {return elements_aux();}
 
-	friend constexpr auto elements(array_ref      & self) ->  elements_type {return           self . elements();}
-	friend constexpr auto elements(array_ref     && self) ->  elements_type {return std::move(self). elements();}
-	friend constexpr auto elements(array_ref const& self) -> celements_type {return           self . elements();}
+	friend constexpr auto elements(array_ref      & s) ->  elements_type {return           s . elements();}
+	friend constexpr auto elements(array_ref     && s) ->  elements_type {return std::move(s). elements();}
+	friend constexpr auto elements(array_ref const& s) -> celements_type {return           s . elements();}
 
 	NODISCARD("")
-	       constexpr auto celements()         const&       {return celements_type{array_ref::data_elements(), array_ref::num_elements()};}
-	friend constexpr auto celements(array_ref const& self) {return self.celements();}
+	       constexpr auto celements()         const&    {return celements_type{array_ref::data_elements(), array_ref::num_elements()};}
+	friend constexpr auto celements(array_ref const& s) {return s.celements();}
 
 	template<typename TT, dimensionality_type DD = D, class... As>
 	constexpr auto operator==(array_ref<TT, DD, As...>&& o) const& -> bool {
-		if( this->extensions() != o.extensions() ){return false;} // TODO(correaa) : or assert?
+		if(this->extensions() != o.extensions()) {return false;}  // TODO(correaa) : or assert?
 		return equal_elements(std::move(o).data_elements());
 	}
 
 	       constexpr auto data_elements()        &&    -> typename array_ref::element_ptr {return array_ref::base_;}
 	friend constexpr auto data_elements(array_ref&& s) -> typename array_ref::element_ptr {return std::move(s).data_elements();}
-
-//	template<class Dummy = void, std::enable_if_t<(D != 1) and sizeof(Dummy*), int> = 0> [[deprecated("use ::data_elements()")]] NODISCARD("") constexpr auto data() const& {return data_elements();}
-//	template<class Dummy = void, std::enable_if_t<(D != 1) and sizeof(Dummy*), int> = 0> [[deprecated("use ::data_elements()")]]               constexpr auto data()     && {return data_elements();}
-//	template<class Dummy = void, std::enable_if_t<(D != 1) and sizeof(Dummy*), int> = 0> [[deprecated("use ::data_elements()")]]               constexpr auto data()      & {return data_elements();}
 
 	// data() is here for compatibility with std::vector
 	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> NODISCARD("") constexpr auto data() const& {return data_elements();}
