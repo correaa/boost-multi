@@ -13,9 +13,9 @@
 #include "./config/NODISCARD.hpp"
 
 #include "./detail/layout.hpp"
-#include "./detail/memory.hpp"     // pointer_traits
-#include "./detail/operators.hpp"  // random_iterable
-#include "./detail/types.hpp"      // dimensionality_type
+#include "./detail/memory.hpp"     // for pointer_traits
+#include "./detail/operators.hpp"  // for random_iterable
+#include "./detail/types.hpp"      // for dimensionality_type
 
 #if defined(__NVCC__)
 #define HD __host__ __device__
