@@ -177,11 +177,10 @@ BOOST_AUTO_TEST_CASE(multi_utility_test){
 	using multi::sizes;
 	using multi::num_elements;
 {
-	double A[4] = {1.,2.,3.,4.};
+	double A[4] = {1., 2., 3., 4.};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : test legacy types
 	BOOST_REQUIRE( dimensionality(A) == 1 );
 	BOOST_REQUIRE( extension(A).first() == 0 );
 	BOOST_REQUIRE( extension(A).last() == 4 );
-//  BOOST_REQUIRE( origin(A) == &A[0] );
 
 	BOOST_REQUIRE( size(A) == 4 );
 	BOOST_REQUIRE( std::get<0>(sizes(A)) == size(A) );
@@ -190,13 +189,13 @@ BOOST_AUTO_TEST_CASE(multi_utility_test){
 	static_assert(std::is_same<decltype(get_allocator(A)), std::allocator<double> >{}, "!");
 
 	using std::addressof;
-//	using multi::data;
+
 	using multi::data_elements;
 	static_assert( std::is_same<decltype(data_elements(A)), double*>{} , "!");
 //	BOOST_REQUIRE( data(A) == addressof(A[0]) );
 	BOOST_REQUIRE( data_elements(A) == addressof(A[0]) );
 }{
-	double A[2][3] = {{1.,2.,3.},{4.,5.,6.}};
+	double A[2][3] = {{1., 2., 3.}, {4., 5., 6.}};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : test legacy types
 	BOOST_REQUIRE( dimensionality(A) == 2 );
 	BOOST_REQUIRE( extension(A).first() == 0 );
 	BOOST_REQUIRE( extension(A).last() == 2 );
