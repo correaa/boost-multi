@@ -29,7 +29,7 @@ namespace multi = boost::multi;
 BOOST_AUTO_TEST_CASE(std_array_extensions_3d) {
 	std::array<std::array<std::array<double, 5>, 4>, 3> arr = {};
 
-	static_assert( std::is_same<typename multi::array_traits<decltype(arr)>::element, double>{}, "!" );
+	static_assert(std::is_same<typename multi::array_traits<decltype(arr)>::element, double>{}, "!");
 
 	using multi::dimensionality;
 	BOOST_REQUIRE( dimensionality(arr) == 3 );
@@ -162,5 +162,56 @@ BOOST_AUTO_TEST_CASE(test_utility_2d) {
 
 	using multi::data_elements;
 	BOOST_REQUIRE( data_elements(carr) == data_elements(marr) );
+}
+
+BOOST_AUTO_TEST_CASE(multi_utility_test){
+
+	static_assert( std::is_same<std::iterator_traits<double const*>::value_type, double>{}, "!");
+
+	using multi::corigin;
+	using multi::dimensionality;
+	using multi::extension;
+	using multi::extensions;
+//  using multi::origin;
+	using multi::size;
+	using multi::sizes;
+	using multi::num_elements;
+{
+	double A[4] = {1., 2., 3., 4.};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : test legacy types
+	BOOST_REQUIRE( dimensionality(A) == 1 );
+	BOOST_REQUIRE( extension(A).first() == 0 );
+	BOOST_REQUIRE( extension(A).last() == 4 );
+
+	BOOST_REQUIRE( size(A) == 4 );
+	BOOST_REQUIRE( std::get<0>(sizes(A)) == size(A) );
+	using multi::get_allocator;
+
+	static_assert(std::is_same<decltype(get_allocator(A)), std::allocator<double> >{}, "!");
+
+	using std::addressof;
+
+	using multi::data_elements;
+	static_assert( std::is_same<decltype(data_elements(A)), double*>{} , "!");
+//	BOOST_REQUIRE( data(A) == addressof(A[0]) );
+	BOOST_REQUIRE( data_elements(A) == addressof(A[0]) );
+}{
+	double A[2][3] = {{1., 2., 3.}, {4., 5., 6.}};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : test legacy types
+	BOOST_REQUIRE( dimensionality(A) == 2 );
+	BOOST_REQUIRE( extension(A).first() == 0 );
+	BOOST_REQUIRE( extension(A).last() == 2 );
+//	int a = extensions(A);
+
+//  BOOST_REQUIRE( origin(A) == &A[0][0] );
+//	*origin(A) = 99.;
+	A[0][0] = 99.;
+
+	BOOST_REQUIRE( A[0][0] == 99. );
+	BOOST_REQUIRE( corigin(A) == &A[0][0] );
+	BOOST_REQUIRE( size(A) == 2 );
+	BOOST_REQUIRE( std::get<0>(sizes(A)) == size(A) );
+	BOOST_REQUIRE( num_elements(A) == 6 );
+
+	static_assert( num_elements(A) == 6 , "!" );
+}
 }
 

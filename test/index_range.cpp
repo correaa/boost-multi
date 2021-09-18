@@ -10,6 +10,8 @@
 #include <boost/hana/integral_constant.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 
+#include<numeric>  // for accumulate
+
 namespace hana = boost::hana;
 namespace multi = boost::multi;
 
@@ -79,5 +81,32 @@ BOOST_AUTO_TEST_CASE(multi_range_in_constexpr) {
 	multi::range<int> rr{5, 12};
 	BOOST_REQUIRE( rr.contains(6) );
 	BOOST_REQUIRE( not rr.contains(12) );
+}
+
+BOOST_AUTO_TEST_CASE(multi_range2) {
+	multi::index_extension x(10);
+
+	BOOST_REQUIRE( *begin(x) == 0 );
+	BOOST_REQUIRE( size(x) == 10 );
+	BOOST_REQUIRE( x[0] == 0 );
+	BOOST_REQUIRE( x[1] == 1 );
+	BOOST_REQUIRE( x[9] == 9 );
+
+	auto b = begin(x);
+	BOOST_REQUIRE( b[0] == x[0] );
+	BOOST_REQUIRE( b[1] == x[1] );
+
+//	static_assert( ranges::forward_iterator< std::decay_t<decltype(b)> > , "!");
+
+	BOOST_REQUIRE( std::accumulate( begin(x), end(x), 0) == 0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 );
+
+//  #if(__cpp_structured_bindings >= 201606)
+//   {
+//  	multi::iextensions<3> ies({{0, 3}, {0, 4}, {0, 5}});
+//  	BOOST_REQUIRE( std::get<1>(ies).size() == 4 );
+//  	auto [is, js, ks] = ies;
+//  	BOOST_REQUIRE( is.size() == 3 );
+//  }
+//  #endif
 }
 

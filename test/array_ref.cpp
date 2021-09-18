@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
 		{15., 16., 17., 18., 19.}
 	};
 
-	multi::array_ptr<double, 2> map = &a;
+	multi::array_ptr<double, 2> map{&a};
 	BOOST_REQUIRE( &map->operator[](1)[1] == &a[1][1] );
 	BOOST_REQUIRE( (*&a)[1][1] == 6. );
 
@@ -271,4 +271,47 @@ BOOST_AUTO_TEST_CASE(array_ref_1D) {
 	BOOST_REQUIRE( &mar1[1] == &a[0] );
 	BOOST_REQUIRE( mar1.base() == &a[0] );
 }
+
+BOOST_AUTO_TEST_CASE(array_ref_original_tests){
+	{
+		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test legacy type
+		double a[4][5] = {{1., 2.}, {2., 3.}};
+		multi::array_ref<double, 2> A(&a[0][0], {4, 5});
+		multi::array_ref<double, 2, double const*> B(&a[0][0], {4, 5});
+		multi::array_ref<double const, 2> C(&a[0][0], {4, 5});
+		multi::array_cref<double, 2> D(&a[0][0], {4, 5});
+		A[1][1] = 2.;
+
+		double d[4][5] = {{1., 2.}, {2., 3.}};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test legacy type
+
+		auto const& dd = static_cast<double const(&)[4][5]>(d);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test legacy type
+		BOOST_REQUIRE( &(dd[1][2]) == &(d[1][2]) );
+		BOOST_REQUIRE(( & A[1].static_array_cast<double, double const*>()[1] == &A[1][1] ));
+		BOOST_REQUIRE(( &multi::static_array_cast<double, double const*>(A[1])[1] == &A[1][1] ));
+	}
+	{
+		double const d2D[4][5] = {{1., 2.}, {2. ,3.}};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test legacy type
+		multi::array_ref<double, 2, const double*> d2Rce(&d2D[0][0], {4, 5});
+		BOOST_REQUIRE( &d2Rce[2][3] == &d2D[2][3] );
+		BOOST_REQUIRE( d2Rce.size() == 4 );
+		BOOST_REQUIRE( num_elements(d2Rce) == 20 );
+	}
+	{
+		std::string const dc3D[4][2][3] = {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test legacy type
+			{{"A0a", "A0b", "A0c"}, {"A1a", "A1b", "A1c"}},
+			{{"B0a", "B0b", "B0c"}, {"B1a", "B1b", "B1c"}},
+			{{"C0a", "C0b", "C0c"}, {"C1a", "C1b", "C1c"}},
+			{{"D0a", "D0b", "D0c"}, {"D1a", "D1b", "D1c"}},
+		};
+		multi::array_cref<std::string, 3> A(&dc3D[0][0][0], {4, 2, 3});
+		BOOST_REQUIRE( num_elements(A) == 24 and A[2][1][1] == "C1b" );
+		auto const& A2 = A.sliced(0, 3).rotated()[1].sliced(0, 2).unrotated();
+		BOOST_REQUIRE( multi::rank<std::decay_t<decltype(A2)>>{} == 2 and num_elements(A2) == 6 );
+		BOOST_REQUIRE( std::get<0>(sizes(A2)) == 3 and std::get<1>(sizes(A2)) == 2 );
+
+		auto const& A3 = A({0, 3}, 1, {0, 2});
+		BOOST_REQUIRE( multi::rank<std::decay_t<decltype(A3)>>{} == 2 and num_elements(A3) == 6 );
+	}
+}
+
 
