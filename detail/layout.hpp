@@ -23,10 +23,10 @@ namespace multi {
 
 namespace detail {
 
-template<typename T, typename... As>
-inline constexpr void construct_from_initializer_list(T* p, As&&... as) {
-	::new(static_cast<void*>(p)) T(std::forward<As>(as)...);
-}
+//  template<typename T, typename... As>
+//  inline constexpr void construct_from_initializer_list(T* p, As&&... as) {
+//  	::new(static_cast<void*>(p)) T(std::forward<As>(as)...);
+// }
 
 template<class To, class From, size_t... I>
 constexpr auto to_tuple_impl(std::initializer_list<From> il, std::index_sequence<I...>/*012*/) {
