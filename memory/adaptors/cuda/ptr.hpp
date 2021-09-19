@@ -48,7 +48,7 @@ private:
 	raw_pointer rp_;
 	template<typename, typename> friend struct ptr;
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
-	ptr(raw_pointer rp) : rp_{rp}{}
+	explicit ptr(raw_pointer rp) : rp_{rp} {}
 public:
 	ptr() = default;
 	ptr(ptr const&) = default;
