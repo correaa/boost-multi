@@ -118,7 +118,8 @@ struct ptr{
 	raw_pointer rp_ = {};
 
 	static_assert( not std::is_same<raw_pointer, void*>{} , "!");
-protected:
+
+ protected:
 	using raw_pointer_traits = typename std::pointer_traits<raw_pointer>;
 	template<class TT> friend class allocator;
 
@@ -127,7 +128,8 @@ protected:
 
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 	friend struct managed::ptr<T, RawPtr>;
-public:
+
+ public:
 	template<class U> using rebind = ptr<U, typename std::pointer_traits<raw_pointer>::template rebind<U>>;
 
 	template<class Other, typename = std::enable_if_t<std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{} and not std::is_same<Other, T>{} >>
