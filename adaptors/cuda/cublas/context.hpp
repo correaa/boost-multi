@@ -38,7 +38,7 @@ public:
 class side{
 	cublasSideMode_t impl_;
 public:
-	side(char trans) : impl_{[=]{
+	explicit side(char trans) : impl_{[=]{
 		switch(trans){
 		case 'L': return CUBLAS_SIDE_LEFT;
 		case 'R': return CUBLAS_SIDE_RIGHT;
@@ -51,7 +51,7 @@ public:
 class filling{
 	cublasFillMode_t impl_;
 public:
-	filling(char trans) : impl_{[=]{
+	explicit filling(char trans) : impl_{[=]{
 		switch(trans){
 		case 'L': return CUBLAS_FILL_MODE_LOWER;
 		case 'U': return CUBLAS_FILL_MODE_UPPER;
@@ -64,7 +64,7 @@ public:
 class diagonal{
 	cublasDiagType_t impl_;
 public:
-	diagonal(char trans) : impl_{[=]{
+	explicit diagonal(char trans) : impl_{[=]{
 		switch(trans){
 		case 'N': return CUBLAS_DIAG_NON_UNIT;
 		case 'U': return CUBLAS_DIAG_UNIT;

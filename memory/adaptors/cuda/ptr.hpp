@@ -144,6 +144,8 @@ public:
 	template<class Other, typename = decltype(static_cast<raw_pointer>(std::declval<Other const&>().rp_))> 
 	constexpr explicit ptr(Other const& o) : rp_{static_cast<raw_pointer>(o.rp_)}{}
 	ptr() = default;
+
+	// cppcheck-suppress noExplicitConstructor ; bug in cppcheck 2.3
 	ptr(ptr const&) = default;
 
 	// cppcheck-suppress noExplicitConstructor ; initialize from nullptr
@@ -176,7 +178,11 @@ public:
 	explicit constexpr operator void const*() const{return rp_;}
 	template<class TT=T, typename = decltype(static_cast<TT*>(raw_pointer{}))>
 	explicit constexpr operator TT*() const{return static_cast<TT*>(rp_);}
-	ptr& operator++(){++rp_; return *this;}
+	ptr& operator++() {
+		static_assert(not std::is_same<raw_pointer, void*>{}, "!");
+		++rp_;
+		return *this;
+	}
 	ptr& operator--(){--rp_; return *this;}
 	ptr  operator++(int){auto tmp = *this; ++(*this); return tmp;}
 	ptr  operator--(int){auto tmp = *this; --(*this); return tmp;}

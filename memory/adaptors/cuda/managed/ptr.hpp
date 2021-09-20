@@ -155,6 +155,8 @@ public:
 	}
 	explicit constexpr ptr(raw_pointer p) : cuda::ptr<T, RawPtr>{p}{}//Cuda::pointer::is_device(p);}
 	ptr() = default;
+
+	// cppcheck-suppress noExplicitConstructor ; bug in cppcheck 2.3
 	ptr(ptr const&) = default;
 
 	// cppcheck-suppress noExplicitConstructor ; initialize from nullptr
