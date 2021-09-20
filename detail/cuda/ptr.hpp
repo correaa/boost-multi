@@ -206,8 +206,9 @@ public:
 		cudaError_t s2 = cudaMemcpy(buff2, other.impl_, sizeof(Other), cudaMemcpyDeviceToHost); assert(s2 == cudaSuccess);
 		return reinterpret_cast<T const&>(buff1)!=reinterpret_cast<Other const&>(buff2);
 	}
-	operator T()&&{
-		char buff[sizeof(T)]; 
+	operator T()&& {
+		static_assert(not std::is_same<T, void>{}, "!");
+		char buff[sizeof(T)];
 		cudaError_t s = cudaMemcpy(buff, this->impl_, sizeof(T), cudaMemcpyDeviceToHost); assert(s == cudaSuccess );
 		return std::move(reinterpret_cast<T&>(buff));
 	}

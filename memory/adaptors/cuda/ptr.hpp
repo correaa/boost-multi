@@ -183,7 +183,7 @@ public:
 	constexpr ptr& operator+=(difference_type n){rp_+=n; return *this;}
 	constexpr ptr& operator-=(difference_type n){rp_-=n; return *this;}
 	constexpr ptr operator+(difference_type n) const{
-		static_cast(not std::is_same<raw_pointer, void*>{} , "!");
+	//	static_cast(not std::is_same<raw_pointer, void*>{} , "!");
 		return ptr{rp_ + n};
 	}
 	constexpr ptr operator-(difference_type n) const{return ptr{rp_ - n};}
@@ -192,7 +192,7 @@ public:
 	constexpr reference operator[](difference_type n) const{return *((*this)+n);}
 	friend constexpr ptr to_address(ptr const& p){return p;}
 	constexpr difference_type operator-(ptr const& o) const{return rp_-o.rp_;}
-	operator ptr<void>(){return {rp_};}
+	operator ptr<void>(){return ptr<void>{rp_};}
 	auto get() const{return rp_;}
 	explicit constexpr operator raw_pointer() const{return rp_;}
 	constexpr raw_pointer raw_pointer_cast() const{return this->rp_;}
