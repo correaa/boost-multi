@@ -17,13 +17,13 @@
 
 #include<mutex>
 
-namespace boost{
-namespace multi::cuda::cublas{
+namespace boost {
+namespace multi::cuda::cublas {
 
 class operation{
 	cublasOperation_t impl_;
 public:
-	operation(char trans) : impl_{[=]{
+	explicit operation(char trans) : impl_{[=]{
 		switch(trans){
 		case 'N': return CUBLAS_OP_N;
 		case 'T': return CUBLAS_OP_T;
@@ -31,7 +31,7 @@ public:
 		default : assert(0);
 		}
 		return cublasOperation_t{};
-	}()}{}
+	}()} {}
 	operator cublasOperation_t() const{return impl_;}
 };
 
@@ -44,7 +44,7 @@ public:
 		case 'R': return CUBLAS_SIDE_RIGHT;
 		}
 		assert(0); return cublasSideMode_t{};
-	}()}{}
+	}()} {}
 	operator cublasSideMode_t() const{return impl_;}
 };
 
