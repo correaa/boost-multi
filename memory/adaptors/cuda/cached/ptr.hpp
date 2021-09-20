@@ -109,8 +109,11 @@ struct ptr<void, RawPtr>{
 	ptr(std::nullptr_t n) : rp_{n} {}
 
 	template<class Other, typename = decltype(raw_pointer{std::declval<Other const&>().impl_})>
-	ptr(Other const& o) : rp_{o.rp_}{}
+	// cppcheck-suppress noExplicitConstructor ; any pointer is convertible to void pointer
+	ptr(Other const& o) : rp_{o.rp_} {}
+
 	ptr& operator=(ptr const&) = default;
+
 	friend constexpr bool operator==(ptr const& self, ptr const& other){return self.rp_==other.rp_;}
 	friend constexpr bool operator!=(ptr const& self, ptr const& other){return self.rp_!=other.rp_;}
 	operator cuda::ptr<void>(){return {rp_};}
@@ -160,7 +163,10 @@ struct ptr : cuda::ptr<T, RawPtr>{
 	explicit constexpr ptr(raw_pointer p) : cuda::ptr<T, RawPtr>{p}{}//Cuda::pointer::is_device(p);}
 	ptr() = default;
 	ptr(ptr const&) = default;
+
+	// cppcheck-suppress noExplicitConstructor ; initialize from nullptr
 	constexpr ptr(std::nullptr_t n) : cuda::ptr<T, RawPtr>{n}{}
+
 	ptr& operator=(ptr const&) = default;
 	friend constexpr bool operator==(ptr const& s, ptr const& o){return s.rp_==o.rp_;}
 	friend constexpr bool operator!=(ptr const& s, ptr const& o){return s.rp_!=o.rp_;}
