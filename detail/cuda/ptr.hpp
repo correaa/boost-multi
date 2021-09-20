@@ -38,9 +38,14 @@ public:
 	explicit ptr(impl_t impl) : impl_{impl}{}
 	ptr() = default;
 	ptr(ptr const&) = default;
-	ptr(std::nullptr_t n) : impl_{n}{}
+
+	// cppcheck-suppress noExplicitConstructor ; initialize from nullptr
+	ptr(std::nullptr_t n) : impl_{n} {}
+
 	template<class Other, typename = decltype(impl_t{std::declval<Other const&>().impl_})>
+	// cppcheck-suppress noExplicitConstructor ; TODO(correaa) : implement implicit propagation
 	ptr(Other const& o) : impl_{o.impl_}{}
+
 	ptr& operator=(ptr const&) = default;
 	auto operator==(ptr const& other) const{return impl_==other.impl_;}
 	auto operator!=(ptr const& other) const{return impl_!=other.impl_;}
@@ -99,18 +104,26 @@ protected:
 	using T = void;
 	using impl_t = Ptr;
 	impl_t impl_;
-private:
-	ptr(impl_t impl) : impl_{impl}{}
-	ptr(ptr<void const> const& p) : impl_{const_cast<void*>(p.impl_)}{}
+
+ private:
+	explicit ptr(impl_t impl) : impl_{impl} {}
+	ptr(ptr<void const> const& p) : impl_{const_cast<void*>(p.impl_)} {}
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 	template<class, class> friend class ptr;
-public:
+
+ public:
 	ptr() = default;
 	ptr(ptr const&) = default;
-	ptr(std::nullptr_t n) : impl_{n}{}
+
+	// cppcheck-suppress noExplicitConstructor ; initialize from nullptr
+	ptr(std::nullptr_t n) : impl_{n} {}
+
 	template<class Other, typename = decltype(impl_t{std::declval<Other const&>().impl_})>
-	ptr(Other const& o) : impl_{o.impl_}{}
+	// cppcheck-suppress noExplicitConstructor ; any pointer is convertible to void pointer
+	ptr(Other const& o) : impl_{o.impl_} {}
+
 	ptr& operator=(ptr const&) = default;
+
 	auto operator==(ptr const& other) const{return impl_==other.impl_;}
 	auto operator!=(ptr const& other) const{return impl_!=other.impl_;}
 
