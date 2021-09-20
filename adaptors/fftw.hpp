@@ -241,7 +241,7 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, fftw::flags 
 	auto const inembed = [&](){
 		std::array<int, std::decay_t<decltype(*It1{})>::rank::value + 1> inembed{};
 		std::adjacent_difference(
-			istrides.rbegin(), istrides.rend(), inembed.rbegin(), [](auto a, auto b){assert(a%b == 0); return a/b;}
+			istrides.rbegin(), istrides.rend(), inembed.rbegin(), [](auto a, auto b){assert(b != 0 and a%b == 0); return a/b;}
 		);
 		return inembed;
 	}();
@@ -249,7 +249,7 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, fftw::flags 
 	auto const onembed = [&](){
 		std::array<int, std::decay_t<decltype(*It1{})>::rank::value + 1> onembed{};
 		std::adjacent_difference(
-			ostrides.rbegin(), ostrides.rend(), onembed.rbegin(), [](auto a, auto b){assert(a%b == 0); return a/b;}
+			ostrides.rbegin(), ostrides.rend(), onembed.rbegin(), [](auto a, auto b){assert(b != 0 and a%b == 0); return a/b;}
 		);
 		return onembed;
 	}();

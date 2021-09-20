@@ -55,13 +55,19 @@ struct ptr<void const, RawPtr>{
 	raw_pointer rp_;
 	template<typename, typename> friend struct ptr;
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
-	ptr(raw_pointer rp) : rp_{rp}{}
-public:
+	explicit ptr(raw_pointer rp) : rp_{rp}{}
+
+ public:
 	ptr() = default;
 	ptr(ptr const&) = default;
-	ptr(std::nullptr_t n) : rp_{n}{}
+
+	// cppcheck-suppress noExplicitConstructor ; initialized from nullptr
+	ptr(std::nullptr_t n) : rp_{n} {}
+
 	template<class Other, typename = decltype(raw_pointer{std::declval<Other const&>().rp_})>
-	ptr(Other const& o) : rp_{o.rp_}{}
+	// cppcheck-suppress noExplicitConstructor ; any pointer is convertible to void pointer
+	ptr(Other const& o) : rp_{o.rp_} {}
+
 	ptr& operator=(ptr const&) = default;
 
 	using pointer = ptr<T>;
@@ -82,20 +88,26 @@ struct ptr<void, RawPtr>{
 	using pointer = ptr;
 	using element_type    = void;
 	using difference_type = typename std::pointer_traits<RawPtr>::difference_type;
-protected:
+
+ protected:
 	using raw_pointer = RawPtr;
 	raw_pointer rp_;
-private:
+
+ private:
 	ptr(ptr<void const> const& p) : rp_{const_cast<void*>(p.rp_)}{}
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 	template<class, class> friend struct ptr;
 	template<class TT, class DP> friend class allocator;
-public:
+
+ public:
 	template<class Other> ptr(ptr<Other> const& p) : rp_{p.rp_}{}
 	explicit ptr(raw_pointer rp) : rp_{rp}{}
 	ptr() = default;
 	ptr(ptr const& p) = default;
-	ptr(std::nullptr_t n) : rp_{n}{}
+
+	// cppcheck-suppress noExplicitConstructor ; initialize from nullptr
+	ptr(std::nullptr_t n) : rp_{n} {}
+
 	template<class Other, typename = decltype(raw_pointer{std::declval<Other const&>().impl_})>
 	ptr(Other const& o) : rp_{o.rp_}{}
 	ptr& operator=(ptr const&) = default;
@@ -117,20 +129,26 @@ template<typename T, typename RawPtr>
 struct ptr : cuda::ptr<T, RawPtr>{
 	using raw_pointer = RawPtr;
 //	raw_pointer rp_;
-protected:
+
+ protected:
 	friend struct cuda::ptr<T, RawPtr>; // to allow automatic conversions
 	template<class TT, class DP> friend class allocator;
 	template<typename, typename> friend struct ptr;
 //	template<class TT, typename = typename std::enable_if<not std::is_const<TT>{}>::type> 
 //	ptr(ptr<TT const> const& p) : rp_{const_cast<T*>(p.impl_)}{}
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
-public:
+
+ public:
 	template<class U> using rebind = ptr<U, typename std::pointer_traits<RawPtr>::template rebind<U>>;
 //	explicit ptr(cuda::ptr<T, RawPtr> const& other) : rp_{other.rp_}{}
+
 	template<class Other, typename = std::enable_if_t<std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{}>>
-	/*explicit(false)*/ constexpr ptr(ptr<Other> const& o) : cuda::ptr<T, RawPtr>{static_cast<raw_pointer>(o.rp_)}{}
+	// cppcheck-suppress noExplicitConstructor ; propagate implicit of underlying pointer
+	constexpr /*explicit(false)*/ ptr(ptr<Other> const& o) : cuda::ptr<T, RawPtr>{static_cast<raw_pointer>(o.rp_)}{}
+
 	template<class Other, typename = std::enable_if_t<not std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{}>, typename = decltype(static_cast<raw_pointer>(std::declval<ptr<Other>>().rp_))>
 	explicit/*(true)*/ constexpr ptr(ptr<Other> const& o, void** = 0) : cuda::ptr<T, RawPtr>{static_cast<raw_pointer>(o.rp_)}{}
+
 	explicit constexpr ptr(void* vp) : cuda::ptr<T, RawPtr>{static_cast<raw_pointer>(vp)}{}
 //	template<class Other, typename = std::enable_if_t<std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{}>>
 //	ptr(ptr<Other> const& o) HD : rp_{static_cast<raw_pointer>(o.rp_)}{}

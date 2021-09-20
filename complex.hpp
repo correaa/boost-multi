@@ -50,11 +50,9 @@ struct complex{
  public:
 	complex() = default;
 
-	// cppcheck-suppress noExplicitConstructor ; a real is a special complex without loss
 	constexpr explicit complex(value_type real) : re{real}, im{value_type{0}} {}
 	constexpr complex(value_type real, value_type imag) : re{real}, im{imag} {}
 
-	// cppcheck-suppress noExplicitConstructor ; can be copied from standard type
 	constexpr explicit complex(std::complex<ValueType> const& other) : re{other.real()}, im{other.imag()} {}
 
 	template<
