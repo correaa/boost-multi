@@ -519,7 +519,6 @@ struct static_array<T, dimensionality_type{0}, Alloc>  // NOLINT(fuchsia-multipl
 	}
 
 	template<class TT, class... Args>
-	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
 	explicit static_array(multi::basic_array<TT, 0, Args...> const& other, allocator_type const& a)
 	: array_alloc{a}
 	, ref(static_array::allocate(other.num_elements()), extensions(other)) {
@@ -533,7 +532,6 @@ struct static_array<T, dimensionality_type{0}, Alloc>  // NOLINT(fuchsia-multipl
 	}
 
 	template<class TT, class... Args>
-	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented by class
 	explicit static_array(array_ref<TT, 0, Args...> const& other)
 	: array_alloc{}, ref{static_array::allocate(other.num_elements()), extensions(other)} {
 		uninitialized_copy_(other.data_elements());

@@ -487,7 +487,7 @@ g++-cppcheck:
     - ln --symbolic --force . ../multi
     - $CXX --version
     - cppcheck --version
-    - cppcheck --enable=all --inline-suppr --suppress=*:*thrust/complex* --suppress=syntaxError --suppress=missingInclude --suppress=missingIncludeSystem --suppress=unmatchedSuppression --suppress=preprocessorErrorDirective --suppress=syntaxError -D__align__ -DCUDARTAPI --language=c++ --std=c++17 --error-exitcode=666 `find . -name '*.hpp'`
+    - cppcheck --enable=all --inline-suppr --suppress=*:*thrust/complex* --suppress=unusedFunction --suppress=syntaxError --suppress=missingInclude --suppress=missingIncludeSystem --suppress=unmatchedSuppression --suppress=preprocessorErrorDirective -D__align__ -DCUDARTAPI --language=c++ --std=c++17 --error-exitcode=666 `find . -name '*.hpp'`
     - mkdir build && cd build
     - cmake -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--inline-suppr;--suppress=*:*thrust/complex*;--suppress=syntaxError;--suppress=missingInclude;--suppress=missingIncludeSystem;--suppress=unmatchedSuppression;--suppress=preprocessorErrorDirective;--suppress=syntaxError;-D__align__;-DCUDARTAPI;--language=c++;--std=c++17;--error-exitcode=666" ..
     - cmake --build .
