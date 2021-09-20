@@ -80,13 +80,19 @@ class ptr<void const, Ptr>{
 	impl_t impl_;
 	template<typename, typename> friend class ptr;
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
-	ptr(impl_t impl) : impl_{impl}{}
-public:
+	explicit ptr(impl_t impl) : impl_{impl}{}
+
+ public:
 	ptr() = default;
 	ptr(ptr const&) = default;
+
+	// cppcheck-suppress noExplicitConstructor ; initialize from nullptr
 	ptr(std::nullptr_t n) : impl_{n}{}
+
 	template<class Other, typename = decltype(impl_t{std::declval<Other const&>().impl_})>
+	// cppcheck-suppress noExplicitConstructor ; any pointer is convertible to void pointer
 	ptr(Other const& o) : impl_{o.impl_}{}
+
 	ptr& operator=(ptr const&) = default;
 
 	using pointer = ptr<T>;
@@ -100,7 +106,7 @@ public:
 
 template<typename Ptr>
 struct ptr<void, Ptr>{
-protected:
+ protected:
 	using T = void;
 	using impl_t = Ptr;
 	impl_t impl_;
@@ -147,18 +153,23 @@ struct overload<F, Fs...> : F, Fs...{
 template<class... Fs> 
 overload<Fs...> make_overload(Fs&&... fs){return {std::forward<Fs>(fs)...};}
 
+template<class T> struct ref;
+
+template<> struct ref<void>{};
+
 template<class T>
 struct ref : private ptr<T>{
 	using value_type = T;
 	using reference = value_type&;
 	using pointer = ptr<T>;
+
 private:
-	ref(pointer p) : ptr<T>{std::move(p)}{}
+	explicit ref(pointer p) : ptr<T>{std::move(p)}{}
 	friend class ptr<T>;
 	ptr<T> operator&(){return *this;}
 	struct skeleton_t{
 		char buff[sizeof(T)]; T* p_;
-		skeleton_t(T* p) : p_{p}{cudaError_t s = cudaMemcpy(buff, p_, sizeof(T), cudaMemcpyDeviceToHost); assert(s == cudaSuccess);}
+		explicit skeleton_t(T* p) : p_{p}{cudaError_t s = cudaMemcpy(buff, p_, sizeof(T), cudaMemcpyDeviceToHost); assert(s == cudaSuccess);}
 		operator T&()&&{return reinterpret_cast<T&>(buff);}
 		void conditional_copyback_if_not(std::false_type) const{
 			cudaError_t s = cudaMemcpy(p_, buff, sizeof(T), cudaMemcpyHostToDevice); assert(s == cudaSuccess);
@@ -229,7 +240,7 @@ public:
 	decltype(auto) operator+=(Other&& o)&&{std::move(*this).skeleton()+=o; return *this;}
 	template<class Other, typename = decltype(std::declval<T&>()-=std::declval<Other&&>())>
 	decltype(auto) operator-=(Other&& o)&&{std::move(*this).skeleton()-=o;}
-	friend void swap(ref&& a, ref&& b){T tmp = std::move(a); std::move(a) = std::move(b); std::move(b) = tmp;}
+	friend void swap(ref&& a, ref&& b){T tmp = std::move(a); a = std::move(b); b = std::move(tmp);}
 	decltype(auto) operator++()&&{++(std::move(*this).skeleton()); return *this;}
 	decltype(auto) operator--()&&{--(std::move(*this).skeleton()); return *this;}
 };
