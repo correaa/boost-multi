@@ -51,7 +51,9 @@ public:
 	fallback(MemoryResource1 const& mr, MemoryResource2* back) : MemoryResource1{mr}, back_{back} {}
 
 	// cppcheck-suppress noExplicitConstructor ; allocators are pointers to memory resources
-	fallback(MemoryResource1 const& mr) : fallback{mr,
+	fallback(MemoryResource1 const& mr)
+	: fallback{
+		mr,
 #if(__cpp_lib_memory_resource>=201603L)
 		std::pmr::get_default_resource()
 #else

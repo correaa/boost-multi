@@ -178,10 +178,13 @@ private:
 		~skeleton_t(){conditional_copyback_if_not(std::is_const<T>{});}
 	};
 	skeleton_t skeleton()&&{return {this->impl_};}
-public:
+
+ public:
+	// cppcheck-suppress noExplicitConstructor ; bug in cppcheck 2.3
 	ref(ref&& r) : ptr<T>{r}{}
 	ref& operator=(ref const&)& = delete;
-private:
+
+ private:
 	ref& move_assign(ref&& other, std::true_type)&{
 		cudaError_t s = cudaMemcpy(this->impl_, other.impl_, sizeof(T), cudaMemcpyDeviceToDevice); assert(s == cudaSuccess);
 		return *this;
