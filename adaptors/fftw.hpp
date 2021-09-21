@@ -49,7 +49,7 @@ constexpr flags preserve_input{FFTW_PRESERVE_INPUT}; // NOLINT(hicpp-signed-bitw
 
 // // NOLINT(): this is a defect in FFTW https://github.com/FFTW/fftw3/issues/246
 
-} // end namespace fftw
+}  // end namespace fftw
 
 #if 0
 template<typename Size>
@@ -428,7 +428,7 @@ struct environment{
 	environment(environment&&) = delete;
 	auto operator=(environment const&) = delete;
 	auto operator=(environment&&) = delete;
-	~environment(){cleanup();}
+	~environment(){fftw_cleanup();}
 };
 
 class plan{
