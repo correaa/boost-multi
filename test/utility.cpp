@@ -164,8 +164,7 @@ BOOST_AUTO_TEST_CASE(test_utility_2d) {
 	BOOST_REQUIRE( data_elements(carr) == data_elements(marr) );
 }
 
-BOOST_AUTO_TEST_CASE(multi_utility_test){
-
+BOOST_AUTO_TEST_CASE(multi_utility_test) {
 	static_assert( std::is_same<std::iterator_traits<double const*>::value_type, double>{}, "!");
 
 	using multi::corigin;
@@ -194,7 +193,7 @@ BOOST_AUTO_TEST_CASE(multi_utility_test){
 	static_assert( std::is_same<decltype(data_elements(A)), double*>{} , "!");
 //	BOOST_REQUIRE( data(A) == addressof(A[0]) );
 	BOOST_REQUIRE( data_elements(A) == addressof(A[0]) );
-}{
+} {
 	double A[2][3] = {{1., 2., 3.}, {4., 5., 6.}};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : test legacy types
 	BOOST_REQUIRE( dimensionality(A) == 2 );
 	BOOST_REQUIRE( extension(A).first() == 0 );

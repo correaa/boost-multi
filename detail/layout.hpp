@@ -87,7 +87,6 @@ template<> struct extensions_t<0>
 	using nelems_type = index;
 	using std::tuple<>::tuple;
 
-//  cppcheck-suppress noExplicitConstructor ; why is it not taking the inheredited constructor above?
 	explicit extensions_t(std::tuple<> const& t) : std::tuple<>{t} {}
 
 	extensions_t() = default;
@@ -122,7 +121,6 @@ template<> struct extensions_t<1>
 
 	extensions_t() = default;
 	NODISCARD("") constexpr auto base() const -> base_ const& {return *this;}
-	// cppcheck-suppress noExplicitConstructor ; I don't know why TODO
 	constexpr explicit extensions_t(base_ const& t) : std::tuple<index_extension>(t) {}
 	friend constexpr auto base(extensions_t const& s) -> decltype(auto) {return s.base();}
 	template<class Archive> void serialize(Archive& ar, unsigned /*version*/) {

@@ -49,7 +49,7 @@ constexpr flags preserve_input{FFTW_PRESERVE_INPUT}; // NOLINT(hicpp-signed-bitw
 
 // // NOLINT(): this is a defect in FFTW https://github.com/FFTW/fftw3/issues/246
 
-} // end namespace fftw
+}  // end namespace fftw
 
 #if 0
 template<typename Size>
@@ -241,7 +241,7 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, fftw::flags 
 	auto const inembed = [&](){
 		std::array<int, std::decay_t<decltype(*It1{})>::rank::value + 1> inembed{};
 		std::adjacent_difference(
-			istrides.rbegin(), istrides.rend(), inembed.rbegin(), [](auto a, auto b){assert(a%b == 0); return a/b;}
+			istrides.rbegin(), istrides.rend(), inembed.rbegin(), [](auto a, auto b){assert(b != 0 and a%b == 0); return a/b;}
 		);
 		return inembed;
 	}();
@@ -249,7 +249,7 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, fftw::flags 
 	auto const onembed = [&](){
 		std::array<int, std::decay_t<decltype(*It1{})>::rank::value + 1> onembed{};
 		std::adjacent_difference(
-			ostrides.rbegin(), ostrides.rend(), onembed.rbegin(), [](auto a, auto b){assert(a%b == 0); return a/b;}
+			ostrides.rbegin(), ostrides.rend(), onembed.rbegin(), [](auto a, auto b){assert(b != 0 and a%b == 0); return a/b;}
 		);
 		return onembed;
 	}();
@@ -428,7 +428,7 @@ struct environment{
 	environment(environment&&) = delete;
 	auto operator=(environment const&) = delete;
 	auto operator=(environment&&) = delete;
-	~environment(){cleanup();}
+	~environment(){fftw_cleanup();}
 };
 
 class plan{

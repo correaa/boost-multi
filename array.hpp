@@ -237,7 +237,6 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	: static_array(o, typename static_array::allocator_type{}) {}
 
 	template<class TT, class... Args>
-	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
 	explicit static_array(array_ref<TT, D, Args...>&& o)
 	: array_alloc{}
 	, ref{array_alloc::allocate(o.num_elements()), o.extensions()} {
@@ -271,7 +270,6 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	) : static_array(static_array<T, D>(mil.begin(), mil.end()), a) {}
 
 	template<class TT, std::size_t N>
-	// cppcheck-suppress noExplicitConstructor ; to allow assigment-like construction from c-arrays
 	constexpr explicit static_array(TT(&array)[N]) : static_array(std::begin(array), std::end(array)) {}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backward compatibility
 	template<class It> static auto distance(It a, It b) {
 		using std::distance;
@@ -519,7 +517,6 @@ struct static_array<T, dimensionality_type{0}, Alloc>  // NOLINT(fuchsia-multipl
 	}
 
 	template<class TT, class... Args>
-	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
 	explicit static_array(multi::basic_array<TT, 0, Args...> const& other, allocator_type const& a)
 	: array_alloc{a}
 	, ref(static_array::allocate(other.num_elements()), extensions(other)) {
@@ -533,7 +530,6 @@ struct static_array<T, dimensionality_type{0}, Alloc>  // NOLINT(fuchsia-multipl
 	}
 
 	template<class TT, class... Args>
-	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented by class
 	explicit static_array(array_ref<TT, 0, Args...> const& other)
 	: array_alloc{}, ref{static_array::allocate(other.num_elements()), extensions(other)} {
 		uninitialized_copy_(other.data_elements());

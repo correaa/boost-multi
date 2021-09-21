@@ -272,7 +272,7 @@ BOOST_AUTO_TEST_CASE(array_ref_1D) {
 	BOOST_REQUIRE( mar1.base() == &a[0] );
 }
 
-BOOST_AUTO_TEST_CASE(array_ref_original_tests){
+BOOST_AUTO_TEST_CASE(array_ref_original_tests) {
 	{
 		// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test legacy type
 		double a[4][5] = {{1., 2.}, {2., 3.}};
@@ -290,13 +290,13 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests){
 		BOOST_REQUIRE(( &multi::static_array_cast<double, double const*>(A[1])[1] == &A[1][1] ));
 	}
 	{
-		double const d2D[4][5] = {{1., 2.}, {2. ,3.}};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test legacy type
+		double const d2D[4][5] = {{1., 2.}, {2., 3.}};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test legacy type
 		multi::array_ref<double, 2, const double*> d2Rce(&d2D[0][0], {4, 5});
 		BOOST_REQUIRE( &d2Rce[2][3] == &d2D[2][3] );
 		BOOST_REQUIRE( d2Rce.size() == 4 );
 		BOOST_REQUIRE( num_elements(d2Rce) == 20 );
 	}
-	{
+	 {
 		std::string const dc3D[4][2][3] = {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test legacy type
 			{{"A0a", "A0b", "A0c"}, {"A1a", "A1b", "A1c"}},
 			{{"B0a", "B0b", "B0c"}, {"B1a", "B1b", "B1c"}},

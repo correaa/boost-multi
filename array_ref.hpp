@@ -61,7 +61,7 @@ template<class To, class From, std::enable_if_t<std::is_constructible<To, From>{
 constexpr auto _explicit_cast(From&& f) -> To {return static_cast<To>(f);}
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D> >
-struct array_types : Layout{  // cppcheck-suppress syntaxError ; false positive in cppcheck
+struct array_types : Layout{  // cxxcheck-suppress syntaxError ; false positive in cppcheck
 	using element = T;
 	using element_type = element;  // this follows more closely https://en.cppreference.com/w/cpp/memory/pointer_traits
 	using element_ptr = ElementPtr;

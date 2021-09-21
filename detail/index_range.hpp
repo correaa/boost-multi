@@ -73,7 +73,7 @@ class range {
 	range() = default;
 
 	template<class Range, typename = std::enable_if_t<std::is_same<std::decay_t<Range>, value_type>{}> >
-	// cppcheck-suppress internalAstError ; because bug in cppcheck
+	// cxxcheck-suppress internalAstError ; because bug in cppcheck
 	constexpr explicit range(Range&& o) : first_{std::forward<Range>(o).first()}, last_{std::forward<Range>(o).last()} {}
 	constexpr range(IndexType f, IndexTypeLast l) : first_{f}, last_{l} {}
 	constexpr explicit range(IndexType f) : range{f, f + 1} {}

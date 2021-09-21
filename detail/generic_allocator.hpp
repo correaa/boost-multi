@@ -45,6 +45,8 @@ class generic_allocator{
 	using size_type =  std::make_unsigned_t<difference_type>;
 
 	generic_allocator() : mr_{nullptr} {}
+
+	// cppcheck-suppress noExplicitConstructor ; allocators are pointers to memory resources
 	generic_allocator(memory_resource_type* mr) : mr_{mr} {}  // NOLINT(runtime/explicit)
 
 	template<typename T2>

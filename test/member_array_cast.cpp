@@ -23,7 +23,8 @@ class particles_SoA{
 	multi::array<v3d, 2> positions_;
 
  public:
-	particles_SoA(multi::array<particle, 2> const& AoS) : // NOLINT(runtime/explicit,google-explicit-constructor,hicpp-explicit-conversions) : particle_SoA can represent a particles' AoS
+	// NOLINTNEXTLINE(runtime/explicit)
+	particles_SoA(multi::array<particle, 2> const& AoS) : // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : particle_SoA can represent a particles' AoS
 		masses_   (AoS.member_cast<double>(&particle::mass    )),
 		positions_(AoS.member_cast<v3d   >(&particle::position)) {}
 	struct reference{

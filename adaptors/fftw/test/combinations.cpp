@@ -6,7 +6,6 @@
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
-
 #include "../../fftw.hpp"
 
 #include <boost/timer/timer.hpp>
@@ -18,6 +17,9 @@
 namespace multi = boost::multi;
 
 namespace utf = boost::unit_test::framework;
+
+using fftw_fixture = multi::fftw::environment;
+BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
 
 class watch : private std::chrono::high_resolution_clock{
 	std::string label;
@@ -37,6 +39,7 @@ class watch : private std::chrono::high_resolution_clock{
 };
 
 BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001) ) {
+
 	using complex = std::complex<double>;
 
 	auto const in = [] {
