@@ -802,8 +802,7 @@ struct basic_array
 	template<class... As> HD constexpr auto paren_(index i, As... as) const& -> decltype(auto) {return operator[](i).paren_(as...);}
 
  public:
-	// the default template parameters below help interpret for {first, last} simple syntax as iranges
-	// do not remove default parameter = irange
+	// vvv DO NOT remove default parameter `= irange` : the default template parameters below help interpret for {first, last} simple syntax as index ranges
 	template<class B1 = irange>                                                                       HD constexpr auto operator()(B1 b1)                                const& -> decltype(auto)                          {return paren_(b1);}
 	template<class B1 = irange, class B2 = irange>                                                    HD constexpr auto operator()(B1 b1, B2 b2)                         const& -> decltype(paren_(b1, b2))                {return paren_(b1, b2);}
 	template<class B1 = irange, class B2 = irange, class B3 = irange>                                 HD constexpr auto operator()(B1 b1, B2 b2, B3 b3)                  const& -> decltype(auto)                          {return paren_(b1, b2, b3);}
