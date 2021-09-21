@@ -15,6 +15,9 @@ $CXXX $CXXFLAGS -Ofast $0 -o $0x -DHAVE_FFTW3_THREADS -lfftw3 -lfftw3_threads -l
 
 namespace multi = boost::multi;
 
+using fftw_fixture = multi::fftw::environment;
+BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
+
 using complex = std::complex<double>;
 
 BOOST_AUTO_TEST_CASE(fftw_transpose) {

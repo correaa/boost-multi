@@ -48,7 +48,6 @@ BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex) { // if you get a se
 	blas::dot(A, B, C);
 	BOOST_REQUIRE_EQUAL( real(C) , real(std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto const& a, auto const& b){return a*std::conj(b);})) );
 	BOOST_REQUIRE_EQUAL( imag(C) , imag(std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto const& a, auto const& b){return a*std::conj(b);})) );
-
 }
 
 BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex_C) {
