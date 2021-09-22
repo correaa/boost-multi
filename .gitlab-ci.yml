@@ -548,7 +548,7 @@ inq-g++-latest:
     - make
     - make install
     - ctest --output-on-failure
-    
+
 inq-cuda-11.4-compileonly:
     image: nvidia/cuda:11.4.0-devel
     stage: test
