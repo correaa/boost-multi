@@ -14,6 +14,7 @@
 #if defined(__NVCC__)
 #include<thrust/copy.h>
 #include<thrust/equal.h>
+#include<thrust/detail/memory_algorithms.h>
 #endif
 
 #include<algorithm>  // for std::copy, std::copy_n, std::equal, etc
@@ -161,7 +162,7 @@ constexpr auto to_address(const T& p) noexcept
 	return _to_address(priority<2>{}, p);
 }
 
-template<class Alloc, class ForwardIt, class Size, typename Value = typename std::iterator_traits<ForwardIt>::value_type>
+template<class Alloc, class ForwardIt, class Size, typename Value = typename std::iterator_traits<ForwardIt>::value_type, typename = decltype(std::addressof(*ForwardIt{}))>
 auto alloc_uninitialized_value_construct_n(Alloc& alloc, ForwardIt first, Size n) -> ForwardIt {
 // ->std::decay_t<decltype(std::allocator_traits<Alloc>::construct(alloc, std::addressof(*first), Value()), first)>
 	ForwardIt current = first;
@@ -295,11 +296,14 @@ auto uninitialized_move_n(InputIt first, Size count, ForwardIt d_first)
 
 constexpr class adl_uninitialized_copy_n_t{
 	template<class... As>          constexpr auto _(priority<1>/**/,        As&&... as) const DECLRETURN(              std::uninitialized_copy_n(std::forward<As>(as)...))
-	template<class... As>          constexpr auto _(priority<2>/**/,        As&&... as) const DECLRETURN(                   uninitialized_copy_n(std::forward<As>(as)...))
-	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& t, As&&... as) const DECLRETURN(std::decay_t<T>::  uninitialized_copy_n(std::forward<T>(t), std::forward<As>(as)...))
-	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).uninitialized_copy_n(std::forward<As>(as)...))
+#if defined(__NVCC__)
+	template<class... As> 		   constexpr auto _(priority<2>/**/,        As&&... as) const DECLRETURN(           thrust::copy_n(                    std::forward<As>(as)...))
+#endif
+	template<class... As>          constexpr auto _(priority<3>/**/,        As&&... as) const DECLRETURN(                   uninitialized_copy_n(std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& t, As&&... as) const DECLRETURN(std::decay_t<T>::  uninitialized_copy_n(std::forward<T>(t), std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<5>/**/, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).uninitialized_copy_n(std::forward<As>(as)...))
 public:
-	template<class... As> constexpr auto operator()(As&&... as) const {return _(priority<4>{}, std::forward<As>(as)...);}  // TODO(correaa) this might trigger a compiler crash with g++ 7.5 because of operator&() && overloads
+	template<class... As> constexpr auto operator()(As&&... as) const {return _(priority<5>{}, std::forward<As>(as)...);}  // TODO(correaa) this might trigger a compiler crash with g++ 7.5 because of operator&() && overloads
 } adl_uninitialized_copy_n;
 
 constexpr class adl_uninitialized_move_n_t{
@@ -449,22 +453,28 @@ public:
 	template<class... As> constexpr auto operator()(As&&... as) const {return (_(priority<4>{}, std::forward<As>(as)...));}
 } adl_alloc_uninitialized_value_construct_n;
 
-constexpr class adl_alloc_uninitialized_default_construct_n_t{
-	template<class... As>          constexpr auto _(priority<1>/**/,        As&&... as) const DECLRETURN(              xtd::alloc_uninitialized_default_construct_n(                    std::forward<As>(as)...))  // TODO(correaa) use boost alloc_X functions?
-	template<class... As>          constexpr auto _(priority<2>/**/,        As&&... as) const DECLRETURN(                   alloc_uninitialized_default_construct_n(                    std::forward<As>(as)...))
-	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& t, As&&... as) const DECLRETURN(  std::decay_t<T>::alloc_uninitialized_default_construct_n(std::forward<T>(t), std::forward<As>(as)...))
-	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).alloc_uninitialized_default_construct_n(                    std::forward<As>(as)...))
-public:
-	template<class... As> constexpr auto operator()(As&&... as) const {return (_(priority<4>{}, std::forward<As>(as)...));}
-} adl_alloc_uninitialized_default_construct_n;
-
 constexpr class adl_uninitialized_default_construct_n_t{
-	template<class... As>          constexpr auto _(priority<1>/**/,        As&&... as) const {return            xtd::uninitialized_default_construct_n              (std::forward<As>(as)...);}
-//  template<class... As>          auto _(priority<2>,        As&&... as) const DECLRETURN(                   uninitialized_default_construct_n              (std::forward<As>(as)...))
-	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).uninitialized_default_construct_n              (std::forward<As>(as)...))
-public:
+	template<class... As>          constexpr auto _(priority<1>/**/,        As&&... as) const {return                  xtd::uninitialized_default_construct_n              (std::forward<As>(as)...);}
+	template<class... As>          constexpr auto _(priority<2>/**/,        As&&... as) const DECLRETURN(                   uninitialized_default_construct_n(                    std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& t, As&&... as) const DECLRETURN(  std::decay_t<T>::uninitialized_default_construct_n(std::forward<T>(t), std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).uninitialized_default_construct_n              (std::forward<As>(as)...))
+
+ public:
 		template<class... As> constexpr auto operator()(As&&... as) const {return (_(priority<4>{}, std::forward<As>(as)...));}
 } adl_uninitialized_default_construct_n;
+
+constexpr class adl_alloc_uninitialized_default_construct_n_t{
+	template<class Alloc, class... As> constexpr auto _(priority<1>/**/, Alloc&&/*unused*/, As&&... as) const JUSTRETURN(adl_uninitialized_default_construct_n(std::forward<As>(as)...))
+//  #if defined(__NVCC__)
+//  template<class Alloc, class... As> constexpr auto _(priority<3>/**/,        As&&... as) const DECLRETURN(          thrust::uninitialized_construct_n_with_allocator(                    std::forward<As>(as)...))
+//  #endif
+	template<class... As>          constexpr auto _(priority<2>/**/,        As&&... as) const DECLRETURN(              xtd::alloc_uninitialized_default_construct_n(                    std::forward<As>(as)...))  // TODO(correaa) use boost alloc_X functions?
+	template<class... As>          constexpr auto _(priority<4>/**/,        As&&... as) const DECLRETURN(                   alloc_uninitialized_default_construct_n(                    std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<5>/**/, T&& t, As&&... as) const DECLRETURN(  std::decay_t<T>::alloc_uninitialized_default_construct_n(std::forward<T>(t), std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<6>/**/, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).alloc_uninitialized_default_construct_n(                    std::forward<As>(as)...))
+public:
+	template<class... As> constexpr auto operator()(As&&... as) const {return (_(priority<6>{}, std::forward<As>(as)...));}
+} adl_alloc_uninitialized_default_construct_n;
 
 constexpr class destroy_n_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,        As&&... as) const DECLRETURN(            multi::destroy_n              (std::forward<As>(as)...))
