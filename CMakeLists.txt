@@ -22,10 +22,15 @@ target_include_directories(
 
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_14)
 
-enable_testing()
 find_program(MEMORYCHECK_COMMAND valgrind)
-set(MEMORYCHECK_COMMAND_OPTIONS "--show-reachable=yes --trace-children=yes --track-origins=yes --leak-check=full --error-exitcode=1")
+set(VALGRIND_COMMAND_OPTIONS    "-q --tool=memcheck --leak-check=yes --num-callers=51 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all")
+set(MEMORYCHECK_COMMAND_OPTIONS "-q --tool=memcheck --leak-check=yes --num-callers=52 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all") # must go before `include(CTest)`
+set(MEMORYCHECK_SUPPRESSIONS_FILE "${PROJECT_SOURCE_DIR}/.valgrind-suppressions") # must go before `include(CTest)`
+
 include(CTest)
+
+enable_testing()
+
 add_subdirectory(test)
 
 install(TARGETS ${PROJECT_NAME}
@@ -61,6 +66,7 @@ install(DIRECTORY ${PROJECT_SOURCE_DIR}/adaptors DESTINATION include/multi)
 
 add_subdirectory(adaptors/blas)
 add_subdirectory(adaptors/fftw)
+add_subdirectory(adaptors/cuda)
 
 #to install this project:
 #cmake .. -DCMAKE_INSTALL_PREFIX:PATH=$HOME

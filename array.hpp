@@ -95,10 +95,16 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	auto uninitialized_value_construct() {
 		return adl_alloc_uninitialized_value_construct_n(static_array::alloc(), this->base_, this->num_elements());
 	}
-	auto uninitialized_default_construct() {
-	//  return std::uninitialized_default_construct_n(this->base_, this->num_elements());
+
+	auto uninitialized_default_construct_if(std::true_type /*true*/ ) {}
+	auto uninitialized_default_construct_if(std::false_type/*false*/) {
 		return adl_alloc_uninitialized_default_construct_n(static_array::alloc(), this->base_, this->num_elements());
 	}
+
+	auto uninitialized_default_construct() {
+		return uninitialized_default_construct_if(std::is_trivially_default_constructible<typename static_array::element_type>{});
+	}
+
 	template<typename It> auto uninitialized_copy_elements(It first) {
 		return array_alloc::uninitialized_copy_n(first, this->num_elements(), this->data_elements());
 	}
@@ -211,9 +217,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 // analgous to std::vector::vector ((4)) https://en.cppreference.com/w/cpp/container/vector/vector
 	explicit static_array(typename static_array::extensions_type x, typename static_array::allocator_type const& a)
 	: array_alloc{a}, ref{array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{x}.num_elements())), x} {
-		if(not std::is_trivially_default_constructible<typename static_array::element_type>{}) {
-			uninitialized_default_construct();  // TODO(correaa) : make if constexpr (effectively)
-		}
+		uninitialized_default_construct();
 	}
 
 	explicit static_array(typename static_array::extensions_type x)
