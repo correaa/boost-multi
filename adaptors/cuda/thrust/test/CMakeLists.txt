@@ -29,7 +29,7 @@ message(STATUS "after: ${CUDA_ARCHITECTURES}")
 
 message(STATUS "before cu tests: ${CUDA_ARCH_LIST}")
 
-if("30;35;50;52;60;61;70;70+PTX;75;75+PTX" STREQUAL "${CUDA_ARCH_LIST}")
+if("30;35;50;52;60;61;70;70+PTX;75;75+PTX" STREQUAL "${CUDA_ARCH_LIST}" OR "" STREQUAL "${CUDA_ARCH_LIST}")
 message(STATUS "gpu not detected")
 set(TEST_SRCS
 )
