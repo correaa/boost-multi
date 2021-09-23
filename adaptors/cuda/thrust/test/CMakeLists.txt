@@ -1,7 +1,8 @@
+# -*-indent-tabs-mode:nil;c-basic-offset:2;tab-width:4;autowrap:nil;-*-
 cmake_minimum_required(VERSION 3.11)
 project(boost-multi-adaptor-cuda-thrust-test VERSION 0.1 LANGUAGES CXX CUDA)
 
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr -Xcudafe \"--display_error_number --diag_suppress=implicit_return_from_non_void_function\"")
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr -Xcudafe \"--display_error_number --diag_suppress=implicit_return_from_non_void_function --diag_suppress=class_and_member_name_conflict\"")
 
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 
