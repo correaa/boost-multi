@@ -29,7 +29,6 @@ set(MEMORYCHECK_SUPPRESSIONS_FILE "${PROJECT_SOURCE_DIR}/.valgrind-suppressions"
 
 include(CTest)
 
-
 enable_testing()
 
 add_subdirectory(test)
