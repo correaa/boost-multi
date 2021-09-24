@@ -112,13 +112,13 @@ auto copy(It first, It last, fancy::ptr<T> dest) {
 }
 
 template<class It, class T>  // custom copy 1D (aka strided copy)
-auto copy(It first, It last, multi::array_iterator<T, 1, fancy::ptr<T>> dest) { (void)last;
+auto copy(It/*first*/, It/*last*/, multi::array_iterator<T, 1, fancy::ptr<T>> dest) {
 //	std::cerr << "1D copy(it1D, it1D, it1D) with strides " << stride(first) << " " << stride(dest) << std::endl;
 	return dest;
 }
 
 template<class It, class T> // custom copy 2D (aka double strided copy)
-auto copy(It first, It last, multi::array_iterator<T, 2, fancy::ptr<T>> dest) { (void)last; (void)first;
+auto copy(It/*first*/, It/*last*/, multi::array_iterator<T, 2, fancy::ptr<T>> dest) {
 //	std::cerr<<"2D copy(It, It, it2D) with strides 1"<< first.stride() <<" "<< dest.stride() <<std::endl;
 	return dest;
 }
