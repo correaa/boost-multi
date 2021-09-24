@@ -80,17 +80,17 @@ template<class T> struct allocator{
 // all these are optional, depending on the level of specialization needed
 template<class Ptr, class T, class Size>
 auto copy_n(Ptr /*first*/, Size /*count*/, ptr<T> result) {
-	std::cerr<< "called Pointer-based copy_n(Ptr, n, fancy::ptr)" <<std::endl;
+//	std::cerr<< "called Pointer-based copy_n(Ptr, n, fancy::ptr)" <<std::endl;
 	return result;
 }
 template<class Ptr, class T, class Size>
 auto copy_n(ptr<T> /*first*/, Size /*count*/, Ptr result) {
-	std::cerr<< "called Pointer-based copy_n(fancy::ptr, n, Ptr)" <<std::endl;
+//	std::cerr<< "called Pointer-based copy_n(fancy::ptr, n, Ptr)" <<std::endl;
 	return result;
 }
 template<class T1, class T2, class Size>
 auto copy_n(ptr<T1> /*first*/, Size /*count*/, ptr<T2> result) {
-	std::cerr<< "called Pointer-based copy_n(fancy::ptr, n, fancy::ptr)" <<std::endl;
+//	std::cerr<< "called Pointer-based copy_n(fancy::ptr, n, fancy::ptr)" <<std::endl;
 	return result;
 }
 
