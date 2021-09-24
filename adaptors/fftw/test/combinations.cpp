@@ -12,6 +12,7 @@
 
 #include<chrono>
 #include<complex>
+#include<iostream>
 #include<random>
 
 namespace multi = boost::multi;
