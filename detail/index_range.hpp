@@ -9,7 +9,7 @@
 
 #include <algorithm>  // for min
 
-//#include <iostream>   // TODO(correaa) remove, add include in QMCP
+// #include <iostream>   // TODO(correaa) remove, add include in QMCP
 
 #include <iterator>   // for std::random_iterator_tag // std::reverse_iterator
 #include <limits>     // for numeric_limits
@@ -141,9 +141,9 @@ class range {
 	       NODISCARD("") constexpr auto size()     const&    noexcept -> size_type {return last_ - first_;}
 	friend               constexpr auto size(range const& s) noexcept -> size_type {return s.size();}
 
-//	friend auto operator<<(std::ostream& os, range const& s) -> std::ostream& {
-//		return s.empty()?os<<"[)":os <<"["<< s.first() <<", "<< s.last() <<")";
-//	}
+//  friend auto operator<<(std::ostream& os, range const& s) -> std::ostream& {
+//  	return s.empty()?os<<"[)":os <<"["<< s.first() <<", "<< s.last() <<")";
+//  }
 	friend constexpr auto begin(range const& self) -> const_iterator {return self.begin();}
 	friend constexpr auto end  (range const& self) -> const_iterator {return self.end()  ;}
 
