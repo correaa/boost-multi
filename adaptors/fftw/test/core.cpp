@@ -10,8 +10,8 @@
 #include "../../../array.hpp"
 
 #include<chrono>
+#include<iostream>
 #include<random>
-
 //#include<thrust/complex.h> // TODO(correaa) make lib work with thrust complex
 
 namespace {

@@ -164,9 +164,6 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
 
 		BOOST_REQUIRE( arrC.extension().start()  == 2 );
 		BOOST_REQUIRE( arrC.extension().finish() == 5 );
-
-		std::cout<< arrC.extension().start()<<"..."<< arrC.extension().finish() <<std::endl;
-	//	BOOST_REQUIRE( arrC[2][1] == "a" );
 	}
 }
 

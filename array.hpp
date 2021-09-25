@@ -448,7 +448,15 @@ struct static_array<T, dimensionality_type{0}, Alloc>  // NOLINT(fuchsia-multipl
  protected:
 	using alloc_traits = typename std::allocator_traits<allocator_type>;
 	using ref = array_ref<T, 0, typename std::allocator_traits<typename std::allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
-	auto uninitialized_value_construct() {return adl_alloc_uninitialized_value_construct_n(static_array::alloc(), this->base_, this->num_elements());}
+
+	auto uninitialized_value_construct_if_not(std::true_type /*true */) {}
+	auto uninitialized_value_construct_if_not(std::false_type/*false*/) {
+		return adl_alloc_uninitialized_value_construct_n(static_array::alloc(), this->base_, this->num_elements());
+	}
+	auto uninitialized_value_construct() {
+		uninitialized_value_construct_if_not(std::is_trivially_default_constructible<typename static_array::element>{});
+	}
+
 	template<typename It> auto uninitialized_copy(It first) {return adl_alloc_uninitialized_copy_n(this->alloc(), first, this->num_elements(), this->data_elements());}
 	template<typename It>
 	auto uninitialized_move(It first) {
@@ -509,16 +517,10 @@ struct static_array<T, dimensionality_type{0}, Alloc>  // NOLINT(fuchsia-multipl
 
 	explicit static_array(typename static_array::extensions_type const& x, allocator_type const& a)  // 3
 	: array_alloc{a}, ref{static_array::allocate(typename static_array::layout_t{x}.num_elements()), x} {
-		if(not std::is_trivially_default_constructible<typename static_array::element>{}) {
-			uninitialized_value_construct();
-		}
+		uninitialized_value_construct();
 	}
-	explicit static_array(typename static_array::extensions_type const& x)  // 3  // TODO(correaa) : call other constructor (above)
-	: array_alloc{}, ref{static_array::allocate(typename static_array::layout_t{x}.num_elements()), x} {
-		if(not std::is_trivially_default_constructible<typename static_array::element>{}) {
-			uninitialized_value_construct();
-		}
-	}
+	explicit static_array(typename static_array::extensions_type const& x)  // 3
+	: static_array(x, allocator_type{}) {}
 
 	template<class TT, class... Args>
 	explicit static_array(multi::basic_array<TT, 0, Args...> const& other, allocator_type const& a)
@@ -902,7 +904,7 @@ struct array : static_array<T, D, Alloc>{
 	}
 
 	template<class IE>
-	[[deprecated]] auto reextent(std::array<IE/*index_extension*/, static_cast<std::size_t>(D)> e) -> decltype(auto) {
+	[[deprecated]] auto reextent(std::array<IE/*index_extension*/, static_cast<std::size_t>(D)> e) -> decltype(auto) {  // TODO(correaa) : remove
 		return reextent(typename array::extensions_type{e});
 	}
 	auto reextent(typename array::extensions_type const& x) -> array& {
@@ -915,8 +917,16 @@ struct array : static_array<T, D, Alloc>{
 		tmp.apply(is) = this->apply(is);
 		swap(tmp);
 #else
-		auto&& tmp = typename array::ref{this->static_::array_alloc::allocate(static_cast<typename std::allocator_traits<typename array::allocator_type>::size_type>(typename array::layout_t{x}.num_elements()), this->data_elements()), x};
-		if(not std::is_trivially_default_constructible<typename array::element>{}) {
+		auto&& tmp = typename array::ref{
+			this->static_::array_alloc::allocate(
+				static_cast<typename std::allocator_traits<typename array::allocator_type>::size_type>(
+					typename array::layout_t{x}.num_elements()
+				),
+				this->data_elements()  // used as hint
+			),
+			x
+		};
+		if(not std::is_trivially_default_constructible<typename array::element>{}) {  // TODO(correaa) convert into constexpr if
 			adl_alloc_uninitialized_value_construct_n(this->alloc(), tmp.data_elements(), tmp.num_elements());
 		}
 		auto const is = intersection(this->extensions(), x);

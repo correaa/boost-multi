@@ -10,7 +10,7 @@ $CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
 #include<stdio.h>
 
 #include<complex>
-#include<iostream>
+//#include<iostream>
 
 #include "../adaptors/../array.hpp"
 
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(multi_1d){
 	auto&& Apart = A({1, 3});
 
 	multi::array<double, 2> const B = {{1, 2, 3}, {4, 5, 6}};
-	
+
 	double sum = 0;
 	for(auto i : A.extension()) sum += A[i];
 
