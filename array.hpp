@@ -453,7 +453,7 @@ struct static_array<T, dimensionality_type{0}, Alloc>  // NOLINT(fuchsia-multipl
 	auto uninitialized_value_construct_if_not(std::false_type/*false*/) {
 		return adl_alloc_uninitialized_value_construct_n(static_array::alloc(), this->base_, this->num_elements());
 	}
-	auto uninitialized_value_construct(){
+	auto uninitialized_value_construct() {
 		uninitialized_value_construct_if_not(std::is_trivially_default_constructible<typename static_array::element>{});
 	}
 
@@ -520,7 +520,7 @@ struct static_array<T, dimensionality_type{0}, Alloc>  // NOLINT(fuchsia-multipl
 		uninitialized_value_construct();
 	}
 	explicit static_array(typename static_array::extensions_type const& x)  // 3
-	: static_array(x, allocator_type{}){}
+	: static_array(x, allocator_type{}) {}
 
 	template<class TT, class... Args>
 	explicit static_array(multi::basic_array<TT, 0, Args...> const& other, allocator_type const& a)
@@ -903,10 +903,10 @@ struct array : static_array<T, D, Alloc>{
 		assign(il.begin(), il.end()); return *this;
 	}
 
-//	template<class IE>
-//	[[deprecated]] auto reextent(std::array<IE/*index_extension*/, static_cast<std::size_t>(D)> e) -> decltype(auto) {
-//		return reextent(typename array::extensions_type{e});
-//	}
+//  template<class IE>
+//  [[deprecated]] auto reextent(std::array<IE/*index_extension*/, static_cast<std::size_t>(D)> e) -> decltype(auto) {
+//  	return reextent(typename array::extensions_type{e});
+//  }
 	auto reextent(typename array::extensions_type const& x) -> array& {
 		if(x == this->extensions()) {
 			return *this;
