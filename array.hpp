@@ -903,10 +903,10 @@ struct array : static_array<T, D, Alloc>{
 		assign(il.begin(), il.end()); return *this;
 	}
 
-//  template<class IE>
-//  [[deprecated]] auto reextent(std::array<IE/*index_extension*/, static_cast<std::size_t>(D)> e) -> decltype(auto) {
-//  	return reextent(typename array::extensions_type{e});
-//  }
+	template<class IE>
+	[[deprecated]] auto reextent(std::array<IE/*index_extension*/, static_cast<std::size_t>(D)> e) -> decltype(auto) {  // TODO(correaa) : remove
+		return reextent(typename array::extensions_type{e});
+	}
 	auto reextent(typename array::extensions_type const& x) -> array& {
 		if(x == this->extensions()) {
 			return *this;
