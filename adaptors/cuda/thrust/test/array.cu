@@ -75,8 +75,8 @@ BOOST_AUTO_TEST_CASE(thrust_complex_cached_without_values_1D){
 
 BOOST_AUTO_TEST_CASE(thrust_complex_cached_2D){
 	using T = inq::complex;
-	multi::array<T, 1, boost::multi::memory::cuda::cached::allocator<T> > aa({10, 20}, T{1., 1.});
-	multi::array<T, 1, boost::multi::memory::cuda::cached::allocator<T> > bb({10, 20}, T{2., 2.});
+	multi::array<T, 2, boost::multi::memory::cuda::cached::allocator<T> > aa({10, 20}, T{1., 1.});
+	multi::array<T, 2, boost::multi::memory::cuda::cached::allocator<T> > bb({10, 20}, T{2., 2.});
 
 	bb = aa;
 
@@ -85,8 +85,8 @@ BOOST_AUTO_TEST_CASE(thrust_complex_cached_2D){
 
 BOOST_AUTO_TEST_CASE(thrust_complex_cached_without_values_2D){
 	using T = inq::complex;
-	multi::array<T, 1, boost::multi::memory::cuda::cached::allocator<T> > aa({10, 20});
-	multi::array<T, 1, boost::multi::memory::cuda::cached::allocator<T> > bb({10, 20});
+	multi::array<T, 2, boost::multi::memory::cuda::cached::allocator<T> > aa({10, 20});
+	multi::array<T, 2, boost::multi::memory::cuda::cached::allocator<T> > bb({10, 20});
 	BOOST_REQUIRE( aa.size() == 10 );
 	BOOST_REQUIRE( bb.size() == 10 );
 
