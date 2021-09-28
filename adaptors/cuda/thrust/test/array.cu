@@ -2,6 +2,8 @@
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
+#include<thrust/memory.h>
+
 #include "../../../../adaptors/cuda/thrust.hpp"
 
 #include <thrust/uninitialized_copy.h>
@@ -11,9 +13,35 @@ namespace multi = boost::multi;
 BOOST_AUTO_TEST_CASE(thrust_array){
 	multi::thrust::cuda::array<double, 2> C({2, 3});
 
-//	C[0][0] = 0. ;
-//	C[1][1] = 11.;
-//	BOOST_TEST_REQUIRE( C[1][1] == 11. );
+	C[0][0] = 0. ;
+	C[1][1] = 11.;
+	BOOST_TEST_REQUIRE( C[1][1] == 11. );
+}
+
+BOOST_AUTO_TEST_CASE(thrust_cpugpu_issue123){
+
+//	[]{}(std::allocator_traits<thrust::device_allocator<char>>::propagate_on_container_move_assignment{});
+	using T = char;
+	multi::array<T, 2, thrust::device_allocator<T>> Devc({1024,1024}, 'a');
+	multi::array<T, 2>                              Host({1024,1024}, 'z');
+
+	BOOST_TEST_REQUIRE( Devc[0][0] == 'a' );
+
+	{
+		auto Devc2 = multi::array<T, 2, thrust::device_allocator<T>>(Host.extensions());
+		copy_n(Host.data_elements(), Host.num_elements(), Devc2.elements().begin());
+		BOOST_TEST_REQUIRE( Devc2[0][0] == 'z' );
+
+		Devc = Devc2;
+		BOOST_TEST_REQUIRE( Devc[0][0] == 'z' );
+	}
+	{
+	//	multi::array<T, 2, thrust::device_allocator<T>> Devc2(Host);
+	//	BOOST_TEST_REQUIRE( Devc2[0][0] == 'z' );
+	}
+//	Dev.sliced(0,512) = Host.sliced(0,512);   // this is fine, since the transfer is contiguous
+//	Dev({0,512},{0,512}) = Host({0,512},{0,512});   // this is x10^4 times slower!!!
+
 }
 
 BOOST_AUTO_TEST_CASE(array){
