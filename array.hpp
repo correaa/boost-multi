@@ -797,6 +797,7 @@ struct array : static_array<T, D, Alloc>{
 	}
 
 #ifndef NOEXCEPT_ASSIGNMENT
+
  private:
 	template<class TrueType>
 	void move_allocator_if(TrueType&&     /*T*/, typename array::allocator_type&&  source  ) {this->alloc() = std::move(source);}
