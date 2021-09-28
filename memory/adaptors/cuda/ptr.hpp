@@ -134,16 +134,16 @@ struct ptr{
 
 	template<class Other, typename = std::enable_if_t<std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{} and not std::is_same<Other, T>{} >>
 	// cppcheck-suppress noExplicitConstructor ;
-	constexpr /*explicit(false)*/ ptr(ptr<Other> const& o) : rp_{static_cast<raw_pointer>(o.rp_)}{}
+	constexpr /*explicit(false)*/ ptr(ptr<Other> const& o) : rp_{static_cast<raw_pointer>(o.rp_)} {}
 	template<class Other, typename = std::enable_if_t<not std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{} and not std::is_same<Other, T>{}>, typename = decltype(static_cast<raw_pointer>(std::declval<ptr<Other>>().rp_))>
-	explicit/*(true)*/ constexpr ptr(ptr<Other> const& o, void** = 0) : rp_{static_cast<raw_pointer>(o.rp_)}{}
-	explicit constexpr ptr(raw_pointer rp)  : rp_{rp}{}
+	explicit/*(true)*/ constexpr ptr(ptr<Other> const& o, void** = 0) : rp_{static_cast<raw_pointer>(o.rp_)} {}
+	explicit constexpr ptr(raw_pointer rp) : rp_{rp} {}
 
 	template<class TT> friend auto reinterpret_pointer_cast(ptr p)
 	->decltype(ptr<TT>{reinterpret_cast<TT*>(std::declval<raw_pointer>())}){
 		return ptr<TT>{reinterpret_cast<TT*>(p.rp_)};}
 
-	template<class Other, typename = decltype(static_cast<raw_pointer>(std::declval<Other const&>().rp_))> 
+	template<class Other, typename = decltype(static_cast<raw_pointer>(std::declval<Other const&>().rp_))>
 	constexpr explicit ptr(Other const& o) : rp_{static_cast<raw_pointer>(o.rp_)}{}
 	ptr() = default;
 
@@ -190,14 +190,18 @@ struct ptr{
 	ptr  operator--(int){auto tmp = *this; --(*this); return tmp;}
 	constexpr ptr& operator+=(difference_type n){rp_+=n; return *this;}
 	constexpr ptr& operator-=(difference_type n){rp_-=n; return *this;}
-	constexpr ptr operator+(difference_type n) const{
+
+	constexpr ptr operator+(difference_type n) const {
 	//	static_cast(not std::is_same<raw_pointer, void*>{} , "!");
 		return ptr{rp_ + n};
 	}
-	constexpr ptr operator-(difference_type n) const{return ptr{rp_ - n};}
+	constexpr ptr operator-(difference_type n) const {return ptr{rp_ - n};}
+
 	using reference = ref<element_type>;
-	constexpr reference operator*() const{ return {*this}; }
-	constexpr reference operator[](difference_type n) const{return *((*this)+n);}
+
+	constexpr auto operator*() const {return reference{*this};}
+	constexpr auto operator[](difference_type n) const {return reference{*((*this)+n)};}
+
 	friend constexpr ptr to_address(ptr const& p){return p;}
 	constexpr difference_type operator-(ptr const& o) const{return rp_-o.rp_;}
 	operator ptr<void>(){return ptr<void>{rp_};}
