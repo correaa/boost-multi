@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE(thrust_complex_cached_2D){
 
 	bb = aa;
 
-	BOOST_REQUIRE(( bb[0] == T{1., 1.} ));
+	BOOST_REQUIRE(( bb[0][0] == T{1., 1.} ));
 }
 
 BOOST_AUTO_TEST_CASE(thrust_complex_cached_without_values_2D){
