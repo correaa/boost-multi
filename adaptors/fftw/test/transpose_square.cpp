@@ -24,7 +24,8 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 	multi::fftw::initialize_threads();
 	 {
 		auto const in = [] {
-			multi::array<complex, 2> ret({819, 819});
+		//	multi::array<complex, 2> ret({819, 819});
+			multi::array<complex, 2> ret({81, 81});
 			std::generate(ret.data_elements(), ret.data_elements() + ret.num_elements(),
 				[eng = std::default_random_engine{std::random_device{}()}, uniform_01 = std::uniform_real_distribution<>{}]() mutable{
 					return complex{uniform_01(eng), uniform_01(eng)};
