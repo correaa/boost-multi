@@ -9,7 +9,7 @@
 
 #include <algorithm>  // for min
 
-// #include <iostream>   // TODO(correaa) remove, add include in QMCP
+#include <iostream>   // TODO(correaa) remove, add include in QMCP
 
 #include <iterator>   // for std::random_iterator_tag // std::reverse_iterator
 #include <limits>     // for numeric_limits
@@ -210,21 +210,24 @@ struct extension_t : public range<IndexType, IndexTypeLast>{
 	using range<IndexType, IndexTypeLast>::range;
 
 	constexpr extension_t(IndexType f, IndexTypeLast l) noexcept : range<IndexType, IndexTypeLast>{f, l} {}
+
 	// cppcheck-suppress noExplicitConstructor ; because syntax convenience // NOLINTNEXTLINE(runtime/explicit)
 	constexpr extension_t(IndexType last) noexcept : range<IndexType, IndexTypeLast>(0, last) {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) because syntax convenience
 	constexpr extension_t() noexcept : range<IndexType, IndexTypeLast>() {}
 
 	friend constexpr auto size(extension_t const& s) -> typename extension_t::size_type {return s.size();}
-	template<class OStream>
-	friend auto operator<<(OStream& os, extension_t const& self) -> decltype(os<<"[]") {
-		if(self.empty()) {
-			return os << static_cast<range<IndexType> const&>(self);
-		}
-		if(self.first() == 0) {
-			return os <<"["<< self.last() <<"]";
-		}
-		return os << static_cast<range<IndexType> const&>(self);
-	}
+
+//  template<class OStream>
+//  friend auto operator<<(OStream& os, extension_t const& self) -> decltype(os<<"[]") {
+//  	if(self.empty()) {
+//  		return os << static_cast<range<IndexType> const&>(self);
+//  	}
+//  	if(self.first() == 0) {
+//  		return os <<"["<< self.last() <<"]";
+//  	}
+//  	return os << static_cast<range<IndexType> const&>(self);
+//  }
+
 	NODISCARD("") constexpr auto start () const -> IndexType {return this->first();}
 	NODISCARD("") constexpr auto finish() const -> IndexType {return this->last ();}
 	friend constexpr auto operator==(extension_t const& a, extension_t const& b) {return static_cast<range<IndexType> const&>(a)==static_cast<range<IndexType> const&>(b);}
