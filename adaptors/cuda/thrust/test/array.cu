@@ -5,8 +5,11 @@
 #include<thrust/memory.h>
 
 #include "../../../../adaptors/cuda/thrust.hpp"
+#include "../../../../memory/adaptors/cuda/cached/allocator.hpp"
 
 #include <thrust/uninitialized_copy.h>
+#include <thrust/complex.h>
+#include <thrust/device_ptr.h>
 
 namespace multi = boost::multi;
 
@@ -42,6 +45,54 @@ BOOST_AUTO_TEST_CASE(thrust_cpugpu_issue123){
 //	Dev.sliced(0,512) = Host.sliced(0,512);   // this is fine, since the transfer is contiguous
 //	Dev({0,512},{0,512}) = Host({0,512},{0,512});   // this is x10^4 times slower!!!
 
+}
+
+namespace inq{
+	using complex = thrust::complex<double>;
+}
+
+BOOST_AUTO_TEST_CASE(thrust_complex_cached_1D){
+	using T = inq::complex;
+	multi::array<T, 1, boost::multi::memory::cuda::cached::allocator<T> > aa(10, T{1., 1.});
+	multi::array<T, 1, boost::multi::memory::cuda::cached::allocator<T> > bb(10, T{2., 2.});
+
+	bb = aa;
+
+	BOOST_REQUIRE(( bb[0] == T{1., 1.} ));
+}
+
+BOOST_AUTO_TEST_CASE(thrust_complex_cached_without_values_1D){
+	using T = inq::complex;
+	multi::array<T, 1, boost::multi::memory::cuda::cached::allocator<T> > aa(10);
+	multi::array<T, 1, boost::multi::memory::cuda::cached::allocator<T> > bb(10);
+	BOOST_REQUIRE( aa.size() == 10 );
+	BOOST_REQUIRE( bb.size() == 10 );
+
+	bb = aa;
+
+	BOOST_REQUIRE(( bb[0] == aa[0] ));
+}
+
+BOOST_AUTO_TEST_CASE(thrust_complex_cached_2D){
+	using T = inq::complex;
+	multi::array<T, 2, boost::multi::memory::cuda::cached::allocator<T> > aa({10, 20}, T{1., 1.});
+	multi::array<T, 2, boost::multi::memory::cuda::cached::allocator<T> > bb({10, 20}, T{2., 2.});
+
+	bb = aa;
+
+	BOOST_REQUIRE(( bb[0][0] == T{1., 1.} ));
+}
+
+BOOST_AUTO_TEST_CASE(thrust_complex_cached_without_values_2D){
+	using T = inq::complex;
+	multi::array<T, 2, boost::multi::memory::cuda::cached::allocator<T> > aa({10, 20});
+	multi::array<T, 2, boost::multi::memory::cuda::cached::allocator<T> > bb({10, 20});
+	BOOST_REQUIRE( aa.size() == 10 );
+	BOOST_REQUIRE( bb.size() == 10 );
+
+	bb = aa;
+
+	BOOST_REQUIRE(( bb[0][0] == aa[0][0] ));
 }
 
 BOOST_AUTO_TEST_CASE(array){
