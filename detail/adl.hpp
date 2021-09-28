@@ -325,7 +325,7 @@ template<class T, class InputIt, class Size, class ForwardIt>
 constexpr auto alloc_uninitialized_move_n(std::allocator<T>&/*alloc*/, InputIt f, Size n, ForwardIt d) {
 	return adl_uninitialized_move_n(f, n, d);}
 
-template<class Alloc, class InputIt, class Size, class ForwardIt>
+template<class Alloc, class InputIt, class Size, class ForwardIt, class = decltype(std::addressof(*ForwardIt{}))>
 auto alloc_uninitialized_copy_n(Alloc& a, InputIt f, Size n, ForwardIt d) {
 // ->std::decay_t<decltype(a.construct(std::addressof(*d), *f), d)>
 	ForwardIt c = d;
@@ -507,11 +507,12 @@ public:
 } adl_alloc_uninitialized_copy;
 
 constexpr class alloc_uninitialized_copy_n_t {
-	template<class... As>          constexpr auto _(priority<1>/**/,        As&&... as) const {return(                  xtd::alloc_uninitialized_copy_n(std::forward<As>(as)...));}
-	template<class... As>          constexpr auto _(priority<2>/**/,        As&&... as) const DECLRETURN(                   alloc_uninitialized_copy_n(std::forward<As>(as)...))
-	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).alloc_uninitialized_copy_n(std::forward<As>(as)...))
+	template<class Alloc, class... As> constexpr auto _(priority<1>/**/, Alloc&&/*alloc*/, As&&... as) const DECLRETURN(                         uninitialized_copy_n(std::forward<As>(as)...))
+	template<class... As>              constexpr auto _(priority<2>/**/,                   As&&... as) const DECLRETURN(              xtd::alloc_uninitialized_copy_n(std::forward<As>(as)...))
+	template<class... As>              constexpr auto _(priority<3>/**/,                   As&&... as) const DECLRETURN(                   alloc_uninitialized_copy_n(std::forward<As>(as)...))
+	template<class T, class... As>     constexpr auto _(priority<4>/**/, T&& t,            As&&... as) const DECLRETURN(std::forward<T>(t).alloc_uninitialized_copy_n(std::forward<As>(as)...))
 public:
-	template<class... As> constexpr auto operator()(As&&... as) const {return _(priority<3>{}, std::forward<As>(as)...);} \
+	template<class... As> constexpr auto operator()(As&&... as) const {return _(priority<4>{}, std::forward<As>(as)...);} \
 } adl_alloc_uninitialized_copy_n;
 
 constexpr class alloc_uninitialized_move_n_t {
