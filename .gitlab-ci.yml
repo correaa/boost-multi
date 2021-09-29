@@ -489,7 +489,7 @@ g++-cppcheck:
     - cppcheck --version
     - find . -name '*.hpp' -exec cppcheck --enable=all --inline-suppr --suppress=syntaxError --suppress=missingInclude --suppress=missingIncludeSystem --suppress=preprocessorErrorDirective --suppress=syntaxError --suppress=unusedFunction --suppress=arithOperationsOnVoidPointer --suppress=sizeofDereferencedVoidPointer --suppress=sizeofDereferencedVoidPointer --suppress=unmatchedSuppression:{} -D__align__ -DCUDARTAPI --language=c++ --std=c++17 --error-exitcode=666 {} \;
     - mkdir build && cd build
-    - cmake -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--inline-suppr;--suppress=*:*thrust/complex*;--suppress=syntaxError;--suppress=missingInclude;--suppress=missingIncludeSystem;--suppress=unmatchedSuppression;--suppress=preprocessorErrorDirective;--suppress=syntaxError;-D__align__;-DCUDARTAPI;--language=c++;--std=c++17;--error-exitcode=666" ..
+    - cmake -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--inline-suppr;--suppress=missingIncludeSystem;--suppress-list=${PROJECT_SOURCE_DIR}/.cppcheck-suppressions;--language=c++;--std=c++17;--error-exitcode=666" ..
     - cmake --build .
     - ctest --output-on-failure
 
