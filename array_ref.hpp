@@ -481,7 +481,7 @@ struct basic_array
 
  private:
 	HD constexpr auto at_(index i) const {  // MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
-		return reference(this->layout().sub(), this->base() + Layout::operator()(i));
+		return reference(this->layout().sub(), this->base() + Layout::operator()(i));  // cppcheck-suppress syntaxError ; bug in cppcheck 2.5
 	}
 
  public:
