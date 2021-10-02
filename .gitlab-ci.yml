@@ -526,7 +526,7 @@ qmcpack-cuda-11.2-compileonly:
       - wget https://cmake.org/files/v3.21/cmake-3.21.3-linux-x86_64.sh  # following https://askubuntu.com/a/865294/15943
       - mkdir /opt/cmake
       - ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
-      - sh cmake-3.21.3-linux-x86_64.sh --prefix=/opt/cmake
+      - yes | sh cmake-3.21.3-linux-x86_64.sh --prefix=/opt/cmake
       - cmake --version
       - git clone https://github.com/QMCPACK/qmcpack.git
       - cd qmcpack
