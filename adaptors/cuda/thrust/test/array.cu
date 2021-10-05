@@ -13,12 +13,23 @@
 
 namespace multi = boost::multi;
 
-BOOST_AUTO_TEST_CASE(thrust_array){
+BOOST_AUTO_TEST_CASE(thrust_array) {
 	multi::thrust::cuda::array<double, 2> C({2, 3});
 
 	C[0][0] = 0. ;
 	C[1][1] = 11.;
-	BOOST_TEST_REQUIRE( C[1][1] == 11. );
+	BOOST_REQUIRE( C[1][1] == 11. );
+}
+
+BOOST_AUTO_TEST_CASE(issue_118) {
+
+	using Allocator = thrust::device_allocator<double>;
+	multi::array<double, 2, Allocator> M({3, 3}, Allocator{});
+
+	M[1][2] = 12.;
+
+	BOOST_REQUIRE( M[1][2] == 12. );
+
 }
 
 BOOST_AUTO_TEST_CASE(thrust_cpugpu_issue123){
