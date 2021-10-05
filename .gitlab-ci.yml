@@ -522,7 +522,12 @@ qmcpack-cuda-11.2-compileonly:
     stage: test
     script:
       - export DEBIAN_FRONTEND=noninteractive
-      - apt-get -qq update && apt-get -qq install --no-install-recommends -y libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libopenmpi-dev gfortran g++ pkg-config cmake make git ca-certificates numdiff python3 python3-numpy python3-h5py python3-mpi4py python3-scipy libxml2-dev libhdf5-dev
+      - apt-get -qq update && apt-get -qq install --no-install-recommends -y libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libopenmpi-dev gfortran g++ pkg-config cmake make git ca-certificates numdiff python3 python3-numpy python3-h5py python3-mpi4py python3-scipy libxml2-dev libhdf5-dev wget
+      - wget https://cmake.org/files/v3.21/cmake-3.21.3-linux-x86_64.sh >/dev/null # following https://askubuntu.com/a/865294/15943
+      - mkdir /opt/cmake
+      - sh cmake-3.21.3-linux-x86_64.sh --skip-license --prefix=/opt/cmake
+      - ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
+      - cmake --version
       - git clone https://github.com/QMCPACK/qmcpack.git
       - cd qmcpack
       - git config --global user.email "alfredo.correa@gmail.com" && git config --global user.name "Alfredo Correa"
