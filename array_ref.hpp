@@ -1447,15 +1447,16 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuc
 		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	}
 
-	constexpr auto operator[](index i) const& -> typename basic_array::const_reference {
+ private:
+	HD constexpr auto bracket_aux(index i) const& -> typename basic_array::      reference{  // TODO(correaa): consider removing HD
 		MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		return *(this->base() + Layout::operator()(i));  // in C++17 this is allowed even with syntethic references
 	}
-	constexpr auto operator[](index i)      & -> typename basic_array::      reference {
-		MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"\nout of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		return *(this->base() + Layout::operator()(i));
-	}
-	constexpr auto operator[](index i)&& -> typename basic_array::reference {return this->operator[](i);}
+
+ public:
+	HD constexpr auto operator[](index i) const& -> typename basic_array::const_reference {return bracket_aux(i);}
+	HD constexpr auto operator[](index i)      & -> typename basic_array::      reference {return bracket_aux(i);}
+	HD constexpr auto operator[](index i)     && -> typename basic_array::      reference {return bracket_aux(i);}
 
  private:
 	template<class Self, typename Tuple, std::size_t ... I, basic_array* = nullptr>
