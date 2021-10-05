@@ -1510,7 +1510,7 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuc
 	}
 
  private:
-	constexpr auto sliced_aux(index first, index last) const -> basic_array {
+	HD constexpr auto sliced_aux(index first, index last) const -> basic_array {
 		typename types::layout_t new_layout = this->layout();
 		if(this->is_empty()) {
 			assert(first == last);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
