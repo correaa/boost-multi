@@ -1469,14 +1469,14 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuc
 	template<typename Tuple> HD constexpr auto apply(Tuple const& t)     && -> decltype(auto) {return apply_impl(std::move(*this), t, std::make_index_sequence<std::tuple_size<Tuple>{}>());}
 	template<typename Tuple> HD constexpr auto apply(Tuple const& t)      & -> decltype(auto) {return apply_impl(          *this , t, std::make_index_sequence<std::tuple_size<Tuple>{}>());}
 
-	template<class Tuple, typename = std::enable_if_t<(std::tuple_size<std::decay_t<Tuple>>{}>1) > >
+	template<class Tuple, std::enable_if_t<(std::tuple_size<std::decay_t<Tuple>>{}>1), int> = 0>
 	HD constexpr auto operator[](Tuple&& t) const
 	->decltype(operator[](std::get<0>(t))[detail::tuple_tail(t)]) {
 		return operator[](std::get<0>(t))[detail::tuple_tail(t)]; }
 
 	template<class Tuple, std::enable_if_t<std::tuple_size<std::decay_t<Tuple>>{}==1, int> = 0>
 	HD constexpr auto operator[](Tuple const& indices  ) const -> decltype(auto) {return operator[](std::get<0>(indices));}
-	template<class Tuple, std::enable_if_t<std::tuple_size<std::decay_t<Tuple>>{}==0>* = nullptr>
+	template<class Tuple, std::enable_if_t<std::tuple_size<std::decay_t<Tuple>>{}==0, int> = 0>
 	HD constexpr auto operator[](Tuple const& /*empty*/) const -> decltype(auto) {return *this;}
 
 	HD constexpr auto elements_at(size_type n) const& -> decltype(auto) {assert(n < this->num_elements()); return operator[](n);}
