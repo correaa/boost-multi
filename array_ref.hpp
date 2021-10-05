@@ -1447,15 +1447,16 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuc
 		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	}
 
-	constexpr auto operator[](index i) const& -> typename basic_array::const_reference {
+ private:
+	HD constexpr auto bracket_aux(index i) const& -> typename basic_array::reference {  // TODO(correaa): consider removing HD
 		MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		return *(this->base() + Layout::operator()(i));  // in C++17 this is allowed even with syntethic references
 	}
-	constexpr auto operator[](index i)      & -> typename basic_array::      reference {
-		MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"\nout of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		return *(this->base() + Layout::operator()(i));
-	}
-	constexpr auto operator[](index i)&& -> typename basic_array::reference {return this->operator[](i);}
+
+ public:
+	HD constexpr auto operator[](index i) const& -> typename basic_array::const_reference {return bracket_aux(i);}
+	HD constexpr auto operator[](index i)      & -> typename basic_array::      reference {return bracket_aux(i);}
+	HD constexpr auto operator[](index i)     && -> typename basic_array::      reference {return bracket_aux(i);}
 
  private:
 	template<class Self, typename Tuple, std::size_t ... I, basic_array* = nullptr>
@@ -1468,15 +1469,11 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuc
 	template<typename Tuple> HD constexpr auto apply(Tuple const& t)     && -> decltype(auto) {return apply_impl(std::move(*this), t, std::make_index_sequence<std::tuple_size<Tuple>{}>());}
 	template<typename Tuple> HD constexpr auto apply(Tuple const& t)      & -> decltype(auto) {return apply_impl(          *this , t, std::make_index_sequence<std::tuple_size<Tuple>{}>());}
 
-	template<class Tuple, typename = std::enable_if_t<(std::tuple_size<std::decay_t<Tuple>>{}>1) > >
-	HD constexpr auto operator[](Tuple&& t) const
-	->decltype(operator[](std::get<0>(t))[detail::tuple_tail(t)]) {
-		return operator[](std::get<0>(t))[detail::tuple_tail(t)]; }
-
-	template<class Tuple, std::enable_if_t<std::tuple_size<std::decay_t<Tuple>>{}==1, int> = 0>
-	HD constexpr auto operator[](Tuple const& indices  ) const -> decltype(auto) {return operator[](std::get<0>(indices));}
-	template<class Tuple, std::enable_if_t<std::tuple_size<std::decay_t<Tuple>>{}==0>* = nullptr>
-	HD constexpr auto operator[](Tuple const& /*empty*/) const -> decltype(auto) {return *this;}
+	template<class Tuple, std::enable_if_t< std::tuple_size<Tuple>{} == 0 , int> = 0> HD constexpr auto operator[](Tuple const& /*empty*/) const& -> decltype(auto) {return *this;}
+	template<class Tuple, std::enable_if_t< std::tuple_size<Tuple>{} == 1 , int> = 0> HD constexpr auto operator[](Tuple const& indices  ) const& -> decltype(auto) {return operator[](std::get<0>(indices));}
+	template<class Tuple, std::enable_if_t<(std::tuple_size<Tuple>{} >  1), int> = 0> HD constexpr auto operator[](Tuple const& indices  ) const&
+	->decltype(operator[](std::get<0>(indices))[detail::tuple_tail(indices)]) {
+		return operator[](std::get<0>(indices))[detail::tuple_tail(indices)]; }
 
 	HD constexpr auto elements_at(size_type n) const& -> decltype(auto) {assert(n < this->num_elements()); return operator[](n);}
 	HD constexpr auto elements_at(size_type n)     && -> decltype(auto) {assert(n < this->num_elements()); return operator[](n);}
@@ -1484,15 +1481,11 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuc
 
 	using typename types::index;
 
-	constexpr auto reindexed(typename basic_array::index first)&& -> basic_array{
+	constexpr auto reindexed(typename basic_array::index first) && {return reindexed(first);}
+	constexpr auto reindexed(typename basic_array::index first)  & {
 		typename types::layout_t new_layout = this->layout();
 		new_layout.reindex(first);
-		return {new_layout, types::base_};
-	}
-	constexpr auto reindexed(typename basic_array::index first)& -> basic_array{
-		typename types::layout_t new_layout = this->layout();
-		new_layout.reindex(first);
-		return {new_layout, types::base_};
+		return basic_array{new_layout, types::base_};
 	}
 
  private:
