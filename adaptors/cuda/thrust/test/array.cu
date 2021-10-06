@@ -2,6 +2,8 @@
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
+#include <boost/timer/timer.hpp>
+
 #include<thrust/memory.h>
 
 #include "../../../../adaptors/cuda/thrust.hpp"
@@ -41,18 +43,29 @@ BOOST_AUTO_TEST_CASE(thrust_cpugpu_issue123){
 
 	BOOST_TEST_REQUIRE( Devc[0][0] == 'a' );
 
-	{
-		auto Devc2 = multi::array<T, 2, thrust::device_allocator<T>>(Host.extensions());
-		copy_n(Host.data_elements(), Host.num_elements(), Devc2.elements().begin());
-		BOOST_TEST_REQUIRE( Devc2[0][0] == 'z' );
+//	{
+//		auto Devc2 = multi::array<T, 2, thrust::device_allocator<T>>(Host.extensions());
+//		copy_n(Host.data_elements(), Host.num_elements(), Devc2.elements().begin());
+//		BOOST_TEST_REQUIRE( Devc2[0][0] == 'z' );
 
-		Devc = Devc2;
-		BOOST_TEST_REQUIRE( Devc[0][0] == 'z' );
-	}
+//		Devc = Devc2;
+//		BOOST_TEST_REQUIRE( Devc[0][0] == 'z' );
+//	}
 	{
+		boost::timer::auto_cpu_timer t;//{"D = H"};
+		Devc = Host;
 	//	multi::array<T, 2, thrust::device_allocator<T>> Devc2(Host);
 	//	BOOST_TEST_REQUIRE( Devc2[0][0] == 'z' );
 	}
+	{
+		boost::timer::auto_cpu_timer t;//{"Dslice = Hslice"};
+		Devc.sliced(0,512) = Host.sliced(0,512);  // this is fine, since the transfer is contiguous
+	}
+	{
+		boost::timer::auto_cpu_timer t;//{"D = H"};
+		Devc({0,512},{0,512}) = Host({0,512},{0,512});  // this is x10^4 times slower!!!
+	}
+
 //	Dev.sliced(0,512) = Host.sliced(0,512);   // this is fine, since the transfer is contiguous
 //	Dev({0,512},{0,512}) = Host({0,512},{0,512});   // this is x10^4 times slower!!!
 

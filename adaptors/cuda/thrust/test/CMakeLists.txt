@@ -41,6 +41,8 @@ set(TEST_SRCS
 )
 endif()
 
+find_package(Boost REQUIRED COMPONENTS unit_test_framework timer)
+
 foreach(TEST_FILE ${TEST_SRCS})
   SET(TEST_EXE "${TEST_FILE}.x")
   add_executable            (${TEST_EXE} ${TEST_FILE})

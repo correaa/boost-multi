@@ -535,7 +535,7 @@ struct basic_array
 	}
 
  private:
-	constexpr auto sliced_aux(index first, index last) const -> basic_array {
+	HD constexpr auto sliced_aux(index first, index last) const -> basic_array {
 		MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(first   ))&&"sliced first out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(last - 1))&&"sliced last  out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		typename types::layout_t new_layout = this->layout();
@@ -544,9 +544,9 @@ struct basic_array
 	}
 
  public:
-	constexpr auto sliced(index first, index last) const& -> basic_const_array {return sliced_aux(first, last);}
-	constexpr auto sliced(index first, index last)      & -> basic_array       {return sliced_aux(first, last);}
-	constexpr auto sliced(index first, index last)     && -> basic_array       {return sliced_aux(first, last);}
+	HD constexpr auto sliced(index first, index last) const& -> basic_const_array {return sliced_aux(first, last);}
+	HD constexpr auto sliced(index first, index last)      & -> basic_array       {return sliced_aux(first, last);}
+	HD constexpr auto sliced(index first, index last)     && -> basic_array       {return sliced_aux(first, last);}
 
 	constexpr auto blocked(typename basic_array::index first, typename basic_array::index last) const& -> basic_const_array {return sliced(first, last).reindexed(first);}
 	constexpr auto blocked(typename basic_array::index first, typename basic_array::index last)      & -> basic_array       {return sliced(first, last).reindexed(first);}
@@ -609,9 +609,9 @@ struct basic_array
 
 	using index_range = typename basic_array::index_range;
 
-	constexpr auto range(index_range ir)      & -> decltype(auto) {return sliced(ir.front(), ir.front() + ir.size());}
-	constexpr auto range(index_range ir)     && -> decltype(auto) {return range(ir);}
-	constexpr auto range(index_range ir) const& -> decltype(auto) {return sliced(ir.front(), ir.front() + ir.size());}
+	HD constexpr auto range(index_range ir) const& -> decltype(auto) {return                  sliced(ir.front(), ir.front() + ir.size());}
+	HD constexpr auto range(index_range ir)     && -> decltype(auto) {return std::move(*this).sliced(ir.front(), ir.front() + ir.size());}
+	HD constexpr auto range(index_range ir)      & -> decltype(auto) {return                  sliced(ir.front(), ir.front() + ir.size());}
 
 	constexpr auto range(typename types::index_range const& ir, dimensionality_type n) const {
 		return rotated(n).range(ir).rotated(-n);
@@ -705,17 +705,17 @@ struct basic_array
 #endif
 	auto operator~ (basic_array const& s) -> basic_array {return s.transposed();}
 
-	constexpr auto rotated()      &  -> basic_array {
+	HD constexpr auto rotated()      &  -> basic_array {
 		typename types::layout_t new_layout = this->layout();
 		new_layout.rotate();
 		return basic_array{new_layout, types::base_};
 	}
-	constexpr auto rotated()      && -> basic_array {
+	HD constexpr auto rotated()      && -> basic_array {
 		typename types::layout_t new_layout = this->layout();
 		new_layout.rotate();
 		return basic_array{new_layout, types::base_};
 	}
-	constexpr auto rotated() const& -> basic_const_array {
+	HD constexpr auto rotated() const& -> basic_const_array {
 		typename types::layout_t new_layout = this->layout();
 		new_layout.rotate();
 		typename basic_const_array::element_ptr new_base_{types::base_};
@@ -726,17 +726,17 @@ struct basic_array
 	friend constexpr auto rotated(basic_array      &  s) -> basic_array       {return           s .rotated();}
 	friend constexpr auto rotated(basic_array      && s) -> basic_array       {return std::move(s).rotated();}
 
-	constexpr auto unrotated()      & {
+	HD constexpr auto unrotated()      & {
 		typename types::layout_t new_layout = this->layout();
 		new_layout.unrotate();
 		return basic_array<T, D, ElementPtr>{new_layout, types::base_};
 	}
-	constexpr auto unrotated()     && {
+	HD constexpr auto unrotated()     && {
 		typename types::layout_t new_layout = this->layout();
 		new_layout.unrotate();
 		return basic_array<T, D, ElementPtr>{new_layout, types::base_};
 	}
-	constexpr auto unrotated() const& {
+	HD constexpr auto unrotated() const& {
 		typename types::layout_t new_layout = this->layout();
 		new_layout.unrotate();
 		return basic_const_array{new_layout, types::base_};
@@ -785,12 +785,26 @@ struct basic_array
  private:
 	template<typename, dimensionality_type, typename, class> friend struct basic_array;
 
-	constexpr auto paren_()      & -> basic_array       {return *this;}
-	constexpr auto paren_()     && -> basic_array       {return this->operator()();}
-	constexpr auto paren_() const& -> basic_const_array {return {this->layout(), this->base()};}
+	HD constexpr auto paren_()      & -> basic_array       {return *this;}
+	HD constexpr auto paren_()     && -> basic_array       {return this->operator()();}
+	HD constexpr auto paren_() const& -> basic_const_array {return {this->layout(), this->base()};}
 
-	template<class... As> HD constexpr auto paren_(index_range a, As... as) &      {return range(a).rotated().paren_(as...).unrotated();}
-	template<class... As> HD constexpr auto paren_(index_range a, As... as) &&     {return range(a).rotated().paren_(as...).unrotated();}
+	template<class... As> HD constexpr auto paren_(index_range a, As... as)      & {
+	// return range(a).rotated().paren_(as...).unrotated();
+		auto&& tmp = range(a);
+		auto&& tmp2 =
+			std::move(tmp).
+			rotated();
+		auto&& tmp3 = std::move(tmp2).paren_(as...);
+		auto&& ret = std::move(tmp3).unrotated();
+		return std::move(ret);
+	}
+	template<class... As> HD constexpr auto paren_(index_range a, As... as)     && {
+		auto&& tmp = std::move(*this).range(a);
+		auto&& tmp2 = std::move(tmp).rotated().paren_(as...);
+		auto&& ret = std::move(tmp2).unrotated();
+		return std::move(ret);
+	}
 	template<class... As> HD constexpr auto paren_(index_range a, As... as) const& {return range(a).rotated().paren_(as...).unrotated();}
 
 	template<class... As> HD constexpr auto paren_(intersecting_range<index> inr, As... as)      & -> decltype(auto) {return paren_(intersection(this->extension(), inr), as...);}
@@ -1489,7 +1503,7 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuc
 	}
 
  private:
-	constexpr auto sliced_aux(index first, index last) const -> basic_array {
+	HD constexpr auto sliced_aux(index first, index last) const -> basic_array {
 		typename types::layout_t new_layout = this->layout();
 		if(this->is_empty()) {
 			assert(first == last);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
@@ -1501,9 +1515,9 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuc
 	}
 
  public:
-	constexpr auto sliced(index first, index last) const& -> basic_const_array {return sliced_aux(first, last);}
-	constexpr auto sliced(index first, index last)      & -> basic_array       {return sliced_aux(first, last);}
-	constexpr auto sliced(index first, index last)     && -> basic_array       {return sliced_aux(first, last);}
+	HD constexpr auto sliced(index first, index last) const& -> basic_const_array {return sliced_aux(first, last);}
+	HD constexpr auto sliced(index first, index last)      & -> basic_array       {return sliced_aux(first, last);}
+	HD constexpr auto sliced(index first, index last)     && -> basic_array       {return sliced_aux(first, last);}
 
 	constexpr auto blocked(typename basic_array::index first, typename basic_array::index last)& -> basic_array {
 		return sliced(first, last).reindexed(first);
@@ -1518,14 +1532,14 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuc
 		return {new_layout, types::base_};
 	}
 
-	constexpr auto sliced(typename types::index first, typename types::index last, typename types::index stride) const
+	HD constexpr auto sliced(typename types::index first, typename types::index last, typename types::index stride) const
 	-> basic_array {
 		return sliced(first, last).strided(stride);
 	}
 
-	constexpr auto range(index_range const& ir)      & {return sliced(ir.front(), ir.last());}
-	constexpr auto range(index_range const& ir)     && {return std::move(*this).sliced(ir.front(), ir.last());}
-	constexpr auto range(index_range const& ir) const& {return sliced(ir.front(), ir.last());}
+	HD constexpr auto range(index_range const& ir)      & {return                  sliced(ir.front(), ir.last());}
+	HD constexpr auto range(index_range const& ir)     && {return std::move(*this).sliced(ir.front(), ir.last());}
+	HD constexpr auto range(index_range const& ir) const& {return                  sliced(ir.front(), ir.last());}
 
 	constexpr auto operator()() const& -> basic_const_array {return {this->layout(), this->base()};}
 	constexpr auto operator()()     && -> basic_array       {return *this;}
@@ -1629,9 +1643,9 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuc
 		return operator()();
 	}
 
-	constexpr auto unrotated()      & -> decltype(auto) {return operator()();}
-	constexpr auto unrotated()     && -> decltype(auto) {return operator()();}
-	constexpr auto unrotated() const& -> decltype(auto) {return operator()();}
+	HD constexpr auto unrotated() const& -> decltype(auto) {return operator()();}
+	HD constexpr auto unrotated()     && -> decltype(auto) {return operator()();}
+	HD constexpr auto unrotated()      & -> decltype(auto) {return operator()();}
 
 	constexpr auto unrotated(dimensionality_type d)      & -> decltype(auto) {
 		assert(d == 1); (void)d;
