@@ -23,18 +23,12 @@ if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
   set_property(GLOBAL PROPERTY CUDA_ARCHITECTURES "${CUDA_ARCH_LIST}")
 endif()
 
-message(STATUS "after: ${CUDA_ARCHITECTURES}")
-
-#file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
-
-message(STATUS "before cu tests: ${CUDA_ARCH_LIST}")
-
 if("30;35;50;52;60;61;70;70+PTX;75;75+PTX" STREQUAL "${CUDA_ARCH_LIST}" OR "" STREQUAL "${CUDA_ARCH_LIST}")
-message(STATUS "gpu not detected")
+message(STATUS "gpu not detected ${CUDA_ARCH_LIST}")
 set(TEST_SRCS
 )
 else()
-message(STATUS "gpu detected")
+message(STATUS "gpu detected: ${CUDA_ARCH_LIST}")
 set(TEST_SRCS
   array.cu
   vector.cu
@@ -48,7 +42,6 @@ foreach(TEST_FILE ${TEST_SRCS})
   add_executable            (${TEST_EXE} ${TEST_FILE})
   if(ENABLE_CUDA OR DEFINED CXXCUDA)
     set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
-    target_compile_options  (${TEST_EXE} PRIVATE -std=c++17 --expt-relaxed-constexpr)
   endif()
 #  target_compile_features   (${TEST_EXE} PUBLIC cxx_std_17) 
   target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
