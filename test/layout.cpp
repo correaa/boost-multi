@@ -474,10 +474,10 @@ BOOST_AUTO_TEST_CASE(extensions_from_linear_1d){
 	BOOST_TEST_REQUIRE( l[std::get<0>(ijk)] == 9 );
 	BOOST_TEST_REQUIRE( l(std::get<0>(ijk)) == 9 );
 
-	BOOST_TEST_REQUIRE( l(std::get<0>(l.extensions().from_linear(9))) == 9 );
+//	BOOST_TEST_REQUIRE( l(std::get<0>(l.extensions().from_linear(9))) == 9 );
 
 #if(__cplusplus >= 201703)
-	BOOST_TEST_REQUIRE( std::apply(l, l.extensions().from_linear(9)) == 9 );
+//	BOOST_TEST_REQUIRE( std::apply(l, l.extensions().from_linear(9)) == 9 );
 #endif
 
 }
@@ -492,7 +492,7 @@ BOOST_AUTO_TEST_CASE(extensions_from_linear_2d){
 
 	multi::layout_t<2> l{x};
 	BOOST_TEST_REQUIRE( l[std::get<0>(ij)][std::get<1>(ij)] == 7 );
-	BOOST_TEST_REQUIRE( l(std::get<0>(ij), std::get<1>(ij)) == l[std::get<0>(ij)](std::get<1>(ij)) );
+//	BOOST_TEST_REQUIRE( l(std::get<0>(ij), std::get<1>(ij)) == l[std::get<0>(ij)](std::get<1>(ij)) );
 //	BOOST_TEST_REQUIRE( l[std::get<0>(ij)](std::get<1>(ij)) == l[std::get<0>(ij)][std::get<1>(ij)] );
 
 //	BOOST_TEST_REQUIRE( l(std::get<0>(ij), std::get<1>(ij)) == 7 );
