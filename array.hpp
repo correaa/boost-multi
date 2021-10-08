@@ -34,6 +34,7 @@ struct array_allocator{
 	MULTI_NO_UNIQUE_ADDRESS allocator_type alloc_;
 	using size_type_ = typename std::allocator_traits<allocator_type>::size_type;
 	using pointer_ = typename std::allocator_traits<allocator_type>::pointer;
+
  protected:
 	              auto alloc()      & -> allocator_type      & {return alloc_;}
 	NODISCARD("") auto alloc() const& -> allocator_type const& {return alloc_;}
@@ -85,8 +86,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
  public:
 	static_assert( std::is_same<typename std::allocator_traits<Alloc>::value_type, typename static_array::element>{},
 		"allocator value type must match array value type");
-//	static_assert( std::is_same<typename std::allocator_traits<Alloc>::pointer, typename static_array::element_ptr>{},
-//		"allocator pointer type must match array pointer type");
+//  static_assert( std::is_same<typename std::allocator_traits<Alloc>::pointer, typename static_array::element_ptr>{},
+//  	"allocator pointer type must match array pointer type");
 	using array_alloc::get_allocator;
 	using typename array_allocator<Alloc>::allocator_type;
 //  using allocator_type = typename static_array::allocator_type;
