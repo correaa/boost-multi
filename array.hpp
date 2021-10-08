@@ -76,7 +76,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 : protected array_allocator<Alloc>
 , public array_ref<
 	T, D,
-	typename array_allocator<Alloc>::allocator_type::pointer  // fixes a bug in thrust 1.11
+	typename std::allocator_traits<Alloc>::pointer  // fixes a bug in thrust 1.11
 	/* ^^^ typename std::allocator_traits<typename array_allocator<Alloc>::allocator_type>::pointer*/
 >
 , boost::multi::random_iterable<static_array<T, D, Alloc>> {
