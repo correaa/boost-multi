@@ -12,6 +12,7 @@
 #include <thrust/uninitialized_copy.h>
 #include <thrust/complex.h>
 #include <thrust/device_ptr.h>
+#include <thrust/system/cuda/experimental/pinned_allocator.h>
 
 namespace multi = boost::multi;
 
@@ -35,42 +36,27 @@ BOOST_AUTO_TEST_CASE(issue_118) {
 }
 
 BOOST_AUTO_TEST_CASE(thrust_cpugpu_issue123){
-
-//	[]{}(std::allocator_traits<thrust::device_allocator<char>>::propagate_on_container_move_assignment{});
 	using T = char;
-	multi::array<T, 2, thrust::device_allocator<T>> Devc({1024,1024}, 'a');
-	multi::array<T, 2>                              Host({1024,1024}, 'z');
+	multi::array<T, 2, thrust::cuda::allocator<T>> Devc({10240,10240}, 'a');
+	multi::array<T, 2>                             Host({10240,10240}, 'z');
+//	multi::array<T, 2, thrust::system::cuda::experimental::pinned_allocator<T>> Host({10240,10240}, 'z');
 
 	BOOST_TEST_REQUIRE( Devc[0][0] == 'a' );
-
-//	{
-//		auto Devc2 = multi::array<T, 2, thrust::device_allocator<T>>(Host.extensions());
-//		copy_n(Host.data_elements(), Host.num_elements(), Devc2.elements().begin());
-//		BOOST_TEST_REQUIRE( Devc2[0][0] == 'z' );
-
-//		Devc = Devc2;
-//		BOOST_TEST_REQUIRE( Devc[0][0] == 'z' );
-//	}
 	{
-		boost::timer::auto_cpu_timer t;//{"D = H"};
+		boost::timer::auto_cpu_timer t;                     // 0.008274s wall
 		Devc = Host;
-	//	multi::array<T, 2, thrust::device_allocator<T>> Devc2(Host);
-	//	BOOST_TEST_REQUIRE( Devc2[0][0] == 'z' );
 	}
 	{
-		boost::timer::auto_cpu_timer t;//{"Dslice = Hslice"};
-		Devc.sliced(0,512) = Host.sliced(0,512);  // this is fine, since the transfer is contiguous
+		boost::timer::auto_cpu_timer t;
+		Devc.sliced(0,5120) = Host.sliced(0,5120);          //  0.005016s wall
 	}
 	{
-		boost::timer::auto_cpu_timer t;//{"D = H"};
-		Devc({0,512},{0,512}) = Host({0,512},{0,512});  // this is x10^4 times slower!!!
+		boost::timer::auto_cpu_timer t;
+		Devc({0,5120},{0,5120}) = Host({0,5120},{0,5120});  // 0.002607s wall
 	}
-
-//	Dev.sliced(0,512) = Host.sliced(0,512);   // this is fine, since the transfer is contiguous
-//	Dev({0,512},{0,512}) = Host({0,512},{0,512});   // this is x10^4 times slower!!!
-
 }
 
+#if 0
 namespace inq{
 	using complex = thrust::complex<double>;
 }
@@ -193,4 +179,5 @@ BOOST_AUTO_TEST_CASE(array){
 //}
 
 }
+#endif
 

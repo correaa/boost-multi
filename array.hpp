@@ -32,16 +32,17 @@ struct array_allocator{
 
  private:
 	MULTI_NO_UNIQUE_ADDRESS allocator_type alloc_;
+	using size_type_ = typename std::allocator_traits<allocator_type>::size_type;
+	using pointer_ = typename std::allocator_traits<allocator_type>::pointer;
 
  protected:
-	              auto alloc()      & -> allocator_type& {return alloc_;}
+	              auto alloc()      & -> allocator_type      & {return alloc_;}
 	NODISCARD("") auto alloc() const& -> allocator_type const& {return alloc_;}
 
 	array_allocator() = default;
 	explicit array_allocator(allocator_type const& a) : alloc_{a} {}
 
-	auto allocate(typename std::allocator_traits<allocator_type>::size_type n)
-	-> typename std::allocator_traits<allocator_type>::pointer {
+	auto allocate(size_type_ n) -> pointer_ {
 		return n?std::allocator_traits<allocator_type>::allocate(alloc_, n):nullptr;
 	}
 	auto allocate(typename std::allocator_traits<allocator_type>::size_type n, typename std::allocator_traits<allocator_type>::const_void_pointer hint)
@@ -73,7 +74,11 @@ template<class T, class Ptr = T*> struct move_ptr : std::move_iterator<Ptr>{
 template<class T, dimensionality_type D, class Alloc = std::allocator<T>>
 struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inheritance used for composition
 : protected array_allocator<Alloc>
-, public array_ref<T, D, typename std::allocator_traits<typename array_allocator<Alloc>::allocator_type>::pointer>
+, public array_ref<
+	T, D,
+	typename std::allocator_traits<Alloc>::pointer  // fixes a bug in thrust 1.11
+	/* ^^^ typename std::allocator_traits<typename array_allocator<Alloc>::allocator_type>::pointer*/
+>
 , boost::multi::random_iterable<static_array<T, D, Alloc>> {
  protected:
 	using array_alloc = array_allocator<Alloc>;
@@ -81,8 +86,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
  public:
 	static_assert( std::is_same<typename std::allocator_traits<Alloc>::value_type, typename static_array::element>{},
 		"allocator value type must match array value type");
-	static_assert( std::is_same<typename std::allocator_traits<Alloc>::pointer, typename static_array::element_ptr>{},
-		"allocator pointer type must match array pointer type");
+//  static_assert( std::is_same<typename std::allocator_traits<Alloc>::pointer, typename static_array::element_ptr>{},
+//  	"allocator pointer type must match array pointer type");
 	using array_alloc::get_allocator;
 	using typename array_allocator<Alloc>::allocator_type;
 //  using allocator_type = typename static_array::allocator_type;
