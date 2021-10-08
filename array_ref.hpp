@@ -482,14 +482,14 @@ struct basic_array
 	using typename types::const_reference;
 
  private:
-	HD constexpr auto at_(index i) const {  // MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
+	HD constexpr auto at_aux(index i) const {  // MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
 		return reference(this->layout().sub(), this->base() + Layout::operator()(i));  // cppcheck-suppress syntaxError ; bug in cppcheck 2.5
 	}
 
  public:
-	HD constexpr auto operator[](index i) const& -> const_reference {return at_(i);}
-	HD constexpr auto operator[](index i)     && ->       reference {return at_(i);}
-	HD constexpr auto operator[](index i)      & ->       reference {return at_(i);}
+	HD constexpr auto operator[](index i) const& -> const_reference {return at_aux(i);}
+	HD constexpr auto operator[](index i)     && ->       reference {return at_aux(i);}
+	HD constexpr auto operator[](index i)      & ->       reference {return at_aux(i);}
 
 	template<class Tuple = std::array<index, static_cast<std::size_t>(D)>, typename = std::enable_if_t<(std::tuple_size<Tuple>{} > 1)> >
 	HD constexpr auto operator[](Tuple const& t) const
@@ -1384,6 +1384,9 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuc
 	using typename types::element_ptr;
 	using typename types::element_const_ptr;
 
+	using const_reference = typename array_types<T, dimensionality_type(1), ElementPtr, Layout>::const_reference;
+	using       reference = typename array_types<T, dimensionality_type(1), ElementPtr, Layout>::      reference;
+
  protected:
 	template<class A>
 	constexpr void intersection_assign_(A&& other)& {
@@ -1464,15 +1467,15 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuc
 	}
 
  private:
-	HD constexpr auto bracket_aux(index i) const& -> typename basic_array::reference {  // TODO(correaa): consider removing HD
+	HD constexpr auto at_aux(index i) const -> typename basic_array::reference {
 		MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		return *(this->base() + Layout::operator()(i));  // in C++17 this is allowed even with syntethic references
 	}
 
  public:
-	HD constexpr auto operator[](index i) const& -> typename basic_array::const_reference {return bracket_aux(i);}
-	HD constexpr auto operator[](index i)      & -> typename basic_array::      reference {return bracket_aux(i);}
-	HD constexpr auto operator[](index i)     && -> typename basic_array::      reference {return bracket_aux(i);}
+	HD constexpr auto operator[](index i) const& -> typename basic_array::const_reference {return at_aux(i);}
+	HD constexpr auto operator[](index i)      & -> typename basic_array::      reference {return at_aux(i);}
+	HD constexpr auto operator[](index i)     && -> typename basic_array::      reference {return at_aux(i);}
 
  private:
 	template<class Self, typename Tuple, std::size_t ... I, basic_array* = nullptr>
