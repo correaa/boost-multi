@@ -537,12 +537,12 @@ struct basic_array
 	}
 
  private:
-	HD constexpr auto sliced_aux(index first, index last) const -> basic_array {
+	HD constexpr auto sliced_aux(index first, index last) const {
 		MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(first   ))&&"sliced first out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(last - 1))&&"sliced last  out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		typename types::layout_t new_layout = this->layout();
 		new_layout.nelems() = this->stride()*(last - first);  // TODO(correaa) : reconstruct layout instead of mutating it
-		return {new_layout, types::base_ + Layout::operator()(first)};
+		return basic_array{new_layout, this->base() + (first*this->layout().stride() - this->layout().offset())};
 	}
 
  public:
@@ -1508,7 +1508,7 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuc
 	}
 
  private:
-	HD constexpr auto sliced_aux(index first, index last) const -> basic_array {
+	HD constexpr auto sliced_aux(index first, index last) const {
 		typename types::layout_t new_layout = this->layout();
 		if(this->is_empty()) {
 			assert(first == last);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
@@ -1516,7 +1516,7 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuc
 		} else {
 			(new_layout.nelems() /= Layout::size())*=(last - first);
 		}
-		return {new_layout, types::base_ + Layout::operator()(first)};
+		return basic_array{new_layout, this->base() + (first*this->layout().stride() - this->layout().offset())};
 	}
 
  public:
