@@ -462,3 +462,18 @@ BOOST_AUTO_TEST_CASE(tuple_zip_test) {
 	BOOST_REQUIRE( std::get<2>(std::get<0>(t123)) == std::string{"10"} );
 }
 
+BOOST_AUTO_TEST_CASE(extensions_from_linear){
+	multi::extensions_t<3> x{11, 13, 17};
+
+	auto ijk = x.from_linear(19);
+
+	BOOST_TEST_REQUIRE( std::get<0>(ijk) == 0 );
+	BOOST_TEST_REQUIRE( std::get<1>(ijk) == 1 );
+	BOOST_TEST_REQUIRE( std::get<2>(ijk) == 2 );
+
+	multi::layout_t<3> l{x};
+	BOOST_TEST_REQUIRE( l[std::get<0>(ijk)][std::get<1>(ijk)][std::get<2>(ijk)] == 19 );
+//  BOOST_TEST_REQUIRE( l(std::get<0>(ijk), std::get<1>(ijk), std::get<2>(ijk)) == 19 );
+
+}
+
