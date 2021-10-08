@@ -61,11 +61,13 @@ template<class To, class From, std::enable_if_t<std::is_constructible<To, From>{
 constexpr auto _explicit_cast(From&& f) -> To {return static_cast<To>(f);}
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D> >
-struct array_types : Layout{  // cppcheck-suppress syntaxError ; false positive in cppcheck
+struct array_types : Layout {  // cppcheck-suppress syntaxError ; false positive in cppcheck
 	using element = T;
 	using element_type = element;  // this follows more closely https://en.cppreference.com/w/cpp/memory/pointer_traits
-	using element_ptr = ElementPtr;
+
+	using element_ptr       = ElementPtr;
 	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element const>;
+
 	using element_ref = typename std::iterator_traits<element_ptr>::reference;
 
 	using layout_t = Layout;
@@ -1461,15 +1463,15 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuc
 		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	}
 
-	constexpr auto operator[](index i) const& -> typename basic_array::const_reference {
+	HD constexpr auto operator[](index i) const& -> typename basic_array::const_reference {
 		MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		return *(this->base() + Layout::operator()(i));  // in C++17 this is allowed even with syntethic references
 	}
-	constexpr auto operator[](index i)      & -> typename basic_array::      reference {
+	HD constexpr auto operator[](index i)      & -> typename basic_array::      reference {
 		MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"\nout of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		return *(this->base() + Layout::operator()(i));
 	}
-	constexpr auto operator[](index i)&& -> typename basic_array::reference {return this->operator[](i);}
+	HD constexpr auto operator[](index i)&& -> typename basic_array::reference {return this->operator[](i);}
 
  private:
 	template<class Self, typename Tuple, std::size_t ... I, basic_array* = nullptr>
