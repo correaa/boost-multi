@@ -77,8 +77,10 @@ class involuter{
 	constexpr auto operator*() const {return reference{Involution{}, *it_};}
 	constexpr auto operator==(involuter const& o) const {return it_==o.it_;}
 	constexpr auto operator!=(involuter const& o) const {return it_!=o.it_;}
-	constexpr auto operator+=(typename involuter::difference_type n) -> involuter& {it_+=n; return *this;}
-	constexpr auto operator+(typename involuter::difference_type n) const {return involuter{it_+n};}
+	constexpr auto operator+=(difference_type n) -> involuter& {it_+=n; return *this;}
+	constexpr auto operator-=(difference_type n) -> involuter& {it_-=n; return *this;}
+	constexpr auto operator+(difference_type n) const {return involuter{it_+n};}
+	constexpr auto operator-(difference_type n) const {return involuter{it_-n};}
 	constexpr auto operator->() const {return pointer{&*it_};}
 };
 
