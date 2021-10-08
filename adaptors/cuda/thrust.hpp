@@ -189,7 +189,7 @@ auto copy_n(
 )-> boost::multi::array_iterator<T2, 2, thrust::cuda::pointer<Q2>> {
 	assert(first_->extensions() == result_->extensions());
 
-	cudaHostRegister((void*)first_.base(), count*first_.stride()*sizeof(T1), cudaHostRegisterReadOnly);
+	cudaHostRegister((void*)first_.base(), count*first_.stride()*sizeof(T1), cudaHostRegisterDefault);  // cudaHostRegisterReadOnly);
 
 	auto source_range = elements_range<Q1*>                      {first_ .base(), count, first_ ->extensions(), first_ .stride(), first_ ->strides()};
 	auto destin_range = elements_range<thrust::cuda::pointer<Q2>>{result_.base(), count, result_->extensions(), result_.stride(), result_->strides()};
