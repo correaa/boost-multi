@@ -285,6 +285,7 @@ struct array_iterator
 	template<class EElement, typename PPtr,
 		decltype(_implicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().ptr_.base()))* = nullptr
 	>
+	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
 	constexpr/*implct*/array_iterator(array_iterator<EElement, D, PPtr> const& o)   // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : propagate implicitness of pointer
 	: ptr_{o.ptr_.base_, o.ptr_.layout()}, stride_{o.stride_} {}
 	// ^^^ TODO(correaa) : implement implcit in terms of explicit? be careful of infinite recursion
