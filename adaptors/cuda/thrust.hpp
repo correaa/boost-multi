@@ -120,20 +120,21 @@ auto copy(
 }
 
 
-template<class Base, class Extensions = boost::multi::extensions_t<1>,  class Layout = std::multi::layout_t<1>>//class Strides = std::tuple<std::ptrdiff_t> >
+template<class Base, class Extensions = boost::multi::extensions_t<1>,  class Layout = boost::multi::layout_t<1>>
 struct elements_range{
 	using difference_type = std::ptrdiff_t;
 
 	struct strides_functor {// : public thrust::unary_function<difference_type, difference_type>{
 		std::ptrdiff_t z_;
 		Layout    l_;
+		strides_functor(std::ptrdiff_t z, Layout l) : z_{z}, l_{l} {}
 
 		__host__ __device__
 		difference_type operator()(const difference_type& n) const {
 			auto const x = l_.extensions();
 			return
 				  n / x.num_elements()*z_
-				+ std::apply(l_, x.from_linear(n % x_.num_elements()));
+				+ std::apply(l_, x.from_linear(n % x.num_elements()));
 		}
 	};
 
@@ -190,8 +191,8 @@ auto copy_n(
 	cudaHostRegister((void*)first_.base(), count*first_.stride()*sizeof(T1), cudaHostRegisterPortable);
 	// cudaHostRegisterReadOnly not available in cuda < 11.1
 
-	auto source_range = elements_range<Q1*>                      {first_ .base(), count, first_ ->extensions(), first_ .stride(), first_ ->strides()};
-	auto destin_range = elements_range<thrust::cuda::pointer<Q2>>{result_.base(), count, result_->extensions(), result_.stride(), result_->strides()};
+	auto source_range = elements_range<Q1*>                      {first_ .base(), first_ .stride(), first_ ->layout(), count};
+	auto destin_range = elements_range<thrust::cuda::pointer<Q2>>{result_.base(), result_.stride(), result_->layout(), count};
 
 	::thrust::copy_n(
 		thrust::device,
