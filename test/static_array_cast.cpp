@@ -68,6 +68,7 @@ class involuter{
 	constexpr auto operator!=(involuter const& o) const {return it_!=o.it_;}
 	constexpr auto operator+=(typename involuter::difference_type n) -> decltype(auto) {it_+=n; return *this;}
 	constexpr auto operator+(typename involuter::difference_type n) const {return involuter{it_+n, f_};}
+	constexpr auto operator-(typename involuter::difference_type n) const {return involuter{it_-n, f_};}
 	constexpr auto operator->() const {return pointer{&*it_, f_};}
 //	~involuter() = default;
 };

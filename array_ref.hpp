@@ -285,6 +285,7 @@ struct array_iterator
 	template<class EElement, typename PPtr,
 		decltype(_implicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().ptr_.base()))* = nullptr
 	>
+	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
 	constexpr/*implct*/array_iterator(array_iterator<EElement, D, PPtr> const& o)   // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : propagate implicitness of pointer
 	: ptr_{o.ptr_.base_, o.ptr_.layout()}, stride_{o.stride_} {}
 	// ^^^ TODO(correaa) : implement implcit in terms of explicit? be careful of infinite recursion
@@ -483,7 +484,7 @@ struct basic_array
 
  private:
 	HD constexpr auto at_aux(index i) const {  // MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
-		return reference(this->layout().sub(), this->base() + Layout::operator()(i));  // cppcheck-suppress syntaxError ; bug in cppcheck 2.5
+		return reference{this->layout().sub(), this->base() + (i*this->layout().stride() - this->layout().offset())};  // cppcheck-suppress syntaxError ; bug in cppcheck 2.5
 	}
 
  public:
@@ -537,12 +538,12 @@ struct basic_array
 	}
 
  private:
-	HD constexpr auto sliced_aux(index first, index last) const -> basic_array {
+	HD constexpr auto sliced_aux(index first, index last) const {
 		MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(first   ))&&"sliced first out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(last - 1))&&"sliced last  out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		typename types::layout_t new_layout = this->layout();
 		new_layout.nelems() = this->stride()*(last - first);  // TODO(correaa) : reconstruct layout instead of mutating it
-		return {new_layout, types::base_ + Layout::operator()(first)};
+		return basic_array{new_layout, this->base() + (first*this->layout().stride() - this->layout().offset())};
 	}
 
  public:
@@ -1469,7 +1470,7 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuc
  private:
 	HD constexpr auto at_aux(index i) const -> typename basic_array::reference {
 		MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		return *(this->base() + Layout::operator()(i));  // in C++17 this is allowed even with syntethic references
+		return *( this->base() + (i*this->stride() - this->offset()) );  // in C++17 this is allowed even with syntethic references
 	}
 
  public:
@@ -1508,7 +1509,7 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuc
 	}
 
  private:
-	HD constexpr auto sliced_aux(index first, index last) const -> basic_array {
+	HD constexpr auto sliced_aux(index first, index last) const {
 		typename types::layout_t new_layout = this->layout();
 		if(this->is_empty()) {
 			assert(first == last);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
@@ -1516,7 +1517,7 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuc
 		} else {
 			(new_layout.nelems() /= Layout::size())*=(last - first);
 		}
-		return {new_layout, types::base_ + Layout::operator()(first)};
+		return basic_array{new_layout, this->base() + (first*this->layout().stride() - this->layout().offset())};
 	}
 
  public:

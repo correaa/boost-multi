@@ -161,10 +161,10 @@ public:
 
 //	involuter(involuter const& other) = default;
 
-	template<class Other, decltype(_implicit_cast<It>(typename Other::underlying_type{}))* = nullptr> 
+	template<class Other, decltype(_implicit_cast<It>(typename Other::underlying_type{}))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor
 	constexpr/*implct*/involuter(Other const& o) : it_{o.it_}, f_{o.f_}{} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : inherit implicit conversion of underlying type
-	template<class Other, decltype(_explicit_cast<It>(typename Other::underlying_type{}))* = nullptr> 
+	template<class Other, decltype(_explicit_cast<It>(typename Other::underlying_type{}))* = nullptr>
 	constexpr explicit involuter(Other const& o) : it_{o.it_}, f_{o.f_}{}
 
 	constexpr auto operator*() const {return reference{*it_, f_};}
@@ -172,9 +172,14 @@ public:
 	auto operator==(involuter const& o) const -> bool{return it_==o.it_;}
 	auto operator!=(involuter const& o) const -> bool{return it_!=o.it_;}
 
-	constexpr auto operator+=(typename involuter::difference_type n) -> involuter&{it_+=n; return *this;}
-	constexpr auto operator+(typename involuter::difference_type n) const{return involuter{it_+n, f_};}
+	constexpr auto operator+=(difference_type n) -> involuter&{it_+=n; return *this;}
+	constexpr auto operator-=(difference_type n) -> involuter&{it_-=n; return *this;}
+
+	constexpr auto operator+(difference_type n) const{return involuter{it_+n, f_};}
+	constexpr auto operator-(difference_type n) const{return involuter{it_-n, f_};}
+
 	auto operator-(involuter const& other) const{return it_ - other.it_;}
+
 	explicit operator bool() const{return it_;}
 	using underlying_type = It;
 	friend constexpr auto underlying(involuter const& self) -> underlying_type{return self.it_;}

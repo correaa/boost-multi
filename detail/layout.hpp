@@ -382,9 +382,9 @@ private:
 public:
 	constexpr auto operator()()        const -> layout_t {return *this;}
 
-	constexpr auto operator()(index i) const -> std::ptrdiff_t {return i*stride_ - offset_;}  // TODO(correaa) : check this
+	constexpr auto operator()(index i) const -> std::ptrdiff_t {return offset_ + i*stride_;}
 	constexpr auto at(        index i) const -> std::ptrdiff_t {return offset_ + i*stride_;}
-	constexpr auto operator[](index i) const -> std::ptrdiff_t {return at(i);}
+	constexpr auto operator[](index i) const -> std::ptrdiff_t {return offset_ + i*stride_;}
 
 	constexpr auto origin() const {return -offset_;}
 
@@ -460,7 +460,6 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 	using strides_type    = decltype(tuple_cat(std::make_tuple(std::declval<index>()), std::declval<typename sub_type::strides_type>()));
 	using sizes_type      = decltype(tuple_cat(std::make_tuple(std::declval<size_type>()), std::declval<typename sub_type::sizes_type>()));
 
-	constexpr auto operator()(index i) const {return i*stride_ - offset_;}
 
 	constexpr auto origin() const {return sub_.origin() - offset_;}
 
@@ -470,14 +469,14 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 		return ret;
 	}
 	constexpr auto operator[](index i) const -> sub_type {return at(i);}
+	constexpr auto operator()(index i) const -> sub_type {return at(i);}
 
 	constexpr auto operator()()        const -> layout_t {return *this;}
 
 	template<class... Indexes>
 	constexpr auto operator()(index i, Indexes... idxs) const
-	->decltype(operator[](i)(idxs...)) {
-		return operator[](i)(idxs...);
-	}
+	->decltype(operator[](i)(idxs...)){
+		return operator[](i)(idxs...);}
 
 	constexpr layout_t(
 		sub_type sub, stride_type stride, offset_type offset, nelems_type nelems
