@@ -1244,6 +1244,11 @@ struct basic_array
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
 	using rebind = basic_array<std::decay_t<T2>, D, P2>;
 
+	template<class T2 = std::remove_const_t<T>, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2 const> >
+	constexpr auto const_array_cast()&& -> rebind<T2, P2> {
+		return {this->layout(), const_cast<P2>(this->base())};  // NOLINT(cppcoreguidelines-pro-type-const-cast) : to implement consts cast
+	}
+
 	constexpr auto as_const() const {
 		return rebind<element, element_const_ptr>{this->layout(), this->base()};
 	}
@@ -1254,12 +1259,9 @@ struct basic_array
 		static_assert( sizeof(T)%sizeof(T2) == 0,
 			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
 
-	//	typedef __attribute__ ((may_alias)) P2 P2Alias;  // NOLINT(modernize-use-using) : need typedef to use gcc's may_alias
-		element_ptr const thisbase = this->base_;
-		P2 const /*__attribute__((__may_alias__))*/ newbase = reinterpret_cast<P2 const&>(thisbase);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 		return {
 			this->layout().scale(sizeof(T)/sizeof(T2)),  // NOLINT(bugprone-sizeof-expression) : sizes are compatible according to static assert above
-			newbase
+			reinterpret_pointer_cast<P2>(this->base())  // if ADL gets confused here (e.g. multi:: and thrust::) then adl_reinterpret_pointer_cast will be necessary
 		};
 	}
 
@@ -1273,23 +1275,15 @@ struct basic_array
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2> >
 	constexpr auto reinterpret_array_cast()     && {return reinterpret_array_cast_aux<T2, P2>();}
 
-	template<class T2 = std::remove_const_t<T>, class P2 = T2*>
-	constexpr auto const_array_cast()&& {
-		return basic_array<std::decay_t<T2>, D, P2>{this->layout(), const_cast<P2>(this->base())};  // NOLINT(cppcoreguidelines-pro-type-const-cast) : to implement consts cast
-	}
-
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
 	constexpr auto reinterpret_array_cast(multi::size_type n) & -> basic_array<std::decay_t<T2>, D + 1, P2> {
 		static_assert( sizeof(T)%sizeof(T2) == 0,
 			"error: reinterpret_array_cast is limited to integral stride values");
 
 		assert( n > 0 );
-		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(n) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		typename basic_array::element_ptr const thisbase = this->base();
-		P2 new_base; std::memcpy(static_cast<void*>(&new_base), static_cast<void const*>(&thisbase), sizeof(P2));  // reinterpret_cast<P2 const&>(thisbase) // TODO find a better way, fancy pointers wouldn't need reinterpret_cast
 		return {
 			layout_t<D+1>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n}.rotate(),  // NOLINT(bugprone-sizeof-expression) T and T2 are size compatible (see static_assert above)
-			new_base
+			reinterpret_pointer_cast<P2>(this->base())  // if ADL gets confused here (e.g. multi:: and thrust::) then adl_reinterpret_pointer_cast will be necessary
 		};
 	}
 
