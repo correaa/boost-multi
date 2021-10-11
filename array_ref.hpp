@@ -1254,7 +1254,7 @@ struct basic_array
 		static_assert( sizeof(T)%sizeof(T2) == 0,
 			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
 
-		auto const thisbase = this->base_;
+		element_ptr const thisbase = this->base_;
 		return {
 			this->layout().scale(sizeof(T)/sizeof(T2)),  // NOLINT(bugprone-sizeof-expression) : sizes are compatible according to static assert above
 			reinterpret_cast<P2 const&>(thisbase)  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
@@ -1262,13 +1262,13 @@ struct basic_array
 	}
 
  public:
-	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2 const> >
+	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2 const> >
 	constexpr auto reinterpret_array_cast() const& {return reinterpret_array_cast_aux<T2, P2>().as_const();}
 
-	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
+	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2> >
 	constexpr auto reinterpret_array_cast()      & {return reinterpret_array_cast_aux<T2, P2>();}
 
-	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
+	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2> >
 	constexpr auto reinterpret_array_cast()     && {return reinterpret_array_cast_aux<T2, P2>();}
 
 	template<class T2 = std::remove_const_t<T>, class P2 = T2*>
