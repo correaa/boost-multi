@@ -186,22 +186,14 @@ auto copy_n(
 )-> boost::multi::array_iterator<T2, 2, thrust::cuda::pointer<Q2>> {
 	assert(first_->extensions() == result_->extensions());
 
-	cudaHostRegister((void*)first_.base(), count*first_.stride()*sizeof(T1), cudaHostRegisterPortable);
-	// cudaHostRegisterReadOnly not available in cuda < 11.1
+	cudaHostRegister((void*)first_.base(), count*first_.stride()*sizeof(T1), cudaHostRegisterPortable);  // cudaHostRegisterReadOnly not available in cuda < 11.1
 
+	auto source_range = boost::multi::ref(first_ , first_  + count).elements();
+//	auto destin_range = elements_range<boost::multi::array_iterator<T2, 2, thrust::cuda::pointer<Q2>>>{result_, count};
 
-//	[]{}(boost::multi::ref(first_, first_ + count).elements().begin());
-	auto source_range = boost::multi::ref(first_, first_ + count).elements();
-//	auto source_range = elements_range<boost::multi::array_iterator<T1, 2, Q1*                      >>{first_ , count};
-//	auto destin_range = boost::multi::ref(result_, result_ + count).elements();
-
-//	[]{}(boost::multi::ref(result_, result_ + count).elements().begin());
-	auto destin_range = elements_range<boost::multi::array_iterator<T2, 2, thrust::cuda::pointer<Q2>>>{result_, count};
-
-	::thrust::copy_n(
-		thrust::device,
-		source_range.begin(), source_range.size(), //count*first_->num_elements(),
-		destin_range.begin()
+	::thrust::copy_n(thrust::device,
+		source_range.begin(), source_range.size(),
+		boost::multi::ref(result_, result_ + count).elements().begin()
 	);
 
 	cudaHostUnregister((void*)first_.base());
