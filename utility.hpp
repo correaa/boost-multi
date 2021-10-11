@@ -59,9 +59,9 @@ constexpr auto stride(Pointer /*unused*/) -> std::ptrdiff_t {return 1;}
 template<class Pointer, std::enable_if_t<std::is_pointer<Pointer>{}, int> =0>  // special sfinae trick
 constexpr auto base(Pointer d) -> Pointer {return d;}
 
-template<class T, class U>
-auto reinterpret_pointer_cast(U* other)
--> decltype(reinterpret_cast<T*>(other)) {return reinterpret_cast<T*>(other);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : unavoidalbe implementation?
+template<class TPointer, class U>
+auto reinterpret_pointer_cast(U* other)  // name taken from thrust::reinterpret_pointer_cast, which is difference from std::reinterpret_pointer_cast(std::shared_ptr<T>)
+-> decltype(reinterpret_cast<TPointer>(other)) {return reinterpret_cast<TPointer>(other);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : unavoidalbe implementation?
 
 template <class T, std::size_t N>
 constexpr auto size(const T(&/*t*/)[N]) noexcept{return multi::size_type{N};}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
