@@ -1258,7 +1258,7 @@ struct basic_array
 		P2 const __attribute__((__may_alias__)) newbase = reinterpret_cast<P2 const&>(this->base_);
 		return {
 			this->layout().scale(sizeof(T)/sizeof(T2)),  // NOLINT(bugprone-sizeof-expression) : sizes are compatible according to static assert above
-			newsbase
+			newbase
 			  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 		};
 	}
