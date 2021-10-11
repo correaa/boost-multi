@@ -466,7 +466,7 @@ struct basic_array
 		}
 		constexpr auto operator*() const -> reference {return *operator->();}
 
-		HD constexpr auto operator[](difference_type d) const -> reference {return *(operator+(d));}
+		constexpr auto operator[](difference_type d) const -> reference {return *(operator+(d));}
 
 		constexpr auto operator+=(difference_type d) -> elements_iterator_t& {n_ += d; return *this;}
 		constexpr auto operator-=(difference_type d) -> elements_iterator_t& {n_ -= d; return *this;}
@@ -1259,7 +1259,7 @@ struct basic_array
 
 		return {
 			this->layout().scale(sizeof(T)/sizeof(T2)),  // NOLINT(bugprone-sizeof-expression) : sizes are compatible according to static assert above
-			reinterpret_cast<P2>(this->base())  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : TODO(correaa) use customized multi/std::reinterpret_pointer_cast
+			reinterpret_cast<P2 const&>(this->base_)  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 		};
 	}
 
