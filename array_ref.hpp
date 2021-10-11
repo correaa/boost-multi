@@ -465,7 +465,8 @@ struct basic_array
 			return base_ + std_apply(l_, l_.extensions().from_linear(n_));
 		}
 		constexpr auto operator*() const -> reference {return *operator->();}
-		constexpr auto operator[](difference_type d) const -> reference {return *(operator+(d));}
+
+		HD constexpr auto operator[](difference_type d) const -> reference {return *(operator+(d));}
 
 		constexpr auto operator+=(difference_type d) -> elements_iterator_t& {n_ += d; return *this;}
 		constexpr auto operator-=(difference_type d) -> elements_iterator_t& {n_ -= d; return *this;}
