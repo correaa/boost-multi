@@ -1255,10 +1255,10 @@ struct basic_array
 			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
 
 	//	typedef __attribute__ ((may_alias)) P2 P2Alias;  // NOLINT(modernize-use-using) : need typedef to use gcc's may_alias
-		P2 const __attribute__((__may_alias__)) newbase = reinterpret_cast<P2 const&>(thisbase);
+		P2 const __attribute__((__may_alias__)) newbase = reinterpret_cast<P2 const&>(this->base_);
 		return {
 			this->layout().scale(sizeof(T)/sizeof(T2)),  // NOLINT(bugprone-sizeof-expression) : sizes are compatible according to static assert above
-			thisbase
+			newsbase
 			  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 		};
 	}
