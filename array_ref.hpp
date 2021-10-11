@@ -269,6 +269,7 @@ struct array_iterator
 
 	using ptr_type = basic_array_ptr<basic_array<element, D-1, element_ptr>, layout_t<D-1>>;
 	using stride_type = index;
+	using layout_type = typename reference::layout_type;
 
 	explicit constexpr array_iterator(std::nullptr_t p) : ptr_{p} {}/*, stride_{1}*/
 	constexpr array_iterator() : array_iterator{nullptr} {}
@@ -1192,6 +1193,7 @@ struct array_iterator<Element, 1, Ptr>
 	using difference_type = typename affine::difference_type;
 
 	array_iterator() = default;
+	using layout_type = multi::layout_t<0>;
 
 	template<
 		class Other,
@@ -1365,6 +1367,7 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuc
 
 	using types = array_types<T, dimensionality_type{1}, ElementPtr, Layout>;
 	using types::types;
+	using layout_type = Layout;
 
 	using default_allocator_type = typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type;
 
