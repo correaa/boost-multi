@@ -4,9 +4,10 @@
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi element access"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
-//#include <boost/test/execution_monitor.hpp>  // for boost::execution_exception
 
 #include "../array.hpp"
+
+#include <numeric>  // for iota
 
 namespace multi = boost::multi;
 
@@ -129,6 +130,13 @@ BOOST_AUTO_TEST_CASE(multi_test_stencil) {
 	BOOST_REQUIRE(           A.stenciled({1, 3}, {2, 5}).num_elements() == 2*3 );
 	BOOST_REQUIRE(           A.stenciled({1, 3}, {2, 5}) [1][2] == "h"         );
 	BOOST_REQUIRE(          &A.stenciled({1, 3}, {2, 5}) [1][2] == &A[1][2]    );
+
+	BOOST_REQUIRE( &A({1, 3}, {2, 5}).elements()[0] == &A(1, 2) );
+	BOOST_REQUIRE( &A({1, 3}, {2, 5}).elements()[A({1, 3}, {2, 5}).elements().size() - 1] == &A(2, 4) );
+
+	BOOST_REQUIRE( &A({1, 3}, {2, 5}).elements().front() == &A(1, 2) );
+	BOOST_REQUIRE( &A({1, 3}, {2, 5}).elements().back()  == &A(2, 4) );
+
 }
 
 BOOST_AUTO_TEST_CASE(multi_extension_intersection) {
@@ -177,6 +185,13 @@ BOOST_AUTO_TEST_CASE(multi_extensions_intersection_2) {
 	BOOST_REQUIRE( C[16][17] == 8. );
 }
 
+BOOST_AUTO_TEST_CASE(multi_elements_iterator) {
+	multi::array<double, 2> A({3, 4});
+	std::iota(A.data_elements(), A.data_elements() + A.num_elements(), 0.);
+
+	BOOST_REQUIRE( A().elements()[7] == 7. );
+	BOOST_REQUIRE( A().elements().begin()[7] == 7. );
+}
 
 #endif
 

@@ -412,6 +412,19 @@ operator*(layout_t<0>::index_extension const& ie, layout_t<0>::extensions_type c
 	return typename layout_t<1>::extensions_type{std::make_tuple(ie)};
 }
 
+template <class F, class Tuple, std::size_t... I>
+static constexpr auto apply_impl(F&& f, Tuple&& t, std::index_sequence<I...> /*012*/) -> decltype(auto) {
+	return std::forward<F>(f)(std::get<I>(std::forward<Tuple>(t))...);
+}
+
+template <class F, class Tuple>
+static constexpr auto std_apply(F&& f, Tuple&& t) -> decltype(auto) {
+	return apply_impl(
+		std::forward<F>(f), std::forward<Tuple>(t),
+		std::make_index_sequence<std::tuple_size<std::remove_reference_t<Tuple>>::value>{}
+	);
+}
+
 template<dimensionality_type D, typename SSize>
 struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 	using dimensionality_type = multi::dimensionality_type;
@@ -440,20 +453,6 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 	nelems_type nelems_ = 0;
 
 	template<dimensionality_type, typename> friend struct layout_t;
-
-	template <class F, class Tuple, std::size_t... I>
-	static constexpr auto apply_impl(F&& f, Tuple&& t, std::index_sequence<I...> /*012*/) -> decltype(auto) {
-		// This implementation is valid since C++20 (via P1065R2)
-		// In C++17, a constexpr counterpart of std::invoke is actually needed here
-		return std::forward<F>(f)(std::get<I>(std::forward<Tuple>(t))...);
-	}
-
-	template <class F, class Tuple>
-	static constexpr auto std_apply(F&& f, Tuple&& t) -> decltype(auto) {
-		return apply_impl(
-		    std::forward<F>(f), std::forward<Tuple>(t),
-		    std::make_index_sequence<std::tuple_size<std::remove_reference_t<Tuple>>::value>{});
-	}
 
  public:
 	using extensions_type = extensions_t<D>;

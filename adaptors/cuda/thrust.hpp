@@ -47,6 +47,20 @@ template<class T, multi::dimensionality_type D> using array = multi::array<T, D,
 
 namespace thrust{
 
+template<>
+struct iterator_system<boost::multi::basic_array<char, 2L, char *, boost::multi::layout_t<2L, boost::multi::size_type>>::elements_iterator_t<char *>>{
+	using type = thrust::iterator_system<char *>::type;
+};
+
+template<>
+struct iterator_system<boost::multi::basic_array<char, 2L, std::__detected_or_t<char *, std::__allocator_traits_base::__pointer, thrust::cuda_cub::allocator<char>>, boost::multi::layout_t<2L, boost::multi::size_type>>::elements_iterator_t<std::__detected_or_t<char *, std::__allocator_traits_base::__pointer, thrust::cuda_cub::allocator<char>>>>{
+	using type = thrust::iterator_system<thrust::cuda::pointer<char>>::type;
+};
+//template<>
+//template<class P>
+//struct iterator_system<<boost::multi::basic_array<T, dimensionality_type D, typename ElementPtr, class Layout>
+//struct basic_array
+
 template<class T1, class PQ1, class Size, class T2, class Q2>
 [[deprecated]]
 auto copy(
@@ -120,59 +134,43 @@ auto copy(
 }
 
 
-template<class Base, class Extensions = boost::multi::extensions_t<1>,  class Layout = boost::multi::layout_t<1>>
+template<class MultiIterator>
 struct elements_range{
 	using difference_type = std::ptrdiff_t;
 
-	struct strides_functor {// : public thrust::unary_function<difference_type, difference_type>{
+ public:
+	struct strides_functor {
 		std::ptrdiff_t z_;
-		Layout    l_;
-		strides_functor(std::ptrdiff_t z, Layout l) : z_{z}, l_{l} {}
+		typename MultiIterator::layout_type l_;
 
-		__host__ __device__
-		difference_type operator()(const difference_type& n) const {
+		constexpr difference_type operator()(const difference_type& n) const {
 			auto const x = l_.extensions();
-			return
-				  n / x.num_elements()*z_
-				+ std::apply(l_, x.from_linear(n % x.num_elements()));
+			return n/x.num_elements()*z_ + std::apply(l_, x.from_linear(n%x.num_elements()));
 		}
 	};
 
-	using CountingIterator = typename thrust::counting_iterator<difference_type>;
-	using TransformIterator = typename thrust::transform_iterator<strides_functor, CountingIterator>;
-	typedef typename thrust::permutation_iterator<Base, TransformIterator> PermutationIterator;
+ protected:
+	using CountingIterator = thrust::counting_iterator<difference_type>;
+	using TransformIterator = thrust::transform_iterator<strides_functor, CountingIterator>;
+	using PermutationIterator = thrust::permutation_iterator<typename MultiIterator::element_ptr, TransformIterator>;
 
-	using iterator = typename thrust::permutation_iterator<Base, TransformIterator>;
+ public:
+	elements_range(MultiIterator it, std::ptrdiff_t count)
+	: base_{it.base()}
+	, sf_{it.stride(), it->layout()}
+	, size_{count*(it->extensions().num_elements())} {}
 
-	elements_range(Base base, std::ptrdiff_t stride, Layout layout, std::ptrdiff_t count)
-	: base_{base}, stride_{stride}, layout_{layout}, count_{count} {}
+	using iterator = typename thrust::permutation_iterator<typename MultiIterator::element_ptr, TransformIterator>;
 
-	iterator begin() const {
-		return iterator{
-			base_,
-			TransformIterator{
-				CountingIterator{0},
-				strides_functor{stride_, layout_}
-			}
-		};
-	}
+	auto begin() const {return iterator{base_, TransformIterator{CountingIterator{    0}, sf_}};}
+	auto end()   const {return iterator{base_, TransformIterator{CountingIterator{size_}, sf_}};}
 
-	iterator end() const {
-		return iterator{
-			base_,
-			TransformIterator{
-				CountingIterator{count_*(layout_.extensions().num_elements())},
-				strides_functor{stride_, layout_}
-			}
-		};
-	}
+	auto size() const {return size_;}
 
-	protected:
-	Base base_;
-	std::ptrdiff_t stride_;
-	Layout layout_;
-
-	std::ptrdiff_t count_;
+ protected:
+	typename MultiIterator::element_ptr base_;
+	strides_functor sf_;
+	std::ptrdiff_t size_;
 };
 
 //template<class Base, class... As>
@@ -191,12 +189,18 @@ auto copy_n(
 	cudaHostRegister((void*)first_.base(), count*first_.stride()*sizeof(T1), cudaHostRegisterPortable);
 	// cudaHostRegisterReadOnly not available in cuda < 11.1
 
-	auto source_range = elements_range<Q1*>                      {first_ .base(), first_ .stride(), first_ ->layout(), count};
-	auto destin_range = elements_range<thrust::cuda::pointer<Q2>>{result_.base(), result_.stride(), result_->layout(), count};
+
+//	[]{}(boost::multi::ref(first_, first_ + count).elements().begin());
+	auto source_range = boost::multi::ref(first_, first_ + count).elements();
+//	auto source_range = elements_range<boost::multi::array_iterator<T1, 2, Q1*                      >>{first_ , count};
+//	auto destin_range = boost::multi::ref(result_, result_ + count).elements();
+
+//	[]{}(boost::multi::ref(result_, result_ + count).elements().begin());
+	auto destin_range = elements_range<boost::multi::array_iterator<T2, 2, thrust::cuda::pointer<Q2>>>{result_, count};
 
 	::thrust::copy_n(
 		thrust::device,
-		source_range.begin(), count*first_->num_elements(),
+		source_range.begin(), source_range.size(), //count*first_->num_elements(),
 		destin_range.begin()
 	);
 
