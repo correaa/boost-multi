@@ -60,7 +60,7 @@ template<class Pointer, std::enable_if_t<std::is_pointer<Pointer>{}, int> =0>  /
 constexpr auto base(Pointer d) -> Pointer {return d;}
 
 template<class TPointer, class U>
-auto reinterpret_pointer_cast(U* other)  // name taken from thrust::reinterpret_pointer_cast, which is difference from std::reinterpret_pointer_cast(std::shared_ptr<T>)
+constexpr auto reinterpret_pointer_cast(U* other)  // name taken from thrust::reinterpret_pointer_cast, which is difference from std::reinterpret_pointer_cast(std::shared_ptr<T>)
 -> decltype(reinterpret_cast<TPointer>(other)) {return reinterpret_cast<TPointer>(other);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : unavoidalbe implementation?
 
 template <class T, std::size_t N>
