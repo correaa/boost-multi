@@ -1254,10 +1254,11 @@ struct basic_array
 		static_assert( sizeof(T)%sizeof(T2) == 0,
 			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
 
+		typedef __attribute__ ((may_alias)) P2 P2Alias;  // NOLINT(modernize-use-using) : need typedef to use gcc's may_alias
 		element_ptr const thisbase = this->base_;
 		return {
 			this->layout().scale(sizeof(T)/sizeof(T2)),  // NOLINT(bugprone-sizeof-expression) : sizes are compatible according to static assert above
-			reinterpret_cast<P2 const&>(thisbase)  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+			reinterpret_cast<P2Alias const&>(thisbase)  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 		};
 	}
 
