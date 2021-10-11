@@ -435,6 +435,7 @@ struct basic_array
 	template<class, class> friend struct basic_array_ptr;
 
  public:
+	using element           = typename types::element;
 	using element_ptr       = typename types::element_ptr;
 	using element_const_ptr = typename types::element_const_ptr;
 
@@ -1240,33 +1241,35 @@ struct basic_array
 		return this->member_cast<T2, P2, Element, PM>(pm);
 	}
 
-	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2 const> >
-	constexpr auto reinterpret_array_cast() const& -> basic_array<std::decay_t<T2>, D, P2> {
-		static_assert( sizeof(T)%sizeof(T2)== 0,
-			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
+	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
+	using rebind = basic_array<std::decay_t<T2>, D, P2>;
 
-		auto thisbase = this->base();
-		return {
-			this->layout().scale(sizeof(T)/sizeof(T2)),
-			static_cast<P2>(static_cast<void*>(thisbase))  // TODO(correaa) : use true reinterpret_cast
-		};
+	constexpr auto as_const() const {
+		return rebind<element, element_const_ptr>{this->layout(), this->base()};
 	}
 
-	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
-	constexpr auto reinterpret_array_cast()& -> basic_array<std::decay_t<T2>, D, P2> {
-		static_assert( sizeof(T)%sizeof(T2)== 0,
+ private:
+	template<class T2, class P2>
+	constexpr auto reinterpret_array_cast_aux() const -> rebind<T2, P2> {
+		static_assert( sizeof(T)%sizeof(T2) == 0,
 			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases" );
 
+		auto const thisbase = this->base_;
 		return {
 			this->layout().scale(sizeof(T)/sizeof(T2)),  // NOLINT(bugprone-sizeof-expression) : sizes are compatible according to static assert above
-			reinterpret_cast<P2 const&>(this->base_)  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+			reinterpret_cast<P2 const&>(thisbase)  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 		};
 	}
 
+ public:
+	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2 const> >
+	constexpr auto reinterpret_array_cast() const& {return reinterpret_array_cast_aux<T2, P2>().as_const();}
+
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
-	constexpr auto reinterpret_array_cast()&& ->  basic_array<std::decay_t<T2>, D, P2> {
-		return this->template reinterpret_array_cast<T2, P2>();
-	}
+	constexpr auto reinterpret_array_cast()      & {return reinterpret_array_cast_aux<T2, P2>();}
+
+	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
+	constexpr auto reinterpret_array_cast()     && {return reinterpret_array_cast_aux<T2, P2>();}
 
 	template<class T2 = std::remove_const_t<T>, class P2 = T2*>
 	constexpr auto const_array_cast()&& {
