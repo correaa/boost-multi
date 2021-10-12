@@ -11,6 +11,7 @@
 #include <thrust/system/cuda/memory.h> // ::thrust::cuda::allocator
 
 #include <thrust/system/cuda/experimental/pinned_allocator.h>
+#include <thrust/host_vector.h>
 
 namespace boost{
 namespace multi{
@@ -186,40 +187,17 @@ auto copy_n(
 )-> boost::multi::array_iterator<T2, 2, thrust::cuda::pointer<Q2>> {
 	assert(first_->extensions() == result_->extensions());
 
-	cudaHostRegister((void*)first_.base(), count*first_.stride()*sizeof(T1), cudaHostRegisterPortable);
-	// cudaHostRegisterReadOnly not available in cuda < 11.1
+	auto const& source_range = boost::multi::ref(first_ , first_  + count).elements();
 
-
-//	[]{}(boost::multi::ref(first_, first_ + count).elements().begin());
-	auto source_range = boost::multi::ref(first_, first_ + count).elements();
-//	auto source_range = elements_range<boost::multi::array_iterator<T1, 2, Q1*                      >>{first_ , count};
-//	auto destin_range = boost::multi::ref(result_, result_ + count).elements();
-
-//	[]{}(boost::multi::ref(result_, result_ + count).elements().begin());
-	auto destin_range = elements_range<boost::multi::array_iterator<T2, 2, thrust::cuda::pointer<Q2>>>{result_, count};
-
-	::thrust::copy_n(
-		thrust::device,
-		source_range.begin(), source_range.size(), //count*first_->num_elements(),
-		destin_range.begin()
+	cudaHostRegister((void*)&source_range.front(), (&source_range.back() - &source_range.front())*sizeof(T1), cudaHostRegisterPortable);  // cudaHostRegisterReadOnly not available in cuda < 11.1
+	::thrust::copy_n(thrust::device,
+		source_range.begin(), source_range.size(),
+		boost::multi::ref(result_, result_ + count).template reinterpret_array_cast<T2, Q2*>().elements().begin()
 	);
-
-	cudaHostUnregister((void*)first_.base());
-
-//	::thrust::for_each(
-//		::thrust::make_counting_iterator(0L),
-//		::thrust::make_counting_iterator(count*first_->num_elements()),
-//		[tmpdata = tmp.data_elements(), first_, count, result_, x = first_->extensions()] __device__ (auto n){
-//			auto const ij = (count*x).from_linear(n);
-//			result_[std::get<0>(ij)][std::get<1>(ij)] = tmpdata[n];//first_[std::get<0>(ij)][std::get<1>(ij)];
-//		}
-//	);
+	cudaHostUnregister((void*)&source_range.front());
 
 	return result_ + count;
 }
-
-
-
 
 template<class T1, class Q1, class Size, class T2, class Q2>
 [[deprecated]]
