@@ -69,6 +69,7 @@ install(DIRECTORY ${PROJECT_SOURCE_DIR}/adaptors DESTINATION include/multi)
 add_subdirectory(adaptors/blas)
 add_subdirectory(adaptors/fftw)
 add_subdirectory(adaptors/cuda)
+add_subdirectory(adaptors/thrust)
 
 #to install this project:
 #cmake .. -DCMAKE_INSTALL_PREFIX:PATH=$HOME

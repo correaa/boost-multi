@@ -16,6 +16,5 @@ set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -std=c++17 --extended-lambda --expt-re
 enable_testing()
 list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure") # needs cmake 3.1
 
-add_subdirectory(thrust/test)
 add_subdirectory(cublas/test)
 endif()
