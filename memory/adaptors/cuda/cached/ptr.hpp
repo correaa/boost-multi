@@ -220,13 +220,19 @@ struct ptr : cuda::ptr<T, RawPtr>{
 	}
 public:
 	friend allocator<std::decay_t<T>> default_allocator_of(ptr const&){return {};}
+
+	template <typename ToPointer>//, typename FromElement>
+	friend constexpr ToPointer
+	reinterpret_pointer_cast(ptr self) {
+		using to_element = typename std::pointer_traits<ToPointer>::element_type;
+		return ToPointer(reinterpret_cast<to_element*>(self.raw_pointer_cast()));
+	}
 };
 
 template<class T, class S> const boost::serialization::array_wrapper<T> make_array(ptr<T> t, S s){
 	using boost::serialization::make_array;
 	return make_array(raw_pointer_cast(t), s);
 }
-
 
 }
 
