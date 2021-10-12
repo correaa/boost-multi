@@ -48,180 +48,142 @@ template<class T, multi::dimensionality_type D> using array = multi::array<T, D,
 
 namespace thrust{
 
-template<>
-struct iterator_system<boost::multi::basic_array<char, 2L, char *, boost::multi::layout_t<2L, boost::multi::size_type>>::elements_iterator_t<char *>>{
-	using type = thrust::iterator_system<char *>::type;
-};
-
-template<>
-struct iterator_system<boost::multi::basic_array<char, 2L, std::__detected_or_t<char *, std::__allocator_traits_base::__pointer, thrust::cuda_cub::allocator<char>>, boost::multi::layout_t<2L, boost::multi::size_type>>::elements_iterator_t<std::__detected_or_t<char *, std::__allocator_traits_base::__pointer, thrust::cuda_cub::allocator<char>>>>{
-	using type = thrust::iterator_system<thrust::cuda::pointer<char>>::type;
-};
 //template<>
-//template<class P>
-//struct iterator_system<<boost::multi::basic_array<T, dimensionality_type D, typename ElementPtr, class Layout>
-//struct basic_array
-
-template<class T1, class PQ1, class Size, class T2, class Q2>
-[[deprecated]]
-auto copy(
-	boost::multi::array_iterator<T1, 2, PQ1                   > first_ , boost::multi::array_iterator<T1, 2, PQ1> last_,
-	boost::multi::array_iterator<T2, 2, thrust::device_ptr<Q2>> result_
-)-> boost::multi::array_iterator<T2, 2, thrust::device_ptr<Q2>> {
-	assert(0);
-//	MULTI_MARK_SCOPE("cuda copy_n 2D");
-//	array_iterator<T1, 2, ::thrust::device_ptr<Q1>> first ; std::memcpy((void*)&first , (void const*)&first_ , sizeof(first_));
-//	array_iterator<T2, 2, ::thrust::device_ptr<Q2>> result; std::memcpy((void*)&result, (void const*)&result_, sizeof(first_));
-//	static_assert( sizeof(first ) == sizeof(first_ ) );
-//	static_assert( sizeof(result) == sizeof(result_) );
-//	assert(first->extensions() == result->extensions());
-//	::thrust::for_each(
-//		::thrust::make_counting_iterator(0L),
-//		::thrust::make_counting_iterator(count*first->num_elements()),
-//		[first, count, result, x = first->extensions()] __device__ (auto n){
-//			std::tuple<index, index> ij = (count*x).from_linear(n);
-//			result[std::get<0>(ij)][std::get<1>(ij)] = T2(first[std::get<0>(ij)][std::get<1>(ij)]);
-//		}
-//	);
-	return result_ + (last_ - first_);
-}
-
-template<class T1, class Q1, class Size, class T2, class Q2>
-[[deprecated]]
-auto copy(
-	boost::multi::array_iterator<T1, 2, thrust::device_ptr<Q1>> first_ , boost::multi::array_iterator<T1, 2, thrust::device_ptr<Q1>> last_,
-	boost::multi::array_iterator<T2, 2, thrust::device_ptr<Q2>> result_
-)-> boost::multi::array_iterator<T2, 2, thrust::device_ptr<Q2>> {
-	assert(0);
-//	MULTI_MARK_SCOPE("cuda copy_n 2D");
-//	array_iterator<T1, 2, ::thrust::device_ptr<Q1>> first ; std::memcpy((void*)&first , (void const*)&first_ , sizeof(first_));
-//	array_iterator<T2, 2, ::thrust::device_ptr<Q2>> result; std::memcpy((void*)&result, (void const*)&result_, sizeof(first_));
-//	static_assert( sizeof(first ) == sizeof(first_ ) );
-//	static_assert( sizeof(result) == sizeof(result_) );
-//	assert(first->extensions() == result->extensions());
-//	::thrust::for_each(
-//		::thrust::make_counting_iterator(0L),
-//		::thrust::make_counting_iterator(count*first->num_elements()),
-//		[first, count, result, x = first->extensions()] __device__ (auto n){
-//			std::tuple<index, index> ij = (count*x).from_linear(n);
-//			result[std::get<0>(ij)][std::get<1>(ij)] = T2(first[std::get<0>(ij)][std::get<1>(ij)]);
-//		}
-//	);
-	return result_ + (last_ - first_);
-}
-
-template<class T1, class Q1, class Size, class T2, class Q2>
-[[deprecated]]
-auto copy(
-	boost::multi::array_iterator<T1, 1, thrust::device_ptr<Q1>> first_ , boost::multi::array_iterator<T1, 1, thrust::device_ptr<Q1>> last_,
-	boost::multi::array_iterator<T2, 1, thrust::device_ptr<Q2>> result_
-)-> boost::multi::array_iterator<T2, 1, thrust::device_ptr<Q2>> {
-	assert(0);
-//	MULTI_MARK_SCOPE("cuda copy_n 2D");
-//	array_iterator<T1, 2, ::thrust::device_ptr<Q1>> first ; std::memcpy((void*)&first , (void const*)&first_ , sizeof(first_));
-//	array_iterator<T2, 2, ::thrust::device_ptr<Q2>> result; std::memcpy((void*)&result, (void const*)&result_, sizeof(first_));
-//	static_assert( sizeof(first ) == sizeof(first_ ) );
-//	static_assert( sizeof(result) == sizeof(result_) );
-//	assert(first->extensions() == result->extensions());
-//	::thrust::for_each(
-//		::thrust::make_counting_iterator(0L),
-//		::thrust::make_counting_iterator(count*first->num_elements()),
-//		[first, count, result, x = first->extensions()] __device__ (auto n){
-//			std::tuple<index, index> ij = (count*x).from_linear(n);
-//			result[std::get<0>(ij)][std::get<1>(ij)] = T2(first[std::get<0>(ij)][std::get<1>(ij)]);
-//		}
-//	);
-	return result_ + (last_ - first_);
-}
-
-
-template<class MultiIterator>
-struct elements_range{
-	using difference_type = std::ptrdiff_t;
-
- public:
-	struct strides_functor {
-		std::ptrdiff_t z_;
-		typename MultiIterator::layout_type l_;
-
-		constexpr difference_type operator()(const difference_type& n) const {
-			auto const x = l_.extensions();
-			return n/x.num_elements()*z_ + std::apply(l_, x.from_linear(n%x.num_elements()));
-		}
-	};
-
- protected:
-	using CountingIterator = thrust::counting_iterator<difference_type>;
-	using TransformIterator = thrust::transform_iterator<strides_functor, CountingIterator>;
-	using PermutationIterator = thrust::permutation_iterator<typename MultiIterator::element_ptr, TransformIterator>;
-
- public:
-	elements_range(MultiIterator it, std::ptrdiff_t count)
-	: base_{it.base()}
-	, sf_{it.stride(), it->layout()}
-	, size_{count*(it->extensions().num_elements())} {}
-
-	using iterator = typename thrust::permutation_iterator<typename MultiIterator::element_ptr, TransformIterator>;
-
-	auto begin() const {return iterator{base_, TransformIterator{CountingIterator{    0}, sf_}};}
-	auto end()   const {return iterator{base_, TransformIterator{CountingIterator{size_}, sf_}};}
-
-	auto size() const {return size_;}
-
- protected:
-	typename MultiIterator::element_ptr base_;
-	strides_functor sf_;
-	std::ptrdiff_t size_;
-};
-
-//template<class Base, class... As>
-//struct iterator_system<elements_range<Base, As...>>{
-//	using type = typename thrust::iterator_system<Base>::type;
+//struct iterator_system<boost::multi::basic_array<char, 2L, char *, boost::multi::layout_t<2L, boost::multi::size_type>>::elements_iterator_t<char *>>{
+//	using type = thrust::iterator_system<char *>::type;
 //};
 
+//template<>
+//struct iterator_system<boost::multi::basic_array<char, 2L, std::__detected_or_t<char *, std::__allocator_traits_base::__pointer, thrust::cuda_cub::allocator<char>>, boost::multi::layout_t<2L, boost::multi::size_type>>::elements_iterator_t<std::__detected_or_t<char *, std::__allocator_traits_base::__pointer, thrust::cuda_cub::allocator<char>>>>{
+//	using type = thrust::iterator_system<thrust::cuda::pointer<char>>::type;
+//};
+
+//template<class MultiIterator>
+//struct elements_range{
+//	using difference_type = std::ptrdiff_t;
+
+// public:
+//	struct strides_functor {
+//		std::ptrdiff_t z_;
+//		typename MultiIterator::layout_type l_;
+
+//		constexpr difference_type operator()(const difference_type& n) const {
+//			auto const x = l_.extensions();
+//			return n/x.num_elements()*z_ + std::apply(l_, x.from_linear(n%x.num_elements()));
+//		}
+//	};
+
+// protected:
+//	using CountingIterator = thrust::counting_iterator<difference_type>;
+//	using TransformIterator = thrust::transform_iterator<strides_functor, CountingIterator>;
+//	using PermutationIterator = thrust::permutation_iterator<typename MultiIterator::element_ptr, TransformIterator>;
+
+// public:
+//	elements_range(MultiIterator it, std::ptrdiff_t count)
+//	: base_{it.base()}
+//	, sf_{it.stride(), it->layout()}
+//	, size_{count*(it->extensions().num_elements())} {}
+
+//	using iterator = typename thrust::permutation_iterator<typename MultiIterator::element_ptr, TransformIterator>;
+
+//	auto begin() const {return iterator{base_, TransformIterator{CountingIterator{    0}, sf_}};}
+//	auto end()   const {return iterator{base_, TransformIterator{CountingIterator{size_}, sf_}};}
+
+//	auto size() const {return size_;}
+
+// protected:
+//	typename MultiIterator::element_ptr base_;
+//	strides_functor sf_;
+//	std::ptrdiff_t size_;
+//};
+
+template<class T> void what(T&&) = delete;
+template<class T> void what() = delete;
+
+
 template<class T1, class Q1, class Size, class T2, class Q2>
-[[deprecated]]
 auto copy_n(
-	boost::multi::array_iterator<T1, 2, Q1*                      > first_ , Size count,
-	boost::multi::array_iterator<T2, 2, thrust::cuda::pointer<Q2>> result_
-)-> boost::multi::array_iterator<T2, 2, thrust::cuda::pointer<Q2>> {
+	boost::multi::array_iterator<T1, 1, Q1*                      >   first , Size count,
+	boost::multi::array_iterator<T2, 1, thrust::cuda::pointer<Q2>> d_first
+)-> boost::multi::array_iterator<T2, 1, thrust::cuda::pointer<Q2>> {
+	assert(first->extensions() == d_first->extensions());
+
+	if constexpr(std::is_trivially_assignable<Q2&, Q1&>{}){
+		if(first.stride() == 1 and d_first.stride() == 1) {
+			auto s = cudaMemcpy  (raw_pointer_cast(d_first.base()),                              first.base(),                            sizeof(T2)* count, cudaMemcpyHostToDevice); assert( s == cudaSuccess );
+		} else {
+			auto s = cudaMemcpy2D(raw_pointer_cast(d_first.base()), d_first.stride()*sizeof(T2), first.base(), first.stride()*sizeof(T2), sizeof(T2), count, cudaMemcpyHostToDevice); assert( s == cudaSuccess );
+		}
+	} else {
+		auto const& source_range = boost::multi::ref(first , first + count).elements();
+		thrust::host_vector<T1, thrust::cuda::experimental::pinned_allocator<T1>> buffer(source_range.begin(), source_range.end());
+		::thrust::copy_n(thrust::device,
+			buffer.begin(), buffer.size(),
+			boost::multi::ref(d_first, d_first + count).template reinterpret_array_cast<T2, Q2*>().elements().begin()
+		);
+	}
+	return d_first + count;
+}
+
+template<class T1, class Q1, class Size, class T2, class Q2, boost::multi::dimensionality_type D>
+auto copy_n(
+	boost::multi::array_iterator<T1, D, Q1*                      > first_ , Size count,
+	boost::multi::array_iterator<T2, D, thrust::cuda::pointer<Q2>> result_
+)-> boost::multi::array_iterator<T2, D, thrust::cuda::pointer<Q2>> {
 	assert(first_->extensions() == result_->extensions());
 
 	auto const& source_range = boost::multi::ref(first_ , first_  + count).elements();
 
-	cudaHostRegister((void*)&source_range.front(), (&source_range.back() - &source_range.front())*sizeof(T1), cudaHostRegisterPortable);  // cudaHostRegisterReadOnly not available in cuda < 11.1
-	::thrust::copy_n(thrust::device,
-		source_range.begin(), source_range.size(),
-		boost::multi::ref(result_, result_ + count).template reinterpret_array_cast<T2, Q2*>().elements().begin()
-	);
-	cudaHostUnregister((void*)&source_range.front());
+	if constexpr(std::is_trivially_assignable<Q2&, Q1&>{}){
+		cudaHostRegister((void*)&source_range.front(), (&source_range.back() - &source_range.front())*sizeof(T1), cudaHostRegisterPortable);  // cudaHostRegisterReadOnly not available in cuda < 11.1
+		::thrust::copy_n(thrust::device,
+			source_range.begin(), source_range.size(),
+			boost::multi::ref(result_, result_ + count).template reinterpret_array_cast<T2, Q2*>().elements().begin()
+		);
+		cudaHostUnregister((void*)&source_range.front());
+	} else {
+		thrust::host_vector<T1, thrust::cuda::experimental::pinned_allocator<T1>> buffer(source_range.begin(), source_range.end());
+		::thrust::copy_n(thrust::device,
+			buffer.begin(), buffer.size(),
+			boost::multi::ref(result_, result_ + count).template reinterpret_array_cast<T2, Q2*>().elements().begin()
+		);
+	}
 
 	return result_ + count;
 }
 
-template<class T1, class Q1, class Size, class T2, class Q2>
-[[deprecated]]
-auto copy_n(
-	boost::multi::array_iterator<T1, 1, thrust::device_ptr<Q1>> first_ , Size count,
-	boost::multi::array_iterator<T2, 1, thrust::device_ptr<Q2>> result_
-)-> boost::multi::array_iterator<T2, 1, thrust::device_ptr<Q2>> {
-	assert(0);
-//	MULTI_MARK_SCOPE("cuda copy_n 2D");
-//	array_iterator<T1, 2, ::thrust::device_ptr<Q1>> first ; std::memcpy((void*)&first , (void const*)&first_ , sizeof(first_));
-//	array_iterator<T2, 2, ::thrust::device_ptr<Q2>> result; std::memcpy((void*)&result, (void const*)&result_, sizeof(first_));
-//	static_assert( sizeof(first ) == sizeof(first_ ) );
-//	static_assert( sizeof(result) == sizeof(result_) );
-//	assert(first->extensions() == result->extensions());
-//	::thrust::for_each(
-//		::thrust::make_counting_iterator(0L),
-//		::thrust::make_counting_iterator(count*first->num_elements()),
-//		[first, count, result, x = first->extensions()] __device__ (auto n){
-//			std::tuple<index, index> ij = (count*x).from_linear(n);
-//			result[std::get<0>(ij)][std::get<1>(ij)] = T2(first[std::get<0>(ij)][std::get<1>(ij)]);
-//		}
-//	);
-	return result_ + count;
+template<class T1, class Q1, class T2, class Q2, boost::multi::dimensionality_type D>
+auto copy(
+	boost::multi::array_iterator<T1, D, Q1*                      >   first,
+	boost::multi::array_iterator<T1, D, Q1*                      >   last ,
+	boost::multi::array_iterator<T2, D, thrust::cuda::pointer<Q2>> d_first
+)-> boost::multi::array_iterator<T2, D, thrust::cuda::pointer<Q2>> {
+	return copy_n(first, last - first, d_first);
 }
+
+template<class T1, class Q1, class T2, class Q2, boost::multi::dimensionality_type D>
+auto uninitialized_copy(
+	boost::multi::array_iterator<T1, D, Q1*                      >   first,
+	boost::multi::array_iterator<T1, D, Q1*                      >   last ,
+	boost::multi::array_iterator<T2, D, thrust::cuda::pointer<Q2>> d_first
+)-> boost::multi::array_iterator<T2, D, thrust::cuda::pointer<Q2>> {
+	if constexpr(std::is_trivially_constructible<T2>{}){
+		return copy(first, last, d_first);
+	}
+	throw std::logic_error("uninitialized_copy for nontrivials in cuda device not implemented");
+}
+
+template<class T1, class Q1, class Size, class T2, class Q2, boost::multi::dimensionality_type D>
+auto uninitialized_copy_n(
+	boost::multi::array_iterator<T1, D, Q1*                      >   first, Size count,
+	boost::multi::array_iterator<T2, D, thrust::cuda::pointer<Q2>> d_first
+)-> boost::multi::array_iterator<T2, D, thrust::cuda::pointer<Q2>> {
+	if constexpr(std::is_trivially_constructible<T2>{}){
+		return copy_n(first, count, d_first);
+	}
+	throw std::logic_error("uninitialized_copy_n for nontrivials in cuda device not implemented");
+}
+
 
 }
 

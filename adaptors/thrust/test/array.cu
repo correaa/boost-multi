@@ -37,24 +37,59 @@ BOOST_AUTO_TEST_CASE(issue_118) {
 
 BOOST_AUTO_TEST_CASE(thrust_cpugpu_issue123){
 	using T = char;
-	multi::array<T, 2, thrust::cuda::allocator<T>> Devc({10240,10240}, 'a');
-	multi::array<T, 2>                             Host({10240,10240}, 'z');
-//	multi::array<T, 2, thrust::system::cuda::experimental::pinned_allocator<T>> Host({10240,10240}, 'z');
+
+	multi::array<T, 2, thrust::cuda::allocator<T>> Devc({10240, 10240}, 'a');
+	multi::array<T, 2>                             Host({10240, 10240}, 'z');
 
 	BOOST_TEST_REQUIRE( Devc[0][0] == 'a' );
 	{
-		boost::timer::auto_cpu_timer t;                     // 0.008274s wall
+		boost::timer::auto_cpu_timer t;                        // 0.010537s
 		Devc = Host;
 	}
 	{
 		boost::timer::auto_cpu_timer t;
-		Devc.sliced(0,5120) = Host.sliced(0,5120);          //  0.005016s wall
+		Devc.sliced(0, 5120) = Host.sliced(0, 5120);           //  0.005292s
 	}
 	{
 		boost::timer::auto_cpu_timer t;
-		Devc({0,5120},{0,5120}) = Host({0,5120},{0,5120});  // 0.002607s wall
+		Devc({0, 5120},{0, 5120}) = Host({0, 5120},{0, 5120});  // 0.016901s
 	}
 }
+
+BOOST_AUTO_TEST_CASE(thrust_cpugpu_issue123_1D){
+	using T = char;
+
+	multi::array<T, 1, thrust::cuda::allocator<T>> Devc({10240*10240}, 'a');
+	multi::array<T, 1>                             Host({10240*10240}, 'z');
+
+	BOOST_TEST_REQUIRE( Devc[0] == 'a' );
+	{
+		boost::timer::auto_cpu_timer t;
+		Devc() = Host();
+	}
+	{
+		boost::timer::auto_cpu_timer t;
+		Devc({0, 10240*10240/2}) = Host({0, 10240*10240/2});
+	}
+}
+
+BOOST_AUTO_TEST_CASE(thrust_cpugpu_issue123_3D){
+	using T = char;
+
+	multi::array<T, 3, thrust::cuda::allocator<T>> Devc({1024, 1024, 1024}, 'a');
+	multi::array<T, 3>                             Host({1024, 1024, 1024}, 'z');
+
+	BOOST_TEST_REQUIRE( Devc[0][0][0] == 'a' );
+	{
+		boost::timer::auto_cpu_timer t;
+		Devc = Host;
+	}
+	{
+		boost::timer::auto_cpu_timer t;
+		Devc({0, 512}, {0, 512}, {0, 512}) = Host({0, 512}, {0, 512}, {0, 512});
+	}
+}
+
 
 #if 0
 namespace inq{
