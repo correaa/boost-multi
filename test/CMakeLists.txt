@@ -55,8 +55,8 @@ foreach(TEST_FILE ${TEST_SRCS})
   target_link_libraries     (${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
   target_link_directories   (${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
   if(NOT ENABLE_CUDA AND (NOT DART_COMPILER_NAME STREQUAL "nvcc"))
-    target_compile_options  (${TEST_EXE} PRIVATE
-       -Werror -Wall -fstrict-aliasing -Wstrict-aliasing -Wshadow -Wsign-conversion -Wold-style-cast -Wcast-align -Wunused -Wnon-virtual-dtor -Woverloaded-virtual -Wcast-qual -Wconversion -Wnull-dereference -Wformat=2
+    target_compile_options  (${TEST_EXE} PRIVATE # -fstrict-aliasing
+       -Werror -Wall -Wstrict-aliasing -Wshadow -Wsign-conversion -Wold-style-cast -Wcast-align -Wunused -Wnon-virtual-dtor -Woverloaded-virtual -Wcast-qual -Wconversion -Wnull-dereference -Wformat=2
        $<$<CXX_COMPILER_ID:GNU>:
                              -Wextra -Wpedantic -Wuninitialized -Wformat-truncation -Wdouble-promotion -Wmisleading-indentation -Wduplicated-cond -Wduplicated-branches -Wlogical-op>
        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
