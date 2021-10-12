@@ -1919,25 +1919,21 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuc
 
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
 	NODISCARD("")
-	          auto reinterpret_array_cast() const& -> basic_array<std::decay_t<T2>, 1, P2> {
+	          auto reinterpret_array_cast() const& -> basic_array<std::decay_t<T2>, 1, P2> {  // TODO(correaa) : use rebind for return type
 		static_assert( sizeof(T)%sizeof(T2)== 0,
 			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases");
 
-		static_assert( sizeof(P2) == sizeof(typename basic_array::element_ptr), "reinterpret on equal size pointers?");  // NOLINT(bugprone-sizeof-expression) : check that pointers (not pointees) are the same size
-		typename basic_array::element_ptr const thisbase = this->base();
-		P2 new_base; std::memcpy(static_cast<void*>(&new_base), static_cast<void const*>(&thisbase), sizeof(P2));  // NOLINT(bugprone-sizeof-expression) : take size of pointer not pointee // TODO(correaa) : find a better way, fancy pointers wouldn't need reinterpret_cast
-		return {this->layout().scale(sizeof(T)/sizeof(T2)), new_base};
+		return {this->layout().scale(sizeof(T)/sizeof(T2)), reinterpret_pointer_cast<P2>(this->base())};
 	}
 
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2 const> >
-	constexpr auto reinterpret_array_cast(size_type n) const& -> basic_array<std::decay_t<T2>, 2, P2> {
+	constexpr auto reinterpret_array_cast(size_type n) const& -> basic_array<std::decay_t<T2>, 2, P2> {  // TODO(correaa) : use rebind for return type
 		static_assert( sizeof(T)%sizeof(T2)== 0,
 			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases");
 
-		auto thisbase = this->base();
 		return basic_array<std::decay_t<T2>, 2, P2>{
 			layout_t<2>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n},
-			static_cast<P2>(static_cast<void*>(thisbase))
+			reinterpret_pointer_cast<P2>(this->base())
 		}.rotated();
 	}
 
@@ -1947,10 +1943,9 @@ struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuc
 		static_assert( sizeof(T)%sizeof(T2)== 0,
 			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases");
 
-		typename basic_array::element_ptr const thisbase = this->base();
 		return basic_array<std::decay_t<T2>, 2, P2>{
 			layout_t<2>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n},
-			static_cast<P2>(static_cast<void*>(thisbase))
+			reinterpret_pointer_cast<P2>(this->base())
 		}.rotated();
 	}
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
