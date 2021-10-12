@@ -1281,11 +1281,13 @@ struct basic_array
 			"error: reinterpret_array_cast is limited to integral stride values");
 
 		assert( n > 0 );
+		assert( sizeof(T) == sizeof(T2)*static_cast<std::size_t>(n) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		return {
-			layout_t<D+1>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n}.rotate(),  // NOLINT(bugprone-sizeof-expression) T and T2 are size compatible (see static_assert above)
+			layout_t<D + 1>{this->layout().scale(sizeof(T)/sizeof(T2)), 1, 0, n}.rotate(),  // NOLINT(bugprone-sizeof-expression) T and T2 are size compatible (see static_assert above)
 			reinterpret_pointer_cast<P2>(this->base())  // if ADL gets confused here (e.g. multi:: and thrust::) then adl_reinterpret_pointer_cast will be necessary
 		};
 	}
+
 
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
 	constexpr auto reinterpret_array_cast(multi::size_type n)     && -> basic_array<std::decay_t<T2>, D + 1, P2>{return reinterpret_array_cast<T2, P2>(n);}
