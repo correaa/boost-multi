@@ -742,13 +742,11 @@ struct basic_array
 
 	using index_range = typename basic_array::index_range;
 
-	HD constexpr auto range(index_range ir) const& -> decltype(auto) {return                  sliced(ir.front(), ir.front() + ir.size());}
-	HD constexpr auto range(index_range ir)     && -> decltype(auto) {return std::move(*this).sliced(ir.front(), ir.front() + ir.size());}
-	HD constexpr auto range(index_range ir)      & -> decltype(auto) {return                  sliced(ir.front(), ir.front() + ir.size());}
+	constexpr auto range(index_range ir) const& -> decltype(auto) {return                  sliced(ir.front(), ir.front() + ir.size());}
+	constexpr auto range(index_range ir)     && -> decltype(auto) {return std::move(*this).sliced(ir.front(), ir.front() + ir.size());}
+	constexpr auto range(index_range ir)      & -> decltype(auto) {return                  sliced(ir.front(), ir.front() + ir.size());}
 
-	constexpr auto range(typename types::index_range const& ir, dimensionality_type n) const {
-		return rotated(n).range(ir).rotated(-n);
-	}
+	[[deprecated]] constexpr auto range(typename types::index_range const& ir, dimensionality_type n) const {return rotated(n).range(ir).rotated(-n);}
 
 	friend constexpr auto flattened(basic_array&& s) -> decltype(auto) {return std::move(s).flattened();}
 	       constexpr auto flattened()&& -> decltype(auto) {
@@ -922,7 +920,7 @@ struct basic_array
 	HD constexpr auto paren_()     && -> basic_array       {return this->operator()();}
 	HD constexpr auto paren_() const& -> basic_const_array {return {this->layout(), this->base()};}
 
-	template<class... As> HD constexpr auto paren_(index_range a, As... as)      & {
+	template<class... As> constexpr auto paren_(index_range a, As... as)      & {
 	// return range(a).rotated().paren_(as...).unrotated();
 		auto&& tmp = range(a);
 		auto&& tmp2 =
@@ -932,17 +930,17 @@ struct basic_array
 		auto&& ret = std::move(tmp3).unrotated();
 		return std::move(ret);
 	}
-	template<class... As> HD constexpr auto paren_(index_range a, As... as)     && {
+	template<class... As> constexpr auto paren_(index_range a, As... as)     && {
 		auto&& tmp = std::move(*this).range(a);
 		auto&& tmp2 = std::move(tmp).rotated().paren_(as...);
 		auto&& ret = std::move(tmp2).unrotated();
 		return std::move(ret);
 	}
-	template<class... As> HD constexpr auto paren_(index_range a, As... as) const& {return range(a).rotated().paren_(as...).unrotated();}
+	template<class... As> constexpr auto paren_(index_range a, As... as) const& {return range(a).rotated().paren_(as...).unrotated();}
 
-	template<class... As> HD constexpr auto paren_(intersecting_range<index> inr, As... as)      & -> decltype(auto) {return paren_(intersection(this->extension(), inr), as...);}
-	template<class... As> HD constexpr auto paren_(intersecting_range<index> inr, As... as)     && -> decltype(auto) {return paren_(intersection(this->extension(), inr), as...);}
-	template<class... As> HD constexpr auto paren_(intersecting_range<index> inr, As... as) const& -> decltype(auto) {return paren_(intersection(this->extension(), inr), as...);}
+	template<class... As> constexpr auto paren_(intersecting_range<index> inr, As... as)      & -> decltype(auto) {return paren_(intersection(this->extension(), inr), as...);}
+	template<class... As> constexpr auto paren_(intersecting_range<index> inr, As... as)     && -> decltype(auto) {return paren_(intersection(this->extension(), inr), as...);}
+	template<class... As> constexpr auto paren_(intersecting_range<index> inr, As... as) const& -> decltype(auto) {return paren_(intersection(this->extension(), inr), as...);}
 
 	template<class... As> HD constexpr auto paren_(index i, As... as)      & -> decltype(auto) {return operator[](i).paren_(as...);}
 	template<class... As> HD constexpr auto paren_(index i, As... as)     && -> decltype(auto) {return operator[](i).paren_(as...);}
