@@ -51,9 +51,11 @@ BOOST_AUTO_TEST_CASE(thrust_cpugpu_issue123){
 		Devc.sliced(0, 5120) = Host.sliced(0, 5120);           //  0.005292s
 	}
 	{
+		Host[123][456] = 'x';
 		boost::timer::auto_cpu_timer t;
 		Devc({0, 5120},{0, 5120}) = Host({0, 5120},{0, 5120});  // 0.016901s
 	}
+	BOOST_TEST_REQUIRE( Devc[123][456] == 'x' );
 }
 
 BOOST_AUTO_TEST_CASE(thrust_cpugpu_issue123_1D){
