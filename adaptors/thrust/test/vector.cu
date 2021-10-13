@@ -8,7 +8,7 @@
 BOOST_AUTO_TEST_CASE(vector){
 	// H has storage for 4 integers
 	thrust::host_vector<int> H(4);
-	
+
 	// initialize individual elements
 	H[0] = 14;
 	H[1] = 20;
@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(vector){
 
 	// Copy host_vector H to device_vector D
 	thrust::device_vector<int> D = H;
-	
+
 //	f(D.data());
 
 	// elements of D can be modified
@@ -40,4 +40,3 @@ BOOST_AUTO_TEST_CASE(vector){
 
 	BOOST_TEST_REQUIRE( D[1] == 88 );
 }
-

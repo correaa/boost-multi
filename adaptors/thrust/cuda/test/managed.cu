@@ -47,15 +47,14 @@ BOOST_AUTO_TEST_CASE(vector){
 
 	set_two_gpu(p);
 	BOOST_TEST_REQUIRE( p[0] == 2. );
-	
+
 	set_three_ref( p[1] );
 	BOOST_TEST_REQUIRE( p[1] == 3. );
-	
+
 	some_fun(p);
-	
+
 	BOOST_TEST_REQUIRE(overload(p) == 1);
-	
+
 	alloc.deallocate(p, 100);
 
 }
-

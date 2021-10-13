@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "../../../cuda/runtime/error.hpp"
+#include "../../cuda/runtime/error.hpp"
 
 #include <thrust/system/cuda/pointer.h>
 
@@ -15,7 +15,7 @@ namespace thrust{
 namespace cuda{
 namespace managed{
 
-template<class> class pointer; 
+template<class> class pointer;
 
 template<class T>
 class reference : public ::thrust::cuda::reference<T>{
@@ -107,7 +107,7 @@ public:
 	template<class InputIt, class ForwardIt>
 	constexpr ForwardIt alloc_uninitialized_copy(InputIt first, InputIt last, ForwardIt d_first) const{
 		return ForwardIt{adl_uninitialized_copy(first, last, d_first)};
-	}		
+	}
 	template<class InputIt, class Size, class ForwardIt>
 	constexpr ForwardIt alloc_uninitialized_copy_n(InputIt first, Size count, ForwardIt d_first) const{
 		return ForwardIt{adl_uninitialized_copy_n(first, count, d_first)};
@@ -141,4 +141,3 @@ int main(){
 
 }
 #endif
-
