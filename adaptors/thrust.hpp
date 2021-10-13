@@ -136,14 +136,14 @@ auto copy_n(
 
 	if constexpr(std::is_trivially_assignable<Q2&, Q1&>{}){
 		cudaHostRegister((void*)&source_range.front(), (&source_range.back() - &source_range.front())*sizeof(T1), cudaHostRegisterPortable);  // cudaHostRegisterReadOnly not available in cuda < 11.1
-		::thrust::copy_n(thrust::device,
+		::thrust::copy_n(thrust::cuda::par,
 			source_range.begin(), source_range.size(),
 			boost::multi::ref(result_, result_ + count).template reinterpret_array_cast<T2, Q2*>().elements().begin()
 		);
 		cudaHostUnregister((void*)&source_range.front());
 	} else {
 		thrust::host_vector<T1, thrust::cuda::experimental::pinned_allocator<T1>> buffer(source_range.begin(), source_range.end());
-		::thrust::copy_n(thrust::device,
+		::thrust::copy_n(thrust::cuda::par,
 			buffer.begin(), buffer.size(),
 			boost::multi::ref(result_, result_ + count).template reinterpret_array_cast<T2, Q2*>().elements().begin()
 		);
