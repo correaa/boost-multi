@@ -144,8 +144,7 @@ auto copy_n(
 			cudaHostUnregister((void*)&source_range.front());
 		}
 	} else {
-		thrust::host_vector<T1, thrust::cuda::experimental::pinned_allocator<T1>> buffer; buffer.reserve(source_range.size());
-		std::copy(std::execution::par, source_range.begin(), source_range.end(), buffer.begin());
+		thrust::host_vector<T1, thrust::cuda::experimental::pinned_allocator<T1>> buffer(source_range.begin(), source_range.end());
 		::thrust::copy_n(thrust::cuda::par,
 			buffer.begin(), buffer.size(),
 			boost::multi::ref(d_first, d_first + count).template reinterpret_array_cast<T2, Q2*>().elements().begin()
