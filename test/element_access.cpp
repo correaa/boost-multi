@@ -193,5 +193,20 @@ BOOST_AUTO_TEST_CASE(multi_elements_iterator) {
 	BOOST_REQUIRE( A().elements().begin()[7] == 7. );
 }
 
+BOOST_AUTO_TEST_CASE(multi_range_rotated) {
+	multi::array<double, 5> A({3, 5, 7, 11, 13});
+
+	using multi::_;
+
+	BOOST_REQUIRE( &A(_, _, {3, 5}) == &A.rotated(2).range({3, 5}).unrotated(2) );
+	BOOST_REQUIRE( &A(_, _, {3, 5}) == &A(_, _, {3, 5}, _) );
+
+	BOOST_REQUIRE( &A(*_, *_, {3, 5}) == &A.rotated(2).range({3, 5}).unrotated(2) );
+	BOOST_REQUIRE( &A(*_, *_, {3, 5}) == &A(*_, *_, {3, 5}, *_) );
+
+	BOOST_REQUIRE( &A(multi::all, multi::all, {3, 5}) == &A.rotated(2).range({3, 5}).unrotated(2) );
+	BOOST_REQUIRE( &A(multi::all, multi::all, {3, 5}) == &A(multi::all, multi::all, {3, 5}, multi::all) );
+}
+
 #endif
 
