@@ -742,13 +742,11 @@ struct basic_array
 
 	using index_range = typename basic_array::index_range;
 
-	HD constexpr auto range(index_range ir) const& -> decltype(auto) {return                  sliced(ir.front(), ir.front() + ir.size());}
-	HD constexpr auto range(index_range ir)     && -> decltype(auto) {return std::move(*this).sliced(ir.front(), ir.front() + ir.size());}
-	HD constexpr auto range(index_range ir)      & -> decltype(auto) {return                  sliced(ir.front(), ir.front() + ir.size());}
+	constexpr auto range(index_range ir) const& -> decltype(auto) {return                  sliced(ir.front(), ir.front() + ir.size());}
+	constexpr auto range(index_range ir)     && -> decltype(auto) {return std::move(*this).sliced(ir.front(), ir.front() + ir.size());}
+	constexpr auto range(index_range ir)      & -> decltype(auto) {return                  sliced(ir.front(), ir.front() + ir.size());}
 
-	constexpr auto range(typename types::index_range const& ir, dimensionality_type n) const {
-		return rotated(n).range(ir).rotated(-n);
-	}
+	[[deprecated]] constexpr auto range(typename types::index_range const& ir, dimensionality_type n) const {return rotated(n).range(ir).rotated(-n);}
 
 	friend constexpr auto flattened(basic_array&& s) -> decltype(auto) {return std::move(s).flattened();}
 	       constexpr auto flattened()&& -> decltype(auto) {
