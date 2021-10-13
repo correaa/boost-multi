@@ -13,8 +13,6 @@
 #include <thrust/system/cuda/experimental/pinned_allocator.h>
 #include <thrust/host_vector.h>
 
-#include<execution>
-
 namespace boost{
 namespace multi{
 namespace thrust{
