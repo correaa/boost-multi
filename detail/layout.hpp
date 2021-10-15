@@ -133,7 +133,7 @@ template<> struct extensions_t<1>
 	}
 	friend constexpr auto operator%(nelems_type n, extensions_t const& s) -> std::tuple<multi::index>{return s.from_linear(n);}
 	friend auto intersection(extensions_t const& x1, extensions_t const& x2){
-		return extensions_t(std::tuple<index_extension>(intersection(std::get<0>(x1), std::get<0>(x2))));
+		return extensions_t{std::tuple<index_extension>{intersection(std::get<0>(x1), std::get<0>(x2))}};
 	}
 };
 
