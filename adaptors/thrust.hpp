@@ -107,9 +107,9 @@ auto copy_n(
 	if constexpr(std::is_trivially_assignable<Q2&, Q1&>{}) {
 		if(count == 0) return d_first;
 		if(first.stride() == 1 and d_first.stride() == 1) {
-			auto s = cudaMemcpy  (raw_pointer_cast(d_first.base()),                              first.base(),                            sizeof(T2)* count, cudaMemcpyHostToDevice); assert( s == cudaSuccess );
+			auto s = cudaMemcpy  (raw_pointer_cast(d_first.base()),                                                        first.base(),                                                      sizeof(T2)* static_cast<std::size_t>(count), cudaMemcpyHostToDevice); assert( s == cudaSuccess );
 		} else {
-			auto s = cudaMemcpy2D(raw_pointer_cast(d_first.base()), d_first.stride()*sizeof(T2), first.base(), first.stride()*sizeof(T2), sizeof(T2), count, cudaMemcpyHostToDevice); assert( s == cudaSuccess );
+			auto s = cudaMemcpy2D(raw_pointer_cast(d_first.base()), static_cast<std::size_t>(d_first.stride())*sizeof(T2), first.base(), static_cast<std::size_t>(first.stride())*sizeof(T2), sizeof(T2), static_cast<std::size_t>(count), cudaMemcpyHostToDevice); assert( s == cudaSuccess );
 		}
 	} else {
 		auto const& source_range = boost::multi::ref(first , first + count).elements();
