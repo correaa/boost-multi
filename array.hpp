@@ -430,7 +430,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 };
 
 template<class T, class Alloc>
-struct static_array<T, dimensionality_type{0}, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : design
+struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : design
 : protected array_allocator<Alloc>
 , public array_ref<T, 0, typename std::allocator_traits<typename array_allocator<Alloc>::allocator_type>::pointer> {
 	static_assert( std::is_same<typename std::allocator_traits<Alloc>::value_type, typename static_array::element>{},
@@ -713,7 +713,7 @@ public:
 };
 
 template<typename T, class Alloc>
-struct array<T, dimensionality_type{0}, Alloc> : static_array<T, 0, Alloc>{
+struct array<T, 0, Alloc> : static_array<T, 0, Alloc>{
 	using static_ = static_array<T, 0, Alloc>;
 	using static_::static_;
 
