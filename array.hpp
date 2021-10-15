@@ -679,10 +679,11 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 		return *this;
 	}
 
-private:
+ private:
 	constexpr auto equal_extensions_if(std::true_type  /*true */, static_array const& other   ) {return this->extensions() == extensions(other);}
 	constexpr auto equal_extensions_if(std::false_type /*false*/, static_array const&/*other*/) {return true;}
-public:
+
+ public:
 	constexpr auto operator=(static_array&& other) noexcept -> static_array& {
 		assert( equal_extensions_if(std::integral_constant<bool, (static_array::rank_v != 0)>{}, other) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
 		adl_move(other.data_elements(), other.data_elements() + other.num_elements(), this->data_elements());  // there is no std::move_n algorithm
