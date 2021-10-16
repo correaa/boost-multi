@@ -194,27 +194,27 @@ using base_ = std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<
 	constexpr extensions_t(Array const& t, std::index_sequence<I...> /*012*/) : base_ {std::get<I>(t)...} {}
 
 	static constexpr auto multiply_fold() -> size_type {return static_cast<size_type>(1);}
-	static constexpr auto multiply_fold(size_type const& a0) -> size_type {return a0;}
-	template<class...As> static constexpr auto multiply_fold(size_type const& a0, As const&...as) -> size_type {return a0*multiply_fold(as...);}
+	static constexpr auto multiply_fold(size_type const& a0) -> size_type {return static_cast<size_type>(a0);}
+	template<class...As> static constexpr auto multiply_fold(size_type const& a0, As const&...as) -> size_type {return static_cast<size_type>(a0)*static_cast<size_type>(multiply_fold(as...));}
 
-	template<std::size_t... I> constexpr auto num_elements_impl(std::index_sequence<I...> /*012*/) const -> size_type {return multiply_fold(std::get<I>(*this).size()...);}
+	template<std::size_t... I> constexpr auto num_elements_impl(std::index_sequence<I...> /*012*/) const -> size_type {return static_cast<size_type>(multiply_fold(std::get<I>(*this).size()...));}
 
  public:
-	constexpr auto num_elements() const -> size_type {return num_elements_impl(std::make_index_sequence<static_cast<std::size_t>(D)>());}
+	constexpr auto num_elements() const -> size_type {return static_cast<size_type>(num_elements_impl(std::make_index_sequence<static_cast<std::size_t>(D)>()));}
 	friend constexpr auto intersection(extensions_t const& x1, extensions_t const& x2) -> extensions_t{
-		return extensions_t(
+		return extensions_t{
 			std::tuple_cat(
-				std::tuple<index_extension>(intersection(std::get<0>(x1), std::get<0>(x2))),
-				intersection( extensions_t<D-1>(detail::tuple_tail(x1.base())), extensions_t<D-1>(detail::tuple_tail(x2.base())) ).base()
+				std::tuple<index_extension>{intersection(std::get<0>(x1), std::get<0>(x2))},
+				intersection( extensions_t<D-1>{detail::tuple_tail(x1.base())}, extensions_t<D-1>{detail::tuple_tail(x2.base())} ).base()
 			)
-		);
+		};
 	}
 };
 
 template<dimensionality_type D> using iextensions = extensions_t<D>;
 
 template<typename SSize>
-struct layout_t<dimensionality_type{0}, SSize>{
+struct layout_t<0, SSize>{
 	using size_type = SSize;
 	using difference_type = std::make_signed_t<size_type>;
 	using index_extension = multi::index_extension;
@@ -259,7 +259,7 @@ struct layout_t<dimensionality_type{0}, SSize>{
 };
 
 template<typename SSize>
-struct layout_t<dimensionality_type{1}, SSize> {
+struct layout_t<1, SSize> {
 	using size_type=SSize;
 	using difference_type=std::make_signed_t<size_type>;
 	using index_extension = multi::index_extension;
