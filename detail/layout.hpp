@@ -183,7 +183,7 @@ using base_ = std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<
 
 	template<class Archive>
 	void serialize(Archive& ar, unsigned /*version*/) {
-		serialize_impl(ar, std::make_index_sequence<static_cast<std::size_t>(D)>{});
+		serialize_impl(ar, std::make_index_sequence<static_cast<std::size_t>(D)>());
 	}
 
  private:
