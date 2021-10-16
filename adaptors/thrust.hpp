@@ -107,9 +107,9 @@ auto copy_n(
 	if constexpr(std::is_trivially_assignable<Q2&, Q1&>{}) {
 		if(count == 0) return d_first;
 		if(first.stride() == 1 and d_first.stride() == 1) {
-			auto s = cudaMemcpy  (raw_pointer_cast(d_first.base()),                              first.base(),                            sizeof(T2)* count, cudaMemcpyHostToDevice); assert( s == cudaSuccess );
+			auto s = cudaMemcpy  (raw_pointer_cast(d_first.base()),                                                        first.base(),                                                      sizeof(T2)* static_cast<std::size_t>(count), cudaMemcpyHostToDevice); assert( s == cudaSuccess );
 		} else {
-			auto s = cudaMemcpy2D(raw_pointer_cast(d_first.base()), d_first.stride()*sizeof(T2), first.base(), first.stride()*sizeof(T2), sizeof(T2), count, cudaMemcpyHostToDevice); assert( s == cudaSuccess );
+			auto s = cudaMemcpy2D(raw_pointer_cast(d_first.base()), static_cast<std::size_t>(d_first.stride())*sizeof(T2), first.base(), static_cast<std::size_t>(first.stride())*sizeof(T2), sizeof(T2), static_cast<std::size_t>(count), cudaMemcpyHostToDevice); assert( s == cudaSuccess );
 		}
 	} else {
 		auto const& source_range = boost::multi::ref(first , first + count).elements();
@@ -133,15 +133,19 @@ auto copy_n(
 
 	if constexpr(std::is_trivially_assignable<Q2&, Q1&>{}) {
 		if(first->stride() == 1 and d_first->stride() == 1 and D == 2) {
-			auto s = cudaMemcpy2D(raw_pointer_cast(d_first.base()), d_first.stride()*sizeof(T2), first.base(), first.stride()*sizeof(T2), first->size()*sizeof(T2), count, cudaMemcpyHostToDevice); assert( s == cudaSuccess );
+			auto s = cudaMemcpy2D(raw_pointer_cast(d_first.base()), static_cast<std::size_t>(d_first.stride())*sizeof(T2), first.base(), static_cast<std::size_t>(first.stride())*sizeof(T2), static_cast<std::size_t>(first->size())*sizeof(T2), static_cast<std::size_t>(count), cudaMemcpyHostToDevice); assert( s == cudaSuccess );
 		} else {
-			cudaHostRegister((void*)&source_range.front(), (&source_range.back() - &source_range.front())*sizeof(T1), cudaHostRegisterPortable);  // cudaHostRegisterReadOnly not available in cuda < 11.1
+			cudaHostRegister(
+				const_cast<void*>(static_cast<void const*>(raw_pointer_cast(&source_range.front()))),
+			//	(void*)&source_range.front(),
+				static_cast<std::size_t>(&source_range.back() - &source_range.front())*sizeof(T1), cudaHostRegisterPortable
+			);  // cudaHostRegisterReadOnly not available in cuda < 11.1
 			::thrust::copy_n(
 				thrust::cuda::par,
 				source_range.begin(), source_range.size(),
 				boost::multi::ref(d_first, d_first + count).template reinterpret_array_cast<T2, Q2*>().elements().begin()
 			);
-			cudaHostUnregister((void*)&source_range.front());
+			cudaHostUnregister(const_cast<void*>(static_cast<void const*>(raw_pointer_cast(&source_range.front()))));
 		}
 	} else {
 		thrust::host_vector<T1, thrust::cuda::experimental::pinned_allocator<T1>> buffer(source_range.begin(), source_range.end());
@@ -172,7 +176,7 @@ auto uninitialized_copy(
 	if constexpr(std::is_trivially_constructible<T2>{}){
 		return copy(first, last, d_first);
 	}
-	throw std::logic_error("uninitialized_copy for nontrivials in cuda device not implemented");
+	throw std::logic_error{"uninitialized_copy for nontrivials in cuda device not implemented"};
 }
 
 template<class T1, class Q1, class Size, class T2, class Q2, boost::multi::dimensionality_type D>
@@ -183,7 +187,7 @@ auto uninitialized_copy_n(
 	if constexpr(std::is_trivial_v<T2> and std::is_nothrow_assignable_v<T2&, Q2&>) {
 		return copy_n(first, count, d_first);
 	}
-	throw std::logic_error("uninitialized_copy_n for nontrivials in cuda device not implemented");
+	throw std::logic_error{"uninitialized_copy_n for nontrivials in cuda device not implemented"};
 }
 
 }

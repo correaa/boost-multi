@@ -133,7 +133,7 @@ template<> struct extensions_t<1>
 	}
 	friend constexpr auto operator%(nelems_type n, extensions_t const& s) -> std::tuple<multi::index>{return s.from_linear(n);}
 	friend auto intersection(extensions_t const& x1, extensions_t const& x2){
-		return extensions_t(std::tuple<index_extension>(intersection(std::get<0>(x1), std::get<0>(x2))));
+		return extensions_t{std::tuple<index_extension>{intersection(std::get<0>(x1), std::get<0>(x2))}};
 	}
 };
 
@@ -147,8 +147,12 @@ using base_ = std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<
 	extensions_t() = default;
 	using nelems_type = multi::index;
 
-	template<class Array, typename = decltype(std::get<D-1>(std::declval<Array>()))>
-	constexpr explicit extensions_t(Array const& t) : extensions_t(t, std::make_index_sequence<static_cast<std::size_t>(D)>{}) {}
+//	template<class Array, typename = decltype(std::get<D-1>(std::declval<Array>()))>
+//	constexpr explicit extensions_t(Array const& t) : extensions_t(t, std::make_index_sequence<static_cast<std::size_t>(D)>{}) {}
+
+	template<class... Ts>
+	constexpr explicit extensions_t(std::tuple<Ts...> const& t)
+	: extensions_t(t, std::make_index_sequence<static_cast<std::size_t>(D)>{}) {}
 
 	constexpr extensions_t(index_extension const& ie, typename layout_t<D-1>::extensions_type const& other)
 	: extensions_t(std::tuple_cat(std::make_tuple(ie), other.base())) {}

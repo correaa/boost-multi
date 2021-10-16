@@ -185,7 +185,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	template<class TT, class... As>
 	static_array(array_ref<TT, D, As...> const& other, typename static_array::allocator_type const& a)
 	: array_alloc{a}
-	, ref{array_alloc::allocate(other.num_elements()), other.extensions()} {
+	, ref{array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extensions()} {
 		adl_alloc_uninitialized_copy_n(static_array::alloc(), other.data_elements(), other.num_elements(), this->data_elements());
 	}
 
@@ -430,7 +430,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 };
 
 template<class T, class Alloc>
-struct static_array<T, dimensionality_type{0}, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : design
+struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : design
 : protected array_allocator<Alloc>
 , public array_ref<T, 0, typename std::allocator_traits<typename array_allocator<Alloc>::allocator_type>::pointer> {
 	static_assert( std::is_same<typename std::allocator_traits<Alloc>::value_type, typename static_array::element>{},
@@ -679,10 +679,11 @@ struct static_array<T, dimensionality_type{0}, Alloc>  // NOLINT(fuchsia-multipl
 		return *this;
 	}
 
-private:
+ private:
 	constexpr auto equal_extensions_if(std::true_type  /*true */, static_array const& other   ) {return this->extensions() == extensions(other);}
 	constexpr auto equal_extensions_if(std::false_type /*false*/, static_array const&/*other*/) {return true;}
-public:
+
+ public:
 	constexpr auto operator=(static_array&& other) noexcept -> static_array& {
 		assert( equal_extensions_if(std::integral_constant<bool, (static_array::rank_v != 0)>{}, other) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
 		adl_move(other.data_elements(), other.data_elements() + other.num_elements(), this->data_elements());  // there is no std::move_n algorithm
@@ -713,7 +714,7 @@ public:
 };
 
 template<typename T, class Alloc>
-struct array<T, dimensionality_type{0}, Alloc> : static_array<T, 0, Alloc>{
+struct array<T, 0, Alloc> : static_array<T, 0, Alloc>{
 	using static_ = static_array<T, 0, Alloc>;
 	using static_::static_;
 

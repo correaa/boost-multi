@@ -43,8 +43,8 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
 BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed) {
 	std::array<std::string, 5> a{ {"a", "b", "c", "d", "e"} };
 
-	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test type
-	multi::Array<std::string(&)[1]> mar = *multi::Array<std::string(*)[1]>(&a);
+	multi::array_ref<std::string, 1> mar = *multi::array_ptr<std::string, 1>(&a);
+
 	BOOST_REQUIRE( &mar[1] == &a[1] );
 	BOOST_REQUIRE( sizes(mar.reindexed(1)) == sizes(mar) );
 	auto diff = &(mar.reindexed(1)[1]) - &mar[0];
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(array_ref_of_nested_std_array_reindexed) {
 	};
 
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test type
-	multi::Array<double(&)[2]> mar = *multi::Array<double(*)[2]>(&a);
+	multi::array_ref<double, 2> mar = *multi::array_ptr<double, 2>(&a);
 
 	BOOST_REQUIRE( &mar[1][1] == &a[1][1] );
 }
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
 	};
 
 	// NOLINTNEXTLINE(hicpp-avoid-c-arrays, modernize-avoid-c-arrays, cppcoreguidelines-avoid-c-arrays): special type
-	multi::Array<double(&)[2]> mar = *multi::Array<double(*)[2]>(&a);
+	multi::array_ref<double, 2> mar = *multi::array_ptr<double, 2>(&a);
 
 	BOOST_REQUIRE( &mar[1][1] == &a[1][1] );
 	BOOST_REQUIRE( size(mar   .reindexed(1)) == size(mar) );
@@ -177,13 +177,13 @@ BOOST_AUTO_TEST_CASE(array_ref_with_stencil) {
 		}
 	};
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test type
-	auto const& mar = *multi::Array<double(*)[2]>(&a);
+	auto const& mar = *multi::array_ptr<double, 2>(&a);
 
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test type
-	multi::Array<double[2]> s = {
-		{ 0, +1,  0},
-		{+1, -4, +1},
-		{ 0, +1,  0}
+	multi::array<double, 2> s = {
+		{ 0., +1.,  0.},
+		{+1., -4., +1.},
+		{ 0., +1.,  0.}
 	};
 	auto const& st = s.reindexed(-1, -1);
 
