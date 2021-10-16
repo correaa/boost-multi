@@ -174,33 +174,33 @@ using base_ = std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<
 
 	constexpr explicit operator bool() const {return not layout_t<D>{*this}.empty();}
 
-//	template<class Archive, std::size_t... I>
-//	void serialize_impl(Archive& /*ar*/, std::index_sequence<I...> /*012*/) {
-//		assert(0);
-//	//  using boost::serialization::make_nvp;
-//	//  (void)std::initializer_list<int>{(ar & make_nvp("extension", std::get<I>(*this)),0)...};
-//	//	(void)std::initializer_list<unsigned>{(ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<I>(*this)), 0U)...};
-//	//  (void)std::initializer_list<int>{(ar & boost::serialization::nvp<std::remove_reference_t<decltype(std::get<I>(*this))> >{"extension", std::get<I>(*this)},0)...};
-//	}
+//  template<class Archive, std::size_t... I>
+//  void serialize_impl(Archive& /*ar*/, std::index_sequence<I...> /*012*/) {
+//      assert(0);
+//  //  using boost::serialization::make_nvp;
+//  //  (void)std::initializer_list<int>{(ar & make_nvp("extension", std::get<I>(*this)),0)...};
+//  //	(void)std::initializer_list<unsigned>{(ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<I>(*this)), 0U)...};
+//  //  (void)std::initializer_list<int>{(ar & boost::serialization::nvp<std::remove_reference_t<decltype(std::get<I>(*this))> >{"extension", std::get<I>(*this)},0)...};
+//  }
 
-//	template<class Archive>
-//	void serialize(Archive& /*ar*/, unsigned /*version*/) {
-//		assert(0);
-//	//	serialize_impl(ar, std::make_index_sequence<static_cast<std::size_t>(D)>());
-//	}
+//  template<class Archive>
+//  void serialize(Archive& /*ar*/, unsigned /*version*/) {
+//  	assert(0);
+//  //	serialize_impl(ar, std::make_index_sequence<static_cast<std::size_t>(D)>());
+//  }
 
  private:
 	template<class Array, std::size_t... I, typename = decltype(base_{std::get<I>(std::declval<Array const&>())...})>
 	constexpr extensions_t(Array const& t, std::index_sequence<I...> /*012*/) : base_ {std::get<I>(t)...} {}
 
-	static constexpr auto multiply_fold() -> size_type {return 1;}
+	static constexpr auto multiply_fold() -> size_type {return static_cast<size_type>(1);}
 	static constexpr auto multiply_fold(size_type const& a0) -> size_type {return a0;}
 	template<class...As> static constexpr auto multiply_fold(size_type const& a0, As const&...as) -> size_type {return a0*multiply_fold(as...);}
 
 	template<std::size_t... I> constexpr auto num_elements_impl(std::index_sequence<I...> /*012*/) const -> size_type {return multiply_fold(std::get<I>(*this).size()...);}
 
  public:
-	constexpr auto num_elements() const -> size_type {return num_elements_impl(std::make_index_sequence<static_cast<std::size_t>(D)>{});}
+	constexpr auto num_elements() const -> size_type {return num_elements_impl(std::make_index_sequence<static_cast<std::size_t>(D)>());}
 	friend constexpr auto intersection(extensions_t const& x1, extensions_t const& x2) -> extensions_t{
 		return extensions_t(
 			std::tuple_cat(
