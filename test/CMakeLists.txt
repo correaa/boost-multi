@@ -58,7 +58,7 @@ foreach(TEST_FILE ${TEST_SRCS})
     target_compile_options  (${TEST_EXE} PRIVATE # -fstrict-aliasing -Wstrict-aliasing
        -Werror -Wall -Wshadow -Wsign-conversion -Wold-style-cast -Wcast-align -Wunused -Wnon-virtual-dtor -Woverloaded-virtual -Wcast-qual -Wconversion -Wnull-dereference -Wformat=2
        $<$<CXX_COMPILER_ID:GNU>:
-                             -Wextra -Wpedantic -Wuninitialized -Wformat-truncation -Wdouble-promotion -Wmisleading-indentation -Wduplicated-cond -Wduplicated-branches -Wlogical-op>
+                             -Werror -Wall -Wshadow -Wsign-conversion -Wold-style-cast -Wcast-align -Wunused -Wnon-virtual-dtor -Woverloaded-virtual -Wcast-qual -Wconversion -Wnull-dereference -Wformat=2 -Wextra -Wpedantic -Wuninitialized -Wformat-truncation -Wdouble-promotion -Wmisleading-indentation -Wduplicated-cond -Wduplicated-branches -Wlogical-op>
        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
                              -Wextra -Wpedantic -Wmove>
        $<$<CXX_COMPILER_ID:Intel>:
