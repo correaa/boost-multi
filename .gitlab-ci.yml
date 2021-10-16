@@ -686,7 +686,7 @@ inq-nvcc-ompi:
     - mkdir build && cd build
     - /usr/local/cuda/bin/nvcc -V
     - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --disable-debug --with-cuda-prefix=/usr/local/cuda
-    - make -j4
+    - make -j8
     - make -j4 install
     - ctest --output-on-failure --timeout 600
     - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest --output-on-failure --timeout 600; cd ..
