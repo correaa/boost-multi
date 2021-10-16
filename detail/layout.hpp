@@ -173,18 +173,21 @@ using base_ = std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<
 	friend constexpr auto operator%(nelems_type n, extensions_t const& s) {return s.from_linear(n);}
 
 	constexpr explicit operator bool() const {return not layout_t<D>{*this}.empty();}
-	template<class Archive, std::size_t... I>
-	void serialize_impl(Archive& ar, std::index_sequence<I...> /*012*/) {
-	//  using boost::serialization::make_nvp;
-	//  (void)std::initializer_list<int>{(ar & make_nvp("extension", std::get<I>(*this)),0)...};
-		(void)std::initializer_list<int>{(ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<I>(*this)), 0)...};
-	//  (void)std::initializer_list<int>{(ar & boost::serialization::nvp<std::remove_reference_t<decltype(std::get<I>(*this))> >{"extension", std::get<I>(*this)},0)...};
-	}
 
-	template<class Archive>
-	void serialize(Archive& ar, unsigned /*version*/) {
-		serialize_impl(ar, std::make_index_sequence<static_cast<std::size_t>(D)>());
-	}
+//	template<class Archive, std::size_t... I>
+//	void serialize_impl(Archive& /*ar*/, std::index_sequence<I...> /*012*/) {
+//		assert(0);
+//	//  using boost::serialization::make_nvp;
+//	//  (void)std::initializer_list<int>{(ar & make_nvp("extension", std::get<I>(*this)),0)...};
+//	//	(void)std::initializer_list<unsigned>{(ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<I>(*this)), 0U)...};
+//	//  (void)std::initializer_list<int>{(ar & boost::serialization::nvp<std::remove_reference_t<decltype(std::get<I>(*this))> >{"extension", std::get<I>(*this)},0)...};
+//	}
+
+//	template<class Archive>
+//	void serialize(Archive& /*ar*/, unsigned /*version*/) {
+//		assert(0);
+//	//	serialize_impl(ar, std::make_index_sequence<static_cast<std::size_t>(D)>());
+//	}
 
  private:
 	template<class Array, std::size_t... I, typename = decltype(base_{std::get<I>(std::declval<Array const&>())...})>
