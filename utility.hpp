@@ -64,7 +64,7 @@ constexpr auto reinterpret_pointer_cast(U* other)  // name taken from thrust::re
 -> decltype(reinterpret_cast<TPointer>(other)) {return reinterpret_cast<TPointer>(other);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : unavoidalbe implementation?
 
 template <class T, std::size_t N>
-constexpr auto size(const T(&/*t*/)[N]) noexcept{return multi::size_type{N};}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+constexpr auto size(const T(&/*t*/)[N]) noexcept{return static_cast<multi::size_type>(N);}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 
 template<class T, typename = typename T::get_allocator>
        auto has_get_allocator_aux(T const&) -> std::true_type;
@@ -192,8 +192,8 @@ constexpr auto dimensionality(Container const& /*container*/)
 	return Container::rank_v;}
 
 template<class T>
-       auto has_dimensionaliy_member_aux(T const& t)->decltype((size_t(T::rank_v), std::true_type{}));
-inline auto has_dimensionaliy_member_aux(...       )->decltype(                    std::false_type{});
+       auto has_dimensionaliy_member_aux(T const& t)->decltype((static_cast<size_type>(T::rank_v), std::true_type{}));
+inline auto has_dimensionaliy_member_aux(...       )->decltype(                                    std::false_type{});
 template<class T> struct has_dimensionality_member : decltype(has_dimensionaliy_member_aux(std::declval<T>())){};
 
 template<class T, typename = std::enable_if_t<not has_dimensionality_member<T>{}>>
@@ -273,7 +273,7 @@ constexpr auto extensions(T const& /*unused*/) -> multi::layout_t<0>::extensions
 
 template<class T, std::size_t N>
 constexpr auto extensions(T(&t)[N]) {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
-	return index_extension(N)*extensions(t[0]);
+	return index_extension{N}*extensions(t[0]);
 }
 
 template<dimensionality_type D>
