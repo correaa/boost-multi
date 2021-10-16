@@ -197,7 +197,7 @@ using base_ = std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<
 	static constexpr auto multiply_fold(size_type const& a0) -> size_type {return static_cast<size_type>(a0);}
 	template<class...As> static constexpr auto multiply_fold(size_type const& a0, As const&...as) -> size_type {return static_cast<size_type>(a0)*static_cast<size_type>(multiply_fold(as...));}
 
-	template<std::size_t... I> constexpr auto num_elements_impl(std::index_sequence<I...> /*012*/) const -> size_type {return static_cast<size_type>(multiply_fold(std::get<I>(*this).size()...));}
+	template<std::size_t... I> constexpr auto num_elements_impl(std::index_sequence<I...> /*012*/) const -> size_type {return static_cast<size_type>(multiply_fold(static_cast<size_type>(std::get<I>(*this).size())...));}
 
  public:
 	constexpr auto num_elements() const -> size_type {return static_cast<size_type>(num_elements_impl(std::make_index_sequence<static_cast<std::size_t>(D)>()));}
