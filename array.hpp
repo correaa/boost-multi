@@ -866,7 +866,7 @@ struct array : static_array<T, D, Alloc>{
 		if(array::extensions() == other.extensions()) {
 			static_::operator=(other);  // TODO(correaa) : protect for self assigment
 		} else {
-			operator=(array(other));
+			operator=(array{other});
 		}
 		return *this;
 	}
