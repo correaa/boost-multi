@@ -321,7 +321,7 @@ template<class T, typename = std::enable_if_t<not has_layout_member<T const&>{}>
 auto layout(T const& /*unused*/) -> layout_t<0> {return {};}
 
 template<class T, std::size_t N>
-constexpr auto layout(T(&t)[N]) {return multi::layout_t<std::rank<T[N]>{}>(multi::extensions(t));}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): for backward compatibility
+constexpr auto layout(T(&t)[N]) {return multi::layout_t<std::rank<T[N]>{}>{multi::extensions(t)};}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): for backward compatibility
 
 template<class T, std::size_t N>
 constexpr auto strides(T(&t)[N]) {return layout(t).strides();}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): for backward compatibility
@@ -391,12 +391,12 @@ constexpr auto extensions(std::array<T, N> const& /*arr*/) {
 
 template<class T, std::size_t N, std::size_t M>
 auto extensions(std::array<std::array<T, N>, M> const& arr) {
-	return multi::iextension(M)*extensions(arr[0]);
+	return multi::iextension{M}*extensions(arr[0]);
 }
 
 template<class T, std::size_t N>
 constexpr auto stride(std::array<T, N> const& /*arr*/) {
-	return multi::size_type{1};  // multi::stride_type?
+	return static_cast<multi::size_type>(1);  // multi::stride_type?
 }
 
 template<class T, std::size_t N, std::size_t M>
