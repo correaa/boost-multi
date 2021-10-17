@@ -475,8 +475,8 @@ struct basic_array
 		constexpr auto operator++() -> elements_iterator_t& {return (*this) += 1;}
 		constexpr auto operator--() -> elements_iterator_t& {return (*this) -= 1;}
 
-		constexpr auto operator+(difference_type d) const {return elements_iterator_t{*this} += d;}
-		constexpr auto operator-(difference_type d) const {return elements_iterator_t{*this} -= d;}
+		constexpr auto operator+(difference_type d) const {elements_iterator_t ret{*this}; return ret += d;}
+		constexpr auto operator-(difference_type d) const {elements_iterator_t ret{*this}; return ret -= d;}
 
 		constexpr auto operator-(elements_iterator_t other) const -> difference_type {
 			assert(base_ == other.base_);
@@ -1401,9 +1401,9 @@ template<class Element, dimensionality_type D, typename... Ts>
 using iterator = array_iterator<Element, D, Ts...>;
 
 template<typename T, typename ElementPtr, class Layout>
-struct basic_array<T, dimensionality_type{0}, ElementPtr, Layout>
-: array_types<T, dimensionality_type(0), ElementPtr, Layout> {
-	using types = array_types<T, dimensionality_type{0}, ElementPtr, Layout>;
+struct basic_array<T, 0, ElementPtr, Layout>
+: array_types<T, 0, ElementPtr, Layout> {
+	using types = array_types<T, 0, ElementPtr, Layout>;
 	using types::types;
 
 	using element      = typename types::element;
@@ -1461,10 +1461,10 @@ struct basic_array<T, dimensionality_type{0}, ElementPtr, Layout>
 };
 
 template<typename T, typename ElementPtr, class Layout>
-struct basic_array<T, dimensionality_type{1}, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritance) : to define operators via CRTP
-: multi::partially_ordered2<basic_array<T, dimensionality_type(1), ElementPtr, Layout>, void>
-, multi::random_iterable<basic_array<T, dimensionality_type(1), ElementPtr, Layout> >
-, array_types<T, dimensionality_type(1), ElementPtr, Layout> {
+struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritance) : to define operators via CRTP
+: multi::partially_ordered2<basic_array<T, 1, ElementPtr, Layout>, void>
+, multi::random_iterable<basic_array<T, 1, ElementPtr, Layout> >
+, array_types<T, 1, ElementPtr, Layout> {
 	~basic_array() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
 	auto operator=(basic_array&& other)&
@@ -1971,9 +1971,10 @@ struct array_ref
 //  constexpr auto operator=(array_ref&&);
 #endif
 
+	using layout_type = typename array_ref::types::layout_t;
+
  protected:
-	constexpr array_ref() noexcept
-	: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{}, nullptr} {}
+	constexpr array_ref() noexcept : basic_array<T, D, ElementPtr>{{}, nullptr} {}
 
 	using iterator = typename basic_array<T, D, ElementPtr>::iterator;
 
@@ -2161,8 +2162,8 @@ class array_ptr<T, 0, Ptr> : multi::array_ref<T, 0, Ptr>{
 template<class TT, std::size_t N>
 constexpr auto addressof(TT(&t)[N]) {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
 	return array_ptr<
-		std::decay_t<std::remove_all_extents_t<TT[N]>>, std::rank<TT[N]>{}, std::remove_all_extents_t<TT[N]>*  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
-	>(&t);
+		std::decay_t<std::remove_all_extents_t<TT[N]>>, static_cast<dimensionality_type>(std::rank<TT[N]>{}), std::remove_all_extents_t<TT[N]>*  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
+	>{&t};
 }
 
 template<class T, dimensionality_type D, typename Ptr = T*>
