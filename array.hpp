@@ -158,8 +158,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	static_array(It first, It last, typename static_array::allocator_type const& a)
 	: array_alloc{a}
 	, ref{
-		array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t {index_extension{adl_distance(first, last)}*multi::extensions(*first)}.num_elements())),
-		index_extension{adl_distance(first, last)}*multi::extensions(*first)
+		array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t {index_extension {adl_distance(first, last)}*multi::extensions(*first)}.num_elements())),
+		index_extension {adl_distance(first, last)}*multi::extensions(*first)
 	} {
 		adl_alloc_uninitialized_copy(static_array::alloc(), first, last, ref::begin());
 	}
