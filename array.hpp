@@ -230,7 +230,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 
 // analgous to std::vector::vector ((4)) https://en.cppreference.com/w/cpp/container/vector/vector
 	explicit static_array(typename static_array::extensions_type x, typename static_array::allocator_type const& a)
-	: array_alloc{a}, ref{array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{x}.num_elements())), x} {
+	: array_alloc{a}
+	, ref{array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{x}.num_elements())), x} {
 		uninitialized_default_construct();
 	}
 
@@ -285,7 +286,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	static_array(
 		std::initializer_list<typename static_array<T, D>::value_type> mil,
 		typename static_array::allocator_type const& a
-	) : static_array(static_array<T, D>(mil.begin(), mil.end()), a) {}
+	) : static_array{static_array<T, D>(mil.begin(), mil.end()), a} {}
 
 	template<class TT, std::size_t N>
 	constexpr explicit static_array(TT(&array)[N]) : static_array(std::begin(array), std::end(array)) {}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backward compatibility
@@ -293,6 +294,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		using std::distance;
 		return distance(a, b);
 	}
+
  protected:
 	void deallocate() {
 		if(this->num_elements()) {
