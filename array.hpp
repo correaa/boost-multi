@@ -851,12 +851,12 @@ struct array : static_array<T, D, Alloc>{
 		class = decltype(std::declval<static_&>().operator=(std::declval<Range&&>())),
 		std::enable_if_t<not std::is_base_of<array, std::decay_t<Range>>{}, int> = 0
 	>
-	auto operator=(Range&& o)  // TODO(correaa) : check that LHS is not read-only
-	->array& {
-		if(array::extensions() == o.extensions()) {
-			static_::operator=(o);
+	auto operator=(Range&& other) ->array& { // TODO(correaa) : check that LHS is not read-only?
+		if(array::extensions() == other.extensions()) {
+			static_::operator=(other);
 		} else {
-			operator=(array(o));
+			array tmp(other);
+			operator=(std::move(tmp));  // operator=(array{other}); produces an error in nvcc 11.2
 		}
 		return *this;
 	}
