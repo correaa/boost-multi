@@ -92,6 +92,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	using typename array_allocator<Alloc>::allocator_type;
 //  using allocator_type = typename static_array::allocator_type;
 	using decay_type = array<T, D, Alloc>;
+	using layout_type = typename array_ref<T, D, typename std::allocator_traits<Alloc>::pointer>::layout_type;
 
  protected:
 	using alloc_traits = typename std::allocator_traits<typename static_array::allocator_type>;
@@ -153,19 +154,20 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	template<class TT, class... Args> auto operator==(basic_array<TT, D, Args...> const& other) const -> bool {return ref::operator==(other);}
 	template<class TT, class... Args> auto operator!=(basic_array<TT, D, Args...> const& other) const -> bool {return ref::operator!=(other);}
 
-	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>  // edecltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>
+	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>  // decltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>
 	// analogous to std::vector::vector (5) https://en.cppreference.com/w/cpp/container/vector/vector
 	static_array(It first, It last, typename static_array::allocator_type const& a)
 	: array_alloc{a}
-	, ref{
-		array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t {index_extension {adl_distance(first, last)}*multi::extensions(*first)}.num_elements())),
+	, ref {
+		array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(layout_type {index_extension {adl_distance(first, last)}*multi::extensions(*first)}.num_elements())),
 		index_extension {adl_distance(first, last)}*multi::extensions(*first)
 	} {
 		adl_alloc_uninitialized_copy(static_array::alloc(), first, last, ref::begin());
 	}
-	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>  // edecltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>
+
+	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>  // decltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>
 	// analogous to std::vector::vector (5) https://en.cppreference.com/w/cpp/container/vector/vector
-	static_array(It first, It last) : static_array(first, last, typename static_array::allocator_type{}) {}
+	static_array(It first, It last) : static_array{first, last, typename static_array::allocator_type{}} {}
 
 	template<
 		class Range, class = std::enable_if_t<not std::is_base_of<static_array, std::decay_t<Range>>{}>,
@@ -174,7 +176,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	>
 	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions // NOLINTNEXTLINE(runtime/explicit)
 	static_array(Range&& rng)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
-	: static_array(std::forward<Range>(rng).begin(), std::forward<Range>(rng).end()) {}
+	: static_array{std::forward<Range>(rng).begin(), std::forward<Range>(rng).end()} {}
 
 	template<class TT>
 	auto uninitialized_fill_elements(TT const& value) {
@@ -185,43 +187,51 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	template<class TT, class... As>
 	static_array(array_ref<TT, D, As...> const& other, typename static_array::allocator_type const& a)
 	: array_alloc{a}
-	, ref{array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(other.num_elements())), other.extensions()} {
+	, ref{
+		array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(other.num_elements())),
+		other.extensions()
+	} {
 		adl_alloc_uninitialized_copy_n(static_array::alloc(), other.data_elements(), other.num_elements(), this->data_elements());
 	}
 
 	template<class TT, class... As>
 	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented  // NOLINTNEXTLINE(runtime/explicit)
-	static_array(array_ref<TT, D, As...> const& other) : static_array(other, typename static_array::allocator_type{}) {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
+	static_array(array_ref<TT, D, As...> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
+	: static_array{other, typename static_array::allocator_type{}} {}
 	// ^^^ TODO(correaa) : check if really necessary
 
 	static_array(typename static_array::extensions_type x, typename static_array::element const& e, typename static_array::allocator_type const& a)  // 2
 	: array_alloc{a}
-	, ref(array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{x}.num_elements())), x) {
+	, ref{array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{x}.num_elements())), x} {
 		array_alloc::uninitialized_fill_n(this->data_elements(), static_cast<typename std::allocator_traits<allocator_type>::size_type>(this->num_elements()), e);
 	}
 
 	template<class Element, std::enable_if_t<std::is_convertible<Element, typename static_array::element>{} and (D == 0), int> = 0>
 	explicit static_array(Element const& e, typename static_array::allocator_type const& a)
-	: static_array(typename static_array::extensions_type{}, e, a) {}
+	: static_array{typename static_array::extensions_type{}, e, a} {}
 
 	static_array(typename static_array::extensions_type x, typename static_array::element const& e)  // 2
-	: array_alloc{}, ref(array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{x}.num_elements())), x) {
+	: array_alloc{}
+	, ref{array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{x}.num_elements())), x} {
 		array_alloc::uninitialized_fill_n(this->base(), static_cast<typename std::allocator_traits<allocator_type>::size_type>(this->num_elements()), e);
 	}
 
 	explicit static_array(typename static_array::extensions_type x, typename std::allocator_traits<Alloc>::const_void_pointer hint)
-	: array_alloc{}, ref(array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{x}.num_elements()), hint), x) {}
+	: array_alloc{}
+	, ref{array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{x}.num_elements()), hint), x} {}
 
 	template<class ValueType, typename = std::enable_if_t<std::is_same<ValueType, typename static_array::value_type>{}>>
 	explicit static_array(typename static_array::index_extension const& e, ValueType const& v, typename static_array::allocator_type const& a)  // 3
 	= delete;
+
 	template<class ValueType, typename = std::enable_if_t<std::is_same<ValueType, typename static_array::value_type>{}>>
 	explicit static_array(typename static_array::index_extension const& e, ValueType const& v)  // 3
 	= delete;
 
 // analgous to std::vector::vector ((4)) https://en.cppreference.com/w/cpp/container/vector/vector
 	explicit static_array(typename static_array::extensions_type x, typename static_array::allocator_type const& a)
-	: array_alloc{a}, ref{array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{x}.num_elements())), x} {
+	: array_alloc{a}
+	, ref{array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{x}.num_elements())), x} {
 		uninitialized_default_construct();
 	}
 
@@ -276,7 +286,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	static_array(
 		std::initializer_list<typename static_array<T, D>::value_type> mil,
 		typename static_array::allocator_type const& a
-	) : static_array(static_array<T, D>(mil.begin(), mil.end()), a) {}
+	) : static_array{static_array<T, D>(mil.begin(), mil.end()), a} {}
 
 	template<class TT, std::size_t N>
 	constexpr explicit static_array(TT(&array)[N]) : static_array(std::begin(array), std::end(array)) {}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backward compatibility
@@ -284,6 +294,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		using std::distance;
 		return distance(a, b);
 	}
+
  protected:
 	void deallocate() {
 		if(this->num_elements()) {
@@ -648,21 +659,23 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 		new_layout.unrotate(d);
 		return basic_array<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
-	constexpr auto unrotated() const& {
-		typename static_array::layout_t new_layout = *this;
-		new_layout.unrotate();
-		return basic_array<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
-	}
 	constexpr auto unrotated(dimensionality_type d)& {
 		typename static_array::layout_t new_layout = *this;
 		new_layout.unrotate(d);
 		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
 	}
-	constexpr auto unrotated()& {
+
+ private:
+	constexpr auto unrotated_aux() {
 		typename static_array::layout_t new_layout = *this;
 		new_layout.unrotate();
-		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
+		return basic_array<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
+
+ public:
+	constexpr auto unrotated()      & {return unrotated_aux();}
+	constexpr auto unrotated() const& {return unrotated_aux().as_const();}
+
 	friend constexpr auto unrotated(static_array      & self) -> decltype(auto) {return self.unrotated();}
 	friend constexpr auto unrotated(static_array const& self) -> decltype(auto) {return self.unrotated();}
 
@@ -851,12 +864,12 @@ struct array : static_array<T, D, Alloc>{
 		class = decltype(std::declval<static_&>().operator=(std::declval<Range&&>())),
 		std::enable_if_t<not std::is_base_of<array, std::decay_t<Range>>{}, int> = 0
 	>
-	auto operator=(Range&& o)  // TODO(correaa) : check that LHS is not read-only
-	->array& {
-		if(array::extensions() == o.extensions()) {
-			static_::operator=(o);
+	auto operator=(Range&& other) ->array& {  // TODO(correaa) : check that LHS is not read-only?
+		if(array::extensions() == other.extensions()) {
+			static_::operator=(other);
 		} else {
-			operator=(array(o));
+			array tmp(other);
+			operator=(std::move(tmp));  // operator=(array{other}); produces an error in nvcc 11.2
 		}
 		return *this;
 	}

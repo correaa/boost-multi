@@ -200,7 +200,9 @@ using base_ = std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<
 	template<std::size_t... I> constexpr auto num_elements_impl(std::index_sequence<I...> /*012*/) const -> size_type {return static_cast<size_type>(multiply_fold(static_cast<size_type>(std::get<I>(*this).size())...));}
 
  public:
-	constexpr auto num_elements() const -> size_type {return static_cast<size_type>(num_elements_impl(std::make_index_sequence<static_cast<std::size_t>(D)>()));}
+	constexpr auto num_elements() const -> size_type {
+		return static_cast<size_type>(num_elements_impl(std::make_index_sequence<static_cast<std::size_t>(D)>()));
+	}
 	friend constexpr auto intersection(extensions_t const& x1, extensions_t const& x2) -> extensions_t{
 		return extensions_t{
 			std::tuple_cat(
