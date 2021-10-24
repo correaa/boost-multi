@@ -92,6 +92,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	using typename array_allocator<Alloc>::allocator_type;
 //  using allocator_type = typename static_array::allocator_type;
 	using decay_type = array<T, D, Alloc>;
+	using layout_type = typename array_ref<T, D, typename std::allocator_traits<Alloc>::pointer>::layout_type;
 
  protected:
 	using alloc_traits = typename std::allocator_traits<typename static_array::allocator_type>;
@@ -157,8 +158,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	// analogous to std::vector::vector (5) https://en.cppreference.com/w/cpp/container/vector/vector
 	static_array(It first, It last, typename static_array::allocator_type const& a)
 	: array_alloc{a}
-	, ref{
-		array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{index_extension{adl_distance(first, last)}*multi::extensions(*first)}.num_elements())),
+	, ref {
+		array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(layout_type {index_extension {adl_distance(first, last)}*multi::extensions(*first)}.num_elements())),
 		index_extension{adl_distance(first, last)}*multi::extensions(*first)
 	} {
 		adl_alloc_uninitialized_copy(static_array::alloc(), first, last, ref::begin());
@@ -648,21 +649,23 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 		new_layout.unrotate(d);
 		return basic_array<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
-	constexpr auto unrotated() const& {
-		typename static_array::layout_t new_layout = *this;
-		new_layout.unrotate();
-		return basic_array<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
-	}
 	constexpr auto unrotated(dimensionality_type d)& {
 		typename static_array::layout_t new_layout = *this;
 		new_layout.unrotate(d);
 		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
 	}
-	constexpr auto unrotated()& {
+
+ private:
+	constexpr auto unrotated_aux() {
 		typename static_array::layout_t new_layout = *this;
 		new_layout.unrotate();
-		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
+		return basic_array<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
+
+ public:
+	constexpr auto unrotated()      & {return unrotated_aux();}
+	constexpr auto unrotated() const& {return unrotated_aux().as_const();}
+
 	friend constexpr auto unrotated(static_array      & self) -> decltype(auto) {return self.unrotated();}
 	friend constexpr auto unrotated(static_array const& self) -> decltype(auto) {return self.unrotated();}
 
@@ -851,7 +854,7 @@ struct array : static_array<T, D, Alloc>{
 		class = decltype(std::declval<static_&>().operator=(std::declval<Range&&>())),
 		std::enable_if_t<not std::is_base_of<array, std::decay_t<Range>>{}, int> = 0
 	>
-	auto operator=(Range&& other) ->array& { // TODO(correaa) : check that LHS is not read-only?
+	auto operator=(Range&& other) ->array& {  // TODO(correaa) : check that LHS is not read-only?
 		if(array::extensions() == other.extensions()) {
 			static_::operator=(other);
 		} else {
