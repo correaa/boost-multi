@@ -149,8 +149,7 @@ BOOST_AUTO_TEST_CASE(test_utility_2d) {
 	};
 	multi::array_ref<double, 2> marr(&carr[0][0], {3, 10});
 
-	using multi::size;
-	BOOST_REQUIRE( size(carr) == size(marr) );
+	BOOST_REQUIRE( carr.size() == size(marr) );
 
 	BOOST_REQUIRE( carr[1][7] == marr[1][7] );
 
