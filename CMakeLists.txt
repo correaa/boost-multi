@@ -23,14 +23,12 @@ target_include_directories(${PROJECT_NAME} INTERFACE $<BUILD_INTERFACE:${${PROJE
 target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_14)
 
 find_program(MEMORYCHECK_COMMAND valgrind)
-set(VALGRIND_COMMAND_OPTIONS "-q --tool=memcheck --leak-check=yes --num-callers=51 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all")
-set(MEMORYCHECK_COMMAND_OPTIONS "-q --tool=memcheck --leak-check=yes --num-callers=52 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all")
-# must go before `include(CTest)`
-set(MEMORYCHECK_SUPPRESSIONS_FILE "${PROJECT_SOURCE_DIR}/.valgrind-suppressions")
-# must go before `include(CTest)`
 
-list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure")
-# before enable_testing()
+set(VALGRIND_COMMAND_OPTIONS    "-q --tool=memcheck --leak-check=yes --num-callers=51 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all")
+set(MEMORYCHECK_COMMAND_OPTIONS "-q --tool=memcheck --leak-check=yes --num-callers=52 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all")  # must go before `include(CTest)`
+set(MEMORYCHECK_SUPPRESSIONS_FILE "${PROJECT_SOURCE_DIR}/.valgrind-suppressions")  # must go before `include(CTest)`
+
+list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure")  # before enable_testing()
 
 include(CTest)
 
