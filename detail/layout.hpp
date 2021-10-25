@@ -152,7 +152,7 @@ using base_ = std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<
 
 	template<class... Ts>
 	constexpr explicit extensions_t(std::tuple<Ts...> const& t)
-	: extensions_t{t, std::make_index_sequence<static_cast<std::size_t>(D)>()} {}
+	: extensions_t(t, std::make_index_sequence<static_cast<std::size_t>(D)>()) {}
 
 	constexpr extensions_t(index_extension const& ie, typename layout_t<D-1>::extensions_type const& other)
 	: extensions_t(std::tuple_cat(std::make_tuple(ie), other.base())) {}

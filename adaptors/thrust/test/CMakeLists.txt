@@ -77,5 +77,10 @@ foreach(TEST_FILE ${TEST_SRCS})
 #       $<$<CXX_COMPILER_ID:MSVC>:
 #          /W4>)
 #  endif()
+  target_compile_options(${TEST_EXE} PRIVATE
+       $<$<CUDA_COMPILER_ID:NVIDIA>:
+         --extended-lambda --expt-relaxed-constexpr -Xcudafe "--display_error_number --diag_suppress=implicit_return_from_non_void_function --diag_suppress=class_and_member_name_conflict" -Xcompiler "-Werror -Wall -Wshadow -Wsign-conversion `#-Wold-style-cast` -Wcast-align -Wunused -Wnon-virtual-dtor -Woverloaded-virtual -Wcast-qual -Wconversion -Wnull-dereference -Wformat=2 -Wextra `#-Wpedantic` -Wuninitialized -Wformat-truncation -Wdouble-promotion -Wmisleading-indentation -Wduplicated-cond -Wduplicated-branches -Wlogical-op"
+       >
+  )
   add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
 endforeach()

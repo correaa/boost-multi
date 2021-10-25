@@ -58,9 +58,9 @@ foreach(TEST_FILE ${TEST_SRCS})
     target_compile_options  (${TEST_EXE} PRIVATE # -fstrict-aliasing -Wstrict-aliasing
        -Werror -Wall -Wshadow -Wsign-conversion -Wold-style-cast -Wcast-align -Wunused -Wnon-virtual-dtor -Woverloaded-virtual -Wcast-qual -Wconversion -Wnull-dereference -Wformat=2
        $<$<CXX_COMPILER_ID:GNU>:
-                             -Werror -Wall -Wshadow -Wsign-conversion -Wold-style-cast -Wcast-align -Wunused -Wnon-virtual-dtor -Woverloaded-virtual -Wcast-qual -Wconversion -Wnull-dereference -Wformat=2 -Wextra -Wpedantic -Wuninitialized -Wformat-truncation -Wdouble-promotion -Wmisleading-indentation -Wduplicated-cond -Wduplicated-branches -Wlogical-op>
+                             -Wextra -Wpedantic -Wuninitialized -Wformat-truncation -Wdouble-promotion -Wmisleading-indentation -Wduplicated-cond -Wduplicated-branches -Wlogical-op>
        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
-                             -Wextra -Wpedantic -Wmove>
+                             -Wextra -Wpedantic -Wmove -Wconsumed>
        $<$<CXX_COMPILER_ID:Intel>:
                              -Wextra                            -wd161 -diag-disable=remark -Warray-bounds -Wchar-subscripts -Wcomment -Wenum-compare -Wformat -Wuninitialized -Wmaybe-uninitialized -Wmain -Wnarrowing -Wnonnull -Wparentheses -Wpointer-sign -Wreorder -Wno-return-type -Wsign-compare -Wsequence-point -Wtrigraphs -Wunused-function -Wunused-but-set-variable -Wunused-variable -Wwrite-strings -diag-error:3846>
        $<$<CXX_COMPILER_ID:PGI>: #PGI 20  doesn't recognize the -Wextra option
