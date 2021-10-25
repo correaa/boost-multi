@@ -110,8 +110,8 @@ BOOST_AUTO_TEST_CASE(test_utility_1d) {
 
 	BOOST_REQUIRE( size(marr) == 10 );
 
-	BOOST_REQUIRE( multi::size(carr) == multi::size(marr) );
-	BOOST_REQUIRE( multi::size(aarr) == multi::size(marr) );
+	BOOST_REQUIRE( static_cast<multi::size_t>(carr.size()) == size(marr) );
+	BOOST_REQUIRE( static_cast<multi::size_t>(aarr.size()) == size(marr) );
 
 	BOOST_REQUIRE( carr[7] == marr[7] );
 	BOOST_REQUIRE( varr[7] == marr[7] );
