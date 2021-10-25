@@ -1,4 +1,4 @@
-# -*-indent-tabs-mode:nil;c-basic-offset:2;tab-width:4;autowrap:nil;-*-
+# -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 #[=[Multi Test suite can be run like this:
   mkdir -p build
   cd build
@@ -117,11 +117,15 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wmisleading-indentation
 					-Wduplicated-cond
 					-Wduplicated-branches
-					-Wlogical-op>
+					-Wlogical-op
+					-Wuseless-cast>
 					$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
 					-Wextra
+					-Wnon-virtual-dtor
 					-Wpedantic
-					-Wmove>
+					-Wmove
+					-Wdouble-promotion
+                    >
 					$<$<CXX_COMPILER_ID:Intel>:
 					-Wextra
 					-wd161
