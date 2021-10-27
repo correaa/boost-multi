@@ -19,8 +19,8 @@ project(
 	LANGUAGES CXX
 )
 
-find_package(Boost REQUIRED) # COMPONENTS unit_test_framework)
-link_libraries("-lboost_unit_test_framework")
+find_package(Boost REQUIRED COMPONENTS unit_test_framework)
+# link_libraries("-lboost_unit_test_framework")
 
 if(NOT DEFINED CMAKE_CXX_STANDARD)
 	set(CMAKE_CXX_STANDARD 14)
@@ -67,11 +67,12 @@ foreach(TEST_FILE ${TEST_SRCS})
 		set_property(TARGET ${TEST_EXE} PROPERTY "${CUDA_ARCH_LIST}")
 		set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
 	endif()
-	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
-	target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
-	target_include_directories(${TEST_EXE} PRIVATE ${Boost_INCLUDE_DIRS})
-	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
-	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
+#	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
+#	target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
+#	target_include_directories(${TEST_EXE} PRIVATE ${Boost_INCLUDE_DIRS})
+#	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
+#	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
+	target_link_libraries(${TEST_EXE} PRIVATE Boost::unit_test_framework)
 	if(NOT ENABLE_CUDA
 	   AND (NOT
 			DART_COMPILER_NAME
