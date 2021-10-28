@@ -99,27 +99,37 @@ foreach(TEST_FILE ${TEST_SRCS})
 					$<$<CXX_COMPILER_ID:GNU>:
 					-Werror
 					-Wall
-					-Wshadow
-					-Wsign-conversion
-					-Wold-style-cast
-					-Wcast-align
-					-Wunused
-					-Wnon-virtual-dtor
-					-Woverloaded-virtual
-					-Wcast-qual
-					-Wconversion
-					-Wnull-dereference
-					-Wformat=2
 					-Wextra
 					-Wpedantic
-					-Wuninitialized
-					-Wformat-truncation
 					-Wdouble-promotion
-					-Wmisleading-indentation
-					-Wduplicated-cond
 					-Wduplicated-branches
+					-Wduplicated-cond
+					-Wcast-align
+					-Wcast-qual
+					-Wconversion
+					-Wformat-truncation
+					-Wformat=2
 					-Wlogical-op
-					-Wuseless-cast>
+					-Wmisleading-indentation
+					-Wno-missing-declarations
+					-Wmissing-include-dirs
+					-Wnon-virtual-dtor
+					-Wnull-dereference
+					-Wold-style-cast
+					-Woverloaded-virtual
+					-Wpointer-arith
+					-Wshadow
+					-Wredundant-decls
+					-Wsign-conversion
+					-Wswitch-enum
+					-Wtrampolines
+					-Wuninitialized
+					-Wunused
+					-Wunused-but-set-variable
+					-Wunused-result
+					-Wuseless-cast
+					-Wzero-as-null-pointer-constant
+					>
 					$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
 					-Wextra
 					-Wnon-virtual-dtor
