@@ -13,6 +13,8 @@ $CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 
 namespace multi = boost::multi;
 
+auto make_ref(double* p);
+
 auto make_ref(double* p) {return multi::array_ref<double, 2>(p, {5, 7});}
 
 BOOST_AUTO_TEST_CASE(equality_1D) {
