@@ -10,6 +10,7 @@ Checks: '
     -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
     -cppcoreguidelines-pro-type-vararg,
     -cppcoreguidelines-avoid-magic-numbers,
+	-fuchsia-default-arguments-calls,
     -fuchsia-trailing-return,
     -fuchsia-statically-constructed-objects,
     -fuchsia-overloaded-operator,
