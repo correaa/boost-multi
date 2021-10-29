@@ -86,14 +86,11 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wall
 					-Wshadow
 					-Wsign-conversion
-					-Wold-style-cast
-					-Wcast-align
 					-Wunused
 					-Wnon-virtual-dtor
 					-Woverloaded-virtual
 					-Wcast-qual
 					-Wconversion
-					-Wnull-dereference
 					-Wformat=2
 					$<$<CXX_COMPILER_ID:GNU>:
 					-Werror
@@ -135,6 +132,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wpedantic
 					-Wmove
 					-Wdouble-promotion
+					-Wcast-align
+					-Wold-style-cast
+					-Wnull-dereference
                     >
 					$<$<CXX_COMPILER_ID:Intel>:
 					-Wextra
