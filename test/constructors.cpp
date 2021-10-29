@@ -46,7 +46,14 @@ BOOST_AUTO_TEST_CASE(multi_constructors_1d) {
 		BOOST_REQUIRE( size(A)==10 );
 		BOOST_REQUIRE( A[5]== double{} );
 	}
-	 {
+	{
+	#if defined(__cpp_deduction_guides)
+		multi::array A(multi::extensions_t<1>{10}, double{});
+		BOOST_REQUIRE( size(A)==10 );
+		BOOST_REQUIRE( A[5]== double{} );
+	#endif
+	}
+	{
 	#if defined(__cpp_deduction_guides)
 		multi::array A(10, double{});
 		BOOST_REQUIRE( size(A)==10 );
