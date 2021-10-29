@@ -1037,7 +1037,7 @@ template<dimensionality_type D, class A, class = std::enable_if_t<is_allocator<A
 	template<class A, class = std::enable_if_t<is_allocator<A>{}>, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<5>, A)->array<T, 5, A>;
 
 	template<class T> array(iextensions<0>, T)->array<T, 0>;
-	template<class T> array(iextensions<1>, T)->array<T, 1>; template<class T> array(multi::size_type, T)->array<T, 1>;
+	template<class T> array(iextensions<1>, T)->array<T, 1>;  // template<class T> array(multi::size_type, T)->array<T, 1>;  // unnecesasry when iextension<1> is implicity constructubel from multi::size_type
 	template<class T> array(iextensions<2>, T)->array<T, 2>;
 	template<class T> array(iextensions<3>, T)->array<T, 3>;
 
