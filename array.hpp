@@ -1017,7 +1017,7 @@ template<class T, class Alloc> array(T[], Alloc)->array<T, 1, Alloc            >
 
 //  template<class Array, class E = typename multi::array_traits<Array>::element, class A=std::allocator<E>, class=std::enable_if_t<is_allocator<A>{}>> array(Array            , A={})->array<typename multi::array_traits<Array>::element, 1, A>;
 
-template<dimensionality_type D, class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<D>, T)->array<T, D, std::allocator<T>>;
+// template<dimensionality_type D, class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<D>, T)->array<T, D, std::allocator<T>>;  // commented for clang
 	template<class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<0>, T)->array<T, 0, std::allocator<T>>;
 	template<class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<1>, T)->array<T, 1, std::allocator<T>>;
 	template<class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<2>, T)->array<T, 2, std::allocator<T>>;
