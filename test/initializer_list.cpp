@@ -60,15 +60,23 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d) {
 		BOOST_REQUIRE(( A == decltype(A){1.2, 3.4, 5.6} ));
 		BOOST_REQUIRE(( A == decltype(A)::decay_type({1.2, 3.4, 5.6}) ));
 	}
-	{
 	#if defined(__cpp_deduction_guides)
+	{
 		multi::array A({1.2, 3.4, 5.6});
 		BOOST_REQUIRE( size(A) == 3 );
 		BOOST_REQUIRE( A[2] == 5.6 );
 		BOOST_REQUIRE(( A == multi::array({1.2, 3.4, 5.6}) ));
-	#endif
 	}
-	 {
+	#if not defined(__NVCC__)
+	{
+		multi::array A = {1.2, 3.4, 5.6};
+		BOOST_REQUIRE( size(A) == 3 );
+		BOOST_REQUIRE( A[2] == 5.6 );
+		BOOST_REQUIRE(( A == multi::array({1.2, 3.4, 5.6}) ));
+	}
+	#endif
+	#endif
+	{
 		std::array<double, 3> const a = {1.1, 2.2, 3.3};
 		using multi::num_elements;
 		BOOST_REQUIRE( num_elements(a) == 3 );
@@ -300,7 +308,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string) {
 		BOOST_REQUIRE( size(A) == 1 and num_elements(A) == 1 );
 		BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 and num_elements(A)==1 and A[0]==9. ); BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 );
 	}
-	 {
+	{
 		multi::array A({
 			{1., 2., 3.},
 			{4., 5., 6.}
