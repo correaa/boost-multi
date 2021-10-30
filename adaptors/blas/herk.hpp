@@ -112,7 +112,7 @@ auto herk(AA alpha, A2D const& a)//->std::decay_t<decltype(herk(alpha, a, Ret({s
 
 template<class T> struct numeric_limits : std::numeric_limits<T>{};
 template<class T> struct numeric_limits<std::complex<T>> : std::numeric_limits<std::complex<T>>{
-	static auto quiet_NaN() -> std::complex<T>{auto n=numeric_limits<T>::quiet_NaN(); return {n, n};}
+	static auto quiet_NaN() -> std::complex<T>{auto n=numeric_limits<T>::quiet_NaN(); return {n, n};}  // NOLINT(readability-identifier-naming) : conventional std name
 };
 
 template<class AA, class A2D, class Ret = typename A2D::decay_type>
@@ -123,7 +123,7 @@ decltype(herk(cs, alpha, a, Ret({size(a), size(a)}, 0., get_allocator(a))))>{
 	return herk(cs, alpha, a, Ret({size(a), size(a)},
 #ifdef NDEBUG
 		numeric_limits<typename Ret::element_type>::quiet_NaN(),
-#endif	
+#endif
 		get_allocator(a)
 	));
 }

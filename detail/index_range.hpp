@@ -200,10 +200,9 @@ class intersecting_range{
 	static constexpr auto all() -> intersecting_range {return {};}
 };
 
-MAYBE_UNUSED constexpr intersecting_range<> const all = intersecting_range<>::all();
-MAYBE_UNUSED constexpr intersecting_range<> const _   = all;
-// MAYBE_UNUSED constexpr intersecting_range<> const __  = all;  // __ is a reserved identifyer (bugprone-reserved-identifier,cert-dcl37-c,cert-dcl51-cpp)
-MAYBE_UNUSED constexpr intersecting_range<> const U   = all;
+MAYBE_UNUSED constexpr intersecting_range<> const ALL = intersecting_range<>::all();
+MAYBE_UNUSED constexpr intersecting_range<> const _   = ALL;
+MAYBE_UNUSED constexpr intersecting_range<> const U   = ALL;
 
 template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
 struct extension_t : public range<IndexType, IndexTypeLast>{

@@ -141,25 +141,25 @@ template<class T>  // this one goes last!!!
 constexpr auto to_address(const T& p) noexcept;
 
 template<class T>
-constexpr auto _to_address(priority<0>/**/, const T& p) noexcept
+constexpr auto me_to_address(priority<0>/**/, const T& p) noexcept
 ->decltype(to_address(p.operator->())) {
 	return to_address(p.operator->()); }
 
 template<class T>
-constexpr auto _to_address(priority<1>/**/, const T& p) noexcept
+constexpr auto me_to_address(priority<1>/**/, const T& p) noexcept
 ->decltype(std::pointer_traits<T>::to_address(p)) {
 	return std::pointer_traits<T>::to_address(p); }
 
 template<class T, std::enable_if_t<std::is_pointer<T>{}, int> = 0>
-constexpr auto _to_address(priority<2>/**/, T const& p) noexcept -> T{
+constexpr auto me_to_address(priority<2>/**/, T const& p) noexcept -> T{
     static_assert(!std::is_function<T>{}, "!");
     return p;
 }
 
 template<class T>  // this one goes last!!!
 constexpr auto to_address(const T& p) noexcept
-->decltype(_to_address(priority<2>{}/**/, p)) {
-	return _to_address(priority<2>{}, p);
+->decltype(me_to_address(priority<2>{}/**/, p)) {
+	return me_to_address(priority<2>{}, p);
 }
 
 template<class Alloc, class ForwardIt, class Size, typename Value = typename std::iterator_traits<ForwardIt>::value_type, typename = decltype(std::addressof(*ForwardIt{}))>

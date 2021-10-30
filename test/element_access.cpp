@@ -13,17 +13,17 @@ namespace multi = boost::multi;
 
 template<class T> void what(T&&) = delete;
 
-namespace testB {
-	struct B{};
+namespace test_bee {
+	struct bee{};
 
-	template<class Array> auto paren(Array&& arr, B const&/*unused*/) -> decltype(auto) {
+	template<class Array> auto paren(Array&& arr, bee const&/*unused*/) -> decltype(auto) {
 		return std::forward<Array>(arr)(0);
 	}
-} // end namespace testB
+} // end namespace test_bee
 
 BOOST_AUTO_TEST_CASE(overload_paren) {
 	multi::array<double, 1> arr({10});
-	testB::B zero;
+	test_bee::bee zero;
 	BOOST_REQUIRE( &arr(0) == &arr(zero) );
 }
 
@@ -204,8 +204,8 @@ BOOST_AUTO_TEST_CASE(multi_range_rotated) {
 	BOOST_REQUIRE( &A(*_, *_, {3, 5}) == &A.rotated(2).range({3, 5}).unrotated(2) );
 	BOOST_REQUIRE( &A(*_, *_, {3, 5}) == &A(*_, *_, {3, 5}, *_) );
 
-	BOOST_REQUIRE( &A(multi::all, multi::all, {3, 5}) == &A.rotated(2).range({3, 5}).unrotated(2) );
-	BOOST_REQUIRE( &A(multi::all, multi::all, {3, 5}) == &A(multi::all, multi::all, {3, 5}, multi::all) );
+	BOOST_REQUIRE( &A(multi::ALL, multi::ALL, {3, 5}) == &A.rotated(2).range({3, 5}).unrotated(2) );
+	BOOST_REQUIRE( &A(multi::ALL, multi::ALL, {3, 5}) == &A(multi::ALL, multi::ALL, {3, 5}, multi::ALL) );
 }
 
 #endif

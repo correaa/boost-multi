@@ -18,15 +18,16 @@ struct particle{
 	v3d position alignas(2*sizeof(double));  //  __attribute__((aligned(2*sizeof(double))))
 };
 
-class particles_SoA{
+class particles_soa{
 	multi::array<double, 2> masses_;
 	multi::array<v3d, 2> positions_;
 
  public:
 	// NOLINTNEXTLINE(runtime/explicit)
-	particles_SoA(multi::array<particle, 2> const& AoS) : // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : particle_SoA can represent a particles' AoS
-		masses_   {AoS.member_cast<double>(&particle::mass    )},
-		positions_{AoS.member_cast<v3d   >(&particle::position)} {}
+	particles_soa(multi::array<particle, 2> const& AoS)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : particle_soa can represent a particles' AoS
+	: masses_   {AoS.member_cast<double>(&particle::mass    )}
+	, positions_{AoS.member_cast<v3d   >(&particle::position)} {}
+
 	struct reference {
 		double& mass;   // NOLINT(misc-non-private-member-variables-in-classes): exposed by design
 		v3d& position;  // NOLINT(misc-non-private-member-variables-in-classes): exposed by design
@@ -34,7 +35,7 @@ class particles_SoA{
 		auto operator+() const {return operator particle();}
 //	#if __cplusplus <= 201402L
 	 private: // NOLINT(whitespace/indent) : bug in cpplint 1.5.5
-		friend class particles_SoA;
+		friend class particles_soa;
 		reference(reference const&) = default;
 		reference(reference&&) = default;
 
@@ -51,8 +52,9 @@ class particles_SoA{
 		auto operator=(reference&& other) noexcept -> reference& {operator=(other); return *this;}
 
 		auto operator==(reference const& other) {return std::tie(mass, position) == std::tie(other.mass, other.position);}
-		auto operator!=(reference const& other) {return std::tie(mass, position) == std::tie(other.mass, other.position);}
+		auto operator!=(reference const& other) {return std::tie(mass, position) != std::tie(other.mass, other.position);}
 	};
+
 	auto operator()(int i, int j){
 		return reference{masses_[i][j], positions_[i][j]};
 	}
@@ -68,7 +70,7 @@ class particles_SoA{
 	multi::array<double, 2> masses_copy = masses;
 	BOOST_REQUIRE( &masses_copy[1][1] != &masses[1][1] );
 
-	particles_SoA SoA{AoS};
+	particles_soa SoA{AoS};
 
 	BOOST_REQUIRE(SoA(1, 1).mass == 99. );
 

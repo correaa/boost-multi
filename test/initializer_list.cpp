@@ -77,14 +77,6 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d_ctad) {
 		BOOST_REQUIRE( A[2] == 5.6 );
 		BOOST_REQUIRE(( A == multi::array({1.2, 3.4, 5.6}) ));
 	}
-	#if not defined(__NVCC__) and not defined(__GNUG__)
-	{
-		multi::array A = {1.2, 3.4, 5.6};
-		BOOST_REQUIRE( size(A) == 3 );
-		BOOST_REQUIRE( A[2] == 5.6 );
-		BOOST_REQUIRE(( A == multi::array({1.2, 3.4, 5.6}) ));
-	}
-	#endif
 	#endif
 }
 
