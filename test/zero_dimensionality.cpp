@@ -13,7 +13,7 @@ namespace multi = boost::multi;
 
 template<class T> void what(T&&) = delete;
 
-BOOST_AUTO_TEST_CASE(zero_dimensionality) {
+BOOST_AUTO_TEST_CASE(zero_dimensionality_part1) {
 	{
 		std::vector<double> v1 = {1., 2., 3.};
 
@@ -50,6 +50,9 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality) {
 		a0 = multi::static_array<double, 0>{60.};
 		BOOST_REQUIRE( a0 == 60. );
 	}
+}
+
+BOOST_AUTO_TEST_CASE(zero_dimensionality_part2) {
 	 {
 		multi::array<std::complex<double>, 2> a({1, 2}, std::allocator<std::complex<double>>{});
 		BOOST_REQUIRE( size(a) == 1 );

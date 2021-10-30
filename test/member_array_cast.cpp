@@ -25,22 +25,23 @@ class particles_SoA{
  public:
 	// NOLINTNEXTLINE(runtime/explicit)
 	particles_SoA(multi::array<particle, 2> const& AoS) : // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : particle_SoA can represent a particles' AoS
-		masses_   (AoS.member_cast<double>(&particle::mass    )),
-		positions_(AoS.member_cast<v3d   >(&particle::position)) {}
-	struct reference{
-		double& mass;  // NOLINT(misc-non-private-member-variables-in-classes): exposed by design
-		v3d& position; // NOLINT(misc-non-private-member-variables-in-classes): exposed by design
+		masses_   {AoS.member_cast<double>(&particle::mass    )},
+		positions_{AoS.member_cast<v3d   >(&particle::position)} {}
+	struct reference {
+		double& mass;   // NOLINT(misc-non-private-member-variables-in-classes): exposed by design
+		v3d& position;  // NOLINT(misc-non-private-member-variables-in-classes): exposed by design
 		operator particle() const {return {mass, position};} // NOLINT(google-explicit-constructor, hicpp-explicit-conversions): allow equal assignment
 		auto operator+() const {return operator particle();}
-	#if __cplusplus <= 201402L
+//	#if __cplusplus <= 201402L
 	 private: // NOLINT(whitespace/indent) : bug in cpplint 1.5.5
 		friend class particles_SoA;
 		reference(reference const&) = default;
 		reference(reference&&) = default;
 
 	 public: // NOLINT(whitespace/indent) : bug in cpplint 1.5.5
-		~reference() noexcept = default;
-	#endif
+		~reference() noexcept = default;  // lints cppcoreguidelines-special-member-functions,hicpp-special-member-functions
+//	#endif
+
 		// NOLINTNEXTLINE(cert-oop54-cpp, fuchsia-trailing-return): simulate reference
 		auto operator=(reference const& other) -> reference& {
 			std::tie(mass, position) = std::tie(other.mass, other.position);
@@ -48,6 +49,7 @@ class particles_SoA{
 		}
 		// NOLINTNEXTLINE(fuchsia-trailing-return): simulate reference
 		auto operator=(reference&& other) noexcept -> reference& {operator=(other); return *this;}
+
 		auto operator==(reference const& other) {return std::tie(mass, position) == std::tie(other.mass, other.position);}
 		auto operator!=(reference const& other) {return std::tie(mass, position) == std::tie(other.mass, other.position);}
 	};
