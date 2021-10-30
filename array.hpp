@@ -981,77 +981,48 @@ struct array : static_array<T, D, Alloc>{
 };
 
 #if defined(__cpp_deduction_guides)
-#if 0  // not defined(__clang__)
-//  template<class T, dimensionality_type D, class A=std::allocator<T>> static_array(multi::initializer_list_t<T, D>, A={})->static_array<T, D, A>;
-//  template<class T, dimensionality_type D, class A=std::allocator<T>> array(multi::initializer_list_t<T, D>, A={})->array<T, D, A>;
-#else  // clang cannot recognize templated-using, so don't replace IL<IL<T>> by IL2<T>, etc
+
 #define IL std::initializer_list
-	template<class T, class A = std::allocator<T>> static_array(IL<T>                , A)->static_array<T, 1, A>;
-	template<class T, class A = std::allocator<T>> static_array(IL<IL<T>>            , A)->static_array<T, 2, A>;
-	template<class T, class A = std::allocator<T>> static_array(IL<IL<IL<T>>>        , A)->static_array<T, 3, A>;
-	template<class T, class A = std::allocator<T>> static_array(IL<IL<IL<IL<T>>>>    , A)->static_array<T, 4, A>;
-	template<class T, class A = std::allocator<T>> static_array(IL<IL<IL<IL<IL<T>>>>>, A)->static_array<T, 5, A>;
 
-	template<class T> static_array(IL<T>                )->static_array<T, 1>;
-	template<class T> static_array(IL<IL<T>>            )->static_array<T, 2>;
-	template<class T> static_array(IL<IL<IL<T>>>        )->static_array<T, 3>;
-	template<class T> static_array(IL<IL<IL<IL<T>>>>    )->static_array<T, 4>;
-	template<class T> static_array(IL<IL<IL<IL<IL<T>>>>>)->static_array<T, 5>;
+template<class T> static_array(IL<T>                ) -> static_array<T, 1>;
+template<class T> static_array(IL<IL<T>>            ) -> static_array<T, 2>;
+template<class T> static_array(IL<IL<IL<T>>>        ) -> static_array<T, 3>;
+template<class T> static_array(IL<IL<IL<IL<T>>>>    ) -> static_array<T, 4>;
+template<class T> static_array(IL<IL<IL<IL<IL<T>>>>>) -> static_array<T, 5>;
 
-	template<class T> array(IL<T>                )->array<T, 1>;
-	template<class T> array(IL<IL<T>>            )->array<T, 2>;
-	template<class T> array(IL<IL<IL<T>>>        )->array<T, 3>;
-	template<class T> array(IL<IL<IL<IL<T>>>>    )->array<T, 4>;
-	template<class T> array(IL<IL<IL<IL<IL<T>>>>>)->array<T, 5>;
+template<class T>        array(IL<T>                ) ->        array<T, 1>;
+template<class T>        array(IL<IL<T>>            ) ->        array<T, 2>;
+template<class T>        array(IL<IL<IL<T>>>        ) ->        array<T, 3>;
+template<class T>        array(IL<IL<IL<IL<T>>>>    ) ->        array<T, 4>;
+template<class T>        array(IL<IL<IL<IL<IL<T>>>>>) ->        array<T, 5>;
 
-	template<class T, class A> array(IL<T>                , A)->array<T, 1, A>;
-	template<class T, class A> array(IL<IL<T>>            , A)->array<T, 2, A>;
-	template<class T, class A> array(IL<IL<IL<T>>>        , A)->array<T, 3, A>;
-	template<class T, class A> array(IL<IL<IL<IL<T>>>>    , A)->array<T, 4, A>;
-	template<class T, class A> array(IL<IL<IL<IL<IL<T>>>>>, A)->array<T, 5, A>;
 #undef IL
-#endif
 
-template<class T>              array(T[]       )->array<T, 1, std::allocator<T>>;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
-template<class T, class Alloc> array(T[], Alloc)->array<T, 1, Alloc            >;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+template<class T>        array(T[]                  ) ->        array<T, 1>;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
-//  template<class Array, class E = typename multi::array_traits<Array>::element, class A=std::allocator<E>, class=std::enable_if_t<is_allocator<A>{}>> array(Array            , A={})->array<typename multi::array_traits<Array>::element, 1, A>;
+//  vvv these are necessary to catch {n, m, ...} notation (or single integer notation)
+template<class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<0>, T) -> array<T, 0>;
+template<class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<1>, T) -> array<T, 1>;
+template<class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<2>, T) -> array<T, 2>;
+template<class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<3>, T) -> array<T, 3>;
+template<class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<4>, T) -> array<T, 4>;
+template<class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<5>, T) -> array<T, 5>;
 
-// template<dimensionality_type D, class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<D>, T)->array<T, D, std::allocator<T>>;  // commented for clang
-	template<class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<0>, T)->array<T, 0, std::allocator<T>>;
-	template<class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<1>, T)->array<T, 1, std::allocator<T>>;
-	template<class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<2>, T)->array<T, 2, std::allocator<T>>;
-	template<class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<3>, T)->array<T, 3, std::allocator<T>>;
-	template<class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<4>, T)->array<T, 4, std::allocator<T>>;
-	template<class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<5>, T)->array<T, 5, std::allocator<T>>;
+// generalization, will not work with naked {n, m, ...} notation (or single integer notation)
+template<dimensionality_type D, class T, class = std::enable_if_t<not is_allocator<T>{}> >
+array(iextensions<D>, T) -> array<T, D>;
 
-template<dimensionality_type D, class T, class A, typename = std::enable_if_t<std::is_same<typename std::allocator_traits<A>::value_type, T>{}> > static_array(iextensions<D>, T, A)->static_array<T, D, A>;
-	template<class T, class A, typename = std::enable_if_t<std::is_same<typename std::allocator_traits<A>::value_type, T>{}>> static_array(T, A)->static_array<T, 0, A>;
-
-template<dimensionality_type D, class A, class = std::enable_if_t<is_allocator<A>{}>, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<D>, A)->array<T, D, A>;
-	template<class A, class = std::enable_if_t<is_allocator<A>{}>, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<0>, A)->array<T, 0, A>;
-	template<class A, class = std::enable_if_t<is_allocator<A>{}>, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<1>, A)->array<T, 1, A>;
-	template<class A, class = std::enable_if_t<is_allocator<A>{}>, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<2>, A)->array<T, 2, A>;
-	template<class A, class = std::enable_if_t<is_allocator<A>{}>, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<3>, A)->array<T, 3, A>;
-	template<class A, class = std::enable_if_t<is_allocator<A>{}>, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<4>, A)->array<T, 4, A>;
-	template<class A, class = std::enable_if_t<is_allocator<A>{}>, typename T = typename std::allocator_traits<A>::value_type> array(iextensions<5>, A)->array<T, 5, A>;
-
-//  vvv commented for gcc
-//  template<class T> array(iextensions<0>, T)->array<T, 0>;
-//  template<class T> array(iextensions<1>, T)->array<T, 1>;  // template<class T> array(multi::size_type, T)->array<T, 1>;  // unnecesasry when iextension<1> is implicity constructubel from multi::size_type
-//  template<class T> array(iextensions<2>, T)->array<T, 2>;
-//  template<class T> array(iextensions<3>, T)->array<T, 3>;
-
-template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<1>, T, MR*)->array<T, 1, A>;
-template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<2>, T, MR*)->array<T, 2, A>;
-template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<3>, T, MR*)->array<T, 3, A>;
-template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<4>, T, MR*)->array<T, 4, A>;
-template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<5>, T, MR*)->array<T, 5, A>;
+template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<1>, T, MR*) -> array<T, 1, A>;
+template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<2>, T, MR*) -> array<T, 2, A>;
+template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<3>, T, MR*) -> array<T, 3, A>;
+template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<4>, T, MR*) -> array<T, 4, A>;
+template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<5>, T, MR*) -> array<T, 5, A>;
 
 template<class MatrixRef, class DT = typename MatrixRef::decay_type, class T = typename DT::element, dimensionality_type D = typename DT::rank{}, class Alloc = typename DT::allocator_type>
 array(MatrixRef)->array<T, D, Alloc>;
 
 template<typename T, dimensionality_type D, typename P> array(basic_array<T, D, P>)->array<T, D>;
+
 #endif  // ends defined(__cpp_deduction_guides)
 
 template <class T, std::size_t N>

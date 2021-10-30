@@ -207,7 +207,7 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 	}
 	 {
 	#if defined(__cpp_deduction_guides)
-		double Z[4][5] {
+		double Z[4][5] {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : testing legacy types
 			{ 0,  1,  2,  3,  4},
 			{ 5,  6,  7,  8,  9},
 			{10, 11, 12, 13, 14},

@@ -17,6 +17,12 @@
 namespace boost {
 namespace multi {
 
+template<class To, class From, std::enable_if_t<std::is_convertible<From, To>{}, int> = 0>
+constexpr auto implicit_cast(From&& f) -> To {return static_cast<To>(f);}
+
+template<class To, class From, std::enable_if_t<std::is_constructible<To, From>{} and not std::is_convertible<From, To>{}, int> = 0>
+constexpr auto explicit_cast(From&& f) -> To {return static_cast<To>(f);}
+
 template<class Array, typename Reference = void, typename Element = void>
 struct array_traits;
 
@@ -295,14 +301,14 @@ auto extensions(T const& t) {
 
 template<class T1> struct extensions_t_aux;
 
-template<class T1, class T2> auto extensions_(T2 const& t2) {
+template<class T1, class T2> auto extensions_me(T2 const& t2) {
 	return extensions_t_aux<T1>::call(t2);
 }
 
 template<class T1> struct extension_t_aux {
 	static auto call(T1 const& /*unused*/) {return std::make_tuple();}
 	template<class T2>
-	static auto call(T2 const& t2) {return std::tuple_cat(std::make_tuple(t2.extension()), extensions_<T1>(*begin(t2)));}
+	static auto call(T2 const& t2) {return std::tuple_cat(std::make_tuple(t2.extension()), extensions_me<T1>(*begin(t2)));}
 };
 
 template<class T, typename = decltype(std::declval<T const&>().layout())>

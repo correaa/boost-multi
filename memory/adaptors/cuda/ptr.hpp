@@ -301,8 +301,8 @@ std::false_type is_ref_aux(...);
 
 template<class TTT> struct is_ref : decltype(is_ref_aux(std::declval<TTT>())){};
 
-template<class To, class From, std::enable_if_t<std::is_convertible<From, To>{},int> =0>
-constexpr To implicit_cast(From&& f){return static_cast<To>(f);}
+//template<class To, class From, std::enable_if_t<std::is_convertible<From, To>{},int> =0>
+//constexpr To implicit_cast(From&& f){return static_cast<To>(f);}
 
 template<class T>
 struct ref{
@@ -319,8 +319,8 @@ struct ref{
  public:
 	constexpr explicit ref(T& t) : pimpl_{&t}{}
 //	ref(T& t) HD : pimpl_{&t}{}
-	template<class Other, typename = decltype(implicit_cast<pointer>(std::declval<ref<Other>>().pimpl_))>
-	/*explicit(false)*/ constexpr ref(ref<Other>&& o) /*HD*/ : pimpl_{implicit_cast<pointer>(std::move(o).pimpl_)}{}
+	template<class Other, typename = decltype(multi::implicit_cast<pointer>(std::declval<ref<Other>>().pimpl_))>
+	/*explicit(false)*/ constexpr ref(ref<Other>&& o) /*HD*/ : pimpl_{multi::implicit_cast<pointer>(std::move(o).pimpl_)}{}
 	template<class Other, typename = std::enable_if_t<not std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>())>, pointer>{}>>
 	explicit/*(true) */ constexpr ref(ref<Other> const& o, void** = 0) /*HD*/ : pimpl_{static_cast<pointer>(o)}{}
 	template<class TT, class PP> friend struct ptr;

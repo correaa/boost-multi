@@ -54,12 +54,6 @@ struct basic_array;
 
 template<typename T, dimensionality_type D, class A = std::allocator<T>> struct array;
 
-template<class To, class From, std::enable_if_t<std::is_convertible<From, To>{}, int> = 0>
-constexpr auto _implicit_cast(From&& f) -> To {return static_cast<To>(f);}
-
-template<class To, class From, std::enable_if_t<std::is_constructible<To, From>{} and not std::is_convertible<From, To>{}, int> = 0>
-constexpr auto _explicit_cast(From&& f) -> To {return static_cast<To>(f);}
-
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D> >
 struct array_types : Layout {  // cppcheck-suppress syntaxError ; false positive in cppcheck
 	using element = T;
@@ -119,14 +113,14 @@ struct array_types : Layout {  // cppcheck-suppress syntaxError ; false positive
 
  protected:  // TODO(correaa) : find why this needs to be public and not protected or friend
 	template<class ArrayTypes, typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>
-		, decltype(_explicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
+		, decltype(multi::explicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
 	>
 	constexpr explicit array_types(ArrayTypes const& a) : Layout{a.layout()}, base_{a.base_} {}
 
 	template<
 		class ArrayTypes,
 		typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>,
-		decltype(_implicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
+		decltype(multi::implicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointers are implicitly convertible
 	constexpr/*implct*/array_types(ArrayTypes const& a)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : inherit behavior of underlying pointer
@@ -278,13 +272,13 @@ struct array_iterator
 
 	template<
 		class EElement, typename PPtr,
-		decltype(_explicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().ptr_.base()))* = nullptr
+		decltype(multi::explicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().ptr_.base()))* = nullptr
 	>
 	constexpr explicit array_iterator(array_iterator<EElement, D, PPtr> const& o)
 	: ptr_{o.ptr_.base_, o.ptr_.layout()}, stride_{o.stride_} {}
 
 	template<class EElement, typename PPtr,
-		decltype(_implicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().ptr_.base()))* = nullptr
+		decltype(multi::implicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().ptr_.base()))* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
 	constexpr/*implct*/array_iterator(array_iterator<EElement, D, PPtr> const& o)   // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : propagate implicitness of pointer
@@ -590,10 +584,10 @@ struct basic_array
 	}
 
 	friend auto get_allocator(basic_array const& s) -> default_allocator_type {return s.get_allocator();}
-	template<class P>
-	static constexpr auto get_allocator_(P const& p) -> default_allocator_type {
-		return multi::default_allocator_of(p);
-	}
+//  template<class P>
+//  static constexpr auto get_allocator_(P const& p) -> default_allocator_type {
+//  	return multi::default_allocator_of(p);
+//  }
 
 	template<class Archive>
 	auto serialize(Archive& ar, unsigned int /*version*/) {
@@ -916,52 +910,52 @@ struct basic_array
  private:
 	template<typename, dimensionality_type, typename, class> friend struct basic_array;
 
-	HD constexpr auto paren_()      & -> basic_array       {return *this;}
-	HD constexpr auto paren_()     && -> basic_array       {return this->operator()();}
-	HD constexpr auto paren_() const& -> basic_const_array {return {this->layout(), this->base()};}
+	HD constexpr auto paren_aux()      & -> basic_array       {return *this;}
+	HD constexpr auto paren_aux()     && -> basic_array       {return this->operator()();}
+	HD constexpr auto paren_aux() const& -> basic_const_array {return {this->layout(), this->base()};}
 
-	template<class... As> constexpr auto paren_(index_range a, As... as)      & {
-	// return range(a).rotated().paren_(as...).unrotated();
+	template<class... As> constexpr auto paren_aux(index_range a, As... as)      & {
+	// return range(a).rotated().paren_aux(as...).unrotated();  // TODO(correaa) compact
 		auto&& tmp = range(a);
 		auto&& tmp2 =
 			std::move(tmp).
 			rotated();
-		auto&& tmp3 = std::move(tmp2).paren_(as...);
+		auto&& tmp3 = std::move(tmp2).paren_aux(as...);
 		auto&& ret = std::move(tmp3).unrotated();
 		return std::move(ret);
 	}
-	template<class... As> constexpr auto paren_(index_range a, As... as)     && {
+	template<class... As> constexpr auto paren_aux(index_range a, As... as)     && {
 		auto&& tmp = std::move(*this).range(a);
-		auto&& tmp2 = std::move(tmp).rotated().paren_(as...);
+		auto&& tmp2 = std::move(tmp).rotated().paren_aux(as...);
 		auto&& ret = std::move(tmp2).unrotated();
 		return std::move(ret);
 	}
-	template<class... As> constexpr auto paren_(index_range a, As... as) const& {return range(a).rotated().paren_(as...).unrotated();}
+	template<class... As> constexpr auto paren_aux(index_range a, As... as) const& {return range(a).rotated().paren_aux(as...).unrotated();}
 
-	template<class... As> constexpr auto paren_(intersecting_range<index> inr, As... as)      & -> decltype(auto) {return paren_(intersection(this->extension(), inr), as...);}
-	template<class... As> constexpr auto paren_(intersecting_range<index> inr, As... as)     && -> decltype(auto) {return paren_(intersection(this->extension(), inr), as...);}
-	template<class... As> constexpr auto paren_(intersecting_range<index> inr, As... as) const& -> decltype(auto) {return paren_(intersection(this->extension(), inr), as...);}
+	template<class... As> constexpr auto paren_aux(intersecting_range<index> inr, As... as)      & -> decltype(auto) {return paren_aux(intersection(this->extension(), inr), as...);}
+	template<class... As> constexpr auto paren_aux(intersecting_range<index> inr, As... as)     && -> decltype(auto) {return paren_aux(intersection(this->extension(), inr), as...);}
+	template<class... As> constexpr auto paren_aux(intersecting_range<index> inr, As... as) const& -> decltype(auto) {return paren_aux(intersection(this->extension(), inr), as...);}
 
-	template<class... As> HD constexpr auto paren_(index i, As... as)      & -> decltype(auto) {return operator[](i).paren_(as...);}
-	template<class... As> HD constexpr auto paren_(index i, As... as)     && -> decltype(auto) {return operator[](i).paren_(as...);}
-	template<class... As> HD constexpr auto paren_(index i, As... as) const& -> decltype(auto) {return operator[](i).paren_(as...);}
+	template<class... As> HD constexpr auto paren_aux(index i, As... as)      & -> decltype(auto) {return operator[](i).paren_aux(as...);}
+	template<class... As> HD constexpr auto paren_aux(index i, As... as)     && -> decltype(auto) {return operator[](i).paren_aux(as...);}
+	template<class... As> HD constexpr auto paren_aux(index i, As... as) const& -> decltype(auto) {return operator[](i).paren_aux(as...);}
 
  public:
 	// vvv DO NOT remove default parameter `= irange` : the default template parameters below help interpret for {first, last} simple syntax as index ranges
-	template<class B1 = irange>                                                                       constexpr auto operator()(B1 b1)                                const& -> decltype(auto) {return                  paren_(b1);}
-	template<class B1 = irange, class B2 = irange>                                                    constexpr auto operator()(B1 b1, B2 b2)                         const& -> decltype(auto) {return                  paren_(b1, b2);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange>                                 constexpr auto operator()(B1 b1, B2 b2, B3 b3)                  const& -> decltype(auto) {return                  paren_(b1, b2, b3);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As> constexpr auto operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as) const& -> decltype(auto) {return                  paren_(b1, b2, b3, b4, as...);}
+	template<class B1 = irange>                                                                       constexpr auto operator()(B1 b1)                                const& -> decltype(auto) {return                  paren_aux(b1);}
+	template<class B1 = irange, class B2 = irange>                                                    constexpr auto operator()(B1 b1, B2 b2)                         const& -> decltype(auto) {return                  paren_aux(b1, b2);}
+	template<class B1 = irange, class B2 = irange, class B3 = irange>                                 constexpr auto operator()(B1 b1, B2 b2, B3 b3)                  const& -> decltype(auto) {return                  paren_aux(b1, b2, b3);}
+	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As> constexpr auto operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as) const& -> decltype(auto) {return                  paren_aux(b1, b2, b3, b4, as...);}
 
-	template<class B1 = irange>                                                                       constexpr auto operator()(B1 b1)                                     & -> decltype(auto) {return                  paren_(b1);}
-	template<class B1 = irange, class B2 = irange>                                                    constexpr auto operator()(B1 b1, B2 b2)                              & -> decltype(auto) {return                  paren_(b1, b2);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange>                                 constexpr auto operator()(B1 b1, B2 b2, B3 b3)                       & -> decltype(auto) {return                  paren_(b1, b2, b3);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As> constexpr auto operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as)      & -> decltype(auto) {return                  paren_(b1, b2, b3, b4, as...);}
+	template<class B1 = irange>                                                                       constexpr auto operator()(B1 b1)                                     & -> decltype(auto) {return                  paren_aux(b1);}
+	template<class B1 = irange, class B2 = irange>                                                    constexpr auto operator()(B1 b1, B2 b2)                              & -> decltype(auto) {return                  paren_aux(b1, b2);}
+	template<class B1 = irange, class B2 = irange, class B3 = irange>                                 constexpr auto operator()(B1 b1, B2 b2, B3 b3)                       & -> decltype(auto) {return                  paren_aux(b1, b2, b3);}
+	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As> constexpr auto operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as)      & -> decltype(auto) {return                  paren_aux(b1, b2, b3, b4, as...);}
 
-	template<class B1 = irange>                                                                       constexpr auto operator()(B1 b1)                                    && -> decltype(auto) {return std::move(*this).paren_(b1);}
-	template<class B1 = irange, class B2 = irange>                                                    constexpr auto operator()(B1 b1, B2 b2)                             && -> decltype(auto) {return std::move(*this).paren_(b1, b2);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange>                                 constexpr auto operator()(B1 b1, B2 b2, B3 b3)                      && -> decltype(auto) {return std::move(*this).paren_(b1, b2, b3);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As> constexpr auto operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as)     && -> decltype(auto) {return std::move(*this).paren_(b1, b2, b3, b4, as...);}
+	template<class B1 = irange>                                                                       constexpr auto operator()(B1 b1)                                    && -> decltype(auto) {return std::move(*this).paren_aux(b1);}
+	template<class B1 = irange, class B2 = irange>                                                    constexpr auto operator()(B1 b1, B2 b2)                             && -> decltype(auto) {return std::move(*this).paren_aux(b1, b2);}
+	template<class B1 = irange, class B2 = irange, class B3 = irange>                                 constexpr auto operator()(B1 b1, B2 b2, B3 b3)                      && -> decltype(auto) {return std::move(*this).paren_aux(b1, b2, b3);}
+	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As> constexpr auto operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as)     && -> decltype(auto) {return std::move(*this).paren_aux(b1, b2, b3, b4, as...);}
 
  private:
 	template<typename Tuple, std::size_t ... I> constexpr auto apply_impl(Tuple const& t, std::index_sequence<I...>/*012*/) const& -> decltype(auto) {return            this->operator()(std::get<I>(t)...);}
@@ -1309,7 +1303,7 @@ struct array_iterator<Element, 1, Ptr>
 
 	template<
 		class Other,
-		decltype(_implicit_cast<Ptr>(typename Other::pointer{}))* = nullptr,
+		decltype(multi::implicit_cast<Ptr>(typename Other::pointer{}))* = nullptr,
 		decltype(std::declval<Other const&>().data_)* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
@@ -1317,7 +1311,7 @@ struct array_iterator<Element, 1, Ptr>
 
 	template<
 		class Other,
-		decltype(_explicit_cast<Ptr>(typename Other::pointer{}))* = nullptr,
+		decltype(multi::explicit_cast<Ptr>(typename Other::pointer{}))* = nullptr,
 		decltype(std::declval<Other const&>().data_)* = nullptr
 	>
 	constexpr explicit array_iterator(Other const& o) : data_{o.data_}, stride_{o.stride_} {}
@@ -1329,7 +1323,7 @@ struct array_iterator<Element, 1, Ptr>
 
 	template<
 		class EElement, typename PPtr,
-		typename = decltype(_implicit_cast<Ptr>(std::declval<array_iterator<EElement, 1, PPtr>>().data_))
+		typename = decltype(multi::implicit_cast<Ptr>(std::declval<array_iterator<EElement, 1, PPtr>>().data_))
 	>
 	constexpr/*implicit*/array_iterator(array_iterator<EElement, 1, PPtr> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to reproduce the implicitness of original pointer
 	: data_{other.data_}, stride_{other.stride_} {}
@@ -1508,12 +1502,12 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
  protected:
 	template<class A>
-	constexpr void intersection_assign_(A&& other)& {
+	constexpr void intersection_assign(A&& other)& {
 		for(auto idx : intersection(types::extension(), extension(other))) {
 			operator[](idx) = std::forward<A>(other)[idx];
 		}
 	}
-	template<class A> constexpr void intersection_assign_(A&& o)&& {intersection_assign_(std::forward<A>(o));}
+	template<class A> constexpr void intersection_assign(A&& o)&& {intersection_assign(std::forward<A>(o));}
 
 	basic_array(basic_array const&) = default;
 
@@ -1678,26 +1672,26 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	HD constexpr auto operator()(index i) const& -> decltype(auto) {return                  operator[](i);}
 
  private:
-	HD constexpr auto paren_()      & {return operator()();}
-	HD constexpr auto paren_()     && {return operator()();}
-	HD constexpr auto paren_() const& {return operator()();}
+	HD constexpr auto paren_aux()      & {return operator()();}
+	HD constexpr auto paren_aux()     && {return operator()();}
+	HD constexpr auto paren_aux() const& {return operator()();}
 
-	HD constexpr auto paren_(index_range const& ir)      & {return range(ir);}
-	HD constexpr auto paren_(index_range const& ir)     && {return range(ir);}
-	HD constexpr auto paren_(index_range const& ir) const& {return range(ir);}
+	HD constexpr auto paren_aux(index_range const& ir)      & {return range(ir);}
+	HD constexpr auto paren_aux(index_range const& ir)     && {return range(ir);}
+	HD constexpr auto paren_aux(index_range const& ir) const& {return range(ir);}
 
-	HD constexpr auto paren_(index i)      & -> decltype(auto) {return operator[](i);}
-	HD constexpr auto paren_(index i)     && -> decltype(auto) {return operator[](i);}
-	HD constexpr auto paren_(index i) const& -> decltype(auto) {return operator[](i);}
+	HD constexpr auto paren_aux(index i)      & -> decltype(auto) {return operator[](i);}
+	HD constexpr auto paren_aux(index i)     && -> decltype(auto) {return operator[](i);}
+	HD constexpr auto paren_aux(index i) const& -> decltype(auto) {return operator[](i);}
 
-	constexpr auto paren_(intersecting_range<index> const& inr)      & -> decltype(auto) {return                  paren_(intersection(this->extension(), inr));}
-	constexpr auto paren_(intersecting_range<index> const& inr)     && -> decltype(auto) {return std::move(*this).paren_(intersection(this->extension(), inr));}
-	constexpr auto paren_(intersecting_range<index> const& inr) const& -> decltype(auto) {return                  paren_(intersection(this->extension(), inr));}
+	constexpr auto paren_aux(intersecting_range<index> const& inr)      & -> decltype(auto) {return                  paren_aux(intersection(this->extension(), inr));}
+	constexpr auto paren_aux(intersecting_range<index> const& inr)     && -> decltype(auto) {return std::move(*this).paren_aux(intersection(this->extension(), inr));}
+	constexpr auto paren_aux(intersecting_range<index> const& inr) const& -> decltype(auto) {return                  paren_aux(intersection(this->extension(), inr));}
 
  public:
-	constexpr auto operator()(intersecting_range<index> const& ir)      & -> decltype(auto) {return                  paren_(ir);}
-	constexpr auto operator()(intersecting_range<index> const& ir)     && -> decltype(auto) {return std::move(*this).paren_(ir);}
-	constexpr auto operator()(intersecting_range<index> const& ir) const& -> decltype(auto) {return                  paren_(ir);}
+	constexpr auto operator()(intersecting_range<index> const& ir)      & -> decltype(auto) {return                  paren_aux(ir);}
+	constexpr auto operator()(intersecting_range<index> const& ir)     && -> decltype(auto) {return std::move(*this).paren_aux(ir);}
+	constexpr auto operator()(intersecting_range<index> const& ir) const& -> decltype(auto) {return                  paren_aux(ir);}
 
 	template<class... Args>
 	constexpr auto operator()(Args&&... args) &
