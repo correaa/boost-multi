@@ -113,14 +113,14 @@ struct array_types : Layout {  // cppcheck-suppress syntaxError ; false positive
 
  protected:  // TODO(correaa) : find why this needs to be public and not protected or friend
 	template<class ArrayTypes, typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>
-		, decltype(explicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
+		, decltype(multi::explicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
 	>
 	constexpr explicit array_types(ArrayTypes const& a) : Layout{a.layout()}, base_{a.base_} {}
 
 	template<
 		class ArrayTypes,
 		typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>,
-		decltype(implicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
+		decltype(multi::implicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointers are implicitly convertible
 	constexpr/*implct*/array_types(ArrayTypes const& a)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : inherit behavior of underlying pointer
@@ -272,13 +272,13 @@ struct array_iterator
 
 	template<
 		class EElement, typename PPtr,
-		decltype(explicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().ptr_.base()))* = nullptr
+		decltype(multi::explicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().ptr_.base()))* = nullptr
 	>
 	constexpr explicit array_iterator(array_iterator<EElement, D, PPtr> const& o)
 	: ptr_{o.ptr_.base_, o.ptr_.layout()}, stride_{o.stride_} {}
 
 	template<class EElement, typename PPtr,
-		decltype(implicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().ptr_.base()))* = nullptr
+		decltype(multi::implicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().ptr_.base()))* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
 	constexpr/*implct*/array_iterator(array_iterator<EElement, D, PPtr> const& o)   // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : propagate implicitness of pointer
@@ -1303,7 +1303,7 @@ struct array_iterator<Element, 1, Ptr>
 
 	template<
 		class Other,
-		decltype(implicit_cast<Ptr>(typename Other::pointer{}))* = nullptr,
+		decltype(multi::implicit_cast<Ptr>(typename Other::pointer{}))* = nullptr,
 		decltype(std::declval<Other const&>().data_)* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
@@ -1311,7 +1311,7 @@ struct array_iterator<Element, 1, Ptr>
 
 	template<
 		class Other,
-		decltype(explicit_cast<Ptr>(typename Other::pointer{}))* = nullptr,
+		decltype(multi::explicit_cast<Ptr>(typename Other::pointer{}))* = nullptr,
 		decltype(std::declval<Other const&>().data_)* = nullptr
 	>
 	constexpr explicit array_iterator(Other const& o) : data_{o.data_}, stride_{o.stride_} {}
@@ -1323,7 +1323,7 @@ struct array_iterator<Element, 1, Ptr>
 
 	template<
 		class EElement, typename PPtr,
-		typename = decltype(implicit_cast<Ptr>(std::declval<array_iterator<EElement, 1, PPtr>>().data_))
+		typename = decltype(multi::implicit_cast<Ptr>(std::declval<array_iterator<EElement, 1, PPtr>>().data_))
 	>
 	constexpr/*implicit*/array_iterator(array_iterator<EElement, 1, PPtr> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to reproduce the implicitness of original pointer
 	: data_{other.data_}, stride_{other.stride_} {}

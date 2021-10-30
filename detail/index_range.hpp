@@ -204,6 +204,8 @@ MAYBE_UNUSED constexpr intersecting_range<> const ALL = intersecting_range<>::al
 MAYBE_UNUSED constexpr intersecting_range<> const _   = ALL;
 MAYBE_UNUSED constexpr intersecting_range<> const U   = ALL;
 
+[[deprecated]] constexpr intersecting_range<> const all = ALL;
+
 template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
 struct extension_t : public range<IndexType, IndexTypeLast>{
 	using range<IndexType, IndexTypeLast>::range;
