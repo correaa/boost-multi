@@ -161,7 +161,7 @@ public:
 
 //	involuter(involuter const& other) = default;
 
-	template<class Other, decltype(implicit_cast<It>(typename Other::underlying_type{}))* = nullptr>
+	template<class Other, decltype(multi::implicit_cast<It>(typename Other::underlying_type{}))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor
 	constexpr/*implct*/involuter(Other const& o) : it_{o.it_}, f_{o.f_}{} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : inherit implicit conversion of underlying type
 	template<class Other, decltype(explicit_cast<It>(typename Other::underlying_type{}))* = nullptr>
