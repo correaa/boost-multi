@@ -990,13 +990,11 @@ template<class T> static_array(IL<IL<IL<T>>>        ) -> static_array<T, 3>;
 template<class T> static_array(IL<IL<IL<IL<T>>>>    ) -> static_array<T, 4>;
 template<class T> static_array(IL<IL<IL<IL<IL<T>>>>>) -> static_array<T, 5>;
 
-#if defined(__NVCC__)  // inheritance of ctad doesn't seem to be working in nvcc(11.4)
-template<class T> array(IL<T>                ) -> array<T, 1>;
-template<class T> array(IL<IL<T>>            ) -> array<T, 2>;
-template<class T> array(IL<IL<IL<T>>>        ) -> array<T, 3>;
-template<class T> array(IL<IL<IL<IL<T>>>>    ) -> array<T, 4>;
-template<class T> array(IL<IL<IL<IL<IL<T>>>>>) -> array<T, 5>;
-#endif
+template<class T>        array(IL<T>                ) ->        array<T, 1>;
+template<class T>        array(IL<IL<T>>            ) ->        array<T, 2>;
+template<class T>        array(IL<IL<IL<T>>>        ) ->        array<T, 3>;
+template<class T>        array(IL<IL<IL<IL<T>>>>    ) ->        array<T, 4>;
+template<class T>        array(IL<IL<IL<IL<IL<T>>>>>) ->        array<T, 5>;
 
 #undef IL
 
