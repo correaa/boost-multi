@@ -45,8 +45,8 @@ class involuter{
 	It it_;
 	MULTI_NO_UNIQUE_ADDRESS F f_;
 	template<class, class> friend class involuter;
-	template<class From, std::enable_if_t<std::is_convertible<From, It>{}, int> =0>
-	static constexpr auto implicit_cast(From&& f) {return static_cast<It>(f);}
+//	template<class From, std::enable_if_t<std::is_convertible<From, It>{}, int> =0>
+//	static constexpr auto implicit_cast(From&& f) {return static_cast<It>(f);}
 
  public:
 	using pointer           = involuter<typename std::iterator_traits<It>::pointer, F>;
@@ -61,7 +61,7 @@ class involuter{
 	constexpr involuter(It it, F f) : it_{std::move(it)}, f_{std::move(f)} {}
 //	involuter(involuter const& other) = default;
 	// NOLINTNEXTLINE(google-explicit-constructor, hicpp-explicit-conversions): this is needed to make involuter<T> implicitly convertible to involuter<T const>
-	template<class Other> constexpr involuter(involuter<Other, F> const& o) : it_{implicit_cast(o.it_)}, f_{o.f_} {}
+	template<class Other> constexpr involuter(involuter<Other, F> const& o) : it_{multi::implicit_cast<It>(o.it_)}, f_{o.f_} {}
 //	auto operator=(involuter const& other) -> involuter& = default;
 	constexpr auto operator*() const{return reference{*it_, f_};}
 	constexpr auto operator==(involuter const& o) const {return it_==o.it_;}

@@ -378,7 +378,7 @@ auto fftw_plan_dft(std::array<bool, +D> which, In&& in, Out&& out, int sign) -> 
 	return fftw_plan_dft(which, std::forward<In>(in), std::forward<Out>(out), sign, fftw::estimate);
 }
 
-template<class In, class Out, dimensionality_type D = In::rank_v, typename = decltype(reinterpret_cast<fftw_complex*>(implicit_cast<std::complex<double>*>(base(std::declval<Out&>()))))> // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : interact with legacy code
+template<class In, class Out, dimensionality_type D = In::rank_v, typename = decltype(reinterpret_cast<fftw_complex*>(multi::implicit_cast<std::complex<double>*>(base(std::declval<Out&>()))))> // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : interact with legacy code
 auto fftw_plan_dft(In const& in, Out&& out, int s, fftw::flags flags){
 	static_assert( D == std::decay_t<Out>::rank_v , "!");
 	using multi::sizes; using multi::strides; assert(sizes(in) == sizes(out));
@@ -398,14 +398,14 @@ auto fftw_plan_dft(In const& in, Out&& out, int s, fftw::flags flags){
 		/*int howmany_rank*/ 0,
 		/*const fftw_iodim *howmany_dims*/ nullptr, //howmany_dims.data(), //;//nullptr,
 		/*fftw_complex *in*/ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(static_cast<std::complex<double> const*>(base(in)))), // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) : interact with legacy code
-		/*fftw_complex *out*/ reinterpret_cast<fftw_complex*>(implicit_cast<std::complex<double>*>(base(out))), // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : interact with legacy code
+		/*fftw_complex *out*/ reinterpret_cast<fftw_complex*>(multi::implicit_cast<std::complex<double>*>(base(out))), // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : interact with legacy code
 		s, static_cast<unsigned>(flags)
 	);
 	assert(ret);
 	return ret;
 }
 
-template<class In, class Out, dimensionality_type D = In::rank_v, typename = decltype(reinterpret_cast<fftw_complex*>(implicit_cast<std::complex<double>*>(base(std::declval<Out&>()))))> // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : interact with legacy code
+template<class In, class Out, dimensionality_type D = In::rank_v, typename = decltype(reinterpret_cast<fftw_complex*>(multi::implicit_cast<std::complex<double>*>(base(std::declval<Out&>()))))> // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : interact with legacy code
 auto fftw_plan_dft(In const& in, Out&& out, int s){
 	return fftw_plan_dft(in, out, s, fftw::estimate);
 }
