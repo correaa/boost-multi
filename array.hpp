@@ -998,6 +998,8 @@ template<class T>        array(IL<IL<IL<IL<IL<T>>>>>) ->        array<T, 5>;
 
 #undef IL
 
+template<class T>        array(T[]                  ) ->        array<T, 1>;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+
 //  vvv these are necessary to catch {n, m, ...} notation (or single integer notation)
 template<class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<0>, T) -> array<T, 0>;
 template<class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<1>, T) -> array<T, 1>;
