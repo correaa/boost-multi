@@ -174,3 +174,14 @@ BOOST_AUTO_TEST_CASE(array_partitioned_add_to_last) {
 	BOOST_REQUIRE( &A4[1][2][3][0] == &A3[1][2][3] );
 }
 
+BOOST_AUTO_TEST_CASE(array_partitioned_vs_chunked) {
+	multi::array<double, 1> A = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11.};
+	BOOST_REQUIRE( size(A.partitioned(3)) == 3 );
+	BOOST_REQUIRE( A.partitioned(3)[1] == decltype(+A.partitioned(3)[1])({4., 5., 6., 7.}) );
+	BOOST_REQUIRE( &A.partitioned(3)[1][2] == &A[6] );
+
+	BOOST_REQUIRE( size(A.chunked(3)) == 4 );
+	BOOST_REQUIRE( A.chunked(3)[1] == decltype(+A.chunked(3)[1])({3., 4., 5.}) );
+	BOOST_REQUIRE( &A.chunked(3)[1][2] == &A[5] );
+}
+
