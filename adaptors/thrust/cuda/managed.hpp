@@ -29,15 +29,19 @@ public:
 };
 
 template<class T>
-class pointer{
+class pointer {
 	::thrust::cuda::pointer<T> impl_;
-public:
-	constexpr explicit pointer(::thrust::cuda::pointer<T> const& other) : impl_{other}{}
-	constexpr explicit pointer(T* other) : impl_(other){}
+
+ public:
+	constexpr explicit pointer(::thrust::cuda::pointer<T> const& other) : impl_{other} {}
+	constexpr explicit pointer(T* other) : impl_(other) {}
 
 	using difference_type   = typename ::thrust::iterator_traits<::thrust::cuda::pointer<T>>::difference_type;
 	using value_type        = typename ::thrust::iterator_traits<::thrust::cuda::pointer<T>>::value_type;
-	using pointer           = pointer<T>; // -Xcudafe \"--diag_suppress=class_and_member_name_conflict\" //TODO
+#pragma push
+#pragma diag_suppress = class_and_member_name_conflict  // for nvcc warning: declaration of a member with the same name as its class
+	using pointer           = pointer<T>;
+#pragma pop
 	using reference         = managed::reference<T>;
 	using iterator_category = typename ::thrust::iterator_traits<::thrust::cuda::pointer<T>>::iterator_category;
 

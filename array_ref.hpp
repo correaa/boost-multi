@@ -1567,7 +1567,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 		std::for_each(this->begin(), this->end(), [&](auto&& e){ar& multi::archive_traits<Archive>::make_nvp("item", e);});
 	}
 	auto operator=(basic_array const& o)    & -> basic_array& {  // TODO(correaa) : make sfinae friendly
-		if(this == &o) {return *this;}
+		if(this == std::addressof(o)) {return *this;}
 		assert(this->extension() == o.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	//  MULTI_MARK_SCOPE(std::string{"multi::operator= D=1 from "}+typeid(T).name()+" to "+typeid(T).name() );
 		this->assign(o.begin(), o.end());  // TODO(correaa) : improve performance by rotating

@@ -58,7 +58,7 @@ endif()
 
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	enable_language(CUDA)
-	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"")
+	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr") # -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"")
 	find_package(CUDA QUIET)
 	if(CUDA_FOUND)
 		message("CUDA found")
@@ -136,7 +136,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 					$<$<CXX_COMPILER_ID:GNU>:
 					-Wextra
 					-Wpedantic
-					-Wformat-truncation> # -Wconversion
+					-Wformat-truncation
+					-Wno-unknown-pragmas> # -Wconversion
 					$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
 					-Wextra
 					-Wpedantic
