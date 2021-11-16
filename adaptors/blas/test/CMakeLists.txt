@@ -136,7 +136,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 					$<$<CXX_COMPILER_ID:GNU>:
 					-Wextra
 					-Wpedantic
-					-Wformat-truncation> # -Wconversion
+					-Wformat-truncation
+					-Wno-unknown-pragmas> # -Wconversion
 					$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
 					-Wextra
 					-Wpedantic
