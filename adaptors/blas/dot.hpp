@@ -133,7 +133,7 @@ auto dot(X const& x, Y const& y){
 	}
 }
 #pragma pop
-#pragma GCC pop
+#pragma GCC diagnostic pop
 
 namespace operators{
 	template<class X1D, class Y1D> [[nodiscard]]

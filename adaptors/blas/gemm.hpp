@@ -274,7 +274,7 @@ auto gemm(                Scalar s, A2D const& a, B2D const& b) {
 	}
 }
 #pragma pop
-#pragma GCC pop
+#pragma GCC diagnostic pop
 
 namespace operators {
 	template<class A2D, class B2D> 
