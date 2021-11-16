@@ -118,6 +118,10 @@ auto dot(Context const& ctxt, X const& x, Y const& y){
 //template<class X, class Y> [[nodiscard]] 
 //dot_ref<blas::context, X, Y> dot(X const& x, Y const& y){return {blas::context{}, x, y};}
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunknown-pragmas"
+#pragma push
+#pragma diag_suppress = implicit_return_from_non_void_function  // for nvcc warning
 template<class X, class Y> [[nodiscard]]
 auto dot(X const& x, Y const& y){
 	if constexpr(is_conjugated<X>{}){
@@ -128,6 +132,8 @@ auto dot(X const& x, Y const& y){
 		return blas::dot(ctxtp, x, y);
 	}
 }
+#pragma pop
+#pragma GCC pop
 
 namespace operators{
 	template<class X1D, class Y1D> [[nodiscard]]
