@@ -791,6 +791,7 @@ struct basic_array
  private:
 	constexpr auto partitioned_aux(size_type s) const -> partitioned_type {
 		assert(s != 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		// vvv TODO(correaa) should be size() here?
 		assert( (this->layout().nelems() % s) == 0);  // if you get an assertion here it means that you are partitioning an array with an incommunsurate partition // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : : normal in a constexpr function
 		multi::layout_t<D+1> new_layout{this->layout(), this->layout().nelems()/s, 0, this->layout().nelems()};
 		new_layout.sub().nelems() /= s;
@@ -801,9 +802,21 @@ struct basic_array
 	       constexpr auto partitioned(size_type n) const& -> partitioned_const_type {return partitioned_aux(n);}
 	       constexpr auto partitioned(size_type n)      & -> partitioned_type       {return partitioned_aux(n);}
 	       constexpr auto partitioned(size_type n)     && -> partitioned_type       {return partitioned_aux(n);}
+
 	friend constexpr auto partitioned(basic_array const& s, size_type n) -> partitioned_const_type {return           s .partitioned(n);}
 	friend constexpr auto partitioned(basic_array      & s, size_type n) -> partitioned_type       {return           s .partitioned(n);}
 	friend constexpr auto partitioned(basic_array     && s, size_type n) -> partitioned_type       {return std::move(s).partitioned(n);}
+
+ private:
+	constexpr auto chunked_aux(size_type s) const -> partitioned_type {
+		assert( this->size() % s == 0 );
+		return partitioned_aux(this->size()/s);
+	}
+
+ public:  // in Mathematica this is called Partition https://reference.wolfram.com/language/ref/Partition.html in RangesV3 it is called chunk
+	constexpr auto chunked(size_type s) const& -> partitioned_const_type {return chunked_aux(s);}
+	constexpr auto chunked(size_type s)      & -> partitioned_type       {return chunked_aux(s);}
+	constexpr auto chunked(size_type s)     && -> partitioned_type       {return chunked_aux(s);}
 
  private:
 	constexpr auto reversed_aux() const -> basic_array{
@@ -1110,7 +1123,8 @@ struct basic_array
 
 //  constexpr
 	auto operator=(basic_array               const& o) & -> basic_array& {
-		if(this == &o) {return *this;}  // lints(cert-oop54-cpp)
+		if(this == std::addressof(o)) {return *this;}  // lints(cert-oop54-cpp)
+		if(&*this == &o) {return *this;}
 		assert(this->extension() == o.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	//  MULTI_MARK_SCOPE("multi::operator= [D="+std::to_string(D)+"] from "+typeid(T).name()+" to "+typeid(T).name() );
 		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()) {
@@ -1125,7 +1139,7 @@ struct basic_array
 
 	constexpr auto operator=(basic_array const& o) &&
 	-> basic_array& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-		if(this == &o) {return *this;}  // lints(cert-oop54-cpp)
+		if(this == std::addressof(o)) {return *this;}  // lints(cert-oop54-cpp)
 		operator=(o);
 		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	}
@@ -1996,8 +2010,12 @@ struct array_ref
  public:
 	array_ref(array_ref&&) noexcept = default;  // this needs to be public in c++14
 
-	template<class OtherPtr, class=std::enable_if_t<not std::is_same<OtherPtr, ElementPtr>{}> >
+	template<class OtherPtr, class=std::enable_if_t<not std::is_same<OtherPtr, ElementPtr>{}>, decltype(multi::explicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
 	constexpr explicit array_ref(array_ref<T, D, OtherPtr>&& other)
+	: basic_array<T, D, ElementPtr>{other.layout(), ElementPtr{other.base()}} {}
+
+	template<class OtherPtr, class=std::enable_if_t<not std::is_same<OtherPtr, ElementPtr>{}>, decltype(multi::implicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
+	constexpr /*implicit*/ array_ref(array_ref<T, D, OtherPtr>&& other)
 	: basic_array<T, D, ElementPtr>{other.layout(), ElementPtr{other.base()}} {}
 
 	constexpr explicit array_ref(typename array_ref::element_ptr p, typename array_ref::extensions_type e) noexcept  // TODO(correa) eliminate this ctor
