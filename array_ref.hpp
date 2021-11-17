@@ -1726,6 +1726,17 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	constexpr auto partitioned(size_type s)     && -> partitioned_type       {return partitioned_aux(s);}
 
  private:
+	constexpr auto chunked_aux(size_type s) const -> partitioned_type {
+		assert( this->size() % s == 0 );
+		return partitioned_aux(this->size()/s);
+	}
+
+ public:  // in Mathematica this is called Partition https://reference.wolfram.com/language/ref/Partition.html in RangesV3 it is called chunk
+	constexpr auto chunked(size_type s) const& -> partitioned_const_type {return chunked_aux(s);}
+	constexpr auto chunked(size_type s)      & -> partitioned_type       {return chunked_aux(s);}
+	constexpr auto chunked(size_type s)     && -> partitioned_type       {return chunked_aux(s);}
+
+ private:
 	constexpr auto reversed_aux() const -> basic_array {
 		auto new_layout = this->layout();
 		new_layout.reverse();
