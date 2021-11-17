@@ -2015,7 +2015,8 @@ struct array_ref
 	: basic_array<T, D, ElementPtr>{other.layout(), ElementPtr{other.base()}} {}
 
 	template<class OtherPtr, class=std::enable_if_t<not std::is_same<OtherPtr, ElementPtr>{}>, decltype(multi::implicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
-	constexpr /*implicit*/ array_ref(array_ref<T, D, OtherPtr>&& other)
+	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax
+	constexpr /*implicit*/ array_ref(array_ref<T, D, OtherPtr>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: basic_array<T, D, ElementPtr>{other.layout(), ElementPtr{other.base()}} {}
 
 	constexpr explicit array_ref(typename array_ref::element_ptr p, typename array_ref::extensions_type e) noexcept  // TODO(correa) eliminate this ctor
