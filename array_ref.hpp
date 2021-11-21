@@ -424,7 +424,7 @@ struct basic_array
 	using types::types;
 
 	template<typename, dimensionality_type, class Alloc> friend struct static_array;
-	basic_array(basic_array const&) = default;
+	basic_array(basic_array const&) = default;  // NOTE: reference type cannot be copied. perhaps you want to return by std::move or std::forward if you got the object from a universal reference argument
 
 	template<class, class> friend struct basic_array_ptr;
 
