@@ -224,10 +224,11 @@ static void Bnaive_product(benchmark::State& state) {
 
 	multi::array<double, 2> C({  A.size() , (~B).size()}, 0.);
 
+    benchmark::ClobberMemory();
 	for(auto _ : state) {
 		product(A, B, C);
 		benchmark::DoNotOptimize(C);
-	    benchmark::ClobberMemory(); // Force 42 to be written to memory.
+	    benchmark::ClobberMemory();
 	}
 }
 
@@ -244,12 +245,13 @@ static void Bgemm(benchmark::State& state) {
 		return B;
 	}();
 
-	multi::array<double, 2> C({  A.size() , (~B).size()}, 0.);
+	multi::array<double, 2> C({A.size() , (~B).size()}, 0.);
 
+    benchmark::ClobberMemory();
 	for(auto _ : state) {
 		multi::blas::gemm(A, B, C);
 		benchmark::DoNotOptimize(C);
-	    benchmark::ClobberMemory(); // Force 42 to be written to memory.
+	    benchmark::ClobberMemory();
 	}
 }
 
