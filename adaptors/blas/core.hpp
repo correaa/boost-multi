@@ -419,7 +419,7 @@ template<class XP, class X = typename std::pointer_traits<XP>::element_type, cla
 //#define xgeru(T) template<         class S> v geru(         S m, S n, T const& a,                    T const* X, S incx,         T const* Y, S incy, T* A, S lda){BLAS(T##geru)(       BC(m), BC(n), a,             X, BC(incx),       Y, BC(incy), A, BC(lda));}
 //#define xgerc(T) template<         class S> v gerc(         S m, S n, T const& a,                    T const* X, S incx,         T const* Y, S incy, T* A, S lda){BLAS(T##gerc)(       BC(m), BC(n), a,             X, BC(incx),       Y, BC(incy), A, BC(lda));}
 
-namespace core{
+namespace core {
 
 //xgemv(s) xgemv(d) xgemv(c) xgemv(z)
 //xger(s)   xger(d)
@@ -430,10 +430,10 @@ namespace core{
 using std::enable_if_t;
 using std::is_assignable;
 
-template<class A, class M, class X, class B, class Y, enable_if_t<is_s<M>{} and is_s<X>{} and is_s<Y>{} and is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const& a, M* ma, size_t lda, X* x, size_t incx, B b, Y* y, size_t incy){BLAS(sgemv)(trans, m, n, a, (s const*)ma, lda, (s const*)x, incx, b, (s*)y, incy);} // NOLINT(google-readability-casting)
-template<class A, class M, class X, class B, class Y, enable_if_t<is_d<M>{} and is_d<X>{} and is_d<Y>{} and is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const& a, M* ma, size_t lda, X* x, size_t incx, B b, Y* y, size_t incy){BLAS(dgemv)(trans, m, n, a, (d const*)ma, lda, (d const*)x, incx, b, (d*)y, incy);} // NOLINT(google-readability-casting)
-template<class A, class M, class X, class B, class Y, enable_if_t<is_c<M>{} and is_c<X>{} and is_c<Y>{} and is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const& a, M* ma, size_t lda, X* x, size_t incx, B b, Y* y, size_t incy){BLAS(cgemv)(trans, m, n, a, (c const*)ma, lda, (c const*)x, incx, b, (c*)y, incy);} // NOLINT(google-readability-casting)
-template<class A, class M, class X, class B, class Y, enable_if_t<is_z<M>{} and is_z<X>{} and is_z<Y>{} and is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const& a, M* ma, size_t lda, X* x, size_t incx, B b, Y* y, size_t incy){BLAS(zgemv)(trans, m, n, a, (z const*)ma, lda, (z const*)x, incx, b, (z*)y, incy);} // NOLINT(google-readability-casting)
+template<class A, class M, class X, class B, class Y, enable_if_t<is_s<M>{} and is_s<X>{} and is_s<Y>{} and is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const& a, M* ma, size_t lda, X* x, size_t incx, B b, Y* y, size_t incy) {BLAS(sgemv)(trans, m, n, a, (s const*)ma, lda, (s const*)x, incx, b, (s*)y, incy);} // NOLINT(google-readability-casting)
+template<class A, class M, class X, class B, class Y, enable_if_t<is_d<M>{} and is_d<X>{} and is_d<Y>{} and is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const& a, M* ma, size_t lda, X* x, size_t incx, B b, Y* y, size_t incy) {BLAS(dgemv)(trans, m, n, a, (d const*)ma, lda, (d const*)x, incx, b, (d*)y, incy);} // NOLINT(google-readability-casting)
+template<class A, class M, class X, class B, class Y, enable_if_t<is_c<M>{} and is_c<X>{} and is_c<Y>{} and is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const& a, M* ma, size_t lda, X* x, size_t incx, B b, Y* y, size_t incy) {BLAS(cgemv)(trans, m, n, a, (c const*)ma, lda, (c const*)x, incx, b, (c*)y, incy);} // NOLINT(google-readability-casting)
+template<class A, class M, class X, class B, class Y, enable_if_t<is_z<M>{} and is_z<X>{} and is_z<Y>{} and is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const& a, M* ma, size_t lda, X* x, size_t incx, B b, Y* y, size_t incy) {BLAS(zgemv)(trans, m, n, a, (z const*)ma, lda, (z const*)x, incx, b, (z*)y, incy);} // NOLINT(google-readability-casting)
 
 //template<class SX, class SY, enable_if_t<is_s<SX>{} and is_s<SY>{} and is_assignable<SY&, SX&>{},int> =0> void copy(size_t n, SX* x, size_t incx, SY* y, size_t incy){BLAS(scopy)(n, (             float   const*)(x), incx, (             float  *)(y), incy);}
 //template<class DX, class DY, enable_if_t<is_d<DX>{} and is_d<DY>{} and is_assignable<DY&, DX&>{},int> =0> void copy(size_t n, DX* x, size_t incx, DY* y, size_t incy){BLAS(dcopy)(n, (             double  const*)(x), incx, (             double *)(y), incy);}
@@ -449,10 +449,10 @@ struct blas2{
 //	static v trsv(char ulA, char transA, char di, S m, T const* A, S lda, T* X, S incx) = delete;
 };
 
-template<> struct blas2<s>{template<class... As> static v    trsv(As... as)                              {BLAS(strsv)(as...);}};
-template<> struct blas2<d>{template<class... As> static v    trsv(As... as)                              {BLAS(dtrsv)(as...);}};
-template<> struct blas2<c>{template<class... As> static v    trsv(As... as)                              {BLAS(ctrsv)(as...);}};
-template<> struct blas2<z>{template<class... As> static auto trsv(As... as)->decltype(BLAS(ztrsv)(as...)){BLAS(ztrsv)(as...);}};
+template<> struct blas2<s>{template<class... As> static v    trsv(As... as)                               {BLAS(strsv)(as...);}};
+template<> struct blas2<d>{template<class... As> static v    trsv(As... as)                               {BLAS(dtrsv)(as...);}};
+template<> struct blas2<c>{template<class... As> static v    trsv(As... as)                               {BLAS(ctrsv)(as...);}};
+template<> struct blas2<z>{template<class... As> static auto trsv(As... as)->decltype(BLAS(ztrsv)(as...)) {BLAS(ztrsv)(as...);}};
 
 namespace core{
 	template<typename TconstP, typename TP, typename S=std::size_t, typename C=char> v trsv(C ulA, C transA, C diA, S n, TconstP A, S lda, TP X, S incx){blas2<std::decay_t<typename std::pointer_traits<TP>::element_type>>::trsv(ulA, transA, diA, n, A, lda, X, incx);}
@@ -472,7 +472,7 @@ template<class UL, class C, class S>             v syrk(        UL ul, C transA,
 	MULTI_MARK_SCOPE("cpu_syrk"); BLAS(T##syrk)(      ul, transA,            BC(n), BC(k), alpha, A, BC(lda),        beta, CC, BC(ldc));}
 #endif
 
-namespace core{
+namespace core {
 
 using std::is_convertible_v;
 using std::pointer_traits;
@@ -537,7 +537,7 @@ enable_if_t< \
 	is_##T<AA>{} and is_##T<BB>{} and is_assignable<BB&, decltype(AA{}*BB{}/ALPHA{})>{} and is_assignable<BB&, decltype(ALPHA{}*BB{}/AA{})>{} and \
 	is_convertible_v<AAP, AA*> and is_convertible_v<BBP, BB*> \
 ,int> =0> \
-v trsm(char side, char ul, char transA, char diag, ssize_t m, ssize_t n, ALPHA alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb){ \
+v trsm(char side, char ul, char transA, char diag, ssize_t m, ssize_t n, ALPHA alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb) { \
 	MULTI_MARK_SCOPE("cpu_trsm");											\
 	assert( side   == 'L' or side   == 'R' );                  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/  \
 	assert( ul     == 'U' or ul     == 'L' );                  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/  \
@@ -563,65 +563,68 @@ xsyrk(s) xsyrk(d) xsyrk(c) xsyrk(z)
 
 #undef BC
 
-struct context{ // stateless (and thread safe)
+struct context { // stateless (and thread safe)
 	template<class... As>
 	static auto axpy(As... as)
-	->decltype(core::axpy(as...)){
-		return core::axpy(as...);}
+	->decltype(core::axpy(as...)) {
+		return core::axpy(as...); }
 
 	template<class... As>
 	static auto gemv(As... as)
-	->decltype(core::gemv(as...)){
-		return core::gemv(as...);}
+	->decltype(core::gemv(as...)) {
+		return core::gemv(as...); }
 
 	template<class... As>
 	static auto gemm(As&&... as)
-	->decltype(core::gemm(std::forward<As>(as)...)){
-		return core::gemm(std::forward<As>(as)...);}
+	->decltype(core::gemm(std::forward<As>(as)...)) {
+		return core::gemm(std::forward<As>(as)...); }
 
 	template<class... As>
 	static auto dot(As&&... as)
-	->decltype(core::dot(std::forward<As>(as)...)){
-		return core::dot(std::forward<As>(as)...);}
+	->decltype(core::dot(std::forward<As>(as)...)) {
+		return core::dot(std::forward<As>(as)...); }
 
 	template<class... As>
 	static auto dotc(As&&... as)
-	->decltype(core::dotc(std::forward<As>(as)...)){
-		return core::dotc(std::forward<As>(as)...);}
+	->decltype(core::dotc(std::forward<As>(as)...)) {
+		return core::dotc(std::forward<As>(as)...); }
 
 	template<class... As>
 	static auto dotu(As&&... as)
-	->decltype(core::dotu(std::forward<As>(as)...)){
-		return core::dotu(std::forward<As>(as)...);}
+	->decltype(core::dotu(std::forward<As>(as)...)) {
+		return core::dotu(std::forward<As>(as)...); }
 
 	template<class... As>
 	static auto trsm(As&&... as)
-	->decltype(core::trsm(std::forward<As>(as)...)){
-		return core::trsm(std::forward<As>(as)...);}
+	->decltype(core::trsm(std::forward<As>(as)...)) {
+		return core::trsm(std::forward<As>(as)...); }
 
 	template<class... As>
 	static auto herk(As&&... as)
-	->decltype(core::herk(std::forward<As>(as)...)){
-		return core::herk(std::forward<As>(as)...);}
+	->decltype(core::herk(std::forward<As>(as)...)) {
+		return core::herk(std::forward<As>(as)...); }
 };
 
-template<class Context> struct is_context : std::false_type{};
-template<> struct is_context<context> : std::true_type{};
-template<> struct is_context<context&&> : std::true_type{};
-template<> struct is_context<context&> : std::true_type{};
-template<> struct is_context<context const&> : std::true_type{};
+template<class Context> struct is_context : std::false_type {};
+template<> struct is_context<context> : std::true_type {};
+template<> struct is_context<context&&> : std::true_type {};
+template<> struct is_context<context&> : std::true_type {};
+template<> struct is_context<context const&> : std::true_type {};
 
-template<> struct is_context<void*&> : std::true_type{};
+template<> struct is_context<void*&> : std::true_type {};
 
-namespace core{
+namespace core {
 template<class Context, class... As>
 auto copy(Context&& /*unused*/, As... as)
-->decltype(core::copy(as...)){
-	return core::copy(as...);}
-} // end namespace core
+->decltype(core::copy(as...)) {
+	return core::copy(as...); }
+}  // end namespace core
 
 template<class TPtr, std::enable_if_t<std::is_convertible<TPtr, typename std::pointer_traits<TPtr>::element_type*>{}, int> =0> 
-auto default_context_of(TPtr const& /*unused*/) -> blas::context*{return {};}
+auto default_context_of(TPtr const& /*unused*/) -> blas::context* {
+	static blas::context dc;
+	return &dc;
+}
 
 } // end namespace blas
 
