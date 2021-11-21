@@ -1,3 +1,4 @@
+# CXX=g++-9 cmake .. -D CMAKE_BUILD_TYPE=Release -D CMAKE_CUDA_HOST_COMPILER=g++-9
 cmake_minimum_required(VERSION 3.10)
 
 project(
@@ -8,6 +9,8 @@ project(
 
 find_package(Boost REQUIRED COMPONENTS serialization unit_test_framework)
 find_package(benchmark REQUIRED)
+find_package(BLAS REQUIRED)
+#find_package(TBB REQUIRED HINTS "/usr")
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -23,3 +26,12 @@ include(CTest)
 add_executable(thrust_assignment.cu.x thrust_assignment.cu)
 add_test(NAME thrust_assignment.cu.x COMMAND thrust_assignment.cu.x)
 target_link_libraries(thrust_assignment.cu.x PRIVATE benchmark::benchmark)
+
+add_executable(matrix_multiplication.cpp.x matrix_multiplication.cpp)
+target_compile_options(matrix_multiplication.cpp.x PRIVATE -Wfatal-errors -Ofast)
+
+target_link_libraries(matrix_multiplication.cpp.x benchmark::benchmark)
+target_link_libraries(matrix_multiplication.cpp.x -ltbb) #TBB::tbb)
+target_link_libraries(matrix_multiplication.cpp.x BLAS::BLAS)
+
+add_test(NAME matrix_multiplication.cpp.x COMMAND matrix_multiplication.cpp.x)

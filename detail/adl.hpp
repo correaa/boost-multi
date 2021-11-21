@@ -566,4 +566,3 @@ template<> struct recursive<1>{
 }  // end namespace boost
 
 #endif
-
