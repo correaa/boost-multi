@@ -24,27 +24,6 @@ auto naive_product(MatrixA const& A, MatrixB const& B, double beta, MatrixC&& C)
 }
 
 template<class MatrixA, class MatrixB, class MatrixC>
-inline auto naive_product2(MatrixA const& A, MatrixB const& B, double beta, MatrixC&& C) -> MatrixC&& {
-	assert( C.size() == A.size() );
-	assert( (~C).size() == (~B).size() );
-
-	std::transform(std::execution::unseq,
-		begin(A), end(A), begin(C), begin(C),
-		[&](auto const& arowi, auto&& crowi) {
-			std::transform(std::execution::unseq,
-				begin(crowi), end(crowi), begin(~B), begin(crowi),
-				[&](auto const& c, auto const& b) {
-					return std::transform_reduce(std::execution::unseq,
-						begin(arowi), end(arowi), begin(b), beta*c);
-				}
-		);
-		return std::move(crowi);
-	});
-	return std::forward<MatrixC>(C);
-//	}
-}
-
-template<class MatrixA, class MatrixB, class MatrixC>
 auto naive_product3(MatrixA const& A, MatrixB const& B, double beta, MatrixC&& C) -> MatrixC&& {
 	assert( C.size() == A.size() );
 	assert( (~C).size() == (~B).size() );
@@ -87,6 +66,27 @@ auto naive_product3(MatrixA const& A, MatrixB const& B, double beta, MatrixC&& C
 //		});
 //	});
 //}
+
+template<class MatrixA, class MatrixB, class MatrixC>
+inline auto naive_product2(MatrixA const& A, MatrixB const& B, double beta, MatrixC&& C) -> MatrixC&& {
+	assert( C.size() == A.size() );
+	assert( (~C).size() == (~B).size() );
+
+	std::transform(std::execution::unseq,
+		begin(A), end(A), begin(C), begin(C),
+		[&](auto const& arowi, auto&& crowi) {
+			std::transform(std::execution::unseq,
+				begin(crowi), end(crowi), begin(~B), begin(crowi),
+				[&](auto const& c, auto const& b) {
+					return std::transform_reduce(std::execution::unseq,
+						begin(arowi), end(arowi), begin(b), beta*c);
+				}
+		);
+		return std::move(crowi);
+	});
+	return std::forward<MatrixC>(C);
+//	}
+}
 
 template<class MatrixA, class MatrixB, class MatrixC>
 auto product(MatrixA const& A, MatrixB const& B, MatrixC&& C) {
