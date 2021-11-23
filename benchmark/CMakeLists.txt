@@ -28,7 +28,7 @@ add_test(NAME thrust_assignment.cu.x COMMAND thrust_assignment.cu.x)
 target_link_libraries(thrust_assignment.cu.x PRIVATE benchmark::benchmark)
 
 add_executable(matrix_multiplication.cpp.x matrix_multiplication.cpp)
-target_compile_options(matrix_multiplication.cpp.x PRIVATE -Wfatal-errors -Ofast)
+target_compile_options(matrix_multiplication.cpp.x PRIVATE -Wfatal-errors)
 
 target_link_libraries(matrix_multiplication.cpp.x benchmark::benchmark)
 target_link_libraries(matrix_multiplication.cpp.x -ltbb) #TBB::tbb)
