@@ -22,9 +22,18 @@ project(
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 # link_libraries("-lboost_unit_test_framework")
 
-if(NOT DEFINED CMAKE_CXX_STANDARD)
-	set(CMAKE_CXX_STANDARD 14)
-endif()
+find_package(PkgConfig REQUIRED)
+#PKG_CONFIG_PATH
+#set(CMAKE_PREFIX_PATH "/usr/local/share/pkgconfig/") #${CMAKE_SOURCE_DIR}/libs/opencv-install")
+pkg_search_module(TBB REQUIRED tbb)
+#include_directories(PkgConfig::TBB)
+link_libraries(-ltbb)#PkgConfig::TBB)
+#cmake_print_properties(TARGETS PkgConfig::TBB PROPERTIES INTERFACE_LINK_LIBRARIES INTERFACE_INCLUDE_DIRECTORIES)
+
+#if(NOT DEFINED CMAKE_CXX_STANDARD)
+#	set(CMAKE_CXX_STANDARD 14)
+#endif()
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
