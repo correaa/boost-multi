@@ -6,13 +6,13 @@
 
 //#include <cblas/cblas.h> // consider being replaceable by cblas.h
 
-//#include<iostream> // debug
 #include<cassert>
 #include<complex>
-#include<cstdint> // int64_t
-#include<cstring> // std::memcpy
-#include<limits> // numeric_limits
-#include<type_traits> // is_convertible
+#include<cstdint>  // int64_t
+#include<cstring>  // std::memcpy
+#include<iostream>  // for debug
+#include<limits>  // numeric_limits
+#include<type_traits>  // is_convertible
 
 #include "../../config/MARK.hpp"
 
@@ -509,23 +509,22 @@ v herk(        UL ul, C transA,             S n, S k, ALPHA const* alpha, AAP aa
 	BLAS(T##herk)(      ul, transA,            BC(n), BC(k), *(Real const*)alpha, aa, BC(lda),        *(Real const*)beta, cc, BC(ldc)); \
 }
 
-#define xgemm(T) \
+#define xgemm(T)                                                                                                                                                                                                                        \
 template<class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BBP, class BB = typename pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename pointer_traits<CCP>::element_type, \
-enable_if_t< \
-	is_##T<AA>{} and is_##T<BB>{} and is_##T<CC>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{})>{} and \
-	is_convertible_v<AAP, AA*> and is_convertible_v<BBP, BB*> and is_convertible_v<CCP, CC*> \
-, int> =0 > \
-v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc) \
-{ \
-	MULTI_MARK_SCOPE("cpu_gemm");			                                                                                                                            \
-	using std::max;                                                                                                                                                     \
-	if(transA =='N'){MULTI_ASSERT1(lda >= max(1L, m));}else{MULTI_ASSERT1(lda >= max(1L, k));}                                                                           \
-	if(transB =='N'){MULTI_ASSERT1(ldb >= max(1L, k));}else{MULTI_ASSERT1(ldb >= max(1L, n));}                                                                           \
-	MULTI_ASSERT1( aa != cc );                                                                                                                                                 \
-	MULTI_ASSERT1( bb != cc );                                                                                                                                                 \
-	MULTI_ASSERT1(ldc >= max(ssize_t{1}, m));                                                                                                                                          \
-	if(*beta != 0.) MULTI_ASSERT1((is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{} + BETA{}*CC{})>{}));                                                                          \
-	BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), *(T const*)alpha, (T const*)static_cast<AA*>(aa), BC(lda), (T const*)static_cast<BB*>(bb), BC(ldb), *(T const*)beta, (T*)static_cast<CC*>(cc), BC(ldc));               \
+enable_if_t<                                                                                                                                                                                                                            \
+	is_##T<AA>{} and is_##T<BB>{} and is_##T<CC>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{})>{} and                                                                                                                            \
+	is_convertible_v<AAP, AA*> and is_convertible_v<BBP, BB*> and is_convertible_v<CCP, CC*>                                                                                                                                            \
+, int> =0 >                                                                                                                                                                                                                             \
+v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc) {                                                                \
+	MULTI_MARK_SCOPE("cpu_gemm");			                                                                                                                                                                                            \
+	using std::max;                                                                                                                                                                                                                     \
+	if(transA =='N'){MULTI_ASSERT1(lda >= max(1L, m));}else{MULTI_ASSERT1(lda >= max(1L, k));}                                                                                                                                          \
+	if(transB =='N'){MULTI_ASSERT1(ldb >= max(1L, k));}else{MULTI_ASSERT1(ldb >= max(1L, n));}                                                                                                                                          \
+	MULTI_ASSERT1( aa != cc );                                                                                                                                                                                                          \
+	MULTI_ASSERT1( bb != cc );                                                                                                                                                                                                          \
+	MULTI_ASSERT1(ldc >= max(ssize_t{1}, m));                                                                                                                                                                                           \
+	if(*beta != 0.) MULTI_ASSERT1((is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{} + BETA{}*CC{})>{}));                                                                                                                                   \
+	BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), *(T const*)alpha, (T const*)static_cast<AA*>(aa), BC(lda), (T const*)static_cast<BB*>(bb), BC(ldb), *(T const*)beta, (T*)static_cast<CC*>(cc), BC(ldc));                         \
 }
 
 xgemm(s) xgemm(d) xgemm(c) xgemm(z) // NOLINT(readability-function-cognitive-complexity) : 36 of 25
