@@ -7,7 +7,7 @@
 
 #include "../array.hpp"
 
-#include "../algorithm/gemm.hpp"
+#include "../algorithms/gemm.hpp"
 
 #include <numeric>
 #include <random>
@@ -34,13 +34,72 @@ BOOST_AUTO_TEST_CASE(algorithm_gemm) {
 		return _;
 	}();
 
-	multi::array<double, 2> C_gold({  A.size() , (~B).size()}, 0.);
-//	std::generate(begin(elements(C_gold)), end(elements(C_gold)), [&]{return dis(gen);});
+	// zero init, beta = zero multiplication
+	{
+		multi::array<double, 2> C_gold({  A.size() , (~B).size()}, 0.);
+		multi::array<double, 2> C = C_gold;
 
-	multi::array<double, 2> C = C_gold;
+		multi::detail::naive_gemm(1., A, B, 0., C_gold);
+		multi::gemm(1., A, B, 0., C);
 
-	multi::detail::naive_gemm(1., A, B, 0., C_gold);
-	multi::gemm(1., A, B, 0., C);
+		BOOST_TEST( C[123][121] == C_gold[123][121] , boost::test_tools::tolerance(1e-13) );
+	}
 
-	BOOST_TEST( C[123][121] == C_gold[123][121] , boost::test_tools::tolerance(1e-13) );
+	// non-zero init, beta = zero multiplication
+	{
+		multi::array<double, 2> C_gold({  A.size() , (~B).size()}, 0.);
+		std::generate(begin(elements(C_gold)), end(elements(C_gold)), [&]{return dis(gen);});
+
+		multi::array<double, 2> C = C_gold;
+
+		multi::detail::naive_gemm(1., A, B, 0., C_gold);
+		multi::gemm(1., A, B, 0., C);
+
+		BOOST_TEST( C[123][121] == C_gold[123][121] , boost::test_tools::tolerance(1e-13) );
+	}
+	// non-zero init, beta = one multiplication
+	{
+		multi::array<double, 2> C_gold({  A.size() , (~B).size()}, 0.);
+		std::generate(begin(elements(C_gold)), end(elements(C_gold)), [&]{return dis(gen);});
+
+		multi::array<double, 2> C = C_gold;
+
+		multi::detail::naive_gemm(1., A, B, 1., C_gold);
+		multi::gemm(1., A, B, 1., C);
+
+		BOOST_TEST( C[123][121] == C_gold[123][121] , boost::test_tools::tolerance(1e-13) );
+	}
+	{
+		multi::array<double, 2> C_gold({  A.size() , (~B).size()}, 0.);
+		std::generate(begin(elements(C_gold)), end(elements(C_gold)), [&]{return dis(gen);});
+
+		multi::array<double, 2> C = C_gold;
+
+		multi::detail::naive_gemm(1., A, B, 0.3, C_gold);
+		multi::gemm(1., A, B, 0.3, C);
+
+		BOOST_TEST( C[123][121] == C_gold[123][121] , boost::test_tools::tolerance(1e-13) );
+	}
+	{
+		multi::array<double, 2> C_gold({  A.size() , (~B).size()}, 0.);
+		std::generate(begin(elements(C_gold)), end(elements(C_gold)), [&]{return dis(gen);});
+
+		multi::array<double, 2> C = C_gold;
+
+		multi::detail::naive_gemm(2., A, B, 0., C_gold);
+		multi::gemm(2., A, B, 0., C);
+
+		BOOST_TEST( C[123][121] == C_gold[123][121] , boost::test_tools::tolerance(1e-13) );
+	}
+	{
+		multi::array<double, 2> C_gold({  A.size() , (~B).size()}, 0.);
+		std::generate(begin(elements(C_gold)), end(elements(C_gold)), [&]{return dis(gen);});
+
+		multi::array<double, 2> C = C_gold;
+
+		multi::detail::naive_gemm(2., A, B, 0.3, C_gold);
+		multi::gemm(2., A, B, 0.3, C);
+
+		BOOST_TEST( C[123][121] == C_gold[123][121] , boost::test_tools::tolerance(1e-13) );
+	}
 }
