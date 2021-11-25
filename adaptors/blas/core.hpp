@@ -348,8 +348,8 @@ using std::is_assignable;
 
 // PGI/NVC++ compiler uses a blas version that needs -DRETURN_BY_STACK
 #if defined(RETURN_BY_STACK) || (defined(FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID) && FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID)
-template<class X, class Y, class R, enable_if_t<is_s<X>{} and is_s<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(sdot )((float *)r, n, (s const*)x, incx, (s const*)y, incy);}
-template<class X, class Y, class R, enable_if_t<is_d<X>{} and is_d<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(ddot )((double*)r, n, (d const*)x, incx, (d const*)y, incy);}
+template<class X, class Y, class R, enable_if_t<is_s<X>{} and is_s<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dot (size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(sdot )((float *)r, n, (s const*)x, incx, (s const*)y, incy);}
+template<class X, class Y, class R, enable_if_t<is_d<X>{} and is_d<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dot (size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(ddot )((double*)r, n, (d const*)x, incx, (d const*)y, incy);}
 
 template<class X, class Y, class R, enable_if_t<is_c<X>{} and is_c<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(cdotu)((Complex_float *)r, n, (c const*)x, incx, (c const*)y, incy);}
 template<class X, class Y, class R, enable_if_t<is_z<X>{} and is_z<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(zdotu)((Complex_double*)r, n, (z const*)x, incx, (z const*)y, incy);}
