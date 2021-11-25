@@ -6,13 +6,13 @@
 
 //#include <cblas/cblas.h> // consider being replaceable by cblas.h
 
-//#include<iostream> // debug
 #include<cassert>
 #include<complex>
-#include<cstdint> // int64_t
-#include<cstring> // std::memcpy
-#include<limits> // numeric_limits
-#include<type_traits> // is_convertible
+#include<cstdint>  // int64_t
+#include<cstring>  // std::memcpy
+#include<iostream>  // for debug
+#include<limits>  // numeric_limits
+#include<type_traits>  // is_convertible
 
 #include "../../config/MARK.hpp"
 
@@ -84,29 +84,32 @@ namespace core{
 
 static_assert(sizeof(INT)==32/8 or sizeof(INT)==64/8, "please set MULTI_BLAS_INT to int32_t or int64_t");
 
-// TODO(correaa) indent declarations like here https://www.netlib.org/lapack/lug/node145.html
+// indented declarations like in https://www.netlib.org/lapack/lug/node145.html
 
-#define xROTG(T1, T2)     v BLAS(   T1##rotg)(                           T1 const*, T1 const*, T2*, T1*)              // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
-#define xROTMG(T)         v BLAS(   T##rotmg)(                           T*, T*, T*, T const&, T(&param)[5])          // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
-#define xROT(TT, T, S)    v BLAS(  TT##rot  )(N,              T       *x, INCX, T       *y, INCY, S const&, S const&) // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
-#define xROTM(T)          v BLAS(   T##rotm )(N, T* x, INCX, T* y, INCY, T const(&p)[5])                              // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
-#define xSWAP(T)          v T ##swap##_ (N,              T       *x, INCX, T       *y, INCY)                          // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
-#define xSCAL(TT, TA, TX) v TT##scal##_ (N, TA const& a, TX      *x, INCX                  )                          // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
-#define xCOPY(T)          v T ##copy##_ (N,              T const *x, INCX, T       *y, INCY)                          // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
-#define xAXPY(T)          v T ##axpy##_ (N,  T const* a, T const *x, INCX, T       *y, INCY)                          // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
-#define xDOT(R, TT, T)    auto BLAS(  TT##dot  )(N,              T const *x, INCX, T const *y, INCY) -> R
+#define xROTG(T1, T2)     v       T1##rotg ##_ (                                                                T1 const*, T1 const*, T2*, T1*          )                  // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xROTMG(T)         v       T ##rotmg##_ (                                                        T*, T*, T*       , T  const&,                     T(&param)[5]  )  // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xROT(TT, T, S)    v       TT##rot  ##_ (    N,              T       *x, INCX, T       *y, INCY,                               S const&, S const&)                  // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xROTM(T)          v       T ##rotm ##_ (    N,              T       *x, INCX, T* y, INCY,                                                         T const(&p)[5])  // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xSWAP(T)          v       T ##swap ##_ (    N,              T       *x, INCX, T       *y, INCY)                                                                    // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xSCAL(TT, TA, TX) v       TT##scal ##_ (    N, TA const& a, TX      *x, INCX)                                                                                      // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xCOPY(T)          v       T ##copy ##_ (    N,              T const *x, INCX, T       *y, INCY)                                                                    // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xAXPY(T)          v       T ##axpy ##_ (    N,  T const* a, T const *x, INCX, T       *y, INCY)                                                                    // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+
 // PGI/NVC++ compiler uses a blas version that needs -DRETURN_BY_STACK
 #if defined(RETURN_BY_STACK) || (defined(FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID) && FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID)
-#define xDOTU(R, T)       v    T##dotu ##_ (R*, N,              T const *x, INCX, T const *y, INCY)
-#define xDOTC(R, T)       v    T##dotc ##_ (R*, N,              T const *x, INCX, T const *y, INCY)
+#define xDOT(R, TT, T)    v       TT##dot  ##_ (R*, N,              T const *x, INCX, T const *y, INCY)
+#define xDOTU(R, T)       v       T ##dotu ##_ (R*, N,              T const *x, INCX, T const *y, INCY)
+#define xDOTC(R, T)       v       T ##dotc ##_ (R*, N,              T const *x, INCX, T const *y, INCY)
 #else
-#define xDOTU(R, T)       auto    T ##dotu##_ (    N,              T const *x, INCX, T const *y, INCY) -> R
-#define xDOTC(R, T)       auto    T ##dotc##_ (    N,              T const *x, INCX, T const *y, INCY) -> R
+#define xDOT(R, TT, T)    auto    TT##dot  ##_ (    N,              T const *x, INCX, T const *y, INCY) -> R
+#define xDOTU(R, T)       auto    T ##dotu ##_ (    N,              T const *x, INCX, T const *y, INCY) -> R
+#define xDOTC(R, T)       auto    T ##dotc ##_ (    N,              T const *x, INCX, T const *y, INCY) -> R
+//#define xxDOT(TT, T)      auto    TT##dot  ##_ (    N,  T const& a, T const *x, INCX, T const *y, INCY) -> T
 #endif
-#define xxDOT(TT, T)    auto    TT##dot ##_ (    N,  T const& a, T const *x, INCX, T const *y, INCY) -> T
-#define xNRM2(R, TT, T) auto    TT##nrm2##_ (    N,              T const *x, INCX                  ) -> R
-#define xASUM(R, TT, T) auto    TT##asum##_ (    N,              T const *x, INCX                  ) -> R
-#define IxAMAX(T)       auto i##T ##amax##_ (    N,              T const* x, INCX                  ) -> INT
+
+#define xNRM2(R, TT, T)   auto    TT##nrm2##_ (    N,               T const *x, INCX) -> R
+#define xASUM(R, TT, T)   auto    TT##asum##_ (    N,               T const *x, INCX) -> R
+#define IxAMAX(T)         auto i##T ##amax##_ (    N,               T const* x, INCX) -> INT
 
 xROTG(s, s)   ; xROTG(d,d)    ;// MKL extension xROTG(c, s); xROTG(z, d);
 xROTMG(s)     ; xROTMG(d)     ;
@@ -116,13 +119,12 @@ xSWAP(s)      ; xSWAP(d)      ; xSWAP(c)      ; xSWAP(z);
 xSCAL(s, s, s); xSCAL(d, d, d); xSCAL(c, c, c); xSCAL(z, z, z); xSCAL(zd, d, z); xSCAL(cs, s, c);
 xCOPY(s)      ; xCOPY(d)      ; xCOPY(c)      ; xCOPY(z)      ;
 xAXPY(s)      ; xAXPY(d)      ; xAXPY(c)      ; xAXPY(z)      ;
-xDOT(s, s, s); xDOT(d, d, d);                                   xDOT(d, ds, s);
+xDOT(s, s, s) ; xDOT(d, d, d) ;                                   xDOT(d, ds, s);
 
 xDOTU(C, c); xDOTU(Z, z);
 //xDOTU(c, c); xDOTU(z, z);
-
 xDOTC(C, c); xDOTC(Z, z);
-xxDOT(sds, s);
+//xxDOT(sds, s);
 xNRM2(s, s, s); xNRM2(d, d, d); xNRM2(s, sc, c); xNRM2(d, dz, z);
 xASUM(s, s, s); xASUM(d, d, d); xASUM(s, sc, c); xASUM(d, dz, z);
 IxAMAX(s); IxAMAX(d); IxAMAX(c); IxAMAX(z);
@@ -346,8 +348,8 @@ using std::is_assignable;
 
 // PGI/NVC++ compiler uses a blas version that needs -DRETURN_BY_STACK
 #if defined(RETURN_BY_STACK) || (defined(FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID) && FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID)
-template<class X, class Y, class R, enable_if_t<is_s<X>{} and is_s<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(sdot )((float *)r, n, (s const*)x, incx, (s const*)y, incy);}
-template<class X, class Y, class R, enable_if_t<is_d<X>{} and is_d<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(ddot )((double*)r, n, (d const*)x, incx, (d const*)y, incy);}
+template<class X, class Y, class R, enable_if_t<is_s<X>{} and is_s<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dot (size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(sdot )((float *)r, n, (s const*)x, incx, (s const*)y, incy);}
+template<class X, class Y, class R, enable_if_t<is_d<X>{} and is_d<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dot (size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(ddot )((double*)r, n, (d const*)x, incx, (d const*)y, incy);}
 
 template<class X, class Y, class R, enable_if_t<is_c<X>{} and is_c<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(cdotu)((Complex_float *)r, n, (c const*)x, incx, (c const*)y, incy);}
 template<class X, class Y, class R, enable_if_t<is_z<X>{} and is_z<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(zdotu)((Complex_double*)r, n, (z const*)x, incx, (z const*)y, incy);}
@@ -509,23 +511,22 @@ v herk(        UL ul, C transA,             S n, S k, ALPHA const* alpha, AAP aa
 	BLAS(T##herk)(      ul, transA,            BC(n), BC(k), *(Real const*)alpha, aa, BC(lda),        *(Real const*)beta, cc, BC(ldc)); \
 }
 
-#define xgemm(T) \
+#define xgemm(T)                                                                                                                                                                                                                        \
 template<class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BBP, class BB = typename pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename pointer_traits<CCP>::element_type, \
-enable_if_t< \
-	is_##T<AA>{} and is_##T<BB>{} and is_##T<CC>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{})>{} and \
-	is_convertible_v<AAP, AA*> and is_convertible_v<BBP, BB*> and is_convertible_v<CCP, CC*> \
-, int> =0 > \
-v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc) \
-{ \
-	MULTI_MARK_SCOPE("cpu_gemm");			                                                                                                                            \
-	using std::max;                                                                                                                                                     \
-	if(transA =='N'){MULTI_ASSERT1(lda >= max(1L, m));}else{MULTI_ASSERT1(lda >= max(1L, k));}                                                                           \
-	if(transB =='N'){MULTI_ASSERT1(ldb >= max(1L, k));}else{MULTI_ASSERT1(ldb >= max(1L, n));}                                                                           \
-	MULTI_ASSERT1( aa != cc );                                                                                                                                                 \
-	MULTI_ASSERT1( bb != cc );                                                                                                                                                 \
-	MULTI_ASSERT1(ldc >= max(ssize_t{1}, m));                                                                                                                                          \
-	if(*beta != 0.) MULTI_ASSERT1((is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{} + BETA{}*CC{})>{}));                                                                          \
-	BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), *(T const*)alpha, (T const*)static_cast<AA*>(aa), BC(lda), (T const*)static_cast<BB*>(bb), BC(ldb), *(T const*)beta, (T*)static_cast<CC*>(cc), BC(ldc));               \
+enable_if_t<                                                                                                                                                                                                                            \
+	is_##T<AA>{} and is_##T<BB>{} and is_##T<CC>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{})>{} and                                                                                                                            \
+	is_convertible_v<AAP, AA*> and is_convertible_v<BBP, BB*> and is_convertible_v<CCP, CC*>                                                                                                                                            \
+, int> =0 >                                                                                                                                                                                                                             \
+v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc) {                                                                \
+	MULTI_MARK_SCOPE("cpu_gemm");			                                                                                                                                                                                            \
+	using std::max;                                                                                                                                                                                                                     \
+	if(transA =='N'){MULTI_ASSERT1(lda >= max(1L, m));}else{MULTI_ASSERT1(lda >= max(1L, k));}                                                                                                                                          \
+	if(transB =='N'){MULTI_ASSERT1(ldb >= max(1L, k));}else{MULTI_ASSERT1(ldb >= max(1L, n));}                                                                                                                                          \
+	MULTI_ASSERT1( aa != cc );                                                                                                                                                                                                          \
+	MULTI_ASSERT1( bb != cc );                                                                                                                                                                                                          \
+	MULTI_ASSERT1(ldc >= max(ssize_t{1}, m));                                                                                                                                                                                           \
+	if(*beta != 0.) MULTI_ASSERT1((is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{} + BETA{}*CC{})>{}));                                                                                                                                   \
+	BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), *(T const*)alpha, (T const*)static_cast<AA*>(aa), BC(lda), (T const*)static_cast<BB*>(bb), BC(ldb), *(T const*)beta, (T*)static_cast<CC*>(cc), BC(ldc));                         \
 }
 
 xgemm(s) xgemm(d) xgemm(c) xgemm(z) // NOLINT(readability-function-cognitive-complexity) : 36 of 25

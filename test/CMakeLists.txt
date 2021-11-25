@@ -20,11 +20,8 @@ project(
 )
 
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
-# link_libraries("-lboost_unit_test_framework")
 
-if(NOT DEFINED CMAKE_CXX_STANDARD)
-	set(CMAKE_CXX_STANDARD 14)
-endif()
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
