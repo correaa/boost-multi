@@ -10,6 +10,8 @@
 #include <boost/hana/integral_constant.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 
+#include <boost/archive/xml_oarchive.hpp>
+
 #include<numeric>  // for accumulate
 
 namespace hana = boost::hana;
@@ -41,6 +43,14 @@ struct integral_constant : private hana::integral_constant<Integral, N>{
 	friend constexpr auto operator>=(Integral const& a, integral_constant const&/*self*/) {return a >= N;}
 	friend constexpr auto operator< (Integral const& a, integral_constant const&/*self*/) {return a <  N;}
 };
+
+BOOST_AUTO_TEST_CASE(xml_serialization_index_range) {
+	{
+	    boost::archive::xml_oarchive oa(std::cerr);
+		multi::range<std::ptrdiff_t> rg{5, 10};
+		oa<< ::boost::serialization::make_nvp("rg", rg);
+	}
+}
 
 BOOST_AUTO_TEST_CASE(multi_range) {
 #if defined(__cpp_deduction_guides) and __cpp_deduction_guides

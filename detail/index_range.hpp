@@ -15,6 +15,43 @@
 #include <limits>     // for numeric_limits
 #include <utility>    // for forward
 
+
+namespace boost {
+namespace serialization {
+
+template<class T> class nvp;
+template<class T> auto make_nvp(const char* n, T& v) noexcept -> const nvp<T>;  // NOLINT(readability-const-return-type) : original boost declaration
+
+}  // end namespace serialization
+}  // end namespace boost
+
+namespace boost {
+namespace multi {
+
+template<class Ar, typename = decltype(Ar::make_nvp(std::declval<char const*>(), int{}))>
+auto has_make_nvp_aux(Ar const&) -> std::true_type ;
+auto has_make_nvp_aux(...      ) -> std::false_type;
+
+template<class Ar, typename = decltype(has_make_nvp_aux(std::declval<Ar>()))>
+struct archive_traits;
+
+template<class Ar>
+struct archive_traits<Ar, std::true_type>{
+	template<class T> static auto make_nvp(char const* n, T& v) {return Ar::make_nvp(n, v);}
+};
+
+template<class Ar>
+struct archive_traits<Ar, std::false_type>{
+	template<class T> static auto make_nvp(char const* n, T& v) {
+		using boost::serialization::make_nvp;
+		return make_nvp(n, v);
+	}
+};
+
+}  // end namespace multi
+}  // end namespace boost
+
+
 namespace boost {
 namespace multi {
 
@@ -46,20 +83,17 @@ class iterator_facade {
 	friend constexpr auto operator--(self_type& s, int) -> self_type {self_type r = s; --s; return r;}
 };
 
-template<class T> struct archive_traits;
-
 template<typename IndexType = std::true_type, typename IndexTypeLast = IndexType>
 class range {
 	IndexType first_ = {};
 	IndexTypeLast last_ = first_;
 
  public:
-	template<class Archive>
-	void serialize(Archive& ar, unsigned /*version*/) {
-		ar & multi::archive_traits<std::decay_t<Archive>>::make_nvp("first", first_);
-		ar & multi::archive_traits<std::decay_t<Archive>>::make_nvp("last" , last_ );
-//  	ar & boost::serialization::make_nvp("last", last_);//BOOST_SERIALIZATION_NVP(last);
-//  	ar & BOOST_SERIALIZATION_NVP(last); !! if you get an error here you need to include the adators/serialization/xml_archive.hpp
+	template<class Ar>
+	void serialize(Ar& ar, unsigned /*version*/) {
+		using multi::archive_traits<Ar>::make_nvp;
+		ar & multi::archive_traits<Ar>::make_nvp("first", first_);
+		ar & multi::archive_traits<Ar>::make_nvp("last" , last_ );
 	}
 
 	using value_type      = IndexType;
