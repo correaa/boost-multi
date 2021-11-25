@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(algorithm_gemm) {
 		multi::detail::naive_gemm(1., A, B, 0., C_gold);
 		multi::gemm(1., A, B, 0., C);
 
-		BOOST_TEST( C[123][121] == C_gold[123][121] , boost::test_tools::tolerance(1e-13) );
+		BOOST_TEST( C[123][121] == C_gold[123][121] , boost::test_tools::tolerance(1e-12) );
 	}
 
 	// non-zero init, beta = zero multiplication
@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(algorithm_gemm) {
 		multi::detail::naive_gemm(1., A, B, 0., C_gold);
 		multi::gemm(1., A, B, 0., C);
 
-		BOOST_TEST( C[123][121] == C_gold[123][121] , boost::test_tools::tolerance(1e-13) );
+		BOOST_TEST( C[123][121] == C_gold[123][121] , boost::test_tools::tolerance(1e-12) );
 	}
 	// non-zero init, beta = one multiplication
 	{
@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(algorithm_gemm) {
 		multi::detail::naive_gemm(1., A, B, 1., C_gold);
 		multi::gemm(1., A, B, 1., C);
 
-		BOOST_TEST( C[123][121] == C_gold[123][121] , boost::test_tools::tolerance(1e-13) );
+		BOOST_TEST( C[123][121] == C_gold[123][121] , boost::test_tools::tolerance(1e-12) );
 	}
 	{
 		multi::array<double, 2> C_gold({  A.size() , (~B).size()}, 0.);
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(algorithm_gemm) {
 		multi::detail::naive_gemm(1., A, B, 0.3, C_gold);
 		multi::gemm(1., A, B, 0.3, C);
 
-		BOOST_TEST( C[123][121] == C_gold[123][121] , boost::test_tools::tolerance(1e-13) );
+		BOOST_TEST( C[123][121] == C_gold[123][121] , boost::test_tools::tolerance(1e-12) );
 	}
 	{
 		multi::array<double, 2> C_gold({  A.size() , (~B).size()}, 0.);
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE(algorithm_gemm) {
 		multi::detail::naive_gemm(2., A, B, 0., C_gold);
 		multi::gemm(2., A, B, 0., C);
 
-		BOOST_TEST( C[123][121] == C_gold[123][121] , boost::test_tools::tolerance(1e-13) );
+		BOOST_TEST( C[123][121] == C_gold[123][121] , boost::test_tools::tolerance(1e-12) );
 	}
 	{
 		multi::array<double, 2> C_gold({  A.size() , (~B).size()}, 0.);
@@ -100,6 +100,6 @@ BOOST_AUTO_TEST_CASE(algorithm_gemm) {
 		multi::detail::naive_gemm(2., A, B, 0.3, C_gold);
 		multi::gemm(2., A, B, 0.3, C);
 
-		BOOST_TEST( C[123][121] == C_gold[123][121] , boost::test_tools::tolerance(1e-13) );
+		BOOST_TEST( C[123][121] == C_gold[123][121] , boost::test_tools::tolerance(1e-12) );
 	}
 }
