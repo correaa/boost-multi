@@ -48,10 +48,11 @@ include(CTest)
 #target_link_libraries(thrust_assignment.cu.x PRIVATE benchmark::benchmark)
 
 add_executable(matrix_multiplication.cpp.x matrix_multiplication.cpp)
-target_compile_options(matrix_multiplication.cpp.x PRIVATE -Wfatal-errors)
-
 target_link_libraries(matrix_multiplication.cpp.x benchmark::benchmark)
-target_link_libraries(matrix_multiplication.cpp.x -ltbb) #TBB::tbb)
-#target_link_libraries(matrix_multiplication.cpp.x BLAS::BLAS)
-
+target_link_libraries(matrix_multiplication.cpp.x -ltbb)
 add_test(NAME matrix_multiplication.cpp.x COMMAND matrix_multiplication.cpp.x)
+
+add_executable(algorithms_gemm.cpp.x algorithms_gemm.cpp)
+target_link_libraries(algorithms_gemm.cpp.x benchmark::benchmark)
+target_link_libraries(algorithms_gemm.cpp.x -ltbb)
+add_test(NAME algorithms_gemm.cpp.x COMMAND algorithms_gemm.cpp.x)
