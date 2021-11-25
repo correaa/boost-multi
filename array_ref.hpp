@@ -2030,7 +2030,11 @@ struct array_ref
 	constexpr array_ref(  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax and because a reference to c-array can be represented as an array_ref
 		TT(&t)[N]  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
 	)
-	: array_ref(static_cast<typename array_ref::element_ptr>(t), extensions(t)) {}
+	: array_ref(
+	//	static_cast<typename array_ref::element_ptr>(t),
+		multi::data_elements(t),
+		extensions(t)
+	) {}
 
 	using basic_array<T, D, ElementPtr>::operator=;
 	using basic_array<T, D, ElementPtr>::operator==;
@@ -2302,15 +2306,12 @@ constexpr auto uninitialized_copy
 // to overwrite the behavior of std::begin and std::end
 // which take rvalue-references as const-references.
 
-template<class T> auto begin(T&& t)
-->decltype(std::forward<T>(t).begin()) {
-	return std::forward<T>(t).begin(); }
+template<class T> auto begin(T&& t) -> decltype(std::forward<T>(t).begin()) {return std::forward<T>(t).begin();}
+template<class T> auto end  (T&& t) -> decltype(std::forward<T>(t).end()  ) {return std::forward<T>(t).end()  ;}
 
-template<class T> auto end(T&& t)
-->decltype(std::forward<T>(t).end()) {
-	return std::forward<T>(t).end(); }
+template<class T, std::size_t N, std::size_t M>
+auto transposed(T(&t)[N][M]) -> decltype(auto) {return ~multi::array_ref<T, 2>(t);}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 }  // end namespace multi
 }  // end namespace boost
 #endif
-
