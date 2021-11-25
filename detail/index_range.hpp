@@ -91,9 +91,9 @@ class range {
  public:
 	template<class Ar>
 	void serialize(Ar& ar, unsigned /*version*/) {
-		using multi::archive_traits<Ar>::make_nvp;
-		ar & multi::archive_traits<Ar>::make_nvp("first", first_);
-		ar & multi::archive_traits<Ar>::make_nvp("last" , last_ );
+		using multi::archive_traits;
+		ar & archive_traits<Ar>::make_nvp("first", first_);
+		ar & archive_traits<Ar>::make_nvp("last" , last_ );
 	}
 
 	using value_type      = IndexType;
