@@ -84,29 +84,32 @@ namespace core{
 
 static_assert(sizeof(INT)==32/8 or sizeof(INT)==64/8, "please set MULTI_BLAS_INT to int32_t or int64_t");
 
-// TODO(correaa) indent declarations like here https://www.netlib.org/lapack/lug/node145.html
+// indented declarations like in https://www.netlib.org/lapack/lug/node145.html
 
-#define xROTG(T1, T2)     v BLAS(   T1##rotg)(                           T1 const*, T1 const*, T2*, T1*)              // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
-#define xROTMG(T)         v BLAS(   T##rotmg)(                           T*, T*, T*, T const&, T(&param)[5])          // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
-#define xROT(TT, T, S)    v BLAS(  TT##rot  )(N,              T       *x, INCX, T       *y, INCY, S const&, S const&) // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
-#define xROTM(T)          v BLAS(   T##rotm )(N, T* x, INCX, T* y, INCY, T const(&p)[5])                              // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
-#define xSWAP(T)          v T ##swap##_ (N,              T       *x, INCX, T       *y, INCY)                          // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
-#define xSCAL(TT, TA, TX) v TT##scal##_ (N, TA const& a, TX      *x, INCX                  )                          // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
-#define xCOPY(T)          v T ##copy##_ (N,              T const *x, INCX, T       *y, INCY)                          // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
-#define xAXPY(T)          v T ##axpy##_ (N,  T const* a, T const *x, INCX, T       *y, INCY)                          // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
-#define xDOT(R, TT, T)    auto BLAS(  TT##dot  )(N,              T const *x, INCX, T const *y, INCY) -> R
+#define xROTG(T1, T2)     v       T1##rotg ##_ (                                                                T1 const*, T1 const*, T2*, T1*          )                  // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xROTMG(T)         v       T ##rotmg##_ (                                                        T*, T*, T*       , T  const&,                     T(&param)[5]  )  // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xROT(TT, T, S)    v       TT##rot  ##_ (    N,              T       *x, INCX, T       *y, INCY,                               S const&, S const&)                  // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xROTM(T)          v       T ##rotm ##_ (    N,              T       *x, INCX, T* y, INCY,                                                         T const(&p)[5])  // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xSWAP(T)          v       T ##swap ##_ (    N,              T       *x, INCX, T       *y, INCY)                                                                    // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xSCAL(TT, TA, TX) v       TT##scal ##_ (    N, TA const& a, TX      *x, INCX)                                                                                      // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xCOPY(T)          v       T ##copy ##_ (    N,              T const *x, INCX, T       *y, INCY)                                                                    // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xAXPY(T)          v       T ##axpy ##_ (    N,  T const* a, T const *x, INCX, T       *y, INCY)                                                                    // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+
 // PGI/NVC++ compiler uses a blas version that needs -DRETURN_BY_STACK
 #if defined(RETURN_BY_STACK) || (defined(FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID) && FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID)
-#define xDOTU(R, T)       v    T##dotu ##_ (R*, N,              T const *x, INCX, T const *y, INCY)
-#define xDOTC(R, T)       v    T##dotc ##_ (R*, N,              T const *x, INCX, T const *y, INCY)
+#define xDOT(R, TT, T)    v       TT##dot  ##_ (R*, N,              T const *x, INCX, T const *y, INCY)
+#define xDOTU(R, T)       v       T ##dotu ##_ (R*, N,              T const *x, INCX, T const *y, INCY)
+#define xDOTC(R, T)       v       T ##dotc ##_ (R*, N,              T const *x, INCX, T const *y, INCY)
 #else
-#define xDOTU(R, T)       auto    T ##dotu##_ (    N,              T const *x, INCX, T const *y, INCY) -> R
-#define xDOTC(R, T)       auto    T ##dotc##_ (    N,              T const *x, INCX, T const *y, INCY) -> R
+#define xDOT(R, TT, T)    auto    TT##dot  ##_ (    N,              T const *x, INCX, T const *y, INCY) -> R
+#define xDOTU(R, T)       auto    T ##dotu ##_ (    N,              T const *x, INCX, T const *y, INCY) -> R
+#define xDOTC(R, T)       auto    T ##dotc ##_ (    N,              T const *x, INCX, T const *y, INCY) -> R
+//#define xxDOT(TT, T)      auto    TT##dot  ##_ (    N,  T const& a, T const *x, INCX, T const *y, INCY) -> T
 #endif
-#define xxDOT(TT, T)    auto    TT##dot ##_ (    N,  T const& a, T const *x, INCX, T const *y, INCY) -> T
-#define xNRM2(R, TT, T) auto    TT##nrm2##_ (    N,              T const *x, INCX                  ) -> R
-#define xASUM(R, TT, T) auto    TT##asum##_ (    N,              T const *x, INCX                  ) -> R
-#define IxAMAX(T)       auto i##T ##amax##_ (    N,              T const* x, INCX                  ) -> INT
+
+#define xNRM2(R, TT, T)   auto    TT##nrm2##_ (    N,               T const *x, INCX) -> R
+#define xASUM(R, TT, T)   auto    TT##asum##_ (    N,               T const *x, INCX) -> R
+#define IxAMAX(T)         auto i##T ##amax##_ (    N,               T const* x, INCX) -> INT
 
 xROTG(s, s)   ; xROTG(d,d)    ;// MKL extension xROTG(c, s); xROTG(z, d);
 xROTMG(s)     ; xROTMG(d)     ;
@@ -116,13 +119,12 @@ xSWAP(s)      ; xSWAP(d)      ; xSWAP(c)      ; xSWAP(z);
 xSCAL(s, s, s); xSCAL(d, d, d); xSCAL(c, c, c); xSCAL(z, z, z); xSCAL(zd, d, z); xSCAL(cs, s, c);
 xCOPY(s)      ; xCOPY(d)      ; xCOPY(c)      ; xCOPY(z)      ;
 xAXPY(s)      ; xAXPY(d)      ; xAXPY(c)      ; xAXPY(z)      ;
-xDOT(s, s, s); xDOT(d, d, d);                                   xDOT(d, ds, s);
+xDOT(s, s, s) ; xDOT(d, d, d) ;                                   xDOT(d, ds, s);
 
 xDOTU(C, c); xDOTU(Z, z);
 //xDOTU(c, c); xDOTU(z, z);
-
 xDOTC(C, c); xDOTC(Z, z);
-xxDOT(sds, s);
+//xxDOT(sds, s);
 xNRM2(s, s, s); xNRM2(d, d, d); xNRM2(s, sc, c); xNRM2(d, dz, z);
 xASUM(s, s, s); xASUM(d, d, d); xASUM(s, sc, c); xASUM(d, dz, z);
 IxAMAX(s); IxAMAX(d); IxAMAX(c); IxAMAX(z);
