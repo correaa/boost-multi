@@ -10,6 +10,7 @@
 #include <boost/hana/integral_constant.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 
+#include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 
 #include<numeric>  // for accumulate
@@ -18,7 +19,7 @@ namespace hana = boost::hana;
 namespace multi = boost::multi;
 
 template<typename Integral, Integral const N>
-struct integral_constant : private hana::integral_constant<Integral, N>{
+struct integral_constant : private hana::integral_constant<Integral, N> {
 //	using hana::integral_constant<Integral, n>::integral_constant;
 	constexpr explicit operator Integral const&() const {
 		return hana::integral_constant<Integral, N>::value;
@@ -45,10 +46,17 @@ struct integral_constant : private hana::integral_constant<Integral, N>{
 };
 
 BOOST_AUTO_TEST_CASE(xml_serialization_index_range) {
+	std::stringstream ss;
+	multi::range<std::ptrdiff_t> const rg{5, 10};
 	{
-	    boost::archive::xml_oarchive oa(std::cerr);
-		multi::range<std::ptrdiff_t> rg{5, 10};
+	    boost::archive::xml_oarchive oa(ss);
 		oa<< ::boost::serialization::make_nvp("rg", rg);
+	}
+	{
+		boost::archive::xml_iarchive ia(ss);
+		multi::range<std::ptrdiff_t> rg2;
+		ia>> ::boost::serialization::make_nvp("rg2", rg2);
+		BOOST_REQUIRE( rg == rg2 );
 	}
 }
 
