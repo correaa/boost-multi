@@ -16,6 +16,41 @@
 #include <utility>    // for forward
 
 namespace boost {
+namespace serialization {
+
+template<class T> class nvp;
+//template<class T> auto make_nvp(const char* n, T& v) noexcept -> const nvp<T>;  // NOLINT(readability-const-return-type) : original boost declaration, if you get an error here, maybe you need a boost version above 1.71
+
+}  // end namespace serialization
+}  // end namespace boost
+
+namespace boost {
+namespace multi {
+
+template<class Ar, typename = decltype(typename Ar::template nvp<int>(std::declval<char const*>(), std::declval<int&>()))>
+auto has_nvp_aux(Ar const&) -> std::true_type ;
+auto has_nvp_aux(...      ) -> std::false_type;
+
+template<class Ar, typename = decltype(has_nvp_aux(std::declval<Ar>()))>
+struct archive_traits;
+
+template<class Ar>
+struct archive_traits<Ar, std::true_type> {
+	template<class T> using nvp = typename Ar::template nvp<T>;
+	template<class T> inline static auto make_nvp(char const* n, T& v) noexcept -> const nvp<T> {return nvp<T>{n, v};}  // NOLINT(readability-const-return-type) : original boost declaration
+};
+
+template<class Ar>
+struct archive_traits<Ar, std::false_type> {
+	template<class T> using nvp = boost::serialization::nvp<T>;
+	template<class T> inline static auto make_nvp(char const* n, T& v) noexcept -> const nvp<T> {return nvp<T>{n, v};}  // NOLINT(readability-const-return-type) : original boost declaration
+};
+
+}  // end namespace multi
+}  // end namespace boost
+
+
+namespace boost {
 namespace multi {
 
 template<
@@ -46,20 +81,16 @@ class iterator_facade {
 	friend constexpr auto operator--(self_type& s, int) -> self_type {self_type r = s; --s; return r;}
 };
 
-template<class T> struct archive_traits;
-
 template<typename IndexType = std::true_type, typename IndexTypeLast = IndexType>
 class range {
 	IndexType first_ = {};
 	IndexTypeLast last_ = first_;
 
  public:
-	template<class Archive>
-	void serialize(Archive& ar, unsigned /*version*/) {
-		ar & multi::archive_traits<std::decay_t<Archive>>::make_nvp("first", first_);
-		ar & multi::archive_traits<std::decay_t<Archive>>::make_nvp("last" , last_ );
-//  	ar & boost::serialization::make_nvp("last", last_);//BOOST_SERIALIZATION_NVP(last);
-//  	ar & BOOST_SERIALIZATION_NVP(last); !! if you get an error here you need to include the adators/serialization/xml_archive.hpp
+	template<class Ar, class ArT = multi::archive_traits<Ar>>
+	void serialize(Ar& ar, unsigned /*version*/) {
+		ar & ArT::make_nvp("first", first_);
+		ar & ArT::make_nvp("last" , last_ );
 	}
 
 	using value_type      = IndexType;
