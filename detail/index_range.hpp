@@ -27,10 +27,6 @@ template<class T> class nvp;
 namespace boost {
 namespace multi {
 
-//template<class Ar, typename = decltype(Ar::make_nvp(std::declval<char const*>(), int{}))>
-//auto has_make_nvp_aux(Ar const&) -> std::true_type ;
-//auto has_make_nvp_aux(...      ) -> std::false_type;
-
 template<class Ar, typename = decltype(typename Ar::template nvp<int>(std::declval<char const*>(), std::declval<int&>()))>
 auto has_nvp_aux(Ar const&) -> std::true_type ;
 auto has_nvp_aux(...      ) -> std::false_type;
