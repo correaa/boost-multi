@@ -78,7 +78,7 @@ g++-current-release:
   stage: test
   script:
     - export CXX="g++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
