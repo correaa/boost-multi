@@ -15,13 +15,15 @@
 #include <limits>     // for numeric_limits
 #include <utility>    // for forward
 
-#include <boost/config.hpp>
-
 namespace boost {
 namespace serialization {
 
 template<class T> class nvp;
-template<class T> auto make_nvp(const char* n, T& v) BOOST_NOEXCEPT -> const nvp<T>;  // NOLINT(readability-const-return-type) : original boost declaration
+#ifndef __CUDACC__
+template<class T> auto make_nvp(const char* n, T& v) noexcept -> const nvp<T>;  // NOLINT(readability-const-return-type) : original boost declaration, if you get an error here, it maybe an old version of Boost
+#else
+template<class T> auto make_nvp(const char* n, T& v)          -> const nvp<T>;  // NOLINT(readability-const-return-type) : original boost declaration, if you get an error here, it maybe an old version of Boost
+#endif
 
 }  // end namespace serialization
 }  // end namespace boost
