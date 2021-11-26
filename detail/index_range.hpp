@@ -15,12 +15,13 @@
 #include <limits>     // for numeric_limits
 #include <utility>    // for forward
 
+#include <boost/config.hpp>
 
 namespace boost {
 namespace serialization {
 
 template<class T> class nvp;
-template<class T> auto make_nvp(const char* n, T& v) noexcept -> const nvp<T>;  // NOLINT(readability-const-return-type) : original boost declaration
+template<class T> auto make_nvp(const char* n, T& v) BOOST_NOEXCEPT -> const nvp<T>;  // NOLINT(readability-const-return-type) : original boost declaration
 
 }  // end namespace serialization
 }  // end namespace boost
