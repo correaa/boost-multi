@@ -36,12 +36,12 @@ template<class Ar, typename = decltype(has_make_nvp_aux(std::declval<Ar>()))>
 struct archive_traits;
 
 template<class Ar>
-struct archive_traits<Ar, std::true_type>{
+struct archive_traits<Ar, std::true_type> {
 	template<class T> static auto make_nvp(char const* n, T& v) {return Ar::make_nvp(n, v);}
 };
 
 template<class Ar>
-struct archive_traits<Ar, std::false_type>{
+struct archive_traits<Ar, std::false_type> {
 	template<class T> static auto make_nvp(char const* n, T& v) {
 		using boost::serialization::make_nvp;
 		return make_nvp(n, v);
