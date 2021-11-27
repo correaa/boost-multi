@@ -111,6 +111,4 @@ constexpr auto contains(index_extensions<D> const& ie, Tuple const& tp) {
 
 }  // end namespace multi
 }  // end namespace boost
-
 #endif
-

@@ -118,7 +118,7 @@ template<> struct extensions_t<1>
 	using nelems_type = index;
 	using index_extension = multi::index_extension;
 	using std::tuple<index_extension>::tuple;
-	
+
 	// seems to be needed by icpc 20.x
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax (compatible with std::vector(int) constructor
 	extensions_t(multi::size_t size) : base_{multi::index_extension{0, size}} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
@@ -127,9 +127,6 @@ template<> struct extensions_t<1>
 	NODISCARD("") constexpr auto base() const -> base_ const& {return *this;}
 	constexpr explicit extensions_t(base_ const& t) : std::tuple<index_extension>(t) {}
 	friend constexpr auto base(extensions_t const& s) -> decltype(auto) {return s.base();}
-	template<class Archive> void serialize(Archive& ar, unsigned /*version*/) {
-		ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<0>(*this));
-	}
 	NODISCARD("") constexpr auto num_elements() const -> size_type {return std::get<0>(*this).size();}
 	NODISCARD("") constexpr auto from_linear(nelems_type n) const {
 		assert(n < num_elements());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
@@ -138,6 +135,10 @@ template<> struct extensions_t<1>
 	friend constexpr auto operator%(nelems_type n, extensions_t const& s) -> std::tuple<multi::index>{return s.from_linear(n);}
 	friend auto intersection(extensions_t const& x1, extensions_t const& x2){
 		return extensions_t{std::tuple<index_extension>{intersection(std::get<0>(x1), std::get<0>(x2))}};
+	}
+	template<class Ar>
+	void serialize(Ar& ar, unsigned /*version*/) {
+		ar & multi::archive_traits<Ar>::make_nvp("extension", std::get<0>(*this));
 	}
 };
 
@@ -150,9 +151,6 @@ using base_ = std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<
 
 	extensions_t() = default;
 	using nelems_type = multi::index;
-
-//	template<class Array, typename = decltype(std::get<D-1>(std::declval<Array>()))>
-//	constexpr explicit extensions_t(Array const& t) : extensions_t(t, std::make_index_sequence<static_cast<std::size_t>(D)>{}) {}
 
 	template<class... Ts>
 	constexpr explicit extensions_t(std::tuple<Ts...> const& t)
@@ -178,20 +176,20 @@ using base_ = std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<
 
 	constexpr explicit operator bool() const {return not layout_t<D>{*this}.empty();}
 
-//  template<class Archive, std::size_t... I>
-//  void serialize_impl(Archive& /*ar*/, std::index_sequence<I...> /*012*/) {
-//      assert(0);
+ private:
+	template<class Archive, std::size_t... I>
+	void serialize_impl(Archive& ar, std::index_sequence<I...> /*012*/) {
 //  //  using boost::serialization::make_nvp;
 //  //  (void)std::initializer_list<int>{(ar & make_nvp("extension", std::get<I>(*this)),0)...};
-//  //	(void)std::initializer_list<unsigned>{(ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<I>(*this)), 0U)...};
+		(void)std::initializer_list<unsigned>{(ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<I>(*this)), 0U)...};
 //  //  (void)std::initializer_list<int>{(ar & boost::serialization::nvp<std::remove_reference_t<decltype(std::get<I>(*this))> >{"extension", std::get<I>(*this)},0)...};
-//  }
+	}
 
-//  template<class Archive>
-//  void serialize(Archive& /*ar*/, unsigned /*version*/) {
-//  	assert(0);
-//  //	serialize_impl(ar, std::make_index_sequence<static_cast<std::size_t>(D)>());
-//  }
+ public:
+	template<class Archive>
+	void serialize(Archive& ar, unsigned /*version*/) {
+		serialize_impl(ar, std::make_index_sequence<static_cast<std::size_t>(D)>());
+	}
 
  private:
 	template<class Array, std::size_t... I, typename = decltype(base_{std::get<I>(std::declval<Array const&>())...})>
