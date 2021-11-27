@@ -39,4 +39,3 @@ struct archive_traits<Ar, std::false_type> {
 }  // end namespace boost
 
 #endif
-
