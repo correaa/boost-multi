@@ -32,7 +32,6 @@ BOOST_AUTO_TEST_CASE(serialize_extensions) {
 		multi::extensions_t<3> x2{51, 52, 53};
 		xia>> BOOST_SERIALIZATION_NVP(x2);
 		BOOST_REQUIRE(x == x2);
-		ofs<< ss.str() <<std::endl;
 	}
 }
 
