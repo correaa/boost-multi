@@ -752,7 +752,7 @@ struct array : static_array<T, D, Alloc>{
 	//  auto operator&() const& -> array const*{return this;}
 
 	template<class Ar, class AT = multi::archive_traits<Ar>>
-	auto serialize(Ar& ar, const unsigned int version) {
+	auto serialize(Ar& ar, const unsigned int version = 16) {  // NOLINT(fuchsia-default-arguments-declarations) version is used for threshold of big vs small data
 		auto x = this->extensions();
 		ar & AT::make_nvp("extensions", x);
 		if(x != this->extensions()) {clear(); this->reextent(x);}
@@ -1053,6 +1053,19 @@ using array = boost::multi::array<T, D, std::pmr::polymorphic_allocator<T>>;
 }  // end namespace multi
 }  // end namespace boost
 #endif
+
+namespace boost {
+namespace serialization {
+template<typename T, boost::multi::dimensionality_type D, class A>
+struct version< boost::multi::array<T, D, A> > {
+//	using type = std::integral_constant<int, 16>; // typedef mpl::int_<1> type;
+//    typedef mpl::integral_c_tag tag;
+//	static const unsigned int value = 16;
+	enum { value = 16 };
+//	BOOST_STATIC_CONSTANT(unsigned int, value = 16 ); //version::type::value);
+};
+}  // end namespace serialization
+}  // end namespace boost
 
 #endif
 
