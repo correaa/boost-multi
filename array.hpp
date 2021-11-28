@@ -712,7 +712,7 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	}
 
 	template<class Archive>
-	void serialize(Archive& ar, const unsigned int version){
+	void serialize(Archive& ar, const unsigned int version) {
 	// auto extensions = this->extensions();
 	// sing boost::serialization::make_nvp;
 	// ar & make_nvp("extensions", extensions);
@@ -751,14 +751,15 @@ struct array : static_array<T, D, Alloc>{
 	//  auto operator&()      & -> array      *{return this;}
 	//  auto operator&() const& -> array const*{return this;}
 
-	template<class Archive>
-	auto serialize(Archive& ar, const unsigned int version) {
+	template<class Ar, class AT = multi::archive_traits<Ar>>
+	auto serialize(Ar& ar, const unsigned int version) {
 		auto x = this->extensions();
-		ar & multi::archive_traits<Archive>::make_nvp("extensions", x);
+		ar & AT::make_nvp("extensions", x);
 		if(x != this->extensions()) {clear(); this->reextent(x);}
 		assert(x == this->extensions());
 		static_::serialize(ar, version);
 	}
+
 	using static_::static_;
 	using typename static_::value_type;
 	array() = default;
@@ -978,6 +979,8 @@ struct array : static_array<T, D, Alloc>{
 	template<class... Ts> constexpr auto reindex(Ts... a) & -> array & {array::layout_t::reindex(a...); return           *this ;}
 
 	~array() = default;
+
+
 };
 
 #if defined(__cpp_deduction_guides)
