@@ -979,8 +979,6 @@ struct array : static_array<T, D, Alloc>{
 	template<class... Ts> constexpr auto reindex(Ts... a) & -> array & {array::layout_t::reindex(a...); return           *this ;}
 
 	~array() = default;
-
-
 };
 
 #if defined(__cpp_deduction_guides)
