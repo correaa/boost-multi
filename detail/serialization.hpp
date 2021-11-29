@@ -13,6 +13,8 @@ template<class T> class  array_wrapper;  // dependency "in name only"
 
 template<typename T> struct version;
 
+class access;
+
 }  // end namespace serialization
 }  // end namespace boost
 

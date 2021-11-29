@@ -262,19 +262,25 @@ auto extension(Container const& c)  // TODO(correaa) consider "extent"
 ->decltype(multi::extension_t<std::make_signed_t<decltype(size(c))>>(0, static_cast<std::make_signed_t<decltype(size(c))>>(size(c)))) {
 	return multi::extension_t<std::make_signed_t<decltype(size(c))>>(0, static_cast<std::make_signed_t<decltype(size(c))>>(size(c))); }
 
+template<class T, typename = decltype(std::declval<T>().shape())>
+       auto has_shape_aux(T const&) -> std::true_type;
+inline auto has_shape_aux(...     ) -> std::false_type;
+
+template<class T> struct has_shape : decltype(has_shape_aux(std::declval<T>())) {};
+
 template<class T, typename = decltype(std::declval<T>().extensions())>
        auto has_extensions_aux(T const&) -> std::true_type;
 inline auto has_extensions_aux(...     ) -> std::false_type;
 
 template<class T> struct has_extensions : decltype(has_extensions_aux(std::declval<T>())) {};
 
-template<class T, typename = std::enable_if_t<has_extensions<T>{}> >
+template<class T, std::enable_if_t<has_extensions<T>{}, int> =0>
 NODISCARD("") auto extensions(T const& t)
 ->std::decay_t<decltype(t.extensions())> {
 	return t.extensions();
 }
 
-template<class T, typename = std::enable_if_t<not has_extensions<T>{}> >
+template<class T, std::enable_if_t<not has_extensions<T>{} and not has_shape<T>{}, int> =0>
 constexpr auto extensions(T const& /*unused*/) -> multi::layout_t<0>::extensions_type {return {};}
 
 template<class T, std::size_t N>
