@@ -125,11 +125,11 @@ template<class T>
 inline auto has_data_elements_aux(...  )->decltype(                       std::false_type{});
 template<class T> struct has_data_elements : decltype(has_data_elements_aux(std::declval<T>())) {};
 
-namespace detail{
+namespace detail {
 template<class T>
        auto has_data_aux(T&& t)->decltype(t.data() + 1, std::true_type {});  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) why +1?
 inline auto has_data_aux(...  )->decltype(              std::false_type{});
-}
+}  // end namespace detail
 template<class T> struct has_data : decltype(detail::has_data_aux(std::declval<T>())) {};
 
 template<class Array, std::enable_if_t<has_data<std::decay_t<Array>>{} and not has_data_elements<std::decay_t<Array>>{}, int> =0>
