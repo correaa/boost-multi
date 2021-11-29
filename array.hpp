@@ -1056,11 +1056,11 @@ namespace boost {
 namespace serialization {
 template<typename T, boost::multi::dimensionality_type D, class A>
 struct version< boost::multi::array<T, D, A> > {
-//	using type = std::integral_constant<int, 16>; // typedef mpl::int_<1> type;
+//  using type = std::integral_constant<int, 16>; // typedef mpl::int_<1> type;
 //    typedef mpl::integral_c_tag tag;
-//	static const unsigned int value = 16;
+//  static const unsigned int value = 16;
 	enum { value = 16 };
-//	BOOST_STATIC_CONSTANT(unsigned int, value = 16 ); //version::type::value);
+//  BOOST_STATIC_CONSTANT(unsigned int, value = 16 ); //version::type::value);
 };
 }  // end namespace serialization
 }  // end namespace boost
