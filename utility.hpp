@@ -116,18 +116,18 @@ constexpr auto num_elements(A const& arr)
 }
 
 template<class T>
-auto has_size_aux(T const& t)->decltype(t.size(), std::true_type {});
+       auto has_size_aux(T const& t)->decltype(t.size(), std::true_type {});
 inline auto has_size_aux(...       )->decltype(                  std::false_type{});
-template<class T> struct has_size : decltype(has_size_aux(std::declval<T>())){};
+template<class T> struct has_size : decltype(has_size_aux(std::declval<T>())) {};
 
 template<class T>
-auto has_data_elements_aux(T&& t)->decltype(t.data_elements() + 1, std::true_type {});  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) why +1?
-auto has_data_elements_aux(...  )->decltype(                       std::false_type{});
+       auto has_data_elements_aux(T&& t)->decltype(t.data_elements() + 1, std::true_type {});  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) why +1?
+inline auto has_data_elements_aux(...  )->decltype(                       std::false_type{});
 template<class T> struct has_data_elements : decltype(has_data_elements_aux(std::declval<T>())) {};
 
 template<class T>
-auto has_data_aux2(T&& t)->decltype(t.data() + 1, std::true_type {});  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) why +1?
-auto has_data_aux2(...  )->decltype(              std::false_type{});
+       auto has_data_aux2(T&& t)->decltype(t.data() + 1, std::true_type {});  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) why +1?
+inline auto has_data_aux2(...  )->decltype(              std::false_type{});
 template<class T> struct has_data : decltype(has_data_aux2(std::declval<T>())) {};
 
 template<class Array, std::enable_if_t<has_data<std::decay_t<Array>>{} and not has_data_elements<std::decay_t<Array>>{}, int> =0>
