@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE(array_serialization) {
 	{
 		{
 			boost::archive::xml_oarchive xoa{ss};
-			xoa<< BOOST_NVP(arr);
+			xoa<< BOOST_SERIALIZATION_NVP(arr);
 		}
 		std::ofstream ofs{"serialization.xml"};
 		ofs<< ss.str();
@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(array_serialization) {
 	{
 		boost::archive::xml_iarchive xia{ss};
 		multi::array<double, 2> arr2;
-		xia>> BOOST_NVP(arr2);
+		xia>> BOOST_SERIALIZATION_NVP(arr2);
 		BOOST_REQUIRE( extensions(arr2) == extensions(arr) );
 		BOOST_REQUIRE( arr2 == arr );
 	}
