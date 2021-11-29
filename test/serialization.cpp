@@ -13,29 +13,15 @@
 #include <boost/serialization/binary_object.hpp>
 #include <boost/serialization/vector.hpp>
 
-#include <boost/multi_array.hpp>
-
 #include <fstream>
 #include <numeric>
 #include <string>
 
 namespace boost {
-namespace serialization {
-
-template<class Archive, class T>//, std::enable_if_t<(boost::multi_array<T, 2>::dimensionality == 2), int*> = 0>
-void serialize(Archive& ar, boost::multi_array<T, 2>& arr, unsigned int /*version*/) {
-	ar & multi::archive_traits<Archive>::make_nvp("00", arr[0][0]);
-}
-
-}  // end namespace serialization
-}  // end namespace boost
-
-
-namespace boost {
 namespace multi {
 
 template<class BoostMultiArray, std::size_t... I>
-constexpr auto extensions_bma(BoostMultiArray const& arr, std::index_sequence<I...> /*012*/) {
+constexpr auto extensions_aux2(BoostMultiArray const& arr, std::index_sequence<I...> /*012*/) {
 	return boost::multi::extensions_t<BoostMultiArray::dimensionality>(
 		boost::multi::iextension{static_cast<multi::index>(arr.index_bases()[I]), static_cast<multi::index>(arr.index_bases()[I]) + static_cast<multi::index>(arr.shape()[I])} ...  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	);
@@ -43,11 +29,38 @@ constexpr auto extensions_bma(BoostMultiArray const& arr, std::index_sequence<I.
 
 template<class BoostMultiArray, std::enable_if_t<has_shape<BoostMultiArray>{} and not has_extensions<BoostMultiArray>{}, int> =0>
 constexpr auto extensions(BoostMultiArray const& array) {
-	return extensions_bma(array, std::make_index_sequence<BoostMultiArray::dimensionality>{});
+	return extensions_aux2(array, std::make_index_sequence<BoostMultiArray::dimensionality>{});
 }
 
 }  // end namespace multi
 }  // end namespace boost
+
+namespace boost {
+
+template<class T, std::size_t D, class As>
+struct multi_array;
+
+}  // end namespace boost
+
+namespace boost {
+namespace serialization {
+
+template<class Archive, class T, std::size_t D, class A>
+auto serialize(Archive& ar, boost::multi_array<T, D, A>& arr, unsigned int /*version*/)
+{
+	auto x = boost::multi::extensions(arr);
+	ar & multi::archive_traits<Archive>::make_nvp("extensions", x);
+	if( x != boost::multi::extensions(arr) ) {
+		arr.resize( std::array<std::size_t, 2>{} );
+		arr.resize( std::array<std::size_t, 2>{static_cast<std::size_t>(std::get<0>(x).size()), static_cast<std::size_t>(std::get<1>(x).size())} );
+	}
+	ar & multi::archive_traits<Archive>::make_nvp("data_elements", multi::archive_traits<Archive>::make_array(boost::multi::data_elements(arr), static_cast<std::size_t>(boost::multi::num_elements(arr))));
+}
+
+}  // end namespace serialization
+}  // end namespace boost
+
+#include <boost/multi_array.hpp>
 
 namespace multi = boost::multi;
 
@@ -75,6 +88,8 @@ BOOST_AUTO_TEST_CASE(boost_multi_array) {
 
 //	BOOST_REQUIRE(( boost::multi_array<double, 2>::dimensionality == 2 ));
 	BOOST_REQUIRE(( boost::multi::extensions(arr) == boost::multi::extensions_t<2>{10, 10} ));
+	BOOST_REQUIRE( boost::multi::data_elements(arr) == arr.data() );
+	BOOST_REQUIRE( boost::multi::num_elements(arr) == static_cast<multi::size_t>(arr.num_elements()) );
 
 	std::stringstream ss;
 	{
