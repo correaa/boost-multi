@@ -584,14 +584,10 @@ struct basic_array
 	}
 
 	friend auto get_allocator(basic_array const& s) -> default_allocator_type {return s.get_allocator();}
-//  template<class P>
-//  static constexpr auto get_allocator_(P const& p) -> default_allocator_type {
-//  	return multi::default_allocator_of(p);
-//  }
 
-	template<class Archive>
-	auto serialize(Archive& ar, unsigned int /*version*/) {
-		std::for_each(this->begin(), this->end(), [&](auto&& e){ar & multi::archive_traits<Archive>::make_nvp("item", e);});
+	template<class Ar, class AT = multi::archive_traits<Ar>>
+	auto serialize(Ar& ar, unsigned int /*version*/) {
+		std::for_each(this->begin(), this->end(), [&](auto&& e){ar & AT::make_nvp("item", e);});
 	}
 
 	using decay_type = array<typename types::element_type, D, typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type>;
@@ -2129,19 +2125,19 @@ struct array_ref
 	       constexpr auto decay()         const&    -> decay_type const& {return static_cast<decay_type const&>(*this);}
 	friend constexpr auto decay(array_ref const& s) -> decay_type const& {return s.decay();}
 
-	template<class Archive>
-	auto serialize(Archive& ar, const unsigned int v){  // TODO(correaa) : consider small and large implementations
-//  	using boost::serialization::make_nvp;
-//  	if(this->num_elements() < (2<<8) )
-			basic_array<T, D, ElementPtr>::serialize(ar, v);
-//  	else{
-//  		using boost::serialization::make_binary_object;
-//  		using boost::serialization::make_array;
-//  		if(std::is_trivially_copy_assignable<typename array_ref::element>{})
-//  			ar & multi::archive_traits<Archive>::make_nvp("binary_data", multi::archive_traits<Archive>::make_binary_object(this->data(), sizeof(typename array_ref::element)*this->num_elements())); //#include<boost/serialization/binary_object.hpp>
-//  		else ar & multi::archive_traits<Archive>::make_nvp("data", multi::archive_traits<Archive>::make_array(this->data(), this->num_elements()));
-//  	}
+	template<class Ar, class AT = multi::archive_traits<Ar>>
+	auto serialize(Ar& ar, const unsigned int version = 16) {  // NOLINT(fuchsia-default-arguments-declarations) version is used for threshold of big vs small data
+		if(this->num_elements() <= static_cast<typename array_ref::size_type>(version)) {
+			basic_array<T, D, ElementPtr>::serialize(ar, version);
+		} else {
+			if(std::is_trivially_copy_assignable<typename array_ref::element>{}) {
+				ar & AT::make_nvp("binary_data", AT::make_binary_object(this->data_elements(), sizeof(typename array_ref::element)*static_cast<std::size_t>(this->num_elements())));
+			} else {
+				ar & AT::make_nvp("data", AT::make_array(this->data_elements(), static_cast<std::size_t>(this->num_elements())));
+			}
+		}
 	}
+
 };
 
 template<class T, dimensionality_type D, class Ptr = T*>
