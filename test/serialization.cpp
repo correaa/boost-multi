@@ -13,14 +13,85 @@
 #include <boost/serialization/binary_object.hpp>
 #include <boost/serialization/vector.hpp>
 
+#include <boost/multi_array.hpp>
+
 #include <fstream>
 #include <numeric>
 #include <string>
 
+namespace boost {
+namespace serialization {
+
+template<class Archive, class T>//, std::enable_if_t<(boost::multi_array<T, 2>::dimensionality == 2), int*> = 0>
+void serialize(Archive& ar, boost::multi_array<T, 2>& arr, unsigned int /*version*/) {
+	ar & multi::archive_traits<Archive>::make_nvp("00", arr[0][0]);
+}
+
+}  // end namespace serialization
+}  // end namespace boost
+
+
+namespace boost {
+namespace multi {
+
+template<class BoostMultiArray, std::size_t... I>
+constexpr auto extensions_bma(BoostMultiArray const& arr, std::index_sequence<I...> /*012*/) {
+	return boost::multi::extensions_t<BoostMultiArray::dimensionality>(
+		boost::multi::iextension{static_cast<multi::index>(arr.index_bases()[I]), static_cast<multi::index>(arr.index_bases()[I]) + static_cast<multi::index>(arr.shape()[I])} ...  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	);
+}
+
+template<class BoostMultiArray, std::enable_if_t<has_shape<BoostMultiArray>{} and not has_extensions<BoostMultiArray>{}, int> =0>
+constexpr auto extensions(BoostMultiArray const& array) {
+	return extensions_bma(array, std::make_index_sequence<BoostMultiArray::dimensionality>{});
+}
+
+}  // end namespace multi
+}  // end namespace boost
+
 namespace multi = boost::multi;
+
+BOOST_AUTO_TEST_CASE(carray_serialization) {
+	double const A[3][3] = {{0., 1., 2.}, {3., 4., 5.}, {6., 7., 8.}};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy types
+	std::stringstream ss;
+	{
+		{
+			boost::archive::xml_oarchive xoa{ss};
+			xoa<< BOOST_SERIALIZATION_NVP(A);
+		}
+		std::ofstream ofs{"serialization_A.xml"};
+		ofs<< ss.str();
+	}
+	{
+		double B[3][3];  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy types
+		boost::archive::xml_iarchive xia{ss};
+		xia>> BOOST_SERIALIZATION_NVP(B);
+		BOOST_REQUIRE( A[1][2] == B[1][2] );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(boost_multi_array) {
+	boost::multi_array<double, 2> arr(boost::extents[10][10]);
+
+//	BOOST_REQUIRE(( boost::multi_array<double, 2>::dimensionality == 2 ));
+	BOOST_REQUIRE(( boost::multi::extensions(arr) == boost::multi::extensions_t<2>{10, 10} ));
+
+	std::stringstream ss;
+	{
+		{
+			boost::archive::xml_oarchive xoa{ss};
+			xoa<< BOOST_SERIALIZATION_NVP(arr);
+		}
+		std::ofstream ofs{"serialization_boost_multi_array.xml"};
+		ofs<< ss.str();
+	}
+}
 
 BOOST_AUTO_TEST_CASE(array_serialization) {
 	multi::array<double, 2> arr({10, 10}, 0.);
+
+	BOOST_REQUIRE(( arr.extension() == boost::multi::index_range{0, 10} ));
+
 	std::iota(arr.data_elements(), arr.data_elements() + arr.num_elements(), 1000.);
 
 	std::stringstream ss;
