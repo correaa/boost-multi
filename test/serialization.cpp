@@ -45,7 +45,7 @@ struct multi_array;
 namespace boost {
 namespace serialization {
 
-template<class Archive, class T, std::size_t D, class A>//, std::enable_if_t<(boost::multi_array<T, 2>::dimensionality == 2), int*> = 0>
+template<class Archive, class T, std::size_t D, class A>
 auto serialize(Archive& ar, boost::multi_array<T, D, A>& arr, unsigned int /*version*/)
 {
 	auto x = boost::multi::extensions(arr);
