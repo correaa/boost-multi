@@ -36,7 +36,9 @@ namespace multi {
 
 template<class BoostMultiArray, std::size_t... I>
 constexpr auto extensions_bma(BoostMultiArray const& arr, std::index_sequence<I...> /*012*/) {
-	return boost::multi::extensions_t<BoostMultiArray::dimensionality>( boost::multi::iextension{static_cast<multi::index>(arr.index_bases()[I]), static_cast<multi::index>(arr.index_bases()[I] + arr.shape()[I])} ...);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	return boost::multi::extensions_t<BoostMultiArray::dimensionality>(
+		boost::multi::iextension{static_cast<multi::index>(arr.index_bases()[I]), static_cast<multi::index>(arr.index_bases()[I]) + static_cast<multi::index>(arr.shape()[I])} ...  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	);
 }
 
 template<class BoostMultiArray, std::enable_if_t<has_shape<BoostMultiArray>{} and not has_extensions<BoostMultiArray>{}, int> =0>
