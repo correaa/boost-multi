@@ -1057,7 +1057,7 @@ namespace serialization {
 
 template<typename T, boost::multi::dimensionality_type D, class A>
 struct version< boost::multi::array<T, D, A> > {
-	using type = std::integral_constant<int, MULTI_SERIALIZATION_ARRAY_VERSION>; // typedef mpl::int_<1> type;
+	using type = std::integral_constant<int, MULTI_SERIALIZATION_ARRAY_VERSION>;  // typedef mpl::int_<1> type;
 	enum { value = type::value };
 };
 
