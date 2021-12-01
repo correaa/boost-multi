@@ -35,6 +35,8 @@ void BM_oserialization(benchmark::State& st) {
 		return A;
 	}();
 
+	std::cerr<< A.num_elements()*sizeof(double) <<std::endl;
+
     benchmark::ClobberMemory();
 	for(auto _  : st) {
 		std::ofstream fs{"file"};
