@@ -2125,19 +2125,34 @@ struct array_ref
 	       constexpr auto decay()         const&    -> decay_type const& {return static_cast<decay_type const&>(*this);}
 	friend constexpr auto decay(array_ref const& s) -> decay_type const& {return s.decay();}
 
+ private:
+	template<class Ar>
+	auto serialize_structured(Ar& ar, const unsigned int version) {
+		basic_array<T, D, ElementPtr>::serialize(ar, version);
+	}
 	template<class Ar, class AT = multi::archive_traits<Ar>>
-	auto serialize(Ar& ar, const unsigned int version = 16) {  // NOLINT(fuchsia-default-arguments-declarations) version is used for threshold of big vs small data
-		if(this->num_elements() <= static_cast<typename array_ref::size_type>(version)) {
-			basic_array<T, D, ElementPtr>::serialize(ar, version);
-		} else {
-			if(std::is_trivially_copy_assignable<typename array_ref::element>{}) {
-				ar & AT::make_nvp("binary_data", AT::make_binary_object(this->data_elements(), sizeof(typename array_ref::element)*static_cast<std::size_t>(this->num_elements())));
-			} else {
-				ar & AT::make_nvp("data", AT::make_array(this->data_elements(), static_cast<std::size_t>(this->num_elements())));
-			}
+	auto serialize_flat(Ar& ar) {
+		ar & AT::make_nvp("data", AT::make_array(this->data_elements(), static_cast<std::size_t>(this->num_elements())));
+	}
+//	template<class Ar, class AT = multi::archive_traits<Ar>>
+//	auto serialize_binary_if(std::true_type, Ar& ar) {
+//		ar & AT::make_nvp("binary_data", AT::make_binary_object(this->data_elements(), static_cast<std::size_t>(this->num_elements())*sizeof(typename array_ref::element)));
+//	}
+//	template<class Ar>
+//	auto serialize_binary_if(std::false_type, Ar& ar) {return serialize_flat(ar);}
+
+ public:
+	template<class Ar, class AT = multi::archive_traits<Ar>>
+	auto serialize(Ar& ar, const unsigned int version) {
+		switch(version) {
+			case 0: return serialize_flat(ar);
+			case 1: return serialize_structured(ar, version);
+		//	case 2: return serialize_binary_if(std::is_trivially_copy_assignable<typename array_ref::element>{}, ar);
+			default:
+				if( this->num_elements() <= version ){serialize_structured(ar, version);}
+				else                                 {serialize_flat      (ar         );}
 		}
 	}
-
 };
 
 template<class T, dimensionality_type D, class Ptr = T*>
@@ -2309,5 +2324,27 @@ template<class T, std::size_t N, std::size_t M>
 auto transposed(T(&t)[N][M]) -> decltype(auto) {return ~multi::array_ref<T, 2>(t);}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 }  // end namespace multi
+}  // end namespace boost
+
+namespace boost {
+namespace serialization {
+
+#ifndef MULTI_SERIALIZATION_ARRAY_VERSION
+#define MULTI_SERIALIZATION_ARRAY_VERSION 0
+#endif
+
+// #define MULTI_SERIALIZATION_ARRAY_VERSION 0 // save data as flat array
+// #define MULTI_SERIALIZATION_ARRAY_VERSION 1 // save data as structured nested labels array
+// #define MULTI_SERIALIZATION_ARRAY_VERSION 2 // save data as binary object if possible even in XML and text mode (not portable)
+// #define MULTI_SERIALIZATION_ARRAY_VERSION 16 // any other value, structure for N <= 16, flat otherwise N > 16
+
+template<typename T, boost::multi::dimensionality_type D, class A>
+struct version< boost::multi::array_ref<T, D, A> > {
+	using type = std::integral_constant<int, MULTI_SERIALIZATION_ARRAY_VERSION>; // typedef mpl::int_<1> type;
+//  typedef mpl::integral_c_tag tag;
+	enum { value = type::value };
+};
+
+}  // end namespace serialization
 }  // end namespace boost
 #endif
