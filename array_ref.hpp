@@ -2145,8 +2145,8 @@ struct array_ref
 	template<class Ar, class AT = multi::archive_traits<Ar>>
 	auto serialize(Ar& ar, const unsigned int version) {
 		switch(version) {
-			case 0: return serialize_flat(ar);
-			case 1: return serialize_structured(ar, version);
+			case static_cast<unsigned int>( 0): return serialize_flat(ar);
+			case static_cast<unsigned int>(-1): return serialize_structured(ar, version);
 		//	case 2: return serialize_binary_if(std::is_trivially_copy_assignable<typename array_ref::element>{}, ar);
 			default:
 				if( this->num_elements() <= version ){serialize_structured(ar, version);}
@@ -2333,9 +2333,9 @@ namespace serialization {
 #define MULTI_SERIALIZATION_ARRAY_VERSION 0
 #endif
 
-// #define MULTI_SERIALIZATION_ARRAY_VERSION 0 // save data as flat array
-// #define MULTI_SERIALIZATION_ARRAY_VERSION 1 // save data as structured nested labels array
-// #define MULTI_SERIALIZATION_ARRAY_VERSION 2 // save data as binary object if possible even in XML and text mode (not portable)
+// #define MULTI_SERIALIZATION_ARRAY_VERSION  0 // save data as flat array
+// #define MULTI_SERIALIZATION_ARRAY_VERSION -1 // save data as structured nested labels array
+// this is disabled! #define MULTI_SERIALIZATION_ARRAY_VERSION  2 // save data as binary object if possible even in XML and text mode (not portable)
 // #define MULTI_SERIALIZATION_ARRAY_VERSION 16 // any other value, structure for N <= 16, flat otherwise N > 16
 
 template<typename T, boost::multi::dimensionality_type D, class A>
