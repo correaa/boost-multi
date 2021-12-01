@@ -274,6 +274,18 @@ NODISCARD("") auto extensions(T const& t)
 	return t.extensions();
 }
 
+template<class BoostMultiArray, std::size_t... I>
+constexpr auto extensions_aux2(BoostMultiArray const& arr, std::index_sequence<I...> /*012*/) {
+	return boost::multi::extensions_t<BoostMultiArray::dimensionality>(
+		boost::multi::iextension{static_cast<multi::index>(arr.index_bases()[I]), static_cast<multi::index>(arr.index_bases()[I]) + static_cast<multi::index>(arr.shape()[I])} ...  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	);
+}
+
+template<class BoostMultiArray, std::enable_if_t<has_shape<BoostMultiArray>{} and not has_extensions<BoostMultiArray>{}, int> =0>
+constexpr auto extensions(BoostMultiArray const& array) {
+	return extensions_aux2(array, std::make_index_sequence<BoostMultiArray::dimensionality>{});
+}
+
 template<class T, std::enable_if_t<not has_extensions<T>{} and not has_shape<T>{}, int> =0>
 constexpr auto extensions(T const& /*unused*/) -> multi::layout_t<0>::extensions_type {return {};}
 
