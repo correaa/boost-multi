@@ -2132,7 +2132,7 @@ struct array_ref
 	}
 	template<class Ar, class AT = multi::archive_traits<Ar>>
 	auto serialize_flat(Ar& ar) {
-		ar & AT::make_nvp("data", AT::make_array(this->data_elements(), static_cast<std::size_t>(this->num_elements())));
+		ar & AT::make_nvp("elements", AT::make_array(this->data_elements(), static_cast<std::size_t>(this->num_elements())));
 	}
 //	template<class Ar, class AT = multi::archive_traits<Ar>>
 //	auto serialize_binary_if(std::true_type, Ar& ar) {
