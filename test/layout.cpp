@@ -20,6 +20,18 @@ namespace multi = boost::multi;
 //	BOOST_REQUIRE( x.num_elements() == 15 );
 //}
 
+auto second_finish(multi::extensions_t<3> x) {
+	return std::get<1>(x).finish();
+}
+
+BOOST_AUTO_TEST_CASE(extensions_3D) {
+	multi::extensions_t<3> x3{ {0, 10}, {0, 20}, {0, 30} };
+	BOOST_REQUIRE( 20 == second_finish(x3                                                     ) );
+	BOOST_REQUIRE( 20 == second_finish(multi::extensions_t<3>{   {0, 10}, {0, 20}, {0, 30} }  ) );
+	BOOST_REQUIRE( 20 == second_finish(multi::extensions_t<3>( { {0, 10}, {0, 20}, {0, 30} } )) );
+	BOOST_REQUIRE( 20 == second_finish(                        { {0, 10}, {0, 20}, {0, 30} } )  );
+}
+
 BOOST_AUTO_TEST_CASE(linearize) {
 	multi::array<double, 3> A({10, 20, 30});
 	BOOST_REQUIRE(  25 % extensions(A) == std::make_tuple(0, 0, 25) );
