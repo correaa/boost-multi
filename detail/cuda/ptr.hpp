@@ -13,9 +13,9 @@
 
 #include<type_traits> // is_const
 
-namespace boost{
-namespace multi{namespace detail{
-namespace memory{namespace cuda{
+namespace boost {
+namespace multi {namespace detail {
+namespace memory {namespace cuda {
 
 template<class T> struct ref;
 
@@ -222,38 +222,41 @@ public:
 	}
 	template<class Other>
 	decltype(auto) operator==(ref<Other>&& other) && {
-		char buff1[sizeof(T)];
-		cudaError_t s1 = cudaMemcpy(buff1, this->impl_, sizeof(T), cudaMemcpyDeviceToHost); assert(s1 == cudaSuccess);
-		char buff2[sizeof(Other)];
-		cudaError_t s2 = cudaMemcpy(buff2, other.impl_, sizeof(Other), cudaMemcpyDeviceToHost); assert(s2 == cudaSuccess);
-		return reinterpret_cast<T const&>(buff1)==reinterpret_cast<Other const&>(buff2);
+		std::array<char, sizeof(T)> buff1;  // char buff1[sizeof(T)];
+		cudaError_t s1 = cudaMemcpy(buff1.data(), this->impl_, buff1.size(), cudaMemcpyDeviceToHost); assert(s1 == cudaSuccess);
+		std::array<char, sizeof(Other)> buff2;  // char buff2[sizeof(Other)];
+		cudaError_t s2 = cudaMemcpy(buff2.data(), other.impl_, buff2.size(), cudaMemcpyDeviceToHost); assert(s2 == cudaSuccess);
+		return reinterpret_cast<T const&>(buff1) == reinterpret_cast<Other const&>(buff2);
 	}
 	template<class Other>
-	decltype(auto) operator!=(ref<Other>&& other)&&{
-		char buff1[sizeof(T)];
-		cudaError_t s1 = cudaMemcpy(buff1, this->impl_, sizeof(T), cudaMemcpyDeviceToHost); assert(s1 == cudaSuccess);
-		char buff2[sizeof(Other)];
-		cudaError_t s2 = cudaMemcpy(buff2, other.impl_, sizeof(Other), cudaMemcpyDeviceToHost); assert(s2 == cudaSuccess);
-		return reinterpret_cast<T const&>(buff1)!=reinterpret_cast<Other const&>(buff2);
+	decltype(auto) operator!=(ref<Other>&& other) && {
+		std::array<char, sizeof(T)> buff1;  // char buff1[sizeof(T)];
+		cudaError_t s1 = cudaMemcpy(buff1.data(), this->impl_, buff1.size(), cudaMemcpyDeviceToHost); assert(s1 == cudaSuccess);
+		std::array<char, sizeof(Other)> buff2;  // char buff2[sizeof(Other)];
+		cudaError_t s2 = cudaMemcpy(buff2.data(), other.impl_, buff2.size(), cudaMemcpyDeviceToHost); assert(s2 == cudaSuccess);
+		return reinterpret_cast<T const&>(buff1) != reinterpret_cast<Other const&>(buff2);
 	}
-	operator T()&& {
+	operator T() && {
 		static_assert(not std::is_same<T, void>{}, "!");
-		char buff[sizeof(T)];
-		cudaError_t s = cudaMemcpy(buff, this->impl_, sizeof(T), cudaMemcpyDeviceToHost); assert(s == cudaSuccess );
+		std::array<char, sizeof(T)> buff;  // char buff[sizeof(T)];
+		cudaError_t s = cudaMemcpy(buff.data(), this->impl_, buff.size(), cudaMemcpyDeviceToHost); assert(s == cudaSuccess );
 		return std::move(reinterpret_cast<T&>(buff));
 	}
 	template<class Other, typename = decltype(std::declval<T&>()+=std::declval<Other&&>())>
-	decltype(auto) operator+=(Other&& o)&&{std::move(*this).skeleton()+=o; return *this;}
+	decltype(auto) operator+=(Other&& o) && {std::move(*this).skeleton()+=o; return *this;}
 	template<class Other, typename = decltype(std::declval<T&>()-=std::declval<Other&&>())>
-	decltype(auto) operator-=(Other&& o)&&{std::move(*this).skeleton()-=o;}
-	friend void swap(ref&& a, ref&& b){T tmp = std::move(a); a = std::move(b); b = std::move(tmp);}
-	decltype(auto) operator++()&&{++(std::move(*this).skeleton()); return *this;}
-	decltype(auto) operator--()&&{--(std::move(*this).skeleton()); return *this;}
+	decltype(auto) operator-=(Other&& o) && {std::move(*this).skeleton()-=o;}
+	friend void swap(ref&& a, ref&& b) {T tmp = std::move(a); a = std::move(b); b = std::move(tmp);}
+	decltype(auto) operator++() && {++(std::move(*this).skeleton()); return *this;}
+	decltype(auto) operator--() && {--(std::move(*this).skeleton()); return *this;}
 };
 
-}}}
+}  // end namespace cuda
+}  // end namespace memory
+}  // end namespace detail
 
-}}
+}  // end namespace multi
+}  // end namespace boost
 
 #ifdef _TEST_BOOST_MULTI_DETAIL_MEMORY_CUDA_PTR
 
@@ -276,7 +279,7 @@ void add_one(double& d){d += 1.;}
 template<class T>
 void add_one(T&& t){std::forward<T>(t) += 1.;}
 
-int main(){
+int main() {
 
 	static_assert(std::is_same<typename std::pointer_traits<cuda::ptr<double>>::element_type, double>{}, "!");
 	cuda::allocator<double> calloc;
@@ -308,10 +311,8 @@ int main(){
 	calloc.deallocate(p, 100);
 
 	multi::array<double, 1, cuda::allocator<double>> arr2(multi::array<double, 1>::extensions_type{100l}, 999.);
-	
+
 	assert(size(arr2) == 100);
 }
 #endif
 #endif
-
-

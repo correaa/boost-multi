@@ -69,8 +69,8 @@ public:
 template<class T> class allocator;
 
 template<typename RawPtr>
-struct ptr<void, RawPtr>{
-protected:
+struct ptr<void, RawPtr> {
+ protected:
 	using T = void;
 	using raw_pointer = RawPtr;
 	using raw_pointer_traits = std::pointer_traits<raw_pointer>;
@@ -80,14 +80,16 @@ protected:
 	friend void free();
 	friend ptr<void> memset(ptr<void> dest, int ch, std::size_t byte_count);
 	template<class, class> friend struct managed::ptr;
-private:
+
+ private:
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 	template<class, class> friend struct ptr;
 	explicit ptr(raw_pointer rp) : rp_{rp}{}
 	operator raw_pointer() const{return rp_;}
 	friend ptr<void> malloc(std::size_t);
 	friend void free(ptr<void>);
-public:
+
+ public:
 	ptr() = default;
 	ptr(ptr const& other) : rp_{other.rp_}{}//= default;
 
@@ -112,7 +114,7 @@ public:
 };
 
 template<typename T, typename RawPtr>
-struct ptr{
+struct ptr {
 	using raw_pointer = RawPtr;
 	using default_allocator_type = typename cuda::allocator<std::decay_t<T>>;
 	raw_pointer rp_ = {};
@@ -151,23 +153,12 @@ struct ptr{
 	ptr(ptr const&) = default;
 
 	// cppcheck-suppress noExplicitConstructor ; initialize from nullptr
-	constexpr ptr(std::nullptr_t nu) : rp_{nu}{}
+	constexpr ptr(std::nullptr_t nu) : rp_{nu} {}
 
 	ptr& operator=(ptr const&) = default;
-//	constexpr bool operator==(ptr const& other) const{return rp_==other.rp_;}
-//	constexpr bool operator!=(ptr const& other) const{return rp_!=other.rp_;}
 
-	friend constexpr bool operator==(ptr const& s, ptr const& o){return s.rp_==o.rp_;}
-	friend constexpr bool operator!=(ptr const& s, ptr const& o){return s.rp_!=o.rp_;}
-
-//	template<class Other>
-//	auto operator==(ptr<Other> const& other) const
-//	->decltype(rp_==other.rp_){
-//		return rp_==other.rp_;}
-//	template<class Other>
-//	auto operator!=(ptr<Other> const& other) const
-//	->decltype(rp_!=other.rp_){
-//		return rp_!=other.rp_;}
+	friend constexpr bool operator==(ptr const& s, ptr const& o) {return s.rp_==o.rp_;}
+	friend constexpr bool operator!=(ptr const& s, ptr const& o) {return s.rp_!=o.rp_;}
 
 	using element_type    = typename raw_pointer_traits::element_type;
 	using difference_type = typename raw_pointer_traits::difference_type;
@@ -213,24 +204,25 @@ struct ptr{
 	constexpr auto operator->*(PM&& pm) const
 	->decltype(ref<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{ptr<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{&(rp_->*std::forward<PM>(pm))}}){
 		return ref<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{ptr<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{&(rp_->*std::forward<PM>(pm))}};}
-public:
+
+ public:
 	friend allocator<std::decay_t<T>> get_allocator(ptr const&){return {};}
 	friend allocator<std::decay_t<T>> default_allocator_of(ptr const&){return {};}
 };
 
 template<class T>
 DEPRECATED("experimental function, it might be removed soon https://gitlab.com/correaa/boost-multi/-/issues/91")
-T* raw_pointer_cast(T* p){return p;}
+T* raw_pointer_cast(T* p) {return p;}
 
 template<class T> allocator<T> get_allocator(ptr<T> const&){return {};}
 
 template<
 	class InputIt, class Size, class... T, class ForwardIt = ptr<T...>,
-	typename InputV = typename std::pointer_traits<InputIt>::element_type, 
-	typename ForwardV = typename std::pointer_traits<ForwardIt>::element_type, 
+	typename InputV = typename std::pointer_traits<InputIt>::element_type,
+	typename ForwardV = typename std::pointer_traits<ForwardIt>::element_type,
 	std::enable_if_t<std::is_trivially_constructible<ForwardV, InputV>{}, int> =0
 >
-ForwardIt uninitialized_copy_n(InputIt f, Size n, ptr<T...> d){
+ForwardIt uninitialized_copy_n(InputIt f, Size n, ptr<T...> d) {
 	memcpy(d, f, n*sizeof(ForwardV));
 	return d + n;
 }
@@ -332,16 +324,16 @@ struct ref{
 	pointer operator&() const& __host__ __device__{return pimpl_;}
 	pointer operator&() && __host__ __device__{return pimpl_;}
 
-	struct skeleton_t{
+	struct skeleton_t {
 		char buff[sizeof(T)]; T* p_;
 		SLOW
-		explicit skeleton_t(T* p) /*HD*/ : p_{p}{
+		explicit skeleton_t(T* p) /*HD*/ : p_{p} {
 			#if __CUDA_ARCH__
 			#else
 //			[[maybe_unused]] 
 			cudaError_t s = cudaMemcpy(buff, p_, sizeof(T), cudaMemcpyDeviceToHost); 
 			(void)s; assert(s == cudaSuccess);
-			#endif	
+			#endif
 		}
 		operator T&()&& /*HD*/{return reinterpret_cast<T&>(buff);}
 		void conditional_copyback_if_not(std::false_type) const /*HD*/{
@@ -366,7 +358,7 @@ struct ref{
 	};
 	skeleton_t skeleton()&& /*HD*/{return {pimpl_.rp_};}
 public:
-	constexpr ref(ref&& r) : pimpl_{std::move(r.pimpl_).rp_}{}
+	constexpr ref(ref&& r) : pimpl_{std::move(r.pimpl_).rp_} {}
 //	ref& operator=(ref const&)& = delete;
 private:
 	ref& move_assign(ref&& other, std::true_type)&{
@@ -401,7 +393,7 @@ public:
 #else
 	template<class TT>
 	[[deprecated("because it implies slow memory access, suround code with CUDA_SLOW")]]
-	__host__ auto operator=(TT&& t) && 
+	__host__ auto operator=(TT&& t) &&
 	->decltype(*pimpl_.rp_ = std::forward<TT>(t), std::move(*this)){	//	assert(0);
 		static_assert(std::is_trivially_assignable<T&, TT&&>{}, "!");
 		cudaError_t s=cudaMemcpy(pimpl_.rp_, std::addressof(t), sizeof(T), cudaMemcpyHostToDevice);assert(s==cudaSuccess);(void)s;
@@ -417,7 +409,7 @@ public:
 		static_assert(std::is_trivially_assignable<T&, TT&>{});
 		cudaError_t s=cudaMemcpy(pimpl_.rp_, std::addressof(t), sizeof(T), cudaMemcpyHostToDevice);assert(s==cudaSuccess);(void)s;
 		return std::move(*this);
-	}	
+	}
 #endif
 
 #if defined(__clang__)
@@ -437,22 +429,22 @@ public:
 	SLOW operator T()&&{
 		char buff[sizeof(T)];
 		cudaError_t s = cudaMemcpy(buff, pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToHost);
-		switch(s){
-			case cudaSuccess: break;
-			case cudaErrorInvalidValue: throw std::runtime_error{"cudaErrorInvalidValue"};
+		switch(s) {
+			case cudaSuccess                    : break;
+			case cudaErrorInvalidValue          : throw std::runtime_error{"cudaErrorInvalidValue"};
 			case cudaErrorInvalidMemcpyDirection: throw std::runtime_error{"cudaErrorInvalidMemcpyDirection"};
-			default: throw std::runtime_error{"unknown error"};
+			default                             : throw std::runtime_error{"unknown error"};
 		}
 		return std::move(reinterpret_cast<T&>(buff));
 	}
 	SLOW operator T() const&{
-		char buff[sizeof(T)];
-		cudaError_t s = cudaMemcpy(buff, pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToHost);
-		switch(s){
-			case cudaSuccess: break;
-			case cudaErrorInvalidValue: throw std::runtime_error{"cudaErrorInvalidValue"};
+		std::array<char, sizeof(T)> buff;  // char buff[sizeof(T)];
+		cudaError_t s = cudaMemcpy(buff.data(), pimpl_.rp_, buff.size(), cudaMemcpyDeviceToHost);
+		switch(s) {
+			case cudaSuccess                    : break;
+			case cudaErrorInvalidValue          : throw std::runtime_error{"cudaErrorInvalidValue"};
 			case cudaErrorInvalidMemcpyDirection: throw std::runtime_error{"cudaErrorInvalidMemcpyDirection"};
-			default: throw std::runtime_error{"unknown error"};
+			default                             : throw std::runtime_error{"unknown error"};
 		}
 		return reinterpret_cast<T&>(buff);
 	}
@@ -462,19 +454,19 @@ public:
 	operator T()&& __device__{return *(pimpl_.rp_);}
 #else
 	SLOW 
-	operator T()&& __host__{
-		char buff[sizeof(T)];
-		{cudaError_t s = cudaMemcpy(buff, pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToHost); assert(s == cudaSuccess); (void)s;}
+	operator T() && __host__ {
+		std::array<char, sizeof(T)> buff;  // char buff[sizeof(T)];
+		{cudaError_t s = cudaMemcpy(buff.data(), pimpl_.rp_, buff.size(), cudaMemcpyDeviceToHost); assert(s == cudaSuccess); (void)s;}
 		return std::move(reinterpret_cast<T&>(buff));
 	}
 #endif
 #if defined(__clang__)
 	[[SLOW]] operator T() const& __host__{
-		char buff[sizeof(T)];
+		std::array<char, sizeof(T)> buff;  // char buff[sizeof(T)];
 		{
 		//	cudaError_t s = cudaMemcpy(buff, this->rp_, sizeof(T), cudaMemcpyDeviceToHost);
-			auto e = static_cast<Cuda::error>(cudaMemcpy(buff, pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToHost));
-			if(e != Cuda::error::success) throw std::system_error(e, " when trying to memcpy for element access");
+			auto e = static_cast<Cuda::error>(cudaMemcpy(buff.data(), pimpl_.rp_, buff.size(), cudaMemcpyDeviceToHost));
+			if(e != Cuda::error::success) {throw std::system_error(e, " when trying to memcpy for element access");}
 		}
 		return std::move(reinterpret_cast<T&>(buff));
 	}
@@ -485,10 +477,10 @@ public:
 #else
 	SLOW
 	operator T() const& __host__{
-		char buff[sizeof(T)];
+		std::array<char, sizeof(T)> buff;  // char buff[sizeof(T)];
 		{
-			auto e = static_cast<Cuda::error>(cudaMemcpy(buff, pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToHost));
-			if(e != Cuda::error::success) throw std::system_error(e, " when trying to memcpy for element access");
+			auto e = static_cast<Cuda::error>(cudaMemcpy(buff.data(), pimpl_.rp_, buff.size(), cudaMemcpyDeviceToHost));
+			if(e != Cuda::error::success) {throw std::system_error(e, " when trying to memcpy for element access");}
 		}
 		return std::move(reinterpret_cast<T&>(buff));
 	}
@@ -531,12 +523,12 @@ public:
 //#endif
 	}
 	template<class Other, typename = std::enable_if_t<not is_ref<Other>{}> > 
-	friend auto operator==(ref&& self, Other&& other) __device__{
+	friend auto operator==(ref&& self, Other&& other) __device__ {
 		return *(self->rp_) == std::forward<Other>(other);
 	}
 #else
 	template<class Other, typename = std::enable_if_t<not is_ref<Other>{}> > 
-	friend auto operator==(ref&& self, Other&& other) __host__{
+	friend auto operator==(ref&& self, Other&& other) __host__ {
 		return std::move(self).operator T() == std::forward<Other>(other);
 	}
 #endif
@@ -551,12 +543,12 @@ public:
 	}
 #endif
 
-	friend __host__ __device__ decltype(auto) raw_reference_cast(ref&& r){return *raw_pointer_cast(&r);}
-	friend __host__ __device__ auto raw_value_cast(ref&& r){return std::move(r).operator T();}
-	auto raw_value_cast()&&{return std::move(*this).operator T();}
+	friend __host__ __device__ decltype(auto) raw_reference_cast(ref&& r) {return *raw_pointer_cast(&r);}
+	friend __host__ __device__          auto  raw_value_cast(ref&& r) {return std::move(r).operator T();}
+	auto raw_value_cast() && {return std::move(*this).operator T();}
 
-	template<class Other, typename = std::enable_if_t<not is_ref<Other>{}> > 
-	friend constexpr bool operator==(Other&& other, ref const& self){
+	template<class Other, typename = std::enable_if_t<not is_ref<Other>{}> >
+	friend constexpr bool operator==(Other&& other, ref const& self) {
 #if __CUDA_ARCH__
 //		return std::forward<Other>(other)==*(this->rp_);
 		return std::forward<Other>(other)==*(self.pimpl_);
@@ -566,25 +558,25 @@ public:
 	}
 	template<class Other, typename = std::enable_if_t<not std::is_same<T, Other>{}> >
 	SLOW
-	bool operator==(ref<Other>&& other)&&{
+	bool operator==(ref<Other>&& other) && {
 //#pragma message ("Warning goes here")
-		char buff1[sizeof(T)];
+		std::array<char, sizeof(T)> buff1;  // char buff1[sizeof(T)];
 	//	cuda::memcpy(buff1, ref::rp_, sizeof(T));
 		/*[[maybe_unused]]*/ cudaError_t s1 = cudaMemcpy(buff1, pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToHost);
 		assert(s1 == cudaSuccess); (void)s1;
-		char buff2[sizeof(Other)];
+		std::array<char, sizeof(T)> buff2;  // char buff2[sizeof(Other)];
 		/*[[maybe_unused]]*/ cudaError_t s2 = cudaMemcpy(buff2, raw_pointer_cast(&other), sizeof(Other), cudaMemcpyDeviceToHost); 
 		assert(s2 == cudaSuccess); (void)s2;
-		return reinterpret_cast<T const&>(buff1)==reinterpret_cast<Other const&>(buff2);
+		return reinterpret_cast<T const&>(buff1) == reinterpret_cast<Other const&>(buff2);
 	}
 #if 1
 	SLOW
 	bool operator==(ref const& other) &&{
-		char buff1[sizeof(T)];
-		{/*[[maybe_unused]]*/ cudaError_t s1 = cudaMemcpy(buff1, pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToHost); assert(s1 == cudaSuccess); (void)s1;}
-		char buff2[sizeof(T)];
-		{/*[[maybe_unused]]*/ cudaError_t s2 = cudaMemcpy(buff2, other.pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToHost); assert(s2 == cudaSuccess); (void)s2;}
-		return reinterpret_cast<T const&>(buff1)==reinterpret_cast<T const&>(buff2);
+		std::array<char, sizeof(T)> buff1;  // char buff1[sizeof(T)];
+		{cudaError_t s1 = cudaMemcpy(buff1.data(), pimpl_.rp_, buff1.size(), cudaMemcpyDeviceToHost); assert(s1 == cudaSuccess); (void)s1;}
+		std::array<char, sizeof(T)> buff2;  // char buff2[sizeof(T)];
+		{cudaError_t s2 = cudaMemcpy(buff2.data(), other.pimpl_.rp_, buff2.size(), cudaMemcpyDeviceToHost); assert(s2 == cudaSuccess); (void)s2;}
+		return reinterpret_cast<T const&>(buff1) == reinterpret_cast<T const&>(buff2);
 	}
 #endif
 #endif

@@ -18,28 +18,28 @@ $CXXX $CXXFLAGS $0 -o $0x -lcudart -lboost_unit_test_framework -lboost_timer&&$0
 
 #include<complex> //TODO remove, handle complex_fix instead?
 
-namespace boost{namespace multi{
-namespace memory{namespace cuda{
+namespace boost {namespace multi {
+namespace memory {namespace cuda {
 
 template<class U, class T, typename Size, typename = std::enable_if_t<std::is_trivially_assignable<T&, U>{}>>
-ptr<T> copy_n(ptr<U> first, Size count, ptr<T> result){
+ptr<T> copy_n(ptr<U> first, Size count, ptr<T> result) {
 	return memcpy(result, first, count*sizeof(T)), result + count;
 }
 
 template<class U, class T, typename Size, typename = std::enable_if_t<std::is_trivially_assignable<T&, U>{}>>
-ptr<T> copy_n(U* first, Size count, ptr<T> result){return memcpy(result, first, count*sizeof(T)), result + count;}
+ptr<T> copy_n(U* first, Size count, ptr<T> result) {return memcpy(result, first, count*sizeof(T)), result + count;}
 
 //template<class U, class T, typename Size, typename = std::enable_if_t<std::is_trivially_assignable<T&, U>{}>>
 //T* copy_n(ptr<U> first, Size count, T* result){return memcpy(result, first, count*sizeof(T)), result + count;}
 
 template<class U, class T, typename Size, typename = std::enable_if_t<std::is_trivially_assignable<T&, U>{}>>
-ptr<T> uninitialized_copy_n(ptr<U> first, Size count, ptr<T> result){return memcpy(result, first, count*sizeof(T)), result + count;}
+ptr<T> uninitialized_copy_n(ptr<U> first, Size count, ptr<T> result) {return memcpy(result, first, count*sizeof(T)), result + count;}
 
 template<class U, class T, typename Size, typename = std::enable_if_t<std::is_trivially_assignable<T&, U>{}>>
-ptr<T> uninitialized_copy_n(U* first, Size count, ptr<T> result){return memcpy(result, first, count*sizeof(T)), result + count;}
+ptr<T> uninitialized_copy_n(U* first, Size count, ptr<T> result) {return memcpy(result, first, count*sizeof(T)), result + count;}
 
 template<class U, class T, typename Size, typename = std::enable_if_t<std::is_trivially_assignable<T&, U>{}>>
-T* uninitialized_copy_n(ptr<U> first, Size count, T* result){return memcpy(result, first, count*sizeof(T)), result + count;}
+T* uninitialized_copy_n(ptr<U> first, Size count, T* result) {return memcpy(result, first, count*sizeof(T)), result + count;}
 
 template<class PtrU, class T>
 auto copy(PtrU first, PtrU last, ptr<T> result){

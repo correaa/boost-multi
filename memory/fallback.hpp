@@ -14,9 +14,9 @@ $CXX $0 -o $0x&&$0x&&rm $0x;exit
 #include<stdlib.h> // aligned_alloc, in c++17 this will be <cstdlib>
 #include <cstddef> // std::max_align_t
 
-namespace boost{
-namespace multi{
-namespace memory{
+namespace boost {
+namespace multi {
+namespace memory {
 
 template<class Ptr = memory::byte*> struct resource;
 
@@ -83,7 +83,9 @@ template<class T, class MR1, class MR2
 > 
 using fallback_allocator = memory::allocator<T, fallback<MR1, MR2>>;//, alignof(T)>>;
 
-}}}
+}  // end namespace memory
+}  // end namespace multi
+}  // end namespace boost
 
 #if not __INCLUDE_LEVEL__ //  _TEST_MULTI_MEMORY_FALLBACK
 
@@ -98,20 +100,20 @@ namespace multi = boost::multi;
 namespace memory = multi::memory;
 using std::cout;
 
-int main(){
+int main() {
 {
-	alignas(double) char buffer[256*sizeof(double)];
-	memory::monotonic<char*> m(buffer);
+	alignas(double) std::array<char, 256*sizeof(double)> buffer;  // char buffer[256*sizeof(double)];
+	memory::monotonic<char*> m(buffer.data(), buffer.size());
 	auto p1 = m.allocate(100*sizeof(double), alignof(double));
-	try{
+	try {
 		auto p2 = m.allocate(200*sizeof(double), alignof(double));
 		m.deallocate(p2, 200*sizeof(double));
-	}catch(std::bad_alloc& e){std::cout <<"throw "<< e.what() << std::endl;}
+	} catch(std::bad_alloc& e) {std::cout <<"throw "<< e.what() << std::endl;}
 	m.deallocate(p1, 100*sizeof(double));
 }
 {
-	alignas(double) char buffer[256*sizeof(double)];
-	memory::fallback<memory::monotonic<char*>> m(buffer);//, boost::multi::memory::get_default_resource());
+	alignas(double) std::array<char, 256*sizeof(double)> buffer;  // char buffer[256*sizeof(double)];
+	memory::fallback<memory::monotonic<char*>> m(buffer.data(), buffer.size());//, boost::multi::memory::get_default_resource());
 	auto p1 = m.allocate(100*sizeof(double), alignof(double));
 	auto p2 = m.allocate(200*sizeof(double), alignof(double));
 	m.deallocate(p2, 200*sizeof(double));
@@ -119,8 +121,8 @@ int main(){
 	assert( m.fallbacks() == 1 );
 }
 {
-	alignas(double) char buffer[256*sizeof(double)];
-	memory::stack<char*> s(buffer);
+	alignas(double) std::array<char, 256*sizeof(double)> buffer;  // char buffer[256*sizeof(double)];
+	memory::stack<char*> s(buffer.data(), buffer.size());
 	auto p1 = s.allocate(1*sizeof(double), alignof(double));
 	auto p2 = s.allocate(100*sizeof(double), alignof(double));
 	s.deallocate(p2, 100*sizeof(double));
@@ -128,25 +130,25 @@ int main(){
 	assert( s.max_needed() == 101*sizeof(double) );
 }
 {
-	alignas(double) char buffer[256*sizeof(double)];
-	memory::fallback<memory::stack<char*>> s(buffer);
+	alignas(double) std::array<char, 256*sizeof(double)> buffer;  // char buffer[256*sizeof(double)];
+	memory::fallback<memory::stack<char*>> s(buffer.data(), buffer.size());
 	auto p1 = s.allocate(10000*sizeof(double), alignof(double));
 	s.deallocate(p1, 10000*sizeof(double));
 	assert( s.fallbacks() == 1 );
 }
 {
-	alignas(double) char buffer[256*sizeof(double)];
-	memory::fallback<memory::stack<char*>> s(buffer);
+	alignas(double) std::array<char, 256*sizeof(double)> buffer;  // char buffer[256*sizeof(double)];
+	memory::fallback<memory::stack<char*>> s(buffer.data(), buffer.size());
 	auto p2 = s.allocate(255*sizeof(double), alignof(double));
 	auto p3 = s.allocate(255*sizeof(double), alignof(double));
 	s.deallocate(p3, 255*sizeof(double));
 	s.deallocate(p2, 255*sizeof(double));
 	assert( s.fallbacks() == 1 );
-	assert( s.max_needed() == (255+255)*sizeof(double) );	
+	assert( s.max_needed() == (255+255)*sizeof(double) );
 }
 {
 	std::size_t guess = 1000;
-	for(int i = 0; i != 3; ++i){
+	for(int i = 0; i != 3; ++i) {
 		std::vector<char> buffer(guess);
 		memory::fallback<memory::stack<char*>> f({buffer.data(), (std::ptrdiff_t)buffer.size()});
 		std::vector<double, memory::fallback_allocator<double, memory::stack<char*>>> v(10, &f);
@@ -158,7 +160,7 @@ int main(){
 cout <<"----------"<< std::endl;
 {
 	memory::fallback<memory::stack<char*>> f;//({buffer.data(), (std::ptrdiff_t)buffer.size()}); // TODO error in nvcc
-	for(int i = 0; i != 3; ++i){
+	for(int i = 0; i != 3; ++i) {
 		std::vector<char> buffer(f.max_needed());
 		f = {{buffer.data(), (std::ptrdiff_t)buffer.size()}};
 		std::vector<double, memory::fallback_allocator<double, memory::stack<char*>>> v(10, &f);
@@ -169,7 +171,7 @@ cout <<"----------"<< std::endl;
 cout <<"----------"<< std::endl;
 {
 	memory::fallback<memory::stack<memory::byte*>> f;//({buffer.data(), (std::ptrdiff_t)buffer.size()});
-	for(int i = 0; i != 3; ++i){
+	for(int i = 0; i != 3; ++i) {
 		std::vector<memory::byte> buffer(f.max_needed());
 		f = {{buffer.data(), (std::ptrdiff_t)buffer.size()}};
 		std::vector<double, memory::fallback_allocator<double, memory::stack<memory::byte*>>> v(10, &f);
@@ -180,7 +182,7 @@ cout <<"----------"<< std::endl;
 cout <<"----------"<< std::endl;
 {
 	memory::fallback<memory::stack<>> f;
-	for(int i = 0; i != 3; ++i){
+	for(int i = 0; i != 3; ++i) {
 		std::vector<memory::byte> buffer(f.max_needed());
 		f = {{buffer.data(), f.max_needed()}};
 		std::vector<double, memory::fallback_allocator<double, memory::stack<>>> v(10, &f);
@@ -191,4 +193,3 @@ cout <<"----------"<< std::endl;
 }
 #endif
 #endif
-

@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed) {
 	arr[4] = "c";
 	arr[5] = "d";
 	arr[6] = "e";
-	BOOST_REQUIRE( std::equal(arr.begin(), arr.end(), mar.begin()) );
+	BOOST_REQUIRE( std::equal(arr.begin(), arr.end(), mar.begin(), mar.end()) );
 
 	auto arrB = multi::array<std::string, 1>({"a", "b", "c", "d", "e"}).reindex(2);
 	BOOST_REQUIRE( size(arrB) == 5 );

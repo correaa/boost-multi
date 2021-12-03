@@ -88,15 +88,13 @@ constexpr size_t size(Ptr const& p){return block<Ptr>(p).size();}//size();}//sta
 
 #include<cassert>
 #include<vector>
-//#include<iostream>
-//using std::cout;
 
 namespace multi = boost::multi;
 namespace memory = multi::memory;
 
-int main(){
+int main() {
 
-	char A[1024];
+	char A[1024];  // flawfinder: ignore testing legacy type
 	memory::block<char*> a{A};
 
 	std::vector<char> V(1000);
