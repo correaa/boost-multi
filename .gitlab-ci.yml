@@ -479,21 +479,20 @@ cuda-11.4-std17:
       - cmake --build . --verbose
       - ctest --output-on-failure
 
-#cppcheck is not working with the new implementation of extensions_t<D>
-#g++-cppcheck:
-#  stage: test
-#  image: debian:stable
-#  script:
-#    - export CXX="g++"
-#    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev cppcheck
-#    - ln --symbolic --force . ../multi
-#    - $CXX --version
-#    - cppcheck --version
-#    - find . -name '*.hpp' -exec cppcheck --enable=all --inline-suppr --suppress=unmatchedSuppression --suppress=syntaxError --suppress=missingInclude --suppress=missingIncludeSystem --suppress=preprocessorErrorDirective --suppress=syntaxError --suppress=unusedFunction --suppress=arithOperationsOnVoidPointer --suppress=sizeofDereferencedVoidPointer --suppress=sizeofDereferencedVoidPointer --suppress=unmatchedSuppression:{} -D__align__ -DCUDARTAPI --language=c++ --std=c++17 --error-exitcode=666 {} \;
-#    - mkdir build && cd build
-#    - cmake -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--inline-suppr;--suppress=missingIncludeSystem;--suppressions-list=${PWD}/../.cppcheck-suppressions;--language=c++;--std=c++17;--error-exitcode=666" ..
-#    - cmake --build .
-#    - ctest --output-on-failure
+g++-cppcheck:
+  stage: test
+  image: debian:stable
+  script:
+    - export CXX="g++"
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev cppcheck
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - cppcheck --version
+    - find . -name '*.hpp' -exec cppcheck --enable=all --inline-suppr --suppress=unmatchedSuppression --suppress=syntaxError --suppress=missingInclude --suppress=missingIncludeSystem --suppress=preprocessorErrorDirective --suppress=syntaxError --suppress=unusedFunction --suppress=arithOperationsOnVoidPointer --suppress=sizeofDereferencedVoidPointer --suppress=sizeofDereferencedVoidPointer --suppress=unmatchedSuppression:{} -D__align__ -DCUDARTAPI --language=c++ --std=c++17 --error-exitcode=666 {} \;
+    - mkdir build && cd build
+    - cmake -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--inline-suppr;--suppress=missingIncludeSystem;--suppressions-list=${PWD}/../.cppcheck-suppressions;--language=c++;--std=c++17;--error-exitcode=666" ..
+    - cmake --build .
+    - ctest --output-on-failure
 
 qmcpack-g++:
   stage: test
