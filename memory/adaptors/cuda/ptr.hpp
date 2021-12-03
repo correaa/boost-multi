@@ -293,11 +293,8 @@ std::false_type is_ref_aux(...);
 
 template<class TTT> struct is_ref : decltype(is_ref_aux(std::declval<TTT>())){};
 
-//template<class To, class From, std::enable_if_t<std::is_convertible<From, To>{},int> =0>
-//constexpr To implicit_cast(From&& f){return static_cast<To>(f);}
-
 template<class T>
-struct ref{
+struct ref {
 	using value_type = T;
 	using reference = value_type&;
 	using pointer = ptr<T>;
@@ -309,30 +306,24 @@ struct ref{
 	template<class TT> friend struct ref;
 
  public:
-	constexpr explicit ref(T& t) : pimpl_{&t}{}
-//	ref(T& t) HD : pimpl_{&t}{}
+	constexpr explicit ref(T& t) : pimpl_{&t} {}
 	template<class Other, typename = decltype(multi::implicit_cast<pointer>(std::declval<ref<Other>>().pimpl_))>
-	/*explicit(false)*/ constexpr ref(ref<Other>&& o) /*HD*/ : pimpl_{multi::implicit_cast<pointer>(std::move(o).pimpl_)}{}
+	/*explicit(false)*/ constexpr ref(ref<Other>&& o) /*HD*/ : pimpl_{multi::implicit_cast<pointer>(std::move(o).pimpl_)} {}
 	template<class Other, typename = std::enable_if_t<not std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>())>, pointer>{}>>
-	explicit/*(true) */ constexpr ref(ref<Other> const& o, void** = 0) /*HD*/ : pimpl_{static_cast<pointer>(o)}{}
+	explicit/*(true) */ constexpr ref(ref<Other> const& o, void** = 0) /*HD*/ : pimpl_{static_cast<pointer>(o)} {}
 	template<class TT, class PP> friend struct ptr;
-//	typename pointer::raw_pointer operator&() & __device__{return pimpl_.rp_;}
-//	typename pointer::raw_pointer operator&() const& __device__{return pimpl_.rp_;}
-//	typename pointer::raw_pointer operator&() && __device__{return pimpl_.rp_;}
 
-	pointer operator&() & __host__ __device__{return pimpl_;}
-	pointer operator&() const& __host__ __device__{return pimpl_;}
-	pointer operator&() && __host__ __device__{return pimpl_;}
+	pointer operator&() &      __host__ __device__ {return pimpl_;}
+	pointer operator&() const& __host__ __device__ {return pimpl_;}
+	pointer operator&() &&     __host__ __device__ {return pimpl_;}
 
 	struct skeleton_t {
-		char buff[sizeof(T)]; T* p_;
+		std::array<char, sizeof(T)> buff; T* p_;
 		SLOW
 		explicit skeleton_t(T* p) /*HD*/ : p_{p} {
 			#if __CUDA_ARCH__
 			#else
-//			[[maybe_unused]] 
-			cudaError_t s = cudaMemcpy(buff, p_, sizeof(T), cudaMemcpyDeviceToHost); 
-			(void)s; assert(s == cudaSuccess);
+			{cudaError_t s = cudaMemcpy(buff.data(), p_, buff.size(), cudaMemcpyDeviceToHost); (void)s; assert(s == cudaSuccess);}
 			#endif
 		}
 		operator T&()&& /*HD*/{return reinterpret_cast<T&>(buff);}
@@ -340,9 +331,7 @@ struct ref{
 			#if __CUDA_ARCH__
 		//	*p_ = reinterpret_cast<T const&>(
 			#else
-		//	[[maybe_unused]] 
-			cudaError_t s = cudaMemcpy(p_, buff, sizeof(T), cudaMemcpyHostToDevice); 
-			(void)s; assert(s == cudaSuccess);
+			{cudaError_t s = cudaMemcpy(p_, buff.data(), buff.size(), cudaMemcpyHostToDevice); (void)s; assert(s == cudaSuccess);}
 			#endif
 		}
 		void conditional_copyback_if_not(std::true_type) const /*HD*/{
@@ -350,29 +339,31 @@ struct ref{
 		//	*p_ = reinterpret_cast<T const&>(
 			#else
 		//	[[maybe_unused]] 
-			cudaError_t s = cudaMemcpy(p_, buff, sizeof(T), cudaMemcpyHostToDevice); 
+			cudaError_t s = cudaMemcpy(p_, buff.data(), buff.size(), cudaMemcpyHostToDevice);
 			(void)s; assert(s == cudaSuccess);
 			#endif
 		}
 		~skeleton_t() /*HD*/{conditional_copyback_if_not(std::is_const<T>{});}
 	};
 	skeleton_t skeleton()&& /*HD*/{return {pimpl_.rp_};}
-public:
+
+ public:
 	constexpr ref(ref&& r) : pimpl_{std::move(r.pimpl_).rp_} {}
-//	ref& operator=(ref const&)& = delete;
-private:
-	ref& move_assign(ref&& other, std::true_type)&{
+
+ private:
+	ref& move_assign(ref&& other, std::true_type) & {
 		cudaError_t s = cudaMemcpy(pimpl_.rp_, other.rp_, sizeof(T), cudaMemcpyDeviceToDevice); (void)s; assert(s == cudaSuccess);
 		return *this;
 	}
-	ref& move_assign(ref&& other, std::false_type)&{
+	ref& move_assign(ref&& other, std::false_type) & {
 		cudaError_t s = cudaMemcpy(pimpl_.rp_, other.rp_, sizeof(T), cudaMemcpyDeviceToDevice); (void)s; assert(s == cudaSuccess);
 		return *this;
 	}
-public:
+
+ public:
 	template<class TT, std::enable_if_t<std::is_trivially_assignable<T&, TT>{}, int> =0>
 	[[deprecated]]
-	ref&& operator=(ref<TT> const& other) &&{
+	ref&& operator=(ref<TT> const& other) && {
 		cudaError_t s = cudaMemcpy(pimpl_.rp_, other.pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToDevice); assert(s==cudaSuccess); (void)s;
 		return std::move(*this);
 	}
@@ -426,9 +417,9 @@ public:
 		return *reinterpret_cast<T*>(&ret);
 	}
 #else
-	SLOW operator T()&&{
-		char buff[sizeof(T)];
-		cudaError_t s = cudaMemcpy(buff, pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToHost);
+	SLOW operator T() && {
+		std::array<char, sizeof(T)> buff;
+		cudaError_t s = cudaMemcpy(buff.data(), pimpl_.rp_, buff.size(), cudaMemcpyDeviceToHost);
 		switch(s) {
 			case cudaSuccess                    : break;
 			case cudaErrorInvalidValue          : throw std::runtime_error{"cudaErrorInvalidValue"};
@@ -498,11 +489,11 @@ public:
 	bool operator!=(ref const& other) const&{return not(*this == other);}
 	template<class Other>
 	bool operator!=(ref<Other>&& other)&&{
-		char buff1[sizeof(T)];
-		/*[[maybe_unused]]*/ cudaError_t s1 = cudaMemcpy(buff1, this->impl_, sizeof(T), cudaMemcpyDeviceToHost); assert(s1 == cudaSuccess); (void)s1;
-		char buff2[sizeof(Other)];
-		/*[[maybe_unused]]*/ cudaError_t s2 = cudaMemcpy(buff2, other.impl_, sizeof(Other), cudaMemcpyDeviceToHost); assert(s2 == cudaSuccess); (void)s2;
-		return reinterpret_cast<T const&>(buff1)!=reinterpret_cast<Other const&>(buff2);
+		std::array<char, sizeof(T)> buff1;  // char buff1[sizeof(T)];
+		{cudaError_t s1 = cudaMemcpy(buff1.data(), this->impl_, buff1.size(), cudaMemcpyDeviceToHost); assert(s1 == cudaSuccess); (void)s1;}
+		std::array<char, sizeof(Other)> buff2;
+		{cudaError_t s2 = cudaMemcpy(buff2.data(), other.impl_, buff2.size(), cudaMemcpyDeviceToHost); assert(s2 == cudaSuccess); (void)s2;}
+		return reinterpret_cast<T const&>(buff1) != reinterpret_cast<Other const&>(buff2);
 	}
 #else
 //	bool operator==(ref const& other) const = delete;
@@ -559,14 +550,11 @@ public:
 	template<class Other, typename = std::enable_if_t<not std::is_same<T, Other>{}> >
 	SLOW
 	bool operator==(ref<Other>&& other) && {
-//#pragma message ("Warning goes here")
 		std::array<char, sizeof(T)> buff1;  // char buff1[sizeof(T)];
 	//	cuda::memcpy(buff1, ref::rp_, sizeof(T));
-		/*[[maybe_unused]]*/ cudaError_t s1 = cudaMemcpy(buff1, pimpl_.rp_, sizeof(T), cudaMemcpyDeviceToHost);
-		assert(s1 == cudaSuccess); (void)s1;
+		{cudaError_t s1 = cudaMemcpy(buff1.data(), pimpl_.rp_, buff1.size(), cudaMemcpyDeviceToHost); assert(s1 == cudaSuccess); (void)s1;}
 		std::array<char, sizeof(T)> buff2;  // char buff2[sizeof(Other)];
-		/*[[maybe_unused]]*/ cudaError_t s2 = cudaMemcpy(buff2, raw_pointer_cast(&other), sizeof(Other), cudaMemcpyDeviceToHost); 
-		assert(s2 == cudaSuccess); (void)s2;
+		{cudaError_t s2 = cudaMemcpy(buff2.data(), raw_pointer_cast(&other), buff2.size(), cudaMemcpyDeviceToHost); assert(s2 == cudaSuccess); (void)s2;}
 		return reinterpret_cast<T const&>(buff1) == reinterpret_cast<Other const&>(buff2);
 	}
 #if 1
