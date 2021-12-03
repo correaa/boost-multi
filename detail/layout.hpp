@@ -118,7 +118,7 @@ template<> struct extensions_t<1>
 	using nelems_type = index;
 	using index_extension = multi::index_extension;
 	using std::tuple<index_extension>::tuple;
-	
+
 	// seems to be needed by icpc 20.x
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax (compatible with std::vector(int) constructor
 	extensions_t(multi::size_t size) : base_{multi::index_extension{0, size}} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
