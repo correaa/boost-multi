@@ -266,7 +266,7 @@ namespace std {  // NOLINT(cert-dcl58-cpp) : to implement structured bindings
     struct tuple_size<boost::multi::extensions_t<D>> : std::integral_constant<std::size_t, static_cast<std::size_t>(D)> {};
 
 	template<std::size_t Index, boost::multi::dimensionality_type D>
-	auto get(boost::multi::extensions_t<D> const& self) -> auto const& {
+	constexpr auto get(boost::multi::extensions_t<D> const& self) -> auto const& {
 		return std::get<Index>(self.base());
 	}
 
