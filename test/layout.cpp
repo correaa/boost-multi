@@ -14,22 +14,17 @@
 
 namespace multi = boost::multi;
 
-//BOOST_AUTO_TEST_CASE(tuple_to_extensions){
-//	std::tuple<int, int> t{3, 5};
-//	auto x = std::apply([](auto... e){return multi::extensions_t<2>{e...};}, t);
-//	BOOST_REQUIRE( x.num_elements() == 15 );
-//}
-
 auto second_finish(multi::extensions_t<3> x) {
 	return std::get<1>(x).finish();
 }
 
 BOOST_AUTO_TEST_CASE(extensions_3D) {
+	BOOST_REQUIRE( 20 == second_finish( multi::extensions_t<3>  { {0, 10}, {0, 20}, {0, 30} }  ) );
+	BOOST_REQUIRE( 20 == second_finish( multi::extensions_t<3>( { {0, 10}, {0, 20}, {0, 30} } )) );
+	BOOST_REQUIRE( 20 == second_finish(                         { {0, 10}, {0, 20}, {0, 30} }  ) );
+
 	multi::extensions_t<3> x3{ {0, 10}, {0, 20}, {0, 30} };
 	BOOST_REQUIRE( 20 == second_finish(x3                                                     ) );
-	BOOST_REQUIRE( 20 == second_finish(multi::extensions_t<3>{   {0, 10}, {0, 20}, {0, 30} }  ) );
-	BOOST_REQUIRE( 20 == second_finish(multi::extensions_t<3>( { {0, 10}, {0, 20}, {0, 30} } )) );
-	BOOST_REQUIRE( 20 == second_finish(                        { {0, 10}, {0, 20}, {0, 30} } )  );
 }
 
 BOOST_AUTO_TEST_CASE(linearize) {
