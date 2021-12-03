@@ -145,14 +145,30 @@ template<dimensionality_type D>
 struct extensions_t :
 		      std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename extensions_t<D-1>::base_>()))>{
 using base_ = std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename extensions_t<D-1>::base_>()))>;
-	using base_::base_;
+//	using base_::base_;
 	static constexpr dimensionality_type dimensionality = D;  // TODO(correaa): consider deprecation
 
 	extensions_t() = default;
 	using nelems_type = multi::index;
 
-//	template<class Array, typename = decltype(std::get<D-1>(std::declval<Array>()))>
-//	constexpr explicit extensions_t(Array const& t) : extensions_t(t, std::make_index_sequence<static_cast<std::size_t>(D)>{}) {}
+	template<class T = void, std::enable_if_t<sizeof(T*) and D == 2, int> = 0>
+	extensions_t(index_extension e1, index_extension e2) : base_{e1, e2} {}
+
+	template<class T = void, std::enable_if_t<sizeof(T*) and D == 3, int> = 0>
+	extensions_t(index_extension e1, index_extension e2, index_extension e3) : base_{e1, e2, e3} {}
+
+	template<class T = void, std::enable_if_t<sizeof(T*) and D == 4, int> = 0>
+	extensions_t(index_extension e1, index_extension e2, index_extension e3, index_extension e4) : base_{e1, e2, e3, e4} {}
+
+	template<class T = void, std::enable_if_t<sizeof(T*) and D == 5, int> = 0>
+	extensions_t(index_extension e1, index_extension e2, index_extension e3, index_extension e4, index_extension e5) : base_{e1, e2, e3, e4, e5} {}
+
+	template<class T = void, std::enable_if_t<sizeof(T*) and D == 6, int> = 0>
+	extensions_t(index_extension e1, index_extension e2, index_extension e3, index_extension e4, index_extension e5, index_extension e6) : base_{e1, e2, e3, e4, e5, e6} {}
+
+	template<class T1, class T2, class T = void, class = decltype(base_{std::tuple<T1, T2>{}}), std::enable_if_t<sizeof(T*) and D == 2, int> = 0>
+	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
+	extensions_t(std::tuple<T1, T2> const& e) : base_{e} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 	template<class... Ts>
 	constexpr explicit extensions_t(std::tuple<Ts...> const& t)
