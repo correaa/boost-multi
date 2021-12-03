@@ -142,33 +142,44 @@ template<> struct extensions_t<1>
 };
 
 template<dimensionality_type D>
-struct extensions_t :
-		      std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename extensions_t<D-1>::base_>()))>{
+struct extensions_t
+//: std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename extensions_t<D-1>::base_>()))>
+{
+
 using base_ = std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename extensions_t<D-1>::base_>()))>;
-//	using base_::base_;
+
+ private:
+	base_ impl_;
+
+ public:
 	static constexpr dimensionality_type dimensionality = D;  // TODO(correaa): consider deprecation
 
 	extensions_t() = default;
 	using nelems_type = multi::index;
 
 	template<class T = void, std::enable_if_t<sizeof(T*) and D == 2, int> = 0>
-	extensions_t(index_extension e1, index_extension e2) : base_{e1, e2} {}
+	extensions_t(index_extension e1, index_extension e2) : impl_{e1, e2} {}
 
 	template<class T = void, std::enable_if_t<sizeof(T*) and D == 3, int> = 0>
-	extensions_t(index_extension e1, index_extension e2, index_extension e3) : base_{e1, e2, e3} {}
+	extensions_t(index_extension e1, index_extension e2, index_extension e3) : impl_{e1, e2, e3} {}
 
 	template<class T = void, std::enable_if_t<sizeof(T*) and D == 4, int> = 0>
-	extensions_t(index_extension e1, index_extension e2, index_extension e3, index_extension e4) : base_{e1, e2, e3, e4} {}
+	extensions_t(index_extension e1, index_extension e2, index_extension e3, index_extension e4) : impl_{e1, e2, e3, e4} {}
 
 	template<class T = void, std::enable_if_t<sizeof(T*) and D == 5, int> = 0>
-	extensions_t(index_extension e1, index_extension e2, index_extension e3, index_extension e4, index_extension e5) : base_{e1, e2, e3, e4, e5} {}
+	extensions_t(index_extension e1, index_extension e2, index_extension e3, index_extension e4, index_extension e5) : impl_{e1, e2, e3, e4, e5} {}
 
 	template<class T = void, std::enable_if_t<sizeof(T*) and D == 6, int> = 0>
-	extensions_t(index_extension e1, index_extension e2, index_extension e3, index_extension e4, index_extension e5, index_extension e6) : base_{e1, e2, e3, e4, e5, e6} {}
+	extensions_t(index_extension e1, index_extension e2, index_extension e3, index_extension e4, index_extension e5, index_extension e6) : impl_{e1, e2, e3, e4, e5, e6} {}
 
 	template<class T1, class T2, class T = void, class = decltype(base_{std::tuple<T1, T2>{}}), std::enable_if_t<sizeof(T*) and D == 2, int> = 0>
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
-	extensions_t(std::tuple<T1, T2> const& e) : base_{e} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	extensions_t(std::tuple<T1, T2> e) : impl_{std::move(e)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+
+	template<class T1, class T2, class T3, class T = void, class = decltype(base_{std::tuple<T1, T2, T3>{}}), std::enable_if_t<sizeof(T*) and D == 3, int> = 0>
+	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
+	extensions_t(std::tuple<T1, T2, T3> e) : impl_{std::move(e)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+
 
 	template<class... Ts>
 	constexpr explicit extensions_t(std::tuple<Ts...> const& t)
@@ -177,12 +188,15 @@ using base_ = std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<
 	constexpr extensions_t(index_extension const& ie, typename layout_t<D-1>::extensions_type const& other)
 	: extensions_t(std::tuple_cat(std::make_tuple(ie), other.base())) {}
 
-	       NODISCARD("") constexpr auto base()            const&    -> base_ const& {return *this;}
+	       NODISCARD("") constexpr auto base()            const&    -> base_ const& {return impl_;}
 	friend               constexpr auto base(extensions_t const& s) -> base_ const& {return s.base();}
 
 	friend constexpr auto operator*(index_extension const& ie, extensions_t const& self) -> typename layout_t<D + 1>::extensions_type {
 		return typename layout_t<D + 1>::extensions_type{std::tuple_cat(std::make_tuple(ie), self.base())};
 	}
+
+	auto operator==(extensions_t const& other) const -> bool {return impl_ == other.impl_;}
+	auto operator!=(extensions_t const& other) const -> bool {return impl_ != other.impl_;}
 
 	constexpr auto from_linear(nelems_type n) const {
 		auto const sub_extensions = extensions_t<D-1>{detail::tuple_tail(this->base())};
@@ -211,13 +225,13 @@ using base_ = std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<
 
  private:
 	template<class Array, std::size_t... I, typename = decltype(base_{std::get<I>(std::declval<Array const&>())...})>
-	constexpr extensions_t(Array const& t, std::index_sequence<I...> /*012*/) : base_ {std::get<I>(t)...} {}
+	constexpr extensions_t(Array const& t, std::index_sequence<I...> /*012*/) : impl_ {std::get<I>(t)...} {}
 
 	static constexpr auto multiply_fold() -> size_type {return static_cast<size_type>(1);}
 	static constexpr auto multiply_fold(size_type const& a0) -> size_type {return static_cast<size_type>(a0);}
 	template<class...As> static constexpr auto multiply_fold(size_type const& a0, As const&...as) -> size_type {return static_cast<size_type>(a0)*static_cast<size_type>(multiply_fold(as...));}
 
-	template<std::size_t... I> constexpr auto num_elements_impl(std::index_sequence<I...> /*012*/) const -> size_type {return static_cast<size_type>(multiply_fold(static_cast<size_type>(std::get<I>(*this).size())...));}
+	template<std::size_t... I> constexpr auto num_elements_impl(std::index_sequence<I...> /*012*/) const -> size_type {return static_cast<size_type>(multiply_fold(static_cast<size_type>(std::get<I>(impl_).size())...));}
 
  public:
 	constexpr auto num_elements() const -> size_type {
@@ -226,7 +240,7 @@ using base_ = std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<
 	friend constexpr auto intersection(extensions_t const& x1, extensions_t const& x2) -> extensions_t{
 		return extensions_t{
 			std::tuple_cat(
-				std::tuple<index_extension>{intersection(std::get<0>(x1), std::get<0>(x2))},
+				std::tuple<index_extension>{intersection(std::get<0>(x1.impl_), std::get<0>(x2.impl_))},
 				intersection( extensions_t<D-1>{detail::tuple_tail(x1.base())}, extensions_t<D-1>{detail::tuple_tail(x2.base())} ).base()
 			)
 		};
@@ -234,6 +248,28 @@ using base_ = std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<
 };
 
 template<dimensionality_type D> using iextensions = extensions_t<D>;
+
+template<boost::multi::dimensionality_type D>
+constexpr auto array_size_impl(const boost::multi::extensions_t<D>&)
+	-> std::integral_constant<std::size_t, static_cast<std::size_t>(D)>;
+
+}  // end namespace multi
+}  // end namespace boost
+
+namespace std {  // NOLINT(cert-dcl58-cpp) : to implement structured bindings
+
+    template<boost::multi::dimensionality_type D>
+    struct tuple_size<boost::multi::extensions_t<D>> : std::integral_constant<std::size_t, static_cast<std::size_t>(D)> {};
+
+	template<std::size_t Index, boost::multi::dimensionality_type D>
+	auto get(boost::multi::extensions_t<D> const& self) -> auto const& {
+		return std::get<Index>(self.base());
+	}
+
+}  // end namespace std
+
+namespace boost {
+namespace multi {
 
 template<typename SSize>
 struct layout_t<0, SSize>{
@@ -513,10 +549,10 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 	layout_t() = default;
 
 	constexpr explicit layout_t(extensions_type const& x)
-	: sub_(std_apply([](auto... e){return multi::extensions_t<D-1>{e...};}, detail::tail(x)))
+	: sub_(std_apply([](auto... e){return multi::extensions_t<D-1>{e...};}, detail::tail(x.base())))
 	, stride_{sub_.size()*sub_.stride()}
-	, offset_{std::get<0>(x).first()*stride_} {
-		nelems_ = std::get<0>(x).size()*(sub().num_elements());
+	, offset_{std::get<0>(x.base()).first()*stride_} {
+		nelems_ = std::get<0>(x.base()).size()*(sub().num_elements());
 	}
 
 	                     constexpr auto sub()             &    -> sub_type      & {return sub_;}
