@@ -92,10 +92,23 @@ public:
 
 namespace multi = boost::multi;
 
-BOOST_AUTO_TEST_CASE(multi_memory_allocator){
-
-	alignas(double) char buffer[280*sizeof(double)];
+BOOST_AUTO_TEST_CASE(multi_memory_allocator) {
+	alignas(double) char buffer[280*sizeof(double)];  // flawfinder: ignore, test for legacy type
 	multi::memory::monotonic<char*> m(buffer);
+	multi::memory::allocator<double, multi::memory::monotonic<char*> > A(&m);
+	double* p = A.allocate(1);
+	A.construct(p, 8.);
+	BOOST_REQUIRE( *p == 8. );
+	BOOST_REQUIRE( boost::alignment::is_aligned(p, alignof(double)) );
+
+	double* arr = A.allocate(255);
+	A.construct(arr, 81.);
+	BOOST_REQUIRE( *arr == 81. );
+}
+
+BOOST_AUTO_TEST_CASE(multi_memory_allocator) {
+	alignas(double) std::array<char, 280*sizeof(double)> buffer;  // char buffer[280*sizeof(double)];
+	multi::memory::monotonic<char*> m(buffer.data(), buffer.size());
 	multi::memory::allocator<double, multi::memory::monotonic<char*> > A(&m);
 	double* p = A.allocate(1);
 	A.construct(p, 8.);

@@ -493,6 +493,7 @@ g++-cppcheck:
     - cmake -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--inline-suppr;--suppress=missingIncludeSystem;--suppressions-list=${PWD}/../.cppcheck-suppressions;--language=c++;--std=c++17;--error-exitcode=666" ..
     - cmake --build .
     - ctest --output-on-failure
+  allow_failure: true
 
 qmcpack-g++:
   stage: test

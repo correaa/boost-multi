@@ -79,10 +79,10 @@ public:
 	}*/
 	template<class P> 
 	[[deprecated("cuda slow")]]
-	void destroy(P p){
-		if(not std::is_trivially_destructible<T>{}){
-			char buff[sizeof(T)];
-			cuda::memcpy(buff, p, sizeof(T));
+	void destroy(P p) {
+		if(not std::is_trivially_destructible<T>{}) {
+			std::array<char, sizeof(T)> buff;  // char buff[sizeof(T)];
+			cuda::memcpy(buff.data(), p, buff.size());
 			((T*)buff)->~T();
 		}
 	}

@@ -69,14 +69,13 @@ using stack_allocator = multi::memory::allocator<T, stack<char*>>;//, alignof(T)
 namespace multi = boost::multi;
 namespace memory = multi::memory;
 
-BOOST_AUTO_TEST_CASE(multi_memory_allocator){
-{
-	alignas(double) char buffer[256*sizeof(double)];
-	memory::stack<char*> stck(buffer);
-	auto p1 = stck.allocate(1*sizeof(double), alignof(double));	  
+BOOST_AUTO_TEST_CASE(multi_memory_allocator) {
+	alignas(double) std::array<char, 256*sizeof(double)> buffer;
+	memory::stack<char*> stck(buffer.data(), buffer.size());
+	auto p1 = stck.allocate(1*sizeof(double), alignof(double));
 	BOOST_REQUIRE( stck.max_needed() == 1*sizeof(double) );
 
-	auto p2 = stck.allocate(255*sizeof(double), alignof(double)); 
+	auto p2 = stck.allocate(255*sizeof(double), alignof(double));
 	BOOST_REQUIRE( stck.max_needed() == 256*sizeof(double) );
 
 	stck.deallocate(p2, 255*sizeof(double));
@@ -87,17 +86,5 @@ BOOST_AUTO_TEST_CASE(multi_memory_allocator){
 
 	auto p3 = stck.allocate(100*sizeof(double)); (void)p3;
 }
-{
-//  alignas(double) char buffer[256*sizeof(double)];
-//  multi::memory::stack<char*> sm(buffer);
-//  {
-//  	std::vector<double, multi::memory::stack_allocator<double>> v(10, &sm);
-//  	std::vector<double, multi::memory::stack_allocator<double>> w(10, &sm);
-//  }
-//  std::vector<double, multi::memory::stack_allocator<double>> w(5, &sm);
-//  BOOST_REQUIRE( sm.max_needed()/sizeof(double) == 20 );
-}
-}
 #endif
 #endif
-

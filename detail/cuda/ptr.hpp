@@ -13,9 +13,9 @@
 
 #include<type_traits> // is_const
 
-namespace boost{
-namespace multi{namespace detail{
-namespace memory{namespace cuda{
+namespace boost {
+namespace multi {namespace detail {
+namespace memory {namespace cuda {
 
 template<class T> struct ref;
 
@@ -24,17 +24,19 @@ template<class T> struct ref;
 template<typename T, typename Ptr = T*> struct ptr;
 
 template<typename T, typename Ptr>
-class ptr{
-protected:
+class ptr {
+ protected:
 	using impl_t = Ptr;
 	impl_t impl_;
-private:
+
+ private:
 	template<class TT> friend class allocator;
 	template<typename, typename> friend class ptr;
 	template<class TT, typename = std::enable_if_t<not std::is_const<TT>{}>> 
 	ptr(ptr<TT const> const& p) : impl_{const_cast<T*>(impl_)}{}
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
-public:
+
+ public:
 	explicit ptr(impl_t impl) : impl_{impl}{}
 	ptr() = default;
 	ptr(ptr const&) = default;
@@ -167,14 +169,15 @@ private:
 	explicit ref(pointer p) : ptr<T>{std::move(p)}{}
 	friend class ptr<T>;
 	ptr<T> operator&(){return *this;}
-	struct skeleton_t{
-		char buff[sizeof(T)]; T* p_;
-		explicit skeleton_t(T* p) : p_{p}{cudaError_t s = cudaMemcpy(buff, p_, sizeof(T), cudaMemcpyDeviceToHost); assert(s == cudaSuccess);}
-		operator T&()&&{return reinterpret_cast<T&>(buff);}
-		void conditional_copyback_if_not(std::false_type) const{
-			cudaError_t s = cudaMemcpy(p_, buff, sizeof(T), cudaMemcpyHostToDevice); assert(s == cudaSuccess);
+	struct skeleton_t {
+		std::array<char, sizeof(T)> buff;  // char buff[sizeof(T)];
+		T* p_;
+		explicit skeleton_t(T* p) : p_{p} {cudaError_t s = cudaMemcpy(buff.data(), p_, buff.size(), cudaMemcpyDeviceToHost); assert(s == cudaSuccess);}
+		operator T&() && {return reinterpret_cast<T&>(buff);}
+		void conditional_copyback_if_not(std::false_type) const {
+			cudaError_t s = cudaMemcpy(p_, buff.data(), buff.size(), cudaMemcpyHostToDevice); assert(s == cudaSuccess);
 		}
-		void conditional_copyback_if_not(std::true_type) const{}
+		void conditional_copyback_if_not(std::true_type) const {}
 		~skeleton_t(){conditional_copyback_if_not(std::is_const<T>{});}
 	};
 	skeleton_t skeleton()&&{return {this->impl_};}
@@ -199,58 +202,61 @@ private:
 public:
 	template<class Other>
 	auto operator+(Other&& o)&&
-	->decltype(std::move(*this).skeleton() + std::forward<Other>(o)){
-		return std::move(*this).skeleton() + std::forward<Other>(o);}
+	->decltype(std::move(*this).skeleton() + std::forward<Other>(o)) {
+		return std::move(*this).skeleton() + std::forward<Other>(o); }
 //	template<class Self, class O, typename = std::enable_if_t<std::is_same<std::decay_t<Self>, ref>{}> > 
 //	friend auto operator+(Self&& self, O&& o)
 //	->decltype(std::forward<Self>(self).skeleton() + std::forward<O>(o)){
 //		return std::forward<Self>(self).skeleton() + std::forward<O>(o);}
-	ref&& operator=(value_type const& t)&&{
+	ref&& operator=(value_type const& t) && {
 		make_overload(
-			[&](std::true_type ){cudaError_t s= cudaMemcpy(this->impl_, std::addressof(t), sizeof(T), cudaMemcpyHostToDevice); assert(s == cudaSuccess);},
-			[&](std::false_type){
-				char buff[sizeof(T)];
-				cudaError_t s1 = cudaMemcpy(buff, this->impl_, sizeof(T), cudaMemcpyDeviceToHost); assert(s1 == cudaSuccess);
+			[&](std::true_type ) {cudaError_t s= cudaMemcpy(this->impl_, std::addressof(t), sizeof(T), cudaMemcpyHostToDevice); assert(s == cudaSuccess);},
+			[&](std::false_type) {
+				std::array<char, sizeof(T)> buff;  // char buff[sizeof(T)];
+				cudaError_t s1 = cudaMemcpy(buff.data(), this->impl_, buff.size(), cudaMemcpyDeviceToHost); assert(s1 == cudaSuccess);
 				reinterpret_cast<T&>(buff) = t;
-				cudaError_t s2 = cudaMemcpy(this->impl_, buff, sizeof(T), cudaMemcpyHostToDevice); assert(s2 == cudaSuccess);
+				cudaError_t s2 = cudaMemcpy(this->impl_, buff.data(), buff.size(), cudaMemcpyHostToDevice); assert(s2 == cudaSuccess);
 			}
 		)(std::is_trivially_copy_assignable<T>{});
 		return std::move(*this);
 	}
 	template<class Other>
-	decltype(auto) operator==(ref<Other>&& other)&&{
-		char buff1[sizeof(T)];
-		cudaError_t s1 = cudaMemcpy(buff1, this->impl_, sizeof(T), cudaMemcpyDeviceToHost); assert(s1 == cudaSuccess);
-		char buff2[sizeof(Other)];
-		cudaError_t s2 = cudaMemcpy(buff2, other.impl_, sizeof(Other), cudaMemcpyDeviceToHost); assert(s2 == cudaSuccess);
-		return reinterpret_cast<T const&>(buff1)==reinterpret_cast<Other const&>(buff2);
+	decltype(auto) operator==(ref<Other>&& other) && {
+		std::array<char, sizeof(T)> buff1;  // char buff1[sizeof(T)];
+		cudaError_t s1 = cudaMemcpy(buff1.data(), this->impl_, buff1.size(), cudaMemcpyDeviceToHost); assert(s1 == cudaSuccess);
+		std::array<char, sizeof(Other)> buff2;  // char buff2[sizeof(Other)];
+		cudaError_t s2 = cudaMemcpy(buff2.data(), other.impl_, buff2.size(), cudaMemcpyDeviceToHost); assert(s2 == cudaSuccess);
+		return reinterpret_cast<T const&>(buff1) == reinterpret_cast<Other const&>(buff2);
 	}
 	template<class Other>
-	decltype(auto) operator!=(ref<Other>&& other)&&{
-		char buff1[sizeof(T)];
-		cudaError_t s1 = cudaMemcpy(buff1, this->impl_, sizeof(T), cudaMemcpyDeviceToHost); assert(s1 == cudaSuccess);
-		char buff2[sizeof(Other)];
-		cudaError_t s2 = cudaMemcpy(buff2, other.impl_, sizeof(Other), cudaMemcpyDeviceToHost); assert(s2 == cudaSuccess);
-		return reinterpret_cast<T const&>(buff1)!=reinterpret_cast<Other const&>(buff2);
+	decltype(auto) operator!=(ref<Other>&& other) && {
+		std::array<char, sizeof(T)> buff1;  // char buff1[sizeof(T)];
+		cudaError_t s1 = cudaMemcpy(buff1.data(), this->impl_, buff1.size(), cudaMemcpyDeviceToHost); assert(s1 == cudaSuccess);
+		std::array<char, sizeof(Other)> buff2;  // char buff2[sizeof(Other)];
+		cudaError_t s2 = cudaMemcpy(buff2.data(), other.impl_, buff2.size(), cudaMemcpyDeviceToHost); assert(s2 == cudaSuccess);
+		return reinterpret_cast<T const&>(buff1) != reinterpret_cast<Other const&>(buff2);
 	}
-	operator T()&& {
+	operator T() && {
 		static_assert(not std::is_same<T, void>{}, "!");
-		char buff[sizeof(T)];
-		cudaError_t s = cudaMemcpy(buff, this->impl_, sizeof(T), cudaMemcpyDeviceToHost); assert(s == cudaSuccess );
+		std::array<char, sizeof(T)> buff;  // char buff[sizeof(T)];
+		cudaError_t s = cudaMemcpy(buff.data(), this->impl_, buff.size(), cudaMemcpyDeviceToHost); assert(s == cudaSuccess );
 		return std::move(reinterpret_cast<T&>(buff));
 	}
 	template<class Other, typename = decltype(std::declval<T&>()+=std::declval<Other&&>())>
-	decltype(auto) operator+=(Other&& o)&&{std::move(*this).skeleton()+=o; return *this;}
+	decltype(auto) operator+=(Other&& o) && {std::move(*this).skeleton()+=o; return *this;}
 	template<class Other, typename = decltype(std::declval<T&>()-=std::declval<Other&&>())>
-	decltype(auto) operator-=(Other&& o)&&{std::move(*this).skeleton()-=o;}
-	friend void swap(ref&& a, ref&& b){T tmp = std::move(a); a = std::move(b); b = std::move(tmp);}
-	decltype(auto) operator++()&&{++(std::move(*this).skeleton()); return *this;}
-	decltype(auto) operator--()&&{--(std::move(*this).skeleton()); return *this;}
+	decltype(auto) operator-=(Other&& o) && {std::move(*this).skeleton()-=o;}
+	friend void swap(ref&& a, ref&& b) {T tmp = std::move(a); a = std::move(b); b = std::move(tmp);}
+	decltype(auto) operator++() && {++(std::move(*this).skeleton()); return *this;}
+	decltype(auto) operator--() && {--(std::move(*this).skeleton()); return *this;}
 };
 
-}}}
+}  // end namespace cuda
+}  // end namespace memory
+}  // end namespace detail
 
-}}
+}  // end namespace multi
+}  // end namespace boost
 
 #ifdef _TEST_BOOST_MULTI_DETAIL_MEMORY_CUDA_PTR
 
@@ -273,7 +279,7 @@ void add_one(double& d){d += 1.;}
 template<class T>
 void add_one(T&& t){std::forward<T>(t) += 1.;}
 
-int main(){
+int main() {
 
 	static_assert(std::is_same<typename std::pointer_traits<cuda::ptr<double>>::element_type, double>{}, "!");
 	cuda::allocator<double> calloc;
@@ -305,10 +311,8 @@ int main(){
 	calloc.deallocate(p, 100);
 
 	multi::array<double, 1, cuda::allocator<double>> arr2(multi::array<double, 1>::extensions_type{100l}, 999.);
-	
+
 	assert(size(arr2) == 100);
 }
 #endif
 #endif
-
-
