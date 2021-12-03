@@ -7,6 +7,8 @@
 #include "../config/MAYBE_UNUSED.hpp"
 #include "../config/NODISCARD.hpp"
 
+#include "../detail/serialization.hpp"
+
 #include <algorithm>  // for min
 
 #include <iostream>   // TODO(correaa) remove, add include in QMCP
@@ -46,20 +48,16 @@ class iterator_facade {
 	friend constexpr auto operator--(self_type& s, int) -> self_type {self_type r = s; --s; return r;}
 };
 
-template<class T> struct archive_traits;
-
 template<typename IndexType = std::true_type, typename IndexTypeLast = IndexType>
 class range {
 	IndexType first_ = {};
 	IndexTypeLast last_ = first_;
 
  public:
-	template<class Archive>
-	void serialize(Archive& ar, unsigned /*version*/) {
-		ar & multi::archive_traits<std::decay_t<Archive>>::make_nvp("first", first_);
-		ar & multi::archive_traits<std::decay_t<Archive>>::make_nvp("last" , last_ );
-//  	ar & boost::serialization::make_nvp("last", last_);//BOOST_SERIALIZATION_NVP(last);
-//  	ar & BOOST_SERIALIZATION_NVP(last); !! if you get an error here you need to include the adators/serialization/xml_archive.hpp
+	template<class Ar, class ArT = multi::archive_traits<Ar>>
+	void serialize(Ar& ar, unsigned /*version*/) {
+		ar & ArT::make_nvp("first", first_);
+		ar & ArT::make_nvp("last" , last_ );
 	}
 
 	using value_type      = IndexType;
@@ -243,12 +241,11 @@ struct extension_t : public range<IndexType, IndexTypeLast>{
 };
 
 template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
-constexpr auto make_extension_t(IndexType f, IndexTypeLast l) -> extension_t<IndexType, IndexTypeLast>{return {f, l};}
+constexpr auto make_extension_t(IndexType f, IndexTypeLast l) -> extension_t<IndexType, IndexTypeLast> {return {f, l};}
 
 template<class IndexTypeLast = std::ptrdiff_t>
-constexpr auto make_extension_t(IndexTypeLast l){return make_extension_t(IndexTypeLast{0}, l);}
+constexpr auto make_extension_t(IndexTypeLast l) {return make_extension_t(IndexTypeLast{0}, l);}
 
 }  // end namespace multi
 }  // end namespace boost
 #endif
-

@@ -584,14 +584,10 @@ struct basic_array
 	}
 
 	friend auto get_allocator(basic_array const& s) -> default_allocator_type {return s.get_allocator();}
-//  template<class P>
-//  static constexpr auto get_allocator_(P const& p) -> default_allocator_type {
-//  	return multi::default_allocator_of(p);
-//  }
 
-	template<class Archive>
-	auto serialize(Archive& ar, unsigned int /*version*/) {
-		std::for_each(this->begin(), this->end(), [&](auto&& e){ar & multi::archive_traits<Archive>::make_nvp("item", e);});
+	template<class Ar, class AT = multi::archive_traits<Ar>>
+	auto serialize(Ar& ar, unsigned int /*version*/) {
+		std::for_each(this->begin(), this->end(), [&](auto&& e){ar & AT::make_nvp("item", e);});
 	}
 
 	using decay_type = array<typename types::element_type, D, typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type>;
@@ -2129,18 +2125,33 @@ struct array_ref
 	       constexpr auto decay()         const&    -> decay_type const& {return static_cast<decay_type const&>(*this);}
 	friend constexpr auto decay(array_ref const& s) -> decay_type const& {return s.decay();}
 
-	template<class Archive>
-	auto serialize(Archive& ar, const unsigned int v){  // TODO(correaa) : consider small and large implementations
-//  	using boost::serialization::make_nvp;
-//  	if(this->num_elements() < (2<<8) )
-			basic_array<T, D, ElementPtr>::serialize(ar, v);
-//  	else{
-//  		using boost::serialization::make_binary_object;
-//  		using boost::serialization::make_array;
-//  		if(std::is_trivially_copy_assignable<typename array_ref::element>{})
-//  			ar & multi::archive_traits<Archive>::make_nvp("binary_data", multi::archive_traits<Archive>::make_binary_object(this->data(), sizeof(typename array_ref::element)*this->num_elements())); //#include<boost/serialization/binary_object.hpp>
-//  		else ar & multi::archive_traits<Archive>::make_nvp("data", multi::archive_traits<Archive>::make_array(this->data(), this->num_elements()));
-//  	}
+ private:
+	template<class Ar>
+	auto serialize_structured(Ar& ar, const unsigned int version) {
+		basic_array<T, D, ElementPtr>::serialize(ar, version);
+	}
+	template<class Ar, class AT = multi::archive_traits<Ar>>
+	auto serialize_flat(Ar& ar) {
+		ar & AT::make_nvp("elements", AT::make_array(this->data_elements(), static_cast<std::size_t>(this->num_elements())));
+	}
+//	template<class Ar, class AT = multi::archive_traits<Ar>>
+//	auto serialize_binary_if(std::true_type, Ar& ar) {
+//		ar & AT::make_nvp("binary_data", AT::make_binary_object(this->data_elements(), static_cast<std::size_t>(this->num_elements())*sizeof(typename array_ref::element)));
+//	}
+//	template<class Ar>
+//	auto serialize_binary_if(std::false_type, Ar& ar) {return serialize_flat(ar);}
+
+ public:
+	template<class Ar, class AT = multi::archive_traits<Ar>>
+	auto serialize(Ar& ar, const unsigned int version) {
+		switch(version) {
+			case static_cast<unsigned int>( 0): return serialize_flat(ar);
+			case static_cast<unsigned int>(-1): return serialize_structured(ar, version);
+		//	case 2: return serialize_binary_if(std::is_trivially_copy_assignable<typename array_ref::element>{}, ar);
+			default:
+				if( this->num_elements() <= version ){serialize_structured(ar, version);}
+				else                                 {serialize_flat      (ar         );}
+		}
 	}
 };
 
@@ -2313,5 +2324,27 @@ template<class T, std::size_t N, std::size_t M>
 auto transposed(T(&t)[N][M]) -> decltype(auto) {return ~multi::array_ref<T, 2>(t);}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 }  // end namespace multi
+}  // end namespace boost
+
+namespace boost {
+namespace serialization {
+
+#ifndef MULTI_SERIALIZATION_ARRAY_VERSION
+#define MULTI_SERIALIZATION_ARRAY_VERSION 0
+#endif
+
+// #define MULTI_SERIALIZATION_ARRAY_VERSION  0 // save data as flat array
+// #define MULTI_SERIALIZATION_ARRAY_VERSION -1 // save data as structured nested labels array
+// this is disabled! #define MULTI_SERIALIZATION_ARRAY_VERSION  2 // save data as binary object if possible even in XML and text mode (not portable)
+// #define MULTI_SERIALIZATION_ARRAY_VERSION 16 // any other value, structure for N <= 16, flat otherwise N > 16
+
+template<typename T, boost::multi::dimensionality_type D, class A>
+struct version< boost::multi::array_ref<T, D, A> > {
+	using type = std::integral_constant<int, MULTI_SERIALIZATION_ARRAY_VERSION>; // typedef mpl::int_<1> type;
+//  typedef mpl::integral_c_tag tag;
+	enum { value = type::value };
+};
+
+}  // end namespace serialization
 }  // end namespace boost
 #endif

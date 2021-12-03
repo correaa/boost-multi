@@ -712,7 +712,7 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	}
 
 	template<class Archive>
-	void serialize(Archive& ar, const unsigned int version){
+	void serialize(Archive& ar, const unsigned int version) {
 	// auto extensions = this->extensions();
 	// sing boost::serialization::make_nvp;
 	// ar & make_nvp("extensions", extensions);
@@ -751,14 +751,15 @@ struct array : static_array<T, D, Alloc>{
 	//  auto operator&()      & -> array      *{return this;}
 	//  auto operator&() const& -> array const*{return this;}
 
-	template<class Archive>
-	auto serialize(Archive& ar, const unsigned int version) {
+	template<class Ar, class AT = multi::archive_traits<Ar>>
+	auto serialize(Ar& ar, const unsigned int version) {  // NOLINT(fuchsia-default-arguments-declarations) version is used for threshold of big vs small data
 		auto x = this->extensions();
-		ar & multi::archive_traits<Archive>::make_nvp("extensions", x);
+		ar & AT::make_nvp("extensions", x);
 		if(x != this->extensions()) {clear(); this->reextent(x);}
 		assert(x == this->extensions());
 		static_::serialize(ar, version);
 	}
+
 	using static_::static_;
 	using typename static_::value_type;
 	array() = default;
@@ -1051,5 +1052,16 @@ using array = boost::multi::array<T, D, std::pmr::polymorphic_allocator<T>>;
 }  // end namespace boost
 #endif
 
-#endif
+namespace boost {
+namespace serialization {
 
+template<typename T, boost::multi::dimensionality_type D, class A>
+struct version< boost::multi::array<T, D, A> > {
+	using type = std::integral_constant<int, MULTI_SERIALIZATION_ARRAY_VERSION>;  // typedef mpl::int_<1> type;
+	enum { value = type::value };
+};
+
+}  // end namespace serialization
+}  // end namespace boost
+
+#endif
