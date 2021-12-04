@@ -78,21 +78,25 @@ template<dimensionality_type D, typename SSize=multi::size_type> struct layout_t
 
 template<dimensionality_type D> struct extensions_t;
 
-template<> struct extensions_t<0>
-: std::tuple<>{
+template<> struct extensions_t<0> {  // : std::tuple<>{
 	using base_ = std::tuple<>;
+
+ private:
+	base_ impl_;
+
+ public:
 	static constexpr dimensionality_type dimensionality = 0;  // TODO(correaa): consider deprecation
 
 	using rank = std::integral_constant<dimensionality_type, 0>;
 
 	using nelems_type = index;
-	using std::tuple<>::tuple;
+//	using std::tuple<>::tuple;
 
-	explicit extensions_t(std::tuple<> const& t) : std::tuple<>{t} {}
+	explicit extensions_t(std::tuple<> const& t) : impl_{t} {}
 
 	extensions_t() = default;
 
-	NODISCARD("") constexpr auto base() const -> base_ const& {return *this;}
+	NODISCARD("") constexpr auto base() const -> base_ const& {return impl_;}
 	friend constexpr auto base(extensions_t const& s) -> decltype(auto) {return s.base();}
 
 //  constexpr operator nelems_type() const {return 1;}
@@ -100,14 +104,15 @@ template<> struct extensions_t<0>
 
 	static constexpr auto num_elements() -> size_type {return 1;}
 
-	static constexpr auto from_linear(nelems_type n) -> std::tuple<>{
+	static constexpr auto from_linear(nelems_type n) -> std::tuple<> {
 		assert(n < num_elements()); (void)n;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : constexpr function
 		return {};
 	}
 	friend constexpr auto operator%(nelems_type n, extensions_t const& /*s*/) -> std::tuple<>{return /*s.*/from_linear(n);}
 	friend constexpr auto intersection(extensions_t const& /*x1*/, extensions_t const& /*x2*/) -> extensions_t{return {};}
-//  constexpr auto operator==([[maybe_unused]] extensions_t const& other) -> bool{return true ;}
-//  constexpr auto operator!=([[maybe_unused]] extensions_t const& other) -> bool{return false;}
+
+	constexpr auto operator==(extensions_t const& /*other*/) -> bool {return true ;}
+	constexpr auto operator!=(extensions_t const& /*other*/) -> bool {return false;}
 };
 
 template<> struct extensions_t<1>  // : std::tuple<multi::index_extension>
