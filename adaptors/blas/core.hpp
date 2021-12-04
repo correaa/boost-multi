@@ -1,4 +1,4 @@
-#ifndef MULTI_ADAPTORS_BLAS_CORE_HPP // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+#ifndef MULTI_ADAPTORS_BLAS_CORE_HPP  // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 #define MULTI_ADAPTORS_BLAS_CORE_HPP
 // © Alfredo A. Correa 2019-2021
 
@@ -37,7 +37,7 @@
 #define BLAS(NamE) cblas_##NamE
 #else
 #define BLAS(NamE) NamE##_
-extern "C"{
+extern "C" {
 
 #ifndef MULTI_BLAS_INT
 #if defined(__INTPTR_WIDTH__)
@@ -57,8 +57,8 @@ using Complex_double = struct { double real, imag; };
 //typedef struct { float  real, imag; } Complex_float ;
 //typedef struct { double real, imag; } Complex_double;
 
-#define C Complex_float // _Complex s
-#define Z Complex_double // _Complex d
+#define C Complex_float  // _Complex s
+#define Z Complex_double  // _Complex d
 
 #if defined(MULTI_BLAS_INT)
 	#if   MULTI_BLAS_INT==32
@@ -66,16 +66,16 @@ using Complex_double = struct { double real, imag; };
 	#elif MULTI_BLAS_INT==64
 		#define INT int64_t
 	#else
-		#define INT int32_t // 32bit safe? pesimistic?
+		#define INT int32_t  // 32bit safe? pesimistic?
 	#endif
 #else
-	#define INT int32_t // 32bit safe? pesimistic?
+	#define INT int32_t  // 32bit safe? pesimistic?
 #endif
 
 namespace core{
 	using size_t = INT;
 	using ssize_t = std::make_signed_t<size_t>;
-} // end namespace core
+}  // end namespace core
 
 #define INTEGER INT const&
 #define N INTEGER n
@@ -143,7 +143,7 @@ IxAMAX(s); IxAMAX(d); IxAMAX(c); IxAMAX(z);
 #define xTRSV(T) void  T## trsv ##_ (UPLO, TRANS, DIAG, N,                  T const* A, LDA, T* X      , INCX                                            ) // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
 
 xGEMV(s); xGEMV(d); xGEMV(c); xGEMV(z);
-xGER(s); xGER(d);
+xGER(s) ; xGER(d) ;
 xGERU(c); xGERU(z);
 xGERC(c); xGERC(z);
 xTRSV(s); xTRSV(d); xTRSV(c); xTRSV(z);
@@ -209,39 +209,12 @@ xTRSM(s); xTRSM(d); xTRSM(c)   ; xTRSM(z)   ;
 #undef LDA
 #undef LDB
 #undef LDC
-}
+}  // end of extern "C"
 #endif
 
-namespace boost{
-namespace multi{
-namespace blas{
-
-//template<class T> struct complex_ptr{
-//	std::complex<T>* impl_;
-//	template<class TT, class=std::enable_if_t<sizeof(*TT{})==sizeof(std::complex<T>) and sizeof(*TT{})==sizeof(TT{}->real())+sizeof(TT{}->imag())>>
-//	explicit complex_ptr(TT tt) : impl_{reinterpret_cast<std::complex<T>*>(tt)}{}
-//	complex_ptr(complex_ptr const&) = delete;
-//	operator std::complex<T>*() const{return   impl_;}
-//	std::complex<T>& operator*() const{return *impl_;}
-//};
-
-//template<class T> struct complex_const_ptr{
-//	std::complex<T> const* impl_;
-//	template<class TT, class=std::enable_if_t<sizeof(*TT{})==sizeof(std::complex<T>) and sizeof(*TT{})==sizeof(TT{}->real())+sizeof(TT{}->imag())>>
-//	explicit complex_const_ptr(TT tt) : impl_{reinterpret_cast<std::complex<T> const*>(tt)}{} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-//	complex_const_ptr(complex_const_ptr const&) = delete;
-//	explicit operator std::complex<T> const*() const{return impl_;}
-//	auto operator*() const -> std::complex<T> const&{return *impl_;}
-//};
-
-//template<class T> struct add_ptr{using type = T*;};
-//template<class T> struct add_const_ptr{using type = T const*;};
-
-//template<class T> struct add_ptr<std::complex<T>>{using type = complex_ptr<T>;};
-//template<class T> struct add_const_ptr<std::complex<T>>{using type = complex_const_ptr<T>;};
-
-//template<class T> using add_ptr_t = typename add_ptr<T>::type;
-//template<class T> using add_const_ptr_t = typename add_const_ptr<T>::type;
+namespace boost {
+namespace multi {
+namespace blas {
 
 //namespace t{
 	using s = float;
@@ -253,7 +226,7 @@ namespace blas{
 
 //using namespace types;
 
-#define BC(x) [](auto xx){assert(xx>=std::numeric_limits<INT>::min() and xx<std::numeric_limits<INT>::max()); return xx;}(x) /*NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/
+#define BC(x) [](auto xx){assert(xx>=std::numeric_limits<INT>::min() and xx<std::numeric_limits<INT>::max()); return xx;}(x)  /*NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/
 
 //#define xrotg(T1, T2)                       v   rotg (T1 const& a, T1 const& b, T2& cc, T1& ss                                       ){     BLAS(T1##rotg )(const_cast<T1*>(&a), const_cast<T1*>(&b), &cc, &ss);  }
 //#define xrotmg(T)                           v   rotmg(T& d1, T& d2, T& A, T const& B, T(&p)[5]                                       ){     BLAS( T##rotmg)(&d1, &d2, &A, B, p);                                  }
@@ -274,7 +247,7 @@ namespace blas{
 //xrotm(s)       xrotm(d)
 //xswap(s)       xswap(d)       xswap(c)       xswap(z)
 
-namespace core{
+namespace core {
 
 //xscal(s, s, s) xscal(d, d, d) xscal(c, c, c) xscal(z, z, z) xscal(zd, d, z) xscal(cs, s, c)
 
@@ -319,7 +292,7 @@ xaxpy(s)       xaxpy(d)       xaxpy(c)       xaxpy(z)
 //template<class A, class CX, class CY, enable_if_t<is_c<CX>{} and is_c<CY>{} and is_assignable<CY&, decltype(A{}*CX{})>{}, int> =0> void axpy(size_t n, A a, CX* x, size_t incx, CY* y, size_t incy){BLAS(caxpy)(n, a, (c const*)(x), incx, (c*)(y), incy);}
 //template<class A, class ZX, class ZY, enable_if_t<is_z<ZX>{} and is_z<ZY>{} and is_assignable<ZY&, decltype(A{}*ZX{})>{}, int> =0> void axpy(size_t n, A a, ZX* x, size_t incx, ZY* y, size_t incy){BLAS(zaxpy)(n, a, (z const*)(x), incx, (z*)(y), incy);}
 
-} // end namespace core
+}  // end namespace core
 
 //template<class R, class S, class T> R dot(S n, T const* x, S incx, T const* y, S incy){
 //	R ret;
@@ -341,39 +314,39 @@ xaxpy(s)       xaxpy(d)       xaxpy(c)       xaxpy(z)
 
 #ifndef CBLAS_H
 
-namespace core{
+namespace core {
 
 using std::enable_if_t;
 using std::is_assignable;
 
 // PGI/NVC++ compiler uses a blas version that needs -DRETURN_BY_STACK
 #if defined(RETURN_BY_STACK) || (defined(FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID) && FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID)
-template<class X, class Y, class R, enable_if_t<is_s<X>{} and is_s<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dot (size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(sdot )((float *)r, n, (s const*)x, incx, (s const*)y, incy);}
-template<class X, class Y, class R, enable_if_t<is_d<X>{} and is_d<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dot (size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(ddot )((double*)r, n, (d const*)x, incx, (d const*)y, incy);}
+template<class X, class Y, class R, enable_if_t<is_s<X>{} and is_s<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dot (size_t n, X* x, size_t incx, Y* y, size_t incy, R* r) {BLAS(sdot )((float *)r, n, (s const*)x, incx, (s const*)y, incy);}
+template<class X, class Y, class R, enable_if_t<is_d<X>{} and is_d<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dot (size_t n, X* x, size_t incx, Y* y, size_t incy, R* r) {BLAS(ddot )((double*)r, n, (d const*)x, incx, (d const*)y, incy);}
 
-template<class X, class Y, class R, enable_if_t<is_c<X>{} and is_c<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(cdotu)((Complex_float *)r, n, (c const*)x, incx, (c const*)y, incy);}
-template<class X, class Y, class R, enable_if_t<is_z<X>{} and is_z<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(zdotu)((Complex_double*)r, n, (z const*)x, incx, (z const*)y, incy);}
+template<class X, class Y, class R, enable_if_t<is_c<X>{} and is_c<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r) {BLAS(cdotu)((Complex_float *)r, n, (c const*)x, incx, (c const*)y, incy);}
+template<class X, class Y, class R, enable_if_t<is_z<X>{} and is_z<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r) {BLAS(zdotu)((Complex_double*)r, n, (z const*)x, incx, (z const*)y, incy);}
 
-template<class X, class Y, class R, enable_if_t<is_c<X>{} and is_c<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotc(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(cdotc)(reinterpret_cast<Complex_float *>(r), n, (c const*)x, incx, (c const*)y, incy);}
-template<class X, class Y, class R, enable_if_t<is_z<X>{} and is_z<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotc(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r){BLAS(zdotc)(reinterpret_cast<Complex_double*>(r), n, (z const*)x, incx, (z const*)y, incy);} // NOLINT(ppcoreguidelines-pro-type-reinterpret-cast) : adapt types
+template<class X, class Y, class R, enable_if_t<is_c<X>{} and is_c<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotc(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r) {BLAS(cdotc)(reinterpret_cast<Complex_float *>(r), n, (c const*)x, incx, (c const*)y, incy);}
+template<class X, class Y, class R, enable_if_t<is_z<X>{} and is_z<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotc(size_t n, X* x, size_t incx, Y* y, size_t incy, R* r) {BLAS(zdotc)(reinterpret_cast<Complex_double*>(r), n, (z const*)x, incx, (z const*)y, incy);} // NOLINT(ppcoreguidelines-pro-type-reinterpret-cast) : adapt types
 #else
-template<class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_s<X>{} and is_s<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dot (ssize_t n, XP x, ptrdiff_t incx, YP y, ptrdiff_t incy, RP r){auto rr = BLAS(sdot )(n, (s const*)static_cast<X*>(x), incx, (s const*)static_cast<Y*>(y), incy); std::memcpy(reinterpret_cast<float *>(static_cast<R*>(r)), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*r));} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting)
-template<class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_d<X>{} and is_d<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dot (ssize_t n, XP x, ptrdiff_t incx, YP y, ptrdiff_t incy, RP r){auto rr = BLAS(ddot )(n, (d const*)static_cast<X*>(x), incx, (d const*)static_cast<Y*>(y), incy); std::memcpy(reinterpret_cast<double*>(static_cast<R*>(r)), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*r));} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting)
+template<class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_s<X>{} and is_s<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dot (ssize_t n, XP x, ptrdiff_t incx, YP y, ptrdiff_t incy, RP r) {auto const rr = BLAS(sdot )(n, (s const*)static_cast<X*>(x), incx, (s const*)static_cast<Y*>(y), incy); std::memcpy(reinterpret_cast<float  *    >(static_cast<R*>(r)), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*r));} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting)
+template<class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_d<X>{} and is_d<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dot (ssize_t n, XP x, ptrdiff_t incx, YP y, ptrdiff_t incy, RP r) {auto const rr = BLAS(ddot )(n, (d const*)static_cast<X*>(x), incx, (d const*)static_cast<Y*>(y), incy); std::memcpy(reinterpret_cast<double *    >(static_cast<R*>(r)), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*r));} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting)
 
-template<class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_c<X>{} and is_c<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(ssize_t n, XP x, ptrdiff_t incx, YP y, ptrdiff_t incy, RP r){auto rr = BLAS(cdotu)(n, (c const*)static_cast<X*>(x), incx, (c const*)static_cast<Y*>(y), incy); std::memcpy(reinterpret_cast<float (*)[2]>(static_cast<R*>(r)), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*r));} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting)
-template<class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_z<X>{} and is_z<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(ssize_t n, XP x, ptrdiff_t incx, YP y, ptrdiff_t incy, RP r){auto rr = BLAS(zdotu)(n, (z const*)static_cast<X*>(x), incx, (z const*)static_cast<Y*>(y), incy); std::memcpy(reinterpret_cast<double(*)[2]>(static_cast<R*>(r)), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*r));} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting)
+template<class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_c<X>{} and is_c<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(ssize_t n, XP x, ptrdiff_t incx, YP y, ptrdiff_t incy, RP r) {auto const rr = BLAS(cdotu)(n, (c const*)static_cast<X*>(x), incx, (c const*)static_cast<Y*>(y), incy); std::memcpy(reinterpret_cast<float (*)[2]>(static_cast<R*>(r)), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*r));} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting)
+template<class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_z<X>{} and is_z<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotu(ssize_t n, XP x, ptrdiff_t incx, YP y, ptrdiff_t incy, RP r) {auto const rr = BLAS(zdotu)(n, (z const*)static_cast<X*>(x), incx, (z const*)static_cast<Y*>(y), incy); std::memcpy(reinterpret_cast<double(*)[2]>(static_cast<R*>(r)), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*r));} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting)
 
-template<class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_c<X>{} and is_c<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotc(ssize_t n, XP x, ptrdiff_t incx, YP y, ptrdiff_t incy, RP r){auto rr = BLAS(cdotc)(n, (c const*)static_cast<X*>(x), incx, (c const*)static_cast<Y*>(y), incy); std::memcpy(reinterpret_cast<float (*)[2]>(static_cast<R*>(r)), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*r));} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting)
-template<class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_z<X>{} and is_z<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotc(ssize_t n, XP x, ptrdiff_t incx, YP y, ptrdiff_t incy, RP r){auto rr = BLAS(zdotc)(n, (z const*)static_cast<X*>(x), incx, (z const*)static_cast<Y*>(y), incy); std::memcpy(reinterpret_cast<double(*)[2]>(static_cast<R*>(r)), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*r));} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting)
+template<class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_c<X>{} and is_c<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotc(ssize_t n, XP x, ptrdiff_t incx, YP y, ptrdiff_t incy, RP r) {auto const rr = BLAS(cdotc)(n, (c const*)static_cast<X*>(x), incx, (c const*)static_cast<Y*>(y), incy); std::memcpy(reinterpret_cast<float (*)[2]>(static_cast<R*>(r)), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*r));} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting)
+template<class XP, class X = typename std::pointer_traits<XP>::element_type, class YP, class Y = typename std::pointer_traits<YP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_z<X>{} and is_z<Y>{} and is_assignable<R&, decltype(0.+X{}*Y{}+X{}*Y{})>{}, int> =0> void dotc(ssize_t n, XP x, ptrdiff_t incx, YP y, ptrdiff_t incy, RP r) {auto const rr = BLAS(zdotc)(n, (z const*)static_cast<X*>(x), incx, (z const*)static_cast<Y*>(y), incy); std::memcpy(reinterpret_cast<double(*)[2]>(static_cast<R*>(r)), &rr, sizeof(rr)); static_assert(sizeof(rr)==sizeof(*r));} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting)
 #endif
 
 } // end namespace core
 #else
-// TODO: make cblas version
+// TODO(correaa) : make cblas version
 #define xdotu(T) template<class S> v dotu(S n, add_const_ptr_t<T> x, S incx, add_const_ptr_t<T> y, S incy, add_ptr_t<T> r){BLAS(T##dotu_sub)(BC(n), x, BC(incx), y, BC(incy), r);}
 #define xdotc(T) template<class S> v dotc(S n, add_const_ptr_t<T> x, S incx, add_const_ptr_t<T> y, S incy, add_ptr_t<T> r){BLAS(T##dotc_sub)(BC(n), x, BC(incx), y, BC(incy), r);}
 
-namespace core{
+namespace core {
 	xdotu(c) xdotu(z)
 	xdotc(c) xdotc(z)
 }
@@ -382,7 +355,7 @@ namespace core{
 #undef xdotc
 #endif
 
-namespace core{
+namespace core {
 	template<class S> auto dot(S n, s const& b, s const* x, S incx, s const* y, S incy) -> s{return BLAS(sdsdot)(BC(n), b, x, BC(incx), y, BC(incy));}
 
 //template<class S> void dot(S n, s const& b, s const* x, S incx, s const* y, S incy, s* result){*result = BLAS(sdsdot)(BC(n), b, x, BC(incx), y, BC(incy));}
@@ -394,7 +367,7 @@ namespace core{
 #define ixamax(T)       template<class S> auto iamax(S n, T const* x, S incx){return BLAS(i##T##amax)(BC(n), x, BC(incx)) - 1;}
 xasum(s, s)    xasum(d, d)                        xasum (c, sc)                  xasum(z, dz)
 
-namespace core{
+namespace core {
 //	xnrm2(s, s, s) xnrm2(d, d, d)  xnrm2(s, c, sc) xnrm2(d, z, dz)
 
 template<class XP, class X = typename std::pointer_traits<XP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_s<X>{} and is_s<R>{} and std::is_assignable<R&, decltype(X{})>{}           , int> =0> void nrm2(ssize_t n, XP x, ptrdiff_t incx, RP r){auto rr = BLAS(snrm2) (n, (s const*)static_cast<X*>(x), incx); std::memcpy((s*)static_cast<R*>(r), &rr, sizeof(s));} // NOLINT(google-readability-casting)
@@ -410,7 +383,6 @@ template<class XP, class X = typename std::pointer_traits<XP>::element_type, cla
 #undef xnrm2
 #undef xasum
 #undef ixamax
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // LEVEL2
@@ -428,7 +400,6 @@ namespace core {
 //                  xgeru(c) xgeru(z)
 //                  xgerc(c) xgerc(z)
 
-
 using std::enable_if_t;
 using std::is_assignable;
 
@@ -442,21 +413,20 @@ template<class A, class M, class X, class B, class Y, enable_if_t<is_z<M>{} and 
 //template<class CX, class CY, enable_if_t<is_c<CX>{} and is_c<CY>{} and is_assignable<CY&, CX&>{},int> =0> void copy(size_t n, CX* x, size_t incx, CY* y, size_t incy){BLAS(ccopy)(n, (std::complex<float > const*)(x), incx, (std::complex<float >*)(y), incy);}
 //template<class ZX, class ZY, enable_if_t<is_z<ZX>{} and is_z<ZY>{} and is_assignable<ZY&, ZX&>{},int> =0> void copy(size_t n, ZX* x, size_t incx, ZY* y, size_t incy){BLAS(zcopy)(n, (std::complex<double> const*)(x), incx, (std::complex<double>*)(y), incy);}
 
-
 } // end namespace core
 
-template<class T> 
-struct blas2{
+template<class T>
+struct blas2 {
 //	template<class S>
 //	static v trsv(char ulA, char transA, char di, S m, T const* A, S lda, T* X, S incx) = delete;
 };
 
-template<> struct blas2<s>{template<class... As> static v    trsv(As... as)                               {BLAS(strsv)(as...);}};
-template<> struct blas2<d>{template<class... As> static v    trsv(As... as)                               {BLAS(dtrsv)(as...);}};
-template<> struct blas2<c>{template<class... As> static v    trsv(As... as)                               {BLAS(ctrsv)(as...);}};
-template<> struct blas2<z>{template<class... As> static auto trsv(As... as)->decltype(BLAS(ztrsv)(as...)) {BLAS(ztrsv)(as...);}};
+template<> struct blas2<s> {template<class... As> static v    trsv(As... as)                                 {BLAS(strsv)(as...);}};
+template<> struct blas2<d> {template<class... As> static v    trsv(As... as)                                 {BLAS(dtrsv)(as...);}};
+template<> struct blas2<c> {template<class... As> static v    trsv(As... as)                                 {BLAS(ctrsv)(as...);}};
+template<> struct blas2<z> {template<class... As> static auto trsv(As... as) -> decltype(BLAS(ztrsv)(as...)) {BLAS(ztrsv)(as...);}};
 
-namespace core{
+namespace core {
 	template<typename TconstP, typename TP, typename S=std::size_t, typename C=char> v trsv(C ulA, C transA, C diA, S n, TconstP A, S lda, TP X, S incx){blas2<std::decay_t<typename std::pointer_traits<TP>::element_type>>::trsv(ulA, transA, diA, n, A, lda, X, incx);}
 } // end namespace core
 
@@ -621,16 +591,14 @@ auto copy(Context&& /*unused*/, As... as)
 	return core::copy(as...); }
 }  // end namespace core
 
-template<class TPtr, std::enable_if_t<std::is_convertible<TPtr, typename std::pointer_traits<TPtr>::element_type*>{}, int> =0> 
+template<class TPtr, std::enable_if_t<std::is_convertible<TPtr, typename std::pointer_traits<TPtr>::element_type*>{}, int> =0>
 auto default_context_of(TPtr const& /*unused*/) -> blas::context* {
 	static blas::context dc;
 	return &dc;
 }
 
 } // end namespace blas
-
 } // end namespace multi
 } // end namespace boost
 
 #endif
-
