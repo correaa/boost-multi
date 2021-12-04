@@ -30,6 +30,10 @@ BOOST_AUTO_TEST_CASE(extensions_3D) {
 	BOOST_REQUIRE( 20 == second_finish(x3                                                     ) );
 }
 
+//BOOST_AUTO_TEST_CASE(extensions_1D) {
+//	BOOST_REQUIRE( multi::extensions_t<1>( { {0, 10} } ) == multi::extensions_t<1>( { {0, 10} } ) );
+//}
+
 BOOST_AUTO_TEST_CASE(serialize_extensions) {
 	multi::extensions_t<3> x{51, 52, 53};
 	std::stringstream ss;
