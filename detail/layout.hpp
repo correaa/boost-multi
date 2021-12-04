@@ -20,13 +20,7 @@
 
 namespace boost {
 namespace multi {
-
 namespace detail {
-
-//  template<typename T, typename... As>
-//  inline constexpr void construct_from_initializer_list(T* p, As&&... as) {
-//  	::new(static_cast<void*>(p)) T(std::forward<As>(as)...);
-// }
 
 template<class To, class From, size_t... I>
 constexpr auto to_tuple_impl(std::initializer_list<From> il, std::index_sequence<I...>/*012*/) {
@@ -72,95 +66,10 @@ constexpr auto tuple_tail(Tuple&& t)
 
 }  // end namespace detail
 
-struct f_tag{};
-
 template<dimensionality_type D, typename SSize=multi::size_type> struct layout_t;
 
-template<dimensionality_type D> struct extensions_t;
-
-template<> struct extensions_t<0> {  // : std::tuple<>{
-	using base_ = std::tuple<>;
-
- private:
-	base_ impl_;
-
- public:
-	static constexpr dimensionality_type dimensionality = 0;  // TODO(correaa): consider deprecation
-
-	using rank = std::integral_constant<dimensionality_type, 0>;
-
-	using nelems_type = index;
-//	using std::tuple<>::tuple;
-
-	explicit extensions_t(std::tuple<> const& t) : impl_{t} {}
-
-	extensions_t() = default;
-
-	constexpr auto base() const -> base_ const& {return impl_;}
-
-	template<class Archive> void serialize(Archive&/*ar*/, unsigned /*version*/) {}
-
-	static constexpr auto num_elements() -> size_type {return 1;}
-
-	static constexpr auto from_linear(nelems_type n) -> std::tuple<> {
-		assert(n < num_elements()); (void)n;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : constexpr function
-		return {};
-	}
-	friend constexpr auto operator%(nelems_type n, extensions_t const& /*s*/) -> std::tuple<>{return /*s.*/from_linear(n);}
-	friend constexpr auto intersection(extensions_t const& /*x1*/, extensions_t const& /*x2*/) -> extensions_t{return {};}
-
-	constexpr auto operator==(extensions_t const& /*other*/) -> bool {return true ;}
-	constexpr auto operator!=(extensions_t const& /*other*/) -> bool {return false;}
-};
-
-template<> struct extensions_t<1>  // : std::tuple<multi::index_extension>
-{
-	using base_ = std::tuple<multi::index_extension>;
-
- private:
-	base_ impl_;
-
- public:
-	static constexpr auto dimensionality = 1;  // TODO(correaa): consider deprecation
-
-	using nelems_type = index;
-	using index_extension = multi::index_extension;
-//	using std::tuple<index_extension>::tuple;
-
-	// seems to be needed by icpc 20.x
-	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax (compatible with std::vector(int) constructor
-	constexpr extensions_t(multi::size_t size) : impl_{multi::index_extension{0, size}} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-
-	template<class T1>
-	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
-	constexpr extensions_t(std::tuple<T1> e) : impl_{std::move(e)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-
-	constexpr extensions_t(index_extension e1) : impl_{e1} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : allow terse syntax
-	constexpr explicit extensions_t(base_ t) : impl_{std::move(t)} {}
-
-	extensions_t() = default;
-	constexpr auto base() const -> base_ const& {return impl_;}
-
-	auto operator==(extensions_t const& other) const -> bool {return impl_ == other.impl_;}
-	auto operator!=(extensions_t const& other) const -> bool {return impl_ != other.impl_;}
-
-	constexpr auto num_elements() const -> size_type {return std::get<0>(impl_).size();}
-	constexpr auto from_linear(nelems_type n) const {
-		assert(n < num_elements());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
-		return std::tuple<multi::index>{n};
-	}
-	friend constexpr auto operator%(nelems_type n, extensions_t const& s) -> std::tuple<multi::index>{return s.from_linear(n);}
-	friend auto intersection(extensions_t const& x1, extensions_t const& x2){
-		return extensions_t({ intersection(std::get<0>(x1.impl_), std::get<0>(x2.impl_)) });
-	}
-	template<class Ar>
-	void serialize(Ar& ar, unsigned /*version*/) {
-		ar & multi::archive_traits<Ar>::make_nvp("extension", std::get<0>(impl_));
-	}
-};
-
 template<dimensionality_type D>
-struct extensions_t {  // : std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename extensions_t<D-1>::base_>()))>
+struct extensions_t {
 	using base_ = std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename extensions_t<D-1>::base_>()))>;
 
  private:
@@ -272,6 +181,85 @@ struct extensions_t {  // : std::decay_t<decltype(std::tuple_cat(std::make_tuple
 				intersection( extensions_t<D-1>{detail::tuple_tail(x1.base())}, extensions_t<D-1>{detail::tuple_tail(x2.base())} ).base()
 			)
 		};
+	}
+};
+
+template<> struct extensions_t<0> {
+	using base_ = std::tuple<>;
+
+ private:
+	base_ impl_;
+
+ public:
+	static constexpr dimensionality_type dimensionality = 0;  // TODO(correaa): consider deprecation
+
+	using rank = std::integral_constant<dimensionality_type, 0>;
+
+	using nelems_type = index;
+//	using std::tuple<>::tuple;
+
+	explicit extensions_t(std::tuple<> const& t) : impl_{t} {}
+
+	extensions_t() = default;
+
+	constexpr auto base() const -> base_ const& {return impl_;}
+
+	template<class Archive> void serialize(Archive&/*ar*/, unsigned /*version*/) {}
+
+	static constexpr auto num_elements() -> size_type {return 1;}
+
+	static constexpr auto from_linear(nelems_type n) -> std::tuple<> {
+		assert(n < num_elements()); (void)n;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : constexpr function
+		return {};
+	}
+	friend constexpr auto operator%(nelems_type n, extensions_t const& /*s*/) -> std::tuple<>{return /*s.*/from_linear(n);}
+	friend constexpr auto intersection(extensions_t const& /*x1*/, extensions_t const& /*x2*/) -> extensions_t{return {};}
+
+	constexpr auto operator==(extensions_t const& /*other*/) -> bool {return true ;}
+	constexpr auto operator!=(extensions_t const& /*other*/) -> bool {return false;}
+};
+
+template<> struct extensions_t<1> {
+	using base_ = std::tuple<multi::index_extension>;
+
+ private:
+	base_ impl_;
+
+ public:
+	static constexpr auto dimensionality = 1;  // TODO(correaa): consider deprecation
+
+	using nelems_type = index;
+	using index_extension = multi::index_extension;
+
+	// seems to be needed by icpc 20.x
+	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax (compatible with std::vector(int) constructor
+	constexpr extensions_t(multi::size_t size) : impl_{multi::index_extension{0, size}} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+
+	template<class T1>
+	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
+	constexpr extensions_t(std::tuple<T1> e) : impl_{std::move(e)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+
+	constexpr extensions_t(index_extension e1) : impl_{e1} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : allow terse syntax
+	constexpr explicit extensions_t(base_ t) : impl_{std::move(t)} {}
+
+	extensions_t() = default;
+	constexpr auto base() const -> base_ const& {return impl_;}
+
+	auto operator==(extensions_t const& other) const -> bool {return impl_ == other.impl_;}
+	auto operator!=(extensions_t const& other) const -> bool {return impl_ != other.impl_;}
+
+	constexpr auto num_elements() const -> size_type {return std::get<0>(impl_).size();}
+	constexpr auto from_linear(nelems_type n) const {
+		assert(n < num_elements());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
+		return std::tuple<multi::index>{n};
+	}
+	friend constexpr auto operator%(nelems_type n, extensions_t const& s) -> std::tuple<multi::index>{return s.from_linear(n);}
+	friend auto intersection(extensions_t const& x1, extensions_t const& x2){
+		return extensions_t({ intersection(std::get<0>(x1.impl_), std::get<0>(x2.impl_)) });
+	}
+	template<class Ar>
+	void serialize(Ar& ar, unsigned /*version*/) {
+		ar & multi::archive_traits<Ar>::make_nvp("extension", std::get<0>(impl_));
 	}
 };
 
