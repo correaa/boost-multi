@@ -96,10 +96,8 @@ template<> struct extensions_t<0> {  // : std::tuple<>{
 
 	extensions_t() = default;
 
-	NODISCARD("") constexpr auto base() const -> base_ const& {return impl_;}
-	friend constexpr auto base(extensions_t const& s) -> decltype(auto) {return s.base();}
+	constexpr auto base() const -> base_ const& {return impl_;}
 
-//  constexpr operator nelems_type() const {return 1;}
 	template<class Archive> void serialize(Archive&/*ar*/, unsigned /*version*/) {}
 
 	static constexpr auto num_elements() -> size_type {return 1;}
@@ -132,6 +130,10 @@ template<> struct extensions_t<1>  // : std::tuple<multi::index_extension>
 	// seems to be needed by icpc 20.x
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax (compatible with std::vector(int) constructor
 	constexpr extensions_t(multi::size_t size) : impl_{multi::index_extension{0, size}} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+
+	template<class T1>
+	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
+	constexpr extensions_t(std::tuple<T1> e) : impl_{std::move(e)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 	constexpr extensions_t(index_extension e1) : impl_{e1} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : allow terse syntax
 	constexpr explicit extensions_t(base_ t) : impl_{std::move(t)} {}
