@@ -125,7 +125,6 @@ struct extensions_t {
 	: extensions_t(std::tuple_cat(std::make_tuple(ie), other.base())) {}
 
 	       NODISCARD("") constexpr auto base()            const&    -> base_ const& {return impl_;}
-	friend               constexpr auto base(extensions_t const& s) -> base_ const& {return s.base();}
 
 	friend constexpr auto operator*(index_extension const& ie, extensions_t const& self) -> extensions_t<D + 1> {
 		return extensions_t<D + 1>{std::tuple_cat(std::make_tuple(ie), self.base())};
@@ -209,8 +208,8 @@ template<> struct extensions_t<0> {
 		assert(n < num_elements()); (void)n;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : constexpr function
 		return {};
 	}
-	friend constexpr auto operator%(nelems_type n, extensions_t const& /*s*/) -> std::tuple<>{return /*s.*/from_linear(n);}
-	friend constexpr auto intersection(extensions_t const& /*x1*/, extensions_t const& /*x2*/) -> extensions_t{return {};}
+	friend constexpr auto operator%(nelems_type n, extensions_t const& /*s*/) -> std::tuple<> {return /*s.*/from_linear(n);}
+	friend constexpr auto intersection(extensions_t const& /*x1*/, extensions_t const& /*x2*/) -> extensions_t {return {};}
 
 	constexpr auto operator==(extensions_t const& /*other*/) -> bool {return true ;}
 	constexpr auto operator!=(extensions_t const& /*other*/) -> bool {return false;}
@@ -226,7 +225,6 @@ template<> struct extensions_t<1> {
 	static constexpr auto dimensionality = 1;  // TODO(correaa): consider deprecation
 
 	using nelems_type = index;
-	using index_extension = multi::index_extension;
 
 	// seems to be needed by icpc 20.x
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax (compatible with std::vector(int) constructor
@@ -236,7 +234,7 @@ template<> struct extensions_t<1> {
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
 	constexpr extensions_t(std::tuple<T1> e) : impl_{std::move(e)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
-	constexpr extensions_t(index_extension e1) : impl_{e1} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : allow terse syntax
+	constexpr extensions_t(multi::index_extension e1) : impl_{e1} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : allow terse syntax
 	constexpr explicit extensions_t(base_ t) : impl_{std::move(t)} {}
 
 	extensions_t() = default;
