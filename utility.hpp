@@ -404,7 +404,7 @@ constexpr auto size(std::array<T, N> const& /*arr*/) {
 
 template<class T, std::size_t N>
 constexpr auto extensions(std::array<T, N> const& /*arr*/) {
-	return multi::extensions_t<1>{{0, N}};
+	return multi::extensions_t<1>({multi::index_extension(0, N)});
 }
 
 template<class T, std::size_t N, std::size_t M>

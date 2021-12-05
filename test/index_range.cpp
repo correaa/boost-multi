@@ -10,8 +10,11 @@
 #include <boost/hana/integral_constant.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 
+#include <boost/serialization/nvp.hpp>
+
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
+
 
 #include<numeric>  // for accumulate
 

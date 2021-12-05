@@ -3,9 +3,16 @@
 
 #ifndef MULTI_DETAIL_SERIALIZATION_HPP
 
-#include "../utility.hpp"
-
 namespace boost {
+namespace archive {
+namespace detail {
+
+template<class Ar> struct common_iarchive;
+template<class Ar> struct common_oarchive;
+
+}  // end namespace detail
+}  // end namespace archive
+
 namespace serialization {
 
 template<class T> class  nvp;            // dependency "in name only"
@@ -19,53 +26,46 @@ class access;
 }  // end namespace serialization
 }  // end namespace boost
 
+namespace cereal {
+
+template<class ArchiveType, std::uint32_t Flags> struct OutputArchive;
+template<class ArchiveType, std::uint32_t Flags> struct InputArchive;
+
+template<class T> class NameValuePair;  // dependency "in name only", if you get an error here you many need to #include <cereal/archives/xml.hpp> at some point
+
+}  // end namespace cereal
+
 namespace boost {
 namespace multi {
 
-template<class Ar, typename = decltype(typename Ar::template nvp<int>(std::declval<char const*>(), std::declval<int&>()))>
-auto has_nvp_aux(Ar const&) -> std::true_type ;
-auto has_nvp_aux(...      ) -> std::false_type;
-
-template<class Ar, typename = decltype(typename Ar::template array_wrapper<int>(std::declval<int*>(), std::declval<std::size_t>()))>
-auto has_array_wrapper_aux(Ar const&) -> std::true_type ;
-auto has_array_wrapper_aux(...      ) -> std::false_type;
-
-template<class Ar, typename = decltype(typename Ar::binary_object(std::declval<const void*>(), std::declval<std::size_t>()))>
-auto has_binary_object_aux(Ar const&) -> std::true_type ;
-auto has_binary_object_aux(...      ) -> std::false_type;
-
-template<class Ar,
-	typename = decltype(has_nvp_aux          (std::declval<Ar>())),
-	typename = decltype(has_array_wrapper_aux(std::declval<Ar>())),
-	typename = decltype(has_binary_object_aux(std::declval<Ar>()))
->
-struct archive_traits;
-
-template<class Ar>
-struct archive_traits<Ar, std::true_type , std::true_type, std::true_type> {
-	template<class T> using nvp           = typename Ar::template nvp          <T>;
-	template<class T> using array_wrapper = typename Ar::template array_wrapper<T>;
-	                  using binary_object = typename Ar::binary_object;
-	template<class T> inline static auto make_nvp  (char const* n, T& v) noexcept -> const nvp          <T> {return nvp          <T>{n, v};}            // NOLINT(readability-const-return-type) : original boost declaration
-	template<class T> inline static auto make_array(T* t, std::size_t s) noexcept -> const array_wrapper<T> {return array_wrapper<T>{t, s};}            // NOLINT(readability-const-return-type) : original boost declaration
-                      inline static auto make_binary_object(const void* t, std::size_t s) noexcept -> const binary_object {return binary_object{t, s};}  // NOLINT(readability-const-return-type) : original boost declaration
+template<class Ar, class Enable = void>
+struct archive_traits {
+	template<class T>
+	inline static auto make_nvp  (char const* /*n*/, T&& v) noexcept {return std::forward<T>(v);}
 };
 
 template<class Ar>
-struct archive_traits<Ar, std::false_type, std::false_type, std::false_type> {
+struct archive_traits<Ar, typename std::enable_if<std::is_base_of<boost::archive::detail::common_oarchive<Ar>, Ar>::value or std::is_base_of<boost::archive::detail::common_iarchive<Ar>, Ar>::value>::type> {
 	template<class T> using nvp           = boost::serialization::nvp          <T>;
 	template<class T> using array_wrapper = boost::serialization::array_wrapper<T>;
 	template<class T> struct binary_object_t {using type = boost::serialization::binary_object;};
-	template<class T> inline static auto make_nvp  (char const* n, T& v) noexcept -> const nvp          <T> {return nvp          <T>{n, v};}  // NOLINT(readability-const-return-type) : original boost declaration
-	template<class T> inline static auto make_array(T* t, std::size_t s) noexcept -> const array_wrapper<T> {return array_wrapper<T>{t, s};}  // NOLINT(readability-const-return-type) : original boost declaration
-	template<class T = void> inline static auto make_binary_object(const void* t, std::size_t s) noexcept -> const typename binary_object_t<T>::type {return typename binary_object_t<T>::type(t, s); }  // if you get an error here you need to eventually `#include<boost/serialization/binary_object.hpp>`// NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) : original boost declaration
+	template<class T>        inline static auto make_nvp          (char const* n, T& v               ) noexcept -> const nvp          <T> {return nvp          <T>{n, v};}  // NOLINT(readability-const-return-type) : original boost declaration
+	template<class T>        inline static auto make_array        (               T* t, std::size_t s) noexcept -> const array_wrapper<T> {return array_wrapper<T>{t, s};}  // NOLINT(readability-const-return-type) : original boost declaration
+	template<class T = void> inline static auto make_binary_object(      const void* t, std::size_t s) noexcept -> const typename binary_object_t<T>::type {return typename binary_object_t<T>::type(t, s); }  // if you get an error here you need to eventually `#include<boost/serialization/binary_object.hpp>`// NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) : original boost declaration
+};
+
+
+template<class Ar>
+struct archive_traits<Ar, typename std::enable_if<
+		   std::is_base_of<cereal::OutputArchive<Ar, 0>, Ar>::value or std::is_base_of<cereal::OutputArchive<Ar, 1>, Ar>::value
+		or std::is_base_of<cereal::InputArchive <Ar, 0>, Ar>::value or std::is_base_of<cereal::InputArchive <Ar, 1>, Ar>::value
+	>::type> {
+	template<class T>
+	inline static auto make_nvp  (char const* n, T&& v) noexcept {return cereal::NameValuePair<T>{n, v};}  // if you get an error here you many need to #include <cereal/archives/xml.hpp> at some point
 };
 
 }  // end namespace multi
 }  // end namespace boost
-
-
-// serialization of array
 
 namespace boost {
 

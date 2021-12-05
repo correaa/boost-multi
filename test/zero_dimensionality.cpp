@@ -82,10 +82,10 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality_part2) {
 		double d3 = 3.;
 		BOOST_REQUIRE(( *multi::array_ptr<double, 0>(&d3, {}) == 3. ));
 
-		#if defined(__cpp_deduction_guides)
-		BOOST_REQUIRE(( *multi::array_ptr {&d3, multi::extensions_t<0>{}} == 3. ));
-		BOOST_REQUIRE((  multi::array_ptr {&d3, multi::extensions_t<0>{}} == multi::array_ptr<double, 0>(&d3, {}) ));
-		#endif
+//		#if defined(__cpp_deduction_guides)
+//		BOOST_REQUIRE(( *multi::array_ptr {&d3, multi::extensions_t<0>{}} == 3. ));
+//		BOOST_REQUIRE((  multi::array_ptr {&d3, multi::extensions_t<0>{}} == multi::array_ptr<double, 0>(&d3, {}) ));
+//		#endif
 	}
 }
 
