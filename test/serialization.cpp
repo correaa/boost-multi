@@ -10,7 +10,17 @@
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 
-#include <boost/serialization/binary_object.hpp>
+#if 1  // 0 to test cereal
+	using OArchive = boost::archive::xml_oarchive;
+	using IArchive = boost::archive::xml_iarchive;
+
+#else
+	#include <cereal/archives/binary.hpp>
+	#include <cereal/archives/xml.hpp>
+	using OArchive = cereal::BinaryOutputArchive;
+	using IArchive = cereal::BinaryInputArchive;
+
+#endif
 
 #include <fstream>
 #include <numeric>
@@ -19,6 +29,26 @@
 #include <boost/multi_array.hpp>
 
 namespace multi = boost::multi;
+
+BOOST_AUTO_TEST_CASE(extensions_serialization) {
+
+	multi::array<double, 2> arr({10, 10});
+	auto const x = arr.extensions();
+	std::stringstream ss;
+	{
+		OArchive xoa{ss};
+		xoa<< multi::archive_traits<OArchive>::make_nvp("x", x);
+	}
+	std::ofstream ofs{"extensions_serialization.bin"}; ofs<< ss.str();
+	{
+		multi::extensions_t<2> y;
+		{
+			IArchive xia{ss};
+			xia>> multi::archive_traits<IArchive>::make_nvp("x", y);;
+		}
+		BOOST_REQUIRE(x == y);
+	}
+}
 
 BOOST_AUTO_TEST_CASE(carray_serialization) {
 	double const A[3][3] = {{0., 1., 2.}, {3., 4., 5.}, {6., 7., 8.}};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy types

@@ -11,7 +11,6 @@
 
 #include "../detail/operators.hpp"
 
-
 #include <algorithm>    // for algorithm
 #include <limits>
 #include <tuple>        // for apply
@@ -148,10 +147,8 @@ struct extensions_t {
  private:
 	template<class Archive, std::size_t... I>
 	void serialize_impl(Archive& ar, std::index_sequence<I...> /*012*/) {
-//  //  using boost::serialization::make_nvp;
-//  //  (void)std::initializer_list<int>{(ar & make_nvp("extension", std::get<I>(*this)),0)...};
-		(void)std::initializer_list<unsigned>{(ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<I>(impl_)), 0U)...};
-//  //  (void)std::initializer_list<int>{(ar & boost::serialization::nvp<std::remove_reference_t<decltype(std::get<I>(*this))> >{"extension", std::get<I>(*this)},0)...};
+		(void)std::initializer_list<unsigned>{(ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<I>(impl_)) , 0U)...};
+//		(void)std::initializer_list<unsigned>{(ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<I>(impl_)) , 0U)...};
 	}
 
  public:
