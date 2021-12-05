@@ -124,7 +124,7 @@ struct extensions_t {
 	constexpr extensions_t(index_extension const& ie, typename layout_t<D-1>::extensions_type const& other)
 	: extensions_t(std::tuple_cat(std::make_tuple(ie), other.base())) {}
 
-	       NODISCARD("") constexpr auto base()            const&    -> base_ const& {return impl_;}
+	constexpr auto base()            const&    -> base_ const& {return impl_;}
 
 	friend constexpr auto operator*(index_extension const& ie, extensions_t const& self) -> extensions_t<D + 1> {
 		return extensions_t<D + 1>{std::tuple_cat(std::make_tuple(ie), self.base())};
