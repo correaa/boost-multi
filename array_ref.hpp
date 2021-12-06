@@ -1288,11 +1288,6 @@ struct basic_array
 	}
 
 	template<class Archive>
-	friend auto operator>>(Archive& ar, basic_array&& self)  // this is for compatability with Archive type
-	->decltype(ar>> self) {
-		return ar>> self; }
-
-	template<class Archive>
 	auto serialize(Archive& ar, unsigned int /*version*/) {
 		using AT = multi::archive_traits<Archive>;
 		std::for_each(this->begin(), this->end(), [&](auto&& item){ar & AT    ::make_nvp("item", item);});
@@ -1469,11 +1464,6 @@ struct basic_array<T, 0, ElementPtr, Layout>
 	constexpr operator element_ref ()                            && {return *(this->base_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 	constexpr operator element_ref ()                             & {return *(this->base_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 	constexpr operator element_cref()                        const& {return *(this->base_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
-
-	template<class Archive>
-	friend auto operator>>(Archive& ar, basic_array&& self)  // this is for compatability with Archive type
-	->decltype(ar>> self) {
-		return ar>> self; }
 
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int /*version*/) {
