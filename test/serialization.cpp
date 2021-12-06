@@ -7,7 +7,7 @@
 
 #include "../detail/serialization.hpp"
 
-#if 1  // 1 to test cereal
+#if 0  // 1 to test cereal
 	#include <cereal/cereal.hpp>
 
 	#include <cereal/archives/binary.hpp>
@@ -301,6 +301,23 @@ BOOST_AUTO_TEST_CASE(array_serialization_3D_inplace) {
 	BOOST_REQUIRE( extensions(arr2) == extensions(arr) );
 	BOOST_REQUIRE( arr2 == arr );
 }
+
+BOOST_AUTO_TEST_CASE(array_serialization_2D_inplace_file) {
+	multi::array<double, 2> arr({2, 2}, 99.);
+
+	{
+		std::ofstream ofs{"file.xml"};
+		XOArchive{ofs}<< make_nvp("arr", arr);
+	}  // flush the file stream
+
+	multi::array<double, 2> arr2;
+	std::ifstream ifs{"file.xml"};
+	XIArchive{ifs}>> make_nvp("arr", arr2);
+
+	BOOST_REQUIRE( extensions(arr2) == extensions(arr) );
+	BOOST_REQUIRE( arr2 == arr );
+}
+
 
 BOOST_AUTO_TEST_CASE(array_serialization_3D_part_binary) {
 	multi::array<double, 3> arr({10, 10, 10}, 0.);
