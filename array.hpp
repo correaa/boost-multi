@@ -755,14 +755,12 @@ struct array : static_array<T, D, Alloc>{
 	void serialize(Archive& ar, const unsigned int version) {  // NOLINT(fuchsia-default-arguments-declarations) version is used for threshold of big vs small data
 		using AT = multi::archive_traits<Archive>;
 		auto extensions = this->extensions();
-		{
-			ar &                   AT::make_nvp("extensions", extensions);
-		//  ar & boost::serialization::make_nvp("extensions", extensions);
-		//  ar &        cereal       ::make_nvp("extensions", extensions);
-		//  ar &        BOOST_SERIALIZATION_NVP              (extensions);
-		//  ar &                     CEREAL_NVP              (extensions);
-		//  ar &                                              extensions ;
-		}
+		ar &                   AT::make_nvp("extensions", extensions);
+	//  ar & boost::serialization::make_nvp("extensions", extensions);
+	//  ar &        cereal       ::make_nvp("extensions", extensions);
+	//  ar &        BOOST_SERIALIZATION_NVP              (extensions);
+	//  ar &                     CEREAL_NVP              (extensions);
+	//  ar &                                              extensions ;
 		if(extensions != this->extensions()) {clear(); this->reextent(extensions);}
 		static_::serialize(ar, version);
 	}
