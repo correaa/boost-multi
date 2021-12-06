@@ -2,6 +2,9 @@
 // Copyright 2018-2021 Alfredo A. Correa
 
 #ifndef MULTI_DETAIL_SERIALIZATION_HPP
+#define MULTI_DETAIL_SERIALIZATION_HPP
+
+#include<algorithm>  // for_each
 
 namespace boost {
 namespace archive {
@@ -21,7 +24,8 @@ template<class T> class  array_wrapper;  // dependency "in name only"
 
 template<typename T> struct version;
 
-class access;
+//template<class Archive, class T>//, std::enable_if_t<std::is_same<T, std::decay_t<T>>{}, int> =0>
+//auto operator>>(Archive& ar, T&& t) -> Archive& {return ar>> t;}
 
 }  // end namespace serialization
 }  // end namespace boost
@@ -49,20 +53,55 @@ struct archive_traits<Ar, typename std::enable_if<std::is_base_of<boost::archive
 	template<class T> using nvp           = boost::serialization::nvp          <T>;
 	template<class T> using array_wrapper = boost::serialization::array_wrapper<T>;
 	template<class T> struct binary_object_t {using type = boost::serialization::binary_object;};
-	template<class T>        inline static auto make_nvp          (char const* n, T& v               ) noexcept -> const nvp          <T> {return nvp          <T>{n, v};}  // NOLINT(readability-const-return-type) : original boost declaration
+	template<class T>        inline static auto make_nvp          (char const* n, T&  v              ) noexcept -> const nvp          <T> {return nvp          <T>{n, v};}  // NOLINT(readability-const-return-type) : original boost declaration
+	template<class T>        inline static auto make_nvp          (char const* n, T&& v              ) noexcept -> const nvp          <T> {return nvp          <T>{n, v};}  // NOLINT(readability-const-return-type) : original boost declaration
 	template<class T>        inline static auto make_array        (               T* t, std::size_t s) noexcept -> const array_wrapper<T> {return array_wrapper<T>{t, s};}  // NOLINT(readability-const-return-type) : original boost declaration
 	template<class T = void> inline static auto make_binary_object(      const void* t, std::size_t s) noexcept -> const typename binary_object_t<T>::type {return typename binary_object_t<T>::type(t, s); }  // if you get an error here you need to eventually `#include<boost/serialization/binary_object.hpp>`// NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) : original boost declaration
 };
 
-
+#if 1
 template<class Ar>
 struct archive_traits<Ar, typename std::enable_if<
 		   std::is_base_of<cereal::OutputArchive<Ar, 0>, Ar>::value or std::is_base_of<cereal::OutputArchive<Ar, 1>, Ar>::value
 		or std::is_base_of<cereal::InputArchive <Ar, 0>, Ar>::value or std::is_base_of<cereal::InputArchive <Ar, 1>, Ar>::value
 	>::type> {
+
+	using self_t = archive_traits<Ar, typename std::enable_if<
+		   std::is_base_of<cereal::OutputArchive<Ar, 0>, Ar>::value or std::is_base_of<cereal::OutputArchive<Ar, 1>, Ar>::value
+		or std::is_base_of<cereal::InputArchive <Ar, 0>, Ar>::value or std::is_base_of<cereal::InputArchive <Ar, 1>, Ar>::value
+	>::type>;
+
 	template<class T>
-	inline static auto make_nvp  (char const* n, T&& v) noexcept {return cereal::NameValuePair<T>{n, v};}  // if you get an error here you many need to #include <cereal/archives/xml.hpp> at some point
+	inline static auto make_nvp  (char const* n, T&& v) noexcept {return cereal::NameValuePair<T&>{n, v};}  // if you get an error here you many need to #include <cereal/archives/xml.hpp> at some point
+	template<class T>
+	inline static auto make_nvp  (char const* n, T& v) noexcept {return cereal::NameValuePair<T&>{n, v};}  // if you get an error here you many need to #include <cereal/archives/xml.hpp> at some point
+
+	template<class T>
+	struct array_wrapper {
+		T* p_;
+		std::size_t c_;
+		template<class Archive>
+		void serialize(Archive& ar, const unsigned int /*version*/) {
+			for(std::size_t i = 0; i != c_; ++i) {
+				auto& item = p_[i];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+				ar &                                        make_nvp("item", item);  // "item" is the name used by Boost.Serialization XML make_array
+			//	ar & boost::multi::archive_traits<Archive>::make_nvp("element", element);
+			//	ar &                         cereal       ::make_nvp("element", element);
+			//	ar &                                      CEREAL_NVP           (element);
+			//	ar &                                                            element ;
+			}
+		}
+	};
+
+	template<class T>
+	inline static auto make_array(T* p, std::size_t count) -> array_wrapper<T> {return array_wrapper<T>{p, count};}
+
+	template<class T>
+	inline static auto make_nvp  (char const* n, array_wrapper<T>&& v) noexcept {return make_nvp(n, v);}
 };
+
+//template<class Ar, class T> auto make_nvp(char const* n, T&& v) -> decltype(auto) {return archive_traits<Ar>::make_nvp(n, std::forward<T>(v));}  // NOLINT(readability-const-return-type)
+#endif
 
 }  // end namespace multi
 }  // end namespace boost

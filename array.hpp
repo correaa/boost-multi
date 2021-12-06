@@ -27,7 +27,7 @@ namespace boost {
 namespace multi {
 
 template<class Allocator>
-struct array_allocator{
+struct array_allocator {
 	using allocator_type = Allocator;
 
  private:
@@ -434,6 +434,11 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	constexpr explicit operator basic_array<typename static_array::value_type, D, typename static_array::element_const_ptr, typename static_array::layout_t>()&{
 		return this->template static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
 	}
+
+	template<class Archive>
+	void serialize(Archive& ar, const unsigned int version) {
+		ref::serialize(ar, version);
+	}
 };
 
 template<class T, class Alloc>
@@ -712,13 +717,8 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	}
 
 	template<class Archive>
-	void serialize(Archive& ar, const unsigned int version) {
-	// auto extensions = this->extensions();
-	// sing boost::serialization::make_nvp;
-	// ar & make_nvp("extensions", extensions);
-	// if(extensions != this->extensions()){clear(); this->reextent(extensions);}
-	// assert(extensions == this->extensions());
-		std::move(*this).ref::serialize(ar, version);
+	void serialize(Archive& ar, const unsigned int version) {  // case D = 0
+		ref::serialize(ar, version);
 	}
 };
 
@@ -751,17 +751,24 @@ struct array : static_array<T, D, Alloc>{
 	//  auto operator&()      & -> array      *{return this;}
 	//  auto operator&() const& -> array const*{return this;}
 
-	template<class Ar, class AT = multi::archive_traits<Ar>>
-	auto serialize(Ar& ar, const unsigned int version) {  // NOLINT(fuchsia-default-arguments-declarations) version is used for threshold of big vs small data
-		auto x = this->extensions();
-		ar & AT::make_nvp("extensions", x);
-		if(x != this->extensions()) {clear(); this->reextent(x);}
-		assert(x == this->extensions());
+	template<class Archive>//, class AT = multi::archive_traits<Ar>>
+	void serialize(Archive& ar, const unsigned int version) {  // NOLINT(fuchsia-default-arguments-declarations) version is used for threshold of big vs small data
+		auto extensions = this->extensions();
+		{
+			ar & multi::archive_traits<Archive>::make_nvp("extensions", extensions);
+		//	ar &           boost::serialization::make_nvp("extensions", extensions);
+		//	ar &                  cereal       ::make_nvp("extensions", extensions);
+		//	ar &                  BOOST_SERIALIZATION_NVP              (extensions);
+		//	ar &                               CEREAL_NVP              (extensions);
+		//	ar &                                                        extensions ; // & AT::make_nvp("extensions", x);
+		}
+		if(extensions != this->extensions()) {clear(); this->reextent(extensions);}
 		static_::serialize(ar, version);
 	}
 
 	using static_::static_;
 	using typename static_::value_type;
+
 	array() = default;
 	array(array const&) = default;
 	auto reshape(typename array::extensions_type x) & -> array& {
