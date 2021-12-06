@@ -598,6 +598,21 @@ The output JSON file of the previous example looks like this.
 }
 ```
 
+Large datasets tend to be serialized much slowly for archives with heavy formatting.
+Here it is a comparison of speeds when (de)serializing a 134 MB 2D array of with random `double`s.
+
+| Archive format (Library)     | file size     | speed (read - write)         | time (read - write)   |
+| ---------------------------- | ------------- | ---------------------------- |-----------------------|
+| JSON (Cereal)                | 684 MB        |   3.9 MB/sec -   8.4 MB/sec  |  32.1 sec - 15.1  sec |
+| XML (Cereal)                 | 612 M         |   2.  MB/sec -   4.  MB/sec  |  56   sec  - 28   sec |
+| XML (Boost)                  | 662 MB        |  11.  MB/sec -  13.  MB/sec  |  11   sec  -  9   sec |
+| Portable Binary (Cereal)     | 134 MB        | 130.  MB/sec - 121.  MB/sec  |  9.7  sec  - 10.6 sec |
+| Text (Boost)                 | 411 MB        |  15.  MB/sec -  16.  MB/sec  |  8.2  sec  - 7.6  sec |
+| Binary (Cereal)              | 134 MB        | 134.4 MB/sec - 126.  MB/sec  |  0.9  sec  -  0.9 sec |
+| Binary (Boost)               | 134 MB        |   5.2 GB/sec -   1.6 GB/sec  |  0.02 sec -   0.1 sec |
+| gzip-XML (Cereal)            | 191 MB        |   2.  MB/sec -   4.  MB/sec  | 61    sec  - 32   sec |
+| gzip-XML (Boost)             | 207 MB        |   8.  MB/sec -   8.  MB/sec  | 16.1  sec  - 15.9 sec |
+
 ## (Polymorphic) Memory Resources
 
 The library is compatible with C++17's polymorphic memory resources (PMR) which allows using preallocated buffers. 
