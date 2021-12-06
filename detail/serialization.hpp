@@ -42,15 +42,15 @@ template<class T> class NameValuePair;  // dependency "in name only", if you get
 namespace boost {
 namespace multi {
 
-//template<class Archive, class MA, std::enable_if_t<std::is_same<MA, std::decay_t<MA>>{} and (MA::dimensionality > -1) , int> =0>
-//auto operator>>(Archive& ar, MA&& self)  // this is for compatability with Archive type
-//->decltype(ar>> self) {
-//	return ar>> self; }
+template<class Archive, class MA, std::enable_if_t<std::is_same<MA, std::decay_t<MA>>{} and (MA::dimensionality > -1) , int> =0>
+auto operator>>(Archive& ar, MA&& self)  // this is for compatability with Archive type
+->decltype(ar>> self) {
+	return ar>> self; }
 
-//template<class Archive, class MA, std::enable_if_t<std::is_same<MA, std::decay_t<MA>>{} and (MA::dimensionality > -1), int> =0>
-//auto operator&(Archive& ar, MA&& self)  // this is for compatability with Archive type
-//->decltype(ar& self) {
-//	return ar& self; }
+template<class Archive, class MA, std::enable_if_t<std::is_same<MA, std::decay_t<MA>>{} and (MA::dimensionality > -1), int> =0>
+auto operator&(Archive& ar, MA&& self)  // this is for compatability with Archive type
+->decltype(ar& self) {
+	return ar& self; }
 
 template<class Ar, class Enable = void>
 struct archive_traits {
