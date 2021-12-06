@@ -2140,7 +2140,7 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
  private:
 	template<class Ar>
 	auto serialize_structured(Ar& ar, const unsigned int version) {
-		basic_array<T, D, ElementPtr>::serialize_helper(ar, version);
+		basic_array<T, D, ElementPtr>::serialize(ar, version);
 	}
 	template<class Archive>
 	auto serialize_flat(Archive& ar, const unsigned int /*version*/) {
