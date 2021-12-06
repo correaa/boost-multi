@@ -1,11 +1,18 @@
 #include <benchmark/benchmark.h>
 #include "../array.hpp"
 
+//#include <cereal/archives/json.hpp>
+//#include <cereal/archives/xml.hpp>
+
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 
+//#include <cereal/archives/portable_binary.hpp>
+
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
+
+//#include <cereal/archives/binary.hpp>
 
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
@@ -41,7 +48,7 @@ void BM_oserialization(benchmark::State& st) {
 	for(auto _  : st) {
 		std::ofstream fs{"file"};
 		Ar xa{fs};
-		xa<< BOOST_SERIALIZATION_NVP(A);
+		xa<< multi::archive_traits<Ar>::make_nvp("A", A);
 		fs.flush();
 		benchmark::DoNotOptimize(A);
 	    benchmark::ClobberMemory();
@@ -58,7 +65,7 @@ void BM_iserialization(benchmark::State& st) {
 	for(auto _  : st) {
 		std::ifstream fs{"file"};
 		Ar xa{fs};
-		xa>> BOOST_SERIALIZATION_NVP(A);
+		xa>> multi::archive_traits<Ar>::make_nvp("A", A);
 		benchmark::DoNotOptimize(A);
 	    benchmark::ClobberMemory();
 	}
@@ -75,6 +82,19 @@ BENCHMARK_TEMPLATE(BM_iserialization, boost::archive::text_iarchive  );
 BENCHMARK_TEMPLATE(BM_oserialization, boost::archive::binary_oarchive);
 BENCHMARK_TEMPLATE(BM_iserialization, boost::archive::binary_iarchive);
 
+//BENCHMARK_TEMPLATE(BM_oserialization, cereal::JSONOutputArchive  );
+//BENCHMARK_TEMPLATE(BM_iserialization, cereal::JSONInputArchive   );
+
+//BENCHMARK_TEMPLATE(BM_oserialization, cereal::XMLOutputArchive  );
+//BENCHMARK_TEMPLATE(BM_iserialization, cereal::XMLInputArchive   );
+
+//BENCHMARK_TEMPLATE(BM_oserialization, cereal::PortableBinaryOutputArchive  );
+//BENCHMARK_TEMPLATE(BM_iserialization, cereal::PortableBinaryInputArchive   );
+
+//BENCHMARK_TEMPLATE(BM_oserialization, cereal::BinaryOutputArchive  );
+//BENCHMARK_TEMPLATE(BM_iserialization, cereal::BinaryInputArchive   );
+
+template<class Ar>
 void BM_gzip_oserialization(benchmark::State& st) {
 	auto const A = []{
 	    std::random_device rd;
@@ -93,16 +113,16 @@ void BM_gzip_oserialization(benchmark::State& st) {
 		boost::iostreams::filtering_ostream out;
 		out.push(boost::iostreams::gzip_compressor{boost::iostreams::zlib::best_speed});
 		out.push(ofs);
-		boost::archive::xml_oarchive xa(out);
-		xa<< BOOST_SERIALIZATION_NVP(A);
+		Ar xa(out);
+		xa<< multi::archive_traits<Ar>::make_nvp("A", A);
 		benchmark::DoNotOptimize(A);
 	    benchmark::ClobberMemory();
 	}
 	st.SetBytesProcessed(st.iterations()*A.num_elements()*sizeof(double));
 	st.SetItemsProcessed(st.iterations()*A.num_elements());
 }
-BENCHMARK(BM_gzip_oserialization);
 
+template<class Ar>
 void BM_gzip_iserialization(benchmark::State& st) {
 	multi::array<double, 4> A({N, N, N, N});
 
@@ -112,14 +132,19 @@ void BM_gzip_iserialization(benchmark::State& st) {
 		boost::iostreams::filtering_istream in;
 		in.push(boost::iostreams::gzip_decompressor{});
 		in.push(ifs);
-		boost::archive::xml_iarchive xa(in);
-		xa>> BOOST_SERIALIZATION_NVP(A);
+		Ar xa(in);
+		xa>> multi::archive_traits<Ar>::make_nvp("A", A);
 		benchmark::DoNotOptimize(A);
 	    benchmark::ClobberMemory();
 	}
 	st.SetBytesProcessed(st.iterations()*A.num_elements()*sizeof(double));
 	st.SetItemsProcessed(st.iterations()*A.num_elements());
 }
-BENCHMARK(BM_gzip_iserialization);
+
+//BENCHMARK_TEMPLATE(BM_gzip_oserialization, cereal::XMLOutputArchive);
+//BENCHMARK_TEMPLATE(BM_gzip_iserialization, cereal::XMLInputArchive);
+
+BENCHMARK_TEMPLATE(BM_gzip_oserialization, boost::archive::xml_oarchive);
+BENCHMARK_TEMPLATE(BM_gzip_iserialization, boost::archive::xml_iarchive);
 
 BENCHMARK_MAIN();
