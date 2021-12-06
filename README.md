@@ -507,16 +507,16 @@ Along with STL itself, the library tries to interact with other existing quality
 
 The capability of serializing arrays is important to save data to disk for later use and also to communicate values via streams or networks (including MPI).
 The C++ language does not give any facilities for serialization and unfortunately the standard library doesn't either.
+
 However there are a few libraries that offer a certain common protocol for serialization,
 such as [Boost.Serialization](https://www.boost.org/doc/libs/1_76_0/libs/serialization/doc/index.html) and [Cereal](https://uscilab.github.io/cereal/).
-
-This library is compatible with both libraries, and yet it doesn't have a dependency on them.
+This library is compatible with both of them, and yet it doesn't have a dependency on them.
 The user can choose one or the other, or none if serialization is not needed.
 
 Here it is a small implementation of save and load functions for array to JSON format with Cereal.
 The example can be easily adapted to other formats or libries (XML with Boost.Serialization are commented on the right).
 
-```
+```cpp
 #include <multi/array.hpp>  // our library
 
 #include<fstream>  // saving to files in example
@@ -550,12 +550,14 @@ int main() {
 ```
 
 These templated functions work for any dimension and element type (as long as it is serializable in itself; all basic types are serializable by default).
-However note that it is resposibility of the use to make sure that data is serialized and deserialized into the same type and also assuming the same format.
+However note that it is resposibility of the user to make sure that data is serialized and deserialized into the same type and also assuming the same format.
 This is because the underlying serialization library only do minimal consistency checks for efficiency reasons.
-Criptic errors and crashes can occurr of libraries, file formats or C++ types are mixed between writes and reads.
+Criptic errors and crashes can occurr if serialization libraries, file formats or C++ types are mixed between writes and reads.
+Serialization is a relatively low level feature for which efficiency and economy of bytes is priority.
+On top of serialization checks can be added by the user before and after loading a file.
 
 References to subarrays can be also serialized, however, in such case size information is not saved.
-The reason is that references cannot be resized if there is size mismatch and serialization only saves minimal information.
+The reason is that references to subarrays cannot be resized in their number of elements if there is size mismatch during deserialization.
 
 The output JSON file of the previous example looks like this.
 (The XML would have a similar structure.)
