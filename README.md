@@ -8,12 +8,12 @@
 _© Alfredo A. Correa, 2018-2021_
 
 `Multi` provides multidimensional array access to contiguous or regularly contiguous memory (or ranges).
-It shares the goals of [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html), 
+It shares the goals of [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html),
 although the code is completely independent and the syntax has slight differences or has been extended.
-`Multi` and `Boost.MultiArray` types can be used interchangeably for the most part, they differ in the semantics of reference and value types. 
+`Multi` and `Boost.MultiArray` types can be used interchangeably for the most part, they differ in the semantics of reference and value types.
 
 Multi aims to simplify the semantics of Boost.MultiArray and make it more compatible with the Standard (STL) Algorithms and special memory.
-It requires C++14. 
+It requires C++14.
 
 Some features:
 
@@ -124,13 +124,13 @@ We create a static C-array of `double`s, and refer to it via a bidimensional arr
 ```cpp
 	#include "../array_ref.hpp"
 	#include "../array.hpp"
-	
+
 	#include<algorithm> // for sort
 	#include<iostream> // for print
-	
+
 	namespace multi = boost::multi;
 	using std::cout; using std::cerr;
-	
+
 	int main(){
 		double d2D[4][5] = {
 			{150, 16, 17, 18, 19},
@@ -252,22 +252,24 @@ Accessing arrays by iterators (`begin`/`end`) enables the use of many iterator b
 
 `cbegin/cend(A)` (or equivalently `A.cbegin/cend()`) gives read-only iterators.
 
-For example in three dimensional array,
+For example in a three dimensional array,
 
-	(cbegin(A)+1)->operator[](1).begin()[0] = 342.4; //error, read-only
-	(begin(A)+1)->operator[](1).begin()[0] = 342.4; // assigns to A[1][1][0]
-	assert( (begin(A)+1)->operator[](1).begin()[0] == 342.4 );
+```cpp
+	(cbegin(A)+1)->operator[](1).begin()[0] = 342.4;  // error, read-only
+	( begin(A)+1)->operator[](1).begin()[0] = 342.4;  // assigns to A[1][1][0]
+	assert( ( begin(A)+1)->operator[](1).begin()[0] == 342.4 );
+```
 
 As an example, this function allows printing arrays of arbitrary dimension into a linear comma-separated form.
 
 ```cpp
 void print(double const& d){cout<<d;};
 template<class MultiArray> 
-void print(MultiArray const& ma){
+void print(MultiArray const& ma) {
 	cout<<"{";
-	if(not ma.empty()){
+	if(not ma.empty()) {
 		print(*cbegin(ma));
-		std::for_each(cbegin(ma)+1, cend(ma), [](auto&& e){cout<<","; print(e);});
+		std::for_each(cbegin(ma)+1, cend(ma), [](auto&& e) {cout<<","; print(e);});
 	}
 	cout<<"}";
 }
@@ -280,17 +282,23 @@ print(A);
 Except for those corresponding to the one-dimensional case, derreferencing iterators generally produce proxy-reference objects. 
 Therefore this is not allowed:
 
-    auto row = *begin(A); // compile error 
+```cpp
+auto row = *begin(A); // compile error
+```
 
 This because `row` doesn't have the expected value semantics, and didn't produce any data copy.
 However this express the intention better
 
-    decltype(A)::value_type row = *begin(A); // there is a real copy.
+```cpp
+decltype(A)::value_type row = *begin(A); // there is a real copy.
+```
 
 In my experience, however, this produces a more consistent idiom to hold references without copying elements.
 
-    auto const& crow = *cbegin(A); // same as decltype(A)::const_reference crow = *cbegin(A);
-    auto&&       row = * begin(A); // same as decltype(A)::      reference  row = * begin(A);
+```cpp
+auto const& crow = *cbegin(A); // same as decltype(A)::const_reference crow = *cbegin(A);
+auto&&       row = * begin(A); // same as decltype(A)::      reference  row = * begin(A);
+```
 
 ## Indexing
 
