@@ -18,14 +18,13 @@ It requires C++14.
 Some features:
 
 * Arbitrary pointer types (minimal requirements)
-* Simplified implementation (~1200 lines)
+* Simplified implementation (~4000 lines)
 * Fast access of subarrays (view) types
 * Value semantics of multi-dimensional array container
 * Better semantics of subarray (view) types
 * Interoperability with other libraries, STL, ranges, 
 
 (Do not confuse this library with Boost.MultiArray or Boost.MultiIndex.)
-
 
 ## Contents
 [[_TOC_]]
@@ -276,7 +275,9 @@ void print(MultiArray const& ma) {
 ...
 print(A);
 ```
+> ```
 > {{{1.2,1.1},{2.4,1}},{{11.2,3},{34.4,4}},{{15.2,99},{32.4,2}}}
+> ```
 
 
 Except for those corresponding to the one-dimensional case, derreferencing iterators generally produce proxy-reference objects. 
@@ -698,7 +699,7 @@ int main(){
 ## TotalView
 
 TotalView visual debugger (commercial) can display arrays in human-readable form (for simple types, like `double` or `std::complex`).
-To use it, simply `#include "multi/adaptors/totalview.hpp"` and link to the TotalView libraries, compile and run the code with the debugger.
+To use it, simply `#include "multi/adaptors/totalview.hpp"` and link to the TotalView libraries, compile and run the code with the TotalView debugger.
 
 # Technical points
 
