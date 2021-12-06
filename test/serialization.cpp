@@ -7,7 +7,7 @@
 
 #include "../detail/serialization.hpp"
 
-#if 0  // 1 to test cereal
+#if 1  // 1 to test cereal
 	#include <cereal/cereal.hpp>
 
 	#include <cereal/archives/binary.hpp>
@@ -269,7 +269,6 @@ BOOST_AUTO_TEST_CASE(array_serialization_3D) {
 	//	xoa<<               AR_NVP(arr);
 	//	xoa<<           CEREAL_NVP(arr);
 	//	xoa<<                      arr ;
-	//	xoa<< CEREAL_NVP(arr);
 	//	xoa<< multi::archive_traits<XOArchive>::make_nvp("arr", arr);
 	}
 	{
@@ -286,6 +285,23 @@ BOOST_AUTO_TEST_CASE(array_serialization_3D) {
 	}
 }
 
+BOOST_AUTO_TEST_CASE(array_serialization_3D_inplace) {
+	multi::array<double, 3> arr({10, 10, 10}, 0.);
+
+	BOOST_REQUIRE(( arr.extension() == boost::multi::index_range{0, 10} ));
+
+	std::iota(arr.data_elements(), arr.data_elements() + arr.num_elements(), 1000.);
+
+	std::stringstream ss;
+	XOArchive{ss}<< make_nvp("arr", arr);
+
+	multi::array<double, 3> arr2;
+	XIArchive{ss}>> make_nvp("arr", arr2);
+
+	BOOST_REQUIRE( extensions(arr2) == extensions(arr) );
+	BOOST_REQUIRE( arr2 == arr );
+}
+
 BOOST_AUTO_TEST_CASE(array_serialization_3D_part_binary) {
 	multi::array<double, 3> arr({10, 10, 10}, 0.);
 
@@ -296,14 +312,13 @@ BOOST_AUTO_TEST_CASE(array_serialization_3D_part_binary) {
 	std::stringstream ss;
 	{
 		BOArchive boa{ss};
-		boa<< arr[2];
+		boa& arr[2];
 	}
 	{
 		BOOST_REQUIRE( arr[3] != arr[2] );
 		{
 			BIArchive bia{ss};
-			auto&& arr3 = arr[3];
-			bia>> arr3;
+			bia& arr[3];
 		}
 		BOOST_REQUIRE( arr[3] == arr[2] );
 	}
