@@ -586,14 +586,6 @@ struct basic_array
 
 	friend auto get_allocator(basic_array const& s) -> default_allocator_type {return s.get_allocator();}
 
-	template<class Archive>
-	auto serialize(Archive& ar, unsigned int /*version*/) {
-		using AT = multi::archive_traits<Archive>;
-		std::for_each(this->begin(), this->end(), [&](auto&& item){ar & AT    ::make_nvp("item", item);});
-	//	std::for_each(this->begin(), this->end(), [&](auto&& item){ar & cereal::make_nvp("item", item);});
-	//	std::for_each(this->begin(), this->end(), [&](auto&& item){ar &                          item ;});
-	}
-
 	using decay_type = array<typename types::element_type, D, typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type>;
 
 	friend constexpr auto decay(basic_array const& s) -> decay_type {return s.decay();}
@@ -1294,6 +1286,19 @@ struct basic_array
 			static_cast<P2>(static_cast<void*>(this->base()))
 		};
 	}
+
+	template<class Archive>
+	friend auto operator>>(Archive& ar, basic_array&& self)  // this is for compatability with Archive type
+	->decltype(ar>> self) {
+		return ar>> self; }
+
+	template<class Archive>
+	auto serialize(Archive& ar, unsigned int /*version*/) {
+		using AT = multi::archive_traits<Archive>;
+		std::for_each(this->begin(), this->end(), [&](auto&& item){ar & AT    ::make_nvp("item", item);});
+	//	std::for_each(this->begin(), this->end(), [&](auto&& item){ar & cereal::make_nvp("item", item);});
+	//	std::for_each(this->begin(), this->end(), [&](auto&& item){ar &                          item ;});
+	}
 };
 
 template<class Element, typename Ptr> struct array_iterator<Element, 0, Ptr>{};
@@ -1464,6 +1469,11 @@ struct basic_array<T, 0, ElementPtr, Layout>
 	constexpr operator element_ref ()                            && {return *(this->base_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 	constexpr operator element_ref ()                             & {return *(this->base_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 	constexpr operator element_cref()                        const& {return *(this->base_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
+
+	template<class Archive>
+	friend auto operator>>(Archive& ar, basic_array&& self)  // this is for compatability with Archive type
+	->decltype(ar>> self) {
+		return ar>> self; }
 
 	template<class Archive>
 	auto serialize(Archive& ar, const unsigned int /*version*/) {
