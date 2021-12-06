@@ -5,7 +5,11 @@
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
-#include "../detail/serialization.hpp"
+#include "../array.hpp"
+
+#include<fstream>
+
+// #include "../detail/serialization.hpp"
 
 #if 0  // 1 to test cereal
 	#include <cereal/cereal.hpp>
@@ -39,15 +43,46 @@
 //	using boost::serialization::make_array;
 #endif
 
-#include "../array.hpp"
-
-#include <fstream>
 #include <numeric>
 #include <string>
 
 #include <boost/multi_array.hpp>
 
 namespace multi = boost::multi;
+
+// #include <cereal/archives/json.hpp>
+#include <boost/archive/xml_iarchive.hpp>
+#include <boost/archive/xml_oarchive.hpp>
+// #include <cereal/types/string.hpp>
+#include <boost/serialization/string.hpp>
+
+struct array {
+	using input_archive  = boost::archive::xml_iarchive;  // cereal::JSONInputArchive ;
+	using output_archive = boost::archive::xml_oarchive;  // cereal::JSONOutputArchive;
+
+	template<class Array, class IStream>
+	static auto load(IStream&& is) -> Array {
+		using boost::serialization::make_nvp;  // cereal::make_nvp;  //
+		Array value;
+		input_archive{is} >> make_nvp("value", value);
+		return value;
+	}
+
+	template<class Array, class OStream>
+	static void save(OStream&& os, Array const& value) {
+		using boost::serialization::make_nvp;  // cereal::make_nvp;  //
+		output_archive{os} << make_nvp("value", value);
+	}
+};
+
+BOOST_AUTO_TEST_CASE(json) {
+	namespace multi = boost::multi;
+	multi::array<std::string, 2> A = {{"00", "01"}, {"10", "11"}};
+	array::save(std::ofstream{"file"}, A);
+
+	auto B = array::load<multi::array<std::string, 2>>(std::ifstream{"file"});
+	BOOST_REQUIRE(A == B);
+}
 
 BOOST_AUTO_TEST_CASE(extensions_serialization) {
 
@@ -317,7 +352,6 @@ BOOST_AUTO_TEST_CASE(array_serialization_2D_inplace_file) {
 	BOOST_REQUIRE( extensions(arr2) == extensions(arr) );
 	BOOST_REQUIRE( arr2 == arr );
 }
-
 
 BOOST_AUTO_TEST_CASE(array_serialization_3D_part_binary) {
 	multi::array<double, 3> arr({10, 10, 10}, 0.);
