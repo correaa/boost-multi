@@ -8,24 +8,23 @@
 _© Alfredo A. Correa, 2018-2021_
 
 `Multi` provides multidimensional array access to contiguous or regularly contiguous memory (or ranges).
-It shares the goals of [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html), 
+It shares the goals of [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html),
 although the code is completely independent and the syntax has slight differences or has been extended.
-`Multi` and `Boost.MultiArray` types can be used interchangeably for the most part, they differ in the semantics of reference and value types. 
+`Multi` and `Boost.MultiArray` types can be used interchangeably for the most part, they differ in the semantics of reference and value types.
 
 Multi aims to simplify the semantics of Boost.MultiArray and make it more compatible with the Standard (STL) Algorithms and special memory.
-It requires C++14. 
+It requires C++14.
 
 Some features:
 
 * Arbitrary pointer types (minimal requirements)
-* Simplified implementation (~1200 lines)
+* Simplified implementation (~4000 lines)
 * Fast access of subarrays (view) types
 * Value semantics of multi-dimensional array container
 * Better semantics of subarray (view) types
 * Interoperability with other libraries, STL, ranges, 
 
 (Do not confuse this library with Boost.MultiArray or Boost.MultiIndex.)
-
 
 ## Contents
 [[_TOC_]]
@@ -124,13 +123,13 @@ We create a static C-array of `double`s, and refer to it via a bidimensional arr
 ```cpp
 	#include "../array_ref.hpp"
 	#include "../array.hpp"
-	
+
 	#include<algorithm> // for sort
 	#include<iostream> // for print
-	
+
 	namespace multi = boost::multi;
 	using std::cout; using std::cerr;
-	
+
 	int main(){
 		double d2D[4][5] = {
 			{150, 16, 17, 18, 19},
@@ -252,45 +251,55 @@ Accessing arrays by iterators (`begin`/`end`) enables the use of many iterator b
 
 `cbegin/cend(A)` (or equivalently `A.cbegin/cend()`) gives read-only iterators.
 
-For example in three dimensional array,
+For example in a three dimensional array,
 
-	(cbegin(A)+1)->operator[](1).begin()[0] = 342.4; //error, read-only
-	(begin(A)+1)->operator[](1).begin()[0] = 342.4; // assigns to A[1][1][0]
-	assert( (begin(A)+1)->operator[](1).begin()[0] == 342.4 );
+```cpp
+	(cbegin(A)+1)->operator[](1).begin()[0] = 342.4;  // error, read-only
+	( begin(A)+1)->operator[](1).begin()[0] = 342.4;  // assigns to A[1][1][0]
+	assert( ( begin(A)+1)->operator[](1).begin()[0] == 342.4 );
+```
 
 As an example, this function allows printing arrays of arbitrary dimension into a linear comma-separated form.
 
 ```cpp
 void print(double const& d){cout<<d;};
 template<class MultiArray> 
-void print(MultiArray const& ma){
+void print(MultiArray const& ma) {
 	cout<<"{";
-	if(not ma.empty()){
+	if(not ma.empty()) {
 		print(*cbegin(ma));
-		std::for_each(cbegin(ma)+1, cend(ma), [](auto&& e){cout<<","; print(e);});
+		std::for_each(cbegin(ma)+1, cend(ma), [](auto&& e) {cout<<","; print(e);});
 	}
 	cout<<"}";
 }
 ...
 print(A);
 ```
+> ```
 > {{{1.2,1.1},{2.4,1}},{{11.2,3},{34.4,4}},{{15.2,99},{32.4,2}}}
+> ```
 
 
 Except for those corresponding to the one-dimensional case, derreferencing iterators generally produce proxy-reference objects. 
 Therefore this is not allowed:
 
-    auto row = *begin(A); // compile error 
+```cpp
+auto row = *begin(A); // compile error
+```
 
 This because `row` doesn't have the expected value semantics, and didn't produce any data copy.
 However this express the intention better
 
-    decltype(A)::value_type row = *begin(A); // there is a real copy.
+```cpp
+decltype(A)::value_type row = *begin(A); // there is a real copy.
+```
 
 In my experience, however, this produces a more consistent idiom to hold references without copying elements.
 
-    auto const& crow = *cbegin(A); // same as decltype(A)::const_reference crow = *cbegin(A);
-    auto&&       row = * begin(A); // same as decltype(A)::      reference  row = * begin(A);
+```cpp
+auto const& crow = *cbegin(A); // same as decltype(A)::const_reference crow = *cbegin(A);
+auto&&       row = * begin(A); // same as decltype(A)::      reference  row = * begin(A);
+```
 
 ## Indexing
 
@@ -503,6 +512,107 @@ The most dramatic example of this is that `std::sort` works with array as it is 
 
 Along with STL itself, the library tries to interact with other existing quality C++ libraries described below.
 
+## Serialization
+
+The capability of serializing arrays is important to save data to disk for later use and also to communicate values via streams or networks (including MPI).
+The C++ language does not give any facilities for serialization and unfortunately the standard library doesn't either.
+
+However there are a few libraries that offer a certain common protocol for serialization,
+such as [Boost.Serialization](https://www.boost.org/doc/libs/1_76_0/libs/serialization/doc/index.html) and [Cereal](https://uscilab.github.io/cereal/).
+This library is compatible with both of them, and yet it doesn't have a dependency on them.
+The user can choose one or the other, or none if serialization is not needed.
+
+Here it is a small implementation of save and load functions for array to JSON format with Cereal.
+The example can be easily adapted to other formats or libries (XML with Boost.Serialization are commented on the right).
+
+```cpp
+#include <multi/array.hpp>  // our library
+
+#include<fstream>  // saving to files in example
+
+#include <cereal/archives/json.hpp>                // #include <boost/archive/xml_iarchive.hpp>
+                                                   // #include <boost/archive/xml_oarchive.hpp>
+
+// for serialization of array elements (in this case strings)
+#include <cereal/types/string.hpp>                 // #include <boost/serialization/string.hpp>
+
+using input_archive  = cereal::JSONInputArchive ;  // boost::archive::xml_iarchive;
+using output_archive = cereal::JSONOutputArchive;  // boost::archive::xml_oarchive;
+
+using cereal::make_nvp;                            // boost::serialization::make_nvp;
+
+template<class Array, class IStream> auto load(IStream&& is) -> Array {
+	Array value; input_archive{is} >> make_nvp("value", value); return value;
+}
+
+template<class Array, class OStream> void save(OStream&& os, Array const& value) {
+	output_archive{os} << make_nvp("value", value);
+}
+
+int main() {
+	multi::array<std::string, 2> const A = {{"w", "x"}, {"y", "z"}};
+	save(std::ofstream{"file"}, A);
+
+	auto B = load<multi::array<std::string, 2>>(std::ifstream{"file"});
+	assert(A == B);
+}
+```
+
+These templated functions work for any dimension and element type (as long as it is serializable in itself; all basic types are serializable by default).
+However note that it is resposibility of the user to make sure that data is serialized and deserialized into the same type and also assuming the same format.
+This is because the underlying serialization library only do minimal consistency checks for efficiency reasons.
+Criptic errors and crashes can occurr if serialization libraries, file formats or C++ types are mixed between writes and reads.
+Serialization is a relatively low level feature for which efficiency and economy of bytes is priority.
+On top of serialization checks can be added by the user before and after loading a file.
+
+References to subarrays can be also serialized, however, in such case size information is not saved.
+The reason is that references to subarrays cannot be resized in their number of elements if there is size mismatch during deserialization.
+
+The output JSON file of the previous example looks like this.
+(The XML would have a similar structure.)
+
+```json
+{
+    "value": {
+        "cereal_class_version": 0,
+        "extensions": {
+            "cereal_class_version": 0,
+            "extension": {
+                "cereal_class_version": 0,
+                "first": 0,
+                "last": 2
+            },
+            "extension": {
+                "first": 0,
+                "last": 2
+            }
+        },
+        "elements": {
+            "cereal_class_version": 0,
+            "item": "w",
+            "item": "x",
+            "item": "y",
+            "item": "z"
+        }
+    }
+}
+```
+
+Large datasets tend to be serialized much slowly for archives with heavy formatting.
+Here it is a comparison of speeds when (de)serializing a 134 MB 2D array of with random `double`s.
+
+| Archive format (Library)     | file size     | speed (read - write)         | time (read - write)   |
+| ---------------------------- | ------------- | ---------------------------- |-----------------------|
+| JSON (Cereal)                | 684 MB        |   3.9 MB/sec -   8.4 MB/sec  |  32.1 sec - 15.1  sec |
+| XML (Cereal)                 | 612 M         |   2.  MB/sec -   4.  MB/sec  |  56   sec  - 28   sec |
+| XML (Boost)                  | 662 MB        |  11.  MB/sec -  13.  MB/sec  |  11   sec  -  9   sec |
+| Portable Binary (Cereal)     | 134 MB        | 130.  MB/sec - 121.  MB/sec  |  9.7  sec  - 10.6 sec |
+| Text (Boost)                 | 411 MB        |  15.  MB/sec -  16.  MB/sec  |  8.2  sec  - 7.6  sec |
+| Binary (Cereal)              | 134 MB        | 134.4 MB/sec - 126.  MB/sec  |  0.9  sec  -  0.9 sec |
+| Binary (Boost)               | 134 MB        |   5.2 GB/sec -   1.6 GB/sec  |  0.02 sec -   0.1 sec |
+| gzip-XML (Cereal)            | 191 MB        |   2.  MB/sec -   4.  MB/sec  | 61    sec  - 32   sec |
+| gzip-XML (Boost)             | 207 MB        |   8.  MB/sec -   8.  MB/sec  | 16.1  sec  - 15.9 sec |
+
 ## (Polymorphic) Memory Resources
 
 The library is compatible with C++17's polymorphic memory resources (PMR) which allows using preallocated buffers. 
@@ -604,7 +714,7 @@ int main(){
 ## TotalView
 
 TotalView visual debugger (commercial) can display arrays in human-readable form (for simple types, like `double` or `std::complex`).
-To use it, simply `#include "multi/adaptors/totalview.hpp"` and link to the TotalView libraries, compile and run the code with the debugger.
+To use it, simply `#include "multi/adaptors/totalview.hpp"` and link to the TotalView libraries, compile and run the code with the TotalView debugger.
 
 # Technical points
 

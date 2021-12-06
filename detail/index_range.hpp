@@ -54,10 +54,22 @@ class range {
 	IndexTypeLast last_ = first_;
 
  public:
-	template<class Ar, class ArT = multi::archive_traits<Ar>>
+	template<class Ar>//, class ArT = multi::archive_traits<Ar>>
 	void serialize(Ar& ar, unsigned /*version*/) {
-		ar & ArT::make_nvp("first", first_);
-		ar & ArT::make_nvp("last" , last_ );
+		{
+		ar & multi::archive_traits<Ar>::make_nvp("first", first_);
+	//	ar & BOOST_SERIALIZATION_NVP(first_);
+	//	ar &       cereal:: make_nvp("first", first_);
+	//	ar &              CEREAL_NVP(first_);   ///ArT::make_nvp("first", first_);
+	//	ar &            first_ ;   ///ArT::make_nvp("first", first_);
+		}
+		{
+		ar & multi::archive_traits<Ar>::make_nvp("last", last_);
+	//	ar &             BOOST_SERIALIZATION_NVP        (last_);
+	//	ar &                   cereal:: make_nvp("last", last_);
+	//	ar &                          CEREAL_NVP        (last_);
+	//	ar &                                             last_ ;   // ArT::make_nvp("last" , last_ );
+		}
 	}
 
 	using value_type      = IndexType;

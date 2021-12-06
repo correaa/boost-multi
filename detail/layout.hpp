@@ -147,12 +147,14 @@ struct extensions_t {
 	template<class Archive, std::size_t... I>
 	void serialize_impl(Archive& ar, std::index_sequence<I...> /*012*/) {
 		(void)std::initializer_list<unsigned>{(ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<I>(impl_)) , 0U)...};
-//		(void)std::initializer_list<unsigned>{(ar & multi::archive_traits<Archive>::make_nvp("extension", std::get<I>(impl_)) , 0U)...};
+	//	(void)std::initializer_list<unsigned>{(ar & boost::serialization::          make_nvp("extension", std::get<I>(impl_)) , 0U)...};
+	//	(void)std::initializer_list<unsigned>{(ar & cereal::                        make_nvp("extension", std::get<I>(impl_)) , 0U)...};
+	//	(void)std::initializer_list<unsigned>{(ar &                                                       std::get<I>(impl_)  , 0U)...};
 	}
 
  public:
 	template<class Archive>
-	void serialize(Archive& ar, unsigned /*version*/) {
+	void serialize(Archive& ar, const unsigned int /*version*/) {//, unsigned /*version*/) {
 		serialize_impl(ar, std::make_index_sequence<static_cast<std::size_t>(D)>());
 	}
 
@@ -254,7 +256,11 @@ template<> struct extensions_t<1> {
 	}
 	template<class Ar>
 	void serialize(Ar& ar, unsigned /*version*/) {
-		ar & multi::archive_traits<Ar>::make_nvp("extension", std::get<0>(impl_));
+		auto& extension = std::get<0>(impl_);
+		ar & multi::archive_traits<Ar>::make_nvp("extension", extension);
+	//	ar & boost::serialization::     make_nvp("extension", extension);
+	//	ar & cereal::                   make_nvp("extension", extension);
+	//	ar &                                                  extension ;
 	}
 };
 

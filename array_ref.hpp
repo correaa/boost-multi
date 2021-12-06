@@ -15,6 +15,7 @@
 #include "./detail/layout.hpp"
 #include "./detail/memory.hpp"     // for pointer_traits
 #include "./detail/operators.hpp"  // for random_iterable
+#include "./detail/serialization.hpp"      // for dimensionality_type
 #include "./detail/types.hpp"      // for dimensionality_type
 
 #if defined(__NVCC__)
@@ -584,11 +585,6 @@ struct basic_array
 	}
 
 	friend auto get_allocator(basic_array const& s) -> default_allocator_type {return s.get_allocator();}
-
-	template<class Ar, class AT = multi::archive_traits<Ar>>
-	auto serialize(Ar& ar, unsigned int /*version*/) {
-		std::for_each(this->begin(), this->end(), [&](auto&& e){ar & AT::make_nvp("item", e);});
-	}
 
 	using decay_type = array<typename types::element_type, D, typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type>;
 
@@ -1290,6 +1286,14 @@ struct basic_array
 			static_cast<P2>(static_cast<void*>(this->base()))
 		};
 	}
+
+	template<class Archive>
+	auto serialize(Archive& ar, unsigned int /*version*/) {
+		using AT = multi::archive_traits<Archive>;
+		std::for_each(this->begin(), this->end(), [&](auto&& item){ar & AT    ::make_nvp("item", item);});
+	//	std::for_each(this->begin(), this->end(), [&](auto&& item){ar & cereal::make_nvp("item", item);});
+	//	std::for_each(this->begin(), this->end(), [&](auto&& item){ar &                          item ;});
+	}
 };
 
 template<class Element, typename Ptr> struct array_iterator<Element, 0, Ptr>{};
@@ -1462,8 +1466,12 @@ struct basic_array<T, 0, ElementPtr, Layout>
 	constexpr operator element_cref()                        const& {return *(this->base_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 
 	template<class Archive>
-	auto serialize(Archive& ar, const unsigned int /*version*/){
-		ar & multi::archive_traits<Archive>::make_nvp("element", *(this->base_));
+	auto serialize(Archive& ar, const unsigned int /*version*/) {
+		using AT = multi::archive_traits<Archive>;
+		auto& element_ = *(this->base_);
+		ar & AT::make_nvp("element", *(this->base_));
+	//	ar & cereal::make_nvp("element", element_);
+	//	ar &                             element_ ;
 	}
 };
 
@@ -1572,10 +1580,6 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	template<class It>
 	constexpr void assign(It first, It last)&& {assign(first, last);}
 
-	template<class Archive>
-	void serialize(Archive& ar, unsigned /*version*/) {
-		std::for_each(this->begin(), this->end(), [&](auto&& e){ar& multi::archive_traits<Archive>::make_nvp("item", e);});
-	}
 	auto operator=(basic_array const& o)    & -> basic_array& {  // TODO(correaa) : make sfinae friendly
 		if(this == std::addressof(o)) {return *this;}
 		assert(this->extension() == o.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
@@ -1965,6 +1969,14 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	constexpr auto fill()&& -> decltype(auto) {
 		return std::move(*this).fill(typename basic_array::element_type{});
 	}
+
+	template<class Archive>
+	void serialize(Archive& ar, unsigned /*version*/) {
+		using AT = multi::archive_traits<Archive>;
+		std::for_each(this->begin(), this->end(), [&](auto&& item){ar & AT    ::make_nvp("item", item);});
+	//	std::for_each(this->begin(), this->end(), [&](auto&& item){ar & cereal::make_nvp("item", item);});
+	//	std::for_each(this->begin(), this->end(), [&](auto&& item){ar &                          item ;});
+	}
 };
 
 template<class T2, class P2, class Array, class... Args>
@@ -1973,9 +1985,9 @@ constexpr auto static_array_cast(Array&& a, Args&&... args) -> decltype(auto) {
 }
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*>
-struct array_ref
-// TODO(correaa) : inheredit from multi::partially_ordered2<array_ref<T, D, ElementPtr>, void>?
-: basic_array<T, D, ElementPtr> {
+struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<array_ref<T, D, ElementPtr>, void>?
+: basic_array<T, D, ElementPtr>
+{
 	~array_ref() = default;  // lints(cppcoreguidelines-special-member-functions)
 
 #if not defined(__NVCC__)  // crashes nvcc 11.3 !!!!
@@ -2130,8 +2142,9 @@ struct array_ref
 	auto serialize_structured(Ar& ar, const unsigned int version) {
 		basic_array<T, D, ElementPtr>::serialize(ar, version);
 	}
-	template<class Ar, class AT = multi::archive_traits<Ar>>
-	auto serialize_flat(Ar& ar) {
+	template<class Archive>
+	auto serialize_flat(Archive& ar, const unsigned int /*version*/) {
+		using AT = multi::archive_traits<Archive>;
 		ar & AT::make_nvp("elements", AT::make_array(this->data_elements(), static_cast<std::size_t>(this->num_elements())));
 	}
 //	template<class Ar, class AT = multi::archive_traits<Ar>>
@@ -2142,16 +2155,18 @@ struct array_ref
 //	auto serialize_binary_if(std::false_type, Ar& ar) {return serialize_flat(ar);}
 
  public:
-	template<class Ar, class AT = multi::archive_traits<Ar>>
-	auto serialize(Ar& ar, const unsigned int version) {
-		switch(version) {
-			case static_cast<unsigned int>( 0): return serialize_flat(ar);
-			case static_cast<unsigned int>(-1): return serialize_structured(ar, version);
-		//	case 2: return serialize_binary_if(std::is_trivially_copy_assignable<typename array_ref::element>{}, ar);
-			default:
-				if( this->num_elements() <= version ){serialize_structured(ar, version);}
-				else                                 {serialize_flat      (ar         );}
-		}
+	template<class Archive>
+	auto serialize(Archive& ar, const unsigned int version) {
+		serialize_flat(ar, version);
+//		serialize_structured(ar, version);
+//		switch(version) {
+//			case static_cast<unsigned int>( 0): return serialize_flat(ar);
+//			case static_cast<unsigned int>(-1): return serialize_structured(ar, version);
+//		//	case 2: return serialize_binary_if(std::is_trivially_copy_assignable<typename array_ref::element>{}, ar);
+//			default:
+//				if( this->num_elements() <= version ){serialize_structured(ar, version);}
+//				else                                 {serialize_flat      (ar         );}
+//		}
 	}
 };
 
@@ -2338,12 +2353,12 @@ namespace serialization {
 // this is disabled! #define MULTI_SERIALIZATION_ARRAY_VERSION  2 // save data as binary object if possible even in XML and text mode (not portable)
 // #define MULTI_SERIALIZATION_ARRAY_VERSION 16 // any other value, structure for N <= 16, flat otherwise N > 16
 
-template<typename T, boost::multi::dimensionality_type D, class A>
-struct version< boost::multi::array_ref<T, D, A> > {
-	using type = std::integral_constant<int, MULTI_SERIALIZATION_ARRAY_VERSION>; // typedef mpl::int_<1> type;
-//  typedef mpl::integral_c_tag tag;
-	enum { value = type::value };
-};
+//template<typename T, boost::multi::dimensionality_type D, class A>
+//struct version< boost::multi::array_ref<T, D, A> > {
+//	using type = std::integral_constant<int, MULTI_SERIALIZATION_ARRAY_VERSION>; // typedef mpl::int_<1> type;
+////  typedef mpl::integral_c_tag tag;
+//	enum { value = type::value };
+//};
 
 }  // end namespace serialization
 }  // end namespace boost
