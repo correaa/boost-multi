@@ -503,6 +503,90 @@ The most dramatic example of this is that `std::sort` works with array as it is 
 
 Along with STL itself, the library tries to interact with other existing quality C++ libraries described below.
 
+## Serialization
+
+The capability of serializing arrays is important to save data to disk for later use and also to communicate values via streams or networks (including MPI).
+The C++ language does not give any facilities for serialization and unfortunately the standard library doesn't either.
+However there are a few libraries that offer a certain common protocol for serialization,
+such as [Boost.Serialization](https://www.boost.org/doc/libs/1_76_0/libs/serialization/doc/index.html) and [Cereal](https://uscilab.github.io/cereal/).
+
+This library is compatible with both libraries, and yet it doesn't have a dependency on them.
+The user can choose one or the other, or none if serialization is not needed.
+
+Here it is a small implementation of save and load functions for array to JSON format with Cereal.
+The example can be easily adapted to other formats or libries (XML with Boost.Serialization are commented on the right).
+
+```
+#include <multi/array.hpp>  // our library
+
+#include<fstream>  // saving to files in example
+
+#include <cereal/archives/json.hpp>                // #include <boost/archive/xml_iarchive.hpp>
+                                                   // #include <boost/archive/xml_oarchive.hpp>
+
+// for serialization of array elements (in this case strings)
+#include <cereal/types/string.hpp>                 // #include <boost/serialization/string.hpp>
+
+using input_archive  = cereal::JSONInputArchive ;  // boost::archive::xml_iarchive;
+using output_archive = cereal::JSONOutputArchive;  // boost::archive::xml_oarchive;
+
+using cereal::make_nvp;                            // boost::serialization::make_nvp;
+
+template<class Array, class IStream> auto load(IStream&& is) -> Array {
+	Array value; input_archive{is} >> make_nvp("value", value); return value;
+}
+
+template<class Array, class OStream> void save(OStream&& os, Array const& value) {
+	output_archive{os} << make_nvp("value", value);
+}
+
+int main() {
+	multi::array<std::string, 2> const A = {{"w", "x"}, {"y", "z"}};
+	save(std::ofstream{"file"}, A);
+
+	auto B = load<multi::array<std::string, 2>>(std::ifstream{"file"});
+	assert(A == B);
+}
+```
+
+These templated functions work for any dimension and element type (as long as it is serializable in itself; all basic types are serializable by default).
+However note that it is resposibility of the use to make sure that data is serialized and deserialized into the same type and also assuming the same format.
+This is because the underlying serialization library only do minimal consistency checks for efficiency reasons.
+Criptic errors and crashes can occurr of libraries, file formats or C++ types are mixed between writes and reads.
+
+References to subarrays can be also serialized, however, in such case size information is not saved.
+The reason is that references cannot be resized if there is size mismatch and serialization only saves minimal information.
+
+The output JSON file of the previous example looks like this.
+(The XML would have a similar structure.)
+
+```json
+{
+    "value": {
+        "cereal_class_version": 0,
+        "extensions": {
+            "cereal_class_version": 0,
+            "extension": {
+                "cereal_class_version": 0,
+                "first": 0,
+                "last": 2
+            },
+            "extension": {
+                "first": 0,
+                "last": 2
+            }
+        },
+        "elements": {
+            "cereal_class_version": 0,
+            "item": "w",
+            "item": "x",
+            "item": "y",
+            "item": "z"
+        }
+    }
+}
+```
+
 ## (Polymorphic) Memory Resources
 
 The library is compatible with C++17's polymorphic memory resources (PMR) which allows using preallocated buffers. 
