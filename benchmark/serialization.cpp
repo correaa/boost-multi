@@ -7,6 +7,8 @@
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
 
+//#include "/home/correaa/prj/alf/boost/archive/yml/yml_iarchive.hpp"
+//#include "/home/correaa/prj/alf/boost/archive/yml/yml_oarchive.hpp"
 //#include <cereal/archives/portable_binary.hpp>
 
 #include <boost/archive/text_iarchive.hpp>
@@ -76,11 +78,14 @@ void BM_iserialization(benchmark::State& st) {
 BENCHMARK_TEMPLATE(BM_oserialization, boost::archive::xml_oarchive   );
 BENCHMARK_TEMPLATE(BM_iserialization, boost::archive::xml_iarchive   );
 
-BENCHMARK_TEMPLATE(BM_oserialization, boost::archive::text_oarchive  );
-BENCHMARK_TEMPLATE(BM_iserialization, boost::archive::text_iarchive  );
+//BENCHMARK_TEMPLATE(BM_oserialization, boost::archive::yml_oarchive   );
+//BENCHMARK_TEMPLATE(BM_iserialization, boost::archive::yml_iarchive   );
 
-BENCHMARK_TEMPLATE(BM_oserialization, boost::archive::binary_oarchive);
-BENCHMARK_TEMPLATE(BM_iserialization, boost::archive::binary_iarchive);
+//BENCHMARK_TEMPLATE(BM_oserialization, boost::archive::text_oarchive  );
+//BENCHMARK_TEMPLATE(BM_iserialization, boost::archive::text_iarchive  );
+
+//BENCHMARK_TEMPLATE(BM_oserialization, boost::archive::binary_oarchive);
+//BENCHMARK_TEMPLATE(BM_iserialization, boost::archive::binary_iarchive);
 
 //BENCHMARK_TEMPLATE(BM_oserialization, cereal::JSONOutputArchive  );
 //BENCHMARK_TEMPLATE(BM_iserialization, cereal::JSONInputArchive   );
