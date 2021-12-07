@@ -609,6 +609,7 @@ Here it is a comparison of speeds when (de)serializing a 134 MB 4-dimensional ar
 | JSON (Cereal)                | 684 MB        |    3.9 MB/sec -    8.4 MB/sec  |  32.1 sec - 15.1  sec |
 | XML (Cereal)                 | 612 MB        |    2.  MB/sec -    4.  MB/sec  |  56   sec  - 28   sec |
 | XML (Boost)                  | 662 MB        |   11.  MB/sec -   13.  MB/sec  |  11   sec  -  9   sec |
+| YAML ([custom](https://gitlab.com/correaa/boost-archive-yml)             | 702 MB        |   10.  MB/sec -    4.4 MB/sec  |  12   sec  - 28   sec |
 | Portable Binary (Cereal)     | 134 MB        |  130.  MB/sec -  121.  MB/sec  |  9.7  sec  - 10.6 sec |
 | Text (Boost)                 | 411 MB        |   15.  MB/sec -   16.  MB/sec  |  8.2  sec  - 7.6  sec |
 | Binary (Cereal)              | 134 MB        |  134.4 MB/sec -  126.  MB/sec  |  0.9  sec  -  0.9 sec |
