@@ -518,57 +518,55 @@ The capability of serializing arrays is important to save data to disk for later
 The C++ language does not give any facilities for serialization and unfortunately the standard library doesn't either.
 
 However there are a few libraries that offer a certain common protocol for serialization,
+The generic protocol is such that variables are (de)serialized using the (`>>`)`<<` operator with the archive; operator `&` can be used to have single code for both.
 such as [Boost.Serialization](https://www.boost.org/doc/libs/1_76_0/libs/serialization/doc/index.html) and [Cereal](https://uscilab.github.io/cereal/).
-This library is compatible with both of them, and yet it doesn't have a dependency on them.
+This library is compatible with both of them, and yet it doesn't depend on any of them.
 The user can choose one or the other, or none if serialization is not needed.
 
 Here it is a small implementation of save and load functions for array to JSON format with Cereal.
-Array variables are (de)serialized using the (`>>`)`<<` operator with the archive; operator `&` can be used to have single code for both.
 The example can be easily adapted to other formats or libries (XML with Boost.Serialization are commented on the right).
 
 ```cpp
 #include <multi/array.hpp>  // our library
-
 #include<fstream>  // saving to files in example
-
 #include <cereal/archives/json.hpp>                // #include <boost/archive/xml_iarchive.hpp>
                                                    // #include <boost/archive/xml_oarchive.hpp>
-
 // for serialization of array elements (in this case strings)
 #include <cereal/types/string.hpp>                 // #include <boost/serialization/string.hpp>
-
 using input_archive  = cereal::JSONInputArchive ;  // boost::archive::xml_iarchive;
 using output_archive = cereal::JSONOutputArchive;  // boost::archive::xml_oarchive;
-
 using cereal::make_nvp;                            // boost::serialization::make_nvp;
 
-template<class Array, class IStream> auto load(IStream&& is) -> Array {
-	Array value;
+namespace multi = boost::multi;
+
+template<class T, multi::dimensionality D, class IStream> auto array_load(IStream&& is) -> Array {
+	multi::array<T, D> value;
 	input_archive{is} >> make_nvp("value", value);
 	return value;
 }
 
-template<class Array, class OStream> void save(OStream&& os, Array const& value) {
+template<class T, multi::dimensionality D, class OStream>
+void array_save(OStream&& os, multi::array<T, D> const& value) {
 	output_archive{os} << make_nvp("value", value);
 }
 
 int main() {
 	multi::array<std::string, 2> const A = {{"w", "x"}, {"y", "z"}};
-	save(std::ofstream{"file"}, A);  // use std::cout to print serialization to the screen
+	array_save(std::ofstream{"file"}, A);  // use std::cout to print serialization to the screen
 
-	auto const B = load<multi::array<std::string, 2>>(std::ifstream{"file"});
+	auto const B = array_load<std::string, 2>(std::ifstream{"file"});
 	assert(A == B);
 }
 ```
 
-These templated functions work for any dimension and element type (as long as it is serializable in itself; all basic types are serializable by default).
-However note that it is resposibility of the user to make sure that data is serialized and deserialized into the same type and also assuming the same format.
-This is because the underlying serialization library only do minimal consistency checks for efficiency reasons.
-Criptic errors and crashes can occurr if serialization libraries, file formats or C++ types are mixed between writes and reads.
+These templated functions work for any dimension and element type (as long as the element type is serializable in itself; all basic types are serializable by default).
+However note that it is responsibility of the user to make sure that data is serialized and deserialized into the same type and also assuming the same format.
+This is because the underlying serialization library only do minimal consistency checks for efficiency reasons and doesn't try to second guess file formats or contained types.
 Serialization is a relatively low level feature for which efficiency and economy of bytes is priority.
+Cryptic errors and crashes can occur if serialization libraries, file formats or C++ types are mixed between writes and reads.
 On top of serialization checks can be added by the user before and after loading a file.
 
-References to subarrays can be also serialized, however, in such case size information is not saved.
+References to subarrays can also be serialized, however, in such case size information is not saved.
 The reason is that references to subarrays cannot be resized in their number of elements if there is size mismatch during deserialization.
 
 The output JSON file of the previous example looks like this.
@@ -601,7 +599,7 @@ The output JSON file of the previous example looks like this.
 }
 ```
 
-Large datasets tend to be serialized much slowly for archives with heavy formatting.
+Large datasets tend to be serialized slowly for archives with heavy formatting.
 Here it is a comparison of speeds when (de)serializing a 134 MB 4-dimensional array of with random `double`s.
 
 | Archive format (Library)     | file size     | speed (read - write)           | time (read - write)   |
@@ -609,7 +607,7 @@ Here it is a comparison of speeds when (de)serializing a 134 MB 4-dimensional ar
 | JSON (Cereal)                | 684 MB        |    3.9 MB/sec -    8.4 MB/sec  |  32.1 sec - 15.1  sec |
 | XML (Cereal)                 | 612 MB        |    2.  MB/sec -    4.  MB/sec  |  56   sec  - 28   sec |
 | XML (Boost)                  | 662 MB        |   11.  MB/sec -   13.  MB/sec  |  11   sec  -  9   sec |
-| YAML ([custom](https://gitlab.com/correaa/boost-archive-yml)             | 702 MB        |   10.  MB/sec -    4.4 MB/sec  |  12   sec  - 28   sec |
+| YAML ([custom archive)](https://gitlab.com/correaa/boost-archive-yml)             | 702 MB        |   10.  MB/sec -    4.4 MB/sec  |  12   sec  - 28   sec |
 | Portable Binary (Cereal)     | 134 MB        |  130.  MB/sec -  121.  MB/sec  |  9.7  sec  - 10.6 sec |
 | Text (Boost)                 | 411 MB        |   15.  MB/sec -   16.  MB/sec  |  8.2  sec  - 7.6  sec |
 | Binary (Cereal)              | 134 MB        |  134.4 MB/sec -  126.  MB/sec  |  0.9  sec  -  0.9 sec |
