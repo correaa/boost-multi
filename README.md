@@ -518,10 +518,11 @@ The capability of serializing arrays is important to save/load data to/from disk
 The C++ language does not give any facilities for serialization and unfortunately the standard library doesn't either.
 
 However there are a few libraries that offer a certain common protocol for serialization,
-The generic protocol is such that variables are (de)serialized using the (`>>`)`<<` operator with the archive; operator `&` can be used to have single code for both.
 such as [Boost.Serialization](https://www.boost.org/doc/libs/1_76_0/libs/serialization/doc/index.html) and [Cereal](https://uscilab.github.io/cereal/).
-This library is compatible with both of them, and yet it doesn't depend on any of them.
+The Multi library is compatible with both of them, and yet it doesn't depend on any of them.
 The user can choose one or the other, or none if serialization is not needed.
+The generic protocol is such that variables are (de)serialized using the (`>>`)`<<` operator with the archive; operator `&` can be used to have single code for both.
+Serialization can be binary (efficient) or text-based (human readable).
 
 Here it is a small implementation of save and load functions for array to JSON format with Cereal.
 The example can be easily adapted to other formats or libries (XML with Boost.Serialization are commented on the right).
@@ -552,9 +553,9 @@ void array_save(OStream&& os, multi::array<T, D> const& value) {
 
 int main() {
 	multi::array<std::string, 2> const A = {{"w", "x"}, {"y", "z"}};
-	array_save(std::ofstream{"file"}, A);  // use std::cout to print serialization to the screen
+	array_save(std::ofstream{"file.string2D.json"}, A);  // use std::cout to print serialization to the screen
 
-	auto const B = array_load<std::string, 2>(std::ifstream{"file"});
+	auto const B = array_load<std::string, 2>(std::ifstream{"file.string2D.json"});
 	assert(A == B);
 }
 ```
