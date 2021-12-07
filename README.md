@@ -417,7 +417,7 @@ namespace minimal {
 	template<class T> class ptr{ // minimalistic pointer
 		T* impl_;
 		T& operator*() const{return *impl_;}
-		auto operator+(std::ptrdiff_t n) const{return ptr{impl_ + n};}
+		auto operator+(std::ptrdiff_t n) const {return ptr{impl_ + n};}
 	//	operator[], operator+=, etc are optional but not necessary
 	};
 }
@@ -514,7 +514,7 @@ Along with STL itself, the library tries to interact with other existing quality
 
 ## Serialization
 
-The capability of serializing arrays is important to save data to disk for later use and also to communicate values via streams or networks (including MPI).
+The capability of serializing arrays is important to save/load data to/from disk and also to communicate values via streams or networks (including MPI).
 The C++ language does not give any facilities for serialization and unfortunately the standard library doesn't either.
 
 However there are a few libraries that offer a certain common protocol for serialization,
@@ -539,13 +539,13 @@ using cereal::make_nvp;                            // boost::serialization::make
 
 namespace multi = boost::multi;
 
-template<class T, multi::dimensionality D, class IStream> auto array_load(IStream&& is) -> Array {
+template<class T, multi::dimensionality_type D, class IStream> auto array_load(IStream&& is) -> Array {
 	multi::array<T, D> value;
 	input_archive{is} >> make_nvp("value", value);
 	return value;
 }
 
-template<class T, multi::dimensionality D, class OStream>
+template<class T, multi::dimensionality_type D, class OStream>
 void array_save(OStream&& os, multi::array<T, D> const& value) {
 	output_archive{os} << make_nvp("value", value);
 }
