@@ -320,23 +320,23 @@ this example code implements Gauss Jordan Elimination without pivoting:
 
 ```cpp
 template<class Matrix, class Vector>
-auto gj_solve(Matrix&& A, Vector&& y)->decltype(y[0]/=A[0][0], y){
-	std::ptrdiff_t Asize = size(A); 
-	for(std::ptrdiff_t r = 0; r != Asize; ++r){
+auto gj_solve(Matrix&& A, Vector&& y) -> decltype(y[0]/=A[0][0], y) {
+	std::ptrdiff_t Asize = size(A);
+	for(std::ptrdiff_t r = 0; r != Asize; ++r) {
 		auto&& Ar = A[r];
 		auto&& Arr = Ar[r];
-		for(std::ptrdiff_t c = r + 1; c != Asize; ++c) Ar[c] /= Arr;
+		for(std::ptrdiff_t c = r + 1; c != Asize; ++c) {Ar[c] /= Arr;}
 		auto const yr = (y[r] /= Arr);
-		for(std::ptrdiff_t r2 = r + 1; r2 != Asize; ++r2){
+		for(std::ptrdiff_t r2 = r + 1; r2 != Asize; ++r2) {
 			auto&& Ar2 = A[r2];
-			auto const& Ar2r = Ar2[r]; // auto&& Ar = A[r];
-			for(std::ptrdiff_t c = r + 1; c != Asize; ++c) Ar2[c] -= Ar2r*Ar[c];
+			auto const& Ar2r = Ar2[r];  // auto&& Ar = A[r];
+			for(std::ptrdiff_t c = r + 1; c != Asize; ++c) {Ar2[c] -= Ar2r*Ar[c];}
 			y[r2] -= Ar2r*yr;
 		}
 	}
-	for(std::ptrdiff_t r = Asize - 1; r > 0; --r){
+	for(std::ptrdiff_t r = Asize - 1; r > 0; --r) {
 		auto const& yr = y[r];
-		for(std::ptrdiff_t r2 = r-1; r2 >=0; --r2) y[r2] -= yr*A[r2][r];
+		for(std::ptrdiff_t r2 = r-1; r2 >=0; --r2) {y[r2] -= yr*A[r2][r];}
 	}
 	return y;
 }
@@ -403,8 +403,8 @@ Other notations are available, but when in doubt the `rotated/strided/sliced/rot
 Blocks (slices) in multidimensions can be obtained but pure index notation using `.operator()`:
 
 ```cpp
-multi::array<double, 2> A({6, 7}); // 6x7 array
-A({1, 4}, {2, 4}) // 3x2 array, containing indices 1 to 4 in the first dimension and 2 to 4 in the second dimension.
+multi::array<double, 2> A({6, 7});  // 6x7 array
+A({1, 4}, {2, 4})  // 3x2 array, containing indices 1 to 4 in the first dimension and 2 to 4 in the second dimension.
 ```
 
 ## Concept Requirements
@@ -413,7 +413,7 @@ The design tries to impose the minimum possible requirements over the used refer
 Pointer-like random access types can be used as substitutes of built-in pointers.
 
 ```cpp
-namespace minimal{
+namespace minimal {
 	template<class T> class ptr{ // minimalistic pointer
 		T* impl_;
 		T& operator*() const{return *impl_;}
@@ -422,7 +422,7 @@ namespace minimal{
 	};
 }
 
-int main(){
+int main() {
 	double* buffer = new double[100];
 	multi::array_ref<double, 2, minimal::ptr<double> > CC(minimal::ptr<double>{buffer}, {10, 10});
 	CC[2]; // requires operator+ 
@@ -523,6 +523,7 @@ This library is compatible with both of them, and yet it doesn't have a dependen
 The user can choose one or the other, or none if serialization is not needed.
 
 Here it is a small implementation of save and load functions for array to JSON format with Cereal.
+Array variables are (de)serialized using the (`>>`)`<<` operator with the archive; operator `&` can be used to have single code for both.
 The example can be easily adapted to other formats or libries (XML with Boost.Serialization are commented on the right).
 
 ```cpp
@@ -542,7 +543,9 @@ using output_archive = cereal::JSONOutputArchive;  // boost::archive::xml_oarchi
 using cereal::make_nvp;                            // boost::serialization::make_nvp;
 
 template<class Array, class IStream> auto load(IStream&& is) -> Array {
-	Array value; input_archive{is} >> make_nvp("value", value); return value;
+	Array value;
+	input_archive{is} >> make_nvp("value", value);
+	return value;
 }
 
 template<class Array, class OStream> void save(OStream&& os, Array const& value) {
@@ -551,9 +554,9 @@ template<class Array, class OStream> void save(OStream&& os, Array const& value)
 
 int main() {
 	multi::array<std::string, 2> const A = {{"w", "x"}, {"y", "z"}};
-	save(std::ofstream{"file"}, A);
+	save(std::ofstream{"file"}, A);  // use std::cout to print serialization to the screen
 
-	auto B = load<multi::array<std::string, 2>>(std::ifstream{"file"});
+	auto const B = load<multi::array<std::string, 2>>(std::ifstream{"file"});
 	assert(A == B);
 }
 ```
@@ -599,12 +602,12 @@ The output JSON file of the previous example looks like this.
 ```
 
 Large datasets tend to be serialized much slowly for archives with heavy formatting.
-Here it is a comparison of speeds when (de)serializing a 134 MB 2D array of with random `double`s.
+Here it is a comparison of speeds when (de)serializing a 134 MB 4-dimensional array of with random `double`s.
 
 | Archive format (Library)     | file size     | speed (read - write)         | time (read - write)   |
 | ---------------------------- | ------------- | ---------------------------- |-----------------------|
 | JSON (Cereal)                | 684 MB        |   3.9 MB/sec -   8.4 MB/sec  |  32.1 sec - 15.1  sec |
-| XML (Cereal)                 | 612 M         |   2.  MB/sec -   4.  MB/sec  |  56   sec  - 28   sec |
+| XML (Cereal)                 | 612 MB        |   2.  MB/sec -   4.  MB/sec  |  56   sec  - 28   sec |
 | XML (Boost)                  | 662 MB        |  11.  MB/sec -  13.  MB/sec  |  11   sec  -  9   sec |
 | Portable Binary (Cereal)     | 134 MB        | 130.  MB/sec - 121.  MB/sec  |  9.7  sec  - 10.6 sec |
 | Text (Boost)                 | 411 MB        |  15.  MB/sec -  16.  MB/sec  |  8.2  sec  - 7.6  sec |
