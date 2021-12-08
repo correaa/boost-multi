@@ -409,12 +409,14 @@ A({1, 4}, {2, 4})  // 3x2 array, containing indices 1 to 4 in the first dimensio
 
 ## Concept Requirements
 
-The design tries to impose the minimum possible requirements over the used referred types.
+The design tries to impose the minimum possible requirements over the  types that parameterize the arrays.
+Array operations assume that the contained type (element type) are regular (i.e. different element represent disjoint entities that behave like values).
 Pointer-like random access types can be used as substitutes of built-in pointers.
+Therefore pointers to special memory (fancy-pointers) are supported.
 
 ```cpp
 namespace minimal {
-	template<class T> class ptr{ // minimalistic pointer
+	template<class T> class ptr {  // minimalistic pointer
 		T* impl_;
 		T& operator*() const{return *impl_;}
 		auto operator+(std::ptrdiff_t n) const {return ptr{impl_ + n};}
