@@ -542,7 +542,8 @@ using cereal::make_nvp;                            // boost::serialization::make
 
 namespace multi = boost::multi;
 
-template<class T, multi::dimensionality_type D, class IStream> auto array_load(IStream&& is) -> Array {
+template<class T, multi::dimensionality_type D, class IStream> 
+auto array_load(IStream&& is) {
 	multi::array<T, D> value;
 	input_archive{is} >> make_nvp("value", value);
 	return value;
