@@ -542,15 +542,15 @@ using cereal::make_nvp;                            // boost::serialization::make
 
 namespace multi = boost::multi;
 
-template<class T, multi::dimensionality_type D, class IStream> 
+template<class Element, multi::dimensionality_type D, class IStream> 
 auto array_load(IStream&& is) {
-	multi::array<T, D> value;
+	multi::array<Element, D> value;
 	input_archive{is} >> make_nvp("value", value);
 	return value;
 }
 
-template<class T, multi::dimensionality_type D, class OStream>
-void array_save(OStream&& os, multi::array<T, D> const& value) {
+template<class Element, multi::dimensionality_type D, class OStream>
+void array_save(OStream&& os, multi::array<Element, D> const& value) {
 	output_archive{os} << make_nvp("value", value);
 }
 
