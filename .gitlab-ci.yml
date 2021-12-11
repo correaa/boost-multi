@@ -173,6 +173,7 @@ memcheck:
     - ctest --overwrite MemoryCheckCommandOptions="--leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=666" -T memcheck --output-on-failure
 
 clang++-9:
+  image: debian:stable
   stage: test
   script:
     - export CXX="clang++-9"
