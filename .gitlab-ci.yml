@@ -186,6 +186,7 @@ clang++-9:
     - ctest --output-on-failure
 
 clang++-9-std17:
+  image: debian:stable
   stage: test
   script:
     - export CXX="clang++-9"
@@ -198,6 +199,7 @@ clang++-9-std17:
     - ctest --output-on-failure
 
 clang++-9-asan:
+  image: debian:stable
   stage: test
   script:
     - export CXX="clang++-9"
