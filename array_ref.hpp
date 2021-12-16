@@ -350,49 +350,49 @@ struct array_iterator
 	constexpr auto operator-=(difference_type d) -> array_iterator& {advance(-d); return *this;}
 };
 
-template<class It>
-struct biiterator
-: boost::multi::iterator_facade<
-	biiterator<It>,
-	typename std::iterator_traits<It>::value_type, std::random_access_iterator_tag,
-	decltype(*(std::move((*std::declval<It>())).begin())), multi::difference_type
->
-,	multi::affine<biiterator<It>, multi::difference_type>
-,	multi::decrementable<biiterator<It>>
-,	multi::incrementable<biiterator<It>>
-,	multi::totally_ordered2<biiterator<It>, void> {
-private:
-	It me_ = {};
-	std::ptrdiff_t pos_ = 0;
-	std::ptrdiff_t stride_ = 1;
+//template<class It>
+//struct biiterator
+//: boost::multi::iterator_facade<
+//	biiterator<It>,
+//	typename std::iterator_traits<It>::value_type, std::random_access_iterator_tag,
+//	decltype(*(std::move((*std::declval<It>())).begin())), multi::difference_type
+//>
+//,	multi::affine<biiterator<It>, multi::difference_type>
+//,	multi::decrementable<biiterator<It>>
+//,	multi::incrementable<biiterator<It>>
+//,	multi::totally_ordered2<biiterator<It>, void> {
+//private:
+//	It me_ = {};
+//	std::ptrdiff_t pos_ = 0;
+//	std::ptrdiff_t stride_ = 1;
 
-public:
-	constexpr biiterator(It me, std::ptrdiff_t pos, std::ptrdiff_t stride)
-	: me_{me}, pos_{pos}, stride_{stride} {}
+//public:
+//	constexpr biiterator(It me, std::ptrdiff_t pos, std::ptrdiff_t stride)
+//	: me_{me}, pos_{pos}, stride_{stride} {}
 
-	constexpr auto operator++() -> decltype(auto) {
-		++pos_;
-		if(pos_==stride_) {
-			++me_;
-			pos_ = 0;
-		}
-		return *this;
-	}
+//	constexpr auto operator++() -> decltype(auto) {
+//		++pos_;
+//		if(pos_==stride_) {
+//			++me_;
+//			pos_ = 0;
+//		}
+//		return *this;
+//	}
 
-	constexpr auto operator==(biiterator const& o) const -> bool {return me_==o.me_ and pos_==o.pos_;}
-	constexpr auto operator+=(multi::difference_type n) -> biiterator& {me_ += n/stride_; pos_ += n%stride_; return *this;}
+//	constexpr auto operator==(biiterator const& o) const -> bool {return me_==o.me_ and pos_==o.pos_;}
+//	constexpr auto operator+=(multi::difference_type n) -> biiterator& {me_ += n/stride_; pos_ += n%stride_; return *this;}
 
-	constexpr auto operator*() const -> decltype(auto) {
-		auto meb = std::move(*me_).begin();
-		return meb[pos_];
-	}
+//	constexpr auto operator*() const -> decltype(auto) {
+//		auto meb = std::move(*me_).begin();
+//		return meb[pos_];
+//	}
 
-	using difference_type = std::ptrdiff_t;
-	using reference = decltype(*std::declval<biiterator>());
-	using value_type = std::decay_t<reference>;
-	using pointer = value_type*;
-	using iterator_category = std::random_access_iterator_tag;
-};
+//	using difference_type = std::ptrdiff_t;
+//	using reference = decltype(*std::declval<biiterator>());
+//	using value_type = std::decay_t<reference>;
+//	using pointer = value_type*;
+//	using iterator_category = std::random_access_iterator_tag;
+//};
 
 template<class It>
 auto ref(It begin, It end)
@@ -734,14 +734,14 @@ struct basic_array
 
 	[[deprecated]] constexpr auto range(typename types::index_range const& ir, dimensionality_type n) const {return rotated(n).range(ir).rotated(-n);}
 
-	friend constexpr auto flattened(basic_array&& s) -> decltype(auto) {return std::move(s).flattened();}
-	       constexpr auto flattened()&& -> decltype(auto) {
-		multi::biiterator<std::decay_t<decltype(std::move(*this).begin())>> biit{std::move(*this).begin(), 0, size(*(std::move(*this).begin()))};
-		return basic_array<typename std::iterator_traits<decltype(biit)>::value_type, 1, decltype(biit)>{
-			multi::layout_t<1>(1, 0, this->size()*size(*(std::move(*this).begin()))),
-			biit
-		};
-	}
+//	friend constexpr auto flattened(basic_array&& s) -> decltype(auto) {return std::move(s).flattened();}
+//	       constexpr auto flattened()&& -> decltype(auto) {
+//		multi::biiterator<std::decay_t<decltype(std::move(*this).begin())>> biit{std::move(*this).begin(), 0, size(*(std::move(*this).begin()))};
+//		return basic_array<typename std::iterator_traits<decltype(biit)>::value_type, 1, decltype(biit)>{
+//			multi::layout_t<1>(1, 0, this->size()*size(*(std::move(*this).begin()))),
+//			biit
+//		};
+//	}
 	constexpr auto is_flattable() const -> bool{return this->stride() == this->layout().sub().nelems();}
 
 	friend constexpr auto flatted(basic_array const& s) {return s.flatted();}
