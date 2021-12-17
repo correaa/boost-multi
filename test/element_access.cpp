@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE(multi_test_stencil) {
 	;
 
 	BOOST_REQUIRE(      size(A) == 3                                           );
-	BOOST_REQUIRE(           A.num_elements() == 3*5                           );
+	BOOST_REQUIRE(           A.num_elements() == 3*5                         );
 	BOOST_REQUIRE(           A[1][2] == "h"                                    );
 
 	BOOST_REQUIRE(      size(A          ({1, 3}, {2, 5})) == 2                 );

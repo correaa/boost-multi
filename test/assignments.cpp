@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE(self_assigment) {
 
 BOOST_AUTO_TEST_CASE(assignments) {
 	{
-		std::vector<double> v(5*7, 99.);
+		std::vector<double> v( static_cast<std::size_t>(5*7), 99.);
 		constexpr double val = 33.;
 		multi::array<double, 2> A({5, 7}, val);
 		multi::array_ref<double, 2>(v.data(), {5, 7}) = A;

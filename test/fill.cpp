@@ -12,8 +12,7 @@
 #include<type_traits> // enable_if_t
 
 // from Howard Hinnart hash
-auto fnv1a(void const* key, std::size_t len, std::size_t h) noexcept;
-auto fnv1a(void const* key, std::size_t len, std::size_t h) noexcept {
+auto fnv1a(void const* key, std::size_t len, std::size_t h) noexcept {  // NOLINT(bugprone-easily-swappable-parameters)
 	auto const *p = static_cast<unsigned char const*>(key);
 	unsigned char const* const e = p + len; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): low level
 	for(; p < e; ++p) { // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): low level
