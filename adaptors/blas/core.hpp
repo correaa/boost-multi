@@ -453,33 +453,33 @@ using std::max;
 
 #define xsyrk(T) \
 template<class UL, class C, class S, class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BETA, class CCP, class CC = typename pointer_traits<CCP>::element_type, \
-enable_if_t< \
-	is_##T<AA>{} and is_##T<CC>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*AA{})>{} and \
-	is_convertible_v<AAP, AA*> and is_convertible_v<CCP, CC*> \
-, int> =0> \
-v syrk(        UL ul, C transA,             S n, S k, ALPHA const* alpha, AAP aa, S lda,             BETA const* beta, CCP cc, S ldc) \
-/*=delete;*/ \
-{ \
-	if(transA == 'N' or transA == 'n') MULTI_ASSERT1( lda >= max(1L, n) ); else MULTI_ASSERT1( lda >= max(1L, k) ); \
-	MULTI_ASSERT1( ldc >= max(1L, n) ); \
-	MULTI_MARK_SCOPE("cpu_herk"); \
-	BLAS(T##syrk)(      ul, transA,            BC(n), BC(k), *(T const*)alpha, aa, BC(lda),        *(T const*)beta, cc, BC(ldc)); \
-}
+enable_if_t<                                                                                                                                                                                      \
+	is_##T<AA>{} and is_##T<CC>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*AA{})>{} and                                                                                                       \
+	is_convertible_v<AAP, AA*> and is_convertible_v<CCP, CC*>                                                                                                                                     \
+, int> =0>                                                                                                                                                                                        \
+v syrk(        UL ul, C transA,             S n, S k, ALPHA const* alpha, AAP aa, S lda,             BETA const* beta, CCP cc, S ldc)  /*NOLINT(bugprone-easily-swappable-parameters)*/           \
+/*=delete;*/                                                                                                                                                                                      \
+{                                                                                                                                                                                                 \
+	if(transA == 'N' or transA == 'n') MULTI_ASSERT1( lda >= max(1L, n) ); else MULTI_ASSERT1( lda >= max(1L, k) );                                                                               \
+	MULTI_ASSERT1( ldc >= max(1L, n) );                                                                                                                                                           \
+	MULTI_MARK_SCOPE("cpu_herk");                                                                                                                                                                 \
+	BLAS(T##syrk)(      ul, transA,            BC(n), BC(k), *(T const*)alpha, aa, BC(lda),        *(T const*)beta, cc, BC(ldc));                                                                 \
+}                                                                                                                                                                                                 \
 
 #define xherk(T) \
-template<class UL, class C, class S, class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BETA, class CCP, class CC = typename pointer_traits<CCP>::element_type, class Real = typename T::value_type,\
-enable_if_t< \
-	is_##T<AA>{} and is_##T<CC>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*AA{})>{} and \
-	is_convertible_v<AAP, AA*> and is_convertible_v<CCP, CC*> \
-, int> =0> \
-v herk(        UL ul, C transA,             S n, S k, ALPHA const* alpha, AAP aa, S lda,             BETA const* beta, CCP cc, S ldc) \
-/*=delete;*/ \
-{ \
-	if(transA == 'N' or transA == 'n'){MULTI_ASSERT1( lda >= max(1L, n) );}else{MULTI_ASSERT1( lda >= max(1L, k) );} /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/ \
-	MULTI_ASSERT1( ldc >= max(1L, n) ); /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/ \
-	MULTI_MARK_SCOPE("cpu_herk"); \
-	BLAS(T##herk)(      ul, transA,            BC(n), BC(k), *(Real const*)alpha, aa, BC(lda),        *(Real const*)beta, cc, BC(ldc)); \
-}
+template<class UL, class C, class S, class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BETA, class CCP, class CC = typename pointer_traits<CCP>::element_type, class Real = typename T::value_type, \
+enable_if_t<                                                                                                                                                                                                                           \
+	is_##T<AA>{} and is_##T<CC>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*AA{})>{} and                                                                                                                                            \
+	is_convertible_v<AAP, AA*> and is_convertible_v<CCP, CC*>                                                                                                                                                                          \
+, int> =0>                                                                                                                                                                                                                             \
+v herk(        UL ul, C transA,             S n, S k, ALPHA const* alpha, AAP aa, S lda,             BETA const* beta, CCP cc, S ldc)  /*NOLINT(bugprone-easily-swappable-parameters)*/                                                \
+/*=delete;*/                                                                                                                                                                                                                           \
+{                                                                                                                                                                                                                                      \
+	if(transA == 'N' or transA == 'n') {MULTI_ASSERT1( lda >= max(1L, n) );} else {MULTI_ASSERT1( lda >= max(1L, k) );}  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                         \
+	MULTI_ASSERT1( ldc >= max(1L, n) );  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                                                                         \
+	MULTI_MARK_SCOPE("cpu_herk");                                                                                                                                                                                                      \
+	BLAS(T##herk)(      ul, transA,            BC(n), BC(k), *(Real const*)alpha, aa, BC(lda),        *(Real const*)beta, cc, BC(ldc));                                                                                                \
+}                                                                                                                                                                                                                                      \
 
 #define xgemm(T)                                                                                                                                                                                                                        \
 template<class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BBP, class BB = typename pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename pointer_traits<CCP>::element_type, \
@@ -487,7 +487,7 @@ enable_if_t<                                                                    
 	is_##T<AA>{} and is_##T<BB>{} and is_##T<CC>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{})>{} and                                                                                                                            \
 	is_convertible_v<AAP, AA*> and is_convertible_v<BBP, BB*> and is_convertible_v<CCP, CC*>                                                                                                                                            \
 , int> =0 >                                                                                                                                                                                                                             \
-v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc) {                                                                \
+v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc) {  /*NOLINT(bugprone-easily-swappable-parameters)*/                                                              \
 	MULTI_MARK_SCOPE("cpu_gemm");			                                                                                                                                                                                            \
 	using std::max;                                                                                                                                                                                                                     \
 	if(transA =='N'){MULTI_ASSERT1(lda >= max(1L, m));}else{MULTI_ASSERT1(lda >= max(1L, k));}                                                                                                                                          \
@@ -497,30 +497,31 @@ v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* a
 	MULTI_ASSERT1(ldc >= max(ssize_t{1}, m));                                                                                                                                                                                           \
 	if(*beta != 0.) MULTI_ASSERT1((is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{} + BETA{}*CC{})>{}));                                                                                                                                   \
 	BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), *(T const*)alpha, (T const*)static_cast<AA*>(aa), BC(lda), (T const*)static_cast<BB*>(bb), BC(ldb), *(T const*)beta, (T*)static_cast<CC*>(cc), BC(ldc));                         \
-}
+}                                                                                                                                                                                                                                       \
 
-xgemm(s) xgemm(d) xgemm(c) xgemm(z) // NOLINT(readability-function-cognitive-complexity) : 36 of 25
+xgemm(s) xgemm(d) xgemm(c) xgemm(z)  // NOLINT(readability-function-cognitive-complexity) : 36 of 25
 #undef xgemm
 
 #define xtrsm(T) \
-template<class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BBP, class BB = typename pointer_traits<BBP>::element_type, \
-enable_if_t< \
-	is_##T<AA>{} and is_##T<BB>{} and is_assignable<BB&, decltype(AA{}*BB{}/ALPHA{})>{} and is_assignable<BB&, decltype(ALPHA{}*BB{}/AA{})>{} and \
-	is_convertible_v<AAP, AA*> and is_convertible_v<BBP, BB*> \
-,int> =0> \
-v trsm(char side, char ul, char transA, char diag, ssize_t m, ssize_t n, ALPHA alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb) { \
-	MULTI_MARK_SCOPE("cpu_trsm");											\
-	assert( side   == 'L' or side   == 'R' );                  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/  \
-	assert( ul     == 'U' or ul     == 'L' );                  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/  \
-	assert( transA == 'N' or transA == 'T' or transA == 'C' ); /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/  \
-	assert( diag     == 'U' or diag     == 'N' );              /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/  \
-	MULTI_ASSERT1( m >= 0 and n >= 0 ); \
-	using std::max; \
+template<class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BBP, class BB = typename pointer_traits<BBP>::element_type,                                                         \
+enable_if_t<                                                                                                                                                                                                      \
+	is_##T<AA>{} and is_##T<BB>{} and is_assignable<BB&, decltype(AA{}*BB{}/ALPHA{})>{} and is_assignable<BB&, decltype(ALPHA{}*BB{}/AA{})>{} and                                                                 \
+	is_convertible_v<AAP, AA*> and is_convertible_v<BBP, BB*>                                                                                                                                                     \
+,int> =0>                                                                                                                                                                                                         \
+v trsm(char side, char ul, char transA, char diag, ssize_t m, ssize_t n, ALPHA alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb) { /*NOLINT(bugprone-easily-swappable-parameters)*/                                \
+	MULTI_MARK_SCOPE("cpu_trsm");											                                                                                                                                      \
+	assert( side   == 'L' or side   == 'R' );                   /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                              \
+	assert( ul     == 'U' or ul     == 'L' );                   /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                              \
+	assert( transA == 'N' or transA == 'T' or transA == 'C' );  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                              \
+	assert( diag     == 'U' or diag     == 'N' );               /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                              \
+	MULTI_ASSERT1( m >= 0 and n >= 0 );                                                                                                                                                                           \
+	using std::max;                                                                                                                                                                                               \
 	if(side == 'L'){MULTI_ASSERT1(lda >= max(ssize_t{1}, m));}else if(side == 'R'){assert( lda >= max(ssize_t{1}, n) );}   /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/  \
-	MULTI_ASSERT1( ldb >= max(ssize_t{1}, m) ); \
-	BLAS(T##trsm)(side, ul, transA, diag, BC(m), BC(n), alpha, (T const*)static_cast<AA*>(aa), BC(lda), (T*)static_cast<BB*>(bb), BC(ldb)); \
-}
-xtrsm(s) xtrsm(d) xtrsm(c) xtrsm(z) // NOLINT(readability-function-cognitive-complexity) : 29 of 25
+	MULTI_ASSERT1( ldb >= max(ssize_t{1}, m) );                                                                                                                                                                   \
+	BLAS(T##trsm)(side, ul, transA, diag, BC(m), BC(n), alpha, (T const*)static_cast<AA*>(aa), BC(lda), (T*)static_cast<BB*>(bb), BC(ldb));                                                                       \
+}                                                                                                                                                                                                                 \
+
+xtrsm(s) xtrsm(d) xtrsm(c) xtrsm(z)  // NOLINT(readability-function-cognitive-complexity) : 29 of 25
 #undef xtrsm
 
 xsyrk(s) xsyrk(d) xsyrk(c) xsyrk(z)
