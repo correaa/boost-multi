@@ -174,6 +174,7 @@ memcheck:
 
 clang++-9:
   stage: test
+  image: debian:stable
   script:
     - export CXX="clang++-9"
     - apt-get update && apt-get install --no-install-recommends -y --quiet clang-9 pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
@@ -186,6 +187,7 @@ clang++-9:
 
 clang++-9-std17:
   stage: test
+  image: debian:stable
   script:
     - export CXX="clang++-9"
     - apt-get update && apt-get install --no-install-recommends -y --quiet clang-9 pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
@@ -198,6 +200,7 @@ clang++-9-std17:
 
 clang++-9-asan:
   stage: test
+  image: debian:stable
   script:
     - export CXX="clang++-9"
     - export ASAN_SYMBOLIZER_PATH=/usr/lib/llvm-9/bin/llvm-symbolizer
