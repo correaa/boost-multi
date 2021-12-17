@@ -173,7 +173,7 @@ auto alloc_uninitialized_value_construct_n(Alloc& alloc, ForwardIt first, Size n
 		//  ::new (static_cast<void*>(std::addressof(*current))) Value();
 		return current;
 	} catch(...) {
-		for(; current != first; ++first) {
+		for(; current != first; ++first) {  // NOLINT(altera-id-dependent-backward-branch)
 			std::allocator_traits<Alloc>::destroy(alloc, std::addressof(*first));
 		}
 		throw;
