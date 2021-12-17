@@ -99,11 +99,11 @@ class gemv_range{
 	auto operator=(gemv_range const&) = delete;
 	auto operator=(gemv_range&&) = delete;
 
-	gemv_range(Scalar alpha, It2D m_first, It2D m_last, It1D v_first) 
+	gemv_range(Scalar alpha, It2D m_first, It2D m_last, It1D v_first)  // NOLINT(bugprone-easily-swappable-parameters)
 		: alpha_{alpha}, m_begin_{std::move(m_first)}, m_end_{std::move(m_last)}, v_first_{std::move(v_first)}{
 		assert(m_begin_.stride() == m_end_.stride());
 	}
-	gemv_range(Context&& ctxt, Scalar alpha, It2D m_first, It2D m_last, It1D v_first)
+	gemv_range(Context&& ctxt, Scalar alpha, It2D m_first, It2D m_last, It1D v_first)  // NOLINT(bugprone-easily-swappable-parameters)
 	: alpha_{alpha}
 	, m_begin_{std::move(m_first)}, m_end_{std::move(m_last)}
 	, v_first_{std::move(v_first)}
