@@ -175,7 +175,7 @@ BOOST_AUTO_TEST_CASE(multi_extensions_intersection_2) {
 	BOOST_REQUIRE( extensions(B).num_elements() == 30*70L );
 
 	auto is = intersection( extensions(A), extensions(B) );
-	BOOST_REQUIRE( is.num_elements() == 30*20 );
+	BOOST_REQUIRE( is.num_elements() == 30*20L );
 
 	multi::array<double, 2> C(is);
 	C(std::get<0>(is), std::get<1>(is)) = A(std::get<0>(is), std::get<1>(is));
