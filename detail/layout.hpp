@@ -375,7 +375,7 @@ struct layout_t<1, SSize> {
 
 	constexpr explicit layout_t(extensions_type e) : layout_t(std::get<0>(e), {}) {}
 
-	constexpr layout_t(stride_type stride, offset_type offset, nelems_type nelems)
+	constexpr layout_t(stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
 	: stride_{stride}, offset_{offset}, nelems_{nelems} {}
 
 	       NODISCARD("") constexpr auto offset()        const&    -> offset_type {return offset_;}
@@ -559,9 +559,8 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 	->decltype(operator[](i)(idxs...)){
 		return operator[](i)(idxs...);}
 
-	constexpr layout_t(
-		sub_type sub, stride_type stride, offset_type offset, nelems_type nelems
-	) : sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
+	constexpr layout_t(sub_type sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
+	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
 
 	layout_t() = default;
 
