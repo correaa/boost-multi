@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 
 	static_assert( decltype(+B)::rank_v == 3 , "!");
 	BOOST_REQUIRE(( sizes(B) == decltype(sizes(B)){7, 3, 2} ));
-	BOOST_REQUIRE( B[4].num_elements() == 3*2 );
+	BOOST_REQUIRE( B[4].num_elements() == 3*2L );
 
 	BOOST_REQUIRE( &B[4][1][0] == &A[4][4] );
 	BOOST_REQUIRE( B[4][1][0] == 4.10 );
