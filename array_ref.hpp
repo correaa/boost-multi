@@ -350,49 +350,49 @@ struct array_iterator
 	constexpr auto operator-=(difference_type d) -> array_iterator& {advance(-d); return *this;}
 };
 
-template<class It>
-struct biiterator
-: boost::multi::iterator_facade<
-	biiterator<It>,
-	typename std::iterator_traits<It>::value_type, std::random_access_iterator_tag,
-	decltype(*(std::move((*std::declval<It>())).begin())), multi::difference_type
->
-,	multi::affine<biiterator<It>, multi::difference_type>
-,	multi::decrementable<biiterator<It>>
-,	multi::incrementable<biiterator<It>>
-,	multi::totally_ordered2<biiterator<It>, void> {
-private:
-	It me_ = {};
-	std::ptrdiff_t pos_ = 0;
-	std::ptrdiff_t stride_ = 1;
+//template<class It>
+//struct biiterator
+//: boost::multi::iterator_facade<
+//	biiterator<It>,
+//	typename std::iterator_traits<It>::value_type, std::random_access_iterator_tag,
+//	decltype(*(std::move((*std::declval<It>())).begin())), multi::difference_type
+//>
+//,	multi::affine<biiterator<It>, multi::difference_type>
+//,	multi::decrementable<biiterator<It>>
+//,	multi::incrementable<biiterator<It>>
+//,	multi::totally_ordered2<biiterator<It>, void> {
+//private:
+//	It me_ = {};
+//	std::ptrdiff_t pos_ = 0;
+//	std::ptrdiff_t stride_ = 1;
 
-public:
-	constexpr biiterator(It me, std::ptrdiff_t pos, std::ptrdiff_t stride)
-	: me_{me}, pos_{pos}, stride_{stride} {}
+//public:
+//	constexpr biiterator(It me, std::ptrdiff_t pos, std::ptrdiff_t stride)
+//	: me_{me}, pos_{pos}, stride_{stride} {}
 
-	constexpr auto operator++() -> decltype(auto) {
-		++pos_;
-		if(pos_==stride_) {
-			++me_;
-			pos_ = 0;
-		}
-		return *this;
-	}
+//	constexpr auto operator++() -> decltype(auto) {
+//		++pos_;
+//		if(pos_==stride_) {
+//			++me_;
+//			pos_ = 0;
+//		}
+//		return *this;
+//	}
 
-	constexpr auto operator==(biiterator const& o) const -> bool {return me_==o.me_ and pos_==o.pos_;}
-	constexpr auto operator+=(multi::difference_type n) -> biiterator& {me_ += n/stride_; pos_ += n%stride_; return *this;}
+//	constexpr auto operator==(biiterator const& o) const -> bool {return me_==o.me_ and pos_==o.pos_;}
+//	constexpr auto operator+=(multi::difference_type n) -> biiterator& {me_ += n/stride_; pos_ += n%stride_; return *this;}
 
-	constexpr auto operator*() const -> decltype(auto) {
-		auto meb = std::move(*me_).begin();
-		return meb[pos_];
-	}
+//	constexpr auto operator*() const -> decltype(auto) {
+//		auto meb = std::move(*me_).begin();
+//		return meb[pos_];
+//	}
 
-	using difference_type = std::ptrdiff_t;
-	using reference = decltype(*std::declval<biiterator>());
-	using value_type = std::decay_t<reference>;
-	using pointer = value_type*;
-	using iterator_category = std::random_access_iterator_tag;
-};
+//	using difference_type = std::ptrdiff_t;
+//	using reference = decltype(*std::declval<biiterator>());
+//	using value_type = std::decay_t<reference>;
+//	using pointer = value_type*;
+//	using iterator_category = std::random_access_iterator_tag;
+//};
 
 template<class It>
 auto ref(It begin, It end)
@@ -734,14 +734,14 @@ struct basic_array
 
 	[[deprecated]] constexpr auto range(typename types::index_range const& ir, dimensionality_type n) const {return rotated(n).range(ir).rotated(-n);}
 
-	friend constexpr auto flattened(basic_array&& s) -> decltype(auto) {return std::move(s).flattened();}
-	       constexpr auto flattened()&& -> decltype(auto) {
-		multi::biiterator<std::decay_t<decltype(std::move(*this).begin())>> biit{std::move(*this).begin(), 0, size(*(std::move(*this).begin()))};
-		return basic_array<typename std::iterator_traits<decltype(biit)>::value_type, 1, decltype(biit)>{
-			multi::layout_t<1>(1, 0, this->size()*size(*(std::move(*this).begin()))),
-			biit
-		};
-	}
+//	friend constexpr auto flattened(basic_array&& s) -> decltype(auto) {return std::move(s).flattened();}
+//	       constexpr auto flattened()&& -> decltype(auto) {
+//		multi::biiterator<std::decay_t<decltype(std::move(*this).begin())>> biit{std::move(*this).begin(), 0, size(*(std::move(*this).begin()))};
+//		return basic_array<typename std::iterator_traits<decltype(biit)>::value_type, 1, decltype(biit)>{
+//			multi::layout_t<1>(1, 0, this->size()*size(*(std::move(*this).begin()))),
+//			biit
+//		};
+//	}
 	constexpr auto is_flattable() const -> bool{return this->stride() == this->layout().sub().nelems();}
 
 	friend constexpr auto flatted(basic_array const& s) {return s.flatted();}
@@ -1519,13 +1519,17 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	using       reference = typename array_types<T, dimensionality_type(1), ElementPtr, Layout>::      reference;
 
  protected:
-	template<class A>
-	constexpr void intersection_assign(A&& other)& {
-		for(auto idx : intersection(types::extension(), extension(other))) {
-			operator[](idx) = std::forward<A>(other)[idx];
-		}
+	template<class A> constexpr void intersection_assign(A&& other)&& {intersection_assign(std::forward<A>(other));}
+	template<class A> constexpr void intersection_assign(A&& other)&  {
+		std::for_each(
+			intersection(types::extension(), extension(other)).begin(),
+			intersection(types::extension(), extension(other)).end()  ,
+			[&](auto const idx) {operator[](idx) = std::forward<A>(other)[idx];}
+		);
+	//	for(auto const idx : intersection(types::extension(), extension(other))) {
+	//		operator[](idx) = std::forward<A>(other)[idx];
+	//	}
 	}
-	template<class A> constexpr void intersection_assign(A&& o)&& {intersection_assign(std::forward<A>(o));}
 
 	basic_array(basic_array const&) = default;
 
@@ -2319,7 +2323,6 @@ template<class In, class T, dimensionality_type N, class TP, class = std::enable
 constexpr auto uninitialized_copy
 // require N>1 (this is important because it forces calling placement new on the pointer
 (In first, In last, multi::array_iterator<T, N, TP> dest) {
-	using std::begin; using std::end;
 	while(first != last) {
 		adl_uninitialized_copy(adl_begin(*first), adl_end(*first), adl_begin(*dest));
 		++first;
