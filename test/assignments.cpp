@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE(self_assigment) {
 
 BOOST_AUTO_TEST_CASE(assignments) {
 	{
-		std::vector<double> v(5*7, 99.);
+		std::vector<double> v( static_cast<std::size_t>(5*7), 99.);
 		constexpr double val = 33.;
 		multi::array<double, 2> A({5, 7}, val);
 		multi::array_ref<double, 2>(v.data(), {5, 7}) = A;
@@ -120,8 +120,8 @@ BOOST_AUTO_TEST_CASE(assignments) {
 		BOOST_REQUIRE( V.is_empty() );
 	}
 	{
-		std::vector<double> v(5*7, 99.);
-		std::vector<double> w(5*7, 33.);
+		std::vector<double> v(5*7L, 99.);
+		std::vector<double> w(5*7L, 33.);
 
 		multi::array_ptr<double, 2> Bp{w.data(), {5, 7}};
 		make_ref(v.data()) = *Bp;
@@ -130,8 +130,8 @@ BOOST_AUTO_TEST_CASE(assignments) {
 		BOOST_REQUIRE( v[9] == 33. );
 	}
 	 {
-		std::vector<double> v(5*7, 99.);
-		std::vector<double> w(5*7, 33.);
+		std::vector<double> v(5*7L, 99.);
+		std::vector<double> w(5*7L, 33.);
 
 		make_ref(v.data()) = make_ref(w.data());
 

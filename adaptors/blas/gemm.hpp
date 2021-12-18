@@ -223,8 +223,10 @@ public:
 	auto operator=(gemm_range&&) -> gemm_range& = delete;
 	~gemm_range() = default;
 
-	gemm_range(ContextPtr ctxtp, Scalar s, ItA a_first, ItA a_last, ItB b_first) : 
-		ctxtp_{ctxtp}, s_{s}, a_begin_{std::move(a_first)}, a_end_{std::move(a_last)}, b_begin_{std::move(b_first)}
+	gemm_range(ContextPtr ctxtp, Scalar s, ItA a_first, ItA a_last, ItB b_first)  // NOLINT(bugprone-easily-swappable-parameters)
+	: ctxtp_{ctxtp}
+	, s_{s}, a_begin_{std::move(a_first)}, a_end_{std::move(a_last)}
+	, b_begin_{std::move(b_first)}
 	{}
 
 	using iterator = gemm_iterator<ContextPtr, Scalar, ItA, ItB>;

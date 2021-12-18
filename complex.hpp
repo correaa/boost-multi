@@ -40,7 +40,7 @@ struct real_t;
 struct imag_t;
 
 template<class ValueType = double>
-struct complex{
+struct complex {
 	using value_type = ValueType;
 
  private:
@@ -51,7 +51,8 @@ struct complex{
 	complex() = default;
 
 	constexpr explicit complex(value_type real) : re{real}, im{value_type{0}} {}
-	constexpr complex(value_type real, value_type imag) : re{real}, im{imag} {}
+	constexpr complex(value_type real, value_type imag) // NOLINT(bugprone-easily-swappable-parameters)
+	: re{real}, im{imag} {}
 
 	constexpr explicit complex(std::complex<ValueType> const& other) : re{other.real()}, im{other.imag()} {}
 

@@ -567,13 +567,12 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 	constexpr explicit layout_t(extensions_type const& x)
 	: sub_(std_apply([](auto... e){return multi::extensions_t<D-1>{e...};}, detail::tail(x.base())))
 	, stride_{sub_.size()*sub_.stride()}
-	, offset_{std::get<0>(x.base()).first()*stride_} {
-		nelems_ = std::get<0>(x.base()).size()*(sub().num_elements());
-	}
+	, offset_{std::get<0>(x.base()).first()*stride_}
+	, nelems_{std::get<0>(x.base()).size()*(sub().num_elements())} {}
 
-	                     constexpr auto sub()             &    -> sub_type      & {return sub_;}
-	       NODISCARD("") constexpr auto sub()        const&    -> sub_type const& {return sub_;}
-	friend               constexpr auto sub(layout_t const& s) -> sub_type const& {return s.sub();}
+	       constexpr auto sub()             &    -> sub_type      & {return sub_;}
+	       constexpr auto sub()        const&    -> sub_type const& {return sub_;}
+	friend constexpr auto sub(layout_t const& s) -> sub_type const& {return s.sub();}
 
 	       constexpr auto nelems()             &    -> nelems_type      & {return   nelems_;}
 	       constexpr auto nelems()        const&    -> nelems_type const& {return   nelems_;}

@@ -173,7 +173,7 @@ auto alloc_uninitialized_value_construct_n(Alloc& alloc, ForwardIt first, Size n
 		//  ::new (static_cast<void*>(std::addressof(*current))) Value();
 		return current;
 	} catch(...) {
-		for(; current != first; ++first) {
+		for(; current != first; ++first) {  // NOLINT(altera-id-dependent-backward-branch)
 			std::allocator_traits<Alloc>::destroy(alloc, std::addressof(*first));
 		}
 		throw;
@@ -183,23 +183,23 @@ auto alloc_uninitialized_value_construct_n(Alloc& alloc, ForwardIt first, Size n
 template<class Alloc, class ForwardIt, class Size, class T = typename std::iterator_traits<ForwardIt>::value_type>
 auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size n)
 ->std::decay_t<decltype(std::allocator_traits<Alloc>::construct(alloc, std::addressof(*first)), first)> {
-	ForwardIt curr = first;
+	ForwardIt current = first;
 	if(std::is_trivially_default_constructible<T>{}) {
-		std::advance(curr, n);
+		std::advance(current, n);
 	} else {
 		using _ = std::allocator_traits<Alloc>;
 		try {
-			for(; n > 0; ++curr, --n) {
-				_::construct(alloc, std::addressof(*curr));
+			for(; n > 0; ++current, --n) {
+				_::construct(alloc, std::addressof(*current));
 			}
 		} catch(...) {
-			for(; curr!=first; ++first) {
+			for(; current != first; ++first) {  // NOLINT(altera-id-dependent-backward-branch)
 				_::destroy(alloc, std::addressof(*first));
 			}
 			throw;
 		}
 	}
-	return curr;
+	return current;
 }
 
 template<class ForwardIt, class Size>
@@ -284,7 +284,7 @@ auto uninitialized_move_n(InputIt first, Size count, ForwardIt d_first)
 			::new (static_cast<void*>(std::addressof(*current))) Value(std::move(*first));
 		}
 	} catch(...) {
-		for(; d_first != current; ++d_first) {
+		for(; d_first != current; ++d_first) {  // NOLINT(altera-id-dependent-backward-branch)
 			d_first->~Value();
 		}
 		throw;
@@ -391,7 +391,7 @@ auto alloc_uninitialized_fill_n(Alloc& a, ForwardIt first, Size n, T const& v)
 		}
 		return current;
 	} catch(...) {
-		for(; first != current; ++first) {
+		for(; first != current; ++first) {  // NOLINT(altera-id-dependent-backward-branch)
 			std::allocator_traits<Alloc>::destroy(a, std::addressof(*first));
 		}
 		throw;

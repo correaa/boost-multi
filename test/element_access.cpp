@@ -114,22 +114,22 @@ BOOST_AUTO_TEST_CASE(multi_test_stencil) {
 		 {"h", "i", "j", "k", "l"}}
 	;
 
-	BOOST_REQUIRE(      size(A) == 3                                           );
-	BOOST_REQUIRE(           A.num_elements() == 3*5                           );
-	BOOST_REQUIRE(           A[1][2] == "h"                                    );
+	BOOST_REQUIRE(      size(A) == 3                                            );
+	BOOST_REQUIRE(           A.num_elements() == 3*5L                           );
+	BOOST_REQUIRE(           A[1][2] == "h"                                     );
 
-	BOOST_REQUIRE(      size(A          ({1, 3}, {2, 5})) == 2                 );
-	BOOST_REQUIRE( extension(A          ({1, 3}, {2, 5})).start() == 0         );
-	BOOST_REQUIRE(           A          ({1, 3}, {2, 5}).num_elements() == 2*3 );
-	BOOST_REQUIRE(           A          ({1, 3}, {2, 5}).num_elements() == 2*3 );
-	BOOST_REQUIRE(           A          ({1, 3}, {2, 5})[0][0] == "h"          );
-	BOOST_REQUIRE(          &A          ({1, 3}, {2, 5})[0][0] == &A[1][2]     );
+	BOOST_REQUIRE(      size(A          ({1, 3}, {2, 5})) == 2                  );
+	BOOST_REQUIRE( extension(A          ({1, 3}, {2, 5})).start() == 0          );
+	BOOST_REQUIRE(           A          ({1, 3}, {2, 5}).num_elements() == 2*3L );
+	BOOST_REQUIRE(           A          ({1, 3}, {2, 5}).num_elements() == 2*3L );
+	BOOST_REQUIRE(           A          ({1, 3}, {2, 5})[0][0] == "h"           );
+	BOOST_REQUIRE(          &A          ({1, 3}, {2, 5})[0][0] == &A[1][2]      );
 
-	BOOST_REQUIRE(      size(A.stenciled({1, 3}, {2, 5})) == 2                 );
-	BOOST_REQUIRE( extension(A.stenciled({1, 3}, {2, 5})).start() == 1         );
-	BOOST_REQUIRE(           A.stenciled({1, 3}, {2, 5}).num_elements() == 2*3 );
-	BOOST_REQUIRE(           A.stenciled({1, 3}, {2, 5}) [1][2] == "h"         );
-	BOOST_REQUIRE(          &A.stenciled({1, 3}, {2, 5}) [1][2] == &A[1][2]    );
+	BOOST_REQUIRE(      size(A.stenciled({1, 3}, {2, 5})) == 2                  );
+	BOOST_REQUIRE( extension(A.stenciled({1, 3}, {2, 5})).start() == 1          );
+	BOOST_REQUIRE(           A.stenciled({1, 3}, {2, 5}).num_elements() == 2*3L );
+	BOOST_REQUIRE(           A.stenciled({1, 3}, {2, 5}) [1][2] == "h"          );
+	BOOST_REQUIRE(          &A.stenciled({1, 3}, {2, 5}) [1][2] == &A[1][2]     );
 
 	BOOST_REQUIRE( &A({1, 3}, {2, 5}).elements()[0] == &A(1, 2) );
 	BOOST_REQUIRE( &A({1, 3}, {2, 5}).elements()[A({1, 3}, {2, 5}).elements().size() - 1] == &A(2, 4) );
@@ -171,11 +171,11 @@ BOOST_AUTO_TEST_CASE(multi_extensions_intersection_2) {
 	multi::array<double, 2> A({80, 20}, 4.);
 	multi::array<double, 2> B({30, 70}, 8.);
 
-	BOOST_REQUIRE( extensions(A).num_elements() == 80*20 );
-	BOOST_REQUIRE( extensions(B).num_elements() == 30*70 );
+	BOOST_REQUIRE( extensions(A).num_elements() == 80*20L );
+	BOOST_REQUIRE( extensions(B).num_elements() == 30*70L );
 
 	auto is = intersection( extensions(A), extensions(B) );
-	BOOST_REQUIRE( is.num_elements() == 30*20 );
+	BOOST_REQUIRE( is.num_elements() == 30*20L );
 
 	multi::array<double, 2> C(is);
 	C(std::get<0>(is), std::get<1>(is)) = A(std::get<0>(is), std::get<1>(is));
