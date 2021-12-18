@@ -407,7 +407,7 @@ BOOST_AUTO_TEST_CASE(continued_part3) {
 	BOOST_REQUIRE( L.size() == size(L) );
 	BOOST_REQUIRE( L.extension() == extension(L) );
 
-	BOOST_REQUIRE( num_elements(L) == 10*20*30L );
+	BOOST_REQUIRE( num_elements(L) == 10*20L*30L );
 	BOOST_REQUIRE( size(L) == 10 );
 	BOOST_REQUIRE( extension(L).first() == 0 );
 	BOOST_REQUIRE( extension(L).last() == 10 );
@@ -471,13 +471,13 @@ BOOST_AUTO_TEST_CASE(continued) {
 }
 {
 	multi::layout_t<3> L({{0, 10}, {0, 20}, {0, 30}});
-	BOOST_REQUIRE( stride(L) == 20*30 );
+	BOOST_REQUIRE( stride(L) == 20*30L );
 	BOOST_REQUIRE( offset(L) == 0 );
-	BOOST_REQUIRE( nelems(L) == 10*20*30 );
+	BOOST_REQUIRE( nelems(L) == 10*20L*30L );
 }
 {
 	multi::layout_t<3> L({{10, 20}, {10, 30}, {10, 40}});
-	BOOST_REQUIRE( stride(L) == 20*30 );
+	BOOST_REQUIRE( stride(L) == 20*30L );
 }
 {
 	std::tuple<int, int, int> ttt = {1, 2, 3};
