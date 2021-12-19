@@ -318,19 +318,19 @@ struct layout_t<0, SSize>{
 
  public:
 	using extensions_type = extensions_t<0>;
-	explicit constexpr layout_t(extensions_type const& /*nil*/) {}
+	constexpr explicit layout_t(extensions_type const& /*nil*/) {}
 	constexpr layout_t() : layout_t{extensions_type{}} {}
 
-	NODISCARD("") constexpr auto extensions() const -> extensions_type {return extensions_type{};}
+	constexpr auto extensions() const -> extensions_type {return extensions_type{};}
 	friend constexpr auto extensions(layout_t const& self) {return self.extensions();}
-	NODISCARD("") constexpr auto sizes() const {return std::tuple<>{};}
+	constexpr auto sizes() const {return std::tuple<>{};}
 
 	[[deprecated]]
-	NODISCARD("") constexpr auto    empty() const -> bool {return false;}
-	NODISCARD("") constexpr auto is_empty() const -> bool {return false;}
+	constexpr auto    empty() const -> bool {return false;}
+	constexpr auto is_empty() const -> bool {return false;}
 
 	friend constexpr auto sizes(layout_t const& s) {return s.sizes();}
-	NODISCARD("") constexpr auto num_elements() const -> nelems_type {return 1;}
+	constexpr auto num_elements() const -> nelems_type {return 1;}
 
 	constexpr auto operator==(layout_t const& /*stateless*/) const -> bool{return true ;}
 	constexpr auto operator!=(layout_t const& /*stateless*/) const -> bool{return false;}
