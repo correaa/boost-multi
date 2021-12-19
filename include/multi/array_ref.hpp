@@ -926,8 +926,8 @@ struct basic_array
 			std::move(tmp).
 			rotated();
 		auto&& tmp3 = std::move(tmp2).paren_aux(as...);
-		auto&& ret = std::move(tmp3).unrotated();
-		return std::move(ret);
+//		auto&& ret = std::move(tmp3).unrotated();
+		return std::move(tmp3).unrotated(); // std::move(ret);
 	}
 	template<class... As> constexpr auto paren_aux(index_range a, As... as)     && {
 		auto&& tmp = std::move(*this).range(a);
