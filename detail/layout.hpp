@@ -81,9 +81,11 @@ struct extensions_t {
 	using nelems_type = multi::index;
 
 	template<class T = void, std::enable_if_t<sizeof(T*) and D == 1, int> = 0>
+	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
 	constexpr extensions_t(multi::size_t i) : extensions_t{index_extension{i}} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : allow terse syntax
 
 	template<class T = void, std::enable_if_t<sizeof(T*) and D == 1, int> = 0>
+	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
 	constexpr extensions_t(index_extension e1) : impl_{e1} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : allow terse syntax
 
 	template<class T = void, std::enable_if_t<sizeof(T*) and D == 2, int> = 0>
@@ -236,6 +238,7 @@ template<> struct extensions_t<1> {
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
 	constexpr extensions_t(std::tuple<T1> e) : impl_{std::move(e)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
+	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
 	constexpr extensions_t(multi::index_extension e1) : impl_{e1} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : allow terse syntax
 	constexpr explicit extensions_t(base_ t) : impl_{std::move(t)} {}
 
@@ -256,8 +259,8 @@ template<> struct extensions_t<1> {
 	}
 	template<class Ar>
 	void serialize(Ar& ar, unsigned /*version*/) {
-		auto& extension = std::get<0>(impl_);
-		ar & multi::archive_traits<Ar>::make_nvp("extension", extension);
+		auto& extension_ = std::get<0>(impl_);
+		ar & multi::archive_traits<Ar>::make_nvp("extension", extension_);
 	//	ar & boost::serialization::     make_nvp("extension", extension);
 	//	ar & cereal::                   make_nvp("extension", extension);
 	//	ar &                                                  extension ;
