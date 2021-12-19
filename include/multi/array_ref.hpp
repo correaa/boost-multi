@@ -266,7 +266,7 @@ struct array_iterator
 	using stride_type = index;
 	using layout_type = typename reference::layout_type;
 
-	explicit constexpr array_iterator(std::nullptr_t p) : ptr_{p} {}/*, stride_{1}*/
+	constexpr explicit array_iterator(std::nullptr_t p) : ptr_{p} {}/*, stride_{1}*/
 	constexpr array_iterator() : array_iterator{nullptr} {}
 
 	template<class, dimensionality_type, class> friend struct array_iterator;

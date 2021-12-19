@@ -138,8 +138,8 @@ struct ptr {
 	// cppcheck-suppress noExplicitConstructor ;
 	constexpr /*explicit(false)*/ ptr(ptr<Other> const& o) : rp_{static_cast<raw_pointer>(o.rp_)} {}
 	template<class Other, typename = std::enable_if_t<not std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{} and not std::is_same<Other, T>{}>, typename = decltype(static_cast<raw_pointer>(std::declval<ptr<Other>>().rp_))>
-	explicit/*(true)*/ constexpr ptr(ptr<Other> const& o, void** = 0) : rp_{static_cast<raw_pointer>(o.rp_)} {}
-	explicit constexpr ptr(raw_pointer rp) : rp_{rp} {}
+	constexpr explicit/*(true)*/ ptr(ptr<Other> const& o, void** = 0) : rp_{static_cast<raw_pointer>(o.rp_)} {}
+	constexpr explicit           ptr(raw_pointer rp) : rp_{rp} {}
 
 	template<class TT> friend auto reinterpret_pointer_cast(ptr p)
 	->decltype(ptr<TT>{reinterpret_cast<TT*>(std::declval<raw_pointer>())}){
