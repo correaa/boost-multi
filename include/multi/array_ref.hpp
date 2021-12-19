@@ -1469,7 +1469,7 @@ struct basic_array<T, 0, ElementPtr, Layout>
 	auto serialize(Archive& ar, const unsigned int /*version*/) {
 		using AT = multi::archive_traits<Archive>;
 		auto& element_ = *(this->base_);
-		ar & AT::make_nvp("element", *(this->base_));
+		ar & AT::make_nvp("element", element_);
 	//	ar & cereal::make_nvp("element", element_);
 	//	ar &                             element_ ;
 	}
