@@ -72,7 +72,7 @@ struct ptr<void const, RawPtr> : cuda::ptr<void const, RawPtr> {
 	using pointer = ptr<T>;
 	using element_type = typename std::pointer_traits<raw_pointer>::element_type;
 	using difference_type = void;
-	explicit operator bool() const{return rp_;}
+//	explicit operator bool() const{return rp_;}
 //	explicit operator raw_pointer&()&{return rp_;}
 	friend constexpr bool operator==(ptr const& self, ptr const& o) {return self.rp_ == o.rp_;}
 	friend constexpr bool operator!=(ptr const& self, ptr const& o) {return self.rp_ != o.rp_;}
