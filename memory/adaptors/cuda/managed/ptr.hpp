@@ -79,7 +79,7 @@ struct ptr<void const, RawPtr> : cuda::ptr<void const, RawPtr> {
 	friend ptr to_address(ptr const& p) {return p;}
 	void operator*() const = delete;
 	template<class U> using rebind = ptr<U, typename std::pointer_traits<raw_pointer>::template rebind<U>>;
-	friend raw_pointer raw_pointer_cast(ptr const& self){return self.rp_;}
+//	friend raw_pointer raw_pointer_cast(ptr const& self){return self.rp_;}
 };
 
 template<typename RawPtr>
