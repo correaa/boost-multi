@@ -82,26 +82,28 @@ struct ptr<void const, RawPtr> : cuda::ptr<void const, RawPtr> {
 };
 
 template<typename RawPtr>
-struct ptr<void, RawPtr> {
+struct ptr<void, RawPtr> : cuda::ptr<void, RawPtr> {
 	using pointer = ptr;
 	using element_type    = void;
 	using difference_type = typename std::pointer_traits<RawPtr>::difference_type;
 protected:
 	using raw_pointer = RawPtr;
-	raw_pointer rp_;
-private:
-	ptr(ptr<void const> const& p) : rp_{const_cast<void*>(p.rp_)}{}
+//	raw_pointer rp_;
+
+ private:
+	ptr(ptr<void const> const& p) : cuda::ptr<void, RawPtr>{const_cast<void*>(p.rp_)} {}
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 	template<class, class> friend struct ptr;
 	template<class TT, class DP> friend class allocator;
-public:
-	template<class Other> ptr(ptr<Other> const& p) : rp_{p.rp_}{}
-	explicit ptr(raw_pointer rp) : rp_{rp}{}
+
+ public:
+	template<class Other> ptr(ptr<Other> const& p) : cuda::ptr<void, RawPtr>{p.rp_} {}
+	explicit ptr(raw_pointer rp) : cuda::ptr<void, RawPtr>{rp} {}
 	ptr() = default;
 	ptr(ptr const& p) = default;
 
 	// cppcheck-suppress noExplicitConstructor ; initialized from nullptr
-	ptr(std::nullptr_t n) : rp_{n} {}
+	ptr(std::nullptr_t n) : cuda::ptr<void, RawPtr>{n} {}
 
 	template<class Other, typename = decltype(raw_pointer{std::declval<Other const&>().impl_})>
 	// cppcheck-suppress noExplicitConstructor ; any pointer is convertible to void pointer
@@ -113,11 +115,11 @@ public:
 	operator cuda::ptr<void>(){return {rp_};}
 	template<class U> using rebind = ptr<U, typename std::pointer_traits<raw_pointer>::template rebind<U>>;
 
-	explicit operator bool() const{return rp_;}
-	explicit operator raw_pointer&()&{return rp_;}
-	friend ptr to_address(ptr const& p){return p;}
+	explicit operator bool() const {return rp_;}
+	explicit operator raw_pointer&()& {return rp_;}
+	friend ptr to_address(ptr const& p) {return p;}
 	void operator*() = delete;
-	friend raw_pointer raw_pointer_cast(ptr const& self){return self.rp_;}
+	friend raw_pointer raw_pointer_cast(ptr const& self) {return self.rp_;}
 };
 
 template<class T, class PrefetchDevice = std::integral_constant<int, -99> > class allocator;
