@@ -86,7 +86,8 @@ struct ptr<void, RawPtr> : cuda::ptr<void, RawPtr> {
 	using pointer = ptr;
 	using element_type    = void;
 	using difference_type = typename std::pointer_traits<RawPtr>::difference_type;
-protected:
+
+ protected:
 	using raw_pointer = RawPtr;
 //	raw_pointer rp_;
 
@@ -110,6 +111,7 @@ protected:
 	ptr(Other const& o) : cuda::ptr<void, RawPtr>{o.rp_}{}
 
 	ptr& operator=(ptr const&) = default;
+
 	friend constexpr bool operator==(ptr const& self, ptr const& other){return self.rp_==other.rp_;}
 	friend constexpr bool operator!=(ptr const& self, ptr const& other){return self.rp_!=other.rp_;}
 	operator cuda::ptr<void>(){return {this->rp_};}
@@ -127,15 +129,17 @@ template<class T, class PrefetchDevice = std::integral_constant<int, -99> > clas
 template<typename T, typename RawPtr>
 struct ptr : cuda::ptr<T, RawPtr>{
 	using raw_pointer = RawPtr;
-//	raw_pointer rp_;  // this is defined in base classs
-protected:
+//	raw_pointer rp_;
+
+ protected:
 	friend struct cuda::ptr<T, RawPtr>; // to allow automatic conversions
 	template<class TT, class DP> friend class allocator;
 	template<typename, typename> friend struct ptr;
 //	template<class TT, typename = typename std::enable_if<not std::is_const<TT>{}>::type> 
 //	ptr(ptr<TT const> const& p) : rp_{const_cast<T*>(p.impl_)}{}
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
-public:
+
+ public:
 	template<class U> using rebind = ptr<U, typename std::pointer_traits<RawPtr>::template rebind<U>>;
 //	explicit ptr(cuda::ptr<T, RawPtr> const& other) : rp_{other.rp_}{}
 
