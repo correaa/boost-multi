@@ -146,15 +146,15 @@ public:
 	template<class Other, typename = std::enable_if_t<not std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{}>, typename = decltype(static_cast<raw_pointer>(std::declval<ptr<Other>>().rp_))>
 	explicit/*(true)*/ constexpr ptr(ptr<Other> const& o, void** = 0) : cuda::ptr<T, RawPtr>{static_cast<raw_pointer>(o.rp_)}{}
 
-	explicit constexpr ptr(void* vp) : cuda::ptr<T, RawPtr>{static_cast<raw_pointer>(vp)}{}
+	constexpr explicit ptr(void* vp) : cuda::ptr<T, RawPtr>{static_cast<raw_pointer>(vp)}{}
 //	template<class Other, typename = std::enable_if_t<std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{}>>
 //	ptr(ptr<Other> const& o) HD : rp_{static_cast<raw_pointer>(o.rp_)}{}
 //	template<class Other, typename = std::enable_if_t<not std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{}>>
 //	explicit ptr(ptr<Other> const& o, void** = 0) HD : rp_{static_cast<raw_pointer>(o.rp_)}{}
-	explicit ptr(cuda::ptr<T, raw_pointer> const& other) : ptr{other.rp_}{
+	constexpr explicit ptr(cuda::ptr<T, raw_pointer> const& other) : ptr{other.rp_}{
 	//	assert(other.rp_!=nullptr or Cuda::pointer::type(other.rp_) == cudaMemoryTypeManaged);
 	}
-	explicit constexpr ptr(raw_pointer p) : cuda::ptr<T, RawPtr>{p}{}//Cuda::pointer::is_device(p);}
+	constexpr explicit ptr(raw_pointer p) : cuda::ptr<T, RawPtr>{p}{}//Cuda::pointer::is_device(p);}
 	ptr() = default;
 
 	// cppcheck-suppress noExplicitConstructor ; bug in cppcheck 2.3
@@ -172,7 +172,7 @@ public:
 	using value_type = T;
 	using pointer = ptr<T>;
 	using iterator_category = typename std::iterator_traits<raw_pointer>::iterator_category; //	using iterator_concept  = typename std::iterator_traits<impl_t>::iterator_concept;
-	explicit constexpr operator bool() const{return this->rp_;}
+	constexpr explicit operator bool() const{return this->rp_;}
 //	bool operator not() const{return !rp_;}
 	constexpr 
 #ifndef MULTI_ALLOW_IMPLICIT_CPU_CONVERSION
