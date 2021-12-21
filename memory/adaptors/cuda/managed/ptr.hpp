@@ -107,16 +107,16 @@ protected:
 
 	template<class Other, typename = decltype(raw_pointer{std::declval<Other const&>().impl_})>
 	// cppcheck-suppress noExplicitConstructor ; any pointer is convertible to void pointer
-	ptr(Other const& o) : rp_{o.rp_}{}
+	ptr(Other const& o) : cuda::ptr<void, RawPtr>{o.rp_}{}
 
 	ptr& operator=(ptr const&) = default;
 	friend constexpr bool operator==(ptr const& self, ptr const& other){return self.rp_==other.rp_;}
 	friend constexpr bool operator!=(ptr const& self, ptr const& other){return self.rp_!=other.rp_;}
-	operator cuda::ptr<void>(){return {rp_};}
+	operator cuda::ptr<void>(){return {this->rp_};}
 	template<class U> using rebind = ptr<U, typename std::pointer_traits<raw_pointer>::template rebind<U>>;
 
-	explicit operator bool() const {return rp_;}
-	explicit operator raw_pointer&()& {return rp_;}
+//	explicit operator bool() const {return this->rp_;}
+	explicit operator raw_pointer&()& {return this->rp_;}
 	friend ptr to_address(ptr const& p) {return p;}
 	void operator*() = delete;
 	friend raw_pointer raw_pointer_cast(ptr const& self) {return self.rp_;}
