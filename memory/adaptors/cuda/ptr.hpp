@@ -64,6 +64,7 @@ public:
 	friend constexpr bool operator==(ptr const& s, ptr const& o){return s.rp_==o.rp_;}
 	friend constexpr bool operator!=(ptr const& s, ptr const& o){return s.rp_!=o.rp_;}
 	friend ptr to_address(ptr const& p){return p;}
+	friend raw_pointer raw_pointer_cast(ptr const& self) {return self.rp_;}
 };
 
 template<class T> class allocator;
