@@ -49,38 +49,38 @@ namespace cached{
 template<typename T, typename Ptr = T*> struct ptr;
 
 template<typename RawPtr>
-struct ptr<void const, RawPtr>{
+struct ptr<void const, RawPtr> : cuda::ptr<void const, RawPtr> {
 	using T = void const;
 	using raw_pointer = RawPtr;
-	raw_pointer rp_;
+//	raw_pointer rp_;
 	template<typename, typename> friend struct ptr;
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
-	explicit ptr(raw_pointer rp) : rp_{rp}{}
+	explicit ptr(raw_pointer rp) : cuda::ptr<void const, RawPtr>{rp} {}
 
  public:
 	ptr() = default;
 	ptr(ptr const&) = default;
 
 	// cppcheck-suppress noExplicitConstructor ; initialized from nullptr
-	ptr(std::nullptr_t n) : rp_{n} {}
+	ptr(std::nullptr_t n) : cuda::ptr<void const, RawPtr>{n} {}
 
 	template<class Other, typename = decltype(raw_pointer{std::declval<Other const&>().rp_})>
 	// cppcheck-suppress noExplicitConstructor ; any pointer is convertible to void pointer
-	ptr(Other const& o) : rp_{o.rp_} {}
+	ptr(Other const& o) : cuda::ptr<void const, RawPtr>{o.rp_} {}
 
 	ptr& operator=(ptr const&) = default;
 
 	using pointer = ptr<T>;
 	using element_type = typename std::pointer_traits<raw_pointer>::element_type;
 	using difference_type = void;//typename std::pointer_traits<impl_t>::difference_type;
-	explicit operator bool() const{return rp_;}
+//	explicit operator bool() const{return rp_;}
 //	explicit operator raw_pointer&()&{return rp_;}
-	friend constexpr bool operator==(ptr const& self, ptr const& other){return self.rp_==other.rp_;}
-	friend constexpr bool operator!=(ptr const& self, ptr const& other){return self.rp_!=other.rp_;}
+	friend constexpr bool operator==(ptr const& self, ptr const& other) {return self.rp_ == other.rp_;}
+	friend constexpr bool operator!=(ptr const& self, ptr const& other) {return self.rp_ != other.rp_;}
 	friend ptr to_address(ptr const& p){return p;}
 	void operator*() const = delete;
 	template<class U> using rebind = ptr<U, typename std::pointer_traits<raw_pointer>::template rebind<U>>;
-	friend raw_pointer raw_pointer_cast(ptr const& self){return self.rp_;}
+	friend raw_pointer raw_pointer_cast(ptr const& self) {return self.rp_;}
 };
 
 template<typename RawPtr>
@@ -150,9 +150,9 @@ struct ptr : cuda::ptr<T, RawPtr>{
 	constexpr /*explicit(false)*/ ptr(ptr<Other> const& o) : cuda::ptr<T, RawPtr>{static_cast<raw_pointer>(o.rp_)}{}
 
 	template<class Other, typename = std::enable_if_t<not std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{}>, typename = decltype(static_cast<raw_pointer>(std::declval<ptr<Other>>().rp_))>
-	explicit/*(true)*/ constexpr ptr(ptr<Other> const& o, void** = 0) : cuda::ptr<T, RawPtr>{static_cast<raw_pointer>(o.rp_)}{}
+	constexpr explicit/*(true)*/ ptr(ptr<Other> const& o, void** = 0) : cuda::ptr<T, RawPtr>{static_cast<raw_pointer>(o.rp_)} {}
 
-	explicit constexpr ptr(void* vp) : cuda::ptr<T, RawPtr>{static_cast<raw_pointer>(vp)}{}
+	constexpr explicit           ptr(void* vp) : cuda::ptr<T, RawPtr>{static_cast<raw_pointer>(vp)} {}
 //	template<class Other, typename = std::enable_if_t<std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{}>>
 //	ptr(ptr<Other> const& o) HD : rp_{static_cast<raw_pointer>(o.rp_)}{}
 //	template<class Other, typename = std::enable_if_t<not std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{}>>
@@ -160,7 +160,7 @@ struct ptr : cuda::ptr<T, RawPtr>{
 	explicit ptr(cuda::ptr<T, raw_pointer> const& other) : ptr{other.rp_}{
 	//	assert(other.rp_!=nullptr or Cuda::pointer::type(other.rp_) == cudaMemoryTypeCached);
 	}
-	explicit constexpr ptr(raw_pointer p) : cuda::ptr<T, RawPtr>{p}{}//Cuda::pointer::is_device(p);}
+	constexpr explicit ptr(raw_pointer p) : cuda::ptr<T, RawPtr>{p} {}
 	ptr() = default;
 
 	// cppcheck-suppress noExplicitConstructor ; bug in cppcheck 2.3
