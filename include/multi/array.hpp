@@ -306,7 +306,11 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		return *this;
 	}
 	template<class... Ts>
-	constexpr auto reindex(Ts... a)&& -> static_array&& {return std::move(reindex(a...));}
+	constexpr auto reindex(Ts... a)&& -> static_array&& {
+	//	return std::move(reindex(a...));
+		reindex(a...);
+		return std::move(*this);
+	}
 
  public:
 	static_array() = default;
