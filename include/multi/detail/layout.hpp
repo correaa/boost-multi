@@ -4,8 +4,8 @@
 #ifndef MULTI_LAYOUT_HPP
 #define MULTI_LAYOUT_HPP
 
-#define EXCLUDE_CPPCHECK
-#ifdef EXCLUDE_CPPCHECK  // TODO(correaa) there is code in this that makes cppcheck crash, narrow it down with ifdef/endif
+//  #define EXCLUDE_CPPCHECK
+//  #ifdef EXCLUDE_CPPCHECK  // TODO(correaa) there is code in this that makes cppcheck crash, narrow it down with ifdef/endif
 
 #include "types.hpp"
 
@@ -719,5 +719,5 @@ namespace std {
 	template<> struct tuple_size<boost::multi::extensions_t<4>> : std::integral_constant<boost::multi::dimensionality_type, 4> {};
 }  // end namespace std
 
-#endif  // EXCLUDE_CPPCHECK
+//  #endif  // EXCLUDE_CPPCHECK
 #endif
