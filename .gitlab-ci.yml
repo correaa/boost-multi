@@ -500,7 +500,7 @@ cuda-11.4-std17:
 
 g++-cppcheck:
   stage: test
-  image: debian:testing
+  image: debian:stable
   script:
     - export CXX="g++"
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev cppcheck
