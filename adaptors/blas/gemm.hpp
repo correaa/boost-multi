@@ -131,7 +131,8 @@ class gemm_range;
 template<class Ext>
 class gemm_reference { // TODO(correaa) implement this in terms of gemv_range
 	Ext x;
-public:
+
+ public:
 	explicit gemm_reference(Ext x_) : x{std::move(x_)} {}
 	auto extensions() const -> Ext const& {return x;}
 	friend auto extensions(gemm_reference const& self) -> Ext const& {return self.extensions();}
@@ -143,11 +144,11 @@ class gemm_iterator {
 	Scalar s_;
 	ItA a_it_;
 	ItB b_begin_;
-	gemm_iterator(ContextPtr ctxtp, Scalar s, ItA a_it, ItB b_begin) : ctxtp_{ctxtp}, s_{s}, a_it_{std::move(a_it)}, b_begin_{std::move(b_begin)}{}
+	gemm_iterator(ContextPtr ctxtp, Scalar s, ItA a_it, ItB b_begin) : ctxtp_{ctxtp}, s_{s}, a_it_{std::move(a_it)}, b_begin_{std::move(b_begin)} {}
 	template<class ContextPtr2, class Scalar2, class ItA2, class ItB2, class DecayType2>
 	friend class gemm_range;
 
-public:
+ public:
 	gemm_iterator(gemm_iterator const&) = default;
 	gemm_iterator(gemm_iterator&&) noexcept = default;
 	~gemm_iterator() = default;
@@ -216,7 +217,7 @@ class gemm_range {
 	ItA a_end_;
 	ItB b_begin_;
 
-public:
+ public:
 	gemm_range(gemm_range const&) = delete;
 	gemm_range(gemm_range&&) = delete;
 	auto operator=(gemm_range const&) -> gemm_range& = delete;
