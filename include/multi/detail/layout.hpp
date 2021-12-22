@@ -5,7 +5,6 @@
 #define MULTI_LAYOUT_HPP
 
 #define EXCLUDE_CPPCHECK
-#ifdef EXCLUDE_CPPCHECK  // TODO(correaa) there is code in this that makes cppcheck crash, narrow it down with ifdef/endif
 
 #include "types.hpp"
 
@@ -66,6 +65,8 @@ constexpr auto tuple_tail(Tuple&& t)
 }  // end namespace detail
 
 template<dimensionality_type D, typename SSize=multi::size_type> struct layout_t;
+
+#ifdef EXCLUDE_CPPCHECK  // TODO(correaa) there is code in this that makes cppcheck crash, narrow it down with ifdef/endif
 
 template<dimensionality_type D>
 struct extensions_t {
@@ -708,6 +709,8 @@ constexpr auto sizes_as(Layout const& self)
 ->decltype(self.template sizes_as<T>()) {
 	return self.template sizes_as<T>(); }
 
+#endif  // EXCLUDE_CPPCHECK
+
 }  // end namespace multi
 }  // end namespace boost
 
@@ -719,5 +722,4 @@ namespace std {
 	template<> struct tuple_size<boost::multi::extensions_t<4>> : std::integral_constant<boost::multi::dimensionality_type, 4> {};
 }  // end namespace std
 
-#endif  // EXCLUDE_CPPCHECK
 #endif
