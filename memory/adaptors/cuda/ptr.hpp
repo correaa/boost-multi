@@ -82,10 +82,10 @@ struct ptr<void, RawPtr> {
 	friend ptr<void> memset(ptr<void> dest, int ch, std::size_t byte_count);
 	template<class, class> friend struct managed::ptr;
 
- private:
+ protected:
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 	template<class, class> friend struct ptr;
-	explicit ptr(raw_pointer rp) : rp_{rp}{}
+	explicit ptr(raw_pointer rp) : rp_{rp} {}
 	operator raw_pointer() const{return rp_;}
 	friend ptr<void> malloc(std::size_t);
 	friend void free(ptr<void>);
