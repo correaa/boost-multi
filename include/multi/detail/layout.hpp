@@ -4,15 +4,14 @@
 #ifndef MULTI_LAYOUT_HPP
 #define MULTI_LAYOUT_HPP
 
+#define EXCLUDE_CPPCHECK
+
 #include "types.hpp"
 
 #include "../config/ASSERT.hpp"
-#include "../config/NODISCARD.hpp"
 
 #include "../detail/operators.hpp"
 
-#include <algorithm>    // for algorithm
-#include <limits>
 #include <tuple>        // for apply
 #include <type_traits>  // for make_signed_t
 #include <utility>      // for swap
@@ -67,6 +66,8 @@ constexpr auto tuple_tail(Tuple&& t)
 
 template<dimensionality_type D, typename SSize=multi::size_type> struct layout_t;
 
+#ifdef EXCLUDE_CPPCHECK  // TODO(correaa) there is code in this that makes cppcheck crash, narrow it down with ifdef/endif
+
 template<dimensionality_type D>
 struct extensions_t {
 	using base_ = std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename extensions_t<D-1>::base_>()))>;
@@ -75,7 +76,7 @@ struct extensions_t {
 	base_ impl_;
 
  public:
-	static constexpr dimensionality_type dimensionality = D;  // TODO(correaa): consider deprecation
+	static constexpr dimensionality_type dimensionality = D;
 
 	extensions_t() = default;
 	using nelems_type = multi::index;
@@ -267,6 +268,8 @@ template<> struct extensions_t<1> {
 	}
 };
 
+#endif  // EXCLUDE_CPPCHECK
+
 template<dimensionality_type D> using iextensions = extensions_t<D>;
 
 template<boost::multi::dimensionality_type D>
@@ -318,19 +321,19 @@ struct layout_t<0, SSize>{
 
  public:
 	using extensions_type = extensions_t<0>;
-	explicit constexpr layout_t(extensions_type const& /*nil*/) {}
+	constexpr explicit layout_t(extensions_type const& /*nil*/) {}
 	constexpr layout_t() : layout_t{extensions_type{}} {}
 
-	NODISCARD("") constexpr auto extensions() const -> extensions_type {return extensions_type{};}
+	constexpr auto extensions() const -> extensions_type {return extensions_type{};}
 	friend constexpr auto extensions(layout_t const& self) {return self.extensions();}
-	NODISCARD("") constexpr auto sizes() const {return std::tuple<>{};}
+	constexpr auto sizes() const {return std::tuple<>{};}
 
 	[[deprecated]]
-	NODISCARD("") constexpr auto    empty() const -> bool {return false;}
-	NODISCARD("") constexpr auto is_empty() const -> bool {return false;}
+	constexpr auto    empty() const -> bool {return false;}
+	constexpr auto is_empty() const -> bool {return false;}
 
 	friend constexpr auto sizes(layout_t const& s) {return s.sizes();}
-	NODISCARD("") constexpr auto num_elements() const -> nelems_type {return 1;}
+	constexpr auto num_elements() const -> nelems_type {return 1;}
 
 	constexpr auto operator==(layout_t const& /*stateless*/) const -> bool{return true ;}
 	constexpr auto operator!=(layout_t const& /*stateless*/) const -> bool{return false;}
@@ -381,10 +384,10 @@ struct layout_t<1, SSize> {
 	constexpr layout_t(stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
 	: stride_{stride}, offset_{offset}, nelems_{nelems} {}
 
-	       NODISCARD("") constexpr auto offset()        const&    -> offset_type {return offset_;}
-	friend               constexpr auto offset(layout_t const& s) -> offset_type {return s.offset();}
+	       constexpr auto offset()        const&    -> offset_type {return offset_;}
+	friend constexpr auto offset(layout_t const& s) -> offset_type {return s.offset();}
 
-	NODISCARD("") constexpr auto offset(dimensionality_type d) const {
+	constexpr auto offset(dimensionality_type d) const {
 		assert(d==0); (void)d;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		return offset_;
 	}
@@ -414,21 +417,20 @@ struct layout_t<1, SSize> {
 	       constexpr auto is_compact()        const&       {return base_size() == num_elements();}
 	friend constexpr auto is_compact(layout_t const& self) {return self.is_compact();}
 
-	              constexpr auto stride()      & -> stride_type      & {return stride_;}
-	              constexpr auto stride() const& -> stride_type const& {return stride_;}
-	NODISCARD("") constexpr auto stride(dimensionality_type d) const {
-		assert(d == 0); (void)d;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
+	constexpr auto stride()      & -> stride_type      & {return stride_;}
+	constexpr auto stride() const& -> stride_type const& {return stride_;}
+	constexpr auto stride(dimensionality_type d) const {assert(d == 0); (void)d;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
 		return stride_;
 	}
 
 	friend constexpr auto stride(layout_t const& self) -> index {return self.stride();}
 
-	       NODISCARD("") constexpr auto strides()        const&    {return std::make_tuple(stride());}
-	friend               constexpr auto strides(layout_t const& s) {return s.strides();}
+	       constexpr auto strides()        const&    {return std::make_tuple(stride());}
+	friend constexpr auto strides(layout_t const& s) {return s.strides();}
 
 	constexpr auto sizes() const {return std::make_tuple(size());}
 
-	template<class T=void> [[deprecated]] NODISCARD("") constexpr auto sizes_as() const {
+	template<class T=void> [[deprecated]] constexpr auto sizes_as() const {
 		return detail::to_array<T>(sizes());
 	}
 
@@ -532,7 +534,7 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 	using nelems_type = index;
 
  private:
-	sub_type    sub_ = {};
+	sub_type    sub_    = {};
 	stride_type stride_ = 1;  // or std::numeric_limits<stride_type>::max()?
 	offset_type offset_ = 0;
 	nelems_type nelems_ = 0;
@@ -547,7 +549,7 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 
 	constexpr auto origin() const {return sub_.origin() - offset_;}
 
-	NODISCARD("") constexpr auto at(index i) const -> sub_type {
+	constexpr auto at(index i) const -> sub_type {
 		auto ret = sub_;
 		ret.offset_ += offset_ + i*stride_;
 		return ret;
@@ -598,8 +600,7 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 	       constexpr auto is_empty()        const     {return nelems_ == 0;}
 	friend constexpr auto is_empty(layout_t const& s) {return s.is_empty();}
 
-	NODISCARD(".empty() means .is_empty()")
-	       constexpr auto    empty()        const {return is_empty();}
+	constexpr auto    empty()        const {return is_empty();}
 
 	friend constexpr auto size(layout_t const& l) -> size_type {return l.size();}
 	       constexpr auto size()        const&    -> size_type {
@@ -608,7 +609,7 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 		return nelems_/stride_;
 	}
 
-	       constexpr auto size(dimensionality_type d) const -> size_type {return (d!=0)?sub_.size(d-1):size();}
+	constexpr auto size(dimensionality_type d) const -> size_type {return (d!=0)?sub_.size(d-1):size();}
 
 	constexpr auto stride()      & -> stride_type      & {return stride_;}
 	constexpr auto stride() const& -> stride_type const& {return stride_;}
@@ -696,7 +697,7 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 		return *this;
 	}
 
-	constexpr auto scale(size_type s) const{
+	constexpr auto scale(size_type s) const {
 		return layout_t{sub_.scale(s), stride_*s, offset_*s, nelems_*s};
 	}
 };
@@ -714,12 +715,11 @@ constexpr auto sizes_as(Layout const& self)
 }  // end namespace boost
 
 namespace std {
-	template<> struct tuple_size<boost::multi::extensions_t<0>> : std::integral_constant<boost::multi::dimensionality_type, 0>{};
-	template<> struct tuple_size<boost::multi::extensions_t<1>> : std::integral_constant<boost::multi::dimensionality_type, 1>{};
-	template<> struct tuple_size<boost::multi::extensions_t<2>> : std::integral_constant<boost::multi::dimensionality_type, 2>{};
-	template<> struct tuple_size<boost::multi::extensions_t<3>> : std::integral_constant<boost::multi::dimensionality_type, 3>{};
-	template<> struct tuple_size<boost::multi::extensions_t<4>> : std::integral_constant<boost::multi::dimensionality_type, 4>{};
+	template<> struct tuple_size<boost::multi::extensions_t<0>> : std::integral_constant<boost::multi::dimensionality_type, 0> {};
+	template<> struct tuple_size<boost::multi::extensions_t<1>> : std::integral_constant<boost::multi::dimensionality_type, 1> {};
+	template<> struct tuple_size<boost::multi::extensions_t<2>> : std::integral_constant<boost::multi::dimensionality_type, 2> {};
+	template<> struct tuple_size<boost::multi::extensions_t<3>> : std::integral_constant<boost::multi::dimensionality_type, 3> {};
+	template<> struct tuple_size<boost::multi::extensions_t<4>> : std::integral_constant<boost::multi::dimensionality_type, 4> {};
 }  // end namespace std
 
 #endif
-

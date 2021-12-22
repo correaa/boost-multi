@@ -485,6 +485,19 @@ cuda-11.4-std17:
       - cmake --build . --verbose
       - ctest --output-on-failure
 
+#cuda-11.5-std17:
+#    image: nvidia/cuda:11.5.0-devel
+#    stage: test
+#    script:
+#      - export DEBIAN_FRONTEND=noninteractive
+#      - apt-get update && apt-get install --no-install-recommends -y --quiet pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
+#      - ln --symbolic --force . ../multi
+#      - nvcc --version
+#      - mkdir build && cd build
+#      - cmake .. -DCMAKE_CXX_STANDARD=17 -DENABLE_CUDA=1
+#      - cmake --build . --verbose
+#      - ctest --output-on-failure
+
 g++-cppcheck:
   stage: test
   image: debian:stable
@@ -494,10 +507,10 @@ g++-cppcheck:
     - ln --symbolic --force . ../multi
     - $CXX --version
     - cppcheck --version
-    - find . -name '*.hpp' -exec cppcheck --enable=all --inline-suppr --suppress=unmatchedSuppression --suppress=syntaxError --suppress=missingInclude --suppress=missingIncludeSystem --suppress=preprocessorErrorDirective --suppress=syntaxError --suppress=unusedFunction --suppress=arithOperationsOnVoidPointer --suppress=sizeofDereferencedVoidPointer --suppress=sizeofDereferencedVoidPointer --suppress=unmatchedSuppression:{} -D__align__ -DCUDARTAPI --language=c++ --std=c++17 --error-exitcode=666 {} \;
+    - find . -name '*.hpp' -exec cppcheck --enable=all --inline-suppr --suppress=unmatchedSuppression --suppress=syntaxError --suppress=missingInclude --suppress=missingIncludeSystem --suppress=preprocessorErrorDirective --suppress=syntaxError --suppress=unusedFunction --suppress=arithOperationsOnVoidPointer --suppress=sizeofDereferencedVoidPointer --suppress=sizeofDereferencedVoidPointer --suppress=unmatchedSuppression:{} -D__align__ -DCUDARTAPI --language=c++ --std=c++17 --error-exitcode=666 -UEXCLUDE_CPPCHECK --verbose --exception-handling {} \;
     - mkdir build && cd build
-    - cmake -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--inline-suppr;--suppress=missingIncludeSystem;--suppressions-list=${PWD}/../.cppcheck-suppressions;--language=c++;--std=c++17;--error-exitcode=666" ..
-    - cmake --build .
+    - cmake -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--inline-suppr;--suppress=missingIncludeSystem;--suppressions-list=${PWD}/../.cppcheck-suppressions;--language=c++;--std=c++17;--error-exitcode=666;-UEXCLUDE_CPPCHECK;--verbose;--exception-handling" ..
+    - cmake --build . --verbose
     - ctest --output-on-failure
   allow_failure: true
 
