@@ -4,6 +4,8 @@
 #ifndef MULTI_LAYOUT_HPP
 #define MULTI_LAYOUT_HPP
 
+#define EXCLUDE_CPPCHECK
+
 #include "types.hpp"
 
 #include "../config/ASSERT.hpp"
@@ -67,6 +69,7 @@ constexpr auto tuple_tail(Tuple&& t)
 
 template<dimensionality_type D, typename SSize=multi::size_type> struct layout_t;
 
+#ifdef EXCLUDE_CPPCHECK
 template<dimensionality_type D>
 struct extensions_t {
 	using base_ = std::decay_t<decltype(std::tuple_cat(std::make_tuple(std::declval<index_extension>()), std::declval<typename extensions_t<D-1>::base_>()))>;
@@ -183,6 +186,7 @@ struct extensions_t {
 		};
 	}
 };
+#endif  // EXCLUDE_CPPCHECK
 
 template<> struct extensions_t<0> {
 	using base_ = std::tuple<>;
@@ -532,7 +536,7 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 	using nelems_type = index;
 
  private:
-	sub_type    sub_ = {};
+	sub_type    sub_    = {};
 	stride_type stride_ = 1;  // or std::numeric_limits<stride_type>::max()?
 	offset_type offset_ = 0;
 	nelems_type nelems_ = 0;
@@ -547,7 +551,7 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 
 	constexpr auto origin() const {return sub_.origin() - offset_;}
 
-	NODISCARD("") constexpr auto at(index i) const -> sub_type {
+	constexpr auto at(index i) const -> sub_type {
 		auto ret = sub_;
 		ret.offset_ += offset_ + i*stride_;
 		return ret;
@@ -696,7 +700,7 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 		return *this;
 	}
 
-	constexpr auto scale(size_type s) const{
+	constexpr auto scale(size_type s) const {
 		return layout_t{sub_.scale(s), stride_*s, offset_*s, nelems_*s};
 	}
 };
@@ -714,11 +718,11 @@ constexpr auto sizes_as(Layout const& self)
 }  // end namespace boost
 
 namespace std {
-	template<> struct tuple_size<boost::multi::extensions_t<0>> : std::integral_constant<boost::multi::dimensionality_type, 0>{};
-	template<> struct tuple_size<boost::multi::extensions_t<1>> : std::integral_constant<boost::multi::dimensionality_type, 1>{};
-	template<> struct tuple_size<boost::multi::extensions_t<2>> : std::integral_constant<boost::multi::dimensionality_type, 2>{};
-	template<> struct tuple_size<boost::multi::extensions_t<3>> : std::integral_constant<boost::multi::dimensionality_type, 3>{};
-	template<> struct tuple_size<boost::multi::extensions_t<4>> : std::integral_constant<boost::multi::dimensionality_type, 4>{};
+	template<> struct tuple_size<boost::multi::extensions_t<0>> : std::integral_constant<boost::multi::dimensionality_type, 0> {};
+	template<> struct tuple_size<boost::multi::extensions_t<1>> : std::integral_constant<boost::multi::dimensionality_type, 1> {};
+	template<> struct tuple_size<boost::multi::extensions_t<2>> : std::integral_constant<boost::multi::dimensionality_type, 2> {};
+	template<> struct tuple_size<boost::multi::extensions_t<3>> : std::integral_constant<boost::multi::dimensionality_type, 3> {};
+	template<> struct tuple_size<boost::multi::extensions_t<4>> : std::integral_constant<boost::multi::dimensionality_type, 4> {};
 }  // end namespace std
 
 #endif
