@@ -264,9 +264,9 @@ auto gemm(ContextPtr ctxtp, Scalar s, A2D const& a, B2D const& b)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
 #pragma push
-#pragma diag_suppress = implicit_return_from_non_void_function  // for nvcc warning
-template<               class Scalar, class A2D, class B2D, class = decltype(Scalar(0.))>
-auto gemm(                Scalar s, A2D const& a, B2D const& b) {
+#pragma nv_diag_suppress = implicit_return_from_non_void_function  // for nvcc warning
+template<class Scalar, class A2D, class B2D, class = decltype(Scalar(0.))>
+auto gemm(Scalar s, A2D const& a, B2D const& b) {
 	if constexpr(is_conjugated<A2D>{}) {
 		auto ctxtp = blas::default_context_of(underlying(a.base()));
 		return blas::gemm(ctxtp, s, a, b);
