@@ -13,8 +13,6 @@
 
 #include "../detail/operators.hpp"
 
-#include <algorithm>    // for algorithm
-#include <limits>
 #include <tuple>        // for apply
 #include <type_traits>  // for make_signed_t
 #include <utility>      // for swap
