@@ -10,7 +10,6 @@
 #include "./config/ASSERT.hpp"
 #include "./config/DELETE.hpp"
 #include "./config/MARK.hpp"
-#include "./config/NODISCARD.hpp"
 
 #include "./detail/layout.hpp"
 #include "./detail/memory.hpp"     // for pointer_traits
@@ -748,10 +747,8 @@ struct basic_array
 		return basic_array<T, D-1, ElementPtr>{new_layout, types::base_};
 	}
 
-	NODISCARD("because it has no side-effect")
 	constexpr auto diagonal()&& {return this->diagonal();}
 
-	NODISCARD("because it has no side-effect")
 	constexpr auto diagonal()& -> basic_array<T, D-1, typename basic_array::element_ptr> {
 		auto L = std::min(std::get<0>(this->sizes()), std::get<1>(this->sizes()));
 		multi::layout_t<D-1> new_layout{(*this)({0, L}, {0, L}).layout().sub()};
@@ -760,7 +757,6 @@ struct basic_array
 		return {new_layout, types::base_};
 	}
 
-	NODISCARD("because it has no side-effect")
 	constexpr auto diagonal() const& -> basic_array<T, D-1, typename basic_array::element_const_ptr> {
 		auto L = std::min(std::get<0>(this->sizes()), std::get<1>(this->sizes()));
 		multi::layout_t<D-1> new_layout{(*this)({0, L}, {0, L}).layout().sub_};
@@ -1908,7 +1904,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 		class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>,
 		class Element = typename basic_array::element,
 		class PM = T2 std::decay_t<Element>::*
-	> NODISCARD("")
+	>
 	constexpr auto member_cast(PM pm) const -> basic_array<T2, 1, P2> {
 		static_assert(sizeof(T)%sizeof(T2) == 0,
 			"array_member_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom alignas structures (to the interesting member(s) sizes) or custom pointers to allow reintrepreation of array elements");
@@ -1923,7 +1919,6 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	}
 
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
-	NODISCARD("")
 	          auto reinterpret_array_cast() const& -> basic_array<std::decay_t<T2>, 1, P2> {  // TODO(correaa) : use rebind for return type
 		static_assert( sizeof(T)%sizeof(T2)== 0,
 			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases");
@@ -2056,7 +2051,6 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 	}
 
  public:
-	NODISCARD("")
 	constexpr auto data_elements() const& -> typename array_ref::element_ptr {return array_ref::base_;}
 
 	constexpr auto operator=(array_ref const& other) & -> array_ref& {
@@ -2090,7 +2084,6 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 	using celements_type = array_ref<typename array_ref::element_type, 1, typename array_ref::element_const_ptr>;
 
  private:
-	NODISCARD("")
 	constexpr auto elements_aux() const {
 		return elements_type{
 			this->data_elements(),
@@ -2099,7 +2092,6 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 	}
 
  public:
-	NODISCARD("")
 	       constexpr auto  elements()         const&       -> celements_type {return elements_aux();}
 	       constexpr auto  elements()              &       ->  elements_type {return elements_aux();}
 	       constexpr auto  elements()             &&       ->  elements_type {return elements_aux();}
@@ -2108,7 +2100,6 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 	friend constexpr auto elements(array_ref     && s) ->  elements_type {return std::move(s). elements();}
 	friend constexpr auto elements(array_ref const& s) -> celements_type {return           s . elements();}
 
-	NODISCARD("")
 	       constexpr auto celements()         const&    {return celements_type{array_ref::data_elements(), array_ref::num_elements()};}
 	friend constexpr auto celements(array_ref const& s) {return s.celements();}
 
@@ -2122,9 +2113,9 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 	friend constexpr auto data_elements(array_ref&& s) -> typename array_ref::element_ptr {return std::move(s).data_elements();}
 
 	// data() is here for compatibility with std::vector
-	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> NODISCARD("") constexpr auto data() const& {return data_elements();}
-	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> NODISCARD("") constexpr auto data()     && {return data_elements();}
-	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> NODISCARD("") constexpr auto data()      & {return data_elements();}
+	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> constexpr auto data() const& {return data_elements();}
+	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> constexpr auto data()     && {return data_elements();}
+	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> constexpr auto data()      & {return data_elements();}
 
 	// TODO(correaa) : find a way to use [[deprecated("use data_elements()")]] for friend functions
 	friend constexpr auto data(array_ref const& s) -> typename array_ref::element_ptr {return s.data_elements();}
@@ -2133,7 +2124,6 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 
 	using decay_type = typename array_ref::decay_type;
 
-	NODISCARD("")
 	       constexpr auto decay()         const&    -> decay_type const& {return static_cast<decay_type const&>(*this);}
 	friend constexpr auto decay(array_ref const& s) -> decay_type const& {return s.decay();}
 
