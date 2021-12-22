@@ -27,8 +27,8 @@ $CXXX $CXXFLAGS $0 -o $0.$X `pkg-config --cflags --libs cudart-11.0` -lboost_uni
 
 #define CUDA_SLOW(ExpR) NO_DEPRECATED(ExpR)
 
-namespace boost{namespace multi{
-namespace memory{namespace cuda{
+namespace boost {namespace multi {
+namespace memory {namespace cuda {
 
 template<class T> struct ref;
 
@@ -37,33 +37,34 @@ template<typename T, typename Ptr = T*> struct ptr;
 namespace managed{template<typename T, typename RawPtr> struct ptr;}
 
 template<typename RawPtr>
-struct ptr<void const, RawPtr>{
+struct ptr<void const, RawPtr> {
 	using pointer = ptr;
 	using element_type = void const;
 //	using difference_type = void;//typename std::pointer_traits<impl_t>::difference_type;
-protected:
+
+ protected:
 	using raw_pointer = RawPtr;
 	template<class, class> friend struct managed::ptr;
-private:
 	raw_pointer rp_;
 	template<typename, typename> friend struct ptr;
 	template<class TT> friend ptr<TT> const_pointer_cast(ptr<TT const> const&);
 	explicit ptr(raw_pointer rp) : rp_{rp} {}
-public:
+
+ public:
 	ptr() = default;
 	ptr(ptr const&) = default;
 
 	// cppcheck-suppress noExplicitConstructor ; initialize from nullptr
-	ptr(std::nullptr_t n) : rp_{n}{}
+	ptr(std::nullptr_t n) : rp_{n} {}
 
 	template<class Other, typename = decltype(raw_pointer{std::declval<Other const&>().rp_})>
 	// cppcheck-suppress noExplicitConstructor ; any other pointer can be converted to void const pointer
-	ptr(Other const& o) : rp_{o.rp_}{}
+	ptr(Other const& o) : rp_{o.rp_} {}
 	ptr& operator=(ptr const&) = default;
-	explicit operator bool() const{return rp_;}
-	friend constexpr bool operator==(ptr const& s, ptr const& o){return s.rp_==o.rp_;}
-	friend constexpr bool operator!=(ptr const& s, ptr const& o){return s.rp_!=o.rp_;}
-	friend ptr to_address(ptr const& p){return p;}
+	explicit operator bool() const {return rp_;}
+	friend constexpr bool operator==(ptr const& s, ptr const& o) {return s.rp_==o.rp_;}
+	friend constexpr bool operator!=(ptr const& s, ptr const& o) {return s.rp_!=o.rp_;}
+	friend ptr to_address(ptr const& p) {return p;}
 	friend raw_pointer raw_pointer_cast(ptr const& self) {return self.rp_;}
 };
 
