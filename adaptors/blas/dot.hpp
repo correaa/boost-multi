@@ -117,6 +117,7 @@ auto dot(Context const& ctxt, X const& x, Y const& y) {
 #pragma GCC diagnostic ignored "-Wunknown-pragmas"
 #pragma push
 #pragma nv_diag_suppress = implicit_return_from_non_void_function  // for nvcc warning
+#pragma    diag_suppress = implicit_return_from_non_void_function  // for nvcc warning
 template<class X, class Y> [[nodiscard]]
 auto dot(X const& x, Y const& y) {
 	if constexpr(is_conjugated<X>{}) {
