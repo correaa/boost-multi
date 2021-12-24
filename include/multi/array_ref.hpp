@@ -822,7 +822,7 @@ struct basic_array
 	}
 	friend constexpr auto transposed(basic_array const& s) -> basic_array {return s.transposed();}
 	friend
-#if not((defined(__INTEL_COMPILER) and (__INTEL_COMPILER < 1911)) or defined(__NVCC__))
+#if not((defined(__INTEL_COMPILER)) or defined(__NVCC__))
 	constexpr
 #endif
 	auto operator~ (basic_array const& s) -> basic_array {return s.transposed();}
@@ -1375,7 +1375,7 @@ struct array_iterator<Element, 1, Ptr>
 	constexpr auto base()              const& -> element_ptr {return data_;}
 
 	friend  // TODO(correaa) : defined FRIEND_CONSTEXPR ?
-#if not((defined(__INTEL_COMPILER) and (__INTEL_COMPILER < 1911)) or defined(__NVCC__))
+#if not((defined(__INTEL_COMPILER)) or defined(__NVCC__))
 	constexpr  // this generates a problem with intel compiler 19 "a constexpr function cannot have a nonliteral return type"
 #endif
 	auto base(array_iterator const& s) -> element_ptr {return s.base();}
