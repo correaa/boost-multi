@@ -170,7 +170,7 @@ memcheck:
     - mkdir build && cd build
     - cmake ..
     - cmake --build . --verbose
-    - ctest --overwrite MemoryCheckCommandOptions="--leak-check=full --track-origins=yes --show-leak-kinds=all --error-exitcode=666" -T memcheck --output-on-failure
+    - ctest --overwrite MemoryCheckCommandOptions="-q --tool=memcheck --leak-check=yes --num-callers=51 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all" -T memcheck --output-on-failure
 
 clang++-9:
   image: debian:stable
