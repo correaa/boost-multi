@@ -43,7 +43,7 @@ struct array_allocator {
 	explicit array_allocator(allocator_type const& a) : alloc_{a} {}
 
 	auto allocate(size_type_ n) -> pointer_ {
-		return n?std::allocator_traits<allocator_type>::allocate(alloc_, n):nullptr;
+		return n?std::allocator_traits<allocator_type>::allocate(alloc_, n):pointer_{nullptr};
 	}
 	auto allocate(typename std::allocator_traits<allocator_type>::size_type n, typename std::allocator_traits<allocator_type>::const_void_pointer hint)
 	-> typename std::allocator_traits<allocator_type>::pointer {
