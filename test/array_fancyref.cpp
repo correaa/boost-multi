@@ -57,9 +57,13 @@ template<class T> class ref {
  public:
 	explicit ref(ref<std::remove_const_t<T>> const& other) : p_{other.p_} {}
 	~ref() = default;
-	auto operator=(ref const& other) -> ref& {p_ = *other.p_; return *this;}
-	ref(ref&&) = default;
-	auto operator=(ref&& other) -> ref& {p_ = std::move(*other.p_); return *this;}
+	auto operator=(ref const& other) -> ref& {
+		if(this == &other) {return *this;}
+		*p_ = *other.p_; return *this;
+	}
+	ref(ref const&) = delete;
+	ref(ref&&) noexcept = default;
+	auto operator=(ref&& other) noexcept -> ref& {*p_ = std::move(*other.p_); return *this;}
 
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator): this class simulates a reference
 	auto operator==(ref const& /*other*/) const {return true;}
