@@ -742,7 +742,7 @@ struct array<T, 0, Alloc> : static_array<T, 0, Alloc>{
 };
 
 template<class T, dimensionality_type D, class Alloc>
-struct array : static_array<T, D, Alloc>{
+struct array : static_array<T, D, Alloc> {
 	using static_ = static_array<T, D, Alloc>;
 	static_assert(
 		   std::is_same<typename array::alloc_traits::value_type, T   >{}
