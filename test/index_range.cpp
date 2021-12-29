@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(xml_serialization_index_range) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_range) {
-#if defined(__cpp_deduction_guides) and __cpp_deduction_guides
+#if defined(__cpp_deduction_guides) and __cpp_deduction_guides and not defined(__NVCC__)
 	BOOST_REQUIRE(( multi::range{5, 5}.empty() ));
 #else
 	BOOST_REQUIRE(( multi::range<std::ptrdiff_t>{5, 5}.empty() ));
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE(multi_range_with_hana_literals) {
 	static_assert(( integral_constant<int, 1234>{} == 1234 ), "!");
 	static_assert(( (integral_constant<int, 1234>{} + integral_constant<int, 1>{})  == 1235 ), "!");
 	static_assert(( (integral_constant<int, 1234>{} + integral_constant<int, 1>{})  == integral_constant<int, 1235>{} ), "!");
-#if defined(__cpp_deduction_guides) and __cpp_deduction_guides
+#if defined(__cpp_deduction_guides) and __cpp_deduction_guides and not defined(__NVCC__)
 	static_assert(( multi::range{integral_constant<int, 0>{}, integral_constant<int, 5>{}}.size() == integral_constant<int, 5>{} ), "!");
 	static_assert(( size(multi::range{integral_constant<int, 0>{}, integral_constant<int, 5>{}}) == integral_constant<int, 5>{} ), "!");
 #endif
