@@ -6,7 +6,7 @@
 
 #include<algorithm>  // for_each
 
-namespace boost {
+namespace boost {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
 namespace archive {
 namespace detail {
 

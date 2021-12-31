@@ -63,7 +63,8 @@ template<class T> class ref {
 	}
 	ref(ref const&) = delete;
 	ref(ref&& other) noexcept : p_{other.p_} {}  // this is needed by nvcc
-	auto operator=(ref&& other) noexcept -> ref& {*p_ = std::move(*other.p_); return *this;}
+
+	auto operator=(ref     && other) noexcept -> ref& {*p_ = std::move(*other.p_); return *this;}
 
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator): this class simulates a reference
 	auto operator==(ref const& /*other*/) const {return true;}
