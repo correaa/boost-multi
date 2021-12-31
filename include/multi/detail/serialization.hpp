@@ -7,7 +7,7 @@
 #include<algorithm>  // for_each
 
 namespace boost {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
-namespace archive {
+namespace archive {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
 namespace detail {
 
 template<class Ar> struct common_iarchive;
