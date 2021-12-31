@@ -23,8 +23,7 @@
 
 #include<utility>  // for move
 
-namespace boost {
-namespace multi {
+namespace boost::multi {
 
 template<class Allocator>
 struct array_allocator {
@@ -1040,14 +1039,13 @@ template <class T, std::size_t N>
 auto decay(const T(&t)[N]) noexcept -> multi::array<typename std::remove_all_extents<T[N]>::type, std::rank<T[N]>{}>{return multi::array_cref<typename std::remove_all_extents<T[N]>::type, std::rank<T[N]>{}>(data_elements(t), extensions(t));}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 
 template<class T, std::size_t N>
-struct array_traits<T[N], void, void>{  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+struct array_traits<T[N], void, void> {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 	using reference = T&;
 	using element = std::remove_all_extents_t<T[N]>;  //  NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 	using decay_type = multi::array<T, 1>;
 };
 
-}  // end namespace multi
-}  // end namespace boost
+}  // end namespace boost::multi
 
 #if(__cpp_lib_memory_resource >= 201603)
 namespace boost::multi::pmr {
