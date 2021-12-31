@@ -44,8 +44,7 @@ struct pointer_traits<std::move_iterator<T*>> : std::pointer_traits<T*> {
 
 }  // end namespace std
 
-namespace boost {
-namespace multi {
+namespace boost::multi {
 
 template<class T> auto modify(T const& t) -> T& {return const_cast<T&>(t);}  // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) see what is this used for
 
@@ -1592,7 +1591,10 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
  private:
 	HD constexpr auto at_aux(index i) const -> typename basic_array::reference {
 		MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		return *( this->base() + (i*this->stride() - this->offset()) );  // in C++17 this is allowed even with syntethic references
+		auto ba = this->base();  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
+		auto of = (i*this->stride() - this->offset());  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
+		auto pt = ba + of;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+		return *pt;  // in C++17 this is allowed even with syntethic references
 	}
 
  public:
@@ -2327,11 +2329,9 @@ template<class T> auto end  (T&& t) -> decltype(std::forward<T>(t).end()  ) {ret
 template<class T, std::size_t N, std::size_t M>
 auto transposed(T(&t)[N][M]) -> decltype(auto) {return ~multi::array_ref<T, 2>(t);}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
-}  // end namespace multi
-}  // end namespace boost
+}  // end namespace boost::multi
 
-namespace boost {
-namespace serialization {
+namespace boost::serialization {
 
 #ifndef MULTI_SERIALIZATION_ARRAY_VERSION
 #define MULTI_SERIALIZATION_ARRAY_VERSION 0
@@ -2349,6 +2349,6 @@ namespace serialization {
 //	enum { value = type::value };
 //};
 
-}  // end namespace serialization
-}  // end namespace boost
+}  // end namespace boost::serialization
+
 #endif
