@@ -212,9 +212,7 @@ xTRSM(s); xTRSM(d); xTRSM(c)   ; xTRSM(z)   ;
 }  // end of extern "C"
 #endif
 
-namespace boost {
-namespace multi {
-namespace blas {
+namespace boost::multi::blas {
 
 //namespace t{
 	using s = float;
@@ -598,8 +596,6 @@ auto default_context_of(TPtr const& /*unused*/) -> blas::context* {
 	return &dc;
 }
 
-} // end namespace blas
-} // end namespace multi
-} // end namespace boost
+} // end namespace boost::multi::blas
 
 #endif

@@ -8,9 +8,7 @@ $CXXX $CXXFLAGS $0 -o $0x `pkg-config --libs blas` -lboost_unit_test_framework&&
 
 #include "../blas/numeric.hpp"
 
-namespace boost{
-namespace multi{
-namespace blas{
+namespace boost::multi::blas {
 
 template<class M> auto transposed(M const& m) -> decltype(auto){return rotated(m);}
 
@@ -77,63 +75,61 @@ namespace operators{
 template<class A> auto T(A&& a) -> decltype(auto){return transposed(std::forward<A>(a));}  // NOLINT(readability-identifier-naming) : conventional one-letter operation BLAS
 template<class A> auto N(A&& a) -> decltype(auto){return identity  (std::forward<A>(a));}  // NOLINT(readability-identifier-naming) : conventional one-letter operation BLAS
 
-} // end namespace blas
-} // end namespace multi
-} // end namespace boost
+} // end namespace boost::multi::blas
 
-#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
+//#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi blas operations"
-#define BOOST_TEST_DYN_LINK
-#include<boost/test/unit_test.hpp>
+//#define BOOST_TEST_MODULE "C++ Unit Tests for Multi blas operations"
+//#define BOOST_TEST_DYN_LINK
+//#include<boost/test/unit_test.hpp>
 
-#include "../../array.hpp"
+//#include "../../array.hpp"
 
-using std::cout;
-template<class M> decltype(auto) print(M const& C){
-	using boost::multi::size;
-	for(int i = 0; i != size(C); ++i){
-		for(int j = 0; j != size(C[i]); ++j) cout<< C[i][j] <<' ';
-		cout<<std::endl;
-	}
-	return cout<<"---"<<std::endl;
-}
+//using std::cout;
+//template<class M> decltype(auto) print(M const& C){
+//	using boost::multi::size;
+//	for(int i = 0; i != size(C); ++i){
+//		for(int j = 0; j != size(C[i]); ++j) cout<< C[i][j] <<' ';
+//		cout<<std::endl;
+//	}
+//	return cout<<"---"<<std::endl;
+//}
 
-namespace multi = boost::multi;
+//namespace multi = boost::multi;
 
-BOOST_AUTO_TEST_CASE(m){
-	using complex = std::complex<double>; constexpr complex I{0., 1.};
+//BOOST_AUTO_TEST_CASE(m){
+//	using complex = std::complex<double>; constexpr complex I{0., 1.};
 
-	namespace blas = multi::blas;
-	multi::array<complex, 2> const A = {
-		{1. - 3.*I, 6.  + 2.*I},
-		{8. + 2.*I, 2. + 4.*I},
-		{2. - 1.*I, 1. + 1.*I}
-	};
-	using blas::hermitized;
-	BOOST_REQUIRE( hermitized(A)[0][1] == conj(A[1][0]) );
+//	namespace blas = multi::blas;
+//	multi::array<complex, 2> const A = {
+//		{1. - 3.*I, 6.  + 2.*I},
+//		{8. + 2.*I, 2. + 4.*I},
+//		{2. - 1.*I, 1. + 1.*I}
+//	};
+//	using blas::hermitized;
+//	BOOST_REQUIRE( hermitized(A)[0][1] == conj(A[1][0]) );
 
-	static_assert( blas::is_conjugated<decltype(blas::H(A))>{}, "!" );
-	BOOST_REQUIRE( blas::H(A)[0][1] == conj(A[1][0]) );
+//	static_assert( blas::is_conjugated<decltype(blas::H(A))>{}, "!" );
+//	BOOST_REQUIRE( blas::H(A)[0][1] == conj(A[1][0]) );
 
-	using blas::transposed;
-	BOOST_REQUIRE( transposed(A)[0][1] == A[1][0] );
+//	using blas::transposed;
+//	BOOST_REQUIRE( transposed(A)[0][1] == A[1][0] );
 
-	static_assert( not blas::is_conjugated<decltype(blas::T(A))>{}, "!" );
-	BOOST_REQUIRE( blas::T(A)[0][1] == A[1][0] );
+//	static_assert( not blas::is_conjugated<decltype(blas::T(A))>{}, "!" );
+//	BOOST_REQUIRE( blas::T(A)[0][1] == A[1][0] );
 
-	using namespace blas::operators;
-	BOOST_REQUIRE( (*~A)[0][1] == conj(A[1][0]) );
-	BOOST_REQUIRE( (~*A)[0][1] == conj(A[1][0]) );
-	BOOST_REQUIRE( ( ~A)[0][1] ==      A[1][0]  );
-	BOOST_REQUIRE( ( *A)[0][1] == conj(A[0][1]) );
+//	using namespace blas::operators;
+//	BOOST_REQUIRE( (*~A)[0][1] == conj(A[1][0]) );
+//	BOOST_REQUIRE( (~*A)[0][1] == conj(A[1][0]) );
+//	BOOST_REQUIRE( ( ~A)[0][1] ==      A[1][0]  );
+//	BOOST_REQUIRE( ( *A)[0][1] == conj(A[0][1]) );
 
-}
+//}
 
-BOOST_AUTO_TEST_CASE(is_complex_array_test){
-	static_assert(multi::blas::is_complex_array<multi::array<std::complex<double>, 2>>{}, "!");
-}
+//BOOST_AUTO_TEST_CASE(is_complex_array_test){
+//	static_assert(multi::blas::is_complex_array<multi::array<std::complex<double>, 2>>{}, "!");
+//}
 
-#endif
+//#endif
 #endif
 
