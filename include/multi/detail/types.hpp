@@ -13,8 +13,7 @@
 #include<type_traits>  // for make_signed_t
 #include<utility>      // for forward
 
-namespace boost {
-namespace multi {
+namespace boost::multi {
 
 using size_t = std::make_signed_t<std::size_t>;
 using size_type = std::make_signed_t<std::size_t>;
@@ -109,6 +108,5 @@ constexpr auto contains(index_extensions<D> const& ie, Tuple const& tp) {
 	return contains(head(ie), head(tp)) and contains(tail(ie), tail(tp));
 }
 
-}  // end namespace multi
-}  // end namespace boost
+}  // end namespace boost::multi
 #endif

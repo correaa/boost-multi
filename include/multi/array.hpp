@@ -248,7 +248,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
 	template<class TT, class... Args,
-		class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::basic_array<TT, D, Args...>::element>{}>,
+	//	class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::basic_array<TT, D, Args...>::element>{}>,
 		class = decltype(adl_copy(std::declval<multi::basic_array<TT, D, Args...> const&>().begin(), std::declval<multi::basic_array<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
 	>
 	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented  // NOLINTNEXTLINE(runtime/explicit)
@@ -1050,20 +1050,15 @@ struct array_traits<T[N], void, void>{  // NOLINT(cppcoreguidelines-avoid-c-arra
 }  // end namespace boost
 
 #if(__cpp_lib_memory_resource >= 201603)
-namespace boost {
-namespace multi {
-namespace pmr {
+namespace boost::multi::pmr {
 
 template <class T, boost::multi::dimensionality_type D>
 using array = boost::multi::array<T, D, std::pmr::polymorphic_allocator<T>>;
 
-}  // end namespace pmr
-}  // end namespace multi
-}  // end namespace boost
+}  // end namespace boost::multi::pmr
 #endif
 
-namespace boost {
-namespace serialization {
+namespace boost::serialization {
 
 template<typename T, boost::multi::dimensionality_type D, class A>
 struct version< boost::multi::array<T, D, A> > {
@@ -1071,7 +1066,6 @@ struct version< boost::multi::array<T, D, A> > {
 	enum { value = type::value };
 };
 
-}  // end namespace serialization
-}  // end namespace boost
+}  // end namespace boost::serialization
 
 #endif
