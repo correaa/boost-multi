@@ -9,8 +9,7 @@
 
 #include<type_traits>
 
-namespace boost{
-namespace multi::blas{
+namespace boost::multi::blas{
 
 using core::copy;
 
@@ -128,8 +127,6 @@ auto copy(Context&& ctxt, A const& a)
 ->decltype(copy<typename A::decay_type, Context, typename A::const_iterator>(std::forward<Context>(ctxt), a.begin(), a.end())){
 	return copy<typename A::decay_type, Context, typename A::const_iterator>(std::forward<Context>(ctxt), a.begin(), a.end());}
 
-} // end namespace multi::blas
-} // end namespace boost
+} // end namespace boost::multi::blas
 
 #endif
-

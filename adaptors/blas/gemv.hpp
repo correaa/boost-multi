@@ -1,33 +1,33 @@
-#ifndef MULTI_ADAPTORS_BLAS_GEMV_HPP // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+#ifndef MULTI_ADAPTORS_BLAS_GEMV_HPP
 #define MULTI_ADAPTORS_BLAS_GEMV_HPP
-// © Alfredo A. Correa 2019-2021
+// Copyright 2019-2021 Alfredo A. Correa
 
 #include "../blas/core.hpp"
 #include "../blas/dot.hpp"
 
 #include "./../../detail/../utility.hpp"
 
-namespace boost{
-namespace multi::blas{
+namespace boost::multi::blas {
 
 using core::gemv;
 
 template<class Context, class A, class MIt, class Size, class XIt, class B, class YIt>
-auto gemv_n(Context&& ctxt, A a, MIt m_first, Size count, XIt x_first, B b, YIt y_first){
+auto gemv_n(Context&& ctxt, A a, MIt m_first, Size count, XIt x_first, B b, YIt y_first) {
 	assert(m_first->stride()==1 or m_first.stride()==1); // blas doesn't implement this case
 	assert( x_first.base() != y_first.base() ); 
 
-	if constexpr(not is_conjugated<MIt>{}){
-		if     (m_first .stride()==1){std::forward<Context>(ctxt).gemv('N', count, m_first->size(), a, m_first.base()            , m_first->stride(), x_first.base(), x_first.stride(), b, y_first.base(), y_first.stride());}
-		else if(m_first->stride()==1){std::forward<Context>(ctxt).gemv('T', m_first->size(), count, a, m_first.base()            , m_first. stride(), x_first.base(), x_first.stride(), b, y_first.base(), y_first.stride());}
-		else                         {assert(0);}
-	}else{
-		if     (m_first->stride()==1){std::forward<Context>(ctxt).gemv('C', m_first->size(), count, a, underlying(m_first.base()), m_first. stride(), x_first.base(), x_first.stride(), b, y_first.base(), y_first.stride());}
-		else if(m_first. stride()==1){assert(0);} // not implemented in blas (use cblas?)
-		else                         {assert(0);} // not implemented in blas
+	if constexpr(not is_conjugated<MIt>{}) {
+		if     (m_first .stride()==1) {std::forward<Context>(ctxt).gemv('N', count, m_first->size(), a, m_first.base()            , m_first->stride(), x_first.base(), x_first.stride(), b, y_first.base(), y_first.stride());}
+		else if(m_first->stride()==1) {std::forward<Context>(ctxt).gemv('T', m_first->size(), count, a, m_first.base()            , m_first. stride(), x_first.base(), x_first.stride(), b, y_first.base(), y_first.stride());}
+		else                          {assert(0);}
+	} else {
+		if     (m_first->stride()==1) {std::forward<Context>(ctxt).gemv('C', m_first->size(), count, a, underlying(m_first.base()), m_first. stride(), x_first.base(), x_first.stride(), b, y_first.base(), y_first.stride());}
+		else if(m_first. stride()==1) {assert(0);} // not implemented in blas (use cblas?)
+		else                          {assert(0);} // not implemented in blas
 	}
 
-	struct{
+	struct {
 		MIt m_last;
 		YIt y_last;
 	} ret{m_first + count, y_first + count};
@@ -36,12 +36,12 @@ auto gemv_n(Context&& ctxt, A a, MIt m_first, Size count, XIt x_first, B b, YIt 
 }
 
 template<class A, class MIt, class Size, class XIt, class B, class YIt>
-auto gemv_n(A a, MIt m_first, Size count, XIt x_first, B b, YIt y_first){
+auto gemv_n(A a, MIt m_first, Size count, XIt x_first, B b, YIt y_first) {
 	return gemv_n(blas::context{}, a, m_first, count, x_first, b, y_first);
 }
 
 template<class A, class M, class V, class B, class W>
-auto gemv(A const& a, M const& m, V const& v, B const& b, W&& w) -> W&&{
+auto gemv(A const& a, M const& m, V const& v, B const& b, W&& w) -> W&& {
 	assert(size( m) == size(w) );
 	assert(size(~m) == size(v) );
 	gemv_n(a, begin(m), size(m), begin(v), b, begin(w));
@@ -49,7 +49,7 @@ auto gemv(A const& a, M const& m, V const& v, B const& b, W&& w) -> W&&{
 }
 
 template<class Scalar, class It2D, class It1D, class Context>
-class gemv_iterator{
+class gemv_iterator {
 	Scalar alpha_ = 1.;
 	It2D m_it_;
 	It1D v_first_;
@@ -85,7 +85,7 @@ class gemv_iterator{
 };
 
 template<class Scalar, class It2D, class It1D, class DecayType, class Context>
-class gemv_range{
+class gemv_range {
 	Scalar alpha_ = 1.;
 	It2D m_begin_;
 	It2D m_end_;
@@ -100,7 +100,7 @@ class gemv_range{
 	auto operator=(gemv_range&&) = delete;
 
 	gemv_range(Scalar alpha, It2D m_first, It2D m_last, It1D v_first)  // NOLINT(bugprone-easily-swappable-parameters)
-		: alpha_{alpha}, m_begin_{std::move(m_first)}, m_end_{std::move(m_last)}, v_first_{std::move(v_first)}{
+		: alpha_{alpha}, m_begin_{std::move(m_first)}, m_end_{std::move(m_last)}, v_first_{std::move(v_first)} {
 		assert(m_begin_.stride() == m_end_.stride());
 	}
 	gemv_range(Context&& ctxt, Scalar alpha, It2D m_first, It2D m_last, It1D v_first)  // NOLINT(bugprone-easily-swappable-parameters)
@@ -123,8 +123,8 @@ class gemv_range{
 	friend auto operator+(gemv_range const& self){return self.decay();}
 	template<class V>
 	friend auto operator+=(V&& v, gemv_range const& s) -> V&&{
-		if constexpr(std::is_same<Context, void*>{}){blas::gemv_n(         s.alpha_, s.m_begin_, s.m_end_ - s.m_begin_, s.v_first_, 1., v.begin());}
-		else                                        {blas::gemv_n(s.ctxt_, s.alpha_, s.m_begin_, s.m_end_ - s.m_begin_, s.v_first_, 1., v.begin());}
+		if constexpr(std::is_same<Context, void*>{}) {blas::gemv_n(         s.alpha_, s.m_begin_, s.m_end_ - s.m_begin_, s.v_first_, 1., v.begin());}
+		else                                         {blas::gemv_n(s.ctxt_, s.alpha_, s.m_begin_, s.m_end_ - s.m_begin_, s.v_first_, 1., v.begin());}
 		return std::forward<V>(v);
 	}
 };
@@ -144,12 +144,10 @@ auto gemv(Context&& ctxt, Scalar s, M const& m, V const& v)
 namespace operators{
 	template<class M, class V>
 	auto operator%(M const& m, V const& v)
-	->decltype(+blas::gemv(1., m, v)){
-		return +blas::gemv(1., m, v);}
+	->decltype(+blas::gemv(1., m, v)) {
+		return +blas::gemv(1., m, v); }
 } // end namespace operators
 
-} // end namespace multi::blas
-} // end namespace boost
+} // end namespace boost::multi::blas
 
 #endif
-

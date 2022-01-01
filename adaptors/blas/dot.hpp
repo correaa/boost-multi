@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo A. Correa 2019-2021
+// Copyright 2019-2021 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_BLAS_DOT_HPP
 #define MULTI_ADAPTORS_BLAS_DOT_HPP
@@ -8,8 +8,7 @@
 #include "../blas/numeric.hpp" // is_complex
 #include "../blas/operations.hpp"  // blas::C
 
-namespace boost {
-namespace multi::blas {
+namespace boost::multi::blas {
 
 using core::dot;
 using core::dotu;
@@ -138,6 +137,6 @@ namespace operators{
 		return dot(x, y); }
 }  // end namespace operators
 
-}  // end namespace multi::blas
-}  // end namespace boost
+}  // end namespace boost::multi::blas
+
 #endif
