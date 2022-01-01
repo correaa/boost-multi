@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo A. Correa 2019-2021
+// Copyright 2019-2021 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_BLAS_NUMERIC_HPP
 #define MULTI_ADAPTORS_BLAS_NUMERIC_HPP
@@ -11,8 +11,8 @@
 
 #include "numeric/is_complex.hpp"
 
-namespace boost{
-namespace multi::blas{
+namespace boost {
+namespace multi::blas {
 
 template<class T> struct complex_dummy{T real; T imag;};
 
@@ -144,7 +144,7 @@ class involuter{
 	F f_;
 	template<class, class, class> friend class involuter;
 
-public:
+ public:
 	using difference_type = typename std::iterator_traits<It>::difference_type;
 	using value_type 	  = typename std::iterator_traits<It>::value_type;
 	using pointer         = involuter<It, F>;//svoid; // typename std::iterator_traits<It>::pointer
@@ -156,8 +156,8 @@ public:
 	involuter() = default;
 //	~involuter() = default;
 
-	constexpr explicit involuter(It it)      : it_{std::move(it)}, f_{}{}
-	constexpr explicit involuter(It it, F f) : it_{std::move(it)}, f_{std::move(f)}{}
+	constexpr explicit involuter(It it)      : it_{std::move(it)}, f_{} {}
+	constexpr explicit involuter(It it, F f) : it_{std::move(it)}, f_{std::move(f)} {}
 
 //	involuter(involuter const& other) = default;
 
@@ -202,7 +202,7 @@ template<class It>  using negater = involuter<It, std::negate<>>;
 #if 1
 struct conjugate{
 	template<class T>
-	auto operator()(T&& a) const -> decltype(auto){
+	auto operator()(T&& a) const -> decltype(auto) {
 	//	using std::conj; /*for doubles?*/ 
 	//	using std::conj;
 	//	std::complex<double> A = static_cast<std::complex<double>>(a);
@@ -216,10 +216,10 @@ template<class Ref> using conjugated = involuted<Ref, conjugate>;
 template<class It> using conjugater = involuter<It, conjugate>;//, conjugated<typename std::iterator_traits<It>::reference> >;
 
 template<class It> auto make_conjugater(It it){return conjugater<It>{it};}
-template<class It> auto make_conjugater(conjugater<It> it) -> It{return underlying(it);}
+template<class It> auto make_conjugater(conjugater<It> it) -> It {return underlying(it);}
 
-template<class T> auto imag(involuted<T, conjugate> const& inv){return inv.decay().imag();}
-template<class T> auto real(involuted<T, conjugate> const& inv){return inv.decay().real();}
+template<class T> auto imag(involuted<T, conjugate> const& inv) {return inv.decay().imag();}
+template<class T> auto real(involuted<T, conjugate> const& inv) {return inv.decay().real();}
 
 template<class T> auto has_imag_fun_aux(T const& t)->decltype(imag(t), std::true_type {});
                   auto has_imag_fun_aux(...       )->decltype(         std::false_type{});
@@ -233,7 +233,7 @@ template<class T> struct has_imag_mem : decltype(has_imag_mem_aux(std::declval<T
 template<class T> struct has_imag : std::integral_constant<bool, (has_imag_fun<T>{} or has_imag_mem<T>{})>{};
 
 template<class A = void> 
-struct is_complex_array : has_imag<std::decay_t<decltype(*base(std::declval<A>()))>>{};
+struct is_complex_array : has_imag<std::decay_t<decltype(*base(std::declval<A>()))>> {};
 //	template<class T> static auto _(T const& t) -> has_imag<T>;
 //	constexpr explicit operator bool()      &{return decltype(_(*base(std::declval<A>()))){};}
 //	constexpr explicit operator bool()     &&{return decltype(_(*base(std::declval<A>()))){};}
@@ -242,37 +242,37 @@ struct is_complex_array : has_imag<std::decay_t<decltype(*base(std::declval<A>()
 //	template<class AA> constexpr auto operator()(AA&& /*unused*/){return _(*base(std::declval<A>()));}
 //};
 
-template<class V> struct is_complex : has_imag<V>{};
+template<class V> struct is_complex : has_imag<V> {};
 
 template<class It> auto is_conjugated_aux(conjugater<It> a) -> std::true_type ;
                    auto is_conjugated_aux(...             ) -> std::false_type;
 
-template<class A = void> struct is_conjugated : decltype(is_conjugated_aux(base(std::declval<A>()))){
-	template<class AA> constexpr auto operator()(AA&& /*unused*/){return is_conjugated_aux(base(std::declval<A>()));}
+template<class A = void> struct is_conjugated : decltype(is_conjugated_aux(base(std::declval<A>()))) {
+	template<class AA> constexpr auto operator()(AA&& /*unused*/) {return is_conjugated_aux(base(std::declval<A>()));}
 };
 
 template<class A, class D = std::decay_t<A>, typename Elem=typename D::element_type, typename Ptr=typename D::element_ptr,
 	std::enable_if_t<not is_complex_array<A>{}, int> =0>
-auto conj(A&& a) -> A&&{
+auto conj(A&& a) -> A&& {
 	return std::forward<A>(a);
 }
 
 template<class A, class D = std::decay_t<A>, typename Elem=typename D::element_type, typename Ptr=typename D::element_ptr,
 	std::enable_if_t<not is_conjugated<A>{} and is_complex_array<A>{}, int> =0>
-auto conj(A&& a) -> decltype(auto){
+auto conj(A&& a) -> decltype(auto) {
 	return std::forward<A>(a).template static_array_cast<Elem, conjugater<Ptr>>();
 }
 
 template<class A, class D = std::decay_t<A>, typename Elem=typename D::element_type, typename Ptr=typename D::element_ptr::underlying_type,
 	std::enable_if_t<    is_conjugated<A>{}, int> =0>
 auto conj(A&& a)
-->decltype(std::forward<A>(a).template static_array_cast<Elem, Ptr>()){
-	return std::forward<A>(a).template static_array_cast<Elem, Ptr>();}
+->decltype(std::forward<A>(a).template static_array_cast<Elem, Ptr>()) {
+	return std::forward<A>(a).template static_array_cast<Elem, Ptr>(); }
 
 } // end namespace multi::blas
 
 template<class It, class F, class Reference>
-auto default_allocator_of(multi::blas::involuter<It, F, Reference> it){
+auto default_allocator_of(multi::blas::involuter<It, F, Reference> it) {
 	return multi::default_allocator_of(underlying(it));
 }
 
