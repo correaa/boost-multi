@@ -10,8 +10,7 @@
 
 #include "../../config/NODISCARD.hpp"
 
-namespace boost{
-namespace multi{namespace blas{
+namespace boost::multi::blas {
 
 using core::axpy;
 
@@ -101,9 +100,5 @@ template<class X1D, class Y1D> auto operator-(X1D const& x, Y1D const& y)->std::
 
 } // end namespace operators
 
-
-} // end namespace blas
-} // end namespace multi
-} // end namespace boost
+} // end namespace boost::multi::blas
 #endif
-
