@@ -16,8 +16,8 @@
 #include <type_traits>  // for make_signed_t
 #include <utility>      // for swap
 
-namespace boost {
-namespace multi {
+namespace boost::multi {
+
 namespace detail {
 
 template<class To, class From, size_t... I>
@@ -276,8 +276,7 @@ template<boost::multi::dimensionality_type D>
 constexpr auto array_size_impl(const boost::multi::extensions_t<D>&)
 	-> std::integral_constant<std::size_t, static_cast<std::size_t>(D)>;
 
-}  // end namespace multi
-}  // end namespace boost
+}  // end namespace boost::multi
 
 namespace std {  // NOLINT(cert-dcl58-cpp) : to implement structured bindings
 
@@ -291,8 +290,7 @@ namespace std {  // NOLINT(cert-dcl58-cpp) : to implement structured bindings
 
 }  // end namespace std
 
-namespace boost {
-namespace multi {
+namespace boost::multi {
 
 template<typename SSize>
 struct layout_t<0, SSize>{
@@ -459,14 +457,14 @@ struct layout_t<1, SSize> {
 	       constexpr auto extensions()        const&       -> extensions_type {return extensions_type{extension()};}
 	friend constexpr auto extensions(layout_t const& self) -> extensions_type {return self.extensions();}
 
-private:
+ private:
 	friend struct layout_t<2U>;
 	void constexpr strides_aux(size_type* it) const {*it = stride();}
 	void constexpr sizes_aux(size_type* it) const {*it = size();}
 	void constexpr offsets_aux(index* it) const {*it = offset();}
 	void constexpr extensions_aux(index_extension* it) const {*it = extension();}
 
-public:
+ public:
 	constexpr auto operator()()        const -> layout_t {return *this;}
 
 	constexpr auto operator()(index i) const -> std::ptrdiff_t {return offset_ + i*stride_;}
@@ -711,8 +709,7 @@ constexpr auto sizes_as(Layout const& self)
 ->decltype(self.template sizes_as<T>()) {
 	return self.template sizes_as<T>(); }
 
-}  // end namespace multi
-}  // end namespace boost
+}  // end namespace boost::multi
 
 namespace std {
 	template<> struct tuple_size<boost::multi::extensions_t<0>> : std::integral_constant<boost::multi::dimensionality_type, 0> {};

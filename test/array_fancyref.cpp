@@ -2,7 +2,6 @@
 // © Alfredo A. Correa 2018-2021
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi constructors"
-#define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
 #include "../array.hpp"
@@ -11,7 +10,7 @@ namespace fancy {
 
 template<class T> class ref;
 
-template<class T = void> class ptr{
+template<class T = void> class ptr {
 	static double value;
 
  public:
@@ -49,14 +48,24 @@ template<class T = void> class ptr{
 template<> double ptr<double>::value = 42.;
 template<> double ptr<double const>::value = 42.;
 
-template<class T> class ref{
+template<class T> class ref {
 	T* p_;
 	explicit ref(T* p) : p_{p} {}
 	friend class ptr<T>;
-	friend struct ref<T const>;
+	friend class ref<T const>;
 
  public:
-	explicit ref(ref<std::remove_const_t<T>> const& other) : p_{other.p_} {}
+//  explicit ref(ref<std::remove_const_t<T>> const& other) : p_{other.p_} {}
+	~ref() = default;
+	auto operator=(ref const& other) -> ref& {
+		if(this == &other) {return *this;}
+		*p_ = *other.p_; return *this;
+	}
+	ref(ref const&) = delete;
+	ref(ref&& other) noexcept : p_{other.p_} {}  // this is needed by nvcc
+
+	auto operator=(ref     && other) noexcept -> ref& {*p_ = std::move(*other.p_); return *this;}
+
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator): this class simulates a reference
 	auto operator==(ref const& /*other*/) const {return true;}
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator): this class simulates a reference
@@ -64,7 +73,7 @@ template<class T> class ref{
 	using decay_t = std::decay_t<T>;
 };
 
-template<class T> struct allocator{
+template<class T> struct allocator {
 	using pointer = ptr<T>;
 	using value_type = T;
 	auto allocate(std::size_t /*size*/) {return pointer{};}
@@ -74,7 +83,7 @@ template<class T> struct allocator{
 	template<class T2> explicit allocator(allocator<T2> const& /*other*/) {}
 	template<class... Args>
 	void construct(pointer /*location*/, Args&&... /*args*/) {}
-	void destroy(pointer /*location*/){}
+	void destroy(pointer /*location*/) {}
 };
 
 // all these are optional, depending on the level of specialization needed
@@ -101,8 +110,7 @@ auto copy_n(ptr<T1> /*first*/, Size /*count*/, ptr<T2> result) {
 //  In boost/multi/adaptors/MyFancyApaptor.hpp if anything, or in user code if it is very specialized
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-namespace boost {
-namespace multi {
+namespace boost::multi {
 
 template<class It, class T>
 auto copy(It first, It last, fancy::ptr<T> dest) {
@@ -129,18 +137,16 @@ auto copy(It/*first*/, It/*last*/, multi::array_iterator<T, 2, fancy::ptr<T>> de
 //	return copy(first, last, dest);
 //}
 
-} // namespace multi
-} // namespace boost
+} // namespace boost::multi
 
 ////////////////////////////////////////////////////////////////////////////////
 // user code
 ////////////////////////////////////////////////////////////////////////////////
 
-//namespace multi = boost::multi;
-
 BOOST_AUTO_TEST_CASE(multi_fancy) {
-//	multi::array<double, 2, fancy::allocator<double>> A({5, 5});
-//	BOOST_REQUIRE( A.size() == 5 );
-//	BOOST_REQUIRE( A[1][1] == A[2][2] );
-}
+	namespace multi = boost::multi;
 
+	multi::array<double, 2, fancy::allocator<double>> A({5, 5});
+	BOOST_REQUIRE( A.size() == 5 );
+	BOOST_REQUIRE( A[1][1] == A[2][2] );
+}

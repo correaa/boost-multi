@@ -1,9 +1,5 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework `pkg-config --libs blas` \
-`#-Wl,-rpath,/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -L/usr/local/Wolfram/Mathematica/12.0/SystemFiles/Libraries/Linux-x86-64 -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -liomp5` \
--lboost_timer &&$0x&&rm $0x; exit
-#endif
-// © Alfredo A. Correa 2019-2021
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
+// Copyright 2019-2021 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_BLAS_HERK_HPP
 #define MULTI_ADAPTORS_BLAS_HERK_HPP
@@ -17,9 +13,7 @@ $CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework `pkg-config --libs blas` \
 
 #include "../../config/NODISCARD.hpp"
 
-namespace boost {
-namespace multi {
-namespace blas {
+namespace boost::multi::blas {
 
 template<class A, std::enable_if_t<not is_conjugated<A>{}, int> =0> 
 auto base_aux(A&& a)
@@ -39,32 +33,32 @@ auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) -> C2D&& // 
 {
 	assert( a.size() == c.size() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	assert( c.size() == rotated(c).size() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
-	if(c.is_empty()){return std::forward<C2D>(c);}
-	if constexpr(is_conjugated<C2D>{}){herk(flip(c_side), alpha, a, beta, hermitized(c)); return std::forward<C2D>(c);}
+	if(c.is_empty()) {return std::forward<C2D>(c);}
+	if constexpr(is_conjugated<C2D>{}) {herk(flip(c_side), alpha, a, beta, hermitized(c)); return std::forward<C2D>(c);}
 	{
 		auto base_a = base_aux(a);
 		auto base_c = base_aux(c); //  static_assert( not is_conjugated<C2D>{}, "!" );
-		if constexpr(is_conjugated<A2D>{}){
+		if constexpr(is_conjugated<A2D>{}) {
 		//	auto& ctxt = *blas::default_context_of(underlying(a.base()));
 			// if you get an error here might be due to lack of inclusion of a header file with the backend appropriate for your type of iterator
-			if     (stride(a)==1 and stride(c)!=1){herk(c_side==filling::upper?'L':'U', 'N', size(c), size(rotated(a)), &alpha, base_a, stride(rotated(a)), &beta, base_c, stride(c));}
-			else if(stride(a)==1 and stride(c)==1){
-				if(size(a)==1)                    {herk(c_side==filling::upper?'L':'U', 'N', size(c), size(rotated(a)), &alpha, base_a, stride(rotated(a)), &beta, base_c, stride(c));}
-				else                              {assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+			if     (stride(a)==1 and stride(c)!=1) {herk(c_side==filling::upper?'L':'U', 'N', size(c), size(rotated(a)), &alpha, base_a, stride(rotated(a)), &beta, base_c, stride(c));}
+			else if(stride(a)==1 and stride(c)==1) {
+				if(size(a)==1)                     {herk(c_side==filling::upper?'L':'U', 'N', size(c), size(rotated(a)), &alpha, base_a, stride(rotated(a)), &beta, base_c, stride(c));}
+				else                               {assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 			}
-			else if(stride(a)!=1 and stride(c)==1){herk(c_side==filling::upper?'U':'L', 'C', size(c), size(rotated(a)), &alpha, base_a, stride(        a ), &beta, base_c, stride(rotated(c)));}
-			else if(stride(a)!=1 and stride(c)!=1){herk(c_side==filling::upper?'L':'U', 'C', size(c), size(rotated(a)), &alpha, base_a, stride(        a ), &beta, base_c, stride(        c ));}
-			else                                  {assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
-		}else{
+			else if(stride(a)!=1 and stride(c)==1) {herk(c_side==filling::upper?'U':'L', 'C', size(c), size(rotated(a)), &alpha, base_a, stride(        a ), &beta, base_c, stride(rotated(c)));}
+			else if(stride(a)!=1 and stride(c)!=1) {herk(c_side==filling::upper?'L':'U', 'C', size(c), size(rotated(a)), &alpha, base_a, stride(        a ), &beta, base_c, stride(        c ));}
+			else                                   {assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+		} else {
 		//	auto& ctxt = *blas::default_context_of(           a.base() );
-			if     (stride(a)!=1 and stride(c)!=1){herk(c_side==filling::upper?'L':'U', 'C', size(c), size(rotated(a)), &alpha, base_a, stride(        a ), &beta, base_c, stride(c));}
-			else if(stride(a)!=1 and stride(c)==1){
+			if     (stride(a)!=1 and stride(c)!=1) {herk(c_side==filling::upper?'L':'U', 'C', size(c), size(rotated(a)), &alpha, base_a, stride(        a ), &beta, base_c, stride(c));}
+			else if(stride(a)!=1 and stride(c)==1) {
 				if(size(a)==1)                     {herk(c_side==filling::upper?'L':'U', 'N', size(c), size(rotated(a)), &alpha, base_a, stride(rotated(a)), &beta, base_c, stride(rotated(c)));}
 				else                               {assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 			}
-			else if(stride(a)==1 and stride(c)!=1){assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
-			else if(stride(a)==1 and stride(c)==1){herk(c_side==filling::upper?'U':'L', 'N', size(c), size(rotated(a)), &alpha, base_a, stride(rotated(a)), &beta, base_c, stride(rotated(c)));}
-			else                                  {assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+			else if(stride(a)==1 and stride(c)!=1) {assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+			else if(stride(a)==1 and stride(c)==1) {herk(c_side==filling::upper?'U':'L', 'N', size(c), size(rotated(a)), &alpha, base_a, stride(rotated(a)), &beta, base_c, stride(rotated(c)));}
+			else                                   {assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 		}
 	}
 	return std::forward<C2D>(c);
@@ -136,7 +130,5 @@ template<class A2D> auto herk(A2D const& a)
 //->decltype(herk(1., a)){
 {	return herk(1., a);}
 
-}  // end namespace blas
-}  // end namespace multi
-}  // end namespace boost
+}  // end namespace boost::multi::blas
 #endif

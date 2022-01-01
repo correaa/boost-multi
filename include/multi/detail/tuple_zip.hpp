@@ -9,8 +9,8 @@
 
 #include<tuple>
 
-namespace boost {
-namespace multi {
+namespace boost {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
+namespace multi {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
 namespace detail {
 
 template<class Tuple1, std::size_t... Indices>

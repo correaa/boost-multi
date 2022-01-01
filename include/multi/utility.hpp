@@ -14,8 +14,7 @@
 
 #include<tuple>  // for tuple<>
 
-namespace boost {
-namespace multi {
+namespace boost::multi {
 
 template<class To, class From, std::enable_if_t<std::is_convertible<From, To>{}, int> = 0>
 constexpr auto implicit_cast(From&& f) -> To {return static_cast<To>(f);}
@@ -54,7 +53,7 @@ template<typename T> struct rank : decltype(rank_aux(std::declval<T>())) {};
 #if not defined(__cpp_lib_nonmember_container_access) or __cpp_lib_nonmember_container_access < 201411
 template<class Container>
 constexpr auto size(Container const& con)
--> std::make_signed_t<decltype(con.size())>{
+-> std::make_signed_t<decltype(con.size())> {
 	return static_cast<std::make_signed_t<decltype(con.size())>>(con.size());}
 #else
 #endif
@@ -427,7 +426,5 @@ constexpr auto layout(std::array<T, N> const& arr) {
 	return multi::layout_t<multi::array_traits<std::array<T, N>>::dimensionality()>{multi::extensions(arr)};
 }
 
-}  // end namespace multi
-}  // end namespace boost
-
+}  // end namespace boost::multi
 #endif

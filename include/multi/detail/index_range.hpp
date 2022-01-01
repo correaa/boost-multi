@@ -17,8 +17,7 @@
 #include <limits>     // for numeric_limits
 #include <utility>    // for forward
 
-namespace boost {
-namespace multi {
+namespace boost::multi {
 
 template<
 	class Self,
@@ -186,10 +185,10 @@ constexpr auto make_range(IndexType first, IndexTypeLast last) -> range<IndexTyp
 }
 
 template<class IndexType = std::ptrdiff_t>
-class intersecting_range{
+class intersecting_range {
 	range<IndexType> impl_{std::numeric_limits<IndexType>::min(), std::numeric_limits<IndexType>::max()};
 	intersecting_range() = default;
-	static constexpr auto make(IndexType first, IndexType last) -> intersecting_range{
+	static constexpr auto make(IndexType first, IndexType last) -> intersecting_range {
 		intersecting_range ret; ret.impl_ = range<IndexType>{first, last}; return ret;
 	}
 	friend constexpr auto intersection(intersecting_range const& self, range<IndexType> const& other) {
@@ -214,10 +213,10 @@ MAYBE_UNUSED constexpr intersecting_range<> const ALL = intersecting_range<>::al
 MAYBE_UNUSED constexpr intersecting_range<> const _   = ALL;
 MAYBE_UNUSED constexpr intersecting_range<> const U   = ALL;
 
-[[deprecated]] constexpr intersecting_range<> const all = ALL;
+[[deprecated]] constexpr intersecting_range<> const all = ALL;  // TODO(correaa) replace by function all() ?
 
 template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
-struct extension_t : public range<IndexType, IndexTypeLast>{
+struct extension_t : public range<IndexType, IndexTypeLast> {
 	using range<IndexType, IndexTypeLast>::range;
 
 	constexpr extension_t(IndexType f, IndexTypeLast l) noexcept : range<IndexType, IndexTypeLast>{f, l} {}
@@ -258,6 +257,5 @@ constexpr auto make_extension_t(IndexType f, IndexTypeLast l) -> extension_t<Ind
 template<class IndexTypeLast = std::ptrdiff_t>
 constexpr auto make_extension_t(IndexTypeLast l) {return make_extension_t(IndexTypeLast{0}, l);}
 
-}  // end namespace multi
-}  // end namespace boost
+}  // end namespace boost::multi
 #endif

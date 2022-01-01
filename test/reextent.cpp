@@ -1,7 +1,6 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
-#endif
-// © Alfredo A. Correa 2018-2019
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
+// Copyright 2018-2021 Alfredo A. Correa
+
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi reextent"
 #define BOOST_TEST_DYN_LINK

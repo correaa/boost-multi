@@ -239,7 +239,7 @@ clang++-tidy:
     - $CXX --version
     - clang-tidy --version
     - mkdir build && cd build
-    - cmake .. -DCMAKE_CXX_CLANG_TIDY="clang-tidy;-checks=*,-readability-magic-numbers,-modernize-use-nodiscard,-altera-struct-pack-align,-cert-err58-cpp,-cppcoreguidelines-avoid-non-const-global-variables,-cppcoreguidelines-macro-usage,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-cppcoreguidelines-pro-type-vararg,-cppcoreguidelines-avoid-magic-numbers,-fuchsia-default-arguments-calls,-fuchsia-trailing-return,-fuchsia-statically-constructed-objects,-fuchsia-overloaded-operator,-hicpp-vararg,-hicpp-no-array-decay,-llvm-header-guard,-llvmlibc-restrict-system-libc-headers,-llvmlibc-implementation-in-namespace,-llvmlibc-callee-namespace,-fuchsia-default-arguments-calls"
+    - cmake .. -DCMAKE_CXX_CLANG_TIDY="clang-tidy;-checks=*,-readability-magic-numbers,-modernize-use-nodiscard,-altera-id-dependent-backward-branch,-altera-struct-pack-align,-altera-unroll-loops,-cert-err58-cpp,-cppcoreguidelines-avoid-non-const-global-variables,-cppcoreguidelines-macro-usage,-cppcoreguidelines-pro-bounds-array-to-pointer-decay,-cppcoreguidelines-pro-type-vararg,-cppcoreguidelines-avoid-magic-numbers,-fuchsia-default-arguments-calls,-fuchsia-trailing-return,-fuchsia-statically-constructed-objects,-fuchsia-overloaded-operator,-hicpp-vararg,-hicpp-no-array-decay,-llvm-header-guard,-llvmlibc-restrict-system-libc-headers,-llvmlibc-implementation-in-namespace,-llvmlibc-callee-namespace,-fuchsia-default-arguments-calls"
     - cmake --build . --verbose -- --quiet --no-print-directory
     - ctest --output-on-failure
 
@@ -366,20 +366,20 @@ clang++-11-std17:
 #      - export MKL_VERBOSE=1
 #      - ctest --output-on-failure
 
-cuda-10.0:
-    image: vistart/cuda:10.2-ubuntu20.04
-    stage: test
-    script:
-      - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet gcc-8 g++-8 pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
-      - ln --symbolic --force . ../multi
-      - nvcc --version
-      - g++-8 --version
-      - cd test
-      - mkdir build && cd build
-      - cmake -DENABLE_CUDA=1 -DCMAKE_CUDA_FLAGS="-ccbin=g++-8" ..
-      - cmake --build . --verbose
-      - ctest --output-on-failure
+#cuda-10.0:
+#    image: vistart/cuda:10.2-ubuntu20.04
+#    stage: test
+#    script:
+#      - export DEBIAN_FRONTEND=noninteractive
+#      - apt-get update && apt-get install --no-install-recommends -y --quiet gcc-8 g++-8 pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
+#      - ln --symbolic --force . ../multi
+#      - nvcc --version
+#      - g++-8 --version
+#      - cd test
+#      - mkdir build && cd build
+#      - cmake -DENABLE_CUDA=1 -DCMAKE_CUDA_FLAGS="-ccbin=g++-8" ..
+#      - cmake --build . --verbose
+#      - ctest --output-on-failure
 
 cuda-11.0:
     image: nvidia/cuda:11.0-devel

@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo A. Correa 2019-2021
+// Copyright 2019-2021 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_BLAS_GEMM_HPP
 #define MULTI_ADAPTORS_BLAS_GEMM_HPP
@@ -9,9 +9,7 @@
 #include "../blas/numeric.hpp"
 #include "../blas/operations.hpp"
 
-namespace boost {
-namespace multi {
-namespace blas {
+namespace boost::multi::blas {
 
 using core::gemm;
 
@@ -286,7 +284,6 @@ namespace operators {
 		return +blas::gemm(1., A, B); }
 }  // end namespace operators
 
-}  // end namespace blas
-}  // end namespace multi
-}  // end namespace boost
+}  // end namespace boost::multi::blas
+
 #endif

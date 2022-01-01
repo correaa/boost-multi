@@ -22,10 +22,9 @@ $CXXX $CXXFLAGS $0 -o $0x$OXX `pkg-config --cflags --libs fftw3 cuda-11.0` -lboo
 
 #include<fftw3.h> // external fftw3 library
 
-namespace boost{
-namespace multi{
+namespace boost::multi {
 
-namespace fftw{
+namespace fftw {
 //	template<class T> auto alignment_of(T* p){return ::fftw_alignment_of((double*)p);}
 #if  __cpp_lib_as_const >= 201510
 using std::as_const;
@@ -406,12 +405,12 @@ auto fftw_plan_dft(In const& in, Out&& out, int s, fftw::flags flags){
 }
 
 template<class In, class Out, dimensionality_type D = In::rank_v, typename = decltype(reinterpret_cast<fftw_complex*>(multi::implicit_cast<std::complex<double>*>(base(std::declval<Out&>()))))> // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : interact with legacy code
-auto fftw_plan_dft(In const& in, Out&& out, int s){
+auto fftw_plan_dft(In const& in, Out&& out, int s) {
 	return fftw_plan_dft(in, out, s, fftw::estimate);
 }
 
 
-namespace fftw{
+namespace fftw {
 
 #if HAVE_FFTW3_THREADS
 inline void initialize_threads(){int good = fftw_init_threads(); assert(good); (void)good;}
@@ -430,7 +429,7 @@ struct environment{
 	~environment(){fftw_cleanup();}
 };
 
-class plan{
+class plan {
 	plan() : impl_{nullptr, &fftw_destroy_plan}{}
 	std::unique_ptr<std::remove_pointer_t<fftw_plan>, decltype(&fftw_destroy_plan)> impl_;
 public:
@@ -484,7 +483,7 @@ public:
 	//}
 	//friend std::ostream& operator<<(std::ostream& os, plan const& p){return os<<p.string_print()<<'\n';}
 #if HAVE_FFTW3_THREADS
-public:
+ public:
 	static void make_thread_safe(){
 		fftw_make_planner_thread_safe(); // needs linking to -lfftw3_threads, requires FFTW-3.3.6 or greater
 		is_thread_safe_ = true;
@@ -495,7 +494,8 @@ public:
 	}
 	static bool is_thread_safe(){return is_thread_safe_;}
 	static bool nthreads(){return nthreads_;}
-private:
+
+ private:
 	static bool is_thread_safe_;
 	static int nthreads_;
 	static bool initialized_threads_;
@@ -522,18 +522,18 @@ static_assert( forward != none and none != backward and backward != forward, "!"
 
 template<class In, class Out>
 auto dft(In const& i, Out&& o, int s)
-->decltype(fftw::plan{i, o, s}(), std::forward<Out>(o)){
-	return fftw::plan{i, o, s}(), std::forward<Out>(o);}
+->decltype(fftw::plan{i, o, s}(), std::forward<Out>(o)) {
+	return fftw::plan{i, o, s}(), std::forward<Out>(o); }
 
 using std::decay_t;
 
 template<class In, class Out, std::size_t D=In::rank_v>
 auto dft(std::array<bool, +D> which, In const& i, Out&& o, sign s)
-->decltype(plan{which, i, o, s}(), std::forward<Out>(o)){
-	return plan{which, i, o, s}(), std::forward<Out>(o);}
+->decltype(plan{which, i, o, s}(), std::forward<Out>(o)) {
+	return plan{which, i, o, s}(), std::forward<Out>(o); }
 
 template<typename In, class Out, dimensionality_type D=In::rank_v, dimensionality_type=std::decay_t<Out>::rank_v>
-auto dft(std::array<sign, +D> w, In const& i, Out&& o){
+auto dft(std::array<sign, +D> w, In const& i, Out&& o) {
 //	std::array<bool, D> non;
 
 	std::array<bool, D> fwd{};
@@ -549,17 +549,17 @@ auto dft(std::array<sign, +D> w, In const& i, Out&& o){
 
 template<typename It1, typename It2>
 auto many_dft(It1 first, It1 last, It2 d_first, int sign)
-->decltype(plan::many(first, last, d_first, sign)(), d_first + (last - first)){
-	return plan::many(first, last, d_first, sign)(), d_first + (last - first);}
+->decltype(plan::many(first, last, d_first, sign)(), d_first + (last - first)) {
+	return plan::many(first, last, d_first, sign)(), d_first + (last - first); }
 
 template<typename In, class R=typename In::decay_type>
 NODISCARD("when first argument is const")
 auto dft(In const& i, sign s)
-->std::decay_t<decltype(dft(i, R(extensions(i), get_allocator(i)), s))>{
+->std::decay_t<decltype(dft(i, R(extensions(i), get_allocator(i)), s))> {
 	return dft(i, R(extensions(i), get_allocator(i)), s);}
 
 template<typename T, dimensionality_type D, class... Args>
-auto rotate(multi::array<T, D, Args...>& i) -> decltype(auto){
+auto rotate(multi::array<T, D, Args...>& i) -> decltype(auto) {
 	multi::array_ref<T, D, typename multi::array<T, D, Args...>::element_ptr> before(data_elements(i), extensions(i));
 	i.reshape(extensions(rotated(before) ));
 	fftw::dft(before, i, fftw::none);
@@ -569,63 +569,63 @@ auto rotate(multi::array<T, D, Args...>& i) -> decltype(auto){
 template<typename In, dimensionality_type D = In::rank_v, class R=typename In::decay_type>
 NODISCARD("when first argument is const")
 auto dft(std::array<bool, +D> which, In const& i, sign s)
-->std::decay_t<decltype(fftw::dft(which, i, R(extensions(i), get_allocator(i)), s))>{
+->std::decay_t<decltype(fftw::dft(which, i, R(extensions(i), get_allocator(i)), s))> {
 	return fftw::dft(which, i, R(extensions(i), get_allocator(i)), s);}
 
 template<typename In, multi::dimensionality_type D = std::decay_t<In>::rank_v>
 auto dft(std::array<bool, +D> which, In&& i, sign s)
-->decltype(dft(which, i, i, s), std::forward<In>(i)){
-	return dft(which, i, i, s), std::forward<In>(i);}
+->decltype(dft(which, i, i, s), std::forward<In>(i)) {
+	return dft(which, i, i, s), std::forward<In>(i); }
 
 template<typename In, std::size_t D = In::rank_v, class R=typename In::decay_type>
 void dft(std::array<bool, +D> which, In const& i) = delete;
 
 template<dimensionality_type Rank /*not deduced*/, typename In, class R=typename In::decay_type>
 NODISCARD("when second argument is const")
-auto dft(In const& i, sign s) -> R{
+auto dft(In const& i, sign s) -> R {
 	static_assert( Rank <= In::rank_v, "!" );
 	return dft<Rank>(i, R(extensions(i), get_allocator(i)), s);
 }
 
 template<typename... A> auto            dft_forward(A&&... a)
-->decltype(fftw::dft(std::forward<A>(a)..., fftw::forward)){
-	return fftw::dft(std::forward<A>(a)..., fftw::forward);}
+->decltype(fftw::dft(std::forward<A>(a)..., fftw::forward)) {
+	return fftw::dft(std::forward<A>(a)..., fftw::forward); }
 
 template<typename BoolArray, typename A>
 NODISCARD("when input argument is read only")
 auto dft_forward(BoolArray which, A const& a)
-->decltype(fftw::dft(which, a, fftw::forward)){
-	return fftw::dft(which, a, fftw::forward);}
+->decltype(fftw::dft(which, a, fftw::forward)) {
+	return fftw::dft(which, a, fftw::forward); }
 
 template<class A, multi::dimensionality_type D = A::rank_v>
 NODISCARD("when input argument is read only")
 auto dft_forward(std::array<bool, +D> which, A const& a)
-->decltype(fftw::dft(which, a, fftw::forward)){
-	return fftw::dft(which, a, fftw::forward);}
+->decltype(fftw::dft(which, a, fftw::forward)) {
+	return fftw::dft(which, a, fftw::forward); }
 
 template<class A, class O, multi::dimensionality_type D = A::rank_v>
 auto dft_forward(std::array<bool, +D> which, A const& a, O&& o)
-->decltype(fftw::dft(which, a, std::forward<O>(o), fftw::forward)){
-	return fftw::dft(which, a, std::forward<O>(o), fftw::forward);}
+->decltype(fftw::dft(which, a, std::forward<O>(o), fftw::forward)) {
+	return fftw::dft(which, a, std::forward<O>(o), fftw::forward); }
 
 template<typename A>
 NODISCARD("when input argument is read only") auto dft_forward(A const& a)
-->decltype(fftw::dft(a, fftw::forward)){
-	return fftw::dft(a, fftw::forward);}
+->decltype(fftw::dft(a, fftw::forward)) {
+	return fftw::dft(a, fftw::forward); }
 
 template<typename... A> auto            dft_backward(A&&... a)
-->decltype(dft(std::forward<A>(a)..., fftw::backward)){
-	return dft(std::forward<A>(a)..., fftw::backward);}
+->decltype(dft(std::forward<A>(a)..., fftw::backward)) {
+	return dft(std::forward<A>(a)..., fftw::backward); }
 
-template<class In> auto dft_inplace(In&& i, sign s) -> In&&{
+template<class In> auto dft_inplace(In&& i, sign s) -> In&& {
 	fftw::plan{i, i, static_cast<int>(s)}();//(i, i); 
 	return std::forward<In>(i);
 }
 
 template<class In, class Out, dimensionality_type D = In::rank_v>
 auto copy(In const& i, Out&& o)
-->decltype(dft(std::array<bool, D>{}, i, std::forward<Out>(o), fftw::forward)){
-	return dft(std::array<bool, D>{}, i, std::forward<Out>(o), fftw::forward);}
+->decltype(dft(std::array<bool, D>{}, i, std::forward<Out>(o), fftw::forward)) {
+	return dft(std::array<bool, D>{}, i, std::forward<Out>(o), fftw::forward); }
 
 template<typename In, class R=typename In::decay_type>
 NODISCARD("when argument is const")
@@ -634,8 +634,8 @@ auto copy(In const& i) -> R
 	return copy(i, R(extensions(i), get_allocator(i)));}
 
 template<typename In, class R=typename std::decay_t<In>::decay_type>
-auto move(In&& in){
-	if(in.is_compact()){
+auto move(In&& in) {
+	if(in.is_compact()) {
 		multi::array_ref<typename In::element, In::rank_v, typename In::element_ptr> Ref(
 			in.base(), extensions(in)
 		);
@@ -648,9 +648,9 @@ auto move(In&& in){
 }
 
 template<typename T, dimensionality_type D, class P, class R=typename multi::array<T, D>>
-auto copy(multi::basic_array<T, D, multi::move_ptr<T, P>>&& a) -> R{
-	if(a.is_compact()){
-		return 
+auto copy(multi::basic_array<T, D, multi::move_ptr<T, P>>&& a) -> R {
+	if(a.is_compact()) {
+		return
 			fftw::copy(
 				a.template static_array_cast<T, T*>(), 
 				multi::array_ref<T, D, T*>(a.base().base(), a.extensions())
@@ -662,11 +662,10 @@ auto copy(multi::basic_array<T, D, multi::move_ptr<T, P>>&& a) -> R{
 
 template<class Array>
 auto transpose(Array& a)
-->decltype(fftw::copy(transposed(a), a.reshape(extensions(layout(a).transpose())))){
+->decltype(fftw::copy(transposed(a), a.reshape(extensions(layout(a).transpose())))) {
 	multi::array_ref<typename Array::element, Array::rank_v, typename Array::element_ptr> r(a.base(), extensions(a));
 	return fftw::copy(r.transposed(), a.reshape(layout(a).transpose().extensions()));
 }
-
 
 #if 0
 // TODO investigate why this doesn't work as expected
@@ -680,8 +679,6 @@ auto rotate(Array& a)
 #endif
 
 } // end namespace fftw
-} // end namespace multi
-} // end namespace boost
+} // end namespace boost::multi
 
 #endif
-

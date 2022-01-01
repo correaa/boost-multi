@@ -23,8 +23,7 @@
 
 #include<utility>  // for move
 
-namespace boost {
-namespace multi {
+namespace boost::multi {
 
 template<class Allocator>
 struct array_allocator {
@@ -43,7 +42,7 @@ struct array_allocator {
 	explicit array_allocator(allocator_type const& a) : alloc_{a} {}
 
 	auto allocate(size_type_ n) -> pointer_ {
-		return n?std::allocator_traits<allocator_type>::allocate(alloc_, n):nullptr;
+		return n?std::allocator_traits<allocator_type>::allocate(alloc_, n):pointer_{nullptr};
 	}
 	auto allocate(typename std::allocator_traits<allocator_type>::size_type n, typename std::allocator_traits<allocator_type>::const_void_pointer hint)
 	-> typename std::allocator_traits<allocator_type>::pointer {
@@ -248,7 +247,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
 	template<class TT, class... Args,
-		class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::basic_array<TT, D, Args...>::element>{}>,
+	//  class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::basic_array<TT, D, Args...>::element>{}>,
 		class = decltype(adl_copy(std::declval<multi::basic_array<TT, D, Args...> const&>().begin(), std::declval<multi::basic_array<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
 	>
 	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented  // NOLINTNEXTLINE(runtime/explicit)
@@ -742,7 +741,7 @@ struct array<T, 0, Alloc> : static_array<T, 0, Alloc>{
 };
 
 template<class T, dimensionality_type D, class Alloc>
-struct array : static_array<T, D, Alloc>{
+struct array : static_array<T, D, Alloc> {
 	using static_ = static_array<T, D, Alloc>;
 	static_assert(
 		   std::is_same<typename array::alloc_traits::value_type, T   >{}
@@ -1040,30 +1039,24 @@ template <class T, std::size_t N>
 auto decay(const T(&t)[N]) noexcept -> multi::array<typename std::remove_all_extents<T[N]>::type, std::rank<T[N]>{}>{return multi::array_cref<typename std::remove_all_extents<T[N]>::type, std::rank<T[N]>{}>(data_elements(t), extensions(t));}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 
 template<class T, std::size_t N>
-struct array_traits<T[N], void, void>{  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+struct array_traits<T[N], void, void> {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 	using reference = T&;
 	using element = std::remove_all_extents_t<T[N]>;  //  NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 	using decay_type = multi::array<T, 1>;
 };
 
-}  // end namespace multi
-}  // end namespace boost
+}  // end namespace boost::multi
 
 #if(__cpp_lib_memory_resource >= 201603)
-namespace boost {
-namespace multi {
-namespace pmr {
+namespace boost::multi::pmr {
 
 template <class T, boost::multi::dimensionality_type D>
 using array = boost::multi::array<T, D, std::pmr::polymorphic_allocator<T>>;
 
-}  // end namespace pmr
-}  // end namespace multi
-}  // end namespace boost
+}  // end namespace boost::multi::pmr
 #endif
 
-namespace boost {
-namespace serialization {
+namespace boost::serialization {
 
 template<typename T, boost::multi::dimensionality_type D, class A>
 struct version< boost::multi::array<T, D, A> > {
@@ -1071,7 +1064,6 @@ struct version< boost::multi::array<T, D, A> > {
 	enum { value = type::value };
 };
 
-}  // end namespace serialization
-}  // end namespace boost
+}  // end namespace boost::serialization
 
 #endif

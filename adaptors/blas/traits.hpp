@@ -1,12 +1,11 @@
 #ifndef MULTI_ADAPTORS_BLAS_TRAITS_HPP// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 #define MULTI_ADAPTORS_BLAS_TRAITS_HPP
-// © Alfredo A. Correa 2019-2021
+// Copyright 2019-2021 Alfredo A. Correa
 
 #include<complex>
 #include<type_traits>
 
-namespace boost{
-namespace multi::blas{
+namespace boost::multi::blas{
 
 // TODO(correaa) : create a BinaryDouble concept?
 
@@ -34,8 +33,5 @@ namespace multi::blas{
 
 	template<class Z> struct is_z : decltype(is_z_aux(std::declval<Z>())){using archetype = std::complex<double>;};
 
-} // end namespace multi::blas
-
-} // end namespace boost
+} // end namespace boost::multi::blas
 #endif
-

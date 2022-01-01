@@ -21,7 +21,7 @@ project(
 
 find_package(Boost REQUIRED COMPONENTS unit_test_framework serialization)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -78,16 +78,14 @@ foreach(TEST_FILE ${TEST_SRCS})
 	)
 		target_compile_options(
 			${TEST_EXE}
-			PRIVATE # -fstrict-aliasing -Wstrict-aliasing
+			PRIVATE # -fstrict-aliasing -Wstrict-aliasing #-Wsign-conversion
 					-Werror
 					-Wall
 					-Wshadow
-					-Wsign-conversion
 					-Wunused
 					-Wnon-virtual-dtor
 					-Woverloaded-virtual
 					-Wcast-qual
-					-Wconversion
 					-Wformat=2
 					$<$<CXX_COMPILER_ID:GNU>:
 					-Werror
@@ -125,6 +123,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					>
 					$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
 					-Wextra
+					-Wconversion
 					-Wnon-virtual-dtor
 					-Wpedantic
 					-Wmove
