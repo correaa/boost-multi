@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo A. Correa 2019-2021
+// Copyright 2019-2021 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi allocators"
 #define BOOST_TEST_DYN_LINK
@@ -50,12 +50,6 @@
 
 namespace multi = boost::multi;
 
-// #include <cereal/archives/json.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-// #include <cereal/types/string.hpp>
-#include <boost/serialization/string.hpp>
-
 struct array {
 	using input_archive  = boost::archive::xml_iarchive;  // cereal::JSONInputArchive ;
 	using output_archive = boost::archive::xml_oarchive;  // cereal::JSONOutputArchive;
@@ -85,7 +79,6 @@ BOOST_AUTO_TEST_CASE(json) {
 }
 
 BOOST_AUTO_TEST_CASE(extensions_serialization) {
-
 	multi::array<double, 2> arr({10, 10});
 	auto const x = arr.extensions();
 	std::stringstream ss;

@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo A. Correa 2019-2021
+// Copyright 2019-2021 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi constructors"
 #define BOOST_TEST_DYN_LINK
@@ -71,13 +71,11 @@ BOOST_AUTO_TEST_CASE(multi_constructors_1d) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_constructors_2d_ctad) {
-	#if defined(__cpp_deduction_guides) and not defined(__NVCC__)
-	{
-		multi::array A({10, 20}, double{});
-		BOOST_REQUIRE( size(A)==10 );
-		BOOST_REQUIRE( A[5][6] == double{} );
-	}
-	#endif
+#if defined(__cpp_deduction_guides) and not defined(__NVCC__)
+	multi::array A({10, 20}, double{});
+	BOOST_REQUIRE( size(A)==10 );
+	BOOST_REQUIRE( A[5][6] == double{} );
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(multi_constructors) {
