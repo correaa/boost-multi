@@ -59,12 +59,13 @@ template<class T> class ref {
 
  public:
 //  explicit ref(ref<std::remove_const_t<T>> const& other) : p_{other.p_} {}
-	constexpr ~ref() = default;
+	~ref() = default;
 	auto operator=(ref const& other) -> ref& {
 		if(this == &other) {return *this;}
 		*p_ = *other.p_; return *this;
 	}
-	ref(ref const&) = delete;
+//  ref(ref const&) = delete;
+	constexpr ref(ref const& other) noexcept : p_{other.p_} {}
 	constexpr ref(ref&& other) noexcept : p_{other.p_} {}  // this is needed by nvcc, needs to be a device function for nvcc 11.2 and lower
 
 	auto operator=(ref     && other) noexcept -> ref& {*p_ = std::move(*other.p_); return *this;}
