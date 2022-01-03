@@ -65,7 +65,7 @@ template<class T> class ref {
 		*p_ = *other.p_; return *this;
 	}
 	ref(ref const&) = delete;
-	ref(ref&& other) noexcept : p_{other.p_} {}  // this is needed by nvcc
+	constexpr ref(ref&& other) noexcept : p_{other.p_} {}  // this is needed by nvcc, needs to be a device function for nvcc 11.2 and lower
 
 	auto operator=(ref     && other) noexcept -> ref& {*p_ = std::move(*other.p_); return *this;}
 
