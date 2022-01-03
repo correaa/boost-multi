@@ -59,7 +59,7 @@ template<class T> class ref {
 
  public:
 //  explicit ref(ref<std::remove_const_t<T>> const& other) : p_{other.p_} {}
-	~ref() = default;
+	constexpr ~ref() = default;
 	auto operator=(ref const& other) -> ref& {
 		if(this == &other) {return *this;}
 		*p_ = *other.p_; return *this;
