@@ -1590,7 +1590,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
  private:
 	HD constexpr auto at_aux(index i) const -> typename basic_array::reference {
-		MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+	//  MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		auto ba = this->base();  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
 		auto of = (i*this->stride() - this->offset());  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
 		auto pt = ba + of;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
