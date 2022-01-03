@@ -29,6 +29,11 @@ if((NOT
 	if(BLAS_FOUND) # in some systems with MKL, regular BLAS headers need to be found for it to work
 		message("Multi/BLAS: MKL environment detected")
 		add_definitions(-DFORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID)
+        SET(CMAKE_SKIP_BUILD_RPATH  FALSE)
+        SET(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE) 
+        SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib64")
+        SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+        SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib64")
 	else()
 		message("Multi/BLAS: MKL environment not detected, looking for other BLAS")
 		unset(BLA_VENDOR)
