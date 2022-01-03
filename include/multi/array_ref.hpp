@@ -1460,7 +1460,7 @@ struct basic_array<T, 0, ElementPtr, Layout>
 	auto serialize(Archive& ar, const unsigned int /*version*/) {
 		using AT = multi::archive_traits<Archive>;
 		auto& element_ = *(this->base_);
-		ar & AT::make_nvp("element", element_);
+		ar &     AT::make_nvp("element", element_);
 	//	ar & cereal::make_nvp("element", element_);
 	//	ar &                             element_ ;
 	}
@@ -1591,10 +1591,11 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
  private:
 	HD constexpr auto at_aux(index i) const -> typename basic_array::reference {
 	//  MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		auto ba = this->base();  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
-		auto of = (i*this->stride() - this->offset());  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
-		auto pt = ba + of;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
-		return *pt;  // in C++17 this is allowed even with syntethic references
+	//  auto ba = this->base();  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
+	//  auto of = (i*this->stride() - this->offset());  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
+	//  auto pt = ba + of;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
+	//  return *pt;  // in C++17 this is allowed even with syntethic references
+		return *(this->base() + (i*this->stride() - this->offset()));
 	}
 
  public:
