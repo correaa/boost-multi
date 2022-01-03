@@ -19,9 +19,10 @@ template<class T = void> class ptr {
 	using pointer = T*;
 	using reference = ref<T>;
 	using iterator_category = std::random_access_iterator_tag;
+
 	ptr() = default;//ptr(ptr const=default; ptr& operator=(ptr const&)=default;
 	explicit ptr(std::nullptr_t) {}
-	template<class Other> explicit ptr(ptr<Other> const& /*unused*/) {}
+	template<class Other> constexpr explicit ptr(ptr<Other> const& /*unused*/) {}
 
 	// vvv it is important that these two functions are device or device host functions
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
@@ -48,6 +49,7 @@ template<class T = void> class ptr {
 //	operator double*() const{return &value;}
 	friend auto get_allocator(ptr const& /*self*/){return std::allocator<value_type>{};}
 };
+
 template<> double ptr<double>::value = 42.;
 template<> double ptr<double const>::value = 42.;
 
