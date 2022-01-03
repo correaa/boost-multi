@@ -10,7 +10,7 @@ namespace fancy {
 
 template<class T> class ref;
 
-template<class T = void> class ptr {
+template<class T = void> class ptr {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 	static double value;
 
  public:
@@ -23,7 +23,7 @@ template<class T = void> class ptr {
 	ptr() = default;//ptr(ptr const=default; ptr& operator=(ptr const&)=default;
 	explicit ptr(std::nullptr_t) {}
 	template<class Other> constexpr explicit ptr(ptr<Other> const& /*other*/) {}
-	constexpr ptr(ptr const& /*other*/) {}
+	constexpr ptr(ptr const& /*other*/) {}  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default)
 
 	// vvv it is important that these two functions are device or device host functions
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
