@@ -27,7 +27,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	enable_language(CUDA)
-	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -std=c++17 --expt-relaxed-constexpr --extended-lambda --Werror cross-execution-space-call,deprecated-declarations")
+	set_property(GLOBAL PROPERTY CUDA_STANDARD 17)  # with cmake 3.13 this is not enough, -std=c++17 is needed below
+	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr --extended-lambda --Werror cross-execution-space-call,deprecated-declarations")
 
 	include(FindCUDA/select_compute_arch)
 	cuda_detect_installed_gpus(INSTALLED_GPU_CCS_1)
