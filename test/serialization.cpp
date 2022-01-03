@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(json) {
 	BOOST_REQUIRE(A == B);
 }
 
-#if not defined(__NVCC__)  // some code contained here doesn't compile with nvcc 11.0,11.1 and 11.2
+// #if not defined(__NVCC__)  // some code contained here doesn't compile with nvcc 11.0,11.1 and 11.2
 BOOST_AUTO_TEST_CASE(extensions_serialization) {
 	multi::array<double, 2> arr({10, 10});
 	auto const x = arr.extensions();
@@ -104,6 +104,7 @@ BOOST_AUTO_TEST_CASE(extensions_serialization) {
 	}
 }
 
+#if not defined(__NVCC__)  // some code contained here doesn't compile with nvcc 11.0,11.1 and 11.2
 BOOST_AUTO_TEST_CASE(carray_serialization) {
 	double const A[3][3] = {{0., 1., 2.}, {3., 4., 5.}, {6., 7., 8.}};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy types
 	std::stringstream ss;
