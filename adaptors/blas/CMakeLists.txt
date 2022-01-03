@@ -1,5 +1,5 @@
 # -*-indent-tabs-mode:nil;c-basic-offset:2;tab-width:4;autowrap:nil;-*-
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.18)  # for BLAS::BLAS
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
@@ -28,7 +28,7 @@ if((NOT
 	find_package(BLAS)
 	if(BLAS_FOUND) # in some systems with MKL, regular BLAS headers need to be found for it to work
 		message("Multi/BLAS: MKL environment detected")
-		add_definitions(-DRETURN_BY_STACK)
+		add_definitions(-DFORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID)
 	else()
 		message("Multi/BLAS: MKL environment not detected, looking for other BLAS")
 		unset(BLA_VENDOR)
@@ -50,7 +50,8 @@ if((NOT
 		$ENV{BLAS_HOME}/include
 	)
 
-	link_libraries(${BLAS_LIBRARIES})
+	link_libraries(BLAS::BLAS)
+#   include_directories(BLAS::BLAS)  # does not including a real path so far
 else()
 	link_libraries("-lblas") # cmake cannot detect BLAS with pgi/nvc++ but it ships with its own version
 endif()
