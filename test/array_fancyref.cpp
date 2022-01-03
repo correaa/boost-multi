@@ -56,7 +56,7 @@ template<> double ptr<double const>::value = 42.;
 
 template<class T> class ref {
 	T* p_;
-	explicit ref(T* p) : p_{p} {}
+	constexpr explicit ref(T* p) : p_{p} {}
 	friend class ptr<T>;
 	friend class ref<T const>;
 
