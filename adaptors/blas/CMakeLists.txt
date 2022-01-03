@@ -1,5 +1,5 @@
 # -*-indent-tabs-mode:nil;c-basic-offset:2;tab-width:4;autowrap:nil;-*-
-cmake_minimum_required(VERSION 3.18)  # for BLAS::BLAS
+cmake_minimum_required(VERSION 3.16)  # 3.18for BLAS::BLAS
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
