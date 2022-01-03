@@ -22,11 +22,14 @@ template<class T = void> class ptr {
 	ptr() = default;//ptr(ptr const=default; ptr& operator=(ptr const&)=default;
 	explicit ptr(std::nullptr_t) {}
 	template<class Other> explicit ptr(ptr<Other> const& /*unused*/) {}
+
+	// vvv it is important that these two functions are device or device host functions
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
-	auto operator*() const -> reference {return reference{&value};}
+	constexpr auto operator*() const -> reference {return reference{&value};}
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
-	auto operator+(difference_type /*unused*/) const -> ptr {return *this;}
+	constexpr auto operator+(difference_type /*unused*/) const -> ptr {return *this;}
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
+
 	auto operator+=(difference_type /*unused*/) -> ptr& {return *this;}
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
 	auto operator++() -> ptr& {return operator+=(1);}
