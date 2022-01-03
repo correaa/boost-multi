@@ -1,5 +1,5 @@
 # -*-indent-tabs-mode:nil;c-basic-offset:2;tab-width:4;autowrap:nil;-*-
-cmake_minimum_required(VERSION 3.16)  # 3.18for BLAS::BLAS
+cmake_minimum_required(VERSION 3.16)  # for reference Ubuntu 20.04 uses 3.16, 3.18 for BLAS::BLAS
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
@@ -47,6 +47,10 @@ if((NOT
 		)
 	endif()
 
+    link_libraries(${BLAS_LIBRARIES})
+    # link_libraries(BLAS::BLAS) // needs 3.18
+
+    # include_directories(BLAS::BLAS)  # does not including a real path so far
 	find_path(
 		BLAS_INCLUDE_DIRS
 		cblas.h
@@ -54,9 +58,6 @@ if((NOT
 		/usr/local/include
 		$ENV{BLAS_HOME}/include
 	)
-
-	link_libraries(BLAS::BLAS)
-#   include_directories(BLAS::BLAS)  # does not including a real path so far
 else()
 	link_libraries("-lblas") # cmake cannot detect BLAS with pgi/nvc++ but it ships with its own version
 endif()
