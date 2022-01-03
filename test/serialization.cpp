@@ -78,6 +78,7 @@ BOOST_AUTO_TEST_CASE(json) {
 	BOOST_REQUIRE(A == B);
 }
 
+#if not defined(__NVCC__)  // some code contained here doesn't compile with nvcc 11.0,11.1 and 11.2
 BOOST_AUTO_TEST_CASE(extensions_serialization) {
 	multi::array<double, 2> arr({10, 10});
 	auto const x = arr.extensions();
@@ -389,3 +390,4 @@ BOOST_AUTO_TEST_CASE(array_serialization_3D_part_xml) {
 		BOOST_REQUIRE( arr[3] == arr[2] );
 	}
 }
+#endif
