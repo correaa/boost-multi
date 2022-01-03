@@ -131,7 +131,6 @@ BOOST_AUTO_TEST_CASE(carray_serialization) {
 	}
 }
 
-#if not defined(__NVCC__)  // some code contained here doesn't compile with nvcc 11.0,11.1 and 11.2
 BOOST_AUTO_TEST_CASE(array_serialization) {
 	multi::array<double, 2> arr({10, 10}, 0.);
 
@@ -163,6 +162,7 @@ BOOST_AUTO_TEST_CASE(array_serialization) {
 	}
 }
 
+#if not defined(__NVCC__)  // some code contained here doesn't compile with nvcc 11.0,11.1 and 11.2
 BOOST_AUTO_TEST_CASE(array_serialization_string) {
 	multi::array<std::string, 2> arr({10, 10});
 	auto const x = extensions(arr);
