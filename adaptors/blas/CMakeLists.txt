@@ -57,7 +57,8 @@ else()
 endif()
 
 if(CMAKE_CXX_COMPILER_ID STREQUAL "PGI")
-	add_definitions(-DRETURN_BY_STACK)
+	add_definitions(-DFORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID)
+	add_definitions(-DRETURN_BY_STACK)  # TODO(correaa) check 
 endif()
 
 include_directories(${CMAKE_BINARY_DIR})
