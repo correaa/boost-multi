@@ -370,7 +370,6 @@ BOOST_AUTO_TEST_CASE(array_serialization_3D_part_binary) {
 		BOOST_REQUIRE( arr[3] == arr[2] );
 	}
 }
-#endif
 
 BOOST_AUTO_TEST_CASE(array_serialization_3D_part_xml) {
 	multi::array<double, 3> arr({10, 10, 10}, 0.);
@@ -393,3 +392,4 @@ BOOST_AUTO_TEST_CASE(array_serialization_3D_part_xml) {
 		BOOST_REQUIRE( arr[3] == arr[2] );
 	}
 }
+#endif
