@@ -348,7 +348,6 @@ BOOST_AUTO_TEST_CASE(array_serialization_2D_inplace_file) {
 	BOOST_REQUIRE( arr2 == arr );
 }
 
-#if not defined(__NVCC__)  // some code contained here doesn't compile with nvcc 11.0,11.1 and 11.2
 BOOST_AUTO_TEST_CASE(array_serialization_3D_part_binary) {
 	multi::array<double, 3> arr({10, 10, 10}, 0.);
 
@@ -371,6 +370,7 @@ BOOST_AUTO_TEST_CASE(array_serialization_3D_part_binary) {
 	}
 }
 
+#if not defined(__NVCC__)  // some code contained here doesn't compile with nvcc 11.0,11.1 and 11.2
 BOOST_AUTO_TEST_CASE(array_serialization_3D_part_xml) {
 	multi::array<double, 3> arr({10, 10, 10}, 0.);
 
