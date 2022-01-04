@@ -26,7 +26,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	enable_language(CUDA)
-	set_property(GLOBAL PROPERTY CUDA_STANDARD 17)  # with cmake 3.16 this is not enough, -std=c++17 is needed below
+#	set_property(GLOBAL PROPERTY CUDA_STANDARD 17)  # with cmake 3.16 this is not enough, -std=c++17 is needed below
 	add_compile_options(-std=c++17)
 	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr --extended-lambda --Werror cross-execution-space-call,deprecated-declarations")
 
