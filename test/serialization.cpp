@@ -348,6 +348,54 @@ BOOST_AUTO_TEST_CASE(array_serialization_2D_inplace_file) {
 	BOOST_REQUIRE( arr2 == arr );
 }
 
+BOOST_AUTO_TEST_CASE(array_serialization_3D_part_binary_lvalue) {
+	multi::array<double, 3> arr({10, 10, 10}, 0.);
+
+	BOOST_REQUIRE(( arr.extension() == boost::multi::index_range{0, 10} ));
+
+	std::iota(arr.data_elements(), arr.data_elements() + arr.num_elements(), 1000.);
+
+	std::stringstream ss{};
+	{
+		BOArchive boa{ss};
+		auto&& arr2 = arr[2];
+		boa& arr2;
+	}
+	{
+		BOOST_REQUIRE( arr[3] != arr[2] );
+		{
+			BIArchive bia{ss};
+			auto&& arr3 = arr[3];
+			bia& arr3;
+		}
+		BOOST_REQUIRE( arr[3] == arr[2] );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(array_serialization_3D_part_xml_lvalue) {
+	multi::array<double, 3> arr({10, 10, 10}, 0.);
+
+	BOOST_REQUIRE(( arr.extension() == boost::multi::index_range{0, 10} ));
+
+	std::iota(arr.data_elements(), arr.data_elements() + arr.num_elements(), 1000.);
+
+	std::stringstream ss{};
+	{
+		XOArchive boa{ss};
+		auto&& arr2 = arr[2];
+		boa<< multi::archive_traits<XOArchive>::make_nvp("arr2", arr2);
+	}
+	{
+		BOOST_REQUIRE( arr[3] != arr[2] );
+		{
+			XIArchive bia{ss};
+			auto&& arr3 = arr[3];
+			bia>> multi::archive_traits<XOArchive>::make_nvp("arr2", arr3);
+		}
+		BOOST_REQUIRE( arr[3] == arr[2] );
+	}
+}
+
 #if not defined(__NVCC__)  // some code contained here doesn't compile with nvcc 11.0,11.1 and 11.2
 BOOST_AUTO_TEST_CASE(array_serialization_3D_part_binary) {
 	multi::array<double, 3> arr({10, 10, 10}, 0.);
