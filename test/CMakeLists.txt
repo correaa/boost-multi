@@ -21,7 +21,6 @@ project(
 
 find_package(Boost REQUIRED COMPONENTS unit_test_framework serialization)
 
-set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
@@ -66,6 +65,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 		set_property(TARGET ${TEST_EXE} PROPERTY "${CUDA_ARCH_LIST}")
 		set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
 	endif()
+	target_compile_features(${TEST_EXE} PUBLIC cxx_std_17)
 	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
 	target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
 	target_include_directories(${TEST_EXE} PRIVATE ${Boost_INCLUDE_DIRS})
