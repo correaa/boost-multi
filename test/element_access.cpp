@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo A. Correa 2018-2021
+// Copyright 2018-2021 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi element access"
 #define BOOST_TEST_DYN_LINK
@@ -136,7 +136,6 @@ BOOST_AUTO_TEST_CASE(multi_test_stencil) {
 
 	BOOST_REQUIRE( &A({1, 3}, {2, 5}).elements().front() == &A(1, 2) );
 	BOOST_REQUIRE( &A({1, 3}, {2, 5}).elements().back()  == &A(2, 4) );
-
 }
 
 BOOST_AUTO_TEST_CASE(multi_extension_intersection) {

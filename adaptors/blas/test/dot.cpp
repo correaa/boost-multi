@@ -21,6 +21,8 @@ BOOST_AUTO_TEST_CASE(blas_dot_context) {
 	multi::array<float, 1> const B = {1., 2., 3.};
 	blas::context ctxt;
 	auto C = +blas::dot(&ctxt, A, B);
+	float c = +blas::dot(&ctxt, A, B);
+	BOOST_TEST_REQUIRE( c == std::inner_product(begin(A), end(A), begin(B), 0.F) );
 	BOOST_REQUIRE( C == std::inner_product(begin(A), end(A), begin(B), 0.F) );
 }
 
@@ -46,8 +48,8 @@ BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex) { // if you get a se
 	multi::array<complex, 1> const B = {1., 2., 3.};
 	complex C;
 	blas::dot(A, B, C);
-	BOOST_REQUIRE_EQUAL( real(C) , real(std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto const& a, auto const& b){return a*std::conj(b);})) );
-	BOOST_REQUIRE_EQUAL( imag(C) , imag(std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto const& a, auto const& b){return a*std::conj(b);})) );
+	BOOST_REQUIRE_EQUAL( real(C) , real(std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto const& a, auto const& b) {return a*std::conj(b);})) );
+	BOOST_REQUIRE_EQUAL( imag(C) , imag(std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto const& a, auto const& b) {return a*std::conj(b);})) );
 }
 
 BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex_C) {
@@ -163,8 +165,6 @@ BOOST_AUTO_TEST_CASE(inq_case) {
 	BOOST_REQUIRE( d_doub == d_arr );
 }
 
-#if 1
-
 BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex) {
 	namespace blas = multi::blas;
 
@@ -262,5 +262,3 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex_thrust) {
 	}
 }
 #endif
-#endif
-

@@ -60,12 +60,12 @@ g++-current-codecov:
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
-    - CXXFLAGS="-ftest-coverage -fprofile-arcs --coverage -fno-inline -fno-inline-small-functions -fno-default-inline"   cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXE_LINKER_FLAGS="-lgcov --coverage" -DCMAKE_BUILD_TYPE=Debug
+    - CXXFLAGS="-ftest-coverage -fprofile-arcs --coverage -fno-inline -fno-inline-small-functions -fno-default-inline" cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXE_LINKER_FLAGS="-lgcov --coverage"
     - cmake --build . --verbose
     - ctest --output-on-failure -T Test -T Coverage
     - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
     - lcov --directory . --capture --output-file coverage.info
-    - lcov --remove coverage.info '/usr/*' --output-file coverage.info 
+    - lcov --remove coverage.info '/usr/*' --output-file coverage.info
     - lcov --list coverage.info
   coverage: /^\s*lines:\s*\d+.\d+\%/
   artifacts:
@@ -186,20 +186,6 @@ clang++-9:
     - cmake --build . --verbose
     - ctest --output-on-failure
 
-clang++-9-std17:
-  image: debian:stable
-  stage: test
-  image: debian:stable
-  script:
-    - export CXX="clang++-9"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet clang-9 pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
-    - ln --symbolic --force . ../multi
-    - $CXX --version
-    - mkdir build && cd build
-    - cmake .. -DCMAKE_CXX_STANDARD=17
-    - cmake --build . --verbose
-    - ctest --output-on-failure
-
 clang++-9-asan:
   image: debian:stable
   stage: test
@@ -259,18 +245,6 @@ g++-cpplint:
     - cmake --build . --verbose -- --quiet --no-print-directory
     - cpplint --filter=-whitespace/line_length,-whitespace/parens,-whitespace/tab,-readability/alt_tokens,-readability/nolint,-runtime/references,-build/include_order,-build/header_guar,-legal/copyright ../array.hpp
 
-clang++-std17:
-  stage: test
-  script:
-    - export CXX="clang++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet clang pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
-    - ln --symbolic --force . ../multi
-    - $CXX --version
-    - mkdir build && cd build
-    - cmake .. -DCMAKE_CXX_STANDARD=17
-    - cmake --build . --verbose -- --quiet --no-print-directory
-    - ctest --output-on-failure
-
 clang++-11:
   stage: test
   script:
@@ -294,18 +268,6 @@ clang++-11-gcc9:
     - $CXX -v
     - mkdir build && cd build
     - cmake ..
-    - cmake --build . --verbose -- --quiet --no-print-directory
-    - ctest --output-on-failure
-
-clang++-11-std17:
-  stage: test
-  script:
-    - export CXX="clang++-11"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet clang-11 pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
-    - ln --symbolic --force . ../multi
-    - $CXX --version
-    - mkdir build && cd build
-    - cmake .. -DCMAKE_CXX_STANDARD=17
     - cmake --build . --verbose -- --quiet --no-print-directory
     - ctest --output-on-failure
 
@@ -409,33 +371,7 @@ cuda-11.1:
       - cmake --build . --verbose
       - ctest --output-on-failure
 
-cuda-11.0-std17:
-    image: nvidia/cuda:11.0-devel
-    stage: test
-    script:
-      - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
-      - ln --symbolic --force . ../multi
-      - nvcc --version
-      - mkdir build && cd build
-      - cmake .. -DCMAKE_CXX_STANDARD=17 -DENABLE_CUDA=1
-      - cmake --build . --verbose
-      - ctest --output-on-failure
-
-cuda-11.1-std17:
-    image: nvidia/cuda:11.1-devel
-    stage: test
-    script:
-      - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
-      - ln --symbolic --force . ../multi
-      - nvcc --version
-      - mkdir build && cd build
-      - cmake .. -DCMAKE_CXX_STANDARD=17 -DENABLE_CUDA=1
-      - cmake --build . --verbose
-      - ctest --output-on-failure
-
-cuda-11.2-std14:
+cuda-11.2:
     image: nvidia/cuda:11.2.0-devel
     stage: test
     script:
@@ -444,24 +380,11 @@ cuda-11.2-std14:
       - ln --symbolic --force . ../multi
       - nvcc --version
       - mkdir build && cd build
-      - cmake .. -DCMAKE_CXX_STANDARD=14 -DENABLE_CUDA=1
+      - cmake .. -DENABLE_CUDA=1
       - cmake --build . --verbose
       - ctest --output-on-failure
 
-cuda-11.2-std17:
-    image: nvidia/cuda:11.2.0-devel
-    stage: test
-    script:
-      - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
-      - ln --symbolic --force . ../multi
-      - nvcc --version
-      - mkdir build && cd build
-      - cmake .. -DCMAKE_CXX_STANDARD=17 -DENABLE_CUDA=1
-      - cmake --build . --verbose
-      - ctest --output-on-failure
-
-cuda-11.3-std17:
+cuda-11.3:
     image: nvidia/cuda:11.3.0-devel
     stage: test
     script:
@@ -470,11 +393,11 @@ cuda-11.3-std17:
       - ln --symbolic --force . ../multi
       - nvcc --version
       - mkdir build && cd build
-      - cmake .. -DCMAKE_CXX_STANDARD=17 -DENABLE_CUDA=1
+      - cmake .. -DENABLE_CUDA=1
       - cmake --build . --verbose
       - ctest --output-on-failure
 
-cuda-11.4-std17:
+cuda-11.4:
     image: nvidia/cuda:11.4.0-devel
     stage: test
     script:
@@ -483,11 +406,24 @@ cuda-11.4-std17:
       - ln --symbolic --force . ../multi
       - nvcc --version
       - mkdir build && cd build
-      - cmake .. -DCMAKE_CXX_STANDARD=17 -DENABLE_CUDA=1
+      - cmake .. -DENABLE_CUDA=1
       - cmake --build . --verbose
       - ctest --output-on-failure
 
-#cuda-11.5-std17:
+cuda-11.5:
+    image: gpuci/cuda:11.5.0-devel-ubuntu20.04
+    stage: test
+    script:
+      - export DEBIAN_FRONTEND=noninteractive
+      - apt-get update && apt-get install --no-install-recommends -y --quiet pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
+      - ln --symbolic --force . ../multi
+      - nvcc --version
+      - mkdir build && cd build
+      - cmake .. -DENABLE_CUDA=1
+      - cmake --build . --verbose
+      - ctest --output-on-failure
+
+#cuda-11.5:
 #    image: nvidia/cuda:11.5.0-devel
 #    stage: test
 #    script:
@@ -496,7 +432,7 @@ cuda-11.4-std17:
 #      - ln --symbolic --force . ../multi
 #      - nvcc --version
 #      - mkdir build && cd build
-#      - cmake .. -DCMAKE_CXX_STANDARD=17 -DENABLE_CUDA=1
+#      - cmake .. -DENABLE_CUDA=1
 #      - cmake --build . --verbose
 #      - ctest --output-on-failure
 

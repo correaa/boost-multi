@@ -21,13 +21,13 @@ project(
 
 find_package(Boost REQUIRED COMPONENTS unit_test_framework serialization)
 
-set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	enable_language(CUDA)
-	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
+#	set_property(GLOBAL PROPERTY CUDA_STANDARD 17)  # with cmake 3.16 this is not enough, -std=c++17 is needed below
+	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -std=c++17 --expt-relaxed-constexpr --extended-lambda --Werror cross-execution-space-call,deprecated-declarations")
 
 	include(FindCUDA/select_compute_arch)
 	cuda_detect_installed_gpus(INSTALLED_GPU_CCS_1)
@@ -63,6 +63,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 	if(ENABLE_CUDA OR DEFINED CXXCUDA)
 		set_property(TARGET ${TEST_EXE} PROPERTY "${CUDA_ARCH_LIST}")
 		set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
+	else()
+		target_compile_features(${TEST_EXE} PUBLIC cxx_std_17)
 	endif()
 	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
 	target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
