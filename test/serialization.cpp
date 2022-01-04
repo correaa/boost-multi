@@ -194,7 +194,7 @@ BOOST_AUTO_TEST_CASE(array_serialization_string) {
 	}
 }
 
-#if not defined(__NVCC__)  // some code contained here doesn't compile with nvcc 11.0,11.1 and 11.2
+//#if not defined(__NVCC__)  // some code contained here doesn't compile with nvcc 11.0,11.1 and 11.2
 BOOST_AUTO_TEST_CASE(array_serialization_binary) {
 	multi::array<double, 2> arr({10, 10}, 0.);
 	BOOST_REQUIRE(( arr.extension() == boost::multi::index_range{0, 10} ));
@@ -244,6 +244,7 @@ BOOST_AUTO_TEST_CASE(array_serialization_string_binary) {
 	}
 }
 
+#if not defined(__NVCC__)  // some code contained here doesn't compile with nvcc 11.0,11.1 and 11.2
 BOOST_AUTO_TEST_CASE(vector) {
 	std::vector<double> v(100); std::iota(begin(v), end(v), 10.);
 
