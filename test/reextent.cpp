@@ -93,3 +93,34 @@ BOOST_AUTO_TEST_CASE(array_reextent_2d_array) {
 	BOOST_REQUIRE( size(A) == 0 );
 }
 
+template< class T, class U >
+constexpr auto  comp_equal( T t, U u ) noexcept -> bool {
+    using UT = std::make_unsigned_t<T>;
+    using UU = std::make_unsigned_t<U>;
+    if constexpr (std::is_signed_v<T> == std::is_signed_v<U>) {
+        return t == u;
+    } else if constexpr (std::is_signed_v<T>) {
+        return t < 0 ? false : UT(t) == u;
+    } else {
+        return u < 0 ? false : t == UU(u);
+	}
+}
+
+BOOST_AUTO_TEST_CASE(array_vector_size) {
+	std::vector<double> v(100);
+	{
+	//  multi::array<double, 1> a(                           v.size() );  // warning: sign-conversion
+		multi::array<double, 1> a(static_cast<multi::size_t>(v.size()));
+		BOOST_REQUIRE( comp_equal(a.size(), v.size()) );
+	}
+	{
+	//  multi::array<double, 1> a({v.size()});                              // warning: sign-conversion
+	//	multi::array<double, 1> a({static_cast<multi::size_t>(v.size())});  // semantic problem, thinks it is an initializer_list
+	//	BOOST_REQUIRE( comp_equal(a.size(), v.size()) );
+	}
+	{
+	 	multi::array<double, 1> a(multi::iextensions<1>({static_cast<multi::size_t>(v.size())}));  // warning: sign-conversion
+	//	multi::array<double, 1> a(static_cast<multi::size_t>(v.size()));
+		BOOST_REQUIRE( comp_equal(a.size(), v.size()) );
+	}
+}

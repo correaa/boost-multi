@@ -25,8 +25,8 @@ template<
 >
 class iterator_facade {
 	using self_type = Self;
-	NODISCARD("") constexpr auto self()      & -> self_type      & {return static_cast<self_type      &>(*this);}
-	NODISCARD("") constexpr auto self() const& -> self_type const& {return static_cast<self_type const&>(*this);}
+	[[nodiscard]] constexpr auto self()      & -> self_type      & {return static_cast<self_type      &>(*this);}
+	[[nodiscard]] constexpr auto self() const& -> self_type const& {return static_cast<self_type const&>(*this);}
 
  public:
 	using value_type        = ValueType;
@@ -35,7 +35,7 @@ class iterator_facade {
 	using difference_type   = DifferenceType;
 	using iterator_category = AccessCategory;
 
-	constexpr auto operator==(self_type const& o) const {return o==self();}
+	constexpr auto operator==(self_type const& o) const {return     o==self() ;}
 	constexpr auto operator!=(self_type const& o) const {return not(o==self());}
 
 	       constexpr auto operator+(difference_type n) const -> self_type {self_type r = self(); r += n; return r;}
@@ -55,20 +55,17 @@ class range {
  public:
 	template<class Ar>//, class ArT = multi::archive_traits<Ar>>
 	void serialize(Ar& ar, unsigned /*version*/) {
-		{
 		ar & multi::archive_traits<Ar>::make_nvp("first", first_);
-	//	ar & BOOST_SERIALIZATION_NVP(first_);
-	//	ar &       cereal:: make_nvp("first", first_);
-	//	ar &              CEREAL_NVP(first_);   ///ArT::make_nvp("first", first_);
-	//	ar &            first_ ;   ///ArT::make_nvp("first", first_);
-		}
-		{
-		ar & multi::archive_traits<Ar>::make_nvp("last", last_);
-	//	ar &             BOOST_SERIALIZATION_NVP        (last_);
-	//	ar &                   cereal:: make_nvp("last", last_);
-	//	ar &                          CEREAL_NVP        (last_);
-	//	ar &                                             last_ ;   // ArT::make_nvp("last" , last_ );
-		}
+	//	ar &             BOOST_SERIALIZATION_NVP(         first_);
+	//	ar &                   cereal:: make_nvp("first", first_);
+	//	ar &                          CEREAL_NVP(         first_);
+	//	ar &                                              first_ ;
+
+		ar & multi::archive_traits<Ar>::make_nvp("last" , last_ );
+	//	ar &             BOOST_SERIALIZATION_NVP(         last_ );
+	//	ar &                   cereal:: make_nvp("last" , last_ );
+	//	ar &                          CEREAL_NVP(         last_ );
+	//	ar &                                              last_  ;
 	}
 
 	using value_type      = IndexType;
@@ -141,13 +138,13 @@ class range {
 	NODISCARD("") constexpr auto begin() const -> const_iterator {return cbegin();}
 	NODISCARD("") constexpr auto end()   const -> const_iterator {return cend();}
 
-	       NODISCARD("") constexpr auto is_empty()     const&    noexcept -> bool {return first_ == last_;}
+	                     constexpr auto is_empty()     const&    noexcept -> bool {return first_ == last_;}
 	friend               constexpr auto is_empty(range const& s) noexcept -> bool {return s.is_empty();}
 
-	       NODISCARD("") constexpr auto empty()     const&    noexcept -> bool{return is_empty();}
+	       [[nodiscard]] constexpr auto empty()     const&    noexcept -> bool{return is_empty();}
 	friend               constexpr auto empty(range const& s) noexcept -> bool{return s.empty();}
 
-	       NODISCARD("") constexpr auto size()     const&    noexcept -> size_type {return last_ - first_;}
+	                     constexpr auto size()     const&    noexcept -> size_type {return last_ - first_;}
 	friend               constexpr auto size(range const& s) noexcept -> size_type {return s.size();}
 
 //  friend auto operator<<(std::ostream& os, range const& s) -> std::ostream& {
@@ -156,18 +153,18 @@ class range {
 	friend constexpr auto begin(range const& self) -> const_iterator {return self.begin();}
 	friend constexpr auto end  (range const& self) -> const_iterator {return self.end()  ;}
 
-	friend constexpr auto operator==(range const& a, range const& b) -> bool{
+	friend constexpr auto operator==(range const& a, range const& b) -> bool {
 		return (a.empty() and b.empty()) or (a.first_==b.first_ and a.last_==b.last_);
 	}
 	friend constexpr auto operator!=(range const& r1, range const& r2) -> bool{return not(r1 == r2);}
 
-	NODISCARD("") constexpr auto find(value_type const& value) const -> range::const_iterator{
+	[[nodiscard]] constexpr auto find(value_type const& value) const -> range::const_iterator {
 		if(value >= last_ or value < first_) {
 			return end();
 		}
 		return begin() + (value - front());
 	}
-	template<class K> NODISCARD("") constexpr auto contains(K const& k) const -> bool {return (k>=first_) and (k<last_);}
+	template<class K> [[nodiscard]] constexpr auto contains(K const& k) const -> bool {return (k>=first_) and (k<last_);}
 	template<class K>               constexpr auto count   (K const& k) const -> value_type {return contains(k);}
 	friend constexpr auto intersection(range const& r1, range const& r2) {
 		using std::max; using std::min;
@@ -238,10 +235,12 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 //  	return os << static_cast<range<IndexType> const&>(self);
 //  }
 
-	NODISCARD("") constexpr auto start () const -> IndexType {return this->first();}
-	NODISCARD("") constexpr auto finish() const -> IndexType {return this->last ();}
-	friend constexpr auto operator==(extension_t const& a, extension_t const& b) {return static_cast<range<IndexType> const&>(a)==static_cast<range<IndexType> const&>(b);}
-	friend constexpr auto operator!=(extension_t const& a, extension_t const& b) {return not(a==b);}
+	[[nodiscard]] constexpr auto start () const -> IndexType {return this->first();}
+	[[nodiscard]] constexpr auto finish() const -> IndexType {return this->last ();}
+
+	friend constexpr auto operator==(extension_t const& a, extension_t const& b) {return static_cast<range<IndexType> const&>(a) == static_cast<range<IndexType> const&>(b);}
+	friend constexpr auto operator!=(extension_t const& a, extension_t const& b) {return static_cast<range<IndexType> const&>(a) != static_cast<range<IndexType> const&>(b);}
+
 	friend constexpr auto intersection(extension_t const& r1, extension_t const& r2) -> extension_t {
 		using std::max; using std::min;
 		auto       first = max(r1.first(), r2.first());

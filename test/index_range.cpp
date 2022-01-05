@@ -130,4 +130,3 @@ BOOST_AUTO_TEST_CASE(multi_range2) {
 //  }
 //  #endif
 }
-
