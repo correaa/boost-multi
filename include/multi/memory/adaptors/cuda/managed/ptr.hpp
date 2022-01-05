@@ -112,12 +112,11 @@ struct ptr<void, RawPtr> : cuda::ptr<void, RawPtr> {
 
 	ptr& operator=(ptr const&) = default;
 
-	friend constexpr bool operator==(ptr const& self, ptr const& other){return self.rp_==other.rp_;}
-	friend constexpr bool operator!=(ptr const& self, ptr const& other){return self.rp_!=other.rp_;}
-	operator cuda::ptr<void>() {return {this->rp_};}  // TODO(correaa) never called because it is base class
+	friend constexpr bool operator==(ptr const& self, ptr const& other) {return self.rp_==other.rp_;}
+	friend constexpr bool operator!=(ptr const& self, ptr const& other) {return self.rp_!=other.rp_;}
+
 	template<class U> using rebind = ptr<U, typename std::pointer_traits<raw_pointer>::template rebind<U>>;
 
-//	explicit operator bool() const {return this->rp_;}
 	explicit operator raw_pointer&()& {return this->rp_;}
 	friend ptr to_address(ptr const& p) {return p;}
 	void operator*() = delete;
