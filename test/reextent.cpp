@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(array_vector_size) {
 	//	BOOST_REQUIRE( comp_equal(a.size(), v.size()) );
 	}
 	{
-	 	multi::array<double, 1> a(multi::iextensions<1>({static_cast<multi::size_t>(v.size())}));  // warning: sign-conversion
+	 	multi::array<double, 1> a(multi::iextensions<1>(static_cast<multi::size_t>(v.size())));  // warning: sign-conversion
 	//	multi::array<double, 1> a(static_cast<multi::size_t>(v.size()));
 		BOOST_REQUIRE( comp_equal(a.size(), v.size()) );
 	}
