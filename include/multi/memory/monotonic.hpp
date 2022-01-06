@@ -15,16 +15,16 @@ $CXX $0 -o $0x&&$0x&&rm $0x;exit
 namespace boost {
 namespace multi {
 
-template<class T> auto raw_pointer_cast(T* p) -> T* {return p;}  // with the meaning of std::to_address
+// template<class T> auto raw_pointer_cast(T* p) -> T* {return p;}  // with the meaning of std::to_address
 
 namespace memory {
 
 template<class Ptr> // TODO test with actual fancy ptr
 Ptr align_up(Ptr p, std::size_t align = alignof(std::max_align_t)) {
-//	using multi::to_address;
-//	auto p_(to_address(p));
-	using multi::raw_pointer_cast;
-	auto p_{raw_pointer_cast(p)};
+	using multi::to_address;
+	auto p_(to_address(p));
+//  using multi::raw_pointer_cast;
+//  auto p_{raw_pointer_cast(p)};
 
 	static_assert( sizeof(*p_)==1 , "!"); // crash
 	auto q_ = reinterpret_cast<decltype(p_)>(
