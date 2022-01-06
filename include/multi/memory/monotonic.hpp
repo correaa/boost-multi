@@ -20,18 +20,20 @@ namespace multi {
 namespace memory {
 
 template<class Ptr> // TODO test with actual fancy ptr
-Ptr align_up(Ptr p, std::size_t align = alignof(std::max_align_t)) {
-	using multi::to_address;
-	auto p_(to_address(p));
-//  using multi::raw_pointer_cast;
-//  auto p_{raw_pointer_cast(p)};
+constexpr
+Ptr align_up(Ptr ptr, std::size_t bytes = alignof(std::max_align_t)) {
+//	using multi::to_address;
+//	auto p_(to_address(p));
+////  using multi::raw_pointer_cast;
+////  auto p_{raw_pointer_cast(p)};
 
-	static_assert( sizeof(*p_)==1 , "!"); // crash
-	auto q_ = reinterpret_cast<decltype(p_)>(
-		(reinterpret_cast<std::uintptr_t>(p_) + (align-1))
-		& ~(align-1)
-	);
-	return p+std::distance(p_,q_);
+//	static_assert( sizeof(*p_)==1 , "!"); // crash
+//	auto q_ = reinterpret_cast<decltype(p_)>(
+//		(reinterpret_cast<std::uintptr_t>(p_) + (align-1))
+//		& ~(align-1)
+//	);
+//	return p+std::distance(p_,q_);
+	return (Ptr) ( bytes * (((detail::uintptr_t) ptr + (bytes - 1)) / bytes) );
 }
 
 template<class T>
