@@ -55,6 +55,7 @@ class allocator {//: protected allocation_counter {
 	template<class TT> using rebind = allocator<TT>;
 	using size_type = ::size_t; // as specified by CudaMalloc
 
+	allocator() = default;
 	template<class U>
 	allocator(allocator<U> const& /*other*/) noexcept {}
 
