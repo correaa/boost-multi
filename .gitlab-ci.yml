@@ -223,7 +223,7 @@ freebsd:
     - cirrus-run
   variables:
     CIRRUS_GITHUB_REPO: sio/.cirrus-ci-jobs
-    CIRRUS_API_TOKEN: 16ith6pmh6g1qhfiup6ukplna0ab5dq58es4spt
+    CIRRUS_API_TOKEN: 3aimie0rrj7b7fn7dh87k866o3k2potcikfff63
 
 #    - export REQUIREMENTS_CHECKSUM=$(sha256sum ansible/tests/requirements.txt|cut -c -64)
 
