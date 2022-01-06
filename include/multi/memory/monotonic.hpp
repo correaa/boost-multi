@@ -33,7 +33,7 @@ Ptr align_up(Ptr ptr, std::size_t bytes = alignof(std::max_align_t)) {
 //		& ~(align-1)
 //	);
 //	return p+std::distance(p_,q_);
-	return (Ptr) ( bytes * ((reinterpret_cast<std::uintptr_t&>(ptr) + (bytes - 1)) / bytes) );  // maybe using uint64_t and static_assert sizeof(void*) == uint64_t
+	return reinterpret_cast<Ptr&>( bytes * ((reinterpret_cast<std::uintptr_t&>(ptr) + (bytes - 1)) / bytes) );  // maybe using uint64_t and static_assert sizeof(void*) == uint64_t
 }
 
 template<class T>
