@@ -220,8 +220,8 @@ clang++-freebsd:
   stage: test
   script:
 
+# Tests that require full virtualization are delegated to Cirrus CI
 freebsd:
-  # Tests that require full virtualization are delegated to Cirrus CI
   stage: test-kvm
   image: potyarkin/cirrus-run
   script:
@@ -230,7 +230,6 @@ freebsd:
   variables:
     CIRRUS_GITHUB_REPO: sio/.cirrus-ci-jobs
     CIRRUS_API_TOKEN: 16ith6pmh6g1qhfiup6ukplna0ab5dq58es4spt
-
 
 clang++-tidy:
   stage: test
