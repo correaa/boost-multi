@@ -88,8 +88,8 @@ class allocator_cache {
 
 auto & cache() {
 	static allocator_cache<cached::ptr<void>> alloc_cache;
-		return alloc_cache;
-	}
+	return alloc_cache;
+}
 
 struct bad_alloc : std::bad_alloc {};
 
