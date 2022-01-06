@@ -37,13 +37,14 @@ Ptr align_up(Ptr ptr, std::size_t bytes = alignof(std::max_align_t)) {
 }
 
 template<class T>
-T* align_up(T* p, std::size_t align = alignof(std::max_align_t)) {
-	return
-		reinterpret_cast<T*>(
-			  (reinterpret_cast<std::uintptr_t>(p) + (align-1)) 
-			& ~(align-1)
-		)
-	;
+T* align_up(T* ptr, std::size_t bytes = alignof(std::max_align_t)) {
+//	return
+//		reinterpret_cast<T*>(
+//			  (reinterpret_cast<std::uintptr_t>(ptr) + (bytes-1))
+//			& ~(bytes-1)
+//		)
+//	;
+	return reinterpret_cast<T*&>( bytes * ((reinterpret_cast<std::uintptr_t&>(ptr) + (bytes - 1)) / bytes) );  // maybe using uint64_t and
 }
 
 template<typename Ptr = byte*, std::size_t Align = alignof(std::max_align_t)>
