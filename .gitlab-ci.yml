@@ -219,13 +219,18 @@ clang++-freebsd:
   image: ustcmirror/freebsd-pkg:latest #debian:testing
   stage: test
   script:
-    - pkg install --no-install-recommends -y --quiet clang pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
-    - ln --symbolic --force . ../multi
-    - $CXX --version
-    - mkdir build && cd build
-    - CXX="clang++" cmake ..
-    - cmake --build . --verbose -- --quiet --no-print-directory
-    - ctest --output-on-failure
+
+freebsd:
+  # Tests that require full virtualization are delegated to Cirrus CI
+  stage: test-kvm
+  image: potyarkin/cirrus-run
+  script:
+    - export REQUIREMENTS_CHECKSUM=$(sha256sum ansible/tests/requirements.txt|cut -c -64)
+    - cirrus-run
+  variables:
+    CIRRUS_GITHUB_REPO: sio/.cirrus-ci-jobs
+    CIRRUS_API_TOKEN: 16ith6pmh6g1qhfiup6ukplna0ab5dq58es4spt
+
 
 clang++-tidy:
   stage: test
