@@ -203,7 +203,6 @@ clang++-9-asan:
     - export ASAN_OPTIONS="halt_on_error=1 detect_leaks=1"
     - ctest --output-on-failure
 
-# clang 10 and clang 11 have a bug when compiling in c++17 mode
 clang++:
   stage: test
   script:
@@ -213,6 +212,18 @@ clang++:
     - $CXX --version
     - mkdir build && cd build
     - cmake ..
+    - cmake --build . --verbose -- --quiet --no-print-directory
+    - ctest --output-on-failure
+
+clang++-freebsd:
+  image: ustcmirror/freebsd-pkg:latest #debian:testing
+  stage: test
+  script:
+    - pkg install --no-install-recommends -y --quiet clang pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - mkdir build && cd build
+    - CXX="clang++" cmake ..
     - cmake --build . --verbose -- --quiet --no-print-directory
     - ctest --output-on-failure
 
