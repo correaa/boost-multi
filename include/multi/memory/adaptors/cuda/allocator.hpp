@@ -54,6 +54,10 @@ class allocator {//: protected allocation_counter {
 	using difference_type = typename pointer::difference_type;
 	template<class TT> using rebind = allocator<TT>;
 	using size_type = ::size_t; // as specified by CudaMalloc
+
+	template<class U>
+	allocator(allocator<U> const& /*other*/) noexcept {}
+
 	pointer allocate(size_type n, const_void_pointer = 0) {//const void* = 0) {
 		if(n == 0) return pointer{nullptr};
 		auto ret = static_cast<pointer>(cuda::malloc(n*sizeof(T)));
@@ -65,8 +69,10 @@ class allocator {//: protected allocation_counter {
 		cuda::free(p);
 	//  ++n_deallocations; bytes_deallocated+=sizeof(T)*n;
 	}
-	std::true_type operator==(allocator const&) const {return {};}
+
+	std::true_type  operator==(allocator const&) const {return {};}
 	std::false_type operator!=(allocator const&) const {return {};}
+
 	template<class P, class... Args>
 	[[deprecated("cuda slow")]]
 	void construct(P p, Args&&... args) = delete;/*{
