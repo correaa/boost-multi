@@ -555,7 +555,7 @@ struct recursive {
 	}
 };
 
-template<> struct recursive<1>{
+template<> struct recursive<1> {
 	template<class Alloc, class InputIt, class ForwardIt>
 	static auto alloc_uninitialized_copy(Alloc& a, InputIt first, InputIt last, ForwardIt dest){
 		return adl_alloc_uninitialized_copy(a, first, last, dest);
