@@ -175,13 +175,14 @@ class allocator<std::max_align_t> {//: allocation_counter{
 
 }}}}
 
-namespace std{
+namespace std {
 
 #if __NVCC__ // this solves this error with nvcc error: ‘template<class _Tp> using __pointer = typename _Tp::pointer’ is protected within this context
 template<class T>
-class allocator_traits<boost::multi::memory::cuda::allocator<T>>{
+class allocator_traits<boost::multi::memory::cuda::allocator<T>> {
 	using Alloc = boost::multi::memory::cuda::allocator<T>;
-public:
+
+ public:
 	using allocator_type = Alloc;
 	using value_type = typename Alloc::value_type;
 	using pointer = typename Alloc::pointer;
@@ -195,41 +196,44 @@ public:
 	using propagate_on_container_swap 	         = std::false_type;
 	template<class T2>
 	using rebind_alloc = typename Alloc::template rebind<T2>;
-	template<class...As> static auto deallocate(allocator_type& a, As&&... as){return a.deallocate(std::forward<As>(as)...);}
-	template<class...As> static auto allocate(allocator_type& a, As&&... as){return a.allocate(std::forward<As>(as)...);}
+
+	static constexpr Alloc select_on_container_copy_construction(Alloc const& a) {return a;}
+
+	template<class...As> static auto deallocate(allocator_type& a, As&&... as) {return a.deallocate(std::forward<As>(as)...);}
+	template<class...As> static auto   allocate(allocator_type& a, As&&... as) {return a.  allocate(std::forward<As>(as)...);}
 };
 #endif
 
-}
+}  // end namespace std
 
-#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi memory allocator"
-#define BOOST_TEST_DYN_LINK
-#include<boost/test/unit_test.hpp>
+//#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
+//#define BOOST_TEST_MODULE "C++ Unit Tests for Multi memory allocator"
+//#define BOOST_TEST_DYN_LINK
+//#include<boost/test/unit_test.hpp>
 
-#include<memory>
-#include<iostream>
-#include<complex>
+//#include<memory>
+//#include<iostream>
+//#include<complex>
 
-#include "../../../array.hpp"
-#include "../cuda/algorithm.hpp"
+//#include "../../../array.hpp"
+//#include "../cuda/algorithm.hpp"
 
-namespace multi = boost::multi;
-namespace cuda  = multi::memory::cuda;
+//namespace multi = boost::multi;
+//namespace cuda  = multi::memory::cuda;
 
-void add_one(double& d){d += 1.;}
-template<class T> void add_one(T&& t){std::forward<T>(t) += 1.;}
+//void add_one(double& d){d += 1.;}
+//template<class T> void add_one(T&& t){std::forward<T>(t) += 1.;}
 
-template<class T> void what(T&&) = delete;
-using std::cout;
+//template<class T> void what(T&&) = delete;
+//using std::cout;
 
-BOOST_AUTO_TEST_CASE(multi_memory_allocator){
-	{
-		multi::static_array<double, 1> A(32, double{}); A[17] = 3.;
-		multi::static_array<double, 1, cuda::allocator<double>> A_gpu = A;
-		BOOST_REQUIRE( A_gpu[17] == 3 );
-	}
-}
-#endif
+//BOOST_AUTO_TEST_CASE(multi_memory_allocator){
+//	{
+//		multi::static_array<double, 1> A(32, double{}); A[17] = 3.;
+//		multi::static_array<double, 1, cuda::allocator<double>> A_gpu = A;
+//		BOOST_REQUIRE( A_gpu[17] == 3 );
+//	}
+//}
+//#endif
 #endif
 
