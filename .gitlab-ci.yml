@@ -215,21 +215,16 @@ clang++:
     - cmake --build . --verbose -- --quiet --no-print-directory
     - ctest --output-on-failure
 
-clang++-freebsd:
-  image: ustcmirror/freebsd-pkg:latest #debian:testing
-  stage: test
+ Tests that require full virtualization are delegated to Cirrus CI
+freebsd:
+  stage: test-kvm
+  image: potyarkin/cirrus-run
   script:
-
-# Tests that require full virtualization are delegated to Cirrus CI
-#freebsd:
-#  stage: test-kvm
-#  image: potyarkin/cirrus-run
-#  script:
-#    - export REQUIREMENTS_CHECKSUM=$(sha256sum ansible/tests/requirements.txt|cut -c -64)
-#    - cirrus-run
-#  variables:
-#    CIRRUS_GITHUB_REPO: sio/.cirrus-ci-jobs
-#    CIRRUS_API_TOKEN: 16ith6pmh6g1qhfiup6ukplna0ab5dq58es4spt
+    - export REQUIREMENTS_CHECKSUM=$(sha256sum ansible/tests/requirements.txt|cut -c -64)
+    - cirrus-run
+  variables:
+    CIRRUS_GITHUB_REPO: sio/.cirrus-ci-jobs
+    CIRRUS_API_TOKEN: 16ith6pmh6g1qhfiup6ukplna0ab5dq58es4spt
 
 clang++-tidy:
   stage: test
