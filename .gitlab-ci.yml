@@ -215,7 +215,7 @@ clang++:
     - cmake --build . --verbose -- --quiet --no-print-directory
     - ctest --output-on-failure
 
-#Tests that require full virtualization are delegated to Cirrus CI
+#Tests that require full virtualization are delegated to Cirrus CI https://cirrus-ci.org/guide/quick-start/?installation_id=21991039&setup_action=install
 #freebsd:
 #  stage: test
 #  image: potyarkin/cirrus-run
