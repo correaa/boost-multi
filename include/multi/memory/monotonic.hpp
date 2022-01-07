@@ -27,16 +27,16 @@ T* align_up(T* ptr, std::size_t bytes = alignof(std::max_align_t)) {
 //			& ~(bytes-1)
 //		)
 //	;
-	using uintptr_t = std::uint64_t; 
-	static_assert(sizeof(uintptr_t) == sizeof(T*), "this function works in 64 bit systems" );
+	using uintptr_t = std::uint64_t;
+	static_assert( sizeof(uintptr_t) == sizeof(T*), "this function works in 64 bit systems" );
 	return reinterpret_cast<T*>( bytes * ((reinterpret_cast<uintptr_t&>(ptr) + (bytes - 1)) / bytes) );
 }
 
-template<class Ptr> // TODO test with actual fancy ptr
+template<class Ptr>  // TODO test with actual fancy ptr
 constexpr
 Ptr align_up(Ptr ptr, std::size_t bytes = alignof(std::max_align_t)) {
 	using multi::to_address;
-	auto p_(to_address(p));
+	auto p_(to_address(ptr));
 ////  using multi::raw_pointer_cast;
 ////  auto p_{raw_pointer_cast(p)};
 
