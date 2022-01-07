@@ -46,7 +46,7 @@ Ptr align_up(Ptr ptr, std::size_t bytes = alignof(std::max_align_t)) {
 //		& ~(align-1)
 //	);
 	auto q_ = align_up(p_, bytes);
-	return p + std::distance(p_, q_);
+	return ptr + std::distance(p_, q_);
 //	return reinterpret_cast<Ptr&>( bytes * ((reinterpret_cast<std::uintptr_t&>(ptr) + (bytes - 1)) / bytes) );  // maybe using uint64_t and static_assert sizeof(void*) == uint64_t
 }
 
