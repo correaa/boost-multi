@@ -116,7 +116,7 @@ struct ptr<void, RawPtr> {
 	explicit operator bool() const{return rp_;}
 //	explicit operator raw_pointer&()&{return impl_;}
 
-	friend constexpr raw_pointer to_address(ptr const& p){return p.rp_;}
+	friend constexpr raw_pointer to_address(ptr const& p) {return p.rp_;}
 };
 
 template<typename T, typename RawPtr>
@@ -574,8 +574,10 @@ struct ref {
 	__host__ __device__
 	ref& operator+=(Other&& o)&&{std::move(*this).skeleton()+=o; return *this;}
 	template<class Other, typename = decltype(std::declval<T&>()-=std::declval<Other&&>())>
-	ref&& operator-=(Other&& o)&&{std::move(*this).skeleton()-=o; return std::move(*this);}
-private:
+	__host__ __device__
+	ref& operator-=(Other&& o)&&{std::move(*this).skeleton()-=o; return *this;}
+
+ private:
 	template<class Ref>
 	void swap(Ref&& b) &&{
 		T tmp = std::move(*this);
@@ -584,8 +586,8 @@ private:
 		b = std::move(tmp);
 	END_CUDA_SLOW
 	}
-public:
 
+ public:
 	template<class Ref>
 #if __NVCC__
 	__attribute__((deprecated))
