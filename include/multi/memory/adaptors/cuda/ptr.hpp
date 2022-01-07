@@ -61,10 +61,13 @@ struct ptr<void const, RawPtr> {
 	// cppcheck-suppress noExplicitConstructor ; any other pointer can be converted to void const pointer
 	ptr(Other const& o) : rp_{o.rp_} {}
 	ptr& operator=(ptr const&) = default;
+
 	explicit operator bool() const {return rp_;}
+
 	friend constexpr bool operator==(ptr const& s, ptr const& o) {return s.rp_==o.rp_;}
 	friend constexpr bool operator!=(ptr const& s, ptr const& o) {return s.rp_!=o.rp_;}
-	friend ptr to_address(ptr const& p) {return p;}
+
+	friend constexpr raw_pointer to_address(ptr const& p) {return self.rp_;}
 	friend raw_pointer raw_pointer_cast(ptr const& self) {return self.rp_;}
 };
 
@@ -112,7 +115,8 @@ struct ptr<void, RawPtr> {
 //	using default_allocator_type = typename cuda::allocator<typename std::iterator_traits<raw_pointer>::value_type>;
 	explicit operator bool() const{return rp_;}
 //	explicit operator raw_pointer&()&{return impl_;}
-	friend ptr to_address(ptr const& p){return p;}
+
+	friend constexpr raw_pointer to_address(ptr const& p){return p.rp_;}
 };
 
 template<typename T, typename RawPtr>
@@ -179,8 +183,10 @@ struct ptr {
 		return *this;
 	}
 	ptr& operator--(){--rp_; return *this;}
+
 	ptr  operator++(int){auto tmp = *this; ++(*this); return tmp;}
 	ptr  operator--(int){auto tmp = *this; --(*this); return tmp;}
+
 	constexpr ptr& operator+=(difference_type n){rp_+=n; return *this;}
 	constexpr ptr& operator-=(difference_type n){rp_-=n; return *this;}
 
@@ -199,7 +205,7 @@ struct ptr {
 	operator ptr<void>(){return ptr<void>{rp_};}
 	auto get() const{return rp_;}
 
-	friend constexpr ptr to_address(ptr const& p) {return p;}  // TODO(correaa) consider returning T* , from https://en.cppreference.com/w/cpp/memory/to_address
+	friend constexpr raw_pointer to_address(ptr const& p) {return p.rp_;}  // TODO(correaa) consider returning T* , from https://en.cppreference.com/w/cpp/memory/to_address
 	explicit constexpr operator raw_pointer() const {return rp_;}
 	constexpr raw_pointer raw_pointer_cast() const {return this->rp_;}
 	friend constexpr raw_pointer raw_pointer_cast(ptr const& self) {return self.rp_;}
