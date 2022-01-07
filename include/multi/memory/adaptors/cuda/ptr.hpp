@@ -67,7 +67,7 @@ struct ptr<void const, RawPtr> {
 	friend constexpr bool operator==(ptr const& s, ptr const& o) {return s.rp_==o.rp_;}
 	friend constexpr bool operator!=(ptr const& s, ptr const& o) {return s.rp_!=o.rp_;}
 
-	friend constexpr raw_pointer to_address(ptr const& p) {return self.rp_;}
+	friend constexpr raw_pointer to_address(ptr const& self) {return self.rp_;}
 	friend raw_pointer raw_pointer_cast(ptr const& self) {return self.rp_;}
 };
 
