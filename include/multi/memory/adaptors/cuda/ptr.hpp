@@ -570,12 +570,26 @@ struct ref {
 	}
 #endif
 #endif
-	template<class Other, typename = decltype(std::declval<T&>()+=std::declval<Other&&>())>
-	__host__ __device__
-	ref& operator+=(Other&& o)&&{std::move(*this).skeleton()+=o; return *this;}
-	template<class Other, typename = decltype(std::declval<T&>()-=std::declval<Other&&>())>
-	__host__ __device__
-	ref& operator-=(Other&& o)&&{std::move(*this).skeleton()-=o; return *this;}
+
+#if __CUDA_ARCH__
+	template<class O, typename = decltype(std::declval<T&>() += std::declval<O&&>())> __device__ ref& operator+=(O&& o) && {*(pimpl_.rp_) += std::forward<O>(o); return std::move(*this);}
+	template<class O, typename = decltype(std::declval<T&>() -= std::declval<O&&>())> __device__ ref& operator-=(O&& o) && {*(pimpl_.rp_) -= std::forward<O>(o); return std::move(*this);}
+#else
+	template<class O, typename = decltype(std::declval<T&>() += std::declval<O&&>())> __host__ SLOW ref&& operator+=(O&& o) && {
+		std::array<char, sizeof(T)> buff;
+		{cudaError_t s = cudaMemcpy(buff.data(), pimpl_.rp_, buff.size(), cudaMemcpyDeviceToHost); assert(s == cudaSuccess); (void)s;}
+		reinterpret_cast<T&>(buff) += std::forward<O>(o);
+		{cudaError_t s = cudaMemcpy(pimpl_.rp_, buff.data(), buff.size(), cudaMemcpyHostToDevice); assert(s == cudaSuccess); (void)s;}
+		return std::move(*this);
+	}
+	template<class O, typename = decltype(std::declval<T&>() -= std::declval<O&&>())> __host__ SLOW ref&& operator-=(O&& o) && {
+		std::array<char, sizeof(T)> buff;
+		{cudaError_t s = cudaMemcpy(buff.data(), pimpl_.rp_, buff.size(), cudaMemcpyDeviceToHost); assert(s == cudaSuccess); (void)s;}
+		reinterpret_cast<T&>(buff) -= std::forward<O>(o);
+		{cudaError_t s = cudaMemcpy(pimpl_.rp_, buff.data(), buff.size(), cudaMemcpyHostToDevice); assert(s == cudaSuccess); (void)s;}
+		return std::move(*this);
+	}
+#endif
 
  private:
 	template<class Ref>

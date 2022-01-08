@@ -77,7 +77,7 @@ struct ptr<void const, RawPtr> : cuda::ptr<void const, RawPtr> {
 //	explicit operator raw_pointer&()&{return rp_;}
 	friend constexpr bool operator==(ptr const& self, ptr const& other) {return self.rp_ == other.rp_;}
 	friend constexpr bool operator!=(ptr const& self, ptr const& other) {return self.rp_ != other.rp_;}
-	friend ptr to_address(ptr const& p){return p;}
+
 	void operator*() const = delete;
 	template<class U> using rebind = ptr<U, typename std::pointer_traits<raw_pointer>::template rebind<U>>;
 //	friend raw_pointer raw_pointer_cast(ptr const& self) {return self.rp_;}
@@ -121,7 +121,7 @@ struct ptr<void, RawPtr> : cuda::ptr<void, RawPtr> {
 
 //	explicit operator bool() const {return this->rp_;}
 	explicit operator raw_pointer&()& {return this->rp_;}
-	friend ptr to_address(ptr const& p) {return p;}
+
 	void operator*() = delete;
 	friend raw_pointer raw_pointer_cast(ptr const& self){return self.rp_;}
 };
@@ -201,7 +201,7 @@ struct ptr : cuda::ptr<T, RawPtr>{
 	using reference = typename std::pointer_traits<raw_pointer>::element_type&;//ref<element_type>;
 	constexpr reference operator*() const{return *(this->rp_);}
 	constexpr reference operator[](difference_type n){return *((*this)+n);}
-	friend inline ptr to_address(ptr const& p){return p;}
+
 	constexpr typename ptr::difference_type operator-(ptr const& other) const{return (this->rp_)-other.rp_;}
 	constexpr raw_pointer raw_pointer_cast() const&{return this->rp_;} // remove
 	friend raw_pointer raw_pointer_cast(ptr const& self){return self.rp_;}
