@@ -23,16 +23,18 @@ template<class T, class Memory
 #endif
 	, typename Constructor = std::allocator<T>
 >
-class allocator{
+class allocator {
 	using memory_type = Memory;
 	memory_type* mp_ 
 #if defined(__cpp_lib_memory_resource) and (__cpp_lib_memory_resource>=201603L)
 		= std::pmr::get_default_resource() // will be standard in C++17
 #endif
 	;
-	using constructor_type = typename Constructor::template rebind<T>::other;
+	using constructor_type = typename std::allocator_traits<Constructor>::template rebind_alloc<T>;
+//	using constructor_type = typename Constructor::template rebind<T>::other;
 	constructor_type ctor_;
-public:
+
+ public:
 	using value_type = T;
 	using pointer = typename std::pointer_traits<decltype(std::declval<memory_type*>()->allocate(0, 0))>::template rebind<value_type>;
 	using difference_type = typename std::pointer_traits<pointer>::difference_type;

@@ -15,7 +15,7 @@ namespace multi = boost::multi;
 template<class It, class F> class involuter;
 
 template<class Ref, class Involution>
-class involuted{
+class involuted {
 	Ref r_;
 	MULTI_NO_UNIQUE_ADDRESS Involution f_;
  public:
@@ -152,4 +152,3 @@ BOOST_AUTO_TEST_CASE(static_array_cast) {
 	double d = 5.;
 	std::move_iterator<double*> di{&d};
 }
-

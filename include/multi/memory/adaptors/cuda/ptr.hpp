@@ -1,6 +1,6 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXXX $CXXFLAGS $0 -o $0.$X `pkg-config --cflags --libs cudart-11.0` -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
-#endif
+//#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
+//$CXXX $CXXFLAGS $0 -o $0.$X `pkg-config --cflags --libs cudart-11.0` -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
+//#endif
 
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_PTR_HPP
 #define BOOST_MULTI_MEMORY_ADAPTORS_CUDA_PTR_HPP
@@ -61,10 +61,13 @@ struct ptr<void const, RawPtr> {
 	// cppcheck-suppress noExplicitConstructor ; any other pointer can be converted to void const pointer
 	ptr(Other const& o) : rp_{o.rp_} {}
 	ptr& operator=(ptr const&) = default;
+
 	explicit operator bool() const {return rp_;}
+
 	friend constexpr bool operator==(ptr const& s, ptr const& o) {return s.rp_==o.rp_;}
 	friend constexpr bool operator!=(ptr const& s, ptr const& o) {return s.rp_!=o.rp_;}
-	friend ptr to_address(ptr const& p) {return p;}
+
+	friend constexpr raw_pointer to_address(ptr const& self) {return self.rp_;}
 	friend raw_pointer raw_pointer_cast(ptr const& self) {return self.rp_;}
 };
 
@@ -112,7 +115,8 @@ struct ptr<void, RawPtr> {
 //	using default_allocator_type = typename cuda::allocator<typename std::iterator_traits<raw_pointer>::value_type>;
 	explicit operator bool() const{return rp_;}
 //	explicit operator raw_pointer&()&{return impl_;}
-	friend ptr to_address(ptr const& p){return p;}
+
+	friend constexpr raw_pointer to_address(ptr const& p) {return p.rp_;}
 };
 
 template<typename T, typename RawPtr>
@@ -179,8 +183,10 @@ struct ptr {
 		return *this;
 	}
 	ptr& operator--(){--rp_; return *this;}
+
 	ptr  operator++(int){auto tmp = *this; ++(*this); return tmp;}
 	ptr  operator--(int){auto tmp = *this; --(*this); return tmp;}
+
 	constexpr ptr& operator+=(difference_type n){rp_+=n; return *this;}
 	constexpr ptr& operator-=(difference_type n){rp_-=n; return *this;}
 
@@ -195,13 +201,15 @@ struct ptr {
 	constexpr auto operator*() const {return reference{*this};}
 	constexpr auto operator[](difference_type n) const {return reference{*((*this)+n)};}
 
-	friend constexpr ptr to_address(ptr const& p){return p;}
 	constexpr difference_type operator-(ptr const& o) const{return rp_-o.rp_;}
 	operator ptr<void>(){return ptr<void>{rp_};}
 	auto get() const{return rp_;}
-	explicit constexpr operator raw_pointer() const{return rp_;}
-	constexpr raw_pointer raw_pointer_cast() const{return this->rp_;}
-	friend constexpr raw_pointer raw_pointer_cast(ptr const& self){return self.rp_;}
+
+	friend constexpr raw_pointer to_address(ptr const& p) {return p.rp_;}  // TODO(correaa) consider returning T* , from https://en.cppreference.com/w/cpp/memory/to_address
+	explicit constexpr operator raw_pointer() const {return rp_;}
+	constexpr raw_pointer raw_pointer_cast() const {return this->rp_;}
+	friend constexpr raw_pointer raw_pointer_cast(ptr const& self) {return self.rp_;}
+
 	template<class PM>
 	constexpr auto operator->*(PM&& pm) const
 	->decltype(ref<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{ptr<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{&(rp_->*std::forward<PM>(pm))}}){
@@ -240,12 +248,11 @@ auto uninitialized_move_n(It first, Size count, boost::multi::iterator<T2, 1, pt
 {	return memcpy2D(base(result), sizeof(T2)*stride(result), base(first), sizeof(T)*stride(first), sizeof(T), count), result + count;}
 
 template<class... T1, class Size, class... T2, class Element = typename std::pointer_traits<ptr<T1...>>::element_type>
-auto uninitialized_move_n(ptr<T1...> first, Size n, ptr<T2...> dest){
+auto uninitialized_move_n(ptr<T1...> first, Size n, ptr<T2...> dest) {
 	assert(( std::is_trivially_constructible<Element, Element>{} ));
 	memcpy(dest, first, n*sizeof(Element));
 	return dest + n;
 }
-
 
 #if 0
 template<
@@ -282,7 +289,7 @@ ForwardIt alloc_uninitialized_copy_n(Alloc&, InputIt f, Size n, ptr<T...> d){
 }
 
 template<class Alloc, class InputIt, typename Size, class... T, class ForwardIt = ptr<T...>>
-ForwardIt alloc_uninitialized_move_n(Alloc& a, InputIt f, Size n, ptr<T...> d){
+ForwardIt alloc_uninitialized_move_n(Alloc& a, InputIt f, Size n, ptr<T...> d) {
 	return alloc_uninitialized_copy_n(a, f, n, d);
 }
 
@@ -347,7 +354,7 @@ struct ref {
 		}
 		~skeleton_t() /*HD*/{conditional_copyback_if_not(std::is_const<T>{});}
 	};
-	skeleton_t skeleton()&& /*HD*/{return {pimpl_.rp_};}
+	skeleton_t skeleton()&& /*HD*/{return skeleton_t{raw_pointer_cast(pimpl_.rp_)};}
 
  public:
 	constexpr ref(ref&& r) : pimpl_{std::move(r.pimpl_).rp_} {}
@@ -481,12 +488,6 @@ struct ref {
 #endif
 	#endif
 
-
-
-
-
-
-
 #ifndef _MULTI_MEMORY_CUDA_DISABLE_ELEMENT_ACCESS
 	bool operator!=(ref const& other) const&{return not(*this == other);}
 	template<class Other>
@@ -501,7 +502,6 @@ struct ref {
 //	bool operator==(ref const& other) const = delete;
 #endif
 #if 1
-
 
 #if defined(__clang__)
 #if defined(__CUDA__) && defined(__CUDA_ARCH__)
@@ -574,8 +574,10 @@ struct ref {
 	__host__ __device__
 	ref& operator+=(Other&& o)&&{std::move(*this).skeleton()+=o; return *this;}
 	template<class Other, typename = decltype(std::declval<T&>()-=std::declval<Other&&>())>
-	ref&& operator-=(Other&& o)&&{std::move(*this).skeleton()-=o; return std::move(*this);}
-private:
+	__host__ __device__
+	ref& operator-=(Other&& o)&&{std::move(*this).skeleton()-=o; return *this;}
+
+ private:
 	template<class Ref>
 	void swap(Ref&& b) &&{
 		T tmp = std::move(*this);
@@ -584,8 +586,8 @@ private:
 		b = std::move(tmp);
 	END_CUDA_SLOW
 	}
-public:
 
+ public:
 	template<class Ref>
 #if __NVCC__
 	__attribute__((deprecated))

@@ -203,7 +203,6 @@ clang++-9-asan:
     - export ASAN_OPTIONS="halt_on_error=1 detect_leaks=1"
     - ctest --output-on-failure
 
-# clang 10 and clang 11 have a bug when compiling in c++17 mode
 clang++:
   stage: test
   script:
@@ -215,6 +214,18 @@ clang++:
     - cmake ..
     - cmake --build . --verbose -- --quiet --no-print-directory
     - ctest --output-on-failure
+
+#Tests that require full virtualization are delegated to Cirrus CI https://cirrus-ci.org/guide/quick-start/?installation_id=21991039&setup_action=install
+#freebsd:
+#  stage: test
+#  image: potyarkin/cirrus-run
+#  script:
+#    - cirrus-run
+#  variables:
+#    CIRRUS_GITHUB_REPO: sio/.cirrus-ci-jobs
+#    CIRRUS_API_TOKEN: 3aimie0rrj7b7fn7dh87k866o3k2potcikfff63
+
+##    - export REQUIREMENTS_CHECKSUM=$(sha256sum ansible/tests/requirements.txt|cut -c -64)
 
 clang++-tidy:
   stage: test
