@@ -30,7 +30,7 @@ g++-std20:
 clang++-std20:
   stage: test
   script:
-    - apt-get update && apt-get install --no-install-recommends -y --quiet clang++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
     - clang++ --version
     - mkdir build && cd build
