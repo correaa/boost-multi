@@ -150,8 +150,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 //  : static_array(std::move(other), typename static_array::allocator_type{}) {}
 //  // ^^^^ TODO(correaa) : check if it is really necessary
 
-	template<class TT, class... Args> auto operator==(basic_array<TT, D, Args...> const& other) const -> bool {return ref::operator==(other);}
-	template<class TT, class... Args> auto operator!=(basic_array<TT, D, Args...> const& other) const -> bool {return ref::operator!=(other);}
+//	template<class TT, class... As> auto operator==(basic_array<TT, D, As...> const& o) const {return ref::operator==(o);}
+//	template<class TT, class... As> auto operator!=(basic_array<TT, D, As...> const& o) const {return ref::operator!=(o);}
 
 	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>  // decltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>
 	// analogous to std::vector::vector (5) https://en.cppreference.com/w/cpp/container/vector/vector
