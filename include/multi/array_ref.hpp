@@ -200,13 +200,17 @@ struct basic_array_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin
 	using Ref::base_;
 	using Ref::layout;
 
-	constexpr auto operator==(basic_array_ptr const& o) const -> bool{return base_==o.base_ and layout()==o.layout();}
+	constexpr auto operator==(basic_array_ptr const& o) const -> bool {return base_ == o.base_ and layout() == o.layout();}
+	constexpr auto operator!=(basic_array_ptr const& o) const -> bool {return base_ != o.base_  or layout() != o.layout();}
 
-	template<class O> constexpr auto operator==(O const& o) const -> bool{return base()==o->base() and layout() == o->layout();}
-	template<class O> constexpr auto operator!=(O const& o) const -> bool{return not ((*this)==o);}
+//	template<class O> constexpr auto operator==(O const& o) const -> bool {return base()==o->base() and layout() == o->layout();}
+//	template<class O> constexpr auto operator!=(O const& o) const -> bool {return not ((*this)==o);}
 
-	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> friend constexpr auto operator==(O const& o, basic_array_ptr const& s) -> bool{return s.operator==(o);}
-	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> friend constexpr auto operator!=(O const& o, basic_array_ptr const& s) -> bool{return not(o==s);}
+	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> friend constexpr auto operator==(O const& o, basic_array_ptr const& s) -> bool {return s.base() == o->base() and s.layout() == o->layout();}
+	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> friend constexpr auto operator!=(O const& o, basic_array_ptr const& s) -> bool {return s.base() != o->base() or  s.layout() != o->layout();}
+
+	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> friend constexpr auto operator==(basic_array_ptr const& s, O const& o) -> bool {return s.base() == o->base() and s.layout() == o->layout();}
+	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> friend constexpr auto operator!=(basic_array_ptr const& s, O const& o) -> bool {return s.base() != o->base() or  s.layout() != o->layout();}
 
  protected:
 	constexpr void increment() {base_ += Ref::nelems();}
