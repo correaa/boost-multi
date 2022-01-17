@@ -200,13 +200,17 @@ struct basic_array_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin
 	using Ref::base_;
 	using Ref::layout;
 
-	constexpr auto operator==(basic_array_ptr const& o) const -> bool{return base_==o.base_ and layout()==o.layout();}
+	constexpr auto operator==(basic_array_ptr const& o) const -> bool {return base_ == o.base_ and layout() == o.layout();}
+	constexpr auto operator!=(basic_array_ptr const& o) const -> bool {return base_ != o.base_  or layout() != o.layout();}
 
-	template<class O> constexpr auto operator==(O const& o) const -> bool{return base()==o->base() and layout() == o->layout();}
-	template<class O> constexpr auto operator!=(O const& o) const -> bool{return not ((*this)==o);}
+//	template<class O> constexpr auto operator==(O const& o) const -> bool {return base()==o->base() and layout() == o->layout();}
+//	template<class O> constexpr auto operator!=(O const& o) const -> bool {return not ((*this)==o);}
 
-	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> friend constexpr auto operator==(O const& o, basic_array_ptr const& s) -> bool{return s.operator==(o);}
-	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> friend constexpr auto operator!=(O const& o, basic_array_ptr const& s) -> bool{return not(o==s);}
+	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> friend constexpr auto operator==(O const& o, basic_array_ptr const& s) -> bool {return s.base() == o->base() and s.layout() == o->layout();}
+	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> friend constexpr auto operator!=(O const& o, basic_array_ptr const& s) -> bool {return s.base() != o->base() or  s.layout() != o->layout();}
+
+	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> friend constexpr auto operator==(basic_array_ptr const& s, O const& o) -> bool {return s.base() == o->base() and s.layout() == o->layout();}
+	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> friend constexpr auto operator!=(basic_array_ptr const& s, O const& o) -> bool {return s.base() != o->base() or  s.layout() != o->layout();}
 
  protected:
 	constexpr void increment() {base_ += Ref::nelems();}
@@ -1138,19 +1142,23 @@ struct basic_array
 	template<class Array> constexpr void swap(basic_array const& s, Array&& a) {s.swap(a);}
 	template<class Array> constexpr void swap(Array&& a, basic_array const& s) {s.swap(a);}
 
-	template<class Array>
-	constexpr auto operator==(Array const& o) const&
-	->decltype(this->extension()==o.extension() and adl_equal(this->begin(), this->end(), adl_begin(o))) {
-		return this->extension()==o.extension() and adl_equal(this->begin(), this->end(), adl_begin(o)); }
+//	template<class Array>
+//	constexpr auto operator==(Array const& o) const&
+//	->decltype(this->extension()==o.extension() and adl_equal(this->begin(), this->end(), adl_begin(o))) {
+//		return this->extension()==o.extension() and adl_equal(this->begin(), this->end(), adl_begin(o)); }
 
-	template<class Array>
-	constexpr auto operator!=(Array const& o) const&
-	->decltype(not (this->extension()==o.extension() and adl_equal(this->begin(), this->end(), adl_begin(o)))) {
-		return not (this->extension()==o.extension() and adl_equal(this->begin(), this->end(), adl_begin(o))); }
+//	template<class Array>
+//	constexpr auto operator!=(Array const& o) const&
+//	->decltype(not (this->extension()==o.extension() and adl_equal(this->begin(), this->end(), adl_begin(o)))) {
+//		return not (this->extension()==o.extension() and adl_equal(this->begin(), this->end(), adl_begin(o))); }
 
 	template<class TT, class... As>
-	constexpr auto operator==(basic_array<TT, D, As...> const& o) const& -> bool {
-		return (this->extension()==o.extension()) and adl_equal(this->begin(), this->end(), adl_begin(o));
+	constexpr auto operator==(basic_array<TT, D, As...> const& o) const -> bool {
+		return (this->extension() == o.extension()) and    adl_equal(this->begin(), this->end(), adl_begin(o));
+	}
+	template<class TT, class... As>
+	constexpr auto operator!=(basic_array<TT, D, As...> const& o) const -> bool {
+		return (this->extension() != o.extension()) or not adl_equal(this->begin(), this->end(), adl_begin(o));
 	}
 
 	template<class It>
@@ -1445,8 +1453,8 @@ struct basic_array<T, 0, ElementPtr, Layout>
 	auto elements_at(size_type n)     && -> element_ref  {assert(n < this->num_elements()); return *(this->base_);}
 	auto elements_at(size_type n)      & -> element_ref  {assert(n < this->num_elements()); return *(this->base_);}
 
-	constexpr auto operator!=(basic_array const& o) const& -> bool {return not adl_equal(o.base_, o.base_ + 1, this->base_);}
-	constexpr auto operator==(basic_array const& o) const& -> bool {return     adl_equal(o.base_, o.base_ + 1, this->base_);}
+	constexpr auto operator!=(basic_array const& o) const {return not adl_equal(o.base_, o.base_ + 1, this->base_);}
+	constexpr auto operator==(basic_array const& o) const {return     adl_equal(o.base_, o.base_ + 1, this->base_);}
 
 	using decay_type = typename types::element;
 
@@ -1805,8 +1813,8 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	constexpr auto operator<<(dimensionality_type i) const -> decltype(auto) {return   rotated(i);}
 	constexpr auto operator>>(dimensionality_type i) const -> decltype(auto) {return unrotated(i);}
 
-	using       iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_ptr      >;
-	using const_iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_const_ptr>;
+	using         iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_ptr      >;
+	using   const_iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_const_ptr>;
 	using reverse_iterator = std::reverse_iterator<iterator>;
 
  private:
@@ -1864,9 +1872,17 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	->decltype(adl_copy_n(f, this->size(), std::declval<iterator>()), void()) {
 		return adl_copy_n(f, this->size(), std::move(*this).begin()), void(); }
 
-	template<typename Array>
-	constexpr auto operator==(Array const& o) const& -> bool {
-		return (this->extension()==extension(o)) and adl_equal(this->begin(), this->end(), adl_begin(o));
+//  template<typename Array, std::enable_if_t<not std::is_base_of<basic_array, Array>{}, int> =0>
+//  constexpr auto operator==(Array const& o) const -> bool {
+//  	return (this->extension()==extension(o)) and adl_equal(this->begin(), this->end(), adl_begin(o));
+//  }
+
+	template<class TT, class... As>
+	constexpr auto operator==(basic_array<TT, 1, As...> const& o) const -> bool {
+		return (this->extension() == o.extension()) and adl_equal(this->begin(), this->end(), o.begin());
+	}
+	constexpr auto operator==(basic_array const& o) const -> bool {
+		return (this->extension() == o.extension()) and adl_equal(this->begin(), this->end(), o.begin());
 	}
 
 	constexpr auto operator<(basic_array const& o) const& -> bool {return lexicographical_compare(*this, o);}
@@ -2106,11 +2122,17 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 	       constexpr auto celements()         const&    {return celements_type{array_ref::data_elements(), array_ref::num_elements()};}
 	friend constexpr auto celements(array_ref const& s) {return s.celements();}
 
-	template<typename TT, dimensionality_type DD = D, class... As>
-	constexpr auto operator==(array_ref<TT, DD, As...>&& o) const& -> bool {
+	template<typename TT, class... As>
+	constexpr auto operator==(array_ref<TT, D, As...> const& o) const {
 		if(this->extensions() != o.extensions()) {return false;}  // TODO(correaa) : or assert?
 		return equal_elements(std::move(o).data_elements());
 	}
+	template<typename TT, class... As>
+	constexpr auto operator!=(array_ref<TT, D, As...> const& o) const {
+		if(this->extensions() != o.extensions()) {return true;}  // TODO(correaa) : or assert?
+		return not equal_elements(std::move(o).data_elements());
+	}
+
 
 	       constexpr auto data_elements()        &&    -> typename array_ref::element_ptr {return array_ref::base_;}
 	friend constexpr auto data_elements(array_ref&& s) -> typename array_ref::element_ptr {return std::move(s).data_elements();}

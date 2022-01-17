@@ -32,9 +32,10 @@ struct integral_constant : private hana::integral_constant<Integral, N> {
 		assert(i == N);
 	}
 	constexpr auto operator==(Integral const& o) const {return static_cast<Integral const&>(*this)==o;}
-	constexpr auto operator==(integral_constant const&/*other*/) {return std::true_type{};}
+	constexpr auto operator==(integral_constant const&/*other*/) const {return std::true_type{};}
+
 	template<Integral N2, typename = std::enable_if_t<(N2 != N)> >
-	constexpr auto operator==(integral_constant<Integral, N2> const&/*other*/) {return std::false_type{};}
+	constexpr auto operator==(integral_constant<Integral, N2> const&/*other*/) const {return std::false_type{};}
 	template<Integral N2>
 	friend constexpr auto operator+(integral_constant const&/*a*/, integral_constant<Integral, N2> const&/*b*/) {
 		return integral_constant<Integral, hana::integral_constant<Integral, N>::value + N2>{};

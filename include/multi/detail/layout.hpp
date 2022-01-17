@@ -216,8 +216,8 @@ template<> struct extensions_t<0> {
 	friend constexpr auto operator%(nelems_type n, extensions_t const& /*s*/) -> std::tuple<> {return /*s.*/from_linear(n);}
 	friend constexpr auto intersection(extensions_t const& /*x1*/, extensions_t const& /*x2*/) -> extensions_t {return {};}
 
-	constexpr auto operator==(extensions_t const& /*other*/) -> bool {return true ;}
-	constexpr auto operator!=(extensions_t const& /*other*/) -> bool {return false;}
+	constexpr auto operator==(extensions_t const& /*other*/) const {return true ;}
+	constexpr auto operator!=(extensions_t const& /*other*/) const {return false;}
 };
 
 template<> struct extensions_t<1> {
