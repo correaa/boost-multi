@@ -16,10 +16,22 @@ g++-latest:
     - ctest --output-on-failure
     - make install
 
+g++-fast:
+  stage: test
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
+    - ln --symbolic --force . ../multi
+    - g++ --version
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=AggressiveOpt
+    - cmake --build . --verbose
+    - ctest --output-on-failure
+    - make install
+
 g++-std20:
   stage: test
   script:
-    - apt-get update && apt-get install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
     - g++ --version
     - mkdir build && cd build
