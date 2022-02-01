@@ -435,19 +435,6 @@ cuda-11.5:
       - cmake --build . --verbose
       - ctest --output-on-failure
 
-#cuda-11.5:
-#    image: nvidia/cuda:11.5.0-devel
-#    stage: test
-#    script:
-#      - export DEBIAN_FRONTEND=noninteractive
-#      - apt-get update && apt-get install --no-install-recommends -y --quiet pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
-#      - ln --symbolic --force . ../multi
-#      - nvcc --version
-#      - mkdir build && cd build
-#      - cmake .. -DENABLE_CUDA=1
-#      - cmake --build . --verbose
-#      - ctest --output-on-failure
-
 g++-cppcheck:
   stage: test
   image: debian:stable
@@ -628,20 +615,20 @@ nvcc-runner: # image: intel/oneapi-basekit
       - cmake --build . -j 12
       - ctest -j 12 --output-on-failure
 
-#oneapi: # WARNING: Failed to pull image with policy "always": failed to register layer: Error processing tar file(exit status 1): write /opt/intel/oneapi/mkl/2021.1-beta08/lib/intel64/libmkl_pgi_thread.a: no space left on device (manager.go:205:310s)
-#    image: intel/oneapi
-#    stage: test
-#    script:
-#        - . /opt/intel/oneapi/setvars.sh
-#        - export CXX="icpc"
-#        - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev liblapack-dev libfftw3-dev
-#        - ln --symbolic --force . ../multi
-#        - $CXX -v
-#        - mkdir build && cd build
-#        - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-#        - cmake --build . -- --quiet --no-print-directory
-#        - export MKL_VERBOSE=1
-#        - ctest --output-on-failure
+oneapi: # WARNING: Failed to pull image with policy "always": failed to register layer: Error processing tar file(exit status 1): write /opt/intel/oneapi/mkl/2021.1-beta08/lib/intel64/libmkl_pgi_thread.a: no space left on device (manager.go:205:310s)
+    image: intel/oneapi
+    stage: test
+    script:
+        - . /opt/intel/oneapi/setvars.sh
+        - export CXX="icpc"
+        - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev liblapack-dev libfftw3-dev
+        - ln --symbolic --force . ../multi
+        - $CXX -v
+        - mkdir build && cd build
+        - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+        - cmake --build . -- --quiet --no-print-directory
+        - export MKL_VERBOSE=1
+        - ctest --output-on-failure
 
 #icpc-memcheck-runner:
 #    stage: test
