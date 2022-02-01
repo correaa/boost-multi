@@ -617,7 +617,7 @@ nvcc-runner: # image: intel/oneapi-basekit
 oneapi:
     stage: test
     script:
-        - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev liblapack-dev libfftw3-dev curl
+        - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev liblapack-dev libfftw3-dev curl ca-certificates
         - curl --output webimage.sh --url https://registrationcenter-download.intel.com/akdlm/irc_nas/18211/l_HPCKit_p_2021.4.0.3347_offline.sh --retry 5 --retry-delay 5
         - chmod +x webimage.sh
         - ./webimage.sh -x -f webimage_extracted --log extract.log
