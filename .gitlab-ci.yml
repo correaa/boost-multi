@@ -429,7 +429,6 @@ cuda-11.5:
       - apt-get update && apt-get install --no-install-recommends -y --quiet pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
       - ln --symbolic --force . ../multi
       - nvcc --version
-      - nvc++ --version
       - mkdir build && cd build
       - cmake .. -DENABLE_CUDA=1
       - cmake --build . --verbose
@@ -616,7 +615,7 @@ nvcc-runner: # image: intel/oneapi-basekit
       - ctest -j 12 --output-on-failure
 
 oneapi: # WARNING: Failed to pull image with policy "always": failed to register layer: Error processing tar file(exit status 1): write /opt/intel/oneapi/mkl/2021.1-beta08/lib/intel64/libmkl_pgi_thread.a: no space left on device (manager.go:205:310s)
-    image: intel/oneapi
+    image: intel/oneapi-basekit
     stage: test
     script:
         - . /opt/intel/oneapi/setvars.sh
@@ -669,7 +668,6 @@ inq-nvcc-ompi:
     - git checkout $CI_COMMIT_BRANCH
     - cd ../..
     - mkdir build && cd build
-    - /usr/local/cuda/bin/nvc++ --version
     - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --disable-debug --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70 `#--with-cuda-prefix=/usr/local/cuda`
     - make -j8
     - make -j4 install
