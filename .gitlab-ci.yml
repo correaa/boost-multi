@@ -615,7 +615,7 @@ nvcc-runner: # image: intel/oneapi-basekit
       - ctest -j 12 --output-on-failure
 
 oneapi: # WARNING: Failed to pull image with policy "always": failed to register layer: Error processing tar file(exit status 1): write /opt/intel/oneapi/mkl/2021.1-beta08/lib/intel64/libmkl_pgi_thread.a: no space left on device (manager.go:205:310s)
-    image: intel/oneapi-basekit
+    image: gitlab-registry.mpcdf.mpg.de/tpurcell/cpp_sisso
     stage: test
     script:
         - . /opt/intel/oneapi/setvars.sh
@@ -628,33 +628,6 @@ oneapi: # WARNING: Failed to pull image with policy "always": failed to register
         - cmake --build . -- --quiet --no-print-directory
         - export MKL_VERBOSE=1
         - ctest --output-on-failure
-
-#icpc-memcheck-runner:
-#    stage: test
-#    tags:
-#      - intel_compiler
-#    script:
-#      - . /opt/intel/system_studio_2020/bin/compilervars.sh intel64
-#      - export CXX="icpc"
-#      - $CXX --version
-#      - mkdir build && cd build
-#      - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-#      - cmake --build . -j 12
-#      - ctest -T memcheck --output-on-failure || (cat Testing/Temporary/MemoryChecker.*.log && exit 0)
-
-#icpc-std17-runner:
-#    stage: test
-#    tags:
-#      - intel_compiler
-#    script:
-#      - . /opt/intel/system_studio_2020/bin/compilervars.sh intel64
-#      - export CXX="icpc"
-#      - $CXX --version
-#      - mkdir build && cd build
-#      - cmake .. -DCMAKE_CXX_STANDARD=17 -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-#      - cmake --build . -j 12
-#      - export MKL_VERBOSE=1
-#      - ctest --output-on-failure
 
 inq-nvcc-ompi:
   stage: test
@@ -674,70 +647,4 @@ inq-nvcc-ompi:
     - ctest --output-on-failure --timeout 600
     - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest --output-on-failure --timeout 600; cd ..
     - rm -rf $PREFIX
-
-#blas&fft:
-#    stage: test
-#    script:
-#      - perl -pi -e 's/main/main\ contrib\ non-free/g' /etc/apt/sources.list
-#      - apt update --quiet
-#      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends -f-assume-yes --quiet libboost-test-dev libboost-timer-dev libtbb-dev libboost-serialization-dev libboost-iostreams-dev librange-v3-dev valgrind
-#      - DEBIAN_FRONTEND=noninteractive apt install --no-install-recommends --assume-yes --quiet clang pkg-config libblas-dev libblas64-dev libfftw3-dev nvidia-cuda-toolkit
-#      - ln --symbolic --force . ../multi
-#      - export CXXX="clang++ -x c++"
-#      - export CXXFLAGS="-Wall -Wextra -Wpedantic -O3 -lcudart -lfftw3 -lcublas -lcufft -lboost_timer -lboost_unit_test_framework `pkg-config --libs blas`"
-#      - export CXX="${CXXX} ${CXXFLAGS}"
-#      - $CXX --version
-#      - cd adaptors/blas
-#      - for a in ./*.hpp; do echo $a; $CXX $a || exit; done;
-#      - cd tests
-#      - for a in ./*.cpp; do echo $a; $CXX $a || exit; done;
-#      - cd ..
-#      - cd ../..
-#      - cd adaptors
-#      - sh ./fftw.hpp
-#      - $CXX fft.hpp
-
-#blas&fftGPU-11:
-#    stage: build
-#    tags:
-#      - cuda_gpu
-#    stage: test
-#    script:
-#      - export PATH=/usr/local/cuda-11.0/bin:$PATH #export PATH=/usr/local/cuda/bin:$PATH
-#      - export LD_LIBRARY_PATH=/usr/local/cuda-11.0/lib64:$LD_LIBRARY_PATH
-#      - export CXXX="clang++ -x c++"
-#      - export CXXFLAGS="`#-Wall -Wextra -Wpedantic` -Ofast -Wl,-rpath=/usr/local/cuda/lib64 -L/usr/local/cuda-11.0/lib64 -I/usr/local/cuda-11.0/include -lcudart -lfftw3 -lcublas -lcufft -lboost_timer -lboost_unit_test_framework `pkg-config --libs blas` "
-#      - export CXX="${CXXX} ${CXXFLAGS}"
-#      - $CXX --version
-#      - cd adaptors/blas
-#      - for a in ./*.hpp; do echo $a; sh $a || exit; echo "\n"; done;
-#      - cd tests
-#      - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
-#      - cd ..
-#      - cd ../..
-#      - cd adaptors
-#      - sh ./fftw.hpp
-#      - sh ./fft.hpp
-
-#blas&fftGPU:
-#    stage: build
-#    tags:
-#      - cuda_gpu
-#    stage: test
-#    script:
-#      - export PATH=/usr/local/cuda/bin:$PATH #export PATH=/usr/local/cuda/bin:$PATH
-#      - export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
-#      - export CXXX="clang++ -x c++"
-#      - export CXXFLAGS="`#-Wall -Wextra -Wpedantic` -Ofast -Wl,-rpath=/usr/local/cuda/lib64 -L/usr/local/cuda/lib64 -I/usr/local/cuda/include -lcudart -lfftw3 -lcublas -lcufft -lboost_timer -lboost_unit_test_framework `pkg-config --libs blas` "
-#      - export CXX="${CXXX} ${CXXFLAGS}"
-#      - $CXX --version
-#      - cd adaptors/blas
-#      - for a in ./*.hpp; do echo $a; sh $a || exit; echo "\n"; done;
-#      - cd tests
-#      - for a in ./*.cpp; do echo $a; sh $a || exit; echo "\n"; done;
-#      - cd ..
-#      - cd ../..
-#      - cd adaptors
-#      - sh ./fftw.hpp
-#      - sh ./fft.hpp
 
