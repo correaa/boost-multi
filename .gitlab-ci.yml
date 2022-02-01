@@ -602,23 +602,22 @@ icpc-runner: # image: intel/oneapi-basekit
       - export MKL_VERBOSE=1
       - ctest --output-on-failure
 
-nvcc-runner: # image: intel/oneapi-basekit
+nvcc-runner:
     stage: test
     tags:
       - intel_compiler
     script:
       - mkdir build && cd build
       - /usr/local/cuda/bin/nvcc --version
-      - /usr/local/cuda/bin/nvc++ --version
       - CUDACXX=/usr/local/cuda/bin/nvcc CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda cmake .. -DCMAKE_CXX_STANDARD=17
       - cmake --build . -j 12
       - ctest -j 12 --output-on-failure
 
-oneapi:
+oneapi: # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.yml
     stage: test
     script:
         - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev liblapack-dev libfftw3-dev curl ca-certificates
-        - curl --output webimage.sh --url https://registrationcenter-download.intel.com/akdlm/irc_nas/18211/l_HPCKit_p_2021.4.0.3347_offline.sh --retry 5 --retry-delay 5
+        - curl --output webimage.sh --url https://registrationcenter-download.intel.com/akdlm/irc_nas/18487/l_BaseKit_p_2022.1.2.146_offline.sh --retry 5 --retry-delay 5
         - chmod +x webimage.sh
         - ./webimage.sh -x -f webimage_extracted --log extract.log
         - rm -rf webimage.sh
