@@ -631,7 +631,7 @@ oneapi: # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.yml
         - $CXX -v
         - mkdir build && cd build
         - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-        - cmake --build . -- --quiet --no-print-directory
+        - cmake --build . -- --verbose --no-print-directory
         - export MKL_VERBOSE=1
         - ctest --output-on-failure
 
