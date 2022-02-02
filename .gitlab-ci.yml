@@ -623,7 +623,7 @@ oneapi: # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.yml
         - rm -rf webimage.sh
         - ls -1 webimage_extracted/
         - WEBIMAGE_NAME=$(ls -1 webimage_extracted/)
-        - webimage_extracted/"$WEBIMAGE_NAME"/bootstrapper -s --action install --components=intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic --eula=accept --log-dir=.
+        - webimage_extracted/"$WEBIMAGE_NAME"/bootstrapper -s --action install --components=intel.oneapi.lin.dpcpp-cpp-compiler-pro --eula=accept --log-dir=.
         - rm -rf webimage_extracted
         - . /opt/intel/oneapi/setvars.sh
         - export CXX="/opt/intel/oneapi/compiler/latest/linux/bin/intel64/icpc"
