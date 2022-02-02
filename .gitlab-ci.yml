@@ -616,7 +616,7 @@ nvcc-runner:
 oneapi: # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.yml
     stage: test
     script:
-        - apt-get update && apt-get install --no-install-recommends -y --quiet cmake make libboost-test-dev libblas-dev liblapack-dev libfftw3-dev curl ca-certificates
+        - apt-get update && apt-get install --no-install-recommends -y --quiet g++ cmake make libboost-test-dev libblas-dev liblapack-dev libfftw3-dev curl ca-certificates
         - curl --output webimage.sh --url https://registrationcenter-download.intel.com/akdlm/irc_nas/18479/l_HPCKit_p_2022.1.2.117_offline.sh --retry 5 --retry-delay 5
         - chmod +x webimage.sh
         - ./webimage.sh -x -f webimage_extracted --log extract.log
