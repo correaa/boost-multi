@@ -625,6 +625,14 @@ oneapi: # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.yml
         - WEBIMAGE_NAME=$(ls -1 webimage_extracted/)
         - 'webimage_extracted/"$WEBIMAGE_NAME"/bootstrapper -s --action install --components=intel.oneapi.lin.dpcpp-cpp-compiler-pro:intel.oneapi.lin.mpi.devel --eula=accept --log-dir=.'
         - rm -rf webimage_extracted
+        - curl https://registrationcenter-download.intel.com/akdlm/irc_nas/18487/l_BaseKit_p_2022.1.2.146_offline.sh --retry 5 --retry-delay 5
+        - chmod +x webimage.sh
+        - ./webimage.sh -x -f webimage_extracted --log extract.log
+        - rm -rf webimage.sh
+        - ls -1 webimage_extracted/
+        - WEBIMAGE_NAME=$(ls -1 webimage_extracted/)
+        - 'webimage_extracted/"$WEBIMAGE_NAME"/bootstrapper -s --action install --components=intel.oneapi.lin.mkl.devel:intel.oneapi.lin.dpcpp-cpp-compiler:intel.oneapi.lin.dpl:intel.oneapi.lin.tbb.devel:intel.oneapi.lin.dpcpp-ct --eula=accept --log-dir=.'
+        - rm -rf webimage_extracted
         - . /opt/intel/oneapi/setvars.sh
         - export CXX="icpc"
         - ln --symbolic --force . ../multi
