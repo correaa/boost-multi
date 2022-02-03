@@ -328,6 +328,7 @@ hpcsdk:
       - curl --output nvhpc-22-1_22.1_amd64.deb --url https://developer.download.nvidia.com/hpc-sdk/22.1/nvhpc-22-1_22.1_amd64.deb --retry 5 --retry-delay 5
       - curl --output nvhpc-2022_22.1_amd64.deb --url https://developer.download.nvidia.com/hpc-sdk/22.1/nvhpc-2022_22.1_amd64.deb --retry 5 --retry-delay 5
       - apt-get install --no-install-recommends -y --quiet ./nvhpc-22-1_22.1_amd64.deb ./nvhpc-2022_22.1_amd64.deb
+      - rm -rf ./nvhpc-22-1_22.1_amd64.deb ./nvhpc-2022_22.1_amd64.deb
       - ls /opt/nvidia
       - tree /opt/nvidia/hpc_sdk
       - find /opt/nvidia -name nvc++
