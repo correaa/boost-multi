@@ -637,7 +637,7 @@ oneapi-icpc: # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.ym
 oneapi-icpx: # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.yml
     stage: test
     script:
-        - apt-get update && apt-get install --no-install-recommends -y --quiet g++ ca-certificates cmake curl libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
+        - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates curl
         - curl --output webimage.sh --url https://registrationcenter-download.intel.com/akdlm/irc_nas/18487/l_BaseKit_p_2022.1.2.146_offline.sh --retry 5 --retry-delay 5
         - chmod +x webimage.sh
         - ./webimage.sh -x -f webimage_extracted --log extract.log
@@ -646,6 +646,7 @@ oneapi-icpx: # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.ym
         - WEBIMAGE_NAME=$(ls -1 webimage_extracted/)
         - webimage_extracted/"$WEBIMAGE_NAME"/bootstrapper -s --action install --components=intel.oneapi.lin.mkl.devel:intel.oneapi.lin.dpcpp-cpp-compiler:intel.oneapi.lin.dpl:intel.oneapi.lin.tbb.devel --eula=accept --log-dir=.
         - rm -rf webimage_extracted
+        - apt-get update && apt-get install --no-install-recommends -y --quiet g++ cmake libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
         - . /opt/intel/oneapi/setvars.sh
         - ln --symbolic --force . ../multi
         - export CC=icx; export CXX=icpx;
