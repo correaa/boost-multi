@@ -644,7 +644,7 @@ oneapi-icpx: # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.ym
         - rm -rf webimage.sh
         - ls -1 webimage_extracted/
         - WEBIMAGE_NAME=$(ls -1 webimage_extracted/)
-        - webimage_extracted/"$WEBIMAGE_NAME"/bootstrapper -s --action install --components=intel.oneapi.lin.mkl.devel:intel.oneapi.lin.dpcpp-cpp-compiler:intel.oneapi.lin.dpl:intel.oneapi.lin.tbb.devel --eula=accept --log-dir=.
+        - webimage_extracted/"$WEBIMAGE_NAME"/bootstrapper -s --action install --components=intel.oneapi.lin.mkl.devel:intel.oneapi.lin.dpcpp-cpp-compiler:intel.oneapi.lin.dpl --eula=accept --log-dir=.
         - rm -rf webimage_extracted
         - apt-get update && apt-get install --no-install-recommends -y --quiet g++ cmake libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
         - . /opt/intel/oneapi/setvars.sh
