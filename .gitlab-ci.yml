@@ -327,6 +327,7 @@ hpcsdk:
       - apt-get install wget
       - wget https://developer.download.nvidia.com/hpc-sdk/22.1/nvhpc-22-1_22.1_amd64.deb https://developer.download.nvidia.com/hpc-sdk/22.1/nvhpc-2022_22.1_amd64.deb
       - apt-get install ./nvhpc-22-1_22.1_amd64.deb ./nvhpc-2022_22.1_amd64.deb
+      - ls /opt/
       - nvc++ --version
 
 oneapi-icpc: # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.yml
