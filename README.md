@@ -54,7 +54,7 @@ make -j
 make test -j
 ```
 
-The code is developed on `clang` (13.0), `gcc` (11.2) and `nvcc` (11.3) compilers, and [tested regularly ](https://gitlab.com/correaa/boost-multi/pipelines) with clang 9-12, NVCC 11.0-11.5, Intel (2022), and PGI(nvc++ 20.7-21.3) compilers.
+The code is developed on `clang` (13.0), `gcc` (11.2) and `nvcc` (11.5), `icpc` (2021.5.0) and `icpx` (2022.0.2) compilers, and [tested regularly ](https://gitlab.com/correaa/boost-multi/pipelines) with clang 9-12, NVCC 11.0-11.4, and PGI(nvc++ 20.7-21.3) compilers.
 For detailed compilation instructions of test please inspect the Continuous Integration (CI) definition file https://gitlab.com/correaa/boost-multi/-/blob/master/.gitlab-ci.yml
 
 ## Types
@@ -201,7 +201,7 @@ If we want to order the matrix in a per-column basis we need to "view" the matri
 
 ```cpp
 		...
-		std::stable_sort( d2D_ref.begin(1), d2D_ref.end(1) );
+		std::stable_sort( rotated(d2D_ref).begin(), rotated(d2D_ref).end() );
 	}
 ```
 
@@ -270,7 +270,7 @@ As an example, this function allows printing arrays of arbitrary dimension into 
 
 ```cpp
 void print(double const& d){cout<<d;};
-template<class MultiArray> 
+template<class MultiArray>
 void print(MultiArray const& ma) {
 	cout<<"{";
 	if(not ma.empty()) {
