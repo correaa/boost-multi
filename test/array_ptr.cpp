@@ -56,10 +56,10 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 		BOOST_REQUIRE( &aP->operator[](1)[1] == &a[1][1] );
 
 		multi::array_ptr<double, 2> aP2{&a};
-		BOOST_REQUIRE( aP == aP2 );
+		BOOST_REQUIRE( aP == aP2 ); BOOST_REQUIRE( not (aP != aP2) );
 
 		multi::array_ptr<double, 2> bP{&b};
-		BOOST_REQUIRE( bP != aP );
+		BOOST_REQUIRE( bP != aP ); BOOST_REQUIRE( not (bP == aP) );
 
 		bP = aP;
 		BOOST_REQUIRE( aP == bP );

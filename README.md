@@ -5,7 +5,7 @@
 
 (not an official Boost library)
 
-_© Alfredo A. Correa, 2018-2021_
+_© Alfredo A. Correa, 2018-2022_
 
 `Multi` provides multidimensional array access to contiguous or regularly contiguous memory (or ranges).
 It shares the goals of [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html),
@@ -13,7 +13,7 @@ although the code is completely independent and the syntax has slight difference
 `Multi` and `Boost.MultiArray` types can be used interchangeably for the most part, they differ in the semantics of reference and value types.
 
 Multi aims to simplify the semantics of Boost.MultiArray and make it more compatible with the Standard (STL) Algorithms and special memory.
-It requires, at least, C++17.
+It requires, at least, C++17. (It is C++20 ready.)
 
 Some features:
 
