@@ -327,11 +327,11 @@ hpcsdk:
       - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates curl
       - curl --output nvhpc-22-1_22.1_amd64.deb --url https://developer.download.nvidia.com/hpc-sdk/22.1/nvhpc-22-1_22.1_amd64.deb --retry 5 --retry-delay 5
       - curl --output nvhpc-2022_22.1_amd64.deb --url https://developer.download.nvidia.com/hpc-sdk/22.1/nvhpc-2022_22.1_amd64.deb --retry 5 --retry-delay 5
-      - apt-get install ./nvhpc-22-1_22.1_amd64.deb ./nvhpc-2022_22.1_amd64.deb
+      - apt-get install --no-install-recommends -y ./nvhpc-22-1_22.1_amd64.deb ./nvhpc-2022_22.1_amd64.deb
       - ls /opt/
       - nvc++ --version
 
-oneapi-icpc: # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.yml
+oneapi-icpc:  # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.yml
     stage: build
     script:
         - apt-get update && apt-get install --no-install-recommends -y --quiet g++ ca-certificates cmake curl libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
