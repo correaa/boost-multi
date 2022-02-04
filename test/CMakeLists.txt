@@ -57,7 +57,7 @@ file(
 	*.cpp
 )
 
-if(CMAKE_CXX_COMPILER MATCHES "nvc++")
+if(CMAKE_CXX_COMPILER MATCHES ".*nvc\+\+")
 	set(CXX_COMPILER_ID NVCPP)
 endif()
 
