@@ -277,6 +277,7 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_carray) {
 	multi::array_cref<double, 2> D(&a[0][0], {4, 5});
 
 	BOOST_REQUIRE( &A[1][2] == &B[1][2] );
+	BOOST_REQUIRE( &A[1][2] == &C[1][2] );
 	BOOST_REQUIRE( &A[1][2] == &D[1][2] );
 
 	A[1][1] = 2.;
