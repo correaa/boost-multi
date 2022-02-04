@@ -34,8 +34,9 @@ auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) -> C2D&& // 
 	assert( a.size() == c.size() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	assert( c.size() == rotated(c).size() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	if(c.is_empty()) {return std::forward<C2D>(c);}
-	if constexpr(is_conjugated<C2D>{}) {herk(flip(c_side), alpha, a, beta, hermitized(c)); return std::forward<C2D>(c);}
-	{
+	if constexpr(is_conjugated<C2D>{}) {
+		herk(flip(c_side), alpha, a, beta, hermitized(c));
+	} else {
 		auto base_a = base_aux(a);
 		auto base_c = base_aux(c); //  static_assert( not is_conjugated<C2D>{}, "!" );
 		if constexpr(is_conjugated<A2D>{}) {
