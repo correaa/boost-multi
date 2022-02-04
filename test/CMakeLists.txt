@@ -57,6 +57,10 @@ file(
 	*.cpp
 )
 
+if(CMAKE_CXX_COMPILER MATCHES "nvc++")
+	set(CXX_COMPILER_ID NVCPP)
+endif()
+
 foreach(TEST_FILE ${TEST_SRCS})
 	set(TEST_EXE "${TEST_FILE}.x")
 	add_executable(${TEST_EXE} ${TEST_FILE})
@@ -87,7 +91,6 @@ foreach(TEST_FILE ${TEST_SRCS})
 				-Wcast-qual
 				-Wformat=2
 				-Wshadow
-				-Wunused
 				$<$<CXX_COMPILER_ID:GNU>:
 					-Wextra
 					-Wcast-align
@@ -132,6 +135,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wold-style-cast
 					-Woverloaded-virtual
 					-Wpedantic
+					-Wunused
                 >
 				$<$<CXX_COMPILER_ID:Intel>:
 					-Wextra
@@ -157,13 +161,18 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wsequence-point
 					-Wtrigraphs
 					-Wuninitialized
+					-Wunused
 					-Wunused-but-set-variable
 					-Wunused-function
 					-Wunused-variable
 					-Wwrite-strings
 				>
 				$<$<CXX_COMPILER_ID:PGI>:  # PGI 20  doesn't recognize the -Wextra option
+					-Wunused
 					--diag_suppress=implicit_return_from_non_void_function
+				>
+				$<$<CXX_COMPILER_ID:NVCPP>:
+					sasasa
 				>
 				$<$<CXX_COMPILER_ID:MSVC>:
 					/WX
