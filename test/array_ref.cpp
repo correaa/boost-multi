@@ -276,6 +276,10 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_carray) {
 	multi::array_ref<double, 2, double const*> B(&a[0][0], {4, 5});
 	multi::array_ref<double const, 2> C(&a[0][0], {4, 5});
 	multi::array_cref<double, 2> D(&a[0][0], {4, 5});
+
+	BOOST_REQUIRE( &A[1][2] == &B[1][2] );
+	BOOST_REQUIRE( &A[1][2] == &D[1][2] );
+
 	A[1][1] = 2.;
 
 	double d[4][5] = {{1., 2.}, {2., 3.}};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test legacy type
