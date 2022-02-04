@@ -75,27 +75,24 @@ foreach(TEST_FILE ${TEST_SRCS})
 	target_include_directories(${TEST_EXE} PRIVATE ${Boost_INCLUDE_DIRS})
 	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
 	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
-	if(NOT ENABLE_CUDA
-	   AND (NOT
-			DART_COMPILER_NAME
-			STREQUAL
-			"nvcc"
-		   )
-	)
+#	if(NOT ENABLE_CUDA
+#	   AND (NOT
+#			DART_COMPILER_NAME
+#			STREQUAL
+#			"nvcc"
+#		   )
+#	)
 		target_compile_options(
 			${TEST_EXE}
-			PRIVATE # -fstrict-aliasing -Wstrict-aliasing #-Wsign-conversion
-				-Wcast-qual
-				-Wformat=2
-				-Wshadow
-				$<$<CXX_COMPILER_ID:GNU>:
+			PRIVATE
+				$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>>:
 					-Werror
+					-Wconversion
 					-Wall
 					-Wextra
 					-pedantic-errors
 					-Wcast-align
 					-Wcast-qual
-					-Wconversion
 					-Wdouble-promotion
 					-Wduplicated-branches
 					-Wduplicated-cond
@@ -115,6 +112,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wredundant-decls
 					-Wshadow
 					-Wsign-conversion
+					-Wstrict-aliasing
 					-Wswitch-enum
 					-Wtrampolines
 					-Wuninitialized
@@ -124,20 +122,60 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wuseless-cast
 					-Wzero-as-null-pointer-constant
 				>
+				$<$<AND:$<CXX_COMPILER_ID:GNU>,$<CUDA_COMPILER_ID:NVIDIA>>:
+					-Xcompiler -Werror
+					-Wconversion
+					-Wall
+					-Wextra
+#					-pedantic-errors
+					-Wcast-align
+					-Wcast-qual
+					-Wdouble-promotion
+					-Wduplicated-branches
+					-Wduplicated-cond
+					-Wformat-truncation
+					-Wformat=2
+					-Wlogical-op
+					-Wmisleading-indentation
+					-Wmissing-include-dirs
+					-Wnon-virtual-dtor
+					-Wno-missing-declarations
+					-Wnon-virtual-dtor
+					-Wnull-dereference
+#					-Wold-style-cast
+					-Woverloaded-virtual
+					-Wpointer-arith
+#					-Wpedantic
+					-Wredundant-decls
+					-Wshadow
+					-Wsign-conversion
+					-Wswitch-enum
+					-Wtrampolines
+					-Wuninitialized
+					-Wunused
+					-Wunused-but-set-variable
+					-Wunused-result
+#					-Wuseless-cast
+					-Wzero-as-null-pointer-constant
+				>
 				$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
 					-Werror
 					-Wall
 					-Wextra
 					-pedantic-errors
 					-Wcast-align
+					-Wcast-qual
 					-Wconversion
 					-Wdouble-promotion
+					-Wformat=2
 					-Wnon-virtual-dtor
 					-Wnull-dereference
 					-Wmove
+					-Wshadow
 					-Wold-style-cast
 					-Woverloaded-virtual
 					-Wpedantic
+					-Wsign-conversion
 					-Wunused
                 >
 				$<$<CXX_COMPILER_ID:Intel>:  # also IntelLLVM, XL (ibm), XLClang (ibm)
@@ -149,10 +187,11 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-diag-error:3846
 					-wd161
 					-Warray-bounds
+					-Wcast-qual
 					-Wchar-subscripts
 					-Wcomment
 					-Wenum-compare
-					-Wformat
+					-Wformat=2
 					-Wnarrowing
 					-Wno-return-type
 					-Wnon-virtual-dtor
@@ -165,6 +204,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wreorder
 					-Wsign-compare
 					-Wsequence-point
+					-Wshadow
 					-Wtrigraphs
 					-Wuninitialized
 					-Wunused
@@ -176,16 +216,19 @@ foreach(TEST_FILE ${TEST_SRCS})
 				$<$<OR:$<CXX_COMPILER_ID:PGI>,$<CXX_COMPILER_ID:NVHPC>>:
 					-Werror
 					-Wall
+					-Wcast-qual
+					-Wformat=2
+					-Wshadow
+					-Wsign-conversion
 					-Wunused
 					--diag_suppress=implicit_return_from_non_void_function
-				>
-				$<$<CXX_COMPILER_ID:NVIDIA>:
+					--display_error_number
 				>
 				$<$<CXX_COMPILER_ID:MSVC>:
 					/WX
 					/W4
 				>
 		)
-	endif()
+#	endif()
 	add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
 endforeach()

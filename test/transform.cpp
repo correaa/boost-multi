@@ -1,8 +1,7 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo Correa 2019-2021
+// Copyright 2019-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi transformed array"
-#define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
 #include "../array.hpp"
@@ -35,20 +34,20 @@ class involuted{
 	involuted(involuted&&) noexcept = default;
 	~involuted() = default;
 	involuted(involuted const&) = default;
-	auto operator=(involuted const&) -> involuted& = default; // NOLINT(fuchsia-trailing-return): simulate reference
-	auto operator=(involuted&&     ) noexcept -> involuted& = default; // NOLINT(fuchsia-trailing-return): simulate reference
+	auto operator=(involuted const&)          -> involuted& = default;  // NOLINT(fuchsia-trailing-return): simulate reference
+	auto operator=(involuted&&     ) noexcept -> involuted& = default;  // NOLINT(fuchsia-trailing-return): simulate reference
 #endif
-	auto operator=(decay_type const& other) -> involuted& { //  NOLINT(fuchsia-trailing-return): simulate reference
+	auto operator=(decay_type const& other) -> involuted& {  // NOLINT(fuchsia-trailing-return): simulate reference
 		r_ = Involution{}(other);
 		return *this;
 	}
 	constexpr explicit operator decay_type() const{return Involution{}(r_);}
 	// NOLINTNEXTLINE(google-runtime-operator): simulated reference
-	constexpr auto operator&()&& {return involuter<Involution, decltype(&std::declval<Ref>())>{Involution{}, &r_};} // NOLINT(runtime/operator)
+	constexpr auto operator&()&& {return involuter<Involution, decltype(&std::declval<Ref>())>{Involution{}, &r_};}  // NOLINT(runtime/operator)
 	// NOLINTNEXTLINE(google-runtime-operator): simulated reference
 	constexpr auto operator&() & {return involuter<Involution, decltype(&std::declval<Ref>())>{Involution{}, &r_};}  // NOLINT(runtime/operator)
 	// NOLINTNEXTLINE(google-runtime-operator): simulated reference
-	constexpr auto operator&() const&{return involuter<Involution, decltype(&std::declval<decay_type const&>())>{Involution{}, &r_};} // NOLINT(runtime/operator)
+	constexpr auto operator&() const&{return involuter<Involution, decltype(&std::declval<decay_type const&>())>{Involution{}, &r_};}  // NOLINT(runtime/operator)
 
 	auto operator==(involuted  const& other) const {return r_ == other.r_;}
 	auto operator!=(involuted  const& other) const {return r_ == other.r_;}
@@ -58,7 +57,7 @@ class involuted{
 };
 
 template<class Involution, class It>
-class involuter{
+class involuter {
 	It it_;
 	template<class, class> friend class involuter;
  public:
@@ -84,14 +83,10 @@ class involuter{
 	constexpr auto operator->() const {return pointer{&*it_};}
 };
 
-//#if defined(__cpp_deduction_guides)
-//template<class T, class F> involuted(F, T&&)->involuted<F, T const>;
-//#endif
-
 template<class Ref> using negated = involuted<std::negate<>, Ref>;
 template<class It>  using negater = involuter<std::negate<>, It >;
 
-class basic_conjugate_t{
+class basic_conjugate_t {
 	template<int N> struct prio : std::conditional_t<N!=0, prio<N-1>, std::true_type>{};
 	template<class T> static auto _(prio<0>/**/, T const& t) DECLRETURN(std::conj(t))
 	template<class T> static auto _(prio<1>/**/, T const& t) DECLRETURN(     conj(t))
@@ -102,12 +97,12 @@ class basic_conjugate_t{
 } basic_conjugate;
 
 template<class T = void>
-struct conjugate : private basic_conjugate_t{
+struct conjugate : private basic_conjugate_t {
 	constexpr auto operator()(T const& arg) const DECLRETURN(_(arg))
 };
 
 template<>
-struct conjugate<> : private basic_conjugate_t{
+struct conjugate<> : private basic_conjugate_t {
 	template<class T>
 	constexpr auto operator()(T const& arg) const DECLRETURN(_(arg))
 };
