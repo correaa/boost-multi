@@ -90,7 +90,6 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wconversion
 					-Wall
 					-Wextra
-					-pedantic-errors
 					-Wcast-align
 					-Wcast-qual
 					-Wdouble-promotion
@@ -127,7 +126,6 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wconversion
 					-Wall
 					-Wextra
-#					-pedantic-errors
 					-Wcast-align
 					-Wcast-qual
 					-Wdouble-promotion
@@ -162,7 +160,6 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Werror
 					-Wall
 					-Wextra
-					-pedantic-errors
 					-Wcast-align
 					-Wcast-qual
 					-Wconversion
