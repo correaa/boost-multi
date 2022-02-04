@@ -82,6 +82,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 #			"nvcc"
 #		   )
 #	)
+	set_property(TARGET ${TEST_EXE} PROPERTY CUDA_STANDARD 17)  # with cmake 3.16 this is not enough, -std=c++17 is needed below
 	target_compile_options(
 		${TEST_EXE}
 		PRIVATE
