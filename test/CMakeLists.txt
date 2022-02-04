@@ -63,8 +63,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 	else()
 	endif()
 
-	target_compile_features(${TEST_EXE} PRIVATE $<NOT:$<CUDA_COMPILER_ID:NVIDIA>:cxx_std_17>)
-	target_compile_options (${TEST_EXE} PRIVATE $<    $<CUDA_COMPILER_ID:NVIDIA>:-std=c++17>)
+	target_compile_features(${TEST_EXE} PRIVATE $<$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>:cxx_std_17>)
+	target_compile_options (${TEST_EXE} PRIVATE $<$<CUDA_COMPILER_ID:NVIDIA>:-std=c++17>)
 
 	target_link_libraries(${TEST_EXE} PRIVATE Boost::unit_test_framework Boost::serialization)
 #	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
