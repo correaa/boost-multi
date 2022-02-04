@@ -29,7 +29,7 @@ g++-latest-std20:
     - make install
 
 g++-std20:
-  stage: test
+  stage: build
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
@@ -40,7 +40,7 @@ g++-std20:
     - ctest --output-on-failure
 
 clang++-std20:
-  stage: test
+  stage: build
   script:
     - apt-get update && apt-get install --no-install-recommends -y --quiet clang pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
@@ -230,45 +230,6 @@ clang++-11-gcc9:
 
 cuda-11.0:
     image: nvidia/cuda:11.0-devel
-    stage: build
-    script:
-      - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
-      - ln --symbolic --force . ../multi
-      - nvcc --version
-      - mkdir build && cd build
-      - cmake .. -DENABLE_CUDA=1
-      - cmake --build . --verbose
-      - ctest --output-on-failure
-
-cuda-11.1:
-    image: nvidia/cuda:11.1-devel
-    stage: build
-    script:
-      - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
-      - ln --symbolic --force . ../multi
-      - nvcc --version
-      - mkdir build && cd build
-      - cmake .. -DENABLE_CUDA=1
-      - cmake --build . --verbose
-      - ctest --output-on-failure
-
-cuda-11.2:
-    image: nvidia/cuda:11.2.0-devel
-    stage: build
-    script:
-      - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
-      - ln --symbolic --force . ../multi
-      - nvcc --version
-      - mkdir build && cd build
-      - cmake .. -DENABLE_CUDA=1
-      - cmake --build . --verbose
-      - ctest --output-on-failure
-
-cuda-11.3:
-    image: nvidia/cuda:11.3.0-devel
     stage: build
     script:
       - export DEBIAN_FRONTEND=noninteractive
