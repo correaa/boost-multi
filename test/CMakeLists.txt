@@ -75,14 +75,13 @@ foreach(TEST_FILE ${TEST_SRCS})
 	target_include_directories(${TEST_EXE} PRIVATE ${Boost_INCLUDE_DIRS})
 	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
 	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
-#	if(NOT ENABLE_CUDA
-#	   AND (NOT
-#			DART_COMPILER_NAME
-#			STREQUAL
-#			"nvcc"
-#		   )
-#	)
-		# nvc++ produces an empty CXX_COMPILER_ID
+	if(NOT ENABLE_CUDA
+	   AND (NOT
+			DART_COMPILER_NAME
+			STREQUAL
+			"nvcc"
+		   )
+	)
 		target_compile_options(
 			${TEST_EXE}
 			PRIVATE # -fstrict-aliasing -Wstrict-aliasing #-Wsign-conversion
@@ -187,6 +186,6 @@ foreach(TEST_FILE ${TEST_SRCS})
 					/W4
 				>
 		)
-#	endif()
+	endif()
 	add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
 endforeach()
