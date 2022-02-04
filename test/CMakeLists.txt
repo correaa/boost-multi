@@ -87,11 +87,11 @@ foreach(TEST_FILE ${TEST_SRCS})
 			${TEST_EXE}
 			PRIVATE # -fstrict-aliasing -Wstrict-aliasing #-Wsign-conversion
 				-Werror
-				-Wall
 				-Wcast-qual
 				-Wformat=2
 				-Wshadow
 				$<$<CXX_COMPILER_ID:GNU>:
+					-Wall
 					-Wextra
 					-Wcast-align
 					-Wcast-qual
@@ -125,6 +125,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wzero-as-null-pointer-constant
 				>
 				$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+					-Wall
 					-Wextra
 					-Wcast-align
 					-Wconversion
@@ -138,6 +139,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wunused
                 >
 				$<$<CXX_COMPILER_ID:Intel>:
+					-Wall
 					-Wextra
 					-diag-disable=remark
 					-diag-error:3846
@@ -168,11 +170,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wwrite-strings
 				>
 				$<$<CXX_COMPILER_ID:PGI>:  # PGI 20  doesn't recognize the -Wextra option
+					-Wall
 					-Wunused
 					--diag_suppress=implicit_return_from_non_void_function
-				>
-				$<$<CXX_COMPILER_ID:NVCPP>:
-					sasasa
 				>
 				$<$<CXX_COMPILER_ID:MSVC>:
 					/WX
