@@ -171,6 +171,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wunused-variable
 					-Wwrite-strings
 				>
+				$<$<CXX_COMPILER_ID:NVHPC>:  # PGI 20  doesn't recognize the -Wextra option
+					-copyfrombelow
+				>
 				$<$<CXX_COMPILER_ID:PGI>:  # PGI 20  doesn't recognize the -Wextra option
 					-Werror
 					-Wall
