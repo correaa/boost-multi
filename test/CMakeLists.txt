@@ -85,11 +85,10 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wall
 					-Wshadow
 					-Wunused
-					-Wnon-virtual-dtor
-					-Woverloaded-virtual
 					-Wcast-qual
 					-Wformat=2
 					$<$<CXX_COMPILER_ID:GNU>:
+					-Wnon-virtual-dtor
 					-Werror
 					-Wall
 					-Wextra
@@ -124,9 +123,11 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wzero-as-null-pointer-constant
 					>
 					$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+					-Wnon-virtual-dtor
 					-Wextra
 					-Wconversion
 					-Wnon-virtual-dtor
+					-Woverloaded-virtual
 					-Wpedantic
 					-Wmove
 					-Wdouble-promotion
@@ -135,6 +136,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wnull-dereference
                     >
 					$<$<CXX_COMPILER_ID:Intel>:
+					-Wnon-virtual-dtor
 					-Wextra
 					-wd161
 					-diag-disable=remark
@@ -151,6 +153,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wparentheses
 					-Wpointer-sign
 					-Wreorder
+					-Woverloaded-virtual
 					-Wno-return-type
 					-Wsign-compare
 					-Wsequence-point
