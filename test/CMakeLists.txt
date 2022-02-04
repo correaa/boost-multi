@@ -57,6 +57,8 @@ file(
 	*.cpp
 )
 
+message(${CXX_COMPILER_ID})
+
 foreach(TEST_FILE ${TEST_SRCS})
 	set(TEST_EXE "${TEST_FILE}.x")
 	add_executable(${TEST_EXE} ${TEST_FILE})
@@ -83,35 +85,33 @@ foreach(TEST_FILE ${TEST_SRCS})
 			PRIVATE # -fstrict-aliasing -Wstrict-aliasing #-Wsign-conversion
 					-Werror
 					-Wall
-					-Wshadow
-					-Wunused
 					-Wcast-qual
 					-Wformat=2
+					-Wshadow
+					-Wunused
 					$<$<CXX_COMPILER_ID:GNU>:
-					-Wnon-virtual-dtor
-					-Werror
-					-Wall
 					-Wextra
-					-Wpedantic
-					-Wdouble-promotion
-					-Wduplicated-branches
-					-Wduplicated-cond
 					-Wcast-align
 					-Wcast-qual
 					-Wconversion
+					-Wdouble-promotion
+					-Wduplicated-branches
+					-Wduplicated-cond
 					-Wformat-truncation
 					-Wformat=2
 					-Wlogical-op
 					-Wmisleading-indentation
-					-Wno-missing-declarations
 					-Wmissing-include-dirs
+					-Wnon-virtual-dtor
+					-Wno-missing-declarations
 					-Wnon-virtual-dtor
 					-Wnull-dereference
 					-Wold-style-cast
 					-Woverloaded-virtual
 					-Wpointer-arith
-					-Wshadow
+					-Wpedantic
 					-Wredundant-decls
+					-Wshadow
 					-Wsign-conversion
 					-Wswitch-enum
 					-Wtrampolines
@@ -123,21 +123,20 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wzero-as-null-pointer-constant
 					>
 					$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
-					-Wnon-virtual-dtor
 					-Wextra
+					-Wcast-align
 					-Wconversion
+					-Wdouble-promotion
 					-Wnon-virtual-dtor
+					-Wnull-dereference
+					-Wmove
+					-Wold-style-cast
 					-Woverloaded-virtual
 					-Wpedantic
-					-Wmove
-					-Wdouble-promotion
-					-Wcast-align
-					-Wold-style-cast
-					-Wnull-dereference
                     >
 					$<$<CXX_COMPILER_ID:Intel>:
-					-Wnon-virtual-dtor
 					-Wextra
+					-Wnon-virtual-dtor
 					-wd161
 					-diag-disable=remark
 					-Warray-bounds
