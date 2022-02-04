@@ -122,39 +122,39 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wzero-as-null-pointer-constant
 				>
 				$<$<AND:$<CXX_COMPILER_ID:GNU>,$<CUDA_COMPILER_ID:NVIDIA>>:
-					-Xcompiler -Werror
-#					-Wconversion
-					-Wall
-					-Wextra
-					-Wcast-align
-					-Wcast-qual
-					-Wdouble-promotion
-					-Wduplicated-branches
-					-Wduplicated-cond
-					-Wformat-truncation
-					-Wformat=2
-					-Wlogical-op
-					-Wmisleading-indentation
-					-Wmissing-include-dirs
-					-Wnon-virtual-dtor
-					-Wno-missing-declarations
-					-Wnon-virtual-dtor
-					-Wnull-dereference
-#					-Wold-style-cast
-					-Woverloaded-virtual
-					-Wpointer-arith
-#					-Wpedantic
-					-Wredundant-decls
-					-Wshadow
-					-Wsign-conversion
-					-Wswitch-enum
-					-Wtrampolines
-					-Wuninitialized
-					-Wunused
-					-Wunused-but-set-variable
-					-Wunused-result
-#					-Wuseless-cast
-					-Wzero-as-null-pointer-constant
+#					-Xcompiler -Werror
+##					-Wconversion
+#					-Wall
+#					-Wextra
+#					-Wcast-align
+#					-Wcast-qual
+#					-Wdouble-promotion
+#					-Wduplicated-branches
+#					-Wduplicated-cond
+#					-Wformat-truncation
+#					-Wformat=2
+#					-Wlogical-op
+#					-Wmisleading-indentation
+#					-Wmissing-include-dirs
+#					-Wnon-virtual-dtor
+#					-Wno-missing-declarations
+#					-Wnon-virtual-dtor
+#					-Wnull-dereference
+##					-Wold-style-cast
+#					-Woverloaded-virtual
+#					-Wpointer-arith
+##					-Wpedantic
+#					-Wredundant-decls
+#					-Wshadow
+#					-Wsign-conversion
+#					-Wswitch-enum
+#					-Wtrampolines
+#					-Wuninitialized
+#					-Wunused
+#					-Wunused-but-set-variable
+#					-Wunused-result
+##					-Wuseless-cast
+#					-Wzero-as-null-pointer-constant
 				>
 				$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
 					-Werror
