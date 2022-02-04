@@ -174,7 +174,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wunused-variable
 					-Wwrite-strings
 				>
-				$<$<OR:$<CXX_COMPILER_ID:PGI>,$<CXX_COMPILER_ID:NVHPC>>>:
+				$<$<OR:$<CXX_COMPILER_ID:PGI>,$<CXX_COMPILER_ID:NVHPC>>:
 					-Werror
 					-Wall
 					-Wunused
