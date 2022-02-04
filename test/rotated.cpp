@@ -1,7 +1,7 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
+// Copyright 2021-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi rotate"
-#define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
 #include "../array.hpp"
@@ -119,9 +119,6 @@ BOOST_AUTO_TEST_CASE(multi_rotate) {
 	BOOST_REQUIRE( (A<<1)[0][1] == 10 );
 	BOOST_REQUIRE( &(A<<1)[1][0] == &A[0][1] );
 	BOOST_REQUIRE( &(~A)[1][0] == &A[0][1] );
-}
-{
-	multi::array<double, 3> const A({3, 5, 7});
 }
 }
 

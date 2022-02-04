@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-// Copyright 2019-2021 Alfredo A. Correa
+// Copyright 2019-2022 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_BLAS_HERK_HPP
 #define MULTI_ADAPTORS_BLAS_HERK_HPP
@@ -34,8 +34,9 @@ auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) -> C2D&& // 
 	assert( a.size() == c.size() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	assert( c.size() == rotated(c).size() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	if(c.is_empty()) {return std::forward<C2D>(c);}
-	if constexpr(is_conjugated<C2D>{}) {herk(flip(c_side), alpha, a, beta, hermitized(c)); return std::forward<C2D>(c);}
-	{
+	if constexpr(is_conjugated<C2D>{}) {
+		herk(flip(c_side), alpha, a, beta, hermitized(c));
+	} else {
 		auto base_a = base_aux(a);
 		auto base_c = base_aux(c); //  static_assert( not is_conjugated<C2D>{}, "!" );
 		if constexpr(is_conjugated<A2D>{}) {

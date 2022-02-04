@@ -1,8 +1,7 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-// Copyright 2021 Alfredo A. Correa
+// Copyright 2021-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi incomplete type"
-#define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
 #include "../array.hpp"
@@ -29,10 +28,12 @@ struct rose_tree_arr2 : std::variant<T, multi::array<rose_tree_arr<T>, 2>> {
 
 BOOST_AUTO_TEST_CASE(rose_tree_vector) {
 	rose_tree_v<double> rt;
+	(void)rt;  // TODO(correaa) test rose_tree
 }
 
 BOOST_AUTO_TEST_CASE(rose_tree_array) {
 	rose_tree_arr<double> rt;
+	(void)rt;  // TODO(correaa) test rose_tree
 }
 
 //BOOST_AUTO_TEST_CASE(rose_tree_array2) {

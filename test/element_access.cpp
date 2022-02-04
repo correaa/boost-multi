@@ -2,7 +2,6 @@
 // Copyright 2018-2021 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi element access"
-#define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
 #include "../array.hpp"
@@ -63,8 +62,9 @@ BOOST_AUTO_TEST_CASE(multi_tests_extension_with_tuple) {
 	multi::array<double, 2> m1(t, 44.);
 	BOOST_REQUIRE( size(m1) == 3 );
 
-//	std::array<int, 3> a = {3, 3};
-	multi::array<double, 2> m2({3, 3}, 55.);
+#if not defined(__INTEL_COMPILER) and not defined(__NVCOMPILER)  // vvv fails for intel compiler and nvc++
+	auto m2 = std::apply([](auto... e){return multi::array<double, 2>({e...}, 55.);}, t);
+#endif
 }
 
 #if 1

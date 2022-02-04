@@ -1,8 +1,7 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo A. Correa 2019-2021
+// Copyright 2019-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi fill"
-#define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
 #include "../array.hpp"
@@ -132,9 +131,8 @@ BOOST_AUTO_TEST_CASE(fill) {
 	fill(begin((d2D<<1)[1]), end((d2D<<1)[1]), 8.);
 	BOOST_REQUIRE( all_of(begin((d2D<<1)[1]), end((d2D<<1)[1]), [](auto&& e){return e==8.;}) );
 
-	std::mt19937 g{r()};
-	auto rand = [d=std::normal_distribution<>{}, g = std::mt19937{r()}]() mutable{return d(g);};
+	auto rand = [d=std::normal_distribution<>{}, g = std::mt19937{r()}]() mutable {return d(g);};
 	multi::array<double, 2> r2D({5, 5});
-	std::for_each(begin(r2D), end(r2D), [&](auto&& e){std::generate(begin(e), end(e), rand);});
+	std::for_each(begin(r2D), end(r2D), [&](auto&& e) {std::generate(begin(e), end(e), rand);});
 }
 
