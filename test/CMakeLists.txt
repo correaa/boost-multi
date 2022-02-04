@@ -60,7 +60,6 @@ foreach(TEST_FILE ${TEST_SRCS})
 	if(ENABLE_CUDA OR DEFINED CXXCUDA)
 		set_property(TARGET ${TEST_EXE} PROPERTY "${CUDA_ARCH_LIST}")
 		set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
-	else()
 	endif()
 
 	target_compile_features(${TEST_EXE} PRIVATE $<$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>:cxx_std_17>)
@@ -68,12 +67,6 @@ foreach(TEST_FILE ${TEST_SRCS})
 
 	target_link_libraries(${TEST_EXE} PRIVATE Boost::unit_test_framework Boost::serialization)
 	target_compile_definitions(${TEST_EXE} PRIVATE "$<$<CUDA_COMPILER_ID:NVIDIA>:BOOST_PP_VARIADICS>")
-#	target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
-
-#	target_include_directories(${TEST_EXE} PRIVATE ${Boost_INCLUDE_DIRS})
-
-#	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
-#	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
 
 	target_compile_options(
 		${TEST_EXE}
