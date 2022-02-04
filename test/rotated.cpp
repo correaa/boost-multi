@@ -120,9 +120,6 @@ BOOST_AUTO_TEST_CASE(multi_rotate) {
 	BOOST_REQUIRE( &(A<<1)[1][0] == &A[0][1] );
 	BOOST_REQUIRE( &(~A)[1][0] == &A[0][1] );
 }
-{
-	multi::array<double, 3> const A({3, 5, 7});
-}
 }
 
 BOOST_AUTO_TEST_CASE(multi_transposed) {
