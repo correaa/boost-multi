@@ -54,8 +54,8 @@ make -j
 make test -j
 ```
 
-The code is developed on `clang` (13.0), `gcc` (11.2) and `nvcc` (11.5), `icpc` (2021.5.0) and `icpx` (2022.0.2) compilers, and [tested regularly ](https://gitlab.com/correaa/boost-multi/pipelines) with clang 9-12, NVCC 11.0-11.4, and PGI(nvc++ 20.7-21.3) compilers.
-For detailed compilation instructions of test please inspect the Continuous Integration (CI) definition file https://gitlab.com/correaa/boost-multi/-/blob/master/.gitlab-ci.yml
+The code is developed targetting several compilers: LLVM's `clang` (13.0), GNU's `g++` (11.2), Nvidia's `nvcc` (11.5), `nvc++` (20.7-21.3) and Intel's `icpc` (2021.5.0), `icpx` (2022.0.2).
+For detailed compilation instructions of test please inspect the Continuous Integration (CI) [definition file](https://gitlab.com/correaa/boost-multi/-/blob/master/.gitlab-ci.yml).
 
 ## Types
 
