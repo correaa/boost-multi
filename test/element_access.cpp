@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_extension_with_tuple) {
 	BOOST_REQUIRE( size(m1) == 3 );
 
 //	std::array<int, 3> a = {3, 3};
-	multi::array<double, 2> m2({3, 3}, 55.);
+	auto m2 = std::apply([](auto... e){return multi::array<double, 2> m2({e...}, 55.);}, t);
 }
 
 #if 1
