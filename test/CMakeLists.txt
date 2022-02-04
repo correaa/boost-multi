@@ -1,7 +1,5 @@
-# -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-#[=[Multi Test suite can be run like this:
-  mkdir -p build
-  cd build
+#[=[Multi Test suite can be run like this: -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+  mkdir -p build && cd build
   cmake .. [-DENABLE_CUDA=1]
   make -j
   ctest -j --output-on-error [-T memcheck]
@@ -26,8 +24,6 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	enable_language(CUDA)
-#	set_property(GLOBAL PROPERTY CUDA_STANDARD 17)  # with cmake 3.16 this is not enough, -std=c++17 is needed below
-#	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -std=c++17")
 
 	include(FindCUDA/select_compute_arch)
 	cuda_detect_installed_gpus(INSTALLED_GPU_CCS_1)
@@ -60,30 +56,29 @@ file(
 foreach(TEST_FILE ${TEST_SRCS})
 	set(TEST_EXE "${TEST_FILE}.x")
 	add_executable(${TEST_EXE} ${TEST_FILE})
+
 	if(ENABLE_CUDA OR DEFINED CXXCUDA)
 		set_property(TARGET ${TEST_EXE} PROPERTY "${CUDA_ARCH_LIST}")
 		set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
-		target_compile_options(${TEST_EXE} PRIVATE
-			$<$<CUDA_COMPILER_ID:NVIDIA>:
-				-std=c++17
-			>
-		)
-	else()
-		target_compile_features(${TEST_EXE} PUBLIC cxx_std_17)
 	endif()
-	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
-	target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
 
-	target_include_directories(${TEST_EXE} PRIVATE ${Boost_INCLUDE_DIRS})
+	target_compile_features(${TEST_EXE} PUBLIC cxx_std_17)
+	target_compile_options(${TEST_EXE} PRIVATE $<$<CUDA_COMPILER_ID:NVIDIA>:-std=c++17>)
 
-	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
-	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
+	target_link_libraries(${TEST_EXE} PRIVATE Boost::unit_test_framework Boost::serialization)
+#	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
+#	target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
+
+#	target_include_directories(${TEST_EXE} PRIVATE ${Boost_INCLUDE_DIRS})
+
+#	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
+#	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
 
 	target_compile_options(
 		${TEST_EXE}
 		PRIVATE
 			$<$<AND:$<CXX_COMPILER_ID:GNU>,$<CUDA_COMPILER_ID:NVIDIA>>:
-				-Xcompiler=-Werror,-Wall,-Wextra,-Wcast-align,-Wcast-qual,-Wdouble-promotion,-Wduplicated-branches,-Wduplicated-cond,-Wformat-truncation,-Wformat=2,-Wlogical-op,-Wmisleading-indentation,-Wmissing-include-dirs,-Wnon-virtual-dtor,,-Wno-missing-declarations,-Wnon-virtual-dtor,-Wnull-dereference,-Woverloaded-virtual,-Wpointer-arith,-Wno-redundant-decls,-Wno-shadow,-Wno-switch-enum,-Wtrampolines,-Wuninitialized,-Wunused,-Wunused-but-set-variable,-Wunused-result,-Wno-zero-as-null-pointer-constant
+				-Xcompiler=-Werror,-Wall,-Wextra,-Wcast-align,-Wcast-qual,-Wdouble-promotion,-Wduplicated-branches,-Wduplicated-cond,-Wformat-truncation,-Wformat=2,-Wlogical-op,-Wmisleading-indentation,-Wmissing-include-dirs,-Wnon-virtual-dtor,-Wno-missing-declarations,-Wnon-virtual-dtor,-Wnull-dereference,-Woverloaded-virtual,-Wpointer-arith,-Wno-redundant-decls,-Wno-shadow,-Wno-switch-enum,-Wtrampolines,-Wuninitialized,-Wunused,-Wunused-but-set-variable,-Wunused-result,-Wno-zero-as-null-pointer-constant
 				--expt-relaxed-constexpr --extended-lambda --Werror=cross-execution-space-call -Xcudafe=--diag_suppress=implicit_return_from_non_void_function,--display_error_number
 			>
 			$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>>:
@@ -191,6 +186,5 @@ foreach(TEST_FILE ${TEST_SRCS})
 				/W4
 			>
 	)
-#	endif()
 	add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
 endforeach()
