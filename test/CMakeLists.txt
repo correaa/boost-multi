@@ -57,8 +57,6 @@ file(
 	*.cpp
 )
 
-message(warning ${CXX_COMPILER_ID})
-
 foreach(TEST_FILE ${TEST_SRCS})
 	set(TEST_EXE "${TEST_FILE}.x")
 	add_executable(${TEST_EXE} ${TEST_FILE})
@@ -80,16 +78,17 @@ foreach(TEST_FILE ${TEST_SRCS})
 			"nvcc"
 		   )
 	)
+		# nvc++ produces an empty CXX_COMPILER_ID
 		target_compile_options(
 			${TEST_EXE}
 			PRIVATE # -fstrict-aliasing -Wstrict-aliasing #-Wsign-conversion
-					-Werror
-					-Wall
-					-Wcast-qual
-					-Wformat=2
-					-Wshadow
-					-Wunused
-					$<$<CXX_COMPILER_ID:GNU>:
+				-Werror
+				-Wall
+				-Wcast-qual
+				-Wformat=2
+				-Wshadow
+				-Wunused
+				$<$<CXX_COMPILER_ID:GNU>:
 					-Wextra
 					-Wcast-align
 					-Wcast-qual
@@ -121,8 +120,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wunused-result
 					-Wuseless-cast
 					-Wzero-as-null-pointer-constant
-					>
-					$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+				>
+				$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
 					-Wextra
 					-Wcast-align
 					-Wconversion
@@ -133,8 +132,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wold-style-cast
 					-Woverloaded-virtual
 					-Wpedantic
-                    >
-					$<$<CXX_COMPILER_ID:Intel>:
+                >
+				$<$<CXX_COMPILER_ID:Intel>:
 					-Wextra
 					-diag-disable=remark
 					-diag-error:3846
@@ -161,12 +160,15 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wunused-but-set-variable
 					-Wunused-function
 					-Wunused-variable
-					-Wwrite-strings>
-					$<$<CXX_COMPILER_ID:PGI>:  # PGI 20  doesn't recognize the -Wextra option
-					--diag_suppress=implicit_return_from_non_void_function>
-					$<$<CXX_COMPILER_ID:MSVC>:
+					-Wwrite-strings
+				>
+				$<$<CXX_COMPILER_ID:PGI>:  # PGI 20  doesn't recognize the -Wextra option
+					--diag_suppress=implicit_return_from_non_void_function
+				>
+				$<$<CXX_COMPILER_ID:MSVC>:
 					/WX
-					/W4>
+					/W4
+				>
 		)
 	endif()
 	add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
