@@ -148,7 +148,4 @@ BOOST_AUTO_TEST_CASE(static_array_cast) {
 	BOOST_REQUIRE( mA_ref == mA );
 	BOOST_REQUIRE( mA == mA_ref );
 }
-
-	double d = 5.;
-	std::move_iterator<double*> di{&d};
 }
