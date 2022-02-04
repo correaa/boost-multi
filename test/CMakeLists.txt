@@ -57,7 +57,7 @@ file(
 	*.cpp
 )
 
-message(${CXX_COMPILER_ID})
+message(warning ${CXX_COMPILER_ID})
 
 foreach(TEST_FILE ${TEST_SRCS})
 	set(TEST_EXE "${TEST_FILE}.x")
@@ -136,33 +136,33 @@ foreach(TEST_FILE ${TEST_SRCS})
                     >
 					$<$<CXX_COMPILER_ID:Intel>:
 					-Wextra
-					-Wnon-virtual-dtor
-					-wd161
 					-diag-disable=remark
+					-diag-error:3846
+					-wd161
 					-Warray-bounds
 					-Wchar-subscripts
 					-Wcomment
 					-Wenum-compare
 					-Wformat
-					-Wuninitialized
+					-Wnarrowing
+					-Wno-return-type
+					-Wnon-virtual-dtor
+					-Wnonnull
 					-Wmaybe-uninitialized
 					-Wmain
-					-Wnarrowing
-					-Wnonnull
+					-Woverloaded-virtual
 					-Wparentheses
 					-Wpointer-sign
 					-Wreorder
-					-Woverloaded-virtual
-					-Wno-return-type
 					-Wsign-compare
 					-Wsequence-point
 					-Wtrigraphs
-					-Wunused-function
+					-Wuninitialized
 					-Wunused-but-set-variable
+					-Wunused-function
 					-Wunused-variable
-					-Wwrite-strings
-					-diag-error:3846>
-					$<$<CXX_COMPILER_ID:PGI>: # PGI 20  doesn't recognize the -Wextra option
+					-Wwrite-strings>
+					$<$<CXX_COMPILER_ID:PGI>:  # PGI 20  doesn't recognize the -Wextra option
 					--diag_suppress=implicit_return_from_non_void_function>
 					$<$<CXX_COMPILER_ID:MSVC>:
 					/WX
