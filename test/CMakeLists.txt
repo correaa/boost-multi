@@ -174,11 +174,13 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wunused-variable
 					-Wwrite-strings
 				>
-				$<$<OR:$<CXX_COMPILER_ID:PGI>,$<CXX_COMPILER_ID:NVHPC>,$<CXX_COMPILER_ID:NVIDIA>>:
+				$<$<OR:$<CXX_COMPILER_ID:PGI>,$<CXX_COMPILER_ID:NVHPC>>>:
 					-Werror
 					-Wall
 					-Wunused
 					--diag_suppress=implicit_return_from_non_void_function
+				>
+				$<$<CXX_COMPILER_ID:NVIDIA>:
 				>
 				$<$<CXX_COMPILER_ID:MSVC>:
 					/WX
