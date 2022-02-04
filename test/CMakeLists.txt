@@ -93,6 +93,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Werror
 					-Wall
 					-Wextra
+					-pedantic-errors
 					-Wcast-align
 					-Wcast-qual
 					-Wconversion
@@ -128,6 +129,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Werror
 					-Wall
 					-Wextra
+					-pedantic-errors
 					-Wcast-align
 					-Wconversion
 					-Wdouble-promotion
@@ -139,10 +141,11 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wpedantic
 					-Wunused
                 >
-				$<$<CXX_COMPILER_ID:Intel>:
+				$<$<CXX_COMPILER_ID:Intel>:  # also IntelLLVM, XL (ibm), XLClang (ibm)
 					-Werror
 					-Wall
 					-Wextra
+					-pedantic-errors
 					-diag-disable=remark
 					-diag-error:3846
 					-wd161
@@ -171,7 +174,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wunused-variable
 					-Wwrite-strings
 				>
-				$<$<OR:$<CXX_COMPILER_ID:PGI>,$<CXX_COMPILER_ID:NVHPC>>:
+				$<$<OR:$<CXX_COMPILER_ID:PGI>,$<CXX_COMPILER_ID:NVHPC>,$<CXX_COMPILER_ID:NVIDIA>>:
 					-Werror
 					-Wall
 					-Wunused
