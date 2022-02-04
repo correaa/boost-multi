@@ -123,7 +123,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 				>
 				$<$<AND:$<CXX_COMPILER_ID:GNU>,$<CUDA_COMPILER_ID:NVIDIA>>:
 					-Xcompiler -Werror
-					-Wconversion
+#					-Wconversion
 					-Wall
 					-Wextra
 					-Wcast-align
@@ -216,7 +216,6 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wcast-qual
 					-Wformat=2
 					-Wshadow
-					-Wsign-conversion
 					-Wunused
 					--diag_suppress=implicit_return_from_non_void_function
 					--display_error_number
