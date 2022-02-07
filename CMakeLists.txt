@@ -29,6 +29,13 @@ target_include_directories(${PROJECT_NAME} INTERFACE $<BUILD_INTERFACE:${${PROJE
 # target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
 target_compile_features(${PROJECT_NAME} INTERFACE $<$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>:cxx_std_17>)
 target_compile_options (${PROJECT_NAME} INTERFACE $<$<CUDA_COMPILER_ID:NVIDIA>:-std=c++17>)
+target_compile_options (
+	${PROJECT_NAME}
+	INTERFACE
+		$<$<AND:$<CXX_COMPILER_ID:GNU>,$<CUDA_COMPILER_ID:NVIDIA>>:
+				--expt-relaxed-constexpr --extended-lambda --Werror=cross-execution-space-call -Xcudafe=--diag_suppress=implicit_return_from_non_void_function,--display_error_number
+		>
+)
 
 install(
 	TARGETS ${PROJECT_NAME}
