@@ -19,7 +19,7 @@ project(
 
 find_package(Boost REQUIRED COMPONENTS unit_test_framework serialization)
 
-if(ENABLE_CUDA OR DEFINED CXXCUDA)
+if((ENABLE_CUDA OR DEFINED CXXCUDA) AND NOT DEFINED FORCED_ARCH)
 	enable_language(CUDA)
 
 	include(FindCUDA/select_compute_arch)
@@ -38,7 +38,6 @@ if(ENABLE_CUDA OR DEFINED CXXCUDA)
 				"${INSTALLED_GPU_CCS_3}"
 	)
 	set(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
-
 endif()
 
 enable_testing()
