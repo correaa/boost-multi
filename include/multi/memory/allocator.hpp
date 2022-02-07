@@ -55,7 +55,7 @@ class allocator {
 			n*sizeof(value_type),
 			std::max(
 				alignof(std::max_align_t),
-				16  // for cuda
+				std::size_t{16}  // for cuda
 			)
 		)));
 	}
