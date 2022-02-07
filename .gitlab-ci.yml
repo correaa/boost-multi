@@ -357,6 +357,7 @@ oneapi-icpx: # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.ym
 
 variables:
   msbuild: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe'
+  mscmake: 'C:\Program Files (x86)\CMake\bin\cmake.exe'
 
 build_windows:
   stage: test
@@ -365,8 +366,10 @@ build_windows:
     - '& "$msbuild" -help'
     - mkdir build
     - cd build
-    - C:\Program\ Files\ (x86)\CMake\bin\cmake.exe  ..
+    - "$mscmake"  --version
+    - "$mscmake"  ..
     - dir
+    - "$mscmake"  --build
   tags:
     - shared-windows
     - windows
