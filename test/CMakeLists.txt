@@ -119,7 +119,6 @@ foreach(TEST_FILE ${TEST_SRCS})
 				-Wconversion
 				-Wdouble-promotion
 				-Wformat=2
-				-Wmisleading-indentation
 				-Wmissing-include-dirs
 				-Wnon-virtual-dtor
 				-Wnull-dereference
