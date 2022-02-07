@@ -74,9 +74,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 				-Werror
 				-Wall
 				-Wextra
-				-Wconversion
 				-Wcast-align
 				-Wcast-qual
+				-Wconversion
 				-Wdouble-promotion
 				-Wduplicated-branches
 				-Wduplicated-cond
@@ -95,6 +95,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 				-Wpedantic
 				-Wredundant-decls
 				-Wshadow
+				-Wold-style-cast
+				-Woverloaded-virtual
+				-Wpedantic
 				-Wsign-conversion
 				-Wstrict-aliasing
 				-Wswitch-enum
@@ -115,15 +118,27 @@ foreach(TEST_FILE ${TEST_SRCS})
 				-Wconversion
 				-Wdouble-promotion
 				-Wformat=2
+				-Wmisleading-indentation
+				-Wmissing-include-dirs
 				-Wnon-virtual-dtor
 				-Wnull-dereference
 				-Wmove
+				-Wold-style-cast
+				-Woverloaded-virtual
+				-Wpointer-arith
+				-Wpedantic
+				-Wredundant-decls
 				-Wshadow
 				-Wold-style-cast
 				-Woverloaded-virtual
 				-Wpedantic
 				-Wsign-conversion
+				-Wstrict-aliasing
+				-Wswitch-enum
+				-Wuninitialized
 				-Wunused
+				-Wunused-result
+				-Wzero-as-null-pointer-constant
             >
 			$<$<CXX_COMPILER_ID:Intel>:  # also IntelLLVM, XL (ibm), XLClang (ibm)
 				-Werror
@@ -131,31 +146,48 @@ foreach(TEST_FILE ${TEST_SRCS})
 				-Wextra
 				-diag-disable=remark
 				-diag-error:3846
+				-diag-disable=1011  # disables warning missing return at the end of non-void function
 				-wd161
+				-Wabi
 				-Warray-bounds
 				-Wcast-qual
 				-Wchar-subscripts
 				-Wcomment
+				-Wdeprecated
 				-Wenum-compare
+				-Wextra-tokens
+				-Wformat
 				-Wformat=2
+				-Wformat-security
+				-Wic-pointer
 				-Wnarrowing
 				-Wno-return-type
 				-Wnon-virtual-dtor
 				-Wnonnull
 				-Wmaybe-uninitialized
 				-Wmain
+				-Wmissing-declarations
+				-Wmissing-prototypes
+				-Wmultichar
 				-Woverloaded-virtual
+				-Woverflow
 				-Wparentheses
+				-Wpointer-arith
 				-Wpointer-sign
 				-Wreorder
+				-Wreturn-type
 				-Wsign-compare
 				-Wsequence-point
 				-Wshadow
+				-Wshorten-64-to-32
+				-Wno-strict-aliasing
+				-Wstrict-prototypes
 				-Wtrigraphs
 				-Wuninitialized
 				-Wunused
 				-Wunused-but-set-variable
 				-Wunused-function
+				-Wunused-parameter
 				-Wunused-variable
 				-Wwrite-strings
 			>
