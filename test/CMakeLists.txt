@@ -106,7 +106,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 				-Wuseless-cast
 				-Wzero-as-null-pointer-constant
 			>
-			$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+			$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID:Clang>>:
 				-Werror
 				-Wall
 				-Wextra
