@@ -428,7 +428,7 @@ culang-runner:
     script:
       - mkdir build && cd build
       - /usr/local/cuda/bin/nvcc --version
-      - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCUDA_HOST_COMPILER=clang++ -DCMAKE_CUDA_COMPILER=/usr/bin/clang++ -DCMAKE_CUDA_FLAGS="--cuda-path=/usr/local/cuda --cuda-gpu-arch=sm_75" -DENABLE_CUDA=1
+      - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCUDA_HOST_COMPILER=clang++ -DCMAKE_CUDA_COMPILER=/usr/bin/clang++ -DCMAKE_CUDA_FLAGS="--cuda-path=/usr/local/cuda --cuda-gpu-arch=sm_75 -Wno-unknown-cuda-version" -DENABLE_CUDA=1
       - cmake --build . -j 12
       - ctest -j 12 --output-on-failure
 
