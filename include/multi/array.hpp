@@ -832,7 +832,8 @@ struct array : static_array<T, D, Alloc> {
  public:
 	auto operator=(array&& other) noexcept -> array& {
 		clear();
-		this->base_ = std::exchange(other.base_, nullptr);  // final null assigment shouldn't be necessary?
+	//  this->base_ = std::exchange(other.base_, nullptr);  // final null assigment shouldn't be necessary?
+		this->base_ = other.base_;
 		move_allocator_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment{}, std::move(other.alloc()));
 		// this->alloc_ = std::move(other.alloc_);
 		static_cast<typename array::layout_t&>(*this) = std::exchange(static_cast<typename array::layout_t&>(other), {});
