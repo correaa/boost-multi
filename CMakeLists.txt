@@ -71,9 +71,11 @@ install(
 # install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake" DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake)
 
 # install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/SI DESTINATION include)
+if (NOT MSVC)
 install(FILES ${PROJECT_SOURCE_DIR}/array_ref.hpp ${PROJECT_SOURCE_DIR}/array.hpp DESTINATION include/multi)
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/detail DESTINATION include/multi)
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/adaptors DESTINATION include/multi)
+endif()
 
 #find_program(MEMORYCHECK_COMMAND valgrind)
 #set(VALGRIND_COMMAND_OPTIONS    "-q --tool=memcheck --leak-check=yes --num-callers=51 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all")
