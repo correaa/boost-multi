@@ -355,6 +355,22 @@ oneapi-icpx: # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.ym
         - ctest --output-on-failure
         - cd ..
 
+variables:
+  msbuild: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe'
+
+build_windows:
+  stage: build
+  script:
+    - '& "$msbuild" -help'
+    - mkdir build
+    - cd build
+    - cmake ..
+    - dir
+  tags:
+    - shared-windows
+    - windows
+    - windows-1809
+
 g++-codecov-runner:
     stage: test
     tags:
