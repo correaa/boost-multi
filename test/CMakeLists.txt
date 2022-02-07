@@ -82,6 +82,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 				-Wduplicated-cond
 				-Wformat-truncation
 				-Wformat=2
+				-Wformat-security
 				-Wlogical-op
 				-Wmisleading-indentation
 				-Wmissing-include-dirs
