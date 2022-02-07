@@ -370,7 +370,7 @@ build_windows:
     - cd build
     - '& "$mscmake"  --version'
     - '& "$mscmake"  ..'
-    - '& "$mscmake"  --build'
+    - '& "$mscmake"  --build .'
     - dir
   tags:
     - shared-windows
