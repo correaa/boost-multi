@@ -365,7 +365,7 @@ build_windows:
     - '& "$msbuild" -help'
     - mkdir build
     - cd build
-    - cmake ..
+    - C:\Program\ Files\ (x86)\CMake\bin\cmake.exe  ..
     - dir
   tags:
     - shared-windows
