@@ -357,7 +357,7 @@ oneapi-icpx: # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.ym
 
 variables:
   msbuild: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe'
-  mscmake: 'C:\Program Files (x86)\CMake\bin\cmake.exe'
+  mscmake: 'C:\Program Files\CMake\bin\cmake.exe'
 
 build_windows:
   stage: build
@@ -450,7 +450,7 @@ culang-runner:
     script:
       - mkdir build && cd build
       - /usr/local/cuda/bin/nvcc --version
-      - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCUDA_HOST_COMPILER=clang++ -DCMAKE_CUDA_COMPILER=/usr/bin/clang++ -DCMAKE_CUDA_FLAGS="--cuda-path=/usr/local/cuda -Wno-unknown-cuda-version --cuda-gpu-arch=sm_50" -DENABLE_CUDA=1
+      - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCUDA_HOST_COMPILER=clang++ -DCMAKE_CUDA_COMPILER=/usr/bin/clang++ -DCMAKE_CUDA_FLAGS="--cuda-path=/usr/local/cuda -Wno-unknown-cuda-version --cuda-gpu-arch=sm_50" -DENABLE_CUDA=1 -DFORCED_ARCH=1
       - make -j 12 VERBOSE=1
       - ctest -j 12 --output-on-failure
 
