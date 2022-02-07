@@ -19,9 +19,6 @@ project(
 
 find_package(Boost REQUIRED COMPONENTS unit_test_framework serialization)
 
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	enable_language(CUDA)
 
@@ -72,9 +69,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 		PRIVATE
 			$<$<AND:$<CXX_COMPILER_ID:GNU>,$<CUDA_COMPILER_ID:NVIDIA>>:
 				-Xcompiler=-Werror,-Wall,-Wextra,-Wcast-align,-Wcast-qual,-Wdouble-promotion,-Wduplicated-branches,-Wduplicated-cond,-Wformat-truncation,-Wformat=2,-Wlogical-op,-Wmisleading-indentation,-Wmissing-include-dirs,-Wnon-virtual-dtor,-Wno-missing-declarations,-Wnon-virtual-dtor,-Wnull-dereference,-Woverloaded-virtual,-Wpointer-arith,-Wno-redundant-decls,-Wno-shadow,-Wno-switch-enum,-Wtrampolines,-Wuninitialized,-Wunused,-Wunused-but-set-variable,-Wunused-result,-Wno-zero-as-null-pointer-constant
-#				--expt-relaxed-constexpr --extended-lambda --Werror=cross-execution-space-call -Xcudafe=--diag_suppress=implicit_return_from_non_void_function,--display_error_number
 			>
-			$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>>:
+			$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_COMPILER_ID:Clang>>>:
 				-Werror
 				-Wall
 				-Wextra
@@ -133,7 +129,6 @@ foreach(TEST_FILE ${TEST_SRCS})
 				-Werror
 				-Wall
 				-Wextra
-				-pedantic-errors
 				-diag-disable=remark
 				-diag-error:3846
 				-wd161
@@ -171,8 +166,6 @@ foreach(TEST_FILE ${TEST_SRCS})
 				-Wformat=2
 				-Wshadow
 				-Wunused
-				--diag_suppress=implicit_return_from_non_void_function
-				--display_error_number
 			>
 			$<$<CXX_COMPILER_ID:MSVC>:
 				/WX

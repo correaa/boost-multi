@@ -26,6 +26,9 @@ add_library(${PROJECT_NAME} INTERFACE)
 
 target_include_directories(${PROJECT_NAME} INTERFACE $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/include> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 # target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
 target_compile_features(${PROJECT_NAME} INTERFACE $<$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>:cxx_std_17>)
 target_compile_options (${PROJECT_NAME} INTERFACE $<$<CUDA_COMPILER_ID:NVIDIA>:-std=c++17>)
@@ -34,6 +37,10 @@ target_compile_options (
 	INTERFACE
 		$<$<AND:$<CXX_COMPILER_ID:GNU>,$<CUDA_COMPILER_ID:NVIDIA>>:
 				--expt-relaxed-constexpr --extended-lambda --Werror=cross-execution-space-call -Xcudafe=--diag_suppress=implicit_return_from_non_void_function,--display_error_number
+		>
+		$<$<OR:$<CXX_COMPILER_ID:PGI>,$<CXX_COMPILER_ID:NVHPC>>:
+			--diag_suppress=implicit_return_from_non_void_function
+			--display_error_number
 		>
 )
 
