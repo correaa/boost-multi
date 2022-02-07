@@ -36,7 +36,7 @@ if((NOT
 	else()
 		message("Multi/BLAS: MKL environment not detected, looking for other BLAS")
 		unset(BLA_VENDOR)
-		find_package(BLAS REQUIRED)
+		find_package(BLAS)
 		find_path(
 			BLAS_INCLUDE_DIRS
 			cblas.h
@@ -68,4 +68,8 @@ endif()
 
 include_directories(${CMAKE_BINARY_DIR})
 
-add_subdirectory(test)
+if(BLAS_FOUND)
+  add_subdirectory(test)
+else()
+  message("BLAS not found, BLAS tests will not be run")
+endif()
