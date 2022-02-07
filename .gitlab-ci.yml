@@ -450,9 +450,11 @@ culang-runner:
     script:
       - mkdir build && cd build
       - /usr/local/cuda/bin/nvcc --version
-      - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCUDA_HOST_COMPILER=clang++ -DCMAKE_CUDA_COMPILER=/usr/bin/clang++ -DCMAKE_CUDA_FLAGS="--cuda-path=/usr/local/cuda --cuda-gpu-arch=sm_72 -foffload=-misa=sm_35 -Wno-unknown-cuda-version -v" -DENABLE_CUDA=1
+      - cmake .. -DCMAKE_BUILD_TYPE=Debug -DCUDA_HOST_COMPILER=clang++ -DCMAKE_CUDA_COMPILER=/usr/bin/clang++ -DCMAKE_CUDA_FLAGS="--cuda-path=/usr/local/cuda -Wno-unknown-cuda-version" -DENABLE_CUDA=1
       - make -j 12 VERBOSE=1
       - ctest -j 12 --output-on-failure
+
+#--cuda-gpu-arch=sm_72 -foffload=-misa=sm_35
 
 qmcpack-g++:
   stage: test
