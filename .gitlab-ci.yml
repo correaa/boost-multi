@@ -363,13 +363,15 @@ build_windows:
   stage: test
   script:
     - choco install -y cmake
+    - choco install boost-msvc-14.2
     - '& "$msbuild" -help'
+    - '& "$msbuild" -version'
     - mkdir build
     - cd build
-    - "$mscmake"  --version
-    - "$mscmake"  ..
+    - '& "$mscmake"  --version'
+    - '& "$mscmake"  ..'
+    - '& "$mscmake"  --build'
     - dir
-    - "$mscmake"  --build
   tags:
     - shared-windows
     - windows
