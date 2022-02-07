@@ -17,7 +17,7 @@
 
 namespace multi = boost::multi;
 
-auto second_finish(multi::extensions_t<3> x) {
+static auto second_finish(multi::extensions_t<3> x) {
 	return std::get<1>(x).finish();
 }
 
