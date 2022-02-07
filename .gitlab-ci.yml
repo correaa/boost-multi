@@ -361,6 +361,7 @@ variables:
 build_windows:
   stage: build
   script:
+    - choco install -y cmake
     - '& "$msbuild" -help'
     - mkdir build
     - cd build
