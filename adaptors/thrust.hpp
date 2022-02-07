@@ -102,7 +102,7 @@ auto copy_n(
 	boost::multi::array_iterator<T1, 1, Q1*                      >   first , Size count,
 	boost::multi::array_iterator<T2, 1, thrust::cuda::pointer<Q2>> d_first
 )-> boost::multi::array_iterator<T2, 1, thrust::cuda::pointer<Q2>> {
-	assert(first->extensions() == d_first->extensions());
+//	assert(first->extensions() == d_first->extensions());
 
 	if constexpr(std::is_trivially_assignable<Q2&, Q1&>{}) {
 		if(count == 0) return d_first;
