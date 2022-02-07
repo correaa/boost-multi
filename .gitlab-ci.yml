@@ -360,7 +360,7 @@ variables:
   mscmake: 'C:\Program Files (x86)\CMake\bin\cmake.exe'
 
 build_windows:
-  stage: test
+  stage: build
   script:
     - choco install -y cmake
     - choco install boost-msvc-14.2
@@ -444,7 +444,7 @@ nvcc-cuda-runner:
       - ctest -j 12 --output-on-failure
 
 culang-runner:
-    stage: test
+    stage: build
     tags:
       - intel_compiler
     script:
