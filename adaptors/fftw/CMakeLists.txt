@@ -9,22 +9,21 @@ project(
 	LANGUAGES CXX
 )
 
-find_package(PkgConfig REQUIRED)
-pkg_search_module(
-	FFTW
-	REQUIRED
-	fftw3
-	IMPORTED_TARGET
-)
-include_directories(PkgConfig::FFTW)
-link_libraries(PkgConfig::FFTW)
+find_package(PkgConfig)
 
-link_libraries(${BLAS_LIBRARIES})
+if(PKG_CONFIG_FOUND)
+	pkg_search_module(
+		FFTW
+		REQUIRED
+		fftw3
+		IMPORTED_TARGET
+	)
+	include_directories(PkgConfig::FFTW)
+	link_libraries(PkgConfig::FFTW)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+	include_directories(${CMAKE_BINARY_DIR})
 
-include_directories(${CMAKE_BINARY_DIR})
+	add_subdirectory(test)
+endif()
+message(WARNING "pkgconfig or fftw not found, skipping fftw tests")
 
-add_subdirectory(test)
