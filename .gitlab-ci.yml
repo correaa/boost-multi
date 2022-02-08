@@ -450,7 +450,7 @@ culang-runner:
     script:
       - mkdir build && cd build
       - /usr/local/cuda/bin/nvcc --version
-      - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCUDA_HOST_COMPILER=clang++ -DCMAKE_CUDA_COMPILER=/usr/bin/clang++ -DCMAKE_CUDA_FLAGS="--cuda-path=/usr/local/cuda -Wno-unknown-cuda-version --cuda-gpu-arch=sm_50 --no-cuda-include-ptx" -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=50 -DFORCED_ARCH=1 -DCMAKE_CUDA_COMPILE_WHOLE_COMPILATION=1 # --cuda-gpu-arch=sm_50 -DFORCED_ARCH=1 -DCMAKE_CUDA_ARCHITECTURES=50
+      - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCUDA_HOST_COMPILER=clang++ -DCMAKE_CUDA_COMPILER=/usr/bin/clang++ -DCMAKE_CUDA_FLAGS="--cuda-path=/usr/local/cuda -Wno-unknown-cuda-version --cuda-gpu-arch=sm_50" -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=50 -DFORCED_ARCH=1 -DCMAKE_CUDA_COMPILE_WHOLE_COMPILATION=1 # --cuda-gpu-arch=sm_50 -DFORCED_ARCH=1 -DCMAKE_CUDA_ARCHITECTURES=50
       - make -j 12 VERBOSE=1
       - ctest -j 12 --output-on-failure
 
