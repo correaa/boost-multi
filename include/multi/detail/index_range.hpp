@@ -4,10 +4,11 @@
 #ifndef MULTI_DETAIL_INDEX_RANGE_HPP
 #define MULTI_DETAIL_INDEX_RANGE_HPP
 
-#include "../config/MAYBE_UNUSED.hpp"
-#include "../config/NODISCARD.hpp"
+//#include "../config/MAYBE_UNUSED.hpp"
+//#include "../config/NODISCARD.hpp"
 
 #include "../detail/serialization.hpp"
+#include "../detail/types.hpp"
 
 #include <algorithm>  // for min
 
@@ -26,8 +27,8 @@ template<
 >
 class iterator_facade {
 	using self_type = Self;
-	[[nodiscard]] constexpr auto self()      & -> self_type      & {return static_cast<self_type      &>(*this);}
-	[[nodiscard]] constexpr auto self() const& -> self_type const& {return static_cast<self_type const&>(*this);}
+	[[nodiscard]] constexpr auto self()      & {return static_cast<self_type      &>(*this);}
+	[[nodiscard]] constexpr auto self() const& {return static_cast<self_type const&>(*this);}
 
  public:
 	using value_type        = ValueType;
@@ -36,17 +37,20 @@ class iterator_facade {
 	using difference_type   = DifferenceType;
 	using iterator_category = AccessCategory;
 
-	friend constexpr auto operator!=(self_type const& self, self_type const& other) {
-		return not(self == other);
-	}
+	friend constexpr auto operator!=(self_type const& s, self_type const& o) {return not(s == o);}
 
-	       constexpr auto operator+(difference_type n) const -> self_type {self_type r = self(); r += n; return r;}
-	       constexpr auto operator-(difference_type n) const -> self_type {self_type r = self(); r -= n; return r;}
+	friend constexpr auto operator<=(self_type const& s, self_type const& o) {return (s < o) or (s == o);}
+	friend constexpr auto operator> (self_type const& s, self_type const& o) {return not(s <= o);}
+	friend constexpr auto operator>=(self_type const& s, self_type const& o) {return not(s < o);}
 
-	friend constexpr auto operator+(difference_type n, self_type const& s) -> self_type {return s + n;}
+	       constexpr auto operator-(difference_type n) const {return self_type{self()} -= n;}
+	       constexpr auto operator+(difference_type n) const {return self_type{self()} += n;}
+	friend constexpr auto operator+(difference_type n, self_type const& s) {return s + n;}
 
 	friend constexpr auto operator++(self_type& s, int) -> self_type {self_type r = s; ++s; return r;}
 	friend constexpr auto operator--(self_type& s, int) -> self_type {self_type r = s; --s; return r;}
+
+	constexpr auto operator[](difference_type n) const {return *(self() + n);}
 };
 
 template<typename IndexType = std::true_type, typename IndexTypeLast = IndexType>
@@ -92,17 +96,10 @@ class range {
 		const_reference, difference_type
 	> {
 		typename const_iterator::value_type curr_;
-	//  constexpr auto dereference() const -> typename const_iterator::reference {return curr_;}
-	//  constexpr void increment() {++curr_;}
-	//  constexpr void decrement() {--curr_;}
-	//  constexpr void advance(typename const_iterator::difference_type n) {curr_+=n;}
-	//  constexpr auto equal(const_iterator const& y) const {return curr_ == y.curr_;}
-	//  constexpr auto distance_to(const_iterator const& z) const -> difference_type {return z.curr_-curr_;}
-		constexpr explicit const_iterator(value_type current) : curr_(current) {}
+		constexpr explicit const_iterator(value_type current) : curr_{current} {}
 		friend class range;
 
-	public:
-		using difference_type = std::ptrdiff_t;
+	 public:
 		const_iterator() = default;
 
 		constexpr auto operator==(const_iterator const& y) const -> bool {return curr_ == y.curr_;}
@@ -115,9 +112,7 @@ class range {
 		constexpr auto operator+=(typename const_iterator::difference_type n) -> const_iterator& {curr_ += n; return *this;}
 
 		constexpr auto operator-(const_iterator const& y) const {return curr_ - y.curr_;}
-		constexpr auto operator-(typename const_iterator::difference_type n) const -> const_iterator {return curr_ - n;}
 		constexpr auto operator*() const -> typename const_iterator::reference {return curr_;}
-		constexpr auto operator[](typename const_iterator::difference_type n) const{return *((*this)+n);}
 	};
 
 	using               iterator =                       const_iterator ;
@@ -208,11 +203,11 @@ class intersecting_range {
 	static constexpr auto all() -> intersecting_range {return {};}
 };
 
-MAYBE_UNUSED constexpr intersecting_range<> const ALL = intersecting_range<>::all();
-MAYBE_UNUSED constexpr intersecting_range<> const _   = ALL;
-MAYBE_UNUSED constexpr intersecting_range<> const U   = ALL;
+[[maybe_unused]] constexpr intersecting_range<> const ALL = intersecting_range<>::all();
+[[maybe_unused]] constexpr intersecting_range<> const _   = ALL;
+[[maybe_unused]] constexpr intersecting_range<> const U   = ALL;
 
-[[deprecated]] constexpr intersecting_range<> const all = ALL;  // TODO(correaa) replace by function all() ?
+// [[deprecated]] constexpr intersecting_range<> const all = ALL;  // TODO(correaa) replace by function all() ?
 
 template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
 struct extension_t : public range<IndexType, IndexTypeLast> {
@@ -257,6 +252,82 @@ constexpr auto make_extension_t(IndexType f, IndexTypeLast l) -> extension_t<Ind
 
 template<class IndexTypeLast = std::ptrdiff_t>
 constexpr auto make_extension_t(IndexTypeLast l) {return make_extension_t(IndexTypeLast{0}, l);}
+
+using index_range         = range<index>;
+using index_extension     = extension_t<index>;
+using iextension = index_extension;
+using irange     = index_range;
+
+namespace detail {
+
+template<typename, typename>
+struct append_to_type_seq{};
+
+template<typename T, typename... Ts, template<typename...> class TT>
+struct append_to_type_seq<T, TT<Ts...> > {
+    using type = TT<Ts..., T>;
+};
+
+template<typename T, dimensionality_type N, template<typename...> class TT = std::tuple>
+struct repeat {
+    using type = typename
+        append_to_type_seq<
+            T,
+            typename repeat<T, N-1, TT>::type
+        >::type;
+};
+
+template<typename T, template<typename...> class TT>
+struct repeat<T, 0, TT> {
+	using type = TT<>;
+};
+
+template<class T, std::size_t N>
+constexpr auto array_size_impl(const std::array<T, N>&)
+    -> std::integral_constant<std::size_t, N>;
+
+template<class... T>
+constexpr auto array_size_impl(const std::tuple<T...>&)
+    -> std::integral_constant<std::size_t, std::tuple_size<std::tuple<T...>>{}>;
+
+template<class Array>
+using array_size = decltype(array_size_impl(std::declval<const Array&>()));
+
+template<class Array>
+constexpr auto static_size() -> std::decay_t<decltype(array_size<Array>::value)> {
+	return array_size<Array>::value;
+}
+template<class Array>
+constexpr auto static_size(Array const& /*unused*/) -> decltype(static_size<Array>()) {
+	return static_size<Array>();
+}
+
+// TODO(correaa) consolidate with tuple_tail defined somewhere else
+template<class Tuple>
+constexpr auto head(Tuple&& t)
+->decltype(std::get<0>(std::forward<Tuple>(t))) {
+	return std::get<0>(std::forward<Tuple>(t)); }
+
+template<typename Tuple, std::size_t... Ns>
+constexpr auto tail_impl(std::index_sequence<Ns...> /*012*/, Tuple&& t) {
+	return std::make_tuple(std::get<Ns+1U>(std::forward<Tuple>(t))...);
+}
+
+template<class Tuple>
+constexpr auto tail(Tuple const& t) {
+	return tail_impl(std::make_index_sequence<(static_size<Tuple>())-1>(), t);
+}
+
+}  // end namespace detail
+
+template<dimensionality_type D> using index_extensions = typename detail::repeat<index_extension, D>::type;
+
+template<dimensionality_type D, class Tuple>
+constexpr auto contains(index_extensions<D> const& ie, Tuple const& tp) {
+//  using detail::head;
+//  using detail::tail;
+	return contains(head(ie), head(tp)) and contains(tail(ie), tail(tp));
+}
 
 }  // end namespace boost::multi
 #endif
