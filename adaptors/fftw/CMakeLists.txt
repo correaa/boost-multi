@@ -24,6 +24,7 @@ if(PKG_CONFIG_FOUND)
 	include_directories(${CMAKE_BINARY_DIR})
 
 	add_subdirectory(test)
+else()
+	message(WARNING "pkgconfig or fftw not found, skipping fftw tests")
 endif()
-message(WARNING "pkgconfig or fftw not found, skipping fftw tests")
 
