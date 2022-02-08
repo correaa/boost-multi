@@ -21,7 +21,8 @@ namespace boost::multi {
 
 template<
 	class Self,
-	class ValueType, class AccessCategory, class Reference = ValueType&, class DifferenceType = typename std::pointer_traits<ValueType*>::difference_type, class Pointer = ValueType*
+	class ValueType, class AccessCategory, 
+	class Reference = ValueType&, class DifferenceType = typename std::pointer_traits<ValueType*>::difference_type, class Pointer = ValueType*
 >
 class iterator_facade {
 	using self_type = Self;
@@ -35,8 +36,9 @@ class iterator_facade {
 	using difference_type   = DifferenceType;
 	using iterator_category = AccessCategory;
 
-	constexpr auto operator==(self_type const& o) const {return     o==self() ;}
-	constexpr auto operator!=(self_type const& o) const {return not(o==self());}
+	friend constexpr auto operator!=(self_type const& self, self_type const& other) {
+		return not(self == other);
+	}
 
 	       constexpr auto operator+(difference_type n) const -> self_type {self_type r = self(); r += n; return r;}
 	       constexpr auto operator-(difference_type n) const -> self_type {self_type r = self(); r -= n; return r;}
