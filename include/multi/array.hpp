@@ -55,23 +55,13 @@ struct array_allocator {
 	auto destroy_n(It first, size_type n) {return adl_alloc_destroy_n(this->alloc(), first, n);}
 
  public:
-	auto get_allocator()               const&    -> allocator_type {return alloc_;}
+	auto get_allocator() const& {return alloc_;}
 };
 
-template<class T, class Ptr = T*> struct move_ptr : std::move_iterator<Ptr> {
-	using std::move_iterator<Ptr>::move_iterator;
-	explicit operator Ptr() const {return std::move_iterator<Ptr>::base();}
-};
-
-// static_array is not a value type because it doesn't define assignment for static_arrays of different extensions
 template<class T, dimensionality_type D, class Alloc = std::allocator<T>>
 struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inheritance used for composition
 : protected array_allocator<Alloc>
-, public array_ref<
-	T, D,
-	typename std::allocator_traits<Alloc>::pointer  // fixes a bug in thrust 1.11
-	/* ^^^ typename std::allocator_traits<typename array_allocator<Alloc>::allocator_type>::pointer*/
->
+, public array_ref<T, D, typename std::allocator_traits<Alloc>::pointer>
 , boost::multi::random_iterable<static_array<T, D, Alloc>> {
  protected:
 	using array_alloc = array_allocator<Alloc>;
