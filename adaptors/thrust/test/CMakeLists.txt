@@ -47,8 +47,6 @@ endif()
 
 find_package(Boost REQUIRED COMPONENTS unit_test_framework timer)
 
-message("dsdasdasdas ${DART_COMPILER_NAME}")
-
 foreach(TEST_FILE ${TEST_SRCS})
 	set(TEST_EXE "${TEST_FILE}.x")
 	add_executable(${TEST_EXE} ${TEST_FILE})

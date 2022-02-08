@@ -26,7 +26,23 @@ add_library(${PROJECT_NAME} INTERFACE)
 
 target_include_directories(${PROJECT_NAME} INTERFACE $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/include> $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
-target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# target_compile_features(${PROJECT_NAME} INTERFACE cxx_std_17)
+target_compile_features(${PROJECT_NAME} INTERFACE $<$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>:cxx_std_17>)
+target_compile_options (${PROJECT_NAME} INTERFACE $<$<CUDA_COMPILER_ID:NVIDIA>:-std=c++17>)
+target_compile_options (
+	${PROJECT_NAME}
+	INTERFACE
+		$<$<AND:$<CXX_COMPILER_ID:GNU>,$<CUDA_COMPILER_ID:NVIDIA>>:
+				--expt-relaxed-constexpr --extended-lambda --Werror=cross-execution-space-call -Xcudafe=--diag_suppress=implicit_return_from_non_void_function,--display_error_number
+		>
+		$<$<OR:$<CXX_COMPILER_ID:PGI>,$<CXX_COMPILER_ID:NVHPC>>:  # EDG diagnostics list: http://www.ssl.berkeley.edu/~jimm/grizzly_docs/SSL/opt/intel/cc/9.0/lib/locale/en_US/mcpcom.msg
+			--diag_suppress=implicit_return_from_non_void_function
+			--display_error_number
+		>
+)
 
 install(
 	TARGETS ${PROJECT_NAME}
@@ -55,9 +71,11 @@ install(
 # install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake" DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake)
 
 # install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/SI DESTINATION include)
+if (NOT MSVC)
 install(FILES ${PROJECT_SOURCE_DIR}/array_ref.hpp ${PROJECT_SOURCE_DIR}/array.hpp DESTINATION include/multi)
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/detail DESTINATION include/multi)
 install(DIRECTORY ${PROJECT_SOURCE_DIR}/adaptors DESTINATION include/multi)
+endif()
 
 #find_program(MEMORYCHECK_COMMAND valgrind)
 #set(VALGRIND_COMMAND_OPTIONS    "-q --tool=memcheck --leak-check=yes --num-callers=51 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all")

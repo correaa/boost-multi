@@ -200,8 +200,9 @@ struct basic_array_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin
 	using Ref::base_;
 	using Ref::layout;
 
-	constexpr auto operator==(basic_array_ptr const& o) const -> bool {return base_ == o.base_ and layout() == o.layout();}
-	constexpr auto operator!=(basic_array_ptr const& o) const -> bool {return base_ != o.base_  or layout() != o.layout();}
+	friend constexpr auto operator==(basic_array_ptr const& self, basic_array_ptr const& other) -> bool {return self.base_ == other.base_ and self.layout() == other.layout();}
+//	constexpr auto operator==(basic_array_ptr const& o) const -> bool {return base_ == o.base_ and layout() == o.layout();}
+//	constexpr auto operator!=(basic_array_ptr const& o) const -> bool {return base_ != o.base_  or layout() != o.layout();}
 
 //	template<class O> constexpr auto operator==(O const& o) const -> bool {return base()==o->base() and layout() == o->layout();}
 //	template<class O> constexpr auto operator!=(O const& o) const -> bool {return not ((*this)==o);}
@@ -1393,8 +1394,8 @@ struct array_iterator<Element, 1, Ptr>
 	constexpr auto operator++() -> array_iterator& {data_+=stride_; return *this;}
 	constexpr auto operator--() -> array_iterator& {data_-=stride_; return *this;}
 
-	friend constexpr auto operator==(array_iterator const& a, array_iterator const& b) -> bool {return    (a.data_ == b.data_);}
-	friend constexpr auto operator!=(array_iterator const& a, array_iterator const& b) -> bool {return not(a.data_ == b.data_);}
+	friend constexpr auto operator==(array_iterator const& a, array_iterator const& b) -> bool {return a.data_ == b.data_;}
+//	friend constexpr auto operator!=(array_iterator const& a, array_iterator const& b) -> bool {return not(a.data_ == b.data_);}
 
 	HD constexpr auto operator*() const -> typename std::iterator_traits<element_ptr>::reference {return *data_;}
 

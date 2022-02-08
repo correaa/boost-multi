@@ -40,7 +40,7 @@ class allocator {
 
 	allocator(memory_type* mp, constructor_type const& ctor) : mp_{mp}, ctor_{ctor} {}
 	// cppcheck-suppress noExplicitConstructor ; allocator *is* a pointer to a heap
-	allocator(memory_type* mp) : allocator(mp, constructor_type{}) {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow pointer syntax
+	allocator(memory_type* mp) : allocator(mp, constructor_type{}) {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow pointer syntax
 
 	explicit allocator(constructor_type const& ctor) : mp_{}, ctor_{ctor} {}
 
@@ -51,10 +51,12 @@ class allocator {
 
 	NODISCARD("because otherwise it will generate a memory leak")
 	auto allocate(size_type n) -> pointer {
-		static_assert( alignof(std::max_align_t) >= 16 , "for cuda");
 		return static_cast<pointer>(static_cast<void_pointer>(mp_->allocate(
 			n*sizeof(value_type),
-			alignof(std::max_align_t) // this takes into account 
+			std::max(
+				alignof(std::max_align_t),
+				std::size_t{16}  // for cuda
+			)
 		)));
 	}
 	void deallocate(pointer p, size_type n) {
@@ -67,7 +69,7 @@ class allocator {
 	void destroy(pointer p) {allocator_traits<Constructor>::destroy(ctor_, p);}
 };
 
-} // end namespace boost::multi::memory
+}  // end namespace boost::multi::memory
 
 //#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 

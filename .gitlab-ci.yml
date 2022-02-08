@@ -310,7 +310,6 @@ hpcsdk20:
       - make VERBOSE=1
       - ctest --output-on-failure
 
-
 oneapi-icpc:  # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.yml
     stage: build
     script:
@@ -355,6 +354,28 @@ oneapi-icpx: # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.ym
         - export MKL_VERBOSE=1
         - ctest --output-on-failure
         - cd ..
+
+variables:
+  msbuild: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe'
+  mscmake: 'C:\Program Files\CMake\bin\cmake.exe'
+
+#build_windows:
+#  stage: build
+#  script:
+#    - choco install --no-progress -y cmake
+#    - choco install --no-progress -y boost-msvc-14.2
+#    - '& "$msbuild" -help'
+#    - '& "$msbuild" -version'
+#    - mkdir build
+#    - cd build
+#    - '& "$mscmake"  --version'
+#    - '& "$mscmake"  ..'
+#    - '& "$mscmake"  --build . --verbose'
+#    - dir
+#  tags:
+#    - shared-windows
+#    - windows
+#    - windows-1809
 
 g++-codecov-runner:
     stage: test
@@ -410,6 +431,28 @@ nvcc-runner:
       - CUDACXX=/usr/local/cuda/bin/nvcc CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda cmake .. -DCMAKE_CXX_STANDARD=17
       - cmake --build . -j 12
       - ctest -j 12 --output-on-failure
+
+nvcc-cuda-runner:
+    stage: test
+    tags:
+      - intel_compiler
+    script:
+      - mkdir build && cd build
+      - /usr/local/cuda/bin/nvcc --version
+      - CUDACXX=/usr/local/cuda/bin/nvcc CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda cmake .. -DCMAKE_CXX_STANDARD=17 -DENABLE_CUDA=1
+      - cmake --build . -j 12
+      - ctest -j 12 --output-on-failure
+
+#culang-runner:
+#    stage: build
+#    tags:
+#      - intel_compiler
+#    script:
+#      - mkdir build && cd build
+#      - /usr/local/cuda/bin/nvcc --version
+#      - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCUDA_HOST_COMPILER=clang++ -DCMAKE_CUDA_COMPILER=/usr/bin/clang++ -DCMAKE_CUDA_FLAGS="--cuda-path=/usr/local/cuda -Wno-unknown-cuda-version --cuda-gpu-arch=sm_50" -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=50 -DFORCED_ARCH=1 -DCMAKE_CUDA_COMPILE_WHOLE_COMPILATION=1 -DCMAKE_CUDA_LINK_EXECUTABLE="<CMAKE_CXX_COMPILER> --run_linker --output_file=<TARGET> --map_file=<TARGET>.map <CMAKE_CXX_LINK_FLAGS> <LINK_LIBRARIES> <LINK_FLAGS> <OBJECTS>" # --cuda-gpu-arch=sm_50 -DFORCED_ARCH=1 -DCMAKE_CUDA_ARCHITECTURES=50
+#      - make -j 12 VERBOSE=1
+#      - ctest -j 12 --output-on-failure
 
 qmcpack-g++:
   stage: test

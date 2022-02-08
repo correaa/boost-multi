@@ -22,6 +22,11 @@ constexpr auto implicit_cast(From&& f) -> To {return static_cast<To>(f);}
 template<class To, class From, std::enable_if_t<std::is_constructible<To, From>{} and not std::is_convertible<From, To>{}, int> = 0>
 constexpr auto explicit_cast(From&& f) -> To {return static_cast<To>(f);}
 
+template<class T, class Ptr = T*> struct move_ptr : std::move_iterator<Ptr> {
+	using std::move_iterator<Ptr>::move_iterator;
+	explicit operator Ptr() const {return std::move_iterator<Ptr>::base();}
+};
+
 template<class Array, typename Reference = void, typename Element = void>
 struct array_traits;
 

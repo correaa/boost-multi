@@ -15,12 +15,6 @@
 #include<algorithm>  // for copy
 #include<memory>  // for allocator_traits
 
-#if(__cplusplus >= 201703L)
-#if((not defined(__GNUG__)) or __GNUG__ > 8)
-#include<memory_resource>
-#endif
-#endif
-
 #include<utility>  // for move
 
 namespace boost::multi {
@@ -31,8 +25,10 @@ struct array_allocator {
 
  private:
 	MULTI_NO_UNIQUE_ADDRESS allocator_type alloc_;
-	using size_type_ = typename std::allocator_traits<allocator_type>::size_type;
-	using pointer_ = typename std::allocator_traits<allocator_type>::pointer;
+
+	using allocator_traits = typename std::allocator_traits<allocator_type>;
+	using size_type_ = typename allocator_traits::size_type;
+	using pointer_   = typename allocator_traits::pointer;
 
  protected:
 	auto alloc()      & -> allocator_type      & {return alloc_;}
@@ -42,42 +38,30 @@ struct array_allocator {
 	explicit array_allocator(allocator_type const& a) : alloc_{a} {}
 
 	auto allocate(size_type_ n) -> pointer_ {
-		return n?std::allocator_traits<allocator_type>::allocate(alloc_, n):pointer_{nullptr};
+		return n?allocator_traits::allocate(alloc_, n):pointer_{nullptr};
 	}
-	auto allocate(typename std::allocator_traits<allocator_type>::size_type n, typename std::allocator_traits<allocator_type>::const_void_pointer hint)
-	-> typename std::allocator_traits<allocator_type>::pointer {
-		return n?std::allocator_traits<allocator_type>::allocate(alloc_, n, hint):nullptr;
+	auto allocate(size_type_ n, typename allocator_traits::const_void_pointer hint) -> pointer_ {
+		return n?allocator_traits::allocate(alloc_, n, hint):pointer_{nullptr};
 	}
 
-	auto uninitialized_fill_n(typename std::allocator_traits<allocator_type>::pointer base, typename std::allocator_traits<allocator_type>::size_type num_elements, typename std::allocator_traits<allocator_type>::value_type e) {
-		return adl_alloc_uninitialized_fill_n(alloc_, base, num_elements, e);
+	auto uninitialized_fill_n(pointer_ base, size_type_ n, typename allocator_traits::value_type e) {
+		return adl_alloc_uninitialized_fill_n(alloc_, base, n, e);
 	}
-	template<typename It>  // TODO(correaa) : should it be a template?
-	auto uninitialized_copy_n(It first, size_type n, typename std::allocator_traits<allocator_type>::pointer data) {
+	template<typename It>
+	auto uninitialized_copy_n(It first, size_type n, pointer_ data) {
 		return adl_alloc_uninitialized_copy_n(alloc_, first, n, data);
 	}
-	template<typename It>  // TODO(correaa) : should it be a template?
+	template<typename It>
 	auto destroy_n(It first, size_type n) {return adl_alloc_destroy_n(this->alloc(), first, n);}
 
  public:
-	       auto get_allocator()               const&    -> allocator_type {return alloc_;}
-	friend auto get_allocator(array_allocator const& s) -> allocator_type {return s.get_allocator();}
+	auto get_allocator() const& {return alloc_;}
 };
 
-template<class T, class Ptr = T*> struct move_ptr : std::move_iterator<Ptr>{
-	using std::move_iterator<Ptr>::move_iterator;
-	explicit operator Ptr() const{return std::move_iterator<Ptr>::base();}
-};
-
-// static_array is not a value type because it doesn't define assignment for static_arrays of different extensions
 template<class T, dimensionality_type D, class Alloc = std::allocator<T>>
 struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inheritance used for composition
 : protected array_allocator<Alloc>
-, public array_ref<
-	T, D,
-	typename std::allocator_traits<Alloc>::pointer  // fixes a bug in thrust 1.11
-	/* ^^^ typename std::allocator_traits<typename array_allocator<Alloc>::allocator_type>::pointer*/
->
+, public array_ref<T, D, typename std::allocator_traits<Alloc>::pointer>
 , boost::multi::random_iterable<static_array<T, D, Alloc>> {
  protected:
 	using array_alloc = array_allocator<Alloc>;
@@ -832,7 +816,8 @@ struct array : static_array<T, D, Alloc> {
  public:
 	auto operator=(array&& other) noexcept -> array& {
 		clear();
-		this->base_ = std::exchange(other.base_, nullptr);  // final null assigment shouldn't be necessary?
+	//  this->base_ = std::exchange(other.base_, nullptr);  // final null assigment shouldn't be necessary?
+		this->base_ = other.base_;
 		move_allocator_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment{}, std::move(other.alloc()));
 		// this->alloc_ = std::move(other.alloc_);
 		static_cast<typename array::layout_t&>(*this) = std::exchange(static_cast<typename array::layout_t&>(other), {});

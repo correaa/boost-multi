@@ -21,7 +21,8 @@ namespace boost::multi {
 
 template<
 	class Self,
-	class ValueType, class AccessCategory, class Reference = ValueType&, class DifferenceType = typename std::pointer_traits<ValueType*>::difference_type, class Pointer = ValueType*
+	class ValueType, class AccessCategory, 
+	class Reference = ValueType&, class DifferenceType = typename std::pointer_traits<ValueType*>::difference_type, class Pointer = ValueType*
 >
 class iterator_facade {
 	using self_type = Self;
@@ -35,8 +36,9 @@ class iterator_facade {
 	using difference_type   = DifferenceType;
 	using iterator_category = AccessCategory;
 
-	constexpr auto operator==(self_type const& o) const {return     o==self() ;}
-	constexpr auto operator!=(self_type const& o) const {return not(o==self());}
+	friend constexpr auto operator!=(self_type const& self, self_type const& other) {
+		return not(self == other);
+	}
 
 	       constexpr auto operator+(difference_type n) const -> self_type {self_type r = self(); r += n; return r;}
 	       constexpr auto operator-(difference_type n) const -> self_type {self_type r = self(); r -= n; return r;}
@@ -84,32 +86,33 @@ class range {
 	constexpr range(IndexType f, IndexTypeLast l) : first_{f}, last_{l} {}
 	constexpr explicit range(IndexType f) : range{f, f + 1} {}
 
-	class const_iterator
-	: public boost::multi::iterator_facade<const_iterator,
+	class const_iterator : public boost::multi::iterator_facade<
+		const_iterator,
 		value_type, std::random_access_iterator_tag,
 		const_reference, difference_type
 	> {
 		typename const_iterator::value_type curr_;
-		constexpr auto dereference() const -> typename const_iterator::reference {return curr_;}
-		constexpr void increment() {++curr_;}
-		constexpr void decrement() {--curr_;}
-		constexpr void advance(typename const_iterator::difference_type n) {curr_+=n;}
-		constexpr auto equal(const_iterator const& y) const -> bool {return curr_ == y.curr_;}
-		constexpr auto distance_to(const_iterator const& z) const -> difference_type {return z.curr_-curr_;}
+	//  constexpr auto dereference() const -> typename const_iterator::reference {return curr_;}
+	//  constexpr void increment() {++curr_;}
+	//  constexpr void decrement() {--curr_;}
+	//  constexpr void advance(typename const_iterator::difference_type n) {curr_+=n;}
+	//  constexpr auto equal(const_iterator const& y) const {return curr_ == y.curr_;}
+	//  constexpr auto distance_to(const_iterator const& z) const -> difference_type {return z.curr_-curr_;}
 		constexpr explicit const_iterator(value_type current) : curr_(current) {}
 		friend class range;
 
 	public:
 		using difference_type = std::ptrdiff_t;
 		const_iterator() = default;
+
 		constexpr auto operator==(const_iterator const& y) const -> bool {return curr_ == y.curr_;}
-		constexpr auto operator< (const_iterator const& y) const -> bool {return curr_ < y.curr_;}
+		constexpr auto operator< (const_iterator const& y) const -> bool {return curr_ <  y.curr_;}
 
 		constexpr auto operator++() -> const_iterator& {++curr_; return *this;}
 		constexpr auto operator--() -> const_iterator& {--curr_; return *this;}
 
-		constexpr auto operator-=(typename const_iterator::difference_type n) -> const_iterator& {curr_-=n; return *this;}
-		constexpr auto operator+=(typename const_iterator::difference_type n) -> const_iterator& {curr_+=n; return *this;}
+		constexpr auto operator-=(typename const_iterator::difference_type n) -> const_iterator& {curr_ -= n; return *this;}
+		constexpr auto operator+=(typename const_iterator::difference_type n) -> const_iterator& {curr_ += n; return *this;}
 
 		constexpr auto operator-(const_iterator const& y) const {return curr_ - y.curr_;}
 		constexpr auto operator-(typename const_iterator::difference_type n) const -> const_iterator {return curr_ - n;}
@@ -117,46 +120,44 @@ class range {
 		constexpr auto operator[](typename const_iterator::difference_type n) const{return *((*this)+n);}
 	};
 
-	using iterator = const_iterator;
-	using reverse_iterator = std::reverse_iterator<iterator>;
+	using               iterator =                       const_iterator ;
+	using       reverse_iterator = std::reverse_iterator<      iterator>;
 	using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-	NODISCARD("") constexpr auto first() const -> const_reference {return first_;}
-	NODISCARD("") constexpr auto last()  const -> const_reference {return last_;}
+	[[nodiscard]] constexpr auto first() const -> const_reference {return first_;}
+	[[nodiscard]] constexpr auto last()  const -> const_reference {return last_ ;}
 
 	constexpr auto operator[](difference_type p) const -> const_reference {return first() + p;}
 
-	NODISCARD("") constexpr auto front() const -> const_reference {return first();}
-	NODISCARD("") constexpr auto back()  const -> const_reference {return last() - 1;}
+	[[nodiscard]] constexpr auto front() const -> const_reference {return first()   ;}
+	[[nodiscard]] constexpr auto back()  const -> const_reference {return last() - 1;}
 
-	NODISCARD("") constexpr auto cbegin() const {return const_iterator{first_};}
-	NODISCARD("") constexpr auto cend()   const {return const_iterator{last_};}
+	[[nodiscard]] constexpr auto cbegin() const {return const_iterator{first_};}
+	[[nodiscard]] constexpr auto cend()   const {return const_iterator{last_ };}
 
-	NODISCARD("") constexpr auto rbegin() const {return reverse_iterator{end()};}
-	NODISCARD("") constexpr auto rend()   const {return reverse_iterator{begin()};}
+	[[nodiscard]] constexpr auto rbegin() const {return reverse_iterator{end()  };}
+	[[nodiscard]] constexpr auto rend()   const {return reverse_iterator{begin()};}
 
-	NODISCARD("") constexpr auto begin() const -> const_iterator {return cbegin();}
-	NODISCARD("") constexpr auto end()   const -> const_iterator {return cend();}
+	[[nodiscard]] constexpr auto begin() const -> const_iterator {return cbegin();}
+	[[nodiscard]] constexpr auto end()   const -> const_iterator {return cend()  ;}
 
-	                     constexpr auto is_empty()     const&    noexcept -> bool {return first_ == last_;}
-	friend               constexpr auto is_empty(range const& s) noexcept -> bool {return s.is_empty();}
+	       constexpr auto is_empty()     const&    noexcept {return first_ == last_;}
+	friend constexpr auto is_empty(range const& s) noexcept {return s.is_empty();}
 
-	       [[nodiscard]] constexpr auto empty()     const&    noexcept -> bool{return is_empty();}
-	friend               constexpr auto empty(range const& s) noexcept -> bool{return s.empty();}
+	[[nodiscard]] 
+	       constexpr auto empty()     const&    noexcept {return is_empty();}
+	friend constexpr auto empty(range const& s) noexcept {return s.empty();}
 
-	                     constexpr auto size()     const&    noexcept -> size_type {return last_ - first_;}
-	friend               constexpr auto size(range const& s) noexcept -> size_type {return s.size();}
+	       constexpr auto size()     const&    noexcept -> size_type {return last_ - first_;}
+	friend constexpr auto size(range const& s) noexcept -> size_type {return s.size();}
 
-//  friend auto operator<<(std::ostream& os, range const& s) -> std::ostream& {
-//  	return s.empty()?os<<"[)":os <<"["<< s.first() <<", "<< s.last() <<")";
-//  }
-	friend constexpr auto begin(range const& self) -> const_iterator {return self.begin();}
-	friend constexpr auto end  (range const& self) -> const_iterator {return self.end()  ;}
+	friend constexpr auto begin(range const& self) {return self.begin();}
+	friend constexpr auto end  (range const& self) {return self.end()  ;}
 
-	friend constexpr auto operator==(range const& a, range const& b) -> bool {
+	friend constexpr auto operator==(range const& a, range const& b) {
 		return (a.empty() and b.empty()) or (a.first_==b.first_ and a.last_==b.last_);
 	}
-	friend constexpr auto operator!=(range const& r1, range const& r2) -> bool{return not(r1 == r2);}
+	friend constexpr auto operator!=(range const& a, range const& b) {return not(a == b);}
 
 	[[nodiscard]] constexpr auto find(value_type const& value) const -> range::const_iterator {
 		if(value >= last_ or value < first_) {
@@ -164,20 +165,21 @@ class range {
 		}
 		return begin() + (value - front());
 	}
-	template<class K> [[nodiscard]] constexpr auto contains(K const& k) const -> bool {return (k>=first_) and (k<last_);}
+	template<class K> [[nodiscard]] constexpr auto contains(K const& k) const {return (k>=first_) and (k<last_);}
 	template<class K>               constexpr auto count   (K const& k) const -> value_type {return contains(k);}
-	friend constexpr auto intersection(range const& r1, range const& r2) {
+
+	friend constexpr auto intersection(range const& a, range const& b) {
 		using std::max; using std::min;
-		auto new_first = max(r1.first(), r2.first());
-		auto new_last  = min(r1.last() , r2.last() );
+		auto new_first = max(a.first(), b.first());
+		auto new_last  = min(a.last() , b.last() );
 		new_first = min(new_first, new_last);
 		return range<decltype(new_first), decltype(new_last)>{new_first, new_last};
 	}
-	NODISCARD("") constexpr auto contains(value_type const& v) const {return v>=first_ and v<last_;}
+	[[nodiscard]] constexpr auto contains(value_type const& v) const {return v >= first_ and v < last_;}
 };
 
 template<class IndexType = std::true_type, typename IndexTypeLast = IndexType>
-constexpr auto make_range(IndexType first, IndexTypeLast last) -> range<IndexType, IndexTypeLast>{
+constexpr auto make_range(IndexType first, IndexTypeLast last) -> range<IndexType, IndexTypeLast> {
 	return {first, last};
 }
 
