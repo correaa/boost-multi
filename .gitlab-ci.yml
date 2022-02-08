@@ -362,8 +362,8 @@ variables:
 build_windows:
   stage: build
   script:
-    - choco install -y cmake
-    - choco install -y boost-msvc-14.2
+    - choco install --no-progress -y cmake
+    - choco install --no-progress -y boost-msvc-14.2
     - '& "$msbuild" -help'
     - '& "$msbuild" -version'
     - mkdir build
