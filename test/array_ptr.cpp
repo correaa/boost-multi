@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 		auto&& aR = *aP;
 		BOOST_REQUIRE( &aR[1][1] == &a[1][1] );
 		BOOST_REQUIRE( aR == *aP );
-		BOOST_REQUIRE( aR.equal(aP->begin()) );
+		BOOST_REQUIRE( std::equal(aR.begin(), aR.end(), aP->begin(), aP->end()) );
 		BOOST_REQUIRE( size(aR) == aP->size() );
 	}
 	{
