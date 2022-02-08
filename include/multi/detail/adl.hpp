@@ -9,6 +9,7 @@
 #include<utility>
 
 #include "../config/MAYBE_UNUSED.hpp"
+#include "../config/NODISCARD.hpp"
 #include "../detail/memory.hpp"
 
 #if defined(__NVCC__)

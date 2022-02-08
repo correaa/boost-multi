@@ -6,7 +6,7 @@
 
 #define EXCLUDE_CPPCHECK
 
-#include "types.hpp"
+#include "index_range.hpp"
 
 #include "../config/ASSERT.hpp"
 

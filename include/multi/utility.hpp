@@ -273,7 +273,7 @@ inline auto has_extensions_aux(...     ) -> std::false_type;
 template<class T> struct has_extensions : decltype(has_extensions_aux(std::declval<T>())) {};
 
 template<class T, std::enable_if_t<has_extensions<T>{}, int> =0>
-NODISCARD("") auto extensions(T const& t)
+[[nodiscard]] auto extensions(T const& t)
 ->std::decay_t<decltype(t.extensions())> {
 	return t.extensions();
 }
