@@ -103,8 +103,8 @@ class range {
 		using difference_type = std::ptrdiff_t;
 		const_iterator() = default;
 
-		constexpr auto operator==(const_iterator const& y) const {return curr_ == y.curr_;}
-		constexpr auto operator< (const_iterator const& y) const {return curr_ <  y.curr_;}
+		constexpr auto operator==(const_iterator const& y) const -> bool {return curr_ == y.curr_;}
+		constexpr auto operator< (const_iterator const& y) const -> bool {return curr_ <  y.curr_;}
 
 		constexpr auto operator++() -> const_iterator& {++curr_; return *this;}
 		constexpr auto operator--() -> const_iterator& {--curr_; return *this;}
