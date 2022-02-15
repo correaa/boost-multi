@@ -138,6 +138,12 @@ BOOST_AUTO_TEST_CASE(multi_test_stencil) {
 	BOOST_REQUIRE( &A({1, 3}, {2, 5}).elements().back()  == &A(2, 4) );
 }
 
+//BOOST_AUTO_TEST_CASE(multi_test_stencil_1D) {  // TODO(correaa) make it work
+//	multi::array<std::string, 1> A = {"a", "b", "c", "d", "e"};
+
+//	BOOST_REQUIRE( &A().elements()[0] == &A[0] );
+//}
+
 BOOST_AUTO_TEST_CASE(multi_extension_intersection) {
 	multi::array<double, 1> A = {{2., 2., 2.}};
 	multi::array<double, 1> B = {{3., 3., 3., 3.}};
