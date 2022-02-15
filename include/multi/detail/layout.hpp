@@ -339,7 +339,7 @@ struct layout_t<0, SSize>{
 };
 
 template<typename SSize>
-struct layout_t<1, SSize> 
+struct layout_t<1, SSize>
 : multi::equality_comparable2<layout_t<1>, void> {
 	using dimensionality_type = multi::dimensionality_type;
 	using sub_type  = layout_t<dimensionality_type{0}, SSize>;
@@ -380,12 +380,9 @@ struct layout_t<1, SSize>
 
 	constexpr explicit layout_t(extensions_type const& x)
 	: sub_{}  // (std_apply([](auto... e){return multi::extensions_t<0>{e...};}, detail::tail(x.base())))
-	, stride_{1}  // sub_.size()*sub_.stride()}
+//  , stride_{1}  // sub_.size()*sub_.stride()}
 	, offset_{std::get<0>(x.base()).first()*stride_}
 	, nelems_{std::get<0>(x.base()).size()*(sub().num_elements())} {}
-
-//	constexpr explicit layout_t(extensions_type e)
-//	: layout_t(std::get<0>(e), {}) {}
 
 	constexpr layout_t(index_extension ie, layout_t<0> const& /*nil*/)
 	//  stride_{1},
@@ -395,9 +392,6 @@ struct layout_t<1, SSize>
 		ie.size()
 	} {}
 
-	constexpr layout_t(stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
-	: stride_{stride}, offset_{offset}, nelems_{nelems} {}
-
 	       constexpr auto offset()        const&    -> offset_type {return offset_;}
 	friend constexpr auto offset(layout_t const& s) -> offset_type {return s.offset();}
 
@@ -406,15 +400,43 @@ struct layout_t<1, SSize>
 		return offset_;
 	}
 
-	constexpr auto nelems()      & -> nelems_type      & {return nelems_;}
-	constexpr auto nelems() const& -> nelems_type const& {return nelems_;}
+
+
+
+
+	constexpr auto operator()()        const -> layout_t {return *this;}
+
+	constexpr auto operator()(index i) const -> std::ptrdiff_t {return offset_ + i*stride_;}
+	constexpr auto at(        index i) const -> std::ptrdiff_t {return offset_ + i*stride_;}
+	constexpr auto operator[](index i) const -> std::ptrdiff_t {return offset_ + i*stride_;}
+
+	constexpr auto origin() const {return -offset_;}
+
+	       constexpr auto sub()             &    -> sub_type      & {return sub_;}
+	       constexpr auto sub()        const&    -> sub_type const& {return sub_;}
+	friend constexpr auto sub(layout_t const& s) -> sub_type const& {return s.sub();}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	       constexpr auto nelems()      & -> nelems_type      & {return nelems_;}
+	       constexpr auto nelems() const& -> nelems_type const& {return nelems_;}
+	friend constexpr auto nelems(layout_t const& s) -> nelems_type const& {return s.nelems();}
 
 	constexpr auto nelems(dimensionality_type d) const {
 		assert( d == 0 ); (void)d;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
 		return nelems_;
 	}
-
-	friend constexpr auto nelems(layout_t const& self) {return self.nelems();}
 
 	friend constexpr auto size(layout_t const& s) -> size_type {return s.size();}
 	       constexpr auto size()        const&    -> size_type {
@@ -430,8 +452,6 @@ struct layout_t<1, SSize>
 
 	       constexpr auto is_compact()        const&       {return base_size() == num_elements();}
 	friend constexpr auto is_compact(layout_t const& self) {return self.is_compact();}
-
-	constexpr auto sub()    const& -> sub_type const& {return sub_;}
 
 	constexpr auto stride()      & -> stride_type      & {return stride_;}
 	constexpr auto stride() const& -> stride_type const& {return stride_;}
@@ -483,14 +503,6 @@ struct layout_t<1, SSize>
 	void constexpr extensions_aux(index_extension* it) const {*it = extension();}
 
  public:
-	constexpr auto operator()()        const -> layout_t {return *this;}
-
-	constexpr auto operator()(index i) const -> std::ptrdiff_t {return offset_ + i*stride_;}
-	constexpr auto at(        index i) const -> std::ptrdiff_t {return offset_ + i*stride_;}
-	constexpr auto operator[](index i) const -> std::ptrdiff_t {return offset_ + i*stride_;}
-
-	constexpr auto origin() const {return -offset_;}
-
 	constexpr auto operator!=(layout_t const& other) const -> bool{return not(*this==other);}
 	constexpr auto operator==(layout_t const& other) const -> bool{
 		return stride_==other.stride_ and offset_==other.offset_ and nelems_==other.nelems_;
@@ -505,7 +517,7 @@ struct layout_t<1, SSize>
 	constexpr auto unrotate() -> layout_t& {return *this;}
 	constexpr auto unrotate(dimensionality_type /*one*/) -> layout_t& {return *this;}
 
-	constexpr auto scale(size_type s) const -> layout_t{return {stride_*s, offset_*s, nelems_*s};}
+	constexpr auto scale(size_type s) const -> layout_t{return {{}, stride_*s, offset_*s, nelems_*s};}
 	constexpr auto reverse() -> layout_t&{return *this;}
 };
 
