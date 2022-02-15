@@ -384,18 +384,9 @@ struct layout_t<1, SSize>
 	, offset_{std::get<0>(x.base()).first()*stride_}
 	, nelems_{std::get<0>(x.base()).size()*(sub().num_elements())} {}
 
-	constexpr layout_t(index_extension ie, layout_t<0> const& /*nil*/)
-	//  stride_{1},
-	: offset_{ie.first()}
-	, nelems_{
-	//  ie.size()<=1?ie.size()*std::numeric_limits<stride_type>::max():ie.size()
-		ie.size()
-	} {}
-
-	       constexpr auto offset()        const&    -> offset_type {return offset_;}
-	friend constexpr auto offset(layout_t const& s) -> offset_type {return s.offset();}
-
-	constexpr auto offset(dimensionality_type d) const {
+	       constexpr auto offset()        const& -> offset_type {return offset_;}
+	friend constexpr auto offset(layout_t const& s) {return s.offset();}
+	       constexpr auto offset(dimensionality_type d) const -> offset_type {
 		assert(d==0); (void)d;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		return offset_;
 	}
@@ -476,7 +467,7 @@ struct layout_t<1, SSize>
 	       constexpr auto num_elements()        const&    -> size_type {return this->size();}
 	friend constexpr auto num_elements(layout_t const& s) -> size_type {return s.num_elements();}
 
-	       constexpr auto is_empty()        const     -> bool {return not nelems_;}
+	       constexpr auto is_empty()        const     -> bool {return nelems_ == 0;}
 	friend constexpr auto is_empty(layout_t const& s) -> bool {return s.is_empty();}
 
 	[[deprecated("use ::is_empty()")]]
