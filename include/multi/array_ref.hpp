@@ -1819,7 +1819,17 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	using reverse_iterator = std::reverse_iterator<iterator>;
 
  private:
-	constexpr       auto begin_aux() const{return iterator{this->base_                 , this->stride()};}
+	explicit constexpr basic_array(iterator begin, iterator end)
+	: basic_array{
+		layout_type{ {}/*begin->layout()*/, begin.stride(), 0, begin.stride()*(end - begin)},
+		begin.base()
+	} {
+		assert(begin.stride()  == end.stride() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+	//  assert(begin->layout() == end->layout());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+	}
+	friend auto ref<iterator>(iterator begin, iterator end) -> multi::basic_array<typename iterator::element, iterator::rank_v, typename iterator::element_ptr>;
+
+	constexpr       auto begin_aux() const{return iterator{this->base_                  , this->stride()};}
 	constexpr       auto end_aux  () const{return iterator{this->base_ + types::nelems(), this->stride()};}
 
  public:
@@ -1827,9 +1837,9 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	constexpr auto begin()      & ->       iterator {return begin_aux();}
 	constexpr auto begin()     && ->       iterator {return begin_aux();}
 
-	constexpr auto end  ()const& -> const_iterator {return end_aux();}
-	constexpr auto end  ()     & ->       iterator {return end_aux();}
-	constexpr auto end  ()    && ->       iterator {return end_aux();}
+	constexpr auto end  () const& -> const_iterator {return end_aux();}
+	constexpr auto end  ()      & ->       iterator {return end_aux();}
+	constexpr auto end  ()     && ->       iterator {return end_aux();}
 
 	friend auto begin(basic_array const& s) -> const_iterator {return           s .begin();}
 	friend auto begin(basic_array      & s) ->       iterator {return           s .begin();}
