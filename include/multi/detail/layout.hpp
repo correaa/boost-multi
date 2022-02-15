@@ -382,7 +382,7 @@ struct layout_t<1, SSize> {
 
 	constexpr explicit layout_t(extensions_type e) : layout_t(std::get<0>(e), {}) {}
 
-	constexpr layout_t(sub_t sub, stride_type stride, offset_type offset, nelems_type nelems)
+	constexpr layout_t(sub_t sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
 	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
 
 	constexpr layout_t(stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
