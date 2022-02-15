@@ -339,38 +339,53 @@ struct layout_t<0, SSize>{
 };
 
 template<typename SSize>
-struct layout_t<1, SSize> {
-	using size_type=SSize;
-	using difference_type=std::make_signed_t<size_type>;
+struct layout_t<1, SSize> 
+: multi::equality_comparable2<layout_t<1>, void> {
+	using dimensionality_type = multi::dimensionality_type;
+	using sub_type  = layout_t<dimensionality_type{0}, SSize>;
+	using size_type = SSize;
+	using index = multi::index;
+	using difference_type = std::make_signed_t<size_type>;
 	using index_extension = multi::index_extension;
-	using index = difference_type;
-	using stride_type=index;
-	using offset_type=index;
-	using nelems_type=index;
 	using index_range = multi::range<index>;
-
-	static constexpr dimensionality_type rank_v = 1;
-	using rank = std::integral_constant<dimensionality_type, rank_v>;
+	using stride_type = index;
+	using offset_type = index;
+	using nelems_type = index;
 
 	static constexpr dimensionality_type dimensionality = 1;  // TODO(correaa): consider deprecation
 
-	friend constexpr auto dimensionality(layout_t const& /*self*/) {return 1;}
+	static constexpr dimensionality_type rank_v = 1;
+	using rank = std::integral_constant<dimensionality_type, 1>;
 
-	using sub_t = layout_t<dimensionality_type{0}, SSize>;
+	friend constexpr auto dimensionality(layout_t const& /*self*/) {return 1;}
 
  private:
 	MULTI_NO_UNIQUE_ADDRESS
-	sub_t       sub_        ;
-	stride_type stride_ =  1;  // std::numeric_limits<stride_type>::max();
-	offset_type offset_ =  0;
-	nelems_type nelems_ =  0;
+	sub_type    sub_       ;
+	stride_type stride_ = 1;  // TODO(correaa) std::numeric_limits<stride_type>::max()?
+	offset_type offset_ = 0;
+	nelems_type nelems_ = 0;
+
+	template<dimensionality_type, typename> friend struct layout_t;
 
  public:
 	using extensions_type = extensions_t<1>;
-	using strides_type = std::tuple<stride_type>;
-	using sizes_type = std::tuple<size_type>;
+	using strides_type    = std::tuple<stride_type>;
+	using sizes_type      = std::tuple<size_type>;
 
 	layout_t() = default;
+
+	constexpr layout_t(sub_type sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
+	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
+
+	constexpr explicit layout_t(extensions_type const& x)
+	: sub_{}  // (std_apply([](auto... e){return multi::extensions_t<0>{e...};}, detail::tail(x.base())))
+	, stride_{1}  // sub_.size()*sub_.stride()}
+	, offset_{std::get<0>(x.base()).first()*stride_}
+	, nelems_{std::get<0>(x.base()).size()*(sub().num_elements())} {}
+
+//	constexpr explicit layout_t(extensions_type e)
+//	: layout_t(std::get<0>(e), {}) {}
 
 	constexpr layout_t(index_extension ie, layout_t<0> const& /*nil*/)
 	//  stride_{1},
@@ -379,11 +394,6 @@ struct layout_t<1, SSize> {
 	//  ie.size()<=1?ie.size()*std::numeric_limits<stride_type>::max():ie.size()
 		ie.size()
 	} {}
-
-	constexpr explicit layout_t(extensions_type e) : layout_t(std::get<0>(e), {}) {}
-
-	constexpr layout_t(sub_t sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
-	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
 
 	constexpr layout_t(stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
 	: stride_{stride}, offset_{offset}, nelems_{nelems} {}
@@ -420,6 +430,8 @@ struct layout_t<1, SSize> {
 
 	       constexpr auto is_compact()        const&       {return base_size() == num_elements();}
 	friend constexpr auto is_compact(layout_t const& self) {return self.is_compact();}
+
+	constexpr auto sub()    const& -> sub_type const& {return sub_;}
 
 	constexpr auto stride()      & -> stride_type      & {return stride_;}
 	constexpr auto stride() const& -> stride_type const& {return stride_;}
