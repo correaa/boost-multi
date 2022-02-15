@@ -340,9 +340,9 @@ struct layout_t<0, SSize>{
 
 template<typename SSize>
 struct layout_t<1, SSize>
-: multi::equality_comparable2<layout_t<1>, void> {
+: multi::equality_comparable2<layout_t<1>, void> { static constexpr multi::dimensionality_type D = 1;
 	using dimensionality_type = multi::dimensionality_type;
-	using sub_type  = layout_t<dimensionality_type{0}, SSize>;
+	using sub_type = layout_t<D - 1, SSize>;
 	using size_type = SSize;
 	using index = multi::index;
 	using difference_type = std::make_signed_t<size_type>;
@@ -352,12 +352,12 @@ struct layout_t<1, SSize>
 	using offset_type = index;
 	using nelems_type = index;
 
-	static constexpr dimensionality_type dimensionality = 1;  // TODO(correaa): consider deprecation
+	static constexpr dimensionality_type dimensionality = D;  // TODO(correaa): consider deprecation
 
-	static constexpr dimensionality_type rank_v = 1;
-	using rank = std::integral_constant<dimensionality_type, 1>;
+	static constexpr dimensionality_type rank_v = D;
+	using rank = std::integral_constant<dimensionality_type, rank_v>;
 
-	friend constexpr auto dimensionality(layout_t const& /*self*/) {return 1;}
+	friend constexpr auto dimensionality(layout_t const& /*self*/) {return D;}
 
  private:
 	MULTI_NO_UNIQUE_ADDRESS
@@ -369,9 +369,9 @@ struct layout_t<1, SSize>
 	template<dimensionality_type, typename> friend struct layout_t;
 
  public:
-	using extensions_type = extensions_t<1>;
-	using strides_type    = std::tuple<stride_type>;
-	using sizes_type      = std::tuple<size_type>;
+	using extensions_type = extensions_t<D>;
+	using strides_type    = decltype(tuple_cat(std::make_tuple(std::declval<index>()), std::declval<typename sub_type::strides_type>()));
+	using sizes_type      = decltype(tuple_cat(std::make_tuple(std::declval<size_type>()), std::declval<typename sub_type::sizes_type>()));
 
 	layout_t() = default;
 
