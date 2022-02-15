@@ -498,16 +498,16 @@ struct basic_array
 	struct elements_range_t {
 		using value_type = typename basic_array::element;
 
-		using size_type = typename basic_array::size_type;
+		using size_type       = typename basic_array::size_type;
 		using difference_type = typename basic_array::difference_type;
 
-		using       reference = typename std::iterator_traits<Pointer>::reference;
+		using       pointer = Pointer;
+		using const_pointer = element_const_ptr;  // typename std::pointer_traits<pointer>::template rebind<value_type const>;
+
+		using       reference = typename std::iterator_traits<pointer          >::reference;
 		using const_reference = typename std::iterator_traits<element_const_ptr>::reference;
 
-		using       pointer = Pointer;
-		using const_pointer = element_const_ptr; // typename std::pointer_traits<pointer>::template rebind<value_type const>;
-
-		using       iterator =  elements_iterator_t<      pointer>;
+		using       iterator =  elements_iterator_t<pointer>;
 		using const_iterator = celements_iterator;
 
 	 private:
@@ -521,9 +521,9 @@ struct basic_array
 	 public:
 		constexpr elements_range_t(pointer base, layout_type l) : base_{base}, l_{l} {}
 
-		constexpr auto operator[](difference_type n)      & ->       reference {return at_aux(n);}
-		constexpr auto operator[](difference_type n)     && ->       reference {return at_aux(n);}
 		constexpr auto operator[](difference_type n) const& -> const_reference {return at_aux(n);}
+		constexpr auto operator[](difference_type n)     && ->       reference {return at_aux(n);}
+		constexpr auto operator[](difference_type n)      & ->       reference {return at_aux(n);}
 
 		constexpr auto size() const {return l_.num_elements();}
 
@@ -532,14 +532,14 @@ struct basic_array
 		constexpr auto end_aux  () const {return iterator{base_, l_, l_.num_elements()};}
 
 	 public:
-		constexpr auto begin() & -> iterator {return begin_aux();}
-		constexpr auto end  () & -> iterator {return end_aux()  ;}
-
-		constexpr auto begin() && -> iterator {return begin_aux();}
-		constexpr auto end  () && -> iterator {return end_aux()  ;}
-
 		constexpr auto begin() const& -> const_iterator {return begin_aux();}
 		constexpr auto end  () const& -> const_iterator {return end_aux  ();}
+
+		constexpr auto begin()     && ->       iterator {return begin_aux();}
+		constexpr auto end  ()     && ->       iterator {return end_aux()  ;}
+
+		constexpr auto begin()      & ->       iterator {return begin_aux();}
+		constexpr auto end  ()      & ->       iterator {return end_aux()  ;}
 
 	 private:
 		constexpr auto front_aux() const -> reference {return *(base_ + std_apply(l_, l_.extensions().from_linear(0                    )));}
@@ -549,11 +549,11 @@ struct basic_array
 		constexpr auto front() const& -> const_reference {return front_aux();}
 		constexpr auto back()  const& -> const_reference {return back_aux ();}
 
-		constexpr auto front() && -> reference {return front_aux();}
-		constexpr auto back()  && -> reference {return back_aux ();}
+		constexpr auto front()     && ->       reference {return front_aux();}
+		constexpr auto back()      && ->       reference {return back_aux ();}
 
-		constexpr auto front() & -> const_reference {return front_aux();}
-		constexpr auto back()  & -> const_reference {return back_aux ();}
+		constexpr auto front()      & -> const_reference {return front_aux();}
+		constexpr auto back()       & -> const_reference {return back_aux ();}
 	};
 
 	using  elements_range = elements_range_t<element_ptr      >;
@@ -1819,7 +1819,17 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	using reverse_iterator = std::reverse_iterator<iterator>;
 
  private:
-	constexpr       auto begin_aux() const{return iterator{this->base_                 , this->stride()};}
+	explicit constexpr basic_array(iterator begin, iterator end)
+	: basic_array{
+		layout_type{ {}/*begin->layout()*/, begin.stride(), 0, begin.stride()*(end - begin)},
+		begin.base()
+	} {
+		assert(begin.stride()  == end.stride() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+	//  assert(begin->layout() == end->layout());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+	}
+	friend auto ref<iterator>(iterator begin, iterator end) -> multi::basic_array<typename iterator::element, iterator::rank_v, typename iterator::element_ptr>;
+
+	constexpr       auto begin_aux() const{return iterator{this->base_                  , this->stride()};}
 	constexpr       auto end_aux  () const{return iterator{this->base_ + types::nelems(), this->stride()};}
 
  public:
@@ -1827,9 +1837,9 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	constexpr auto begin()      & ->       iterator {return begin_aux();}
 	constexpr auto begin()     && ->       iterator {return begin_aux();}
 
-	constexpr auto end  ()const& -> const_iterator {return end_aux();}
-	constexpr auto end  ()     & ->       iterator {return end_aux();}
-	constexpr auto end  ()    && ->       iterator {return end_aux();}
+	constexpr auto end  () const& -> const_iterator {return end_aux();}
+	constexpr auto end  ()      & ->       iterator {return end_aux();}
+	constexpr auto end  ()     && ->       iterator {return end_aux();}
 
 	friend auto begin(basic_array const& s) -> const_iterator {return           s .begin();}
 	friend auto begin(basic_array      & s) ->       iterator {return           s .begin();}
