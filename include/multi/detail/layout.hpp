@@ -9,6 +9,7 @@
 #include "index_range.hpp"
 
 #include "../config/ASSERT.hpp"
+#include "../config/NO_UNIQUE_ADDRESS.hpp"
 
 #include "../detail/operators.hpp"
 
@@ -358,9 +359,11 @@ struct layout_t<1, SSize> {
 	using sub_t = layout_t<dimensionality_type{0}, SSize>;
 
  private:
-	stride_type stride_ = 1;  // std::numeric_limits<stride_type>::max();
-	offset_type offset_ = 0;
-	nelems_type nelems_ = 0;
+	MULTI_NO_UNIQUE_ADDRESS
+	sub_t       sub_        ;
+	stride_type stride_ =  1;  // std::numeric_limits<stride_type>::max();
+	offset_type offset_ =  0;
+	nelems_type nelems_ =  0;
 
  public:
 	using extensions_type = extensions_t<1>;
@@ -378,6 +381,9 @@ struct layout_t<1, SSize> {
 	} {}
 
 	constexpr explicit layout_t(extensions_type e) : layout_t(std::get<0>(e), {}) {}
+
+	constexpr layout_t(sub_t sub, stride_type stride, offset_type offset, nelems_type nelems)
+	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
 
 	constexpr layout_t(stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
 	: stride_{stride}, offset_{offset}, nelems_{nelems} {}
