@@ -344,11 +344,11 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	friend constexpr auto origin(static_array const& s) -> typename static_array::element_const_ptr {return    s.origin();}
 
  private:
-//	constexpr auto rotated_aux(dimensionality_type d) const& {
-//		typename static_array::layout_t new_layout = *this;
-//		new_layout.rotate(d);
-//		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
-//	}
+//  constexpr auto rotated_aux(dimensionality_type d) const& {
+//  	typename static_array::layout_t new_layout = *this;
+//  	new_layout.rotate(d);
+//  	return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
+//  }
 	constexpr auto rotated_aux() const {
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate();
@@ -356,21 +356,21 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
  public:
-//	constexpr auto rotated(dimensionality_type d) const& {
-//		typename static_array::layout_t new_layout = this->layout();
-//		new_layout.rotate(d);
-//		return basic_array<T, D, typename static_array::element_const_ptr>{new_layout, this->base_};
-//	}
-//	constexpr auto rotated(dimensionality_type d)& {
-//		typename static_array::layout_t new_layout = this->layout();
-//		new_layout.rotate(d);
-//		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
-//	}
-//	constexpr auto rotated(dimensionality_type d)&& {
-//		typename static_array::layout_t new_layout = this->layout();
-//		new_layout.rotate(d);
-//		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
-//	}
+//  constexpr auto rotated(dimensionality_type d) const& {
+//  	typename static_array::layout_t new_layout = this->layout();
+//  	new_layout.rotate(d);
+//  	return basic_array<T, D, typename static_array::element_const_ptr>{new_layout, this->base_};
+//  }
+//  constexpr auto rotated(dimensionality_type d)& {
+//  	typename static_array::layout_t new_layout = this->layout();
+//  	new_layout.rotate(d);
+//  	return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
+//  }
+//  constexpr auto rotated(dimensionality_type d)&& {
+//  	typename static_array::layout_t new_layout = this->layout();
+//  	new_layout.rotate(d);
+//  	return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
+//  }
 
 	constexpr auto rotated() const& {return std::move(*this).rotated_aux();}
 	constexpr auto rotated()      & {return std::move(*this).rotated_aux();}
@@ -390,16 +390,16 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
 	}
 
-//	constexpr auto unrotated() const& {return unrotated(1);}
-//	constexpr auto unrotated()      & {return unrotated(1);}
+//  constexpr auto unrotated() const& {return unrotated(1);}
+//  constexpr auto unrotated()      & {return unrotated(1);}
 
 	friend constexpr auto unrotated(static_array      & self) -> decltype(auto) {return self.unrotated();}
 	friend constexpr auto unrotated(static_array const& self) -> decltype(auto) {return self.unrotated();}
 
-//	constexpr auto operator<<(dimensionality_type d)       -> decltype(auto) {return   rotated(d);}
-//	constexpr auto operator>>(dimensionality_type d)       -> decltype(auto) {return unrotated(d);}
-//	constexpr auto operator<<(dimensionality_type d) const -> decltype(auto) {return   rotated(d);}
-//	constexpr auto operator>>(dimensionality_type d) const -> decltype(auto) {return unrotated(d);}
+//  constexpr auto operator<<(dimensionality_type d)       -> decltype(auto) {return   rotated(d);}
+//  constexpr auto operator>>(dimensionality_type d)       -> decltype(auto) {return unrotated(d);}
+//  constexpr auto operator<<(dimensionality_type d) const -> decltype(auto) {return   rotated(d);}
+//  constexpr auto operator>>(dimensionality_type d) const -> decltype(auto) {return unrotated(d);}
 
 	template<class TT, class... Args>
 	auto operator=(multi::basic_array<TT, D, Args...> const& other) -> static_array& {

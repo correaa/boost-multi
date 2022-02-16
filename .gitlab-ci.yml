@@ -189,7 +189,7 @@ clang++-tidy:
     - ctest --output-on-failure
 
 g++-cpplint:
-  stage: build
+  stage: test
   script:
     - export CXX="g++"
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libblas-dev liblapack-dev libfftw3-dev python3-pip
