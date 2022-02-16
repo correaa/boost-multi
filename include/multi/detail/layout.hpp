@@ -478,17 +478,23 @@ struct layout_t<1, SSize>
 	friend constexpr auto extension(layout_t const& s) -> index_extension {return s.extension();}
 	       constexpr auto extension()        const&    -> index_extension {
 		if(nelems_ == 0) {return {};}
-		assert(stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
+		assert(stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		return {offset_/stride_, (offset_ + nelems_)/stride_};
 	}
 
-	constexpr auto extension(dimensionality_type d) const {
-		assert(stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		assert(d < D); (void)d;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		return index_extension{offset_/stride_, (offset_ + nelems_)/stride_};
-	}
-	       constexpr auto extensions()        const&       -> extensions_type {return extensions_type{extension()};}
-	friend constexpr auto extensions(layout_t const& self) -> extensions_type {return self.extensions();}
+//  constexpr auto extension(dimensionality_type d) const {
+//  	assert(stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+//  	assert(d < D); (void)d;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+//  	return index_extension{offset_/stride_, (offset_ + nelems_)/stride_};
+//  }
+
+//  constexpr auto extension_aux() const -> index_extension {
+//  	assert(stride_ != 0 and nelems_%stride_ == 0);
+//  	return {offset_/stride_, (offset_ + nelems_)/stride_};
+//  }
+
+	       constexpr auto extensions()        const&    -> extensions_type {return extensions_type{extension()};}
+	friend constexpr auto extensions(layout_t const& s) -> extensions_type {return s.extensions();}
 
  private:
 	friend struct layout_t<2U>;
@@ -672,8 +678,8 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 		assert(stride_ != 0 and nelems_%stride_ == 0);
 		return {offset_/stride_, (offset_ + nelems_)/stride_};
 	}
-	template<dimensionality_type DD = 0>
-	constexpr auto extension(dimensionality_type d) const -> index_extension {return d?sub_.extension(d-1):extension();}
+//	template<dimensionality_type DD = 0>
+//	constexpr auto extension(dimensionality_type d) const -> index_extension {return d?sub_.extension(d-1):extension();}
 	constexpr auto extensions() const -> extensions_type {return extensions_type{tuple_cat(std::make_tuple(extension()), sub_.extensions().base())};}
 	friend constexpr auto extensions(layout_t const& self) -> extensions_type {return self.extensions();}
 

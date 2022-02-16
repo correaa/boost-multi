@@ -63,16 +63,23 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section_part2) {
 	using multi::_;
 	using multi::U;
 
-	BOOST_REQUIRE( size( A(    _    , 2) ) == size(A) );
-	BOOST_REQUIRE( size( A(   *_    , 2) ) == size(A) );
+	BOOST_REQUIRE( size( A(       _       , 2) ) == size(A) );
+	BOOST_REQUIRE( size( A(      *_       , 2) ) == size(A) );
 
-	BOOST_REQUIRE( size( A(    _<2  , 2) ) == 2 );
-	BOOST_REQUIRE( size( A(   *_<2  , 2) ) == 2 );
-	BOOST_REQUIRE( size( A(    U<2  , 2) ) == 2 );
+	BOOST_REQUIRE( size( A(      (_)      , 2) ) == size(A) );
 
-	BOOST_REQUIRE( size( A( 1<=_    , 2) ) == 3 );
-	BOOST_REQUIRE( size( A( 1<=*_   , 2) ) == 3 );
-	BOOST_REQUIRE( size( A( 1<=U    , 2) ) == 3 );
+//  BOOST_REQUIRE( size( A(      {_}      , 2) ) == size(A) );
+
+
+	BOOST_REQUIRE( size( A(       _  < 2  , 2) ) == 2 );
+	BOOST_REQUIRE( size( A(      *_  < 2  , 2) ) == 2 );
+	BOOST_REQUIRE( size( A(       U  < 2  , 2) ) == 2 );
+
+//  BOOST_REQUIRE( size( A(      {_} < 2  , 2) ) == 2 );
+
+	BOOST_REQUIRE( size( A( 1 <=  _     , 2) ) == 3 );
+	BOOST_REQUIRE( size( A( 1 <= *_     , 2) ) == 3 );
+	BOOST_REQUIRE( size( A( 1 <=  U     , 2) ) == 3 );
 
 	BOOST_REQUIRE( size( A( 1<= _<3 , 2) ) == 2 );
 	BOOST_REQUIRE( size( A( 1<=*_<3 , 2) ) == 2 );
@@ -83,7 +90,7 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section_part2) {
 
 	BOOST_REQUIRE( size( A(A.extension(), 2) ) == size(A) );
 
-	auto&& col2( A(A.extension(0), 2) ); // select column #2
+	auto&& col2( A(A.extension(), 2) ); // select column #2
 	// same as A(extesion(A), 2)
 	// same as A(A.extension(0), 2);
 	// same as rotated(A)[2];
@@ -98,6 +105,6 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section_part2) {
 	BOOST_REQUIRE(( col2 == multi::array<double, 1>{02., 12., 22., 32.} ));
 	BOOST_REQUIRE(( col2 == multi::array<double, 1>(rotated(A)[2]) ));
 	BOOST_REQUIRE(( col2 == rotated(A)[2] ));
-	BOOST_REQUIRE(( col2 == A(A.extension(0), 2) ));
+	BOOST_REQUIRE(( col2 == A(A.extension(), 2) ));
 }
 

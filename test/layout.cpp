@@ -413,12 +413,12 @@ BOOST_AUTO_TEST_CASE(continued_part3) {
 	BOOST_REQUIRE( extension(L).last() == 10 );
 
 	BOOST_REQUIRE( L.size(1) == 20 );
-	BOOST_REQUIRE( L.extension(1).first() == 0 );
-	BOOST_REQUIRE( L.extension(1).last() == 20 );
+	BOOST_REQUIRE( std::get<1>(L.extensions()).first() == 0 );
+	BOOST_REQUIRE( std::get<1>(L.extensions()).last() == 20 );
 
 	BOOST_REQUIRE( L.size(2) == 30 );
-	BOOST_REQUIRE( L.extension(2).first() == 0 );
-	BOOST_REQUIRE( L.extension(2).last() == 30 );
+	BOOST_REQUIRE( std::get<2>(L.extensions()).first() == 0 );
+	BOOST_REQUIRE( std::get<2>(L.extensions()).last() == 30 );
 
 	using std::get;
 	BOOST_REQUIRE( get<0>(strides(L)) == L.stride(0) );
