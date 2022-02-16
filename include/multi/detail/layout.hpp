@@ -337,8 +337,11 @@ struct layout_t<0, SSize> {
 	friend constexpr auto sizes(layout_t const& s) {return s.sizes();}
 	constexpr auto num_elements() const -> nelems_type {return 1;}
 
-	constexpr size_type base_size() const {return 0;}
-	constexpr offset_type origin() const {return 0;}
+	auto strides() const {return std::tuple<>{};}
+	auto offsets() const {return std::tuple<>{};}
+
+	constexpr auto base_size() const -> size_type   {return 0;}
+	constexpr auto origin()    const -> offset_type {return 0;}
 
 	constexpr offset_type operator()() const {return offset_;}
 
@@ -454,11 +457,8 @@ struct layout_t<1, SSize>
 
 	constexpr auto stride()      & -> stride_type      & {return stride_;}
 	constexpr auto stride() const& -> stride_type const& {return stride_;}
-	constexpr auto stride(dimensionality_type d) const {
-		assert(d < D); (void)d;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
-		return stride();
-	}
-	       constexpr auto strides()        const&    {return std::make_tuple(stride());}
+
+	       constexpr auto strides()        const&    {return tuple_cat(std::make_tuple(stride()), sub_.strides());}
 	friend constexpr auto strides(layout_t const& s) {return s.strides();}
 	friend constexpr auto stride(layout_t const& s) -> index {return s.stride();}
 
@@ -495,13 +495,6 @@ struct layout_t<1, SSize>
 
 	       constexpr auto extensions()        const&    -> extensions_type {return extensions_type{extension()};}
 	friend constexpr auto extensions(layout_t const& s) -> extensions_type {return s.extensions();}
-
- private:
-	friend struct layout_t<2U>;
-	void constexpr strides_aux(size_type* it) const {*it = stride();}
-	void constexpr sizes_aux(size_type* it) const {*it = size();}
-	void constexpr offsets_aux(index* it) const {*it = offset();}
-	void constexpr extensions_aux(index_extension* it) const {*it = extension();}
 
  public:
 	constexpr auto operator!=(layout_t const& other) const -> bool{return not(*this==other);}
@@ -643,7 +636,6 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 	constexpr auto stride()      & -> stride_type      & {return stride_;}
 	constexpr auto stride() const& -> stride_type const& {return stride_;}
 
-	       constexpr auto stride(dimensionality_type d) const& -> index {return (d!=0)?sub_.stride(d-1):stride();}
 	friend constexpr auto stride(layout_t const& s) -> index {return s.stride();}
 
 	       constexpr auto strides()        const&    -> strides_type {return tuple_cat(std::make_tuple(stride()), sub_.strides());}

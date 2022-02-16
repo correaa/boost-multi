@@ -203,9 +203,15 @@ class intersecting_range {
 	static constexpr auto all() -> intersecting_range {return {};}
 };
 
-[[maybe_unused]] constexpr intersecting_range<> const ALL = intersecting_range<>::all();
-[[maybe_unused]] constexpr intersecting_range<> const _   = ALL;
-[[maybe_unused]] constexpr intersecting_range<> const U   = ALL;
+[[maybe_unused]] constexpr intersecting_range<> const ALL   = intersecting_range<>::all();
+[[maybe_unused]] constexpr intersecting_range<> const _     = ALL;
+[[maybe_unused]] constexpr intersecting_range<> const U     = ALL;
+[[maybe_unused]] constexpr intersecting_range<> const ooo   = ALL;
+
+[[maybe_unused]] constexpr intersecting_range<> const V     = U;
+[[maybe_unused]] constexpr intersecting_range<> const A     = V;
+//  [[maybe_unused]] constexpr intersecting_range<> const ∀      = V;
+//  [[maybe_unused]] constexpr intersecting_range<> const …      = ALL;
 
 // [[deprecated]] constexpr intersecting_range<> const all = ALL;  // TODO(correaa) replace by function all() ?
 
