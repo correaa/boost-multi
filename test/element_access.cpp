@@ -203,13 +203,13 @@ BOOST_AUTO_TEST_CASE(multi_range_rotated) {
 
 	using multi::_;
 
-	BOOST_REQUIRE( &A(_, _, {3, 5}) == &A.rotated(2).range({3, 5}).unrotated(2) );
-	BOOST_REQUIRE( &A(_, _, {3, 5}) == &A(_, _, {3, 5}, _) );
+	BOOST_REQUIRE( &A( _,  _, {3, 5}) == &A.rotated().rotated().range({3, 5}).unrotated().unrotated() );
+	BOOST_REQUIRE( &A( _,  _, {3, 5}) == &A( _,  _, {3, 5}, _) );
 
-	BOOST_REQUIRE( &A(*_, *_, {3, 5}) == &A.rotated(2).range({3, 5}).unrotated(2) );
+	BOOST_REQUIRE( &A(*_, *_, {3, 5}) == &A.rotated().rotated().range({3, 5}).unrotated().unrotated() );
 	BOOST_REQUIRE( &A(*_, *_, {3, 5}) == &A(*_, *_, {3, 5}, *_) );
 
-	BOOST_REQUIRE( &A(multi::ALL, multi::ALL, {3, 5}) == &A.rotated(2).range({3, 5}).unrotated(2) );
+	BOOST_REQUIRE( &A(multi::ALL, multi::ALL, {3, 5}) == &A.rotated().rotated().range({3, 5}).unrotated().unrotated() );
 	BOOST_REQUIRE( &A(multi::ALL, multi::ALL, {3, 5}) == &A(multi::ALL, multi::ALL, {3, 5}, multi::ALL) );
 }
 

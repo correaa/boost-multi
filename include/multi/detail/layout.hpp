@@ -344,10 +344,13 @@ struct layout_t<0, SSize> {
 	constexpr auto base_size() const -> size_type   {return 0;}
 	constexpr auto origin()    const -> offset_type {return 0;}
 
-	constexpr offset_type operator()() const {return offset_;}
+	constexpr auto operator()() const -> offset_type {return offset_;}
 
-	constexpr auto operator==(layout_t const& /*stateless*/) const -> bool{return true ;}
-	constexpr auto operator!=(layout_t const& /*stateless*/) const -> bool{return false;}
+	constexpr auto reverse()          -> layout_t& {return *this;}
+	constexpr auto scale(size_type /*s*/) const {return *this;}
+
+	friend constexpr auto operator!=(layout_t const& /*self*/, layout_t const& /*other*/) {return false;}
+	friend constexpr auto operator==(layout_t const& /*self*/, layout_t const& /*other*/) {return true ;}
 };
 
 template<typename SSize>
@@ -482,17 +485,6 @@ struct layout_t<1, SSize>
 		return {offset_/stride_, (offset_ + nelems_)/stride_};
 	}
 
-//  constexpr auto extension(dimensionality_type d) const {
-//  	assert(stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-//  	assert(d < D); (void)d;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-//  	return index_extension{offset_/stride_, (offset_ + nelems_)/stride_};
-//  }
-
-//  constexpr auto extension_aux() const -> index_extension {
-//  	assert(stride_ != 0 and nelems_%stride_ == 0);
-//  	return {offset_/stride_, (offset_ + nelems_)/stride_};
-//  }
-
 	       constexpr auto extensions()        const&    -> extensions_type {return extensions_type{tuple_cat(std::make_tuple(extension()), sub_.extensions().base())};}
 	friend constexpr auto extensions(layout_t const& s) -> extensions_type {return s.extensions();}
 
@@ -501,17 +493,38 @@ struct layout_t<1, SSize>
 		return self.sub_==other.sub_ and self.stride_==other.stride_ and self.offset_==other.offset_ and self.nelems_==other.nelems_;
 	}
 
-	template<typename Size>
-	constexpr auto partition(Size const& /*unused*/) -> layout_t& {return *this;}
+	constexpr auto reverse() -> layout_t& {
+		unrotate();
+		sub_.reverse();
+		return *this;
+	}
 
-	constexpr auto   rotate() -> layout_t& {return *this;}
-	constexpr auto   rotate(dimensionality_type /*one*/) -> layout_t& {return *this;}
+	constexpr auto   rotate() -> layout_t& {
+		if constexpr(D > 1) {
+			transpose(); sub_.rotate();
+		}
+		return *this;
+	}
+	constexpr auto unrotate() -> layout_t& {
+		if constexpr(D > 1) {
+			sub_.unrotate(); transpose();
+		}
+		return *this;
+	}
 
-	constexpr auto unrotate() -> layout_t& {return *this;}
-	constexpr auto unrotate(dimensionality_type /*one*/) -> layout_t& {return *this;}
+	constexpr auto transpose() -> layout_t& {
+		if constexpr(D > 1) {
+			using std::swap;
+			swap(stride_, sub_.stride_);
+			swap(offset_, sub_.offset_);
+			swap(nelems_, sub_.nelems_);
+		}
+		return *this;
+	}
 
-	constexpr auto scale(size_type s) const -> layout_t{return {{}, stride_*s, offset_*s, nelems_*s};}
-	constexpr auto reverse() -> layout_t&{return *this;}
+	constexpr auto scale(size_type s) const {
+		return layout_t{sub_.scale(s), stride_*s, offset_*s, nelems_*s};
+	}
 };
 
 inline constexpr auto
@@ -694,6 +707,7 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 		sub_.reverse();
 		return *this;
 	}
+
 	constexpr auto   rotate() -> layout_t& {transpose(); sub_.  rotate(); return *this;}
 	constexpr auto unrotate() -> layout_t& {sub_.unrotate(); transpose(); return *this;}
 
