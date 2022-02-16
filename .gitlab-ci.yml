@@ -176,7 +176,7 @@ clang++:
     - ctest --output-on-failure
 
 clang++-tidy:
-  stage: build
+  stage: test
   script:
     - export CXX="clang++"
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang clang-tidy pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libblas-dev liblapack-dev libfftw3-dev
