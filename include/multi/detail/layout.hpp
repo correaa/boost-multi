@@ -462,28 +462,29 @@ struct layout_t<1, SSize>
 	friend constexpr auto strides(layout_t const& s) {return s.strides();}
 	friend constexpr auto stride(layout_t const& s) -> index {return s.stride();}
 
-	       constexpr auto is_compact()        const&       {return base_size() == num_elements();}
-	friend constexpr auto is_compact(layout_t const& self) {return self.is_compact();}
+	       constexpr auto is_empty()        const     {return nelems_ == 0;}
+	friend constexpr auto is_empty(layout_t const& s) {return s.is_empty();}
+
+	[[nodiscard]]
+	constexpr auto    empty()        const {return is_empty();}
 
 	constexpr auto sizes() const {return std::make_tuple(size());}
 
 	constexpr auto nelemss() const {return std::make_tuple(nelems_);}
 
-
-	       constexpr auto is_empty()        const     -> bool {return nelems_ == 0;}
-	friend constexpr auto is_empty(layout_t const& s) -> bool {return s.is_empty();}
-
-	[[deprecated("use ::is_empty()")]]
-	       constexpr auto    empty()        const -> bool {return is_empty();}
+	       constexpr auto is_compact()        const&    {return base_size() == num_elements();}
+	friend constexpr auto is_compact(layout_t const& s) {return s.is_compact();}
 
 	friend constexpr auto extension(layout_t const& s) -> index_extension {return s.extension();}
 	       constexpr auto extension()        const&    -> index_extension {
+		if(nelems_ == 0) {return {};}
 		assert(stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
-		return {offset_/stride_, (offset_+nelems_)/stride_};
+		return {offset_/stride_, (offset_ + nelems_)/stride_};
 	}
+
 	constexpr auto extension(dimensionality_type d) const {
 		assert(stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		assert(d == 0); (void)d;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		assert(d < D); (void)d;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		return index_extension{offset_/stride_, (offset_ + nelems_)/stride_};
 	}
 	       constexpr auto extensions()        const&       -> extensions_type {return extensions_type{extension()};}
