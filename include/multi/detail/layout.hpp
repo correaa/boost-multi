@@ -379,7 +379,7 @@ struct layout_t<1, SSize>
 	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
 
 	constexpr explicit layout_t(extensions_type const& x)
-	: sub_{}  // (std_apply([](auto... e){return multi::extensions_t<0>{e...};}, detail::tail(x.base())))
+	: sub_{std::apply([](auto... e){return multi::extensions_t<D - 1>{e...};}, detail::tail(x.base()))}
 //  , stride_{1}  // sub_.size()*sub_.stride()}
 	, offset_{std::get<0>(x.base()).first()*stride_}
 	, nelems_{std::get<0>(x.base()).size()*(sub().num_elements())} {}
