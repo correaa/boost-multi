@@ -350,7 +350,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 //  	return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
 //  }
 	constexpr auto rotated_aux() const {
-		typename static_array::layout_t new_layout = this=>layout();
+		typename static_array::layout_t new_layout = this->layout();
 		new_layout.rotate();
 		return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
 	}
