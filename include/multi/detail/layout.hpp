@@ -339,6 +339,7 @@ struct layout_t<0, SSize> {
 
 	auto strides() const {return std::tuple<>{};}
 	auto offsets() const {return std::tuple<>{};}
+	auto nelemss() const {return std::tuple<>{};}
 
 	constexpr auto base_size() const -> size_type   {return 0;}
 	constexpr auto origin()    const -> offset_type {return 0;}
@@ -351,7 +352,7 @@ struct layout_t<0, SSize> {
 
 template<typename SSize>
 struct layout_t<1, SSize>
-: multi::equality_comparable2<layout_t<1>, void> { static constexpr multi::dimensionality_type D = 1;
+: multi::equality_comparable2<layout_t<1, SSize>, void> { static constexpr multi::dimensionality_type D = 1;  // TODO(correaa) check equality_comparable2, not working
 	using dimensionality_type = multi::dimensionality_type;
 	using sub_type = layout_t<D - 1, SSize>;
 	using size_type = SSize;
@@ -468,9 +469,8 @@ struct layout_t<1, SSize>
 	[[nodiscard]]
 	constexpr auto    empty()        const {return is_empty();}
 
-	constexpr auto sizes() const {return std::make_tuple(size());}
-
-	constexpr auto nelemss() const {return std::make_tuple(nelems_);}
+	constexpr auto sizes()   const {return tuple_cat(std::make_tuple(size())  , sub_.sizes()  );}
+	constexpr auto nelemss() const {return tuple_cat(std::make_tuple(nelems()), sub_.nelemss());}
 
 	       constexpr auto is_compact()        const&    {return base_size() == num_elements();}
 	friend constexpr auto is_compact(layout_t const& s) {return s.is_compact();}
@@ -493,13 +493,12 @@ struct layout_t<1, SSize>
 //  	return {offset_/stride_, (offset_ + nelems_)/stride_};
 //  }
 
-	       constexpr auto extensions()        const&    -> extensions_type {return extensions_type{extension()};}
+	       constexpr auto extensions()        const&    -> extensions_type {return extensions_type{tuple_cat(std::make_tuple(extension()), sub_.extensions().base())};}
 	friend constexpr auto extensions(layout_t const& s) -> extensions_type {return s.extensions();}
 
- public:
-	constexpr auto operator!=(layout_t const& other) const -> bool{return not(*this==other);}
-	constexpr auto operator==(layout_t const& other) const -> bool{
-		return stride_==other.stride_ and offset_==other.offset_ and nelems_==other.nelems_;
+	friend constexpr auto operator!=(layout_t const& self, layout_t const& other) {return not(self == other);}
+	friend constexpr auto operator==(layout_t const& self, layout_t const& other) {
+		return self.sub_==other.sub_ and self.stride_==other.stride_ and self.offset_==other.offset_ and self.nelems_==other.nelems_;
 	}
 
 	template<typename Size>
