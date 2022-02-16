@@ -317,6 +317,7 @@ struct layout_t<0, SSize>{
 	nelems_type nelems_ = 1;  // std::numeric_limits<nelems_type>::max();
 	void* stride_ = nullptr;
 	void* sub = nullptr;
+	offset_type offset_ = 0;
 
  public:
 	using extensions_type = extensions_t<0>;
@@ -333,6 +334,11 @@ struct layout_t<0, SSize>{
 
 	friend constexpr auto sizes(layout_t const& s) {return s.sizes();}
 	constexpr auto num_elements() const -> nelems_type {return 1;}
+
+	size_type base_size() const {return 0;}
+	offset_type origin() const {return 0;}
+
+	offset_type operator()() const {return offset_;}
 
 	constexpr auto operator==(layout_t const& /*stateless*/) const -> bool{return true ;}
 	constexpr auto operator!=(layout_t const& /*stateless*/) const -> bool{return false;}
@@ -394,14 +400,14 @@ struct layout_t<1, SSize>
  public:
 	constexpr auto operator[](index i) const {return at(i);}
 
-	constexpr auto operator()(index i) const {return at(i);}
 	constexpr auto operator()()        const {return *this;}
+	constexpr auto operator()(index i) const {return at(i);}
 	template<class... Is>
 	constexpr auto operator()(index i, Is... is) const {
 		return operator[](i)(is...);
 	}
 
-	constexpr auto origin() const {return -offset_;}
+	constexpr auto origin() const {return sub_.origin() - offset_;}
 
 	       constexpr auto sub()             &    -> sub_type      & {return sub_;}
 	       constexpr auto sub()        const&    -> sub_type const& {return sub_;}
@@ -410,7 +416,7 @@ struct layout_t<1, SSize>
 	       constexpr auto offset()        const& -> offset_type {return offset_;}
 	friend constexpr auto offset(layout_t const& s) {return s.offset();}
 	       constexpr auto offset(dimensionality_type d) const -> offset_type {
-		assert(d==0); (void)d;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		assert(d < D); (void)d;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		return offset_;
 	}
 	constexpr auto offsets() const {return tuple_cat(std::make_tuple(offset()), sub_.offsets());}
@@ -420,7 +426,7 @@ struct layout_t<1, SSize>
 	friend constexpr auto nelems(layout_t const& s) -> nelems_type const& {return s.nelems();}
 
 	constexpr auto nelems(dimensionality_type d) const {
-		assert( d == 0 ); (void)d;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
+		assert(d < D); (void)d;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
 		return nelems_;
 	}
 
@@ -439,7 +445,7 @@ struct layout_t<1, SSize>
 	template<class... Is>
 	constexpr auto reindex(index i, Is... is) -> layout_t& {reindex(i).rotate().reindex(is...).unrotate(); return *this;}
 
-	constexpr auto base_size() const {return nelems_;}
+	constexpr auto base_size() const {using std::max; return max(nelems_, sub_.base_size());}
 
 	       constexpr auto is_compact()        const&       {return base_size() == num_elements();}
 	friend constexpr auto is_compact(layout_t const& self) {return self.is_compact();}
