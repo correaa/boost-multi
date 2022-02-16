@@ -384,22 +384,22 @@ struct layout_t<1, SSize>
 	, offset_{std::get<0>(x.base()).first()*stride_}
 	, nelems_{std::get<0>(x.base()).size()*(sub().num_elements())} {}
 
-	       constexpr auto offset()        const& -> offset_type {return offset_;}
-	friend constexpr auto offset(layout_t const& s) {return s.offset();}
-	       constexpr auto offset(dimensionality_type d) const -> offset_type {
-		assert(d==0); (void)d;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		return offset_;
+ private:
+	constexpr auto at(index i) const {
+		auto ret = offset_;
+		ret += i*stride_;
+		return ret;
 	}
 
+ public:
+	constexpr auto operator[](index i) const {return at(i);}
 
-
-
-
-	constexpr auto operator()()        const -> layout_t {return *this;}
-
-	constexpr auto operator()(index i) const -> std::ptrdiff_t {return offset_ + i*stride_;}
-	constexpr auto at(        index i) const -> std::ptrdiff_t {return offset_ + i*stride_;}
-	constexpr auto operator[](index i) const -> std::ptrdiff_t {return offset_ + i*stride_;}
+	constexpr auto operator()(index i) const {return at(i);}
+	constexpr auto operator()()        const {return *this;}
+	template<class... Is>
+	constexpr auto operator()(index i, Is... is) const {
+		return operator[](i)(is...);
+	}
 
 	constexpr auto origin() const {return -offset_;}
 
@@ -407,21 +407,16 @@ struct layout_t<1, SSize>
 	       constexpr auto sub()        const&    -> sub_type const& {return sub_;}
 	friend constexpr auto sub(layout_t const& s) -> sub_type const& {return s.sub();}
 
+	       constexpr auto offset()        const& -> offset_type {return offset_;}
+	friend constexpr auto offset(layout_t const& s) {return s.offset();}
+	       constexpr auto offset(dimensionality_type d) const -> offset_type {
+		assert(d==0); (void)d;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		return offset_;
+	}
+	constexpr auto offsets() const {return tuple_cat(std::make_tuple(offset()), sub_.offsets());}
 
-
-
-
-
-
-
-
-
-
-
-
-
-	       constexpr auto nelems()      & -> nelems_type      & {return nelems_;}
-	       constexpr auto nelems() const& -> nelems_type const& {return nelems_;}
+	       constexpr auto nelems()             &    -> nelems_type      & {return   nelems_;}
+	       constexpr auto nelems()        const&    -> nelems_type const& {return   nelems_;}
 	friend constexpr auto nelems(layout_t const& s) -> nelems_type const& {return s.nelems();}
 
 	constexpr auto nelems(dimensionality_type d) const {
@@ -431,14 +426,19 @@ struct layout_t<1, SSize>
 
 	friend constexpr auto size(layout_t const& s) -> size_type {return s.size();}
 	       constexpr auto size()        const&    -> size_type {
+		if(nelems_ == 0) {return 0;}  // TODO(correaa) perhaps initializing stride_ to max removes this if-statement
 		MULTI_ACCESS_ASSERT(stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
 		return nelems_/stride_;
 	}
-	constexpr auto size(dimensionality_type d) const -> size_type {
+	constexpr auto size(dimensionality_type d) const -> size_type {  // TODO(correaa) remove?
 		assert( d == 0 ); (void)d;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
 		return nelems_/stride_;
 	}
+
 	constexpr auto reindex(index i) -> layout_t& {offset_ = i*stride_; return *this;}
+	template<class... Is>
+	constexpr auto reindex(index i, Is... is) -> layout_t& {reindex(i).rotate().reindex(is...).unrotate(); return *this;}
+
 	constexpr auto base_size() const {return nelems_;}
 
 	       constexpr auto is_compact()        const&       {return base_size() == num_elements();}
@@ -461,7 +461,6 @@ struct layout_t<1, SSize>
 		return detail::to_array<T>(sizes());
 	}
 
-	constexpr auto offsets() const {return std::make_tuple(offset());}
 	constexpr auto nelemss() const {return std::make_tuple(nelems_);}
 
 	       constexpr auto num_elements()        const&    -> size_type {return this->size();}
