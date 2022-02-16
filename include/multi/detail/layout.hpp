@@ -294,7 +294,7 @@ namespace std {  // NOLINT(cert-dcl58-cpp) : to implement structured bindings
 namespace boost::multi {
 
 template<typename SSize>
-struct layout_t<0, SSize>{
+struct layout_t<0, SSize> {
 	using size_type = SSize;
 	using difference_type = std::make_signed_t<size_type>;
 	using index_extension = multi::index_extension;
@@ -315,9 +315,11 @@ struct layout_t<0, SSize>{
 
  private:
 	nelems_type nelems_ = 1;  // std::numeric_limits<nelems_type>::max();
+	void* sub_ = nullptr;
 	void* stride_ = nullptr;
-	void* sub = nullptr;
 	offset_type offset_ = 0;
+
+	template<dimensionality_type, typename> friend struct layout_t;
 
  public:
 	using extensions_type = extensions_t<0>;
@@ -335,10 +337,10 @@ struct layout_t<0, SSize>{
 	friend constexpr auto sizes(layout_t const& s) {return s.sizes();}
 	constexpr auto num_elements() const -> nelems_type {return 1;}
 
-	size_type base_size() const {return 0;}
-	offset_type origin() const {return 0;}
+	constexpr size_type base_size() const {return 0;}
+	constexpr offset_type origin() const {return 0;}
 
-	offset_type operator()() const {return offset_;}
+	constexpr offset_type operator()() const {return offset_;}
 
 	constexpr auto operator==(layout_t const& /*stateless*/) const -> bool{return true ;}
 	constexpr auto operator!=(layout_t const& /*stateless*/) const -> bool{return false;}
@@ -376,8 +378,8 @@ struct layout_t<1, SSize>
 
  public:
 	using extensions_type = extensions_t<D>;
-	using strides_type    = decltype(tuple_cat(std::make_tuple(std::declval<index>()), std::declval<typename sub_type::strides_type>()));
-	using sizes_type      = decltype(tuple_cat(std::make_tuple(std::declval<size_type>()), std::declval<typename sub_type::sizes_type>()));
+	using strides_type    = decltype(tuple_cat(std::make_tuple(std::declval<index    >()), std::declval<typename sub_type::strides_type>()));
+	using sizes_type      = decltype(tuple_cat(std::make_tuple(std::declval<size_type>()), std::declval<typename sub_type::sizes_type  >()));
 
 	layout_t() = default;
 
@@ -392,9 +394,9 @@ struct layout_t<1, SSize>
 
  private:
 	constexpr auto at(index i) const {
-		auto ret = offset_;
-		ret += i*stride_;
-		return ret;
+		auto ret = sub_;
+		ret.offset_ += offset_ + i*stride_;
+		return ret();
 	}
 
  public:
@@ -447,30 +449,26 @@ struct layout_t<1, SSize>
 
 	constexpr auto base_size() const {using std::max; return max(nelems_, sub_.base_size());}
 
-	       constexpr auto is_compact()        const&       {return base_size() == num_elements();}
-	friend constexpr auto is_compact(layout_t const& self) {return self.is_compact();}
+	       constexpr auto num_elements()        const&    -> size_type {return size()*sub_.num_elements();}
+	friend constexpr auto num_elements(layout_t const& s) -> size_type {return s.num_elements();}
 
 	constexpr auto stride()      & -> stride_type      & {return stride_;}
 	constexpr auto stride() const& -> stride_type const& {return stride_;}
-	constexpr auto stride(dimensionality_type d) const {assert(d == 0); (void)d;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
-		return stride_;
+	constexpr auto stride(dimensionality_type d) const {
+		assert(d < D); (void)d;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
+		return stride();
 	}
-
-	friend constexpr auto stride(layout_t const& self) -> index {return self.stride();}
-
 	       constexpr auto strides()        const&    {return std::make_tuple(stride());}
 	friend constexpr auto strides(layout_t const& s) {return s.strides();}
+	friend constexpr auto stride(layout_t const& s) -> index {return s.stride();}
+
+	       constexpr auto is_compact()        const&       {return base_size() == num_elements();}
+	friend constexpr auto is_compact(layout_t const& self) {return self.is_compact();}
 
 	constexpr auto sizes() const {return std::make_tuple(size());}
 
-	template<class T=void> [[deprecated]] constexpr auto sizes_as() const {
-		return detail::to_array<T>(sizes());
-	}
-
 	constexpr auto nelemss() const {return std::make_tuple(nelems_);}
 
-	       constexpr auto num_elements()        const&    -> size_type {return this->size();}
-	friend constexpr auto num_elements(layout_t const& s) -> size_type {return s.num_elements();}
 
 	       constexpr auto is_empty()        const     -> bool {return nelems_ == 0;}
 	friend constexpr auto is_empty(layout_t const& s) -> bool {return s.is_empty();}
