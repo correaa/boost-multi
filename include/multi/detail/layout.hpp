@@ -440,15 +440,15 @@ struct layout_t<1, SSize>
 	}
 
 	friend constexpr auto size(layout_t const& s) -> size_type {return s.size();}
-	       constexpr auto size()        const&    -> size_type {
+	       constexpr auto size()        const     -> size_type {
 		if(nelems_ == 0) {return 0;}  // TODO(correaa) perhaps initializing stride_ to max removes this if-statement
 		MULTI_ACCESS_ASSERT(stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
 		return nelems_/stride_;
 	}
-	constexpr auto size(dimensionality_type d) const -> size_type {  // TODO(correaa) remove?
-		assert( d == 0 ); (void)d;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
-		return nelems_/stride_;
-	}
+//	constexpr auto size(dimensionality_type d) const -> size_type {  // TODO(correaa) remove?
+//		assert( d == 0 ); (void)d;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
+//		return nelems_/stride_;
+//	}
 
 	constexpr auto reindex(index i) -> layout_t& {offset_ = i*stride_; return *this;}
 	template<class... Is>
@@ -562,7 +562,7 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 	friend constexpr auto dimensionality(layout_t const& /*unused*/) -> dimensionality_type {return D;}
 
 	using sub_type = layout_t<D-1>;
-	using size_type = multi::size_type;
+	using size_type = SSize;
 	using index = multi::index;
 	using difference_type = multi::difference_type;
 	using index_extension = multi::index_extension;
@@ -647,7 +647,7 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 		return nelems_/stride_;
 	}
 
-	constexpr auto size(dimensionality_type d) const -> size_type {return (d!=0)?sub_.size(d-1):size();}
+//	constexpr auto size(dimensionality_type d) const -> size_type {return (d!=0)?sub_.size(d-1):size();}
 
 	constexpr auto stride()      & -> stride_type      & {return stride_;}
 	constexpr auto stride() const& -> stride_type const& {return stride_;}
@@ -691,9 +691,9 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 	constexpr auto extensions() const -> extensions_type {return extensions_type{tuple_cat(std::make_tuple(extension()), sub_.extensions().base())};}
 	friend constexpr auto extensions(layout_t const& self) -> extensions_type {return self.extensions();}
 
-	[[deprecated("use get<d>(m.extensions()")]] constexpr auto extension(dimensionality_type d) const {return std::apply([](auto... e){return std::array<size_type, D>{e...};}, extensions()).at(d);}
-	[[deprecated("use get<d>(m.strides())  ")]] constexpr auto stride   (dimensionality_type d) const {return std::apply([](auto... e){return std::array<size_type, D>{e...};}, strides()   ).at(d);}
-	[[deprecated("use get<d>(m.sizes())    ")]] constexpr auto size     (dimensionality_type d) const {return std::apply([](auto... e){return std::array<size_type, D>{e...};}, sizes()     ).at(d);}
+	[[deprecated("use get<d>(m.extensions()")]] constexpr auto extension(dimensionality_type d) const {return std::apply([](auto... e){return std::array<index_extension, static_cast<std::size_t>(D)>{e...};}, extensions()).at(d);}
+	[[deprecated("use get<d>(m.strides())  ")]] constexpr auto stride   (dimensionality_type d) const {return std::apply([](auto... e){return std::array<stride_type    , static_cast<std::size_t>(D)>{e...};}, strides   ()).at(d);}
+	[[deprecated("use get<d>(m.sizes())    ")]] constexpr auto size     (dimensionality_type d) const {return std::apply([](auto... e){return std::array<size_type      , static_cast<std::size_t>(D)>{e...};}, sizes     ()).at(d);}
 
 	template<typename Size>
 	constexpr auto partition(Size const& s) -> layout_t& {

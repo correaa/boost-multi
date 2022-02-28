@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section_part2) {
 	// same as A(extesion(A), 2)
 	// same as A(A.extension(0), 2);
 	// same as rotated(A)[2];
-	BOOST_REQUIRE( col2.size(0) == size(A) );
+//  BOOST_REQUIRE( col2.size(0) == size(A) );
 
 	BOOST_REQUIRE( dimensionality(col2) == 1 );
 	BOOST_REQUIRE( size(col2) == size(A) );
