@@ -485,8 +485,10 @@ struct layout_t<1, SSize>
 		return {offset_/stride_, (offset_ + nelems_)/stride_};
 	}
 
-	       constexpr auto extensions()        const&    -> extensions_type {return extensions_type{tuple_cat(std::make_tuple(extension()), sub_.extensions().base())};}
+	       constexpr auto extensions()        const     -> extensions_type {return extensions_type{tuple_cat(std::make_tuple(extension()), sub_.extensions().base())};}
 	friend constexpr auto extensions(layout_t const& s) -> extensions_type {return s.extensions();}
+
+	[[deprecated("use get<D>(m.extensions()")]] constexpr auto extension(dimensionality_type d) const {return std::apply([](auto... e){return std::array<size_type, D>{e...};}, extensions()).at(d);}
 
 	friend constexpr auto operator!=(layout_t const& self, layout_t const& other) {return not(self == other);}
 	friend constexpr auto operator==(layout_t const& self, layout_t const& other) {
