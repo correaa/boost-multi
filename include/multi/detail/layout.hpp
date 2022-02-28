@@ -488,7 +488,9 @@ struct layout_t<1, SSize>
 	       constexpr auto extensions()        const     -> extensions_type {return extensions_type{tuple_cat(std::make_tuple(extension()), sub_.extensions().base())};}
 	friend constexpr auto extensions(layout_t const& s) -> extensions_type {return s.extensions();}
 
-	[[deprecated("use get<D>(m.extensions()")]] constexpr auto extension(dimensionality_type d) const {return std::apply([](auto... e){return std::array<size_type, D>{e...};}, extensions()).at(d);}
+	[[deprecated("use get<d>(m.extensions()")]] constexpr auto extension(dimensionality_type d) const {return std::apply([](auto... e){return std::array<size_type, D>{e...};}, extensions()).at(d);}
+	[[deprecated("use get<d>(m.strides())  ")]] constexpr auto stride   (dimensionality_type d) const {return std::apply([](auto... e){return std::array<size_type, D>{e...};}, strides()   ).at(d);}
+	[[deprecated("use get<d>(m.sizes())    ")]] constexpr auto size     (dimensionality_type d) const {return std::apply([](auto... e){return std::array<size_type, D>{e...};}, sizes()     ).at(d);}
 
 	friend constexpr auto operator!=(layout_t const& self, layout_t const& other) {return not(self == other);}
 	friend constexpr auto operator==(layout_t const& self, layout_t const& other) {
@@ -674,7 +676,7 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 	constexpr auto sizes_as() const {return detail::to_array<T>(sizes());}
 
 	friend constexpr auto extension(layout_t const& s) -> index_extension {return s.extension();}
-	       constexpr auto extension()        const&    -> index_extension {
+	       constexpr auto extension()        const     -> index_extension {
 		if(nelems_ == 0) {return {};}
 		assert(stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		return {offset_/stride_, (offset_ + nelems_)/stride_};
@@ -688,6 +690,10 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 //	constexpr auto extension(dimensionality_type d) const -> index_extension {return d?sub_.extension(d-1):extension();}
 	constexpr auto extensions() const -> extensions_type {return extensions_type{tuple_cat(std::make_tuple(extension()), sub_.extensions().base())};}
 	friend constexpr auto extensions(layout_t const& self) -> extensions_type {return self.extensions();}
+
+	[[deprecated("use get<d>(m.extensions()")]] constexpr auto extension(dimensionality_type d) const {return std::apply([](auto... e){return std::array<size_type, D>{e...};}, extensions()).at(d);}
+	[[deprecated("use get<d>(m.strides())  ")]] constexpr auto stride   (dimensionality_type d) const {return std::apply([](auto... e){return std::array<size_type, D>{e...};}, strides()   ).at(d);}
+	[[deprecated("use get<d>(m.sizes())    ")]] constexpr auto size     (dimensionality_type d) const {return std::apply([](auto... e){return std::array<size_type, D>{e...};}, sizes()     ).at(d);}
 
 	template<typename Size>
 	constexpr auto partition(Size const& s) -> layout_t& {
