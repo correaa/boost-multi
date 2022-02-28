@@ -89,31 +89,42 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section_syntax) {
 	};
 
 	using multi::_;
-	using multi::U;
-
 	BOOST_REQUIRE( size( A(       _       , 2) ) == size(A) );
 	BOOST_REQUIRE( size( A(      *_       , 2) ) == size(A) );
 
 	BOOST_REQUIRE( size( A(      (_)      , 2) ) == size(A) );
 
-//  BOOST_REQUIRE( size( A(      {_}      , 2) ) == size(A) );
+	using multi::U;
+	BOOST_REQUIRE( size( A(       U       , 2) ) == size(A) );
+	BOOST_REQUIRE( size( A(       U       , 2) ) == size(A) );
 
+	BOOST_REQUIRE( size( A(       U       , 2) ) == size(A) );
+
+	using multi::V;
+	BOOST_REQUIRE( size( A(       V       , 2) ) == size(A) );
+	BOOST_REQUIRE( size( A(       V       , 2) ) == size(A) );
+
+	BOOST_REQUIRE( size( A(       V       , 2) ) == size(A) );
+
+//	using multi::A;
+//	BOOST_REQUIRE( size( A(       A       , 2) ) == size(A) );
+//	BOOST_REQUIRE( size( A(       A       , 2) ) == size(A) );
+
+//	BOOST_REQUIRE( size( A(       A       , 2) ) == size(A) );
 
 	BOOST_REQUIRE( size( A(       _  < 2  , 2) ) == 2 );
 	BOOST_REQUIRE( size( A(      *_  < 2  , 2) ) == 2 );
 	BOOST_REQUIRE( size( A(       U  < 2  , 2) ) == 2 );
 
-//  BOOST_REQUIRE( size( A(      {_} < 2  , 2) ) == 2 );
+	BOOST_REQUIRE( size( A( 1 <=  _       , 2) ) == 3 );
+	BOOST_REQUIRE( size( A( 1 <= *_       , 2) ) == 3 );
+	BOOST_REQUIRE( size( A( 1 <=  U       , 2) ) == 3 );
 
-	BOOST_REQUIRE( size( A( 1 <=  _     , 2) ) == 3 );
-	BOOST_REQUIRE( size( A( 1 <= *_     , 2) ) == 3 );
-	BOOST_REQUIRE( size( A( 1 <=  U     , 2) ) == 3 );
+	BOOST_REQUIRE( size( A( 1 <=  _ < 3   , 2) ) == 2 );
+	BOOST_REQUIRE( size( A( 1 <= *_ < 3   , 2) ) == 2 );
+	BOOST_REQUIRE( size( A( 1 <=  U < 3   , 2) ) == 2 );
 
-	BOOST_REQUIRE( size( A( 1<= _<3 , 2) ) == 2 );
-	BOOST_REQUIRE( size( A( 1<=*_<3 , 2) ) == 2 );
-	BOOST_REQUIRE( size( A( 1<= U<3 , 2) ) == 2 );
-
-	BOOST_REQUIRE( size( A(    *_<2 , 2) ) == 2 );
-	BOOST_REQUIRE( size( A(     U<2 , 2) ) == 2 );
+	BOOST_REQUIRE( size( A(      *_ < 2   , 2) ) == 2 );
+	BOOST_REQUIRE( size( A(       U < 2   , 2) ) == 2 );
 }
 

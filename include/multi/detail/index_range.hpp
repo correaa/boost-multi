@@ -200,7 +200,7 @@ class intersecting_range {
 
  public:
 	constexpr auto operator*() const& -> intersecting_range const& {return *this;}
-	static constexpr auto all() -> intersecting_range {return {};}
+	static constexpr auto all() {return intersecting_range{};}
 };
 
 [[maybe_unused]] constexpr intersecting_range<> const ALL   = intersecting_range<>::all();
@@ -211,9 +211,6 @@ class intersecting_range {
 [[maybe_unused]] constexpr intersecting_range<> const V     = U;
 [[maybe_unused]] constexpr intersecting_range<> const A     = V;
 //  [[maybe_unused]] constexpr intersecting_range<> const ∀      = V;
-//  [[maybe_unused]] constexpr intersecting_range<> const …      = ALL;
-
-// [[deprecated]] constexpr intersecting_range<> const all = ALL;  // TODO(correaa) replace by function all() ?
 
 template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
 struct extension_t : public range<IndexType, IndexTypeLast> {
