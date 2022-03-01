@@ -267,7 +267,7 @@ cuda-11.4:
       - ctest --output-on-failure
 
 cuda-11.5:
-    image: nvidia/cuda:11.5.0-devel
+    image: nvidia/11.5.1-devel-ubuntu20.04
     stage: build
     script:
       - export DEBIAN_FRONTEND=noninteractive
@@ -293,7 +293,7 @@ cuda-11.5gpuci:
       - ctest --output-on-failure
 
 cuda-11.6:
-    image: nvidia/cuda:11.6.0-devel
+    image: nvidia/11.6.0-devel-ubuntu20.04
     stage: build
     script:
       - export DEBIAN_FRONTEND=noninteractive
