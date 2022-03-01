@@ -266,34 +266,8 @@ cuda-11.4:
       - cmake --build . --verbose
       - ctest --output-on-failure
 
-cuda-11.6:
-    image: nvidia/cuda:11.6.0-base-ubuntu20.04
-    stage: build
-    script:
-      - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
-      - ln --symbolic --force . ../multi
-      - nvcc --version
-      - mkdir build && cd build
-      - cmake .. -DENABLE_CUDA=1
-      - cmake --build . --verbose
-      - ctest --output-on-failure
-
 cuda-11.5gpuci:
     image: gpuci/cuda:11.5.0-devel-ubuntu20.04
-    stage: build
-    script:
-      - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
-      - ln --symbolic --force . ../multi
-      - nvcc --version
-      - mkdir build && cd build
-      - cmake .. -DENABLE_CUDA=1
-      - cmake --build . --verbose
-      - ctest --output-on-failure
-
-cuda-11.6gpuci:
-    image: gpuci/cuda:11.6.0-devel-ubuntu20.04
     stage: build
     script:
       - export DEBIAN_FRONTEND=noninteractive
@@ -480,17 +454,6 @@ nvcc-cuda-runner:
       - CUDACXX=/usr/local/cuda/bin/nvcc CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda cmake .. -DCMAKE_CXX_STANDARD=17 -DENABLE_CUDA=1
       - cmake --build . -j 12
       - ctest -j 12 --output-on-failure
-
-#culang-runner:
-#    stage: build
-#    tags:
-#      - intel_compiler
-#    script:
-#      - mkdir build && cd build
-#      - /usr/local/cuda/bin/nvcc --version
-#      - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCUDA_HOST_COMPILER=clang++ -DCMAKE_CUDA_COMPILER=/usr/bin/clang++ -DCMAKE_CUDA_FLAGS="--cuda-path=/usr/local/cuda -Wno-unknown-cuda-version --cuda-gpu-arch=sm_50" -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=50 -DFORCED_ARCH=1 -DCMAKE_CUDA_COMPILE_WHOLE_COMPILATION=1 -DCMAKE_CUDA_LINK_EXECUTABLE="<CMAKE_CXX_COMPILER> --run_linker --output_file=<TARGET> --map_file=<TARGET>.map <CMAKE_CXX_LINK_FLAGS> <LINK_LIBRARIES> <LINK_FLAGS> <OBJECTS>" # --cuda-gpu-arch=sm_50 -DFORCED_ARCH=1 -DCMAKE_CUDA_ARCHITECTURES=50
-#      - make -j 12 VERBOSE=1
-#      - ctest -j 12 --output-on-failure
 
 qmcpack-g++:
   stage: test
