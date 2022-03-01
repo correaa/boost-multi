@@ -412,13 +412,22 @@ BOOST_AUTO_TEST_CASE(continued_part3) {
 	BOOST_REQUIRE( extension(L).first() == 0 );
 	BOOST_REQUIRE( extension(L).last() == 10 );
 
+	BOOST_REQUIRE( std::get<0>(L.extensions()) == L.extension() );
+
+
+	boost::multi::extensions_t<2> x2;
+	std::get<0>(x2);
+
+	BOOST_REQUIRE( std::get<0>(L.extensions()).first() ==  0 );
+	BOOST_REQUIRE( std::get<0>(L.extensions()).last()  == 10 );
+
 //  BOOST_REQUIRE( L.size(1) == 20 );
-	BOOST_REQUIRE( std::get<1>(L.extensions()).first() == 0 );
-	BOOST_REQUIRE( std::get<1>(L.extensions()).last() == 20 );
+	BOOST_REQUIRE( std::get<1>(L.extensions()).first() ==  0 );
+	BOOST_REQUIRE( std::get<1>(L.extensions()).last()  == 20 );
 
 //  BOOST_REQUIRE( L.size(2) == 30 );
-	BOOST_REQUIRE( std::get<2>(L.extensions()).first() == 0 );
-	BOOST_REQUIRE( std::get<2>(L.extensions()).last() == 30 );
+	BOOST_REQUIRE( std::get<2>(L.extensions()).first() ==  0 );
+	BOOST_REQUIRE( std::get<2>(L.extensions()).last()  == 30 );
 
 	using std::get;
 	BOOST_REQUIRE( get<0>(strides(L)) == L.stride() );
