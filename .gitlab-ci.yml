@@ -271,19 +271,22 @@ cuda-11.6:
     script:
       - export DEBIAN_FRONTEND=noninteractive
       - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev wget ca-certificates gnupg
-      - wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin --no-verbose >/dev/null
-      - mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
-      - wget https://developer.download.nvidia.com/compute/cuda/11.6.1/local_installers/cuda-repo-ubuntu2004-11-6-local_11.6.1-510.47.03-1_amd64.deb  --no-verbose >/dev/null
-      - dpkg -i cuda-repo-ubuntu2004-11-6-local_11.6.1-510.47.03-1_amd64.deb
-      - apt-key add /var/cuda-repo-ubuntu2004-11-6-local/7fa2af80.pub
-      - apt-get update
-      - apt-get -f -y --quiet install cuda
+      - wget https://developer.download.nvidia.com/compute/cuda/11.6.1/local_installers/cuda_11.6.1_510.47.03_linux.run
+      - sh cuda_11.6.1_510.47.03_linux.run
       - ln --symbolic --force . ../multi
       - nvcc --version
       - mkdir build && cd build
       - cmake .. -DENABLE_CUDA=1
       - cmake --build . --verbose
       - ctest --output-on-failure
+
+#      - wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin --no-verbose >/dev/null
+#      - mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
+#      - wget https://developer.download.nvidia.com/compute/cuda/11.6.1/local_installers/cuda-repo-ubuntu2004-11-6-local_11.6.1-510.47.03-1_amd64.deb  --no-verbose >/dev/null
+#      - dpkg -i cuda-repo-ubuntu2004-11-6-local_11.6.1-510.47.03-1_amd64.deb
+#      - apt-key add /var/cuda-repo-ubuntu2004-11-6-local/7fa2af80.pub
+#      - apt-get update
+#      - apt-get -f -y --quiet install cuda
 
 g++-cppcheck:
   stage: build
