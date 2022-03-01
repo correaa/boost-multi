@@ -266,19 +266,6 @@ cuda-11.4:
       - cmake --build . --verbose
       - ctest --output-on-failure
 
-cuda-11.5:
-    image: nvidia/11.5.1-devel-ubuntu20.04
-    stage: build
-    script:
-      - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
-      - ln --symbolic --force . ../multi
-      - nvcc --version
-      - mkdir build && cd build
-      - cmake .. -DENABLE_CUDA=1
-      - cmake --build . --verbose
-      - ctest --output-on-failure
-
 cuda-11.5gpuci:
     image: gpuci/cuda:11.5.0-devel-ubuntu20.04
     stage: build
@@ -292,8 +279,8 @@ cuda-11.5gpuci:
       - cmake --build . --verbose
       - ctest --output-on-failure
 
-cuda-11.6:
-    image: nvidia/11.6.0-devel-ubuntu20.04
+cuda-11.6gpuci:
+    image: gpuci/cuda:11.6.0-devel-ubuntu20.04
     stage: build
     script:
       - export DEBIAN_FRONTEND=noninteractive
