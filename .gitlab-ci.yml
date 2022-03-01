@@ -271,7 +271,7 @@ cuda-11.6:
     script:
       - export DEBIAN_FRONTEND=noninteractive
       - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev wget ca-certificates gnupg
-      - wget https://developer.download.nvidia.com/compute/cuda/11.6.1/local_installers/cuda_11.6.1_510.47.03_linux.run
+      - wget https://developer.download.nvidia.com/compute/cuda/11.6.1/local_installers/cuda_11.6.1_510.47.03_linux.run --no-verbose >/dev/null
       - sh cuda_11.6.1_510.47.03_linux.run
       - ln --symbolic --force . ../multi
       - nvcc --version
