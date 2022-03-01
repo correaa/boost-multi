@@ -6,10 +6,9 @@ image: debian:testing
 g++-latest:
   stage: build
   script:
-    - export CXX="g++"
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
-    - $CXX --version
+    - g++ --version
     - mkdir build && cd build
     - cmake ..
     - cmake --build .
