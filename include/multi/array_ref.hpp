@@ -515,7 +515,8 @@ struct basic_array
 		layout_type l_;
 
 		constexpr auto at_aux(difference_type n) const -> reference {
-			return *(base_ + std::apply(l_, l_.extensions().from_linear(n)));
+			auto const os = std::apply(l_, l_.extensions().from_linear(n));
+			return *(base_ + os);
 		}
 
 	 public:
@@ -761,6 +762,7 @@ struct basic_array
 		return {new_layout, types::base_};
 	}
 
+	template<class Dummy = void, std::enable_if_t<(D > 1) and sizeof(Dummy*), int> =0>
 	constexpr auto diagonal() const& -> basic_array<T, D-1, typename basic_array::element_const_ptr> {
 		auto L = std::min(std::get<0>(this->sizes()), std::get<1>(this->sizes()));
 		multi::layout_t<D-1> new_layout{(*this)({0, L}, {0, L}).layout().sub_};
