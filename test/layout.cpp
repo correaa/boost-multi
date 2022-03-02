@@ -416,7 +416,7 @@ BOOST_AUTO_TEST_CASE(continued_part3) {
 
 	boost::multi::extensions_t<2> x2;
 
-	BOOST_REQUIRE( std::get<0>(x2) == multi::index_extension{} );
+	BOOST_REQUIRE( std::get<0>(x2).is_empty() );
 
 //	BOOST_REQUIRE( std::get<0>(L.sizes()) == L.size(0) );
 //	BOOST_REQUIRE( std::get<0>(L.extensions()) == L.extension(0) );
