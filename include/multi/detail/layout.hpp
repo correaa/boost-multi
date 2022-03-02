@@ -134,8 +134,10 @@ struct extensions_t {
 		return extensions_t<D + 1>{std::tuple_cat(std::make_tuple(ie), self.base())};
 	}
 
-	auto operator==(extensions_t const& other) const -> bool {return impl_ == other.impl_;}
-	auto operator!=(extensions_t const& other) const -> bool {return impl_ != other.impl_;}
+	friend auto operator==(extensions_t const& s, extensions_t const& o) {return s.impl_ == o.impl_;}
+	friend auto operator!=(extensions_t const& s, extensions_t const& o) {return s.impl_ != o.impl_;}
+
+//	auto operator!=(extensions_t const& other) const -> bool {return impl_ != other.impl_;}
 
 	constexpr auto from_linear(nelems_type n) const {
 		auto const sub_extensions = extensions_t<D-1>{detail::tuple_tail(this->base())};
@@ -316,7 +318,7 @@ struct layout_t<0, SSize> {
  private:
 	nelems_type nelems_ = 1;  // std::numeric_limits<nelems_type>::max();
 	void* sub_ = nullptr;
-	void* stride_ = nullptr;
+//  void* stride_ = nullptr;
 	offset_type offset_ = 0;
 
 	template<dimensionality_type, typename> friend struct layout_t;
@@ -351,8 +353,12 @@ struct layout_t<0, SSize> {
 
 	friend constexpr auto operator!=(layout_t const& /*self*/, layout_t const& /*other*/) {return false;}
 	friend constexpr auto operator==(layout_t const& /*self*/, layout_t const& /*other*/) {return true ;}
+
+	constexpr auto   rotate() -> layout_t& {return *this;}
+	constexpr auto unrotate() -> layout_t& {return *this;}
 };
 
+#if 0
 template<typename SSize>
 struct layout_t<1, SSize>
 : multi::equality_comparable2<layout_t<1, SSize>, void> { static constexpr multi::dimensionality_type D = 1;  // TODO(correaa) check equality_comparable2, not working
@@ -530,25 +536,7 @@ struct layout_t<1, SSize>
 		return layout_t{sub_.scale(s), stride_*s, offset_*s, nelems_*s};
 	}
 };
-
-inline constexpr auto
-operator*(layout_t<0>::index_extension const& ie, layout_t<0>::extensions_type const& /*zero*/)
--> typename layout_t<1>::extensions_type {
-	return typename layout_t<1>::extensions_type{std::make_tuple(ie)};
-}
-
-template <class F, class Tuple, std::size_t... I>
-static constexpr auto apply_impl(F&& f, Tuple&& t, std::index_sequence<I...> /*012*/) -> decltype(auto) {
-	return std::forward<F>(f)(std::get<I>(std::forward<Tuple>(t))...);
-}
-
-template <class F, class Tuple>
-static constexpr auto std_apply(F&& f, Tuple&& t) -> decltype(auto) {
-	return apply_impl(
-		std::forward<F>(f), std::forward<Tuple>(t),
-		std::make_index_sequence<std::tuple_size<std::remove_reference_t<Tuple>>::value>{}
-	);
-}
+#endif
 
 template<dimensionality_type D, typename SSize>
 struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
@@ -587,20 +575,20 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 
 	constexpr auto origin() const {return sub_.origin() - offset_;}
 
-	constexpr auto at(index i) const -> sub_type {
+ private:
+	constexpr auto at_aux(index i) const {
 		auto ret = sub_;
 		ret.offset_ += offset_ + i*stride_;
-		return ret;
+		return ret();
 	}
-	constexpr auto operator[](index i) const -> sub_type {return at(i);}
-	constexpr auto operator()(index i) const -> sub_type {return at(i);}
 
-	constexpr auto operator()()        const -> layout_t {return *this;}
+ public:
+	constexpr auto operator[](index i) const {return at_aux(i);}
 
+	constexpr auto operator()()        const {return *this;}
+	constexpr auto operator()(index i) const {return at_aux(i);}
 	template<class... Indexes>
-	constexpr auto operator()(index i, Indexes... idxs) const
-	->decltype(operator[](i)(idxs...)){
-		return operator[](i)(idxs...);}
+	constexpr auto operator()(index i, Indexes... idxs) const {return operator[](i)(idxs...);}
 
 	constexpr layout_t(sub_type sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
 	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
@@ -608,8 +596,8 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 	layout_t() = default;
 
 	constexpr explicit layout_t(extensions_type const& x)
-	: sub_(std_apply([](auto... e){return multi::extensions_t<D-1>{e...};}, detail::tail(x.base())))
-	, stride_{sub_.size()*sub_.stride()}
+	: sub_(std::apply([](auto... e){return multi::extensions_t<D-1>{e...};}, detail::tail(x.base())))
+	, stride_{sub_.num_elements()}  // {sub_.size()*sub_.stride()}
 	, offset_{std::get<0>(x.base()).first()*stride_}
 	, nelems_{std::get<0>(x.base()).size()*(sub().num_elements())} {}
 
@@ -623,9 +611,9 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 
 	constexpr auto nelems(dimensionality_type d) const {return (d!=0)?sub_.nelems(d-1):nelems_;}
 
-	constexpr auto operator!=(layout_t const& o) const -> bool {return not((*this)==o);}
-	constexpr auto operator==(layout_t const& o) const -> bool {
-		return sub_==o.sub_ and stride_==o.stride_ and offset_==o.offset_ and nelems_==o.nelems_;
+	friend constexpr auto operator!=(layout_t const& s, layout_t const& o) {return not(s == o);}
+	friend constexpr auto operator==(layout_t const& s, layout_t const& o) {
+		return s.sub_==o.sub_ and s.stride_==o.stride_ and s.offset_==o.offset_ and s.nelems_==o.nelems_;
 	}
 
 	constexpr auto reindex(index i) -> layout_t& {offset_ = i*stride_; return *this;}
@@ -686,9 +674,8 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 		assert(stride_ != 0 and nelems_%stride_ == 0);
 		return {offset_/stride_, (offset_ + nelems_)/stride_};
 	}
-//	template<dimensionality_type DD = 0>
-//	constexpr auto extension(dimensionality_type d) const -> index_extension {return d?sub_.extension(d-1):extension();}
-	constexpr auto extensions() const -> extensions_type {return extensions_type{tuple_cat(std::make_tuple(extension()), sub_.extensions().base())};}
+
+	constexpr auto extensions() const {return extensions_type{tuple_cat(std::make_tuple(extension()), sub_.extensions().base())};}
 	friend constexpr auto extensions(layout_t const& self) -> extensions_type {return self.extensions();}
 
 	[[deprecated("use get<d>(m.extensions()")]] constexpr auto extension(dimensionality_type d) const {return std::apply([](auto... e){return std::array<index_extension, static_cast<std::size_t>(D)>{e...};}, extensions().base()).at(static_cast<std::size_t>(d));}
@@ -703,11 +690,14 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 		sub_.partition(s);
 		return *this;
 	}
+//	template<class T = void, std::enable_if_t<(D > 1) and sizeof(T*), int> = 0>
 	constexpr auto transpose() -> layout_t& {
-		using std::swap;
-		swap(stride_, sub_.stride_);
-		swap(offset_, sub_.offset_);
-		swap(nelems_, sub_.nelems_);
+		if constexpr(D > 1) {
+			using std::swap;
+			swap(stride_, sub_.stride_);
+			swap(offset_, sub_.offset_);
+			swap(nelems_, sub_.nelems_);
+		}
 		return *this;
 	}
 	constexpr auto reverse() -> layout_t& {
@@ -743,6 +733,12 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 		return layout_t{sub_.scale(s), stride_*s, offset_*s, nelems_*s};
 	}
 };
+
+inline constexpr auto
+operator*(layout_t<0>::index_extension const& ie, layout_t<0>::extensions_type const& /*zero*/)
+-> typename layout_t<1>::extensions_type {
+	return typename layout_t<1>::extensions_type{std::make_tuple(ie)};
+}
 
 inline constexpr auto operator*(extensions_t<1> const& ie, extensions_t<1> const& self) {
 	return extensions_t<2>({std::get<0>(ie), std::get<0>(self)});
