@@ -488,9 +488,9 @@ struct layout_t<1, SSize>
 	       constexpr auto extensions()        const     -> extensions_type {return extensions_type{tuple_cat(std::make_tuple(extension()), sub_.extensions().base())};}
 	friend constexpr auto extensions(layout_t const& s) -> extensions_type {return s.extensions();}
 
-	[[deprecated("use get<d>(m.extensions()")]] constexpr auto extension(dimensionality_type d) const {return std::apply([](auto... e){return std::array<size_type, D>{e...};}, extensions()).at(d);}
-	[[deprecated("use get<d>(m.strides())  ")]] constexpr auto stride   (dimensionality_type d) const {return std::apply([](auto... e){return std::array<size_type, D>{e...};}, strides()   ).at(d);}
-	[[deprecated("use get<d>(m.sizes())    ")]] constexpr auto size     (dimensionality_type d) const {return std::apply([](auto... e){return std::array<size_type, D>{e...};}, sizes()     ).at(d);}
+	[[deprecated("use get<d>(m.extensions()")]] constexpr auto extension(dimensionality_type d) const {return std::apply([](auto... e){return std::array<size_type, D>{e...};}, extensions().base()).at(static_cast<std::size_t>(d));}
+	[[deprecated("use get<d>(m.strides())  ")]] constexpr auto stride   (dimensionality_type d) const {return std::apply([](auto... e){return std::array<size_type, D>{e...};}, strides()          ).at(static_cast<std::size_t>(d));}
+	[[deprecated("use get<d>(m.sizes())    ")]] constexpr auto size     (dimensionality_type d) const {return std::apply([](auto... e){return std::array<size_type, D>{e...};}, sizes()            ).at(static_cast<std::size_t>(d));}
 
 	friend constexpr auto operator!=(layout_t const& self, layout_t const& other) {return not(self == other);}
 	friend constexpr auto operator==(layout_t const& self, layout_t const& other) {
@@ -691,9 +691,9 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 	constexpr auto extensions() const -> extensions_type {return extensions_type{tuple_cat(std::make_tuple(extension()), sub_.extensions().base())};}
 	friend constexpr auto extensions(layout_t const& self) -> extensions_type {return self.extensions();}
 
-	[[deprecated("use get<d>(m.extensions()")]] constexpr auto extension(dimensionality_type d) const {return std::apply([](auto... e){return std::array<index_extension, static_cast<std::size_t>(D)>{e...};}, extensions()).at(d);}
-	[[deprecated("use get<d>(m.strides())  ")]] constexpr auto stride   (dimensionality_type d) const {return std::apply([](auto... e){return std::array<stride_type    , static_cast<std::size_t>(D)>{e...};}, strides   ()).at(d);}
-	[[deprecated("use get<d>(m.sizes())    ")]] constexpr auto size     (dimensionality_type d) const {return std::apply([](auto... e){return std::array<size_type      , static_cast<std::size_t>(D)>{e...};}, sizes     ()).at(d);}
+	[[deprecated("use get<d>(m.extensions()")]] constexpr auto extension(dimensionality_type d) const {return std::apply([](auto... e){return std::array<index_extension, static_cast<std::size_t>(D)>{e...};}, extensions().base()).at(static_cast<std::size_t>(d));}
+	[[deprecated("use get<d>(m.strides())  ")]] constexpr auto stride   (dimensionality_type d) const {return std::apply([](auto... e){return std::array<stride_type    , static_cast<std::size_t>(D)>{e...};}, strides   ()       ).at(static_cast<std::size_t>(d));}
+	[[deprecated("use get<d>(m.sizes())    ")]] constexpr auto size     (dimensionality_type d) const {return std::apply([](auto... e){return std::array<size_type      , static_cast<std::size_t>(D)>{e...};}, sizes     ()       ).at(static_cast<std::size_t>(d));}
 
 	template<typename Size>
 	constexpr auto partition(Size const& s) -> layout_t& {

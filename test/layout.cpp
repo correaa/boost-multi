@@ -151,10 +151,9 @@ BOOST_AUTO_TEST_CASE(layout) {
 	static_assert(dimensionality(A)==3, "!");
 	using multi::extensions;
 	auto xA = extensions(A);
-	using std::get;
-	BOOST_REQUIRE( size(get<0>(xA)) == 3 );
-	BOOST_REQUIRE( size(get<1>(xA)) == 4 );
-	BOOST_REQUIRE( size(get<2>(xA)) == 5 );
+	BOOST_REQUIRE( size(std::get<0>(xA)) == 3 );
+	BOOST_REQUIRE( size(std::get<1>(xA)) == 4 );
+	BOOST_REQUIRE( size(std::get<2>(xA)) == 5 );
 
 	multi::array<double, 3> AA({3, 4, 5});
 	using multi::layout;
@@ -176,9 +175,9 @@ BOOST_AUTO_TEST_CASE(layout) {
 	using multi::extensions;
 	auto xA = extensions(A);
 	using std::get;
-	BOOST_REQUIRE( size(get<0>(xA)) == 3 );
-	BOOST_REQUIRE( size(get<1>(xA)) == 4 );
-	BOOST_REQUIRE( size(get<2>(xA)) == 5 );
+	BOOST_REQUIRE( size(std::get<0>(xA)) == 3 );
+	BOOST_REQUIRE( size(std::get<1>(xA)) == 4 );
+	BOOST_REQUIRE( size(std::get<2>(xA)) == 5 );
 
 	multi::array<double, 3> AA({3, 4, 5});
 	using multi::layout;
@@ -416,7 +415,13 @@ BOOST_AUTO_TEST_CASE(continued_part3) {
 
 
 	boost::multi::extensions_t<2> x2;
-	std::get<0>(x2);
+
+	BOOST_REQUIRE( std::get<0>(x2) == multi::index_extension{} );
+
+//	BOOST_REQUIRE( std::get<0>(L.sizes()) == L.size(0) );
+//	BOOST_REQUIRE( std::get<0>(L.extensions()) == L.extension(0) );
+
+	BOOST_REQUIRE(( std::get<0>(L.extensions()) == multi::index_extension{0, 10} ));
 
 	BOOST_REQUIRE( std::get<0>(L.extensions()).first() ==  0 );
 	BOOST_REQUIRE( std::get<0>(L.extensions()).last()  == 10 );
