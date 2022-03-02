@@ -588,9 +588,7 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 	constexpr auto operator()()        const {return *this;}
 	constexpr auto operator()(index i) const {return at_aux(i);}
 	template<class... Indexes>
-	constexpr auto operator()(index i, Indexes... idxs) const
-//	->decltype(operator[](i)(idxs...)){
-	{	return operator[](i)(idxs...);}
+	constexpr auto operator()(index i, Indexes... idxs) const {return operator[](i)(idxs...);}
 
 	constexpr layout_t(sub_type sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
 	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
