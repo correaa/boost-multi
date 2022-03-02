@@ -537,19 +537,6 @@ operator*(layout_t<0>::index_extension const& ie, layout_t<0>::extensions_type c
 	return typename layout_t<1>::extensions_type{std::make_tuple(ie)};
 }
 
-template <class F, class Tuple, std::size_t... I>
-static constexpr auto apply_impl(F&& f, Tuple&& t, std::index_sequence<I...> /*012*/) -> decltype(auto) {
-	return std::forward<F>(f)(std::get<I>(std::forward<Tuple>(t))...);
-}
-
-template <class F, class Tuple>
-static constexpr auto std_apply(F&& f, Tuple&& t) -> decltype(auto) {
-	return apply_impl(
-		std::forward<F>(f), std::forward<Tuple>(t),
-		std::make_index_sequence<std::tuple_size<std::remove_reference_t<Tuple>>::value>{}
-	);
-}
-
 template<dimensionality_type D, typename SSize>
 struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 	using dimensionality_type = multi::dimensionality_type;
@@ -608,7 +595,7 @@ struct layout_t : multi::equality_comparable2<layout_t<D>, void> {
 	layout_t() = default;
 
 	constexpr explicit layout_t(extensions_type const& x)
-	: sub_(std_apply([](auto... e){return multi::extensions_t<D-1>{e...};}, detail::tail(x.base())))
+	: sub_(std::apply([](auto... e){return multi::extensions_t<D-1>{e...};}, detail::tail(x.base())))
 	, stride_{sub_.size()*sub_.stride()}
 	, offset_{std::get<0>(x.base()).first()*stride_}
 	, nelems_{std::get<0>(x.base()).size()*(sub().num_elements())} {}

@@ -460,7 +460,7 @@ struct basic_array
 		: base_{other.base_}, l_{other.l_}, n_{other.n_} {}
 
 		constexpr auto operator->() const -> pointer {
-			return base_ + std_apply(l_, l_.extensions().from_linear(n_));
+			return base_ + std::apply(l_, l_.extensions().from_linear(n_));
 		}
 		constexpr auto operator*() const -> reference {return *operator->();}
 
@@ -515,7 +515,7 @@ struct basic_array
 		layout_type l_;
 
 		constexpr auto at_aux(difference_type n) const -> reference {
-			return *(base_ + std_apply(l_, l_.extensions().from_linear(n)));
+			return *(base_ + std::apply(l_, l_.extensions().from_linear(n)));
 		}
 
 	 public:
@@ -542,8 +542,8 @@ struct basic_array
 		constexpr auto end  ()      & ->       iterator {return end_aux()  ;}
 
 	 private:
-		constexpr auto front_aux() const -> reference {return *(base_ + std_apply(l_, l_.extensions().from_linear(0                    )));}
-		constexpr auto back_aux()  const -> reference {return *(base_ + std_apply(l_, l_.extensions().from_linear(l_.num_elements() - 1)));}
+		constexpr auto front_aux() const -> reference {return *(base_ + std::apply(l_, l_.extensions().from_linear(0                    )));}
+		constexpr auto back_aux()  const -> reference {return *(base_ + std::apply(l_, l_.extensions().from_linear(l_.num_elements() - 1)));}
 
 	 public:
 		constexpr auto front() const& -> const_reference {return front_aux();}
