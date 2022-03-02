@@ -151,10 +151,9 @@ BOOST_AUTO_TEST_CASE(layout) {
 	static_assert(dimensionality(A)==3, "!");
 	using multi::extensions;
 	auto xA = extensions(A);
-	using std::get;
-	BOOST_REQUIRE( size(get<0>(xA)) == 3 );
-	BOOST_REQUIRE( size(get<1>(xA)) == 4 );
-	BOOST_REQUIRE( size(get<2>(xA)) == 5 );
+	BOOST_REQUIRE( size(std::get<0>(xA)) == 3 );
+	BOOST_REQUIRE( size(std::get<1>(xA)) == 4 );
+	BOOST_REQUIRE( size(std::get<2>(xA)) == 5 );
 
 	multi::array<double, 3> AA({3, 4, 5});
 	using multi::layout;
@@ -176,9 +175,9 @@ BOOST_AUTO_TEST_CASE(layout) {
 	using multi::extensions;
 	auto xA = extensions(A);
 	using std::get;
-	BOOST_REQUIRE( size(get<0>(xA)) == 3 );
-	BOOST_REQUIRE( size(get<1>(xA)) == 4 );
-	BOOST_REQUIRE( size(get<2>(xA)) == 5 );
+	BOOST_REQUIRE( size(std::get<0>(xA)) == 3 );
+	BOOST_REQUIRE( size(std::get<1>(xA)) == 4 );
+	BOOST_REQUIRE( size(std::get<2>(xA)) == 5 );
 
 	multi::array<double, 3> AA({3, 4, 5});
 	using multi::layout;
@@ -387,17 +386,17 @@ BOOST_AUTO_TEST_CASE(continued_part2) {
 	BOOST_REQUIRE( offset(L) == 0 );
 	BOOST_REQUIRE( nelems(L) == 10*20L*30L );
 
-	BOOST_REQUIRE( L.stride(0) == stride(L) );
-	BOOST_REQUIRE( L.offset(0) == offset(L) );
-	BOOST_REQUIRE( L.nelems(0) == nelems(L) );
+	BOOST_REQUIRE( L.stride() == stride(L) );
+	BOOST_REQUIRE( L.offset() == offset(L) );
+	BOOST_REQUIRE( L.nelems() == nelems(L) );
 
-	BOOST_REQUIRE( L.stride(1) == 30 );
-	BOOST_REQUIRE( L.offset(1) == 0 );
-	BOOST_REQUIRE( L.nelems(1) == 20*30L );
+	BOOST_REQUIRE( std::get<1>(L.strides()) == 30     );
+	BOOST_REQUIRE( std::get<1>(L.offsets()) ==  0     );
+	BOOST_REQUIRE( std::get<1>(L.nelemss()) == 20*30L );
 
-	BOOST_REQUIRE( L.stride(2) == 1 );
-	BOOST_REQUIRE( L.offset(2) == 0 );
-	BOOST_REQUIRE( L.nelems(2) == 30 );
+	BOOST_REQUIRE( std::get<2>(L.strides()) ==  1 );
+	BOOST_REQUIRE( std::get<2>(L.offsets()) ==  0 );
+	BOOST_REQUIRE( std::get<2>(L.nelemss()) == 30 );
 }
 
 BOOST_AUTO_TEST_CASE(continued_part3) {
@@ -412,21 +411,34 @@ BOOST_AUTO_TEST_CASE(continued_part3) {
 	BOOST_REQUIRE( extension(L).first() == 0 );
 	BOOST_REQUIRE( extension(L).last() == 10 );
 
-	BOOST_REQUIRE( L.size(1) == 20 );
-	BOOST_REQUIRE( L.extension(1).first() == 0 );
-	BOOST_REQUIRE( L.extension(1).last() == 20 );
+	BOOST_REQUIRE( std::get<0>(L.extensions()) == L.extension() );
 
-	BOOST_REQUIRE( L.size(2) == 30 );
-	BOOST_REQUIRE( L.extension(2).first() == 0 );
-	BOOST_REQUIRE( L.extension(2).last() == 30 );
+
+	boost::multi::extensions_t<2> x2;
+
+	BOOST_REQUIRE( std::get<0>(x2).is_empty() );
+
+//	BOOST_REQUIRE( std::get<0>(L.sizes()) == L.size(0) );
+//	BOOST_REQUIRE( std::get<0>(L.extensions()) == L.extension(0) );
+
+	BOOST_REQUIRE(( std::get<0>(L.extensions()) == multi::index_extension{0, 10} ));
+
+	BOOST_REQUIRE( std::get<0>(L.extensions()).first() ==  0 );
+	BOOST_REQUIRE( std::get<0>(L.extensions()).last()  == 10 );
+
+//  BOOST_REQUIRE( L.size(1) == 20 );
+	BOOST_REQUIRE( std::get<1>(L.extensions()).first() ==  0 );
+	BOOST_REQUIRE( std::get<1>(L.extensions()).last()  == 20 );
+
+//  BOOST_REQUIRE( L.size(2) == 30 );
+	BOOST_REQUIRE( std::get<2>(L.extensions()).first() ==  0 );
+	BOOST_REQUIRE( std::get<2>(L.extensions()).last()  == 30 );
 
 	using std::get;
-	BOOST_REQUIRE( get<0>(strides(L)) == L.stride(0) );
-	BOOST_REQUIRE( get<1>(strides(L)) == L.stride(1) );
-	BOOST_REQUIRE( get<2>(strides(L)) == L.stride(2) );
+	BOOST_REQUIRE( get<0>(strides(L)) == L.stride() );
 
 	auto const& strides = L.strides();
-	BOOST_REQUIRE( get<0>(strides) == L.stride(0) );
+	BOOST_REQUIRE( get<0>(strides) == L.stride() );
 }
 
 BOOST_AUTO_TEST_CASE(continued) {

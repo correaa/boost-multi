@@ -200,14 +200,17 @@ class intersecting_range {
 
  public:
 	constexpr auto operator*() const& -> intersecting_range const& {return *this;}
-	static constexpr auto all() -> intersecting_range {return {};}
+	static constexpr auto all() {return intersecting_range{};}
 };
 
-[[maybe_unused]] constexpr intersecting_range<> const ALL = intersecting_range<>::all();
-[[maybe_unused]] constexpr intersecting_range<> const _   = ALL;
-[[maybe_unused]] constexpr intersecting_range<> const U   = ALL;
+[[maybe_unused]] constexpr intersecting_range<> const ALL   = intersecting_range<>::all();
+[[maybe_unused]] constexpr intersecting_range<> const _     = ALL;
+[[maybe_unused]] constexpr intersecting_range<> const U     = ALL;
+[[maybe_unused]] constexpr intersecting_range<> const ooo   = ALL;
 
-// [[deprecated]] constexpr intersecting_range<> const all = ALL;  // TODO(correaa) replace by function all() ?
+[[maybe_unused]] constexpr intersecting_range<> const V     = U;
+[[maybe_unused]] constexpr intersecting_range<> const A     = V;
+//  [[maybe_unused]] constexpr intersecting_range<> const ∀      = V;
 
 template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
 struct extension_t : public range<IndexType, IndexTypeLast> {
@@ -309,8 +312,8 @@ constexpr auto head(Tuple&& t)
 	return std::get<0>(std::forward<Tuple>(t)); }
 
 template<typename Tuple, std::size_t... Ns>
-constexpr auto tail_impl(std::index_sequence<Ns...> /*012*/, Tuple&& t) {
-	return std::make_tuple(std::get<Ns+1U>(std::forward<Tuple>(t))...);
+constexpr auto tail_impl(std::index_sequence<Ns...> /*012*/, [[maybe_unused]] Tuple&& t) {  // [[maybe_unused]] needed by icpc "error #869: parameter "t" was never referenced"
+	return std::make_tuple(std::get<Ns + 1U>(std::forward<Tuple>(t))...);
 }
 
 template<class Tuple>

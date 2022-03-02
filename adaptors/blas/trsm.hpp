@@ -18,9 +18,9 @@ using core::trsm;
 
 template<class Context, class A2D, class B2D>
 auto trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, blas::diagonal a_diag, typename A2D::element_type alpha, A2D const& a, B2D&& b) // NOLINT(readability-function-cognitive-complexity) : cognitive load 115
--> decltype(auto) try {
-	if     (a_side == blas::side::left ){assert(size(~a) >= size( b));} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
-	else if(a_side == blas::side::right){assert(size( a) >= size(~b));} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+-> B2D&& {
+	if     (a_side == blas::side::left ) {assert(size(~a) >= size( b));} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+	else if(a_side == blas::side::right) {assert(size( a) >= size(~b));} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
 	assert( stride( a) == 1 or stride(~a) == 1 ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	assert( stride( b) == 1 or stride(~b) == 1 ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
@@ -55,14 +55,14 @@ auto trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, blas::diagona
 		#undef CTXT
 	}
 	return std::forward<B2D>(b);
-} catch(std::logic_error& le) {
-	using std::to_string;
-	throw std::logic_error{
-		"couldn't do "+std::string(__PRETTY_FUNCTION__)+" of layout a_side="+ static_cast<char>(a_side) +" a_fill="+ static_cast<char>(a_fill) +" a_diag="+ static_cast<char>(a_diag) +" alpha=xx" // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
-		+" a_conj="+ to_string(is_conjugated<A2D>{}) +" a_strides="+to_string(stride(a)) +","+ to_string(stride(~a))+" a_sizes="+to_string(size(a)) +","+ to_string(size(~a))
-		+" b_conj="+ to_string(is_conjugated<B2D>{}) +" b_strides="+to_string(stride(b)) +","+ to_string(stride(~b))+" b_sizes="+to_string(size(b)) +","+ to_string(size(~b))
-		+" because " + le.what()
-	};
+//} catch(std::logic_error& le) {
+//	using std::to_string;
+//	throw std::logic_error{
+//		"couldn't do "+std::string(__PRETTY_FUNCTION__)+" of layout a_side="+ static_cast<char>(a_side) +" a_fill="+ static_cast<char>(a_fill) +" a_diag="+ static_cast<char>(a_diag) +" alpha=xx" // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+//		+" a_conj="+ to_string(is_conjugated<A2D>{}) +" a_strides="+to_string(stride(a)) +","+ to_string(stride(~a))+" a_sizes="+to_string(size(a)) +","+ to_string(size(~a))
+//		+" b_conj="+ to_string(is_conjugated<B2D>{}) +" b_strides="+to_string(stride(b)) +","+ to_string(stride(~b))+" b_sizes="+to_string(size(b)) +","+ to_string(size(~b))
+//		+" because " + le.what()
+//	};
 }
 
 template<class A2D, class B2D>

@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(multi_rotate_4d) {
 	BOOST_REQUIRE(( sizes(unrotd) == decltype(sizes(unrotd)){4, 14, 14, 7} ));
 	BOOST_REQUIRE( &original[0][1][2][3] == &unrotd[3][0][1][2] );
 
-	auto&& unrotd2 = original.unrotated(2);
+	auto&& unrotd2 = original.unrotated().unrotated();
 	BOOST_REQUIRE(( sizes(unrotd2) == decltype(sizes(unrotd2)){7, 4, 14, 14} ));
 	BOOST_REQUIRE( &original[0][1][2][3] == &unrotd2[2][3][0][1] );
 }

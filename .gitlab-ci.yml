@@ -6,10 +6,9 @@ image: debian:testing
 g++-latest:
   stage: build
   script:
-    - export CXX="g++"
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
-    - $CXX --version
+    - g++ --version
     - mkdir build && cd build
     - cmake ..
     - cmake --build .
@@ -176,7 +175,7 @@ clang++:
     - ctest --output-on-failure
 
 clang++-tidy:
-  stage: build
+  stage: test
   script:
     - export CXX="clang++"
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang clang-tidy pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libblas-dev liblapack-dev libfftw3-dev
@@ -189,7 +188,7 @@ clang++-tidy:
     - ctest --output-on-failure
 
 g++-cpplint:
-  stage: build
+  stage: test
   script:
     - export CXX="g++"
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libblas-dev liblapack-dev libfftw3-dev python3-pip
@@ -214,22 +213,21 @@ clang++-11:
     - cmake --build . --verbose -- --quiet --no-print-directory
     - ctest --output-on-failure
 
-clang++-11-gcc9:
-  stage: build
-  image: vistart/cuda:10.2-ubuntu20.04
-  script:
-    - export CXX="clang++-11"
-    - apt-get update 
-    - DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y --quiet gcc-9 clang-11 pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
-    - ln --symbolic --force . ../multi
-    - $CXX -v
-    - mkdir build && cd build
-    - cmake ..
-    - cmake --build . --verbose -- --quiet --no-print-directory
-    - ctest --output-on-failure
-
 cuda-11.0:
     image: nvidia/cuda:11.0-devel
+    stage: build
+    script:
+      - export DEBIAN_FRONTEND=noninteractive
+      - apt-get update && apt-get install --no-install-recommends -y --quiet pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
+      - ln --symbolic --force . ../multi
+      - nvcc --version
+      - mkdir build && cd build
+      - cmake .. -DENABLE_CUDA=1
+      - cmake --build . --verbose
+      - ctest --output-on-failure
+
+cuda-11.3:
+    image: nvidia/cuda:11.3.0-devel
     stage: build
     script:
       - export DEBIAN_FRONTEND=noninteractive
@@ -254,7 +252,7 @@ cuda-11.4:
       - cmake --build . --verbose
       - ctest --output-on-failure
 
-cuda-11.5:
+cuda-11.5gpuci:
     image: gpuci/cuda:11.5.0-devel-ubuntu20.04
     stage: build
     script:
@@ -443,17 +441,6 @@ nvcc-cuda-runner:
       - cmake --build . -j 12
       - ctest -j 12 --output-on-failure
 
-#culang-runner:
-#    stage: build
-#    tags:
-#      - intel_compiler
-#    script:
-#      - mkdir build && cd build
-#      - /usr/local/cuda/bin/nvcc --version
-#      - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCUDA_HOST_COMPILER=clang++ -DCMAKE_CUDA_COMPILER=/usr/bin/clang++ -DCMAKE_CUDA_FLAGS="--cuda-path=/usr/local/cuda -Wno-unknown-cuda-version --cuda-gpu-arch=sm_50" -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=50 -DFORCED_ARCH=1 -DCMAKE_CUDA_COMPILE_WHOLE_COMPILATION=1 -DCMAKE_CUDA_LINK_EXECUTABLE="<CMAKE_CXX_COMPILER> --run_linker --output_file=<TARGET> --map_file=<TARGET>.map <CMAKE_CXX_LINK_FLAGS> <LINK_LIBRARIES> <LINK_FLAGS> <OBJECTS>" # --cuda-gpu-arch=sm_50 -DFORCED_ARCH=1 -DCMAKE_CUDA_ARCHITECTURES=50
-#      - make -j 12 VERBOSE=1
-#      - ctest -j 12 --output-on-failure
-
 qmcpack-g++:
   stage: test
   script:
@@ -476,6 +463,34 @@ qmcpack-g++:
     - cd ../../qmcpack
     - cd build
     - cmake -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DQMC_MIXED_PRECISION=1 -DCMAKE_BUILD_TYPE=Debug -DMPIEXEC_PREFLAGS="--allow-run-as-root;--bind-to;none" ..
+    - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
+    - ctest -R ppconvert --output-on-failure
+    - ctest -R afqmc     --output-on-failure
+
+qmcpack-clang++:
+  stage: test
+  script:
+    - export DEBIAN_FRONTEND=noninteractive
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y clang libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libopenmpi-dev gfortran pkg-config cmake make git ca-certificates numdiff python3 python3-numpy python3-h5py python3-mpi4py python3-scipy libxml2-dev libhdf5-dev libomp-dev
+    - git clone https://github.com/QMCPACK/qmcpack.git
+    - cp -r qmcpack qmcpack.noupdate
+    - cd qmcpack
+    - git config --global user.email "alfredo.correa@gmail.com" && git config --global user.name "Alfredo Correa"
+    - git rm -r external_codes/boost_multi/multi && git commit -m "remove multi subtree"
+    - echo $CI_REPOSITORY_URL
+    - echo $CI_COMMIT_BRANCH
+    - git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL $CI_COMMIT_BRANCH || git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL # e.g. https://gitlab.com/correaa/boost-multi.git
+    - cd ../qmcpack.noupdate
+    - cd build
+    - export OMPI_CC=clang
+    - export OMPI_CXX=clang++
+    - cmake -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DQMC_MIXED_PRECISION=1 -DCMAKE_BUILD_TYPE=Debug -DMPIEXEC_PREFLAGS="--allow-run-as-root;--bind-to;none" ..
+    - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
+    - ctest -R ppconvert --output-on-failure
+    - ctest -R afqmc     --output-on-failure
+    - cd ../../qmcpack
+    - cd build
+    - OMPI_CC=clang OMPI_CXX=clang++ cmake -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DQMC_MIXED_PRECISION=1 -DCMAKE_BUILD_TYPE=Debug -DMPIEXEC_PREFLAGS="--allow-run-as-root;--bind-to;none" ..
     - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
     - ctest -R ppconvert --output-on-failure
     - ctest -R afqmc     --output-on-failure
