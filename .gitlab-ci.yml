@@ -241,20 +241,6 @@ cuda-11.0:
       - cmake --build . --verbose
       - ctest --output-on-failure
 
-cuda-11.1:
-    image: nvidia/cuda:11.1.0-devel
-    allow_failure: true
-    stage: build
-    script:
-      - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
-      - ln --symbolic --force . ../multi
-      - nvcc --version
-      - mkdir build && cd build
-      - cmake .. -DENABLE_CUDA=1
-      - cmake --build . --verbose
-      - ctest --output-on-failure
-
 cuda-11.3:
     image: nvidia/cuda:11.3.0-devel
     stage: build
