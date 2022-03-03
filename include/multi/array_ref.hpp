@@ -678,22 +678,22 @@ struct basic_array
 
 	constexpr auto stenciled(iextension x)                                             & -> basic_array{return blocked(x.start(), x.finish());}
 	constexpr auto stenciled(iextension x, iextension x1)                              & -> basic_array{return ((stenciled(x).rotated()).stenciled(x1)).unrotated();}
-	constexpr auto stenciled(iextension x, iextension x1, iextension x2)               & -> basic_array{return ((stenciled(x)<<1).stenciled(x1, x2))>>1;}
-	constexpr auto stenciled(iextension x, iextension x1, iextension x2, iextension x3)& -> basic_array{return ((stenciled(x)<<1).stenciled(x1, x2, x3))>>1;}
+	constexpr auto stenciled(iextension x, iextension x1, iextension x2)               & -> basic_array{return ((stenciled(x).rotated()).stenciled(x1, x2)).unrotated();}
+	constexpr auto stenciled(iextension x, iextension x1, iextension x2, iextension x3)& -> basic_array{return ((stenciled(x).rotated()).stenciled(x1, x2, x3)).unrotated();}
 	template<class... Xs>
-	constexpr auto stenciled(iextension x, iextension x1, iextension x2, iextension x3, Xs... xs)& -> basic_array{return ((stenciled(x)<<1).stenciled(x1, x2, x3, xs...))>>1;}
+	constexpr auto stenciled(iextension x, iextension x1, iextension x2, iextension x3, Xs... xs)& -> basic_array{return ((stenciled(x).rotated()).stenciled(x1, x2, x3, xs...)).unrotated();}
 
 	constexpr auto stenciled(iextension x)                                             && -> basic_array{return blocked(x.start(), x.finish());}
-	constexpr auto stenciled(iextension x, iextension x1)                              && -> basic_array{return ((stenciled(x)<<1).stenciled(x1))>>1;}
-	constexpr auto stenciled(iextension x, iextension x1, iextension x2)               && -> basic_array{return ((stenciled(x)<<1).stenciled(x1, x2))>>1;}
-	constexpr auto stenciled(iextension x, iextension x1, iextension x2, iextension x3)&& -> basic_array{return ((stenciled(x)<<1).stenciled(x1, x2, x3))>>1;}
+	constexpr auto stenciled(iextension x, iextension x1)                              && -> basic_array{return ((stenciled(x).rotated()).stenciled(x1)).unrotated();}
+	constexpr auto stenciled(iextension x, iextension x1, iextension x2)               && -> basic_array{return ((stenciled(x).rotated()).stenciled(x1, x2)).unrotated();}
+	constexpr auto stenciled(iextension x, iextension x1, iextension x2, iextension x3)&& -> basic_array{return ((stenciled(x).rotated()).stenciled(x1, x2, x3)).unrotated();}
 	template<class... Xs>
-	constexpr auto stenciled(iextension x, iextension x1, iextension x2, iextension x3, Xs... xs)&& -> basic_array{return ((stenciled(x)<<1).stenciled(x1, x2, x3, xs...))>>1;}
+	constexpr auto stenciled(iextension x, iextension x1, iextension x2, iextension x3, Xs... xs)&& -> basic_array{return ((stenciled(x).rotated()).stenciled(x1, x2, x3, xs...)).unrotated();}
 
 	constexpr auto stenciled(iextension x)                                              const& -> basic_const_array {return blocked(x.start(), x.finish());}
-	constexpr auto stenciled(iextension x, iextension x1)                               const& -> basic_const_array {return ((stenciled(x)<<1).stenciled(x1))>>1;}
-	constexpr auto stenciled(iextension x, iextension x1, iextension x2)                const& -> basic_const_array {return ((stenciled(x)<<1).stenciled(x1, x2))>>1;}
-	constexpr auto stenciled(iextension x, iextension x1, iextension x2, iextension x3) const& -> basic_const_array {return ((stenciled(x)<<1).stenciled(x1, x2, x3))>>1;}
+	constexpr auto stenciled(iextension x, iextension x1)                               const& -> basic_const_array {return ((stenciled(x).rotated()).stenciled(x1)).unrotated();}
+	constexpr auto stenciled(iextension x, iextension x1, iextension x2)                const& -> basic_const_array {return ((stenciled(x).rotated()).stenciled(x1, x2)).unrotated();}
+	constexpr auto stenciled(iextension x, iextension x1, iextension x2, iextension x3) const& -> basic_const_array {return ((stenciled(x).rotated()).stenciled(x1, x2, x3)).unrotated();}
 
 	template<class... Xs>
 	constexpr auto stenciled(iextension x, iextension x1, iextension x2, iextension x3, Xs... xs)const& -> basic_const_array {
@@ -733,7 +733,7 @@ struct basic_array
 	constexpr auto range(index_range ir)     && -> decltype(auto) {return std::move(*this).sliced(ir.front(), ir.front() + ir.size());}
 	constexpr auto range(index_range ir)      & -> decltype(auto) {return                  sliced(ir.front(), ir.front() + ir.size());}
 
-	[[deprecated]] constexpr auto range(typename types::index_range const& ir, dimensionality_type n) const {return rotated(n).range(ir).rotated(-n);}
+//	[[deprecated]] constexpr auto range(typename types::index_range const& ir, dimensionality_type n) const {return rotated(n).range(ir).rotated(-n);}
 
 //	friend constexpr auto flattened(basic_array&& s) -> decltype(auto) {return std::move(s).flattened();}
 //	       constexpr auto flattened()&& -> decltype(auto) {

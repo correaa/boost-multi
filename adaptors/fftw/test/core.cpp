@@ -282,7 +282,7 @@ BOOST_AUTO_TEST_CASE(cufft_many_2D) {
 		return ret;
 	}();
 	multi::array<complex, 3> out(extensions(in));
-	multi::fftw::many_dft((in<<1).begin(), (in<<1).end(), (out<<1).begin(), multi::fftw::forward);
+	multi::fftw::many_dft((in.rotated()).begin(), (in.rotated()).end(), (out.rotated()).begin(), multi::fftw::forward);
 
 	multi::array<complex, 3> out2(extensions(in));
 	multi::fftw::dft_forward({true, false, true}, in, out2);
