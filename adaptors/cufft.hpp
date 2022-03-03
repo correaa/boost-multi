@@ -395,16 +395,27 @@ auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
 			if(which[1] == false and i.is_flattable() and o.is_flattable()) cufft::dft(tail, i.flatted(), o.flatted(), s);
 			else{
 				auto d_min = 0; auto n_min = size(i);
-				for(auto d = 0; d != D - 1; ++d){
-					if((size(i<<d) < n_min) and (tail[d]==false)){
-						n_min = size(i<<d); 
-						d_min = d;
+				for(auto d = 0; d != D - 1; ++d) {
+					switch(d) {
+						case 0: if( (std::get<0>(i.sizes()) < n_min) and (tail[d]==false)) {n_min = std::get<0>(i.sizes()); d_min = d;} break;
+						case 1: if( (std::get<1>(i.sizes()) < n_min) and (tail[d]==false)) {n_min = std::get<1>(i.sizes()); d_min = d;} break;
+						case 2: if( (std::get<2>(i.sizes()) < n_min) and (tail[d]==false)) {n_min = std::get<2>(i.sizes()); d_min = d;} break;
+						case 3: if( (std::get<3>(i.sizes()) < n_min) and (tail[d]==false)) {n_min = std::get<3>(i.sizes()); d_min = d;} break;
+						default: assert(0);
 					}
+				//  if((size(i<<d) < n_min) and (tail[d]==false)) {n_min = size(i<<d); d_min = d;}
 				}
-				if( d_min!=0 ){
+				if( d_min!=0 ) {
 					std::rotate(which.begin(), which.begin()+d_min, which.end());
-					dft(which, i<<d_min, o<<d_min, s);
-				}else{
+					switch(d_min) {
+						case 0: dft(which, i, o, s); break;
+						case 1: dft(which, i.rotated()                    , o.rotated()                    , s); break;
+						case 2: dft(which, i.rotated().rotated()          , o.rotated().rotated()          , s); break;
+						case 3: dft(which, i.rotated().rotated().rotated(), o.rotated().rotated().rotated(), s); break;
+						default: assert(0);
+					}
+				//  dft(which, i<<d_min, o<<d_min, s);
+				} else {
 					if(base(i) == base(o) and i.layout() != o.layout()){
 						auto const tmp = +i;
 						for(auto idx : extension(i)) cufft::dft(tail, tmp[idx], o[idx], s);
