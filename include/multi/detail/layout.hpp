@@ -339,7 +339,7 @@ struct layout_t<0, SSize>
 	layout_t() = default;
 	constexpr explicit layout_t(extensions_type const& /*nil*/) {}
 
-	constexpr layout_t(sub_type sub, stride_type stride, offset_type offset, nelems_type nelems)
+	constexpr layout_t(sub_type sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
 	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
 
 	[[nodiscard]] constexpr auto extensions()        const     {return extensions_type{};}
