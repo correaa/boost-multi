@@ -370,11 +370,11 @@ auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
 {
 	assert(extension(i) == extension(o));
 	auto ff = std::find(begin(which)+1, end(which), false);
-	if(which[0] == true){
-		if(ff==end(which)) cufft::dft(i, std::forward<Out>(o), s);
+	if(which[0] == true) {
+		if(ff==end(which)) {cufft::dft(i, std::forward<Out>(o), s);}
 		else {
 			auto const n = ff - which.begin();
-			sstd::rotate(begin(which), ff, end(which));
+			std::rotate(begin(which), ff, end(which));
 			// TODO(correaa) : make this more elegant
 			switch(n) {
 				case 0: dft(which, i                              , o                              , s); break;
@@ -384,7 +384,7 @@ auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
 				default: assert(0);
 			}
 		}
-	}else if(which[0]==false){
+	} else if(which[0]==false) {
 		if(D==1 or std::none_of(begin(which)+1, end(which), [](auto e){return e;})){
 			if(base(o) != base(i)) std::forward<Out>(o) = i;
 			else if(o.layout() != i.layout()) std::forward<Out>(o) = +i;
