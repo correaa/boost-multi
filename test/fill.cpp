@@ -128,8 +128,8 @@ BOOST_AUTO_TEST_CASE(fill) {
 	fill(begin(rotated(d2D)[1]), end(rotated(d2D)[1]), 8.);
 	BOOST_REQUIRE( all_of(begin(rotated(d2D)[1]), end(rotated(d2D)[1]), [](auto&& e){return e==8.;}) );
 
-	fill(begin((d2D<<1)[1]), end((d2D<<1)[1]), 8.);
-	BOOST_REQUIRE( all_of(begin((d2D<<1)[1]), end((d2D<<1)[1]), [](auto&& e){return e==8.;}) );
+	fill(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), 8.);
+	BOOST_REQUIRE( all_of(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), [](auto&& e){return e==8.;}) );
 
 	auto rand = [d=std::normal_distribution<>{}, g = std::mt19937{r()}]() mutable {return d(g);};
 	multi::array<double, 2> r2D({5, 5});

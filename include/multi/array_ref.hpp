@@ -515,8 +515,7 @@ struct basic_array
 		layout_type l_;
 
 		constexpr auto at_aux(difference_type n) const -> reference {
-			auto const os = std::apply(l_, l_.extensions().from_linear(n));
-			return *(base_ + os);
+			return *(base_ + std::apply(l_, l_.extensions().from_linear(n)));
 		}
 
 	 public:
@@ -643,17 +642,19 @@ struct basic_array
 		new_layout.reindex(first);
 		return {new_layout, types::base_};
 	}
+
+	// TODO(correaa) : implement reindexed_aux
 	template<class... Indexes>
 	constexpr auto reindexed(typename basic_array::index first, Indexes... idxs) const& -> basic_const_array {
-		return ((reindexed(first)<<1).reindexed(idxs...))>>1;
+		return ((reindexed(first).rotated()).reindexed(idxs...)).unrotated();
 	}
 	template<class... Indexes>
 	constexpr auto reindexed(typename basic_array::index first, Indexes... idxs) & -> basic_array {
-		return ((reindexed(first)<<1).reindexed(idxs...))>>1;
+		return ((reindexed(first).rotated()).reindexed(idxs...)).unrotated();
 	}
 	template<class... Indexes>
 	constexpr auto reindexed(typename basic_array::index first, Indexes... idxs)&& -> basic_array {
-		return ((std::move(*this).reindexed(first)<<1).reindexed(idxs...))>>1;
+		return ((std::move(*this).reindexed(first).rotated()).reindexed(idxs...)).unrotated();
 	}
 
  private:
@@ -676,7 +677,7 @@ struct basic_array
 	using iextension = typename basic_array::index_extension;
 
 	constexpr auto stenciled(iextension x)                                             & -> basic_array{return blocked(x.start(), x.finish());}
-	constexpr auto stenciled(iextension x, iextension x1)                              & -> basic_array{return ((stenciled(x)<<1).stenciled(x1))>>1;}
+	constexpr auto stenciled(iextension x, iextension x1)                              & -> basic_array{return ((stenciled(x).rotated()).stenciled(x1)).unrotated();}
 	constexpr auto stenciled(iextension x, iextension x1, iextension x2)               & -> basic_array{return ((stenciled(x)<<1).stenciled(x1, x2))>>1;}
 	constexpr auto stenciled(iextension x, iextension x1, iextension x2, iextension x3)& -> basic_array{return ((stenciled(x)<<1).stenciled(x1, x2, x3))>>1;}
 	template<class... Xs>
@@ -752,6 +753,7 @@ struct basic_array
 		return basic_array<T, D-1, ElementPtr>{new_layout, types::base_};
 	}
 
+	// TODO(correaa) : define a diagonal_aux
 	constexpr auto diagonal()&& {return this->diagonal();}
 
 	constexpr auto diagonal()& -> basic_array<T, D-1, typename basic_array::element_ptr> {
@@ -767,7 +769,7 @@ struct basic_array
 		auto L = std::min(std::get<0>(this->sizes()), std::get<1>(this->sizes()));
 		multi::layout_t<D-1> new_layout{(*this)({0, L}, {0, L}).layout().sub_};
 		new_layout.nelems_ += (*this)({0, L}, {0, L}).layout().nelems_;
-		new_layout.stride_ += (*this)({0, L}, {0, L}).layout().stride_;
+		new_layout.stride_ += (*this)({0, L}, {0, L}).layout().stride_;  // cppcheck-suppress arithOperationsOnVoidPointer ; false positive D == 1 doesn't happen here
 		return {new_layout, types::base_};
 	}
 
@@ -871,36 +873,36 @@ struct basic_array
 	}
 	friend constexpr auto unrotated(basic_array const& self) {return self.unrotated();}
 
-	constexpr auto rotated(dimensionality_type i) & -> basic_array{
-		typename types::layout_t new_layout = this->layout();
-		new_layout.rotate(i);
-		return {new_layout, types::base_};
-	}
-	constexpr auto rotated(dimensionality_type i) && -> basic_array{return rotated(i);}
-	constexpr auto rotated(dimensionality_type i) const& -> basic_const_array{
-		typename types::layout_t new_layout = this->layout();
-		new_layout.rotate(i);
-		return {new_layout, types::base_};
-	}
+//	constexpr auto rotated(dimensionality_type i) & -> basic_array{
+//		typename types::layout_t new_layout = this->layout();
+//		new_layout.rotate(i);
+//		return {new_layout, types::base_};
+//	}
+//	constexpr auto rotated(dimensionality_type i) && -> basic_array{return rotated(i);}
+//	constexpr auto rotated(dimensionality_type i) const& -> basic_const_array{
+//		typename types::layout_t new_layout = this->layout();
+//		new_layout.rotate(i);
+//		return {new_layout, types::base_};
+//	}
 
-	constexpr auto unrotated(dimensionality_type i) & -> basic_array {
-		typename types::layout_t new_layout = this->layout();
-		new_layout.unrotate(i);
-		return {new_layout, types::base_};
-	}
-	constexpr auto unrotated(dimensionality_type i)     && -> basic_array       {return unrotated(i);}
-	constexpr auto unrotated(dimensionality_type i) const& -> basic_const_array {
-		typename types::layout_t new_layout = this->layout();
-		new_layout.unrotate(i);
-		return {new_layout, types::base_};
-	}
+//	constexpr auto unrotated(dimensionality_type i) & -> basic_array {
+//		typename types::layout_t new_layout = this->layout();
+//		new_layout.unrotate(i);
+//		return {new_layout, types::base_};
+//	}
+//	constexpr auto unrotated(dimensionality_type i)     && -> basic_array       {return unrotated(i);}
+//	constexpr auto unrotated(dimensionality_type i) const& -> basic_const_array {
+//		typename types::layout_t new_layout = this->layout();
+//		new_layout.unrotate(i);
+//		return {new_layout, types::base_};
+//	}
 
-	constexpr auto operator<<(dimensionality_type i)      & -> decltype(auto) {return                    rotated(i);}
-	constexpr auto operator>>(dimensionality_type i)      & -> decltype(auto) {return                  unrotated(i);}
-	constexpr auto operator<<(dimensionality_type i)     && -> decltype(auto) {return std::move(*this).  rotated(i);}
-	constexpr auto operator>>(dimensionality_type i)     && -> decltype(auto) {return std::move(*this).unrotated(i);}
-	constexpr auto operator<<(dimensionality_type i) const& -> decltype(auto) {return                    rotated(i);}
-	constexpr auto operator>>(dimensionality_type i) const& -> decltype(auto) {return                  unrotated(i);}
+//	constexpr auto operator<<(dimensionality_type i)      & -> decltype(auto) {return                    rotated(i);}
+//	constexpr auto operator>>(dimensionality_type i)      & -> decltype(auto) {return                  unrotated(i);}
+//	constexpr auto operator<<(dimensionality_type i)     && -> decltype(auto) {return std::move(*this).  rotated(i);}
+//	constexpr auto operator>>(dimensionality_type i)     && -> decltype(auto) {return std::move(*this).unrotated(i);}
+//	constexpr auto operator<<(dimensionality_type i) const& -> decltype(auto) {return                    rotated(i);}
+//	constexpr auto operator>>(dimensionality_type i) const& -> decltype(auto) {return                  unrotated(i);}
 
 	constexpr auto operator|(typename basic_array::size_type n)      & -> decltype(auto) {return partitioned(n);}
 	constexpr auto operator|(typename basic_array::size_type n)     && -> decltype(auto) {return std::move(*this).partitioned(n);}
