@@ -295,7 +295,9 @@ namespace std {  // NOLINT(cert-dcl58-cpp) : to implement structured bindings
 
 namespace boost::multi {
 
-struct monostate {};
+struct monostate : equality_comparable<monostate> {
+	friend constexpr auto operator==(monostate const& /*self*/, monostate const& /*other*/) {return true;}
+};
 
 template<typename SSize>
 struct layout_t<0, SSize>
@@ -367,8 +369,10 @@ struct layout_t<0, SSize>
 	constexpr auto reverse()          -> layout_t& {return *this;}
 	constexpr auto scale(size_type /*s*/) const {return *this;}
 
-//	friend constexpr auto operator!=(layout_t const& /*self*/, layout_t const& /*other*/) {return false;}
-	friend constexpr auto operator==(layout_t const& /*self*/, layout_t const& /*other*/) {return true ;}
+//	friend constexpr auto operator!=(layout_t const& s, layout_t const& o) {return not(s == o);}
+	friend constexpr auto operator==(layout_t const& s, layout_t const& o) {
+		return s.sub_ == o.sub_ and s.stride_ == o.stride_ and s.offset_ == o.offset_ and s.nelems_ == o.nelems_;
+	}
 
 	constexpr auto   rotate() -> layout_t& {return *this;}
 	constexpr auto unrotate() -> layout_t& {return *this;}
