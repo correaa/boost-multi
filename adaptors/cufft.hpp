@@ -1,7 +1,5 @@
-#ifdef COMPILATION// -*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
-$CXX $0 -o $0x -lcudart -lcufft `pkg-config --libs fftw3` -lboost_unit_test_framework&&$0x&&rm $0x;exit
-#endif
-// © Alfredo A. Correa 2020-2021
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2020-2022 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_CUFFTW_HPP
 #define MULTI_ADAPTORS_CUFFTW_HPP
@@ -374,10 +372,17 @@ auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
 	auto ff = std::find(begin(which)+1, end(which), false);
 	if(which[0] == true){
 		if(ff==end(which)) cufft::dft(i, std::forward<Out>(o), s);
-		else{
-			auto n = ff - which.begin();
-			std::rotate(begin(which), ff, end(which));
-			dft(which, i<<n, o<<n, s);
+		else {
+			auto const n = ff - which.begin();
+			sstd::rotate(begin(which), ff, end(which));
+			// TODO(correaa) : make this more elegant
+			switch(n) {
+				case 0: dft(which, i                              , o                              , s); break;
+				case 1: dft(which, i.rotated()                    , o.rotated()                    , s); break;
+				case 2: dft(which, i.rotated().rotated()          , o.rotated().rotated()          , s); break;
+				case 3: dft(which, i.rotated().rotated().rotated(), o.rotated().rotated().rotated(), s); break;
+				default: assert(0);
+			}
 		}
 	}else if(which[0]==false){
 		if(D==1 or std::none_of(begin(which)+1, end(which), [](auto e){return e;})){
@@ -458,10 +463,7 @@ auto dft_backward(A const& a)
 ->decltype(cufft::dft(a, cufft::backward)){
 	return cufft::dft(a, cufft::backward);}
 
-
 }
 
 }}
-
 #endif
-
