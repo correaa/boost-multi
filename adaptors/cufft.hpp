@@ -366,10 +366,10 @@ auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
 				auto d_min = 0; auto n_min = size(i);
 				for(auto d = 0; d != D - 1; ++d) {
 					switch(d) {
-						case 0: if( (std::get<0>(i.sizes()) < n_min) and (tail[d]==false)) {n_min = std::get<0>(i.sizes()); d_min = d;} break;
-						case 1: if( (std::get<1>(i.sizes()) < n_min) and (tail[d]==false)) {n_min = std::get<1>(i.sizes()); d_min = d;} break;
-						case 2: if( (std::get<2>(i.sizes()) < n_min) and (tail[d]==false)) {n_min = std::get<2>(i.sizes()); d_min = d;} break;
-						case 3: if( (std::get<3>(i.sizes()) < n_min) and (tail[d]==false)) {n_min = std::get<3>(i.sizes()); d_min = d;} break;
+						case 0: if( (size(i                              ) < n_min) and (tail[d] == false)) {n_min = size(i                              ); d_min = d;} break;
+						case 1: if( (size(i.rotated()                    ) < n_min) and (tail[d] == false)) {n_min = size(i.rotated()                    ); d_min = d;} break;
+						case 2: if( (size(i.rotated().rotated()          ) < n_min) and (tail[d] == false)) {n_min = size(i.rotated().rotated()          ); d_min = d;} break;
+						case 3: if( (size(i.rotated().rotated().rotated()) < n_min) and (tail[d] == false)) {n_min = size(i.rotated().rotated().rotated()); d_min = d;} break;
 						default: assert(0);
 					}
 				//  if((size(i<<d) < n_min) and (tail[d]==false)) {n_min = size(i<<d); d_min = d;}
