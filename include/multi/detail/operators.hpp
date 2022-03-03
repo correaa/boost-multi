@@ -13,7 +13,7 @@ struct empty_base {};
 
 template<class Self, class U> struct equality_comparable2;
 
-template <class Self, class Other>
+template<class Self, class Other>
 struct equality_comparable2 {
 	friend constexpr auto operator!=(const Self& s, const Other& o) {return not(s == o);}
 
@@ -26,7 +26,7 @@ struct equality_comparable2 {
 
 template<class Self> struct equality_comparable : equality_comparable2<Self, Self> {};
 
-template <class T>
+template<class T>
 struct equality_comparable2<T, void> {
 	template<class U, typename = std::enable_if_t<not std::is_base_of<T, U>{}> >
 	friend constexpr auto operator!=(const T& y, const U& x) -> bool {return not(y==x);}
