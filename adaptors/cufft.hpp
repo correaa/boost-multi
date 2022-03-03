@@ -337,7 +337,8 @@ constexpr auto array_tail(Array const& t)
 
 template<typename In, class Out, std::size_t D = In::dimensionality, std::enable_if_t<(D>1), int> = 0>
 auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
-->decltype(many_dft(i.begin(), i.end(), o.begin(), s),std::forward<Out>(o)) {
+->decltype(many_dft(i.begin(), i.end(), o.begin(), s),std::forward<Out>(o))
+{
 	assert(extension(i) == extension(o));
 	auto ff = std::find(begin(which)+1, end(which), false);
 	if(which[0] == true) {
@@ -355,11 +356,12 @@ auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
 			}
 		}
 	} else if(which[0]==false) {
-		if(D==1 or std::none_of(begin(which)+1, end(which), [](auto e){return e;})) {
+		if(D==1 or std::none_of(begin(which)+1, end(which), [](auto e){return e;})){
 			if(base(o) != base(i)) std::forward<Out>(o) = i;
 			else if(o.layout() != i.layout()) std::forward<Out>(o) = +i;
-		} else if(ff==end(which)) {many_dft(i.begin(), i.end(), o.begin(), s);}
-		} else {
+		}
+		else if(ff==end(which)) many_dft(i.begin(), i.end(), o.begin(), s);
+		else{
 			std::array<bool, D-1> tail = array_tail(which);
 			if(which[1] == false and i.is_flattable() and o.is_flattable()) cufft::dft(tail, i.flatted(), o.flatted(), s);
 			else{
@@ -385,14 +387,12 @@ auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
 					}
 				//  dft(which, i<<d_min, o<<d_min, s);
 				} else {
-					if(base(i) == base(o) and i.layout() != o.layout()) {
+					if(base(i) == base(o) and i.layout() != o.layout()){
 						auto const tmp = +i;
-						for(auto idx : extension(i)) {cufft::dft(tail, tmp[idx], o[idx], s);}
-					} else {
-						for(auto idx : extension(i)) {
-							MULTI_MARK_SCOPE("cufft inner loop");
-							cufft::dft(tail, i[idx], o[idx], s);
-						}
+						for(auto idx : extension(i)) cufft::dft(tail, tmp[idx], o[idx], s);
+					}else for(auto idx : extension(i)){
+						MULTI_MARK_SCOPE("cufft inner loop");
+						cufft::dft(tail, i[idx], o[idx], s);
 					}
 				}
 			}
@@ -404,46 +404,46 @@ auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
 template<typename In,  std::size_t D = In::dimensionality>
 NODISCARD("when passing a const argument")
 auto dft(std::array<bool, D> which, In const& i, int sign)->std::decay_t<decltype(
-dft(which, i, typename In::decay_type(extensions(i), get_allocator(i)), sign))> {return
-dft(which, i, typename In::decay_type(extensions(i), get_allocator(i)), sign);  }
+dft(which, i, typename In::decay_type(extensions(i), get_allocator(i)), sign))>{return 
+dft(which, i, typename In::decay_type(extensions(i), get_allocator(i)), sign);}
 
 template<typename In,  std::size_t D = In::dimensionality>
 auto dft(std::array<bool, D> which, In&& i, int sign)
-->decltype(dft(which, i, i, sign), std::forward<In>(i)) {
-	return dft(which, i, i, sign), std::forward<In>(i); }
+->decltype(dft(which, i, i, sign), std::forward<In>(i)){
+	return dft(which, i, i, sign), std::forward<In>(i);}
 
 //template<typename... A> auto            dft_forward(A&&... a)
 //->decltype(cufft::dft(std::forward<A>(a)..., cufft::forward)){
 //	return cufft::dft(std::forward<A>(a)..., cufft::forward);}
 
 template<typename Array, typename A> NODISCARD("when passing a const argument")
-auto dft_forward(Array arr, A const& a)
-->decltype(cufft::dft(arr, a, cufft::forward)) {
-	return cufft::dft(arr, a, cufft::forward); }
+auto dft_forward(Array arr, A const& a) 
+->decltype(cufft::dft(arr, a, cufft::forward)){
+	return cufft::dft(arr, a, cufft::forward);}
 
 template<typename Array, dimensionality_type D> NODISCARD("when passing a const argument")
-auto dft_forward(Array arr, multi::cuda::array<std::complex<double>, D>&& a)
-->decltype(cufft::dft(arr, a, cufft::forward), multi::cuda::array<std::complex<double>, D>{}) {
-	return cufft::dft(arr, a, cufft::forward), std::move(a)                                  ;}
+auto dft_forward(Array arr, multi::cuda::array<std::complex<double>, D>&& a) 
+->decltype(cufft::dft(arr, a, cufft::forward), multi::cuda::array<std::complex<double>, D>{}){//assert(0);
+	return cufft::dft(arr, a, cufft::forward), std::move(a);}
 
 template<typename A> NODISCARD("when passing a const argument")
 auto dft_forward(A const& a)
-->decltype(cufft::dft(a, cufft::forward)) {
-	return cufft::dft(a, cufft::forward); }
+->decltype(cufft::dft(a, cufft::forward)){
+	return cufft::dft(a, cufft::forward);}
 
 template<typename... A> auto            dft_backward(A&&... a)
-->decltype(cufft::dft(std::forward<A>(a)..., cufft::backward)) {
-	return cufft::dft(std::forward<A>(a)..., cufft::backward); }
+->decltype(cufft::dft(std::forward<A>(a)..., cufft::backward)){
+	return cufft::dft(std::forward<A>(a)..., cufft::backward);}
 
 template<typename Array, typename A> NODISCARD("when passing a const argument")
 auto dft_backward(Array arr, A const& a) 
-->decltype(cufft::dft(arr, a, cufft::backward)) {
-	return cufft::dft(arr, a, cufft::backward); }
+->decltype(cufft::dft(arr, a, cufft::backward)){
+	return cufft::dft(arr, a, cufft::backward);}
 
 template<typename A> NODISCARD("when passing a const argument")
 auto dft_backward(A const& a)
-->decltype(cufft::dft(a, cufft::backward)) {
-	return cufft::dft(a, cufft::backward); }
+->decltype(cufft::dft(a, cufft::backward)){
+	return cufft::dft(a, cufft::backward);}
 
 }
 
