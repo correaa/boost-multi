@@ -298,8 +298,8 @@ namespace boost::multi {
 struct monostate {};
 
 template<typename SSize>
-struct layout_t<multi::dimensionality_type{0}, SSize>
-: multi::equality_comparable<layout_t<multi::dimensionality_type{0}, SSize> >
+struct layout_t<0, SSize>
+: multi::equality_comparable<layout_t<0, SSize> >
 {
 	using dimensionality_type = multi::dimensionality_type;
 	using rank = std::integral_constant<dimensionality_type, 0>;
