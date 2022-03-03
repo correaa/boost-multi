@@ -385,12 +385,14 @@ auto dft(std::array<bool, D> which, In const& i, Out&& o, int s)
 					}
 				//  dft(which, i<<d_min, o<<d_min, s);
 				} else {
-					if(base(i) == base(o) and i.layout() != o.layout()){
+					if(base(i) == base(o) and i.layout() != o.layout()) {
 						auto const tmp = +i;
-						for(auto idx : extension(i)) cufft::dft(tail, tmp[idx], o[idx], s);
-					}else for(auto idx : extension(i)){
-						MULTI_MARK_SCOPE("cufft inner loop");
-						cufft::dft(tail, i[idx], o[idx], s);
+						for(auto idx : extension(i)) {cufft::dft(tail, tmp[idx], o[idx], s);}
+					} else {
+						for(auto idx : extension(i)) {
+							MULTI_MARK_SCOPE("cufft inner loop");
+							cufft::dft(tail, i[idx], o[idx], s);
+						}
 					}
 				}
 			}
