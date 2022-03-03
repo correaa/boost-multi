@@ -342,17 +342,17 @@ struct layout_t<0, SSize>
 	constexpr layout_t(sub_type sub, stride_type stride, offset_type offset, nelems_type nelems)
 	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}
 
-	[[nodiscard]]        constexpr auto extensions()        const     {return extensions_type{};}
-	[[nodiscard]] friend constexpr auto extensions(layout_t const& s) {return s.extensions();}
+	[[nodiscard]] constexpr auto extensions()        const     {return extensions_type{};}
+	friend        constexpr auto extensions(layout_t const& s) {return s.extensions();}
 
-	[[nodiscard]]        constexpr auto num_elements()        const     {return nelems_;}
-	[[nodiscard]] friend constexpr auto num_elements(layout_t const& s) {return s.num_elements();}
+	[[nodiscard]] constexpr auto num_elements()        const     {return nelems_;}
+	friend        constexpr auto num_elements(layout_t const& s) {return s.num_elements();}
 
-	[[nodiscard]]        constexpr auto empty()        const     {return nelems_ == 0;}
-	[[nodiscard]] friend constexpr auto empty(layout_t const& s) {return s.empty();}
+	[[nodiscard]] constexpr auto empty()        const     {return nelems_ == 0;}
+	friend        constexpr auto empty(layout_t const& s) {return s.empty();}
 
-	[[nodiscard]]        constexpr auto sizes()        const     {return std::tuple<>{};}
-	[[nodiscard]] friend constexpr auto sizes(layout_t const& s) {return s.sizes();}
+	[[nodiscard]] constexpr auto sizes()        const     {return std::tuple<>{};}
+	friend        constexpr auto sizes(layout_t const& s) {return s.sizes();}
 
 	[[nodiscard]] auto strides() const {return strides_type{};}
 	[[nodiscard]] auto offsets() const {return offsets_type{};}
