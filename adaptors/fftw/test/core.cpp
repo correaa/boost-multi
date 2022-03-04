@@ -74,7 +74,7 @@ struct fftw_fixture : fftw::environment{
 BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
 
 BOOST_AUTO_TEST_CASE(fftw_3D) {
-	using complex = std::complex<double>; // TODO(correaa) make it work with thrust
+	using complex = std::complex<double>;  // TODO(correaa) make it work with thrust
 	multi::array<complex, 3> in({10, 10, 10});
 	in[2][3][4] = 99.;
 	multi::fftw::dft_forward(in);

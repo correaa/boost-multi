@@ -24,7 +24,7 @@ class n_random_complex {
 		iterator(n_random_complex<T> const* ptr, std::size_t n) : ptr_{ptr}, n_{n} {}
 
 		auto operator*() const {return std::complex<T>{ptr_->dist_(ptr_->gen_), ptr_->dist_(ptr_->gen_)};}
-		iterator& operator++() {++n_; return *this;}
+		auto operator++() -> iterator& {++n_; return *this;}
 		friend auto operator==(iterator const& s, iterator const& o) {return s.n_ == o.n_;}
 		auto operator-(iterator const& other) const {return n_ - other.n_;}
 	};
@@ -37,13 +37,23 @@ namespace fftw = multi::fftw;
 
 BOOST_AUTO_TEST_CASE(fftw_shift){
 
+	struct watch : std::chrono::steady_clock {
+		time_point start = now();
+		auto elapsed_sec() const {return std::chrono::duration<double>(now() - start).count();}
+	};
+
 	multi::array<std::complex<double>, 1> const arr = n_random_complex<double>(19586);  BOOST_REQUIRE(arr.size() == 19586);
 	multi::array<std::complex<double>, 1>       res(arr.extensions());                  BOOST_REQUIRE(res.size() == 19586);
 
-	for(int i = 0; i != 40; ++i) {
-		fftw::dft_forward(arr, res);
-		std::rotate(res.begin(), res.begin() + res.size()/2, res.end());
-	}
+	fftw::plan fdft{arr, res, multi::fftw::forward};
 
+	auto const N = 1000;
+	[&, _ = watch{}]{
+		for(int i = 0; i != N; ++i) {
+			fdft(arr.base(), res.base());
+			std::rotate(res.begin(), res.begin() + res.size()/2, res.end());
+		}
+
+	    BOOST_TEST_MESSAGE( "FFTW shift " << _.elapsed_sec()/N <<" sec" );  // prints  0.000882224 sec
+	}();
 }
-
