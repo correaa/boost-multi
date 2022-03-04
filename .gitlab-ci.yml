@@ -229,6 +229,7 @@ clang++-11:
 
 cuda-11.0:
     image: nvidia/cuda:11.0-devel
+    allow_failure: true
     stage: build
     script:
       - export DEBIAN_FRONTEND=noninteractive

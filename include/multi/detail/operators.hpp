@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2018-2021 Alfredo A. Correa
+// Copyright 2018-2022 Alfredo A. Correa
 
 #ifndef BOOST_MULTI_DETAIL_OPERATORS_HPP
 #define BOOST_MULTI_DETAIL_OPERATORS_HPP
@@ -11,10 +11,23 @@ namespace boost::multi {
 
 struct empty_base {};
 
-template<class T, class V, class B = empty_base> struct equality_comparable2;
+template<class Self, class U> struct equality_comparable2;
 
-template <class T, class B>
-struct equality_comparable2<T, void, B> : B {
+template<class Self, class Other>
+struct equality_comparable2 {
+	friend constexpr auto operator!=(const Self& s, const Other& o) {return not(s == o);}
+
+	template<class OOther, std::enable_if_t<std::is_base_of<OOther, Other>{} and not std::is_base_of<Other, Self>{}, int> =0>
+	friend constexpr auto operator!=(OOther const& o, Self const& s) {return not(o == s);}
+
+	template<class OOther, std::enable_if_t<std::is_base_of<Other, OOther>{} and not std::is_base_of<Other, Self>{}, int> =0>
+	friend constexpr auto operator==(OOther const& o, const Self& s) {return     s == o;}
+};
+
+template<class Self> struct equality_comparable : equality_comparable2<Self, Self> {};
+
+template<class T>
+struct equality_comparable2<T, void> {
 	template<class U, typename = std::enable_if_t<not std::is_base_of<T, U>{}> >
 	friend constexpr auto operator!=(const T& y, const U& x) -> bool {return not(y==x);}
 };
