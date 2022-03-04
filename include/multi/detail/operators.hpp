@@ -17,10 +17,10 @@ template<class Self, class Other>
 struct equality_comparable2 {
 	friend constexpr auto operator!=(const Self& s, const Other& o) {return not(s == o);}
 
-	template<class OOther, std::enable_if_t<std::is_base_of<OOther, Other>{} and not std::is_base_of<Other, Self>{}, int> =0>
+	template<class OOther, std::enable_if_t<std::is_base_of<Other, OOther>{} and not std::is_base_of<Self, Other>{}, int> =0>
 	friend constexpr auto operator!=(OOther const& o, Self const& s) {return not(o == s);}
 
-	template<class OOther, std::enable_if_t<std::is_base_of<Other, OOther>{} and not std::is_base_of<Other, Self>{}, int> =0>
+	template<class OOther, std::enable_if_t<std::is_base_of<Other, OOther>{} and not std::is_base_of<Self, Other>{}, int> =0>
 	friend constexpr auto operator==(OOther const& o, const Self& s) {return     s == o;}
 };
 
@@ -129,6 +129,16 @@ struct random_iterable {
 	       constexpr auto cback () const&    -> decltype(auto) {return static_cast<T const&>(*this).back() ;}
 	friend constexpr auto cfront(T const& s) -> decltype(auto) {return s.cfront();}
 	friend constexpr auto cback (T const& s) -> decltype(auto) {return s.cback() ;}
+};
+
+template<class Self, class Value, class Reference = Value&, class Pointer = Value*, class Difference = std::ptrdiff_t>
+struct random_access_iterator : equality_comparable2<Self, Self> {
+	using difference_type = Difference;
+	using value_type = Value;
+	using pointer = Pointer;
+	using reference = Reference;
+	using iterator_category = std::random_access_iterator_tag;
+	auto operator*() const -> Reference {return *static_cast<Self const&>(*this);}
 };
 
 }  // end namespace boost::multi
