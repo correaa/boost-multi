@@ -37,9 +37,9 @@ namespace fftw = multi::fftw;
 
 BOOST_AUTO_TEST_CASE(fftw_shift){
 
-	struct watch : std::chrono::steady_clock {
-		time_point start = now();
-		auto elapsed_sec() const {return std::chrono::duration<double>(now() - start).count();}
+	class watch : std::chrono::steady_clock {
+		time_point start_ = now();
+		public: auto elapsed_sec() const {return std::chrono::duration<double>(now() - start_).count();}
 	};
 
 	multi::array<std::complex<double>, 1> const arr = n_random_complex<double>(19586);  BOOST_REQUIRE(arr.size() == 19586);
@@ -47,7 +47,7 @@ BOOST_AUTO_TEST_CASE(fftw_shift){
 
 	fftw::plan fdft{arr, res, multi::fftw::forward};
 
-	auto const N = 1000;
+	auto const N = 40;
 	[&, _ = watch{}]{
 		for(int i = 0; i != N; ++i) {
 			fdft(arr.base(), res.base());
