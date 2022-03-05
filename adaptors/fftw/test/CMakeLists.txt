@@ -96,6 +96,7 @@ set(TEST_SRCS
 	combinations.cpp
 	# copy.cpp
 	core.cpp
+    shift.cpp
 	# thrust.cpp
 	transpose.cpp
 	transpose_square.cpp

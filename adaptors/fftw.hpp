@@ -396,8 +396,8 @@ auto fftw_plan_dft(In const& in, Out&& out, int s, fftw::flags flags){
 		/*const fftw_iodim64 *dims*/ dims.data(),
 		/*int howmany_rank*/ 0,
 		/*const fftw_iodim *howmany_dims*/ nullptr, //howmany_dims.data(), //;//nullptr,
-		/*fftw_complex *in*/ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(static_cast<std::complex<double> const*>(base(in)))), // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) : interact with legacy code
-		/*fftw_complex *out*/ reinterpret_cast<fftw_complex*>(multi::implicit_cast<std::complex<double>*>(base(out))), // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : interact with legacy code
+		/*fftw_complex *in */ const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(         static_cast<std::complex<double> const*>(base(in)))),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) : interact with legacy code
+		/*fftw_complex *out*/                           reinterpret_cast<fftw_complex      *>(multi::implicit_cast<std::complex<double>      *>(base(out))),  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : interact with legacy code
 		s, static_cast<unsigned>(flags)
 	);
 	assert(ret);
@@ -430,13 +430,15 @@ struct environment{
 };
 
 class plan {
-	plan() : impl_{nullptr, &fftw_destroy_plan}{}
+	plan() : impl_{nullptr, &fftw_destroy_plan} {}
 	std::unique_ptr<std::remove_pointer_t<fftw_plan>, decltype(&fftw_destroy_plan)> impl_;
-public:
-	plan(plan const&) = delete;//default;
+
+ public:
+	plan(plan const&) = delete;
 	plan(plan&&) = default;
 	~plan() = default;
-	template<typename... As, 
+
+	template<typename... As,
 		typename = decltype(fftw_plan_dft(std::declval<As&&>()...))
 	>
 	explicit plan(As&&... as) : impl_{fftw_plan_dft(std::forward<As>(as)...), &fftw_destroy_plan}{
@@ -466,7 +468,7 @@ public:
 	void operator()(I&& i, O&& o) const{execute(std::forward<I>(i), std::forward<O>(o));}
 	void operator()()             const{execute();} // http://www.fftw.org/fftw3_doc/Thread-safety.html#Thread-safety
 
-	[[nodiscard]] auto cost() const -> double{return fftw_cost(impl_.get());}
+	[[nodiscard]] auto cost() const -> double {return fftw_cost(impl_.get());}
 	[[nodiscard]] auto flops() const{
 		struct ret_t{
 			double add = 0.;
