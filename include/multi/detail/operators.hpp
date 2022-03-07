@@ -11,13 +11,16 @@ namespace boost::multi {
 
 struct empty_base {};
 
-template<class Self, class U> class equality_comparable2;
+template<class Self> struct selfable {
+	using self_type = Self;
+	auto self() const -> self_type const& {return static_cast<self_type const&>(*this);}
+	friend auto self(selfable const& s) {return s.self();}
+};
+
+template<class Self, class U> struct equality_comparable2;
 
 template<class Self, class Other>
-class equality_comparable2 {
-	auto self() const -> Self const& {return static_cast<Self const&>(*this);}
-
- public:
+struct equality_comparable2 : selfable<Self> {
 	friend constexpr auto operator==(equality_comparable2 const& s, Other const& o) {return     s.self() == o ;}
 	friend constexpr auto operator!=(equality_comparable2 const& s, Other const& o) {return not(s.self() == o);}
 
@@ -26,10 +29,7 @@ class equality_comparable2 {
 };
 
 template<class Self>
-class equality_comparable2<Self, Self> {
-	auto self() const -> Self const& {return static_cast<Self const&>(*this);}
-
- public:
+struct equality_comparable2<Self, Self> : selfable<Self> {
 	friend constexpr auto operator==(equality_comparable2 const& s, equality_comparable2 const& o) {return     s.self() == o.self() ;}
 	friend constexpr auto operator!=(equality_comparable2 const& s, equality_comparable2 const& o) {return not(s.self() == o.self());}
 };
