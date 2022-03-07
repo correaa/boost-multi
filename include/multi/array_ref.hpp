@@ -396,6 +396,126 @@ struct array_iterator
 //	using iterator_category = std::random_access_iterator_tag;
 //};
 
+template<typename Pointer, class LayoutType>
+struct elements_iterator_t : boost::multi::equality_comparable<elements_iterator_t<Pointer, LayoutType>> {
+	using difference_type = typename std::iterator_traits<Pointer>::difference_type;
+	using value_type = typename std::iterator_traits<Pointer>::value_type;
+	using pointer = Pointer;
+	using reference = typename std::iterator_traits<Pointer>::reference;
+	using iterator_category = std::random_access_iterator_tag;
+
+	using layout_type = LayoutType;
+
+ private:
+	pointer base_;
+	layout_type l_;
+	difference_type n_;
+	template<class, class> friend struct elements_iterator_t;
+
+ public:
+	constexpr elements_iterator_t(pointer base, layout_type l, difference_type n)
+	: base_{base}, l_{l}, n_{n} {}
+
+	template<class ElementsIterator = elements_iterator_t>
+	// cppcheck-suppress noExplicitConstructor
+	constexpr elements_iterator_t(ElementsIterator const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	: base_{other.base_}, l_{other.l_}, n_{other.n_} {}
+
+	constexpr auto operator->() const -> pointer {
+		return base_ + std::apply(l_, l_.extensions().from_linear(n_));
+	}
+	constexpr auto operator*() const -> reference {return *operator->();}
+
+	constexpr auto operator[](difference_type d) const -> reference {return *(operator+(d));}
+
+	constexpr auto operator+=(difference_type d) -> elements_iterator_t& {n_ += d; return *this;}
+	constexpr auto operator-=(difference_type d) -> elements_iterator_t& {n_ -= d; return *this;}
+
+	constexpr auto operator++() -> elements_iterator_t& {return (*this) += 1;}
+	constexpr auto operator--() -> elements_iterator_t& {return (*this) -= 1;}
+
+	constexpr auto operator+(difference_type d) const {elements_iterator_t ret{*this}; return ret += d;}
+	constexpr auto operator-(difference_type d) const {elements_iterator_t ret{*this}; return ret -= d;}
+
+	constexpr auto operator-(elements_iterator_t other) const -> difference_type {
+		assert(base_ == other.base_);
+		assert(l_ == other.l_);
+		return n_ - other.n_;
+	}
+
+	friend constexpr auto operator==(elements_iterator_t const& s, elements_iterator_t const& o) {return s.n_ == o.n_ and s.base_ == o.base_ and s.l_ == o.l_;}
+	friend constexpr auto operator!=(elements_iterator_t const& s, elements_iterator_t const& o) {return not(s==o);}
+
+	constexpr auto operator<(elements_iterator_t const& other) const {
+		assert( base_ == other.base_ );
+		assert( l_    == other.l_    );
+		return n_ < other.n_;
+	}
+};
+
+template<typename Pointer, class LayoutType>
+struct elements_range_t {
+	using       pointer = Pointer;
+	using layout_type = LayoutType;
+
+	using value_type = typename std::iterator_traits<pointer>::value_type;
+	using const_pointer = typename std::pointer_traits<pointer>::template rebind<value_type const>;
+
+	using       reference = typename std::iterator_traits<      pointer>::reference;
+	using const_reference = typename std::iterator_traits<const_pointer>::reference;
+
+	using size_type       = typename std::iterator_traits<pointer>::difference_type;
+	using difference_type = typename std::iterator_traits<pointer>::difference_type;
+
+	using       iterator = elements_iterator_t<pointer, layout_type>;
+	using const_iterator = elements_iterator_t<const_pointer, layout_type>;
+
+ private:
+	pointer base_;
+	layout_type l_;
+
+	constexpr auto at_aux(difference_type n) const -> reference {
+		return *(base_ + std::apply(l_, l_.extensions().from_linear(n)));
+	}
+
+ public:
+	constexpr elements_range_t(pointer base, layout_type l) : base_{base}, l_{l} {}
+
+	constexpr auto operator[](difference_type n) const& -> const_reference {return at_aux(n);}
+	constexpr auto operator[](difference_type n)     && ->       reference {return at_aux(n);}
+	constexpr auto operator[](difference_type n)      & ->       reference {return at_aux(n);}
+
+	constexpr auto size() const {return l_.num_elements();}
+
+ private:
+	constexpr auto begin_aux() const {return iterator{base_, l_, 0                };}
+	constexpr auto end_aux  () const {return iterator{base_, l_, l_.num_elements()};}
+
+ public:
+	constexpr auto begin() const& -> const_iterator {return begin_aux();}
+	constexpr auto end  () const& -> const_iterator {return end_aux  ();}
+
+	constexpr auto begin()     && ->       iterator {return begin_aux();}
+	constexpr auto end  ()     && ->       iterator {return end_aux()  ;}
+
+	constexpr auto begin()      & ->       iterator {return begin_aux();}
+	constexpr auto end  ()      & ->       iterator {return end_aux()  ;}
+
+ private:
+	constexpr auto front_aux() const -> reference {return *(base_ + std::apply(l_, l_.extensions().from_linear(0                    )));}
+	constexpr auto back_aux()  const -> reference {return *(base_ + std::apply(l_, l_.extensions().from_linear(l_.num_elements() - 1)));}
+
+ public:
+	constexpr auto front() const& -> const_reference {return front_aux();}
+	constexpr auto back()  const& -> const_reference {return back_aux ();}
+
+	constexpr auto front()     && ->       reference {return front_aux();}
+	constexpr auto back()      && ->       reference {return back_aux ();}
+
+	constexpr auto front()      & -> const_reference {return front_aux();}
+	constexpr auto back()       & -> const_reference {return back_aux ();}
+};
+
 template<class It>
 auto ref(It begin, It end)
 ->multi::basic_array<typename It::element, It::rank_v, typename It::element_ptr> {
@@ -436,128 +556,11 @@ struct basic_array
 	using element_ptr       = typename types::element_ptr;
 	using element_const_ptr = typename types::element_const_ptr;
 
-	template<class Pointer>
-	struct elements_iterator_t {
-		using difference_type = typename basic_array::difference_type;
-		using value_type = typename basic_array::element;
-		using pointer = Pointer;
-		using reference = typename std::iterator_traits<Pointer>::reference;
-		using iterator_category = std::random_access_iterator_tag;
+	using  elements_iterator = elements_iterator_t<element_ptr      , layout_type>;
+	using celements_iterator = elements_iterator_t<element_const_ptr, layout_type>;
 
-	 private:
-		pointer base_;
-		layout_type l_;
-		difference_type n_;
-		template<class> friend struct elements_iterator_t;
-
-	 public:
-		constexpr elements_iterator_t(pointer base, layout_type l, difference_type n)
-		: base_{base}, l_{l}, n_{n} {}
-
-		template<class ElementsIterator = elements_iterator_t>
-		// cppcheck-suppress noExplicitConstructor
-		constexpr elements_iterator_t(ElementsIterator const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-		: base_{other.base_}, l_{other.l_}, n_{other.n_} {}
-
-		constexpr auto operator->() const -> pointer {
-			return base_ + std::apply(l_, l_.extensions().from_linear(n_));
-		}
-		constexpr auto operator*() const -> reference {return *operator->();}
-
-		constexpr auto operator[](difference_type d) const -> reference {return *(operator+(d));}
-
-		constexpr auto operator+=(difference_type d) -> elements_iterator_t& {n_ += d; return *this;}
-		constexpr auto operator-=(difference_type d) -> elements_iterator_t& {n_ -= d; return *this;}
-
-		constexpr auto operator++() -> elements_iterator_t& {return (*this) += 1;}
-		constexpr auto operator--() -> elements_iterator_t& {return (*this) -= 1;}
-
-		constexpr auto operator+(difference_type d) const {elements_iterator_t ret{*this}; return ret += d;}
-		constexpr auto operator-(difference_type d) const {elements_iterator_t ret{*this}; return ret -= d;}
-
-		constexpr auto operator-(elements_iterator_t other) const -> difference_type {
-			assert(base_ == other.base_);
-			assert(l_ == other.l_);
-			return n_ - other.n_;
-		}
-
-		constexpr auto operator==(elements_iterator_t const& other) {return n_ == other.n_ and base_ == other.base_ and l_ == other.l_;}
-		constexpr auto operator!=(elements_iterator_t const& other) {return not ((*this)==other);}
-
-		constexpr auto operator<(elements_iterator_t const& other) const {
-			assert( base_ == other.base_ );
-			assert( l_    == other.l_    );
-			return n_ < other.n_;
-		}
-	};
-
-	using  elements_iterator = elements_iterator_t<element_ptr      >;
-	using celements_iterator = elements_iterator_t<element_const_ptr>;
-
-	template<class Pointer>
-	struct elements_range_t {
-		using value_type = typename basic_array::element;
-
-		using size_type       = typename basic_array::size_type;
-		using difference_type = typename basic_array::difference_type;
-
-		using       pointer = Pointer;
-		using const_pointer = element_const_ptr;  // typename std::pointer_traits<pointer>::template rebind<value_type const>;
-
-		using       reference = typename std::iterator_traits<pointer          >::reference;
-		using const_reference = typename std::iterator_traits<element_const_ptr>::reference;
-
-		using       iterator =  elements_iterator_t<pointer>;
-		using const_iterator = celements_iterator;
-
-	 private:
-		pointer base_;
-		layout_type l_;
-
-		constexpr auto at_aux(difference_type n) const -> reference {
-			return *(base_ + std::apply(l_, l_.extensions().from_linear(n)));
-		}
-
-	 public:
-		constexpr elements_range_t(pointer base, layout_type l) : base_{base}, l_{l} {}
-
-		constexpr auto operator[](difference_type n) const& -> const_reference {return at_aux(n);}
-		constexpr auto operator[](difference_type n)     && ->       reference {return at_aux(n);}
-		constexpr auto operator[](difference_type n)      & ->       reference {return at_aux(n);}
-
-		constexpr auto size() const {return l_.num_elements();}
-
-	 private:
-		constexpr auto begin_aux() const {return iterator{base_, l_, 0                };}
-		constexpr auto end_aux  () const {return iterator{base_, l_, l_.num_elements()};}
-
-	 public:
-		constexpr auto begin() const& -> const_iterator {return begin_aux();}
-		constexpr auto end  () const& -> const_iterator {return end_aux  ();}
-
-		constexpr auto begin()     && ->       iterator {return begin_aux();}
-		constexpr auto end  ()     && ->       iterator {return end_aux()  ;}
-
-		constexpr auto begin()      & ->       iterator {return begin_aux();}
-		constexpr auto end  ()      & ->       iterator {return end_aux()  ;}
-
-	 private:
-		constexpr auto front_aux() const -> reference {return *(base_ + std::apply(l_, l_.extensions().from_linear(0                    )));}
-		constexpr auto back_aux()  const -> reference {return *(base_ + std::apply(l_, l_.extensions().from_linear(l_.num_elements() - 1)));}
-
-	 public:
-		constexpr auto front() const& -> const_reference {return front_aux();}
-		constexpr auto back()  const& -> const_reference {return back_aux ();}
-
-		constexpr auto front()     && ->       reference {return front_aux();}
-		constexpr auto back()      && ->       reference {return back_aux ();}
-
-		constexpr auto front()      & -> const_reference {return front_aux();}
-		constexpr auto back()       & -> const_reference {return back_aux ();}
-	};
-
-	using  elements_range = elements_range_t<element_ptr      >;
-	using celements_range = elements_range_t<element_const_ptr>;
+	using  elements_range = elements_range_t<element_ptr      , layout_type>;
+	using celements_range = elements_range_t<element_const_ptr, layout_type>;
 
 	constexpr auto  elements()      & { return  elements_range{this->base(), this->layout()};}
 	constexpr auto  elements()     && { return  elements_range{this->base(), this->layout()};}
