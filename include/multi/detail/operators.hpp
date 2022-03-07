@@ -11,17 +11,27 @@ namespace boost::multi {
 
 struct empty_base {};
 
+template<class Self> struct selfable {
+	using self_type = Self;
+	auto self() const -> self_type const& {return static_cast<self_type const&>(*this);}
+	friend auto self(selfable const& s) {return s.self();}
+};
+
 template<class Self, class U> struct equality_comparable2;
 
 template<class Self, class Other>
-struct equality_comparable2 {
-	friend constexpr auto operator!=(const Self& s, const Other& o) {return not(s == o);}
+struct equality_comparable2 : selfable<Self> {
+	friend constexpr auto operator==(equality_comparable2 const& s, Other const& o) {return     s.self() == o ;}
+	friend constexpr auto operator!=(equality_comparable2 const& s, Other const& o) {return not(s.self() == o);}
 
-	template<class OOther, std::enable_if_t<std::is_base_of<Other, OOther>{} and not std::is_base_of<Self, Other>{}, int> =0>
-	friend constexpr auto operator!=(OOther const& o, Self const& s) {return not(o == s);}
+	friend constexpr auto operator!=(Other const& o, equality_comparable2 const& s) {return not(o == s.self());}
+	friend constexpr auto operator==(Other const& o, equality_comparable2 const& s) {return     s.self() == o;}
+};
 
-	template<class OOther, std::enable_if_t<std::is_base_of<Other, OOther>{} and not std::is_base_of<Self, Other>{}, int> =0>
-	friend constexpr auto operator==(OOther const& o, const Self& s) {return     s == o;}
+template<class Self>
+struct equality_comparable2<Self, Self> : selfable<Self> {
+	friend constexpr auto operator==(equality_comparable2 const& s, equality_comparable2 const& o) {return     s.self() == o.self() ;}
+	friend constexpr auto operator!=(equality_comparable2 const& s, equality_comparable2 const& o) {return not(s.self() == o.self());}
 };
 
 template<class Self> struct equality_comparable : equality_comparable2<Self, Self> {};
