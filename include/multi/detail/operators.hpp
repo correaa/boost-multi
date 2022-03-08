@@ -38,8 +38,11 @@ template<class Self> struct equality_comparable : equality_comparable2<Self, Sel
 
 template<class T>
 struct equality_comparable2<T, void> {
-	template<class U, typename = std::enable_if_t<not std::is_base_of<T, U>{}> >
-	friend constexpr auto operator!=(const T& y, const U& x) -> bool {return not(y==x);}
+	template<class Other> friend constexpr auto operator==(equality_comparable2 const& s, Other const& o) {return     s.self() == o ;}
+	template<class Other> friend constexpr auto operator!=(equality_comparable2 const& s, Other const& o) {return not(s.self() == o);}
+
+	template<class Other> friend constexpr auto operator!=(Other const& o, equality_comparable2 const& s) {return not(o == s.self());}
+	template<class Other> friend constexpr auto operator==(Other const& o, equality_comparable2 const& s) {return     s.self() == o;}
 };
 
 template<class T, class V> struct partially_ordered2;
