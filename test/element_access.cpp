@@ -131,11 +131,22 @@ BOOST_AUTO_TEST_CASE(multi_test_stencil) {
 	BOOST_REQUIRE(           A.stenciled({1, 3}, {2, 5}) [1][2] == "h"          );
 	BOOST_REQUIRE(          &A.stenciled({1, 3}, {2, 5}) [1][2] == &A[1][2]     );
 
+	BOOST_REQUIRE(  A().elements().size() == A.num_elements() );
+
 	BOOST_REQUIRE( &A({1, 3}, {2, 5}).elements()[0] == &A(1, 2) );
 	BOOST_REQUIRE( &A({1, 3}, {2, 5}).elements()[A({1, 3}, {2, 5}).elements().size() - 1] == &A(2, 4) );
 
 	BOOST_REQUIRE( &A({1, 3}, {2, 5}).elements().front() == &A(1, 2) );
 	BOOST_REQUIRE( &A({1, 3}, {2, 5}).elements().back()  == &A(2, 4) );
+}
+
+BOOST_AUTO_TEST_CASE(multi_test_elements_1D) {
+	multi::array<double, 1> A = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9.};
+	BOOST_REQUIRE( A.size() == 10 );
+
+	BOOST_REQUIRE(  A.elements().size() == 10 );
+	BOOST_REQUIRE( &A.elements()[0] == &A[0] );
+	BOOST_REQUIRE( &A.elements()[9] == &A[9] );
 }
 
 //BOOST_AUTO_TEST_CASE(multi_test_stencil_1D) {  // TODO(correaa) make it work

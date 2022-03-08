@@ -479,6 +479,12 @@ struct elements_range_t {
 	}
 
  public:
+	template<class OtherRange, decltype(multi::implicit_cast<pointer>(std::declval<OtherRange>().base_))* = nullptr>
+	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
+	constexpr elements_range_t(OtherRange const& other) : base_{other.base}, l_{other.l_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to reproduce the implicitness of the argument
+	template<class OtherRange, decltype(multi::explicit_cast<pointer>(std::declval<OtherRange>().base_))* = nullptr>
+	constexpr explicit elements_range_t(OtherRange const& other) : elements_range_t{other} {}
+
 	constexpr elements_range_t(pointer base, layout_type l) : base_{base}, l_{l} {}
 
 	constexpr auto operator[](difference_type n) const& -> const_reference {return at_aux(n);}
@@ -559,13 +565,17 @@ struct basic_array
 	using  elements_iterator = elements_iterator_t<element_ptr      , layout_type>;
 	using celements_iterator = elements_iterator_t<element_const_ptr, layout_type>;
 
-	using  elements_range = elements_range_t<element_ptr      , layout_type>;
-	using celements_range = elements_range_t<element_const_ptr, layout_type>;
+	using       elements_range = elements_range_t<element_ptr      , layout_type>;
+	using const_elements_range = elements_range_t<element_const_ptr, layout_type>;
 
-	constexpr auto  elements()      & { return  elements_range{this->base(), this->layout()};}
-	constexpr auto  elements()     && { return  elements_range{this->base(), this->layout()};}
-	constexpr auto  elements() const& { return celements_range{this->base(), this->layout()};}
-	constexpr auto celements() const& { return celements_range{this->base(), this->layout()};}
+ private:
+	constexpr auto elements_aux() const {return elements_range{this->base(), this->layout()};}
+
+ public:
+	constexpr auto       elements()      & ->       elements_range {return elements_aux();}
+	constexpr auto       elements()     && ->       elements_range {return elements_aux();}
+	constexpr auto       elements() const& -> const_elements_range {return elements_aux();}
+	constexpr auto const_elements() const  -> const_elements_range {return elements_aux();}
 
 	~basic_array() = default;  // this lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
@@ -1662,6 +1672,21 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	}
 
  public:
+	using  elements_iterator = elements_iterator_t<element_ptr      , layout_type>;
+	using celements_iterator = elements_iterator_t<element_const_ptr, layout_type>;
+
+	using       elements_range = elements_range_t<element_ptr      , layout_type>;
+	using const_elements_range = elements_range_t<element_const_ptr, layout_type>;
+
+ private:
+	constexpr auto elements_aux() const {return elements_range{this->base(), this->layout()};}
+
+ public:
+	constexpr auto       elements()      & ->       elements_range {return elements_aux();}
+	constexpr auto       elements()     && ->       elements_range {return elements_aux();}
+	constexpr auto       elements() const& -> const_elements_range {return elements_aux();}
+	constexpr auto const_elements() const  -> const_elements_range {return elements_aux();}
+
 	HD constexpr auto sliced(index first, index last) const& -> basic_const_array {return sliced_aux(first, last);}
 	HD constexpr auto sliced(index first, index last)      & -> basic_array       {return sliced_aux(first, last);}
 	HD constexpr auto sliced(index first, index last)     && -> basic_array       {return sliced_aux(first, last);}
