@@ -147,13 +147,28 @@ BOOST_AUTO_TEST_CASE(multi_test_elements_1D) {
 	BOOST_REQUIRE(  A.elements().size() == 10 );
 	BOOST_REQUIRE( &A.elements()[0] == &A[0] );
 	BOOST_REQUIRE( &A.elements()[9] == &A[9] );
+
+	BOOST_REQUIRE(  A.elements().begin() < A.elements().end()   );
+	BOOST_REQUIRE(  A.elements().end()   > A.elements().begin() );
 }
 
-//BOOST_AUTO_TEST_CASE(multi_test_stencil_1D) {  // TODO(correaa) make it work
-//	multi::array<std::string, 1> A = {"a", "b", "c", "d", "e"};
+BOOST_AUTO_TEST_CASE(multi_test_elements) {
+	multi::array<double, 1> A = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9.};
+	BOOST_REQUIRE( A.size() == 10 );
 
-//	BOOST_REQUIRE( &A().elements()[0] == &A[0] );
-//}
+	BOOST_REQUIRE(  A().elements().size() == 10 );
+	BOOST_REQUIRE( &A().elements()[0] == &A[0] );
+	BOOST_REQUIRE( &A().elements()[9] == &A[9] );
+
+	BOOST_REQUIRE(  A().elements().begin() <  A().elements().end() );
+	BOOST_REQUIRE(  A().elements().begin() == A().elements().begin() );
+
+	BOOST_REQUIRE( A().elements().begin() <  A().elements().end() or A().elements().begin() == A().elements().end() );
+	BOOST_REQUIRE( A().elements().begin() <= A().elements().end() );
+
+	BOOST_REQUIRE(  A().elements().end()  >  A().elements().begin() );
+	BOOST_REQUIRE(  A().elements().end()  >= A().elements().begin() );
+}
 
 BOOST_AUTO_TEST_CASE(multi_extension_intersection) {
 	multi::array<double, 1> A = {{2., 2., 2.}};

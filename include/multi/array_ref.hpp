@@ -397,7 +397,9 @@ struct array_iterator
 //};
 
 template<typename Pointer, class LayoutType>
-struct elements_iterator_t : boost::multi::equality_comparable<elements_iterator_t<Pointer, LayoutType>> {
+struct elements_iterator_t
+: boost::multi::totally_ordered<elements_iterator_t<Pointer, LayoutType>>
+{
 	using difference_type = typename std::iterator_traits<Pointer>::difference_type;
 	using value_type = typename std::iterator_traits<Pointer>::value_type;
 	using pointer = Pointer;
@@ -443,13 +445,14 @@ struct elements_iterator_t : boost::multi::equality_comparable<elements_iterator
 		return n_ - other.n_;
 	}
 
-	friend constexpr auto operator==(elements_iterator_t const& s, elements_iterator_t const& o) {return s.n_ == o.n_ and s.base_ == o.base_ and s.l_ == o.l_;}
-	friend constexpr auto operator!=(elements_iterator_t const& s, elements_iterator_t const& o) {return not(s==o);}
+	friend constexpr auto operator==(elements_iterator_t const& s, elements_iterator_t const& o) {
+		return s.n_ == o.n_ and s.base_ == o.base_ and s.l_ == o.l_;
+	}
 
-	constexpr auto operator<(elements_iterator_t const& other) const {
-		assert( base_ == other.base_ );
-		assert( l_    == other.l_    );
-		return n_ < other.n_;
+	friend constexpr auto operator<(elements_iterator_t const& s, elements_iterator_t const& o) {
+		assert( s.base_ == o.base_ );
+		assert( s.l_    == o.l_    );
+		return s.n_ < o.n_;
 	}
 };
 
