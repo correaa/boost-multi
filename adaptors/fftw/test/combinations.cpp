@@ -76,7 +76,7 @@ BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001) ) {
 			multi::fftw::dft_forward(c, in, out);
 		}
 		{
-			multi::fftw::plan p(c, in, out, multi::fftw::forward);
+			multi::fftw::plan p{c, in, out, multi::fftw::forward};
 			boost::timer::auto_cpu_timer t{"cpu_oplac planned %ws wall, CPU (%p%)\n"};
 			p();
 		}
@@ -87,13 +87,13 @@ BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001) ) {
 		}
 		{
 			auto in_rw = in;
-			multi::fftw::plan p(c, in_rw, in_rw, multi::fftw::forward);
+			multi::fftw::plan p{c, in_rw, in_rw, multi::fftw::forward};
 			boost::timer::auto_cpu_timer t{"cpu_iplac planned %ws wall, CPU (%p%)\n"};
 			p();
 		}
 		{
 			auto in_rw = in;
-			multi::fftw::plan p(c, in_rw, in_rw, multi::fftw::forward);
+			multi::fftw::plan p{c, in_rw, in_rw, multi::fftw::forward};
 			boost::timer::auto_cpu_timer t{
 				"cpu_iplac planned measured %ws wall, CPU (%p%)\n"
 			};
