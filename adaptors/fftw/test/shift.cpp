@@ -30,6 +30,7 @@ class n_random_complex {
 	};
 	auto begin() const {return iterator{this, 0 };}
 	auto end  () const {return iterator{this, n_};}
+	auto size()  const {return n_;}
 };
 
 namespace multi = boost::multi;

@@ -13,20 +13,21 @@ struct empty_base {};
 
 template<class Self> struct selfable {
 	using self_type = Self;
-	auto self() const -> self_type const& {return static_cast<self_type const&>(*this);}
-	friend auto self(selfable const& s) {return s.self();}
+	constexpr auto self() const -> self_type const& {return static_cast<self_type const&>(*this);}
+	constexpr auto self()       -> self_type      & {return static_cast<self_type      &>(*this);}
+	friend constexpr auto self(selfable const& s) -> self_type const& {return s.self();}
 };
 
 template<class Self, class U> struct equality_comparable2;
 
-template<class Self, class Other>
-struct equality_comparable2 : selfable<Self> {
-	friend constexpr auto operator==(equality_comparable2 const& s, Other const& o) {return     s.self() == o ;}
-	friend constexpr auto operator!=(equality_comparable2 const& s, Other const& o) {return not(s.self() == o);}
+//template<class Self, class Other>
+//struct equality_comparable2 : virtual selfable<Self> {
+//	friend constexpr auto operator==(equality_comparable2 const& s, Other const& o) {return     s.self() == o ;}
+//	friend constexpr auto operator!=(equality_comparable2 const& s, Other const& o) {return not(s.self() == o);}
 
-	friend constexpr auto operator!=(Other const& o, equality_comparable2 const& s) {return not(o == s.self());}
-	friend constexpr auto operator==(Other const& o, equality_comparable2 const& s) {return     s.self() == o;}
-};
+//	friend constexpr auto operator!=(Other const& o, equality_comparable2 const& s) {return not(s.self() == o);}
+//	friend constexpr auto operator==(Other const& o, equality_comparable2 const& s) {return     s.self() == o ;}
+//};
 
 template<class Self>
 struct equality_comparable2<Self, Self> : selfable<Self> {
@@ -36,14 +37,14 @@ struct equality_comparable2<Self, Self> : selfable<Self> {
 
 template<class Self> struct equality_comparable : equality_comparable2<Self, Self> {};
 
-template<class T>
-struct equality_comparable2<T, void> {
-	template<class Other> friend constexpr auto operator==(equality_comparable2 const& s, Other const& o) {return     s.self() == o ;}
-	template<class Other> friend constexpr auto operator!=(equality_comparable2 const& s, Other const& o) {return not(s.self() == o);}
+//template<class T>
+//struct equality_comparable2<T, void> {
+//	template<class Other> friend constexpr auto operator==(equality_comparable2 const& s, Other const& o) {return     s.self() == o ;}
+//	template<class Other> friend constexpr auto operator!=(equality_comparable2 const& s, Other const& o) {return not(s.self() == o);}
 
-	template<class Other> friend constexpr auto operator!=(Other const& o, equality_comparable2 const& s) {return not(o == s.self());}
-	template<class Other> friend constexpr auto operator==(Other const& o, equality_comparable2 const& s) {return     s.self() == o;}
-};
+//	template<class Other> friend constexpr auto operator!=(Other const& o, equality_comparable2 const& s) {return not(s.self() == o);}
+//	template<class Other> friend constexpr auto operator==(Other const& o, equality_comparable2 const& s) {return     s.self() == o ;}
+//};
 
 template<class T, class V> struct partially_ordered2;
 
@@ -64,10 +65,24 @@ struct partially_ordered2<T, void>{
 	friend constexpr auto operator>=(const U& x, const T& y) -> bool {return (y < x) or (y == x);}
 };
 
-template<class T, class V, class B = empty_base> struct totally_ordered2;
+template<class T, class V> struct totally_ordered2;
 
-template<class T, class B>
-struct totally_ordered2<T, void, B> : B {
+template<class Self>
+struct totally_ordered2<Self, Self> : equality_comparable2<Self, Self> {
+	friend auto operator< (totally_ordered2 const& s, totally_ordered2 const& o) {return     s.self() < o.self() ;}
+	friend auto operator==(totally_ordered2 const& s, totally_ordered2 const& o) {return not(s.self() < o.self()) and not(o.self() < s.self());}
+	friend auto operator!=(totally_ordered2 const& s, totally_ordered2 const& o) {return    (s.self() < o.self()) or     (o.self() < s.self());}
+
+	friend auto operator<=(totally_ordered2 const& s, totally_ordered2 const& o) {return not(o.self() < s.self());}
+
+	friend auto operator> (totally_ordered2 const& s, totally_ordered2 const& o) {return not(s.self() < o.self()) and not(s.self() == o.self());}
+	friend auto operator>=(totally_ordered2 const& s, totally_ordered2 const& o) {return not(s.self() < o.self());}
+};
+
+template<class Self> using totally_ordered = totally_ordered2<Self, Self>;
+
+template<class T>
+struct totally_ordered2<T, void> {
 	template<class U>
 	friend constexpr auto operator<=(const T& x, const U& y) {return (x < y) or (x == y);}
 	template<class U>
@@ -89,10 +104,14 @@ struct weakly_decrementable {
 //  friend T& operator--(weakly_decrementable& t){return --static_cast<T&>(t);}
 };
 
-template<class T>
-struct incrementable : weakly_incrementable<T> {
-	template<class U, typename = std::enable_if_t<not std::is_base_of<T, U>{}>>
-	friend constexpr auto operator++(U& self, int) -> T {T tmp{self}; ++self; return tmp;}
+//template<class T>
+//struct incrementable : weakly_incrementable<T> {
+//	template<class U, typename = std::enable_if_t<not std::is_base_of<T, U>{}>>
+//	friend constexpr auto operator++(U& self, int) -> T {T tmp{self}; ++self; return tmp;}
+//};
+
+template<class Self> struct incrementable : totally_ordered<Self> {//, self_mutable<Self> {
+	friend constexpr auto operator++(incrementable& s, int) -> Self {Self tmp{s.self()}; ++s.self(); assert(s.self() > tmp); return tmp;}
 };
 
 template<class T>
