@@ -233,7 +233,7 @@ template<class Element, dimensionality_type D, typename ElementPtr>
 struct array_iterator;
 
 template<class Element, dimensionality_type D, typename ElementPtr>
-struct array_iterator
+struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 : boost::multi::iterator_facade<
 	array_iterator<Element, D, ElementPtr>, void, std::random_access_iterator_tag,
 	basic_array<Element, D-1, ElementPtr> const&, typename layout_t<D-1>::difference_type
@@ -352,53 +352,10 @@ struct array_iterator
 	constexpr auto operator-=(difference_type d) -> array_iterator& {advance(-d); return *this;}
 };
 
-//template<class It>
-//struct biiterator
-//: boost::multi::iterator_facade<
-//	biiterator<It>,
-//	typename std::iterator_traits<It>::value_type, std::random_access_iterator_tag,
-//	decltype(*(std::move((*std::declval<It>())).begin())), multi::difference_type
-//>
-//,	multi::affine<biiterator<It>, multi::difference_type>
-//,	multi::decrementable<biiterator<It>>
-//,	multi::incrementable<biiterator<It>>
-//,	multi::totally_ordered2<biiterator<It>, void> {
-//private:
-//	It me_ = {};
-//	std::ptrdiff_t pos_ = 0;
-//	std::ptrdiff_t stride_ = 1;
-
-//public:
-//	constexpr biiterator(It me, std::ptrdiff_t pos, std::ptrdiff_t stride)
-//	: me_{me}, pos_{pos}, stride_{stride} {}
-
-//	constexpr auto operator++() -> decltype(auto) {
-//		++pos_;
-//		if(pos_==stride_) {
-//			++me_;
-//			pos_ = 0;
-//		}
-//		return *this;
-//	}
-
-//	constexpr auto operator==(biiterator const& o) const -> bool {return me_==o.me_ and pos_==o.pos_;}
-//	constexpr auto operator+=(multi::difference_type n) -> biiterator& {me_ += n/stride_; pos_ += n%stride_; return *this;}
-
-//	constexpr auto operator*() const -> decltype(auto) {
-//		auto meb = std::move(*me_).begin();
-//		return meb[pos_];
-//	}
-
-//	using difference_type = std::ptrdiff_t;
-//	using reference = decltype(*std::declval<biiterator>());
-//	using value_type = std::decay_t<reference>;
-//	using pointer = value_type*;
-//	using iterator_category = std::random_access_iterator_tag;
-//};
-
 template<typename Pointer, class LayoutType>
 struct elements_iterator_t
-: boost::multi::totally_ordered<elements_iterator_t<Pointer, LayoutType>>
+: boost::multi::incrementable<elements_iterator_t<Pointer, LayoutType>>  // NOLINT(fuchsia-multiple-inheritance)
+, boost::multi::decrementable<elements_iterator_t<Pointer, LayoutType>>
 {
 	using difference_type = typename std::iterator_traits<Pointer>::difference_type;
 	using value_type = typename std::iterator_traits<Pointer>::value_type;
@@ -443,10 +400,6 @@ struct elements_iterator_t
 		assert(base_ == other.base_);
 		assert(l_ == other.l_);
 		return n_ - other.n_;
-	}
-
-	friend constexpr auto operator==(elements_iterator_t const& s, elements_iterator_t const& o) {
-		return s.n_ == o.n_ and s.base_ == o.base_ and s.l_ == o.l_;
 	}
 
 	friend constexpr auto operator<(elements_iterator_t const& s, elements_iterator_t const& o) {
@@ -1007,7 +960,7 @@ struct basic_array
 	friend auto ref<iterator>(iterator begin, iterator end) -> multi::basic_array<typename iterator::element, iterator::rank_v, typename iterator::element_ptr>;
 
 	template<class Iterator>
-	struct basic_reverse_iterator
+	struct basic_reverse_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	: std::reverse_iterator<Iterator>
 	, boost::multi::totally_ordered2<basic_reverse_iterator<Iterator>, void> {
 		template<class O, typename = decltype(std::reverse_iterator<Iterator>{base(std::declval<O const&>())})>
@@ -1319,7 +1272,7 @@ struct basic_array
 template<class Element, typename Ptr> struct array_iterator<Element, 0, Ptr>{};
 
 template<class Element, typename Ptr>
-struct array_iterator<Element, 1, Ptr>
+struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 : boost::multi::iterator_facade<
 	array_iterator<Element, 1, Ptr>,
 	Element, std::random_access_iterator_tag,
