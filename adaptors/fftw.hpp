@@ -43,9 +43,10 @@ public:
 };
 
 
-constexpr flags estimate      {FFTW_ESTIMATE      }; // NOLINT(hicpp-signed-bitwise) : defined in an external lib 1U << 6
-constexpr flags preserve_input{FFTW_PRESERVE_INPUT}; // NOLINT(hicpp-signed-bitwise) : defined in an external lib 1U << 4
+constexpr flags estimate      {FFTW_ESTIMATE      };  // NOLINT(hicpp-signed-bitwise) : defined in an external lib 1U << 6
+constexpr flags measure       {FFTW_MEASURE       };
 
+constexpr flags preserve_input{FFTW_PRESERVE_INPUT};  // NOLINT(hicpp-signed-bitwise) : defined in an external lib 1U << 4
 // // NOLINT(): this is a defect in FFTW https://github.com/FFTW/fftw3/issues/246
 
 }  // end namespace fftw
