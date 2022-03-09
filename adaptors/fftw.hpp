@@ -403,7 +403,7 @@ auto fftw_plan_dft(multi::layout_t<D> const& in_layout, PtrIn in_base, multi::la
 	return ret;
 }
 
-template<dimensionality_type D, class PtrIn, class PtrOut>  //, typename = decltype(reinterpret_cast<fftw_complex*>(multi::implicit_cast<std::complex<double>*>(std::declval<PtrOut&>())))>  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : interact with legacy code
+template<dimensionality_type D>  //, typename = decltype(reinterpret_cast<fftw_complex*>(multi::implicit_cast<std::complex<double>*>(std::declval<PtrOut&>())))>  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : interact with legacy code
 auto fftw_plan_dft(multi::layout_t<D> const& in_layout, multi::layout_t<D> const& out_layout, int s, fftw::flags flags) {
 	return fftw_plan_dft(in_layout, nullptr, out_layout, nullptr, s, flags | fftw::estimate);
 }
@@ -417,7 +417,6 @@ template<class In, class Out, dimensionality_type D = In::rank_v, typename = dec
 auto fftw_plan_dft(In const& in, Out&& out, int s) {
 	return fftw_plan_dft(in, out, s, fftw::estimate);
 }
-
 
 namespace fftw {
 
