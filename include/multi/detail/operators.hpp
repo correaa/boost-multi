@@ -134,7 +134,7 @@ struct steppable : totally_ordered<Self> {
 };
 
 template<class Self, typename Difference>
-struct affine_with_unit : steppable<affine_with_unit<Self, Difference> > {
+struct affine_with_unit : steppable<Self> {//affine_with_unit<Self, Difference> > {
 	using self_type = Self;
 	constexpr auto self() const -> self_type const& {return static_cast<self_type const&>(*this);}
 	constexpr auto self()       -> self_type      & {return static_cast<self_type      &>(*this);}
@@ -143,18 +143,57 @@ struct affine_with_unit : steppable<affine_with_unit<Self, Difference> > {
 	friend constexpr auto operator++(affine_with_unit& s) -> Self& {return s.self() += difference_type{1};}
 	friend constexpr auto operator--(affine_with_unit& s) -> Self& {return s.self() -= difference_type{1};}
 
-	friend constexpr auto operator+(affine_with_unit const& s, difference_type const& d) {
-		auto ret = s;
-		ret+=d;
+	friend constexpr auto operator-(affine_with_unit const& s, difference_type const& d) -> Self {
+		auto ret{s.self()};
+		ret += (-d);
 		return ret;
+	}
+	friend constexpr auto operator+(affine_with_unit const& s, difference_type const& d) -> Self {
+		auto ret{s.self()};
+		ret += d;
+		return ret;
+	}
+	friend constexpr auto operator+(difference_type const& d, affine_with_unit const& s) -> Self {
+		auto ret{s.self()};
+		ret += d;
+		return ret;
+	}
+	friend constexpr auto operator<(affine_with_unit const& s, affine_with_unit const& o) -> bool {
+		return difference_type{0} < o.self() - s.self();
 	}
 };
 
-template<class T, class Reference>
+template<class Self, typename Reference>
 struct dereferenceable {
+	using self_type = Self;
+	constexpr auto self() const -> self_type const& {return static_cast<self_type const&>(*this);}
+	constexpr auto self()       -> self_type      & {return static_cast<self_type      &>(*this);}
+
 	using reference = Reference;
-	friend constexpr auto operator*(dereferenceable const& t) -> reference {return *static_cast<T const&>(t);}
+
+	constexpr auto operator*() const -> reference {return *(self().operator->());}
 };
+
+template<class Self, typename Difference, typename Reference>
+struct random_accessable  // NOLINT(fuchsia-multiple-inheritance)
+: affine_with_unit<Self, Difference>
+, dereferenceable<Self, Reference> {
+	using difference_type = Difference;
+	using reference = Reference;
+	using iterator_category = std::random_access_iterator_tag;
+
+	using self_type = Self;
+	constexpr auto self() const -> self_type const& {return static_cast<self_type const&>(*this);}
+	constexpr auto self()       -> self_type      & {return static_cast<self_type      &>(*this);}
+
+	constexpr auto operator[](difference_type d) const -> reference {return *(self() + d);}
+};
+
+//template<class T, class Reference>
+//struct dereferenceable {
+//	using reference = Reference;
+//	friend constexpr auto operator*(dereferenceable const& t) -> reference {return *static_cast<T const&>(t);}
+//};
 
 template<class T, class D>
 struct addable2 {
