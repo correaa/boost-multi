@@ -354,8 +354,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 
 template<typename Pointer, class LayoutType>
 struct elements_iterator_t
-: boost::multi::incrementable<elements_iterator_t<Pointer, LayoutType>>  // NOLINT(fuchsia-multiple-inheritance)
-, boost::multi::decrementable<elements_iterator_t<Pointer, LayoutType>>
+: boost::multi::steppable<elements_iterator_t<Pointer, LayoutType>>
 {
 	using difference_type = typename std::iterator_traits<Pointer>::difference_type;
 	using value_type = typename std::iterator_traits<Pointer>::value_type;

@@ -123,8 +123,32 @@ struct decrementable : weakly_decrementable<T> {
 	friend constexpr auto operator--(U& self, int) -> T {T tmp{self}; --self; return tmp;}
 };
 
-template<class T>
-struct steppable : incrementable<T>, decrementable<T> {};
+template<class Self>
+struct steppable : totally_ordered<Self> {
+	using self_type = Self;
+	constexpr auto self() const -> self_type const& {return static_cast<self_type const&>(*this);}
+	constexpr auto self()       -> self_type      & {return static_cast<self_type      &>(*this);}
+
+	friend constexpr auto operator++(steppable& s, int) -> Self {Self tmp{s.self()}; ++s.self(); return tmp;}
+	friend constexpr auto operator--(steppable& s, int) -> Self {Self tmp{s.self()}; --s.self(); return tmp;}
+};
+
+template<class Self, typename Difference>
+struct affine_with_unit : steppable<affine_with_unit<Self, Difference> > {
+	using self_type = Self;
+	constexpr auto self() const -> self_type const& {return static_cast<self_type const&>(*this);}
+	constexpr auto self()       -> self_type      & {return static_cast<self_type      &>(*this);}
+
+	using difference_type = Difference;
+	friend constexpr auto operator++(affine_with_unit& s) -> Self& {return s.self() += difference_type{1};}
+	friend constexpr auto operator--(affine_with_unit& s) -> Self& {return s.self() -= difference_type{1};}
+
+	friend constexpr auto operator+(affine_with_unit const& s, difference_type const& d) {
+		auto ret = s;
+		ret+=d;
+		return ret;
+	}
+};
 
 template<class T, class Reference>
 struct dereferenceable {
