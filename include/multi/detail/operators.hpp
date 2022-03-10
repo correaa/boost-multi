@@ -31,7 +31,7 @@ template<class Self, class U> struct equality_comparable2;
 
 template<class Self>
 struct equality_comparable2<Self, Self> : selfable<Self> {
-	friend constexpr auto operator==(equality_comparable2 const& s, equality_comparable2 const& o) {return     s.self() == o.self() ;}
+//	friend constexpr auto operator==(equality_comparable2 const& s, equality_comparable2 const& o) {return     s.self() == o.self() ;}
 	friend constexpr auto operator!=(equality_comparable2 const& s, equality_comparable2 const& o) {return not(s.self() == o.self());}
 };
 
@@ -68,15 +68,18 @@ struct partially_ordered2<T, void>{
 template<class T, class V> struct totally_ordered2;
 
 template<class Self>
-struct totally_ordered2<Self, Self> : equality_comparable2<Self, Self> {
-	friend auto operator< (totally_ordered2 const& s, totally_ordered2 const& o) {return     s.self() < o.self() ;}
-	friend auto operator==(totally_ordered2 const& s, totally_ordered2 const& o) {return not(s.self() < o.self()) and not(o.self() < s.self());}
-	friend auto operator!=(totally_ordered2 const& s, totally_ordered2 const& o) {return    (s.self() < o.self()) or     (o.self() < s.self());}
+struct totally_ordered2<Self, Self> : equality_comparable2<totally_ordered2<Self, Self>, totally_ordered2<Self, Self>> {
+	using self_type = Self;
+	constexpr auto self() const -> self_type const& {return static_cast<self_type const&>(*this);}
 
-	friend auto operator<=(totally_ordered2 const& s, totally_ordered2 const& o) {return not(o.self() < s.self());}
+//	friend auto operator< (totally_ordered2 const& s, totally_ordered2 const& o) -> bool {return     s.self() < o.self() ;}
+	friend auto operator==(totally_ordered2 const& s, totally_ordered2 const& o) -> bool {return not(s.self() < o.self()) and not(o.self() < s.self());}
+//	friend auto operator!=(totally_ordered2 const& s, totally_ordered2 const& o) {return    (s.self() < o.self()) or     (o.self() < s.self());}
 
-	friend auto operator> (totally_ordered2 const& s, totally_ordered2 const& o) {return not(s.self() < o.self()) and not(s.self() == o.self());}
-	friend auto operator>=(totally_ordered2 const& s, totally_ordered2 const& o) {return not(s.self() < o.self());}
+	friend auto operator<=(totally_ordered2 const& s, totally_ordered2 const& o) -> bool {return not(o.self() < s.self());}
+
+	friend auto operator> (totally_ordered2 const& s, totally_ordered2 const& o) -> bool {return not(s.self() < o.self()) and not(s.self() == o.self());}
+	friend auto operator>=(totally_ordered2 const& s, totally_ordered2 const& o) -> bool {return not(s.self() < o.self());}
 };
 
 template<class Self> using totally_ordered = totally_ordered2<Self, Self>;

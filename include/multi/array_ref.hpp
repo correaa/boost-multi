@@ -370,15 +370,18 @@ struct elements_iterator_t
 	layout_type l_;
 	difference_type n_;
 	template<class, class> friend struct elements_iterator_t;
+	template<class, class> friend struct elements_range_t;
+
+	constexpr elements_iterator_t(pointer base, layout_type l, difference_type n) : base_{base}, l_{l}, n_{n} {}
 
  public:
-	constexpr elements_iterator_t(pointer base, layout_type l, difference_type n)
-	: base_{base}, l_{l}, n_{n} {}
 
-	template<class ElementsIterator = elements_iterator_t>
+	template<class ElementsIterator, decltype(multi::implicit_cast<pointer>(std::declval<ElementsIterator>().base_))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor
-	constexpr elements_iterator_t(ElementsIterator const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	: base_{other.base_}, l_{other.l_}, n_{other.n_} {}
+	constexpr /*impl*/ elements_iterator_t(ElementsIterator const& other) : elements_iterator_t{other.base_, other.l_, other.n_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	template<class ElementsIterator>
+	constexpr explicit elements_iterator_t(ElementsIterator const& other) : elements_iterator_t{other.base_, other.l_, other.n_} {}
+
 
 	constexpr auto operator->() const -> pointer {
 		return base_ + std::apply(l_, l_.extensions().from_linear(n_));
