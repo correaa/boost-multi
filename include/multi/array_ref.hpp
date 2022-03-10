@@ -353,7 +353,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 };
 
 template<typename Pointer, class LayoutType>
-struct elements_iterator_t  // NOLINT(fuchsia-multiple-inheritance)
+struct elements_iterator_t
 : boost::multi::random_accessable<elements_iterator_t<Pointer, LayoutType>, typename std::iterator_traits<Pointer>::difference_type, typename std::iterator_traits<Pointer>::reference>
 {
 	using difference_type = typename std::iterator_traits<Pointer>::difference_type;
