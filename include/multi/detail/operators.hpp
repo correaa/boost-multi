@@ -31,7 +31,7 @@ template<class Self, class U> struct equality_comparable2;
 
 template<class Self>
 struct equality_comparable2<Self, Self> : selfable<Self> {
-	friend constexpr auto operator==(equality_comparable2 const& s, equality_comparable2 const& o) {return     s.self() == o.self() ;}
+//	friend constexpr auto operator==(equality_comparable2 const& s, equality_comparable2 const& o) {return     s.self() == o.self() ;}
 	friend constexpr auto operator!=(equality_comparable2 const& s, equality_comparable2 const& o) {return not(s.self() == o.self());}
 };
 
@@ -68,15 +68,18 @@ struct partially_ordered2<T, void>{
 template<class T, class V> struct totally_ordered2;
 
 template<class Self>
-struct totally_ordered2<Self, Self> : equality_comparable2<Self, Self> {
-	friend auto operator< (totally_ordered2 const& s, totally_ordered2 const& o) {return     s.self() < o.self() ;}
-	friend auto operator==(totally_ordered2 const& s, totally_ordered2 const& o) {return not(s.self() < o.self()) and not(o.self() < s.self());}
-	friend auto operator!=(totally_ordered2 const& s, totally_ordered2 const& o) {return    (s.self() < o.self()) or     (o.self() < s.self());}
+struct totally_ordered2<Self, Self> : equality_comparable2<totally_ordered2<Self, Self>, totally_ordered2<Self, Self>> {
+	using self_type = Self;
+	constexpr auto self() const -> self_type const& {return static_cast<self_type const&>(*this);}
 
-	friend auto operator<=(totally_ordered2 const& s, totally_ordered2 const& o) {return not(o.self() < s.self());}
+//	friend auto operator< (totally_ordered2 const& s, totally_ordered2 const& o) -> bool {return     s.self() < o.self() ;}
+	friend auto operator==(totally_ordered2 const& s, totally_ordered2 const& o) -> bool {return not(s.self() < o.self()) and not(o.self() < s.self());}
+//	friend auto operator!=(totally_ordered2 const& s, totally_ordered2 const& o) {return    (s.self() < o.self()) or     (o.self() < s.self());}
 
-	friend auto operator> (totally_ordered2 const& s, totally_ordered2 const& o) {return not(s.self() < o.self()) and not(s.self() == o.self());}
-	friend auto operator>=(totally_ordered2 const& s, totally_ordered2 const& o) {return not(s.self() < o.self());}
+	friend auto operator<=(totally_ordered2 const& s, totally_ordered2 const& o) -> bool {return not(o.self() < s.self());}
+
+	friend auto operator> (totally_ordered2 const& s, totally_ordered2 const& o) -> bool {return not(s.self() < o.self()) and not(s.self() == o.self());}
+	friend auto operator>=(totally_ordered2 const& s, totally_ordered2 const& o) -> bool {return not(s.self() < o.self());}
 };
 
 template<class Self> using totally_ordered = totally_ordered2<Self, Self>;
@@ -120,14 +123,77 @@ struct decrementable : weakly_decrementable<T> {
 	friend constexpr auto operator--(U& self, int) -> T {T tmp{self}; --self; return tmp;}
 };
 
-template<class T>
-struct steppable : incrementable<T>, decrementable<T> {};
+template<class Self>
+struct steppable : totally_ordered<Self> {
+	using self_type = Self;
+	constexpr auto self() const -> self_type const& {return static_cast<self_type const&>(*this);}
+	constexpr auto self()       -> self_type      & {return static_cast<self_type      &>(*this);}
 
-template<class T, class Reference>
-struct dereferenceable {
-	using reference = Reference;
-	friend constexpr auto operator*(dereferenceable const& t) -> reference {return *static_cast<T const&>(t);}
+	friend constexpr auto operator++(steppable& s, int) -> Self {Self tmp{s.self()}; ++s.self(); return tmp;}
+	friend constexpr auto operator--(steppable& s, int) -> Self {Self tmp{s.self()}; --s.self(); return tmp;}
 };
+
+template<class Self, typename Difference>
+struct affine_with_unit : steppable<Self> {//affine_with_unit<Self, Difference> > {
+	using self_type = Self;
+	constexpr auto self() const -> self_type const& {return static_cast<self_type const&>(*this);}
+	constexpr auto self()       -> self_type      & {return static_cast<self_type      &>(*this);}
+
+	using difference_type = Difference;
+	friend constexpr auto operator++(affine_with_unit& s) -> Self& {return s.self() += difference_type{1};}
+	friend constexpr auto operator--(affine_with_unit& s) -> Self& {return s.self() -= difference_type{1};}
+
+	friend constexpr auto operator-(affine_with_unit const& s, difference_type const& d) -> Self {
+		auto ret{s.self()};
+		ret += (-d);
+		return ret;
+	}
+	friend constexpr auto operator+(affine_with_unit const& s, difference_type const& d) -> Self {
+		auto ret{s.self()};
+		ret += d;
+		return ret;
+	}
+	friend constexpr auto operator+(difference_type const& d, affine_with_unit const& s) -> Self {
+		auto ret{s.self()};
+		ret += d;
+		return ret;
+	}
+	friend constexpr auto operator<(affine_with_unit const& s, affine_with_unit const& o) -> bool {
+		return difference_type{0} < o.self() - s.self();
+	}
+};
+
+template<class Self, typename Reference>
+struct dereferenceable {
+	using self_type = Self;
+	constexpr auto self() const -> self_type const& {return static_cast<self_type const&>(*this);}
+	constexpr auto self()       -> self_type      & {return static_cast<self_type      &>(*this);}
+
+	using reference = Reference;
+
+	constexpr auto operator*() const -> reference {return *(self().operator->());}
+};
+
+template<class Self, typename Difference, typename Reference>
+struct random_accessable  // NOLINT(fuchsia-multiple-inheritance)
+: affine_with_unit<Self, Difference>
+, dereferenceable<Self, Reference> {
+	using difference_type = Difference;
+	using reference = Reference;
+	using iterator_category = std::random_access_iterator_tag;
+
+	using self_type = Self;
+	constexpr auto self() const -> self_type const& {return static_cast<self_type const&>(*this);}
+	constexpr auto self()       -> self_type      & {return static_cast<self_type      &>(*this);}
+
+	constexpr auto operator[](difference_type d) const -> reference {return *(self() + d);}
+};
+
+//template<class T, class Reference>
+//struct dereferenceable {
+//	using reference = Reference;
+//	friend constexpr auto operator*(dereferenceable const& t) -> reference {return *static_cast<T const&>(t);}
+//};
 
 template<class T, class D>
 struct addable2 {

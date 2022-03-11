@@ -354,14 +354,11 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 
 template<typename Pointer, class LayoutType>
 struct elements_iterator_t
-: boost::multi::incrementable<elements_iterator_t<Pointer, LayoutType>>  // NOLINT(fuchsia-multiple-inheritance)
-, boost::multi::decrementable<elements_iterator_t<Pointer, LayoutType>>
+: boost::multi::random_accessable<elements_iterator_t<Pointer, LayoutType>, typename std::iterator_traits<Pointer>::difference_type, typename std::iterator_traits<Pointer>::reference>
 {
 	using difference_type = typename std::iterator_traits<Pointer>::difference_type;
 	using value_type = typename std::iterator_traits<Pointer>::value_type;
 	using pointer = Pointer;
-	using reference = typename std::iterator_traits<Pointer>::reference;
-	using iterator_category = std::random_access_iterator_tag;
 
 	using layout_type = LayoutType;
 
@@ -370,43 +367,40 @@ struct elements_iterator_t
 	layout_type l_;
 	difference_type n_;
 	template<class, class> friend struct elements_iterator_t;
+	template<class, class> friend struct elements_range_t;
+
+	constexpr elements_iterator_t(pointer base, layout_type l, difference_type n) : base_{base}, l_{l}, n_{n} {}
 
  public:
-	constexpr elements_iterator_t(pointer base, layout_type l, difference_type n)
-	: base_{base}, l_{l}, n_{n} {}
-
-	template<class ElementsIterator = elements_iterator_t>
+	template<class ElementsIterator, decltype(multi::implicit_cast<pointer>(std::declval<ElementsIterator>().base_))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor
-	constexpr elements_iterator_t(ElementsIterator const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	: base_{other.base_}, l_{other.l_}, n_{other.n_} {}
+	constexpr /*impl*/ elements_iterator_t(ElementsIterator const& other) : elements_iterator_t{other.base_, other.l_, other.n_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	template<class ElementsIterator>
+	constexpr explicit elements_iterator_t(ElementsIterator const& other) : elements_iterator_t{other.base_, other.l_, other.n_} {}
 
-	constexpr auto operator->() const -> pointer {
-		return base_ + std::apply(l_, l_.extensions().from_linear(n_));
-	}
-	constexpr auto operator*() const -> reference {return *operator->();}
-
-	constexpr auto operator[](difference_type d) const -> reference {return *(operator+(d));}
+	constexpr auto operator->() const -> pointer {return base_ + std::apply(l_, l_.extensions().from_linear(n_));}
 
 	constexpr auto operator+=(difference_type d) -> elements_iterator_t& {n_ += d; return *this;}
-	constexpr auto operator-=(difference_type d) -> elements_iterator_t& {n_ -= d; return *this;}
-
-	constexpr auto operator++() -> elements_iterator_t& {return (*this) += 1;}
-	constexpr auto operator--() -> elements_iterator_t& {return (*this) -= 1;}
-
-	constexpr auto operator+(difference_type d) const {elements_iterator_t ret{*this}; return ret += d;}
-	constexpr auto operator-(difference_type d) const {elements_iterator_t ret{*this}; return ret -= d;}
-
-	constexpr auto operator-(elements_iterator_t other) const -> difference_type {
-		assert(base_ == other.base_);
-		assert(l_ == other.l_);
+	constexpr auto operator-(elements_iterator_t const& other) const -> difference_type {
+		assert(base_ == other.base_ and l_ == other.l_);
 		return n_ - other.n_;
 	}
 
-	friend constexpr auto operator<(elements_iterator_t const& s, elements_iterator_t const& o) {
-		assert( s.base_ == o.base_ );
-		assert( s.l_    == o.l_    );
-		return s.n_ < o.n_;
-	}
+//	using reference = typename std::iterator_traits<Pointer>::reference;
+//	using iterator_category = std::random_access_iterator_tag;
+
+//	friend constexpr auto operator<(elements_iterator_t const& s, elements_iterator_t const& o) {
+//		assert( s.base_ == o.base_ );
+//		assert( s.l_    == o.l_    );
+//		return s.n_ < o.n_;
+//	}
+//	constexpr auto operator-=(difference_type d) -> elements_iterator_t& {n_ -= d; return *this;}
+
+//	constexpr auto operator++() -> elements_iterator_t& {return (*this) += 1;}
+//	constexpr auto operator--() -> elements_iterator_t& {return (*this) -= 1;}
+
+//	constexpr auto operator+(difference_type d) const {elements_iterator_t ret{*this}; return ret += d;}
+//	constexpr auto operator-(difference_type d) const {elements_iterator_t ret{*this}; return ret -= d;}
 };
 
 template<typename Pointer, class LayoutType>
