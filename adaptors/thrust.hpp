@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo A. Correa 2021
+// Copyright 2021-2022 Alfredo A. Correa
 
 #pragma once
 
@@ -46,7 +46,8 @@ template<class T, multi::dimensionality_type D> using array = multi::array<T, D,
 
 }}}
 
-namespace thrust{
+
+namespace thrust {
 
 //template<>
 //struct iterator_system<boost::multi::basic_array<char, 2L, char *, boost::multi::layout_t<2L, boost::multi::size_type>>::elements_iterator_t<char *>>{
@@ -122,6 +123,31 @@ auto copy_n(
 	return d_first + count;
 }
 
+template<class T1, class Q1, class Size, class T2, class Q2>
+auto copy_n(
+	boost::multi::array_iterator<T1, 1, thrust::cuda::pointer<Q1>>   first , Size count,
+	boost::multi::array_iterator<T2, 1,                       Q2*> d_first
+)-> boost::multi::array_iterator<T2, 1,                       Q2*> {
+	if constexpr(std::is_trivially_assignable<Q2&, Q1&>{}) {
+		if(count == 0) return d_first;
+		if(first.stride() == 1 and d_first.stride() == 1) {
+			auto s = cudaMemcpy  (                 d_first.base() ,                                                        raw_pointer_cast(first.base()),                                                      sizeof(T2)* static_cast<std::size_t>(count), cudaMemcpyDeviceToHost); assert( s == cudaSuccess );
+		} else {
+			auto s = cudaMemcpy2D(                 d_first.base() , static_cast<std::size_t>(d_first.stride())*sizeof(T2), raw_pointer_cast(first.base()), static_cast<std::size_t>(first.stride())*sizeof(T2), sizeof(T2), static_cast<std::size_t>(count), cudaMemcpyDeviceToHost); assert( s == cudaSuccess );
+		}
+	} else {
+		assert(0);
+		throw 0;
+//		auto const& source_range = boost::multi::ref(first , first + count).elements();
+//		thrust::host_vector<T1, thrust::cuda::experimental::pinned_allocator<T1>> buffer(source_range.begin(), source_range.end());
+//		::thrust::copy_n(thrust::device,
+//			buffer.begin(), buffer.size(),
+//			boost::multi::ref(d_first, d_first + count).template reinterpret_array_cast<T2, Q2*>().elements().begin()
+//		);
+	}
+	return d_first + count;
+}
+
 template<class T1, class Q1, class Size, class T2, class Q2, boost::multi::dimensionality_type D>
 auto copy_n(
 	boost::multi::array_iterator<T1, D, Q1*                      >   first, Size count,
@@ -160,10 +186,19 @@ auto copy_n(
 
 template<class T1, class Q1, class T2, class Q2, boost::multi::dimensionality_type D>
 auto copy(
-	boost::multi::array_iterator<T1, D, Q1*                      >   first,
-	boost::multi::array_iterator<T1, D, Q1*                      >   last ,
+	boost::multi::array_iterator<T1, D,                       Q1*>   first,
+	boost::multi::array_iterator<T1, D,                       Q1*>   last ,
 	boost::multi::array_iterator<T2, D, thrust::cuda::pointer<Q2>> d_first
 )-> boost::multi::array_iterator<T2, D, thrust::cuda::pointer<Q2>> {
+	return copy_n(first, last - first, d_first);
+}
+
+template<class T1, class Q1, class T2, class Q2, boost::multi::dimensionality_type D>
+auto copy(
+	boost::multi::array_iterator<T1, D, thrust::cuda::pointer<Q1>>   first,
+	boost::multi::array_iterator<T1, D, thrust::cuda::pointer<Q1>>   last ,
+	boost::multi::array_iterator<T2, D,                       Q2*> d_first
+)-> boost::multi::array_iterator<T2, D,                       Q2*> {
 	return copy_n(first, last - first, d_first);
 }
 
