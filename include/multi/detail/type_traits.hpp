@@ -10,5 +10,5 @@ namespace multi {
 
 template<class T> struct is_trivially_default_constructible : std::is_trivially_default_constructible<T> {};
 
-}
-}
+}  // end namespace multi
+}  // end namespace boost
