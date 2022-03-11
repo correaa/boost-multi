@@ -9,6 +9,7 @@
 
 #include "./detail/adl.hpp"
 #include "./detail/memory.hpp"
+#include "./detail/type_traits.hpp"
 
 #include "./memory/allocator.hpp"
 
@@ -91,7 +92,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
 	auto uninitialized_default_construct() {
-		return uninitialized_default_construct_if(std::is_trivially_default_constructible<typename static_array::element_type>{});
+		return uninitialized_default_construct_if(multi::is_trivially_default_constructible<typename static_array::element_type>{});
 	}
 
 	template<typename It> auto uninitialized_copy_elements(It first) {
