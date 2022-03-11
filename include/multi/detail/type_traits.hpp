@@ -5,7 +5,7 @@
 
 #include<type_traits>
 
-namespace boost {
+namespace boost {  // NOLINT(modernize-concat-nested-namespaces)
 namespace multi {
 
 template<class T> struct is_trivially_default_constructible : std::is_trivially_default_constructible<T> {};
