@@ -204,8 +204,8 @@ auto copy(
 
 template<class T1, class Q1, class T2, class Q2, boost::multi::dimensionality_type D>
 auto uninitialized_copy(
-	boost::multi::array_iterator<T1, D, Q1*                      >   first,
-	boost::multi::array_iterator<T1, D, Q1*                      >   last ,
+	boost::multi::array_iterator<T1, D,                       Q1*>   first,
+	boost::multi::array_iterator<T1, D,                       Q1*>   last ,
 	boost::multi::array_iterator<T2, D, thrust::cuda::pointer<Q2>> d_first
 )-> boost::multi::array_iterator<T2, D, thrust::cuda::pointer<Q2>> {
 	if constexpr(std::is_trivially_constructible<T2>{}){
@@ -216,7 +216,7 @@ auto uninitialized_copy(
 
 template<class T1, class Q1, class Size, class T2, class Q2, boost::multi::dimensionality_type D>
 auto uninitialized_copy_n(
-	boost::multi::array_iterator<T1, D, Q1*                      >   first, Size count,
+	boost::multi::array_iterator<T1, D,                       Q1*>   first, Size count,
 	boost::multi::array_iterator<T2, D, thrust::cuda::pointer<Q2>> d_first
 )-> boost::multi::array_iterator<T2, D, thrust::cuda::pointer<Q2>> {
 	if constexpr(std::is_trivial_v<T2> and std::is_nothrow_assignable_v<T2&, Q2&>) {
@@ -225,5 +225,27 @@ auto uninitialized_copy_n(
 	throw std::logic_error{"uninitialized_copy_n for nontrivials in cuda device not implemented"};
 }
 
+template<class T1, class Q1, class T2, class Q2, boost::multi::dimensionality_type D>
+auto uninitialized_copy(
+	boost::multi::array_iterator<T1, D, thrust::cuda::pointer<Q1>>   first,
+	boost::multi::array_iterator<T1, D, thrust::cuda::pointer<Q1>>   last ,
+	boost::multi::array_iterator<T2, D,                       Q2*> d_first
+)-> boost::multi::array_iterator<T2, D,                       Q2*> {
+	if constexpr(std::is_trivially_constructible<T2>{}) {
+		return copy(first, last, d_first);
+	}
+	throw std::logic_error{"uninitialized_copy for nontrivials in cuda device not implemented"};
 }
 
+template<class T1, class Q1, class Size, class T2, class Q2, boost::multi::dimensionality_type D>
+auto uninitialized_copy_n(
+	boost::multi::array_iterator<T1, D, thrust::cuda::pointer<Q1>>   first, Size count,
+	boost::multi::array_iterator<T2, D,                       Q2*> d_first
+)-> boost::multi::array_iterator<T2, D,                       Q2*> {
+	if constexpr(std::is_trivial_v<T2> and std::is_nothrow_assignable_v<T2&, Q2&>) {
+		return copy_n(first, count, d_first);
+	}
+	throw std::logic_error{"uninitialized_copy_n for nontrivials in cuda device not implemented"};
+}
+
+}
