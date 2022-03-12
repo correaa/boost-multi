@@ -71,12 +71,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_cpugpu_1D_issue123, T, types_list) {
 //  BOOST_TEST_REQUIRE( T{Devc[123][456]} == T{} );
 	{
 		boost::timer::auto_cpu_timer t{""};
-		Host = Devc;
+//		Host = Devc;
 		std::cout<<"contiguous devc to host: "<< Host.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec\n";
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
-		Host.sliced(0, 10240*10240/2) = Devc.sliced(0, 10240*10240/2);           //  0.005292s
+//		Host.sliced(0, 10240*10240/2) = Devc.sliced(0, 10240*10240/2);           //  0.005292s
 		std::cout<<"sliced     devc to host: "<< Host.sliced(0, 10240*10240/2).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec\n";
 	}
 	std::cout<<"==="<<std::endl;
@@ -108,17 +108,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_cpugpu_issue123, T, types_list) {
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
-		Host = Devc;
+//		Host = Devc;
 		std::cout<<"contiguous devc to host: "<< Host.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec\n";
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
-		Host.sliced(0, 5120) = Devc.sliced(0, 5120);           //  0.005292s
+//		Host.sliced(0, 5120) = Devc.sliced(0, 5120);           //  0.005292s
 		std::cout<<"sliced     devc to host: "<< Host.sliced(0, 5120).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec\n";
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
-		Host({0, 5120},{0, 5120}) = Devc({0, 5120},{0, 5120});  // 0.002859s
+//		Host({0, 5120},{0, 5120}) = Devc({0, 5120},{0, 5120});  // 0.002859s
 		std::cout<<"strided    devc to host: "<< Host({0, 5120},{0, 5120}).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec\n";
 	}
 	std::cout<<"==="<<std::endl;
@@ -150,17 +150,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_cpugpu_issue123_3D, T, types_list) {
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
-		Host = Devc;
+//		Host = Devc;
 		std::cout<<"contiguous devc to host: "<< Host.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec\n";
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
-		Devc.sliced(0, 512) = Host.sliced(0, 512);           //  0.005292s
+//		Devc.sliced(0, 512) = Host.sliced(0, 512);           //  0.005292s
 		std::cout<<"sliced     devc to host: "<< Host.sliced(0, 512).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec\n";
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
-		Devc({0, 512}, {0, 512}, {0, 512}) = Host({0, 512}, {0, 512}, {0, 512});  // 0.002859s
+//		Devc({0, 512}, {0, 512}, {0, 512}) = Host({0, 512}, {0, 512}, {0, 512});  // 0.002859s
 		std::cout<<"strided    devc to host: "<< Host({0, 512},{0, 512}, {0, 512}).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec\n";
 	}
 	std::cout<<"==="<<std::endl;
