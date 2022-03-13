@@ -9,6 +9,7 @@
 
 #include "./detail/adl.hpp"
 #include "./detail/memory.hpp"
+#include "./detail/type_traits.hpp"
 
 #include "./memory/allocator.hpp"
 
@@ -91,7 +92,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
 	auto uninitialized_default_construct() {
-		return uninitialized_default_construct_if(std::is_trivially_default_constructible<typename static_array::element_type>{});
+		return uninitialized_default_construct_if(multi::is_trivially_default_constructible<typename static_array::element_type>{});
 	}
 
 	template<typename It> auto uninitialized_copy_elements(It first) {
@@ -418,7 +419,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		return *this;
 	}
 	template<class TT, class... As>
-	auto operator=(static_array<TT, D, As...> const& other)& -> static_array& {
+	auto operator=(static_array<TT, D, As...> const& other) & -> static_array& {
 		assert( extensions(other) == static_array::extensions() );
 		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
 		return *this;
