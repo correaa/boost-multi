@@ -419,7 +419,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		return *this;
 	}
 	template<class TT, class... As>
-	auto operator=(static_array<TT, D, As...> const& other)& -> static_array& {
+	auto operator=(static_array<TT, D, As...> const& other) & -> static_array& {
 		assert( extensions(other) == static_array::extensions() );
 		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
 		return *this;
