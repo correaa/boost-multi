@@ -13,30 +13,46 @@
 #include <thrust/system/cuda/experimental/pinned_allocator.h>
 #include <thrust/host_vector.h>
 
-namespace boost{
-namespace multi{
-namespace thrust{
+// begin of nvcc trhust 11.5 workaround : https://github.com/NVIDIA/thrust/issues/1629
+namespace thrust {
+
+template<typename Element, typename Tag, typename Reference, typename Derived> class pointer;
+template<class T> struct pointer_traits;
+
+}
+
+namespace std {
+
+template<class... As> class pointer_traits<thrust::pointer<As...>>
+: thrust::pointer_traits<thrust::pointer<As...>> {};
+
+}
+// end of nvcc trhust 11.5 workaround
+
+namespace boost {
+namespace multi {
+namespace thrust {
 
 template<class T, multi::dimensionality_type D> using device_array = multi::array<T, D, ::thrust::device_allocator<T>>;
 template<class T, multi::dimensionality_type D> using host_array   = multi::array<T, D                               >;
 
-namespace device{
+namespace device {
 
 template<class T, multi::dimensionality_type D> using array = device_array<T, D>;
 
 }
 
-namespace host{
+namespace host {
 
 template<class T, multi::dimensionality_type D> using array = host_array<T, D>;
 
 }
 
-namespace cuda{
+namespace cuda {
 
 template<class T, multi::dimensionality_type D> using array = multi::array<T, D, ::thrust::cuda::allocator<T>>;
 
-namespace managed{
+namespace managed {
 
 template<class T, multi::dimensionality_type D> using array = multi::array<T, D, boost::multi::thrust::cuda::managed::allocator<T>>;
 
