@@ -13,6 +13,8 @@
 #include <thrust/system/cuda/experimental/pinned_allocator.h>
 #include <thrust/host_vector.h>
 
+#include<thrust/detail/type_traits/pointer_traits.h>
+
 // begin of nvcc trhust 11.5 workaround : https://github.com/NVIDIA/thrust/issues/1629
 namespace thrust {
 
@@ -24,7 +26,10 @@ template<class T> struct pointer_traits;
 namespace std {
 
 template<class... As> class pointer_traits<thrust::pointer<As...>>
-: thrust::pointer_traits<thrust::pointer<As...>> {};
+: thrust::detail::pointer_traits<thrust::pointer<As...>> {
+	template<class T>
+	using rebind = typename thrust::detail::pointer_traits<thrust::pointer<As...>>::template rebind<T>::other;
+};
 
 }
 // end of nvcc trhust 11.5 workaround
