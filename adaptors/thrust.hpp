@@ -25,7 +25,7 @@ template<class T> struct pointer_traits;
 
 namespace std {
 
-template<class... As> class pointer_traits<thrust::pointer<As...>>
+template<class... As> struct pointer_traits<thrust::pointer<As...>>
 : thrust::detail::pointer_traits<thrust::pointer<As...>> {
 	template<class T>
 	using rebind = typename thrust::detail::pointer_traits<thrust::pointer<As...>>::template rebind<T>::other;
