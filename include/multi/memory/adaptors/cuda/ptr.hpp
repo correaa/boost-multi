@@ -164,7 +164,7 @@ struct ptr {
 	ptr() = default;
 
 	// cppcheck-suppress noExplicitConstructor ; bug in cppcheck 2.3
-	HD ptr(ptr const&) = default;
+	ptr(ptr const&) = default;
 
 	// cppcheck-suppress noExplicitConstructor ; initialize from nullptr
 	constexpr ptr(std::nullptr_t nu) : rp_{nu} {}
