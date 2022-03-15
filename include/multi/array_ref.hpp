@@ -350,7 +350,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 };
 
 template<typename Pointer, class LayoutType>
-struct elements_iterator_t
+struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 : boost::multi::random_accessable<elements_iterator_t<Pointer, LayoutType>, typename std::iterator_traits<Pointer>::difference_type, typename std::iterator_traits<Pointer>::reference>
 {
 	using difference_type = typename std::iterator_traits<Pointer>::difference_type;
@@ -377,7 +377,6 @@ struct elements_iterator_t
 	HD constexpr explicit elements_iterator_t(ElementsIterator const& other) : elements_iterator_t{other.base_, other.l_, other.n_} {}
 
 	HD constexpr elements_iterator_t(elements_iterator_t const& o) : base_{o.base_}, l_{o.l_}, n_{o.n_} {}
-	~elements_iterator_t() = default;  // for cppcoreguidelines-special-member-functions,hicpp-special-member-functions
 
 	HD constexpr auto operator+=(difference_type const& d) -> elements_iterator_t& {n_ += d; return *this;}
 	constexpr auto operator-(elements_iterator_t const& other) const -> difference_type {
