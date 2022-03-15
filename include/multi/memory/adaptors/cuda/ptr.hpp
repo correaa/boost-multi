@@ -150,21 +150,21 @@ struct ptr {
 
 	template<class Other, typename = std::enable_if_t<std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{} and not std::is_same<Other, T>{} >>
 	// cppcheck-suppress noExplicitConstructor ;
-	constexpr /*explicit(false)*/ ptr(ptr<Other> const& o) : rp_{static_cast<raw_pointer>(o.rp_)} {}
+	HD constexpr /*explicit(false)*/ ptr(ptr<Other> const& o) : rp_{static_cast<raw_pointer>(o.rp_)} {}
 	template<class Other, typename = std::enable_if_t<not std::is_convertible<std::decay_t<decltype(std::declval<ptr<Other>>().rp_)>, raw_pointer>{} and not std::is_same<Other, T>{}>, typename = decltype(static_cast<raw_pointer>(std::declval<ptr<Other>>().rp_))>
-	constexpr explicit/*(true)*/ ptr(ptr<Other> const& o, void** = 0) : rp_{static_cast<raw_pointer>(o.rp_)} {}
-	constexpr explicit           ptr(raw_pointer rp) : rp_{rp} {}
+	HD constexpr explicit/*(true)*/ ptr(ptr<Other> const& o, void** = 0) : rp_{static_cast<raw_pointer>(o.rp_)} {}
+	HD constexpr explicit           ptr(raw_pointer rp) : rp_{rp} {}
 
 	template<class TT> friend auto reinterpret_pointer_cast(ptr p)
 	->decltype(ptr<TT>{reinterpret_cast<TT*>(std::declval<raw_pointer>())}){
 		return ptr<TT>{reinterpret_cast<TT*>(p.rp_)};}
 
 	template<class Other, typename = decltype(static_cast<raw_pointer>(std::declval<Other const&>().rp_))>
-	constexpr explicit ptr(Other const& o) : rp_{static_cast<raw_pointer>(o.rp_)}{}
+	HD constexpr explicit ptr(Other const& o) : rp_{static_cast<raw_pointer>(o.rp_)}{}
 	ptr() = default;
 
 	// cppcheck-suppress noExplicitConstructor ; bug in cppcheck 2.3
-	ptr(ptr const&) = default;
+	HD ptr(ptr const&) = default;
 
 	// cppcheck-suppress noExplicitConstructor ; initialize from nullptr
 	constexpr ptr(std::nullptr_t nu) : rp_{nu} {}
@@ -181,22 +181,22 @@ struct ptr {
 
 	using pointer = ptr<T, RawPtr>;
 	using iterator_category = typename std::iterator_traits<raw_pointer>::iterator_category;
-	explicit constexpr operator bool() const{return rp_;}
-	explicit constexpr operator void const*() const{return rp_;}
+	explicit constexpr operator bool() const {return rp_;}
+	explicit constexpr operator void const*() const {return rp_;}
 	template<class TT=T, typename = decltype(static_cast<TT*>(raw_pointer{}))>
-	explicit constexpr operator TT*() const{return static_cast<TT*>(rp_);}
+	explicit constexpr operator TT*() const {return static_cast<TT*>(rp_);}
 	ptr& operator++() {
 		static_assert(not std::is_same<raw_pointer, void*>{}, "!");
 		++rp_;
 		return *this;
 	}
-	ptr& operator--(){--rp_; return *this;}
+	ptr& operator--() {--rp_; return *this;}
 
-	ptr  operator++(int){auto tmp = *this; ++(*this); return tmp;}
-	ptr  operator--(int){auto tmp = *this; --(*this); return tmp;}
+	ptr  operator++(int) {auto tmp = *this; ++(*this); return tmp;}
+	ptr  operator--(int) {auto tmp = *this; --(*this); return tmp;}
 
-	constexpr ptr& operator+=(difference_type n){rp_+=n; return *this;}
-	constexpr ptr& operator-=(difference_type n){rp_-=n; return *this;}
+	constexpr ptr& operator+=(difference_type n) {rp_+=n; return *this;}
+	constexpr ptr& operator-=(difference_type n) {rp_-=n; return *this;}
 
 	constexpr ptr operator+(difference_type n) const {
 	//	static_cast(not std::is_same<raw_pointer, void*>{} , "!");
@@ -209,9 +209,9 @@ struct ptr {
 	[[deprecated("slow")]] constexpr auto operator*() const {return reference{*this};}
 	constexpr auto operator[](difference_type n) const {return reference{*((*this)+n)};}
 
-	constexpr difference_type operator-(ptr const& o) const{return rp_-o.rp_;}
-	operator ptr<void>(){return ptr<void>{rp_};}
-	auto get() const{return rp_;}
+	constexpr difference_type operator-(ptr const& o) const {return rp_-o.rp_;}
+	operator ptr<void>() {return ptr<void>{rp_};}
+	HD auto get() const {return rp_;}
 
 	friend constexpr raw_pointer to_address(ptr const& p) {return p.rp_;}  // TODO(correaa) consider returning T* , from https://en.cppreference.com/w/cpp/memory/to_address
 	explicit constexpr operator raw_pointer() const {return rp_;}
@@ -220,12 +220,12 @@ struct ptr {
 
 	template<class PM>
 	constexpr auto operator->*(PM&& pm) const
-	->decltype(ref<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{ptr<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{&(rp_->*std::forward<PM>(pm))}}){
-		return ref<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{ptr<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{&(rp_->*std::forward<PM>(pm))}};}
+	->decltype(ref<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{ptr<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{&(rp_->*std::forward<PM>(pm))}}) {
+		return ref<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{ptr<std::decay_t<decltype(rp_->*std::forward<PM>(pm))>>{&(rp_->*std::forward<PM>(pm))}}; }
 
  public:
-	friend allocator<std::decay_t<T>> get_allocator(ptr const&){return {};}
-	friend allocator<std::decay_t<T>> default_allocator_of(ptr const&){return {};}
+	friend allocator<std::decay_t<T>> get_allocator(ptr const&) {return {};}
+	friend allocator<std::decay_t<T>> default_allocator_of(ptr const&) {return {};}
 };
 
 template<class T>
