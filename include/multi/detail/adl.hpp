@@ -56,7 +56,8 @@ constexpr class adl_copy_n_t {
 	template<class... As>          constexpr auto _(priority<2>/**/,        As&&... as) const DECLRETURN(                   copy_n(                    std::forward<As>(as)...))
 	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& t, As&&... as) const DECLRETURN(std::decay_t<T>::  copy_n(std::forward<T>(t), std::forward<As>(as)...))
 	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).copy_n(                    std::forward<As>(as)...))
-public:
+
+ public:
 	template<class... As> constexpr auto operator()(As&&... as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
 } adl_copy_n;
 
@@ -101,20 +102,24 @@ public:
 #endif
 } adl_equal;
 
+template<class... Args> struct adl_custom_copy;
+
 constexpr class adl_copy_t {
+	class Copy;
 	template<class InputIt, class OutputIt,
 		class=std::enable_if_t<std::is_assignable<typename std::iterator_traits<OutputIt>::reference, typename std::iterator_traits<InputIt>::reference>{}>
 	>
-	NODISCARD("")                  constexpr auto _(priority<1>/**/, InputIt first, InputIt last, OutputIt d_first)
-	                                                                                const DECLRETURN(              std::copy(first, last, d_first))
+	NODISCARD("")                  constexpr auto _(priority<1>/**/, InputIt first, InputIt last, OutputIt d_first)	                                                                                const DECLRETURN(              std::copy(first, last, d_first))
 #if defined(__NVCC__)
 	template<class... As> 		   constexpr auto _(priority<2>/**/,        As&&... as) const DECLRETURN(           thrust::copy(std::forward<As>(as)...))
 #endif
 	template<         class... As> constexpr auto _(priority<3>/**/,        As&&... as) const DECLRETURN(                   copy(std::forward<As>(as)...))
 	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& t, As&&... as) const DECLRETURN(  std::decay_t<T>::copy(std::forward<T>(t), std::forward<As>(as)...))
-	template<class T, class... As> constexpr auto _(priority<5>/**/, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).copy(std::forward<As>(as)...))
-public:
-	template<class... As> constexpr auto operator()(As&&... as) const DECLRETURN( _(priority<5>{}, std::forward<As>(as)...) ) \
+//	template<class... As         > constexpr auto _(priority<5>/**/,        As&&... as) const DECLRETURN(boost::multi::adl_custom_copy<std::decay_t<As>...>::copy(std::forward<As>(as)...))
+	template<class T, class... As> constexpr auto _(priority<6>/**/, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).copy(std::forward<As>(as)...))
+
+ public:
+	template<class... As> constexpr auto operator()(As&&... as) const DECLRETURN( _(priority<6>{}, std::forward<As>(as)...) ) \
 } adl_copy;
 
 namespace adl {
