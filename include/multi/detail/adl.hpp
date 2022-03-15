@@ -519,7 +519,8 @@ constexpr class alloc_uninitialized_copy_n_t {
 #if defined(__NVCC__)
 	template<class Alloc, class... As> constexpr auto _(priority<3>/**/, Alloc&&         , As&&... as) const DECLRETURN(                 thrust::uninitialized_copy_n(std::forward<As>(as)...))
 #endif
-	template<class... As>              constexpr auto _(priority<4>/**/, Alloc&&         , As&&... as) const DECLRETURN(                         uninitialized_copy_n(std::forward<As>(as)...))
+// TODO(correaa) revise
+	template<class Alloc, class... As>              constexpr auto _(priority<4>/**/, Alloc&&         , As&&... as) const DECLRETURN(                         uninitialized_copy_n(std::forward<As>(as)...))
 	template<class... As>              constexpr auto _(priority<5>/**/,                   As&&... as) const DECLRETURN(                   alloc_uninitialized_copy_n(std::forward<As>(as)...))
 	template<class T, class... As>     constexpr auto _(priority<6>/**/, T&& t,            As&&... as) const DECLRETURN(std::forward<T>(t).alloc_uninitialized_copy_n(std::forward<As>(as)...))
 public:
