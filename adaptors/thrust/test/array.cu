@@ -42,8 +42,8 @@ namespace multi = boost::multi;
 namespace {
 
 template<class T> using test_allocator =
-//  multi ::memory::cuda::allocator<T>
-	thrust::cuda::allocator<T>
+	multi ::memory::cuda::allocator<T>
+//  thrust::cuda::allocator<T>
 ;
 
 }
