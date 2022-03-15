@@ -139,7 +139,7 @@ struct extensions_t {
 
 //	auto operator!=(extensions_t const& other) const -> bool {return impl_ != other.impl_;}
 
-	constexpr auto from_linear(nelems_type n) const {
+	constexpr auto from_linear(nelems_type const& n) const {
 		auto const sub_extensions = extensions_t<D-1>{detail::tuple_tail(this->base())};
 		auto const sub_num_elements = sub_extensions.num_elements();
 		return std::tuple_cat(std::make_tuple(n/sub_num_elements), sub_extensions.from_linear(n%sub_num_elements));
@@ -210,13 +210,12 @@ template<> struct extensions_t<0> {
 
 	template<class Archive> void serialize(Archive&/*ar*/, unsigned /*version*/) {}
 
-	static constexpr auto num_elements() -> size_type {return 1;}
-
-	static constexpr auto from_linear(nelems_type n) -> std::tuple<> {
+	static constexpr auto num_elements() /*const*/ -> size_type {return 1;}
+	static constexpr auto from_linear(nelems_type const& n) /*const*/ -> std::tuple<> {
 		assert(n < num_elements()); (void)n;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : constexpr function
 		return {};
 	}
-	friend constexpr auto operator%(nelems_type n, extensions_t const& /*s*/) -> std::tuple<> {return /*s.*/from_linear(n);}
+	friend constexpr auto operator%(nelems_type const& n, extensions_t const& /*s*/) -> std::tuple<> {return /*s.*/from_linear(n);}
 	friend constexpr auto intersection(extensions_t const& /*x1*/, extensions_t const& /*x2*/) -> extensions_t {return {};}
 
 	constexpr auto operator==(extensions_t const& /*other*/) const {return true ;}

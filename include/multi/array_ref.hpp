@@ -277,16 +277,13 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 		class EElement, typename PPtr,
 		decltype(multi::explicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().ptr_.base()))* = nullptr
 	>
-	constexpr explicit array_iterator(array_iterator<EElement, D, PPtr> const& o)
-	: ptr_{o.ptr_.base_, o.ptr_.layout()}, stride_{o.stride_} {}
+	constexpr explicit array_iterator(array_iterator<EElement, D, PPtr> const& o) : ptr_{o.ptr_.base_, o.ptr_.layout()}, stride_{o.stride_} {}
 
 	template<class EElement, typename PPtr,
 		decltype(multi::implicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().ptr_.base()))* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
-	constexpr/*implct*/array_iterator(array_iterator<EElement, D, PPtr> const& o)   // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : propagate implicitness of pointer
-	: ptr_{o.ptr_.base_, o.ptr_.layout()}, stride_{o.stride_} {}
-	// ^^^ TODO(correaa) : implement implcit in terms of explicit? be careful of infinite recursion
+	constexpr/*mplct*/ array_iterator(array_iterator<EElement, D, PPtr> const& o)  : ptr_{o.ptr_.base_, o.ptr_.layout()}, stride_{o.stride_} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : propagate implicitness of pointer
 
 	array_iterator(array_iterator const&) = default;
 	auto operator=(array_iterator const& other) -> array_iterator& = default;
@@ -353,12 +350,13 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 };
 
 template<typename Pointer, class LayoutType>
-struct elements_iterator_t
+struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 : boost::multi::random_accessable<elements_iterator_t<Pointer, LayoutType>, typename std::iterator_traits<Pointer>::difference_type, typename std::iterator_traits<Pointer>::reference>
 {
 	using difference_type = typename std::iterator_traits<Pointer>::difference_type;
 	using value_type = typename std::iterator_traits<Pointer>::value_type;
 	using pointer = Pointer;
+	using reference =  typename std::iterator_traits<Pointer>::reference;
 
 	using layout_type = LayoutType;
 
@@ -374,17 +372,21 @@ struct elements_iterator_t
  public:
 	template<class ElementsIterator, decltype(multi::implicit_cast<pointer>(std::declval<ElementsIterator>().base_))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor
-	constexpr /*impl*/ elements_iterator_t(ElementsIterator const& other) : elements_iterator_t{other.base_, other.l_, other.n_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	HD constexpr /*impl*/ elements_iterator_t(ElementsIterator const& other) : elements_iterator_t{other.base_, other.l_, other.n_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	template<class ElementsIterator>
-	constexpr explicit elements_iterator_t(ElementsIterator const& other) : elements_iterator_t{other.base_, other.l_, other.n_} {}
+	HD constexpr explicit elements_iterator_t(ElementsIterator const& other) : elements_iterator_t{other.base_, other.l_, other.n_} {}
 
-	constexpr auto operator->() const -> pointer {return base_ + std::apply(l_, l_.extensions().from_linear(n_));}
+	HD constexpr elements_iterator_t(elements_iterator_t const& o) : base_{o.base_}, l_{o.l_}, n_{o.n_} {}
 
-	constexpr auto operator+=(difference_type d) -> elements_iterator_t& {n_ += d; return *this;}
+	HD constexpr auto operator+=(difference_type const& d) -> elements_iterator_t& {n_ += d; return *this;}
 	constexpr auto operator-(elements_iterator_t const& other) const -> difference_type {
 		assert(base_ == other.base_ and l_ == other.l_);
 		return n_ - other.n_;
 	}
+	HD constexpr auto operator+(difference_type const& d) const -> elements_iterator_t {elements_iterator_t ret{*this}; ret += d; return ret;}  // explicit here is necessary for nvcc/thrust
+
+	constexpr auto operator->()                         const -> pointer   {return base_ + std::apply(l_, l_.extensions().from_linear(n_));}
+	constexpr auto operator[](difference_type const& d) const -> reference {return base_[std::apply(l_, l_.extensions().from_linear(n_ + d))];}  // explicit here is necessary for nvcc/thrust
 
 //	using reference = typename std::iterator_traits<Pointer>::reference;
 //	using iterator_category = std::random_access_iterator_tag;
@@ -468,8 +470,8 @@ struct elements_range_t {
 	constexpr auto front()     && ->       reference {return front_aux();}
 	constexpr auto back()      && ->       reference {return back_aux ();}
 
-	constexpr auto front()      & -> const_reference {return front_aux();}
-	constexpr auto back()       & -> const_reference {return back_aux ();}
+	constexpr auto front()      & ->       reference {return front_aux();}
+	constexpr auto back()       & ->       reference {return back_aux ();}
 };
 
 template<class It>
@@ -920,10 +922,10 @@ struct basic_array
 	template<class B1 = irange, class B2 = irange, class B3 = irange>                                 constexpr auto operator()(B1 b1, B2 b2, B3 b3)                       & -> decltype(auto) {return                  paren_aux(b1, b2, b3);}
 	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As> constexpr auto operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as)      & -> decltype(auto) {return                  paren_aux(b1, b2, b3, b4, as...);}
 
-	template<class B1 = irange>                                                                       constexpr auto operator()(B1 b1)                                    && -> decltype(auto) {return std::move(*this).paren_aux(b1);}
-	template<class B1 = irange, class B2 = irange>                                                    constexpr auto operator()(B1 b1, B2 b2)                             && -> decltype(auto) {return std::move(*this).paren_aux(b1, b2);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange>                                 constexpr auto operator()(B1 b1, B2 b2, B3 b3)                      && -> decltype(auto) {return std::move(*this).paren_aux(b1, b2, b3);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As> constexpr auto operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as)     && -> decltype(auto) {return std::move(*this).paren_aux(b1, b2, b3, b4, as...);}
+	template<class B1 = irange>                                                                          constexpr auto operator()(B1 b1)                                    && -> decltype(auto) {return std::move(*this).paren_aux(b1);}
+	template<class B1 = irange, class B2 = irange>                                                    HD constexpr auto operator()(B1 b1, B2 b2)                             && -> decltype(auto) {return std::move(*this).paren_aux(b1, b2);}
+	template<class B1 = irange, class B2 = irange, class B3 = irange>                                    constexpr auto operator()(B1 b1, B2 b2, B3 b3)                      && -> decltype(auto) {return std::move(*this).paren_aux(b1, b2, b3);}
+	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As>    constexpr auto operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... as)     && -> decltype(auto) {return std::move(*this).paren_aux(b1, b2, b3, b4, as...);}
 
  private:
 	template<typename Tuple, std::size_t ... I> constexpr auto apply_impl(Tuple const& t, std::index_sequence<I...>/*012*/) const& -> decltype(auto) {return            this->operator()(std::get<I>(t)...);}
@@ -1275,7 +1277,8 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 , multi::affine          <array_iterator<Element, 1, Ptr>, multi::difference_type>
 , multi::decrementable   <array_iterator<Element, 1, Ptr>>
 , multi::incrementable   <array_iterator<Element, 1, Ptr>>
-, multi::totally_ordered2<array_iterator<Element, 1, Ptr>, void> {
+, multi::totally_ordered2<array_iterator<Element, 1, Ptr>, void>
+{
 	using affine = multi::affine<array_iterator<Element, 1, Ptr>, multi::difference_type>;
 	using difference_type = typename affine::difference_type;
 
@@ -1288,7 +1291,7 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 		decltype(std::declval<Other const&>().data_)* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
-	constexpr/*implct*/array_iterator(Other const& o) : data_{o.data_}, stride_{o.stride_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to reproduce the implicitness of the argument
+	constexpr/*mplct*/ array_iterator(Other const& o) : data_{o.data_}, stride_{o.stride_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to reproduce the implicitness of the argument
 
 	template<
 		class Other,

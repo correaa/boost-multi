@@ -13,7 +13,9 @@
 #include <thrust/system/cuda/experimental/pinned_allocator.h>
 #include <thrust/host_vector.h>
 
-#include<thrust/detail/type_traits/pointer_traits.h>
+#include <thrust/detail/type_traits/pointer_traits.h>
+
+#include <utility>  // std::copy
 
 // begin of nvcc trhust 11.5 workaround : https://github.com/NVIDIA/thrust/issues/1629
 namespace thrust {
@@ -67,8 +69,42 @@ template<class T, multi::dimensionality_type D> using array = multi::array<T, D,
 
 }}}
 
+//namespace thrust {
 
-namespace thrust {
+//template<
+//	class T1, class Q1,
+//	class Size,
+//	class T2, class P2
+//>
+//auto copy_n(
+//	boost::multi::array_iterator<T1, 1, Q1*>   first , Size count,
+//	boost::multi::array_iterator<T2, 1, P2 > d_first
+//)-> boost::multi::array_iterator<T2, 1, P2 > {
+////	assert(first->extensions() == d_first->sextensions());
+//	using E2  = typename std::pointer_traits<P2>::element_type;
+//	using TP2 = decltype(::thrust::cuda_cub::pointer<E2>{std::declval<P2>()});
+//	if constexpr(std::is_trivially_assignable<E2&, Q1&>{}) {
+//		if(count == 0) return d_first;
+//		if(first.stride() == 1 and d_first.stride() == 1) {
+//			auto s = cudaMemcpy  (raw_pointer_cast(TP2{d_first.base()}),                                                        first.base(),                                                      sizeof(T2)* static_cast<std::size_t>(count), cudaMemcpyHostToDevice); assert( s == cudaSuccess );
+//		} else {
+//			auto s = cudaMemcpy2D(raw_pointer_cast(TP2{d_first.base()}), static_cast<std::size_t>(d_first.stride())*sizeof(T2), first.base(), static_cast<std::size_t>(first.stride())*sizeof(T2), sizeof(T2), static_cast<std::size_t>(count), cudaMemcpyHostToDevice); assert( s == cudaSuccess );
+//		}
+//	} else {
+////		assert(0);
+////		auto const& source_range = boost::multi::ref(first , first + count).elements();
+////		thrust::host_vector<T1, thrust::cuda::experimental::pinned_allocator<T1>> buffer(source_range.begin(), source_range.end());
+////		::thrust::copy_n(thrust::device,
+////			buffer.begin(), buffer.size(),
+////			boost::multi::ref(TP2{d_first}, TP2{d_first + count}).template reinterpret_array_cast<T2, E2*>().elements().begin()
+////		);
+//	}
+//	return d_first + count;
+//}
+
+//}
+
+namespace boost::multi {
 
 //template<>
 //struct iterator_system<boost::multi::basic_array<char, 2L, char *, boost::multi::layout_t<2L, boost::multi::size_type>>::elements_iterator_t<char *>>{
@@ -119,154 +155,238 @@ namespace thrust {
 //	std::ptrdiff_t size_;
 //};
 
-template<class T1, class Q1, class Size, class T2, class Q2>
-auto copy_n(
-	boost::multi::array_iterator<T1, 1, Q1*                      >   first , Size count,
-	boost::multi::array_iterator<T2, 1, thrust::cuda::pointer<Q2>> d_first
-)-> boost::multi::array_iterator<T2, 1, thrust::cuda::pointer<Q2>> {
-//	assert(first->extensions() == d_first->extensions());
-
-	if constexpr(std::is_trivially_assignable<Q2&, Q1&>{}) {
-		if(count == 0) return d_first;
-		if(first.stride() == 1 and d_first.stride() == 1) {
-			auto s = cudaMemcpy  (raw_pointer_cast(d_first.base()),                                                        first.base(),                                                      sizeof(T2)* static_cast<std::size_t>(count), cudaMemcpyHostToDevice); assert( s == cudaSuccess );
-		} else {
-			auto s = cudaMemcpy2D(raw_pointer_cast(d_first.base()), static_cast<std::size_t>(d_first.stride())*sizeof(T2), first.base(), static_cast<std::size_t>(first.stride())*sizeof(T2), sizeof(T2), static_cast<std::size_t>(count), cudaMemcpyHostToDevice); assert( s == cudaSuccess );
-		}
-	} else {
-		auto const& source_range = boost::multi::ref(first , first + count).elements();
-		thrust::host_vector<T1, thrust::cuda::experimental::pinned_allocator<T1>> buffer(source_range.begin(), source_range.end());
-		::thrust::copy_n(thrust::device,
-			buffer.begin(), buffer.size(),
-			boost::multi::ref(d_first, d_first + count).template reinterpret_array_cast<T2, Q2*>().elements().begin()
-		);
-	}
-	return d_first + count;
-}
-
-template<class T1, class Q1, class Size, class T2, class Q2>
-auto copy_n(
-	boost::multi::array_iterator<T1, 1, thrust::cuda::pointer<Q1>>   first , Size count,
-	boost::multi::array_iterator<T2, 1,                       Q2*> d_first
-)-> boost::multi::array_iterator<T2, 1,                       Q2*> {
-	if constexpr(std::is_trivially_assignable<Q2&, Q1&>{}) {
-		if(count == 0) return d_first;
-		if(first.stride() == 1 and d_first.stride() == 1) {
-			auto s = cudaMemcpy  (                 d_first.base() ,                                                        raw_pointer_cast(first.base()),                                                      sizeof(T2)* static_cast<std::size_t>(count), cudaMemcpyDeviceToHost); assert( s == cudaSuccess );
-		} else {
-			auto s = cudaMemcpy2D(                 d_first.base() , static_cast<std::size_t>(d_first.stride())*sizeof(T2), raw_pointer_cast(first.base()), static_cast<std::size_t>(first.stride())*sizeof(T2), sizeof(T2), static_cast<std::size_t>(count), cudaMemcpyDeviceToHost); assert( s == cudaSuccess );
-		}
-	} else {
-		assert(0);
-		throw 0;
-//		auto const& source_range = boost::multi::ref(first , first + count).elements();
+//template<class T1, class Q1, class Size, class T2, class Q2>
+//auto copy_n(
+//	boost::multi::array_iterator<T1, 1, thrust::cuda::pointer<Q1>>   first , Size count,
+//	boost::multi::array_iterator<T2, 1,                       Q2*> d_first
+//)-> boost::multi::array_iterator<T2, 1,                       Q2*> {
+//	auto const& source_range = boost::multi::ref(first , first + count).elements();
+//	if constexpr(std::is_trivially_assignable<Q2&, Q1&>{}) {
+//		if(count == 0) return d_first;
+//		if(first.stride() == 1 and d_first.stride() == 1) {
+//			auto s = cudaMemcpy  (                 d_first.base() ,                                                        raw_pointer_cast(first.base()),                                                      sizeof(T2)* static_cast<std::size_t>(count), cudaMemcpyDeviceToHost); assert( s == cudaSuccess );
+//		} else {
+//			auto s = cudaMemcpy2D(                 d_first.base() , static_cast<std::size_t>(d_first.stride())*sizeof(T2), raw_pointer_cast(first.base()), static_cast<std::size_t>(first.stride())*sizeof(T2), sizeof(T2), static_cast<std::size_t>(count), cudaMemcpyDeviceToHost); assert( s == cudaSuccess );
+//		}
+//	} else {
 //		thrust::host_vector<T1, thrust::cuda::experimental::pinned_allocator<T1>> buffer(source_range.begin(), source_range.end());
 //		::thrust::copy_n(thrust::device,
 //			buffer.begin(), buffer.size(),
 //			boost::multi::ref(d_first, d_first + count).template reinterpret_array_cast<T2, Q2*>().elements().begin()
 //		);
+//	}
+//	return d_first + count;
+//}
+
+// copy_n
+
+template<class T1, class Q1, class Size, class T2, class Q2, boost::multi::dimensionality_type D>
+auto copy_n(
+	boost::multi::array_iterator<T1, D,                         Q1*>   first, Size count,
+	boost::multi::array_iterator<T2, D, ::thrust::cuda::pointer<Q2>> d_first
+)-> boost::multi::array_iterator<T2, D, ::thrust::cuda::pointer<Q2>> {
+	if(count == 0) {return d_first;}
+
+	auto const& source = boost::multi::ref(  first,   first + count).elements();
+	auto     && destin = boost::multi::ref(d_first, d_first + count).elements();
+
+	if constexpr(std::is_trivially_assignable<Q2&, Q1&>{}) {
+		if constexpr(D == 1) {
+			if(first.stride() == 1 and d_first.stride() == 1) {
+				auto s = cudaMemcpy  (raw_pointer_cast(d_first.base()),                                                        first.base(),                                                      sizeof(T2)* static_cast<std::size_t>(count), cudaMemcpyHostToDevice); assert( s == cudaSuccess );
+			} else {
+				auto s = cudaMemcpy2D(raw_pointer_cast(d_first.base()), static_cast<std::size_t>(d_first.stride())*sizeof(T2), first.base(), static_cast<std::size_t>(first.stride())*sizeof(T2), sizeof(T2), static_cast<std::size_t>(count), cudaMemcpyHostToDevice); assert( s == cudaSuccess );
+			}
+			return d_first + count;
+		} else if constexpr(D == 2) {
+			if(first->stride() == 1 and d_first->stride() == 1) {
+				auto s = cudaMemcpy2D(raw_pointer_cast(d_first.base()), static_cast<std::size_t>(d_first.stride())*sizeof(T2), first.base(), static_cast<std::size_t>(first.stride())*sizeof(T2), static_cast<std::size_t>(first->size())*sizeof(T2), static_cast<std::size_t>(count), cudaMemcpyHostToDevice); assert( s == cudaSuccess );
+				return d_first + count;
+			}
+		}
+		cudaHostRegister(
+			const_cast<void*>(static_cast<void const*>(std::min(&source.front(), &source.back()))),
+			static_cast<std::size_t>(std::abs(&source.back() - &source.front()) + 1)*sizeof(T1),
+			cudaHostRegisterPortable  // ideally cudaHostRegisterReadOnly but not available in cuda < 11.1
+		);
+		::thrust::copy_n(
+			::thrust::cuda::par,
+			source.begin(), source.size(),
+			boost::multi::ref(d_first, d_first + count).template reinterpret_array_cast<T2, Q2*>().elements().begin()
+		);
+		cudaHostUnregister(const_cast<void*>(static_cast<void const*>(std::min(&source.front(), &source.back()))));
+	} else {
+		// TODO(correaa) fail safe for low memory
+		::thrust::host_vector<T1, ::thrust::cuda::experimental::pinned_allocator<T1>> buffer(source.begin(), source.end());
+		::thrust::copy_n(
+			::thrust::cuda::par,
+			buffer.begin(), buffer.size(),
+			destin.begin()
+		);
 	}
 	return d_first + count;
 }
 
 template<class T1, class Q1, class Size, class T2, class Q2, boost::multi::dimensionality_type D>
 auto copy_n(
-	boost::multi::array_iterator<T1, D, Q1*                      >   first, Size count,
-	boost::multi::array_iterator<T2, D, thrust::cuda::pointer<Q2>> d_first
-)-> boost::multi::array_iterator<T2, D, thrust::cuda::pointer<Q2>> {
-	assert(first->extensions() == d_first->extensions());
+	boost::multi::array_iterator<T1, D, ::thrust::cuda::pointer<Q1>>   first, Size count,
+	boost::multi::array_iterator<T2, D,                         Q2*> d_first
+)-> boost::multi::array_iterator<T2, D,                         Q2*> {
+	if(count == 0) {return d_first;}
 
-	auto const& source_range = boost::multi::ref(first , first + count).elements();
+	auto const& source = boost::multi::ref(  first ,   first + count).elements();
+	auto     && destin = boost::multi::ref(d_first , d_first + count).elements();
 
 	if constexpr(std::is_trivially_assignable<Q2&, Q1&>{}) {
-		if(first->stride() == 1 and d_first->stride() == 1 and D == 2) {
-			auto s = cudaMemcpy2D(raw_pointer_cast(d_first.base()), static_cast<std::size_t>(d_first.stride())*sizeof(T2), first.base(), static_cast<std::size_t>(first.stride())*sizeof(T2), static_cast<std::size_t>(first->size())*sizeof(T2), static_cast<std::size_t>(count), cudaMemcpyHostToDevice); assert( s == cudaSuccess );
-		} else {
-			cudaHostRegister(
-				const_cast<void*>(static_cast<void const*>(raw_pointer_cast(&source_range.front()))),
-			//	(void*)&source_range.front(),
-				static_cast<std::size_t>(&source_range.back() - &source_range.front())*sizeof(T1), cudaHostRegisterPortable
-			);  // cudaHostRegisterReadOnly not available in cuda < 11.1
-			::thrust::copy_n(
-				thrust::cuda::par,
-				source_range.begin(), source_range.size(),
-				boost::multi::ref(d_first, d_first + count).template reinterpret_array_cast<T2, Q2*>().elements().begin()
-			);
-			cudaHostUnregister(const_cast<void*>(static_cast<void const*>(raw_pointer_cast(&source_range.front()))));
+		if constexpr(D == 1) {
+			if(first.stride() == 1 and d_first.stride() == 1) {
+				auto s = cudaMemcpy  (d_first.base(),                                                        raw_pointer_cast(first.base()),                                                      sizeof(T2)* static_cast<std::size_t>(count)                                        , cudaMemcpyDeviceToHost); assert( s == cudaSuccess );
+			} else {
+				auto s = cudaMemcpy2D(d_first.base(), static_cast<std::size_t>(d_first.stride())*sizeof(T2), raw_pointer_cast(first.base()), static_cast<std::size_t>(first.stride())*sizeof(T2), sizeof(T2)                                        , static_cast<std::size_t>(count), cudaMemcpyDeviceToHost); assert( s == cudaSuccess );
+			}
+			return d_first + count;
+		} else if constexpr(D == 2) {
+			if(first->stride() == 1 and d_first->stride() == 1) {
+				auto s = cudaMemcpy2D(d_first.base(), static_cast<std::size_t>(d_first.stride())*sizeof(T2), raw_pointer_cast(first.base()), static_cast<std::size_t>(first.stride())*sizeof(T2), static_cast<std::size_t>(first->size())*sizeof(T2), static_cast<std::size_t>(count), cudaMemcpyDeviceToHost); assert( s == cudaSuccess );
+				return d_first + count;
+			}
 		}
+		cudaHostRegister(
+			static_cast<void*>(std::min(&destin.front(), &destin.back())),
+			static_cast<std::size_t>(std::abs(&destin.back() - &destin.front()))*sizeof(T1),
+			cudaHostRegisterPortable
+		);
+		::thrust::copy_n(
+			::thrust::cuda::par,
+			source.begin(), source.size(),
+			destin.begin()
+		);
+		cudaHostUnregister(static_cast<void*>(std::min(&destin.front(), &destin.back())));
 	} else {
-		thrust::host_vector<T1, thrust::cuda::experimental::pinned_allocator<T1>> buffer(source_range.begin(), source_range.end());
-		::thrust::copy_n(thrust::cuda::par,
+		// TODO(correaa) fail safe for low memory
+		::thrust::host_vector<T1, ::thrust::cuda::experimental::pinned_allocator<T1>> buffer(source.begin(), source.end());
+		std::copy_n(
+		//	std::execution::seq,
 			buffer.begin(), buffer.size(),
-			boost::multi::ref(d_first, d_first + count).template reinterpret_array_cast<T2, Q2*>().elements().begin()
+			destin.begin()
 		);
 	}
-
 	return d_first + count;
 }
 
+
+template<class T1, class Q1, class Size, class T2, class Q2, boost::multi::dimensionality_type D>
+auto copy_n(
+	boost::multi::array_iterator<T1, D, ::thrust::cuda::pointer<Q1>>   first, Size count,
+	boost::multi::array_iterator<T2, D, ::thrust::cuda::pointer<Q2>> d_first
+)-> boost::multi::array_iterator<T2, D, ::thrust::cuda::pointer<Q2>> {
+	if(count == 0) {return d_first;}
+
+	auto const& source = boost::multi::ref(  first ,   first + count).elements();
+	auto     && destin = boost::multi::ref(d_first , d_first + count).elements();
+
+	::thrust::copy_n(
+		::thrust::cuda::par,
+		source.begin(), source.size (),
+		destin.begin()
+	);
+	return d_first + count;
+}
+
+// copy
+
 template<class T1, class Q1, class T2, class Q2, boost::multi::dimensionality_type D>
 auto copy(
-	boost::multi::array_iterator<T1, D,                       Q1*>   first,
-	boost::multi::array_iterator<T1, D,                       Q1*>   last ,
-	boost::multi::array_iterator<T2, D, thrust::cuda::pointer<Q2>> d_first
-)-> boost::multi::array_iterator<T2, D, thrust::cuda::pointer<Q2>> {
+	boost::multi::array_iterator<T1, D,                         Q1*>   first,
+	boost::multi::array_iterator<T1, D,                         Q1*>   last ,
+	boost::multi::array_iterator<T2, D, ::thrust::cuda::pointer<Q2>> d_first
+)-> boost::multi::array_iterator<T2, D, ::thrust::cuda::pointer<Q2>> {
 	return copy_n(first, last - first, d_first);
 }
 
 template<class T1, class Q1, class T2, class Q2, boost::multi::dimensionality_type D>
 auto copy(
-	boost::multi::array_iterator<T1, D, thrust::cuda::pointer<Q1>>   first,
-	boost::multi::array_iterator<T1, D, thrust::cuda::pointer<Q1>>   last ,
-	boost::multi::array_iterator<T2, D,                       Q2*> d_first
-)-> boost::multi::array_iterator<T2, D,                       Q2*> {
+	boost::multi::array_iterator<T1, D, ::thrust::cuda::pointer<Q1>>   first,
+	boost::multi::array_iterator<T1, D, ::thrust::cuda::pointer<Q1>>   last ,
+	boost::multi::array_iterator<T2, D,                         Q2*> d_first
+)-> boost::multi::array_iterator<T2, D,                         Q2*> {
 	return copy_n(first, last - first, d_first);
 }
 
 template<class T1, class Q1, class T2, class Q2, boost::multi::dimensionality_type D>
-auto uninitialized_copy(
-	boost::multi::array_iterator<T1, D,                       Q1*>   first,
-	boost::multi::array_iterator<T1, D,                       Q1*>   last ,
-	boost::multi::array_iterator<T2, D, thrust::cuda::pointer<Q2>> d_first
-)-> boost::multi::array_iterator<T2, D, thrust::cuda::pointer<Q2>> {
-	if constexpr(std::is_trivially_constructible<T2>{}){
-		return copy(first, last, d_first);
-	}
-	throw std::logic_error{"uninitialized_copy for nontrivials in cuda device not implemented"};
+auto copy(
+	boost::multi::array_iterator<T1, D, ::thrust::cuda::pointer<Q1>>   first,
+	boost::multi::array_iterator<T1, D, ::thrust::cuda::pointer<Q1>>   last ,
+	boost::multi::array_iterator<T2, D, ::thrust::cuda::pointer<Q2>> d_first
+)-> boost::multi::array_iterator<T2, D, ::thrust::cuda::pointer<Q2>> {
+	return copy_n(first, last - first, d_first);
+}
+
+// uninitialized_copy_n
+
+template<class T1, class Q1, class Size, class T2, class Q2, boost::multi::dimensionality_type D>
+auto uninitialized_copy_n(
+	boost::multi::array_iterator<T1, D,                         Q1*>   first, Size count,
+	boost::multi::array_iterator<T2, D, ::thrust::cuda::pointer<Q2>> d_first
+)-> boost::multi::array_iterator<T2, D, ::thrust::cuda::pointer<Q2>> {
+	if constexpr(std::is_trivial_v<T2> and std::is_nothrow_assignable_v<T2&, Q2&>) {return copy_n(first, count, d_first);}
+	throw std::logic_error{"uninitialized_copy_n for nontrivials in cuda device not implemented"};
 }
 
 template<class T1, class Q1, class Size, class T2, class Q2, boost::multi::dimensionality_type D>
 auto uninitialized_copy_n(
-	boost::multi::array_iterator<T1, D,                       Q1*>   first, Size count,
-	boost::multi::array_iterator<T2, D, thrust::cuda::pointer<Q2>> d_first
-)-> boost::multi::array_iterator<T2, D, thrust::cuda::pointer<Q2>> {
+	boost::multi::array_iterator<T1, D, ::thrust::cuda::pointer<Q1>>   first, Size count,
+	boost::multi::array_iterator<T2, D,                         Q2*> d_first
+)-> boost::multi::array_iterator<T2, D,                         Q2*> {
 	if constexpr(std::is_trivial_v<T2> and std::is_nothrow_assignable_v<T2&, Q2&>) {
 		return copy_n(first, count, d_first);
 	}
 	throw std::logic_error{"uninitialized_copy_n for nontrivials in cuda device not implemented"};
 }
 
-template<class T1, class Q1, class T2, class Q2, boost::multi::dimensionality_type D>
-auto uninitialized_copy(
-	boost::multi::array_iterator<T1, D, thrust::cuda::pointer<Q1>>   first,
-	boost::multi::array_iterator<T1, D, thrust::cuda::pointer<Q1>>   last ,
-	boost::multi::array_iterator<T2, D,                       Q2*> d_first
-)-> boost::multi::array_iterator<T2, D,                       Q2*> {
-	if constexpr(std::is_trivially_constructible<T2>{}) {
-		return copy(first, last, d_first);
-	}
-	throw std::logic_error{"uninitialized_copy for nontrivials in cuda device not implemented"};
-}
-
 template<class T1, class Q1, class Size, class T2, class Q2, boost::multi::dimensionality_type D>
 auto uninitialized_copy_n(
-	boost::multi::array_iterator<T1, D, thrust::cuda::pointer<Q1>>   first, Size count,
-	boost::multi::array_iterator<T2, D,                       Q2*> d_first
-)-> boost::multi::array_iterator<T2, D,                       Q2*> {
-	if constexpr(std::is_trivial_v<T2> and std::is_nothrow_assignable_v<T2&, Q2&>) {
-		return copy_n(first, count, d_first);
-	}
-	throw std::logic_error{"uninitialized_copy_n for nontrivials in cuda device not implemented"};
+	boost::multi::array_iterator<T1, D, ::thrust::cuda::pointer<Q1>>   first, Size count,
+	boost::multi::array_iterator<T2, D, ::thrust::cuda::pointer<Q2>> d_first
+)-> boost::multi::array_iterator<T2, D, ::thrust::cuda::pointer<Q2>> {
+	if(count == 0) {return d_first;}
+
+	auto const& source = boost::multi::ref(  first ,   first + count).elements();
+	auto     && destin = boost::multi::ref(d_first , d_first + count).elements();
+
+	::thrust::uninitialized_copy_n(
+		::thrust::cuda::par,
+		source.begin(), source.size (),
+		destin.begin()
+	);
+	return d_first + count;
 }
 
+// uninitialized_copy
+
+template<class T1, class Q1, class T2, class Q2, boost::multi::dimensionality_type D>
+auto uninitialized_copy(
+	boost::multi::array_iterator<T1, D,                         Q1*>   first,
+	boost::multi::array_iterator<T1, D,                         Q1*>   last ,
+	boost::multi::array_iterator<T2, D, ::thrust::cuda::pointer<Q2>> d_first
+)-> boost::multi::array_iterator<T2, D, ::thrust::cuda::pointer<Q2>> {
+	return uninitialized_copy_n(first, last - first, d_first);
+}
+
+template<class T1, class Q1, class T2, class Q2, boost::multi::dimensionality_type D>
+auto uninitialized_copy(
+	boost::multi::array_iterator<T1, D, ::thrust::cuda::pointer<Q1>>   first,
+	boost::multi::array_iterator<T1, D, ::thrust::cuda::pointer<Q1>>   last ,
+	boost::multi::array_iterator<T2, D,                         Q2*> d_first
+)-> boost::multi::array_iterator<T2, D,                         Q2*> {
+	return uninitialized_copy_n(first, last - first, d_first);}
+}
+
+template<class T1, class Q1, class T2, class Q2, boost::multi::dimensionality_type D>
+auto uninitialized_copy(
+	boost::multi::array_iterator<T1, D, ::thrust::cuda::pointer<Q1>>   first,
+	boost::multi::array_iterator<T1, D, ::thrust::cuda::pointer<Q1>>   last ,
+	boost::multi::array_iterator<T2, D, ::thrust::cuda::pointer<Q2>> d_first
+)-> boost::multi::array_iterator<T2, D, ::thrust::cuda::pointer<Q2>> {
+	return uninitialized_copy_n(first, last - first, d_first);
 }
