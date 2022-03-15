@@ -372,16 +372,19 @@ struct elements_iterator_t
  public:
 	template<class ElementsIterator, decltype(multi::implicit_cast<pointer>(std::declval<ElementsIterator>().base_))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor
-	constexpr /*impl*/ elements_iterator_t(ElementsIterator const& other) : elements_iterator_t{other.base_, other.l_, other.n_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	HD constexpr /*impl*/ elements_iterator_t(ElementsIterator const& other) : elements_iterator_t{other.base_, other.l_, other.n_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	template<class ElementsIterator>
-	constexpr explicit elements_iterator_t(ElementsIterator const& other) : elements_iterator_t{other.base_, other.l_, other.n_} {}
+	HD constexpr explicit elements_iterator_t(ElementsIterator const& other) : elements_iterator_t{other.base_, other.l_, other.n_} {}
 
-	constexpr auto operator+=(difference_type const& d) -> elements_iterator_t& {n_ += d; return *this;}
+	HD constexpr elements_iterator_t(elements_iterator_t const& o) : base_{o.base_}, l_{o.l_}, n_{o.n_} {}
+
+
+	HD constexpr auto operator+=(difference_type const& d) -> elements_iterator_t& {n_ += d; return *this;}
 	constexpr auto operator-(elements_iterator_t const& other) const -> difference_type {
 		assert(base_ == other.base_ and l_ == other.l_);
 		return n_ - other.n_;
 	}
-	constexpr auto operator+(difference_type const& d) const -> elements_iterator_t {elements_iterator_t ret{*this}; ret += d; return ret;}  // explicit here is necessary for nvcc/thrust
+	HD constexpr auto operator+(difference_type const& d) const -> elements_iterator_t {elements_iterator_t ret{*this}; ret += d; return ret;}  // explicit here is necessary for nvcc/thrust
 
 	constexpr auto operator->()                         const -> pointer   {return base_ + std::apply(l_, l_.extensions().from_linear(n_));}
 	constexpr auto operator[](difference_type const& d) const -> reference {return base_[std::apply(l_, l_.extensions().from_linear(n_ + d))];}  // explicit here is necessary for nvcc/thrust
