@@ -112,11 +112,17 @@ auto dot(Context const& ctxt, X const& x, Y const& y) {
 	return dot_ref<Context, X, Y>{ctxt, x, y};
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunknown-pragmas"
-#pragma push
-#pragma nv_diag_suppress = implicit_return_from_non_void_function  // for nvcc warning
-#pragma    diag_suppress = implicit_return_from_non_void_function  // for nvcc warning
+#if defined __NVCC__
+#if (__CUDACC_VER_MAJOR__ <= 11) and (__CUDACC_VER_MINOR__ < 4)
+#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+#pragma nv_diagnostic push
+#pragma nv_diag_suppress = implicit_return_from_non_void_function
+#else
+#pragma    diagnostic push
+#pragma    diag_suppress = implicit_return_from_non_void_function
+#endif
+#endif
+#endif
 template<class X, class Y> [[nodiscard]]
 auto dot(X const& x, Y const& y) {
 	if constexpr(is_conjugated<X>{}) {
@@ -127,8 +133,15 @@ auto dot(X const& x, Y const& y) {
 		return blas::dot(ctxtp, x, y);
 	}
 }
-#pragma pop
-#pragma GCC diagnostic pop
+#if defined __NVCC__
+#if (__CUDACC_VER_MAJOR__ <= 11) and (__CUDACC_VER_MINOR__ < 4)
+#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+#pragma nv_diagnostic pop
+#else
+#pragma    diagnostic pop
+#endif
+#endif
+#endif
 
 namespace operators{
 	template<class X1D, class Y1D> [[nodiscard]]
