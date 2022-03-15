@@ -10,7 +10,7 @@
 
 #include <thrust/complex.h>
 #include <thrust/device_ptr.h>
-#include <thrust/memory.h>
+#include <thrust/system/cuda/memory.h>
 #include <thrust/uninitialized_copy.h>
 
 #include "../../../memory/adaptors/cuda/allocator.hpp"
@@ -42,8 +42,8 @@ namespace multi = boost::multi;
 namespace {
 
 template<class T> using test_allocator =
-	multi ::memory::cuda::allocator<T>
-//  thrust::cuda::allocator<T>
+//  multi ::memory::cuda::allocator<T>
+	thrust::cuda::allocator<T>
 ;
 
 }
@@ -51,6 +51,9 @@ template<class T> using test_allocator =
 using types_list = boost::mpl::list<char, double, std::complex<double>, thrust::complex<double> >;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_cpugpu_1D_issue123, T, types_list) {  // BOOST_AUTO_TEST_CASE(fdfdfdsfds) { using T = char;
+
+	std::allocator_traits<thrust::cuda::allocator<double>>::pointer pp{};
+
 	static_assert( multi::is_trivially_default_constructible<T>{}, "!");
 	static_assert( std::is_trivially_copy_constructible<T>{}     , "!");
 	static_assert( std::is_trivially_assignable<T&, T>{}         , "!");
