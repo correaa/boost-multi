@@ -136,8 +136,9 @@ struct steppable : totally_ordered<Self> {
 template<class Self, typename Difference>
 struct affine_with_unit : steppable<Self> {//affine_with_unit<Self, Difference> > {
 	using self_type = Self;
-	constexpr auto self() const -> self_type const& {return static_cast<self_type const&>(*this);}
-	constexpr auto self()       -> self_type      & {return static_cast<self_type      &>(*this);}
+	constexpr auto cself() const -> self_type const& {return static_cast<self_type const&>(*this);}
+	constexpr auto  self() const -> self_type const& {return static_cast<self_type const&>(*this);}
+	constexpr auto  self()       -> self_type      & {return static_cast<self_type      &>(*this);}
 
 	using difference_type = Difference;
 	friend constexpr auto operator++(affine_with_unit& s) -> Self& {return s.self() += difference_type{1};}
@@ -148,11 +149,18 @@ struct affine_with_unit : steppable<Self> {//affine_with_unit<Self, Difference> 
 		ret += (-d);
 		return ret;
 	}
-	friend constexpr auto operator+(affine_with_unit const& s, difference_type const& d) -> Self {
-		auto ret{s.self()};
+	constexpr auto operator+(difference_type const& d) const -> Self {
+		auto ret{cself()};
 		ret += d;
 		return ret;
 	}
+//	friend
+////  constexpr
+//	auto operator+(affine_with_unit const& s, difference_type const& d) -> Self {
+//		auto ret{s.self()};
+//		ret += d;
+//		return ret;
+//	}
 	friend constexpr auto operator+(difference_type const& d, affine_with_unit const& s) -> Self {
 		auto ret{s.self()};
 		ret += d;
