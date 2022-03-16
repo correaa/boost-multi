@@ -295,7 +295,7 @@ g++-cppcheck:
     - cmake --build . --verbose
     - ctest --output-on-failure
 
-hpcsdk:
+hpcsdk-22.1:
     stage: build
     script:
       - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates curl tree
@@ -311,7 +311,7 @@ hpcsdk:
       - make VERBOSE=1
       - ctest --output-on-failure
 
-hpcsdk20:
+hpcsdk-22.1-std20:
     stage: build
     script:
       - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates curl tree
@@ -322,6 +322,20 @@ hpcsdk20:
       - apt-get install --no-install-recommends -y --quiet cmake libboost-test-dev libboost-serialization-dev libboost-timer-dev make pkg-config libblas-dev liblapack-dev libfftw3-dev
       - mkdir build && cd build
       - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/22.1/compilers/bin/nvc++ cmake .. -DCMAKE_CXX_STANDARD=20
+      - make VERBOSE=1
+      - ctest --output-on-failure
+
+nvhpc-22.2:
+    stage: build
+    script:
+      - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | sudo tee /etc/apt/sources.list.d/nvhpc.list
+      - sudo apt-get update -y
+      - sudo apt-get install -y nvhpc-22-2
+      - rm -rf ./nvhpc-22-1_22.1_amd64.deb ./nvhpc-2022_22.1_amd64.deb
+      - apt-get install --no-install-recommends -y --quiet ca-certificates curl tree grep cmake libboost-test-dev libboost-serialization-dev libboost-timer-dev make pkg-config libblas-dev liblapack-dev libfftw3-dev
+      - nvc++ --version
+      - mkdir build && cd build
+      - CXX=nvc++ cmake ..
       - make VERBOSE=1
       - ctest --output-on-failure
 
