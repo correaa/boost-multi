@@ -112,7 +112,7 @@ auto dot(Context const& ctxt, X const& x, Y const& y) {
 	return dot_ref<Context, X, Y>{ctxt, x, y};
 }
 
-#if defined __NVCC__
+#if defined __NVCC__   // in place of global -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"
 	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
 		#pragma nv_diagnostic push
 		#pragma nv_diag_suppress = implicit_return_from_non_void_function

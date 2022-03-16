@@ -256,14 +256,18 @@ auto gemm(ContextPtr ctxtp, Scalar s, A2D const& a, B2D const& b)
 	return {ctxtp, s, begin(a), end(a), begin(b)};
 }
 
-//#pragma warning (disable:1011)
-//#pragma diag_suppress 0117 //"implicit_return_from_non_void_function"
-//#pragma diag_suppress 940 //"implicit_return_from_non_void_function"
-// -Xcudafe "--diag_suppress=implicit_return_from_non_void_function"
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunknown-pragmas"
-#pragma push
-#pragma nv_diag_suppress = implicit_return_from_non_void_function  // for nvcc warning
+#if defined __NVCC__
+	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+		#pragma nv_diagnostic push
+		#pragma nv_diag_suppress = implicit_return_from_non_void_function
+	#else
+		#pragma    diagnostic push
+		#pragma    diag_suppress = implicit_return_from_non_void_function
+	#endif
+#elif defined __NVCOMPILER
+	#pragma    diagnostic push
+	#pragma    diag_suppress = implicit_return_from_non_void_function
+#endif
 template<class Scalar, class A2D, class B2D, class = decltype(Scalar(0.))>
 auto gemm(Scalar s, A2D const& a, B2D const& b) {
 	if constexpr(is_conjugated<A2D>{}) {
@@ -274,8 +278,15 @@ auto gemm(Scalar s, A2D const& a, B2D const& b) {
 		return blas::gemm(ctxtp, s, a, b);
 	}
 }
-#pragma pop
-#pragma GCC diagnostic pop
+#if defined __NVCC__
+	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+		#pragma nv_diagnostic pop
+	#else
+		#pragma    diagnostic pop
+	#endif
+#elif defined __NVCOMPILER
+	#pragma    diagnostic pop
+#endif
 
 namespace operators {
 	template<class A2D, class B2D>

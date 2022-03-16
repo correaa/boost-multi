@@ -1,6 +1,6 @@
-#ifndef MULTI_ADAPTORS_BLAS_TRSM_HPP  // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-#define MULTI_ADAPTORS_BLAS_TRSM_HPP
-// Copyright 2019-2021 Alfredo A. Correa
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2019-2022 Alfredo A. Correa
+#pragma once
 
 #include "../blas/core.hpp"
 #include "../blas/filling.hpp"
@@ -9,7 +9,7 @@
 
 namespace boost::multi::blas {
 
-enum class diagonal : char{
+enum class diagonal : char {
 	    unit = 'U', 
 	non_unit = 'N', general = non_unit
 };
@@ -76,12 +76,31 @@ auto trsm(Context&& ctxt, blas::side a_side, blas::filling a_fill, typename A2D:
 ->decltype(trsm(std::forward<Context>(ctxt), a_side, a_fill, blas::diagonal::general, alpha, a, std::forward<B2D>(b))) {
 	return trsm(std::forward<Context>(ctxt), a_side, a_fill, blas::diagonal::general, alpha, a, std::forward<B2D>(b)); }
 
+#if defined __NVCC__
+	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+		#pragma nv_diagnostic push
+		#pragma nv_diag_suppress = implicit_return_from_non_void_function
+	#else
+		#pragma    diagnostic push
+		#pragma    diag_suppress = implicit_return_from_non_void_function
+	#endif
+#elif defined __NVCOMPILER
+	#pragma    diagnostic push
+	#pragma    diag_suppress = implicit_return_from_non_void_function
+#endif
 template<class A2D, class B2D>
 auto trsm(blas::side a_side, blas::filling a_fill, typename A2D::element_type alpha, A2D const& a, B2D&& b) -> decltype(auto) {
 	if constexpr(not is_conjugated<A2D>{}) {return trsm(default_context_of(           a.base() ), a_side, a_fill, alpha, a, std::forward<B2D>(b));}
 	else                                   {return trsm(default_context_of(underlying(a.base())), a_side, a_fill, alpha, a, std::forward<B2D>(b));}
-} // EDG based compilers (e.g. nvcc) need option: -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\""
-
-} // end namespace boost::multi::blas
-
+}
+#if defined __NVCC__
+	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+		#pragma nv_diagnostic pop
+	#else
+		#pragma    diagnostic pop
+	#endif
+#elif defined __NVCOMPILER
+	#pragma    diagnostic pop
 #endif
+
+}  // end namespace boost::multi::blas
