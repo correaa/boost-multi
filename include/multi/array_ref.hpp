@@ -529,6 +529,10 @@ struct basic_array
 	constexpr auto       elements() const& -> const_elements_range {return elements_aux();}
 	constexpr auto const_elements() const  -> const_elements_range {return elements_aux();}
 
+	constexpr auto hull() const -> std::pair<element_const_ptr, size_type> {
+		return {this->base(), std::abs(this->hull_size())};
+	}
+
 	~basic_array() = default;  // this lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
 	basic_array(basic_array&&)  // in C++ < 17 this is necessary to return references from functions
@@ -1635,10 +1639,14 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	constexpr auto elements_aux() const {return elements_range{this->base(), this->layout()};}
 
  public:
-	constexpr auto       elements()      & ->       elements_range {return elements_aux();}
-	constexpr auto       elements()     && ->       elements_range {return elements_aux();}
-	constexpr auto       elements() const& -> const_elements_range {return elements_aux();}
-	constexpr auto const_elements() const  -> const_elements_range {return elements_aux();}
+	constexpr auto  elements()      & ->       elements_range {return elements_aux();}
+	constexpr auto  elements()     && ->       elements_range {return elements_aux();}
+	constexpr auto  elements() const& -> const_elements_range {return elements_aux();}
+	constexpr auto celements() const  -> const_elements_range {return elements_aux();}
+
+	constexpr auto hull() const -> std::pair<element_const_ptr, size_type> {
+		return {std::min(this->base(), this->base() + this->hull_size()), std::abs(this->hull_size())};
+	}
 
 	HD constexpr auto sliced(index first, index last) const& -> basic_const_array {return sliced_aux(first, last);}
 	HD constexpr auto sliced(index first, index last)      & -> basic_array       {return sliced_aux(first, last);}
