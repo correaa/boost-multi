@@ -91,6 +91,18 @@ BOOST_AUTO_TEST_CASE(array_reextent_2d_array) {
 	BOOST_REQUIRE( size(A) == 0 );
 }
 
+#if defined __NVCC__
+	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+		#pragma nv_diagnostic push
+		#pragma nv_diag_suppress = implicit_return_from_non_void_function
+	#else
+		#pragma    diagnostic push
+		#pragma    diag_suppress = implicit_return_from_non_void_function
+	#endif
+#elif defined __NVCOMPILER
+	#pragma    diagnostic push
+	#pragma    diag_suppress = implicit_return_from_non_void_function
+#endif
 template< class T, class U >
 constexpr auto comp_equal(T t, U u) noexcept -> bool {
     using UT = std::make_unsigned_t<T>;
@@ -102,8 +114,16 @@ constexpr auto comp_equal(T t, U u) noexcept -> bool {
 	} else {
 		return u < 0 ? false : t == UU(u);
 	}
-	return false;
 }
+#if defined __NVCC__
+	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+		#pragma nv_diagnostic pop
+	#else
+		#pragma    diagnostic pop
+	#endif
+#elif defined __NVCOMPILER
+	#pragma    diagnostic pop
+#endif
 
 BOOST_AUTO_TEST_CASE(array_vector_size) {
 	std::vector<double> v(100);
