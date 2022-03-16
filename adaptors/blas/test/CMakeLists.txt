@@ -58,7 +58,7 @@ endif()
 
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	enable_language(CUDA)
-	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr") # -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"")
+	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
 	find_package(CUDA QUIET)
 	if(CUDA_FOUND)
 		message("CUDA found")
@@ -168,8 +168,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wunused-variable
 					-Wwrite-strings
 					-diag-error:3846>
-					$<$<CXX_COMPILER_ID:PGI>: # PGI 20  doesn't recognize the -Wextra option
-					--diag_suppress=implicit_return_from_non_void_function>
+                    $<$<OR:$<CXX_COMPILER_ID:PGI>,$<CXX_COMPILER_ID:NVHPC>>:  # EDG diagnostics list: http://www.ssl.berkeley.edu/~jimm/grizzly_docs/SSL/opt/intel/cc/9.0/lib/locale/en_US/mcpcom.msg
+                    --display_error_number --diag_error=incompatible_assignment_operands,returning_ptr_to_local_variable,subscript_out_of_range,used_before_set,undefined_preproc_id,implicit_func_decl,implicit_return_from_non_void_function,missing_type_specifier
+		            >
 					$<$<CXX_COMPILER_ID:MSVC>:
 					/W4>
 		)

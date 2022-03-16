@@ -375,6 +375,8 @@ struct layout_t<0, SSize>
 
 	constexpr auto   rotate() -> layout_t& {return *this;}
 	constexpr auto unrotate() -> layout_t& {return *this;}
+
+	constexpr auto hull_size() const -> size_type {return num_elements();}
 };
 
 #if 0
@@ -559,7 +561,7 @@ struct layout_t<1, SSize>
 
 template<dimensionality_type D, typename SSize>
 struct layout_t
-: multi::equality_comparable<layout_t<D, SSize>> 
+: multi::equality_comparable<layout_t<D, SSize>>
 {
 	using dimensionality_type = multi::dimensionality_type;
 	using rank = std::integral_constant<dimensionality_type, D>;
@@ -731,6 +733,11 @@ struct layout_t
 
 	constexpr auto   rotate() -> layout_t& {if constexpr(D > 1) {transpose(); sub_.  rotate();} return *this;}
 	constexpr auto unrotate() -> layout_t& {if constexpr(D > 1) {sub_.unrotate(); transpose();} return *this;}
+
+	constexpr auto hull_size() const -> size_type {
+		if(is_empty()) {return 0;}
+		return std::abs(size()*stride())>std::abs(sub_.hull_size())?size()*stride():sub_.hull_size();
+	}
 
 //	constexpr auto   rotate(dimensionality_type r) -> layout_t& {
 //		assert( r >= 0 );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
