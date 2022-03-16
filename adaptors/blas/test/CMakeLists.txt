@@ -169,7 +169,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wwrite-strings
 					-diag-error:3846>
                     $<$<OR:$<CXX_COMPILER_ID:PGI>,$<CXX_COMPILER_ID:NVHPC>>:  # EDG diagnostics list: http://www.ssl.berkeley.edu/~jimm/grizzly_docs/SSL/opt/intel/cc/9.0/lib/locale/en_US/mcpcom.msg
-                    --display_error_number --diag_error=incompatible_assignment_operands,returning_ptr_to_local_variable,subscript_out_of_range,used_before_set,undefined_preproc_id,implicit_func_decl,implicit_return_from_non_void_function,ghs_identical_param_and_return_types_required,ghs_not_enough_initializers,integer_sign_change,missing_type_specifier,nonprototype_function_defined,ghs_pointer_to_larger_alignment
+                    --display_error_number --diag_error=incompatible_assignment_operands,returning_ptr_to_local_variable,subscript_out_of_range,used_before_set,undefined_preproc_id,implicit_func_decl,implicit_return_from_non_void_function,ghs_not_enough_initializers,integer_sign_change,missing_type_specifier,nonprototype_function_defined,ghs_pointer_to_larger_alignment
 		            >
 					$<$<CXX_COMPILER_ID:MSVC>:
 					/W4>
