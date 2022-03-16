@@ -113,15 +113,16 @@ auto dot(Context const& ctxt, X const& x, Y const& y) {
 }
 
 #if defined __NVCC__
-#if (__CUDACC_VER_MAJOR__ <= 11) and (__CUDACC_VER_MINOR__ < 4)
-#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-#pragma nv_diagnostic push
-#pragma nv_diag_suppress = implicit_return_from_non_void_function
-#else
-#pragma    diagnostic push
-#pragma    diag_suppress = implicit_return_from_non_void_function
-#endif
-#endif
+	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+		#pragma nv_diagnostic push
+		#pragma nv_diag_suppress = implicit_return_from_non_void_function
+	#else
+		#pragma    diagnostic push
+		#pragma    diag_suppress = implicit_return_from_non_void_function
+	#endif
+#elif defined __NVCOMPILER
+	#pragma    diagnostic push
+	#pragma    diag_suppress = implicit_return_from_non_void_function
 #endif
 template<class X, class Y> [[nodiscard]]
 auto dot(X const& x, Y const& y) {
@@ -134,13 +135,13 @@ auto dot(X const& x, Y const& y) {
 	}
 }
 #if defined __NVCC__
-#if (__CUDACC_VER_MAJOR__ <= 11) and (__CUDACC_VER_MINOR__ < 4)
-#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-#pragma nv_diagnostic pop
-#else
-#pragma    diagnostic pop
-#endif
-#endif
+	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
+		#pragma nv_diagnostic pop
+	#else
+		#pragma    diagnostic pop
+	#endif
+#elif defined __NVCOMPILER
+	#pragma    diagnostic pop
 #endif
 
 namespace operators{
