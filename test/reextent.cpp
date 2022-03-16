@@ -116,7 +116,7 @@ constexpr auto comp_equal(T t, U u) noexcept -> bool {
 	} else {
 		return u < 0 ? false : t == UU(u);
 	}
-	#ifndef __INTEL_COMPILER
+	#if not defined(__INTEL_COMPILER) and not defined(__NVCOMPILER)s
 	__builtin_unreachable();
 	#endif
 }
