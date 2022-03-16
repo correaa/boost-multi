@@ -99,9 +99,10 @@ constexpr auto comp_equal(T t, U u) noexcept -> bool {
 		return t == u;
 	} else if constexpr (std::is_signed_v<T>) {
 		return t < 0 ? false : UT(t) == u;
+	} else {
+		return u < 0 ? false : t == UU(u);
 	}
-	return u < 0 ? false : t == UU(u);
-
+	return false;
 }
 
 BOOST_AUTO_TEST_CASE(array_vector_size) {
