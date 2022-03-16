@@ -119,7 +119,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wwrite-strings
 					-diag-error:3846>
 					$<$<CXX_COMPILER_ID:PGI>: # PGI 20  doesn't recognize the -Wextra option
-					--diag_suppress=implicit_return_from_non_void_function>
+                    >
 					$<$<CXX_COMPILER_ID:MSVC>:
 					/W4>
 		)
