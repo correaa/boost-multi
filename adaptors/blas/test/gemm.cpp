@@ -314,7 +314,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_nh) {
 }
 
 #if 1
-#if CUDA_FOUND
+#if defined(CUDA_FOUND)
 #include<thrust/complex.h>
 BOOST_AUTO_TEST_CASE(multi_blas_gemm_nh_thrust) {
 	using complex = thrust::complex<double>; complex const I{0, 1};
