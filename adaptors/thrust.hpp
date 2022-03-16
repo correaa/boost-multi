@@ -205,16 +205,16 @@ auto copy_n(
 			}
 		}
 		cudaHostRegister(
-			const_cast<void*>(static_cast<void const*>(std::min(&source.front(), &source.back()))),
-			static_cast<std::size_t>(std::abs(&source.back() - &source.front()) + 1)*sizeof(T1),
-			cudaHostRegisterPortable  // ideally cudaHostRegisterReadOnly but not available in cuda < 11.1
+			const_cast<void*>(static_cast<void const*>(boost::multi::ref(  first,   first + count).hull().first )),  // static_cast<void*>(std::min(&destin.front(), &destin.back())),
+			static_cast<std::size_t>                  (boost::multi::ref(  first,   first + count).hull().second)*sizeof(T1) ,  // static_cast<std::size_t>(std::abs(&destin.back() - &destin.front()))*sizeof(T1),
+			cudaHostRegisterPortable
 		);
 		::thrust::copy_n(
 			::thrust::cuda::par,
 			source.begin(), source.size(),
 			boost::multi::ref(d_first, d_first + count).template reinterpret_array_cast<T2, Q2*>().elements().begin()
 		);
-		cudaHostUnregister(const_cast<void*>(static_cast<void const*>(std::min(&source.front(), &source.back()))));
+		cudaHostUnregister(const_cast<void*>(static_cast<void const*>(boost::multi::ref(  first,   first + count).hull().first )));
 	} else {
 		// TODO(correaa) fail safe for low memory
 		::thrust::host_vector<T1, ::thrust::cuda::experimental::pinned_allocator<T1>> buffer(source.begin(), source.end());
@@ -234,8 +234,8 @@ auto copy_n(
 )-> boost::multi::array_iterator<T2, D,                         Q2*> {
 	if(count == 0) {return d_first;}
 
-	auto const& source = boost::multi::ref(  first ,   first + count).elements();
-	auto     && destin = boost::multi::ref(d_first , d_first + count).elements();
+	auto const& source = boost::multi::ref(  first,   first + count).elements();
+	auto     && destin = boost::multi::ref(d_first, d_first + count).elements();
 
 	if constexpr(std::is_trivially_assignable<Q2&, Q1&>{}) {
 		if constexpr(D == 1) {
@@ -252,8 +252,8 @@ auto copy_n(
 			}
 		}
 		cudaHostRegister(
-			static_cast<void*>(std::min(&destin.front(), &destin.back())),
-			static_cast<std::size_t>(std::abs(&destin.back() - &destin.front()))*sizeof(T1),
+			const_cast<void*>(static_cast<void const*>(boost::multi::ref(d_first, d_first + count).hull().first )),  // static_cast<void*>(std::min(&destin.front(), &destin.back())),
+			static_cast<std::size_t>                  (boost::multi::ref(d_first, d_first + count).hull().second)*sizeof(T2) ,  // static_cast<std::size_t>(std::abs(&destin.back() - &destin.front()))*sizeof(T1),
 			cudaHostRegisterPortable
 		);
 		::thrust::copy_n(
@@ -261,7 +261,7 @@ auto copy_n(
 			source.begin(), source.size(),
 			destin.begin()
 		);
-		cudaHostUnregister(static_cast<void*>(std::min(&destin.front(), &destin.back())));
+		cudaHostUnregister(const_cast<void*>(static_cast<void const*>(boost::multi::ref(d_first, d_first + count).hull().first )));
 	} else {
 		// TODO(correaa) fail safe for low memory
 		::thrust::host_vector<T1, ::thrust::cuda::experimental::pinned_allocator<T1>> buffer(source.begin(), source.end());
