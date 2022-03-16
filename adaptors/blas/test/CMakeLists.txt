@@ -58,7 +58,7 @@ endif()
 
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	enable_language(CUDA)
-	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr") # -Xcudafe \"--diag_suppress=implicit_return_from_non_void_function\"")
+	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
 	find_package(CUDA QUIET)
 	if(CUDA_FOUND)
 		message("CUDA found")
@@ -169,7 +169,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wwrite-strings
 					-diag-error:3846>
 					$<$<CXX_COMPILER_ID:PGI>: # PGI 20  doesn't recognize the -Wextra option
-					--diag_suppress=implicit_return_from_non_void_function>
+                    >
 					$<$<CXX_COMPILER_ID:MSVC>:
 					/W4>
 		)
