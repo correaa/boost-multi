@@ -91,6 +91,8 @@ BOOST_AUTO_TEST_CASE(array_reextent_2d_array) {
 	BOOST_REQUIRE( size(A) == 0 );
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic warning "-Wunknown-pragmas"
 #if defined __NVCC__
 	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
 		#pragma nv_diagnostic push
@@ -114,6 +116,9 @@ constexpr auto comp_equal(T t, U u) noexcept -> bool {
 	} else {
 		return u < 0 ? false : t == UU(u);
 	}
+	#ifndef __INTEL_COMPILER
+	__builtin_unreachable();
+	#endif
 }
 #if defined __NVCC__
 	#ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
@@ -124,6 +129,7 @@ constexpr auto comp_equal(T t, U u) noexcept -> bool {
 #elif defined __NVCOMPILER
 	#pragma    diagnostic pop
 #endif
+#pragma GCC diagnostic pop
 
 BOOST_AUTO_TEST_CASE(array_vector_size) {
 	std::vector<double> v(100);
