@@ -92,16 +92,16 @@ BOOST_AUTO_TEST_CASE(array_reextent_2d_array) {
 }
 
 template< class T, class U >
-constexpr auto  comp_equal( T t, U u ) noexcept -> bool {
+constexpr auto comp_equal(T t, U u) noexcept -> bool {
     using UT = std::make_unsigned_t<T>;
     using UU = std::make_unsigned_t<U>;
     if constexpr (std::is_signed_v<T> == std::is_signed_v<U>) {
-        return t == u;
-    } else if constexpr (std::is_signed_v<T>) {
-        return t < 0 ? false : UT(t) == u;
-    } else {
-        return u < 0 ? false : t == UU(u);
+		return t == u;
+	} else if constexpr (std::is_signed_v<T>) {
+		return t < 0 ? false : UT(t) == u;
 	}
+	return u < 0 ? false : t == UU(u);
+
 }
 
 BOOST_AUTO_TEST_CASE(array_vector_size) {
