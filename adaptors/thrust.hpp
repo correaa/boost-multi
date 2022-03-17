@@ -36,6 +36,27 @@ template<class... As> struct pointer_traits<thrust::pointer<As...>>
 }
 // end of nvcc trhust 11.5 workaround
 
+// this is important for algorithms to dispatch to the right thrust executor
+namespace thrust {
+	template<class It> struct iterator_system;
+
+//	template<class T, class Pointer>
+//	struct iterator_system<boost::multi::array_iterator<T, 1, Pointer>>{
+//		using type = typename thrust::iterator_system<Pointer>::type;
+//	};
+
+	template<class T, boost::multi::dimensionality_type D, class Pointer>
+	struct iterator_system<boost::multi::array_iterator<T, D, Pointer>>{
+		using type = typename thrust::iterator_system<typename boost::multi::array_iterator<T, D, Pointer>::element_ptr>::type;
+	};
+
+	template<typename Pointer, class LayoutType>
+	struct iterator_system<boost::multi::elements_iterator_t<Pointer, LayoutType>> {
+		using type = typename thrust::iterator_system<typename boost::multi::elements_iterator_t<Pointer, LayoutType>::pointer>::type;
+	};
+}
+
+
 namespace boost {
 namespace multi {
 namespace thrust {
@@ -103,8 +124,6 @@ template<class T, multi::dimensionality_type D> using array = multi::array<T, D,
 //}
 
 //}
-
-namespace boost::multi {
 
 //template<>
 //struct iterator_system<boost::multi::basic_array<char, 2L, char *, boost::multi::layout_t<2L, boost::multi::size_type>>::elements_iterator_t<char *>>{
@@ -177,6 +196,8 @@ namespace boost::multi {
 //	}
 //	return d_first + count;
 //}
+
+namespace boost::multi {
 
 // copy_n
 
@@ -379,7 +400,7 @@ auto uninitialized_copy(
 	boost::multi::array_iterator<T1, D, ::thrust::cuda::pointer<Q1>>   last ,
 	boost::multi::array_iterator<T2, D,                         Q2*> d_first
 )-> boost::multi::array_iterator<T2, D,                         Q2*> {
-	return uninitialized_copy_n(first, last - first, d_first);}
+	return uninitialized_copy_n(first, last - first, d_first);
 }
 
 template<class T1, class Q1, class T2, class Q2, boost::multi::dimensionality_type D>
@@ -390,3 +411,25 @@ auto uninitialized_copy(
 )-> boost::multi::array_iterator<T2, D, ::thrust::cuda::pointer<Q2>> {
 	return uninitialized_copy_n(first, last - first, d_first);
 }
+
+// equal
+
+template<class T1, class Q1, class T2, class Q2, boost::multi::dimensionality_type D>
+auto equal(
+	boost::multi::array_iterator<T1, D, ::thrust::cuda::pointer<Q1>>   first1,
+	boost::multi::array_iterator<T1, D, ::thrust::cuda::pointer<Q1>>   last1 ,
+	boost::multi::array_iterator<T2, D, ::thrust::cuda::pointer<Q2>>   first2
+)-> bool {
+	if(first1 == last1) {return true;}
+
+	auto const& elems1 = boost::multi::ref(first1,           last1          ).elements();
+	auto const& elems2 = boost::multi::ref(first2, first2 + (last1 - first1)).elements();
+
+	return ::thrust::equal(
+//		::thrust::cuda::par,
+		elems1.begin(), elems1.end(),
+		elems2.begin()
+	);
+}
+
+}  // end namespace boost::multi

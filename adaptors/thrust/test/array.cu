@@ -17,6 +17,8 @@
 
 #include <boost/mpl/list.hpp>
 
+#include <numeric>
+
 namespace multi = boost::multi;
 
 //BOOST_AUTO_TEST_CASE(thrust_array) {
@@ -42,15 +44,15 @@ namespace multi = boost::multi;
 namespace {
 
 template<class T> using test_allocator =
-	multi ::memory::cuda::allocator<T>
-//  thrust::cuda::allocator<T>
+//  multi ::memory::cuda::allocator<T>
+	thrust::cuda::allocator<T>
 ;
 
 }
 
 using types_list = boost::mpl::list<char, double, std::complex<double>, thrust::complex<double> >;
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_cpugpu_1D_issue123, T, types_list) {  // BOOST_AUTO_TEST_CASE(fdfdfdsfds) { using T = char;
+BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_copy_1D_issue123, T, types_list) {  // BOOST_AUTO_TEST_CASE(fdfdfdsfds) { using T = char;
 	static_assert( multi::is_trivially_default_constructible<T>{}, "!");
 	static_assert( std::is_trivially_copy_constructible<T>{}     , "!");
 	static_assert( std::is_trivially_assignable<T&, T>{}         , "!");
@@ -58,8 +60,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_cpugpu_1D_issue123, T, types_list) {  // BO
 
 	multi::array<T, 1, test_allocator<T>> Devc(multi::extensions_t<1>{10240*10240});
 	multi::array<T, 1, test_allocator<T>> Dev2(multi::extensions_t<1>{10240*10240});
-	multi::array<T, 1>                    Host(multi::extensions_t<1>{10240*10240}, T{});
-	multi::array<T, 1>                    Hos2(multi::extensions_t<1>{10240*10240}, T{});
+	multi::array<T, 1>                    Host(multi::extensions_t<1>{10240*10240}); std::iota(Host.elements().begin(), Host.elements().end(), 12.);
+	multi::array<T, 1>                    Hos2(multi::extensions_t<1>{10240*10240});
 
 	std::cout<<"| 1D `"<< typeid(T).name() <<"` total data size: "<< Host.num_elements()*sizeof(T) / 1073741824. <<" GB | speed |\n|---|---|\n";
 	{
@@ -69,35 +71,37 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_cpugpu_1D_issue123, T, types_list) {  // BO
 		boost::timer::auto_cpu_timer t{""};
 		Devc = Host;
 		std::cout<<"| contiguous host to devc | "<< Host.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
-		BOOST_REQUIRE( T(*Devc.data_elements()) == T{} );
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
 		Devc.sliced(0, 10240*10240/2) = Host.sliced(0, 10240*10240/2);           //  0.005292s
 		std::cout<<"| sliced     host to devc | "<< Host.sliced(0, 10240*10240/2).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
-		BOOST_REQUIRE( T(*Devc.data_elements()) == T{} );
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
-		Host = Devc;
+		Hos2 = Devc;
 		std::cout<<"| contiguous devc to host | "<< Host.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+		BOOST_REQUIRE( Hos2 == Host );
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
-		Host.sliced(0, 10240*10240/2) = Devc.sliced(0, 10240*10240/2);           //  0.005292s
+		Hos2.sliced(0, 10240*10240/2) = Devc.sliced(0, 10240*10240/2);           //  0.005292s
 		std::cout<<"| sliced     devc to host | "<< Host.sliced(0, 10240*10240/2).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+		BOOST_REQUIRE( Hos2 == Host );
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
 		Dev2 = Devc;
 		cudaDeviceSynchronize();
 		std::cout<<"| contiguous devc to devc | "<< Dev2.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+		BOOST_REQUIRE( Dev2 == Devc );
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
 		Dev2.sliced(0, 10240*10240/2) = Devc.sliced(0, 10240*10240/2);           //  0.005292s
 		cudaDeviceSynchronize();
 		std::cout<<"| sliced     devc to devc | "<< Dev2.sliced(0, 10240*10240/2).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+		BOOST_REQUIRE( Dev2 == Devc );
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
@@ -111,7 +115,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_cpugpu_1D_issue123, T, types_list) {  // BO
 		cudaDeviceSynchronize();
 		std::cout<<"| sliced     host to host | "<< Hos2.sliced(0, 10240*10240/2).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
 	}
-
 	std::cout<<"   "<<std::endl;
 }
 
@@ -121,8 +124,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_cpugpu_issue123, T, types_list) {
 	multi::array<T, 2, test_allocator<T>> Devc({10240, 10240});
 	multi::array<T, 2, test_allocator<T>> Dev2({10240, 10240});
 
-	multi::array<T, 2>                    Host({10240, 10240}, T{});
-	multi::array<T, 2, test_allocator<T>> Hos2({10240, 10240});
+	multi::array<T, 2>                    Host({10240, 10240}); std::iota(Host.elements().begin(), Host.elements().end(), 12.);
+	multi::array<T, 2>                    Hos2({10240, 10240});
 
 	std::cout<<"| 2D `"<< typeid(T).name() <<"` max data size "<< Host.num_elements()*sizeof(T) / 1073741824. <<" GB | speed |\n|---|---|\n";
 	{
@@ -145,36 +148,42 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_cpugpu_issue123, T, types_list) {
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
-		Host = Devc;
+		Hos2 = Devc;
 		std::cout<<"| contiguous devc to host | "<< Host.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+		BOOST_REQUIRE(Hos2 == Host);
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
-		Host.sliced(0, 5120) = Devc.sliced(0, 5120);           //  0.005292s
+		Hos2.sliced(0, 5120) = Devc.sliced(0, 5120);           //  0.005292s
 		std::cout<<"| sliced     devc to host | "<< Host.sliced(0, 5120).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+		BOOST_REQUIRE(Hos2 == Host);
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
-		Host({0, 5120},{0, 5120}) = Devc({0, 5120},{0, 5120});  // 0.002859s
+		Hos2({0, 5120},{0, 5120}) = Devc({0, 5120},{0, 5120});  // 0.002859s
 		std::cout<<"| strided    devc to host | "<< Host({0, 5120},{0, 5120}).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+		BOOST_REQUIRE(Hos2 == Host);
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
 		Dev2 = Devc;
 		cudaDeviceSynchronize();
 		std::cout<<"| contiguous devc to devc | "<< Host.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+		BOOST_REQUIRE( Dev2 == Devc );
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
 		Dev2.sliced(0, 5120) = Devc.sliced(0, 5120);           //  0.005292s
 		cudaDeviceSynchronize();
 		std::cout<<"| sliced     devc to devc | "<< Host.sliced(0, 5120).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+		BOOST_REQUIRE( Dev2 == Devc );
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
 		Dev2({0, 5120},{0, 5120}) = Devc({0, 5120},{0, 5120});  // 0.002859s
 		cudaDeviceSynchronize();
 		std::cout<<"| strided    devc to devc | "<< Host({0, 5120},{0, 5120}).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+		BOOST_REQUIRE( Dev2 == Devc );
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
@@ -198,7 +207,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_cpugpu_issue123_3D, T, types_list) {
 
 	multi::array<T, 3, test_allocator<T>> Devc({1024, 1024, 100});
 	multi::array<T, 3, test_allocator<T>> Dev2({1024, 1024, 100});
-	multi::array<T, 3>                    Host({1024, 1024, 100}, T{});
+	multi::array<T, 3>                    Host({1024, 1024, 100}); std::iota(Host.elements().begin(), Host.elements().end(), 12.);
 	multi::array<T, 3>                    Hos2({1024, 1024, 100});
 
 	std::cout<<"| 3D `"<< typeid(T).name() <<"` max data size "<< Host.num_elements()*sizeof(T) / 1073741824. <<" GB | speed |\n|---|---|\n";
@@ -209,52 +218,55 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_cpugpu_issue123_3D, T, types_list) {
 		boost::timer::auto_cpu_timer t{""};
 		Devc = Host;
 		std::cout<<"| contiguous host to devc | "<< Host.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << " GB/sec |\n";
-		BOOST_REQUIRE( T(*Devc.data_elements()) == T{} );
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
 		Devc.sliced(0, 512) = Host.sliced(0, 512);           //  0.005292s
 		std::cout<<"| sliced     host to devc | "<< Host.sliced(0, 512).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << " GB/sec |\n";
-		BOOST_REQUIRE( T(*Devc.data_elements()) == T{} );
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
 		Devc({0, 512}, {0, 512}, {0, 512}) = Host({0, 512}, {0, 512}, {0, 512});  // 0.002859s
 		std::cout<<"| strided    host to devc | "<< Host({0, 512},{0, 512}, {0, 512}).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
-		BOOST_REQUIRE( T(*Devc.data_elements()) == T{} );
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
-		Host = Devc;
+		Hos2 = Devc;
 		std::cout<<"| contiguous devc to host | "<< Host.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+		BOOST_REQUIRE(Hos2 == Host);
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
-		Host.sliced(0, 512) = Devc.sliced(0, 512);           //  0.005292s
+		Hos2.sliced(0, 512) = Devc.sliced(0, 512);           //  0.005292s
 		std::cout<<"| sliced     devc to host | "<< Host.sliced(0, 512).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+		BOOST_REQUIRE(Hos2 == Host);
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
-		Host({0, 512}, {0, 512}, {0, 512}) = Devc({0, 512}, {0, 512}, {0, 512});  // 0.002859s
+		Hos2({0, 512}, {0, 512}, {0, 512}) = Devc({0, 512}, {0, 512}, {0, 512});  // 0.002859s
 		std::cout<<"| strided    devc to host | "<< Host({0, 512},{0, 512}, {0, 512}).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+		BOOST_REQUIRE(Hos2 == Host);
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
 		Dev2 = Devc;
 		cudaDeviceSynchronize();
 		std::cout<<"| contiguous devc to devc | "<< Dev2.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+		BOOST_REQUIRE(Dev2 == Devc);
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
 		Dev2.sliced(0, 512) = Devc.sliced(0, 512);           //  0.005292s
 		cudaDeviceSynchronize();
 		std::cout<<"| sliced     devc to devc | "<< Dev2.sliced(0, 512).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+		BOOST_REQUIRE(Dev2 == Devc);
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
 		Dev2({0, 512}, {0, 512}, {0, 512}) = Devc({0, 512}, {0, 512}, {0, 512});  // 0.002859s
 		cudaDeviceSynchronize();
 		std::cout<<"| strided    devc to devc | "<< Dev2({0, 512},{0, 512}, {0, 512}).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+		BOOST_REQUIRE(Dev2 == Devc);
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
@@ -272,6 +284,128 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_cpugpu_issue123_3D, T, types_list) {
 		std::cout<<"| strided    host to host | "<< Hos2({0, 512},{0, 512}, {0, 512}).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
 	}
 	std::cout<<"   "<<std::endl;
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_equality_1D_issue123, T, types_list) {  // BOOST_AUTO_TEST_CASE(fdfdfdsfds) { using T = char;
+	multi::array<T, 1, test_allocator<T>> Devc(multi::extensions_t<1>{10240*10240});
+	multi::array<T, 1, test_allocator<T>> Dev2(multi::extensions_t<1>{10240*10240});
+	multi::array<T, 1>                    Host(multi::extensions_t<1>{10240*10240}); std::iota(Host.elements().begin(), Host.elements().end(), 12.);
+	multi::array<T, 1>                    Hos2(multi::extensions_t<1>{10240*10240});
+
+	std::cout<<"| 1D `"<< typeid(T).name() <<"` total data size: "<< Host.num_elements()*sizeof(T) / 1073741824. <<" GB | speed |\n|---|---|\n";
+
+	Devc = Host;
+	Dev2 = Host;
+	Hos2 = Host;
+	{
+		boost::timer::auto_cpu_timer t{""};
+		BOOST_REQUIRE(Devc == Dev2);
+		std::cout<<"| contiguous devc == devc | "<< Devc.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+	}
+	{
+		boost::timer::auto_cpu_timer t{""};
+		BOOST_REQUIRE(Devc.sliced(0, 10240*10240/2) == Dev2.sliced(0, 10240*10240/2));
+		std::cout<<"| sliced     devc == devc | "<< Devc.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+	}
+	{
+		boost::timer::auto_cpu_timer t{""};
+		BOOST_REQUIRE(Host == Hos2);
+		std::cout<<"| contiguous host == host | "<< Hos2.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+	}
+	{
+		boost::timer::auto_cpu_timer t{""};
+		BOOST_REQUIRE(Host.sliced(0, 10240*10240/2) == Hos2.sliced(0, 10240*10240/2));
+		std::cout<<"| sliced     host == host | "<< Hos2.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+	}
+
+	std::cout<<"   "<<std::endl;
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_equality_2D_issue123, T, types_list) {
+	multi::array<T, 2, test_allocator<T>> Devc({10240, 10240});
+	multi::array<T, 2, test_allocator<T>> Dev2({10240, 10240});
+	multi::array<T, 2>                    Host({10240, 10240}); std::iota(Host.elements().begin(), Host.elements().end(), 12.);
+	multi::array<T, 2>                    Hos2({10240, 10240});
+
+	std::cout<<"| 2D `"<< typeid(T).name() <<"` max data size "<< Host.num_elements()*sizeof(T) / 1073741824. <<" GB | speed |\n|---|---|\n";
+
+	Devc = Host;
+	Dev2 = Host;
+	Hos2 = Host;
+	{
+		boost::timer::auto_cpu_timer t{""};
+		BOOST_REQUIRE(Devc == Dev2);
+		std::cout<<"| contiguous devc == devc | "<< Devc.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+	}
+	{
+		boost::timer::auto_cpu_timer t{""};
+		BOOST_REQUIRE(Devc.sliced(0, 5120) == Dev2.sliced(0, 5120));
+		std::cout<<"| sliced     devc == devc | "<< Devc.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+	}
+	{
+		boost::timer::auto_cpu_timer t{""};
+		BOOST_REQUIRE(Devc({0, 5120},{0, 5120}) == Dev2({0, 5120},{0, 5120}));
+		std::cout<<"| strided    devc == devc | "<< Dev2({0, 5120},{0, 5120}).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+	}
+	{
+		boost::timer::auto_cpu_timer t{""};
+		BOOST_REQUIRE(Host == Hos2);
+		std::cout<<"| contiguous devc == devc | "<< Hos2.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+	}
+	{
+		boost::timer::auto_cpu_timer t{""};
+		BOOST_REQUIRE(Host.sliced(0, 5120) == Hos2.sliced(0, 5120));
+		std::cout<<"| sliced     devc == devc | "<< Hos2.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+	}
+	{
+		boost::timer::auto_cpu_timer t{""};
+		BOOST_REQUIRE(Host({0, 5120},{0, 5120}) == Hos2({0, 5120},{0, 5120}));
+		std::cout<<"| strided    devc == devc | "<< Hos2({0, 5120},{0, 5120}).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+	}
+	std::cout<<"   "<<std::endl;
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_equality_issue123_3D, T, types_list) {
+	multi::array<T, 3, test_allocator<T>> Devc({1024, 1024, 100});
+	multi::array<T, 3, test_allocator<T>> Dev2({1024, 1024, 100});
+	multi::array<T, 3>                    Host({1024, 1024, 100}); std::iota(Host.elements().begin(), Host.elements().end(), 12.);
+	multi::array<T, 3>                    Hos2({1024, 1024, 100});
+
+	std::cout<<"| 3D `"<< typeid(T).name() <<"` max data size "<< Host.num_elements()*sizeof(T) / 1073741824. <<" GB | speed |\n|---|---|\n";
+
+	Devc = Host;
+	Dev2 = Host;
+	Hos2 = Host;
+	{
+		boost::timer::auto_cpu_timer t{""};
+		BOOST_REQUIRE( Devc == Dev2 );
+		std::cout<<"| contiguous devc == devc | "<< Devc.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << " GB/sec |\n";
+	}
+	{
+		boost::timer::auto_cpu_timer t{""};
+		BOOST_REQUIRE( Devc.sliced(0, 512) == Dev2.sliced(0, 512) );
+		std::cout<<"| sliced     devc == devc | "<< Dev2.sliced(0, 512).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << " GB/sec |\n";
+	}
+	{
+		boost::timer::auto_cpu_timer t{""};
+		BOOST_REQUIRE( Devc({0, 512}, {0, 512}, {0, 512}) == Dev2({0, 512}, {0, 512}, {0, 512}) );
+		std::cout<<"| strided    devc == devc | "<< Dev2({0, 512},{0, 512}, {0, 512}).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+	}
+	{
+		boost::timer::auto_cpu_timer t{""};
+		BOOST_REQUIRE( Host == Hos2 );
+		std::cout<<"| contiguous host == host | "<< Hos2.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << " GB/sec |\n";
+	}
+	{
+		boost::timer::auto_cpu_timer t{""};
+		BOOST_REQUIRE( Host.sliced(0, 512) == Hos2.sliced(0, 512) );
+		std::cout<<"| sliced     host == host | "<< Hos2.sliced(0, 512).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << " GB/sec |\n";
+	}
+	{
+		boost::timer::auto_cpu_timer t{""};
+		BOOST_REQUIRE( Host({0, 512}, {0, 512}, {0, 512}) == Hos2({0, 512}, {0, 512}, {0, 512}) );
+		std::cout<<"| strided    host == host | "<< Hos2({0, 512},{0, 512}, {0, 512}).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+	}
 }
 
 #if 0

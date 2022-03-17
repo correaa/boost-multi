@@ -526,7 +526,7 @@ struct basic_array
  public:
 	constexpr auto       elements()      & ->       elements_range {return elements_aux();}
 	constexpr auto       elements()     && ->       elements_range {return elements_aux();}
-	constexpr auto       elements() const& -> const_elements_range {return elements_aux();}
+	constexpr auto       elements() const& -> const_elements_range {return const_elements_range{this->base(), this->layout()};}
 	constexpr auto const_elements() const  -> const_elements_range {return elements_aux();}
 
 	constexpr auto hull() const -> std::pair<element_const_ptr, size_type> {
@@ -1128,11 +1128,13 @@ struct basic_array
 
 	template<class TT, class... As>
 	constexpr auto operator==(basic_array<TT, D, As...> const& o) const -> bool {
-		return (this->extension() == o.extension()) and    adl_equal(this->begin(), this->end(), adl_begin(o));
+		return (this->extension() == o.extension())
+		and    adl_equal(this->elements().begin(), this->elements().end(), o.elements().begin());
 	}
 	template<class TT, class... As>
 	constexpr auto operator!=(basic_array<TT, D, As...> const& o) const -> bool {
-		return (this->extension() != o.extension()) or not adl_equal(this->begin(), this->end(), adl_begin(o));
+		return (this->extension() != o.extension())
+		or not adl_equal(this->elements().begin(), this->elements().end(), o.elements().begin());
 	}
 
 	template<class It>
@@ -2069,9 +2071,9 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 	template<class It> constexpr auto copy_elements(It first) {
 		return adl_copy_n(first, array_ref::num_elements(), array_ref::data_elements());
 	}
-	template<class It> constexpr auto equal_elements(It first) const {
-		return adl_equal(first, first + this->num_elements(), this->data_elements());
-	}
+//	template<class It> HD constexpr auto equal_elements(It first) const {
+//		return adl_equal(first, first + this->num_elements(), this->data_elements());
+//	}
 
  public:
 	constexpr auto data_elements() const& -> typename array_ref::element_ptr {return array_ref::base_;}
@@ -2129,12 +2131,14 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 	template<typename TT, class... As>
 	constexpr auto operator==(array_ref<TT, D, As...> const& o) const {
 		if(this->extensions() != o.extensions()) {return false;}  // TODO(correaa) : or assert?
-		return equal_elements(std::move(o).data_elements());
+		return adl_equal(o.data_elements(), o.data_elements() + this->num_elements(), this->data_elements());
+	//	return equal_elements(std::move(o).data_elements());
 	}
 	template<typename TT, class... As>
 	constexpr auto operator!=(array_ref<TT, D, As...> const& o) const {
 		if(this->extensions() != o.extensions()) {return true;}  // TODO(correaa) : or assert?
-		return not equal_elements(std::move(o).data_elements());
+		return not adl_equal(o.data_elements(), o.data_elements() + this->num_elements(), this->data_elements());
+	//	return not equal_elements(std::move(o).data_elements());
 	}
 
 
