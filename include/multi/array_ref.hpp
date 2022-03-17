@@ -389,8 +389,16 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 	constexpr auto operator->()                         const -> pointer   {return base_ + std::apply(l_, l_.extensions().from_linear(n_    )) ;}
 	constexpr auto operator[](difference_type const& d) const -> reference {return base_  [std::apply(l_, l_.extensions().from_linear(n_ + d))];}  // explicit here is necessary for nvcc/thrust
 
-//	using reference = typename std::iterator_traits<Pointer>::reference;
 
+	// redundant operators (cuda?)
+	HD constexpr auto operator==(elements_iterator_t const& other) const {
+		return n_ == other.n_ and base_ == other.base_ and l_ == other.l_;
+	}
+	HD constexpr auto operator!=(elements_iterator_t const& other) const {
+		return n_ != other.n_ or  base_ != other.base_ or  l_ != other.l_;
+	}
+
+//	using reference = typename std::iterator_traits<Pointer>::reference;
 
 //	friend constexpr auto operator<(elements_iterator_t const& s, elements_iterator_t const& o) {
 //		assert( s.base_ == o.base_ );
