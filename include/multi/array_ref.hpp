@@ -357,6 +357,7 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 	using value_type = typename std::iterator_traits<Pointer>::value_type;
 	using pointer = Pointer;
 	using reference =  typename std::iterator_traits<Pointer>::reference;
+	using iterator_category = std::random_access_iterator_tag;
 
 	using layout_type = LayoutType;
 
@@ -379,17 +380,17 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 	HD constexpr elements_iterator_t(elements_iterator_t const& o) : base_{o.base_}, l_{o.l_}, n_{o.n_} {}
 
 	HD constexpr auto operator+=(difference_type const& d) -> elements_iterator_t& {n_ += d; return *this;}
-	constexpr auto operator-(elements_iterator_t const& other) const -> difference_type {
+	HD constexpr auto operator-(elements_iterator_t const& other) const -> difference_type {
 		assert(base_ == other.base_ and l_ == other.l_);
 		return n_ - other.n_;
 	}
 	HD constexpr auto operator+(difference_type const& d) const -> elements_iterator_t {elements_iterator_t ret{*this}; ret += d; return ret;}  // explicit here is necessary for nvcc/thrust
 
-	constexpr auto operator->()                         const -> pointer   {return base_ + std::apply(l_, l_.extensions().from_linear(n_));}
-	constexpr auto operator[](difference_type const& d) const -> reference {return base_[std::apply(l_, l_.extensions().from_linear(n_ + d))];}  // explicit here is necessary for nvcc/thrust
+	constexpr auto operator->()                         const -> pointer   {return base_ + std::apply(l_, l_.extensions().from_linear(n_    )) ;}
+	constexpr auto operator[](difference_type const& d) const -> reference {return base_  [std::apply(l_, l_.extensions().from_linear(n_ + d))];}  // explicit here is necessary for nvcc/thrust
 
 //	using reference = typename std::iterator_traits<Pointer>::reference;
-//	using iterator_category = std::random_access_iterator_tag;
+
 
 //	friend constexpr auto operator<(elements_iterator_t const& s, elements_iterator_t const& o) {
 //		assert( s.base_ == o.base_ );
