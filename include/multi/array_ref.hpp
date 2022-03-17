@@ -391,10 +391,10 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 
 
 	// redundant operators (cuda?)
-	HD constexpr auto operator==(elements_iterator_t const& other) const {
+	HD constexpr auto operator==(elements_iterator_t const& other) const -> bool {
 		return n_ == other.n_ and base_ == other.base_ and l_ == other.l_;
 	}
-	HD constexpr auto operator!=(elements_iterator_t const& other) const {
+	HD constexpr auto operator!=(elements_iterator_t const& other) const -> bool {
 		return n_ != other.n_ or  base_ != other.base_ or  l_ != other.l_;
 	}
 

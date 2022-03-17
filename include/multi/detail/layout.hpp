@@ -637,7 +637,7 @@ struct layout_t
 	constexpr auto nelems(dimensionality_type d) const {return (d!=0)?sub_.nelems(d-1):nelems_;}
 
 //  friend constexpr auto operator!=(layout_t const& s, layout_t const& o) {return not(s == o);}
-	friend constexpr auto operator==(layout_t const& s, layout_t const& o) {
+	friend constexpr auto operator==(layout_t const& s, layout_t const& o) -> bool {
 		return s.sub_ == o.sub_ and s.stride_ == o.stride_ and s.offset_ == o.offset_ and s.nelems_ == o.nelems_;
 	}
 
