@@ -393,12 +393,12 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 	elements_iterator_t(elements_iterator_t const&) = default;
 
 	HD constexpr auto operator++() -> elements_iterator_t& {
-		std::apply( [&](auto&... e){return xs_.next_canonical(e...);}, ns_ );
+		std::apply( [&xs = this->xs_](auto&... e){return xs.next_canonical(e...);}, ns_ );
 		++n_;
 		return *this;
 	}
 	HD constexpr auto operator--() -> elements_iterator_t& {
-		std::apply( [&](auto&... e){return xs_.prev_canonical(e...); }, ns_ );
+		std::apply( [&xs = this->xs_](auto&... e){return xs.prev_canonical(e...); }, ns_ );
 		--n_;
 		return *this;
 	}
