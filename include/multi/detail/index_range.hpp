@@ -271,7 +271,7 @@ struct append_to_type_seq<T, TT<Ts...> > {
     using type = TT<Ts..., T>;
 };
 
-template<typename T, dimensionality_type N, template<typename...> class TT = std::tuple>
+template<typename T, dimensionality_type N, template<typename...> class TT>// = std::tuple>
 struct repeat {
     using type = typename
         append_to_type_seq<
@@ -323,7 +323,7 @@ constexpr auto tail(Tuple const& t) {
 
 }  // end namespace detail
 
-template<dimensionality_type D> using index_extensions = typename detail::repeat<index_extension, D>::type;
+template<dimensionality_type D> using index_extensions = typename detail::repeat<index_extension, D, std::tuple>::type;
 
 template<dimensionality_type D, class Tuple>
 constexpr auto contains(index_extensions<D> const& ie, Tuple const& tp) {
