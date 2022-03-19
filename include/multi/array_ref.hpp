@@ -403,38 +403,38 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 		return *this;
 	}
 
-	constexpr auto operator+=(difference_type const& d) -> elements_iterator_t& {
+	HD constexpr auto operator+=(difference_type const& d) -> elements_iterator_t& {
 		auto const nn = std::apply(xs_, ns_);
 		ns_ = to_array(xs_.from_linear(nn + d));
 		n_ += d;
 		return *this;
 	}
-	constexpr auto operator-=(difference_type const& d) -> elements_iterator_t& {
+	HD constexpr auto operator-=(difference_type const& d) -> elements_iterator_t& {
 		auto const nn = std::apply(xs_, ns_);
 		ns_ = to_array(xs_.from_linear(nn - d));
 		n_ -= d;
 		return *this;
 	}
 
-	constexpr auto operator-(elements_iterator_t const& other) const -> difference_type {
+	HD constexpr auto operator-(elements_iterator_t const& other) const -> difference_type {
 		assert(base_ == other.base_ and l_ == other.l_);
 		return n_ - other.n_;
 	}
-	constexpr auto operator<(elements_iterator_t const& other) const -> difference_type {
+	HD constexpr auto operator<(elements_iterator_t const& other) const -> difference_type {
 		assert(base_ == other.base_ and l_ == other.l_);
 		return n_ < other.n_;
 	}
-	constexpr auto operator+(difference_type const& d) const -> elements_iterator_t {auto ret{*this}; ret += d; return ret;}  // explicitly necessary for nvcc/thrust
-	constexpr auto operator-(difference_type const& d) const -> elements_iterator_t {auto ret{*this}; ret -= d; return ret;}  // explicitly necessary for nvcc/thrust
+	HD constexpr auto operator+(difference_type const& d) const -> elements_iterator_t {auto ret{*this}; ret += d; return ret;}  // explicitly necessary for nvcc/thrust
+	HD constexpr auto operator-(difference_type const& d) const -> elements_iterator_t {auto ret{*this}; ret -= d; return ret;}  // explicitly necessary for nvcc/thrust
 
-	constexpr auto operator->() const -> pointer   {return base_ + std::apply(l_, ns_) ;}
-	constexpr auto operator*()  const -> reference {return base_  [std::apply(l_, ns_)];}
-	constexpr auto operator[](difference_type const& d) const -> reference {
+	HD constexpr auto operator->() const -> pointer   {return base_ + std::apply(l_, ns_) ;}
+	HD constexpr auto operator*()  const -> reference {return base_  [std::apply(l_, ns_)];}
+	HD constexpr auto operator[](difference_type const& d) const -> reference {
 		auto const nn = std::apply(xs_, ns_);
 		return base_[std::apply(l_, to_array(xs_.from_linear(nn + d)))];
 	}  // explicit here is necessary for nvcc/thrust
 
-	constexpr auto operator==(elements_iterator_t const& other) const -> bool {
+	HD constexpr auto operator==(elements_iterator_t const& other) const -> bool {
 		assert(base_ == other.base_ and l_ == other.l_);
 		return n_ == other.n_;// and base_ == other.base_ and l_ == other.l_;
 	}
