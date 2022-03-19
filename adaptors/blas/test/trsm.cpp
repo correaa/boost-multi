@@ -355,8 +355,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare) {
 	}
 }
 
-#if 0
-
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitized_gemm_check_no_const) {
 	namespace blas = multi::blas;
 	using complex = std::complex<double>; complex const I{0, 1};
@@ -375,6 +373,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitiz
 	blas::trsm(blas::side::left, blas::filling::upper, 1., A, blas::H(B)); // B†←A⁻¹.B†, B←B.A⁻¹†, B←(A⁻¹.B†)†
 	BOOST_REQUIRE_CLOSE( imag(B[1][2]) , -0.147059 , 0.001);
 }
+
+#if 0
 
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitized_gemm_check) {
 	using complex = std::complex<double>; complex const I{0, 1};

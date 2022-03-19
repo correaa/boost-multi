@@ -412,24 +412,24 @@ auto uninitialized_copy(
 	return uninitialized_copy_n(first, last - first, d_first);
 }
 
-// equal
+//// equal
 
-template<class T1, class Q1, class T2, class Q2, boost::multi::dimensionality_type D>
-auto equal(
-	boost::multi::array_iterator<T1, D, ::thrust::cuda::pointer<Q1>>   first1,
-	boost::multi::array_iterator<T1, D, ::thrust::cuda::pointer<Q1>>   last1 ,
-	boost::multi::array_iterator<T2, D, ::thrust::cuda::pointer<Q2>>   first2
-)-> bool {
-	if(first1 == last1) {return true;}
+//template<class T1, class Q1, class T2, class Q2, boost::multi::dimensionality_type D>
+//auto equal(
+//	boost::multi::array_iterator<T1, D, ::thrust::cuda::pointer<Q1>>   first1,
+//	boost::multi::array_iterator<T1, D, ::thrust::cuda::pointer<Q1>>   last1 ,
+//	boost::multi::array_iterator<T2, D, ::thrust::cuda::pointer<Q2>>   first2
+//)-> bool {
+//	if(first1 == last1) {return true;}
 
-	auto const& elems1 = boost::multi::ref(first1,           last1          ).elements();
-	auto const& elems2 = boost::multi::ref(first2, first2 + (last1 - first1)).elements();
+//	auto const& elems1 = boost::multi::ref(first1,           last1          ).elements();
+//	auto const& elems2 = boost::multi::ref(first2, first2 + (last1 - first1)).elements();
 
-	return ::thrust::equal(
+//	return ::thrust::equal(
 //		::thrust::cuda::par,
-		elems1.begin(), elems1.end(),
-		elems2.begin()
-	);
-}
+//		elems1.begin(), elems1.end(),
+//		elems2.begin()
+//	);
+//}
 
 }  // end namespace boost::multi
