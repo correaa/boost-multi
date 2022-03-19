@@ -62,7 +62,7 @@ class involuter {
 	// NOLINTNEXTLINE(google-explicit-constructor, hicpp-explicit-conversions): this is needed to make involuter<T> implicitly convertible to involuter<T const>
 	template<class Other> constexpr involuter(involuter<Other, F> const& o) : it_{multi::implicit_cast<It>(o.it_)}, f_{o.f_} {}
 //	auto operator=(involuter const& other) -> involuter& = default;
-	constexpr auto operator*() const{return reference{*it_, f_};}
+	constexpr auto operator*() const {return reference{*it_, f_};}
 	constexpr auto operator==(involuter const& o) const {return it_==o.it_;}
 	constexpr auto operator!=(involuter const& o) const {return it_!=o.it_;}
 	constexpr auto operator+=(typename involuter::difference_type n) -> decltype(auto) {it_+=n; return *this;}
@@ -71,6 +71,7 @@ class involuter {
 	constexpr auto operator-(involuter const& other) const {return it_ - other.it_;}
 	constexpr auto operator->() const {return pointer{&*it_, f_};}
 //	~involuter() = default;
+	constexpr auto operator[](typename involuter::difference_type n) const {return reference{*(it_ + n), f_};}
 };
 
 #if defined(__cpp_deduction_guides)
