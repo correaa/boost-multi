@@ -242,7 +242,8 @@ cuda-11.0:
       - ctest --output-on-failure
 
 cuda-11.1:
-    image: nvidia/cuda:11.3.0-devel
+    image: nvidia/cuda:11.1.0-devel
+    allow_failure: true
     stage: build
     script:
       - export DEBIAN_FRONTEND=noninteractive
@@ -256,6 +257,7 @@ cuda-11.1:
 
 cuda-11.2:
     image: nvidia/cuda:11.2.0-devel
+    allow_failure: true
     stage: build
     script:
       - export DEBIAN_FRONTEND=noninteractive
