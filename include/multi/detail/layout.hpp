@@ -310,8 +310,8 @@ template<> struct extensions_t<1> {
 
 	friend constexpr auto operator%(nelems_type n, extensions_t const& s) -> std::tuple<multi::index> {return s.from_linear(n);}
 
-	static constexpr auto to_linear(index const& i) /*const*/ {return i;}
-	constexpr auto operator()(index const& i) const {return to_linear(i);}
+	static constexpr auto to_linear(index const& i) -> difference_type  /*const*/ {return i;}
+	constexpr auto operator()(index const& i) const -> difference_type {return to_linear(i);}
 
 	template<class... Indices>
 	constexpr auto next_canonical(index& i) const -> bool {
