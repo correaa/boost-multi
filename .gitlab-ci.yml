@@ -523,7 +523,7 @@ nvcc-cuda-runner:
     script:
       - mkdir build && cd build
       - /usr/local/cuda/bin/nvcc --version
-      - CUDACXX=/usr/local/cuda/bin/nvcc CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda cmake .. -DCMAKE_CXX_STANDARD=17 -DENABLE_CUDA=1
+      - CUDACXX=/usr/local/cuda/bin/nvcc CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda cmake .. -DCMAKE_CXX_STANDARD=17 -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release
       - cmake --build . -j 12 || make VERBOSE=1
       - ctest -j 12 --output-on-failure
 
