@@ -19,29 +19,7 @@
 
 #include <numeric>
 
-#include <execution>
-
 namespace multi = boost::multi;
-
-//BOOST_AUTO_TEST_CASE(thrust_array) {
-//	multi::thrust::cuda::array<double, 2> C({2, 3});
-
-//	C[0][0] = 0. ;
-//	C[1][1] = 11.;
-//	BOOST_REQUIRE( C[1][1] == 11. );
-//}
-
-//BOOST_AUTO_TEST_CASE(issue_118) {
-
-//	using Allocator = thrust::device_allocator<double>;
-//	multi::array<double, 2, Allocator> M({3, 3}, Allocator{});
-
-//	M[1][2] = 12.;
-
-//	BOOST_REQUIRE( M[1][2] == 12. );
-
-//	thrust::cuda::pointer<double> cpd = thrust::device_ptr<double>{};
-//}
 
 namespace {
 
@@ -54,7 +32,7 @@ template<class T> using test_allocator =
 
 using types_list = boost::mpl::list<char, double, std::complex<double>, thrust::complex<double> >;
 
-#if 0
+#if 1
 BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_copy_1D_issue123, T, types_list) {  // BOOST_AUTO_TEST_CASE(fdfdfdsfds) { using T = char;
 	static_assert( multi::is_trivially_default_constructible<T>{}, "!");
 	static_assert( std::is_trivially_copy_constructible<T>{}     , "!");
