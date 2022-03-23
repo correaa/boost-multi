@@ -21,16 +21,16 @@ namespace boost::multi {
 
 namespace detail {
 
-template<class To, class From, size_t... I>
-constexpr auto to_tuple_impl(std::initializer_list<From> il, std::index_sequence<I...>/*012*/) {
-	(void)il;
-	return std::make_tuple(To{il.begin()[I]}...);
-}
+//template<class To, class From, size_t... I>
+//constexpr auto to_tuple_impl(std::initializer_list<From> il, std::index_sequence<I...>/*012*/) {
+//	(void)il;
+//	return std::make_tuple(To{il.begin()[I]}...);
+//}
 
-template<class To, class From, size_t... I>
-constexpr auto to_tuple_impl(std::array<From, sizeof...(I)> arr, std::index_sequence<I...>/*012*/) {
-	return std::make_tuple(To{std::get<I>(arr)}...);
-}
+//template<class To, class From, size_t... I>
+//constexpr auto to_tuple_impl(std::array<From, sizeof...(I)> arr, std::index_sequence<I...>/*012*/) {
+//	return std::make_tuple(To{std::get<I>(arr)}...);
+//}
 
 template<class To, std::size_t N, class From>
 constexpr auto to_tuple(std::array<From, N> arr) {
