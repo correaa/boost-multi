@@ -357,52 +357,91 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 	using value_type = typename std::iterator_traits<Pointer>::value_type;
 	using pointer = Pointer;
 	using reference =  typename std::iterator_traits<Pointer>::reference;
+	using iterator_category = std::random_access_iterator_tag;
 
 	using layout_type = LayoutType;
 
  private:
 	pointer base_;
 	layout_type l_;
-	difference_type n_;
+	difference_type n_ = 0;
+	extensions_t<layout_type::dimensionality> xs_;
+//	typename extensions_t<layout_type::dimensionality>::indices_type ns_ = {};
+	std::array<multi::index, layout_type::dimensionality> ns_ = {};
+
+	template<class Tuple>
+	static constexpr auto to_array(Tuple const& t) {
+		return std::apply(
+			[](auto const&... e){return std::array<multi::index, sizeof...(e)>{{e...}};},
+			t
+		);
+	}
+
 	template<class, class> friend struct elements_iterator_t;
 	template<class, class> friend struct elements_range_t;
 
-	constexpr elements_iterator_t(pointer base, layout_type l, difference_type n) : base_{base}, l_{l}, n_{n} {}
+	constexpr elements_iterator_t(pointer base, layout_type l, difference_type n)
+	: base_{base}, l_{l}, n_{n}, xs_{l_.extensions()}, ns_{to_array(xs_.from_linear(n))} {}
 
  public:
-	template<class ElementsIterator, decltype(multi::implicit_cast<pointer>(std::declval<ElementsIterator>().base_))* = nullptr>
+	template<class Other, decltype(multi::implicit_cast<pointer>(std::declval<Other>().base_))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor
-	HD constexpr /*impl*/ elements_iterator_t(ElementsIterator const& other) : elements_iterator_t{other.base_, other.l_, other.n_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	template<class ElementsIterator>
-	HD constexpr explicit elements_iterator_t(ElementsIterator const& other) : elements_iterator_t{other.base_, other.l_, other.n_} {}
+	HD constexpr /*impl*/ elements_iterator_t(Other const& o) : elements_iterator_t{o.base_, o.l_, o.n_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	template<class Other>
+	HD constexpr explicit elements_iterator_t(Other const& o) : elements_iterator_t{o.base_, o.l_, o.n_} {}
 
-	HD constexpr elements_iterator_t(elements_iterator_t const& o) : base_{o.base_}, l_{o.l_}, n_{o.n_} {}
+	elements_iterator_t(elements_iterator_t const&) = default;
 
-	HD constexpr auto operator+=(difference_type const& d) -> elements_iterator_t& {n_ += d; return *this;}
-	constexpr auto operator-(elements_iterator_t const& other) const -> difference_type {
+	HD constexpr auto operator++() -> elements_iterator_t& {
+		std::apply( [&xs = this->xs_](auto&... e){return xs.next_canonical(e...);}, ns_ );
+		++n_;
+		return *this;
+	}
+	HD constexpr auto operator--() -> elements_iterator_t& {
+		std::apply( [&xs = this->xs_](auto&... e){return xs.prev_canonical(e...); }, ns_ );
+		--n_;
+		return *this;
+	}
+
+	HD constexpr auto operator+=(difference_type const& d) -> elements_iterator_t& {
+		auto const nn = std::apply(xs_, ns_);
+		ns_ = to_array(xs_.from_linear(nn + d));
+		n_ += d;
+		return *this;
+	}
+	HD constexpr auto operator-=(difference_type const& d) -> elements_iterator_t& {
+		auto const nn = std::apply(xs_, ns_);
+		ns_ = to_array(xs_.from_linear(nn - d));
+		n_ -= d;
+		return *this;
+	}
+
+	HD constexpr auto operator-(elements_iterator_t const& other) const -> difference_type {
 		assert(base_ == other.base_ and l_ == other.l_);
 		return n_ - other.n_;
 	}
-	HD constexpr auto operator+(difference_type const& d) const -> elements_iterator_t {elements_iterator_t ret{*this}; ret += d; return ret;}  // explicit here is necessary for nvcc/thrust
+	HD constexpr auto operator<(elements_iterator_t const& other) const -> difference_type {
+		assert(base_ == other.base_ and l_ == other.l_);
+		return n_ < other.n_;
+	}
+	HD constexpr auto operator+(difference_type const& d) const -> elements_iterator_t {auto ret{*this}; ret += d; return ret;}  // explicitly necessary for nvcc/thrust
+	HD constexpr auto operator-(difference_type const& d) const -> elements_iterator_t {auto ret{*this}; ret -= d; return ret;}  // explicitly necessary for nvcc/thrust
 
-	constexpr auto operator->()                         const -> pointer   {return base_ + std::apply(l_, l_.extensions().from_linear(n_));}
-	constexpr auto operator[](difference_type const& d) const -> reference {return base_[std::apply(l_, l_.extensions().from_linear(n_ + d))];}  // explicit here is necessary for nvcc/thrust
+	HD constexpr auto operator->() const -> pointer   {return base_ + std::apply(l_, ns_) ;}
+	HD constexpr auto operator*()  const -> reference {return base_  [std::apply(l_, ns_)];}
+	HD constexpr auto operator[](difference_type const& d) const -> reference {
+		auto const nn = std::apply(xs_, ns_);
+		return base_[std::apply(l_, to_array(xs_.from_linear(nn + d)))];
+	}  // explicit here is necessary for nvcc/thrust
 
-//	using reference = typename std::iterator_traits<Pointer>::reference;
-//	using iterator_category = std::random_access_iterator_tag;
-
-//	friend constexpr auto operator<(elements_iterator_t const& s, elements_iterator_t const& o) {
-//		assert( s.base_ == o.base_ );
-//		assert( s.l_    == o.l_    );
-//		return s.n_ < o.n_;
-//	}
-//	constexpr auto operator-=(difference_type d) -> elements_iterator_t& {n_ -= d; return *this;}
-
-//	constexpr auto operator++() -> elements_iterator_t& {return (*this) += 1;}
-//	constexpr auto operator--() -> elements_iterator_t& {return (*this) -= 1;}
-
-//	constexpr auto operator+(difference_type d) const {elements_iterator_t ret{*this}; return ret += d;}
-//	constexpr auto operator-(difference_type d) const {elements_iterator_t ret{*this}; return ret -= d;}
+	HD constexpr auto operator==(elements_iterator_t const& other) const -> bool {
+		assert(base_ == other.base_ and l_ == other.l_);
+		return n_ == other.n_;// and base_ == other.base_ and l_ == other.l_;
+	}
+	HD constexpr auto operator!=(elements_iterator_t const& other) const -> bool {
+		assert(base_ == other.base_ and l_ == other.l_);
+		return n_ != other.n_;
+	}
 };
 
 template<typename Pointer, class LayoutType>
@@ -426,24 +465,43 @@ struct elements_range_t {
 	pointer base_;
 	layout_type l_;
 
-	constexpr auto at_aux(difference_type n) const -> reference {
-		return *(base_ + std::apply(l_, l_.extensions().from_linear(n)));
-	}
-
  public:
 	template<class OtherRange, decltype(multi::implicit_cast<pointer>(std::declval<OtherRange>().base_))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointer is implicitly convertible
-	constexpr elements_range_t(OtherRange const& other) : base_{other.base}, l_{other.l_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to reproduce the implicitness of the argument
+	constexpr /*impl*/ elements_range_t(OtherRange const& other) : base_{other.base}, l_{other.l_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to reproduce the implicitness of the argument
 	template<class OtherRange, decltype(multi::explicit_cast<pointer>(std::declval<OtherRange>().base_))* = nullptr>
 	constexpr explicit elements_range_t(OtherRange const& other) : elements_range_t{other} {}
 
 	constexpr elements_range_t(pointer base, layout_type l) : base_{base}, l_{l} {}
 
+ private:
+	constexpr auto at_aux(difference_type n) const -> reference {return base_[std::apply(l_, l_.extensions().from_linear(n))];}
+
+ public:
 	constexpr auto operator[](difference_type n) const& -> const_reference {return at_aux(n);}
 	constexpr auto operator[](difference_type n)     && ->       reference {return at_aux(n);}
 	constexpr auto operator[](difference_type n)      & ->       reference {return at_aux(n);}
 
 	constexpr auto size() const {return l_.num_elements();}
+
+	elements_range_t(elements_range_t const&) = delete;
+	elements_range_t(elements_range_t     &&) = delete;
+
+	auto operator=(elements_range_t const&) -> elements_range_t& = delete;
+	auto operator=(elements_range_t     &&) -> elements_range_t& = delete;
+
+	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL> const& o)  & -> elements_range_t& {assert(size() == o.size()); adl_copy(o.begin(), o.end(), begin()); return *this;}
+	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL> const& o) && -> elements_range_t& {assert(size() == o.size()); adl_copy(o.begin(), o.end(), begin()); return *this;}
+
+	template<typename OP, class OL> auto operator==(elements_range_t<OP, OL> const& o) const -> bool {return size() == o.size() and     adl_equal(o.begin(), o.end(), begin());}
+	template<typename OP, class OL> auto operator!=(elements_range_t<OP, OL> const& o) const -> bool {return size() != o.size() or  not adl_equal(o.begin(), o.end(), begin());}
+
+	template<typename OP, class OL> void swap(elements_range_t<OP, OL>&  o)  & {assert(size() == o.size()); adl_swap_ranges(begin(), end(), o.begin());}
+	template<typename OP, class OL> void swap(elements_range_t<OP, OL>&  o) && {assert(size() == o.size()); adl_swap_ranges(begin(), end(), o.begin());}
+	template<typename OP, class OL> void swap(elements_range_t<OP, OL>&& o)  & {assert(size() == o.size()); adl_swap_ranges(begin(), end(), o.begin());}
+	template<typename OP, class OL> void swap(elements_range_t<OP, OL>&& o) && {assert(size() == o.size()); adl_swap_ranges(begin(), end(), o.begin());}
+
+	~elements_range_t() = default;
 
  private:
 	constexpr auto begin_aux() const {return iterator{base_, l_, 0                };}
@@ -460,8 +518,8 @@ struct elements_range_t {
 	constexpr auto end  ()      & ->       iterator {return end_aux()  ;}
 
  private:
-	constexpr auto front_aux() const -> reference {return *(base_ + std::apply(l_, l_.extensions().from_linear(0                    )));}
-	constexpr auto back_aux()  const -> reference {return *(base_ + std::apply(l_, l_.extensions().from_linear(l_.num_elements() - 1)));}
+	constexpr auto front_aux() const -> reference {return base_[std::apply(l_, l_.extensions().from_linear(0                    ))];}
+	constexpr auto back_aux()  const -> reference {return base_[std::apply(l_, l_.extensions().from_linear(l_.num_elements() - 1))];}
 
  public:
 	constexpr auto front() const& -> const_reference {return front_aux();}
@@ -526,7 +584,7 @@ struct basic_array
  public:
 	constexpr auto       elements()      & ->       elements_range {return elements_aux();}
 	constexpr auto       elements()     && ->       elements_range {return elements_aux();}
-	constexpr auto       elements() const& -> const_elements_range {return elements_aux();}
+	constexpr auto       elements() const& -> const_elements_range {return const_elements_range{this->base(), this->layout()};}
 	constexpr auto const_elements() const  -> const_elements_range {return elements_aux();}
 
 	constexpr auto hull() const -> std::pair<element_const_ptr, size_type> {
@@ -1057,9 +1115,11 @@ struct basic_array
 	//  MULTI_MARK_SCOPE( std::string{"multi::operator= (D="}+std::to_string(D)+") from "+typeid(TT).name()+" to "+typeid(T).name() );
 		if(this->is_empty()) {return *this;}
 		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()) {
-			adl_copy_n(o.base(), o.num_elements(), this->base());
+			this->elements() = o.elements();
+//			adl_copy_n(o.base(), o.num_elements(), this->base());
 		} else if(o.stride() < (~o).stride()) {
-			adl_copy_n( (~o).begin(), (~o).size(), (~(*this)).begin() );
+			(~(*this)).elements() = o.elements();
+//			adl_copy_n( (~o).begin(), (~o).size(), (~(*this)).begin() );
 		} else {
 			assign(o.begin());
 		}
@@ -1107,41 +1167,30 @@ struct basic_array
 
 	template<class Array> void swap(Array&& o) && {
 		assert( std::move(*this).extension() == std::forward<Array>(o).extension() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
+		elements().swap(o.elements());
+	//  adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
 	}
 	template<class A> constexpr void swap(A&& o) & {return swap(std::forward<A>(o));}
 
 	friend constexpr void swap(basic_array&& a, basic_array&& b) {std::move(a).swap(std::move(b));}
 
-	template<class Array> constexpr void swap(basic_array const& s, Array&& a) {s.swap(a);}
+	template<class Array> constexpr void swap(basic_array const& s, Array&& a) {s.swap(a);}  // TODO(correaa) remove
 	template<class Array> constexpr void swap(Array&& a, basic_array const& s) {s.swap(a);}
-
-//	template<class Array>
-//	constexpr auto operator==(Array const& o) const&
-//	->decltype(this->extension()==o.extension() and adl_equal(this->begin(), this->end(), adl_begin(o))) {
-//		return this->extension()==o.extension() and adl_equal(this->begin(), this->end(), adl_begin(o)); }
-
-//	template<class Array>
-//	constexpr auto operator!=(Array const& o) const&
-//	->decltype(not (this->extension()==o.extension() and adl_equal(this->begin(), this->end(), adl_begin(o)))) {
-//		return not (this->extension()==o.extension() and adl_equal(this->begin(), this->end(), adl_begin(o))); }
 
 	template<class TT, class... As>
 	constexpr auto operator==(basic_array<TT, D, As...> const& o) const -> bool {
-		return (this->extension() == o.extension()) and    adl_equal(this->begin(), this->end(), adl_begin(o));
+		return (this->extension() == o.extension()) and (this->elements() == o.elements());
 	}
 	template<class TT, class... As>
 	constexpr auto operator!=(basic_array<TT, D, As...> const& o) const -> bool {
-		return (this->extension() != o.extension()) or not adl_equal(this->begin(), this->end(), adl_begin(o));
+		return (this->extension() != o.extension()) or (this->elements() != o.elements());
 	}
 
-	template<class It>
-	constexpr auto equal(It begin) const& -> bool {
-		return adl_equal(
-			std::move(modify(*this)).begin(),  // TODO(correaa) : what is this?
-			std::move(modify(*this)).end(),
-			begin
-		);
+	constexpr auto operator==(basic_array const& o) const -> bool {
+		return (this->extension() == o.extension()) and (this->elements() == o.elements());
+	}
+	constexpr auto operator!=(basic_array const& o) const -> bool {
+		return (this->extension() != o.extension()) or  (this->elements() != o.elements());
 	}
 
  private:
@@ -2069,9 +2118,9 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 	template<class It> constexpr auto copy_elements(It first) {
 		return adl_copy_n(first, array_ref::num_elements(), array_ref::data_elements());
 	}
-	template<class It> constexpr auto equal_elements(It first) const {
-		return adl_equal(first, first + this->num_elements(), this->data_elements());
-	}
+//	template<class It> HD constexpr auto equal_elements(It first) const {
+//		return adl_equal(first, first + this->num_elements(), this->data_elements());
+//	}
 
  public:
 	constexpr auto data_elements() const& -> typename array_ref::element_ptr {return array_ref::base_;}
@@ -2129,12 +2178,14 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 	template<typename TT, class... As>
 	constexpr auto operator==(array_ref<TT, D, As...> const& o) const {
 		if(this->extensions() != o.extensions()) {return false;}  // TODO(correaa) : or assert?
-		return equal_elements(std::move(o).data_elements());
+		return adl_equal(o.data_elements(), o.data_elements() + this->num_elements(), this->data_elements());
+	//	return equal_elements(std::move(o).data_elements());
 	}
 	template<typename TT, class... As>
 	constexpr auto operator!=(array_ref<TT, D, As...> const& o) const {
 		if(this->extensions() != o.extensions()) {return true;}  // TODO(correaa) : or assert?
-		return not equal_elements(std::move(o).data_elements());
+		return not adl_equal(o.data_elements(), o.data_elements() + this->num_elements(), this->data_elements());
+	//	return not equal_elements(std::move(o).data_elements());
 	}
 
 

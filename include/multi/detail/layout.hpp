@@ -139,15 +139,49 @@ struct extensions_t {
 
 //	auto operator!=(extensions_t const& other) const -> bool {return impl_ != other.impl_;}
 
-	constexpr auto from_linear(nelems_type const& n) const {
+	using indices_type = decltype(std::tuple_cat(std::make_tuple(multi::index{}), typename extensions_t<D-1>::indices_type{}));
+
+	template<class Tuple = typename detail::repeat<multi::index, D, std::tuple>::type>
+	[[nodiscard]] constexpr auto from_linear(nelems_type const& n) const {
 		auto const sub_extensions = extensions_t<D-1>{detail::tuple_tail(this->base())};
 		auto const sub_num_elements = sub_extensions.num_elements();
-		return std::tuple_cat(std::make_tuple(n/sub_num_elements), sub_extensions.from_linear(n%sub_num_elements));
+		assert( sub_num_elements != 0 );
+		return std::apply(
+			[](auto const&... e){return Tuple{e...};},
+			std::tuple_cat(std::make_tuple(n/sub_num_elements), sub_extensions.from_linear(n%sub_num_elements))
+		);
 	}
 
 	friend constexpr auto operator%(nelems_type n, extensions_t const& s) {return s.from_linear(n);}
 
 	constexpr explicit operator bool() const {return not layout_t<D>{*this}.empty();}
+
+	template<class... Indices>
+	constexpr auto to_linear(index i, Indices... is) const {
+		auto const sub_extensions = extensions_t<D-1>{detail::tuple_tail(this->base())};
+		return i*sub_extensions.num_elements() + sub_extensions.to_linear(is...);
+	}
+	template<class... Indices>
+	constexpr auto operator()(index i, Indices... is) const {return to_linear(i, is...);}
+
+	template<class... Indices>
+	constexpr auto next_canonical(index& i, Indices&... is) const -> bool {
+		if(extensions_t<D-1>{detail::tuple_tail(this->base())}.next_canonical(is...)) {++i;}
+		if(i == std::get<0>(impl_).last()) {
+			i = std::get<0>(impl_).first();
+			return true;
+		}
+		return false;
+	}
+	template<class... Indices>
+	constexpr auto prev_canonical(index& i, Indices&... is) const -> bool {
+		if(extensions_t<D-1>{detail::tuple_tail(this->base())}.prev_canonical(is...)) {--i;}
+		if(i <  std::get<0>(impl_).first()) {
+			i = std::get<0>(impl_).back();
+			return true;
+		}
+		return false;
+	}
 
  private:
 	template<class Archive, std::size_t... I>
@@ -211,11 +245,22 @@ template<> struct extensions_t<0> {
 	template<class Archive> void serialize(Archive&/*ar*/, unsigned /*version*/) {}
 
 	static constexpr auto num_elements() /*const*/ -> size_type {return 1;}
-	static constexpr auto from_linear(nelems_type const& n) /*const*/ -> std::tuple<> {
-		assert(n < num_elements()); (void)n;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : constexpr function
-		return {};
+
+	using indices_type = std::tuple<>;
+
+	template<class Tuple = typename detail::repeat<multi::index, 0, std::tuple>::type>
+	[[nodiscard]] static constexpr auto from_linear(nelems_type const& n) /*const*/ -> indices_type {
+		assert(n == 0); (void)n;  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : constexpr function
+		return Tuple{};
 	}
 	friend constexpr auto operator%(nelems_type const& n, extensions_t const& /*s*/) -> std::tuple<> {return /*s.*/from_linear(n);}
+
+	static constexpr auto to_linear() /*const*/ -> difference_type {return 0;}
+	constexpr auto operator()() const {return to_linear();}
+
+	static constexpr auto next_canonical() /*const*/ -> bool {return true;}
+	static constexpr auto prev_canonical() /*const*/ -> bool {return true;}
+
 	friend constexpr auto intersection(extensions_t const& /*x1*/, extensions_t const& /*x2*/) -> extensions_t {return {};}
 
 	constexpr auto operator==(extensions_t const& /*other*/) const {return true ;}
@@ -252,11 +297,40 @@ template<> struct extensions_t<1> {
 	auto operator!=(extensions_t const& other) const -> bool {return impl_ != other.impl_;}
 
 	constexpr auto num_elements() const -> size_type {return std::get<0>(impl_).size();}
-	constexpr auto from_linear(nelems_type n) const {
-		assert(n < num_elements());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
-		return std::tuple<multi::index>{n};
+
+	using indices_type = decltype(std::make_tuple(multi::index{}));
+
+	template<class Tuple = typename detail::repeat<multi::index, 1, std::tuple>::type>
+	[[nodiscard]] constexpr auto from_linear(nelems_type const& n) const {
+	//	assert(n <= num_elements());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
+	//	return std::make_tuple(n);
+	//  return std::tuple<multi::index>{n};
+		return Tuple{n};
 	}
-	friend constexpr auto operator%(nelems_type n, extensions_t const& s) -> std::tuple<multi::index>{return s.from_linear(n);}
+
+	friend constexpr auto operator%(nelems_type n, extensions_t const& s) -> std::tuple<multi::index> {return s.from_linear(n);}
+
+	static constexpr auto to_linear(index const& i) -> difference_type  /*const*/ {return i;}
+	constexpr auto operator()(index const& i) const -> difference_type {return to_linear(i);}
+
+	template<class... Indices>
+	constexpr auto next_canonical(index& i) const -> bool {
+		++i;
+		if(i == std::get<0>(impl_).last()) {
+			i = std::get<0>(impl_).first();
+			return true;
+		}
+		return false;
+	}
+	constexpr auto prev_canonical(index& i) const -> bool {
+		--i;
+		if(i == std::get<0>(impl_).first() - 1) {
+			i = std::get<0>(impl_).back();
+			return true;
+		}
+		return false;
+	}
+
 	friend auto intersection(extensions_t const& x1, extensions_t const& x2){
 		return extensions_t({ intersection(std::get<0>(x1.impl_), std::get<0>(x2.impl_)) });
 	}
@@ -637,7 +711,7 @@ struct layout_t
 	constexpr auto nelems(dimensionality_type d) const {return (d!=0)?sub_.nelems(d-1):nelems_;}
 
 //  friend constexpr auto operator!=(layout_t const& s, layout_t const& o) {return not(s == o);}
-	friend constexpr auto operator==(layout_t const& s, layout_t const& o) {
+	friend constexpr auto operator==(layout_t const& s, layout_t const& o) -> bool {
 		return s.sub_ == o.sub_ and s.stride_ == o.stride_ and s.offset_ == o.offset_ and s.nelems_ == o.nelems_;
 	}
 
@@ -705,9 +779,9 @@ struct layout_t
 	constexpr auto extensions() const {return extensions_type{tuple_cat(std::make_tuple(extension()), sub_.extensions().base())};}
 	friend constexpr auto extensions(layout_t const& self) -> extensions_type {return self.extensions();}
 
-	[[deprecated("use get<d>(m.extensions()")]] constexpr auto extension(dimensionality_type d) const {return std::apply([](auto... e){return std::array<index_extension, static_cast<std::size_t>(D)>{e...};}, extensions().base()).at(static_cast<std::size_t>(d));}
-	[[deprecated("use get<d>(m.strides())  ")]] constexpr auto stride   (dimensionality_type d) const {return std::apply([](auto... e){return std::array<stride_type    , static_cast<std::size_t>(D)>{e...};}, strides   ()       ).at(static_cast<std::size_t>(d));}
-	[[deprecated("use get<d>(m.sizes())    ")]] constexpr auto size     (dimensionality_type d) const {return std::apply([](auto... e){return std::array<size_type      , static_cast<std::size_t>(D)>{e...};}, sizes     ()       ).at(static_cast<std::size_t>(d));}
+	[[deprecated("use get<d>(m.extensions()")]] constexpr auto extension(dimensionality_type d) const {return std::apply([](auto... e) {return std::array<index_extension, static_cast<std::size_t>(D)>{e...};}, extensions().base()).at(static_cast<std::size_t>(d));}
+	[[deprecated("use get<d>(m.strides())  ")]] constexpr auto stride   (dimensionality_type d) const {return std::apply([](auto... e) {return std::array<stride_type    , static_cast<std::size_t>(D)>{e...};}, strides   ()       ).at(static_cast<std::size_t>(d));}
+	[[deprecated("use get<d>(m.sizes())    ")]] constexpr auto size     (dimensionality_type d) const {return std::apply([](auto... e) {return std::array<size_type      , static_cast<std::size_t>(D)>{e...};}, sizes     ()       ).at(static_cast<std::size_t>(d));}
 
 	template<typename Size>
 	constexpr auto partition(Size const& s) -> layout_t& {

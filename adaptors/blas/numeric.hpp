@@ -44,7 +44,7 @@ template<class Ref, class Involution> class involuted;
 template<class It, class F, class Reference = involuted<typename std::iterator_traits<It>::reference, F> > class involuter;
 
 template<class Ref, class Involution>
-class involuted{
+class involuted {
 	Ref r_; // [[no_unique_address]] 
 	Involution f_;
 
@@ -119,7 +119,7 @@ public:
 };
 
 #if defined(__cpp_deduction_guides)
-template<class T, class F> involuted(T&&, F)->involuted<T const, F>;
+template<class T, class F> involuted(T&&, F) -> involuted<T const, F>;
 //template<class T, class F> involuted(T&, F)->involuted<T&, F>;
 //template<class T, class F> involuted(T const&, F)->involuted<T const&, F>;
 #endif
@@ -139,7 +139,7 @@ auto default_allocator_of(involuter<It, F> const& iv){
 }
 
 template<class It, class F, class Reference>
-class involuter{
+class involuter {
 	It it_; // [[no_unique_address]] 
 	F f_;
 	template<class, class, class> friend class involuter;
@@ -168,6 +168,7 @@ class involuter{
 	constexpr explicit involuter(Other const& o) : it_{o.it_}, f_{o.f_}{}
 
 	constexpr auto operator*() const {return reference{*it_, f_};}
+	constexpr auto operator[](difference_type d) const {return reference{*(it_ + d), f_};}
 
 	auto operator==(involuter const& o) const -> bool{return it_==o.it_;}
 	auto operator!=(involuter const& o) const -> bool{return it_!=o.it_;}

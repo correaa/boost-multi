@@ -50,6 +50,61 @@ BOOST_AUTO_TEST_CASE(serialize_extensions) {
 	}
 }
 
+BOOST_AUTO_TEST_CASE(extensions_to_linear) {
+	multi::extensions_t<3> x{4, 5, 3};
+	BOOST_REQUIRE( x.to_linear(0, 0, 0) ==  0 );
+	BOOST_REQUIRE( x.to_linear(0, 0, 1) ==  1 );
+	BOOST_REQUIRE( x.to_linear(0, 0, 2) ==  2 );
+	BOOST_REQUIRE( x.to_linear(0, 1, 0) ==  3 );
+	BOOST_REQUIRE( x.to_linear(0, 1, 1) ==  4 );
+	BOOST_REQUIRE( x.to_linear(0, 1, 2) ==  5 );
+	BOOST_REQUIRE( x.to_linear(1, 0, 0) == 15 );
+
+	for(int i = 0; i != 4; ++i) {
+		for(int j = 0; j != 5; ++j) {
+			for(int k = 0; k != 3; ++k) {
+				BOOST_REQUIRE( x.from_linear(x.to_linear(i, j, k)) ==  std::make_tuple(i, j, k) );
+			}
+		}
+	}
+
+	BOOST_REQUIRE( x.to_linear(4, 0, 0) == x.num_elements() );
+
+	for(int n = 0; n != x.num_elements(); ++n) {
+		BOOST_REQUIRE( std::apply([&](auto... e){return x.to_linear(e...);}, x.from_linear(n)) == n );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(extensions_layout_to_linear) {
+	multi::array<double, 3> A({40, 50, 80});
+	auto&& B = A({10, 30}, {20, 32}, {60, 75});
+
+	for(int i = 0; i != 10; ++i) {
+		for(int j = 0; j != 12; ++j) {
+			for(int k = 0; k != 15; ++k) {
+				BOOST_REQUIRE( &  B.base()  [B.layout()(i, j, k)] == &B(i, j, k) );
+				BOOST_REQUIRE( &*(B.base() + B.layout()(i, j, k)) == &B(i, j, k) );
+			}
+		}
+	}
+}
+
+BOOST_AUTO_TEST_CASE(extensions_layout_to_linear_2) {
+	multi::array<double, 3> A({40, 50, 80});
+	auto&& B = A({10, 30}, {20, 32}, {60, 75});
+
+	auto const& C = B.rotated();
+	auto Cx = C.extensions();
+	for(auto i : std::get<0>(Cx)) {
+		for(auto j : std::get<1>(Cx)) {
+			for(auto k : std::get<2>(Cx)) {
+				BOOST_REQUIRE( &  C.base()  [C.layout()(i, j, k)] == &C(i, j, k) );
+				BOOST_REQUIRE( &*(C.base() + C.layout()(i, j, k)) == &C(i, j, k) );
+			}
+		}
+	}
+}
+
 BOOST_AUTO_TEST_CASE(linearize) {
 	multi::array<double, 3> A({10, 20, 30});
 	BOOST_REQUIRE(  25 % extensions(A) == std::make_tuple(0, 0, 25) );

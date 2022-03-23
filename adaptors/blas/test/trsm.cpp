@@ -374,6 +374,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitiz
 	BOOST_REQUIRE_CLOSE( imag(B[1][2]) , -0.147059 , 0.001);
 }
 
+#if 0
+
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitized_gemm_check) {
 	using complex = std::complex<double>; complex const I{0, 1};
 	multi::array<complex, 2> const A = {
@@ -527,6 +529,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_thrust_nonsquare_default_diagonal_h
 //}
 #endif
 
+#endif
 #if 0
 
 //template<class T> void what(T&&) = delete;

@@ -51,7 +51,7 @@ template<std::size_t I> struct priority : std::conditional_t<I==0, std::true_typ
 constexpr class adl_copy_n_t {
 	template<class... As>          constexpr auto _(priority<0>/**/,        As&&... as) const DECLRETURN(              std::copy_n(                    std::forward<As>(as)...))
 #if defined(__NVCC__)
-	template<class... As> 		   constexpr auto _(priority<1>/**/,        As&&... as) const DECLRETURN(           thrust::copy_n(                    std::forward<As>(as)...))
+	template<class... As> 		   constexpr auto _(priority<1>/**/,        As&&... as) const DECLRETURN(         ::thrust::copy_n(                    std::forward<As>(as)...))
 #endif
 	template<class... As>          constexpr auto _(priority<2>/**/,        As&&... as) const DECLRETURN(                   copy_n(                    std::forward<As>(as)...))
 	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& t, As&&... as) const DECLRETURN(std::decay_t<T>::  copy_n(std::forward<T>(t), std::forward<As>(as)...))
@@ -86,20 +86,20 @@ public:
 } adl_fill_n;
 
 constexpr class adl_equal_t {
-	template<         class...As> constexpr auto _(priority<1>/**/,      As...as) const DECLRETURN(   std::equal(as...))
+	template<         class...As> constexpr auto _(priority<1>/**/,        As&&...as) const DECLRETURN(   std::equal(std::forward<As>(as)...))
 #ifdef THRUST_VERSION
-//  template<         class...As> constexpr auto _(priority<2>,      As...as) const DECLRETURN(thrust::equal(as...))
+	template<         class...As> constexpr auto _(priority<2>/**/,        As&&...as) const DECLRETURN(::thrust::equal(std::forward<As>(as)...))
 #endif
-#ifndef THRUST_VERSION
-	template<         class...As> constexpr auto _(priority<3>/**/,      As...as) const DECLRETURN(        equal(as...))
-#endif
-	template<class T, class...As> constexpr auto _(priority<4>/**/, T t, As...as) const DECLRETURN(      t.equal(as...))
+//#ifndef THRUST_VERSION
+	template<         class...As> constexpr auto _(priority<3>/**/,        As&&...as) const DECLRETURN(        equal(std::forward<As>(as)...))
+//#endif
+	template<class T, class...As> constexpr auto _(priority<4>/**/, T&& t, As&&...as) const DECLRETURN( std::forward<T>(t).equal(std::forward<As>(as)...))
 public:
-	template<class...As> constexpr auto operator()(As...as) const DECLRETURN(_(priority<4>{}, as...))
-#ifdef THRUST_VERSION
-	template<class It, class...As, class=std::enable_if_t<(It::dimensionality > 1)> >
-	                     constexpr auto operator()(It begin, As... as) const DECLRETURN(_(priority<1>{}, begin, as...))
-#endif
+	template<class...As> constexpr auto operator()(As&&...as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
+//#ifdef THRUST_VERSION
+//	template<class It, class...As, class=std::enable_if_t<(It::dimensionality > 1)> >
+//	                     constexpr auto operator()(It begin, As... as) const DECLRETURN(_(priority<1>{}, begin, as...))
+//#endif
 } adl_equal;
 
 template<class... Args> struct adl_custom_copy;
