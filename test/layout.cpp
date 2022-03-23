@@ -112,8 +112,11 @@ BOOST_AUTO_TEST_CASE(linearize) {
 	BOOST_REQUIRE( 655 % extensions(A) == std::make_tuple(1, 1, 25) );
 	BOOST_REQUIRE(1255 % extensions(A) == std::make_tuple(2, 1, 25) );
 
-	std::tuple<multi::index, multi::index, multi::index> p = A.extensions().from_linear(655);
-	BOOST_REQUIRE( p == std::make_tuple(1, 1, 25) );
+	auto const p = A.extensions().from_linear(655);
+//  BOOST_REQUIRE( p == std::make_tuple(1, 1, 25) );
+	BOOST_REQUIRE( std::get<0>(p) ==  1 );
+	BOOST_REQUIRE( std::get<1>(p) ==  1 );
+	BOOST_REQUIRE( std::get<2>(p) == 25 );
 }
 
 BOOST_AUTO_TEST_CASE(layout_0) {
@@ -547,7 +550,7 @@ BOOST_AUTO_TEST_CASE(continued) {
 	BOOST_REQUIRE( stride(L) == 20*30L );
 }
 {
-	std::tuple<int, int, int> ttt = {1, 2, 3};
+	auto const ttt = boost::multi::make_tuple(1, 2, 3);
 	auto arrr = boost::multi::detail::to_array(ttt);
 	BOOST_REQUIRE(arrr[1] == 2);
 }
