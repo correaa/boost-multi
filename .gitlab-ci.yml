@@ -382,7 +382,7 @@ nvhpc-22.1-std20:
 nvhpc-22.2:
     stage: build
     script:
-      - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
+      - apt-get install --no-install-recommends -y --quiet ca-certificates
       - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
       - apt-get update -y
       - apt-get install -y nvhpc-22-2
