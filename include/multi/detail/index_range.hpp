@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2018-2021 Alfredo A. Correa
+// Copyright 2018-2022 Alfredo A. Correa
 
 #ifndef MULTI_DETAIL_INDEX_RANGE_HPP
 #define MULTI_DETAIL_INDEX_RANGE_HPP
@@ -22,7 +22,7 @@ namespace boost::multi {
 
 template<
 	class Self,
-	class ValueType, class AccessCategory, 
+	class ValueType, class AccessCategory,
 	class Reference = ValueType&, class DifferenceType = typename std::pointer_traits<ValueType*>::difference_type, class Pointer = ValueType*
 >
 class iterator_facade {
@@ -139,7 +139,7 @@ class range {
 	       constexpr auto is_empty()     const&    noexcept {return first_ == last_;}
 	friend constexpr auto is_empty(range const& s) noexcept {return s.is_empty();}
 
-	[[nodiscard]] 
+	[[nodiscard]]
 	       constexpr auto empty()     const&    noexcept {return is_empty();}
 	friend constexpr auto empty(range const& s) noexcept {return s.empty();}
 
@@ -256,10 +256,10 @@ constexpr auto make_extension_t(IndexType f, IndexTypeLast l) -> extension_t<Ind
 template<class IndexTypeLast = std::ptrdiff_t>
 constexpr auto make_extension_t(IndexTypeLast l) {return make_extension_t(IndexTypeLast{0}, l);}
 
-using index_range         = range<index>;
-using index_extension     = extension_t<index>;
-using iextension = index_extension;
-using irange     = index_range;
+using index_range     = range<index>;
+using index_extension = extension_t<index>;
+using iextension      = index_extension;
+using irange          = index_range;
 
 namespace detail {
 
