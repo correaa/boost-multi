@@ -32,10 +32,10 @@ namespace detail {
 //	return std::make_tuple(To{std::get<I>(arr)}...);
 //}
 
-template<class To, std::size_t N, class From>
-constexpr auto to_tuple(std::array<From, N> arr) {
-	return to_tuple_impl<To, From>(arr, std::make_index_sequence<N>());
-}
+//template<class To, std::size_t N, class From>
+//constexpr auto to_tuple(std::array<From, N> arr) {
+//	return to_tuple_impl<To, From>(arr, std::make_index_sequence<N>());
+//}
 
 template <class TT, class Tuple, std::size_t... I>
 constexpr auto to_array_impl(
@@ -137,8 +137,6 @@ struct extensions_t {
 	friend auto operator==(extensions_t const& s, extensions_t const& o) {return s.impl_ == o.impl_;}
 	friend auto operator!=(extensions_t const& s, extensions_t const& o) {return s.impl_ != o.impl_;}
 
-//	auto operator!=(extensions_t const& other) const -> bool {return impl_ != other.impl_;}
-
 	using indices_type = decltype(std::tuple_cat(std::make_tuple(multi::index{}), typename extensions_t<D-1>::indices_type{}));
 
 	template<class Tuple = typename detail::repeat<multi::index, D, std::tuple>::type>
@@ -234,7 +232,6 @@ template<> struct extensions_t<0> {
 	using rank = std::integral_constant<dimensionality_type, 0>;
 
 	using nelems_type = index;
-//	using std::tuple<>::tuple;
 
 	explicit extensions_t(std::tuple<> const& t) : impl_{t} {}
 
