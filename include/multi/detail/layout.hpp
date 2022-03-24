@@ -37,20 +37,20 @@ namespace detail {
 //	return to_tuple_impl<To, From>(arr, std::make_index_sequence<N>());
 //}
 
-template <class TT, class Tuple, std::size_t... I>
-constexpr auto to_array_impl(
-	Tuple&& t, std::index_sequence<I...> /*012*/
-) -> std::array<TT, std::tuple_size_v<std::decay_t<Tuple>>> {
-	return {static_cast<TT>(std::get<I>(std::forward<Tuple>(t)))...};
-}
+//template <class TT, class Tuple, std::size_t... I>
+//constexpr auto to_array_impl(
+//	Tuple&& t, std::index_sequence<I...> /*012*/
+//) -> std::array<TT, std::tuple_size_v<std::decay_t<Tuple>>> {
+//	return {static_cast<TT>(std::get<I>(std::forward<Tuple>(t)))...};
+//}
 
-template<class T = void, class Tuple, class TT = std::conditional_t<std::is_same<T, void>{}, std::decay_t<decltype(std::get<0>(std::decay_t<Tuple>{}))>, T> >
-constexpr auto to_array(Tuple&& t) -> std::array<TT, std::tuple_size_v<std::decay_t<Tuple>>> {
-	return to_array_impl<TT>(
-		std::forward<Tuple>(t),
-		std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<Tuple>>>{}
-	);
-}
+//template<class T = void, class Tuple, class TT = std::conditional_t<std::is_same<T, void>{}, std::decay_t<decltype(std::get<0>(std::decay_t<Tuple>{}))>, T> >
+//constexpr auto to_array(Tuple&& t) -> std::array<TT, std::tuple_size_v<std::decay_t<Tuple>>> {
+//	return to_array_impl<TT>(
+//		std::forward<Tuple>(t),
+//		std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<Tuple>>>{}
+//	);
+//}
 
 template <class Tuple, std::size_t... Ns>
 constexpr auto tuple_tail_impl(Tuple&& t, std::index_sequence<Ns...> /*012*/) {
@@ -759,8 +759,8 @@ struct layout_t
 	friend constexpr auto shape(layout_t const& s) -> decltype(auto) {return s.shape();}
 
 	constexpr auto sizes() const {return tuple_cat(std::make_tuple(size()), sub_.sizes());}
-	template<class T = void>
-	constexpr auto sizes_as() const {return detail::to_array<T>(sizes());}
+//  template<class T = void>
+//  constexpr auto sizes_as() const {return detail::to_array<T>(sizes());}
 
 	friend        constexpr auto extension(layout_t const& s) {return s.extension();}
 	[[nodiscard]] constexpr auto extension()        const     {
@@ -848,10 +848,10 @@ inline constexpr auto operator*(extensions_t<1> const& ie, extensions_t<1> const
 	return extensions_t<2>({std::get<0>(ie), std::get<0>(self)});
 }
 
-template<class T, class Layout>
-constexpr auto sizes_as(Layout const& self)
-->decltype(self.template sizes_as<T>()) {
-	return self.template sizes_as<T>(); }
+//template<class T, class Layout>
+//constexpr auto sizes_as(Layout const& self)
+//->decltype(self.template sizes_as<T>()) {
+//	return self.template sizes_as<T>(); }
 
 }  // end namespace boost::multi
 

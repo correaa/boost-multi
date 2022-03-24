@@ -187,8 +187,12 @@ auto fftw_plan_dft_3d(
 }
 #endif
 
-template<class T, class Tpl> constexpr auto to_array(Tpl const& t){
-	return detail::to_array_impl<T>(t, std::make_index_sequence<std::tuple_size<Tpl>{}>{});
+template<class T, class Tpl> constexpr auto to_array(Tpl const& tpl) {
+	return std::apply(
+		[](auto const&... es) {return std::array<T, std::tuple_size<Tpl>::value>{static_cast<T>(es)...};},
+		tpl
+	);
+//  return detail::to_array_impl<T>(t, std::make_index_sequence<std::tuple_size<Tpl>{}>{});
 }
 
 #if 0
