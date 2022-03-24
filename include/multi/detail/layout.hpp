@@ -304,7 +304,8 @@ template<> struct extensions_t<1> {
 
 	constexpr auto num_elements() const -> size_type {
 	//  return std::get<0>(impl_).size();
-		return std::apply([](auto const& e, auto const&... /*tail*/){return e.size();}, impl_);
+		return head(impl_).size();
+	//	return std::apply([](auto const& e, auto const&... /*tail*/) {return e.size();}, impl_);
 	}
 
 	using indices_type = multi::detail::tuple<multi::index>;
