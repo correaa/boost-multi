@@ -551,8 +551,8 @@ BOOST_AUTO_TEST_CASE(continued) {
 }
 {
 	auto const ttt = boost::multi::make_tuple(1, 2, 3);
-	auto arrr = boost::multi::detail::to_array(ttt);
-	BOOST_REQUIRE(arrr[1] == 2);
+	auto const arr = std::apply([](auto... es) {return std::array<int, 3>{es...};}, ttt);
+	BOOST_REQUIRE(arr[1] == 2);
 }
 }
 
