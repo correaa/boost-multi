@@ -1,11 +1,11 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo A. Correa 2018-2021
+// © Alfredo A. Correa 2018-2022
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi utility"
-#define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
 #include "../array.hpp"
+#include "../detail/tuple_zip.hpp"
 
 //#include<boost/archive/xml_iarchive.hpp>
 //#include<boost/archive/xml_oarchive.hpp>
@@ -25,6 +25,11 @@ namespace multi = boost::multi;
 //}
 
 // TODO(correaa) add test for reinterpret_pointer_cast
+
+BOOST_AUTO_TEST_CASE(tuple) {
+	using multi::detail::tuple;
+	tuple<std::string, int> t{"hola", 42};
+}
 
 BOOST_AUTO_TEST_CASE(std_array_extensions_3d) {
 	std::array<std::array<std::array<double, 5>, 4>, 3> arr = {};

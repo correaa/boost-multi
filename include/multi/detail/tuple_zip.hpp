@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2021 Alfredo A. Correa
+// Copyright 2021-2022 Alfredo A. Correa
 
 #ifndef MULTI_TUPLE_ZIP
 #define MULTI_TUPLE_ZIP
@@ -9,9 +9,25 @@
 
 #include<tuple>
 
-namespace boost {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
-namespace multi {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
+namespace boost::multi {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
 namespace detail {
+
+template<class... Ts> class tuple;
+
+template<class T0, class... Ts> class tuple<T0, Ts...> {
+	T0 t0_;
+	tuple<Ts...> sub_;
+
+ public:
+	constexpr explicit tuple(T0 t0, Ts... ts)
+	: t0_{std::move(t0)}, sub_{std::move(ts)...} {}
+};
+
+template<> class tuple<> {};
+
+//template<class... Ts>
+//constexpr auto make_tuple(Ts... ts) -> tuple<std::decay_t<Ts>...> {
+//	return tuple<std::decay_t<Ts>...>(std::move(ts)...) }
 
 template<class Tuple1, std::size_t... Indices>
 auto tuple_zip_impl(Tuple1&& t1, std::index_sequence<Indices...> /*012*/) {
@@ -64,7 +80,6 @@ auto tuple_zip(Tuple1&& t1, Tuples&&... ts) {
 }
 
 }  // end namespace detail
-}  // end namespace multi
-}  // end namespace boost
+}  // end namespace boost::multi
 
 #endif

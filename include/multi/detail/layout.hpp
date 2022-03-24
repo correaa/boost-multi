@@ -55,7 +55,7 @@ namespace detail {
 template <class Tuple, std::size_t... Ns>
 constexpr auto tuple_tail_impl(Tuple&& t, std::index_sequence<Ns...> /*012*/) {
 	(void)t;  // workaround bug warning in nvcc
-	return std::forward_as_tuple(std::forward<decltype(std::get<Ns + 1>(t))>(std::get<Ns + 1>(t))...);
+	return std::forward_as_tuple(std::forward<decltype(std::get<Ns + 1U>(t))>(std::get<Ns + 1U>(t))...);
 }
 
 template<class Tuple>
