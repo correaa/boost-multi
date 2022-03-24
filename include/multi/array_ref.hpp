@@ -637,17 +637,17 @@ struct basic_array
 	HD constexpr auto operator[](index i)     && ->       reference {return at_aux(i);}
 	HD constexpr auto operator[](index i)      & ->       reference {return at_aux(i);}
 
-	template<class Tuple = std::array<index, static_cast<std::size_t>(D)>, typename = std::enable_if_t<(std::tuple_size<Tuple>{} > 1)> >
+	template<class Tuple = std::array<index, static_cast<std::size_t>(D)>, typename = std::enable_if_t<(std::tuple_size<Tuple>::value > 1)> >
 	HD constexpr auto operator[](Tuple const& t) const
 	->decltype(operator[](std::get<0>(t))[detail::tuple_tail(t)]) {
 		return operator[](std::get<0>(t))[detail::tuple_tail(t)]; }
 
-	template<class Tuple, typename = std::enable_if_t<std::tuple_size<Tuple>::value==1> >
+	template<class Tuple, typename = std::enable_if_t<(std::tuple_size<Tuple>::value == 1)> >
 	HD constexpr auto operator[](Tuple const& t) const
 	->decltype(operator[](std::get<0>(t))) {
 		return operator[](std::get<0>(t)); }
 
-	template<class Tuple, std::enable_if_t<std::tuple_size<std::decay_t<Tuple>>::value==0, int> = 0>
+	template<class Tuple, std::enable_if_t<(std::tuple_size<std::decay_t<Tuple>>::value == 0), int> = 0>
 	constexpr auto operator[](Tuple const& /*no indices*/) const -> basic_const_array {
 		return *this;
 	}
@@ -1642,13 +1642,13 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	}
 
  public:
-	template<typename Tuple> HD constexpr auto apply(Tuple const& t) const& -> decltype(auto) {return apply_impl(          *this , t, std::make_index_sequence<std::tuple_size<Tuple>{}>());}
-	template<typename Tuple> HD constexpr auto apply(Tuple const& t)     && -> decltype(auto) {return apply_impl(std::move(*this), t, std::make_index_sequence<std::tuple_size<Tuple>{}>());}
-	template<typename Tuple> HD constexpr auto apply(Tuple const& t)      & -> decltype(auto) {return apply_impl(          *this , t, std::make_index_sequence<std::tuple_size<Tuple>{}>());}
+	template<typename Tuple> HD constexpr auto apply(Tuple const& t) const& -> decltype(auto) {return apply_impl(          *this , t, std::make_index_sequence<std::tuple_size_v<Tuple>>());}
+	template<typename Tuple> HD constexpr auto apply(Tuple const& t)     && -> decltype(auto) {return apply_impl(std::move(*this), t, std::make_index_sequence<std::tuple_size_v<Tuple>>());}
+	template<typename Tuple> HD constexpr auto apply(Tuple const& t)      & -> decltype(auto) {return apply_impl(          *this , t, std::make_index_sequence<std::tuple_size_v<Tuple>>());}
 
-	template<class Tuple, std::enable_if_t< std::tuple_size<Tuple>{} == 0 , int> = 0> HD constexpr auto operator[](Tuple const& /*empty*/) const& -> decltype(auto) {return *this;}
-	template<class Tuple, std::enable_if_t< std::tuple_size<Tuple>{} == 1 , int> = 0> HD constexpr auto operator[](Tuple const& indices  ) const& -> decltype(auto) {return operator[](std::get<0>(indices));}
-	template<class Tuple, std::enable_if_t<(std::tuple_size<Tuple>{} >  1), int> = 0> HD constexpr auto operator[](Tuple const& indices  ) const&
+	template<class Tuple, std::enable_if_t<(std::tuple_size<Tuple>::value == 0), int> = 0> HD constexpr auto operator[](Tuple const& /*empty*/) const& -> decltype(auto) {return *this;}
+	template<class Tuple, std::enable_if_t<(std::tuple_size<Tuple>::value == 1), int> = 0> HD constexpr auto operator[](Tuple const& indices  ) const& -> decltype(auto) {return operator[](std::get<0>(indices));}
+	template<class Tuple, std::enable_if_t<(std::tuple_size<Tuple>::value >  1), int> = 0> HD constexpr auto operator[](Tuple const& indices  ) const&
 	->decltype(operator[](std::get<0>(indices))[detail::tuple_tail(indices)]) {
 		return operator[](std::get<0>(indices))[detail::tuple_tail(indices)]; }
 

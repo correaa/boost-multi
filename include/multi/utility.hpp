@@ -218,7 +218,7 @@ constexpr auto sizes(Array const& arr)
 	return arr.sizes(); }
 
 template<class T, typename = std::enable_if_t<not has_sizes<T>{}> >
-inline constexpr auto sizes(T const& /*unused*/) -> std::tuple<> {return {};}
+inline constexpr auto sizes(T const& /*unused*/) -> tuple<> {return {};}
 
 template<class T, std::size_t N>
 constexpr auto sizes(const T(&t)[N]) noexcept {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
