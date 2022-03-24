@@ -183,53 +183,20 @@ template<std::size_t N, class T0, class... Ts> struct tuple_element<N, boost::mu
 	using type = typename tuple_element<N - 1, boost::multi::detail::tuple<Ts...>>::type;
 };
 
-//#if defined __NVCC__
-//    #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-//        #pragma nv_diagnostic push
-//        #pragma nv_diag_suppress = implicit_return_from_non_void_function
-//    #else
-//        #pragma    diagnostic push
-//        #pragma    diag_suppress = implicit_return_from_non_void_function
-//    #endif
-//#elif defined __NVCOMPILER
-//    #pragma    diagnostic push
-//    #pragma    diag_suppress = implicit_return_from_non_void_function
-//#endif
-//template<std::size_t N, class T0, class... Ts>
-//constexpr decltype(auto) get(boost::multi::detail::tuple<T0, Ts...> const& t) {
-//	if constexpr(N == 0) {
-//		return t.t0_;
-//	} else {
-//		return std::get<N-1>(t.sub_);
-//	}
-//}
+template<std::size_t N, class... Ts>
+constexpr auto get(boost::multi::detail::tuple<Ts...> const& t)
+->decltype(boost::multi::detail::get<N>(t)) {
+	return boost::multi::detail::get<N>(t); }
 
-//template<std::size_t N, class T0, class... Ts>
-//constexpr auto& get(boost::multi::detail::tuple<T0, Ts...>& t) {
-//	if constexpr(N == 0) {
-//		return t.t0_;
-//	} else {
-//		return std::get<N-1>(t.sub_);
-//	}
-//}
+template<std::size_t N, class... Ts>
+constexpr auto get(boost::multi::detail::tuple<Ts...> & t)
+->decltype(boost::multi::detail::get<N>(t)) {
+	return boost::multi::detail::get<N>(t); }
 
-//template<std::size_t N, class T0, class... Ts>
-//constexpr auto&& get(boost::multi::detail::tuple<T0, Ts...>&& t) {
-//	if constexpr(N == 0) {
-//		return std::move(t.t0_);
-//	} else {
-//		return std::get<N-1>(std::move(t.sub_));
-//	}
-//}
-//#if defined __NVCC__
-//    #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-//        #pragma nv_diagnostic pop
-//    #else
-//        #pragma    diagnostic pop
-//    #endif
-//#elif defined __NVCOMPILER
-//    #pragma    diagnostic pop
-//#endif
+template<std::size_t N, class... Ts>
+constexpr auto get(boost::multi::detail::tuple<Ts...> && t)
+->decltype(boost::multi::detail::get<N>(std::move(t))) {
+	return boost::multi::detail::get<N>(std::move(t)); }
 
 template <class F, class Tuple, std::size_t... I>
 constexpr auto apply_timpl(F&& f, Tuple&& t, std::index_sequence<I...> /*012*/) -> decltype(auto) {
