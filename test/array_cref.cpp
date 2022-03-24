@@ -29,6 +29,8 @@ BOOST_AUTO_TEST_CASE(array_cref) {
 	multi::array_ref<complex, 2, complex const*> D2D(dc.data(), {10, 10});
 	multi::array_cref<complex, 2> F2D(d.data(), {10, 10});
 
+	BOOST_REQUIRE( &D2D == &F2D );
+
 	A2D[7][8] = 3.;
 	BOOST_REQUIRE(  F2D[7][8] == 3. );
 	BOOST_REQUIRE( &A2D[7][8] == &F2D[7][8] );
