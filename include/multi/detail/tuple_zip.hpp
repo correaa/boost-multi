@@ -15,8 +15,8 @@ namespace detail {
 
 template<class Tuple1, std::size_t... Indices>
 auto tuple_zip_impl(Tuple1&& t1, std::index_sequence<Indices...> /*012*/) {
-	return std::make_tuple(
-		std::make_tuple(
+	return make_tuple(
+		make_tuple(
 			std::get<Indices>(std::forward<Tuple1>(t1))
 		)...
 	);
@@ -24,8 +24,8 @@ auto tuple_zip_impl(Tuple1&& t1, std::index_sequence<Indices...> /*012*/) {
 
 template<class Tuple1, class Tuple2, std::size_t... Is>
 auto tuple_zip_impl(Tuple1&& t1, Tuple2&& t2, std::index_sequence<Is...> /*012*/) {
-	return std::make_tuple(
-		std::make_tuple(
+	return make_tuple(
+		make_tuple(
 			std::get<Is>(std::forward<Tuple1>(t1)),
 			std::get<Is>(std::forward<Tuple2>(t2))
 		)...
@@ -34,8 +34,8 @@ auto tuple_zip_impl(Tuple1&& t1, Tuple2&& t2, std::index_sequence<Is...> /*012*/
 
 template<class Tuple1, class Tuple2, class Tuple3, std::size_t... Is>
 auto tuple_zip_impl(Tuple1&& t1, Tuple2&& t2, Tuple3&& t3, std::index_sequence<Is...> /*012*/) {
-	return	std::make_tuple(
-		std::make_tuple(
+	return	make_tuple(
+		make_tuple(
 			std::get<Is>(std::forward<Tuple1>(t1)),
 			std::get<Is>(std::forward<Tuple2>(t2)),
 			std::get<Is>(std::forward<Tuple3>(t3))
@@ -45,8 +45,8 @@ auto tuple_zip_impl(Tuple1&& t1, Tuple2&& t2, Tuple3&& t3, std::index_sequence<I
 
 template<class Tuple1, class Tuple2, class Tuple3, class Tuple4, std::size_t... Is>
 auto tuple_zip_impl(Tuple1&& t1, Tuple2&& t2, Tuple3&& t3, Tuple4&& t4, std::index_sequence<Is...> /*012*/) {
-	return std::make_tuple(
-		std::make_tuple(
+	return make_tuple(
+		make_tuple(
 			std::get<Is>(std::forward<Tuple1>(t1)),
 			std::get<Is>(std::forward<Tuple2>(t2)),
 			std::get<Is>(std::forward<Tuple3>(t3)),

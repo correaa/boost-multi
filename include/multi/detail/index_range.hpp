@@ -22,8 +22,8 @@ namespace boost::multi {
 
 template<class... Ts>
 using tuple = std::tuple<Ts...>;
-
 using std::make_tuple;
+using std::tuple_cat;
 
 template<
 	class Self,

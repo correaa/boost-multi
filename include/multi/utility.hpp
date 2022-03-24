@@ -224,7 +224,7 @@ template<class T, std::size_t N>
 constexpr auto sizes(const T(&t)[N]) noexcept {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 //  using std::size; // this line needs c++17
 	using boost::multi::size;
-	return std::tuple_cat(std::make_tuple(boost::multi::size(t)), sizes(t[0]));
+	return tuple_cat(std::make_tuple(boost::multi::size(t)), sizes(t[0]));
 }
 
 template<class T, std::size_t N>
@@ -302,7 +302,7 @@ template<dimensionality_type D>
 struct extensions_aux {
 	template<class T>
 	static auto call(T const& t) {
-		return std::tuple_cat(std::make_tuple(t.extension()), extensions<D-1>(t));
+		return tuple_cat(std::make_tuple(t.extension()), extensions<D-1>(t));
 	}
 };
 
@@ -324,7 +324,7 @@ template<class T1, class T2> auto extensions_me(T2 const& t2) {
 template<class T1> struct extension_t_aux {
 	static auto call(T1 const& /*unused*/) {return std::make_tuple();}
 	template<class T2>
-	static auto call(T2 const& t2) {return std::tuple_cat(std::make_tuple(t2.extension()), extensions_me<T1>(*begin(t2)));}
+	static auto call(T2 const& t2) {return tuple_cat(std::make_tuple(t2.extension()), extensions_me<T1>(*begin(t2)));}
 };
 
 template<class T, typename = decltype(std::declval<T const&>().layout())>

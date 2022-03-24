@@ -261,18 +261,19 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, fftw::flags 
 	}();
 
 	auto ret = ::fftw_plan_many_dft(
-		/*int rank*/ ion.size(),
-		/*const int* n*/ ion.data(),
-		/*int howmany*/ last - first,
-		/*fftw_complex * in */ reinterpret_cast<fftw_complex*>(const_cast<std::complex<double>*>(static_cast<std::complex<double> const*>(base(first)))),   // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast) input data
-		/*const int *inembed*/ inembed.data(),
-		/*int istride*/ istrides.back(),
-		/*int idist*/ stride(first),
-		/*fftw_complex * out */ reinterpret_cast<fftw_complex*>(static_cast<std::complex<double>*>(base(d_first))), // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) adapt types
-		/*const int *onembed*/ onembed.data(),
-		/*int ostride*/ ostrides.back(),
-		/*int odist*/ stride(d_first),
-		/*int*/ sign, /*unsigned*/ static_cast<unsigned>(flags)
+		/*int           rank    */ ion.size(),
+		/*const int*    n       */ ion.data(),
+		/*int           howmany */ last - first,
+		/*fftw_complex* in      */ reinterpret_cast<fftw_complex*>(const_cast<std::complex<double>*>(static_cast<std::complex<double> const*>(base(first)))),   // NOLINT(cppcoreguidelines-pro-type-const-cast,cppcoreguidelines-pro-type-reinterpret-cast) input data
+		/*const int*    inembed */ inembed.data(),
+		/*int           istride */ istrides.back(),
+		/*int           idist   */ stride(first),
+		/*fftw_complex* out     */ reinterpret_cast<fftw_complex*>(static_cast<std::complex<double>*>(base(d_first))), // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) adapt types
+		/*const int*    onembed */ onembed.data(),
+		/*int           ostride */ ostrides.back(),
+		/*int           odist   */ stride(d_first),
+		/*int                   */ sign,
+		/*unsigned              */ static_cast<unsigned>(flags)
 	);
 	assert(ret); // if you get null here it could be because your library doesn't support this fftw call mode
 	return ret;
