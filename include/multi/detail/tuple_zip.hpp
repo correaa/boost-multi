@@ -233,6 +233,7 @@ template<std::size_t N, class T0, class... Ts> struct tuple_element<N, boost::mu
 
 template <class F, class Tuple, std::size_t... I>
 constexpr auto apply_timpl(F&& f, Tuple&& t, std::index_sequence<I...> /*012*/) -> decltype(auto) {
+	(void)t;  // fix "error #827: parameter "t" was never referenced" in NVC++ and "error #869: parameter "t" was never referenced" in oneAPI-ICPC
     return std::forward<F>(f)(boost::multi::detail::get<I>(std::forward<Tuple>(t))...);
 }
 
