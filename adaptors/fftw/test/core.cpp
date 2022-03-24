@@ -409,7 +409,8 @@ BOOST_AUTO_TEST_CASE(fftw_4D_inq_poisson) {
 	multi::array<complex, 4> out(extensions(in));
 	multi::fftw::dft({0, 1, 1, 0}, in, out);
 
-	BOOST_TEST( power(in) == power(out)/std::get<1>(sizes(out))/std::get<2>(sizes(out)) , boost::test_tools::tolerance(1e-10) );
+	using boost::multi::detail::get;
+	BOOST_TEST( power(in) == power(out)/get<1>(sizes(out))/get<2>(sizes(out)) , boost::test_tools::tolerance(1e-10) );
 }
 
 BOOST_AUTO_TEST_CASE(fftw_1D_power) {

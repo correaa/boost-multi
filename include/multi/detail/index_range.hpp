@@ -8,6 +8,7 @@
 //#include "../config/NODISCARD.hpp"
 
 #include "../detail/serialization.hpp"
+#include "../detail/tuple_zip.hpp"
 #include "../detail/types.hpp"
 
 #include <algorithm>  // for min
@@ -20,10 +21,13 @@
 
 namespace boost::multi {
 
-template<class... Ts>
-using tuple = std::tuple<Ts...>;
-using std::make_tuple;
-using std::tuple_cat;
+//template<class... Ts>
+//using tuple = std::tuple<Ts...>;
+
+using boost::multi::detail::tuple;
+//using std::tuple;
+//using std::make_tuple;
+//using std::tuple_cat;
 
 template<
 	class Self,
@@ -310,21 +314,23 @@ struct repeat<T, 0, TT> {
 //	return static_size<Array>();
 //}
 
-// TODO(correaa) consolidate with tuple_tail defined somewhere else
-template<class Tuple>
-constexpr auto head(Tuple&& t)
-->decltype(std::get<0>(std::forward<Tuple>(t))) {
-	return std::get<0>(std::forward<Tuple>(t)); }
+//// TODO(correaa) consolidate with tuple_tail defined somewhere else
+//template<class Tuple>
+//constexpr auto head(Tuple&& t)
+//->decltype(std::get<0>(std::forward<Tuple>(t))) {
+//	return std::get<0>(std::forward<Tuple>(t)); }
 
-template<typename Tuple, std::size_t... Ns>
-constexpr auto tail_impl(std::index_sequence<Ns...> /*012*/, [[maybe_unused]] Tuple&& t) {  // [[maybe_unused]] needed by icpc "error #869: parameter "t" was never referenced"
-	return make_tuple(std::get<Ns + 1U>(std::forward<Tuple>(t))...);
-}
+//template<typename Tuple, std::size_t... Ns>
+//constexpr auto tail_impl(std::index_sequence<Ns...> /*012*/, [[maybe_unused]] Tuple&& t) {  // [[maybe_unused]] needed by icpc "error #869: parameter "t" was never referenced"
+//	using boost::multi::detail::get;
+//	return boost::multi::detail::tuple{get<Ns + 1U>(std::forward<Tuple>(t))...};
+////  return make_tuple(std::get<Ns + 1U>(std::forward<Tuple>(t))...);
+//}
 
-template<class Tuple>
-constexpr auto tail(Tuple const& t) {
-	return tail_impl(std::make_index_sequence<std::tuple_size_v<Tuple> - 1U>(), t);
-}
+//template<class Tuple>
+//constexpr auto tail(Tuple const& t) {
+//	return tail_impl(std::make_index_sequence<std::tuple_size_v<Tuple> - 1U>(), t);
+//}
 
 }  // end namespace detail
 

@@ -12,7 +12,7 @@
 #include<iterator>  // for std::size (in c++17)
 #endif
 
-#include<tuple>  // for tuple<>
+//#include<tuple>  // for tuple<>
 
 namespace boost::multi {
 
@@ -224,7 +224,8 @@ template<class T, std::size_t N>
 constexpr auto sizes(const T(&t)[N]) noexcept {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 //  using std::size; // this line needs c++17
 	using boost::multi::size;
-	return tuple_cat(make_tuple(boost::multi::size(t)), sizes(t[0]));
+	return tuple(boost::multi::size(t), sizes(t[0]));
+//  return tuple_cat(make_tuple(boost::multi::size(t)), sizes(t[0]));
 }
 
 template<class T, std::size_t N>

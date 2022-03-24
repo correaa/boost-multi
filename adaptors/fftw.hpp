@@ -220,27 +220,33 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, fftw::flags 
 	assert(sizes(*first)==sizes(*d_first));
 
 	auto const ssn_tuple = multi::detail::tuple_zip(strides(*first  ), strides(*d_first), sizes(*first));
-	auto ssn = std::apply([](auto... e){return std::array<std::tuple<int, int, int>, sizeof...(e)>{
-		std::make_tuple(static_cast<int>(std::get<0>(e)), static_cast<int>(std::get<1>(e)), static_cast<int>(std::get<2>(e)))...
-	};}, ssn_tuple);
+	auto ssn = std::apply([](auto... e){
+		using boost::multi::detail::get;
+		return std::array<boost::multi::detail::tuple<int, int, int>, sizeof...(e)>{
+			boost::multi::detail::mk_tuple(static_cast<int>(get<0>(e)), static_cast<int>(get<1>(e)), static_cast<int>(get<2>(e)))...
+		};
+	}, ssn_tuple);
 	std::sort(ssn.begin(), ssn.end(), std::greater<>{});
 
 	auto const istrides = [&](){
 		std::array<int, std::decay_t<decltype(*It1{})>::rank::value> istrides{};
-		std::transform(ssn.begin(), ssn.end(), istrides.begin(), [](auto e){return std::get<0>(e);});
+		using boost::multi::detail::get;
+		std::transform(ssn.begin(), ssn.end(), istrides.begin(), [](auto e){return get<0>(e);});
 		return istrides;
 	}();
 
 	auto const ostrides = [&](){
 		std::array<int, std::decay_t<decltype(*It1{})>::rank::value> ostrides{};
-		std::transform(ssn.begin(), ssn.end(), ostrides.begin(), [](auto e){return std::get<1>(e);});
+		using boost::multi::detail::get;
+		std::transform(ssn.begin(), ssn.end(), ostrides.begin(), [](auto e){return get<1>(e);});
 		return ostrides;
 	}();
 	assert( std::is_sorted(ostrides.begin(), ostrides.end(), std::greater<>{}) ); // otherwise ordering is incompatible
 
 	auto const ion      = [&](){
 		std::array<int, std::decay_t<decltype(*It1{})>::rank::value> ion     {};
-		std::transform(ssn.begin(), ssn.end(), ion     .begin(), [](auto e){return std::get<2>(e);});
+		using boost::multi::detail::get;
+		std::transform(ssn.begin(), ssn.end(), ion     .begin(), [](auto e){return get<2>(e);});
 		return ion;
 	}();
 
@@ -303,11 +309,12 @@ auto fftw_plan_dft(std::array<bool, +D> which, In&& in, Out&& out, int sign, fft
 	auto const istride_tuple = in.strides();
 	auto const ostride_tuple = out.strides();
 
+	using boost::multi::detail::get;
 	auto which_iodims = std::apply([](auto... e){
 		return std::array<std::pair<bool, fftw_iodim64>, sizeof...(e)>{
 			std::pair<bool, fftw_iodim64>{
-				std::get<0>(e),
-				fftw_iodim64{std::get<1>(e), std::get<2>(e), std::get<3>(e)}
+				get<0>(e),
+				fftw_iodim64{get<1>(e), get<2>(e), get<3>(e)}  // TODO(correaa) use apply?
 			}...
 		};
 	}, boost::multi::detail::tuple_zip(which, sizes_tuple, istride_tuple, ostride_tuple));
@@ -390,8 +397,9 @@ auto fftw_plan_dft(multi::layout_t<D> const& in_layout, PtrIn in_base, multi::la
 	assert( in_layout.sizes() == out_layout.sizes() );
 
 	auto const dims = std::apply([](auto... e){
+		using boost::multi::detail::get;
 		return std::array<fftw_iodim64, sizeof...(e)>{
-			fftw_iodim64{std::get<0>(e), std::get<1>(e), std::get<2>(e)}
+			fftw_iodim64{get<0>(e), get<1>(e), get<2>(e)}
 			...
 		};
 	}, boost::multi::detail::tuple_zip(in_layout.sizes(), in_layout.strides(), out_layout.strides()));

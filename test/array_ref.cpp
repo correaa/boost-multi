@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
 
 	BOOST_REQUIRE( &mar.reindexed(1)({1, 5})[1][0] == &mar[0][0] );
 
-	BOOST_REQUIRE( sizes(mar.stenciled({2, 4})) == std::make_tuple(2, 5) );
+	BOOST_REQUIRE(( sizes(mar.stenciled({2, 4})) == decltype(sizes(mar.stenciled({2, 4}))){2, 5} ));
 	BOOST_REQUIRE( &mar.stenciled({2, 4})[2][0] == &mar[2][0] );
 	BOOST_REQUIRE( &mar.stenciled({2, 4}, {1, 3})[2][1] == &mar[2][1] );
 
@@ -309,7 +309,9 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray_string) {
 	BOOST_REQUIRE( num_elements(A) == 24 and A[2][1][1] == "C1b" );
 	auto const& A2 = A.sliced(0, 3).rotated()[1].sliced(0, 2).unrotated();
 	BOOST_REQUIRE( multi::rank<std::decay_t<decltype(A2)>>{} == 2 and num_elements(A2) == 6 );
-	BOOST_REQUIRE( std::get<0>(sizes(A2)) == 3 and std::get<1>(sizes(A2)) == 2 );
+
+	using boost::multi::detail::get;
+	BOOST_REQUIRE( get<0>(sizes(A2)) == 3 and get<1>(sizes(A2)) == 2 );
 
 	auto const& A3 = A({0, 3}, 1, {0, 2});
 	BOOST_REQUIRE( multi::rank<std::decay_t<decltype(A3)>>{} == 2 and num_elements(A3) == 6 );

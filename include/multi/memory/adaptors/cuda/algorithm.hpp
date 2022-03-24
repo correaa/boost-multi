@@ -152,7 +152,8 @@ array_iterator<T2, 1, ptr<Q2>> copy_n(
 		[first, result, x = multi::extensions_t<1>(count)] __device__ (auto n){ // requires --extended-lambda nvcc flag
 		//  std::tuple<index>
 			auto const i = x.from_linear(n);
-			result[std::get<0>(i)] = T2(first[std::get<0>(i)]);
+			using boost::multi::detail::get;
+			result[get<0>(i)] = T2(first[get<0>(i)]);
 		}
 	);
 	return result_ + count;

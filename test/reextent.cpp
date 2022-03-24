@@ -45,10 +45,10 @@ BOOST_AUTO_TEST_CASE(array_reextent_1d) {
 	BOOST_REQUIRE( A[9] == 4. );
 //	BOOST_REQUIRE( A[19] == 0. ); // impossible to know by sometimes 0.
 
-	A.reextent(std::tuple<int>(22) );
+//  A.reextent(std::tuple<int>(22) );
+	A.reextent( boost::multi::tuple<int>(22) );
 	BOOST_REQUIRE( size(A) == 22 );
 	BOOST_REQUIRE( A[9] == 4. );
-
 
 }
 
