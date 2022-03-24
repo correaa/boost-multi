@@ -923,6 +923,11 @@ struct array : static_array<T, D, Alloc> {
 		assign(il.begin(), il.end()); return *this;
 	}
 
+	template<class... TTs>
+	[[deprecated]] auto reextent(std::tuple<TTs...> const& other) -> array& {
+		return reextent(std::apply([](auto const&... es) {return typename array::extensions_type{es...};}, other));
+	}
+
 	auto reextent(typename array::extensions_type const& x) -> array& {
 		if(x == this->extensions()) {
 			return *this;

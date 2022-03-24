@@ -50,6 +50,14 @@ BOOST_AUTO_TEST_CASE(array_reextent_1d) {
 	BOOST_REQUIRE( size(A) == 22 );
 	BOOST_REQUIRE( A[9] == 4. );
 
+	A.reextent( {23} );
+	BOOST_REQUIRE( size(A) == 23 );
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+	A.reextent( std::make_tuple(24) );
+	BOOST_REQUIRE( size(A) == 24 );
+#pragma GCC diagnostic pop
 }
 
 BOOST_AUTO_TEST_CASE(array_reextent_0D) {
