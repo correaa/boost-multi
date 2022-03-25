@@ -925,7 +925,7 @@ struct array : static_array<T, D, Alloc> {
 
 	template<class... TTs>
 	[[deprecated]] auto reextent(std::tuple<TTs...> const& other) -> array& {
-		return reextent(std::apply([](auto const&... es) {return typename array::extensions_type{static_cast<typename array::size_type>(es)...};}, other));
+		return reextent(std::apply([](auto const&... es) {return typename array::extensions_type(es...);}, other));  // paren is important here ext_type(...) for allow narrowing casts
 	}
 
 	auto reextent(typename array::extensions_type const& x) -> array& {
