@@ -64,7 +64,23 @@ BOOST_AUTO_TEST_CASE(array_reextent_1d) {
 #pragma GCC diagnostic pop
 #pragma diagnostic pop
 #pragma warning(pop)                 // NOLINT(clang-diagnostic-unknown-pragmas)
+}
 
+void fff(boost::multi::detail::tuple<long> /*t*/) {
+};
+
+BOOST_AUTO_TEST_CASE(tuple_implicit_test) {
+#pragma warning(push)                // NOLINT(clang-diagnostic-unknown-pragmas)
+#pragma warning (disable:1478 1786)  // NOLINT(clang-diagnostic-unknown-pragmas)
+#pragma diagnostic push
+#pragma diag_suppress 1215,1216,1444,1445
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+	fff(1L);
+	fff(1);
+#pragma GCC diagnostic pop
+#pragma diagnostic pop
+#pragma warning(pop)                 // NOLINT(clang-diagnostic-unknown-pragmas)
 }
 
 BOOST_AUTO_TEST_CASE(array_reextent_0D) {
