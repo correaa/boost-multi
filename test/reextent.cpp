@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(array_reextent_1d) {
 #pragma warning(push)                // NOLINT(clang-diagnostic-unknown-pragmas)
 #pragma warning (disable:1478 1786)  // NOLINT(clang-diagnostic-unknown-pragmas)
 #pragma diagnostic push
-#pragma diag_suppress 1215,1444
+#pragma diag_suppress 1216
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 	A.reextent( std::make_tuple(24) );
