@@ -68,19 +68,24 @@ BOOST_AUTO_TEST_CASE(array_reextent_1d) {
 
 inline void fff(boost::multi::detail::tuple<long> /*t*/) {}  // NOLINT(google-runtime-int) for testing
 
-BOOST_AUTO_TEST_CASE(tuple_implicit_test) {
 #pragma warning(push)                // NOLINT(clang-diagnostic-unknown-pragmas)
 #pragma warning (disable:1478 1786)  // NOLINT(clang-diagnostic-unknown-pragmas)
 #pragma diagnostic push
 #pragma diag_suppress 1215,1216,1444,1445
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+BOOST_AUTO_TEST_CASE(tuple_implicit_test) {
 	fff(1L);
 	fff(1);
+}
+
+BOOST_AUTO_TEST_CASE(tuple_conversion_deprecated) {
+	boost::multi::tuple<int, int> t{1, 1};
+	BOOST_REQUIRE( t == std::make_tuple(1, 1) );
+}
 #pragma GCC diagnostic pop
 #pragma diagnostic pop
 #pragma warning(pop)                 // NOLINT(clang-diagnostic-unknown-pragmas)
-}
 
 BOOST_AUTO_TEST_CASE(array_reextent_0D) {
 	multi::array<double, 0> A({}, 4.);

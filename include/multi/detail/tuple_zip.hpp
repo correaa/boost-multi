@@ -7,7 +7,7 @@
 #include<cassert>
 #include<utility>
 
-//#include<tuple>
+#include<tuple>  // for deprecated functions
 
 namespace boost::multi {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
 namespace detail {
@@ -30,6 +30,10 @@ template<class T0, class... Ts> class tuple<T0, Ts...> {  // NOLINT(cppcoreguide
 
 	tuple() = default;
 	tuple(tuple const&) = default;
+
+	// cppcheck-suppress noExplicitConstructor ; for compatibility with QMC to be deprecated
+	[[deprecated]] tuple(std::tuple<T0, Ts...> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	: tuple{std::apply([](auto const&... es) {return tuple{es...};}, other)} {}
 
 	constexpr auto operator=(tuple const& other) -> tuple& {
 		if(this == &other) {return *this;}
