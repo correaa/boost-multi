@@ -45,12 +45,47 @@ BOOST_AUTO_TEST_CASE(array_reextent_1d) {
 	BOOST_REQUIRE( A[9] == 4. );
 //	BOOST_REQUIRE( A[19] == 0. ); // impossible to know by sometimes 0.
 
-	A.reextent(std::tuple<int>(22) );
+//  A.reextent(std::tuple<int>(22) );
+	A.reextent( boost::multi::tuple<int>(22) );
 	BOOST_REQUIRE( size(A) == 22 );
 	BOOST_REQUIRE( A[9] == 4. );
 
+	A.reextent( {23} );
+	BOOST_REQUIRE( size(A) == 23 );
 
+#pragma warning(push)                // NOLINT(clang-diagnostic-unknown-pragmas)
+#pragma warning (disable:1478 1786)  // NOLINT(clang-diagnostic-unknown-pragmas)
+#pragma diagnostic push
+#pragma diag_suppress 1215,1216,1444,1445
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+	A.reextent( std::make_tuple(24) );
+	BOOST_REQUIRE( size(A) == 24 );
+#pragma GCC diagnostic pop
+#pragma diagnostic pop
+#pragma warning(pop)                 // NOLINT(clang-diagnostic-unknown-pragmas)
 }
+
+inline void fff(boost::multi::detail::tuple<long> /*t*/) {}  // NOLINT(google-runtime-int) for testing
+
+#pragma warning(push)                // NOLINT(clang-diagnostic-unknown-pragmas)
+#pragma warning (disable:1478 1786)  // NOLINT(clang-diagnostic-unknown-pragmas)
+#pragma diagnostic push
+#pragma diag_suppress 1215,1216,1444,1445
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+BOOST_AUTO_TEST_CASE(tuple_implicit_test) {
+	fff(1L);
+	fff(1);
+}
+
+BOOST_AUTO_TEST_CASE(tuple_conversion_deprecated) {
+	boost::multi::tuple<int, int> t{1, 1};
+	BOOST_REQUIRE( t == std::make_tuple(1, 1) );
+}
+#pragma GCC diagnostic pop
+#pragma diagnostic pop
+#pragma warning(pop)                 // NOLINT(clang-diagnostic-unknown-pragmas)
 
 BOOST_AUTO_TEST_CASE(array_reextent_0D) {
 	multi::array<double, 0> A({}, 4.);

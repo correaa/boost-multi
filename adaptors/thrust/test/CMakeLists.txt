@@ -6,8 +6,7 @@ project(
 	LANGUAGES CXX CUDA
 )
 
-# --Werror=cross-execution-space-call
-set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr --extended-lambda -Xcudafe \"--display_error_number\"")
+set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr --extended-lambda --Werror=cross-execution-space-call -Xcudafe \"--display_error_number\"")
 
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 

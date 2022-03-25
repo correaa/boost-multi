@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2018-2021 Alfredo A. Correa
+// Copyright 2018-2022 Alfredo A. Correa
 
 #ifndef BOOST_MULTI_ARRAY_REF_HPP
 #define BOOST_MULTI_ARRAY_REF_HPP
@@ -366,22 +366,24 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 	layout_type l_;
 	difference_type n_ = 0;
 	extensions_t<layout_type::dimensionality> xs_;
-//	typename extensions_t<layout_type::dimensionality>::indices_type ns_ = {};
-	std::array<multi::index, layout_type::dimensionality> ns_ = {};
+	typename extensions_t<layout_type::dimensionality>::indices_type ns_ = {};
+//	std::array<multi::index, layout_type::dimensionality> ns_ = {};
+//	multi::defail::repeat<layout_type::dimensionality,
+//	typename layout_type::indices ns_ = {};
 
-	template<class Tuple>
-	static constexpr auto to_array(Tuple const& t) {
-		return std::apply(
-			[](auto const&... e){return std::array<multi::index, sizeof...(e)>{{e...}};},
-			t
-		);
-	}
+//	template<class Tuple>
+//	static constexpr auto to_array(Tuple const& t) {
+//		return std::apply(
+//			[](auto const&... e){return std::array<multi::index, sizeof...(e)>{{e...}};},
+//			t
+//		);
+//	}
 
 	template<class, class> friend struct elements_iterator_t;
 	template<class, class> friend struct elements_range_t;
 
 	constexpr elements_iterator_t(pointer base, layout_type l, difference_type n)
-	: base_{base}, l_{l}, n_{n}, xs_{l_.extensions()}, ns_{to_array(xs_.from_linear(n))} {}
+	: base_{base}, l_{l}, n_{n}, xs_{l_.extensions()}, ns_{xs_.from_linear(n)} {}
 
  public:
 	template<class Other, decltype(multi::implicit_cast<pointer>(std::declval<Other>().base_))* = nullptr>
@@ -405,13 +407,13 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 
 	HD constexpr auto operator+=(difference_type const& d) -> elements_iterator_t& {
 		auto const nn = std::apply(xs_, ns_);
-		ns_ = to_array(xs_.from_linear(nn + d));
+		ns_ = xs_.from_linear(nn + d);
 		n_ += d;
 		return *this;
 	}
 	HD constexpr auto operator-=(difference_type const& d) -> elements_iterator_t& {
 		auto const nn = std::apply(xs_, ns_);
-		ns_ = to_array(xs_.from_linear(nn - d));
+		ns_ = xs_.from_linear(nn - d);
 		n_ -= d;
 		return *this;
 	}
@@ -431,7 +433,7 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 	HD constexpr auto operator*()  const -> reference {return base_  [std::apply(l_, ns_)];}
 	HD constexpr auto operator[](difference_type const& d) const -> reference {
 		auto const nn = std::apply(xs_, ns_);
-		return base_[std::apply(l_, to_array(xs_.from_linear(nn + d)))];
+		return base_[std::apply(l_, xs_.from_linear(nn + d))];
 	}  // explicit here is necessary for nvcc/thrust
 
 	HD constexpr auto operator==(elements_iterator_t const& other) const -> bool {
@@ -784,7 +786,8 @@ struct basic_array
 	constexpr auto diagonal()&& {return this->diagonal();}
 
 	constexpr auto diagonal()& -> basic_array<T, D-1, typename basic_array::element_ptr> {
-		auto L = std::min(std::get<0>(this->sizes()), std::get<1>(this->sizes()));
+		using boost::multi::detail::get;
+		auto L = std::min(get<0>(this->sizes()), get<1>(this->sizes()));
 		multi::layout_t<D-1> new_layout{(*this)({0, L}, {0, L}).layout().sub()};
 		new_layout.nelems() += (*this)({0, L}, {0, L}).layout().nelems();  // TODO(correaa) : don't use mutation
 		new_layout.stride() += (*this)({0, L}, {0, L}).layout().stride();  // TODO(correaa) : don't use mutation
@@ -2337,12 +2340,12 @@ template<
 >
 array_ptr(T(*)[N])->array_ptr<V, static_cast<multi::dimensionality_type>(D)>;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
 
-template<class Ptr> array_ref(Ptr, index_extensions<0>)->array_ref<typename std::iterator_traits<Ptr>::value_type, 0, Ptr>;
-template<class Ptr> array_ref(Ptr, index_extensions<1>)->array_ref<typename std::iterator_traits<Ptr>::value_type, 1, Ptr>;
-template<class Ptr> array_ref(Ptr, index_extensions<2>)->array_ref<typename std::iterator_traits<Ptr>::value_type, 2, Ptr>;
-template<class Ptr> array_ref(Ptr, index_extensions<3>)->array_ref<typename std::iterator_traits<Ptr>::value_type, 3, Ptr>;
-template<class Ptr> array_ref(Ptr, index_extensions<4>)->array_ref<typename std::iterator_traits<Ptr>::value_type, 4, Ptr>;
-template<class Ptr> array_ref(Ptr, index_extensions<5>)->array_ref<typename std::iterator_traits<Ptr>::value_type, 5, Ptr>;
+template<class Ptr> array_ref(Ptr, index_extensions<0>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 0, Ptr>;
+template<class Ptr> array_ref(Ptr, index_extensions<1>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 1, Ptr>;
+template<class Ptr> array_ref(Ptr, index_extensions<2>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 2, Ptr>;
+template<class Ptr> array_ref(Ptr, index_extensions<3>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 3, Ptr>;
+template<class Ptr> array_ref(Ptr, index_extensions<4>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 4, Ptr>;
+template<class Ptr> array_ref(Ptr, index_extensions<5>) -> array_ref<typename std::iterator_traits<Ptr>::value_type, 5, Ptr>;
 
 template<class It, class Tuple> array_ref(It, Tuple)->array_ref<typename std::iterator_traits<It>::value_type, std::tuple_size<Tuple>::value, It>;
 #endif

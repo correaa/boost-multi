@@ -26,16 +26,18 @@ BOOST_AUTO_TEST_CASE(array_cref) {
 
 	BOOST_REQUIRE( &A2D[3][4] == &B2D[3][4] );
 
-	multi::array_ref<complex, 2, complex const*> D2D(dc.data(), {10, 10});
-	multi::array_cref<complex, 2> F2D(d.data(), {10, 10});
+	multi::array_ref <complex, 2, complex const*> D2D(dc.data(), {10, 10});
+	multi::array_cref<complex, 2>                 F2D(d .data(), {10, 10});
+
+	BOOST_REQUIRE( D2D.layout() == F2D.layout() );
 
 	A2D[7][8] = 3.;
 	BOOST_REQUIRE(  F2D[7][8] == 3. );
 	BOOST_REQUIRE( &A2D[7][8] == &F2D[7][8] );
 
-#if defined(__cpp_deduction_guides) and not defined(__NVCC__)
-	multi::array_ref G2D(dc.data(), {10, 10});
-	BOOST_REQUIRE( G2D == D2D );
-#endif
+//#if defined(__cpp_deduction_guides) and not defined(__NVCC__)
+//	multi::array_ref G2D(dc.data(), {10, 10});  // TODO(correaa)
+//	BOOST_REQUIRE( G2D == D2D );
+//#endif
 }
 

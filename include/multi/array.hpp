@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2018-2021 Alfredo A. Correa
+// Copyright 2018-2022 Alfredo A. Correa
 
 #ifndef BOOST_MULTI_ARRAY_HPP_
 #define BOOST_MULTI_ARRAY_HPP_
@@ -14,9 +14,9 @@
 #include "./memory/allocator.hpp"
 
 #include<algorithm>  // for copy
-#include<memory>  // for allocator_traits
-
-#include<utility>  // for move
+#include<memory>     // for allocator_traits
+#include<tuple>      // needed by a deprecated function
+#include<utility>    // for move
 
 namespace boost::multi {
 
@@ -921,6 +921,11 @@ struct array : static_array<T, D, Alloc> {
 
 	auto operator=(std::initializer_list<typename array::value_type> il) -> array& {
 		assign(il.begin(), il.end()); return *this;
+	}
+
+	template<class... TTs>
+	[[deprecated]] auto reextent(std::tuple<TTs...> const& other) -> array& {
+		return reextent(std::apply([](auto const&... es) {return typename array::extensions_type(es...);}, other));  // paren is important here ext_type(...) for allow narrowing casts
 	}
 
 	auto reextent(typename array::extensions_type const& x) -> array& {
