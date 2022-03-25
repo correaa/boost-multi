@@ -799,7 +799,8 @@ struct layout_t
 
 	[[deprecated("use get<d>(m.extensions()")]] constexpr auto extension(dimensionality_type d) const {return std::apply([](auto... e) {return std::array<index_extension, static_cast<std::size_t>(D)>{e...};}, extensions().base()).at(static_cast<std::size_t>(d));}
 	[[deprecated("use get<d>(m.strides())  ")]] constexpr auto stride   (dimensionality_type d) const {return std::apply([](auto... e) {return std::array<stride_type    , static_cast<std::size_t>(D)>{e...};}, strides   ()       ).at(static_cast<std::size_t>(d));}
-	[[deprecated("use get<d>(m.sizes())    ")]] constexpr auto size     (dimensionality_type d) const {return std::apply([](auto... e) {return std::array<size_type      , static_cast<std::size_t>(D)>{e...};}, sizes     ()       ).at(static_cast<std::size_t>(d));}
+//  [[deprecated("use get<d>(m.sizes())    ")]]
+	constexpr auto size     (dimensionality_type d) const {return std::apply([](auto... e) {return std::array<size_type      , static_cast<std::size_t>(D)>{e...};}, sizes     ()       ).at(static_cast<std::size_t>(d));}
 
 	template<typename Size>
 	constexpr auto partition(Size const& s) -> layout_t& {
