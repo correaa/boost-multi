@@ -31,8 +31,8 @@ template<class T0, class... Ts> class tuple<T0, Ts...> {  // NOLINT(cppcoreguide
 	tuple() = default;
 	tuple(tuple const&) = default;
 
-	// cppcheck-suppress noExplicitConstructor ; for compatibility with QMC to be deprecated
 	template<class TT0, class... TTs>
+	// cppcheck-suppress noExplicitConstructor ; for compatibility with QMC to be deprecated
 	[[deprecated]] tuple(std::tuple<TT0, TTs...> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: tuple{std::apply([](auto const&... es) {return tuple(es...);}, other)} {}  // paren to allow narrowing conversions
 
