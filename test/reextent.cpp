@@ -53,16 +53,14 @@ BOOST_AUTO_TEST_CASE(array_reextent_1d) {
 	A.reextent( {23} );
 	BOOST_REQUIRE( size(A) == 23 );
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignore "-Wunknown-pragmas"
-#pragma warning (disable:1478)
+#pragma warning(push)                // NOLINT(clang-diagnostic-unknown-pragmas)
+#pragma warning (disable:1478 1786)  // NOLINT(clang-diagnostic-unknown-pragmas)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 	A.reextent( std::make_tuple(24) );
 	BOOST_REQUIRE( size(A) == 24 );
 #pragma GCC diagnostic pop
-#pragma warning (enable:1478)
-#pragma GCC diagnostic pop
+#pragma warning(pop)                 // NOLINT(clang-diagnostic-unknown-pragmas)
 
 }
 

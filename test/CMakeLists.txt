@@ -91,6 +91,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 				-Wmissing-include-dirs
 				-Wnon-virtual-dtor
 				-Wno-missing-declarations
+				-Wno-unknown-pragmas
 				-Wnon-virtual-dtor
 				-Wnull-dereference
 				-Wold-style-cast
@@ -123,6 +124,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 				-Wdouble-promotion
 				-Wformat=2
 				-Wmissing-include-dirs
+				-Wno-unknown-pragmas
 				-Wnon-virtual-dtor
 				-Wnull-dereference
 				-Wmove
