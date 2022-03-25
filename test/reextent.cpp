@@ -66,8 +66,7 @@ BOOST_AUTO_TEST_CASE(array_reextent_1d) {
 #pragma warning(pop)                 // NOLINT(clang-diagnostic-unknown-pragmas)
 }
 
-inline void fff(boost::multi::detail::tuple<long> /*t*/) {  // NOLINT(google-runtime-int) for testing
-};
+inline void fff(boost::multi::detail::tuple<long> /*t*/) {}  // NOLINT(google-runtime-int) for testing
 
 BOOST_AUTO_TEST_CASE(tuple_implicit_test) {
 #pragma warning(push)                // NOLINT(clang-diagnostic-unknown-pragmas)
