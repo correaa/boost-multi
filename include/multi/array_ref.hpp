@@ -542,8 +542,8 @@ auto ref(It begin, It end)
 
 template<typename T, dimensionality_type D, typename ElementPtr, class Layout>
 struct basic_array
-: multi::partially_ordered2<basic_array<T, D, ElementPtr, Layout>, void>
-, array_types<T, D, ElementPtr, Layout> {
+//  : multi::partially_ordered2<basic_array<T, D, ElementPtr, Layout>, void>
+: array_types<T, D, ElementPtr, Layout> {
 	using types = array_types<T, D, ElementPtr, Layout>;
 
 	friend struct basic_array<typename types::element, Layout::rank_v + 1, typename types::element_ptr >;
@@ -1207,8 +1207,14 @@ struct basic_array
 	}
 
  public:
-	template<class O> constexpr auto operator<(O&& o)&& -> bool {return lexicographical_compare(std::move(*this), std::forward<O>(o));}
-	template<class O> constexpr auto operator>(O&& o)&& -> bool {return lexicographical_compare(std::forward<O>(o), std::move(*this));}
+//	template<class O> constexpr auto operator<(O&& o)&& -> bool {return lexicographical_compare(std::move(*this), std::forward<O>(o));}
+//  template<class O> constexpr auto operator>(O&& o)&& -> bool {return lexicographical_compare(std::forward<O>(o), std::move(*this));}
+
+	constexpr auto operator< (basic_array const& o) const& -> bool {return lexicographical_compare(*this, o);}
+	constexpr auto operator<=(basic_array const& o) const& -> bool {return *this == o or lexicographical_compare(*this, o);}
+
+	constexpr auto operator> (basic_array const& o) const& -> bool {return o < *this;}
+
 
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
 	constexpr auto static_array_cast() const -> basic_array<T2, D, P2> {
@@ -1503,8 +1509,8 @@ struct basic_array<T, 0, ElementPtr, Layout>
 
 template<typename T, typename ElementPtr, class Layout>
 struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritance) : to define operators via CRTP
-: multi::partially_ordered2<basic_array<T, 1, ElementPtr, Layout>, void>
-, multi::random_iterable<basic_array<T, 1, ElementPtr, Layout> >
+// : multi::partially_ordered2<basic_array<T, 1, ElementPtr, Layout>, void>
+: multi::random_iterable<basic_array<T, 1, ElementPtr, Layout> >
 , array_types<T, 1, ElementPtr, Layout> {
 	~basic_array() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
@@ -1864,7 +1870,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	using reverse_iterator = std::reverse_iterator<iterator>;
 
  private:
-	explicit constexpr basic_array(iterator begin, iterator end)
+	constexpr explicit basic_array(iterator begin, iterator end)
 	: basic_array{
 		layout_type{ {}/*begin->layout()*/, begin.stride(), 0, begin.stride()*(end - begin)},
 		begin.base()
@@ -1874,8 +1880,8 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	}
 	friend auto ref<iterator>(iterator begin, iterator end) -> multi::basic_array<typename iterator::element, iterator::rank_v, typename iterator::element_ptr>;
 
-	constexpr       auto begin_aux() const{return iterator{this->base_                  , this->stride()};}
-	constexpr       auto end_aux  () const{return iterator{this->base_ + types::nelems(), this->stride()};}
+	constexpr auto begin_aux() const {return iterator{this->base_                  , this->stride()};}
+	constexpr auto end_aux  () const {return iterator{this->base_ + types::nelems(), this->stride()};}
 
  public:
 	constexpr auto begin() const& -> const_iterator {return begin_aux();}
@@ -1886,13 +1892,13 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	constexpr auto end  ()      & ->       iterator {return end_aux();}
 	constexpr auto end  ()     && ->       iterator {return end_aux();}
 
-	friend auto begin(basic_array const& s) -> const_iterator {return           s .begin();}
-	friend auto begin(basic_array      & s) ->       iterator {return           s .begin();}
-	friend auto begin(basic_array     && s) ->       iterator {return std::move(s).begin();}
+	friend constexpr auto begin(basic_array const& s) -> const_iterator {return           s .begin();}
+	friend constexpr auto begin(basic_array      & s) ->       iterator {return           s .begin();}
+	friend constexpr auto begin(basic_array     && s) ->       iterator {return std::move(s).begin();}
 
-	friend auto end  (basic_array const& s) -> const_iterator {return           s .end()  ;}
-	friend auto end  (basic_array      & s) ->       iterator {return           s .end()  ;}
-	friend auto end  (basic_array     && s) ->       iterator {return std::move(s).end()  ;}
+	friend constexpr auto end  (basic_array const& s) -> const_iterator {return           s .end()  ;}
+	friend constexpr auto end  (basic_array      & s) ->       iterator {return           s .end()  ;}
+	friend constexpr auto end  (basic_array     && s) ->       iterator {return std::move(s).end()  ;}
 
 	constexpr auto cbegin() const -> const_iterator {return begin();}
 	constexpr auto cend  () const -> const_iterator {return end()  ;}
@@ -1907,7 +1913,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 			std::declval<iterator>()
 		)
 	)>
-//  constexpr
+	constexpr
 	auto operator=(basic_array<TT, 1, As...> const& other)&& -> basic_array& {
 		assert( this->extensions() == other.extensions() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	//  MULTI_MARK_SCOPE(std::string{"multi::operator= D=1 from "}+typeid(TT).name()+" to "+typeid(T).name() ); // this is not the place for benchmark, benchmark implementations
@@ -1917,6 +1923,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	}
 
 	template<class TT, class... As>
+	constexpr
 	auto operator=(basic_array<TT, 1, As...> const& other)& -> basic_array& {
 		assert(this->extensions() == other.extensions());
 		if(this->is_empty()) {return *this;}
@@ -1928,11 +1935,6 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	->decltype(adl_copy_n(f, this->size(), std::declval<iterator>()), void()) {
 		return adl_copy_n(f, this->size(), std::move(*this).begin()), void(); }
 
-//  template<typename Array, std::enable_if_t<not std::is_base_of<basic_array, Array>{}, int> =0>
-//  constexpr auto operator==(Array const& o) const -> bool {
-//  	return (this->extension()==extension(o)) and adl_equal(this->begin(), this->end(), adl_begin(o));
-//  }
-
 	template<class TT, class... As>
 	constexpr auto operator==(basic_array<TT, 1, As...> const& o) const -> bool {
 		return (this->extension() == o.extension()) and adl_equal(this->begin(), this->end(), o.begin());
@@ -1941,7 +1943,8 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 		return (this->extension() == o.extension()) and adl_equal(this->begin(), this->end(), o.begin());
 	}
 
-	constexpr auto operator<(basic_array const& o) const& -> bool {return lexicographical_compare(*this, o);}
+	constexpr auto operator< (basic_array const& o) const& -> bool {return lexicographical_compare(*this, o);}
+	constexpr auto operator<=(basic_array const& o) const& -> bool {return lexicographical_compare(*this, o) or operator==(o);}
 
 	template<class Array> constexpr void swap(Array&& o)&& {
 		assert(this->extension() == o.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
@@ -1963,8 +1966,8 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	}
 
  public:
-	template<class O> constexpr auto operator<(O const& o) const -> bool {return lexicographical_compare(*this, o);}
-	template<class O> constexpr auto operator>(O const& o) const -> bool {return lexicographical_compare(o, *this);}
+//	template<class O> constexpr auto operator<(O const& o) const -> bool {return lexicographical_compare(*this, o);}
+//	template<class O> constexpr auto operator>(O const& o) const -> bool {return lexicographical_compare(o, *this);}
 
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
 	constexpr auto static_array_cast() const -> basic_array<T2, 1, P2> {  // name taken from std::static_pointer_cast
