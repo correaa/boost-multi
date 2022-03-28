@@ -1970,8 +1970,11 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	}
 
  public:
-	template<class O> constexpr auto operator<(O const& o) const -> bool {return lexicographical_compare(*this, o);}
-	template<class O> constexpr auto operator>(O const& o) const -> bool {return lexicographical_compare(o, *this);}
+//	template<class O> constexpr auto operator<(O const& o) const -> bool {return lexicographical_compare(*this, o);}
+//	template<class O> constexpr auto operator>(O const& o) const -> bool {return lexicographical_compare(o, *this);}
+
+	constexpr auto operator<(basic_array const& o) const -> bool {return lexicographical_compare(*this, o);}
+	constexpr auto operator>(basic_array const& o) const -> bool {return lexicographical_compare(o, *this);}
 
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
 	constexpr auto static_array_cast() const -> basic_array<T2, 1, P2> {  // name taken from std::static_pointer_cast
