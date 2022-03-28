@@ -542,8 +542,8 @@ auto ref(It begin, It end)
 
 template<typename T, dimensionality_type D, typename ElementPtr, class Layout>
 struct basic_array
-: multi::partially_ordered2<basic_array<T, D, ElementPtr, Layout>, void>
-, array_types<T, D, ElementPtr, Layout> {
+//  : multi::partially_ordered2<basic_array<T, D, ElementPtr, Layout>, void>
+: array_types<T, D, ElementPtr, Layout> {
 	using types = array_types<T, D, ElementPtr, Layout>;
 
 	friend struct basic_array<typename types::element, Layout::rank_v + 1, typename types::element_ptr >;
@@ -1207,8 +1207,14 @@ struct basic_array
 	}
 
  public:
-	template<class O> constexpr auto operator<(O&& o)&& -> bool {return lexicographical_compare(std::move(*this), std::forward<O>(o));}
-	template<class O> constexpr auto operator>(O&& o)&& -> bool {return lexicographical_compare(std::forward<O>(o), std::move(*this));}
+//	template<class O> constexpr auto operator<(O&& o)&& -> bool {return lexicographical_compare(std::move(*this), std::forward<O>(o));}
+//  template<class O> constexpr auto operator>(O&& o)&& -> bool {return lexicographical_compare(std::forward<O>(o), std::move(*this));}
+
+	constexpr auto operator< (basic_array const& o) const& -> bool {return lexicographical_compare(*this, o);}
+	constexpr auto operator<=(basic_array const& o) const& -> bool {return *this == o or lexicographical_compare(*this, o);}
+
+	constexpr auto operator> (basic_array const& o) const& -> bool {return o < *this;}
+
 
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
 	constexpr auto static_array_cast() const -> basic_array<T2, D, P2> {
@@ -1503,8 +1509,8 @@ struct basic_array<T, 0, ElementPtr, Layout>
 
 template<typename T, typename ElementPtr, class Layout>
 struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritance) : to define operators via CRTP
-: multi::partially_ordered2<basic_array<T, 1, ElementPtr, Layout>, void>
-, multi::random_iterable<basic_array<T, 1, ElementPtr, Layout> >
+// : multi::partially_ordered2<basic_array<T, 1, ElementPtr, Layout>, void>
+: multi::random_iterable<basic_array<T, 1, ElementPtr, Layout> >
 , array_types<T, 1, ElementPtr, Layout> {
 	~basic_array() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
@@ -1941,7 +1947,8 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 		return (this->extension() == o.extension()) and adl_equal(this->begin(), this->end(), o.begin());
 	}
 
-	constexpr auto operator<(basic_array const& o) const& -> bool {return lexicographical_compare(*this, o);}
+	constexpr auto operator< (basic_array const& o) const& -> bool {return lexicographical_compare(*this, o);}
+	constexpr auto operator<=(basic_array const& o) const& -> bool {return lexicographical_compare(*this, o) or operator==(o);}
 
 	template<class Array> constexpr void swap(Array&& o)&& {
 		assert(this->extension() == o.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function

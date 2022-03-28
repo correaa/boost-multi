@@ -46,24 +46,24 @@ template<class Self> struct equality_comparable : equality_comparable2<Self, Sel
 //	template<class Other> friend constexpr auto operator==(Other const& o, equality_comparable2 const& s) {return     s.self() == o ;}
 //};
 
-template<class T, class V> struct partially_ordered2;
+//template<class T, class V> struct partially_ordered2;
 
-template <class T>
-struct partially_ordered2<T, void>{
-	template<class U, typename = std::enable_if_t<not std::is_base_of<T, U>{}>>
-	friend constexpr auto operator>(const U& x, const T& y) -> bool {return y < x;}
-	template<class U, typename = std::enable_if_t<not std::is_base_of<T, U>{}>>
-	friend constexpr auto operator<(const U& x, const T& y) -> bool {return y > x;}
+//template <class T>
+//struct partially_ordered2<T, void>{
+//	template<class U, typename = std::enable_if_t<not std::is_base_of<T, U>{}>>
+//	friend constexpr auto operator>(const U& x, const T& y) -> bool {return y < x;}
+//	template<class U, typename = std::enable_if_t<not std::is_base_of<T, U>{}>>
+//	friend constexpr auto operator<(const U& x, const T& y) -> bool {return y > x;}
 
-	template<class U>
-	friend constexpr auto operator<=(T&& x, U&& y) -> bool{return (std::forward<T>(x) < std::forward<T>(y)) or (std::forward<T>(x) == std::forward<T>(y));}
-	template<class U, typename = std::enable_if_t<not std::is_base_of<T, U>{}>>
-	friend constexpr auto operator<=(const U& x, const T& y) -> bool {return (y > x) or (y == x);}
-	template<class U>
-	friend constexpr auto operator>=(const T& x, const U& y) -> bool {return (x > y) or (x == y);}
-	template<class U, typename = std ::enable_if_t<not std::is_base_of<T, U>{}>>
-	friend constexpr auto operator>=(const U& x, const T& y) -> bool {return (y < x) or (y == x);}
-};
+//	template<class U>
+//	friend constexpr auto operator<=(T&& x, U&& y) -> bool{return (std::forward<T>(x) < std::forward<T>(y)) or (std::forward<T>(x) == std::forward<T>(y));}
+//	template<class U, typename = std::enable_if_t<not std::is_base_of<T, U>{}>>
+//	friend constexpr auto operator<=(const U& x, const T& y) -> bool {return (y > x) or (y == x);}
+//	template<class U>
+//	friend constexpr auto operator>=(const T& x, const U& y) -> bool {return (x > y) or (x == y);}
+//	template<class U, typename = std ::enable_if_t<not std::is_base_of<T, U>{}>>
+//	friend constexpr auto operator>=(const U& x, const T& y) -> bool {return (y < x) or (y == x);}
+//};
 
 template<class T, class V> struct totally_ordered2;
 
