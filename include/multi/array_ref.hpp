@@ -1913,7 +1913,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 			std::declval<iterator>()
 		)
 	)>
-//  constexpr
+	constexpr
 	auto operator=(basic_array<TT, 1, As...> const& other)&& -> basic_array& {
 		assert( this->extensions() == other.extensions() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	//  MULTI_MARK_SCOPE(std::string{"multi::operator= D=1 from "}+typeid(TT).name()+" to "+typeid(T).name() ); // this is not the place for benchmark, benchmark implementations
@@ -1923,6 +1923,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	}
 
 	template<class TT, class... As>
+	constexpr
 	auto operator=(basic_array<TT, 1, As...> const& other)& -> basic_array& {
 		assert(this->extensions() == other.extensions());
 		if(this->is_empty()) {return *this;}
