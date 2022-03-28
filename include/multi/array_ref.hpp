@@ -1870,7 +1870,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	using reverse_iterator = std::reverse_iterator<iterator>;
 
  private:
-	explicit constexpr basic_array(iterator begin, iterator end)
+	constexpr explicit basic_array(iterator begin, iterator end)
 	: basic_array{
 		layout_type{ {}/*begin->layout()*/, begin.stride(), 0, begin.stride()*(end - begin)},
 		begin.base()
@@ -1880,8 +1880,8 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	}
 	friend auto ref<iterator>(iterator begin, iterator end) -> multi::basic_array<typename iterator::element, iterator::rank_v, typename iterator::element_ptr>;
 
-	constexpr       auto begin_aux() const{return iterator{this->base_                  , this->stride()};}
-	constexpr       auto end_aux  () const{return iterator{this->base_ + types::nelems(), this->stride()};}
+	constexpr auto begin_aux() const {return iterator{this->base_                  , this->stride()};}
+	constexpr auto end_aux  () const {return iterator{this->base_ + types::nelems(), this->stride()};}
 
  public:
 	constexpr auto begin() const& -> const_iterator {return begin_aux();}
@@ -1892,13 +1892,13 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	constexpr auto end  ()      & ->       iterator {return end_aux();}
 	constexpr auto end  ()     && ->       iterator {return end_aux();}
 
-	friend auto begin(basic_array const& s) -> const_iterator {return           s .begin();}
-	friend auto begin(basic_array      & s) ->       iterator {return           s .begin();}
-	friend auto begin(basic_array     && s) ->       iterator {return std::move(s).begin();}
+	friend constexpr auto begin(basic_array const& s) -> const_iterator {return           s .begin();}
+	friend constexpr auto begin(basic_array      & s) ->       iterator {return           s .begin();}
+	friend constexpr auto begin(basic_array     && s) ->       iterator {return std::move(s).begin();}
 
-	friend auto end  (basic_array const& s) -> const_iterator {return           s .end()  ;}
-	friend auto end  (basic_array      & s) ->       iterator {return           s .end()  ;}
-	friend auto end  (basic_array     && s) ->       iterator {return std::move(s).end()  ;}
+	friend constexpr auto end  (basic_array const& s) -> const_iterator {return           s .end()  ;}
+	friend constexpr auto end  (basic_array      & s) ->       iterator {return           s .end()  ;}
+	friend constexpr auto end  (basic_array     && s) ->       iterator {return std::move(s).end()  ;}
 
 	constexpr auto cbegin() const -> const_iterator {return begin();}
 	constexpr auto cend  () const -> const_iterator {return end()  ;}
