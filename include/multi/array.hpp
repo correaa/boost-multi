@@ -56,7 +56,7 @@ struct array_allocator {
 	auto destroy_n(It first, size_type n) {return adl_alloc_destroy_n(this->alloc(), first, n);}
 
  public:
-	auto get_allocator() const& {return alloc_;}
+	constexpr auto get_allocator() const {return alloc_;}
 };
 
 template<class T, dimensionality_type D, class Alloc = std::allocator<T>>
@@ -325,7 +325,11 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	using       iterator = multi::array_iterator<T, D, typename static_array::element_ptr      >;
 	using const_iterator = multi::array_iterator<T, D, typename static_array::element_const_ptr>;
 
-	friend auto get_allocator(static_array const& self) -> typename static_array::allocator_type {return self.get_allocator();}
+	friend
+	#if not defined(__NVCC__) and not defined(__INTEL_COMPILER)
+	constexpr
+	#endif
+	auto get_allocator(static_array const& s) -> typename static_array::allocator_type {return s.get_allocator();}
 
 	       constexpr auto data_elements()            const& ->                        element_const_ptr {return this->base_;}
 	       constexpr auto data_elements()                 & -> typename static_array::element_ptr       {return this->base_;}
@@ -590,7 +594,11 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	}
 	using element_const_ptr = typename std::pointer_traits<typename static_array::element_ptr>::template rebind<typename static_array::element const>;
 
-	friend auto get_allocator(static_array const& self) -> allocator_type {return self.get_allocator();}
+	friend
+	#if not defined(__NVCC__) and not defined(__INTEL_COMPILER)
+	constexpr
+	#endif
+	auto get_allocator(static_array const& s) -> allocator_type {return s.get_allocator();}
 
 	       constexpr auto base()                 &    -> typename static_array::element_ptr       {return ref::base();}
 	       constexpr auto base()            const&    -> typename static_array::element_const_ptr {return ref::base();}
@@ -792,7 +800,11 @@ struct array : static_array<T, D, Alloc> {
 	array(array&& o, typename array::allocator_type const& a) noexcept : static_{std::move(o), a} {}
 	array(array&& o) noexcept : array{std::move(o), o.get_allocator()} {}
 
-	friend auto get_allocator(array const& self) -> typename array::allocator_type {return self.get_allocator();}
+	friend
+	#if not defined(__NVCC__) and not defined(__INTEL_COMPILER)
+	constexpr
+	#endif
+	auto get_allocator(array const& s) -> typename array::allocator_type {return s.get_allocator();}
 
  private:
 	template<class TrueType>
