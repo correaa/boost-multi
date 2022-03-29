@@ -1415,11 +1415,11 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 	#endif
 	auto base(array_iterator const& s) -> element_ptr {return s.base();}
 
-	       constexpr auto stride()              const&    -> stride_type {return   stride_;}
+	       constexpr auto stride()              const     -> stride_type {return   stride_;}
 	friend constexpr auto stride(array_iterator const& s) -> stride_type {return s.stride_;}
 
-	constexpr auto operator++() -> array_iterator& {data_+=stride_; return *this;}
-	constexpr auto operator--() -> array_iterator& {data_-=stride_; return *this;}
+	constexpr auto operator++() -> array_iterator& {data_ += stride_; return *this;}
+	constexpr auto operator--() -> array_iterator& {data_ -= stride_; return *this;}
 
 	friend constexpr auto operator==(array_iterator const& a, array_iterator const& b) -> bool {return a.data_ == b.data_;}
 //	friend constexpr auto operator!=(array_iterator const& a, array_iterator const& b) -> bool {return not(a.data_ == b.data_);}
@@ -1457,19 +1457,19 @@ struct basic_array<T, 0, ElementPtr, Layout>
 		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	}
 
-	constexpr auto operator==(element const& e) const& -> bool {
+	constexpr auto operator==(element const& e) const -> bool {
 		assert(this->num_elements()==1);
 		return adl_equal(&e, std::next(&e, this->num_elements()), this->base());
 	}
-	constexpr auto operator!=(element const& e) const& {return not operator==(e);}
+	constexpr auto operator!=(element const& e) const {return not operator==(e);}
 
 	template<class TT, class=decltype(std::declval<typename basic_array::element>()==std::declval<TT>())>
-	constexpr auto operator==(TT const& e) const&
+	constexpr auto operator==(TT const& e) const
 	->decltype(adl_equal(&e, std::next(&e, this->num_elements()), this->base() )) {assert(this->num_elements()==1);
 		return adl_equal(&e, std::next(&e, this->num_elements()), this->base() ); }
 
 	template<class TT>
-	constexpr auto operator!=(TT const& e) const& {return not operator==(e);}
+	constexpr auto operator!=(TT const& e) const {return not operator==(e);}
 
 	template<class Range0>
 	constexpr
@@ -1487,7 +1487,7 @@ struct basic_array<T, 0, ElementPtr, Layout>
 
 	using decay_type = typename types::element;
 
-	constexpr auto operator()() const& -> element_ref {return *(this->base_);}
+	constexpr auto operator()() const -> element_ref {return *(this->base_);}
 
 	constexpr operator element_ref ()                            && {return *(this->base_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 	constexpr operator element_ref ()                             & {return *(this->base_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
