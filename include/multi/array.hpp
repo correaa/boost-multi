@@ -675,11 +675,11 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	friend constexpr auto unrotated(static_array      & self) -> decltype(auto) {return self.unrotated();}
 	friend constexpr auto unrotated(static_array const& self) -> decltype(auto) {return self.unrotated();}
 
-	constexpr auto operator<<(dimensionality_type d)       -> decltype(auto) {return   rotated(d);}
-	constexpr auto operator>>(dimensionality_type d)       -> decltype(auto) {return unrotated(d);}
+//	constexpr auto operator<<(dimensionality_type d)       -> decltype(auto) {return   rotated(d);}
+//	constexpr auto operator>>(dimensionality_type d)       -> decltype(auto) {return unrotated(d);}
 
-	constexpr auto operator<<(dimensionality_type d) const -> decltype(auto) {return   rotated(d);}
-	constexpr auto operator>>(dimensionality_type d) const -> decltype(auto) {return unrotated(d);}
+//	constexpr auto operator<<(dimensionality_type d) const -> decltype(auto) {return   rotated(d);}
+//	constexpr auto operator>>(dimensionality_type d) const -> decltype(auto) {return unrotated(d);}
 
 	constexpr auto operator=(static_array const& other) -> static_array& {
 		assert( extensions(other) == static_array::extensions() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
