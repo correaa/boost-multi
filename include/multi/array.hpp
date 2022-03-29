@@ -56,7 +56,7 @@ struct array_allocator {
 	auto destroy_n(It first, size_type n) {return adl_alloc_destroy_n(this->alloc(), first, n);}
 
  public:
-	constexpr auto get_allocator() const {return alloc_;}
+	constexpr auto get_allocator() const -> allocator_type {return alloc_;}
 };
 
 template<class T, dimensionality_type D, class Alloc = std::allocator<T>>
@@ -349,11 +349,6 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	friend constexpr auto origin(static_array const& s) -> typename static_array::element_const_ptr {return    s.origin();}
 
  private:
-//  constexpr auto rotated_aux(dimensionality_type d) const& {
-//  	typename static_array::layout_t new_layout = *this;
-//  	new_layout.rotate(d);
-//  	return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
-//  }
 	constexpr auto rotated_aux() const {
 		typename static_array::layout_t new_layout = this->layout();
 		new_layout.rotate();
