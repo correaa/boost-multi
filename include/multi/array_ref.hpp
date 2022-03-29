@@ -1535,8 +1535,8 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
 	using decay_type = array<typename types::element, dimensionality_type{1}, typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type>;
 
-	       constexpr auto decay()           const&       -> decay_type {return decay_type{*this};}
-	friend constexpr auto decay(basic_array const& self) -> decay_type {return self.decay();}
+	       constexpr auto decay()           const     -> decay_type {return decay_type{*this};}
+	friend constexpr auto decay(basic_array const& s) -> decay_type {return s.decay();}
 
 	using basic_const_array = basic_array<
 		T, 1,
