@@ -556,14 +556,13 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 		uninitialized_copy_(other.data_elements());
 	}
 
-	static_array(static_array const& o) :                                  // 5b
-		array_alloc{o.get_allocator()},
-		ref{static_array::allocate(o.num_elements(), o.data_elements()), {} }
-	 {
+	static_array(static_array const& o)                                    // 5b
+	: array_alloc{o.get_allocator()}
+	, ref{static_array::allocate(o.num_elements(), o.data_elements()), {}} {
 		uninitialized_copy(o.data_elements());
 	}
 
-	static_array(static_array&& o) noexcept :   // it is private because it is a valid operation for derived classes //5b
+	static_array(static_array&& o) noexcept :  // it is private because it is a valid operation for derived classes //5b
 		array_alloc{o.get_allocator()},
 		ref{static_array::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(o.num_elements()), o.data_elements()), o.extensions()} {
 		uninitialized_move(o.data_elements());
@@ -615,34 +614,34 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 		return *(this->base_);
 	}
 
-	constexpr auto rotated(dimensionality_type d) const& {
-		typename static_array::layout_t new_layout = *this;
-		new_layout.rotate(d);
-		return basic_array<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
-	}
+//	constexpr auto rotated(dimensionality_type d) const& {
+//		typename static_array::layout_t new_layout = *this;
+//		new_layout.rotate(d);
+//		return basic_array<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
+//	}
 	constexpr auto rotated() const& {
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate();
 		return basic_array<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
 
-	constexpr auto rotated(dimensionality_type d)& {
-		typename static_array::layout_t new_layout = *this;
-		new_layout.rotate(d);
-		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
-	}
-	constexpr auto rotated()& {
+//	constexpr auto rotated(dimensionality_type d)& {
+//		typename static_array::layout_t new_layout = *this;
+//		new_layout.rotate(d);
+//		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
+//	}
+	constexpr auto rotated() & {
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate();
 		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
 	}
 
-	constexpr auto rotated(dimensionality_type d)&& {
-		typename static_array::layout_t new_layout = *this;
-		new_layout.rotate(d);
-		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
-	}
-	constexpr auto rotated()&& {
+//	constexpr auto rotated(dimensionality_type d) && {
+//		typename static_array::layout_t new_layout = *this;
+//		new_layout.rotate(d);
+//		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
+//	}
+	constexpr auto rotated() && {
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate();
 		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
