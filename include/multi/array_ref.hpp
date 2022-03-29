@@ -1409,11 +1409,11 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 
 	constexpr auto base()              const& -> element_ptr {return data_;}
 
-	friend  // TODO(correaa) : defined FRIEND_CONSTEXPR ?
-#if not((defined(__INTEL_COMPILER)) or defined(__NVCC__))
-//	constexpr  // this generates a problem with intel compiler 19 "a constexpr function cannot have a nonliteral return type"
-#endif
-	constexpr auto base(array_iterator const& s) -> element_ptr {return s.base();}
+	friend  // TODO(correaa) : defined FRIEND_CONSTEXPR or make "conditional" constexpr?
+	#if not defined(__INTEL_COMPILER) and not defined(__NVCOMPILER) and not defined(__NVCC__)
+	constexpr  // this generates a problem with intel compiler 19 and v2021 "a constexpr function cannot have a nonliteral return type"
+	#endif
+	auto base(array_iterator const& s) -> element_ptr {return s.base();}
 
 	       constexpr auto stride()              const&    -> stride_type {return   stride_;}
 	friend constexpr auto stride(array_iterator const& s) -> stride_type {return s.stride_;}
