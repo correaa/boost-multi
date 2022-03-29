@@ -604,33 +604,33 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 		return *(this->base_);
 	}
 
-//	constexpr auto rotated(dimensionality_type d) const& {
-//		typename static_array::layout_t new_layout = *this;
-//		new_layout.rotate(d);
-//		return basic_array<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
-//	}
+//  constexpr auto rotated(dimensionality_type d) const& {
+//  	typename static_array::layout_t new_layout = *this;
+//  	new_layout.rotate(d);
+//  	return basic_array<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
+//  }
 	constexpr auto rotated() const& {
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate();
 		return basic_array<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
 
-//	constexpr auto rotated(dimensionality_type d)& {
-//		typename static_array::layout_t new_layout = *this;
-//		new_layout.rotate(d);
-//		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
-//	}
+//  constexpr auto rotated(dimensionality_type d)& {
+//  	typename static_array::layout_t new_layout = *this;
+//  	new_layout.rotate(d);
+//  	return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
+//  }
 	constexpr auto rotated() & {
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate();
 		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
 	}
 
-//	constexpr auto rotated(dimensionality_type d) && {
-//		typename static_array::layout_t new_layout = *this;
-//		new_layout.rotate(d);
-//		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
-//	}
+//  constexpr auto rotated(dimensionality_type d) && {
+//  	typename static_array::layout_t new_layout = *this;
+//  	new_layout.rotate(d);
+//  	return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
+//  }
 	constexpr auto rotated() && {
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate();
@@ -665,11 +665,11 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	friend constexpr auto unrotated(static_array      & self) -> decltype(auto) {return self.unrotated();}
 	friend constexpr auto unrotated(static_array const& self) -> decltype(auto) {return self.unrotated();}
 
-//	constexpr auto operator<<(dimensionality_type d)       -> decltype(auto) {return   rotated(d);}
-//	constexpr auto operator>>(dimensionality_type d)       -> decltype(auto) {return unrotated(d);}
+//  constexpr auto operator<<(dimensionality_type d)       -> decltype(auto) {return   rotated(d);}
+//  constexpr auto operator>>(dimensionality_type d)       -> decltype(auto) {return unrotated(d);}
 
-//	constexpr auto operator<<(dimensionality_type d) const -> decltype(auto) {return   rotated(d);}
-//	constexpr auto operator>>(dimensionality_type d) const -> decltype(auto) {return unrotated(d);}
+//  constexpr auto operator<<(dimensionality_type d) const -> decltype(auto) {return   rotated(d);}
+//  constexpr auto operator>>(dimensionality_type d) const -> decltype(auto) {return unrotated(d);}
 
 	constexpr auto operator=(static_array const& other) -> static_array& {
 		assert( extensions(other) == static_array::extensions() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
