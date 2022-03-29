@@ -1528,7 +1528,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
 	constexpr auto get_allocator() const -> default_allocator_type {return default_allocator_of(basic_array::base());}
 	friend
-	#if not defined(__NVCC__) and not defined(__INTEL_COMPILER)
+	#if not defined(__NVCC__) and not defined(__NVCOMPILER) and not defined(__INTEL_COMPILER)
 	constexpr
 	#endif
 	auto get_allocator(basic_array const& self) -> default_allocator_type {return self.get_allocator();}
