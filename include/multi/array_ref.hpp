@@ -604,7 +604,7 @@ struct basic_array
 	}
 
 	friend
-	#if not defined(__NVCC__) and not defined(__INTEL_COMPILER)
+	#if not defined(__NVCC__) and not defined(__NVCOMPILER) and not defined(__INTEL_COMPILER)
 	constexpr
 	#endif
 	auto get_allocator(basic_array const& s) -> default_allocator_type {return s.get_allocator();}
