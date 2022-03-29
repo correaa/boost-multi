@@ -1571,16 +1571,18 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
 	friend constexpr auto static_array_cast(basic_array<TT, DD, PP> const&) -> decltype(auto);
 
-	friend auto operator+(basic_array const& self) -> decay_type {return self.decay();}
-
-	template<class T2> friend constexpr auto reinterpret_array_cast(basic_array&& a) {
+	template<class T2>
+	friend constexpr auto reinterpret_array_cast(basic_array&& a) {
 		return std::move(a).template reinterpret_array_cast<T2, typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>();
 	}
-	template<class T2> friend constexpr auto reinterpret_array_cast(basic_array const& a) {
+	template<class T2>
+	friend constexpr auto reinterpret_array_cast(basic_array const& a) {
 		return a.template reinterpret_array_cast<T2, typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>();
 	}
 
  public:
+	constexpr auto operator+() const -> decay_type {return decay();}
+
 	basic_array(basic_array&&) noexcept = default;  // in C++ 14 this is necessary to return array references from functions
 // in c++17 things changed and non-moveable non-copyable types can be returned from functions and captured by auto
 
@@ -1946,11 +1948,11 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	constexpr auto operator< (basic_array const& o) const& -> bool {return lexicographical_compare(*this, o);}
 	constexpr auto operator<=(basic_array const& o) const& -> bool {return lexicographical_compare(*this, o) or operator==(o);}
 
-	template<class Array> constexpr void swap(Array&& o)&& {
+	template<class Array> constexpr void swap(Array&& o) && {
 		assert(this->extension() == o.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
 	}
-	template<class A> constexpr void swap(A&& o)& {return swap(std::forward<A>(o));}
+	template<class A> constexpr void swap(A&& o) & {return swap(std::forward<A>(o));}
 
 	friend constexpr void swap(basic_array&& a, basic_array&& b) {std::move(a).swap(std::move(b));}
 
@@ -1959,7 +1961,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
  private:
 	template<class A1, class A2>
-	static constexpr auto lexicographical_compare(A1 const& a1, A2 const& a2) {
+	static constexpr auto lexicographical_compare(A1 const& a1, A2 const& a2) -> bool {
 		if(extension(a1).first() > extension(a2).first()) {return true ;}
 		if(extension(a1).first() < extension(a2).first()) {return false;}
 		return adl_lexicographical_compare(adl_begin(a1), adl_end(a1), adl_begin(a2), adl_end(a2));
