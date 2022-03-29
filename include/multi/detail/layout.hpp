@@ -23,37 +23,6 @@ namespace boost::multi {
 
 namespace detail {
 
-//template<class To, class From, size_t... I>
-//constexpr auto to_tuple_impl(std::initializer_list<From> il, std::index_sequence<I...>/*012*/) {
-//	(void)il;
-//	return std::make_tuple(To{il.begin()[I]}...);
-//}
-
-//template<class To, class From, size_t... I>
-//constexpr auto to_tuple_impl(std::array<From, sizeof...(I)> arr, std::index_sequence<I...>/*012*/) {
-//	return std::make_tuple(To{std::get<I>(arr)}...);
-//}
-
-//template<class To, std::size_t N, class From>
-//constexpr auto to_tuple(std::array<From, N> arr) {
-//	return to_tuple_impl<To, From>(arr, std::make_index_sequence<N>());
-//}
-
-//template <class TT, class Tuple, std::size_t... I>
-//constexpr auto to_array_impl(
-//	Tuple&& t, std::index_sequence<I...> /*012*/
-//) -> std::array<TT, std::tuple_size_v<std::decay_t<Tuple>>> {
-//	return {static_cast<TT>(std::get<I>(std::forward<Tuple>(t)))...};
-//}
-
-//template<class T = void, class Tuple, class TT = std::conditional_t<std::is_same<T, void>{}, std::decay_t<decltype(std::get<0>(std::decay_t<Tuple>{}))>, T> >
-//constexpr auto to_array(Tuple&& t) -> std::array<TT, std::tuple_size_v<std::decay_t<Tuple>>> {
-//	return to_array_impl<TT>(
-//		std::forward<Tuple>(t),
-//		std::make_index_sequence<std::tuple_size_v<std::remove_reference_t<Tuple>>>{}
-//	);
-//}
-
 template <class Tuple, std::size_t... Ns>
 constexpr auto tuple_tail_impl(Tuple&& t, std::index_sequence<Ns...> /*012*/) {
 	(void)t;  // workaround bug warning in nvcc
@@ -459,6 +428,9 @@ struct layout_t<0, SSize>
 	friend constexpr auto operator==(layout_t const& s, layout_t const& o) {
 		return s.sub_ == o.sub_ and s.stride_ == o.stride_ and s.offset_ == o.offset_ and s.nelems_ == o.nelems_;
 	}
+	constexpr auto operator< (layout_t const& o) const -> bool {
+		return std::tie(offset_, nelems_) < std::tie(o.offset_, o.nelems_);
+	}
 
 	constexpr auto   rotate() -> layout_t& {return *this;}
 	constexpr auto unrotate() -> layout_t& {return *this;}
@@ -731,6 +703,9 @@ struct layout_t
 //  friend constexpr auto operator!=(layout_t const& s, layout_t const& o) {return not(s == o);}
 	friend constexpr auto operator==(layout_t const& s, layout_t const& o) -> bool {
 		return s.sub_ == o.sub_ and s.stride_ == o.stride_ and s.offset_ == o.offset_ and s.nelems_ == o.nelems_;
+	}
+	constexpr auto operator< (layout_t const& o) const -> bool {
+		return std::tie(sub_, stride_, offset_, nelems_) < std::tie(o.sub_, o.stride_, o.offset_, o.nelems_);
 	}
 
 	constexpr auto reindex(index i) -> layout_t& {offset_ = i*stride_; return *this;}

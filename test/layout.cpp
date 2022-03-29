@@ -158,9 +158,9 @@ BOOST_AUTO_TEST_CASE(layout_2) {
 
 BOOST_AUTO_TEST_CASE(layout_3) {
 	multi::array<double, 2> B2(
-#if defined(__INTEL_COMPILER) or (defined(__GNUC__) and (__GNUC__ < 6))
-		multi::extensions_t<2>
-#endif
+//#if defined(__INTEL_COMPILER) or (defined(__GNUC__) and (__GNUC__ < 6))
+//		multi::extensions_t<2>
+//#endif
 		{50, 50}
 	);
 	BOOST_REQUIRE( size(B2) == 50 ); BOOST_REQUIRE( B2.size() == 50 );
@@ -170,6 +170,9 @@ BOOST_AUTO_TEST_CASE(layout_3) {
 	static_assert( decltype(B2(0, {10, 20}))::rank_v  == 1 , "!");
 
 	BOOST_REQUIRE( size(B2(0, {10, 20})) == 10 );
+
+	BOOST_REQUIRE(      B2.layout() == B2.layout()  );
+	BOOST_REQUIRE( not (B2.layout() <  B2.layout()) );
 }
 
 BOOST_AUTO_TEST_CASE(layout) {
