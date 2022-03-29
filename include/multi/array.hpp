@@ -801,7 +801,7 @@ struct array : static_array<T, D, Alloc> {
 	array(array&& o) noexcept : array{std::move(o), o.get_allocator()} {}
 
 	friend
-	#if not defined(__NVCC__) and not defined(__INTEL_COMPILER)
+	#if not defined(__NVCC__) and not defined(__NVCOMPILER) and not defined(__INTEL_COMPILER)
 	constexpr
 	#endif
 	auto get_allocator(array const& s) -> typename array::allocator_type {return s.get_allocator();}
