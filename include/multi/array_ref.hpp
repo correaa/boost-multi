@@ -1526,8 +1526,12 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
 	using default_allocator_type = typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type;
 
-	constexpr auto get_allocator()           const&       -> default_allocator_type {return default_allocator_of(basic_array::base());}
-	friend    auto get_allocator(basic_array const& self) -> default_allocator_type {return self.get_allocator();}
+	constexpr auto get_allocator() const -> default_allocator_type {return default_allocator_of(basic_array::base());}
+	friend
+	#if not defined(__NVCC__) and not defined(__INTEL_COMPILER)
+	constexpr
+	#endif
+	auto get_allocator(basic_array const& self) -> default_allocator_type {return self.get_allocator();}
 
 	using decay_type = array<typename types::element, dimensionality_type{1}, typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type>;
 
@@ -1828,38 +1832,38 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	constexpr auto   rotated()     && -> decltype(auto) {return operator()();}
 	constexpr auto   rotated() const& -> decltype(auto) {return operator()();}
 
-	constexpr auto   rotated(dimensionality_type d)      & -> decltype(auto) {
-		assert(d == 1); (void)d;
-		return operator()();
-	}
-	constexpr auto   rotated(dimensionality_type d)     && -> decltype(auto) {
-		assert(d == 1); (void)d;
-		return operator()();
-	}
-	constexpr auto   rotated(dimensionality_type d) const& -> decltype(auto) {
-		assert(d == 1); (void)d;
-		return operator()();
-	}
+//	constexpr auto   rotated(dimensionality_type d)      & -> decltype(auto) {
+//		assert(d == 1); (void)d;
+//		return operator()();
+//	}
+//	constexpr auto   rotated(dimensionality_type d)     && -> decltype(auto) {
+//		assert(d == 1); (void)d;
+//		return operator()();
+//	}
+//	constexpr auto   rotated(dimensionality_type d) const& -> decltype(auto) {
+//		assert(d == 1); (void)d;
+//		return operator()();
+//	}
 
 	HD constexpr auto unrotated() const& -> decltype(auto) {return operator()();}
 	HD constexpr auto unrotated()     && -> decltype(auto) {return operator()();}
 	HD constexpr auto unrotated()      & -> decltype(auto) {return operator()();}
 
-	constexpr auto unrotated(dimensionality_type d)      & -> decltype(auto) {
-		assert(d == 1); (void)d;
-		return operator()();
-	}
-	constexpr auto unrotated(dimensionality_type d)     && -> decltype(auto) {
-		assert(d == 1); (void)d;
-		return operator()();
-	}
-	constexpr auto unrotated(dimensionality_type d) const& -> decltype(auto) {
-		assert(d == 1); (void)d;
-		return operator()();
-	}
+//	constexpr auto unrotated(dimensionality_type d)      & -> decltype(auto) {
+//		assert(d == 1); (void)d;
+//		return operator()();
+//	}
+//	constexpr auto unrotated(dimensionality_type d)     && -> decltype(auto) {
+//		assert(d == 1); (void)d;
+//		return operator()();
+//	}
+//	constexpr auto unrotated(dimensionality_type d) const& -> decltype(auto) {
+//		assert(d == 1); (void)d;
+//		return operator()();
+//	}
 
-	constexpr auto operator<<(dimensionality_type i) const -> decltype(auto) {return   rotated(i);}
-	constexpr auto operator>>(dimensionality_type i) const -> decltype(auto) {return unrotated(i);}
+//	constexpr auto operator<<(dimensionality_type i) const -> decltype(auto) {return   rotated(i);}
+//	constexpr auto operator>>(dimensionality_type i) const -> decltype(auto) {return unrotated(i);}
 
 	using         iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_ptr      >;
 	using   const_iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_const_ptr>;
