@@ -69,7 +69,7 @@ g++-current-asan:
     - ln --symbolic --force . ../multi
     - $CXX --version
     - mkdir build && cd build
-    - CXXFLAGS="-g -O1 -fsanitize=address -fno-omit-frame-pointer" cmake .. -DCMAKE_BUILD_TYPE=Debug
+    - CXXFLAGS="-g -O1 -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer" cmake .. -DCMAKE_BUILD_TYPE=Debug
     - cmake --build . --verbose
     - ctest --output-on-failure
 

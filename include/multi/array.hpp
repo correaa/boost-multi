@@ -56,7 +56,7 @@ struct array_allocator {
 	auto destroy_n(It first, size_type n) {return adl_alloc_destroy_n(this->alloc(), first, n);}
 
  public:
-	auto get_allocator() const& {return alloc_;}
+	constexpr auto get_allocator() const -> allocator_type {return alloc_;}
 };
 
 template<class T, dimensionality_type D, class Alloc = std::allocator<T>>
@@ -128,16 +128,6 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	: static_array(std::move(other), typename static_array::allocator_type{}) {}  // 6b
 
  public:
-//  // cppcheck-suppress noExplicitConstructor ; because argument can be well-represented
-//  explicit static_array(
-//      basic_array<typename static_array::element, static_array::dimensionality, multi::move_ptr<typename static_array::element, typename static_array::element_ptr>>&& other
-//  ) noexcept
-//  : static_array(std::move(other), typename static_array::allocator_type{}) {}
-//  // ^^^^ TODO(correaa) : check if it is really necessary
-
-//  template<class TT, class... As> auto operator==(basic_array<TT, D, As...> const& o) const {return ref::operator==(o);}
-//  template<class TT, class... As> auto operator!=(basic_array<TT, D, As...> const& o) const {return ref::operator!=(o);}
-
 	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>  // decltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>
 	// analogous to std::vector::vector (5) https://en.cppreference.com/w/cpp/container/vector/vector
 	static_array(It first, It last, typename static_array::allocator_type const& a)
@@ -325,7 +315,11 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	using       iterator = multi::array_iterator<T, D, typename static_array::element_ptr      >;
 	using const_iterator = multi::array_iterator<T, D, typename static_array::element_const_ptr>;
 
-	friend auto get_allocator(static_array const& self) -> typename static_array::allocator_type {return self.get_allocator();}
+	friend
+	#if not defined(__NVCC__) and not defined(__INTEL_COMPILER)
+	constexpr
+	#endif
+	auto get_allocator(static_array const& s) -> typename static_array::allocator_type {return s.get_allocator();}
 
 	       constexpr auto data_elements()            const& ->                        element_const_ptr {return this->base_;}
 	       constexpr auto data_elements()                 & -> typename static_array::element_ptr       {return this->base_;}
@@ -345,11 +339,6 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	friend constexpr auto origin(static_array const& s) -> typename static_array::element_const_ptr {return    s.origin();}
 
  private:
-//  constexpr auto rotated_aux(dimensionality_type d) const& {
-//  	typename static_array::layout_t new_layout = *this;
-//  	new_layout.rotate(d);
-//  	return basic_array<T, D, typename static_array::element_ptr>{new_layout, this->base_};
-//  }
 	constexpr auto rotated_aux() const {
 		typename static_array::layout_t new_layout = this->layout();
 		new_layout.rotate();
@@ -557,14 +546,13 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 		uninitialized_copy_(other.data_elements());
 	}
 
-	static_array(static_array const& o) :                                  // 5b
-		array_alloc{o.get_allocator()},
-		ref{static_array::allocate(o.num_elements(), o.data_elements()), {} }
-	 {
+	static_array(static_array const& o)                                    // 5b
+	: array_alloc{o.get_allocator()}
+	, ref{static_array::allocate(o.num_elements(), o.data_elements()), {}} {
 		uninitialized_copy(o.data_elements());
 	}
 
-	static_array(static_array&& o) noexcept :   // it is private because it is a valid operation for derived classes //5b
+	static_array(static_array&& o) noexcept :  // it is private because it is a valid operation for derived classes //5b
 		array_alloc{o.get_allocator()},
 		ref{static_array::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(o.num_elements()), o.data_elements()), o.extensions()} {
 		uninitialized_move(o.data_elements());
@@ -590,7 +578,11 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	}
 	using element_const_ptr = typename std::pointer_traits<typename static_array::element_ptr>::template rebind<typename static_array::element const>;
 
-	friend auto get_allocator(static_array const& self) -> allocator_type {return self.get_allocator();}
+	friend
+	#if not defined(__NVCC__) and not defined(__INTEL_COMPILER)
+	constexpr
+	#endif
+	auto get_allocator(static_array const& s) -> allocator_type {return s.get_allocator();}
 
 	       constexpr auto base()                 &    -> typename static_array::element_ptr       {return ref::base();}
 	       constexpr auto base()            const&    -> typename static_array::element_const_ptr {return ref::base();}
@@ -612,34 +604,34 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 		return *(this->base_);
 	}
 
-	constexpr auto rotated(dimensionality_type d) const& {
-		typename static_array::layout_t new_layout = *this;
-		new_layout.rotate(d);
-		return basic_array<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
-	}
+//  constexpr auto rotated(dimensionality_type d) const& {
+//  	typename static_array::layout_t new_layout = *this;
+//  	new_layout.rotate(d);
+//  	return basic_array<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
+//  }
 	constexpr auto rotated() const& {
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate();
 		return basic_array<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
 
-	constexpr auto rotated(dimensionality_type d)& {
-		typename static_array::layout_t new_layout = *this;
-		new_layout.rotate(d);
-		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
-	}
-	constexpr auto rotated()& {
+//  constexpr auto rotated(dimensionality_type d)& {
+//  	typename static_array::layout_t new_layout = *this;
+//  	new_layout.rotate(d);
+//  	return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
+//  }
+	constexpr auto rotated() & {
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate();
 		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
 	}
 
-	constexpr auto rotated(dimensionality_type d)&& {
-		typename static_array::layout_t new_layout = *this;
-		new_layout.rotate(d);
-		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
-	}
-	constexpr auto rotated()&& {
+//  constexpr auto rotated(dimensionality_type d) && {
+//  	typename static_array::layout_t new_layout = *this;
+//  	new_layout.rotate(d);
+//  	return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
+//  }
+	constexpr auto rotated() && {
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate();
 		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
@@ -673,11 +665,11 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	friend constexpr auto unrotated(static_array      & self) -> decltype(auto) {return self.unrotated();}
 	friend constexpr auto unrotated(static_array const& self) -> decltype(auto) {return self.unrotated();}
 
-	constexpr auto operator<<(dimensionality_type d)       -> decltype(auto) {return   rotated(d);}
-	constexpr auto operator>>(dimensionality_type d)       -> decltype(auto) {return unrotated(d);}
+//  constexpr auto operator<<(dimensionality_type d)       -> decltype(auto) {return   rotated(d);}
+//  constexpr auto operator>>(dimensionality_type d)       -> decltype(auto) {return unrotated(d);}
 
-	constexpr auto operator<<(dimensionality_type d) const -> decltype(auto) {return   rotated(d);}
-	constexpr auto operator>>(dimensionality_type d) const -> decltype(auto) {return unrotated(d);}
+//  constexpr auto operator<<(dimensionality_type d) const -> decltype(auto) {return   rotated(d);}
+//  constexpr auto operator>>(dimensionality_type d) const -> decltype(auto) {return unrotated(d);}
 
 	constexpr auto operator=(static_array const& other) -> static_array& {
 		assert( extensions(other) == static_array::extensions() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : allow a constexpr-friendly assert
@@ -792,7 +784,11 @@ struct array : static_array<T, D, Alloc> {
 	array(array&& o, typename array::allocator_type const& a) noexcept : static_{std::move(o), a} {}
 	array(array&& o) noexcept : array{std::move(o), o.get_allocator()} {}
 
-	friend auto get_allocator(array const& self) -> typename array::allocator_type {return self.get_allocator();}
+	friend
+	#if not defined(__NVCC__) and not defined(__NVCOMPILER) and not defined(__INTEL_COMPILER)
+	constexpr
+	#endif
+	auto get_allocator(array const& s) -> typename array::allocator_type {return s.get_allocator();}
 
  private:
 	template<class TrueType>

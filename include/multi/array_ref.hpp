@@ -87,9 +87,9 @@ struct array_types : Layout {  // cppcheck-suppress syntaxError ; false positive
 	   constexpr auto cbase() const  -> element_const_ptr {return base_;}
 	   constexpr auto mbase() const& -> element_ptr&      {return base_;}
 
-	friend           auto  base(array_types const& s) -> element_ptr  {return s.base();}
+	friend constexpr auto  base(array_types const& s) -> element_ptr  {return s.base();}
 
-	       constexpr auto layout() const               -> layout_t const& {return *this;}
+	       constexpr auto layout()           const     -> layout_t const& {return *this;}
 	friend constexpr auto layout(array_types const& s) -> layout_t const& {return s.layout();}
 
 	       constexpr auto origin()           const&    -> decltype(auto) {return base_+Layout::origin();}
@@ -103,9 +103,6 @@ struct array_types : Layout {  // cppcheck-suppress syntaxError ; false positive
  public:
 	array_types() = default;
 
-//  #if defined(__NVCC__)
-//  	__host__ __device__ // TODO check why this is necessary (nvcc 11), removing this gives a, trivial_device_copy D->H failed: cudaErrorLaunchFailure: unspecified launch failure
-//  #endif
 	constexpr array_types(layout_t const& l, element_ptr const& data)
 	: Layout{l}, base_{data} {}
 
@@ -121,7 +118,7 @@ struct array_types : Layout {  // cppcheck-suppress syntaxError ; false positive
 		decltype(multi::implicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointers are implicitly convertible
-	constexpr/*implct*/array_types(ArrayTypes const& a)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : inherit behavior of underlying pointer
+	constexpr /*implt*/ array_types(ArrayTypes const& a)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : inherit behavior of underlying pointer
 	: Layout{a.layout()}, base_{a.base_} {}
 	// ^^^ TODO(correaa) : call explicit from implicit, careful with infinite recursion
 
@@ -144,12 +141,14 @@ struct basic_array_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin
 	Ref const&, typename Layout::difference_type
 > {  //, boost::multi::totally_ordered2<basic_array_ptr<Ref, Layout>, void>
 	~basic_array_ptr() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-	auto operator=(basic_array_ptr&& other)  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+
+	constexpr auto operator=(basic_array_ptr&& other)  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 	noexcept  // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
 	-> basic_array_ptr& {
 		operator=(other);
 		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	}
+
 	using pointer = Ref const*;
 	using element_type = typename Ref::decay_type;
 	using difference_type = typename Layout::difference_type;
@@ -169,7 +168,7 @@ struct basic_array_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin
 	basic_array_ptr(basic_array_ptr      &&) noexcept = default;
 	basic_array_ptr(basic_array_ptr const& )          = default;
 
-	auto operator=(basic_array_ptr const& other) -> basic_array_ptr& {
+	constexpr auto operator=(basic_array_ptr const& other) -> basic_array_ptr& {
 		if(this == &other) {return *this;}  // lints(cert-oop54-cpp)
 		this->base_ = other.base_;
 		static_cast<Layout&>(*this) = other.layout();
@@ -177,7 +176,7 @@ struct basic_array_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin
 	}
 	constexpr explicit operator bool() const {return this->base_;}
 
-	constexpr auto  dereference() const -> Ref {return Ref{this->layout(), this->base_};}
+	constexpr auto dereference() const -> Ref {return Ref{this->layout(), this->base_};}
 
 	HD constexpr auto  operator* () const -> Ref{return Ref{*this};}
 
@@ -186,7 +185,7 @@ struct basic_array_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin
 
 	constexpr auto  operator[](difference_type n) const -> Ref {return *(*this + n);}
 
-	constexpr auto operator<(basic_array_ptr const& o) const -> bool{return distance_to(o) > 0;}
+	constexpr auto operator<(basic_array_ptr const& o) const -> bool {return distance_to(o) > 0;}
 
 	constexpr basic_array_ptr(typename Ref::element_ptr p, Layout const& l) : Ref{l, p} {}
 
@@ -288,7 +287,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	array_iterator(array_iterator const&) = default;
 	auto operator=(array_iterator const& other) -> array_iterator& = default;
 
-	explicit constexpr operator bool() const {return static_cast<bool>(ptr_.base_);}
+	constexpr explicit operator bool() const {return static_cast<bool>(ptr_.base_);}
 	HD constexpr auto operator*() const -> basic_array<element, D-1, element_ptr> {/*assert(*this);*/ return {*ptr_};}
 
 	constexpr auto operator->() const -> decltype(auto) {/*assert(*this);*/ return ptr_;}
@@ -299,7 +298,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	constexpr auto operator==(array_iterator const& o) const -> bool {return ptr_==o.ptr_ and stride_==o.stride_ and ptr_.layout() == o.ptr_.layout();}
 	constexpr auto operator< (array_iterator const& o) const -> bool {return distance_to(o) > 0;}
 
-	explicit constexpr array_iterator(typename basic_array<element, D-1, element_ptr>::element_ptr p, layout_t<D-1> l, index stride)
+	constexpr explicit array_iterator(typename basic_array<element, D-1, element_ptr>::element_ptr p, layout_t<D-1> l, index stride)
 	: ptr_{p, l}, stride_{stride} {}
 
 	template<class, dimensionality_type, class, class> friend struct basic_array;
@@ -367,17 +366,6 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 	difference_type n_ = 0;
 	extensions_t<layout_type::dimensionality> xs_;
 	typename extensions_t<layout_type::dimensionality>::indices_type ns_ = {};
-//	std::array<multi::index, layout_type::dimensionality> ns_ = {};
-//	multi::defail::repeat<layout_type::dimensionality,
-//	typename layout_type::indices ns_ = {};
-
-//	template<class Tuple>
-//	static constexpr auto to_array(Tuple const& t) {
-//		return std::apply(
-//			[](auto const&... e){return std::array<multi::index, sizeof...(e)>{{e...}};},
-//			t
-//		);
-//	}
 
 	template<class, class> friend struct elements_iterator_t;
 	template<class, class> friend struct elements_range_t;
@@ -535,7 +523,7 @@ struct elements_range_t {
 };
 
 template<class It>
-auto ref(It begin, It end)
+constexpr auto ref(It begin, It end)
 ->multi::basic_array<typename It::element, It::rank_v, typename It::element_ptr> {
 	return multi::basic_array<typename It::element, It::rank_v, typename It::element_ptr>{begin, end};
 }
@@ -615,7 +603,11 @@ struct basic_array
 		return get_allocator(this->base());
 	}
 
-	friend auto get_allocator(basic_array const& s) -> default_allocator_type {return s.get_allocator();}
+	friend
+	#if not defined(__NVCC__) and not defined(__NVCOMPILER) and not defined(__INTEL_COMPILER)
+	constexpr
+	#endif
+	auto get_allocator(basic_array const& s) -> default_allocator_type {return s.get_allocator();}
 
 	using decay_type = array<typename types::element_type, D, typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type>;
 
@@ -625,7 +617,12 @@ struct basic_array
 		return ret;
 	}
 
-	friend           auto operator+(basic_array const& s) -> decay_type {return s.decay();}
+	constexpr auto operator+() const -> decay_type {return decay();}
+//  friend
+//  #if not defined(__NVCC__)
+//  constexpr
+//  #endif
+//  auto operator+(basic_array const& s) -> decay_type {return s.operator+();}
 
 	using typename types::const_reference;
 
@@ -1010,7 +1007,7 @@ struct basic_array
 	using const_iterator = array_iterator<element, D, element_const_ptr>;
 
  private:
-	explicit constexpr basic_array(iterator begin, iterator end)
+	constexpr explicit basic_array(iterator begin, iterator end)
 	: basic_array{
 		layout_type{begin->layout(), begin.stride(), 0, begin.stride()*(end - begin)},
 		begin.base()
@@ -1018,7 +1015,7 @@ struct basic_array
 		assert(begin.stride()  == end.stride() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		assert(begin->layout() == end->layout());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	}
-	friend auto ref<iterator>(iterator begin, iterator end) -> multi::basic_array<typename iterator::element, iterator::rank_v, typename iterator::element_ptr>;
+	friend constexpr auto ref<iterator>(iterator begin, iterator end) -> multi::basic_array<typename iterator::element, iterator::rank_v, typename iterator::element_ptr>;
 
 	template<class Iterator>
 	struct basic_reverse_iterator  // NOLINT(fuchsia-multiple-inheritance)
@@ -1057,7 +1054,7 @@ struct basic_array
 		Layout l = static_cast<Layout const&>(*this); l.rotate(d);
 		return {types::base_ + l(0       ), l.sub_, l.stride_};
 	}
-	constexpr auto end(dimensionality_type d) && -> iterator {
+	constexpr auto end  (dimensionality_type d) && -> iterator {
 		Layout l = static_cast<Layout const&>(*this); l.rotate(d);
 		return {types::base_ + l(l.size()), l.sub_, l.stride_};
 	}
@@ -1095,7 +1092,7 @@ struct basic_array
 		class = std::enable_if_t<not std::is_base_of<basic_array, Range>{}>,
 		class = decltype(adl_copy_n(adl_begin(std::declval<Range const&>()), std::declval<typename basic_array::size_type>(), std::declval<typename basic_array::iterator>()))
 	>
-//  constexpr
+	constexpr
 	auto operator=(Range const& r)&  // check that you LHS is not read-only
 	-> basic_array& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 		assert(this->size() == r.size());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
@@ -1105,6 +1102,7 @@ struct basic_array
 	}
 
 	template<class Range, class = std::enable_if_t<not std::is_base_of<basic_array, Range>{}> >
+	constexpr
 	auto operator=(Range const& r)&&
 	-> basic_array&  {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 		operator=(r);
@@ -1112,7 +1110,7 @@ struct basic_array
 	}
 
 	template<class TT, class... As>
-//  constexpr
+	constexpr
 	auto operator=(basic_array<TT, D, As...> const& o)& -> basic_array& {
 		assert(this->extension() == o.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	//  MULTI_MARK_SCOPE( std::string{"multi::operator= (D="}+std::to_string(D)+") from "+typeid(TT).name()+" to "+typeid(T).name() );
@@ -1145,7 +1143,7 @@ struct basic_array
 		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	}
 
-//  constexpr
+	constexpr
 	auto operator=(basic_array               const& o) & -> basic_array& {
 		if(this == std::addressof(o)) {return *this;}  // lints(cert-oop54-cpp)
 		if(&*this == &o) {return *this;}
@@ -1168,7 +1166,7 @@ struct basic_array
 		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	}
 
-	template<class Array> void swap(Array&& o) && {
+	template<class Array> constexpr void swap(Array&& o) && {
 		assert( std::move(*this).extension() == std::forward<Array>(o).extension() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		elements().swap(o.elements());
 	//  adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
@@ -1207,9 +1205,6 @@ struct basic_array
 	}
 
  public:
-//	template<class O> constexpr auto operator<(O&& o)&& -> bool {return lexicographical_compare(std::move(*this), std::forward<O>(o));}
-//  template<class O> constexpr auto operator>(O&& o)&& -> bool {return lexicographical_compare(std::forward<O>(o), std::move(*this));}
-
 	constexpr auto operator< (basic_array const& o) const& -> bool {return lexicographical_compare(*this, o);}
 	constexpr auto operator<=(basic_array const& o) const& -> bool {return *this == o or lexicographical_compare(*this, o);}
 
@@ -1371,10 +1366,10 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 		class EElement, typename PPtr,
 		typename = decltype(multi::implicit_cast<Ptr>(std::declval<array_iterator<EElement, 1, PPtr>>().data_))
 	>
-	constexpr/*implicit*/array_iterator(array_iterator<EElement, 1, PPtr> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to reproduce the implicitness of original pointer
+	constexpr /*impl*/ array_iterator(array_iterator<EElement, 1, PPtr> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to reproduce the implicitness of original pointer
 	: data_{other.data_}, stride_{other.stride_} {}
 
-	explicit constexpr operator bool() const {return static_cast<bool>(this->data_);}
+	constexpr explicit operator bool() const {return static_cast<bool>(this->data_);}
 
 	HD constexpr auto operator[](typename array_iterator::difference_type n) const -> typename std::iterator_traits<Ptr>::reference {
 		return *((*this) + n);
@@ -1414,17 +1409,17 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 
 	constexpr auto base()              const& -> element_ptr {return data_;}
 
-	friend  // TODO(correaa) : defined FRIEND_CONSTEXPR ?
-#if not((defined(__INTEL_COMPILER)) or defined(__NVCC__))
-	constexpr  // this generates a problem with intel compiler 19 "a constexpr function cannot have a nonliteral return type"
-#endif
+	friend  // TODO(correaa) : defined FRIEND_CONSTEXPR or make "conditional" constexpr?
+	#if not defined(__INTEL_COMPILER) and not defined(__NVCOMPILER) and not defined(__NVCC__)
+	constexpr  // this generates a problem with intel compiler 19 and v2021 "a constexpr function cannot have a nonliteral return type"
+	#endif
 	auto base(array_iterator const& s) -> element_ptr {return s.base();}
 
-	       constexpr auto stride()              const&    -> stride_type {return   stride_;}
+	       constexpr auto stride()              const     -> stride_type {return   stride_;}
 	friend constexpr auto stride(array_iterator const& s) -> stride_type {return s.stride_;}
 
-	constexpr auto operator++() -> array_iterator& {data_+=stride_; return *this;}
-	constexpr auto operator--() -> array_iterator& {data_-=stride_; return *this;}
+	constexpr auto operator++() -> array_iterator& {data_ += stride_; return *this;}
+	constexpr auto operator--() -> array_iterator& {data_ -= stride_; return *this;}
 
 	friend constexpr auto operator==(array_iterator const& a, array_iterator const& b) -> bool {return a.data_ == b.data_;}
 //	friend constexpr auto operator!=(array_iterator const& a, array_iterator const& b) -> bool {return not(a.data_ == b.data_);}
@@ -1451,7 +1446,7 @@ struct basic_array<T, 0, ElementPtr, Layout>
 	using element_cref = typename std::iterator_traits<typename basic_array::element_const_ptr>::reference;
 	using iterator = array_iterator<T, 0, ElementPtr>;
 
-//  constexpr
+	constexpr
 	auto operator=(element const& e) & -> basic_array& {
 	//  MULTI_MARK_SCOPE(std::string{"multi::operator= D=0 from "}+typeid(T).name()+" to "+typeid(T).name() );
 		adl_copy_n(&e, 1, this->base_);
@@ -1462,21 +1457,22 @@ struct basic_array<T, 0, ElementPtr, Layout>
 		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	}
 
-	constexpr auto operator==(element const& e) const& -> bool {
+	constexpr auto operator==(element const& e) const -> bool {
 		assert(this->num_elements()==1);
 		return adl_equal(&e, std::next(&e, this->num_elements()), this->base());
 	}
-	constexpr auto operator!=(element const& e) const& {return not operator==(e);}
+	constexpr auto operator!=(element const& e) const {return not operator==(e);}
 
 	template<class TT, class=decltype(std::declval<typename basic_array::element>()==std::declval<TT>())>
-	constexpr auto operator==(TT const& e) const&
+	constexpr auto operator==(TT const& e) const
 	->decltype(adl_equal(&e, std::next(&e, this->num_elements()), this->base() )) {assert(this->num_elements()==1);
 		return adl_equal(&e, std::next(&e, this->num_elements()), this->base() ); }
 
 	template<class TT>
-	constexpr auto operator!=(TT const& e) const& {return not operator==(e);}
+	constexpr auto operator!=(TT const& e) const {return not operator==(e);}
 
 	template<class Range0>
+	constexpr
 	auto operator=(Range0&& r)& -> basic_array& {
 		adl_copy_n(&r, 1, this->base_);
 		return *this;
@@ -1491,7 +1487,7 @@ struct basic_array<T, 0, ElementPtr, Layout>
 
 	using decay_type = typename types::element;
 
-	constexpr auto operator()() const& -> element_ref {return *(this->base_);}
+	constexpr auto operator()() const -> element_ref {return *(this->base_);}
 
 	constexpr operator element_ref ()                            && {return *(this->base_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 	constexpr operator element_ref ()                             & {return *(this->base_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
@@ -1530,13 +1526,17 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
 	using default_allocator_type = typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type;
 
-	constexpr auto get_allocator()           const&       -> default_allocator_type {return default_allocator_of(basic_array::base());}
-	friend    auto get_allocator(basic_array const& self) -> default_allocator_type {return self.get_allocator();}
+	constexpr auto get_allocator() const -> default_allocator_type {return default_allocator_of(basic_array::base());}
+	friend
+	#if not defined(__NVCC__) and not defined(__NVCOMPILER) and not defined(__INTEL_COMPILER)
+	constexpr
+	#endif
+	auto get_allocator(basic_array const& self) -> default_allocator_type {return self.get_allocator();}
 
 	using decay_type = array<typename types::element, dimensionality_type{1}, typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type>;
 
-	       constexpr auto decay()           const&       -> decay_type {return decay_type{*this};}
-	friend constexpr auto decay(basic_array const& self) -> decay_type {return self.decay();}
+	       constexpr auto decay()           const     -> decay_type {return decay_type{*this};}
+	friend constexpr auto decay(basic_array const& s) -> decay_type {return s.decay();}
 
 	using basic_const_array = basic_array<
 		T, 1,
@@ -1571,16 +1571,18 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	template<class T2, class P2, class TT, dimensionality_type DD, class PP>
 	friend constexpr auto static_array_cast(basic_array<TT, DD, PP> const&) -> decltype(auto);
 
-	friend auto operator+(basic_array const& self) -> decay_type {return self.decay();}
-
-	template<class T2> friend constexpr auto reinterpret_array_cast(basic_array&& a) {
+	template<class T2>
+	friend constexpr auto reinterpret_array_cast(basic_array&& a) {
 		return std::move(a).template reinterpret_array_cast<T2, typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>();
 	}
-	template<class T2> friend constexpr auto reinterpret_array_cast(basic_array const& a) {
+	template<class T2>
+	friend constexpr auto reinterpret_array_cast(basic_array const& a) {
 		return a.template reinterpret_array_cast<T2, typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>();
 	}
 
  public:
+	constexpr auto operator+() const -> decay_type {return decay();}
+
 	basic_array(basic_array&&) noexcept = default;  // in C++ 14 this is necessary to return array references from functions
 // in c++17 things changed and non-moveable non-copyable types can be returned from functions and captured by auto
 
@@ -1832,38 +1834,38 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	constexpr auto   rotated()     && -> decltype(auto) {return operator()();}
 	constexpr auto   rotated() const& -> decltype(auto) {return operator()();}
 
-	constexpr auto   rotated(dimensionality_type d)      & -> decltype(auto) {
-		assert(d == 1); (void)d;
-		return operator()();
-	}
-	constexpr auto   rotated(dimensionality_type d)     && -> decltype(auto) {
-		assert(d == 1); (void)d;
-		return operator()();
-	}
-	constexpr auto   rotated(dimensionality_type d) const& -> decltype(auto) {
-		assert(d == 1); (void)d;
-		return operator()();
-	}
+//	constexpr auto   rotated(dimensionality_type d)      & -> decltype(auto) {
+//		assert(d == 1); (void)d;
+//		return operator()();
+//	}
+//	constexpr auto   rotated(dimensionality_type d)     && -> decltype(auto) {
+//		assert(d == 1); (void)d;
+//		return operator()();
+//	}
+//	constexpr auto   rotated(dimensionality_type d) const& -> decltype(auto) {
+//		assert(d == 1); (void)d;
+//		return operator()();
+//	}
 
 	HD constexpr auto unrotated() const& -> decltype(auto) {return operator()();}
 	HD constexpr auto unrotated()     && -> decltype(auto) {return operator()();}
 	HD constexpr auto unrotated()      & -> decltype(auto) {return operator()();}
 
-	constexpr auto unrotated(dimensionality_type d)      & -> decltype(auto) {
-		assert(d == 1); (void)d;
-		return operator()();
-	}
-	constexpr auto unrotated(dimensionality_type d)     && -> decltype(auto) {
-		assert(d == 1); (void)d;
-		return operator()();
-	}
-	constexpr auto unrotated(dimensionality_type d) const& -> decltype(auto) {
-		assert(d == 1); (void)d;
-		return operator()();
-	}
+//	constexpr auto unrotated(dimensionality_type d)      & -> decltype(auto) {
+//		assert(d == 1); (void)d;
+//		return operator()();
+//	}
+//	constexpr auto unrotated(dimensionality_type d)     && -> decltype(auto) {
+//		assert(d == 1); (void)d;
+//		return operator()();
+//	}
+//	constexpr auto unrotated(dimensionality_type d) const& -> decltype(auto) {
+//		assert(d == 1); (void)d;
+//		return operator()();
+//	}
 
-	constexpr auto operator<<(dimensionality_type i) const -> decltype(auto) {return   rotated(i);}
-	constexpr auto operator>>(dimensionality_type i) const -> decltype(auto) {return unrotated(i);}
+//	constexpr auto operator<<(dimensionality_type i) const -> decltype(auto) {return   rotated(i);}
+//	constexpr auto operator>>(dimensionality_type i) const -> decltype(auto) {return unrotated(i);}
 
 	using         iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_ptr      >;
 	using   const_iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_const_ptr>;
@@ -1946,11 +1948,11 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	constexpr auto operator< (basic_array const& o) const& -> bool {return lexicographical_compare(*this, o);}
 	constexpr auto operator<=(basic_array const& o) const& -> bool {return lexicographical_compare(*this, o) or operator==(o);}
 
-	template<class Array> constexpr void swap(Array&& o)&& {
+	template<class Array> constexpr void swap(Array&& o) && {
 		assert(this->extension() == o.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
 	}
-	template<class A> constexpr void swap(A&& o)& {return swap(std::forward<A>(o));}
+	template<class A> constexpr void swap(A&& o) & {return swap(std::forward<A>(o));}
 
 	friend constexpr void swap(basic_array&& a, basic_array&& b) {std::move(a).swap(std::move(b));}
 
@@ -1959,7 +1961,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
  private:
 	template<class A1, class A2>
-	static constexpr auto lexicographical_compare(A1 const& a1, A2 const& a2) {
+	static constexpr auto lexicographical_compare(A1 const& a1, A2 const& a2) -> bool {
 		if(extension(a1).first() > extension(a2).first()) {return true ;}
 		if(extension(a1).first() < extension(a2).first()) {return false;}
 		return adl_lexicographical_compare(adl_begin(a1), adl_end(a1), adl_begin(a2), adl_end(a2));
@@ -1997,7 +1999,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	}
 
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
-	          auto reinterpret_array_cast() const& -> basic_array<std::decay_t<T2>, 1, P2> {  // TODO(correaa) : use rebind for return type
+	constexpr auto reinterpret_array_cast() const& -> basic_array<std::decay_t<T2>, 1, P2> {  // TODO(correaa) : use rebind for return type
 		static_assert( sizeof(T)%sizeof(T2)== 0,
 			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases");
 
@@ -2046,9 +2048,9 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	template<class Archive>
 	void serialize(Archive& ar, unsigned /*version*/) {
 		using AT = multi::archive_traits<Archive>;
-		std::for_each(this->begin(), this->end(), [&](auto&& item){ar & AT    ::make_nvp("item", item);});
-	//	std::for_each(this->begin(), this->end(), [&](auto&& item){ar & cereal::make_nvp("item", item);});
-	//	std::for_each(this->begin(), this->end(), [&](auto&& item){ar &                          item ;});
+		std::for_each(this->begin(), this->end(), [&](auto&& item) {ar & AT    ::make_nvp("item", item);});
+	//	std::for_each(this->begin(), this->end(), [&](auto&& item) {ar & cereal::make_nvp("item", item);});
+	//	std::for_each(this->begin(), this->end(), [&](auto&& item) {ar &                          item ;});
 	}
 };
 
@@ -2070,8 +2072,6 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 		operator=(other);  // array_refs do not rebind! elements must be copied
 		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 	}
-#else
-//  constexpr auto operator=(array_ref&&);
 #endif
 
 	using layout_type = typename array_ref::types::layout_t;
@@ -2089,7 +2089,12 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 	array_ref(array_ref const&) = default;  // don't try to use `auto` for references, use `auto&&` or explicit value type
 
  public:
-	array_ref(array_ref&&) noexcept = default;  // this needs to be public in c++14
+	#if defined(__NVCC__)
+	array_ref(array_ref&&) noexcept = default;  // this needs to be public in nvcc c++17
+	#else
+	array_ref(array_ref&&) = delete;
+	#endif
+
 
 	template<class OtherPtr, class=std::enable_if_t<not std::is_same<OtherPtr, ElementPtr>{}>, decltype(multi::explicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
 	constexpr explicit array_ref(array_ref<T, D, OtherPtr>&& other)
@@ -2112,7 +2117,6 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 		TT(&t)[N]  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
 	)
 	: array_ref(
-	//	static_cast<typename array_ref::element_ptr>(t),
 		multi::data_elements(t),
 		extensions(t)
 	) {}
@@ -2124,9 +2128,6 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 	template<class It> constexpr auto copy_elements(It first) {
 		return adl_copy_n(first, array_ref::num_elements(), array_ref::data_elements());
 	}
-//	template<class It> HD constexpr auto equal_elements(It first) const {
-//		return adl_equal(first, first + this->num_elements(), this->data_elements());
-//	}
 
  public:
 	constexpr auto data_elements() const& -> typename array_ref::element_ptr {return array_ref::base_;}
@@ -2170,9 +2171,9 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 	}
 
  public:
-	       constexpr auto  elements()         const&       -> celements_type {return elements_aux();}
-	       constexpr auto  elements()              &       ->  elements_type {return elements_aux();}
-	       constexpr auto  elements()             &&       ->  elements_type {return elements_aux();}
+	       constexpr auto  elements()        const&       -> celements_type {return elements_aux();}
+	       constexpr auto  elements()             &       ->  elements_type {return elements_aux();}
+	       constexpr auto  elements()            &&       ->  elements_type {return elements_aux();}
 
 	friend constexpr auto elements(array_ref      & s) ->  elements_type {return           s . elements();}
 	friend constexpr auto elements(array_ref     && s) ->  elements_type {return std::move(s). elements();}
@@ -2182,13 +2183,13 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 	friend constexpr auto celements(array_ref const& s) {return s.celements();}
 
 	template<typename TT, class... As>
-	constexpr auto operator==(array_ref<TT, D, As...> const& o) const {
+	constexpr auto operator==(array_ref<TT, D, As...> const& o) const -> bool {
 		if(this->extensions() != o.extensions()) {return false;}  // TODO(correaa) : or assert?
 		return adl_equal(o.data_elements(), o.data_elements() + this->num_elements(), this->data_elements());
 	//	return equal_elements(std::move(o).data_elements());
 	}
 	template<typename TT, class... As>
-	constexpr auto operator!=(array_ref<TT, D, As...> const& o) const {
+	constexpr auto operator!=(array_ref<TT, D, As...> const& o) const -> bool {
 		if(this->extensions() != o.extensions()) {return true;}  // TODO(correaa) : or assert?
 		return not adl_equal(o.data_elements(), o.data_elements() + this->num_elements(), this->data_elements());
 	//	return not equal_elements(std::move(o).data_elements());
