@@ -1478,9 +1478,9 @@ struct basic_array<T, 0, ElementPtr, Layout>
 		return *this;
 	}
 
-	auto elements_at(size_type n) const& -> element_cref {assert(n < this->num_elements()); return *(this->base_);}
-	auto elements_at(size_type n)     && -> element_ref  {assert(n < this->num_elements()); return *(this->base_);}
-	auto elements_at(size_type n)      & -> element_ref  {assert(n < this->num_elements()); return *(this->base_);}
+	constexpr auto elements_at(size_type n [[maybe_unused]]) const& -> element_cref {assert(n < this->num_elements()); return *(this->base_);}
+	constexpr auto elements_at(size_type n [[maybe_unused]])     && -> element_ref  {assert(n < this->num_elements()); return *(this->base_);}
+	constexpr auto elements_at(size_type n [[maybe_unused]])      & -> element_ref  {assert(n < this->num_elements()); return *(this->base_);}
 
 	constexpr auto operator!=(basic_array const& o) const {return not adl_equal(o.base_, o.base_ + 1, this->base_);}
 	constexpr auto operator==(basic_array const& o) const {return     adl_equal(o.base_, o.base_ + 1, this->base_);}

@@ -4,8 +4,7 @@
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi array reference"
 #include<boost/test/unit_test.hpp>
 
-#include "../array.hpp"
-#include "../array_ref.hpp"
+#include "multi/array.hpp"
 
 namespace multi = boost::multi;
 

@@ -59,7 +59,7 @@ auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) -> C2D&& // 
 			}
 			else if(stride(a)==1 and stride(c)!=1) {assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 			else if(stride(a)==1 and stride(c)==1) {herk(c_side==filling::upper?'U':'L', 'N', size(c), size(rotated(a)), &alpha, base_a, stride(rotated(a)), &beta, base_c, stride(rotated(c)));}
-			else                                   {assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+		//  else                                   {assert(0);} // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 		}
 	}
 	return std::forward<C2D>(c);

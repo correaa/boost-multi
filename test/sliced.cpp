@@ -4,7 +4,7 @@
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi slice"
 #include<boost/test/unit_test.hpp>
 
-#include "../array.hpp"
+#include "multi/array.hpp"
 
 #include<numeric> // std::iota
 

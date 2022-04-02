@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo A. Correa 2019-2021
+// © Alfredo A. Correa 2019-2022
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS axpy"
 #define BOOST_TEST_DYN_LINK
@@ -7,9 +7,9 @@
 
 #include "config.hpp"
 
-#include "../../../array.hpp"
-#include       "../../blas/axpy.hpp"
-#include       "../../blas/operations.hpp"
+#include "multi/adaptors/blas/axpy.hpp"
+#include "multi/adaptors/blas/operations.hpp"
+#include "multi/array.hpp"
 
 #include<complex>
 

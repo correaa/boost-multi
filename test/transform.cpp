@@ -4,7 +4,7 @@
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi transformed array"
 #include<boost/test/unit_test.hpp>
 
-#include "../array.hpp"
+#include "multi/array.hpp"
 
 //#include<boost/iterator/transform_iterator.hpp> //might need -DBOOST_RESULT_OF_USE_DECLTYPE
 

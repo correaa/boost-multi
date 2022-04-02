@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_1d_real) {
 
 	using blas::dot;
 	BOOST_REQUIRE( 14. == dot(V, W) );
-	BOOST_REQUIRE( dot(V, W) == 14. );
+	BOOST_REQUIRE( dot(V, W) == 14.F );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_real) {

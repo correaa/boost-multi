@@ -23,7 +23,7 @@ auto gemv_n(Context&& ctxt, A a, MIt m_first, Size count, XIt x_first, B b, YIt 
 		else                          {assert(0);}
 	} else {
 		if     (m_first->stride()==1) {std::forward<Context>(ctxt).gemv('C', m_first->size(), count, a, underlying(m_first.base()), m_first. stride(), x_first.base(), x_first.stride(), b, y_first.base(), y_first.stride());}
-		else if(m_first. stride()==1) {assert(0);} // not implemented in blas (use cblas?)
+	//  else if(m_first. stride()==1) {assert(0);} // not implemented in blas (use cblas?)
 		else                          {assert(0);} // not implemented in blas
 	}
 

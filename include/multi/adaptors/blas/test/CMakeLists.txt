@@ -120,7 +120,10 @@ foreach(TEST_FILE ${TEST_SRCS})
 	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
 	target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
 	target_include_directories(${TEST_EXE} PRIVATE ${Boost_INCLUDE_DIRS})
+
+    target_link_libraries(${TEST_EXE} PRIVATE multi)
 	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
+
 	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
 	if(NOT ENABLE_CUDA
 	   AND (NOT

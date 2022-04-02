@@ -4,8 +4,8 @@
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi utility"
 #include<boost/test/unit_test.hpp>
 
-#include "../array.hpp"
-#include "../detail/tuple_zip.hpp"
+#include "multi/array.hpp"
+#include "multi/detail/tuple_zip.hpp"
 
 //#include<boost/archive/xml_iarchive.hpp>
 //#include<boost/archive/xml_oarchive.hpp>
