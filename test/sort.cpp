@@ -4,7 +4,7 @@
 #define BOOST_TEST_MODULE "Unit Tests for Multi sort"
 #include<boost/test/unit_test.hpp>
 
-#include "../array.hpp"
+#include "multi/array.hpp"
 
 #include<algorithm> // stable_sort
 #include<vector>

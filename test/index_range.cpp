@@ -28,7 +28,7 @@ struct integral_constant : private hana::integral_constant<Integral, N> {
 		return hana::integral_constant<Integral, N>::value;
 	}
 	integral_constant() = default;
-	constexpr explicit integral_constant(Integral const& i) {
+	constexpr explicit integral_constant(Integral const& i [[maybe_unused]]) {
 		assert(i == N);
 	}
 	constexpr auto operator==(Integral const& o) const {return static_cast<Integral const&>(*this)==o;}

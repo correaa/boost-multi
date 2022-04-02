@@ -4,8 +4,8 @@
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi static array cast"
 #include<boost/test/unit_test.hpp>
 
-#include "../array.hpp"
-#include "../config/NO_UNIQUE_ADDRESS.hpp"
+#include "multi/array.hpp"
+#include "multi/config/NO_UNIQUE_ADDRESS.hpp"
 
 #include<numeric>
 

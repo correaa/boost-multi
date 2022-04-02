@@ -5,7 +5,7 @@
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
-#include "../array.hpp"
+#include "multi/array.hpp"
 
 namespace multi = boost::multi;
 
@@ -24,3 +24,7 @@ BOOST_AUTO_TEST_CASE(array_flatted_3d) {
 	}
 }
 
+BOOST_AUTO_TEST_CASE(array_flatted_3d_bis) {
+	multi::array<double, 3>	A3({13, 4, 5});
+	BOOST_REQUIRE( A3.size() == 13 );
+}

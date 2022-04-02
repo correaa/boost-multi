@@ -5,10 +5,10 @@
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
-#include "../array.hpp"
-#include "../utility.hpp"
+#include "multi/array.hpp"
+#include "multi/utility.hpp"
 
-#include "../detail/tuple_zip.hpp"
+#include "multi/detail/tuple_zip.hpp"
 
 #include <boost/archive/xml_iarchive.hpp>
 #include <boost/archive/xml_oarchive.hpp>
