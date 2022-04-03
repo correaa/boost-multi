@@ -75,9 +75,9 @@ install(
 
 # install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/SI DESTINATION include)
 if (NOT MSVC)
-install(FILES ${PROJECT_SOURCE_DIR}/array_ref.hpp ${PROJECT_SOURCE_DIR}/array.hpp DESTINATION include/multi)
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/detail DESTINATION include/multi)
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/adaptors DESTINATION include/multi)
+install(FILES ${PROJECT_SOURCE_DIR}/include/multi/array_ref.hpp ${PROJECT_SOURCE_DIR}/include/multi/array.hpp DESTINATION include/multi)
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/multi/detail DESTINATION include/multi)
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/multi/adaptors DESTINATION include/multi)
 endif()
 
 #find_program(MEMORYCHECK_COMMAND valgrind)
