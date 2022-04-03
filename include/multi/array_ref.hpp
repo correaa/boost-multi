@@ -348,6 +348,55 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	constexpr auto operator-=(difference_type d) -> array_iterator& {advance(-d); return *this;}
 };
 
+template<typename ElementPtr, dimensionality_type D, class StridesType>
+struct cursor_t {
+	using difference_type = typename std::iterator_traits<ElementPtr>::difference_type;
+	using strides_type = StridesType;
+	using element_ptr = ElementPtr;
+	using element_ref = typename std::iterator_traits<element_ptr>::reference;
+	using pointer = element_ptr;
+	using reference = element_ref;
+	using indices_type = typename extensions_t<D>::indices_type;
+
+ private:
+	strides_type strides_;
+	element_ptr  base_;
+
+	template<class, dimensionality_type, class, class> friend struct basic_array;
+	template<class, dimensionality_type, class> friend struct cursor_t;
+
+	constexpr cursor_t(element_ptr base, strides_type strides) : strides_{strides}, base_{base} {}
+
+ public:
+	constexpr auto operator[](difference_type n) const -> decltype(auto) {
+		if constexpr(D != 1) {
+			return cursor_t<ElementPtr, D-1, decltype(tail(strides_))>{base_ + std::get<0>(strides_)*n, tail(strides_)};
+		} else {
+			return base_[std::get<0>(strides_)*n];
+		}
+	}
+	constexpr auto operator()(difference_type n) const -> decltype(auto) {
+		return operator[](n);
+	}
+	template<class... Ns>
+	constexpr auto operator()(difference_type n, Ns... ns) const -> decltype(auto) {
+		return operator[](n)(ns...);
+	}
+ private:
+	template<class Tuple, std::size_t... I>
+	constexpr auto apply_impl(Tuple const& t, std::index_sequence<I...> /*012*/) const -> decltype(auto) {
+		return ((std::get<I>(t)*std::get<I>(strides_)) + ...);
+}
+ public:
+	template<class Tuple = indices_type>
+	constexpr auto operator+=(Tuple const& t) -> cursor_t& {
+		base_ += apply_impl(t, std::make_index_sequence<std::tuple_size<Tuple>::value>{});
+		return *this;
+	}
+	constexpr auto operator* () const -> reference {return *base_;}
+	constexpr auto operator->() const -> pointer   {return  base_;}
+};
+
 template<typename Pointer, class LayoutType>
 struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 : boost::multi::random_accessable<elements_iterator_t<Pointer, LayoutType>, typename std::iterator_traits<Pointer>::difference_type, typename std::iterator_traits<Pointer>::reference>
@@ -1083,6 +1132,16 @@ struct basic_array
 	       constexpr auto cend()             const& -> const_iterator {return end()  ;}
 	friend constexpr auto cbegin(basic_array const& s) {return s.cbegin();}
 	friend constexpr auto cend  (basic_array const& s) {return s.cend()  ;}
+
+ private:
+	constexpr auto home_aux() const -> cursor_t<typename basic_array::element_ptr, D, typename basic_array::strides_type> {
+		return {this->base(), this->strides()};
+	}
+
+ public:
+	constexpr auto home() const& -> cursor_t<typename basic_array::element_const_ptr, D, typename basic_array::strides_type> {return home_aux();}
+	constexpr auto home()     && -> cursor_t<typename basic_array::element_ptr      , D, typename basic_array::strides_type> {return home_aux();}
+	constexpr auto home()      & -> cursor_t<typename basic_array::element_ptr      , D, typename basic_array::strides_type> {return home_aux();}
 
 	template<class It> constexpr auto assign(It first) & -> It {adl_copy_n(first, this->size(), begin()); std::advance(first, this->size()); return first;}
 	template<class It> constexpr auto assign(It first)&& -> It {return assign(first);}

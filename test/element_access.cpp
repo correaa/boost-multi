@@ -251,5 +251,32 @@ BOOST_AUTO_TEST_CASE(multi_range_rotated) {
 	BOOST_REQUIRE( &A(multi::ALL, multi::ALL, {3, 5}) == &A(multi::ALL, multi::ALL, {3, 5}, multi::ALL) );
 }
 
-#endif
+BOOST_AUTO_TEST_CASE(multi_home_2d) {
+	multi::array<double, 2> A({3, 5});
 
+	auto h = A.home();
+	BOOST_REQUIRE( & h[1][2] == & A[1][2] );
+	BOOST_REQUIRE( & h[0][0] == & A[0][0] );
+	BOOST_REQUIRE(   h[1][2] ==   A[1][2] );
+
+	BOOST_REQUIRE( & *h == & A[0][0] );
+	BOOST_REQUIRE(   h[0][0] ==   A[0][0] );
+
+	BOOST_REQUIRE(   *h ==   A[0][0] );
+
+	BOOST_REQUIRE(    h(0, 0) ==   A[0][0] );
+	BOOST_REQUIRE(    h(1, 0) ==   A[1][0] );
+	h += multi::detail::tuple<multi::size_t, multi::size_t>{1L, 0L};
+//	BOOST_REQUIRE(    *(h + multi::make_tuple(1, 0)) == A[1][0] );
+
+}
+
+BOOST_AUTO_TEST_CASE(multi_home_5d) {
+	multi::array<double, 5> A({3, 5, 7, 11, 13});
+
+	auto const h = A.home();
+	BOOST_REQUIRE( & h[1][2][3][4][5] == & A[1][2][3][4][5] );
+
+}
+
+#endif
