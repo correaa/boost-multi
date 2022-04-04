@@ -22,22 +22,22 @@ find_package(Boost REQUIRED COMPONENTS unit_test_framework serialization)
 if((ENABLE_CUDA OR DEFINED CXXCUDA) AND NOT DEFINED FORCED_ARCH)
 	enable_language(CUDA)
 
-	include(FindCUDA/select_compute_arch)
-	cuda_detect_installed_gpus(INSTALLED_GPU_CCS_1)
-	string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
-	string(
-		REPLACE " "
-				";"
-				INSTALLED_GPU_CCS_3
-				"${INSTALLED_GPU_CCS_2}"
-	)
-	string(
-		REPLACE "."
-				""
-				CUDA_ARCH_LIST
-				"${INSTALLED_GPU_CCS_3}"
-	)
-	set(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
+#	include(FindCUDA/select_compute_arch)
+#	cuda_detect_installed_gpus(INSTALLED_GPU_CCS_1)
+#	string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
+#	string(
+#		REPLACE " "
+#				";"
+#				INSTALLED_GPU_CCS_3
+#				"${INSTALLED_GPU_CCS_2}"
+#	)
+#	string(
+#		REPLACE "."
+#				""
+#				CUDA_ARCH_LIST
+#				"${INSTALLED_GPU_CCS_3}"
+#	)
+#	set(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
 endif()
 
 enable_testing()
@@ -54,7 +54,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 	add_executable(${TEST_EXE} ${TEST_FILE})
 
 	if((ENABLE_CUDA OR DEFINED CXXCUDA) AND NOT DEFINED FORCED_ARCH)
-		set_property(TARGET ${TEST_EXE} PROPERTY "${CUDA_ARCH_LIST}")
+#		set_property(TARGET ${TEST_EXE} PROPERTY "${CUDA_ARCH_LIST}")
 	endif()
 
 	if(ENABLE_CUDA OR DEFINED CXXCUDA)
