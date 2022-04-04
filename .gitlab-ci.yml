@@ -401,7 +401,7 @@ nvhpc-22.3:
        - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
        - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
        - apt-get update -y
-       - apt-get install --no-install-recommends -y nvhpc-22-3 cmake make libboost-test-dev
+       - apt-get install --no-install-recommends -y nvhpc-22-3 cmake make libboost-test-dev libboost-serialization-dev
        - /opt/nvidia/hpc_sdk/Linux_x86_64/22.3/compilers/bin/nvc++ --version
        - mkdir build && cd build
        - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/compilers/bin/nvc++ cmake ..
