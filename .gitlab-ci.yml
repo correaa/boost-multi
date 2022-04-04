@@ -354,7 +354,7 @@ cuda-11.6:
        - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
        - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
        - apt-get update -y
-       - apt-get install --no-install-recommends -y nvhpc-22-3 pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+       - apt-get install --no-install-recommends -y nvhpc-22-3 wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
        - wget https://cmake.org/files/v3.21/cmake-3.21.3-linux-x86_64.sh --no-verbose # following https://askubuntu.com/a/865294/15943
        - mkdir /opt/cmake
        - sh cmake-3.21.3-linux-x86_64.sh --skip-license --prefix=/opt/cmake
