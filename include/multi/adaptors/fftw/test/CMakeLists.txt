@@ -55,33 +55,33 @@ if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	enable_language(CUDA)
 	set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} --expt-relaxed-constexpr")
 
-	include(FindCUDA/select_compute_arch)
-	cuda_detect_installed_gpus(INSTALLED_GPU_CCS_1)
-	string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
-	string(
-		REPLACE " "
-				";"
-				INSTALLED_GPU_CCS_3
-				"${INSTALLED_GPU_CCS_2}"
-	)
-	string(
-		REPLACE "."
-				""
-				CUDA_ARCH_LIST
-				"${INSTALLED_GPU_CCS_3}"
-	)
-	set(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
+#	include(FindCUDA/select_compute_arch)
+#	cuda_detect_installed_gpus(INSTALLED_GPU_CCS_1)
+#	string(STRIP "${INSTALLED_GPU_CCS_1}" INSTALLED_GPU_CCS_2)
+#	string(
+#		REPLACE " "
+#				";"
+#				INSTALLED_GPU_CCS_3
+#				"${INSTALLED_GPU_CCS_2}"
+#	)
+#	string(
+#		REPLACE "."
+#				""
+#				CUDA_ARCH_LIST
+#				"${INSTALLED_GPU_CCS_3}"
+#	)
+#	set(CMAKE_CUDA_ARCHITECTURES ${CUDA_ARCH_LIST})
 
 endif()
 
-find_package(CUDA QUIET)
+#find_package(CUDA QUIET)
 
-if(CUDA_FOUND)
-	message("CUDA found")
-	include_directories(${CUDA_INCLUDE_DIRS})
-else()
-	message("CUDA not found")
-endif()
+#if(CUDA_FOUND)
+#	message("CUDA found")
+#	include_directories(${CUDA_INCLUDE_DIRS})
+#else()
+#	message("CUDA not found")
+#endif()
 
 enable_testing()
 list(APPEND CMAKE_CTEST_ARGUMENTS "--output-on-failure") # needs cmake 3.17
@@ -107,7 +107,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 	add_executable(${TEST_EXE} ${TEST_FILE})
 	if(ENABLE_CUDA OR DEFINED CXXCUDA)
 		set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
-		set_property(TARGET ${TEST_EXE} PROPERTY "${CUDA_ARCH_LIST}")
+	#	set_property(TARGET ${TEST_EXE} PROPERTY "${CUDA_ARCH_LIST}")
 		target_compile_options(${TEST_EXE} PRIVATE -std=c++17)
 	endif()
 	# target_compile_features   (${TEST_EXE} PUBLIC cxx_std_17)
