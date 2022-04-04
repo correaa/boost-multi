@@ -341,10 +341,10 @@ cuda-11.6:
        - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
        - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
        - apt-get update -y
-       - apt-get install --no-install-recommends -y nvhpc-22-3 cmake make libboost-test-dev libboost-serialization-dev
+       - apt-get install --no-install-recommends -y nvhpc-22-3 cmake make libboost-test-dev libboost-serialization-dev libboost-timer-dev
        - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/cuda/bin/nvcc --version
        - mkdir build && cd build
-       - CUDACXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2022/cuda/bin/nvcc CUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/2022/cuda cmake .. -DENABLE_CUDA=1
+       - cmake .. -DENABLE_CUDA=1 -DCUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda
        - cmake --build . --verbose
        - ctest --output-on-failure
 
