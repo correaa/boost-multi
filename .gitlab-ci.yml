@@ -328,12 +328,25 @@ cuda-11.5gpuci:
     script:
       - export DEBIAN_FRONTEND=noninteractive
       - apt-get update && apt-get install --no-install-recommends -y --quiet pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
-      - ln --symbolic --force . ../multi
       - nvcc --version
+      - ln --symbolic --force . ../multi
       - mkdir build && cd build
       - cmake .. -DENABLE_CUDA=1
       - cmake --build . --verbose
       - ctest --output-on-failure
+
+cuda-11.6:
+    stage: build
+    script:
+       - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
+       - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
+       - apt-get update -y
+       - apt-get install --no-install-recommends -y nvhpc-22-3 cmake make libboost-test-dev libboost-serialization-dev
+       - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/cuda/bin/nvcc --version
+       - mkdir build && cd build
+       - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2022/cuda/bin/nvcc cmake .. -DENABLE_CUDA=1
+       - cmake --build . --verbose
+       - ctest --output-on-failure
 
 g++-cppcheck:
   stage: build
