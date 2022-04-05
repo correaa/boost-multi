@@ -796,11 +796,17 @@ struct basic_array
 		return operator[](n / sub_num_elements).elements_at(n % sub_num_elements);
 	}
 
-	constexpr auto strided(typename types::index s) const -> basic_array{
-		typename types::layout_t new_layout = *this;
-		new_layout.stride_*=s;
+ private:
+	constexpr auto strided_aux(difference_type s) const -> basic_array {
+		typename types::layout_t new_layout{this->layout().sub(), this->layout().stride()*s, this->layout().offset(), this->layout().nelems()};
 		return {new_layout, types::base_};
 	}
+
+ public:
+	constexpr auto strided(difference_type s) const& -> basic_const_array {return strided_aux(s);}
+	constexpr auto strided(difference_type s)     && -> basic_array       {return strided_aux(s);}
+	constexpr auto strided(difference_type s)      & -> basic_array       {return strided_aux(s);}
+
 	constexpr auto sliced(
 		typename types::index first, typename types::index last, typename types::index stride_
 	) const -> basic_array {
