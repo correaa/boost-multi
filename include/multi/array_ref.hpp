@@ -46,6 +46,11 @@ struct pointer_traits<std::move_iterator<T*>> : std::pointer_traits<T*> {
 
 namespace boost::multi {
 
+template<class A>
+constexpr auto home(A&& a)
+->decltype(std::forward<A>(a).home()) {
+	return std::forward<A>(a).home(); }
+
 template<class T> auto modify(T const& t) -> T& {return const_cast<T&>(t);}  // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) see what is this used for
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>>
