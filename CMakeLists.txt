@@ -90,7 +90,7 @@ enable_testing()
 
 add_subdirectory(test)
 
-add_subdirectory(adaptors/blas)
-add_subdirectory(adaptors/fftw)
-add_subdirectory(adaptors/cuda)
-add_subdirectory(adaptors/thrust)
+add_subdirectory(include/multi/adaptors/blas  )
+add_subdirectory(include/multi/adaptors/fftw  )
+add_subdirectory(include/multi/adaptors/cuda  )
+add_subdirectory(include/multi/adaptors/thrust)
