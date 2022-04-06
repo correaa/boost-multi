@@ -603,6 +603,8 @@ struct basic_array
 	constexpr basic_array(layout_type const& layout, ElementPtr const& p)
 	: array_types<T, D, ElementPtr, Layout>{layout, p} {}
 
+	auto operator=(basic_array&& other) -> basic_array& {return operator=(other);}
+
  protected:
 	using types::types;
 
@@ -1197,14 +1199,14 @@ struct basic_array
 		return *this;
 	}
 
-	constexpr auto operator=(basic_array&& o)&&  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-	noexcept  // lints(hicpp-noexcept-move,performance-noexcept-move-constructor) // TODO(correaa) : make conditionally noexcept
-	-> basic_array& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-		assert(this->extensions() == o.extensions());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		if(this->is_empty()) {return *this;}
-		basic_array::operator=(o);
-		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-	}
+//	constexpr auto operator=(basic_array&& o)&&  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+//	noexcept  // lints(hicpp-noexcept-move,performance-noexcept-move-constructor) // TODO(correaa) : make conditionally noexcept?
+//	-> basic_array& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+//		assert(this->extensions() == o.extensions());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+//		if(this->is_empty()) {return *this;}
+//		basic_array::operator=(o);
+//		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+//	}
 
 	template<class TT, class... As>
 	constexpr auto operator=(basic_array<TT, D, As...> const& o)&&
