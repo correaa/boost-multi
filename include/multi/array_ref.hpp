@@ -1164,38 +1164,35 @@ struct basic_array
 		class = std::enable_if_t<not std::is_base_of<basic_array, Range>{}>,
 		class = decltype(adl_copy_n(adl_begin(std::declval<Range const&>()), std::declval<typename basic_array::size_type>(), std::declval<typename basic_array::iterator>()))
 	>
-	constexpr
-	auto operator=(Range const& r)&  // check that you LHS is not read-only
+	constexpr auto operator=(Range const& r)&  // check that you LHS is not read-only
 	-> basic_array& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 		assert(this->size() == r.size());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	//  MULTI_MARK_SCOPE(std::string{"multi::operator= D="}+std::to_string(D)+" from range to "+typeid(T).name() );
 		adl_copy_n(adl_begin(r), this->size(), begin());
 		return *this;
 	}
-
 	template<class Range, class = std::enable_if_t<not std::is_base_of<basic_array, Range>{}> >
-	constexpr
-	auto operator=(Range const& r)&&
-	-> basic_array&  {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-		operator=(r);
-		return *this;
-	}
+	constexpr auto operator=(Range const& r) && -> basic_array& {operator=(r); return *this;}
+
+	template<class TT, class... As>
+	constexpr auto operator=(basic_array<TT, D, As...> const& o) && -> basic_array& {operator=(o); return *this;}
 
 	template<class TT, class... As>
 	constexpr
 	auto operator=(basic_array<TT, D, As...> const& o) & -> basic_array& {
 		assert(this->extension() == o.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	//  MULTI_MARK_SCOPE( std::string{"multi::operator= (D="}+std::to_string(D)+") from "+typeid(TT).name()+" to "+typeid(T).name() );
-		if(this->is_empty()) {return *this;}
-		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()) {
-			this->elements() = o.elements();
-//			adl_copy_n(o.base(), o.num_elements(), this->base());
-		} else if(o.stride() < (~o).stride()) {
-			(~(*this)).elements() = o.elements();
-//			adl_copy_n( (~o).begin(), (~o).size(), (~(*this)).begin() );
-		} else {
-			assign(o.begin());
-		}
+		this->elements() = o.elements();
+//		if(this->is_empty()) {return *this;}
+//		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()) {
+//			this->elements() = o.elements();
+////			adl_copy_n(o.base(), o.num_elements(), this->base());
+//		} else if(o.stride() < (~o).stride()) {
+//			(~(*this)).elements() = o.elements();
+////			adl_copy_n( (~o).begin(), (~o).size(), (~(*this)).begin() );
+//		} else {
+//			assign(o.begin());
+//		}
 		return *this;
 	}
 
@@ -1207,13 +1204,6 @@ struct basic_array
 //		basic_array::operator=(o);
 //		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 //	}
-
-	template<class TT, class... As>
-	constexpr auto operator=(basic_array<TT, D, As...> const& o)&&
-	-> basic_array& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-		operator=(o);
-		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-	}
 
 	constexpr
 	auto operator=(basic_array               const& o) & -> basic_array& {
@@ -1545,7 +1535,7 @@ struct basic_array<T, 0, ElementPtr, Layout>
 
 	template<class Range0>
 	constexpr
-	auto operator=(Range0&& r)& -> basic_array& {
+	auto operator=(Range0 const& r) & -> basic_array& {
 		adl_copy_n(&r, 1, this->base_);
 		return *this;
 	}
