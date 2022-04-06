@@ -428,6 +428,8 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 	: base_{base}, l_{l}, n_{n}, xs_{l_.extensions()}, ns_{xs_.from_linear(n)} {}
 
  public:
+	layout_type layout() const {return l_;}
+
 	template<class Other, decltype(multi::implicit_cast<pointer>(std::declval<Other>().base_))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor
 	HD constexpr /*impl*/ elements_iterator_t(Other const& o) : elements_iterator_t{o.base_, o.l_, o.n_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
