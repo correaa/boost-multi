@@ -603,7 +603,7 @@ struct basic_array
 	constexpr basic_array(layout_type const& layout, ElementPtr const& p)
 	: array_types<T, D, ElementPtr, Layout>{layout, p} {}
 
-	auto operator=(basic_array&& other) -> basic_array& {return operator=(other);}
+	auto operator=(basic_array&& other) noexcept(false) -> basic_array& {operator=(other); return *this;}
 
  protected:
 	using types::types;
