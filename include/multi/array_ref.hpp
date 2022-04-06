@@ -796,11 +796,17 @@ struct basic_array
 		return operator[](n / sub_num_elements).elements_at(n % sub_num_elements);
 	}
 
-	constexpr auto strided(typename types::index s) const -> basic_array{
-		typename types::layout_t new_layout = *this;
-		new_layout.stride_*=s;
+ private:
+	constexpr auto strided_aux(difference_type s) const -> basic_array {
+		typename types::layout_t new_layout{this->layout().sub(), this->layout().stride()*s, this->layout().offset(), this->layout().nelems()};
 		return {new_layout, types::base_};
 	}
+
+ public:
+	constexpr auto strided(difference_type s) const& -> basic_const_array {return strided_aux(s);}
+	constexpr auto strided(difference_type s)     && -> basic_array       {return strided_aux(s);}
+	constexpr auto strided(difference_type s)      & -> basic_array       {return strided_aux(s);}
+
 	constexpr auto sliced(
 		typename types::index first, typename types::index last, typename types::index stride_
 	) const -> basic_array {
@@ -1175,7 +1181,7 @@ struct basic_array
 
 	template<class TT, class... As>
 	constexpr
-	auto operator=(basic_array<TT, D, As...> const& o)& -> basic_array& {
+	auto operator=(basic_array<TT, D, As...> const& o) & -> basic_array& {
 		assert(this->extension() == o.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	//  MULTI_MARK_SCOPE( std::string{"multi::operator= (D="}+std::to_string(D)+") from "+typeid(TT).name()+" to "+typeid(T).name() );
 		if(this->is_empty()) {return *this;}
@@ -1783,16 +1789,20 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 		return blocked(x.start(), x.finish());
 	}
 
-	constexpr auto strided(typename types::index s) const -> basic_array {
-		typename types::layout_t new_layout = this->layout();
-		new_layout.stride_*=s;
+ private:
+	constexpr auto strided_aux(difference_type s) const -> basic_array {
+		typename types::layout_t new_layout = {this->layout().sub(), this->layout().stride()*s, this->layout().offset(), this->layout().nelems()};
 		return {new_layout, types::base_};
 	}
 
-	HD constexpr auto sliced(typename types::index first, typename types::index last, typename types::index stride) const
-	-> basic_array {
-		return sliced(first, last).strided(stride);
-	}
+ public:
+	constexpr auto strided(difference_type s) const& -> basic_const_array {return strided_aux(s);}
+	constexpr auto strided(difference_type s)     && -> basic_array       {return strided_aux(s);}
+	constexpr auto strided(difference_type s)      & -> basic_array       {return strided_aux(s);}
+
+	HD constexpr auto sliced(index first, index last, difference_type stride) const& -> basic_const_array {return sliced(first, last).strided(stride);}
+	HD constexpr auto sliced(index first, index last, difference_type stride)     && -> basic_array       {return sliced(first, last).strided(stride);}
+	HD constexpr auto sliced(index first, index last, difference_type stride)      & -> basic_array       {return sliced(first, last).strided(stride);}
 
 	HD constexpr auto range(index_range const& ir)      & {return                  sliced(ir.front(), ir.last());}
 	HD constexpr auto range(index_range const& ir)     && {return std::move(*this).sliced(ir.front(), ir.last());}

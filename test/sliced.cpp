@@ -46,3 +46,17 @@ BOOST_AUTO_TEST_CASE(multi_array_sliced) {
 	BOOST_REQUIRE( &(A.rotated()).sliced(0, 5)[1][2][3][4] == &(A.rotated())[1][2][3][4] );
 }
 
+BOOST_AUTO_TEST_CASE(multi_array_stride) {
+	multi::array<double, 2> A = {
+		{ 1.,  2.,  3.,  4.},
+		{ 5.,  6.,  7.,  8.},
+		{ 9., 10., 11., 12.},
+		{13., 14., 15., 16.},
+	};
+	BOOST_REQUIRE((
+		A.strided(2) == multi::array<double, 2>{
+			{ 1.,  2.,  3.,  4.},
+			{ 9., 10., 11., 12.},
+		}
+	));
+}
