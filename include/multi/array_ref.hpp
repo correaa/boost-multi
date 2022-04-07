@@ -1214,17 +1214,18 @@ struct basic_array
 
 	constexpr
 	auto operator=(basic_array               const& o) & -> basic_array& {
-		if(this == std::addressof(o)) {return *this;}  // lints(cert-oop54-cpp)
-		if(&*this == &o) {return *this;}
+		if(  this == std::addressof(o)) {return *this;}  // lints(cert-oop54-cpp)
+		if(&*this ==               &o ) {return *this;}
 		assert(this->extension() == o.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	//  MULTI_MARK_SCOPE("multi::operator= [D="+std::to_string(D)+"] from "+typeid(T).name()+" to "+typeid(T).name() );
-		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()) {
-			adl_copy_n(o.base(), o.num_elements(), this->base());
-		} else if(o.stride() < (~o).stride()) {
-			adl_copy_n( (~o).begin(), (~o).size(), (~(*this)).begin() );
-		} else {
-			assign(o.begin());
-		}
+		elements() = o.elements();
+//		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()) {
+//			adl_copy_n(o.base(), o.num_elements(), this->base());
+//		} else if(o.stride() < (~o).stride()) {
+//			adl_copy_n( (~o).begin(), (~o).size(), (~(*this)).begin() );
+//		} else {
+//			assign(o.begin());
+//		}
 		return *this;
 	}
 
@@ -1688,17 +1689,15 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	constexpr void assign(It first, It last)&& {assign(first, last);}
 
 	auto operator=(basic_array const& o)    & -> basic_array& {  // TODO(correaa) : make sfinae friendly
-		if(this == std::addressof(o)) {return *this;}
+		if(  this == std::addressof(o)) {return *this;}
+		if(&*this ==               &o ) {return *this;}
 		assert(this->extension() == o.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	//  MULTI_MARK_SCOPE(std::string{"multi::operator= D=1 from "}+typeid(T).name()+" to "+typeid(T).name() );
-		this->assign(o.begin(), o.end());  // TODO(correaa) : improve performance by rotating
+	//	this->assign(o.begin(), o.end());
+		elements() = o.elements();
 		return *this;
 	}
-	template<class TT, dimensionality_type DD, class... As>
-	constexpr auto operator=(basic_array const& o) && -> basic_array& {  // TODO(correaa) : make sfinae friendly
-		this->operator=(o);
-		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-	}
+	constexpr auto operator=(basic_array const& o) && -> basic_array& {operator=(o); return *this;}
 
  private:
 	HD constexpr auto at_aux(index i) const -> typename basic_array::reference {
