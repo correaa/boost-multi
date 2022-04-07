@@ -20,14 +20,17 @@ BOOST_AUTO_TEST_CASE(array_reextent) {
 	BOOST_REQUIRE(size(C[0]) == 3);
 
 	A.reextent({5, 4}, 99.);
-	BOOST_REQUIRE( num_elements(A)== 20 );
-	BOOST_TEST_REQUIRE( A[1][2] == 6. );  // reextent preserves values when it can...
-	BOOST_REQUIRE( A[4][3] == 99. ); // ...and gives selected value to the rest
+	BOOST_REQUIRE( num_elements(A)== 5L*4L );
+	BOOST_REQUIRE( A[1][2] ==  6. );  // reextent preserves values when it can...
+	BOOST_REQUIRE( A[4][3] == 99. );  // ...and gives selected value to the rest
+}
 
-	A = multi::array<double, 2>(extensions(A), 123.); // this is not inefficient, it moves
+BOOST_AUTO_TEST_CASE(array_move_clear) {
+	multi::array<double, 2> A({2, 3});
+	A = multi::array<double, 2>(extensions(A), 123.);
 	BOOST_REQUIRE( A[1][2] == 123. );
 
-	clear(A); // A.clear();
+	A.clear();  // clear(A);
 	BOOST_REQUIRE( num_elements(A) == 0 );
 	BOOST_REQUIRE( size(A) == 0 );
 
@@ -43,7 +46,7 @@ BOOST_AUTO_TEST_CASE(array_reextent_1d) {
 	A.reextent(multi::extensions_t<1>{multi::iextension{20}});
 	BOOST_REQUIRE( size(A) == 20 );
 	BOOST_REQUIRE( A[9] == 4. );
-//	BOOST_REQUIRE( A[19] == 0. ); // impossible to know by sometimes 0.
+//	BOOST_REQUIRE( A[19] == 0. ); // impossible to know since it is sometimes 0.
 
 //  A.reextent(std::tuple<int>(22) );
 	A.reextent( boost::multi::tuple<int>(22) );
