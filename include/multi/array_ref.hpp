@@ -1968,10 +1968,10 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
 	template<class TT, class... As>
 	constexpr auto operator==(basic_array<TT, 1, As...> const& o) const -> bool {
-		return (this->extension() == o.extension()) and adl_equal(this->begin(), this->end(), o.begin());
+		return (this->extension() == o.extension()) and elements() == o.elements();  // adl_equal(this->begin(), this->end(), o.begin());
 	}
 	constexpr auto operator==(basic_array const& o) const -> bool {
-		return (this->extension() == o.extension()) and adl_equal(this->begin(), this->end(), o.begin());
+		return (this->extension() == o.extension()) and elements() == o.elements();  // adl_equal(this->begin(), this->end(), o.begin());
 	}
 
 	constexpr auto operator< (basic_array const& o) const& -> bool {return lexicographical_compare(*this, o);}
