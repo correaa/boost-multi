@@ -412,6 +412,8 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 	using reference =  typename std::iterator_traits<Pointer>::reference;
 	using iterator_category = std::random_access_iterator_tag;
 
+	using const_pointer = typename std::pointer_traits<pointer>::template rebind<value_type const>;
+
 	using layout_type = LayoutType;
 
  private:
@@ -428,6 +430,10 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 	: base_{base}, l_{l}, n_{n}, xs_{l_.extensions()}, ns_{xs_.from_linear(n)} {}
 
  public:
+	auto base()       ->       pointer {return base_;}
+	auto base() const -> const_pointer {return base_;}
+	auto layout() const -> layout_type {return l_;}
+
 	template<class Other, decltype(multi::implicit_cast<pointer>(std::declval<Other>().base_))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor
 	HD constexpr /*impl*/ elements_iterator_t(Other const& o) : elements_iterator_t{o.base_, o.l_, o.n_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
@@ -471,6 +477,7 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 	HD constexpr auto operator+(difference_type const& d) const -> elements_iterator_t {auto ret{*this}; ret += d; return ret;}  // explicitly necessary for nvcc/thrust
 	HD constexpr auto operator-(difference_type const& d) const -> elements_iterator_t {auto ret{*this}; ret -= d; return ret;}  // explicitly necessary for nvcc/thrust
 
+	constexpr auto current() const -> pointer {return base_ + std::apply(l_, ns_);}
 	HD constexpr auto operator->() const -> pointer   {return base_ + std::apply(l_, ns_) ;}
 	HD constexpr auto operator*()  const -> reference {return base_  [std::apply(l_, ns_)];}
 	HD constexpr auto operator[](difference_type const& d) const -> reference {
@@ -630,7 +637,7 @@ struct basic_array
  public:
 	constexpr auto       elements()      & ->       elements_range {return elements_aux();}
 	constexpr auto       elements()     && ->       elements_range {return elements_aux();}
-	constexpr auto       elements() const& -> const_elements_range {return const_elements_range{this->base(), this->layout()};}
+	constexpr auto       elements() const& -> const_elements_range {return const_elements_range{this->base(), this->layout()};}  // TODO(correaa) simplify
 	constexpr auto const_elements() const  -> const_elements_range {return elements_aux();}
 
 	constexpr auto hull() const -> std::pair<element_const_ptr, size_type> {
@@ -1164,38 +1171,35 @@ struct basic_array
 		class = std::enable_if_t<not std::is_base_of<basic_array, Range>{}>,
 		class = decltype(adl_copy_n(adl_begin(std::declval<Range const&>()), std::declval<typename basic_array::size_type>(), std::declval<typename basic_array::iterator>()))
 	>
-	constexpr
-	auto operator=(Range const& r)&  // check that you LHS is not read-only
+	constexpr auto operator=(Range const& r)&  // check that you LHS is not read-only
 	-> basic_array& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 		assert(this->size() == r.size());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	//  MULTI_MARK_SCOPE(std::string{"multi::operator= D="}+std::to_string(D)+" from range to "+typeid(T).name() );
 		adl_copy_n(adl_begin(r), this->size(), begin());
 		return *this;
 	}
-
 	template<class Range, class = std::enable_if_t<not std::is_base_of<basic_array, Range>{}> >
-	constexpr
-	auto operator=(Range const& r)&&
-	-> basic_array&  {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-		operator=(r);
-		return *this;
-	}
+	constexpr auto operator=(Range const& r) && -> basic_array& {operator=(r); return *this;}
+
+	template<class TT, class... As>
+	constexpr auto operator=(basic_array<TT, D, As...> const& o) && -> basic_array& {operator=(o); return *this;}
 
 	template<class TT, class... As>
 	constexpr
 	auto operator=(basic_array<TT, D, As...> const& o) & -> basic_array& {
 		assert(this->extension() == o.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	//  MULTI_MARK_SCOPE( std::string{"multi::operator= (D="}+std::to_string(D)+") from "+typeid(TT).name()+" to "+typeid(T).name() );
-		if(this->is_empty()) {return *this;}
-		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()) {
-			this->elements() = o.elements();
-//			adl_copy_n(o.base(), o.num_elements(), this->base());
-		} else if(o.stride() < (~o).stride()) {
-			(~(*this)).elements() = o.elements();
-//			adl_copy_n( (~o).begin(), (~o).size(), (~(*this)).begin() );
-		} else {
-			assign(o.begin());
-		}
+		this->elements() = o.elements();
+//		if(this->is_empty()) {return *this;}
+//		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()) {
+//			this->elements() = o.elements();
+////			adl_copy_n(o.base(), o.num_elements(), this->base());
+//		} else if(o.stride() < (~o).stride()) {
+//			(~(*this)).elements() = o.elements();
+////			adl_copy_n( (~o).begin(), (~o).size(), (~(*this)).begin() );
+//		} else {
+//			assign(o.begin());
+//		}
 		return *this;
 	}
 
@@ -1207,13 +1211,6 @@ struct basic_array
 //		basic_array::operator=(o);
 //		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 //	}
-
-	template<class TT, class... As>
-	constexpr auto operator=(basic_array<TT, D, As...> const& o)&&
-	-> basic_array& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-		operator=(o);
-		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-	}
 
 	constexpr
 	auto operator=(basic_array               const& o) & -> basic_array& {
@@ -1545,7 +1542,7 @@ struct basic_array<T, 0, ElementPtr, Layout>
 
 	template<class Range0>
 	constexpr
-	auto operator=(Range0&& r)& -> basic_array& {
+	auto operator=(Range0 const& r) & -> basic_array& {
 		adl_copy_n(&r, 1, this->base_);
 		return *this;
 	}
@@ -1773,7 +1770,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
  public:
 	constexpr auto  elements()      & ->       elements_range {return elements_aux();}
 	constexpr auto  elements()     && ->       elements_range {return elements_aux();}
-	constexpr auto  elements() const& -> const_elements_range {return elements_aux();}
+	constexpr auto  elements() const& -> const_elements_range {return const_elements_range{this->base(), this->layout()};}  // TODO(correaa) simplify
 	constexpr auto celements() const  -> const_elements_range {return elements_aux();}
 
 	constexpr auto hull() const -> std::pair<element_const_ptr, size_type> {
@@ -1910,38 +1907,9 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	constexpr auto   rotated()     && -> decltype(auto) {return operator()();}
 	constexpr auto   rotated() const& -> decltype(auto) {return operator()();}
 
-//	constexpr auto   rotated(dimensionality_type d)      & -> decltype(auto) {
-//		assert(d == 1); (void)d;
-//		return operator()();
-//	}
-//	constexpr auto   rotated(dimensionality_type d)     && -> decltype(auto) {
-//		assert(d == 1); (void)d;
-//		return operator()();
-//	}
-//	constexpr auto   rotated(dimensionality_type d) const& -> decltype(auto) {
-//		assert(d == 1); (void)d;
-//		return operator()();
-//	}
-
 	HD constexpr auto unrotated() const& -> decltype(auto) {return operator()();}
 	HD constexpr auto unrotated()     && -> decltype(auto) {return operator()();}
 	HD constexpr auto unrotated()      & -> decltype(auto) {return operator()();}
-
-//	constexpr auto unrotated(dimensionality_type d)      & -> decltype(auto) {
-//		assert(d == 1); (void)d;
-//		return operator()();
-//	}
-//	constexpr auto unrotated(dimensionality_type d)     && -> decltype(auto) {
-//		assert(d == 1); (void)d;
-//		return operator()();
-//	}
-//	constexpr auto unrotated(dimensionality_type d) const& -> decltype(auto) {
-//		assert(d == 1); (void)d;
-//		return operator()();
-//	}
-
-//	constexpr auto operator<<(dimensionality_type i) const -> decltype(auto) {return   rotated(i);}
-//	constexpr auto operator>>(dimensionality_type i) const -> decltype(auto) {return unrotated(i);}
 
 	using         iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_ptr      >;
 	using   const_iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_const_ptr>;
@@ -1984,28 +1952,13 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	friend constexpr auto cbegin(basic_array const& s) {return s.cbegin();}
 	friend constexpr auto cend  (basic_array const& s) {return s.cend()  ;}
 
-	template<class TT, class... As, class = decltype(
-		adl_copy(
-			std::declval<basic_array<TT, 1, As...> const&>().begin(),
-			std::declval<basic_array<TT, 1, As...> const&>().end()  ,
-			std::declval<iterator>()
-		)
-	)>
-	constexpr
-	auto operator=(basic_array<TT, 1, As...> const& other)&& -> basic_array& {
-		assert( this->extensions() == other.extensions() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-	//  MULTI_MARK_SCOPE(std::string{"multi::operator= D=1 from "}+typeid(TT).name()+" to "+typeid(T).name() ); // this is not the place for benchmark, benchmark implementations
-		if(this->is_empty()) {return *this;}
-		adl_copy(other.begin(), other.end(), this->begin());
-		return *this;
-	}
+	template<class TT, class... As>
+	constexpr auto operator=(basic_array<TT, 1, As...> const& o) && -> basic_array& {operator=(o); return *this;}
 
 	template<class TT, class... As>
-	constexpr
-	auto operator=(basic_array<TT, 1, As...> const& other)& -> basic_array& {
-		assert(this->extensions() == other.extensions());
-		if(this->is_empty()) {return *this;}
-		adl_copy(other.begin(), other.end(), this->begin());
+	constexpr auto operator=(basic_array<TT, 1, As...> const& o)  & -> basic_array& {
+		assert(this->extensions() == o.extensions());
+		elements() = o.elements();
 		return *this;
 	}
 
@@ -2015,10 +1968,10 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
 	template<class TT, class... As>
 	constexpr auto operator==(basic_array<TT, 1, As...> const& o) const -> bool {
-		return (this->extension() == o.extension()) and adl_equal(this->begin(), this->end(), o.begin());
+		return (this->extension() == o.extension()) and elements() == o.elements();  // adl_equal(this->begin(), this->end(), o.begin());
 	}
 	constexpr auto operator==(basic_array const& o) const -> bool {
-		return (this->extension() == o.extension()) and adl_equal(this->begin(), this->end(), o.begin());
+		return (this->extension() == o.extension()) and elements() == o.elements();  // adl_equal(this->begin(), this->end(), o.begin());
 	}
 
 	constexpr auto operator< (basic_array const& o) const& -> bool {return lexicographical_compare(*this, o);}

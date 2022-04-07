@@ -86,20 +86,15 @@ public:
 } adl_fill_n;
 
 constexpr class adl_equal_t {
-	template<         class...As> constexpr auto _(priority<1>/**/,        As&&...as) const DECLRETURN(   std::equal(std::forward<As>(as)...))
-#ifdef THRUST_VERSION
-	template<         class...As> constexpr auto _(priority<2>/**/,        As&&...as) const DECLRETURN(::thrust::equal(std::forward<As>(as)...))
+	template<         class...As> constexpr auto _(priority<1>/**/,        As&&...as) const DECLRETURN(               std::equal(                    std::forward<As>(as)...))
+#if defined(__NVCC__)
+	template<         class...As> constexpr auto _(priority<2>/**/,        As&&...as) const DECLRETURN(          ::thrust::equal(                    std::forward<As>(as)...))
 #endif
-//#ifndef THRUST_VERSION
-	template<         class...As> constexpr auto _(priority<3>/**/,        As&&...as) const DECLRETURN(        equal(std::forward<As>(as)...))
-//#endif
-	template<class T, class...As> constexpr auto _(priority<4>/**/, T&& t, As&&...as) const DECLRETURN( std::forward<T>(t).equal(std::forward<As>(as)...))
+	template<         class...As> constexpr auto _(priority<3>/**/,        As&&...as) const DECLRETURN(                    equal(                    std::forward<As>(as)...))
+	template<class T, class...As> constexpr auto _(priority<4>/**/, T&& t, As&&...as) const DECLRETURN( std::decay_t<T>::  equal(std::forward<T>(t), std::forward<As>(as)...))
+	template<class T, class...As> constexpr auto _(priority<5>/**/, T&& t, As&&...as) const DECLRETURN( std::forward<T>(t).equal(                    std::forward<As>(as)...))
 public:
-	template<class...As> constexpr auto operator()(As&&...as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
-//#ifdef THRUST_VERSION
-//	template<class It, class...As, class=std::enable_if_t<(It::dimensionality > 1)> >
-//	                     constexpr auto operator()(It begin, As... as) const DECLRETURN(_(priority<1>{}, begin, as...))
-//#endif
+	template<class...As> constexpr auto operator()(As&&...as) const DECLRETURN(_(priority<5>{}, std::forward<As>(as)...))
 } adl_equal;
 
 template<class... Args> struct adl_custom_copy;

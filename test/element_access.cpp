@@ -236,6 +236,14 @@ BOOST_AUTO_TEST_CASE(multi_elements_iterator) {
 	BOOST_REQUIRE( A().elements().begin()[7] == 7. );
 }
 
+BOOST_AUTO_TEST_CASE(multi_elements_iterator_1D) {
+	multi::array<double, 1> A({100}, 0.);
+	std::iota(A.data_elements(), A.data_elements() + A.num_elements(), 0.);
+
+	BOOST_REQUIRE( A().elements()[7] == 7. );
+	BOOST_REQUIRE( A().elements().begin()[7] == 7. );
+}
+
 BOOST_AUTO_TEST_CASE(multi_range_rotated) {
 	multi::array<double, 5> A({3, 5, 7, 11, 13});
 

@@ -435,7 +435,7 @@ struct layout_t<0, SSize>
 	constexpr auto   rotate() -> layout_t& {return *this;}
 	constexpr auto unrotate() -> layout_t& {return *this;}
 
-	constexpr auto hull_size() const -> size_type {return num_elements();}
+	constexpr auto hull_size() const -> size_type {return num_elements();}  // not in bytes
 };
 
 #if 0
