@@ -421,13 +421,15 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 	layout_type l_;
 	difference_type n_ = 0;
 	extensions_t<layout_type::dimensionality> xs_;
-	typename extensions_t<layout_type::dimensionality>::indices_type ns_ = {};
+
+	using indices_type = typename extensions_t<layout_type::dimensionality>::indices_type;
+	indices_type ns_ = {};
 
 	template<class, class> friend struct elements_iterator_t;
 	template<class, class> friend struct elements_range_t;
 
 	constexpr elements_iterator_t(pointer base, layout_type l, difference_type n)
-	: base_{base}, l_{l}, n_{n}, xs_{l_.extensions()}, ns_{xs_.from_linear(n)} {}
+	: base_{base}, l_{l}, n_{n}, xs_{l_.extensions()}, ns_{l.is_empty()?indices_type{}:xs_.from_linear(n)} {}
 
  public:
 	auto base()       ->       pointer {return base_;}
@@ -526,14 +528,21 @@ struct elements_range_t {
 	constexpr elements_range_t(pointer base, layout_type l) : base_{base}, l_{l} {}
 
  private:
-	constexpr auto at_aux(difference_type n) const -> reference {return base_[std::apply(l_, l_.extensions().from_linear(n))];}
+	constexpr auto at_aux(difference_type n) const -> reference {
+		assert( not is_empty() );
+		return base_[std::apply(l_, l_.extensions().from_linear(n))];
+	}
 
  public:
 	constexpr auto operator[](difference_type n) const& -> const_reference {return at_aux(n);}
 	constexpr auto operator[](difference_type n)     && ->       reference {return at_aux(n);}
 	constexpr auto operator[](difference_type n)      & ->       reference {return at_aux(n);}
 
-	constexpr auto size() const {return l_.num_elements();}
+	constexpr auto size() const -> size_type {return l_.num_elements();}
+
+	[[nodiscard]]
+	constexpr auto    empty() const -> bool {return l_.   empty();}
+	constexpr auto is_empty() const -> bool {return l_.is_empty();}
 
 	elements_range_t(elements_range_t const&) = delete;
 	elements_range_t(elements_range_t     &&) = delete;
@@ -542,7 +551,7 @@ struct elements_range_t {
 	auto operator=(elements_range_t     &&) -> elements_range_t& = delete;
 
 	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL> const& o)  & -> elements_range_t& {assert(size() == o.size()); adl_copy(o.begin(), o.end(), begin()); return *this;}
-	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL> const& o) && -> elements_range_t& {assert(size() == o.size()); adl_copy(o.begin(), o.end(), begin()); return *this;}
+	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL> const& o) && -> elements_range_t& {operator=(o); return *this;}
 
 	template<typename OP, class OL> auto operator==(elements_range_t<OP, OL> const& o) const -> bool {return size() == o.size() and     adl_equal(o.begin(), o.end(), begin());}
 	template<typename OP, class OL> auto operator!=(elements_range_t<OP, OL> const& o) const -> bool {return size() != o.size() or  not adl_equal(o.begin(), o.end(), begin());}
@@ -1214,8 +1223,8 @@ struct basic_array
 
 	constexpr
 	auto operator=(basic_array               const& o) & -> basic_array& {
-		if(  this == std::addressof(o)) {return *this;}  // lints(cert-oop54-cpp)
-		if(&*this ==               &o ) {return *this;}
+		if(this == std::addressof(o)) {return *this;}  // lints(cert-oop54-cpp)
+		if(&*this == &o) {return *this;}
 		assert(this->extension() == o.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	//  MULTI_MARK_SCOPE("multi::operator= [D="+std::to_string(D)+"] from "+typeid(T).name()+" to "+typeid(T).name() );
 		elements() = o.elements();
@@ -1697,7 +1706,10 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 		elements() = o.elements();
 		return *this;
 	}
-	constexpr auto operator=(basic_array const& o) && -> basic_array& {operator=(o); return *this;}
+	constexpr auto operator=(basic_array const& o) && -> basic_array& {
+		if(this == std::addressof(o)) {return *this;}  // lints cert-oop54-cpp
+		operator=(o); return *this;
+	}
 
  private:
 	HD constexpr auto at_aux(index i) const -> typename basic_array::reference {
