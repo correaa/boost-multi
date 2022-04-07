@@ -87,7 +87,7 @@ namespace thrust {
 namespace boost::multi {
 
 // copy_n
-#if 0
+#if 1
 template<class Q1, class L1, class Size, class Q2, class L2>
 auto copy_n(
 	boost::multi::elements_iterator_t<                        Q1*, L1>   first, Size count,
