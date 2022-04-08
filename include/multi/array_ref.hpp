@@ -421,13 +421,15 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 	layout_type l_;
 	difference_type n_ = 0;
 	extensions_t<layout_type::dimensionality> xs_;
-	typename extensions_t<layout_type::dimensionality>::indices_type ns_ = {};
+
+	using indices_type = typename extensions_t<layout_type::dimensionality>::indices_type;
+	indices_type ns_ = {};
 
 	template<class, class> friend struct elements_iterator_t;
 	template<class, class> friend struct elements_range_t;
 
 	constexpr elements_iterator_t(pointer base, layout_type l, difference_type n)
-	: base_{base}, l_{l}, n_{n}, xs_{l_.extensions()}, ns_{xs_.from_linear(n)} {}
+	: base_{base}, l_{l}, n_{n}, xs_{l_.extensions()}, ns_{l.is_empty()?indices_type{}:xs_.from_linear(n)} {}
 
  public:
 	auto base()       ->       pointer {return base_;}
@@ -526,14 +528,21 @@ struct elements_range_t {
 	constexpr elements_range_t(pointer base, layout_type l) : base_{base}, l_{l} {}
 
  private:
-	constexpr auto at_aux(difference_type n) const -> reference {return base_[std::apply(l_, l_.extensions().from_linear(n))];}
+	constexpr auto at_aux(difference_type n) const -> reference {
+		assert( not is_empty() );
+		return base_[std::apply(l_, l_.extensions().from_linear(n))];
+	}
 
  public:
 	constexpr auto operator[](difference_type n) const& -> const_reference {return at_aux(n);}
 	constexpr auto operator[](difference_type n)     && ->       reference {return at_aux(n);}
 	constexpr auto operator[](difference_type n)      & ->       reference {return at_aux(n);}
 
-	constexpr auto size() const {return l_.num_elements();}
+	constexpr auto size() const -> size_type {return l_.num_elements();}
+
+	[[nodiscard]]
+	constexpr auto    empty() const -> bool {return l_.   empty();}
+	constexpr auto is_empty() const -> bool {return l_.is_empty();}
 
 	elements_range_t(elements_range_t const&) = delete;
 	elements_range_t(elements_range_t     &&) = delete;
@@ -541,11 +550,17 @@ struct elements_range_t {
 	auto operator=(elements_range_t const&) -> elements_range_t& = delete;
 	auto operator=(elements_range_t     &&) -> elements_range_t& = delete;
 
-	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL> const& o)  & -> elements_range_t& {assert(size() == o.size()); adl_copy(o.begin(), o.end(), begin()); return *this;}
-	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL> const& o) && -> elements_range_t& {assert(size() == o.size()); adl_copy(o.begin(), o.end(), begin()); return *this;}
+	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL> const& o)  & -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
+	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL> const& o) && -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
 
-	template<typename OP, class OL> auto operator==(elements_range_t<OP, OL> const& o) const -> bool {return size() == o.size() and     adl_equal(o.begin(), o.end(), begin());}
-	template<typename OP, class OL> auto operator!=(elements_range_t<OP, OL> const& o) const -> bool {return size() != o.size() or  not adl_equal(o.begin(), o.end(), begin());}
+	template<typename OP, class OL> auto operator==(elements_range_t<OP, OL> const& o) const -> bool {
+		if( is_empty() and o.is_empty()) {return true;}
+		return size() == o.size() and     adl_equal(o.begin(), o.end(), begin());
+	}
+	template<typename OP, class OL> auto operator!=(elements_range_t<OP, OL> const& o) const -> bool {
+		if( is_empty() and o.is_empty()) {return false;}
+		return size() != o.size() or  not adl_equal(o.begin(), o.end(), begin());
+	}
 
 	template<typename OP, class OL> void swap(elements_range_t<OP, OL>&  o)  & {assert(size() == o.size()); adl_swap_ranges(begin(), end(), o.begin());}
 	template<typename OP, class OL> void swap(elements_range_t<OP, OL>&  o) && {assert(size() == o.size()); adl_swap_ranges(begin(), end(), o.begin());}
@@ -1218,13 +1233,14 @@ struct basic_array
 		if(&*this == &o) {return *this;}
 		assert(this->extension() == o.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	//  MULTI_MARK_SCOPE("multi::operator= [D="+std::to_string(D)+"] from "+typeid(T).name()+" to "+typeid(T).name() );
-		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()) {
-			adl_copy_n(o.base(), o.num_elements(), this->base());
-		} else if(o.stride() < (~o).stride()) {
-			adl_copy_n( (~o).begin(), (~o).size(), (~(*this)).begin() );
-		} else {
-			assign(o.begin());
-		}
+		elements() = o.elements();
+//		if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()) {
+//			adl_copy_n(o.base(), o.num_elements(), this->base());
+//		} else if(o.stride() < (~o).stride()) {
+//			adl_copy_n( (~o).begin(), (~o).size(), (~(*this)).begin() );
+//		} else {
+//			assign(o.begin());
+//		}
 		return *this;
 	}
 
@@ -1688,16 +1704,17 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	constexpr void assign(It first, It last)&& {assign(first, last);}
 
 	auto operator=(basic_array const& o)    & -> basic_array& {  // TODO(correaa) : make sfinae friendly
-		if(this == std::addressof(o)) {return *this;}
+		if(  this == std::addressof(o)) {return *this;}
+		if(&*this ==               &o ) {return *this;}
 		assert(this->extension() == o.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	//  MULTI_MARK_SCOPE(std::string{"multi::operator= D=1 from "}+typeid(T).name()+" to "+typeid(T).name() );
-		this->assign(o.begin(), o.end());  // TODO(correaa) : improve performance by rotating
+	//	this->assign(o.begin(), o.end());
+		elements() = o.elements();
 		return *this;
 	}
-	template<class TT, dimensionality_type DD, class... As>
-	constexpr auto operator=(basic_array const& o) && -> basic_array& {  // TODO(correaa) : make sfinae friendly
-		this->operator=(o);
-		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+	constexpr auto operator=(basic_array const& o) && -> basic_array& {
+		if(this == std::addressof(o)) {return *this;}  // lints cert-oop54-cpp
+		operator=(o); return *this;
 	}
 
  private:
