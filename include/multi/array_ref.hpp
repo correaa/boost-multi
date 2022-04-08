@@ -550,11 +550,17 @@ struct elements_range_t {
 	auto operator=(elements_range_t const&) -> elements_range_t& = delete;
 	auto operator=(elements_range_t     &&) -> elements_range_t& = delete;
 
-	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL> const& o)  & -> elements_range_t& {assert(size() == o.size()); adl_copy(o.begin(), o.end(), begin()); return *this;}
-	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL> const& o) && -> elements_range_t& {operator=(o); return *this;}
+	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL> const& o)  & -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
+	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL> const& o) && -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
 
-	template<typename OP, class OL> auto operator==(elements_range_t<OP, OL> const& o) const -> bool {return size() == o.size() and     adl_equal(o.begin(), o.end(), begin());}
-	template<typename OP, class OL> auto operator!=(elements_range_t<OP, OL> const& o) const -> bool {return size() != o.size() or  not adl_equal(o.begin(), o.end(), begin());}
+	template<typename OP, class OL> auto operator==(elements_range_t<OP, OL> const& o) const -> bool {
+		if( is_empty() and o.is_empty()) {return true;}
+		return size() == o.size() and     adl_equal(o.begin(), o.end(), begin());
+	}
+	template<typename OP, class OL> auto operator!=(elements_range_t<OP, OL> const& o) const -> bool {
+		if( is_empty() and o.is_empty()) {return false;}
+		return size() != o.size() or  not adl_equal(o.begin(), o.end(), begin());
+	}
 
 	template<typename OP, class OL> void swap(elements_range_t<OP, OL>&  o)  & {assert(size() == o.size()); adl_swap_ranges(begin(), end(), o.begin());}
 	template<typename OP, class OL> void swap(elements_range_t<OP, OL>&  o) && {assert(size() == o.size()); adl_swap_ranges(begin(), end(), o.begin());}
