@@ -548,12 +548,6 @@ struct elements_range_t {
 	elements_range_t(elements_range_t const&) = delete;
 	elements_range_t(elements_range_t     &&) = delete;
 
-	auto operator=(elements_range_t const&) -> elements_range_t& = delete;
-	auto operator=(elements_range_t     &&) -> elements_range_t& = delete;
-
-	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL> const& o)  & -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
-	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL> const& o) && -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
-
 	template<typename OP, class OL> auto operator==(elements_range_t<OP, OL> const& o) const -> bool {
 		if( is_empty() and o.is_empty()) {return true;}
 		return size() == o.size() and     adl_equal(o.begin(), o.end(), begin());
@@ -597,6 +591,32 @@ struct elements_range_t {
 
 	constexpr auto front()      & ->       reference {return front_aux();}
 	constexpr auto back()       & ->       reference {return back_aux ();}
+
+	auto operator=(elements_range_t const&) -> elements_range_t& = delete;
+	auto operator=(elements_range_t     &&) -> elements_range_t& = delete;
+
+	template<class OtherElementRange, class = decltype(adl_copy(std::declval<OtherElementRange&&>().begin(), std::declval<OtherElementRange&&>().end(), std::declval<iterator>()))>
+	auto operator=(OtherElementRange&& o)  & -> elements_range_t& {assert(size() == o.size());
+		if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());};
+		return *this;
+	}
+
+	template<class OtherElementRange, class = decltype(adl_copy(std::declval<OtherElementRange&&>().begin(), std::declval<OtherElementRange&&>().end(), std::declval<iterator>()))>
+	auto operator=(OtherElementRange&& o) && -> elements_range_t& {assert(size() == o.size());
+		if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());};
+		return *this;
+	}
+
+#if 0
+	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL> const& o)  & -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
+	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL> const& o) && -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
+
+	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL>     && o)  & -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
+	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL>     && o) && -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
+
+	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL>      & o)  & -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
+	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL>      & o) && -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
+#endif
 };
 
 template<class It>
