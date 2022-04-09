@@ -291,7 +291,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	~static_array() noexcept {destroy(); deallocate();}
 
 	using element_const_ptr = typename std::pointer_traits<typename static_array::element_ptr>::template rebind<typename static_array::element const>;
-	using element_move_ptr  = std::move_iterator<typename static_array::element_ptr>;
+	using element_move_ptr  = multi::move_ptr<typename static_array::element_ptr>;
 
 	using reference = typename std::conditional<
 		(D > 1),
@@ -877,16 +877,16 @@ struct array : static_array<T, D, Alloc> {
 		return *this;
 	}
 
-	auto operator=(basic_array<T, D, multi::move_ptr<typename array::element, typename array::element_ptr>>& other) -> array& {
-		if(other.layout() != this->layout()) {
-			array::operator=(other.template static_array_cast<typename array::element, typename array::element_ptr>());
-			return *this;
-		}
-		if(this->base_ != other.base_) {
-			other.base_ = nullptr;
-		}
-		return *this;
-	}
+//	auto operator=(basic_array<T, D, multi::move_ptr<typename array::element, typename array::element_ptr>>& other) -> array& {
+//		if(other.layout() != this->layout()) {
+//			array::operator=(other.template static_array_cast<typename array::element, typename array::element_ptr>());
+//			return *this;
+//		}
+//		if(this->base_ != other.base_) {
+//			other.base_ = nullptr;
+//		}
+//		return *this;
+//	}
 	friend void swap(array& a, array& b) {a.swap(b);}
 	void assign(typename array::extensions_type x, typename array::element const& e) {
 		if(array::extensions() == x) {
