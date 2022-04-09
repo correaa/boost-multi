@@ -29,6 +29,12 @@ template<class T, class Ptr = T*> struct move_ptr : private std::move_iterator<P
 	using reference = typename std::move_iterator<Ptr>::reference;
 	using iterator_category = typename std::iterator_traits<std::move_iterator<Ptr>>::iterator_category;
 
+	template<class U> using rebind = std::conditional_t<
+		std::is_const_v<U>,
+		typename std::pointer_traits<Ptr>::template rebind<U>,
+		move_ptr<U, U*>
+	>;
+
 	using std::move_iterator<Ptr>::move_iterator;
 
 	constexpr /*implicit*/ operator Ptr() const {return std::move_iterator<Ptr>::base();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) decay to lvalue should be easy
