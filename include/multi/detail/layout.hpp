@@ -405,8 +405,8 @@ struct layout_t<0, SSize>
 	[[nodiscard]] constexpr auto num_elements()        const     {return nelems_;}
 	friend        constexpr auto num_elements(layout_t const& s) {return s.num_elements();}
 
-	[[nodiscard]] constexpr auto empty()        const     {return nelems_ == 0;}
-	friend        constexpr auto empty(layout_t const& s) {return s.empty();}
+	[[nodiscard]] constexpr auto empty()        const     noexcept {return nelems_ == 0;}
+	friend        constexpr auto empty(layout_t const& s) noexcept {return s.empty();}
 
 	[[nodiscard]] constexpr auto sizes()        const     {return tuple<>{};}
 	friend        constexpr auto sizes(layout_t const& s) {return s.sizes();}
@@ -715,10 +715,10 @@ struct layout_t
 	       constexpr auto num_elements()        const&    -> size_type {return size()*sub_.num_elements();}
 	friend constexpr auto num_elements(layout_t const& s) -> size_type {return s.num_elements();}
 
-	       constexpr auto is_empty()        const     {return nelems_ == 0;}
-	friend constexpr auto is_empty(layout_t const& s) {return s.is_empty();}
+	       constexpr auto is_empty()        const     noexcept {return nelems_ == 0;}
+	friend constexpr auto is_empty(layout_t const& s) noexcept {return s.is_empty();}
 
-	constexpr auto    empty()        const {return is_empty();}
+	constexpr auto    empty()        const noexcept {return is_empty();}
 
 	friend constexpr auto size(layout_t const& l) -> size_type {return l.size();}
 	       constexpr auto size()        const&    -> size_type {
