@@ -65,6 +65,7 @@ struct array_types : Layout {  // cppcheck-suppress syntaxError ; false positive
 
 	using element_ptr       = ElementPtr;
 	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element const>;
+	using element_move_ptr  = multi::move_ptr<element, element_ptr>;
 
 	using element_ref = typename std::iterator_traits<element_ptr>::reference;
 
@@ -547,12 +548,6 @@ struct elements_range_t {
 	elements_range_t(elements_range_t const&) = delete;
 	elements_range_t(elements_range_t     &&) = delete;
 
-	auto operator=(elements_range_t const&) -> elements_range_t& = delete;
-	auto operator=(elements_range_t     &&) -> elements_range_t& = delete;
-
-	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL> const& o)  & -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
-	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL> const& o) && -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
-
 	template<typename OP, class OL> auto operator==(elements_range_t<OP, OL> const& o) const -> bool {
 		if( is_empty() and o.is_empty()) {return true;}
 		return size() == o.size() and     adl_equal(o.begin(), o.end(), begin());
@@ -596,6 +591,32 @@ struct elements_range_t {
 
 	constexpr auto front()      & ->       reference {return front_aux();}
 	constexpr auto back()       & ->       reference {return back_aux ();}
+
+	auto operator=(elements_range_t const&) -> elements_range_t& = delete;
+	auto operator=(elements_range_t     &&) -> elements_range_t& = delete;
+
+	template<class OtherElementRange, class = decltype(adl_copy(std::declval<OtherElementRange&&>().begin(), std::declval<OtherElementRange&&>().end(), std::declval<iterator>()))>
+	auto operator=(OtherElementRange&& o)  & -> elements_range_t& {assert(size() == o.size());
+		if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());};
+		return *this;
+	}
+
+	template<class OtherElementRange, class = decltype(adl_copy(std::declval<OtherElementRange&&>().begin(), std::declval<OtherElementRange&&>().end(), std::declval<iterator>()))>
+	auto operator=(OtherElementRange&& o) && -> elements_range_t& {assert(size() == o.size());
+		if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());};
+		return *this;
+	}
+
+#if 0
+	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL> const& o)  & -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
+	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL> const& o) && -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
+
+	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL>     && o)  & -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
+	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL>     && o) && -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
+
+	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL>      & o)  & -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
+	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL>      & o) && -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
+#endif
 };
 
 template<class It>
@@ -639,6 +660,7 @@ struct basic_array
 	using element           = typename types::element;
 	using element_ptr       = typename types::element_ptr;
 	using element_const_ptr = typename types::element_const_ptr;
+	using element_move_ptr  = multi::move_ptr<element, element_ptr>;
 
 	using  elements_iterator = elements_iterator_t<element_ptr      , layout_type>;
 	using celements_iterator = elements_iterator_t<element_const_ptr, layout_type>;
@@ -1346,6 +1368,8 @@ struct basic_array
 	constexpr auto as_const() const {
 		return rebind<element, element_const_ptr>{this->layout(), this->base()};
 	}
+	constexpr auto moved() && {return rebind<element, element_move_ptr>{this->layout(), element_move_ptr{this->base()}};}
+	constexpr auto moved()  & {return rebind<element, element_move_ptr>{this->layout(), element_move_ptr{this->base()}};}
 
  private:
 	template<class T2, class P2>
@@ -1788,6 +1812,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	constexpr auto  elements()      & ->       elements_range {return elements_aux();}
 	constexpr auto  elements()     && ->       elements_range {return elements_aux();}
 	constexpr auto  elements() const& -> const_elements_range {return const_elements_range{this->base(), this->layout()};}  // TODO(correaa) simplify
+
 	constexpr auto celements() const  -> const_elements_range {return elements_aux();}
 
 	constexpr auto hull() const -> std::pair<element_const_ptr, size_type> {
@@ -2014,9 +2039,6 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	}
 
  public:
-//	template<class O> constexpr auto operator<(O const& o) const -> bool {return lexicographical_compare(*this, o);}
-//	template<class O> constexpr auto operator>(O const& o) const -> bool {return lexicographical_compare(o, *this);}
-
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
 	constexpr auto static_array_cast() const -> basic_array<T2, 1, P2> {  // name taken from std::static_pointer_cast
 		return {this->layout(), static_cast<P2>(this->base())};
@@ -2042,6 +2064,12 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 #else
 		return {this->layout().scale(sizeof(T)/sizeof(T2)), static_cast<P2>(&(this->base_->*pm))};  // this crashes nvcc 11.2-11.4 and some? gcc compiler
 #endif
+	}
+
+	using element_move_ptr = typename multi::move_ptr<typename basic_array::element, typename basic_array::element_ptr>;
+
+	constexpr auto moved() && {
+		return basic_array<typename basic_array::element, 1, element_move_ptr>{this->layout(), element_move_ptr{this->base()}};
 	}
 
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>

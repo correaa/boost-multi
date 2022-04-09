@@ -22,9 +22,31 @@ constexpr auto implicit_cast(From&& f) -> To {return static_cast<To>(f);}
 template<class To, class From, std::enable_if_t<std::is_constructible<To, From>{} and not std::is_convertible<From, To>{}, int> = 0>
 constexpr auto explicit_cast(From&& f) -> To {return static_cast<To>(f);}
 
-template<class T, class Ptr = T*> struct move_ptr : std::move_iterator<Ptr> {
+template<class T, class Ptr = T*> struct move_ptr : private std::move_iterator<Ptr> {
+	using difference_type = typename std::iterator_traits<std::move_iterator<Ptr>>::difference_type;
+	using value_type = typename std::iterator_traits<std::move_iterator<Ptr>>::value_type;
+	using pointer = Ptr;
+	using reference = typename std::move_iterator<Ptr>::reference;
+	using iterator_category = typename std::iterator_traits<std::move_iterator<Ptr>>::iterator_category;
+
+	template<class U> using rebind = std::conditional_t<
+		std::is_const_v<U>,
+		typename std::pointer_traits<Ptr>::template rebind<U>,
+		move_ptr<U, U*>
+	>;
+
 	using std::move_iterator<Ptr>::move_iterator;
-	explicit operator Ptr() const {return std::move_iterator<Ptr>::base();}
+
+	constexpr /*implicit*/ operator Ptr() const {return std::move_iterator<Ptr>::base();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) decay to lvalue should be easy
+	constexpr auto operator+=(difference_type n) -> move_ptr& {static_cast<std::move_iterator<Ptr>&>(*this) += n; return *this;}
+	constexpr auto operator+(difference_type n) const -> move_ptr {move_ptr ret{*this}; ret += n; return ret;}
+	constexpr auto operator-(move_ptr const& other) const -> difference_type {return static_cast<std::move_iterator<Ptr> const&>(*this) - static_cast<std::move_iterator<Ptr> const&>(other);}
+
+	constexpr auto operator*() const -> decltype(auto) {return *static_cast<std::move_iterator<Ptr> const&>(*this);}
+	constexpr auto operator[](difference_type n) const -> decltype(auto) {return *((*this) + n);}
+
+	constexpr auto operator==(move_ptr const& other) const -> bool {return static_cast<std::move_iterator<Ptr> const&>(*this) == static_cast<std::move_iterator<Ptr> const&>(other);}
+	constexpr auto operator!=(move_ptr const& other) const -> bool {return static_cast<std::move_iterator<Ptr> const&>(*this) != static_cast<std::move_iterator<Ptr> const&>(other);}
 };
 
 template<class Array, typename Reference = void, typename Element = void>
