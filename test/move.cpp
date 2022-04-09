@@ -84,3 +84,37 @@ BOOST_AUTO_TEST_CASE(multi_array_move_into_vector_move) {
 	BOOST_REQUIRE( Bv[5][1][2] == 99. );
 }
 
+BOOST_AUTO_TEST_CASE(multi_array_move_array) {
+	multi::array<std::vector<double>, 2> A({10, 10}, std::vector<double>(5) );
+	auto B = std::move(A);
+	BOOST_REQUIRE( A.   empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move) test deterministic moved from state
+	BOOST_REQUIRE( A.is_empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move) test deterministic moved from state
+}
+
+BOOST_AUTO_TEST_CASE(multi_array_move_elements) {
+	multi::array<std::vector<double>, 1> A({10}, std::vector<double>(5) );
+
+	std::vector<std::vector<double>> sink(5);
+
+	auto* ptr1 = A[1].data();
+
+	std::copy( A({0, 5}).moved().begin(), A({0, 5}).moved().end(), sink.begin() );
+	BOOST_REQUIRE(     A[1].empty() );
+	BOOST_REQUIRE( not A[5].empty() );
+
+	BOOST_REQUIRE( sink[1].data() == ptr1 );
+}
+
+BOOST_AUTO_TEST_CASE(multi_array_move_elements_range) {
+	multi::array<std::vector<double>, 1> A({10}, std::vector<double>(5) );
+
+	std::vector<std::vector<double>> sink(5);
+
+	auto* ptr1 = A[1].data();
+
+	std::copy( A({0, 5}).moved().elements().begin(), A({0, 5}).moved().elements().end(), sink.begin() );
+	BOOST_REQUIRE(     A[1].empty() );
+	BOOST_REQUIRE( not A[5].empty() );
+
+	BOOST_REQUIRE( sink[1].data() == ptr1 );
+}
