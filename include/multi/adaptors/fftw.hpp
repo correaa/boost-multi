@@ -1,7 +1,5 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-$CXXX $CXXFLAGS $0 -o $0x$OXX `pkg-config --cflags --libs fftw3 cuda-11.0` -lboost_timer -lboost_unit_test_framework&&$0x$OXX&&rm $0x$OXX;exit
-#endif
-// © Alfredo A. Correa 2018-2020
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2018-2022 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_FFTW_HPP
 #define MULTI_ADAPTORS_FFTW_HPP

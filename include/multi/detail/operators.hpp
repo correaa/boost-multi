@@ -1,8 +1,8 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2018-2022 Alfredo A. Correa
 
-#ifndef BOOST_MULTI_DETAIL_OPERATORS_HPP
-#define BOOST_MULTI_DETAIL_OPERATORS_HPP
+#ifndef MULTI_DETAIL_OPERATORS_HPP
+#define MULTI_DETAIL_OPERATORS_HPP
 
 #include<type_traits>  // enable_if
 #include<utility>  // forward

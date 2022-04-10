@@ -1,8 +1,8 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2018-2022 Alfredo A. Correa
 
-#ifndef BOOST_MULTI_ARRAY_REF_HPP
-#define BOOST_MULTI_ARRAY_REF_HPP
+#ifndef MULTI_ARRAY_REF_HPP
+#define MULTI_ARRAY_REF_HPP
 
 #include "./memory/pointer_traits.hpp"
 #include "utility.hpp"

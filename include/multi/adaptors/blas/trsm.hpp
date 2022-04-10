@@ -1,6 +1,8 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2019-2022 Alfredo A. Correa
-#pragma once
+
+#ifndef MULTI_ADAPTORS_BLAS_TRSM_HPP
+#define MULTI_ADAPTORS_BLAS_TRSM_HPP
 
 #include "../blas/core.hpp"
 #include "../blas/filling.hpp"
@@ -104,3 +106,5 @@ auto trsm(blas::side a_side, blas::filling a_fill, typename A2D::element_type al
 #endif
 
 }  // end namespace boost::multi::blas
+
+#endif

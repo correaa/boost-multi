@@ -1,7 +1,5 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXXX $CXXFLAGS $0 -o $0x -lboost_unit_test_framework&&$0x&&rm $0x;exit
-#endif
-// © Alfredo A. Correa 2020-2021
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2020-2022 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_BLAS_NUMERIC_IS_COMPLEX_HPP
 #define MULTI_ADAPTORS_BLAS_NUMERIC_IS_COMPLEX_HPP
@@ -50,40 +48,4 @@ template<class T, class V> struct is_complex_of : std::integral_constant<bool, r
 
 } // end namespace boost::multi::blas::numeric
 
-//#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
-
-//#define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS numeric is_complex"
-//#define BOOST_TEST_DYN_LINK
-//#include<boost/test/unit_test.hpp>
-
-//#include<thrust/complex.h>
-
-//#include "../../../complex.hpp"
-//#include "boost/mpl/list.hpp"
-
-//namespace multi = boost::multi;
-
-//BOOST_AUTO_TEST_CASE(multi_blas_is_complex){
-//	namespace numeric = multi::blas::numeric;
-
-//	boost::mpl::for_each<boost::mpl::list<double, float, long double>>([](auto f){
-//		using F = decltype(f);
-//		static_assert( not numeric::is_complex<F>{}, "!");
-
-//		static_assert( numeric::is_complex<std::complex<F>>{}, "!");
-//		static_assert( numeric::is_complex<thrust::complex<F>>{}, "!");
-//		static_assert( numeric::is_complex<multi::complex<F>>{}, "!");
-
-//		static_assert( numeric::is_complex_of<std::complex<F>, F>{}, "!");
-//		static_assert( not numeric::is_complex_of<F, F>{}, "!");
-//	});
-
-
-//	static_assert( not numeric::is_complex_of<std::complex<double>, float>{}, "!");
-//	static_assert( not numeric::is_complex_of<double, float>{}, "!");
-
-//	static_assert( numeric::is_complex<std::complex<double> const&>{}, "!");
-//}
-
-//#endif
 #endif

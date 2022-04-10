@@ -18,11 +18,13 @@ Checks: '*,
   -google-runtime-references,
   -hicpp-vararg,
   -hicpp-no-array-decay,
-  -llvm-header-guard,
-  -llvmlibc-restrict-system-libc-headers,
+  -llvmlibc-callee-namespace,
   -llvmlibc-implementation-in-namespace,
-  -llvmlibc-callee-namespace
+  -llvmlibc-restrict-system-libc-headers
 '
+
+#  -llvm-header-guard
+
 CheckOptions:
   - { key: readability-identifier-naming.NamespaceCase,       value: lower_case }
   - { key: readability-identifier-naming.ClassCase,           value: lower_case }
@@ -37,3 +39,8 @@ WarningsAsErrors: '*'
 HeaderFilterRegex: '.'
 AnalyzeTemporaryDtors: false
 FormatStyle: file
+
+#  -llvmlibc-implementation-in-namespace,
+#  -llvmlibc-callee-namespace
+#  -llvmlibc-restrict-system-libc-headers
+
