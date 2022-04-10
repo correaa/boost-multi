@@ -1,9 +1,8 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2018-2021 Alfredo A. Correa
 
-#pragma once
-#ifndef BOOST_MULTI_DETAIL_MEMORY_HPP
-#define BOOST_MULTI_DETAIL_MEMORY_HPP
+#ifndef MULTI_DETAIL_MEMORY_HPP
+#define MULTI_DETAIL_MEMORY_HPP
 
 #include "../detail/adl.hpp"
 #include "../utility.hpp"

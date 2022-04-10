@@ -1,7 +1,8 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2022 Alfredo A. Correa
 
-#pragma once
+#ifndef MULTI_DETAIL_TYPE_TRAITS_HPP
+#define MULTI_DETAIL_TYPE_TRAITS_HPP
 
 #include<type_traits>
 
@@ -12,3 +13,5 @@ template<class T> struct is_trivially_default_constructible : std::is_trivially_
 
 }  // end namespace multi
 }  // end namespace boost
+
+#endif
