@@ -1,6 +1,7 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2021-2022 Alfredo A. Correa
 
+#pragma once
 #ifndef MULTI_TUPLE_ZIP
 #define MULTI_TUPLE_ZIP
 

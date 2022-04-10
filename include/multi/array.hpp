@@ -1,6 +1,7 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2018-2022 Alfredo A. Correa
 
+#pragma once
 #ifndef BOOST_MULTI_ARRAY_HPP_
 #define BOOST_MULTI_ARRAY_HPP_
 
