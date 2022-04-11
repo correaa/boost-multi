@@ -55,7 +55,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 	endif()
 	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
 	target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
-	target_include_directories(${TEST_EXE} PRIVATE ${Boost_INCLUDE_DIRS})
+	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
 	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
 	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
 	# if(NOT ENABLE_CUDA AND (NOT DART_COMPILER_NAME STREQUAL "nvcc")) target_compile_options  (${TEST_EXE} PRIVATE -Werror $<$<CXX_COMPILER_ID:GNU>: -Wall -Wshadow -Wsign-conversion -Wold-style-cast -Wcast-align -Wunused -Wnon-virtual-dtor
