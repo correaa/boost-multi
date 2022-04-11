@@ -2470,7 +2470,7 @@ template<class In, class T, dimensionality_type N, class TP, class = std::enable
 constexpr auto uninitialized_copy
 // require N>1 (this is important because it forces calling placement new on the pointer
 (In first, In last, multi::array_iterator<T, N, TP> dest) {
-	while(first != last) {
+	while(first != last) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 		adl_uninitialized_copy(adl_begin(*first), adl_end(*first), adl_begin(*dest));
 		++first;
 		++dest;
@@ -2493,7 +2493,7 @@ auto transposed(T(&t)[N][M]) -> decltype(auto) {return ~multi::array_ref<T, 2>(t
 namespace boost::serialization {
 
 #ifndef MULTI_SERIALIZATION_ARRAY_VERSION
-#define MULTI_SERIALIZATION_ARRAY_VERSION 0
+	#define MULTI_SERIALIZATION_ARRAY_VERSION 0  // NOLINT(cppcoreguidelines-macro-usage) gives user opportunity to select serialization version
 #endif
 
 // #define MULTI_SERIALIZATION_ARRAY_VERSION  0 // save data as flat array

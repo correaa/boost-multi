@@ -92,7 +92,7 @@ struct archive_traits<Ar, typename std::enable_if<
 		std::size_t c_;
 		template<class Archive>
 		void serialize(Archive& ar, const unsigned int /*version*/) {
-			for(std::size_t i = 0; i != c_; ++i) {
+			for(std::size_t i = 0; i != c_; ++i) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 				auto& item = p_[i];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 				ar &                                        make_nvp("item", item);  // "item" is the name used by Boost.Serialization XML make_array
 			//	ar & boost::multi::archive_traits<Archive>::make_nvp("element", element);
@@ -159,50 +159,5 @@ namespace serialization {
 //		ofs<< ss.str();
 //	}
 //}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #endif

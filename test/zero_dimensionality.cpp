@@ -79,8 +79,8 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality_part2) {
 		multi::array_ptr<double, 0> ap0dd{&dd};
 		BOOST_REQUIRE( ap0dd != ap0 );
 		BOOST_REQUIRE( *ap0 == *ap0dd );
-		double d3 = 3.;
-		BOOST_REQUIRE(( *multi::array_ptr<double, 0>(&d3, {}) == 3. ));
+		double d3 = M_PI;
+		BOOST_REQUIRE(( *multi::array_ptr<double, 0>(&d3, {}) == M_PI ));
 
 //		#if defined(__cpp_deduction_guides)
 //		BOOST_REQUIRE(( *multi::array_ptr {&d3, multi::extensions_t<0>{}} == 3. ));

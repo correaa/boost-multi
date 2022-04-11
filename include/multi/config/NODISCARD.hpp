@@ -15,7 +15,7 @@
 	#if (__has_cpp_attribute(nodiscard)>=201907) and (__cplusplus>201703L)
 		#define NODISCARD(MsG) [[nodiscard(MsG)]]
 	#else
-		#define NODISCARD(MsG) [[nodiscard]]
+		#define NODISCARD(MsG) [[nodiscard]]  // NOLINT(cppcoreguidelines-macro-usage) TODO(correaa) check if this is needed in C++17
 	#endif
 #elif __has_cpp_attribute(gnu::warn_unused_result)
 	#define NODISCARD(MsG) [[gnu::warn_unused_result]]

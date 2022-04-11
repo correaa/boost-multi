@@ -8,7 +8,7 @@
 	#ifdef CALI_CXX_MARK_SCOPE
 		#define MULTI_MARK_SCOPE(MsG) CALI_CXX_MARK_SCOPE(MsG)
 	#else
-		#define MULTI_MARK_SCOPE(MsG) ((void)0)
+		#define MULTI_MARK_SCOPE(MsG) ((void)0)  // NOLINT(cppcoreguidelines-macro-usage) to mark scopes
 	#endif
 #endif
 

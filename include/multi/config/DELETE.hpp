@@ -13,5 +13,5 @@ template<bool B = false, class T = int> using disable_if = typename disable_if_i
 
 } // end namespace boost::multi
 
-#define DELETE(ConD) boost::multi::disable_if<ConD> =0
+#define DELETE(ConD) boost::multi::disable_if<ConD> =0  // NOLINT(cppcoreguidelines-macro-usage) TODO(correaa) remove
 #endif
