@@ -984,7 +984,7 @@ struct array : static_array<T, D, Alloc> {
 
 #if defined(__cpp_deduction_guides)
 
-#define IL std::initializer_list
+#define IL std::initializer_list  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing TODO(correaa) remove
 
 template<class T> static_array(IL<T>                ) -> static_array<T, 1>;
 template<class T> static_array(IL<IL<T>>            ) -> static_array<T, 2>;

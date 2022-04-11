@@ -23,7 +23,7 @@
 #include<iterator>   // for begin, end
 #include<memory>     // for uninitialized_copy, etc
 
-#define BOOST_MULTI_DEFINE_ADL(FuN) \
+#define BOOST_MULTI_DEFINE_ADL(FuN) /*NOLINT(cppcoreguidelines-macro-usage) TODO(correaa) consider replacing for all ADL'd operations*/ \
 namespace boost { \
 namespace multi { \
 namespace adl { \
@@ -45,8 +45,8 @@ namespace boost::multi {
 
 template<std::size_t I> struct priority : std::conditional_t<I==0, std::true_type, struct priority<I-1>> {};
 
-#define DECLRETURN(ExpR) ->decltype(ExpR) {return ExpR;}
-#define JUSTRETURN(ExpR)                  {return ExpR;}
+#define DECLRETURN(ExpR) ->decltype(ExpR) {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
+#define JUSTRETURN(ExpR)                  {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
 
 constexpr class adl_copy_n_t {
 	template<class... As>          constexpr auto _(priority<0>/**/,        As&&... as) const DECLRETURN(              std::copy_n(                    std::forward<As>(as)...))
@@ -169,13 +169,13 @@ auto alloc_uninitialized_value_construct_n(Alloc& alloc, ForwardIt first, Size n
 // ->std::decay_t<decltype(std::allocator_traits<Alloc>::construct(alloc, std::addressof(*first), Value()), first)>
 	ForwardIt current = first;
 	try {
-		for (; n > 0 ; ++current, --n) {
+		for (; n > 0 ; ++current, --n) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 			std::allocator_traits<Alloc>::construct(alloc, std::addressof(*current), Value());  // !!!!!!!!!!!!!! if you are using std::complex type consider making complex default constructible (e.g. by type traits)
 		}
 		//  ::new (static_cast<void*>(std::addressof(*current))) Value();
 		return current;
 	} catch(...) {
-		for(; current != first; ++first) {  // NOLINT(altera-id-dependent-backward-branch)
+		for(; current != first; ++first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 			std::allocator_traits<Alloc>::destroy(alloc, std::addressof(*first));
 		}
 		throw;
@@ -191,11 +191,11 @@ auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size
 	} else {
 		using _ = std::allocator_traits<Alloc>;
 		try {
-			for(; n > 0; ++current, --n) {
+			for(; n > 0; ++current, --n) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 				_::construct(alloc, std::addressof(*current));
 			}
 		} catch(...) {
-			for(; current != first; ++first) {  // NOLINT(altera-id-dependent-backward-branch)
+			for(; current != first; ++first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 				_::destroy(alloc, std::addressof(*first));
 			}
 			throw;
@@ -209,7 +209,7 @@ auto uninitialized_default_construct_n( ForwardIt first, Size n ) -> ForwardIt {
     using T = typename std::iterator_traits<ForwardIt>::value_type;
     ForwardIt current = first;
     try {
-        for (; n > 0 ; (void) ++current, --n) {
+        for (; n > 0 ; (void) ++current, --n) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
             ::new (static_cast<void*>(std::addressof(*current))) T;
         }
         return current;
@@ -232,7 +232,7 @@ template<class BidirIt, class Size, class T = typename std::iterator_traits<Bidi
 constexpr auto destroy_n(BidirIt first, Size n)
 ->std::decay_t<decltype(std::addressof(*(first-1)), first)> {
 	first += n;
-	for(; n != 0; --first, --n) {
+	for(; n != 0; --first, --n) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 		std::addressof(*(first-1))->~T();
 	}
 	return first;
@@ -242,7 +242,7 @@ template<class Alloc, class BidirIt, class Size, class T = typename std::iterato
 constexpr auto alloc_destroy_n(Alloc& a, BidirIt first, Size n)
 ->std::decay_t<decltype(std::addressof(*(first-1)), first)> {
 	first += n;
-	for (; n != 0; --first, --n) {
+	for (; n != 0; --first, --n) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 		std::allocator_traits<Alloc>::destroy(a, std::addressof(*(first-1)));
 	}
 	return first;
@@ -265,11 +265,11 @@ auto uninitialized_copy_n(InputIt first, Size count, ForwardIt d_first)
 ->std::decay_t<decltype(::new (static_cast<void*>(std::addressof(*d_first))) Value(*first), d_first)> {
 	ForwardIt current = d_first;
 	try {
-		for (; count > 0; ++first, (void) ++current, --count) {
+		for (; count > 0; ++first, (void) ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 			::new (static_cast<void*>(std::addressof(*current))) Value(*first);
 		}
 	} catch(...) {
-		for(; d_first != current; ++d_first) {
+		for(; d_first != current; ++d_first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 			d_first->~Value();
 		}
 		throw;
@@ -282,11 +282,11 @@ auto uninitialized_move_n(InputIt first, Size count, ForwardIt d_first)
 ->std::decay_t<decltype(::new (static_cast<void*>(std::addressof(*d_first))) Value(std::move(*first)), d_first)> {
 	ForwardIt current = d_first;
 	try {
-		for (; count > 0; ++first, (void) ++current, --count) {
+		for (; count > 0; ++first, (void) ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 			::new (static_cast<void*>(std::addressof(*current))) Value(std::move(*first));
 		}
 	} catch(...) {
-		for(; d_first != current; ++d_first) {  // NOLINT(altera-id-dependent-backward-branch)
+		for(; d_first != current; ++d_first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 			d_first->~Value();
 		}
 		throw;
@@ -332,12 +332,12 @@ auto alloc_uninitialized_copy_n(Alloc& a, InputIt f, Size n, ForwardIt d) {
 // ->std::decay_t<decltype(a.construct(std::addressof(*d), *f), d)>
 	ForwardIt c = d;
 	try {
-		for(; n > 0; ++f, ++c, --n) {
+		for(; n > 0; ++f, ++c, --n) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 			std::allocator_traits<Alloc>::construct(a, std::addressof(*c), *f);
 		}
 		return c;
 	} catch(...) {
-		for(; d != c; ++d) {
+		for(; d != c; ++d) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 			std::allocator_traits<Alloc>::destroy(a, std::addressof(*d));
 		}
 		throw;
@@ -349,12 +349,12 @@ auto alloc_uninitialized_move_n(Alloc& a, InputIt f, Size n, ForwardIt d) {
 // ->std::decay_t<decltype(a.construct(std::addressof(*d), *f), d)>
 	ForwardIt c = d;
 	try {
-		for(; n > 0; ++f, ++c, --n) {
+		for(; n > 0; ++f, ++c, --n) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 			std::allocator_traits<Alloc>::construct(a, std::addressof(*c), std::move(*f));
 		}
 		return c;
 	} catch(...) {
-		for(; d != c; ++d) {
+		for(; d != c; ++d) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 			std::allocator_traits<Alloc>::destroy(a, std::addressof(*d));
 		}
 		throw;
@@ -371,12 +371,12 @@ auto alloc_uninitialized_copy(Alloc& a, InputIt first, InputIt last, ForwardIt d
 // ->std::decay_t<decltype(a.construct(std::addressof(*d_first), *first), d_first)> // problematic in clang-11 + gcc-9
 	ForwardIt current = d_first;
 	try {
-		for(; first != last; ++first, (void)++current) {
+		for(; first != last; ++first, (void)++current) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 			std::allocator_traits<std::decay_t<Alloc>>::construct(a, std::addressof(*current), *first);
 		}
 		return current;
 	} catch(...) {
-		for(; d_first != current; ++d_first) {
+		for(; d_first != current; ++d_first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 			std::allocator_traits<std::decay_t<Alloc>>::destroy(a, std::addressof(*d_first));
 		}
 		throw;
@@ -388,12 +388,12 @@ auto alloc_uninitialized_fill_n(Alloc& a, ForwardIt first, Size n, T const& v)
 ->std::decay_t<decltype(std::allocator_traits<Alloc>::construct(a, std::addressof(*first), v), first)> {
 	ForwardIt current = first;  // using std::to_address;
 	try {
-		for(; n > 0; ++current, --n) {
+		for(; n > 0; ++current, --n) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 			std::allocator_traits<Alloc>::construct(a, std::addressof(*current), v);
 		}
 		return current;
 	} catch(...) {
-		for(; first != current; ++first) {  // NOLINT(altera-id-dependent-backward-branch)
+		for(; first != current; ++first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 			std::allocator_traits<Alloc>::destroy(a, std::addressof(*first));
 		}
 		throw;
@@ -553,7 +553,7 @@ struct recursive {
 	template<class Alloc, class InputIt, class ForwardIt>
 	static constexpr auto alloc_uninitialized_copy(Alloc& a, InputIt first, InputIt last, ForwardIt dest){
 		using std::begin; using std::end;
-		while(first!=last) {
+		while(first!=last) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 			recursive<N-1>::alloc_uninitialized_copy(a, begin(*first), end(*first), begin(*dest));
 			++first;
 			++dest;
