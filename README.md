@@ -38,23 +38,27 @@ It is important to compile programs that use the library with a decent level of 
 For example, when testing speed, please make sure that you are compiling in release mode (`-DNDEBUG`) and with optimizations (`-O3`), 
 if your test involves mathematical operations add arithmetic optimizations (`-Ofast`) to compare with Fortran code.
 
-A CMake build system is provided to automatically run basic tests.
-Test do depend on Boost.Test.
+A CMake build system is provided to automatically run basic tests. (Test do depend on the Boost.Test library.)
 
 ```bash
 git clone https://gitlab.com/correaa/boost-multi.git multi
 cd multi
-```
-```bash
-#export CXX="nvcc -DBOOST_PP_VARIADICS=1 -x cu -O3"  #optional spec. compiler
-mkdir -p test/build
-cd test/build
+mkdir -p build
+cd build
 cmake ..
 make -j
 make test -j
 ```
 
-The code is developed targetting several compilers: LLVM's `clang` (13.0), GNU's `g++` (11.2), Nvidia's `nvcc` (11.5), `nvc++` (20.7-21.3) and Intel's `icpc` (2021.5.0), `icpx` (2022.0.2).
+### Dependecies and compiler requirements
+
+The core of the library doesn't have dependencies (other than the standard library).
+
+Compiling and running the test depends on Boost.Test (which can be installed with `sudo apt install libboost-test-dev` in Debian-like systems.)
+
+"Adaptor" sublibraries (included in `multi/adaptors/`) have specific dependencies, Boost.Serialization, fftw, blas, lapack, thurst, CUDA. (which can be installed with `sudo apt install libboost-serialization-dev libfftw3-dev libblas64-dev liblapack64-dev libthrust-dev libcudart11.0` or indiviudually.)
+
+The code is developed targetting several compilers that allow compilation of standard C++17: for example LLVM's `clang` (13.0), GNU's `g++` (11.2), Nvidia's `nvcc` (11.5), `nvc++` (20.7-21.3) and Intel's `icpc` (2021.5.0), `icpx` (2022.0.2).
 For detailed compilation instructions of test please inspect the Continuous Integration (CI) [definition file](https://gitlab.com/correaa/boost-multi/-/blob/master/.gitlab-ci.yml).
 
 ## Types
