@@ -1,8 +1,8 @@
 # -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 # Copyright 2018-2022 Alfredo A. Correa
 
-cmake_minimum_required(VERSION 3.11) # -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-# for reference: Ubuntu 20.04 ships cmake 3.16.3, Fedora 31 ships cmake 3.17.4, (Gitlab CI) debian:stable-backports ships cmake 3.13.4, debian:testing ships 3.18.4
+cmake_minimum_required(VERSION 3.13)
+# for reference: Ubuntu 20.04 ships cmake 3.16.3, Ubuntu 21.10 -> 3.18.4, Fedora 31 -> 3.17.4, (Gitlab CI) debian:stable-backports ships cmake 3.13.4, debian:testing -> 3.18.4
 
 # to install this project: cmake .. -DCMAKE_INSTALL_PREFIX:PATH=$HOME cmake --build . --config Release --target test --target install -- -j $(nproc)
 # to use this project do: project("Your project") find_package(boost-multi CONFIG REQUIRED) add_executable(${PROJECT_NAME} src/your_main.cpp) target_link_libraries(${PROJECT_NAME} boost-multi::boost-multi)
@@ -12,13 +12,11 @@ message("current build directory: ${CMAKE_CURRENT_BINARY_DIR}")
 
 project(
 	multi
-	VERSION 0.78.0
+	VERSION 0.79.0
 	DESCRIPTION "A header only C++ library that provides multidimensional array access to contiguous or regularly contiguous memory (or ranges)."
 	HOMEPAGE_URL "https://gitlab.com/correaa/boost-multi"
 	LANGUAGES CXX
 )
-
-# set(CMAKE_CXX_STANDARD 14) set(CMAKE_CXX_STANDARD_REQUIRED True) set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(GNUInstallDirs)
 
@@ -33,7 +31,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # 		$<$<AND:$<CXX_COMPILER_ID:GNU>,$<CUDA_COMPILER_ID:NVIDIA>>:
 # https://youtrack.jetbrains.com/issue/CPP-25608
 target_compile_features(${PROJECT_NAME} INTERFACE $<$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>:cxx_std_17>)
-target_compile_options (${PROJECT_NAME} INTERFACE $<$<CUDA_COMPILER_ID:NVIDIA>:-std=c++17>)
+target_compile_options (${PROJECT_NAME} INTERFACE       $<$<CUDA_COMPILER_ID:NVIDIA>: -std=c++17>)
 
 target_compile_options (
 	${PROJECT_NAME}
@@ -62,8 +60,6 @@ write_basic_package_version_file(
 	COMPATIBILITY SameMajorVersion
 )
 
-# configure_package_config_file( "${PROJECT_SOURCE_DIR}/cmake/multiConfig.cmake.in" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" INSTALL_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake)
-
 install(
 	EXPORT ${PROJECT_NAME}_Targets
 	FILE ${PROJECT_NAME}Targets.cmake
@@ -71,19 +67,17 @@ install(
 	DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake
 )
 
-# install(FILES "${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake" "${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake" DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake)
-
-# install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/SI DESTINATION include)
 if (NOT MSVC)
-install(FILES ${PROJECT_SOURCE_DIR}/include/multi/array_ref.hpp ${PROJECT_SOURCE_DIR}/include/multi/array.hpp DESTINATION include/multi)
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/multi/detail DESTINATION include/multi)
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/multi/adaptors DESTINATION include/multi)
+	install(FILES     ${PROJECT_SOURCE_DIR}/include/multi/array_ref.hpp ${PROJECT_SOURCE_DIR}/include/multi/array.hpp DESTINATION include/multi)
+	install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/multi/detail                                                      DESTINATION include/multi)
+	install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/multi/adaptors                                                    DESTINATION include/multi)
 endif()
 
 #find_program(MEMORYCHECK_COMMAND valgrind)
 #set(VALGRIND_COMMAND_OPTIONS    "-q --tool=memcheck --leak-check=yes --num-callers=51 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all")
 #set(MEMORYCHECK_COMMAND_OPTIONS "-q --tool=memcheck --leak-check=yes --num-callers=52 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all")  # must go before `include(CTest)`
 #set(MEMORYCHECK_SUPPRESSIONS_FILE "${PROJECT_SOURCE_DIR}/.valgrind-suppressions")  # must go before `include(CTest)`
+
 include(CTest)
 
 enable_testing()
