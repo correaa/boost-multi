@@ -289,6 +289,25 @@ auto copy_n(
 	return d_first + count;
 }
 
+template<class Q1, class L1, class Q2, class L2>
+auto copy(
+	boost::multi::elements_iterator_t<    Q1*, L1>   first,
+	boost::multi::elements_iterator_t<    Q1*, L1>   last ,
+	boost::multi::elements_iterator_t<ptr<Q2>, L2> d_first
+)-> boost::multi::elements_iterator_t<ptr<Q2>, L2> {
+	return copy_n(first, last - first, d_first);
+}
+
+template<class Q1, class L1, class Q2, class L2>
+auto copy(
+	boost::multi::elements_iterator_t<ptr<Q1>, L1>   first,
+	boost::multi::elements_iterator_t<ptr<Q1>, L1>   last ,
+	boost::multi::elements_iterator_t<    Q2*, L2> d_first
+)-> boost::multi::elements_iterator_t<    Q2*, L2> {
+	return copy_n(first, last - first, d_first);
+}
+
+
 //template<
 //	multi::dimensionality_type D,
 //	class T1, class Q1,
