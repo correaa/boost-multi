@@ -265,6 +265,7 @@ auto uninitialized_move_n(ptr<T1...> first, Size n, ptr<T2...> dest) {
 
 // copy_n
 
+template<class Q1, class L1, class Size, class Q2, class L2>
 auto copy_n(
 	boost::multi::elements_iterator_t<    Q1*, L1>   first, Size count,
 	boost::multi::elements_iterator_t<ptr<Q2>, L2> d_first
@@ -282,45 +283,45 @@ auto copy_n(
 	boost::multi::elements_iterator_t<    Q2*, L2> d_first
 )-> boost::multi::elements_iterator_t<    Q2*, L2> {
 	copy_n(
-		static_cast<boost::multi::elements_iterator_t<::thrust::cuda::pointer<Q1>, L1>(  first), count,
-		                                                                               d_first
+		static_cast<boost::multi::elements_iterator_t<::thrust::cuda::pointer<Q1>, L1>>(  first), count,
+		                                                                                d_first
 	);
 	return d_first + count;
 }
 
-template<
-	multi::dimensionality_type D,
-	class T1, class Q1,
-	class Size,
-	class T2, class Q2
->
-auto copy_n(
-	boost::multi::array_iterator<T1, D, ptr<Q1>>   first , Size count,
-	boost::multi::array_iterator<T2, D,     Q2*> d_first
-)-> boost::multi::array_iterator<T2, D,     Q2*> {
-	copy_n(
-		static_cast<boost::multi::array_iterator<T1, D, ::thrust::cuda::pointer<Q1>>>(  first), count,
-		                                                                              d_first
-	);
-	return d_first + count;
-}
+//template<
+//	multi::dimensionality_type D,
+//	class T1, class Q1,
+//	class Size,
+//	class T2, class Q2
+//>
+//auto copy_n(
+//	boost::multi::array_iterator<T1, D, ptr<Q1>>   first , Size count,
+//	boost::multi::array_iterator<T2, D,     Q2*> d_first
+//)-> boost::multi::array_iterator<T2, D,     Q2*> {
+//	copy_n(
+//		static_cast<boost::multi::array_iterator<T1, D, ::thrust::cuda::pointer<Q1>>>(  first), count,
+//		                                                                              d_first
+//	);
+//	return d_first + count;
+//}
 
-template<
-	multi::dimensionality_type D,
-	class T1, class Q1,
-	class Size,
-	class T2, class Q2
->
-auto copy_n(
-	boost::multi::array_iterator<T1, D, ptr<Q1>>   first , Size count,
-	boost::multi::array_iterator<T2, D, ptr<Q2>> d_first
-)-> boost::multi::array_iterator<T2, D, ptr<Q2>> {
-	copy_n(
-		static_cast<boost::multi::array_iterator<T1, D, ::thrust::cuda::pointer<Q1>>>(  first), count,
-		static_cast<boost::multi::array_iterator<T2, D, ::thrust::cuda::pointer<Q2>>>(d_first)
-	);
-	return d_first + count;
-}
+//template<
+//	multi::dimensionality_type D,
+//	class T1, class Q1,
+//	class Size,
+//	class T2, class Q2
+//>
+//auto copy_n(
+//	boost::multi::array_iterator<T1, D, ptr<Q1>>   first , Size count,
+//	boost::multi::array_iterator<T2, D, ptr<Q2>> d_first
+//)-> boost::multi::array_iterator<T2, D, ptr<Q2>> {
+//	copy_n(
+//		static_cast<boost::multi::array_iterator<T1, D, ::thrust::cuda::pointer<Q1>>>(  first), count,
+//		static_cast<boost::multi::array_iterator<T2, D, ::thrust::cuda::pointer<Q2>>>(d_first)
+//	);
+//	return d_first + count;
+//}
 
 // copy
 
