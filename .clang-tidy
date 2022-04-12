@@ -53,9 +53,9 @@ Checks: '*,
 #  -fuchsia-trailing-return,                              // to allow any '-> decltype(auto)'
 #  -hicpp-vararg,                                         // all BOOST_TEST_REQUIRE macros require this
 #  -hicpp-no-array-decay,                                 // all assert macros require this
-#  -llvmlibc-implementation-in-namespace,                 // non sense warning
-#  -llvmlibc-callee-namespace,                            // non sense warning
-#  -llvmlibc-restrict-system-libc-headers,                // non sense warning
+#  -llvmlibc-implementation-in-namespace,                 // nonsense warning
+#  -llvmlibc-callee-namespace,                            // nonsense warning
+#  -llvmlibc-restrict-system-libc-headers,                // nonsense warning
 #  -modernize-use-nodiscard,                              // this would add [[nodiscard]] to almost all functions, adding a lot of noise
 #  -readability-magic-numbers,                            // all tests use magic numbers
 
