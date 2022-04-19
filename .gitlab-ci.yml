@@ -459,6 +459,8 @@ circle-167:
     script:
       - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev tar gzip wget libelf1 grep
       - grep __cxa_finalize /usr/include/c++/11/cxxabi.h -A10 -B10
+      - cp /usr/include/c++/11/cxxabi.h /usr/include/c++/11/cxxabi.h.bak
+      - sed -z 's/void\n  __cxa_finalize/int\n  __cxa_finalize/g' /usr/include/c++/11/cxxabi.h.bak > /usr/include/c++/11/cxxabi.h
       - mkdir -p build_167 && cd build_167
       - wget https://www.circle-lang.org/linux/build_167.tgz --no-verbose
       - tar -zxvf build_167.tgz
