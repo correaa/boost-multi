@@ -82,13 +82,16 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wextra
 					-Wcast-align
 					-Wcast-qual
+					-Wclobbered
 					-Wconversion
 					-Wdouble-promotion
 					-Wduplicated-branches
 					-Wduplicated-cond
+					-Wempty-body
 					-Wformat-truncation
 					-Wformat=2
 					-Wformat-security
+					-Wignored-qualifiers
 					-Wlogical-op
 					-Wmisleading-indentation
 					-Wmissing-include-dirs
@@ -106,12 +109,14 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wold-style-cast
 					-Woverloaded-virtual
 					-Wpedantic
+					-Wsign-compare
 					-Wsign-conversion
 					-Wstrict-aliasing
 					-Wswitch-enum
 					-Wtrampolines
 					-Wuninitialized
 					-Wunused
+					-Wunused-parameter
 					-Wunused-but-set-variable
 					-Wunused-result
 					-Wuseless-cast
@@ -140,9 +145,11 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wold-style-cast
 					-Woverloaded-virtual
 					-Wpedantic
+					-Wsign-compare
 					-Wsign-conversion
 					-Wstrict-aliasing
 					-Wswitch-enum
+					-Wtype-limits
 					-Wuninitialized
 					-Wunused
 					-Wunused-result
@@ -184,13 +191,14 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wpointer-sign
 					-Wreorder
 					-Wreturn-type
-					-Wsign-compare
 					-Wsequence-point
 					-Wshadow
+					-Wsign-compare
 					-Wshorten-64-to-32
 					-Wno-strict-aliasing
 					-Wstrict-prototypes
 					-Wtrigraphs
+					-Wtype-limits
 					-Wuninitialized
 					-Wunused
 					-Wunused-but-set-variable
@@ -205,7 +213,11 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wcast-qual
 					-Wformat=2
 					-Wshadow
+					-Wsign-compare
+					-Wuninitialized
 					-Wunused
+					-Wunused-parameter
+					-Wtype-limits
 				>
 				$<$<CXX_COMPILER_ID:MSVC>:
 					/WX
