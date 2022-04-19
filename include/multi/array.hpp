@@ -249,7 +249,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	constexpr static_array(std::initializer_list<typename static_array<T, D>::value_type> mil)
-	: static_array(static_array<T, D>(mil.begin(), mil.end())) {}
+	: static_array{static_array<T, D>(mil.begin(), mil.end())} {}  // construct all with default constructor and copy to special memory at the end
 
 	static_array(
 		std::initializer_list<typename static_array<T, D>::value_type> mil,
