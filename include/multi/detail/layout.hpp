@@ -312,7 +312,7 @@ template<> struct extensions_t<1> {
 	}
 
 	friend auto intersection(extensions_t const& x1, extensions_t const& x2){
-		return extensions_t({ intersection(boost::multi::detail::get<0>(x1.impl_), boost::multi::detail::get<0>(x2.impl_)) });
+		return extensions_t{ intersection(boost::multi::detail::get<0>(x1.impl_), boost::multi::detail::get<0>(x2.impl_)) };
 	}
 	template<class Ar>
 	void serialize(Ar& ar, unsigned /*version*/) {
