@@ -73,7 +73,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 //  static_assert( std::is_same<typename std::allocator_traits<Alloc>::pointer, typename static_array::element_ptr>{},
 //  	"allocator pointer type must match array pointer type");
 	using array_alloc::get_allocator;
-	using typename array_allocator<Alloc>::allocator_type;
+	using allocator_type = typename array_allocator<Alloc>::allocator_type;
 //  using allocator_type = typename static_array::allocator_type;
 	using decay_type = array<T, D, Alloc>;
 	using layout_type = typename array_ref<T, D, typename std::allocator_traits<Alloc>::pointer>::layout_type;
@@ -503,12 +503,12 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	explicit static_array(typename static_array::element const& e)          // 2
 	: static_array(multi::iextensions<0>{}, e) {}
 
-	template<class ValueType, typename = std::enable_if_t<std::is_same<ValueType, typename static_array::value_type>{}>>
+	template<class ValueType, typename = std::enable_if_t<std::is_same<ValueType, value_type>{}>>
 	explicit static_array(typename static_array::index_extension const& e, ValueType const& v, allocator_type const& a)  // 3
 	: static_array(e*extensions(v), a) {
 		using std::fill; fill(this->begin(), this->end(), v);
 	}
-	template<class ValueType, typename = std::enable_if_t<std::is_same<ValueType, typename static_array::value_type>{}>>
+	template<class ValueType, typename = std::enable_if_t<std::is_same<ValueType, value_type>{}>>
 	explicit static_array(typename static_array::index_extension const& e, ValueType const& v)  // 3  // TODO(correaa) : call other constructor (above)
 	: static_array(e*extensions(v)) {
 		using std::fill; fill(this->begin(), this->end(), v);
@@ -696,8 +696,8 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 		return *this;
 	}
 
-	constexpr explicit operator basic_array<typename static_array::value_type, 0, typename static_array::element_const_ptr, typename static_array::layout_t>()& {
-		return this->template static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>();
+	constexpr explicit operator basic_array<value_type, 0, typename static_array::element_const_ptr, typename static_array::layout_t>()& {
+		return this->template static_array_cast<value_type, typename static_array::element_const_ptr>();
 		  // return static_array_cast<typename static_array::value_type, typename static_array::element_const_ptr>(*this);
 	}
 
@@ -909,13 +909,13 @@ struct array : static_array<T, D, Alloc> {
 		}
 		return *this;
 	}
-	void assign(std::initializer_list<typename array::value_type> il) {assign(il.begin(), il.end());}
+	void assign(std::initializer_list<value_type> il) {assign(il.begin(), il.end());}
 
 	template<class Range> auto assign(Range&& r) &
 	->decltype(assign(adl_begin(r), adl_end(r))) {
 		return assign(adl_begin(r), adl_end(r)); }
 
-	auto operator=(std::initializer_list<typename array::value_type> il) -> array& {
+	auto operator=(std::initializer_list<value_type> il) -> array& {
 		assign(il.begin(), il.end()); return *this;
 	}
 
