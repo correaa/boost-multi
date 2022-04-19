@@ -592,7 +592,7 @@ nvcc-runner:
       - ctest -j 1 --output-on-failure
 
 nvcc-cuda-runner:
-    stage: build
+    stage: test
     tags:
       - intel_compiler
     script:
