@@ -753,17 +753,17 @@ struct basic_array
 
 	using typename types::index;
 
-	constexpr auto reindexed(typename basic_array::index first) const& -> basic_const_array {
+	constexpr auto reindexed(index first) const& -> basic_const_array {
 		typename types::layout_t new_layout = this->layout();
 		new_layout.reindex(first);
 		return {new_layout, types::base_};
 	}
-	constexpr auto reindexed(typename basic_array::index first)& -> basic_array{
+	constexpr auto reindexed(index first)& -> basic_array{
 		typename types::layout_t new_layout = this->layout();
 		new_layout.reindex(first);
 		return {new_layout, types::base_};
 	}
-	constexpr auto reindexed(typename basic_array::index first)&& -> basic_array {
+	constexpr auto reindexed(index first)&& -> basic_array {
 		typename types::layout_t new_layout = this->layout();
 		new_layout.reindex(first);
 		return {new_layout, types::base_};
@@ -771,15 +771,15 @@ struct basic_array
 
 	// TODO(correaa) : implement reindexed_aux
 	template<class... Indexes>
-	constexpr auto reindexed(typename basic_array::index first, Indexes... idxs) const& -> basic_const_array {
+	constexpr auto reindexed(index first, Indexes... idxs) const& -> basic_const_array {
 		return ((reindexed(first).rotated()).reindexed(idxs...)).unrotated();
 	}
 	template<class... Indexes>
-	constexpr auto reindexed(typename basic_array::index first, Indexes... idxs) & -> basic_array {
+	constexpr auto reindexed(index first, Indexes... idxs) & -> basic_array {
 		return ((reindexed(first).rotated()).reindexed(idxs...)).unrotated();
 	}
 	template<class... Indexes>
-	constexpr auto reindexed(typename basic_array::index first, Indexes... idxs)&& -> basic_array {
+	constexpr auto reindexed(index first, Indexes... idxs)&& -> basic_array {
 		return ((std::move(*this).reindexed(first).rotated()).reindexed(idxs...)).unrotated();
 	}
 
@@ -797,8 +797,8 @@ struct basic_array
 	HD constexpr auto sliced(index first, index last)      & -> basic_array       {return sliced_aux(first, last);}
 	HD constexpr auto sliced(index first, index last)     && -> basic_array       {return sliced_aux(first, last);}
 
-	constexpr auto blocked(typename basic_array::index first, typename basic_array::index last) const& -> basic_const_array {return sliced(first, last).reindexed(first);}
-	constexpr auto blocked(typename basic_array::index first, typename basic_array::index last)      & -> basic_array       {return sliced(first, last).reindexed(first);}
+	constexpr auto blocked(index first, index last) const& -> basic_const_array {return sliced(first, last).reindexed(first);}
+	constexpr auto blocked(index first, index last)      & -> basic_array       {return sliced(first, last).reindexed(first);}
 
 	using iextension = typename basic_array::index_extension;
 
@@ -1779,8 +1779,8 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
 	using typename types::index;
 
-	constexpr auto reindexed(typename basic_array::index first) && {return reindexed(first);}
-	constexpr auto reindexed(typename basic_array::index first)  & {
+	constexpr auto reindexed(index first) && {return reindexed(first);}
+	constexpr auto reindexed(index first)  & {
 		typename types::layout_t new_layout = this->layout();
 		new_layout.reindex(first);
 		return basic_array{new_layout, types::base_};
@@ -1823,7 +1823,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	HD constexpr auto sliced(index first, index last)      & -> basic_array       {return sliced_aux(first, last);}
 	HD constexpr auto sliced(index first, index last)     && -> basic_array       {return sliced_aux(first, last);}
 
-	constexpr auto blocked(typename basic_array::index first, typename basic_array::index last)& -> basic_array {
+	constexpr auto blocked(index first, index last)& -> basic_array {
 		return sliced(first, last).reindexed(first);
 	}
 	constexpr auto stenciled(typename basic_array::index_extension x) -> basic_array {
