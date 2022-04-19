@@ -79,7 +79,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	using layout_type = typename array_ref<T, D, typename std::allocator_traits<Alloc>::pointer>::layout_type;
 
  protected:
-	using alloc_traits = typename std::allocator_traits<typename static_array::allocator_type>;
+	using alloc_traits = typename std::allocator_traits<allocator_type>;
 	using ref = array_ref<T, D, typename std::allocator_traits<typename std::allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
 
 	auto uninitialized_value_construct() {
@@ -114,10 +114,10 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 
 	using typename ref::size_type;
 	using typename ref::difference_type;
-	explicit static_array(typename static_array::allocator_type const& a) : array_alloc{a} {}
+	explicit static_array(allocator_type const& a) : array_alloc{a} {}
 
  protected:
-	static_array(static_array&& other, typename static_array::allocator_type const& a) noexcept  // 6b
+	static_array(static_array&& other, allocator_type const& a) noexcept          // 6b
 	: array_alloc{a}  // TODO(correaa) : handle allocation propagation here
 	, ref{other.base_, other.extensions()} {
 		other.ref::layout_t::operator=({});
@@ -125,12 +125,12 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	}
 
 	static_array(static_array&& other) noexcept
-	: static_array(std::move(other), typename static_array::allocator_type{}) {}  // 6b
+	: static_array(std::move(other), allocator_type{}) {}  // 6b
 
  public:
 	template<class It, class = typename std::iterator_traits<std::decay_t<It>>::difference_type>  // decltype(std::distance(std::declval<It>(), std::declval<It>()), *std::declval<It>())>
 	// analogous to std::vector::vector (5) https://en.cppreference.com/w/cpp/container/vector/vector
-	static_array(It first, It last, typename static_array::allocator_type const& a)
+	static_array(It first, It last, allocator_type const& a)
 	: array_alloc{a}
 	, ref {
 		array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(layout_type {index_extension {adl_distance(first, last)}*multi::extensions(*first)}.num_elements())),
@@ -159,7 +159,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 
 	// vvv TODO(correaa) : check if really necessary
 	template<class TT, class... As>
-	static_array(array_ref<TT, D, As...> const& other, typename static_array::allocator_type const& a)
+	static_array(array_ref<TT, D, As...> const& other, allocator_type const& a)
 	: array_alloc{a}
 	, ref{
 		array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(other.num_elements())),
@@ -174,7 +174,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	: static_array(other, allocator_type{}) {}
 	// ^^^ TODO(correaa) : check if really necessary
 
-	static_array(typename static_array::extensions_type x, typename static_array::element const& e, typename static_array::allocator_type const& a)  // 2
+	static_array(typename static_array::extensions_type x, typename static_array::element const& e, allocator_type const& a)  // 2
 	: array_alloc{a}
 	, ref{array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{x}.num_elements())), x} {
 		array_alloc::uninitialized_fill_n(this->data_elements(), static_cast<typename std::allocator_traits<allocator_type>::size_type>(this->num_elements()), e);
@@ -195,7 +195,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	, ref{array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{x}.num_elements()), hint), x} {}
 
 	template<class ValueType, typename = std::enable_if_t<std::is_same<ValueType, typename static_array::value_type>{}>>
-	explicit static_array(typename static_array::index_extension const& e, ValueType const& v, typename static_array::allocator_type const& a)  // 3
+	explicit static_array(typename static_array::index_extension const& e, ValueType const& v, allocator_type const& a)  // 3
 	= delete;
 
 	template<class ValueType, typename = std::enable_if_t<std::is_same<ValueType, typename static_array::value_type>{}>>
@@ -203,20 +203,20 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	= delete;
 
 // analgous to std::vector::vector ((4)) https://en.cppreference.com/w/cpp/container/vector/vector
-	explicit static_array(typename static_array::extensions_type x, typename static_array::allocator_type const& a)
+	explicit static_array(typename static_array::extensions_type x, allocator_type const& a)
 	: array_alloc{a}
 	, ref{array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{x}.num_elements())), x} {
 		uninitialized_default_construct();
 	}
 
 	explicit static_array(typename static_array::extensions_type x)
-	: static_array(x, typename static_array::allocator_type{}) {}
+	: static_array(x, allocator_type{}) {}
 
 	template<class TT, class... Args,
 		class = std::enable_if_t<std::is_assignable<typename ref::element_ref, typename multi::basic_array<TT, D, Args...>::element>{}>,
 		class = decltype(adl_copy(std::declval<multi::basic_array<TT, D, Args...> const&>().begin(), std::declval<multi::basic_array<TT, D, Args...> const&>().end(), std::declval<typename static_array::iterator>()))
 	>
-	static_array(multi::basic_array<TT, D, Args...> const& o, typename static_array::allocator_type const& a)
+	static_array(multi::basic_array<TT, D, Args...> const& o, allocator_type const& a)
 	: static_array(o.extensions(), a) {
 		adl_uninitialized_copy(o.begin(), o.end(), this->begin());  // TODO(correaa): call this conditionally on T properties
 	}
@@ -227,7 +227,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	>
 	// cppcheck-suppress noExplicitConstructor ; because argument can be well-represented  // NOLINTNEXTLINE(runtime/explicit)
 	static_array(multi::basic_array<TT, D, Args...> const& o)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
-	: static_array(o, typename static_array::allocator_type{}) {}
+	: static_array(o, allocator_type{}) {}
 
 	template<class TT, class... Args>
 	explicit static_array(array_ref<TT, D, Args...>&& o)
@@ -253,7 +253,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 
 	static_array(
 		std::initializer_list<typename static_array<T, D>::value_type> mil,
-		typename static_array::allocator_type const& a
+		allocator_type const& a
 	) : static_array{static_array<T, D>(mil.begin(), mil.end()), a} {}
 
 	template<class TT, std::size_t N>
@@ -319,7 +319,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	#if not defined(__NVCC__) and not defined(__INTEL_COMPILER)
 	constexpr
 	#endif
-	auto get_allocator(static_array const& s) -> typename static_array::allocator_type {return s.get_allocator();}
+	auto get_allocator(static_array const& s) -> allocator_type {return s.get_allocator();}
 
 	       constexpr auto data_elements()            const& ->                        element_const_ptr {return this->base_;}
 	       constexpr auto data_elements()                 & -> typename static_array::element_ptr       {return this->base_;}
