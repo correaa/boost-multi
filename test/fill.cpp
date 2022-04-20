@@ -20,9 +20,9 @@ static constexpr auto fnv1a(void const* key, std::size_t len, std::size_t h) noe
 	return h;
 }
 
-static constexpr auto fnv1a(void const* key, std::size_t len) noexcept {
-	return fnv1a(key, len, 14695981039346656037U);
-}
+// static constexpr auto fnv1a(void const* key, std::size_t len) noexcept {
+// 	return fnv1a(key, len, 14695981039346656037U);
+// }
 
 class fnv1a_t {
 	std::size_t h = 14695981039346656037U;  // offset
@@ -95,11 +95,12 @@ BOOST_AUTO_TEST_CASE(fill_member) {
 		{100., 11., 12., 13., 14.},
 		{ 50.,  6.,  7.,  8.,  9.}
 	};
-	BOOST_REQUIRE( d2D.elements().size() == d2D.num_elements() );
-	BOOST_REQUIRE( d2D.elements().base() == d2D.base() );
-	BOOST_REQUIRE( d2D.elements()[3] == 18. );
+
+	BOOST_REQUIRE(   d2D.elements().size()  == d2D.num_elements()  );
+	BOOST_REQUIRE(   d2D.elements().base()  == d2D.base()          );
+	BOOST_REQUIRE(   d2D.elements()[3]      == 18.                 );
 	BOOST_REQUIRE( &*d2D.elements().begin() == d2D.data_elements() );
-	BOOST_REQUIRE( &*d2D.elements().end() == d2D.data_elements() + d2D.num_elements() );
+	BOOST_REQUIRE( &*d2D.elements().end()   == d2D.data_elements() + d2D.num_elements() );
 //	std::fill( d2D.elements().begin(), d2D.elements().end() , 99. );
 //	multi::adl_fill_n( d2D.elements().begin(), d2D.elements().size(), 99. );
 	d2D.elements().fill(99.);
@@ -117,21 +118,20 @@ BOOST_AUTO_TEST_CASE(fill) {
 		{ 50.,  6.,  7.,  8.,  9.}
 	};
 	using std::all_of;
-	BOOST_REQUIRE( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& e){return e==5.;}) );
+	BOOST_REQUIRE( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& e) {return e == 5.;}) );
 
 	using std::fill;
 	fill(d2D[1].begin(), d2D[1].end(), 8.);
 
-	BOOST_REQUIRE( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& e){return e==8.;}) );
+	BOOST_REQUIRE( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& e) {return e == 8.;}) );
 
 	fill(begin(rotated(d2D)[1]), end(rotated(d2D)[1]), 8.);
-	BOOST_REQUIRE( all_of(begin(rotated(d2D)[1]), end(rotated(d2D)[1]), [](auto&& e){return e==8.;}) );
+	BOOST_REQUIRE( all_of(begin(rotated(d2D)[1]), end(rotated(d2D)[1]), [](auto&& e) {return e == 8.;}) );
 
 	fill(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), 8.);
-	BOOST_REQUIRE( all_of(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), [](auto&& e){return e==8.;}) );
+	BOOST_REQUIRE( all_of(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), [](auto&& e) {return e == 8.;}) );
 
 	auto rand = [d=std::normal_distribution<>{}, g = std::mt19937{r()}]() mutable {return d(g);};
 	multi::array<double, 2> r2D({5, 5});
 	std::for_each(begin(r2D), end(r2D), [&](auto&& e) {std::generate(begin(e), end(e), rand);});
 }
-
