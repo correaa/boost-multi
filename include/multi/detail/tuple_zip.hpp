@@ -120,7 +120,7 @@ constexpr auto tail(tuple<T0, Ts...> const& t) -> decltype(auto) {
 
 template<class T0, class... Ts>
 constexpr auto tail(tuple<T0, Ts...> && t) -> decltype(auto) {
-	return std::move(t).tail());
+	return std::move(t).tail();
 }
 
 template<class T0, class... Ts>
