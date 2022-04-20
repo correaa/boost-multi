@@ -43,7 +43,7 @@ namespace adl { \
 
 namespace boost::multi {
 
-template<std::size_t I> struct priority : std::conditional_t<I==0, std::true_type, struct priority<I-1>> {};
+template<std::size_t I> struct priority : std::conditional_t<I==0, std::true_type, priority<I-1>> {};
 
 #define DECLRETURN(ExpR) ->decltype(ExpR) {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
 #define JUSTRETURN(ExpR)                  {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
@@ -126,7 +126,7 @@ namespace adl {
 		template<class... As>          auto _(priority<4>/**/,        As&&... as) const DECLRETURN(custom::           fill_t<As&&...>::_(std::forward<As>(as)...))
 	public:
 		template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<5>{}, std::forward<As>(as)...))
-	} fill;
+	} fill [[maybe_unused]];
 }  // end namespace adl
 
 template<class Alloc>
