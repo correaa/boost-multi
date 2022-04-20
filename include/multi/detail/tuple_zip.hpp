@@ -114,20 +114,13 @@ constexpr auto head(tuple<T0, Ts...> & t) -> decltype(auto) {
 }
 
 template<class T0, class... Ts>
-constexpr auto tail(tuple<T0, Ts...> const& t) -> decltype(auto) {
-	return t.tail();
-}
+constexpr auto tail(tuple<T0, Ts...> const& t) -> decltype(auto) {return t.tail();}
 
 template<class T0, class... Ts>
-constexpr auto tail(tuple<T0, Ts...> && t) -> decltype(auto) {
-	return std::move(t).tail();
-}
+constexpr auto tail(tuple<T0, Ts...>     && t) -> decltype(auto) {return std::move(t).tail();}
 
 template<class T0, class... Ts>
-constexpr auto tail(tuple<T0, Ts...> & t) -> decltype(auto) {
-	return t.tail();
-}
-
+constexpr auto tail(tuple<T0, Ts...>      & t) -> decltype(auto) {return t.tail();}
 
 #if defined __NVCC__
     #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
