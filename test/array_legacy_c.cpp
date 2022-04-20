@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE(array_legacy_c) {
 	}
 }
 
-constexpr auto f2(multi::array_ref<double, 1>&& R) -> double& {return R[2];}
+inline constexpr auto f2(multi::array_ref<double, 1>&& R) -> double& {return R[2];}
 
 BOOST_AUTO_TEST_CASE(array_legacy_c_2) {
 	double A[5] = {150, 16, 17, 18, 19}; //  NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
