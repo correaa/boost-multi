@@ -80,27 +80,59 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Werror
 					-Wall
 					-Wextra
-					-Wcast-align
-					-Wcast-qual
+					-Wabi=13 -Waddress
+					-Waddress-of-packed-member
+				#   -Waggregate-return 
+				#   -Wabi-tag
+					-Waggressive-loop-optimizations
+					-Walloc-zero -Walloca 
+					-Wanalyzer-double-fclose -Wanalyzer-double-free -Wanalyzer-exposure-through-output-file -Wanalyzer-file-leak
+					-Wanalyzer-free-of-non-heap -Wanalyzer-malloc-leak -Wanalyzer-mismatching-deallocation -Wanalyzer-null-argument -Wanalyzer-null-dereference -Wanalyzer-possible-null-argument 
+					-Wanalyzer-possible-null-dereference -Wanalyzer-shift-count-negative -Wanalyzer-shift-count-overflow -Wanalyzer-stale-setjmp-buffer -Wanalyzer-tainted-array-index 
+					-Wanalyzer-too-complex -Wanalyzer-unsafe-call-within-signal-handler -Wanalyzer-use-after-free -Wanalyzer-use-of-pointer-in-stale-stack-frame
+					-Wanalyzer-write-to-const -Wanalyzer-write-to-string-literal
+					-Warith-conversion -Warray-bounds -Wattribute-warning -Wattributes
+					-Wbool-compare
+					-Wbool-operation -Wbuiltin-declaration-mismatch
+					-Wbuiltin-macro-redefined
+					-Wc++0x-compat -Wc++14-compat
+					-Wcannot-profile -Wcast-align -Wcast-align=strict -Wcast-function-type -Wcast-qual -Wchar-subscripts
 					-Wclobbered
+					-Wcomment -Wconditionally-supported -Wconversion -Wconversion-null -Wcoverage-mismatch -Wcpp -Wctor-dtor-privacy
 					-Wconversion
+					-Wdangling-else -Wdate-time
+					-Wdeprecated -Wdeprecated-declarations
+					-Wdisabled-optimization
+					-Wdiv-by-zero
 					-Wdouble-promotion
-					-Wduplicated-branches
-					-Wduplicated-cond
-					-Wempty-body
+					-Wduplicated-branches -Wduplicated-cond
+					-Wempty-body -Wendif-labels -Wenum-compare -Wenum-conversion -Wexpansion-to-defined # -Wextra
 					-Wformat-truncation
-					-Wformat=2
-					-Wformat-security
+					-Wformat=2 -Wformat-diag -Wformat-extra-args -Wformat-nonliteral -Wformat-security -Wformat-signedness -Wformat-y2k -Wformat-zero-length
+					-Wframe-address
+					-Wfree-nonheap-object
+					-Whsa
+					-Wif-not-aligned
+					-Wignored-attributes -Wignored-qualifiers
+					-Winit-self  # -Winline
+					-Wint-in-bool-context -Wint-to-pointer-cast -Winvalid-memory-model -Winvalid-pch
 					-Wignored-qualifiers
-					-Wlogical-op
+					-Wlogical-not-parentheses -Wlogical-op
+					-Wlong-long -Wlto-type-mismatch
+					-Wmain -Wmaybe-uninitialized -Wmemset-elt-size -Wmemset-transposed-args -Wmisleading-indentation -Wmismatched-dealloc
+					-Wmissing-attributes -Wmissing-braces -Wmissing-declarations -Wmissing-field-initializers -Wmissing-include-dirs -Wmissing-profile
+					-Wmultichar -Wmultistatement-macros
 					-Wmisleading-indentation
 					-Wmissing-include-dirs
+					-Wnarrowing -Wnonnull -Wnonnull-compare -Wnull-dereference
 					-Wnon-virtual-dtor
 					-Wno-missing-declarations
 					-Wno-unknown-pragmas
 					-Wnon-virtual-dtor
 					-Wnull-dereference
+					-Wodr
 					-Wold-style-cast
+					-Wopenmp-simd -Woverflow -Woverlength-strings
 					-Woverloaded-virtual
 					-Wpointer-arith
 					-Wpedantic
@@ -217,7 +249,6 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wuninitialized
 					-Wunused
 					-Wunused-parameter
-					-Wtype-limits
 				>
 				$<$<CXX_COMPILER_ID:MSVC>:
 					/WX
