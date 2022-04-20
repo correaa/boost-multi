@@ -120,8 +120,7 @@ constexpr auto tail(tuple<T0, Ts...> const& t) -> decltype(auto) {
 
 template<class T0, class... Ts>
 constexpr auto tail(tuple<T0, Ts...> && t) -> decltype(auto) {
-	// cppcheck-suppress returnStdMoveLocal ; false positive
-	return std::move(t.tail());
+	return std::move(t).tail());
 }
 
 template<class T0, class... Ts>
@@ -163,7 +162,7 @@ constexpr auto get(tuple<T0, Ts...>& t) -> auto& {
 template<std::size_t N, class T0, class... Ts>
 constexpr auto get(tuple<T0, Ts...>&& t) -> auto&& {
 	if constexpr(N == 0) {
-		return std::move(t.head());
+		return std::move(t).head();
 	} else {
 		return get<N-1>(std::move(t.tail()));
 	}
