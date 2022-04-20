@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE(array_legacy_c) {
 }
 
 auto f2(multi::array_ref<double, 1>&& R)
-#ifdef(__GNUC__)
+#ifdef __GNUC__
 __attribute__((const))
 #endif
 -> double&;
