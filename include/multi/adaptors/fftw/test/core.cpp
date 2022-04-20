@@ -290,9 +290,11 @@ BOOST_AUTO_TEST_CASE(cufft_many_2D) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_5D) {
-	multi::array<complex, 5> in({4., 5., 6., 7., 8.});
+	multi::array<complex, 5> in({4, 5, 6, 7, 8});
+	BOOST_REQUIRE( size(in) == 4 );
+
 	in[2][3][4][5][6] = 99.;
-	auto const out_fwd = multi::fftw::dft(in, fftw::forward);
+	auto const fwd = multi::fftw::dft(in, fftw::forward);
 
 	BOOST_REQUIRE(in[2][3][4][5][6] == 99.);
 	BOOST_REQUIRE( power(in) - power(out_fwd)/num_elements(out_fwd) < 1e-8 );
