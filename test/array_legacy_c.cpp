@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(array_legacy_c) {
 
 auto f2(multi::array_ref<double, 1>&& R) -> double&
 #ifdef __GNUC__
-__attribute__((const))
+__attribute__((const))  // NOLINT(clang-diagnostic-ignored-attributes)
 #endif
 ;
 
