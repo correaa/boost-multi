@@ -83,24 +83,28 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wextra-semi
 					-Wpedantic
 					# -Wabi=13 -Wabi-tag (maybe important when linking with very old libraries)
-					-Waddress -Waddress-of-packed-member
+					-Waddress
+					# -Waddress-of-packed-member (gcc 11, not in gcc 8)
 					# -Waggregate-return (disallow return classes or structs, seems a C-compatibility warning)
 					-Waggressive-loop-optimizations
 					-Walloc-zero  # -Walloc-size-larger-than=
 					-Walloca  # -Walloca-larger-than=
-					-Wanalyzer-double-fclose -Wanalyzer-double-free -Wanalyzer-exposure-through-output-file -Wanalyzer-file-leak -Wanalyzer-free-of-non-heap -Wanalyzer-malloc-leak
+					# -Wanalyzer-double-fclose -Wanalyzer-double-free -Wanalyzer-exposure-through-output-file -Wanalyzer-file-leak -Wanalyzer-free-of-non-heap -Wanalyzer-malloc-leak (gcc 11, not in gcc 9)
 					# -Wanalyzer-mismatching-deallocation (gcc 11, not in gcc 10)
-					-Wanalyzer-null-argument -Wanalyzer-null-dereference -Wanalyzer-possible-null-argument -Wanalyzer-possible-null-dereference
+					# -Wanalyzer-null-argument -Wanalyzer-null-dereference -Wanalyzer-possible-null-argument -Wanalyzer-possible-null-dereference (gcc 11, not in gcc 9)
 					# -Wanalyzer-shift-count-negative -Wanalyzer-shift-count-overflow (gcc 11, not in gcc 10)
-					-Wanalyzer-stale-setjmp-buffer -Wanalyzer-tainted-array-index -Wanalyzer-too-complex -Wanalyzer-unsafe-call-within-signal-handler -Wanalyzer-use-after-free -Wanalyzer-use-of-pointer-in-stale-stack-frame
+					# -Wanalyzer-stale-setjmp-buffer -Wanalyzer-tainted-array-index -Wanalyzer-too-complex -Wanalyzer-unsafe-call-within-signal-handler -Wanalyzer-use-after-free -Wanalyzer-use-of-pointer-in-stale-stack-frame (gcc 11, not in gcc 9)
 					# -Wanalyzer-write-to-const -Wanalyzer-write-to-string-literal (gcc 11, not in gcc 10)
-					-Warith-conversion
-					-Warray-bounds -Warray-parameter #  -Warray-bounds=<0,2> -Warray-parameter=<0,2> 
-					-Wattribute-warning -Wattributes
+					# -Warith-conversion (gcc 11, not in gcc 9)
+					-Warray-bounds 
+					# -Warray-parameter #  -Warray-bounds=<0,2> -Warray-parameter=<0,2>  (gcc 11, not in gcc 10)
+					# -Wattribute-warning (gcc 11, not in gcc 8)
+					-Wattributes
 					-Wbool-compare -Wbool-operation
 					-Wbuiltin-declaration-mismatch -Wbuiltin-macro-redefined
-					-Wc++0x-compat -Wc++14-compat -Wc++17-compat -Wc++1z-compat -Wc++20-compat -Wc++2a-compat
-					-Wcannot-profile
+					-Wc++0x-compat -Wc++14-compat -Wc++17-compat -Wc++1z-compat
+					# -Wc++20-compat -Wc++2a-compat (gcc 11, not in gcc 9)
+					# -Wcannot-profile (gcc 11, not in gcc 8)
 					-Wcast-align -Wcast-align=strict -Wcast-function-type -Wcast-qual
 					-Wcatch-value  # -Wcatch-value=<0, 3>
 					-Wchar-subscripts -Wclobbered -Wcomment  # (same as -Wcomments)
@@ -111,17 +115,23 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wctor-dtor-privacy
 					-Wdangling-else -Wdate-time
 					-Wdelete-incomplete -Wdelete-non-virtual-dtor
-					-Wdeprecated -Wdeprecated-copy -Wdeprecated-copy-dtor -Wdeprecated-declarations -Wdeprecated-enum-enum-conversion -Wdeprecated-enum-float-conversion
+					-Wdeprecated 
+					# -Wdeprecated-copy -Wdeprecated-copy-dtor (gcc 11, not in gcc 8)
+					-Wdeprecated-declarations
+					# -Wdeprecated-enum-enum-conversion -Wdeprecated-enum-float-conversion (gcc 11, not in gcc 10)
 					-Wdisabled-optimization -Wdiv-by-zero -Wdouble-promotion
 					-Wduplicated-branches -Wduplicated-cond
 					# -Weffc++ (doesn't allow some advanced techniques, such as CRTP)
 					-Wempty-body -Wendif-labels
-					-Wenum-compare -Wenum-conversion
+					-Wenum-compare
+					# -Wenum-conversion (gcc 11, not in gcc 10)
 					-Wexpansion-to-defined
-					-Wexceptions
+					# -Wexceptions  (gcc 11, not in gcc 10)
 					# -Wextra (see above)
 					-Wfloat-conversion # -Wfloat-equal (disallows float equality)
-					-Wformat-truncation -Wformat=2 -Wformat-diag -Wformat-extra-args -Wformat-nonliteral -Wformat-security -Wformat-signedness -Wformat-truncation -Wformat-y2k -Wformat-zero-length  # -Wformat-overflow=<0,2>
+					-Wformat-truncation -Wformat=2
+					# -Wformat-diag (gcc 11, not in gcc 9)
+					-Wformat-extra-args -Wformat-nonliteral -Wformat-security -Wformat-signedness -Wformat-truncation -Wformat-y2k -Wformat-zero-length  # -Wformat-overflow=<0,2>
 					-Wframe-address  # -Wframe-larger-than=<byte-size>
 					-Wfree-nonheap-object -Whsa -Wif-not-aligned
 					-Wignored-attributes -Wignored-qualifiers
@@ -129,7 +139,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Winit-self
 					# -Winline
 					-Wint-in-bool-context -Wint-to-pointer-cast
-					-Winvalid-imported-macros
+					# -Winvalid-imported-macros (gcc 11, not in gcc 10)
 					-Winvalid-memory-model -Winvalid-offsetof -Winvalid-pch
 					-Wignored-qualifiers
 					# -Wlarger-than=<byte-size>  # (disallow large objects types? in executable)
@@ -138,8 +148,10 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wlong-long -Wlto-type-mismatch -Wmain -Wmaybe-uninitialized
 					-Wmemset-elt-size -Wmemset-transposed-args
 					-Wmisleading-indentation
-					-Wmismatched-dealloc -Wmismatched-new-delete -Wmismatched-tags
-					-Wmissing-attributes -Wmissing-braces -Wmissing-declarations -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs -Wmissing-noreturn -Wmissing-profile
+					# -Wmismatched-dealloc -Wmismatched-new-delete (gcc 11, not in gcc 10)
+					# -Wmismatched-tags (gcc 11, not in gcc 9)
+					-Wmissing-attributes -Wmissing-braces -Wmissing-declarations -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs -Wmissing-noreturn
+					# -Wmissing-profile (gcc 11, not in gcc 8)
 					-Wmultichar
 					# -Wmultiple-inheritance (disallows composition by inheritance)
 					-Wmultistatement-macros
@@ -156,11 +168,18 @@ foreach(TEST_FILE ${TEST_SRCS})
 					# -Wpadded (disallows structs that need padding for alignment)
 					-Wparentheses
 					# -Wpedantic (see above)
-					-Wpessimizing-move -Wplacement-new  #=1  -Wplacement-new=<0,2>
+					# -Wpessimizing-move (gcc 11, not in gcc 8)
+					-Wplacement-new  #=1  -Wplacement-new=<0,2>
 					-Wpmf-conversions
 					-Wpointer-arith -Wpointer-compare
-					-Wpragmas -Wprio-ctor-dtor -Wpsabi
-					-Wrange-loop-construct -Wredundant-decls -Wredundant-move -Wredundant-tags -Wregister
+					-Wpragmas
+					# -Wprio-ctor-dtor (gcc 11, not in gcc 8) 
+					-Wpsabi
+					# -Wrange-loop-construct (gcc 11, not in gcc 10)
+					-Wredundant-decls
+					# -Wredundant-move (gcc 11, not in gcc 8)
+					# -Wredundant-tags (gcc 11, not in gcc 9)
+					-Wregister
 					-Wreturn-local-addr -Wreturn-type
 					-Wrestrict -Wreorder
 					-Wscalar-storage-order -Wsequence-point
@@ -168,22 +187,28 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wshift-count-negative -Wshift-count-overflow -Wshift-negative-value -Wshift-overflow  #=1 -Wshift-overflow=<0,2>
 					-Wsign-compare -Wsign-conversion -Wsign-promo
 					-Wsized-deallocation
-					-Wsizeof-array-argument -Wsizeof-array-div -Wsizeof-pointer-div -Wsizeof-pointer-memaccess
-					-Wstack-protector  # -Wstack-usage=<byte-size> 
+					-Wsizeof-array-argument 
+					# -Wsizeof-array-div (gcc 11, not in gcc 10)
+					-Wsizeof-pointer-div -Wsizeof-pointer-memaccess
+					-Wstack-protector  # -Wstack-usage=<byte-size>
 					-Wstrict-aliasing  #=3  -Wstrict-aliasing=<0,3>
 					-Wstrict-null-sentinel  #=1  -Wstrict-overflow=<0,5>
 					-Wstrict-overflow  #=1  -Wstrict-overflow=<0,5>
-					-Wstring-compare
+					# -Wstring-compare (gcc 11, not in gcc 9)
 					-Wstringop-overflow  #=2  -Wstringop-overflow=<0,4>
-					-Wstringop-overread -Wstringop-truncation
+					# -Wstringop-overread (gcc 11, not in gcc 10)
+					-Wstringop-truncation
 					-Wsubobject-linkage
 					-Wsuggest-attribute=const -Wsuggest-attribute=format -Wsuggest-attribute=malloc -Wsuggest-attribute=noreturn -Wsuggest-attribute=pure -Wsuggest-final-methods -Wsuggest-final-types
-					-Wswitch -Wswitch-bool -Wswitch-default -Wswitch-enum -Wswitch-outside-range -Wswitch-unreachable
+					-Wswitch -Wswitch-bool -Wswitch-default -Wswitch-enum
+					# -Wswitch-outside-range (gcc 11, not in gcc 9)
+					-Wswitch-unreachable
 					-Wsync-nand -Wsynth
 					# -Wsystem-headers (expects system headers to be warning-compliant which they are not)
 					-Wtautological-compare
 					# -Wtemplates (disallows templates, C-tool)
-					-Wtrampolines -Wtrigraphs -Wtsan
+					-Wtrampolines -Wtrigraphs
+					# -Wtsan (gcc 11, not in gcc 10)
 					-Wtype-limits -Wundef -Wuninitialized
 					-Wno-unknown-pragmas  # (see above) -Wunknown-pragmas (other compilers need their own pragmas for their warnings)
 					-Wunreachable-code -Wunsafe-loop-optimizations
@@ -191,9 +216,13 @@ foreach(TEST_FILE ${TEST_SRCS})
 					# -Wunused-const-variable  #=2 TODO(correaa) add [[maybe_unused]] to niebloids
 					-Wunused-function -Wunused-label -Wunused-local-typedefs -Wunused-macros -Wunused-parameter -Wunused-result -Wunused-value -Wunused-variable
 					-Wuseless-cast
-					-Wvarargs -Wvariadic-macros -Wvector-operation-performance -Wvexing-parse -Wvirtual-inheritance -Wvirtual-move-assign
-					-Wvla -Wvla-parameter
-					-Wvolatile -Wvolatile-register-var
+					-Wvarargs -Wvariadic-macros -Wvector-operation-performance
+					# -Wvexing-parse (gcc 11, not in gcc 10)
+					-Wvirtual-inheritance -Wvirtual-move-assign
+					-Wvla
+					# -Wvla-parameter (gcc 11, not in gcc 10)
+					# -Wvolatile (gcc 11, not in gcc 9)
+					-Wvolatile-register-var
 					-Wwrite-strings
 					-Wzero-as-null-pointer-constant
 				>
