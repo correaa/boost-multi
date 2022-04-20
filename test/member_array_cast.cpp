@@ -63,7 +63,7 @@ class particles_soa{
 };
 
 	multi::array<particle, 2> AoS({2, 2}, particle{});
-	AoS[1][1] = particle{99., v3d{1., 2.}};
+	AoS[1][1] = particle{99., v3d{{1., 2.}} };
 
 	auto&& masses = AoS.member_cast<double>(&particle::mass);
 	BOOST_REQUIRE( size(masses) == 2 );

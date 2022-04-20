@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_tuple_as_extra_dimension) {
 	}
 
 	 {
-		multi::array<vector3, 2> const A({4, 5}, vector3{1., 2., 3.});
+		multi::array<vector3, 2> const A({4, 5}, vector3{{1., 2., 3.}} );
 
 		BOOST_REQUIRE( dimensionality(A.reinterpret_array_cast<double>(3)) == 3 );
 		BOOST_REQUIRE( A.reinterpret_array_cast<double>(3).num_elements() == A.num_elements()*3 );

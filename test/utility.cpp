@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(std_array_extensions_1d) {
 }
 
 BOOST_AUTO_TEST_CASE(test_utility_1d) {
-	std::array<double, 10> carr = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9.};
+	std::array<double, 10> carr = {{0., 1., 2., 3., 4., 5., 6., 7., 8., 9.}};
 	multi::array_ref<double, 1> marr(&carr[0], {multi::iextension{10}});
 //	boost::multi_array_ref<double, 1> Marr(&carr[0], boost::extents[10]);
 	std::vector<double> varr(10); std::iota(begin(varr), end(varr), 0);
@@ -148,13 +148,11 @@ BOOST_AUTO_TEST_CASE(test_utility_1d) {
 }
 
 BOOST_AUTO_TEST_CASE(test_utility_2d) {
-	std::array<std::array<double, 10>, 3> carr{
-		{
-			{ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.},
-			{10., 11., 12., 13., 14., 15., 16., 17., 18., 19.},
-			{20., 21., 22., 23., 24., 25., 26., 27., 28., 29.},
-		}
-	};
+	std::array<std::array<double, 10>, 3> carr{{
+		{{ 0.,  1.,  2.,  3.,  4.,  5.,  6.,  7.,  8.,  9.}},
+		{{10., 11., 12., 13., 14., 15., 16., 17., 18., 19.}},
+		{{20., 21., 22., 23., 24., 25., 26., 27., 28., 29.}},
+	}};
 	multi::array_ref<double, 2> marr(&carr[0][0], {3, 10});
 
 	BOOST_REQUIRE( static_cast<multi::size_t>(carr.size()) == size(marr) );

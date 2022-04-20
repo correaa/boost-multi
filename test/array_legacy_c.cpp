@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(array_legacy_c) {
 	static_assert( sizeof(complex) == sizeof(fake::fftw_complex), "!" );
 	fake::fftw_plan_dft(
 		dimensionality(in),
-		std::apply([](auto... es){return std::array<int, 2>{static_cast<int>(es)...};}, in.sizes()).data(),
+		std::apply([](auto... es) {return std::array<int, 2>{{static_cast<int>(es)...}};}, in.sizes()).data(),
 		reinterpret_cast<fake::fftw_complex*>(const_cast<complex*>(in .data_elements())), // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast, cppcoreguidelines-pro-type-const-cast): testing legacy code
 		reinterpret_cast<fake::fftw_complex*>(                     out.data_elements() ), // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast): testing legacy code
 		1, 0
