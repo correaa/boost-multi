@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(array_legacy_c) {
 		BOOST_REQUIRE( d2D[3].is_compact() );
 		BOOST_REQUIRE( not rotated(d2D)[2].is_compact() );
 	}
-	 {
+	{
 		multi::array<complex, 2> d2D({5, 3});
 		BOOST_REQUIRE( d2D.is_compact() );
 		BOOST_REQUIRE( rotated(d2D).is_compact() );
@@ -88,11 +88,13 @@ BOOST_AUTO_TEST_CASE(array_legacy_c) {
 	}
 }
 
-auto f2(multi::array_ref<double, 1>&& R) -> double&;
+auto f2(multi::array_ref<double, 1>&& R)
+#ifdef(__GNUC__)
+__attribute__((const))
+#endif
+-> double&;
 
-auto f2(multi::array_ref<double, 1>&& R) -> double& {
-	return R[2];
-}
+auto f2(multi::array_ref<double, 1>&& R) -> double& {return R[2];}
 
 BOOST_AUTO_TEST_CASE(array_legacy_c_2) {
 	double A[5] = {150, 16, 17, 18, 19}; //  NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
