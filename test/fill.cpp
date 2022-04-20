@@ -20,8 +20,7 @@ static constexpr auto fnv1a(void const* key, std::size_t len, std::size_t h) noe
 	return h;
 }
 
-auto fnv1a(void const* key, std::size_t len) noexcept;
-auto fnv1a(void const* key, std::size_t len) noexcept {
+static constexpr auto fnv1a(void const* key, std::size_t len) noexcept {
 	return fnv1a(key, len, 14695981039346656037U);
 }
 
