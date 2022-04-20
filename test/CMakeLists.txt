@@ -79,79 +79,122 @@ foreach(TEST_FILE ${TEST_SRCS})
 				$<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_COMPILER_ID:Clang>>>:
 					-Werror
 					-Wall
-					-Wextra
-					-Wabi=13 -Waddress
-					-Waddress-of-packed-member
-				#   -Waggregate-return 
-				#   -Wabi-tag
+					-Wextra  # (activates -Wunknown-pragmas)
+					-Wextra-semi
+					-Wpedantic
+					# -Wabi=13 -Wabi-tag (maybe important when linking with very old libraries)
+					-Waddress -Waddress-of-packed-member
+					# -Waggregate-return (disallow return classes or structs, seems a C-compatibility warning)
 					-Waggressive-loop-optimizations
-					-Walloc-zero -Walloca 
-					-Wanalyzer-double-fclose -Wanalyzer-double-free -Wanalyzer-exposure-through-output-file -Wanalyzer-file-leak
-					-Wanalyzer-free-of-non-heap -Wanalyzer-malloc-leak -Wanalyzer-mismatching-deallocation -Wanalyzer-null-argument -Wanalyzer-null-dereference -Wanalyzer-possible-null-argument 
-					-Wanalyzer-possible-null-dereference -Wanalyzer-shift-count-negative -Wanalyzer-shift-count-overflow -Wanalyzer-stale-setjmp-buffer -Wanalyzer-tainted-array-index 
-					-Wanalyzer-too-complex -Wanalyzer-unsafe-call-within-signal-handler -Wanalyzer-use-after-free -Wanalyzer-use-of-pointer-in-stale-stack-frame
-					-Wanalyzer-write-to-const -Wanalyzer-write-to-string-literal
-					-Warith-conversion -Warray-bounds -Wattribute-warning -Wattributes
-					-Wbool-compare
-					-Wbool-operation -Wbuiltin-declaration-mismatch
-					-Wbuiltin-macro-redefined
-					-Wc++0x-compat -Wc++14-compat
-					-Wcannot-profile -Wcast-align -Wcast-align=strict -Wcast-function-type -Wcast-qual -Wchar-subscripts
-					-Wclobbered
-					-Wcomment -Wconditionally-supported -Wconversion -Wconversion-null -Wcoverage-mismatch -Wcpp -Wctor-dtor-privacy
-					-Wconversion
+					-Walloc-zero  # -Walloc-size-larger-than=
+					-Walloca  # -Walloca-larger-than=
+					-Wanalyzer-double-fclose -Wanalyzer-double-free -Wanalyzer-exposure-through-output-file -Wanalyzer-file-leak -Wanalyzer-free-of-non-heap -Wanalyzer-malloc-leak
+					# -Wanalyzer-mismatching-deallocation (gcc 11, not in gcc 10)
+					-Wanalyzer-null-argument -Wanalyzer-null-dereference -Wanalyzer-possible-null-argument -Wanalyzer-possible-null-dereference
+					# -Wanalyzer-shift-count-negative -Wanalyzer-shift-count-overflow (gcc 11, not in gcc 10)
+					-Wanalyzer-stale-setjmp-buffer -Wanalyzer-tainted-array-index -Wanalyzer-too-complex -Wanalyzer-unsafe-call-within-signal-handler -Wanalyzer-use-after-free -Wanalyzer-use-of-pointer-in-stale-stack-frame
+					# -Wanalyzer-write-to-const -Wanalyzer-write-to-string-literal (gcc 11, not in gcc 10)
+					-Warith-conversion
+					-Warray-bounds -Warray-parameter #  -Warray-bounds=<0,2> -Warray-parameter=<0,2> 
+					-Wattribute-warning -Wattributes
+					-Wbool-compare -Wbool-operation
+					-Wbuiltin-declaration-mismatch -Wbuiltin-macro-redefined
+					-Wc++0x-compat -Wc++14-compat -Wc++17-compat -Wc++1z-compat -Wc++20-compat -Wc++2a-compat
+					-Wcannot-profile
+					-Wcast-align -Wcast-align=strict -Wcast-function-type -Wcast-qual
+					-Wcatch-value  # -Wcatch-value=<0, 3>
+					-Wchar-subscripts -Wclobbered -Wcomment  # (same as -Wcomments)
+					-Wconditionally-supported
+					-Wconversion -Wconversion-null
+					-Wcoverage-mismatch -Wcpp 
+					# -Wctad-maybe-unsupported  # TODO(correaa) add ctad explicitly as necessary
+					-Wctor-dtor-privacy
 					-Wdangling-else -Wdate-time
-					-Wdeprecated -Wdeprecated-declarations
-					-Wdisabled-optimization
-					-Wdiv-by-zero
-					-Wdouble-promotion
+					-Wdelete-incomplete -Wdelete-non-virtual-dtor
+					-Wdeprecated -Wdeprecated-copy -Wdeprecated-copy-dtor -Wdeprecated-declarations -Wdeprecated-enum-enum-conversion -Wdeprecated-enum-float-conversion
+					-Wdisabled-optimization -Wdiv-by-zero -Wdouble-promotion
 					-Wduplicated-branches -Wduplicated-cond
-					-Wempty-body -Wendif-labels -Wenum-compare -Wenum-conversion -Wexpansion-to-defined # -Wextra
-					-Wformat-truncation
-					-Wformat=2 -Wformat-diag -Wformat-extra-args -Wformat-nonliteral -Wformat-security -Wformat-signedness -Wformat-y2k -Wformat-zero-length
-					-Wframe-address
-					-Wfree-nonheap-object
-					-Whsa
-					-Wif-not-aligned
+					# -Weffc++ (doesn't allow some advanced techniques, such as CRTP)
+					-Wempty-body -Wendif-labels
+					-Wenum-compare -Wenum-conversion
+					-Wexpansion-to-defined
+					-Wexceptions
+					# -Wextra (see above)
+					-Wfloat-conversion # -Wfloat-equal (disallows float equality)
+					-Wformat-truncation -Wformat=2 -Wformat-diag -Wformat-extra-args -Wformat-nonliteral -Wformat-security -Wformat-signedness -Wformat-truncation -Wformat-y2k -Wformat-zero-length  # -Wformat-overflow=<0,2>
+					-Wframe-address  # -Wframe-larger-than=<byte-size>
+					-Wfree-nonheap-object -Whsa -Wif-not-aligned
 					-Wignored-attributes -Wignored-qualifiers
-					-Winit-self  # -Winline
-					-Wint-in-bool-context -Wint-to-pointer-cast -Winvalid-memory-model -Winvalid-pch
+					-Wimplicit-fallthrough#=3  # -Wimplicit-fallthrough=<0,5>
+					-Winit-self
+					# -Winline
+					-Wint-in-bool-context -Wint-to-pointer-cast
+					-Winvalid-imported-macros
+					-Winvalid-memory-model -Winvalid-offsetof -Winvalid-pch
 					-Wignored-qualifiers
+					# -Wlarger-than=<byte-size>  # (disallow large objects types? in executable)
+					-Wliteral-suffix
 					-Wlogical-not-parentheses -Wlogical-op
-					-Wlong-long -Wlto-type-mismatch
-					-Wmain -Wmaybe-uninitialized -Wmemset-elt-size -Wmemset-transposed-args -Wmisleading-indentation -Wmismatched-dealloc
-					-Wmissing-attributes -Wmissing-braces -Wmissing-declarations -Wmissing-field-initializers -Wmissing-include-dirs -Wmissing-profile
-					-Wmultichar -Wmultistatement-macros
+					-Wlong-long -Wlto-type-mismatch -Wmain -Wmaybe-uninitialized
+					-Wmemset-elt-size -Wmemset-transposed-args
 					-Wmisleading-indentation
-					-Wmissing-include-dirs
-					-Wnarrowing -Wnonnull -Wnonnull-compare -Wnull-dereference
+					-Wmismatched-dealloc -Wmismatched-new-delete -Wmismatched-tags
+					-Wmissing-attributes -Wmissing-braces -Wmissing-declarations -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs -Wmissing-noreturn -Wmissing-profile
+					-Wmultichar
+					# -Wmultiple-inheritance (disallows composition by inheritance)
+					-Wmultistatement-macros
+					# -Wnamespaces (disallows use of namespaces, seems a C-tool)
+					-Wnarrowing
+					-Wnoexcept -Wnoexcept-type
+					-Wnormalized  #=nfc -Wnormalized=[none|id|nfc|nfkc]
+					-Wnon-template-friend
 					-Wnon-virtual-dtor
-					-Wno-missing-declarations
-					-Wno-unknown-pragmas
-					-Wnon-virtual-dtor
-					-Wnull-dereference
-					-Wodr
-					-Wold-style-cast
-					-Wopenmp-simd -Woverflow -Woverlength-strings
-					-Woverloaded-virtual
-					-Wpointer-arith
-					-Wpedantic
-					-Wredundant-decls
-					-Wshadow
-					-Wold-style-cast
-					-Woverloaded-virtual
-					-Wpedantic
-					-Wsign-compare
-					-Wsign-conversion
-					-Wstrict-aliasing
-					-Wswitch-enum
-					-Wtrampolines
-					-Wuninitialized
-					-Wunused
-					-Wunused-parameter
-					-Wunused-but-set-variable
-					-Wunused-result
+					-Wnonnull -Wnonnull-compare -Wnull-dereference
+					-Wodr -Wold-style-cast -Wopenmp-simd -Woverflow
+					-Woverlength-strings -Woverloaded-virtual
+					-Wpacked -Wpacked-bitfield-compat -Wpacked-not-aligned
+					# -Wpadded (disallows structs that need padding for alignment)
+					-Wparentheses
+					# -Wpedantic (see above)
+					-Wpessimizing-move -Wplacement-new  #=1  -Wplacement-new=<0,2>
+					-Wpmf-conversions
+					-Wpointer-arith -Wpointer-compare
+					-Wpragmas -Wprio-ctor-dtor -Wpsabi
+					-Wrange-loop-construct -Wredundant-decls -Wredundant-move -Wredundant-tags -Wregister
+					-Wreturn-local-addr -Wreturn-type
+					-Wrestrict -Wreorder
+					-Wscalar-storage-order -Wsequence-point
+					-Wshadow -Wshadow-compatible-local -Wshadow-local -Wshadow=compatible-local -Wshadow=local
+					-Wshift-count-negative -Wshift-count-overflow -Wshift-negative-value -Wshift-overflow  #=1 -Wshift-overflow=<0,2>
+					-Wsign-compare -Wsign-conversion -Wsign-promo
+					-Wsized-deallocation
+					-Wsizeof-array-argument -Wsizeof-array-div -Wsizeof-pointer-div -Wsizeof-pointer-memaccess
+					-Wstack-protector  # -Wstack-usage=<byte-size> 
+					-Wstrict-aliasing  #=3  -Wstrict-aliasing=<0,3>
+					-Wstrict-null-sentinel  #=1  -Wstrict-overflow=<0,5>
+					-Wstrict-overflow  #=1  -Wstrict-overflow=<0,5>
+					-Wstring-compare
+					-Wstringop-overflow  #=2  -Wstringop-overflow=<0,4>
+					-Wstringop-overread -Wstringop-truncation
+					-Wsubobject-linkage
+					-Wsuggest-attribute=const -Wsuggest-attribute=format -Wsuggest-attribute=malloc -Wsuggest-attribute=noreturn -Wsuggest-attribute=pure -Wsuggest-final-methods -Wsuggest-final-types
+					-Wswitch -Wswitch-bool -Wswitch-default -Wswitch-enum -Wswitch-outside-range -Wswitch-unreachable
+					-Wsync-nand -Wsynth
+					# -Wsystem-headers (expects system headers to be warning-compliant which they are not)
+					-Wtautological-compare
+					# -Wtemplates (disallows templates, C-tool)
+					-Wtrampolines -Wtrigraphs -Wtsan
+					-Wtype-limits -Wundef -Wuninitialized
+					-Wno-unknown-pragmas  # (see above) -Wunknown-pragmas (other compilers need their own pragmas for their warnings)
+					-Wunreachable-code -Wunsafe-loop-optimizations
+					-Wunused -Wunused-parameter -Wunused-but-set-variable 
+					# -Wunused-const-variable  #=2 TODO(correaa) add [[maybe_unused]] to niebloids
+					-Wunused-function -Wunused-label -Wunused-local-typedefs -Wunused-macros -Wunused-parameter -Wunused-result -Wunused-value -Wunused-variable
 					-Wuseless-cast
+					-Wvarargs -Wvariadic-macros -Wvector-operation-performance -Wvexing-parse -Wvirtual-inheritance -Wvirtual-move-assign
+					-Wvla -Wvla-parameter
+					-Wvolatile -Wvolatile-register-var
+					-Wwrite-strings
 					-Wzero-as-null-pointer-constant
 				>
 				$<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID:Clang>>:
