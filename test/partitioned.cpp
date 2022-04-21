@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE(array_partitioned_add_to_last) {
 	};
 
 #if(__cplusplus >= 201703L)
-	auto strides = std::apply([](auto... e){return std::array<std::ptrdiff_t, sizeof...(e)>{e...};}, A3.strides());
+	auto strides = std::apply([](auto... e) {return std::array<std::ptrdiff_t, sizeof...(e)>{{e...}};}, A3.strides());
 
 	BOOST_REQUIRE( std::is_sorted(strides.rbegin(), strides.rend()) and A3.num_elements() == A3.nelems() ); // contiguous c-ordering
 #endif

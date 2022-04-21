@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(empty_intersection) {
 
 BOOST_AUTO_TEST_CASE(multi_tests_element_access_with_tuple) {
 	multi::array<double, 2> m({3, 3}, 44.);
-	std::array<int, 2> p = {1, 2};
+	std::array<int, 2> p = {{1, 2}};
 
 	BOOST_REQUIRE( m[p[0]][p[1]] == m(1, 2) );
 	BOOST_REQUIRE( &m(p[0], p[1]) == &m[p[0]][p[1]] );

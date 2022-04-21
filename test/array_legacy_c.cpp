@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(array_legacy_c) {
 	static_assert( sizeof(complex) == sizeof(fake::fftw_complex), "!" );
 	fake::fftw_plan_dft(
 		dimensionality(in),
-		std::apply([](auto... es){return std::array<int, 2>{static_cast<int>(es)...};}, in.sizes()).data(),
+		std::apply([](auto... es) {return std::array<int, 2>{{static_cast<int>(es)...}};}, in.sizes()).data(),
 		reinterpret_cast<fake::fftw_complex*>(const_cast<complex*>(in .data_elements())), // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast, cppcoreguidelines-pro-type-const-cast): testing legacy code
 		reinterpret_cast<fake::fftw_complex*>(                     out.data_elements() ), // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast): testing legacy code
 		1, 0
@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(array_legacy_c) {
 		BOOST_REQUIRE( d2D[3].is_compact() );
 		BOOST_REQUIRE( not rotated(d2D)[2].is_compact() );
 	}
-	 {
+	{
 		multi::array<complex, 2> d2D({5, 3});
 		BOOST_REQUIRE( d2D.is_compact() );
 		BOOST_REQUIRE( rotated(d2D).is_compact() );
@@ -88,11 +88,7 @@ BOOST_AUTO_TEST_CASE(array_legacy_c) {
 	}
 }
 
-auto f2(multi::array_ref<double, 1>&& R) -> double&;
-
-auto f2(multi::array_ref<double, 1>&& R) -> double& {
-	return R[2];
-}
+inline constexpr auto f2(multi::array_ref<double, 1>&& R) -> double& {return R[2];}
 
 BOOST_AUTO_TEST_CASE(array_legacy_c_2) {
 	double A[5] = {150, 16, 17, 18, 19}; //  NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)

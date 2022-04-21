@@ -85,9 +85,9 @@ BOOST_AUTO_TEST_CASE(one_based_2D) {
 
 BOOST_AUTO_TEST_CASE(one_base_2D_ref) {
 	std::array<std::array<double, 5>, 3> A = {{
-		{ 1.,  2.,  3.,  4.,  5.},
-		{ 6.,  7.,  8.,  9., 10.},
-		{11., 12., 13., 14., 15.}
+		{{ 1.,  2.,  3.,  4.,  5.}},
+		{{ 6.,  7.,  8.,  9., 10.}},
+		{{11., 12., 13., 14., 15.}}
 	}};
 
 	BOOST_REQUIRE( A[0][0] == 1. );

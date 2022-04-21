@@ -198,12 +198,10 @@ BOOST_AUTO_TEST_CASE(layout) {
 
 	BOOST_REQUIRE( &B2copy[1][1] != &B2({0, 2}, {0, 2})[1][1] );
 
-	std::array<std::array<decltype(B2({0, 2}, {0, 2})), 2>, 2> B2blk = {
-		{
-			{B2({0, 2}, {0, 2}), B2({0, 2}, {2, 4})},
-			{B2({2, 4}, {0, 2}), B2({2, 4}, {2, 4})}
-		}
-	};
+	std::array<std::array<decltype(B2({0, 2}, {0, 2})), 2>, 2> B2blk = {{
+		{{ B2({0, 2}, {0, 2}), B2({0, 2}, {2, 4}) }},
+		{{ B2({2, 4}, {0, 2}), B2({2, 4}, {2, 4}) }}
+	}};
 
 	BOOST_REQUIRE( &B2blk[1][1][1][1] == &B2[3][3] );
 }
@@ -560,7 +558,7 @@ BOOST_AUTO_TEST_CASE(continued) {
 }
 {
 	auto const ttt = boost::multi::tuple<int, int, int>{1, 2, 3};
-	auto const arr = std::apply([](auto... es) {return std::array<int, 3>{es...};}, ttt);
+	auto const arr = std::apply([](auto... es) {return std::array<int, 3>{{es...}};}, ttt);
 	BOOST_REQUIRE(arr[1] == 2);
 }
 }

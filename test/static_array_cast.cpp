@@ -35,8 +35,8 @@ class involuted {
 	constexpr auto operator=(involuted&& other)& noexcept -> involuted& = default;
 	template<class DecayType>
 	auto operator==(DecayType&& other) const&
-	->decltype(this->operator decay_type()==other){
-		return this->operator decay_type()==other;}
+	->decltype(this->operator decay_type()==other) {
+		return this->operator decay_type()==other; }
 };
 
 template<class It, class F>

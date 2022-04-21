@@ -52,14 +52,12 @@ BOOST_AUTO_TEST_CASE(multi_rotate_4d_op) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_rotate_part1) {
-	std::array<std::array<double, 5>, 4> a = {
-		{
-			{ 0,  1,  2,  3,  4},
-			{ 5,  6,  7,  8,  9},
-			{10, 11, 12, 13, 14},
-			{15, 16, 17, 18, 19}
-		}
-	};
+	std::array<std::array<double, 5>, 4> a = {{
+		{{ 0.,  1.,  2.,  3.,  4.}},
+		{{ 5.,  6.,  7.,  8.,  9.}},
+		{{10., 11., 12., 13., 14.}},
+		{{15., 16., 17., 18., 19.}}
+	}};
 	std::array<std::array<double, 5>, 4> b = {};
 
 	multi::array_ref<double, 2> A(&a[0][0], {4, 5});

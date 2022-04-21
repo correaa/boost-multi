@@ -753,17 +753,17 @@ struct basic_array
 
 	using typename types::index;
 
-	constexpr auto reindexed(typename basic_array::index first) const& -> basic_const_array {
+	constexpr auto reindexed(index first) const& -> basic_const_array {
 		typename types::layout_t new_layout = this->layout();
 		new_layout.reindex(first);
 		return {new_layout, types::base_};
 	}
-	constexpr auto reindexed(typename basic_array::index first)& -> basic_array{
+	constexpr auto reindexed(index first)& -> basic_array{
 		typename types::layout_t new_layout = this->layout();
 		new_layout.reindex(first);
 		return {new_layout, types::base_};
 	}
-	constexpr auto reindexed(typename basic_array::index first)&& -> basic_array {
+	constexpr auto reindexed(index first)&& -> basic_array {
 		typename types::layout_t new_layout = this->layout();
 		new_layout.reindex(first);
 		return {new_layout, types::base_};
@@ -771,15 +771,15 @@ struct basic_array
 
 	// TODO(correaa) : implement reindexed_aux
 	template<class... Indexes>
-	constexpr auto reindexed(typename basic_array::index first, Indexes... idxs) const& -> basic_const_array {
+	constexpr auto reindexed(index first, Indexes... idxs) const& -> basic_const_array {
 		return ((reindexed(first).rotated()).reindexed(idxs...)).unrotated();
 	}
 	template<class... Indexes>
-	constexpr auto reindexed(typename basic_array::index first, Indexes... idxs) & -> basic_array {
+	constexpr auto reindexed(index first, Indexes... idxs) & -> basic_array {
 		return ((reindexed(first).rotated()).reindexed(idxs...)).unrotated();
 	}
 	template<class... Indexes>
-	constexpr auto reindexed(typename basic_array::index first, Indexes... idxs)&& -> basic_array {
+	constexpr auto reindexed(index first, Indexes... idxs)&& -> basic_array {
 		return ((std::move(*this).reindexed(first).rotated()).reindexed(idxs...)).unrotated();
 	}
 
@@ -797,8 +797,8 @@ struct basic_array
 	HD constexpr auto sliced(index first, index last)      & -> basic_array       {return sliced_aux(first, last);}
 	HD constexpr auto sliced(index first, index last)     && -> basic_array       {return sliced_aux(first, last);}
 
-	constexpr auto blocked(typename basic_array::index first, typename basic_array::index last) const& -> basic_const_array {return sliced(first, last).reindexed(first);}
-	constexpr auto blocked(typename basic_array::index first, typename basic_array::index last)      & -> basic_array       {return sliced(first, last).reindexed(first);}
+	constexpr auto blocked(index first, index last) const& -> basic_const_array {return sliced(first, last).reindexed(first);}
+	constexpr auto blocked(index first, index last)      & -> basic_array       {return sliced(first, last).reindexed(first);}
 
 	using iextension = typename basic_array::index_extension;
 
@@ -1682,11 +1682,11 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
 	template<class T2>
 	friend constexpr auto reinterpret_array_cast(basic_array&& a) {
-		return std::move(a).template reinterpret_array_cast<T2, typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>();
+		return std::move(a).template reinterpret_array_cast<T2, typename std::pointer_traits<element_ptr>::template rebind<T2>>();
 	}
 	template<class T2>
 	friend constexpr auto reinterpret_array_cast(basic_array const& a) {
-		return a.template reinterpret_array_cast<T2, typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>();
+		return a.template reinterpret_array_cast<T2, typename std::pointer_traits<element_ptr>::template rebind<T2>>();
 	}
 
  public:
@@ -1779,8 +1779,8 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
 	using typename types::index;
 
-	constexpr auto reindexed(typename basic_array::index first) && {return reindexed(first);}
-	constexpr auto reindexed(typename basic_array::index first)  & {
+	constexpr auto reindexed(index first) && {return reindexed(first);}
+	constexpr auto reindexed(index first)  & {
 		typename types::layout_t new_layout = this->layout();
 		new_layout.reindex(first);
 		return basic_array{new_layout, types::base_};
@@ -1823,7 +1823,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	HD constexpr auto sliced(index first, index last)      & -> basic_array       {return sliced_aux(first, last);}
 	HD constexpr auto sliced(index first, index last)     && -> basic_array       {return sliced_aux(first, last);}
 
-	constexpr auto blocked(typename basic_array::index first, typename basic_array::index last)& -> basic_array {
+	constexpr auto blocked(index first, index last)& -> basic_array {
 		return sliced(first, last).reindexed(first);
 	}
 	constexpr auto stenciled(typename basic_array::index_extension x) -> basic_array {
@@ -2039,17 +2039,17 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	}
 
  public:
-	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
+	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
 	constexpr auto static_array_cast() const -> basic_array<T2, 1, P2> {  // name taken from std::static_pointer_cast
 		return {this->layout(), static_cast<P2>(this->base())};
 	}
-	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>, class... Args>
+	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>, class... Args>
 	constexpr auto static_array_cast(Args&&... args) const -> basic_array<T2, 1, P2> {  // name taken from std::static_pointer_cast
 		return {this->layout(), P2{this->base(), std::forward<Args>(args)...}};
 	}
 
 	template<
-		class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>,
+		class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>,
 		class Element = typename basic_array::element,
 		class PM = T2 std::decay_t<Element>::*
 	>
@@ -2066,13 +2066,13 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 #endif
 	}
 
-	using element_move_ptr = typename multi::move_ptr<typename basic_array::element, typename basic_array::element_ptr>;
+	using element_move_ptr = typename multi::move_ptr<typename basic_array::element, element_ptr>;
 
 	constexpr auto moved() && {
 		return basic_array<typename basic_array::element, 1, element_move_ptr>{this->layout(), element_move_ptr{this->base()}};
 	}
 
-	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>
+	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>>
 	constexpr auto reinterpret_array_cast() const& -> basic_array<std::decay_t<T2>, 1, P2> {  // TODO(correaa) : use rebind for return type
 		static_assert( sizeof(T)%sizeof(T2)== 0,
 			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases");
@@ -2080,7 +2080,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 		return {this->layout().scale(sizeof(T)/sizeof(T2)), reinterpret_pointer_cast<P2>(this->base())};
 	}
 
-	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2 const> >
+	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2 const> >
 	constexpr auto reinterpret_array_cast(size_type n) const& -> basic_array<std::decay_t<T2>, 2, P2> {  // TODO(correaa) : use rebind for return type
 		static_assert( sizeof(T)%sizeof(T2)== 0,
 			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases");
@@ -2092,7 +2092,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	}
 
 	// TODO(correaa) : rename to reinterpret_pointer_cast?
-	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
+	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2> >
 	constexpr auto reinterpret_array_cast(size_type n)& -> basic_array<std::decay_t<T2>, 2, P2> {
 		static_assert( sizeof(T)%sizeof(T2)== 0,
 			"error: reinterpret_array_cast is limited to integral stride values, therefore the element target size must be multiple of the source element size. Use custom pointers to allow reintrepreation of array elements in other cases");
@@ -2102,7 +2102,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 			reinterpret_pointer_cast<P2>(this->base())
 		}.rotated();
 	}
-	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2> >
+	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2> >
 	constexpr auto reinterpret_array_cast(size_type n)&& -> basic_array<std::decay_t<T2>, 2, P2> {
 		return this->reinterpret_array_cast(n);
 	}

@@ -10,8 +10,8 @@ namespace boost {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 comp
 namespace archive {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
 namespace detail {
 
-template<class Ar> struct common_iarchive;
-template<class Ar> struct common_oarchive;
+template<class Ar> class common_iarchive;
+template<class Ar> class common_oarchive;
 
 }  // end namespace detail
 }  // end namespace archive
@@ -119,7 +119,7 @@ struct archive_traits<Ar, typename std::enable_if<
 namespace boost {
 
 template<class T, std::size_t D, class As>
-struct multi_array;
+class multi_array;
 
 }  // end namespace boost
 

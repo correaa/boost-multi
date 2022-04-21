@@ -369,7 +369,6 @@ auto copy(
 	boost::multi::array_iterator<T2, D,     Q2*> d_first
 )-> boost::multi::array_iterator<T2, D,     Q2*> {
 	return copy_n(first, last - first, d_first);
-	return d_first + (last - first);
 }
 
 template<
@@ -383,7 +382,6 @@ auto copy(
 	boost::multi::array_iterator<T2, D, ptr<Q2>> d_first
 )-> boost::multi::array_iterator<T2, D, ptr<Q2>> {
 	return copy_n(first, last - first, d_first);
-	return d_first + (last - first);
 }
 
 // uninitialized_copy_n
@@ -451,8 +449,7 @@ auto uninitialized_copy(
 	boost::multi::array_iterator<T1, D,     Q1*>   last ,
 	boost::multi::array_iterator<T2, D, ptr<Q2>> d_first
 )-> boost::multi::array_iterator<T2, D, ptr<Q2>> {
-	uninitialized_copy_n(first, last - first, static_cast<boost::multi::array_iterator<T2, D, ::thrust::cuda::pointer<Q2>>>(d_first));
-	return d_first + (last - first);
+	return uninitialized_copy_n(first, last - first, static_cast<boost::multi::array_iterator<T2, D, ::thrust::cuda::pointer<Q2>>>(d_first));
 }
 
 template<
@@ -466,7 +463,6 @@ auto uninitialized_copy(
 	boost::multi::array_iterator<T2, D,     Q2*> d_first
 )-> boost::multi::array_iterator<T2, D,     Q2*> {
 	return uninitialized_copy_n(first, last - first, d_first);
-	return d_first + (last - first);
 }
 
 template<
@@ -480,7 +476,6 @@ auto uninitialized_copy(
 	boost::multi::array_iterator<T2, D, ptr<Q2>> d_first
 )-> boost::multi::array_iterator<T2, D, ptr<Q2>> {
 	return uninitialized_copy_n(first, last - first, d_first);
-	return d_first + (last - first);
 }
 
 template<

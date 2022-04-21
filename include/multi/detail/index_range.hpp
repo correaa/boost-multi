@@ -96,7 +96,7 @@ class range {
 	template<class Range, typename = std::enable_if_t<std::is_same<std::decay_t<Range>, value_type>{}> >
 	// cxxcheck-suppress internalAstError ; because bug in cppcheck
 	constexpr explicit range(Range&& o) : first_{std::forward<Range>(o).first()}, last_{std::forward<Range>(o).last()} {}
-	constexpr range(IndexType f, IndexTypeLast l) : first_{f}, last_{l} {}
+	constexpr range(IndexType f, IndexTypeLast l) noexcept : first_{f}, last_{l} {}
 	constexpr explicit range(IndexType f) : range{f, f + 1} {}
 
 	class const_iterator : public boost::multi::iterator_facade<
@@ -209,7 +209,7 @@ class intersecting_range {
 
  public:
 	constexpr auto operator*() const& -> intersecting_range const& {return *this;}
-	static constexpr auto all() {return intersecting_range{};}
+	static constexpr auto all() noexcept {return intersecting_range{};}
 };
 
 [[maybe_unused]] constexpr intersecting_range<> const ALL   = intersecting_range<>::all();

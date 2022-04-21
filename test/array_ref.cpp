@@ -70,14 +70,12 @@ BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed) {
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_of_nested_std_array_reindexed) {
-	std::array<std::array<double, 5>, 4> a = {
-		{
-			{ 0.,  1.,  2.,  3.,  4.},
-			{ 5.,  6.,  7.,  8.,  9.},
-			{10., 11., 12., 13., 14.},
-			{15., 16., 17., 18., 19.}
-		}
-	};
+	std::array<std::array<double, 5>, 4> a = {{
+		{{ 0.,  1.,  2.,  3.,  4.}},
+		{{ 5.,  6.,  7.,  8.,  9.}},
+		{{10., 11., 12., 13., 14.}},
+		{{15., 16., 17., 18., 19.}}
+	}};
 
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test type
 	multi::array_ref<double, 2> mar = *multi::array_ptr<double, 2>(&a);
@@ -166,14 +164,12 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_with_stencil) {
-	std::array<std::array<double, 5>, 4> a = {
-		{
-			{ 0,  1,  2,  3,  4},
-			{ 5,  6,  7,  8,  9},
-			{10, 11, 12, 13, 14},
-			{15, 16, 17, 18, 19}
-		}
-	};
+	std::array<std::array<double, 5>, 4> a = {{
+		{{ 0.,  1.,  2.,  3.,  4.}},
+		{{ 5.,  6.,  7.,  8.,  9.}},
+		{{10., 11., 12., 13., 14.}},
+		{{15., 16., 17., 18., 19.}}
+	}};
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test type
 	auto const& mar = *multi::array_ptr<double, 2>(&a);
 
@@ -242,7 +238,7 @@ BOOST_AUTO_TEST_CASE(array_2D_with_offset) {
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_1D) {
-	std::array<std::string, 5> a = {"a", "b", "c", "d", "e"};
+	std::array<std::string, 5> a = {{"a", "b", "c", "d", "e"}};
 
 	multi::array_ref<std::string, 1>&& mar = *multi::array_ptr<std::string, 1>{&a};
 //	multi::Array<std::string(&)[1]> mar = *multi::Array<std::string(*)[1]>(&a);

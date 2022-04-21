@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d) {
 		BOOST_REQUIRE(( A == decltype(A)::decay_type({1.2, 3.4, 5.6}) ));
 	}
 	{
-		std::array<double, 3> const a = {1.1, 2.2, 3.3};
+		std::array<double, 3> const a = {{1.1, 2.2, 3.3}};
 		using multi::num_elements;
 		BOOST_REQUIRE( num_elements(a) == 3 );
 
@@ -108,16 +108,16 @@ BOOST_AUTO_TEST_CASE(multi_initialize_from_carray_1d) {
 #endif
 	}
 	{
-		std::array<double, 3> a = {1.1, 2.2, 3.3};
+		std::array<double, 3> a = {{1.1, 2.2, 3.3}};
 		multi::array<double, 1> const A(begin(a), end(a));
 		BOOST_REQUIRE(( A == decltype(A){1.1, 2.2, 3.3} ));
 	}
 	 {
-	#if defined(__cpp_deduction_guides) and not defined(__NVCC__)
-		std::array a = {1.1, 2.2, 3.3};
-		multi::array<double, 1> const A(begin(a), end(a));
-		assert(( A == decltype(A){1.1, 2.2, 3.3} ));
-	#endif
+//  #if defined(__cpp_deduction_guides) and not defined(__NVCC__)
+//  	std::array a = {{1.1, 2.2, 3.3}};
+//  	multi::array<double, 1> const A(begin(a), end(a));
+//  	BOOST_REQUIRE(( A == decltype(A){1.1, 2.2, 3.3} ));
+//  #endif
 	}
 }
 
@@ -169,33 +169,32 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d) {
 		BOOST_REQUIRE( vec[1] == 5.5 );
 	}
 	{
-		std::array<std::array<double, 2>, 3> const a = {
-			{
-				{ 1.2,  2.4},
-				{11.2, 34.4},
-				{15.2, 32.4}
-			}
-		};
+		std::array<std::array<double, 2>, 3> const a = {{
+			{{ 1.2,  2.4}},
+			{{11.2, 34.4}},
+			{{15.2, 32.4}}
+		}};
 		using std::begin; using std::end;
 		multi::static_array<double, 2> A(begin(a), end(a));
+
 		BOOST_REQUIRE( size(A) == 3 );
 		BOOST_REQUIRE( size(A[0]) == 2 );
 		BOOST_REQUIRE( A[1][0] == 11.2 );
 	}
 	{
-		std::array<std::array<double, 2>, 3> const staticA = {
-			{
-				{ 1.2,  2.4},
-				{11.2, 34.4},
-				{15.2, 32.4}
-			}
-		};
+		std::array<std::array<double, 2>, 3> const staticA = {{
+			{{ 1.2,  2.4}},
+			{{11.2, 34.4}},
+			{{15.2, 32.4}}
+		}};
 		multi::static_array<double, 2> const A(std::begin(staticA), std::end(staticA));
-		BOOST_REQUIRE(( A == multi::array<double, 2>{
-				{ 1.2,  2.4},
-				{11.2, 34.4},
-				{15.2, 32.4}
-			}
+
+		BOOST_REQUIRE((
+			A == multi::array<double, 2> {{
+				{{ 1.2,  2.4}},
+				{{11.2, 34.4}},
+				{{15.2, 32.4}}
+			}}
 		));
 		BOOST_REQUIRE(not( A != multi::array<double, 2>{
 				{ 1.2,  2.4},

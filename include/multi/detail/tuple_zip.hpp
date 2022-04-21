@@ -51,6 +51,7 @@ template<class T0, class... Ts> class tuple<T0, Ts...> {  // NOLINT(cppcoreguide
 	constexpr explicit tuple(T0 t0, Ts... ts)
 	: head_{std::move(t0)}, tail_{std::move(ts)...} {}
 
+	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
 	constexpr tuple(T0 t0, tuple<Ts...> sub) : head_{std::move(t0)}, tail_{std::move(sub)} {}
 
 	constexpr auto operator==(tuple const& other) const -> bool {
@@ -113,20 +114,13 @@ constexpr auto head(tuple<T0, Ts...> & t) -> decltype(auto) {
 }
 
 template<class T0, class... Ts>
-constexpr auto tail(tuple<T0, Ts...> const& t) -> decltype(auto) {
-	return t.tail();
-}
+constexpr auto tail(tuple<T0, Ts...> const& t) -> decltype(auto) {return t.tail();}
 
 template<class T0, class... Ts>
-constexpr auto tail(tuple<T0, Ts...> && t) -> decltype(auto) {
-	return std::move(t.tail());
-}
+constexpr auto tail(tuple<T0, Ts...>     && t) -> decltype(auto) {return std::move(t).tail();}
 
 template<class T0, class... Ts>
-constexpr auto tail(tuple<T0, Ts...> & t) -> decltype(auto) {
-	return t.tail();
-}
-
+constexpr auto tail(tuple<T0, Ts...>      & t) -> decltype(auto) {return t.tail();}
 
 #if defined __NVCC__
     #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
@@ -161,7 +155,7 @@ constexpr auto get(tuple<T0, Ts...>& t) -> auto& {
 template<std::size_t N, class T0, class... Ts>
 constexpr auto get(tuple<T0, Ts...>&& t) -> auto&& {
 	if constexpr(N == 0) {
-		return std::move(t.head());
+		return std::move(t).head();
 	} else {
 		return get<N-1>(std::move(t.tail()));
 	}

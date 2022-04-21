@@ -9,7 +9,7 @@
 
 namespace boost::multi {
 
-template<std::size_t I> struct priority_me : std::conditional_t<I==0, std::true_type, struct priority_me<I-1>>{};
+template<std::size_t I> struct priority_me : std::conditional_t<I==0, std::true_type, priority_me<I-1>>{};
 
 template<class Pointer>  auto dat_aux(priority_me<0>, Pointer ) -> std::allocator<typename std::iterator_traits<Pointer>::value_type>;
 template<class T>        auto dat_aux(priority_me<1>, T*      ) -> std::allocator<typename std::iterator_traits<T*>::value_type>;
