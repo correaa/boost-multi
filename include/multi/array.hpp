@@ -753,6 +753,9 @@ struct array : static_array<T, D, Alloc> {
 	using static_::static_;
 	using typename static_::value_type;
 
+	array(std::initializer_list<typename static_array<T, D>::value_type> ilv)
+	: static_{static_array<T, D>(ilv.begin(), ilv.end())} {}  // construct all with default constructor and copy to special memory at the end
+
 	array() = default;
 	array(array const&) = default;
 	auto reshape(typename array::extensions_type x) & -> array& {
