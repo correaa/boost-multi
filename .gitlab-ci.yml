@@ -15,6 +15,30 @@ g++-latest:
     - ctest --output-on-failure
     - make install
 
+g++-latest-debug:
+  stage: build
+  script:
+    - export CXX="g++"
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - mkdir build && cd build
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug
+    - cmake --build . --verbose
+    - ctest --output-on-failure
+
+g++-8:
+  stage: build
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ gcc-8 pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
+    - ln --symbolic --force . ../multi
+    - g++-8 --version
+    - mkdir build && cd build
+    - CXX=g++-8 cmake ..
+    - cmake --build .
+    - ctest --output-on-failure
+    - make install
+
 g++-latest-std20:
   stage: build
   script:
@@ -106,18 +130,6 @@ g++-current-codecov:
     expire_in: 2 days
     reports:
       cobertura: build/coverage.xml
-
-g++-current-release:
-  stage: build
-  script:
-    - export CXX="g++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
-    - ln --symbolic --force . ../multi
-    - $CXX --version
-    - mkdir build && cd build
-    - cmake .. -DCMAKE_BUILD_TYPE=Release
-    - cmake --build . --verbose
-    - ctest --output-on-failure
 
 g++-openblas:
   stage: build
