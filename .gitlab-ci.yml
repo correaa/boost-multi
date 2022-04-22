@@ -31,7 +31,7 @@ g++-8:
   image: debian:stable
   stage: build
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ gcc-8 pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ g++-8 pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
     - g++-8 --version
     - mkdir build && cd build
