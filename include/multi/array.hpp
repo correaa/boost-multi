@@ -753,6 +753,7 @@ struct array : static_array<T, D, Alloc> {
 	using static_::static_;
 	using typename static_::value_type;
 
+	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
 	array(std::initializer_list<typename static_array<T, D>::value_type> ilv)
 	: static_{static_array<T, D>(ilv.begin(), ilv.end())} {}  // construct all with default constructor and copy to special memory at the end
 
