@@ -33,7 +33,7 @@ g++-9:
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++-9 pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
-    - g++-8 --version
+    - g++-9 --version
     - mkdir build && cd build
     - CXX=g++-9 cmake ..
     - cmake --build .
