@@ -11,7 +11,7 @@
 #include "./detail/memory.hpp"
 #include "./detail/type_traits.hpp"
 
-#include "./memory/allocator.hpp"
+// #include "./memory/allocator.hpp"
 
 #include<algorithm>  // for copy
 #include<memory>     // for allocator_traits
@@ -1014,11 +1014,11 @@ template<class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iexten
 template<dimensionality_type D, class T, class = std::enable_if_t<not is_allocator<T>{}> >
 array(iextensions<D>, T) -> array<T, D>;
 
-template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<1>, T, MR*) -> array<T, 1, A>;
-template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<2>, T, MR*) -> array<T, 2, A>;
-template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<3>, T, MR*) -> array<T, 3, A>;
-template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<4>, T, MR*) -> array<T, 4, A>;
-template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<5>, T, MR*) -> array<T, 5, A>;
+//template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<1>, T, MR*) -> array<T, 1, A>;
+//template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<2>, T, MR*) -> array<T, 2, A>;
+//template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<3>, T, MR*) -> array<T, 3, A>;
+//template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<4>, T, MR*) -> array<T, 4, A>;
+//template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<5>, T, MR*) -> array<T, 5, A>;
 
 template<class MatrixRef, class DT = typename MatrixRef::decay_type, class T = typename DT::element, dimensionality_type D = typename DT::rank{}, class Alloc = typename DT::allocator_type>
 array(MatrixRef)->array<T, D, Alloc>;
@@ -1039,7 +1039,7 @@ struct array_traits<T[N], void, void> {  // NOLINT(cppcoreguidelines-avoid-c-arr
 
 }  // end namespace boost::multi
 
-#if(__cpp_lib_memory_resource >= 201603)
+#if defined(__cpp_lib_memory_resource) && (__cpp_lib_memory_resource >= 201603)
 namespace boost::multi::pmr {
 
 template <class T, boost::multi::dimensionality_type D>
