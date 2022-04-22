@@ -80,7 +80,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Werror
 					-Wall
 					-Wextra  # (activates -Wunknown-pragmas)
-					-Wextra-semi
+					# -Wextra-semi (gcc 8, not in gcc 7)
 					-Wpedantic
 					# -Wabi=13 -Wabi-tag (maybe important when linking with very old libraries)
 					-Waddress
@@ -98,15 +98,17 @@ foreach(TEST_FILE ${TEST_SRCS})
 					# -Warith-conversion (gcc 11, not in gcc 9)
 					-Warray-bounds 
 					# -Warray-parameter #  -Warray-bounds=<0,2> -Warray-parameter=<0,2>  (gcc 11, not in gcc 10)
-					# -Wattribute-warning (gcc 11, not in gcc 8)
+					# -Wattribute-warning (gcc 9, not in gcc 8)
 					-Wattributes
 					-Wbool-compare -Wbool-operation
 					-Wbuiltin-declaration-mismatch -Wbuiltin-macro-redefined
 					-Wc++0x-compat -Wc++14-compat -Wc++17-compat -Wc++1z-compat
 					# -Wc++20-compat -Wc++2a-compat (gcc 11, not in gcc 9)
-					# -Wcannot-profile (gcc 11, not in gcc 8)
-					-Wcast-align -Wcast-align=strict -Wcast-function-type -Wcast-qual
-					-Wcatch-value  # -Wcatch-value=<0, 3>
+					# -Wcannot-profile (gcc 9, not in gcc 8)
+					-Wcast-align 
+					# -Wcast-align=strict -Wcast-function-type (gcc 8, not in gcc 7)
+					-Wcast-qual
+					# -Wcatch-value  # -Wcatch-value=<0, 3> (gcc 8, not in gcc 7)
 					-Wchar-subscripts -Wclobbered -Wcomment  # (same as -Wcomments)
 					-Wconditionally-supported
 					-Wconversion -Wconversion-null
@@ -130,10 +132,11 @@ foreach(TEST_FILE ${TEST_SRCS})
 					# -Wextra (see above)
 					-Wfloat-conversion # -Wfloat-equal (disallows float equality)
 					-Wformat-truncation -Wformat=2
-					# -Wformat-diag (gcc 11, not in gcc 9)
+					# -Wformat-diag (gcc 10, not in gcc 9)
 					-Wformat-extra-args -Wformat-nonliteral -Wformat-security -Wformat-signedness -Wformat-truncation -Wformat-y2k -Wformat-zero-length  # -Wformat-overflow=<0,2>
 					-Wframe-address  # -Wframe-larger-than=<byte-size>
-					-Wfree-nonheap-object -Whsa -Wif-not-aligned
+					-Wfree-nonheap-object -Whsa
+					# -Wif-not-aligned (gcc 8, not in gcc 7)
 					-Wignored-attributes -Wignored-qualifiers
 					-Wimplicit-fallthrough#=3  # -Wimplicit-fallthrough=<0,5>
 					-Winit-self
@@ -150,11 +153,12 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wmisleading-indentation
 					# -Wmismatched-dealloc -Wmismatched-new-delete (gcc 11, not in gcc 10)
 					# -Wmismatched-tags (gcc 11, not in gcc 9)
-					-Wmissing-attributes -Wmissing-braces -Wmissing-declarations -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs -Wmissing-noreturn
+					# -Wmissing-attributes (gcc 8, not in gcc 7)
+					-Wmissing-braces -Wmissing-declarations -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs -Wmissing-noreturn
 					# -Wmissing-profile (gcc 11, not in gcc 8)
 					-Wmultichar
 					# -Wmultiple-inheritance (disallows composition by inheritance)
-					-Wmultistatement-macros
+					# -Wmultistatement-macros (gcc 8, not in gcc 7)
 					# -Wnamespaces (disallows use of namespaces, seems a C-tool)
 					-Wnarrowing
 					-Wnoexcept -Wnoexcept-type
@@ -164,7 +168,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wnonnull -Wnonnull-compare -Wnull-dereference
 					-Wodr -Wold-style-cast -Wopenmp-simd -Woverflow
 					-Woverlength-strings -Woverloaded-virtual
-					-Wpacked -Wpacked-bitfield-compat -Wpacked-not-aligned
+					-Wpacked -Wpacked-bitfield-compat
+					# -Wpacked-not-aligned (gcc 8, not in gcc 7)
 					# -Wpadded (disallows structs that need padding for alignment)
 					-Wparentheses
 					# -Wpedantic (see above)
@@ -189,7 +194,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wsized-deallocation
 					-Wsizeof-array-argument 
 					# -Wsizeof-array-div (gcc 11, not in gcc 10)
-					-Wsizeof-pointer-div -Wsizeof-pointer-memaccess
+					# -Wsizeof-pointer-div (gcc 8, not in gcc 7) 
+					-Wsizeof-pointer-memaccess
 					-Wstack-protector  # -Wstack-usage=<byte-size>
 					-Wstrict-aliasing  #=3  -Wstrict-aliasing=<0,3>
 					-Wstrict-null-sentinel  #=1  -Wstrict-overflow=<0,5>
@@ -197,9 +203,11 @@ foreach(TEST_FILE ${TEST_SRCS})
 					# -Wstring-compare (gcc 11, not in gcc 9)
 					-Wstringop-overflow  #=2  -Wstringop-overflow=<0,4>
 					# -Wstringop-overread (gcc 11, not in gcc 10)
-					-Wstringop-truncation
+					# -Wstringop-truncation (gcc 8, not in gcc 7)
 					-Wsubobject-linkage
-					-Wsuggest-attribute=const -Wsuggest-attribute=format -Wsuggest-attribute=malloc -Wsuggest-attribute=noreturn -Wsuggest-attribute=pure -Wsuggest-final-methods -Wsuggest-final-types
+					-Wsuggest-attribute=const -Wsuggest-attribute=format
+					# -Wsuggest-attribute=malloc (gcc 8, not in gcc 7)
+					-Wsuggest-attribute=noreturn -Wsuggest-attribute=pure -Wsuggest-final-methods -Wsuggest-final-types
 					-Wswitch -Wswitch-bool -Wswitch-default -Wswitch-enum
 					# -Wswitch-outside-range (gcc 11, not in gcc 9)
 					-Wswitch-unreachable
