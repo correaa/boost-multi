@@ -28,6 +28,7 @@ g++-latest-debug:
     - ctest --output-on-failure
 
 g++-8:
+  image: debian:stable
   stage: build
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++ gcc-8 pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
@@ -158,7 +159,6 @@ memcheck:
 clang++-9:
   image: debian:stable
   stage: build
-  image: debian:stable
   script:
     - export CXX="clang++-9"
     - apt-get update && apt-get install --no-install-recommends -y --quiet clang-9 pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
