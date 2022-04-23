@@ -262,7 +262,7 @@ namespace detail {
 //}
 
 template<class Tuple1, class Tuple2, std::size_t... Is>
-auto tuple_zip_impl(Tuple1&& t1, Tuple2&& t2, std::index_sequence<Is...> /*012*/) {
+constexpr auto tuple_zip_impl(Tuple1&& t1, Tuple2&& t2, std::index_sequence<Is...> /*012*/) {
 	using boost::multi::detail::get;
 	return boost::multi::detail::mk_tuple(
 		boost::multi::detail::mk_tuple(
@@ -273,7 +273,7 @@ auto tuple_zip_impl(Tuple1&& t1, Tuple2&& t2, std::index_sequence<Is...> /*012*/
 }
 
 template<class Tuple1, class Tuple2, class Tuple3, std::size_t... Is>
-auto tuple_zip_impl(Tuple1&& t1, Tuple2&& t2, Tuple3&& t3, std::index_sequence<Is...> /*012*/) {
+constexpr auto tuple_zip_impl(Tuple1&& t1, Tuple2&& t2, Tuple3&& t3, std::index_sequence<Is...> /*012*/) {
 	using boost::multi::detail::get;
 	return boost::multi::detail::mk_tuple(
 		boost::multi::detail::mk_tuple(
@@ -285,7 +285,7 @@ auto tuple_zip_impl(Tuple1&& t1, Tuple2&& t2, Tuple3&& t3, std::index_sequence<I
 }
 
 template<class Tuple1, class Tuple2, class Tuple3, class Tuple4, std::size_t... Is>
-auto tuple_zip_impl(Tuple1&& t1, Tuple2&& t2, Tuple3&& t3, Tuple4&& t4, std::index_sequence<Is...> /*012*/) {
+constexpr auto tuple_zip_impl(Tuple1&& t1, Tuple2&& t2, Tuple3&& t3, Tuple4&& t4, std::index_sequence<Is...> /*012*/) {
 	using boost::multi::detail::get;
 	return boost::multi::detail::mk_tuple(
 		boost::multi::detail::mk_tuple(
@@ -307,7 +307,7 @@ auto tuple_zip_impl(Tuple1&& t1, Tuple2&& t2, Tuple3&& t3, Tuple4&& t4, std::ind
 //}
 
 template<class T1, class T2>
-auto tuple_zip(T1&& t1, T2&& t2) {
+constexpr auto tuple_zip(T1&& t1, T2&& t2) {
 	return detail::tuple_zip_impl(
 		std::forward<T1>(t1), std::forward<T2>(t2),
 		std::make_index_sequence<std::tuple_size<typename std::decay<T1>::type>::value>()
@@ -315,7 +315,7 @@ auto tuple_zip(T1&& t1, T2&& t2) {
 }
 
 template<class T1, class T2, class T3>
-auto tuple_zip(T1&& t1, T2&& t2, T3&& t3) {
+constexpr auto tuple_zip(T1&& t1, T2&& t2, T3&& t3) {
 	return detail::tuple_zip_impl(
 		std::forward<T1>(t1), std::forward<T2>(t2), std::forward<T3>(t3),
 		std::make_index_sequence<std::tuple_size<typename std::decay<T1>::type>::value>()
@@ -323,7 +323,7 @@ auto tuple_zip(T1&& t1, T2&& t2, T3&& t3) {
 }
 
 template<class T1, class T2, class T3, class T4>
-auto tuple_zip(T1&& t1, T2&& t2, T3&& t3, T4&& t4) {
+constexpr auto tuple_zip(T1&& t1, T2&& t2, T3&& t3, T4&& t4) {
 	return detail::tuple_zip_impl(
 		std::forward<T1>(t1), std::forward<T2>(t2), std::forward<T3>(t3), std::forward<T4>(t4),
 		std::make_index_sequence<std::tuple_size<typename std::decay<T1>::type>::value>()
