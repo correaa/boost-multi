@@ -1,10 +1,7 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
-#endif
-// © Alfredo A. Correa 2018-2021
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2018-2021 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi select range"
-#define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
 #include "multi/array.hpp"
@@ -71,7 +68,7 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section_part2) {
 	BOOST_REQUIRE( dimensionality(col2) == 1 );
 	BOOST_REQUIRE( size(col2) == size(A) );
 	BOOST_REQUIRE( col2.size() == size(A) );
-	BOOST_REQUIRE( stride(col2) == 3 );
+	BOOST_REQUIRE( col2.stride() == 3 );
 	BOOST_REQUIRE( col2[0] == 02. );
 	BOOST_REQUIRE( col2[1] == 12. );
 	BOOST_REQUIRE(( col2 == multi::array<double, 1>{02., 12., 22., 32.} ));

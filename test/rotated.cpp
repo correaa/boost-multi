@@ -6,13 +6,16 @@
 
 #include "multi/array.hpp"
 
-#include<numeric> // iota
+#include<numeric>  // iota
 
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(multi_rotate_3d) {
 	multi::array<double, 3> A({3, 4, 5});
-	BOOST_REQUIRE(( sizes(A) == decltype(sizes(A)){3, 4, 5} ));
+
+	BOOST_REQUIRE( std::get<0>(sizes(A)) == 3 );
+	BOOST_REQUIRE( std::get<1>(sizes(A)) == 4 );
+	BOOST_REQUIRE( std::get<2>(sizes(A)) == 5 );
 
 	auto&& RA = rotated(A);
 	BOOST_REQUIRE(( sizes(RA) == decltype(sizes(RA)){4, 5, 3} ));

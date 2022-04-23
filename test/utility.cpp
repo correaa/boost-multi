@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo A. Correa 2018-2022
+// Copyright 2018-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi utility"
 #include<boost/test/unit_test.hpp>
@@ -39,14 +39,11 @@ BOOST_AUTO_TEST_CASE(std_array_extensions_3d) {
 
 	static_assert(std::is_same<typename multi::array_traits<decltype(arr)>::element, double>{}, "!");
 
-	using multi::dimensionality;
-	BOOST_REQUIRE( dimensionality(arr) == 3 );
+	BOOST_REQUIRE( multi::dimensionality(arr) == 3 );
 
-	using multi::extension;
-	BOOST_REQUIRE( extension(arr) == 3 );
+	BOOST_REQUIRE( multi::extension(arr) == 3 );
 
-	using multi::extensions;
-	BOOST_REQUIRE(( extensions(arr) == decltype(extensions(arr)){3, 4, 5} ));
+	BOOST_REQUIRE(( multi::extensions(arr) == decltype(multi::extensions(arr)){3, 4, 5} ));
 
 	using multi::data_elements;
 	BOOST_REQUIRE( data_elements(arr) == &arr[0][0][0] );
@@ -58,7 +55,7 @@ BOOST_AUTO_TEST_CASE(std_array_extensions_3d) {
 	using multi::layout;
 	BOOST_REQUIRE( layout(arr) == layout(marr) );
 
-	BOOST_REQUIRE( extensions(arr) == extensions(marr) );
+	BOOST_REQUIRE( multi::extensions(arr) == extensions(marr) );
 }
 
 BOOST_AUTO_TEST_CASE(std_array_extensions_2d) {
