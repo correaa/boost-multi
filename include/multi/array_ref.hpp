@@ -175,7 +175,7 @@ struct basic_array_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin
 	basic_array_ptr(basic_array_ptr const& )          = default;
 
 	constexpr auto operator=(basic_array_ptr const& other) -> basic_array_ptr& {
-		if(this == &other) {return *this;}  // lints(cert-oop54-cpp)
+		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
 		this->base_ = other.base_;
 		static_cast<Layout&>(*this) = other.layout();
 		return *this;
@@ -1729,7 +1729,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
 	auto operator=(basic_array const& o)    & -> basic_array& {  // TODO(correaa) : make sfinae friendly
 		if(  this == std::addressof(o)) {return *this;}
-		if(&*this ==               &o ) {return *this;}
+	//  if(&*this ==               &o ) {return *this;}
 		assert(this->extension() == o.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	//  MULTI_MARK_SCOPE(std::string{"multi::operator= D=1 from "}+typeid(T).name()+" to "+typeid(T).name() );
 	//	this->assign(o.begin(), o.end());
