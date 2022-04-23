@@ -847,7 +847,7 @@ struct array : static_array<T, D, Alloc> {
 		} else {
 			clear();
 			copy_allocator_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment{}, other.alloc());
-			static_cast<typename array::layout_t&>(*this) = static_cast<typename array::layout_t const&>(other);
+			this->layout() = other.layout();
 			array::allocate();
 			array::uninitialized_copy_elements(other.data_elements());
 			// operator=(array{other}); // calls operator=(array&&)
