@@ -777,7 +777,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wunicode -Wunicode-homoglyph -Wunicode-whitespace -Wunicode-zero-width
 					-Wuninitialized
 					# -Wuninitialized-const-reference (clang 11, not in clang 9)
-					-Wunknown-argument -Wunknown-assumption -Wunknown-attributes -Wunknown-cuda-version -Wunknown-escape-sequence
+					-Wunknown-argument
+					# -Wunknown-assumption (clang 13, not in clang 11)
+					-Wunknown-attributes -Wunknown-cuda-version -Wunknown-escape-sequence
 					# -Wunknown-pragmas # (other compilers need their own pragmas)
 					-Wno-unknown-pragmas # (other compilers need their own pragmas)
 					# -Wunknown-sanitizers
