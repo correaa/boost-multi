@@ -132,7 +132,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wformat-truncation -Wformat=2
 					# -Wformat-diag (gcc 11, not in gcc 9)
 					-Wformat-extra-args -Wformat-nonliteral -Wformat-security -Wformat-signedness -Wformat-truncation -Wformat-y2k -Wformat-zero-length  # -Wformat-overflow=<0,2>
-					# -Wframe-address (clang 11, not in clang 9)
+					-Wframe-address
 					# -Wframe-larger-than=<byte-size>
 					-Wfree-nonheap-object -Whsa -Wif-not-aligned
 					-Wignored-attributes -Wignored-qualifiers
@@ -509,7 +509,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wformat=2
 					-Wfortify-source
 					-Wfour-char-constants
-					-Wframe-address
+					# -Wframe-address (clang 11, not in clang 9)
 					# -Wframe-larger-than # -Wframe-larger-than=
 					-Wframework-include-private-from-public
 					# -Wfree-nonheap-object (clang 13, not in clang 11)
@@ -519,14 +519,14 @@ foreach(TEST_FILE ${TEST_SRCS})
 					# -Wfuture-compat
 					# -Wgcc-compat
 					# -Wglobal-constructors (Boost.Test)
-					-Wglobal-isel
+					# -Wglobal-isel (clang 11, not in clang 9)
 					-Wgnu -Wgnu-alignof-expression -Wgnu-anonymous-struct -Wgnu-array-member-paren-init -Wgnu-auto-type -Wgnu-binary-literal -Wgnu-case-range -Wgnu-complex-integer -Wgnu-compound-literal-initializer -Wgnu-conditional-omitted-operand -Wgnu-designator -Wgnu-empty-initializer	-Wgnu-empty-struct -Wgnu-flexible-array-initializer	-Wgnu-flexible-array-union-member -Wgnu-folding-constant -Wgnu-imaginary-constant -Wgnu-include-next -Wgnu-inline-cpp-without-extern -Wgnu-label-as-value
 					# -Wgnu-null-pointer-arithmetic
 					# -Wgnu-pointer-arith (clang 15, not in clang 13)
 					-Wgnu-redeclared-enum -Wgnu-statement-expression -Wgnu-static-float-init -Wgnu-string-literal-operator-template -Wgnu-union-cast -Wgnu-variable-sized-type-not-at-end -Wgnu-zero-line-directive -Wgnu-zero-variadic-macro-arguments
 					# -Wgpu-maybe-wrong-side (clang 15, not in clang 13)
 					-Wheader-guard -Wheader-hygiene
-					-Whip-only
+					# -Whip-only (clang 11, not in clang 9)
 					-Widiomatic-parentheses
 					-Wignored-attributes
 					# -Wignored-availability-without-sdk-settings (clang 13, not in clang 11)
@@ -536,7 +536,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 					#-Wignored-pragmas (other compilers need pragmas)
 					-Wignored-qualifiers
 					# -Wignored-reference-qualifiers (clang 15, not in clang 13)
-					-Wimplicit -Wimplicit-atomic-properties -Wimplicit-const-int-float-conversion -Wimplicit-conversion-floating-point-to-bool -Wimplicit-exception-spec-mismatch -Wimplicit-fallthrough -Wimplicit-fallthrough-per-function -Wimplicit-fixed-point-conversion -Wimplicit-float-conversion -Wimplicit-function-declaration -Wimplicit-int -Wimplicit-int-conversion -Wimplicit-int-float-conversion -Wimplicit-retain-self -Wimplicitly-unsigned-literal
+					-Wimplicit -Wimplicit-atomic-properties
+					# -Wimplicit-const-int-float-conversion (clang 11, not in clang 9)
+					-Wimplicit-conversion-floating-point-to-bool -Wimplicit-exception-spec-mismatch -Wimplicit-fallthrough -Wimplicit-fallthrough-per-function -Wimplicit-fixed-point-conversion -Wimplicit-float-conversion -Wimplicit-function-declaration -Wimplicit-int -Wimplicit-int-conversion -Wimplicit-int-float-conversion -Wimplicit-retain-self -Wimplicitly-unsigned-literal
 					-Wimport -Wimport-preprocessor-directive-pedantic
 					-Winaccessible-base
 					-Winclude-next-absolute-path -Winclude-next-outside-header
@@ -547,12 +549,18 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Winit-self
 					-Winitializer-overrides
 					-Winjected-class-name
-					-Winline -Winline-asm -Winline-namespace-reopened-noninline -Winline-new-delete
+					-Winline -Winline-asm
+					# -Winline-namespace-reopened-noninline (clang 11, not in clang 9)
+					-Winline-new-delete
 					-Winstantiation-after-specialization
-					-Wint-conversion -Wint-conversions -Wint-in-bool-context -Wint-to-pointer-cast -Wint-to-void-pointer-cast
+					-Wint-conversion -Wint-conversions
+					# -Wint-in-bool-context (clang 11, not in clang 9)
+					-Wint-to-pointer-cast -Wint-to-void-pointer-cast
 					-Winteger-overflow
 					# -Winterrupt-service-routine (clang 13, not in clang 11)
-					-Winvalid-command-line-argument -Winvalid-constexpr -Winvalid-iboutlet -Winvalid-initializer-from-system-header -Winvalid-ios-deployment-target -Winvalid-no-builtin-names -Winvalid-noreturn -Winvalid-offsetof -Winvalid-or-nonexistent-directory -Winvalid-partial-specialization -Winvalid-pch -Winvalid-pp-token -Winvalid-source-encoding -Winvalid-token-paste
+					-Winvalid-command-line-argument -Winvalid-constexpr -Winvalid-iboutlet -Winvalid-initializer-from-system-header -Winvalid-ios-deployment-target
+					# -Winvalid-no-builtin-names (clang 11, not in clang 9)
+					-Winvalid-noreturn -Winvalid-offsetof -Winvalid-or-nonexistent-directory -Winvalid-partial-specialization -Winvalid-pch -Winvalid-pp-token -Winvalid-source-encoding -Winvalid-token-paste
 					-Wjump-seh-finally
 					-Wkeyword-compat -Wkeyword-macro
 					-Wknr-promoted-parameter
@@ -569,18 +577,23 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wmain -Wmain-return-type
 					-Wmalformed-warning-check
 					-Wmany-braces-around-scalar-init
-					-Wmax-tokens -Wmax-unsigned-zero
+					# -Wmax-tokens (clang 11, not in clang 9)
+					-Wmax-unsigned-zero
 					-Wmemset-transposed-args -Wmemsize-comparison
 					-Wmethod-signatures
 					-Wmicrosoft
 					# -Wmicrosoft-abstract (clang 13, not in clang 11)
 					-Wmicrosoft-anon-tag -Wmicrosoft-cast -Wmicrosoft-charize -Wmicrosoft-comment-paste -Wmicrosoft-const-init -Wmicrosoft-cpp-macro -Wmicrosoft-default-arg-redefinition -Wmicrosoft-drectve-section -Wmicrosoft-end-of-file -Wmicrosoft-enum-forward-reference -Wmicrosoft-enum-value -Wmicrosoft-exception-spec -Wmicrosoft-exists -Wmicrosoft-explicit-constructor-call -Wmicrosoft-extra-qualification -Wmicrosoft-fixed-enum -Wmicrosoft-flexible-array -Wmicrosoft-goto -Wmicrosoft-inaccessible-base -Wmicrosoft-include	-Wmicrosoft-mutable-reference -Wmicrosoft-pure-definition	-Wmicrosoft-redeclare-static -Wmicrosoft-sealed
 					# -Wmicrosoft-static-assert (clang 13, not in clang 11) 
-					-Wmicrosoft-template -Wmicrosoft-template-shadow -Wmicrosoft-union-member-reference -Wmicrosoft-unqualified-friend -Wmicrosoft-using-decl -Wmicrosoft-void-pseudo-dtor
+					-Wmicrosoft-template
+					# -Wmicrosoft-template-shadow (clang 11, not in clang 9)
+					-Wmicrosoft-union-member-reference -Wmicrosoft-unqualified-friend -Wmicrosoft-using-decl -Wmicrosoft-void-pseudo-dtor
 					# -Wmisexpect (clang 15, not in clang 13)
-					-Wmisleading-indentation
+					# -Wmisleading-indentation (clang 11, not in clang 9)
 					-Wmismatched-new-delete -Wmismatched-parameter-types -Wmismatched-return-types -Wmismatched-tags
-					-Wmissing-braces -Wmissing-constinit -Wmissing-declarations -Wmissing-exception-spec -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs -Wmissing-method-return-type -Wmissing-noescape -Wmissing-noreturn -Wmissing-prototype-for-cc -Wmissing-prototypes -Wmissing-selector-name -Wmissing-sysroot -Wmissing-variable-declarations
+					-Wmissing-braces
+					# -Wmissing-constinit (clang 11, not in clang 9)
+					-Wmissing-declarations -Wmissing-exception-spec -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs -Wmissing-method-return-type -Wmissing-noescape -Wmissing-noreturn -Wmissing-prototype-for-cc -Wmissing-prototypes -Wmissing-selector-name -Wmissing-sysroot -Wmissing-variable-declarations
 					# -Wmisspelled-assumption (clang 13, not in clang 11)
 					-Rmodule-build
 					-Wmodule-conflict -Wmodule-file-config-mismatch -Wmodule-file-extension -Rmodule-import -Wmodule-import-in-extern-c
@@ -597,12 +610,12 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wnewline-eof
 					-Wnoderef
 					-Wnoexcept-type
-					-Wnon-c-typedef-for-linkage
+					# -Wnon-c-typedef-for-linkage (clang 11, not in clang 9)
 					-Wnon-gcc
 					-Wnon-literal-null-conversion
 					-Wnon-modular-include-in-framework-module -Wnon-modular-include-in-module
 					-Wnon-pod-varargs
-					-Wnon-power-of-two-alignment
+					# -Wnon-power-of-two-alignment (clang 11, not in clang 9)
 					-Wnon-virtual-dtor
 					-Wnonnull
 					-Wnonportable-cfstrings -Wnonportable-include-path -Wnonportable-system-include-path
@@ -617,9 +630,11 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wodr
 					-Wold-style-cast -Wold-style-definition
 					-Wopencl-unsupported-rgba
-					-Wopenmp
+					# -Wopenmp (clang 11, not in clang 9)
 					# -Wopenmp-51-extensions (clang 13, not in clang 11)
-					-Wopenmp-clauses -Wopenmp-loop-form -Wopenmp-mapping -Wopenmp-target
+					-Wopenmp-clauses -Wopenmp-loop-form
+					# -Wopenmp-mapping (clang 11, not in clang 9)
+					-Wopenmp-target
 					-Woption-ignored
 					-Wordered-compare-function-pointers
 					-Wout-of-line-declaration -Wout-of-scope-function
@@ -637,7 +652,11 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wpedantic -Wpedantic-core-features
 					# -Wpedantic-macros (clang 15, not in clang 13)
 					-Wpessimizing-move
-					-Wpointer-arith -Wpointer-bool-conversion -Wpointer-compare -Wpointer-integer-compare -Wpointer-sign -Wpointer-to-enum-cast -Wpointer-to-int-cast -Wpointer-type-mismatch
+					-Wpointer-arith -Wpointer-bool-conversion
+					# -Wpointer-compare (clang 11, not in clang 9)
+					-Wpointer-integer-compare -Wpointer-sign
+					# -Wpointer-to-enum-cast (clang 11, not in clang 9)
+					-Wpointer-to-int-cast -Wpointer-type-mismatch
 					-Wpoison-system-directories
 					-Wpotentially-direct-selector -Wpotentially-evaluated-expression
 					# -Wpragma-clang-attribute
@@ -720,9 +739,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wsync-fetch-and-nand-semantics-changed
 					-Wsynth
 					# -Wtarget-clones-mixed-specifiers (clang 15, not in clang 13)
-					-Wtautological-bitwise-compare -Wtautological-compare -Wtautological-constant-compare -Wtautological-constant-in-range-compare -Wtautological-constant-out-of-range-compare -Wtautological-objc-bool-compare -Wtautological-overlap-compare -Wtautological-pointer-compare -Wtautological-type-limit-compare -Wtautological-undefined-compare -Wtautological-unsigned-char-zero-compare -Wtautological-unsigned-enum-zero-compare
-					# -Wtautological-unsigned-zero-compare (clang 13, not in clang 11)
-					-Wtautological-value-range-compare
+					-Wtautological-bitwise-compare -Wtautological-compare -Wtautological-constant-compare -Wtautological-constant-in-range-compare -Wtautological-constant-out-of-range-compare -Wtautological-objc-bool-compare -Wtautological-overlap-compare -Wtautological-pointer-compare -Wtautological-type-limit-compare -Wtautological-undefined-compare
+					# -Wtautological-unsigned-char-zero-compare -Wtautological-unsigned-enum-zero-compare
+					# -Wtautological-unsigned-zero-compare -Wtautological-value-range-compare (clang 13, not in clang 11)
 					# -Wtcb-enforcement (clang 13, not in clang 11)
 					-Wtentative-definition-incomplete-type
 					-Wthread-safety -Wthread-safety-analysis -Wthread-safety-attributes -Wthread-safety-beta -Wthread-safety-negative -Wthread-safety-precise -Wthread-safety-reference -Wthread-safety-verbose
