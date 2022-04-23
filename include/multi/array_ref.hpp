@@ -110,9 +110,11 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using layout_t::is_compact;
 
-	friend constexpr auto size     (array_types const& s) noexcept -> size_type      {return s.size     ();}
-	friend constexpr auto extension(array_types const& s) noexcept -> extension_type {return s.extension();}
-	friend constexpr auto is_empty (array_types const& s) noexcept -> bool           {return s.is_empty ();}
+	friend constexpr auto size        (array_types const& s) noexcept -> size_type       {return s.size     ();}
+	friend constexpr auto extension   (array_types const& s) noexcept -> extension_type  {return s.extension();}
+	friend constexpr auto is_empty    (array_types const& s) noexcept -> bool            {return s.is_empty ();}
+	friend constexpr auto num_elements(array_types const& s) noexcept -> size_type       {return s.num_elements();}
+	friend constexpr auto extensions  (array_types const& s) noexcept -> extensions_type {return s.extensions();}
 
 	// TODO(correaa) [[deprecated("use member syntax for non-salient properties")]]
 	friend
