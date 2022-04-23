@@ -779,7 +779,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 					# -Wuninitialized-const-reference (clang 11, not in clang 9)
 					-Wunknown-argument
 					# -Wunknown-assumption (clang 13, not in clang 11)
-					-Wunknown-attributes -Wunknown-cuda-version -Wunknown-escape-sequence
+					-Wunknown-attributes
+					# -Wunknown-cuda-version (clang 11, not in clang 9)
+					-Wunknown-escape-sequence
 					# -Wunknown-pragmas # (other compilers need their own pragmas)
 					-Wno-unknown-pragmas # (other compilers need their own pragmas)
 					# -Wunknown-sanitizers
