@@ -212,22 +212,22 @@ BOOST_AUTO_TEST_CASE(layout) {
 	static_assert(dimensionality(A)==3, "!");
 	using multi::extensions;
 	auto xA = extensions(A);
+
 	BOOST_REQUIRE( size(std::get<0>(xA)) == 3 );
 	BOOST_REQUIRE( size(std::get<1>(xA)) == 4 );
 	BOOST_REQUIRE( size(std::get<2>(xA)) == 5 );
+
+	static_assert( multi::stride(A)       == 20 , "!" );
+
+//  static_assert( multi::stride(A)       ==  5 , "!" );
+	static_assert( multi::stride(A[1])    ==  5 , "!" );
+	static_assert( multi::stride(A[0][0]) ==  1 , "!" );
 
 	multi::array<double, 3> AA({3, 4, 5});
 	using multi::layout;
 	BOOST_REQUIRE( layout(AA) == layout(A) );
 
-	using multi::stride;
-	BOOST_REQUIRE( stride(AA) == 20 );
-	static_assert( stride(A) == 20 , "!" );
-	static_assert( stride(A[0]) == 5 , "!" );
-	static_assert( stride(A[1]) == 5 , "!" );
-	static_assert( stride(A[0][0]) == 1 , "!" );
-//		assert( stride(A) == 20 );
-//		assert( stride(A[0]) == 20 );
+	BOOST_REQUIRE( AA     .stride() == 20 );
 }
 {
 	std::array<std::array<std::array<double, 5>, 4>, 3> A = {};
@@ -244,12 +244,13 @@ BOOST_AUTO_TEST_CASE(layout) {
 	using multi::layout;
 	BOOST_REQUIRE( layout(AA) == layout(A) );
 
-	using multi::stride;
-	BOOST_REQUIRE( stride(AA) == 20 );
-	static_assert( stride(A) == 20 , "!" );
-	BOOST_REQUIRE( stride(A[0]) == 5 );
-	BOOST_REQUIRE( stride(A[1]) == 5 );
-	BOOST_REQUIRE( stride(A[0][0]) == 1 );
+	BOOST_REQUIRE( AA.stride() == 20 );
+
+	static_assert( multi::stride(A) == 20 , "!" );
+
+	BOOST_REQUIRE( multi::stride(A[0])    == 5 );
+	BOOST_REQUIRE( multi::stride(A[1])    == 5 );
+	BOOST_REQUIRE( multi::stride(A[0][0]) == 1 );
 //		assert( stride(A) == 20 );
 //		assert( stride(A[0]) == 20 );
 }
@@ -261,8 +262,8 @@ BOOST_AUTO_TEST_CASE(layout) {
 	};
 	BOOST_REQUIRE( size(B2) == 3 );
 	BOOST_REQUIRE( size(rotated(B2)) == 1 ); BOOST_REQUIRE( size(B2[0]) == 1);
-	BOOST_REQUIRE( stride(B2) == 1 );
-	BOOST_REQUIRE( stride(B2[0]) == 1 );
+	BOOST_REQUIRE( B2   .stride() == 1 );
+	BOOST_REQUIRE( B2[0].stride() == 1 );
 }
 }
 

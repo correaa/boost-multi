@@ -58,8 +58,8 @@ struct basic_array;
 
 template<typename T, dimensionality_type D, class A = std::allocator<T>> struct array;
 
-template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D> >
-struct array_types : Layout {  // cppcheck-suppress syntaxError ; false positive in cppcheck
+template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>>
+struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false positive in cppcheck
 	using element = T;
 	using element_type = element;  // this follows more closely https://en.cppreference.com/w/cpp/memory/pointer_traits
 
@@ -70,6 +70,59 @@ struct array_types : Layout {  // cppcheck-suppress syntaxError ; false positive
 	using element_ref = typename std::iterator_traits<element_ptr>::reference;
 
 	using layout_t = Layout;
+
+	using typename layout_t::rank  ;
+	using          layout_t::rank_v;
+	using          layout_t::dimensionality;
+
+	using typename layout_t::stride_type;
+	using          layout_t::stride     ;
+
+	using layout_t::num_elements;
+	using layout_t::offset;
+
+	using typename layout_t::index;
+	using typename layout_t::index_range;
+	using typename layout_t::index_extension;
+
+	using typename layout_t::extensions_type;
+
+	using typename layout_t::strides_type;
+	using          layout_t::strides     ;
+
+	using layout_t::extensions;
+
+	using typename layout_t::difference_type;
+
+	using typename layout_t::size_type;
+	using          layout_t::size     ;
+
+	using layout_t::nelems;
+
+	using typename layout_t::extension_type;
+	using          layout_t::extension;
+
+	using layout_t::is_empty;
+	using layout_t::   empty;
+
+	using layout_t::sub;
+	using layout_t::sizes;
+
+	using layout_t::is_compact;
+
+	friend constexpr auto size     (array_types const& s) noexcept -> size_type      {return s.size     ();}
+	friend constexpr auto extension(array_types const& s) noexcept -> extension_type {return s.extension();}
+	friend constexpr auto is_empty (array_types const& s) noexcept -> bool           {return s.is_empty ();}
+
+	// TODO(correaa) [[deprecated("use member syntax for non-salient properties")]]
+	friend
+	constexpr auto stride     (array_types const& s) noexcept -> stride_type         {return s.stride     ();}
+
+	// TODO(correaa) [[deprecated("use member syntax for non-salient properties")]]
+	friend
+	constexpr auto strides    (array_types const& s) noexcept -> strides_type         {return s.strides     ();}
+
+	auto layout() -> layout_t& {return static_cast<layout_t&>(*this);}
 
 	using value_type = typename std::conditional<
 		(D > 1),
@@ -177,7 +230,8 @@ struct basic_array_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin
 	constexpr auto operator=(basic_array_ptr const& other) -> basic_array_ptr& {
 		if(this == &other) {return *this;}  // lints(cert-oop54-cpp)
 		this->base_ = other.base_;
-		static_cast<Layout&>(*this) = other.layout();
+	//  static_cast<Layout&>(*this)
+		layout() = other.layout();
 		return *this;
 	}
 	constexpr explicit operator bool() const {return this->base_;}
@@ -635,11 +689,13 @@ struct basic_array
 	friend struct basic_array<typename types::element, Layout::rank_v + 1, typename types::element_ptr&>;
 
 	using types::layout;
+	using typename types::element_type;
+
 	using layout_type = Layout;
 
 	constexpr auto layout() const -> layout_type {return array_types<T, D, ElementPtr, Layout>::layout();}
 
-	using basic_const_array = basic_array<T, D, typename std::pointer_traits<ElementPtr>::template rebind<typename basic_array::element_type const>, Layout>;
+	using basic_const_array = basic_array<T, D, typename std::pointer_traits<ElementPtr>::template rebind<element_type const>, Layout>;
 
 	basic_array() = default;
 
@@ -1615,7 +1671,7 @@ struct basic_array<T, 0, ElementPtr, Layout>
 template<typename T, typename ElementPtr, class Layout>
 struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inheritance) : to define operators via CRTP
 // : multi::partially_ordered2<basic_array<T, 1, ElementPtr, Layout>, void>
-: multi::random_iterable<basic_array<T, 1, ElementPtr, Layout> >
+: multi::random_iterable    <basic_array<T, 1, ElementPtr, Layout>>
 , array_types<T, 1, ElementPtr, Layout> {
 	~basic_array() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
@@ -1777,8 +1833,6 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	HD constexpr auto elements_at(size_type n)     && -> decltype(auto) {assert(n < this->num_elements()); return operator[](n);}
 	HD constexpr auto elements_at(size_type n)      & -> decltype(auto) {assert(n < this->num_elements()); return operator[](n);}
 
-	using typename types::index;
-
 	constexpr auto reindexed(index first) && {return reindexed(first);}
 	constexpr auto reindexed(index first)  & {
 		typename types::layout_t new_layout = this->layout();
@@ -1793,7 +1847,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 			assert(first == last);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 			new_layout.nelems() = 0;  // TODO(correaa) : don't use mutation
 		} else {
-			(new_layout.nelems() /= Layout::size())*=(last - first);
+			(new_layout.nelems() /= this->size())*=(last - first);
 		}
 		return basic_array{new_layout, this->base() + (first*this->layout().stride() - this->layout().offset())};
 	}
@@ -2010,10 +2064,13 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
 	template<class TT, class... As>
 	constexpr auto operator==(basic_array<TT, 1, As...> const& o) const -> bool {
-		return (this->extension() == o.extension()) and elements() == o.elements();  // adl_equal(this->begin(), this->end(), o.begin());
+		return (this->extension() == o.extension()) and elements() == o.elements();
 	}
 	constexpr auto operator==(basic_array const& o) const -> bool {
-		return (this->extension() == o.extension()) and elements() == o.elements();  // adl_equal(this->begin(), this->end(), o.begin());
+		return (this->extension() == o.extension()) and elements() == o.elements();
+	}
+	constexpr auto operator!=(basic_array const& o) const -> bool {
+		return (this->extension() != o.extension()) or  elements() != o.elements();
 	}
 
 	constexpr auto operator< (basic_array const& o) const& -> bool {return lexicographical_compare(*this, o);}
@@ -2484,6 +2541,8 @@ constexpr auto uninitialized_copy
 
 template<class T> auto begin(T&& t) -> decltype(std::forward<T>(t).begin()) {return std::forward<T>(t).begin();}
 template<class T> auto end  (T&& t) -> decltype(std::forward<T>(t).end()  ) {return std::forward<T>(t).end()  ;}
+
+// template<class T> auto size (T const& t) {return t.size();}
 
 template<class T, std::size_t N, std::size_t M>
 auto transposed(T(&t)[N][M]) -> decltype(auto) {return ~multi::array_ref<T, 2>(t);}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
