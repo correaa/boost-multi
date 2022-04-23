@@ -272,8 +272,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Waddress-of-packed-member
 					-Waddress-of-temporary
 					-Waggregate-return
-					-Waix-compat
-					-Walign-mismatch
+					# -Waix-compat (clang 13, not in clang 11)
+					# -Walign-mismatch (clang 13, not in clang 11)
 					#-Wall
 					-Walloca
 					-Walloca-with-align-alignof
@@ -398,10 +398,10 @@ foreach(TEST_FILE ${TEST_SRCS})
 					# -Wc99-designator
 					# -Wc99-extensions
 					-Wcall-to-pure-virtual-from-ctor-dtor
-					-Wcalled-once-parameter
+					# -Wcalled-once-parameter (clang 13, not in clang 11)
 					-Wcast-align
 					-Wcast-calling-convention
-					-Wcast-function-type
+					# -Wcast-function-type (clang 13, not in clang 11)
 					-Wcast-of-sel-type
 					-Wcast-qual
 					-Wcast-qual-unrelated
@@ -417,9 +417,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wcompare-distinct-pointer-types
 					-Wcompletion-handler
 					-Wcomplex-component-init
-					-Wcompound-token-split
-					-Wcompound-token-split-by-macro
-					-Wcompound-token-split-by-space
+					# -Wcompound-token-split (clang 13, not in clang 11)
+					# -Wcompound-token-split-by-macro (clang 13, not in clang 11)
+					# -Wcompound-token-split-by-space (clang 13, not in clang 11)
 					-Wconcepts-ts-compat
 					-Wconditional-type-mismatch
 					-Wconditional-uninitialized
@@ -441,11 +441,11 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wctu
 					-Wcuda-compat
 					-Wcustom-atomic-properties
-					-Wcxx-attribute-extension
+					# -Wcxx-attribute-extension (clang 13, not in clang 11)
 					-Wdangling
 					-Wdangling-else
 					-Wdangling-field
-					-Wdangling-gsl
+					# -Wdangling-gsl (clang 13, not in clang 9)
 					-Wdangling-initializer-list
 					-Wdarwin-sdk-settings
 					-Wdate-time
@@ -460,16 +460,16 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wdelete-non-virtual-dtor
 					# -Wdelimited-escape-sequence-extension (clang 15, not in clang 13)
 					-Wdeprecated
-					-Wdeprecated-altivec-src-compat
+					# -Wdeprecated-altivec-src-compat (clang 13, not in clang 11)
 					-Wdeprecated-anon-enum-enum-conversion
 					-Wdeprecated-array-compare
 					-Wdeprecated-attributes
 					-Wdeprecated-comma-subscript
 					-Wdeprecated-copy
 					-Wdeprecated-copy-dtor
-					-Wdeprecated-copy-with-dtor
+					# -Wdeprecated-copy-with-dtor (clang 13, not in clang 11)
 					-Wdeprecated-copy-with-user-provided-copy
-					-Wdeprecated-copy-with-user-provided-dtor
+					# -Wdeprecated-copy-with-user-provided-dtor (clang 13, not in clang 11)
 					# -Wdeprecated-coroutine (clang 15, not in clang 13)
 					-Wdeprecated-declarations
 					-Wdeprecated-dynamic-exception-spec
@@ -560,7 +560,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wfor-loop-analysis
 					-Wformat
 					-Wformat-extra-args
-					-Wformat-insufficient-args
+					# -Wformat-insufficient-args (clang 13, not in clang 11)
 					-Wformat-invalid-specifier
 					-Wformat-non-iso
 					-Wformat-nonliteral
@@ -575,10 +575,10 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wframe-address
 					# -Wframe-larger-than # -Wframe-larger-than=
 					-Wframework-include-private-from-public
-					-Wfree-nonheap-object
+					# -Wfree-nonheap-object (clang 13, not in clang 11)
 					-Wfunction-def-in-objc-container
 					-Wfunction-multiversion
-					-Wfuse-ld-path
+					# -Wfuse-ld-path (clang 13, not in clang 11)
 					# -Wfuture-attribute-extensions (clang 15, not in clang 13)
 					# -Wfuture-compat
 					# -Wgcc-compat
@@ -620,7 +620,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Whip-only
 					-Widiomatic-parentheses
 					-Wignored-attributes
-					-Wignored-availability-without-sdk-settings
+					# -Wignored-availability-without-sdk-settings (clang 13, not in clang 11)
 					-Wignored-optimization-argument
 					#-Wignored-pragma-intrinsic
 					#-Wignored-pragma-optimize
@@ -679,7 +679,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wint-to-pointer-cast
 					-Wint-to-void-pointer-cast
 					-Winteger-overflow
-					-Winterrupt-service-routine
+					# -Winterrupt-service-routine (clang 13, not in clang 11)
 					-Winvalid-command-line-argument
 					-Winvalid-constexpr
 					-Winvalid-iboutlet
@@ -720,7 +720,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wmemsize-comparison
 					-Wmethod-signatures
 					-Wmicrosoft
-					-Wmicrosoft-abstract
+					# -Wmicrosoft-abstract (clang 13, not in clang 11)
 					-Wmicrosoft-anon-tag
 					-Wmicrosoft-cast
 					-Wmicrosoft-charize
