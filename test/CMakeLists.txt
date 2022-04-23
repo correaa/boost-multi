@@ -275,7 +275,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					# -Waix-compat (clang 13, not in clang 11)
 					# -Walign-mismatch (clang 13, not in clang 11)
 					#-Wall
-					-Walloca
+					# -Walloca (clang 11, not in clang 9)
 					-Walloca-with-align-alignof
 					# -Walways-inline-coroutine (clang 15, not in clang 13)
 					-Wambiguous-delete
@@ -327,7 +327,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wbraced-scalar-init
 					# -Wbranch-protection (clang 15, not in clang 13)
 					-Wbridge-cast
-					-Wbuiltin-assume-aligned-alignment -Wbuiltin-macro-redefined -Wbuiltin-memcpy-chk-size -Wbuiltin-requires-header
+					# -Wbuiltin-assume-aligned-alignment (clang 11, not in clang 9)
+					-Wbuiltin-macro-redefined -Wbuiltin-memcpy-chk-size -Wbuiltin-requires-header
 					# -Wc++-compat
 					# -Wc++0x-compat
 					# -Wc++0x-extensions
@@ -390,13 +391,13 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wchar-align
 					-Wchar-subscripts
 					-Wclang-cl-pch
-					-Wclass-conversion
+					# -Wclass-conversion (clang 11, not in clang 9)
 					-Wclass-varargs
-					-Wcmse-union-leak
+					# -Wcmse-union-leak (clang 11, not in clang 9)
 					-Wcomma
 					-Wcomment -Wcomments
 					-Wcompare-distinct-pointer-types
-					-Wcompletion-handler
+					# -Wcompletion-handler (clang 13, not in clang 11)
 					-Wcomplex-component-init
 					# -Wcompound-token-split (clang 13, not in clang 11)
 					# -Wcompound-token-split-by-macro (clang 13, not in clang 11)
@@ -404,7 +405,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wconcepts-ts-compat
 					-Wconditional-type-mismatch -Wconditional-uninitialized
 					-Wconfig-macros
-					-Wconstant-conversion -Wconstant-evaluated -Wconstant-logical-operand
+					-Wconstant-conversion
+					# -Wconstant-evaluated (clang 11, not in clang 9)
+					-Wconstant-logical-operand
 					-Wconstexpr-not-const
 					-Wconsumed
 					-Wconversion -Wconversion-null
@@ -432,12 +435,16 @@ foreach(TEST_FILE ${TEST_SRCS})
 					# -Wdelimited-escape-sequence-extension (clang 15, not in clang 13)
 					-Wdeprecated
 					# -Wdeprecated-altivec-src-compat (clang 13, not in clang 11)
-					-Wdeprecated-anon-enum-enum-conversion -Wdeprecated-array-compare -Wdeprecated-attributes -Wdeprecated-comma-subscript -Wdeprecated-copy -Wdeprecated-copy-dtor
+					# -Wdeprecated-anon-enum-enum-conversion -Wdeprecated-array-compare (clang 11, not in clang 9)
+					-Wdeprecated-attributes -Wdeprecated-comma-subscript
+					# -Wdeprecated-copy -Wdeprecated-copy-dtor (clang 11, not in clang 9)
 					# -Wdeprecated-copy-with-dtor (clang 13, not in clang 11)
-					-Wdeprecated-copy-with-user-provided-copy
+					# -Wdeprecated-copy-with-user-provided-copy (clang 13, not in clang 11)
 					# -Wdeprecated-copy-with-user-provided-dtor (clang 13, not in clang 11)
 					# -Wdeprecated-coroutine (clang 15, not in clang 13)
-					-Wdeprecated-declarations -Wdeprecated-dynamic-exception-spec -Wdeprecated-enum-compare -Wdeprecated-enum-compare-conditional -Wdeprecated-enum-enum-conversion -Wdeprecated-enum-float-conversion
+					-Wdeprecated-declarations -Wdeprecated-dynamic-exception-spec
+					# -Wdeprecated-enum-compare -Wdeprecated-enum-compare-conditional -Wdeprecated-enum-enum-conversion (clang 11, not in clang 9)
+					-Wdeprecated-enum-float-conversion
 					# -Wdeprecated-experimental-coroutine (clang 15, not in clang 13)
 					-Wdeprecated-implementations -Wdeprecated-increment-bool
 					# -Wdeprecated-non-prototype (clang 15, not in clang 13)
@@ -556,12 +563,14 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wmethod-signatures
 					-Wmicrosoft
 					# -Wmicrosoft-abstract (clang 13, not in clang 11)
-					-Wmicrosoft-anon-tag -Wmicrosoft-cast -Wmicrosoft-charize -Wmicrosoft-comment-paste -Wmicrosoft-const-init -Wmicrosoft-cpp-macro -Wmicrosoft-default-arg-redefinition -Wmicrosoft-drectve-section -Wmicrosoft-end-of-file -Wmicrosoft-enum-forward-reference -Wmicrosoft-enum-value -Wmicrosoft-exception-spec -Wmicrosoft-exists -Wmicrosoft-explicit-constructor-call -Wmicrosoft-extra-qualification -Wmicrosoft-fixed-enum -Wmicrosoft-flexible-array -Wmicrosoft-goto -Wmicrosoft-inaccessible-base -Wmicrosoft-include	-Wmicrosoft-mutable-reference -Wmicrosoft-pure-definition	-Wmicrosoft-redeclare-static -Wmicrosoft-sealed -Wmicrosoft-static-assert -Wmicrosoft-template -Wmicrosoft-template-shadow -Wmicrosoft-union-member-reference -Wmicrosoft-unqualified-friend -Wmicrosoft-using-decl -Wmicrosoft-void-pseudo-dtor
+					-Wmicrosoft-anon-tag -Wmicrosoft-cast -Wmicrosoft-charize -Wmicrosoft-comment-paste -Wmicrosoft-const-init -Wmicrosoft-cpp-macro -Wmicrosoft-default-arg-redefinition -Wmicrosoft-drectve-section -Wmicrosoft-end-of-file -Wmicrosoft-enum-forward-reference -Wmicrosoft-enum-value -Wmicrosoft-exception-spec -Wmicrosoft-exists -Wmicrosoft-explicit-constructor-call -Wmicrosoft-extra-qualification -Wmicrosoft-fixed-enum -Wmicrosoft-flexible-array -Wmicrosoft-goto -Wmicrosoft-inaccessible-base -Wmicrosoft-include	-Wmicrosoft-mutable-reference -Wmicrosoft-pure-definition	-Wmicrosoft-redeclare-static -Wmicrosoft-sealed
+					# -Wmicrosoft-static-assert (clang 13, not in clang 11) 
+					-Wmicrosoft-template -Wmicrosoft-template-shadow -Wmicrosoft-union-member-reference -Wmicrosoft-unqualified-friend -Wmicrosoft-using-decl -Wmicrosoft-void-pseudo-dtor
 					# -Wmisexpect (clang 15, not in clang 13)
 					-Wmisleading-indentation
 					-Wmismatched-new-delete -Wmismatched-parameter-types -Wmismatched-return-types -Wmismatched-tags
 					-Wmissing-braces -Wmissing-constinit -Wmissing-declarations -Wmissing-exception-spec -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs -Wmissing-method-return-type -Wmissing-noescape -Wmissing-noreturn -Wmissing-prototype-for-cc -Wmissing-prototypes -Wmissing-selector-name -Wmissing-sysroot -Wmissing-variable-declarations
-					-Wmisspelled-assumption
+					# -Wmisspelled-assumption (clang 13, not in clang 11)
 					-Rmodule-build
 					-Wmodule-conflict -Wmodule-file-config-mismatch -Wmodule-file-extension -Rmodule-import -Wmodule-import-in-extern-c
 					# -Rmodule-lock
@@ -590,13 +599,16 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wnontrivial-memaccess
 					-Wnsconsumed-mismatch
 					-Wnsreturns-mismatch
-					-Wnull-arithmetic -Wnull-character -Wnull-conversion -Wnull-dereference -Wnull-pointer-arithmetic -Wnull-pointer-subtraction
+					-Wnull-arithmetic -Wnull-character -Wnull-conversion -Wnull-dereference -Wnull-pointer-arithmetic
+					# -Wnull-pointer-subtraction (clang 13, not in clang 11)
 					-Wnullability -Wnullability-completeness -Wnullability-completeness-on-arrays -Wnullability-declspec -Wnullability-extension -Wnullability-inferred-on-nested-type
 					-Wnullable-to-nonnull-conversion
 					-Wodr
 					-Wold-style-cast -Wold-style-definition
 					-Wopencl-unsupported-rgba
-					-Wopenmp -Wopenmp-51-extensions -Wopenmp-clauses -Wopenmp-loop-form -Wopenmp-mapping -Wopenmp-target
+					-Wopenmp
+					# -Wopenmp-51-extensions (clang 13, not in clang 11)
+					-Wopenmp-clauses -Wopenmp-loop-form -Wopenmp-mapping -Wopenmp-target
 					-Woption-ignored
 					-Wordered-compare-function-pointers
 					-Wout-of-line-declaration -Wout-of-scope-function
@@ -623,13 +635,11 @@ foreach(TEST_FILE ${TEST_SRCS})
 					# -Wpragma-pack-suspicious-include
 					# -Wpragma-system-header-outside-header
 					# -Wpragmas
-					# -Wpre-c++14-compat
-					# -Wpre-c++14-compat-pedantic
-					# -Wpre-c++17-compat
-					# -Wpre-c++17-compat-pedantic
-					-Wpre-c++20-compat -Wpre-c++20-compat-pedantic -Wpre-c++2b-compat -Wpre-c++2b-compat-pedantic
-					-Wpre-c2x-compat -Wpre-c2x-compat-pedantic
-					-Wpre-openmp-51-compat
+					# -Wpre-c++14-compat -Wpre-c++14-compat-pedantic
+					# -Wpre-c++17-compat -Wpre-c++17-compat-pedantic
+					# -Wpre-c++20-compat -Wpre-c++20-compat-pedantic -Wpre-c++2b-compat -Wpre-c++2b-compat-pedantic (clang 13, not in clang 11)
+					# -Wpre-c2x-compat -Wpre-c2x-compat-pedantic (clang 13, not in clang 11)
+					# -Wpre-openmp-51-compat (clang 13, not in clang 11)
 					-Wpredefined-identifier-outside-function
 					-Wprivate-extern -Wprivate-header -Wprivate-module
 					-Wprofile-instr-missing -Wprofile-instr-out-of-date -Wprofile-instr-unprofiled
@@ -649,7 +659,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Rremark-backend-plugin
 					-Wreorder -Wreorder-ctor -Wreorder-init-list
 					-Wrequires-super-attribute
-					-Wreserved-id-macro -Wreserved-identifier -Wreserved-macro-identifier
+					-Wreserved-id-macro
+					# -Wreserved-identifier -Wreserved-macro-identifier (clang 13, not in clang 11)
 					-Wreserved-user-defined-literal
 					# -Wrestrict-expansion (clang 15, not in clang 13)
 					-Wretained-language-linkage
@@ -676,7 +687,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wslash-u-filename
 					-Wslh-asm-goto
 					-Wsometimes-uninitialized
-					-Wsource-mgr -Wsource-uses-openmp
+					# -Wsource-mgr (clang 13, not in clang 11)
+					-Wsource-uses-openmp
 					-Wspir-compat
 					# -Wspirv-compat (clang 15, not in clang 13)
 					-Wstack-exhausted -Wstack-protector
@@ -684,13 +696,15 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wstdlibcxx-not-found
 					-Wstrict-aliasing -Wstrict-aliasing=0 -Wstrict-aliasing=1 -Wstrict-aliasing=2
 					-Wstrict-overflow -Wstrict-overflow=0 -Wstrict-overflow=1 -Wstrict-overflow=2 -Wstrict-overflow=3 -Wstrict-overflow=4 -Wstrict-overflow=5 -Wstrict-potentially-direct-selector -Wstrict-prototypes -Wstrict-selector-match
-					-Wstring-compare -Wstring-concatenation -Wstring-conversion -Wstring-plus-char -Wstring-plus-int
+					-Wstring-compare
+					# -Wstring-concatenation (clang 13, not in clang 11)
+					-Wstring-conversion -Wstring-plus-char -Wstring-plus-int
 					-Wstrlcpy-strlcat-size
 					-Wstrncat-size
 					-Wsuggest-destructor-override -Wsuggest-override
 					-Wsuper-class-method-mismatch
 					-Wsuspicious-bzero -Wsuspicious-memaccess
-					-Wswift-name-attribute
+					# -Wswift-name-attribute (clang 13, not in clang 11)
 					-Wswitch -Wswitch-bool -Wswitch-default -Wswitch-enum
 					-Wsync-fetch-and-nand-semantics-changed
 					-Wsynth
