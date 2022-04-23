@@ -117,10 +117,11 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	explicit static_array(allocator_type const& a) : array_alloc{a} {}
 
  protected:
-	static_array(static_array&& other, allocator_type const& a) noexcept          // 6b
+	static_array(static_array&& other, allocator_type const& a) noexcept          // 6b  TODO(correaa) move from array only
 	: array_alloc{a}  // TODO(correaa) : handle allocation propagation here
 	, ref{other.base_, other.extensions()} {
-		other.ref::layout_t::operator=({});
+		other.layout() = {};
+	//	other.ref::layout_t::operator=({});
 		other.base_ = nullptr;
 	}
 
@@ -272,7 +273,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	void clear() noexcept {
 		this->destroy();
 		deallocate();
-		layout_t<D>::operator=({});
+		this->layout() = {};
 	}
 	template<class... Ts>
 	constexpr auto reindex(Ts... a)& -> static_array& {
@@ -736,6 +737,9 @@ struct array : static_array<T, D, Alloc> {
 	//  auto operator&()      & -> array      *{return this;}
 	//  auto operator&() const& -> array const*{return this;}
 
+//  friend auto extensions(array const& s) -> typenameextensions_type {return s.extensions();}
+	friend auto sizes(array const& s) -> typename array::sizes_type {return s.sizes();}
+
 	template<class Archive>
 	void serialize(Archive& ar, const unsigned int version) {  // NOLINT(fuchsia-default-arguments-declarations) version is used for threshold of big vs small data
 		using AT = multi::archive_traits<Archive>;
@@ -759,17 +763,19 @@ struct array : static_array<T, D, Alloc> {
 
 	array() = default;
 	array(array const&) = default;
+
 	auto reshape(typename array::extensions_type x) & -> array& {
 		typename array::layout_t new_layout{x};
 		assert( new_layout.num_elements() == this->num_elements() );
-		static_cast<typename array::layout_t&>(*this) = new_layout;
+		this->layout() = new_layout;
 		return *this;
 	}
+
 	auto clear() noexcept -> array& {
 		static_::clear();
 		return *this;
 	}
-	friend auto clear(array& self) noexcept -> array& {return self.clear();}
+	friend auto clear(array& s) noexcept -> array& {return s.clear();}
 
 	friend auto data_elements(array const& self) {return self.data_elements();}
 	friend auto data_elements(array      & self) {return self.data_elements();}
@@ -806,8 +812,8 @@ struct array : static_array<T, D, Alloc> {
 		swap_allocator_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_swap{}, other.alloc());
 		swap(this->base_, other.base_);
 		swap(
-			static_cast<typename array::layout_t&>(*this),
-			static_cast<typename array::layout_t&>(other)
+			this->layout(),
+			other.layout()
 		);
 	}
 
@@ -826,7 +832,7 @@ struct array : static_array<T, D, Alloc> {
 		this->base_ = other.base_;
 		move_allocator_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment{}, std::move(other.alloc()));
 		// this->alloc_ = std::move(other.alloc_);
-		static_cast<typename array::layout_t&>(*this) = std::exchange(static_cast<typename array::layout_t&>(other), {});
+		this->layout() = std::exchange(other.layout(), {});
 		return *this;
 	}
 
@@ -845,7 +851,7 @@ struct array : static_array<T, D, Alloc> {
 		} else {
 			clear();
 			copy_allocator_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment{}, other.alloc());
-			static_cast<typename array::layout_t&>(*this) = static_cast<typename array::layout_t const&>(other);
+			this->layout() = other.layout();
 			array::allocate();
 			array::uninitialized_copy_elements(other.data_elements());
 			// operator=(array{other}); // calls operator=(array&&)
@@ -955,7 +961,7 @@ struct array : static_array<T, D, Alloc> {
 		this->destroy();
 		this->deallocate();
 		this->base_ = tmp.base();
-		(*this).array::layout_t::operator=(tmp.layout());
+		this->layout() = tmp.layout();
 #endif
 		return *this;
 	}
@@ -976,12 +982,13 @@ struct array : static_array<T, D, Alloc> {
 		this->destroy();
 		this->deallocate();
 		this->base_ = tmp.base();  // TODO(correaa) : use (and implement) `.move();`
-		(*this).array::layout_t::operator=(tmp.layout());
+		this->layout() = tmp.layout();
+	//  (*this).array::layout_t::operator=(tmp.layout());
 #endif
 		return *this;
 	}
-	template<class... Ts> constexpr auto reindex(Ts... a)&& -> array&& {array::layout_t::reindex(a...); return std::move(*this);}
-	template<class... Ts> constexpr auto reindex(Ts... a) & -> array & {array::layout_t::reindex(a...); return           *this ;}
+	template<class... Ts> constexpr auto reindex(Ts... a)&& -> array&& {this->layout().reindex(a...); return std::move(*this);}
+	template<class... Ts> constexpr auto reindex(Ts... a) & -> array & {this->layout().reindex(a...); return           *this ;}
 
 	~array() = default;
 };

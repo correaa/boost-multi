@@ -228,25 +228,25 @@ constexpr auto dimensionality(T const&/*, void* = nullptr*/) {return 0;}
 template<class T, std::size_t N>
 constexpr auto dimensionality(T const(&t)[N]) {return 1 + dimensionality(t[0]);}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 
-template<class T, typename = decltype(std::declval<T>().sizes())>
-       auto has_sizes_aux(T const&) -> std::true_type;
-inline auto has_sizes_aux(...     ) -> std::false_type;
+//template<class T, typename = decltype(std::declval<T const&>().sizes())>
+//       auto has_sizes_aux(T const&) -> std::true_type;
+//inline auto has_sizes_aux(...     ) -> std::false_type;
 
-template<class T> struct has_sizes : decltype(has_sizes_aux(std::declval<T>())){};
+//template<class T> struct has_sizes : decltype(has_sizes_aux(std::declval<T>())){};
 
-template<class Array, typename = std::enable_if_t<has_sizes<Array>{}> >
-constexpr auto sizes(Array const& arr)
-->decltype(arr.sizes()) {
-	return arr.sizes(); }
+//template<class Array, typename = std::enable_if_t<has_sizes<Array>{}> >
+//constexpr auto sizes(Array const& arr)
+//->decltype(arr.sizes()) {
+//	return arr.sizes(); }
 
-template<class T, typename = std::enable_if_t<not has_sizes<T>{}> >
-inline constexpr auto sizes(T const& /*unused*/) -> tuple<> {return {};}
+template<class T>  // , typename = std::enable_if_t<not has_sizes<T const&>::value>>
+inline constexpr auto sizes(T const& /*unused*/) noexcept -> tuple<> {return {};}
 
 template<class T, std::size_t N>
 constexpr auto sizes(const T(&t)[N]) noexcept {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 //  using std::size; // this line needs c++17
-	using boost::multi::size;
-	return tuple(boost::multi::size(t), sizes(t[0]));
+	using multi::size;
+	return tuple(multi::size(t), multi::sizes(t[0]));
 //  return tuple_cat(make_tuple(boost::multi::size(t)), sizes(t[0]));
 }
 
@@ -289,7 +289,7 @@ inline auto has_shape_aux(...     ) -> std::false_type;
 
 template<class T> struct has_shape : decltype(has_shape_aux(std::declval<T>())) {};
 
-template<class T, typename = decltype(std::declval<T>().extensions())>
+template<class T, typename = decltype(std::declval<T const&>().extensions())>
        auto has_extensions_aux(T const&) -> std::true_type;
 inline auto has_extensions_aux(...     ) -> std::false_type;
 

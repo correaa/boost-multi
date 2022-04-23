@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo A. Correa 2019-2021
+// Copyright 2019-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi reversed"
 #define BOOST_TEST_DYN_LINK
@@ -34,6 +34,11 @@ BOOST_AUTO_TEST_CASE(multi_reversed_4d) {
 
 	BOOST_REQUIRE( &A.reversed()[1][2][3][4] == &A[4][3][2][1] );
 
+
+	BOOST_REQUIRE( std::get<0>( A.reversed().transposed().flatted().reversed().sizes() ) == 13 );
+	BOOST_REQUIRE( std::get<1>( A.reversed().transposed().flatted().reversed().sizes() ) ==  5 );
+	BOOST_REQUIRE( std::get<2>( A.reversed().transposed().flatted().reversed().sizes() ) == 77 );
+
 	BOOST_REQUIRE(( sizes(A.reversed().transposed().flatted().reversed()) == decltype(sizes(A.reversed().transposed().flatted().reversed())){13, 5, 77} ));
 
 	BOOST_REQUIRE( &A.reversed().transposed().flatted().reversed()[1][2][ 5] == & A[1][2][0][ 5] );
@@ -47,7 +52,7 @@ BOOST_AUTO_TEST_CASE(multi_reversed_4d) {
 BOOST_AUTO_TEST_CASE(multi_reversed_4d_partition_last) {
 	multi::array<double, 4> A({11, 5, 7, 12});
 
-	BOOST_TEST_REQUIRE( A.reversed().size() == 12 );
+	BOOST_REQUIRE( A.reversed().size() == 12 );
 
 	BOOST_REQUIRE( & A.reversed()[1][2][3][4] == &A[4][3][2][1] );
 
