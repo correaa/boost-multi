@@ -71,7 +71,8 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using layout_t = Layout;
 
-	using typename layout_t::rank  ;
+	using rank = typename layout_t::rank  ;
+
 	using          layout_t::rank_v;
 	using          layout_t::dimensionality;
 
