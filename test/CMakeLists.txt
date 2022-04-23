@@ -520,7 +520,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 					# -Wgcc-compat
 					# -Wglobal-constructors (Boost.Test)
 					# -Wglobal-isel (clang 11, not in clang 9)
-					-Wgnu -Wgnu-alignof-expression -Wgnu-anonymous-struct -Wgnu-array-member-paren-init -Wgnu-auto-type -Wgnu-binary-literal -Wgnu-case-range -Wgnu-complex-integer -Wgnu-compound-literal-initializer -Wgnu-conditional-omitted-operand -Wgnu-designator -Wgnu-empty-initializer	-Wgnu-empty-struct -Wgnu-flexible-array-initializer	-Wgnu-flexible-array-union-member -Wgnu-folding-constant -Wgnu-imaginary-constant -Wgnu-include-next -Wgnu-inline-cpp-without-extern -Wgnu-label-as-value
+					-Wgnu -Wgnu-alignof-expression -Wgnu-anonymous-struct -Wgnu-array-member-paren-init -Wgnu-auto-type -Wgnu-binary-literal -Wgnu-case-range -Wgnu-complex-integer -Wgnu-compound-literal-initializer -Wgnu-conditional-omitted-operand -Wgnu-designator -Wgnu-empty-initializer	-Wgnu-empty-struct -Wgnu-flexible-array-initializer	-Wgnu-flexible-array-union-member -Wgnu-folding-constant -Wgnu-imaginary-constant -Wgnu-include-next
+					# -Wgnu-inline-cpp-without-extern (clang 11, not in clang 9)
+					-Wgnu-label-as-value
 					# -Wgnu-null-pointer-arithmetic
 					# -Wgnu-pointer-arith (clang 15, not in clang 13)
 					-Wgnu-redeclared-enum -Wgnu-statement-expression -Wgnu-static-float-init -Wgnu-string-literal-operator-template -Wgnu-union-cast -Wgnu-variable-sized-type-not-at-end -Wgnu-zero-line-directive -Wgnu-zero-variadic-macro-arguments
@@ -538,7 +540,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 					# -Wignored-reference-qualifiers (clang 15, not in clang 13)
 					-Wimplicit -Wimplicit-atomic-properties
 					# -Wimplicit-const-int-float-conversion (clang 11, not in clang 9)
-					-Wimplicit-conversion-floating-point-to-bool -Wimplicit-exception-spec-mismatch -Wimplicit-fallthrough -Wimplicit-fallthrough-per-function -Wimplicit-fixed-point-conversion -Wimplicit-float-conversion -Wimplicit-function-declaration -Wimplicit-int -Wimplicit-int-conversion -Wimplicit-int-float-conversion -Wimplicit-retain-self -Wimplicitly-unsigned-literal
+					-Wimplicit-conversion-floating-point-to-bool -Wimplicit-exception-spec-mismatch -Wimplicit-fallthrough -Wimplicit-fallthrough-per-function -Wimplicit-fixed-point-conversion -Wimplicit-float-conversion -Wimplicit-function-declaration -Wimplicit-int -Wimplicit-int-conversion
+					# -Wimplicit-int-float-conversion (clang 11, not in clang 9)
+					-Wimplicit-retain-self -Wimplicitly-unsigned-literal
 					-Wimport -Wimport-preprocessor-directive-pedantic
 					-Winaccessible-base
 					-Winclude-next-absolute-path -Winclude-next-outside-header
@@ -657,8 +661,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wpointer-integer-compare -Wpointer-sign
 					# -Wpointer-to-enum-cast (clang 11, not in clang 9)
 					-Wpointer-to-int-cast -Wpointer-type-mismatch
-					-Wpoison-system-directories
-					-Wpotentially-direct-selector -Wpotentially-evaluated-expression
+					# -Wpoison-system-directories (clang 11, not in clang 9)
+					# -Wpotentially-direct-selector (clang 11, not in clang 9)
+					-Wpotentially-evaluated-expression
 					# -Wpragma-clang-attribute
 					# -Wpragma-once-outside-header
 					# -Wpragma-pack
@@ -675,10 +680,11 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wprofile-instr-missing -Wprofile-instr-out-of-date -Wprofile-instr-unprofiled
 					-Wproperty-access-dot-syntax -Wproperty-attribute-mismatch
 					-Wprotocol -Wprotocol-property-synthesis-ambiguity
-					-Wpsabi
+					# -Wpsabi (clang 11, not in clang 9)
 					-Wqualified-void-return-type
 					-Wquoted-include-in-framework-header
-					-Wrange-loop-analysis -Wrange-loop-bind-reference -Wrange-loop-construct
+					-Wrange-loop-analysis
+					# -Wrange-loop-bind-reference -Wrange-loop-construct (clang 11, not in clang 9)
 					-Wreadonly-iboutlet-property
 					-Wreceiver-expr -Wreceiver-forward-class
 					-Wredeclared-class-member
@@ -687,7 +693,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wregister
 					-Wreinterpret-base-class
 					-Rremark-backend-plugin
-					-Wreorder -Wreorder-ctor -Wreorder-init-list
+					-Wreorder
+					# -Wreorder-ctor -Wreorder-init-list (clang 11, not in clang 9)
 					-Wrequires-super-attribute
 					-Wreserved-id-macro
 					# -Wreserved-identifier -Wreserved-macro-identifier (clang 13, not in clang 11)
@@ -695,7 +702,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					# -Wrestrict-expansion (clang 15, not in clang 13)
 					-Wretained-language-linkage
 					-Wreturn-stack-address -Wreturn-std-move -Wreturn-type -Wreturn-type-c-linkage
-					-Wrewrite-not-bool
+					# -Wrewrite-not-bool (clang 11, not in clang 9)
 					# -Rround-trip-cc1-args (clang 13, not in clang 11)
 					# -Wrtti (clang 13, not in clang 11)
 					-Rsanitize-address
@@ -712,26 +719,33 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wshift-count-negative -Wshift-count-overflow -Wshift-negative-value -Wshift-op-parentheses -Wshift-overflow -Wshift-sign-overflow
 					-Wshorten-64-to-32
 					-Wsign-compare -Wsign-conversion -Wsign-promo
-					-Wsigned-enum-bitfield -Wsigned-unsigned-wchar
-					-Wsizeof-array-argument -Wsizeof-array-decay -Wsizeof-array-div -Wsizeof-pointer-div -Wsizeof-pointer-memaccess
+					-Wsigned-enum-bitfield
+					# -Wsigned-unsigned-wchar (clang 11, not in clang 9)
+					-Wsizeof-array-argument -Wsizeof-array-decay
+					# -Wsizeof-array-div (clang 11, not in clang 9)
+					-Wsizeof-pointer-div -Wsizeof-pointer-memaccess
 					-Wslash-u-filename
-					-Wslh-asm-goto
+					# -Wslh-asm-goto (clang 11, not in clang 9)
 					-Wsometimes-uninitialized
 					# -Wsource-mgr (clang 13, not in clang 11)
 					-Wsource-uses-openmp
 					-Wspir-compat
 					# -Wspirv-compat (clang 15, not in clang 13)
-					-Wstack-exhausted -Wstack-protector
+					# -Wstack-exhausted (clang 11, not in clang 9)
+					-Wstack-protector
 					-Wstatic-float-init -Wstatic-in-inline -Wstatic-inline-explicit-instantiation -Wstatic-local-in-inline -Wstatic-self-init
 					-Wstdlibcxx-not-found
 					-Wstrict-aliasing -Wstrict-aliasing=0 -Wstrict-aliasing=1 -Wstrict-aliasing=2
-					-Wstrict-overflow -Wstrict-overflow=0 -Wstrict-overflow=1 -Wstrict-overflow=2 -Wstrict-overflow=3 -Wstrict-overflow=4 -Wstrict-overflow=5 -Wstrict-potentially-direct-selector -Wstrict-prototypes -Wstrict-selector-match
+					-Wstrict-overflow -Wstrict-overflow=0 -Wstrict-overflow=1 -Wstrict-overflow=2 -Wstrict-overflow=3 -Wstrict-overflow=4 -Wstrict-overflow=5
+					# -Wstrict-potentially-direct-selector (clang 11, not in clang 9)
+					-Wstrict-prototypes -Wstrict-selector-match
 					-Wstring-compare
 					# -Wstring-concatenation (clang 13, not in clang 11)
 					-Wstring-conversion -Wstring-plus-char -Wstring-plus-int
 					-Wstrlcpy-strlcat-size
 					-Wstrncat-size
-					-Wsuggest-destructor-override -Wsuggest-override
+					# -Wsuggest-destructor-override (clang 11, not in clang 9)
+					# -Wsuggest-override (clang 11, not in clang 9)
 					-Wsuper-class-method-mismatch
 					-Wsuspicious-bzero -Wsuspicious-memaccess
 					# -Wswift-name-attribute (clang 13, not in clang 11)
@@ -739,7 +753,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wsync-fetch-and-nand-semantics-changed
 					-Wsynth
 					# -Wtarget-clones-mixed-specifiers (clang 15, not in clang 13)
-					-Wtautological-bitwise-compare -Wtautological-compare -Wtautological-constant-compare -Wtautological-constant-in-range-compare -Wtautological-constant-out-of-range-compare -Wtautological-objc-bool-compare -Wtautological-overlap-compare -Wtautological-pointer-compare -Wtautological-type-limit-compare -Wtautological-undefined-compare
+					# -Wtautological-bitwise-compare (clang 11, not in clang 9)
+					-Wtautological-compare -Wtautological-constant-compare -Wtautological-constant-in-range-compare -Wtautological-constant-out-of-range-compare -Wtautological-objc-bool-compare -Wtautological-overlap-compare -Wtautological-pointer-compare -Wtautological-type-limit-compare -Wtautological-undefined-compare
 					# -Wtautological-unsigned-char-zero-compare -Wtautological-unsigned-enum-zero-compare
 					# -Wtautological-unsigned-zero-compare -Wtautological-value-range-compare (clang 13, not in clang 11)
 					# -Wtcb-enforcement (clang 13, not in clang 11)
@@ -754,7 +769,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 					# -Wunaligned-qualifier-implicit-cast (clang 15, not in clang 13)
 					-Wunavailable-declarations
 					-Wundeclared-selector
-					-Wundef -Wundef-prefix
+					-Wundef
+					# -Wundef-prefix (clang 11, not in clang 9)
 					-Wundefined-bool-conversion -Wundefined-func-template -Wundefined-inline -Wundefined-internal -Wundefined-internal-type -Wundefined-reinterpret-cast -Wundefined-var-template -Wunderaligned-exception-object
 					-Wunevaluated-expression
 					-Wunguarded-availability -Wunguarded-availability-new
