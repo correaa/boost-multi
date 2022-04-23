@@ -666,8 +666,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wretained-language-linkage
 					-Wreturn-stack-address -Wreturn-std-move -Wreturn-type -Wreturn-type-c-linkage
 					-Wrewrite-not-bool
-					-Rround-trip-cc1-args
-					-Wrtti
+					# -Rround-trip-cc1-args (clang 13, not in clang 11)
+					# -Wrtti (clang 13, not in clang 11)
 					-Rsanitize-address
 					# -Rsearch-path-usage
 					-Wsection
@@ -709,8 +709,10 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wsync-fetch-and-nand-semantics-changed
 					-Wsynth
 					# -Wtarget-clones-mixed-specifiers (clang 15, not in clang 13)
-					-Wtautological-bitwise-compare -Wtautological-compare -Wtautological-constant-compare -Wtautological-constant-in-range-compare -Wtautological-constant-out-of-range-compare -Wtautological-objc-bool-compare -Wtautological-overlap-compare -Wtautological-pointer-compare -Wtautological-type-limit-compare -Wtautological-undefined-compare -Wtautological-unsigned-char-zero-compare -Wtautological-unsigned-enum-zero-compare -Wtautological-unsigned-zero-compare -Wtautological-value-range-compare
-					-Wtcb-enforcement
+					-Wtautological-bitwise-compare -Wtautological-compare -Wtautological-constant-compare -Wtautological-constant-in-range-compare -Wtautological-constant-out-of-range-compare -Wtautological-objc-bool-compare -Wtautological-overlap-compare -Wtautological-pointer-compare -Wtautological-type-limit-compare -Wtautological-undefined-compare -Wtautological-unsigned-char-zero-compare -Wtautological-unsigned-enum-zero-compare
+					# -Wtautological-unsigned-zero-compare (clang 13, not in clang 11)
+					-Wtautological-value-range-compare
+					# -Wtcb-enforcement (clang 13, not in clang 11)
 					-Wtentative-definition-incomplete-type
 					-Wthread-safety -Wthread-safety-analysis -Wthread-safety-attributes -Wthread-safety-beta -Wthread-safety-negative -Wthread-safety-precise -Wthread-safety-reference -Wthread-safety-verbose
 					-Wtrigraphs
@@ -748,7 +750,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 					# -Wunsupported-abi (clang 15, not in clang 13)
 					-Wunsupported-abs -Wunsupported-availability-guard -Wunsupported-cb -Wunsupported-dll-base-class-template -Wunsupported-floating-point-opt -Wunsupported-friend -Wunsupported-gpopt -Wunsupported-nan -Wunsupported-target-opt -Wunsupported-visibility
 					-Wunusable-partial-specialization
-					-Wunused -Wunused-argument -Wunused-but-set-parameter -Wunused-but-set-variable -Wunused-command-line-argument -Wunused-comparison -Wunused-const-variable -Wunused-exception-parameter -Wunused-function -Wunused-getter-return-value -Wunused-label -Wunused-lambda-capture -Wunused-local-typedef -Wunused-local-typedefs -Wunused-macros -Wunused-member-function -Wunused-parameter -Wunused-private-field -Wunused-property-ivar -Wunused-result -Wunused-template -Wunused-value -Wunused-variable -Wunused-volatile-lvalue
+					-Wunused -Wunused-argument
+					# -Wunused-but-set-parameter -Wunused-but-set-variable (clang 13, not in clang 11)
+					-Wunused-command-line-argument -Wunused-comparison -Wunused-const-variable -Wunused-exception-parameter -Wunused-function -Wunused-getter-return-value -Wunused-label -Wunused-lambda-capture -Wunused-local-typedef -Wunused-local-typedefs -Wunused-macros -Wunused-member-function -Wunused-parameter -Wunused-private-field -Wunused-property-ivar -Wunused-result -Wunused-template -Wunused-value -Wunused-variable -Wunused-volatile-lvalue
 					# -Wused-but-marked-unused (Boost.Test)
 					-Wuser-defined-literals -Wuser-defined-warnings
 					-Wvarargs
