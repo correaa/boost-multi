@@ -132,7 +132,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wformat-truncation -Wformat=2
 					# -Wformat-diag (gcc 11, not in gcc 9)
 					-Wformat-extra-args -Wformat-nonliteral -Wformat-security -Wformat-signedness -Wformat-truncation -Wformat-y2k -Wformat-zero-length  # -Wformat-overflow=<0,2>
-					-Wframe-address  # -Wframe-larger-than=<byte-size>
+					# -Wframe-address (clang 11, not in clang 9)
+					# -Wframe-larger-than=<byte-size>
 					-Wfree-nonheap-object -Whsa -Wif-not-aligned
 					-Wignored-attributes -Wignored-qualifiers
 					-Wimplicit-fallthrough#=3  # -Wimplicit-fallthrough=<0,5>
@@ -282,9 +283,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wambiguous-ellipsis
 					-Wambiguous-macro
 					-Wambiguous-member-template
-					-Wambiguous-reversed-operator
+					# -Wambiguous-reversed-operator (clang 11, not in clang 9)
 					-Wanalyzer-incompatible-plugin
-					-Wanon-enum-enum-conversion
+					# -Wanon-enum-enum-conversion (clang 11, not in clang 9)
 					-Wanonymous-pack-parens
 					-Warc
 					-Warc-bridge-casts-disallowed-in-nonarc
@@ -319,11 +320,13 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wbind-to-temporary-copy
 					-Wbinding-in-condition
 					# -Wbit-int-extension (clang 15, not in clang 13)
-					-Wbitfield-constant-conversion -Wbitfield-enum-conversion -Wbitfield-width -Wbitwise-conditional-parentheses
+					-Wbitfield-constant-conversion -Wbitfield-enum-conversion -Wbitfield-width
+					# -Wbitwise-conditional-parentheses (clang 11, not in clang 9)
 					# -Wbitwise-instead-of-logical (clang 15, not in clang 13)
 					-Wbitwise-op-parentheses
 					-Wblock-capture-autoreleasing
-					-Wbool-conversion -Wbool-conversions -Wbool-operation
+					-Wbool-conversion -Wbool-conversions
+					# -Wbool-operation (clang 11, not in clang 9)
 					-Wbraced-scalar-init
 					# -Wbranch-protection (clang 15, not in clang 13)
 					-Wbridge-cast
@@ -436,7 +439,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wdeprecated
 					# -Wdeprecated-altivec-src-compat (clang 13, not in clang 11)
 					# -Wdeprecated-anon-enum-enum-conversion -Wdeprecated-array-compare (clang 11, not in clang 9)
-					-Wdeprecated-attributes -Wdeprecated-comma-subscript
+					-Wdeprecated-attributes
+					# -Wdeprecated-comma-subscript (clang 11, not in clang 9)
 					# -Wdeprecated-copy -Wdeprecated-copy-dtor (clang 11, not in clang 9)
 					# -Wdeprecated-copy-with-dtor (clang 13, not in clang 11)
 					# -Wdeprecated-copy-with-user-provided-copy (clang 13, not in clang 11)
@@ -444,7 +448,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					# -Wdeprecated-coroutine (clang 15, not in clang 13)
 					-Wdeprecated-declarations -Wdeprecated-dynamic-exception-spec
 					# -Wdeprecated-enum-compare -Wdeprecated-enum-compare-conditional -Wdeprecated-enum-enum-conversion (clang 11, not in clang 9)
-					-Wdeprecated-enum-float-conversion
+					# -Wdeprecated-enum-float-conversion (clang 11, not in clang 9)
 					# -Wdeprecated-experimental-coroutine (clang 15, not in clang 13)
 					-Wdeprecated-implementations -Wdeprecated-increment-bool
 					# -Wdeprecated-non-prototype (clang 15, not in clang 13)
@@ -452,7 +456,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 					# -Wdeprecated-pragma (clang 15, not in clang 13)
 					-Wdeprecated-register -Wdeprecated-this-capture
 					# -Wdeprecated-type (clang 15, not in clang 13)
-					-Wdeprecated-volatile -Wdeprecated-writable-strings
+					# -Wdeprecated-volatile (clang 11, not in clang 9)
+					-Wdeprecated-writable-strings
 					-Wdirect-ivar-access
 					# -Wdisabled-macro-expansion (Boost.Test)
 					-Wdisabled-optimization
@@ -464,18 +469,22 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wdocumentation -Wdocumentation-deprecated-sync -Wdocumentation-html -Wdocumentation-pedantic -Wdocumentation-unknown-command
 					-Wdollar-in-identifier-extension
 					-Wdouble-promotion
-					-Wdtor-name -Wdtor-typedef
+					# -Wdtor-name -Wdtor-typedef (clang 11, not in clang 9)
 					-Wduplicate-decl-specifier -Wduplicate-enum -Wduplicate-method-arg -Wduplicate-method-match -Wduplicate-protocol
 					-Wdynamic-class-memaccess -Wdynamic-exception-spec
 					# -Weffc++
-					-Welaborated-enum-base -Welaborated-enum-class
+					# -Welaborated-enum-base -Welaborated-enum-class (clang 11, not in clang 9)
 					-Wembedded-directive
 					-Wempty-body -Wempty-decomposition -Wempty-init-stmt -Wempty-translation-unit
 					-Wencode-type
 					-Wendif-labels
-					-Wenum-compare -Wenum-compare-conditional -Wenum-compare-switch -Wenum-conversion -Wenum-enum-conversion -Wenum-float-conversion -Wenum-too-large
+					-Wenum-compare
+					# -Wenum-compare-conditional (clang 11, not in clang 9)
+					-Wenum-compare-switch -Wenum-conversion
+					# -Wenum-enum-conversion -Wenum-float-conversion (clang 11, not in clang 9)
+					-Wenum-too-large
 					-Wexceptions
-					-Wexcess-initializers
+					# -Wexcess-initializers (clang 11, not in clang 9)
 					-Wexit-time-destructors
 					-Wexpansion-to-defined
 					-Wexplicit-initialize-call -Wexplicit-ownership-type
@@ -483,10 +492,10 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wextern-c-compat -Wextern-initializer
 					#-Wextra
 					-Wextra-qualification -Wextra-semi -Wextra-semi-stmt -Wextra-tokens
-					-Wfinal-dtor-non-final-class
+					# -Wfinal-dtor-non-final-class (clang 11, not in clang 9)
 					# -Wfinal-macro (clang 15, not in clang 13)
 					-Wfixed-enum-extension
-					-Wfixed-point-overflow
+					# -Wfixed-point-overflow (clang 11, not in clang 9)
 					-Wflag-enum
 					-Wflexible-array-extensions
 					-Wfloat-conversion # -Wfloat-equal
@@ -494,7 +503,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wfor-loop-analysis
 					-Wformat -Wformat-extra-args
 					# -Wformat-insufficient-args (clang 13, not in clang 11)
-					-Wformat-invalid-specifier -Wformat-non-iso -Wformat-nonliteral -Wformat-pedantic -Wformat-security -Wformat-type-confusion -Wformat-y2k -Wformat-zero-length
+					-Wformat-invalid-specifier -Wformat-non-iso -Wformat-nonliteral -Wformat-pedantic -Wformat-security
+					# -Wformat-type-confusion (clang 11, not in clang 9)
+					-Wformat-y2k -Wformat-zero-length
 					-Wformat=2
 					-Wfortify-source
 					-Wfour-char-constants
