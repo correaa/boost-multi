@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo A. Correa 2018-2021
+// Copyright 2018-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi partitioned operation"
 #define BOOST_TEST_DYN_LINK
@@ -14,10 +14,11 @@ BOOST_AUTO_TEST_CASE(array_partitioned_1d) {
 	auto&& A2_ref = A1.partitioned(2);
 
 	static_assert( std::decay<decltype(A2_ref)>::type::rank {} == decltype(A1)::rank {} + 1 , "!");
-	static_assert( std::decay_t<decltype(A2_ref)>::rank_v == decltype(A1)::rank_v +1 , "!");
+	static_assert( std::decay_t<decltype(A2_ref)>::rank_v == decltype(A1)::rank_v +1        , "!");
 
-	BOOST_REQUIRE( size(A2_ref)==2 );
-	BOOST_REQUIRE( size(A2_ref[0])==3 );
+	BOOST_REQUIRE( size(A2_ref   ) == 2 );
+	BOOST_REQUIRE( size(A2_ref[0]) == 3 );
+
 	BOOST_REQUIRE( &A2_ref[1][0] == &A1[3] );
 
 	BOOST_REQUIRE(( A2_ref == multi::array<double, 2>{ {0, 1, 2}, {3, 4, 5} } ));
@@ -32,7 +33,9 @@ BOOST_AUTO_TEST_CASE(array_partitioned_2d) {
 		{ 18, 19, 20, 21, 22, 23},
 	};
 	auto&& A3_ref = A2.partitioned(2);
+
 	static_assert( std::decay_t<decltype(A3_ref)>::rank_v == decltype(A2)::rank_v + 1 , "!");
+
 	BOOST_REQUIRE( num_elements(A3_ref) == num_elements(A2) );
 	BOOST_REQUIRE( size(A3_ref)==2 );
 	BOOST_REQUIRE( size(A3_ref[0])==2 );
@@ -51,12 +54,23 @@ BOOST_AUTO_TEST_CASE(array_partitioned) {
 	};
 
 	BOOST_REQUIRE(  size(A2) == 6 );
-	BOOST_REQUIRE(( sizes(A2) == decltype(sizes(A2)){6, 2} ));
+
+	BOOST_REQUIRE( std::get<0>(A2.sizes()) == 6 );
+	BOOST_REQUIRE( std::get<1>(A2.sizes()) == 2 );
+
+	BOOST_REQUIRE(( A2.sizes() == decltype(A2.sizes()){6, 2} ));
+
+	BOOST_REQUIRE( std::get<0>(sizes(A2)) == 6 );
+	BOOST_REQUIRE( std::get<1>(sizes(A2)) == 2 );
 
 	BOOST_REQUIRE( size(A2.partitioned(3)) == 3 );
 	static_assert( decltype(A2.partitioned(3))::rank_v == 3 , "!");
 
 	BOOST_REQUIRE(( sizes(A2.partitioned(3)) == decltype(sizes(A2.partitioned(3))){3, 2, 2} ));
+
+	BOOST_REQUIRE( std::get<0>(sizes(A2.partitioned(3))) == 3 );
+	BOOST_REQUIRE( std::get<1>(sizes(A2.partitioned(3))) == 2 );
+	BOOST_REQUIRE( std::get<2>(sizes(A2.partitioned(3))) == 2 );
 
 	BOOST_REQUIRE( size(A2.partitioned(1)) == 1 );
 	static_assert( decltype(A2.partitioned(1))::rank_v == 3 , "!");

@@ -541,8 +541,8 @@ struct layout_t
 	template<class... Idx>
 	constexpr auto reindex(index i, Idx... is) -> layout_t& {reindex(i).rotate().reindex(is...).unrotate(); return *this;}
 
-	       constexpr auto num_elements()        const&    -> size_type {return size()*sub_.num_elements();}
-	friend constexpr auto num_elements(layout_t const& s) -> size_type {return s.num_elements();}
+	       constexpr auto num_elements()        const     noexcept -> size_type {return size()*sub_.num_elements();}
+	friend constexpr auto num_elements(layout_t const& s) noexcept -> size_type {return s.num_elements();}
 
 	       constexpr auto is_empty()        const     noexcept {return nelems_ == 0;}
 	friend constexpr auto is_empty(layout_t const& s) noexcept {return s.is_empty();}
@@ -550,7 +550,7 @@ struct layout_t
 	constexpr auto    empty()        const noexcept {return is_empty();}
 
 	friend constexpr auto size(layout_t const& l) noexcept -> size_type {return l.size();}
-	       constexpr auto size()        const&    noexcept -> size_type {
+	       constexpr auto size()        const     noexcept -> size_type {
 	//  if(nelems_ == 0) {return 0;}
 	//  MULTI_ACCESS_ASSERT(stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		if(nelems_ != 0) {MULTI_ACCESS_ASSERT(stride_ != 0);}
@@ -559,12 +559,12 @@ struct layout_t
 
 //	constexpr auto size(dimensionality_type d) const -> size_type {return (d!=0)?sub_.size(d-1):size();}
 
-	constexpr auto stride()      & -> stride_type      & {return stride_;}
-	constexpr auto stride() const& -> stride_type const& {return stride_;}
+	constexpr auto stride()       -> stride_type      & {return stride_;}
+	constexpr auto stride() const -> stride_type const& {return stride_;}
 
 	friend constexpr auto stride(layout_t const& s) -> index {return s.stride();}
 
-	       constexpr auto strides()        const&    -> strides_type {return strides_type{stride(), sub_.strides()};}
+	       constexpr auto strides()        const     -> strides_type {return strides_type{stride(), sub_.strides()};}
 	friend constexpr auto strides(layout_t const& s) -> strides_type {return s.strides();}
 
 	constexpr auto offset(dimensionality_type d) const -> index {return (d!=0)?sub_.offset(d-1):offset_;}
@@ -581,7 +581,7 @@ struct layout_t
 	       constexpr auto shape()        const&    -> decltype(auto) {return   sizes();}
 	friend constexpr auto shape(layout_t const& s) -> decltype(auto) {return s.shape();}
 
-	constexpr auto sizes() const {return tuple{size(), sub_.sizes()};}
+	constexpr auto sizes() const noexcept {return tuple{size(), sub_.sizes()};}
 
 	friend        constexpr auto extension(layout_t const& s) {return s.extension();}
 	[[nodiscard]] constexpr auto extension()        const     -> extension_type {

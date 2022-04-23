@@ -85,12 +85,8 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using typename layout_t::index_range;
 	using typename layout_t::index_extension;
 
-	using typename layout_t::extensions_type;
-
 	using typename layout_t::strides_type;
 	using          layout_t::strides     ;
-
-	using layout_t::extensions;
 
 	using typename layout_t::difference_type;
 
@@ -102,19 +98,28 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using typename layout_t::extension_type;
 	using          layout_t::extension;
 
+	using typename layout_t::extensions_type;
+	using          layout_t::extensions;
+
+	constexpr auto extensions() const -> extensions_type {return static_cast<layout_t const&>(*this).extensions();}
+
 	using layout_t::is_empty;
 	using layout_t::   empty;
 
 	using layout_t::sub;
-	using layout_t::sizes;
+
+	using typename layout_t::sizes_type;
+	using          layout_t::sizes;
 
 	using layout_t::is_compact;
 
-	friend constexpr auto size        (array_types const& s) noexcept -> size_type       {return s.size     ();}
-	friend constexpr auto extension   (array_types const& s) noexcept -> extension_type  {return s.extension();}
-	friend constexpr auto is_empty    (array_types const& s) noexcept -> bool            {return s.is_empty ();}
+	friend constexpr auto size        (array_types const& s) noexcept -> size_type       {return s.size        ();}
+	friend constexpr auto extension   (array_types const& s) noexcept -> extension_type  {return s.extension   ();}
+	friend constexpr auto is_empty    (array_types const& s) noexcept -> bool            {return s.is_empty    ();}
 	friend constexpr auto num_elements(array_types const& s) noexcept -> size_type       {return s.num_elements();}
-	friend constexpr auto extensions  (array_types const& s) noexcept -> extensions_type {return s.extensions();}
+
+	friend constexpr auto extensions  (array_types const& s) noexcept -> extensions_type {return s.extensions  ();}
+	friend constexpr auto sizes       (array_types const& s) noexcept -> sizes_type      {return s.sizes       ();}
 
 	// TODO(correaa) [[deprecated("use member syntax for non-salient properties")]]
 	friend
@@ -124,7 +129,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	friend
 	constexpr auto strides    (array_types const& s) noexcept -> strides_type         {return s.strides     ();}
 
-	auto layout() -> layout_t& {return static_cast<layout_t&>(*this);}
+	constexpr auto layout() -> layout_t& {return static_cast<layout_t&>(*this);}
 
 	using value_type = typename std::conditional<
 		(D > 1),
@@ -743,6 +748,9 @@ struct basic_array
 
 	basic_array(basic_array&&)  // in C++ < 17 this is necessary to return references from functions
 		noexcept = default;  // lints(readability-redundant-access-specifiers)
+
+	friend constexpr auto sizes(basic_array const& s) noexcept -> typename basic_array::sizes_type {return s.sizes();}  // needed by nvcc
+	friend constexpr auto size (basic_array const& s) noexcept -> typename basic_array::size_type  {return s.size ();}  // needed by nvcc
 
 	template<class T2> friend constexpr auto reinterpret_array_cast(basic_array&& a) {
 		return std::move(a).template reinterpret_array_cast<T2, typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>();
@@ -1748,6 +1756,9 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	}
 
  public:
+	friend constexpr auto sizes(basic_array const& s) noexcept -> typename basic_array::sizes_type {return s.sizes();}  // needed by nvcc
+	friend constexpr auto size (basic_array const& s) noexcept -> typename basic_array::size_type  {return s.size ();}  // needed by nvcc
+
 	constexpr auto operator+() const -> decay_type {return decay();}
 
 	basic_array(basic_array&&) noexcept = default;  // in C++ 14 this is necessary to return array references from functions
@@ -2216,6 +2227,9 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 
  public:  // lints(hicpp-use-equals-delete,modernize-use-equals-delete)
 	array_ref(iterator, iterator) = delete;
+
+	friend constexpr auto sizes(array_ref const& s) noexcept -> typename array_ref::sizes_type {return s.sizes();}  // needed by nvcc
+	friend constexpr auto size (array_ref const& s) noexcept -> typename array_ref::size_type  {return s.size ();}  // needed by nvcc
 
  protected:
 	[[deprecated("references are not copyable, use auto&&")]]

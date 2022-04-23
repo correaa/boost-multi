@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
 	BOOST_REQUIRE( &mar[1][1] == &a[1][1] );
 
 	auto const& a_const = a;
-//	double const(&a_const)[4][5] = a;
+//  double const(&a_const)[4][5] = a;
 	BOOST_REQUIRE( &a_const[1][1] == &a[1][1] );
 
 	static_assert( decltype(mar(2, {1, 3}))::rank_v == 1 , "!");
@@ -45,6 +45,7 @@ BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed) {
 
 	BOOST_REQUIRE( &mar[1] == &a[1] );
 	BOOST_REQUIRE( sizes(mar.reindexed(1)) == sizes(mar) );
+
 	auto diff = &(mar.reindexed(1)[1]) - &mar[0];
 	BOOST_REQUIRE( diff == 0 );
 
@@ -99,6 +100,7 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
 	BOOST_REQUIRE( size(mar[0].reindexed(1)) == size(mar[0]) );
 
 	BOOST_REQUIRE( sizes(mar.reindexed(1)) == sizes(mar) );
+
 	BOOST_REQUIRE( &mar.reindexed(1)[1][0] == &mar[0][0] );
 
 	BOOST_REQUIRE( sizes(mar[0].reindexed(1)) == sizes(mar[0]) );

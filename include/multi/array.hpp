@@ -737,6 +737,9 @@ struct array : static_array<T, D, Alloc> {
 	//  auto operator&()      & -> array      *{return this;}
 	//  auto operator&() const& -> array const*{return this;}
 
+//  friend auto extensions(array const& s) -> typenameextensions_type {return s.extensions();}
+	friend auto sizes(array const& s) -> typename array::sizes_type {return s.sizes();}
+
 	template<class Archive>
 	void serialize(Archive& ar, const unsigned int version) {  // NOLINT(fuchsia-default-arguments-declarations) version is used for threshold of big vs small data
 		using AT = multi::archive_traits<Archive>;
