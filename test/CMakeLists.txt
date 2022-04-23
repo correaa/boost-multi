@@ -775,12 +775,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wunevaluated-expression
 					-Wunguarded-availability -Wunguarded-availability-new
 					-Wunicode -Wunicode-homoglyph -Wunicode-whitespace -Wunicode-zero-width
-					-Wuninitialized -Wuninitialized-const-reference
-					# -Wunknown-argument
-					# -Wunknown-assumption
-					# -Wunknown-attributes
-					# -Wunknown-cuda-version
-					# -Wunknown-escape-sequence
+					-Wuninitialized
+					# -Wuninitialized-const-reference (clang 11, not in clang 9)
+					-Wunknown-argument -Wunknown-assumption -Wunknown-attributes -Wunknown-cuda-version -Wunknown-escape-sequence
 					# -Wunknown-pragmas # (other compilers need their own pragmas)
 					-Wno-unknown-pragmas # (other compilers need their own pragmas)
 					# -Wunknown-sanitizers
@@ -794,7 +791,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wunreachable-code-loop-increment -Wunreachable-code-return
 					-Wunsequenced
 					# -Wunsupported-abi (clang 15, not in clang 13)
-					-Wunsupported-abs -Wunsupported-availability-guard -Wunsupported-cb -Wunsupported-dll-base-class-template -Wunsupported-floating-point-opt -Wunsupported-friend -Wunsupported-gpopt -Wunsupported-nan -Wunsupported-target-opt -Wunsupported-visibility
+					-Wunsupported-abs -Wunsupported-availability-guard -Wunsupported-cb -Wunsupported-dll-base-class-template
+					# -Wunsupported-floating-point-opt (clang 11, not in clang 9)
+					-Wunsupported-friend -Wunsupported-gpopt -Wunsupported-nan -Wunsupported-target-opt -Wunsupported-visibility
 					-Wunusable-partial-specialization
 					-Wunused -Wunused-argument
 					# -Wunused-but-set-parameter -Wunused-but-set-variable (clang 13, not in clang 11)
@@ -808,13 +807,14 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wvexing-parse
 					-Wvisibility
 					-Wvla -Wvla-extension
-					-Wvoid-pointer-to-enum-cast -Wvoid-pointer-to-int-cast -Wvoid-ptr-dereference
+					# -Wvoid-pointer-to-enum-cast -Wvoid-pointer-to-int-cast (clang 11, not in clang 9)
+					-Wvoid-ptr-dereference
 					-Wvolatile-register-var
-					-Wwasm-exception-spec
+					# -Wwasm-exception-spec (clang 11, not in clang 9)
 					-Wweak-template-vtables -Wweak-vtables
 					-Wwritable-strings
 					-Wwrite-strings
-					-Wxor-used-as-pow
+					# -Wxor-used-as-pow (clang 11, not in clang 9)
 					-Wzero-as-null-pointer-constant -Wzero-length-array
 		        >
 				$<$<CXX_COMPILER_ID:Intel>:  # also IntelLLVM, XL (ibm), XLClang (ibm)
