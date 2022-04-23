@@ -18,7 +18,7 @@ struct particle{
 	v3d position alignas(2*sizeof(double));  //  __attribute__((aligned(2*sizeof(double))))
 };
 
-class particles_soa{
+class particles_soa {
 	multi::array<double, 2> masses_;
 	multi::array<v3d, 2> positions_;
 
@@ -28,7 +28,7 @@ class particles_soa{
 	: masses_   {AoS.member_cast<double>(&particle::mass    )}
 	, positions_{AoS.member_cast<v3d   >(&particle::position)} {}
 
-	struct reference {
+	struct reference {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 		double& mass;   // NOLINT(misc-non-private-member-variables-in-classes): exposed by design
 		v3d& position;  // NOLINT(misc-non-private-member-variables-in-classes): exposed by design
 		operator particle() const {return {mass, position};} // NOLINT(google-explicit-constructor, hicpp-explicit-conversions): allow equal assignment
@@ -39,10 +39,10 @@ class particles_soa{
 	 private: // NOLINT(whitespace/indent) : bug in cpplint 1.5.5
 		friend class particles_soa;
 		reference(reference const&) = default;
-		reference(reference&&) = default;
+	//  reference(reference&&) = default;
 
 	 public: // NOLINT(whitespace/indent) : bug in cpplint 1.5.5
-		~reference() noexcept = default;  // lints cppcoreguidelines-special-member-functions,hicpp-special-member-functions
+	//  ~reference() noexcept = default;  // lints cppcoreguidelines-special-member-functions,hicpp-special-member-functions
 //	#endif
 
 		// NOLINTNEXTLINE(cert-oop54-cpp, fuchsia-trailing-return): simulate reference
@@ -88,6 +88,7 @@ class particles_soa{
 	SoA(1, 1) = SoA(0, 0);
 	BOOST_REQUIRE(SoA(1, 1).mass == SoA(0, 0).mass );
 	BOOST_REQUIRE(SoA(1, 1) == SoA(0, 0) );
+	BOOST_REQUIRE(not (SoA(1, 1) != SoA(0, 0)) );
 }
 
 struct alignas(32) employee{

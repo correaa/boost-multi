@@ -659,13 +659,13 @@ struct elements_range_t {
 
 	template<class OtherElementRange, class = decltype(adl_copy(std::declval<OtherElementRange&&>().begin(), std::declval<OtherElementRange&&>().end(), std::declval<iterator>()))>
 	auto operator=(OtherElementRange&& o)  & -> elements_range_t& {assert(size() == o.size());
-		if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());};
+		if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}
 		return *this;
 	}
 
 	template<class OtherElementRange, class = decltype(adl_copy(std::declval<OtherElementRange&&>().begin(), std::declval<OtherElementRange&&>().end(), std::declval<iterator>()))>
 	auto operator=(OtherElementRange&& o) && -> elements_range_t& {assert(size() == o.size());
-		if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());};
+		if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}
 		return *this;
 	}
 

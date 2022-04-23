@@ -42,8 +42,9 @@ pkg_search_module(
 	fftw3
 	IMPORTED_TARGET
 )
-include_directories(PkgConfig::FFTW)
-link_libraries(PkgConfig::FFTW)
+
+# include_directories(PkgConfig::FFTW)
+# link_libraries(PkgConfig::FFTW)
 # cmake_print_properties(TARGETS PkgConfig::FFTW PROPERTIES INTERFACE_LINK_LIBRARIES INTERFACE_INCLUDE_DIRECTORIES)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -169,4 +170,5 @@ foreach(TEST_FILE ${TEST_SRCS})
 		)
 	endif()
 	add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
+    target_link_libraries(${TEST_EXE} PRIVATE PkgConfig::FFTW)
 endforeach()
