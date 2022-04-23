@@ -94,7 +94,7 @@ class basic_conjugate_t {
 	template<class T> static auto _(prio<3>/**/, T const& t) DECLRETURN(   t.conj( ))
  public:
 	template<class T> static auto _(T const& t) DECLRETURN(_(prio<3>{}, t))
-} basic_conjugate;
+};
 
 template<class T = void>
 struct conjugate : private basic_conjugate_t {

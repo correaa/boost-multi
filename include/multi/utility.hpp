@@ -218,8 +218,8 @@ constexpr auto dimensionality(Container const& /*container*/)
 	return Container::rank_v;}
 
 template<class T>
-       auto has_dimensionaliy_member_aux(T const& t)->decltype((static_cast<size_type>(T::rank_v), std::true_type{}));
-inline auto has_dimensionaliy_member_aux(...       )->decltype(                                    std::false_type{});
+       auto has_dimensionaliy_member_aux(T const& t)->decltype(static_cast<void>(static_cast<size_type>(T::rank_v)), std::true_type {});
+inline auto has_dimensionaliy_member_aux(...       )->decltype(                                                      std::false_type{});
 template<class T> struct has_dimensionality_member : decltype(has_dimensionaliy_member_aux(std::declval<T>())){};
 
 template<class T, typename = std::enable_if_t<not has_dimensionality_member<T>{}>>

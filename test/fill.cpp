@@ -40,8 +40,6 @@ class fnv1a_t {
 	explicit operator result_type() const& noexcept {return h;}
 };
 
-std::random_device r;
-
 BOOST_AUTO_TEST_CASE(fill_1d) {
 	namespace multi = boost::multi;
 	{
@@ -109,6 +107,8 @@ BOOST_AUTO_TEST_CASE(fill_member) {
 }
 
 BOOST_AUTO_TEST_CASE(fill) {
+	std::random_device r;
+
 	namespace multi = boost::multi;
 
 	multi::array<double, 2> d2D = {
