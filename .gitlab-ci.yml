@@ -389,9 +389,9 @@ g++-cppcheck:
     - ln --symbolic --force . ../multi
     - $CXX --version
     - cppcheck --version
-    - find . -name '*.hpp' -exec cppcheck --enable=all --inline-suppr --suppress=unmatchedSuppression --suppress=syntaxError --suppress=missingInclude --suppress=missingIncludeSystem --suppress=preprocessorErrorDirective --suppress=syntaxError --suppress=unusedFunction --suppress=arithOperationsOnVoidPointer --suppress=sizeofDereferencedVoidPointer --suppress=sizeofDereferencedVoidPointer --suppress=unmatchedSuppression:{} -D__align__ -DCUDARTAPI --language=c++ --std=c++17 --error-exitcode=666 -UEXCLUDE_CPPCHECK --verbose --exception-handling {} \;
+    - find . -name '*.hpp' -exec cppcheck --enable=all --inline-suppr --suppress=unmatchedSuppression --suppress=syntaxError --suppress=missingInclude --suppress=missingIncludeSystem --suppress=preprocessorErrorDirective --suppress=syntaxError --suppress=unusedFunction --suppress=arithOperationsOnVoidPointer --suppress=sizeofDereferencedVoidPointer --suppress=sizeofDereferencedVoidPointer --suppress=unmatchedSuppression:{} -D__align__ -DCUDARTAPI --language=c++ --std=c++17 --error-exitcode=666 --verbose --exception-handling {} \;
     - mkdir build && cd build
-    - cmake -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--inline-suppr;--suppress=missingIncludeSystem;--suppressions-list=${PWD}/../.cppcheck-suppressions;--language=c++;--std=c++17;--error-exitcode=666;-UEXCLUDE_CPPCHECK;--verbose;--exception-handling" ..
+    - cmake -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--inline-suppr;--suppress=missingIncludeSystem;--suppressions-list=${PWD}/../.cppcheck-suppressions;--language=c++;--std=c++17;--error-exitcode=666;--verbose;--exception-handling" ..
     - cmake --build . --verbose
     - ctest --output-on-failure
 
