@@ -39,8 +39,6 @@ constexpr auto tuple_tail(Tuple&& t)
 
 template<dimensionality_type D, typename SSize=multi::size_type> struct layout_t;
 
-#ifdef EXCLUDE_CPPCHECK  // TODO(correaa) there is code in this that makes cppcheck crash, narrow it down with ifdef/endif
-
 template<dimensionality_type D>
 struct extensions_t {
 //  using base_ = std::decay_t<decltype(tuple_cat(make_tuple(std::declval<index_extension>()), std::declval<typename extensions_t<D-1>::base_>()))>;
@@ -253,7 +251,6 @@ template<> struct extensions_t<1> {
 
 	using nelems_type = index;
 
-	// seems to be needed by icpc 20.x
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax (compatible with std::vector(int) constructor
 	constexpr extensions_t(multi::size_t size) : impl_{multi::index_extension{0, size}} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
@@ -262,7 +259,8 @@ template<> struct extensions_t<1> {
 	constexpr extensions_t(tuple<T1> e) : impl_{static_cast<multi::index_extension>(head(e))} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
-	constexpr extensions_t(multi::index_extension e1) : impl_{e1} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : allow terse syntax
+	constexpr extensions_t(multi::index_extension const& e1) : impl_{e1} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : allow terse syntax
+
 	constexpr explicit extensions_t(base_ t) : impl_{t} {}
 
 	extensions_t() = default;
@@ -278,6 +276,7 @@ template<> struct extensions_t<1> {
 	}
 
 	using indices_type = multi::detail::tuple<multi::index>;
+
 
 	[[nodiscard]] constexpr auto from_linear(nelems_type const& n) const -> indices_type {  // NOLINT(readability-convert-member-functions-to-static) TODO(correaa)
 	//	assert(n <= num_elements());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in constexpr function
@@ -323,9 +322,8 @@ template<> struct extensions_t<1> {
 	//	ar & cereal::                   make_nvp("extension", extension);
 	//	ar &                                                  extension ;
 	}
-};
 
-#endif  // EXCLUDE_CPPCHECK
+};
 
 template<dimensionality_type D> using iextensions = extensions_t<D>;
 
