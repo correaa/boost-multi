@@ -4,8 +4,6 @@
 #ifndef MULTI_DETAIL_LAYOUT_HPP
 #define MULTI_DETAIL_LAYOUT_HPP
 
-#define EXCLUDE_CPPCHECK
-
 #include "index_range.hpp"
 
 #include "tuple_zip.hpp"
