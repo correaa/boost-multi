@@ -130,8 +130,10 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	friend
 	constexpr auto strides    (array_types const& s) noexcept -> strides_type         {return s.strides     ();}
 
-	constexpr auto layout() -> layout_t& {return static_cast<layout_t&>(*this);}
+ protected:
+	constexpr auto layout_mutable() -> layout_t& {return static_cast<layout_t&>(*this);}
 
+ public:
 	using value_type = typename std::conditional<
 		(D > 1),
 		array<element, D-1, typename multi::pointer_traits<element_ptr>::default_allocator_type>,
@@ -209,11 +211,13 @@ struct basic_array_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin
 > {  //, boost::multi::totally_ordered2<basic_array_ptr<Ref, Layout>, void>
 	~basic_array_ptr() = default;  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
-	constexpr auto operator=(basic_array_ptr&& other)  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-	noexcept  // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
+	constexpr auto operator=(basic_array_ptr&& other) noexcept  // lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)  // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
 	-> basic_array_ptr& {
-		operator=(other);
-		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
+		this->base_ = other.base_;
+	//  static_cast<Layout&>(*this)
+		this->layout_mutable() = other.layout();
+		return *this;
 	}
 
 	using pointer = Ref const*;
@@ -235,11 +239,11 @@ struct basic_array_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin
 	basic_array_ptr(basic_array_ptr      &&) noexcept = default;
 	basic_array_ptr(basic_array_ptr const& )          = default;
 
-	constexpr auto operator=(basic_array_ptr const& other) -> basic_array_ptr& {
+	constexpr auto operator=(basic_array_ptr const& other) noexcept -> basic_array_ptr& {
 		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
 		this->base_ = other.base_;
 	//  static_cast<Layout&>(*this)
-		layout() = other.layout();
+		this->layout_mutable() = other.layout();
 		return *this;
 	}
 	constexpr explicit operator bool() const {return this->base_;}
