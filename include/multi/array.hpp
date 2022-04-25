@@ -120,7 +120,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	static_array(static_array&& other, allocator_type const& a) noexcept          // 6b  TODO(correaa) move from array only
 	: array_alloc{a}  // TODO(correaa) : handle allocation propagation here
 	, ref{other.base_, other.extensions()} {
-		other.layout() = {};
+		other.layout_mutable() = {};
 	//	other.ref::layout_t::operator=({});
 		other.base_ = nullptr;
 	}
@@ -273,7 +273,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	void clear() noexcept {
 		this->destroy();
 		deallocate();
-		this->layout() = {};
+		this->layout_mutable() = {};
 	}
 	template<class... Ts>
 	constexpr auto reindex(Ts... a)& -> static_array& {
@@ -767,7 +767,7 @@ struct array : static_array<T, D, Alloc> {
 	auto reshape(typename array::extensions_type x) & -> array& {
 		typename array::layout_t new_layout{x};
 		assert( new_layout.num_elements() == this->num_elements() );
-		this->layout() = new_layout;
+		this->layout_mutable() = new_layout;
 		return *this;
 	}
 
@@ -812,8 +812,8 @@ struct array : static_array<T, D, Alloc> {
 		swap_allocator_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_swap{}, other.alloc());
 		swap(this->base_, other.base_);
 		swap(
-			this->layout(),
-			other.layout()
+			this->layout_mutable(),
+			other.layout_mutable()
 		);
 	}
 
@@ -832,7 +832,7 @@ struct array : static_array<T, D, Alloc> {
 		this->base_ = other.base_;
 		move_allocator_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment{}, std::move(other.alloc()));
 		// this->alloc_ = std::move(other.alloc_);
-		this->layout() = std::exchange(other.layout(), {});
+		this->layout_mutable() = std::exchange(other.layout_mutable(), {});
 		return *this;
 	}
 
@@ -851,7 +851,7 @@ struct array : static_array<T, D, Alloc> {
 		} else {
 			clear();
 			copy_allocator_if(typename std::allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment{}, other.alloc());
-			this->layout() = other.layout();
+			this->layout_mutable() = other.layout();
 			array::allocate();
 			array::uninitialized_copy_elements(other.data_elements());
 			// operator=(array{other}); // calls operator=(array&&)
@@ -961,7 +961,7 @@ struct array : static_array<T, D, Alloc> {
 		this->destroy();
 		this->deallocate();
 		this->base_ = tmp.base();
-		this->layout() = tmp.layout();
+		this->layout_mutable() = tmp.layout();
 #endif
 		return *this;
 	}
@@ -982,13 +982,13 @@ struct array : static_array<T, D, Alloc> {
 		this->destroy();
 		this->deallocate();
 		this->base_ = tmp.base();  // TODO(correaa) : use (and implement) `.move();`
-		this->layout() = tmp.layout();
+		this->layout_mutable() = tmp.layout();
 	//  (*this).array::layout_t::operator=(tmp.layout());
 #endif
 		return *this;
 	}
-	template<class... Ts> constexpr auto reindex(Ts... a)&& -> array&& {this->layout().reindex(a...); return std::move(*this);}
-	template<class... Ts> constexpr auto reindex(Ts... a) & -> array & {this->layout().reindex(a...); return           *this ;}
+	template<class... Ts> constexpr auto reindex(Ts... a)&& -> array&& {this->layout_mutable().reindex(a...); return std::move(*this);}
+	template<class... Ts> constexpr auto reindex(Ts... a) & -> array & {this->layout_mutable().reindex(a...); return           *this ;}
 
 	~array() = default;
 };
