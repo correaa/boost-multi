@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(multi_constructors_1d) {
 		BOOST_REQUIRE( size(A)==10 );
 		BOOST_REQUIRE( A[5]== double{} );
 	}
-	#if defined(__cpp_deduction_guides) and not defined(__NVCC__)
+	#if defined(__cpp_deduction_guides) and not defined(__NVCC__) and not defined(__circle_build__)
 	{
 		multi::array A(multi::extensions_t<1>{{0, 10}}, double{});
 		BOOST_REQUIRE( size(A)==10 );
