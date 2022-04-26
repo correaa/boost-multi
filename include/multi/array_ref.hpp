@@ -437,12 +437,12 @@ struct cursor_t {
 	template<class, dimensionality_type, class, class> friend struct basic_array;
 	template<class, dimensionality_type, class> friend struct cursor_t;
 
-	constexpr cursor_t(element_ptr base, strides_type strides) : strides_{strides}, base_{base} {}
+	constexpr cursor_t(element_ptr base, strides_type const& strides) : strides_{strides}, base_{base} {}
 
  public:
 	constexpr auto operator[](difference_type n) const -> decltype(auto) {
 		if constexpr(D != 1) {
-			return cursor_t<ElementPtr, D-1, decltype(tail(strides_))>{base_ + std::get<0>(strides_)*n, tail(strides_)};
+			return cursor_t<ElementPtr, D-1, std::decay_t<decltype(tail(strides_))>>{base_ + std::get<0>(strides_)*n, strides_.tail()};
 		} else {
 			return base_[std::get<0>(strides_)*n];
 		}
@@ -1323,7 +1323,7 @@ struct basic_array
 	constexpr
 	auto operator=(basic_array               const& o) & -> basic_array& {
 		if(this == std::addressof(o)) {return *this;}  // lints(cert-oop54-cpp)
-		if(&*this == &o) {return *this;}
+	//  if(&*this == &o) {return *this;}
 		assert(this->extension() == o.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	//  MULTI_MARK_SCOPE("multi::operator= [D="+std::to_string(D)+"] from "+typeid(T).name()+" to "+typeid(T).name() );
 		elements() = o.elements();
@@ -2335,15 +2335,15 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 	friend constexpr auto celements(array_ref const& s) {return s.celements();}
 
 	template<typename TT, class... As>
-	constexpr auto operator==(array_ref<TT, D, As...> const& o) const -> bool {
-		if(this->extensions() != o.extensions()) {return false;}  // TODO(correaa) : or assert?
-		return adl_equal(o.data_elements(), o.data_elements() + this->num_elements(), this->data_elements());
+	friend constexpr auto operator==(array_ref const& s, array_ref<TT, D, As...> const& o) -> bool {
+		if(s.extensions() != o.extensions()) {return false;}  // TODO(correaa) : or assert?
+		return adl_equal(o.data_elements(), o.data_elements() + s.num_elements(), s.data_elements());
 	//	return equal_elements(std::move(o).data_elements());
 	}
 	template<typename TT, class... As>
-	constexpr auto operator!=(array_ref<TT, D, As...> const& o) const -> bool {
-		if(this->extensions() != o.extensions()) {return true;}  // TODO(correaa) : or assert?
-		return not adl_equal(o.data_elements(), o.data_elements() + this->num_elements(), this->data_elements());
+	friend constexpr auto operator!=(array_ref const& s, array_ref<TT, D, As...> const& o) -> bool {
+		if(s.extensions() != o.extensions()) {return true;}  // TODO(correaa) : or assert?
+		return not adl_equal(o.data_elements(), o.data_elements() + s.num_elements(), s.data_elements());
 	//	return not equal_elements(std::move(o).data_elements());
 	}
 
