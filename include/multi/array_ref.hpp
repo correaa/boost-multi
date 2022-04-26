@@ -1643,13 +1643,13 @@ struct basic_array<T, 0, ElementPtr, Layout>
 	}
 	constexpr auto operator!=(element const& e) const {return not operator==(e);}
 
-	template<class TT, class=decltype(std::declval<typename basic_array::element>()==std::declval<TT>())>
-	constexpr auto operator==(TT const& e) const
-	->decltype(adl_equal(&e, std::next(&e, this->num_elements()), this->base() )) {assert(this->num_elements()==1);
-		return adl_equal(&e, std::next(&e, this->num_elements()), this->base() ); }
+//  template<class TT, class=decltype(std::declval<typename basic_array::element>()==std::declval<TT>())>
+//  constexpr auto operator==(TT const& e) const
+//  ->decltype(adl_equal(&e, std::next(&e, this->num_elements()), this->base() )) {assert(this->num_elements()==1);
+//  	return adl_equal(&e, std::next(&e, this->num_elements()), this->base() ); }
 
-	template<class TT>
-	constexpr auto operator!=(TT const& e) const {return not operator==(e);}
+//  template<class TT>
+//  constexpr auto operator!=(TT const& e) const {return not operator==(e);}
 
 	template<class Range0>
 	constexpr
