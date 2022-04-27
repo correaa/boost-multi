@@ -2088,11 +2088,8 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	friend constexpr auto operator==(basic_array const& s, basic_array<TT, 1, As...> const& o) -> bool {
 		return s.extension() == o.extension() and s.elements() == o.elements();
 	}
-
-	friend constexpr auto operator==(basic_array const& s, basic_array const& o) -> bool {
-		return s.extension() == o.extension() and s.elements() == o.elements();
-	}
-	friend constexpr auto operator!=(basic_array const& s, basic_array const& o) -> bool {
+	template<class TT, class... As>
+	friend constexpr auto operator!=(basic_array const& s, basic_array<TT, 1, As...> const& o) -> bool {
 		return s.extension() != o.extension() or  s.elements() != o.elements();
 	}
 
@@ -2296,7 +2293,7 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 		return *this;
 	}
 	constexpr auto operator=(array_ref const& other) && -> array_ref& {
-		if(this == &other) {return *this;}  // lints(cert-oop54-cpp)
+		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
 		operator=(other);
 		return *this;
 	}
