@@ -235,6 +235,9 @@ struct basic_array_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin
 
 	constexpr basic_array_ptr(typename Ref::element_ptr p, layout_t<typename Ref::rank{}-1> l) : Ref{l, p} {}
 	constexpr basic_array_ptr(typename Ref::element_ptr p, index_extensions<typename Ref::rank{}> e) : Ref{p, e} {}
+	template<class Array>
+	// cppcheck-suppress noExplicitConstructor ; no information loss, allows comparisons
+	constexpr basic_array_ptr(Array* Ap) : basic_array_ptr{Ap->data_elements(), Ap->layout()} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 	basic_array_ptr(basic_array_ptr      &&) noexcept = default;
 	basic_array_ptr(basic_array_ptr const& )          = default;
@@ -264,7 +267,7 @@ struct basic_array_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin
 	template<typename T, dimensionality_type D, typename ElementPtr, class LLayout>
 	friend struct basic_array;
 
-	constexpr auto base() const {return this->base_;}
+	constexpr auto base() const -> typename Ref::element_ptr {return this->base_;}
 
 	friend constexpr auto base(basic_array_ptr const& self) {return self.base();}
 
@@ -278,11 +281,11 @@ struct basic_array_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin
 //	template<class O> constexpr auto operator==(O const& o) const -> bool {return base()==o->base() and layout() == o->layout();}
 //	template<class O> constexpr auto operator!=(O const& o) const -> bool {return not ((*this)==o);}
 
-	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> friend constexpr auto operator==(O const& o, basic_array_ptr const& s) -> bool {return s.base() == o->base() and s.layout() == o->layout();}
-	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> friend constexpr auto operator!=(O const& o, basic_array_ptr const& s) -> bool {return s.base() != o->base() or  s.layout() != o->layout();}
+//  template<class... O, std::enable_if_t<not std::is_base_of<basic_array_ptr, basic_array_ptr<O...> >{}, int> =0> friend constexpr auto operator==(basic_array_ptr<O...> const& o, basic_array_ptr const& s) -> decltype(s.base() == o->base() and s.layout() == o->layout()) {return s.base() == o->base() and s.layout() == o->layout();}
+//  template<class... O, std::enable_if_t<not std::is_base_of<basic_array_ptr, basic_array_ptr<O...> >{}, int> =0> friend constexpr auto operator!=(basic_array_ptr<O...> const& o, basic_array_ptr const& s) -> decltype(s.base() != o->base() or  s.layout() != o->layout()) {return s.base() != o->base() or  s.layout() != o->layout();}
 
-	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> friend constexpr auto operator==(basic_array_ptr const& s, O const& o) -> bool {return s.base() == o->base() and s.layout() == o->layout();}
-	template<class O, std::enable_if_t<not std::is_base_of<basic_array_ptr, O>{}, int> =0> friend constexpr auto operator!=(basic_array_ptr const& s, O const& o) -> bool {return s.base() != o->base() or  s.layout() != o->layout();}
+	template<class... O, std::enable_if_t<not std::is_base_of<basic_array_ptr, basic_array_ptr<O...> >{}, int> =0> friend constexpr auto operator==(basic_array_ptr const& s, basic_array_ptr<O...> const& o) -> bool {return s.base() == o->base() and s.layout() == o->layout();}
+	template<class... O, std::enable_if_t<not std::is_base_of<basic_array_ptr, basic_array_ptr<O...> >{}, int> =0> friend constexpr auto operator!=(basic_array_ptr const& s, basic_array_ptr<O...> const& o) -> bool {return s.base() == o->base() and s.layout() == o->layout();}
 
  protected:
 	constexpr void increment() {base_ += Ref::nelems();}
@@ -1357,12 +1360,12 @@ struct basic_array
 	template<class Array> constexpr void swap(Array&& a, basic_array const& s) {s.swap(a);}
 
 	template<class TT, class... As>
-	constexpr auto operator==(basic_array<TT, D, As...> const& o) const -> bool {
-		return (this->extension() == o.extension()) and (this->elements() == o.elements());
+	friend constexpr auto operator==(basic_array const& s, basic_array<TT, D, As...> const& o) -> bool {
+		return (s.extension() == o.extension()) and (s.elements() == o.elements());
 	}
 	template<class TT, class... As>
-	constexpr auto operator!=(basic_array<TT, D, As...> const& o) const -> bool {
-		return (this->extension() != o.extension()) or (this->elements() != o.elements());
+	friend constexpr auto operator!=(basic_array const& s, basic_array<TT, D, As...> const& o) -> bool {
+		return (s.extension() != o.extension()) or  (s.elements() != o.elements());
 	}
 
 	constexpr auto operator==(basic_array const& o) const -> bool {
@@ -1777,14 +1780,15 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	friend constexpr auto dimensionality(basic_array const&/*self*/) -> dimensionality_type {return 1;}
 
 	// NOLINTNEXTLINE(runtime/operator)
-	constexpr auto operator&() && -> basic_array_ptr<basic_array, Layout> {  // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed
+	constexpr auto operator&()     && -> basic_array_ptr<basic_array, Layout> {  // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed
 		return {this->base_, this->layout()};
 	}
-
 	// NOLINTNEXTLINE(runtime/operator)
-	constexpr auto operator&()  & -> basic_array_ptr<basic_array, Layout> {  // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed
+	constexpr auto operator&()      & -> basic_array_ptr<basic_array, Layout> {  // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed
 		return {this->base_, this->layout()};
 	}
+	// NOLINTNEXTLINE(runtime/operator)
+	constexpr auto operator&() const& -> basic_array_ptr<basic_const_array, Layout> {return {this->base_, this->layout()};}  // NOLINT(google-runtime-operator) extend semantics
 
 	constexpr void assign(std::initializer_list<typename basic_array::value_type> il) const {assert( il.size() == static_cast<std::size_t>(this->size()) );
 		assign(il.begin(), il.end());
@@ -2081,18 +2085,16 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 		return adl_copy_n(f, this->size(), std::move(*this).begin()), void(); }
 
 	template<class TT, class... As>
-	constexpr auto operator==(basic_array<TT, 1, As...> const& o) const -> bool {
-		return (this->extension() == o.extension()) and elements() == o.elements();
+	friend constexpr auto operator==(basic_array const& s, basic_array<TT, 1, As...> const& o) -> bool {
+		return s.extension() == o.extension() and s.elements() == o.elements();
 	}
-	constexpr auto operator==(basic_array const& o) const -> bool {
-		return (this->extension() == o.extension()) and elements() == o.elements();
-	}
-	constexpr auto operator!=(basic_array const& o) const -> bool {
-		return (this->extension() != o.extension()) or  elements() != o.elements();
+	template<class TT, class... As>
+	friend constexpr auto operator!=(basic_array const& s, basic_array<TT, 1, As...> const& o) -> bool {
+		return s.extension() != o.extension() or  s.elements() != o.elements();
 	}
 
-	constexpr auto operator< (basic_array const& o) const& -> bool {return lexicographical_compare(*this, o);}
-	constexpr auto operator<=(basic_array const& o) const& -> bool {return lexicographical_compare(*this, o) or operator==(o);}
+	friend constexpr auto operator< (basic_array const& s, basic_array const& o) -> bool {return lexicographical_compare(s, o);}
+	friend constexpr auto operator<=(basic_array const& s, basic_array const& o) -> bool {return lexicographical_compare(s, o) or s == o;}
 
 	template<class Array> constexpr void swap(Array&& o) && {
 		assert(this->extension() == o.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
@@ -2274,7 +2276,7 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 	) {}
 
 	using basic_array<T, D, ElementPtr>::operator=;
-	using basic_array<T, D, ElementPtr>::operator==;
+//	using basic_array<T, D, ElementPtr>::operator==;
 
  private:
 	template<class It> constexpr auto copy_elements(It first) {
@@ -2291,7 +2293,7 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 		return *this;
 	}
 	constexpr auto operator=(array_ref const& other) && -> array_ref& {
-		if(this == &other) {return *this;}  // lints(cert-oop54-cpp)
+		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
 		operator=(other);
 		return *this;
 	}

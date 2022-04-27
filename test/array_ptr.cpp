@@ -30,10 +30,12 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr_equality) {
 	auto const& AC2 = A[2];
 	BOOST_REQUIRE( AC2[0] == A[2][0] );
 	BOOST_REQUIRE( AC2.base() == A[2].base() );
-	BOOST_REQUIRE( &AC2 == &A[2] );
+	BOOST_REQUIRE( &AC2 == &std::as_const(A)[2] );
+	BOOST_REQUIRE( &AC2 == &              A [2] );
 
 	auto const& ac2 = AC2; //fwd_array(A[2]);
-	BOOST_REQUIRE( &ac2 == &A[2] );
+	BOOST_REQUIRE( &ac2 == &std::as_const(A)[2] );
+	BOOST_REQUIRE( &ac2 == &              A [2] );
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_ptr) {
