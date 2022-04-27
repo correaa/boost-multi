@@ -733,9 +733,9 @@ struct array : static_array<T, D, Alloc> {
 
  public:
 	// NOLINTNEXTLINE(runtime/operator)
-	auto operator&()     && -> array      * = delete;  // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
-	//  auto operator&()      & -> array      *{return this;}
-	//  auto operator&() const& -> array const*{return this;}
+	auto operator&()     && -> array      * = delete;       // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
+	auto operator&()      & -> array      * {return this;}  // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
+	auto operator&() const& -> array const* {return this;}  // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
 
 //  friend auto extensions(array const& s) -> typenameextensions_type {return s.extensions();}
 	friend auto sizes(array const& s) -> typename array::sizes_type {return s.sizes();}
