@@ -2287,7 +2287,7 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 	constexpr auto data_elements() const& -> typename array_ref::element_ptr {return array_ref::base_;}
 
 	constexpr auto operator=(array_ref const& other) & -> array_ref& {
-		if(this == &other) {return *this;}  // lints(cert-oop54-cpp)
+		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
 		assert(this->num_elements() == other.num_elements());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		array_ref::copy_elements(other.data_elements());
 		return *this;
