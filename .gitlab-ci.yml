@@ -300,7 +300,7 @@ cuda-11.3:
     stage: build
     script:
       - export DEBIAN_FRONTEND=noninteractive
-      - echo 'deb [trusted=yes] https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu2004/x86_64 /' | tee /etc/apt/sources.list.d/nvhpc.list
+      - echo 'deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu2004/x86_64 /' | tee /etc/apt/sources.list.d/nvhpc.list
       - apt-get update
       - apt-get install --no-install-recommends -y --quiet pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev cuda
       - ln --symbolic --force . ../multi
