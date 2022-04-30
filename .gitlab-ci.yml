@@ -296,7 +296,7 @@ cuda-11.2:
 
 cuda-11.3:
     allow_failure: true
-    image: nvidia/cuda:11.3.0-devel
+    image: nvidia/cuda:11.3.1-devel-ubi8
     stage: build
     script:
       - export DEBIAN_FRONTEND=noninteractive
@@ -310,7 +310,7 @@ cuda-11.3:
 
 cuda-11.4:
     allow_failure: true
-    image: nvidia/cuda:11.4.0-devel
+    image: docker pull nvidia/cuda:11.4.2-devel-ubi8
     stage: build
     script:
       - export DEBIAN_FRONTEND=noninteractive
