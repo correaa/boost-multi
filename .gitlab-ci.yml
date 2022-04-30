@@ -386,7 +386,7 @@ cuda-11.X:
        - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
        - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
        - apt-get update -y
-       - apt-get install --no-install-recommends -y cmake nvhpc-22-2 wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+       - apt-get install --no-install-recommends -y cmake nvhpc-2022 nvhpc-22-2 wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
        - cmake --version
        - apt-cache madison nvhpc
        - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/cuda/bin/nvcc --version
