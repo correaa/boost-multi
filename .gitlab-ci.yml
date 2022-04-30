@@ -378,6 +378,7 @@ cuda-11.6:
        - cmake --build . || make VERBOSE=1
        - ctest --output-on-failure
 
+# https://forums.developer.nvidia.com/t/22-2-debian-install/203239/4
 cuda-11.X:
     allow_failure: true
     stage: build
