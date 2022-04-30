@@ -1227,8 +1227,8 @@ struct basic_array
 
 	// NOLINTNEXTLINE(runtime/operator)
 	constexpr auto operator&()     && {return       ptr {this->base_, this->layout()};}  // NOLINT(google-runtime-operator) // gives compiler crash in g++-7 (Ubuntu 7.5.0-6ubuntu4) 7.5.0
-	constexpr auto operator&()      & {return       ptr {this->base_, this->layout()};}
-	constexpr auto operator&() const& {return const_ptr {this->base_, this->layout()};}
+	constexpr auto operator&()      & {return       ptr {this->base_, this->layout()};}  // NOLINT(google-runtime-operator) // gives compiler crash in g++-7 (Ubuntu 7.5.0-6ubuntu4) 7.5.0
+	constexpr auto operator&() const& {return const_ptr {this->base_, this->layout()};}  // NOLINT(google-runtime-operator) // gives compiler crash in g++-7 (Ubuntu 7.5.0-6ubuntu4) 7.5.0
 
 	constexpr auto begin(dimensionality_type d) && -> iterator {
 		Layout l = static_cast<Layout const&>(*this); l.rotate(d);
