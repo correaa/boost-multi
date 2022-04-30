@@ -300,9 +300,9 @@ cuda-11.3:
     stage: build
     script:
       - export DEBIAN_FRONTEND=noninteractive
+      - curl -s https://packages.gitlab.com/gpg.key | apt-key add -
       - apt-get update
       - apt-get install curl
-      - curl -s https://packages.gitlab.com/gpg.key | apt-key add -
       - apt-get install --no-install-recommends -y --quiet pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
       - ln --symbolic --force . ../multi
       - nvcc --version
