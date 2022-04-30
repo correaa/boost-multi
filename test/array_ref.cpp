@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
 		BOOST_REQUIRE( size(arrB) == 3 );
 		BOOST_REQUIRE( arrB[2][1] == "a" );
 	}
-	 {
+	{
 		multi::array<std::string, 2> arrB = (multi::array<std::string, 2>
 			{{"a", "b", "c", "d", "e"},
 			 {"f", "g", "h", "f", "g"},
@@ -296,6 +296,7 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray) {
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray_string) {
+	#if not defined(__circle_build__)  // bug in circle 169 https://github.com/seanbaxter/circle/issues/114
 	std::string const dc3D[4][2][3] = {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test legacy type
 		{{"A0a", "A0b", "A0c"}, {"A1a", "A1b", "A1c"}},
 		{{"B0a", "B0b", "B0c"}, {"B1a", "B1b", "B1c"}},
@@ -307,14 +308,14 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray_string) {
 	auto const& A2 = A.sliced(0, 3).rotated()[1].sliced(0, 2).unrotated();
 	BOOST_REQUIRE( multi::rank<std::decay_t<decltype(A2)>>{} == 2 and num_elements(A2) == 6 );
 
-	using boost::multi::detail::get;
-	BOOST_REQUIRE( get<0>(sizes(A2)) == 3 and get<1>(sizes(A2)) == 2 );
+	BOOST_REQUIRE( std::get<0>(sizes(A2)) == 3 and std::get<1>(sizes(A2)) == 2 );
 
 	auto const& A3 = A({0, 3}, 1, {0, 2});
 	BOOST_REQUIRE( multi::rank<std::decay_t<decltype(A3)>>{} == 2 and num_elements(A3) == 6 );
 
 	BOOST_REQUIRE( A2.layout()[2][1] == &A2[2][1] - A2.base() );
 	BOOST_REQUIRE( A2.rotated().layout()[1][2] == &A2.rotated()[1][2] - A2.rotated().base() );
+	#endif
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_rebuild_2D) {

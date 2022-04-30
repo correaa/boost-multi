@@ -252,8 +252,8 @@ clang++-11:
 #    - ctest --output-on-failure
 
 cuda-11.0:
-    image: nvidia/cuda:11.0-devel
     allow_failure: true
+    image: nvidia/cuda:11.0-devel
     stage: build
     script:
       - export DEBIAN_FRONTEND=noninteractive
@@ -281,8 +281,8 @@ cuda-11.0:
 #      - ctest --output-on-failure
 
 cuda-11.2:
-    image: nvidia/cuda:11.2.0-devel
     allow_failure: true
+    image: nvidia/cuda:11.2.0-devel
     stage: build
     script:
       - export DEBIAN_FRONTEND=noninteractive
@@ -295,6 +295,7 @@ cuda-11.2:
       - ctest --output-on-failure
 
 cuda-11.3:
+    allow_failure: true
     image: nvidia/cuda:11.3.0-devel
     stage: build
     script:
@@ -308,6 +309,7 @@ cuda-11.3:
       - ctest --output-on-failure
 
 cuda-11.4:
+    allow_failure: true
     image: nvidia/cuda:11.4.0-devel
     stage: build
     script:
@@ -347,6 +349,7 @@ cuda-11.4:
 #      - ctest --output-on-failure
 
 cuda-11.5gpuci:
+    allow_failure: true
     image: gpuci/cuda:11.5.0-devel-ubuntu20.04
     stage: build
     script:
@@ -360,24 +363,37 @@ cuda-11.5gpuci:
       - ctest --output-on-failure
 
 cuda-11.6:
+    allow_failure: false
     stage: build
-    allow_failure: true
     script:
        - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
        - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
        - apt-get update -y
        - apt-get install --no-install-recommends -y cmake nvhpc-22-3 wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
        - cmake --version
+       - apt-cache madison nvhpc
        - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/cuda/bin/nvcc --version
        - mkdir build && cd build
        - cmake .. -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc -DCUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_FLAGS="-gencode arch=compute_61,code=sm_61"
        - cmake --build . || make VERBOSE=1
        - ctest --output-on-failure
 
-#       - wget https://github.com/Kitware/CMake/releases/download/v3.23.0/cmake-3.23.0-linux-x86_64.sh --no-verbose # following https://askubuntu.com/a/865294/15943
-#       - mkdir /opt/cmake
-#       - sh cmake-3.23.0-linux-x86_64.sh --skip-license --prefix=/opt/cmake
-#       - ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
+# https://forums.developer.nvidia.com/t/22-2-debian-install/203239/4
+cuda-11.X:
+    allow_failure: true
+    stage: build
+    script:
+       - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
+       - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
+       - apt-get update -y
+       - apt-get install --no-install-recommends -y cmake nvhpc-2022 nvhpc-22-2 wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+       - cmake --version
+       - apt-cache madison nvhpc
+       - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/cuda/bin/nvcc --version
+       - mkdir build && cd build
+       - cmake .. -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc -DCUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_FLAGS="-gencode arch=compute_61,code=sm_61"
+       - cmake --build . || make VERBOSE=1
+       - ctest --output-on-failure
 
 g++-cppcheck:
   stage: build
@@ -694,6 +710,7 @@ qmcpack-clang++:
     - ctest -R afqmc     --output-on-failure
 
 qmcpack-cuda-11.2-compileonly:
+    allow_failure: true
     image: nvidia/cuda:11.2.0-devel
     stage: test
     script:
@@ -754,6 +771,7 @@ inq-g++-latest:
     - ctest --output-on-failure
 
 inq-cuda-11.4-compileonly:
+    allow_failure: true
     image: nvidia/cuda:11.4.0-devel
     stage: test
     script:
