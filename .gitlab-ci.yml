@@ -296,11 +296,12 @@ cuda-11.2:
 
 cuda-11.3:
     allow_failure: true
-    image: nvidia/cuda:11.3.0-devel
     stage: build
     script:
       - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
+      - echo 'deb [trusted=yes] https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu2004/x86_64 /' | tee /etc/apt/sources.list.d/nvhpc.list
+      - apt-get update
+      - apt-get install --no-install-recommends -y --quiet pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev cuda
       - ln --symbolic --force . ../multi
       - nvcc --version
       - mkdir build && cd build
@@ -310,7 +311,7 @@ cuda-11.3:
 
 cuda-11.4:
     allow_failure: true
-    image: nvidia/cuda:11.4.0-devel
+    image: docker pull nvidia/cuda:11.4.2-devel-ubi8
     stage: build
     script:
       - export DEBIAN_FRONTEND=noninteractive
@@ -386,7 +387,7 @@ cuda-11.X:
        - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
        - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
        - apt-get update -y
-       - apt-get install --no-install-recommends -y cmake nvhpc-2022 nvhpc-22-2 wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+       - apt-get install --no-install-recommends -y cmake nvhpc-22-1 wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
        - cmake --version
        - apt-cache madison nvhpc
        - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/cuda/bin/nvcc --version
