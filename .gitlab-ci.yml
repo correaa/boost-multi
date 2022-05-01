@@ -363,6 +363,22 @@ cuda-11.5gpuci:
       - cmake --build . --verbose
       - ctest --output-on-failure
 
+cuda-11.0-sdkhpc:
+    allow_failure: true
+    stage: build
+    script:
+       - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
+       - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
+       - apt-get update -y
+       - apt-get install --no-install-recommends -y cmake nvhpc-22-3 wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+       - cmake --version
+       - apt-cache madison nvhpc
+       - /opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.0/bin/nvcc --version
+       - mkdir build && cd build
+       - cmake .. -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.0/bin/nvcc -DCUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.0 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_FLAGS="-gencode arch=compute_61,code=sm_61"
+       - cmake --build . || make VERBOSE=1
+       - ctest --output-on-failure
+
 cuda-11.6:
     allow_failure: false
     stage: build
@@ -373,7 +389,7 @@ cuda-11.6:
        - apt-get install --no-install-recommends -y cmake nvhpc-22-3 wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
        - cmake --version
        - apt-cache madison nvhpc
-       - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/cuda/bin/nvcc --version
+       - /opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc --version
        - mkdir build && cd build
        - cmake .. -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc -DCUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_FLAGS="-gencode arch=compute_61,code=sm_61"
        - cmake --build . || make VERBOSE=1
@@ -774,7 +790,7 @@ inq-g++-latest:
 
 inq-cuda-11.6-compileonly:
     allow_failure: true
-    stage: test
+    stage: build
     script:
       - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
       - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
