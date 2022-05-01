@@ -1,10 +1,7 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-$CXXX $CXXFLAGS -Ofast $0 -o $0x -DHAVE_FFTW3_THREADS -lfftw3 -lfftw3_threads -lboost_unit_test_framework -lboost_timer&&$0x&&rm $0x;exit
-#endif
-// © Alfredo A. Correa 2020
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2020-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW transpose"
-#define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 #include<boost/timer/timer.hpp>
 

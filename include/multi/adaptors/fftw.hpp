@@ -207,8 +207,11 @@ template<class T> constexpr auto _constx(T&&t) -> std::remove_reference_t<T>{ret
 template<typename It1, class It2, std::enable_if_t<std::is_pointer<decltype(base(It2{}))>{} or std::is_convertible<decltype(base(It2{})), std::complex<double>*>{}, int> = 0
 >
 auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, fftw::flags flags)
-->decltype(reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double>*>*/(base(d_first))), fftw_plan{}){ // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : interact with legacy code
-
+#ifndef __circle_build__
+-> decltype(reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double>*>*/(base(d_first))), fftw_plan{}) {  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : interact with legacy code
+#else
+-> fftw_plan {
+#endif
 	static_assert( sizeof(*base(  first)) == sizeof(real(*base(  first))) + sizeof(imag(*base(  first))) and sizeof(*base(  first)) == sizeof(fftw_complex), 
 		"input  must have complex pod layout" );
 	static_assert( sizeof(*base(d_first)) == sizeof(real(*base(d_first))) + sizeof(imag(*base(d_first))) and sizeof(*base(d_first)) == sizeof(fftw_complex), 
