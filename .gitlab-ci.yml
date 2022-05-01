@@ -223,7 +223,7 @@ g++-cpplint:
     - mkdir build && cd build
     - cmake .. -DCMAKE_CXX_CPPLINT="cpplint;--filter=-whitespace/braces,-whitespace/tab,-whitespace/parens,-whitespace/operators,-readability/alt_tokens,-build/include_order,-whitespace/line_length,-whitespace/semicolon,-legal/copyright,-whitespace/comments,-readability/nolint"
     - cmake --build . --verbose -- --quiet --no-print-directory
-    - cpplint --filter=-whitespace/line_length,-whitespace/parens,-whitespace/tab,-readability/alt_tokens,-readability/nolint,-runtime/references,-build/include_order,-build/header_guar,-legal/copyright ../array.hpp
+    - cpplint --filter=-whitespace/line_length,-whitespace/parens,-whitespace/tab,-readability/alt_tokens,-readability/nolint,-runtime/references,-build/include_order,-build/header_guar,-legal/copyright ../include/multi/array.hpp
 
 clang++-11:
   stage: build
@@ -371,23 +371,6 @@ cuda-11.6:
        - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
        - apt-get update -y
        - apt-get install --no-install-recommends -y cmake nvhpc-22-3 wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-       - cmake --version
-       - apt-cache madison nvhpc
-       - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/cuda/bin/nvcc --version
-       - mkdir build && cd build
-       - cmake .. -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc -DCUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_FLAGS="-gencode arch=compute_61,code=sm_61"
-       - cmake --build . || make VERBOSE=1
-       - ctest --output-on-failure
-
-# https://forums.developer.nvidia.com/t/22-2-debian-install/203239/4
-cuda-11.X:
-    allow_failure: true
-    stage: build
-    script:
-       - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
-       - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
-       - apt-get update -y
-       - apt-get install --no-install-recommends -y cmake nvhpc-22-1 wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
        - cmake --version
        - apt-cache madison nvhpc
        - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/cuda/bin/nvcc --version
@@ -806,7 +789,7 @@ inq-cuda-11.6-compileonly:
       - cd ../..
       - mkdir build && cd build
       - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/cuda/bin/nvcc --version
-      - CUDACXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2022/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70
+      - CUDACXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2022/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6 -DCMAKE_CUDA_ARCHITECTURES=70
       - make silicon
 
 #inq-cuda-11.4-compileonly:
