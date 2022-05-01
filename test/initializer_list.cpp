@@ -2,7 +2,6 @@
 // Copyright 2019-2021 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi initializer_list"
-#define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
 #include "multi/array.hpp"
@@ -12,6 +11,15 @@
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d) {
+	{
+		std::vector<double> const v = {1., 2., 3.};
+		BOOST_REQUIRE( v[1] == 2. );
+	}
+	{
+		multi::static_array<double, 1> A = {1.2, 3.4, 5.6};
+		BOOST_REQUIRE( size(A) == 3 );
+		BOOST_REQUIRE( A[2] == 5.6 );
+	}
 	{
 		multi::static_array<double, 1> const A = {1.2, 3.4, 5.6};
 		BOOST_REQUIRE( size(A) == 3 );
@@ -62,7 +70,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d_ctad) {
-	#if defined(__cpp_deduction_guides) and not defined(__NVCC__)
+	#if defined(__cpp_deduction_guides) and not defined(__NVCC__) and not defined(__circle_build__)
 	{
 		multi::static_array const A = {1.2, 3.4, 5.6};
 		BOOST_REQUIRE( size(A) == 3 );
@@ -112,12 +120,12 @@ BOOST_AUTO_TEST_CASE(multi_initialize_from_carray_1d) {
 		multi::array<double, 1> const A(begin(a), end(a));
 		BOOST_REQUIRE(( A == decltype(A){1.1, 2.2, 3.3} ));
 	}
-	 {
-//  #if defined(__cpp_deduction_guides) and not defined(__NVCC__)
-//  	std::array a = {{1.1, 2.2, 3.3}};
-//  	multi::array<double, 1> const A(begin(a), end(a));
-//  	BOOST_REQUIRE(( A == decltype(A){1.1, 2.2, 3.3} ));
-//  #endif
+	{
+	#if defined(__cpp_deduction_guides) and not defined(__NVCC__) and not defined(__circle_build__)
+		std::array a = {{1.1, 2.2, 3.3}};
+		multi::array<double, 1> const A(begin(a), end(a));
+		BOOST_REQUIRE(( A == decltype(A){1.1, 2.2, 3.3} ));
+	#endif
 	}
 }
 
@@ -219,7 +227,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d) {
 		multi::array<double, 2> A(begin(a), end(a));
 		BOOST_REQUIRE( num_elements(A) == 6 and A[2][1] == 6. );
 	}
-	 {
+	{
 		using complex = std::complex<double>; complex const I{0., 1.};
 		multi::array<complex, 2> b = {
 			{2. + 1.*I, 1. + 3.*I, 1. + 7.*I},
@@ -269,7 +277,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string_ctad) {
-	#if defined(__cpp_deduction_guides) and not defined(__NVCC__)
+	#if defined(__cpp_deduction_guides) and not defined(__NVCC__) and not defined(__circle_build__)
 	{
 		multi::array A({1., 2., 3.});
 		static_assert( std::is_same<decltype(A)::element_type, double>{}, "!");
