@@ -121,11 +121,11 @@ BOOST_AUTO_TEST_CASE(multi_initialize_from_carray_1d) {
 		BOOST_REQUIRE(( A == decltype(A){1.1, 2.2, 3.3} ));
 	}
 	{
-	#if defined(__cpp_deduction_guides) and not defined(__NVCC__) and not defined(__circle_build__)
-		std::array a = {{1.1, 2.2, 3.3}};
-		multi::array<double, 1> const A(begin(a), end(a));
-		BOOST_REQUIRE(( A == decltype(A){1.1, 2.2, 3.3} ));
-	#endif
+//	#if defined(__cpp_deduction_guides) and not defined(__NVCC__) and not defined(__circle_build__)
+//		std::array a = {{1.1, 2.2, 3.3}};
+//		multi::array<double, 1> const A(begin(a), end(a));
+//		BOOST_REQUIRE(( A == decltype(A){1.1, 2.2, 3.3} ));
+//	#endif
 	}
 }
 
