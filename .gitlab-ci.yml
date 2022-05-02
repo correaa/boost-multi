@@ -727,7 +727,7 @@ qmcpack-clang++:
 
 qmcpack-cuda-11.6-compileonly:
     allow_failure: true
-    stage: build
+    stage: test
     script:
       - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
       - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
@@ -753,8 +753,9 @@ qmcpack-cuda-11.6-compileonly:
       - ctest -R ppconvert --output-on-failure
 
 qmcpack-cuda-11.6-gcc9-compileonly:
-    allow_failure: true
-    stage: build
+    allow_failure: false
+    image: debian:stable-backports
+    stage: test
     script:
       - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
       - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
