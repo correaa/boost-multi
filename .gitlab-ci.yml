@@ -731,8 +731,9 @@ qmcpack-cuda-11.6-compileonly:
     script:
       - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
       - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
-       - apt-get update -y
-       - apt-get install --no-install-recommends -y nvhpc-22-3 cmake gfortran g++ git wget  make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev libxml2-dev make numdiff pkg-config python3 python3-h5py python3-mpi4py python3-numpy python3-scipy
+      - apt-get update -y
+      - apt-get install --no-install-recommends -y nvhpc-22-3 cmake gfortran g++ git wget  make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev libxml2-dev make numdiff pkg-config python3 python3-h5py python3-mpi4py python3-numpy python3-scipy
+      - /opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc --version
       - cmake --version
       - git clone https://github.com/QMCPACK/qmcpack.git
       - cd qmcpack
@@ -743,6 +744,28 @@ qmcpack-cuda-11.6-compileonly:
       - git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL $CI_COMMIT_BRANCH || git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL # e.g. https://gitlab.com/correaa/boost-multi.git
       - cd build
       - cmake -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DQMC_CXX_STANDARD=17 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc -DCUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6 ..
+      - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
+      - ctest -R ppconvert --output-on-failure
+
+qmcpack-cuda-11.6-gcc8-compileonly:
+    allow_failure: true
+    stage: build
+    script:
+      - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
+      - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
+      - apt-get update -y
+      - apt-get install --no-install-recommends -y nvhpc-22-3 cmake gfortran g++ g++-8 git wget  make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev libxml2-dev make numdiff pkg-config python3 python3-h5py python3-mpi4py python3-numpy python3-scipy
+      - /opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc --version
+      - cmake --version
+      - git clone https://github.com/QMCPACK/qmcpack.git
+      - cd qmcpack
+      - git config --global user.email "alfredo.correa@gmail.com" && git config --global user.name "Alfredo Correa"
+      - git rm -r external_codes/boost_multi/multi && git commit -m "remove multi subtree"
+      - echo $CI_REPOSITORY_URL
+      - echo $CI_COMMIT_BRANCH
+      - git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL $CI_COMMIT_BRANCH || git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL # e.g. https://gitlab.com/correaa/boost-multi.git
+      - cd build
+      - cmake -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DQMC_CXX_STANDARD=17 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc CMAKE_CUDA_HOST_COMPILER=g++-8 -DCUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6 ..
       - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
       - ctest -R ppconvert --output-on-failure
 
