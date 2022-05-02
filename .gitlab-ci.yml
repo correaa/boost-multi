@@ -873,7 +873,7 @@ inq-cuda-11.6-compileonly:
       - CUDACXX=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6 -DCMAKE_CUDA_ARCHITECTURES=70
       - make silicon
 
-inq-cuda-11.6-compileonly:
+inq-cuda-11.6-gcc8-compileonly:
     allow_failure: true
     stage: build
     script:
