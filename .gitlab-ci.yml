@@ -873,6 +873,26 @@ inq-cuda-11.6-compileonly:
       - CUDACXX=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6 -DCMAKE_CUDA_ARCHITECTURES=70
       - make silicon
 
+inq-cuda-11.6-compileonly:
+    allow_failure: true
+    stage: build
+    script:
+      - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
+      - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
+      - apt-get update && apt-get install --no-install-recommends -y --quiet 
+        ca-certificates cmake g++ g++-8 git gfortran nvhpc-22-3 make libfftw3-dev libblas-dev libboost-serialization-dev libboost-test-dev libboost-timer-dev libboost-filesystem-dev liblapack-dev libopenmpi-dev pkg-config wget
+      - cmake --version
+      - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
+      - cd inq
+      - cd external_libs/multi
+      - git fetch
+      - git checkout $CI_COMMIT_BRANCH
+      - cd ../..
+      - mkdir build && cd build
+      - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/cuda/bin/nvcc --version
+      - CUDACXX=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6 -DCMAKE_CUDA_ARCHITECTURES=70
+      - make silicon
+
 #inq-cuda-11.4-compileonly:
 #    allow_failure: true
 #    image: nvidia/cuda:11.4.0-devel
