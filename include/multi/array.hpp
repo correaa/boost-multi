@@ -121,7 +121,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	: array_alloc{a}  // TODO(correaa) : handle allocation propagation here
 	, ref{other.base_, other.extensions()} {
 		other.layout_mutable() = {};
-	//	other.ref::layout_t::operator=({});
+	//  other.ref::layout_t::operator=({});
 		other.base_ = nullptr;
 	}
 
@@ -734,7 +734,9 @@ struct array : static_array<T, D, Alloc> {
  public:
 	// NOLINTNEXTLINE(runtime/operator)
 	auto operator&()     && -> array      * = delete;       // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
+	// NOLINTNEXTLINE(runtime/operator)
 	auto operator&()      & -> array      * {return this;}  // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
+	// NOLINTNEXTLINE(runtime/operator)
 	auto operator&() const& -> array const* {return this;}  // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
 
 //  friend auto extensions(array const& s) -> typenameextensions_type {return s.extensions();}
@@ -887,16 +889,16 @@ struct array : static_array<T, D, Alloc> {
 		return *this;
 	}
 
-//	auto operator=(basic_array<T, D, multi::move_ptr<typename array::element, typename array::element_ptr>>& other) -> array& {
-//		if(other.layout() != this->layout()) {
-//			array::operator=(other.template static_array_cast<typename array::element, typename array::element_ptr>());
-//			return *this;
-//		}
-//		if(this->base_ != other.base_) {
-//			other.base_ = nullptr;
-//		}
-//		return *this;
-//	}
+//  auto operator=(basic_array<T, D, multi::move_ptr<typename array::element, typename array::element_ptr>>& other) -> array& {
+//  	if(other.layout() != this->layout()) {
+//  		array::operator=(other.template static_array_cast<typename array::element, typename array::element_ptr>());
+//  		return *this;
+//  	}
+//  	if(this->base_ != other.base_) {
+//  		other.base_ = nullptr;
+//  	}
+//  	return *this;
+//  }
 	friend void swap(array& a, array& b) {a.swap(b);}
 	void assign(typename array::extensions_type x, typename array::element const& e) {
 		if(array::extensions() == x) {
@@ -1025,11 +1027,11 @@ template<class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iexten
 template<dimensionality_type D, class T, class = std::enable_if_t<not is_allocator<T>{}> >
 array(iextensions<D>, T) -> array<T, D>;
 
-//template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<1>, T, MR*) -> array<T, 1, A>;
-//template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<2>, T, MR*) -> array<T, 2, A>;
-//template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<3>, T, MR*) -> array<T, 3, A>;
-//template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<4>, T, MR*) -> array<T, 4, A>;
-//template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<5>, T, MR*) -> array<T, 5, A>;
+//  template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<1>, T, MR*) -> array<T, 1, A>;
+//  template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<2>, T, MR*) -> array<T, 2, A>;
+//  template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<3>, T, MR*) -> array<T, 3, A>;
+//  template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<4>, T, MR*) -> array<T, 4, A>;
+//  template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<5>, T, MR*) -> array<T, 5, A>;
 
 template<class MatrixRef, class DT = typename MatrixRef::decay_type, class T = typename DT::element, dimensionality_type D = typename DT::rank{}, class Alloc = typename DT::allocator_type>
 array(MatrixRef)->array<T, D, Alloc>;
