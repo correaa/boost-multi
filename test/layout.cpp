@@ -231,7 +231,12 @@ BOOST_AUTO_TEST_CASE(layout) {
 {
 	std::array<std::array<std::array<double, 5>, 4>, 3> A = {};
 	using multi::dimensionality;
-	static_assert(dimensionality(A)==3, "!");
+#if defined(__circle_build__)
+	       assert(dimensionality(A)==3);
+#else
+	static_assert(dimensionality(A)==3);
+#endif
+
 	using multi::extensions;
 	auto xA = extensions(A);
 	using std::get;
@@ -245,7 +250,11 @@ BOOST_AUTO_TEST_CASE(layout) {
 
 	BOOST_REQUIRE( AA.stride() == 20 );
 
-	static_assert( multi::stride(A) == 20 , "!" );
+#if defined(__circle_build__)
+	       assert( multi::stride(A) == 20);
+#else
+	static_assert( multi::stride(A) == 20);
+#endif
 
 	BOOST_REQUIRE( multi::stride(A[0])    == 5 );
 	BOOST_REQUIRE( multi::stride(A[1])    == 5 );
