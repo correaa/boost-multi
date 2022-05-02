@@ -223,7 +223,7 @@ g++-cpplint:
     - mkdir build && cd build
     - cmake .. -DCMAKE_CXX_CPPLINT="cpplint;--filter=-whitespace/braces,-whitespace/tab,-whitespace/parens,-whitespace/operators,-readability/alt_tokens,-build/include_order,-whitespace/line_length,-whitespace/semicolon,-legal/copyright,-whitespace/comments,-readability/nolint"
     - cmake --build . --verbose -- --quiet --no-print-directory
-    - cpplint --filter=-whitespace/line_length,-whitespace/parens,-whitespace/tab,-readability/alt_tokens,-readability/nolint,-runtime/references,-build/include_order,-build/header_guar,-legal/copyright ../array.hpp
+    - cpplint --filter=-whitespace/line_length,-whitespace/parens,-whitespace/tab,-readability/alt_tokens,-readability/nolint,-runtime/references,-build/include_order,-build/header_guar,-legal/copyright ../include/multi/array.hpp
 
 clang++-11:
   stage: build
@@ -363,6 +363,22 @@ cuda-11.5gpuci:
       - cmake --build . --verbose
       - ctest --output-on-failure
 
+cuda-11.0-sdkhpc:
+    allow_failure: true
+    stage: build
+    script:
+       - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
+       - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
+       - apt-get update -y
+       - apt-get install --no-install-recommends -y cmake nvhpc-22-3 wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+       - cmake --version
+       - apt-cache madison nvhpc
+       - /opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.0/bin/nvcc --version
+       - mkdir build && cd build
+       - cmake .. -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.0/bin/nvcc -DCUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.0 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_FLAGS="-gencode arch=compute_61,code=sm_61"
+       - cmake --build . || make VERBOSE=1
+       - ctest --output-on-failure
+
 cuda-11.6:
     allow_failure: false
     stage: build
@@ -373,24 +389,7 @@ cuda-11.6:
        - apt-get install --no-install-recommends -y cmake nvhpc-22-3 wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
        - cmake --version
        - apt-cache madison nvhpc
-       - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/cuda/bin/nvcc --version
-       - mkdir build && cd build
-       - cmake .. -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc -DCUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_FLAGS="-gencode arch=compute_61,code=sm_61"
-       - cmake --build . || make VERBOSE=1
-       - ctest --output-on-failure
-
-# https://forums.developer.nvidia.com/t/22-2-debian-install/203239/4
-cuda-11.X:
-    allow_failure: true
-    stage: build
-    script:
-       - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
-       - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
-       - apt-get update -y
-       - apt-get install --no-install-recommends -y cmake nvhpc-22-1 wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-       - cmake --version
-       - apt-cache madison nvhpc
-       - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/cuda/bin/nvcc --version
+       - /opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc --version
        - mkdir build && cd build
        - cmake .. -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc -DCUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_FLAGS="-gencode arch=compute_61,code=sm_61"
        - cmake --build . || make VERBOSE=1
@@ -710,16 +709,35 @@ qmcpack-clang++:
     - ctest -R ppconvert --output-on-failure
     - ctest -R afqmc     --output-on-failure
 
-qmcpack-cuda-11.2-compileonly:
+#cuda-11.6:
+#    allow_failure: false
+#    stage: build
+#    script:
+#       - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
+#       - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
+#       - apt-get update -y
+#       - apt-get install --no-install-recommends -y cmake nvhpc-22-3 wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+#       - cmake --version
+#       - apt-cache madison nvhpc
+#       - /opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc --version
+#       - mkdir build && cd build
+#       - cmake .. -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc -DCUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_FLAGS="-gencode arch=compute_61,code=sm_61"
+#       - cmake --build . || make VERBOSE=1
+#       - ctest --output-on-failure
+
+qmcpack-cuda-11.6-compileonly:
     allow_failure: true
-    image: nvidia/cuda:11.2.0-devel
     stage: test
     script:
-      - export DEBIAN_FRONTEND=noninteractive
-      - apt-get -qq update && apt-get -qq install --no-install-recommends -y libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libopenmpi-dev gfortran g++ pkg-config cmake make git ca-certificates numdiff python3 python3-numpy python3-h5py python3-mpi4py python3-scipy libxml2-dev libhdf5-dev wget
-      - wget https://cmake.org/files/v3.21/cmake-3.21.3-linux-x86_64.sh --no-verbose # following https://askubuntu.com/a/865294/15943
+      - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
+      - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
+      - apt-get update -y
+      - apt-get install --no-install-recommends -y nvhpc-22-3 gfortran g++ git wget  make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev libxml2-dev make numdiff pkg-config python3 python3-h5py python3-mpi4py python3-numpy python3-scipy
+      - g++ --version
+      - /opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc
+      - wget https://cmake.org/files/v3.22/cmake-3.22.4-linux-x86_64.sh --no-verbose # following https://askubuntu.com/a/865294/15943
       - mkdir /opt/cmake
-      - sh cmake-3.21.3-linux-x86_64.sh --skip-license --prefix=/opt/cmake
+      - sh cmake-3.22.4-linux-x86_64.sh --skip-license --prefix=/opt/cmake
       - ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
       - cmake --version
       - git clone https://github.com/QMCPACK/qmcpack.git
@@ -730,9 +748,67 @@ qmcpack-cuda-11.2-compileonly:
       - echo $CI_COMMIT_BRANCH
       - git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL $CI_COMMIT_BRANCH || git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL # e.g. https://gitlab.com/correaa/boost-multi.git
       - cd build
-      - cmake -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DQMC_CXX_STANDARD=17 -DENABLE_CUDA=1 ..
+      - CUDACXX=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc cmake -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DQMC_CXX_STANDARD=17 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc -DCUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6 ..
       - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
       - ctest -R ppconvert --output-on-failure
+
+qmcpack-cuda-11.6-gcc9-compileonly:
+    allow_failure: true
+    image: debian:stable-backports
+    stage: test
+    script:
+      - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
+      - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
+      - apt-get update -y
+      - apt-get install --no-install-recommends -y nvhpc-22-3 gfortran g++ g++-9 git wget  make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev libxml2-dev make numdiff pkg-config python3 python3-h5py python3-mpi4py python3-numpy python3-scipy
+      - g++-9 --version
+      - /opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc --version
+      - wget https://cmake.org/files/v3.22/cmake-3.22.4-linux-x86_64.sh --no-verbose # following https://askubuntu.com/a/865294/15943
+      - mkdir /opt/cmake
+      - sh cmake-3.22.4-linux-x86_64.sh --skip-license --prefix=/opt/cmake
+      - ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
+      - cmake --version
+      - git clone https://github.com/QMCPACK/qmcpack.git
+      - cd qmcpack
+      - git config --global user.email "alfredo.correa@gmail.com" && git config --global user.name "Alfredo Correa"
+      - git rm -r external_codes/boost_multi/multi && git commit -m "remove multi subtree"
+      - echo $CI_REPOSITORY_URL
+      - echo $CI_COMMIT_BRANCH
+      - git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL $CI_COMMIT_BRANCH || git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL # e.g. https://gitlab.com/correaa/boost-multi.git
+      - cd build
+      - CUDACXX=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc cmake -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DQMC_CXX_STANDARD=17 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc -DCMAKE_CUDA_HOST_COMPILER=g++-9 -DCUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6 ..
+      - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
+      - ctest -R ppconvert --output-on-failure
+
+#      - wget https://cmake.org/files/v3.22/cmake-3.22.3-linux-x86_64.sh --no-verbose # following https://askubuntu.com/a/865294/15943
+#      - mkdir /opt/cmake
+#      - sh cmake-3.21.3-linux-x86_64.sh --skip-license --prefix=/opt/cmake
+#      - ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
+#      - cmake --version
+
+#qmcpack-cuda-11.2-compileonly:
+#    allow_failure: true
+#    image: nvidia/cuda:11.2.0-devel
+#    stage: test
+#    script:
+#      - export DEBIAN_FRONTEND=noninteractive
+#      - apt-get -qq update && apt-get -qq install --no-install-recommends -y libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libopenmpi-dev gfortran g++ pkg-config cmake make git ca-certificates numdiff python3 python3-numpy python3-h5py python3-mpi4py python3-scipy libxml2-dev libhdf5-dev wget
+#      - wget https://cmake.org/files/v3.21/cmake-3.21.3-linux-x86_64.sh --no-verbose # following https://askubuntu.com/a/865294/15943
+#      - mkdir /opt/cmake
+#      - sh cmake-3.21.3-linux-x86_64.sh --skip-license --prefix=/opt/cmake
+#      - ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
+#      - cmake --version
+#      - git clone https://github.com/QMCPACK/qmcpack.git
+#      - cd qmcpack
+#      - git config --global user.email "alfredo.correa@gmail.com" && git config --global user.name "Alfredo Correa"
+#      - git rm -r external_codes/boost_multi/multi && git commit -m "remove multi subtree"
+#      - echo $CI_REPOSITORY_URL
+#      - echo $CI_COMMIT_BRANCH
+#      - git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL $CI_COMMIT_BRANCH || git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL # e.g. https://gitlab.com/correaa/boost-multi.git
+#      - cd build
+#      - cmake -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DQMC_CXX_STANDARD=17 -DENABLE_CUDA=1 ..
+#      - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
+#      - ctest -R ppconvert --output-on-failure
 
 qmcpack-icpc-runner:
   stage: test
@@ -771,17 +847,32 @@ inq-g++-latest:
     - make install
     - ctest --output-on-failure
 
-inq-cuda-11.4-compileonly:
+
+#cuda-11.6:
+#    allow_failure: false
+#    stage: build
+#    script:
+#       - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
+#       - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
+#       - apt-get update -y
+#       - apt-get install --no-install-recommends -y cmake nvhpc-22-3 wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+#       - cmake --version
+#       - apt-cache madison nvhpc
+#       - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/cuda/bin/nvcc --version
+#       - mkdir build && cd build
+#       - cmake .. -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc -DCUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_FLAGS="-gencode arch=compute_61,code=sm_61"
+#       - cmake --build . || make VERBOSE=1
+#       - ctest --output-on-failure
+
+
+inq-cuda-11.6-compileonly:
     allow_failure: true
-    image: nvidia/cuda:11.4.0-devel
     stage: test
     script:
-      - export DEBIAN_FRONTEND=noninteractive
-      - apt-get update && apt-get install --no-install-recommends -y --quiet libblas-dev liblapack-dev libfftw3-dev libboost-filesystem-dev libboost-serialization-dev libopenmpi-dev gfortran g++ pkg-config make git ca-certificates wget
-      - wget https://cmake.org/files/v3.21/cmake-3.21.3-linux-x86_64.sh --no-verbose >/dev/null
-      - mkdir /opt/cmake
-      - sh cmake-3.21.3-linux-x86_64.sh --skip-license --prefix=/opt/cmake
-      - ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
+      - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
+      - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
+      - apt-get update && apt-get install --no-install-recommends -y --quiet 
+        ca-certificates cmake g++ git gfortran nvhpc-22-3 make libfftw3-dev libblas-dev libboost-serialization-dev libboost-test-dev libboost-timer-dev libboost-filesystem-dev liblapack-dev libopenmpi-dev pkg-config wget
       - cmake --version
       - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
       - cd inq
@@ -790,9 +881,55 @@ inq-cuda-11.4-compileonly:
       - git checkout $CI_COMMIT_BRANCH
       - cd ../..
       - mkdir build && cd build
-      - /usr/local/cuda/bin/nvcc -V
-      - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70
+      - g++ --version
+      - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/cuda/bin/nvcc --version
+      - CUDACXX=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6 -DCMAKE_CUDA_ARCHITECTURES=70
       - make silicon
+
+inq-cuda-11.6-gcc9-compileonly:
+    allow_failure: false
+    image: debian:stable-backports
+    stage: test
+    script:
+      - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
+      - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
+      - apt-get update && apt-get install --no-install-recommends -y --quiet 
+        ca-certificates cmake g++ g++-9 git gfortran nvhpc-22-3 make libfftw3-dev libblas-dev libboost-serialization-dev libboost-test-dev libboost-timer-dev libboost-filesystem-dev liblapack-dev libopenmpi-dev pkg-config wget
+      - cmake --version
+      - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
+      - cd inq
+      - cd external_libs/multi
+      - git fetch
+      - git checkout $CI_COMMIT_BRANCH
+      - cd ../..
+      - mkdir build && cd build
+      - g++-9 --version
+      - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/cuda/bin/nvcc --version
+      - CUDACXX=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_HOST_COMPILER=g++-9 -DCUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6 -DCMAKE_CUDA_ARCHITECTURES=70
+      - make silicon
+
+#inq-cuda-11.4-compileonly:
+#    allow_failure: true
+#    image: nvidia/cuda:11.4.0-devel
+#    stage: test
+#    script:
+#      - export DEBIAN_FRONTEND=noninteractive
+#      - apt-get update && apt-get install --no-install-recommends -y --quiet libblas-dev liblapack-dev libfftw3-dev libboost-filesystem-dev libboost-serialization-dev libopenmpi-dev gfortran g++ pkg-config make git ca-certificates wget
+#      - wget https://cmake.org/files/v3.21/cmake-3.21.3-linux-x86_64.sh --no-verbose >/dev/null
+#      - mkdir /opt/cmake
+#      - sh cmake-3.21.3-linux-x86_64.sh --skip-license --prefix=/opt/cmake
+#      - ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
+#      - cmake --version
+#      - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
+#      - cd inq
+#      - cd external_libs/multi
+#      - git fetch
+#      - git checkout $CI_COMMIT_BRANCH
+#      - cd ../..
+#      - mkdir build && cd build
+#      - /usr/local/cuda/bin/nvcc -V
+#      - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70
+#      - make silicon
 
 inq-nvcc-ompi-runner:
   stage: test
