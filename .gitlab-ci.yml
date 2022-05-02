@@ -753,7 +753,7 @@ qmcpack-cuda-11.6-compileonly:
       - ctest -R ppconvert --output-on-failure
 
 qmcpack-cuda-11.6-gcc9-compileonly:
-    allow_failure: false
+    allow_failure: true
     image: debian:stable-backports
     stage: test
     script:
@@ -867,7 +867,7 @@ inq-g++-latest:
 
 inq-cuda-11.6-compileonly:
     allow_failure: true
-    stage: build
+    stage: test
     script:
       - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
       - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
@@ -887,9 +887,9 @@ inq-cuda-11.6-compileonly:
       - make silicon
 
 inq-cuda-11.6-gcc9-compileonly:
-    allow_failure: true
+    allow_failure: false
     image: debian:stable-backports
-    stage: build
+    stage: test
     script:
       - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
       - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
