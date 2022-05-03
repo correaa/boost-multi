@@ -833,6 +833,7 @@ qmcpack-icpc-runner:
 
 qmcpack-cuda-runner:
   stage: test
+  allow_failure: true
   tags:
     - intel_compiler
   script:
@@ -848,10 +849,9 @@ qmcpack-cuda-runner:
     - cd ../..
     - mkdir build && cd build
     - /usr/local/cuda/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$HOME --enable-cuda --disable-debug -DCMAKE_CUDA_ARCHITECTURES=72
-    - make -j 16
-    - make install
-    - ctest --output-on-failure
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DQMC_CXX_STANDARD=17 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_HOST_COMPILER=g++-9 ..
+    - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
+    - ctest -R ppconvert --output-on-failure
 
 inq-g++-latest:
   stage: test
