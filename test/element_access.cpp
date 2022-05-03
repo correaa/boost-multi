@@ -88,57 +88,57 @@ BOOST_AUTO_TEST_CASE(multi_test_constness_reference) {
 //	m({0, 3}, {0, 3})[1][1] = 66.;
 }
 
-BOOST_AUTO_TEST_CASE(multi_test_non_constness_reference) {
-	multi::array<double, 2> m({10, 10}, 99.);
+//BOOST_AUTO_TEST_CASE(multi_test_non_constness_reference) {
+//	multi::array<double, 2> m({10, 10}, 99.);
 
-	BOOST_REQUIRE( size( m(1, {0, 3}) ) == 3 );
-	static_assert(std::is_assignable<decltype(m(1, {0, 3})[1]), double>{}, "!");
+//	BOOST_REQUIRE( size( m(1, {0, 3}) ) == 3 );
+//	static_assert(std::is_assignable<decltype(m(1, {0, 3})[1]), double>{}, "!");
 
-	static_assert( decltype( m({0, 3}, 1) )::rank_v == 1 , "!");
-	BOOST_REQUIRE( m(1, {0, 3})[1] == 99. );
-	BOOST_REQUIRE( size(m.sliced(0, 3)) == 3 );
+//	static_assert( decltype( m({0, 3}, 1) )::rank_v == 1 , "!");
+//	BOOST_REQUIRE( m(1, {0, 3})[1] == 99. );
+//	BOOST_REQUIRE( size(m.sliced(0, 3)) == 3 );
 
-	BOOST_REQUIRE( size(m.range({0, 3}).rotated()(1L).unrotated()) == 3 );
-	BOOST_REQUIRE( size(m(multi::index_range{0, 3}, 1)) == 3 );
+//	BOOST_REQUIRE( size(m.range({0, 3}).rotated()(1L).unrotated()) == 3 );
+//	BOOST_REQUIRE( size(m(multi::index_range{0, 3}, 1)) == 3 );
 
-	BOOST_REQUIRE( m({0, 3}, {0, 3})[1][1] == 99. );
+//	BOOST_REQUIRE( m({0, 3}, {0, 3})[1][1] == 99. );
 
-	m(1, {0, 3})[1] = 88.;
-	BOOST_REQUIRE( m(1, {0, 3})[1] == 88. );
-}
-
-//BOOST_AUTO_TEST_CASE(multi_test_stencil) {
-//	multi::array<std::string, 2> A =
-//		{{"a", "b", "c", "d", "e"},
-//		 {"f", "g", "h", "f", "g"},
-//		 {"h", "i", "j", "k", "l"}}
-//	;
-
-//	BOOST_REQUIRE(      size(A) == 3                                            );
-//	BOOST_REQUIRE(           A.num_elements() == 3*5L                           );
-//	BOOST_REQUIRE(           A[1][2] == "h"                                     );
-
-//	BOOST_REQUIRE(      size(A          ({1, 3}, {2, 5})) == 2                  );
-//	BOOST_REQUIRE( extension(A          ({1, 3}, {2, 5})).start() == 0          );
-//	BOOST_REQUIRE(           A          ({1, 3}, {2, 5}).num_elements() == 2*3L );
-//	BOOST_REQUIRE(           A          ({1, 3}, {2, 5}).num_elements() == 2*3L );
-//	BOOST_REQUIRE(           A          ({1, 3}, {2, 5})[0][0] == "h"           );
-//	BOOST_REQUIRE(          &A          ({1, 3}, {2, 5})[0][0] == &A[1][2]      );
-
-//	BOOST_REQUIRE(      size(A.stenciled({1, 3}, {2, 5})) == 2                  );
-//	BOOST_REQUIRE( extension(A.stenciled({1, 3}, {2, 5})).start() == 1          );
-//	BOOST_REQUIRE(           A.stenciled({1, 3}, {2, 5}).num_elements() == 2*3L );
-//	BOOST_REQUIRE(           A.stenciled({1, 3}, {2, 5}) [1][2] == "h"          );
-//	BOOST_REQUIRE(          &A.stenciled({1, 3}, {2, 5}) [1][2] == &A[1][2]     );
-
-//	BOOST_REQUIRE(  A().elements().size() == A.num_elements() );
-
-//	BOOST_REQUIRE( &A({1, 3}, {2, 5}).elements()[0] == &A(1, 2) );
-//	BOOST_REQUIRE( &A({1, 3}, {2, 5}).elements()[A({1, 3}, {2, 5}).elements().size() - 1] == &A(2, 4) );
-
-//	BOOST_REQUIRE( &A({1, 3}, {2, 5}).elements().front() == &A(1, 2) );
-//	BOOST_REQUIRE( &A({1, 3}, {2, 5}).elements().back()  == &A(2, 4) );
+//	m(1, {0, 3})[1] = 88.;
+//	BOOST_REQUIRE( m(1, {0, 3})[1] == 88. );
 //}
+
+BOOST_AUTO_TEST_CASE(multi_test_stencil) {
+	multi::array<std::string, 2> A =
+		{{"a", "b", "c", "d", "e"},
+		 {"f", "g", "h", "f", "g"},
+		 {"h", "i", "j", "k", "l"}}
+	;
+
+	BOOST_REQUIRE(      size(A) == 3                                            );
+	BOOST_REQUIRE(           A.num_elements() == 3*5L                           );
+	BOOST_REQUIRE(           A[1][2] == "h"                                     );
+
+	BOOST_REQUIRE(      size(A          ({1, 3}, {2, 5})) == 2                  );
+	BOOST_REQUIRE( extension(A          ({1, 3}, {2, 5})).start() == 0          );
+	BOOST_REQUIRE(           A          ({1, 3}, {2, 5}).num_elements() == 2*3L );
+	BOOST_REQUIRE(           A          ({1, 3}, {2, 5}).num_elements() == 2*3L );
+	BOOST_REQUIRE(           A          ({1, 3}, {2, 5})[0][0] == "h"           );
+	BOOST_REQUIRE(          &A          ({1, 3}, {2, 5})[0][0] == &A[1][2]      );
+
+	BOOST_REQUIRE(      size(A.stenciled({1, 3}, {2, 5})) == 2                  );
+	BOOST_REQUIRE( extension(A.stenciled({1, 3}, {2, 5})).start() == 1          );
+	BOOST_REQUIRE(           A.stenciled({1, 3}, {2, 5}).num_elements() == 2*3L );
+	BOOST_REQUIRE(           A.stenciled({1, 3}, {2, 5}) [1][2] == "h"          );
+	BOOST_REQUIRE(          &A.stenciled({1, 3}, {2, 5}) [1][2] == &A[1][2]     );
+
+	BOOST_REQUIRE(  A().elements().size() == A.num_elements() );
+
+	BOOST_REQUIRE( &A({1, 3}, {2, 5}).elements()[0] == &A(1, 2) );
+	BOOST_REQUIRE( &A({1, 3}, {2, 5}).elements()[A({1, 3}, {2, 5}).elements().size() - 1] == &A(2, 4) );
+
+	BOOST_REQUIRE( &A({1, 3}, {2, 5}).elements().front() == &A(1, 2) );
+	BOOST_REQUIRE( &A({1, 3}, {2, 5}).elements().back()  == &A(2, 4) );
+}
 
 //BOOST_AUTO_TEST_CASE(multi_test_elements_1D) {
 //	multi::array<double, 1> A = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9.};
