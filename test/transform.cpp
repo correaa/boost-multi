@@ -200,7 +200,7 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 		auto&& mA_ref = A.static_array_cast<double, test::negater<double*>>();
 		BOOST_REQUIRE( mA_ref[1][1] == mA[1][1] );
 	}
-	 {
+	{
 	#if defined(__cpp_deduction_guides)
 		double Z[4][5] {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : testing legacy types
 			{ 0,  1,  2,  3,  4},
@@ -216,10 +216,10 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 		{
 			using complex = std::complex<double>;
 			multi::array<complex, 2> d2D = {
-				{ {0., 3.}, { 1., 9.}, { 2., 4.},  3.,  4.},
-				{  5.     , { 6., 3.}, { 7., 5.},  8.,  9.},
-				{ {1., 4.}, { 9., 1.},  12.     , 13., 14.},
-				{  15.    ,  16.    ,   17.     , 18., 19.}
+				{ { 0., 3.}, { 1., 9.}, { 2., 4.}, { 3., 0.}, { 4., 0.} },
+				{ { 5., 0.}, { 6., 3.}, { 7., 5.}, { 8., 0.}, { 9., 0.} },
+				{ { 1., 4.}, { 9., 1.}, {12., 0.}, {13., 0.}, {14., 0.} },
+				{ {15., 0.}, {16., 0.}, {17., 0.}, {18., 0.}, {19., 0.} }
 			};
 
 			auto&& d2Dreal = d2D.reinterpret_array_cast<double>();
@@ -231,7 +231,7 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 			auto&& d2DrealT = rotated(d2D).reinterpret_array_cast<double>();
 			BOOST_REQUIRE( d2DrealT[2][1] == 7. );
 
-			multi::array<double, 2> d2Dreal_copy = d2D.template reinterpret_array_cast<double>();//d2Dreal;
+			multi::array<double, 2> d2Dreal_copy = d2D.template reinterpret_array_cast<double>();
 			BOOST_REQUIRE( d2Dreal_copy == d2Dreal );
 		}
 		{

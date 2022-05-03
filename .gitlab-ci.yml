@@ -831,6 +831,28 @@ qmcpack-icpc-runner:
     - make -output-sync=recurse -j 16 ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
     - ctest -R ppconvert --output-on-failure
 
+qmcpack-cuda-runner:
+  stage: test
+  allow_failure: true
+  tags:
+    - intel_compiler
+  script:
+    - . /opt/intel/oneapi/setvars.sh
+    - export CXX="icpc"
+    - $CXX --version
+    - cmake --version
+    - export PREFIX=`mktemp -d`
+    - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
+    - cd inq
+    - cd external_libs/multi
+    - git checkout $CI_COMMIT_BRANCH
+    - cd ../..
+    - mkdir build && cd build
+    - /usr/local/cuda/bin/nvcc --version
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DQMC_CXX_STANDARD=17 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_HOST_COMPILER=g++-9 ..
+    - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
+    - ctest -R ppconvert --output-on-failure
+
 inq-g++-latest:
   stage: test
   script:
