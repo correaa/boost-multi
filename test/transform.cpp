@@ -231,7 +231,7 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 			auto&& d2DrealT = rotated(d2D).reinterpret_array_cast<double>();
 			BOOST_REQUIRE( d2DrealT[2][1] == 7. );
 
-			multi::array<double, 2> d2Dreal_copy = d2D.template reinterpret_array_cast<double>();d2Dreal;
+			multi::array<double, 2> d2Dreal_copy = d2D.template reinterpret_array_cast<double>();
 			BOOST_REQUIRE( d2Dreal_copy == d2Dreal );
 		}
 		{
