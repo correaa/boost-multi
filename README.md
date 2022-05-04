@@ -387,9 +387,15 @@ The syntax can be combined in arbitrary ways, for example `*begin(A[n])` is equi
 ### Element access and partial access
 
 Index access mimics that of C-fixed sizes arrays. 
-For example, a 3-dimensional array will access to an element by `m[1][2][3]`,
+For example, a 2-dimensional array will access to an element by specifying two indices `A[1][2]`,
 which can be used for direct write and read operations; 
-while _partial_ index arguments `m[1][2]` generate a view 1-dimensional object (reference).
+while _partial_ index arguments `A[1][2]` generate a view 1-dimensional object (reference).
+
+```cpp
+A        // is a 2D value array
+A[0]     // is a 1D "reference"/"view" array
+A[0][0]  // is a an element reference, zero-D
+```
 
 Transpositions are also multi-dimensional arrays views in which the index are *logically* rearranged, for example `rotated(m)[2][3][1] == m[1][2][3]`.
 (`rotate` refers to the fact that the logical indices are _rotated_ to the left.)
