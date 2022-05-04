@@ -87,18 +87,19 @@ For `D == 1` this is a true C++ reference to an elements. These types are genera
 Declare an array by specifying the element type and the dimension;
 indiviudual elements can be input with nested braced notation.
 ```cpp
-std::array<double, 2> A = {
+multi::array<double, 2> A = {
 	{1., 2., 3.}
 	{4., 5., 6.}
 };
-```
 
-(The size is automatically deduced; the first dimension are the (two) "rows" above.)
+assert( A.size() == 2 );
+assert( A.num_elements() == 6 );
 
-```cpp
-assert( A.size()==2 );
+assert( std::get<0>(A.sizes()) == 3 );
 assert( std::get<1>(A.sizes()) == 3 );
 ```
+
+(The size is automatically deduced; the first (leading) dimension are the (two) "rows" above.)
 
 The value of an array can be copied, (moved,) and compared;
 copies are equal but independent.
@@ -114,7 +115,7 @@ assert( &B[0][1] != &A[0][1]           );
 Arrays can be initialized from its sizes alone, in which case the element values are default constructed:
 
 ```cpp
-std::array<double, 3> C({3, 4, 5});
+multi::array<double, 3> C({3, 4, 5});
 assert( num_elements(C) == 3*4*5 );  // 60 elements
 ```
 
