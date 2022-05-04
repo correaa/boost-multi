@@ -448,11 +448,13 @@ gj_solve(A({1000, 4000}, {0, 3000}), y);
 Given an array, a slice in the first dimension can be taken with the `sliced` function. `sliced` takes two arguments, the first index of the slice and the last index (not included) of the slice. For example,
 
 ```cpp
-multi::array<double, 2> d2D({4, 5});
-assert( d2D.size(0) == 4 and d2D.size(1) == 5 );
+multi::array<double, 2> A({4, 5});  // A is a value
+assert( std::get<0>(A) == 2 );
+assert( std::get<1>(A) == 5 );
 
-auto&& d2D_sliced = d2D.sliced(1, 3); // {{d2D[1], d2D[2]}}
-assert( d2D_sliced.size(0) == 2 and d2D_sliced.size(1) == 5 );
+auto&& A_sliced = A.sliced(1, 3); // {{d2D[1], d2D[2]}}
+assert( std::get<0>(A_sliced) == 2 );
+assert( std::get<1>(A_sliced) == 5 );
 ```
 
 The number of rows in the sliced matrix is 2 because we took only two rows, row 1 and row 2 (row 3 is excluded).
@@ -488,9 +490,24 @@ Other notations are available, but when in doubt, the `rotated/strided/sliced/ro
 Blocks (slices) in multidimensions can be obtained but pure index notation using parentheses `()` (`.operator()`):
 
 ```cpp
-multi::array<double, 2> A({6, 7});  // 6x7 array
-A({1, 4}, {2, 4})  // 3x2 array, containing indices 1 to 4 in the first dimension and 2 to 4 in the second dimension.
+auto        A = multi::array<double, 2>({6, 7});  // 2D value array
+
+auto&&      A_block1 = A({1, 4}, {2, 4});  // 2D subarray reference (modifiable)
+auto const& A_block2 = A({1, 4}, {2, 4});  // 2D subarray reference (non-modifiable)
+
+auto        A_block3 = A({1, 4}, {2, 4});  // disabled
 ```
+
+Note that the last case gives a compilation error, the library prevents the use of this references as if they are were values.
+Some times copies are necessary, specifically from a subarray block, this can be done by constructing a new array. 
+The value array can be deduces by using `auto` and the `decay` member, which in turn is equivalent to the unary `+` operator.
+
+```cpp
+multi::array<double, 2> block_value_1 =   A({1, 4}, {2, 4})        ;
+auto                    block_value_2 =   A({1, 4}, {2, 4}).decay();
+auto                    block_value_3 = + A({1, 4}, {2, 4})        ;
+```
+
 
 ## Concept Requirements
 
