@@ -285,14 +285,12 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, fftw::flags 
 	return ret;
 }
 
-template<typename It1, class It2, std::enable_if_t<std::is_pointer<decltype(base(It2{}))>{} or std::is_convertible<decltype(base(It2{})), std::complex<double>*>{}, int> = 0
+template<
+	typename It1, class It2, 
+	std::enable_if_t<std::is_pointer<decltype(base(It2{}))>{} or std::is_convertible<decltype(base(It2{})), std::complex<double>*>{}, int> = 0
 >
 auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign)
-#ifndef __circle_build__
-->decltype(reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double>*>*/(base(d_first))), fftw_plan{}) { // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : interact with legacy code
-#else
 ->fftw_plan {
-#endif
 	return fftw_plan_many_dft(first, last, d_first, sign, fftw::estimate);
 }
 
