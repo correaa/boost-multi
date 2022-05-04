@@ -709,22 +709,6 @@ qmcpack-clang++:
     - ctest -R ppconvert --output-on-failure
     - ctest -R afqmc     --output-on-failure
 
-#cuda-11.6:
-#    allow_failure: false
-#    stage: build
-#    script:
-#       - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
-#       - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
-#       - apt-get update -y
-#       - apt-get install --no-install-recommends -y cmake nvhpc-22-3 wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-#       - cmake --version
-#       - apt-cache madison nvhpc
-#       - /opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc --version
-#       - mkdir build && cd build
-#       - cmake .. -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc -DCUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_FLAGS="-gencode arch=compute_61,code=sm_61"
-#       - cmake --build . || make VERBOSE=1
-#       - ctest --output-on-failure
-
 qmcpack-cuda-11.6-compileonly:
     allow_failure: true
     stage: test
@@ -780,36 +764,6 @@ qmcpack-cuda-11.6-gcc9-compileonly:
       - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
       - ctest -R ppconvert --output-on-failure
 
-#      - wget https://cmake.org/files/v3.22/cmake-3.22.3-linux-x86_64.sh --no-verbose # following https://askubuntu.com/a/865294/15943
-#      - mkdir /opt/cmake
-#      - sh cmake-3.21.3-linux-x86_64.sh --skip-license --prefix=/opt/cmake
-#      - ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
-#      - cmake --version
-
-#qmcpack-cuda-11.2-compileonly:
-#    allow_failure: true
-#    image: nvidia/cuda:11.2.0-devel
-#    stage: test
-#    script:
-#      - export DEBIAN_FRONTEND=noninteractive
-#      - apt-get -qq update && apt-get -qq install --no-install-recommends -y libblas-dev liblapack-dev libfftw3-dev libboost-serialization-dev libopenmpi-dev gfortran g++ pkg-config cmake make git ca-certificates numdiff python3 python3-numpy python3-h5py python3-mpi4py python3-scipy libxml2-dev libhdf5-dev wget
-#      - wget https://cmake.org/files/v3.21/cmake-3.21.3-linux-x86_64.sh --no-verbose # following https://askubuntu.com/a/865294/15943
-#      - mkdir /opt/cmake
-#      - sh cmake-3.21.3-linux-x86_64.sh --skip-license --prefix=/opt/cmake
-#      - ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
-#      - cmake --version
-#      - git clone https://github.com/QMCPACK/qmcpack.git
-#      - cd qmcpack
-#      - git config --global user.email "alfredo.correa@gmail.com" && git config --global user.name "Alfredo Correa"
-#      - git rm -r external_codes/boost_multi/multi && git commit -m "remove multi subtree"
-#      - echo $CI_REPOSITORY_URL
-#      - echo $CI_COMMIT_BRANCH
-#      - git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL $CI_COMMIT_BRANCH || git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL # e.g. https://gitlab.com/correaa/boost-multi.git
-#      - cd build
-#      - cmake -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DQMC_CXX_STANDARD=17 -DENABLE_CUDA=1 ..
-#      - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
-#      - ctest -R ppconvert --output-on-failure
-
 qmcpack-icpc-runner:
   stage: test
   tags:
@@ -847,7 +801,7 @@ qmcpack-cuda-runner:
     - git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL $CI_COMMIT_BRANCH || git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL # e.g. https://gitlab.com/correaa/boost-multi.git master
     - cd build
     - /usr/local/cuda/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda/bin/nvcc cmake -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DBUILD_PPCONVERT=1 -DQMC_MIXED_PRECISION=1 -DQMC_CXX_STANDARD=17 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_HOST_COMPILER=g++-9 ..
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DQMC_CXX_STANDARD=17 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_HOST_COMPILER=g++-9 -DCXX_FLAGS="-Wno-deprecated" ..
     - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
     - ctest -R ppconvert --output-on-failure
     - ctest -R afqmc     --output-on-failure
