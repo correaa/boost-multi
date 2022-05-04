@@ -15,9 +15,8 @@ class n_random_complex {
     mutable std::mt19937 gen_{std::random_device{}()};
 	mutable std::uniform_real_distribution<> dist_{-1., 1.};
 
-	n_random_complex(n_random_complex const&) = delete;
-
  public:
+	n_random_complex(n_random_complex const&) = delete;
 	explicit n_random_complex(std::size_t n) : n_{n} {}
 
 	class iterator : public boost::multi::random_access_iterator<iterator, std::complex<T>, std::complex<T>, void> {
