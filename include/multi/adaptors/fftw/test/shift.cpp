@@ -10,12 +10,13 @@
 #include <random>
 
 template<class T>
-class n_random_complex {
+class n_random_complex {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 	std::size_t n_ = 0;
     mutable std::mt19937 gen_{std::random_device{}()};
 	mutable std::uniform_real_distribution<> dist_{-1., 1.};
 
  public:
+	n_random_complex(n_random_complex const&) = delete;
 	explicit n_random_complex(std::size_t n) : n_{n} {}
 
 	class iterator : public boost::multi::random_access_iterator<iterator, std::complex<T>, std::complex<T>, void> {
@@ -27,11 +28,15 @@ class n_random_complex {
 
 		auto operator*() const {return std::complex<T>{ptr_->dist_(ptr_->gen_), ptr_->dist_(ptr_->gen_)};}
 		auto operator++() -> iterator& {++n_; return *this;}
+
 		friend auto operator==(iterator const& s, iterator const& o) {return s.n_ == o.n_;}
+		friend auto operator!=(iterator const& s, iterator const& o) {return s.n_ != o.n_;}
+
 		auto operator-(iterator const& other) const {return n_ - other.n_;}
 	};
 	auto begin() const {return iterator{this, 0 };}
 	auto end  () const {return iterator{this, n_};}
+
 	auto size()  const {return n_;}
 };
 
