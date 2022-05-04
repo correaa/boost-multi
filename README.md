@@ -648,31 +648,27 @@ Here it is a comparison of speeds when (de)serializing a 134 MB 4-dimensional ar
 | gzip-XML (Cereal)            | 191 MB        |    2.  MB/sec -    4.  MB/sec  | 61    sec  - 32   sec |
 | gzip-XML (Boost)             | 207 MB        |    8.  MB/sec -    8.  MB/sec  | 16.1  sec  - 15.9 sec |
 
-## (Polymorphic) Memory Resources
+## Polymorphic Memory Resources
 
-The library is compatible with C++17's polymorphic memory resources (PMR) which allows using preallocated buffers. 
-This enables the use of stack memory or in order to reduce the number of allocations.
-For example, this code ends up with `buffer` containing the string `"aaaabbbbbb  "`.
+The library is compatible with C++17's polymorphic memory resources (PMR) which allows using preallocated buffers as described in this example. 
+This enables the use of stack memory, with many performance advantaneges.
+For example, this code uses a buffer to allocate memory for two arrays, we will see how this buffer ends up containing the data of the arrays `"aaaabbbbbbXX"`.
 
 ```cpp
 #include <memory_resource>  // polymorphic memory resource, monotonic buffer, needs C++17
-int main(){
-	char buffer[13] = "____________"; // a small buffer on the stack
-	std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)}; // or multi::memory::monotonic<char*>
 
-	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> A({2, 2}, 'a', &pool); // or multi::memory::monotonic_allocator<double>
+int main() {
+	char buffer[13] = "XXXXXXXXXXXX";  // a small buffer on the stack
+	std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};
+
+	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> A({2, 2}, 'a', &pool);
 	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> B({3, 2}, 'b', &pool);
-	assert( buffer == std::string{"aaaabbbbbb__"} );
+
+	assert( buffer == std::string{"aaaabbbbbbXX"} );
 }
 ```
 
-Besides PMR, the library comes with its own customized (non-polymorphic) memory resources if, for any reason, the standard PMRs are not sufficiently general.
-The headers to include are:
-
-```cpp
-#include<multi/memory/monotonic.hpp> // multi::memory::monotonic<char*> : no memory reclaim
-#include<multi/memory/stack.hpp>     // multi::memory::stack<char*>     : FIFO memory reclaim
-```
+The library supports classic allocators (`std::allocator` by default) and also allocators from other libraries (see Thurst section).
 
 ## Range v3
 
