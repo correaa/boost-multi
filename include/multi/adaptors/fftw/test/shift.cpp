@@ -15,6 +15,8 @@ class n_random_complex {
     mutable std::mt19937 gen_{std::random_device{}()};
 	mutable std::uniform_real_distribution<> dist_{-1., 1.};
 
+	n_random_complex(n_random_complex const&) = delete;
+
  public:
 	explicit n_random_complex(std::size_t n) : n_{n} {}
 
@@ -28,6 +30,7 @@ class n_random_complex {
 		auto operator*() const {return std::complex<T>{ptr_->dist_(ptr_->gen_), ptr_->dist_(ptr_->gen_)};}
 		auto operator++() -> iterator& {++n_; return *this;}
 		friend auto operator==(iterator const& s, iterator const& o) {return s.n_ == o.n_;}
+		friend auto operator!=(iterator const& s, iterator const& o) {return s.n_ != o.n_;}
 		auto operator-(iterator const& other) const {return n_ - other.n_;}
 	};
 	auto begin() const {return iterator{this, 0 };}
