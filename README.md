@@ -88,8 +88,8 @@ Declare an array by specifying the element type and the dimension;
 indiviudual elements can be input with nested braced notation.
 ```cpp
 std::array<double, 2> A = {
-	{1, 2, 3}
-	{4, 5, 6}
+	{1., 2., 3.}
+	{4., 5., 6.}
 };
 ```
 
