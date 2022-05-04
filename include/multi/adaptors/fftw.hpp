@@ -289,7 +289,11 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, fftw::flags 
 template<typename It1, class It2, std::enable_if_t<std::is_pointer<decltype(base(It2{}))>{} or std::is_convertible<decltype(base(It2{})), std::complex<double>*>{}, int> = 0
 >
 auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign)
-->decltype(reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double>*>*/(base(d_first))), fftw_plan{}){ // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : interact with legacy code
+#ifndef __circle_build__
+->decltype(reinterpret_cast<fftw_complex*>(/*static_cast<std::complex<double>*>*/(base(d_first))), fftw_plan{}) { // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : interact with legacy code
+#else
+->fftw_plan {
+#endif
 	return fftw_plan_many_dft(first, last, d_first, sign, fftw::estimate);
 }
 
@@ -545,7 +549,7 @@ static_assert( forward != none and none != backward and backward != forward, "!"
 
 //enum strategy: decltype(FFTW_ESTIMATE){ estimate = FFTW_ESTIMATE, measure = FFTW_MEASURE };
 
-template<class In, class Out>
+template<class In, class Out, dimensionality_type = In::rank_v>
 auto dft(In const& i, Out&& o, int s)
 ->decltype(fftw::plan{i, o, s}(), std::forward<Out>(o)) {
 	return fftw::plan{i, o, s}(), std::forward<Out>(o); }
@@ -591,13 +595,17 @@ auto rotate(multi::array<T, D, Args...>& i) -> decltype(auto) {
 	return i;
 }
 
-template<typename In, dimensionality_type D = In::rank_v, class R=typename In::decay_type>
+template<typename In, dimensionality_type D = In::rank_v, class R=typename In::decay_type,
+	std::enable_if_t<not std::is_assignable_v<decltype(*std::declval<In const&>().base()), typename std::decay_t<In>::element>, int> =0
+>
 NODISCARD("when first argument is const")
 auto dft(std::array<bool, +D> which, In const& i, sign s)
 ->std::decay_t<decltype(fftw::dft(which, i, R(extensions(i), get_allocator(i)), s))> {
 	return fftw::dft(which, i, R(extensions(i), get_allocator(i)), s);}
 
-template<typename In, multi::dimensionality_type D = std::decay_t<In>::rank_v>
+template<typename In, multi::dimensionality_type D = std::decay_t<In>::rank_v,
+	std::enable_if_t<std::is_assignable_v<decltype(*std::declval<In     &&>().base()), typename std::decay_t<In>::element>, int> =0
+>
 auto dft(std::array<bool, +D> which, In&& i, sign s)
 ->decltype(dft(which, i, i, s), std::forward<In>(i)) {
 	return dft(which, i, i, s), std::forward<In>(i); }
