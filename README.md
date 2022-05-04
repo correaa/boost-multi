@@ -112,6 +112,12 @@ assert(  B[0][1] ==  A[0][1]           );
 assert( &B[0][1] != &A[0][1]           );
 ```
 
+Individual elements can be accessed by the multidimensional indices, either with square bracket (one index at a time) or with parenthesis.
+
+```
+assert(  A(1, 2)  ==  A[1][2] );
+```
+
 Arrays can be initialized from its sizes alone, in which case the element values are default constructed:
 
 ```cpp
@@ -262,8 +268,8 @@ multi::array<double, 1> A1 = {1., 2., 3.};
 assert( num_elements(A1)==3 );
 
 multi::array<double, 2> A2 {
-	 {1.,2.,3.},
-	 {4.,5.,6.}
+	 { 1., 2., 3.},
+	 { 4., 5., 6.}
 };
 
 assert( num_elements(A2) == 2*3);
@@ -278,6 +284,29 @@ assert( num_elements(A3) == 3*2*2 );
 ```
 
 In all cases constness (`const` declaration) is honored in the expected way.
+
+## Changing extents (sizes)
+
+Arrays can change their size preserving elements with `reextents`.
+
+```cpp
+multi::array<double, 2> A {
+	 {1., 2., 3.},
+	 {4., 5., 6.}
+};
+
+A.reextents({4, 4});
+
+assert( A[0][0] = 1. );
+```
+
+Subarrays, or views cannot change their size. `A[1].reextents({4})`.
+The main utility of `reextents` is element preservation.
+If element preservation is not desired, simple (move) assignment from a new array expresses the intention better as it is more efficient.
+
+```cpp
+A = multi::array<double, 2>({4, 4});
+```
 
 ## Iteration
 
