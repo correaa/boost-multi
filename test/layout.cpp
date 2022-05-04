@@ -230,11 +230,10 @@ BOOST_AUTO_TEST_CASE(layout) {
 }
 {
 	std::array<std::array<std::array<double, 5>, 4>, 3> A = {};
-	using multi::dimensionality;
-#if defined(__circle_build__)
-	       assert(dimensionality(A)==3);
-#else
-	static_assert(dimensionality(A)==3);
+#if defined(__circle_build__)  // circle doesn't see dimensionality as a constexpr "cannot access value of A at compile time;"
+	       assert( multi::dimensionality(A) == 3 );
+#else  // other compilers ok
+	static_assert( multi::dimensionality(A) == 3 );
 #endif
 
 	using multi::extensions;
@@ -250,9 +249,9 @@ BOOST_AUTO_TEST_CASE(layout) {
 
 	BOOST_REQUIRE( AA.stride() == 20 );
 
-#if defined(__circle_build__)
+#if defined(__circle_build__)  // circle doesn't recognize this as a constexpr "cannot access value of A at compile time;"
 	       assert( multi::stride(A) == 20);
-#else
+#else  // other compilers ok
 	static_assert( multi::stride(A) == 20);
 #endif
 
