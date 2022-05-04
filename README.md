@@ -648,7 +648,7 @@ Here it is a comparison of speeds when (de)serializing a 134 MB 4-dimensional ar
 | gzip-XML (Cereal)            | 191 MB        |    2.  MB/sec -    4.  MB/sec  | 61    sec  - 32   sec |
 | gzip-XML (Boost)             | 207 MB        |    8.  MB/sec -    8.  MB/sec  | 16.1  sec  - 15.9 sec |
 
-## (Polymorphic) Memory Resources
+## Polymorphic Memory Resources
 
 The library is compatible with C++17's polymorphic memory resources (PMR) which allows using preallocated buffers as described in this example. 
 This enables the use of stack memory, with many performance advantaneges.
@@ -667,6 +667,8 @@ int main() {
 	assert( buffer == std::string{"aaaabbbbbbXX"} );
 }
 ```
+
+The library supports classic allocators (`std::allocator` by default) and also allocators from other libraries (see Thurst section).
 
 ## Range v3
 
