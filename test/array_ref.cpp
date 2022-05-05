@@ -296,7 +296,7 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray) {
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray_string) {
-	#if not defined(__circle_build__)  // bug in circle 169 https://github.com/seanbaxter/circle/issues/114
+	#if not defined(__circle_build__)  // circle 170 crashes https://github.com/seanbaxter/circle/issues/114
 	std::string const dc3D[4][2][3] = {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test legacy type
 		{{"A0a", "A0b", "A0c"}, {"A1a", "A1b", "A1c"}},
 		{{"B0a", "B0b", "B0c"}, {"B1a", "B1b", "B1c"}},

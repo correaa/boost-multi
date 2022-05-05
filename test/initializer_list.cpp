@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d_ctad) {
-	#if defined(__cpp_deduction_guides) and not defined(__NVCC__) and not defined(__circle_build__)
+	#if defined(__cpp_deduction_guides) and not defined(__NVCC__) and not defined(__circle_build__)  // circle 170 crashes
 	{
 		multi::static_array const A = {1.2, 3.4, 5.6};
 		BOOST_REQUIRE( size(A) == 3 );
@@ -119,13 +119,6 @@ BOOST_AUTO_TEST_CASE(multi_initialize_from_carray_1d) {
 		std::array<double, 3> a = {{1.1, 2.2, 3.3}};
 		multi::array<double, 1> const A(begin(a), end(a));
 		BOOST_REQUIRE(( A == decltype(A){1.1, 2.2, 3.3} ));
-	}
-	{
-//	#if defined(__cpp_deduction_guides) and not defined(__NVCC__) and not defined(__circle_build__)
-//		std::array a = {{1.1, 2.2, 3.3}};
-//		multi::array<double, 1> const A(begin(a), end(a));
-//		BOOST_REQUIRE(( A == decltype(A){1.1, 2.2, 3.3} ));
-//	#endif
 	}
 }
 
@@ -277,7 +270,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string_ctad) {
-	#if defined(__cpp_deduction_guides) and not defined(__NVCC__) and not defined(__circle_build__)
+	#if defined(__cpp_deduction_guides) and not defined(__NVCC__) and not defined(__circle_build__)  // circle 170 crashes
 	{
 		multi::array A({1., 2., 3.});
 		static_assert( std::is_same<decltype(A)::element_type, double>{}, "!");

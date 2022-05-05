@@ -45,13 +45,13 @@ BOOST_AUTO_TEST_CASE(iterator_2d) {
 	{
 		multi::array<double, 2> A({120, 140}, 99.);
 		BOOST_REQUIRE(      A.size() == 120 );
-	#if not defined(__circle_build__)
+	#if not defined(__circle_build__)  // circle 170 crashes
 		BOOST_REQUIRE( size(A)       == 120 );
 	#endif
-	#if not defined(__circle_build__)
+	#if not defined(__circle_build__)  // circle 170 crashes
 		BOOST_REQUIRE( A.cbegin() < A.cend() );
 	#endif
-	#if not defined(__circle_build__)
+	#if not defined(__circle_build__)  // circle 170 crashes
 		BOOST_REQUIRE( A.cend() - A.cbegin() == A.size() );
 	#endif
 		using iter = multi::array<double, 2>::iterator;
@@ -221,4 +221,3 @@ BOOST_AUTO_TEST_CASE(multi_reverse_iterator_2D) {
 
 	BOOST_TEST( (*rbegin)[1] == 200. );
 }
-
