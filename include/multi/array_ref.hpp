@@ -755,7 +755,7 @@ struct basic_array
 	~basic_array() = default;  // this lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
 	// in C++ < 17 this is necessary to return references from functions
-#if defined(__NVCC__) or defined(__INTEL_COMPILER)
+#if defined(__NVCC__) or defined(__INTEL_COMPILER) or defined(__NVCOMPILER)
 	basic_array(basic_array&&) noexcept = default;  // lints(readability-redundant-access-specifiers)
 #else
 	basic_array(basic_array&&) noexcept = delete;   // lints(readability-redundant-access-specifiers)
