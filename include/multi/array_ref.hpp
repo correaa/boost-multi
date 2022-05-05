@@ -754,8 +754,8 @@ struct basic_array
 
 	~basic_array() = default;  // this lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
-	basic_array(basic_array&&)  // in C++ < 17 this is necessary to return references from functions
-		noexcept = default;  // lints(readability-redundant-access-specifiers)
+	// in C++ < 17 this is necessary to return references from functions
+	basic_array(basic_array&&) noexcept = default;  // lints(readability-redundant-access-specifiers)
 
 	friend constexpr auto sizes(basic_array const& s) noexcept -> typename basic_array::sizes_type {return s.sizes();}  // needed by nvcc
 	friend constexpr auto size (basic_array const& s) noexcept -> typename basic_array::size_type  {return s.size ();}  // needed by nvcc
@@ -1769,7 +1769,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
 	constexpr auto operator+() const -> decay_type {return decay();}
 
-	basic_array(basic_array&&) noexcept = default;  // in C++ 14 this is necessary to return array references from functions
+	basic_array(basic_array&&) noexcept = delete;  // in C++ 14 this is necessary to return array references from functions
 // in c++17 things changed and non-moveable non-copyable types can be returned from functions and captured by auto
 
  protected:
