@@ -103,4 +103,19 @@ BOOST_AUTO_TEST_CASE(subrange_assignment) {
 		BOOST_REQUIRE( B == A({0, 3}, {0, 3}) );
 	}
 }
+BOOST_AUTO_TEST_CASE(subrange_ranges) {
+	multi::array<double, 2> A = {
+		{1., 2., 3., 4.},
+		{5., 6., 7., 8.},
+		{9., 0., 1., 2.},
+		{3., 4., 5., 6.}
+	};
+	auto&& Ab = A({0, 3}, {0, 3});
+	BOOST_REQUIRE( &Ab[2][2] == &A[2][2] );
 
+	auto const& Abc = A({0, 3}, {0, 3});
+	BOOST_REQUIRE( &Abc[2][2] == &A[2][2] );
+
+	auto AB = A({0, 3}, {0, 3});
+	BOOST_REQUIRE( &AB[2][2] == &A[2][2] );
+}
