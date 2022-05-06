@@ -699,6 +699,7 @@ struct basic_array
 //  : multi::partially_ordered2<basic_array<T, D, ElementPtr, Layout>, void>
 : array_types<T, D, ElementPtr, Layout> {
 	using types = array_types<T, D, ElementPtr, Layout>;
+	using ref_ = basic_array;
 
 	friend struct basic_array<typename types::element, Layout::rank_v + 1, typename types::element_ptr >;
 	friend struct basic_array<typename types::element, Layout::rank_v + 1, typename types::element_ptr&>;
@@ -743,6 +744,12 @@ struct basic_array
 	constexpr auto elements_aux() const {return elements_range{this->base(), this->layout()};}
 
  public:
+	#if defined(__NVCC__)
+	basic_array(basic_array&&) noexcept = default;  // lints(readability-redundant-access-specifiers)
+	#else
+	basic_array(basic_array&&) noexcept = delete;  // lints(readability-redundant-access-specifiers)
+	#endif
+
 	constexpr auto       elements()      & ->       elements_range {return elements_aux();}
 	constexpr auto       elements()     && ->       elements_range {return elements_aux();}
 	constexpr auto       elements() const& -> const_elements_range {return const_elements_range{this->base(), this->layout()};}  // TODO(correaa) simplify
@@ -755,11 +762,6 @@ struct basic_array
 	~basic_array() = default;  // this lints(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 
 	// in C++ < 17 this is necessary to return references from functions
-#if defined(__NVCC__) or defined(__INTEL_COMPILER) or defined(__NVCOMPILER)
-	basic_array(basic_array&&) noexcept = default;  // lints(readability-redundant-access-specifiers)
-#else
-	basic_array(basic_array&&) noexcept = delete;   // lints(readability-redundant-access-specifiers)
-#endif
 	friend constexpr auto sizes(basic_array const& s) noexcept -> typename basic_array::sizes_type {return s.sizes();}  // needed by nvcc
 	friend constexpr auto size (basic_array const& s) noexcept -> typename basic_array::size_type  {return s.size ();}  // needed by nvcc
 
@@ -1709,6 +1711,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	using types = array_types<T, dimensionality_type{1}, ElementPtr, Layout>;
 	using types::types;
 	using layout_type = Layout;
+	using ref_ = basic_array;
 
 	using default_allocator_type = typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type;
 
