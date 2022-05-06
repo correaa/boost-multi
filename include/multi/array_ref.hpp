@@ -744,11 +744,11 @@ struct basic_array
 	constexpr auto elements_aux() const {return elements_range{this->base(), this->layout()};}
 
  public:
-	#if defined(__NVCC__)
+//	#if defined(__NVCC__)
 	basic_array(basic_array&&) noexcept = default;  // lints(readability-redundant-access-specifiers)
-	#else
-	basic_array(basic_array&&) noexcept = delete;  // lints(readability-redundant-access-specifiers)
-	#endif
+//	#else
+//	basic_array(basic_array&&) noexcept = delete;  // lints(readability-redundant-access-specifiers)
+//	#endif
 
 	constexpr auto       elements()      & ->       elements_range {return elements_aux();}
 	constexpr auto       elements()     && ->       elements_range {return elements_aux();}
