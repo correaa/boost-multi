@@ -110,27 +110,27 @@ g++-current-tsan:
     - cmake --build . --verbose
     - ctest --output-on-failure
 
-#g++-current-codecov:
-#  stage: build
-#  script:
-#    - export CXX="g++"
-#    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev curl gcovr lcov
-#    - ln --symbolic --force . ../multi
-#    - $CXX --version
-#    - mkdir build && cd build
-#    - CXXFLAGS="-ftest-coverage -fprofile-arcs --coverage -fno-inline -fno-inline-small-functions -fno-default-inline" cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXE_LINKER_FLAGS="-lgcov --coverage"
-#    - cmake --build . --verbose
-#    - ctest --output-on-failure -T Test -T Coverage
-#    - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
-#    - lcov --directory . --capture --output-file coverage.info
-#    - lcov --remove coverage.info '/usr/*' --output-file coverage.info
-#    - lcov --list coverage.info
-#  coverage: /^\s*lines:\s*\d+.\d+\%/
-#  artifacts:
-#    name: ${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}
-#    expire_in: 2 days
-#    reports:
-#      cobertura: build/coverage.xml
+g++-current-codecov:
+  stage: build
+  script:
+    - export CXX="g++"
+    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev curl gcovr lcov
+    - ln --symbolic --force . ../multi
+    - $CXX --version
+    - mkdir build && cd build
+    - CXXFLAGS="-ftest-coverage -fprofile-arcs --coverage -fno-inline -fno-inline-small-functions -fno-default-inline" cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXE_LINKER_FLAGS="-lgcov --coverage"
+    - cmake --build . --verbose
+    - ctest --output-on-failure -T Test -T Coverage
+    - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
+    - lcov --directory . --capture --output-file coverage.info
+    - lcov --remove coverage.info '/usr/*' --output-file coverage.info
+    - lcov --list coverage.info
+  coverage: /^\s*lines:\s*\d+.\d+\%/
+  artifacts:
+    name: ${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}
+    expire_in: 2 days
+    reports:
+      cobertura: build/coverage.xml
 
 g++-openblas:
   stage: build
@@ -718,7 +718,7 @@ qmcpack-cuda-11.6-compileonly:
       - apt-get update -y
       - apt-get install --no-install-recommends -y nvhpc-22-3 gfortran g++ git wget  make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev libxml2-dev make numdiff pkg-config python3 python3-h5py python3-mpi4py python3-numpy python3-scipy
       - g++ --version
-      - /opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc --version
+      - /opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc
       - wget https://cmake.org/files/v3.22/cmake-3.22.4-linux-x86_64.sh --no-verbose # following https://askubuntu.com/a/865294/15943
       - mkdir /opt/cmake
       - sh cmake-3.22.4-linux-x86_64.sh --skip-license --prefix=/opt/cmake
@@ -793,16 +793,21 @@ qmcpack-cuda-runner:
   script:
     - cmake --version
     - git clone https://github.com/QMCPACK/qmcpack.git
+    - cp -r qmcpack qmcpack.noupdate
     - cd qmcpack
     - git config --global user.email "alfredo.correa@gmail.com" && git config --global user.name "Alfredo Correa"
     - git rm -r external_codes/boost_multi/multi && git commit -m "remove multi subtree"
-    - echo $CI_REPOSITORY_URL
-    - echo $CI_COMMIT_BRANCH
-    - git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL $CI_COMMIT_BRANCH || git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL # e.g. https://gitlab.com/correaa/boost-multi.git master
+    - git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL $CI_COMMIT_BRANCH # e.g. https://gitlab.com/correaa/boost-multi.git
+    - cd ../qmcpack.noupdate
     - cd build
-    - /usr/local/cuda/bin/nvcc --version
     - CUDACXX=/usr/local/cuda/bin/nvcc cmake -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DQMC_CXX_STANDARD=17 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_HOST_COMPILER=g++-9 -DCMAKE_CXX_FLAGS="-Wno-deprecated -Wno-deprecated-declarations" ..
-    - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance VERBOSE=1
+    - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
+    - ctest -R ppconvert --output-on-failure
+    - ctest -R afqmc     --output-on-failure
+    - cd ../../qmcpack
+    - cd build
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DQMC_CXX_STANDARD=17 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_HOST_COMPILER=g++-9 -DCMAKE_CXX_FLAGS="-Wno-deprecated -Wno-deprecated-declarations" ..
+    - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
     - ctest -R ppconvert --output-on-failure
     - ctest -R afqmc     --output-on-failure
 
