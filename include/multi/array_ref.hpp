@@ -383,13 +383,15 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	HD constexpr auto operator()(index i          ) const -> decltype(auto) {return this->operator[](i)       ; }
 
  private:
-	template<typename Tuple, std::size_t ... I>
-	HD constexpr auto apply_impl(Tuple const& t, std::index_sequence<I...>/*012*/) const -> decltype(auto) {
-		return this->operator()(std::get<I>(t)...);
+	template<class Self, typename Tuple, std::size_t ... I>
+	static HD constexpr auto apply_impl(Self&& self, Tuple const& t, std::index_sequence<I...>/*012*/) -> decltype(auto) {
+		return std::forward<Self>(self)(std::get<I>(t)...);
 	}
 
  public:
-	template<typename Tuple> HD constexpr auto apply(Tuple const& t) const -> decltype(auto) {return apply_impl(t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
+	template<typename Tuple> HD constexpr auto apply(Tuple const& t) const& -> decltype(auto) {return apply_impl(          *this , t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
+	template<typename Tuple> HD constexpr auto apply(Tuple const& t)     && -> decltype(auto) {return apply_impl(std::move(*this), t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
+	template<typename Tuple> HD constexpr auto apply(Tuple const& t)      & -> decltype(auto) {return apply_impl(          *this , t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
 
  private:
 	ptr_type ptr_;
@@ -1836,7 +1838,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
  private:
 	template<class Self, typename Tuple, std::size_t ... I, basic_array* = nullptr>
-	friend HD constexpr auto apply_impl(Self&& self, Tuple const& t, std::index_sequence<I...> /*012*/) -> decltype(auto) {
+	static HD constexpr auto apply_impl(Self&& self, Tuple const& t, std::index_sequence<I...> /*012*/) -> decltype(auto) {
 		return std::forward<Self>(self)(std::get<I>(t)...);
 	}
 
