@@ -51,13 +51,12 @@ extern "C" {
 #define z std::complex<d>
 #define v void
 
-
+// cppcheck-suppress unusedStructMember
 using Complex_float  = struct { float  real, imag; };
+// cppcheck-suppress unusedStructMember
 using Complex_double = struct { double real, imag; };
-//typedef struct { float  real, imag; } Complex_float ;
-//typedef struct { double real, imag; } Complex_double;
 
-#define C Complex_float  // _Complex s
+#define C Complex_float   // _Complex s
 #define Z Complex_double  // _Complex d
 
 #if defined(MULTI_BLAS_INT)
