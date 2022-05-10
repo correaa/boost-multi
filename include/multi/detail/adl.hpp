@@ -164,7 +164,7 @@ constexpr auto to_address(const T& p) noexcept
 	return me_to_address(priority<2>{}, p);
 }
 
-template<class Alloc, class ForwardIt, class Size, typename Value = typename std::iterator_traits<ForwardIt>::value_type, typename = decltype(std::addressof(*ForwardIt{}))>
+template<class Alloc, class ForwardIt, class Size, typename Value = typename std::iterator_traits<ForwardIt>::value_type, typename = decltype(std::addressof(*ForwardIt{})), typename = decltype(Value())>
 auto alloc_uninitialized_value_construct_n(Alloc& alloc, ForwardIt first, Size n) -> ForwardIt {
 // ->std::decay_t<decltype(std::allocator_traits<Alloc>::construct(alloc, std::addressof(*first), Value()), first)>
 	ForwardIt current = first;
@@ -446,13 +446,25 @@ public:
 	template<class... As> constexpr	auto operator()(As&&... as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
 } adl_lexicographical_compare;
 
-constexpr class adl_alloc_uninitialized_value_construct_n_t {
-	template<class... As>          constexpr auto _(priority<1>/**/,        As&&... as) const DECLRETURN(              xtd::alloc_uninitialized_value_construct_n(std::forward<As>(as)...))  // TODO(correaa) use boost alloc_X functions?
-	template<class... As>          constexpr auto _(priority<2>/**/,        As&&... as) const DECLRETURN(                   alloc_uninitialized_value_construct_n(std::forward<As>(as)...))
-	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& t, As&&... as) const DECLRETURN(  std::decay_t<T>::alloc_uninitialized_value_construct_n(std::forward<T>(t), std::forward<As>(as)...))
-	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).alloc_uninitialized_value_construct_n(std::forward<As>(as)...))
-public:
+constexpr class adl_uninitialized_value_construct_n_t {
+	template<class... As>              constexpr auto _(priority<1>/**/,                    As&&... as) const DECLRETURN(              std::uninitialized_value_construct_n(std::forward<As>(as)...))  // TODO(correaa) use boost alloc_X functions?
+	template<class... As>              constexpr auto _(priority<2>/**/,                    As&&... as) const DECLRETURN(                   uninitialized_value_construct_n(std::forward<As>(as)...))
+	template<class T, class... As>     constexpr auto _(priority<3>/**/, T&& t,             As&&... as) const DECLRETURN(  std::decay_t<T>::uninitialized_value_construct_n(std::forward<T>(t), std::forward<As>(as)...))
+	template<class T, class... As>     constexpr auto _(priority<4>/**/, T&& t,             As&&... as) const DECLRETURN(std::forward<T>(t).uninitialized_value_construct_n(std::forward<As>(as)...))
+
+ public:
 	template<class... As> constexpr auto operator()(As&&... as) const {return (_(priority<4>{}, std::forward<As>(as)...));}
+} adl_uninitialized_value_construct_n;
+
+constexpr class adl_alloc_uninitialized_value_construct_n_t {
+	template<class Alloc, class... As> constexpr auto _(priority<1>/**/, Alloc&& /*alloc*/, As&&... as) const DECLRETURN(                     adl_uninitialized_value_construct_n(std::forward<As>(as)...))
+	template<class... As>              constexpr auto _(priority<2>/**/,                    As&&... as) const DECLRETURN(              xtd::alloc_uninitialized_value_construct_n(std::forward<As>(as)...))  // TODO(correaa) use boost alloc_X functions?
+	template<class... As>              constexpr auto _(priority<3>/**/,                    As&&... as) const DECLRETURN(                   alloc_uninitialized_value_construct_n(std::forward<As>(as)...))
+	template<class T, class... As>     constexpr auto _(priority<4>/**/, T&& t,             As&&... as) const DECLRETURN(  std::decay_t<T>::alloc_uninitialized_value_construct_n(std::forward<T>(t), std::forward<As>(as)...))
+	template<class T, class... As>     constexpr auto _(priority<5>/**/, T&& t,             As&&... as) const DECLRETURN(std::forward<T>(t).alloc_uninitialized_value_construct_n(std::forward<As>(as)...))
+
+ public:
+	template<class... As> constexpr auto operator()(As&&... as) const {return (_(priority<5>{}, std::forward<As>(as)...));}
 } adl_alloc_uninitialized_value_construct_n;
 
 constexpr class adl_uninitialized_default_construct_n_t {
