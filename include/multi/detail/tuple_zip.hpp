@@ -178,6 +178,7 @@ constexpr auto get(tuple<T0, Ts...>&& t) -> auto&& {
 namespace std {  // NOLINT(cert-dcl58-cpp) define stuff in STD
 
 template<class... Ts> struct tuple_size<boost::multi::detail::tuple<Ts...>> {
+	// cppcheck-suppress unusedStructMember
 	static constexpr std::size_t value = sizeof...(Ts);
 };
 
