@@ -61,7 +61,7 @@ Compiling and running the tests depends on Boost.Test
 (which can be installed with `sudo apt install libboost-serialization-dev libfftw3-dev libblas64-dev liblapack64-dev libthrust-dev libcudart11.0` or indiviudually.)
 
 The code is developed for several compilers with standard C++17 support, for reference:
-LLVM's `clang` (9+), GNU's `g++` (7+), Nvidia's `nvcc` (11.3+) and `nvc++` (20.7-21.3+), Intel's `icpc` (2021.2.0+) and `icpx` (2022.0.2+) and Baxter's [`circle`](https://www.circle-lang.org/) (build 168). 
+LLVM's `clang` (9+) (`libc++` and `libstdc++`), GNU's `g++` (7+), Nvidia's `nvcc` (11.3+) and `nvc++` (20.7-21.3+), Intel's `icpc` (2021.2.0+) and `icpx` (2022.0.2+) and Baxter's [`circle`](https://www.circle-lang.org/) (build 168). 
 For detailed compilation instructions of test please inspect the Continuous Integration (CI) [definition file](https://gitlab.com/correaa/boost-multi/-/blob/master/.gitlab-ci.yml).
 
 ## Types
