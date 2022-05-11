@@ -786,7 +786,7 @@ qmcpack-icpc-runner:
     - ctest -R ppconvert --output-on-failure
 
 qmcpack-cuda-runner:
-  allow_failure: true
+  allow_failure: false
   stage: test
   tags:
     - intel_compiler
