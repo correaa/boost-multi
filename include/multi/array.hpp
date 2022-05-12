@@ -78,9 +78,10 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	using decay_type = array<T, D, Alloc>;
 	using layout_type = typename array_ref<T, D, typename std::allocator_traits<Alloc>::pointer>::layout_type;
 
+	using ref = array_ref<T, D, typename std::allocator_traits<typename std::allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
+
  protected:
 	using alloc_traits = typename std::allocator_traits<allocator_type>;
-	using ref = array_ref<T, D, typename std::allocator_traits<typename std::allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>;
 
 	auto uninitialized_value_construct() {
 		return adl_alloc_uninitialized_value_construct_n(static_array::alloc(), this->base_, this->num_elements());

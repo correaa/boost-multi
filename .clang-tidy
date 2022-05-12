@@ -28,6 +28,7 @@ Checks: '*,
   -cppcoreguidelines-macro-usage,
   -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
   -cppcoreguidelines-pro-type-vararg,
+  -fuchsia-default-arguments-declarations,
   -fuchsia-default-arguments-calls,
   -fuchsia-overloaded-operator,
   -fuchsia-statically-constructed-objects,
@@ -50,6 +51,7 @@ Checks: '*,
 #  -cppcoreguidelines-macro-usage,                        // BOOST_TEST_MODULE macro requires this
 #  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,  // assert macros need this
 #  -cppcoreguidelines-pro-type-vararg,                    // BOOST_REQUIRE macros require this
+#  -fuchsia-default-arguments-declarations                // BOOST_AUTO_TEST_CASE_TEMPLATE
 #  -fuchsia-default-arguments-calls,                      // BOOST_REQUIRE macros require this
 #  -fuchsia-overloaded-operator,                          // this library overloads operators (==, >, +)
 #  -fuchsia-statically-constructed-objects,               // BOOST_AUTO_TEST_CASE creates these
