@@ -233,8 +233,8 @@ struct basic_array_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin
 
 	template<class, class> friend struct basic_array_ptr;
 
-	constexpr basic_array_ptr(typename Ref::element_ptr p, layout_t<typename Ref::rank{}-1> l) : Ref{l, p} {}
-	constexpr basic_array_ptr(typename Ref::element_ptr p, index_extensions<typename Ref::rank{}> e) : Ref{p, e} {}
+	constexpr basic_array_ptr(typename Ref::element_ptr p, layout_t<Ref::rank_v - 1> l) : Ref{l, p} {}
+	constexpr basic_array_ptr(typename Ref::element_ptr p, index_extensions<Ref::rank_v> e) : Ref{p, e} {}
 	template<class Array>
 	// cppcheck-suppress noExplicitConstructor ; no information loss, allows comparisons
 	constexpr basic_array_ptr(Array* Ap) : basic_array_ptr{Ap->data_elements(), Ap->layout()} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)

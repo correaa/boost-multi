@@ -1033,7 +1033,7 @@ array(iextensions<D>, T) -> array<T, D>;
 //  template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<4>, T, MR*) -> array<T, 4, A>;
 //  template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<5>, T, MR*) -> array<T, 5, A>;
 
-template<class MatrixRef, class DT = typename MatrixRef::decay_type, class T = typename DT::element, dimensionality_type D = typename DT::rank{}, class Alloc = typename DT::allocator_type>
+template<class MatrixRef, class DT = typename MatrixRef::decay_type, class T = typename DT::element, dimensionality_type D = DT::rank_v, class Alloc = typename DT::allocator_type>
 array(MatrixRef)->array<T, D, Alloc>;
 
 template<typename T, dimensionality_type D, typename P> array(basic_array<T, D, P>)->array<T, D>;
@@ -1041,7 +1041,7 @@ template<typename T, dimensionality_type D, typename P> array(basic_array<T, D, 
 #endif  // ends defined(__cpp_deduction_guides)
 
 template <class T, std::size_t N>
-auto decay(const T(&t)[N]) noexcept -> multi::array<typename std::remove_all_extents<T[N]>::type, std::rank<T[N]>{}>{return multi::array_cref<typename std::remove_all_extents<T[N]>::type, std::rank<T[N]>{}>(data_elements(t), extensions(t));}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+auto decay(const T(&t)[N]) noexcept -> multi::array<typename std::remove_all_extents<T[N]>::type, std::rank_v<T[N]>>{return multi::array_cref<typename std::remove_all_extents<T[N]>::type, std::rank_v<T[N]>>(data_elements(t), extensions(t));}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
 
 template<class T, std::size_t N>
 struct array_traits<T[N], void, void> {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
