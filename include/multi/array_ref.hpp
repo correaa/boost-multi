@@ -678,6 +678,13 @@ struct elements_range_t {
 		return *this;
 	}
 
+	auto operator=(std::initializer_list<value_type> il) && -> elements_range_t& {operator=(il); return *this;}
+	auto operator=(std::initializer_list<value_type> il) &  -> elements_range_t& {
+		assert(static_cast<size_type>(il.size()) == size());
+		adl_copy_n(il.begin(), il.size(), begin());
+		return *this;
+	}
+
 #if 0
 	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL> const& o)  & -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
 	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL> const& o) && -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
@@ -1786,6 +1793,13 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
  public:
 	friend constexpr auto dimensionality(basic_array const&/*self*/) -> dimensionality_type {return 1;}
+
+	auto operator=(std::initializer_list<typename basic_array::value_type> il) && -> basic_array& {operator=(il); return *this;}
+	auto operator=(std::initializer_list<typename basic_array::value_type> il) &  -> basic_array& {
+		assert( static_cast<size_type>(il.size()) == this->size() );
+		adl_copy_n(il.begin(), il.size(), begin());
+		return *this;
+	}
 
 	// NOLINTNEXTLINE(runtime/operator)
 	constexpr auto operator&()     && -> basic_array_ptr<basic_array, Layout> {  // NOLINT(google-runtime-operator) : taking address of a reference-like object should be allowed

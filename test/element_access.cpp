@@ -286,4 +286,14 @@ BOOST_AUTO_TEST_CASE(multi_test_stencil) {
 //	BOOST_REQUIRE( & h[1][2][3][4][5] == & A[1][2][3][4][5] );
 //}
 
+BOOST_AUTO_TEST_CASE(elements_from_init_list) {
+
+	multi::array<double, 2> A({3, 2});
+	A().elements() = {1., 2., 3., 4., 5., 6.};
+	BOOST_REQUIRE(A[1][0] == 3.);
+
+	A.elements() = {10., 20., 30., 40., 50., 60.};
+	BOOST_REQUIRE(A[1][0] == 30.);
+}
+
 #endif
