@@ -1300,7 +1300,8 @@ struct basic_array
 	-> basic_array& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
 		assert(this->size() == r.size());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	//  MULTI_MARK_SCOPE(std::string{"multi::operator= D="}+std::to_string(D)+" from range to "+typeid(T).name() );
-		adl_copy_n(adl_begin(r), this->size(), begin());
+	//	adl_copy_n(adl_begin(r), this->size(), begin());
+		adl_copy(adl_begin(r), adl_end(r), begin());
 		return *this;
 	}
 	template<class Range, class = std::enable_if_t<not std::is_base_of<basic_array, Range>{}> >
