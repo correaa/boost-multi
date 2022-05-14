@@ -29,7 +29,7 @@ class involuted {
 	~involuted() = default;
 	// NOLINTNEXTLINE(google-explicit-constructor,hicpp-explicit-conversions): simulates a reference
 	constexpr operator decay_type() const& {return f_(r_);}
-	// NOLINTNEXTLINE(google-runtime-operator): simulates reference
+	// NOLINTNEXTLINE(google-runtime-operator,fuchsia-overloaded-operator): simulates reference
 	constexpr auto operator&()&& -> decltype(auto) {return involuter<decltype(&std::declval<Ref>()), Involution>{&r_, f_};} //  NOLINT(runtime/operator)
 	// NOLINTNEXTLINE(fuchsia-trailing-return,-warnings-as-errors): trailing return helps reading
 	template<class DecayType> constexpr auto operator=(DecayType&& other)& -> involuted& {r_=f_(std::forward<DecayType>(other)); return *this;}
