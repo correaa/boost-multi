@@ -811,10 +811,10 @@ qmcpack-cuda-runner:
     - ctest -R ppconvert --output-on-failure
     - ctest -R afqmc     --output-on-failure
 
-inq-g++-latest:
+inq-clang++-latest:
   stage: test
   script:
-    - apt-get update && apt-get install --no-install-recommends -y --quiet libblas-dev liblapack-dev libfftw3-dev libboost-filesystem-dev libboost-serialization-dev libopenmpi-dev gfortran g++ pkg-config cmake make git ca-certificates
+    - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates clang cmake gfortran git libblas-dev libboost-filesystem-dev libboost-serialization-dev libfftw3-dev liblapack-dev libopenmpi-dev make pkg-config
     - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
     - cd inq
     - cd external_libs/multi
@@ -822,7 +822,7 @@ inq-g++-latest:
     - git checkout $CI_COMMIT_BRANCH
     - cd ../..
     - mkdir build && cd build
-    - ../configure --prefix=$HOME --disable-debug
+    - CXX=clang++ ../configure --prefix=$HOME --disable-debug
     - make
     - make install
     - ctest --output-on-failure
@@ -910,6 +910,22 @@ inq-cuda-11.6-gcc9-compileonly:
 #      - /usr/local/cuda/bin/nvcc -V
 #      - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70
 #      - make silicon
+
+inq-g++-latest:
+  stage: test
+  script:
+    - apt-get update && apt-get install --no-install-recommends -y --quiet libblas-dev liblapack-dev libfftw3-dev libboost-filesystem-dev libboost-serialization-dev libopenmpi-dev gfortran g++ pkg-config cmake make git ca-certificates
+    - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
+    - cd inq
+    - cd external_libs/multi
+    - git fetch
+    - git checkout $CI_COMMIT_BRANCH
+    - cd ../..
+    - mkdir build && cd build
+    - ../configure --prefix=$HOME --disable-debug
+    - make
+    - make install
+    - ctest --output-on-failure
 
 inq-nvcc-ompi-runner:
   stage: test
