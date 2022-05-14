@@ -2239,15 +2239,6 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 {
 	~array_ref() = default;  // lints(cppcoreguidelines-special-member-functions)
 
-#if not defined(__NVCC__)  // crashes nvcc 11.3 !!!!
-	constexpr auto operator=(array_ref&& other)  // lints(cppcoreguidelines-special-member-functions)
-	noexcept(std::is_nothrow_copy_assignable<T>{})  // lints(hicpp-noexcept-move,performance-noexcept-move-constructor)
-	-> array_ref& {
-		operator=(other);  // array_refs do not rebind! elements must be copied
-		return *this;  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
-	}
-#endif
-
 	using layout_type = typename array_ref::types::layout_t;
 
  protected:
@@ -2320,6 +2311,21 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 		operator=(other);
 		return *this;
 	}
+
+#if not defined(__NVCC__)  // crashes nvcc 11.3 !!!!
+	constexpr auto operator=(array_ref&& other) &  // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor)
+	-> array_ref& {
+		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
+		operator=(std::as_const(other));
+		return *this;
+	}
+	constexpr auto operator=(array_ref&& other) &&  // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor)
+	-> array_ref& {
+		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
+		operator=(std::as_const(other));
+		return *this;
+	}
+#endif
 
 	template<typename TT, dimensionality_type DD = D, class... As>
 //  constexpr

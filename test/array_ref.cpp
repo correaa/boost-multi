@@ -6,6 +6,8 @@
 
 #include "multi/array.hpp"
 
+#include<numeric>  // for std::iota
+
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
@@ -338,4 +340,39 @@ BOOST_AUTO_TEST_CASE(array_ref_rebuild_1D) {
 	BOOST_REQUIRE( d1B.base()   == d1B_ref.base() );
 	BOOST_REQUIRE( d1B.layout() == d1B_ref.layout() );
 	BOOST_REQUIRE( &d1R() == &multi::ref(d1B.begin(), d1B.end()) );
+}
+
+BOOST_AUTO_TEST_CASE(array_ref_move_assigment_2D) {
+	{
+		multi::array<double, 2> A({5, 4}); std::iota(A.elements().begin(), A.elements().end(),  0.);
+		multi::array<double, 2> B({5, 4}); std::iota(B.elements().begin(), B.elements().end(), 10.);
+
+		multi::array_ref<double, 2>&& Aref{{5, 4}, A.data_elements()};
+		multi::array_ref<double, 2>&& Bref{{5, 4}, B.data_elements()};
+
+		Bref = Aref;
+
+		BOOST_REQUIRE( B == A );
+	}
+	{
+		multi::array<double, 2> A({5, 4}); std::iota(A.elements().begin(), A.elements().end(),  0.);
+		multi::array<double, 2> B({5, 4}); std::iota(B.elements().begin(), B.elements().end(), 10.);
+
+		multi::array_ref<double, 2>&& Bref{{5, 4}, B.data_elements()};
+
+		Bref = multi::array_ref<double, 2>{{5, 4}, A.data_elements()};
+
+		BOOST_REQUIRE( B == A );
+	}
+	{
+		multi::array<double, 2> A({5, 4}); std::iota(A.elements().begin(), A.elements().end(),  0.);
+		multi::array<double, 2> B({5, 4}); std::iota(B.elements().begin(), B.elements().end(), 10.);
+
+		multi::array_ref<double, 2>&& Aref{{5, 4}, A.data_elements()};
+		multi::array_ref<double, 2>&& Bref{{5, 4}, B.data_elements()};
+
+		Bref = std::move(Aref);
+
+		BOOST_REQUIRE( B == A );
+	}
 }
