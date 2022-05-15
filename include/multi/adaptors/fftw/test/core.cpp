@@ -432,3 +432,175 @@ BOOST_AUTO_TEST_CASE(fftw_1D_power) {
 	BOOST_TEST( power(in) == power(out)/num_elements(out), boost::test_tools::tolerance(1e-15) );
 }
 
+#if 1
+namespace boost::multi::fftw {
+
+template<class MDIterator>
+class fft_iterator {
+	MDIterator base_;
+
+ public:
+	using iterator_type = MDIterator;
+
+	using difference_type = typename std::iterator_traits<MDIterator>::difference_type;
+	using value_type      = typename std::iterator_traits<MDIterator>::value_type;
+	using pointer         = void*;
+	class reference {
+		typename MDIterator::reference impl_;
+		explicit reference(typename MDIterator::reference impl) : impl_{std::move(impl)} {}
+		friend class fft_iterator;
+
+	 public:
+		using extensions_type = typename MDIterator::reference::extensions_type;
+		auto extensions() const -> extensions_type {return impl_.extensions();}
+	};
+
+	using iterator_category = std::random_access_iterator_tag; // using iterator_category = std::input_iterator_tag;
+
+	explicit fft_iterator(iterator_type base) noexcept : base_{std::move(base)} {}
+
+	friend auto operator-(fft_iterator const& a, fft_iterator const& b) -> difference_type {
+		return a.base_ - b.base_;
+	}
+
+	template<class ItOut>
+	friend auto copy(fft_iterator first, fft_iterator last, ItOut d_first) {
+		fftw::dft({1}, multi::ref(first.base_, last.base_), multi::ref(d_first, d_first + (last.base_ - first.base_)));
+		return d_first + (last.base_ - first.base_);
+	}
+	template<class ItOut>
+	friend auto uninitialized_copy(fft_iterator first, fft_iterator last, ItOut d_first) {
+		return copy(first, last, d_first);
+	}
+
+	auto operator*() const {return reference{*base_};}
+};
+
+template<class Array>
+class fft_range {
+	typename Array::const_iterator first_;
+	typename Array::size_type      n_;
+
+	using iterator_type = typename Array::const_iterator;
+
+ public:
+	using size_type = typename Array::size_type;
+	using iterator = fft_iterator<iterator_type>;
+
+	using decay_type = typename Array::decay_type;
+
+	explicit fft_range(Array const& in) : first_{in.begin()}, n_{in.size()} {}
+
+	auto begin() const {return iterator{first_     };}
+	auto end()   const {return iterator{first_ + n_};}
+
+	auto size()       const {return n_;}
+	auto extensions() const {return multi::ref(first_, first_ + n_).extensions();}
+
+	auto operator+() const {return decay_type(*this);}
+};
+
+template<class Array> auto fft(Array const& in) {return fft_range{in};}
+
+}  // end namespace boost::multi::fftw
+
+BOOST_AUTO_TEST_CASE(fftw_2D_const_range_part1) {
+	multi::array<complex, 2> const in = {
+		{  1. + 2.*I,  9. - 1.*I, 2. +  4.*I},
+		{  3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
+		{  4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
+		{  3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
+		{ 31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+	};
+
+	{
+		multi::static_array<complex, 2> fwd(in.extensions());
+
+		auto* data = fwd.data_elements();
+
+		fwd = multi::fftw::fft(in);
+
+		BOOST_REQUIRE( size(fwd) == size(in) );
+		BOOST_REQUIRE( data == fwd.data_elements() );
+
+		BOOST_TEST_REQUIRE( power(  in    ) - power(  fwd    )/size(fwd) < 1e-8 );
+		BOOST_TEST_REQUIRE( power((~in)[0]) - power((~fwd)[0])/size(fwd) < 1e-8 );
+		BOOST_TEST_REQUIRE( power((~in)[2]) - power((~fwd)[2])/size(fwd) < 1e-8 );
+	}
+	{
+		multi::array<complex, 2> fwd(in.extensions());
+
+		auto* data = fwd.data_elements();
+
+		fwd = multi::fftw::fft(in);
+
+		BOOST_REQUIRE( size(fwd) == size(in) );
+		BOOST_REQUIRE( data == fwd.data_elements() );
+
+		BOOST_TEST_REQUIRE( power(  in    ) - power(  fwd    )/size(fwd) < 1e-8 );
+		BOOST_TEST_REQUIRE( power((~in)[0]) - power((~fwd)[0])/size(fwd) < 1e-8 );
+		BOOST_TEST_REQUIRE( power((~in)[2]) - power((~fwd)[2])/size(fwd) < 1e-8 );
+	}
+	{
+		multi::array<complex, 2> fwd;
+
+		auto* data = fwd.data_elements();
+
+		fwd = multi::fftw::fft(in);
+
+		BOOST_REQUIRE( size(fwd) == size(in) );
+		BOOST_REQUIRE( data != fwd.data_elements() );
+
+		BOOST_TEST_REQUIRE( power(  in    ) - power(  fwd    )/size(fwd) < 1e-8 );
+		BOOST_TEST_REQUIRE( power((~in)[0]) - power((~fwd)[0])/size(fwd) < 1e-8 );
+		BOOST_TEST_REQUIRE( power((~in)[2]) - power((~fwd)[2])/size(fwd) < 1e-8 );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(fftw_2D_const_range_part2) {
+	multi::array<complex, 2> const in = {
+		{  1. + 2.*I,  9. - 1.*I, 2. +  4.*I},
+		{  3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
+		{  4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
+		{  3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
+		{ 31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+	};
+
+	{
+		multi::array<complex, 2> fwd(multi::fftw::fft(in));
+
+		BOOST_REQUIRE( size(fwd) == size(in) );
+
+		BOOST_TEST_REQUIRE( power(in      ) - power(  fwd    )/size(fwd) < 1e-8 );
+		BOOST_TEST_REQUIRE( power((~in)[0]) - power((~fwd)[0])/size(fwd) < 1e-8 );
+		BOOST_TEST_REQUIRE( power((~in)[2]) - power((~fwd)[2])/size(fwd) < 1e-8 );
+	}
+	{
+		multi::array<complex, 2> fwd = multi::fftw::fft(in);
+
+		BOOST_REQUIRE( size(fwd) == size(in) );
+
+		BOOST_TEST_REQUIRE( power(in      ) - power(  fwd    )/size(fwd) < 1e-8 );
+		BOOST_TEST_REQUIRE( power((~in)[0]) - power((~fwd)[0])/size(fwd) < 1e-8 );
+		BOOST_TEST_REQUIRE( power((~in)[2]) - power((~fwd)[2])/size(fwd) < 1e-8 );
+	}
+	{
+		auto fwd = multi::array<complex, 2>(multi::fftw::fft(in));
+
+		BOOST_REQUIRE( size(fwd) == size(in) );
+
+		BOOST_TEST_REQUIRE( power(in      ) - power(  fwd    )/size(fwd) < 1e-8 );
+		BOOST_TEST_REQUIRE( power((~in)[0]) - power((~fwd)[0])/size(fwd) < 1e-8 );
+		BOOST_TEST_REQUIRE( power((~in)[2]) - power((~fwd)[2])/size(fwd) < 1e-8 );
+	}
+	{
+		auto fwd = + multi::fftw::fft(in);
+
+		BOOST_REQUIRE( fwd.extensions() == in.extensions() );
+
+		BOOST_TEST_REQUIRE( power(in      ) - power(  fwd    )/size(fwd) < 1e-8 );
+		BOOST_TEST_REQUIRE( power((~in)[0]) - power((~fwd)[0])/size(fwd) < 1e-8 );
+		BOOST_TEST_REQUIRE( power((~in)[2]) - power((~fwd)[2])/size(fwd) < 1e-8 );
+	}
+}
+#endif

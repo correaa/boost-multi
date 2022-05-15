@@ -2312,7 +2312,6 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 		return *this;
 	}
 
-#if not defined(__NVCC__)  // crashes nvcc 11.3 !!!!
 	constexpr auto operator=(array_ref&& other) &  // NOLINT(hicpp-noexcept-move,performance-noexcept-move-constructor)
 	-> array_ref& {
 		if(this == std::addressof(other)) {return *this;}  // lints(cert-oop54-cpp)
@@ -2325,7 +2324,6 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 		operator=(std::as_const(other));
 		return *this;
 	}
-#endif
 
 	template<typename TT, dimensionality_type DD = D, class... As>
 //  constexpr
