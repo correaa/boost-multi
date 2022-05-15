@@ -504,7 +504,7 @@ template<class Array> auto fft(Array const& in) {return fft_range{in};}
 
 }  // end namespace boost::multi::fftw
 
-BOOST_AUTO_TEST_CASE(fftw_2D_const_range) {
+BOOST_AUTO_TEST_CASE(fftw_2D_const_range_part1) {
 	multi::array<complex, 2> const in = {
 		{  1. + 2.*I,  9. - 1.*I, 2. +  4.*I},
 		{  3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
@@ -527,6 +527,45 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range) {
 		BOOST_TEST_REQUIRE( power((~in)[0]) - power((~fwd)[0])/size(fwd) < 1e-8 );
 		BOOST_TEST_REQUIRE( power((~in)[2]) - power((~fwd)[2])/size(fwd) < 1e-8 );
 	}
+	{
+		multi::array<complex, 2> fwd(in.extensions());
+
+		auto* data = fwd.data_elements();
+
+		fwd = multi::fftw::fft(in);
+
+		BOOST_REQUIRE( size(fwd) == size(in) );
+		BOOST_REQUIRE( data == fwd.data_elements() );
+
+		BOOST_TEST_REQUIRE( power(  in    ) - power(  fwd    )/size(fwd) < 1e-8 );
+		BOOST_TEST_REQUIRE( power((~in)[0]) - power((~fwd)[0])/size(fwd) < 1e-8 );
+		BOOST_TEST_REQUIRE( power((~in)[2]) - power((~fwd)[2])/size(fwd) < 1e-8 );
+	}
+	{
+		multi::array<complex, 2> fwd;
+
+		auto* data = fwd.data_elements();
+
+		fwd = multi::fftw::fft(in);
+
+		BOOST_REQUIRE( size(fwd) == size(in) );
+		BOOST_REQUIRE( data != fwd.data_elements() );
+
+		BOOST_TEST_REQUIRE( power(  in    ) - power(  fwd    )/size(fwd) < 1e-8 );
+		BOOST_TEST_REQUIRE( power((~in)[0]) - power((~fwd)[0])/size(fwd) < 1e-8 );
+		BOOST_TEST_REQUIRE( power((~in)[2]) - power((~fwd)[2])/size(fwd) < 1e-8 );
+	}
+}
+
+BOOST_AUTO_TEST_CASE(fftw_2D_const_range_part2) {
+	multi::array<complex, 2> const in = {
+		{  1. + 2.*I,  9. - 1.*I, 2. +  4.*I},
+		{  3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
+		{  4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
+		{  3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
+		{ 31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+	};
+
 	{
 		multi::array<complex, 2> fwd(multi::fftw::fft(in));
 
