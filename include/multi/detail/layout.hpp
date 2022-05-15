@@ -163,7 +163,7 @@ struct extensions_t {
 
  public:
 	template<class Archive>
-	void serialize(Archive& ar, const unsigned int /*version*/) {//, unsigned /*version*/) {
+	void serialize(Archive& ar, const unsigned int /*version*/) {
 		serialize_impl(ar, std::make_index_sequence<static_cast<std::size_t>(D)>());
 	}
 
@@ -193,6 +193,13 @@ struct extensions_t {
 			}
 		};
 	}
+
+	template<std::size_t Index>
+	friend constexpr auto get(extensions_t const& self) -> typename std::tuple_element<Index, base_>::type {
+		using boost::multi::detail::get;
+		return get<Index>(self.base());
+	}
+
 };
 
 template<> struct extensions_t<0> {
@@ -236,6 +243,12 @@ template<> struct extensions_t<0> {
 
 	constexpr auto operator==(extensions_t const& /*other*/) const {return true ;}
 	constexpr auto operator!=(extensions_t const& /*other*/) const {return false;}
+
+	template<std::size_t Index>
+	friend constexpr auto get(extensions_t const& self) -> typename std::tuple_element<Index, base_>::type {
+		using boost::multi::detail::get;
+		return get<Index>(self.base());
+	}
 };
 
 template<> struct extensions_t<1> {
@@ -321,6 +334,11 @@ template<> struct extensions_t<1> {
 	//	ar &                                                  extension ;
 	}
 
+	template<std::size_t Index>
+	friend constexpr auto get(extensions_t const& self) -> typename std::tuple_element<Index, base_>::type {
+		using boost::multi::detail::get;
+		return get<Index>(self.base());
+	}
 };
 
 template<dimensionality_type D> using iextensions = extensions_t<D>;
@@ -336,8 +354,13 @@ namespace std {  // NOLINT(cert-dcl58-cpp) : to implement structured bindings
     template<boost::multi::dimensionality_type D>
     struct tuple_size<boost::multi::extensions_t<D>> : std::integral_constant<std::size_t, static_cast<std::size_t>(D)> {};
 
+    template<std::size_t Index, boost::multi::dimensionality_type D>
+    struct tuple_element<Index, boost::multi::extensions_t<D>> {
+		using type = typename std::tuple_element<Index, typename boost::multi::extensions_t<D>::base_>::type;
+	};
+
 	template<std::size_t Index, boost::multi::dimensionality_type D>
-	constexpr auto get(boost::multi::extensions_t<D> const& self) {
+	constexpr auto get(boost::multi::extensions_t<D> const& self) -> typename std::tuple_element<Index, boost::multi::extensions_t<D>>::type {
 		using boost::multi::detail::get;
 		return get<Index>(self.base());
 	}
