@@ -195,7 +195,7 @@ BOOST_AUTO_TEST_CASE(fftw_1D_const_forward) {
 BOOST_AUTO_TEST_CASE(fftw_1D_const_sign) {
 	multi::array<complex, 1> const in = {1. + 2.*I, 2. + 3. *I, 4. + 5.*I, 5. + 6.*I};
 
-	auto const fwd = multi::fftw::dft(in, +1); // Fourier[in, FourierParameters -> {1, -1}]
+	auto const fwd = multi::fftw::dft(in, static_cast<multi::fftw::sign>(+1)); // Fourier[in, FourierParameters -> {1, -1}]
 	BOOST_REQUIRE( size(fwd) == size(in) );
 	BOOST_REQUIRE( fwd[2] == -2. - 2.*I  );
 }
@@ -203,7 +203,7 @@ BOOST_AUTO_TEST_CASE(fftw_1D_const_sign) {
 BOOST_AUTO_TEST_CASE(fftw_1D_const_copy_by_false) {
 	multi::array<complex, 1> const in = {1. + 2.*I, 2. + 3. *I, 4. + 5.*I, 5. + 6.*I};
 
-	auto const out = multi::fftw::dft({false}, in, +1);
+	auto const out = multi::fftw::dft({false}, in, static_cast<multi::fftw::sign>(+1));
 	BOOST_REQUIRE( out == in );
 }
 
@@ -243,7 +243,7 @@ BOOST_AUTO_TEST_CASE(fftw_many2_from_3) {
 BOOST_AUTO_TEST_CASE(fftw_many2_from_2) {
 	multi::array<complex, 2> in({5, 6}); randomizer<complex>{}(in);
 	multi::array<complex, 2> out({5, 6});
-	fftw::dft({true, true}, in, out, FFTW_FORWARD);
+	fftw::dft({true, true}, in, out, static_cast<fftw::sign>(FFTW_FORWARD));
 
 	multi::array<complex, 2> out2({5, 6});
 	fftw::dft(in, out2, FFTW_FORWARD);
@@ -411,7 +411,11 @@ BOOST_AUTO_TEST_CASE(fftw_4D_inq_poisson) {
 	}();
 
 	multi::array<complex, 4> out(extensions(in));
-	multi::fftw::dft({0, 1, 1, 0}, in, out);
+	using multi::fftw::sign;
+	multi::fftw::dft(
+		{static_cast<sign>(0), static_cast<sign>(+1), static_cast<sign>(+1), static_cast<sign>(0)},
+		in, out
+	);
 
 	using boost::multi::detail::get;
 	BOOST_TEST( power(in) == power(out)/get<1>(sizes(out))/get<2>(sizes(out)) , boost::test_tools::tolerance(1e-10) );
@@ -513,18 +517,31 @@ class fft_range {
 		std::rotate(new_which.begin(), new_which.begin() + 1, new_which.end());
 		return fft_range<std::decay_t<decltype(multi::ref(first_, first_ + n_).rotated())>>{multi::ref(first_, first_ + n_).rotated(), new_which};
 	}
+	auto unrotated() const {
+		auto new_which = which_;
+		std::rotate(new_which.rbegin(), new_which.rbegin() + 1, new_which.rend());
+		return fft_range<std::decay_t<decltype(multi::ref(first_, first_ + n_).unrotated())>>{multi::ref(first_, first_ + n_).unrotated(), new_which};
+	}
 	auto transposed() const {
 		auto new_which = which_;
 		std::swap(std::get<0>(new_which), std::get<1>(new_which));
 		return fft_range<std::decay_t<decltype(multi::ref(first_, first_ + n_).transposed())>>{multi::ref(first_, first_ + n_).transposed(), new_which};
 	}
 
-
-//	template<class... FBNs>
-//	auto operator()(FBNs... fbns) const {
-//		auto new_which = which_;
-//		
-//	}
+	template<class... FBNs>
+	auto operator()(FBNs... fbns) const {
+		static_assert( sizeof...(fbns) <= Array::rank_v , "too many arguments");
+		auto new_which = which_;
+		std::array<fftw::sign, sizeof...(fbns)> fbna{fbns...};
+		std::transform(fbna.begin(), fbna.end(), new_which.begin(), new_which.begin(), 
+			[](auto fbn, auto nw) {
+				if(fbn == fftw::none) {return nw;}
+				assert(nw == fftw::none);
+				return fbn;
+			}
+		);
+		return fft_range<std::decay_t<decltype(multi::ref(first_, first_ + n_)())>>{multi::ref(first_, first_ + n_)(), new_which};
+	}
 };
 
 template<class Array> auto  fft(Array const& in) {return fft_range{in, {fftw::forward }};}
@@ -762,4 +779,18 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_part2) {
 		BOOST_TEST_REQUIRE( fwd[2][0] == in[0][2] );
 	}
 }
+
+BOOST_AUTO_TEST_CASE(fftw_4D_many_new_interface) {
+	auto const in = [] {
+		multi::array<complex, 4> in({97, 95, 101, 10}, 0.);
+		in[2][3][4][5] = 99.; return in;
+	}();
+	auto fwd = + multi::fftw::ref(in)(fftw::forward, fftw::forward, fftw::forward, fftw::none);
+	BOOST_REQUIRE( in[2][3][4][5] == 99. );
+
+	multi::array<complex, 4> out(extensions(in));
+	multi::fftw::many_dft(begin(unrotated(in)), end(unrotated(in)), begin(unrotated(out)), fftw::forward);
+	BOOST_REQUIRE( out == fwd );
+}
+
 #endif
