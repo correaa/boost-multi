@@ -544,9 +544,21 @@ class fft_range {
 	}
 };
 
-template<class Array> auto  fft(Array const& in) {return fft_range{in, {fftw::forward }};}
-template<class Array> auto ifft(Array const& in) {return fft_range{in, {fftw::backward}};}
-template<class Array> auto  ref(Array const& in) {return fft_range{in, {}              };}
+template<class Array> 
+auto  ref(Array const& in) {return fft_range{in, {}};}
+
+template<dimensionality_type ND = 1, class Array>
+auto  fft(Array const& in) {
+	std::array<fftw::sign, Array::rank_v> which{};
+	for(auto it = which.begin(); it != which.begin() + ND; ++it) {*it = fftw::forward ;}
+	return fft_range{in, which};
+}
+template<dimensionality_type ND = 1, class Array>
+auto ifft(Array const& in) {
+	std::array<fftw::sign, Array::rank_v> which{};
+	for(auto it = which.begin(); it != which.begin() + ND; ++it) {*it = fftw::backward;}
+	return fft_range{in, which};
+}
 
 }  // end namespace boost::multi::fftw
 
@@ -783,14 +795,25 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_part2) {
 BOOST_AUTO_TEST_CASE(fftw_4D_many_new_interface) {
 	auto const in = [] {
 		multi::array<complex, 4> in({97, 95, 101, 10}, 0.);
-		in[2][3][4][5] = 99.; return in;
+		in[2][3][4][5] = 99.;
+		return in;
 	}();
-	auto fwd = + multi::fftw::ref(in)(fftw::forward, fftw::forward, fftw::forward, fftw::none);
-	BOOST_REQUIRE( in[2][3][4][5] == 99. );
+	{
+		auto fwd = + multi::fftw::ref(in)(fftw::forward, fftw::forward, fftw::forward, fftw::none);
+		BOOST_REQUIRE( in[2][3][4][5] == 99. );
 
-	multi::array<complex, 4> out(extensions(in));
-	multi::fftw::many_dft(begin(unrotated(in)), end(unrotated(in)), begin(unrotated(out)), fftw::forward);
-	BOOST_REQUIRE( out == fwd );
+		multi::array<complex, 4> out(extensions(in));
+		multi::fftw::many_dft(begin(unrotated(in)), end(unrotated(in)), begin(unrotated(out)), fftw::forward);
+		BOOST_REQUIRE( out == fwd );
+	}
+	{
+		auto fwd = + multi::fftw::ref(in)(fftw::forward, fftw::forward, fftw::forward);
+		BOOST_REQUIRE( in[2][3][4][5] == 99. );
+
+		multi::array<complex, 4> out(extensions(in));
+		multi::fftw::many_dft(begin(unrotated(in)), end(unrotated(in)), begin(unrotated(out)), fftw::forward);
+		BOOST_REQUIRE( out == fwd );
+	}
 }
 
 #endif
