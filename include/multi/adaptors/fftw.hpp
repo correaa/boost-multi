@@ -538,8 +538,8 @@ int plan::nthreads_ = (initialize_threads(), with_nthreads());
 #endif
 
 using sign = int;
-constexpr sign forward = FFTW_FORWARD;
-constexpr sign none = 0;
+constexpr sign forward  = FFTW_FORWARD;
+constexpr sign none     = 0;
 constexpr sign backward = FFTW_BACKWARD;
 
 static_assert( forward != none and none != backward and backward != forward, "!");
@@ -698,7 +698,7 @@ auto transpose(Array& a)
 }
 
 #if 0
-// TODO investigate why this doesn't work as expected
+// TODO(correaa) investigate why this doesn't work as expected
 template<class Array>
 auto rotate(Array& a)
 ->decltype(fftw::copy(rotated(a), a.reshape(extensions(layout(a).transpose())))){
@@ -708,7 +708,7 @@ auto rotate(Array& a)
 }
 #endif
 
-} // end namespace fftw
-} // end namespace boost::multi
+}  // end namespace fftw
+}  // end namespace boost::multi
 
 #endif
