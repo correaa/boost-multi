@@ -533,7 +533,7 @@ class fft_range {
 		static_assert( sizeof...(fbns) <= Array::rank_v , "too many arguments");
 		auto new_which = which_;
 		std::array<fftw::sign, sizeof...(fbns)> fbna{fbns...};
-		std::transform(fbna.begin(), fbna.end(), new_which.begin(), new_which.begin(), 
+		std::transform(fbna.begin(), fbna.end(), new_which.begin(), new_which.begin(),
 			[](auto fbn, auto nw) {
 				if(fbn == fftw::none) {return nw;}
 				assert(nw == fftw::none);
@@ -814,6 +814,82 @@ BOOST_AUTO_TEST_CASE(fftw_4D_many_new_interface) {
 		multi::fftw::many_dft(begin(unrotated(in)), end(unrotated(in)), begin(unrotated(out)), fftw::forward);
 		BOOST_REQUIRE( out == fwd );
 	}
+}
+
+BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_naive) {
+	multi::array<complex, 2> in = {
+		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
+		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
+		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
+		{    3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
+		{   31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+	};
+	multi::array<complex, 2> const in_transpose = in.transposed();
+	in = in.transposed();
+	BOOST_REQUIRE( in != in_transpose );
+}
+
+BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_naive_square) {
+	multi::array<complex, 2> in = {
+		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
+		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
+		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
+	};
+	multi::array<complex, 2> const in_transpose = in.transposed();
+	in = in.transposed();
+	BOOST_REQUIRE( in != in_transpose );
+}
+
+BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed) {
+	multi::array<complex, 2> in = {
+		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
+		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
+		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
+		{    3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
+		{   31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+	};
+	multi::array<complex, 2> const in_transpose = in.transposed();
+	auto* in_base = in.base();
+	in = multi::fftw::ref(in).transposed();
+	BOOST_REQUIRE( in == in_transpose );
+	BOOST_REQUIRE( in_base == in.base() );
+}
+
+BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_square) {
+	multi::array<complex, 2> in = {
+		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
+		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
+		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
+	};
+	multi::array<complex, 2> const in_transpose = in.transposed();
+	auto* in_base = in.base();
+	in = multi::fftw::ref(in).transposed();
+	BOOST_REQUIRE( in == in_transpose );
+	BOOST_REQUIRE( in_base == in.base() );
+}
+
+BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod) {
+	multi::array<std::string, 2> in = {
+		{  "100. + 2.*I",  "9. - 1.*I", "2. +  4.*I"},
+		{    "3. + 3.*I",  "7. - 4.*I", "1. +  9.*I"},
+		{    "4. + 1.*I",  "5. + 3.*I", "2. +  4.*I"},
+		{    "3. - 1.*I",  "8. + 7.*I", "2. +  1.*I"},
+		{   "31. - 1.*I", "18. + 7.*I", "2. + 10.*I"}
+	};
+	multi::array<std::string, 2> const in_transpose = in.transposed();
+	in = in.transposed();
+	BOOST_REQUIRE( in != in_transpose );
+}
+
+BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod_square) {
+	multi::array<std::string, 2> in = {
+		{  "100. + 2.*I",  "9. - 1.*I", "2. +  4.*I"},
+		{    "3. + 3.*I",  "7. - 4.*I", "1. +  9.*I"},
+		{    "4. + 1.*I",  "5. + 3.*I", "2. +  4.*I"}
+	};
+	multi::array<std::string, 2> const in_transpose = in.transposed();
+	in = in.transposed();
+	BOOST_REQUIRE( in != in_transpose );
 }
 
 #endif

@@ -873,6 +873,9 @@ struct array : static_array<T, D, Alloc> {
 	auto operator=(Range&& other) ->array& {  // TODO(correaa) : check that LHS is not read-only?
 		if(array::extensions() == other.extensions()) {
 			static_::operator=(other);
+		} else if(this->num_elements() == other.extensions().num_elements()) {
+			reshape(other.extensions());
+			static_::operator=(other);
 		} else {
 			array tmp(other);
 			operator=(std::move(tmp));  // operator=(array{other}); produces an error in nvcc 11.2
