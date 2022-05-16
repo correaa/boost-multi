@@ -537,10 +537,12 @@ bool plan::is_thread_safe_ = (plan::make_thread_safe(), true);
 int plan::nthreads_ = (initialize_threads(), with_nthreads());
 #endif
 
-using sign = int;
-constexpr sign forward  = FFTW_FORWARD;
-constexpr sign none     = 0;
-constexpr sign backward = FFTW_BACKWARD;
+//using sign = int;
+//constexpr sign forward  = FFTW_FORWARD;
+//constexpr sign none     = 0;
+//constexpr sign backward = FFTW_BACKWARD;
+
+enum sign : decltype(FFTW_FORWARD) {backward = FFTW_BACKWARD, none = 0, forward = FFTW_FORWARD};
 
 static_assert( forward != none and none != backward and backward != forward, "!");
 
@@ -568,7 +570,7 @@ auto dft(std::array<sign, +D> w, In const& i, Out&& o) {
 
 	std::array<bool, D> bwd{};
 	std::transform(begin(w), end(w), begin(bwd), [](auto e){return e==FFTW_BACKWARD;}); 
-	if(std::accumulate(begin(bwd), end(bwd), false)){dft(bwd, o, o, FFTW_BACKWARD);}
+	if(std::accumulate(begin(bwd), end(bwd), false)){dft(bwd, o, o, static_cast<sign>(FFTW_BACKWARD));}
 
 	return std::forward<Out>(o);
 }
