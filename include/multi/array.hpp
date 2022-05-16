@@ -877,8 +877,9 @@ struct array : static_array<T, D, Alloc> {
 			reshape(other.extensions());
 			static_::operator=(other);
 		} else {
-			array tmp(other);
-			operator=(std::move(tmp));  // operator=(array{other}); produces an error in nvcc 11.2
+		//	array tmp(other);
+		//	operator=(std::move(tmp));  // operator=(array{other}); produces an error in nvcc 11.2
+			operator=(array(other));
 		}
 		return *this;
 	}
