@@ -877,8 +877,6 @@ struct array : static_array<T, D, Alloc> {
 			reshape(other.extensions());
 			static_::operator=(other);
 		} else {
-		//  array tmp(other);
-		//  operator=(std::move(tmp));  // operator=(array{other}); produces an error in nvcc 11.2
 			operator=(array(other));
 		}
 		return *this;
@@ -894,16 +892,6 @@ struct array : static_array<T, D, Alloc> {
 		return *this;
 	}
 
-//  auto operator=(basic_array<T, D, multi::move_ptr<typename array::element, typename array::element_ptr>>& other) -> array& {
-//  	if(other.layout() != this->layout()) {
-//  		array::operator=(other.template static_array_cast<typename array::element, typename array::element_ptr>());
-//  		return *this;
-//  	}
-//  	if(this->base_ != other.base_) {
-//  		other.base_ = nullptr;
-//  	}
-//  	return *this;
-//  }
 	friend void swap(array& a, array& b) {a.swap(b);}
 	void assign(typename array::extensions_type x, typename array::element const& e) {
 		if(array::extensions() == x) {
@@ -912,7 +900,7 @@ struct array : static_array<T, D, Alloc> {
 			this->clear();
 			(*this).array::layout_t::operator=(layout_t<D>{x});
 			this->base_ = this->static_::array_alloc::allocate(this->num_elements());
-			adl_alloc_uninitialized_fill_n(this->alloc(), this->base_, this->num_elements(), e);  //  recursive_uninitialized_fill<dimensionality>(alloc(), begin(), end(), e);
+			adl_alloc_uninitialized_fill_n(this->alloc(), this->base_, this->num_elements(), e);  // recursive_uninitialized_fill<dimensionality>(alloc(), begin(), end(), e);
 		}
 	}
 
