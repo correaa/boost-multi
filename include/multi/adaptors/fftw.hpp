@@ -785,7 +785,8 @@ class fft_range {
 	auto end()   const {return iterator{first_ + n_, which_};}
 
 	auto size()       const {return n_;}
-	auto extensions() const {return multi::ref(first_, first_ + n_).extensions();}
+	auto extensions()   const {return multi::ref(first_, first_ + n_).extensions();}
+	auto num_elements() const {return multi::ref(first_, first_ + n_).num_elements();}
 
 	auto operator+() const {return decay_type(*this);}
 	auto base() const {return multi::ref(first_, first_ + n_);}
