@@ -51,13 +51,13 @@ struct basic_array;
 
 }  // end namespace boost::multi
 
-namespace std {  // NOLINT(cert-dcl58-cpp)
+//namespace std {  // NOLINT(cert-dcl58-cpp)
 
-	template<class T, boost::multi::dimensionality_type D, class L>
-	auto move(boost::multi::basic_array<T, D,                        T*, L>&& array)
-	        ->boost::multi::basic_array<T, D, boost::multi::move_ptr<T>, L>;
+//	template<class T, boost::multi::dimensionality_type D, class L>
+//	auto move(boost::multi::basic_array<T, D,                        T*, L>&& array)
+//	        ->boost::multi::basic_array<T, D, boost::multi::move_ptr<T>, L>;
 
-}  // end namespace std
+//}  // end namespace std
 
 namespace boost::multi {
 
@@ -2617,15 +2617,15 @@ auto transposed(T(&t)[N][M]) -> decltype(auto) {return ~multi::array_ref<T, 2>(t
 
 }  // end namespace boost::multi
 
-namespace std {  // NOLINT(cert-dcl58-cpp)
+//namespace std {  // NOLINT(cert-dcl58-cpp)
 
-	template<class T, boost::multi::dimensionality_type D, class L>
-	auto move(boost::multi::basic_array<T, D,                        T*, L>&& array)
-	        ->boost::multi::basic_array<T, D, boost::multi::move_ptr<T>, L> {
-		return std::move(array).moved();
-	}
+//	template<class T, boost::multi::dimensionality_type D, class L>
+//	auto move(boost::multi::basic_array<T, D,                        T*, L>&& array)
+//	        ->boost::multi::basic_array<T, D, boost::multi::move_ptr<T>, L> {
+//		return std::move(array).moved();
+//	}
 
-}  // end namespace std
+//}  // end namespace std
 
 namespace boost::serialization {
 
