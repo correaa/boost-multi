@@ -25,6 +25,44 @@ BOOST_AUTO_TEST_CASE(array_reextent) {
 	BOOST_REQUIRE( A[4][3] == 99. );  // ...and gives selected value to the rest
 }
 
+BOOST_AUTO_TEST_CASE(array_reextent_noop) {
+	multi::array<double, 2> A({2, 3});
+	BOOST_REQUIRE( num_elements(A) == 6 );
+
+	A[1][2] = 6.;
+	BOOST_REQUIRE( A[1][2] == 6. );
+
+	multi::array<double, 2> C({2, 3});
+	BOOST_REQUIRE(size(C) == 2);
+	BOOST_REQUIRE(size(C[0]) == 3);
+
+	auto* const A_base = A.base();
+	A.reextent({2, 3});
+	BOOST_REQUIRE( num_elements(A)== 2L*3L );
+	BOOST_REQUIRE( A[1][2] ==  6. );  // reextent preserves values when it can...
+
+	BOOST_REQUIRE( A_base == A.base() );
+}
+
+BOOST_AUTO_TEST_CASE(array_reextent_noop_with_init) {
+	multi::array<double, 2> A({2, 3});
+	BOOST_REQUIRE( num_elements(A) == 6 );
+
+	A[1][2] = 6.;
+	BOOST_REQUIRE( A[1][2] == 6. );
+
+	multi::array<double, 2> C({2, 3});
+	BOOST_REQUIRE(size(C) == 2);
+	BOOST_REQUIRE(size(C[0]) == 3);
+
+	auto* const A_base = A.base();
+	A.reextent({2, 3}, 99.);
+	BOOST_REQUIRE( num_elements(A)== 2L*3L );
+	BOOST_REQUIRE( A[1][2] ==  6. );  // reextent preserves values when it can...
+
+	BOOST_REQUIRE( A_base == A.base() );
+}
+
 BOOST_AUTO_TEST_CASE(array_move_clear) {
 	multi::array<double, 2> A({2, 3});
 	A = multi::array<double, 2>(extensions(A), 123.);
