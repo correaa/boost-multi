@@ -206,7 +206,7 @@ constexpr auto get(boost::multi::detail::tuple<Ts...> && t)
 	return boost::multi::detail::get<N>(std::move(t)); }
 
 template <class F, class Tuple, std::size_t... I>
-constexpr auto apply_timpl(F&& f, Tuple&& t, std::index_sequence<I...> /*012*/) -> decltype(auto) {
+constexpr auto apply_timpl(F&& f, Tuple&& t, std::index_sequence<I...>/*012*/) -> decltype(auto) {
 	(void)t;  // fix "error #827: parameter "t" was never referenced" in NVC++ and "error #869: parameter "t" was never referenced" in oneAPI-ICPC
     return std::forward<F>(f)(boost::multi::detail::get<I>(std::forward<Tuple>(t))...);
 }
@@ -330,7 +330,6 @@ constexpr auto tuple_zip(T1&& t1, T2&& t2, T3&& t3, T4&& t4) {
 		std::make_index_sequence<std::tuple_size<typename std::decay<T1>::type>::value>()
 	);
 }
-
 
 }  // end namespace detail
 }  // end namespace boost::multi

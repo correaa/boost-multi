@@ -44,30 +44,34 @@ BOOST_AUTO_TEST_CASE(multi_tests_element_access_with_tuple) {
 	BOOST_REQUIRE( m[p[0]][p[1]] == m(1, 2) );
 	BOOST_REQUIRE( &m(p[0], p[1]) == &m[p[0]][p[1]] );
 
-#if 0
-	using std::
-#if not defined(__cpp_lib_apply) or not(__cpp_lib_apply>=201603)
-		experimental::
-#endif
-		apply;
-	BOOST_REQUIRE( &m[p[0]][p[1]] == &apply(m, p) );
-#endif
-
 	BOOST_REQUIRE( &m[p[0]][p[1]] == &m(p[0], p[1]) );
 	BOOST_REQUIRE( &m(p[0], p[1]) == &m.apply(p) );
+
+#if not defined(__circle_build__)
+	BOOST_REQUIRE( &m[p[0]][p[1]] == &std::apply(m, p) );
+	BOOST_REQUIRE( &m[p[0]][p[1]] == &     apply(m, p) );
+#endif
 }
 
-//BOOST_AUTO_TEST_CASE(multi_tests_extension_with_tuple) {  // TODO(correaa) make it work
-//	auto const t = boost::multi::detail::tuple<int, int>{3, 3};
-//	multi::array<double, 2> m1(t, 44.);
-//	BOOST_REQUIRE( size(m1) == 3 );
+BOOST_AUTO_TEST_CASE(multi_tests_extension_with_tuple) {
+	{
+		multi::array<double, 2>::extensions_type x = {3, 4};
+		multi::array<double, 2> A(x, 44.);
+		BOOST_REQUIRE( size(A) == 3 );
+	}
+	{
+		auto const t = std::make_tuple(3, 4);
+		auto const [n, m] = t;
+		multi::array<double, 2> A({n, m}, 44.);
+		BOOST_REQUIRE( size(A) == 3 );
+	}
+	{
+		auto const t = std::make_tuple(3, 4);
+		auto A = std::apply([](auto const&... e) {return multi::array<double, 2>({e...}, 55.);}, t);
+		BOOST_REQUIRE( size(A) == 3 );
+	}
+}
 
-//#if not defined(__INTEL_COMPILER) and not defined(__NVCOMPILER)  // vvv fails for intel compiler and nvc++
-//	auto m2 = std::apply([](auto... e) {return multi::array<double, 2>({e...}, 55.);}, t);
-//#endif
-//}
-
-#if 1
 BOOST_AUTO_TEST_CASE(multi_test_constness_reference) {
 	multi::array<double, 2> const m({10, 10}, 99.);
 
@@ -82,12 +86,13 @@ BOOST_AUTO_TEST_CASE(multi_test_constness_reference) {
 	BOOST_REQUIRE( m({0, 3}, {0, 3})[1][1] == 99. );
 
 	static_assert(not std::is_assignable<decltype(m(1, {0, 3})[1]), double>{}, "!");
-// none of these lines should compile because m is read-only
-//	m(1, {0, 3})[1] = 88.;
-//	m({0, 3}, 1)[1] = 77.;
-//	m({0, 3}, {0, 3})[1][1] = 66.;
+//  none of these lines should compile because m is read-only
+//  m(1, {0, 3})[1] = 88.;
+//  m({0, 3}, 1)[1] = 77.;
+//  m({0, 3}, {0, 3})[1][1] = 66.;
 }
 
+#if 1
 //BOOST_AUTO_TEST_CASE(multi_test_non_constness_reference) {
 //	multi::array<double, 2> m({10, 10}, 99.);
 
@@ -140,47 +145,42 @@ BOOST_AUTO_TEST_CASE(multi_test_stencil) {
 	BOOST_REQUIRE( &A({1, 3}, {2, 5}).elements().back()  == &A(2, 4) );
 }
 
-//BOOST_AUTO_TEST_CASE(multi_test_elements_1D) {
-//	multi::array<double, 1> A = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9.};
-//	BOOST_REQUIRE( A.size() == 10 );
+BOOST_AUTO_TEST_CASE(multi_test_elements_1D) {
+	multi::array<double, 1> A = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9.};
+	BOOST_REQUIRE( A.size() == 10 );
 
-//	BOOST_REQUIRE(  A.elements().size() == 10 );
-//	BOOST_REQUIRE( &A.elements()[0] == &A[0] );
-//	BOOST_REQUIRE( &A.elements()[9] == &A[9] );
+	BOOST_REQUIRE(  A.elements().size() == 10 );
+	BOOST_REQUIRE( &A.elements()[0] == &A[0] );
+	BOOST_REQUIRE( &A.elements()[9] == &A[9] );
 
-//	BOOST_REQUIRE(  A.elements().begin() < A.elements().end()   );
-//	BOOST_REQUIRE(  A.elements().end()   > A.elements().begin() );
-//}
+	BOOST_REQUIRE(      A.elements().begin() <  A.elements().end()     );
+	BOOST_REQUIRE(      A.elements().end()   >  A.elements().begin()   );
+	BOOST_REQUIRE(      A.elements().begin() != A.elements().end()     );
+	BOOST_REQUIRE( not( A.elements().begin() == A.elements().end()   ) );
 
-//BOOST_AUTO_TEST_CASE(multi_test_elements_1D_elements_range) {
-//	multi::array<double, 1> A = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9.};
-//	BOOST_REQUIRE( A().size() == 10 );
+	BOOST_REQUIRE(  A().elements().begin() <  A().elements().end() );
+	BOOST_REQUIRE(  A().elements().begin() == A().elements().begin() );
 
-//	BOOST_REQUIRE(  A().elements().size() == 10 );
-//	BOOST_REQUIRE( &A().elements()[0] == &A[0] );
-//	BOOST_REQUIRE( &A().elements()[9] == &A[9] );
+	BOOST_REQUIRE( A().elements().begin() <  A().elements().end() or A().elements().begin() == A().elements().end() );
+	BOOST_REQUIRE( A().elements().begin() <= A().elements().end() );
 
-//	BOOST_REQUIRE(  A().elements().begin() < A().elements().end()   );
-//	BOOST_REQUIRE(  A().elements().end()   > A().elements().begin() );
-//}
+	BOOST_REQUIRE(  A().elements().end()  >  A().elements().begin() );
+	BOOST_REQUIRE(  A().elements().end()  >= A().elements().begin() );
 
-//BOOST_AUTO_TEST_CASE(multi_test_elements) {
-//	multi::array<double, 1> A = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9.};
-//	BOOST_REQUIRE( A.size() == 10 );
+	A.elements() = {9., 8., 7., 6., 5., 4., 3., 2., 1., 0.};
+	BOOST_REQUIRE( A[2] == 7. );
+	BOOST_REQUIRE( A.elements()[2] == 7. );
+}
 
-//	BOOST_REQUIRE(  A().elements().size() == 10 );
-//	BOOST_REQUIRE( &A().elements()[0] == &A[0] );
-//	BOOST_REQUIRE( &A().elements()[9] == &A[9] );
+BOOST_AUTO_TEST_CASE(multi_test_elements_1D_as_range) {
+	multi::array<double, 1> A = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9.};
+	BOOST_REQUIRE( A.size() == 10 );
 
-//	BOOST_REQUIRE(  A().elements().begin() <  A().elements().end() );
-//	BOOST_REQUIRE(  A().elements().begin() == A().elements().begin() );
+	A().elements() = {9., 8., 7., 6., 5., 4., 3., 2., 1., 0.};
+	BOOST_REQUIRE( A[2] == 7. );
+	BOOST_REQUIRE( A.elements()[2] == 7. );
+}
 
-//	BOOST_REQUIRE( A().elements().begin() <  A().elements().end() or A().elements().begin() == A().elements().end() );
-//	BOOST_REQUIRE( A().elements().begin() <= A().elements().end() );
-
-//	BOOST_REQUIRE(  A().elements().end()  >  A().elements().begin() );
-//	BOOST_REQUIRE(  A().elements().end()  >= A().elements().begin() );
-//}
 
 //BOOST_AUTO_TEST_CASE(multi_extension_intersection) {
 //	multi::array<double, 1> A = {{2., 2., 2.}};
@@ -286,7 +286,7 @@ BOOST_AUTO_TEST_CASE(multi_test_stencil) {
 //	BOOST_REQUIRE( & h[1][2][3][4][5] == & A[1][2][3][4][5] );
 //}
 
-BOOST_AUTO_TEST_CASE(elements_from_init_list) {
+BOOST_AUTO_TEST_CASE(elements_from_init_list_2D) {
 
 	multi::array<double, 2> A({3, 2});
 	A().elements() = {1., 2., 3., 4., 5., 6.};
