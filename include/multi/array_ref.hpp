@@ -46,15 +46,27 @@ struct pointer_traits<std::move_iterator<T*>> : std::pointer_traits<T*> {
 
 namespace boost::multi {
 
+template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>>
+struct basic_array;
+
+}  // end namespace boost::multi
+
+//namespace std {  // NOLINT(cert-dcl58-cpp)
+
+//	template<class T, boost::multi::dimensionality_type D, class L>
+//	auto move(boost::multi::basic_array<T, D,                        T*, L>&& array)
+//	        ->boost::multi::basic_array<T, D, boost::multi::move_ptr<T>, L>;
+
+//}  // end namespace std
+
+namespace boost::multi {
+
 template<class A>
 constexpr auto home(A&& a)
 ->decltype(std::forward<A>(a).home()) {
 	return std::forward<A>(a).home(); }
 
 template<class T> auto modify(T const& t) -> T& {return const_cast<T&>(t);}  // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) see what is this used for
-
-template<typename T, dimensionality_type D, typename ElementPtr = T*, class Layout = layout_t<D>>
-struct basic_array;
 
 template<typename T, dimensionality_type D, class A = std::allocator<T>> struct array;
 
@@ -351,7 +363,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 		class EElement, typename PPtr,
 		decltype(multi::explicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().ptr_.base()))* = nullptr
 	>
-	constexpr explicit array_iterator(array_iterator<EElement, D, PPtr> const& o) : ptr_{o.ptr_.base_, o.ptr_.layout()}, stride_{o.stride_} {}
+	constexpr explicit array_iterator(array_iterator<EElement, D, PPtr> const& o) : ptr_{element_ptr{o.ptr_.base_}, o.ptr_.layout()}, stride_{o.stride_} {}
 
 	template<class EElement, typename PPtr,
 		decltype(multi::implicit_cast<ElementPtr>(std::declval<array_iterator<EElement, D, PPtr>>().ptr_.base()))* = nullptr
@@ -1094,37 +1106,6 @@ struct basic_array
 	}
 	friend constexpr auto unrotated(basic_array const& self) {return self.unrotated();}
 
-//	constexpr auto rotated(dimensionality_type i) & -> basic_array{
-//		typename types::layout_t new_layout = this->layout();
-//		new_layout.rotate(i);
-//		return {new_layout, types::base_};
-//	}
-//	constexpr auto rotated(dimensionality_type i) && -> basic_array{return rotated(i);}
-//	constexpr auto rotated(dimensionality_type i) const& -> basic_const_array{
-//		typename types::layout_t new_layout = this->layout();
-//		new_layout.rotate(i);
-//		return {new_layout, types::base_};
-//	}
-
-//	constexpr auto unrotated(dimensionality_type i) & -> basic_array {
-//		typename types::layout_t new_layout = this->layout();
-//		new_layout.unrotate(i);
-//		return {new_layout, types::base_};
-//	}
-//	constexpr auto unrotated(dimensionality_type i)     && -> basic_array       {return unrotated(i);}
-//	constexpr auto unrotated(dimensionality_type i) const& -> basic_const_array {
-//		typename types::layout_t new_layout = this->layout();
-//		new_layout.unrotate(i);
-//		return {new_layout, types::base_};
-//	}
-
-//	constexpr auto operator<<(dimensionality_type i)      & -> decltype(auto) {return                    rotated(i);}
-//	constexpr auto operator>>(dimensionality_type i)      & -> decltype(auto) {return                  unrotated(i);}
-//	constexpr auto operator<<(dimensionality_type i)     && -> decltype(auto) {return std::move(*this).  rotated(i);}
-//	constexpr auto operator>>(dimensionality_type i)     && -> decltype(auto) {return std::move(*this).unrotated(i);}
-//	constexpr auto operator<<(dimensionality_type i) const& -> decltype(auto) {return                    rotated(i);}
-//	constexpr auto operator>>(dimensionality_type i) const& -> decltype(auto) {return                  unrotated(i);}
-
 	constexpr auto operator|(typename basic_array::size_type n)      & -> decltype(auto) {return partitioned(n);}
 	constexpr auto operator|(typename basic_array::size_type n)     && -> decltype(auto) {return std::move(*this).partitioned(n);}
 	constexpr auto operator|(typename basic_array::size_type n) const& -> decltype(auto) {return partitioned(n);}
@@ -1199,6 +1180,7 @@ struct basic_array
 
 	using       iterator = array_iterator<element, D, element_ptr      >;
 	using const_iterator = array_iterator<element, D, element_const_ptr>;
+	using  move_iterator = array_iterator<element, D, element_move_ptr >;
 
  private:
 	constexpr explicit basic_array(iterator begin, iterator end)
@@ -1258,25 +1240,42 @@ struct basic_array
 	constexpr auto end_aux()   const {return iterator {types::base_ + nelems(), sub(), stride()};}
 
  public:
-	       constexpr auto begin()          &    -> iterator {return begin_aux();}
-	       constexpr auto end  ()          &    -> iterator {return end_aux()  ;}
-	friend constexpr auto begin(basic_array& s) -> iterator {return s.begin();}
-	friend constexpr auto end  (basic_array& s) -> iterator {return s.end  ();}
+	       constexpr auto  begin()                & {return begin_aux();}
+	       constexpr auto  end  ()                & {return end_aux()  ;}
+	friend constexpr auto  begin(basic_array      & s) {return s.begin();}
+	friend constexpr auto  end  (basic_array      & s) {return s.end  ();}
 
-	       constexpr auto begin()          &&    -> iterator {return              begin();}
-	       constexpr auto end  ()          &&    -> iterator {return              end()  ;}
-	friend constexpr auto begin(basic_array&& s) -> iterator {return std::move(s).begin();}
-	friend constexpr auto end  (basic_array&& s) -> iterator {return std::move(s).end()  ;}
+	       constexpr auto  begin()               && {return begin();}
+	       constexpr auto  end  ()               && {return end()  ;}
+	friend constexpr auto  begin(basic_array     && s) {return std::move(s).begin();}
+	friend constexpr auto  end  (basic_array     && s) {return std::move(s).end()  ;}
 
-	       constexpr auto begin()           const&    -> const_iterator {return begin_aux();}
-	       constexpr auto end  ()           const&    -> const_iterator {return end_aux()  ;}
-	friend constexpr auto begin(basic_array const& s) -> const_iterator {return s.begin();}
-	friend constexpr auto end  (basic_array const& s) -> const_iterator {return s.end()  ;}
+	       constexpr auto  begin()           const& -> const_iterator {return begin_aux();}
+	       constexpr auto  end  ()           const& -> const_iterator {return end_aux()  ;}
+	friend constexpr auto  begin(basic_array const& s) -> const_iterator {return s.begin();}
+	friend constexpr auto  end  (basic_array const& s) -> const_iterator {return s.end()  ;}
 
-	       constexpr auto cbegin()           const& -> const_iterator {return begin();}
-	       constexpr auto cend()             const& -> const_iterator {return end()  ;}
+
+ 	       constexpr auto cbegin()           const& {return begin();}
+	       constexpr auto cend()             const& {return end()  ;}
 	friend constexpr auto cbegin(basic_array const& s) {return s.cbegin();}
 	friend constexpr auto cend  (basic_array const& s) {return s.cend()  ;}
+
+
+ 	       constexpr auto mbegin()                & {return move_iterator{begin()};}
+	       constexpr auto mend()                  & {return move_iterator{end()  };}
+	friend constexpr auto mbegin(basic_array      & s) {return s.mbegin();}
+	friend constexpr auto mend  (basic_array      & s) {return s.mend()  ;}
+
+ 	       constexpr auto mbegin()               && {return mbegin();}
+	       constexpr auto mend()                 && {return mend()  ;}
+	friend constexpr auto mbegin(basic_array     && s) {return s.mbegin();}
+	friend constexpr auto mend  (basic_array     && s) {return s.mend()  ;}
+
+ 	       constexpr auto mbegin()           const& -> const_iterator {return begin();}
+	       constexpr auto mend()             const& -> const_iterator {return end()  ;}
+	friend constexpr auto mbegin(basic_array const& s) {return s.mbegin();}
+	friend constexpr auto mend  (basic_array const& s) {return s.mend()  ;}
 
  private:
 	constexpr auto home_aux() const -> cursor_t<typename basic_array::element_ptr, D, typename basic_array::strides_type> {
@@ -1723,6 +1722,12 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	using layout_type = Layout;
 	using ref_ = basic_array;
 
+	using element_type = T;
+
+	using       element_ptr = typename types::element_ptr;
+	using element_const_ptr = typename types::element_const_ptr;
+	using  element_move_ptr = multi::move_ptr<element_type, element_ptr>;
+
 	using default_allocator_type = typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type;
 
 	constexpr auto get_allocator() const -> default_allocator_type {return default_allocator_of(basic_array::base());}
@@ -1742,9 +1747,6 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 		typename std::pointer_traits<ElementPtr>::template rebind<typename basic_array::element_type const>,
 		Layout
 	>;
-
-	using typename types::element_ptr;
-	using typename types::element_const_ptr;
 
 	using const_reference = typename array_types<T, dimensionality_type(1), ElementPtr, Layout>::const_reference;
 	using       reference = typename array_types<T, dimensionality_type(1), ElementPtr, Layout>::      reference;
@@ -2054,7 +2056,9 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
 	using         iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_ptr      >;
 	using   const_iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_const_ptr>;
-	using reverse_iterator = std::reverse_iterator<iterator>;
+	using    move_iterator =                 array_iterator<           element_type, 1,                 element_move_ptr >;
+
+//  using reverse_iterator = std::reverse_iterator<iterator>;
 
  private:
 	constexpr explicit basic_array(iterator begin, iterator end)
@@ -2074,6 +2078,12 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	constexpr auto begin() const& -> const_iterator {return begin_aux();}
 	constexpr auto begin()      & ->       iterator {return begin_aux();}
 	constexpr auto begin()     && ->       iterator {return begin_aux();}
+
+	constexpr auto mbegin()     & {return move_iterator{begin()};}
+	constexpr auto mend  ()     & {return move_iterator{end  ()};}
+
+	constexpr auto mbegin()    && {return move_iterator{begin()};}
+	constexpr auto mend  ()    && {return move_iterator{end  ()};}
 
 	constexpr auto end  () const& -> const_iterator {return end_aux();}
 	constexpr auto end  ()      & ->       iterator {return end_aux();}
@@ -2100,6 +2110,16 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	constexpr auto operator=(basic_array<TT, 1, As...> const& o)  & -> basic_array& {
 		assert(this->extensions() == o.extensions());
 		elements() = o.elements();
+		return *this;
+	}
+
+	template<class TT, class... As>
+	constexpr auto operator=(basic_array<TT, 1, As...>&& o) && -> basic_array& {operator=(std::move(o)); return *this;}
+
+	template<class TT, class... As>
+	constexpr auto operator=(basic_array<TT, 1, As...>&& o)  & -> basic_array& {
+		assert(this->extensions() == o.extensions());
+		elements() = std::move(o).elements();
 		return *this;
 	}
 
@@ -2165,8 +2185,6 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 		return {this->layout().scale(sizeof(T)/sizeof(T2)), static_cast<P2>(&(this->base_->*pm))};  // this crashes nvcc 11.2-11.4 and some? gcc compiler
 #endif
 	}
-
-	using element_move_ptr = typename multi::move_ptr<typename basic_array::element, element_ptr>;
 
 	constexpr auto moved() && {
 		return basic_array<typename basic_array::element, 1, element_move_ptr>{this->layout(), element_move_ptr{this->base()}};
@@ -2598,6 +2616,16 @@ template<class T, std::size_t N, std::size_t M>
 auto transposed(T(&t)[N][M]) -> decltype(auto) {return ~multi::array_ref<T, 2>(t);}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 }  // end namespace boost::multi
+
+//namespace std {  // NOLINT(cert-dcl58-cpp)
+
+//	template<class T, boost::multi::dimensionality_type D, class L>
+//	auto move(boost::multi::basic_array<T, D,                        T*, L>&& array)
+//	        ->boost::multi::basic_array<T, D, boost::multi::move_ptr<T>, L> {
+//		return std::move(array).moved();
+//	}
+
+//}  // end namespace std
 
 namespace boost::serialization {
 

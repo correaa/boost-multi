@@ -39,6 +39,8 @@ template<class T, class Ptr = T*> struct move_ptr : private std::move_iterator<P
 
 	constexpr /*implicit*/ operator Ptr() const {return std::move_iterator<Ptr>::base();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) decay to lvalue should be easy
 	constexpr auto operator+=(difference_type n) -> move_ptr& {static_cast<std::move_iterator<Ptr>&>(*this) += n; return *this;}
+	constexpr auto operator-=(difference_type n) -> move_ptr& {static_cast<std::move_iterator<Ptr>&>(*this) -= n; return *this;}
+
 	constexpr auto operator+(difference_type n) const -> move_ptr {move_ptr ret{*this}; ret += n; return ret;}
 	constexpr auto operator-(move_ptr const& other) const -> difference_type {return static_cast<std::move_iterator<Ptr> const&>(*this) - static_cast<std::move_iterator<Ptr> const&>(other);}
 

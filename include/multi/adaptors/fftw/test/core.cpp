@@ -436,7 +436,7 @@ BOOST_AUTO_TEST_CASE(fftw_1D_power) {
 	BOOST_TEST( power(in) == power(out)/num_elements(out), boost::test_tools::tolerance(1e-15) );
 }
 
-#if 1
+#if 0
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_part1) {
 	multi::array<complex, 2> const in = {
 		{  1. + 2.*I,  9. - 1.*I, 2. +  4.*I},
@@ -536,6 +536,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_part2) {
 		BOOST_TEST_REQUIRE( power((~in)[2]) - power((~fwd)[2])/size(fwd) < 1e-8 );
 	}
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref) {
 	multi::array<complex, 2> const in = {
@@ -729,6 +730,21 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed) {
 	BOOST_REQUIRE( in_base == in.base() );
 }
 
+BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nested) {
+	multi::array<complex, 2> in = {
+		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
+		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
+		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
+		{    3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
+		{   31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+	};
+	multi::array<complex, 2> const in_transpose = in.transposed();
+	auto* in_base = in.base();
+	in = multi::fftw::ref(in.transposed());
+	BOOST_REQUIRE( in == in_transpose );
+	BOOST_REQUIRE( in_base == in.base() );
+}
+
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_square) {
 	multi::array<complex, 2> in = {
 		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
@@ -738,6 +754,19 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_square) {
 	multi::array<complex, 2> const in_transpose = in.transposed();
 	auto* in_base = in.base();
 	in = multi::fftw::ref(in).transposed();
+	BOOST_REQUIRE( in == in_transpose );
+	BOOST_REQUIRE( in_base == in.base() );
+}
+
+BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_square_nested) {
+	multi::array<complex, 2> in = {
+		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
+		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
+		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
+	};
+	multi::array<complex, 2> const in_transpose = in.transposed();
+	auto* in_base = in.base();
+	in = multi::fftw::ref(in.transposed());
 	BOOST_REQUIRE( in == in_transpose );
 	BOOST_REQUIRE( in_base == in.base() );
 }
@@ -766,4 +795,17 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod_square) {
 	BOOST_REQUIRE( in != in_transpose );
 }
 
-#endif
+//BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_move) {
+//	multi::array<complex, 2> in = {
+//		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
+//		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
+//		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
+//		{    3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
+//		{   31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+//	};
+//	multi::array<complex, 2> const in_transpose = in.transposed();
+//	auto* in_base = in.base();
+//	multi::array<complex, 2> out = multi::fftw::ref(std::move(in)).operator multi::array<complex, 2>();
+//	BOOST_REQUIRE( out == in_transpose );
+//	BOOST_REQUIRE( in_base == out.base() );
+//}
