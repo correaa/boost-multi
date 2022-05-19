@@ -1411,6 +1411,11 @@ struct basic_array
 		P2 p2{this->base_};
 		return basic_array<T2, D, P2>{this->layout(), p2};
 	}
+	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>, class... Args>
+	constexpr auto static_array_cast(Args&&... args) const -> basic_array<T2, D, P2> {  // name taken from std::static_pointer_cast
+		return {this->layout(), P2{this->base(), std::forward<Args>(args)...}};
+	}
+
 
 	template<
 		class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2 const>,
