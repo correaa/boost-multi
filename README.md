@@ -532,30 +532,11 @@ Since `array_ref` does not manage the memory associated with it, the reference c
 ### Special Memory: Allocators and Fancy Pointers
 
 `array`'s manages its memory behind the scenes through allocators, which can be specified at construction.
-It can handle special memory, as long as the underlying types behave coherently, these include fancy pointers and fancy references.
+It can handle special memory, as long as the underlying types behave coherently, these include [fancy pointers](https://en.cppreference.com/w/cpp/named_req/Allocator#Fancy_pointers) (and fancy references).
 Associated fancy pointers and fancy reference (if any) are deduced from the allocator types.
+Another use of fancy pointer is to create by-element "projections".
 
-The behavior regarding memory managament of the [fancy pointers](https://en.cppreference.com/w/cpp/named_req/Allocator#Fancy_pointers) can be customized (if necessary) by specializations of some or all of these functions:
-
-```cpp
-destroy(alloc, first, last);
-destroy_n(alloc, first, n) -> last
-uninitialized_copy_n(alloc, first, n, dest) -> last;
-uninitialized_fill_n(alloc, first, n, value) -> last;
-uninitialized_default_construct_n(alloc, first, n) -> last;
-uninitialized_value_construct_n(alloc, first, n) -> last;
-```
-
-where `alloc` is the special allocator, `n` is a size (usually the number of elements), `first`, `last` and `dest` are fancy pointers.
-
-Copying underlying memory can be customized by specializing:
-
-```cpp
-copy_n(first, n, dest)
-fill_n(first, n, value)
-```
-
-Specific cases of fancy memory are file-mapped memory or interprocess shared memory.
+Specific uses of fancy memory are file-mapped memory or interprocess shared memory.
 This example illustrates memory persistency by combining with Boost.Interprocess library. 
 The arrays support their allocators and fancy pointers (`boost::interprocess::offset_ptr`).
 
@@ -585,11 +566,13 @@ int main(){
 }
 ```
 
+(See also, examples of interactions with the CUDA Thrust library to see more uses of special pointer types to handle special memory.)
+
 Another kind of fancy-pointer is one that transforms the underlying values.
 These are useful to create "projections" or "views" of data elements.
 In the following example a "transforming pointer" is used to create a conjugated view of the elements.
 In combination with transposed view, it can create a hermitic (transposed-conjugate) view of the matrix (without copying elements).
-We can adapt `boost::transform_iterator` to save coding, but other libraries can be used also.
+We can adapt the library type `boost::transform_iterator` to save coding, but other libraries can be used also.
 The hermitized view is read-only, but with additional work a read-write view can be created (see `multi::blas::hermitized` in multi-adaptors).
 
 ```cpp
