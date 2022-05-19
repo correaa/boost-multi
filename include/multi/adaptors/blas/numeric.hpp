@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2021 Alfredo A. Correa
+// Copyright 2019-2022 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_BLAS_NUMERIC_HPP
 #define MULTI_ADAPTORS_BLAS_NUMERIC_HPP
@@ -127,14 +127,8 @@ template<class T, class F> involuted(T&&, F) -> involuted<T const, F>;
 template<class It, class F, class Reference>
 class involuter;
 
-//template<class It, class F>
-//auto get_allocator(involuter<It, F> const& inv){
-//	using multi::get_allocator;
-//	return get_allocator(inv.it_);
-//}
-
 template<class It, class F>
-auto default_allocator_of(involuter<It, F> const& iv){
+auto default_allocator_of(involuter<It, F> const& iv) {
 	return default_allocator_of(iv.it_);
 }
 
