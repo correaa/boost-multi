@@ -155,3 +155,37 @@ BOOST_AUTO_TEST_CASE(subrange_ranges) {
 	auto AB = A({0, 3}, {0, 3});
 	BOOST_REQUIRE( &AB[2][2] == &A[2][2] );
 }
+
+BOOST_AUTO_TEST_CASE(subrange_1D_issue129) {
+	multi::array<double, 1> A({1024}, double{});
+	std::iota(A.elements().begin(), A.elements().end(), 0.);
+
+	BOOST_REQUIRE( A.sliced(0, 512, 2)[  1] ==   2. );
+	BOOST_REQUIRE( A.sliced(0, 512, 2)[255] == 510. );
+
+	BOOST_REQUIRE( A.sliced(0, 512)[  1] ==   1. );
+	BOOST_REQUIRE( A.sliced(0, 512)[511] == 511. );
+
+	BOOST_REQUIRE( A({0, 512})[  1] ==   1. );
+	BOOST_REQUIRE( A({0, 512})[511] == 511. );
+
+//  BOOST_REQUIRE( A({0, 512, 2})[  1] ==   2. );  // TODO(correaa) coompilation error
+//  BOOST_REQUIRE( A({0, 512, 2})[255] == 510. );  // TODO(correaa) coompilation error
+}
+
+BOOST_AUTO_TEST_CASE(subrange_2D_issue129) {
+	multi::array<double, 2> A({66, 1024}, double{});
+	std::iota(A.elements().begin(), A.elements().end(), 0.);
+
+	BOOST_REQUIRE( A[0].sliced(0, 512, 2)[  1] ==   2. );
+	BOOST_REQUIRE( A[0].sliced(0, 512, 2)[255] == 510. );
+
+	BOOST_REQUIRE( A[0].sliced(0, 512)[  1] ==   1. );
+	BOOST_REQUIRE( A[0].sliced(0, 512)[511] == 511. );
+
+	BOOST_REQUIRE( A(0, {0, 512})[  1] ==   1. );
+	BOOST_REQUIRE( A(0, {0, 512})[511] == 511. );
+
+//  BOOST_REQUIRE( A(0, {0, 512, 2})[  1] ==   2. );  // TODO(correaa) coompilation error
+//  BOOST_REQUIRE( A(0, {0, 512, 2})[255] == 510. );  // TODO(correaa) coompilation error
+}
