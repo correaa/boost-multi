@@ -576,20 +576,19 @@ We can adapt the library type `boost::transform_iterator` to save coding, but ot
 The hermitized view is read-only, but with additional work a read-write view can be created (see `multi::blas::hermitized` in multi-adaptors).
 
 ```cpp
-constexpr static auto conj = [](auto const& c) -> std::complex<double> const {return std::conj(c);};
+constexpr auto conj = [](auto const& c) -> auto const {return std::conj(c);};
 
 template<class T> struct conjr : boost::transform_iterator<decltype(conj), T*> {
 	template<class... As> conjr(As const&... as) : boost::transform_iterator<decltype(conj), T*>{as...} {}
 };
 
-template<class Array2D> auto hermitized(Array2D&& arr) {
+template<class Array2D, class Complex = typename Array2D::element_type>
+auto hermitized(Array2D const& arr) {
 	return arr
-		.transposed()  // lazily tranposes the array
-		.template static_array_cast<std::complex<double>, conjr<std::complex<double>> >(conj)  // lazy conjugate elements
+		.transposed() // lazily tranposes the array
+		.template static_array_cast<Complex, conjr<Complex>>(conj)  // lazy conjugate elements
 	;
 }
-
-std::complex<double> const f() {return std::complex<double>{};}
 
 int main() {
     using namespace std::complex_literals;
