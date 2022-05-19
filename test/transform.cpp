@@ -22,7 +22,7 @@ namespace test {
 template<class Involution, class It> class involuter;
 
 template<class Involution, class Ref>
-class involuted{
+class involuted {
 	Ref r_;
 	template<class Involuted, std::enable_if_t<std::is_base_of<involuted, std::decay_t<Involuted>>{}, int> =0>
 	friend auto underlying(Involuted&& self) ->decltype(self.r_) {return self.r_;}
@@ -30,24 +30,24 @@ class involuted{
  public:
 	using decay_type = std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
 	constexpr involuted(Involution /*stateless*/, Ref r) : r_{std::forward<Ref>(r)} {}
-#if __cplusplus <= 201402L
-	involuted(involuted&&) noexcept = default;
-	~involuted() = default;
-	involuted(involuted const&) = default;
-	auto operator=(involuted const&)          -> involuted& = default;  // NOLINT(fuchsia-trailing-return): simulate reference
-	auto operator=(involuted&&     ) noexcept -> involuted& = default;  // NOLINT(fuchsia-trailing-return): simulate reference
-#endif
+//#if __cplusplus <= 201402L
+//	involuted(involuted&&) noexcept = default;
+//	~involuted() = default;
+//	involuted(involuted const&) = default;
+//	auto operator=(involuted const&)          -> involuted& = default;  // NOLINT(fuchsia-trailing-return): simulate reference
+//	auto operator=(involuted&&     ) noexcept -> involuted& = default;  // NOLINT(fuchsia-trailing-return): simulate reference
+//#endif
 	auto operator=(decay_type const& other) -> involuted& {  // NOLINT(fuchsia-trailing-return): simulate reference
 		r_ = Involution{}(other);
 		return *this;
 	}
-	constexpr explicit operator decay_type() const{return Involution{}(r_);}
+	constexpr explicit operator decay_type() const {return Involution{}(r_);}
 	// NOLINTNEXTLINE(google-runtime-operator): simulated reference
 	constexpr auto operator&()&& {return involuter<Involution, decltype(&std::declval<Ref>())>{Involution{}, &r_};}  // NOLINT(runtime/operator)
 	// NOLINTNEXTLINE(google-runtime-operator): simulated reference
 	constexpr auto operator&() & {return involuter<Involution, decltype(&std::declval<Ref>())>{Involution{}, &r_};}  // NOLINT(runtime/operator)
 	// NOLINTNEXTLINE(google-runtime-operator): simulated reference
-	constexpr auto operator&() const&{return involuter<Involution, decltype(&std::declval<decay_type const&>())>{Involution{}, &r_};}  // NOLINT(runtime/operator)
+	constexpr auto operator&() const& {return involuter<Involution, decltype(&std::declval<decay_type const&>())>{Involution{}, &r_};}  // NOLINT(runtime/operator)
 
 	auto operator==(involuted  const& other) const {return r_ == other.r_;}
 	auto operator!=(involuted  const& other) const {return r_ == other.r_;}
@@ -60,6 +60,7 @@ template<class Involution, class It>
 class involuter {
 	It it_;
 	template<class, class> friend class involuter;
+
  public:
 	using pointer           = involuter<Involution, typename std::iterator_traits<It>::pointer>;
 	using element_type      = typename std::pointer_traits<It>::element_type;
@@ -69,6 +70,7 @@ class involuter {
 	using reference         = involuted<Involution, typename std::iterator_traits<It>::reference>;
 	using value_type        = typename std::iterator_traits<It>::value_type;
 	using iterator_category = typename std::iterator_traits<It>::iterator_category;
+
 	constexpr explicit involuter(It it) : it_{std::move(it)} {}
 	constexpr involuter(Involution /*stateless*/, It it) : it_{std::move(it)} {}// f_{std::move(f)}{}
 	template<class Other>
@@ -131,7 +133,7 @@ template<class T> conjd(T&&)->conjd<T>;
 template<class Complex> using conjr = test::involuter<conjugate<>, Complex>;
 
 template<class P = std::complex<double>*>
-class indirect_real{// : std::iterator_traits<typename std::pointer_traits<P>::element_type::value_type*>{
+class indirect_real {
 	P impl_;
  public:
 	explicit indirect_real(P const& p) : impl_{p} {}
