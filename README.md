@@ -587,11 +587,10 @@ int main(){
 
 Another kind of fancy-pointer is one that transforms the underlying values.
 These are useful to create "projections" or "views" of data elements.
-
-In the following example a transforming pointer is used to create a conjugated view of the elements.
-That, in combination with transposed view, we can create a hermitic (transposed-conjugate) view of the matrix (without copying elements).
+In the following example a "transforming pointer" is used to create a conjugated view of the elements.
+In combination with transposed view, it can create a hermitic (transposed-conjugate) view of the matrix (without copying elements).
 We can adapt `boost::transform_iterator` to save coding, but other libraries can be used also.
-The hermitized view is read only, with additional work a read-write view can be created (see `multi::blas::hermitized` in multi-adaptors).
+The hermitized view is read-only, but with additional work a read-write view can be created (see `multi::blas::hermitized` in multi-adaptors).
 
 ```cpp
 constexpr static auto conj = [](auto const& c) -> std::complex<double> const {return std::conj(c);};
@@ -601,7 +600,10 @@ template<class T> struct conjr : boost::transform_iterator<decltype(conj), T*> {
 };
 
 template<class Array2D> auto hermitized(Array2D&& arr) {
-	return arr.transposed().template static_array_cast<std::complex<double>, conjr<std::complex<double>> >(conj);
+	return arr
+		.transposed()  // lazily tranposes the array
+		.template static_array_cast<std::complex<double>, conjr<std::complex<double>> >(conj)  // lazy conjugate elements
+	;
 }
 
 std::complex<double> const f() {return std::complex<double>{};}
