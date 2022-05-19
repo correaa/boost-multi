@@ -1193,29 +1193,29 @@ struct basic_array
 	}
 	friend constexpr auto ref<iterator>(iterator begin, iterator end) -> multi::basic_array<typename iterator::element, iterator::rank_v, typename iterator::element_ptr>;
 
-	template<class Iterator>
-	struct basic_reverse_iterator  // NOLINT(fuchsia-multiple-inheritance)
-	: std::reverse_iterator<Iterator>
-	, boost::multi::totally_ordered2<basic_reverse_iterator<Iterator>, void> {
-		template<class O, typename = decltype(std::reverse_iterator<Iterator>{base(std::declval<O const&>())})>
-		constexpr explicit basic_reverse_iterator(O const& o) : std::reverse_iterator<Iterator>{base(o)} {}
-		constexpr basic_reverse_iterator() : std::reverse_iterator<Iterator>{} {}
-		constexpr explicit basic_reverse_iterator(Iterator it) : std::reverse_iterator<Iterator>(std::prev(it)) {}
-		constexpr explicit operator Iterator() const {
-			auto ret = this->base();
-			if(ret!=Iterator{}) {return ++ret;}
-			return Iterator{};
-		}
-		constexpr explicit operator bool() const {return static_cast<bool>(this->base());}
-		constexpr auto operator==(basic_reverse_iterator const& other) const -> bool {return (this->base() == other.base());}
-		constexpr auto operator*()  const -> typename Iterator::reference {return this->current;}
-		constexpr auto operator->() const -> typename Iterator::pointer   {return &this->current;}
-		constexpr auto operator[](typename Iterator::difference_type n) const -> typename Iterator::reference {return *(this->current - n);}
-		constexpr auto operator<(basic_reverse_iterator const& o) const -> bool {return o.base() < this->base();}
-	};
+//	template<class Iterator>
+//	struct basic_reverse_iterator  // NOLINT(fuchsia-multiple-inheritance)
+//	: std::reverse_iterator<Iterator>
+//	, boost::multi::totally_ordered2<basic_reverse_iterator<Iterator>, void> {
+//		template<class O, typename = decltype(std::reverse_iterator<Iterator>{base(std::declval<O const&>())})>
+//		constexpr explicit basic_reverse_iterator(O const& o) : std::reverse_iterator<Iterator>{base(o)} {}
+//		constexpr basic_reverse_iterator() : std::reverse_iterator<Iterator>{} {}
+//		constexpr explicit basic_reverse_iterator(Iterator it) : std::reverse_iterator<Iterator>(std::prev(it)) {}
+//		constexpr explicit operator Iterator() const {
+//			auto ret = this->base();
+//			if(ret!=Iterator{}) {return ++ret;}
+//			return Iterator{};
+//		}
+//		constexpr explicit operator bool() const {return static_cast<bool>(this->base());}
+//		constexpr auto operator==(basic_reverse_iterator const& other) const -> bool {return (this->base() == other.base());}
+//		constexpr auto operator*()  const -> typename Iterator::reference {return this->current;}
+//		constexpr auto operator->() const -> typename Iterator::pointer   {return &this->current;}
+//		constexpr auto operator[](typename Iterator::difference_type n) const -> typename Iterator::reference {return *(this->current - n);}
+//		constexpr auto operator<(basic_reverse_iterator const& o) const -> bool {return o.base() < this->base();}
+//	};
 
  public:
-	using reverse_iterator = basic_reverse_iterator<iterator>;
+//	using reverse_iterator = basic_reverse_iterator<iterator>;
 	using ptr = basic_array_ptr<basic_array, Layout>;
 	using const_ptr = basic_array_ptr<basic_const_array, Layout>;
 

@@ -74,13 +74,13 @@ BOOST_AUTO_TEST_CASE(iterator_2d) {
 	}
 }
 
-BOOST_AUTO_TEST_CASE(iterator_reverse) {
-	multi::array<double, 3>::reverse_iterator rit = {};
-	BOOST_REQUIRE(( rit.base() == multi::array<double, 3>::reverse_iterator{}.base() ));
-	BOOST_REQUIRE(( multi::array<double, 3>::reverse_iterator{}.base() == multi::array<double, 3>::reverse_iterator{}.base() ));
-	BOOST_REQUIRE(( multi::array<double, 3>::reverse_iterator{} == multi::array<double, 3>::reverse_iterator{} ));
-	BOOST_REQUIRE(( multi::array<double, 3>::reverse_iterator{} == multi::array<double, 3>::reverse_iterator{} ));
-}
+//BOOST_AUTO_TEST_CASE(iterator_reverse) {
+//	multi::array<double, 3>::reverse_iterator rit = {};
+//	BOOST_REQUIRE(( rit.base() == multi::array<double, 3>::reverse_iterator{}.base() ));
+//	BOOST_REQUIRE(( multi::array<double, 3>::reverse_iterator{}.base() == multi::array<double, 3>::reverse_iterator{}.base() ));
+//	BOOST_REQUIRE(( multi::array<double, 3>::reverse_iterator{} == multi::array<double, 3>::reverse_iterator{} ));
+//	BOOST_REQUIRE(( multi::array<double, 3>::reverse_iterator{} == multi::array<double, 3>::reverse_iterator{} ));
+//}
 
 BOOST_AUTO_TEST_CASE(iterator_interface ) {
 	multi::array<double, 3> A = {
@@ -103,12 +103,12 @@ BOOST_AUTO_TEST_CASE(iterator_interface ) {
 	BOOST_REQUIRE( begin(A[0]) < end(A[0]) );
 	BOOST_REQUIRE( begin(A[0]) < end(A[0]) );
 
-	BOOST_REQUIRE(( multi::array<double, 3>::reverse_iterator {A.begin()} == rend(A) ));
+//  BOOST_REQUIRE(( multi::array<double, 3>::reverse_iterator {A.begin()} == rend(A) ));
 
-	BOOST_REQUIRE( rbegin(A) < rend(A) );
+//  BOOST_REQUIRE( rbegin(A) < rend(A) );
 
 	BOOST_REQUIRE( end(A) - begin(A) == size(A) );
-	BOOST_REQUIRE( rend(A) - rbegin(A) == size(A) );
+//  BOOST_REQUIRE( rend(A) - rbegin(A) == size(A) );
 
 	BOOST_REQUIRE( size(*begin(A)) == 2 );
 	BOOST_REQUIRE( size(begin(A)[1]) == 2 );
@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE(iterator_semantics) {
 	cit = it3;
 	BOOST_REQUIRE( cit == it3 );
 
-	BOOST_REQUIRE(( begin(A) == multi::array<double, 3>::iterator(rend(A)) ));
+//  BOOST_REQUIRE(( begin(A) == multi::array<double, 3>::iterator(rend(A)) ));
 
 	BOOST_REQUIRE( &A[0][2][1] == &begin(A)[0][2][1] );
 
