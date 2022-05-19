@@ -508,25 +508,12 @@ auto                    block_value_2 =   A({1, 4}, {2, 4}).decay();
 auto                    block_value_3 = + A({1, 4}, {2, 4})        ;
 ```
 
+## Type Requirements
 
-## Concept Requirements
-
-The design tries to impose the minimum possible requirements over the  types that parameterize the arrays.
+The design tries to impose the minimum possible requirements over the types that parameterize the arrays.
 Array operations assume that the contained type (element type) are regular (i.e. different element represent disjoint entities that behave like values).
 Pointer-like random access types can be used as substitutes of built-in pointers.
-Therefore pointers to special memory (fancy-pointers) are supported.
-
-```cpp
-int main() {
-	double* buffer = new double[100];
-	multi::array_ref<double, 2, minimal::ptr<double> > CC(minimal::ptr<double>{buffer}, {10, 10});
-	CC[2]; // requires operator+ 
-	CC[1][1]; // requires operator*
-	CC[1][1] = 9;
-	assert(CC[1][1] == 9);
-	delete[] buffer;
-}
-```
+(Therefore pointers to special memory and fancy-pointers are supported.)
 
 ### Linear Sequences: Pointers
 
@@ -595,6 +582,40 @@ int main(){
 	assert( arr2d[4][5] == 45.001 );
 	m.destroy<marray<double, 2>>("arr2d");
 }
+}
+```
+
+Another kind of fancy-pointer is one that transforms the underlying values.
+These are useful to create "projections" or "views" of data elements.
+
+In the following example a transforming pointer is used to create a conjugated view of the elements.
+That, in combination with transposed view, we can create a hermitic (transposed-conjugate) view of the matrix (without copying elements).
+We can adapt `boost::transform_iterator` to save coding, but other libraries can be used also.
+The hermitized view is read only, with additional work a read-write view can be created (see `multi::blas::hermitized` in multi-adaptors).
+
+```cpp
+constexpr static auto conj = [](auto const& c) -> std::complex<double> const {return std::conj(c);};
+
+template<class T> struct conjr : boost::transform_iterator<decltype(conj), T*> {
+	template<class... As> conjr(As const&... as) : boost::transform_iterator<decltype(conj), T*>{as...} {}
+};
+
+template<class Array2D> auto hermitized(Array2D&& arr) {
+	return arr.transposed().template static_array_cast<std::complex<double>, conjr<std::complex<double>> >(conj);
+}
+
+std::complex<double> const f() {return std::complex<double>{};}
+
+int main() {
+    using namespace std::complex_literals;
+	multi::array A = {
+		{ 1. + 2.i,  3. +  4.i},
+		{ 8. + 9.i, 10. + 11.i}
+	};
+
+	auto const& Ah = hermitized(A);
+
+	assert( Ah[1][0] == std::conj(A[0][1]) );
 }
 ```
 
