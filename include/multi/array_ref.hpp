@@ -670,7 +670,6 @@ struct elements_range_t {
 	constexpr auto front()      & ->       reference {return *begin();}
 	constexpr auto back()       & ->       reference {return *std::prev(end());}
 
-
 	auto operator=(elements_range_t const&) -> elements_range_t& = delete;
 	auto operator=(elements_range_t     &&) -> elements_range_t& = delete;
 
