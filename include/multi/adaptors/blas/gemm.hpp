@@ -45,25 +45,33 @@ try {
 				else if( a_count==1                        ){CTXT.gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first->size()  );}
 				else                                        {CTXT.gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), base(a_first), a_first. stride(), &beta, base(c_first), c_first. stride());}
 			}else if(a_first->stride()==1 and b_first->stride()==1 and c_first. stride()==1){
-				if  (a_count==1)        {CTXT.gemm('T', 'T', a_count, b_first->size(), a_first->size(), &alpha, base(a_first), a_first. stride(), base(b_first), b_first->size() , &beta, base(c_first), a_first->size()  );}
-				else                    {CTXT.gemm('T', 'T', a_count, b_first->size(), a_first->size(), &alpha, base(a_first), a_first. stride(), base(b_first), b_first.stride(), &beta, base(c_first), c_first->stride());}
+				if  (a_count==1)                            {CTXT.gemm('T', 'T', a_count, b_first->size(), a_first->size(), &alpha, base(a_first), a_first. stride(), base(b_first), b_first->size() , &beta, base(c_first), a_first->size()  );}
+				else                                        {CTXT.gemm('T', 'T', a_count, b_first->size(), a_first->size(), &alpha, base(a_first), a_first. stride(), base(b_first), b_first.stride(), &beta, base(c_first), c_first->stride());}
 			}else if(a_first. stride()==1 and b_first->stride()==1 and c_first->stride()==1){
-				if  (a_count==1)        {CTXT.gemm('N', 'T', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), base(a_first), a_first->stride(), &beta, base(c_first), a_first->size()  );}
-				else                    {CTXT.gemm('N', 'T', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), base(a_first), a_first->stride(), &beta, base(c_first), c_first.stride());}
+				if  (a_count==1)                            {CTXT.gemm('N', 'T', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), base(a_first), a_first->stride(), &beta, base(c_first), a_first->size()  );}
+				else                                        {CTXT.gemm('N', 'T', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), base(a_first), a_first->stride(), &beta, base(c_first), c_first.stride());}
 			}else if(a_first. stride()==1 and b_first->stride()==1 and c_first. stride()==1){
-				if  (a_count==1)        {CTXT.gemm('N', 'T', a_count, b_first->size(), a_first->size(), &alpha, base(a_first), a_first->stride(), base(b_first), a_first->size()  , &beta, base(c_first), b_first->size()  );}
-				else                    {CTXT.gemm('N', 'T', a_count, b_first->size(), a_first->size(), &alpha, base(a_first), a_first->stride(), base(b_first), b_first. stride(), &beta, base(c_first), c_first->stride());}
+				if  (a_count==1)                            {CTXT.gemm('N', 'T', a_count, b_first->size(), a_first->size(), &alpha, base(a_first), a_first->stride(), base(b_first), a_first->size()  , &beta, base(c_first), b_first->size()  );}
+				else                                        {CTXT.gemm('N', 'T', a_count, b_first->size(), a_first->size(), &alpha, base(a_first), a_first->stride(), base(b_first), b_first. stride(), &beta, base(c_first), c_first->stride());}
 			}else if(a_first->stride()==1 and b_first.stride()==1 and c_first. stride()==1){
 				if     (a_count==1 and b_first->size()==1  ){CTXT.gemm('N', 'N', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->size()  , base(a_first), a_first->size()  , &beta, base(c_first), c_first->stride());}
 				else if(a_count==1)                         {CTXT.gemm('N', 'T', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first->stride());}
 				else                                        {CTXT.gemm('N', 'T', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first.stride() , &beta, base(c_first), c_first->stride());}
 			}else if(a_first->stride()==1 and b_first. stride()==1 and c_first->stride()==1){
 				if  (a_count==1)        {CTXT.gemm('T', 'N', a_count, c_first->size(), a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first.stride());}
-				else                    {CTXT.gemm('T', 'N', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first.stride(), &beta, base(c_first), c_first.stride());}
-			}else if(a_first. stride()==1 and b_first.stride( )==1 and c_first. stride()==1){
-				                        {CTXT.gemm('N', 'N', c_first->size(), a_count, a_first->size(), &alpha, base(a_first), a_first->stride(), base(b_first), b_first->stride(), &beta, base(c_first), c_first->stride());}
+				else                                        {CTXT.gemm('T', 'N', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first.stride(), &beta, base(c_first), c_first.stride());}
+			}else if(a_first. stride()==1 and b_first.stride( )==1 and c_first. stride()==1) {
+				                                            {CTXT.gemm('N', 'N', a_count, b_first->size(), a_first->size(), &alpha, base(a_first), a_first->stride(), base(b_first), b_first->stride(), &beta, base(c_first), c_first->stride());}
 			}else if(a_first. stride()==1 and b_first.stride( )==1 and c_first->stride()==1){
-				                        {CTXT.gemm('T', 'T', a_count, c_first->size(), a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first->stride(), &beta, base(c_first), c_first. stride());}
+				                                            {CTXT.gemm('T', 'T', b_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first->stride(), &beta, base(c_first), c_first. stride());}
+
+// // b_first->size(), a_first->size(), a_count
+// b_first->size(), a_count, a_first->size()
+// a_first->size(), a_count, b_first->size()
+// a_first->size(), b_first->size(), a_count
+// a_count, b_first->size(), a_first->size(),
+// a_count, a_first->size(), b_first->size()
+
 			}else{assert(0);}  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 		}else if constexpr(!is_conjugated<It2DA>{} and  is_conjugated<It2DB>{}){
 			if      (a_first->stride()==1 and b_first->stride()==1 and c_first->stride()==1){

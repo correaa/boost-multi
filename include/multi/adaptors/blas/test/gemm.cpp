@@ -1,14 +1,11 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-// © Alfredo A. Correa 2019-2021
+// © Alfredo A. Correa 2019-2022
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS gemm"
-#define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
 #include "../../../adaptors/blas/gemm.hpp"
 #include "../../../array.hpp"
-
-//#include "config.hpp"
 
 #include<random>
 
@@ -1728,3 +1725,50 @@ BOOST_AUTO_TEST_CASE(blas_gemm_inq_case) { // https://gitlab.com/correaa/boost-m
 }
 #endif
 
+BOOST_AUTO_TEST_CASE(blas_issue_109_part2) {
+	multi::array<double, 2> const A({ 3, 4}, 5.);
+	multi::array<double, 2> const B({ 2, 3}, 7.);
+
+	multi::array<double, 2> C({2, 4}, 999.);
+	blas::gemm(1., ~A, ~B, 0., ~C);
+
+	BOOST_TEST_REQUIRE( C[0][0] == 105. );
+	BOOST_TEST_REQUIRE( C[0][1] == 105. );
+	BOOST_TEST_REQUIRE( C[1][0] == 105. );
+}
+
+BOOST_AUTO_TEST_CASE(blas_issue_109) {
+	multi::array<double, 2> const A({ 3, 4}, 5.);
+	multi::array<double, 2> const B({ 2, 3}, 7.);
+
+	multi::array<double, 2> C({4, 2}, 999.);
+	blas::gemm(1., ~A, ~B, 0., C);
+
+	BOOST_TEST_REQUIRE( C[0][0] == 105. );
+	BOOST_TEST_REQUIRE( C[0][1] == 105. );
+	BOOST_TEST_REQUIRE( C[1][0] == 105. );
+}
+
+BOOST_AUTO_TEST_CASE(blas_issue_109_part2_complex) {
+	multi::array<std::complex<double>, 2> const A({ 3, 4}, 5.);
+	multi::array<std::complex<double>, 2> const B({ 2, 3}, 7.);
+
+	multi::array<std::complex<double>, 2> C({2, 4}, 999.);
+	blas::gemm(1., ~A, ~B, 0., ~C);
+
+	BOOST_TEST_REQUIRE( C[0][0] == 105. );
+	BOOST_TEST_REQUIRE( C[0][1] == 105. );
+	BOOST_TEST_REQUIRE( C[1][0] == 105. );
+}
+
+BOOST_AUTO_TEST_CASE(blas_issue_109_complex) {
+	multi::array<std::complex<double>, 2> const A({ 3, 4}, 5.);
+	multi::array<std::complex<double>, 2> const B({ 2, 3}, 7.);
+
+	multi::array<std::complex<double>, 2> C({4, 2}, 999.);
+	blas::gemm(1., ~A, ~B, 0., C);
+
+	BOOST_TEST_REQUIRE( C[0][0] == 105. );
+	BOOST_TEST_REQUIRE( C[0][1] == 105. );
+	BOOST_TEST_REQUIRE( C[1][0] == 105. );
+}
