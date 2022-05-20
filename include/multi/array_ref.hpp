@@ -661,19 +661,15 @@ struct elements_range_t {
 	constexpr auto begin()      & ->       iterator {return begin_aux();}
 	constexpr auto end  ()      & ->       iterator {return end_aux()  ;}
 
- private:
-	constexpr auto front_aux() const -> reference {return base_[std::apply(l_, l_.extensions().from_linear(0                    ))];}
-	constexpr auto back_aux()  const -> reference {return base_[std::apply(l_, l_.extensions().from_linear(l_.num_elements() - 1))];}
+	constexpr auto front() const& -> const_reference {return *begin();}
+	constexpr auto back()  const& -> const_reference {return *std::prev(end());}
 
- public:
-	constexpr auto front() const& -> const_reference {return front_aux();}
-	constexpr auto back()  const& -> const_reference {return back_aux ();}
+	constexpr auto front()     && ->       reference {return *begin();}
+	constexpr auto back()      && ->       reference {return *std::prev(end());}
 
-	constexpr auto front()     && ->       reference {return front_aux();}
-	constexpr auto back()      && ->       reference {return back_aux ();}
+	constexpr auto front()      & ->       reference {return *begin();}
+	constexpr auto back()       & ->       reference {return *std::prev(end());}
 
-	constexpr auto front()      & ->       reference {return front_aux();}
-	constexpr auto back()       & ->       reference {return back_aux ();}
 
 	auto operator=(elements_range_t const&) -> elements_range_t& = delete;
 	auto operator=(elements_range_t     &&) -> elements_range_t& = delete;
@@ -846,24 +842,14 @@ struct basic_array
 	->decltype(operator[](std::get<0>(t))) {
 		return operator[](std::get<0>(t)); }
 
- private:  // TODO(correaa) put front and back in operators crtp
-	constexpr auto front_aux() const -> reference {return at_aux(this->extension().front());}
-	constexpr auto back_aux()  const -> reference {return at_aux(this->extension().back ());}
+	constexpr auto front() const& -> const_reference {return *begin();}
+	constexpr auto back()  const& -> const_reference {return *std::prev(end());}
 
- public:
-	constexpr auto front() const& -> const_reference {return front_aux();}
-	constexpr auto back()  const& -> const_reference {return back_aux ();}
+	constexpr auto front()     && ->       reference {return *begin();}
+	constexpr auto back()      && ->       reference {return *std::prev(end());}
 
-	constexpr auto front()     && ->       reference {return front_aux();}
-	constexpr auto back()      && ->       reference {return back_aux ();}
-
-	constexpr auto front()      & ->       reference {return front_aux();}
-	constexpr auto back()       & ->       reference {return back_aux ();}
-
-	template<class Tuple, std::enable_if_t<(std::tuple_size<std::decay_t<Tuple>>::value == 0), int> = 0>
-	constexpr auto operator[](Tuple const& /*no indices*/) const -> basic_const_array {
-		return *this;
-	}
+	constexpr auto front()      & ->       reference {return *begin();}
+	constexpr auto back()       & ->       reference {return *std::prev(end());}
 
 	using typename types::index;
 
@@ -1878,19 +1864,14 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	HD constexpr auto operator[](index i)      & -> typename basic_array::      reference {return at_aux(i);}
 	HD constexpr auto operator[](index i)     && -> typename basic_array::      reference {return at_aux(i);}
 
- private:  // TODO(correaa) put front and back in operators crtp
-	constexpr auto front_aux() const -> reference {return at_aux(this->extension().front());}
-	constexpr auto back_aux()  const -> reference {return at_aux(this->extension().back ());}
+	constexpr auto front() const& -> const_reference {return *begin();}
+	constexpr auto back()  const& -> const_reference {return *std::prev(end());}
 
- public:
-	constexpr auto front() const& -> const_reference {return front_aux();}
-	constexpr auto back()  const& -> const_reference {return back_aux ();}
+	constexpr auto front()     && ->       reference {return *begin();}
+	constexpr auto back()      && ->       reference {return *std::prev(end());}
 
-	constexpr auto front()     && ->       reference {return front_aux();}
-	constexpr auto back()      && ->       reference {return back_aux ();}
-
-	constexpr auto front()      & ->       reference {return front_aux();}
-	constexpr auto back()       & ->       reference {return back_aux ();}
+	constexpr auto front()      & ->       reference {return *begin();}
+	constexpr auto back()       & ->       reference {return *std::prev(end());}
 
 
  private:
