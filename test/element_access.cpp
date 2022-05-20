@@ -296,4 +296,26 @@ BOOST_AUTO_TEST_CASE(elements_from_init_list_2D) {
 	BOOST_REQUIRE(A[1][0] == 30.);
 }
 
+BOOST_AUTO_TEST_CASE(front_back_2D) {
+	multi::array<double, 2> A({3, 4});
+	std::iota(A.data_elements(), A.data_elements() + A.num_elements(), 0.);
+
+	BOOST_REQUIRE(  A.front()[2] ==  A[0][2] );
+	BOOST_REQUIRE( &A.front()[2] == &A[0][2] );
+
+	BOOST_REQUIRE(  A.back ()[2] ==  A[2][2] );
+	BOOST_REQUIRE( &A.back ()[2] == &A[2][2] );
+}
+
+BOOST_AUTO_TEST_CASE(front_back_1D) {
+	multi::array<double, 1> A({30}, double{});
+	std::iota(A.data_elements(), A.data_elements() + A.num_elements(), 0.);
+
+	BOOST_REQUIRE(  A.front() ==  A[ 0] );
+	BOOST_REQUIRE( &A.front() == &A[ 0] );
+
+	BOOST_REQUIRE(  A.back () ==  A[29] );
+	BOOST_REQUIRE( &A.back () == &A[29] );
+}
+
 #endif
