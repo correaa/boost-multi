@@ -12,6 +12,7 @@
 namespace multi = boost::multi;
 namespace blas = multi::blas;
 
+#if 0
 BOOST_AUTO_TEST_CASE(multi_blas_gemm_square_real) {
 	multi::array<double, 2> const a = {
 		{1, 3, 4},
@@ -1723,6 +1724,8 @@ BOOST_AUTO_TEST_CASE(blas_gemm_inq_case) { // https://gitlab.com/correaa/boost-m
 		BOOST_REQUIRE( (+blas::gemm(1., blas::H(mat2), vec))[0][0] == (+blas::gemm(1., blas::H(mat({0, 3}, {0, 1})), vec))[0][0] );
 	}
 }
+#endif
+#endif
 
 BOOST_AUTO_TEST_CASE(blas_issue_109) {
 	using complex = std::complex<double>; complex const I{0, 1};
@@ -1737,5 +1740,4 @@ BOOST_AUTO_TEST_CASE(blas_issue_109) {
 	BOOST_TEST_REQUIRE( C[1][0] == 105. );
 }
 
-#endif
 
