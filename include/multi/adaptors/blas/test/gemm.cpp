@@ -12,7 +12,6 @@
 namespace multi = boost::multi;
 namespace blas = multi::blas;
 
-#if 0
 BOOST_AUTO_TEST_CASE(multi_blas_gemm_square_real) {
 	multi::array<double, 2> const a = {
 		{1, 3, 4},
@@ -1725,10 +1724,20 @@ BOOST_AUTO_TEST_CASE(blas_gemm_inq_case) { // https://gitlab.com/correaa/boost-m
 	}
 }
 #endif
-#endif
+
+BOOST_AUTO_TEST_CASE(blas_issue_109_part2) {
+	multi::array<double, 2> const A({ 3, 4}, 5.);
+	multi::array<double, 2> const B({ 2, 3}, 7.);
+
+	multi::array<double, 2> C({2, 4}, 999.);
+	blas::gemm(1., ~A, ~B, 0., ~C);
+
+	BOOST_TEST_REQUIRE( C[0][0] == 105. );
+	BOOST_TEST_REQUIRE( C[0][1] == 105. );
+	BOOST_TEST_REQUIRE( C[1][0] == 105. );
+}
 
 BOOST_AUTO_TEST_CASE(blas_issue_109) {
-	using complex = std::complex<double>; complex const I{0, 1};
 	multi::array<double, 2> const A({ 3, 4}, 5.);
 	multi::array<double, 2> const B({ 2, 3}, 7.);
 
@@ -1740,4 +1749,26 @@ BOOST_AUTO_TEST_CASE(blas_issue_109) {
 	BOOST_TEST_REQUIRE( C[1][0] == 105. );
 }
 
+BOOST_AUTO_TEST_CASE(blas_issue_109_part2_complex) {
+	multi::array<std::complex<double>, 2> const A({ 3, 4}, 5.);
+	multi::array<std::complex<double>, 2> const B({ 2, 3}, 7.);
 
+	multi::array<std::complex<double>, 2> C({2, 4}, 999.);
+	blas::gemm(1., ~A, ~B, 0., ~C);
+
+	BOOST_TEST_REQUIRE( C[0][0] == 105. );
+	BOOST_TEST_REQUIRE( C[0][1] == 105. );
+	BOOST_TEST_REQUIRE( C[1][0] == 105. );
+}
+
+BOOST_AUTO_TEST_CASE(blas_issue_109_complex) {
+	multi::array<std::complex<double>, 2> const A({ 3, 4}, 5.);
+	multi::array<std::complex<double>, 2> const B({ 2, 3}, 7.);
+
+	multi::array<std::complex<double>, 2> C({4, 2}, 999.);
+	blas::gemm(1., ~A, ~B, 0., C);
+
+	BOOST_TEST_REQUIRE( C[0][0] == 105. );
+	BOOST_TEST_REQUIRE( C[0][1] == 105. );
+	BOOST_TEST_REQUIRE( C[1][0] == 105. );
+}
