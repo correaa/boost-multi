@@ -226,10 +226,10 @@ struct affine : addable2<T, Difference>, subtractable2<T, Difference> {
 
 template<class T>
 struct random_iterable {
-	       constexpr auto rbegin()&    {return typename T::reverse_iterator{static_cast<T&>(*this).end  ()};}
-	       constexpr auto rend  ()&    {return typename T::reverse_iterator{static_cast<T&>(*this).begin()};}
-	friend /*consx*/ auto rbegin(T& s) {return static_cast<random_iterable&>(s).rbegin();}
-	friend /*consx*/ auto rend  (T& s) {return static_cast<random_iterable&>(s).rend  ();}
+//         constexpr auto rbegin()&    {return typename T::reverse_iterator{static_cast<T&>(*this).end  ()};}
+//         constexpr auto rend  ()&    {return typename T::reverse_iterator{static_cast<T&>(*this).begin()};}
+//  friend /*consx*/ auto rbegin(T& s) {return static_cast<random_iterable&>(s).rbegin();}
+//  friend /*consx*/ auto rend  (T& s) {return static_cast<random_iterable&>(s).rend  ();}
 
 	       constexpr auto cfront() const&    -> decltype(auto) {return static_cast<T const&>(*this).front();}
 	       constexpr auto cback () const&    -> decltype(auto) {return static_cast<T const&>(*this).back() ;}
