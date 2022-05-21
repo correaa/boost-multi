@@ -265,6 +265,22 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		return distance(a, b);
 	}
 
+//	constexpr auto begin() const& -> typename static_array::const_iterator {return ref:: begin();}
+//	constexpr auto end  () const& -> typename static_array::const_iterator {return ref:: end  ();}
+
+	constexpr auto begin()     && -> typename static_array:: move_iterator {return ref::mbegin();}
+	constexpr auto end  ()     && -> typename static_array:: move_iterator {return ref::mend  ();}
+
+//	constexpr auto begin()      & -> typename static_array::      iterator {return ref:: begin();}
+//	constexpr auto end  ()      & -> typename static_array::      iterator {return ref:: end  ();}
+
+	constexpr auto operator[](index i) const& -> typename static_array::const_reference {return ref::operator[](i);}
+	constexpr auto operator[](index i)     && -> decltype(auto)                         {
+		if constexpr( D == 1) {return std::move(ref::operator[](i)       );}
+		else                  {return           ref::operator[](i).moved();}
+	}
+	constexpr auto operator[](index i)      & -> typename static_array::      reference {return ref::operator[](i);}
+
  protected:
 	void deallocate() {
 		if(this->num_elements()) {
