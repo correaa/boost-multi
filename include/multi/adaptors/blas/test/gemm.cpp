@@ -1,5 +1,5 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-// © Alfredo A. Correa 2019-2022
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2019-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS gemm"
 #include<boost/test/unit_test.hpp>
@@ -310,7 +310,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_nh) {
 	}
 }
 
-#if 1
 #if defined(CUDA_FOUND)
 #include<thrust/complex.h>
 BOOST_AUTO_TEST_CASE(multi_blas_gemm_nh_thrust) {
@@ -355,7 +354,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_nh_thrust) {
 		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
 	}
 }
-#endif
 
 BOOST_AUTO_TEST_CASE(multi_blas_gemm_elongated) {
 	using complex = std::complex<double>; complex const I{0, 1};
@@ -367,7 +365,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_elongated) {
 		blas::gemm(1., a, blas::H(a), 0., c); // c=aa†, c†=aa†
 		BOOST_REQUIRE( c[0][0] == 87. + 0.*I );
 	}
-	 {
+	{
 		multi::array<complex, 2> c({1, 1});
 		blas::gemm_n(1., begin(a), size(a), begin(blas::H(a)), 0., begin(c)); // c=aa†, c†=aa†
 		BOOST_REQUIRE( c[0][0] == 87. + 0.*I );
@@ -641,7 +639,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_1x3_part_3x2) {
 		blas::gemm(1., ~(ar(extension(ar), {0, 1})), b, 0., ~c); // c=a⸆b, c⸆=b⸆a
 		BOOST_REQUIRE( c[1][0] == 184 );
 	}
-	 {
+	{
 		auto ar = +~a;
 		multi::array<double, 2> c({size(~b), size(~ar(extension(ar), {0, 1}))});
 		blas::gemm_n(1., begin(~(ar(extension(ar), {0, 1}))), size(~(ar(extension(ar), {0, 1}))), begin(b), 0., begin(~c)); // c=a⸆b, c⸆=b⸆a
@@ -1770,5 +1768,38 @@ BOOST_AUTO_TEST_CASE(blas_issue_109_complex) {
 
 	BOOST_TEST_REQUIRE( C[0][0] == 105. );
 	BOOST_TEST_REQUIRE( C[0][1] == 105. );
+	BOOST_TEST_REQUIRE( C[1][0] == 105. );
+}
+
+BOOST_AUTO_TEST_CASE(blas_issue_109_complex_mx2) {
+	multi::array<std::complex<double>, 2> const A({ 3, 4}, 5.);
+	multi::array<std::complex<double>, 2> const B({ 2, 3}, 7.);
+
+	multi::array<std::complex<double>, 2> C({4, 2}, 999.);
+	blas::gemm(1., ~A, ~B, 0., C);
+
+	BOOST_TEST_REQUIRE( C[0][0] == 105. );
+	BOOST_TEST_REQUIRE( C[1][0] == 105. );
+}
+
+BOOST_AUTO_TEST_CASE(blas_issue_109_complex_mx1) {
+	multi::array<std::complex<double>, 2> const A({ 3, 4}, 5.);
+	multi::array<std::complex<double>, 2> const B({ 1, 3}, 7.);
+
+	multi::array<std::complex<double>, 2> C({4, 1}, 999.);
+	blas::gemm(1., ~A, ~B, 0., C);
+
+	BOOST_TEST_REQUIRE( C[0][0] == 105. );
+	BOOST_TEST_REQUIRE( C[1][0] == 105. );
+}
+
+BOOST_AUTO_TEST_CASE(blas_issue_109_double_mx1) {
+	multi::array<double, 2> const A({ 3, 4}, 5.);
+	multi::array<double, 2> const B({ 1, 3}, 7.);
+
+	multi::array<double, 2> C({4, 1}, 999.);
+	blas::gemm(1., ~A, ~B, 0., C);
+
+	BOOST_TEST_REQUIRE( C[0][0] == 105. );
 	BOOST_TEST_REQUIRE( C[1][0] == 105. );
 }
