@@ -1,6 +1,8 @@
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2019-2022 Alfredo A. Correa
+
 #ifndef MULTI_ADAPTORS_BLAS_CORE_HPP  // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 #define MULTI_ADAPTORS_BLAS_CORE_HPP
-// © Alfredo A. Correa 2019-2022
 
 // https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
 
@@ -497,7 +499,7 @@ v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* a
 	if(transB != 'N') {MULTI_ASSERT1(ldb >= max(1L, n));}                                                                                                                                                                               \
 	MULTI_ASSERT1( aa != cc );                                                                                                                                                                                                          \
 	MULTI_ASSERT1( bb != cc );                                                                                                                                                                                                          \
-	MULTI_ASSERT1( ldc >= max(1L, m) );                                                                                                                                                                                                 \
+	if(not( ldc >= max(1L, m) )) {throw std::logic_error("failed 'ldc >= max(1L, m)' with ldc = "+ std::to_string(ldc) +" and m = "+ std::to_string(m));}                                                                               \
 	if(*beta != 0.) {MULTI_ASSERT1((is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{} + BETA{}*CC{})>{}));}                                                                                                                                 \
 	BLAS(T##gemm)(transA, transB, BC(m), BC(n), BC(k), *(T const*)alpha, (T const*)static_cast<AA*>(aa), BC(lda), (T const*)static_cast<BB*>(bb), BC(ldb), *(T const*)beta, (T*)static_cast<CC*>(cc), BC(ldc));                         \
 }                                                                                                                                                                                                                                       \
