@@ -277,7 +277,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	constexpr auto operator[](index i) const& -> typename static_array::const_reference {return ref::operator[](i);}
 	constexpr auto operator[](index i)     && -> decltype(auto)                         {
 		if constexpr( D == 1) {return std::move(ref::operator[](i)       );}
-		else                  {return           ref::operator[](i).moved();}
+		else                  {return           ref::operator[](i).moved();}  // NOLINT(readability/braces)
 	}
 	constexpr auto operator[](index i)      & -> typename static_array::      reference {return ref::operator[](i);}
 
