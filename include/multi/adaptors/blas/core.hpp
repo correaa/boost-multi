@@ -1,6 +1,8 @@
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2019-2022 Alfredo A. Correa
+
 #ifndef MULTI_ADAPTORS_BLAS_CORE_HPP  // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 #define MULTI_ADAPTORS_BLAS_CORE_HPP
-// © Alfredo A. Correa 2019-2022
 
 // https://software.intel.com/en-us/articles/intel-mkl-link-line-advisor
 
