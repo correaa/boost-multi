@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo A. Correa 2018-2022
+// Copyright 2018-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi iterators"
 #include<boost/test/unit_test.hpp>
@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(iterator_1d) {
 		BOOST_REQUIRE( b == cbb );
 	}
 
-	*begin( multi::array<double, 1>(multi::extensions_t<1>{multi::iextension{10}}, 99.) ) = 44.;
+//  *begin( multi::array<double, 1>(multi::extensions_t<1>{multi::iextension{10}}, 99.) ) = 44.;
 }
 
 BOOST_AUTO_TEST_CASE(iterator_2d) {

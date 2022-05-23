@@ -6,6 +6,7 @@
 
 #include "multi/array.hpp"
 
+#include <deque>
 #include <numeric>  // for iota
 
 namespace multi = boost::multi;
@@ -316,6 +317,67 @@ BOOST_AUTO_TEST_CASE(front_back_1D) {
 
 	BOOST_REQUIRE(  A.back () ==  A[29] );
 	BOOST_REQUIRE( &A.back () == &A[29] );
+}
+
+BOOST_AUTO_TEST_CASE(elements_rvalues) {
+	using movable_type = std::vector<double>;
+	movable_type movable_value(5., 99.);
+
+	multi::array<movable_type, 1> A = {movable_value, movable_value, movable_value};
+	BOOST_REQUIRE( A.size() == 3 );
+
+	movable_type front = std::move(A)[0];
+
+	BOOST_REQUIRE( front == movable_value );
+	BOOST_REQUIRE( A[0].empty()           );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
+	BOOST_REQUIRE( A[1] == movable_value  );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
+
+	std::move(A)[1] = movable_value;
+}
+
+template<class Array1D>
+void assign_elements_from_to(Array1D&& arr, std::deque<std::vector<double>>& dest) {
+	std::copy(std::forward<Array1D>(arr).begin(), std::forward<Array1D>(arr).end(), std::back_inserter(dest));
+}
+
+BOOST_AUTO_TEST_CASE(elements_rvalues_nomove) {
+	using movable_type = std::vector<double>;
+	movable_type movable_value(5., 99.);
+
+	multi::array<movable_type, 1> A = {movable_value, movable_value, movable_value};
+	BOOST_REQUIRE( A.size() == 3 );
+
+	std::deque<std::vector<double>> q1;
+
+	assign_elements_from_to(A, q1);
+
+	BOOST_REQUIRE( A[0] == movable_value );
+
+	std::deque<std::vector<double>> q2;
+
+	assign_elements_from_to(std::move(A), q2);
+
+	BOOST_REQUIRE( A[0].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
+
+	BOOST_REQUIRE( q1 == q2 );
+}
+
+BOOST_AUTO_TEST_CASE(elements_rvalues_assignment) {
+	std::vector<double> v = {1., 2., 3.};
+	std::move(v) = std::vector<double>{3., 4., 5.};
+	std::move(v)[1] = 99.;  // it compiles  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
+//  std::move(v[1]) = 99.;  // does not compile
+
+//  double a = 5.;
+//	std::move(a) = 9.;  // does not compile
+//  BOOST_REQUIRE( a == 9. );
+
+	multi::array<double, 1> A = {1., 2., 3.};
+	multi::array<double, 1> B = {1., 2., 3.};
+	std::move(A) = B;  // this compiles TODO(correaa) should it?
+
+//  std::move(A)[0] = 10.;  // does not compile
+
 }
 
 #endif

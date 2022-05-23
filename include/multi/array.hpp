@@ -36,7 +36,7 @@ struct array_allocator {
 	auto alloc() const& -> allocator_type const& {return alloc_;}
 
 	array_allocator() = default;
-	explicit array_allocator(allocator_type const& a) : alloc_{a} {}
+	explicit array_allocator(allocator_type const& alloc) : alloc_{alloc} {}
 
 	auto allocate(size_type_ n) -> pointer_ {
 		return n?allocator_traits::allocate(alloc_, n):pointer_{nullptr};
@@ -104,7 +104,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	void destroy_if_not(std::false_type/*false*/) {array_alloc::destroy_n(this->data_elements(), this->num_elements());}
 	void destroy() {destroy_if_not(std::is_trivially_destructible<typename static_array::element>{});}
 
-	void allocate() {this->base_ = array_alloc::allocate(static_array::num_elements());}
+	void allocate() {this->base_ = array_alloc::allocate(static_cast<typename std::allocator_traits<typename static_array::allocator_type>::size_type>(static_array::num_elements()));}
 
  public:
 	using value_type = typename std::conditional<
@@ -118,8 +118,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	explicit static_array(allocator_type const& a) : array_alloc{a} {}
 
  protected:
-	static_array(static_array&& other, allocator_type const& a) noexcept          // 6b  TODO(correaa) move from array only
-	: array_alloc{a}  // TODO(correaa) : handle allocation propagation here
+	static_array(static_array&& other, allocator_type const& alloc) noexcept          // 6b  TODO(correaa) move from array only
+	: array_alloc{alloc}  // TODO(correaa) : handle allocation propagation here
 	, ref{other.base_, other.extensions()} {
 		other.layout_mutable() = {};
 	//  other.ref::layout_t::operator=({});
@@ -265,6 +265,22 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		return distance(a, b);
 	}
 
+	constexpr auto begin() const& -> typename static_array::const_iterator {return ref:: begin();}
+	constexpr auto end  () const& -> typename static_array::const_iterator {return ref:: end  ();}
+
+	constexpr auto begin()     && -> typename static_array:: move_iterator {return ref::mbegin();}
+	constexpr auto end  ()     && -> typename static_array:: move_iterator {return ref::mend  ();}
+
+	constexpr auto begin()      & -> typename static_array::      iterator {return ref:: begin();}
+	constexpr auto end  ()      & -> typename static_array::      iterator {return ref:: end  ();}
+
+	constexpr auto operator[](index i) const& -> typename static_array::const_reference {return ref::operator[](i);}
+	constexpr auto operator[](index i)     && -> decltype(auto)                         {
+		if constexpr( D == 1) {return std::move(ref::operator[](i)       );}
+		else                  {return           ref::operator[](i).moved();}  // NOLINT(readability/braces)
+	}
+	constexpr auto operator[](index i)      & -> typename static_array::      reference {return ref::operator[](i);}
+
  protected:
 	void deallocate() {
 		if(this->num_elements()) {
@@ -399,6 +415,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		return *this;
 	}
 	auto operator=(static_array const& other) & -> static_array& {
+		if(this == std::addressof(other)) {return *this;}  // cert-oop54-cpp
 		assert( extensions(other) == static_array::extensions() );
 		if(this == &other) {return *this;}  // lints (cert-oop54-cpp) : handle self-assignment properly
 		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
