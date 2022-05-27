@@ -6,7 +6,9 @@
 
 #include "detail/layout.hpp"
 
-#include<memory>  // for allocator<>
+
+#include<memory>       // for allocator<>
+#include<type_traits>  // for std::invoke_result
 
 #if(__cplusplus >= 201703L)
 #include<iterator>  // for std::size (in c++17)
@@ -22,7 +24,8 @@ constexpr auto implicit_cast(From&& f) -> To {return static_cast<To>(f);}
 template<class To, class From, std::enable_if_t<std::is_constructible<To, From>{} and not std::is_convertible<From, To>{}, int> = 0>
 constexpr auto explicit_cast(From&& f) -> To {return static_cast<To>(f);}
 
-template<class T, class Ptr = T*> struct move_ptr : private std::move_iterator<Ptr> {
+template<class T, class Ptr = T*>
+struct move_ptr : private std::move_iterator<Ptr> {
 	using difference_type = typename std::iterator_traits<std::move_iterator<Ptr>>::difference_type;
 	using value_type = typename std::iterator_traits<std::move_iterator<Ptr>>::value_type;
 	using pointer = Ptr;
@@ -50,6 +53,43 @@ template<class T, class Ptr = T*> struct move_ptr : private std::move_iterator<P
 	constexpr auto operator==(move_ptr const& other) const -> bool {return static_cast<std::move_iterator<Ptr> const&>(*this) == static_cast<std::move_iterator<Ptr> const&>(other);}
 	constexpr auto operator!=(move_ptr const& other) const -> bool {return static_cast<std::move_iterator<Ptr> const&>(*this) != static_cast<std::move_iterator<Ptr> const&>(other);}
 };
+
+template<class T, class UF, class Ptr = T*, class Ref = std::invoke_result_t<UF const&, typename std::iterator_traits<Ptr>::reference>>
+struct transform_ptr {
+	using difference_type   = typename std::iterator_traits<Ptr>::difference_type;
+	using value_type        = std::decay_t<Ref>;//typename std::iterator_traits<std::move_iterator<Ptr>>::value_type;
+	using pointer           = Ptr;
+	using reference         = Ref;
+	using iterator_category = typename std::iterator_traits<Ptr>::iterator_category;
+
+	template<class U> using rebind = transform_ptr<T, UF, typename std::pointer_traits<Ptr>::template rebind<U>, decltype(std::declval<UF&>()(*std::declval<typename std::pointer_traits<Ptr>::template rebind<U>>()))>;
+
+	template<class... As>
+	constexpr transform_ptr(pointer p, UF f) : p_{p}, f_(std::move(f)) {}
+
+	constexpr auto functor() const -> UF {return f_;}
+	constexpr auto base() const -> Ptr const& {return p_;}
+	constexpr auto operator*() const -> reference {return f_(*p_);}  // NOLINT(readability-const-return-type) in case synthesis reference is a `T const`
+
+	constexpr auto operator+=(difference_type n) -> transform_ptr& {p_ += n; return *this;}
+	constexpr auto operator-=(difference_type n) -> transform_ptr& {p_ -= n; return *this;}
+
+	constexpr auto operator+(difference_type n) const -> transform_ptr {transform_ptr ret{*this}; ret += n; return ret;}
+	constexpr auto operator-(transform_ptr const& other) const -> difference_type {return p_ - other.p_;}
+
+//	constexpr auto operator*() const -> decltype(auto) {return *static_cast<std::move_iterator<Ptr> const&>(*this);}
+	constexpr auto operator[](difference_type n) const -> reference {return *((*this) + n);}
+
+//	constexpr auto operator==(move_ptr const& other) const -> bool {return static_cast<std::move_iterator<Ptr> const&>(*this) == static_cast<std::move_iterator<Ptr> const&>(other);}
+//	constexpr auto operator!=(move_ptr const& other) const -> bool {return static_cast<std::move_iterator<Ptr> const&>(*this) != static_cast<std::move_iterator<Ptr> const&>(other);}
+ private:
+	Ptr p_;
+//#if __has_cpp_attribute(no_unique_address)	>= 201803
+//	[[no_unique_address]]
+//#endif
+	UF  f_;
+};
+
 
 template<class Array, typename Reference = void, typename Element = void>
 struct array_traits;
