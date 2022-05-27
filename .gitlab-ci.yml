@@ -880,6 +880,7 @@ inq-clang++-latest:
 
 inq-cuda-11.7-compileonly:
   allow_failure: true
+  image: debian:stable
   stage: test
   script:
     - export DEBIAN_FRONTEND=noninteractive
