@@ -899,7 +899,7 @@ inq-cuda-11.7-compileonly:
     - cd ../..
     - mkdir build && cd build
     - g++ --version
-    - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/cuda/bin/nvcc --version
+    - /usr/local/cuda-11.7/bin/nvcc --version
     - CUDACXX=/usr/local/cuda-11.7/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-11.7 -DCMAKE_CUDA_ARCHITECTURES=70
     - make silicon
 
