@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(adaptor_blas_double_100x1_1x1_H_sub) {
 	BOOST_REQUIRE(C[99][0] == 1.);
 }
 
-BOOST_AUTO_TEST_CASE(adaptor_blas_double_100x1_1x1_H_sub) {
+BOOST_AUTO_TEST_CASE(adaptor_blas_double_100x1_1x1_H_sub_6) {
 	multi::array<double, 2> A({100, 4}, 2.);
 	multi::array<double, 2> B({  4, 4}, 3.);
 
