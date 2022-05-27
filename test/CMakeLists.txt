@@ -827,6 +827,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wwrite-strings
 					# -Wxor-used-as-pow (clang 11, not in clang 9)
 					-Wzero-as-null-pointer-constant -Wzero-length-array
+					-Wno-c++98-compat-unnamed-type-template-args
+					-Wno-ignored-qualifiers
 		        >
 				$<$<CXX_COMPILER_ID:Intel>:  # also IntelLLVM, XL (ibm), XLClang (ibm)
 					-Werror
