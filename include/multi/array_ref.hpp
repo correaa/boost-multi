@@ -1728,9 +1728,11 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
 	using element_type = T;
 
-	using       element_ptr = typename types::element_ptr;
+	using element_ptr       = typename types::element_ptr;
 	using element_const_ptr = typename types::element_const_ptr;
-	using  element_move_ptr = multi::move_ptr<element_type, element_ptr>;
+	using element_move_ptr  = multi::move_ptr<element_type, element_ptr>;
+	using element_ref       = typename types::element_ref;
+	using element_cref      = typename std::iterator_traits<element_const_ptr>::reference;
 
 	using default_allocator_type = typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type;
 
@@ -1849,7 +1851,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	}
 
  private:
-	HD constexpr auto at_aux(index i) const -> typename basic_array::reference {
+	HD constexpr auto at_aux(index i) const -> typename basic_array::reference {  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
 	//  MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	//  auto ba = this->base();  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
 	//  auto of = (i*this->stride() - this->offset());  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
@@ -1859,7 +1861,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	}
 
  public:
-	HD constexpr auto operator[](index i) const& -> typename basic_array::const_reference {return at_aux(i);}
+	HD constexpr auto operator[](index i) const& -> typename basic_array::const_reference {return at_aux(i);}  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
 	HD constexpr auto operator[](index i)      & -> typename basic_array::      reference {return at_aux(i);}
 	HD constexpr auto operator[](index i)     && -> typename basic_array::      reference {return at_aux(i);}
 
@@ -2068,15 +2070,13 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	HD constexpr auto unrotated()     && -> decltype(auto) {return operator()();}
 	HD constexpr auto unrotated()      & -> decltype(auto) {return operator()();}
 
-	using         iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_ptr      >;
-	using   const_iterator = typename multi::array_iterator<typename types::element, 1, typename types::element_const_ptr>;
-	using    move_iterator =                 array_iterator<           element_type, 1,                 element_move_ptr >;
-
-//  using reverse_iterator = std::reverse_iterator<iterator>;
+	using         iterator = typename multi::array_iterator<element_type, 1, typename types::element_ptr      >;
+	using   const_iterator = typename multi::array_iterator<element_type, 1, typename types::element_const_ptr>;
+	using    move_iterator =                 array_iterator<element_type, 1,                 element_move_ptr >;
 
  private:
 	constexpr explicit basic_array(iterator begin, iterator end)
-	: basic_array{
+	: basic_array {
 		layout_type{ {}/*begin->layout()*/, begin.stride(), 0, begin.stride()*(end - begin)},
 		begin.base()
 	} {
@@ -2180,6 +2180,14 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	template<class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>, class... Args>
 	constexpr auto static_array_cast(Args&&... args) const -> basic_array<T2, 1, P2> {  // name taken from std::static_pointer_cast
 		return {this->layout(), P2{this->base(), std::forward<Args>(args)...}};
+	}
+
+	template<class UF>
+	constexpr auto element_transformed(UF f) const {
+		return static_array_cast<
+			std::decay_t<std::invoke_result_t<UF const&, element_ref> >,
+			transform_ptr<std::decay_t<std::invoke_result_t<UF const&, element_cref>>, UF, element_const_ptr, std::invoke_result_t<UF const&, element_cref>>
+		>(std::move(f));
 	}
 
 	template<

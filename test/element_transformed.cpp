@@ -10,7 +10,7 @@
 
 // namespace multi = boost::multi;
 
-inline constexpr auto conj_read = [](auto const& c) -> auto const {return std::conj(c);};  // NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
+inline constexpr auto conj_ro = [](auto const& c) -> auto const {return std::conj(c);};  // NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
 
 //struct conj_cref;
 
@@ -66,7 +66,7 @@ namespace multi = boost::multi;
 BOOST_AUTO_TEST_CASE(transform_ptr_single) {
 	std::complex<double> const I{0, 1};
 	std::complex<double> c = 1. + 2.*I;
-	multi::transform_ptr<std::complex<double>, decltype(conj_read)> tp{&c, conj_read};
+	multi::transform_ptr<std::complex<double>, decltype(conj_ro)> tp{&c, conj_ro};
 	BOOST_REQUIRE( *tp == std::conj(1. + 2.*I) );
 }
 
@@ -75,9 +75,9 @@ BOOST_AUTO_TEST_CASE(multi_array_sliced_empty_1D_read) {
 	multi::array<std::complex<double>, 1> A = { 1. + 2.*I,  3. +  4.*I};
 	BOOST_REQUIRE( A.size() == 2 );
 
-//	auto const& Ac = A.element_transformed(conj_read);
-//	BOOST_REQUIRE( Ac[0] == conj(A[0]) );
-//	BOOST_REQUIRE( Ac[1] == conj(A[1]) );
+	auto const& Ac = A.element_transformed(conj_ro);
+	BOOST_REQUIRE( Ac[0] == conj_ro(A[0]) );
+	BOOST_REQUIRE( Ac[1] == conj_ro(A[1]) );
 
 //  Ac[0] = 5. + 4.i;  // doesn't compile thanks to the `auto const` in the `conj` def
 }
