@@ -379,19 +379,38 @@ clang++-11:
 #       - cmake --build . || make VERBOSE=1
 #       - ctest --output-on-failure
 
-cuda-11.6:
-    allow_failure: false
+#cuda-11.6:
+#    allow_failure: false
+#    stage: build
+#    script:
+#       - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
+#       - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
+#       - apt-get update -y
+#       - apt-get install --no-install-recommends -y cmake nvhpc-22-3 wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+#       - cmake --version
+#       - apt-cache madison nvhpc
+#       - /opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc --version
+#       - mkdir build && cd build
+#       - cmake .. -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc -DCUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_FLAGS="-gencode arch=compute_61,code=sm_61"
+#       - cmake --build . || make VERBOSE=1
+#       - ctest --output-on-failure
+
+cuda-11.7:
+    allow_failure: true
     stage: build
+    image: debian:stable
     script:
-       - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
-       - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
-       - apt-get update -y
-       - apt-get install --no-install-recommends -y cmake nvhpc-22-3 wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
-       - cmake --version
-       - apt-cache madison nvhpc
-       - /opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc --version
+       - export DEBIAN_FRONTEND=noninteractive
+       - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates gnupg software-properties-common
+       - apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/debian11/x86_64/3bf863cc.pub
+       - add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/debian11/x86_64/ /"
+       - add-apt-repository contrib
+       - apt-get update
+       - apt-get -y install cuda
+       - apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+       - /usr/local/cuda-11.7/bin/nvcc --version
        - mkdir build && cd build
-       - cmake .. -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc -DCUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_FLAGS="-gencode arch=compute_61,code=sm_61"
+       - cmake .. -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/usr/local/cuda-11.7/bin/nvcc -DCMAKE_CXX_STANDARD=17 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_FLAGS="-gencode arch=compute_61,code=sm_61"
        - cmake --build . || make VERBOSE=1
        - ctest --output-on-failure
 
@@ -456,18 +475,18 @@ g++-cppcheck:
 #      - make VERBOSE=1
 #      - ctest --output-on-failure
 
-nvhpc-22.3:
-    stage: build
-    script:
-       - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
-       - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
-       - apt-get update -y
-       - apt-get install --no-install-recommends -y nvhpc-22-3 cmake make libboost-test-dev libboost-serialization-dev
-       - /opt/nvidia/hpc_sdk/Linux_x86_64/22.3/compilers/bin/nvc++ --version
-       - mkdir build && cd build
-       - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/compilers/bin/nvc++ cmake ..
-       - make VERBOSE=1
-       - ctest --output-on-failure
+#nvhpc-22.3:
+#    stage: build
+#    script:
+#       - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
+#       - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
+#       - apt-get update -y
+#       - apt-get install --no-install-recommends -y nvhpc-22-3 cmake make libboost-test-dev libboost-serialization-dev
+#       - /opt/nvidia/hpc_sdk/Linux_x86_64/22.3/compilers/bin/nvc++ --version
+#       - mkdir build && cd build
+#       - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/compilers/bin/nvc++ cmake ..
+#       - make VERBOSE=1
+#       - ctest --output-on-failure
 
 #      - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates curl tree
 #      - curl --output nvhpc-22-1_22.1_amd64.deb --url https://developer.download.nvidia.com/hpc-sdk/22.1/nvhpc-22-1_22.1_amd64.deb --retry 5 --retry-delay 5
@@ -481,6 +500,20 @@ nvhpc-22.3:
 #      - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/22.1/compilers/bin/nvc++ cmake ..
 #      - make VERBOSE=1
 #      - ctest --output-on-failure
+
+
+nvhpc-22.5:
+    stage: build
+    script:
+       - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
+       - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' |      tee /etc/apt/sources.list.d/nvhpc.list
+       - apt-get update -y
+       - apt-get install --no-install-recommends -y nvhpc-22-5 cmake make libboost-test-dev libboost-serialization-dev
+       - /opt/nvidia/hpc_sdk/Linux_x86_64/22.5/compilers/bin/nvc++ --version
+       - mkdir build && cd build
+       - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/22.5/compilers/bin/nvc++ cmake ..
+       - make VERBOSE=1
+       - ctest --output-on-failure
 
 circle-168:
   allow_failure: true
@@ -845,48 +878,56 @@ inq-clang++-latest:
 #       - ctest --output-on-failure
 
 
-inq-cuda-11.6-compileonly:
-    allow_failure: true
-    stage: test
-    script:
-      - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
-      - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
-      - apt-get update && apt-get install --no-install-recommends -y --quiet 
-        ca-certificates cmake g++ git gfortran nvhpc-22-3 make libfftw3-dev libblas-dev libboost-serialization-dev libboost-test-dev libboost-timer-dev libboost-filesystem-dev liblapack-dev libopenmpi-dev pkg-config wget
-      - cmake --version
-      - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
-      - cd inq
-      - cd external_libs/multi
-      - git fetch
-      - git checkout $CI_COMMIT_BRANCH
-      - cd ../..
-      - mkdir build && cd build
-      - g++ --version
-      - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/cuda/bin/nvcc --version
-      - CUDACXX=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6 -DCMAKE_CUDA_ARCHITECTURES=70
-      - make silicon
+inq-cuda-11.7-compileonly:
+  allow_failure: true
+  image: debian:stable
+  stage: test
+  script:
+    - export DEBIAN_FRONTEND=noninteractive
+    - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates gnupg software-properties-common
+    - apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/debian11/x86_64/3bf863cc.pub
+    - add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/debian11/x86_64/ /"
+    - add-apt-repository contrib
+    - apt-get update
+    - apt-get -y install cuda
+    - apt-get install --no-install-recommends -y cmake g++ g++-9 git gfortran make libfftw3-dev libblas-dev libboost-serialization-dev libboost-test-dev libboost-timer-dev libboost-filesystem-dev liblapack-dev libopenmpi-dev pkg-config wget
+    - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
+    - cd inq
+    - cd external_libs/multi
+    - git fetch
+    - git checkout $CI_COMMIT_BRANCH
+    - cd ../..
+    - mkdir build && cd build
+    - g++ --version
+    - /usr/local/cuda-11.7/bin/nvcc --version
+    - CUDACXX=/usr/local/cuda-11.7/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-11.7 -DCMAKE_CUDA_ARCHITECTURES=70
+    - make silicon
 
-inq-cuda-11.6-gcc9-compileonly:
-    allow_failure: false
-    image: debian:stable-backports
-    stage: test
-    script:
-      - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
-      - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
-      - apt-get update && apt-get install --no-install-recommends -y --quiet 
-        ca-certificates cmake g++ g++-9 git gfortran nvhpc-22-3 make libfftw3-dev libblas-dev libboost-serialization-dev libboost-test-dev libboost-timer-dev libboost-filesystem-dev liblapack-dev libopenmpi-dev pkg-config wget
-      - cmake --version
-      - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
-      - cd inq
-      - cd external_libs/multi
-      - git fetch
-      - git checkout $CI_COMMIT_BRANCH
-      - cd ../..
-      - mkdir build && cd build
-      - g++-9 --version
-      - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/cuda/bin/nvcc --version
-      - CUDACXX=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_HOST_COMPILER=g++-9 -DCUDA_TOOLKIT_ROOT_DIR=/opt/nvidia/hpc_sdk/Linux_x86_64/22.3/cuda/11.6 -DCMAKE_CUDA_ARCHITECTURES=70
-      - make silicon
+inq-cuda-11.7-gcc9-compileonly:
+  allow_failure: false
+  image: debian:stable-backports
+  stage: test
+  script:
+    - export DEBIAN_FRONTEND=noninteractive
+    - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates gnupg software-properties-common
+    - apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/debian11/x86_64/3bf863cc.pub
+    - add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/debian11/x86_64/ /"
+    - add-apt-repository contrib
+    - apt-get update
+    - apt-get -y install cuda
+    - apt-get install --no-install-recommends -y cmake g++ g++-9 git gfortran make libfftw3-dev libblas-dev libboost-serialization-dev libboost-test-dev libboost-timer-dev libboost-filesystem-dev liblapack-dev libopenmpi-dev pkg-config wget
+    - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
+    - cd inq
+    - cd external_libs/multi
+    - git fetch
+    - git checkout $CI_COMMIT_BRANCH
+    - cd ../..
+    - mkdir build && cd build
+    - g++-9 --version
+    - /usr/local/cuda-11.7/bin/nvcc --version
+    - cmake --version
+    - CUDACXX=/usr/local/cuda-11.7/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_HOST_COMPILER=g++-9 -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-11.7 -DCMAKE_CUDA_ARCHITECTURES=70
+    - make silicon
 
 #inq-cuda-11.4-compileonly:
 #    allow_failure: true

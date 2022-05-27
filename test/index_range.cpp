@@ -59,8 +59,29 @@ BOOST_AUTO_TEST_CASE(multi_range_in_constexpr) {
 	BOOST_REQUIRE(( multi::extension_t<int>{5, 12}.contains(10) ));
 
 	multi::range<int> rr{5, 12};
+
 	BOOST_REQUIRE( rr.contains(6) );
 	BOOST_REQUIRE( not rr.contains(12) );
+
+	BOOST_REQUIRE( * rr.begin()      ==  5 );
+	BOOST_REQUIRE( *(rr.begin() + 1) ==  6 );
+
+	BOOST_REQUIRE(   rr.first()      ==  5 );
+	BOOST_REQUIRE(   rr.last()       == 12 );
+
+	BOOST_REQUIRE(   rr.front()      ==  5 );
+	BOOST_REQUIRE(   rr.back ()      == 11 );
+
+	std::vector<int> v = {5, 6, 7, 8, 9, 10, 11};
+
+	assert( std::equal( rr.begin(), rr.end(), v.begin(), v.end() ) );
+
+	auto sum = 0;
+	for(auto e : rr) {
+		sum += e;
+	}
+	BOOST_REQUIRE( sum == 5 + 6 + 7 + 8 + 9 + 10 + 11 );
+
 }
 
 BOOST_AUTO_TEST_CASE(multi_range2) {
