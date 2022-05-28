@@ -1,4 +1,4 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi element transformed"
@@ -8,9 +8,51 @@
 
 #include<complex>
 
-// namespace multi = boost::multi;
+namespace multi = boost::multi;
 
-inline constexpr auto conj_ro = [](auto const& c) -> auto const {return std::conj(c);};  // NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
+using complex = std::complex<double>;
+constexpr complex I{0, 1};
+
+BOOST_AUTO_TEST_CASE(multi_array_sliced_empty_1D_basic) {
+
+	multi::array<complex, 1> A = { 1. + 2.*I,  3. +  4.*I};
+	BOOST_REQUIRE( A.size() == 2 );
+
+	auto const conj = static_cast<complex (&)(complex const&)>(std::conj<double>);
+
+	auto const& Ac = A.element_transformed(conj);
+	BOOST_REQUIRE( Ac[0] == conj(A[0]) );
+	BOOST_REQUIRE( Ac[1] == conj(A[1]) );
+
+	Ac[0] = 5. + 4.*I;  // doesn't compile thanks to the `auto const` in the `conj` def
+}
+
+BOOST_AUTO_TEST_CASE(multi_array_sliced_empty_1D_lambda) {
+
+	multi::array<complex, 1> A = { 1. + 2.*I,  3. +  4.*I};
+	BOOST_REQUIRE( A.size() == 2 );
+
+	auto const& Ac = A.element_transformed([](auto const& c) {return std::conj(c);});
+	BOOST_REQUIRE( Ac[0] == std::conj(A[0]) );
+	BOOST_REQUIRE( Ac[1] == std::conj(A[1]) );
+
+	Ac[0] = 5. + 4.*I;  // unfortunately this compiles leading to confusion
+	BOOST_REQUIRE( Ac[0] == 1. - 2.*I );
+
+}
+
+BOOST_AUTO_TEST_CASE(multi_array_sliced_empty_1D_lambda_to_const) {
+
+	multi::array<complex, 1> A = { 1. + 2.*I,  3. +  4.*I};
+	BOOST_REQUIRE( A.size() == 2 );
+
+	auto const& Ac = A.element_transformed([](auto const& c) -> auto const {return std::conj(c);});  // NOLINT(readability-const-return-type) to disable assignment
+	BOOST_REQUIRE( Ac[0] == std::conj(A[0]) );
+	BOOST_REQUIRE( Ac[1] == std::conj(A[1]) );
+
+//  Ac[0] = 5. + 4.*I;  // doesn't compile due to const return, the element is not assignable anyway
+	BOOST_REQUIRE( Ac[0] == 1. - 2.*I );
+}
 
 //struct conj_cref;
 
@@ -49,31 +91,49 @@ inline constexpr auto conj_ro = [](auto const& c) -> auto const {return std::con
 //	auto operator()(std::complex<double>     && v) const -> conj_ref  {return conj_ref{v};}
 //} conj_rw;
 
-//constexpr auto conj_rw  = [](std::complex<double>& c) -> conj_ref {return conj_ref{c};};
+//struct conj_cref {
+////	conj_cref(conj_ref&& other) : c_{other.c_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+////	explicit conj_cref(std::complex<double> const& c) : c_{c} {}
+////	operator std::complex<double>()     && {return std::conj(c_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+////	operator std::complex<double>()      & {return std::conj(c_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+////	operator std::complex<double>() const& {return std::conj(c_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+////	auto operator==(std::complex<double> const& other) const -> bool {return std::conj(c_) == other;}
 
-namespace multi = boost::multi;
+// private:
+//	std::complex<double> const& c_;
+//};
 
-//BOOST_AUTO_TEST_CASE(multi_array_sliced_empty_1D_stl) {
-//    using namespace std::complex_literals;
-//	multi::array A = { 1. + 2.i,  3. +  4.i};
-//	auto const& Ac = A.element_transformed(static_cast<std::complex<double>(*)(std::complex<double> const&)>(&std::conj<double>));
-//	BOOST_REQUIRE( Ac[0] == conj(A[0]) );
-//	BOOST_REQUIRE( Ac[1] == conj(A[1]) );
+//constexpr auto conj_ro  = [](std::complex<double> const& c) {return conj_cref{c};};
 
-////  Ac[0] = 5. + 4.i;  // doesn't compile thanks to the `auto const` in the `conj` def
+//BOOST_AUTO_TEST_CASE(multi_array_sliced_empty_1D_proxy_readonly) {
+
+//	multi::array<complex, 1> A = { 1. + 2.*I,  3. +  4.*I};
+//	BOOST_REQUIRE( A.size() == 2 );
+
+//	auto const& Ac = A.element_transformed(conj_ro);  // NOLINT(readability-const-return-type) to disable assignment
+//	BOOST_REQUIRE( Ac[0] == std::conj(A[0]) );
+//	BOOST_REQUIRE( Ac[1] == std::conj(A[1]) );
+
+////  Ac[0] = 5. + 4.*I;  // doesn't compile due to const return, the element is not assignable anyway
+//	BOOST_REQUIRE( Ac[0] == 1. - 2.*I );
 //}
 
 BOOST_AUTO_TEST_CASE(transform_ptr_single) {
-	std::complex<double> const I{0, 1};
-	std::complex<double> c = 1. + 2.*I;
-	multi::transform_ptr<std::complex<double>, decltype(conj_ro)> tp{&c, conj_ro};
+
+	complex c = 1. + 2.*I;
+
+	constexpr auto conj_ro = [](auto const& z) -> auto const {return std::conj(z);};  // NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
+
+	multi::transform_ptr<complex, decltype(conj_ro)> tp{&c, conj_ro};
 	BOOST_REQUIRE( *tp == std::conj(1. + 2.*I) );
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_sliced_empty_1D_read) {
-	std::complex<double> const I{0, 1};
-	multi::array<std::complex<double>, 1> A = { 1. + 2.*I,  3. +  4.*I};
+
+	multi::array<complex, 1> A = { 1. + 2.*I,  3. +  4.*I};
 	BOOST_REQUIRE( A.size() == 2 );
+
+	constexpr auto conj_ro = [](auto const& z) -> auto const {return std::conj(z);};  // NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
 
 	auto const& Ac = A.element_transformed(conj_ro);
 	BOOST_REQUIRE( Ac[0] == conj_ro(A[0]) );
