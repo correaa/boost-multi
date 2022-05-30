@@ -54,24 +54,26 @@ BOOST_AUTO_TEST_CASE(multi_array_sliced_empty_1D_lambda_to_const) {
 	BOOST_REQUIRE( Ac[0] == 1. - 2.*I );
 }
 
-struct Conjd {  // NOLINT(readability-identifier-naming) for testing
-	explicit Conjd(std::complex<double> const& c) : c_{c} {}
-	operator std::complex<double>() const {return std::conj(c_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	friend auto operator==(std::complex<double> const& other, Conjd const& self) {return std::conj(self.c_) == other;}
-	friend auto operator==(Conjd const& self, std::complex<double> const& other) {return other == std::conj(self.c_);}
+struct cConjd {  // NOLINT(readability-identifier-naming) for testing
+	constexpr explicit cConjd(std::complex<double> const& c) : c_{c} {}
+	constexpr operator std::complex<double>() const {return std::conj(c_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	friend constexpr auto operator==(std::complex<double> const& other, cConjd const& self) {return std::conj(self.c_) == other;}
+	friend constexpr auto operator==(cConjd const& self, std::complex<double> const& other) {return other == std::conj(self.c_);}
 
  private:
 	std::complex<double> const& c_;
 };
 
-inline auto Conj(std::complex<double> const& c) {return Conjd{c};}  // NOLINT(readability-identifier-naming)
+constexpr struct Conj_t {  // NOLINT(readability-identifier-naming) for testing
+	constexpr auto operator()(std::complex<double> const& c) const {return cConjd{c};}  // NOLINT(readability-identifier-naming)
+} Conj;
 
 BOOST_AUTO_TEST_CASE(multi_array_sliced_empty_1D_ConjProxy) {
 
 	multi::array<complex, 1> A = { 1. + 2.*I,  3. +  4.*I};
 	BOOST_REQUIRE( A.size() == 2 );
 
-	auto const& Ac = A.element_transformed(&Conj);  // NOLINT(readability-const-return-type) to disable assignment
+	auto const& Ac = A.element_transformed(Conj);  // NOLINT(readability-const-return-type) to disable assignment
 	BOOST_REQUIRE( std::conj(A[0]) == Ac[0] );
 	BOOST_REQUIRE( std::conj(A[1]) == Ac[1] );
 
