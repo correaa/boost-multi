@@ -57,8 +57,8 @@ BOOST_AUTO_TEST_CASE(multi_array_sliced_empty_1D_lambda_to_const) {
 struct cConjd {  // NOLINT(readability-identifier-naming) for testing
 	constexpr explicit cConjd(std::complex<double> const& c) : c_{c} {}
 	operator std::complex<double>() const {return std::conj(c_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	friend constexpr auto operator==(std::complex<double> const& other, cConjd const& self) {return std::conj(self.c_) == other;}
-	friend constexpr auto operator==(cConjd const& self, std::complex<double> const& other) {return other == std::conj(self.c_);}
+	friend auto operator==(std::complex<double> const& other, cConjd const& self) {return std::conj(self.c_) == other;}
+	friend auto operator==(cConjd const& self, std::complex<double> const& other) {return other == std::conj(self.c_);}
 
  private:
 	std::complex<double> const& c_;
