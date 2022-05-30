@@ -622,71 +622,71 @@ variables:
 #    - windows
 #    - windows-1809
 
-g++-codecov-runner:
-    stage: test
-    tags:
-      - intel_compiler
-    script:
-      - export CXX="g++"
-      - $CXX --version
-      - mkdir build && cd build
-      - cmake --version
-      - CXXFLAGS="-ftest-coverage -fprofile-arcs --coverage" cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCMAKE_EXE_LINKER_FLAGS="-lgcov --coverage"
-      - cmake --build . -j 12
-      - ctest --output-on-failure -T Test -T Coverage #      - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
-      - lcov --directory . --capture --output-file coverage.info
-      - lcov --remove coverage.info '/usr/*' --output-file coverage.info 
-      - lcov --list coverage.info
-      - bash <(curl -s https://codecov.io/bash) -t 999feb5b-a599-4d02-b9c5-46d977247f3a || echo "Codecov did not collect coverage reports"
+#g++-codecov-runner:
+#    stage: test
+#    tags:
+#      - intel_compiler
+#    script:
+#      - export CXX="g++"
+#      - $CXX --version
+#      - mkdir build && cd build
+#      - cmake --version
+#      - CXXFLAGS="-ftest-coverage -fprofile-arcs --coverage" cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCMAKE_EXE_LINKER_FLAGS="-lgcov --coverage"
+#      - cmake --build . -j 12
+#      - ctest --output-on-failure -T Test -T Coverage #      - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
+#      - lcov --directory . --capture --output-file coverage.info
+#      - lcov --remove coverage.info '/usr/*' --output-file coverage.info 
+#      - lcov --list coverage.info
+#      - bash <(curl -s https://codecov.io/bash) -t 999feb5b-a599-4d02-b9c5-46d977247f3a || echo "Codecov did not collect coverage reports"
 
-icpc-nomkl-runner:
-    stage: test
-    tags:
-      - intel_compiler
-    script:
-      - export CXX="/opt/intel/oneapi/compiler/2021.2.0/linux/bin/intel64/icpc"
-      - $CXX --version
-      - mkdir build && cd build
-      - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-      - cmake --build . -j 12
-      - export MKL_VERBOSE=1
-      - ctest --output-on-failure
+#icpc-nomkl-runner:
+#    stage: test
+#    tags:
+#      - intel_compiler
+#    script:
+#      - export CXX="/opt/intel/oneapi/compiler/2021.2.0/linux/bin/intel64/icpc"
+#      - $CXX --version
+#      - mkdir build && cd build
+#      - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+#      - cmake --build . -j 12
+#      - export MKL_VERBOSE=1
+#      - ctest --output-on-failure
 
-icpc-runner: # image: intel/oneapi-basekit
-    stage: test
-    tags:
-      - intel_compiler
-    script:
-      - . /opt/intel/oneapi/setvars.sh
-      - export CXX="icpc"
-      - $CXX --version
-      - mkdir build && cd build
-      - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
-      - cmake --build . -j 12
-      - export MKL_VERBOSE=1
-      - ctest --output-on-failure
+#icpc-runner: # image: intel/oneapi-basekit
+#    stage: test
+#    tags:
+#      - intel_compiler
+#    script:
+#      - . /opt/intel/oneapi/setvars.sh
+#      - export CXX="icpc"
+#      - $CXX --version
+#      - mkdir build && cd build
+#      - cmake .. -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON
+#      - cmake --build . -j 12
+#      - export MKL_VERBOSE=1
+#      - ctest --output-on-failure
 
-nvcc-runner:
-    stage: test
-    tags:
-      - intel_compiler
-    script:
-      - mkdir build && cd build
-      - /usr/local/cuda/bin/nvcc --version
-      - CUDACXX=/usr/local/cuda/bin/nvcc CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda cmake .. -DCMAKE_CXX_STANDARD=17 -DCMAKE_BUILD_TYPE=Release
-      - cmake --build . -j 12
-      - ctest -j 1 --output-on-failure
+#nvcc-runner:
+#    stage: test
+#    tags:
+#      - intel_compiler
+#    script:
+#      - mkdir build && cd build
+#      - /usr/local/cuda/bin/nvcc --version
+#      - CUDACXX=/usr/local/cuda/bin/nvcc CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda cmake .. -DCMAKE_CXX_STANDARD=17 -DCMAKE_BUILD_TYPE=Release
+#      - cmake --build . -j 12
+#      - ctest -j 1 --output-on-failure
 
-nvcc-cuda-runner:
-    stage: test
-    tags:
-      - intel_compiler
-    script:
-      - mkdir build && cd build
-      - /usr/local/cuda/bin/nvcc --version
-      - CUDACXX=/usr/local/cuda/bin/nvcc CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda cmake .. -DCMAKE_CXX_STANDARD=17 -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=72 -DCMAKE_CUDA_FLAGS="-gencode arch=compute_72,code=sm_72"
-      - cmake --build . -j 12 || make VERBOSE=1
-      - ctest -j 1 --output-on-failure
+#nvcc-cuda-runner:
+#    stage: test
+#    tags:
+#      - intel_compiler
+#    script:
+#      - mkdir build && cd build
+#      - /usr/local/cuda/bin/nvcc --version
+#      - CUDACXX=/usr/local/cuda/bin/nvcc CUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda cmake .. -DCMAKE_CXX_STANDARD=17 -DENABLE_CUDA=1 -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_ARCHITECTURES=72 -DCMAKE_CUDA_FLAGS="-gencode arch=compute_72,code=sm_72"
+#      - cmake --build . -j 12 || make VERBOSE=1
+#      - ctest -j 1 --output-on-failure
 
 qmcpack-g++:
   stage: test
