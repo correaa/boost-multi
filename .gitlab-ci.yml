@@ -26,8 +26,7 @@ g++-debug:
     - cmake .. -DCMAKE_BUILD_TYPE=Debug
     - cmake --build . --verbose
     - ctest --output-on-failure
-  dependecies:
-    - g++
+  needs: ["g++"]
 
 g++-9:
   image: debian:stable-backports
@@ -41,8 +40,7 @@ g++-9:
     - cmake --build .
     - ctest --output-on-failure
     - make install
-  dependecies:
-    - g++
+  needs: ["g++"]
 
 g++-std20:
   stage: build
@@ -55,19 +53,7 @@ g++-std20:
     - cmake --build . --verbose
     - ctest --output-on-failure
     - make install
-  dependecies:
-    - g++
-
-clang++-std20:
-  stage: build
-  script:
-    - apt-get update && apt-get install --no-install-recommends -y --quiet clang pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
-    - ln --symbolic --force . ../multi
-    - clang++ --version
-    - mkdir build && cd build
-    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20
-    - cmake --build . --verbose
-    - ctest --output-on-failure
+  needs: ["g++"]
 
 g++-asan:
   stage: build
@@ -80,8 +66,7 @@ g++-asan:
     - CXXFLAGS="-g -O1 -fsanitize=address,undefined -fno-sanitize-recover=all -fno-omit-frame-pointer" cmake .. -DCMAKE_BUILD_TYPE=Debug
     - cmake --build . --verbose
     - ctest --output-on-failure
-  dependecies:
-    - g++
+  needs: ["g++"]
 
 g++-tsan:
   stage: build
@@ -94,8 +79,7 @@ g++-tsan:
     - CXXFLAGS="-g -O1 -fsanitize=thread            -fno-sanitize-recover=all -fno-omit-frame-pointer" cmake .. -DCMAKE_BUILD_TYPE=Debug
     - cmake --build . --verbose
     - ctest --output-on-failure
-  dependecies:
-    - g++
+  needs: ["g++"]
 
 #g++-current-codecov:
 #  stage: build
@@ -131,8 +115,7 @@ g++-openblas:
     - cmake ..
     - cmake --build . --verbose
     - ctest --output-on-failure
-  dependecies:
-    - g++
+  needs: ["g++"]
 
 memcheck:
   stage: build
@@ -145,8 +128,7 @@ memcheck:
     - cmake ..
     - cmake --build . --verbose
     - ctest --overwrite MemoryCheckCommandOptions="-q --tool=memcheck --leak-check=yes --num-callers=51 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all" -T memcheck --output-on-failure
-  dependecies:
-    - g++
+  needs: ["g++"]
 
 clang++:
   stage: build
@@ -172,8 +154,7 @@ clang++-9:
     - cmake ..
     - cmake --build . --verbose
     - ctest --output-on-failure
-  dependecies:
-    - clang++
+  needs: ["clang++"]
 
 clang++-9-asan:
   image: debian:stable
@@ -191,8 +172,7 @@ clang++-9-asan:
     - cmake --build . --verbose
     - export ASAN_OPTIONS="halt_on_error=1 detect_leaks=1"
     - ctest --output-on-failure
-  dependecies:
-    - clang++
+  needs: ["clang++"]
 
 clang++-11:
   stage: build
@@ -204,8 +184,19 @@ clang++-11:
     - cmake ..
     - cmake --build . --verbose -- --quiet --no-print-directory
     - ctest --output-on-failure
-  dependecies:
-    - clang++
+  needs: ["clang++"]
+
+clang++-std20:
+  stage: build
+  script:
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
+    - ln --symbolic --force . ../multi
+    - clang++ --version
+    - mkdir build && cd build
+    - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_STANDARD=20
+    - cmake --build . --verbose
+    - ctest --output-on-failure
+  needs: ["clang++"]
 
 clang++-tidy:
   stage: test
@@ -219,8 +210,7 @@ clang++-tidy:
     - cmake .. -DCMAKE_CXX_CLANG_TIDY="clang-tidy"
     - cmake --build . --verbose -- --quiet --no-print-directory
     - ctest --output-on-failure
-  dependecies:
-    - clang++
+  needs: ["clang++"]
 
 g++-cpplint:
   stage: test
@@ -235,8 +225,7 @@ g++-cpplint:
     - cmake .. -DCMAKE_CXX_CPPLINT="cpplint;--filter=-whitespace/braces,-whitespace/tab,-whitespace/parens,-whitespace/operators,-readability/alt_tokens,-build/include_order,-whitespace/line_length,-whitespace/semicolon,-legal/copyright,-whitespace/comments,-readability/nolint"
     - cmake --build . --verbose -- --quiet --no-print-directory
     - cpplint --filter=-whitespace/line_length,-whitespace/parens,-whitespace/tab,-readability/alt_tokens,-readability/nolint,-runtime/references,-build/include_order,-build/header_guar,-legal/copyright ../include/multi/array.hpp
-  dependecies:
-    - g++
+  needs: ["g++"]
 
 #clang++-11-gcc9:
 #  stage: build
@@ -414,8 +403,7 @@ cuda-11.7:
     - cmake .. -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/usr/local/cuda-11.7/bin/nvcc -DCMAKE_CXX_STANDARD=17 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_FLAGS="-gencode arch=compute_61,code=sm_61"
     - cmake --build . || make VERBOSE=1
     - ctest --output-on-failure
-  dependecies:
-    - g++
+  needs: ["g++"]
 
 g++-cppcheck:
   stage: build
@@ -432,8 +420,7 @@ g++-cppcheck:
     - cmake -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--inline-suppr;--language=c++;--std=c++17;--check-config;--error-exitcode=666;--verbose;--exception-handling" ..
     - cmake --build . --verbose || make VERBOSE=1
     - ctest --output-on-failure
-  dependecies:
-    - g++
+  needs: ["g++"]
 
 #nvhpc-22.1:
 #    stage: build
@@ -518,9 +505,7 @@ nvhpc-22.5:
     - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/22.5/compilers/bin/nvc++ cmake ..
     - make VERBOSE=1
     - ctest --output-on-failure
-  dependecies:
-    - g++
-    - clang++
+  needs: ["g++"]
 
 circle-168:
   allow_failure: false
@@ -541,9 +526,7 @@ circle-168:
     - CXX=/builds/correaa/boost-multi/build_168/circle cmake .. -DBOOST_LIBRARYDIR=/usr/lib/x86_64-linux-gnu/ -DENABLE_CIRCLE=1
     - make VERBOSE=1
     - ctest --output-on-failure
-  dependecies:
-    - g++
-    - clang++
+  needs: ["g++"]
 
 circle-latest:
   allow_failure: true
@@ -564,8 +547,7 @@ circle-latest:
     - CXX=/builds/correaa/boost-multi/build_latest/circle cmake .. -DBOOST_LIBRARYDIR=/usr/lib/x86_64-linux-gnu/ -DENABLE_CIRCLE=1
     - make VERBOSE=1
     - ctest --output-on-failure
-  dependecies:
-    - circle-168
+  needs: ["g++"]
 
 icpc:  # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.yml
   stage: build
@@ -587,9 +569,7 @@ icpc:  # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.yml
     - cmake .. #cmake --build . -- --quiet --no-print-directory
     - make VERBOSE=1
     - ctest --output-on-failure
-  dependecies:
-    - g++
-    - clang++
+  needs: ["g++"]
 
 icpx: # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.yml
   stage: build
@@ -614,9 +594,7 @@ icpx: # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.yml
     - export MKL_VERBOSE=1
     - ctest --output-on-failure
     - cd ..
-  dependecies:
-    - g++
-    - clang++
+  needs: ["clang++"]
 
 variables:
   msbuild: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe'
@@ -731,8 +709,7 @@ qmcpack-g++:
     - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
     - ctest -R ppconvert --output-on-failure
     - ctest -R afqmc     --output-on-failure
-  dependecies:
-    - g++
+  needs: ["g++"]
 
 qmcpack-clang++:
   stage: test
@@ -761,8 +738,7 @@ qmcpack-clang++:
     - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
     - ctest -R ppconvert --output-on-failure
     - ctest -R afqmc     --output-on-failure
-  dependecies:
-    - clang++
+  needs: ["clang++"]
 
 #qmcpack-cuda-11.6-compileonly:
 #    allow_failure: true
@@ -868,8 +844,7 @@ qmcpack-icpc:
     - cmake -DCMAKE_C_COMPILER=mpiicc -DCMAKE_CXX_COMPILER=mpiicpc -DBUILD_AFQMC=1 -DQMC_CXX_STANDARD=17 ..
     - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
     - ctest -R ppconvert --output-on-failure
-  dependecies:
-    - icpc
+  needs: ["icpc"]
 
 #qmcpack-cuda-runner:
 #  allow_failure: false
@@ -925,8 +900,7 @@ qmcpack-cuda-11.7-compileonly:
     - cd build
     - CUDACXX=/usr/local/cuda/bin/nvcc cmake -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DQMC_CXX_STANDARD=17 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_HOST_COMPILER=g++-9 -DCMAKE_CXX_FLAGS="-Wno-deprecated -Wno-deprecated-declarations" ..
     - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
-  dependecies:
-    - cuda-11.7
+  needs: ["cuda-11.7"]
 
 inq-clang++-latest:
   stage: test
@@ -943,8 +917,7 @@ inq-clang++-latest:
     - make
     - make install
     - ctest --output-on-failure
-  dependecies:
-    - clang++
+  needs: ["clang++"]
 
 #cuda-11.6:
 #    allow_failure: false
@@ -987,8 +960,7 @@ inq-cuda-11.7-compileonly:
     - /usr/local/cuda-11.7/bin/nvcc --version
     - CUDACXX=/usr/local/cuda-11.7/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-11.7 -DCMAKE_CUDA_ARCHITECTURES=70
     - make silicon
-  dependecies:
-    - cuda-11.7
+  needs: ["cuda-11.7"]
 
 #inq-cuda-11.7-gcc9-compileonly:
 #  allow_failure: false
@@ -1054,8 +1026,7 @@ inq-g++-latest:
     - make
     - make install
     - ctest --output-on-failure
-  dependecies:
-    - g++
+  needs: ["g++"]
 
 #inq-nvcc-ompi-runner:
 #  stage: test
