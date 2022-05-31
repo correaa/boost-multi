@@ -14,7 +14,6 @@ using complex = std::complex<double>;
 constexpr complex I{0, 1};
 
 BOOST_AUTO_TEST_CASE(multi_array_sliced_empty_1D_basic) {
-
 	multi::array<complex, 1> A = { 1. + 2.*I,  3. +  4.*I};
 	BOOST_REQUIRE( A.size() == 2 );
 
@@ -28,7 +27,6 @@ BOOST_AUTO_TEST_CASE(multi_array_sliced_empty_1D_basic) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_sliced_empty_1D_lambda) {
-
 	multi::array<complex, 1> A = { 1. + 2.*I,  3. +  4.*I};
 	BOOST_REQUIRE( A.size() == 2 );
 
@@ -38,11 +36,9 @@ BOOST_AUTO_TEST_CASE(multi_array_sliced_empty_1D_lambda) {
 
 	Ac[0] = 5. + 4.*I;  // unfortunately this compiles leading to confusion
 	BOOST_REQUIRE( Ac[0] == 1. - 2.*I );
-
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_sliced_empty_1D_lambda_to_const) {
-
 	multi::array<complex, 1> A = { 1. + 2.*I,  3. +  4.*I};
 	BOOST_REQUIRE( A.size() == 2 );
 
@@ -69,7 +65,6 @@ constexpr struct Conj_t {  // NOLINT(readability-identifier-naming) for testing
 } Conj;
 
 BOOST_AUTO_TEST_CASE(multi_array_sliced_empty_1D_ConjProxy) {
-
 	multi::array<complex, 1> A = { 1. + 2.*I,  3. +  4.*I};
 	BOOST_REQUIRE( A.size() == 2 );
 
@@ -146,7 +141,6 @@ BOOST_AUTO_TEST_CASE(multi_array_sliced_empty_1D_ConjProxy) {
 //}
 
 BOOST_AUTO_TEST_CASE(transform_ptr_single) {
-
 	complex c = 1. + 2.*I;
 
 	constexpr auto conj_ro = [](auto const& z) -> auto const {return std::conj(z);};  // NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
@@ -156,7 +150,6 @@ BOOST_AUTO_TEST_CASE(transform_ptr_single) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_sliced_empty_1D_read) {
-
 	multi::array<complex, 1> A = { 1. + 2.*I,  3. +  4.*I};
 	BOOST_REQUIRE( A.size() == 2 );
 
