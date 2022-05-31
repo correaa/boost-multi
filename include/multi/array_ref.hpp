@@ -2183,12 +2183,21 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	}
 
 	template<class UF>
-	constexpr auto element_transformed(UF f) const {
+	constexpr auto element_transformed(UF&& f) const& {
 		return static_array_cast<
 			std::decay_t<std::invoke_result_t<UF const&, element_ref> >,
 			transform_ptr<std::decay_t<std::invoke_result_t<UF const&, element_cref>>, UF, element_const_ptr, std::invoke_result_t<UF const&, element_cref>>
-		>(std::move(f));
+		>(std::forward<UF>(f));
 	}
+	template<class UF>
+	constexpr auto element_transformed(UF&& f)  & {
+		return static_array_cast<
+			std::decay_t<std::invoke_result_t<UF const&, element_ref> >,
+			transform_ptr<std::decay_t<std::invoke_result_t<UF const&, element_ref>>, UF, element_ptr, std::invoke_result_t<UF const&, element_ref>>
+		>(std::forward<UF>(f));
+	}
+	template<class UF>
+	constexpr auto element_transformed(UF&& f) && {return element_transformed(std::forward<UF>(f));}
 
 	template<
 		class T2, class P2 = typename std::pointer_traits<element_ptr>::template rebind<T2>,
