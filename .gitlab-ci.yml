@@ -181,7 +181,7 @@ clang++-11:
     - ln --symbolic --force . ../multi
     - clang++-11 --version
     - mkdir build && cd build
-    - cmake ..
+    - CXX=clang++-11 cmake ..
     - cmake --build . --verbose -- --quiet --no-print-directory
     - ctest --output-on-failure
   needs: ["clang++"]
