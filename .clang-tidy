@@ -23,6 +23,7 @@ Checks: '*,
   -altera-struct-pack-align,
   -altera-unroll-loops,
   -cert-err58-cpp,
+  -clang-diagnostic-c++98-compat-unnamed-type-template-args,
   -cppcoreguidelines-avoid-magic-numbers,
   -cppcoreguidelines-avoid-non-const-global-variables,
   -cppcoreguidelines-macro-usage,
@@ -46,6 +47,7 @@ Checks: '*,
 #  -altera-struct-pack-align,                             // this asks to use non-standard pragmas such as __attribute__((aligned(0))) and _attribute__((packed)), may interfeere with gcc/nvcc compatibility?
 #  -altera-unroll-loops,                                  // expansion BOOST_REQUIRE macro requires this
 #  -cert-err58-cpp,                                       // expansion BOOST_AUTO_TEST_CASE macro requires this
+#  -clang-diagnostic-c++98-compat-unnamed-type-template-args  // allow lambda types in template parameters
 #  -cppcoreguidelines-avoid-magic-numbers,                // all tests use magic numbers
 #  -cppcoreguidelines-avoid-non-const-global-variables,   // expansion BOOST_AUTO_TEST_CASE macros require this
 #  -cppcoreguidelines-macro-usage,                        // definition of BOOST_TEST_MODULE macro requires this
