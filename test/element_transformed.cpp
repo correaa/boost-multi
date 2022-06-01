@@ -51,10 +51,10 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_lambda_with_const_return)
 template<typename ComplexRef> struct Conjd;
 
 constexpr struct Conj_t {  // NOLINT(readability-identifier-naming) for testing
-	template<class ComplexRef> auto operator()(ComplexRef&& z) const {return Conjd<decltype(z)>{z};}
-	template<class T> auto operator()(Conjd<T> const&) const = delete;
-	template<class T> auto operator()(Conjd<T> &&) const = delete;
-	template<class T> auto operator()(Conjd<T> &) const = delete;
+	template<class ComplexRef> constexpr auto operator()(ComplexRef&& z) const {return Conjd<decltype(z)>{z};}
+	template<class T> constexpr auto operator()(Conjd<T> const&) const = delete;
+	template<class T> constexpr auto operator()(Conjd<T> &&) const = delete;
+	template<class T> constexpr auto operator()(Conjd<T> &) const = delete;
 } Conj;
 
 template<typename ComplexRef>
