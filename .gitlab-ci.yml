@@ -618,22 +618,22 @@ variables:
 #    - windows
 #    - windows-1809
 
-#g++-codecov-runner:
-#    stage: test
-#    tags:
-#      - intel_compiler
-#    script:
-#      - export CXX="g++"
-#      - $CXX --version
-#      - mkdir build && cd build
-#      - cmake --version
-#      - CXXFLAGS="-ftest-coverage -fprofile-arcs --coverage" cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -DCMAKE_EXE_LINKER_FLAGS="-lgcov --coverage"
-#      - cmake --build . -j 12
-#      - ctest --output-on-failure -T Test -T Coverage #      - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
-#      - lcov --directory . --capture --output-file coverage.info
-#      - lcov --remove coverage.info '/usr/*' --output-file coverage.info 
-#      - lcov --list coverage.info
-#      - bash <(curl -s https://codecov.io/bash) -t 999feb5b-a599-4d02-b9c5-46d977247f3a || echo "Codecov did not collect coverage reports"
+g++-codecov-runner:
+    stage: test
+    tags:
+      - intel_compiler
+    script:
+      - export CXX="g++"
+      - $CXX --version
+      - mkdir build && cd build
+      - cmake --version
+      - CXXFLAGS="-fprofile-arcs -ftest-coverage --coverage" cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXE_LINKER_FLAGS="-fprofile-arcs -ftest-coverage -lgcov --coverage"
+      - cmake --build . -j 12
+      - ctest --output-on-failure -T Test -T Coverage  # - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
+      - lcov --directory . --capture --output-file coverage.info
+      - lcov --remove coverage.info '/usr/*' --output-file coverage.info 
+      - lcov --list coverage.info
+      - bash <(curl -s https://codecov.io/bash) -t 999feb5b-a599-4d02-b9c5-46d977247f3a || echo "Codecov did not collect coverage reports"
 
 #icpc-nomkl-runner:
 #    stage: test
