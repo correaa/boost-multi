@@ -62,7 +62,14 @@ struct transform_ptr {
 	using reference         = Ref;
 	using iterator_category = typename std::iterator_traits<Ptr>::iterator_category;
 
-	template<class U> using rebind = transform_ptr<T, UF, typename std::pointer_traits<Ptr>::template rebind<U>, decltype(std::declval<UF&>()(*std::declval<typename std::pointer_traits<Ptr>::template rebind<U>>()))>;
+	template<class U> using rebind = transform_ptr<
+		std::decay_t<U>, UF,
+		std::conditional_t<
+			std::is_const_v<U>,
+			typename std::pointer_traits<Ptr>::template rebind<typename std::pointer_traits<Ptr>::element_type const>,
+			Ptr
+		>
+	>;
 
 	template<class... As>
 	constexpr transform_ptr(pointer p, UF f) : p_{p}, f_(std::move(f)) {}
