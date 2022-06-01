@@ -7,6 +7,7 @@
 #include "multi/array.hpp"
 
 #include<complex>
+#include<numeric>
 
 namespace multi = boost::multi;
 
@@ -24,6 +25,7 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_function_reference) {
 
 	Ac[0] = 5. + 4.*I;  // this unfortunately compiles and it is confusing, this is a defect of std::complex<double>
 	BOOST_REQUIRE( Ac[0] == 1. - 2.*I );
+	BOOST_REQUIRE( std::inner_product(A.begin(), A.end(), Ac.begin(), complex{0.}) == std::norm(A[0]) + std::norm(A[1]) );
 }
 
 BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_lambda) {
