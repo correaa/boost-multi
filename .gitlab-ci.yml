@@ -623,11 +623,10 @@ g++-codecov-runner:
     tags:
       - intel_compiler
     script:
-      - export CXX="g++"
-      - $CXX --version
+      - g++ --version
       - mkdir build && cd build
       - cmake --version
-      - CXXFLAGS="-fprofile-arcs -ftest-coverage --coverage" cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXE_LINKER_FLAGS="-fprofile-arcs -ftest-coverage -lgcov --coverage"
+      - CXX="g++" CXXFLAGS="-fprofile-arcs -ftest-coverage --coverage" cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXE_LINKER_FLAGS="-fprofile-arcs -ftest-coverage -lgcov --coverage"
       - cmake --build . -j 12
       - ctest --output-on-failure -T Test -T Coverage  # - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
       - lcov --directory . --capture --output-file coverage.info
