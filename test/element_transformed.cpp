@@ -23,6 +23,7 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_function_reference) {
 	BOOST_REQUIRE( Ac[1] == conj(A[1]) );
 
 	Ac[0] = 5. + 4.*I;  // this unfortunately compiles and it is confusing, this is a defect of std::complex<double>
+	BOOST_REQUIRE( Ac[0] == 1. - 2.*I );
 }
 
 BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_lambda) {
