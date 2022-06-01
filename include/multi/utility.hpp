@@ -74,6 +74,9 @@ struct transform_ptr {
 	template<class... As>
 	constexpr transform_ptr(pointer p, UF f) : p_{p}, f_(std::move(f)) {}
 
+	template<class Other>
+	transform_ptr(Other const& other) : p_{other.p_}, f_{other.f_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) TODO(correaa) use conditional explicit idiom here
+
 	constexpr auto functor() const -> UF {return f_;}
 	constexpr auto base() const -> Ptr const& {return p_;}
 	constexpr auto operator*() const -> reference {return f_(*p_);}  // NOLINT(readability-const-return-type) in case synthesis reference is a `T const`
@@ -91,10 +94,9 @@ struct transform_ptr {
 //	constexpr auto operator!=(move_ptr const& other) const -> bool {return static_cast<std::move_iterator<Ptr> const&>(*this) != static_cast<std::move_iterator<Ptr> const&>(other);}
  private:
 	Ptr p_;
-//#if __has_cpp_attribute(no_unique_address)	>= 201803
-//	[[no_unique_address]]
-//#endif
 	UF  f_;
+
+	template<class, class, class, class> friend struct transform_ptr;
 };
 
 
