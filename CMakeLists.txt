@@ -82,9 +82,16 @@ include(CTest)
 
 enable_testing()
 
-add_subdirectory(test)
+find_package(Boost COMPONENTS unit_test_framework)
+if(Boost_FOUND)
+	add_subdirectory(test)
 
-add_subdirectory(include/multi/adaptors/blas  )
-add_subdirectory(include/multi/adaptors/fftw  )
-add_subdirectory(include/multi/adaptors/cuda  )
-add_subdirectory(include/multi/adaptors/thrust)
+	add_subdirectory(include/multi/adaptors/blas  )
+	add_subdirectory(include/multi/adaptors/fftw  )
+	add_subdirectory(include/multi/adaptors/cuda  )
+	add_subdirectory(include/multi/adaptors/thrust)
+else()
+    message (WARNING "Cannot find Boost, library will not be tested")
+endif()
+
+

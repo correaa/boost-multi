@@ -17,7 +17,7 @@ project(
 	LANGUAGES CXX
 )
 
-find_package(Boost REQUIRED COMPONENTS unit_test_framework serialization)
+find_package(Boost COMPONENTS unit_test_framework serialization REQUIRED)
 
 if((ENABLE_CUDA OR DEFINED CXXCUDA) AND NOT DEFINED FORCED_ARCH)
 	enable_language(CUDA)
