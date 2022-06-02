@@ -639,7 +639,7 @@ variables:
 #g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
 
 cobertura:
-  stage: test
+  stage: build
   script:
     - apt-get -qq install --no-install-recommends -y --quiet cmake
     - mkdir build && cd build
