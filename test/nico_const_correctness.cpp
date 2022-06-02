@@ -54,8 +54,8 @@ template<class Array1D>
 void print_2d(Array1D const& coll) {
 //  *(coll.begin()->begin()) = 99;  // doesn't compile "assignment of read-only location"
 
-	for(auto const& row : coll) {
-		for(auto const& e : row) {
+	for(auto const&& row : coll) {
+		for(auto const&& e : row) {
 			std::cout<< e <<", ";
 		}
 		std::cout << std::endl;
