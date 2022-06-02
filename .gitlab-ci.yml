@@ -655,6 +655,7 @@ cobertura:
       coverage_report:
         coverage_format: cobertura
         path: build/coverage.xml
+  needs: ["g++"]
 
 #icpc-nomkl-runner:
 #    stage: test
