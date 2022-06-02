@@ -641,7 +641,7 @@ variables:
 cobertura:
   stage: build
   script:
-    - apt-get update && apt-get -qq install --no-install-recommends -y --quiet cmake g++ gcovr make libboost-test-dev libboost-serialization-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
+    - apt-get update && apt-get -qq install --no-install-recommends -y --quiet cmake g++ gcovr make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
     - CXXFLAGS="--coverage" cmake ..
     - cmake --build .
