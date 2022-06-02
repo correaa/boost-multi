@@ -636,9 +636,12 @@ variables:
 #    - bash <(curl -s https://codecov.io/bash) -t 999feb5b-a599-4d02-b9c5-46d977247f3a || echo "Codecov did not collect coverage reports"
 #  needs: ["g++"]
 
+#g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
+
 cobertura:
   stage: test
   script:
+    - apt-get -qq install --no-install-recommends -y --quiet cmake
     - mkdir build && cd build
     - CXXFLAGS="--coverage" cmake ..
     - cmake --build .
@@ -652,7 +655,6 @@ cobertura:
       coverage_report:
         coverage_format: cobertura
         path: build/coverage.xml
-  needs: ["g++"]
 
 #icpc-nomkl-runner:
 #    stage: test
