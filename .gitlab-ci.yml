@@ -641,7 +641,7 @@ variables:
 cobertura:
   stage: build
   script:
-    - apt-get update && apt-get -qq install --no-install-recommends -y --quiet cmake g++ gcovr make
+    - apt-get update && apt-get -qq install --no-install-recommends -y --quiet cmake g++ gcovr make libboost-test-dev
     - mkdir build && cd build
     - CXXFLAGS="--coverage" cmake ..
     - cmake --build .
