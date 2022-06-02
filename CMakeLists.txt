@@ -80,11 +80,17 @@ endif()
 
 include(CTest)
 
-enable_testing()
+find_package(Boost COMPONENTS unit_test_framework)
 
-add_subdirectory(test)
+if(Boost_FOUND)
+	enable_testing()
+	add_subdirectory(test)
 
-add_subdirectory(include/multi/adaptors/blas  )
-add_subdirectory(include/multi/adaptors/fftw  )
-add_subdirectory(include/multi/adaptors/cuda  )
-add_subdirectory(include/multi/adaptors/thrust)
+	add_subdirectory(include/multi/adaptors/blas  )
+	add_subdirectory(include/multi/adaptors/fftw  )
+	add_subdirectory(include/multi/adaptors/cuda  )
+	add_subdirectory(include/multi/adaptors/thrust)
+else()
+    message (WARNING "Cannot find Boost, library will not be tested. If you want this feature install Boost.Test, for example please run:\n     apt-get install libboost-test-dev")
+endif()
+

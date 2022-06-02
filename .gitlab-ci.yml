@@ -618,22 +618,43 @@ variables:
 #    - windows
 #    - windows-1809
 
-g++-codecov-runner:
-  stage: test
-  allow_failure: true
-  tags:
-    - intel_compiler
+#g++-codecov-runner:
+#  stage: test
+#  allow_failure: true
+#  tags:
+#    - intel_compiler
+#  script:
+#    - g++ --version
+#    - mkdir build && cd build
+#    - cmake --version
+#    - CXX="g++" CXXFLAGS="-fprofile-arcs -ftest-coverage --coverage" cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXE_LINKER_FLAGS="-fprofile-arcs -ftest-coverage -lgcov --coverage"
+#    - cmake --build . -j 12
+#    - ctest --output-on-failure -T Test -T Coverage  # - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
+#    - lcov --directory . --capture --output-file coverage.info
+#    - lcov --remove coverage.info '/usr/*' --output-file coverage.info 
+#    - lcov --list coverage.info
+#    - bash <(curl -s https://codecov.io/bash) -t 999feb5b-a599-4d02-b9c5-46d977247f3a || echo "Codecov did not collect coverage reports"
+#  needs: ["g++"]
+
+#g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
+
+cobertura:
+  stage: build
   script:
-    - g++ --version
+    - apt-get update && apt-get -qq install --no-install-recommends -y --quiet cmake g++ gcovr make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - mkdir build && cd build
-    - cmake --version
-    - CXX="g++" CXXFLAGS="-fprofile-arcs -ftest-coverage --coverage" cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXE_LINKER_FLAGS="-fprofile-arcs -ftest-coverage -lgcov --coverage"
-    - cmake --build . -j 12
-    - ctest --output-on-failure -T Test -T Coverage  # - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
-    - lcov --directory . --capture --output-file coverage.info
-    - lcov --remove coverage.info '/usr/*' --output-file coverage.info 
-    - lcov --list coverage.info
-    - bash <(curl -s https://codecov.io/bash) -t 999feb5b-a599-4d02-b9c5-46d977247f3a || echo "Codecov did not collect coverage reports"
+    - CXXFLAGS="--coverage" cmake ..
+    - cmake --build .
+    - ctest
+    - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
+  coverage: /^\s*lines:\s*\d+.\d+\%/
+  artifacts:
+    name: ${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}
+    expire_in: 2 days
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: build/coverage.xml
   needs: ["g++"]
 
 #icpc-nomkl-runner:
