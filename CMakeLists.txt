@@ -80,10 +80,10 @@ endif()
 
 include(CTest)
 
-enable_testing()
-
 find_package(Boost COMPONENTS unit_test_framework)
+
 if(Boost_FOUND)
+	enable_testing()
 	add_subdirectory(test)
 
 	add_subdirectory(include/multi/adaptors/blas  )
@@ -93,5 +93,4 @@ if(Boost_FOUND)
 else()
     message (WARNING "Cannot find Boost, library will not be tested. If you want this feature install Boost.Test, for example please run:\n     apt-get install libboost-test-dev")
 endif()
-
 
