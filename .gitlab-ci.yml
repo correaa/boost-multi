@@ -641,7 +641,7 @@ variables:
 cobertura:
   stage: build
   script:
-    - apt-get update && apt-get -qq install --no-install-recommends -y --quiet cmake g++
+    - apt-get update && apt-get -qq install --no-install-recommends -y --quiet cmake g++ make
     - mkdir build && cd build
     - CXXFLAGS="--coverage" cmake ..
     - cmake --build .
