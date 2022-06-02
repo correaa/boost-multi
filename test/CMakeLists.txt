@@ -17,7 +17,7 @@ project(
 	LANGUAGES CXX
 )
 
-find_package(Boost COMPONENTS unit_test_framework serialization REQUIRED)
+find_package(Boost COMPONENTS unit_test_framework serialization REQUIRED)  # tests require serialization, `apt-get install libboost-serialization-dev`
 
 if((ENABLE_CUDA OR DEFINED CXXCUDA) AND NOT DEFINED FORCED_ARCH)
 	enable_language(CUDA)
@@ -904,3 +904,4 @@ foreach(TEST_FILE ${TEST_SRCS})
 	endif()
 	add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
 endforeach()
+
