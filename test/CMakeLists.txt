@@ -829,6 +829,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wzero-as-null-pointer-constant -Wzero-length-array
 					-Wno-c++98-compat-unnamed-type-template-args
 					-Wno-ignored-qualifiers
+					-Wno-range-loop-analysis # (this check is overzealous in clang 9)
 		        >
 				$<$<CXX_COMPILER_ID:Intel>:  # also IntelLLVM, XL (ibm), XLClang (ibm)
 					-Werror
