@@ -164,7 +164,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 		typename std::iterator_traits<element_const_ptr>::reference
 	>::type;
 
-	HD constexpr auto  base() const  -> element_ptr       {return base_;}
+	   constexpr auto  base() const  -> element_ptr       {return base_;}
 	   constexpr auto cbase() const  -> element_const_ptr {return base_;}
 	   constexpr auto mbase() const& -> element_ptr&      {return base_;}
 
@@ -749,6 +749,8 @@ struct basic_array
 	using element_ptr       = typename types::element_ptr;
 	using element_const_ptr = typename types::element_const_ptr;
 	using element_move_ptr  = multi::move_ptr<element, element_ptr>;
+	using element_ref       = typename types::element_ref;
+	using element_cref      = typename std::iterator_traits<element_const_ptr>::reference;
 
 	using  elements_iterator = elements_iterator_t<element_ptr      , layout_type>;
 	using celements_iterator = elements_iterator_t<element_const_ptr, layout_type>;
@@ -1415,6 +1417,22 @@ struct basic_array
 		return {this->layout(), P2{this->base(), std::forward<Args>(args)...}};
 	}
 
+	template<class UF>
+	constexpr auto element_transformed(UF&& f) const& {
+		return static_array_cast<
+			std::decay_t<std::invoke_result_t<UF const&, element_ref> >,
+			transform_ptr<std::decay_t<std::invoke_result_t<UF const&, element_cref>>, UF, element_const_ptr, std::invoke_result_t<UF const&, element_cref>>
+		>(std::forward<UF>(f));
+	}
+	template<class UF>
+	constexpr auto element_transformed(UF&& f)  & {
+		return static_array_cast<
+			std::decay_t<std::invoke_result_t<UF const&, element_ref> >,
+			transform_ptr<std::decay_t<std::invoke_result_t<UF const&, element_ref>>, UF, element_ptr, std::invoke_result_t<UF const&, element_ref>>
+		>(std::forward<UF>(f));
+	}
+	template<class UF>
+	constexpr auto element_transformed(UF&& f) && {return element_transformed(std::forward<UF>(f));}
 
 	template<
 		class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2 const>,
@@ -1863,7 +1881,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
  public:
 	HD constexpr auto operator[](index i) const& -> typename basic_array::const_reference {return at_aux(i);}  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
 	HD constexpr auto operator[](index i)      & -> typename basic_array::      reference {return at_aux(i);}
-	HD constexpr auto operator[](index i)     && -> typename basic_array::      reference {return at_aux(i);}
+	HD constexpr auto operator[](index i)     && -> typename basic_array::      reference {return at_aux(i);}  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
 
 	constexpr auto front() const& -> const_reference {return *begin();}
 	constexpr auto back()  const& -> const_reference {return *std::prev(end());}
