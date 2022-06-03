@@ -508,6 +508,62 @@ auto                    block_value_2 =   A({1, 4}, {2, 4}).decay();
 auto                    block_value_3 = + A({1, 4}, {2, 4})        ;
 ```
 
+## Const-correctness
+
+The library goes to great lenghts to ensure const-correctness.
+Const-correctness refers to the property of an object, or parts of it, of not accepting mutation.
+It is not only important to avoid bugs and typos but also to ensure compatibility with thread safety.
+
+An array can be declared to be constant using the keyword `const`.
+A reference array (`array_ref`) is never resizable (or reassignable) but their elements are mutable unless the reference is declared with `const`.
+
+The design ensures that constness of references and values is propagated to subsets (views) and to elements.
+Any subarray (views) will propagate the constness of the original array.
+
+Subarray can be named into constant language references by using `auto const&`.
+If mutation is desired use `auto&&`.
+
+As a general rules take generic array arguments (values or views) as `Array&&` (or `auto&&`) and non mutable arguments (values and views) as `Array const&` (or `auto const&`).
+
+```cpp
+template<class Array1D>
+void print(Array1D const& coll) {
+//  *coll.begin() = 99;  // doesn't compile "assignment of read-only location"
+
+	for(auto const& e : coll) {std::cout<< e <<", ";}
+	std::cout << std::endl;
+}
+
+int main() {
+	multi::array<int, 1> const coll1 = {0, 8, 15, 47, 11, 42};
+
+	print( coll1 );  // prints "0, 8, 15, 47, 11, 42"
+	print( coll1({0, 3}) );  // prints "0, 8, 15"
+}
+
+template<class Array1D>
+void fill_99(Array1D&& coll) {
+	for(auto& e : coll) {e = 99;}
+}
+
+int main() {
+	multi::array<int, 1> coll1 = {0, 8, 15, 47, 11, 42};
+
+	fill_99( coll1 );
+	fill_99( coll1({0, 3}) );
+
+	auto&& coll1_take3 = coll1({0, 3});
+	fill_99( coll1_take3 );
+
+	auto const& coll2 = coll1;
+//  fill_99( coll2 );  // doesn't compile because coll2 is const
+//  fill_99( coll2({0, 3}) );  // similar to coll2 | take(3) doesn't compile
+
+	auto const& coll1_take3_const = coll1({0, 3});
+//  fill_99( coll1_take3_const );  // doesn't compile because coll1_take3_const is const
+}
+```
+
 ## Type Requirements
 
 The design tries to impose the minimum possible requirements over the types that parameterize the arrays.
