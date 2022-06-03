@@ -63,6 +63,51 @@ BOOST_AUTO_TEST_CASE(array_reextent_noop_with_init) {
 	BOOST_REQUIRE( A_base == A.base() );
 }
 
+BOOST_AUTO_TEST_CASE(array_reextent_moved) {
+	multi::array<double, 2> A({2, 3});
+	BOOST_REQUIRE( num_elements(A) == 6 );
+
+	A[1][2] = 6.;
+	BOOST_REQUIRE( A[1][2] == 6. );
+
+	auto* const A_base = A.base();
+	A = std::move(A).reextent({2, 3}, 99.);  // "A = ..." suppresses linter bugprone-use-after-move,hicpp-invalid-access-moved
+	BOOST_REQUIRE( num_elements(A)== 2L*3L );
+	BOOST_TEST( A[1][2] ==  6. );  // after move the original elments might not be the same
+
+	BOOST_REQUIRE( A_base == A.base() );
+}
+
+BOOST_AUTO_TEST_CASE(array_reextent_moved_trivial) {
+	multi::array<double, 2> A({2, 3});
+	BOOST_REQUIRE( num_elements(A) == 6 );
+
+	A[1][2] = 6.;
+	BOOST_REQUIRE( A[1][2] == 6. );
+
+	auto* const A_base = A.base();
+	A = std::move(A).reextent({2, 3});  // "A = ..." suppresses linter bugprone-use-after-move,hicpp-invalid-access-moved
+	BOOST_REQUIRE( num_elements(A)== 2L*3L );
+	BOOST_REQUIRE( A[1][2] ==  6. );  // after move the original elments might not be the same
+
+	BOOST_REQUIRE( A_base == A.base() );
+}
+
+BOOST_AUTO_TEST_CASE(array_reextent_moved_trivial_change_extents) {
+	multi::array<double, 2> A({2, 3});
+	BOOST_REQUIRE( num_elements(A) == 6 );
+
+	A[1][2] = 6.;
+	BOOST_REQUIRE( A[1][2] == 6. );
+
+	auto* const A_base = A.base();
+	A = std::move(A).reextent({4, 5});
+	BOOST_REQUIRE( num_elements(A)== 4L*5L );
+	BOOST_REQUIRE( A[1][2] !=  6. );  // after move the original elments might not be the same
+
+	BOOST_REQUIRE( A_base != A.base() );
+}
+
 BOOST_AUTO_TEST_CASE(array_move_clear) {
 	multi::array<double, 2> A({2, 3});
 	A = multi::array<double, 2>(extensions(A), 123.);
