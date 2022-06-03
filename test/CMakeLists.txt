@@ -690,7 +690,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					# -Wpsabi (clang 11, not in clang 9)
 					-Wqualified-void-return-type
 					-Wquoted-include-in-framework-header
-					-Wrange-loop-analysis
+					# -Wrange-loop-analysis (this check is overzealous in clang 9)
 					# -Wrange-loop-bind-reference -Wrange-loop-construct (clang 11, not in clang 9)
 					-Wreadonly-iboutlet-property
 					-Wreceiver-expr -Wreceiver-forward-class
@@ -829,6 +829,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wzero-as-null-pointer-constant -Wzero-length-array
 					-Wno-c++98-compat-unnamed-type-template-args
 					-Wno-ignored-qualifiers
+					-Wno-range-loop-analysis # (this check is overzealous in clang 9)
 		        >
 				$<$<CXX_COMPILER_ID:Intel>:  # also IntelLLVM, XL (ibm), XLClang (ibm)
 					-Werror
