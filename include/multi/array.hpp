@@ -946,10 +946,26 @@ struct array : static_array<T, D, Alloc> {
 		return reextent(std::apply([](auto const&... es) {return typename array::extensions_type(es...);}, other));  // paren is important here ext_type(...) for allow narrowing casts
 	}
 
-	auto reextent(typename array::extensions_type const& x) -> array& {
-		if(x == this->extensions()) {
-			return *this;
+	auto reextent(typename array::extensions_type const& x) && -> array& {
+		if(x == this->extensions()) {return *this;}
+		this->destroy();
+		this->deallocate();
+		this->layout_mutable() = typename array::layout_t{x};
+		this->base_ = this->static_::array_alloc::allocate(
+			static_cast<typename std::allocator_traits<typename array::allocator_type>::size_type>(
+				typename array::layout_t{x}.num_elements()
+			),
+			this->data_elements()  // used as hint
+		);
+		if constexpr(not std::is_trivially_default_constructible<typename array::element>{}) {  // TODO(correaa) convert into constexpr if
+			adl_alloc_uninitialized_value_construct_n(this->alloc(), this->base_, this->num_elements());
 		}
+
+		return *this;
+	}
+
+	auto reextent(typename array::extensions_type const& x)  & -> array& {
+		if(x == this->extensions()) {return *this;}
 #if 0
 		array tmp(x, this->get_allocator());  // TODO(correaa) opportunity missed to use hint allocation
 		auto const is = intersection(this->extensions(), x);
@@ -965,7 +981,7 @@ struct array : static_array<T, D, Alloc> {
 			),
 			x
 		};
-		if(not std::is_trivially_default_constructible<typename array::element>{}) {  // TODO(correaa) convert into constexpr if
+		if constexpr(not std::is_trivially_default_constructible<typename array::element>{}) {  // TODO(correaa) convert into constexpr if
 			adl_alloc_uninitialized_value_construct_n(this->alloc(), tmp.data_elements(), tmp.num_elements());
 		}
 		auto const is = intersection(this->extensions(), x);
@@ -977,7 +993,24 @@ struct array : static_array<T, D, Alloc> {
 #endif
 		return *this;
 	}
-	auto reextent(typename array::extensions_type const& x, typename array::element const& e) -> array& {
+
+	auto reextent(typename array::extensions_type const& x, typename array::element const& e) && -> array& {
+		if(x == this->extensions()) {return *this;}
+		this->destroy();
+		this->deallocate();
+		this->layout_mutable() = typename array::layout_t{x};
+		this->base_ = this->static_::array_alloc::allocate(
+			static_cast<typename std::allocator_traits<typename array::allocator_type>::size_type>(
+				typename array::layout_t{x}.num_elements()
+			),
+			this->data_elements()  // used as hint
+		);
+		this->uninitialized_fill_n(this->base_, static_cast<typename std::allocator_traits<typename array::allocator_type>::size_type>(this->num_elements()), e);
+
+		return *this;
+	}
+
+	auto reextent(typename array::extensions_type const& x, typename array::element const& e) & -> array& {
 		if(x == this->extensions()) {
 			return *this;
 		}
