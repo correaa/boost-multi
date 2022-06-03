@@ -54,8 +54,8 @@ template<class Array1D>
 void print_2d(Array1D const& coll) {
 //  *(coll.begin()->begin()) = 99;  // doesn't compile "assignment of read-only location"
 
-	for(auto const&& row : coll) {
-		for(auto const&& e : row) {
+	for(auto const& row : coll) {
+		for(auto const& e : row) {
 			std::cout<< e <<", ";
 		}
 		std::cout << std::endl;
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(const_views_2d) {
 
 template<class Array1D>
 void fill_2d_99(Array1D&& coll) {
-//  for(auto const& row : coll) { does npt work because it would make it const
+//  for(auto const& row : coll) {  // does not work because it would make it const
 	for(auto&& row : coll) {
 		for(auto&& e : row) {
 			e = 99;
