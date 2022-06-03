@@ -63,11 +63,11 @@ struct transform_ptr {
 	using iterator_category = typename std::iterator_traits<Ptr>::iterator_category;
 
 	template<class U> using rebind = transform_ptr<
-		std::decay_t<U>, UF,
+		U, UF,
 		std::conditional_t<
 			std::is_const_v<U>,
-			typename std::pointer_traits<Ptr>::template rebind<typename std::pointer_traits<Ptr>::element_type const>,
-			Ptr
+			Ptr,
+			typename std::pointer_traits<Ptr>::template rebind<typename std::pointer_traits<Ptr>::element_type const>
 		>
 	>;
 
@@ -79,7 +79,10 @@ struct transform_ptr {
 
 	constexpr auto functor() const -> UF {return f_;}
 	constexpr auto base() const -> Ptr const& {return p_;}
-	constexpr auto operator*() const -> reference {return f_(*p_);}  // NOLINT(readability-const-return-type) in case synthesis reference is a `T const`
+	constexpr auto operator*() const -> reference {  // NOLINT(readability-const-return-type) in case synthesis reference is a `T const`
+		return std::invoke(f_, *p_);  // NOLINT(readability-const-return-type) in case synthesis reference is a `T const`
+	//  return f_(*p_);  // NOLINT(readability-const-return-type) in case synthesis reference is a `T const`
+	}
 
 	constexpr auto operator+=(difference_type n) -> transform_ptr& {p_ += n; return *this;}
 	constexpr auto operator-=(difference_type n) -> transform_ptr& {p_ -= n; return *this;}
