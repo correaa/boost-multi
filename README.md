@@ -8,23 +8,23 @@
 _© Alfredo A. Correa, 2018-2022_
 
 `Multi` provides multidimensional array access to contiguous or regularly contiguous memory (or ranges).
-It shares the goals of [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html),
-although the code is completely independent and the syntax has slight differences or has been extended.
-`Multi` and `Boost.MultiArray` types can be used interchangeably for the most part, they differ in the semantics of reference and value types.
 
-Multi aims to simplify the semantics of Boost.MultiArray and make it more compatible with the Standard (STL) Algorithms and special memory.
+This library, `Multi`, aims to offer manipulation of data expressed in array form with well behavied value semantics, offering compatibility with the Standard (STL) Algorithms, special memory following modern C++ design principles.
 It requires, at least, C++17. (It is C++20 ready.)
 
 Some features:
 
-* Arbitrary pointer types (minimal requirements)
+* Arbitrary pointer types (fancy pointers)
 * Simplified implementation (~4000 lines)
-* Fast access of subarrays (view) types
+* Fast access of elements and subarrays (views) types
 * Value semantics of multi-dimensional array container
-* Better semantics of subarray (view) types
-* Interoperability with other libraries, STL, ranges, 
+* Well defined semantics of subarray (view) types
+* Interoperability with other libraries, STL, ranges, thrust, Boost, etc.
 
-(Do not confuse this library with Boost.MultiArray or Boost.MultiIndex.)
+(Do not confuse this library with Boost.MultiArray or Boost.MultiIndex. 
+It shares the goals of [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html),
+although the code is completely independent.
+Although the syntax has only slightly different or has been extended, they have important semantic differences.)
 
 ## Contents
 [[_TOC_]]
