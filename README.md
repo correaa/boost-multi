@@ -520,11 +520,6 @@ A reference array (`array_ref`) is never resizable (or reassignable) but their e
 The design ensures that constness of references and values is propagated to subsets (views) and to elements.
 Any subarray (views) will propagate the constness of the original array.
 
-Subarray can be named into constant language references by using `auto const&`.
-If mutation is desired use `auto&&`.
-
-As a general rules take generic array arguments (values or views) as `Array&&` (or `auto&&`) and non mutable arguments (values and views) as `Array const&` (or `auto const&`).
-
 ```cpp
 template<class Array1D>
 void print(Array1D const& coll) {
@@ -540,7 +535,15 @@ int main() {
 	print( coll1 );  // prints "0, 8, 15, 47, 11, 42"
 	print( coll1({0, 3}) );  // prints "0, 8, 15"
 }
+```
 
+As a general rule, in functions take generic array arguments that are _not_ going to be mutated as `Array const&` (in the context of `template<class Array>`).
+If mutation is expected take them as `Array&&` (note the double ampersand, i.e. universal/forwarding reference).
+Views can be *named* into "constant language references" by using `auto const&`.
+If mutation is desired use `auto&&`.
+Normal references `Array&` or `auto&` in general doesn't have the expected behavior for views,
+
+```cpp
 template<class Array1D>
 void fill_99(Array1D&& coll) {
 	for(auto& e : coll) {e = 99;}
