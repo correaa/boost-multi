@@ -126,3 +126,40 @@ BOOST_AUTO_TEST_CASE(transform_ptr_1D_array) {
 
 //  Ac[0] = 5. + 4.i;  // doesn't compile thanks to the `auto const` in the `conj` def
 }
+
+BOOST_AUTO_TEST_CASE(arthur_odwyer_array_transform_int) {
+
+	struct S {  // NOLINT(readability-identifier-naming)
+    	int a;
+    	int b;
+	};
+
+	multi::array<S, 1> v({2}, S{});
+	auto&& r = v.element_transformed(&S::a);
+	r[0] = 99.;
+
+	BOOST_REQUIRE( v[0].a == 99. );
+
+	auto const& cr = v.element_transformed(&S::a); (void)cr;
+	BOOST_REQUIRE( cr[0] == 99. );
+//  cr[0] = 99.;  // compile error "assignment of read-only location"
+}
+
+BOOST_AUTO_TEST_CASE(arthur_odwyer_array_transform_int_array) {
+
+	struct S {  // NOLINT(readability-identifier-naming)
+    	int a[10];  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) testing
+    	int b;
+	};
+
+	multi::array<S, 1> v({2}, S{});
+	auto&& r = v.element_transformed(&S::a);
+	r[0][1] = 99.;
+
+	BOOST_REQUIRE( r[0][1] == 99. );
+	BOOST_REQUIRE( v[0].a[1] == 99. );
+
+	auto const& cr = v.element_transformed(&S::a); (void)cr;
+	BOOST_REQUIRE( cr[0][1] == 99. );
+//  cr[0][1] = 99.;  // compile error "assignment of read-only location"
+}
