@@ -14,12 +14,12 @@ It requires, at least, C++17. (It is C++20 ready.)
 
 Some features:
 
-* Arbitrary pointer types (fancy pointers)
-* Simplified implementation (~4000 lines)
-* Fast access of elements and subarrays (views) types
 * Value semantics of multi-dimensional array container
-* Well defined semantics of subarray (view) types
-* Interoperability with other libraries, STL, ranges, thrust, Boost, etc.
+* Well defined referential semantics of subarray (view) types
+* Interoperability with other libraries, STL, ranges, thrust, Boost, and C-libraries.
+* Fast access of elements and subarrays (views) types
+* Arbitrary pointer types (fancy pointers, memory spaces)
+* Simplified implementation (~4000 lines)
 
 (Do not confuse this library with Boost.MultiArray or Boost.MultiIndex. 
 It shares the goals of [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html),
