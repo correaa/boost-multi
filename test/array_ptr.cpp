@@ -104,3 +104,23 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 	}
 }
 
+BOOST_AUTO_TEST_CASE(span_like) {
+
+	std::vector<double> v = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10.};
+
+	using my_span = multi::array_ref<double, 1>;
+
+	auto aP = & my_span{v.data() + 2,{5}};                                         // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	BOOST_REQUIRE( aP->size() == 5 );
+	BOOST_REQUIRE( (*aP)[0] == 2. );
+
+	auto const& aCRef = *aP;
+	BOOST_REQUIRE(  aCRef.size() == 5 );
+
+	BOOST_REQUIRE( &aCRef[0] == &v[2] );
+	BOOST_REQUIRE(  aCRef[0] == 2.    );
+
+	auto&& aRef = *aP;
+	aRef[0] = 99.;
+	BOOST_REQUIRE( v[2] == 99. );
+}
