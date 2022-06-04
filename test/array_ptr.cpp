@@ -1,10 +1,7 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
-#endif
-// © Alfredo A. Correa 2019-2020
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// © Alfredo A. Correa 2019-2022
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi array pointer"
-#define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
 #include "multi/array.hpp"
@@ -91,7 +88,7 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 		BOOST_REQUIRE( (*ps[2])[4] == 19 );
 		BOOST_REQUIRE( ps[2]->operator[](4) == 19 );
 	}
-	 {
+	{
 		std::vector<double> v1(100, 3.);
 		std::vector<double> const v2(100, 4.);
 		multi::array_ptr<double, 2> v1P2D(v1.data(), {10, 10});
@@ -104,3 +101,23 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 	}
 }
 
+BOOST_AUTO_TEST_CASE(span_like) {
+
+	std::vector<double> v = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10.};
+
+	using my_span = multi::array_ref<double, 1>;
+
+	auto aP = & my_span{v.data() + 2,{5}};                                         // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	BOOST_REQUIRE( aP->size() == 5 );
+	BOOST_REQUIRE( (*aP)[0] == 2. );
+
+	auto const& aCRef = *aP;
+	BOOST_REQUIRE(  aCRef.size() == 5 );
+
+	BOOST_REQUIRE( &aCRef[0] == &v[2] );
+	BOOST_REQUIRE(  aCRef[0] == 2.    );
+
+	auto&& aRef = *aP;
+	aRef[0] = 99.;
+	BOOST_REQUIRE( v[2] == 99. );
+}
