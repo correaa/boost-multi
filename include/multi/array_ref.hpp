@@ -1643,7 +1643,7 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 	friend constexpr auto operator==(array_iterator const& a, array_iterator const& b) -> bool {return a.data_ == b.data_;}
 //	friend constexpr auto operator!=(array_iterator const& a, array_iterator const& b) -> bool {return not(a.data_ == b.data_);}
 
-	HD constexpr auto operator*() const -> typename std::iterator_traits<element_ptr>::reference {return *data_;}
+	HD constexpr auto operator*() const -> typename std::iterator_traits<element_ptr>::reference {return *data_;}  // NOLINT(readability-const-return-type)
 
 	constexpr auto operator-(array_iterator const& o) const -> difference_type {return -distance_to(o);}
 
@@ -1747,7 +1747,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	using element_type = T;
 
 	using element_ptr       = typename types::element_ptr;
-	using element_const_ptr = typename types::element_const_ptr;
+	using element_const_ptr = typename std::pointer_traits<ElementPtr>::template rebind<element_type const>;
 	using element_move_ptr  = multi::move_ptr<element_type, element_ptr>;
 	using element_ref       = typename types::element_ref;
 	using element_cref      = typename std::iterator_traits<element_const_ptr>::reference;
@@ -1875,12 +1875,12 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	//  auto of = (i*this->stride() - this->offset());  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
 	//  auto pt = ba + of;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
 	//  return *pt;  // in C++17 this is allowed even with syntethic references
-		return *(this->base() + (i*this->stride() - this->offset()));
+		return *(this->base() + (i*this->stride() - this->offset()));  // TODO(correaa) use this->base()[(i*this->stride() - this->offset())]
 	}
 
  public:
 	HD constexpr auto operator[](index i) const& -> typename basic_array::const_reference {return at_aux(i);}  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
-	HD constexpr auto operator[](index i)      & -> typename basic_array::      reference {return at_aux(i);}
+	HD constexpr auto operator[](index i)      & -> typename basic_array::      reference {return at_aux(i);}  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
 	HD constexpr auto operator[](index i)     && -> typename basic_array::      reference {return at_aux(i);}  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
 
 	constexpr auto front() const& -> const_reference {return *begin();}
