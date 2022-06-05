@@ -180,6 +180,6 @@ BOOST_AUTO_TEST_CASE(indirect_transformed) {
 	for(auto&& e : indirect_v) {std::cout << e << std::endl;}
 
 	auto const& const_indirect_v = indirect_v;  (void)const_indirect_v;
-	const_indirect_v[1] = 999.;  // does not compile, good!
+//  const_indirect_v[1] = 999.;  // does not compile, good!
 
 }
