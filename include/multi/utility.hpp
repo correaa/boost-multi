@@ -54,6 +54,13 @@ struct move_ptr : private std::move_iterator<Ptr> {
 	constexpr auto operator!=(move_ptr const& other) const -> bool {return static_cast<std::move_iterator<Ptr> const&>(*this) != static_cast<std::move_iterator<Ptr> const&>(other);}
 };
 
+#if defined(__NVCC__)
+template<class T> struct ref_add_const {using type = T const;};  // this is not the same as std::add_const
+
+template<class T> struct ref_add_const<T const > {using type = T const ;};
+template<class T> struct ref_add_const<T const&> {using type = T const&;};
+#endif
+
 template<class T, class UF, class Ptr, class Ref = std::invoke_result_t<UF const&, typename std::iterator_traits<Ptr>::reference>>
 struct transform_ptr {
 	using difference_type   = typename std::iterator_traits<Ptr>::difference_type;
@@ -66,7 +73,14 @@ struct transform_ptr {
 		transform_ptr<
 			std::remove_cv_t<U>,
 			UF, Ptr,
-			typename std::conditional<std::is_const_v<U>, Ref const, Ref>::type
+			typename std::conditional<std::is_const_v<U>,
+			#if not defined(__NVCC__)
+				Ref const,
+			#else
+				typename ref_add_const<Ref>::type,
+			#endif
+				Ref
+			>::type
 		>
 	;
 
