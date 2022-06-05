@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_function_reference) {
 	BOOST_REQUIRE( Ac[0] == conj(A[0]) );
 	BOOST_REQUIRE( Ac[1] == conj(A[1]) );
 
-	Ac[0] = 5. + 4.*I;  // this unfortunately compiles and it is confusing, this is a defect of std::complex<double>
+//  Ac[0] = 5. + 4.*I;  // this doesn't compile, good!
 	BOOST_REQUIRE( Ac[0] == 1. - 2.*I );
 	BOOST_REQUIRE( std::inner_product(A.begin(), A.end(), Ac.begin(), complex{0.}) == std::norm(A[0]) + std::norm(A[1]) );
 }
@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_lambda) {
 	BOOST_REQUIRE( Ac[0] == std::conj(A[0]) );
 	BOOST_REQUIRE( Ac[1] == std::conj(A[1]) );
 
-	Ac[0] = 5. + 4.*I;  // this unfortunately compiles and it is confusing, this is a defect of std::complex<double>
+//	Ac[0] = 5. + 4.*I;  // this doesn't compile, good!
 	BOOST_REQUIRE( Ac[0] == 1. - 2.*I );
 }
 
@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_lambda_with_const_return)
 	BOOST_REQUIRE( Ac[0] == std::conj(A[0]) );
 	BOOST_REQUIRE( Ac[1] == std::conj(A[1]) );
 
-//  Ac[0] = 5. + 4.*I;  // doesn't compile due to const return, the element is not assignable anyway
+//	Ac[0] = 5. + 4.*I;  // this doesn't compile, good!
 	BOOST_REQUIRE( Ac[0] == 1. - 2.*I );
 }
 
@@ -111,7 +111,7 @@ BOOST_AUTO_TEST_CASE(transform_ptr_single_value) {
 
 	constexpr auto conj_ro = [](auto const& z) -> auto const {return std::conj(z);};  // NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
 
-	multi::transform_ptr<complex, decltype(conj_ro)> tp{&c, conj_ro};
+	multi::transform_ptr<complex, decltype(conj_ro), complex*> tp{&c, conj_ro};
 	BOOST_REQUIRE( *tp == std::conj(1. + 2.*I) );
 }
 
@@ -162,4 +162,24 @@ BOOST_AUTO_TEST_CASE(arthur_odwyer_array_transform_int_array) {
 	auto const& cr = v.element_transformed(&S::a); (void)cr;
 	BOOST_REQUIRE( cr[0][1] == 99. );
 //  cr[0][1] = 99.;  // compile error "assignment of read-only location"
+}
+
+BOOST_AUTO_TEST_CASE(indirect_transformed) {
+
+	std::vector<double> v = {0., 1.1, 2.2, 3.3, 4.4, 5.5};
+
+	multi::array<std::size_t, 1> const a = {4, 3, 2, 1, 0};
+
+	auto&& indirect_v = a.element_transformed([&v](auto idx) noexcept -> double& {return v[idx];});
+
+	BOOST_REQUIRE(  indirect_v[1] ==  v[3] );
+	BOOST_REQUIRE( &indirect_v[1] == &v[3] );
+
+	indirect_v[1] = 99.;
+	BOOST_TEST(  v[3] ==  99. );
+	for(auto&& e : indirect_v) {std::cout << e << std::endl;}
+
+	auto const& const_indirect_v = indirect_v;  (void)const_indirect_v;
+	const_indirect_v[1] = 999.;  // does not compile, good!
+
 }
