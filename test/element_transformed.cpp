@@ -168,18 +168,22 @@ BOOST_AUTO_TEST_CASE(indirect_transformed) {
 
 	std::vector<double> v = {0., 1.1, 2.2, 3.3, 4.4, 5.5};
 
-	multi::array<std::size_t, 1> const a = {4, 3, 2, 1, 0};
+	using index_t = std::vector<double>::size_type;
 
-	auto&& indirect_v = a.element_transformed([&v](auto idx) noexcept -> double& {return v[idx];});
+	multi::array<index_t, 1> const a = {4, 3, 2, 1, 0};
+
+	auto&& indirect_v = a.element_transformed([&v](index_t idx) noexcept -> double& {return v[idx];});
 
 	BOOST_REQUIRE(  indirect_v[1] ==  v[3] );
 	BOOST_REQUIRE( &indirect_v[1] == &v[3] );
 
 	indirect_v[1] = 99.;
-	BOOST_TEST(  v[3] ==  99. );
-	for(auto&& e : indirect_v) {std::cout << e << std::endl;}
+	BOOST_REQUIRE(  v[3] ==  99. );
+
+	for(auto&& e : indirect_v) {e = 88.;}
+	BOOST_REQUIRE(  v[3] ==  88. );
 
 	auto const& const_indirect_v = indirect_v;  (void)const_indirect_v;
 //  const_indirect_v[1] = 999.;  // does not compile, good!
-
+	BOOST_REQUIRE(  const_indirect_v[3] ==  88. );
 }
