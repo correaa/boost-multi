@@ -54,7 +54,7 @@ struct move_ptr : private std::move_iterator<Ptr> {
 	constexpr auto operator!=(move_ptr const& other) const -> bool {return static_cast<std::move_iterator<Ptr> const&>(*this) != static_cast<std::move_iterator<Ptr> const&>(other);}
 };
 
-template<class T, class UF, class Ptr = T*, class Ref = std::invoke_result_t<UF const&, typename std::iterator_traits<Ptr>::reference>>
+template<class T, class UF, class Ptr, class Ref = std::invoke_result_t<UF const&, typename std::iterator_traits<Ptr>::reference>>
 struct transform_ptr {
 	using difference_type   = typename std::iterator_traits<Ptr>::difference_type;
 	using value_type        = std::decay_t<Ref>;//typename std::iterator_traits<std::move_iterator<Ptr>>::value_type;
@@ -62,20 +62,18 @@ struct transform_ptr {
 	using reference         = Ref;
 	using iterator_category = typename std::iterator_traits<Ptr>::iterator_category;
 
-	template<class U> using rebind = transform_ptr<
-		U, UF,
-		std::conditional_t<
-			std::is_const_v<U>,
-			Ptr,
-			typename std::pointer_traits<Ptr>::template rebind<typename std::pointer_traits<Ptr>::element_type const>
+	template<class U> using rebind =
+		transform_ptr<
+			std::remove_cv_t<U>, UF, Ptr,
+			typename std::conditional<std::is_const_v<U>, Ref const, Ref>::type
 		>
-	>;
+	;
 
 	template<class... As>
 	constexpr transform_ptr(pointer p, UF f) : p_{p}, f_(std::move(f)) {}
 
 	template<class Other>
-	transform_ptr(Other const& other) : p_{other.p_}, f_{other.f_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) TODO(correaa) use conditional explicit idiom here
+	constexpr transform_ptr(Other const& other) : p_{other.p_}, f_{other.f_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) TODO(correaa) use conditional explicit idiom here
 
 	constexpr auto functor() const -> UF {return f_;}
 	constexpr auto base() const -> Ptr const& {return p_;}
@@ -88,13 +86,14 @@ struct transform_ptr {
 	constexpr auto operator-=(difference_type n) -> transform_ptr& {p_ -= n; return *this;}
 
 	constexpr auto operator+(difference_type n) const -> transform_ptr {transform_ptr ret{*this}; ret += n; return ret;}
+
 	constexpr auto operator-(transform_ptr const& other) const -> difference_type {return p_ - other.p_;}
 
-//	constexpr auto operator*() const -> decltype(auto) {return *static_cast<std::move_iterator<Ptr> const&>(*this);}
 	constexpr auto operator[](difference_type n) const -> reference {return *((*this) + n);}
 
-//	constexpr auto operator==(move_ptr const& other) const -> bool {return static_cast<std::move_iterator<Ptr> const&>(*this) == static_cast<std::move_iterator<Ptr> const&>(other);}
-//	constexpr auto operator!=(move_ptr const& other) const -> bool {return static_cast<std::move_iterator<Ptr> const&>(*this) != static_cast<std::move_iterator<Ptr> const&>(other);}
+	constexpr auto operator==(transform_ptr const& other) const -> bool {return p_ == other.p_;}
+	constexpr auto operator!=(transform_ptr const& other) const -> bool {return p_ != other.p_;}
+
  private:
 	Ptr p_;
 	UF  f_;
