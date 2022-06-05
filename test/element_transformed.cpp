@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_mutable_proxy) {
 BOOST_AUTO_TEST_CASE(transform_ptr_single_value) {
 	complex c = 1. + 2.*I;
 
-	constexpr auto conj_ro = [](auto const& z) -> auto const {return std::conj(z);};  // NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
+	constexpr auto conj_ro = [](auto const& z) {return std::conj(z);};  // NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
 
 	multi::transform_ptr<complex, decltype(conj_ro), complex*> tp{&c, conj_ro};
 	BOOST_REQUIRE( *tp == std::conj(1. + 2.*I) );
@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE(transform_ptr_single_value) {
 BOOST_AUTO_TEST_CASE(transform_ptr_1D_array) {
 	multi::array<complex, 1> A = { 1. + 2.*I,  3. +  4.*I};
 
-	constexpr auto conj_ro = [](auto const& z) -> auto const {return std::conj(z);};  // NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
+	constexpr auto conj_ro = [](auto const& z) {return std::conj(z);};  // NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
 
 	auto const& Ac = A.element_transformed(conj_ro);
 	BOOST_REQUIRE( Ac[0] == conj_ro(A[0]) );
