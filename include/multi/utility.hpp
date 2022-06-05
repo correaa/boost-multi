@@ -64,7 +64,8 @@ struct transform_ptr {
 
 	template<class U> using rebind =
 		transform_ptr<
-			std::remove_cv_t<U>, UF, Ptr,
+			std::remove_cv_t<U>,
+			UF, Ptr,
 			typename std::conditional<std::is_const_v<U>, Ref const, Ref>::type
 		>
 	;
