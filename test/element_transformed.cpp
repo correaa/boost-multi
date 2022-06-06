@@ -187,3 +187,30 @@ BOOST_AUTO_TEST_CASE(indirect_transformed) {
 //  const_indirect_v[1] = 999.;  // does not compile, good!
 	BOOST_REQUIRE(  const_indirect_v[3] ==  88. );
 }
+
+BOOST_AUTO_TEST_CASE(indirect_transformed_carray) {
+
+	double D[5][3] = { // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) testing legacy types
+		{ 0.0,  1.0,  2.0},
+		{10.0, 11.0, 12.0},
+		{20.0, 21.0, 22.0},
+		{30.0, 31.0, 32.0},
+		{40.0, 41.0, 42.0}
+	};
+
+	using index_t = std::vector<double>::size_type;
+	multi::array<index_t, 1> const a = {4, 3, 2, 1, 0};
+
+	auto&& indirect_v = a.element_transformed([&D](index_t idx) noexcept -> double(&)[3] {return D[idx];});  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+
+	BOOST_REQUIRE( &indirect_v[1][2] ==  &D[3][2] );
+	BOOST_REQUIRE(  indirect_v[1][2] ==  32.0 );
+
+	indirect_v[1][2] = 11111.0;
+	BOOST_TEST   (  indirect_v[1][2] ==  11111.0 );
+
+	auto const& const_indirect_v = indirect_v;
+
+	BOOST_TEST(  const_indirect_v[1][2] ==  11111.0 );  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) testing legacy type
+//  const_indirect_v[1][2] = 999.;  // doesn't compile, good!
+}
