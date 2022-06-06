@@ -1420,15 +1420,25 @@ struct basic_array
 	template<class UF>
 	constexpr auto element_transformed(UF&& f) const& {
 		return static_array_cast<
-			std::decay_t<std::invoke_result_t<UF const&, element_ref> >,
-			transform_ptr<std::decay_t<std::invoke_result_t<UF const&, element_cref>>, UF, element_const_ptr, std::invoke_result_t<UF const&, element_cref>>
+		//  std::remove_cv_t<std::remove_reference_t<std::invoke_result_t<UF const&, element_cref>>>,
+			std::decay_t<std::invoke_result_t<UF const&, element_cref>>, 
+			transform_ptr<
+			//  std::remove_cv_t<std::remove_reference_t<std::invoke_result_t<UF const&, element_cref>>>,
+				std::decay_t<std::invoke_result_t<UF const&, element_cref>>,
+				UF, element_const_ptr, std::invoke_result_t<UF const&, element_cref>
+			>
 		>(std::forward<UF>(f));
 	}
 	template<class UF>
 	constexpr auto element_transformed(UF&& f)  & {
 		return static_array_cast<
-			std::decay_t<std::invoke_result_t<UF const&, element_ref> >,
-			transform_ptr<std::decay_t<std::invoke_result_t<UF const&, element_ref>>, UF, element_ptr, std::invoke_result_t<UF const&, element_ref>>
+		//	std::remove_cv_t<std::remove_reference_t<std::invoke_result_t<UF const&, element_ref >>>,
+			std::decay_t<std::invoke_result_t<UF const&, element_ref >>,
+			transform_ptr<
+			//	std::remove_cv_t<std::remove_reference_t<std::invoke_result_t<UF const&, element_ref >>>,
+				std::decay_t<std::invoke_result_t<UF const&, element_ref >>,
+				UF, element_ptr      , std::invoke_result_t<UF const&, element_ref >
+			>
 		>(std::forward<UF>(f));
 	}
 	template<class UF>
@@ -2203,15 +2213,25 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	template<class UF>
 	constexpr auto element_transformed(UF&& f) const& {
 		return static_array_cast<
-			std::decay_t<std::invoke_result_t<UF const&, element_ref> >,
-			transform_ptr<std::decay_t<std::invoke_result_t<UF const&, element_cref>>, UF, element_const_ptr, std::invoke_result_t<UF const&, element_cref>>
+		//  std::remove_cv_t<std::remove_reference_t<std::invoke_result_t<UF const&, element_cref>>>,
+			std::decay_t<std::invoke_result_t<UF const&, element_cref>>, 
+			transform_ptr<
+			//  std::remove_cv_t<std::remove_reference_t<std::invoke_result_t<UF const&, element_cref>>>,
+				std::decay_t<std::invoke_result_t<UF const&, element_cref>>,
+				UF, element_const_ptr, std::invoke_result_t<UF const&, element_cref>
+			>
 		>(std::forward<UF>(f));
 	}
 	template<class UF>
 	constexpr auto element_transformed(UF&& f)  & {
 		return static_array_cast<
-			std::decay_t<std::invoke_result_t<UF const&, element_ref> >,
-			transform_ptr<std::decay_t<std::invoke_result_t<UF const&, element_ref>>, UF, element_ptr, std::invoke_result_t<UF const&, element_ref>>
+		//	std::remove_cv_t<std::remove_reference_t<std::invoke_result_t<UF const&, element_ref >>>,
+			std::decay_t<std::invoke_result_t<UF const&, element_ref >>,
+			transform_ptr<
+			//	std::remove_cv_t<std::remove_reference_t<std::invoke_result_t<UF const&, element_ref >>>,
+				std::decay_t<std::invoke_result_t<UF const&, element_ref >>,
+				UF, element_ptr      , std::invoke_result_t<UF const&, element_ref >
+			>
 		>(std::forward<UF>(f));
 	}
 	template<class UF>
