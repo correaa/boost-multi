@@ -880,36 +880,34 @@ To use it, simply `#include "multi/adaptors/totalview.hpp"` and link to the Tota
 ### What's up with the multiple bracket notation? 
 
 The chained bracket notation (`A[i][j][k]`) allows to refer to elements and subarrays lower dimensional subarrays in a consistent and _generic_ manner and it is the recommended way to access the array objects.
-It is a frequently raised question whether the chained bracket notation is good for performance, since it appears that each utilization of the bracket leads to the creation of a temporary which in turn generates a partial copy of the layout.
+It is a frequently raised question whether the chained bracket notation is good for performance, since it appears that each utilization of the bracket leads to the creation of a temporary object which in turn generates a partial copy of the layout.
 Moreover, this goes against [historical recommendations](https://isocpp.org/wiki/faq/operator-overloading#matrix-subscript-op).
 
-It turns out that [modern compilers with a fair level of optimization (`-O2`)](https://godbolt.org/z/3fYd5c) can elide these temporary objects, so that `A[i][j][k]` generates identical assembly code as `A.base() + i*stride1 + j*stride2 + k*stride3` (+offsets not shown).
-
+It turns out that modern compilers with a fair level of optimization (`-O2`) can elide these temporary objects, so that `A[i][j][k]` generates identical assembly code as `A.base() + i*stride1 + j*stride2 + k*stride3` (+offsets not shown).
 In a subsequent optimization, constant indices can have their "partial stride" computation removed from loops. 
-As a result, these two loops lead to the [same machine code](https://godbolt.org/z/z1se74):
+As a result, these two loops lead to the [same machine code](https://godbolt.org/z/ncqrjnMvo):
 
 ```cpp
-    for(int j = 0; j != nj; ++j)
-        ++A[i][j][k];
+	// given the values of i and k and accumulating variable acc ...
+    for(long j = 0; j != M; ++j) {acc += A[i][j][k];}
 ```
 ```cpp
-    double* Ai_k = A.base() + i*A_stride1 + k*A_stride3;
-    for(int j = 0; j != nj; ++jj)
-        ++(*(Ai_k + j*A_stride2));
+    auto* base = A.base() + i*std::get<0>(A.strides()) + k*std::get<2>(A.strides());
+    for(long j = 0; j != M; ++j) {acc += *(base + j*std::get<1>(A.strides()));}
 ```
 
-Incidentally, the library also supports parenthesis notation with multiple indices `A(i, j, k)` for element or partial access, but it does so for accidental reasons as part of a more general syntax to generate sub-blocks.
+Incidentally, the library also supports parenthesis notation with multiple indices `A(i, j, k)` for element or partial access, but it does so as part of a more general syntax to generate sub-blocks.
 In any case `A(i, j, k)` is expanded to `A[i][j][k]` internally in the library when `i, j, k` are normal integer indices.
 Additionally, array coordinates can be directly stored in tuple-like data structures, allowing this functional syntax:
 
 ```cpp
-std::array p = {2,3,4};
-std::apply(A, p) = 234; // A[2][3][4] = 234;
+std::array p = {2, 3, 4};
+std::apply(A, p) = 234;  // same as A(2, 3, 4) = 234; and same as A[2][3][4] = 234;
 ```
 
 ### Customizing recursive operations: SCARY iterators
 
-A custom level of customization can be achieved by intercepting internal recursive algorithms.
+A level of customization can be achieved by intercepting internal recursive algorithms.
 Multi iterators are [SCARY](http://www.open-std.org/jtc1/sc22/WG21/docs/papers/2009/n2980.pdf). 
 SCARY means that they are independent of any container and can be accessed generically through their dimension and underlying pointer types:
 
@@ -938,4 +936,3 @@ void copy(It first, It last, multi::array_iterator<T, 2, fancy::ptr<T> > dest){
 
 For example, if your custom pointers refers a memory type in which 2D memory copying (strided copy) is faster than sequencial copying, that kind of instruction can be ejecuted when the library internally calls `copy`.
 This customization must be performed (unfortunately) in the `boost::multi` namespace (this is where the Multi iterators are defined) and the customization happens through matching the dimension and the pointer type.
-
