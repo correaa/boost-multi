@@ -1,17 +1,17 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2018-2021 Alfredo A. Correa
+// Copyright 2018-2022 Alfredo A. Correa
 
 #ifndef MULTI_UTILITY_HPP
 #define MULTI_UTILITY_HPP
 
 #include "detail/layout.hpp"
 
-
-#include<memory>       // for allocator<>
-#include<type_traits>  // for std::invoke_result
+#include <functional>    // for std::invoke
+#include <memory>       // for allocator<>
+#include <type_traits>  // for std::invoke_result
 
 #if(__cplusplus >= 201703L)
-#include<iterator>  // for std::size (in c++17)
+#include <iterator>  // for std::size (in c++17)
 #endif
 
 //#include<tuple>  // for tuple<>

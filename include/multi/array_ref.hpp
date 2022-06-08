@@ -94,6 +94,8 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	using layout_t::num_elements;
 	using layout_t::offset;
 
+	using layout_t::offsets;
+
 	using typename layout_t::index;
 	using typename layout_t::index_range;
 	using typename layout_t::index_extension;
