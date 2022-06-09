@@ -4,30 +4,18 @@
 #ifndef MULTI_DETAIL_INDEX_RANGE_HPP
 #define MULTI_DETAIL_INDEX_RANGE_HPP
 
-//#include "../config/MAYBE_UNUSED.hpp"
-//#include "../config/NODISCARD.hpp"
-
 #include "../detail/serialization.hpp"
 #include "../detail/tuple_zip.hpp"
 #include "../detail/types.hpp"
 
 #include <algorithm>  // for min
-
-// #include <iostream>   // TODO(correaa) remove, add include in QMCP
-
 #include <iterator>   // for std::random_iterator_tag // std::reverse_iterator
 #include <limits>     // for numeric_limits
 #include <utility>    // for forward
 
 namespace boost::multi {
 
-//template<class... Ts>
-//using tuple = std::tuple<Ts...>;
-
 using boost::multi::detail::tuple;
-//using std::tuple;
-//using std::make_tuple;
-//using std::tuple_cat;
 
 template<
 	class Self,
