@@ -6,7 +6,7 @@
 
 #include "multi/array.hpp"
 
-#include<numeric>  // iota
+#include<numeric>  // for std::iota
 
 namespace multi = boost::multi;
 
