@@ -49,7 +49,7 @@ auto operator>>(Archive& ar, MA&& self)  // this is for compatability with Archi
 	return ar>> self; }
 
 template<class Archive, class MA, std::enable_if_t<std::is_same_v<MA, std::decay_t<MA>> and (MA::dimensionality > -1), int> =0>
-auto operator&(Archive& ar, MA&& self)  // this is for compatability with Archive type
+auto operator& (Archive& ar, MA&& self)  // this is for compatability with Archive type
 ->decltype(ar& self) {
 	return ar& self; }
 
