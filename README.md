@@ -34,9 +34,8 @@ Although the syntax has only slightly different or has been extended, they have 
 `Multi` doesn't require instalation, single file `#include<multi/array.hpp>` is enough to use the full core library.
 `Multi`'s _only_ dependecy is the standard C++ library.
 
-It is important to compile programs that use the library with a decent level of optimization, specially if element-access is intensively used.
-For example, when testing speed, please make sure that you are compiling in release mode (`-DNDEBUG`) and with optimizations (`-O3`),
-if your test involves mathematical operations add arithmetic optimizations (`-Ofast`) to compare with Fortran code.
+It is important to compile programs that use the library with some level of optimization, specially if element-access is intensively used.
+For example, when testing speed, please make sure that you are compiling in release mode (`-DNDEBUG`) and with optimizations (`-O3`).
 
 A CMake build system is provided to automatically run basic tests. (Test do depend on the Boost.Test library.)
 
@@ -61,7 +60,7 @@ Compiling and running the tests depends on Boost.Test
 (which can be installed with `sudo apt install libboost-serialization-dev libfftw3-dev libblas64-dev liblapack64-dev libthrust-dev libcudart11.0` or indiviudually.)
 
 The code is developed for several compilers with standard C++17 support, for reference:
-LLVM's `clang` (9+) (`libc++` and `libstdc++`), GNU's `g++` (7+), Nvidia's `nvcc` (11.3+) and `nvc++` (20.7-21.3+), Intel's `icpc` (2021.2.0+) and `icpx` (2022.0.2+) and Baxter's [`circle`](https://www.circle-lang.org/) (build 168). 
+LLVM's `clang` (5.0+) (`libc++` and `libstdc++`), GNU's `g++` (7.1+), Nvidia's `nvcc` (11.3+) and `nvc++` (20.7-21.3+), Intel's `icpc` (2021.2.0+) and `icpx` (2022.0.0+) and Baxter's [`circle`](https://www.circle-lang.org/) (build 168). 
 For detailed compilation instructions of test please inspect the Continuous Integration (CI) [definition file](https://gitlab.com/correaa/boost-multi/-/blob/master/.gitlab-ci.yml).
 
 ## Types
