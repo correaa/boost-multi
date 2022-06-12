@@ -31,12 +31,12 @@ template<class T0, class... Ts> class tuple<T0, Ts...> {  // NOLINT(cppcoreguide
 	tuple() = default;
 	tuple(tuple const&) = default;
 
-	template<class TT0, class... TTs>
-	[[deprecated]]
-	// cppcheck-suppress noExplicitConstructor ; for compatibility with QMC to be deprecated
-	constexpr tuple(std::tuple<TT0, TTs...> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	: tuple{std::apply([](auto const&... es) noexcept {return tuple(es...);}, other)}  // paren to allow narrowing conversions
-	{}
+//	template<class TT0, class... TTs>
+//	[[deprecated]]
+//	// cppcheck-suppress noExplicitConstructor ; for compatibility with QMC to be deprecated
+//	constexpr tuple(std::tuple<TT0, TTs...> const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+//	: tuple{std::apply([](auto const&... es) noexcept {return tuple(es...);}, other)}  // paren to allow narrowing conversions
+//	{}
 
 	constexpr auto operator=(tuple const& other) -> tuple& {
 		if(this == &other) {return *this;}
