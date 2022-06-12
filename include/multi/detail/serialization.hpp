@@ -43,12 +43,12 @@ template<class T> class NameValuePair;  // dependency "in name only", if you get
 namespace boost {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
 namespace multi {
 
-template<class Archive, class MA, std::enable_if_t<std::is_same_v<MA, std::decay_t<MA>> and (MA::dimensionality > -1) , int> =0>
+template<class Archive, class MA, std::enable_if_t<std::is_same_v<MA, std::decay_t<MA>> && (MA::dimensionality > -1) , int> =0>
 auto operator>>(Archive& ar, MA&& self)  // this is for compatability with Archive type
 ->decltype(ar>> self) {
 	return ar>> self; }
 
-template<class Archive, class MA, std::enable_if_t<std::is_same_v<MA, std::decay_t<MA>> and (MA::dimensionality > -1), int> =0>
+template<class Archive, class MA, std::enable_if_t<std::is_same_v<MA, std::decay_t<MA>> && (MA::dimensionality > -1), int> =0>
 auto operator& (Archive& ar, MA&& self)  // this is for compatability with Archive type
 ->decltype(ar& self) {
 	return ar& self; }
