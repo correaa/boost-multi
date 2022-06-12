@@ -43,12 +43,12 @@ template<class T> class NameValuePair;  // dependency "in name only", if you get
 namespace boost {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
 namespace multi {
 
-template<class Archive, class MA, std::enable_if_t<std::is_same_v<MA, std::decay_t<MA>> and (MA::dimensionality > -1) , int> =0>
+template<class Archive, class MA, std::enable_if_t<std::is_same_v<MA, std::decay_t<MA>> && (MA::dimensionality > -1) , int> =0>
 auto operator>>(Archive& ar, MA&& self)  // this is for compatability with Archive type
 ->decltype(ar>> self) {
 	return ar>> self; }
 
-template<class Archive, class MA, std::enable_if_t<std::is_same_v<MA, std::decay_t<MA>> and (MA::dimensionality > -1), int> =0>
+template<class Archive, class MA, std::enable_if_t<std::is_same_v<MA, std::decay_t<MA>> && (MA::dimensionality > -1), int> =0>
 auto operator& (Archive& ar, MA&& self)  // this is for compatability with Archive type
 ->decltype(ar& self) {
 	return ar& self; }
@@ -60,7 +60,7 @@ struct archive_traits {
 };
 
 template<class Ar>
-struct archive_traits<Ar, typename std::enable_if<std::is_base_of_v<boost::archive::detail::common_oarchive<Ar>, Ar> or std::is_base_of_v<boost::archive::detail::common_iarchive<Ar>, Ar>>::type> {
+struct archive_traits<Ar, typename std::enable_if<std::is_base_of_v<boost::archive::detail::common_oarchive<Ar>, Ar> || std::is_base_of_v<boost::archive::detail::common_iarchive<Ar>, Ar>>::type> {
 	template<class T> using nvp           = boost::serialization::nvp          <T>;
 	template<class T> using array_wrapper = boost::serialization::array_wrapper<T>;
 	template<class T> struct binary_object_t {using type = boost::serialization::binary_object;};
@@ -73,13 +73,13 @@ struct archive_traits<Ar, typename std::enable_if<std::is_base_of_v<boost::archi
 #if 1
 template<class Ar>
 struct archive_traits<Ar, typename std::enable_if<
-		   std::is_base_of_v<cereal::OutputArchive<Ar, 0>, Ar> or std::is_base_of_v<cereal::OutputArchive<Ar, 1>, Ar>
-		or std::is_base_of_v<cereal::InputArchive <Ar, 0>, Ar> or std::is_base_of_v<cereal:: InputArchive<Ar, 1>, Ar>
+		   std::is_base_of_v<cereal::OutputArchive<Ar, 0>, Ar> || std::is_base_of_v<cereal::OutputArchive<Ar, 1>, Ar>
+		or std::is_base_of_v<cereal::InputArchive <Ar, 0>, Ar> || std::is_base_of_v<cereal:: InputArchive<Ar, 1>, Ar>
 	>::type> {
 
 	using self_t = archive_traits<Ar, typename std::enable_if<
-		   std::is_base_of_v<cereal::OutputArchive<Ar, 0>, Ar> or std::is_base_of_v<cereal::OutputArchive<Ar, 1>, Ar>
-		or std::is_base_of_v<cereal:: InputArchive<Ar, 0>, Ar> or std::is_base_of_v<cereal:: InputArchive<Ar, 1>, Ar>
+		   std::is_base_of_v<cereal::OutputArchive<Ar, 0>, Ar> || std::is_base_of_v<cereal::OutputArchive<Ar, 1>, Ar>
+		or std::is_base_of_v<cereal:: InputArchive<Ar, 0>, Ar> || std::is_base_of_v<cereal:: InputArchive<Ar, 1>, Ar>
 	>::type>;
 
 	template<class T>
