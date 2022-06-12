@@ -166,12 +166,20 @@ BOOST_AUTO_TEST_CASE(tuple_implicit_test) {
 }
 
 BOOST_AUTO_TEST_CASE(tuple_conversion_deprecated) {
-	boost::multi::tuple<int, int> t{1, 1};
-	BOOST_REQUIRE( t == std::make_tuple(1, 1) );
+	boost::multi::tuple<int, int> t{1, 2};
+	BOOST_REQUIRE( std::get<0>(t) == 1 );
+	BOOST_REQUIRE( std::get<1>(t) == 2 );
 }
 #pragma GCC diagnostic pop
 #pragma diagnostic pop                   // NOLINT(clang-diagnostic-unknown-pragmas)
 #pragma warning(pop)                     // NOLINT(clang-diagnostic-unknown-pragmas)
+
+BOOST_AUTO_TEST_CASE(tuple_decomposition) {
+	boost::multi::tuple<int, int> t{1, 2};
+	auto [t0, t1] = t;
+	BOOST_REQUIRE( t0 == 1 );
+	BOOST_REQUIRE( t1 == 2 );
+}
 
 BOOST_AUTO_TEST_CASE(array_reextent_0D) {
 	multi::array<double, 0> A({}, 4.);
