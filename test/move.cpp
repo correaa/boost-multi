@@ -1,15 +1,45 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2020-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi move"
 #include<boost/test/unit_test.hpp>
 
+#include <boost/multi_array.hpp>
+
 #include "multi/array.hpp"
 
-#include<algorithm>  // for std::move
-#include<vector>
+#include <algorithm>  // for std::move
+#include <memory>
+#include <vector>
 
 namespace multi = boost::multi;
+
+BOOST_AUTO_TEST_CASE(move_unique_ptr_1D) {
+	{
+		multi::array<std::unique_ptr<int>, 1> A(multi::extensions_t<1>{10});
+		multi::array<std::unique_ptr<int>, 1> B(multi::extensions_t<1>{10});
+		std::move(A.begin(), A.end(), B.begin());
+	}
+	{
+		multi::array<std::unique_ptr<int>, 1> A(multi::extensions_t<1>{10});
+		multi::array<std::unique_ptr<int>, 1> B = std::move(A);
+	}
+	{
+		multi::array<std::unique_ptr<int>, 1> A(multi::extensions_t<1>{10});
+		multi::array<std::unique_ptr<int>, 1> B(multi::extensions_t<1>{10});
+		B = std::move(A);
+	}
+	{
+		multi::array<std::unique_ptr<int>, 1> A(multi::extensions_t<1>{10});
+		A[1] = std::make_unique<int>(42);
+
+		multi::array<std::unique_ptr<int>, 1> B(multi::extensions_t<1>{10});
+		B() = A().moved();
+		BOOST_REQUIRE( !A[1] );
+		BOOST_REQUIRE(  B[1] );
+		BOOST_REQUIRE( *B[1] == 42 );
+	}
+}
 
 BOOST_AUTO_TEST_CASE(multi_swap) {
 	multi::array<double, 2> A({3,  5}, 99.);
