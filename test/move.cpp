@@ -17,17 +17,33 @@ namespace multi = boost::multi;
 BOOST_AUTO_TEST_CASE(move_unique_ptr_1D) {
 	{
 		multi::array<std::unique_ptr<int>, 1> A(multi::extensions_t<1>{10});
+		A[1] = std::make_unique<int>(42);
+
 		multi::array<std::unique_ptr<int>, 1> B(multi::extensions_t<1>{10});
 		std::move(A.begin(), A.end(), B.begin());
+
+		BOOST_REQUIRE( !A[1] );
+		BOOST_REQUIRE(  B[1] );
+		BOOST_REQUIRE( *B[1] == 42 );
 	}
 	{
 		multi::array<std::unique_ptr<int>, 1> A(multi::extensions_t<1>{10});
+		A[1] = std::make_unique<int>(42);
+
 		multi::array<std::unique_ptr<int>, 1> B = std::move(A);
+		BOOST_REQUIRE(  A.is_empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move)
+		BOOST_REQUIRE(  B[1] );
+		BOOST_REQUIRE( *B[1] == 42 );
 	}
 	{
 		multi::array<std::unique_ptr<int>, 1> A(multi::extensions_t<1>{10});
-		multi::array<std::unique_ptr<int>, 1> B(multi::extensions_t<1>{10});
+		A[1] = std::make_unique<int>(42);
+
+		multi::array<std::unique_ptr<int>, 1> B;//(multi::extensions_t<1>{10});
 		B = std::move(A);
+		BOOST_REQUIRE(  A.is_empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move)
+		BOOST_REQUIRE(  B[1] );
+		BOOST_REQUIRE( *B[1] == 42 );
 	}
 	{
 		multi::array<std::unique_ptr<int>, 1> A(multi::extensions_t<1>{10});
