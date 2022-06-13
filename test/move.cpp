@@ -34,6 +34,7 @@ BOOST_AUTO_TEST_CASE(move_unique_ptr_1D) {
 		A[1] = std::make_unique<int>(42);
 
 		multi::array<std::unique_ptr<int>, 1> B(multi::extensions_t<1>{10});
+	//  B() = A();  // fails to compile, elements are not copy assignable
 		B() = A().moved();
 		BOOST_REQUIRE( !A[1] );
 		BOOST_REQUIRE(  B[1] );
