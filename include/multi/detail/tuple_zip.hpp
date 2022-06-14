@@ -45,10 +45,10 @@ template<class T0, class... Ts> class tuple<T0, Ts...> {  // NOLINT(cppcoreguide
 		return *this;
 	}
 
-	template<class TT0>
-	// cppcheck-suppress noExplicitConstructor ; for compatibility with QMC to be deprecated
-	[[deprecated]] constexpr tuple(TT0 t0)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-	: head_{std::move(t0)}, tail_{} {}
+//	template<class TT0>
+//	// cppcheck-suppress noExplicitConstructor ; for compatibility with QMC to be deprecated
+//	[[deprecated]] constexpr tuple(TT0 t0)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+//	: head_{std::move(t0)}, tail_{} {}
 
 	constexpr explicit tuple(T0 t0, Ts... ts)
 	: head_{std::move(t0)}, tail_{std::move(ts)...} {}
