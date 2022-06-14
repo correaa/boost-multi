@@ -152,27 +152,27 @@ BOOST_AUTO_TEST_CASE(array_reextent_1d) {
 #pragma warning(pop)                       // NOLINT(clang-diagnostic-unknown-pragmas)
 }
 
-inline void fff(boost::multi::detail::tuple<long> /*t*/) {}  // NOLINT(google-runtime-int) for testing
+//inline void fff(boost::multi::detail::tuple<long> /*t*/) {}  // NOLINT(google-runtime-int) for testing
 
-#pragma warning(push)                     // NOLINT(clang-diagnostic-unknown-pragmas)
-#pragma warning (disable:1478 1786)       // NOLINT(clang-diagnostic-unknown-pragmas)
-#pragma diagnostic push                   // NOLINT(clang-diagnostic-unknown-pragmas)
-#pragma diag_suppress 1215,1216,1444,1445 // NOLINT(clang-diagnostic-unknown-pragmas)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-BOOST_AUTO_TEST_CASE(tuple_implicit_test) {
-	fff(1L);
-	fff(1);
-}
+//#pragma warning(push)                     // NOLINT(clang-diagnostic-unknown-pragmas)
+//#pragma warning (disable:1478 1786)       // NOLINT(clang-diagnostic-unknown-pragmas)
+//#pragma diagnostic push                   // NOLINT(clang-diagnostic-unknown-pragmas)
+//#pragma diag_suppress 1215,1216,1444,1445 // NOLINT(clang-diagnostic-unknown-pragmas)
+//#pragma GCC diagnostic push
+//#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+//BOOST_AUTO_TEST_CASE(tuple_implicit_test) {
+//	fff(1L);
+//	fff(1);
+//}
 
-BOOST_AUTO_TEST_CASE(tuple_conversion_deprecated) {
-	boost::multi::tuple<int, int> t{1, 2};
-	BOOST_REQUIRE( std::get<0>(t) == 1 );
-	BOOST_REQUIRE( std::get<1>(t) == 2 );
-}
-#pragma GCC diagnostic pop
-#pragma diagnostic pop                   // NOLINT(clang-diagnostic-unknown-pragmas)
-#pragma warning(pop)                     // NOLINT(clang-diagnostic-unknown-pragmas)
+//BOOST_AUTO_TEST_CASE(tuple_conversion_deprecated) {
+//	boost::multi::tuple<int, int> t{1, 2};
+//	BOOST_REQUIRE( std::get<0>(t) == 1 );
+//	BOOST_REQUIRE( std::get<1>(t) == 2 );
+//}
+//#pragma GCC diagnostic pop
+//#pragma diagnostic pop                   // NOLINT(clang-diagnostic-unknown-pragmas)
+//#pragma warning(pop)                     // NOLINT(clang-diagnostic-unknown-pragmas)
 
 BOOST_AUTO_TEST_CASE(tuple_decomposition) {
 	boost::multi::tuple<int, int> t{1, 2};
