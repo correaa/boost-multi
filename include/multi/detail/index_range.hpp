@@ -52,8 +52,8 @@ class iterator_facade {
 
 template<typename IndexType = std::true_type, typename IndexTypeLast = IndexType>
 class range {
-	IndexType first_ = {};
-	IndexTypeLast last_ = first_;
+	IndexType     first_ = {};
+	IndexTypeLast last_  = first_;
 
  public:
 	template<class Ar>//, class ArT = multi::archive_traits<Ar>>
@@ -179,7 +179,8 @@ constexpr auto make_range(IndexType first, IndexTypeLast last) -> range<IndexTyp
 template<class IndexType = std::ptrdiff_t>
 class intersecting_range {
 	range<IndexType> impl_{std::numeric_limits<IndexType>::min(), std::numeric_limits<IndexType>::max()};
-	constexpr intersecting_range() = default;
+
+	intersecting_range() = default;
 	static constexpr auto make(IndexType first, IndexType last) -> intersecting_range {
 		intersecting_range ret; ret.impl_ = range<IndexType>{first, last}; return ret;
 	}
@@ -208,7 +209,8 @@ class intersecting_range {
 
 [[maybe_unused]] constexpr intersecting_range<> V     = U;
 [[maybe_unused]] constexpr intersecting_range<> A     = V;
-//  [[maybe_unused]] constexpr intersecting_range<> const ∀      = V;
+
+//[[maybe_unused]] constexpr intersecting_range<> https://www.compart.com/en/unicode/U+2200      = V;
 
 template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
 struct extension_t : public range<IndexType, IndexTypeLast> {
