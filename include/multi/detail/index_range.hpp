@@ -179,7 +179,7 @@ constexpr auto make_range(IndexType first, IndexTypeLast last) -> range<IndexTyp
 template<class IndexType = std::ptrdiff_t>
 class intersecting_range {
 	range<IndexType> impl_{std::numeric_limits<IndexType>::min(), std::numeric_limits<IndexType>::max()};
-	intersecting_range() = default;
+	constexpr intersecting_range() = default;
 	static constexpr auto make(IndexType first, IndexType last) -> intersecting_range {
 		intersecting_range ret; ret.impl_ = range<IndexType>{first, last}; return ret;
 	}
@@ -198,16 +198,16 @@ class intersecting_range {
 
  public:
 	constexpr auto operator*() const& -> intersecting_range const& {return *this;}
-	static constexpr auto all() noexcept {return intersecting_range{};}
+	static constexpr auto all() noexcept -> intersecting_range {return intersecting_range{};}
 };
 
-[[maybe_unused]] constexpr intersecting_range<> const ALL   = intersecting_range<>::all();
-[[maybe_unused]] constexpr intersecting_range<> const _     = ALL;
-[[maybe_unused]] constexpr intersecting_range<> const U     = ALL;
-[[maybe_unused]] constexpr intersecting_range<> const ooo   = ALL;
+[[maybe_unused]] constexpr intersecting_range<> ALL   = intersecting_range<>::all();
+[[maybe_unused]] constexpr intersecting_range<> _     = ALL;
+[[maybe_unused]] constexpr intersecting_range<> U     = ALL;
+[[maybe_unused]] constexpr intersecting_range<> ooo   = ALL;
 
-[[maybe_unused]] constexpr intersecting_range<> const V     = U;
-[[maybe_unused]] constexpr intersecting_range<> const A     = V;
+[[maybe_unused]] constexpr intersecting_range<> V     = U;
+[[maybe_unused]] constexpr intersecting_range<> A     = V;
 //  [[maybe_unused]] constexpr intersecting_range<> const ∀      = V;
 
 template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
