@@ -350,7 +350,7 @@ multi::array<std::vector<double>, 2> B({10, 10});
 B[1] = A[2].moved();  // 10 *elements* of the third row of A is moved into the second row of B.
 ```
 
-(There is no point in doing `B[1] = std::move(A[1]);` which is equivalent to `B[1] = A[1]` since `A[2]` is a view. )
+There is no point in doing `B[1] = std::move(A[2]);` (which is equivalent to `B[1] = A[2];`) since `A[2]` is a view.
 
 ## Changing extents (sizes)
 
