@@ -340,8 +340,8 @@ auto B2 = std::move(A2);  // A2 is empty after this
 ```
 
 Subarrays do not own the data therefore they cannot be moved in the same sense.
-However indivial elements of a view can be moved, this is particularly useful if the elements are expensive to copy.
-A moved subview is simply another view of the elements.
+However, indivial elements of a view can be moved, this is particularly useful if the elements are expensive to copy.
+A moved subview is simply another kind view of the elements.
 
 ```cpp
 multi::array<std::vector<double>, 2> A({10, 10});
@@ -349,8 +349,6 @@ multi::array<std::vector<double>, 2> B({10, 10});
 ...
 B[1] = A[2].moved();  // 10 *elements* of the third row of A is moved into the second row of B.
 ```
-
-There is no point in doing `B[1] = std::move(A[2]);` (which is equivalent to `B[1] = A[2];`) since `A[2]` is a view.
 
 ## Changing extents (sizes)
 
