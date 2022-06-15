@@ -284,6 +284,74 @@ assert( num_elements(A3) == 3*2*2 );
 
 In all cases constness (`const` declaration) is honored in the expected way.
 
+## Copy and assigment
+
+The library offer value semantics for the `multi::array<T, D>` family of classes.
+Constructing or assignment from an existing array generates a copy of the original object, that is, and object that is independent but equal in value.
+
+```cpp
+auto B2 = A2;  // same as multi::array<double, 3> B3 = A3;
+assert( B2        == A2        );  // copies have the same value (and also the same shape)
+assert( B2.base() != A2.base() );  // but they are independent
+```
+
+Any (mutable) array can be assigned at any moment, independent of the previous state or shape of the variable.
+The dimensionalities must match.
+```cpp
+B2 = A2;  // same as multi::array<double, 3> B3 = A3;
+```
+
+(The operation can fail there is no enough memory to hold a copy.)
+
+Sometimes it is necessary to generate copies from views, the dimensionality must match.
+```cpp
+multi::array<double, 3> C2 = A2( {0, 2}, {0, 2} );
+```
+or equivalently:
+```cpp
+auto C2 = + A2( {0, 2}, {0, 2} );
+```
+Note the use of `+` as indicator that a copy must be created (it has no arithmetic implications), otherwise `C3` will still be a non-indepdent view of the original array.
+
+Subviews can also assigned but only if the shape of the left-hand side (LHS) and right-hand side (RHS) match.
+Otherwise the behavior is undefined (in debug mode the program will fail an `assert`).
+
+```cpp
+C2( {0, 2}, {0, 2} ) = A2( {0, 2}, {0, 2} );  // both are 2x2 views of arrays, *elements* are copies
+```
+
+Introducing the same or overlapping elements in the RHS and LHS produces undefined behavior in general (and the library doesn't check);
+for example this instruction does not transpose the array, but produces an undefined result.
+
+```cpp
+A2 = A2.transposed();
+```
+
+... while this does produce a transposition (at the cost of making a copy of the tranposed array first and assigning it back to the original array).
+
+```cpp
+A2 = + A2.transposed();
+```
+
+Finally, arrays can be efficiently moved by transferring ownership of the internal data.
+
+```cpp
+auto B2 = std::move(A2);  // A2 is empty after this
+```
+
+Subarrays do not own the data therefore they cannot be moved in the same sense.
+However indivial elements of a view can be moved, this is particularly useful if the elements are expensive to copy.
+A moved subview is simply another view of the elements.
+
+```cpp
+multi::array<std::vector<double>, 2> A({10, 10});
+multi::array<std::vector<double>, 2> B({10, 10});
+...
+B[1] = A[2].moved();  // 10 *elements* of the third row of A is moved into the second row of B.
+```
+
+(There is no point in doing `B[1] = std::move(A[1]);` which is equivalent to `B[1] = A[1]` since `A[2]` is a view. )
+
 ## Changing extents (sizes)
 
 Arrays can change their size preserving elements with `reextents`.
