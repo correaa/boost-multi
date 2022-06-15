@@ -180,7 +180,7 @@ template<class IndexType = std::ptrdiff_t>
 class intersecting_range {
 	range<IndexType> impl_{std::numeric_limits<IndexType>::min(), std::numeric_limits<IndexType>::max()};
 
-	intersecting_range() = default;
+	constexpr intersecting_range() = default;  // MSVC 19.07 needs constexpr to initialize ALL later
 	static constexpr auto make(IndexType first, IndexType last) -> intersecting_range {
 		intersecting_range ret; ret.impl_ = range<IndexType>{first, last}; return ret;
 	}
@@ -199,7 +199,7 @@ class intersecting_range {
 
  public:
 	constexpr auto operator*() const& -> intersecting_range const& {return *this;}
-	static constexpr auto all() noexcept -> intersecting_range {return intersecting_range{};}
+	static constexpr auto all() noexcept {return intersecting_range{};}
 };
 
 [[maybe_unused]] constexpr intersecting_range<> ALL   = intersecting_range<>::all();
