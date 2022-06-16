@@ -18,10 +18,10 @@
 
 namespace boost::multi {
 
-template<class To, class From, std::enable_if_t<std::is_convertible<From, To>{}, int> = 0>
+template<class To, class From, std::enable_if_t<std::is_convertible_v<From, To>, int> = 0>
 constexpr auto implicit_cast(From&& f) -> To {return static_cast<To>(f);}
 
-template<class To, class From, std::enable_if_t<std::is_constructible<To, From>{} and not std::is_convertible<From, To>{}, int> = 0>
+template<class To, class From, std::enable_if_t<std::is_constructible<To, From>{} && !std::is_convertible_v<From, To>, int> =0>
 constexpr auto explicit_cast(From&& f) -> To {return static_cast<To>(f);}
 
 template<class T, class Ptr = T*>
@@ -137,7 +137,7 @@ template<typename T, typename = std::enable_if_t<has_rank<T>{}> >
 constexpr auto rank_aux(T const&) -> typename T::rank;
 
 template<typename T, typename = std::enable_if_t<not has_rank<T>{}> >
-constexpr auto rank_aux(T const&) -> std::integral_constant<size_t, std::rank<T>{}>;
+constexpr auto rank_aux(T const&) -> std::integral_constant<size_t, std::rank_v<T>>;
 
 template<typename T> struct rank : decltype(rank_aux(std::declval<T>())) {};
 
@@ -222,23 +222,24 @@ inline auto has_data_aux(...  )->decltype(              std::false_type{});
 }  // end namespace detail
 template<class T> struct has_data : decltype(detail::has_data_aux(std::declval<T>())) {};
 
-template<class Array, std::enable_if_t<has_data<std::decay_t<Array>>{} and not has_data_elements<std::decay_t<Array>>{}, int> =0>
+template<class Array, std::enable_if_t<has_data<std::decay_t<Array>>{} && !has_data_elements<std::decay_t<Array>>{}, int> =0>
 auto data_elements(Array& arr) {return arr.data();}
 
-template<class Array, std::enable_if_t<has_data<std::decay_t<Array>>{} and not has_data_elements<std::decay_t<Array>>{}, int> =0>
+template<class Array, std::enable_if_t<has_data<std::decay_t<Array>>{} && !has_data_elements<std::decay_t<Array>>{}, int> =0>
 auto data_elements(Array const& arr) {return arr.data();}
 
-template<class A, std::enable_if_t<not has_num_elements<A>{} and has_size<A>{} and has_data<A>{}, int> =0>
-constexpr auto num_elements(A const& arr)
-->std::make_signed_t<decltype(arr.size())> {
-	return static_cast<std::make_signed_t<decltype(arr.size())>>(arr.size());}
+template<class A, std::enable_if_t<!has_num_elements<A>{} && has_size<A>{} && has_data<A>{}, int> =0>
+constexpr auto num_elements(A const& arr) -> std::make_signed_t<decltype(arr.size())> {
+
+	return static_cast<std::make_signed_t<decltype(arr.size())>>(arr.size());
+}
 
 template<class A, std::enable_if_t<has_data_elements<A>{}, int> =0>
 constexpr auto data_elements(A const& arr)
 ->decltype(arr.data_elements()) {
 	return arr.data_elements(); }
 
-template<class T, std::enable_if_t<not std::is_array<std::decay_t<T>>{} and not has_data_elements<std::decay_t<T>>{} and not has_data<std::decay_t<T>>{}, int> =0>
+template<class T, std::enable_if_t<!std::is_array_v<std::decay_t<T>> && !has_data_elements<std::decay_t<T>>{} && !has_data<std::decay_t<T>>{}, int> =0>
 constexpr auto data_elements(T& t) {return &t;}
 
 template<class A> struct num_elements_t: std::integral_constant<std::ptrdiff_t, 1> {};
@@ -328,7 +329,7 @@ constexpr auto base(T const* t) noexcept {return t;}
 template<class T, typename = std::enable_if_t<not std::is_array<T>{}> >
 constexpr auto base(T* t) noexcept {return t;}
 
-template<class T, std::enable_if_t<std::is_standard_layout<T>{} and std::is_trivial<T>{}, int> = 0>
+template<class T, std::enable_if_t<std::is_standard_layout_v<T> && std::is_trivial_v<T>, int> =0>
 auto base(T& t) {return &t;}
 
 template<class T>
@@ -372,12 +373,12 @@ constexpr auto extensions_aux2(BoostMultiArray const& arr, std::index_sequence<I
 	);
 }
 
-template<class BoostMultiArray, std::enable_if_t<has_shape<BoostMultiArray>{} and not has_extensions<BoostMultiArray>{}, int> =0>
+template<class BoostMultiArray, std::enable_if_t<has_shape<BoostMultiArray>{} && !has_extensions<BoostMultiArray>{}, int> =0>
 constexpr auto extensions(BoostMultiArray const& array) {
 	return extensions_aux2(array, std::make_index_sequence<BoostMultiArray::dimensionality>{});
 }
 
-template<class T, std::enable_if_t<not has_extensions<T>{} and not has_shape<T>{}, int> =0>
+template<class T, std::enable_if_t<not has_extensions<T>{} && !has_shape<T>{}, int> =0>
 constexpr auto extensions(T const& /*unused*/) -> multi::layout_t<0>::extensions_type {return {};}
 
 template<class T, std::size_t N>
