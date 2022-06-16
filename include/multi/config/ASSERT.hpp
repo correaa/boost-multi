@@ -9,7 +9,8 @@
 #if defined(MULTI_ACCESS_NDEBUG) or defined(__CUDACC__)
 	#define MULTI_ACCESS_ASSERT(Expr)
 #else
-	#define MULTI_ACCESS_ASSERT(Expr) assert(Expr)  // NOLINT(cppcoreguidelines-macro-usage) this is for very inefficient asserts
+	// NOLINTNEXTLINE(cppcoreguidelines-macro-usage) this is for very inefficient asserts
+	#define MULTI_ACCESS_ASSERT(Expr) assert(Expr)
 #endif
 
 #endif
