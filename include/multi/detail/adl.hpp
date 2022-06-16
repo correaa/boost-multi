@@ -8,7 +8,6 @@
 #include<type_traits>  // std::conditional_t
 #include<utility>
 
-#include "../config/MAYBE_UNUSED.hpp"
 #include "../detail/memory.hpp"
 
 #if defined(__NVCC__)
