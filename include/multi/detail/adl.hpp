@@ -9,7 +9,6 @@
 #include<utility>
 
 #include "../config/MAYBE_UNUSED.hpp"
-#include "../config/NODISCARD.hpp"
 #include "../detail/memory.hpp"
 
 #if defined(__NVCC__)
@@ -104,7 +103,7 @@ constexpr class adl_copy_t {
 	template<class InputIt, class OutputIt,
 		class=std::enable_if_t<std::is_assignable<typename std::iterator_traits<OutputIt>::reference, typename std::iterator_traits<InputIt>::reference>{}>
 	>
-	NODISCARD("")                  constexpr auto _(priority<1>/**/, InputIt first, InputIt last, OutputIt d_first)	                                                                                const DECLRETURN(              std::copy(first, last, d_first))
+	[[nodiscard]]                  constexpr auto _(priority<1>/**/, InputIt first, InputIt last, OutputIt d_first)	                                                                                const DECLRETURN(              std::copy(first, last, d_first))
 #if defined(__NVCC__)
 	template<class... As> 		   constexpr auto _(priority<2>/**/,        As&&... as) const DECLRETURN(           thrust::copy(std::forward<As>(as)...))
 #endif
@@ -250,7 +249,7 @@ constexpr auto alloc_destroy_n(Alloc& a, BidirIt first, Size n)
 
 constexpr class adl_uninitialized_copy_t {
 	template<class InIt, class FwdIt, class=decltype(std::addressof(*FwdIt{}))>  // sfinae friendy std::uninitialized_copy
-	NODISCARD("")                  constexpr auto _(priority<1>/**/, InIt f, InIt l, FwdIt d) const DECLRETURN(              std::uninitialized_copy(f, l, d))
+	[[nodiscard]]                  constexpr auto _(priority<1>/**/, InIt f, InIt l, FwdIt d) const DECLRETURN(              std::uninitialized_copy(f, l, d))
 	template<class... As>          constexpr auto _(priority<2>/**/,        As&&... as)       const DECLRETURN(                   uninitialized_copy(std::forward<As>(as)...))
 	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& t, As&&... as)       const DECLRETURN(  std::decay_t<T>::uninitialized_copy(std::forward<T>(t), std::forward<As>(as)...))
 	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& t, As&&... as)       const DECLRETURN(std::forward<T>(t).uninitialized_copy(std::forward<As>(as)...))
@@ -411,19 +410,19 @@ public:
 } adl_distance;
 
 constexpr class adl_begin_t {
-	template<class... As>          NODISCARD("") constexpr auto _(priority<1>/**/,        As&&... as) const DECLRETURN(              std::begin(std::forward<As>(as)...))
-	template<class... As>          NODISCARD("") constexpr auto _(priority<2>/**/,        As&&... as) const DECLRETURN(                   begin(std::forward<As>(as)...))
+	template<class... As>          [[nodiscard]] constexpr auto _(priority<1>/**/,        As&&... as) const DECLRETURN(              std::begin(std::forward<As>(as)...))
+	template<class... As>          [[nodiscard]] constexpr auto _(priority<2>/**/,        As&&... as) const DECLRETURN(                   begin(std::forward<As>(as)...))
 	template<class T, class... As>               constexpr auto _(priority<3>/**/, T&& t, As&&... as) const DECLRETURN(  std::decay_t<T>::begin(std::forward<T>(t), std::forward<As>(as)...))
-	template<class T, class... As> NODISCARD("") constexpr auto _(priority<4>/**/, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).begin(std::forward<As>(as)...))
+	template<class T, class... As> [[nodiscard]] constexpr auto _(priority<4>/**/, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).begin(std::forward<As>(as)...))
 public:
 	template<class... As> constexpr auto operator()(As&&... as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
 } adl_begin;
 
 constexpr class adl_end_t {
 	template<class... As>                        constexpr auto _(priority<1>/**/,        As&&... as) const DECLRETURN(              std::end(std::forward<As>(as)...))
-	template<class... As>          NODISCARD("") constexpr auto _(priority<2>/**/,        As&&... as) const DECLRETURN(                   end(std::forward<As>(as)...))
+	template<class... As>          [[nodiscard]] constexpr auto _(priority<2>/**/,        As&&... as) const DECLRETURN(                   end(std::forward<As>(as)...))
 	template<class T, class... As>               constexpr auto _(priority<3>/**/, T&& t, As&&... as) const DECLRETURN(  std::decay_t<T>::end(std::forward<T>(t), std::forward<As>(as)...))
-	template<class T, class... As> NODISCARD("") constexpr auto _(priority<4>/**/, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).end(std::forward<As>(as)...))
+	template<class T, class... As> [[nodiscard]] constexpr auto _(priority<4>/**/, T&& t, As&&... as) const DECLRETURN(std::forward<T>(t).end(std::forward<As>(as)...))
 public:
 	template<class... As> constexpr auto operator()(As&&... as) const DECLRETURN(_(priority<4>{}, std::forward<As>(as)...))
 } adl_end;
