@@ -21,7 +21,7 @@
 #include<iterator>   // for begin, end
 #include<memory>     // for uninitialized_copy, etc
 
-#define BOOST_MULTI_DEFINE_ADL(FuN) /*NOLINT(cppcoreguidelines-macro-usage) TODO(correaa) consider replacing for all ADL'd operations*/ \
+#define BOOST_MULTI_DEFINE_ADL(FuN)  /*NOLINT(cppcoreguidelines-macro-usage) TODO(correaa) consider replacing for all ADL'd operations*/ \
 namespace boost { \
 namespace multi { \
 namespace adl { \
