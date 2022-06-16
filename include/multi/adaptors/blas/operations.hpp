@@ -35,7 +35,7 @@ auto transposed(A&& a) -> decltype(auto){return rotated(std::forward<A>(a));}
 
 namespace operators{
 
-MAYBE_UNUSED constexpr static struct {
+[[maybe_unused]] constexpr static struct {
 
 	template<class A, std::enable_if_t<std::decay_t<A>::rank_v == 2, int> =0>
 	auto operator()(A&& a) const -> decltype(auto){return hermitized(std::forward<A>(a));}
