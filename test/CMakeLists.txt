@@ -105,7 +105,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wc++0x-compat -Wc++14-compat -Wc++17-compat -Wc++1z-compat
 					# -Wc++20-compat -Wc++2a-compat (gcc 11, not in gcc 9)
 					# -Wcannot-profile (gcc 9, not in gcc 8)
-					-Wcast-align 
+					-Wcast-align
 					# -Wcast-align=strict -Wcast-function-type (gcc 8, not in gcc 7)
 					-Wcast-qual
 					# -Wcatch-value  # -Wcatch-value=<0, 3> (gcc 8, not in gcc 7)
