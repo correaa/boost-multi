@@ -34,12 +34,12 @@ struct allocator_traits : std::allocator_traits<Alloc> {
 using memory::allocator_traits;
 
 // https://en.cppreference.com/w/cpp/memory/destroy
-template<class Alloc, class ForwardIt, std::enable_if_t<not has_rank<ForwardIt>{}, int> = 0>
+template<class Alloc, class ForwardIt, std::enable_if_t<!has_rank<ForwardIt>::value, int> = 0>
 void destroy(Alloc& a, ForwardIt f, ForwardIt l) {
 	for(; f != l; ++f) {allocator_traits<Alloc>::destroy(a, std::addressof(*f));}  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 }
 
-template<class Alloc, class ForwardIt, std::enable_if_t<has_rank<ForwardIt>{} and ForwardIt::rank_v == 1, int> = 0>
+template<class Alloc, class ForwardIt, std::enable_if_t<has_rank<ForwardIt>::value and ForwardIt::rank_v == 1, int> = 0>
 void destroy(Alloc& a, ForwardIt first, ForwardIt last) {
 	//  using multi::to_address;
 	for(; first != last; ++first) {a.destroy(to_address(first));}  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
@@ -128,7 +128,7 @@ template<class AA> class is_allocator {
 		class A,
 		class P = typename A::pointer, class S = typename A::size_type,
 		typename = decltype(
-			std::declval<A const&>()==A{std::declval<A const&>()},
+			std::declval<A const&>() == A{std::declval<A const&>()},
 			std::declval<A&>().deallocate(P{std::declval<A&>().allocate(std::declval<S>())}, std::declval<S>())
 		)
 	>
@@ -137,8 +137,10 @@ template<class AA> class is_allocator {
 
  public:
 	static bool const value = decltype(aux(std::declval<AA>()))::value;
-	constexpr explicit operator bool() const{return value;}
+	constexpr explicit operator bool() const {return value;}
 };
+
+template<class Alloc> constexpr bool is_allocator_v = is_allocator<Alloc>::value;
 
 template<dimensionality_type N, class InputIt, class ForwardIt>
 auto uninitialized_copy(InputIt first, InputIt last, ForwardIt dest) {
