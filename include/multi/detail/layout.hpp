@@ -86,7 +86,7 @@ struct extensions_t {
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
 	constexpr extensions_t(tuple<T1, T2, T3> e) : impl_{std::move(e)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
-	template<class T1, class T2, class T3, class T4, class T = void, class = decltype(base_{tuple<T1, T2, T3, T4>{}}), std::enable_if_t<sizeof(T*) and D == 4, int> = 0>
+	template<class T1, class T2, class T3, class T4, class T = void, class = decltype(base_{tuple<T1, T2, T3, T4>{}}), std::enable_if_t<sizeof(T*) && D == 4, int> = 0>
 	// cppcheck-suppress noExplicitConstructor ; to allow passing tuple<int, int> // NOLINTNEXTLINE(runtime/explicit)
 	constexpr extensions_t(tuple<T1, T2, T3, T4> e) : impl_{std::move(e)} {} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
@@ -514,11 +514,12 @@ struct layout_t
 
  public:
 	layout_t() = default;
-	constexpr explicit layout_t(extensions_type const& x)
-	: sub_(std::apply([](auto... e) {return multi::extensions_t<D-1>{e...};}, detail::tail(x.base())))
-	, stride_{sub_.num_elements()}  // {sub_.size()*sub_.stride()}
-	, offset_{boost::multi::detail::get<0>(x.base()).first()*stride_}
-	, nelems_{boost::multi::detail::get<0>(x.base()).size()*(sub().num_elements())} {}
+	constexpr explicit layout_t(extensions_type const& x) :
+		sub_(std::apply([](auto... e) {return multi::extensions_t<D-1>{e...};}, detail::tail(x.base()))),
+		stride_{sub_.num_elements()},  // {sub_.size()*sub_.stride()}
+		offset_{boost::multi::detail::get<0>(x.base()).first()*stride_},
+		nelems_{boost::multi::detail::get<0>(x.base()).size()*(sub().num_elements())} 
+	{}
 
 	constexpr layout_t(sub_type sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
 	: sub_{sub}, stride_{stride}, offset_{offset}, nelems_{nelems} {}

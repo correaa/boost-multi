@@ -1,7 +1,7 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo A. Correa 2020-2021
+// Copyright 2020-2022 Alfredo A. Correa
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW transpose"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW core"
 #define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
@@ -12,14 +12,14 @@
 #include<chrono>
 #include<iostream>
 #include<random>
-//#include<thrust/complex.h> // TODO(correaa) make lib work with thrust complex
+//#include<thrust/complex.h>  // TODO(correaa) make lib work with thrust complex
 
 namespace {
 
 namespace multi = boost::multi;
 namespace fftw = multi::fftw;
 
-using complex = std::complex<double>; MAYBE_UNUSED complex const I{0, 1};
+using complex = std::complex<double>; [[maybe_unused]] complex const I{0, 1};
 
 template<class M> auto power(M const& m)->decltype(std::norm(m)) {return std::norm(m);}
 
@@ -31,7 +31,7 @@ struct sum_power{
 	template<class A, class B> auto operator()(A const& a, B const& b) const{return a+power(b);}
 };
 
-MAYBE_UNUSED constexpr int N = 16;
+[[maybe_unused]] constexpr int N = 16;
 
 } // end anonymous namespace
 

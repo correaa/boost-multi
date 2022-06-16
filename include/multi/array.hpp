@@ -1059,15 +1059,15 @@ template<class T>        array(IL<IL<IL<IL<IL<T>>>>>) ->        array<T, 5>;
 template<class T>        array(T[]                  ) ->        array<T, 1>;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 //  vvv these are necessary to catch {n, m, ...} notation (or single integer notation)
-template<class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<0>, T) -> array<T, 0>;
-template<class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<1>, T) -> array<T, 1>;
-template<class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<2>, T) -> array<T, 2>;
-template<class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<3>, T) -> array<T, 3>;
-template<class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<4>, T) -> array<T, 4>;
-template<class T, class = std::enable_if_t<not is_allocator<T>{}> > array(iextensions<5>, T) -> array<T, 5>;
+template<class T, class = std::enable_if_t<!boost::multi::is_allocator_v<T>> > array(iextensions<0>, T) -> array<T, 0>;
+template<class T, class = std::enable_if_t<!boost::multi::is_allocator_v<T>> > array(iextensions<1>, T) -> array<T, 1>;
+template<class T, class = std::enable_if_t<!boost::multi::is_allocator_v<T>> > array(iextensions<2>, T) -> array<T, 2>;
+template<class T, class = std::enable_if_t<!boost::multi::is_allocator_v<T>> > array(iextensions<3>, T) -> array<T, 3>;
+template<class T, class = std::enable_if_t<!boost::multi::is_allocator_v<T>> > array(iextensions<4>, T) -> array<T, 4>;
+template<class T, class = std::enable_if_t<!boost::multi::is_allocator_v<T>> > array(iextensions<5>, T) -> array<T, 5>;
 
 // generalization, will not work with naked {n, m, ...} notation (or single integer notation)
-template<dimensionality_type D, class T, class = std::enable_if_t<not is_allocator<T>{}> >
+template<dimensionality_type D, class T, class = std::enable_if_t<!boost::multi::is_allocator_v<T>> >
 array(iextensions<D>, T) -> array<T, D>;
 
 //  template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<1>, T, MR*) -> array<T, 1, A>;

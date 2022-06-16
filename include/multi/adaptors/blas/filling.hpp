@@ -14,8 +14,8 @@ enum class filling : char{
 	upper = 'L' 
 };
 
-MAYBE_UNUSED static constexpr filling U = filling::upper;
-MAYBE_UNUSED static constexpr filling L = filling::lower;
+[[maybe_unused]] static constexpr filling U = filling::upper;
+[[maybe_unused]] static constexpr filling L = filling::lower;
 
 inline auto flip(filling side) -> filling {
 	switch(side) {
