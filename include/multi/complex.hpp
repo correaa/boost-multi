@@ -176,8 +176,8 @@ decltype(auto) member_array_cast(Array&& a, imag_t const*){
 }
 */
 
-static constexpr real_t real MAYBE_UNUSED;
-static constexpr imag_t imag MAYBE_UNUSED;
+[[maybe_unused]] static constexpr real_t real;
+[[maybe_unused]] static constexpr imag_t imag;
 
 }  // end namespace multi
 }  // end namespace boost
