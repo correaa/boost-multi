@@ -4,8 +4,9 @@
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi fill"
 #include<boost/test/unit_test.hpp>
 
-#include "multi/array.hpp"
+#include "../include/multi/array.hpp"
 
+#include<algorithm>  // for transform
 #include<limits>
 #include<random>
 #include<type_traits> // enable_if_t
@@ -43,42 +44,42 @@ class fnv1a_t {
 BOOST_AUTO_TEST_CASE(fill_1d) {
 	namespace multi = boost::multi;
 	{
-		multi::array<double, 1> d1D(multi::extensions_t<1>{multi::iextension{10}});
-		static_assert( std::is_same<std::iterator_traits<decltype(begin(d1D))>::value_type, double>{}, "!");
+		multi::array<multi::index, 1> d1D(multi::extensions_t<1>{multi::iextension{10}});
+		static_assert( std::is_same_v<std::iterator_traits<decltype(begin(d1D))>::value_type, multi::index>, "!");
 
 		using std::copy;
 		copy(begin(extension(d1D)), end(extension(d1D)), begin(d1D));
-		BOOST_REQUIRE( d1D[0] == 0. );
-		BOOST_REQUIRE( d1D[1] == 1. );
-		BOOST_REQUIRE( d1D[9] == 9. );
+		BOOST_REQUIRE( d1D[0] == 0 );
+		BOOST_REQUIRE( d1D[1] == 1 );
+		BOOST_REQUIRE( d1D[9] == 9 );
 
 		d1D.assign(extension(d1D));
-		BOOST_REQUIRE( d1D[0] == 0. );
-		BOOST_REQUIRE( d1D[1] == 1. );
-		BOOST_REQUIRE( d1D[9] == 9. );
+		BOOST_REQUIRE( d1D[0] == 0 );
+		BOOST_REQUIRE( d1D[1] == 1 );
+		BOOST_REQUIRE( d1D[9] == 9 );
 	}
 	{
-		multi::array<double, 1> d1D(begin(multi::index_extension(10)), end(multi::index_extension(10)));
+		multi::array<multi::index, 1> d1D(begin(multi::index_extension(10)), end(multi::index_extension(10)));
 		BOOST_REQUIRE( size(d1D) == 10 );
-		BOOST_REQUIRE( d1D[0] == 0. );
-		BOOST_REQUIRE( d1D[1] == 1. );
-		BOOST_REQUIRE( d1D[9] == 9. );
+		BOOST_REQUIRE( d1D[0] == 0 );
+		BOOST_REQUIRE( d1D[1] == 1 );
+		BOOST_REQUIRE( d1D[9] == 9 );
 	}
 	{
-		multi::array<double, 1> d1D(multi::extensions_t<1>{multi::iextension{10}});
+		multi::array<multi::index, 1> d1D(multi::extensions_t<1>{multi::iextension{10}});
 		BOOST_REQUIRE( size(d1D) == 10 );
 
 		d1D.assign(begin(extension(d1D)), end(extension(d1D)));
-		BOOST_REQUIRE( d1D[0] == 0. );
-		BOOST_REQUIRE( d1D[1] == 1. );
-		BOOST_REQUIRE( d1D[9] == 9. );
+		BOOST_REQUIRE( d1D[0] == 0 );
+		BOOST_REQUIRE( d1D[1] == 1 );
+		BOOST_REQUIRE( d1D[9] == 9 );
 	}
 	{
-		multi::array<double, 1> d1D(multi::extensions_t<1>{multi::iextension{10}});
+		multi::array<multi::index, 1> d1D(multi::extensions_t<1>{multi::iextension{10}});
 		d1D.assign(extension(d1D));
-		BOOST_REQUIRE( d1D[0] == 0. );
-		BOOST_REQUIRE( d1D[1] == 1. );
-		BOOST_REQUIRE( d1D[9] == 9. );
+		BOOST_REQUIRE( d1D[0] == 0 );
+		BOOST_REQUIRE( d1D[1] == 1 );
+		BOOST_REQUIRE( d1D[9] == 9 );
 	}
 }
 
@@ -201,4 +202,3 @@ BOOST_AUTO_TEST_CASE (julia_broadcast, *boost::unit_test::tolerance(0.00001) ) {
 	}
 
 }
-

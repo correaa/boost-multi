@@ -298,8 +298,8 @@ struct basic_array_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin
 //  template<class... O, std::enable_if_t<not std::is_base_of<basic_array_ptr, basic_array_ptr<O...> >{}, int> =0> friend constexpr auto operator==(basic_array_ptr<O...> const& o, basic_array_ptr const& s) -> decltype(s.base() == o->base() and s.layout() == o->layout()) {return s.base() == o->base() and s.layout() == o->layout();}
 //  template<class... O, std::enable_if_t<not std::is_base_of<basic_array_ptr, basic_array_ptr<O...> >{}, int> =0> friend constexpr auto operator!=(basic_array_ptr<O...> const& o, basic_array_ptr const& s) -> decltype(s.base() != o->base() or  s.layout() != o->layout()) {return s.base() != o->base() or  s.layout() != o->layout();}
 
-	template<class... O, std::enable_if_t<not std::is_base_of<basic_array_ptr, basic_array_ptr<O...> >{}, int> =0> friend constexpr auto operator==(basic_array_ptr const& s, basic_array_ptr<O...> const& o) -> bool {return s.base() == o->base() and s.layout() == o->layout();}
-	template<class... O, std::enable_if_t<not std::is_base_of<basic_array_ptr, basic_array_ptr<O...> >{}, int> =0> friend constexpr auto operator!=(basic_array_ptr const& s, basic_array_ptr<O...> const& o) -> bool {return s.base() == o->base() and s.layout() == o->layout();}
+	template<class RR, class LL, std::enable_if_t<not std::is_base_of<basic_array_ptr, basic_array_ptr<RR, LL> >{}, int> =0> friend constexpr auto operator==(basic_array_ptr const& s, basic_array_ptr<RR, LL> const& o) -> bool {return s.base() == o->base() and s.layout() == o->layout();}
+	template<class RR, class LL, std::enable_if_t<not std::is_base_of<basic_array_ptr, basic_array_ptr<RR, LL> >{}, int> =0> friend constexpr auto operator!=(basic_array_ptr const& s, basic_array_ptr<RR, LL> const& o) -> bool {return s.base() == o->base() and s.layout() == o->layout();}
 
  protected:
 	constexpr void increment() {base_ += Ref::nelems();}
@@ -719,8 +719,10 @@ struct basic_array
 	using types = array_types<T, D, ElementPtr, Layout>;
 	using ref_ = basic_array;
 
-	friend struct basic_array<typename types::element, Layout::rank_v + 1, typename types::element_ptr >;
-	friend struct basic_array<typename types::element, Layout::rank_v + 1, typename types::element_ptr&>;
+	using array_types<T, D, ElementPtr, Layout>::rank_v;
+
+	friend struct basic_array<typename types::element, rank_v + 1, typename types::element_ptr >;
+	friend struct basic_array<typename types::element, rank_v + 1, typename types::element_ptr&>;
 
 	using types::layout;
 	using typename types::element_type;
@@ -1177,9 +1179,9 @@ struct basic_array
 	template<typename Tuple> constexpr auto apply(Tuple const& t)     && -> decltype(auto) {return apply_impl(t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
 	template<typename Tuple> constexpr auto apply(Tuple const& t)      & -> decltype(auto) {return apply_impl(t, std::make_index_sequence<std::tuple_size<Tuple>::value>());}
 
-	using Layout::nelems;
-	using Layout::stride;
-	using Layout::sub;
+//  using Layout::nelems;
+//  using Layout::stride;
+//  using Layout::sub;
 
 	using       iterator = array_iterator<element, D, element_ptr      >;
 	using const_iterator = array_iterator<element, D, element_const_ptr>;
@@ -1239,8 +1241,8 @@ struct basic_array
 	}
 
  private:
-	constexpr auto begin_aux() const {return iterator {types::base_           , sub(), stride()};}
-	constexpr auto end_aux()   const {return iterator {types::base_ + nelems(), sub(), stride()};}
+	constexpr auto begin_aux() const {return iterator {types::base_                 , this->sub(), this->stride()};}
+	constexpr auto end_aux()   const {return iterator {types::base_ + this->nelems(), this->sub(), this->stride()};}
 
  public:
 	       constexpr auto  begin()                & {return begin_aux();}
@@ -2111,7 +2113,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 		assert(begin.stride()  == end.stride() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	//  assert(begin->layout() == end->layout());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	}
-	friend auto ref<iterator>(iterator begin, iterator end) -> multi::basic_array<typename iterator::element, iterator::rank_v, typename iterator::element_ptr>;
+	friend constexpr auto ref<iterator>(iterator begin, iterator end) -> multi::basic_array<typename iterator::element, iterator::rank_v, typename iterator::element_ptr>;
 
 	constexpr auto begin_aux() const {return iterator{this->base_                  , this->stride()};}
 	constexpr auto end_aux  () const {return iterator{this->base_ + types::nelems(), this->stride()};}
