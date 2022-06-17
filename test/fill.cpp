@@ -77,9 +77,9 @@ BOOST_AUTO_TEST_CASE(fill_1d) {
 	{
 		multi::array<multi::index, 1> d1D(multi::extensions_t<1>{multi::iextension{10}});
 		d1D.assign(extension(d1D));
-		BOOST_REQUIRE( d1D[0] == 0. );
-		BOOST_REQUIRE( d1D[1] == 1. );
-		BOOST_REQUIRE( d1D[9] == 9. );
+		BOOST_REQUIRE( d1D[0] == 0 );
+		BOOST_REQUIRE( d1D[1] == 1 );
+		BOOST_REQUIRE( d1D[9] == 9 );
 	}
 }
 
