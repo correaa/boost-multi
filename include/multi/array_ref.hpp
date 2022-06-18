@@ -36,7 +36,7 @@ template<class T>
 struct pointer_traits<std::move_iterator<T*>> : std::pointer_traits<T*> {
 	template<class U> using rebind =
 		std::conditional_t<
-			std::is_const<U>{},
+			std::is_const<U>::value,
 			U*,
 			std::pointer_traits<std::move_iterator<U*>>
 		>;
