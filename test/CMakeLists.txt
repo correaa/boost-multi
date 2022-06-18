@@ -11,11 +11,11 @@ if(EXISTS "CMakeLists.txt")
 	message(FATAL_ERROR "You probably don't want to run CMake in a directory with CMakeLists.txt")
 endif()
 
-project(
-	boost-multi-test
-	VERSION 0.1
-	LANGUAGES CXX
-)
+#project(
+#	boost-multi-test
+#	VERSION 0.1
+#	LANGUAGES CXX
+#)
 
 find_package(Boost COMPONENTS unit_test_framework serialization REQUIRED)  # tests require serialization, `apt-get install libboost-serialization-dev`
 
@@ -63,7 +63,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 
 	target_link_libraries(${TEST_EXE} PRIVATE multi)
 
-	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
+	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${PROJECT_SOURCE_DIR}/include ${Boost_INCLUDE_DIRS})
 	target_link_libraries     (${TEST_EXE}        PRIVATE Boost::unit_test_framework Boost::serialization)
 
 	target_compile_definitions(${TEST_EXE} PRIVATE "$<$<CUDA_COMPILER_ID:NVIDIA>:BOOST_PP_VARIADICS>")
