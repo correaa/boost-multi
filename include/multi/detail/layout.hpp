@@ -516,12 +516,14 @@ struct layout_t
 	layout_t() = default;
 	constexpr explicit layout_t(extensions_type const& x) :
 		sub_{
-			std::apply([](auto... e) {return multi::extensions_t<D-1>{e...};},
-			detail::tail(x.base()))
+			std::apply(
+				[](auto... e) {return multi::extensions_t<D-1>{e...};},
+				detail::tail(x.base())
+			)
 		},
 		stride_{sub_.num_elements()},
 		offset_{boost::multi::detail::get<0>(x.base()).first()*stride_},
-		nelems_{boost::multi::detail::get<0>(x.base()).size()*(sub().num_elements())} 
+		nelems_{boost::multi::detail::get<0>(x.base()).size()*sub().num_elements()}
 	{}
 
 	constexpr layout_t(sub_type sub, stride_type stride, offset_type offset, nelems_type nelems)  // NOLINT(bugprone-easily-swappable-parameters)
