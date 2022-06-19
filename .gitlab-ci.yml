@@ -431,13 +431,8 @@ clang++-iwyu:
     - ln --symbolic --force . ../multi
     - clang++ --version
     - iwyu --version
-    - find . -name '*.hpp' -exec iwyu -Xiwyu --cxx17ns -Xiwyu --quoted_includes_first -Xiwyu --cxx17ns -std=c++17 {} \;
-    - mkdir build && cd build
-    - CXX=clang++ cmake -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="iwyu;-Xiwyu;--transitive_includes_only;-Xiwyu;--quoted_includes_first;-Xiwyu;--cxx17ns" ..
-    - cmake --build . --verbose || make VERBOSE=1
-    - ctest --output-on-failure
+    - find . -name '*.hpp' -exec iwyu -Xiwyu --transitive_includes_only -Xiwyu --cxx17ns -Xiwyu --quoted_includes_first -Xiwyu --cxx17ns -std=c++17 {} \;
   needs: ["clang++"]
-
 
 #nvhpc-22.1:
 #    stage: build
