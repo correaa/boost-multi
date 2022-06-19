@@ -33,6 +33,7 @@ class monotonic_buffer : block<Ptr> {
 	size_type allocated_bytes_ = 0;
 	size_type deallocated_bytes_ = 0;
 //  size_type position_ = 0;
+	static std::size_t max_alignment = A;
 
 	static size_type align_up(size_type n) noexcept {
 		return (n + (max_alignment-1)) & ~(max_alignment-1);
@@ -60,7 +61,7 @@ class monotonic_buffer : block<Ptr> {
 		assert(allocated_bytes() == deallocated_bytes());
 #endif
 	}
-	using void_pointer = monotonic_buffer
+	using void_pointer = monotonic_buffer;
 
 	template<size_type RequiredAlignment = sizeof(std::max_align_t)>
 	void_pointer allocate(size_type req_bytes, size_type al = RequiredAlignment) {
