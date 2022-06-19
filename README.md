@@ -23,8 +23,7 @@ Some features:
 
 (Do not confuse this library with Boost.MultiArray or Boost.MultiIndex. 
 It shares the goals of [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html),
-although the code is completely independent.
-Although the syntax has only slightly different or has been extended, they have important semantic differences.)
+although the code is completely independent and with important semantic differences.)
 
 ## Contents
 [[_TOC_]]
