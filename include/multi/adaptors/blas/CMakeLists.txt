@@ -3,11 +3,11 @@ cmake_minimum_required(VERSION 3.16)  # for reference Ubuntu 20.04 uses 3.16, 3.
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
-project(
-	boost-multi-adaptors-blas
-	VERSION 0.1
-	LANGUAGES CXX
-)
+#project(
+#	boost-multi-adaptors-blas
+#	VERSION 0.1
+#	LANGUAGES CXX
+#)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)

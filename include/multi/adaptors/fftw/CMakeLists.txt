@@ -3,11 +3,11 @@ cmake_minimum_required(VERSION 3.11)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-project(
-	boost-multi-adaptors-fftw
-	VERSION 0.1
-	LANGUAGES CXX
-)
+#project(
+#	boost-multi-adaptors-fftw
+#	VERSION 0.1
+#	LANGUAGES CXX
+#)
 
 find_package(PkgConfig)
 

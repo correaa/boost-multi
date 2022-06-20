@@ -6,7 +6,7 @@
 
 #include "../detail/serialization.hpp"
 #include "../detail/tuple_zip.hpp"
-#include "../detail/types.hpp"
+#include "multi/detail/types.hpp"
 
 #include <algorithm>  // for min
 #include <iterator>   // for std::random_iterator_tag // std::reverse_iterator
