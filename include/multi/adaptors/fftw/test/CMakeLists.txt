@@ -13,11 +13,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
-project(
-	boost-multi-adaptors-fftw-test
-	VERSION 0.1
-	LANGUAGES CXX
-)
+#project(
+#	boost-multi-adaptors-fftw-test
+#	VERSION 0.1
+#	LANGUAGES CXX
+#)
 
 if((NOT
 	CMAKE_CXX_COMPILER_ID
@@ -114,7 +114,10 @@ foreach(TEST_FILE ${TEST_SRCS})
 	# target_compile_features   (${TEST_EXE} PUBLIC cxx_std_17)
 	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
 	target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
+
+	target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
 	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
+
 	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
 	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
 	if((NOT ENABLE_CUDA)
