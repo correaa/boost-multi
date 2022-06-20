@@ -16,7 +16,7 @@ template<class... Ts> class tuple;
 
 template<class T0, class... Ts> class tuple<T0, Ts...> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 	T0 head_;
-	tuple<Ts...> tail_;
+	tuple<Ts...> tail_;  // TODO(correaa) use [[no_unique_address]] in C++20
 
  public:
 	constexpr auto head() const& -> T0 const& {return head_;}
