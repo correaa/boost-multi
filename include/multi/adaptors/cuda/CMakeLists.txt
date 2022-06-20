@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.11)
-project(
-	boost-multi-adaptor-cuda
-	VERSION 0.1
-	LANGUAGES CXX
-)
+#project(
+#	boost-multi-adaptor-cuda
+#	VERSION 0.1
+#	LANGUAGES CXX
+#)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
