@@ -431,7 +431,7 @@ clang++-iwyu:
     - ln --symbolic --force . ../multi
     - clang++ --version
     - iwyu --version
-    - find . -name '*.hpp' -exec iwyu -Xiwyu --transitive_includes_only -Xiwyu --cxx17ns -Xiwyu --quoted_includes_first -Xiwyu --cxx17ns -std=c++17 {} \;
+    - find . -name '*.hpp' -exec iwyu -w -Xiwyu --transitive_includes_only -Xiwyu --cxx17ns -Xiwyu --quoted_includes_first -Xiwyu --cxx17ns -std=c++17 {} \;
   needs: ["clang++"]
 
 #nvhpc-22.1:
