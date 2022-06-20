@@ -63,7 +63,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 
 	target_link_libraries(${TEST_EXE} PRIVATE multi)
 
-	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${PROJECT_SOURCE_DIR}/include ${Boost_INCLUDE_DIRS})
+	target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
+	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS}        )
 	target_link_libraries     (${TEST_EXE}        PRIVATE Boost::unit_test_framework Boost::serialization)
 
 	target_compile_definitions(${TEST_EXE} PRIVATE "$<$<CUDA_COMPILER_ID:NVIDIA>:BOOST_PP_VARIADICS>")
