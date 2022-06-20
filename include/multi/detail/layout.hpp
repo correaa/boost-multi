@@ -8,10 +8,9 @@
 
 #include "tuple_zip.hpp"
 
-#include "../config/ASSERT.hpp"
-#include "../config/NO_UNIQUE_ADDRESS.hpp"
+#include "multi/config/ASSERT.hpp"
 
-#include "../detail/operators.hpp"
+#include "multi/detail/operators.hpp"
 
 //#include <tuple>        // for apply
 #include <type_traits>  // for make_signed_t
