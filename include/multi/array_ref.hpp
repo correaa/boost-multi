@@ -1868,7 +1868,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	template<class It>
 	constexpr void assign(It first, It last)&& {assign(first, last);}
 
-	auto operator=(basic_array const& o)    & -> basic_array& {
+	constexpr auto operator=(basic_array const& o)    & -> basic_array& {
 		static_assert(std::is_copy_assignable_v<element_type>, "assignment requires element-wise assignment");  // TODO(correaa) : make sfinae friendly
 		if(this == std::addressof(o)) {return *this;}
 		assert(this->extension() == o.extension());

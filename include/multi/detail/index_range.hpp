@@ -4,8 +4,8 @@
 #ifndef MULTI_DETAIL_INDEX_RANGE_HPP
 #define MULTI_DETAIL_INDEX_RANGE_HPP
 
-#include "../detail/serialization.hpp"
-#include "../detail/tuple_zip.hpp"
+#include "multi/detail/serialization.hpp"
+#include "multi/detail/tuple_zip.hpp"
 #include "multi/detail/types.hpp"
 
 #include <algorithm>  // for min
