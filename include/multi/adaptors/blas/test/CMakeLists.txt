@@ -11,11 +11,11 @@ cmake_minimum_required(VERSION 3.11)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
-project(
-	boost-multi-adaptors-blas-test
-	VERSION 0.1
-	LANGUAGES CXX
-)
+#project(
+#	boost-multi-adaptors-blas-test
+#	VERSION 0.1
+#	LANGUAGES CXX
+#)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -117,6 +117,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 		target_compile_options(${TEST_EXE} PRIVATE -std=c++17)
 	endif()
 	# target_compile_features   (${TEST_EXE} PUBLIC cxx_std_17)
+
+	target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
+
 	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
 	target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
 	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
