@@ -61,7 +61,7 @@ template<> class tuple<> {
 };
 
 // TODO(correaa) : this classe can be collapsed with the general case with [[no_unique_address]] in C++20
-template<class T0> class tuple<T0> : tuple<> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+template<class T0> class tuple<T0> : private tuple<> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 	T0 head_;
 
  public:
