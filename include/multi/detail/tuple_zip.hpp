@@ -19,14 +19,13 @@ template<class T0, class... Ts> class tuple<T0, Ts...> {  // NOLINT(cppcoreguide
 	tuple<Ts...> tail_;  // TODO(correaa) use [[no_unique_address]] in C++20
 
  public:
-	constexpr auto head() const& -> T0 const& {return head_;}
+	constexpr auto head() const& -> T0 const& {return           head_ ;}
+	constexpr auto head()     && -> T0     && {return std::move(head_);}
+	constexpr auto head()      & -> T0      & {return           head_ ;}
 
-	constexpr auto head() && -> T0&& {return std::move(head_);}
-	constexpr auto head() & -> T0& {return head_;}
-
-	constexpr auto tail() const& -> tuple<Ts...> const& {return tail_;}
-	constexpr auto tail() && -> tuple<Ts...>&& {return std::move(tail_);}
-	constexpr auto tail() & -> tuple<Ts...>& {return tail_;}
+	constexpr auto tail() const& -> tuple<Ts...> const& {return           tail_ ;}
+	constexpr auto tail()     && -> tuple<Ts...>     && {return std::move(tail_);}
+	constexpr auto tail()      & -> tuple<Ts...>      & {return           tail_ ;}
 
 	constexpr tuple() = default;
 	constexpr tuple(tuple const&) = default;
@@ -37,19 +36,18 @@ template<class T0, class... Ts> class tuple<T0, Ts...> {  // NOLINT(cppcoreguide
 
 	constexpr auto operator=(tuple const& other) -> tuple& = default;
 
-
-	constexpr auto operator==(tuple const& other) const -> bool {return head_ == other.head_ and tail_ == other.tail_;}
-	constexpr auto operator!=(tuple const& other) const -> bool {return head_ != other.head_ or  tail_ != other.tail_;}
+	constexpr auto operator==(tuple const& other) const -> bool {return head_ == other.head_ and tail() == other.tail();}
+	constexpr auto operator!=(tuple const& other) const -> bool {return head_ != other.head_ or  tail() != other.tail();}
 
 	constexpr auto operator< (tuple const& other) const {
 		if(head_ < other.head_) {return true ;}
 		if(other.head_ < head_) {return false;}
-		return tail_ < other.tail_;
+		return tail() < other.tail();
 	}
 	constexpr auto operator> (tuple const& other) const {
 		if(head_ > other.head_) {return true ;}
 		if(other.head_ > head_) {return false;}
-		return tail_ > other.tail_;
+		return tail() > other.tail();
 	}
 };
 
