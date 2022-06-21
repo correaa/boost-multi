@@ -37,19 +37,18 @@ template<class T0, class... Ts> class tuple<T0, Ts...> {  // NOLINT(cppcoreguide
 
 	constexpr auto operator=(tuple const& other) -> tuple& = default;
 
-
-	constexpr auto operator==(tuple const& other) const -> bool {return head_ == other.head_ and tail_ == other.tail_;}
-	constexpr auto operator!=(tuple const& other) const -> bool {return head_ != other.head_ or  tail_ != other.tail_;}
+	constexpr auto operator==(tuple const& other) const -> bool {return head_ == other.head_ and tail() == other.tail();}
+	constexpr auto operator!=(tuple const& other) const -> bool {return head_ != other.head_ or  tail() != other.tail();}
 
 	constexpr auto operator< (tuple const& other) const {
 		if(head_ < other.head_) {return true ;}
 		if(other.head_ < head_) {return false;}
-		return tail_ < other.tail_;
+		return tail() < other.tail();
 	}
 	constexpr auto operator> (tuple const& other) const {
 		if(head_ > other.head_) {return true ;}
 		if(other.head_ > head_) {return false;}
-		return tail_ > other.tail_;
+		return tail() > other.tail();
 	}
 };
 
