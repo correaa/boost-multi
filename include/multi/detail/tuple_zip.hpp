@@ -19,14 +19,13 @@ template<class T0, class... Ts> class tuple<T0, Ts...> {  // NOLINT(cppcoreguide
 	tuple<Ts...> tail_;  // TODO(correaa) use [[no_unique_address]] in C++20
 
  public:
-	constexpr auto head() const& -> T0 const& {return head_;}
+	constexpr auto head() const& -> T0 const& {return           head_ ;}
+	constexpr auto head()     && -> T0     && {return std::move(head_);}
+	constexpr auto head()      & -> T0      & {return           head_ ;}
 
-	constexpr auto head() && -> T0&& {return std::move(head_);}
-	constexpr auto head() & -> T0& {return head_;}
-
-	constexpr auto tail() const& -> tuple<Ts...> const& {return tail_;}
-	constexpr auto tail() && -> tuple<Ts...>&& {return std::move(tail_);}
-	constexpr auto tail() & -> tuple<Ts...>& {return tail_;}
+	constexpr auto tail() const& -> tuple<Ts...> const& {return           tail_ ;}
+	constexpr auto tail()     && -> tuple<Ts...>     && {return std::move(tail_);}
+	constexpr auto tail()      & -> tuple<Ts...>      & {return           tail_ ;}
 
 	constexpr tuple() = default;
 	constexpr tuple(tuple const&) = default;
