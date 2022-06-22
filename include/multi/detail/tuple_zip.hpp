@@ -70,25 +70,27 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	}
 };
 
+#if defined(__INTEL_COMPILER)  // this instance is necessary due to a bug in intel compiler icpc
 //  TODO(correaa) : this classe can be collapsed with the general case with [[no_unique_address]] in C++20
 template<class T0> class tuple<T0> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 	T0 head_;
+	tuple<> tail_;
 
  public:
 	constexpr auto head() const& -> T0 const& {return           head_ ;}
 	constexpr auto head()     && -> T0     && {return std::move(head_);}
 	constexpr auto head()      & -> T0      & {return           head_ ;}
 
-	constexpr auto tail() const& -> tuple<> const& {return reinterpret_cast<tuple<> const&>(*this);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-	constexpr auto tail()     && -> tuple<>     && {return reinterpret_cast<tuple<>     &&>(*this);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-	constexpr auto tail()      & -> tuple<>      & {return reinterpret_cast<tuple<>      &>(*this);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+	constexpr auto tail() const& -> tuple<> const& {return           tail_ ;}
+	constexpr auto tail()     && -> tuple<>     && {return std::move(tail_);}
+	constexpr auto tail()      & -> tuple<>      & {return           tail_ ;}
 
 	constexpr tuple() = default;
 	constexpr tuple(tuple const&) = default;
 
 	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
-	constexpr          tuple(T0 t0, tuple<> /*sub*/) : head_{std::move(t0)} {}
-	constexpr explicit tuple(T0 t0)          : head_{std::move(t0)} {}
+	constexpr          tuple(T0 t0, tuple<> /*sub*/) : head_{std::move(t0)}, tail_{sub} {}
+	constexpr explicit tuple(T0 t0)                  : head_{std::move(t0)}, tail_{}    {}
 
 	constexpr auto operator=(tuple const& other) -> tuple& = default;
 
@@ -98,6 +100,7 @@ template<class T0> class tuple<T0> {  // NOLINT(cppcoreguidelines-special-member
 	constexpr auto operator< (tuple const& other) const {return head_ < other.head_;}
 	constexpr auto operator> (tuple const& other) const {return head_ > other.head_;}
 };
+#endif
 
 template<class T0, class... Ts> tuple(T0, tuple<Ts...>) -> tuple<T0, Ts...>;
 
