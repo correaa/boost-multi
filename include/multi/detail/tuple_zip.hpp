@@ -14,27 +14,42 @@ namespace detail {
 
 template<class... Ts> class tuple;
 
-template<class T0, class... Ts> class tuple<T0, Ts...> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+template<> class tuple<> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+ public:
+	constexpr tuple() = default;
+	constexpr tuple(tuple const&) = default;
+
+	constexpr auto operator=(tuple const&) -> tuple& = default;
+
+	constexpr auto operator==(tuple const& /*other*/) const -> bool {return true ;}
+	constexpr auto operator!=(tuple const& /*other*/) const -> bool {return false;}
+
+	constexpr auto operator< (tuple const& /*other*/) const {return false;}
+	constexpr auto operator> (tuple const& /*other*/) const {return false;}
+};
+
+template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 	T0 head_;
-	tuple<Ts...> tail_;  // TODO(correaa) use [[no_unique_address]] in C++20
+	using tail_type = tuple<Ts...>;
+//	tuple<Ts...> tail_;  // TODO(correaa) use [[no_unique_address]] in C++20
 
  public:
 	constexpr auto head() const& -> T0 const& {return           head_ ;}
 	constexpr auto head()     && -> T0     && {return std::move(head_);}
 	constexpr auto head()      & -> T0      & {return           head_ ;}
 
-	constexpr auto tail() const& -> tuple<Ts...> const& {return           tail_ ;}
-	constexpr auto tail()     && -> tuple<Ts...>     && {return std::move(tail_);}
-	constexpr auto tail()      & -> tuple<Ts...>      & {return           tail_ ;}
+	constexpr auto tail() const& -> tail_type const& {return static_cast<tail_type const&>(*this);}
+	constexpr auto tail()     && -> tail_type     && {return static_cast<tail_type     &&>(*this);}
+	constexpr auto tail()      & -> tail_type      & {return static_cast<tail_type      &>(*this);}
 
 	constexpr tuple() = default;
 	constexpr tuple(tuple const&) = default;
 
 	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
-	constexpr          tuple(T0 t0, tuple<Ts...> sub) : head_{std::move(t0)}, tail_{std::move(sub)  } {}
-	constexpr explicit tuple(T0 t0, Ts...        ts ) : head_{std::move(t0)}, tail_{std::move(ts)...} {}
+	constexpr          tuple(T0 t0, tuple<Ts...> sub) : tail_type{std::move(sub)  }, head_{std::move(t0)} {}
+	constexpr explicit tuple(T0 t0, Ts...        ts ) : tail_type{std::move(ts)...}, head_{std::move(t0)} {}
 
-	constexpr auto operator=(tuple const& other) -> tuple& = default;
+	constexpr auto operator=(tuple const&) -> tuple& = default;
 
 	constexpr auto operator==(tuple const& other) const -> bool {return head_ == other.head_ and tail() == other.tail();}
 	constexpr auto operator!=(tuple const& other) const -> bool {return head_ != other.head_ or  tail() != other.tail();}
@@ -49,44 +64,6 @@ template<class T0, class... Ts> class tuple<T0, Ts...> {  // NOLINT(cppcoreguide
 		if(other.head_ > head_) {return false;}
 		return tail() > other.tail();
 	}
-};
-
-template<> class tuple<> {
- public:
-	constexpr auto operator==(tuple const& /*other*/) const -> bool {return true ;}
-	constexpr auto operator!=(tuple const& /*other*/) const -> bool {return false;}
-
-	constexpr auto operator< (tuple const& /*other*/) const {return false;}
-	constexpr auto operator> (tuple const& /*other*/) const {return false;}
-};
-
-// TODO(correaa) : this classe can be collapsed with the general case with [[no_unique_address]] in C++20
-template<class T0> class tuple<T0> : private tuple<> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-	T0 head_;
-
- public:
-	constexpr auto head() const& -> T0 const& {return           head_ ;}
-	constexpr auto head()     && -> T0     && {return std::move(head_);}
-	constexpr auto head()      & -> T0      & {return           head_ ;}
-
-	constexpr auto tail() const& -> tuple<> const& {return static_cast<tuple<> const&>(*this);}
-	constexpr auto tail()     && -> tuple<>     && {return static_cast<tuple<>     &&>(*this);}
-	constexpr auto tail()      & -> tuple<>      & {return static_cast<tuple<>      &>(*this);}
-
-	constexpr tuple() = default;
-	constexpr tuple(tuple const&) = default;
-
-	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
-	constexpr          tuple(T0 t0, tuple<> /*sub*/) : head_{std::move(t0)} {}
-	constexpr explicit tuple(T0 t0)                  : head_{std::move(t0)} {}
-
-	constexpr auto operator=(tuple const& other) -> tuple& = default;
-
-	constexpr auto operator==(tuple const& other) const {return head_ == other.head_;}
-	constexpr auto operator!=(tuple const& other) const {return head_ != other.head_;}
-
-	constexpr auto operator< (tuple const& other) const {return head_ < other.head_;}
-	constexpr auto operator> (tuple const& other) const {return head_ > other.head_;}
 };
 
 template<class T0, class... Ts> tuple(T0, tuple<Ts...>) -> tuple<T0, Ts...>;
@@ -121,13 +98,13 @@ constexpr auto head(tuple<T0, Ts...> & t) -> decltype(auto) {
 }
 
 template<class T0, class... Ts>
-constexpr auto tail(tuple<T0, Ts...> const& t) -> decltype(auto) {return t.tail();}
+constexpr auto tail(tuple<T0, Ts...> const& t) -> decltype(t.tail()) {return t.tail();}
 
 template<class T0, class... Ts>
-constexpr auto tail(tuple<T0, Ts...>     && t) -> decltype(auto) {return std::move(t).tail();}
+constexpr auto tail(tuple<T0, Ts...>     && t) -> decltype(std::move(t).tail()) {return std::move(t).tail();}
 
 template<class T0, class... Ts>
-constexpr auto tail(tuple<T0, Ts...>      & t) -> decltype(auto) {return t.tail();}
+constexpr auto tail(tuple<T0, Ts...>      & t) -> decltype(t.tail()) {return t.tail();}
 
 #if defined __NVCC__
     #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
