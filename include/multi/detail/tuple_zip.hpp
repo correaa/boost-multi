@@ -42,6 +42,10 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	constexpr auto tail()     && -> tail_type     && {return static_cast<tail_type     &&>(*this);}
 	constexpr auto tail()      & -> tail_type      & {return static_cast<tail_type      &>(*this);}
 
+//	constexpr auto tail() const& -> tuple<Ts...> const& {return           tail_ ;}
+//	constexpr auto tail()     && -> tuple<Ts...>     && {return std::move(tail_);}
+//	constexpr auto tail()      & -> tuple<Ts...>      & {return           tail_ ;}
+
 	constexpr tuple() = default;
 	constexpr tuple(tuple const&) = default;
 
@@ -64,6 +68,35 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 		if(other.head_ > head_) {return false;}
 		return tail() > other.tail();
 	}
+};
+
+//  TODO(correaa) : this classe can be collapsed with the general case with [[no_unique_address]] in C++20
+template<class T0> class tuple<T0> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
+	T0 head_;
+
+ public:
+	constexpr auto head() const& -> T0 const& {return           head_ ;}
+	constexpr auto head()     && -> T0     && {return std::move(head_);}
+	constexpr auto head()      & -> T0      & {return           head_ ;}
+
+	constexpr auto tail() const& -> tuple<> const& {return reinterpret_cast<tuple<> const&>(*this);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+	constexpr auto tail()     && -> tuple<>     && {return reinterpret_cast<tuple<>     &&>(*this);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+	constexpr auto tail()      & -> tuple<>      & {return reinterpret_cast<tuple<>      &>(*this);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+
+	constexpr tuple() = default;
+	constexpr tuple(tuple const&) = default;
+
+	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
+	constexpr          tuple(T0 t0, tuple<> /*sub*/) : head_{std::move(t0)} {}
+	constexpr explicit tuple(T0 t0)          : head_{std::move(t0)} {}
+
+	constexpr auto operator=(tuple const& other) -> tuple& = default;
+
+	constexpr auto operator==(tuple const& other) const {return head_ == other.head_;}
+	constexpr auto operator!=(tuple const& other) const {return head_ != other.head_;}
+
+	constexpr auto operator< (tuple const& other) const {return head_ < other.head_;}
+	constexpr auto operator> (tuple const& other) const {return head_ > other.head_;}
 };
 
 template<class T0, class... Ts> tuple(T0, tuple<Ts...>) -> tuple<T0, Ts...>;
