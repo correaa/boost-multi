@@ -89,7 +89,7 @@ template<class T0> class tuple<T0> {  // NOLINT(cppcoreguidelines-special-member
 	constexpr tuple(tuple const&) = default;
 
 	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
-	constexpr          tuple(T0 t0, tuple<> /*sub*/) : head_{std::move(t0)}, tail_{sub} {}
+	constexpr          tuple(T0 t0, tuple<> sub) : head_{std::move(t0)}, tail_{sub} {}
 	constexpr explicit tuple(T0 t0)                  : head_{std::move(t0)}, tail_{}    {}
 
 	constexpr auto operator=(tuple const& other) -> tuple& = default;
