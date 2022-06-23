@@ -94,13 +94,14 @@ include_directories(${CMAKE_BINARY_DIR})
 
 # file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 set(TEST_SRCS
-	combinations.cpp
-	# copy.cpp
-	core.cpp
-    shift.cpp
-	# thrust.cpp
-	transpose.cpp
-	transpose_square.cpp
+  combinations.cpp
+# copy.cpp
+  core.cpp
+  moved.cpp
+  shift.cpp
+# thrust.cpp
+  transpose.cpp
+  transpose_square.cpp
 )
 
 foreach(TEST_FILE ${TEST_SRCS})
