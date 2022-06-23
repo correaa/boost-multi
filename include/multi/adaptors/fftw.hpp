@@ -791,11 +791,11 @@ class fft_range {
 	auto extensions()   const {return ref_.extensions();}
 	auto num_elements() const {return ref_.num_elements();}
 
-	operator decay_type() && {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-		decay_type ret(std::move(ref_));
-		ret = *this;
-		return ret;
-	}
+//	operator decay_type() && {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+//		decay_type ret(std::move(ref_));
+//		ret = *this;
+//		return ret;
+//	}
 
 	auto operator+() const {return decay_type(*this);}
 	auto base() const {return ref_.base();}
