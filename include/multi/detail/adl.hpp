@@ -8,7 +8,7 @@
 #include<type_traits>  // std::conditional_t
 #include<utility>
 
-#include "../detail/memory.hpp"
+#include "multi/detail/memory.hpp"
 
 #if defined(__NVCC__)
 #include<thrust/copy.h>

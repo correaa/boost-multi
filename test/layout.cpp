@@ -598,6 +598,51 @@ BOOST_AUTO_TEST_CASE(extensions_from_linear_1d) {
 #endif
 }
 
+BOOST_AUTO_TEST_CASE(extensions_from_linear_2d_structured_binding) {
+	multi::extensions_t<2> x{3, 5};
+	auto [i, j] = x.from_linear(7);
+
+	BOOST_TEST_REQUIRE( i == 1 );
+	BOOST_TEST_REQUIRE( j == 2 );
+//	BOOST_TEST_REQUIRE( std::apply(l, l.extensions().from_linear(9)) == 9 );
+}
+
+BOOST_AUTO_TEST_CASE(extensions_from_linear_2d_std_get) {
+	multi::extensions_t<2> x{3, 5};
+	auto i = std::get<0>(x.from_linear(7));
+	auto j = std::get<1>(x.from_linear(7));
+	BOOST_TEST_REQUIRE( i == 1 );
+	BOOST_TEST_REQUIRE( j == 2 );
+}
+
+BOOST_AUTO_TEST_CASE(extensions_from_linear_2d_std_get_using) {
+	multi::extensions_t<2> x{3, 5};
+	using std::get;
+	auto i = get<0>(x.from_linear(7));
+	auto j = get<1>(x.from_linear(7));
+	BOOST_TEST_REQUIRE( i == 1 );
+	BOOST_TEST_REQUIRE( j == 2 );
+}
+
+//BOOST_AUTO_TEST_CASE(extensions_from_linear_2d_get) {
+//	multi::extensions_t<2> x{3, 5};
+//	auto i = get<0>(x.from_linear(7));
+//	auto j = get<1>(x.from_linear(7));
+//	BOOST_TEST_REQUIRE( i == 1 );
+//	BOOST_TEST_REQUIRE( j == 2 );
+//}
+
+BOOST_AUTO_TEST_CASE(extensions_from_linear_2d_get_using) {
+	multi::extensions_t<2> x{3, 5};
+
+	using multi::detail::get;
+
+	auto i = get<0>(x.from_linear(7));
+	auto j = get<1>(x.from_linear(7));
+	BOOST_TEST_REQUIRE( i == 1 );
+	BOOST_TEST_REQUIRE( j == 2 );
+}
+
 BOOST_AUTO_TEST_CASE(extensions_from_linear_2d) {
 	multi::extensions_t<2> x{3, 5};
 
@@ -610,20 +655,108 @@ BOOST_AUTO_TEST_CASE(extensions_from_linear_2d) {
 
 	multi::layout_t<2> l{x};
 	BOOST_TEST_REQUIRE( l[get<0>(ij)][get<1>(ij)] == 7 );
-//	BOOST_TEST_REQUIRE( l(std::get<0>(ij), std::get<1>(ij)) == l[std::get<0>(ij)](std::get<1>(ij)) );
-//	BOOST_TEST_REQUIRE( l[std::get<0>(ij)](std::get<1>(ij)) == l[std::get<0>(ij)][std::get<1>(ij)] );
+}
 
-//	BOOST_TEST_REQUIRE( l(std::get<0>(ij), std::get<1>(ij)) == 7 );
+BOOST_AUTO_TEST_CASE(extensions_from_linear_3d_std_get) {
+	multi::extensions_t<3> x{11, 13, 17};
 
-//	BOOST_TEST_REQUIRE( l(std::get<0>(l.extensions().from_linear(7)), std::get<1>(l.extensions().from_linear(7))) == 7 );
+	BOOST_TEST_REQUIRE( std::get<0>(x.from_linear( 0)) ==  0 );
+	BOOST_TEST_REQUIRE( std::get<1>(x.from_linear( 0)) ==  0 );
+	BOOST_TEST_REQUIRE( std::get<2>(x.from_linear( 0)) ==  0 );
 
-#if(__cplusplus >= 201703)
-	auto [i, j] = x.from_linear(7);
+	BOOST_TEST_REQUIRE( std::get<0>(x.from_linear( 1)) ==  0 );
+	BOOST_TEST_REQUIRE( std::get<1>(x.from_linear( 1)) ==  0 );
+	BOOST_TEST_REQUIRE( std::get<2>(x.from_linear( 1)) ==  1 );
 
-	BOOST_TEST_REQUIRE( i == 1 );
-	BOOST_TEST_REQUIRE( j == 2 );
-//	BOOST_TEST_REQUIRE( std::apply(l, l.extensions().from_linear(9)) == 9 );
-#endif
+	BOOST_TEST_REQUIRE( std::get<0>(x.from_linear(16)) ==  0 );
+	BOOST_TEST_REQUIRE( std::get<1>(x.from_linear(16)) ==  0 );
+	BOOST_TEST_REQUIRE( std::get<2>(x.from_linear(16)) == 16 );
+
+	BOOST_TEST_REQUIRE( std::get<0>(x.from_linear(17)) ==  0 );
+	BOOST_TEST_REQUIRE( std::get<1>(x.from_linear(17)) ==  1 );
+	BOOST_TEST_REQUIRE( std::get<2>(x.from_linear(17)) ==  0 );
+
+	BOOST_TEST_REQUIRE( std::get<0>(x.from_linear(18)) ==  0 );
+	BOOST_TEST_REQUIRE( std::get<1>(x.from_linear(18)) ==  1 );
+	BOOST_TEST_REQUIRE( std::get<2>(x.from_linear(18)) ==  1 );
+
+	multi::layout_t<3> l{x};
+	BOOST_TEST_REQUIRE( l[std::get<0>(x.from_linear(19))][std::get<1>(x.from_linear(19))][std::get<2>(x.from_linear(19))] == 19 );
+	BOOST_TEST_REQUIRE( l(std::get<0>(x.from_linear(19)), std::get<1>(x.from_linear(19)), std::get<2>(x.from_linear(19))) == 19 );
+}
+
+BOOST_AUTO_TEST_CASE(extensions_from_linear_3d_std_get_using) {
+	multi::extensions_t<3> x{11, 13, 17};
+
+	using std::get;
+
+	BOOST_TEST_REQUIRE( get<0>(x.from_linear( 0)) ==  0 );
+	BOOST_TEST_REQUIRE( get<1>(x.from_linear( 0)) ==  0 );
+	BOOST_TEST_REQUIRE( get<2>(x.from_linear( 0)) ==  0 );
+
+	BOOST_TEST_REQUIRE( get<0>(x.from_linear( 1)) ==  0 );
+	BOOST_TEST_REQUIRE( get<1>(x.from_linear( 1)) ==  0 );
+	BOOST_TEST_REQUIRE( get<2>(x.from_linear( 1)) ==  1 );
+
+	BOOST_TEST_REQUIRE( get<0>(x.from_linear(16)) ==  0 );
+	BOOST_TEST_REQUIRE( get<1>(x.from_linear(16)) ==  0 );
+	BOOST_TEST_REQUIRE( get<2>(x.from_linear(16)) == 16 );
+
+	BOOST_TEST_REQUIRE( get<0>(x.from_linear(17)) ==  0 );
+	BOOST_TEST_REQUIRE( get<1>(x.from_linear(17)) ==  1 );
+	BOOST_TEST_REQUIRE( get<2>(x.from_linear(17)) ==  0 );
+
+	BOOST_TEST_REQUIRE( get<0>(x.from_linear(18)) ==  0 );
+	BOOST_TEST_REQUIRE( get<1>(x.from_linear(18)) ==  1 );
+	BOOST_TEST_REQUIRE( get<2>(x.from_linear(18)) ==  1 );
+
+	BOOST_TEST_REQUIRE( get<0>(x.from_linear(19)) ==  0 );
+	BOOST_TEST_REQUIRE( get<1>(x.from_linear(19)) ==  1 );
+	BOOST_TEST_REQUIRE( get<2>(x.from_linear(19)) ==  2 );
+
+	multi::layout_t<3> l{x};
+	BOOST_TEST_REQUIRE( l[get<0>(x.from_linear(19))][get<1>(x.from_linear(19))][get<2>(x.from_linear(19))] == 19 );
+	BOOST_TEST_REQUIRE( l(get<0>(x.from_linear(19)), get<1>(x.from_linear(19)), get<2>(x.from_linear(19))) == 19 );
+}
+
+BOOST_AUTO_TEST_CASE(extensions_from_linear_3d_struct_bind) {
+	multi::extensions_t<3> x{11, 13, 17};
+
+	using std::get;
+	{
+	auto [i, j, k] = x.from_linear( 0);
+	BOOST_TEST_REQUIRE( i ==  0 );
+	BOOST_TEST_REQUIRE( j ==  0 );
+	BOOST_TEST_REQUIRE( k ==  0 );
+	}
+	{
+	auto [i, j, k] = x.from_linear( 1);
+	BOOST_TEST_REQUIRE( i ==  0 );
+	BOOST_TEST_REQUIRE( j ==  0 );
+	BOOST_TEST_REQUIRE( k ==  1 );
+	}
+	{
+	auto [i, j, k] = x.from_linear(16);
+	BOOST_TEST_REQUIRE( i ==  0 );
+	BOOST_TEST_REQUIRE( j ==  0 );
+	BOOST_TEST_REQUIRE( k == 16 );
+	}
+	{
+	auto [i, j, k] = x.from_linear(17);
+	BOOST_TEST_REQUIRE( i ==  0 );
+	BOOST_TEST_REQUIRE( j ==  1 );
+	BOOST_TEST_REQUIRE( k ==  0 );
+	}
+	{
+	auto [i, j, k] = x.from_linear(18);
+	BOOST_TEST_REQUIRE( i ==  0 );
+	BOOST_TEST_REQUIRE( j ==  1 );
+	BOOST_TEST_REQUIRE( k ==  1 );
+
+	multi::layout_t<3> l{x};
+	BOOST_TEST_REQUIRE( l[i][j][k] == 18 );
+	BOOST_TEST_REQUIRE( l(i, j, k) == 18 );
+	}
 }
 
 BOOST_AUTO_TEST_CASE(extensions_from_linear_3d) {
@@ -631,7 +764,15 @@ BOOST_AUTO_TEST_CASE(extensions_from_linear_3d) {
 
 	auto ijk = x.from_linear(19);
 
-	using multi::detail::get;
+	{
+	using std::get;
+	BOOST_TEST_REQUIRE( get<0>(x.from_linear(19)) == 0 );
+	BOOST_TEST_REQUIRE( get<1>(x.from_linear(19)) == 1 );
+	BOOST_TEST_REQUIRE( get<2>(x.from_linear(19)) == 2 );
+	}
+	{
+	using std::get;
+//  using multi::detail::get;
 	BOOST_TEST_REQUIRE( get<0>(ijk) == 0 );
 	BOOST_TEST_REQUIRE( get<1>(ijk) == 1 );
 	BOOST_TEST_REQUIRE( get<2>(ijk) == 2 );
@@ -639,6 +780,7 @@ BOOST_AUTO_TEST_CASE(extensions_from_linear_3d) {
 	multi::layout_t<3> l{x};
 
 	BOOST_TEST_REQUIRE( l[get<0>(ijk)][get<1>(ijk)][get<2>(ijk)] == 19 );
-//	BOOST_TEST_REQUIRE( l(std::get<0>(ijk), std::get<1>(ijk), std::get<2>(ijk)) == 19 );
+	BOOST_TEST_REQUIRE( l(get<0>(ijk), get<1>(ijk), get<2>(ijk)) == 19 );
+	}
 }
 

@@ -4,8 +4,8 @@
 #ifndef MULTI_DETAIL_MEMORY_HPP
 #define MULTI_DETAIL_MEMORY_HPP
 
-#include "../detail/adl.hpp"
-#include "../utility.hpp"
+#include "multi/detail/adl.hpp"
+#include "multi/utility.hpp"
 
 #include "layout.hpp"
 
