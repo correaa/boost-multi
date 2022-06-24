@@ -887,6 +887,21 @@ struct basic_array
 	constexpr auto reindexed(index first, Indexes... idxs)&& -> basic_array {
 		return ((std::move(*this).reindexed(first).rotated()).reindexed(idxs...)).unrotated();
 	}
+ private:
+	constexpr auto take_aux(difference_type n) const {
+		typename types::layout_t new_layout{
+			this->layout().sub(),
+			this->layout().stride(),
+			this->layout().offset(),
+			this->stride()*n
+		};
+		return basic_array{new_layout, this->base()};
+	}
+
+ public:
+	constexpr auto take(difference_type n) const& -> basic_const_array {return take_aux(n);}
+	constexpr auto take(difference_type n)     && -> basic_array       {return take_aux(n);}
+	constexpr auto take(difference_type n)      & -> basic_array       {return take_aux(n);}
 
  private:
 	HD constexpr auto sliced_aux(index first, index last) const {
@@ -1936,6 +1951,22 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 		new_layout.reindex(first);
 		return basic_array{new_layout, types::base_};
 	}
+
+ private:
+	constexpr auto take_aux(difference_type n) const {
+		typename types::layout_t new_layout{
+			this->layout().sub(),
+			this->layout().stride(),
+			this->layout().offset(),
+			this->stride()*n
+		};
+		return basic_array{new_layout, this->base()};
+	}
+
+ public:
+	constexpr auto take(difference_type n) const& -> basic_const_array {return take_aux(n);}
+	constexpr auto take(difference_type n)     && -> basic_array       {return take_aux(n);}
+	constexpr auto take(difference_type n)      & -> basic_array       {return take_aux(n);}
 
  private:
 	HD constexpr auto sliced_aux(index first, index last) const {
