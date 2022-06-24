@@ -10,6 +10,36 @@
 namespace multi = boost::multi;
 using complex = std::complex<double>; [[maybe_unused]] complex const I{0, 1};
 
+template<class M> auto power(M const& m) {
+	return accumulate(m.elements().begin(), m.elements().end(), 0., [](auto const& a, auto const& e) {return a + std::norm(e);});
+}
+
+template<class T>
+void what(T&&) = delete;
+
+BOOST_AUTO_TEST_CASE(fftw_2D_const_range_fft_move) {
+	multi::array<complex, 2> in = {
+		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
+		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
+		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
+		{    3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
+		{   31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+	};
+
+	{
+		auto const in_copy = in;
+	//  auto* const in_base = in.base();
+
+		multi::array<complex, 2> in2(in.extensions());
+
+		in2 = multi::fftw::fft(std::move(in));
+
+		BOOST_REQUIRE( power(in2)/num_elements(in2) - power(in_copy) < 1e-8 );
+//		BOOST_REQUIRE( in2.base() == in_base );
+//		BOOST_REQUIRE( in.is_empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
+	}
+}
+
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_move) {
 	multi::array<complex, 2> in = {
 		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
@@ -51,7 +81,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed) {
 		in = multi::fftw::ref(in).transposed();
 
 		BOOST_REQUIRE( in.size() == 3 );
-		BOOST_REQUIRE( in == in_copy.transposed() );
+		BOOST_REQUIRE( in == in_copy.transposed() );  // prove correctness
 		BOOST_REQUIRE( in_base == in.base() );  // prove no allocation
 	}
 }
@@ -72,10 +102,10 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_naive) {
 		BOOST_REQUIRE( in_base == in.base() );
 		BOOST_REQUIRE( in.size() == 5 );
 
-		in = in.transposed();
+		in = in.transposed();  // this is UB
 
 		BOOST_REQUIRE( in.size() == 3 );
-		BOOST_REQUIRE( in != in_copy.transposed() );
+		BOOST_REQUIRE( in != in_copy.transposed() );  // prove it is incorrect
 		BOOST_REQUIRE( in_base == in.base() );  // prove no allocation
 	}
 }
@@ -99,32 +129,32 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_naive_copy) {
 		in = + in.transposed();
 
 		BOOST_REQUIRE( in.size() == 3 );
-		BOOST_REQUIRE( in == in_copy.transposed() );
+		BOOST_REQUIRE( in == in_copy.transposed() );  // prove correctness
 		BOOST_REQUIRE( in_base != in.base() );  // prove no allocation
 	}
 }
 
 
+BOOST_AUTO_TEST_CASE(fftw_2D_const_range_fft_copy) {
+	multi::array<complex, 2> in = {
+		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
+		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
+		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
+		{    3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
+		{   31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+	};
 
-//BOOST_AUTO_TEST_CASE(fftw_2D_const_range_fft_move) {
-//	multi::array<complex, 2> in = {
-//		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
-//		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
-//		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
-//		{    3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
-//		{   31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
-//	};
+	{
+		auto const in_copy = in;
+		auto* const in_base = in.base();
 
-//	{
-//		auto const in_copy = in;
-//		auto* const in_base = in.base();
+		multi::array<complex, 2> in2 = multi::fftw::fft(in);
 
-//		multi::array<complex, 2> in2 = multi::fftw::fft(std::move(in));
-
-//		BOOST_REQUIRE( in2.base() == in_base );
-//		BOOST_REQUIRE( in.is_empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
-//	}
-//}
+		BOOST_REQUIRE( power(in2)/num_elements(in2) - power(in_copy) < 1e-8 );
+		BOOST_REQUIRE( in2.base() != in_base );
+		BOOST_REQUIRE( not in.is_empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
+	}
+}
 
 //BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_move) {
 //	multi::array<complex, 2> in = {

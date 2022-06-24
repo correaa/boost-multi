@@ -842,7 +842,7 @@ template<dimensionality_type ND = 1, class Array>
 auto  fft(Array&& in) {
 	std::array<fftw::sign, std::decay_t<Array>::rank_v> which{};
 	for(auto it = which.begin(); it != which.begin() + ND; ++it) {*it = fftw::forward ;}
-	return fft_range{in, which};
+	return fft_range<Array&&>{std::forward<Array>(in), which};
 }
 template<dimensionality_type ND = 1, class Array>
 auto ifft(Array&& in) {
