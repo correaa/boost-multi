@@ -221,7 +221,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wtype-limits -Wundef -Wuninitialized
 					-Wno-unknown-pragmas  # (see above) -Wunknown-pragmas (other compilers need their own pragmas for their warnings)
 					-Wunreachable-code -Wunsafe-loop-optimizations
-					-Wunused -Wunused-parameter -Wunused-but-set-variable 
+					-Wunused -Wunused-but-set-variable 
 					# -Wunused-const-variable  #=2 TODO(correaa) add [[maybe_unused]] to niebloids
 					-Wunused-function -Wunused-label -Wunused-local-typedefs -Wunused-macros -Wunused-parameter -Wunused-result -Wunused-value -Wunused-variable
 					-Wuseless-cast
@@ -858,11 +858,11 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wnonnull
 					-Wmaybe-uninitialized
 					-Wmain
-					-Wmissing-declarations
-					-Wmissing-prototypes
+					-Wmissing-declarations -Wmissing-prototypes
 					-Wmultichar
 					-Woverloaded-virtual
 					-Woverflow
+					-Wp64
 					-Wparentheses
 					-Wpointer-arith
 					-Wpointer-sign
@@ -872,17 +872,16 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wshadow
 					-Wsign-compare
 					-Wshorten-64-to-32
+					-Wmissing-prototypes
 					-Wno-strict-aliasing
+					-Wno-unknown-pragmas
 					-Wstrict-prototypes
 					-Wtrigraphs
 					-Wtype-limits
 					-Wuninitialized
-					-Wunused
-					-Wunused-but-set-variable
-					-Wunused-function
-					-Wunused-parameter
-					-Wunused-variable
+					-Wunused -Wunused-but-set-variable -Wunused-function -Wunused-parameter -Wunused-variable
 					-Wwrite-strings
+					-fno-gnu-keyword
 				>
 				$<$<OR:$<CXX_COMPILER_ID:PGI>,$<CXX_COMPILER_ID:NVHPC>>:
 					-Werror
