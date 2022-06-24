@@ -320,6 +320,8 @@ BOOST_AUTO_TEST_CASE(move_array_elements) {
 	{
 		auto A = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));
 		auto B = std::move(A);
+		BOOST_REQUIRE( B.size() == 5 );
+		BOOST_REQUIRE( B[0].size() == 7 );
 		BOOST_REQUIRE( A.is_empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move)
 	}
 	{
