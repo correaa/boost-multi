@@ -316,6 +316,63 @@ BOOST_AUTO_TEST_CASE(move_reference_range) {
 	BOOST_REQUIRE( A[1][1].empty() );
 }
 
+BOOST_AUTO_TEST_CASE(move_array_elements) {
+	{
+		auto A = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));
+		auto B = std::move(A);
+		BOOST_REQUIRE( A.is_empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move)
+	}
+	{
+		auto A = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));
+
+		std::vector<double> v0 = std::move(A[0]);
+		BOOST_REQUIRE( v0.size() == 7 );
+		BOOST_REQUIRE( A[0].empty() );
+
+		std::vector<double> v1 = std::move(A)[1];
+		BOOST_REQUIRE( v1.size() == 7 );
+		BOOST_REQUIRE( A[1].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move) for test
+
+		auto B = multi::array<std::vector<double>, 1>({ 1}, std::vector<double>{});
+
+		B({0, 1}) = A({2, 3});
+		BOOST_REQUIRE( B[0].size() == 7 );
+		BOOST_REQUIRE( A[2].size() == 7 );
+	}
+	{
+		auto A = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));
+		auto B = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>{});
+
+		B() = A();
+		BOOST_REQUIRE( B[0].size() == 7 );
+		BOOST_REQUIRE( A[2].size() == 7 );
+
+		B() = std::move(A)();
+		BOOST_REQUIRE( B[0].size() == 7 );
+		BOOST_REQUIRE( A[2].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
+	}
+	{
+		auto A = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));
+		auto B = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>{});
+
+		B() = A();
+		BOOST_REQUIRE( B[0].size() == 7 );
+		BOOST_REQUIRE( not A[2].empty() );
+		BOOST_REQUIRE( A[2].size() == 7 );
+
+//		B({0, 5}) = std::move(A)({0, 5});
+//		BOOST_REQUIRE( B[0].size() == 7 );
+//		BOOST_REQUIRE( A[2].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
+	}
+
+
+//	{
+//		auto A = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));
+//		auto B = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>{} );
+//		B() = A();
+//	}
+}
+
 //BOOST_AUTO_TEST_CASE(move_move_range) {
 //	multi::array<std::vector<double>, 2> A({10, 20}, std::vector<double>{1., 2., 3.});
 //	multi::array<std::vector<double>, 2> B({10, 20}, std::vector<double>{}          );
