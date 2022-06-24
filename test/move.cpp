@@ -369,15 +369,31 @@ BOOST_AUTO_TEST_CASE(move_array_elements) {
 		BOOST_REQUIRE( B[0].size() == 7 );
 		BOOST_REQUIRE( A[0].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
 	}
-//	{
-//		auto A = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));
-//		auto B = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>{});
+	{
+		auto A = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));
+		auto B = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>{});
 
-//		B() = std::move(A)({0, 5});
-//		BOOST_REQUIRE( B[0].size() == 7 );
-//		BOOST_REQUIRE( A[0].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
-//	}
+		auto&& mAp = std::move(A)();
+		B() = mAp;
+		BOOST_REQUIRE( B[0].size() == 7 );
+		BOOST_REQUIRE( A[0].size() == 7 );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
+	}
+	{
+		auto A = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));
+		auto B = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>{});
 
+		B({0, 5}) = std::move(A)();
+		BOOST_REQUIRE( B[0].size() == 7 );
+		BOOST_REQUIRE( A[0].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
+	}
+	{
+		auto A = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));
+		auto B = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>{});
+
+		B() = std::move(A).take(5);
+		BOOST_REQUIRE( B[0].size() == 7 );
+		BOOST_REQUIRE( A[0].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
+	}
 
 //	{
 //		auto A = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));

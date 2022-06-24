@@ -60,3 +60,18 @@ BOOST_AUTO_TEST_CASE(multi_array_stride) {
 		}
 	));
 }
+
+BOOST_AUTO_TEST_CASE(take) {
+	multi::array<double, 2> A = {
+		{ 1.,  2.,  3.,  4.},
+		{ 5.,  6.,  7.,  8.},
+		{ 9., 10., 11., 12.},
+		{13., 14., 15., 16.},
+	};
+	BOOST_REQUIRE((
+		A.take(2) == multi::array<double, 2>{
+			{ 1.,  2.,  3.,  4.},
+			{ 5.,  6.,  7.,  8.},
+		}
+	));
+}
