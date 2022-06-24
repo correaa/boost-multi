@@ -359,12 +359,15 @@ BOOST_AUTO_TEST_CASE(move_array_elements) {
 
 		B() = A();
 		BOOST_REQUIRE( B[0].size() == 7 );
-		BOOST_REQUIRE( not A[2].empty() );
-		BOOST_REQUIRE( A[2].size() == 7 );
+		BOOST_REQUIRE( A[0].size() == 7 );
+	}
+	{
+		auto A = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));
+		auto B = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>{});
 
-//		B({0, 5}) = std::move(A)({0, 5});
-//		BOOST_REQUIRE( B[0].size() == 7 );
-//		BOOST_REQUIRE( A[2].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
+		B() = std::move(A)();
+		BOOST_REQUIRE( B[0].size() == 7 );
+		BOOST_REQUIRE( A[0].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
 	}
 
 
