@@ -889,6 +889,7 @@ struct basic_array
 	}
  private:
 	constexpr auto take_aux(difference_type n) const {
+		assert( n <= this->size() );
 		typename types::layout_t new_layout{
 			this->layout().sub(),
 			this->layout().stride(),
@@ -1954,6 +1955,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
  private:
 	constexpr auto take_aux(difference_type n) const {
+		assert( n <= this->size() );
 		typename types::layout_t new_layout{
 			this->layout().sub(),
 			this->layout().stride(),
