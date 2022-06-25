@@ -45,6 +45,8 @@ struct move_ptr : private std::move_iterator<Ptr> {
 	constexpr auto operator-=(difference_type n) -> move_ptr& {static_cast<std::move_iterator<Ptr>&>(*this) -= n; return *this;}
 
 	constexpr auto operator+(difference_type n) const -> move_ptr {move_ptr ret{*this}; ret += n; return ret;}
+	constexpr auto operator-(difference_type n) const -> move_ptr {move_ptr ret{*this}; ret -= n; return ret;}
+
 	constexpr auto operator-(move_ptr const& other) const -> difference_type {return static_cast<std::move_iterator<Ptr> const&>(*this) - static_cast<std::move_iterator<Ptr> const&>(other);}
 
 	constexpr auto operator*() const -> decltype(auto) {return *static_cast<std::move_iterator<Ptr> const&>(*this);}
@@ -97,6 +99,7 @@ struct transform_ptr {
 	constexpr auto operator-=(difference_type n) -> transform_ptr& {p_ -= n; return *this;}
 
 	constexpr auto operator+(difference_type n) const -> transform_ptr {transform_ptr ret{*this}; ret += n; return ret;}
+	constexpr auto operator-(difference_type n) const -> transform_ptr {transform_ptr ret{*this}; ret -= n; return ret;}
 
 	constexpr auto operator-(transform_ptr const& other) const -> difference_type {return p_ - other.p_;}
 

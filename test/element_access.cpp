@@ -288,7 +288,6 @@ BOOST_AUTO_TEST_CASE(multi_test_elements_1D_as_range) {
 //}
 
 BOOST_AUTO_TEST_CASE(elements_from_init_list_2D) {
-
 	multi::array<double, 2> A({3, 2});
 	A().elements() = {1., 2., 3., 4., 5., 6.};
 	BOOST_REQUIRE(A[1][0] == 3.);
@@ -377,7 +376,6 @@ BOOST_AUTO_TEST_CASE(elements_rvalues_assignment) {
 	std::move(A) = B;  // this compiles TODO(correaa) should it?
 
 //  std::move(A)[0] = 10.;  // does not compile
-
 }
 
 #endif

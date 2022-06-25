@@ -905,6 +905,23 @@ struct basic_array
 	constexpr auto take(difference_type n)      & -> basic_array       {return take_aux(n);}
 
  private:
+	constexpr auto drop_aux(difference_type n) const {
+		assert( n <= this->size() );
+		typename types::layout_t new_layout{
+			this->layout().sub(),
+			this->layout().stride(),
+			this->layout().offset(),
+			this->stride()*(this->size() - n)
+		};
+		return basic_array{new_layout, this->base() + n*this->layout().stride() - this->layout().offset()};
+	}
+
+ public:
+	constexpr auto drop(difference_type n) const& -> basic_const_array {return drop_aux(n);}
+	constexpr auto drop(difference_type n)     && -> basic_array       {return drop_aux(n);}
+	constexpr auto drop(difference_type n)      & -> basic_array       {return drop_aux(n);}
+
+ private:
 	HD constexpr auto sliced_aux(index first, index last) const {
 		MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(first   ))&&"sliced first out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(last - 1))&&"sliced last  out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
@@ -1955,7 +1972,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
  private:
 	constexpr auto take_aux(difference_type n) const {
-		assert( n <= this->size() );
+		assert( n <= this->size() );  // calculating size is expensive that is why 
 		typename types::layout_t new_layout{
 			this->layout().sub(),
 			this->layout().stride(),
@@ -1969,6 +1986,23 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	constexpr auto take(difference_type n) const& -> basic_const_array {return take_aux(n);}
 	constexpr auto take(difference_type n)     && -> basic_array       {return take_aux(n);}
 	constexpr auto take(difference_type n)      & -> basic_array       {return take_aux(n);}
+
+ private:
+	constexpr auto drop_aux(difference_type n) const -> basic_array {
+		assert( n <= this->size() );
+		typename types::layout_t new_layout{
+			this->layout().sub(),
+			this->layout().stride(),
+			this->layout().offset(),
+			this->stride()*(this->size() - n)
+		};
+		return basic_array{new_layout, this->base() + (n*this->layout().stride() - this->layout().offset())};
+	}
+
+ public:
+	constexpr auto drop(difference_type n) const& -> basic_const_array {return drop_aux(n);}
+	constexpr auto drop(difference_type n)     && -> basic_array       {return drop_aux(n);}
+	constexpr auto drop(difference_type n)      & -> basic_array       {return drop_aux(n);}
 
  private:
 	HD constexpr auto sliced_aux(index first, index last) const {
