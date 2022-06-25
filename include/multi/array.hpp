@@ -125,6 +125,9 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	using ref::take;
 	constexpr auto take(difference_type n) && -> decltype(auto) {return ref::take(n).element_moved();}
 
+	using ref::drop;
+	constexpr auto drop(difference_type n) && -> decltype(auto) {return ref::drop(n).element_moved();}
+
  protected:
 	static_array(static_array&& other, allocator_type const& alloc) noexcept          // 6b  TODO(correaa) move from array only
 	: array_alloc{alloc}  // TODO(correaa) : handle allocation propagation here

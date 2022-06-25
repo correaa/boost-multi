@@ -75,3 +75,18 @@ BOOST_AUTO_TEST_CASE(take) {
 		}
 	));
 }
+
+BOOST_AUTO_TEST_CASE(drop) {
+	multi::array<double, 2> A = {
+		{ 1.,  2.,  3.,  4.},
+		{ 5.,  6.,  7.,  8.},
+		{ 9., 10., 11., 12.},
+		{13., 14., 15., 16.},
+	};
+	BOOST_REQUIRE((
+		A.drop(2) == multi::array<double, 2>{
+			{ 9., 10., 11., 12.},
+			{13., 14., 15., 16.},
+		}
+	));
+}

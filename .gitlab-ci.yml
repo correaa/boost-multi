@@ -222,9 +222,9 @@ g++-cpplint:
     - $CXX --version
     - cpplint --version
     - mkdir build && cd build
-    - cmake .. -DCMAKE_CXX_CPPLINT="cpplint;--filter=-whitespace/braces,-whitespace/tab,-whitespace/parens,-whitespace/operators,-readability/alt_tokens,-build/include_order,-whitespace/line_length,-whitespace/semicolon,-legal/copyright,-whitespace/comments,-readability/nolint"
+    - cmake .. -DCMAKE_CXX_CPPLINT="cpplint;--filter=-build/include_order,-legal/copyright,-readability/alt_tokens,-readability/nolint,-runtime/references,-whitespace/braces,-whitespace/comments,-whitespace/line_length,-whitespace/operators,-whitespace/parens,-whitespace/semicolon,-whitespace/tab"
     - cmake --build . --verbose -- --quiet --no-print-directory
-    - cpplint --filter=-whitespace/line_length,-whitespace/parens,-whitespace/tab,-readability/alt_tokens,-readability/nolint,-runtime/references,-build/include_order,-build/header_guar,-legal/copyright ../include/multi/array.hpp
+    - cpplint --filter=-build/include_order,-build/header_guar,-legal/copyright,-readability/nolint,-runtime/references,-whitespace/line_length,-whitespace/parens,-whitespace/tab,-readability/alt_tokens --recursive ../include/multi/array.hpp
   needs: ["g++"]
 
 #clang++-11-gcc9:
@@ -1081,4 +1081,4 @@ inq-nvcc-ompi-runner:
     - ctest -j2 --output-on-failure --timeout 600
     - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest --output-on-failure --timeout 600; cd ..
     - rm -rf $PREFIX
-
+  needs: ["cuda-11.7"]

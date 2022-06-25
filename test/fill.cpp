@@ -140,7 +140,6 @@ BOOST_AUTO_TEST_CASE(fill) {
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(fill_1D) {
-
 	multi::array<double, 1> a = {1., 2., 3.};
 	multi::array<double, 2> B({10, 3});
 
@@ -150,14 +149,12 @@ BOOST_AUTO_TEST_CASE(fill_1D) {
 	BOOST_REQUIRE( B[1] == a );
 	// ...
 	BOOST_REQUIRE( B[9] == a );
-
 }
 
 #define FWD(a) std::forward<decltype(a)>(a)
 
 template<class BinaryOp, class Column, class Array, class Out>
 auto broadcast(BinaryOp op, Column const& a, Array const& A, Out&& B) -> Out&& {
-
 	std::transform(
 		begin(~A), end(~A), begin(~B), begin(~B),
 		[acol = (~a)[0], &op](auto const& Acol, auto&& Bcol) {
@@ -170,7 +167,6 @@ auto broadcast(BinaryOp op, Column const& a, Array const& A, Out&& B) -> Out&& {
 }
 
 BOOST_AUTO_TEST_CASE (julia_broadcast, *boost::unit_test::tolerance(0.00001) ) {
-
 	multi::array<double, 2> a = {
 		{0.1},
 		{0.2}
@@ -200,5 +196,4 @@ BOOST_AUTO_TEST_CASE (julia_broadcast, *boost::unit_test::tolerance(0.00001) ) {
 		BOOST_TEST( Ap[0][0] == 1.20813 ); BOOST_TEST( Ap[0][1] == 1.82068 ); BOOST_TEST( Ap[0][2] == 1.25387 );
 		BOOST_TEST( Ap[1][0] == 1.56851 ); BOOST_TEST( Ap[1][1] == 1.86401 ); BOOST_TEST( Ap[1][2] == 1.67846 );
 	}
-
 }

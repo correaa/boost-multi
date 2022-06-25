@@ -102,7 +102,6 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 }
 
 BOOST_AUTO_TEST_CASE(span_like) {
-
 	std::vector<double> v = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10.};
 
 	using my_span = multi::array_ref<double, 1>;

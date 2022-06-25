@@ -128,7 +128,6 @@ BOOST_AUTO_TEST_CASE(transform_ptr_1D_array) {
 }
 
 BOOST_AUTO_TEST_CASE(arthur_odwyer_array_transform_int) {
-
 	struct S {  // NOLINT(readability-identifier-naming)
     	int a;
     	int b;
@@ -146,7 +145,6 @@ BOOST_AUTO_TEST_CASE(arthur_odwyer_array_transform_int) {
 }
 
 BOOST_AUTO_TEST_CASE(arthur_odwyer_array_transform_int_array) {
-
 	struct S {  // NOLINT(readability-identifier-naming)
     	int a[10];  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) testing
     	int b;
@@ -165,7 +163,6 @@ BOOST_AUTO_TEST_CASE(arthur_odwyer_array_transform_int_array) {
 }
 
 BOOST_AUTO_TEST_CASE(indirect_transformed) {
-
 	std::vector<double> v = {0., 1.1, 2.2, 3.3, 4.4, 5.5};
 
 	using index_t = std::vector<double>::size_type;
@@ -189,7 +186,6 @@ BOOST_AUTO_TEST_CASE(indirect_transformed) {
 }
 
 BOOST_AUTO_TEST_CASE(indirect_transformed_carray) {
-
 	double D[5][3] = { // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) testing legacy types
 		{ 0.0,  1.0,  2.0},
 		{10.0, 11.0, 12.0},

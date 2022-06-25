@@ -316,7 +316,7 @@ BOOST_AUTO_TEST_CASE(move_reference_range) {
 	BOOST_REQUIRE( A[1][1].empty() );
 }
 
-BOOST_AUTO_TEST_CASE(move_array_elements) {
+BOOST_AUTO_TEST_CASE(move_array_elements) {  // NOLINT(readability-function-cognitive-complexity)
 	{
 		auto A = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));
 		auto B = std::move(A);
@@ -390,9 +390,74 @@ BOOST_AUTO_TEST_CASE(move_array_elements) {
 		auto A = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));
 		auto B = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>{});
 
+		B() = A.take(5);
+		BOOST_REQUIRE( B[0].size() == 7 );
+		BOOST_REQUIRE( A[0].size() == 7);  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
+	}
+	{
+		auto A = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));
+		auto B = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>{});
+
 		B() = std::move(A).take(5);
 		BOOST_REQUIRE( B[0].size() == 7 );
 		BOOST_REQUIRE( A[0].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
+	}
+	{
+		auto A = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));
+		auto B = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>{});
+		auto&& mAt5 = std::move(A).take(5);
+		B() = mAt5;
+		BOOST_REQUIRE( B[0].size() == 7 );
+		BOOST_REQUIRE( A[0].size() == 7 );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
+	}
+	{
+		auto A = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));
+		auto B = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>{});
+		auto&& mAt5 = std::move(A).take(5);
+		B() = mAt5;
+		BOOST_REQUIRE( B[0].size() == 7 );
+		BOOST_REQUIRE( A[0].size() == 7 );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
+	}
+	{
+		auto A = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));
+		auto B = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>{});
+		auto&& mAt5 = std::move(A).take(5);
+		B() = std::move(mAt5);
+		BOOST_REQUIRE( B[0].size() == 7 );
+		BOOST_REQUIRE( A[0].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
+	}
+	{
+		auto A = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));
+		auto B = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>{});
+		auto&& mAt5 = std::move(A).take(5);
+		B() = std::move(mAt5).take(5);
+		BOOST_REQUIRE( B[0].size() == 7 );
+		BOOST_REQUIRE( A[0].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
+	}
+	{
+		auto A = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));
+		auto B = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>{});
+		auto&& mAt5 = std::move(A).take(5);
+		auto&& r = std::move(mAt5).take(5);
+		B() = r;
+		BOOST_REQUIRE( B[0].size() == 7 );
+		BOOST_REQUIRE( A[0].size() == 7 );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
+	}
+	{
+		auto A = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));
+		auto B = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>{});
+		auto&& mAt5 = std::move(A).take(5);
+		B() = std::move(mAt5).drop(0);
+		BOOST_REQUIRE( B[0].size() == 7 );
+		BOOST_REQUIRE( A[0].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
+	}
+	{
+		auto A = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));
+		auto B = multi::array<std::vector<double>, 1>({ 4}, std::vector<double>{});
+		B() = std::move(A).drop(1);
+		BOOST_REQUIRE( B[0].size() == 7 );
+		BOOST_REQUIRE( A[0].size() == 7 );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
+		BOOST_REQUIRE( A[1].empty()     );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
 	}
 
 //	{
