@@ -61,7 +61,6 @@ BOOST_AUTO_TEST_CASE(test_resize_copy_1) {
 }
 
 BOOST_AUTO_TEST_CASE(test_resize_copy_2) {
-
 	std::vector<double> const source = {0., 1., 2., 3.};
 
 	std::vector<double>     dest_v = {99., 99.};
@@ -122,7 +121,6 @@ BOOST_AUTO_TEST_CASE(test_resize_copy_4) {
 }
 
 BOOST_AUTO_TEST_CASE(test_resize_copy_5) {
-
 	std::vector<double> const source = {0., 1., 2., 3.};
 
 	std::vector<double>     dest_v = {99., 99.};
@@ -140,7 +138,6 @@ BOOST_AUTO_TEST_CASE(test_resize_copy_5) {
 
 	BOOST_REQUIRE( dest_v.size() == 4 );
 	BOOST_REQUIRE( dest_v[3] == 3. );
-
 }
 
 BOOST_AUTO_TEST_CASE(test_resize_copy_6) {
