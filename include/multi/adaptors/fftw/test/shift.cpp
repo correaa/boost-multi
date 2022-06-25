@@ -6,7 +6,7 @@
 
 #include "../../fftw.hpp"
 
-#include <chrono>
+#include <chrono>  // NOLINT(build/c++11)
 #include <random>
 
 template<class T>
@@ -44,7 +44,6 @@ namespace multi = boost::multi;
 namespace fftw = multi::fftw;
 
 BOOST_AUTO_TEST_CASE(fftw_shift) {
-
 	class watch : std::chrono::steady_clock {
 		time_point start_ = now();
 
