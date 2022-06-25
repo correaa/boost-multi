@@ -1081,4 +1081,4 @@ inq-nvcc-ompi-runner:
     - ctest -j2 --output-on-failure --timeout 600
     - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest --output-on-failure --timeout 600; cd ..
     - rm -rf $PREFIX
-
+  needs: ["cuda-11.7"]
