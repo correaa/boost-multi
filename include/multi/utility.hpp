@@ -156,7 +156,7 @@ template<class Pointer, std::enable_if_t<std::is_pointer<Pointer>{}, int> = 0>  
 constexpr auto stride(Pointer /*unused*/) -> std::ptrdiff_t {return 1;}
 
 template<class Pointer, std::enable_if_t<std::is_pointer<Pointer>{}, int> =0>  // special sfinae trick
-constexpr auto base(Pointer d) -> Pointer {return d;}
+constexpr auto base(Pointer p) -> Pointer {return p;}
 
 template<class TPointer, class U>
 constexpr auto reinterpret_pointer_cast(U* other)  // name taken from thrust::reinterpret_pointer_cast, which is difference from std::reinterpret_pointer_cast(std::shared_ptr<T>)
@@ -347,9 +347,9 @@ inline auto has_extension_aux(...     ) -> std::false_type;
 template<class T> struct has_extension : decltype(has_extension_aux(std::declval<T>())){};
 
 template<class Container, class=std::enable_if_t<!has_extension<Container>::value>>
-auto extension(Container const& c)  // TODO(correaa) consider "extent"
-->decltype(multi::extension_t<std::make_signed_t<decltype(size(c))>>(0, static_cast<std::make_signed_t<decltype(size(c))>>(size(c)))) {
-	return multi::extension_t<std::make_signed_t<decltype(size(c))>>(0, static_cast<std::make_signed_t<decltype(size(c))>>(size(c))); }
+auto extension(Container const& cont)  // TODO(correaa) consider "extent"
+->decltype(multi::extension_t<std::make_signed_t<decltype(size(cont))>>(0, static_cast<std::make_signed_t<decltype(size(cont))>>(size(cont)))) {
+	return multi::extension_t<std::make_signed_t<decltype(size(cont))>>(0, static_cast<std::make_signed_t<decltype(size(cont))>>(size(cont))); }
 
 template<class T, typename = decltype(std::declval<T>().shape())>
        auto has_shape_aux(T const&) -> std::true_type;
