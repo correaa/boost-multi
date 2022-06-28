@@ -43,7 +43,7 @@ if((NOT
 		/usr/local/include
 		$ENV{BLAS_HOME}/include
 	)
-	include_directories(${TEST_EXE} PRIVATE ${BLAS_INCLUDE_DIRS})
+#   include_directories(${TEST_EXE} PRIVATE ${BLAS_INCLUDE_DIRS})
 	link_libraries(${BLAS_LIBRARIES})
 else()
 	find_package(Boost REQUIRED) # cmake cannot detect this component with pgi compiler
