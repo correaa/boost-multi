@@ -35,14 +35,14 @@ using memory::allocator_traits;
 
 // https://en.cppreference.com/w/cpp/memory/destroy
 template<class Alloc, class ForwardIt, std::enable_if_t<!has_rank<ForwardIt>::value, int> = 0>
-void destroy(Alloc& a, ForwardIt f, ForwardIt l) {
-	for(; f != l; ++f) {allocator_traits<Alloc>::destroy(a, std::addressof(*f));}  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+void destroy(Alloc& alloc, ForwardIt first, ForwardIt last) {
+	for(; first != last; ++first) {allocator_traits<Alloc>::destroy(alloc, std::addressof(*first));}  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 }
 
 template<class Alloc, class ForwardIt, std::enable_if_t<has_rank<ForwardIt>::value and ForwardIt::rank_v == 1, int> = 0>
-void destroy(Alloc& a, ForwardIt first, ForwardIt last) {
+void destroy(Alloc& alloc, ForwardIt first, ForwardIt last) {
 	//  using multi::to_address;
-	for(; first != last; ++first) {a.destroy(to_address(first));}  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+	for(; first != last; ++first) {alloc.destroy(to_address(first));}  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 }
 
 template<class Alloc, class ForwardIt, std::enable_if_t<has_rank<ForwardIt>{} and ForwardIt::rank_v != 1, int> = 0>
@@ -170,11 +170,13 @@ struct recursive_fill_aux {
 	}
 };
 
-template<> struct recursive_fill_aux<1> {
-	template<class O, class T>  static auto call(O f, O l, T const& v) {
-		using std::fill; return fill(f, l, v);
-	}
-};
+
+// TODO(correa) remove commented code
+//template<> struct recursive_fill_aux<1> {
+//	template<class O, class T>  static auto call(O f, O l, T const& v) {
+//		using std::fill; return fill(f, l, v);
+//	}
+//};
 
 }  // end namespace boost::multi
 

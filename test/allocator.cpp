@@ -17,7 +17,7 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
 	std::transform(
 		begin(multi::iextension(3)), end(multi::iextension(3)),
 		std::back_inserter(va),
-		[](auto i){return multi::array<double, 2>({i, i}, static_cast<double>(i));}
+		[](auto idx){return multi::array<double, 2>({idx, idx}, static_cast<double>(idx));}
 	);
 
 	BOOST_REQUIRE( size(va[0]) == 0 );
@@ -35,11 +35,11 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
 	BOOST_REQUIRE( va == wa );
 
 	std::vector<multi::array<double, 2>> ua(3);
-	auto x = multi::iextension(static_cast<multi::size_type>(ua.size()));
+	auto iex = multi::iextension(static_cast<multi::size_type>(ua.size()));
 	std::transform(
-		begin(x), end(x),
+		begin(iex), end(iex),
 		begin(ua),
-		[](auto i){return multi::array<double, 2>({i, i}, static_cast<double>(i));}
+		[](auto idx){return multi::array<double, 2>({idx, idx}, static_cast<double>(idx));}
 	);
 	BOOST_REQUIRE( ua == va );
 }
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(array1d_of_arrays2d) {
 
 	std::transform(
 		begin(extension(A)), end(extension(A)), begin(A),
-		[](auto i){return multi::array<double, 2>({i, i}, static_cast<double>(i));}
+		[](auto idx){return multi::array<double, 2>({idx, idx}, static_cast<double>(idx));}
 	);
 
 	BOOST_REQUIRE( size(A[0]) == 0 );
