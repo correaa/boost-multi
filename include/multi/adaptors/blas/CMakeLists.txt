@@ -44,6 +44,9 @@ if((NOT
 			/usr/local/include
 			$ENV{BLAS_HOME}/include
 		)
+		if(BLAS_FOUND)
+			message("Some BLAS found")
+		endif()
 	endif()
 
     link_libraries(${BLAS_LIBRARIES})
