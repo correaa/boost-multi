@@ -33,19 +33,24 @@ although the code is completely independent and with important semantic differen
 `Multi` doesn't require instalation, single file `#include<multi/array.hpp>` is enough to use the full core library.
 `Multi`'s _only_ dependecy is the standard C++ library.
 
+Testing the library requires CMake, a C++ compiler and the Boost.Test library. 
+
+```bash
+sudo apt install cmake libboost-test-dev
+```
+
 It is important to compile programs that use the library with some level of optimization, specially if element-access is intensively used.
 For example, when testing speed, please make sure that you are compiling in release mode (`-DNDEBUG`) and with optimizations (`-O3`).
 
 A CMake build system is provided to automatically run basic tests. (Test do depend on the Boost.Test library.)
 
 ```bash
-git clone https://gitlab.com/correaa/boost-multi.git multi
+git clone https://gitlab.com/correaa/boost-multi.git
 cd multi
-mkdir -p build
-cd build
+mkdir -p build && cd build
 cmake ..
-make -j
-make test -j
+cmake --build .
+ctest
 ```
 
 ### Dependecies and compiler requirements
@@ -59,7 +64,11 @@ Compiling and running the tests depends on Boost.Test
 (which can be installed with `sudo apt install libboost-serialization-dev libfftw3-dev libblas64-dev liblapack64-dev libthrust-dev libcudart11.0` or indiviudually.)
 
 The code is developed for several compilers with standard C++17 support, for reference:
-LLVM's `clang` (5.0+) (`libc++` and `libstdc++`), GNU's `g++` (7.1+), Nvidia's `nvcc` (11.3+) and `nvc++` (20.7-21.3+), Intel's `icpc` (2021.2.0+) and `icpx` (2022.0.0+), Baxter's [`circle`](https://www.circle-lang.org/) (build 168+), and Microsoft's [MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/) (+19.14 in [conformant mode](https://godbolt.org/z/vrfh1fxWK)).
+LLVM's `clang` (5.0+) (`libc++` and `libstdc++`), 
+GNU's `g++` (7.1+), 
+Nvidia's `nvcc` (11.3+) and `nvc++` (20.7-21.3+), 
+Intel's `icpc` (2021.2.0+) and `icpx` (2022.0.0+), 
+Baxter's [`circle`](https://www.circle-lang.org/) (build 168+), and Microsoft's [MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/) (+19.14 in [conformant mode](https://godbolt.org/z/vrfh1fxWK)).
 
 ## Types
 
