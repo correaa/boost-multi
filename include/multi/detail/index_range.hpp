@@ -138,19 +138,19 @@ class range {
 	friend constexpr auto is_empty(range const& s) noexcept {return s.is_empty();}
 
 	[[nodiscard]]
-	       constexpr auto empty()     const&    noexcept {return is_empty();}
-	friend constexpr auto empty(range const& s) noexcept {return s.empty();}
+	       constexpr auto empty()     const&       noexcept {return is_empty();}
+	friend constexpr auto empty(range const& self) noexcept {return self.empty();}
 
-	       constexpr auto size()     const&    noexcept -> size_type {return last_ - first_;}
-	friend constexpr auto size(range const& s) noexcept -> size_type {return s.size();}
+	       constexpr auto size()     const&       noexcept -> size_type {return last_ - first_;}
+	friend constexpr auto size(range const& self) noexcept -> size_type {return self.size();}
 
 	friend constexpr auto begin(range const& self) {return self.begin();}
 	friend constexpr auto end  (range const& self) {return self.end()  ;}
 
-	friend constexpr auto operator==(range const& a, range const& b) {
-		return (a.empty() and b.empty()) or (a.first_==b.first_ and a.last_==b.last_);
+	friend constexpr auto operator==(range const& self, range const& other) {
+		return (self.empty() and other.empty()) or (self.first_ == other.first_ and self.last_ == other.last_);
 	}
-	friend constexpr auto operator!=(range const& a, range const& b) {return not(a == b);}
+	friend constexpr auto operator!=(range const& self, range const& other) {return not(self == other);}
 
 	[[nodiscard]] constexpr auto find(value_type const& value) const -> range::const_iterator {
 		if(value >= last_ or value < first_) {
@@ -204,10 +204,10 @@ class intersecting_range {
 
 [[maybe_unused]] constexpr intersecting_range<> ALL   = intersecting_range<>::all();
 [[maybe_unused]] constexpr intersecting_range<> _     = ALL;
-[[maybe_unused]] constexpr intersecting_range<> U     = ALL;
+[[maybe_unused]] constexpr intersecting_range<> U     = ALL; // NOLINT(readability-identifier-length)
 [[maybe_unused]] constexpr intersecting_range<> ooo   = ALL;
 
-[[maybe_unused]] constexpr intersecting_range<> V     = U;
+[[maybe_unused]] constexpr intersecting_range<> V     = U;  // NOLINT(readability-identifier-length)
 [[maybe_unused]] constexpr intersecting_range<> A     = V;
 
 //[[maybe_unused]] constexpr intersecting_range<> https://www.compart.com/en/unicode/U+2200 = V;
@@ -216,13 +216,16 @@ template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::d
 struct extension_t : public range<IndexType, IndexTypeLast> {
 	using range<IndexType, IndexTypeLast>::range;
 
-	constexpr extension_t(IndexType f, IndexTypeLast l) noexcept : range<IndexType, IndexTypeLast>{f, l} {}
+	constexpr extension_t(IndexType first, IndexTypeLast last) noexcept
+	: range<IndexType, IndexTypeLast>{first, last} {}
 
 	// cppcheck-suppress noExplicitConstructor ; because syntax convenience // NOLINTNEXTLINE(runtime/explicit)
-	constexpr extension_t(IndexType last) noexcept : range<IndexType, IndexTypeLast>(0, last) {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) because syntax convenience
+	constexpr extension_t(IndexType last) noexcept  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) because syntax convenience
+	: range<IndexType, IndexTypeLast>(0, last) {}
+
 	constexpr extension_t() noexcept : range<IndexType, IndexTypeLast>() {}
 
-	friend constexpr auto size(extension_t const& s) -> typename extension_t::size_type {return s.size();}
+	friend constexpr auto size(extension_t const& self) -> typename extension_t::size_type {return self.size();}
 
 //  template<class OStream>
 //  friend auto operator<<(OStream& os, extension_t const& self) -> decltype(os<<"[]") {
@@ -238,23 +241,25 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 	[[nodiscard]] constexpr auto start () const -> IndexType {return this->first();}
 	[[nodiscard]] constexpr auto finish() const -> IndexType {return this->last ();}
 
-	friend constexpr auto operator==(extension_t const& a, extension_t const& b) {return static_cast<range<IndexType> const&>(a) == static_cast<range<IndexType> const&>(b);}
-	friend constexpr auto operator!=(extension_t const& a, extension_t const& b) {return static_cast<range<IndexType> const&>(a) != static_cast<range<IndexType> const&>(b);}
+	friend constexpr auto operator==(extension_t const& self, extension_t const& other) {return static_cast<range<IndexType> const&>(self) == static_cast<range<IndexType> const&>(other);}
+	friend constexpr auto operator!=(extension_t const& self, extension_t const& other) {return static_cast<range<IndexType> const&>(self) != static_cast<range<IndexType> const&>(other);}
 
-	friend constexpr auto intersection(extension_t const& r1, extension_t const& r2) -> extension_t {
+	friend constexpr auto intersection(extension_t const& ex1, extension_t const& ex2) -> extension_t {
 		using std::max; using std::min;
-		auto       first = max(r1.first(), r2.first());
-		auto const last  = min(r1.last() , r2.last() );
+		auto       first = max(ex1.first(), ex2.first());
+		auto const last  = min(ex1.last() , ex2.last() );
 		first = min(first, last);
 		return extension_t{first, last};
 	}
 };
 
 template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
-constexpr auto make_extension_t(IndexType f, IndexTypeLast l) -> extension_t<IndexType, IndexTypeLast> {return {f, l};}
+constexpr auto make_extension_t(IndexType first, IndexTypeLast last) -> extension_t<IndexType, IndexTypeLast> {
+	return {first, last};
+}
 
 template<class IndexTypeLast = std::ptrdiff_t>
-constexpr auto make_extension_t(IndexTypeLast l) {return make_extension_t(IndexTypeLast{0}, l);}
+constexpr auto make_extension_t(IndexTypeLast last) {return make_extension_t(IndexTypeLast{0}, last);}
 
 using index_range     = range<index>;
 using index_extension = extension_t<index>;
@@ -328,10 +333,10 @@ struct repeat<T, 0, TT> {
 template<dimensionality_type D> using index_extensions = typename detail::repeat<index_extension, D, tuple>::type;
 
 template<dimensionality_type D, class Tuple>
-constexpr auto contains(index_extensions<D> const& ie, Tuple const& tp) {
+constexpr auto contains(index_extensions<D> const& iex, Tuple const& tup) {
 //  using detail::head;
 //  using detail::tail;
-	return contains(head(ie), head(tp)) and contains(tail(ie), tail(tp));
+	return contains(head(iex), head(tup)) and contains(tail(iex), tail(tup));
 }
 
 }  // end namespace boost::multi
