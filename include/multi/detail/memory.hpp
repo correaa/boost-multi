@@ -109,19 +109,19 @@ auto alloc_uninitialized_copy(Alloc& a, InputIt f, InputIt l, MIt d) -> MIt {
 
 }  // end namespace xtd
 
-// https://en.cppreference.com/w/cpp/memory/destroy_at
-template<class Alloc, class T, typename AT = std::allocator_traits<Alloc> >
-void destroy_at(Alloc& a, T* p) {AT::destroy(a, p);}
+// // https://en.cppreference.com/w/cpp/memory/destroy_at
+// template<class Alloc, class T, typename AT = std::allocator_traits<Alloc> >
+// void destroy_at(Alloc& a, T* p) {AT::destroy(a, p);}
 
-// https://en.cppreference.com/w/cpp/memory/destroy_n
-template<class Alloc, class ForwardIt, class Size>  // , typename AT = typename std::allocator_traits<Alloc> >
-auto destroy_n(Alloc& a, ForwardIt first, Size n) -> ForwardIt {
-//  using std::addressof;
-	for(; n > 0; ++first, --n) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-		allocator_traits<Alloc>::destroy(a, to_address(first));
-	}
-	return first;
-}
+// // https://en.cppreference.com/w/cpp/memory/destroy_n
+// template<class Alloc, class ForwardIt, class Size>  // , typename AT = typename std::allocator_traits<Alloc> >
+// auto destroy_n(Alloc& a, ForwardIt first, Size n) -> ForwardIt {
+// //  using std::addressof;
+// 	for(; n > 0; ++first, --n) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+// 		allocator_traits<Alloc>::destroy(a, to_address(first));
+// 	}
+// 	return first;
+// }
 
 template<class AA> class is_allocator {
 	template<
@@ -152,24 +152,23 @@ auto uninitialized_copy(InputIt first, InputIt last, ForwardIt dest) {
 	return dest;
 }
 
-template<dimensionality_type N> struct recursive_fill_aux;
+// template<dimensionality_type N> struct recursive_fill_aux;
 
-template<dimensionality_type N, class Out, class T>
-void recursive_fill(Out f, Out l, T const& value) {
-	return recursive_fill_aux<N>::call(f, l, value);
-}
+// template<dimensionality_type N, class Out, class T>
+// void recursive_fill(Out f, Out l, T const& value) {
+// 	return recursive_fill_aux<N>::call(f, l, value);
+// }
 
-template<dimensionality_type N>
-struct recursive_fill_aux {
-	template<class Out, class T>
-	static auto call(Out first, Out last, T const& value) {
-		using std::begin; using std::end;
-		for(; first != last; ++first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-			recursive_fill<N-1>(begin(*first), end(*first), value);  // (*first).begin() instead of first->begin() to make it work with T[][]
-		}
-	}
-};
-
+// template<dimensionality_type N>
+// struct recursive_fill_aux {
+// 	template<class Out, class T>
+// 	static auto call(Out first, Out last, T const& value) {
+// 		using std::begin; using std::end;
+// 		for(; first != last; ++first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+// 			recursive_fill<N-1>(begin(*first), end(*first), value);  // (*first).begin() instead of first->begin() to make it work with T[][]
+// 		}
+// 	}
+// };
 
 // TODO(correa) remove commented code
 //template<> struct recursive_fill_aux<1> {
