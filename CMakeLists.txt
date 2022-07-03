@@ -91,6 +91,6 @@ if(Boost_FOUND)
 	add_subdirectory(include/multi/adaptors/cuda  )
 	add_subdirectory(include/multi/adaptors/thrust)
 else()
-    message (WARNING "Cannot find Boost, library will not be tested. If you want this feature install Boost.Test, for example please run:\n    apt-get install libboost-test-dev")
+    message (WARNING "Cannot find Boost, library will not be tested. If you want this feature install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev")
 endif()
 

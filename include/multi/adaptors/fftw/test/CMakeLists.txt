@@ -30,18 +30,18 @@ if((NOT
 		"nvcc"
 	   )
 )
-	find_package(Boost REQUIRED COMPONENTS unit_test_framework timer)
+#	find_package(Boost REQUIRED COMPONENTS unit_test_framework timer)
 else()
-	link_libraries("-lboost_unit_test_framework -lboost_timer")
+	link_libraries("-lboost_unit_test_framework") # -lboost_timer")
 endif()
 
-find_package(PkgConfig REQUIRED)
-pkg_search_module(
-	FFTW
-	REQUIRED
-	fftw3
-	IMPORTED_TARGET
-)
+# find_package(PkgConfig REQUIRED)
+# pkg_search_module(
+# 	FFTW
+# 	REQUIRED
+# 	fftw3
+# 	IMPORTED_TARGET
+# )
 
 # include_directories(PkgConfig::FFTW)
 # link_libraries(PkgConfig::FFTW)
