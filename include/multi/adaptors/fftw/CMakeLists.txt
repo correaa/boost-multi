@@ -14,17 +14,20 @@ find_package(PkgConfig)
 if(PKG_CONFIG_FOUND)
 	pkg_search_module(
 		FFTW
-		REQUIRED
 		fftw3
 		IMPORTED_TARGET
 	)
-	include_directories(PkgConfig::FFTW)
-	link_libraries(PkgConfig::FFTW)
+	if(FFTW_FOUND)
+		include_directories(PkgConfig::FFTW)
+		link_libraries(PkgConfig::FFTW)
 
-	include_directories(${CMAKE_BINARY_DIR})
+		include_directories(${CMAKE_BINARY_DIR})
 
-	add_subdirectory(test)
+		add_subdirectory(test)
+	else()
+		message(WARNING "Cannot find FFTW, FFTW-adaptor will not be tested. If you want this feature install FFTW, for example please run:\n    sudo apt install pkg-config libfftw3-dev")
+	endif()
 else()
-	message(WARNING "pkgconfig or fftw not found, skipping fftw tests")
+	message(WARNING "Cannot find PkgConfig and/or FFTW, FFTW-adaptor will not be tested. If you want this feature install PkgConfig and FFTW, for example please run:\n    sudo apt install pkg-config libfftw3-dev")
 endif()
 
