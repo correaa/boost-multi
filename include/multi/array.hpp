@@ -732,8 +732,8 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	}
 
 	template<class Archive>
-	void serialize(Archive& ar, const unsigned int version) {  // case D = 0
-		ref::serialize(ar, version);
+	void serialize(Archive& arxiv, const unsigned int version) {
+		ref::serialize(arxiv, version);
 	}
 };
 
@@ -768,21 +768,20 @@ struct array : static_array<T, D, Alloc> {
 	// NOLINTNEXTLINE(runtime/operator)
 	auto operator&() const& -> array const* {return this;}  // NOLINT(google-runtime-operator) : delete operator&& defined in base class to avoid taking address of temporary
 
-//  friend auto extensions(array const& s) -> typenameextensions_type {return s.extensions();}
-	friend auto sizes(array const& s) -> typename array::sizes_type {return s.sizes();}
+	friend auto sizes(array const& self) -> typename array::sizes_type {return self.sizes();}
 
 	template<class Archive>
-	void serialize(Archive& ar, const unsigned int version) {  // NOLINT(fuchsia-default-arguments-declarations) version is used for threshold of big vs small data
+	void serialize(Archive& arxiv, const unsigned int version) {
 		using AT = multi::archive_traits<Archive>;
 		auto extensions_ = this->extensions();
-		ar &                   AT::make_nvp("extensions", extensions_);
-	//  ar & boost::serialization::make_nvp("extensions", extensions);
-	//  ar &        cereal       ::make_nvp("extensions", extensions);
-	//  ar &        BOOST_SERIALIZATION_NVP              (extensions);
-	//  ar &                     CEREAL_NVP              (extensions);
-	//  ar &                                              extensions ;
-		if(extensions_ != this->extensions()) {clear(); this->reextent(extensions_);}
-		static_::serialize(ar, version);
+		arxiv &                   AT::make_nvp("extensions", extensions_);
+	//  arxiv & boost::serialization::make_nvp("extensions", extensions );
+	//  arxiv &        cereal       ::make_nvp("extensions", extensions );
+	//  arxiv &        BOOST_SERIALIZATION_NVP(              extensions );
+	//  arxiv &                     CEREAL_NVP(              extensions );
+	//  arxiv &                                              extensions  ;
+		if(this->extensions() != extensions_) {clear(); this->reextent(extensions_);}
+		static_::serialize(arxiv, version);
 	}
 
 	using static_::static_;
@@ -795,8 +794,8 @@ struct array : static_array<T, D, Alloc> {
 	array() = default;
 	array(array const&) = default;
 
-	auto reshape(typename array::extensions_type x) & -> array& {
-		typename array::layout_t new_layout{x};
+	auto reshape(typename array::extensions_type extensions) & -> array& {
+		typename array::layout_t new_layout{extensions};  // TODO(correaa) implement move-reextent in terms of reshape
 		assert( new_layout.num_elements() == this->num_elements() );
 		this->layout_mutable() = new_layout;
 		return *this;
@@ -806,14 +805,14 @@ struct array : static_array<T, D, Alloc> {
 		static_::clear();
 		return *this;
 	}
-	friend auto clear(array& s) noexcept -> array& {return s.clear();}
+	friend auto clear(array& self) noexcept -> array& {return self.clear();}
 
 	friend auto data_elements(array const& self) {return self.data_elements();}
 	friend auto data_elements(array      & self) {return self.data_elements();}
 	friend auto data_elements(array     && self) {return std::move(self).data_elements();}
 
-	auto move() & -> basic_array<typename array::element, D, multi::move_ptr<typename array::element> >{
-		basic_array<typename array::element, D, multi::move_ptr<typename array::element> >
+	auto move() & -> basic_array<typename array::element, D, multi::move_ptr<typename array::element>> {
+		basic_array<typename array::element, D, multi::move_ptr<typename array::element>>
 		ret = multi::static_array_cast<typename array::element, multi::move_ptr<typename array::element>>(*this);
 		layout_t<D>::operator=({});
 		return ret;
@@ -822,14 +821,14 @@ struct array : static_array<T, D, Alloc> {
 		return self.move();
 	}
 
-	array(array&& o, typename array::allocator_type const& a) noexcept : static_{std::move(o), a} {}
-	array(array&& o) noexcept : array{std::move(o), o.get_allocator()} {}
+	array(array&& other, typename array::allocator_type const& alloc) noexcept : static_{std::move(other), alloc} {}
+	array(array&& other) noexcept : array{std::move(other), other.get_allocator()} {}
 
 	friend
 	#if not defined(__NVCC__) and not defined(__NVCOMPILER) and not defined(__INTEL_COMPILER)
 	constexpr
 	#endif
-	auto get_allocator(array const& s) -> typename array::allocator_type {return s.get_allocator();}
+	auto get_allocator(array const& self) -> typename array::allocator_type {return self.get_allocator();}
 
  private:
 	template<class TrueType>
@@ -920,15 +919,16 @@ struct array : static_array<T, D, Alloc> {
 		return *this;
 	}
 
-	friend void swap(array& a, array& b) {a.swap(b);}
-	void assign(typename array::extensions_type x, typename array::element const& e) {
-		if(array::extensions() == x) {
-			adl_fill_n(this->base_, this->num_elements(), e);
+	friend void swap(array& self, array& other) {self.swap(other);}
+
+	void assign(typename array::extensions_type extensions, typename array::element const& elem) {
+		if(array::extensions() == extensions) {
+			adl_fill_n(this->base_, this->num_elements(), elem);
 		} else {
 			this->clear();
-			(*this).array::layout_t::operator=(layout_t<D>{x});
+			(*this).array::layout_t::operator=(layout_t<D>{extensions});
 			this->base_ = this->static_::array_alloc::allocate(this->num_elements());
-			adl_alloc_uninitialized_fill_n(this->alloc(), this->base_, this->num_elements(), e);  // recursive_uninitialized_fill<dimensionality>(alloc(), begin(), end(), e);
+			adl_alloc_uninitialized_fill_n(this->alloc(), this->base_, this->num_elements(), elem);  // recursive_uninitialized_fill<dimensionality>(alloc(), begin(), end(), e);
 		}
 	}
 
@@ -942,29 +942,32 @@ struct array : static_array<T, D, Alloc> {
 		}
 		return *this;
 	}
-	void assign(std::initializer_list<value_type> il) {assign(il.begin(), il.end());}
+	void assign(std::initializer_list<value_type> values) {assign(values.begin(), values.end());}
 
-	template<class Range> auto assign(Range&& r) &
-	->decltype(assign(adl_begin(r), adl_end(r))) {
-		return assign(adl_begin(r), adl_end(r)); }
+	template<class Range> auto assign(Range&& other) &
+	->decltype(assign(adl_begin(other), adl_end(other))) {  // TODO(correaa) use forward
+		return assign(adl_begin(other), adl_end(other)); }
 
-	auto operator=(std::initializer_list<value_type> il) -> array& {
-		assign(il.begin(), il.end()); return *this;
+	auto operator=(std::initializer_list<value_type> values) -> array& {
+		assign(values.begin(), values.end());
+		return *this;
 	}
 
 	template<class... TTs>
 	[[deprecated]] auto reextent(std::tuple<TTs...> const& other) -> array& {
-		return reextent(std::apply([](auto const&... es) {return typename array::extensions_type(es...);}, other));  // paren is important here ext_type(...) for allow narrowing casts
+		return reextent(
+			std::apply([](auto const&... extensions) {return typename array::extensions_type(extensions...);}, other)
+		);  // paren is important here ext_type(...) for allow narrowing casts ^^^
 	}
 
-	auto reextent(typename array::extensions_type const& x) && -> array& {
-		if(x == this->extensions()) {return *this;}
+	auto reextent(typename array::extensions_type const& extensions) && -> array& {
+		if(extensions == this->extensions()) {return *this;}
 		this->destroy();
 		this->deallocate();
-		this->layout_mutable() = typename array::layout_t{x};
+		this->layout_mutable() = typename array::layout_t{extensions};
 		this->base_ = this->static_::array_alloc::allocate(
 			static_cast<typename std::allocator_traits<typename array::allocator_type>::size_type>(
-				typename array::layout_t{x}.num_elements()
+				typename array::layout_t{extensions}.num_elements()
 			),
 			this->data_elements()  // used as hint
 		);
