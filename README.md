@@ -28,19 +28,19 @@ although the code is completely independent and with important semantic differen
 ## Contents
 [[_TOC_]]
 
-## Installation and Tests
+## Using the library, installation and tests
 
 `Multi` doesn't require instalation, single file `#include<multi/array.hpp>` is enough to use the full core library.
 `Multi`'s _only_ dependecy is the standard C++ library.
 
-Testing the library requires CMake, a C++ compiler and the Boost.Test library. 
-
-```bash
-sudo apt install cmake libboost-test-dev
-```
-
 It is important to compile programs that use the library with some level of optimization, specially if element-access is intensively used.
 For example, when testing speed, please make sure that you are compiling in release mode (`-DNDEBUG`) and with optimizations (`-O3`).
+
+Testing the library requires CMake, a build system (e.g. make), and the Boost.Test library. 
+
+```bash
+sudo apt install cmake libboost-test-dev make
+```
 
 A CMake build system is provided to automatically run basic tests. (Test do depend on the Boost.Test library.)
 
