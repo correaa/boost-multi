@@ -975,8 +975,8 @@ struct array : static_array<T, D, Alloc> {
 		return *this;
 	}
 
-	auto reextent(typename array::extensions_type const& x)  & -> array& {
-		if(x == this->extensions()) {return *this;}
+	auto reextent(typename array::extensions_type const& extensions)  & -> array& {
+		if(extensions == this->extensions()) {return *this;}
 #if 0
 		array tmp(x, this->get_allocator());  // TODO(correaa) opportunity missed to use hint allocation
 		auto const is = intersection(this->extensions(), x);
@@ -986,16 +986,16 @@ struct array : static_array<T, D, Alloc> {
 		auto&& tmp = typename array::ref{
 			this->static_::array_alloc::allocate(
 				static_cast<typename std::allocator_traits<typename array::allocator_type>::size_type>(
-					typename array::layout_t{x}.num_elements()
+					typename array::layout_t{extensions}.num_elements()
 				),
 				this->data_elements()  // used as hint
 			),
-			x
+			extensions
 		};
 		if constexpr(not std::is_trivially_default_constructible<typename array::element>{}) {  // TODO(correaa) convert into constexpr if
 			adl_alloc_uninitialized_value_construct_n(this->alloc(), tmp.data_elements(), tmp.num_elements());
 		}
-		auto const is = intersection(this->extensions(), x);
+		auto const is = intersection(this->extensions(), extensions);
 		tmp.apply(is) = this->apply(is);  // TODO(correaa) : use (and implement) `.move();`
 		this->destroy();
 		this->deallocate();
@@ -1005,24 +1005,24 @@ struct array : static_array<T, D, Alloc> {
 		return *this;
 	}
 
-	auto reextent(typename array::extensions_type const& x, typename array::element const& e) && -> array& {
-		if(x == this->extensions()) {return *this;}
+	auto reextent(typename array::extensions_type const& extensions, typename array::element const& elem) && -> array& {
+		if(extensions == this->extensions()) {return *this;}
 		this->destroy();
 		this->deallocate();
-		this->layout_mutable() = typename array::layout_t{x};
+		this->layout_mutable() = typename array::layout_t{extensions};
 		this->base_ = this->static_::array_alloc::allocate(
 			static_cast<typename std::allocator_traits<typename array::allocator_type>::size_type>(
-				typename array::layout_t{x}.num_elements()
+				typename array::layout_t{extensions}.num_elements()
 			),
 			this->data_elements()  // used as hint
 		);
-		this->uninitialized_fill_n(this->base_, static_cast<typename std::allocator_traits<typename array::allocator_type>::size_type>(this->num_elements()), e);
+		this->uninitialized_fill_n(this->base_, static_cast<typename std::allocator_traits<typename array::allocator_type>::size_type>(this->num_elements()), elem);
 
 		return *this;
 	}
 
-	auto reextent(typename array::extensions_type const& x, typename array::element const& e) & -> array& {
-		if(x == this->extensions()) {
+	auto reextent(typename array::extensions_type const& exs, typename array::element const& elem) & -> array& {
+		if(exs == this->extensions()) {
 			return *this;
 		}
 #if 0
@@ -1031,9 +1031,9 @@ struct array : static_array<T, D, Alloc> {
 		tmp.apply(is) = this->apply(is);
 		swap(tmp);
 #else  // implementation with hint
-		auto&& tmp = typename array::ref{this->static_::array_alloc::allocate(static_cast<typename std::allocator_traits<typename array::allocator_type>::size_type>(typename array::layout_t{x}.num_elements()), this->data_elements()), x};
-		this->uninitialized_fill_n(tmp.data_elements(), static_cast<typename std::allocator_traits<typename array::allocator_type>::size_type>(tmp.num_elements()), e);
-		auto const is = intersection(this->extensions(), x);
+		auto&& tmp = typename array::ref{this->static_::array_alloc::allocate(static_cast<typename std::allocator_traits<typename array::allocator_type>::size_type>(typename array::layout_t{exs}.num_elements()), this->data_elements()), exs};
+		this->uninitialized_fill_n(tmp.data_elements(), static_cast<typename std::allocator_traits<typename array::allocator_type>::size_type>(tmp.num_elements()), elem);
+		auto const is = intersection(this->extensions(), exs);
 		tmp.apply(is) = this->apply(is);
 		this->destroy();
 		this->deallocate();
@@ -1043,8 +1043,8 @@ struct array : static_array<T, D, Alloc> {
 #endif
 		return *this;
 	}
-	template<class... Ts> constexpr auto reindex(Ts... a)&& -> array&& {this->layout_mutable().reindex(a...); return std::move(*this);}
-	template<class... Ts> constexpr auto reindex(Ts... a) & -> array & {this->layout_mutable().reindex(a...); return           *this ;}
+	template<class... Indices> constexpr auto reindex(Indices... idxs)&& -> array&& {this->layout_mutable().reindex(idxs...); return std::move(*this);}
+	template<class... Indices> constexpr auto reindex(Indices... idxs) & -> array & {this->layout_mutable().reindex(idxs...); return           *this ;}
 
 	~array() = default;
 };
