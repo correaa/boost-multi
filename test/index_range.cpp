@@ -8,15 +8,16 @@
 
 #include <boost/iterator/transform_iterator.hpp>
 
-#include <boost/serialization/nvp.hpp>
+// #include <boost/serialization/nvp.hpp>
 
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
+// #include <boost/archive/xml_iarchive.hpp>
+// #include <boost/archive/xml_oarchive.hpp>
 
 #include<numeric>  // for accumulate
 
 namespace multi = boost::multi;
 
+#if 0
 BOOST_AUTO_TEST_CASE(xml_serialization_index_range) {
 	std::stringstream ss;
 	multi::range<std::ptrdiff_t> const rg{5, 10};
@@ -31,6 +32,7 @@ BOOST_AUTO_TEST_CASE(xml_serialization_index_range) {
 		BOOST_REQUIRE( rg == rg2 );
 	}
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(multi_range) {
 #if defined(__cpp_deduction_guides) and __cpp_deduction_guides and not defined(__NVCC__)

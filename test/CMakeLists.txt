@@ -17,7 +17,7 @@ endif()
 #	LANGUAGES CXX
 #)
 
-find_package(Boost COMPONENTS unit_test_framework serialization REQUIRED)  # tests require serialization, `apt-get install libboost-serialization-dev`
+find_package(Boost COMPONENTS unit_test_framework REQUIRED)  # tests require Boost.Test `sudo apt install libboost-test-dev`
 
 if((ENABLE_CUDA OR DEFINED CXXCUDA) AND NOT DEFINED FORCED_ARCH)
 	enable_language(CUDA)
@@ -65,7 +65,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 
 	target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
 	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS}        )
-	target_link_libraries     (${TEST_EXE}        PRIVATE Boost::unit_test_framework Boost::serialization)
+	target_link_libraries     (${TEST_EXE}        PRIVATE Boost::unit_test_framework   )
 
 	target_compile_definitions(${TEST_EXE} PRIVATE "$<$<CUDA_COMPILER_ID:NVIDIA>:BOOST_PP_VARIADICS>")
 

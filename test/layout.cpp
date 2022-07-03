@@ -9,8 +9,8 @@
 
 #include "multi/detail/tuple_zip.hpp"
 
-#include <boost/archive/xml_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
+//#include <boost/archive/xml_iarchive.hpp>
+//#include <boost/archive/xml_oarchive.hpp>
 
 #include<tuple>
 
@@ -33,6 +33,7 @@ BOOST_AUTO_TEST_CASE(extensions_3D) {
 //	BOOST_REQUIRE( multi::extensions_t<1>( { {0, 10} } ) == multi::extensions_t<1>( { {0, 10} } ) );
 //}
 
+#if 0
 BOOST_AUTO_TEST_CASE(serialize_extensions) {
 	multi::extensions_t<3> x{51, 52, 53};
 	std::stringstream ss;
@@ -48,6 +49,7 @@ BOOST_AUTO_TEST_CASE(serialize_extensions) {
 		BOOST_REQUIRE(x == x2);
 	}
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(extensions_to_linear) {
 	multi::extensions_t<3> x{4, 5, 3};
