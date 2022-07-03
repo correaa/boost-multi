@@ -34,18 +34,18 @@ class iterator_facade {
 	using difference_type   = DifferenceType;
 	using iterator_category = AccessCategory;
 
-	friend constexpr auto operator!=(self_type const& s, self_type const& o) {return not(s == o);}
+	friend constexpr auto operator!=(self_type const& self, self_type const& other) {return not(self == other);}
 
-	friend constexpr auto operator<=(self_type const& s, self_type const& o) {return (s < o) or (s == o);}
-	friend constexpr auto operator> (self_type const& s, self_type const& o) {return not(s <= o);}
-	friend constexpr auto operator>=(self_type const& s, self_type const& o) {return not(s < o);}
+	friend constexpr auto operator<=(self_type const& self, self_type const& other) {return (self < other) or (self == other);}
+	friend constexpr auto operator> (self_type const& self, self_type const& other) {return not(self <= other);}
+	friend constexpr auto operator>=(self_type const& self, self_type const& other) {return not(self <  other);}
 
 	       constexpr auto operator-(difference_type n) const {return self_type{self()} -= n;}
 	       constexpr auto operator+(difference_type n) const {return self_type{self()} += n;}
-	friend constexpr auto operator+(difference_type n, self_type const& s) {return s + n;}
+	friend constexpr auto operator+(difference_type n, self_type const& self) {return self + n;}
 
-	friend constexpr auto operator++(self_type& s, int) -> self_type {self_type r = s; ++s; return r;}
-	friend constexpr auto operator--(self_type& s, int) -> self_type {self_type r = s; --s; return r;}
+	friend constexpr auto operator++(self_type& self, int) -> self_type {self_type ret = self; ++self; return ret;}
+	friend constexpr auto operator--(self_type& self, int) -> self_type {self_type ret = self; --self; return ret;}
 
 	constexpr auto operator[](difference_type n) const {return *(self() + n);}
 };
@@ -56,19 +56,19 @@ class range {
 	IndexTypeLast last_  = first_;
 
  public:
-	template<class Ar>//, class ArT = multi::archive_traits<Ar>>
-	void serialize(Ar& ar, unsigned /*version*/) {
-		ar & multi::archive_traits<Ar>::make_nvp("first", first_);
-	//	ar &             BOOST_SERIALIZATION_NVP(         first_);
-	//	ar &                   cereal:: make_nvp("first", first_);
-	//	ar &                          CEREAL_NVP(         first_);
-	//	ar &                                              first_ ;
+	template<class Archive>  // , class ArT = multi::archive_traits<Ar>>
+	void serialize(Archive& arxiv, unsigned /*version*/) {
+		arxiv & multi::archive_traits<Archive>::make_nvp("first", first_);
+	//	arxiv &                  BOOST_SERIALIZATION_NVP(         first_);
+	//	arxiv &                        cereal:: make_nvp("first", first_);
+	//	arxiv &                               CEREAL_NVP(         first_);
+	//	arxiv &                                                   first_ ;
 
-		ar & multi::archive_traits<Ar>::make_nvp("last" , last_ );
-	//	ar &             BOOST_SERIALIZATION_NVP(         last_ );
-	//	ar &                   cereal:: make_nvp("last" , last_ );
-	//	ar &                          CEREAL_NVP(         last_ );
-	//	ar &                                              last_  ;
+		arxiv & multi::archive_traits<Archive>::make_nvp("last" , last_ );
+	//	arxiv &                  BOOST_SERIALIZATION_NVP(         last_ );
+	//	arxiv &                        cereal:: make_nvp("last" , last_ );
+	//	arxiv &                               CEREAL_NVP(         last_ );
+	//	arxiv &                                                   last_  ;
 	}
 
 	using value_type      = IndexType;
@@ -83,10 +83,11 @@ class range {
 
 	template<class Range, typename = std::enable_if_t<std::is_same_v<std::decay_t<Range>, value_type>> >
 	// cxxcheck-suppress internalAstError ; because bug in cppcheck
-	constexpr explicit range(Range&& o) : first_{std::forward<Range>(o).first()}, last_{std::forward<Range>(o).last()} {}
+	constexpr explicit range(Range&& other)
+	: first_{std::forward<Range>(other).first()}, last_{std::forward<Range>(other).last()} {}
 
-	constexpr range(IndexType f, IndexTypeLast l) noexcept : first_{f}, last_{l} {}
-	constexpr explicit range(IndexType f) : range{f, f + 1} {}
+	constexpr range(IndexType first, IndexTypeLast last) noexcept : first_{first}, last_{last} {}
+	[[deprecated]] constexpr explicit range(IndexType first) : range{first, first + 1} {}
 
 	class const_iterator : public boost::multi::iterator_facade<
 		const_iterator,
@@ -100,8 +101,8 @@ class range {
 	 public:
 		const_iterator() = default;
 
-		constexpr auto operator==(const_iterator const& y) const -> bool {return curr_ == y.curr_;}
-		constexpr auto operator< (const_iterator const& y) const -> bool {return curr_ <  y.curr_;}
+		constexpr auto operator==(const_iterator const& other) const -> bool {return curr_ == other.curr_;}
+		constexpr auto operator< (const_iterator const& other) const -> bool {return curr_ <  other.curr_;}
 
 		constexpr auto operator++() -> const_iterator& {++curr_; return *this;}
 		constexpr auto operator--() -> const_iterator& {--curr_; return *this;}
@@ -109,7 +110,7 @@ class range {
 		constexpr auto operator-=(typename const_iterator::difference_type n) -> const_iterator& {curr_ -= n; return *this;}
 		constexpr auto operator+=(typename const_iterator::difference_type n) -> const_iterator& {curr_ += n; return *this;}
 
-		constexpr auto operator-(const_iterator const& y) const {return curr_ - y.curr_;}
+		constexpr auto operator-(const_iterator const& other) const {return curr_ - other.curr_;}
 		constexpr auto operator*() const -> typename const_iterator::reference {return curr_;}
 	};
 
@@ -134,8 +135,8 @@ class range {
 	[[nodiscard]] constexpr auto begin() const -> const_iterator {return cbegin();}
 	[[nodiscard]] constexpr auto end()   const -> const_iterator {return cend()  ;}
 
-	       constexpr auto is_empty()     const&    noexcept {return first_ == last_;}
-	friend constexpr auto is_empty(range const& s) noexcept {return s.is_empty();}
+	       constexpr auto is_empty()     const&       noexcept {return first_ == last_;}
+	friend constexpr auto is_empty(range const& self) noexcept {return self.is_empty();}
 
 	[[nodiscard]]
 	       constexpr auto empty()     const&       noexcept {return is_empty();}
@@ -158,13 +159,13 @@ class range {
 		}
 		return begin() + (value - front());
 	}
-	template<class K> [[nodiscard]] constexpr auto contains(K const& k) const {return (k>=first_) and (k<last_);}
-	template<class K>               constexpr auto count   (K const& k) const -> value_type {return contains(k);}
+	template<class Value> [[nodiscard]] constexpr auto contains(Value const& v) const {return (v >=first_) and (v < last_);}
+	template<class Value> [[nodiscard]] constexpr auto count   (Value const& v) const -> value_type {return contains(v);}
 
-	friend constexpr auto intersection(range const& a, range const& b) {
+	friend constexpr auto intersection(range const& self, range const& other) {
 		using std::max; using std::min;
-		auto new_first = max(a.first(), b.first());
-		auto new_last  = min(a.last() , b.last() );
+		auto new_first = max(self.first(), other.first());
+		auto new_last  = min(self.last() , other.last() );
 		new_first = min(new_first, new_last);
 		return range<decltype(new_first), decltype(new_last)>{new_first, new_last};
 	}
@@ -203,8 +204,8 @@ class intersecting_range {
 };
 
 [[maybe_unused]] constexpr intersecting_range<> ALL   = intersecting_range<>::all();
-[[maybe_unused]] constexpr intersecting_range<> _     = ALL;
-[[maybe_unused]] constexpr intersecting_range<> U     = ALL; // NOLINT(readability-identifier-length)
+[[maybe_unused]] constexpr intersecting_range<> _     = ALL;  // NOLINT(readability-identifier-length)
+[[maybe_unused]] constexpr intersecting_range<> U     = ALL;  // NOLINT(readability-identifier-length)
 [[maybe_unused]] constexpr intersecting_range<> ooo   = ALL;
 
 [[maybe_unused]] constexpr intersecting_range<> V     = U;  // NOLINT(readability-identifier-length)
