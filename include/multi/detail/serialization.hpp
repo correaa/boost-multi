@@ -43,15 +43,15 @@ template<class T> class NameValuePair;  // dependency "in name only", if you get
 namespace boost {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
 namespace multi {
 
-template<class Archive, class MA, std::enable_if_t<std::is_same_v<MA, std::decay_t<MA>> && (MA::dimensionality > -1) , int> =0>
-auto operator>>(Archive& ar, MA&& self)  // this is for compatability with Archive type
-->decltype(ar>> self) {
-	return ar>> self; }
+template<class Archive, class MA, std::enable_if_t<std::is_same_v<MA, std::decay_t<MA>> and (MA::dimensionality > -1) , int> =0>
+auto operator>>(Archive& arxiv, MA&& self)  // this is for compatability with Archive type
+->decltype(arxiv>> self) {
+	return arxiv>> self; }
 
-template<class Archive, class MA, std::enable_if_t<std::is_same_v<MA, std::decay_t<MA>> && (MA::dimensionality > -1), int> =0>
-auto operator& (Archive& ar, MA&& self)  // this is for compatability with Archive type
-->decltype(ar& self) {
-	return ar& self; }
+template<class Archive, class MA, std::enable_if_t<std::is_same_v<MA, std::decay_t<MA>> and (MA::dimensionality > -1), int> =0>
+auto operator& (Archive& arxiv, MA&& self)  // this is for compatability with Archive type
+->decltype(arxiv& self) {
+	return arxiv& self; }
 
 template<class Ar, class Enable = void>
 struct archive_traits {
@@ -64,22 +64,25 @@ struct archive_traits<Ar, typename std::enable_if<std::is_base_of_v<boost::archi
 	template<class T> using nvp           = boost::serialization::nvp          <T>;
 	template<class T> using array_wrapper = boost::serialization::array_wrapper<T>;
 	template<class T> struct binary_object_t {using type = boost::serialization::binary_object;};
-	template<class T>        inline static auto make_nvp          (char const* n, T&  v              ) noexcept -> const nvp          <T> {return nvp          <T>{n, v};}  // NOLINT(readability-const-return-type) : original boost declaration
-	template<class T>        inline static auto make_nvp          (char const* n, T&& v              ) noexcept -> const nvp          <T> {return nvp          <T>{n, v};}  // NOLINT(readability-const-return-type) : original boost declaration
-	template<class T>        inline static auto make_array        (               T* t, std::size_t s) noexcept -> const array_wrapper<T> {return array_wrapper<T>{t, s};}  // NOLINT(readability-const-return-type) : original boost declaration
-	template<class T = void> inline static auto make_binary_object(      const void* t, std::size_t s) noexcept -> const typename binary_object_t<T>::type {return typename binary_object_t<T>::type(t, s); }  // if you get an error here you need to eventually `#include<boost/serialization/binary_object.hpp>`// NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) : original boost declaration
+	template<class T>        inline static auto make_nvp          (char const* name, T&  value) noexcept -> const nvp<T> {return nvp<T>{name, value};}  // NOLINT(readability-const-return-type) : original boost declaration
+	template<class T>        inline static auto make_nvp          (char const* name, T&& value) noexcept -> const nvp<T> {return nvp<T>{name, value};}  // NOLINT(readability-const-return-type) : original boost declaration
+
+	template<class T>        inline static auto make_array        (               T* first, std::size_t size) noexcept -> const array_wrapper<T> {return array_wrapper<T>{first, size};}  // NOLINT(readability-const-return-type) : original boost declaration
+	template<class T = void> inline static auto make_binary_object(      const void* first, std::size_t size) noexcept -> const typename binary_object_t<T>::type {return typename binary_object_t<T>::type(first, size); }  // if you get an error here you need to eventually `#include<boost/serialization/binary_object.hpp>`// NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) : original boost declaration
 };
 
 #if 1
 template<class Ar>
-struct archive_traits<Ar, typename std::enable_if<
-		   std::is_base_of_v<cereal::OutputArchive<Ar, 0>, Ar> || std::is_base_of_v<cereal::OutputArchive<Ar, 1>, Ar>
-		|| std::is_base_of_v<cereal::InputArchive <Ar, 0>, Ar> || std::is_base_of_v<cereal:: InputArchive<Ar, 1>, Ar>
-	>::type> {
-
+struct archive_traits<
+	Ar, 
+	typename std::enable_if<
+		   std::is_base_of_v<cereal::OutputArchive<Ar, 0>, Ar> or std::is_base_of_v<cereal::OutputArchive<Ar, 1>, Ar>
+		or std::is_base_of_v<cereal::InputArchive <Ar, 0>, Ar> or std::is_base_of_v<cereal:: InputArchive<Ar, 1>, Ar>
+	>::type
+> {
 	using self_t = archive_traits<Ar, typename std::enable_if<
-		   std::is_base_of_v<cereal::OutputArchive<Ar, 0>, Ar> || std::is_base_of_v<cereal::OutputArchive<Ar, 1>, Ar>
-		|| std::is_base_of_v<cereal:: InputArchive<Ar, 0>, Ar> || std::is_base_of_v<cereal:: InputArchive<Ar, 1>, Ar>
+		   std::is_base_of_v<cereal::OutputArchive<Ar, 0>, Ar> or std::is_base_of_v<cereal::OutputArchive<Ar, 1>, Ar>
+		or std::is_base_of_v<cereal:: InputArchive<Ar, 0>, Ar> or std::is_base_of_v<cereal:: InputArchive<Ar, 1>, Ar>
 	>::type>;
 
 	template<class T>
@@ -92,14 +95,14 @@ struct archive_traits<Ar, typename std::enable_if<
 		T* p_;
 		std::size_t c_;
 		template<class Archive>
-		void serialize(Archive& ar, const unsigned int /*version*/) {
+		void serialize(Archive& arxiv, const unsigned int /*version*/) {
 			for(std::size_t i = 0; i != c_; ++i) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 				auto& item = p_[i];  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-				ar &                                        make_nvp("item", item);  // "item" is the name used by Boost.Serialization XML make_array
-			//	ar & boost::multi::archive_traits<Archive>::make_nvp("element", element);
-			//	ar &                         cereal       ::make_nvp("element", element);
-			//	ar &                                      CEREAL_NVP           (element);
-			//	ar &                                                            element ;
+				arxiv &                                        make_nvp("item"   , item   );  // "item" is the name used by Boost.Serialization XML make_array
+			//	arxiv & boost::multi::archive_traits<Archive>::make_nvp("element", element);
+			//	arxiv &                                cereal::make_nvp("element", element);
+			//	arxiv &                                      CEREAL_NVP(           element);
+			//	arxiv &                                                            element ;
 			}
 		}
 	};
