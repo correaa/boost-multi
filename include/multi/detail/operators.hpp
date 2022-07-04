@@ -4,8 +4,8 @@
 #ifndef MULTI_DETAIL_OPERATORS_HPP
 #define MULTI_DETAIL_OPERATORS_HPP
 
-#include<type_traits>  // enable_if
-#include<utility>  // forward
+#include<type_traits>  // for enable_if
+#include<utility>  // for forward
 
 namespace boost::multi {
 
