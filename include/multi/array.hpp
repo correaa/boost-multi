@@ -504,8 +504,8 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 
 	auto uninitialized_fill(typename static_array::element const& elem) {
 		array_alloc::uninitialized_fill_n(
-			this->base_, 
-			static_cast<typename std::allocator_traits<allocator_type>::size_type>(this->num_elements()), 
+			this->base_,
+			static_cast<typename std::allocator_traits<allocator_type>::size_type>(this->num_elements()),
 			elem
 		);
 	}
