@@ -1044,20 +1044,20 @@ struct basic_array
 		return {new_layout, types::base_};
 	}
 
-	friend constexpr auto diagonal(basic_array const& s) {return           s .diagonal();}
-	friend constexpr auto diagonal(basic_array&       s) {return           s .diagonal();}
-	friend constexpr auto diagonal(basic_array&&      s) {return std::move(s).diagonal();}
+	friend constexpr auto diagonal(basic_array const& self) {return           self .diagonal();}
+	friend constexpr auto diagonal(basic_array&       self) {return           self .diagonal();}
+	friend constexpr auto diagonal(basic_array&&      self) {return std::move(self).diagonal();}
 
 	using partitioned_type       = basic_array<T, D+1, element_ptr      >;
 	using partitioned_const_type = basic_array<T, D+1, element_const_ptr>;
 
  private:
-	constexpr auto partitioned_aux(size_type s) const -> partitioned_type {
-		assert(s != 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+	constexpr auto partitioned_aux(size_type n) const -> partitioned_type {
+		assert(n != 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		// vvv TODO(correaa) should be size() here?
-		assert( (this->layout().nelems() % s) == 0);  // if you get an assertion here it means that you are partitioning an array with an incommunsurate partition // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : : normal in a constexpr function
-		multi::layout_t<D+1> new_layout{this->layout(), this->layout().nelems()/s, 0, this->layout().nelems()};
-		new_layout.sub().nelems() /= s;
+		assert( (this->layout().nelems() % n) == 0);  // if you get an assertion here it means that you are partitioning an array with an incommunsurate partition // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : : normal in a constexpr function
+		multi::layout_t<D+1> new_layout{this->layout(), this->layout().nelems()/n, 0, this->layout().nelems()};
+		new_layout.sub().nelems() /= n;
 		return {new_layout, types::base_};
 	}
 
@@ -1066,45 +1066,45 @@ struct basic_array
 	       constexpr auto partitioned(size_type n)      & -> partitioned_type       {return partitioned_aux(n);}
 	       constexpr auto partitioned(size_type n)     && -> partitioned_type       {return partitioned_aux(n);}
 
-	friend constexpr auto partitioned(basic_array const& s, size_type n) -> partitioned_const_type {return           s .partitioned(n);}
-	friend constexpr auto partitioned(basic_array      & s, size_type n) -> partitioned_type       {return           s .partitioned(n);}
-	friend constexpr auto partitioned(basic_array     && s, size_type n) -> partitioned_type       {return std::move(s).partitioned(n);}
+	friend constexpr auto partitioned(basic_array const& self, size_type n) -> partitioned_const_type {return           self .partitioned(n);}
+	friend constexpr auto partitioned(basic_array      & self, size_type n) -> partitioned_type       {return           self .partitioned(n);}
+	friend constexpr auto partitioned(basic_array     && self, size_type n) -> partitioned_type       {return std::move(self).partitioned(n);}
 
  private:
-	constexpr auto chunked_aux(size_type s) const -> partitioned_type {
-		assert( this->size() % s == 0 );
-		return partitioned_aux(this->size()/s);
+	constexpr auto chunked_aux(size_type count) const -> partitioned_type {
+		assert( this->size() % count == 0 );
+		return partitioned_aux(this->size()/count);
 	}
 
  public:  // in Mathematica this is called Partition https://reference.wolfram.com/language/ref/Partition.html in RangesV3 it is called chunk
-	constexpr auto chunked(size_type s) const& -> partitioned_const_type {return chunked_aux(s);}
-	constexpr auto chunked(size_type s)      & -> partitioned_type       {return chunked_aux(s);}
-	constexpr auto chunked(size_type s)     && -> partitioned_type       {return chunked_aux(s);}
+	constexpr auto chunked(size_type count) const& -> partitioned_const_type {return chunked_aux(count);}
+	constexpr auto chunked(size_type count)      & -> partitioned_type       {return chunked_aux(count);}
+	constexpr auto chunked(size_type count)     && -> partitioned_type       {return chunked_aux(count);}
 
  private:
-	constexpr auto reversed_aux() const -> basic_array{
+	constexpr auto reversed_aux() const -> basic_array {
 		auto new_layout = this->layout();
 		new_layout.reverse();
 		return {new_layout, types::base_};
 	}
 
  public:
-	       constexpr auto reversed()           const&    -> basic_const_array {return reversed_aux();}
-	       constexpr auto reversed()                &    -> basic_array       {return reversed_aux();}
-	       constexpr auto reversed()               &&    -> basic_array       {return reversed_aux();}
-	friend constexpr auto reversed(basic_array const& s) -> basic_const_array {return           s .reversed();}
-	friend constexpr auto reversed(basic_array      & s) -> basic_array       {return           s .reversed();}
-	friend constexpr auto reversed(basic_array     && s) -> basic_array       {return std::move(s).reversed();}
+	       constexpr auto reversed()           const&       -> basic_const_array {return reversed_aux();}
+	       constexpr auto reversed()                &       -> basic_array       {return reversed_aux();}
+	       constexpr auto reversed()               &&       -> basic_array       {return reversed_aux();}
+	friend constexpr auto reversed(basic_array const& self) -> basic_const_array {return           self .reversed();}
+	friend constexpr auto reversed(basic_array      & self) -> basic_array       {return           self .reversed();}
+	friend constexpr auto reversed(basic_array     && self) -> basic_array       {return std::move(self).reversed();}
 
-	constexpr auto transposed() const& -> basic_array{
+	constexpr auto transposed() const& -> basic_array {
 		return {this->layout().transpose(), types::base_};
 	}
-	friend constexpr auto transposed(basic_array const& s) -> basic_array {return s.transposed();}
+	friend constexpr auto transposed(basic_array const& self) -> basic_array {return self.transposed();}
 	friend
 #if not((defined(__INTEL_COMPILER)) or defined(__NVCC__))
 	constexpr
 #endif
-	auto operator~ (basic_array const& s) -> basic_array {return s.transposed();}
+	auto operator~ (basic_array const& self) -> basic_array {return self.transposed();}
 
 	HD constexpr auto rotated()      &  -> basic_array {
 		typename types::layout_t new_layout = this->layout();
@@ -1123,9 +1123,9 @@ struct basic_array
 		return basic_const_array{new_layout, new_base_};
 	}
 
-	friend constexpr auto rotated(basic_array const&  s) -> basic_const_array {return           s .rotated();}
-	friend constexpr auto rotated(basic_array      &  s) -> basic_array       {return           s .rotated();}
-	friend constexpr auto rotated(basic_array      && s) -> basic_array       {return std::move(s).rotated();}
+	friend constexpr auto rotated(basic_array const&  self) -> basic_const_array {return           self .rotated();}
+	friend constexpr auto rotated(basic_array      &  self) -> basic_array       {return           self .rotated();}
+	friend constexpr auto rotated(basic_array      && self) -> basic_array       {return std::move(self).rotated();}
 
 	HD constexpr auto unrotated()      & {
 		typename types::layout_t new_layout = this->layout();
@@ -1159,20 +1159,22 @@ struct basic_array
 	HD constexpr auto paren_aux()     && -> basic_array       {return this->operator()();}
 	HD constexpr auto paren_aux() const& -> basic_const_array {return {this->layout(), this->base()};}
 
-	template<class... As> constexpr auto paren_aux(index_range a, As... as)      & {
+	template<class... As> constexpr auto paren_aux(index_range irng, As... args)      & {
 	// return range(a).rotated().paren_aux(as...).unrotated();  // TODO(correaa) compact
-		auto&& tmp = range(a);
-		auto&& tmp2 =
-			std::move(tmp).
-			rotated();
-		auto&& tmp3 = std::move(tmp2).paren_aux(as...);
+	//  auto&& tmp = range(irng);
+	//  auto&& tmp2 =
+	//  	std::move(tmp).
+	//  		rotated();
+	//  auto&& tmp3 = std::move(tmp2).paren_aux(args...);
 //		auto&& ret = std::move(tmp3).unrotated();
-		return std::move(tmp3).unrotated(); // std::move(ret);
+	//  return std::move(tmp3).unrotated(); // std::move(ret);
+		return range(irng).rotated().paren_aux(args...).unrotated(); // std::move(ret);
 	}
 	template<class... As> constexpr auto paren_aux(index_range irng, As... args)     && {
-		auto&& tmp = std::move(*this).range(irng);
-		auto&& tmp2 = std::move(tmp).rotated().paren_aux(args...);
-		return std::move(tmp2).unrotated();
+	//  auto&& tmp = std::move(*this).range(irng);
+	//  auto&& tmp2 = std::move(tmp).rotated().paren_aux(args...);
+	//  return std::move(tmp2).unrotated();
+		return std::move(*this).range(irng).rotated().paren_aux(args...).unrotated();
 	}
 	template<class... As>    constexpr auto paren_aux(index_range rng, As... args) const& {return range(rng).rotated().paren_aux(args...).unrotated();}
 
@@ -1186,20 +1188,20 @@ struct basic_array
 
  public:
 	// vvv DO NOT remove default parameter `= irange` : the default template parameters below help interpret the expression `{first, last}` syntax as index ranges
-	template<class B1 = irange>                                                                          constexpr auto operator()(B1 b1)                                  const& -> decltype(auto) {return                  paren_aux(b1);}
-	template<class B1 = irange, class B2 = irange>                                                       constexpr auto operator()(B1 b1, B2 b2)                           const& -> decltype(auto) {return                  paren_aux(b1, b2);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange>                                    constexpr auto operator()(B1 b1, B2 b2, B3 b3)                    const& -> decltype(auto) {return                  paren_aux(b1, b2, b3);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As>    constexpr auto operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... args) const& -> decltype(auto) {return                  paren_aux(b1, b2, b3, b4, args...);}
+	template<class A1 = irange>                                                                          constexpr auto operator()(A1 arg1)                                        const& -> decltype(auto) {return                  paren_aux(arg1);}
+	template<class A1 = irange, class A2 = irange>                                                       constexpr auto operator()(A1 arg1, A2 arg2)                               const& -> decltype(auto) {return                  paren_aux(arg1, arg2);}
+	template<class A1 = irange, class A2 = irange, class A3 = irange>                                    constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3)                      const& -> decltype(auto) {return                  paren_aux(arg1, arg2, arg3);}
+	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As>    constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args) const& -> decltype(auto) {return                  paren_aux(arg1, arg2, arg3, arg4, args...);}
 
-	template<class B1 = irange>                                                                          constexpr auto operator()(B1 b1)                                       & -> decltype(auto) {return                  paren_aux(b1);}
-	template<class B1 = irange, class B2 = irange>                                                       constexpr auto operator()(B1 b1, B2 b2)                                & -> decltype(auto) {return                  paren_aux(b1, b2);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange>                                    constexpr auto operator()(B1 b1, B2 b2, B3 b3)                         & -> decltype(auto) {return                  paren_aux(b1, b2, b3);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As>    constexpr auto operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... args)      & -> decltype(auto) {return                  paren_aux(b1, b2, b3, b4, args...);}
+	template<class A1 = irange>                                                                          constexpr auto operator()(A1 arg1)                                             & -> decltype(auto) {return                  paren_aux(arg1);}
+	template<class A1 = irange, class A2 = irange>                                                       constexpr auto operator()(A1 arg1, A2 arg2)                                    & -> decltype(auto) {return                  paren_aux(arg1, arg2);}
+	template<class A1 = irange, class A2 = irange, class A3 = irange>                                    constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3)                           & -> decltype(auto) {return                  paren_aux(arg1, arg2, arg3);}
+	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As>    constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args)      & -> decltype(auto) {return                  paren_aux(arg1, arg2, arg3, arg4, args...);}
 
-	template<class B1 = irange>                                                                          constexpr auto operator()(B1 b1)                                      && -> decltype(auto) {return std::move(*this).paren_aux(b1);}
-	template<class B1 = irange, class B2 = irange>                                                    HD constexpr auto operator()(B1 b1, B2 b2)                               && -> decltype(auto) {return std::move(*this).paren_aux(b1, b2);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange>                                    constexpr auto operator()(B1 b1, B2 b2, B3 b3)                        && -> decltype(auto) {return std::move(*this).paren_aux(b1, b2, b3);}
-	template<class B1 = irange, class B2 = irange, class B3 = irange, class B4 = irange, class... As>    constexpr auto operator()(B1 b1, B2 b2, B3 b3, B4 b4, As... args)     && -> decltype(auto) {return std::move(*this).paren_aux(b1, b2, b3, b4, args...);}
+	template<class A1 = irange>                                                                          constexpr auto operator()(A1 arg1)                                            && -> decltype(auto) {return std::move(*this).paren_aux(arg1);}
+	template<class A1 = irange, class A2 = irange>                                                    HD constexpr auto operator()(A1 arg1, A2 arg2)                                   && -> decltype(auto) {return std::move(*this).paren_aux(arg1, arg2);}
+	template<class A1 = irange, class A2 = irange, class A3 = irange>                                    constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3)                          && -> decltype(auto) {return std::move(*this).paren_aux(arg1, arg2, arg3);}
+	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As>    constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args)     && -> decltype(auto) {return std::move(*this).paren_aux(arg1, arg2, arg3, arg4, args...);}
 
  private:
 	template<typename Tuple, std::size_t ... I> constexpr auto apply_impl(Tuple const& tuple, std::index_sequence<I...>/*012*/) const& -> decltype(auto) {return            this->operator()(std::get<I>(tuple)...);}
