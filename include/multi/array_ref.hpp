@@ -1848,17 +1848,17 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	friend constexpr auto static_array_cast(basic_array<TT, DD, PP> const&) -> decltype(auto);
 
 	template<class T2>
-	friend constexpr auto reinterpret_array_cast(basic_array&& a) {
-		return std::move(a).template reinterpret_array_cast<T2, typename std::pointer_traits<element_ptr>::template rebind<T2>>();
+	friend constexpr auto reinterpret_array_cast(basic_array&& self) {
+		return std::move(self).template reinterpret_array_cast<T2, typename std::pointer_traits<element_ptr>::template rebind<T2>>();
 	}
 	template<class T2>
-	friend constexpr auto reinterpret_array_cast(basic_array const& a) {
-		return a.template reinterpret_array_cast<T2, typename std::pointer_traits<element_ptr>::template rebind<T2>>();
+	friend constexpr auto reinterpret_array_cast(basic_array const& self) {
+		return self.template reinterpret_array_cast<T2, typename std::pointer_traits<element_ptr>::template rebind<T2>>();
 	}
 
  public:
-	friend constexpr auto sizes(basic_array const& s) noexcept -> typename basic_array::sizes_type {return s.sizes();}  // needed by nvcc
-	friend constexpr auto size (basic_array const& s) noexcept -> typename basic_array::size_type  {return s.size ();}  // needed by nvcc
+	friend constexpr auto sizes(basic_array const& self) noexcept -> typename basic_array::sizes_type {return self.sizes();}  // needed by nvcc
+	friend constexpr auto size (basic_array const& self) noexcept -> typename basic_array::size_type  {return self.size ();}  // needed by nvcc
 
 	constexpr auto operator+() const -> decay_type {return decay();}
 
@@ -1870,12 +1870,12 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	template<class, dimensionality_type D, class> friend struct array_iterator;
 
  public:
-	friend constexpr auto dimensionality(basic_array const&/*self*/) -> dimensionality_type {return 1;}
+	friend constexpr auto dimensionality(basic_array const& /*self*/) -> dimensionality_type {return 1;}
 
-	auto operator=(std::initializer_list<typename basic_array::value_type> il) && -> basic_array& {operator=(il); return *this;}
-	auto operator=(std::initializer_list<typename basic_array::value_type> il) &  -> basic_array& {
-		assert( static_cast<size_type>(il.size()) == this->size() );
-		adl_copy_n(il.begin(), il.size(), begin());
+	auto operator=(std::initializer_list<typename basic_array::value_type> values) && -> basic_array& {operator=(values); return *this;}
+	auto operator=(std::initializer_list<typename basic_array::value_type> values) &  -> basic_array& {
+		assert( static_cast<size_type>(values.size()) == this->size() );
+		adl_copy_n(values.begin(), values.size(), begin());
 		return *this;
 	}
 
@@ -1890,8 +1890,8 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	// NOLINTNEXTLINE(runtime/operator)
 	constexpr auto operator&() const& -> basic_array_ptr<basic_const_array, Layout> {return {this->base_, this->layout()};}  // NOLINT(google-runtime-operator) extend semantics
 
-	constexpr void assign(std::initializer_list<typename basic_array::value_type> il) const {assert( il.size() == static_cast<std::size_t>(this->size()) );
-		assign(il.begin(), il.end());
+	constexpr void assign(std::initializer_list<typename basic_array::value_type> values) const {assert( values.size() == static_cast<std::size_t>(this->size()) );
+		assign(values.begin(), values.end());
 	}
 	template<class It>
 	constexpr auto assign(It first) & -> It {adl_copy_n(first, this->size(), this->begin()); std::advance(first, this->size()); return first;}
@@ -1905,32 +1905,32 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	template<class It>
 	constexpr void assign(It first, It last)&& {assign(first, last);}
 
-	constexpr auto operator=(basic_array const& o)    & -> basic_array& {
+	constexpr auto operator=(basic_array const& other)    & -> basic_array& {
 		static_assert(std::is_copy_assignable_v<element_type>, "assignment requires element-wise assignment");  // TODO(correaa) : make sfinae friendly
-		if(this == std::addressof(o)) {return *this;}
-		assert(this->extension() == o.extension());
-		elements() = o.elements();
+		if(this == std::addressof(other)) {return *this;}
+		assert(this->extension() == other.extension());
+		elements() = other.elements();
 		return *this;
 	}
-	constexpr auto operator=(basic_array const& o) && -> basic_array& {
-		if(this == std::addressof(o)) {return *this;}  // lints cert-oop54-cpp
-		operator=(o); return *this;
+	constexpr auto operator=(basic_array const& other) && -> basic_array& {
+		if(this == std::addressof(other)) {return *this;}  // lints cert-oop54-cpp
+		operator=(other); return *this;
 	}
 
  private:
-	HD constexpr auto at_aux(index i) const -> typename basic_array::reference {  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
+	HD constexpr auto at_aux(index idx) const -> typename basic_array::reference {  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
 	//  MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	//  auto ba = this->base();  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
 	//  auto of = (i*this->stride() - this->offset());  // NOLINT(llvm-qualified-auto,readability-qualified-auto)
 	//  auto pt = ba + of;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic,llvm-qualified-auto,readability-qualified-auto)
 	//  return *pt;  // in C++17 this is allowed even with syntethic references
-		return *(this->base() + (i*this->stride() - this->offset()));  // TODO(correaa) use this->base()[(i*this->stride() - this->offset())]
+		return *(this->base() + (idx*this->stride() - this->offset()));  // TODO(correaa) use this->base()[(i*this->stride() - this->offset())]
 	}
 
  public:
-	HD constexpr auto operator[](index i) const& -> typename basic_array::const_reference {return at_aux(i);}  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
-	HD constexpr auto operator[](index i)      & -> typename basic_array::      reference {return at_aux(i);}  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
-	HD constexpr auto operator[](index i)     && -> typename basic_array::      reference {return at_aux(i);}  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
+	HD constexpr auto operator[](index idx) const& -> typename basic_array::const_reference {return at_aux(idx);}  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
+	HD constexpr auto operator[](index idx)      & -> typename basic_array::      reference {return at_aux(idx);}  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
+	HD constexpr auto operator[](index idx)     && -> typename basic_array::      reference {return at_aux(idx);}  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
 
 	constexpr auto front() const& -> const_reference {return *begin();}
 	constexpr auto back()  const& -> const_reference {return *std::prev(end());}
@@ -1944,14 +1944,14 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
  private:
 	template<class Self, typename Tuple, std::size_t ... I, basic_array* = nullptr>
-	static HD constexpr auto apply_impl(Self&& self, Tuple const& t, std::index_sequence<I...> /*012*/) -> decltype(auto) {
-		return std::forward<Self>(self)(std::get<I>(t)...);
+	static HD constexpr auto apply_impl(Self&& self, Tuple const& tuple, std::index_sequence<I...> /*012*/) -> decltype(auto) {
+		return std::forward<Self>(self)(std::get<I>(tuple)...);
 	}
 
  public:
-	template<typename Tuple> HD constexpr auto apply(Tuple const& t) const& -> decltype(auto) {return apply_impl(          *this , t, std::make_index_sequence<std::tuple_size_v<Tuple>>());}
-	template<typename Tuple> HD constexpr auto apply(Tuple const& t)     && -> decltype(auto) {return apply_impl(std::move(*this), t, std::make_index_sequence<std::tuple_size_v<Tuple>>());}
-	template<typename Tuple> HD constexpr auto apply(Tuple const& t)      & -> decltype(auto) {return apply_impl(          *this , t, std::make_index_sequence<std::tuple_size_v<Tuple>>());}
+	template<typename Tuple> HD constexpr auto apply(Tuple const& tuple) const& -> decltype(auto) {return apply_impl(          *this , tuple, std::make_index_sequence<std::tuple_size_v<Tuple>>());}
+	template<typename Tuple> HD constexpr auto apply(Tuple const& tuple)     && -> decltype(auto) {return apply_impl(std::move(*this), tuple, std::make_index_sequence<std::tuple_size_v<Tuple>>());}
+	template<typename Tuple> HD constexpr auto apply(Tuple const& tuple)      & -> decltype(auto) {return apply_impl(          *this , tuple, std::make_index_sequence<std::tuple_size_v<Tuple>>());}
 
 	template<class Tuple, std::enable_if_t<(std::tuple_size<Tuple>::value == 0), int> = 0> HD constexpr auto operator[](Tuple const& /*empty*/) const& -> decltype(auto) {return *this;}
 	template<class Tuple, std::enable_if_t<(std::tuple_size<Tuple>::value == 1), int> = 0> HD constexpr auto operator[](Tuple const& indices  ) const& -> decltype(auto) {return operator[](std::get<0>(indices));}
@@ -1959,9 +1959,9 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	->decltype(operator[](std::get<0>(indices))[detail::tuple_tail(indices)]) {
 		return operator[](std::get<0>(indices))[detail::tuple_tail(indices)]; }
 
-	HD constexpr auto elements_at(size_type n) const& -> decltype(auto) {assert(n < this->num_elements()); return operator[](n);}
-	HD constexpr auto elements_at(size_type n)     && -> decltype(auto) {assert(n < this->num_elements()); return operator[](n);}
-	HD constexpr auto elements_at(size_type n)      & -> decltype(auto) {assert(n < this->num_elements()); return operator[](n);}
+	HD constexpr auto elements_at(size_type idx) const& -> decltype(auto) {assert(idx < this->num_elements()); return operator[](idx);}
+	HD constexpr auto elements_at(size_type idx)     && -> decltype(auto) {assert(idx < this->num_elements()); return operator[](idx);}
+	HD constexpr auto elements_at(size_type idx)      & -> decltype(auto) {assert(idx < this->num_elements()); return operator[](idx);}
 
 	constexpr auto reindexed(index first) && {return reindexed(first);}
 	constexpr auto reindexed(index first)  & {
@@ -1971,38 +1971,38 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	}
 
  private:
-	constexpr auto take_aux(difference_type n) const {
-		assert( n <= this->size() );  // calculating size is expensive that is why 
+	constexpr auto take_aux(difference_type count) const {
+		assert( count <= this->size() );  // calculating size is expensive that is why 
 		typename types::layout_t new_layout{
 			this->layout().sub(),
 			this->layout().stride(),
 			this->layout().offset(),
-			this->stride()*n
+			this->stride()*count
 		};
 		return basic_array{new_layout, this->base()};
 	}
 
  public:
-	constexpr auto take(difference_type n) const& -> basic_const_array {return take_aux(n);}
-	constexpr auto take(difference_type n)     && -> basic_array       {return take_aux(n);}
-	constexpr auto take(difference_type n)      & -> basic_array       {return take_aux(n);}
+	constexpr auto take(difference_type count) const& -> basic_const_array {return take_aux(count);}
+	constexpr auto take(difference_type count)     && -> basic_array       {return take_aux(count);}
+	constexpr auto take(difference_type count)      & -> basic_array       {return take_aux(count);}
 
  private:
-	constexpr auto drop_aux(difference_type n) const -> basic_array {
-		assert( n <= this->size() );
+	constexpr auto drop_aux(difference_type count) const -> basic_array {
+		assert( count <= this->size() );
 		typename types::layout_t new_layout{
 			this->layout().sub(),
 			this->layout().stride(),
 			this->layout().offset(),
-			this->stride()*(this->size() - n)
+			this->stride()*(this->size() - count)
 		};
-		return basic_array{new_layout, this->base() + (n*this->layout().stride() - this->layout().offset())};
+		return basic_array{new_layout, this->base() + (count*this->layout().stride() - this->layout().offset())};
 	}
 
  public:
-	constexpr auto drop(difference_type n) const& -> basic_const_array {return drop_aux(n);}
-	constexpr auto drop(difference_type n)     && -> basic_array       {return drop_aux(n);}
-	constexpr auto drop(difference_type n)      & -> basic_array       {return drop_aux(n);}
+	constexpr auto drop(difference_type count) const& -> basic_const_array {return drop_aux(count);}
+	constexpr auto drop(difference_type count)     && -> basic_array       {return drop_aux(count);}
+	constexpr auto drop(difference_type count)      & -> basic_array       {return drop_aux(count);}
 
  private:
 	HD constexpr auto sliced_aux(index first, index last) const {
@@ -2044,62 +2044,62 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	constexpr auto blocked(index first, index last)& -> basic_array {
 		return sliced(first, last).reindexed(first);
 	}
-	constexpr auto stenciled(typename basic_array::index_extension x) -> basic_array {
-		return blocked(x.start(), x.finish());
+	constexpr auto stenciled(typename basic_array::index_extension ext) -> basic_array {
+		return blocked(ext.start(), ext.finish());
 	}
 
  private:
-	constexpr auto strided_aux(difference_type s) const -> basic_array {
-		typename types::layout_t new_layout = {this->layout().sub(), this->layout().stride()*s, this->layout().offset(), this->layout().nelems()};
+	constexpr auto strided_aux(difference_type diff) const -> basic_array {
+		typename types::layout_t new_layout = {this->layout().sub(), this->layout().stride()*diff, this->layout().offset(), this->layout().nelems()};
 		return {new_layout, types::base_};
 	}
 
  public:
-	constexpr auto strided(difference_type s) const& -> basic_const_array {return strided_aux(s);}
-	constexpr auto strided(difference_type s)     && -> basic_array       {return strided_aux(s);}
-	constexpr auto strided(difference_type s)      & -> basic_array       {return strided_aux(s);}
+	constexpr auto strided(difference_type diff) const& -> basic_const_array {return strided_aux(diff);}
+	constexpr auto strided(difference_type diff)     && -> basic_array       {return strided_aux(diff);}
+	constexpr auto strided(difference_type diff)      & -> basic_array       {return strided_aux(diff);}
 
 	HD constexpr auto sliced(index first, index last, difference_type stride) const& -> basic_const_array {return sliced(first, last).strided(stride);}
 	HD constexpr auto sliced(index first, index last, difference_type stride)     && -> basic_array       {return sliced(first, last).strided(stride);}
 	HD constexpr auto sliced(index first, index last, difference_type stride)      & -> basic_array       {return sliced(first, last).strided(stride);}
 
-	HD constexpr auto range(index_range const& ir)      & {return                  sliced(ir.front(), ir.last());}
-	HD constexpr auto range(index_range const& ir)     && {return std::move(*this).sliced(ir.front(), ir.last());}
-	HD constexpr auto range(index_range const& ir) const& {return                  sliced(ir.front(), ir.last());}
+	HD constexpr auto range(index_range const& rng)      & {return                  sliced(rng.front(), rng.last());}
+	HD constexpr auto range(index_range const& rng)     && {return std::move(*this).sliced(rng.front(), rng.last());}
+	HD constexpr auto range(index_range const& rng) const& {return                  sliced(rng.front(), rng.last());}
 
 	constexpr auto operator()() const& -> basic_const_array {return {this->layout(), this->base()};}
 	constexpr auto operator()()     && -> basic_array       {return *this;}
 	constexpr auto operator()()      & -> basic_array       {return *this;}
 
-	constexpr auto operator()(index_range const& ir)      & {return                  range(ir);}
-	constexpr auto operator()(index_range const& ir)     && {return std::move(*this).range(ir);}
-	constexpr auto operator()(index_range const& ir) const& {return                  range(ir);}
+	constexpr auto operator()(index_range const& rng)      & {return                  range(rng);}
+	constexpr auto operator()(index_range const& rng)     && {return std::move(*this).range(rng);}
+	constexpr auto operator()(index_range const& rng) const& {return                  range(rng);}
 
-	HD constexpr auto operator()(index i)      & -> decltype(auto) {return                  operator[](i);}
-	HD constexpr auto operator()(index i)     && -> decltype(auto) {return std::move(*this).operator[](i);}
-	HD constexpr auto operator()(index i) const& -> decltype(auto) {return                  operator[](i);}
+	HD constexpr auto operator()(index idx)      & -> decltype(auto) {return                  operator[](idx);}
+	HD constexpr auto operator()(index idx)     && -> decltype(auto) {return std::move(*this).operator[](idx);}
+	HD constexpr auto operator()(index idx) const& -> decltype(auto) {return                  operator[](idx);}
 
  private:
 	HD constexpr auto paren_aux()      & {return operator()();}
 	HD constexpr auto paren_aux()     && {return operator()();}
 	HD constexpr auto paren_aux() const& {return operator()();}
 
-	HD constexpr auto paren_aux(index_range const& ir)      & {return range(ir);}
-	HD constexpr auto paren_aux(index_range const& ir)     && {return range(ir);}
-	HD constexpr auto paren_aux(index_range const& ir) const& {return range(ir);}
+	HD constexpr auto paren_aux(index_range const& rng)      & {return range(rng);}
+	HD constexpr auto paren_aux(index_range const& rng)     && {return range(rng);}
+	HD constexpr auto paren_aux(index_range const& rng) const& {return range(rng);}
 
-	HD constexpr auto paren_aux(index i)      & -> decltype(auto) {return operator[](i);}
-	HD constexpr auto paren_aux(index i)     && -> decltype(auto) {return operator[](i);}
-	HD constexpr auto paren_aux(index i) const& -> decltype(auto) {return operator[](i);}
+	HD constexpr auto paren_aux(index idx)      & -> decltype(auto) {return operator[](idx);}
+	HD constexpr auto paren_aux(index idx)     && -> decltype(auto) {return operator[](idx);}
+	HD constexpr auto paren_aux(index idx) const& -> decltype(auto) {return operator[](idx);}
 
-	constexpr auto paren_aux(intersecting_range<index> const& inr)      & -> decltype(auto) {return                  paren_aux(intersection(this->extension(), inr));}
-	constexpr auto paren_aux(intersecting_range<index> const& inr)     && -> decltype(auto) {return std::move(*this).paren_aux(intersection(this->extension(), inr));}
-	constexpr auto paren_aux(intersecting_range<index> const& inr) const& -> decltype(auto) {return                  paren_aux(intersection(this->extension(), inr));}
+	constexpr auto paren_aux(intersecting_range<index> const& rng)      & -> decltype(auto) {return                  paren_aux(intersection(this->extension(), rng));}
+	constexpr auto paren_aux(intersecting_range<index> const& rng)     && -> decltype(auto) {return std::move(*this).paren_aux(intersection(this->extension(), rng));}
+	constexpr auto paren_aux(intersecting_range<index> const& rng) const& -> decltype(auto) {return                  paren_aux(intersection(this->extension(), rng));}
 
  public:
-	constexpr auto operator()(intersecting_range<index> const& ir)      & -> decltype(auto) {return                  paren_aux(ir);}
-	constexpr auto operator()(intersecting_range<index> const& ir)     && -> decltype(auto) {return std::move(*this).paren_aux(ir);}
-	constexpr auto operator()(intersecting_range<index> const& ir) const& -> decltype(auto) {return                  paren_aux(ir);}
+	constexpr auto operator()(intersecting_range<index> const& isrange)      & -> decltype(auto) {return                  paren_aux(isrange);}
+	constexpr auto operator()(intersecting_range<index> const& isrange)     && -> decltype(auto) {return std::move(*this).paren_aux(isrange);}
+	constexpr auto operator()(intersecting_range<index> const& isrange) const& -> decltype(auto) {return                  paren_aux(isrange);}
 
 	template<class... Args>
 	constexpr auto operator()(Args&&... args) &
@@ -2120,29 +2120,29 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	using partitioned_const_type = basic_array<T, 2, element_const_ptr>;
 
  private:
-	constexpr auto partitioned_aux(size_type s) const -> partitioned_type {
-		assert( s != 0 );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		assert( (this->layout().nelems() %s) == 0 );  // TODO(correaa) remove assert? truncate left over? (like mathematica) // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		multi::layout_t<2> new_layout{this->layout(), this->layout().nelems()/s, 0, this->layout().nelems()};
-		new_layout.sub().nelems() /= s;  // TODO(correaa) : don't use mutation
+	constexpr auto partitioned_aux(size_type size) const -> partitioned_type {
+		assert( size != 0 );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		assert( (this->layout().nelems() % size) == 0 );  // TODO(correaa) remove assert? truncate left over? (like mathematica) // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		multi::layout_t<2> new_layout{this->layout(), this->layout().nelems()/size, 0, this->layout().nelems()};
+		new_layout.sub().nelems() /= size;  // TODO(correaa) : don't use mutation
 		return {new_layout, types::base_};
 	}
 
  public:
-	constexpr auto partitioned(size_type s) const& -> partitioned_const_type {return partitioned_aux(s);}
-	constexpr auto partitioned(size_type s)      & -> partitioned_type       {return partitioned_aux(s);}
-	constexpr auto partitioned(size_type s)     && -> partitioned_type       {return partitioned_aux(s);}
+	constexpr auto partitioned(size_type size) const& -> partitioned_const_type {return partitioned_aux(size);}
+	constexpr auto partitioned(size_type size)      & -> partitioned_type       {return partitioned_aux(size);}
+	constexpr auto partitioned(size_type size)     && -> partitioned_type       {return partitioned_aux(size);}
 
  private:
-	constexpr auto chunked_aux(size_type s) const -> partitioned_type {
-		assert( this->size() % s == 0 );
-		return partitioned_aux(this->size()/s);
+	constexpr auto chunked_aux(size_type size) const -> partitioned_type {
+		assert( this->size() % size == 0 );
+		return partitioned_aux(this->size()/size);
 	}
 
  public:  // in Mathematica this is called Partition https://reference.wolfram.com/language/ref/Partition.html in RangesV3 it is called chunk
-	constexpr auto chunked(size_type s) const& -> partitioned_const_type {return chunked_aux(s);}
-	constexpr auto chunked(size_type s)      & -> partitioned_type       {return chunked_aux(s);}
-	constexpr auto chunked(size_type s)     && -> partitioned_type       {return chunked_aux(s);}
+	constexpr auto chunked(size_type size) const& -> partitioned_const_type {return chunked_aux(size);}
+	constexpr auto chunked(size_type size)      & -> partitioned_type       {return chunked_aux(size);}
+	constexpr auto chunked(size_type size)     && -> partitioned_type       {return chunked_aux(size);}
 
  private:
 	constexpr auto reversed_aux() const -> basic_array {
@@ -2156,12 +2156,12 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	constexpr auto reversed()      & -> basic_array       {return reversed_aux();}
 	constexpr auto reversed()     && -> basic_array       {return reversed_aux();}
 
-	friend constexpr auto reversed(basic_array const& s) -> basic_const_array {return           s .reversed();}
-	friend constexpr auto reversed(basic_array      & s) -> basic_array       {return           s .reversed();}
-	friend constexpr auto reversed(basic_array     && s) -> basic_array       {return std::move(s).reversed();}
+	friend constexpr auto reversed(basic_array const& self) -> basic_const_array {return           self .reversed();}
+	friend constexpr auto reversed(basic_array      & self) -> basic_array       {return           self .reversed();}
+	friend constexpr auto reversed(basic_array     && self) -> basic_array       {return std::move(self).reversed();}
 
-	friend constexpr auto   rotated(basic_array const& s) -> decltype(auto) {return s.  rotated();}
-	friend constexpr auto unrotated(basic_array const& s) -> decltype(auto) {return s.unrotated();}
+	friend constexpr auto   rotated(basic_array const& self) -> decltype(auto) {return self.  rotated();}
+	friend constexpr auto unrotated(basic_array const& self) -> decltype(auto) {return self.unrotated();}
 
 	constexpr auto   rotated()      & -> decltype(auto) {return operator()();}
 	constexpr auto   rotated()     && -> decltype(auto) {return operator()();}
@@ -2190,49 +2190,43 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	constexpr auto end_aux  () const {return iterator{this->base_ + types::nelems(), this->stride()};}
 
  public:
-	constexpr auto begin() const& -> const_iterator {return begin_aux();}
-	constexpr auto begin()      & ->       iterator {return begin_aux();}
-	constexpr auto begin()     && ->       iterator {return begin_aux();}
+	constexpr auto  begin() const& -> const_iterator {return begin_aux();}
+	constexpr auto  begin()      & ->       iterator {return begin_aux();}
+	constexpr auto  begin()     && ->       iterator {return begin_aux();}
 
-	constexpr auto mbegin()     & {return move_iterator{begin()};}
-	constexpr auto mend  ()     & {return move_iterator{end  ()};}
+	constexpr auto mbegin()      & {return move_iterator{begin()};}
+	constexpr auto mend  ()      & {return move_iterator{end  ()};}
 
-	constexpr auto mbegin()    && {return move_iterator{begin()};}
-	constexpr auto mend  ()    && {return move_iterator{end  ()};}
+	constexpr auto mbegin()     && {return move_iterator{begin()};}
+	constexpr auto mend  ()     && {return move_iterator{end  ()};}
 
-	constexpr auto end  () const& -> const_iterator {return end_aux();}
-	constexpr auto end  ()      & ->       iterator {return end_aux();}
-	constexpr auto end  ()     && ->       iterator {return end_aux();}
+	constexpr auto  end  () const& -> const_iterator {return end_aux();}
+	constexpr auto  end  ()      & ->       iterator {return end_aux();}
+	constexpr auto  end  ()     && ->       iterator {return end_aux();}
 
-	friend constexpr auto begin(basic_array const& s) -> const_iterator {return           s .begin();}
-	friend constexpr auto begin(basic_array      & s) ->       iterator {return           s .begin();}
-	friend constexpr auto begin(basic_array     && s) ->       iterator {return std::move(s).begin();}
+	friend constexpr auto begin(basic_array const& self) -> const_iterator {return           self .begin();}
+	friend constexpr auto begin(basic_array      & self) ->       iterator {return           self .begin();}
+	friend constexpr auto begin(basic_array     && self) ->       iterator {return std::move(self).begin();}
 
-	friend constexpr auto end  (basic_array const& s) -> const_iterator {return           s .end()  ;}
-	friend constexpr auto end  (basic_array      & s) ->       iterator {return           s .end()  ;}
-	friend constexpr auto end  (basic_array     && s) ->       iterator {return std::move(s).end()  ;}
+	friend constexpr auto end  (basic_array const& self) -> const_iterator {return           self .end()  ;}
+	friend constexpr auto end  (basic_array      & self) ->       iterator {return           self .end()  ;}
+	friend constexpr auto end  (basic_array     && self) ->       iterator {return std::move(self).end()  ;}
 
-	constexpr auto cbegin() const -> const_iterator {return begin();}
-	constexpr auto cend  () const -> const_iterator {return end()  ;}
+	       constexpr auto cbegin()           const& -> const_iterator {return begin();}
+	       constexpr auto cend  ()           const& -> const_iterator {return end()  ;}
 
-	friend constexpr auto cbegin(basic_array const& s) {return s.cbegin();}
-	friend constexpr auto cend  (basic_array const& s) {return s.cend()  ;}
+	friend constexpr auto cbegin(basic_array const& self) {return self.cbegin();}
+	friend constexpr auto cend  (basic_array const& self) {return self.cend()  ;}
 
-	template<class TT, class... As>
-	constexpr auto operator=(basic_array<TT, 1, As...> const& o) && -> basic_array& {operator=(o); return *this;}
-
-	template<class TT, class... As>
-	constexpr auto operator=(basic_array<TT, 1, As...> const& o)  & -> basic_array& {
-		assert(this->extensions() == o.extensions());
-		elements() = o.elements();
+	template<class TT, class... As> constexpr auto operator=(basic_array<TT, 1, As...> const& other) && -> basic_array& {operator=(          other ); return *this;}
+	template<class TT, class... As> constexpr auto operator=(basic_array<TT, 1, As...> const& other)  & -> basic_array& {
+		assert(other.extensions() == this->extensions());
+		elements() = other.elements();
 		return *this;
 	}
 
-	template<class TT, class... As>
-	constexpr auto operator=(basic_array<TT, 1, As...>&& other) && -> basic_array& {operator=(std::move(other)); return *this;}
-
-	template<class TT, class... As>
-	constexpr auto operator=(basic_array<TT, 1, As...>&& other)  & -> basic_array& {
+	template<class TT, class... As> constexpr auto operator=(basic_array<TT, 1, As...>     && other) && -> basic_array& {operator=(std::move(other)); return *this;}
+	template<class TT, class... As> constexpr auto operator=(basic_array<TT, 1, As...>     && other)  & -> basic_array& {
 		assert(this->extensions() == other.extensions());
 		elements() = std::move(other).elements();
 		return *this;
