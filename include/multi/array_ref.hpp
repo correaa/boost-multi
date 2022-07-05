@@ -808,34 +808,28 @@ struct basic_array
 	#if not defined(__NVCC__) and not defined(__NVCOMPILER) and not defined(__INTEL_COMPILER)
 	constexpr
 	#endif
-	auto get_allocator(basic_array const& s) -> default_allocator_type {return s.get_allocator();}
+	auto get_allocator(basic_array const& self) -> default_allocator_type {return self.get_allocator();}
 
 	using decay_type = array<typename types::element_type, D, typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type>;
 
-	friend constexpr auto decay(basic_array const& s) -> decay_type {return s.decay();}
+	friend constexpr auto decay(basic_array const& self) -> decay_type {return self.decay();}
 	       constexpr auto decay()           const&    -> decay_type {
 		decay_type ret{std::move(modify(*this))};
 		return ret;
 	}
 
 	constexpr auto operator+() const -> decay_type {return decay();}
-//  friend
-//  #if not defined(__NVCC__)
-//  constexpr
-//  #endif
-//  auto operator+(basic_array const& s) -> decay_type {return s.operator+();}
-
 	using typename types::const_reference;
 
  private:
-	HD constexpr auto at_aux(index i) const {  // MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
-		return reference{this->layout().sub(), this->base() + (i*this->layout().stride() - this->layout().offset())};  // cppcheck-suppress syntaxError ; bug in cppcheck 2.5
+	HD constexpr auto at_aux(index idx) const {  // MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
+		return reference{this->layout().sub(), this->base() + (idx*this->layout().stride() - this->layout().offset())};  // cppcheck-suppress syntaxError ; bug in cppcheck 2.5
 	}
 
  public:
-	HD constexpr auto operator[](index i) const& -> const_reference {return at_aux(i);}
-	HD constexpr auto operator[](index i)     && ->       reference {return at_aux(i);}
-	HD constexpr auto operator[](index i)      & ->       reference {return at_aux(i);}
+	HD constexpr auto operator[](index idx) const& -> const_reference {return at_aux(idx);}
+	HD constexpr auto operator[](index idx)     && ->       reference {return at_aux(idx);}
+	HD constexpr auto operator[](index idx)      & ->       reference {return at_aux(idx);}
 
 	template<class Tuple = std::array<index, static_cast<std::size_t>(D)>, typename = std::enable_if_t<(std::tuple_size<Tuple>::value > 1)> >
 	HD constexpr auto operator[](Tuple const& t) const
@@ -940,28 +934,28 @@ struct basic_array
 
 	using iextension = typename basic_array::index_extension;
 
-	constexpr auto stenciled(iextension x)                                             & -> basic_array{return blocked(x.start(), x.finish());}
-	constexpr auto stenciled(iextension x, iextension x1)                              & -> basic_array{return ((stenciled(x).rotated()).stenciled(x1)).unrotated();}
-	constexpr auto stenciled(iextension x, iextension x1, iextension x2)               & -> basic_array{return ((stenciled(x).rotated()).stenciled(x1, x2)).unrotated();}
-	constexpr auto stenciled(iextension x, iextension x1, iextension x2, iextension x3)& -> basic_array{return ((stenciled(x).rotated()).stenciled(x1, x2, x3)).unrotated();}
+	constexpr auto stenciled(iextension iex)                                                         & -> basic_array{return blocked(iex.start(), iex.finish());}
+	constexpr auto stenciled(iextension iex, iextension iex1)                                        & -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1)).unrotated();}
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2)                       & -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1, iex2)).unrotated();}
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3)      & -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3)).unrotated();}
 	template<class... Xs>
-	constexpr auto stenciled(iextension x, iextension x1, iextension x2, iextension x3, Xs... xs)& -> basic_array{return ((stenciled(x).rotated()).stenciled(x1, x2, x3, xs...)).unrotated();}
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs)     & -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3, iexs...)).unrotated();}
 
-	constexpr auto stenciled(iextension x)                                             && -> basic_array{return blocked(x.start(), x.finish());}
-	constexpr auto stenciled(iextension x, iextension x1)                              && -> basic_array{return ((stenciled(x).rotated()).stenciled(x1)).unrotated();}
-	constexpr auto stenciled(iextension x, iextension x1, iextension x2)               && -> basic_array{return ((stenciled(x).rotated()).stenciled(x1, x2)).unrotated();}
-	constexpr auto stenciled(iextension x, iextension x1, iextension x2, iextension x3)&& -> basic_array{return ((stenciled(x).rotated()).stenciled(x1, x2, x3)).unrotated();}
+	constexpr auto stenciled(iextension iex)                                                        && -> basic_array{return blocked(iex.start(), iex.finish());}
+	constexpr auto stenciled(iextension iex, iextension iex1)                                       && -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1)).unrotated();}
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2)                      && -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1, iex2)).unrotated();}
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3)     && -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3)).unrotated();}
 	template<class... Xs>
-	constexpr auto stenciled(iextension x, iextension x1, iextension x2, iextension x3, Xs... xs)&& -> basic_array{return ((stenciled(x).rotated()).stenciled(x1, x2, x3, xs...)).unrotated();}
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs)    && -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3, iexs...)).unrotated();}
 
-	constexpr auto stenciled(iextension x)                                              const& -> basic_const_array {return blocked(x.start(), x.finish());}
-	constexpr auto stenciled(iextension x, iextension x1)                               const& -> basic_const_array {return ((stenciled(x).rotated()).stenciled(x1)).unrotated();}
-	constexpr auto stenciled(iextension x, iextension x1, iextension x2)                const& -> basic_const_array {return ((stenciled(x).rotated()).stenciled(x1, x2)).unrotated();}
-	constexpr auto stenciled(iextension x, iextension x1, iextension x2, iextension x3) const& -> basic_const_array {return ((stenciled(x).rotated()).stenciled(x1, x2, x3)).unrotated();}
+	constexpr auto stenciled(iextension iex)                                                    const& -> basic_const_array {return blocked(iex.start(), iex.finish());}
+	constexpr auto stenciled(iextension iex, iextension iex1)                                   const& -> basic_const_array {return ((stenciled(iex).rotated()).stenciled(iex1)).unrotated();}
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2)                  const& -> basic_const_array {return ((stenciled(iex).rotated()).stenciled(iex1, iex2)).unrotated();}
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3) const& -> basic_const_array {return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3)).unrotated();}
 
 	template<class... Xs>
-	constexpr auto stenciled(iextension x, iextension x1, iextension x2, iextension x3, Xs... xs)const& -> basic_const_array {
-		return ((stenciled(x).rotated()).stenciled(x1, x2, x3, xs...)).unrotated();
+	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs) const& -> basic_const_array {
+		return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3, iexs...)).unrotated();
 	}
 
 	constexpr auto elements_at(size_type idx) const& -> decltype(auto) {
