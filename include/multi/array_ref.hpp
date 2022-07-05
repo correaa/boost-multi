@@ -2229,48 +2229,48 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	}
 
 	template<class TT, class... As>
-	constexpr auto operator=(basic_array<TT, 1, As...>&& o) && -> basic_array& {operator=(std::move(o)); return *this;}
+	constexpr auto operator=(basic_array<TT, 1, As...>&& other) && -> basic_array& {operator=(std::move(other)); return *this;}
 
 	template<class TT, class... As>
-	constexpr auto operator=(basic_array<TT, 1, As...>&& o)  & -> basic_array& {
-		assert(this->extensions() == o.extensions());
-		elements() = std::move(o).elements();
+	constexpr auto operator=(basic_array<TT, 1, As...>&& other)  & -> basic_array& {
+		assert(this->extensions() == other.extensions());
+		elements() = std::move(other).elements();
 		return *this;
 	}
 
-	template<class It> constexpr auto assign(It f)&&
-	->decltype(adl_copy_n(f, this->size(), std::declval<iterator>()), void()) {
-		return adl_copy_n(f, this->size(), std::move(*this).begin()), void(); }
+	template<class It> constexpr auto assign(It first) &&
+	->decltype(adl_copy_n(first, this->size(), std::declval<iterator>()), void()) {
+		return adl_copy_n(first, this->size(), std::move(*this).begin()), void(); }
 
 	template<class TT, class... As>
-	friend constexpr auto operator==(basic_array const& s, basic_array<TT, 1, As...> const& o) -> bool {
-		return s.extension() == o.extension() and s.elements() == o.elements();
+	friend constexpr auto operator==(basic_array const& self, basic_array<TT, 1, As...> const& other) -> bool {
+		return self.extension() == other.extension() and self.elements() == other.elements();
 	}
 	template<class TT, class... As>
-	friend constexpr auto operator!=(basic_array const& s, basic_array<TT, 1, As...> const& o) -> bool {
-		return s.extension() != o.extension() or  s.elements() != o.elements();
+	friend constexpr auto operator!=(basic_array const& self, basic_array<TT, 1, As...> const& other) -> bool {
+		return self.extension() != other.extension() or self.elements() != other.elements();
 	}
 
-	friend constexpr auto operator< (basic_array const& s, basic_array const& o) -> bool {return lexicographical_compare(s, o);}
-	friend constexpr auto operator<=(basic_array const& s, basic_array const& o) -> bool {return lexicographical_compare(s, o) or s == o;}
+	friend constexpr auto operator< (basic_array const& self, basic_array const& other) -> bool {return lexicographical_compare(self, other);}
+	friend constexpr auto operator<=(basic_array const& self, basic_array const& other) -> bool {return lexicographical_compare(self, other) or self == other;}
 
-	template<class Array> constexpr void swap(Array&& o) && {
-		assert(this->extension() == o.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(o)));
+	template<class Array> constexpr void swap(Array&& other) && {
+		assert(this->extension() == other.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+		adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(other)));
 	}
-	template<class A> constexpr void swap(A&& o) & {return swap(std::forward<A>(o));}
+	template<class A> constexpr void swap(A&& other) & {return swap(std::forward<A>(other));}
 
-	friend constexpr void swap(basic_array&& a, basic_array&& b) {std::move(a).swap(std::move(b));}
+	friend constexpr void swap(basic_array&& self, basic_array&& other) {std::move(self).swap(std::move(other));}
 
-	template<class A, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<A>>{}> > friend constexpr void swap(basic_array&& s, A&& a) {s.swap(a);}
-	template<class A, typename = std::enable_if_t<not std::is_base_of<basic_array, std::decay_t<A>>{}> > friend constexpr void swap(A&& a, basic_array&& s) {s.swap(a);}
+	template<class A, typename = std::enable_if_t<not std::is_base_of_v<basic_array, std::decay_t<A>>>> friend constexpr void swap(basic_array&& self, A&& other) {self.swap(other);}
+	template<class A, typename = std::enable_if_t<not std::is_base_of_v<basic_array, std::decay_t<A>>>> friend constexpr void swap(A&& other, basic_array&& self) {self.swap(other);}
 
  private:
 	template<class A1, class A2>
-	static constexpr auto lexicographical_compare(A1 const& a1, A2 const& a2) -> bool {
-		if(extension(a1).first() > extension(a2).first()) {return true ;}
-		if(extension(a1).first() < extension(a2).first()) {return false;}
-		return adl_lexicographical_compare(adl_begin(a1), adl_end(a1), adl_begin(a2), adl_end(a2));
+	static constexpr auto lexicographical_compare(A1 const& self, A2 const& other) -> bool {
+		if(extension(self).first() > extension(other).first()) {return true ;}
+		if(extension(self).first() < extension(other).first()) {return false;}
+		return adl_lexicographical_compare(adl_begin(self), adl_end(self), adl_begin(other), adl_end(other));
 	}
 
  public:
@@ -2370,29 +2370,29 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	}
 
 	template<class TT = typename basic_array::element_type>
-	constexpr auto fill(TT const& value)& -> decltype(auto) {
+	constexpr auto fill(TT const& value) & -> decltype(auto) {
 		return adl_fill_n(this->begin(), this->size(), value), *this;
 	}
 	constexpr auto fill()& -> decltype(auto) {return fill(typename basic_array::element_type{});}
 
 	template<class TT = typename basic_array::element_type>
-	constexpr auto fill(TT const& value)&& -> decltype(auto) {return std::move(this->fill(value));}
-	constexpr auto fill()&& -> decltype(auto) {
+	constexpr auto fill(TT const& value) && -> decltype(auto) {return std::move(this->fill(value));}
+	constexpr auto fill() && -> decltype(auto) {
 		return std::move(*this).fill(typename basic_array::element_type{});
 	}
 
 	template<class Archive>
-	void serialize(Archive& ar, unsigned /*version*/) {
+	void serialize(Archive& arxiv, unsigned /*version*/) {
 		using AT = multi::archive_traits<Archive>;
-		std::for_each(this->begin(), this->end(), [&](auto&& item) {ar & AT    ::make_nvp("item", item);});
-	//	std::for_each(this->begin(), this->end(), [&](auto&& item) {ar & cereal::make_nvp("item", item);});
-	//	std::for_each(this->begin(), this->end(), [&](auto&& item) {ar &                          item ;});
+		std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv & AT    ::make_nvp("item", item);});
+	//	std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv & cereal::make_nvp("item", item);});
+	//	std::for_each(this->begin(), this->end(), [&](auto&& item) {arxiv &                          item ;});
 	}
 };
 
 template<class T2, class P2, class Array, class... Args>
-constexpr auto static_array_cast(Array&& a, Args&&... args) -> decltype(auto) {
-	return a.template static_array_cast<T2, P2>(std::forward<Args>(args)...);
+constexpr auto static_array_cast(Array&& self, Args&&... args) -> decltype(auto) {
+	return self.template static_array_cast<T2, P2>(std::forward<Args>(args)...);
 }
 
 template<typename T, dimensionality_type D, typename ElementPtr = T*>
@@ -2411,8 +2411,8 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
  public:  // lints(hicpp-use-equals-delete,modernize-use-equals-delete)
 	array_ref(iterator, iterator) = delete;
 
-	friend constexpr auto sizes(array_ref const& s) noexcept -> typename array_ref::sizes_type {return s.sizes();}  // needed by nvcc
-	friend constexpr auto size (array_ref const& s) noexcept -> typename array_ref::size_type  {return s.size ();}  // needed by nvcc
+	friend constexpr auto sizes(array_ref const& self) noexcept -> typename array_ref::sizes_type {return self.sizes();}  // needed by nvcc
+	friend constexpr auto size (array_ref const& self) noexcept -> typename array_ref::size_type  {return self.size ();}  // needed by nvcc
 
  protected:
 	[[deprecated("references are not copyable, use auto&&")]]
@@ -2435,20 +2435,20 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 	constexpr /*implicit*/ array_ref(array_ref<T, D, OtherPtr>&& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 	: basic_array<T, D, ElementPtr>{other.layout(), ElementPtr{other.base()}} {}
 
-	constexpr explicit array_ref(typename array_ref::element_ptr p, typename array_ref::extensions_type e) noexcept  // TODO(correa) eliminate this ctor
-	: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p} {}
+	constexpr explicit array_ref(typename array_ref::element_ptr p, typename array_ref::extensions_type extensions) noexcept  // TODO(correa) eliminate this ctor
+	: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{extensions}, p} {}
 
-	constexpr array_ref(typename array_ref::extensions_type e, typename array_ref::element_ptr p) noexcept
-	: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{e}, p} {}
+	constexpr array_ref(typename array_ref::extensions_type extensions, typename array_ref::element_ptr p) noexcept
+	: basic_array<T, D, ElementPtr>{typename array_ref::types::layout_t{extensions}, p} {}
 
 	template<class TT, std::size_t N>
 	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax and because a reference to c-array can be represented as an array_ref
 	constexpr array_ref(  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax and because a reference to c-array can be represented as an array_ref
-		TT(&t)[N]  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
+		TT(&array)[N]  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
 	)
 	: array_ref(
-		multi::data_elements(t),
-		extensions(t)
+		multi::data_elements(array),
+		extensions(array)
 	) {}
 
 	using basic_array<T, D, ElementPtr>::operator=;
@@ -2489,16 +2489,16 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 
 	template<typename TT, dimensionality_type DD = D, class... As>
 //  constexpr
-	auto operator=(array_ref<TT, DD, As...> const& o)& -> array_ref& {
-		assert( this->extensions() == o.extensions() );
+	auto operator=(array_ref<TT, DD, As...> const& other)& -> array_ref& {
+		assert( this->extensions() == other.extensions() );
 	//  MULTI_MARK_SCOPE(std::string{"multi::operator= D="}+std::to_string(D)+" from "+typeid(TT).name()+" to "+typeid(T).name() );
-		adl_copy_n(o.data_elements(), o.num_elements(), this->data_elements());
+		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
 		return *this;
 	}
 
 	template<typename TT, dimensionality_type DD = D, class... As>
-	constexpr auto operator=(array_ref<TT, DD, As...> const& o)&& -> array_ref& {
-		this->operator=(o);
+	constexpr auto operator=(array_ref<TT, DD, As...> const& other) && -> array_ref& {
+		this->operator=(other);
 		return *this;  // lints (cppcoreguidelines-c-copy-assignment-signature)
 	}
 
@@ -2518,29 +2518,26 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 	       constexpr auto  elements()             &       ->  elements_type {return elements_aux();}
 	       constexpr auto  elements()            &&       ->  elements_type {return elements_aux();}
 
-	friend constexpr auto elements(array_ref      & s) ->  elements_type {return           s . elements();}
-	friend constexpr auto elements(array_ref     && s) ->  elements_type {return std::move(s). elements();}
-	friend constexpr auto elements(array_ref const& s) -> celements_type {return           s . elements();}
+	friend constexpr auto elements(array_ref      & self) ->  elements_type {return           self . elements();}
+	friend constexpr auto elements(array_ref     && self) ->  elements_type {return std::move(self). elements();}
+	friend constexpr auto elements(array_ref const& self) -> celements_type {return           self . elements();}
 
-	       constexpr auto celements()         const&    {return celements_type{array_ref::data_elements(), array_ref::num_elements()};}
-	friend constexpr auto celements(array_ref const& s) {return s.celements();}
+	       constexpr auto celements()         const&       {return celements_type{array_ref::data_elements(), array_ref::num_elements()};}
+	friend constexpr auto celements(array_ref const& self) {return self.celements();}
 
 	template<typename TT, class... As>
-	friend constexpr auto operator==(array_ref const& s, array_ref<TT, D, As...> const& o) -> bool {
-		if(s.extensions() != o.extensions()) {return false;}  // TODO(correaa) : or assert?
-		return adl_equal(o.data_elements(), o.data_elements() + s.num_elements(), s.data_elements());
-	//	return equal_elements(std::move(o).data_elements());
+	friend constexpr auto operator==(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {
+		if(self.extensions() != other.extensions()) {return false;}  // TODO(correaa) : or assert?
+		return adl_equal(other.data_elements(), other.data_elements() + self.num_elements(), self.data_elements());
 	}
 	template<typename TT, class... As>
-	friend constexpr auto operator!=(array_ref const& s, array_ref<TT, D, As...> const& o) -> bool {
-		if(s.extensions() != o.extensions()) {return true;}  // TODO(correaa) : or assert?
-		return not adl_equal(o.data_elements(), o.data_elements() + s.num_elements(), s.data_elements());
-	//	return not equal_elements(std::move(o).data_elements());
+	friend constexpr auto operator!=(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {
+		if(self.extensions() != other.extensions()) {return true;}  // TODO(correaa) : or assert?
+		return not adl_equal(other.data_elements(), other.data_elements() + self.num_elements(), self.data_elements());
 	}
 
-
-	       constexpr auto data_elements()        &&    -> typename array_ref::element_ptr {return array_ref::base_;}
-	friend constexpr auto data_elements(array_ref&& s) -> typename array_ref::element_ptr {return std::move(s).data_elements();}
+	       constexpr auto data_elements()        &&       -> typename array_ref::element_ptr {return array_ref::base_;}
+	friend constexpr auto data_elements(array_ref&& self) -> typename array_ref::element_ptr {return std::move(self).data_elements();}
 
 	// data() is here for compatibility with std::vector
 	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> constexpr auto data() const& {return data_elements();}
@@ -2548,24 +2545,24 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 	template<class Dummy = void, std::enable_if_t<(D == 1) and sizeof(Dummy*), int> = 0> constexpr auto data()      & {return data_elements();}
 
 	// TODO(correaa) : find a way to use [[deprecated("use data_elements()")]] for friend functions
-	friend constexpr auto data(array_ref const& s) -> typename array_ref::element_ptr {return s.data_elements();}
-	friend constexpr auto data(array_ref      & s) -> typename array_ref::element_ptr {return s.data_elements();}
-	friend constexpr auto data(array_ref     && s) -> typename array_ref::element_ptr {return std::move(s).data_elements();}
+	friend constexpr auto data(array_ref const& self) -> typename array_ref::element_ptr {return           self .data_elements();}
+	friend constexpr auto data(array_ref      & self) -> typename array_ref::element_ptr {return           self .data_elements();}
+	friend constexpr auto data(array_ref     && self) -> typename array_ref::element_ptr {return std::move(self).data_elements();}
 
 	using decay_type = typename array_ref::decay_type;
 
-	       constexpr auto decay()         const&    -> decay_type const& {return static_cast<decay_type const&>(*this);}
-	friend constexpr auto decay(array_ref const& s) -> decay_type const& {return s.decay();}
+	       constexpr auto decay()         const&       -> decay_type const& {return static_cast<decay_type const&>(*this);}
+	friend constexpr auto decay(array_ref const& self) -> decay_type const& {return self.decay();}
 
  private:
 	template<class Ar>
-	auto serialize_structured(Ar& ar, const unsigned int version) {
-		basic_array<T, D, ElementPtr>::serialize(ar, version);
+	auto serialize_structured(Ar& arxiv, const unsigned int version) {
+		basic_array<T, D, ElementPtr>::serialize(arxiv, version);
 	}
 	template<class Archive>
-	auto serialize_flat(Archive& ar, const unsigned int /*version*/) {
+	auto serialize_flat(Archive& arxiv, const unsigned int /*version*/) {
 		using AT = multi::archive_traits<Archive>;
-		ar & AT::make_nvp("elements", AT::make_array(this->data_elements(), static_cast<std::size_t>(this->num_elements())));
+		arxiv & AT::make_nvp("elements", AT::make_array(this->data_elements(), static_cast<std::size_t>(this->num_elements())));
 	}
 //	template<class Ar, class AT = multi::archive_traits<Ar>>
 //	auto serialize_binary_if(std::true_type, Ar& ar) {
@@ -2576,16 +2573,16 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 
  public:
 	template<class Archive>
-	auto serialize(Archive& ar, const unsigned int version) {
-		serialize_flat(ar, version);
+	auto serialize(Archive& arxiv, const unsigned int version) {
+		serialize_flat(arxiv, version);
 //		serialize_structured(ar, version);
 //		switch(version) {
-//			case static_cast<unsigned int>( 0): return serialize_flat(ar);
-//			case static_cast<unsigned int>(-1): return serialize_structured(ar, version);
-//		//	case 2: return serialize_binary_if(std::is_trivially_copy_assignable<typename array_ref::element>{}, ar);
+//			case static_cast<unsigned int>( 0): return serialize_flat(arxiv);
+//			case static_cast<unsigned int>(-1): return serialize_structured(arxiv, version);
+//		//	case 2: return serialize_binary_if(std::is_trivially_copy_assignable<typename array_ref::element>{}, arxiv);
 //			default:
-//				if( this->num_elements() <= version ){serialize_structured(ar, version);}
-//				else                                 {serialize_flat      (ar         );}
+//				if( this->num_elements() <= version ){serialize_structured(arxiv, version);}
+//				else                                 {serialize_flat      (arxiv         );}
 //		}
 	}
 };
@@ -2608,7 +2605,8 @@ struct array_ptr
 , typename array_ref<T, D, Ptr>::layout_t> {
 	using basic_ptr = basic_array_ptr<basic_array<T, D, Ptr>, typename array_ref<T, D, Ptr>::layout_t>;
 
-	constexpr array_ptr(Ptr p, multi::extensions_t<D> x) : basic_ptr{p, multi::layout_t<D>{x}} {}
+	constexpr array_ptr(Ptr p, multi::extensions_t<D> extensions)
+	: basic_ptr{p, multi::layout_t<D>{extensions}} {}
 
 	constexpr explicit array_ptr(std::nullptr_t p) : array_ptr{p, multi::extensions_t<D>{}} {}
 
@@ -2623,7 +2621,7 @@ struct array_ptr
 template<class T, typename Ptr>
 class array_ptr<T, 0, Ptr> : multi::array_ref<T, 0, Ptr>{
  public:
-	constexpr explicit array_ptr(Ptr p, typename multi::array_ref<T, 0, Ptr>::extensions_type x) : multi::array_ref<T, 0, Ptr>(p, x) {}
+	constexpr explicit array_ptr(Ptr p, typename multi::array_ref<T, 0, Ptr>::extensions_type extensions) : multi::array_ref<T, 0, Ptr>(p, extensions) {}
 	constexpr explicit array_ptr(Ptr p) : array_ptr(p, typename multi::array_ref<T, 0, Ptr>::extensions_type{}) {}
 
 	constexpr explicit operator bool() const {return this->base();}
@@ -2647,16 +2645,16 @@ template<class T, dimensionality_type D, typename Ptr = T*>
 using array_cptr = array_ptr<T, D, 	typename std::pointer_traits<Ptr>::template rebind<T const>>;
 
 template<dimensionality_type D, class P>
-constexpr auto make_array_ref(P p, multi::extensions_t<D> x) {
-	return array_ref<typename std::iterator_traits<P>::value_type, D, P>(p, x);
+constexpr auto make_array_ref(P p, multi::extensions_t<D> extensions) {
+	return array_ref<typename std::iterator_traits<P>::value_type, D, P>(p, extensions);
 }
 
-template<class P> auto make_array_ref(P p, extensions_t<0> x) {return make_array_ref<0>(p, x);}
-template<class P> auto make_array_ref(P p, extensions_t<1> x) {return make_array_ref<1>(p, x);}
-template<class P> auto make_array_ref(P p, extensions_t<2> x) {return make_array_ref<2>(p, x);}
-template<class P> auto make_array_ref(P p, extensions_t<3> x) {return make_array_ref<3>(p, x);}
-template<class P> auto make_array_ref(P p, extensions_t<4> x) {return make_array_ref<4>(p, x);}
-template<class P> auto make_array_ref(P p, extensions_t<5> x) {return make_array_ref<5>(p, x);}
+template<class P> auto make_array_ref(P p, extensions_t<0> extensions) {return make_array_ref<0>(p, extensions);}
+template<class P> auto make_array_ref(P p, extensions_t<1> extensions) {return make_array_ref<1>(p, extensions);}
+template<class P> auto make_array_ref(P p, extensions_t<2> extensions) {return make_array_ref<2>(p, extensions);}
+template<class P> auto make_array_ref(P p, extensions_t<3> extensions) {return make_array_ref<3>(p, extensions);}
+template<class P> auto make_array_ref(P p, extensions_t<4> extensions) {return make_array_ref<4>(p, extensions);}
+template<class P> auto make_array_ref(P p, extensions_t<5> extensions) {return make_array_ref<5>(p, extensions);}
 
 // In ICC you need to specify the dimensionality in make_array_ref<D>
 // #if defined(__INTEL_COMPILER)
@@ -2699,35 +2697,22 @@ template<class It, class Tuple> array_ref(It, Tuple)->array_ref<typename std::it
 
 // TODO(correaa) move to utility
 template<class T, std::size_t N>
-constexpr auto rotated(const T(&t)[N]) noexcept {                                                  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
-	return multi::array_ref<std::remove_all_extents<T[N]>, std::rank<T[N]>{}, decltype(base(t))>(  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
-		base(t), extensions(t)
+constexpr auto rotated(const T(&array)[N]) noexcept {                                                  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
+	return multi::array_ref<std::remove_all_extents<T[N]>, std::rank<T[N]>{}, decltype(base(array))>(  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
+		base(array), extensions(array)
 	).rotated();
 }
 template<class T, std::size_t N>
-constexpr auto rotated(T(&t)[N]) noexcept {                                                        // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
-	return multi::array_ref<std::remove_all_extents<T[N]>, std::rank<T[N]>{}, decltype(base(t))>(  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
-		base(t), extensions(t)
+constexpr auto rotated(T(&array)[N]) noexcept {                                                        // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
+	return multi::array_ref<std::remove_all_extents<T[N]>, std::rank<T[N]>{}, decltype(base(array))>(  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
+		base(array), extensions(array)
 	).rotated();
 }
 
-//template<class TD, class Ptr> struct Array_aux;
-//template<class T, std::size_t D, class Ptr> struct Array_aux<   T[D], Ptr>{using type = array    <T, static_cast<multi::dimensionality_type>(D), Ptr>  ;};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : enable syntax
-//template<class T, std::size_t D, class Ptr> struct Array_aux<T(&)[D], Ptr>{using type = array_ref<T, static_cast<multi::dimensionality_type>(D), Ptr>&&;};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : enable syntax
-//template<class T, std::size_t D, class Ptr> struct Array_aux<T(*)[D], Ptr>{using type = array_ptr<T, static_cast<multi::dimensionality_type>(D), Ptr>  ;};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : enable syntax
-
-//template<class TD, class Second =
-//	std::conditional_t<
-//		std::is_reference<TD>{} or std::is_pointer<TD>{},
-//		std::add_pointer_t<std::remove_all_extents_t<std::remove_reference_t<std::remove_pointer_t<TD>>>>,
-//		std::allocator<std::remove_all_extents_t<TD>>
-//	>
-//> using Array = typename Array_aux<TD, Second>::type;
-
 template<class RandomAccessIterator, dimensionality_type D>
-constexpr auto operator/(RandomAccessIterator data, multi::extensions_t<D> x)
+constexpr auto operator/(RandomAccessIterator data, multi::extensions_t<D> extensions)
 -> multi::array_ptr<typename std::iterator_traits<RandomAccessIterator>::value_type, D, RandomAccessIterator>
-{return {data, x};}
+{return {data, extensions};}
 
 template<class T, dimensionality_type D, class... Ts>
 constexpr auto is_basic_array_aux(basic_array<T, D, Ts...> const&) -> std::true_type;
