@@ -961,35 +961,35 @@ struct basic_array
 
 	template<class... Xs>
 	constexpr auto stenciled(iextension x, iextension x1, iextension x2, iextension x3, Xs... xs)const& -> basic_const_array {
-		return ((stenciled(x)<<1).stenciled(x1, x2, x3, xs...))>>1;
+		return ((stenciled(x).rotated()).stenciled(x1, x2, x3, xs...)).unrotated();
 	}
 
-	constexpr auto elements_at(size_type n) const& -> decltype(auto) {
-		assert(n < this->num_elements());
+	constexpr auto elements_at(size_type idx) const& -> decltype(auto) {
+		assert(idx < this->num_elements());
 		auto const sub_num_elements = this->begin()->num_elements();
-		return operator[](n / sub_num_elements).elements_at(n % sub_num_elements);
+		return operator[](idx / sub_num_elements).elements_at(idx % sub_num_elements);
 	}
-	constexpr auto elements_at(size_type n) && -> decltype(auto) {
-		assert(n < this->num_elements());
+	constexpr auto elements_at(size_type idx) && -> decltype(auto) {
+		assert(idx < this->num_elements());
 		auto const sub_num_elements = this->begin()->num_elements();
-		return operator[](n / sub_num_elements).elements_at(n % sub_num_elements);
+		return operator[](idx / sub_num_elements).elements_at(idx % sub_num_elements);
 	}
-	constexpr auto elements_at(size_type n) & -> decltype(auto) {
-		assert(n < this->num_elements());
+	constexpr auto elements_at(size_type idx) & -> decltype(auto) {
+		assert(idx < this->num_elements());
 		auto const sub_num_elements = this->begin()->num_elements();
-		return operator[](n / sub_num_elements).elements_at(n % sub_num_elements);
+		return operator[](idx / sub_num_elements).elements_at(idx % sub_num_elements);
 	}
 
  private:
-	constexpr auto strided_aux(difference_type s) const -> basic_array {
-		typename types::layout_t new_layout{this->layout().sub(), this->layout().stride()*s, this->layout().offset(), this->layout().nelems()};
+	constexpr auto strided_aux(difference_type diff) const -> basic_array {
+		typename types::layout_t new_layout{this->layout().sub(), this->layout().stride()*diff, this->layout().offset(), this->layout().nelems()};
 		return {new_layout, types::base_};
 	}
 
  public:
-	constexpr auto strided(difference_type s) const& -> basic_const_array {return strided_aux(s);}
-	constexpr auto strided(difference_type s)     && -> basic_array       {return strided_aux(s);}
-	constexpr auto strided(difference_type s)      & -> basic_array       {return strided_aux(s);}
+	constexpr auto strided(difference_type diff) const& -> basic_const_array {return strided_aux(diff);}
+	constexpr auto strided(difference_type diff)     && -> basic_array       {return strided_aux(diff);}
+	constexpr auto strided(difference_type diff)      & -> basic_array       {return strided_aux(diff);}
 
 	constexpr auto sliced(
 		typename types::index first, typename types::index last, typename types::index stride_
@@ -999,9 +999,9 @@ struct basic_array
 
 	using index_range = typename basic_array::index_range;
 
-	constexpr auto range(index_range ir) const& -> decltype(auto) {return                  sliced(ir.front(), ir.front() + ir.size());}
-	constexpr auto range(index_range ir)     && -> decltype(auto) {return std::move(*this).sliced(ir.front(), ir.front() + ir.size());}
-	constexpr auto range(index_range ir)      & -> decltype(auto) {return                  sliced(ir.front(), ir.front() + ir.size());}
+	constexpr auto range(index_range irng) const& -> decltype(auto) {return                  sliced(irng.front(), irng.front() + irng.size());}
+	constexpr auto range(index_range irng)     && -> decltype(auto) {return std::move(*this).sliced(irng.front(), irng.front() + irng.size());}
+	constexpr auto range(index_range irng)      & -> decltype(auto) {return                  sliced(irng.front(), irng.front() + irng.size());}
 
 //	[[deprecated]] constexpr auto range(typename types::index_range const& ir, dimensionality_type n) const {return rotated(n).range(ir).rotated(-n);}
 
@@ -1015,7 +1015,7 @@ struct basic_array
 //	}
 	constexpr auto is_flattable() const -> bool{return this->stride() == this->layout().sub().nelems();}
 
-	friend constexpr auto flatted(basic_array const& s) {return s.flatted();}
+	friend constexpr auto flatted(basic_array const& self) {return self.flatted();}
 	       constexpr auto flatted()           const& {
 		assert(is_flattable() && "flatted doesn't work for all layouts!");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		multi::layout_t<D-1> new_layout{this->layout().sub()};
@@ -1024,23 +1024,23 @@ struct basic_array
 	}
 
 	// TODO(correaa) : define a diagonal_aux
-	constexpr auto diagonal()&& {return this->diagonal();}
+	constexpr auto diagonal()    && {return this->diagonal();}
 
-	constexpr auto diagonal()& -> basic_array<T, D-1, typename basic_array::element_ptr> {
+	constexpr auto diagonal()     & -> basic_array<T, D-1, typename basic_array::element_ptr> {
 		using boost::multi::detail::get;
-		auto L = std::min(get<0>(this->sizes()), get<1>(this->sizes()));
-		multi::layout_t<D-1> new_layout{(*this)({0, L}, {0, L}).layout().sub()};
-		new_layout.nelems() += (*this)({0, L}, {0, L}).layout().nelems();  // TODO(correaa) : don't use mutation
-		new_layout.stride() += (*this)({0, L}, {0, L}).layout().stride();  // TODO(correaa) : don't use mutation
+		auto square_size = std::min(get<0>(this->sizes()), get<1>(this->sizes()));
+		multi::layout_t<D-1> new_layout{(*this)({0, square_size}, {0, square_size}).layout().sub()};
+		new_layout.nelems() += (*this)({0, square_size}, {0, square_size}).layout().nelems();  // TODO(correaa) : don't use mutation
+		new_layout.stride() += (*this)({0, square_size}, {0, square_size}).layout().stride();  // TODO(correaa) : don't use mutation
 		return {new_layout, types::base_};
 	}
 
 	template<class Dummy = void, std::enable_if_t<(D > 1) and sizeof(Dummy*), int> =0>
 	constexpr auto diagonal() const& -> basic_array<T, D-1, typename basic_array::element_const_ptr> {
-		auto L = std::min(std::get<0>(this->sizes()), std::get<1>(this->sizes()));
-		multi::layout_t<D-1> new_layout{(*this)({0, L}, {0, L}).layout().sub_};
-		new_layout.nelems_ += (*this)({0, L}, {0, L}).layout().nelems_;
-		new_layout.stride_ += (*this)({0, L}, {0, L}).layout().stride_;  // cppcheck-suppress arithOperationsOnVoidPointer ; false positive D == 1 doesn't happen here
+		auto square_size = std::min(std::get<0>(this->sizes()), std::get<1>(this->sizes()));
+		multi::layout_t<D-1> new_layout{(*this)({0, square_size}, {0, square_size}).layout().sub_};
+		new_layout.nelems_ += (*this)({0, square_size}, {0, square_size}).layout().nelems_;
+		new_layout.stride_ += (*this)({0, square_size}, {0, square_size}).layout().stride_;  // cppcheck-suppress arithOperationsOnVoidPointer ; false positive D == 1 doesn't happen here
 		return {new_layout, types::base_};
 	}
 
