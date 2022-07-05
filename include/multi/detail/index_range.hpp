@@ -270,7 +270,7 @@ using irange          = index_range;
 namespace detail {
 
 template<typename, typename>
-struct append_to_type_seq{};
+struct append_to_type_seq {};
 
 template<typename T, typename... Ts, template<typename...> class TT>
 struct append_to_type_seq<T, TT<Ts...> > {
