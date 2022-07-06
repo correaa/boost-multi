@@ -607,7 +607,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					# -Wmissing-constinit (clang 11, not in clang 9)
 					-Wmissing-declarations -Wmissing-exception-spec -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs -Wmissing-method-return-type -Wmissing-noescape -Wmissing-noreturn -Wmissing-prototype-for-cc -Wmissing-prototypes -Wmissing-selector-name -Wmissing-sysroot -Wmissing-variable-declarations
 					# -Wmisspelled-assumption (clang 13, not in clang 11)
-					-Rmodule-build
+					# -Rmodule-build
 					-Wmodule-conflict -Wmodule-file-config-mismatch -Wmodule-file-extension -Rmodule-import -Wmodule-import-in-extern-c
 					# -Rmodule-lock
 					-Wmodules-ambiguous-internal-linkage -Wmodules-import-nested-redundant
@@ -659,7 +659,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 					# -Wpadded (ask for aligment)
 					-Wparentheses -Wparentheses-equality
 					-Wpartial-availability
-					-Rpass -Rpass-analysis -Wpass-failed -Rpass-missed
+					# -Rpass -Rpass-analysis
+					-Wpass-failed
+					# -Rpass-missed
 					-Wpch-date-time
 					-Wpedantic -Wpedantic-core-features
 					# -Wpedantic-macros (clang 15, not in clang 13)
