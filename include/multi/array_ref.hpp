@@ -12,10 +12,10 @@
 #include "./config/MARK.hpp"
 
 #include "./detail/layout.hpp"
-#include "./detail/memory.hpp"     // for pointer_traits
-#include "./detail/operators.hpp"  // for random_iterable
-#include "./detail/serialization.hpp"      // for dimensionality_type
-#include "./detail/types.hpp"      // for dimensionality_type
+#include "./detail/memory.hpp"         // for pointer_traits
+#include "./detail/operators.hpp"      // for random_iterable
+#include "./detail/serialization.hpp"
+#include "./detail/types.hpp"          // for dimensionality_type
 
 #if defined(__NVCC__)
 #define HD __host__ __device__
@@ -51,20 +51,12 @@ struct basic_array;
 
 }  // end namespace boost::multi
 
-//namespace std {  // NOLINT(cert-dcl58-cpp)
-
-//	template<class T, boost::multi::dimensionality_type D, class L>
-//	auto move(boost::multi::basic_array<T, D,                        T*, L>&& array)
-//	        ->boost::multi::basic_array<T, D, boost::multi::move_ptr<T>, L>;
-
-//}  // end namespace std
-
 namespace boost::multi {
 
-template<class A>
-constexpr auto home(A&& a)
-->decltype(std::forward<A>(a).home()) {
-	return std::forward<A>(a).home(); }
+template<class Array>
+constexpr auto home(Array&& array)
+->decltype(std::forward<A>(array).home()) {
+	return std::forward<A>(array).home(); }
 
 template<class T> auto modify(T const& t) -> T& {return const_cast<T&>(t);}  // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) see what is this used for
 
@@ -128,21 +120,21 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 
 	using layout_t::is_compact;
 
-	friend constexpr auto size        (array_types const& s) noexcept -> size_type       {return s.size        ();}
-	friend constexpr auto extension   (array_types const& s) noexcept -> extension_type  {return s.extension   ();}
-	friend constexpr auto is_empty    (array_types const& s) noexcept -> bool            {return s.is_empty    ();}
-	friend constexpr auto num_elements(array_types const& s) noexcept -> size_type       {return s.num_elements();}
+	friend constexpr auto size        (array_types const& self) noexcept -> size_type       {return self.size        ();}
+	friend constexpr auto extension   (array_types const& self) noexcept -> extension_type  {return self.extension   ();}
+	friend constexpr auto is_empty    (array_types const& self) noexcept -> bool            {return self.is_empty    ();}
+	friend constexpr auto num_elements(array_types const& self) noexcept -> size_type       {return self.num_elements();}
 
-	friend constexpr auto extensions  (array_types const& s) noexcept -> extensions_type {return s.extensions  ();}
-	friend constexpr auto sizes       (array_types const& s) noexcept -> sizes_type      {return s.sizes       ();}
-
-	// TODO(correaa) [[deprecated("use member syntax for non-salient properties")]]
-	friend
-	constexpr auto stride     (array_types const& s) noexcept -> stride_type         {return s.stride     ();}
+	friend constexpr auto extensions  (array_types const& self) noexcept -> extensions_type {return self.extensions  ();}
+	friend constexpr auto sizes       (array_types const& self) noexcept -> sizes_type      {return self.sizes       ();}
 
 	// TODO(correaa) [[deprecated("use member syntax for non-salient properties")]]
 	friend
-	constexpr auto strides    (array_types const& s) noexcept -> strides_type         {return s.strides     ();}
+	constexpr auto stride     (array_types const& self) noexcept -> stride_type         {return self.stride     ();}
+
+	// TODO(correaa) [[deprecated("use member syntax for non-salient properties")]]
+	friend
+	constexpr auto strides    (array_types const& self) noexcept -> strides_type         {return self.strides     ();}
 
  protected:
 	constexpr auto layout_mutable() -> layout_t& {return static_cast<layout_t&>(*this);}
@@ -170,30 +162,30 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	   constexpr auto cbase() const  -> element_const_ptr {return base_;}
 	   constexpr auto mbase() const& -> element_ptr&      {return base_;}
 
-	friend constexpr auto  base(array_types const& s) -> element_ptr  {return s.base();}
+	friend constexpr auto  base(array_types const& self) -> element_ptr  {return self.base();}
 
-	       constexpr auto layout()           const     -> layout_t const& {return *this;}
-	friend constexpr auto layout(array_types const& s) -> layout_t const& {return s.layout();}
+	       constexpr auto layout()           const        -> layout_t const& {return *this;}
+	friend constexpr auto layout(array_types const& self) -> layout_t const& {return self.layout();}
 
-	       constexpr auto origin()           const&    -> decltype(auto) {return base_+Layout::origin();}
-	friend constexpr auto origin(array_types const& s) -> decltype(auto) {return s.origin();}
+	       constexpr auto origin()           const&       -> decltype(auto) {return base_ + Layout::origin();}
+	friend constexpr auto origin(array_types const& self) -> decltype(auto) {return self.origin();}
 
  protected:
 	using derived = basic_array<T, D, ElementPtr, Layout>;
 	element_ptr base_;  // NOLINT(cppcoreguidelines-non-private-member-variables-in-classes,misc-non-private-member-variables-in-classes) : TODO(correaa) try to make it private, [static_]array needs mutation
-	constexpr explicit array_types(std::nullptr_t np) : Layout{}, base_{np} {}
+	constexpr explicit array_types(std::nullptr_t nil) : Layout{}, base_{nil} {}
 
  public:
 	array_types() = default;
 
-	constexpr array_types(layout_t const& l, element_ptr const& data)
-	: Layout{l}, base_{data} {}
+	constexpr array_types(layout_t const& lyt, element_ptr const& data)
+	: Layout{lyt}, base_{data} {}
 
  protected:  // TODO(correaa) : find why this needs to be public and not protected or friend
 	template<class ArrayTypes, typename = std::enable_if_t<not std::is_base_of<array_types, std::decay_t<ArrayTypes>>{}>
 		, decltype(multi::explicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
 	>
-	constexpr explicit array_types(ArrayTypes const& a) : Layout{a.layout()}, base_{a.base_} {}
+	constexpr explicit array_types(ArrayTypes const& other) : Layout{other.layout()}, base_{other.base_} {}
 
 	template<
 		class ArrayTypes,
@@ -201,8 +193,8 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 		decltype(multi::implicit_cast<element_ptr>(std::declval<ArrayTypes const&>().base_))* = nullptr
 	>
 	// cppcheck-suppress noExplicitConstructor ; because underlying pointers are implicitly convertible
-	constexpr /*implt*/ array_types(ArrayTypes const& a)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : inherit behavior of underlying pointer
-	: Layout{a.layout()}, base_{a.base_} {}
+	constexpr /*implt*/ array_types(ArrayTypes const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : inherit behavior of underlying pointer
+	: Layout{other.layout()}, base_{other.base_} {}
 	// ^^^ TODO(correaa) : call explicit from implicit, careful with infinite recursion
 
 	template<
@@ -242,16 +234,16 @@ struct basic_array_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin
 	using reference = Ref;
 	using iterator_category = std::random_access_iterator_tag;
 
-	constexpr explicit basic_array_ptr(std::nullptr_t p) : Ref{p} {}
+	constexpr explicit basic_array_ptr(std::nullptr_t nil) : Ref{nil} {}
 	constexpr basic_array_ptr() : basic_array_ptr{nullptr} {}
 
 	template<class, class> friend struct basic_array_ptr;
 
-	constexpr basic_array_ptr(typename Ref::element_ptr p, layout_t<Ref::rank_v - 1> l) : Ref{l, p} {}
-	constexpr basic_array_ptr(typename Ref::element_ptr p, index_extensions<Ref::rank_v> e) : Ref{p, e} {}
+	constexpr basic_array_ptr(typename Ref::element_ptr p, layout_t<Ref::rank_v - 1> lyt) : Ref{lyt, p} {}
+	constexpr basic_array_ptr(typename Ref::element_ptr p, index_extensions<Ref::rank_v> exts) : Ref{p, exts} {}
 	template<class Array>
 	// cppcheck-suppress noExplicitConstructor ; no information loss, allows comparisons
-	constexpr basic_array_ptr(Array* Ap) : basic_array_ptr{Ap->data_elements(), Ap->layout()} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	constexpr basic_array_ptr(Array* other) : basic_array_ptr{other->data_elements(), other->layout()} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
 	basic_array_ptr(basic_array_ptr      &&) noexcept = default;
 	basic_array_ptr(basic_array_ptr const& )          = default;
@@ -298,8 +290,8 @@ struct basic_array_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin
 //  template<class... O, std::enable_if_t<not std::is_base_of<basic_array_ptr, basic_array_ptr<O...> >{}, int> =0> friend constexpr auto operator==(basic_array_ptr<O...> const& o, basic_array_ptr const& s) -> decltype(s.base() == o->base() and s.layout() == o->layout()) {return s.base() == o->base() and s.layout() == o->layout();}
 //  template<class... O, std::enable_if_t<not std::is_base_of<basic_array_ptr, basic_array_ptr<O...> >{}, int> =0> friend constexpr auto operator!=(basic_array_ptr<O...> const& o, basic_array_ptr const& s) -> decltype(s.base() != o->base() or  s.layout() != o->layout()) {return s.base() != o->base() or  s.layout() != o->layout();}
 
-	template<class RR, class LL, std::enable_if_t<not std::is_base_of<basic_array_ptr, basic_array_ptr<RR, LL> >{}, int> =0> friend constexpr auto operator==(basic_array_ptr const& s, basic_array_ptr<RR, LL> const& o) -> bool {return s.base() == o->base() and s.layout() == o->layout();}
-	template<class RR, class LL, std::enable_if_t<not std::is_base_of<basic_array_ptr, basic_array_ptr<RR, LL> >{}, int> =0> friend constexpr auto operator!=(basic_array_ptr const& s, basic_array_ptr<RR, LL> const& o) -> bool {return s.base() == o->base() and s.layout() == o->layout();}
+	template<class RR, class LL, std::enable_if_t<not std::is_base_of<basic_array_ptr, basic_array_ptr<RR, LL> >{}, int> =0> friend constexpr auto operator==(basic_array_ptr const& self, basic_array_ptr<RR, LL> const& other) -> bool {return self.base() == other->base() and self.layout() == other->layout();}
+	template<class RR, class LL, std::enable_if_t<not std::is_base_of<basic_array_ptr, basic_array_ptr<RR, LL> >{}, int> =0> friend constexpr auto operator!=(basic_array_ptr const& self, basic_array_ptr<RR, LL> const& other) -> bool {return self.base() == other->base() and self.layout() == other->layout();}
 
  protected:
 	constexpr void increment() {base_ += Ref::nelems();}
