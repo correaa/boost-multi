@@ -42,17 +42,17 @@ BOOST_AUTO_TEST_CASE(multi_range) {
 #endif
 {
 	auto drng = multi::range<std::ptrdiff_t>{5, 10};
-	std::vector<double> v(drng.begin(), drng.end());
-	BOOST_REQUIRE( v[1] == 6 );
+	std::vector<double> vec(drng.begin(), drng.end());
+	BOOST_REQUIRE( vec[1] == 6 );
 }
 {
 	auto drng = multi::range<std::ptrdiff_t>{5, 10};
-	auto fun = [](auto x) {return x + 1;};
-	std::vector<double> v(
+	auto fun = [](auto idx) {return idx + 1;};
+	std::vector<double> vec(
 		boost::make_transform_iterator(drng.begin(), fun),
 		boost::make_transform_iterator(drng.end()  , fun)
 	);
-	BOOST_REQUIRE( v[1] == 7 );
+	BOOST_REQUIRE( vec[1] == 7 );
 }
 }
 
@@ -60,26 +60,26 @@ BOOST_AUTO_TEST_CASE(multi_range_in_constexpr) {
 	BOOST_REQUIRE( multi::extension_t<int>{5} == 5 ); // this is not a constexpr in cuda 10
 	BOOST_REQUIRE(( multi::extension_t<int>{5, 12}.contains(10) ));
 
-	multi::range<int> rr{5, 12};
+	multi::range<int> irng{5, 12};
 
-	BOOST_REQUIRE( rr.contains(6) );
-	BOOST_REQUIRE( not rr.contains(12) );
+	BOOST_REQUIRE( irng.contains(6) );
+	BOOST_REQUIRE( not irng.contains(12) );
 
-	BOOST_REQUIRE( * rr.begin()      ==  5 );
-	BOOST_REQUIRE( *(rr.begin() + 1) ==  6 );
+	BOOST_REQUIRE( * irng.begin()      ==  5 );
+	BOOST_REQUIRE( *(irng.begin() + 1) ==  6 );
 
-	BOOST_REQUIRE(   rr.first()      ==  5 );
-	BOOST_REQUIRE(   rr.last()       == 12 );
+	BOOST_REQUIRE(   irng.first()      ==  5 );
+	BOOST_REQUIRE(   irng.last()       == 12 );
 
-	BOOST_REQUIRE(   rr.front()      ==  5 );
-	BOOST_REQUIRE(   rr.back ()      == 11 );
+	BOOST_REQUIRE(   irng.front()      ==  5 );
+	BOOST_REQUIRE(   irng.back ()      == 11 );
 
 	std::vector<int> vec = {5, 6, 7, 8, 9, 10, 11};
 
-	assert( std::equal( rr.begin(), rr.end(), vec.begin(), vec.end() ) );
+	assert( std::equal( irng.begin(), irng.end(), vec.begin(), vec.end() ) );
 
 	auto sum = 0;
-	for(auto elem : rr) {
+	for(auto elem : irng) {
 		sum += elem;
 	}
 	BOOST_REQUIRE( sum == 5 + 6 + 7 + 8 + 9 + 10 + 11 );
@@ -87,28 +87,28 @@ BOOST_AUTO_TEST_CASE(multi_range_in_constexpr) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_range2) {
-	multi::index_extension x(10);
+	multi::index_extension iex(10);
 
-	BOOST_REQUIRE( *begin(x) == 0 );
-	BOOST_REQUIRE( size(x) == 10 );
-	BOOST_REQUIRE( x[0] == 0 );
-	BOOST_REQUIRE( x[1] == 1 );
-	BOOST_REQUIRE( x[9] == 9 );
+	BOOST_REQUIRE( *begin(iex) == 0 );
+	BOOST_REQUIRE( size(iex) == 10 );
+	BOOST_REQUIRE( iex[0] == 0 );
+	BOOST_REQUIRE( iex[1] == 1 );
+	BOOST_REQUIRE( iex[9] == 9 );
 
-	auto xbeg = begin(x);
-	BOOST_REQUIRE( xbeg[0] == x[0] );
-	BOOST_REQUIRE( xbeg[1] == x[1] );
+	auto const xbeg = begin(iex);
+	BOOST_REQUIRE( xbeg[0] == iex[0] );
+	BOOST_REQUIRE( xbeg[1] == iex[1] );
 
-//	static_assert( ranges::forward_iterator< std::decay_t<decltype(b)> > , "!");
-
-	BOOST_REQUIRE( std::accumulate( begin(x), end(x), 0) == 0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 );
+	BOOST_REQUIRE( std::accumulate( begin(iex), end(iex), 0) == 0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 );
 
 //  #if(__cpp_structured_bindings >= 201606)
-//   {
-//  	multi::iextensions<3> ies({{0, 3}, {0, 4}, {0, 5}});
-//  	BOOST_REQUIRE( std::get<1>(ies).size() == 4 );
-//  	auto [is, js, ks] = ies;
-//  	BOOST_REQUIRE( is.size() == 3 );
-//  }
+	{
+		multi::iextensions<3> ies({{0, 3}, {0, 4}, {0, 5}});
+		BOOST_REQUIRE( std::get<1>(ies).size() == 4 );
+		auto [eyes, jays, kays] = ies;
+		BOOST_REQUIRE( eyes.size() == 3 );
+		BOOST_REQUIRE( jays.size() == 4 );
+		BOOST_REQUIRE( kays.size() == 5 );
+	}
 //  #endif
 }
