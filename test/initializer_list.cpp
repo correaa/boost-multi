@@ -12,76 +12,76 @@ namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d) {
 	{
-		std::vector<double> const v = {1., 2., 3.};
-		BOOST_REQUIRE( v[1] == 2. );
+		std::vector<double> const vec = {1., 2., 3.};
+		BOOST_REQUIRE( vec[1] == 2. );
 	}
 	{
-		multi::static_array<double, 1> A = {1.2, 3.4, 5.6};
-		BOOST_REQUIRE( size(A) == 3 );
-		BOOST_REQUIRE( A[2] == 5.6 );
+		multi::static_array<double, 1> arr = {1.2, 3.4, 5.6};
+		BOOST_REQUIRE( size(arr) == 3 );
+		BOOST_REQUIRE( arr[2] == 5.6 );
 	}
 	{
-		multi::static_array<double, 1> const A = {1.2, 3.4, 5.6};
-		BOOST_REQUIRE( size(A) == 3 );
-		BOOST_REQUIRE( A[2] == 5.6 );
-	}
-	{
-		auto il = {1.2, 3.4, 5.6};
-		multi::static_array<double, 1> const A(il);
-		BOOST_REQUIRE( size(A) == 3 );
-		BOOST_REQUIRE( A[2] == il.begin()[2] );
+		multi::static_array<double, 1> const arr = {1.2, 3.4, 5.6};
+		BOOST_REQUIRE( size(arr) == 3 );
+		BOOST_REQUIRE( arr[2] == 5.6 );
 	}
 	{
 		auto il = {1.2, 3.4, 5.6};
-		multi::static_array<double, 1> const A(begin(il), end(il));
-		BOOST_REQUIRE( size(A) == 3 );
-		BOOST_REQUIRE( A[2] == il.begin()[2] );
-	}
-	{
-		multi::static_array<double, 1> const A = {1.2, 3.4, 5.6};
-		BOOST_REQUIRE( size(A) == 3 );
-		BOOST_REQUIRE( A[2] == 5.6 );
-		BOOST_REQUIRE(( A == multi::static_array<double, 1>{1.2, 3.4, 5.6} ));
-		BOOST_REQUIRE(( A == decltype(A){1.2, 3.4, 5.6} ));
+		multi::static_array<double, 1> const arr(il);
+		BOOST_REQUIRE( size(arr) == 3 );
+		BOOST_REQUIRE( arr[2] == il.begin()[2] );
 	}
 	{
 		auto il = {1.2, 3.4, 5.6};
-		multi::array<double, 1> const A(il.begin(), il.end());
-		BOOST_REQUIRE( size(A) == 3 );
-		BOOST_REQUIRE( A[2] == 5.6 );
+		multi::static_array<double, 1> const arr(begin(il), end(il));
+		BOOST_REQUIRE( size(arr) == 3 );
+		BOOST_REQUIRE( arr[2] == il.begin()[2] );
 	}
 	{
-		multi::array<double, 1> const A = {1.2, 3.4, 5.6};
-		BOOST_REQUIRE( size(A) == 3 );
-		BOOST_REQUIRE( A[2] == 5.6 );
-		BOOST_REQUIRE(( A == multi::array<double, 1>{1.2, 3.4, 5.6} ));
-		BOOST_REQUIRE(( A == decltype(A){1.2, 3.4, 5.6} ));
-		BOOST_REQUIRE(( A == decltype(A)::decay_type({1.2, 3.4, 5.6}) ));
+		multi::static_array<double, 1> const arr = {1.2, 3.4, 5.6};
+		BOOST_REQUIRE( size(arr) == 3 );
+		BOOST_REQUIRE( arr[2] == 5.6 );
+		BOOST_REQUIRE(( arr == multi::static_array<double, 1>{1.2, 3.4, 5.6} ));
+		BOOST_REQUIRE(( arr == decltype(arr){1.2, 3.4, 5.6} ));
 	}
 	{
-		std::array<double, 3> const a = {{1.1, 2.2, 3.3}};
+		auto values = {1.2, 3.4, 5.6};
+		multi::array<double, 1> const arr(values.begin(), values.end());
+		BOOST_REQUIRE( size(arr) == 3 );
+		BOOST_REQUIRE( arr[2] == 5.6 );
+	}
+	{
+		multi::array<double, 1> const arr = {1.2, 3.4, 5.6};
+		BOOST_REQUIRE( size(arr) == 3 );
+		BOOST_REQUIRE( arr[2] == 5.6 );
+		BOOST_REQUIRE(( arr == multi::array<double, 1>{1.2, 3.4, 5.6} ));
+		BOOST_REQUIRE(( arr == decltype(A){1.2, 3.4, 5.6} ));
+		BOOST_REQUIRE(( arr == decltype(A)::decay_type({1.2, 3.4, 5.6}) ));
+	}
+	{
+		std::array<double, 3> const stdarr = {{1.1, 2.2, 3.3}};
 		using multi::num_elements;
-		BOOST_REQUIRE( num_elements(a) == 3 );
+		BOOST_REQUIRE( num_elements(stdarr) == 3 );
 
 		using std::begin; using std::end;
-		multi::static_array<double, 1> const A(begin(a), end(a));
-		BOOST_REQUIRE( size(A) == 3 );
+		multi::static_array<double, 1> const arr(begin(stdarr), end(stdarr));
+		BOOST_REQUIRE( size(arr) == 3 );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d_ctad) {
 	#if defined(__cpp_deduction_guides) and not defined(__NVCC__) and not defined(__circle_build__)  // circle 170 crashes
 	{
-		multi::static_array const A = {1.2, 3.4, 5.6};
-		BOOST_REQUIRE( size(A) == 3 );
-		BOOST_REQUIRE( A[2] == 5.6 );
-		BOOST_REQUIRE(( A == multi::static_array{1.2, 3.4, 5.6} ));
+		multi::static_array const arr = {1.2, 3.4, 5.6};
+		BOOST_REQUIRE( size(arr) == 3 );
+		BOOST_REQUIRE( arr[2] == 5.6 );
+		BOOST_REQUIRE(( arr == multi::static_array{1.2, 3.4, 5.6} ));
 	}
 	{
-		multi::array A({1.2, 3.4, 5.6});
-		BOOST_REQUIRE( size(A) == 3 );
-		BOOST_REQUIRE( A[2] == 5.6 );
-		BOOST_REQUIRE(( A == multi::array({1.2, 3.4, 5.6}) ));
+		multi::array arr({1.2, 3.4, 5.6});
+		BOOST_REQUIRE( size(arr) == 3 );
+		BOOST_REQUIRE( arr[2] == 5.6 );
+		BOOST_REQUIRE(( arr == multi::array({1.2, 3.4, 5.6}) ));
 	}
 	#endif
 }
@@ -116,9 +116,9 @@ BOOST_AUTO_TEST_CASE(multi_initialize_from_carray_1d) {
 #endif
 	}
 	{
-		std::array<double, 3> a = {{1.1, 2.2, 3.3}};
-		multi::array<double, 1> const A(begin(a), end(a));
-		BOOST_REQUIRE(( A == decltype(A){1.1, 2.2, 3.3} ));
+		std::array<double, 3> stdarr = {{1.1, 2.2, 3.3}};
+		multi::array<double, 1> const arr(begin(stdarr), end(stdarr));
+		BOOST_REQUIRE(( arr == decltype(arr){1.1, 2.2, 3.3} ));
 	}
 }
 
@@ -170,41 +170,41 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d) {
 		BOOST_REQUIRE( vec[1] == 5.5 );
 	}
 	{
-		std::array<std::array<double, 2>, 3> const a = {{
+		std::array<std::array<double, 2>, 3> const nested = {{
 			{{ 1.2,  2.4}},
 			{{11.2, 34.4}},
 			{{15.2, 32.4}}
 		}};
 		using std::begin; using std::end;
-		multi::static_array<double, 2> A(begin(a), end(a));
+		multi::static_array<double, 2> arr(begin(nested), end(nested));
 
-		BOOST_REQUIRE( size(A) == 3 );
-		BOOST_REQUIRE( size(A[0]) == 2 );
-		BOOST_REQUIRE( A[1][0] == 11.2 );
+		BOOST_REQUIRE( size(arr) == 3 );
+		BOOST_REQUIRE( size(arr[0]) == 2 );
+		BOOST_REQUIRE( arr[1][0] == 11.2 );
 	}
 	{
-		std::array<std::array<double, 2>, 3> const staticA = {{
+		std::array<std::array<double, 2>, 3> const nested = {{
 			{{ 1.2,  2.4}},
 			{{11.2, 34.4}},
 			{{15.2, 32.4}}
 		}};
-		multi::static_array<double, 2> const A(std::begin(staticA), std::end(staticA));
+		multi::static_array<double, 2> const arr(std::begin(nested), std::end(nested));
 
 		BOOST_REQUIRE((
-			A == multi::array<double, 2> {{
+			arr == multi::array<double, 2> {{
 				{{ 1.2,  2.4}},
 				{{11.2, 34.4}},
 				{{15.2, 32.4}}
 			}}
 		));
-		BOOST_REQUIRE(not( A != multi::array<double, 2>{
+		BOOST_REQUIRE(not( arr != multi::array<double, 2>{
 				{ 1.2,  2.4},
 				{11.2, 34.4},
 				{15.2, 32.4}
 			}
 		));
 		BOOST_REQUIRE((
-			A == decltype(A){
+			arr == decltype(arr){
 				{ 1.2,  2.4},
 				{11.2, 34.4},
 				{15.2, 32.4}
@@ -212,21 +212,21 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d) {
 		));
 	}
 	{
-		std::array<std::array<double, 2>, 3> a = {{
+		std::array<std::array<double, 2>, 3> nested = {{
 			{{1., 2.}},
 			{{2., 4.}},
 			{{3., 6.}}
 		}};
-		multi::array<double, 2> A(begin(a), end(a));
-		BOOST_REQUIRE( num_elements(A) == 6 and A[2][1] == 6. );
+		multi::array<double, 2> arr(begin(nested), end(nested));
+		BOOST_REQUIRE( num_elements(arr) == 6 and arr[2][1] == 6. );
 	}
 	{
-		using complex = std::complex<double>; complex const I{0., 1.};
-		multi::array<complex, 2> b = {
+		using complex = std::complex<double>; complex const I{0., 1.};  // NOLINT(readability-identifier-length) imaginary unit
+		multi::array<complex, 2> arr = {
 			{2. + 1.*I, 1. + 3.*I, 1. + 7.*I},
 			{3. + 4.*I, 4. + 2.*I, 0. + 0.*I}
 		};
-		BOOST_REQUIRE( b[1][1] == 4. + 2.*I );
+		BOOST_REQUIRE( arr[1][1] == 4. + 2.*I );
 	}
 }
 
