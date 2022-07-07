@@ -261,11 +261,11 @@ constexpr auto comp_equal(T t, U u) noexcept -> bool {
 #pragma GCC diagnostic pop
 
 BOOST_AUTO_TEST_CASE(array_vector_size) {
-	std::vector<double> v(100);
+	std::vector<double> vec(100);
 	{
 	//  multi::array<double, 1> a(                           v.size() );  // warning: sign-conversion
-		multi::array<double, 1> a(static_cast<multi::size_t>(v.size()));
-		BOOST_REQUIRE( comp_equal(a.size(), v.size()) );
+		multi::array<double, 1> a(static_cast<multi::size_t>(vec.size()));
+		BOOST_REQUIRE( comp_equal(a.size(), vec.size()) );
 	}
 	{
 	//  multi::array<double, 1> a({v.size()});                              // warning: sign-conversion
@@ -273,8 +273,8 @@ BOOST_AUTO_TEST_CASE(array_vector_size) {
 	//	BOOST_REQUIRE( comp_equal(a.size(), v.size()) );
 	}
 	{
-	 	multi::array<double, 1> a(multi::iextensions<1>(static_cast<multi::size_t>(v.size())));  // warning: sign-conversion
+	 	multi::array<double, 1> arr(multi::iextensions<1>(static_cast<multi::size_t>(vec.size())));  // warning: sign-conversion
 	//	multi::array<double, 1> a(static_cast<multi::size_t>(v.size()));
-		BOOST_REQUIRE( comp_equal(a.size(), v.size()) );
+		BOOST_REQUIRE( comp_equal(arr.size(), vec.size()) );
 	}
 }

@@ -883,7 +883,6 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wuninitialized
 					-Wunused -Wunused-but-set-variable -Wunused-function -Wunused-parameter -Wunused-variable
 					-Wwrite-strings
-					-fno-gnu-keyword
 				>
 				$<$<OR:$<CXX_COMPILER_ID:PGI>,$<CXX_COMPILER_ID:NVHPC>>:
 					-Werror

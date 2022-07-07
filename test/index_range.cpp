@@ -41,16 +41,16 @@ BOOST_AUTO_TEST_CASE(multi_range) {
 	BOOST_REQUIRE(( multi::range<std::ptrdiff_t>{5, 5}.empty() ));
 #endif
 {
-	auto r = multi::range<std::ptrdiff_t>{5, 10};
-	std::vector<double> v(r.begin(), r.end());
+	auto drng = multi::range<std::ptrdiff_t>{5, 10};
+	std::vector<double> v(drng.begin(), drng.end());
 	BOOST_REQUIRE( v[1] == 6 );
 }
 {
-	auto r = multi::range<std::ptrdiff_t>{5, 10};
-	auto f = [](auto x) {return x+1;};
+	auto drng = multi::range<std::ptrdiff_t>{5, 10};
+	auto fun = [](auto x) {return x + 1;};
 	std::vector<double> v(
-		boost::make_transform_iterator(r.begin(), f),
-		boost::make_transform_iterator(r.end()  , f)
+		boost::make_transform_iterator(drng.begin(), fun),
+		boost::make_transform_iterator(drng.end()  , fun)
 	);
 	BOOST_REQUIRE( v[1] == 7 );
 }
@@ -74,13 +74,13 @@ BOOST_AUTO_TEST_CASE(multi_range_in_constexpr) {
 	BOOST_REQUIRE(   rr.front()      ==  5 );
 	BOOST_REQUIRE(   rr.back ()      == 11 );
 
-	std::vector<int> v = {5, 6, 7, 8, 9, 10, 11};
+	std::vector<int> vec = {5, 6, 7, 8, 9, 10, 11};
 
-	assert( std::equal( rr.begin(), rr.end(), v.begin(), v.end() ) );
+	assert( std::equal( rr.begin(), rr.end(), vec.begin(), vec.end() ) );
 
 	auto sum = 0;
-	for(auto e : rr) {
-		sum += e;
+	for(auto elem : rr) {
+		sum += elem;
 	}
 	BOOST_REQUIRE( sum == 5 + 6 + 7 + 8 + 9 + 10 + 11 );
 
@@ -95,9 +95,9 @@ BOOST_AUTO_TEST_CASE(multi_range2) {
 	BOOST_REQUIRE( x[1] == 1 );
 	BOOST_REQUIRE( x[9] == 9 );
 
-	auto b = begin(x);
-	BOOST_REQUIRE( b[0] == x[0] );
-	BOOST_REQUIRE( b[1] == x[1] );
+	auto xbeg = begin(x);
+	BOOST_REQUIRE( xbeg[0] == x[0] );
+	BOOST_REQUIRE( xbeg[1] == x[1] );
 
 //	static_assert( ranges::forward_iterator< std::decay_t<decltype(b)> > , "!");
 

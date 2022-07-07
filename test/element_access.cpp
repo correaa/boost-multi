@@ -39,54 +39,55 @@ BOOST_AUTO_TEST_CASE(empty_intersection) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_element_access_with_tuple) {
-	multi::array<double, 2> m({3, 3}, 44.);
-	std::array<int, 2> p = {{1, 2}};
+	multi::array<double, 2> arr({3, 3}, 44.);
+	std::array<int, 2> point = {{1, 2}};
 
-	BOOST_REQUIRE( m[p[0]][p[1]] == m(1, 2) );
-	BOOST_REQUIRE( &m(p[0], p[1]) == &m[p[0]][p[1]] );
+	BOOST_REQUIRE(  arr[point[0]][point[1]] ==  arr(1, 2) );
+	BOOST_REQUIRE( &arr(point[0], point[1]) == &arr[point[0]][point[1]] );
 
-	BOOST_REQUIRE( &m[p[0]][p[1]] == &m(p[0], p[1]) );
-	BOOST_REQUIRE( &m(p[0], p[1]) == &m.apply(p) );
+	BOOST_REQUIRE( &arr[point[0]][point[1]] == &arr(point[0], point[1]) );
+	BOOST_REQUIRE( &arr(point[0], point[1]) == &arr.apply(point) );
 
 #if not defined(__circle_build__)
-	BOOST_REQUIRE( &m[p[0]][p[1]] == &std::apply(m, p) );
-	BOOST_REQUIRE( &m[p[0]][p[1]] == &     apply(m, p) );
+	BOOST_REQUIRE( &arr[point[0]][point[1]] == &std::apply(arr, point) );
+	BOOST_REQUIRE( &arr[point[0]][point[1]] == &     apply(arr, point) );
 #endif
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_extension_with_tuple) {
 	{
-		multi::array<double, 2>::extensions_type x = {3, 4};
-		multi::array<double, 2> A(x, 44.);
-		BOOST_REQUIRE( size(A) == 3 );
+		multi::array<double, 2>::extensions_type ext = {3, 4};
+		multi::array<double, 2> arr(ext, 44.);
+		BOOST_REQUIRE( size(arr) == 3 );
 	}
 	{
-		auto const t = std::make_tuple(3, 4);
-		auto const [n, m] = t;
-		multi::array<double, 2> A({n, m}, 44.);
-		BOOST_REQUIRE( size(A) == 3 );
+		auto const [en, em] = std::make_tuple(3, 4);
+		multi::array<double, 2> arr({en, em}, 44.);
+		BOOST_REQUIRE( size(arr) == 3 );
 	}
 	{
-		auto const t = std::make_tuple(3, 4);
-		auto A = std::apply([](auto const&... e) {return multi::array<double, 2>({e...}, 55.);}, t);
-		BOOST_REQUIRE( size(A) == 3 );
+		auto arr = std::apply([](auto const&... szs) {return multi::array<double, 2>({szs...}, 55.);}, std::make_tuple(3, 4));
+		BOOST_REQUIRE( size(arr) == 3 );
+		BOOST_REQUIRE( std::get<0>(sizes(arr)) == 3 );
+		BOOST_REQUIRE( std::get<1>(sizes(arr)) == 4 );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(multi_test_constness_reference) {
-	multi::array<double, 2> const m({10, 10}, 99.);
+	multi::array<double, 2> const carr({10, 10}, 99.);
 
-	BOOST_REQUIRE( size( m(1, {0, 3}) ) == 3 );
+	BOOST_REQUIRE( size( carr(1, {0, 3}) ) == 3 );
 
-	BOOST_REQUIRE( m(1, {0, 3})[1] == 99. );
-	static_assert( decltype( m({0, 3}, 1) )::rank_v == 1 , "!");
-	BOOST_REQUIRE( size(m.sliced(0, 3)) == 3 );
+	BOOST_REQUIRE( carr(1, {0, 3})[1] == 99. );
+	static_assert( decltype( carr({0, 3}, 1) )::rank_v == 1 , "!");
+	BOOST_REQUIRE( size(carr.sliced(0, 3)) == 3 );
 
-	BOOST_REQUIRE( m.range({0, 3}).rotated()[1].unrotated().size() == 3 );
+	BOOST_REQUIRE( carr.range({0, 3}).rotated()[1].unrotated().size() == 3 );
 
-	BOOST_REQUIRE( m({0, 3}, {0, 3})[1][1] == 99. );
+	BOOST_REQUIRE( carr({0, 3}, {0, 3})[1][1] == 99. );
 
-	static_assert(not std::is_assignable<decltype(m(1, {0, 3})[1]), double>{}, "!");
+	static_assert(not std::is_assignable_v<decltype(carr(1, {0, 3})[1]), double>, "!");
+
 //  none of these lines should compile because m is read-only
 //  m(1, {0, 3})[1] = 88.;
 //  m({0, 3}, 1)[1] = 77.;
@@ -362,20 +363,18 @@ BOOST_AUTO_TEST_CASE(elements_rvalues_nomove) {
 }
 
 BOOST_AUTO_TEST_CASE(elements_rvalues_assignment) {
-	std::vector<double> v = {1., 2., 3.};
-	std::move(v) = std::vector<double>{3., 4., 5.};
-	std::move(v)[1] = 99.;  // it compiles  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
+	std::vector<double> vec = {1., 2., 3.};
+	std::move(vec) = std::vector<double>{3., 4., 5.};
+	std::move(vec)[1] = 99.;  // it compiles  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
 //  std::move(v[1]) = 99.;  // does not compile
 
 //  double a = 5.;
 //	std::move(a) = 9.;  // does not compile
 //  BOOST_REQUIRE( a == 9. );
 
-	multi::array<double, 1> A = {1., 2., 3.};
-	multi::array<double, 1> B = {1., 2., 3.};
-	std::move(A) = B;  // this compiles TODO(correaa) should it?
-
-//  std::move(A)[0] = 10.;  // does not compile
+	multi::array<double, 1> arr1 = {1., 2., 3.};
+	multi::array<double, 1> arr2 = {1., 2., 3.};
+	std::move(arr1) = arr2;  // this compiles TODO(correaa) should it?
 }
 
 #endif

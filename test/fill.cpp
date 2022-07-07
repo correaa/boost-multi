@@ -12,13 +12,13 @@
 #include<type_traits> // enable_if_t
 
 // from Howard Hinnart hash
-static constexpr auto fnv1a(void const* key, std::size_t len, std::size_t h) noexcept {  // NOLINT(bugprone-easily-swappable-parameters)
-	auto const *p = static_cast<unsigned char const*>(key);
-	unsigned char const* const e = p + len; // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): low level
-	for(; p < e; ++p) {  // NOLINT(altera-id-dependent-backward-branch,cppcoreguidelines-pro-bounds-pointer-arithmetic): low level
-		h = (h ^ *p) * 1099511628211U;  // prime
+static constexpr auto fnv1a(void const* key, std::size_t len, std::size_t hash) noexcept {  // NOLINT(bugprone-easily-swappable-parameters)
+	auto const *first = static_cast<unsigned char const*>(key);
+	unsigned char const* const last = first + len;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): low level
+	for(; first < last; ++first) {  // NOLINT(altera-id-dependent-backward-branch,cppcoreguidelines-pro-bounds-pointer-arithmetic): low level
+		hash = (hash ^ *first) * 1099511628211U;  // prime
 	}
-	return h;
+	return hash;
 }
 
 // static constexpr auto fnv1a(void const* key, std::size_t len) noexcept {
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE(fill_member) {
 }
 
 BOOST_AUTO_TEST_CASE(fill) {
-	std::random_device r;
+	std::random_device randdev;
 
 	namespace multi = boost::multi;
 
@@ -119,55 +119,55 @@ BOOST_AUTO_TEST_CASE(fill) {
 		{ 50.,  6.,  7.,  8.,  9.}
 	};
 	using std::all_of;
-	BOOST_REQUIRE( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& e) {return e == 5.;}) );
+	BOOST_REQUIRE( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& elem) {return elem == 5.;}) );
 
 	using std::fill;
 	fill(d2D[1].begin(), d2D[1].end(), 8.);
 
-	BOOST_REQUIRE( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& e) {return e == 8.;}) );
+	BOOST_REQUIRE( all_of(begin(d2D[1]), end(d2D[1]), [](auto const& elem) {return elem == 8.;}) );
 
 	fill(begin(rotated(d2D)[1]), end(rotated(d2D)[1]), 8.);
-	BOOST_REQUIRE( all_of(begin(rotated(d2D)[1]), end(rotated(d2D)[1]), [](auto&& e) {return e == 8.;}) );
+	BOOST_REQUIRE( all_of(begin(rotated(d2D)[1]), end(rotated(d2D)[1]), [](auto&& elem) {return elem == 8.;}) );
 
 	fill(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), 8.);
-	BOOST_REQUIRE( all_of(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), [](auto&& e) {return e == 8.;}) );
+	BOOST_REQUIRE( all_of(begin((d2D.rotated())[1]), end((d2D.rotated())[1]), [](auto&& elem) {return elem == 8.;}) );
 
-	auto rand = [d=std::normal_distribution<>{}, g = std::mt19937{r()}]() mutable {return d(g);};
+	auto rand = [gauss = std::normal_distribution<>{}, gen = std::mt19937{randdev()}]() mutable {return gauss(gen);};
 	multi::array<double, 2> r2D({5, 5});
-	std::for_each(begin(r2D), end(r2D), [&](auto&& e) {std::generate(begin(e), end(e), rand);});
+	std::for_each(begin(r2D), end(r2D), [&](auto&& elem) {std::generate(begin(elem), end(elem), rand);});
 }
 
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(fill_1D) {
-	multi::array<double, 1> a = {1., 2., 3.};
+	multi::array<double, 1> arr = {1., 2., 3.};
 	multi::array<double, 2> B({10, 3});
 
-	std::fill( begin(B), end(B), a );
+	std::fill( begin(B), end(B), arr );
 
-	BOOST_REQUIRE( B[0] == a );
-	BOOST_REQUIRE( B[1] == a );
+	BOOST_REQUIRE( B[0] == arr );
+	BOOST_REQUIRE( B[1] == arr );
 	// ...
-	BOOST_REQUIRE( B[9] == a );
+	BOOST_REQUIRE( B[9] == arr );
 }
 
 #define FWD(a) std::forward<decltype(a)>(a)
 
 template<class BinaryOp, class Column, class Array, class Out>
-auto broadcast(BinaryOp op, Column const& a, Array const& A, Out&& B) -> Out&& {
+auto broadcast(BinaryOp op, Column const& col, Array const& in, Out&& out) -> Out&& {
 	std::transform(
-		begin(~A), end(~A), begin(~B), begin(~B),
-		[acol = (~a)[0], &op](auto const& Acol, auto&& Bcol) {
+		begin(~in), end(~in), begin(~out), begin(~out),
+		[acol = (~col)[0], &op](auto const& Acol, auto&& Bcol) {
 			std::transform(begin(Acol), end(Acol), begin(acol), begin(Bcol), op);
 			return FWD(Bcol);
 		}
 	);
 
-	return std::forward<Out>(B);
+	return std::forward<Out>(out);
 }
 
 BOOST_AUTO_TEST_CASE (julia_broadcast, *boost::unit_test::tolerance(0.00001) ) {
-	multi::array<double, 2> a = {
+	multi::array<double, 2> arr = {
 		{0.1},
 		{0.2}
 	};
@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE (julia_broadcast, *boost::unit_test::tolerance(0.00001) ) {
 	};
 	{  // "broadcast"
 		multi::array<double, 2> B(extensions(A));
-		broadcast(std::plus<>{}, a, A, B);
+		broadcast(std::plus<>{}, arr, A, B);
 
 		BOOST_TEST( B[0][0] == 1.20813 ); BOOST_TEST( B[0][1] == 1.82068 ); BOOST_TEST( B[0][2] == 1.25387 );
 		BOOST_TEST( B[1][0] == 1.56851 ); BOOST_TEST( B[1][1] == 1.86401 ); BOOST_TEST( B[1][2] == 1.67846 );
@@ -186,7 +186,7 @@ BOOST_AUTO_TEST_CASE (julia_broadcast, *boost::unit_test::tolerance(0.00001) ) {
 	{  // inefficient: replicate the vector before summing elementwise
 		multi::array<double, 2> ax3({2, 3});
 
-		std::fill( begin(~ax3), end(~ax3), (~a)[0] );
+		std::fill( begin(~ax3), end(~ax3), (~arr)[0] );
 		BOOST_TEST( ax3[0][0] == 0.1 ); BOOST_TEST( ax3[0][1] == 0.1 ); BOOST_TEST( ax3[0][2] == 0.1 );
 		BOOST_TEST( ax3[1][0] == 0.2 ); BOOST_TEST( ax3[1][1] == 0.2 ); BOOST_TEST( ax3[1][2] == 0.2 );
 

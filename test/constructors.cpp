@@ -14,7 +14,7 @@ namespace multi = boost::multi;
 using complex = std::complex<double>;
 
 struct multiplies_bind1st{
-	explicit multiplies_bind1st(multi::array<complex, 2>&& m) : m_(std::move(m)) {} // this produces a bug in nvcc11.0
+	explicit multiplies_bind1st(multi::array<complex, 2>&& marr) : m_(std::move(marr)) {} // this produces a bug in nvcc11.0
  private:
 	multi::array<complex, 2> m_;
 };
@@ -27,8 +27,8 @@ BOOST_AUTO_TEST_CASE(multi_construct_1d) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_constructors_inqnvcc_bug) {
-	multi::array<complex, 2> m({10, 10});
-	multiplies_bind1st(std::move(m));
+	multi::array<complex, 2> marr({10, 10});
+	multiplies_bind1st(std::move(marr));
 }
 
 BOOST_AUTO_TEST_CASE(multi_constructors_1d) {
