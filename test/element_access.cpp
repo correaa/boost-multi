@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_extension_with_tuple) {
 		BOOST_REQUIRE( size(arr) == 3 );
 	}
 	{
-		auto arr = std::apply([](auto... sizes) {return multi::array<double, 2>({sizes...}, 55.);}, std::make_tuple(3, 4));
+		auto arr = std::apply([](auto const&... szs) {return multi::array<double, 2>({szs...}, 55.);}, std::make_tuple(3, 4));
 		BOOST_REQUIRE( size(arr) == 3 );
 		BOOST_REQUIRE( std::get<0>(sizes(arr)) == 3 );
 		BOOST_REQUIRE( std::get<1>(sizes(arr)) == 4 );
