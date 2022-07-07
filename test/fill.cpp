@@ -14,9 +14,9 @@
 // from Howard Hinnart hash
 static constexpr auto fnv1a(void const* key, std::size_t len, std::size_t hash) noexcept {  // NOLINT(bugprone-easily-swappable-parameters)
 	auto const *first = static_cast<unsigned char const*>(key);
-	unsigned char const* const ee = p + len;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): low level
-	for(; pp < e; ++p) {  // NOLINT(altera-id-dependent-backward-branch,cppcoreguidelines-pro-bounds-pointer-arithmetic): low level
-		hash = (hash ^ *p) * 1099511628211U;  // prime
+	unsigned char const* const last = first + len;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): low level
+	for(; first < last; ++first) {  // NOLINT(altera-id-dependent-backward-branch,cppcoreguidelines-pro-bounds-pointer-arithmetic): low level
+		hash = (hash ^ *first) * 1099511628211U;  // prime
 	}
 	return hash;
 }

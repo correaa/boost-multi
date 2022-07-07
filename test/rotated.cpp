@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(multi_rotate_part1) {
 	std::array<std::array<double, 5>, 4> b = {};
 
 	multi::array_ref<double, 2> A(&a[0][0], {4, 5});
-	multi::array_ref<double, 2> B(&b[0][0], {4, 5});
+	multi::array_ref<double, 2> B(&b[0][0], {4, 5});  // NOLINT(readability-container-data-pointer) test access
 
 	rotated(B) = rotated(A);
 	BOOST_REQUIRE( B[1][1] == 6  );
@@ -124,14 +124,14 @@ BOOST_AUTO_TEST_CASE(multi_rotate) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_transposed) {
-	multi::array<double, 2> const M = {
+	multi::array<double, 2> const arr0 = {
 		{ 9., 24., 30., 9.},
 		{ 4., 10., 12., 7.},
 		{14., 16., 36., 1.}
 	};
-	multi::array<double, 2> const MT1 =  M.transposed();
-	multi::array<double, 2> const MT2 = ~M;
-	BOOST_REQUIRE( MT1 == MT2 );
+	multi::array<double, 2> const arr1 =  arr0.transposed();
+	multi::array<double, 2> const arr2 = ~arr0;
+	BOOST_REQUIRE( arr1 == arr2 );
 }
 
 BOOST_AUTO_TEST_CASE(miguel) {

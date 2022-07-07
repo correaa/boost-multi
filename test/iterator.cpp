@@ -190,34 +190,34 @@ BOOST_AUTO_TEST_CASE(iterator_arrow_operator) {
 }
 
 BOOST_AUTO_TEST_CASE(index_range_iteration) {
-	multi::index_range r{0, 5}; // semiopen interval
+	multi::index_range irng{0, 5}; // semiopen interval
 	std::ostringstream out;
-	std::copy(begin(r), end(r), std::ostream_iterator<int>{out, ","});
+	std::copy(begin(irng), end(irng), std::ostream_iterator<int>{out, ","});
 	BOOST_REQUIRE( out.str() == "0,1,2,3,4," );
 
-	BOOST_REQUIRE( std::accumulate(begin(r), end(r), 0) == r.size()*(r.size()-1)/2 );
+	BOOST_REQUIRE( std::accumulate(begin(irng), end(irng), 0) == irng.size()*(irng.size()-1)/2 );
 
-	BOOST_REQUIRE( std::accumulate(begin(r), end(r), 0, [](auto&& acc, auto const& e){return acc + e*e*e;}) > 0 ); // sum of cubes
+	BOOST_REQUIRE( std::accumulate(begin(irng), end(irng), 0, [](auto&& acc, auto const& e){return acc + e*e*e;}) > 0 ); // sum of cubes
 }
 
 BOOST_AUTO_TEST_CASE(multi_reverse_iterator_1D) {
-	multi::array<double, 1> V(100, 66.);
-	BOOST_REQUIRE( &V[99] == &*std::make_reverse_iterator(V.end()) );
+	multi::array<double, 1> arr(100, 66.);
+	BOOST_REQUIRE( &arr[99] == &*std::make_reverse_iterator(arr.end()) );
 
-	auto rbegin = std::make_reverse_iterator(V.end());
+	auto rbegin = std::make_reverse_iterator(arr.end());
 	rbegin += 100;
 	multi::array<double, 1>::iterator begin{rbegin.base()};
-	BOOST_REQUIRE( begin  == V.begin() );
+	BOOST_REQUIRE( begin  == arr.begin() );
 }
 
 BOOST_AUTO_TEST_CASE(multi_reverse_iterator_2D) {
-	multi::array<double, 2> A = {
+	multi::array<double, 2> arr = {
 		{  1.,   2.},
 		{ 10.,  20.},
 		{100., 200.}
 	};
-	BOOST_REQUIRE( (*A.begin())[1] == 2. );
-	auto rbegin = std::make_reverse_iterator(A.end());
+	BOOST_REQUIRE( (*arr.begin())[1] == 2. );
+	auto rbegin = std::make_reverse_iterator(arr.end());
 
 	BOOST_TEST( (*rbegin)[1] == 200. );
 }
