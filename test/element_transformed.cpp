@@ -12,48 +12,48 @@
 namespace multi = boost::multi;
 
 using complex = std::complex<double>;
-constexpr complex I{0, 1};
+constexpr complex I{0, 1};  // NOLINT(readability-identifier-length) I imaginary unit
 
 BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_function_reference) {
-	multi::array<complex, 1> A = { 1. + 2.*I,  3. +  4.*I};
+	multi::array<complex, 1> arr = { 1. + 2.*I,  3. +  4.*I};
 
 	constexpr auto conj = static_cast<complex (&)(complex const&)>(std::conj<double>);
 
-	auto const& Ac = A.element_transformed(conj);
-	BOOST_REQUIRE( Ac[0] == conj(A[0]) );
-	BOOST_REQUIRE( Ac[1] == conj(A[1]) );
+	auto const& conjd_arr = arr.element_transformed(conj);
+	BOOST_REQUIRE( conjd_arr[0] == conj(arr[0]) );
+	BOOST_REQUIRE( conjd_arr[1] == conj(arr[1]) );
 
 //  Ac[0] = 5. + 4.*I;  // this doesn't compile, good!
-	BOOST_REQUIRE( Ac[0] == 1. - 2.*I );
-	BOOST_REQUIRE( std::inner_product(A.begin(), A.end(), Ac.begin(), complex{0.}) == std::norm(A[0]) + std::norm(A[1]) );
+	BOOST_REQUIRE( conjd_arr[0] == 1. - 2.*I );
+	BOOST_REQUIRE( std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{0.}) == std::norm(arr[0]) + std::norm(arr[1]) );
 }
 
 BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_lambda) {
-	multi::array<complex, 1> A = { 1. + 2.*I,  3. +  4.*I};
+	multi::array<complex, 1> arr = { 1. + 2.*I,  3. +  4.*I};
 
-	auto const& Ac = A.element_transformed([](auto const& c) {return std::conj(c);});
-	BOOST_REQUIRE( Ac[0] == std::conj(A[0]) );
-	BOOST_REQUIRE( Ac[1] == std::conj(A[1]) );
+	auto const& conjd_arr = arr.element_transformed([](auto const& cee) {return std::conj(cee);});
+	BOOST_REQUIRE( conjd_arr[0] == std::conj(arr[0]) );
+	BOOST_REQUIRE( conjd_arr[1] == std::conj(arr[1]) );
 
 //	Ac[0] = 5. + 4.*I;  // this doesn't compile, good!
-	BOOST_REQUIRE( Ac[0] == 1. - 2.*I );
+	BOOST_REQUIRE( conjd_arr[0] == 1. - 2.*I );
 }
 
 BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_lambda_with_const_return) {
-	multi::array<complex, 1> A = { 1. + 2.*I,  3. +  4.*I};
+	multi::array<complex, 1> arr = { 1. + 2.*I,  3. +  4.*I};
 
-	auto const& Ac = A.element_transformed([](auto const& c) -> auto const {return std::conj(c);});  // NOLINT(readability-const-return-type) to disable assignment
-	BOOST_REQUIRE( Ac[0] == std::conj(A[0]) );
-	BOOST_REQUIRE( Ac[1] == std::conj(A[1]) );
+	auto const& conjd_arr = arr.element_transformed([](auto const& cee) -> auto const {return std::conj(cee);});  // NOLINT(readability-const-return-type) to disable assignment
+	BOOST_REQUIRE( conjd_arr[0] == std::conj(arr[0]) );
+	BOOST_REQUIRE( conjd_arr[1] == std::conj(arr[1]) );
 
 //	Ac[0] = 5. + 4.*I;  // this doesn't compile, good!
-	BOOST_REQUIRE( Ac[0] == 1. - 2.*I );
+	BOOST_REQUIRE( conjd_arr[0] == 1. - 2.*I );
 }
 
 template<typename ComplexRef> struct Conjd;
 
 constexpr struct Conj_t {  // NOLINT(readability-identifier-naming) for testing
-	template<class ComplexRef> constexpr auto operator()(ComplexRef&& z) const {return Conjd<decltype(z)>{z};}
+	template<class ComplexRef> constexpr auto operator()(ComplexRef&& zee) const {return Conjd<decltype(zee)>{zee};}
 	template<class T> constexpr auto operator()(Conjd<T> const&) const = delete;
 	template<class T> constexpr auto operator()(Conjd<T> &&) const = delete;
 	template<class T> constexpr auto operator()(Conjd<T> &) const = delete;
@@ -77,7 +77,7 @@ struct Conjd {  // NOLINT(readability-identifier-naming) for testing
 	constexpr auto operator=(decay_type const& other) && -> Conjd& {c_ = std::conj(other); return *this;}
 
  private:
-	constexpr explicit Conjd(ComplexRef c) : c_{c} {}
+	constexpr explicit Conjd(ComplexRef cee) : c_{cee} {}
 	ComplexRef c_;
 	friend decltype(Conj);
 };
@@ -107,22 +107,22 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_mutable_proxy) {
 }
 
 BOOST_AUTO_TEST_CASE(transform_ptr_single_value) {
-	complex c = 1. + 2.*I;
+	complex cee = 1. + 2.*I;
 
-	constexpr auto conj_ro = [](auto const& z) {return std::conj(z);};  // NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
+	constexpr auto conj_ro = [](auto const& zee) {return std::conj(zee);};  // NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
 
-	multi::transform_ptr<complex, decltype(conj_ro), complex*> tp{&c, conj_ro};
-	BOOST_REQUIRE( *tp == std::conj(1. + 2.*I) );
+	multi::transform_ptr<complex, decltype(conj_ro), complex*> conjd_ceeP{&cee, conj_ro};
+	BOOST_REQUIRE( *conjd_ceeP == std::conj(1. + 2.*I) );
 }
 
 BOOST_AUTO_TEST_CASE(transform_ptr_1D_array) {
-	multi::array<complex, 1> A = { 1. + 2.*I,  3. +  4.*I};
+	multi::array<complex, 1> arr = { 1. + 2.*I,  3. +  4.*I};
 
-	constexpr auto conj_ro = [](auto const& z) {return std::conj(z);};  // NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
+	constexpr auto conj_ro = [](auto const& zee) {return std::conj(zee);};  // NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
 
-	auto const& Ac = A.element_transformed(conj_ro);
-	BOOST_REQUIRE( Ac[0] == conj_ro(A[0]) );
-	BOOST_REQUIRE( Ac[1] == conj_ro(A[1]) );
+	auto const& conjd_arr = arr.element_transformed(conj_ro);
+	BOOST_REQUIRE( conjd_arr[0] == conj_ro(arr[0]) );
+	BOOST_REQUIRE( conjd_arr[1] == conj_ro(arr[1]) );
 
 //  Ac[0] = 5. + 4.i;  // doesn't compile thanks to the `auto const` in the `conj` def
 }
@@ -133,14 +133,14 @@ BOOST_AUTO_TEST_CASE(arthur_odwyer_array_transform_int) {
     	int b;
 	};
 
-	multi::array<S, 1> v({2}, S{});
-	auto&& r = v.element_transformed(&S::a);
-	r[0] = 99.;
+	multi::array<S, 1> arr({2}, S{});
+	auto&& ref = arr.element_transformed(&S::a);
+	ref[0] = 99.;
 
-	BOOST_REQUIRE( v[0].a == 99. );
+	BOOST_REQUIRE( arr[0].a == 99. );
 
-	auto const& cr = v.element_transformed(&S::a); (void)cr;
-	BOOST_REQUIRE( cr[0] == 99. );
+	auto const& cref = arr.element_transformed(&S::a);
+	BOOST_REQUIRE( cref[0] == 99. );
 //  cr[0] = 99.;  // compile error "assignment of read-only location"
 }
 
@@ -150,35 +150,35 @@ BOOST_AUTO_TEST_CASE(arthur_odwyer_array_transform_int_array) {
     	int b;
 	};
 
-	multi::array<S, 1> v({2}, S{});
-	auto&& r = v.element_transformed(&S::a);
-	r[0][1] = 99.;
+	multi::array<S, 1> vec({2}, S{});
+	auto&& ref = vec.element_transformed(&S::a);
+	ref[0][1] = 99.;
 
-	BOOST_REQUIRE( r[0][1] == 99. );
-	BOOST_REQUIRE( v[0].a[1] == 99. );
+	BOOST_REQUIRE( ref[0][1] == 99. );
+	BOOST_REQUIRE( vec[0].a[1] == 99. );
 
-	auto const& cr = v.element_transformed(&S::a); (void)cr;
-	BOOST_REQUIRE( cr[0][1] == 99. );
-//  cr[0][1] = 99.;  // compile error "assignment of read-only location"
+	auto const& cref = vec.element_transformed(&S::a);
+	BOOST_REQUIRE( cref[0][1] == 99. );
+//  cref[0][1] = 99.;  // compile error "assignment of read-only location"
 }
 
 BOOST_AUTO_TEST_CASE(indirect_transformed) {
-	std::vector<double> v = {0., 1.1, 2.2, 3.3, 4.4, 5.5};
+	std::vector<double> vec = {0., 1.1, 2.2, 3.3, 4.4, 5.5};
 
 	using index_t = std::vector<double>::size_type;
 
-	multi::array<index_t, 1> const a = {4, 3, 2, 1, 0};
+	multi::array<index_t, 1> const arr = {4, 3, 2, 1, 0};
 
-	auto&& indirect_v = a.element_transformed([&v](index_t idx) noexcept -> double& {return v[idx];});
+	auto&& indirect_v = arr.element_transformed([&vec](index_t idx) noexcept -> double& {return vec[idx];});
 
-	BOOST_REQUIRE(  indirect_v[1] ==  v[3] );
-	BOOST_REQUIRE( &indirect_v[1] == &v[3] );
+	BOOST_REQUIRE(  indirect_v[1] ==  vec[3] );
+	BOOST_REQUIRE( &indirect_v[1] == &vec[3] );
 
 	indirect_v[1] = 99.;
-	BOOST_REQUIRE(  v[3] ==  99. );
+	BOOST_REQUIRE(  vec[3] ==  99. );
 
-	for(auto&& e : indirect_v) {e = 88.;}
-	BOOST_REQUIRE(  v[3] ==  88. );
+	for(auto&& elem : indirect_v) {elem = 88.;}
+	BOOST_REQUIRE(  vec[3] ==  88. );
 
 	auto const& const_indirect_v = indirect_v;  (void)const_indirect_v;
 //  const_indirect_v[1] = 999.;  // does not compile, good!
@@ -195,9 +195,9 @@ BOOST_AUTO_TEST_CASE(indirect_transformed_carray) {
 	};
 
 	using index_t = std::vector<double>::size_type;
-	multi::array<index_t, 1> const a = {4, 3, 2, 1, 0};
+	multi::array<index_t, 1> const arr = {4, 3, 2, 1, 0};
 
-	auto&& indirect_v = a.element_transformed([&D](index_t idx) noexcept -> double(&)[3] {return D[idx];});  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+	auto&& indirect_v = arr.element_transformed([&D](index_t idx) noexcept -> double(&)[3] {return D[idx];});  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 	BOOST_REQUIRE( &indirect_v[1][2] ==  &D[3][2] );
 	BOOST_REQUIRE(  indirect_v[1][2] ==  32.0 );
