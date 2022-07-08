@@ -56,9 +56,9 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_tuple_as_extra_dimension) {
 	using vector3 = std::array<double, 3>;
 //	using vector3 = std::tuple<double, double, double>; // for tuples reinterpret_array_cast is implementation dependent!!
 
-	vector3 v;
+	vector3 v3d;
 	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast, cppcoreguidelines-avoid-c-arrays, hicpp-avoid-c-arrays, modernize-avoid-c-arrays): test
-	BOOST_REQUIRE( &reinterpret_cast<double(&)[3]>(v)[1] == &std::get<1>(v) );
+	BOOST_REQUIRE( &reinterpret_cast<double(&)[3]>(v3d)[1] == &std::get<1>(v3d) );
 	{
 		multi::array<vector3, 1> A(multi::extensions_t<1>{multi::iextension{10}});
 		BOOST_REQUIRE( &A.reinterpret_array_cast<double>(3)[2][1] == &std::get<1>(A[2]) );
@@ -94,29 +94,29 @@ template<class T> struct complex_dummy{T real; T imag;};
 
 BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast) {
 {
-	std::complex<double> c{1, 2};
-	auto *pC = reinterpret_cast<complex_dummy<double>*>(&c); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-	pC->real = 11;
-	BOOST_REQUIRE(real(c)==11);
+	std::complex<double> cee{1, 2};
+	auto *ptr = reinterpret_cast<complex_dummy<double>*>(&cee); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+	ptr->real = 11;
+	BOOST_REQUIRE(real(cee)==11);
 }
 {
-	multi::array<std::complex<double>, 1> A(multi::extensions_t<1>{multi::iextension{10}});
-	std::iota( begin(A), end(A), 1.);
-	BOOST_REQUIRE( A[8] == 9. );
-	auto&& A2 = A.reinterpret_array_cast<complex_dummy<double>>();
-	A2[8].real = 1000.;
-	BOOST_REQUIRE( A[8] == 1000. );
+	multi::array<std::complex<double>, 1> arr(multi::extensions_t<1>{multi::iextension{10}});
+	std::iota( begin(arr), end(arr), 1.);
+	BOOST_REQUIRE( arr[8] == 9. );
+	auto&& arr2 = arr.reinterpret_array_cast<complex_dummy<double>>();
+	arr2[8].real = 1000.;
+	BOOST_REQUIRE( arr[8] == 1000. );
 }
 }
 
 BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_realcomplex) {
 	using complex = std::complex<double>;
 {
-	complex c{1, 2};
-	auto *pC = reinterpret_cast<std::array<double, 2>*>(&c); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
-	(*pC)[0] = 11;
-	BOOST_REQUIRE( pC );
-	BOOST_REQUIRE(real(c)==11);
+	complex cee{1, 2};
+	auto *conjd_cee = reinterpret_cast<std::array<double, 2>*>(&cee); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+	(*conjd_cee)[0] = 11;
+	BOOST_REQUIRE( conjd_cee );
+	BOOST_REQUIRE(real(cee)==11);
 }
 {
 	complex cee{1, 2};

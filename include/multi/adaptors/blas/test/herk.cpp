@@ -215,29 +215,29 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_identity) {
 		BOOST_REQUIRE( blas::H(blas::T(c))[0][1]==9999. );
 	}
 	{
-//		multi::array<complex, 2> c({3, 3}, 9999.);
-//		using namespace multi::blas;
-//		blas::herk(blas::filling::lower, 1., blas::T(a), 0., c); // c†=c=aa†=(aa†)†, `c` in lower triangular
-//		BOOST_REQUIRE( c[1][0]==complex(50., -49.) );
-//		BOOST_REQUIRE( c[0][1]==9999. );
+//      multi::array<complex, 2> c({3, 3}, 9999.);
+//      using namespace multi::blas;
+//      blas::herk(blas::filling::lower, 1., blas::T(a), 0., c); // c†=c=aa†=(aa†)†, `c` in lower triangular
+//      BOOST_REQUIRE( c[1][0]==complex(50., -49.) );
+//      BOOST_REQUIRE( c[0][1]==9999. );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
 		blas::herk(blas::U, 1., a, 0., c); // c†=c=aa†=(aa†)†, `c` in upper triangular
-		BOOST_REQUIRE( c[0][1]==complex(50., +49.) );
-		BOOST_REQUIRE( c[1][0]==9999. );
+		BOOST_REQUIRE( c[0][1] == complex(50., +49.) );
+		BOOST_REQUIRE( c[1][0] == 9999. );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.);
 		blas::herk(1., a, c); // c†=c=aa†=(aa†)†
-		BOOST_REQUIRE( c[0][1]==complex(50., +49.) );
-		BOOST_REQUIRE( c[1][0]==complex(50., -49.) );
+		BOOST_REQUIRE( c[0][1] == complex(50., +49.) );
+		BOOST_REQUIRE( c[1][0] == complex(50., -49.) );
 	}
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.);
 		blas::herk(blas::L, 1., blas::H(a), 0., c); // c†=c=aa†=(aa†)†, `c` in lower triangular
-		BOOST_REQUIRE( c[1][0]==complex(52., 90.) );
-		BOOST_REQUIRE( c[0][1]==9999. );
+		BOOST_REQUIRE( c[1][0] == complex(52., 90.) );
+		BOOST_REQUIRE( c[0][1] == 9999. );
 	}
 	{
 	//	multi::array<complex, 2> c({3, 3}, 9999.);

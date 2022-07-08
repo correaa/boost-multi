@@ -157,21 +157,21 @@ class involuter {
 
 	template<class Other, decltype(multi::implicit_cast<It>(typename Other::underlying_type{}))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor
-	constexpr/*implct*/involuter(Other const& o) : it_{o.it_}, f_{o.f_}{} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : inherit implicit conversion of underlying type
+	constexpr/*implct*/involuter(Other const& other) : it_{other.it_}, f_{other.f_}{} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : inherit implicit conversion of underlying type
 	template<class Other, decltype(explicit_cast<It>(typename Other::underlying_type{}))* = nullptr>
-	constexpr explicit involuter(Other const& o) : it_{o.it_}, f_{o.f_}{}
+	constexpr explicit involuter(Other const& other) : it_{other.it_}, f_{other.f_}{}
 
 	constexpr auto operator*() const {return reference{*it_, f_};}
-	constexpr auto operator[](difference_type d) const {return reference{*(it_ + d), f_};}
+	constexpr auto operator[](difference_type n) const {return reference{*(it_ + n), f_};}
 
-	auto operator==(involuter const& o) const -> bool{return it_==o.it_;}
-	auto operator!=(involuter const& o) const -> bool{return it_!=o.it_;}
+	auto operator==(involuter const& other) const -> bool {return it_ == other.it_;}
+	auto operator!=(involuter const& other) const -> bool {return it_ != other.it_;}
 
-	constexpr auto operator+=(difference_type n) -> involuter&{it_+=n; return *this;}
-	constexpr auto operator-=(difference_type n) -> involuter&{it_-=n; return *this;}
+	constexpr auto operator+=(difference_type n) -> involuter& {it_ += n; return *this;}
+	constexpr auto operator-=(difference_type n) -> involuter& {it_ -= n; return *this;}
 
-	constexpr auto operator+(difference_type n) const{return involuter{it_+n, f_};}
-	constexpr auto operator-(difference_type n) const{return involuter{it_-n, f_};}
+	constexpr auto operator+(difference_type n) const {return involuter{it_ + n, f_};}
+	constexpr auto operator-(difference_type n) const {return involuter{it_ - n, f_};}
 
 	auto operator-(involuter const& other) const{return it_ - other.it_;}
 
@@ -194,17 +194,13 @@ class involuter {
 template<class Ref> using negated = involuted<Ref, std::negate<>>;
 template<class It>  using negater = involuter<It, std::negate<>>;
 
-#if 1
-struct conjugate{
-	template<class T>
-	auto operator()(T&& a) const -> decltype(auto) {
-	//	using std::conj; /*for doubles?*/ 
-	//	using std::conj;
-	//	std::complex<double> A = static_cast<std::complex<double>>(a);
-		return multi::adl_conj(std::forward<T>(a)); // this is needed by icc
+struct conjugate {
+	template<class Complex>
+	auto operator()(Complex&& zee) const -> decltype(auto) {
+	//  using std::conj;  /*for doubles?*/
+		return multi::adl_conj(std::forward<Complex>(zee));  // this is needed by icc
 	}
 };
-#endif
 
 template<class Ref> using conjugated = involuted<Ref, conjugate>;
 

@@ -35,13 +35,13 @@ class particles_soa {
 		auto operator+() const {return operator particle();}
 
 		reference(double& mss, v3d& pos) : mass{mss}, position{pos} {}  // NOLINT(google-runtime-references)
-	//  #if __cplusplus <= 201402L
+		
 	 private: // NOLINT(whitespace/indent) : bug in cpplint 1.5.5
 		friend class particles_soa;
 		reference(reference const&) = default;
 	//  reference(reference&&) = default;
 
-	 public: // NOLINT(whitespace/indent) : bug in cpplint 1.5.5
+	 public:  // NOLINT(whitespace/indent) : bug in cpplint 1.5.5
 	//  ~reference() noexcept = default;  // lints cppcoreguidelines-special-member-functions,hicpp-special-member-functions
 	//  #endif
 
@@ -57,9 +57,7 @@ class particles_soa {
 		auto operator!=(reference const& other) const {return std::tie(mass, position) != std::tie(other.mass, other.position);}
 	};
 
-	auto operator()(int i, int j){
-		return reference{masses_[i][j], positions_[i][j]};
-	}
+	auto operator()(int eye, int jay){return reference{masses_[eye][jay], positions_[eye][jay]};}
 };
 
 	multi::array<particle, 2> AoS({2, 2}, particle{});

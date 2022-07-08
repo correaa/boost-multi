@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 }
 
 BOOST_AUTO_TEST_CASE(array_partitioned_add_to_last) {
-	multi::array<double, 3>	A3 = {
+	multi::array<double, 3>	arr = {
 		{
 			{  0.,  1.,  2.,  3.,  4.,  5.},
 			{  6.,  7.,  8.,  9., 10., 11.},
@@ -173,21 +173,19 @@ BOOST_AUTO_TEST_CASE(array_partitioned_add_to_last) {
 		}
 	};
 
-#if(__cplusplus >= 201703L)
-	auto strides = std::apply([](auto... e) {return std::array<std::ptrdiff_t, sizeof...(e)>{{e...}};}, A3.strides());
+	auto strides = std::apply([](auto... strds) {return std::array<std::ptrdiff_t, sizeof...(strds)>{{strds...}};}, arr.strides());
 
-	BOOST_REQUIRE( std::is_sorted(strides.rbegin(), strides.rend()) and A3.num_elements() == A3.nelems() ); // contiguous c-ordering
-#endif
+	BOOST_REQUIRE( std::is_sorted(strides.rbegin(), strides.rend()) and arr.num_elements() == arr.nelems() ); // contiguous c-ordering
 
-	auto&& A4 = A3.reinterpret_array_cast<double>(1);
+	auto&& A4 = arr.reinterpret_array_cast<double>(1);
 
-	BOOST_REQUIRE(( A3.extensions() == decltype(A3.extensions()){2, 4, 6} ));
+	BOOST_REQUIRE(( arr.extensions() == decltype(arr.extensions()){2, 4, 6} ));
 	BOOST_REQUIRE(( A4.extensions() == decltype(A4.extensions()){2, 4, 6, 1} ));
 
 	BOOST_REQUIRE( A4.is_flattable() );
 	BOOST_REQUIRE( A4.flatted().is_flattable() );
 
-	BOOST_REQUIRE( &A4[1][2][3][0] == &A3[1][2][3] );
+	BOOST_REQUIRE( &A4[1][2][3][0] == &arr[1][2][3] );
 }
 
 BOOST_AUTO_TEST_CASE(array_partitioned_vs_chunked_1D) {

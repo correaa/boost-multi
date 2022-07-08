@@ -12,8 +12,8 @@
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(multi_array_stable_sort) {
-	std::vector<double> v = {1., 2., 3.};
-	BOOST_REQUIRE( std::is_sorted(begin(v), end(v)) );
+	std::vector<double> vec = {1., 2., 3.};
+	BOOST_REQUIRE( std::is_sorted(begin(vec), end(vec)) );
 
 	multi::array<double, 2> d2D = {
 		{150, 16, 17, 18, 19},
@@ -52,8 +52,8 @@ BOOST_AUTO_TEST_CASE(multi_array_stable_sort) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_ref_stable_sort) {
-	std::vector<double> v = {1., 2., 3.};
-	BOOST_REQUIRE( std::is_sorted(begin(v), end(v)) );
+	std::vector<double> vec = {1., 2., 3.};
+	BOOST_REQUIRE( std::is_sorted(begin(vec), end(vec)) );
 
 	std::array<std::array<double, 5>, 4> d2D {{
 		{{150, 16, 17, 18, 19}},
@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(multi_array_ref_stable_sort) {
 		{{100, 11, 12, 13, 14}},
 		{{ 50,  6,  7,  8,  9}}
 	}};
-	auto&& d2D_ref = *multi::array_ptr<double, 2>(&d2D[0][0], {4, 5});
+	auto&& d2D_ref = *multi::array_ptr<double, 2>(&d2D[0][0], {4, 5});  // NOLINT(readability-container-data-pointer) test access
 
 	BOOST_REQUIRE( not std::is_sorted(begin(d2D_ref), end(d2D_ref) ) );
 	std::stable_sort( begin(d2D_ref), end(d2D_ref) );

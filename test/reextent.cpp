@@ -129,9 +129,8 @@ BOOST_AUTO_TEST_CASE(array_reextent_1d) {
 	A.reextent(multi::extensions_t<1>{multi::iextension{20}});
 	BOOST_REQUIRE( size(A) == 20 );
 	BOOST_REQUIRE( A[9] == 4. );
-//	BOOST_REQUIRE( A[19] == 0. ); // impossible to know since it is sometimes 0.
+//  BOOST_REQUIRE( A[19] == 0. );  // impossible to know since it is sometimes 0.
 
-//  A.reextent(std::tuple<int>(22) );
 	A.reextent( boost::multi::tuple<int>(22) );
 	BOOST_REQUIRE( size(A) == 22 );
 	BOOST_REQUIRE( A[9] == 4. );
@@ -175,8 +174,8 @@ BOOST_AUTO_TEST_CASE(array_reextent_1d) {
 //#pragma warning(pop)                     // NOLINT(clang-diagnostic-unknown-pragmas)
 
 BOOST_AUTO_TEST_CASE(tuple_decomposition) {
-	boost::multi::tuple<int, int> t{1, 2};
-	auto [t0, t1] = t;
+	boost::multi::tuple<int, int> tup{1, 2};
+	auto [t0, t1] = tup;
 	BOOST_REQUIRE( t0 == 1 );
 	BOOST_REQUIRE( t1 == 2 );
 }
@@ -235,15 +234,15 @@ BOOST_AUTO_TEST_CASE(array_reextent_2d_array) {
 	#pragma    diag_suppress = implicit_return_from_non_void_function
 #endif
 template< class T, class U >
-constexpr auto comp_equal(T t, U u) noexcept -> bool {
+constexpr auto comp_equal(T left, U right) noexcept -> bool {
     using UT = std::make_unsigned_t<T>;
     using UU = std::make_unsigned_t<U>;
     if constexpr (std::is_signed_v<T> == std::is_signed_v<U>) {
-		return t == u;
+		return left == right;
 	} else if constexpr (std::is_signed_v<T>) {
-		return t < 0 ? false : UT(t) == u;
+		return left < 0 ? false : static_cast<UT>(left) == right;
 	} else {
-		return u < 0 ? false : t == UU(u);
+		return right < 0 ? false : left == UU(right);
 	}
 	#if not defined(__INTEL_COMPILER) and not defined(__NVCOMPILER)
 	__builtin_unreachable();
@@ -263,14 +262,9 @@ constexpr auto comp_equal(T t, U u) noexcept -> bool {
 BOOST_AUTO_TEST_CASE(array_vector_size) {
 	std::vector<double> vec(100);
 	{
-	//  multi::array<double, 1> a(                           v.size() );  // warning: sign-conversion
-		multi::array<double, 1> a(static_cast<multi::size_t>(vec.size()));
-		BOOST_REQUIRE( comp_equal(a.size(), vec.size()) );
-	}
-	{
-	//  multi::array<double, 1> a({v.size()});                              // warning: sign-conversion
-	//	multi::array<double, 1> a({static_cast<multi::size_t>(v.size())});  // semantic problem, thinks it is an initializer_list
-	//	BOOST_REQUIRE( comp_equal(a.size(), v.size()) );
+	//  multi::array<double, 1> a(                             vec.size() );  // warning: sign-conversion
+		multi::array<double, 1> arr(static_cast<multi::size_t>(vec.size()));
+		BOOST_REQUIRE( comp_equal(arr.size(), vec.size()) );
 	}
 	{
 	 	multi::array<double, 1> arr(multi::iextensions<1>(static_cast<multi::size_t>(vec.size())));  // warning: sign-conversion

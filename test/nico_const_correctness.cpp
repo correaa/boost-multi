@@ -12,8 +12,8 @@ template<class Array1D>
 void print(Array1D const& coll) {
 //  *coll.begin() = 99;  // doesn't compile "assignment of read-only location"
 
-	for(auto const& e : coll) {std::cout<< e <<", ";}
-	std::cout << std::endl;
+	for(auto const& elem : coll) {std::cout<< elem <<", ";}
+	std::cout<<std::endl;
 }
 
 BOOST_AUTO_TEST_CASE(const_views) {
@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(const_views) {
 
 template<class Array1D>
 void fill_99(Array1D&& coll) {
-	for(auto& e : coll) {e = 99;}
+	for(auto& elem : coll) {elem = 99;}
 }
 
 BOOST_AUTO_TEST_CASE(mutating_views) {
@@ -55,10 +55,10 @@ void print_2d(Array1D const& coll) {
 //  *(coll.begin()->begin()) = 99;  // doesn't compile "assignment of read-only location"
 
 	for(auto const& row : coll) {
-		for(auto const& e : row) {
-			std::cout<< e <<", ";
+		for(auto const& elem : row) {
+			std::cout<< elem <<", ";
 		}
-		std::cout << std::endl;
+		std::cout<<std::endl;
 	}
 }
 
@@ -80,8 +80,8 @@ template<class Array1D>
 void fill_2d_99(Array1D&& coll) {
 //  for(auto const& row : coll) {  // does not work because it would make it const
 	for(auto&& row : coll) {
-		for(auto&& e : row) {
-			e = 99;
+		for(auto&& elem : row) {
+			elem = 99;
 		}
 	}
 }

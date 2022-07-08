@@ -16,8 +16,8 @@
 
 namespace multi = boost::multi;
 
-static auto second_finish(multi::extensions_t<3> x) {
-	return std::get<1>(x).finish();
+static auto second_finish(multi::extensions_t<3> exts) {
+	return std::get<1>(exts).finish();
 }
 
 BOOST_AUTO_TEST_CASE(extensions_3D) {
@@ -25,8 +25,8 @@ BOOST_AUTO_TEST_CASE(extensions_3D) {
 	BOOST_REQUIRE( 20 == second_finish( multi::extensions_t<3>( { {0, 10}, {0, 20}, {0, 30} } )) );
 	BOOST_REQUIRE( 20 == second_finish(                         { {0, 10}, {0, 20}, {0, 30} }  ) );
 
-	multi::extensions_t<3> x3{ {0, 10}, {0, 20}, {0, 30} };
-	BOOST_REQUIRE( 20 == second_finish(x3                                                     ) );
+	multi::extensions_t<3> exts{ {0, 10}, {0, 20}, {0, 30} };
+	BOOST_REQUIRE( 20 == second_finish(exts                                                     ) );
 }
 
 //BOOST_AUTO_TEST_CASE(extensions_1D) {
@@ -52,27 +52,27 @@ BOOST_AUTO_TEST_CASE(serialize_extensions) {
 #endif
 
 BOOST_AUTO_TEST_CASE(extensions_to_linear) {
-	multi::extensions_t<3> x{4, 5, 3};
-	BOOST_REQUIRE( x.to_linear(0, 0, 0) ==  0 );
-	BOOST_REQUIRE( x.to_linear(0, 0, 1) ==  1 );
-	BOOST_REQUIRE( x.to_linear(0, 0, 2) ==  2 );
-	BOOST_REQUIRE( x.to_linear(0, 1, 0) ==  3 );
-	BOOST_REQUIRE( x.to_linear(0, 1, 1) ==  4 );
-	BOOST_REQUIRE( x.to_linear(0, 1, 2) ==  5 );
-	BOOST_REQUIRE( x.to_linear(1, 0, 0) == 15 );
+	multi::extensions_t<3> exts{4, 5, 3};
+	BOOST_REQUIRE( exts.to_linear(0, 0, 0) ==  0 );
+	BOOST_REQUIRE( exts.to_linear(0, 0, 1) ==  1 );
+	BOOST_REQUIRE( exts.to_linear(0, 0, 2) ==  2 );
+	BOOST_REQUIRE( exts.to_linear(0, 1, 0) ==  3 );
+	BOOST_REQUIRE( exts.to_linear(0, 1, 1) ==  4 );
+	BOOST_REQUIRE( exts.to_linear(0, 1, 2) ==  5 );
+	BOOST_REQUIRE( exts.to_linear(1, 0, 0) == 15 );
 
-	for(int i = 0; i != 4; ++i) {
-		for(int j = 0; j != 5; ++j) {
-			for(int k = 0; k != 3; ++k) {
-				BOOST_REQUIRE(( x.from_linear(x.to_linear(i, j, k)) ==  decltype(x.from_linear(x.to_linear(i, j, k))){i, j, k} ));
+	for(int eye = 0; eye != 4; ++eye) {
+		for(int jay = 0; jay != 5; ++jay) {
+			for(int kay = 0; kay != 3; ++kay) {
+				BOOST_REQUIRE(( exts.from_linear(exts.to_linear(eye, jay, kay)) == decltype(exts.from_linear(exts.to_linear(eye, jay, kay))){eye, jay, kay} ));
 			}
 		}
 	}
 
-	BOOST_REQUIRE( x.to_linear(4, 0, 0) == x.num_elements() );
+	BOOST_REQUIRE( exts.to_linear(4, 0, 0) == exts.num_elements() );
 
-	for(int n = 0; n != x.num_elements(); ++n) {
-		BOOST_REQUIRE( std::apply([&](auto... e){return x.to_linear(e...);}, x.from_linear(n)) == n );
+	for(int idx = 0; idx != exts.num_elements(); ++idx) {
+		BOOST_REQUIRE( std::apply([&](auto... indices){return exts.to_linear(indices...);}, exts.from_linear(idx)) == idx );
 	}
 }
 
@@ -91,89 +91,89 @@ BOOST_AUTO_TEST_CASE(extensions_layout_to_linear) {
 }
 
 BOOST_AUTO_TEST_CASE(extensions_layout_to_linear_2) {
-	multi::array<double, 3> A({40, 50, 80});
-	auto&& B = A({10, 30}, {20, 32}, {60, 75});
+	multi::array<double, 3> arr({40, 50, 80});
+	auto&& sub = arr({10, 30}, {20, 32}, {60, 75});
 
-	auto const& C = B.rotated();
-	auto Cx = C.extensions();
-	for(auto i : std::get<0>(Cx)) {
-		for(auto j : std::get<1>(Cx)) {
-			for(auto k : std::get<2>(Cx)) {
-				BOOST_REQUIRE( &  C.base()  [C.layout()(i, j, k)] == &C(i, j, k) );
-				BOOST_REQUIRE( &*(C.base() + C.layout()(i, j, k)) == &C(i, j, k) );
+	auto const& rot = sub.rotated();
+	auto exts = rot.extensions();
+	for(auto eye : std::get<0>(exts)) {
+		for(auto jay : std::get<1>(exts)) {
+			for(auto kay : std::get<2>(exts)) {
+				BOOST_REQUIRE( &  rot.base()  [rot.layout()(eye, jay, kay)] == &rot(eye, jay, kay) );
+				BOOST_REQUIRE( &*(rot.base() + rot.layout()(eye, jay, kay)) == &rot(eye, jay, kay) );
 			}
 		}
 	}
 }
 
 BOOST_AUTO_TEST_CASE(linearize) {
-	multi::array<double, 3> A({10, 20, 30});
+	multi::array<double, 3> arr({10, 20, 30});
 
-	BOOST_REQUIRE((  25 % extensions(A) == decltype(  25 % extensions(A)){0, 0, 25} ));
-	BOOST_REQUIRE((  55 % extensions(A) == decltype(  55 % extensions(A))(0, 1, 25) ));
-	BOOST_REQUIRE(( 655 % extensions(A) == decltype( 655 % extensions(A))(1, 1, 25) ));
-	BOOST_REQUIRE((1255 % extensions(A) == decltype(1255 % extensions(A))(2, 1, 25) ));
+	BOOST_REQUIRE((  25 % extensions(arr) == decltype(  25 % extensions(arr)){0, 0, 25} ));
+	BOOST_REQUIRE((  55 % extensions(arr) == decltype(  55 % extensions(arr))(0, 1, 25) ));
+	BOOST_REQUIRE(( 655 % extensions(arr) == decltype( 655 % extensions(arr))(1, 1, 25) ));
+	BOOST_REQUIRE((1255 % extensions(arr) == decltype(1255 % extensions(arr))(2, 1, 25) ));
 
-	auto const p = A.extensions().from_linear(655);
+	auto const point = arr.extensions().from_linear(655);
 //  BOOST_REQUIRE( p == std::make_tuple(1, 1, 25) );
 	using multi::detail::get;
-	BOOST_REQUIRE( get<0>(p) ==  1 );
-	BOOST_REQUIRE( get<1>(p) ==  1 );
-	BOOST_REQUIRE( get<2>(p) == 25 );
+	BOOST_REQUIRE( get<0>(point) ==  1 );
+	BOOST_REQUIRE( get<1>(point) ==  1 );
+	BOOST_REQUIRE( get<2>(point) == 25 );
 }
 
 BOOST_AUTO_TEST_CASE(layout_0) {
-	multi::array<double, 3> A3(
+	multi::array<double, 3> arr(
 #if defined(__INTEL_COMPILER) or (defined(__GNUC__) and (__GNUC__ < 6))
 		multi::extensions_t<3>
 #endif
 		{51, 52, 53}
 	);
-	BOOST_REQUIRE( size(A3) == 51      ); BOOST_REQUIRE( A3.size() == 51       );
-	BOOST_REQUIRE( size(A3[0]) == 52   ); BOOST_REQUIRE( A3[0].size() == 52    );
-	BOOST_REQUIRE( size(A3[0][0]) == 53); BOOST_REQUIRE( A3[0][0].size() == 53 );
+	BOOST_REQUIRE( size(arr) == 51      ); BOOST_REQUIRE( arr.size() == 51       );
+	BOOST_REQUIRE( size(arr[0]) == 52   ); BOOST_REQUIRE( arr[0].size() == 52    );
+	BOOST_REQUIRE( size(arr[0][0]) == 53); BOOST_REQUIRE( arr[0][0].size() == 53 );
 }
 
 BOOST_AUTO_TEST_CASE(layout_1) {
 	//NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): testing feature
-	double DA[50][50][50];
+	double arr[50][50][50];
 	using multi::size;
-	BOOST_REQUIRE( size(DA) == 50 );
+	BOOST_REQUIRE( size(arr) == 50 );
 
 	using multi::extension;
-	BOOST_REQUIRE(( extension(DA) == multi::index_extension{0, 50} ));
-	BOOST_REQUIRE(( extension(DA) == multi::iextension{0, 50}      ));
-	BOOST_REQUIRE(( extension(DA) == multi::irange{0, 50} ));
+	BOOST_REQUIRE(( extension(arr) == multi::index_extension{0, 50} ));
+	BOOST_REQUIRE(( extension(arr) == multi::iextension{0, 50}      ));
+	BOOST_REQUIRE(( extension(arr) == multi::irange{0, 50} ));
 }
 
 BOOST_AUTO_TEST_CASE(layout_2) {
-	std::array<std::array<std::array<double, 50>, 50>, 50> DA{};
+	std::array<std::array<std::array<double, 50>, 50>, 50> arr{};
 	using multi::size;
-	BOOST_REQUIRE( size(DA) == 50 );
+	BOOST_REQUIRE( size(arr) == 50 );
 
 	using multi::extension;
-	BOOST_REQUIRE(( extension(DA) == multi::index_extension{0, 50} ));
-	BOOST_REQUIRE(( extension(DA) == multi::iextension{0, 50}      ));
-	BOOST_REQUIRE(( extension(DA) == multi::irange{0, 50}          ));
+	BOOST_REQUIRE(( extension(arr) == multi::index_extension{0, 50} ));
+	BOOST_REQUIRE(( extension(arr) == multi::iextension{0, 50}      ));
+	BOOST_REQUIRE(( extension(arr) == multi::irange{0, 50}          ));
 }
 
 BOOST_AUTO_TEST_CASE(layout_3) {
-	multi::array<double, 2> B2(
+	multi::array<double, 2> arr(
 //#if defined(__INTEL_COMPILER) or (defined(__GNUC__) and (__GNUC__ < 6))
 //		multi::extensions_t<2>
 //#endif
 		{50, 50}
 	);
-	BOOST_REQUIRE( size(B2) == 50 ); BOOST_REQUIRE( B2.size() == 50 );
-	BOOST_REQUIRE( B2[0].sliced(10, 20).size() == 10 );
-	BOOST_REQUIRE( size(B2[0].sliced(10, 20))  == 10 );
+	BOOST_REQUIRE( size(arr) == 50 ); BOOST_REQUIRE( arr.size() == 50 );
+	BOOST_REQUIRE( arr[0].sliced(10, 20).size() == 10 );
+	BOOST_REQUIRE( size(arr[0].sliced(10, 20))  == 10 );
 
-	static_assert( decltype(B2(0, {10, 20}))::rank_v  == 1 , "!");
+	static_assert( decltype(arr(0, {10, 20}))::rank_v  == 1 , "!");
 
-	BOOST_REQUIRE( size(B2(0, {10, 20})) == 10 );
+	BOOST_REQUIRE( size(arr(0, {10, 20})) == 10 );
 
-	BOOST_REQUIRE(      B2.layout() == B2.layout()  );
-	BOOST_REQUIRE( not (B2.layout() <  B2.layout()) );
+	BOOST_REQUIRE(      arr.layout() == arr.layout()  );
+	BOOST_REQUIRE( not (arr.layout() <  arr.layout()) );
 }
 
 BOOST_AUTO_TEST_CASE(layout) {
@@ -283,13 +283,13 @@ BOOST_AUTO_TEST_CASE(multi_layout_with_offset) {
 		BOOST_REQUIRE( l1.extension().finish() == 5 );
 	}
 	{
-		boost::multi::layout_t<2>::extensions_type x{
+		boost::multi::layout_t<2>::extensions_type exts{
 			multi::iextension(2, 5),
 			multi::iextension(0, 5)
 		};
-		multi::layout_t<2> l2(x);
-		BOOST_REQUIRE( l2.extension().start()  == std::get<0>(x).start()  );
-		BOOST_REQUIRE( l2.extension().finish() == std::get<0>(x).finish() );
+		multi::layout_t<2> l2(exts);
+		BOOST_REQUIRE( l2.extension().start()  == std::get<0>(exts).start()  );
+		BOOST_REQUIRE( l2.extension().finish() == std::get<0>(exts).finish() );
 	}
 	 {
 		multi::layout_t<2> l2({multi::iextension(0, 3), multi::iextension(2, 7)});
@@ -300,44 +300,44 @@ BOOST_AUTO_TEST_CASE(multi_layout_with_offset) {
 
 BOOST_AUTO_TEST_CASE(multi_layout_part1) {
 {
-	multi::layout_t<0> L;
-	static_assert( decltype(L)::rank_v==0 , "!");
-	BOOST_REQUIRE( num_elements(L) == 1 );
+	multi::layout_t<0> lyt;
+	static_assert( decltype(lyt)::rank_v==0 , "!");
+	BOOST_REQUIRE( num_elements(lyt) == 1 );
 }{
-	multi::iextensions<0> x{};
-	multi::layout_t<0> L(x);
-	BOOST_REQUIRE(L.num_elements() == 1);
-}{  multi::layout_t<1> L{};
-	static_assert( decltype(L)::rank_v == 1 , "!");
-	BOOST_REQUIRE( num_elements(L) == 0 );
-	BOOST_REQUIRE( size(L) == 0 );
-	BOOST_REQUIRE( size(extension(L))==0 );
-	BOOST_REQUIRE( stride(L)!=0 );
-	BOOST_REQUIRE( is_empty(L) );
+	multi::iextensions<0> exts{};
+	multi::layout_t<0> lyt(exts);
+	BOOST_REQUIRE(lyt.num_elements() == 1);
+}{  multi::layout_t<1> lyt{};
+	static_assert( decltype(lyt)::rank_v == 1 , "!");
+	BOOST_REQUIRE( num_elements(lyt) == 0 );
+	BOOST_REQUIRE( size(lyt) == 0 );
+	BOOST_REQUIRE( size(extension(lyt))==0 );
+	BOOST_REQUIRE( stride(lyt)!=0 );
+	BOOST_REQUIRE( is_empty(lyt) );
 }{
-	multi::layout_t<2> L({2, 10});
-	static_assert( decltype(L)::rank_v == 2 , "!");
-	BOOST_REQUIRE( num_elements(L) == 20 );
-	BOOST_REQUIRE( size(L) == 2 );
-	BOOST_REQUIRE( size(extension(L))==2 );
-	BOOST_REQUIRE( stride(L)==10 );
-	BOOST_REQUIRE( not is_empty(L) );
+	multi::layout_t<2> lyt({2, 10});
+	static_assert( decltype(lyt)::rank_v == 2 , "!");
+	BOOST_REQUIRE( num_elements(lyt) == 20 );
+	BOOST_REQUIRE( size(lyt) == 2 );
+	BOOST_REQUIRE( size(extension(lyt))==2 );
+	BOOST_REQUIRE( stride(lyt)==10 );
+	BOOST_REQUIRE( not is_empty(lyt) );
 } {
-	multi::layout_t<1> L(multi::iextensions<1>{20});
-	static_assert( decltype(L)::rank_v == 1 , "!");
-	BOOST_REQUIRE( num_elements(L) == 20 );
-	BOOST_REQUIRE( size(L) == 20 );
-	BOOST_REQUIRE( stride(L) == 1 );
+	multi::layout_t<1> lyt(multi::iextensions<1>{20});
+	static_assert( decltype(lyt)::rank_v == 1 , "!");
+	BOOST_REQUIRE( num_elements(lyt) == 20 );
+	BOOST_REQUIRE( size(lyt) == 20 );
+	BOOST_REQUIRE( stride(lyt) == 1 );
 }
 }
 
 BOOST_AUTO_TEST_CASE(multi_layout_part2) {
 {
-	multi::layout_t<1> L(multi::iextensions<1>{1});
-	static_assert( decltype(L)::rank_v ==1 , "!");
-	BOOST_REQUIRE( num_elements(L) == 1 );
-	BOOST_REQUIRE( size(L) == 1 );
-	BOOST_REQUIRE( stride(L) == 1 );
+	multi::layout_t<1> lyt(multi::iextensions<1>{1});
+	static_assert( decltype(lyt)::rank_v ==1 , "!");
+	BOOST_REQUIRE( num_elements(lyt) == 1 );
+	BOOST_REQUIRE( size(lyt) == 1 );
+	BOOST_REQUIRE( stride(lyt) == 1 );
 } {
 	multi::layout_t<2> lyt({1, 10});
 	static_assert( decltype(lyt)::rank_v ==2 , "!");
@@ -361,114 +361,114 @@ BOOST_AUTO_TEST_CASE(multi_layout_part3) {
 	using std::get;
 	BOOST_REQUIRE( get<0>(strides(lyt)) == 1 );
 	BOOST_REQUIRE( get<1>(strides(lyt)) == 1 );
-}{  multi::layout_t<2> L{};
-	BOOST_REQUIRE( dimensionality(L)==2 );
-	BOOST_REQUIRE( num_elements(L) == 0 );
-	BOOST_REQUIRE( size(L) == 0 );
-	BOOST_REQUIRE( size(extension(L))==0 );
-	BOOST_REQUIRE( stride(L)!=0 );
-	BOOST_REQUIRE( is_empty(L) );
-}{  multi::layout_t<3> L{}; BOOST_REQUIRE( num_elements(L) == 0 );
-}{	multi::layout_t<3> L({{0, 10}, {0, 10}, {0, 10}}); BOOST_REQUIRE( num_elements(L) == 1000 );
-}{	multi::layout_t<3> L({{10}, {10}, {10}}); BOOST_REQUIRE( num_elements(L) == 1000 );
-}{	multi::layout_t<3> L({10, 10, 10}); BOOST_REQUIRE( num_elements(L) == 1000 );
-}{	multi::layout_t<3> L({multi::index_extension{0, 10}, {0, 10}, {0, 10}}); BOOST_REQUIRE( num_elements(L) == 1000 );
-}{	multi::layout_t<3> L(multi::layout_t<3>::extensions_type{{0, 10}, {0, 10}, {0, 10}}); BOOST_REQUIRE( num_elements(L) == 1000 );
+}{  multi::layout_t<2> lyt{};
+	BOOST_REQUIRE( dimensionality(lyt)==2 );
+	BOOST_REQUIRE( num_elements(lyt) == 0 );
+	BOOST_REQUIRE( size(lyt) == 0 );
+	BOOST_REQUIRE( size(extension(lyt))==0 );
+	BOOST_REQUIRE( stride(lyt)!=0 );
+	BOOST_REQUIRE( is_empty(lyt) );
+}{  multi::layout_t<3> lyt{}; BOOST_REQUIRE( num_elements(lyt) == 0 );
+}{	multi::layout_t<3> lyt({{0, 10}, {0, 10}, {0, 10}}); BOOST_REQUIRE( num_elements(lyt) == 1000 );
+}{	multi::layout_t<3> lyt({{10}, {10}, {10}}); BOOST_REQUIRE( num_elements(lyt) == 1000 );
+}{	multi::layout_t<3> lyt({10, 10, 10}); BOOST_REQUIRE( num_elements(lyt) == 1000 );
+}{	multi::layout_t<3> lyt({multi::index_extension{0, 10}, {0, 10}, {0, 10}}); BOOST_REQUIRE( num_elements(lyt) == 1000 );
+}{	multi::layout_t<3> lyt(multi::layout_t<3>::extensions_type{{0, 10}, {0, 10}, {0, 10}}); BOOST_REQUIRE( num_elements(lyt) == 1000 );
 }
 }
 
 BOOST_AUTO_TEST_CASE(layout_to_offset) {
-	multi::layout_t<3> L({10, 20, 30});
-	multi::array<double, 3> A({10, 20, 30});
-	BOOST_REQUIRE( L[0][0][0] == &A[0][0][0] - A.data_elements() );
-	BOOST_REQUIRE( L[0][0][1] == &A[0][0][1] - A.data_elements() );
-	BOOST_REQUIRE( L[0][0][2] == &A[0][0][2] - A.data_elements() );
+	multi::layout_t<3> lyt({10, 20, 30});
+	multi::array<double, 3> arr({10, 20, 30});
+	BOOST_REQUIRE( lyt[0][0][0] == &arr[0][0][0] - arr.data_elements() );
+	BOOST_REQUIRE( lyt[0][0][1] == &arr[0][0][1] - arr.data_elements() );
+	BOOST_REQUIRE( lyt[0][0][2] == &arr[0][0][2] - arr.data_elements() );
 
-	BOOST_TEST_REQUIRE( L[0][1][2] == &A[0][1][2] - A.data_elements() );
-	BOOST_TEST_REQUIRE( L[3][1][2] == &A[3][1][2] - A.data_elements() );
+	BOOST_TEST_REQUIRE( lyt[0][1][2] == &arr[0][1][2] - arr.data_elements() );
+	BOOST_TEST_REQUIRE( lyt[3][1][2] == &arr[3][1][2] - arr.data_elements() );
 }
 
 BOOST_AUTO_TEST_CASE(layout_to_offset_sub) {
-	multi::array<double, 3> A({10, 20, 30});
-	auto&& s = A({2, 6}, {4, 8}, {10, 20});
-	auto l = s.layout();
-	BOOST_REQUIRE( l[0][0][0] == &s[0][0][0] - base(s) );
-	BOOST_REQUIRE( l[0][0][1] == &s[0][0][1] - base(s) );
-	BOOST_REQUIRE( l[0][0][2] == &s[0][0][2] - base(s) );
-	BOOST_REQUIRE( l[0][1][2] == &s[0][1][2] - base(s) );
-	BOOST_REQUIRE( l[3][1][2] == &s[3][1][2] - base(s) );
+	multi::array<double, 3> arr({10, 20, 30});
+	auto&& sub = arr({2, 6}, {4, 8}, {10, 20});
+	auto const lyt = sub.layout();
+	BOOST_REQUIRE( lyt[0][0][0] == &sub[0][0][0] - base(sub) );
+	BOOST_REQUIRE( lyt[0][0][1] == &sub[0][0][1] - base(sub) );
+	BOOST_REQUIRE( lyt[0][0][2] == &sub[0][0][2] - base(sub) );
+	BOOST_REQUIRE( lyt[0][1][2] == &sub[0][1][2] - base(sub) );
+	BOOST_REQUIRE( lyt[3][1][2] == &sub[3][1][2] - base(sub) );
 }
 
 BOOST_AUTO_TEST_CASE(continued_part1) {
 {
-	multi::layout_t<3> L(multi::layout_t<3>::extensions_type{{0, 10}, {0, 10}, {0, 10}});
-	BOOST_REQUIRE( num_elements(L) == 1000);
+	multi::layout_t<3> lyt(multi::layout_t<3>::extensions_type{{0, 10}, {0, 10}, {0, 10}});
+	BOOST_REQUIRE( num_elements(lyt) == 1000);
 }
-{	multi::layout_t<3> L({multi::iextension{0, 10}, multi::iextension{0, 10}, multi::iextension{0, 10}}); BOOST_REQUIRE(L.num_elements() == 1000);
-}{	multi::layout_t<3> L({multi::iextension{10}, multi::iextension{10}, multi::iextension{10}}); BOOST_REQUIRE( num_elements(L) == 1000);
-}{	multi::layout_t<3> L({10, 10, multi::iextension{10}}); BOOST_REQUIRE( num_elements(L) == 1000 );
+{	multi::layout_t<3> lyt({multi::iextension{0, 10}, multi::iextension{0, 10}, multi::iextension{0, 10}}); BOOST_REQUIRE(lyt.num_elements() == 1000);
+}{	multi::layout_t<3> lyt({multi::iextension{10}, multi::iextension{10}, multi::iextension{10}}); BOOST_REQUIRE( num_elements(lyt) == 1000);
+}{	multi::layout_t<3> lyt({10, 10, multi::iextension{10}}); BOOST_REQUIRE( num_elements(lyt) == 1000 );
 }{
-	multi::layout_t<1> L;
-	BOOST_REQUIRE( size(L) == 0 );
+	multi::layout_t<1> lyt;
+	BOOST_REQUIRE( size(lyt) == 0 );
 }{
-	multi::layout_t<1> L({{0, 10}});
-	BOOST_REQUIRE( size(L) == 10 );
-	BOOST_REQUIRE( extension(L).start () ==  0 );
-	BOOST_REQUIRE( extension(L).finish() == 10 );
+	multi::layout_t<1> lyt({{0, 10}});
+	BOOST_REQUIRE( size(lyt) == 10 );
+	BOOST_REQUIRE( extension(lyt).start () ==  0 );
+	BOOST_REQUIRE( extension(lyt).finish() == 10 );
 
-	L.reindex(1);
-	BOOST_REQUIRE( size(L) == 10 );
-	BOOST_REQUIRE( extension(L).start () ==  1 );
-	BOOST_REQUIRE( extension(L).finish() == 11 );
+	lyt.reindex(1);
+	BOOST_REQUIRE( size(lyt) == 10 );
+	BOOST_REQUIRE( extension(lyt).start () ==  1 );
+	BOOST_REQUIRE( extension(lyt).finish() == 11 );
 }{
-	multi::layout_t<2> L;
-	BOOST_REQUIRE( size(L) == 0 );
+	multi::layout_t<2> lyt;
+	BOOST_REQUIRE( size(lyt) == 0 );
 }
 {
-	multi::layout_t<2> L({{0, 10}, {0, 20}});
-	BOOST_REQUIRE( size(L) == 10 );
-	BOOST_REQUIRE( extension(L).start () ==  0 );
-	BOOST_REQUIRE( extension(L).finish() == 10 );
+	multi::layout_t<2> lyt({{0, 10}, {0, 20}});
+	BOOST_REQUIRE( size(lyt) == 10 );
+	BOOST_REQUIRE( extension(lyt).start () ==  0 );
+	BOOST_REQUIRE( extension(lyt).finish() == 10 );
 
-	L.reindex(1);
-	BOOST_REQUIRE( extension(L).start () ==  1 );
-	BOOST_REQUIRE( extension(L).finish() == 11 );
+	lyt.reindex(1);
+	BOOST_REQUIRE( extension(lyt).start () ==  1 );
+	BOOST_REQUIRE( extension(lyt).finish() == 11 );
 
-	L.rotate().reindex(3).unrotate();
-	BOOST_TEST_REQUIRE( extension(L).start () ==  1 );
-	BOOST_TEST_REQUIRE( extension(L).finish() == 11 );
+	lyt.rotate().reindex(3).unrotate();
+	BOOST_TEST_REQUIRE( extension(lyt).start () ==  1 );
+	BOOST_TEST_REQUIRE( extension(lyt).finish() == 11 );
 
-	BOOST_TEST_REQUIRE( std::get<0>(extensions(L)).start () == 1 );
-	BOOST_TEST_REQUIRE( std::get<1>(extensions(L)).start () == 3 );
-	BOOST_TEST_REQUIRE( std::get<1>(extensions(L)).finish() == 23 );
+	BOOST_TEST_REQUIRE( std::get<0>(extensions(lyt)).start () == 1 );
+	BOOST_TEST_REQUIRE( std::get<1>(extensions(lyt)).start () == 3 );
+	BOOST_TEST_REQUIRE( std::get<1>(extensions(lyt)).finish() == 23 );
 }
 }
 
 BOOST_AUTO_TEST_CASE(continued_part2) {
-	multi::layout_t<3> L({{0, 10}, {0, 20}, {0, 30}});
+	multi::layout_t<3> lyt({{0, 10}, {0, 20}, {0, 30}});
 
-	BOOST_REQUIRE( not L.empty() );
+	BOOST_REQUIRE( not lyt.empty() );
 
-	BOOST_REQUIRE( stride(L) == L.stride() );
-	BOOST_REQUIRE( offset(L) == L.offset() );
-	BOOST_REQUIRE( nelems(L) == L.nelems() );
+	BOOST_REQUIRE( stride(lyt) == lyt.stride() );
+	BOOST_REQUIRE( offset(lyt) == lyt.offset() );
+	BOOST_REQUIRE( nelems(lyt) == lyt.nelems() );
 
-	BOOST_REQUIRE( stride(L) == 20*30L );
-	BOOST_REQUIRE( offset(L) == 0 );
-	BOOST_REQUIRE( nelems(L) == 10*20L*30L );
+	BOOST_REQUIRE( stride(lyt) == 20*30L );
+	BOOST_REQUIRE( offset(lyt) == 0 );
+	BOOST_REQUIRE( nelems(lyt) == 10*20L*30L );
 
-	BOOST_REQUIRE( L.stride() == stride(L) );
-	BOOST_REQUIRE( L.offset() == offset(L) );
-	BOOST_REQUIRE( L.nelems() == nelems(L) );
+	BOOST_REQUIRE( lyt.stride() == stride(lyt) );
+	BOOST_REQUIRE( lyt.offset() == offset(lyt) );
+	BOOST_REQUIRE( lyt.nelems() == nelems(lyt) );
 
 	using boost::multi::detail::get;
-	BOOST_REQUIRE( get<1>(L.strides()) == 30     );
-	BOOST_REQUIRE( get<1>(L.offsets()) ==  0     );
-	BOOST_REQUIRE( get<1>(L.nelemss()) == 20*30L );
+	BOOST_REQUIRE( get<1>(lyt.strides()) == 30     );
+	BOOST_REQUIRE( get<1>(lyt.offsets()) ==  0     );
+	BOOST_REQUIRE( get<1>(lyt.nelemss()) == 20*30L );
 
-	BOOST_REQUIRE( get<2>(L.strides()) ==  1 );
-	BOOST_REQUIRE( get<2>(L.offsets()) ==  0 );
-	BOOST_REQUIRE( get<2>(L.nelemss()) == 30 );
+	BOOST_REQUIRE( get<2>(lyt.strides()) ==  1 );
+	BOOST_REQUIRE( get<2>(lyt.offsets()) ==  0 );
+	BOOST_REQUIRE( get<2>(lyt.nelemss()) == 30 );
 }
 
 BOOST_AUTO_TEST_CASE(continued_part3) {
@@ -485,13 +485,12 @@ BOOST_AUTO_TEST_CASE(continued_part3) {
 
 	BOOST_REQUIRE( std::get<0>(lyt.extensions()) == lyt.extension() );
 
-
-	boost::multi::extensions_t<2> x2;
+	boost::multi::extensions_t<2> exts2;
 
 	using boost::multi::detail::get;
 	using std::get;
 
-	BOOST_REQUIRE( get<0>(x2).is_empty() );
+	BOOST_REQUIRE( get<0>(exts2).is_empty() );
 
 //	BOOST_REQUIRE( std::get<0>(L.sizes()) == L.size(0) );
 //	BOOST_REQUIRE( std::get<0>(L.extensions()) == L.extension(0) );
@@ -568,7 +567,7 @@ BOOST_AUTO_TEST_CASE(continued) {
 }
 {
 	auto const ttt = boost::multi::tuple<int, int, int>{1, 2, 3};
-	auto const arr = std::apply([](auto... es) {return std::array<int, 3>{{es...}};}, ttt);
+	auto const arr = std::apply([](auto... elems) {return std::array<int, 3>{{elems...}};}, ttt);
 	BOOST_REQUIRE(arr[1] == 2);
 }
 }
