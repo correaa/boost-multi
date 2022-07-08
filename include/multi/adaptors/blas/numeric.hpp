@@ -35,8 +35,8 @@ auto imag(A&& a)
 template<class ComplexArr, class ComplexElem = typename std::decay_t<ComplexArr>::element, typename RealElem = typename ComplexElem::value_type,
 	class=std::enable_if_t<blas::numeric::is_complex_of<ComplexElem, RealElem>::value>
 >
-auto real_doubled(ComplexArr&& a){ // produces a real view of complex array with the last dimension duplicated and with interleaved real imaginary parts
-	return std::forward<ComplexArr>(a).template reinterpret_array_cast<RealElem>(2).rotated().flatted().unrotated();
+auto real_doubled(ComplexArr&& array) {  // produces a real view of complex array with the last dimension duplicated and with interleaved real imaginary parts
+	return std::forward<ComplexArr>(array).template reinterpret_array_cast<RealElem>(2).rotated().flatted().unrotated();
 }
 
 template<class Ref, class Involution> class involuted;
@@ -51,8 +51,8 @@ class involuted {
 public:
 	using decay_type =std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
 
-	constexpr explicit involuted(Ref r, Involution f) : r_{std::forward<Ref>(r)}, f_{f}{}
-	constexpr explicit involuted(Ref r) : r_{std::forward<Ref>(r)}, f_{}{}
+	constexpr explicit involuted(Ref ref, Involution f) : r_{std::forward<Ref>(ref)}, f_{f}{}
+	constexpr explicit involuted(Ref ref) : r_{std::forward<Ref>(ref)}, f_{}{}
 
 	auto operator=(involuted const& other) -> involuted& = delete;
 
@@ -256,9 +256,9 @@ auto conj(A&& a) -> decltype(auto) {
 
 template<class A, class D = std::decay_t<A>, typename Elem=typename D::element_type, typename Ptr=typename D::element_ptr::underlying_type,
 	std::enable_if_t<    is_conjugated<A>{}, int> =0>
-auto conj(A&& a)
-->decltype(std::forward<A>(a).template static_array_cast<Elem, Ptr>()) {
-	return std::forward<A>(a).template static_array_cast<Elem, Ptr>(); }
+auto conj(A&& array)
+->decltype(std::forward<A>(array).template static_array_cast<Elem, Ptr>()) {
+	return std::forward<A>(array).template static_array_cast<Elem, Ptr>(); }
 
 } // end namespace multi::blas
 
@@ -270,4 +270,3 @@ auto default_allocator_of(multi::blas::involuter<It, F, Reference> it) {
 } // end namespace boost
 
 #endif
-

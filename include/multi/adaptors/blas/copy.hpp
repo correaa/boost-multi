@@ -73,19 +73,19 @@ public:
 	friend constexpr auto uninitialized_copy(copy_iterator first, copy_iterator last, It1DOut d_first) -> It1DOut{
 		return copy_n(first, distance(first, last), d_first);
 	}
-	friend constexpr auto distance(copy_iterator const& a, copy_iterator const& b) -> difference_type{
-		assert(stride(b.it_) == stride(a.it_)); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr assert
-		return b.it_ - a.it_;
+	friend constexpr auto distance(copy_iterator const& self, copy_iterator const& other) -> difference_type{
+		assert(stride(other.it_) == stride(self.it_)); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr assert
+		return other.it_ - self.it_;
 	}
 	constexpr auto operator*() const -> value_type{return *it_;}
 };
 
 template<class ContextPtr, class It1D, class DecayType = void, class DiffType = typename std::iterator_traits<It1D>::difference_type>
-class copy_range{
+class copy_range {
 	ContextPtr ctxp_ = {};
 	It1D begin_, end_;
 
-public:
+ public:
 	using difference_type = DiffType;
 	using iterator        = copy_iterator<ContextPtr, It1D>;
 	using decay_type      = DecayType;
@@ -96,15 +96,15 @@ public:
 	auto operator=(copy_range&&) -> copy_range& = delete;
 	~copy_range() = default;
 
-	constexpr copy_range(It1D first, It1D last) : begin_{first}, end_{last}{}
-	constexpr copy_range(ContextPtr ctxp, It1D first, It1D last) : ctxp_{ctxp}, begin_{first}, end_{last}{}
-	constexpr auto size()  const -> difference_type{return end_ - begin_;}
-	constexpr auto begin() const{return iterator{ctxp_, begin_};}
-	constexpr auto end()   const{return iterator{ctxp_, end_  };}
-	constexpr auto extensions() const -> typename decay_type::extensions_type{return {multi::iextension{size()}};}
+	constexpr copy_range(It1D first, It1D last) : begin_{first}, end_{last} {}
+	constexpr copy_range(ContextPtr ctxp, It1D first, It1D last) : ctxp_{ctxp}, begin_{first}, end_{last} {}
+	constexpr auto size()  const -> difference_type {return end_ - begin_;}
+	constexpr auto begin() const {return iterator{ctxp_, begin_};}
+	constexpr auto end()   const {return iterator{ctxp_, end_  };}
+	constexpr auto extensions() const -> typename decay_type::extensions_type {return {multi::iextension{size()}};}
 	template<class Other, class=decltype(Other(std::declval<iterator>(), std::declval<iterator>()))>
 	operator Other() const{return Other(begin(), end());} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
-	friend auto operator+(copy_range const& s){return s.operator decay_type();}
+	friend auto operator+(copy_range const& self) {return self.operator decay_type();}
 };
 
 template<class DecayType, class It> NODISCARD()
@@ -118,12 +118,12 @@ auto copy(Context&& ctxt, It const& first, It const& last)
 	return copy_range<Context, It, DecayType>{ctxt, first, last};}
 
 template<class A> NODISCARD()
-auto copy(A const& a) // need to specify templates (instead of deduced for intel)
-->decltype(copy<typename A::decay_type, typename A::const_iterator>(a.begin(), a.end())){
-	return copy<typename A::decay_type, typename A::const_iterator>(a.begin(), a.end());}
+auto copy(A const& array)  // need to specify templates (instead of deduced for intel)
+->decltype(copy<typename A::decay_type, typename A::const_iterator>(array.begin(), array.end())){
+	return copy<typename A::decay_type, typename A::const_iterator>(array.begin(), array.end());}
 
 template<class Context, class A, class=std::enable_if_t<blas::is_context<Context>{}>> NODISCARD()
-auto copy(Context&& ctxt, A const& a)
+auto copy(Context&& ctxt, A const& a)  // NOLINT(readability-identifier-length) conventional name in BLAS
 ->decltype(copy<typename A::decay_type, Context, typename A::const_iterator>(std::forward<Context>(ctxt), a.begin(), a.end())){
 	return copy<typename A::decay_type, Context, typename A::const_iterator>(std::forward<Context>(ctxt), a.begin(), a.end());}
 

@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_copy_row) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_copy_complex) {
-	using complex = std::complex<double>; constexpr complex I{0, 1};
+	using complex = std::complex<double>; constexpr complex I{0, 1};  // NOLINT(readability-identifier-length) imag unit
 	multi::array<complex, 2> A = {
 		{1. + 3.*I,  2. + 4.*I,  3. + 5.*I,  4. + 6.*I},
 		{5.,  6.,  7.,  8.},

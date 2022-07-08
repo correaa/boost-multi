@@ -42,25 +42,25 @@ template<
 	class Alloc = typename std::allocator_traits<typename A1D::default_allocator_type>::template rebind_alloc<T>
 >
 NODISCARD("")
-auto nrm2(A1D const& x)
-//->std::decay_t<decltype(nrm2(x, multi::static_array<T, 0, Alloc>({}, x.get_allocator()) ))>{
-->std::decay_t<decltype(nrm2(x, multi::static_array<T, 0, Alloc>({})))> { // x.get_allocator() in decltype doesn't work for icc
-	return nrm2(x, multi::static_array<T, 0, Alloc>({}, x.get_allocator()));}
+auto nrm2(A1D const& array)
+//->std::decay_t<decltype(nrm2(array, multi::static_array<T, 0, Alloc>({}, x.get_allocator()) ))>{
+->std::decay_t<decltype(nrm2(array, multi::static_array<T, 0, Alloc>({})))> { // array.get_allocator() in decltype doesn't work for icc
+	return nrm2(array, multi::static_array<T, 0, Alloc>({}, array.get_allocator()));}
 
 template<class Alloc, class A1D, typename T = decltype(norm(std::declval<typename A1D::value_type>())), 
 	class AllocR = typename std::allocator_traits<typename A1D::default_allocator_type>::template rebind_alloc<T>
 >
 NODISCARD("")
-auto nrm2(A1D const& x, AllocR const& alloc)
-->std::decay_t<decltype(blas::nrm2(x, multi::static_array<T, 0, AllocR>({}, alloc)))> {
-	return              blas::nrm2(x, multi::static_array<T, 0, AllocR>({}, alloc)) ; }
+auto nrm2(A1D const& array, AllocR const& alloc)
+->std::decay_t<decltype(blas::nrm2(array, multi::static_array<T, 0, AllocR>({}, alloc)))> {
+	return              blas::nrm2(array, multi::static_array<T, 0, AllocR>({}, alloc)) ; }
 
 namespace operators {
 	using std::norm;
 	template<class A1D, class Real = decltype(norm(std::declval<typename A1D::value_type>()))>//decltype(norm(std::declval<typename A1D::value_type>()))> 
-	NODISCARD("") auto operator^(A1D const& a, int n)
-	->decltype(std::pow(Real{blas::nrm2(a)}, n)) {
-		return std::pow(Real{blas::nrm2(a)}, n); }
+	NODISCARD("") auto operator^(A1D const& array, int n)
+	->decltype(std::pow(Real{blas::nrm2(array)}, n)) {
+		return std::pow(Real{blas::nrm2(array)}, n); }
 } // end namespace operators
 
 } // end namespace boost::multi::blas
