@@ -33,7 +33,8 @@ BOOST_AUTO_TEST_CASE(std_array_extensions_3d) {
 	BOOST_REQUIRE(( multi::extensions(arr) == decltype(multi::extensions(arr)){3, 4, 5} ));
 
 	using multi::data_elements;
-	BOOST_REQUIRE( data_elements(arr) == &arr[0][0][0] );
+	BOOST_REQUIRE( data_elements(arr) == &arr[0][0][0] );  // NOLINT(readability-container-data-pointer)
+	BOOST_REQUIRE( data_elements(arr) ==  arr[0][0].data() );
 
 	using multi::num_elements;
 	BOOST_REQUIRE( num_elements(arr) == 60 );
@@ -60,7 +61,9 @@ BOOST_AUTO_TEST_CASE(std_array_extensions_2d) {
 	BOOST_REQUIRE(( extensions(arr) == decltype(extensions(arr)){3, 4} ));
 
 	using multi::data_elements;
-	BOOST_REQUIRE( data_elements(arr) == &arr[0][0] );
+	BOOST_REQUIRE( data_elements(arr) == &arr[0][0] );  // NOLINT(readability-container-data-pointer) test access
+	BOOST_REQUIRE( data_elements(arr) ==  arr[0].data() );
+	BOOST_REQUIRE( data_elements(arr) ==  arr.front().data() );
 
 	using multi::num_elements;
 	BOOST_REQUIRE( num_elements(arr) == 12 );
@@ -87,7 +90,8 @@ BOOST_AUTO_TEST_CASE(std_array_extensions_1d) {
 	BOOST_REQUIRE(( extensions(arr) == decltype(extensions(arr)){multi::iextension{4}} ));
 
 	using multi::data_elements;
-	BOOST_REQUIRE( data_elements(arr) == &arr[0] );
+	BOOST_REQUIRE( data_elements(arr) == &arr[0] );  // NOLINT(readability-container-data-pointer) test access
+	BOOST_REQUIRE( data_elements(arr) ==  arr.data() );
 
 	using multi::num_elements;
 	BOOST_REQUIRE( num_elements(arr) == 4 );

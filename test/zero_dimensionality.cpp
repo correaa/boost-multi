@@ -10,8 +10,6 @@
 
 namespace multi = boost::multi;
 
-template<class T> void what(T&&) = delete;
-
 BOOST_AUTO_TEST_CASE(zero_dimensionality_part1) {
 	{
 		std::vector<double> v1 = {1., 2., 3.};
@@ -29,8 +27,8 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality_part1) {
 		m0 = 5.1;
 		BOOST_REQUIRE( v1[0] == 5.1 );
 
-		double const& d = std::move(m0);
-		BOOST_REQUIRE( d == 5.1 );
+		double const& doub = std::move(m0);
+		BOOST_REQUIRE( doub == 5.1 );
 	}
 	{
 		multi::static_array<double, 0> a0 = multi::static_array<double, 0>{45.};  // TODO(correaa) this might trigger a compiler crash with g++ 7.5 because of operator&() && overloads
@@ -53,25 +51,25 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality_part1) {
 
 BOOST_AUTO_TEST_CASE(zero_dimensionality_part2) {
 	{
-		multi::array<std::complex<double>, 2> a({1, 2}, std::allocator<std::complex<double>>{});
-		BOOST_REQUIRE( size(a) == 1 );
+		multi::array<std::complex<double>, 2> arr({1, 2}, std::allocator<std::complex<double>>{});
+		BOOST_REQUIRE( size(arr) == 1 );
 	}
 	{
-		double d = 2.;
-		double dd{multi::array_ref<double, 0>(&d, {})};
+		double doub = 2.;
+		double dd{multi::array_ref<double, 0>(&doub, {})};
 
-		BOOST_REQUIRE( dd == d );
+		BOOST_REQUIRE( dd == doub );
 
-		multi::array_ptr<double, 1> ap1(&d, multi::extensions_t<1>{{0, 1}});
-		BOOST_REQUIRE( ap1->base() == &d );
-		BOOST_REQUIRE( (*ap1).base() == &d );
+		multi::array_ptr<double, 1> ap1(&doub, multi::extensions_t<1>{{0, 1}});
+		BOOST_REQUIRE( ap1->base() == &doub );
+		BOOST_REQUIRE( (*ap1).base() == &doub );
 
-		multi::array_ptr<double, 0> ap0(&d, {});
+		multi::array_ptr<double, 0> ap0(&doub, {});
 
-		BOOST_REQUIRE(( ap0 == multi::array_ptr<double, 0>(&d, {}) ));
+		BOOST_REQUIRE(( ap0 == multi::array_ptr<double, 0>(&doub, {}) ));
 		BOOST_REQUIRE(( ap0 != multi::array_ptr<double, 0>(&dd, {}) ));
-		BOOST_REQUIRE( ap0->base() == &d );
-		BOOST_REQUIRE( (*ap0).base() == &d );
+		BOOST_REQUIRE( ap0->base() == &doub );
+		BOOST_REQUIRE( (*ap0).base() == &doub );
 
 		multi::array_ptr<double, 0> ap0dd{&dd};
 		BOOST_REQUIRE( ap0dd != ap0 );

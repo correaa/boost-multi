@@ -13,7 +13,7 @@
 namespace test {
 	constexpr struct neg_t {
 		template<class T>
-		constexpr auto operator()(T const& x) const -> decltype(-x) {return -x;}
+		constexpr auto operator()(T const& value) const -> decltype(-value) {return -value;}
 	} neg;
 } // end namespace test
 
@@ -29,14 +29,7 @@ class involuted {
 
  public:
 	using decay_type = std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
-	constexpr involuted(Involution /*stateless*/, Ref r) : r_{std::forward<Ref>(r)} {}
-//#if __cplusplus <= 201402L
-//	involuted(involuted&&) noexcept = default;
-//	~involuted() = default;
-//	involuted(involuted const&) = default;
-//	auto operator=(involuted const&)          -> involuted& = default;  // NOLINT(fuchsia-trailing-return): simulate reference
-//	auto operator=(involuted&&     ) noexcept -> involuted& = default;  // NOLINT(fuchsia-trailing-return): simulate reference
-//#endif
+	constexpr involuted(Involution /*stateless*/, Ref ref) : r_{std::forward<Ref>(ref)} {}
 	auto operator=(decay_type const& other) -> involuted& {  // NOLINT(fuchsia-trailing-return): simulate reference
 		r_ = Involution{}(other);
 		return *this;
@@ -74,15 +67,19 @@ class involuter {
 	constexpr explicit involuter(It it) : it_{std::move(it)} {}
 	constexpr involuter(Involution /*stateless*/, It it) : it_{std::move(it)} {}// f_{std::move(f)}{}
 	template<class Other>
-	explicit involuter(involuter<Involution, Other> const& o) : it_{o.it_} {}
+	explicit involuter(involuter<Involution, Other> const& other) : it_{other.it_} {}
+
 	constexpr auto operator*() const {return reference{Involution{}, *it_};}
-	constexpr auto operator==(involuter const& o) const {return it_==o.it_;}
-	constexpr auto operator!=(involuter const& o) const {return it_!=o.it_;}
-	constexpr auto operator+=(difference_type n) -> involuter& {it_+=n; return *this;}
-	constexpr auto operator-=(difference_type n) -> involuter& {it_-=n; return *this;}
-	constexpr auto operator+(difference_type n) const {return involuter{it_+n};}
-	constexpr auto operator-(difference_type n) const {return involuter{it_-n};}
 	constexpr auto operator->() const {return pointer{&*it_};}
+
+	constexpr auto operator==(involuter const& other) const {return it_ == other.it_;}
+	constexpr auto operator!=(involuter const& other) const {return it_ != other.it_;}
+
+	constexpr auto operator+=(difference_type n) -> involuter& {it_ += n; return *this;}
+	constexpr auto operator-=(difference_type n) -> involuter& {it_ -= n; return *this;}
+
+	constexpr auto operator+(difference_type n) const {return involuter{it_ + n};}
+	constexpr auto operator-(difference_type n) const {return involuter{it_ - n};}
 };
 
 template<class Ref> using negated = involuted<std::negate<>, Ref>;
@@ -116,7 +113,7 @@ struct conjugate<> : private basic_conjugate_t {
 #pragma GCC diagnostic ignored "-Wsubobject-linkage"
 #endif
 template<class ComplexRef> struct conjd : test::involuted<conjugate<>, ComplexRef>{
-	explicit conjd(ComplexRef r) : test::involuted<conjugate<>, ComplexRef>(conjugate<>{}, r) {}
+	explicit conjd(ComplexRef ref) : test::involuted<conjugate<>, ComplexRef>(conjugate<>{}, ref) {}
 	auto real() const {return underlying(*this).real();}
 	auto imag() const {return negated<decltype(underlying(std::declval<test::involuted<conjugate<>, ComplexRef> const&>()).imag())>{std::negate<>{}, underlying(*this).imag()};}
 	friend auto real(conjd const& self) -> decltype(auto) {using std::real; return real(static_cast<typename conjd::decay_type>(self));}
@@ -154,66 +151,66 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 	namespace multi = boost::multi;
 	{
 		using complex = std::complex<double>;
-		complex c{1., 2.};
+		complex cee{1., 2.};
 
-		auto&& z = test::conjd<complex&>{c};
-		BOOST_REQUIRE(( z == complex{1., -2.} ));
+		auto&& zee = test::conjd<complex&>{cee};
+		BOOST_REQUIRE(( zee == complex{1., -2.} ));
 
-		BOOST_REQUIRE( real(z)  ==  1. );
-		BOOST_REQUIRE( imag(z)  == -2. );
-		BOOST_REQUIRE( z.real() ==  1. );
-		BOOST_REQUIRE( z.imag() == -2. );
+		BOOST_REQUIRE( real(zee)  ==  1. );
+		BOOST_REQUIRE( imag(zee)  == -2. );
+		BOOST_REQUIRE( zee.real() ==  1. );
+		BOOST_REQUIRE( zee.imag() == -2. );
 	}
 	{
-		double a = 5;
+		double doub = 5;
 
-		auto&& c = test::involuted<test::neg_t, double&>(test::neg, a);
-		BOOST_REQUIRE( c == -5. );
+		auto&& negd_a = test::involuted<test::neg_t, double&>(test::neg, doub);
+		BOOST_REQUIRE( negd_a == -5. );
 
-		c = 10.;
-		BOOST_REQUIRE( c == 10. );
-		BOOST_REQUIRE( a = -10. );
+		negd_a = 10.;
+		BOOST_REQUIRE( negd_a == 10. );
+		BOOST_REQUIRE( doub = -10. );
 	}
 	{
-		multi::array<double, 1> A = { 0,  1,  2,  3,  4};
-		auto&& A_ref = A.static_array_cast<double, double const*>();
-		BOOST_REQUIRE( A_ref[2] == A[2] );
+		multi::array<double, 1> arr = { 0,  1,  2,  3,  4};
+		auto&& ref = arr.static_array_cast<double, double const*>();
+		BOOST_REQUIRE( ref[2] == arr[2] );
 	}
 
 	{
-		multi::array<double, 1> A = { 0,  1,  2,  3,  4};
-		multi::array<double, 1> mA = { -0,  -1,  -2,  -3, -4};
-		auto&& mA_ref = A.static_array_cast<double, test::negater<double*>>();
-		BOOST_REQUIRE( mA_ref[2] == mA[2] );
+		multi::array<double, 1> arr = { +0.0, +1.0, +2.0, +3.0, +4.0};
+		multi::array<double, 1> neg = { -0.0, -1.0, -2.0, -3.0, -4.0};
+		auto&& negd_arr = arr.static_array_cast<double, test::negater<double*>>();
+		BOOST_REQUIRE( negd_arr[2] == neg[2] );
 	}
 	{
-		multi::array<double, 2> A = {
-			{ 0,  1,  2,  3,  4},
-			{ 5,  6,  7,  8,  9},
-			{10, 11, 12, 13, 14},
-			{15, 16, 17, 18, 19}
+		multi::array<double, 2> arr = {
+			{ +0.0,  +1.0,  +2.0,  +3.0,  +4.0},
+			{ +5.0,  +6.0,  +7.0,  +8.0,  +9.0},
+			{+10.0, +11.0, +12.0, +13.0, +14.0},
+			{+15.0, +16.0, +17.0, +18.0, +19.0}
 		};
-		multi::array<double, 2> mA = {
-			{ -0,  -1,  -2,  -3,  -4},
-			{ -5,  -6,  -7,  -8,  -9},
-			{-10, -11, -12, -13, -14},
-			{-15, -16, -17, -18, -19}
+		multi::array<double, 2> neg = {
+			{ -0.0,  -1.0,  -2.0,  -3.0,  -4.0},
+			{ -5.0,  -6.0,  -7.0,  -8.0,  -9.0},
+			{-10.0, -11.0, -12.0, -13.0, -14.0},
+			{-15.0, -16.0, -17.0, -18.0, -19.0}
 		};
-		auto&& mA_ref = A.static_array_cast<double, test::negater<double*>>();
-		BOOST_REQUIRE( mA_ref[1][1] == mA[1][1] );
+		auto&& negd_arr = arr.static_array_cast<double, test::negater<double*>>();
+		BOOST_REQUIRE( negd_arr[1][1] == neg[1][1] );
 	}
 	{
 	#if defined(__cpp_deduction_guides)
-		double Z[4][5] {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : testing legacy types
+		double zee[4][5] {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : testing legacy types
 			{ 0,  1,  2,  3,  4},
 			{ 5,  6,  7,  8,  9},
 			{10, 11, 12, 13, 14},
 			{15, 16, 17, 18, 19}
 		};
-		auto&& d2DC = multi::make_array_ref(test::involuter<decltype(test::neg), double*>{test::neg, &Z[0][0]}, {4, 5});
+		auto&& d2DC = multi::make_array_ref(test::involuter<decltype(test::neg), double*>{test::neg, &zee[0][0]}, {4, 5});
 
 		d2DC[1][1] = -66.;
-		BOOST_REQUIRE( Z[1][1] == 66 );
+		BOOST_REQUIRE( zee[1][1] == 66 );
 	#endif
 		{
 			using complex = std::complex<double>;
@@ -238,13 +235,13 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 		}
 		{
 			using complex = std::complex<double>;
-			constexpr auto const I = complex{0., 1.};
-			multi::array<complex, 2> A = {
+			constexpr auto const I = complex{0., 1.};  // NOLINT(readability-identifier-length) imaginary unit
+			multi::array<complex, 2> arr = {
 				{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
 				{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
 			};
-			auto Aconj = A.static_array_cast<complex, test::conjr<complex*>>();
-			BOOST_REQUIRE( Aconj[1][2] == conj(A[1][2]) );
+			auto conjd_arr = arr.static_array_cast<complex, test::conjr<complex*>>();
+			BOOST_REQUIRE( conjd_arr[1][2] == conj(arr[1][2]) );
 		}
 	}
 }
