@@ -34,8 +34,8 @@ class particles_soa {
 		operator particle() const {return {mass, position};} // NOLINT(google-explicit-constructor, hicpp-explicit-conversions): allow equal assignment
 		auto operator+() const {return operator particle();}
 
-		reference(double& m, v3d& p) : mass{m}, position{p} {} // NOLINT(google-runtime-references)
-//	#if __cplusplus <= 201402L
+		reference(double& mss, v3d& pos) : mass{mss}, position{pos} {}  // NOLINT(google-runtime-references)
+	//  #if __cplusplus <= 201402L
 	 private: // NOLINT(whitespace/indent) : bug in cpplint 1.5.5
 		friend class particles_soa;
 		reference(reference const&) = default;
@@ -43,7 +43,7 @@ class particles_soa {
 
 	 public: // NOLINT(whitespace/indent) : bug in cpplint 1.5.5
 	//  ~reference() noexcept = default;  // lints cppcoreguidelines-special-member-functions,hicpp-special-member-functions
-//	#endif
+	//  #endif
 
 		// NOLINTNEXTLINE(cert-oop54-cpp, fuchsia-trailing-return): simulate reference
 		auto operator=(reference const& other) -> reference& {

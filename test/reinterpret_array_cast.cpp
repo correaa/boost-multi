@@ -119,19 +119,19 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_realcomplex) {
 	BOOST_REQUIRE(real(c)==11);
 }
 {
-	complex c{1, 2};
+	complex cee{1, 2};
 	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast, cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): test purposes
-	auto *pC = reinterpret_cast<double(*)[2]>(&c);
-	(*pC)[0] = 11;
-	BOOST_REQUIRE( pC );
-	BOOST_REQUIRE(real(c)==11);
+	auto *ceePC = reinterpret_cast<double(*)[2]>(&cee);
+	(*ceePC)[0] = 11;
+	BOOST_REQUIRE( ceePC );
+	BOOST_REQUIRE(real(cee)==11);
 }
 {
-	multi::array<complex, 1> A(multi::extensions_t<1>{multi::iextension{10}});
-	auto&& A2 = A.reinterpret_array_cast<double>(2);
-	A2[8][0] = 1000.;
-	A2[8][1] = 2000.;
-	BOOST_REQUIRE( A[8] == std::complex<double>(1000., 2000.) );
+	multi::array<complex, 1> arr(multi::extensions_t<1>{multi::iextension{10}});
+	auto&& arr2 = arr.reinterpret_array_cast<double>(2);
+	arr2[8][0] = 1000.;
+	arr2[8][1] = 2000.;
+	BOOST_REQUIRE( arr[8] == std::complex<double>(1000., 2000.) );
 }
 }
 
