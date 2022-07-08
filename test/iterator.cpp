@@ -11,64 +11,62 @@
 
 namespace multi = boost::multi;
 
-template<class MA> auto take(MA&& ma) -> decltype(ma[0]) {return ma[0];}
+template<class Array> auto take(Array&& array) -> decltype(array[0]) {return array[0];}
 
 BOOST_AUTO_TEST_CASE(iterator_1d) {
 	{
-		multi::array<double, 1> A(multi::extensions_t<1>{multi::iextension{100}}, 99.);
-		BOOST_REQUIRE( size(A) == 100 );
-		BOOST_REQUIRE( begin(A) < end(A) );
-		BOOST_REQUIRE( end(A) - begin(A) == size(A) );
+		multi::array<double, 1> arr(multi::extensions_t<1>{multi::iextension{100}}, 99.);
+		BOOST_REQUIRE( size(arr) == 100 );
+		BOOST_REQUIRE( begin(arr) < end(arr) );
+		BOOST_REQUIRE( end(arr) - begin(arr) == size(arr) );
 
-		multi::array<double, 1>::const_iterator cb = cbegin(A);
-		multi::array<double, 1>::iterator b = begin(A);
-		BOOST_REQUIRE( cb == b );
+		multi::array<double, 1>::const_iterator cbarr = cbegin(arr);
+		multi::array<double, 1>::iterator barr = begin(arr);
+		BOOST_REQUIRE( cbarr == barr );
 
-		multi::array<double, 1>::const_iterator cb2 = begin(A);
-		BOOST_REQUIRE( cb2 == cb );
+		multi::array<double, 1>::const_iterator cbarr2 = begin(arr);
+		BOOST_REQUIRE( cbarr2 == cbarr );
 	}
 	{
-		multi::array<double, 1> A(multi::extensions_t<1>{multi::iextension{100}}, 99.);
-		BOOST_REQUIRE( size(A) == 100 );
-		BOOST_REQUIRE( begin(A) < end(A) );
+		multi::array<double, 1> arr(multi::extensions_t<1>{multi::iextension{100}}, 99.);
+		BOOST_REQUIRE( size(arr) == 100 );
+		BOOST_REQUIRE( begin(arr) < end(arr) );
 
-		auto b = A.begin();
-		multi::array<double, 1>::const_iterator cbb = b;
-		BOOST_REQUIRE( cbb == b );
-		BOOST_REQUIRE( b == cbb );
+		auto arr2 = arr.begin();
+		multi::array<double, 1>::const_iterator cbb = arr2;
+		BOOST_REQUIRE( cbb == arr2 );
+		BOOST_REQUIRE( arr2 == cbb );
 	}
-
-//  *begin( multi::array<double, 1>(multi::extensions_t<1>{multi::iextension{10}}, 99.) ) = 44.;
 }
 
 BOOST_AUTO_TEST_CASE(iterator_2d) {
 	{
-		multi::array<double, 2> A({120, 140}, 99.);
-		BOOST_REQUIRE(      A.size() == 120 );
+		multi::array<double, 2> arr({120, 140}, 99.);
+		BOOST_REQUIRE(      arr.size() == 120 );
 	#if not defined(__circle_build__)  // circle 170 crashes
-		BOOST_REQUIRE( size(A)       == 120 );
+		BOOST_REQUIRE( size(arr)       == 120 );
 	#endif
 	#if not defined(__circle_build__)  // circle 170 crashes
-		BOOST_REQUIRE( A.cbegin() < A.cend() );
+		BOOST_REQUIRE( arr.cbegin() < arr.cend() );
 	#endif
 	#if not defined(__circle_build__)  // circle 170 crashes
-		BOOST_REQUIRE( A.cend() - A.cbegin() == A.size() );
+		BOOST_REQUIRE( arr.cend() - arr.cbegin() == arr.size() );
 	#endif
 		using iter = multi::array<double, 2>::iterator;
-		static_assert( std::is_same< iter::element   , double >{}, "!");
-		static_assert( std::is_same< iter::value_type, multi::array<double, 1> >{}, "!");
-		static_assert( std::is_same< iter::reference, multi::basic_array<double, 1>>{}, "!");
-		static_assert( std::is_same< iter::element_ptr, double*>{}, "!");
+		static_assert( std::is_same_v< iter::element   , double >, "!");
+		static_assert( std::is_same_v< iter::value_type, multi::array<double, 1> >, "!");
+		static_assert( std::is_same_v< iter::reference, multi::basic_array<double, 1>>, "!");
+		static_assert( std::is_same_v< iter::element_ptr, double*>, "!");
 
 		using citer = multi::array<double, 2>::const_iterator;
-		static_assert( std::is_same< citer::element   , double >{}, "!");
-		static_assert( std::is_same< citer::value_type, multi::array<double, 1> >{}, "!");
-		static_assert( std::is_same< citer::reference, multi::basic_array<double, 1, double const*>>{}, "!");
-		static_assert( std::is_same< citer::element_ptr, double const* >{}, "!");
+		static_assert( std::is_same_v< citer::element   , double >, "!");
+		static_assert( std::is_same_v< citer::value_type, multi::array<double, 1> >, "!");
+		static_assert( std::is_same_v< citer::reference, multi::basic_array<double, 1, double const*>>, "!");
+		static_assert( std::is_same_v< citer::element_ptr, double const* >, "!");
 	}
 	{
-		std::vector<double> v(10000);
-		multi::array_ref<double, 2> A(v.data(), {100, 100});
+		std::vector<double> vec(10000);
+		multi::array_ref<double, 2> A(vec.data(), {100, 100});
 		BOOST_REQUIRE(size(A) == 100);
 		begin(A)[4][3] = 2.;
 	}
@@ -113,15 +111,15 @@ BOOST_AUTO_TEST_CASE(iterator_interface ) {
 	BOOST_REQUIRE( size(*begin(A)) == 2 );
 	BOOST_REQUIRE( size(begin(A)[1]) == 2 );
 
-	BOOST_REQUIRE( &(A[1][1].begin()[0]) == &A[1][1][0] );
+	BOOST_REQUIRE( &(A[1][1].begin()[0]) == &A[1][1][0] );  // NOLINT(readability-container-data-pointer) test access
 	BOOST_REQUIRE( &A[0][1][0] == &A[0][1][0] );
 	BOOST_REQUIRE( &((*A.begin())[1][0]) == &A[0][1][0] );
 	BOOST_REQUIRE( &((*A.begin()).operator[](1)[0]) == &A[0][1][0] );
 	BOOST_REQUIRE( &(A.begin()->operator[](1)[0]) == &A[0][1][0] );
-	BOOST_REQUIRE( &(A.begin()->operator[](1).begin()[0]) == &A[0][1][0] );
-	BOOST_REQUIRE( &((A.begin()+1)->operator[](1).begin()[0]) == &A[1][1][0] );
-	BOOST_REQUIRE( &((begin(A)+1)->operator[](1).begin()[0]) == &A[1][1][0] );
-	BOOST_REQUIRE( &((cbegin(A)+1)->operator[](1).begin()[0]) == &A[1][1][0] );
+	BOOST_REQUIRE( &(A.begin()->operator[](1).begin()[0]) == &A[0][1][0] );  // NOLINT(readability-container-data-pointer) test access
+	BOOST_REQUIRE( &((A.begin()+1)->operator[](1).begin()[0]) == &A[1][1][0] );  // NOLINT(readability-container-data-pointer) test access
+	BOOST_REQUIRE( &((begin(A)+1)->operator[](1).begin()[0]) == &A[1][1][0] );  // NOLINT(readability-container-data-pointer) test access
+	BOOST_REQUIRE( &((cbegin(A)+1)->operator[](1).begin()[0]) == &A[1][1][0] );  // NOLINT(readability-container-data-pointer) test access
 }
 
 BOOST_AUTO_TEST_CASE(iterator_semantics) {
@@ -197,7 +195,7 @@ BOOST_AUTO_TEST_CASE(index_range_iteration) {
 
 	BOOST_REQUIRE( std::accumulate(begin(irng), end(irng), 0) == irng.size()*(irng.size()-1)/2 );
 
-	BOOST_REQUIRE( std::accumulate(begin(irng), end(irng), 0, [](auto&& acc, auto const& e){return acc + e*e*e;}) > 0 ); // sum of cubes
+	BOOST_REQUIRE( std::accumulate(begin(irng), end(irng), 0, [](auto&& acc, auto const& elem) {return acc + elem*elem*elem;}) > 0 ); // sum of cubes
 }
 
 BOOST_AUTO_TEST_CASE(multi_reverse_iterator_1D) {

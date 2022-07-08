@@ -55,23 +55,23 @@ BOOST_AUTO_TEST_CASE(multi_rotate_4d_op) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_rotate_part1) {
-	std::array<std::array<double, 5>, 4> a = {{
+	std::array<std::array<double, 5>, 4> stdarr = {{
 		{{ 0.,  1.,  2.,  3.,  4.}},
 		{{ 5.,  6.,  7.,  8.,  9.}},
 		{{10., 11., 12., 13., 14.}},
 		{{15., 16., 17., 18., 19.}}
 	}};
-	std::array<std::array<double, 5>, 4> b = {};
+	std::array<std::array<double, 5>, 4> stdarr2 = {};
 
-	multi::array_ref<double, 2> A(&a[0][0], {4, 5});
-	multi::array_ref<double, 2> B(&b[0][0], {4, 5});  // NOLINT(readability-container-data-pointer) test access
+	multi::array_ref<double, 2> arr (&stdarr [0][0], {4, 5});  // NOLINT(readability-container-data-pointer) test access
+	multi::array_ref<double, 2> arr2(&stdarr2[0][0], {4, 5});  // NOLINT(readability-container-data-pointer) test access
 
-	rotated(B) = rotated(A);
-	BOOST_REQUIRE( B[1][1] == 6  );
-	BOOST_REQUIRE( B[2][1] == 11 );
-	BOOST_REQUIRE( B[1][2] == 7  );
-	BOOST_REQUIRE( (B.rotated() ) == (A.rotated() ) );
-	BOOST_REQUIRE( (B.rotated() )[2][1] == 7 );
+	rotated(arr2) = rotated(arr);
+	BOOST_REQUIRE( arr2[1][1] == 6  );
+	BOOST_REQUIRE( arr2[2][1] == 11 );
+	BOOST_REQUIRE( arr2[1][2] == 7  );
+	BOOST_REQUIRE( (arr2.rotated() ) == (arr.rotated() ) );
+	BOOST_REQUIRE( (arr2.rotated() )[2][1] == 7 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_rotate) {

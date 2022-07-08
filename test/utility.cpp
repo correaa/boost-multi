@@ -15,24 +15,11 @@
 //#include "../adaptors/serialization/xml_archive.hpp"
 
 #include<fstream>
-#include<numeric> // iota
+#include<numeric>  // for iota
 
 namespace multi = boost::multi;
 
-//BOOST_AUTO_TEST_CASE(c_array_2d){
-//	double const A[2][2] = {{1., 2.}, {3., 4.}};
-//	BOOST_REQUIRE( std::data(A) == &A[0][0] );
-//}
-
 // TODO(correaa) add test for reinterpret_pointer_cast
-
-BOOST_AUTO_TEST_CASE(tuple) {
-	using multi::detail::tuple;
-	tuple<std::string, int> t{"hola", 42};
-	tuple<std::string, int> const t_copy = t;  // NOLINT(performance-unnecessary-copy-initialization) for testing
-
-	BOOST_REQUIRE( t_copy == t );
-}
 
 BOOST_AUTO_TEST_CASE(std_array_extensions_3d) {
 	std::array<std::array<std::array<double, 5>, 4>, 3> arr = {};
@@ -108,7 +95,7 @@ BOOST_AUTO_TEST_CASE(std_array_extensions_1d) {
 
 BOOST_AUTO_TEST_CASE(test_utility_1d) {
 	std::array<double, 10> carr = {{0., 1., 2., 3., 4., 5., 6., 7., 8., 9.}};
-	multi::array_ref<double, 1> marr(&carr[0], {multi::iextension{10}});
+	multi::array_ref<double, 1> marr(carr.data(), {multi::iextension{10}});
 //	boost::multi_array_ref<double, 1> Marr(&carr[0], boost::extents[10]);
 	std::vector<double> varr(10); std::iota(begin(varr), end(varr), 0);
 	std::array<double, 10> aarr{}; std::iota(begin(aarr), end(aarr), 0);
@@ -150,7 +137,7 @@ BOOST_AUTO_TEST_CASE(test_utility_2d) {
 		{{10., 11., 12., 13., 14., 15., 16., 17., 18., 19.}},
 		{{20., 21., 22., 23., 24., 25., 26., 27., 28., 29.}},
 	}};
-	multi::array_ref<double, 2> marr(&carr[0][0], {3, 10});
+	multi::array_ref<double, 2> marr(&carr[0][0], {3, 10});  // NOLINT(readability-container-data-pointer) tests access
 
 	BOOST_REQUIRE( static_cast<multi::size_t>(carr.size()) == size(marr) );
 

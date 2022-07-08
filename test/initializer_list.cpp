@@ -55,8 +55,8 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d) {
 		BOOST_REQUIRE( size(arr) == 3 );
 		BOOST_REQUIRE( arr[2] == 5.6 );
 		BOOST_REQUIRE(( arr == multi::array<double, 1>{1.2, 3.4, 5.6} ));
-		BOOST_REQUIRE(( arr == decltype(A){1.2, 3.4, 5.6} ));
-		BOOST_REQUIRE(( arr == decltype(A)::decay_type({1.2, 3.4, 5.6}) ));
+		BOOST_REQUIRE(( arr == decltype(arr){1.2, 3.4, 5.6} ));
+		BOOST_REQUIRE(( arr == decltype(arr)::decay_type({1.2, 3.4, 5.6}) ));
 	}
 	{
 		std::array<double, 3> const stdarr = {{1.1, 2.2, 3.3}};
@@ -93,11 +93,11 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_array) {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc99-designator"
 //		double const a[] = { [8] = 8., 9., 10. };
-		std::array<double, 11> const a = {{ [8] = 8., 9., 10. }};
+		std::array<double, 11> const stdarr = {{ [8] = 8., 9., 10. }};
 #pragma GCC diagnostic pop
-		multi::array<double, 1> A = a;
-		BOOST_REQUIRE( A.size() == 11 );
-		BOOST_REQUIRE( A[9] == 9. );
+		multi::array<double, 1> arr = stdarr;
+		BOOST_REQUIRE( arr.size() == 11 );
+		BOOST_REQUIRE( arr[9] == 9. );
 	}
 #endif
 }
