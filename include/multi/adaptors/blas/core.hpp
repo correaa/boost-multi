@@ -226,7 +226,8 @@ namespace boost::multi::blas {
 
 //using namespace types;
 
-#define BC(x) [](auto n) {assert(xx>=std::numeric_limits<INT>::min() and n<std::numeric_limits<INT>::max()); return n;}(x)  /*NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/
+// Boundary Checked value
+#define BC(value) [](auto checked) {assert(checked >= std::numeric_limits<INT>::min() and checked < std::numeric_limits<INT>::max()); return checked;}(value)  /*NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/
 
 //#define xrotg(T1, T2)                       v   rotg (T1 const& a, T1 const& b, T2& cc, T1& ss                                       ){     BLAS(T1##rotg )(const_cast<T1*>(&a), const_cast<T1*>(&b), &cc, &ss);  }
 //#define xrotmg(T)                           v   rotmg(T& d1, T& d2, T& A, T const& B, T(&p)[5]                                       ){     BLAS( T##rotmg)(&d1, &d2, &A, B, p);                                  }
