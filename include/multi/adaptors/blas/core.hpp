@@ -87,16 +87,17 @@ static_assert(sizeof(INT)==32/8 or sizeof(INT)==64/8, "please set MULTI_BLAS_INT
 
 // indented declarations like in https://www.netlib.org/lapack/lug/node145.html
 
-#define xROTG(T1, T2)     v       T1##rotg ##_ (                                                                T1 const*, T1 const*, T2*, T1*          )                  // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
-#define xROTMG(T)         v       T ##rotmg##_ (                                                        T*, T*, T*       , T  const&,                     T(&param)[5]  )  // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
-#define xROT(TT, T, S)    v       TT##rot  ##_ (    N,              T       *x, INCX, T       *y, INCY,                               S const&, S const&)                  // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
-#define xROTM(T)          v       T ##rotm ##_ (    N,              T       *x, INCX, T* y, INCY,                                                         T const(&p)[5])  // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
-#define xSWAP(T)          v       T ##swap ##_ (    N,              T       *x, INCX, T       *y, INCY)                                                                    // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
-#define xSCAL(TT, TA, TX) v       TT##scal ##_ (    N, TA const& a, TX      *x, INCX)                                                                                      // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
-#define xCOPY(T)          v       T ##copy ##_ (    N,              T const *x, INCX, T       *y, INCY)                                                                    // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
-#define xAXPY(T)          v       T ##axpy ##_ (    N,  T const* a, T const *x, INCX, T       *y, INCY)                                                                    // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xROTG(T1, T2)     v       T1##rotg ##_ (                                                                T1 const*, T1 const*, T2*, T1*                          )  // NOLINT(bugprone-macro-parentheses,readability-identifier-length) macro arg expands to type
+#define xROTMG(T)         v       T ##rotmg##_ (                                                        T*, T*, T*       , T  const&,                     T(&param)[5]  )  // NOLINT(bugprone-macro-parentheses,readability-identifier-length) macro arg expands to type
+#define xROT(TT, T, S)    v       TT##rot  ##_ (    N,              T       *x, INCX, T       *y, INCY,                               S const&, S const&                )  // NOLINT(bugprone-macro-parentheses,readability-identifier-length) macro arg expands to type
+#define xROTM(T)          v       T ##rotm ##_ (    N,              T       *x, INCX, T       *y, INCY,                                                   T const(&p)[5])  // NOLINT(bugprone-macro-parentheses,readability-identifier-length) macro arg expands to type
+#define xSWAP(T)          v       T ##swap ##_ (    N,              T       *x, INCX, T       *y, INCY                                                                  )  // NOLINT(bugprone-macro-parentheses,readability-identifier-length) macro arg expands to type
+#define xSCAL(TT, TA, TX) v       TT##scal ##_ (    N, TA const& a, TX      *x, INCX                                                                                    )  // NOLINT(bugprone-macro-parentheses,readability-identifier-length) macro arg expands to type
+#define xCOPY(T)          v       T ##copy ##_ (    N,              T const *x, INCX, T       *y, INCY                                                                  )  // NOLINT(bugprone-macro-parentheses,readability-identifier-length) macro arg expands to type
+#define xAXPY(T)          v       T ##axpy ##_ (    N,  T const* a, T const *x, INCX, T       *y, INCY                                                                  )  // NOLINT(bugprone-macro-parentheses,readability-identifier-length) macro arg expands to type
 
-#define xDOT(R, TT, T)    auto    TT##dot  ##_ (    N,              T const *x, INCX, T const *y, INCY) -> R  // in MKL and vanilla BLAS, OpenBLAS, real dot always return by stack
+// in MKL and vanilla BLAS, OpenBLAS, real dot always return by stack
+#define xDOT(R, TT, T)    auto    TT##dot  ##_ (    N,              T const *x, INCX, T const *y, INCY) -> R  // NOLINT(readability-identifier-length) conventional BLAS naming
 
 // PGI/NVC++ compiler uses a blas version that needs -DRETURN_BY_STACK
 #if defined(RETURN_BY_STACK) || (defined(FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID) && FORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID)
@@ -104,14 +105,14 @@ static_assert(sizeof(INT)==32/8 or sizeof(INT)==64/8, "please set MULTI_BLAS_INT
 #define xDOTU(R, T)       v       T ##dotu ##_ (R*, N,              T const *x, INCX, T const *y, INCY)  // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
 #define xDOTC(R, T)       v       T ##dotc ##_ (R*, N,              T const *x, INCX, T const *y, INCY)  // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
 #else
-#define xDOTU(R, T)       auto    T ##dotu ##_ (    N,              T const *x, INCX, T const *y, INCY) -> R
-#define xDOTC(R, T)       auto    T ##dotc ##_ (    N,              T const *x, INCX, T const *y, INCY) -> R
+#define xDOTU(R, T)       auto    T ##dotu ##_ (    N,              T const *x, INCX, T const *y, INCY) -> R  // NOLINT(readability-identifier-length) conventional BLAS naming
+#define xDOTC(R, T)       auto    T ##dotc ##_ (    N,              T const *x, INCX, T const *y, INCY) -> R  // NOLINT(readability-identifier-length) conventional BLAS naming
 //#define xxDOT(TT, T)      auto    TT##dot  ##_ (    N,  T const& a, T const *x, INCX, T const *y, INCY) -> T
 #endif
 
-#define xNRM2(R, TT, T)   auto    TT##nrm2##_ (    N,               T const *x, INCX) -> R
-#define xASUM(R, TT, T)   auto    TT##asum##_ (    N,               T const *x, INCX) -> R
-#define IxAMAX(T)         auto i##T ##amax##_ (    N,               T const* x, INCX) -> INT
+#define xNRM2(R, TT, T)   auto    TT##nrm2##_ (    N,               T const *x, INCX) -> R    // NOLINT(readability-identifier-length) conventional BLAS naming
+#define xASUM(R, TT, T)   auto    TT##asum##_ (    N,               T const *x, INCX) -> R    // NOLINT(readability-identifier-length) conventional BLAS naming
+#define IxAMAX(T)         auto i##T ##amax##_ (    N,               T const* x, INCX) -> INT  // NOLINT(readability-identifier-length) conventional BLAS naming
 
 xROTG(s, s)   ; xROTG(d,d)    ;// MKL extension xROTG(c, s); xROTG(z, d);
 xROTMG(s)     ; xROTMG(d)     ;
@@ -139,7 +140,7 @@ IxAMAX(s); IxAMAX(d); IxAMAX(c); IxAMAX(z);
 #define DIAG const char& diag
 
 #define xGEMV(T) void  T## gemv ##_ (      TRANS,       NR, NC, T const& a, T const* A, LDA, T const* X, INCX, T const& beta, T*       Y, INCY           )  // NOLINT(bugprone-macro-parentheses,readability-identifier-length) macro arg expands to type
-#define xGER( T)  void  T## ger  ##_ (                   NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA)  // NOLINT(bugprone-macro-parentheses,readability-identifier-length) macro arg expands to type
+#define xGER( T)  void T## ger  ##_ (                   NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA)  // NOLINT(bugprone-macro-parentheses,readability-identifier-length) macro arg expands to type
 #define xGERU(T) void  T## geru ##_ (                   NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA)  // NOLINT(bugprone-macro-parentheses,readability-identifier-length) macro arg expands to type
 #define xGERC(T) void  T## gerc ##_ (                   NR, NC, T const& a,                  T const* X, INCX,                T const* Y, INCY, T* A, LDA)  // NOLINT(bugprone-macro-parentheses,readability-identifier-length) macro arg expands to type
 #define xTRSV(T) void  T## trsv ##_ (UPLO, TRANS, DIAG, N,                  T const* A, LDA, T* X      , INCX                                            )  // NOLINT(bugprone-macro-parentheses,readability-identifier-length) macro arg expands to type
@@ -253,10 +254,10 @@ template<class CX, class CY, enable_if_t<is_c<CX>{} and is_c<CY>{} and is_assign
 template<class ZX, class ZY, enable_if_t<is_z<ZX>{} and is_z<ZY>{} and is_assignable<ZY&, ZX&>{},int> =0> void copy(ssize_t n, ZX* x, ptrdiff_t incx, ZY* y, ptrdiff_t incy) {BLAS(zcopy)(n, (std::complex<double> const*)(x), incx, (std::complex<double>*)(y), incy);}  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
 
 // TODO(correaa) : add mixed-type scal (zdscal, csscal)
-template<class ALPHAP, class SXP, class SX = typename std::pointer_traits<SXP>::element_type, class ALPHA = typename std::pointer_traits<ALPHAP>::element_type, enable_if_t<is_s<SX>{} and is_s<ALPHA>{} and is_assignable<SX&, decltype(*ALPHAP{}*SX{})>{}>* = nullptr> void scal(ssize_t n, ALPHAP a, SXP xp, ptrdiff_t incx) {BLAS(sscal)(n, *(             float   const*)a, (             float  *)xp, incx);} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting)
-template<class ALPHAP, class DXP, class DX = typename std::pointer_traits<DXP>::element_type, class ALPHA = typename std::pointer_traits<ALPHAP>::element_type, enable_if_t<is_d<DX>{} and is_d<ALPHA>{} and is_assignable<DX&, decltype(*ALPHAP{}*DX{})>{}>* = nullptr> void scal(ssize_t n, ALPHAP a, DXP xp, ptrdiff_t incx) {BLAS(dscal)(n, *(             double  const*)a, (             double *)xp, incx);} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting)
-template<class ALPHAP, class CXP, class CX = typename std::pointer_traits<CXP>::element_type, class ALPHA = typename std::pointer_traits<ALPHAP>::element_type, enable_if_t<is_c<CX>{} and is_c<ALPHA>{} and is_assignable<CX&, decltype(*ALPHAP{}*CX{})>{}>* = nullptr> void scal(ssize_t n, ALPHAP a, CXP xp, ptrdiff_t incx) {BLAS(cscal)(n, *(std::complex<float > const*)a, (std::complex<float >*)xp, incx);} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting)
-template<class ALPHAP, class ZXP, class ZX = typename std::pointer_traits<ZXP>::element_type, class ALPHA = typename std::pointer_traits<ALPHAP>::element_type, enable_if_t<is_z<ZX>{} and is_z<ALPHA>{} and is_assignable<ZX&, decltype(*ALPHAP{}*ZX{})>{}>* = nullptr> void scal(ssize_t n, ALPHAP a, ZXP xp, ptrdiff_t incx) {BLAS(zscal)(n, *(std::complex<double> const*)a, (std::complex<double>*)xp, incx);} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting)
+template<class ALPHAP, class SXP, class SX = typename std::pointer_traits<SXP>::element_type, class ALPHA = typename std::pointer_traits<ALPHAP>::element_type, enable_if_t<is_s<SX>{} and is_s<ALPHA>{} and is_assignable<SX&, decltype(*ALPHAP{}*SX{})>{}>* = nullptr> void scal(ssize_t n, ALPHAP a, SXP xp, ptrdiff_t incx) {BLAS(sscal)(n, *(             float   const*)a, (             float  *)xp, incx);} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
+template<class ALPHAP, class DXP, class DX = typename std::pointer_traits<DXP>::element_type, class ALPHA = typename std::pointer_traits<ALPHAP>::element_type, enable_if_t<is_d<DX>{} and is_d<ALPHA>{} and is_assignable<DX&, decltype(*ALPHAP{}*DX{})>{}>* = nullptr> void scal(ssize_t n, ALPHAP a, DXP xp, ptrdiff_t incx) {BLAS(dscal)(n, *(             double  const*)a, (             double *)xp, incx);} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
+template<class ALPHAP, class CXP, class CX = typename std::pointer_traits<CXP>::element_type, class ALPHA = typename std::pointer_traits<ALPHAP>::element_type, enable_if_t<is_c<CX>{} and is_c<ALPHA>{} and is_assignable<CX&, decltype(*ALPHAP{}*CX{})>{}>* = nullptr> void scal(ssize_t n, ALPHAP a, CXP xp, ptrdiff_t incx) {BLAS(cscal)(n, *(std::complex<float > const*)a, (std::complex<float >*)xp, incx);} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
+template<class ALPHAP, class ZXP, class ZX = typename std::pointer_traits<ZXP>::element_type, class ALPHA = typename std::pointer_traits<ALPHAP>::element_type, enable_if_t<is_z<ZX>{} and is_z<ALPHA>{} and is_assignable<ZX&, decltype(*ALPHAP{}*ZX{})>{}>* = nullptr> void scal(ssize_t n, ALPHAP a, ZXP xp, ptrdiff_t incx) {BLAS(zscal)(n, *(std::complex<double> const*)a, (std::complex<double>*)xp, incx);} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
 
 //xdot(s, s, s)  xdot(d, d, d)                                xdot(d, ds, s)
 

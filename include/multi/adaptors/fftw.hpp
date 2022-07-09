@@ -636,22 +636,23 @@ auto dft_forward(std::array<bool, +D> which, A const& a)
 	return fftw::dft(which, a, fftw::forward); }
 
 template<class A, class O, multi::dimensionality_type D = A::rank_v>
-auto dft_forward(std::array<bool, +D> which, A const& a, O&& o)
-->decltype(fftw::dft(which, a, std::forward<O>(o), fftw::forward)) {
-	return fftw::dft(which, a, std::forward<O>(o), fftw::forward); }
+auto dft_forward(std::array<bool, +D> which, A const& in, O&& out)
+->decltype(fftw::dft(which, in, std::forward<O>(out), fftw::forward)) {
+	return fftw::dft(which, in, std::forward<O>(out), fftw::forward); }
 
 template<typename A>
-NODISCARD("when input argument is read only") auto dft_forward(A const& a)
-->decltype(fftw::dft(a, fftw::forward)) {
-	return fftw::dft(a, fftw::forward); }
+NODISCARD("when input argument is read only")
+auto dft_forward(A const& array)
+->decltype(fftw::dft(array, fftw::forward)) {
+	return fftw::dft(array, fftw::forward); }
 
-template<typename... A> auto            dft_backward(A&&... a)
-->decltype(dft(std::forward<A>(a)..., fftw::backward)) {
-	return dft(std::forward<A>(a)..., fftw::backward); }
+template<typename... A> auto            dft_backward(A&&... args)
+->decltype(dft(std::forward<A>(args)..., fftw::backward)) {
+	return dft(std::forward<A>(args)..., fftw::backward); }
 
-template<class In> auto dft_inplace(In&& i, sign s) -> In&& {
-	fftw::plan{i, i, static_cast<int>(s)}();//(i, i); 
-	return std::forward<In>(i);
+template<class In> auto dft_inplace(In&& in, sign direction) -> In&& {
+	fftw::plan{in, in, static_cast<int>(direction)}();
+	return std::forward<In>(in);
 }
 
 template<class In, class Out, dimensionality_type D = In::rank_v>
@@ -660,7 +661,7 @@ auto copy(In const& in, Out&& out)
 	return dft(std::array<bool, D>{}, in, std::forward<Out>(out), fftw::forward); }
 
 template<typename In, class R=typename In::decay_type>
-[[nodiscard("when input argument is const")]]
+[[nodiscard]] // ("when input argument is const")]]
 auto copy(In const& in) -> R
 {//->decltype(copy(i, R(extensions(i), get_allocator(i))), R()){
 	return copy(in, R(extensions(in), get_allocator(in)));}
@@ -728,7 +729,7 @@ class fft_iterator {
 	using pointer         = void*;
 	class reference {
 		typename MDIterator::reference::extensions_type x_;
-		explicit reference(typename MDIterator::reference const& r) : x_{r.extensions()} {}
+		explicit reference(typename MDIterator::reference const& ref) : x_{ref.extensions()} {}
 		friend class fft_iterator;
 
 	 public:

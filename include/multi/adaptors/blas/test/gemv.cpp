@@ -203,10 +203,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_temporary) {
 		{0., 0., 1.}
 	};
 
-	auto const B = [](auto _) {
+	auto const B = [](auto array) {
 		auto rand = [d=std::normal_distribution<>{}, g=std::mt19937{1}]()mutable{return complex{d(g), d(g)};}; // NOLINT(cert-msc32-c,cert-msc51-cpp): test purposes
-		std::generate(_.elements().begin(), _.elements().end(), rand);
-		return _;
+		std::generate(array.elements().begin(), array.elements().end(), rand);
+		return array;
 	}(multi::array<complex, 2>({3, 3}));
 
 	using blas::operators::operator*;
