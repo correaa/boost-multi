@@ -159,8 +159,8 @@ xTRSV(s); xTRSV(d); xTRSV(c); xTRSV(z);
 #define SIDE const char& side
 
 #define xGEMM(T)     void T ##gemm ##_ (            TRANSA, TRANSB,       NR, NC, NK, T  const& a, T const* A, LDA, T const* B, LDB, T  const& b     , T const* CC, LDC)
-#define xSYRK(T)     void T ##syrk ##_ (      UPLO, TRANSA,               NR, NK,     T  const& a, T const* A, LDA,                  T  const& b     , T*       CC, LDC) // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
-#define xHERK(TT, T) void T ##herk ##_ (      UPLO, TRANSA,               NR, NK,     TT const& a, T const* A, LDA,                  TT const& b     , T*       CC, LDC) // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xSYRK(T)     void T ##syrk ##_ (      UPLO, TRANSA,               NR, NK,     T  const& a, T const* A, LDA,                  T  const& b     , T*       CC, LDC)  // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
+#define xHERK(TT, T) void T ##herk ##_ (      UPLO, TRANSA,               NR, NK,     TT const& a, T const* A, LDA,                  TT const& b     , T*       CC, LDC)  // NOLINT(bugprone-macro-parentheses) : macro arg expands to type
 #define xTRSM(T)     void T ##trsm ##_ (SIDE, UPLO, TRANSA,         DIAG, NR, NK,     T  const& a, T const* A, LDA,                  T  const* B, LDB                  )
 
 xGEMM(s); xGEMM(d); xGEMM(c)   ; xGEMM(z)   ;
@@ -360,8 +360,8 @@ namespace core {
 template<class XP, class X = typename std::pointer_traits<XP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_s<X>{} and is_s<R>{} and std::is_assignable<R&, decltype(X{})>{}           , int> =0> void nrm2(ssize_t n, XP x, ptrdiff_t incx, RP r){auto rr = BLAS(snrm2) (n, (s const*)static_cast<X*>(x), incx); std::memcpy((s*)static_cast<R*>(r), &rr, sizeof(s));} // NOLINT(google-readability-casting)
 template<class XP, class X = typename std::pointer_traits<XP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_d<X>{} and is_d<R>{} and std::is_assignable<R&, decltype(X{})>{}           , int> =0> void nrm2(ssize_t n, XP x, ptrdiff_t incx, RP r){auto rr = BLAS(dnrm2) (n, (d const*)static_cast<X*>(x), incx); std::memcpy((s*)static_cast<R*>(r), &rr, sizeof(d));} // NOLINT(google-readability-casting)
 
-template<class XP, class X = typename std::pointer_traits<XP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_c<X>{} and is_s<R>{} and std::is_assignable<R&, decltype(std::norm(X{}))>{}, int> =0> void nrm2(ssize_t n, XP x, ptrdiff_t incx, RP r){auto rr = BLAS(scnrm2)(n, (c const*)static_cast<X*>(x), incx); std::memcpy((s*)static_cast<R*>(r), &rr, sizeof(s));} // NOLINT(google-readability-casting)
-template<class XP, class X = typename std::pointer_traits<XP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_z<X>{} and is_d<R>{} and std::is_assignable<R&, decltype(std::norm(X{}))>{}, int> =0> void nrm2(ssize_t n, XP x, ptrdiff_t incx, RP r){auto rr = BLAS(dznrm2)(n, (z const*)static_cast<X*>(x), incx); std::memcpy((s*)static_cast<R*>(r), &rr, sizeof(d));} // NOLINT(google-readability-casting)
+template<class XP, class X = typename std::pointer_traits<XP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_c<X>{} and is_s<R>{} and std::is_assignable<R&, decltype(std::norm(X{}))>{}, int> =0> void nrm2(ssize_t n, XP x, ptrdiff_t incx, RP r){auto rr = BLAS(scnrm2)(n, (c const*)static_cast<X*>(x), incx); std::memcpy((s*)static_cast<R*>(r), &rr, sizeof(s));} // NOLINT(google-readability-casting,readability-identifier-length)
+template<class XP, class X = typename std::pointer_traits<XP>::element_type, class RP, class R = typename std::pointer_traits<RP>::element_type, enable_if_t<is_z<X>{} and is_d<R>{} and std::is_assignable<R&, decltype(std::norm(X{}))>{}, int> =0> void nrm2(ssize_t n, XP x, ptrdiff_t incx, RP r){auto rr = BLAS(dznrm2)(n, (z const*)static_cast<X*>(x), incx); std::memcpy((s*)static_cast<R*>(r), &rr, sizeof(d));} // NOLINT(google-readability-casting,readability-identifier-length)
 
 //	template<class S>    v nrm2 (S n, typename add_const_ptr<std::complex<double>>::type x, S incx, d* r){*r = BLAS(dznrm2  )(BC(n), x, BC(incx));}
 	ixamax(s)      ixamax(d)       ixamax(c)       ixamax(z)
@@ -439,14 +439,14 @@ enable_if_t<                                                                    
 	is_##T<AA>{} and is_##T<CC>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*AA{})>{} and                                                                                                       \
 	is_convertible_v<AAP, AA*> and is_convertible_v<CCP, CC*>                                                                                                                                     \
 , int> =0>                                                                                                                                                                                        \
-v syrk(        UL ul, C transA,             S n, S k, ALPHA const* alpha, AAP aa, S lda,             BETA const* beta, CCP cc, S ldc)  /*NOLINT(bugprone-easily-swappable-parameters)*/           \
+v syrk(        UL uplo, C transA,             S n, S k, ALPHA const* alpha, AAP aa, S lda,             BETA const* beta, CCP cc, S ldc)  /*NOLINT(bugprone-easily-swappable-parameters,readability-identifier-length)*/      \
 /*=delete;*/                                                                                                                                                                                      \
 {                                                                                                                                                                                                 \
 	if(transA == 'N' or  transA == 'n') {MULTI_ASSERT1( lda >= max(1L, n) );}                                                                                                                     \
 	if(transA != 'N' and transA != 'n') {MULTI_ASSERT1( lda >= max(1L, k) );}                                                                                                                     \
 	MULTI_ASSERT1( ldc >= max(1L, n) );                                                                                                                                                           \
 	MULTI_MARK_SCOPE("cpu_herk");                                                                                                                                                                 \
-	BLAS(T##syrk)(      ul, transA,            BC(n), BC(k), *(T const*)alpha, aa, BC(lda),        *(T const*)beta, cc, BC(ldc));                                                                 \
+	BLAS(T##syrk)(      uplo, transA,            BC(n), BC(k), *(T const*)alpha, aa, BC(lda),        *(T const*)beta, cc, BC(ldc));                                                                 \
 }                                                                                                                                                                                                 \
 
 #define xherk(T) \
@@ -455,14 +455,14 @@ enable_if_t<                                                                    
 	is_##T<AA>{} and is_##T<CC>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*AA{})>{} and                                                                                                                                            \
 	is_convertible_v<AAP, AA*> and is_convertible_v<CCP, CC*>                                                                                                                                                                          \
 , int> =0>                                                                                                                                                                                                                             \
-v herk(        UL ul, C transA,             S n, S k, ALPHA const* alpha, AAP aa, S lda,             BETA const* beta, CCP cc, S ldc)  /*NOLINT(bugprone-easily-swappable-parameters)*/                                                \
-/*=delete;*/                                                                                                                                                                                                                           \
+v herk(        UL uplo, C transA,             S n, S k, ALPHA const* alpha, AAP aa, S lda,             BETA const* beta, CCP cc, S ldc)  /*NOLINT(bugprone-easily-swappable-parameters,readability-identifier-length)*/                                                \
+/*=delete;*/                                                                                                                                                                                                                          \
 {                                                                                                                                                                                                                                      \
 	if(transA == 'N' or  transA == 'n') {MULTI_ASSERT1( lda >= max(1L, n) );}  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                                   \
 	if(transA != 'N' and transA != 'n') {MULTI_ASSERT1( lda >= max(1L, k) );}                                                                                                                                                          \
 	MULTI_ASSERT1( ldc >= max(1L, n) );  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                                                                         \
 	MULTI_MARK_SCOPE("cpu_herk");                                                                                                                                                                                                      \
-	BLAS(T##herk)(      ul, transA,            BC(n), BC(k), *(Real const*)alpha, aa, BC(lda),        *(Real const*)beta, cc, BC(ldc));                                                                                                \
+	BLAS(T##herk)(      uplo, transA,            BC(n), BC(k), *(Real const*)alpha, aa, BC(lda),        *(Real const*)beta, cc, BC(ldc));                                                                                                \
 }                                                                                                                                                                                                                                      \
 
 #define xgemm(T)                                                                                                                                                                                                                        \
@@ -495,10 +495,10 @@ enable_if_t<                                                                    
 	is_##T<AA>{} and is_##T<BB>{} and is_assignable<BB&, decltype(AA{}*BB{}/ALPHA{})>{} and is_assignable<BB&, decltype(ALPHA{}*BB{}/AA{})>{} and                                                                 \
 	is_convertible_v<AAP, AA*> and is_convertible_v<BBP, BB*>                                                                                                                                                     \
 ,int> =0>                                                                                                                                                                                                         \
-v trsm(char side, char ul, char transA, char diag, ssize_t m, ssize_t n, ALPHA alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb) { /*NOLINT(bugprone-easily-swappable-parameters)*/                                \
+v trsm(char side, char uplo, char transA, char diag, ssize_t m, ssize_t n, ALPHA alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb) { /*NOLINT(bugprone-easily-swappable-parameters,readability-identifier-length)*/  \
 	MULTI_MARK_SCOPE("cpu_trsm");											                                                                                                                                      \
 	assert( side   == 'L' or side   == 'R' );                   /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                             \
-	assert( ul     == 'U' or ul     == 'L' );                   /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                             \
+	assert( uplo   == 'U' or uplo   == 'L' );                   /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                             \
 	assert( transA == 'N' or transA == 'T' or transA == 'C' );  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                             \
 	assert( diag   == 'U' or diag   == 'N' );                   /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                             \
 	MULTI_ASSERT1( m >= 0 and n >= 0 );                                                                                                                                                                           \
@@ -506,7 +506,7 @@ v trsm(char side, char ul, char transA, char diag, ssize_t m, ssize_t n, ALPHA a
 	if(side == 'L') {MULTI_ASSERT1( lda >= max(ssize_t{1}, m) );}   /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                         \
 	if(side == 'R') {MULTI_ASSERT1( lda >= max(ssize_t{1}, n) );}                                                                                                                                                 \
 	MULTI_ASSERT1( ldb >= max(ssize_t{1}, m) );                                                                                                                                                                   \
-	BLAS(T##trsm)(side, ul, transA, diag, BC(m), BC(n), alpha, (T const*)static_cast<AA*>(aa), BC(lda), (T*)static_cast<BB*>(bb), BC(ldb));                                                                       \
+	BLAS(T##trsm)(side, uplo, transA, diag, BC(m), BC(n), alpha, (T const*)static_cast<AA*>(aa), BC(lda), (T*)static_cast<BB*>(bb), BC(ldb));                                                                       \
 }                                                                                                                                                                                                                 \
 
 xtrsm(s) xtrsm(d) xtrsm(c) xtrsm(z)  // NOLINT(readability-function-cognitive-complexity) : 29 of 25

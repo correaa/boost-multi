@@ -36,7 +36,7 @@ auto copy(Context&& ctxt, It first, It last, OutIt d_first)
 	return copy_n(std::forward<Context>(ctxt), first, last - first, d_first); }
 
 template<class X1D, class Y1D>
-auto copy(X1D const& x, Y1D&& y)
+auto copy(X1D const& x, Y1D&& y)  // NOLINT(readability-identifier-length) conventional BLAS naming
 ->decltype(blas::copy_n(x.begin(), x.size(), y.begin()), std::forward<Y1D>(y)) {
 	assert( (x.size() == y.size()) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : assert
 	return blas::copy_n(x.begin(), x.size(), y.begin()), std::forward<Y1D>(y); }

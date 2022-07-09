@@ -130,15 +130,15 @@ struct real_t{
 
 struct imag_t {
 	template<class Array, typename E = typename std::decay_t<Array>::element, typename ValueType = typename E::value_type>
-	auto operator()(Array&& a) const
-	->decltype(std::forward<Array>(a).template reinterpret_array_cast<complex<ValueType>>().template member_cast<ValueType>(&complex<ValueType>::imag)) {
-		return std::forward<Array>(a).template reinterpret_array_cast<complex<ValueType>>().template member_cast<ValueType>(&complex<ValueType>::imag); }
+	auto operator()(Array&& array) const
+	->decltype(std::forward<Array>(array).template reinterpret_array_cast<complex<ValueType>>().template member_cast<ValueType>(&complex<ValueType>::imag)) {
+		return std::forward<Array>(array).template reinterpret_array_cast<complex<ValueType>>().template member_cast<ValueType>(&complex<ValueType>::imag); }
 	template<class T, typename ValueType = typename std::decay_t<T>::value_type,
 		std::enable_if_t<
-			sizeof(T)==2*sizeof(ValueType) and
+			sizeof(T) == 2*sizeof(ValueType) and
 			std::is_assignable<ValueType&, decltype(real(std::declval<T>()))>{} and
 			std::is_assignable<ValueType&, decltype(imag(std::declval<T>()))>{}, int
-		> = 0
+		> =0
 	>
 	auto operator()(T& t) const -> ValueType& {
 		return reinterpret_cast<multi::complex<ValueType>&>(t).imag;  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : TODO(correaa) : t[1]

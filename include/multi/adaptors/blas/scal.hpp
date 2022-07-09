@@ -8,8 +8,8 @@ namespace boost::multi::blas{
 
 using core::scal;
 
-template<class A, class It, class Size>
-auto scal_n(A const& a, It first, Size count)
+template<class Scalar, class It, class Size>
+auto scal_n(Scalar const& a, It first, Size count)  // NOLINT(readability-identifier-length) conventional BLAS naming
 ->decltype(scal(count, &a, first.base(), first.stride()), void()) {
 	       scal(count, &a, first.base(), first.stride());         }
 
@@ -18,8 +18,8 @@ auto scal(A const& a, It1D first, It1D last)
 ->decltype(blas::scal_n(a, first, last - first)){
 	return blas::scal_n(a, first, last - first);}
 
-template<class A, class X1D> // don't do this: ", typename Elem = typename X1D::element_type>"
-auto scal(A const& a, X1D&& x)
+template<class Scalar, class X1D>  // don't do this: ", typename Elem = typename X1D::element_type>"
+auto scal(Scalar const& a, X1D&& x)  // NOLINT(readability-identifier-length) conventional BLAS naming
 ->decltype(blas::scal(a, x.begin(), x.end()), std::forward<X1D>(x)) {
 	return blas::scal(a, x.begin(), x.end()), std::forward<X1D>(x); }
 

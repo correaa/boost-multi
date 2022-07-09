@@ -100,22 +100,23 @@ public:
 		return other == self.operator decay_type();}
 
 	template<class DecayType, std::enable_if_t<not std::is_base_of<involuted, DecayType>{}, int> =0>
-	friend constexpr auto operator==(DecayType&& other, involuted const& self){
-		return other == self.operator decay_type();}
+	friend constexpr auto operator==(DecayType&& other, involuted const& self) {
+		return other == self.operator decay_type();
+	}
 	template<class DecayType, std::enable_if_t<not std::is_base_of<involuted, DecayType>{}, int> =0>
-	friend constexpr auto operator!=(DecayType&& other, involuted const& self){
-		return other != self.operator decay_type();}
+	friend constexpr auto operator!=(DecayType&& other, involuted const& self) {
+		return other != self.operator decay_type();\
+	}
 //	auto imag() const{return static_cast<decay_type>(*this).imag();}
-	template<class Any> friend constexpr auto operator<<(Any&& a, involuted const& self) -> Any&
-//	->decltype(a << self.operator decay_type())
-	{
-		return a << self.operator decay_type();}
-	constexpr auto conj() const&{return adl_conj(operator decay_type());}
+	template<class Sink> friend constexpr auto operator<<(Sink&& sink, involuted const& self) -> Sink& {
+		return sink<< self.operator decay_type();
+	}
+	constexpr auto conj() const& {return adl_conj(operator decay_type());}
 
 	template<class T = void*>
 	friend constexpr auto imag(involuted const& self)
-	->decltype(adl_imag(std::declval<decay_type>())){
-		return adl_imag(self.operator decay_type());}
+	->decltype(adl_imag(std::declval<decay_type>())) {
+		return adl_imag(self.operator decay_type()); }
 };
 
 #if defined(__cpp_deduction_guides)
@@ -235,8 +236,9 @@ struct is_complex_array : has_imag<std::decay_t<decltype(*base(std::declval<A>()
 
 template<class V> struct is_complex : has_imag<V> {};
 
-template<class It> auto is_conjugated_aux(conjugater<It> a) -> std::true_type ;
-                   auto is_conjugated_aux(...             ) -> std::false_type;
+template<class It> 
+auto is_conjugated_aux(conjugater<It> /*self*/) -> std::true_type ;
+auto is_conjugated_aux(...                    ) -> std::false_type;
 
 template<class A = void> struct is_conjugated : decltype(is_conjugated_aux(base(std::declval<A>()))) {
 	template<class AA> constexpr auto operator()(AA&& /*unused*/) {return is_conjugated_aux(base(std::declval<A>()));}
@@ -244,14 +246,14 @@ template<class A = void> struct is_conjugated : decltype(is_conjugated_aux(base(
 
 template<class A, class D = std::decay_t<A>, typename Elem=typename D::element_type, typename Ptr=typename D::element_ptr,
 	std::enable_if_t<not is_complex_array<A>{}, int> =0>
-auto conj(A&& a) -> A&& {
-	return std::forward<A>(a);
+auto conj(A&& array) -> A&& {
+	return std::forward<A>(array);
 }
 
 template<class A, class D = std::decay_t<A>, typename Elem=typename D::element_type, typename Ptr=typename D::element_ptr,
 	std::enable_if_t<not is_conjugated<A>{} and is_complex_array<A>{}, int> =0>
-auto conj(A&& a) -> decltype(auto) {
-	return std::forward<A>(a).template static_array_cast<Elem, conjugater<Ptr>>();
+auto conj(A&& array) -> decltype(auto) {
+	return std::forward<A>(array).template static_array_cast<Elem, conjugater<Ptr>>();
 }
 
 template<class A, class D = std::decay_t<A>, typename Elem=typename D::element_type, typename Ptr=typename D::element_ptr::underlying_type,
