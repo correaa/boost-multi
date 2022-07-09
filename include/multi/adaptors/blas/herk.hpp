@@ -111,7 +111,7 @@ template<class T> struct numeric_limits<std::complex<T>> : std::numeric_limits<s
 };
 
 template<class AA, class A2D, class Ret = typename A2D::decay_type>
-[[nodiscard("because argument is read-only")]]
+[[nodiscard]] // ("because argument is read-only")]]
 auto herk(filling cs, AA alpha, A2D const& a)  // NOLINT(readability-identifier-naming) : conventional BLAS name
 ->std::decay_t<
 decltype(  herk(cs, alpha, a, Ret({size(a), size(a)}, 0., get_allocator(a))))> {

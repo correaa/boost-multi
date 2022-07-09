@@ -218,12 +218,12 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_temporary) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_gemv_context) {
-	multi::array<double, 2> const a = {
+	multi::array<double, 2> const a = {  // NOLINT(readability-identifier-length) conventional name in BLAS
 		{ 9., 24., 30., 9.},
 		{ 4., 10., 12., 7.},
 		{14., 16., 36., 1.}
 	};
-	multi::array<double, 1> const x = {1.1, 2.1, 3.1, 4.1};
+	multi::array<double, 1> const x = {1.1, 2.1, 3.1, 4.1};  // NOLINT(readability-identifier-length) conventional name in BLAS
 
 	blas::context ctxt;
 	{
