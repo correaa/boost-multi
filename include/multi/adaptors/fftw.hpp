@@ -655,15 +655,15 @@ template<class In> auto dft_inplace(In&& i, sign s) -> In&& {
 }
 
 template<class In, class Out, dimensionality_type D = In::rank_v>
-auto copy(In const& i, Out&& o)
-->decltype(dft(std::array<bool, D>{}, i, std::forward<Out>(o), fftw::forward)) {
-	return dft(std::array<bool, D>{}, i, std::forward<Out>(o), fftw::forward); }
+auto copy(In const& in, Out&& out)
+->decltype(dft(std::array<bool, D>{}, in, std::forward<Out>(out), fftw::forward)) {
+	return dft(std::array<bool, D>{}, in, std::forward<Out>(out), fftw::forward); }
 
 template<typename In, class R=typename In::decay_type>
-NODISCARD("when argument is const")
-auto copy(In const& i) -> R
+[[nodiscard("when input argument is const")]]
+auto copy(In const& in) -> R
 {//->decltype(copy(i, R(extensions(i), get_allocator(i))), R()){
-	return copy(i, R(extensions(i), get_allocator(i)));}
+	return copy(in, R(extensions(in), get_allocator(in)));}
 
 template<typename In, class R=typename std::decay_t<In>::decay_type>
 auto move(In&& in) {
@@ -680,23 +680,23 @@ auto move(In&& in) {
 }
 
 template<typename T, dimensionality_type D, class P, class R=typename multi::array<T, D>>
-auto copy(multi::basic_array<T, D, multi::move_ptr<T, P>>&& a) -> R {
-	if(a.is_compact()) {
+auto copy(multi::basic_array<T, D, multi::move_ptr<T, P>>&& array) -> R {
+	if(array.is_compact()) {
 		return
 			fftw::copy(
-				a.template static_array_cast<T, T*>(), 
-				multi::array_ref<T, D, T*>(a.base().base(), a.extensions())
+				array.template static_array_cast<T, T*>(), 
+				multi::array_ref<T, D, T*>(array.base().base(), array.extensions())
 			).template static_array_cast<T, multi::move_ptr<T>>()
 		;
 	}
-	return fftw::copy(a.template static_array_cast<T, P>());
+	return fftw::copy(array.template static_array_cast<T, P>());
 }
 
 template<class Array>
-auto transpose(Array& a)
-->decltype(fftw::copy(transposed(a), a.reshape(extensions(layout(a).transpose())))) {
-	multi::array_ref<typename Array::element, Array::rank_v, typename Array::element_ptr> r(a.base(), extensions(a));
-	return fftw::copy(r.transposed(), a.reshape(layout(a).transpose().extensions()));
+auto transpose(Array& array)
+->decltype(fftw::copy(transposed(array), array.reshape(extensions(layout(array).transpose())))) {
+	multi::array_ref<typename Array::element, Array::rank_v, typename Array::element_ptr> ref(array.base(), extensions(array));
+	return fftw::copy(ref.transposed(), array.reshape(layout(array).transpose().extensions()));
 }
 
 #if 0

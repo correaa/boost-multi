@@ -14,23 +14,23 @@
 namespace boost {
 namespace multi::blas {
 
-template<class T> struct complex_dummy{T real; T imag;};
+template<class T> struct complex_dummy {T real; T imag;};
 
 template<
 	class A, typename Complex = typename std::decay_t<A>::element, typename T=typename Complex::value_type,
 	class=std::enable_if_t<blas::numeric::is_complex_of<Complex, T>::value>
 >
-auto real(A&& a)
-->decltype(std::forward<A>(a).template reinterpret_array_cast<complex_dummy<T>>().template member_cast<T>(&complex_dummy<T>::real)){
-	return std::forward<A>(a).template reinterpret_array_cast<complex_dummy<T>>().template member_cast<T>(&complex_dummy<T>::real);}
+auto real(A&& array)
+->decltype(std::forward<A>(array).template reinterpret_array_cast<complex_dummy<T>>().template member_cast<T>(&complex_dummy<T>::real)){
+	return std::forward<A>(array).template reinterpret_array_cast<complex_dummy<T>>().template member_cast<T>(&complex_dummy<T>::real);}
 
 template<
 	class A, class Complex = typename std::decay_t<A>::element_type, typename T=typename Complex::value_type,
 	class=std::enable_if_t<blas::numeric::is_complex_of<Complex, T>::value>
 >
-auto imag(A&& a)
-->decltype(std::forward<A>(a).template reinterpret_array_cast<complex_dummy<T>>().template member_cast<T>(&complex_dummy<T>::imag)){
-	return std::forward<A>(a).template reinterpret_array_cast<complex_dummy<T>>().template member_cast<T>(&complex_dummy<T>::imag);}
+auto imag(A&& array)
+->decltype(std::forward<A>(array).template reinterpret_array_cast<complex_dummy<T>>().template member_cast<T>(&complex_dummy<T>::imag)){
+	return std::forward<A>(array).template reinterpret_array_cast<complex_dummy<T>>().template member_cast<T>(&complex_dummy<T>::imag);}
 
 template<class ComplexArr, class ComplexElem = typename std::decay_t<ComplexArr>::element, typename RealElem = typename ComplexElem::value_type,
 	class=std::enable_if_t<blas::numeric::is_complex_of<ComplexElem, RealElem>::value>
@@ -45,7 +45,7 @@ template<class It, class F, class Reference = involuted<typename std::iterator_t
 
 template<class Ref, class Involution>
 class involuted {
-	Ref r_; // [[no_unique_address]] 
+	Ref r_;  // [[no_unique_address]] 
 	Involution f_;
 
 public:

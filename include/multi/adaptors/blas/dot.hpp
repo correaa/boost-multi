@@ -1,12 +1,12 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2021 Alfredo A. Correa
+// Copyright 2019-2022 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_BLAS_DOT_HPP
 #define MULTI_ADAPTORS_BLAS_DOT_HPP
 
 #include "../blas/core.hpp"
-#include "../blas/numeric.hpp" // is_complex
-#include "../blas/operations.hpp"  // blas::C
+#include "../blas/numeric.hpp"     // for is_complex
+#include "../blas/operations.hpp"  // for blas::C
 
 namespace boost::multi::blas {
 
@@ -86,13 +86,13 @@ template<class ContextPtr, class X, class Y, class Ptr = dot_ptr<ContextPtr, typ
 struct dot_ref : private Ptr {
 	using decay_type = decltype(typename X::value_type{}*typename Y::value_type{});
 	dot_ref(ContextPtr ctxt, X const& x, Y const& y) : Ptr{ctxt, begin(x), size(x), begin(y)} {
-		assert(( size(x) == size(y) )); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+		assert(( size(x) == size(y) ));  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	}
-	constexpr auto operator&() const& -> Ptr const& {return *this;} // NOLINT(google-runtime-operator) : reference type
+	constexpr auto operator&() const& -> Ptr const& {return *this;}  // NOLINT(google-runtime-operator) : reference type
 	auto decay() const& -> decay_type {decay_type r; copy_n(operator&(), 1, &r); return r;}
-	operator decay_type()       const& {return decay();} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,hicpp-explicit-conversion) : to allow terse syntax
+	operator decay_type()       const& {return decay();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,hicpp-explicit-conversion) : to allow terse syntax
 #if not defined(__CUDACC__) or not defined(__INTEL_COMPILER)
-	friend auto operator*(decay_type const& lhs, dot_ref const& s) {return lhs*s.decay();}
+	friend auto operator*(decay_type const& lhs, dot_ref const& self) {return lhs*self.decay();}
 #endif
 	auto operator+() const -> decay_type {return decay();}
 	auto operator==(dot_ref const& other) const -> bool {return decay() == other.decay();}

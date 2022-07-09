@@ -107,12 +107,12 @@ auto herk(AA alpha, A2D const& a)//->std::decay_t<decltype(herk(alpha, a, Ret({s
 
 template<class T> struct numeric_limits : std::numeric_limits<T>{};
 template<class T> struct numeric_limits<std::complex<T>> : std::numeric_limits<std::complex<T>> {
-	static auto quiet_NaN() -> std::complex<T>{auto n=numeric_limits<T>::quiet_NaN(); return {n, n};}  // NOLINT(readability-identifier-naming) : conventional std name
+	static auto quiet_NaN() -> std::complex<T> {auto n = numeric_limits<T>::quiet_NaN(); return {n, n};}  // NOLINT(readability-identifier-naming) : conventional std name
 };
 
 template<class AA, class A2D, class Ret = typename A2D::decay_type>
-NODISCARD("because argument is read-only")
-auto herk(filling cs, AA alpha, A2D const& a)
+[[nodiscard("because argument is read-only")]]
+auto herk(filling cs, AA alpha, A2D const& a)  // NOLINT(readability-identifier-naming) : conventional BLAS name
 ->std::decay_t<
 decltype(  herk(cs, alpha, a, Ret({size(a), size(a)}, 0., get_allocator(a))))> {
 	return herk(cs, alpha, a, Ret({size(a), size(a)},
@@ -128,7 +128,7 @@ template<class A2D> auto herk(filling s, A2D const& a)
 	return herk(s, 1., a); }
 
 template<class A2D> auto herk(A2D const& array)
-//->decltype(herk(1., a)){
+//->decltype(herk(1., a)) {
 {	return herk(1., array);}
 
 }  // end namespace boost::multi::blas

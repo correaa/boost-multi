@@ -16,23 +16,26 @@ constexpr class adl_conj_t {
 	template<class... As>          auto _(priority<1>/**/,        As&&... args) const JUSTRETURN(              std::conj(std::forward<As>(args)...))
 	template<class... As>          auto _(priority<2>/**/,        As&&... args) const DECLRETURN(                   conj(std::forward<As>(args)...))
 	template<class T, class... As> auto _(priority<3>/**/, T&& t, As&&... args) const DECLRETURN(std::forward<T>(t).conj(std::forward<As>(args)...))
-public:
-	template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<3>{}, std::forward<As>(as)...))
+
+ public:
+	template<class... As> auto operator()(As&&... args) const DECLRETURN(_(priority<3>{}, std::forward<As>(args)...))
 } adl_conj;
 
 constexpr class adl_real_t {
 	template<class... As>          auto _(priority<1>/**/,        As&&... args) const DECLRETURN(              std::real(std::forward<As>(args)...))
 	template<class... As>          auto _(priority<2>/**/,        As&&... args) const DECLRETURN(                   real(std::forward<As>(args)...))
 	template<class T, class... As> auto _(priority<3>/**/, T&& t, As&&... args) const DECLRETURN(std::forward<T>(t).real(std::forward<As>(args)...))
-public:
-	template<class... As> auto operator()(As&&... as) const DECLRETURN(_(priority<3>{}, std::forward<As>(as)...))
+
+ public:
+	template<class... As> auto operator()(As&&... args) const DECLRETURN(_(priority<3>{}, std::forward<As>(args)...))
 } adl_real;
 
 constexpr class adl_imag_t{
 	template<class... As>          auto _(priority<1>/**/,        As&&... args) const DECLRETURN(              std::imag(std::forward<As>(args)...))
 	template<class... As>          auto _(priority<2>/**/,        As&&... args) const DECLRETURN(                   imag(std::forward<As>(args)...))
 	template<class T, class... As> auto _(priority<3>/**/, T&& t, As&&... args) const DECLRETURN(std::forward<T>(t).imag(std::forward<As>(args)...))
-public:
+
+ public:
 	template<class... As> auto operator()(As&&... args) const DECLRETURN(_(priority<3>{}, std::forward<As>(args)...))
 } adl_imag;
 

@@ -227,7 +227,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_context) {
 
 	blas::context ctxt;
 	{
-		multi::array<double, 1>       y(multi::extensions_t<1>{multi::iextension{size(a)}});
+		multi::array<double, 1>       y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) conventional name in BLAS
 		blas::gemv_n(ctxt, 1., begin(a), size(a), begin(x), 0., begin(y));
 		BOOST_REQUIRE_CLOSE( y[1] , 91.3 , 0.0001 );
 		BOOST_REQUIRE_CLOSE( y[2] , +blas::dot(a[2], x) , 0.0001 );
