@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001) ) {
 			auto out_cpy = multi::fftw::dft_forward(which, in);
 			BOOST_TEST(abs(out_cpy[5][4][3][1] - out[5][4][3][1]) == 0.);
 		}
-		 {
+		{
 			auto in_rw = in;
 			watch _{"cpu_move %ws wall, CPU (%p%)\n"};
 			auto out_cpy = multi::fftw::dft_forward(which, std::move(in_rw));
