@@ -15,7 +15,7 @@ CheckOptions:
   - { key: readability-identifier-naming.TemplateParameterCase    , value: CamelCase  }
   - { key: readability-identifier-length.MinimumVariableNameLength, value: 2          }
   - { key: readability-identifier-length.MinimumParameterNameLengt, value: 2          }
-  - { key: readability-identifier-length.IgnoredVariableNames     , value: 'A|B|C|D'  }
+  - { key: readability-identifier-length.IgnoredVariableNames     , value: 'A|B|C|D|_'  }
   - { key: readability-identifier-length.IgnoredParameterNames    , value: 'f|n|p|t|v'}
 
 # - { key: readability-identifier-naming.VariableCase,          value: aNy_CasE   } for tests

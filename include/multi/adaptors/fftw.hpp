@@ -740,8 +740,8 @@ class fft_iterator {
 
 	explicit fft_iterator(iterator_type base, std::array<fftw::sign, MDIterator::rank_v> which) noexcept : base_{std::move(base)}, which_{which} {}
 
-	friend auto operator-(fft_iterator const& a, fft_iterator const& b) -> difference_type {
-		return a.base_ - b.base_;
+	friend auto operator-(fft_iterator const& self, fft_iterator const& other) -> difference_type {
+		return self.base_ - other.base_;
 	}
 
 	template<class ItOut>

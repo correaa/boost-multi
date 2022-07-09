@@ -25,25 +25,25 @@ auto axpy_n(Context&& ctxt, typename It1::value_type alpha, It1 first, Size n, O
 	return std::forward<Context>(ctxt).axpy(n, &alpha, base(first) , stride(first) , base(d_first) , stride(d_first)) , d_first + n; }
 
 template<class X1D, class Y1D, typename = decltype( std::declval<Y1D&&>()[0] = 0. )>
-auto axpy(typename X1D::element alpha, X1D const& x, Y1D&& y)
+auto axpy(typename X1D::element alpha, X1D const& x, Y1D&& y)  // NOLINT(readability-identifier-length) conventional BLAS names
 ->decltype(axpy_n(alpha, x.begin(), x.size(), y.begin()), std::forward<Y1D>(y)) {
 	assert(size(x)==size(y)); // intel doesn't like ADL in deduced/sfinaed return types // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : bug in clang-tidy https://reviews.llvm.org/D31130
 	return axpy_n(alpha, begin(x), size(x), begin(y)), std::forward<Y1D>(y);
 }
 
 template<class Context, class X1D, class Y1D, typename = decltype( std::declval<Y1D&&>()[0] = 0. )>
-auto axpy(Context&& ctxt, typename X1D::element alpha, X1D const& x, Y1D&& y)
+auto axpy(Context&& ctxt, typename X1D::element alpha, X1D const& x, Y1D&& y)  // NOLINT(readability-identifier-length) conventional BLAS names
 ->decltype(axpy_n(std::forward<Context>(ctxt), alpha, x.begin( ), x.size( ), y.begin( )), std::forward<Y1D>(y)) {
 	assert(size(x)==size(y)); // intel doesn't like ADL in deduced/sfinaed return types // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : bug in clang-tidy https://reviews.llvm.org/D31130
 	return axpy_n(std::forward<Context>(ctxt), alpha,   begin(x),   size(x),   begin(y)), std::forward<Y1D>(y); }
 
 template<class X1D, class Y1D>
-auto axpy(X1D const& x, Y1D&& y) -> Y1D&& {
+auto axpy(X1D const& x, Y1D&& y) -> Y1D&& {  // NOLINT(readability-identifier-length) conventional BLAS names
 	return axpy(+1., x, std::forward<Y1D>(y));
 }
 
 template<class Context, class X1D, class Y1D, std::enable_if_t<is_context<Context>{}> >
-auto axpy(Context&& ctxt, X1D const& x, Y1D&& y) -> Y1D&& {
+auto axpy(Context&& ctxt, X1D const& x, Y1D&& y) -> Y1D&& {  // NOLINT(readability-identifier-length) conventional BLAS names
 	return axpy(std::forward<Context>(ctxt), +1., x, std::forward<Y1D>(y));
 }
 
@@ -76,26 +76,28 @@ class axpy_range {
 		blas::axpy_n(std::forward<Context>(self.ctxt_), -self.alpha_, self.x_begin_, self.count_, other.begin());
 		return std::forward<Other>(other);
 	}
-	auto operator*=(Scale s)& -> axpy_range&{alpha_ *= s; return *this;}
+	auto operator*=(Scale s) & -> axpy_range& {alpha_ *= s; return *this;}  // NOLINT(readability-identifier-length) conventional BLAS naming
 };
 
-template<class Context, class Scale, class X, class=std::enable_if_t<is_context<Context>{}>>
-auto axpy(Context&& ctxt, Scale a, X const& x) -> axpy_range<Context, Scale, typename X::const_iterator>{
-	return {std::forward<Context>(ctxt), a, begin(x), end(x)};}
+template<class Context, class Scale, class X1D, class=std::enable_if_t<is_context<Context>{}>>
+auto axpy(Context&& ctxt, Scale a, X1D const& x) -> axpy_range<Context, Scale, typename X1D::const_iterator> {  // NOLINT(readability-identifier-length) conventional BLAS naming
+	return {std::forward<Context>(ctxt), a, begin(x), end(x)};
+}
 
-template<class Scale, class X>
-auto axpy(Scale a, X const& x)
--> axpy_range<blas::context const&, Scale, typename X::const_iterator>{
-	return {blas::context{}, a, begin(x), end(x)};
+template<class Scale, class X1D>
+auto axpy(Scale a, X1D const& x)
+-> axpy_range<blas::context const&, Scale, typename X1D::const_iterator> {
+	blas::context ctxt{};
+	return {ctxt, a, begin(x), end(x)};  // TODO(correaa) fix temporary
 }
 
 namespace operators {
 
-template<class X1D, class Y1D> auto operator+=(X1D&& x, Y1D const& other) DECLRETURN(axpy(+1., other, std::forward<X1D>(x)))
-template<class X1D, class Y1D> auto operator-=(X1D&& x, Y1D const& other) DECLRETURN(axpy(-1., other, std::forward<X1D>(x)))
+template<class X1D, class Y1D> auto operator+=(X1D&& x, Y1D const& other) DECLRETURN(axpy(+1., other, std::forward<X1D>(x)))  // NOLINT(readability-identifier-length) conventional name in BLAS
+template<class X1D, class Y1D> auto operator-=(X1D&& x, Y1D const& other) DECLRETURN(axpy(-1., other, std::forward<X1D>(x)))  // NOLINT(readability-identifier-length) conventional name in BLAS
 
-template<class X1D, class Y1D> auto operator+(X1D const& x, Y1D const& y)->std::decay_t<decltype(x.decay())> {auto X = x.decay(); X+=y; return X;}
-template<class X1D, class Y1D> auto operator-(X1D const& x, Y1D const& y)->std::decay_t<decltype(x.decay())> {auto X = x.decay(); X-=y; return X;}
+template<class X1D, class Y1D> auto operator+(X1D const& x, Y1D const& y) -> std::decay_t<decltype(x.decay())> {auto X = x.decay(); X += y; return X;}  // NOLINT(readability-identifier-length) conventional name in BLAS
+template<class X1D, class Y1D> auto operator-(X1D const& x, Y1D const& y) -> std::decay_t<decltype(x.decay())> {auto X = x.decay(); X -= y; return X;}  // NOLINT(readability-identifier-length) conventional name in BLAS
 
 } // end namespace operators
 

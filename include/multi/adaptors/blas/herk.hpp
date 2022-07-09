@@ -114,7 +114,7 @@ template<class AA, class A2D, class Ret = typename A2D::decay_type>
 NODISCARD("because argument is read-only")
 auto herk(filling cs, AA alpha, A2D const& a)
 ->std::decay_t<
-decltype(herk(cs, alpha, a, Ret({size(a), size(a)}, 0., get_allocator(a))))> {
+decltype(  herk(cs, alpha, a, Ret({size(a), size(a)}, 0., get_allocator(a))))> {
 	return herk(cs, alpha, a, Ret({size(a), size(a)},
 #ifdef NDEBUG
 		numeric_limits<typename Ret::element_type>::quiet_NaN(),
@@ -127,9 +127,9 @@ template<class A2D> auto herk(filling s, A2D const& a)
 ->decltype(herk(s, 1., a)) {
 	return herk(s, 1., a); }
 
-template<class A2D> auto herk(A2D const& a)
+template<class A2D> auto herk(A2D const& array)
 //->decltype(herk(1., a)){
-{	return herk(1., a);}
+{	return herk(1., array);}
 
 }  // end namespace boost::multi::blas
 #endif

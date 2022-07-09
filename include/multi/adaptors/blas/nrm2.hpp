@@ -1,11 +1,8 @@
-#ifndef MULTI_ADAPTORS_BLAS_NRM2_HPP // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-#define MULTI_ADAPTORS_BLAS_NRM2_HPP
-// © Alfredo A. Correa 2019-2021
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2019-2022 Alfredo A. Correa
 
-#ifdef __CUDA_ARCH__
-//#define BOOST_NO_RTTI 1
-//#define BOOST_TYPE_INDEX_CTTI_USER_DEFINED_PARSING (39, 1, true, "T = ")
-#endif
+#ifndef MULTI_ADAPTORS_BLAS_NRM2_HPP
+#define MULTI_ADAPTORS_BLAS_NRM2_HPP
 
 #include "../blas/core.hpp"
 
@@ -18,12 +15,12 @@ namespace boost::multi::blas {
 using core::nrm2;
 
 using multi::base; 
-using std::norm; // nvcc11 needs using std::FUNCTION and the FUNCTION (and it works in clang, gcc, culang, icc)
+using std::norm;  // nvcc11 needs using std::FUNCTION and the FUNCTION (and it works in clang, gcc, culang, icc)
 
 template<class A1D, class A0D>
-auto nrm2(A1D const& x, A0D&& r)
-->decltype(nrm2(x.size(), x.base(), x.stride(), base(r)), std::forward<A0D>(r)) {
-	return nrm2(x.size(), x.base(), x.stride(), base(r)), std::forward<A0D>(r); }
+auto nrm2(A1D const& x, A0D&& res)  // NOLINT(readability-identifier-length) conventional BLAS naming
+->decltype(nrm2(x.size(), x.base(), x.stride(), base(res)), std::forward<A0D>(res)) {
+	return nrm2(x.size(), x.base(), x.stride(), base(res)), std::forward<A0D>(res); }
 
 #if 0
 template<class A1D>
@@ -38,29 +35,29 @@ auto nrm2(A1D const& x, float& r)
 #endif
 
 template<
-	class A1D, typename T = double, //decltype(norm(std::declval<typename A1D::value_type>())), 
+	class A1D, typename T = double, //  decltype(norm(std::declval<typename A1D::value_type>())), 
 	class Alloc = typename std::allocator_traits<typename A1D::default_allocator_type>::template rebind_alloc<T>
 >
 NODISCARD("")
-auto nrm2(A1D const& x)
-//->std::decay_t<decltype(nrm2(x, multi::static_array<T, 0, Alloc>({}, x.get_allocator()) ))>{
-->std::decay_t<decltype(nrm2(x, multi::static_array<T, 0, Alloc>({})))> { // x.get_allocator() in decltype doesn't work for icc
-	return nrm2(x, multi::static_array<T, 0, Alloc>({}, x.get_allocator()));}
+auto nrm2(A1D const& array)
+//->std::decay_t<decltype(nrm2(array, multi::static_array<T, 0, Alloc>({}, x.get_allocator()) ))>{
+->std::decay_t<decltype(nrm2(array, multi::static_array<T, 0, Alloc>({})))> { // array.get_allocator() in decltype doesn't work for icc
+	return nrm2(array, multi::static_array<T, 0, Alloc>({}, array.get_allocator()));}
 
 template<class Alloc, class A1D, typename T = decltype(norm(std::declval<typename A1D::value_type>())), 
 	class AllocR = typename std::allocator_traits<typename A1D::default_allocator_type>::template rebind_alloc<T>
 >
 NODISCARD("")
-auto nrm2(A1D const& x, AllocR const& alloc)
-->std::decay_t<decltype(blas::nrm2(x, multi::static_array<T, 0, AllocR>({}, alloc)))> {
-	return              blas::nrm2(x, multi::static_array<T, 0, AllocR>({}, alloc)) ; }
+auto nrm2(A1D const& array, AllocR const& alloc)
+->std::decay_t<decltype(blas::nrm2(array, multi::static_array<T, 0, AllocR>({}, alloc)))> {
+	return              blas::nrm2(array, multi::static_array<T, 0, AllocR>({}, alloc)) ; }
 
 namespace operators {
 	using std::norm;
 	template<class A1D, class Real = decltype(norm(std::declval<typename A1D::value_type>()))>//decltype(norm(std::declval<typename A1D::value_type>()))> 
-	NODISCARD("") auto operator^(A1D const& a, int n)
-	->decltype(std::pow(Real{blas::nrm2(a)}, n)) {
-		return std::pow(Real{blas::nrm2(a)}, n); }
+	NODISCARD("") auto operator^(A1D const& array, int n)
+	->decltype(std::pow(Real{blas::nrm2(array)}, n)) {
+		return std::pow(Real{blas::nrm2(array)}, n); }
 } // end namespace operators
 
 } // end namespace boost::multi::blas

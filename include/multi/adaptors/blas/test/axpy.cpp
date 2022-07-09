@@ -36,12 +36,12 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_double) {
 		{9., 10., 11., 12.}
 	};
 	multi::array<double, 2> A = cA;
-	multi::array<double, 1> const b = cA[2];
+	multi::array<double, 1> const b = cA[2];  // NOLINT(readability-identifier-length) conventional name in BLAS
 
 	blas::axpy(2., b, A[1]); // A[1] = 2*b + A[1], A[1]+= a*A[1]
 	BOOST_REQUIRE( A[1][2] == 2.*b[2] + cA[1][2] );
 
-	using complex = std::complex<double>; complex const I = {0, 1};
+	using complex = std::complex<double>; complex const I = {0, 1};  // NOLINT(readability-identifier-length) imaginary unit
 	multi::array<complex, 1> AC = {1. + 2.*I, 3. + 4.*I, 4. - 8.*I};
 	multi::array<complex, 1> BC(extensions(AC), complex{0.});
 
@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex_as_operator_plus_equal) {
 	};
 	auto const AC = A;
 	multi::array<complex, 1> const B = A[2];
-	A[1] += blas::axpy(2., B); // zaxpy (2. is promoted to 2+I*0 internally and automatically)
+	A[1] += blas::axpy(2., B);  // zaxpy (2. is promoted to 2+I*0 internally and automatically)
 	BOOST_REQUIRE( A[1][2] == 2.*B[2] + AC[1][2] );
 }
 
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex_as_operator_minus_equal) {
 	};
 	auto const AC = A;
 	multi::array<complex, 1> const B = A[2];
-	A[1] -= blas::axpy(2., B); // zaxpy (2. is promoted to 2+I*0 internally and automatically)
+	A[1] -= blas::axpy(2., B);  // zaxpy (2. is promoted to 2+I*0 internally and automatically)
 	BOOST_REQUIRE( A[1][2] == -2.*B[2] + AC[1][2] );
 }
 
@@ -105,16 +105,16 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex_context) {
 
 BOOST_AUTO_TEST_CASE(multi_blas_axpy_operator_minus) {
 	using complex = std::complex<double>;
-	multi::array<complex, 1> x = {10., 11., 12., 13.};
-	multi::array<complex, 1> y = x;
+	multi::array<complex, 1> x = {10., 11., 12., 13.};  // NOLINT(readability-identifier-length) : conventional one-letter operation BLAS
+	multi::array<complex, 1> y = x;  // NOLINT(readability-identifier-length) : conventional one-letter operation BLASs
 
 	using blas::operators::operator-;
-	using blas::operators::operator+;
-	using blas::operators::operator-=;
 
 	BOOST_REQUIRE( (x - y)[0] == 0. );
 	BOOST_REQUIRE( (y - x)[0] == 0. );
 
+	using blas::operators::operator+;
+	
 	BOOST_REQUIRE( (x - (y+y))[0] == -x[0] );
 	BOOST_REQUIRE( ((x+x) - y)[0] == +x[0] );
 
@@ -123,8 +123,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_operator_minus) {
 	BOOST_REQUIRE( (A[0] - B)[0] == 0. );
 	BOOST_REQUIRE( (A[0] - B)[1] == 0. );
 
-	multi::array<complex, 1> X = {10., 11., 12., 13.};
-	multi::array<complex, 1> Y = {10., 11., 12., 13.};
+	multi::array<complex, 1> X = {10., 11., 12., 13.};  // NOLINT(readability-identifier-length) : conventional one-letter operation BLAS
+	multi::array<complex, 1> Y = {10., 11., 12., 13.};  // NOLINT(readability-identifier-length) : conventional one-letter operation BLAS
+
+	using blas::operators::operator-=;
 	X -= Y;
 	BOOST_REQUIRE( X[0] == 0. );
 }
