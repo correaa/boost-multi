@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001) ) {
 		return ret;
 	}();
 
-	std::vector<std::array<bool, 4>> cases = {
+	std::vector<std::array<bool, 4>> which_cases = {
 		{false, true , true , true },
 		{false, true , true , false},
 		{true , false, false, false},
@@ -62,47 +62,47 @@ BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001) ) {
 	};
 
 	using std::cout;
-	for(auto case : cases) {
+	for(auto which : which_cases) {
 		cout<<"case ";
-		copy(begin(case), end(case), std::ostream_iterator<bool>{cout, ", "});
+		copy(begin(which), end(which), std::ostream_iterator<bool>{cout, ", "});
 		cout<<"\n";
 
 		multi::array<complex, 4> out = in;
 		{
 			watch _{"cpu_oplac %ws wall, CPU (%p%)\n"};
-			multi::fftw::dft_forward(case, in, out);
+			multi::fftw::dft_forward(which, in, out);
 		}
 		{
-			multi::fftw::plan p{case, in, out, multi::fftw::forward};
+			multi::fftw::plan pln{which, in, out, multi::fftw::forward};
 			watch _{"cpu_oplac planned %ws wall, CPU (%p%)\n"};
-			p();
+			pln();
 		}
 		{
 			auto in_rw = in;
 			watch _{"cpu_iplac %ws wall, CPU (%p%)\n"};
-			multi::fftw::dft_forward(case, in_rw);
+			multi::fftw::dft_forward(which, in_rw);
 		}
 		{
 			auto in_rw = in;
-			multi::fftw::plan pln{case, in_rw, in_rw, multi::fftw::forward};
+			multi::fftw::plan pln{which, in_rw, in_rw, multi::fftw::forward};
 			watch _{"cpu_iplac planned %ws wall, CPU (%p%)\n"};
 			pln();
 		}
 		{
 			auto in_rw = in;
-			multi::fftw::plan pln{case, in_rw, in_rw, multi::fftw::forward};
+			multi::fftw::plan pln{which, in_rw, in_rw, multi::fftw::forward};
 			watch _{"cpu_iplac planned measured %ws wall, CPU (%p%)\n"};
 			pln();
 		}
 		{
 			watch _{"cpu_alloc %ws wall, CPU (%p%)\n"};
-			auto out_cpy = multi::fftw::dft_forward(case, in);
+			auto out_cpy = multi::fftw::dft_forward(which, in);
 			BOOST_TEST(abs(out_cpy[5][4][3][1] - out[5][4][3][1]) == 0.);
 		}
 		 {
 			auto in_rw = in;
 			watch _{"cpu_move %ws wall, CPU (%p%)\n"};
-			auto out_cpy = multi::fftw::dft_forward(case, std::move(in_rw));
+			auto out_cpy = multi::fftw::dft_forward(which, std::move(in_rw));
 			BOOST_TEST(abs(out_cpy[5][4][3][1] - out[5][4][3][1]) == 0.);
 		}
 	}

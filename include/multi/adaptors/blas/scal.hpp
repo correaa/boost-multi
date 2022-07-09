@@ -26,16 +26,17 @@ auto scal(A const& a, X1D&& x)
 template<class A>
 class scal_range {
 	A alpha_;
-public:
+
+ public:
 	using scalar_type = A;
 	explicit scal_range(A const& alpha) : alpha_{alpha} {}
 	template<class X1D>
-	friend auto operator*=(X1D&& x, scal_range const& self)
+	friend auto operator*=(X1D&& x, scal_range const& self)  // NOLINT(readability-identifier-length) conventional BLAS naming
 	->decltype(std::forward<X1D>(scal(std::declval<scalar_type const&>(), x))) {
 		return std::forward<X1D>(scal(self.alpha_, x));}
 };
 
-template<class A> auto scal(A const& a) {return scal_range<A>{a};}
+template<class A> auto scal(A const& array) {return scal_range<A>{array};}
 
 } // end namespace boost::multi::blas
 

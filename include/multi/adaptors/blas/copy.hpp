@@ -1,6 +1,8 @@
-#ifndef MULTI_ADAPTORS_BLAS_COPY_HPP // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+ // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2020-2022 Alfredo A. Correa
+
+#ifndef MULTI_ADAPTORS_BLAS_COPY_HPP
 #define MULTI_ADAPTORS_BLAS_COPY_HPP
-// © Alfredo A. Correa 2020-2021
 
 #include "../blas/core.hpp"
 #include "../blas/operations.hpp"
@@ -9,40 +11,40 @@
 
 #include<type_traits>
 
-namespace boost::multi::blas{
+namespace boost::multi::blas {
 
 using core::copy;
 
 template<class It, typename Size, class OutIt>
 auto copy_n(It first, Size n, OutIt d_first)
-->decltype(copy(n, first.base(), first.stride(), d_first.base(), d_first.stride()), d_first + n){
-	return copy(n, first.base(), first.stride(), d_first.base(), d_first.stride()), d_first + n;}
+->decltype(copy(n, first.base(), first.stride(), d_first.base(), d_first.stride()), d_first + n) {
+	return copy(n, first.base(), first.stride(), d_first.base(), d_first.stride()), d_first + n; }
 
-template<class Context, class It, typename Size, class OutIt, class=std::enable_if_t<blas::is_context<Context>{}> >
+template<class Context, class It, typename Size, class OutIt, class=std::enable_if_t<blas::is_context<Context>{}>>
 auto copy_n(Context&& ctxt, It first, Size n, OutIt d_first)
-->decltype(copy(std::forward<Context>(ctxt), n, first.base(), first.stride(), d_first.base(), d_first.stride()), d_first + n){
-	return copy(std::forward<Context>(ctxt), n, first.base(), first.stride(), d_first.base(), d_first.stride()), d_first + n;}
+->decltype(copy(std::forward<Context>(ctxt), n, first.base(), first.stride(), d_first.base(), d_first.stride()), d_first + n) {
+	return copy(std::forward<Context>(ctxt), n, first.base(), first.stride(), d_first.base(), d_first.stride()), d_first + n; }
 
 template<class It, class OutIt>
 auto copy(It first, It last, OutIt d_first)
-->decltype(copy_n(first, last - first, d_first)){
-	return copy_n(first, last - first, d_first);}
+->decltype(copy_n(first, last - first, d_first)) {
+	return copy_n(first, last - first, d_first); }
 
 template<class Context, class It, class OutIt, class=std::enable_if_t<blas::is_context<Context>{}>>
 auto copy(Context&& ctxt, It first, It last, OutIt d_first)
-->decltype(copy_n(std::forward<Context>(ctxt), first, last - first, d_first)){
-	return copy_n(std::forward<Context>(ctxt), first, last - first, d_first);}
+->decltype(copy_n(std::forward<Context>(ctxt), first, last - first, d_first)) {
+	return copy_n(std::forward<Context>(ctxt), first, last - first, d_first); }
 
 template<class X1D, class Y1D>
 auto copy(X1D const& x, Y1D&& y)
-->decltype(blas::copy_n(x.begin(), x.size(), y.begin()), std::forward<Y1D>(y)){
-	assert( (x.size() == y.size()) ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : assert
-	return blas::copy_n(x.begin(), x.size(), y.begin()), std::forward<Y1D>(y);}
+->decltype(blas::copy_n(x.begin(), x.size(), y.begin()), std::forward<Y1D>(y)) {
+	assert( (x.size() == y.size()) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : assert
+	return blas::copy_n(x.begin(), x.size(), y.begin()), std::forward<Y1D>(y); }
 
 template<class Context, class X1D, class Y1D>
-auto copy(Context&& ctxt, X1D const& x, Y1D&& y)
-->decltype(blas::copy_n(std::forward<Context>(ctxt), x.begin(), x.size(), y.begin()), std::forward<Y1D>(y)){
-	assert(x.size()==y.size()); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr assert
+auto copy(Context&& ctxt, X1D const& x, Y1D&& y)  // NOLINT(readability-identifier-length) conventional BLAS naming
+->decltype(blas::copy_n(std::forward<Context>(ctxt), x.begin(), x.size(), y.begin()), std::forward<Y1D>(y)) {
+	assert(x.size()==y.size());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr assert
 	return blas::copy_n(std::forward<Context>(ctxt), x.begin(), x.size(), y.begin()), std::forward<Y1D>(y);
 }
 

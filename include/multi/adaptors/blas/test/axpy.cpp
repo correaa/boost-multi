@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex_as_operator_plus_equal) {
 	};
 	auto const AC = A;
 	multi::array<complex, 1> const B = A[2];
-	A[1] += blas::axpy(2., B); // zaxpy (2. is promoted to 2+I*0 internally and automatically)
+	A[1] += blas::axpy(2., B);  // zaxpy (2. is promoted to 2+I*0 internally and automatically)
 	BOOST_REQUIRE( A[1][2] == 2.*B[2] + AC[1][2] );
 }
 
@@ -86,7 +86,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex_as_operator_minus_equal) {
 	};
 	auto const AC = A;
 	multi::array<complex, 1> const B = A[2];
-	A[1] -= blas::axpy(2., B); // zaxpy (2. is promoted to 2+I*0 internally and automatically)
+	A[1] -= blas::axpy(2., B);  // zaxpy (2. is promoted to 2+I*0 internally and automatically)
 	BOOST_REQUIRE( A[1][2] == -2.*B[2] + AC[1][2] );
 }
 

@@ -76,7 +76,7 @@ class axpy_range {
 		blas::axpy_n(std::forward<Context>(self.ctxt_), -self.alpha_, self.x_begin_, self.count_, other.begin());
 		return std::forward<Other>(other);
 	}
-	auto operator*=(Scale s)& -> axpy_range&{alpha_ *= s; return *this;}
+	auto operator*=(Scale s) & -> axpy_range& {alpha_ *= s; return *this;}  // NOLINT(readability-identifier-length) conventional BLAS naming
 };
 
 template<class Context, class Scale, class X1D, class=std::enable_if_t<is_context<Context>{}>>

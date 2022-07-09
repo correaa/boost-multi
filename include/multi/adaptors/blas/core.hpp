@@ -226,7 +226,7 @@ namespace boost::multi::blas {
 
 //using namespace types;
 
-#define BC(x) [](auto xx){assert(xx>=std::numeric_limits<INT>::min() and xx<std::numeric_limits<INT>::max()); return xx;}(x)  /*NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/
+#define BC(x) [](auto n) {assert(xx>=std::numeric_limits<INT>::min() and n<std::numeric_limits<INT>::max()); return n;}(x)  /*NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/
 
 //#define xrotg(T1, T2)                       v   rotg (T1 const& a, T1 const& b, T2& cc, T1& ss                                       ){     BLAS(T1##rotg )(const_cast<T1*>(&a), const_cast<T1*>(&b), &cc, &ss);  }
 //#define xrotmg(T)                           v   rotmg(T& d1, T& d2, T& A, T const& B, T(&p)[5]                                       ){     BLAS( T##rotmg)(&d1, &d2, &A, B, p);                                  }
@@ -283,26 +283,11 @@ template<class ALPHA, class SXP, class SX = typename pointer_traits<SXP>::elemen
 	is_##T<ALPHA>{} and is_##T<SX>{} and is_##T<SY>{} and is_assignable<SY&, decltype(ALPHA{}*SX{})>{} \
 	and is_convertible_v<SXP, SX*> and is_convertible_v<SYP, SY*> \
 , int> =0> \
-void axpy(size_t n, ALPHA const* a, SXP x, size_t incx, SYP y, size_t incy) {BLAS(T##axpy)(n, (T const *)a, (T const*)static_cast<SX*>(x), incx, (T*)static_cast<SY*>(y), incy);}
+void axpy(size_t n, ALPHA const* a, SXP x, size_t incx, SYP y, size_t incy) {BLAS(T##axpy)(n, (T const *)a, (T const*)static_cast<SX*>(x), incx, (T*)static_cast<SY*>(y), incy);}  /*NOLINT(readability-identifier-length) NOLINT(readability-identifier-length) conventional BLAS name*/
 
 xaxpy(s)       xaxpy(d)       xaxpy(c)       xaxpy(z)
 #undef  xaxpy
-//template<class A, class SX, class SY, enable_if_t<is_s<SX>{} and is_s<SY>{} and is_assignable<SY&, decltype(A{}*SX{})>{}, int> =0> void axpy(size_t n, A a, SX* x, size_t incx, SY* y, size_t incy){BLAS(saxpy)(n, a, (s const*)(x), incx, (s*)(y), incy);}
-//template<class A, class DX, class DY, enable_if_t<is_d<DX>{} and is_d<DY>{} and is_assignable<DY&, decltype(A{}*DX{})>{}, int> =0> void axpy(size_t n, A a, DX* x, size_t incx, DY* y, size_t incy){BLAS(daxpy)(n, a, (d const*)(x), incx, (d*)(y), incy);}
-//template<class A, class CX, class CY, enable_if_t<is_c<CX>{} and is_c<CY>{} and is_assignable<CY&, decltype(A{}*CX{})>{}, int> =0> void axpy(size_t n, A a, CX* x, size_t incx, CY* y, size_t incy){BLAS(caxpy)(n, a, (c const*)(x), incx, (c*)(y), incy);}
-//template<class A, class ZX, class ZY, enable_if_t<is_z<ZX>{} and is_z<ZY>{} and is_assignable<ZY&, decltype(A{}*ZX{})>{}, int> =0> void axpy(size_t n, A a, ZX* x, size_t incx, ZY* y, size_t incy){BLAS(zaxpy)(n, a, (z const*)(x), incx, (z*)(y), incy);}
-
 }  // end namespace core
-
-//template<class R, class S, class T> R dot(S n, T const* x, S incx, T const* y, S incy){
-//	R ret;
-//	dot(n, x, incx, y, incy, &ret);
-//	return ret;
-//}
-
-//template<class S, class T> T dot(S n, T const* x, S incx, T const* y, S incy){
-//	return dot<T, S, T>(n, x, incx, y, incy);
-//}
 
 #undef xrotg
 #undef xrot
@@ -516,7 +501,7 @@ v trsm(char side, char ul, char transA, char diag, ssize_t m, ssize_t n, ALPHA a
 	assert( transA == 'N' or transA == 'T' or transA == 'C' );  /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                             \
 	assert( diag   == 'U' or diag   == 'N' );                   /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                             \
 	MULTI_ASSERT1( m >= 0 and n >= 0 );                                                                                                                                                                           \
-	using std::max;                                                                                                                                                                                               \
+	using std::max;                                                                                                                                                                                           \
 	if(side == 'L') {MULTI_ASSERT1( lda >= max(ssize_t{1}, m) );}   /* NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/                                                         \
 	if(side == 'R') {MULTI_ASSERT1( lda >= max(ssize_t{1}, n) );}                                                                                                                                                 \
 	MULTI_ASSERT1( ldb >= max(ssize_t{1}, m) );                                                                                                                                                                   \
@@ -540,59 +525,60 @@ xsyrk(s) xsyrk(d) xsyrk(c) xsyrk(z)
 
 struct context { // stateless (and thread safe)
 	template<class... As>
-	static auto axpy(As... as)
-	->decltype(core::axpy(as...)) {
-		return core::axpy(as...); }
+	static auto axpy(As... args)
+	->decltype(core::axpy(args...)) {
+		return core::axpy(args...); }
 
 	template<class... As>
-	static auto gemv(As... as)
-	->decltype(core::gemv(as...)) {
-		return core::gemv(as...); }
+	static auto gemv(As... args)
+	->decltype(core::gemv(args...)) {
+		return core::gemv(args...); }
 
 	template<class... As>
-	static auto gemm(As&&... as)
-	->decltype(core::gemm(std::forward<As>(as)...)) {
-		return core::gemm(std::forward<As>(as)...); }
+	static auto gemm(As&&... args)
+	->decltype(core::gemm(std::forward<As>(args)...)) {
+		return core::gemm(std::forward<As>(args)...); }
 
 	template<class... As>
-	static auto dot(As&&... as)
-	->decltype(core::dot(std::forward<As>(as)...)) {
-		return core::dot(std::forward<As>(as)...); }
+	static auto dot(As&&... args)
+	->decltype(core::dot(std::forward<As>(args)...)) {
+		return core::dot(std::forward<As>(args)...); }
 
 	template<class... As>
-	static auto dotc(As&&... as)
-	->decltype(core::dotc(std::forward<As>(as)...)) {
-		return core::dotc(std::forward<As>(as)...); }
+	static auto dotc(As&&... args)
+	->decltype(core::dotc(std::forward<As>(args)...)) {
+		return core::dotc(std::forward<As>(args)...); }
 
 	template<class... As>
-	static auto dotu(As&&... as)
-	->decltype(core::dotu(std::forward<As>(as)...)) {
-		return core::dotu(std::forward<As>(as)...); }
+	static auto dotu(As&&... args)
+	->decltype(core::dotu(std::forward<As>(args)...)) {
+		return core::dotu(std::forward<As>(args)...); }
 
 	template<class... As>
-	static auto trsm(As&&... as)
-	->decltype(core::trsm(std::forward<As>(as)...)) {
-		return core::trsm(std::forward<As>(as)...); }
+	static auto trsm(As&&... args)
+	->decltype(core::trsm(std::forward<As>(args)...)) {
+		return core::trsm(std::forward<As>(args)...); }
 
 	template<class... As>
-	static auto herk(As&&... as)
-	->decltype(core::herk(std::forward<As>(as)...)) {
-		return core::herk(std::forward<As>(as)...); }
+	static auto herk(As&&... args)
+	->decltype(core::herk(std::forward<As>(args)...)) {
+		return core::herk(std::forward<As>(args)...); }
 };
 
-template<class Context> struct is_context : std::false_type {};
-template<> struct is_context<context> : std::true_type {};
-template<> struct is_context<context&&> : std::true_type {};
-template<> struct is_context<context&> : std::true_type {};
-template<> struct is_context<context const&> : std::true_type {};
+template<class Context> struct is_context    : std::false_type {};
+
+template<> struct is_context<context>        : std::true_type  {};
+template<> struct is_context<context&&>      : std::true_type  {};
+template<> struct is_context<context&>       : std::true_type  {};
+template<> struct is_context<context const&> : std::true_type  {};
 
 template<> struct is_context<void*&> : std::true_type {};
 
 namespace core {
 template<class Context, class... As>
-auto copy(Context&& /*unused*/, As... as)
-->decltype(core::copy(as...)) {
-	return core::copy(as...); }
+auto copy(Context&& /*unused*/, As... args)
+->decltype(core::copy(args...)) {
+	return core::copy(args...); }
 }  // end namespace core
 
 template<class TPtr, std::enable_if_t<std::is_convertible<TPtr, typename std::pointer_traits<TPtr>::element_type*>{}, int> =0>

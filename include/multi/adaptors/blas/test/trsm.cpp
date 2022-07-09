@@ -357,16 +357,17 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare) {
 
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitized_gemm_check_no_const) {
 	namespace blas = multi::blas;
-	using complex = std::complex<double>; complex const I{0, 1};
+	using complex = std::complex<double>; complex const I{0, 1};  // NOLINT(readability-identifier-length)
 	multi::array<complex, 2> const A = {
-		{ 1. + 4.*I,  3.,  4.- 10.*I},
-		{ 0.,  7.- 3.*I,  1.},
-		{ 0.,  0.,  8.- 2.*I}
+		{ 1. + 4.*I,  3.      ,  4.- 10.*I},
+		{ 0.       ,  7.- 3.*I,  1.       },
+		{ 0.       ,  0.      ,  8.-  2.*I}
 	};
 	multi::array<complex, 2> B = {
 		{1. + 1.*I, 2. + 1.*I, 3. + 1.*I},
 		{5. + 3.*I, 9. + 3.*I, 1. - 1.*I}
 	};
+
 	using multi::blas::trsm;
 	using multi::blas::filling;
 	using multi::blas::hermitized;

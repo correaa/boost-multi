@@ -21,9 +21,9 @@ using multi::base;
 using std::norm; // nvcc11 needs using std::FUNCTION and the FUNCTION (and it works in clang, gcc, culang, icc)
 
 template<class A1D, class A0D>
-auto nrm2(A1D const& x, A0D&& r)
-->decltype(nrm2(x.size(), x.base(), x.stride(), base(r)), std::forward<A0D>(r)) {
-	return nrm2(x.size(), x.base(), x.stride(), base(r)), std::forward<A0D>(r); }
+auto nrm2(A1D const& x, A0D&& res)
+->decltype(nrm2(x.size(), x.base(), x.stride(), base(res)), std::forward<A0D>(res)) {
+	return nrm2(x.size(), x.base(), x.stride(), base(res)), std::forward<A0D>(res); }
 
 #if 0
 template<class A1D>
