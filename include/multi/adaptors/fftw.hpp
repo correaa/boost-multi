@@ -603,7 +603,7 @@ auto dft(std::array<bool, +D> which, In const& i, sign s)
 	return fftw::dft(which, i, R(extensions(i), get_allocator(i)), s);}
 
 template<typename In, multi::dimensionality_type D = std::decay_t<In>::rank_v,
-	std::enable_if_t<std::is_assignable_v<decltype(*std::declval<In     &&>().base()), typename std::decay_t<In>::element>, int> =0
+	std::enable_if_t<std::is_assignable_v<decltype(*std::declval<In&&>().base()), typename std::decay_t<In>::element>, int> =0
 >
 auto dft(std::array<bool, +D> which, In&& i, sign s)
 ->decltype(dft(which, i, i, s), std::forward<In>(i)) {
@@ -613,21 +613,21 @@ template<typename In, std::size_t D = In::rank_v, class R=typename In::decay_typ
 void dft(std::array<bool, +D> which, In const& i) = delete;
 
 template<dimensionality_type Rank /*not deduced*/, typename In, class R=typename In::decay_type>
-NODISCARD("when second argument is const")
+[[nodiscard]]  // ("when second argument is const")
 auto dft(In const& i, sign s) -> R {
 	static_assert( Rank <= In::rank_v, "!" );
 	return dft<Rank>(i, R(extensions(i), get_allocator(i)), s);
 }
 
-template<typename... A> auto            dft_forward(A&&... a)
-->decltype(fftw::dft(std::forward<A>(a)..., fftw::forward)) {
-	return fftw::dft(std::forward<A>(a)..., fftw::forward); }
+template<typename... A> auto            dft_forward(A&&... array)
+->decltype(fftw::dft(std::forward<A>(array)..., fftw::forward)) {
+	return fftw::dft(std::forward<A>(array)..., fftw::forward); }
 
 template<typename BoolArray, typename A>
-NODISCARD("when input argument is read only")
-auto dft_forward(BoolArray which, A const& a)
-->decltype(fftw::dft(which, a, fftw::forward)) {
-	return fftw::dft(which, a, fftw::forward); }
+[[nodiscard]]  // ("when input argument is read only")
+auto dft_forward(BoolArray which, A const& array)
+->decltype(fftw::dft(which, array, fftw::forward)) {
+	return fftw::dft(which, array, fftw::forward); }
 
 template<class A, multi::dimensionality_type D = A::rank_v>
 NODISCARD("when input argument is read only")

@@ -11,8 +11,6 @@
 #include "../blas/side.hpp"
 #include "../blas/syrk.hpp" // fallback to real case
 
-#include "../../config/NODISCARD.hpp"
-
 namespace boost::multi::blas {
 
 template<class A, std::enable_if_t<not is_conjugated<A>{}, int> =0> 
@@ -70,11 +68,6 @@ auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c)
 ->decltype(syrk(c_side, alpha, a, beta, std::forward<C2D>(c))) {
 	return syrk(c_side, alpha, a, beta, std::forward<C2D>(c)); }
 
-//template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr>
-//auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c)
-//->decltype(herk_aux(c_side, alpha, a, beta, std::forward<C2D>(c), is_complex<C2D>{})){
-//	return herk_aux(c_side, alpha, a, beta, std::forward<C2D>(c), is_complex<C2D>{});}
-
 template<class AA, class A2D, class C2D, class = typename A2D::element_ptr>
 auto herk(filling c_side, AA alpha, A2D const& a, C2D&& c)
 ->decltype(herk(c_side, alpha, a, 0., std::forward<C2D>(c))) {
@@ -90,24 +83,16 @@ auto herk(A2D const& a, C2D&& c)
 ->decltype(herk(1., a, std::forward<C2D>(c))) {
 	return herk(1., a, std::forward<C2D>(c)); }
 
-/*
-template<class A2D, class C2D>
-NODISCARD("when last argument is const")
-auto herk(A2D const& a, C2D const& c)
-->decltype(herk(1., a, decay(c))){
-	return herk(1., a, decay(c));}
-*/
-
 template<class AA, class A2D, class Ret = typename A2D::decay_type>
-NODISCARD("when argument is read-only")
-auto herk(AA alpha, A2D const& a)//->std::decay_t<decltype(herk(alpha, a, Ret({size(a), size(a)}, get_allocator(a))))>{
+[[nodiscard]]  // ("when argument is read-only")
+auto herk(AA alpha, A2D const& a)  //->std::decay_t<decltype(herk(alpha, a, Ret({size(a), size(a)}, get_allocator(a))))>{
 {
 	return herk(alpha, a, Ret({size(a), size(a)}));//Ret({size(a), size(a)}));//, get_allocator(a)));
 }
 
 template<class T> struct numeric_limits : std::numeric_limits<T>{};
 template<class T> struct numeric_limits<std::complex<T>> : std::numeric_limits<std::complex<T>> {
-	static auto quiet_NaN() -> std::complex<T> {auto n = numeric_limits<T>::quiet_NaN(); return {n, n};}  // NOLINT(readability-identifier-length) conventional std name
+	static auto quiet_NaN() -> std::complex<T> {auto nana = numeric_limits<T>::quiet_NaN(); return {nana, nana};}  // NOLINT(readability-identifier-naming) conventional std name
 };
 
 template<class AA, class A2D, class Ret = typename A2D::decay_type>
