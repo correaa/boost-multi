@@ -122,7 +122,7 @@ auto gemm_n(typename It2DA::element alpha, It2DA a_first, Size a_count, It2DB b_
 	return gemm_n(Context{}, alpha, a_first, a_count, b_first, beta, c_first); }
 
 template<class Context, class A, class B, class C>
-auto gemm(Context&& ctx, typename A::element alpha, A const& a, B const& b, typename A::element beta, C&& c) -> C&& {
+auto gemm(Context&& ctx, typename A::element alpha, A const& a, B const& b, typename A::element beta, C&& c) -> C&& {  // NOLINT(readability-identifier-length) BLAS naming
 	assert( size( a) == size( c) );
 	if(not a.is_empty()) {assert( size(~a) == size( b) );}
 	if constexpr(is_conjugated<C>{}) {blas::gemm  (std::forward<Context>(ctx), conj(alpha), conj(a),           conj(b) , conj(beta), conj(c) );}
@@ -131,7 +131,7 @@ auto gemm(Context&& ctx, typename A::element alpha, A const& a, B const& b, type
 }
 
 template<class A, class B, class C>
-auto gemm(typename A::element alpha, A const& a, B const& b, typename A::element beta, C&& c) -> C&& {
+auto gemm(typename A::element alpha, A const& a, B const& b, typename A::element beta, C&& c) -> C&& {  // NOLINT(readability-identifier-length) BLAS naming
 	return gemm(blas::context{}, alpha, a, b, beta, std::forward<C>(c));
 }
 
@@ -154,7 +154,7 @@ class gemm_iterator {
 	Scalar s_;
 	ItA a_it_;
 	ItB b_begin_;
-	gemm_iterator(ContextPtr ctxtp, Scalar s, ItA a_it, ItB b_begin) : ctxtp_{ctxtp}, s_{s}, a_it_{std::move(a_it)}, b_begin_{std::move(b_begin)} {}
+	gemm_iterator(ContextPtr ctxtp, Scalar s, ItA a_it, ItB b_begin) : ctxtp_{ctxtp}, s_{s}, a_it_{std::move(a_it)}, b_begin_{std::move(b_begin)} {}  // NOLINT(readability-identifier-length) BLAS naming
 	template<class ContextPtr2, class Scalar2, class ItA2, class ItB2, class DecayType2>
 	friend class gemm_range;
 
@@ -234,7 +234,7 @@ class gemm_range {
 	auto operator=(gemm_range&&) -> gemm_range& = delete;
 	~gemm_range() = default;
 
-	gemm_range(ContextPtr ctxtp, Scalar s, ItA a_first, ItA a_last, ItB b_first)  // NOLINT(bugprone-easily-swappable-parameters)
+	gemm_range(ContextPtr ctxtp, Scalar s, ItA a_first, ItA a_last, ItB b_first)  // NOLINT(bugprone-easily-swappable-parameters,readability-identifier-length) conventional BLAS naming
 	: ctxtp_{ctxtp}
 	, s_{s}, a_begin_{std::move(a_first)}, a_end_{std::move(a_last)}
 	, b_begin_{std::move(b_first)}
@@ -255,8 +255,8 @@ class gemm_range {
 //	operator decay_type() const{return decay_type(*this);} // do not use curly { }
 	auto operator+() const -> decay_type {return *this;} // TODO(correaa) : investigate why return decay_type{*this} doesn't work
 	template<class Arr>
-	friend auto operator+=(Arr&& a, gemm_range const& gr) -> Arr&& {
-		blas::gemm_n(*gr.ctxtp_, gr.s_, gr.a_begin_, gr.a_end_ - gr.a_begin_, gr.b_begin_, 1., a.begin());
+	friend auto operator+=(Arr&& a, gemm_range const& self) -> Arr&& {
+		blas::gemm_n(*self.ctxtp_, self.s_, self.a_begin_, self.a_end_ - self.a_begin_, self.b_begin_, 1., a.begin());
 		return std::forward<Arr>(a);
 	}
 };
@@ -281,7 +281,7 @@ auto gemm(ContextPtr ctxtp, Scalar s, A2D const& a, B2D const& b)
 	#pragma    diag_suppress = implicit_return_from_non_void_function
 #endif
 template<class Scalar, class A2D, class B2D, class = decltype(Scalar(0.))>
-auto gemm(Scalar s, A2D const& a, B2D const& b) {
+auto gemm(Scalar s, A2D const& a, B2D const& b) {  // NOLINT(readability-identifier-length) conventional BLAS naming
 	if constexpr(is_conjugated<A2D>{}) {
 		auto ctxtp = blas::default_context_of(underlying(a.base()));
 		return blas::gemm(ctxtp, s, a, b);

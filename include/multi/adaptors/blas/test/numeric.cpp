@@ -4,8 +4,6 @@
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS numeric"
 #include<boost/test/unit_test.hpp>
 
-// #include "config.hpp"
-
 #include "../../../array.hpp"
 #include "../../blas/numeric.hpp"
 #include "../../blas/operations.hpp"
@@ -15,64 +13,64 @@
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_numeric_imag) {
-	using complex = std::complex<double>; constexpr complex I{0, 1};
+	using complex = std::complex<double>; constexpr complex I{0, 1};  // NOLINT(readability-identifier-length) imag unit
 
 	namespace blas = multi::blas;
-	multi::array<complex, 1> a = { 1. + 2.*I, 3. + 5.*I, 9. + 2.*I };
-	BOOST_REQUIRE( blas::imag(a)[2] == 2. );
-	BOOST_REQUIRE( blas::real(a)[2] == 9. );
+	multi::array<complex, 1> array = { 1. + 2.*I, 3. + 5.*I, 9. + 2.*I };
+	BOOST_REQUIRE( blas::imag(array)[2] == 2. );
+	BOOST_REQUIRE( blas::real(array)[2] == 9. );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_numeric_real_conjugated) {
-	using complex = std::complex<double>; complex const I{0, 1};
+	using complex = std::complex<double>; complex const I{0, 1};  // NOLINT(readability-identifier-length) imag unit
 
-	multi::array<complex, 2> B = {
+	multi::array<complex, 2> array = {
 		{1. - 3.*I, 6. + 2.*I},
 		{8. + 2.*I, 2. + 4.*I},
 		{2. - 1.*I, 1. + 1.*I}
 	};
-	BOOST_REQUIRE( B[0][0] == 1. - 3.*I );
+	BOOST_REQUIRE( array[0][0] == 1. - 3.*I );
 
-	multi::array<complex, 2> const Bconst = {
+	multi::array<complex, 2> const carray = {
 		{1. - 3.*I, 6. + 2.*I},
 		{8. + 2.*I, 2. + 4.*I},
 		{2. - 1.*I, 1. + 1.*I}
 	};
-	BOOST_REQUIRE( Bconst[0][0] == 1. - 3.*I );
+	BOOST_REQUIRE( carray[0][0] == 1. - 3.*I );
 
 	namespace blas = multi::blas;
-	auto BdataC = blas::make_conjugater(B.data_elements());
+	auto conjr = blas::make_conjugater(array.data_elements());
 
-	decltype(blas::make_conjugater(Bconst.data_elements())) ppp;// = BdataC;
-	ppp = BdataC;
+	decltype(blas::make_conjugater(carray.data_elements())) ppp;// = BdataC;
+	ppp = conjr;
 
 	BOOST_REQUIRE( *ppp == 1. + 3.*I );
 
 //	static_assert(    multi::blas::is_complex_array<multi::array<thrust::complex<double>, 2>>{}, "!");
-	static_assert(    blas::is_complex_array<decltype(B)>{} );
-	static_assert(not blas::is_conjugated<decltype(B)>{} );
+	static_assert(    blas::is_complex_array<decltype(array)>{} );
+	static_assert(not blas::is_conjugated<decltype(array)>{} );
 
-	auto&& Bconj = blas::conj(B);
-	static_assert( blas::is_conjugated<decltype(Bconj)>{} );
+	auto&& conjd_array = blas::conj(array);
+	static_assert( blas::is_conjugated<decltype(conjd_array)>{} );
 
-	BOOST_REQUIRE( Bconj[0][0] == 1. + 3.*I );
-	BOOST_REQUIRE( imag(*base(Bconj)) == +3 );
+	BOOST_REQUIRE( conjd_array[0][0] == 1. + 3.*I );
+	BOOST_REQUIRE( imag(*base(conjd_array)) == +3 );
 
 //	BOOST_TEST_REQUIRE( base(Bconj)->imag() == +3 );
-	BOOST_REQUIRE( rotated(Bconj)[1][0] == Bconj[0][1] );
+	BOOST_REQUIRE( rotated(conjd_array)[1][0] == conjd_array[0][1] );
 
 //	BOOST_REQUIRE( base(Bconj) == -3.*I );
-	static_assert( blas::is_complex_array<decltype(Bconj)>{} );
+	static_assert( blas::is_complex_array<decltype(conjd_array)>{} );
 
-	BOOST_REQUIRE( blas::conj(Bconj) == B );
+	BOOST_REQUIRE( blas::conj(conjd_array) == array );
 
-	BOOST_REQUIRE( blas::conj(B)[1][0] == std::conj(B[1][0]) );
+	BOOST_REQUIRE( blas::conj(array)[1][0] == std::conj(array[1][0]) );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_numeric_decay) {
-	using complex = std::complex<double>; complex const I{0, 1};
+	using complex = std::complex<double>; complex const I{0, 1};  // NOLINT(readability-identifier-length) imag unit
 
-	multi::array<complex, 2> B = {
+	multi::array<complex, 2> arr = {
 		{ 1. - 3.*I, 6. + 2.*I, 9. + 3.*I},
 		{ 8. + 2.*I, 2. + 4.*I, 9. + 3.*I},
 		{ 2. - 1.*I, 1. + 1.*I, 9. + 3.*I},
@@ -80,19 +78,19 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_decay) {
 	};
 
 	namespace blas = multi::blas;
-	multi::array<complex, 2> conjB = blas::conj(B);
+	multi::array<complex, 2> conj_arr = blas::conj(arr);
 
-	BOOST_REQUIRE( conjB[2][1] == std::conj(B[2][1]) );
-	BOOST_REQUIRE( blas::conj(B)[2][1] == std::conj(B[2][1]) );
+	BOOST_REQUIRE( conj_arr[2][1] == std::conj(arr[2][1]) );
+	BOOST_REQUIRE( blas::conj(arr)[2][1] == std::conj(arr[2][1]) );
 
-	BOOST_REQUIRE( blas::transposed(B)[1][2] == B[2][1] );
-	BOOST_REQUIRE( blas::transposed(B) == ~B );
+	BOOST_REQUIRE( blas::transposed(arr)[1][2] == arr[2][1] );
+	BOOST_REQUIRE( blas::transposed(arr) == ~arr );
 
-	BOOST_REQUIRE( blas::hermitized(B)[2][1] == blas::conj(B)[1][2] );
-	BOOST_REQUIRE( blas::hermitized(B)       == blas::conj(blas::transposed(B)) );
+	BOOST_REQUIRE( blas::hermitized(arr)[2][1] == blas::conj(arr)[1][2] );
+	BOOST_REQUIRE( blas::hermitized(arr)       == blas::conj(blas::transposed(arr)) );
 
-	BOOST_REQUIRE( blas::real(B)[2][1] == std::real(B[2][1]) );
-	BOOST_REQUIRE( blas::imag(B)[2][1] == std::imag(B[2][1]) );
+	BOOST_REQUIRE( blas::real(arr)[2][1] == std::real(arr[2][1]) );
+	BOOST_REQUIRE( blas::imag(arr)[2][1] == std::imag(arr[2][1]) );
 
 	multi::array<double, 2> B_real_doubled = {
 		{ 1., -3., 6., 2., 9., 3.},
@@ -100,8 +98,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_decay) {
 		{ 2., -1., 1., 1., 9., 3.},
 		{ 9.,  3., 9., 3., 9., 3.}
 	};
-	BOOST_REQUIRE( sizes(blas::real_doubled(B)) == sizes(B_real_doubled) );
-	BOOST_REQUIRE(       blas::real_doubled(B)  ==       B_real_doubled  );
+	BOOST_REQUIRE( sizes(blas::real_doubled(arr)) == sizes(B_real_doubled) );
+	BOOST_REQUIRE(       blas::real_doubled(arr)  ==       B_real_doubled  );
 }
 
 #if defined(CUDA_FOUND) and CUDA_FOUND
@@ -122,43 +120,15 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_decay_thrust) {
 }
 #endif
 
-//#if defined(CUDA_FOUND) and CUDA_FOUND
-//#include "../../blas/cuda.hpp"
-//#include "../../../adaptors/cuda.hpp"
-//namespace cuda = multi::cuda;
-
-//BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_numeric_imag_cuda){
-//	cuda::array<complex, 1> a = { 1. + 2.*I, 3. + 5.*I, 9. + 2.*I };
-//	namespace blas = multi::blas;
-//	BOOST_REQUIRE( blas::imag(a)[2] == 2. );
-//}
-
-//BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_numeric_imag_cuda_managed){
-//	cuda::managed::array<complex, 1> a = { 1. + 2.*I, 3. + 5.*I, 9. + 2.*I };
-//	using multi::blas::imag;
-//	BOOST_REQUIRE( imag(a)[2] == 2. );
-//}
-
-//BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_numeric_hermitized_cuda){
-//	cuda::array<complex, 2> const a = {
-//		{ 1. + 2.*I, 3. + 5.*I, 9. + 2.*I },
-//		{ 1. + 2.*I, 3. + 5.*I, 9. + 2.*I },
-//		{ 1. + 2.*I, 3. + 5.*I, 9. + 2.*I },
-//	};
-//	using multi::blas::hermitized;
-//	hermitized(a);
-//}
-//#endif
-
 BOOST_AUTO_TEST_CASE(multi_blas_numeric_real_imag_part) {
-	using complex = std::complex<double>; complex const I{0., 1.};
+	using complex = std::complex<double>; complex const I{0, 1};  // NOLINT(readability-identifier-length) imag unit
 
-	multi::array<double, 2> A = {
+	multi::array<double, 2> arr = {
 		{1., 3., 4.},
 		{9., 7., 1.}
 	};
-	multi::array<complex, 2> Acplx = A;
-	BOOST_REQUIRE( Acplx[1][1] == A[1][1] );
+	multi::array<complex, 2> complex_arr = arr;
+	BOOST_REQUIRE( complex_arr[1][1] == arr[1][1] );
 
 	multi::array<complex, 2> B = {
 		{1. - 3.*I, 6. + 2.*I},

@@ -85,12 +85,12 @@ class dot_ptr {
 template<class ContextPtr, class X, class Y, class Ptr = dot_ptr<ContextPtr, typename X::const_iterator, typename X::size_type, typename Y::const_iterator>>
 struct dot_ref : private Ptr {
 	using decay_type = decltype(typename X::value_type{}*typename Y::value_type{});
-	dot_ref(ContextPtr ctxt, X const& x, Y const& y) : Ptr{ctxt, begin(x), size(x), begin(y)} {
+	dot_ref(ContextPtr ctxt, X const& x, Y const& y) : Ptr{ctxt, begin(x), size(x), begin(y)} {  // NOLINT(readability-identifier-length) BLAS naming
 		assert(( size(x) == size(y) ));  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	}
-	constexpr auto operator&() const& -> Ptr const& {return *this;}  // NOLINT(google-runtime-operator) : reference type
+	constexpr auto operator&() const& -> Ptr const& {return *this;}  // NOLINT(google-runtime-operator) reference type
 	auto decay() const& -> decay_type {decay_type r; copy_n(operator&(), 1, &r); return r;}
-	operator decay_type()       const& {return decay();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,hicpp-explicit-conversion) : to allow terse syntax
+	operator decay_type()       const& {return decay();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,hicpp-explicit-conversion) to allow terse syntax
 #if not defined(__CUDACC__) or not defined(__INTEL_COMPILER)
 	friend auto operator*(decay_type const& lhs, dot_ref const& self) {return lhs*self.decay();}
 #endif
@@ -108,7 +108,7 @@ struct dot_ref : private Ptr {
 };
 
 template<class Context, class X, class Y> [[nodiscard]]
-auto dot(Context const& ctxt, X const& x, Y const& y) {
+auto dot(Context const& ctxt, X const& x, Y const& y) {  // NOLINT(readability-identifier-length) BLAS naming
 	return dot_ref<Context, X, Y>{ctxt, x, y};
 }
 
@@ -124,8 +124,9 @@ auto dot(Context const& ctxt, X const& x, Y const& y) {
 	#pragma    diagnostic push
 	#pragma    diag_suppress = implicit_return_from_non_void_function
 #endif
+
 template<class X, class Y> [[nodiscard]]
-auto dot(X const& x, Y const& y) {
+auto dot(X const& x, Y const& y) {  // NOLINT(readability-identifier-length) BLAS naming
 	if constexpr(is_conjugated<X>{}) {
 		auto ctxtp = blas::default_context_of(underlying(x.base()));
 		return blas::dot(ctxtp, x, y);
@@ -144,9 +145,9 @@ auto dot(X const& x, Y const& y) {
 	#pragma    diagnostic pop
 #endif
 
-namespace operators{
+namespace operators {
 	template<class X1D, class Y1D> [[nodiscard]]
-	auto operator,(X1D const& x, Y1D const& y)
+	auto operator,(X1D const& x, Y1D const& y)  // NOLINT(readability-identifier-length) BLAS naming
 	->decltype(dot(x, y)) {
 		return dot(x, y); }
 }  // end namespace operators
