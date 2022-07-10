@@ -79,14 +79,15 @@ class axpy_range {
 	auto operator*=(Scale s) & -> axpy_range& {alpha_ *= s; return *this;}  // NOLINT(readability-identifier-length) conventional BLAS naming
 };
 
-template<class Context, class Scale, class X1D, class=std::enable_if_t<is_context<Context>{}>>
-auto axpy(Context&& ctxt, Scale a, X1D const& x) -> axpy_range<Context, Scale, typename X1D::const_iterator> {  // NOLINT(readability-identifier-length) conventional BLAS naming
+template<class Context, class Scalar, class X1D, class=std::enable_if_t<is_context<Context>{}>>
+auto axpy(Context&& ctxt, Scalar a, X1D const& x)  // NOLINT(readability-identifier-length) conventional BLAS naming
+-> axpy_range<Context, Scalar, typename X1D::const_iterator> {  // NOLINT(readability-identifier-length) conventional BLAS naming
 	return {std::forward<Context>(ctxt), a, begin(x), end(x)};
 }
 
-template<class Scale, class X1D>
-auto axpy(Scale a, X1D const& x)
--> axpy_range<blas::context const&, Scale, typename X1D::const_iterator> {
+template<class Scalar, class X1D>
+auto axpy(Scalar a, X1D const& x)  // NOLINT(readability-identifier-length) conventional BLAS naming
+-> axpy_range<blas::context const&, Scalar, typename X1D::const_iterator> {
 	blas::context ctxt{};
 	return {ctxt, a, begin(x), end(x)};  // TODO(correaa) fix temporary
 }

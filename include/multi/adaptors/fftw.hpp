@@ -603,7 +603,7 @@ auto dft(std::array<bool, +D> which, In const& i, sign s)
 	return fftw::dft(which, i, R(extensions(i), get_allocator(i)), s);}
 
 template<typename In, multi::dimensionality_type D = std::decay_t<In>::rank_v,
-	std::enable_if_t<std::is_assignable_v<decltype(*std::declval<In     &&>().base()), typename std::decay_t<In>::element>, int> =0
+	std::enable_if_t<std::is_assignable_v<decltype(*std::declval<In&&>().base()), typename std::decay_t<In>::element>, int> =0
 >
 auto dft(std::array<bool, +D> which, In&& i, sign s)
 ->decltype(dft(which, i, i, s), std::forward<In>(i)) {
@@ -613,21 +613,21 @@ template<typename In, std::size_t D = In::rank_v, class R=typename In::decay_typ
 void dft(std::array<bool, +D> which, In const& i) = delete;
 
 template<dimensionality_type Rank /*not deduced*/, typename In, class R=typename In::decay_type>
-NODISCARD("when second argument is const")
+[[nodiscard]]  // ("when second argument is const")
 auto dft(In const& i, sign s) -> R {
 	static_assert( Rank <= In::rank_v, "!" );
 	return dft<Rank>(i, R(extensions(i), get_allocator(i)), s);
 }
 
-template<typename... A> auto            dft_forward(A&&... a)
-->decltype(fftw::dft(std::forward<A>(a)..., fftw::forward)) {
-	return fftw::dft(std::forward<A>(a)..., fftw::forward); }
+template<typename... A> auto            dft_forward(A&&... array)
+->decltype(fftw::dft(std::forward<A>(array)..., fftw::forward)) {
+	return fftw::dft(std::forward<A>(array)..., fftw::forward); }
 
 template<typename BoolArray, typename A>
-NODISCARD("when input argument is read only")
-auto dft_forward(BoolArray which, A const& a)
-->decltype(fftw::dft(which, a, fftw::forward)) {
-	return fftw::dft(which, a, fftw::forward); }
+[[nodiscard]]  // ("when input argument is read only")
+auto dft_forward(BoolArray which, A const& array)
+->decltype(fftw::dft(which, array, fftw::forward)) {
+	return fftw::dft(which, array, fftw::forward); }
 
 template<class A, multi::dimensionality_type D = A::rank_v>
 NODISCARD("when input argument is read only")
@@ -636,34 +636,35 @@ auto dft_forward(std::array<bool, +D> which, A const& a)
 	return fftw::dft(which, a, fftw::forward); }
 
 template<class A, class O, multi::dimensionality_type D = A::rank_v>
-auto dft_forward(std::array<bool, +D> which, A const& a, O&& o)
-->decltype(fftw::dft(which, a, std::forward<O>(o), fftw::forward)) {
-	return fftw::dft(which, a, std::forward<O>(o), fftw::forward); }
+auto dft_forward(std::array<bool, +D> which, A const& in, O&& out)
+->decltype(fftw::dft(which, in, std::forward<O>(out), fftw::forward)) {
+	return fftw::dft(which, in, std::forward<O>(out), fftw::forward); }
 
 template<typename A>
-NODISCARD("when input argument is read only") auto dft_forward(A const& a)
-->decltype(fftw::dft(a, fftw::forward)) {
-	return fftw::dft(a, fftw::forward); }
+NODISCARD("when input argument is read only")
+auto dft_forward(A const& array)
+->decltype(fftw::dft(array, fftw::forward)) {
+	return fftw::dft(array, fftw::forward); }
 
-template<typename... A> auto            dft_backward(A&&... a)
-->decltype(dft(std::forward<A>(a)..., fftw::backward)) {
-	return dft(std::forward<A>(a)..., fftw::backward); }
+template<typename... A> auto            dft_backward(A&&... args)
+->decltype(dft(std::forward<A>(args)..., fftw::backward)) {
+	return dft(std::forward<A>(args)..., fftw::backward); }
 
-template<class In> auto dft_inplace(In&& i, sign s) -> In&& {
-	fftw::plan{i, i, static_cast<int>(s)}();//(i, i); 
-	return std::forward<In>(i);
+template<class In> auto dft_inplace(In&& in, sign direction) -> In&& {
+	fftw::plan{in, in, static_cast<int>(direction)}();
+	return std::forward<In>(in);
 }
 
 template<class In, class Out, dimensionality_type D = In::rank_v>
-auto copy(In const& i, Out&& o)
-->decltype(dft(std::array<bool, D>{}, i, std::forward<Out>(o), fftw::forward)) {
-	return dft(std::array<bool, D>{}, i, std::forward<Out>(o), fftw::forward); }
+auto copy(In const& in, Out&& out)
+->decltype(dft(std::array<bool, D>{}, in, std::forward<Out>(out), fftw::forward)) {
+	return dft(std::array<bool, D>{}, in, std::forward<Out>(out), fftw::forward); }
 
 template<typename In, class R=typename In::decay_type>
-NODISCARD("when argument is const")
-auto copy(In const& i) -> R
+[[nodiscard]] // ("when input argument is const")]]
+auto copy(In const& in) -> R
 {//->decltype(copy(i, R(extensions(i), get_allocator(i))), R()){
-	return copy(i, R(extensions(i), get_allocator(i)));}
+	return copy(in, R(extensions(in), get_allocator(in)));}
 
 template<typename In, class R=typename std::decay_t<In>::decay_type>
 auto move(In&& in) {
@@ -680,23 +681,23 @@ auto move(In&& in) {
 }
 
 template<typename T, dimensionality_type D, class P, class R=typename multi::array<T, D>>
-auto copy(multi::basic_array<T, D, multi::move_ptr<T, P>>&& a) -> R {
-	if(a.is_compact()) {
+auto copy(multi::basic_array<T, D, multi::move_ptr<T, P>>&& array) -> R {
+	if(array.is_compact()) {
 		return
 			fftw::copy(
-				a.template static_array_cast<T, T*>(), 
-				multi::array_ref<T, D, T*>(a.base().base(), a.extensions())
+				array.template static_array_cast<T, T*>(), 
+				multi::array_ref<T, D, T*>(array.base().base(), array.extensions())
 			).template static_array_cast<T, multi::move_ptr<T>>()
 		;
 	}
-	return fftw::copy(a.template static_array_cast<T, P>());
+	return fftw::copy(array.template static_array_cast<T, P>());
 }
 
 template<class Array>
-auto transpose(Array& a)
-->decltype(fftw::copy(transposed(a), a.reshape(extensions(layout(a).transpose())))) {
-	multi::array_ref<typename Array::element, Array::rank_v, typename Array::element_ptr> r(a.base(), extensions(a));
-	return fftw::copy(r.transposed(), a.reshape(layout(a).transpose().extensions()));
+auto transpose(Array& array)
+->decltype(fftw::copy(transposed(array), array.reshape(extensions(layout(array).transpose())))) {
+	multi::array_ref<typename Array::element, Array::rank_v, typename Array::element_ptr> ref(array.base(), extensions(array));
+	return fftw::copy(ref.transposed(), array.reshape(layout(array).transpose().extensions()));
 }
 
 #if 0
@@ -728,7 +729,7 @@ class fft_iterator {
 	using pointer         = void*;
 	class reference {
 		typename MDIterator::reference::extensions_type x_;
-		explicit reference(typename MDIterator::reference const& r) : x_{r.extensions()} {}
+		explicit reference(typename MDIterator::reference const& ref) : x_{ref.extensions()} {}
 		friend class fft_iterator;
 
 	 public:

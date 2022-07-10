@@ -203,10 +203,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_temporary) {
 		{0., 0., 1.}
 	};
 
-	auto const B = [](auto _) {
+	auto const B = [](auto array) {
 		auto rand = [d=std::normal_distribution<>{}, g=std::mt19937{1}]()mutable{return complex{d(g), d(g)};}; // NOLINT(cert-msc32-c,cert-msc51-cpp): test purposes
-		std::generate(_.elements().begin(), _.elements().end(), rand);
-		return _;
+		std::generate(array.elements().begin(), array.elements().end(), rand);
+		return array;
 	}(multi::array<complex, 2>({3, 3}));
 
 	using blas::operators::operator*;
@@ -218,16 +218,16 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_temporary) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_gemv_context) {
-	multi::array<double, 2> const a = {
+	multi::array<double, 2> const a = {  // NOLINT(readability-identifier-length) conventional name in BLAS
 		{ 9., 24., 30., 9.},
 		{ 4., 10., 12., 7.},
 		{14., 16., 36., 1.}
 	};
-	multi::array<double, 1> const x = {1.1, 2.1, 3.1, 4.1};
+	multi::array<double, 1> const x = {1.1, 2.1, 3.1, 4.1};  // NOLINT(readability-identifier-length) conventional name in BLAS
 
 	blas::context ctxt;
 	{
-		multi::array<double, 1>       y(multi::extensions_t<1>{multi::iextension{size(a)}});
+		multi::array<double, 1>       y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) conventional name in BLAS
 		blas::gemv_n(ctxt, 1., begin(a), size(a), begin(x), 0., begin(y));
 		BOOST_REQUIRE_CLOSE( y[1] , 91.3 , 0.0001 );
 		BOOST_REQUIRE_CLOSE( y[2] , +blas::dot(a[2], x) , 0.0001 );

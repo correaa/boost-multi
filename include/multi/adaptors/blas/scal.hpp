@@ -13,8 +13,8 @@ auto scal_n(Scalar const& a, It first, Size count)  // NOLINT(readability-identi
 ->decltype(scal(count, &a, first.base(), first.stride()), void()) {
 	       scal(count, &a, first.base(), first.stride());         }
 
-template<class A, class It1D>
-auto scal(A const& a, It1D first, It1D last)
+template<class Scalar, class It1D>
+auto scal(Scalar const& a, It1D first, It1D last)  // NOLINT(readability-identifier-length) conventional BLAS naming
 ->decltype(blas::scal_n(a, first, last - first)){
 	return blas::scal_n(a, first, last - first);}
 
