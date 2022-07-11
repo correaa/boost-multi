@@ -893,7 +893,7 @@ struct array : static_array<T, D, Alloc> {
 			reshape(other.extensions());
 			static_::operator=(other);
 		} else {
-			operator=(array(other));
+			operator=(static_cast<array>(other));
 		}
 		return *this;
 	}
