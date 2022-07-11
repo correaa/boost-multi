@@ -2279,7 +2279,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 		auto* p1 = &r1; P2 p2 = reinterpret_cast<P2&>(p1);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : TODO(correaa) : find a better way
 		return {this->layout().scale(sizeof(T)/sizeof(T2)), p2};
 #else
-		return {this->layout().scale(sizeof(T)/sizeof(T2)), static_cast<P2>(&(this->base_->*pm))};  // this crashes nvcc 11.2-11.4 and some? gcc compiler
+		return {this->layout().scale(sizeof(T)/sizeof(T2)), static_cast<P2>(&(this->base_->*member))};  // this crashes nvcc 11.2-11.4 and some? gcc compiler
 #endif
 	}
 

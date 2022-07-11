@@ -107,7 +107,7 @@ constexpr class adl_copy_t {
 	>
 	                               constexpr auto _(priority<1>/**/, InputIt first, InputIt last, OutputIt d_first)	const DECLRETURN(std::copy(first, last, d_first))
 #if defined(__NVCC__)
-	template<class... As> 		   constexpr auto _(priority<2>/**/,          As&&... args) const DECLRETURN(           thrust::copy(std::forward<As>(as)...))
+	template<class... As> 		   constexpr auto _(priority<2>/**/,          As&&... args) const DECLRETURN(           thrust::copy(std::forward<As>(args)...))
 #endif
 	template<         class... As> constexpr auto _(priority<3>/**/,          As&&... args) const DECLRETURN(                   copy(std::forward<As>(args)...))
 	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args) const DECLRETURN(  std::decay_t<T>::copy(std::forward<T>(arg), std::forward<As>(args)...))
