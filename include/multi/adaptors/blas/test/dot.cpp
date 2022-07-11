@@ -183,19 +183,19 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex) {
 	}
 	{
 		complex c = blas::dot(A[1], blas::C(A[2]));  // NOLINT(readability-identifier-length) BLAS naming
-		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}, std::plus<>{}, [](auto a, auto b){return a*conj(b);}) );
+		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}, std::plus<>{}, [](auto alpha, auto omega) {return alpha*conj(omega);}) );
 	}
 	{
 		complex c = blas::dot(blas::C(A[1]), A[2]);  // NOLINT(readability-identifier-length) BLAS naming
-		BOOST_TEST_REQUIRE( c == inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}, std::plus<>{}, [](auto a, auto b){return conj(a)*b;}) );
+		BOOST_TEST_REQUIRE( c == inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}, std::plus<>{}, [](auto alpha, auto omega) {return conj(alpha)*omega;}) );
 	}
 	{
 		complex c = blas::dot(blas::conj(A[1]), A[2]);  // NOLINT(readability-identifier-length) BLAS naming
-		BOOST_TEST_REQUIRE( c == inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}, std::plus<>{}, [](auto a, auto b){return conj(a)*b;}) );
+		BOOST_TEST_REQUIRE( c == inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{}, std::plus<>{}, [](auto alpha, auto omega) {return conj(alpha)*omega;}) );
 	}
 	{
 		complex c = blas::dot(blas::C(A[1]), A[2]);  // NOLINT(readability-identifier-length) BLAS naming
-		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}, std::plus<>{}, [](auto a, auto b){return conj(a)*b;}) );
+		BOOST_TEST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}, std::plus<>{}, [](auto alpha, auto omega) {return conj(alpha)*omega;}) );
 	}
 }
 
