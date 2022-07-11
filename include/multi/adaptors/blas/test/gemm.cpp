@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE(adaptor_blas_double_100x1_1x1_T) {
 	multi::array<double, 2> A({100, 1}, 1.);  // NOLINT(readability-identifier-length) BLAS naming
 	multi::array<double, 2> B({  1, 1}, 1.);  // NOLINT(readability-identifier-length) BLAS naming
 
-	multi::array<double, 2> C({100, 1}, 0.);
+	multi::array<double, 2> C({100, 1}, 0.);  // NOLINT(readability-identifier-length) BLAS naming
 
 	blas::gemm(1., A, blas::T(B), 0., C);  // c=ab, c⸆=b⸆a⸆
 	BOOST_REQUIRE(C[99][0] == 1.);
@@ -1826,10 +1826,10 @@ BOOST_AUTO_TEST_CASE(blas_gemm_inq_case) { // https://gitlab.com/correaa/boost-m
 #endif
 
 BOOST_AUTO_TEST_CASE(blas_issue_109_part2) {
-	multi::array<double, 2> const A({ 3, 4}, 5.);
-	multi::array<double, 2> const B({ 2, 3}, 7.);
+	multi::array<double, 2> const A({ 3, 4}, 5.);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<double, 2> const B({ 2, 3}, 7.);  // NOLINT(readability-identifier-length) BLAS naming
 
-	multi::array<double, 2> C({2, 4}, 999.);
+	multi::array<double, 2> C({2, 4}, 999.);  // NOLINT(readability-identifier-length) BLAS naming
 	blas::gemm(1., ~A, ~B, 0., ~C);
 
 	BOOST_TEST_REQUIRE( C[0][0] == 105. );
@@ -1838,10 +1838,10 @@ BOOST_AUTO_TEST_CASE(blas_issue_109_part2) {
 }
 
 BOOST_AUTO_TEST_CASE(blas_issue_109) {
-	multi::array<double, 2> const A({ 3, 4}, 5.);
-	multi::array<double, 2> const B({ 2, 3}, 7.);
+	multi::array<double, 2> const A({ 3, 4}, 5.);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<double, 2> const B({ 2, 3}, 7.);  // NOLINT(readability-identifier-length) BLAS naming
 
-	multi::array<double, 2> C({4, 2}, 999.);
+	multi::array<double, 2> C({4, 2}, 999.);  // NOLINT(readability-identifier-length) BLAS naming
 	blas::gemm(1., ~A, ~B, 0., C);
 
 	BOOST_TEST_REQUIRE( C[0][0] == 105. );
@@ -1850,10 +1850,10 @@ BOOST_AUTO_TEST_CASE(blas_issue_109) {
 }
 
 BOOST_AUTO_TEST_CASE(blas_issue_109_part2_complex) {
-	multi::array<std::complex<double>, 2> const A({ 3, 4}, 5.);
-	multi::array<std::complex<double>, 2> const B({ 2, 3}, 7.);
+	multi::array<std::complex<double>, 2> const A({ 3, 4}, 5.);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<std::complex<double>, 2> const B({ 2, 3}, 7.);  // NOLINT(readability-identifier-length) BLAS naming
 
-	multi::array<std::complex<double>, 2> C({2, 4}, 999.);
+	multi::array<std::complex<double>, 2> C({2, 4}, 999.);  // NOLINT(readability-identifier-length) BLAS naming
 	blas::gemm(1., ~A, ~B, 0., ~C);
 
 	BOOST_TEST_REQUIRE( C[0][0] == 105. );
@@ -1862,10 +1862,10 @@ BOOST_AUTO_TEST_CASE(blas_issue_109_part2_complex) {
 }
 
 BOOST_AUTO_TEST_CASE(blas_issue_109_complex) {
-	multi::array<std::complex<double>, 2> const A({ 3, 4}, 5.);
-	multi::array<std::complex<double>, 2> const B({ 2, 3}, 7.);
+	multi::array<std::complex<double>, 2> const A({ 3, 4}, 5.);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<std::complex<double>, 2> const B({ 2, 3}, 7.);  // NOLINT(readability-identifier-length) BLAS naming
 
-	multi::array<std::complex<double>, 2> C({4, 2}, 999.);
+	multi::array<std::complex<double>, 2> C({4, 2}, 999.);  // NOLINT(readability-identifier-length) BLAS naming
 	blas::gemm(1., ~A, ~B, 0., C);
 
 	BOOST_TEST_REQUIRE( C[0][0] == 105. );
@@ -1874,10 +1874,10 @@ BOOST_AUTO_TEST_CASE(blas_issue_109_complex) {
 }
 
 BOOST_AUTO_TEST_CASE(blas_issue_109_complex_mx2) {
-	multi::array<std::complex<double>, 2> const A({ 3, 4}, 5.);
-	multi::array<std::complex<double>, 2> const B({ 2, 3}, 7.);
+	multi::array<std::complex<double>, 2> const A({ 3, 4}, 5.);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<std::complex<double>, 2> const B({ 2, 3}, 7.);  // NOLINT(readability-identifier-length) BLAS naming
 
-	multi::array<std::complex<double>, 2> C({4, 2}, 999.);
+	multi::array<std::complex<double>, 2> C({4, 2}, 999.);  // NOLINT(readability-identifier-length) BLAS naming
 	blas::gemm(1., ~A, ~B, 0., C);
 
 	BOOST_TEST_REQUIRE( C[0][0] == 105. );
@@ -1896,10 +1896,10 @@ BOOST_AUTO_TEST_CASE(blas_issue_109_complex_mx1) {
 }
 
 BOOST_AUTO_TEST_CASE(blas_issue_109_double_mx1) {
-	multi::array<double, 2> const A({ 3, 4}, 5.);
-	multi::array<double, 2> const B({ 1, 3}, 7.);
+	multi::array<double, 2> const A({ 3, 4}, 5.);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<double, 2> const B({ 1, 3}, 7.);  // NOLINT(readability-identifier-length) BLAS naming
 
-	multi::array<double, 2> C({4, 1}, 999.);
+	multi::array<double, 2> C({4, 1}, 999.);  // NOLINT(readability-identifier-length) BLAS naming
 	blas::gemm(1., ~A, ~B, 0., C);
 
 	BOOST_TEST_REQUIRE( C[0][0] == 105. );
