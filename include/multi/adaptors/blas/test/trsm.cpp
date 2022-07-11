@@ -44,10 +44,10 @@ auto triangular(multi::blas::filling f, Matrix const& m) {  // NOLINT(readabilit
 
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_0x0) {
 	namespace blas = multi::blas;
-	multi::array<double, 2> const A;
+	multi::array<double, 2> const A;  // NOLINT(readability-identifier-length) BLAS naming
 
-	 {
-		multi::array<double, 2> B;
+	{
+		multi::array<double, 2> B;  // NOLINT(readability-identifier-length) BLAS naming
 		// B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
 		blas::trsm(blas::side::left, blas::filling::upper, blas::diagonal::general, 1., A, B);
 	}
@@ -55,11 +55,11 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_0x0) {
 
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_1x1) {
 	namespace blas = multi::blas;
-	multi::array<double, 2> const A = {
+	multi::array<double, 2> const A = {  // NOLINT(readability-identifier-length) BLAS naming
 		{10., },
 	};
 	{
-		multi::array<double, 2> B = {
+		multi::array<double, 2> B = {  // NOLINT(readability-identifier-length) BLAS naming
 			{3., },
 		};
 		auto const B_cpy = B;
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_1x1) {
 		BOOST_REQUIRE_CLOSE( (+blas::gemm(1., A, B))[0][0] , B_cpy[0][0] , 0.00001 );
 	}
 	{
-		multi::array<double, 2> B = {
+		multi::array<double, 2> B = {  // NOLINT(readability-identifier-length) BLAS naming
 			{3., },
 		};
 		auto const B_cpy = B;
@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_1x1) {
 		BOOST_REQUIRE_CLOSE( (+blas::gemm(1., A, B))[0][0] , 2.*B_cpy[0][0] , 0.00001 );
 	}
 	 {
-		multi::array<double, 2> B = {
+		multi::array<double, 2> B = {  // NOLINT(readability-identifier-length) BLAS naming
 			{3., 4., 5.},
 		};
 		auto const B_cpy = B;
@@ -94,14 +94,14 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_1x1) {
 
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square) {
 	namespace blas = multi::blas;
-	multi::array<double, 2> const A = {
+	multi::array<double, 2> const A = {  // NOLINT(readability-identifier-length) BLAS naming
 		{     1.,      3.,  4.},
 		{    NAN,      7.,  1.},
 		{    NAN,     NAN,  8.}
 	};
 	auto const A_cpy = triangular(blas::filling::upper, A);
 	{
-		multi::array<double, 2> B = {
+		multi::array<double, 2> B = {  // NOLINT(readability-identifier-length) BLAS naming
 			{1., 3., 4.},
 			{2., 7., 1.},
 			{3., 4., 2.}
@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square) {
 	{
 		auto const AT =+ ~A;
 		auto const AT_cpy = triangular(blas::filling::lower, AT);
-		multi::array<double, 2> B = {
+		multi::array<double, 2> B = {  // NOLINT(readability-identifier-length) BLAS naming
 			{1., 3., 4.},
 			{2., 7., 1.},
 			{3., 4., 2.}
@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square) {
 	{
 		auto const AT =+ ~A;
 		auto const AT_cpy = triangular(blas::filling::lower, AT);
-		multi::array<double, 2> const B = {
+		multi::array<double, 2> const B = {  // NOLINT(readability-identifier-length) BLAS naming
 			{1., 3., 4.},
 			{2., 7., 1.},
 			{3., 4., 2.}
@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square) {
 		BOOST_REQUIRE( (+blas::gemm(1., blas::T(AT_cpy), blas::T(BT)))[1][2] == B[1][2] );
 	}
 	{
-		multi::array<double, 2> const B = {
+		multi::array<double, 2> const B = {  // NOLINT(readability-identifier-length) BLAS naming
 			{1., 3., 4.},
 			{2., 7., 1.},
 			{3., 4., 2.}
@@ -151,13 +151,13 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square) {
 
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex) {
 	namespace blas = multi::blas;
-	using complex = std::complex<double>; complex const I{0, 1};  // NOLINT(readability-identifier-length) imaginary unit
-	multi::array<complex, 2> const A = {
+	using complex = std::complex<double>; complex const I{0, 1};  // NOLINT(readability-identifier-length) imag unit
+	multi::array<complex, 2> const A = {  // NOLINT(readability-identifier-length) BLAS naming
 		{ 1. + 2.*I,  3. - 1.*I,  4. + 9.*I},
 		{NAN       ,  7. + 4.*I,  1. + 8.*I},
 		{NAN       , NAN       ,  8. + 2.*I}
 	};
-	multi::array<complex, 2> B = {
+	multi::array<complex, 2> B = {  // NOLINT(readability-identifier-length) BLAS naming
 		{1. - 9.*I, 3. + 2.*I, 4. + 3.*I},
 		{2. - 2.*I, 7. - 2.*I, 1. - 1.*I},
 		{3. + 1.*I, 4. + 8.*I, 2. + 7.*I}
@@ -169,13 +169,13 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex) {
 
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_rectangular) {
 	namespace blas = multi::blas;
-	using complex = std::complex<double>; complex const I{0, 1};  // NOLINT(readability-identifier-length) imaginary unit
-	multi::array<complex, 2> const A = {
+	using complex = std::complex<double>; complex const I{0, 1};  // NOLINT(readability-identifier-length) imag unit
+	multi::array<complex, 2> const A = {  // NOLINT(readability-identifier-length) BLAS naming
 		{ 1. + 2.*I,  3. - 1.*I,  4. + 9.*I},
 		{NAN       ,  7. + 4.*I,  1. + 8.*I},
 		{NAN       , NAN       ,  8. + 2.*I}
 	};
-	multi::array<complex, 2> B = {
+	multi::array<complex, 2> B = {  // NOLINT(readability-identifier-length) BLAS naming
 		{1. - 9.*I, 3. + 2.*I},
 		{2. - 2.*I, 7. - 2.*I},
 		{3. + 1.*I, 4. + 8.*I}
@@ -187,13 +187,13 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_rectangular) {
 
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column) {
 	namespace blas = multi::blas;
-	using complex = std::complex<double>; complex const I{0, 1};  // NOLINT(readability-identifier-length) imaginary unit
-	multi::array<complex, 2> const A = {
+	using complex = std::complex<double>; complex const I{0, 1};  // NOLINT(readability-identifier-length) imag unit
+	multi::array<complex, 2> const A = {  // NOLINT(readability-identifier-length) BLAS naming
 		{ 1. + 2.*I,  3. - 1.*I,  4. + 9.*I},
 		{NAN       ,  7. + 4.*I,  1. + 8.*I},
 		{NAN       , NAN       ,  8. + 2.*I}
 	};
-	multi::array<complex, 2> B = {
+	multi::array<complex, 2> B = {  // NOLINT(readability-identifier-length) BLAS naming
 		{1. - 9.*I},
 		{2. - 2.*I},
 		{3. + 1.*I}
@@ -206,12 +206,12 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column) {
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column_cpu) {
 	namespace blas = multi::blas;
 	using complex = std::complex<double>; complex const I{0, 1};  // NOLINT(readability-identifier-length) imaginary unit
-	multi::array<complex, 2> const A = {
+	multi::array<complex, 2> const A = {  // NOLINT(readability-identifier-length) BLAS naming
 		{ 1. + 2.*I,  3. - 1.*I,  4. + 9.*I},
 		{NAN       ,  7. + 4.*I,  1. + 8.*I},
 		{NAN       , NAN       ,  8. + 2.*I}
 	};
-	multi::array<complex, 2> B = {
+	multi::array<complex, 2> B = {  // NOLINT(readability-identifier-length) BLAS naming
 		{1. - 9.*I},
 		{2. - 2.*I},
 		{3. + 1.*I}
@@ -223,17 +223,16 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column_cpu) {
 
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_real) {
 	namespace blas = multi::blas;
-	multi::array<double, 2> const A = {{2., }, };
+	multi::array<double, 2> const A = {{2., }, };  // NOLINT(readability-identifier-length) BLAS naming
 	{
-		multi::array<double, 2> B = {{1., 2., 3.}, };
+		multi::array<double, 2> B = {{1., 2., 3.}, };  // NOLINT(readability-identifier-length) BLAS naming
 		BOOST_REQUIRE( B.size() == 1 );
 		auto const B_cpy = B;
 		blas::trsm(blas::side::left, blas::filling::lower, 1., A, B);
 		BOOST_REQUIRE( B[0][1] == B_cpy[0][1]/A[0][0] );
 	}
-
-	 {
-		multi::array<double, 2> B = {
+	{
+		multi::array<double, 2> B = {  // NOLINT(readability-identifier-length) BLAS naming
 			{1.},
 			{2.},
 			{3.},
@@ -247,10 +246,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_real) {
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_complex) {
 	namespace blas = multi::blas;
 	using complex = std::complex<double>;
-	multi::array<complex, 2> const A = {{2., }, };
+	multi::array<complex, 2> const A = {{2., }, };  // NOLINT(readability-identifier-length) BLAS naming
 
 	 {
-		multi::array<complex, 2> B = {{1., 2., 3.}, };
+		multi::array<complex, 2> B = {{1., 2., 3.}, };  // NOLINT(readability-identifier-length) BLAS naming
 		auto const B_cpy = B;
 		blas::trsm(blas::side::left, blas::filling::lower, 1., A, B);
 		BOOST_REQUIRE( B[0][1] == B_cpy[0][1]/A[0][0] );
@@ -282,14 +281,14 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_complex) {
 
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare) {
 	namespace blas = multi::blas;
-	multi::array<double, 2> const A = {
+	multi::array<double, 2> const A = {  // NOLINT(readability-identifier-length) BLAS naming
 		{  1.,   3.,  4.},
 		{ NAN,   7.,  1.},
 		{ NAN,  NAN,  8.}
 	};
 	auto const A_cpy = triangular(blas::filling::upper, A);
 	{
-		multi::array<double, 2> B = {
+		multi::array<double, 2> B = {  // NOLINT(readability-identifier-length) BLAS naming
 			{1., 3., 4., 8.},
 			{2., 7., 1., 9.},
 			{3., 4., 2., 1.},
@@ -308,7 +307,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare) {
 		BOOST_REQUIRE_CLOSE( (+blas::gemm(1., A_cpy, blas::T(BT)))[1][2] , blas::T(BT_cpy)[1][2] , 0.00001 );
 	}
 	{
-		multi::array<double, 2> B = {
+		multi::array<double, 2> B = {  // NOLINT(readability-identifier-length) BLAS naming
 			{1., 3., 4., 8.},
 			{2., 7., 1., 9.},
 			{3., 4., 2., 1.},
@@ -322,7 +321,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare) {
 		BOOST_REQUIRE_CLOSE( (~BT)[1][2] , 0.107143, 0.001 );
 	}
 	{
-		multi::array<double, 2> B = {
+		multi::array<double, 2> B = {  // NOLINT(readability-identifier-length) BLAS naming
 			{1.},
 			{2.},
 			{3.},
@@ -333,7 +332,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare) {
 		BOOST_REQUIRE_CLOSE( (+blas::gemm(1., A_cpy, B))[1][0] , B_cpy[1][0] , 0.00001 );
 	}
 	{
-		multi::array<double, 2> B = {
+		multi::array<double, 2> B = {  // NOLINT(readability-identifier-length) BLAS naming
 			{1.},
 			{2.},
 			{3.},
@@ -344,7 +343,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare) {
 		BOOST_REQUIRE_CLOSE( (+blas::gemm(1./1.2, A_cpy, B))[1][0] , B_cpy[1][0] , 0.00001 );
 	}
 	 {
-		multi::array<double, 2> B = {
+		multi::array<double, 2> B = {  // NOLINT(readability-identifier-length) BLAS naming
 			{1.},
 			{2.},
 			{3.},
@@ -357,13 +356,13 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare) {
 
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitized_gemm_check_no_const) {
 	namespace blas = multi::blas;
-	using complex = std::complex<double>; complex const I{0, 1};  // NOLINT(readability-identifier-length)
-	multi::array<complex, 2> const A = {
+	using complex = std::complex<double>; complex const I{0, 1};  // NOLINT(readability-identifier-length) imag unit
+	multi::array<complex, 2> const A = {  // NOLINT(readability-identifier-length) BLAS naming
 		{ 1. + 4.*I,  3.      ,  4.- 10.*I},
 		{ 0.       ,  7.- 3.*I,  1.       },
 		{ 0.       ,  0.      ,  8.-  2.*I}
 	};
-	multi::array<complex, 2> B = {
+	multi::array<complex, 2> B = {  // NOLINT(readability-identifier-length) BLAS naming
 		{1. + 1.*I, 2. + 1.*I, 3. + 1.*I},
 		{5. + 3.*I, 9. + 3.*I, 1. - 1.*I}
 	};
@@ -371,12 +370,11 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitiz
 	using multi::blas::trsm;
 	using multi::blas::filling;
 	using multi::blas::hermitized;
-	blas::trsm(blas::side::left, blas::filling::upper, 1., A, blas::H(B)); // B†←A⁻¹.B†, B←B.A⁻¹†, B←(A⁻¹.B†)†
+	blas::trsm(blas::side::left, blas::filling::upper, 1., A, blas::H(B));  // B†←A⁻¹.B†, B←B.A⁻¹†, B←(A⁻¹.B†)†
 	BOOST_REQUIRE_CLOSE( imag(B[1][2]) , -0.147059 , 0.001);
 }
 
 #if 0
-
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitized_gemm_check) {
 	using complex = std::complex<double>; complex const I{0, 1};
 	multi::array<complex, 2> const A = {
@@ -499,7 +497,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_thrust_nonsquare_default_diagonal_h
 			BOOST_REQUIRE_CLOSE( B[1][2].imag() , -0.147059 , 0.001 );
 			BOOST_REQUIRE( S == blas::H(B) );
 		}
-		 {
+		{
 			multi::array<complex, 2> B = {
 				{1. + 1.*I, 2. + 1.*I, 3. + 1.*I},
 				{5. + 3.*I, 9. + 3.*I, 1. - 1.*I}

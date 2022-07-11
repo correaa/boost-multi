@@ -51,7 +51,7 @@ class involuted {
 public:
 	using decay_type =std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
 
-	constexpr explicit involuted(Ref ref, Involution f) : r_{std::forward<Ref>(ref)}, f_{f}{}
+	constexpr explicit involuted(Ref ref, Involution fun) : r_{std::forward<Ref>(ref)}, f_{fun}{}
 	constexpr explicit involuted(Ref ref) : r_{std::forward<Ref>(ref)}, f_{}{}
 
 	auto operator=(involuted const& other) -> involuted& = delete;
@@ -152,7 +152,7 @@ class involuter {
 //	~involuter() = default;
 
 	constexpr explicit involuter(It it)      : it_{std::move(it)}, f_{} {}
-	constexpr explicit involuter(It it, F f) : it_{std::move(it)}, f_{std::move(f)} {}
+	constexpr explicit involuter(It it, F fun) : it_{std::move(it)}, f_{std::move(fun)} {}
 
 //	involuter(involuter const& other) = default;
 
@@ -213,13 +213,13 @@ template<class It> auto make_conjugater(conjugater<It> it) -> It {return underly
 template<class T> auto imag(involuted<T, conjugate> const& inv) {return inv.decay().imag();}
 template<class T> auto real(involuted<T, conjugate> const& inv) {return inv.decay().real();}
 
-template<class T> auto has_imag_fun_aux(T const& t)->decltype(imag(t), std::true_type {});
-                  auto has_imag_fun_aux(...       )->decltype(         std::false_type{});
+template<class T> auto has_imag_fun_aux(T const& value) -> decltype(imag(value), std::true_type {});
+                  auto has_imag_fun_aux(...           ) -> decltype(             std::false_type{});
 template<class T> struct has_imag_fun : decltype(has_imag_fun_aux(std::declval<T>())){};
 
 
-template<class T> auto has_imag_mem_aux(T const& t)->decltype(t.imag(), std::true_type {});
-                  auto has_imag_mem_aux(...       )->decltype(         std::false_type{});
+template<class T> auto has_imag_mem_aux(T const& value) -> decltype(value.imag(), std::true_type {});
+                  auto has_imag_mem_aux(...           ) -> decltype(         std::false_type{});
 template<class T> struct has_imag_mem : decltype(has_imag_mem_aux(std::declval<T>())){};
 
 template<class T> struct has_imag : std::integral_constant<bool, (has_imag_fun<T>{} or has_imag_mem<T>{})>{};

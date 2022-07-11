@@ -9,30 +9,30 @@
 namespace multi = boost::multi;
 
 // NOLINTNEXTLINE(fuchsia-trailing-return): trailing return helps readability
-template<class T> auto fwd_array(T&& t)->T&& {return std::forward<T>(t);}
+template<class T> auto fwd_array(T&& array) -> T&& {return std::forward<T>(array);}
 
 BOOST_AUTO_TEST_CASE(multi_array_ptr_equality) {
-	multi::array<double, 2> A = {
+	multi::array<double, 2> arr = {
 		{1., 2., 3.},
 		{4., 5., 6.},
 		{7., 8., 9.},
 		{1., 2., 3.}
 	};
-	BOOST_REQUIRE(  A[2] ==  A[2] );
-	BOOST_REQUIRE( &A[2] == &A[2] );
-	BOOST_REQUIRE( &A[2] == &fwd_array(A[2]) );
-	BOOST_REQUIRE( &fwd_array(A[2]) == &A[2] );
+	BOOST_REQUIRE(  arr[2] ==  arr[2] );
+	BOOST_REQUIRE( &arr[2] == &arr[2] );
+	BOOST_REQUIRE( &arr[2] == &fwd_array(arr[2]) );
+	BOOST_REQUIRE( &fwd_array(arr[2]) == &arr[2] );
 
 //	auto const& A2 = fwd_array(A[2]);
-	auto const& AC2 = A[2];
-	BOOST_REQUIRE( AC2[0] == A[2][0] );
-	BOOST_REQUIRE( AC2.base() == A[2].base() );
-	BOOST_REQUIRE( &AC2 == &std::as_const(A)[2] );
-	BOOST_REQUIRE( &AC2 == &              A [2] );
+	auto const& carr2 = arr[2];
+	BOOST_REQUIRE( carr2[0] == arr[2][0] );
+	BOOST_REQUIRE( carr2.base() == arr[2].base() );
+	BOOST_REQUIRE( &carr2 == &std::as_const(arr)[2] );
+	BOOST_REQUIRE( &carr2 == &              arr [2] );
 
-	auto const& ac2 = AC2; //fwd_array(A[2]);
-	BOOST_REQUIRE( &ac2 == &std::as_const(A)[2] );
-	BOOST_REQUIRE( &ac2 == &              A [2] );
+	auto const& ac2 = carr2; //fwd_array(A[2]);
+	BOOST_REQUIRE( &ac2 == &std::as_const(arr)[2] );
+	BOOST_REQUIRE( &ac2 == &              arr [2] );
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_ptr) {

@@ -2,7 +2,6 @@
 // Copyright 2019-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi legacy adaptor example"
-#define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
 #include "multi/array.hpp"
@@ -14,17 +13,17 @@ namespace multi = boost::multi;
 
 namespace fake {
 
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, hicpp-avoid-c-arrays, modernize-avoid-c-arrays): testing a legacy interface
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) testing a legacy interface
 using fftw_complex = double[2];
 
 void fftw_plan_dft(
-	int rank, const int *n,
-	fftw_complex *in, fftw_complex *out, int sign, unsigned flags
+	int rank, const int* n,
+	fftw_complex* in, fftw_complex* out, int sign, unsigned flags
 );
 
 void fftw_plan_dft(
-	int rank, const int *n,
-	fftw_complex *in, fftw_complex *out, int sign, unsigned flags
+	int rank, const int* n,
+	fftw_complex* in, fftw_complex* out, int sign, unsigned flags
 ) {
 	(void)rank, (void)n, (void)in, (void)out, (void)sign, (void)flags;
 }
@@ -91,7 +90,7 @@ BOOST_AUTO_TEST_CASE(array_legacy_c) {
 inline constexpr auto f2(multi::array_ref<double, 1>&& array) -> double& {return array[2];}
 
 BOOST_AUTO_TEST_CASE(array_legacy_c_2) {
-	double A[5] = {150, 16, 17, 18, 19}; //  NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-	BOOST_REQUIRE( &f2(A) == &A[2] );
+	double arr[5] = {150, 16, 17, 18, 19}; //  NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+	BOOST_REQUIRE( &f2(arr) == &arr[2] );
 }
 

@@ -130,18 +130,18 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_real_imag_part) {
 	multi::array<complex, 2> complex_arr = arr;
 	BOOST_REQUIRE( complex_arr[1][1] == arr[1][1] );
 
-	multi::array<complex, 2> B = {
+	multi::array<complex, 2> arr2 = {
 		{1. - 3.*I, 6. + 2.*I},
 		{8. + 2.*I, 2. + 4.*I},
 		{2. - 1.*I, 1. + 1.*I}
 	};
 
-	multi::array<double, 2> Breal = {
+	multi::array<double, 2> arr2_real = {
 		{1., 6.},
 		{8., 2.},
 		{2., 1.}
 	};
-	multi::array<double, 2> Bimag = {
+	multi::array<double, 2> arr2_imag = {
 		{-3., +2.},
 		{+2., +4.},
 		{-1., +1.}
@@ -150,17 +150,17 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_real_imag_part) {
 	using multi::blas::real;
 	using multi::blas::imag;
 
-	BOOST_REQUIRE( Breal == real(B) );
-	BOOST_REQUIRE( real(B) == Breal );
-	BOOST_REQUIRE( imag(B) == Bimag );
+	BOOST_REQUIRE( arr2_real == real(arr2) );
+	BOOST_REQUIRE( real(arr2) == arr2_real );
+	BOOST_REQUIRE( imag(arr2) == arr2_imag );
 
-	BOOST_REQUIRE( B[1][0] == 8. + 2.*I );
-	BOOST_REQUIRE( B[1][0].imag() == 2. );
+	BOOST_REQUIRE( arr2[1][0] == 8. + 2.*I );
+	BOOST_REQUIRE( arr2[1][0].imag() == 2. );
 
 	namespace blas = multi::blas;
 
-	BOOST_REQUIRE( blas::hermitized(B)[1][2] == std::conj( B[2][1] ) );
+	BOOST_REQUIRE( blas::hermitized(arr2)[1][2] == std::conj( arr2[2][1] ) );
 
-	blas::hermitized(B)[1][2] = 20. + 30.*I;
-	BOOST_REQUIRE( B[2][1] == 20. - 30.*I );
+	blas::hermitized(arr2)[1][2] = 20. + 30.*I;
+	BOOST_REQUIRE( arr2[2][1] == 20. - 30.*I );
 }

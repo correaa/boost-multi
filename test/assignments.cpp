@@ -1,10 +1,7 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
-#endif
-// © Alfredo A. Correa 2019-2020
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2019-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi assignments"
-#define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
 #include<complex>
@@ -13,51 +10,51 @@ $CXX $CXXFLAGS $0 -o $0.$X -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
 
 namespace multi = boost::multi;
 
-inline static constexpr auto make_ref(double* p) -> multi::array_ref<double, 2> {
-	return multi::array_ref<double, 2>(p, {5, 7});
+inline static constexpr auto make_ref(double* ptr) -> multi::array_ref<double, 2> {
+	return multi::array_ref<double, 2>(ptr, {5, 7});
 }
 
 BOOST_AUTO_TEST_CASE(equality_1D) {
-	multi::array<double, 1> A = {1., 2., 3.};
-	multi::array<double, 1> B = {1., 2., 3.};
-	BOOST_REQUIRE( A == B );
-	BOOST_REQUIRE( not (A != B) );
+	multi::array<double, 1> arr  = {1., 2., 3.};
+	multi::array<double, 1> arr2 = {1., 2., 3.};
+	BOOST_REQUIRE(      arr == arr2   );
+	BOOST_REQUIRE( not (arr != arr2) );
 
-	BOOST_REQUIRE( A() == B() );
-	BOOST_REQUIRE( not (A() != B()) );
+	BOOST_REQUIRE(      arr() == arr2() );
+	BOOST_REQUIRE( not (arr() != arr2()) );
 }
 
 BOOST_AUTO_TEST_CASE(equality_2D) {
-	multi::array<double, 2> A = {
+	multi::array<double, 2> arr = {
 		{1., 2., 3.},
 		{4., 5., 6.}
 	};
-	multi::array<double, 2> B = {
+	multi::array<double, 2> arr2 = {
 		{1., 2., 3.},
 		{4., 5., 6.}
 	};
-	BOOST_REQUIRE( A == B );
-	BOOST_REQUIRE( not (A != B) );
+	BOOST_REQUIRE( arr == arr2 );
+	BOOST_REQUIRE( not (arr != arr2) );
 
-	BOOST_REQUIRE( A() == B() );
-	BOOST_REQUIRE( not (A() != B()) );
+	BOOST_REQUIRE( arr() == arr2() );
+	BOOST_REQUIRE( not (arr() != arr2()) );
 
-	BOOST_REQUIRE( A[0] == B[0] );
-	BOOST_REQUIRE( not (A[0] != B[0]) );
+	BOOST_REQUIRE( arr[0] == arr2[0] );
+	BOOST_REQUIRE( not (arr[0] != arr2[0]) );
 }
 
 BOOST_AUTO_TEST_CASE(multi_copy_move) {
-	multi::array<double, 2> A({3, 3}, 0.);
-	multi::array<double, 2> B = A;
-	BOOST_REQUIRE( A == B );
+	multi::array<double, 2> arr({3, 3}, 0.);
+	multi::array<double, 2> arr2 = arr;
+	BOOST_REQUIRE( arr == arr2 );
 
-	auto* A_data = A.data_elements();
-	multi::array<double, 2> C = std::move(A);
+	auto* arr_data = arr.data_elements();
+	multi::array<double, 2> arr3 = std::move(arr);
 
-	BOOST_REQUIRE( C.data_elements() == A_data );
+	BOOST_REQUIRE( arr3.data_elements() == arr_data );
 
-	multi::array<double, 2> D(std::move(B));
-	BOOST_REQUIRE( size(D) == 3 );
+	multi::array<double, 2> arr4(std::move(arr2));
+	BOOST_REQUIRE( size(arr4) == 3 );
 }
 
 #if 1

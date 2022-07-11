@@ -104,15 +104,15 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_array) {
 
 BOOST_AUTO_TEST_CASE(multi_initialize_from_carray_1d) {
 	 {
-		multi::static_array<double, 1> const A = {1.1, 2.2, 3.3};
-		BOOST_REQUIRE( size(A) == 3 );
-		BOOST_REQUIRE( A[1] == 2.2 );
+		multi::static_array<double, 1> const arr = {1.1, 2.2, 3.3};
+		BOOST_REQUIRE( size(arr) == 3 );
+		BOOST_REQUIRE( arr[1] == 2.2 );
 	}
 	{
 #if defined(__cpp_deduction_guides) and not defined(__NVCC__)
-//		multi::array A = {{1.1, 2.2, 3.3}};
-//		static_assert( decltype(A)::dimensionality == 1 , "!");
-//		BOOST_REQUIRE( size(A)==3 and A[1] == 2.2 );
+//		multi::array arr = {{1.1, 2.2, 3.3}};
+//		static_assert( decltype(arr)::dimensionality == 1 , "!");
+//		BOOST_REQUIRE( size(arr)==3 and arr[1] == 2.2 );
 #endif
 	}
 	{
@@ -124,44 +124,44 @@ BOOST_AUTO_TEST_CASE(multi_initialize_from_carray_1d) {
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d) {
 	{
-		multi::static_array<double, 2> const A = {
+		multi::static_array<double, 2> const arr = {
 			{ 1.2,  2.4, 3.6, 8.9},
 			{11.2, 34.4, 5.6, 1.1},
 			{15.2, 32.4, 5.6, 3.4}
 		};
-		BOOST_REQUIRE( size(A) == 3 );
-		BOOST_REQUIRE( size(A[0]) == 4 );
-		BOOST_REQUIRE(( A == decltype(A){
+		BOOST_REQUIRE( size(arr) == 3 );
+		BOOST_REQUIRE( size(arr[0]) == 4 );
+		BOOST_REQUIRE(( arr == decltype(arr){
 			{ 1.2,  2.4, 3.6, 8.9},
 			{11.2, 34.4, 5.6, 1.1},
 			{15.2, 32.4, 5.6, 3.4}
 		}));
 	}
 	{
-		multi::array<double, 2> const A = {
+		multi::array<double, 2> const arr = {
 			{ 1.2,  2.4, 3.6},
 			{11.2, 34.4, 5.6},
 			{15.2, 32.4, 5.6}
 		};
-		BOOST_REQUIRE( size(A) == 3 );
-		BOOST_REQUIRE( size(A) == 3 and size(A[0]) == 3 );
-		BOOST_REQUIRE( A[1][1] == 34.4 );
+		BOOST_REQUIRE( size(arr) == 3 );
+		BOOST_REQUIRE( size(arr) == 3 and size(arr[0]) == 3 );
+		BOOST_REQUIRE( arr[1][1] == 34.4 );
 	}
 	{
-		multi::array<double, 2> A = {
+		multi::array<double, 2> arr = {
 			{ 1.2,  2.4, 3.6},
 			{11.2, 34.4, 5.6},
 			{15.2, 32.4, 5.6}
 		};
-		BOOST_REQUIRE( size(A) == 3 );
-		BOOST_REQUIRE( size(A) == 3 and size(A[0]) == 3 );
-		BOOST_REQUIRE( A[1][1] == 34.4 );
-		A = {
+		BOOST_REQUIRE( size(arr) == 3 );
+		BOOST_REQUIRE( size(arr) == 3 and size(arr[0]) == 3 );
+		BOOST_REQUIRE( arr[1][1] == 34.4 );
+		arr = {
 			{ 00.,  01., 02.},
 			{ 10.,  11., 12.},
 			{ 20.,  21., 22.}
 		};
-		BOOST_REQUIRE( A[1][2] == 12. );
+		BOOST_REQUIRE( arr[1][2] == 12. );
 	}
 	{
 		multi::array<double, 1> vec;
@@ -239,7 +239,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_static_array_initializer_list) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d) {
-	multi::array<double, 3> const A = {
+	multi::array<double, 3> const arr = {
 		{
 			{ 1.2, 0.},
 			{ 2.4, 1.}
@@ -253,7 +253,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d) {
 			{32.4,  2.}
 		}
 	};
-	BOOST_REQUIRE( A[1][1][0] == 34.4 and A[1][1][1] == 4.   );
+	BOOST_REQUIRE( arr[1][1][0] == 34.4 and arr[1][1][1] == 4.   );
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string) {
@@ -272,41 +272,42 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string) {
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string_ctad) {
 	#if defined(__cpp_deduction_guides) and not defined(__NVCC__) and not defined(__circle_build__)  // circle 170 crashes
 	{
-		multi::array A({1., 2., 3.});
-		static_assert( std::is_same<decltype(A)::element_type, double>{}, "!");
-		BOOST_REQUIRE( size(A) == 3 and num_elements(A) == 3 );
-		BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 and num_elements(A)==3 and A[1]==2. );
-		static_assert( typename decltype(A)::rank {}==1 );
+		multi::array arr({1., 2., 3.});
+		static_assert( std::is_same<decltype(arr)::element_type, double>{}, "!");
+		BOOST_REQUIRE( size(arr) == 3 and num_elements(arr) == 3 );
+		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 and num_elements(arr)==3 and arr[1]==2. );
+		static_assert( typename decltype(arr)::rank {}==1 );
 	}
 	{
-		multi::array A({1., 2.});
-		static_assert( std::is_same<decltype(A)::element_type, double>{}, "!");
-		BOOST_REQUIRE( size(A) == 2 and num_elements(A) == 2 );
-		BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 and num_elements(A)==2 and A[1]==2. ); BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 );
+		multi::array arr({1., 2.});
+		static_assert( std::is_same<decltype(arr)::element_type, double>{}, "!");
+		BOOST_REQUIRE( size(arr) == 2 and num_elements(arr) == 2 );
+		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 and num_elements(arr)==2 and arr[1]==2. ); BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 );
 	}
 	{
-		multi::array A({0, 2}); // 	multi::array A = {0, 2}; not working with CTAD
-		static_assert( std::is_same<decltype(A)::element_type, int>{}, "!" );
-		BOOST_REQUIRE( size(A) == 2 and num_elements(A) == 2 );
-		BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 and num_elements(A)==2 and A[1]==2. ); BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 );
+		multi::array arr({0, 2}); // 	multi::array arr = {0, 2}; not working with CTAD
+		static_assert( std::is_same_v<decltype(arr)::element_type, int>, "!" );
+		BOOST_REQUIRE( size(arr) == 2 and num_elements(arr) == 2 );
+		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 and num_elements(arr)==2 and arr[1]==2. ); BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 );
 	}
 	{
-		multi::array A({9.}); // multi::array A = {9.}; not working with CTAD
-		static_assert( std::is_same<decltype(A)::element_type, double>{}, "!" );
-		BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 and num_elements(A)==1 and A[0]==9. ); BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 );
+		multi::array arr({9.}); // multi::array arr = {9.}; not working with CTAD
+		static_assert( std::is_same<decltype(arr)::element_type, double>{}, "!" );
+		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 and num_elements(arr)==1 and arr[0]==9. ); BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 );
 	}
 	{
-		multi::array A({9}); // multi::array A = {9}; not working with CTAD
-		static_assert( std::is_same<decltype(A)::element_type, int>{}, "!" );
-		BOOST_REQUIRE( size(A) == 1 and num_elements(A) == 1 );
-		BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 and num_elements(A)==1 and A[0]==9. ); BOOST_REQUIRE( multi::rank<decltype(A)>{}==1 );
+		multi::array arr({9}); // multi::array arr = {9}; not working with CTAD
+		static_assert( std::is_same<decltype(arr)::element_type, int>{}, "!" );
+		BOOST_REQUIRE( size(arr) == 1 and num_elements(arr) == 1 );
+		BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 1 );
+		BOOST_REQUIRE( num_elements(arr) == 1 and arr[0] == 9. );
 	}
 	{
-		multi::array A({
+		multi::array arr({
 			{1., 2., 3.},
 			{4., 5., 6.}
 		});
-		BOOST_REQUIRE( multi::rank<decltype(A)>{}==2 and num_elements(A)==6 );
+		BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 2 and num_elements(arr) == 6 );
 	}
 	#endif
 }

@@ -19,12 +19,12 @@ namespace memory {
 template<class Alloc>
 struct allocator_traits : std::allocator_traits<Alloc> {
 	template<class Ptr, class... Args>
-	static auto construct(Alloc& alloc, Ptr p, Args&&... args)
+	static auto construct(Alloc& alloc, Ptr p, Args&&... args)  // NOLINT(readability-identifier-length) std naming
 	->decltype(alloc.construct(p, std::forward<Args>(args)...)) {
 		return alloc.construct(p, std::forward<Args>(args)...); }
 
 	template<class Ptr>
-	static auto destroy(Alloc& alloc, Ptr p)
+	static auto destroy(Alloc& alloc, Ptr p)  // NOLINT(readability-identifier-length) std naming
 	->decltype(alloc.destroy(p)) {
 		return alloc.destroy(p); }
 };

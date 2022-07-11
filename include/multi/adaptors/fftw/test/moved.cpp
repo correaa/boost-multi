@@ -8,7 +8,7 @@
 #include "../../../array.hpp"
 
 namespace multi = boost::multi;
-using complex = std::complex<double>; [[maybe_unused]] complex const I{0, 1};
+using complex = std::complex<double>; [[maybe_unused]] complex const I{0, 1};  // NOLINT(readability-identifier-length) imag unit
 
 template<class M> auto power(M const& array) {
 	return std::transform_reduce(array.elements().begin(), array.elements().end(), 0., std::plus<>{}, [](auto zee) {return std::norm(zee);});

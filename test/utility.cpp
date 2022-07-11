@@ -168,45 +168,44 @@ BOOST_AUTO_TEST_CASE(multi_utility_test) {
 	using multi::sizes;
 	using multi::num_elements;
 {
-	double A[4] = {1., 2., 3., 4.};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : test legacy types
-	BOOST_REQUIRE( dimensionality(A) == 1 );
-	BOOST_REQUIRE( extension(A).first() == 0 );
-	BOOST_REQUIRE( extension(A).last() == 4 );
+	double arr[4] = {1., 2., 3., 4.};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy types
+	BOOST_REQUIRE( dimensionality(arr) == 1 );
+	BOOST_REQUIRE( extension(arr).first() == 0 );
+	BOOST_REQUIRE( extension(arr).last() == 4 );
 
-	BOOST_REQUIRE( size(A) == 4 );
+	BOOST_REQUIRE( size(arr) == 4 );
 
 	using boost::multi::detail::get;
-	BOOST_REQUIRE( get<0>(sizes(A)) == size(A) );
+	BOOST_REQUIRE( get<0>(sizes(arr)) == size(arr) );
 	using multi::get_allocator;
 
-	static_assert(std::is_same<decltype(get_allocator(A)), std::allocator<double> >{}, "!");
+	static_assert(std::is_same<decltype(get_allocator(arr)), std::allocator<double> >{}, "!");
 
 	using std::addressof;
 
 	using multi::data_elements;
-	static_assert( std::is_same<decltype(data_elements(A)), double*>{} , "!");
+	static_assert( std::is_same<decltype(data_elements(arr)), double*>{} , "!");
 //	BOOST_REQUIRE( data(A) == addressof(A[0]) );
-	BOOST_REQUIRE( data_elements(A) == addressof(A[0]) );
+	BOOST_REQUIRE( data_elements(arr) == addressof(arr[0]) );
 } {
-	double A[2][3] = {{1., 2., 3.}, {4., 5., 6.}};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : test legacy types
-	BOOST_REQUIRE( dimensionality(A) == 2 );
-	BOOST_REQUIRE( extension(A).first() == 0 );
-	BOOST_REQUIRE( extension(A).last() == 2 );
+	double arr[2][3] = {{1., 2., 3.}, {4., 5., 6.}};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : test legacy types
+	BOOST_REQUIRE( dimensionality(arr) == 2 );
+	BOOST_REQUIRE( extension(arr).first() == 0 );
+	BOOST_REQUIRE( extension(arr).last() == 2 );
 //	int a = extensions(A);
 
 //  BOOST_REQUIRE( origin(A) == &A[0][0] );
 //	*origin(A) = 99.;
-	A[0][0] = 99.;
+	arr[0][0] = 99.;
 
-	BOOST_REQUIRE( A[0][0] == 99. );
-	BOOST_REQUIRE( corigin(A) == &A[0][0] );
-	BOOST_REQUIRE( size(A) == 2 );
+	BOOST_REQUIRE( arr[0][0] == 99. );
+	BOOST_REQUIRE( corigin(arr) == &arr[0][0] );
+	BOOST_REQUIRE( size(arr) == 2 );
 
 	using multi::detail::get;
-	BOOST_REQUIRE( get<0>(sizes(A)) == size(A) );
-	BOOST_REQUIRE( num_elements(A) == 6 );
+	BOOST_REQUIRE( get<0>(sizes(arr)) == size(arr) );
+	BOOST_REQUIRE( num_elements(arr) == 6 );
 
-	static_assert( num_elements(A) == 6 , "!" );
+	static_assert( num_elements(arr) == 6 , "!" );
 }
 }
-

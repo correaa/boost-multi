@@ -10,6 +10,7 @@
 #include<chrono>
 #include<iostream>
 #include<random>
+
 //#include<thrust/complex.h>  // TODO(correaa) make lib work with thrust complex
 
 namespace {
@@ -26,7 +27,7 @@ template<class M, DELETE((M::rank_v < 1))> auto power(M const& m) {
 }
 
 struct sum_power{
-	template<class A, class B> auto operator()(A const& a, B const& b) const {return a+power(b);}
+	template<class A, class B> auto operator()(A const& alpha, B const& omega) const {return alpha + power(omega);}
 };
 
 [[maybe_unused]] constexpr int N = 16;
@@ -64,7 +65,7 @@ template<class T> struct randomizer<std::complex<T>> {
 	}
 };
 
-struct fftw_fixture : fftw::environment{
+struct fftw_fixture : fftw::environment {
 //	void setup(){}
 //	void teardown(){}//fftw_cleanup();}
 };

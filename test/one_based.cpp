@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2021 Alfredo A. Correa
+// Copyright 2019-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi one-based"
 #include<boost/test/unit_test.hpp>
@@ -84,21 +84,21 @@ BOOST_AUTO_TEST_CASE(one_based_2D) {
 }
 
 BOOST_AUTO_TEST_CASE(one_base_2D_ref) {
-	std::array<std::array<double, 5>, 3> A = {{
+	std::array<std::array<double, 5>, 3> arr = {{
 		{{ 1.,  2.,  3.,  4.,  5.}},
 		{{ 6.,  7.,  8.,  9., 10.}},
 		{{11., 12., 13., 14., 15.}}
 	}};
 
-	BOOST_REQUIRE( A[0][0] == 1. );
+	BOOST_REQUIRE( arr[0][0] == 1. );
 
-//	multi::array_ref<double, 2> const& Ar = *multi::array_ptr<double, 2>(&A[0][0], {3, 5});
-//	BOOST_REQUIRE( &Ar[1][3] == &A[1][3] );
+//	multi::array_ref<double, 2> const& Ar = *multi::array_ptr<double, 2>(&arr[0][0], {3, 5});
+//	BOOST_REQUIRE( &Ar[1][3] == &arr[1][3] );
 
-//	multi::array_ref<double, 2> const& Ar2 = *multi::array_ptr<double, 2>(&A[0][0], {{1, 1+3}, {1, 1+5}});
+//	multi::array_ref<double, 2> const& Ar2 = *multi::array_ptr<double, 2>(&arr[0][0], {{1, 1+3}, {1, 1+5}});
 //	BOOST_REQUIRE( sizes(Ar) == sizes(Ar2) );
-//	BOOST_REQUIRE( &Ar2[1][1] == &A[0][0] );
-//	BOOST_REQUIRE( &Ar2[2][4] == &A[1][3] );
+//	BOOST_REQUIRE( &Ar2[1][1] == &arr[0][0] );
+//	BOOST_REQUIRE( &Ar2[2][4] == &arr[1][3] );
 
 //	BOOST_REQUIRE( Ar2.extensions() != Ar.extensions() );
 //	BOOST_REQUIRE( not(Ar2 == Ar) );

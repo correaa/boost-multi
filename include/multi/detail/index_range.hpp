@@ -121,7 +121,7 @@ class range {
 	[[nodiscard]] constexpr auto first() const -> const_reference {return first_;}
 	[[nodiscard]] constexpr auto last()  const -> const_reference {return last_ ;}
 
-	constexpr auto operator[](difference_type p) const -> const_reference {return first() + p;}
+	constexpr auto operator[](difference_type n) const -> const_reference {return first() + n;}
 
 	[[nodiscard]] constexpr auto front() const -> const_reference {return first()   ;}
 	[[nodiscard]] constexpr auto back()  const -> const_reference {return last() - 1;}
@@ -159,8 +159,8 @@ class range {
 		}
 		return begin() + (value - front());
 	}
-	template<class Value> [[nodiscard]] constexpr auto contains(Value const& v) const {return (v >=first_) and (v < last_);}
-	template<class Value> [[nodiscard]] constexpr auto count   (Value const& v) const -> value_type {return contains(v);}
+	template<class Value> [[nodiscard]] constexpr auto contains(Value const& value) const {return (value >=first_) and (value < last_);}
+	template<class Value> [[nodiscard]] constexpr auto count   (Value const& value) const -> value_type {return contains(value);}
 
 	friend constexpr auto intersection(range const& self, range const& other) {
 		using std::max; using std::min;
@@ -169,7 +169,7 @@ class range {
 		new_first = min(new_first, new_last);
 		return range<decltype(new_first), decltype(new_last)>{new_first, new_last};
 	}
-	[[nodiscard]] constexpr auto contains(value_type const& v) const {return v >= first_ and v < last_;}
+	[[nodiscard]] constexpr auto contains(value_type const& value) const {return value >= first_ and value < last_;}
 };
 
 template<class IndexType = std::true_type, typename IndexTypeLast = IndexType>
@@ -209,7 +209,7 @@ class intersecting_range {
 [[maybe_unused]] constexpr intersecting_range<> ooo   = ALL;
 
 [[maybe_unused]] constexpr intersecting_range<> V     = U;  // NOLINT(readability-identifier-length)
-[[maybe_unused]] constexpr intersecting_range<> A     = V;
+[[maybe_unused]] constexpr intersecting_range<> A     = V;  // NOLINT(readability-identifier-length)
 
 //[[maybe_unused]] constexpr intersecting_range<> https://www.compart.com/en/unicode/U+2200 = V;
 
