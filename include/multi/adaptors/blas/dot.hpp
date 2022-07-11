@@ -89,7 +89,7 @@ struct dot_ref : private Ptr {
 		assert(( size(x) == size(y) ));  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	}
 	constexpr auto operator&() const& -> Ptr const& {return *this;}  // NOLINT(google-runtime-operator) reference type
-	auto decay() const& -> decay_type {decay_type r; copy_n(operator&(), 1, &r); return r;}
+	auto decay() const& -> decay_type {decay_type ret; copy_n(operator&(), 1, &ret); return ret;}
 	operator decay_type()       const& {return decay();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,hicpp-explicit-conversion) to allow terse syntax
 #if not defined(__CUDACC__) or not defined(__INTEL_COMPILER)
 	friend auto operator*(decay_type const& lhs, dot_ref const& self) {return lhs*self.decay();}

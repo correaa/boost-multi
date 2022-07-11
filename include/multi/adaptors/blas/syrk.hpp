@@ -11,7 +11,7 @@ namespace boost::multi::blas {
 using core::syrk;
 
 template<typename AA, typename BB, class A2D, class C2D>
-auto syrk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) {
+auto syrk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) {  // NOLINT(readability-identifier-length) BLAS naming
 //->decltype(syrk('\0', '\0', size(c), size(a), alpha, base(a), stride(rotated(a)), beta, base(c), stride(c)), std::forward<C2D>(c)){
 	assert( size(c) == size(rotated(c)) );
 	if(stride(a)==1) {
@@ -25,24 +25,26 @@ auto syrk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) {
 }
 
 template<typename AA, class A2D, class C2D>
-auto syrk(filling c_side, AA alpha, A2D const& a, C2D&& c)
+auto syrk(filling c_side, AA alpha, A2D const& a, C2D&& c)  // NOLINT(readability-identifier-length) BLAS naming
 ->decltype(syrk(c_side, alpha, a, 0., std::forward<C2D>(c))) {
 	return syrk(c_side, alpha, a, 0., std::forward<C2D>(c)); }
 
 template<typename AA, class A2D, class C2D>
-auto syrk(AA alpha, A2D const& a, C2D&& c)
+auto syrk(AA alpha, A2D const& a, C2D&& c)  // NOLINT(readability-identifier-length) BLAS naming
 ->decltype(syrk(filling::upper, alpha, a, syrk(filling::lower, alpha, a, std::forward<C2D>(c)))) {
 	return syrk(filling::upper, alpha, a, syrk(filling::lower, alpha, a, std::forward<C2D>(c))); }
 
 template<typename AA, class A2D, class Ret = typename A2D::decay_type>
-NODISCARD("because input argument is const") // this decay in the return type is important
-auto syrk(AA alpha, A2D const& a)->std::decay_\
+[[nodiscard]]  // ("because input argument is const")
+// this decay in the return type is important
+// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
+auto syrk(AA alpha, A2D const& a) -> std::decay_\
 t<decltype(syrk(alpha, a, Ret({size(a), size(a)}, get_allocator(a))))> {
-	return syrk(alpha, a, Ret({size(a), size(a)}, get_allocator(a)));}
+	return syrk(alpha, a, Ret({size(a), size(a)}, get_allocator(a)));  }
 
 template<class A2D>
-NODISCARD("")
-auto syrk(A2D const& A)
+[[nodiscard]]
+auto syrk(A2D const& A)  // NOLINT(readability-identifier-length) BLAS naming
 ->decltype(syrk(1., A)) {
 	return syrk(1., A); }
 
@@ -51,7 +53,6 @@ auto syrk(A2D const& A)
 //#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 
 //#define BOOST_TEST_MODULE "C++ Unit Tests for Multi cuBLAS syrk"
-//#define BOOST_TEST_DYN_LINK
 //#include<boost/test/unit_test.hpp>
 
 //#include "../blas/gemm.hpp"

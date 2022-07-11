@@ -13,11 +13,11 @@ namespace boost::multi::blas {
 
 enum class filling : char {
 	lower = 'U',
-	upper = 'L' 
+	upper = 'L'
 };
 
-[[maybe_unused]] static constexpr filling U = filling::upper;
-[[maybe_unused]] static constexpr filling L = filling::lower;
+[[maybe_unused]] static constexpr filling U = filling::upper;  // NOLINT(readability-identifier-length) BLAS naming
+[[maybe_unused]] static constexpr filling L = filling::lower;  // NOLINT(readability-identifier-length) BLAS naming
 
 inline auto flip(filling side) -> filling {
 	switch(side) {

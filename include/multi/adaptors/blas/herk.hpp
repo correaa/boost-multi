@@ -109,9 +109,9 @@ template<class A2D> auto herk(filling s, A2D const& a)  // NOLINT(readability-id
 ->decltype(herk(s, 1., a)) {
 	return herk(s, 1., a); }
 
-template<class A2D> auto herk(A2D const& array)
-//->decltype(herk(1., a)) {
-{	return herk(1., array);}
+template<class A2D> auto herk(A2D const& array) {
+		return herk(1., array);
+}
 
 }  // end namespace boost::multi::blas
 #endif

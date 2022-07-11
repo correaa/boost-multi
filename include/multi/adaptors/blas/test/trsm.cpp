@@ -21,7 +21,7 @@ $CXX $0 -o $0x -lcudart -lcublas `pkg-config --libs blas` -lboost_unit_test_fram
 namespace multi = boost::multi;
 
 template<class Matrix>
-auto triangular(multi::blas::filling f, Matrix const& m) {
+auto triangular(multi::blas::filling f, Matrix const& m) {  // NOLINT(readability-identifier-length) BLAS naming
 	auto ret =+ m;
 	switch(f) {
 	case multi::blas::filling::upper:
