@@ -211,7 +211,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_square_real) {
 		BOOST_REQUIRE( c[2][1] == 100 );
 	}
 	 {
-		multi::array<double, 2> c({size(a), size(rotated(b))}, 9999);
+		multi::array<double, 2> c({size(a), size(rotated(b))}, 9999);  // NOLINT(readability-identifier-length) BLAS naming
 		blas::gemm_n(2., begin(blas::H(a)), size(blas::H(a)), begin(blas::H(b)), 0., begin(c));
 		BOOST_REQUIRE( c[2][1] == 100 );
 	}
@@ -365,7 +365,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_automatic) {
 
 BOOST_AUTO_TEST_CASE(multi_blas_gemm_nh) {
 	using complex = std::complex<double>; complex const I{0, 1};  // NOLINT(readability-identifier-length) imaginary unit
-	multi::array<complex, 2> const a = {
+	multi::array<complex, 2> const a = {  // NOLINT(readability-identifier-length) BLAS naming
 		{1.-2.*I, 9.-1.*I},
 		{2.+3.*I, 1.-2.*I}
 	};

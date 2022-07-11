@@ -36,13 +36,13 @@ auto copy(Context&& ctxt, It first, It last, OutIt d_first)
 	return copy_n(std::forward<Context>(ctxt), first, last - first, d_first); }
 
 template<class X1D, class Y1D>
-auto copy(X1D const& x, Y1D&& y)  // NOLINT(readability-identifier-length) conventional BLAS naming
+auto copy(X1D const& x, Y1D&& y)  // NOLINT(readability-identifier-length) BLAS naming
 ->decltype(blas::copy_n(x.begin(), x.size(), y.begin()), std::forward<Y1D>(y)) {
 	assert( (x.size() == y.size()) );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : assert
 	return blas::copy_n(x.begin(), x.size(), y.begin()), std::forward<Y1D>(y); }
 
 template<class Context, class X1D, class Y1D>
-auto copy(Context&& ctxt, X1D const& x, Y1D&& y)  // NOLINT(readability-identifier-length) conventional BLAS naming
+auto copy(Context&& ctxt, X1D const& x, Y1D&& y)  // NOLINT(readability-identifier-length) BLAS naming
 ->decltype(blas::copy_n(std::forward<Context>(ctxt), x.begin(), x.size(), y.begin()), std::forward<Y1D>(y)) {
 	assert(x.size()==y.size());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr assert
 	return blas::copy_n(std::forward<Context>(ctxt), x.begin(), x.size(), y.begin()), std::forward<Y1D>(y);

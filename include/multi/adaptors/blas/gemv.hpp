@@ -1,7 +1,8 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2019-2022 Alfredo A. Correa
+
 #ifndef MULTI_ADAPTORS_BLAS_GEMV_HPP
 #define MULTI_ADAPTORS_BLAS_GEMV_HPP
-// Copyright 2019-2021 Alfredo A. Correa
 
 #include "../blas/core.hpp"
 #include "../blas/dot.hpp"
@@ -13,7 +14,7 @@ namespace boost::multi::blas {
 using core::gemv;
 
 template<class Context, class A, class MIt, class Size, class XIt, class B, class YIt>
-auto gemv_n(Context&& ctxt, A a, MIt m_first, Size count, XIt x_first, B b, YIt y_first) {
+auto gemv_n(Context&& ctxt, A a, MIt m_first, Size count, XIt x_first, B b, YIt y_first) {  // NOLINT(readability-identifier-length) BLAS naming
 	assert(m_first->stride()==1 or m_first.stride()==1); // blas doesn't implement this case
 	assert( x_first.base() != y_first.base() ); 
 
@@ -36,12 +37,12 @@ auto gemv_n(Context&& ctxt, A a, MIt m_first, Size count, XIt x_first, B b, YIt 
 }
 
 template<class A, class MIt, class Size, class XIt, class B, class YIt>
-auto gemv_n(A a, MIt m_first, Size count, XIt x_first, B b, YIt y_first) {
+auto gemv_n(A a, MIt m_first, Size count, XIt x_first, B b, YIt y_first) {  // NOLINT(readability-identifier-length) BLAS naming
 	return gemv_n(blas::context{}, a, m_first, count, x_first, b, y_first);
 }
 
 template<class A, class M, class V, class B, class W>
-auto gemv(A const& a, M const& m, V const& v, B const& b, W&& w) -> W&& {
+auto gemv(A const& a, M const& m, V const& v, B const& b, W&& w) -> W&& {  // NOLINT(readability-identifier-length) BLAS naming
 	assert(size( m) == size(w) );
 	assert(size(~m) == size(v) );
 	gemv_n(a, begin(m), size(m), begin(v), b, begin(w));
@@ -62,25 +63,25 @@ class gemv_iterator {
 	using reference = void;
 	using iterator_category = std::random_access_iterator_tag;
 
-	friend auto operator-(gemv_iterator const& a, gemv_iterator const& b) -> difference_type{
-		assert(a.v_first_ == b.v_first_);
-		return a.m_it_ - b.m_it_;
+	friend auto operator-(gemv_iterator const& self, gemv_iterator const& other) -> difference_type {
+		assert(self.v_first_ == other.v_first_);
+		return self.m_it_ - other.m_it_;
 	}
 	template<class It1DOut>
 	friend auto copy_n(gemv_iterator first, difference_type count, It1DOut result){
-		if constexpr(std::is_same<Context, void>{}){blas::gemv_n(             first.alpha_, first.m_it_, count, first.v_first_, 0., result);}
-		else                                       {blas::gemv_n(first.ctxt_, first.alpha_, first.m_it_, count, first.v_first_, 0., result);}
+		if constexpr(std::is_same_v<Context, void>) {blas::gemv_n(             first.alpha_, first.m_it_, count, first.v_first_, 0., result);}
+		else                                        {blas::gemv_n(first.ctxt_, first.alpha_, first.m_it_, count, first.v_first_, 0., result);}
 		return result + count;
 	}
 	template<class It1DOut>
 	friend auto copy(gemv_iterator first, gemv_iterator last, It1DOut result){return copy_n(first, last - first, result);}
 	template<class It1DOut>
-	friend auto uninitialized_copy(gemv_iterator first, gemv_iterator last, It1DOut result){
-		static_assert(std::is_trivially_default_constructible<typename It1DOut::value_type>{});
+	friend auto uninitialized_copy(gemv_iterator first, gemv_iterator last, It1DOut result) {
+		static_assert(std::is_trivially_default_constructible_v<typename It1DOut::value_type>);
 		return copy(first, last, result);
 	}
 	gemv_iterator(Scalar alpha, It2D m_it, It1D v_first, Context ctxt) 
-		: alpha_{alpha}, m_it_{std::move(m_it)}, v_first_{std::move(v_first)}, ctxt_{ctxt}{}
+	: alpha_{alpha}, m_it_{std::move(m_it)}, v_first_{std::move(v_first)}, ctxt_{ctxt} {}
 	auto operator*() const -> value_type{return 0.;}
 };
 
@@ -120,9 +121,9 @@ class gemv_range {
 	auto extensions() const -> typename decay_type::extensions_type{return typename decay_type::extensions_type{{0, size()}};}
 	auto decay() const{return decay_type{*this};}
 
-	friend auto operator+(gemv_range const& self){return self.decay();}
+	friend auto operator+(gemv_range const& self) {return self.decay();}
 	template<class V>
-	friend auto operator+=(V&& v, gemv_range const& s) -> V&&{
+	friend auto operator+=(V&& v, gemv_range const& s) -> V&& {  // NOLINT(readability-identifier-length) BLAS naming
 		if constexpr(std::is_same<Context, void*>{}) {blas::gemv_n(         s.alpha_, s.m_begin_, s.m_end_ - s.m_begin_, s.v_first_, 1., v.begin());}
 		else                                         {blas::gemv_n(s.ctxt_, s.alpha_, s.m_begin_, s.m_end_ - s.m_begin_, s.v_first_, 1., v.begin());}
 		return std::forward<V>(v);
@@ -130,7 +131,7 @@ class gemv_range {
 };
 
 template<class Scalar, class M, class V>
-auto gemv(Scalar s, M const& m, V const& v)
+auto gemv(Scalar s, M const& m, V const& v)  // NOLINT(readability-identifier-length) BLAS naming
 {//->decltype(gemv_range{s, m, v}){
 	assert(size(~m) == size(v));
 	return gemv_range<Scalar, typename M::const_iterator, typename V::const_iterator, typename V::decay_type, blas::context>(s, m.begin(), m.end(), v.begin());}
@@ -143,7 +144,7 @@ auto gemv(Context&& ctxt, Scalar s, M const& m, V const& v) {  // NOLINT(readabi
 
 namespace operators{
 	template<class M, class V>
-	auto operator%(M const& m, V const& v)
+	auto operator%(M const& m, V const& v)  // NOLINT(readability-identifier-length) BLAS naming
 	->decltype(+blas::gemv(1., m, v)) {
 		return +blas::gemv(1., m, v); }
 } // end namespace operators

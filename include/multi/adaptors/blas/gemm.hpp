@@ -41,40 +41,32 @@ try {
 		#define CTXT std::forward<Context>(ctxt)
 		if constexpr      (!is_conjugated<It2DA>{} and !is_conjugated<It2DB>{}){
 			if      (a_first->stride()==1 and b_first->stride()==1 and c_first->stride()==1) {
-				if     ( a_count==1 and b_first->size()==1 ){CTXT.gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->size()  , base(a_first), a_first->size() , &beta, base(c_first), c_first->size()  );}
-				else if( a_count==1                        ){CTXT.gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first->size()  );}
-				else                                        {CTXT.gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), base(a_first), a_first. stride(), &beta, base(c_first), c_first. stride());}
+				if     ( a_count==1 and b_first->size()==1 ) {CTXT.gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->size()  , base(a_first), a_first->size()  , &beta, base(c_first), c_first->size()  );}
+				else if( a_count==1                        ) {CTXT.gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first->size()  );}
+				else                                         {CTXT.gemm('N', 'N', b_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), base(a_first), a_first. stride(), &beta, base(c_first), c_first. stride());}
 			}else if(a_first->stride()==1 and b_first->stride()==1 and c_first. stride()==1) {
-				if  (a_count==1)                            {CTXT.gemm('T', 'T', a_count, b_first->size(), a_first->size(), &alpha, base(a_first), a_first. stride(), base(b_first), b_first->size() , &beta, base(c_first), a_first->size()  );}
-				else                                        {CTXT.gemm('T', 'T', a_count, b_first->size(), a_first->size(), &alpha, base(a_first), a_first. stride(), base(b_first), b_first.stride(), &beta, base(c_first), c_first->stride());}
+				if  (a_count==1)                             {CTXT.gemm('T', 'T', a_count, b_first->size(), a_first->size(), &alpha, base(a_first), a_first. stride(), base(b_first), b_first->size()  , &beta, base(c_first), a_first->size()  );}
+				else                                         {CTXT.gemm('T', 'T', a_count, b_first->size(), a_first->size(), &alpha, base(a_first), a_first. stride(), base(b_first), b_first. stride(), &beta, base(c_first), c_first->stride());}
 			}else if(a_first. stride()==1 and b_first->stride()==1 and c_first->stride()==1) { 
-				if  (a_count==1)                            {CTXT.gemm('N', 'T', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), base(a_first), a_first->stride(), &beta, base(c_first), a_count         );}
-				else                                        {CTXT.gemm('N', 'T', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), base(a_first), a_first->stride(), &beta, base(c_first), c_first.stride());}
+				if  (a_count==1)                             {CTXT.gemm('N', 'T', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), base(a_first), a_first->stride(), &beta, base(c_first), a_count         );}
+				else                                         {CTXT.gemm('N', 'T', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first. stride(), base(a_first), a_first->stride(), &beta, base(c_first), c_first.stride());}
 			}else if(a_first. stride()==1 and b_first->stride()==1 and c_first. stride()==1) {
-				if  (a_count==1)                            {CTXT.gemm('N', 'T', a_count, b_first->size(), a_first->size(), &alpha, base(a_first), a_first->stride(), base(b_first), a_first->size()  , &beta, base(c_first), b_first->size()  );}
-				else                                        {CTXT.gemm('N', 'T', a_count, b_first->size(), a_first->size(), &alpha, base(a_first), a_first->stride(), base(b_first), b_first. stride(), &beta, base(c_first), c_first->stride());}
+				if  (a_count==1)                             {CTXT.gemm('N', 'T', a_count, b_first->size(), a_first->size(), &alpha, base(a_first), a_first->stride(), base(b_first), a_first->size()  , &beta, base(c_first), b_first->size()  );}
+				else                                         {CTXT.gemm('N', 'T', a_count, b_first->size(), a_first->size(), &alpha, base(a_first), a_first->stride(), base(b_first), b_first. stride(), &beta, base(c_first), c_first->stride());}
 			}else if(a_first->stride()==1 and b_first.stride()==1 and c_first. stride()==1) {
-				if     (a_count==1 and b_first->size()==1  ){CTXT.gemm('N', 'N', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->size()  , base(a_first), a_first->size()  , &beta, base(c_first), c_first->stride());}
-				else if(a_count==1)                         {CTXT.gemm('N', 'T', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first->stride());}
-				else if(a_first->size() == 1 and b_first->size() == 1) {
-															 CTXT.gemm('N', 'N', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first.stride() , &beta, base(c_first), c_first->stride());
-				}
-				else                                        {CTXT.gemm('N', 'T', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first.stride() , &beta, base(c_first), c_first->stride());}
+				if     (a_count==1 and b_first->size()==1  ) {CTXT.gemm('N', 'N', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->size()  , base(a_first), a_first->size()  , &beta, base(c_first), c_first->stride());}
+				else if(a_count==1)                          {CTXT.gemm('N', 'T', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first->stride());}
+				else if(a_first->size() == 1 and b_first->size() == 1)
+															 {CTXT.gemm('N', 'N', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first. stride(), &beta, base(c_first), c_first->stride());}
+				else                                         {CTXT.gemm('N', 'T', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first. stride(), &beta, base(c_first), c_first->stride());}
 			}else if(a_first->stride()==1 and b_first. stride()==1 and c_first->stride()==1) {
-				if  (a_count==1)                            {CTXT.gemm('T', 'N', a_count, c_first->size(), a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first.stride());}
-				else                                        {CTXT.gemm('T', 'N', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first.stride(), &beta, base(c_first), c_first.stride());}
+				if  (a_count==1)                             {CTXT.gemm('T', 'N', a_count, c_first->size(), a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first->size()  , &beta, base(c_first), c_first. stride());}
+				else                                         {CTXT.gemm('T', 'N', c_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first. stride(), &beta, base(c_first), c_first. stride());}
 			}else if(a_first. stride()==1 and b_first.stride( )==1 and c_first. stride()==1) {
-				if  (b_first->size()==1)                    {CTXT.gemm('N', 'N', a_count, b_first->size(), a_first->size(), &alpha, base(a_first), a_first->stride(), base(b_first), b_first->stride(), &beta, base(c_first), a_count          );}
-				else                                        {CTXT.gemm('N', 'N', a_count, b_first->size(), a_first->size(), &alpha, base(a_first), a_first->stride(), base(b_first), b_first->stride(), &beta, base(c_first), c_first->stride());}
+				if  (b_first->size()==1)                     {CTXT.gemm('N', 'N', a_count, b_first->size(), a_first->size(), &alpha, base(a_first), a_first->stride(), base(b_first), b_first->stride(), &beta, base(c_first), a_count          );}
+				else                                         {CTXT.gemm('N', 'N', a_count, b_first->size(), a_first->size(), &alpha, base(a_first), a_first->stride(), base(b_first), b_first->stride(), &beta, base(c_first), c_first->stride());}
 			}else if(a_first. stride()==1 and b_first.stride( )==1 and c_first->stride()==1) {			
-				                                            {CTXT.gemm('T', 'T', b_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first->stride(), &beta, base(c_first), c_first. stride());}
-
-// // b_first->size(), a_first->size(), a_count
-// b_first->size(), a_count, a_first->size()
-// a_first->size(), a_count, b_first->size()
-// a_first->size(), b_first->size(), a_count
-// a_count, b_first->size(), a_first->size(),
-// a_count, a_first->size(), b_first->size()
+				                                             {CTXT.gemm('T', 'T', b_first->size(), a_count, a_first->size(), &alpha, base(b_first), b_first->stride(), base(a_first), a_first->stride(), &beta, base(c_first), c_first. stride());}
 			} else {assert(0);}  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
 		}else if constexpr(!is_conjugated<It2DA>{} and  is_conjugated<It2DB>{}){
@@ -109,9 +101,9 @@ try {
 	using std::to_string;
 	throw std::logic_error{
 		"couldn't do "+std::string(__PRETTY_FUNCTION__)+" of layout a_count="+std::to_string(a_count) // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
-		+" a_strides="+to_string(a_first.stride())+","+to_string(a_first->stride())+" a->size="+to_string(a_first->size())
-		+" b_strides="+to_string(b_first.stride())+","+to_string(b_first->stride())+" b->size="+to_string(b_first->size())
-		+" c_strides="+to_string(c_first.stride())+","+to_string(c_first->stride())+" c->size="+to_string(c_first->size())
+		+" a_strides="+ to_string(a_first.stride()) +","+ to_string(a_first->stride()) +" a->size="+ to_string(a_first->size())
+		+" b_strides="+ to_string(b_first.stride()) +","+ to_string(b_first->stride()) +" b->size="+ to_string(b_first->size())
+		+" c_strides="+ to_string(c_first.stride()) +","+ to_string(c_first->stride()) +" c->size="+ to_string(c_first->size())
 		+" because " + e.what()
 	};
 }
@@ -139,13 +131,13 @@ template<class ContextPtr, class Scalar, class ItA, class ItB, class DecayType>
 class gemm_range;
 
 template<class Ext>
-class gemm_reference { // TODO(correaa) implement this in terms of gemv_range
-	Ext x;
+class gemm_reference {  // TODO(correaa) implement this in terms of gemv_range
+	Ext exts_;
 
  public:
-	explicit gemm_reference(Ext x_) : x{std::move(x_)} {}
-	auto extensions() const -> Ext const& {return x;}
-	friend auto extensions(gemm_reference const& self) -> Ext const& {return self.extensions();}
+	explicit gemm_reference(Ext exts) : exts_{std::move(exts)} {}
+	auto extensions() const {return exts_;}
+	friend auto extensions(gemm_reference const& self) {return self.extensions();}
 };
 
 template<class ContextPtr, class Scalar, class ItA, class ItB>
@@ -181,7 +173,7 @@ class gemm_iterator {
 
 	auto operator+(difference_type n) const {gemm_iterator ret{*this}; ret+=n; return ret;}
 
-	friend auto operator-(gemm_iterator const& a, gemm_iterator const& b) -> difference_type {
+	friend auto operator-(gemm_iterator const& a, gemm_iterator const& b) -> difference_type {  // NOLINT(readability-identifier-length) BLAS naming
 		assert(a.b_begin_ == b.b_begin_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 		return a.a_it_ - b.a_it_;
 	}
@@ -234,7 +226,7 @@ class gemm_range {
 	auto operator=(gemm_range&&) -> gemm_range& = delete;
 	~gemm_range() = default;
 
-	gemm_range(ContextPtr ctxtp, Scalar s, ItA a_first, ItA a_last, ItB b_first)  // NOLINT(bugprone-easily-swappable-parameters,readability-identifier-length) conventional BLAS naming
+	gemm_range(ContextPtr ctxtp, Scalar s, ItA a_first, ItA a_last, ItB b_first)  // NOLINT(bugprone-easily-swappable-parameters,readability-identifier-length) BLAS naming
 	: ctxtp_{ctxtp}
 	, s_{s}, a_begin_{std::move(a_first)}, a_end_{std::move(a_last)}
 	, b_begin_{std::move(b_first)}

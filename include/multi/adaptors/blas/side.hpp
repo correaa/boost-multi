@@ -11,8 +11,8 @@ enum side : char {
 //	post_multiply = 'L'
 };
 
-inline auto swap(side s) -> side {
-	switch(s) {
+inline auto swap(side sid) -> side {
+	switch(sid) {
 		case side::left : return side::right;
 		case side::right: return side::left ;
 	} __builtin_unreachable();

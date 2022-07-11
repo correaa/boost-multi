@@ -19,7 +19,7 @@ namespace fftw = multi::fftw;
 
 using complex = std::complex<double>; [[maybe_unused]] complex const I{0, 1};  // NOLINT(readability-identifier-length) imag unit
 
-template<class M> auto power(M const& m) -> decltype(std::norm(m)) {return std::norm(m);}
+template<class M> auto power(M const& elem) -> decltype(std::norm(elem)) {return std::norm(elem);}
 
 template<class M, DELETE((M::rank_v < 1))> auto power(M const& m) {
 	return accumulate(begin(m), end(m), 0., [](auto const& a, auto const& b) {return a + power(b);});
@@ -48,19 +48,19 @@ class watch : private std::chrono::high_resolution_clock{
 	}
 };
 
-template<class T> struct randomizer{
-	template<class M> void operator()(M&& m) const {for(auto&& e : m) {operator()(e);}}
-	void operator()(T& e) const{  // NOLINT(runtime/references) : passing by reference
-		static std::random_device r; static std::mt19937 g{r()}; static std::normal_distribution<T> d;
-		e = d(g);
+template<class T> struct randomizer {
+	template<class M> void operator()(M&& array) const {for(auto&& elem : array) {operator()(elem);}}
+	void operator()(T& elem) const {  // NOLINT(runtime/references) passing by reference
+		static std::random_device dev; static std::mt19937 gen{dev()}; static std::normal_distribution<T> gauss;
+		elem = gauss(gen);
 	}
 };
 
-template<class T> struct randomizer<std::complex<T>>{
-	template<class M> void operator()(M&& m) const {for(auto&& e : m) {operator()(e);}}
-	void operator()(std::complex<T>& e) const{  // NOLINT(runtime/references) : passing by reference
+template<class T> struct randomizer<std::complex<T>> {
+	template<class M> void operator()(M&& m) const {for(auto&& elem : m) {operator()(elem);}}
+	void operator()(std::complex<T>& zee) const{  // NOLINT(runtime/references) : passing by reference
 		static std::random_device r; static std::mt19937 g{r()}; static std::normal_distribution<T> d;
-		e = std::complex<T>(d(g), d(g));
+		zee = std::complex<T>(d(g), d(g));
 	}
 };
 

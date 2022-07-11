@@ -16,20 +16,24 @@ namespace multi = boost::multi;
 namespace blas = multi::blas;
 
 BOOST_AUTO_TEST_CASE(blas_dot_context) {
-	multi::array<float, 1> const A = {1., 2., 3.};
-	multi::array<float, 1> const B = {1., 2., 3.};
+	multi::array<float, 1> const x = {1., 2., 3.};  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<float, 1> const y = {1., 2., 3.};  // NOLINT(readability-identifier-length) BLAS naming
 	blas::context ctxt;
-	auto C = +blas::dot(&ctxt, A, B);
-	float c = +blas::dot(&ctxt, A, B);
-	BOOST_TEST_REQUIRE( c == std::inner_product(begin(A), end(A), begin(B), 0.F) );
-	BOOST_REQUIRE( C == std::inner_product(begin(A), end(A), begin(B), 0.F) );
+	{
+		auto  res = +blas::dot(&ctxt, x, y);  // NOLINT(readability-identifier-length) BLAS naming
+		BOOST_REQUIRE( res == std::inner_product(begin(x), end(x), begin(y), 0.F) );
+	}
+	{
+		float res = +blas::dot(&ctxt, x, y);  // NOLINT(readability-identifier-length) BLAS naming
+		BOOST_TEST_REQUIRE( res == std::inner_product(begin(x), end(x), begin(y), 0.F) );
+	}
 }
 
 BOOST_AUTO_TEST_CASE(blas_dot_no_context) {
-	multi::array<float, 1> const A = {1., 2., 3.};
-	multi::array<float, 1> const B = {1., 2., 3.};
-	auto C = +blas::dot(A, B);
-	BOOST_REQUIRE( C == std::inner_product(begin(A), end(A), begin(B), 0.F) );
+	multi::array<float, 1> const x = {1., 2., 3.};  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<float, 1> const y = {1., 2., 3.};  // NOLINT(readability-identifier-length) BLAS naming
+	auto res = +blas::dot(x, y);
+	BOOST_REQUIRE( res == std::inner_product(begin(x), end(x), begin(y), 0.F) );
 }
 
 
@@ -47,8 +51,8 @@ BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex) { // if you get a se
 	multi::array<complex, 1> const B = {1., 2., 3.};
 	complex C;
 	blas::dot(A, B, C);
-	BOOST_REQUIRE_EQUAL( real(C) , real(std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto const& a, auto const& b) {return a*std::conj(b);})) );
-	BOOST_REQUIRE_EQUAL( imag(C) , imag(std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto const& a, auto const& b) {return a*std::conj(b);})) );
+	BOOST_REQUIRE_EQUAL( real(C) , real(std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto const& alpha, auto const& omega) {return alpha*std::conj(omega);})) );
+	BOOST_REQUIRE_EQUAL( imag(C) , imag(std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto const& alpha, auto const& omega) {return alpha*std::conj(omega);})) );
 }
 
 BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex_C) {
@@ -121,18 +125,18 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_real) {
 		BOOST_REQUIRE( d==std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.) );
 	}
 	{
-		double d = NAN;
-		blas::dot(cA[1], cA[2], d);
-		BOOST_REQUIRE( d==std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.) );
+		double res = NAN;
+		blas::dot(cA[1], cA[2], res);
+		BOOST_REQUIRE( res == std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.) );
 	}
 	{
-		double d = NAN;
-		auto d2 = blas::dot(cA[1], cA[2], d);
-		BOOST_REQUIRE( d==d2 );
+		double res = NAN;
+		auto res2 = blas::dot(cA[1], cA[2], res);
+		BOOST_REQUIRE( res == res2 );
 	}
 	 {
-		double d = blas::dot(cA[1], cA[2]);
-		BOOST_REQUIRE( d == std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.) );
+		double res = blas::dot(cA[1], cA[2]);
+		BOOST_REQUIRE( res == std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.) );
 		BOOST_REQUIRE( blas::dot(cA[1], cA[2]) == blas::dot(cA[2], cA[1]) );
 	}
 }

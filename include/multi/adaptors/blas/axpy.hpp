@@ -88,7 +88,7 @@ auto axpy(Context&& ctxt, Scalar a, X1D const& x)  // NOLINT(readability-identif
 template<class Scalar, class X1D>
 auto axpy(Scalar a, X1D const& x)  // NOLINT(readability-identifier-length) conventional BLAS naming
 -> axpy_range<blas::context const&, Scalar, typename X1D::const_iterator> {
-	blas::context ctxt{};
+	static blas::context ctxt{};
 	return {ctxt, a, begin(x), end(x)};  // TODO(correaa) fix temporary
 }
 
