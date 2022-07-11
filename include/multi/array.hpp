@@ -1087,7 +1087,9 @@ template<typename T, dimensionality_type D, typename P> array(basic_array<T, D, 
 #endif  // ends defined(__cpp_deduction_guides)
 
 template <class T, std::size_t N>
-auto decay(const T(&array)[N]) noexcept -> multi::array<typename std::remove_all_extents<T[N]>::type, std::rank_v<T[N]>> {return multi::array_cref<typename std::remove_all_extents<T[N]>::type, std::rank_v<T[N]>>(data_elements(array), extensions(array));}  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+auto decay(const T(&arr)[N]) noexcept -> multi::array<typename std::remove_all_extents<T[N]>::type, std::rank_v<T[N]>> {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+	return multi::array_cref<typename std::remove_all_extents<T[N]>::type, std::rank_v<T[N]>>(data_elements(arr), extensions(arr));  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+}
 
 template<class T, std::size_t N>
 struct array_traits<T[N], void, void> {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
