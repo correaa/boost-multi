@@ -2674,7 +2674,7 @@ constexpr auto is_basic_array_aux(...                            ) -> std::false
 
 template<class A> struct is_basic_array: decltype(is_basic_array_aux(std::declval<A>())){};
 
-template<class In, class T, dimensionality_type N, class TP, class = std::enable_if_t<(N > 1)>, class = decltype(adl_begin(*In{}), adl_end(*In{}))>
+template<class In, class T, dimensionality_type N, class TP, class = std::enable_if_t<(N > 1)>, class = decltype((void)adl_begin(*In{}), adl_end(*In{}))>
 constexpr auto uninitialized_copy
 // require N>1 (this is important because it forces calling placement new on the pointer
 (In first, In last, multi::array_iterator<T, N, TP> dest) {
