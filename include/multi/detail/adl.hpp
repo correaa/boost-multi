@@ -420,7 +420,7 @@ constexpr class adl_begin_t {
 	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).begin(std::forward<As>(args)...))
 
  public:
-	template<class... As> constexpr auto operator()(As&&... args) const DECLRETURN(_(priority<4>{}, std::forward<As>(args)...))
+	template<class... As> [[nodiscard]] constexpr auto operator()(As&&... args) const DECLRETURN(_(priority<4>{}, std::forward<As>(args)...))
 } adl_begin;
 
 constexpr class adl_end_t {
