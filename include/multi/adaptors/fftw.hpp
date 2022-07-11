@@ -238,30 +238,30 @@ auto fftw_plan_many_dft(It1 first, It1 last, It2 d_first, int sign, fftw::flags 
 	auto const ostrides = [&](){
 		std::array<int, std::decay_t<decltype(*It1{})>::rank::value> ostrides{};
 		using boost::multi::detail::get;
-		std::transform(ssn.begin(), ssn.end(), ostrides.begin(), [](auto e){return get<1>(e);});
+		std::transform(ssn.begin(), ssn.end(), ostrides.begin(), [](auto elem) {return get<1>(elem);});
 		return ostrides;
 	}();
-	assert( std::is_sorted(ostrides.begin(), ostrides.end(), std::greater<>{}) ); // otherwise ordering is incompatible
+	assert( std::is_sorted(ostrides.begin(), ostrides.end(), std::greater<>{}) );  // otherwise ordering is incompatible
 
-	auto const ion      = [&](){
+	auto const ion      = [&]() {
 		std::array<int, std::decay_t<decltype(*It1{})>::rank::value> ion     {};
 		using boost::multi::detail::get;
-		std::transform(ssn.begin(), ssn.end(), ion     .begin(), [](auto e){return get<2>(e);});
+		std::transform(ssn.begin(), ssn.end(), ion     .begin(), [](auto elem) {return get<2>(elem);});
 		return ion;
 	}();
 
-	auto const inembed = [&](){
+	auto const inembed = [&]() {
 		std::array<int, std::decay_t<decltype(*It1{})>::rank::value + 1> inembed{};
 		std::adjacent_difference(
-			istrides.rbegin(), istrides.rend(), inembed.rbegin(), [](auto a, auto b){assert(b != 0 and a%b == 0); return a/b;}
+			istrides.rbegin(), istrides.rend(), inembed.rbegin(), [](auto a, auto b) {assert(b != 0 and a%b == 0); return a/b;}
 		);
 		return inembed;
 	}();
 
-	auto const onembed = [&](){
+	auto const onembed = [&]() {
 		std::array<int, std::decay_t<decltype(*It1{})>::rank::value + 1> onembed{};
 		std::adjacent_difference(
-			ostrides.rbegin(), ostrides.rend(), onembed.rbegin(), [](auto a, auto b){assert(b != 0 and a%b == 0); return a/b;}
+			ostrides.rbegin(), ostrides.rend(), onembed.rbegin(), [](auto a, auto b) {assert(b != 0 and a%b == 0); return a/b;}
 		);
 		return onembed;
 	}();
@@ -465,24 +465,23 @@ class plan {
 	template<typename... As,
 		typename = decltype(fftw_plan_dft(std::declval<As&&>()...))
 	>
-	explicit plan(As&&... as) : impl_{fftw_plan_dft(std::forward<As>(as)...), &fftw_destroy_plan}{
+	explicit plan(As&&... args) : impl_{fftw_plan_dft(std::forward<As>(args)...), &fftw_destroy_plan} {
 		assert(impl_);
 	}
 	template<typename... As>
-	static auto many(As&&... as)
-	->std::decay_t<decltype(fftw_plan_many_dft(std::forward<As>(as)...) , std::declval<plan>())>
-	{
-		plan r; r.impl_.reset(fftw_plan_many_dft(std::forward<As>(as)...)); return r; // this produces a compilation error in icc++17
+	static auto many(As&&... args)
+	->std::decay_t<decltype(fftw_plan_many_dft(std::forward<As>(args)...) , std::declval<plan>())> {
+		plan r; r.impl_.reset(fftw_plan_many_dft(std::forward<As>(args)...)); return r; // this produces a compilation error in icc++17
 	}
 
 private:
-	void execute() const{fftw_execute(impl_.get());} //TODO(correaa): remove const
+	void execute() const {fftw_execute(impl_.get());} //TODO(correaa): remove const
 	template<class I, class O>
-	void execute_dft(I&& i, O&& o) const{
-		::fftw_execute_dft(impl_.get(), const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(static_cast<std::complex<double> const*>(base(i)))), reinterpret_cast<fftw_complex*>(static_cast<std::complex<double>*>(base(o)))); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) : to interface with legacy fftw
+	void execute_dft(I&& in, O&& out) const {
+		::fftw_execute_dft(impl_.get(), const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(static_cast<std::complex<double> const*>(base(in)))), reinterpret_cast<fftw_complex*>(static_cast<std::complex<double>*>(base(out)))); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) : to interface with legacy fftw
 	}
-	template<class I, class O> void execute(I&& i, O&& o) const{execute_dft(std::forward<I>(i), std::forward<O>(o));}
-	friend void execute(plan const& p){p.execute();}
+	template<class I, class O> void execute(I&& i, O&& o) const {execute_dft(std::forward<I>(i), std::forward<O>(o));}
+	friend void execute(plan const& p) {p.execute();}
 
 public:
 	auto operator=(plan&&) -> plan& = default;
@@ -580,11 +579,11 @@ auto dft(In const& in, sign dir)
 	return dft(in, R(extensions(in), get_allocator(in)), dir);}
 
 template<typename T, dimensionality_type D, class... Args>
-auto rotate(multi::array<T, D, Args...>& io) -> decltype(auto) {
-	multi::array_ref<T, D, typename multi::array<T, D, Args...>::element_ptr> before(data_elements(io), extensions(io));
-	io.reshape(extensions(rotated(before) ));
-	fftw::dft(before, io, fftw::none);
-	return io;
+auto rotate(multi::array<T, D, Args...>& inout) -> decltype(auto) {
+	multi::array_ref<T, D, typename multi::array<T, D, Args...>::element_ptr> before(data_elements(inout), extensions(inout));
+	inout.reshape(extensions(rotated(before) ));
+	fftw::dft(before, inout, fftw::none);
+	return inout;
 }
 
 template<typename In, dimensionality_type D = In::rank_v, class R=typename In::decay_type,

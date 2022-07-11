@@ -46,7 +46,7 @@ auto detect_triangular_aux(A2D const& array, std::false_type /*false*/) -> filli
 }
 
 template<class A2D>
-auto detect_triangular(A2D const&) -> filling;
+auto detect_triangular(A2D const& /*array*/) -> filling;
 
 template<class A2D, std::enable_if_t<is_conjugated<A2D>{}, int> =0>
 auto detect_triangular_aux(A2D const& array) -> filling {

@@ -14,19 +14,19 @@
 namespace boost::multi::blas {
 
 template<class A, std::enable_if_t<not is_conjugated<A>{}, int> =0> 
-auto base_aux(A&& a)
-->decltype(base(a)) {
-	return base(a); }
+auto base_aux(A&& array)
+->decltype(base(array)) {
+	return base(array); }
 
 template<class A, std::enable_if_t<    is_conjugated<A>{}, int> =0>
-auto base_aux(A&& a)
-->decltype(underlying(base(a))) {
-	return underlying(base(a)); }
+auto base_aux(A&& array)
+->decltype(underlying(base(array))) {
+	return underlying(base(array)); }
 
 using core::herk;
 
 template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr, std::enable_if_t<is_complex_array<C2D>{}, int> =0>
-auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) -> C2D&& // NOLINT(readability-function-cognitive-complexity) : 74
+auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) -> C2D&&  // NOLINT(readability-function-cognitive-complexity,readability-identifier-length) 74, BLAS naming
 //->decltype(herk('\0', '\0', c.size(), a.size(), &alpha, base_aux(a), stride(a.rotated()), &beta, base_aux(c), stride(c)), std::forward<C2D>(c))
 {
 	assert( a.size() == c.size() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)

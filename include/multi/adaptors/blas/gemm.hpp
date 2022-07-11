@@ -176,17 +176,17 @@ class gemm_iterator {
 	auto operator+=(difference_type n) -> gemm_iterator& {a_it_ += n; return *this;}
 	auto operator-=(difference_type n) -> gemm_iterator& {a_it_ -= n; return *this;}
 
-	auto operator++() -> gemm_iterator& {return operator+=(1);} // required by random access concept requires even if not used explicitly
+	auto operator++() -> gemm_iterator& {return operator+=(1);}  // required by random access concept requires even if not used explicitly
 	auto operator--() -> gemm_iterator& {return operator-=(1);}
 
 	auto operator+(difference_type n) const {gemm_iterator ret{*this}; ret+=n; return ret;}
 
 	friend auto operator-(gemm_iterator const& a, gemm_iterator const& b) -> difference_type {
-		assert(a.b_begin_ == b.b_begin_); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+		assert(a.b_begin_ == b.b_begin_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 		return a.a_it_ - b.a_it_;
 	}
-	friend auto operator==(gemm_iterator const& a, gemm_iterator const& b) -> bool {return a.a_it_ == b.a_it_;}
-	friend auto operator!=(gemm_iterator const& a, gemm_iterator const& b) -> bool {return a.a_it_ != b.a_it_;}
+	friend auto operator==(gemm_iterator const& self, gemm_iterator const& other) -> bool {return self.a_it_ == other.a_it_;}
+	friend auto operator!=(gemm_iterator const& self, gemm_iterator const& other) -> bool {return self.a_it_ != other.a_it_;}
 
 	template<class ItOut>
 	friend auto copy_n(gemm_iterator const& first, difference_type count, ItOut d_first)
@@ -255,14 +255,14 @@ class gemm_range {
 //	operator decay_type() const{return decay_type(*this);} // do not use curly { }
 	auto operator+() const -> decay_type {return *this;} // TODO(correaa) : investigate why return decay_type{*this} doesn't work
 	template<class Arr>
-	friend auto operator+=(Arr&& a, gemm_range const& self) -> Arr&& {
+	friend auto operator+=(Arr&& a, gemm_range const& self) -> Arr&& {  // NOLINT(readability-identifier-length) BLAS naming
 		blas::gemm_n(*self.ctxtp_, self.s_, self.a_begin_, self.a_end_ - self.a_begin_, self.b_begin_, 1., a.begin());
 		return std::forward<Arr>(a);
 	}
 };
 
 template<class ContextPtr, class Scalar, class A2D, class B2D, class=std::enable_if_t<is_context<decltype(*ContextPtr{})>{}> >
-auto gemm(ContextPtr ctxtp, Scalar s, A2D const& a, B2D const& b)
+auto gemm(ContextPtr ctxtp, Scalar s, A2D const& a, B2D const& b)  // NOLINT(readability-identifier-length) BLAS naming
 ->gemm_range<ContextPtr, Scalar, typename A2D::const_iterator, typename B2D::const_iterator, typename A2D::decay_type/*B2D*/>
 {
 	return {ctxtp, s, begin(a), end(a), begin(b)};
