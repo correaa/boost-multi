@@ -10,8 +10,9 @@
 namespace multi = boost::multi;
 using complex = std::complex<double>; [[maybe_unused]] complex const I{0, 1};
 
-template<class M> auto power(M const& m) {
-	return accumulate(m.elements().begin(), m.elements().end(), 0., [](auto const& a, auto const& e) {return a + std::norm(e);});
+template<class M> auto power(M const& array) {
+	return std::transform_reduce(array.elements().begin(), array.elements().end(), 0., std::plus<>{}, [](auto zee) {return std::norm(zee);});
+//  return accumulate(array.elements().begin(), array.elements().end(), 0., [](auto const& acc, auto const& elem) {return acc + std::norm(elem);});
 }
 
 template<class T>

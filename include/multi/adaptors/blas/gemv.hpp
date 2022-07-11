@@ -136,10 +136,10 @@ auto gemv(Scalar s, M const& m, V const& v)
 	return gemv_range<Scalar, typename M::const_iterator, typename V::const_iterator, typename V::decay_type, blas::context>(s, m.begin(), m.end(), v.begin());}
 
 template<class Context, class Scalar, class M, class V>
-auto gemv(Context&& ctxt, Scalar s, M const& m, V const& v)
-//->decltype(gemv_ranges, m, v})
-{	assert(size(~m) == size(v));
-	return gemv_range<Scalar, typename M::const_iterator, typename V::const_iterator, typename V::decay_type, Context&&>(std::forward<Context>(ctxt), s, m.begin(), m.end(), v.begin());}
+auto gemv(Context&& ctxt, Scalar s, M const& m, V const& v) {  // NOLINT(readability-identifier-length) BLAS naming
+	assert(size(~m) == size(v));
+	return gemv_range<Scalar, typename M::const_iterator, typename V::const_iterator, typename V::decay_type, Context&&>(std::forward<Context>(ctxt), s, m.begin(), m.end(), v.begin());
+}
 
 namespace operators{
 	template<class M, class V>

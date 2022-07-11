@@ -217,15 +217,13 @@ xTRSM(s); xTRSM(d); xTRSM(c)   ; xTRSM(z)   ;
 
 namespace boost::multi::blas {
 
-//namespace t{
+//namespace t {
 	using s = float;
 	using d = double;
-	using c = std::complex<s>; //using C = Complex_float ;
-	using z = std::complex<d>; //using Z = Complex_double;
+	using c = std::complex<s>;  //using C = Complex_float ;
+	using z = std::complex<d>;  //using Z = Complex_double;
 	using v = void;
-//} // end namespace types
-
-//using namespace types;
+//}  // end namespace types
 
 // Boundary Checked value
 #define BC(value) [](auto checked) {assert(checked >= std::numeric_limits<INT>::min() and checked < std::numeric_limits<INT>::max()); return checked;}(value)  /*NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)*/
@@ -237,8 +235,6 @@ namespace boost::multi::blas {
 //xswap(s)       xswap(d)       xswap(c)       xswap(z)
 
 namespace core {
-
-//xscal(s, s, s) xscal(d, d, d) xscal(c, c, c) xscal(z, z, z) xscal(zd, d, z) xscal(cs, s, c)
 
 using std::enable_if_t;
 using std::is_assignable;
@@ -258,10 +254,6 @@ template<class ALPHAP, class SXP, class SX = typename std::pointer_traits<SXP>::
 template<class ALPHAP, class DXP, class DX = typename std::pointer_traits<DXP>::element_type, class ALPHA = typename std::pointer_traits<ALPHAP>::element_type, enable_if_t<is_d<DX>{} and is_d<ALPHA>{} and is_assignable<DX&, decltype(*ALPHAP{}*DX{})>{}>* = nullptr> void scal(ssize_t n, ALPHAP a, DXP xp, ptrdiff_t incx) {BLAS(dscal)(n, *(             double  const*)a, (             double *)xp, incx);} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
 template<class ALPHAP, class CXP, class CX = typename std::pointer_traits<CXP>::element_type, class ALPHA = typename std::pointer_traits<ALPHAP>::element_type, enable_if_t<is_c<CX>{} and is_c<ALPHA>{} and is_assignable<CX&, decltype(*ALPHAP{}*CX{})>{}>* = nullptr> void scal(ssize_t n, ALPHAP a, CXP xp, ptrdiff_t incx) {BLAS(cscal)(n, *(std::complex<float > const*)a, (std::complex<float >*)xp, incx);} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
 template<class ALPHAP, class ZXP, class ZX = typename std::pointer_traits<ZXP>::element_type, class ALPHA = typename std::pointer_traits<ALPHAP>::element_type, enable_if_t<is_z<ZX>{} and is_z<ALPHA>{} and is_assignable<ZX&, decltype(*ALPHAP{}*ZX{})>{}>* = nullptr> void scal(ssize_t n, ALPHAP a, ZXP xp, ptrdiff_t incx) {BLAS(zscal)(n, *(std::complex<double> const*)a, (std::complex<double>*)xp, incx);} // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays,google-readability-casting,readability-identifier-length)
-
-//xdot(s, s, s)  xdot(d, d, d)                                xdot(d, ds, s)
-
-//template<class SXP, class SYP, class SRP, enable_if_t<is_s<SX>{} and is_s<SY>{} and is_assignable<SY&, SX&>{}>* = nullptr> void dot(size_t n, SXP xp, ptrdiff_t incx, SYP yp, ptrdiff_t incy, RP rp
 
 using std::pointer_traits;
 using std::enable_if_t;

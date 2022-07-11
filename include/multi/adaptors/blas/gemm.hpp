@@ -122,7 +122,7 @@ auto gemm_n(typename It2DA::element alpha, It2DA a_first, Size a_count, It2DB b_
 	return gemm_n(Context{}, alpha, a_first, a_count, b_first, beta, c_first); }
 
 template<class Context, class A, class B, class C>
-auto gemm(Context&& ctx, typename A::element alpha, A const& a, B const& b, typename A::element beta, C&& c) -> C&& {
+auto gemm(Context&& ctx, typename A::element alpha, A const& a, B const& b, typename A::element beta, C&& c) -> C&& {  // NOLINT(readability-identifier-length) BLAS naming
 	assert( size( a) == size( c) );
 	if(not a.is_empty()) {assert( size(~a) == size( b) );}
 	if constexpr(is_conjugated<C>{}) {blas::gemm  (std::forward<Context>(ctx), conj(alpha), conj(a),           conj(b) , conj(beta), conj(c) );}
@@ -131,7 +131,7 @@ auto gemm(Context&& ctx, typename A::element alpha, A const& a, B const& b, type
 }
 
 template<class A, class B, class C>
-auto gemm(typename A::element alpha, A const& a, B const& b, typename A::element beta, C&& c) -> C&& {
+auto gemm(typename A::element alpha, A const& a, B const& b, typename A::element beta, C&& c) -> C&& {  // NOLINT(readability-identifier-length) BLAS naming
 	return gemm(blas::context{}, alpha, a, b, beta, std::forward<C>(c));
 }
 
@@ -154,7 +154,7 @@ class gemm_iterator {
 	Scalar s_;
 	ItA a_it_;
 	ItB b_begin_;
-	gemm_iterator(ContextPtr ctxtp, Scalar s, ItA a_it, ItB b_begin) : ctxtp_{ctxtp}, s_{s}, a_it_{std::move(a_it)}, b_begin_{std::move(b_begin)} {}
+	gemm_iterator(ContextPtr ctxtp, Scalar s, ItA a_it, ItB b_begin) : ctxtp_{ctxtp}, s_{s}, a_it_{std::move(a_it)}, b_begin_{std::move(b_begin)} {}  // NOLINT(readability-identifier-length) BLAS naming
 	template<class ContextPtr2, class Scalar2, class ItA2, class ItB2, class DecayType2>
 	friend class gemm_range;
 
@@ -176,17 +176,17 @@ class gemm_iterator {
 	auto operator+=(difference_type n) -> gemm_iterator& {a_it_ += n; return *this;}
 	auto operator-=(difference_type n) -> gemm_iterator& {a_it_ -= n; return *this;}
 
-	auto operator++() -> gemm_iterator& {return operator+=(1);} // required by random access concept requires even if not used explicitly
+	auto operator++() -> gemm_iterator& {return operator+=(1);}  // required by random access concept requires even if not used explicitly
 	auto operator--() -> gemm_iterator& {return operator-=(1);}
 
 	auto operator+(difference_type n) const {gemm_iterator ret{*this}; ret+=n; return ret;}
 
 	friend auto operator-(gemm_iterator const& a, gemm_iterator const& b) -> difference_type {
-		assert(a.b_begin_ == b.b_begin_); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+		assert(a.b_begin_ == b.b_begin_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 		return a.a_it_ - b.a_it_;
 	}
-	friend auto operator==(gemm_iterator const& a, gemm_iterator const& b) -> bool {return a.a_it_ == b.a_it_;}
-	friend auto operator!=(gemm_iterator const& a, gemm_iterator const& b) -> bool {return a.a_it_ != b.a_it_;}
+	friend auto operator==(gemm_iterator const& self, gemm_iterator const& other) -> bool {return self.a_it_ == other.a_it_;}
+	friend auto operator!=(gemm_iterator const& self, gemm_iterator const& other) -> bool {return self.a_it_ != other.a_it_;}
 
 	template<class ItOut>
 	friend auto copy_n(gemm_iterator const& first, difference_type count, ItOut d_first)
@@ -234,7 +234,7 @@ class gemm_range {
 	auto operator=(gemm_range&&) -> gemm_range& = delete;
 	~gemm_range() = default;
 
-	gemm_range(ContextPtr ctxtp, Scalar s, ItA a_first, ItA a_last, ItB b_first)  // NOLINT(bugprone-easily-swappable-parameters)
+	gemm_range(ContextPtr ctxtp, Scalar s, ItA a_first, ItA a_last, ItB b_first)  // NOLINT(bugprone-easily-swappable-parameters,readability-identifier-length) conventional BLAS naming
 	: ctxtp_{ctxtp}
 	, s_{s}, a_begin_{std::move(a_first)}, a_end_{std::move(a_last)}
 	, b_begin_{std::move(b_first)}
@@ -255,14 +255,14 @@ class gemm_range {
 //	operator decay_type() const{return decay_type(*this);} // do not use curly { }
 	auto operator+() const -> decay_type {return *this;} // TODO(correaa) : investigate why return decay_type{*this} doesn't work
 	template<class Arr>
-	friend auto operator+=(Arr&& a, gemm_range const& gr) -> Arr&& {
-		blas::gemm_n(*gr.ctxtp_, gr.s_, gr.a_begin_, gr.a_end_ - gr.a_begin_, gr.b_begin_, 1., a.begin());
+	friend auto operator+=(Arr&& a, gemm_range const& self) -> Arr&& {  // NOLINT(readability-identifier-length) BLAS naming
+		blas::gemm_n(*self.ctxtp_, self.s_, self.a_begin_, self.a_end_ - self.a_begin_, self.b_begin_, 1., a.begin());
 		return std::forward<Arr>(a);
 	}
 };
 
 template<class ContextPtr, class Scalar, class A2D, class B2D, class=std::enable_if_t<is_context<decltype(*ContextPtr{})>{}> >
-auto gemm(ContextPtr ctxtp, Scalar s, A2D const& a, B2D const& b)
+auto gemm(ContextPtr ctxtp, Scalar s, A2D const& a, B2D const& b)  // NOLINT(readability-identifier-length) BLAS naming
 ->gemm_range<ContextPtr, Scalar, typename A2D::const_iterator, typename B2D::const_iterator, typename A2D::decay_type/*B2D*/>
 {
 	return {ctxtp, s, begin(a), end(a), begin(b)};
@@ -281,7 +281,7 @@ auto gemm(ContextPtr ctxtp, Scalar s, A2D const& a, B2D const& b)
 	#pragma    diag_suppress = implicit_return_from_non_void_function
 #endif
 template<class Scalar, class A2D, class B2D, class = decltype(Scalar(0.))>
-auto gemm(Scalar s, A2D const& a, B2D const& b) {
+auto gemm(Scalar s, A2D const& a, B2D const& b) {  // NOLINT(readability-identifier-length) conventional BLAS naming
 	if constexpr(is_conjugated<A2D>{}) {
 		auto ctxtp = blas::default_context_of(underlying(a.base()));
 		return blas::gemm(ctxtp, s, a, b);

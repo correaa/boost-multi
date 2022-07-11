@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square) {
 			{3., 4., 2.}
 		};
 		auto const B_cpy = B;
-		blas::trsm(blas::side::left, blas::filling::upper, 1., A, B); // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
+		blas::trsm(blas::side::left, blas::filling::upper, 1., A, B);  // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
 		BOOST_REQUIRE_CLOSE( B[1][2] , 0.107143 , 0.001 );
 		BOOST_REQUIRE( (+blas::gemm(1., A_cpy, B))[1][2] == B_cpy[1][2] );
 	}
@@ -151,7 +151,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_square) {
 
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex) {
 	namespace blas = multi::blas;
-	using complex = std::complex<double>; complex const I{0, 1};
+	using complex = std::complex<double>; complex const I{0, 1};  // NOLINT(readability-identifier-length) imaginary unit
 	multi::array<complex, 2> const A = {
 		{ 1. + 2.*I,  3. - 1.*I,  4. + 9.*I},
 		{NAN       ,  7. + 4.*I,  1. + 8.*I},
@@ -162,14 +162,14 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex) {
 		{2. - 2.*I, 7. - 2.*I, 1. - 1.*I},
 		{3. + 1.*I, 4. + 8.*I, 2. + 7.*I}
 	};
-	blas::trsm(blas::side::left, blas::filling::lower, 2.+1.*I, blas::H(A), B); // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
+	blas::trsm(blas::side::left, blas::filling::lower, 2.+1.*I, blas::H(A), B);  // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
 	BOOST_REQUIRE_CLOSE( real(B[1][2]) ,  2.33846   , 0.0001 );
 	BOOST_REQUIRE_CLOSE( imag(B[1][2]) , -0.0923077 , 0.0001 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_rectangular) {
 	namespace blas = multi::blas;
-	using complex = std::complex<double>; complex const I{0, 1};
+	using complex = std::complex<double>; complex const I{0, 1};  // NOLINT(readability-identifier-length) imaginary unit
 	multi::array<complex, 2> const A = {
 		{ 1. + 2.*I,  3. - 1.*I,  4. + 9.*I},
 		{NAN       ,  7. + 4.*I,  1. + 8.*I},
@@ -180,14 +180,14 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_rectangular) {
 		{2. - 2.*I, 7. - 2.*I},
 		{3. + 1.*I, 4. + 8.*I}
 	};
-	blas::trsm(blas::side::left, blas::filling::lower, 2.+1.*I, blas::H(A), B); // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
+	blas::trsm(blas::side::left, blas::filling::lower, 2.+1.*I, blas::H(A), B);  // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
 	BOOST_REQUIRE_CLOSE( real(B[2][0]) , -4.16471 , 0.0001 );
 	BOOST_REQUIRE_CLOSE( imag(B[2][0]) ,  8.25882 , 0.0001 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column) {
 	namespace blas = multi::blas;
-	using complex = std::complex<double>; complex const I{0, 1};
+	using complex = std::complex<double>; complex const I{0, 1};  // NOLINT(readability-identifier-length) imaginary unit
 	multi::array<complex, 2> const A = {
 		{ 1. + 2.*I,  3. - 1.*I,  4. + 9.*I},
 		{NAN       ,  7. + 4.*I,  1. + 8.*I},
@@ -198,14 +198,14 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column) {
 		{2. - 2.*I},
 		{3. + 1.*I}
 	};
-	blas::trsm(blas::side::left, blas::filling::lower, 2.+1.*I, blas::H(A), B); // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
+	blas::trsm(blas::side::left, blas::filling::lower, 2.+1.*I, blas::H(A), B);  // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
 	BOOST_REQUIRE_CLOSE( real(B[2][0]) , -4.16471 , 0.0001);
 	BOOST_REQUIRE_CLOSE( imag(B[2][0]) ,  8.25882 , 0.0001);
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column_cpu) {
 	namespace blas = multi::blas;
-	using complex = std::complex<double>; complex const I{0, 1};
+	using complex = std::complex<double>; complex const I{0, 1};  // NOLINT(readability-identifier-length) imaginary unit
 	multi::array<complex, 2> const A = {
 		{ 1. + 2.*I,  3. - 1.*I,  4. + 9.*I},
 		{NAN       ,  7. + 4.*I,  1. + 8.*I},
@@ -216,7 +216,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column_cpu) {
 		{2. - 2.*I},
 		{3. + 1.*I}
 	};
-	blas::trsm(blas::side::left, blas::filling::lower, 2.+1.*I, blas::H(A), B); // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
+	blas::trsm(blas::side::left, blas::filling::lower, 2.+1.*I, blas::H(A), B);  // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
 	BOOST_REQUIRE_CLOSE( real(B[2][0]) , -4.16471 , 0.0001 );
 	BOOST_REQUIRE_CLOSE( imag(B[2][0]) ,  8.25882 , 0.0001 );
 }

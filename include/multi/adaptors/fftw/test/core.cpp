@@ -17,16 +17,16 @@ namespace {
 namespace multi = boost::multi;
 namespace fftw = multi::fftw;
 
-using complex = std::complex<double>; [[maybe_unused]] complex const I{0, 1};
+using complex = std::complex<double>; [[maybe_unused]] complex const I{0, 1};  // NOLINT(readability-identifier-length) imag unit
 
-template<class M> auto power(M const& m)->decltype(std::norm(m)) {return std::norm(m);}
+template<class M> auto power(M const& m) -> decltype(std::norm(m)) {return std::norm(m);}
 
 template<class M, DELETE((M::rank_v < 1))> auto power(M const& m) {
-	return accumulate(begin(m), end(m), 0., [](auto const& a, auto const& b){return a + power(b);});
+	return accumulate(begin(m), end(m), 0., [](auto const& a, auto const& b) {return a + power(b);});
 }
 
 struct sum_power{
-	template<class A, class B> auto operator()(A const& a, B const& b) const{return a+power(b);}
+	template<class A, class B> auto operator()(A const& a, B const& b) const {return a+power(b);}
 };
 
 [[maybe_unused]] constexpr int N = 16;
@@ -42,7 +42,7 @@ class watch : private std::chrono::high_resolution_clock{
 	watch(watch const&) = delete;
 	watch(watch&&) = default;
 	auto operator=(watch const&) = delete;
-	auto operator=(watch&&) -> watch& = default; // NOLINT(fuchsia-trailing-return):
+	auto operator=(watch&&) -> watch& = default;  // NOLINT(fuchsia-trailing-return):
 	~watch(){
 		std::cerr<< label<<": "<< std::chrono::duration<double>(now() - start).count() <<" sec"<<std::endl;
 	}
@@ -50,7 +50,7 @@ class watch : private std::chrono::high_resolution_clock{
 
 template<class T> struct randomizer{
 	template<class M> void operator()(M&& m) const {for(auto&& e : m) {operator()(e);}}
-	void operator()(T& e) const{ // NOLINT(runtime/references) : passing by reference
+	void operator()(T& e) const{  // NOLINT(runtime/references) : passing by reference
 		static std::random_device r; static std::mt19937 g{r()}; static std::normal_distribution<T> d;
 		e = d(g);
 	}
@@ -58,7 +58,7 @@ template<class T> struct randomizer{
 
 template<class T> struct randomizer<std::complex<T>>{
 	template<class M> void operator()(M&& m) const {for(auto&& e : m) {operator()(e);}}
-	void operator()(std::complex<T>& e) const{ // NOLINT(runtime/references) : passing by reference
+	void operator()(std::complex<T>& e) const{  // NOLINT(runtime/references) : passing by reference
 		static std::random_device r; static std::mt19937 g{r()}; static std::normal_distribution<T> d;
 		e = std::complex<T>(d(g), d(g));
 	}
@@ -302,8 +302,8 @@ BOOST_AUTO_TEST_CASE(fftw_2D_power_plan) {
 	multi::array<complex, 2> in({16, 16});
 	std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 	multi::array<complex, 2> out(extensions(in));
-	multi::fftw::plan const p{in, out, fftw::forward, fftw::preserve_input};
-	p(); //execute(p); //p.execute();
+	multi::fftw::plan const pln{in, out, fftw::forward, fftw::preserve_input};
+	pln(); //execute(p); //p.execute();
 	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-8 );
 }
 
@@ -311,8 +311,8 @@ BOOST_AUTO_TEST_CASE(fftw_2D_power_plan_modern) {
 	multi::array<complex, 2> in({16, 16});
 	std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 	multi::array<complex, 2> out(extensions(in));
-	multi::fftw::plan const p{in.layout(), out.layout(), fftw::forward, fftw::preserve_input};
-	p(in.base(), out.base()); //execute(p); //p.execute();
+	multi::fftw::plan const pln{in.layout(), out.layout(), fftw::forward, fftw::preserve_input};
+	pln(in.base(), out.base()); //execute(p); //p.execute();
 	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-8 );
 }
 
@@ -320,8 +320,8 @@ BOOST_AUTO_TEST_CASE(fftw_2D_power_plan_modern_measure) {
 	multi::array<complex, 2> in({16, 16});
 	std::iota(data_elements(in), data_elements(in) + num_elements(in), 1.2); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 	multi::array<complex, 2> out(extensions(in));
-	multi::fftw::plan const p{in.layout(), out.layout(), fftw::forward, fftw::preserve_input};
-	p(in.base(), out.base()); //execute(p); //p.execute();
+	multi::fftw::plan const pln{in.layout(), out.layout(), fftw::forward, fftw::preserve_input};
+	pln(in.base(), out.base()); //execute(p); //p.execute();
 	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-8 );
 }
 
@@ -428,9 +428,9 @@ BOOST_AUTO_TEST_CASE(fftw_1D_power) {
 
 	multi::array<complex, 1> out(extensions(in));
 
-	auto* p = multi::fftw_plan_dft(in, out, fftw::forward, fftw::preserve_input);
-	fftw_execute(p);
-	fftw_destroy_plan(p);
+	auto* pln = multi::fftw_plan_dft(in, out, fftw::forward, fftw::preserve_input);
+	fftw_execute(pln);
+	fftw_destroy_plan(pln);
 	BOOST_TEST( power(in) == power(out)/num_elements(out), boost::test_tools::tolerance(1e-15) );
 }
 
@@ -602,8 +602,8 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_part2) {
 		BOOST_REQUIRE( in2 == in.rotated() );
 	}
 	{
-		auto&& r = multi::fftw::ref(in);
-		auto in2 = + r;
+		auto&& ref = multi::fftw::ref(in);
+		auto in2 =+ ref;
 		BOOST_REQUIRE( in2 == in );
 
 		multi::array<complex, 2> tt({3, 5});

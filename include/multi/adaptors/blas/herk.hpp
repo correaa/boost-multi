@@ -14,21 +14,19 @@
 namespace boost::multi::blas {
 
 template<class A, std::enable_if_t<not is_conjugated<A>{}, int> =0> 
-auto base_aux(A&& a)
-->decltype(base(a)) {
-	return base(a); }
+auto base_aux(A&& array)
+->decltype(base(array)) {
+	return base(array); }
 
 template<class A, std::enable_if_t<    is_conjugated<A>{}, int> =0>
-auto base_aux(A&& a)
-->decltype(underlying(base(a))) {
-	return underlying(base(a)); }
+auto base_aux(A&& array)
+->decltype(underlying(base(array))) {
+	return underlying(base(array)); }
 
 using core::herk;
 
 template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr, std::enable_if_t<is_complex_array<C2D>{}, int> =0>
-auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) -> C2D&& // NOLINT(readability-function-cognitive-complexity) : 74
-//->decltype(herk('\0', '\0', c.size(), a.size(), &alpha, base_aux(a), stride(a.rotated()), &beta, base_aux(c), stride(c)), std::forward<C2D>(c))
-{
+auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) -> C2D&& {  // NOLINT(readability-function-cognitive-complexity,readability-identifier-length) 74, BLAS naming
 	assert( a.size() == c.size() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	assert( c.size() == rotated(c).size() ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	if(c.is_empty()) {return std::forward<C2D>(c);}
@@ -64,40 +62,39 @@ auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c) -> C2D&& // 
 }
 
 template<class AA, class BB, class A2D, class C2D, class = typename A2D::element_ptr, std::enable_if_t<not is_complex_array<C2D>{}, int> =0>
-auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c)
+auto herk(filling c_side, AA alpha, A2D const& a, BB beta, C2D&& c)  // NOLINT(readability-identifier-length) BLAS naming
 ->decltype(syrk(c_side, alpha, a, beta, std::forward<C2D>(c))) {
 	return syrk(c_side, alpha, a, beta, std::forward<C2D>(c)); }
 
 template<class AA, class A2D, class C2D, class = typename A2D::element_ptr>
-auto herk(filling c_side, AA alpha, A2D const& a, C2D&& c)
+auto herk(filling c_side, AA alpha, A2D const& a, C2D&& c)  // NOLINT(readability-identifier-length) BLAS naming
 ->decltype(herk(c_side, alpha, a, 0., std::forward<C2D>(c))) {
 	return herk(c_side, alpha, a, 0., std::forward<C2D>(c)); }
 
 template<typename AA, class A2D, class C2D>
-auto herk(AA alpha, A2D const& a, C2D&& c)
+auto herk(AA alpha, A2D const& a, C2D&& c)  // NOLINT(readability-identifier-length) BLAS naming
 ->decltype(herk(filling::lower, alpha, a, herk(filling::upper, alpha, a, std::forward<C2D>(c)))) {
 	return herk(filling::lower, alpha, a, herk(filling::upper, alpha, a, std::forward<C2D>(c))); }
 
 template<class A2D, class C2D>
-auto herk(A2D const& a, C2D&& c)
+auto herk(A2D const& a, C2D&& c)  // NOLINT(readability-identifier-length) BLAS naming
 ->decltype(herk(1., a, std::forward<C2D>(c))) {
 	return herk(1., a, std::forward<C2D>(c)); }
 
 template<class AA, class A2D, class Ret = typename A2D::decay_type>
 [[nodiscard]]  // ("when argument is read-only")
-auto herk(AA alpha, A2D const& a)  //->std::decay_t<decltype(herk(alpha, a, Ret({size(a), size(a)}, get_allocator(a))))>{
-{
+auto herk(AA alpha, A2D const& a) {  // NOLINT(readability-identifier-length) BLAS naming
 	return herk(alpha, a, Ret({size(a), size(a)}));//Ret({size(a), size(a)}));//, get_allocator(a)));
 }
 
-template<class T> struct numeric_limits : std::numeric_limits<T>{};
+template<class T> struct numeric_limits : std::numeric_limits<T> {};
 template<class T> struct numeric_limits<std::complex<T>> : std::numeric_limits<std::complex<T>> {
 	static auto quiet_NaN() -> std::complex<T> {auto nana = numeric_limits<T>::quiet_NaN(); return {nana, nana};}  // NOLINT(readability-identifier-naming) conventional std name
 };
 
 template<class AA, class A2D, class Ret = typename A2D::decay_type>
-[[nodiscard]] // ("because argument is read-only")]]
-auto herk(filling cs, AA alpha, A2D const& a)  // NOLINT(readability-identifier-length) conventional BLAS naming
+[[nodiscard]]  // ("because argument is read-only")]]
+auto herk(filling cs, AA alpha, A2D const& a)  // NOLINT(readability-identifier-length) BLAS naming
 ->std::decay_t<
 decltype(  herk(cs, alpha, a, Ret({size(a), size(a)}, 0., get_allocator(a))))> {
 	return herk(cs, alpha, a, Ret({size(a), size(a)},
@@ -108,7 +105,7 @@ decltype(  herk(cs, alpha, a, Ret({size(a), size(a)}, 0., get_allocator(a))))> {
 	));
 }
 
-template<class A2D> auto herk(filling s, A2D const& a)  // NOLINT(readability-identifier-length) conventional BLAS naming
+template<class A2D> auto herk(filling s, A2D const& a)  // NOLINT(readability-identifier-length) BLAS naming
 ->decltype(herk(s, 1., a)) {
 	return herk(s, 1., a); }
 
