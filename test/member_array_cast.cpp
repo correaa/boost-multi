@@ -1,8 +1,7 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-//  © Alfredo A. Correa 2018-2021
+// Copyright 2018-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi member cast"
-#define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
 #include "multi/array.hpp"
@@ -35,7 +34,7 @@ class particles_soa {
 		auto operator+() const {return operator particle();}
 
 		reference(double& mss, v3d& pos) : mass{mss}, position{pos} {}  // NOLINT(google-runtime-references)
-		
+
 	 private: // NOLINT(whitespace/indent) : bug in cpplint 1.5.5
 		friend class particles_soa;
 		reference(reference const&) = default;

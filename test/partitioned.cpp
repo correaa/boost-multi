@@ -108,7 +108,7 @@ template<class T> class propagate_const<T const&>{
 };
 
 BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
-	multi::array<double, 2> A = { // A[walker][encoded_property] // 7 walkers
+	multi::array<double, 2> arr = { // arr[walker][encoded_property] // 7 walkers
 		{99., 99., 0.00, 0.01, 0.10, 0.11, 0.20, 0.21, 99.},
 		{99., 99., 1.00, 1.01, 1.10, 1.11, 1.20, 1.21, 99.},
 		{99., 99., 2.00, 2.01, 2.10, 2.11, 2.20, 2.21, 99.},
@@ -119,25 +119,25 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 	};
 
 	multi::iextension const encoded_3x2_range = {2, 8};
-	auto&& B = A.rotated()(encoded_3x2_range).partitioned(3).unrotated();
+	auto&& arrRPU = arr.rotated()(encoded_3x2_range).partitioned(3).unrotated();
 
-	static_assert( decltype(+B)::rank_v == 3 , "!");
-	BOOST_REQUIRE(( sizes(B) == decltype(sizes(B)){7, 3, 2} ));
-	BOOST_REQUIRE( B[4].num_elements() == 3*2L );
+	static_assert( decltype(+arrRPU)::rank_v == 3 , "!");
+	BOOST_REQUIRE(( sizes(arrRPU) == decltype(sizes(arrRPU)){7, 3, 2} ));
+	BOOST_REQUIRE( arrRPU[4].num_elements() == 3*2L );
 
-	BOOST_REQUIRE( &B[4][1][0] == &A[4][4] );
-	BOOST_REQUIRE( B[4][1][0] == 4.10 );
+	BOOST_REQUIRE( &arrRPU[4][1][0] == &arr[4][4] );
+	BOOST_REQUIRE( arrRPU[4][1][0] == 4.10 );
 
 	BOOST_REQUIRE((
-		B[4] == multi::array<double, 2>{
+		arrRPU[4] == multi::array<double, 2>{
 			{4.00, 4.01},
 			{4.10, 4.11},
 			{4.20, 4.21},
 		}
 	));
 
-	B[4][1][0] = 1111.;
-	BOOST_REQUIRE( A[4][4] == 1111. );
+	arrRPU[4][1][0] = 1111.;
+	BOOST_REQUIRE( arr[4][4] == 1111. );
 
 	class walker_ref{
 		using raw_source_reference = decltype(std::declval<multi::array<double, 2>&>()[0]);
@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 		explicit walker_ref(raw_source_reference&& row) : prop1{row[0]}, prop2{row[1]}, slater_array{row({2, 8}).partitioned(3)}, prop3{row[8]}{}
 	};
 
-	auto&& wr = walker_ref(A[5]);
+	auto&& wr = walker_ref(arr[5]);
 	wr.prop1 = 88;
 	BOOST_REQUIRE( wr.slater_array[2][1] == 5.21 );
 
@@ -189,22 +189,22 @@ BOOST_AUTO_TEST_CASE(array_partitioned_add_to_last) {
 }
 
 BOOST_AUTO_TEST_CASE(array_partitioned_vs_chunked_1D) {
-	multi::array<double, 1> A = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11.};
-	BOOST_REQUIRE( size(A.partitioned(3)) == 3 );
-	BOOST_REQUIRE( A.partitioned(3)[1] == decltype(+A.partitioned(3)[1])({4., 5., 6., 7.}) );
-	BOOST_REQUIRE( &A.partitioned(3)[1][2] == &A[6] );
+	multi::array<double, 1> arr = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11.};
+	BOOST_REQUIRE( size(arr.partitioned(3)) == 3 );
+	BOOST_REQUIRE( arr.partitioned(3)[1] == decltype(+arr.partitioned(3)[1])({4., 5., 6., 7.}) );
+	BOOST_REQUIRE( &arr.partitioned(3)[1][2] == &arr[6] );
 
-	BOOST_REQUIRE( size(A.chunked(3)) == 4 );
-	BOOST_REQUIRE( A.chunked(3)[1] == decltype(+A.chunked(3)[1])({3., 4., 5.}) );
-	BOOST_REQUIRE( &A.chunked(3)[1][2] == &A[5] );
+	BOOST_REQUIRE( size(arr.chunked(3)) == 4 );
+	BOOST_REQUIRE( arr.chunked(3)[1] == decltype(+arr.chunked(3)[1])({3., 4., 5.}) );
+	BOOST_REQUIRE( &arr.chunked(3)[1][2] == &arr[5] );
 }
 
 BOOST_AUTO_TEST_CASE(array_partitioned_vs_chunked_2D) {
-	multi::array<double, 2> A({100, 53});
-	BOOST_REQUIRE( size(A.partitioned(20)) == 20 );
-	BOOST_REQUIRE( &A.partitioned(20)[1][2] == &A[7] );
+	multi::array<double, 2> arr({100, 53});
+	BOOST_REQUIRE( size(arr.partitioned(20)) == 20 );
+	BOOST_REQUIRE( &arr.partitioned(20)[1][2] == &arr[7] );
 
-	BOOST_REQUIRE( size(A.chunked(5)) == 20 );
-	BOOST_REQUIRE( &A.chunked(5)[1][2] == &A[7] );
+	BOOST_REQUIRE( size(arr.chunked(5)) == 20 );
+	BOOST_REQUIRE( &arr.chunked(5)[1][2] == &arr[7] );
 }
 

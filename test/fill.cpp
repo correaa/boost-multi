@@ -33,8 +33,8 @@ class fnv1a_t {
 	static constexpr auto min() {return std::numeric_limits<result_type>::min();}
 	static constexpr auto max() {return std::numeric_limits<result_type>::max();}
 	void operator()(void const* key, std::size_t len) noexcept {h = fnv1a(key, len, h);}
-	template<class T, std::enable_if_t<std::is_fundamental<T>{}, int> = 0>
-	auto operator()(T const& t) noexcept -> decltype(auto) {operator()(&t, sizeof(t)); return *this;}
+	template<class T, std::enable_if_t<std::is_fundamental_v<T>, int> = 0>
+	auto operator()(T const& value) noexcept -> decltype(auto) {operator()(&value, sizeof(value)); return *this;}
 //  result_type operator()() && noexcept{return h;}
 	auto operator()() const& noexcept {return h;}
 //  explicit operator result_type() && noexcept {return h;}
@@ -141,20 +141,20 @@ namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(fill_1D) {
 	multi::array<double, 1> arr = {1., 2., 3.};
-	multi::array<double, 2> B({10, 3});
+	multi::array<double, 2> arr2({10, 3});
 
-	std::fill( begin(B), end(B), arr );
+	std::fill( begin(arr2), end(arr2), arr );
 
-	BOOST_REQUIRE( B[0] == arr );
-	BOOST_REQUIRE( B[1] == arr );
+	BOOST_REQUIRE( arr2[0] == arr );
+	BOOST_REQUIRE( arr2[1] == arr );
 	// ...
-	BOOST_REQUIRE( B[9] == arr );
+	BOOST_REQUIRE( arr2[9] == arr );
 }
 
 #define FWD(a) std::forward<decltype(a)>(a)
 
 template<class BinaryOp, class Column, class Array, class Out>
-auto broadcast(BinaryOp op, Column const& col, Array const& in, Out&& out) -> Out&& {
+auto broadcast(BinaryOp op, Column const& col, Array const& in, Out&& out) -> Out&& {  // NOLINT(readability-identifier-length) clang-tidy 14 bug
 	std::transform(
 		begin(~in), end(~in), begin(~out), begin(~out),
 		[acol = (~col)[0], &op](auto const& Acol, auto&& Bcol) {
@@ -167,31 +167,30 @@ auto broadcast(BinaryOp op, Column const& col, Array const& in, Out&& out) -> Ou
 }
 
 BOOST_AUTO_TEST_CASE (julia_broadcast, *boost::unit_test::tolerance(0.00001) ) {
-	multi::array<double, 2> arr = {
+	multi::array<double, 2> col = {
 		{0.1},
 		{0.2}
 	};
-	multi::array<double, 2> A = {
+	multi::array<double, 2> arr = {
 		{1.10813, 1.72068, 1.15387},
 		{1.36851, 1.66401, 1.47846}
 	};
 	{  // "broadcast"
-		multi::array<double, 2> B(extensions(A));
-		broadcast(std::plus<>{}, arr, A, B);
+		multi::array<double, 2> arr2(extensions(arr));
+		broadcast(std::plus<>{}, col, arr, arr2);
 
-		BOOST_TEST( B[0][0] == 1.20813 ); BOOST_TEST( B[0][1] == 1.82068 ); BOOST_TEST( B[0][2] == 1.25387 );
-		BOOST_TEST( B[1][0] == 1.56851 ); BOOST_TEST( B[1][1] == 1.86401 ); BOOST_TEST( B[1][2] == 1.67846 );
+		BOOST_TEST( arr2[0][0] == 1.20813 ); BOOST_TEST( arr2[0][1] == 1.82068 ); BOOST_TEST( arr2[0][2] == 1.25387 );
+		BOOST_TEST( arr2[1][0] == 1.56851 ); BOOST_TEST( arr2[1][1] == 1.86401 ); BOOST_TEST( arr2[1][2] == 1.67846 );
 	}
-
 	{  // inefficient: replicate the vector before summing elementwise
 		multi::array<double, 2> ax3({2, 3});
 
-		std::fill( begin(~ax3), end(~ax3), (~arr)[0] );
+		std::fill( begin(~ax3), end(~ax3), (~col)[0] );
 		BOOST_TEST( ax3[0][0] == 0.1 ); BOOST_TEST( ax3[0][1] == 0.1 ); BOOST_TEST( ax3[0][2] == 0.1 );
 		BOOST_TEST( ax3[1][0] == 0.2 ); BOOST_TEST( ax3[1][1] == 0.2 ); BOOST_TEST( ax3[1][2] == 0.2 );
 
-		multi::array<double, 2> Ap(extensions(A));
-		std::transform(begin(A.elements()), end(A.elements()), begin(ax3.elements()), begin(Ap.elements()), std::plus<>{});
+		multi::array<double, 2> Ap(extensions(arr));
+		std::transform(begin(arr.elements()), end(arr.elements()), begin(ax3.elements()), begin(Ap.elements()), std::plus<>{});
 
 		BOOST_TEST( Ap[0][0] == 1.20813 ); BOOST_TEST( Ap[0][1] == 1.82068 ); BOOST_TEST( Ap[0][2] == 1.25387 );
 		BOOST_TEST( Ap[1][0] == 1.56851 ); BOOST_TEST( Ap[1][1] == 1.86401 ); BOOST_TEST( Ap[1][2] == 1.67846 );

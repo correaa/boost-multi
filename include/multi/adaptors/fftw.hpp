@@ -448,10 +448,10 @@ private:
 		::fftw_execute_dft(impl_.get(), const_cast<fftw_complex*>(reinterpret_cast<fftw_complex const*>(static_cast<std::complex<double> const*>(base(in)))), reinterpret_cast<fftw_complex*>(static_cast<std::complex<double>*>(base(out)))); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast,cppcoreguidelines-pro-type-const-cast) : to interface with legacy fftw
 	}
 	template<class I, class O> void execute(I&& in, O&& out) const {execute_dft(std::forward<I>(in), std::forward<O>(out));}
-	friend void execute(plan const& p) {p.execute();}
+	friend void execute(plan const& self) {self.execute();}
 
 public:
-	auto operator=(plan&&) -> plan& = default;
+	auto operator=(plan     &&) -> plan& = default;
 	auto operator=(plan const&) -> plan& = delete;
 
 	template<class I, class O> 

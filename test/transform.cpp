@@ -6,8 +6,6 @@
 
 #include "multi/array.hpp"
 
-//#include<boost/iterator/transform_iterator.hpp> //might need -DBOOST_RESULT_OF_USE_DECLTYPE
-
 #include<complex>
 
 namespace test {
@@ -30,7 +28,7 @@ class involuted {
  public:
 	using decay_type = std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
 	constexpr involuted(Involution /*stateless*/, Ref ref) : r_{std::forward<Ref>(ref)} {}
-	auto operator=(decay_type const& other) -> involuted& {  // NOLINT(fuchsia-trailing-return): simulate reference
+	auto operator=(decay_type const& other) -> involuted& {  // NOLINT(fuchsia-trailing-return) simulate reference
 		r_ = Involution{}(other);
 		return *this;
 	}
@@ -87,12 +85,13 @@ template<class It>  using negater = involuter<std::negate<>, It >;
 
 class basic_conjugate_t {
 	template<int N> struct prio : std::conditional_t<N!=0, prio<N-1>, std::true_type>{};
-	template<class T> static auto _(prio<0>/**/, T const& t) DECLRETURN(std::conj(t))
-	template<class T> static auto _(prio<1>/**/, T const& t) DECLRETURN(     conj(t))
-	template<class T> static auto _(prio<2>/**/, T const& t) DECLRETURN(  T::conj(t))
-	template<class T> static auto _(prio<3>/**/, T const& t) DECLRETURN(   t.conj( ))
+	template<class T> static auto _(prio<0>/**/, T const& value) DECLRETURN(std::conj(value))
+	template<class T> static auto _(prio<1>/**/, T const& value) DECLRETURN(     conj(value))
+	template<class T> static auto _(prio<2>/**/, T const& value) DECLRETURN(  T::conj(value))
+	template<class T> static auto _(prio<3>/**/, T const& value) DECLRETURN(   value.conj( ))
+
  public:
-	template<class T> static auto _(T const& t) DECLRETURN(_(prio<3>{}, t))
+	template<class T> static auto _(T const& value) DECLRETURN(_(prio<3>{}, value))
 };
 
 template<class T = void>
@@ -105,8 +104,6 @@ struct conjugate<> : private basic_conjugate_t {
 	template<class T>
 	constexpr auto operator()(T const& arg) const DECLRETURN(_(arg))
 };
-
-//MAYBE_UNUSED static auto conj = [](std::complex<double> const& a){return std::conj(std::forward<decltype(a)>(a));};
 
 #if defined(__NVCC__)
 #pragma GCC diagnostic push
@@ -132,8 +129,9 @@ template<class Complex> using conjr = test::involuter<conjugate<>, Complex>;
 template<class P = std::complex<double>*>
 class indirect_real {
 	P impl_;
+
  public:
-	explicit indirect_real(P const& p) : impl_{p} {}
+	explicit indirect_real(P const& ptr) : impl_{ptr} {}
 	auto operator+(std::ptrdiff_t n) const {return indirect_real{impl_ + n};}
 	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast): extra real part as reference
 	auto operator*() const -> decltype(auto) {return reinterpret_cast<std::array<double, 2>&>(*impl_)[0];}
@@ -145,7 +143,7 @@ class indirect_real {
 	using iterator_category = typename std::iterator_traits<P>::iterator_category;
 };
 
-} // namespace test
+}  // namespace test
 
 BOOST_AUTO_TEST_CASE(transformed_array) {
 	namespace multi = boost::multi;
@@ -245,4 +243,3 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 		}
 	}
 }
-

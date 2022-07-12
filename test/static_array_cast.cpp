@@ -21,7 +21,7 @@ class involuted {
  public:
 	using decay_type = std::decay_t<decltype(std::declval<Involution>()(std::declval<Ref>()))>;
 
-	constexpr involuted(Ref ref, Involution f) : r_{std::forward<Ref>(ref)}, f_{f} {}
+	constexpr involuted(Ref ref, Involution fun) : r_{std::forward<Ref>(ref)}, f_{fun} {}
 	constexpr explicit involuted(Ref ref) : r_{std::forward<Ref>(ref)}, f_{} {}
 	involuted(involuted const&) = default;
 	involuted(involuted&&) noexcept = default;
@@ -63,8 +63,8 @@ class involuter {
 	using reference         = involuted<typename std::iterator_traits<It>::reference, F>;
 	using value_type        = typename std::iterator_traits<It>::value_type;
 	using iterator_category = typename std::iterator_traits<It>::iterator_category;
-	explicit constexpr involuter(It it) : it_{std::move(it)}, f_{} {}
-	constexpr involuter(It it, F f) : it_{std::move(it)}, f_{std::move(f)} {}
+	explicit constexpr involuter(It it) : it_{std::move(it)}, f_{} {}  // NOLINT(readability-identifier-length) clang-tidy 14 bug
+	constexpr involuter(It it, F fun) : it_{std::move(it)}, f_{std::move(fun)} {}
 //	involuter(involuter const& other) = default;
 	// NOLINTNEXTLINE(google-explicit-constructor, hicpp-explicit-conversions): this is needed to make involuter<T> implicitly convertible to involuter<T const>
 	template<class Other> constexpr involuter(involuter<Other, F> const& other) : it_{multi::implicit_cast<It>(other.it_)}, f_{other.f_} {}
@@ -127,34 +127,34 @@ BOOST_AUTO_TEST_CASE(static_array_cast_2) {
 
 BOOST_AUTO_TEST_CASE(static_array_cast_3) {
 {
-	multi::static_array<double, 1>  A { {  0.,   1.,   2.,   3.,  4.} };
-	multi::static_array<double, 1> mA = { -0.,  -1.,  -2.,  -3., -4.};
-	auto&& mA_ref = multi::static_array_cast<double, involuter<double*, std::negate<>>>(A);
-	BOOST_REQUIRE( mA_ref[2] == mA[2] );
-	BOOST_REQUIRE( mA[2] == mA_ref[2] );
-	BOOST_REQUIRE( std::equal(begin(mA_ref), end(mA_ref), begin(mA), end(mA)) );
-	BOOST_REQUIRE( mA_ref == mA );
-	BOOST_REQUIRE( mA == mA_ref );
+	multi::static_array<double, 1> arr  { {  0.,   1.,   2.,   3.,  4.} };
+	multi::static_array<double, 1> arr2 = { -0.,  -1.,  -2.,  -3., -4.};
+	auto&& neg_arr = multi::static_array_cast<double, involuter<double*, std::negate<>>>(arr);
+	BOOST_REQUIRE( neg_arr[2] == arr2[2] );
+	BOOST_REQUIRE( arr2[2] == neg_arr[2] );
+	BOOST_REQUIRE( std::equal(begin(neg_arr), end(neg_arr), begin(arr2), end(arr2)) );
+	BOOST_REQUIRE( neg_arr == arr2 );
+	BOOST_REQUIRE( arr2 == neg_arr );
 }
 {
-  multi::static_array<double, 2> A({4, 5}, 0.);
-	std::iota(elements(A).begin(), elements(A).end(), 0.);
+	multi::static_array<double, 2> arr({4, 5}, 0.);
+	std::iota(elements(arr).begin(), elements(arr).end(), 0.);
 
-	multi::array<double, 2> mA({4, 5});
-	std::transform(begin(elements(A)), end(elements(A)), begin(elements(mA)), std::negate<>{});
+	multi::array<double, 2> arr2({4, 5});
+	std::transform(begin(elements(arr)), end(elements(arr)), begin(elements(arr2)), std::negate<>{});
 
-	auto&& mA_ref = A.static_array_cast<double, negater<double*>>();
+	auto&& neg_arr = arr.static_array_cast<double, negater<double*>>();
 
-	BOOST_REQUIRE( mA_ref[1][1] == mA[1][1] );
-	BOOST_REQUIRE( mA[1][1] == mA_ref[1][1] );
+	BOOST_REQUIRE( neg_arr[1][1] == arr2[1][1] );
+	BOOST_REQUIRE( arr2[1][1] == neg_arr[1][1] );
 
-	BOOST_REQUIRE( std::equal(begin(mA[1]), end(mA[1]), begin(mA_ref[1]), end(mA_ref[1])) );
+	BOOST_REQUIRE( std::equal(begin(arr2[1]), end(arr2[1]), begin(neg_arr[1]), end(neg_arr[1])) );
 
-	BOOST_REQUIRE( mA[1] == mA_ref[1] );
-	BOOST_REQUIRE( mA_ref[1] == mA[1] );
+	BOOST_REQUIRE( arr2[1] == neg_arr[1] );
+	BOOST_REQUIRE( neg_arr[1] == arr2[1] );
 
-	BOOST_REQUIRE( std::equal(begin(mA), end(mA), begin(mA_ref), end(mA_ref)) );
-	BOOST_REQUIRE( mA_ref == mA );
-	BOOST_REQUIRE( mA == mA_ref );
+	BOOST_REQUIRE( std::equal(begin(arr2), end(arr2), begin(neg_arr), end(neg_arr)) );
+	BOOST_REQUIRE( neg_arr == arr2 );
+	BOOST_REQUIRE( arr2 == neg_arr );
 }
 }

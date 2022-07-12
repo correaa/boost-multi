@@ -54,11 +54,11 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 	//	multi::fftw::plan::with_nthreads(1);
 		 {
 			multi::array<complex, 2> out = in;
-			auto* p = out.data_elements();
+			auto* data = out.data_elements();
 			 {
-				watch t{"fftw trans mve 1 thread  %ws wall, CPU (%p%)\n"};
+				watch unnamed{"fftw trans mve 1 thread  %ws wall, CPU (%p%)\n"};
 				multi::fftw::transpose( out );
-				BOOST_REQUIRE( out.data_elements() == p );
+				BOOST_REQUIRE( out.data_elements() == data );
 				BOOST_REQUIRE( out[35][79] == in[79][35] );
 			}
 			BOOST_REQUIRE( out == ~in );
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 			multi::array<complex, 2> out = in;
 			multi::array<complex, 2> aux(extensions(out));
 			 {
-				watch t{"auxiliary copy           %ws wall, CPU (%p%)\n"};
+				watch unnamed{"auxiliary copy           %ws wall, CPU (%p%)\n"};
 				aux = ~out;
 				out = std::move(aux);
 				BOOST_REQUIRE( out[35][79] == in[79][35] );
@@ -112,10 +112,10 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 		{
 			multi::array<complex, 2> out = in;
 			 {
-				watch t{"transposition with loop   %ws wall, CPU (%p%)\n"};
-				for(auto i : extension(out)) {
-					for(auto j = 0; j != i; ++j) {
-						std::swap(out[i][j], out[j][i]);
+				watch unnamed{"transposition with loop   %ws wall, CPU (%p%)\n"};
+				for(auto ii : extension(out)) {
+					for(auto j = 0; j != ii; ++j) {
+						std::swap(out[ii][j], out[j][ii]);
 					}
 				}
 				BOOST_REQUIRE( out[35][79] == in[79][35] );
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 		 {
 			multi::array<complex, 2> out = in;
 			 {
-				watch t{"transposition with loop 2 %ws wall, CPU (%p%)\n"};
+				watch unnamed{"transposition with loop 2 %ws wall, CPU (%p%)\n"};
 				for(auto i = 0; i != out.size(); ++i) {
 					for(auto j = i + 1; j != out.size(); ++j) {
 						std::swap(out[i][j], out[j][i]);

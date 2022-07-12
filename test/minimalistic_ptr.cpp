@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo A. Correa 2018-2021
+// Copyright 2018-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi minimalistic pointer"
 #include<boost/test/unit_test.hpp>
@@ -43,8 +43,8 @@ template<class T> class ptr2 : public std::iterator_traits<T*> { // minimalistic
 
  public:
 	constexpr explicit ptr2(T* impl) : impl_{impl} {}
-	constexpr explicit ptr2(ptr<T> const& p) : impl_{p.impl_} {}
-	template<class U, class = std::enable_if_t<std::is_convertible<U*, T*>{}> >
+	constexpr explicit ptr2(ptr<T> const& other) : impl_{other.impl_} {}
+	template<class U, class = std::enable_if_t<std::is_convertible_v<U*, T*>>>
 	// cppcheck-suppress [noExplicitConstructor, unmatchedSuppression]
 	ptr2(ptr2<U> const& other) : impl_{other.impl_} {}  // NOLINT(google-explicit-constructor, hicpp-explicit-conversions): ptr<T> -> ptr<T const>
 
@@ -63,7 +63,7 @@ template<class T> class ptr2 : public std::iterator_traits<T*> { // minimalistic
 	using default_allocator_type = std::allocator<T>;
 };
 
-} // end namespace minimalistic
+}  // end namespace minimalistic
 
 BOOST_AUTO_TEST_CASE(test_minimalistic_ptr) {
 	std::array<double, 400> buffer{};

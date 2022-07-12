@@ -56,7 +56,7 @@ auto operator& (Archive& arxiv, MA&& self)  // this is for compatability with Ar
 template<class Ar, class Enable = void>
 struct archive_traits {
 	template<class T>
-	inline static auto make_nvp  (char const* /*n*/, T&& v) noexcept {return std::forward<T>(v);}
+	inline static auto make_nvp  (char const* /*n*/, T&& value) noexcept {return std::forward<T>(value);}
 };
 
 template<class Ar>
@@ -86,9 +86,9 @@ struct archive_traits<
 	>::type>;
 
 	template<class T>
-	inline static auto make_nvp  (char const* n, T&& v) noexcept {return cereal::NameValuePair<T&>{n, v};}  // if you get an error here you many need to #include <cereal/archives/xml.hpp> at some point
+	inline static auto make_nvp  (char const* name, T&& value) noexcept {return cereal::NameValuePair<T&>{name, value};}  // if you get an error here you many need to #include <cereal/archives/xml.hpp> at some point
 	template<class T>
-	inline static auto make_nvp  (char const* n, T&  v) noexcept {return cereal::NameValuePair<T&>{n, v};}  // if you get an error here you many need to #include <cereal/archives/xml.hpp> at some point
+	inline static auto make_nvp  (char const* name, T&  value) noexcept {return cereal::NameValuePair<T&>{name, value};}  // if you get an error here you many need to #include <cereal/archives/xml.hpp> at some point
 
 	template<class T>
 	struct array_wrapper {
@@ -108,10 +108,10 @@ struct archive_traits<
 	};
 
 	template<class T>
-	inline static auto make_array(T* p, std::size_t count) -> array_wrapper<T> {return array_wrapper<T>{p, count};}
+	inline static auto make_array(T* ptr, std::size_t count) -> array_wrapper<T> {return array_wrapper<T>{ptr, count};}
 
 	template<class T>
-	inline static auto make_nvp  (char const* n, array_wrapper<T>&& v) noexcept {return make_nvp(n, v);}
+	inline static auto make_nvp  (char const* name, array_wrapper<T>&& value) noexcept {return make_nvp(name, value);}
 };
 
 //template<class Ar, class T> auto make_nvp(char const* n, T&& v) -> decltype(auto) {return archive_traits<Ar>::make_nvp(n, std::forward<T>(v));}  // NOLINT(readability-const-return-type)
@@ -144,24 +144,5 @@ namespace serialization {
 
 }  // end namespace serialization
 }  // end namespace boost
-
-//BOOST_AUTO_TEST_CASE(boost_multi_array) {
-//	boost::multi_array<double, 2> arr(boost::extents[10][10]);
-
-////	BOOST_REQUIRE(( boost::multi_array<double, 2>::dimensionality == 2 ));
-//	BOOST_REQUIRE(( boost::multi::extensions(arr) == boost::multi::extensions_t<2>{10, 10} ));
-//	BOOST_REQUIRE( boost::multi::data_elements(arr) == arr.data() );
-//	BOOST_REQUIRE( boost::multi::num_elements(arr) == static_cast<multi::size_t>(arr.num_elements()) );
-
-//	std::stringstream ss;
-//	{
-//		{
-//			boost::archive::xml_oarchive xoa{ss};
-//			xoa<< BOOST_SERIALIZATION_NVP(arr);
-//		}
-//		std::ofstream ofs{"serialization_boost_multi_array.xml"};
-//		ofs<< ss.str();
-//	}
-//}
 
 #endif

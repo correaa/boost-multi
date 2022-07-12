@@ -72,19 +72,19 @@ BOOST_AUTO_TEST_CASE(extensions_to_linear) {
 	BOOST_REQUIRE( exts.to_linear(4, 0, 0) == exts.num_elements() );
 
 	for(int idx = 0; idx != exts.num_elements(); ++idx) {
-		BOOST_REQUIRE( std::apply([&](auto... indices){return exts.to_linear(indices...);}, exts.from_linear(idx)) == idx );
+		BOOST_REQUIRE( std::apply([&](auto... indices) {return exts.to_linear(indices...);}, exts.from_linear(idx)) == idx );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(extensions_layout_to_linear) {
-	multi::array<double, 3> A({40, 50, 80});
-	auto&& B = A({10, 30}, {20, 32}, {60, 75});
+	multi::array<double, 3> arr({40, 50, 80});
+	auto&& sub = arr({10, 30}, {20, 32}, {60, 75});
 
 	for(int i = 0; i != 10; ++i) {
 		for(int j = 0; j != 12; ++j) {
 			for(int k = 0; k != 15; ++k) {
-				BOOST_REQUIRE( &  B.base()  [B.layout()(i, j, k)] == &B(i, j, k) );
-				BOOST_REQUIRE( &*(B.base() + B.layout()(i, j, k)) == &B(i, j, k) );
+				BOOST_REQUIRE( &  sub.base()  [sub.layout()(i, j, k)] == &sub(i, j, k) );
+				BOOST_REQUIRE( &*(sub.base() + sub.layout()(i, j, k)) == &sub(i, j, k) );
 			}
 		}
 	}
@@ -208,38 +208,38 @@ BOOST_AUTO_TEST_CASE(layout) {
 }
 {
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, hicpp-avoid-c-arrays,-warnings-as-errors, modernize-avoid-c-arrays,-warnings-as-errors): test
-	double A[3][4][5] = {};
+	double arr[3][4][5] = {};
 	using multi::dimensionality;
-	static_assert(dimensionality(A)==3, "!");
+	static_assert(dimensionality(arr)==3, "!");
 	using multi::extensions;
-	auto xA = extensions(A);
+	auto xA = extensions(arr);
 
 	BOOST_REQUIRE( size(std::get<0>(xA)) == 3 );
 	BOOST_REQUIRE( size(std::get<1>(xA)) == 4 );
 	BOOST_REQUIRE( size(std::get<2>(xA)) == 5 );
 
-	static_assert( multi::stride(A)       == 20 , "!" );
+	static_assert( multi::stride(arr)       == 20 , "!" );
 
-//  static_assert( multi::stride(A)       ==  5 , "!" );
-	static_assert( multi::stride(A[1])    ==  5 , "!" );
-	static_assert( multi::stride(A[0][0]) ==  1 , "!" );
+//  static_assert( multi::stride(arr)       ==  5 , "!" );
+	static_assert( multi::stride(arr[1])    ==  5 , "!" );
+	static_assert( multi::stride(arr[0][0]) ==  1 , "!" );
 
 	multi::array<double, 3> AA({3, 4, 5});
 	using multi::layout;
-	BOOST_REQUIRE( layout(AA) == layout(A) );
+	BOOST_REQUIRE( layout(AA) == layout(arr) );
 
 	BOOST_REQUIRE( AA     .stride() == 20 );
 }
 {
-	std::array<std::array<std::array<double, 5>, 4>, 3> A = {};
+	std::array<std::array<std::array<double, 5>, 4>, 3> arr = {};
 #if defined(__circle_build__)  // circle doesn't see dimensionality as a constexpr "cannot access value of A at compile time;"
-	       assert( multi::dimensionality(A) == 3 );
+	       assert( multi::dimensionality(arr) == 3 );
 #else  // other compilers ok
-	static_assert( multi::dimensionality(A) == 3 );
+	static_assert( multi::dimensionality(arr) == 3 );
 #endif
 
 	using multi::extensions;
-	auto xA = extensions(A);
+	auto xA = extensions(arr);
 	using std::get;
 	BOOST_REQUIRE( size(std::get<0>(xA)) == 3 );
 	BOOST_REQUIRE( size(std::get<1>(xA)) == 4 );
@@ -247,21 +247,21 @@ BOOST_AUTO_TEST_CASE(layout) {
 
 	multi::array<double, 3> AA({3, 4, 5});
 	using multi::layout;
-	BOOST_REQUIRE( layout(AA) == layout(A) );
+	BOOST_REQUIRE( layout(AA) == layout(arr) );
 
 	BOOST_REQUIRE( AA.stride() == 20 );
 
 #if defined(__circle_build__)  // circle doesn't recognize this as a constexpr "cannot access value of A at compile time;"
-	       assert( multi::stride(A) == 20);
+	       assert( multi::stride(arr) == 20);
 #else  // other compilers ok
-	static_assert( multi::stride(A) == 20);
+	static_assert( multi::stride(arr) == 20);
 #endif
 
-	BOOST_REQUIRE( multi::stride(A[0])    == 5 );
-	BOOST_REQUIRE( multi::stride(A[1])    == 5 );
-	BOOST_REQUIRE( multi::stride(A[0][0]) == 1 );
-//		assert( stride(A) == 20 );
-//		assert( stride(A[0]) == 20 );
+	BOOST_REQUIRE( multi::stride(arr[0])    == 5 );
+	BOOST_REQUIRE( multi::stride(arr[1])    == 5 );
+	BOOST_REQUIRE( multi::stride(arr[0][0]) == 1 );
+//		assert( stride(arr) == 20 );
+//		assert( stride(arr[0]) == 20 );
 }
 {
 	multi::array<double, 2> B2 = {

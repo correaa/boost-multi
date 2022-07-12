@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo A. Correa 2018-2021
+// Copyright 2018-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi constructors"
 #include<boost/test/unit_test.hpp>
@@ -45,7 +45,7 @@ template<class T = void> class ptr {  // NOLINT(cppcoreguidelines-special-member
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
 	auto operator->() const -> ptr const& {return *this;}
 	// NOLINTNEXTLINE(fuchsia-trailing-return): this class simulates pointer
-	friend auto to_address(ptr const& p) -> ptr {return p;}
+	friend auto to_address(ptr const& pointer) -> ptr {return pointer;}
 	explicit operator bool() {return false;}
 //	operator double*() const{return &value;}
 	friend auto get_allocator(ptr const& /*self*/){return std::allocator<value_type>{};}
@@ -152,7 +152,7 @@ auto copy(It/*first*/, It/*last*/, multi::array_iterator<T, 2, fancy::ptr<T>> de
 BOOST_AUTO_TEST_CASE(multi_fancy) {
 	namespace multi = boost::multi;
 
-	multi::array<double, 2, fancy::allocator<double>> A({5, 5});
-	BOOST_REQUIRE( A.size() == 5 );
-	BOOST_REQUIRE( A[1][1] == A[2][2] );
+	multi::array<double, 2, fancy::allocator<double>> arr({5, 5});
+	BOOST_REQUIRE( arr.size() == 5 );
+	BOOST_REQUIRE( arr[1][1] == arr[2][2] );
 }

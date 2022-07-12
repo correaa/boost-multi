@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2020-2021 Alfredo Correa
+// Copyright 2020-2022 Alfredo Correa
 
 #ifndef MULTI_COMPLEX_HPP
 #define MULTI_COMPLEX_HPP
@@ -13,27 +13,27 @@ namespace boost {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 comp
 namespace multi {
 
 constexpr class adl_conj_t {
-	template<class... As>          auto _(priority<1>/**/,        As&&... args) const JUSTRETURN(              std::conj(std::forward<As>(args)...))
-	template<class... As>          auto _(priority<2>/**/,        As&&... args) const DECLRETURN(                   conj(std::forward<As>(args)...))
-	template<class T, class... As> auto _(priority<3>/**/, T&& t, As&&... args) const DECLRETURN(std::forward<T>(t).conj(std::forward<As>(args)...))
+	template<class... As>          auto _(priority<1>/**/,          As&&... args) const JUSTRETURN(              std::  conj(std::forward<As>(args)...))
+	template<class... As>          auto _(priority<2>/**/,          As&&... args) const DECLRETURN(                     conj(std::forward<As>(args)...))
+	template<class T, class... As> auto _(priority<3>/**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).conj(std::forward<As>(args)...))
 
  public:
 	template<class... As> auto operator()(As&&... args) const DECLRETURN(_(priority<3>{}, std::forward<As>(args)...))
 } adl_conj;
 
 constexpr class adl_real_t {
-	template<class... As>          auto _(priority<1>/**/,        As&&... args) const DECLRETURN(              std::real(std::forward<As>(args)...))
-	template<class... As>          auto _(priority<2>/**/,        As&&... args) const DECLRETURN(                   real(std::forward<As>(args)...))
-	template<class T, class... As> auto _(priority<3>/**/, T&& t, As&&... args) const DECLRETURN(std::forward<T>(t).real(std::forward<As>(args)...))
+	template<class... As>          auto _(priority<1>/**/,          As&&... args) const DECLRETURN(                std::real(std::forward<As>(args)...))
+	template<class... As>          auto _(priority<2>/**/,          As&&... args) const DECLRETURN(                     real(std::forward<As>(args)...))
+	template<class T, class... As> auto _(priority<3>/**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).real(std::forward<As>(args)...))
 
  public:
 	template<class... As> auto operator()(As&&... args) const DECLRETURN(_(priority<3>{}, std::forward<As>(args)...))
 } adl_real;
 
 constexpr class adl_imag_t{
-	template<class... As>          auto _(priority<1>/**/,        As&&... args) const DECLRETURN(              std::imag(std::forward<As>(args)...))
-	template<class... As>          auto _(priority<2>/**/,        As&&... args) const DECLRETURN(                   imag(std::forward<As>(args)...))
-	template<class T, class... As> auto _(priority<3>/**/, T&& t, As&&... args) const DECLRETURN(std::forward<T>(t).imag(std::forward<As>(args)...))
+	template<class... As>          auto _(priority<1>/**/,          As&&... args) const DECLRETURN(                std::imag(std::forward<As>(args)...))
+	template<class... As>          auto _(priority<2>/**/,          As&&... args) const DECLRETURN(                     imag(std::forward<As>(args)...))
+	template<class T, class... As> auto _(priority<3>/**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).imag(std::forward<As>(args)...))
 
  public:
 	template<class... As> auto operator()(As&&... args) const DECLRETURN(_(priority<3>{}, std::forward<As>(args)...))
@@ -143,8 +143,8 @@ struct imag_t {
 			std::is_assignable<ValueType&, decltype(imag(std::declval<T>()))>{}, int
 		> =0
 	>
-	auto operator()(T& t) const -> ValueType& {
-		return reinterpret_cast<multi::complex<ValueType>&>(t).imag;  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : TODO(correaa) : t[1]
+	auto operator()(T& value) const -> ValueType& {
+		return reinterpret_cast<multi::complex<ValueType>&>(value).imag;  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : TODO(correaa) : t[1]
 	}
 	template<class T, typename ValueType = typename std::decay_t<T>::value_type,
 		std::enable_if_t<
@@ -153,31 +153,10 @@ struct imag_t {
 			std::is_assignable<ValueType&, decltype(imag(std::declval<T>()))>{}, int
 		> =0
 	>
-	auto operator()(T const& t) const -> ValueType const&{
-		return reinterpret_cast<multi::complex<ValueType> const&>(t).imag;  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : TODO(correaa) : t[1]
+	auto operator()(T const& value) const -> ValueType const&{
+		return reinterpret_cast<multi::complex<ValueType> const&>(value).imag;  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast) : TODO(correaa) : t[1]
 	}
 };
-
-/*
-template<class T2, class Array, class P2 = typename std::pointer_traits<typename std::decay<Array>::type::element_ptr>::template rebind<T2>,
-typename E = typename std::decay_t<Array>::element,
-typename R = decltype(real(E{})),
-std::enable_if_t<sizeof(E)==2*sizeof(typename E::value_type), int> =0
->
-decltype(auto) member_array_cast(Array&& a, real_t const*){
-	struct Complex{double real; double imag;};
-	return multi::member_array_cast<double>(multi::reinterpret_array_cast<Complex>(std::forward<Array>(a)), &Complex::real);
-}
-template<class T2, class Array, class P2 = typename std::pointer_traits<typename std::decay<Array>::type::element_ptr>::template rebind<T2>,
-typename E = typename std::decay_t<Array>::element,
-typename R = decltype(real(E{})),
-std::enable_if_t<sizeof(E)==2*sizeof(typename E::value_type), int> =0
->
-decltype(auto) member_array_cast(Array&& a, imag_t const*){
-	struct Complex{double real; double imag;};
-	return multi::member_array_cast<double>(multi::reinterpret_array_cast<Complex>(std::forward<Array>(a)), &Complex::imag);
-}
-*/
 
 [[maybe_unused]] static constexpr real_t real;
 [[maybe_unused]] static constexpr imag_t imag;
@@ -189,7 +168,7 @@ namespace std {
 
 template<class T>
 struct is_trivially_default_constructible<std::complex<T>>
-: is_trivially_default_constructible<T>{};
+: is_trivially_default_constructible<T> {};
 
 }  // end namespace std
 

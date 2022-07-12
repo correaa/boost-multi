@@ -5,22 +5,21 @@ HeaderFilterRegex: '.'
 FormatStyle: file
 
 CheckOptions:
-  - { key: readability-identifier-naming.ClassCase,                 value: lower_case }
-  - { key: readability-identifier-naming.FunctionCase,              value: lower_case }
-  - { key: readability-identifier-naming.GlobalConstantCase,        value: aNy_CasE   }
-  - { key: readability-identifier-naming.NamespaceCase,             value: lower_case }
-  - { key: readability-identifier-naming.PrivateMemberPrefix,       value: ''         }
-  - { key: readability-identifier-naming.PrivateMemberSufix,        value: _          }
-  - { key: readability-identifier-naming.StructCase,                value: lower_case }
-  - { key: readability-identifier-naming.TemplateParameterCase    , value: CamelCase  }
-  - { key: readability-identifier-length.MinimumVariableNameLength, value: 2          }
-  - { key: readability-identifier-length.MinimumParameterNameLengt, value: 2          }
-  - { key: readability-identifier-length.IgnoredVariableNames     , value: 'A|B|C|D|_'  }
-  - { key: readability-identifier-length.IgnoredParameterNames    , value: 'f|n|p|t|v'}
+  - { key: readability-identifier-naming.ClassCase                   , value: lower_case  }
+  - { key: readability-identifier-naming.FunctionCase                , value: lower_case }
+  - { key: readability-identifier-naming.GlobalConstantCase          , value: aNy_CasE   }
+  - { key: readability-identifier-naming.NamespaceCase               , value: lower_case }
+  - { key: readability-identifier-naming.PrivateMemberPrefix         , value: ''         }
+  - { key: readability-identifier-naming.PrivateMemberSufix          , value: _          }
+  - { key: readability-identifier-naming.StructCase                  , value: lower_case }
+  - { key: readability-identifier-naming.TemplateParameterCase       , value: CamelCase  }
+  - { key: readability-identifier-length.MinimumVariableNameLength   , value: 2          }
+  - { key: readability-identifier-length.MinimumParameterNameLength  , value: 2          }
+  - { key: readability-identifier-length.MinimumLoopCounterNameLength, value: 2          }
+  - { key: readability-identifier-length.IgnoredLoopCounterNames     , value: "^[ijk_]$" }
 
 # - { key: readability-identifier-naming.VariableCase,          value: aNy_CasE   } for tests
 # - { key: readability-identifier-naming.PrivateMethodSuffix,   value:            }
-# TODO(correaa) make private method suffix _
 
 Checks: '*,
   -altera-id-dependent-backward-branch,

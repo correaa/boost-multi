@@ -38,30 +38,30 @@ BOOST_AUTO_TEST_CASE(blas_dot_no_context) {
 
 
 BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param) {
-	multi::array<float, 1> const A = {1., 2., 3.};
-	multi::array<float, 1> const B = {1., 2., 3.};
-	float C = NAN;
-	blas::dot(A, B, C);
-	BOOST_REQUIRE( C == std::inner_product(begin(A), end(A), begin(B), 0.F) );
+	multi::array<float, 1> const x = {1., 2., 3.};  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<float, 1> const y = {1., 2., 3.};  // NOLINT(readability-identifier-length) BLAS naming
+	float res = NAN;
+	blas::dot(x, y, res);
+	BOOST_REQUIRE( res == std::inner_product(begin(x), end(x), begin(y), 0.F) );
 }
 
-BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex) { // if you get a segfaut here, your system may require -DRETURN_BY_STACK
+BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex) {  // if you get a segfaut here, your system may require -DRETURN_BY_STACK
 	using complex = std::complex<double>;
-	multi::array<complex, 1> const A = {1., 2., 3.};
-	multi::array<complex, 1> const B = {1., 2., 3.};
-	complex C;
-	blas::dot(A, B, C);
-	BOOST_REQUIRE_EQUAL( real(C) , real(std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto const& alpha, auto const& omega) {return alpha*std::conj(omega);})) );
-	BOOST_REQUIRE_EQUAL( imag(C) , imag(std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto const& alpha, auto const& omega) {return alpha*std::conj(omega);})) );
+	multi::array<complex, 1> const x = {1., 2., 3.};  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<complex, 1> const y = {1., 2., 3.};  // NOLINT(readability-identifier-length) BLAS naming
+	complex res;
+	blas::dot(x, y, res);
+	BOOST_REQUIRE_EQUAL( real(res) , real(std::inner_product(begin(x), end(x), begin(y), complex{0.}, std::plus<>{}, [](auto const& alpha, auto const& omega) {return alpha*std::conj(omega);})) );
+	BOOST_REQUIRE_EQUAL( imag(res) , imag(std::inner_product(begin(x), end(x), begin(y), complex{0.}, std::plus<>{}, [](auto const& alpha, auto const& omega) {return alpha*std::conj(omega);})) );
 }
 
 BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param_complex_C) {
-	using complex = std::complex<double>; complex const I{0., 1.};
-	multi::array<complex, 1> const A = {1., 2.       , 3.};
-	multi::array<complex, 1> const B = {1., 2. + 2.*I, 3.};
-	complex C;
-	blas::dot(blas::C(A), B, C);
-	BOOST_REQUIRE( C == std::inner_product(begin(A), end(A), begin(B), complex{0.}, std::plus<>{}, [](auto const& a, auto const& b){return conj(a)*b;}) );
+	using complex = std::complex<double>; complex const I{0, 1};  // NOLINT(readability-identifier-length) imag unit
+	multi::array<complex, 1> const x = {1., 2.       , 3.};  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<complex, 1> const y = {1., 2. + 2.*I, 3.};  // NOLINT(readability-identifier-length) BLAS naming
+	complex res;
+	blas::dot(blas::C(x), y, res);
+	BOOST_REQUIRE( res == std::inner_product(begin(x), end(x), begin(y), complex{0.}, std::plus<>{}, [](auto const& alpha, auto const& omega) {return conj(alpha)*omega;}) );
 }
 
 #if defined(CUDA_FOUND) and CUDA_FOUND
@@ -82,12 +82,12 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_strided) {
 		{5.,  6.,  7.,  8.},
 		{9., 10., 11., 12.}
 	};
-	double d = std::numeric_limits<double>::quiet_NaN();
-	blas::dot_n(begin(CA[1]), size(CA[1]), begin(CA[2]), &d);
-	BOOST_REQUIRE( d == std::inner_product(begin(CA[1]), begin(CA[2]), end(CA[1]), 0.) );
+	double res = std::numeric_limits<double>::quiet_NaN();
+	blas::dot_n(begin(CA[1]), size(CA[1]), begin(CA[2]), &res);
+	BOOST_REQUIRE( res == std::inner_product(begin(CA[1]), begin(CA[2]), end(CA[1]), 0.) );
 
-	double d2 = blas::dot(CA[1], CA[2]);
-	BOOST_REQUIRE( d == d2 );
+	double res2 = blas::dot(CA[1], CA[2]);
+	BOOST_REQUIRE( res == res2 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_dot_strided_context) {
@@ -96,22 +96,22 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_strided_context) {
 		{5.,  6.,  7.,  8.},
 		{9., 10., 11., 12.}
 	};
-	double d = std::numeric_limits<double>::quiet_NaN();
+	double res = std::numeric_limits<double>::quiet_NaN();
 	blas::context ctxt;
-	blas::dot_n(&ctxt, begin(CA[1]), size(CA[1]), begin(CA[2]), &d);
-	BOOST_REQUIRE( d == std::inner_product(begin(CA[1]), begin(CA[2]), end(CA[1]), 0.) );
+	blas::dot_n(&ctxt, begin(CA[1]), size(CA[1]), begin(CA[2]), &res);
+	BOOST_REQUIRE( res == std::inner_product(begin(CA[1]), begin(CA[2]), end(CA[1]), 0.) );
 
-	double d2 = blas::dot(CA[1], CA[2]);
-	BOOST_REQUIRE( d == d2 );
+	double res2 = blas::dot(CA[1], CA[2]);
+	BOOST_REQUIRE( res == res2 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_dot_1d_real) {
-	multi::array<float, 1> V = {1., 2., 3.};
-	multi::array<float, 1> W = {1., 2., 3.};
+	multi::array<float, 1> x = {1., 2., 3.};  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<float, 1> y = {1., 2., 3.};  // NOLINT(readability-identifier-length) BLAS naming
 
 	using blas::dot;
-	BOOST_REQUIRE( 14. == dot(V, W) );
-	BOOST_REQUIRE( dot(V, W) == 14.F );
+	BOOST_REQUIRE( 14. == dot(x, y) );
+	BOOST_REQUIRE( dot(x, y) == 14.F );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_real) {
@@ -121,8 +121,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_real) {
 		{9., 10., 11., 12.}
 	};
 	{
-		double d = blas::dot(cA[1], cA[2]);
-		BOOST_REQUIRE( d==std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.) );
+		double res = blas::dot(cA[1], cA[2]);
+		BOOST_REQUIRE( res == std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.) );
 	}
 	{
 		double res = NAN;
@@ -142,28 +142,28 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_real) {
 }
 
 BOOST_AUTO_TEST_CASE(inq_case) {
-	multi::array<double, 1> v1(multi::extensions_t<1>{multi::iextension{10}}, +1.0);
-	multi::array<double, 1> v2(multi::extensions_t<1>{multi::iextension{10}}, -1.0);
+	multi::array<double, 1> x(multi::extensions_t<1>{multi::iextension{10}}, +1.0);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<double, 1> y(multi::extensions_t<1>{multi::iextension{10}}, -1.0);  // NOLINT(readability-identifier-length) BLAS naming
 
 	using blas::dot;
 	using blas::hermitized;
 	using blas::conj;
 
-	auto a = dot(v1, v2);
-	auto b = dot(hermitized(v1), v2);
+	auto res = dot(x, y);
+	auto res2 = dot(hermitized(x), y);
 
-	BOOST_REQUIRE(a == b);
+	BOOST_REQUIRE(res == res2);
 
-	auto c = dot(blas::conj(v1), v2); // conjugation doesn't do anything for real array
-	BOOST_REQUIRE(c == a);
+	auto res3 = dot(blas::conj(x), y);  // conjugation doesn't do anything for real array
+	BOOST_REQUIRE(res3 == res);
 
-	auto d_arr = dot(blas::C(v1), v2);
-	BOOST_REQUIRE(d_arr == a);
+	auto d_arr = dot(blas::C(x), y);
+	BOOST_REQUIRE(d_arr == res);
 
 	static_assert( not std::is_same<decltype(d_arr), double>{}, "!" );
 
 	using blas::C;
-	double d_doub = dot(C(v1), v2);
+	double d_doub = dot(C(x), y);
 
 	BOOST_REQUIRE( d_doub == d_arr );
 }

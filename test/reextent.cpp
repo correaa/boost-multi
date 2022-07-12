@@ -9,134 +9,134 @@
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(array_reextent) {
-	multi::array<double, 2> A({2, 3});
-	BOOST_REQUIRE( num_elements(A) == 6 );
+	multi::array<double, 2> arr({2, 3});
+	BOOST_REQUIRE( num_elements(arr) == 6 );
 
-	A[1][2] = 6.;
-	BOOST_REQUIRE( A[1][2] == 6. );
+	arr[1][2] = 6.;
+	BOOST_REQUIRE( arr[1][2] == 6. );
 
-	multi::array<double, 2> C({2, 3});
-	BOOST_REQUIRE(size(C) == 2);
-	BOOST_REQUIRE(size(C[0]) == 3);
+	multi::array<double, 2> arr3({2, 3});
+	BOOST_REQUIRE(size(arr3) == 2);
+	BOOST_REQUIRE(size(arr3[0]) == 3);
 
-	A.reextent({5, 4}, 99.);
-	BOOST_REQUIRE( num_elements(A)== 5L*4L );
-	BOOST_REQUIRE( A[1][2] ==  6. );  // reextent preserves values when it can...
-	BOOST_REQUIRE( A[4][3] == 99. );  // ...and gives selected value to the rest
+	arr.reextent({5, 4}, 99.);
+	BOOST_REQUIRE( num_elements(arr)== 5L*4L );
+	BOOST_REQUIRE( arr[1][2] ==  6. );  // reextent preserves values when it can...
+	BOOST_REQUIRE( arr[4][3] == 99. );  // ...and gives selected value to the rest
 }
 
 BOOST_AUTO_TEST_CASE(array_reextent_noop) {
-	multi::array<double, 2> A({2, 3});
-	BOOST_REQUIRE( num_elements(A) == 6 );
+	multi::array<double, 2> arr({2, 3});
+	BOOST_REQUIRE( num_elements(arr) == 6 );
 
-	A[1][2] = 6.;
-	BOOST_REQUIRE( A[1][2] == 6. );
+	arr[1][2] = 6.;
+	BOOST_REQUIRE( arr[1][2] == 6. );
 
-	multi::array<double, 2> C({2, 3});
-	BOOST_REQUIRE(size(C) == 2);
-	BOOST_REQUIRE(size(C[0]) == 3);
+	multi::array<double, 2> arr3({2, 3});
+	BOOST_REQUIRE(size(arr3) == 2);
+	BOOST_REQUIRE(size(arr3[0]) == 3);
 
-	auto* const A_base = A.base();
-	A.reextent({2, 3});
-	BOOST_REQUIRE( num_elements(A)== 2L*3L );
-	BOOST_REQUIRE( A[1][2] ==  6. );  // reextent preserves values when it can...
+	auto* const A_base = arr.base();
+	arr.reextent({2, 3});
+	BOOST_REQUIRE( num_elements(arr)== 2L*3L );
+	BOOST_REQUIRE( arr[1][2] ==  6. );  // reextent preserves values when it can...
 
-	BOOST_REQUIRE( A_base == A.base() );
+	BOOST_REQUIRE( A_base == arr.base() );
 }
 
 BOOST_AUTO_TEST_CASE(array_reextent_noop_with_init) {
-	multi::array<double, 2> A({2, 3});
-	BOOST_REQUIRE( num_elements(A) == 6 );
+	multi::array<double, 2> arr({2, 3});
+	BOOST_REQUIRE( num_elements(arr) == 6 );
 
-	A[1][2] = 6.;
-	BOOST_REQUIRE( A[1][2] == 6. );
+	arr[1][2] = 6.;
+	BOOST_REQUIRE( arr[1][2] == 6. );
 
-	multi::array<double, 2> C({2, 3});
-	BOOST_REQUIRE(size(C) == 2);
-	BOOST_REQUIRE(size(C[0]) == 3);
+	multi::array<double, 2> arr3({2, 3});
+	BOOST_REQUIRE(size(arr3) == 2);
+	BOOST_REQUIRE(size(arr3[0]) == 3);
 
-	auto* const A_base = A.base();
-	A.reextent({2, 3}, 99.);
-	BOOST_REQUIRE( num_elements(A)== 2L*3L );
-	BOOST_REQUIRE( A[1][2] ==  6. );  // reextent preserves values when it can...
+	auto* const A_base = arr.base();
+	arr.reextent({2, 3}, 99.);
+	BOOST_REQUIRE( num_elements(arr)== 2L*3L );
+	BOOST_REQUIRE( arr[1][2] ==  6. );  // reextent preserves values when it can...
 
-	BOOST_REQUIRE( A_base == A.base() );
+	BOOST_REQUIRE( A_base == arr.base() );
 }
 
 BOOST_AUTO_TEST_CASE(array_reextent_moved) {
-	multi::array<double, 2> A({2, 3});
-	BOOST_REQUIRE( num_elements(A) == 6 );
+	multi::array<double, 2> arr({2, 3});
+	BOOST_REQUIRE( num_elements(arr) == 6 );
 
-	A[1][2] = 6.;
-	BOOST_REQUIRE( A[1][2] == 6. );
+	arr[1][2] = 6.;
+	BOOST_REQUIRE( arr[1][2] == 6. );
 
-	auto* const A_base = A.base();
-	A = std::move(A).reextent({2, 3}, 99.);  // "A = ..." suppresses linter bugprone-use-after-move,hicpp-invalid-access-moved
-	BOOST_REQUIRE( num_elements(A)== 2L*3L );
-	BOOST_TEST( A[1][2] ==  6. );  // after move the original elments might not be the same
+	auto* const A_base = arr.base();
+	arr = std::move(arr).reextent({2, 3}, 99.);  // "arr = ..." suppresses linter bugprone-use-after-move,hicpp-invalid-access-moved
+	BOOST_REQUIRE( num_elements(arr)== 2L*3L );
+	BOOST_TEST( arr[1][2] ==  6. );  // after move the original elments might not be the same
 
-	BOOST_REQUIRE( A_base == A.base() );
+	BOOST_REQUIRE( A_base == arr.base() );
 }
 
 BOOST_AUTO_TEST_CASE(array_reextent_moved_trivial) {
-	multi::array<double, 2> A({2, 3});
-	BOOST_REQUIRE( num_elements(A) == 6 );
+	multi::array<double, 2> arr({2, 3});
+	BOOST_REQUIRE( num_elements(arr) == 6 );
 
-	A[1][2] = 6.;
-	BOOST_REQUIRE( A[1][2] == 6. );
+	arr[1][2] = 6.;
+	BOOST_REQUIRE( arr[1][2] == 6. );
 
-	auto* const A_base = A.base();
-	A = std::move(A).reextent({2, 3});  // "A = ..." suppresses linter bugprone-use-after-move,hicpp-invalid-access-moved
-	BOOST_REQUIRE( num_elements(A)== 2L*3L );
-	BOOST_REQUIRE( A[1][2] ==  6. );  // after move the original elments might not be the same
+	auto* const A_base = arr.base();
+	arr = std::move(arr).reextent({2, 3});  // "arr = ..." suppresses linter bugprone-use-after-move,hicpp-invalid-access-moved
+	BOOST_REQUIRE( num_elements(arr)== 2L*3L );
+	BOOST_REQUIRE( arr[1][2] ==  6. );  // after move the original elments might not be the same
 
-	BOOST_REQUIRE( A_base == A.base() );
+	BOOST_REQUIRE( A_base == arr.base() );
 }
 
 BOOST_AUTO_TEST_CASE(array_reextent_moved_trivial_change_extents) {
-	multi::array<double, 2> A({2, 3});
-	BOOST_REQUIRE( num_elements(A) == 6 );
+	multi::array<double, 2> arr({2, 3});
+	BOOST_REQUIRE( num_elements(arr) == 6 );
 
-	A[1][2] = 6.;
-	BOOST_REQUIRE( A[1][2] == 6. );
+	arr[1][2] = 6.;
+	BOOST_REQUIRE( arr[1][2] == 6. );
 
-	auto* const A_base = A.base();
-	A = std::move(A).reextent({4, 5});
-	BOOST_REQUIRE( num_elements(A)== 4L*5L );
-	BOOST_REQUIRE( A[1][2] !=  6. );  // after move the original elments might not be the same
+	auto* const A_base = arr.base();
+	arr = std::move(arr).reextent({4, 5});
+	BOOST_REQUIRE( num_elements(arr)== 4L*5L );
+	BOOST_REQUIRE( arr[1][2] !=  6. );  // after move the original elments might not be the same
 
-	BOOST_REQUIRE( A_base != A.base() );
+	BOOST_REQUIRE( A_base != arr.base() );
 }
 
 BOOST_AUTO_TEST_CASE(array_move_clear) {
-	multi::array<double, 2> A({2, 3});
-	A = multi::array<double, 2>(extensions(A), 123.);
-	BOOST_REQUIRE( A[1][2] == 123. );
+	multi::array<double, 2> arr({2, 3});
+	arr = multi::array<double, 2>(extensions(arr), 123.);
+	BOOST_REQUIRE( arr[1][2] == 123. );
 
-	A.clear();  // clear(A);
-	BOOST_REQUIRE( num_elements(A) == 0 );
-	BOOST_REQUIRE( size(A) == 0 );
+	arr.clear();  // clear(arr);
+	BOOST_REQUIRE( num_elements(arr) == 0 );
+	BOOST_REQUIRE( size(arr) == 0 );
 
-	A.reextent({5, 4}, 66.);
-	BOOST_REQUIRE( A[4][3] == 66. );
+	arr.reextent({5, 4}, 66.);
+	BOOST_REQUIRE( arr[4][3] == 66. );
 }
 
 BOOST_AUTO_TEST_CASE(array_reextent_1d) {
-	multi::array<double, 1> A(multi::extensions_t<1>{multi::iextension{10}}, 4.);
-	BOOST_REQUIRE( size(A) == 10 );
-	BOOST_REQUIRE( A[9] == 4. );
+	multi::array<double, 1> arr(multi::extensions_t<1>{multi::iextension{10}}, 4.);
+	BOOST_REQUIRE( size(arr) == 10 );
+	BOOST_REQUIRE( arr[9] == 4. );
 
-	A.reextent(multi::extensions_t<1>{multi::iextension{20}});
-	BOOST_REQUIRE( size(A) == 20 );
-	BOOST_REQUIRE( A[9] == 4. );
-//  BOOST_REQUIRE( A[19] == 0. );  // impossible to know since it is sometimes 0.
+	arr.reextent(multi::extensions_t<1>{multi::iextension{20}});
+	BOOST_REQUIRE( size(arr) == 20 );
+	BOOST_REQUIRE( arr[9] == 4. );
+//  BOOST_REQUIRE( arr[19] == 0. );  // impossible to know since it is sometimes 0.
 
-	A.reextent( boost::multi::tuple<int>(22) );
-	BOOST_REQUIRE( size(A) == 22 );
-	BOOST_REQUIRE( A[9] == 4. );
+	arr.reextent( boost::multi::tuple<int>(22) );
+	BOOST_REQUIRE( size(arr) == 22 );
+	BOOST_REQUIRE( arr[9] == 4. );
 
-	A.reextent( {23} );
-	BOOST_REQUIRE( size(A) == 23 );
+	arr.reextent( {23} );
+	BOOST_REQUIRE( size(arr) == 23 );
 
 #pragma warning(push)                      // NOLINT(clang-diagnostic-unknown-pragmas)
 #pragma warning (disable:1478 1786)        // NOLINT(clang-diagnostic-unknown-pragmas)
@@ -144,8 +144,8 @@ BOOST_AUTO_TEST_CASE(array_reextent_1d) {
 #pragma diag_suppress 1215,1216,1444,1445  // NOLINT(clang-diagnostic-unknown-pragmas)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-	A.reextent( std::make_tuple(24) );
-	BOOST_REQUIRE( size(A) == 24 );
+	arr.reextent( std::make_tuple(24) );
+	BOOST_REQUIRE( size(arr) == 24 );
 #pragma GCC diagnostic pop
 #pragma diagnostic pop                     // NOLINT(clang-diagnostic-unknown-pragmas)
 #pragma warning(pop)                       // NOLINT(clang-diagnostic-unknown-pragmas)
@@ -181,42 +181,42 @@ BOOST_AUTO_TEST_CASE(tuple_decomposition) {
 }
 
 BOOST_AUTO_TEST_CASE(array_reextent_0D) {
-	multi::array<double, 0> A({}, 4.);
-//	A.reextent(A.extensions()); // TODO(correaa) : fix unused for D = 0
-	BOOST_REQUIRE( *A.data_elements() == 4. );
+	multi::array<double, 0> arr({}, 4.);
+//	arr.reextent(arr.extensions()); // TODO(correaa) : fix unused for D = 0
+	BOOST_REQUIRE( *arr.data_elements() == 4. );
 }
 
 BOOST_AUTO_TEST_CASE(array_reextent_1d_with_initialization) {
-	multi::array<double, 1> A(multi::extensions_t<1>{multi::iextension{10}}, 4.);
-	BOOST_REQUIRE( size(A) == 10 );
-	BOOST_REQUIRE( A[9] == 4. );
+	multi::array<double, 1> arr(multi::extensions_t<1>{multi::iextension{10}}, 4.);
+	BOOST_REQUIRE( size(arr) == 10 );
+	BOOST_REQUIRE( arr[9] == 4. );
 
-	A.reextent(multi::extensions_t<1>{multi::iextension{20}}, 8.);
-	BOOST_REQUIRE( size(A) == 20 );
-	BOOST_REQUIRE( A[9] == 4. );
-	BOOST_REQUIRE( A[19] == 8. );
+	arr.reextent(multi::extensions_t<1>{multi::iextension{20}}, 8.);
+	BOOST_REQUIRE( size(arr) == 20 );
+	BOOST_REQUIRE( arr[9] == 4. );
+	BOOST_REQUIRE( arr[19] == 8. );
 }
 
 BOOST_AUTO_TEST_CASE(array_reextent_2d) {
-	multi::array<double, 2> A({10, 20}, 4.);
-	BOOST_REQUIRE( A[1][2] == 4. );
+	multi::array<double, 2> arr({10, 20}, 4.);
+	BOOST_REQUIRE( arr[1][2] == 4. );
 
-	A.clear();
-	BOOST_REQUIRE( num_elements(A) == 0 );
-	BOOST_REQUIRE( size(A) == 0 );
+	arr.clear();
+	BOOST_REQUIRE( num_elements(arr) == 0 );
+	BOOST_REQUIRE( size(arr) == 0 );
 
-	A.reextent({20, 30}, 9.);
-	BOOST_REQUIRE( A[1][2] = 9. );
-	BOOST_REQUIRE( A[11][22] = 9. );
+	arr.reextent({20, 30}, 9.);
+	BOOST_REQUIRE( arr[1][2] = 9. );
+	BOOST_REQUIRE( arr[11][22] = 9. );
 }
 
 BOOST_AUTO_TEST_CASE(array_reextent_2d_array) {
-	multi::array<double, 2> A({10, 20}, 4.);
-	BOOST_REQUIRE( A[1][2] == 4. );
+	multi::array<double, 2> arr({10, 20}, 4.);
+	BOOST_REQUIRE( arr[1][2] == 4. );
 
-	A.clear();
-	BOOST_REQUIRE( num_elements(A) == 0 );
-	BOOST_REQUIRE( size(A) == 0 );
+	arr.clear();
+	BOOST_REQUIRE( num_elements(arr) == 0 );
+	BOOST_REQUIRE( size(arr) == 0 );
 }
 
 #pragma GCC diagnostic push

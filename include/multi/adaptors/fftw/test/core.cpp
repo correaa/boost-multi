@@ -10,6 +10,7 @@
 #include<chrono>
 #include<iostream>
 #include<random>
+
 //#include<thrust/complex.h>  // TODO(correaa) make lib work with thrust complex
 
 namespace {
@@ -21,17 +22,16 @@ using complex = std::complex<double>; [[maybe_unused]] complex const I{0, 1};  /
 
 template<class M> auto power(M const& elem) -> decltype(std::norm(elem)) {return std::norm(elem);}
 
-template<class M, DELETE((M::rank_v < 1))> auto power(M const& m) {
-	return accumulate(begin(m), end(m), 0., [](auto const& a, auto const& b) {return a + power(b);});
+template<class M, DELETE((M::rank_v < 1))>
+auto power(M const& array) {
+	return accumulate(begin(array), end(array), 0., [](auto const& alpha, auto const& omega) {return alpha + power(omega);});
 }
 
 struct sum_power{
-	template<class A, class B> auto operator()(A const& a, B const& b) const {return a+power(b);}
+	template<class A, class B> auto operator()(A const& alpha, B const& omega) const {return alpha + power(omega);}
 };
 
-[[maybe_unused]] constexpr int N = 16;
-
-} // end anonymous namespace
+}  // end anonymous namespace
 
 class watch : private std::chrono::high_resolution_clock{
 	std::string label;
@@ -57,14 +57,14 @@ template<class T> struct randomizer {
 };
 
 template<class T> struct randomizer<std::complex<T>> {
-	template<class M> void operator()(M&& m) const {for(auto&& elem : m) {operator()(elem);}}
-	void operator()(std::complex<T>& zee) const{  // NOLINT(runtime/references) : passing by reference
-		static std::random_device r; static std::mt19937 g{r()}; static std::normal_distribution<T> d;
-		zee = std::complex<T>(d(g), d(g));
+	template<class M> void operator()(M&& array) const {for(auto&& elem : array) {operator()(elem);}}
+	void operator()(std::complex<T>& zee) const {  // NOLINT(runtime/references) : passing by reference
+		static std::random_device dev; static std::mt19937 gen{dev()}; static std::normal_distribution<T> gauss;
+		zee = std::complex<T>(gauss(gen), gauss(gen));
 	}
 };
 
-struct fftw_fixture : fftw::environment{
+struct fftw_fixture : fftw::environment {
 //	void setup(){}
 //	void teardown(){}//fftw_cleanup();}
 };
@@ -379,13 +379,13 @@ BOOST_AUTO_TEST_CASE(fftw_3D_power_out_of_place_over_ref) {
 
 BOOST_AUTO_TEST_CASE(fftw_3D_power_out_of_place_over_temporary) {
 	double powerin = NAN;
-	auto f = [&](){
+	auto fun = [&]() {
 		multi::array<complex, 3> in({4, 4, 4});
 		std::iota(data_elements(in), data_elements(in)+num_elements(in), 1.2); // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 		powerin = power(in);
 		return in;
 	};
-	auto out = fftw::dft(f(), fftw::forward);
+	auto out = fftw::dft(fun(), fftw::forward);
 	BOOST_REQUIRE( std::abs(powerin - power(out)/num_elements(out)) < 1e-10 );
 }
 
@@ -420,8 +420,8 @@ BOOST_AUTO_TEST_CASE(fftw_4D_inq_poisson) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_1D_power) {
-	multi::array<complex, 1> in(N, 0.);
-	BOOST_REQUIRE( size(in) == N );
+	multi::array<complex, 1> in(16, 0.);
+	BOOST_REQUIRE( size(in) == 16 );
 
 	std::iota(begin(in), end(in), 1.);
 	BOOST_TEST_REQUIRE( power(in) == 1496. );
@@ -615,9 +615,9 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_part2) {
 		{
 			auto xs = std::get<0>(in.extensions());  // TODO(correaa) use structured bindings
 			auto ys = std::get<1>(in.extensions());
-			for(auto const x : xs) {
-				for(auto const y : ys) {
-					std::cout<< in[x][y] <<'\t';
+			for(auto const ex : xs) {
+				for(auto const wye : ys) {
+					std::cout<< in[ex][wye] <<'\t';
 				}
 				std::cout<< std::endl;
 			}
@@ -626,9 +626,9 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_part2) {
 		{
 			auto xs = std::get<0>(in2t.extensions());
 			auto ys = std::get<1>(in2t.extensions());
-			for(auto const x : xs) {
-				for(auto const y : ys) {
-					std::cout<< in2t[x][y] <<'\t';
+			for(auto const ex : xs) {
+				for(auto const why : ys) {
+					std::cout<< in2t[ex][why] <<'\t';
 				}
 				std::cout<< std::endl;
 			}
@@ -637,9 +637,9 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_part2) {
 		{
 			auto xs = std::get<0>(tt.extensions());
 			auto ys = std::get<1>(tt.extensions());
-			for(auto x : xs) {
-				for(auto y : ys) {
-					std::cout<< tt[x][y] <<'\t';
+			for(auto ex : xs) {
+				for(auto wye : ys) {
+					std::cout<< tt[ex][wye] <<'\t';
 				}
 				std::cout<< std::endl;
 			}
