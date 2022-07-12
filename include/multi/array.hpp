@@ -323,7 +323,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 
 	using reference = typename std::conditional<
 		(D > 1),
-		basic_array<typename static_array::element, D-1, typename static_array::element_ptr>,
+		basic_array<typename static_array::element, D - 1, typename static_array::element_ptr>,
 		typename std::conditional<
 			D == 1,
 			typename std::iterator_traits<typename static_array::element_ptr>::reference,
@@ -332,7 +332,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	>::type;
 	using const_reference = typename std::conditional<
 		(D > 1),
-		basic_array<typename static_array::element, D-1, typename static_array::element_const_ptr>,  // TODO(correaa) should be const_reference, but doesn't work witn rangev3?
+		basic_array<typename static_array::element, D - 1, typename static_array::element_const_ptr>,  // TODO(correaa) should be const_reference, but doesn't work witn rangev3?
 		typename std::conditional<
 			D == 1,
 			decltype(*std::declval<typename static_array::element_const_ptr>()),
@@ -397,11 +397,6 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 
 	friend constexpr auto unrotated(static_array      & self) -> decltype(auto) {return self.unrotated();}
 	friend constexpr auto unrotated(static_array const& self) -> decltype(auto) {return self.unrotated();}
-
-//  constexpr auto operator<<(dimensionality_type d)       -> decltype(auto) {return   rotated(d);}
-//  constexpr auto operator>>(dimensionality_type d)       -> decltype(auto) {return unrotated(d);}
-//  constexpr auto operator<<(dimensionality_type d) const -> decltype(auto) {return   rotated(d);}
-//  constexpr auto operator>>(dimensionality_type d) const -> decltype(auto) {return unrotated(d);}
 
 	template<class TT, class... Args>
 	auto operator=(multi::basic_array<TT, D, Args...> const& other) -> static_array& {
@@ -510,7 +505,10 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 		);
 	}
 
-	static_array(typename static_array::extensions_type const& extensions, typename static_array::element const& elem)  // 2
+	static_array(
+		typename static_array::extensions_type const& extensions,
+		typename static_array::element const& elem
+	)  // 2
 	: array_alloc{}
 	, ref(static_array::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements())), extensions) {
 		uninitialized_fill(elem);
@@ -623,33 +621,18 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 		return *(this->base_);
 	}
 
-//  constexpr auto rotated(dimensionality_type d) const& {
-//  	typename static_array::layout_t new_layout = *this;
-//  	new_layout.rotate(d);
-//  	return basic_array<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
-//  }
 	constexpr auto rotated() const& {
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate();
 		return basic_array<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
 	}
 
-//  constexpr auto rotated(dimensionality_type d)& {
-//  	typename static_array::layout_t new_layout = *this;
-//  	new_layout.rotate(d);
-//  	return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
-//  }
-	constexpr auto rotated() & {
+	constexpr auto rotated()  & {
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate();
 		return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
 	}
 
-//  constexpr auto rotated(dimensionality_type d) && {
-//  	typename static_array::layout_t new_layout = *this;
-//  	new_layout.rotate(d);
-//  	return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
-//  }
 	constexpr auto rotated() && {
 		typename static_array::layout_t new_layout = *this;
 		new_layout.rotate();
@@ -658,17 +641,6 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 
 	friend constexpr auto rotated(static_array&       self) -> decltype(auto) {return self.rotated();}
 	friend constexpr auto rotated(static_array const& self) -> decltype(auto) {return self.rotated();}
-
-	// constexpr auto unrotated(dimensionality_type d) const& {
-	// 	typename static_array::layout_t new_layout = *this;
-	// 	new_layout.unrotate(d);
-	// 	return basic_array<T, 0, typename static_array::element_const_ptr>{new_layout, this->base_};
-	// }
-	// constexpr auto unrotated(dimensionality_type d)& {
-	// 	typename static_array::layout_t new_layout = *this;
-	// 	new_layout.unrotate(d);
-	// 	return basic_array<T, 0, typename static_array::element_ptr>{new_layout, this->base_};
-	// }
 
  private:
 	constexpr auto unrotated_aux() {
@@ -1062,22 +1034,16 @@ template<class T>        array(IL<IL<IL<IL<IL<T>>>>>) ->        array<T, 5>;
 template<class T>        array(T[]                  ) ->        array<T, 1>;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 
 //  vvv these are necessary to catch {n, m, ...} notation (or single integer notation)
-template<class T, class = std::enable_if_t<!boost::multi::is_allocator_v<T>> > array(iextensions<0>, T) -> array<T, 0>;
-template<class T, class = std::enable_if_t<!boost::multi::is_allocator_v<T>> > array(iextensions<1>, T) -> array<T, 1>;
-template<class T, class = std::enable_if_t<!boost::multi::is_allocator_v<T>> > array(iextensions<2>, T) -> array<T, 2>;
-template<class T, class = std::enable_if_t<!boost::multi::is_allocator_v<T>> > array(iextensions<3>, T) -> array<T, 3>;
-template<class T, class = std::enable_if_t<!boost::multi::is_allocator_v<T>> > array(iextensions<4>, T) -> array<T, 4>;
-template<class T, class = std::enable_if_t<!boost::multi::is_allocator_v<T>> > array(iextensions<5>, T) -> array<T, 5>;
+template<class T, class = std::enable_if_t<not boost::multi::is_allocator_v<T>>> array(iextensions<0>, T) -> array<T, 0>;
+template<class T, class = std::enable_if_t<not boost::multi::is_allocator_v<T>>> array(iextensions<1>, T) -> array<T, 1>;
+template<class T, class = std::enable_if_t<not boost::multi::is_allocator_v<T>>> array(iextensions<2>, T) -> array<T, 2>;
+template<class T, class = std::enable_if_t<not boost::multi::is_allocator_v<T>>> array(iextensions<3>, T) -> array<T, 3>;
+template<class T, class = std::enable_if_t<not boost::multi::is_allocator_v<T>>> array(iextensions<4>, T) -> array<T, 4>;
+template<class T, class = std::enable_if_t<not boost::multi::is_allocator_v<T>>> array(iextensions<5>, T) -> array<T, 5>;
 
 // generalization, will not work with naked {n, m, ...} notation (or single integer notation)
 template<dimensionality_type D, class T, class = std::enable_if_t<!boost::multi::is_allocator_v<T>> >
 array(iextensions<D>, T) -> array<T, D>;
-
-//  template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<1>, T, MR*) -> array<T, 1, A>;
-//  template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<2>, T, MR*) -> array<T, 2, A>;
-//  template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<3>, T, MR*) -> array<T, 3, A>;
-//  template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<4>, T, MR*) -> array<T, 4, A>;
-//  template<class T, class MR, class A = memory::allocator<T, MR>> array(extensions_t<5>, T, MR*) -> array<T, 5, A>;
 
 template<class MatrixRef, class DT = typename MatrixRef::decay_type, class T = typename DT::element, dimensionality_type D = DT::rank_v, class Alloc = typename DT::allocator_type>
 array(MatrixRef)->array<T, D, Alloc>;
