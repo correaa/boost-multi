@@ -535,7 +535,7 @@ circle-168:
     - ls
     - ./build_168/circle --version
     - mkdir build && cd build
-    - CXX=/builds/correaa/boost-multi/build_168/circle cmake .. -DBOOST_LIBRARYDIR=/usr/lib/x86_64-linux-gnu/ -DENABLE_CIRCLE=1
+    - CXX=`pwd`/../build_168/circle cmake .. -DBOOST_LIBRARYDIR=/usr/lib/x86_64-linux-gnu/ -DENABLE_CIRCLE=1
     - make VERBOSE=1
     - ctest --output-on-failure
   needs: ["g++"]
@@ -556,7 +556,7 @@ circle-latest:
     - ls
     - ./build_latest/circle --version
     - mkdir build && cd build
-    - CXX=/builds/correaa/boost-multi/build_latest/circle cmake .. -DBOOST_LIBRARYDIR=/usr/lib/x86_64-linux-gnu/ -DENABLE_CIRCLE=1
+    - CXX=`pwd`/../build_latest/circle cmake .. -DBOOST_LIBRARYDIR=/usr/lib/x86_64-linux-gnu/ -DENABLE_CIRCLE=1
     - make VERBOSE=1
     - ctest --output-on-failure
   needs: ["g++"]
