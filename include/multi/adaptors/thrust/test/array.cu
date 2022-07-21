@@ -30,7 +30,12 @@ template<class T> using test_allocator =
 
 }
 
-using types_list = boost::mpl::list<char, double, std::complex<double>, thrust::complex<double> >;
+using types_list = boost::mpl::list<
+//	char, 
+	double, 
+//	std::complex<double>, 
+	thrust::complex<double> 
+>;
 
 #if 1
 BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_copy_1D_issue123, T, types_list) {  // BOOST_AUTO_TEST_CASE(fdfdfdsfds) { using T = char;
@@ -92,6 +97,13 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_copy_1D_issue123, T, types_list) {  // BOOS
 		Dev2 = Devc;
 		cudaDeviceSynchronize();
 		std::cout<<"| contiguous devc -> devc | "<< Dev2.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+		BOOST_REQUIRE( Dev2 == Devc );
+	}
+	{
+		boost::timer::auto_cpu_timer t{""};
+		cudaMemcpy(raw_pointer_cast(Dev2.data_elements()), raw_pointer_cast(Devc.data_elements()), Devc.num_elements()*sizeof(T), cudaMemcpyDeviceToDevice);
+		cudaDeviceSynchronize();
+		std::cout<<"| cudaMemcpy devc -> devc | "<< Dev2.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
 		BOOST_REQUIRE( Dev2 == Devc );
 	}
 	{
@@ -179,6 +191,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_cpugpu_issue123, T, types_list) {
 		Dev2 = Devc;
 		cudaDeviceSynchronize();
 		std::cout<<"| contiguous devc to devc | "<< Host.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+		BOOST_REQUIRE( Dev2 == Devc );
+	}
+	{
+		boost::timer::auto_cpu_timer t{""};
+		cudaMemcpy(raw_pointer_cast(Dev2.data_elements()), raw_pointer_cast(Devc.data_elements()), Devc.num_elements()*sizeof(T), cudaMemcpyDeviceToDevice);
+		cudaDeviceSynchronize();
+		std::cout<<"| cudaMemcpy devc to devc | "<< Host.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
+		BOOST_REQUIRE( Dev2 == Devc );
+	}
+	{
+		boost::timer::auto_cpu_timer t{""};
+		auto Dev3 = Devc;
+		cudaDeviceSynchronize();
+		std::cout<<"| contiguous UNINIT_COPY devc to devc | "<< Host.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |\n";
 		BOOST_REQUIRE( Dev2 == Devc );
 	}
 	{
