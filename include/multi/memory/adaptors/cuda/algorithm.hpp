@@ -178,7 +178,7 @@ copy_n(
 		::thrust::make_counting_iterator(0L),
 		::thrust::make_counting_iterator(count*first->num_elements()),
 		[first, count, result, x = first->extensions()] __device__ (auto n){
-			std::tuple<index, index> ij = (count*x).from_linear(n);
+			auto const ij = (count*x).from_linear(n);
 			result[std::get<0>(ij)][std::get<1>(ij)] = T2(first[std::get<0>(ij)][std::get<1>(ij)]);
 		}
 	);
