@@ -158,9 +158,9 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 		typename std::iterator_traits<element_const_ptr>::reference
 	>::type;
 
-	   constexpr auto  base() const  -> element_ptr       {return base_;}
-	   constexpr auto cbase() const  -> element_const_ptr {return base_;}
-	   constexpr auto mbase() const& -> element_ptr&      {return base_;}
+	HD constexpr auto  base() const  -> element_ptr       {return base_;}
+	HD constexpr auto cbase() const  -> element_const_ptr {return base_;}
+	HD constexpr auto mbase() const& -> element_ptr&      {return base_;}
 
 	friend constexpr auto  base(array_types const& self) -> element_ptr  {return self.base();}
 

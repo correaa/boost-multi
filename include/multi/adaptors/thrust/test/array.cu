@@ -26,17 +26,17 @@ namespace {
 
 template<class T> using test_allocator =
 //  multi ::memory::cuda::allocator<T>
-  multi ::memory::cuda::cached::allocator<T, std::integral_constant<int, 0> >
-//  thrust::cuda::allocator<T>
+//	multi ::memory::cuda::cached::allocator<T, std::integral_constant<int, 0> >
+	thrust::cuda::allocator<T>
 ;
 
 }
 
 using types_list = boost::mpl::list<
-  //char, 
-	double, 
-  //std::complex<double>, 
-	thrust::complex<double> 
+  //char,
+	double,
+  //std::complex<double>,
+	thrust::complex<double>
 >;
 
 #if 1
@@ -157,15 +157,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_copy_1D_issue123, T, types_list) {  // BOOS
 	std::cout<<"   "<<std::endl;
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_cpugpu_issue123, T, types_list) {
+BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_cpugpu_2D_issue123, T, types_list) {
 
-	multi::array<T, 2, test_allocator<T>> Devc({10240, 10240});
-	multi::array<T, 2, test_allocator<T>> Dev2({10240, 10240});
+	auto const exts = multi::extensions_t<2>({10240, 10240});
 
-	multi::array<T, 2>                    Host({10240, 10240}); std::iota(Host.elements().begin(), Host.elements().end(), 12.);
-	multi::array<T, 2>                    Hos2({10240, 10240});
+	std::cout<<"| 2D `"<< typeid(T).name() <<"` max data size "<< exts.num_elements()*sizeof(T) / 1073741824. <<" GB | speed |\n|---|---|"<<std::endl;
 
-	std::cout<<"| 2D `"<< typeid(T).name() <<"` max data size "<< Host.num_elements()*sizeof(T) / 1073741824. <<" GB | speed |\n|---|---|"<<std::endl;
+	multi::array<T, 2, test_allocator<T>> Devc(exts);
+	multi::array<T, 2, test_allocator<T>> Dev2(exts);
+
+	multi::array<T, 2>                    Host(exts); std::iota(Host.elements().begin(), Host.elements().end(), 12.);
+	multi::array<T, 2>                    Hos2(exts);
+
 	{
 		Devc({0, 5120},{0, 5120}) = Host({0, 5120},{0, 5120});  // 0.002859s
 	}
@@ -207,6 +210,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_cpugpu_issue123, T, types_list) {
 		Dev2 = Devc;
 		cudaDeviceSynchronize();
 		std::cout<<"| contiguous devc to devc | "<< Host.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |"<<std::endl;
+		//BOOST_REQUIRE( Dev2 == Devc );
+	}
+	{
+		boost::timer::auto_cpu_timer t{""};
+		auto Dev3 = Devc;
+		cudaDeviceSynchronize();
+		std::cout<<"| copy_ctr   devc -> devc | "<< Devc.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |"<<std::endl;
+		//BOOST_REQUIRE( Dev3 == Devc );
+	}
+	{
+		boost::timer::auto_cpu_timer t{""};
+		cudaMemcpy(raw_pointer_cast(Dev2.data_elements()), raw_pointer_cast(Devc.data_elements()), Devc.num_elements()*sizeof(T), cudaMemcpyDeviceToDevice);
+		cudaDeviceSynchronize();
+		std::cout<<"| cudaMemcpy devc to devc | "<< Host.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |"<<std::endl;
 		//BOOST_REQUIRE( Dev2 == Devc );
 	}
 	{
@@ -257,12 +274,15 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_cpugpu_issue123, T, types_list) {
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_cpugpu_issue123_3D, T, types_list) {
 
-	multi::array<T, 3, test_allocator<T>> Devc({1024, 1024, 100});
-	multi::array<T, 3, test_allocator<T>> Dev2({1024, 1024, 100});
-	multi::array<T, 3>                    Host({1024, 1024, 100}); std::iota(Host.elements().begin(), Host.elements().end(), 12.);
-	multi::array<T, 3>                    Hos2({1024, 1024, 100});
+	auto const exts = multi::extensions_t<3>({1024, 1024, 100});
 
-	std::cout<<"| 3D `"<< typeid(T).name() <<"` max data size "<< Host.num_elements()*sizeof(T) / 1073741824. <<" GB | speed |\n|---|---|"<<std::endl;
+	std::cout<<"| 3D `"<< typeid(T).name() <<"` max data size "<< exts.num_elements()*sizeof(T) / 1073741824. <<" GB | speed |\n|---|---|"<<std::endl;
+
+	multi::array<T, 3, test_allocator<T>> Devc(exts);
+	multi::array<T, 3, test_allocator<T>> Dev2(exts);
+	multi::array<T, 3>                    Host(exts); std::iota(Host.elements().begin(), Host.elements().end(), 12.);
+	multi::array<T, 3>                    Hos2(exts);
+
 	{
 		Devc({0, 512}, {0, 512}, {0, 512}) = Host({0, 512}, {0, 512}, {0, 512});  // 0.002859s
 	}
@@ -308,6 +328,27 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_cpugpu_issue123_3D, T, types_list) {
 	}
 	{
 		boost::timer::auto_cpu_timer t{""};
+		auto Dev3 = Devc;
+		cudaDeviceSynchronize();
+		std::cout<<"| copy_ctr   devc -> devc | "<< Devc.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |"<<std::endl;
+		//BOOST_REQUIRE( Dev3 == Devc );
+	}
+	{
+		boost::timer::auto_cpu_timer t{""};
+		cudaMemcpy(raw_pointer_cast(Dev2.data_elements()), raw_pointer_cast(Devc.data_elements()), Devc.num_elements()*sizeof(T), cudaMemcpyDeviceToDevice);
+		cudaDeviceSynchronize();
+		std::cout<<"| cudaMemcpy devc -> devc | "<< Dev2.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |"<<std::endl;
+		//BOOST_REQUIRE( Dev2 == Devc );
+	}
+	{
+		boost::timer::auto_cpu_timer t{""};
+		cudaMemcpy(raw_pointer_cast(Dev2.data_elements()), raw_pointer_cast(Devc.data_elements()), Devc.num_elements()*sizeof(T), cudaMemcpyDeviceToDevice);
+		cudaDeviceSynchronize();
+		std::cout<<"| cudaMemcpy devc -> devc | "<< Dev2.num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |"<<std::endl;
+		//BOOST_REQUIRE( Dev2 == Devc );
+	}
+	{
+		boost::timer::auto_cpu_timer t{""};
 		Dev2.sliced(0, 512) = Devc.sliced(0, 512);           //  0.005292s
 		cudaDeviceSynchronize();
 		std::cout<<"| sliced     devc to devc | "<< Dev2.sliced(0, 512).num_elements()*sizeof(T) / (t.elapsed().wall/1e9) / 1073741824. << "GB/sec |"<<std::endl;
@@ -339,6 +380,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_cpugpu_issue123_3D, T, types_list) {
 }
 #endif
 
+#if 0
 BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_equality_1D_issue123, T, types_list) {
 	multi::array<T, 1, test_allocator<T>> Devc(multi::extensions_t<1>{10240*10240});
 	multi::array<T, 1, test_allocator<T>> Dev2(multi::extensions_t<1>{10240*10240});
@@ -531,6 +573,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_equality_issue123_3D, T, types_list) {
 	}
 	std::cout<<"   "<<std::endl;
 }
+#endif
 #endif
 
 #if 0
