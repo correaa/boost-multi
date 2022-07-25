@@ -17,6 +17,8 @@
 #include "../../../memory/adaptors/cuda/cached/allocator.hpp"
 #include "../../../memory/adaptors/cuda/managed/allocator.hpp"
 
+#include<multi/adaptors/thrust/managed_allocator.hpp>
+
 #include <boost/mpl/list.hpp>
 
 #include <numeric>
@@ -27,8 +29,9 @@ namespace {
 
 template<class T> using test_allocator =
 //  multi ::memory::cuda::allocator<T>
-	multi ::memory::cuda::managed::allocator<T>//, std::integral_constant<int, 0> >
+//	multi ::memory::cuda::managed::allocator<T>//, std::integral_constant<int, 0> >
 //	multi ::memory::cuda::cached::allocator<T, std::integral_constant<int, 0> >
+	multi::thrust::cuda::managed_allocator<T>
 //	thrust::cuda::allocator<T>
 ;
 
