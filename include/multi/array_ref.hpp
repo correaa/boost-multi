@@ -2028,13 +2028,13 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	HD constexpr auto range(index_range const& rng)     && {return std::move(*this).sliced(rng.front(), rng.last());}
 	HD constexpr auto range(index_range const& rng) const& {return                  sliced(rng.front(), rng.last());}
 
-	constexpr auto operator()() const& -> basic_const_array {return {this->layout(), this->base()};}
-	constexpr auto operator()()     && -> basic_array       {return *this;}
-	constexpr auto operator()()      & -> basic_array       {return *this;}
+	HD constexpr auto operator()() const& -> basic_const_array {return {this->layout(), this->base()};}
+	HD constexpr auto operator()()     && -> basic_array       {return *this;}
+	HD constexpr auto operator()()      & -> basic_array       {return *this;}
 
-	constexpr auto operator()(index_range const& rng)      & {return                  range(rng);}
-	constexpr auto operator()(index_range const& rng)     && {return std::move(*this).range(rng);}
-	constexpr auto operator()(index_range const& rng) const& {return                  range(rng);}
+	HD constexpr auto operator()(index_range const& rng)      & {return                  range(rng);}
+	HD constexpr auto operator()(index_range const& rng)     && {return std::move(*this).range(rng);}
+	HD constexpr auto operator()(index_range const& rng) const& {return                  range(rng);}
 
 	HD constexpr auto operator()(index idx)      & -> decltype(auto) {return                  operator[](idx);}
 	HD constexpr auto operator()(index idx)     && -> decltype(auto) {return std::move(*this).operator[](idx);}
