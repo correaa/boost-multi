@@ -520,7 +520,7 @@ nvhpc-22.5:
   needs: ["g++"]
 
 circle-168:
-  allow_failure: false
+  allow_failure: true
   stage: build
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev tar gzip wget libelf1 grep
