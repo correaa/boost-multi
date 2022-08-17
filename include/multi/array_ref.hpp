@@ -540,7 +540,7 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 		return *this;
 	}
 
-	HD constexpr auto operator-(elements_iterator_t const& other) const -> difference_type {
+	HD [[gnu::pure]] constexpr auto operator-(elements_iterator_t const& other) const -> difference_type {
 		assert(base_ == other.base_ and l_ == other.l_);
 		return n_ - other.n_;
 	}
