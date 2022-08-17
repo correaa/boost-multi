@@ -693,7 +693,7 @@ struct elements_range_t {
 };
 
 template<class It>
-constexpr auto ref(It begin, It end)
+[[gnu::pure]] constexpr auto ref(It begin, It end)
 ->multi::basic_array<typename It::element, It::rank_v, typename It::element_ptr> {
 	return multi::basic_array<typename It::element, It::rank_v, typename It::element_ptr>{begin, end};
 }
@@ -899,7 +899,7 @@ struct basic_array
 	constexpr auto drop(difference_type n)      & -> basic_array       {return drop_aux(n);}
 
  private:
-	HD constexpr auto sliced_aux(index first, index last) const {
+	HD [[gnu::pure]] constexpr auto sliced_aux(index first, index last) const {
 		MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(first   ))&&"sliced first out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		MULTI_ACCESS_ASSERT(((first==last) or this->extension().contains(last - 1))&&"sliced last  out of bounds");  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		typename types::layout_t new_layout = this->layout();
@@ -909,22 +909,22 @@ struct basic_array
 
  public:
 	HD constexpr auto sliced(index first, index last) const& -> basic_const_array {return sliced_aux(first, last);}
-	HD constexpr auto sliced(index first, index last)      & -> basic_array       {return sliced_aux(first, last);}
-	HD constexpr auto sliced(index first, index last)     && -> basic_array       {return sliced_aux(first, last);}
+	HD [[gnu::pure]] constexpr auto sliced(index first, index last)      & -> basic_array       {return sliced_aux(first, last);}
+	HD [[gnu::pure]] constexpr auto sliced(index first, index last)     && -> basic_array       {return sliced_aux(first, last);}
 
 	constexpr auto blocked(index first, index last) const& -> basic_const_array {return sliced(first, last).reindexed(first);}
-	constexpr auto blocked(index first, index last)      & -> basic_array       {return sliced(first, last).reindexed(first);}
+	constexpr [[gnu::pure]] auto blocked(index first, index last)      & -> basic_array       {return sliced(first, last).reindexed(first);}
 
 	using iextension = typename basic_array::index_extension;
 
-	constexpr auto stenciled(iextension iex)                                                         & -> basic_array{return blocked(iex.start(), iex.finish());}
+	constexpr [[gnu::pure]] auto stenciled(iextension iex)                                                         & -> basic_array{return blocked(iex.start(), iex.finish());}
 	constexpr auto stenciled(iextension iex, iextension iex1)                                        & -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1)).unrotated();}
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2)                       & -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1, iex2)).unrotated();}
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3)      & -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3)).unrotated();}
 	template<class... Xs>
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs)     & -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3, iexs...)).unrotated();}
 
-	constexpr auto stenciled(iextension iex)                                                        && -> basic_array{return blocked(iex.start(), iex.finish());}
+	constexpr auto [[gnu::pure]] stenciled(iextension iex)                                                        && -> basic_array{return blocked(iex.start(), iex.finish());}
 	constexpr auto stenciled(iextension iex, iextension iex1)                                       && -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1)).unrotated();}
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2)                      && -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1, iex2)).unrotated();}
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3)     && -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3)).unrotated();}
@@ -977,8 +977,8 @@ struct basic_array
 	using index_range = typename basic_array::index_range;
 
 	constexpr auto range(index_range irng) const& -> decltype(auto) {return                  sliced(irng.front(), irng.front() + irng.size());}
-	constexpr auto range(index_range irng)     && -> decltype(auto) {return std::move(*this).sliced(irng.front(), irng.front() + irng.size());}
-	constexpr auto range(index_range irng)      & -> decltype(auto) {return                  sliced(irng.front(), irng.front() + irng.size());}
+	constexpr [[gnu::pure]] auto range(index_range irng)     && -> decltype(auto) {return std::move(*this).sliced(irng.front(), irng.front() + irng.size());}
+	constexpr [[gnu::pure]] auto range(index_range irng)      & -> decltype(auto) {return                  sliced(irng.front(), irng.front() + irng.size());}
 
 //	[[deprecated]] constexpr auto range(typename types::index_range const& ir, dimensionality_type n) const {return rotated(n).range(ir).rotated(-n);}
 
@@ -1172,7 +1172,7 @@ struct basic_array
 
 	template<class A1 = irange>                                                                          constexpr auto operator()(A1 arg1)                                             & -> decltype(auto) {return                  paren_aux(arg1);}
 	template<class A1 = irange, class A2 = irange>                                                       constexpr auto operator()(A1 arg1, A2 arg2)                                    & -> decltype(auto) {return                  paren_aux(arg1, arg2);}
-	template<class A1 = irange, class A2 = irange, class A3 = irange>                                    constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3)                           & -> decltype(auto) {return                  paren_aux(arg1, arg2, arg3);}
+	template<class A1 = irange, class A2 = irange, class A3 = irange>                                    [[gnu::pure]] constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3)                           & -> decltype(auto) {return                  paren_aux(arg1, arg2, arg3);}
 	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As>    constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args)      & -> decltype(auto) {return                  paren_aux(arg1, arg2, arg3, arg4, args...);}
 
 	template<class A1 = irange>                                                                          constexpr auto operator()(A1 arg1)                                            && -> decltype(auto) {return std::move(*this).paren_aux(arg1);}
