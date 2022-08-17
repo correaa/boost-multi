@@ -980,16 +980,6 @@ struct basic_array
 	[[gnu::pure]] constexpr auto range(index_range irng)     && -> decltype(auto) {return std::move(*this).sliced(irng.front(), irng.front() + irng.size());}
 	[[gnu::pure]] constexpr auto range(index_range irng)      & -> decltype(auto) {return                  sliced(irng.front(), irng.front() + irng.size());}
 
-//	[[deprecated]] constexpr auto range(typename types::index_range const& ir, dimensionality_type n) const {return rotated(n).range(ir).rotated(-n);}
-
-//	friend constexpr auto flattened(basic_array&& s) -> decltype(auto) {return std::move(s).flattened();}
-//	       constexpr auto flattened()&& -> decltype(auto) {
-//		multi::biiterator<std::decay_t<decltype(std::move(*this).begin())>> biit{std::move(*this).begin(), 0, size(*(std::move(*this).begin()))};
-//		return basic_array<typename std::iterator_traits<decltype(biit)>::value_type, 1, decltype(biit)>{
-//			multi::layout_t<1>(1, 0, this->size()*size(*(std::move(*this).begin()))),
-//			biit
-//		};
-//	}
 	constexpr auto is_flattable() const -> bool{return this->stride() == this->layout().sub().nelems();}
 
 	friend constexpr auto flatted(basic_array const& self) {return self.flatted();}
