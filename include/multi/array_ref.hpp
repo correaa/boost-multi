@@ -913,18 +913,18 @@ struct basic_array
 	HD [[gnu::pure]] constexpr auto sliced(index first, index last)     && -> basic_array       {return sliced_aux(first, last);}
 
 	constexpr auto blocked(index first, index last) const& -> basic_const_array {return sliced(first, last).reindexed(first);}
-	constexpr [[gnu::pure]] auto blocked(index first, index last)      & -> basic_array       {return sliced(first, last).reindexed(first);}
+	[[gnu::pure]] constexpr auto blocked(index first, index last)      & -> basic_array       {return sliced(first, last).reindexed(first);}
 
 	using iextension = typename basic_array::index_extension;
 
-	constexpr [[gnu::pure]] auto stenciled(iextension iex)                                                         & -> basic_array{return blocked(iex.start(), iex.finish());}
+	[[gnu::pure]] constexpr auto stenciled(iextension iex)                                                         & -> basic_array{return blocked(iex.start(), iex.finish());}
 	constexpr auto stenciled(iextension iex, iextension iex1)                                        & -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1)).unrotated();}
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2)                       & -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1, iex2)).unrotated();}
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3)      & -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3)).unrotated();}
 	template<class... Xs>
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3, Xs... iexs)     & -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3, iexs...)).unrotated();}
 
-	constexpr auto [[gnu::pure]] stenciled(iextension iex)                                                        && -> basic_array{return blocked(iex.start(), iex.finish());}
+	[[gnu::pure]] constexpr auto stenciled(iextension iex)                                                        && -> basic_array{return blocked(iex.start(), iex.finish());}
 	constexpr auto stenciled(iextension iex, iextension iex1)                                       && -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1)).unrotated();}
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2)                      && -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1, iex2)).unrotated();}
 	constexpr auto stenciled(iextension iex, iextension iex1, iextension iex2, iextension iex3)     && -> basic_array{return ((stenciled(iex).rotated()).stenciled(iex1, iex2, iex3)).unrotated();}
@@ -977,8 +977,8 @@ struct basic_array
 	using index_range = typename basic_array::index_range;
 
 	constexpr auto range(index_range irng) const& -> decltype(auto) {return                  sliced(irng.front(), irng.front() + irng.size());}
-	constexpr [[gnu::pure]] auto range(index_range irng)     && -> decltype(auto) {return std::move(*this).sliced(irng.front(), irng.front() + irng.size());}
-	constexpr [[gnu::pure]] auto range(index_range irng)      & -> decltype(auto) {return                  sliced(irng.front(), irng.front() + irng.size());}
+	[[gnu::pure]] constexpr auto range(index_range irng)     && -> decltype(auto) {return std::move(*this).sliced(irng.front(), irng.front() + irng.size());}
+	[[gnu::pure]] constexpr auto range(index_range irng)      & -> decltype(auto) {return                  sliced(irng.front(), irng.front() + irng.size());}
 
 //	[[deprecated]] constexpr auto range(typename types::index_range const& ir, dimensionality_type n) const {return rotated(n).range(ir).rotated(-n);}
 
