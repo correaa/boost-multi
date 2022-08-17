@@ -1969,7 +1969,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	constexpr auto drop(difference_type count)      & -> basic_array       {return drop_aux(count);}
 
  private:
-	HD constexpr auto sliced_aux(index first, index last) const {
+	HD [[gnu::pure]] constexpr auto sliced_aux(index first, index last) const {
 		typename types::layout_t new_layout = this->layout();
 		if(this->is_empty()) {
 			assert(first == last);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
@@ -2002,13 +2002,13 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	}
 
 	HD constexpr auto sliced(index first, index last) const& -> basic_const_array {return sliced_aux(first, last);}
-	HD constexpr auto sliced(index first, index last)      & -> basic_array       {return sliced_aux(first, last);}
+	HD [[gnu::pure]] constexpr auto sliced(index first, index last)      & -> basic_array       {return sliced_aux(first, last);}
 	HD constexpr auto sliced(index first, index last)     && -> basic_array       {return sliced_aux(first, last);}
 
-	constexpr auto blocked(index first, index last)& -> basic_array {
+	[[gnu::pure]] constexpr auto blocked(index first, index last)& -> basic_array {
 		return sliced(first, last).reindexed(first);
 	}
-	constexpr auto stenciled(typename basic_array::index_extension ext) -> basic_array {
+	[[gnu::pure]] constexpr auto stenciled(typename basic_array::index_extension ext) -> basic_array {
 		return blocked(ext.start(), ext.finish());
 	}
 
