@@ -590,6 +590,7 @@ struct layout_t
 	constexpr auto    empty()        const noexcept {return is_empty();}
 
 	friend constexpr auto size(layout_t const& self) noexcept -> size_type {return self.size();}
+	__attribute__ ((pure))
 	       constexpr auto size()        const        noexcept -> size_type {
 	//  if(nelems_ == 0) {return 0;}
 	//  MULTI_ACCESS_ASSERT(stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
