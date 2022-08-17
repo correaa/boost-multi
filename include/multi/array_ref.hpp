@@ -2480,7 +2480,7 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 	friend constexpr auto celements(array_ref const& self) {return self.celements();}
 
 	template<typename TT, class... As>
-	friend constexpr auto operator==(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {
+	friend [[gnu::pure]] constexpr auto operator==(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {
 		if(self.extensions() != other.extensions()) {return false;}  // TODO(correaa) : or assert?
 		return adl_equal(other.data_elements(), other.data_elements() + self.num_elements(), self.data_elements());
 	}
