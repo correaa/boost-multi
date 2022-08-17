@@ -86,7 +86,7 @@ constexpr class adl_fill_n_t {
 } adl_fill_n;
 
 constexpr class adl_equal_t {
-	template<         class...As> constexpr auto _(priority<1>/**/,          As&&...args) const DECLRETURN(               std::  equal(                      std::forward<As>(args)...))
+	template<         class...As> [[gnu::pure]] constexpr auto _(priority<1>/**/,          As&&...args) const DECLRETURN(               std::  equal(                      std::forward<As>(args)...))
 #if defined(__NVCC__)
 	template<         class...As> constexpr auto _(priority<2>/**/,          As&&...args) const DECLRETURN(          ::thrust::  equal(                      std::forward<As>(args)...))
 #endif
