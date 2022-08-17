@@ -841,6 +841,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-diag-disable=remark
 					-diag-error:3846
 					-diag-disable=1011  # disables warning missing return at the end of non-void function
+					-diag-disable=2196  # disables "error #2196: routine is both "inline" and "noinline"" in icpc 2021.5.0
 					-wd161
 					-Wabi
 					-Warray-bounds
