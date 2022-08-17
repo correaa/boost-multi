@@ -563,7 +563,7 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 		assert(base_ == other.base_ and l_ == other.l_);
 		return n_ == other.n_;// and base_ == other.base_ and l_ == other.l_;
 	}
-	HD constexpr auto operator!=(elements_iterator_t const& other) const -> bool {
+	HD [[gnu::pure]] constexpr auto operator!=(elements_iterator_t const& other) const -> bool {
 		assert(base_ == other.base_ and l_ == other.l_);
 		return n_ != other.n_;
 	}
