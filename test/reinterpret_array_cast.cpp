@@ -150,5 +150,6 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_pointer) {
 	multi::array<double, 2> arr({10, 10}, 5.);
 
 	auto&& Aconstcast = arr.reinterpret_array_cast<double, double const*>();
+	BOOST_REQUIRE( &arr[0][0] == &Aconstcast[0][0] );
 	static_assert( std::is_same<decltype(Aconstcast[1][2]), double const&>{}, "!" );
 }
