@@ -414,6 +414,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	constexpr auto operator++() -> array_iterator& {ptr_.base_ += stride_; return *this;}
 	constexpr auto operator--() -> array_iterator& {decrement(); return *this;}
 
+	[[gnu::pure]]
 	friend constexpr auto operator-(array_iterator const& self, array_iterator const& other) -> difference_type {
 		assert(self.stride_ == other.stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) normal in a constexpr function
 		assert(self.stride_ != 0);              // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) normal in a constexpr function
@@ -558,11 +559,11 @@ struct elements_iterator_t  // NOLINT(cppcoreguidelines-special-member-functions
 		return base_[std::apply(l_, xs_.from_linear(nn + n))];
 	}  // explicit here is necessary for nvcc/thrust
 
-	HD constexpr auto operator==(elements_iterator_t const& other) const -> bool {
+	HD [[gnu::pure]] constexpr auto operator==(elements_iterator_t const& other) const -> bool {
 		assert(base_ == other.base_ and l_ == other.l_);
 		return n_ == other.n_;// and base_ == other.base_ and l_ == other.l_;
 	}
-	HD constexpr auto operator!=(elements_iterator_t const& other) const -> bool {
+	HD [[gnu::pure]] constexpr auto operator!=(elements_iterator_t const& other) const -> bool {
 		assert(base_ == other.base_ and l_ == other.l_);
 		return n_ != other.n_;
 	}
@@ -635,12 +636,12 @@ struct elements_range_t {
 	~elements_range_t() = default;
 
  private:
-	constexpr auto begin_aux() const {return iterator{base_, l_, 0                };}
-	constexpr auto end_aux  () const {return iterator{base_, l_, l_.num_elements()};}
+	[[gnu::pure]] constexpr auto begin_aux() const {return iterator{base_, l_, 0                };}
+	[[gnu::pure]] constexpr auto end_aux  () const {return iterator{base_, l_, l_.num_elements()};}
 
  public:
-	constexpr auto begin() const& -> const_iterator {return begin_aux();}
-	constexpr auto end  () const& -> const_iterator {return end_aux  ();}
+	[[gnu::pure]] constexpr auto begin() const& -> const_iterator {return begin_aux();}
+	[[gnu::pure]] constexpr auto end  () const& -> const_iterator {return end_aux  ();}
 
 	constexpr auto begin()     && ->       iterator {return begin_aux();}
 	constexpr auto end  ()     && ->       iterator {return end_aux()  ;}
