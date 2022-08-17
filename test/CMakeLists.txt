@@ -97,7 +97,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					# -Wanalyzer-stale-setjmp-buffer -Wanalyzer-tainted-array-index -Wanalyzer-too-complex -Wanalyzer-unsafe-call-within-signal-handler -Wanalyzer-use-after-free -Wanalyzer-use-of-pointer-in-stale-stack-frame (gcc 11, not in gcc 9)
 					# -Wanalyzer-write-to-const -Wanalyzer-write-to-string-literal (gcc 11, not in gcc 10)
 					# -Warith-conversion (gcc 11, not in gcc 9)
-					-Warray-bounds 
+					-Warray-bounds
 					# -Warray-parameter #  -Warray-bounds=<0,2> -Warray-parameter=<0,2>  (gcc 11, not in gcc 10)
 					# -Wattribute-warning (gcc 9, not in gcc 8)
 					-Wattributes
