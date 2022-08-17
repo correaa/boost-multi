@@ -625,8 +625,7 @@ struct layout_t
 	constexpr auto sizes() const noexcept {return tuple{size(), sub_.sizes()};}
 
 	friend        constexpr auto extension(layout_t const& self) {return self.extension();}
-	__attribute__ ((pure))
-	[[nodiscard]] constexpr auto extension()        const     -> extension_type {
+	[[nodiscard]] 	__attribute__ ((pure)) constexpr auto extension()        const     -> extension_type {
 		if(nelems_ == 0) {return index_extension{};}
 		assert(stride_ != 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		assert(offset_ % stride_ == 0);
