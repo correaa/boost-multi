@@ -1019,7 +1019,7 @@ struct basic_array
 	using partitioned_const_type = basic_array<T, D+1, element_const_ptr>;
 
  private:
-	constexpr auto partitioned_aux(size_type n) const -> partitioned_type {
+	[[gnu::pure]] constexpr auto partitioned_aux(size_type n) const -> partitioned_type {
 		assert(n != 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		// vvv TODO(correaa) should be size() here?
 		assert( (this->layout().nelems() % n) == 0);  // if you get an assertion here it means that you are partitioning an array with an incommunsurate partition // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : : normal in a constexpr function
@@ -1031,7 +1031,7 @@ struct basic_array
  public:
 	       constexpr auto partitioned(size_type n) const& -> partitioned_const_type {return partitioned_aux(n);}
 	       constexpr auto partitioned(size_type n)      & -> partitioned_type       {return partitioned_aux(n);}
-	       constexpr auto partitioned(size_type n)     && -> partitioned_type       {return partitioned_aux(n);}
+	[[gnu::pure]] constexpr auto partitioned(size_type n)     && -> partitioned_type       {return partitioned_aux(n);}
 
 	friend constexpr auto partitioned(basic_array const& self, size_type n) -> partitioned_const_type {return           self .partitioned(n);}
 	friend constexpr auto partitioned(basic_array      & self, size_type n) -> partitioned_type       {return           self .partitioned(n);}
@@ -2478,7 +2478,7 @@ struct array_ref // TODO(correaa) : inheredit from multi::partially_ordered2<arr
 		return adl_equal(other.data_elements(), other.data_elements() + self.num_elements(), self.data_elements());
 	}
 	template<typename TT, class... As>
-	friend constexpr auto operator!=(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {
+	[[gnu::pure]] friend constexpr auto operator!=(array_ref const& self, array_ref<TT, D, As...> const& other) -> bool {
 		if(self.extensions() != other.extensions()) {return true;}  // TODO(correaa) : or assert?
 		return not adl_equal(other.data_elements(), other.data_elements() + self.num_elements(), self.data_elements());
 	}
