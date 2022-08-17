@@ -576,7 +576,7 @@ icpc:  # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.yml
     - . /opt/intel/oneapi/setvars.sh
     - ln --symbolic --force . ../multi
     - export CC=icc; export CXX=icpc;
-    - $CXX -v
+    - $CXX -gcc-name=gcc-11 -gxx-name=g++-11 -v
     - mkdir build.icpc && cd build.icpc
     - cmake .. -DCMAKE_C_FLAGS="-gcc-name=gcc-11" -DCMAKE_CXX_FLAGS="-gxx-name=g++-11" #icpc 2022.1.2 is incompatible with gcc 12 lib
     - make VERBOSE=1
