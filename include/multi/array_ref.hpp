@@ -2199,8 +2199,8 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 		return self.extension() != other.extension() or self.elements() != other.elements();
 	}
 
-	friend constexpr auto operator< (basic_array const& self, basic_array const& other) -> bool {return lexicographical_compare(self, other);}
-	friend constexpr auto operator<=(basic_array const& self, basic_array const& other) -> bool {return lexicographical_compare(self, other) or self == other;}
+	[[gnu::pure]] friend constexpr auto operator< (basic_array const& self, basic_array const& other) -> bool {return lexicographical_compare(self, other);}
+	[[gnu::pure]] friend constexpr auto operator<=(basic_array const& self, basic_array const& other) -> bool {return lexicographical_compare(self, other) or self == other;}
 
 	template<class Array> constexpr void swap(Array&& other) && {
 		assert(this->extension() == other.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
@@ -2215,7 +2215,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
  private:
 	template<class A1, class A2>
-	static constexpr auto lexicographical_compare(A1 const& self, A2 const& other) -> bool {
+	static [[gnu::pure]] constexpr auto lexicographical_compare(A1 const& self, A2 const& other) -> bool {
 		if(extension(self).first() > extension(other).first()) {return true ;}
 		if(extension(self).first() < extension(other).first()) {return false;}
 		return adl_lexicographical_compare(adl_begin(self), adl_end(self), adl_begin(other), adl_end(other));
