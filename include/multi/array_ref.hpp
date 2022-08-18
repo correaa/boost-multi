@@ -370,7 +370,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	HD constexpr auto operator[](difference_type n) const -> basic_array<element, D-1, element_ptr> {return *((*this) + n);}
 
 	constexpr auto operator==(array_iterator const& other) const -> bool {return ptr_ == other.ptr_ and stride_== other.stride_ and ptr_.layout() == other.ptr_.layout();}
-	constexpr auto operator< (array_iterator const& other) const -> bool {return distance_to(other) > 0;}
+	[[gnu::pure]] constexpr auto operator< (array_iterator const& other) const -> bool {return distance_to(other) > 0;}
 
 	constexpr explicit array_iterator(typename basic_array<element, D-1, element_ptr>::element_ptr base, layout_t<D-1> lyt, index stride)
 	: ptr_{base, lyt}, stride_{stride} {}
@@ -399,7 +399,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	constexpr auto equal(array_iterator const& other) const -> bool {return ptr_ == other.ptr_ and stride_ == other.stride_;}
 	constexpr void decrement() {ptr_.base_ -= stride_;}
 	constexpr void advance(difference_type n) {ptr_.base_ += stride_*n;}
-	constexpr auto distance_to(array_iterator const& other) const -> difference_type {
+	[[gnu::pure]] constexpr auto distance_to(array_iterator const& other) const -> difference_type {
 		assert( stride_ == other.stride_); assert( stride_ != 0 );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) normal in a constexpr function
 		return (other.ptr_.base_ - ptr_.base_)/stride_;
 	}
@@ -1400,8 +1400,8 @@ struct basic_array
 	}
 
  public:
-	constexpr auto operator< (basic_array const& other) const& -> bool {return lexicographical_compare(*this, other);}
-	constexpr auto operator<=(basic_array const& other) const& -> bool {return *this == other or lexicographical_compare(*this, other);}
+	[[gnu::pure]] constexpr auto operator< (basic_array const& other) const& -> bool {return lexicographical_compare(*this, other);}
+	[[gnu::pure]] constexpr auto operator<=(basic_array const& other) const& -> bool {return *this == other or lexicographical_compare(*this, other);}
 	constexpr auto operator> (basic_array const& other) const& -> bool {return other < *this;}
 
 	template<class T2, class P2 = typename std::pointer_traits<typename basic_array::element_ptr>::template rebind<T2>>

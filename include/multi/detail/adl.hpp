@@ -90,7 +90,7 @@ constexpr class adl_equal_t {
 #if defined(__NVCC__)
 	template<         class...As>               constexpr auto _(priority<2>/**/,          As&&...args) const DECLRETURN(          ::thrust::  equal(                      std::forward<As>(args)...))
 #endif
-	template<         class...As>               constexpr auto _(priority<3>/**/,          As&&...args) const DECLRETURN(                      equal(                      std::forward<As>(args)...))
+	template<         class...As> [[gnu::pure]] constexpr auto _(priority<3>/**/,          As&&...args) const DECLRETURN(                      equal(                      std::forward<As>(args)...))
 	template<class T, class...As>               constexpr auto _(priority<4>/**/, T&& arg, As&&...args) const DECLRETURN( std::decay_t<T>::    equal(std::forward<T>(arg), std::forward<As>(args)...))
 	template<class T, class...As>               constexpr auto _(priority<5>/**/, T&& arg, As&&...args) const DECLRETURN( std::forward<T>(arg).equal(                      std::forward<As>(args)...))
 
@@ -450,7 +450,7 @@ constexpr class adl_lexicographical_compare_t {
 	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).lexicographical_compare(std::forward<As>(args)...))
 
  public:
-	template<class... As> constexpr	auto operator()(As&&... args) const DECLRETURN(_(priority<4>{}, std::forward<As>(args)...))
+	template<class... As> [[gnu::pure]] constexpr	auto operator()(As&&... args) const DECLRETURN(_(priority<4>{}, std::forward<As>(args)...))
 } adl_lexicographical_compare;
 
 constexpr class adl_uninitialized_value_construct_n_t {
