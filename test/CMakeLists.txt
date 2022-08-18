@@ -208,7 +208,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wsubobject-linkage
 					-Wsuggest-attribute=const -Wsuggest-attribute=format
 					# -Wsuggest-attribute=malloc (gcc 8, not in gcc 7)
-					-Wsuggest-attribute=noreturn -Wsuggest-attribute=pure -Wsuggest-final-methods -Wsuggest-final-types
+					-Wsuggest-attribute=noreturn
+					# -Wsuggest-attribute=pure
+					-Wsuggest-final-methods -Wsuggest-final-types
 					-Wswitch -Wswitch-bool -Wswitch-default -Wswitch-enum
 					# -Wswitch-outside-range (gcc 11, not in gcc 9)
 					-Wswitch-unreachable
