@@ -2215,7 +2215,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
  private:
 	template<class A1, class A2>
-	static [[gnu::pure]] constexpr auto lexicographical_compare(A1 const& self, A2 const& other) -> bool {
+	 [[gnu::pure]] static constexpr auto lexicographical_compare(A1 const& self, A2 const& other) -> bool {
 		if(extension(self).first() > extension(other).first()) {return true ;}
 		if(extension(self).first() < extension(other).first()) {return false;}
 		return adl_lexicographical_compare(adl_begin(self), adl_end(self), adl_begin(other), adl_end(other));
