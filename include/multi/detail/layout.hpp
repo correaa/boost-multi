@@ -625,7 +625,7 @@ struct layout_t
 	constexpr auto sizes() const noexcept {return tuple{size(), sub_.sizes()};}
 
 	friend        constexpr auto extension(layout_t const& self) {return self.extension();}
-	[[nodiscard]] 	__attribute__ ((pure)) constexpr auto extension()        const     -> extension_type {
+	[[nodiscard]] /*[[gnu::pure]]*/ constexpr auto extension()        const     -> extension_type {
 		if(nelems_ == 0) {return index_extension{};}
 		assert(stride_ != 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		assert(offset_ % stride_ == 0);
@@ -640,7 +640,7 @@ struct layout_t
 	constexpr auto extension(dimensionality_type dim) const {return std::apply([](auto... extensions) {return std::array<index_extension, static_cast<std::size_t>(D)>{extensions...};}, extensions().base()).at(static_cast<std::size_t>(dim));}
 //  [[deprecated("use get<d>(m.strides())  ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
 	constexpr auto stride   (dimensionality_type dim) const {return std::apply([](auto... strides   ) {return std::array<stride_type    , static_cast<std::size_t>(D)>{strides   ...};}, strides   ()       ).at(static_cast<std::size_t>(dim));}
-//  [[deprecated("use get<d>(m.sizes())    ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
+	[[deprecated("use get<d>(m.sizes())    ")]]  // TODO(correaa) redeprecate, this is commented to give a smaller CI output
 	constexpr auto size     (dimensionality_type dim) const {return std::apply([](auto... sizes     ) {return std::array<size_type      , static_cast<std::size_t>(D)>{sizes     ...};}, sizes     ()       ).at(static_cast<std::size_t>(dim));}
 
 	template<typename Size>
