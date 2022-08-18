@@ -108,7 +108,7 @@ struct extensions_t {
 //	using indices_type = decltype(tuple_cat(make_tuple(multi::index{}), typename extensions_t<D-1>::indices_type{}));
 	using indices_type = multi::detail::tuple_prepend_t<multi::index, typename extensions_t<D-1>::indices_type>;
 
-	[[nodiscard]] [[gnu::pure]] constexpr auto from_linear(nelems_type const& n) const -> indices_type {
+	[[nodiscard]] /*[[gnu::pure]]*/ constexpr auto from_linear(nelems_type const& n) const -> indices_type {
 	//	auto const sub_extensions = extensions_t<D-1>{detail::tuple_tail(this->base())};
 		auto const sub_num_elements = extensions_t<D-1>{tail(this->base())}.num_elements();
 		assert( sub_num_elements != 0 );
@@ -590,7 +590,7 @@ struct layout_t
 	constexpr auto    empty()        const noexcept {return is_empty();}
 
 	friend constexpr auto size(layout_t const& self) noexcept -> size_type {return self.size();}
-	[[gnu::pure]]
+	/*[[gnu::pure]]*/
 	       constexpr auto size()        const        noexcept -> size_type {
 	//  if(nelems_ == 0) {return 0;}
 	//  MULTI_ACCESS_ASSERT(stride_);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
