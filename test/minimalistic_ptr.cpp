@@ -35,6 +35,8 @@ template<class T> class ptr : public std::iterator_traits<T*> { // minimalistic 
 
 //	T& operator[](difference_type n) const{return impl_[n];} // optional
 	using default_allocator_type = std::allocator<T>;
+
+	template<class T2> auto operator==(ptr<T2> const& other) const& {return impl_ == other.impl_;}
 	template<class> friend class ptr2;
 };
 
@@ -83,13 +85,13 @@ BOOST_AUTO_TEST_CASE(test_minimalistic_ptr) {
 
 	minimalistic::ptr<double> pd{nullptr};
 	minimalistic::ptr<const double> pcd = pd;
-	(void)pcd;
+	BOOST_REQUIRE( pcd == pd );
 
 	{
 		auto&& REF = *CCP; (void)REF;
 		static_assert( std::is_same<decltype(REF.partitioned(2).partitioned(2).base()), minimalistic::ptr<double      >>{}, "!" );
 	}
-	 {
+	{
 		auto const& REF = *CCP; (void)REF;
 		static_assert( std::is_same<decltype(REF.partitioned(2).partitioned(2).base()), minimalistic::ptr<double const>>{}, "!" );
 	}

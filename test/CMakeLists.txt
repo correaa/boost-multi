@@ -97,7 +97,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					# -Wanalyzer-stale-setjmp-buffer -Wanalyzer-tainted-array-index -Wanalyzer-too-complex -Wanalyzer-unsafe-call-within-signal-handler -Wanalyzer-use-after-free -Wanalyzer-use-of-pointer-in-stale-stack-frame (gcc 11, not in gcc 9)
 					# -Wanalyzer-write-to-const -Wanalyzer-write-to-string-literal (gcc 11, not in gcc 10)
 					# -Warith-conversion (gcc 11, not in gcc 9)
-					-Warray-bounds 
+					-Warray-bounds
 					# -Warray-parameter #  -Warray-bounds=<0,2> -Warray-parameter=<0,2>  (gcc 11, not in gcc 10)
 					# -Wattribute-warning (gcc 9, not in gcc 8)
 					-Wattributes
@@ -208,7 +208,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wsubobject-linkage
 					-Wsuggest-attribute=const -Wsuggest-attribute=format
 					# -Wsuggest-attribute=malloc (gcc 8, not in gcc 7)
-					-Wsuggest-attribute=noreturn -Wsuggest-attribute=pure -Wsuggest-final-methods -Wsuggest-final-types
+					-Wsuggest-attribute=noreturn
+					# -Wsuggest-attribute=pure
+					-Wsuggest-final-methods -Wsuggest-final-types
 					-Wswitch -Wswitch-bool -Wswitch-default -Wswitch-enum
 					# -Wswitch-outside-range (gcc 11, not in gcc 9)
 					-Wswitch-unreachable
@@ -841,6 +843,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-diag-disable=remark
 					-diag-error:3846
 					-diag-disable=1011  # disables warning missing return at the end of non-void function
+					-diag-disable=2196  # disables "error #2196: routine is both "inline" and "noinline"" in icpc 2021.5.0
 					-wd161
 					-Wabi
 					-Warray-bounds
