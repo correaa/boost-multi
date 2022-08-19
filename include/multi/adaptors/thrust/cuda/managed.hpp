@@ -39,7 +39,7 @@ class pointer {
 	using difference_type   = typename ::thrust::iterator_traits<::thrust::cuda::pointer<T>>::difference_type;
 	using value_type        = typename ::thrust::iterator_traits<::thrust::cuda::pointer<T>>::value_type;
 #pragma push
-#pragma diag_suppress = class_and_member_name_conflict  // for nvcc warning: declaration of a member with the same name as its class TODO(correaa) switch to new stype pragma for nvcc and nvc++
+#pragma nv_diag_suppress = class_and_member_name_conflict  // for nvcc warning: declaration of a member with the same name as its class TODO(correaa) switch to new stype pragma for nvcc and nvc++
 	using pointer           = pointer<T>;
 #pragma pop
 	using reference         = managed::reference<T>;

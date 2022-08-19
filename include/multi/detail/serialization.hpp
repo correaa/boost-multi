@@ -44,12 +44,12 @@ namespace boost {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 comp
 namespace multi {
 
 template<class Archive, class MA, std::enable_if_t<std::is_same_v<MA, std::decay_t<MA>> and (MA::dimensionality > -1) , int> =0>
-auto operator>>(Archive& arxiv, MA&& self)  // this is for compatability with Archive type
+auto operator>>(Archive& arxiv, MA&& self)  // this is for compatibility with Archive type
 ->decltype(arxiv>> self) {
 	return arxiv>> self; }
 
 template<class Archive, class MA, std::enable_if_t<std::is_same_v<MA, std::decay_t<MA>> and (MA::dimensionality > -1), int> =0>
-auto operator& (Archive& arxiv, MA&& self)  // this is for compatability with Archive type
+auto operator& (Archive& arxiv, MA&& self)  // this is for compatibility with Archive type
 ->decltype(arxiv& self) {
 	return arxiv& self; }
 
