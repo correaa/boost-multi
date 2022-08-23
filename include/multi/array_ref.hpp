@@ -806,11 +806,9 @@ struct basic_array
 
  private:
 	HD constexpr auto at_aux(index idx) const {  // MULTI_ACCESS_ASSERT(this->extension().contains(i)&&"out of bounds");
-		auto s = this->layout().sub();
-		auto b = this->base() + (idx*this->layout().stride() - this->layout().offset());
 		return reference{
-			s, // this->layout().sub(),
-			b  // this->base() + (idx*this->layout().stride() - this->layout().offset())
+			this->layout().sub(),
+			this->base() + (idx*this->layout().stride() - this->layout().offset())
 		};  // cppcheck-suppress syntaxError ; bug in cppcheck 2.5
 	}
 
