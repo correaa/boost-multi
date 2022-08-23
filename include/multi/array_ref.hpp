@@ -162,7 +162,7 @@ struct array_types : private Layout {  // cppcheck-suppress syntaxError ; false 
 	HD constexpr auto cbase() const  -> element_const_ptr {return base_;}
 	HD constexpr auto mbase() const& -> element_ptr&      {return base_;}
 
-	friend constexpr auto  base(array_types const& self) -> element_ptr  {return self.base();}
+	friend /*constexpr*/ auto  base(array_types const& self) -> element_ptr  {return self.base();}
 
 	       constexpr auto layout()           const        -> layout_t const& {return *this;}
 	friend constexpr auto layout(array_types const& self) -> layout_t const& {return self.layout();}
@@ -1253,7 +1253,7 @@ struct basic_array
 	       constexpr auto  begin()               && {return begin();}
 	       constexpr auto  end  ()               && {return end()  ;}
 	friend /*constexpr*/ auto  begin(basic_array     && self) {return std::move(self).begin();}
-	friend constexpr     auto  end  (basic_array     && self) {return std::move(self).end()  ;}
+	friend /*constexpr*/ auto  end  (basic_array     && self) {return std::move(self).end()  ;}
 
 	       constexpr auto  begin()           const& -> const_iterator {return begin_aux();}
 	       constexpr auto  end  ()           const& -> const_iterator {return end_aux()  ;}
@@ -2020,7 +2020,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	HD constexpr auto sliced(index first, index last, difference_type stride)     && -> basic_array       {return sliced(first, last).strided(stride);}
 	HD constexpr auto sliced(index first, index last, difference_type stride)      & -> basic_array       {return sliced(first, last).strided(stride);}
 
-	   constexpr auto range(index_range const& rng)      & {return                  sliced(rng.front(), rng.last());}
+	HD constexpr auto range(index_range const& rng)      & {return                  sliced(rng.front(), rng.last());}
 	HD constexpr auto range(index_range const& rng)     && {return std::move(*this).sliced(rng.front(), rng.last());}
 	HD constexpr auto range(index_range const& rng) const& {return                  sliced(rng.front(), rng.last());}
 
