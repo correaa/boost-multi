@@ -134,9 +134,10 @@ BOOST_AUTO_TEST_CASE(multi_array_move_into_vector_move) {
 
 BOOST_AUTO_TEST_CASE(multi_array_move_array) {
 	multi::array<std::vector<double>, 2> arr({10, 10}, std::vector<double>(5) );
-	auto arr2 = std::move(arr); (void)arr2;
-	BOOST_REQUIRE( arr.   empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move) test deterministic moved from state
-	BOOST_REQUIRE( arr.is_empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move) test deterministic moved from state
+	auto arr2 = std::move(arr);
+	BOOST_REQUIRE( arr .   empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move) test deterministic moved from state
+	BOOST_REQUIRE( arr .is_empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move) test deterministic moved from state
+	BOOST_REQUIRE( arr2.size() == 10 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_move_elements) {

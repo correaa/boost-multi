@@ -197,7 +197,7 @@ struct ptr : cuda::ptr<T, RawPtr> {
 	constexpr ptr operator-(typename ptr::difference_type n) const {return (*this) + (-n);} // remove
 	using reference = typename std::pointer_traits<raw_pointer>::element_type&;//ref<element_type>;
 	constexpr reference operator*() const {return *(this->rp_);}
-	constexpr reference operator[](difference_type n) {return *((*this)+n);}
+	constexpr reference operator[](difference_type n) const {return *((*this)+n);}
 	constexpr typename ptr::difference_type operator-(ptr const& other) const {return (this->rp_)-other.rp_;}
 
 	       constexpr raw_pointer raw_pointer_cast()   const&       {return this->rp_;} // remove

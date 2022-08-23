@@ -783,6 +783,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod_square) {
+	#if not defined(__circle_build__)  // circle 170 crashes https://github.com/seanbaxter/circle/issues/114
 	multi::array<std::string, 2> in = {
 		{  "100. + 2.*I",  "9. - 1.*I", "2. +  4.*I"},
 		{    "3. + 3.*I",  "7. - 4.*I", "1. +  9.*I"},
@@ -791,6 +792,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod_square) {
 	multi::array<std::string, 2> const in_transpose = in.transposed();
 	in = in.transposed();
 	BOOST_REQUIRE( in != in_transpose );
+	#endif
 }
 
 //BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_move) {
