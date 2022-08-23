@@ -144,8 +144,8 @@ BOOST_AUTO_TEST_CASE(array_reextent_1d) {
 #pragma nv_diag_suppress 1215,1216,1444,1445  // NOLINT(clang-diagnostic-unknown-pragmas)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-	arr.reextent( std::make_tuple(24) );
-	BOOST_REQUIRE( size(arr) == 24 );
+//	arr.reextent( std::make_tuple(24) );
+//	BOOST_REQUIRE( size(arr) == 24 );
 #pragma GCC diagnostic pop
 #pragma nv_diagnostic pop                     // NOLINT(clang-diagnostic-unknown-pragmas)
 #pragma warning(pop)                       // NOLINT(clang-diagnostic-unknown-pragmas)
