@@ -178,7 +178,7 @@ class involuter {
 
 	explicit operator bool() const{return it_;}
 	using underlying_type = It;
-	friend constexpr auto underlying(involuter const& self) -> underlying_type{return self.it_;}
+	friend /*constexpr*/ auto underlying(involuter const& self) -> underlying_type{return self.it_;}
 	constexpr explicit operator It() const {return underlying(*this);}
 //	friend auto get_allocator(involuter const& self){return get_allocator(self.it_);}
 	friend auto default_allocator_of(involuter const& inv){
