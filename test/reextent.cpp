@@ -1,4 +1,4 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2018-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi reextent"
@@ -140,14 +140,14 @@ BOOST_AUTO_TEST_CASE(array_reextent_1d) {
 
 #pragma warning(push)                      // NOLINT(clang-diagnostic-unknown-pragmas)
 #pragma warning (disable:1478 1786)        // NOLINT(clang-diagnostic-unknown-pragmas)
-#pragma diagnostic push                    // NOLINT(clang-diagnostic-unknown-pragmas)
-#pragma diag_suppress 1215,1216,1444,1445  // NOLINT(clang-diagnostic-unknown-pragmas)
+#pragma nv_diagnostic push                    // NOLINT(clang-diagnostic-unknown-pragmas)
+#pragma nv_diag_suppress 1215,1216,1444,1445  // NOLINT(clang-diagnostic-unknown-pragmas)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 	arr.reextent( std::make_tuple(24) );
 	BOOST_REQUIRE( size(arr) == 24 );
 #pragma GCC diagnostic pop
-#pragma diagnostic pop                     // NOLINT(clang-diagnostic-unknown-pragmas)
+#pragma nv_diagnostic pop                     // NOLINT(clang-diagnostic-unknown-pragmas)
 #pragma warning(pop)                       // NOLINT(clang-diagnostic-unknown-pragmas)
 }
 
