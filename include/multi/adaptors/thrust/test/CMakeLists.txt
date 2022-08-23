@@ -16,6 +16,7 @@ find_program(MEMORYCHECK_COMMAND valgrind)
 set(MEMORYCHECK_COMMAND_OPTIONS "--leak-check=full --error-exitcode=1")
 include(CTest)
 
+# TODO(correaa) this will be simpler in Cmake 3.24 https://stackoverflow.com/a/72332793/225186
 if(NOT DEFINED CMAKE_CUDA_ARCHITECTURES)
 	# temporary workaround to detect CUDA arch, for between the deprecation of FindCUDA in CMake 3.10 and the availability of FindCudaToolkit in CMake 3.17 # https://stackoverflow.com/a/68223399/225186
 	include(FindCUDA/select_compute_arch)
@@ -42,13 +43,13 @@ if("30;35;50;52;60;61;70;70+PTX;75;75+PTX" STREQUAL "${CUDA_ARCH_LIST}" OR "" ST
 	set(TEST_SRCS)
 else()
 	message(STATUS "gpu detected: ${CUDA_ARCH_LIST}")
-	set(TEST_SRCS array.cu vector.cu)
 endif()
 
 find_package(Boost REQUIRED COMPONENTS unit_test_framework timer)
 
 set(TEST_SRCS
-	array.cu
+    array.cu
+    managed.cu
 )
 
 foreach(TEST_FILE ${TEST_SRCS})
@@ -65,10 +66,14 @@ foreach(TEST_FILE ${TEST_SRCS})
 	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
 	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
 	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
-    if("30;35;50;52;60;61;70;70+PTX;75;75+PTX" STREQUAL "${CUDA_ARCH_LIST}" OR "" STREQUAL "${CUDA_ARCH_LIST}")
+    if("30;35;50;52;60;61;70;70+PTX;75;75+PTX" STREQUAL "${CUDA_ARCH_LIST}" OR "" STREQUAL "${CUDA_ARCH_LIST}" OR NOT ENABLE_GPU)
 	    message(STATUS "gpu not detected ${CUDA_ARCH_LIST}")
     else()
 	    message(STATUS "gpu detected: ${CUDA_ARCH_LIST}")
+	    add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
+    endif()
+    if(ENABLE_GPU)
+	    message(STATUS "gpu run forced")
 	    add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
     endif()
 endforeach()
