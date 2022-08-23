@@ -49,7 +49,7 @@ find_package(Boost REQUIRED COMPONENTS unit_test_framework timer)
 
 set(TEST_SRCS
     array.cu
-    managed.cu
+    universal.cu
 )
 
 foreach(TEST_FILE ${TEST_SRCS})
