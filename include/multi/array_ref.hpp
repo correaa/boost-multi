@@ -288,6 +288,11 @@ struct basic_array_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin
 		return eq and this->layout() == other.layout();
 	}
 
+	template<class Array>
+	friend HD constexpr auto operator==(Array* other, basic_array_ptr const& self) -> bool {
+		return other->base() == self.base_ and other->layout() == self.layout();
+	}
+
 //	friend HD /*constexpr*/ auto operator==(basic_array_ptr const& self, basic_array_ptr const& other) -> bool {
 //		auto b1 = self.base_;
 //		auto b2 = other.base_;
@@ -408,7 +413,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 
  private:
 	ptr_type ptr_;
-	stride_type stride_;// = {1};  // nice non-zero default
+	stride_type stride_ = {1};  // nice non-zero default  // TODO(correaa) use INT_MAX?
 
 	constexpr auto equal(array_iterator const& other) const -> bool {return ptr_ == other.ptr_ and stride_ == other.stride_;}
 	constexpr void decrement() {ptr_.base_ -= stride_;}
