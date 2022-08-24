@@ -38,6 +38,16 @@ template<class... As> struct pointer_traits<thrust::pointer<As...>>
 }  // end namespace std
 // end of nvcc trhust 11.5 workaround
 
+namespace boost::multi {
+
+template<class T>
+struct pointer_traits<::thrust::pointer<T, ::thrust::cuda_cub::tag, T&>> : std::pointer_traits<::thrust::pointer<T, ::thrust::cuda_cub::tag, T&>> {
+	using default_allocator_type = ::thrust::universal_allocator<std::decay_t<T>>;
+};
+
+} // end namespace boost::multi
+
+
 // this is important for algorithms to dispatch to the right thrust executor
 namespace thrust {
 
@@ -86,13 +96,18 @@ namespace cuda {
 
 namespace boost::multi {
 
+template<class Q, class R>
+constexpr auto default_allocator_of(::thrust::pointer<Q, ::thrust::cuda_cub::tag, Q&> /*unused*/) {
+	return ::thrust::cuda::universal_allocator<typename std::iterator_traits<::thrust::pointer<Q, ::thrust::cuda_cub::tag, Q&>>::value_type>{};
+}
+
 // copy_n
 #if 1
 template<class Q1, class L1, class Size, class Q2, class R2, class L2>
 auto copy_n(
 	boost::multi::elements_iterator_t<                  Q1*                                                , L1>   first, Size count,
-	boost::multi::elements_iterator_t<::thrust::pointer<Q2, ::thrust::cuda_cub::tag, R2, ::thrust::use_default>, L2> d_first
-)-> boost::multi::elements_iterator_t<::thrust::pointer<Q2, ::thrust::cuda_cub::tag, R2, ::thrust::use_default>, L2> {
+	boost::multi::elements_iterator_t<::thrust::pointer<Q2, ::thrust::cuda_cub::tag, R2>, L2> d_first
+)-> boost::multi::elements_iterator_t<::thrust::pointer<Q2, ::thrust::cuda_cub::tag, R2>, L2> {
 	if constexpr(std::is_trivially_assignable<Q2&, Q1&>{}) {
 		if constexpr(L1::dimensionality == 1 and L2::dimensionality == 1) {
 			if(first.layout().stride() == 1 and d_first.layout().stride() == 1) {
