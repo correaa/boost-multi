@@ -1087,7 +1087,7 @@ struct basic_array
 	constexpr auto transposed() const& -> basic_array {
 		return {this->layout().transpose(), types::base_};
 	}
-	friend constexpr auto transposed(basic_array const& self) -> basic_array {return self.transposed();}
+	friend /*constexpr*/ auto transposed(basic_array const& self) -> basic_array {return self.transposed();}
 	friend
 #if not((defined(__INTEL_COMPILER)) or defined(__NVCC__))
 	constexpr
