@@ -27,5 +27,6 @@ BOOST_AUTO_TEST_CASE(thrust_universal_ptr) {
 	Hos2({0, 10}, {0, 20}) = Univ({0, 10}, {0, 20});
 
 	BOOST_REQUIRE( Hos2[0][0] == 12. );
+
 }
 
