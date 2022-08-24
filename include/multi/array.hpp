@@ -349,9 +349,9 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	#endif
 	auto get_allocator(static_array const& self) -> allocator_type {return self.get_allocator();}
 
-	       constexpr auto data_elements()            const& ->                        element_const_ptr {return this->base_;}
-	       constexpr auto data_elements()                 & -> typename static_array::element_ptr       {return this->base_;}
-	       constexpr auto data_elements()                && -> typename static_array::element_move_ptr  {return std::make_move_iterator(this->base_);}
+	       HD constexpr auto data_elements()            const& ->                        element_const_ptr {return this->base_;}
+	       HD constexpr auto data_elements()                 & -> typename static_array::element_ptr       {return this->base_;}
+	       HD constexpr auto data_elements()                && -> typename static_array::element_move_ptr  {return std::make_move_iterator(this->base_);}
 	friend constexpr auto data_elements(static_array const& self) {return           self .data_elements();}
 	friend constexpr auto data_elements(static_array      & self) {return           self .data_elements();}
 	friend constexpr auto data_elements(static_array     && self) {return std::move(self).data_elements();}
@@ -379,7 +379,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	constexpr auto rotated()     && {return std::move(*this).rotated_aux();}
 
 	friend constexpr auto rotated(static_array&       self) -> decltype(auto) {return self.rotated();}
-	friend constexpr auto rotated(static_array const& self) -> decltype(auto) {return self.rotated();}
+	friend /*constexpr*/ auto rotated(static_array const& self) -> decltype(auto) {return self.rotated();}
 
 	constexpr auto unrotated() const& {
 		typename static_array::layout_t new_layout = this->layout();
@@ -404,9 +404,9 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		return *this;
 	}
 	auto operator=(static_array const& other) & -> static_array& {
-		if(this == std::addressof(other)) {return *this;}  // cert-oop54-cpp
+		if(std::addressof(other) == this) {return *this;}  // cert-oop54-cpp
 		assert( extensions(other) == static_array::extensions() );
-		if(this == &other) {return *this;}  // lints (cert-oop54-cpp) : handle self-assignment properly
+		if(&other == this) {return *this;}  // lints (cert-oop54-cpp) : handle self-assignment properly
 		adl_copy_n(other.data_elements(), other.num_elements(), this->data_elements());
 		return *this;
 	}
