@@ -104,7 +104,7 @@ BOOST_AUTO_TEST_CASE(multi_rotate) {
 
 	BOOST_REQUIRE( & ~~arr          == & arr      );
 	BOOST_REQUIRE( &  (arr.rotated().rotated().rotated() )     == & arr       );
-	BOOST_REQUIRE( &   arr          == & (arr.rotated().rotated().rotated() ) );
+    BOOST_REQUIRE( &   arr          == & (arr.rotated().rotated().rotated() ) );
 	BOOST_REQUIRE( &  (arr.rotated() )     != & arr      );
 	BOOST_REQUIRE( &  (arr.unrotated().rotated()) == & arr      );
 
