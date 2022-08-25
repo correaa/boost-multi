@@ -204,7 +204,7 @@ public:
 	->std::decay_t<decltype(const_cast<complex_type*>(reinterpret_cast<complex_type*>(raw_pointer_cast(base(d_first)))), std::declval<plan>())>
 #else
 	template<class It1, class It2, dimensionality_type D = decltype(*It1{})::dimensionality, 
-		typename TT = decltype(const_cast<complex_type*>(reinterpret_cast<complex_type*>(It2{}.base().raw_pointer_cast())))
+		typename TT = decltype(const_cast<complex_type*>(reinterpret_cast<complex_type*>(raw_pointer_cast(It2{}.base())))
 	>
 	static auto many(It1 first, It1 last, It2 d_first, int sign = 0, unsigned = 0)
 #endif
@@ -244,8 +244,8 @@ public:
 
 		plan ret;
 		ret.direction_ = sign;
-		ret.idata_ =                           reinterpret_cast<complex_type const*>(  first.base().raw_pointer_cast()) ;
-		ret.odata_ = const_cast<complex_type*>(reinterpret_cast<complex_type*      >(d_first.base().raw_pointer_cast()));
+		ret.idata_ =                           reinterpret_cast<complex_type const*>(raw_pointer_cast(  first.base())) ;
+		ret.odata_ = const_cast<complex_type*>(reinterpret_cast<complex_type*      >(raw_pointer_cast(d_first.base())));
 
 		auto it = cache<D>().find(std::make_tuple(ion, inembed, istride, stride(first), onembed, ostride, stride(d_first), last - first));
 		if(it != cache<D>().end()) {

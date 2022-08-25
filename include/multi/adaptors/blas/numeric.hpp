@@ -151,16 +151,16 @@ class involuter {
 	involuter() = default;
 //	~involuter() = default;
 
-	constexpr explicit involuter(It it)      : it_{std::move(it)}, f_{} {}
-	constexpr explicit involuter(It it, F fun) : it_{std::move(it)}, f_{std::move(fun)} {}
+	HD constexpr explicit involuter(It it)      : it_{std::move(it)}, f_{} {}
+	HD constexpr explicit involuter(It it, F fun) : it_{std::move(it)}, f_{std::move(fun)} {}
 
 //	involuter(involuter const& other) = default;
 
 	template<class Other, decltype(multi::implicit_cast<It>(typename Other::underlying_type{}))* = nullptr>
 	// cppcheck-suppress noExplicitConstructor
-	constexpr/*implct*/involuter(Other const& other) : it_{other.it_}, f_{other.f_}{} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : inherit implicit conversion of underlying type
+	HD constexpr/*implct*/involuter(Other const& other) : it_{other.it_}, f_{other.f_}{} // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : inherit implicit conversion of underlying type
 	template<class Other, decltype(explicit_cast<It>(typename Other::underlying_type{}))* = nullptr>
-	constexpr explicit involuter(Other const& other) : it_{other.it_}, f_{other.f_}{}
+	HD constexpr explicit involuter(Other const& other) : it_{other.it_}, f_{other.f_}{}
 
 	constexpr auto operator*() const {return reference{*it_, f_};}
 	constexpr auto operator[](difference_type n) const {return reference{*(it_ + n), f_};}
@@ -266,7 +266,7 @@ auto conj(A&& array)
 
 template<class It, class F, class Reference>
 auto default_allocator_of(multi::blas::involuter<It, F, Reference> it) {
-	return multi::default_allocator_of(underlying(it));
+	return multi::default_allocator_of(it.underlying());
 }
 
 } // end namespace boost
