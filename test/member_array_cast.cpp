@@ -88,7 +88,7 @@ class particles_soa {
 	BOOST_REQUIRE(not (SoA(1, 1) != SoA(0, 0)) );
 }
 
-struct alignas(32) employee{
+struct alignas(32) employee {
 	std::string name;
 	int16_t salary;
 	std::size_t age;
