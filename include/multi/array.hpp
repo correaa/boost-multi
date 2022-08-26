@@ -50,7 +50,11 @@ struct array_allocator {
 	}
 	template<typename It>
 	auto uninitialized_copy_n(It first, size_type count, pointer_ d_first) {
-		return adl_alloc_uninitialized_copy_n(alloc_, first, count, d_first);
+		if constexpr(std::is_trivial_v<typename std::iterator_traits<pointer_>::value_type>) {
+			return                     adl_copy_n(        first, count, d_first);
+		} else {
+			return adl_alloc_uninitialized_copy_n(alloc_, first, count, d_first);
+		}
 	}
 	template<typename It>
 	auto destroy_n(It first, size_type n) {return adl_alloc_destroy_n(this->alloc(), first, n);}
@@ -180,7 +184,11 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		array_alloc::allocate(static_cast<typename std::allocator_traits<allocator_type>::size_type>(other.num_elements())),
 		other.extensions()
 	} {
-		adl_alloc_uninitialized_copy_n(static_array::alloc(), other.data_elements(), other.num_elements(), this->data_elements());
+		if constexpr(std::is_trivial_v<T>) {
+			                    adl_copy_n(                       other.data_elements(), other.num_elements(), this->data_elements());
+		} else {
+			adl_alloc_uninitialized_copy_n(static_array::alloc(), other.data_elements(), other.num_elements(), this->data_elements());
+		}
 	}
 
 	template<class TT, class... As>

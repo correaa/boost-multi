@@ -30,3 +30,50 @@ BOOST_AUTO_TEST_CASE(thrust_universal_ptr) {
 
 }
 
+BOOST_AUTO_TEST_CASE(thrust_universal_ptr_initializer_list) {
+
+	multi::array<double, 1                                           > Host = {1., 2., 3.};
+	BOOST_REQUIRE( Host.size() == 3 );
+	{
+		multi::array<double, 1, thrust::cuda::universal_allocator<double>> Univ(multi::extensions_t<1>{3});
+		Univ[0] = 3.;
+		Univ[1] = 2.;
+		Univ[2] = 1.;
+
+		Host() = Univ();
+
+		BOOST_REQUIRE( Host[0] == 3. );
+	}
+	{
+		multi::array<double, 1> tmp = {3., 2., 1.};
+		multi::array<double, 1, thrust::cuda::universal_allocator<double>> Univ{multi::extensions_t<1>{3}};
+		Univ = tmp;
+
+		Host() = Univ();
+
+		BOOST_REQUIRE( Host[0] == 3. );
+	}
+	{
+		multi::array<double, 1> tmp = {3., 2., 1.};
+		multi::array<double, 1, thrust::cuda::universal_allocator<double>> Univ{tmp};
+
+		Host() = Univ();
+
+		BOOST_REQUIRE( Host[0] == 3. );
+	}
+	{
+		multi::array<double, 1, thrust::cuda::universal_allocator<double>> Univ = {3., 2., 1.};
+
+		Host() = Univ();
+
+		BOOST_REQUIRE( Host[0] == 3. );
+	}
+//	{
+//		multi::array<double, 1, thrust::cuda::universal_allocator<double>> Univ = {3., 2., 1.};
+
+//		Host() = Univ();
+
+//		BOOST_REQUIRE( Host[0] == 3. );
+//	}
+}
+
