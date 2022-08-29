@@ -10,6 +10,7 @@ namespace boost::multi {
 
 template<class Alloc>
 struct allocator_traits : std::allocator_traits<Alloc> {
+#if 0
 	template<class Ptr, class... Args>
 	static auto construct(Alloc& alloc, Ptr p, Args&&... args)  // NOLINT(readability-identifier-length) std naming
 	->decltype(alloc.construct(p, std::forward<Args>(args)...)) {
@@ -19,6 +20,7 @@ struct allocator_traits : std::allocator_traits<Alloc> {
 	static auto destroy(Alloc& alloc, Ptr p)  // NOLINT(readability-identifier-length) std naming
 	->decltype(alloc.destroy(p)) {
 		return alloc.destroy(p); }
+#endif
 };
 
 // https://en.cppreference.com/w/cpp/memory/destroy
