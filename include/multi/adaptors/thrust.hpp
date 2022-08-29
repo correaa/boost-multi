@@ -47,45 +47,18 @@ struct pointer_traits<::thrust::pointer<T, ::thrust::cuda_cub::tag, T&>> : std::
 
 } // end namespace boost::multi
 
-namespace std {
-
-//template<>
-//static
-//template<class T>
-//static
-//typename std::allocator_traits<thrust::mr::stateless_resource_allocator<T, thrust::system::cuda::universal_memory_resource>>::const_void_pointer
-//allocator_traits<thrust::mr::stateless_resource_allocator<T, thrust::system::cuda::universal_memory_resource>>::allocate(
-//	thrust::mr::stateless_resource_allocator<T, thrust::system::cuda::universal_memory_resource>& self,
-//	typename std::allocator_traits<thrust::mr::stateless_resource_allocator<T, thrust::system::cuda::universal_memory_resource>>::size_type n,
-//	typename std::allocator_traits<thrust::mr::stateless_resource_allocator<T, thrust::system::cuda::universal_memory_resource>>::const_void_pointer hint
-//) {
-//	abort();
-//	return std::allocator_traits<thrust::mr::stateless_resource_allocator<double, thrust::system::cuda::universal_memory_resource>::allocate(self, n);
-//}
+namespace boost::multi {
 
 template<class TT>
-class allocator_traits<thrust::mr::stateless_resource_allocator<TT, thrust::system::cuda::universal_memory_resource>> {
-	using Alloc = thrust::mr::stateless_resource_allocator<TT, thrust::system::cuda::universal_memory_resource>;
+struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust::system::cuda::universal_memory_resource>>
+: std::allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust::system::cuda::universal_memory_resource>> {
+ private:
+	using Alloc = ::thrust::mr::stateless_resource_allocator<TT, ::thrust::system::cuda::universal_memory_resource>;
+
  public:
-	using allocator_type = Alloc;
-	using value_type = typename Alloc::value_type;
-	using pointer =	typename Alloc::pointer;
-	using const_pointer = typename Alloc::const_pointer;
-	using void_pointer = typename Alloc::void_pointer;
-	using const_void_pointer = typename std::pointer_traits<pointer>::rebind<const void>;  // typename Alloc::const_void_pointer;
-	using difference_type = typename Alloc::difference_type;
-	using size_type = typename Alloc::size_type;
-	using propagate_on_container_copy_assignment = typename Alloc::propagate_on_container_copy_assignment; // if present, otherwise std::false_type
-	using propagate_on_container_move_assignment = typename Alloc::propagate_on_container_move_assignment;// if present, otherwise std::false_type
-	using propagate_on_container_swap = typename Alloc::propagate_on_container_swap;// if present, otherwise std::false_type
-	using is_always_equal = typename std::is_empty<Alloc>::type;  // typename Alloc::is_always_equal; // if present, otherwise std::is_empty<Alloc>::type
-
-	template<class T> using rebind_alloc = typename Alloc::rebind<T>::other; //  if present, otherwise Alloc<T, Args> if this Alloc is Alloc<U, Args>
-	template<class T> using rebind_traits = std::allocator_traits<rebind_alloc<T>>;
-
-	[[nodiscard]] static constexpr pointer allocate(Alloc& a, size_type n ) {return a.allocate(n);}
-	[[nodiscard]] static constexpr pointer allocate(Alloc& a, size_type n, const_void_pointer hint) {
-		auto ret = a.allocate(n);
+	using std::allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust::system::cuda::universal_memory_resource>>::allocate;
+	[[nodiscard]] static constexpr typename allocator_traits::pointer allocate(Alloc& a, size_type n, typename allocator_traits::const_void_pointer hint) {
+		auto ret = allocator_traits::allocate(a, n);
 		if(not hint) {return ret;}
 		cudaPointerAttributes attr;
 		if(cudaPointerGetAttributes(&attr, raw_pointer_cast(hint)) != cudaSuccess) {return ret;}
@@ -93,16 +66,6 @@ class allocator_traits<thrust::mr::stateless_resource_allocator<TT, thrust::syst
 		cudaMemPrefetchAsync(raw_pointer_cast(ret), n*sizeof(TT), attr.device);
 		return ret;
 	}
-
-	static constexpr void deallocate( Alloc& a, pointer p, size_type n ) {a.deallocate(p, n);}
-	template<class T, class... Args>
-	static constexpr auto construct(Alloc& a, T* p, Args&&... args)
-	->decltype(a.construct(p, std::forward<Args>(args)...), void()) {
-		return a.construct(p, std::forward<Args>(args)...);}
-	template<class T>
-	static constexpr void destroy(Alloc& a, T* p) {return a.destroy(p);}
-	static constexpr auto max_size( const Alloc& a ) noexcept -> size_type {return a.max_size();}
-	static constexpr auto select_on_container_copy_construction(const Alloc& a) -> Alloc {return a;}//.select_on_container_copy_construction();}
 };
 
 }
