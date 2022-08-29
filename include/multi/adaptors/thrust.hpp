@@ -96,7 +96,9 @@ class allocator_traits<thrust::mr::stateless_resource_allocator<TT, thrust::syst
 
 	static constexpr void deallocate( Alloc& a, pointer p, size_type n ) {a.deallocate(p, n);}
 	template<class T, class... Args>
-	static constexpr void construct(Alloc& a, T* p, Args&&... args) {return a.construct(p, std::forward<Args>(args)...);}
+	static constexpr auto construct(Alloc& a, T* p, Args&&... args)
+	->decltype(a.construct(p, std::forward<Args>(args)...), void()) {
+		return a.construct(p, std::forward<Args>(args)...);}
 	template<class T>
 	static constexpr void destroy(Alloc& a, T* p) {return a.destroy(p);}
 	static constexpr auto max_size( const Alloc& a ) noexcept -> size_type {return a.max_size();}
