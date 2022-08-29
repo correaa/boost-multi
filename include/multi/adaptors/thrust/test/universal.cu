@@ -30,6 +30,8 @@ BOOST_AUTO_TEST_CASE(thrust_universal_ptr) {
 
 }
 
+template<class T> void what(T const&) = delete;
+
 BOOST_AUTO_TEST_CASE(thrust_universal_ptr_initializer_list) {
 
 	multi::array<double, 1                                           > Host = {1., 2., 3.};
@@ -68,6 +70,7 @@ BOOST_AUTO_TEST_CASE(thrust_universal_ptr_initializer_list) {
 
 		BOOST_REQUIRE( Host[0] == 3. );
 	}
+//	what( thrust::cuda::universal_allocator<double>{} );
 //	{
 //		multi::array<double, 1, thrust::cuda::universal_allocator<double>> Univ = {3., 2., 1.};
 
