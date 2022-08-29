@@ -1,23 +1,16 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2018-2021 Alfredo A. Correa
+// Copyright 2018-2022 Alfredo A. Correa
 
 #ifndef MULTI_DETAIL_MEMORY_HPP
 #define MULTI_DETAIL_MEMORY_HPP
 
-#include "multi/detail/adl.hpp"
-#include "multi/utility.hpp"
-
-#include "layout.hpp"
-
-#include <algorithm>  // for copy_n
-#include <memory>
-#include <utility>
+#include <memory>  // for std::allocator_traits
 
 namespace boost::multi {
-namespace memory {
 
 template<class Alloc>
 struct allocator_traits : std::allocator_traits<Alloc> {
+#if 0
 	template<class Ptr, class... Args>
 	static auto construct(Alloc& alloc, Ptr p, Args&&... args)  // NOLINT(readability-identifier-length) std naming
 	->decltype(alloc.construct(p, std::forward<Args>(args)...)) {
@@ -27,11 +20,8 @@ struct allocator_traits : std::allocator_traits<Alloc> {
 	static auto destroy(Alloc& alloc, Ptr p)  // NOLINT(readability-identifier-length) std naming
 	->decltype(alloc.destroy(p)) {
 		return alloc.destroy(p); }
+#endif
 };
-
-}  // end namespace memory
-
-using memory::allocator_traits;
 
 // https://en.cppreference.com/w/cpp/memory/destroy
 template<class Alloc, class ForwardIt, std::enable_if_t<!has_rank<ForwardIt>::value, int> = 0>
@@ -151,31 +141,6 @@ auto uninitialized_copy(InputIt first, InputIt last, ForwardIt dest) {
 	}
 	return dest;
 }
-
-// template<dimensionality_type N> struct recursive_fill_aux;
-
-// template<dimensionality_type N, class Out, class T>
-// void recursive_fill(Out f, Out l, T const& value) {
-// 	return recursive_fill_aux<N>::call(f, l, value);
-// }
-
-// template<dimensionality_type N>
-// struct recursive_fill_aux {
-// 	template<class Out, class T>
-// 	static auto call(Out first, Out last, T const& value) {
-// 		using std::begin; using std::end;
-// 		for(; first != last; ++first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-// 			recursive_fill<N-1>(begin(*first), end(*first), value);  // (*first).begin() instead of first->begin() to make it work with T[][]
-// 		}
-// 	}
-// };
-
-// TODO(correa) remove commented code
-//template<> struct recursive_fill_aux<1> {
-//	template<class O, class T>  static auto call(O f, O l, T const& v) {
-//		using std::fill; return fill(f, l, v);
-//	}
-//};
 
 }  // end namespace boost::multi
 

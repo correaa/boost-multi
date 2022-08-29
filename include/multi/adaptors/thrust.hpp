@@ -12,8 +12,8 @@
 #include <thrust/device_allocator.h>
 #include <thrust/system/cuda/memory.h>  // ::thrust::cuda::allocator
 
-#include <thrust/system/cuda/experimental/pinned_allocator.h>
-#include <thrust/host_vector.h>
+//#include <thrust/system/cuda/experimental/pinned_allocator.h>
+//#include <thrust/host_vector.h>
 
 #include <thrust/detail/type_traits/pointer_traits.h>
 
@@ -47,6 +47,28 @@ struct pointer_traits<::thrust::pointer<T, ::thrust::cuda_cub::tag, T&>> : std::
 
 } // end namespace boost::multi
 
+namespace boost::multi {
+
+template<class TT>
+struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust::system::cuda::universal_memory_resource>>
+: std::allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust::system::cuda::universal_memory_resource>> {
+ private:
+	using Alloc = ::thrust::mr::stateless_resource_allocator<TT, ::thrust::system::cuda::universal_memory_resource>;
+
+ public:
+	using std::allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust::system::cuda::universal_memory_resource>>::allocate;
+	[[nodiscard]] static constexpr typename allocator_traits::pointer allocate(Alloc& a, size_type n, typename allocator_traits::const_void_pointer hint) {
+		auto ret = allocator_traits::allocate(a, n);
+		if(not hint) {return ret;}
+		cudaPointerAttributes attr;
+		if(cudaPointerGetAttributes(&attr, raw_pointer_cast(hint)) != cudaSuccess) {return ret;}
+		assert(attr.type == cudaMemoryTypeManaged);
+		cudaMemPrefetchAsync(raw_pointer_cast(ret), n*sizeof(TT), attr.device);
+		return ret;
+	}
+};
+
+}
 
 // this is important for algorithms to dispatch to the right thrust executor
 namespace thrust {
