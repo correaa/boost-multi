@@ -11,6 +11,7 @@
 #include "./config/DELETE.hpp"
 #include "./config/MARK.hpp"
 
+#include "./detail/adl.hpp"
 #include "./detail/layout.hpp"
 #include "./detail/memory.hpp"         // for pointer_traits
 #include "./detail/operators.hpp"      // for random_iterable
