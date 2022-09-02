@@ -54,13 +54,18 @@ struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust:
 : std::allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust::system::cuda::universal_memory_resource>> {
  private:
 	using Alloc = ::thrust::mr::stateless_resource_allocator<TT, ::thrust::system::cuda::universal_memory_resource>;
+	using base = std::allocator_traits<Alloc>;
 
  public:
-	using std::allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust::system::cuda::universal_memory_resource>>::allocate;
-	[[nodiscard]] static constexpr typename allocator_traits::pointer allocate(Alloc& a, size_type n, typename allocator_traits::const_void_pointer hint) {
+	using typename base::pointer;
+	using typename base::size_type;
+	using typename base::const_void_pointer;
+
+	using base::allocate;
+	[[nodiscard]] static constexpr auto allocate(Alloc& a, size_type n, const_void_pointer hint) -> pointer {
 		auto ret = allocator_traits::allocate(a, n);
 		if(not hint) {return ret;}
-		cudaPointerAttributes attr;
+		cudaPointerAttributes attr{};
 		if(cudaPointerGetAttributes(&attr, raw_pointer_cast(hint)) != cudaSuccess) {return ret;}
 		assert(attr.type == cudaMemoryTypeManaged);
 		cudaMemPrefetchAsync(raw_pointer_cast(ret), n*sizeof(TT), attr.device);
