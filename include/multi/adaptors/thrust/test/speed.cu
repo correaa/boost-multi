@@ -13,8 +13,8 @@ BOOST_AUTO_TEST_CASE(thrust_universal_speed) {
 
 	auto const n = 8000;
 
-	multi::array<complex, 2, thrust::universal_allocator<complex>> src({n, n});
-	multi::array<complex, 2, thrust::universal_allocator<complex>> dst(extensions(src));
+	multi::array<complex, 2, thrust::cuda::universal_allocator<complex>> src({n, n});
+	multi::array<complex, 2, thrust::cuda::universal_allocator<complex>> dst(extensions(src));
 
 	auto const threshold = 0.2;
 
