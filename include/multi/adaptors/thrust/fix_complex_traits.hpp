@@ -10,9 +10,11 @@
 namespace boost {
 namespace multi {
 
-#pragma message "By including this header, the behavior of initialization of thrust::complex<T> in multi::array's changes. thrust::complex<T> elements will not be initialized."
+#ifndef NDEBUG
+#pragma message "By including this header, the behavior of initialization of thrust::complex<T> in multi::array's changes. ::thrust::complex<T> elements will not be initialized."
+#endif
 
-template<class T> struct is_trivially_default_constructible<thrust::complex<T>> : std::is_trivially_default_constructible<T> {};
+template<class T> struct is_trivially_default_constructible<::thrust::complex<T>> : std::is_trivially_default_constructible<T> {};
 
 }
 }
