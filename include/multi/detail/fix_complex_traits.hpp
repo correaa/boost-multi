@@ -5,6 +5,8 @@
 
 #include "../detail/type_traits.hpp"
 
+#include "../detail/fix_complex_traits.hpp"
+
 #include<complex>
 
 namespace boost {
@@ -13,6 +15,8 @@ namespace multi {
 #pragma message "By including this header, the behavior of initialization of std::complex<T> in multi::array's changes. std::complex<T>  elements will not be initialized."
 
 template<class T> struct is_trivially_default_constructible<std::complex<T>> : std::is_trivially_default_constructible<T> {};
+
+static_assert(is_trivially_default_constructible<::std::complex<double>>::value);
 
 }
 }
