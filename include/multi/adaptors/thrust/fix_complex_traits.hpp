@@ -16,5 +16,7 @@ namespace multi {
 
 template<class T> struct is_trivially_default_constructible<::thrust::complex<T>> : std::is_trivially_default_constructible<T> {};
 
+static_assert(is_trivially_default_constructible<::thrust::complex<double>>::value);
+
 }
 }

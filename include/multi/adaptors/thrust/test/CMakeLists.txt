@@ -50,6 +50,7 @@ find_package(Boost REQUIRED COMPONENTS unit_test_framework timer)
 set(TEST_SRCS
     array.cu
     speed.cu
+    speed_algo.cu
     universal.cu
 )
 

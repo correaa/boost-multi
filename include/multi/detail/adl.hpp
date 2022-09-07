@@ -562,8 +562,8 @@ constexpr class uninitialized_fill_n_t {
 } adl_uninitialized_fill_n;
 
 constexpr class alloc_uninitialized_fill_n_t {
-	template<class Alloc, class... As> constexpr auto _(priority<1>/**/, Alloc&&/*alloc*/, As&&... args) const DECLRETURN(                              adl_uninitialized_fill_n(std::forward<As>(args)...))
-	template<             class... As> constexpr auto _(priority<2>/**/,                   As&&... args) const DECLRETURN(                       xtd::alloc_uninitialized_fill_n(std::forward<As>(args)...))
+	template<             class... As> constexpr auto _(priority<1>/**/,                   As&&... args) const DECLRETURN(                       xtd::alloc_uninitialized_fill_n(std::forward<As>(args)...))
+	template<class Alloc, class... As> constexpr auto _(priority<2>/**/, Alloc&&/*alloc*/, As&&... args) const DECLRETURN(                              adl_uninitialized_fill_n(std::forward<As>(args)...))
 	template<             class... As> constexpr auto _(priority<3>/**/,                   As&&... args) const DECLRETURN(                            alloc_uninitialized_fill_n(std::forward<As>(args)...))
 	template<class Alloc, class... As> constexpr auto _(priority<4>/**/, Alloc&&  alloc  , As&&... args) const DECLRETURN( std::forward<Alloc>(alloc).alloc_uninitialized_fill_n(std::forward<As>(args)...))
  public:
