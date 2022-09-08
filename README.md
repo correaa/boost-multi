@@ -924,22 +924,37 @@ int main(){
 
 (Similarly works with [LLNL's Meta Allocator](https://github.com/llnl/metall))
 
-## Cuda thrust
+## CUDA Thrust
+
+The library works out of the box in combination with the CUDA Thrust library.
 
 ```cpp
-#include "multi/adaptors/thrust/allocator_traits.hpp"
-#include "multi/adaptors/thrust/algorithms.hpp"
-#include "multi/array.hpp"
+#include <multi/array.hpp>
+#include <thrust/memory.h>
 
 namespace multi = boost::multi;
-int main(){
-	multi::array<double, 2, thrust::device_allocator<double>> A2({10,10});
-	multi::array<double, 2, thrust::device_allocator<double>> B2({10,10});
-	A2[5][0] = 50.;
+int main() {
+	multi::array<double, 2, thrust::device_allocator<double>> A({10,10});
+	multi::array<double, 2, thrust::device_allocator<double>> B({10,10});
+	A[5][0] = 50.;
 	thrust::copy(begin(rotated(A2)[0]), end(rotated(A2)[0]), begin(rotated(B2)[0]));
 	assert( B2[5][0] == 50. );
 }
 ```
+
+which uses the default Thrust backend (CUDA, OpenMP or TBB).
+Universal memory (accessible from normal CPU code) can be used by using `thrust::universal_allocator` instead.
+
+More specific allocators can be used to force certain Thrust backends, for example CUDA managed memory:
+
+```cpp
+#include <thrust/system/cuda/memory.h>
+...
+	multi::array<double, 2, thrust::cuda::universal_allocator<double>> A({10,10});
+```
+
+Multi doesn't have a dependency on Thrust; they just work well together, both in terms of semantics and efficiency.
+Certain "patches" (template specialization) can be applied to Thrust to extra efficiency and achieve near native speed by `#include<multi/adaptors/thrust.hpp>`.
 
 ## TotalView
 
