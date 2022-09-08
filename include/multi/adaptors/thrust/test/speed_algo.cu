@@ -12,7 +12,12 @@
 namespace multi = boost::multi;
 using complex = thrust::complex<double>;
 
-BOOST_AUTO_TEST_CASE(thrust_universal_speed) {
+template <typename T>
+void doNotOptimize(T const& val) {
+  asm volatile("" : : "g"(val) : "memory");
+}
+
+BOOST_AUTO_TEST_CASE(thrust_universal_speed_algo) {
 
 	auto const n = 8000;
 	{ //cctor
@@ -32,10 +37,11 @@ BOOST_AUTO_TEST_CASE(thrust_universal_speed) {
 		auto tick = std::chrono::high_resolution_clock::now();
 		multi::array<complex, 2, thrust::cuda::universal_allocator<complex>> A({n, n});
 
-		auto size = A.num_elements()*sizeof(complex)/1e9;
 		std::fill_n(raw_pointer_cast(A.data_elements()), A.num_elements(), complex{1.0});
 
 		std::chrono::duration<double> time = std::chrono::high_resolution_clock::now() - tick;
+
+		auto size = A.num_elements()*sizeof(complex)/1e9;
 		double rate = size/time.count();
 
 		std::cout<<"no  pre+cpu_algo rate = "<< rate <<" GB/s\n";
@@ -45,10 +51,11 @@ BOOST_AUTO_TEST_CASE(thrust_universal_speed) {
 		multi::array<complex, 2, thrust::cuda::universal_allocator<complex>> A({n, n});
 		cudaMemPrefetchAsync(raw_pointer_cast(A.data_elements()), A.num_elements()*sizeof(complex), 0);
 
-		auto size = A.num_elements()*sizeof(complex)/1e9;
 		thrust::fill_n(raw_pointer_cast(A.data_elements()), A.num_elements(), complex{1.0});
 
 		std::chrono::duration<double> time = std::chrono::high_resolution_clock::now() - tick;
+
+		auto size = A.num_elements()*sizeof(complex)/1e9;
 		double rate = size/time.count();
 
 		std::cout<<"dev pre+cpu_algo rate = "<< rate <<" GB/s\n";
@@ -57,26 +64,39 @@ BOOST_AUTO_TEST_CASE(thrust_universal_speed) {
 		auto tick = std::chrono::high_resolution_clock::now();
 		multi::array<complex, 2, thrust::cuda::universal_allocator<complex>> A({n, n});
 
-		auto size = A.num_elements()*sizeof(complex)/1e9;
 		thrust::fill_n(A.data_elements(), A.num_elements(), complex{1.0});
 
 		std::chrono::duration<double> time = std::chrono::high_resolution_clock::now() - tick;
+
+		auto size = A.num_elements()*sizeof(complex)/1e9;
 		double rate = size/time.count();
 
 		std::cout<<"no  pre+gpu_algo rate = "<< rate <<" GB/s\n";
 	}
 	{
+		auto tick = std::chrono::high_resolution_clock::now();
 		multi::array<complex, 2, thrust::cuda::universal_allocator<complex>> A({n, n});
 		cudaMemPrefetchAsync(raw_pointer_cast(A.data_elements()), A.num_elements()*sizeof(complex), 0);
-		auto tick = std::chrono::high_resolution_clock::now();
 
-		auto size = A.num_elements()*sizeof(complex)/1e9;
 		thrust::fill_n(A.data_elements(), A.num_elements(), complex{1.0});
 
 		std::chrono::duration<double> time = std::chrono::high_resolution_clock::now() - tick;
+
+		auto size = A.num_elements()*sizeof(complex)/1e9;
 		double rate = size/time.count();
 
 		std::cout<<"dev pre+gpu_algo rate = "<< rate <<" GB/s\n";
+	}
+	{
+		auto tick = std::chrono::high_resolution_clock::now();
+		multi::array<complex, 2, thrust::cuda::universal_allocator<complex>> A({n, n}, complex{0.0});
+		doNotOptimize(A);
+		std::chrono::duration<double> time = std::chrono::high_resolution_clock::now() - tick;
+
+		auto size = A.num_elements()*sizeof(complex)/1e9;
+		double rate = size/time.count();
+
+		std::cout<<"fill constructor rate = "<< rate <<" GB/s\n";
 	}
 }
 
