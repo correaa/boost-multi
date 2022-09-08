@@ -197,7 +197,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 
 	static_array(typename static_array::extensions_type extensions, typename static_array::element const& elem, allocator_type const& alloc)  // 2
 	: array_alloc{alloc}
-	, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements())), extensions} {
+	, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements()), nullptr), extensions} {
 		array_alloc::uninitialized_fill_n(this->data_elements(), static_cast<typename allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);
 	}
 
@@ -207,7 +207,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 
 	static_array(typename static_array::extensions_type extensions, typename static_array::element const& elem)  // 2
 	: array_alloc{}
-	, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements())), extensions} {
+	, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements()), nullptr), extensions} {
 		array_alloc::uninitialized_fill_n(this->base(), static_cast<typename allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);
 	}
 
@@ -516,7 +516,7 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 		typename static_array::element const& elem
 	)  // 2
 	: array_alloc{}
-	, ref(static_array::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements())), extensions) {
+	, ref(static_array::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements()), nullptr), extensions) {
 		uninitialized_fill(elem);
 	}
 
@@ -894,7 +894,7 @@ struct array : static_array<T, D, Alloc> {
 		} else {
 			this->clear();
 			(*this).array::layout_t::operator=(layout_t<D>{extensions});
-			this->base_ = this->static_::array_alloc::allocate(this->num_elements());
+			this->base_ = this->static_::array_alloc::allocate(this->num_elements(), nullptr);
 			adl_alloc_uninitialized_fill_n(this->alloc(), this->base_, this->num_elements(), elem);  // recursive_uninitialized_fill<dimensionality>(alloc(), begin(), end(), e);
 		}
 	}
@@ -982,7 +982,8 @@ struct array : static_array<T, D, Alloc> {
 		this->layout_mutable() = typename array::layout_t{extensions};
 		this->base_ = this->static_::array_alloc::allocate(
 			static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(
-				typename array::layout_t{extensions}.num_elements()
+				typename array::layout_t{extensions}.num_elements(),
+				nullptr
 			),
 			this->data_elements()  // used as hint
 		);
@@ -1001,7 +1002,10 @@ struct array : static_array<T, D, Alloc> {
 		tmp.apply(is) = this->apply(is);
 		swap(tmp);
 #else  // implementation with hint
-		auto&& tmp = typename array::ref{this->static_::array_alloc::allocate(static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(typename array::layout_t{exs}.num_elements()), this->data_elements()), exs};
+		auto&& tmp = typename array::ref{this->static_::array_alloc::allocate(
+			static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(typename array::layout_t{exs}.num_elements()), this->data_elements(),
+			nullptr
+		), exs};
 		this->uninitialized_fill_n(tmp.data_elements(), static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(tmp.num_elements()), elem);
 		auto const is = intersection(this->extensions(), exs);
 		tmp.apply(is) = this->apply(is);
