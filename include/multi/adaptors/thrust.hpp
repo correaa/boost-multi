@@ -64,12 +64,41 @@ struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust:
 	using base::allocate;
 	[[nodiscard]] static constexpr auto allocate(Alloc& a, size_type n, const_void_pointer hint) -> pointer {
 		auto ret = allocator_traits::allocate(a, n);
-		if(not hint) {return ret;}
-		cudaPointerAttributes attr{};
-		if(cudaPointerGetAttributes(&attr, raw_pointer_cast(hint)) != cudaSuccess) {return ret;}
-		assert(attr.type == cudaMemoryTypeManaged);
-		cudaMemPrefetchAsync(raw_pointer_cast(ret), n*sizeof(TT), attr.device);
+		if(not hint) {
+			prefetch_to_device(ret, n*sizeof(TT), get_current_device());
+			return ret;
+		}
+		prefetch_to_device(ret, n*sizeof(TT), get_device(hint));
 		return ret;
+	}
+
+ private:
+	using device_index = int;
+	static auto get_current_device() -> device_index {
+		int device;
+		switch(cudaGetDevice(&device)) {
+			case cudaSuccess          : break;
+			case cudaErrorInvalidValue: assert(0);
+		}
+		return device;
+	}
+	static void prefetch_to_device(const_void_pointer p, size_type byte_count, device_index d) {
+		switch(cudaMemPrefetchAsync(raw_pointer_cast(p), byte_count, d)) {
+			case cudaSuccess           : break;
+			case cudaErrorInvalidValue : assert(0); break;
+			case cudaErrorInvalidDevice: assert(0); break;
+		}
+	}
+
+	static auto get_device(const_void_pointer p) -> device_index {
+		cudaPointerAttributes attr{};
+		switch(cudaPointerGetAttributes(&attr, raw_pointer_cast(p))) {
+			case cudaSuccess: break;
+			case cudaErrorInvalidDevice: assert(0); break;
+			case cudaErrorInvalidValue: assert(0); break;
+		}
+		assert(attr.type == cudaMemoryTypeManaged);
+		return attr.device;
 	}
 };
 
