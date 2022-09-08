@@ -403,7 +403,7 @@ cuda-11.7:
     - apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - /usr/local/cuda-11.7/bin/nvcc --version
     - mkdir build && cd build
-    - cmake .. -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/usr/local/cuda-11.7/bin/nvcc -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_FLAGS="-gencode arch=compute_61,code=sm_61"
+    - cmake .. -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/usr/local/cuda-11.7/bin/nvcc -DCMAKE_CXX_STANDARD=17 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_FLAGS="-gencode arch=compute_61,code=sm_61"
     - cmake --build . || make VERBOSE=1
     - ctest --output-on-failure
   needs: ["g++"]
@@ -415,7 +415,7 @@ cuda-runner:
   script:
     - mkdir build && cd build
     - /usr/local/cuda/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CUDA_FLAGS="-ccbin=g++-9" -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=70
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_ARCHITECTURES=70 -DCMAKE_CUDA_FLAGS="-ccbin=g++-9" -DCMAKE_CXX_STANDARD=17
     - make -j8 -output-sync=recurse
     - ctest --output-on-failure --timeout 600
     - ../build/include/multi/adaptors/thrust/test/speed.cu.x
