@@ -1002,7 +1002,7 @@ struct array : static_array<T, D, Alloc> {
 		swap(tmp);
 #else  // implementation with hint
 		auto&& tmp = typename array::ref{this->static_::array_alloc::allocate(
-			static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(typename array::layout_t{exs}.num_elements()), 
+			static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(typename array::layout_t{exs}.num_elements()),
 			this->data_elements()  // use as hint
 		), exs};
 		this->uninitialized_fill_n(tmp.data_elements(), static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(tmp.num_elements()), elem);
