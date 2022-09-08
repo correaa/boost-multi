@@ -926,7 +926,7 @@ int main(){
 
 ## CUDA Thrust
 
-The library works out of the box in combination with the CUDA Thrust library.
+The library works out-of-the-box in combination with the CUDA Thrust library.
 
 ```cpp
 #include <multi/array.hpp>
@@ -953,8 +953,16 @@ More specific allocators can be used to force certain Thrust backends, for examp
 	multi::array<double, 2, thrust::cuda::universal_allocator<double>> A({10,10});
 ```
 
-Multi doesn't have a dependency on Thrust; they just work well together, both in terms of semantics and efficiency.
-Certain "patches" (template specialization) can be applied to Thrust to extra efficiency and achieve near native speed by `#include<multi/adaptors/thrust.hpp>`.
+Multi doesn't have a dependency on Thrust (or bisebersa); they just work well together, both in terms of semantics and efficiency.
+Certain "patches" (template specialization) can be applied to Thrust to gain extra efficiency and achieve near native speed by adding the `#include<multi/adaptors/thrust.hpp>`.
+
+Multi can be used on existing memory in a non-invasive way via (non-owning) reference arrays:
+
+```cpp
+	// assumes raw_pointer was allocated with cudaMalloc
+	using cuda_ptr = thrust::cuda::pointer<double>;
+	multi::array_ref<double, 2, gpu_ptr> Aref({n, n}, gpu_ptr{raw_pointer});
+```
 
 ## TotalView
 
