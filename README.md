@@ -943,7 +943,7 @@ int main() {
 ```
 
 which uses the default Thrust backend (CUDA, OpenMP or TBB).
-Universal memory (accessible from normal CPU code) can be used by using `thrust::universal_allocator` instead.
+Universal memory (accessible from normal CPU code) can be used with `thrust::universal_allocator` instead.
 
 More specific allocators can be used to force certain Thrust backends, for example CUDA managed memory:
 
@@ -953,8 +953,9 @@ More specific allocators can be used to force certain Thrust backends, for examp
 	multi::array<double, 2, thrust::cuda::universal_allocator<double>> A({10,10});
 ```
 
-Multi doesn't have a dependency on Thrust (or bisebersa); they just work well together, both in terms of semantics and efficiency.
-Certain "patches" (template specialization) can be applied to Thrust to gain extra efficiency and achieve near native speed by adding the `#include<multi/adaptors/thrust.hpp>`.
+Multi doesn't have a dependency on Thrust (or bisebersa); 
+they just work well together, both in terms of semantics and efficiency.
+Certain "patches" (to correct Thrust behavior) can be applied to Thrust to gain extra efficiency and achieve near native speed by adding the `#include<multi/adaptors/thrust.hpp>`.
 
 Multi can be used on existing memory in a non-invasive way via (non-owning) reference arrays:
 
