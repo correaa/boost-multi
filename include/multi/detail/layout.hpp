@@ -603,8 +603,6 @@ struct layout_t
 		return nelems_ == 0?0:nelems_/stride_;
 	}
 
-//	constexpr auto size(dimensionality_type d) const -> size_type {return (d!=0)?sub_.size(d-1):size();}
-
 	constexpr auto stride()       -> stride_type      & {return stride_;}
 	constexpr auto stride() const -> stride_type const& {return stride_;}
 
