@@ -408,6 +408,20 @@ cuda-11.7:
     - ctest --output-on-failure
   needs: ["g++"]
 
+cuda-runner:
+  stage: test
+  tags:
+    - intel_compiler
+  script:
+    - mkdir build && cd build
+    - /usr/local/cuda/bin/nvcc --version
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_ARCHITECTURES=70 -DCMAKE_CUDA_FLAGS="-ccbin=g++-9" -DCMAKE_CXX_STANDARD=17
+    - make -j8 -output-sync=recurse
+    - ctest --output-on-failure --timeout 600
+    - ../build/include/multi/adaptors/thrust/test/speed.cu.x
+    - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
+  needs: ["cuda-11.7"]
+
 g++-cppcheck:
   stage: build
   allow_failure: false
