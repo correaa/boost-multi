@@ -816,18 +816,21 @@ struct array : static_array<T, D, Alloc> {
 
 #ifndef NOEXCEPT_ASSIGNMENT
 
- private:
-	template<class TrueType>
-	void move_allocator_if(TrueType&&     /*T*/, typename array::allocator_type&&  source  ) {this->alloc() = std::move(source);}
-	void move_allocator_if(std::true_type /*T*/, typename array::allocator_type&&  source  ) {this->alloc() = std::move(source);}
-	void move_allocator_if(std::false_type/*F*/, typename array::allocator_type&&/*source*/) {}
+// private:
+//	template<class TrueType>
+//	void move_allocator_if(TrueType&&     /*T*/, typename array::allocator_type&&  source  ) {this->alloc() = std::move(source);}
+//	void move_allocator_if(std::true_type /*T*/, typename array::allocator_type&&  source  ) {this->alloc() = std::move(source);}
+//	void move_allocator_if(std::false_type/*F*/, typename array::allocator_type&&/*source*/) {}
 
  public:
 	auto operator=(array&& other) noexcept -> array& {
 		clear();
 	//  this->base_ = std::exchange(other.base_, nullptr);  // final null assigment shouldn't be necessary?
 		this->base_ = other.base_;
-		move_allocator_if(typename allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment{}, std::move(other.alloc()));
+		if constexpr(typename allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment::value) {
+			this->alloc_ = std::move(other.alloc_);
+		}
+	//	move_allocator_if(typename allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment{}, std::move(other.alloc()));
 		// this->alloc_ = std::move(other.alloc_);
 		this->layout_mutable() = std::exchange(other.layout_mutable(), {});
 		return *this;
