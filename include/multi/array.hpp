@@ -807,7 +807,7 @@ struct array : static_array<T, D, Alloc> {
 	void swap(array& other) noexcept {
 	//	swap_allocator_if(typename allocator_traits<typename array::allocator_type>::propagate_on_container_swap{}, other.alloc());
 		using std::swap;
-		if constexpr(typename allocator_traits<typename array::allocator_type>::propagate_on_container_swap::value) {
+		if constexpr(allocator_traits<typename array::allocator_type>::propagate_on_container_swap::value) {
 			using std::swap; swap(this->alloc(), other.alloc());
 		}
 		swap(this->base_, other.base_);
