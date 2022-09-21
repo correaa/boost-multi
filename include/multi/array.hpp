@@ -827,7 +827,7 @@ struct array : static_array<T, D, Alloc> {
 		clear();
 	//  this->base_ = std::exchange(other.base_, nullptr);  // final null assigment shouldn't be necessary?
 		this->base_ = other.base_;
-		if constexpr(typename allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment::value) {
+		if constexpr(allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment::value) {
 			this->alloc() = std::move(other.alloc());
 		}
 	//	move_allocator_if(typename allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment{}, std::move(other.alloc()));
