@@ -797,16 +797,19 @@ struct array : static_array<T, D, Alloc> {
 	#endif
 	auto get_allocator(array const& self) -> typename array::allocator_type {return self.get_allocator();}
 
- private:
-	template<class TrueType>
-	void swap_allocator_if(TrueType&&     /*T*/, typename array::allocator_type&  source  ) {using std::swap; swap(this->alloc(), source);}
-	void swap_allocator_if(std::true_type /*T*/, typename array::allocator_type&  source  ) {using std::swap; swap(this->alloc(), source);}
-	void swap_allocator_if(std::false_type/*F*/, typename array::allocator_type&/*source*/) {}
+// private:
+//	template<class TrueType>
+//	void swap_allocator_if(TrueType&&     /*T*/, typename array::allocator_type&  source  ) {using std::swap; swap(this->alloc(), source);}
+//	void swap_allocator_if(std::true_type /*T*/, typename array::allocator_type&  source  ) {using std::swap; swap(this->alloc(), source);}
+//	void swap_allocator_if(std::false_type/*F*/, typename array::allocator_type&/*source*/) {}
 
- public:
+// public:
 	void swap(array& other) noexcept {
+	//	swap_allocator_if(typename allocator_traits<typename array::allocator_type>::propagate_on_container_swap{}, other.alloc());
 		using std::swap;
-		swap_allocator_if(typename allocator_traits<typename array::allocator_type>::propagate_on_container_swap{}, other.alloc());
+		if constexpr(typename allocator_traits<typename array::allocator_type>::propagate_on_container_swap::value) {
+			using std::swap; swap(this->alloc(), other.alloc());
+		}
 		swap(this->base_, other.base_);
 		swap(
 			this->layout_mutable(),
@@ -822,7 +825,6 @@ struct array : static_array<T, D, Alloc> {
 //	void move_allocator_if(std::true_type /*T*/, typename array::allocator_type&&  source  ) {this->alloc() = std::move(source);}
 //	void move_allocator_if(std::false_type/*F*/, typename array::allocator_type&&/*source*/) {}
 
- public:
 	auto operator=(array&& other) noexcept -> array& {
 		clear();
 	//  this->base_ = std::exchange(other.base_, nullptr);  // final null assigment shouldn't be necessary?
