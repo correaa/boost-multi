@@ -854,7 +854,7 @@ This enables the use of stack memory, with many performance advantaneges.
 For example, this code uses a buffer to allocate memory for two arrays, we will see how this buffer ends up containing the data of the arrays `"aaaabbbbbbXX"`.
 
 ```cpp
-#include <memory_resource>  // polymorphic memory resource, monotonic buffer, needs C++17
+#include <memory_resource>  // for polymorphic memory resource, monotonic buffer
 
 int main() {
 	char buffer[13] = "XXXXXXXXXXXX";  // a small buffer on the stack
