@@ -536,38 +536,12 @@ nvhpc-22.7:
     - ctest --output-on-failure
   needs: ["g++"]
 
-circle-168:
-  allow_failure: true
-  image: debian:stable  # circle is incompatible with gcc 12 lib
-  stage: build
-  script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev tar gzip wget libelf1 grep
-#    - grep __cxa_finalize /usr/include/c++/11/cxxabi.h -A10 -B10
-#    - cp /usr/include/c++/11/cxxabi.h /usr/include/c++/11/cxxabi.h.bak
-#    - sed -z 's/void\n  __cxa_finalize/int\n  __cxa_finalize/g' /usr/include/c++/11/cxxabi.h.bak > /usr/include/c++/11/cxxabi.h
-#    - grep __cxa_finalize /usr/include/c++/11/cxxabi.h -A10 -B10
-    - mkdir -p build_168 && cd build_168
-    - wget https://www.circle-lang.org/linux/build_168.tgz --no-verbose
-    - tar -zxvf build_168.tgz
-    - cd ..
-    - ls
-    - ./build_168/circle --version
-    - mkdir build && cd build
-    - CXX=`pwd`/../build_168/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DBOOST_LIBRARYDIR=/usr/lib/x86_64-linux-gnu/ -DENABLE_CIRCLE=1
-    - make VERBOSE=1
-    - ctest --output-on-failure
-  needs: ["g++"]
-
 circle-latest:
-  allow_failure: true
+  allow_failure: false
   image: debian:stable  # circle is incompatible with gcc 12 lib
   stage: build
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev tar gzip wget libelf1 grep
-#    - grep __cxa_finalize /usr/include/c++/11/cxxabi.h -A10 -B10
-#    - cp /usr/include/c++/11/cxxabi.h /usr/include/c++/11/cxxabi.h.bak
-#    - sed -z 's/void\n  __cxa_finalize/int\n  __cxa_finalize/g' /usr/include/c++/11/cxxabi.h.bak > /usr/include/c++/11/cxxabi.h
-#    - grep __cxa_finalize /usr/include/c++/11/cxxabi.h -A10 -B10
     - mkdir -p build_latest && cd build_latest
     - wget https://www.circle-lang.org/linux/build_latest.tgz --no-verbose
     - tar -zxvf build_latest.tgz
@@ -581,7 +555,7 @@ circle-latest:
   needs: ["g++"]
 
 icpc:  # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.yml
-  allow_failure: true
+  allow_failure: false
   image: debian:stable  # icpc 2022.1.2 is incompatible with gcc 12 lib
   stage: build
   script:
@@ -605,7 +579,7 @@ icpc:  # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.yml
   needs: ["g++"]
 
 icpc-backports:  # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.yml
-  allow_failure: true
+  allow_failure: false
   image: debian:stable-backports  # icpc 2022.1.2 is incompatible with gcc 12 lib
   stage: build
   script:
@@ -897,7 +871,7 @@ qmcpack-clang++:
 #    - ctest -R ppconvert --output-on-failure
 
 qmcpack-icpc:
-  allow_failure: yes
+  allow_failure: false
   image: debian:stable  # icpc 2022.1.2 is incompatible with gcc 12 lib
   stage: test
   script:
@@ -929,7 +903,7 @@ qmcpack-icpc:
   needs: ["icpc"]
 
 qmcpack-icpc-backports:
-  allow_failure: yes
+  allow_failure: false
   image: debian:stable-backports  # icpc 2022.1.2 is incompatible with gcc 12 lib
   stage: test
   script:
@@ -962,7 +936,7 @@ qmcpack-icpc-backports:
   needs: ["icpc"]
 
 qmcpack-cuda-runner:
-  allow_failure: true
+  allow_failure: false
   stage: test
   tags:
     - intel_compiler
@@ -989,7 +963,7 @@ qmcpack-cuda-runner:
   needs: ["qmcpack-g++"]
 
 qmcpack-cuda-11.7-compileonly:
-  allow_failure: true
+  allow_failure: false
   image: debian:stable
   stage: test
   script:
@@ -1053,7 +1027,7 @@ inq-clang++-latest:
 
 
 inq-cuda-11.7-compileonly:
-  allow_failure: true
+  allow_failure: false
   image: debian:stable
   stage: test
   script:
