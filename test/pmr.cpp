@@ -22,6 +22,7 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		BOOST_TEST( buffer[ 0] == '0' );  // buffer is intact when initializing without value
 		BOOST_TEST( buffer[13] == '3' );
 
+		BOOST_TEST( A.num_elements() == 2*3 );
 	//  BOOST_TEST( A[0][0] != 0. );
 	//  BOOST_TEST( A[1][2] != 0. );
 	}
