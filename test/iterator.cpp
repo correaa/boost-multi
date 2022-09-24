@@ -155,7 +155,11 @@ BOOST_AUTO_TEST_CASE(iterator_semantics) {
 	BOOST_TEST( arr.layout().stride() == ref.layout().stride());
 	BOOST_TEST( arr.layout().offset() == ref.layout().offset());
 	BOOST_TEST( arr.layout().nelems() == ref.layout().nelems());
+
+	BOOST_REQUIRE( arr.num_elements() == ref.num_elements() );
+	BOOST_REQUIRE( arr.stride() == ref.stride() );
 	BOOST_REQUIRE( arr.layout() == ref.layout() );
+
 	BOOST_REQUIRE( &multi::ref(begin(arr), end(arr)) == &arr );
 }
 
