@@ -797,16 +797,11 @@ struct array : static_array<T, D, Alloc> {
 	#endif
 	auto get_allocator(array const& self) -> typename array::allocator_type {return self.get_allocator();}
 
- private:
-	template<class TrueType>
-	void swap_allocator_if(TrueType&&     /*T*/, typename array::allocator_type&  source  ) {using std::swap; swap(this->alloc(), source);}
-	void swap_allocator_if(std::true_type /*T*/, typename array::allocator_type&  source  ) {using std::swap; swap(this->alloc(), source);}
-	void swap_allocator_if(std::false_type/*F*/, typename array::allocator_type&/*source*/) {}
-
- public:
 	void swap(array& other) noexcept {
 		using std::swap;
-		swap_allocator_if(typename allocator_traits<typename array::allocator_type>::propagate_on_container_swap{}, other.alloc());
+		if constexpr(allocator_traits<typename array::allocator_type>::propagate_on_container_swap::value) {
+			swap(this->alloc(), other.alloc());
+		}
 		swap(this->base_, other.base_);
 		swap(
 			this->layout_mutable(),
@@ -815,43 +810,31 @@ struct array : static_array<T, D, Alloc> {
 	}
 
 #ifndef NOEXCEPT_ASSIGNMENT
-
- private:
-	template<class TrueType>
-	void move_allocator_if(TrueType&&     /*T*/, typename array::allocator_type&&  source  ) {this->alloc() = std::move(source);}
-	void move_allocator_if(std::true_type /*T*/, typename array::allocator_type&&  source  ) {this->alloc() = std::move(source);}
-	void move_allocator_if(std::false_type/*F*/, typename array::allocator_type&&/*source*/) {}
-
- public:
 	auto operator=(array&& other) noexcept -> array& {
 		clear();
-	//  this->base_ = std::exchange(other.base_, nullptr);  // final null assigment shouldn't be necessary?
 		this->base_ = other.base_;
-		move_allocator_if(typename allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment{}, std::move(other.alloc()));
-		// this->alloc_ = std::move(other.alloc_);
+		if constexpr(allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment::value) {
+			this->alloc() = std::move(other.alloc());
+		}
 		this->layout_mutable() = std::exchange(other.layout_mutable(), {});
 		return *this;
 	}
 
- private:
-	template<class TrueType>
-	void copy_allocator_if(TrueType&&     /*T*/, typename array::allocator_type const&  source  ) {this->alloc() = source;}
-	void copy_allocator_if(std::true_type /*T*/, typename array::allocator_type const&  source  ) {this->alloc() = source;}
-	void copy_allocator_if(std::false_type/*F*/, typename array::allocator_type const&/*source*/) {}
-
- public:
 	auto operator=(array const& other) -> array& {
 		if(array::extensions() == other.extensions()) {
 			if(this == &other) {return *this;}  // required by cert-oop54-cpp
-			copy_allocator_if(typename allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment{}, other.alloc());
+			if constexpr(allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment::value) {
+				this->alloc() = other.alloc();
+			}
 			static_::operator=(other);
 		} else {
 			clear();
-			copy_allocator_if(typename allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment{}, other.alloc());
+			if constexpr(allocator_traits<typename array::allocator_type>::propagate_on_container_copy_assignment::value) {
+				this->alloc() = other.alloc();
+			}
 			this->layout_mutable() = other.layout();
 			array::allocate();
 			array::uninitialized_copy_elements(other.data_elements());
-			// operator=(array{other}); // calls operator=(array&&)
 		}
 		return *this;
 	}
