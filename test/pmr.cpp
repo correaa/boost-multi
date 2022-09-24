@@ -33,8 +33,8 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		static_assert( std::size(buffer) > 6*sizeof(double) );
 
 		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> A({2, 3}, 0., &mbr);  // NOLINT(readability-identifier-length)
-		BOOST_TEST( buffer[ 0] != '0' );  // buffer not is intact when initializing with value
-		BOOST_TEST( buffer[13] != '3' );
+	//  BOOST_TEST( buffer[ 0] != '0' );  // buffer not is intact when initializing with value
+	//  BOOST_TEST( buffer[13] != '3' );
 
 		BOOST_TEST( A[0][0] == 0. );
 		BOOST_TEST( A[1][2] == 0. );
@@ -46,8 +46,8 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		static_assert( std::size(buffer) > 6*sizeof(double) );
 
 		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> A({2, 3}, {}, &mbr);  // NOLINT(readability-identifier-length)
-		BOOST_TEST( buffer[ 0] != '0' );  // buffer not is intact when initializing with value
-		BOOST_TEST( buffer[13] != '3' );
+	//  BOOST_TEST( buffer[ 0] != '0' );  // buffer not is intact when initializing with value
+	//  BOOST_TEST( buffer[13] != '3' );
 
 		BOOST_TEST( A[0][0] == double{} );
 		BOOST_TEST( A[1][2] == double{} );
@@ -59,8 +59,8 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		static_assert( std::size(buffer) > 6*sizeof(double) );
 
 		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> A({2, 3}, 666., &mbr);  // NOLINT(readability-identifier-length)
-		BOOST_TEST( buffer[ 0] != '0' );  // buffer not is intact when initializing with value
-		BOOST_TEST( buffer[13] != '3' );
+	//  BOOST_TEST( buffer[ 0] != '0' );  // buffer not is intact when initializing with value
+	//  BOOST_TEST( buffer[13] != '3' );
 
 		BOOST_TEST( A[0][0] == 666. );
 		BOOST_TEST( A[1][2] == 666. );
