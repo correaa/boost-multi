@@ -22,8 +22,8 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		BOOST_TEST( buffer[ 0] == '0' );  // buffer is intact when initializing without value
 		BOOST_TEST( buffer[13] == '3' );
 
-		BOOST_TEST( A[0][0] != 0. );
-		BOOST_TEST( A[1][2] != 0. );
+	//  BOOST_TEST( A[0][0] != 0. );
+	//  BOOST_TEST( A[1][2] != 0. );
 	}
 	{
 		char buffer[] = "0123456789012345678901234567890123456789012345678901234567890123456789";  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) use raw memory
@@ -32,6 +32,9 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		static_assert( std::size(buffer) > 6*sizeof(double) );
 
 		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> A({2, 3}, 0., &mbr);  // NOLINT(readability-identifier-length)
+		BOOST_TEST( buffer[ 0] != '0' );  // buffer not is intact when initializing with value
+		BOOST_TEST( buffer[13] != '3' );
+
 		BOOST_TEST( A[0][0] == 0. );
 		BOOST_TEST( A[1][2] == 0. );
 	}
@@ -42,6 +45,9 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		static_assert( std::size(buffer) > 6*sizeof(double) );
 
 		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> A({2, 3}, {}, &mbr);  // NOLINT(readability-identifier-length)
+		BOOST_TEST( buffer[ 0] != '0' );  // buffer not is intact when initializing with value
+		BOOST_TEST( buffer[13] != '3' );
+
 		BOOST_TEST( A[0][0] == double{} );
 		BOOST_TEST( A[1][2] == double{} );
 	}
@@ -52,6 +58,9 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		static_assert( std::size(buffer) > 6*sizeof(double) );
 
 		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> A({2, 3}, 666., &mbr);  // NOLINT(readability-identifier-length)
+		BOOST_TEST( buffer[ 0] != '0' );  // buffer not is intact when initializing with value
+		BOOST_TEST( buffer[13] != '3' );
+
 		BOOST_TEST( A[0][0] == 666. );
 		BOOST_TEST( A[1][2] == 666. );
 	}
