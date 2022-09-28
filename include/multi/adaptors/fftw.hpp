@@ -723,8 +723,9 @@ class fft_iterator {
 	auto operator*() const {return reference{*base_};}
 };
 
-template<class Array>
+template<class Origin, class Array>
 class fft_range {
+	Origin origin_;
 	Array ref_;
 	using which_type = std::array<fftw::sign, std::decay_t<Array>::rank_v>;
 	which_type which_;
@@ -737,12 +738,28 @@ class fft_range {
 
 	using decay_type = typename std::decay_t<Array>::decay_type;
 
-	explicit fft_range(Array&& in, which_type which)
-	: ref_{std::forward<Array>(in)}, which_{which} {}
+	explicit fft_range(Origin&& origin, Array&& in, which_type which)
+	: origin_{std::forward<Origin>(origin)}, ref_{std::forward<Array>(in)}, which_{which} {}
 
-//	explicit fft_range(Array&& in, which_type which)
-//	: ref_{std::forward<Array>(in)}, which_{which} {}
-//	: first_{in.begin()}, n_{in.size()}, which_{which} {}
+	operator decay_type() && {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+		if constexpr(std::is_same_v<Origin, decay_type&&>) {
+			decay_type the_ret{std::forward<Origin>(origin_)};
+			the_ret.reshape(this->extensions());
+
+			fftw::dft(
+				which_,
+				ref_,
+				the_ret
+			);
+
+			return the_ret;
+		} else {
+			return decay_type{this->begin(), this->end()};
+		}
+	}
+
+	auto operator+() const& {return static_cast<decay_type>(          *this );}
+	auto operator+()     && {return static_cast<decay_type>(std::move(*this));}
 
 	auto begin() const {return iterator{ref_.begin(), which_};}
 	auto end()   const {return iterator{ref_.end()  , which_};}
@@ -751,29 +768,22 @@ class fft_range {
 	auto extensions()   const {return ref_.extensions();}
 	auto num_elements() const {return ref_.num_elements();}
 
-//	operator decay_type() && {  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
-//		decay_type ret(std::move(ref_));
-//		ret = *this;
-//		return ret;
-//	}
-
-	auto operator+() const {return decay_type(*this);}
 	auto base() const {return ref_.base();}
 
 	auto rotated() const {
 		auto new_which = which_;
 		std::rotate(new_which.begin(), new_which.begin() + 1, new_which.end());
-		return fft_range<std::decay_t<decltype(ref_.rotated())>>{ref_.rotated(), new_which};
+		return fft_range<Origin, std::decay_t<decltype(ref_.rotated())>>{origin_, ref_.rotated(), new_which};
 	}
 	auto unrotated() const {
 		auto new_which = which_;
 		std::rotate(new_which.rbegin(), new_which.rbegin() + 1, new_which.rend());
-		return fft_range<std::decay_t<decltype(ref_.unrotated())>>{ref_.unrotated(), new_which};
+		return fft_range<Origin, std::decay_t<decltype(ref_.unrotated())>>{origin_, ref_.unrotated(), new_which};
 	}
 	auto transposed() const {
 		auto new_which = which_;
 		std::swap(std::get<0>(new_which), std::get<1>(new_which));
-		return fft_range<std::decay_t<decltype(ref_.transposed())>>{ref_.transposed(), new_which};
+		return fft_range<Origin, std::decay_t<decltype(ref_.transposed())>>{std::forward<Origin>(origin_), ref_.transposed(), new_which};
 	}
 
 	template<class... FBNs>
@@ -788,21 +798,28 @@ class fft_range {
 				return fbn;
 			}
 		);
-		return fft_range<std::decay_t<decltype(ref_())>>{ref_(), new_which};
+		return fft_range<Origin, std::decay_t<decltype(ref_())>>{origin_, ref_(), new_which};
 	}
 };
 
 template<class Array>
-auto  ref(Array&& in) {return fft_range<Array&&>{std::forward<Array>(in), {}};}
+auto ref(Array&& in) {
+	return fft_range<Array&&, Array&&> {
+		std::forward<Array>(in),
+		std::forward<Array>(in), {}
+	};
+}
 
-template<class T, dimensionality_type D, class... As>
-auto  ref(multi::array<T, D, As...>&& in) {return fft_range<multi::array<T, D, As...>>{std::move(in), {}};}
+template<class Array>
+auto move(Array&& in) {
+	return ref(std::forward<Array>(in));
+}
 
 template<dimensionality_type ND = 1, class Array>
-auto  fft(Array&& in) {
+auto fft(Array&& in) {
 	std::array<fftw::sign, std::decay_t<Array>::rank_v> which{};
 	for(auto it = which.begin(); it != which.begin() + ND; ++it) {*it = fftw::forward ;}
-	return fft_range<Array&&>{std::forward<Array>(in), which};
+	return fft_range<Array&&, Array&&>{std::forward<Array>(in), std::forward<Array>(in), which};
 }
 template<dimensionality_type ND = 1, class Array>
 auto ifft(Array&& in) {
