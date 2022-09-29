@@ -906,9 +906,7 @@ In this other [example](https://godbolt.org/z/MTodPEnsr), a 2D Multi array (or s
 #include<range/v3/all.hpp>
 
 template<class MultiArray2D>
-void subtract_mean_columnwise(
-    MultiArray2D&& arr
-) {
+void subtract_mean_columnwise(MultiArray2D&& arr) {
     auto&& tarr = arr.transposed();
     auto const column_mean = 
         tarr
