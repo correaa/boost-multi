@@ -869,13 +869,23 @@ int main() {
 
 The library supports classic allocators (`std::allocator` by default) and also allocators from other libraries (see Thurst section).
 
-## Range v3
+## Range-v3
+
+The library works out of the box with Eric Niebler's Range-v3 library.
+The library helps removing iterators from the code when possible.
+
+Every Multi object, can be regarded as range. 
+Array values and (subarray) references are interpreted as Range-views.
+
+For example for a 2D array `d2D`, `d2D` itself is interpreted as a ranges of rows.
+Each row, in turn, is interpreted as a range of elements.
+In this way, `d2D.transposed()` is interpreted as a range of columns (of the original array), and each column a range of elements (arranged vertically in the original array)
 
 ```cpp
 #include <range/v3/all.hpp>
 int main(){
 
-	multi::array const d2D = {
+	multi::array<int, 2> const d2D = {
 		{ 0,  1,  2,  3}, 
 		{ 5,  6,  7,  8}, 
 		{10, 11, 12, 13}, 
@@ -886,6 +896,32 @@ int main(){
 
 	static_assert(ranges::RandomAccessIterator<multi::array<double, 1>::iterator>{});
 	static_assert(ranges::RandomAccessIterator<multi::array<double, 2>::iterator>{});
+}
+```
+
+In this other [example](https://godbolt.org/z/MTodPEnsr), a 2D Multi array (or subarray) is modified such that each element of a column is subtracted the mean value of such column.
+
+```cpp
+#include<multi/array.hpp>
+#include<range/v3/all.hpp>
+
+template<class MultiArray2D>
+void subtract_mean_columnwise(
+    MultiArray2D&& arr
+) {
+    auto&& tarr = arr.transposed();
+    auto const column_mean = 
+        tarr
+        | ranges::views::transform([](auto const& row) {return ranges::accumulate(row, 0.0)/row.size();})
+        | ranges::to<multi::array<double, 1>>
+    ;
+
+    ranges::transform(
+        arr.elements(),
+        column_mean | ranges::views::cycle,
+        arr.elements().begin(),
+        [](auto const elem, auto const mean) {return elem - mean;}
+    );
 }
 ```
 
