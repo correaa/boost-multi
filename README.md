@@ -872,14 +872,14 @@ The library supports classic allocators (`std::allocator` by default) and also a
 ## Range-v3
 
 The library works out of the box with Eric Niebler's Range-v3 library.
-The library helps removing iterators from the code when possible.
+The library helps removing explicit iterators (e.g. `begin`, `end`) from the code when possible.
 
-Every Multi object, can be regarded as range. 
-Array values and (subarray) references are interpreted as Range-views.
+Every Multi array object can be regarded as range.
+Every subarray references (and array values) are interpreted as range views.
 
-For example for a 2D array `d2D`, `d2D` itself is interpreted as a ranges of rows.
+For example for a 2D array `d2D`, `d2D` itself is interpreted as a range of rows.
 Each row, in turn, is interpreted as a range of elements.
-In this way, `d2D.transposed()` is interpreted as a range of columns (of the original array), and each column a range of elements (arranged vertically in the original array)
+In this way, `d2D.transposed()` is interpreted as a range of columns (of the original array), and each column a range of elements (arranged vertically in the original array).
 
 ```cpp
 #include <range/v3/all.hpp>
