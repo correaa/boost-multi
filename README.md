@@ -782,7 +782,7 @@ Due to the priority of arbitrary layouts, the `mdspan` research team didn't find
 The ultimate reason is that arbitrary layouts do not compose well across subdimensions.
 This imposes certain limitations in the library such as ad-hoc slicing and subarray.
 
-Here it is a table with comparison, also the libraries can be compare [here](https://godbolt.org/z/1b6hKMr3K)
+Here it is a table with comparison, also the libraries can be compare [here](https://godbolt.org/z/5Pbrs5fEd)
 
 |                         | Multi                                                           | mdspan                                      |
 |---                      | ---                                                             | ---                                         | 
@@ -792,6 +792,8 @@ Here it is a table with comparison, also the libraries can be compare [here](htt
 | Compile-time dim size   | no                                                              | **yes**, via template paramaters `mdspan{T*, extent<16, dynamic_extents>{32} }` |   |
 | Array values (owning data) | **yes**, via `multi::array<T, D>({x1, x2, ..., xD})`             | no, (planned `mdarray`)                     |
 | Value semantic (Regular) | **yes**, via cctor, mctor, assign, massign, auto decay of views | no, and not planned                          |
+| const-propagation Reference semantic | **yes**, via `const` or `const&` | no, const mdspan elements are assignable!                          |
+| References w/no-rebinding   | **yes**, assignment is deep | no, assignment of mdspan rebinds!                         |
 | Element access              | **yes**, via `A(i, j, ...)`                                     | **yes**, via `A(i, j, ...)`                          |
 | Partial element access      | **yes**, via `A[i]` or `A[i][j]`                                | **yes**, via `submdspan(A, i, full_extent)`                               |
 | Subarray views              | **yes**, via `A({0, 2}, {1, 2})` or `A(1, {1, 2})`              | **yes**, via `submdspan(A, std::tuple{0, 2}, std::tuple{0, 2})` |
