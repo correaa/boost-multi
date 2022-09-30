@@ -796,7 +796,7 @@ Here it is a table with comparison, also the libraries can be compare [here](htt
 | Partial element access      | **yes**, via `A[i]` or `A[i][j]`                                | **yes**, via `submdspan(A, i, all`                               |
 | Subarray views              | **yes**, via `A({0, 2}, {1, 2})` or `A(1, {1, 2})`              | **yes**, via `submdspan(A, std::tuple{0, 2}, std::tuple{0, 2})` |
 | Subarray with lower dim     | **yes**, via `A(1, {1, 2})`                                     | **yes**, via `submdspan(A, 1, std::tuple{0, 2})` |
-| Subarray w/well def layout  | **yes** (strided layout)                                     | **no**                  |
+| Subarray w/well def layout  | **yes** (strided layout)                                     | no                  |
 | Custom Alloctors            | **yes**, via `multi::array<T, D, Alloc>`                        | no (no allocation or ownership)             |
 | PMR Alloctors               | **yes**, via `multi::pmr::array<T, D>`                          | no (no allocation or ownership)             |
 | Fancy pointers / references | **yes**, via `multi::array<T, D, FancyAlloc>` or views          | no                                          |
@@ -807,8 +807,10 @@ Here it is a table with comparison, also the libraries can be compare [here](htt
 | Flattening of elements      | **yes**, via `A.elements()` range (efficient representation)    | **yes**, but via indices roundtrip (inefficient)              |
 | Iterators                | **yes**, standard compliant, random-access-iterator            | no, or very limited              |
 | Multidimensional iterators (cursors) | **yes** (experimental)            | no              |
-| STL algorithms or Ranges | **yes**                      | **no**, limited via `std::cartesian_product`                         |
+| STL algorithms or Ranges | **yes**                      | no, limited via `std::cartesian_product`                         |
 | Compatibility with Boost | **yes**, serialization, interprocess  (see below)      | no                            |
+| Compatibility with Thrust | **yes**, via flatten views (ad-hoc loop fusion), fancy-pointers/-references      | no                         |
+
 
 ## Serialization
 
