@@ -740,7 +740,75 @@ int main() {
 The fundamental goal of the library is that the arrays and iterators can be used with STL algorithms out-of-the-box with a reasonable efficiency.
 The most dramatic example of this is that `std::sort` works with array as it is shown in a previous example.
 
-Along with STL itself, the library tries to interact with other existing quality C++ libraries described below.
+Along with STL itself, the library tries to interact with other existing quality C++ libraries listed below.
+
+### Ranges (C++20)
+
+Although no exhaustive test has been performed, the library is expected to work with STL ranges. 
+The library works well with Ranges-v3 which is approximately a superset of STL ranges (see example below).
+
+### Polymorphic Memory Resources
+
+The library is compatible with C++17's polymorphic memory resources (PMR) which allows using preallocated buffers as described in this example. 
+This enables the use of stack memory, with many performance advantaneges.
+For example, this code uses a buffer to allocate memory for two arrays, we will see how this buffer ends up containing the data of the arrays `"aaaabbbbbbXX"`.
+
+```cpp
+#include <memory_resource>  // for polymorphic memory resource, monotonic buffer
+
+int main() {
+	char buffer[13] = "XXXXXXXXXXXX";  // a small buffer on the stack
+	std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};
+
+	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> A({2, 2}, 'a', &pool);
+	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> B({3, 2}, 'b', &pool);
+
+	assert( buffer == std::string{"aaaabbbbbbXX"} );
+}
+```
+
+The library supports classic allocators (`std::allocator` by default) and also allocators from other libraries (see Thurst section).
+
+### Comparison with `mdspan` (projected for C++23)
+
+C++23 will provide `mdspan` a non-owning multidimensional array.
+This is a good point to compare it.
+Although the goals are similar, the two libraries differ in their generality and approach; in a few words:
+
+The Multi library concentrates in well defined value- and reference-semantics of arbitrary memory types with regularly arranged elements (distributions described by strides and offsets) and extreme compatibility with STL algorithms (via iterators) and other fundamental libraries.
+
+`mdspan` concetrates in arbitrary layouts for non-owining memory of a single type (described by raw pointers).
+Due to the priority of arbitrary layouts, the `mdspan` research team didn't find efficient ways to introduce iterators into the library and the compatibility with respect to the rest of the STL is therefore lacking.
+The ultimate reason is that arbitrary layouts do not compose well across subdimensions.
+This imposes certain limitations in the library such as ad-hoc slicing and subarray.
+
+Here it is a table with comparison, also the libraries can be compare [here](https://godbolt.org/z/1b6hKMr3K)
+
+|                         | Multi                                                           | mdspan                                      |
+|---                      | ---                                                             | ---                                         | 
+| External Deps            | none (Standard Library C++17)      | none (Standard Library C++17)     |
+| Non-owning view of data | **yes**, via `multi::array_ref<T, D>(Tptr, {x1, x2, ..., xD})`      | **yes**, via `mdspan m{T*, extents{x1, x2, ..., xD}};`     |
+| Arbritary number of dim | **yes**, via positive dimension (compile-time) parameter `D`        | **yes**, same                                   |
+| Compile-time dim size   | no                                                              | **yes**, via template paramaters `mdspan{T*, extent<16, dynamic_extents>{32} }` |   |
+| Array values (owning data) | **yes**, via `multi::array<T, D>({x1, x2, ..., xD})`             | no, (planned `mdarray`)                     |
+| Value semantic (Regular) | **yes**, via cctor, mctor, assign, massign, auto decay of views | no, and not planned                          |
+| Element access              | **yes**, via `A(i, j, ...)`                                     | **yes**, via `A(i, j, ...)`                          |
+| Partial element access      | **yes**, via `A[i]` or `A[i][j]`                                | **yes**, via `submdspan(A, i, all`                               |
+| Subarray views              | **yes**, via `A({0, 2}, {1, 2})` or `A(1, {1, 2})`              | **yes**, via `submdspan(A, std::tuple{0, 2}, std::tuple{0, 2})` |
+| Subarray with lower dim     | **yes**, via `A(1, {1, 2})`                                     | **yes**, via `submdspan(A, 1, std::tuple{0, 2})` |
+| Subarray w/well def layout  | **yes** (strided layout)                                     | **no**                  |
+| Custom Alloctors            | **yes**, via `multi::array<T, D, Alloc>`                        | no (no allocation or ownership)             |
+| PMR Alloctors               | **yes**, via `multi::pmr::array<T, D>`                          | no (no allocation or ownership)             |
+| Fancy pointers / references | **yes**, via `multi::array<T, D, FancyAlloc>` or views          | no                                          |
+| Strided Layout              | **yes**                                                         | **yes**                                         |
+| Fortran-ordering            | **yes**, for views, e.g. resulted from transposed views         | **yes** (only views are supported)              |
+| Zig-zag / Hilbert ordering  | no                                                          | **yes**, via arbitrary layouts (but no inverse or flattening) |
+| Arbitrary layout            | no                                                          | **yes**, possibly inneficient, no efficient slicing |
+| Flattening of elements      | **yes**, via `A.elements()` range (efficient representation)    | **yes**, but via indices roundtrip (inefficient)              |
+| Iterators                | **yes**, standard compliant, random-access-iterator            | **no** or very limited              |
+| Multidimensional iterators (cursors) | **yes**, experimental            | **no**              |
+| STL algorithms or Ranges | **yes**                      | **no**, limited via `std::cartesian_product`                         |
+| Compatibility with Boost | **yes**, serialization, interprocess  (see below)      | **no**                            |
 
 ## Serialization
 
@@ -846,28 +914,6 @@ Here it is a comparison of speeds when (de)serializing a 134 MB 4-dimensional ar
 | Binary (Boost)               | 134 MB        | 5200.  MB/sec - 1600.  MB/sec  |  0.02 sec -   0.1 sec |
 | gzip-XML (Cereal)            | 191 MB        |    2.  MB/sec -    4.  MB/sec  | 61    sec  - 32   sec |
 | gzip-XML (Boost)             | 207 MB        |    8.  MB/sec -    8.  MB/sec  | 16.1  sec  - 15.9 sec |
-
-## Polymorphic Memory Resources
-
-The library is compatible with C++17's polymorphic memory resources (PMR) which allows using preallocated buffers as described in this example. 
-This enables the use of stack memory, with many performance advantaneges.
-For example, this code uses a buffer to allocate memory for two arrays, we will see how this buffer ends up containing the data of the arrays `"aaaabbbbbbXX"`.
-
-```cpp
-#include <memory_resource>  // for polymorphic memory resource, monotonic buffer
-
-int main() {
-	char buffer[13] = "XXXXXXXXXXXX";  // a small buffer on the stack
-	std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};
-
-	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> A({2, 2}, 'a', &pool);
-	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> B({3, 2}, 'b', &pool);
-
-	assert( buffer == std::string{"aaaabbbbbbXX"} );
-}
-```
-
-The library supports classic allocators (`std::allocator` by default) and also allocators from other libraries (see Thurst section).
 
 ## Range-v3
 
