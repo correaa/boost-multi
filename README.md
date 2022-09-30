@@ -771,13 +771,13 @@ The library supports classic allocators (`std::allocator` by default) and also a
 
 ### Comparison with `mdspan` (projected for C++23)
 
-C++23 will provide `mdspan` a non-owning multidimensional array.
-This is a good point to compare it.
+C++23 will provide `mdspan`, a non-owning multidimensional array.
+This is a good point to compare the two libraries.
 Although the goals are similar, the two libraries differ in their generality and approach; in a few words:
 
-The Multi library concentrates in well defined value- and reference-semantics of arbitrary memory types with regularly arranged elements (distributions described by strides and offsets) and extreme compatibility with STL algorithms (via iterators) and other fundamental libraries.
+The Multi library concentrates in _well defined value- and reference-semantics of arbitrary memory types with regularly arranged elements_ (distributions described by strides and offsets) and _extreme compatibility with STL algorithms_ (via iterators) and other fundamental libraries.
 
-`mdspan` concetrates in arbitrary layouts for non-owining memory of a single type (described by raw pointers).
+`mdspan` concetrates in _arbitrary layouts_ for non-owining memory of a single type (described by raw pointers).
 Due to the priority of arbitrary layouts, the `mdspan` research team didn't find efficient ways to introduce iterators into the library and the compatibility with respect to the rest of the STL is therefore lacking.
 The ultimate reason is that arbitrary layouts do not compose well across subdimensions.
 This imposes certain limitations in the library such as ad-hoc slicing and subarray.
