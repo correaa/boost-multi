@@ -793,7 +793,7 @@ Here it is a table with comparison, also the libraries can be compare [here](htt
 | Array values (owning data) | **yes**, via `multi::array<T, D>({x1, x2, ..., xD})`             | no, (planned `mdarray`)                     |
 | Value semantic (Regular) | **yes**, via cctor, mctor, assign, massign, auto decay of views | no, and not planned                          |
 | Element access              | **yes**, via `A(i, j, ...)`                                     | **yes**, via `A(i, j, ...)`                          |
-| Partial element access      | **yes**, via `A[i]` or `A[i][j]`                                | **yes**, via `submdspan(A, i, all`                               |
+| Partial element access      | **yes**, via `A[i]` or `A[i][j]`                                | **yes**, via `submdspan(A, i, full_extent)`                               |
 | Subarray views              | **yes**, via `A({0, 2}, {1, 2})` or `A(1, {1, 2})`              | **yes**, via `submdspan(A, std::tuple{0, 2}, std::tuple{0, 2})` |
 | Subarray with lower dim     | **yes**, via `A(1, {1, 2})`                                     | **yes**, via `submdspan(A, 1, std::tuple{0, 2})` |
 | Subarray w/well def layout  | **yes** (strided layout)                                     | no                  |
