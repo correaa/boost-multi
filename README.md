@@ -810,7 +810,7 @@ Here it is a table with comparison, also the libraries can be compare [here](htt
 | STL algorithms or Ranges | **yes**                      | no, limited via `std::cartesian_product`                         |
 | Compatibility with Boost | **yes**, serialization, interprocess  (see below)      | no                            |
 | Compatibility with Thrust | **yes**, via flatten views (ad-hoc loop fusion), fancy-pointers/-references      | no                         |
-| Used in production       | [QMCPACK](https://qmcpack.org/), [INQ](https://gitlab.com/npneq/inq) | ? |
+| Used in production       | [QMCPACK](https://qmcpack.org/), [INQ](https://gitlab.com/npneq/inq) | ? , experience from Kokkos incarnation |
 
 ## Serialization
 
