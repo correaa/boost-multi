@@ -1037,7 +1037,7 @@ More specific allocators can be used to force certain Thrust backends, for examp
 	multi::array<double, 2, thrust::cuda::universal_allocator<double>> A({10,10});
 ```
 
-Multi doesn't have a dependency on Thrust (or bisebersa); 
+Multi doesn't have a dependency on Thrust (or viseversa); 
 they just work well together, both in terms of semantics and efficiency.
 Certain "patches" (to correct Thrust behavior) can be applied to Thrust to gain extra efficiency and achieve near native speed by adding the `#include<multi/adaptors/thrust.hpp>`.
 
