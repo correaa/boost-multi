@@ -805,10 +805,10 @@ Here it is a table with comparison, also the libraries can be compare [here](htt
 | Zig-zag / Hilbert ordering  | no                                                          | **yes**, via arbitrary layouts (but no inverse or flattening) |
 | Arbitrary layout            | no                                                          | **yes**, possibly inneficient, no efficient slicing |
 | Flattening of elements      | **yes**, via `A.elements()` range (efficient representation)    | **yes**, but via indices roundtrip (inefficient)              |
-| Iterators                | **yes**, standard compliant, random-access-iterator            | **no** or very limited              |
-| Multidimensional iterators (cursors) | **yes**, experimental            | **no**              |
+| Iterators                | **yes**, standard compliant, random-access-iterator            | no, or very limited              |
+| Multidimensional iterators (cursors) | **yes** (experimental)            | no              |
 | STL algorithms or Ranges | **yes**                      | **no**, limited via `std::cartesian_product`                         |
-| Compatibility with Boost | **yes**, serialization, interprocess  (see below)      | **no**                            |
+| Compatibility with Boost | **yes**, serialization, interprocess  (see below)      | no                            |
 
 ## Serialization
 
