@@ -786,7 +786,7 @@ Here it is a table with comparison, also the libraries can be compare [here](htt
 
 |                         | Multi                                                           | mdspan                                      |
 |---                      | ---                                                             | ---                                         | 
-| External Deps            | none (Standard Library C++17)      | none (Standard Library C++17)     |
+| External Deps            | no (Standard Library C++17)      | no (Standard Library)     |
 | Non-owning view of data | **yes**, via `multi::array_ref<T, D>(Tptr, {x1, x2, ..., xD})`      | **yes**, via `mdspan m{T*, extents{x1, x2, ..., xD}};`     |
 | Arbritary number of dim | **yes**, via positive dimension (compile-time) parameter `D`        | **yes**, same                                   |
 | Compile-time dim size   | no                                                              | **yes**, via template paramaters `mdspan{T*, extent<16, dynamic_extents>{32} }` |   |
