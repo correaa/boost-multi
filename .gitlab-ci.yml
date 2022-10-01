@@ -17,6 +17,7 @@ g++:
     - cmake --build .
     - ctest --output-on-failure
     - make install
+    - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
 
 g++-debug:
   stage: build
