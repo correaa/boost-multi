@@ -161,7 +161,7 @@ BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark_syntax) {
 	using complex = std::complex<double>;
 
 	auto const in = [] {
-		multi::array<complex, 4> ret({32, 90, 98, 96});
+		multi::array<complex, 4> ret({6, 12, 12, 12});
 		std::generate(ret.data_elements(), ret.data_elements() + ret.num_elements(),
 			[eng = std::default_random_engine {std::random_device {}()},
 				uniform_01 = std::uniform_real_distribution<>{}]() mutable{
