@@ -795,7 +795,7 @@ Here it is a table with comparison, also the libraries can be compare [here](htt
 | const-propagation Reference semantic | **yes**, via `const` or `const&` | no, const mdspan elements are assignable!                          |
 | References w/no-rebinding   | **yes**, assignment is deep | no, assignment of mdspan rebinds!                         |
 | Element access              | **yes**, via `A(i, j, ...)`                                     | **yes**, via `A(i, j, ...)`                          |
-| Partial element access      | **yes**, via `A[i]` or `A[i][j]`                                | **yes**, via `submdspan(A, i, full_extent)`                               |
+| Partial element access      | **yes**, via `A[i]` or `A(i, multi::all)`           | **yes**, via `submdspan(A, i, full_extent)`                               |
 | Subarray views              | **yes**, via `A({0, 2}, {1, 2})` or `A(1, {1, 2})`              | **yes**, via `submdspan(A, std::tuple{0, 2}, std::tuple{0, 2})` |
 | Subarray with lower dim     | **yes**, via `A(1, {1, 2})`                                     | **yes**, via `submdspan(A, 1, std::tuple{0, 2})` |
 | Subarray w/well def layout  | **yes** (strided layout)                                     | no                  |
