@@ -625,6 +625,7 @@ auto copy(In const& in) -> R
 {//->decltype(copy(i, R(extensions(i), get_allocator(i))), R()){
 	return copy(in, R(extensions(in), get_allocator(in)));}
 
+#if 0
 template<typename In, class R=typename std::decay_t<In>::decay_type>
 auto move(In&& in) {
 	if(in.is_compact()) {
@@ -638,6 +639,7 @@ auto move(In&& in) {
 	}
 	return copy(std::forward<In>(in));
 }
+#endif
 
 template<typename T, dimensionality_type D, class P, class R=typename multi::array<T, D>>
 auto copy(multi::basic_array<T, D, multi::move_ptr<T, P>>&& array) -> R {
@@ -798,7 +800,7 @@ class fft_range {
 				return fbn;
 			}
 		);
-		return fft_range<Origin, std::decay_t<decltype(ref_())>>{origin_, ref_(), new_which};
+		return fft_range<Origin, std::decay_t<decltype(ref_())>>{std::forward<Origin>(origin_), ref_(), new_which};
 	}
 };
 
@@ -810,21 +812,19 @@ auto ref(Array&& in) {
 	};
 }
 
-template<class Array>
-auto move(Array&& in) {
-	return ref(std::forward<Array>(in));
-}
+template<class Array> auto move(Array& in) {return fftw::ref(std::move(in));}
 
 template<dimensionality_type ND = 1, class Array>
 auto fft(Array&& in) {
 	std::array<fftw::sign, std::decay_t<Array>::rank_v> which{};
-	for(auto it = which.begin(); it != which.begin() + ND; ++it) {*it = fftw::forward ;}
+	std::fill_n(which.begin(), ND, fftw::forward);
 	return fft_range<Array&&, Array&&>{std::forward<Array>(in), std::forward<Array>(in), which};
 }
+
 template<dimensionality_type ND = 1, class Array>
 auto ifft(Array&& in) {
 	std::array<fftw::sign, Array::rank_v> which{};
-	for(auto it = which.begin(); it != which.begin() + ND; ++it) {*it = fftw::backward;}
+	std::fill_n(which.begin(), ND, fftw::backward);
 	return fft_range{in, which};
 }
 

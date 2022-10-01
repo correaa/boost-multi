@@ -264,3 +264,25 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_moveassign) {
 	}
 }
 
+BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_fftwmove) {
+	multi::array<complex, 2> in = {
+		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
+		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
+		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
+		{    3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
+		{   31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+	};
+
+	{
+		auto const in_copy = in;
+		auto* const in_base = in.base();
+
+		multi::array<complex, 2> in2;
+		in2 = multi::fftw::move(in).transposed();
+
+		BOOST_REQUIRE( in2 == in_copy.transposed() );
+		BOOST_REQUIRE( in2.base() == in_base );
+		BOOST_REQUIRE( in.is_empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
+	}
+}
+
