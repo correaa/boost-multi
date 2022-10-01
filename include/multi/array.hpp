@@ -162,12 +162,12 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 
 	template<
 		class Range, class = std::enable_if_t<not std::is_base_of<static_array, std::decay_t<Range>>{}>,
-		class = decltype(/*static_array*/(std::declval<Range&&>().begin() - std::declval<Range&&>().end())),  // instantiation of static_array here gives a compiler error in 11.0, partially defined type?
-		class = std::enable_if_t<not is_basic_array<Range&&>{}>
+		class = decltype(/*static_array*/(std::declval<Range const&>().begin() - std::declval<Range const&>().end())),  // instantiation of static_array here gives a compiler error in 11.0, partially defined type?
+		class = std::enable_if_t<not is_basic_array<Range const&>{}>
 	>
 	// cppcheck-suppress noExplicitConstructor ; because I want to use equal for lazy assigments form range-expressions // NOLINTNEXTLINE(runtime/explicit)
-	static_array(Range&& rng)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
-	: static_array{std::forward<Range>(rng).begin(), std::forward<Range>(rng).end()} {}
+	static_array(Range const& rng)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
+	: static_array{rng.begin(), rng.end()} {}
 
 	template<class TT>
 	auto uninitialized_fill_elements(TT const& value) {
@@ -854,7 +854,7 @@ struct array : static_array<T, D, Alloc> {
 			reshape(other.extensions());
 			static_::operator=(other);
 		} else {
-			operator=(static_cast<array>(other));
+			operator=(static_cast<array>(std::forward<Range>(other)));
 		}
 		return *this;
 	}
