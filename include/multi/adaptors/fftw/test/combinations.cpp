@@ -177,7 +177,7 @@ BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark_syntax) {
 	using clock = std::chrono::high_resolution_clock;
 	{
 		auto const tick = clock::now();
-		multi::array<complex, 4> out({32, 128, 128, 128});
+		multi::array<complex, 4> out({6, 12, 12, 12});
 		out = multi::fftw::ref(in)(fftw::none, fftw::forward, fftw::forward, fftw::forward);
 		BOOST_REQUIRE( out.extensions() == in.extensions() );
 		auto time = std::chrono::duration<double>(clock::now() - tick);
