@@ -177,19 +177,6 @@ clang++-9-asan:
     - ctest --output-on-failure
   needs: ["clang++"]
 
-clang++-11:
-  image: debian:stable
-  stage: build
-  script:
-    - apt-get update && apt-get install --no-install-recommends -y --quiet clang-11 pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
-    - ln --symbolic --force . ../multi
-    - mkdir build && cd build
-    - clang++-11 --version
-    - CXX=clang++-11 cmake ..
-    - cmake --build . --verbose -- --quiet --no-print-directory
-    - ctest --output-on-failure
-  needs: ["clang++"]
-
 clang++-std20:
   stage: build
   script:
