@@ -178,14 +178,14 @@ clang++-9-asan:
   needs: ["clang++"]
 
 clang++-11:
-  image: debian:stable
+  image: debian
   stage: build
   script:
-    - apt-get update && apt-get install --no-install-recommends -y --quiet clang-11 pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet clang-12 pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
     - ln --symbolic --force . ../multi
-    - clang++-11 --version
+    - clang++-12 --version
     - mkdir build && cd build
-    - CXX=clang++-11 cmake ..
+    - CXX=clang++-12 cmake ..
     - cmake --build . --verbose -- --quiet --no-print-directory
     - ctest --output-on-failure
   needs: ["clang++"]
