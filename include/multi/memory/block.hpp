@@ -24,14 +24,14 @@ using byte = std::byte;
 #endif
 
 template<
-	typename Ptr = byte*, 
+	typename Ptr = byte*,
 	typename Diff = typename std::pointer_traits<Ptr>::difference_type
 > 
 struct block;
 
 namespace detail {
 template<typename Ptr, typename Difference>
-struct basic_block {//: std::pointer_traits<Ptr>{
+struct basic_block {
 	using pointer = typename std::pointer_traits<Ptr>::pointer; // basic_block? block<Ptr>?
 	using element_type = typename std::pointer_traits<Ptr>::element_type;
 	using difference_type = Difference;//typename std::pointer_traits<Ptr>::difference_type;
