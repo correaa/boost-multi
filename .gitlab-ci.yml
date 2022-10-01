@@ -178,6 +178,7 @@ clang++-9-asan:
   needs: ["clang++"]
 
 clang++-11:
+  image: debian:stable
   stage: build
   script:
     - apt-get update && apt-get install --no-install-recommends -y --quiet clang-11 pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
