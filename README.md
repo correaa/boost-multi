@@ -9,8 +9,8 @@ _© Alfredo A. Correa, 2018-2022_
 
 `Multi` provides multidimensional array access to contiguous or regularly contiguous memory (or ranges).
 
-This library, `Multi`, aims to offer manipulation of data expressed in array form with well behavied value semantics, offering compatibility with the Standard (STL) Algorithms, special memory following modern C++ design principles.
-It requires, at least, C++17. (It is C++20 ready.)
+This library aims to offer manipulation of data expressed in array form with well behaved value semantics, offering total compatibility with the Standard (STL) Algorithms, special memory, and following modern C++ design principles.
+It requires at least C++17. (It is C++20 ready.)
 
 Some features:
 
