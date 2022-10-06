@@ -952,7 +952,7 @@ qmcpack-cuda-runner:
     - ctest -R afqmc     --output-on-failure
   needs: ["qmcpack-g++"]
 
-qmcpack-cuda-11.7-compileonly:
+qmcpack-cuda-11.8-compileonly:
   allow_failure: false
   image: debian:stable
   stage: test
@@ -1016,7 +1016,7 @@ inq-clang++-latest:
 #       - ctest --output-on-failure
 
 
-inq-cuda-11.7-compileonly:
+inq-cuda-11.8-compileonly:
   allow_failure: false
   image: debian:stable
   stage: test
@@ -1037,36 +1037,10 @@ inq-cuda-11.7-compileonly:
     - cd ../..
     - mkdir build && cd build
     - g++ --version
-    - /usr/local/cuda-11.7/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda-11.7/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-11.7 -DCMAKE_CUDA_ARCHITECTURES=70
+    - /usr/local/cuda-11.8/bin/nvcc --version
+    - CUDACXX=/usr/local/cuda-11.8/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-11.8 -DCMAKE_CUDA_ARCHITECTURES=70
     - make silicon
-  needs: ["cuda-11.7"]
-
-#inq-cuda-11.7-gcc9-compileonly:
-#  allow_failure: false
-#  image: debian:stable-backports
-#  stage: test
-#  script:
-#    - export DEBIAN_FRONTEND=noninteractive
-#    - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates gnupg software-properties-common
-#    - apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/debian11/x86_64/3bf863cc.pub
-#    - add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/debian11/x86_64/ /"
-#    - add-apt-repository contrib
-#    - apt-get update
-#    - apt-get -y install cuda
-#    - apt-get install --no-install-recommends -y cmake g++ g++-9 git gfortran make libfftw3-dev libblas-dev libboost-serialization-dev libboost-test-dev libboost-timer-dev libboost-filesystem-dev liblapack-dev libopenmpi-dev pkg-config wget
-#    - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
-#    - cd inq
-#    - cd external_libs/multi
-#    - git fetch
-#    - git checkout $CI_COMMIT_BRANCH
-#    - cd ../..
-#    - mkdir build && cd build
-#    - g++-9 --version
-#    - /usr/local/cuda-11.7/bin/nvcc --version
-#    - cmake --version
-#    - CUDACXX=/usr/local/cuda-11.7/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --with-cuda-prefix=/usr/local/cuda --pass-thru -DCMAKE_CUDA_HOST_COMPILER=g++-9 -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-11.7 -DCMAKE_CUDA_ARCHITECTURES=70
-#    - make silicon
+  needs: ["cuda-11.8"]
 
 #inq-cuda-11.4-compileonly:
 #    allow_failure: true
@@ -1126,4 +1100,4 @@ inq-nvcc-ompi-runner:
     - ctest -j2 --output-on-failure --timeout 600
     - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest --output-on-failure --timeout 600; cd ..
     - rm -rf $PREFIX
-  needs: ["cuda-11.7"]
+  needs: ["cuda-11.8"]
