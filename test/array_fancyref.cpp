@@ -45,8 +45,8 @@ template<class T = void> class ptr {  // NOLINT(cppcoreguidelines-special-member
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
 	auto operator->() const -> ptr const& {return *this;}
 	// NOLINTNEXTLINE(fuchsia-trailing-return): this class simulates pointer
-	friend auto to_address(ptr const& pointer) -> ptr {return pointer;}
-	explicit operator bool() {return false;}
+//  friend auto to_address(ptr const& pointer) -> ptr {return pointer;}
+	explicit operator bool() const {return false;}
 //	operator double*() const{return &value;}
 	friend auto get_allocator(ptr const& /*self*/){return std::allocator<value_type>{};}
 };

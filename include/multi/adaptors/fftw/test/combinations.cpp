@@ -39,7 +39,6 @@ class watch : private std::chrono::high_resolution_clock {
 };
 
 BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001) ) {
-
 	using complex = std::complex<double>;
 
 	auto const in = [] {
