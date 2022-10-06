@@ -120,18 +120,18 @@ g++-openblas:
     - ctest --output-on-failure
   needs: ["g++"]
 
-memcheck:
-  stage: build
-  script:
-    - export CXX="g++"
-    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX valgrind pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
-    - ln --symbolic --force . ../multi
-    - $CXX --version
-    - mkdir build && cd build
-    - cmake ..
-    - cmake --build . --verbose
-    - ctest --overwrite MemoryCheckCommandOptions="-q --tool=memcheck --leak-check=yes --num-callers=51 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all" -T memcheck --output-on-failure
-  needs: ["g++"]
+#memcheck:
+#  stage: build
+#  script:
+#    - export CXX="g++"
+#    - apt-get update && apt-get install --no-install-recommends -y --quiet $CXX valgrind pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev
+#    - ln --symbolic --force . ../multi
+#    - $CXX --version
+#    - mkdir build && cd build
+#    - cmake ..
+#    - cmake --build . --verbose
+#    - ctest --overwrite MemoryCheckCommandOptions="-q --tool=memcheck --leak-check=yes --num-callers=51 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all" -T memcheck --output-on-failure
+#  needs: ["g++"]
 
 clang++:
   stage: build
@@ -189,19 +189,19 @@ clang++-std20:
     - ctest --output-on-failure
   needs: ["clang++"]
 
-clang++-tidy:
-  stage: test
-  script:
-    - export CXX="clang++"
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang clang-tidy pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libblas-dev liblapack-dev libfftw3-dev
-    - ln --symbolic --force . ../multi
-    - $CXX --version
-    - clang-tidy --version
-    - mkdir build && cd build
-    - cmake .. -DCMAKE_CXX_CLANG_TIDY="clang-tidy"
-    - cmake --build . --verbose -- --quiet --no-print-directory
-    - ctest --output-on-failure
-  needs: ["clang++"]
+#clang++-tidy:
+#  stage: test
+#  script:
+#    - export CXX="clang++"
+#    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet clang clang-tidy pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libblas-dev liblapack-dev libfftw3-dev
+#    - ln --symbolic --force . ../multi
+#    - $CXX --version
+#    - clang-tidy --version
+#    - mkdir build && cd build
+#    - cmake .. -DCMAKE_CXX_CLANG_TIDY="clang-tidy"
+#    - cmake --build . --verbose -- --quiet --no-print-directory
+#    - ctest --output-on-failure
+#  needs: ["clang++"]
 
 #g++-cpplint:
 #  stage: test
@@ -853,7 +853,7 @@ qmcpack-cuda-runner:
     - cd ../../qmcpack
     - cd build
     - CUDACXX=/usr/local/cuda/bin/nvcc cmake -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DQMC_CXX_STANDARD=17 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_HOST_COMPILER=g++-9 -DCMAKE_CXX_FLAGS="-Wno-deprecated -Wno-deprecated-declarations" ..
-    - make -j4 ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
+    - make -j16 ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
     - ctest -R ppconvert --output-on-failure
     - ctest -R afqmc     --output-on-failure
   needs: ["qmcpack-g++"]
@@ -1001,8 +1001,8 @@ inq-nvcc-ompi-runner:
     - cd ../..
     - mkdir build && cd build
     - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --disable-debug --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70 `#--with-cuda-prefix=/usr/local/cuda`
-    - make -j4 -output-sync=recurse
-    - make -j4 install
+    - make -j16 -output-sync=recurse VERBOSE=0 || make VERBOSE=1
+    - make -j4  install
     - ctest -j2 --output-on-failure --timeout 600
     - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest --output-on-failure --timeout 600; cd ..
     - rm -rf $PREFIX
