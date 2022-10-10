@@ -526,9 +526,10 @@ nvhpc-22.7:
     - ctest --output-on-failure
   needs: ["g++"]
 
-circle-latest:
+#  image: debian:stable  # circle is incompatible with gcc 12 lib
+
+circle:
   allow_failure: false
-  image: debian:stable  # circle is incompatible with gcc 12 lib
   stage: build
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev tar gzip wget libelf1 grep
@@ -539,7 +540,7 @@ circle-latest:
     - ls
     - ./build_latest/circle --version
     - mkdir build && cd build
-    - CXX=`pwd`/../build_latest/circle cmake .. -DBOOST_LIBRARYDIR=/usr/lib/x86_64-linux-gnu/ -DENABLE_CIRCLE=1
+    - CXX=`pwd`/../build_latest/circle CXXFLAGS="-nostdinc -I/usr/include/c++/11 -I/usr/include/x86_64-linux-gnu/c++/11 -I/usr/lib/gcc/x86_64-linux-gnu/11/include" cmake .. -DBOOST_LIBRARYDIR=/usr/lib/x86_64-linux-gnu/ -DENABLE_CIRCLE=1
     - make VERBOSE=1
     - ctest --output-on-failure
   needs: ["clang++"]
@@ -550,7 +551,7 @@ icpc:  # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.yml
   stage: build
   script:
     - apt-get update && apt-get install --no-install-recommends -y --quiet g++ ca-certificates cmake curl libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
-    - curl --output webimage.sh --url https://registrationcenter-download.intel.com/akdlm/irc_nas/18479/l_HPCKit_p_2022.1.2.117_offline.sh --retry 5 --retry-delay 5
+    - curl --output webimage.sh --url https://registrationcenter-download.intel.com/akdlm/IRC_NAS/18856/l_HPCKit_p_2022.3.0.8751_offline.sh --retry 5 --retry-delay 5
     - chmod +x webimage.sh
     - ./webimage.sh -x -f webimage_extracted --log extract.log
     - rm -rf webimage.sh
