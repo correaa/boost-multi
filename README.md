@@ -760,14 +760,15 @@ int main() {
 	char buffer[13] = "XXXXXXXXXXXX";  // a small buffer on the stack
 	std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};
 
-	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> A({2, 2}, 'a', &pool);
-	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> B({3, 2}, 'b', &pool);
+	multi::pmr::array<char, 2> A({2, 2}, 'a', &pool);
+	multi::pmr::array<char, 2> B({3, 2}, 'b', &pool);
 
 	assert( buffer == std::string{"aaaabbbbbbXX"} );
 }
 ```
 
 The library supports classic allocators (`std::allocator` by default) and also allocators from other libraries (see Thurst section).
+(`multi::pmr::array<T, D>` is a synonym for `multi::array<T, D, std::pmr::polymorphic_allocator<T>>`.)
 
 ### Comparison with `mdspan` (projected for C++23)
 
