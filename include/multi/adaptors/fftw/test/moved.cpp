@@ -19,6 +19,7 @@ template<class T>
 void what(T&&) = delete;
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_fft_move) {
+	#if not defined(__circle_build__)
 	multi::array<complex, 2> in = {
 		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
 		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
@@ -39,9 +40,11 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_fft_move) {
 //		BOOST_REQUIRE( in2.base() == in_base );
 //		BOOST_REQUIRE( in.is_empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
 	}
+	#endif
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_move) {
+	#if not defined(__circle_build__)
 	multi::array<complex, 2> in = {
 		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
 		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
@@ -61,9 +64,11 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_move) {
 		BOOST_REQUIRE( in == in_copy );
 		BOOST_REQUIRE( in_base == in.base() );  // prove no allocation
 	}
+	#endif
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed) {
+	#if not defined(__circle_build__)
 	multi::array<complex, 2> in = {
 		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
 		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
@@ -85,6 +90,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed) {
 		BOOST_REQUIRE( in == in_copy.transposed() );  // prove correctness
 		BOOST_REQUIRE( in_base == in.base() );  // prove no allocation
 	}
+	#endif
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_naive) {
@@ -137,6 +143,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_naive_copy) {
 
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_fft_copy) {
+	#if not defined(__circle_build__)
 	multi::array<complex, 2> in = {
 		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
 		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
@@ -155,9 +162,11 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_fft_copy) {
 		BOOST_REQUIRE( in2.base() != in_base );
 		BOOST_REQUIRE( not in.is_empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
 	}
+	#endif
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_copyconstruct) {
+	#if not defined(__circle_build__)
 	multi::array<complex, 2> in = {
 		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
 		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
@@ -176,6 +185,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_copyconstruct) {
 		BOOST_REQUIRE( in2.base() != in_base );
 		BOOST_REQUIRE( in .base() == in_base );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
 	}
+	#endif
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_moveconstruct) {

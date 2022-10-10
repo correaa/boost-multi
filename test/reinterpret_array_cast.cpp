@@ -37,8 +37,21 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_complex_to_real_extra_dimensio
 	multi::array<complex, 1> arr(multi::extensions_t<1>{multi::iextension{100}}, complex{1., 2.});
 	BOOST_REQUIRE(  size(arr) == 100 );
 
-	BOOST_REQUIRE( real(arr[0]) == 1. );
-	BOOST_REQUIRE( imag(arr[0]) == 2. );
+	#if not defined(__circle_build__)  // TODO(correaa)
+	{
+		complex arr0 = arr[0];
+		BOOST_TEST_REQUIRE( arr0.real() == 1. );
+		BOOST_TEST_REQUIRE( arr0.imag() == 2. );
+	}
+
+	BOOST_TEST_REQUIRE( arr[0].real() == 1. );
+	BOOST_TEST_REQUIRE( arr[0].imag() == 2. );
+
+	BOOST_TEST_REQUIRE( std::real(arr[0]) == 1. );
+	BOOST_TEST_REQUIRE( std::imag(arr[0]) == 2. );
+
+	BOOST_TEST_REQUIRE( real(arr[0]) == 1. );
+	BOOST_TEST_REQUIRE( imag(arr[0]) == 2. );
 
 	BOOST_REQUIRE(( arr[0] == complex{1., 2.} ));
 
@@ -51,6 +64,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_complex_to_real_extra_dimensio
 	BOOST_REQUIRE(( sizes(arr3)==decltype(sizes(arr3)){100, 2} ));
 	BOOST_REQUIRE( arr3[5][0] == real(arr[5]) );
 	BOOST_REQUIRE( arr3[5][1] == imag(arr[5]) );
+	#endif
 }
 
 BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_tuple_as_extra_dimension) {

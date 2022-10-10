@@ -325,9 +325,15 @@ BOOST_AUTO_TEST_CASE(array_ref_rebuild_2D) {
 	auto&& d2B = d2R();
 	auto&& d2B_ref = multi::ref(d2B.begin(), d2B.end());
 
-	BOOST_REQUIRE( d2B.base()   == d2B_ref.base() );
-	BOOST_REQUIRE( d2B.layout() == d2B_ref.layout() );
+	#if not defined(__circle_build__)
+	BOOST_REQUIRE(  d2B[0][0]    ==  d2B_ref[0][0] );
+	BOOST_REQUIRE( &d2B[0][0]    == &d2B_ref[0][0] );
+
+	BOOST_REQUIRE(  d2B.base()   ==  d2B_ref.base() );
+	BOOST_REQUIRE(  d2B.layout() ==  d2B_ref.layout() );
+
 	BOOST_REQUIRE( &d2R() == &multi::ref(d2B.begin(), d2B.end()) );
+	#endif
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_rebuild_1D) {
@@ -336,9 +342,11 @@ BOOST_AUTO_TEST_CASE(array_ref_rebuild_1D) {
 	auto&& d1B = d1R();
 	auto&& d1B_ref = multi::ref(d1B.begin(), d1B.end());
 
+	#if not defined(__circle_build__)
 	BOOST_REQUIRE( d1B.base()   == d1B_ref.base() );
 	BOOST_REQUIRE( d1B.layout() == d1B_ref.layout() );
 	BOOST_REQUIRE( &d1R() == &multi::ref(d1B.begin(), d1B.end()) );
+	#endif
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_move_assigment_2D) {
