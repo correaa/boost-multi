@@ -37,7 +37,8 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_function_reference) {
 BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_lambda) {
 	multi::array<complex, 1> arr = { 1. + 2.*I,  3. +  4.*I};
 
-	auto const& conjd_arr = arr.element_transformed([](auto const& cee) {return std::conj(cee);});
+	// g++ -std=20 needs the transformation (lambda) to be noexcept
+	auto const& conjd_arr = arr.element_transformed([](auto const& cee) noexcept {return std::conj(cee);});
 	BOOST_REQUIRE( conjd_arr[0] == std::conj(arr[0]) );
 	BOOST_REQUIRE( conjd_arr[1] == std::conj(arr[1]) );
 
@@ -48,7 +49,8 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_lambda) {
 BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_lambda_with_const_return) {
 	multi::array<complex, 1> arr = { 1. + 2.*I,  3. +  4.*I};
 
-	auto const& conjd_arr = arr.element_transformed([](auto const& cee) -> auto const {return std::conj(cee);});  // NOLINT(readability-const-return-type) to disable assignment
+	// g++ -std=20 needs the transformation (lambda) to be noexcept
+	auto const& conjd_arr = arr.element_transformed([](auto const& cee) noexcept -> auto const {return std::conj(cee);});  // NOLINT(readability-const-return-type) to disable assignment
 	BOOST_REQUIRE( conjd_arr[0] == std::conj(arr[0]) );
 	BOOST_REQUIRE( conjd_arr[1] == std::conj(arr[1]) );
 
@@ -115,7 +117,8 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_mutable_proxy) {
 BOOST_AUTO_TEST_CASE(transform_ptr_single_value) {
 	complex cee = 1. + 2.*I;
 
-	constexpr auto conj_ro = [](auto const& zee) {return std::conj(zee);};  // NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
+	// g++ -std=20 needs the transformation (lambda) to be noexcept
+	constexpr auto conj_ro = [](auto const& zee) noexcept {return std::conj(zee);};  // NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
 
 	multi::transform_ptr<complex, decltype(conj_ro), complex*> conjd_ceeP{&cee, conj_ro};
 	BOOST_REQUIRE( *conjd_ceeP == std::conj(1. + 2.*I) );
@@ -124,7 +127,8 @@ BOOST_AUTO_TEST_CASE(transform_ptr_single_value) {
 BOOST_AUTO_TEST_CASE(transform_ptr_1D_array) {
 	multi::array<complex, 1> arr = { 1. + 2.*I,  3. +  4.*I};
 
-	constexpr auto conj_ro = [](auto const& zee) {return std::conj(zee);};  // NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
+	// g++ -std=20 needs the transformation (lambda) to be noexcept
+	constexpr auto conj_ro = [](auto const& zee) noexcept {return std::conj(zee);};  // NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
 
 	auto const& conjd_arr = arr.element_transformed(conj_ro);
 	BOOST_REQUIRE( conjd_arr[0] == conj_ro(arr[0]) );
