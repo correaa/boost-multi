@@ -43,6 +43,9 @@ class n_random_complex {  // NOLINT(cppcoreguidelines-special-member-functions,h
 namespace multi = boost::multi;
 namespace fftw = multi::fftw;
 
+using fftw_fixture = fftw::environment;
+BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
+
 BOOST_AUTO_TEST_CASE(fftw_shift) {
 	class watch : std::chrono::steady_clock {
 		time_point start_ = now();

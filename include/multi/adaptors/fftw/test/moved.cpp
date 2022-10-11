@@ -12,11 +12,10 @@ using complex = std::complex<double>; [[maybe_unused]] complex const I{0, 1};  /
 
 template<class M> auto power(M const& array) {
 	return std::transform_reduce(array.elements().begin(), array.elements().end(), 0., std::plus<>{}, [](auto zee) {return std::norm(zee);});
-//  return accumulate(array.elements().begin(), array.elements().end(), 0., [](auto const& acc, auto const& elem) {return acc + std::norm(elem);});
 }
 
-template<class T>
-void what(T&&) = delete;
+using fftw_fixture = multi::fftw::environment;
+BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_fft_move) {
 	#if not defined(__circle_build__)
