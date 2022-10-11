@@ -93,6 +93,7 @@ BOOST_AUTO_TEST_CASE(array_reextent_moved_trivial) {
 	BOOST_REQUIRE( A_base == arr.base() );
 }
 
+
 BOOST_AUTO_TEST_CASE(array_reextent_moved_trivial_change_extents) {
 	multi::array<double, 2> arr({2, 3});
 	BOOST_REQUIRE( num_elements(arr) == 6 );
@@ -103,7 +104,7 @@ BOOST_AUTO_TEST_CASE(array_reextent_moved_trivial_change_extents) {
 	auto* const A_base = arr.base();
 	arr = std::move(arr).reextent({4, 5});
 	BOOST_REQUIRE( num_elements(arr)== 4L*5L );
-	BOOST_REQUIRE( arr[1][2] !=  6. );  // after move the original elments might not be the same
+//  BOOST_REQUIRE( arr[1][2] !=  6. );  // after move the original elements might not be the same, but it is not 100% possible to check
 
 	BOOST_REQUIRE( A_base != arr.base() );
 }
