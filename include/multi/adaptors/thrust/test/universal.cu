@@ -30,8 +30,6 @@ BOOST_AUTO_TEST_CASE(thrust_universal_ptr) {
 
 }
 
-template<class T> void what(T const&) = delete;
-
 BOOST_AUTO_TEST_CASE(thrust_universal_ptr_initializer_list) {
 
 	multi::array<double, 1                                           > Host = {1., 2., 3.};
