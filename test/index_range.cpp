@@ -83,7 +83,6 @@ BOOST_AUTO_TEST_CASE(multi_range_in_constexpr) {
 		sum += elem;
 	}
 	BOOST_REQUIRE( sum == 5 + 6 + 7 + 8 + 9 + 10 + 11 );
-
 }
 
 BOOST_AUTO_TEST_CASE(multi_range2) {
@@ -101,7 +100,6 @@ BOOST_AUTO_TEST_CASE(multi_range2) {
 
 	BOOST_REQUIRE( std::accumulate( begin(iex), end(iex), 0) == 0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 );
 
-//  #if(__cpp_structured_bindings >= 201606)
 	{
 		multi::iextensions<3> ies({{0, 3}, {0, 4}, {0, 5}});
 		BOOST_REQUIRE( std::get<1>(ies).size() == 4 );
@@ -110,5 +108,4 @@ BOOST_AUTO_TEST_CASE(multi_range2) {
 		BOOST_REQUIRE( jays.size() == 4 );
 		BOOST_REQUIRE( kays.size() == 5 );
 	}
-//  #endif
 }
