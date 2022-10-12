@@ -87,17 +87,16 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d_ctad) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_array) {
-//#if not defined (__GNUG__)
 #if defined(__INTEL_COMPILER) or (defined(__clang__) and (__clang_major__ >= 10))  // doesn't work on gcc
 	  {
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc99-designator"
-//		double const a[] = { [8] = 8., 9., 10. };
-		std::array<double, 11> const stdarr = {{ [8] = 8., 9., 10. }};
+//      double const a[] = { [8] = 8.0, 9.0, 10.0 };
+		std::array<double, 11> const stdarr = {{ [8] = 8.0, 9.0, 10.0 }};
 #pragma GCC diagnostic pop
 		multi::array<double, 1> arr = stdarr;
 		BOOST_REQUIRE( arr.size() == 11 );
-		BOOST_REQUIRE( arr[9] == 9. );
+		BOOST_REQUIRE( arr[9] == 9.0 );
 	}
 #endif
 }

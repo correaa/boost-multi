@@ -313,7 +313,8 @@ BOOST_AUTO_TEST_CASE(multi_layout_part2) {
 	BOOST_REQUIRE( size(lyt) == 1);
 	BOOST_REQUIRE( not is_empty(lyt) );
 	BOOST_REQUIRE( size(extension(lyt))==1 );
-	BOOST_REQUIRE( stride(lyt)== 10 );//std::numeric_limits<std::ptrdiff_t>::max() );
+	BOOST_REQUIRE( stride(lyt)== 10 );  // std::numeric_limits<std::ptrdiff_t>::max() );
+
 	using std::get;
 	BOOST_REQUIRE( get<0>(strides(lyt)) == 10);
 	BOOST_REQUIRE( get<1>(strides(lyt)) == 1 );
@@ -460,8 +461,8 @@ BOOST_AUTO_TEST_CASE(continued_part3) {
 
 	BOOST_REQUIRE( get<0>(exts2).is_empty() );
 
-//	BOOST_REQUIRE( std::get<0>(L.sizes()) == L.size(0) );
-//	BOOST_REQUIRE( std::get<0>(L.extensions()) == L.extension(0) );
+//  BOOST_REQUIRE( std::get<0>(L.sizes()) == L.size(0) );
+//  BOOST_REQUIRE( std::get<0>(L.extensions()) == L.extension(0) );
 
 	BOOST_REQUIRE(( get<0>(lyt.extensions()) == multi::index_extension{0, 10} ));
 
@@ -540,13 +541,13 @@ BOOST_AUTO_TEST_CASE(continued) {
 }
 }
 
-//BOOST_AUTO_TEST_CASE(tuple_zip_test) {  // TODO(correaa) make it work
+//  BOOST_AUTO_TEST_CASE(tuple_zip_test) {  // TODO(correaa) make it work
 //  auto t1 = std::make_tuple( 1,  2,  3);
 //  auto t2 = std::make_tuple(10, 20, 30);
 //  auto t3 = std::make_tuple(std::string{"10"}, std::string{"20"}, std::string{"30"});
 //  auto t123 = boost::multi::detail::tuple_zip(t1, t2, t3);
 //  BOOST_REQUIRE( std::get<2>(std::get<0>(t123)) == std::string{"10"} );
-//}
+//  }
 
 BOOST_AUTO_TEST_CASE(extensions_from_linear_1d) {
 	multi::extensions_t<1> exts{11};

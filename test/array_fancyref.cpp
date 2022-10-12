@@ -41,13 +41,13 @@ template<class T = void> class ptr {  // NOLINT(cppcoreguidelines-special-member
 	auto operator==(ptr const& /*other*/) const -> bool {return true;}
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
 	auto operator!=(ptr const& /*other*/) const -> bool {return false;}
-//	explicit operator T*() const{return &value;}
+//  explicit operator T*() const{return &value;}
 	// NOLINTNEXTLINE(fuchsia-overloaded-operator, fuchsia-trailing-return): this class simulates pointer
 	auto operator->() const -> ptr const& {return *this;}
 	// NOLINTNEXTLINE(fuchsia-trailing-return): this class simulates pointer
 //  friend auto to_address(ptr const& pointer) -> ptr {return pointer;}
 	explicit operator bool() const {return false;}
-//	operator double*() const{return &value;}
+//  operator double*() const{return &value;}
 	friend auto get_allocator(ptr const& /*self*/){return std::allocator<value_type>{};}
 };
 
@@ -62,11 +62,7 @@ template<class T> class ref {
  public:
 //  explicit ref(ref<std::remove_const_t<T>> const& other) : p_{other.p_} {}
 	~ref() = default;
-	auto operator=(ref const& other) -> ref& = delete;//{
-//		if(this == &other) {return *this;}
-//		*p_ = *other.p_; return *this;
-//	}
-//  ref(ref const&) = delete;
+	auto operator=(ref const& other) -> ref& = delete;
 	constexpr ref(ref const& /*other*/) = delete;
 	constexpr ref(ref&& /*other*/) noexcept {}  // this is needed by nvcc, needs to be a device function for nvcc 11.2 and lower
 
@@ -84,7 +80,7 @@ template<class T> struct allocator {
 	using value_type = T;
 	auto allocate(std::size_t /*size*/) {return pointer{};}
 	void deallocate(pointer /*base*/, std::size_t /*size*/) {}
-//	std::true_type operator==(allocator const&){return {};}
+//  std::true_type operator==(allocator const&){return {};}
 	allocator() = default;
 	template<class T2> explicit allocator(allocator<T2> const& /*other*/) {}
 	template<class... Args>
@@ -95,21 +91,21 @@ template<class T> struct allocator {
 // all these are optional, depending on the level of specialization needed
 template<class Ptr, class T, class Size>
 auto copy_n(Ptr /*first*/, Size /*count*/, ptr<T> result) {
-//	std::cerr<< "called Pointer-based copy_n(Ptr, n, fancy::ptr)" <<std::endl;
+//  std::cerr<< "called Pointer-based copy_n(Ptr, n, fancy::ptr)" <<std::endl;
 	return result;
 }
 template<class Ptr, class T, class Size>
 auto copy_n(ptr<T> /*first*/, Size /*count*/, Ptr result) {
-//	std::cerr<< "called Pointer-based copy_n(fancy::ptr, n, Ptr)" <<std::endl;
+//  std::cerr<< "called Pointer-based copy_n(fancy::ptr, n, Ptr)" <<std::endl;
 	return result;
 }
 template<class T1, class T2, class Size>
 auto copy_n(ptr<T1> /*first*/, Size /*count*/, ptr<T2> result) {
-//	std::cerr<< "called Pointer-based copy_n(fancy::ptr, n, fancy::ptr)" <<std::endl;
+//  std::cerr<< "called Pointer-based copy_n(fancy::ptr, n, fancy::ptr)" <<std::endl;
 	return result;
 }
 
-} // namespace fancy
+}  // end namespace fancy
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //  multi-fancy glue, where should this be?
@@ -121,8 +117,8 @@ namespace boost::multi {
 template<class It, class T>
 auto copy(It first, It last, fancy::ptr<T> dest) {
 	return copy(first, last, multi::array_iterator<T, 1, fancy::ptr<T>>{dest});
-//	std::cerr << "1D copy(it1D, it1D, it1D) with strides " << stride(first) << " " << stride(dest) << std::endl;
-//	return dest;
+//  std::cerr << "1D copy(it1D, it1D, it1D) with strides " << stride(first) << " " << stride(dest) << std::endl;
+//  return dest;
 }
 
 template<class It, class T>  // custom copy 1D (aka strided copy)
@@ -143,7 +139,7 @@ auto copy(It/*first*/, It/*last*/, multi::array_iterator<T, 2, fancy::ptr<T>> de
 //	return copy(first, last, dest);
 //}
 
-} // namespace boost::multi
+}  // end namespace boost::multi
 
 ////////////////////////////////////////////////////////////////////////////////
 // user code

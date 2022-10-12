@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo A. Correa 2021-2022
+// Copyright 2021-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi index range"
 #include<boost/test/unit_test.hpp>
@@ -8,31 +8,9 @@
 
 #include <boost/iterator/transform_iterator.hpp>
 
-// #include <boost/serialization/nvp.hpp>
-
-// #include <boost/archive/xml_iarchive.hpp>
-// #include <boost/archive/xml_oarchive.hpp>
-
 #include<numeric>  // for accumulate
 
 namespace multi = boost::multi;
-
-#if 0
-BOOST_AUTO_TEST_CASE(xml_serialization_index_range) {
-	std::stringstream ss;
-	multi::range<std::ptrdiff_t> const rg{5, 10};
-	{
-	    boost::archive::xml_oarchive oa{ss};
-		oa<< ::boost::serialization::make_nvp("rg", rg);
-	}
-	{
-		boost::archive::xml_iarchive ia{ss};
-		multi::range<std::ptrdiff_t> rg2;
-		ia>> ::boost::serialization::make_nvp("rg2", rg2);
-		BOOST_REQUIRE( rg == rg2 );
-	}
-}
-#endif
 
 BOOST_AUTO_TEST_CASE(multi_range) {
 #if defined(__cpp_deduction_guides) and __cpp_deduction_guides and not defined(__NVCC__)

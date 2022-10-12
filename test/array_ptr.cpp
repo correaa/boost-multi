@@ -23,14 +23,14 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr_equality) {
 	BOOST_REQUIRE( &arr[2] == &fwd_array(arr[2]) );
 	BOOST_REQUIRE( &fwd_array(arr[2]) == &arr[2] );
 
-//	auto const& A2 = fwd_array(A[2]);
+//  auto const& A2 = fwd_array(A[2]);
 	auto const& carr2 = arr[2];
 	BOOST_REQUIRE( carr2[0] == arr[2][0] );
 	BOOST_REQUIRE( carr2.base() == arr[2].base() );
 	BOOST_REQUIRE( &carr2 == &std::as_const(arr)[2] );
 	BOOST_REQUIRE( &carr2 == &              arr [2] );
 
-	auto const& ac2 = carr2; //fwd_array(A[2]);
+	auto const& ac2 = carr2;  // fwd_array(A[2]);
 	BOOST_REQUIRE( &ac2 == &std::as_const(arr)[2] );
 	BOOST_REQUIRE( &ac2 == &              arr [2] );
 }
@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE(span_like) {
 
 	using my_span = multi::array_ref<double, 1>;
 
-	auto aP = & my_span{vec.data() + 2,{5}};                                         // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	auto aP = & my_span{vec.data() + 2,{5}};  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	BOOST_REQUIRE( aP->size() == 5 );
 	BOOST_REQUIRE( (*aP)[0] == 2. );
 
