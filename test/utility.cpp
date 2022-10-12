@@ -7,13 +7,6 @@
 #include "multi/array.hpp"
 #include "multi/detail/tuple_zip.hpp"
 
-//#include<boost/archive/xml_iarchive.hpp>
-//#include<boost/archive/xml_oarchive.hpp>
-
-//#include<boost/serialization/binary_object.hpp>
-
-//#include "../adaptors/serialization/xml_archive.hpp"
-
 #include<fstream>
 #include<numeric>  // for iota
 
@@ -100,7 +93,7 @@ BOOST_AUTO_TEST_CASE(std_array_extensions_1d) {
 BOOST_AUTO_TEST_CASE(test_utility_1d) {
 	std::array<double, 10> carr = {{0., 1., 2., 3., 4., 5., 6., 7., 8., 9.}};
 	multi::array_ref<double, 1> marr(carr.data(), {multi::iextension{10}});
-//	boost::multi_array_ref<double, 1> Marr(&carr[0], boost::extents[10]);
+//  boost::multi_array_ref<double, 1> Marr(&carr[0], boost::extents[10]);
 	std::vector<double> varr(10); std::iota(begin(varr), end(varr), 0);
 	std::array<double, 10> aarr{}; std::iota(begin(aarr), end(aarr), 0);
 
@@ -185,17 +178,15 @@ BOOST_AUTO_TEST_CASE(multi_utility_test) {
 
 	using multi::data_elements;
 	static_assert( std::is_same<decltype(data_elements(arr)), double*>{} , "!");
-//	BOOST_REQUIRE( data(A) == addressof(A[0]) );
+//  BOOST_REQUIRE( data(A) == addressof(A[0]) );
 	BOOST_REQUIRE( data_elements(arr) == addressof(arr[0]) );
-} {
+}
+{
 	double arr[2][3] = {{1., 2., 3.}, {4., 5., 6.}};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : test legacy types
 	BOOST_REQUIRE( dimensionality(arr) == 2 );
 	BOOST_REQUIRE( extension(arr).first() == 0 );
 	BOOST_REQUIRE( extension(arr).last() == 2 );
-//	int a = extensions(A);
 
-//  BOOST_REQUIRE( origin(A) == &A[0][0] );
-//	*origin(A) = 99.;
 	arr[0][0] = 99.;
 
 	BOOST_REQUIRE( arr[0][0] == 99. );
