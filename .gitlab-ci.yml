@@ -531,9 +531,8 @@ circle:
   image: debian:stable  # circle is incompatible with gcc 12 lib
   stage: build
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev tar gzip wget libelf1 grep mlocate
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev tar gzip wget libelf1
     - mkdir -p build_latest && cd build_latest
-    - locate cstddef
     - wget https://www.circle-lang.org/linux/build_latest.tgz --no-verbose
     - tar -zxvf build_latest.tgz
     - cd ..
