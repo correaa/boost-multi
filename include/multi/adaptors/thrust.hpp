@@ -7,13 +7,10 @@
 
 #include "./thrust/cuda/managed.hpp"
 
+#include <thrust/device_allocator.h>
 #include <thrust/universal_allocator.h>
 
-#include <thrust/device_allocator.h>
 #include <thrust/system/cuda/memory.h>  // ::thrust::cuda::allocator
-
-//#include <thrust/system/cuda/experimental/pinned_allocator.h>
-//#include <thrust/host_vector.h>
 
 #include <thrust/detail/type_traits/pointer_traits.h>
 
@@ -127,9 +124,9 @@ namespace thrust {
 // defines multi::thrust::device_array
 // defines multi::thrust::host_array
 
-template<class T, multi::dimensionality_type D> using device_array    = multi::array<T, D, ::thrust::device_allocator   <T>>;
-template<class T, multi::dimensionality_type D> using universal_array = multi::array<T, D, ::thrust::universal_allocator<T>>;
-template<class T, multi::dimensionality_type D> using host_array      = multi::array<T, D                                  >;
+template<typename T, multi::dimensionality_type D, class Alloc = ::thrust::device_allocator   <T>> using device_array    = multi::array<T, D, Alloc>;
+template<typename T, multi::dimensionality_type D, class Alloc = ::thrust::universal_allocator<T>> using universal_array = multi::array<T, D, Alloc>;
+template<typename T, multi::dimensionality_type D, class Alloc = std::allocator               <T>> using host_array      = multi::array<T, D, Alloc>;
 
 // defines multi::thrust::device::array
 // defines multi::thrust::host  ::array
