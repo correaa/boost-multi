@@ -20,7 +20,7 @@ template<class T = void> class ptr {  // NOLINT(cppcoreguidelines-special-member
 	using reference = ref<T>;
 	using iterator_category = std::random_access_iterator_tag;
 
-	ptr() = default;//ptr(ptr const=default; ptr& operator=(ptr const&)=default;
+	ptr() = default;
 	explicit ptr(std::nullptr_t) {}
 	template<class Other> constexpr explicit ptr(ptr<Other> const& /*other*/) {}
 	constexpr ptr(ptr const& /*other*/) {}  // NOLINT(hicpp-use-equals-default,modernize-use-equals-default)

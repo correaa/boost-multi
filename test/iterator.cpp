@@ -174,8 +174,8 @@ BOOST_AUTO_TEST_CASE(iterator_arrow_operator) {
 
 	BOOST_REQUIRE( arr[1][0] == "10" );
 
-	BOOST_REQUIRE( std::is_sorted(begin(arr), end(arr)) ); // sorted by rows
-	BOOST_REQUIRE( std::is_sorted(begin(arr.rotated()), end(arr.rotated())) ); // sorted by cols
+	BOOST_REQUIRE( std::is_sorted(begin(arr), end(arr)) );  // sorted by rows
+	BOOST_REQUIRE( std::is_sorted(begin(arr.rotated()), end(arr.rotated())) );  // sorted by cols
 
 	BOOST_REQUIRE( begin( arr           )->size() == arr[0].size() );
 	BOOST_REQUIRE( begin( arr.rotated() )->size() == arr.size() );
@@ -185,14 +185,14 @@ BOOST_AUTO_TEST_CASE(iterator_arrow_operator) {
 }
 
 BOOST_AUTO_TEST_CASE(index_range_iteration) {
-	multi::index_range irng{0, 5}; // semiopen interval
+	multi::index_range irng{0, 5};  // semiopen interval
 	std::ostringstream out;
 	std::copy(begin(irng), end(irng), std::ostream_iterator<int>{out, ","});
 	BOOST_REQUIRE( out.str() == "0,1,2,3,4," );
 
 	BOOST_REQUIRE( std::accumulate(begin(irng), end(irng), 0) == irng.size()*(irng.size()-1)/2 );
 
-	BOOST_REQUIRE( std::accumulate(begin(irng), end(irng), 0, [](auto&& acc, auto const& elem) {return acc + elem*elem*elem;}) > 0 ); // sum of cubes
+	BOOST_REQUIRE( std::accumulate(begin(irng), end(irng), 0, [](auto&& acc, auto const& elem) {return acc + elem*elem*elem;}) > 0 );  // sum of cubes
 }
 
 BOOST_AUTO_TEST_CASE(multi_reverse_iterator_1D) {

@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_complex_to_real_extra_dimensio
 
 BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_tuple_as_extra_dimension) {
 	using vector3 = std::array<double, 3>;
-//	using vector3 = std::tuple<double, double, double>; // for tuples reinterpret_array_cast is implementation dependent!!
+//  using vector3 = std::tuple<double, double, double>; // for tuples reinterpret_array_cast is implementation dependent!!
 
 	vector3 v3d;
 	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast, cppcoreguidelines-avoid-c-arrays, hicpp-avoid-c-arrays, modernize-avoid-c-arrays): test
@@ -109,7 +109,7 @@ template<class T> struct complex_dummy{T real; T imag;};
 BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast) {
 {
 	std::complex<double> cee{1, 2};
-	auto *ptr = reinterpret_cast<complex_dummy<double>*>(&cee); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+	auto *ptr = reinterpret_cast<complex_dummy<double>*>(&cee);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	ptr->real = 11;
 	BOOST_REQUIRE(real(cee)==11);
 }
@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_realcomplex) {
 	using complex = std::complex<double>;
 {
 	complex cee{1, 2};
-	auto *conjd_cee = reinterpret_cast<std::array<double, 2>*>(&cee); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+	auto *conjd_cee = reinterpret_cast<std::array<double, 2>*>(&cee);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	(*conjd_cee)[0] = 11;
 	BOOST_REQUIRE( conjd_cee );
 	BOOST_REQUIRE(real(cee)==11);
@@ -157,7 +157,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_pair_to_complex) {
 	multi::array<complex, 2> const& Aconst = arr;
 	auto&& A_block = Aconst({0, 5}, {0, 5});
 
-	auto const& Apair_block = A_block.template reinterpret_array_cast<pair const>(); // const is important // cppcheck 1.90 needs `template` to avoid internal bug
+	auto const& Apair_block = A_block.template reinterpret_array_cast<pair const>();  // const is important // cppcheck 1.90 needs `template` to avoid internal bug
 	BOOST_REQUIRE( &Apair_block[1][2] == static_cast<void*>(&arr[1][2]) );
 
 	auto&& Adoubles_block = A_block.reinterpret_array_cast<double const>(2);

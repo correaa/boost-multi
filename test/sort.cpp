@@ -6,7 +6,7 @@
 
 #include "multi/array.hpp"
 
-#include<algorithm> // stable_sort
+#include<algorithm>  // stable_sort
 #include<vector>
 
 namespace multi = boost::multi;

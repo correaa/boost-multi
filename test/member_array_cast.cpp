@@ -30,17 +30,17 @@ class particles_soa {
 	struct reference {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 		double& mass;   // NOLINT(misc-non-private-member-variables-in-classes): exposed by design
 		v3d& position;  // NOLINT(misc-non-private-member-variables-in-classes): exposed by design
-		operator particle() const {return {mass, position};} // NOLINT(google-explicit-constructor, hicpp-explicit-conversions): allow equal assignment
+		operator particle() const {return {mass, position};}  // NOLINT(google-explicit-constructor, hicpp-explicit-conversions): allow equal assignment
 		auto operator+() const {return operator particle();}
 
 		reference(double& mss, v3d& pos) : mass{mss}, position{pos} {}  // NOLINT(google-runtime-references)
 
-	 private: // NOLINT(whitespace/indent) : bug in cpplint 1.5.5
+	 private:  // NOLINT(whitespace/indent) bug in cpplint 1.6
 		friend class particles_soa;
 		reference(reference const&) = default;
 	//  reference(reference&&) = default;
 
-	 public:  // NOLINT(whitespace/indent) : bug in cpplint 1.5.5
+	 public:  // NOLINT(whitespace/indent) bug in cpplint 1.6
 	//  ~reference() noexcept = default;  // lints cppcoreguidelines-special-member-functions,hicpp-special-member-functions
 	//  #endif
 
@@ -92,7 +92,7 @@ struct alignas(32) employee {
 	std::string name;
 	int16_t salary;
 	std::size_t age;
-//	private: //	char padding_[9];// std::array<char, 9> padding_; // use alignment or padding to allow member_cast
+//  private:  // char padding_[9];// std::array<char, 9> padding_;  // use alignment or padding to allow member_cast
 };
 
 BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {

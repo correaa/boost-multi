@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section_part2) {
 
 	BOOST_REQUIRE( size( arr(arr.extension(), 2) ) == size(arr) );
 
-	auto&& col2( arr(arr.extension(), 2) ); // select column #2
+	auto&& col2( arr(arr.extension(), 2) );  // select column #2
 	// same as arr(extesion(arr), 2)
 	// same as arr(arr.extension(0), 2);
 	// same as rotated(arr)[2];
@@ -103,11 +103,11 @@ BOOST_AUTO_TEST_CASE(multi_array_range_section_syntax) {
 
 	BOOST_REQUIRE( size( arr(       V       , 2) ) == size(arr) );
 
-//	using multi::A;
-//	BOOST_REQUIRE( size( arr(       arr       , 2) ) == size(arr) );
-//	BOOST_REQUIRE( size( arr(       arr       , 2) ) == size(arr) );
+//  using multi::A;
+//  BOOST_REQUIRE( size( arr(       arr       , 2) ) == size(arr) );
+//  BOOST_REQUIRE( size( arr(       arr       , 2) ) == size(arr) );
 
-//	BOOST_REQUIRE( size( arr(       arr       , 2) ) == size(arr) );
+//  BOOST_REQUIRE( size( arr(       arr       , 2) ) == size(arr) );
 
 	BOOST_REQUIRE( size( arr(       _  < 2  , 2) ) == 2 );
 	BOOST_REQUIRE( size( arr(      *_  < 2  , 2) ) == 2 );

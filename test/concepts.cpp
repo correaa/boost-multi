@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo Correa 2022
+// Copyright 2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi concepts"
 #include<boost/test/unit_test.hpp>
@@ -34,4 +34,3 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(convertibles, NDArray, NDArrays)
 	static_assert( std::is_same_v<typename NDRef::element_type, typename multi::array<double, 1>::value_type> );
 	static_assert( std::is_same_v<typename NDRef::element_ref , typename multi::array<double, 1>::reference > );
 }
-
