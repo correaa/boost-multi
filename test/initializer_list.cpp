@@ -109,9 +109,9 @@ BOOST_AUTO_TEST_CASE(multi_initialize_from_carray_1d) {
 	}
 	{
 #if defined(__cpp_deduction_guides) and not defined(__NVCC__)
-//		multi::array arr = {{1.1, 2.2, 3.3}};
-//		static_assert( decltype(arr)::dimensionality == 1 , "!");
-//		BOOST_REQUIRE( size(arr)==3 and arr[1] == 2.2 );
+//  	multi::array arr = {{1.1, 2.2, 3.3}};
+//  	static_assert( decltype(arr)::dimensionality == 1 , "!");
+//  	BOOST_REQUIRE( size(arr)==3 and arr[1] == 2.2 );
 #endif
 	}
 	{
@@ -284,18 +284,18 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string_ctad) {
 		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 and num_elements(arr)==2 and arr[1]==2. ); BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 );
 	}
 	{
-		multi::array arr({0, 2}); // 	multi::array arr = {0, 2}; not working with CTAD
+		multi::array arr({0, 2});  //  multi::array arr = {0, 2}; not working with CTAD
 		static_assert( std::is_same_v<decltype(arr)::element_type, int>, "!" );
 		BOOST_REQUIRE( size(arr) == 2 and num_elements(arr) == 2 );
 		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 and num_elements(arr)==2 and arr[1]==2. ); BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 );
 	}
 	{
-		multi::array arr({9.}); // multi::array arr = {9.}; not working with CTAD
+		multi::array arr({9.});  // multi::array arr = {9.}; not working with CTAD
 		static_assert( std::is_same<decltype(arr)::element_type, double>{}, "!" );
 		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 and num_elements(arr)==1 and arr[0]==9. ); BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 );
 	}
 	{
-		multi::array arr({9}); // multi::array arr = {9}; not working with CTAD
+		multi::array arr({9});  // multi::array arr = {9}; not working with CTAD
 		static_assert( std::is_same<decltype(arr)::element_type, int>{}, "!" );
 		BOOST_REQUIRE( size(arr) == 1 and num_elements(arr) == 1 );
 		BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 1 );

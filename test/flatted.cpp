@@ -1,8 +1,7 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-// © Alfredo Correa 2018-2021
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2018-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi flattened operation"
-#define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
 
 #include "multi/array.hpp"
@@ -18,7 +17,7 @@ BOOST_AUTO_TEST_CASE(array_flatted_3d) {
 		auto&& arrRFU = arr.rotated().flatted().unrotated();
 		BOOST_REQUIRE( &arrRFU[11][7] == &arr[11][1][2] );
 	}
-	 {
+	{
 		auto&& arrRFU = (arr.rotated()).flatted().unrotated();
 		BOOST_REQUIRE( &arrRFU[11][7] == &arr[11][7/5][7%5] );
 	}

@@ -78,11 +78,16 @@ BOOST_AUTO_TEST_CASE(multi_constructors_2d_ctad) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_constructors) {
-{//multi::array<double, 1> arr({10}); assert(size(A)==1); // warning in clang
-}{//multi::array<double, 1> arr({10}, double{}); assert(size(arr)==10); // warning in clang
-}{//multi::array<double, 1> arr({10}, double{}); assert(size(arr)==10); // warning in clang
-}{//multi::array<double, 1> arr({10}, 0.); assert(size(arr)==10); // warning in clang
-}{//multi::array<double, 1> arr({10}, {}); assert(size(arr)==10); // error ambiguous
+{
+// multi::array<double, 1> arr({10}); assert(size(A)==1); // warning in clang
+}{
+// multi::array<double, 1> arr({10}, double{}); assert(size(arr)==10); // warning in clang
+}{
+// multi::array<double, 1> arr({10}, double{}); assert(size(arr)==10); // warning in clang
+}{
+// multi::array<double, 1> arr({10}, 0.); assert(size(arr)==10); // warning in clang
+}{
+// multi::array<double, 1> arr({10}, {}); assert(size(arr)==10); // error ambiguous
 }{ multi::array<std::size_t, 1> arr = {10}    ; BOOST_REQUIRE( size(arr)==1 and arr[0]==10 );
 }{ multi::array<int        , 1> arr = {10}    ; BOOST_REQUIRE( size(arr)==1 and arr[0]==10 );
 }{ multi::array<double     , 1> arr = {10}    ; BOOST_REQUIRE( size(arr)==1 and arr[0]==10 );

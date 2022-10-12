@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
 		multi::array<std::string, 2> arrB = (multi::array<std::string, 2>
 			{{"a", "b", "c", "d", "e"},
 			 {"f", "g", "h", "f", "g"},
-			 {"h", "i", "j", "k", "l"}})//.reindex(2, 1);
+			 {"h", "i", "j", "k", "l"}})  // .reindex(2, 1);
 		;
 		BOOST_REQUIRE( arrB.reindex(2).extension() == multi::iextension(2, 5) );
 		auto exts = arrB.reindexed(2).extensions();
@@ -282,7 +282,8 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_carray) {
 
 	double darr2[4][5] = {{1., 2.}, {2., 3.}};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
 
-	auto const& dd = static_cast<double const(&)[4][5]>(darr2);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
+	auto const& dd = static_cast<double const(&)[4][5]>(darr2);
 	BOOST_REQUIRE( &(dd[1][2]) == &(darr2[1][2]) );
 	BOOST_REQUIRE(( & ref[1].static_array_cast<double, double const*>()[1] == &ref[1][1] ));
 	BOOST_REQUIRE(( &multi::static_array_cast<double, double const*>(ref[1])[1] == &ref[1][1] ));

@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE(span_like) {
 
 	using my_span = multi::array_ref<double, 1>;
 
-	auto aP = & my_span{vec.data() + 2,{5}};  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+	auto aP = & my_span{vec.data() + 2, {5}};  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	BOOST_REQUIRE( aP->size() == 5 );
 	BOOST_REQUIRE( (*aP)[0] == 2. );
 
