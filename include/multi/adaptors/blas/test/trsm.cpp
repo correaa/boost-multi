@@ -1,19 +1,12 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-$CXX $0 -o $0x -lcudart -lcublas `pkg-config --libs blas` -lboost_unit_test_framework&&$0x&&rm $0x;exit
-#endif
-// © Alfredo A. Correa 2019-2021
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2019-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS trsm"
-#define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
-
-//#include "../../../memory/adaptors/cuda/managed/ptr.hpp"
 
 #include "../../../adaptors/blas/gemm.hpp"
 #include "../../../adaptors/blas/trsm.hpp"
-//#include "../../../adaptors/blas/cuda.hpp"
 
-//#include "../../../adaptors/cuda.hpp"
 #include "../../../array.hpp"
 
 #include <config.hpp>
@@ -264,16 +257,13 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_complex) {
 		{2.},
 		{3.},
 	};
-	{
-	//	auto const B_cpy = B1;
-		blas::trsm(blas::side::left, blas::filling::lower, 1., A, blas::H(B1));
-	//	BOOST_REQUIRE( (+blas::gemm(1., A, blas::H(B1)))[0][1] == blas::H(B_cpy)[0][1] );
-	}
 
-	 {
+	blas::trsm(blas::side::left, blas::filling::lower, 1., A, blas::H(B1));
+
+	{
 		auto const B_cpy = B2;
 		blas::trsm(blas::side::right, blas::filling::upper, 1., blas::H(A), B2);
-	//	BOOST_REQUIRE( (+blas::gemm(1., A, blas::H(B)))[0][1] == blas::H(B_cpy)[0][1] );
+	//  BOOST_REQUIRE( (+blas::gemm(1., A, blas::H(B)))[0][1] == blas::H(B_cpy)[0][1] );
 		BOOST_REQUIRE( (+blas::gemm(1., B2, blas::H(A)))[1][0] == B_cpy[1][0] );
 	}
 	BOOST_REQUIRE( B1 == B2 );
@@ -296,7 +286,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare) {
 		auto const B_cpy =+ B;
 		multi::array<double, 2> BT =+ ~B;
 		BOOST_REQUIRE( BT == ~B );
-		blas::trsm(blas::side::left, blas::filling::upper, 1., A, B); // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
+		blas::trsm(blas::side::left, blas::filling::upper, 1., A, B);  // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
 		BOOST_REQUIRE_CLOSE( B[1][2] , 0.107143                              , 0.001);
 		BOOST_REQUIRE_CLOSE( (+blas::gemm(1., A_cpy, B))[1][2] , B_cpy[1][2] , 0.001);
 
@@ -314,7 +304,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare) {
 		};
 		multi::array<double, 2> AT = ~A;
 		multi::array<double, 2> BT = ~B;
-		blas::trsm(blas::side::left, blas::filling::upper, 1., blas::T(AT), B); // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
+		blas::trsm(blas::side::left, blas::filling::upper, 1., blas::T(AT), B);  // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
 		BOOST_REQUIRE_CLOSE( B[1][2] , 0.107143 , 0.001 );
 
 		blas::trsm(blas::side::left, blas::filling::upper, 1., blas::T(AT), blas::T(BT));
@@ -327,7 +317,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_real_nonsquare) {
 			{3.},
 		};
 		auto const B_cpy =+ B;
-		blas::trsm(blas::side::left, blas::filling::upper, 1., A, B); // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
+		blas::trsm(blas::side::left, blas::filling::upper, 1., A, B);  // B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
 		BOOST_REQUIRE_CLOSE( B[2][0] , 0.375 , 0.00001 );
 		BOOST_REQUIRE_CLOSE( (+blas::gemm(1., A_cpy, B))[1][0] , B_cpy[1][0] , 0.00001 );
 	}
@@ -391,7 +381,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitiz
 				{2. + 1.*I, 9. + 3.*I},
 				{3. + 1.*I, 1. - 1.*I},
 			};
-			auto S = blas::trsm(blas::side::left, blas::filling::lower, 1., blas::H(A), B); // S = A⁻¹†.B, S† = B†.A⁻¹
+			auto S = blas::trsm(blas::side::left, blas::filling::lower, 1., blas::H(A), B);  // S = A⁻¹†.B, S† = B†.A⁻¹
 			BOOST_REQUIRE_CLOSE( real(S[2][1]) , 1.71608 , 0.001 );
 		}
 		{
@@ -399,7 +389,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitiz
 				{1. + 1.*I, 2. + 1.*I, 3. + 1.*I},
 				{5. + 3.*I, 9. + 3.*I, 1. - 1.*I}
 			};
-			auto S =+ blas::trsm(blas::side::left, blas::filling::upper, 1., A, blas::H(B)); // S = A⁻¹B†, S†=B.A⁻¹†, S=(B.A⁻¹)†, B <- S†, B <- B.A⁻¹†
+			auto S =+ blas::trsm(blas::side::left, blas::filling::upper, 1., A, blas::H(B));  // S = A⁻¹B†, S†=B.A⁻¹†, S=(B.A⁻¹)†, B <- S†, B <- B.A⁻¹†
 			BOOST_REQUIRE_CLOSE( imag(S[2][1]) , +0.147059 , 0.001);
 			BOOST_REQUIRE_CLOSE( imag(B[1][2]) , -0.147059 , 0.001);
 		}
@@ -408,7 +398,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitiz
 				{1. + 1.*I, 2. + 1.*I, 3. + 1.*I},
 				{5. + 3.*I, 9. + 3.*I, 1. - 1.*I}
 			};
-			auto S =+ blas::trsm(blas::side::left, blas::filling::upper, 2., A, blas::H(B)); // S = A⁻¹B†, S†=B.A⁻¹†, S=(B.A⁻¹)†, B <- S†, B <- B.A⁻¹†
+			auto S =+ blas::trsm(blas::side::left, blas::filling::upper, 2., A, blas::H(B));  // S = A⁻¹B†, S†=B.A⁻¹†, S=(B.A⁻¹)†, B <- S†, B <- B.A⁻¹†
 			BOOST_REQUIRE_CLOSE( imag(S[2][1]) , +0.147059*2. , 0.001 );
 			BOOST_REQUIRE_CLOSE( imag(B[1][2]) , -0.147059*2. , 0.001 );
 		}
@@ -484,7 +474,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_thrust_nonsquare_default_diagonal_h
 				{2. + 1.*I, 9. + 3.*I},
 				{3. + 1.*I, 1. - 1.*I},
 			};
-			auto S = blas::trsm(blas::side::left, blas::filling::lower, 1., blas::H(A), B); // S = A⁻¹†.B, S† = B†.A⁻¹
+			auto S = blas::trsm(blas::side::left, blas::filling::lower, 1., blas::H(A), B);  // S = A⁻¹†.B, S† = B†.A⁻¹
 			BOOST_REQUIRE_CLOSE( S[2][1].real() , 1.71608 , 0.001 );
 			BOOST_REQUIRE( S == B );
 		}
@@ -493,7 +483,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_thrust_nonsquare_default_diagonal_h
 				{1. + 1.*I, 2. + 1.*I, 3. + 1.*I},
 				{5. + 3.*I, 9. + 3.*I, 1. - 1.*I}
 			};
-			auto S =+ blas::trsm(blas::side::left, blas::filling::upper, 1., A, blas::H(B)); // S = A⁻¹B†, S†=B.A⁻¹†, S=(B.A⁻¹)†, B <- S†, B <- B.A⁻¹†
+			auto S =+ blas::trsm(blas::side::left, blas::filling::upper, 1., A, blas::H(B));  // S = A⁻¹B†, S†=B.A⁻¹†, S=(B.A⁻¹)†, B <- S†, B <- B.A⁻¹†
 			BOOST_REQUIRE_CLOSE( B[1][2].imag() , -0.147059 , 0.001 );
 			BOOST_REQUIRE( S == blas::H(B) );
 		}
@@ -502,37 +492,16 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_thrust_nonsquare_default_diagonal_h
 				{1. + 1.*I, 2. + 1.*I, 3. + 1.*I},
 				{5. + 3.*I, 9. + 3.*I, 1. - 1.*I}
 			};
-			auto S =+ blas::trsm(blas::side::left, blas::filling::upper, 2., A, blas::H(B)); // S = A⁻¹B†, S†=B.A⁻¹†, S=(B.A⁻¹)†, B <- S†, B <- B.A⁻¹†
+			auto S =+ blas::trsm(blas::side::left, blas::filling::upper, 2., A, blas::H(B));  // S = A⁻¹B†, S†=B.A⁻¹†, S=(B.A⁻¹)†, B <- S†, B <- B.A⁻¹†
 			BOOST_REQUIRE_CLOSE( B[1][2].imag() , -0.147059*2. , 0.001  );
 			BOOST_REQUIRE( S == blas::H(B) );
 		}
 	}
 }
-//BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column_cuda, *utf::tolerance(0.00001)){
-//	namespace cuda = multi::cuda;
-//	cuda::array<complex, 2> A = {
-//		{ 1.,  3.,  4.},
-//		{NAN,  7.,  1.},
-//		{NAN, NAN,  8.}
-//	};
-////	multi::cuda::array<complex, 2> const B = {
-////		{1.},
-////		{2.},
-////		{3.}
-////	};
-//	namespace blas = multi::blas;
-////	auto Bcpy = blas::trsm(blas::filling::upper, 1., A, B); // B ⬅ α Inv[A].B, B† ⬅ B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
-////	multi::array<complex, 2> Bcpu = Bcpy;
-////	BOOST_TEST_REQUIRE( std::real(Bcpu[2][0]) == 0.375 );
-////	BOOST_TEST_REQUIRE( std::imag(Bcpu[2][0]) == 0.    );
-//}
+#endif
 #endif
 
-#endif
 #if 0
-
-//template<class T> void what(T&&) = delete;
-
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_column_cuda, *utf::tolerance(0.00001)) {
 	multi::cuda::array<double, 2> const A = {
 		{ 1.,  3.,  4.},
@@ -547,7 +516,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_column_cuda, *utf::tolerance(0.00001
 	namespace blas = multi::blas;
 	using blas::filling;
 	using blas::hermitized;
-	trsm(filling::upper, 1., A, B); // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
+	trsm(filling::upper, 1., A, B);  // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
 	BOOST_REQUIRE( B[2][0] == 0.375 );
 }
 
@@ -565,7 +534,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_column_cuda2, *utf::tolerance(0.000
 	namespace blas = multi::blas;
 	using blas::filling;
 	using blas::hermitized;
-	trsm(filling::lower, 2.+1.*I, hermitized(A), B); // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
+	trsm(filling::lower, 2.+1.*I, hermitized(A), B);  // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
 	multi::array<complex, 2> Bcpu = B;
 	BOOST_REQUIRE( real(Bcpu[2][0]) == -4.16471 );
 	BOOST_REQUIRE( imag(Bcpu[2][0]) ==  8.25882 );
@@ -586,8 +555,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_cuda_trsm_complex, *utf::tolerance(0.00001)) {
 	namespace blas = multi::blas;
 	using blas::filling;
 	using blas::hermitized;
-//	auto C = trsm(filling::lower, 2.+1.*I, hermitized(A), B); // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
-	auto C = trsm(filling::lower, 1., hermitized(A), B); // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit
+//  auto C = trsm(filling::lower, 2.+1.*I, hermitized(A), B);  // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
+	auto C = trsm(filling::lower, 1., hermitized(A), B);  // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_cuda_managed_trsm_complex, *utf::tolerance(0.00001)) {
@@ -605,6 +574,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_cuda_managed_trsm_complex, *utf::tolerance(0.000
 	namespace blas = multi::blas;
 	using blas::filling;
 	using blas::hermitized;
-	auto C = trsm(filling::lower, 2.+1.*I, hermitized(A), B); // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
+	auto C = trsm(filling::lower, 2.+1.*I, hermitized(A), B);  // B=alpha Inv[A†].B, B†=B†.Inv[A], Solve(A†.X=B, X), Solve(X†.A=B†, X), A is upper triangular (with implicit zeros below)
 }
 #endif

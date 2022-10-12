@@ -111,7 +111,7 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
 	auto diff = &mar[0].reindexed(1)[1] - &mar[0][0];
 	BOOST_REQUIRE( diff == 0 );
 
-//	BOOST_REQUIRE( &(((mar<<1).reindexed(2)>>1).reindexed(1))[1][2] == &mar[0][0] );
+//  BOOST_REQUIRE( &(((mar<<1).reindexed(2)>>1).reindexed(1))[1][2] == &mar[0][0] );
 	BOOST_REQUIRE( &mar.reindexed(1, 2)[1][2] == &mar[0][0] );
 
 	BOOST_REQUIRE( &mar.reindexed(1)({1, 5})[1][0] == &mar[0][0] );
@@ -120,10 +120,10 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
 	BOOST_REQUIRE( &mar.stenciled({2, 4})[2][0] == &mar[2][0] );
 	BOOST_REQUIRE( &mar.stenciled({2, 4}, {1, 3})[2][1] == &mar[2][1] );
 
-//	BOOST_REQUIRE( &mar[0][0] == mar.origin() ); // origin changed meaning in on 2020/Dec/16
-//	BOOST_REQUIRE( mar.base() == mar.origin() );
+//  BOOST_REQUIRE( &mar[0][0] == mar.origin() ); // origin changed meaning in on 2020/Dec/16
+//  BOOST_REQUIRE( mar.base() == mar.origin() );
 
-//	BOOST_REQUIRE( mar.stenciled({2, 4}).origin() == mar.origin() );  // origin changed meaning in on 2020/Dec/16
+//  BOOST_REQUIRE( mar.stenciled({2, 4}).origin() == mar.origin() );  // origin changed meaning in on 2020/Dec/16
 	BOOST_REQUIRE( mar.stenciled({2, 4}).base()   != mar.base()   );
 
 	BOOST_REQUIRE( &mar.stenciled({2, 4})[2][0] == mar.stenciled({2, 4}).base() );
@@ -190,12 +190,12 @@ BOOST_AUTO_TEST_CASE(array_ref_with_stencil) {
 
 	 {
 		auto xs = extensions(mar);
-		for(auto eye = std::get<0>(xs).start() + 1; eye != std::get<0>(xs).finish()-1; ++eye) {
+		for(auto i = std::get<0>(xs).start() + 1; i != std::get<0>(xs).finish()-1; ++i) {
 			for(auto jay = std::get<1>(xs).start() + 1; jay != std::get<1>(xs).finish() - 1; ++jay) {
 				auto xt = extensions(stencil);
 				for(auto kay : std::get<0>(xt)) {
 					for(auto ell : std::get<1>(xt)) {
-						gy[eye][jay] += stencil[kay][ell]*mar[eye + kay][jay + ell];
+						gy[i][jay] += stencil[kay][ell]*mar[i + kay][jay + ell];
 					}
 				}
 			}
@@ -204,22 +204,22 @@ BOOST_AUTO_TEST_CASE(array_ref_with_stencil) {
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_1D_from_vector) {
-	std::vector<double> vec = {1, 2, 3};
+	std::vector<double> vec = {1.0, 2.0, 3.0};
 	multi::array_ref<double, 1> aref({{1, 3}}, vec.data());
 	BOOST_REQUIRE( aref.extension() == multi::iextension(1, 3) );
 	BOOST_REQUIRE( &aref[1] == vec.data() );
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector) {
-	std::vector<double> vec = {1, 2, 3, 4, 5, 6};
+	std::vector<double> vec = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
 	multi::array_ref<double, 2> aref({2, 3}, vec.data());
 	BOOST_REQUIRE( &aref[1][0] == &vec[3] );
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset) {
 	std::vector<double> vec = {
-		1, 2, 3,
-		4, 5, 6
+		1.0, 2.0, 3.0,
+		4.0, 5.0, 6.0
 	};
 	multi::array_ref<double, 2> aref({multi::iextension(1, 3), multi::iextension(1, 4)}, vec.data());
 
@@ -325,9 +325,15 @@ BOOST_AUTO_TEST_CASE(array_ref_rebuild_2D) {
 	auto&& d2B = d2R();
 	auto&& d2B_ref = multi::ref(d2B.begin(), d2B.end());
 
-	BOOST_REQUIRE( d2B.base()   == d2B_ref.base() );
-	BOOST_REQUIRE( d2B.layout() == d2B_ref.layout() );
+	#if not defined(__circle_build__)
+	BOOST_REQUIRE(  d2B[0][0]    ==  d2B_ref[0][0] );
+	BOOST_REQUIRE( &d2B[0][0]    == &d2B_ref[0][0] );
+
+	BOOST_REQUIRE(  d2B.base()   ==  d2B_ref.base() );
+	BOOST_REQUIRE(  d2B.layout() ==  d2B_ref.layout() );
+
 	BOOST_REQUIRE( &d2R() == &multi::ref(d2B.begin(), d2B.end()) );
+	#endif
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_rebuild_1D) {
@@ -336,9 +342,11 @@ BOOST_AUTO_TEST_CASE(array_ref_rebuild_1D) {
 	auto&& d1B = d1R();
 	auto&& d1B_ref = multi::ref(d1B.begin(), d1B.end());
 
+	#if not defined(__circle_build__)
 	BOOST_REQUIRE( d1B.base()   == d1B_ref.base() );
 	BOOST_REQUIRE( d1B.layout() == d1B_ref.layout() );
 	BOOST_REQUIRE( &d1R() == &multi::ref(d1B.begin(), d1B.end()) );
+	#endif
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_move_assigment_2D) {

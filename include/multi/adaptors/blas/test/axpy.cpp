@@ -1,11 +1,8 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo A. Correa 2019-2022
+// Copyright 2019-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS axpy"
-#define BOOST_TEST_DYN_LINK 
 #include<boost/test/unit_test.hpp>
-
-#include "config.hpp"
 
 #include "multi/adaptors/blas/axpy.hpp"
 #include "multi/adaptors/blas/operations.hpp"
@@ -25,7 +22,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_real) {
 	auto const AC = a;
 	multi::array<double, 1> const b = a[2];  // NOLINT(readability-identifier-length) BLAS naming
 
-	blas::axpy(2., b, a[1]); // daxpy
+	blas::axpy(2., b, a[1]);  // daxpy
 	BOOST_REQUIRE( a[1][2] == 2.*b[2] + AC[1][2] );
 }
 
@@ -38,7 +35,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_double) {
 	multi::array<double, 2> arr = const_arr;
 	multi::array<double, 1> const b = const_arr[2];  // NOLINT(readability-identifier-length) conventional name in BLAS
 
-	blas::axpy(2., b, arr[1]); // A[1] = 2*b + A[1], A[1]+= a*A[1]
+	blas::axpy(2., b, arr[1]);  // A[1] = 2*b + A[1], A[1]+= a*A[1]
 	BOOST_REQUIRE( arr[1][2] == 2.*b[2] + const_arr[1][2] );
 
 	using complex = std::complex<double>; complex const I = {0, 1};  // NOLINT(readability-identifier-length) imaginary unit
@@ -99,7 +96,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex_context) {
 	};
 	auto const arr_copy = arr;
 	multi::array<complex, 1> const arr2 = arr[2];
-	blas::axpy(blas::context{}, 2., arr2, arr[1]); // zaxpy (2. is promoted to 2+I*0 internally and automatically)
+	blas::axpy(blas::context{}, 2., arr2, arr[1]);  // zaxpy (2. is promoted to 2+I*0 internally and automatically)
 	BOOST_REQUIRE( arr[1][2] == 2.*arr2[2] + arr_copy[1][2] );
 }
 
@@ -114,7 +111,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_operator_minus) {
 	BOOST_REQUIRE( (y - x)[0] == 0. );
 
 	using blas::operators::operator+;
-	
+
 	BOOST_REQUIRE( (x - (y+y))[0] == -x[0] );
 	BOOST_REQUIRE( ((x+x) - y)[0] == +x[0] );
 
@@ -142,7 +139,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex_thrust) {
 	};
 	auto const AC = A;
 	multi::array<complex, 1> const B = A[2];
-	blas::axpy(2., B, A[1]); // zaxpy (2. is promoted to 2+I*0 internally and automatically)
+	blas::axpy(2., B, A[1]);  // zaxpy (2. is promoted to 2+I*0 internally and automatically)
 	BOOST_REQUIRE( A[1][2] == 2.*B[2] + AC[1][2] );
 }
 #endif

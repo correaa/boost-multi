@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// © Alfredo A. Correa 2018-2021
+// Copyright 2018-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi subrange selection"
 #define BOOST_TEST_DYN_LINK
@@ -7,7 +7,7 @@
 
 #include "multi/array.hpp"
 
-#include<numeric> // iota
+#include<numeric>  // iota
 
 namespace multi = boost::multi;
 
@@ -112,8 +112,8 @@ BOOST_AUTO_TEST_CASE(subrange_ranges_sliced_1D) {
 	auto&& Ab2 = Ab;
 	BOOST_REQUIRE( &Ab2[0] == &arr[1] );
 
-//  auto Abb = Ab;  // not allowed
-//	auto Abb = std::move(Ab); (void)Abb;
+//  auto Abb = Ab;  // not allowed!
+//  auto Abb = std::move(Ab); (void)Abb;
 
 	auto const& Abc = arr.sliced(1, 3);
 	BOOST_REQUIRE( &Abc[0] == &arr[1] );

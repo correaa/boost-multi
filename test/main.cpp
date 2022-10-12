@@ -9,9 +9,7 @@
 namespace multi = boost::multi;
 
 auto main() -> int {
-
 	multi::array<double, 2> arr({10, 15}, 99.);
 
 	if( arr[1][2] != 99. ) {return 1;}
-
 }

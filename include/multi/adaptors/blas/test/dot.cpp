@@ -203,9 +203,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex) {
 	}
 }
 
-#include "config.hpp" // cuda found
-#if defined(CUDA_FOUND) and CUDA_FOUND
-//#include<thrust/complex.h>
+#if 0
+#if defined(CUDA_FOUND) and CUDA_FOUND  // TODO(correaa) move this to thrust test directory
 
 BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex_thrust) {
 	namespace blas = multi::blas;
@@ -259,9 +258,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_complex_thrust) {
 		complex c = blas::dot(A[1], A[2]);
 		BOOST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}) );
 	}
-	 {
+	{
 		complex c = blas::dot(A[1], blas::C(A[2]));
 		BOOST_REQUIRE( c == std::inner_product(begin(A[1]), end(A[1]), begin(A[2]), complex{0}, std::plus<>{}, [](auto a, auto b){return a*conj(b);}) );
 	}
 }
+#endif
 #endif

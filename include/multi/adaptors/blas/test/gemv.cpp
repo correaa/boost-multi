@@ -1,11 +1,8 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-// © Alfredo A. Correa 2020
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2020-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS gemv"
-#define BOOST_TEST_DYN_LINK
 #include<boost/test/unit_test.hpp>
-
-#include "config.hpp"
 
 #include "../../../adaptors/blas/gemv.hpp"
 #include "../../../array.hpp"
@@ -124,7 +121,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_real) {
 
 BOOST_AUTO_TEST_CASE(multi_blas_gemv_real_complex) {
 	namespace blas = multi::blas;
-	using complex = std::complex<double>; //#define I *std::complex<double>(0, 1)
+	using complex = std::complex<double>;
 	using std::abs;
 	multi::array<complex, 2> const M = {  // NOLINT(readability-identifier-length) BLAS naming
 		{ 9., 24., 30., 9.},
@@ -136,7 +133,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_real_complex) {
 		multi::array<complex, 1> Y = {4., 5., 6.};  // NOLINT(readability-identifier-length) BLAS naming
 		double const alpha = 1.1;
 		double const beta = 1.2;
-		blas::gemv(alpha, M, X, beta, Y); // y = a*M*x + b*y
+		blas::gemv(alpha, M, X, beta, Y);  // y = a*M*x + b*y
 
 		multi::array<complex, 1> const Y3 = {214.02, 106.43, 188.37};
 
@@ -145,34 +142,6 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_real_complex) {
 		BOOST_REQUIRE_SMALL( n2 , 1e-13);
 	}
 }
-
-#if CUDA_FOUND
-#include<thrust/complex.h>
-BOOST_AUTO_TEST_CASE(multi_blas_gemv_real_complex_thrust) {
-	namespace blas = multi::blas;
-	using complex = thrust::complex<double>; //#define I *std::complex<double>(0, 1)
-	using std::abs;
-	multi::array<complex, 2> const M = {
-		{ 9., 24., 30., 9.},
-		{ 4., 10., 12., 7.},
-		{14., 16., 36., 1.}
-	};
-	multi::array<complex, 1> const X = {1.1, 2.1, 3.1, 4.1};
-	{
-		multi::array<complex, 1> Y = {4., 5., 6.};
-		double const a = 1.1;
-		double const b = 1.2;
-		blas::gemv(a, M, X, b, Y); // y = a*M*x + b*y
-
-		multi::array<complex, 1> const Y3 = {214.02, 106.43, 188.37};
-	}
-	 {
-		multi::array<complex, 1> Y = {4., 5., 6.};
-		blas::gemv(1.1, M, X, 1., Y); // y = a*M*x + b*y
-		BOOST_REQUIRE( Y[1] == 105.43 );
-	}
-}
-#endif
 
 BOOST_AUTO_TEST_CASE(multi_blas_gemv_complex) {
 	namespace blas = multi::blas;

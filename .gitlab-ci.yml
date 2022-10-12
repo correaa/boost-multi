@@ -526,12 +526,12 @@ nvhpc-22.7:
     - ctest --output-on-failure
   needs: ["g++"]
 
-circle-latest:
+circle:
   allow_failure: false
   image: debian:stable  # circle is incompatible with gcc 12 lib
   stage: build
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev tar gzip wget libelf1 grep
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev tar gzip wget libelf1
     - mkdir -p build_latest && cd build_latest
     - wget https://www.circle-lang.org/linux/build_latest.tgz --no-verbose
     - tar -zxvf build_latest.tgz
@@ -550,7 +550,7 @@ icpc:  # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.yml
   stage: build
   script:
     - apt-get update && apt-get install --no-install-recommends -y --quiet g++ ca-certificates cmake curl libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
-    - curl --output webimage.sh --url https://registrationcenter-download.intel.com/akdlm/irc_nas/18479/l_HPCKit_p_2022.1.2.117_offline.sh --retry 5 --retry-delay 5
+    - curl --output webimage.sh --url https://registrationcenter-download.intel.com/akdlm/IRC_NAS/18856/l_HPCKit_p_2022.3.0.8751_offline.sh --retry 5 --retry-delay 5
     - chmod +x webimage.sh
     - ./webimage.sh -x -f webimage_extracted --log extract.log
     - rm -rf webimage.sh

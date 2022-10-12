@@ -41,12 +41,12 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_real_conjugated) {
 	namespace blas = multi::blas;
 	auto conjr = blas::make_conjugater(array.data_elements());
 
-	decltype(blas::make_conjugater(carray.data_elements())) ppp;// = BdataC;
+	decltype(blas::make_conjugater(carray.data_elements())) ppp;  // = BdataC;
 	ppp = conjr;
 
 	BOOST_REQUIRE( *ppp == 1. + 3.*I );
 
-//	static_assert(    multi::blas::is_complex_array<multi::array<thrust::complex<double>, 2>>{}, "!");
+//  static_assert(    multi::blas::is_complex_array<multi::array<thrust::complex<double>, 2>>{}, "!");
 	static_assert(    blas::is_complex_array<decltype(array)>{} );
 	static_assert(not blas::is_conjugated<decltype(array)>{} );
 
@@ -56,10 +56,10 @@ BOOST_AUTO_TEST_CASE(multi_blas_numeric_real_conjugated) {
 	BOOST_REQUIRE( conjd_array[0][0] == 1. + 3.*I );
 	BOOST_REQUIRE( imag(*base(conjd_array)) == +3 );
 
-//	BOOST_TEST_REQUIRE( base(Bconj)->imag() == +3 );
+//  BOOST_TEST_REQUIRE( base(Bconj)->imag() == +3 );
 	BOOST_REQUIRE( rotated(conjd_array)[1][0] == conjd_array[0][1] );
 
-//	BOOST_REQUIRE( base(Bconj) == -3.*I );
+//  BOOST_REQUIRE( base(Bconj) == -3.*I );
 	static_assert( blas::is_complex_array<decltype(conjd_array)>{} );
 
 	BOOST_REQUIRE( blas::conj(conjd_array) == array );

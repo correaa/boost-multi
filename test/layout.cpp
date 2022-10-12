@@ -9,9 +9,6 @@
 
 #include "multi/detail/tuple_zip.hpp"
 
-//#include <boost/archive/xml_iarchive.hpp>
-//#include <boost/archive/xml_oarchive.hpp>
-
 #include<tuple>
 
 namespace multi = boost::multi;
@@ -28,28 +25,6 @@ BOOST_AUTO_TEST_CASE(extensions_3D) {
 	multi::extensions_t<3> exts{ {0, 10}, {0, 20}, {0, 30} };
 	BOOST_REQUIRE( 20 == second_finish(exts                                                     ) );
 }
-
-//BOOST_AUTO_TEST_CASE(extensions_1D) {
-//	BOOST_REQUIRE( multi::extensions_t<1>( { {0, 10} } ) == multi::extensions_t<1>( { {0, 10} } ) );
-//}
-
-#if 0
-BOOST_AUTO_TEST_CASE(serialize_extensions) {
-	multi::extensions_t<3> x{51, 52, 53};
-	std::stringstream ss;
-	{
-		boost::archive::xml_oarchive xoa{ss};
-		xoa<< BOOST_SERIALIZATION_NVP(x);
-	}
-	{
-		std::cerr<< ss.str() << std::endl;
-		boost::archive::xml_iarchive xia{ss};
-		multi::extensions_t<3> x2{51, 52, 53};
-		xia>> BOOST_SERIALIZATION_NVP(x2);
-		BOOST_REQUIRE(x == x2);
-	}
-}
-#endif
 
 BOOST_AUTO_TEST_CASE(extensions_to_linear) {
 	multi::extensions_t<3> exts{4, 5, 3};
@@ -135,7 +110,7 @@ BOOST_AUTO_TEST_CASE(layout_0) {
 }
 
 BOOST_AUTO_TEST_CASE(layout_1) {
-	//NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): testing feature
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays): testing feature
 	double arr[50][50][50];
 	using multi::size;
 	BOOST_REQUIRE( size(arr) == 50 );
@@ -158,12 +133,7 @@ BOOST_AUTO_TEST_CASE(layout_2) {
 }
 
 BOOST_AUTO_TEST_CASE(layout_3) {
-	multi::array<double, 2> arr(
-//#if defined(__INTEL_COMPILER) or (defined(__GNUC__) and (__GNUC__ < 6))
-//		multi::extensions_t<2>
-//#endif
-		{50, 50}
-	);
+	multi::array<double, 2> arr({50, 50});
 	BOOST_REQUIRE( size(arr) == 50 ); BOOST_REQUIRE( arr.size() == 50 );
 	BOOST_REQUIRE( arr[0].sliced(10, 20).size() == 10 );
 	BOOST_REQUIRE( size(arr[0].sliced(10, 20))  == 10 );
@@ -251,7 +221,7 @@ BOOST_AUTO_TEST_CASE(layout) {
 
 	BOOST_REQUIRE( AA.stride() == 20 );
 
-#if defined(__circle_build__)  // circle doesn't recognize this as a constexpr "cannot access value of A at compile time;"
+#if defined(__circle_build__)  // circle doesn't recognize this as a constexpr "cannot access value of `arr` at compile time;"
 	       assert( multi::stride(arr) == 20);
 #else  // other compilers ok
 	static_assert( multi::stride(arr) == 20);
@@ -260,8 +230,6 @@ BOOST_AUTO_TEST_CASE(layout) {
 	BOOST_REQUIRE( multi::stride(arr[0])    == 5 );
 	BOOST_REQUIRE( multi::stride(arr[1])    == 5 );
 	BOOST_REQUIRE( multi::stride(arr[0][0]) == 1 );
-//		assert( stride(arr) == 20 );
-//		assert( stride(arr[0]) == 20 );
 }
 {
 	multi::array<double, 2> B2 = {
@@ -345,7 +313,8 @@ BOOST_AUTO_TEST_CASE(multi_layout_part2) {
 	BOOST_REQUIRE( size(lyt) == 1);
 	BOOST_REQUIRE( not is_empty(lyt) );
 	BOOST_REQUIRE( size(extension(lyt))==1 );
-	BOOST_REQUIRE( stride(lyt)== 10 );//std::numeric_limits<std::ptrdiff_t>::max() );
+	BOOST_REQUIRE( stride(lyt)== 10 );  // std::numeric_limits<std::ptrdiff_t>::max() );
+
 	using std::get;
 	BOOST_REQUIRE( get<0>(strides(lyt)) == 10);
 	BOOST_REQUIRE( get<1>(strides(lyt)) == 1 );
@@ -492,8 +461,8 @@ BOOST_AUTO_TEST_CASE(continued_part3) {
 
 	BOOST_REQUIRE( get<0>(exts2).is_empty() );
 
-//	BOOST_REQUIRE( std::get<0>(L.sizes()) == L.size(0) );
-//	BOOST_REQUIRE( std::get<0>(L.extensions()) == L.extension(0) );
+//  BOOST_REQUIRE( std::get<0>(L.sizes()) == L.size(0) );
+//  BOOST_REQUIRE( std::get<0>(L.extensions()) == L.extension(0) );
 
 	BOOST_REQUIRE(( get<0>(lyt.extensions()) == multi::index_extension{0, 10} ));
 
@@ -572,13 +541,13 @@ BOOST_AUTO_TEST_CASE(continued) {
 }
 }
 
-//BOOST_AUTO_TEST_CASE(tuple_zip_test) {  // TODO(correaa) make it work
-//	auto t1 = std::make_tuple( 1,  2,  3);
-//	auto t2 = std::make_tuple(10, 20, 30);
-//	auto t3 = std::make_tuple(std::string{"10"}, std::string{"20"}, std::string{"30"});
-//	auto t123 = boost::multi::detail::tuple_zip(t1, t2, t3);
-//	BOOST_REQUIRE( std::get<2>(std::get<0>(t123)) == std::string{"10"} );
-//}
+//  BOOST_AUTO_TEST_CASE(tuple_zip_test) {  // TODO(correaa) make it work
+//  auto t1 = std::make_tuple( 1,  2,  3);
+//  auto t2 = std::make_tuple(10, 20, 30);
+//  auto t3 = std::make_tuple(std::string{"10"}, std::string{"20"}, std::string{"30"});
+//  auto t123 = boost::multi::detail::tuple_zip(t1, t2, t3);
+//  BOOST_REQUIRE( std::get<2>(std::get<0>(t123)) == std::string{"10"} );
+//  }
 
 BOOST_AUTO_TEST_CASE(extensions_from_linear_1d) {
 	multi::extensions_t<1> exts{11};
@@ -603,7 +572,7 @@ BOOST_AUTO_TEST_CASE(extensions_from_linear_2d_structured_binding) {
 
 	BOOST_TEST_REQUIRE( eye == 1 );
 	BOOST_TEST_REQUIRE( jay == 2 );
-//	BOOST_TEST_REQUIRE( std::apply(l, l.extensions().from_linear(9)) == 9 );
+//  BOOST_TEST_REQUIRE( std::apply(l, l.extensions().from_linear(9)) == 9 );
 }
 
 BOOST_AUTO_TEST_CASE(extensions_from_linear_2d_std_get) {

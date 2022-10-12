@@ -10,8 +10,6 @@
 
 #include<complex>
 
-#include "config.hpp"
-
 namespace multi = boost::multi;
 namespace blas = multi::blas;
 
@@ -58,12 +56,12 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_copy_real) {
 	BOOST_REQUIRE( arr[0][2] ==  3. );
 	BOOST_REQUIRE( arr[2][2] ==  3. );
 
-//	multi::blas::copy(begin(A[1]), end(A[1]), begin(A[2])); // dcopy
+//  multi::blas::copy(begin(A[1]), end(A[1]), begin(A[2]));  // dcopy
 	blas::copy( arr[1]({0, size(arr[1])}), arr[2]({0, size(arr[1])}) );
 	BOOST_REQUIRE( arr[1][3] == 8. );
 	BOOST_REQUIRE( arr[2][3] == 8. );
 
-	multi::array<double, 1> AR3 = blas::copy(rotated(arr)[3]); // dcopy
+	multi::array<double, 1> AR3 = blas::copy(rotated(arr)[3]);  // dcopy
 	BOOST_REQUIRE( AR3[1] == arr[1][3] );
 }
 
@@ -105,7 +103,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_copy_context) {
 	}
 }
 
-#if CUDA_FOUND
+#if 0
+#if CUDA_FOUND  // TODO(correaa) move test to thrust/cublas directory
 #include<thrust/complex.h>
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_copy_thrust) {
@@ -125,4 +124,5 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_text_copy_interop) {
 
 	BOOST_REQUIRE( a == b );
 }
+#endif
 #endif

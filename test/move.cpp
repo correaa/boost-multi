@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(move_unique_ptr_1D) {
 		multi::array<std::unique_ptr<int>, 1> arr(multi::extensions_t<1>{10});
 		arr[1] = std::make_unique<int>(42);
 
-		multi::array<std::unique_ptr<int>, 1> arr2;//(multi::extensions_t<1>{10});
+		multi::array<std::unique_ptr<int>, 1> arr2;  // (multi::extensions_t<1>{10});
 		arr2 = std::move(arr);
 		BOOST_REQUIRE(  arr.is_empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move)
 		BOOST_REQUIRE(  arr2[1] );
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE(multi_array_move_into_vector_reserve) {
 	std::vector<multi::array<double, 2> > Av(10, multi::array<double, 2>({4, 5}, 99.));
 	std::vector<multi::array<double, 2> > Bv; Bv.reserve(Av.size());
 
-//	for(auto& v: Av) Bv.emplace_back(std::move(v), std::allocator<double>{}); // segfaults nvcc 11.0 but not nvcc 11.1
+//  for(auto& v: Av) Bv.emplace_back(std::move(v), std::allocator<double>{});  // segfaults nvcc 11.0 but not nvcc 11.1
 	std::move(begin(Av), end(Av), std::back_inserter(Bv));
 
 	BOOST_REQUIRE( size(Bv) == size(Av) );

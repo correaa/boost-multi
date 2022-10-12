@@ -760,14 +760,15 @@ int main() {
 	char buffer[13] = "XXXXXXXXXXXX";  // a small buffer on the stack
 	std::pmr::monotonic_buffer_resource pool{std::data(buffer), std::size(buffer)};
 
-	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> A({2, 2}, 'a', &pool);
-	multi::array<char, 2, std::pmr::polymorphic_allocator<char>> B({3, 2}, 'b', &pool);
+	multi::pmr::array<char, 2> A({2, 2}, 'a', &pool);
+	multi::pmr::array<char, 2> B({3, 2}, 'b', &pool);
 
 	assert( buffer == std::string{"aaaabbbbbbXX"} );
 }
 ```
 
 The library supports classic allocators (`std::allocator` by default) and also allocators from other libraries (see Thurst section).
+(`multi::pmr::array<T, D>` is a synonym for `multi::array<T, D, std::pmr::polymorphic_allocator<T>>`.)
 
 ### Comparison with `mdspan` (projected for C++23)
 
@@ -784,35 +785,35 @@ This imposes certain limitations in the library such as ad-hoc slicing and subar
 
 Here it is a table with comparison, also the libraries can be compare [here](https://godbolt.org/z/5Pbrs5fEd)
 
-|                         | Multi                                                           | mdspan                                      |
-|---                      | ---                                                             | ---                                         | 
-| External Deps            | no (Standard Library C++17)      | no (Standard Library)     |
-| Non-owning view of data | **yes**, via `multi::array_ref<T, D>(Tptr, {x1, x2, ..., xD})`      | **yes**, via `mdspan m{T*, extents{x1, x2, ..., xD}};`     |
-| Arbritary number of dim | **yes**, via positive dimension (compile-time) parameter `D`        | **yes**, same                                   |
-| Compile-time dim size   | no                                                              | **yes**, via template paramaters `mdspan{T*, extent<16, dynamic_extents>{32} }` |   |
-| Array values (owning data) | **yes**, via `multi::array<T, D>({x1, x2, ..., xD})`             | no, (planned `mdarray`)                     |
-| Value semantic (Regular) | **yes**, via cctor, mctor, assign, massign, auto decay of views | no, and not planned                          |
-| const-propagation Reference semantic | **yes**, via `const` or `const&` | no, const mdspan elements are assignable!                          |
-| References w/no-rebinding   | **yes**, assignment is deep | no, assignment of mdspan rebinds!                         |
+|                             | Multi                                                           | mdspan                                      |
+|---                          | ---                                                             | ---                                         | 
+| No external Deps            | **yes** (only Standard Library C++17)                           | **yes** (only Standard Library)                 |
+| Non-owning view of data     | **yes**, via `multi::array_ref<T, D>(Tptr, {x1, x2, ..., xD})`  | **yes**, via `mdspan m{T*, extents{x1, x2, ..., xD}};`     |
+| Arbritary number of dim     | **yes**, via positive dimension (compile-time) parameter `D`    | **yes**, same                                   |
+| Compile-time dim size       | no                                                              | **yes**, via template paramaters `mdspan{T*, extent<16, dynamic_extents>{32} }` |   |
+| Array values (owning data)  | **yes**, via `multi::array<T, D>({x1, x2, ..., xD})`            | no, (planned `mdarray`)                     |
+| Value semantic (Regular)    | **yes**, via cctor, mctor, assign, massign, auto decay of views | no, and not planned                          |
+| const-propagation semantics | **yes**, via `const` or `const&`                                | no, const mdspan elements are assignable!          |
+| References w/no-rebinding   | **yes**, assignment is deep                                     | no, assignment of mdspan rebinds!                         |
 | Element access              | **yes**, via `A(i, j, ...)`                                     | **yes**, via `A(i, j, ...)`                          |
-| Partial element access      | **yes**, via `A[i]` or `A(i, multi::all)`           | **yes**, via `submdspan(A, i, full_extent)`                               |
+| Partial element access      | **yes**, via `A[i]` or `A(i, multi::all)`                       | **yes**, via `submdspan(A, i, full_extent)`                               |
 | Subarray views              | **yes**, via `A({0, 2}, {1, 2})` or `A(1, {1, 2})`              | **yes**, via `submdspan(A, std::tuple{0, 2}, std::tuple{0, 2})` |
 | Subarray with lower dim     | **yes**, via `A(1, {1, 2})`                                     | **yes**, via `submdspan(A, 1, std::tuple{0, 2})` |
-| Subarray w/well def layout  | **yes** (strided layout)                                     | no                  |
+| Subarray w/well def layout  | **yes** (strided layout)                                        | no                  |
 | Custom Alloctors            | **yes**, via `multi::array<T, D, Alloc>`                        | no (no allocation or ownership)             |
 | PMR Alloctors               | **yes**, via `multi::pmr::array<T, D>`                          | no (no allocation or ownership)             |
 | Fancy pointers / references | **yes**, via `multi::array<T, D, FancyAlloc>` or views          | no                                          |
 | Strided Layout              | **yes**                                                         | **yes**                                         |
 | Fortran-ordering            | **yes**, for views, e.g. resulted from transposed views         | **yes** (only views are supported)              |
-| Zig-zag / Hilbert ordering  | no                                                          | **yes**, via arbitrary layouts (but no inverse or flattening) |
-| Arbitrary layout            | no                                                          | **yes**, possibly inneficient, no efficient slicing |
+| Zig-zag / Hilbert ordering  | no                                                              | **yes**, via arbitrary layouts (but no inverse or flattening) |
+| Arbitrary layout            | no                                                              | **yes**, possibly inneficient, no efficient slicing |
 | Flattening of elements      | **yes**, via `A.elements()` range (efficient representation)    | **yes**, but via indices roundtrip (inefficient)              |
-| Iterators                | **yes**, standard compliant, random-access-iterator            | no, or very limited              |
-| Multidimensional iterators (cursors) | **yes** (experimental)            | no              |
-| STL algorithms or Ranges | **yes**                      | no, limited via `std::cartesian_product`                         |
-| Compatibility with Boost | **yes**, serialization, interprocess  (see below)      | no                            |
-| Compatibility with Thrust | **yes**, via flatten views (ad-hoc loop fusion), fancy-pointers/-references      | no                         |
-| Used in production       | [QMCPACK](https://qmcpack.org/), [INQ](https://gitlab.com/npneq/inq) | ? , experience from Kokkos incarnation |
+| Iterators                   | **yes**, standard compliant, random-access-iterator             | no, or very limited              |
+| Multidimensional iterators (cursors) | **yes** (experimental)                                 | no              |
+| STL algorithms or Ranges    | **yes**                                                         | no, limited via `std::cartesian_product`                         |
+| Compatibility with Boost    | **yes**, serialization, interprocess  (see below)               | no                            |
+| Compatibility with Thrust   | **yes**, via flatten views (ad-hoc loop fusion), fancy-pointers/-references | no                         |
+| Used in production          | [QMCPACK](https://qmcpack.org/), [INQ](https://gitlab.com/npneq/inq) | ? , experience from Kokkos incarnation |
 
 ## Serialization
 

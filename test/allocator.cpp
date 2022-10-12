@@ -6,8 +6,6 @@
 
 #include "multi/array.hpp"
 
-//#include "../../multi/memory/stack.hpp" //TODO(correaa) test custom allocator
-
 #include<vector>
 
 namespace multi = boost::multi;

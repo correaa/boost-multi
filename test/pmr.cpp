@@ -11,7 +11,6 @@
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
-
 	{
 		char buffer[] = "0123456789012345678901234567890123456789012345678901234567890123456789";  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) use raw memory
 

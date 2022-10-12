@@ -13,14 +13,14 @@ namespace multi = boost::multi;
 using complex = std::complex<double>;
 
 struct multiplies_bind1st{
-	explicit multiplies_bind1st(multi::array<complex, 2>&& marr) : m_(std::move(marr)) {} // this produces a bug in nvcc11.0
+	explicit multiplies_bind1st(multi::array<complex, 2>&& marr) : m_(std::move(marr)) {}  // this produces a bug in nvcc11.0
  private:
 	multi::array<complex, 2> m_;
 };
 
 BOOST_AUTO_TEST_CASE(multi_construct_1d) {
 	multi::static_array<double, 1> arr(multi::extensions_t<1>{multi::iextension{10}}, 1.);
-//	multi::static_array<double, 1> arr(multi::array<double, 1>::extensions_type{10}, 1.);
+//  multi::static_array<double, 1> arr(multi::array<double, 1>::extensions_type{10}, 1.);
 	BOOST_REQUIRE( size(arr) == 10 );
 	BOOST_REQUIRE( arr[1] == 1. );
 }

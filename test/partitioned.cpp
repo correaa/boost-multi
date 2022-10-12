@@ -108,7 +108,7 @@ template<class T> class propagate_const<T const&>{
 };
 
 BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
-	multi::array<double, 2> arr = { // arr[walker][encoded_property] // 7 walkers
+	multi::array<double, 2> arr = {  // arr[walker][encoded_property]  // 7 walkers
 		{99., 99., 0.00, 0.01, 0.10, 0.11, 0.20, 0.21, 99.},
 		{99., 99., 1.00, 1.01, 1.10, 1.11, 1.20, 1.21, 99.},
 		{99., 99., 2.00, 2.01, 2.10, 2.11, 2.20, 2.21, 99.},
@@ -143,10 +143,10 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 		using raw_source_reference = decltype(std::declval<multi::array<double, 2>&>()[0]);
 		using internal_array_type = decltype(std::declval<raw_source_reference>()({2, 8}).partitioned(3));
 	public:
-		propagate_const<double&> prop1;   // NOLINT(misc-non-private-member-variables-in-classes)
-		propagate_const<double&> prop2;   // NOLINT(misc-non-private-member-variables-in-classes)
-		internal_array_type slater_array; // NOLINT(misc-non-private-member-variables-in-classes)
-		propagate_const<double&> prop3;   // NOLINT(misc-non-private-member-variables-in-classes)
+		propagate_const<double&> prop1;    // NOLINT(misc-non-private-member-variables-in-classes)
+		propagate_const<double&> prop2;    // NOLINT(misc-non-private-member-variables-in-classes)
+		internal_array_type slater_array;  // NOLINT(misc-non-private-member-variables-in-classes)
+		propagate_const<double&> prop3;    // NOLINT(misc-non-private-member-variables-in-classes)
 		explicit walker_ref(raw_source_reference&& row) : prop1{row[0]}, prop2{row[1]}, slater_array{row({2, 8}).partitioned(3)}, prop3{row[8]}{}
 	};
 
@@ -175,7 +175,7 @@ BOOST_AUTO_TEST_CASE(array_partitioned_add_to_last) {
 
 	auto strides = std::apply([](auto... strds) {return std::array<std::ptrdiff_t, sizeof...(strds)>{{strds...}};}, arr.strides());
 
-	BOOST_REQUIRE( std::is_sorted(strides.rbegin(), strides.rend()) and arr.num_elements() == arr.nelems() ); // contiguous c-ordering
+	BOOST_REQUIRE( std::is_sorted(strides.rbegin(), strides.rend()) and arr.num_elements() == arr.nelems() );  // contiguous c-ordering
 
 	auto&& A4 = arr.reinterpret_array_cast<double>(1);
 

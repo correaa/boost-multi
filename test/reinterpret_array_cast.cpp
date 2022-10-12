@@ -37,8 +37,21 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_complex_to_real_extra_dimensio
 	multi::array<complex, 1> arr(multi::extensions_t<1>{multi::iextension{100}}, complex{1., 2.});
 	BOOST_REQUIRE(  size(arr) == 100 );
 
-	BOOST_REQUIRE( real(arr[0]) == 1. );
-	BOOST_REQUIRE( imag(arr[0]) == 2. );
+	#if not defined(__circle_build__)  // TODO(correaa)
+	{
+		complex arr0 = arr[0];
+		BOOST_TEST_REQUIRE( arr0.real() == 1. );
+		BOOST_TEST_REQUIRE( arr0.imag() == 2. );
+	}
+
+	BOOST_TEST_REQUIRE( arr[0].real() == 1. );
+	BOOST_TEST_REQUIRE( arr[0].imag() == 2. );
+
+	BOOST_TEST_REQUIRE( std::real(arr[0]) == 1. );
+	BOOST_TEST_REQUIRE( std::imag(arr[0]) == 2. );
+
+	BOOST_TEST_REQUIRE( real(arr[0]) == 1. );
+	BOOST_TEST_REQUIRE( imag(arr[0]) == 2. );
 
 	BOOST_REQUIRE(( arr[0] == complex{1., 2.} ));
 
@@ -51,11 +64,12 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_complex_to_real_extra_dimensio
 	BOOST_REQUIRE(( sizes(arr3)==decltype(sizes(arr3)){100, 2} ));
 	BOOST_REQUIRE( arr3[5][0] == real(arr[5]) );
 	BOOST_REQUIRE( arr3[5][1] == imag(arr[5]) );
+	#endif
 }
 
 BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_tuple_as_extra_dimension) {
 	using vector3 = std::array<double, 3>;
-//	using vector3 = std::tuple<double, double, double>; // for tuples reinterpret_array_cast is implementation dependent!!
+//  using vector3 = std::tuple<double, double, double>; // for tuples reinterpret_array_cast is implementation dependent!!
 
 	vector3 v3d;
 	// NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast, cppcoreguidelines-avoid-c-arrays, hicpp-avoid-c-arrays, modernize-avoid-c-arrays): test
@@ -95,7 +109,7 @@ template<class T> struct complex_dummy{T real; T imag;};
 BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast) {
 {
 	std::complex<double> cee{1, 2};
-	auto *ptr = reinterpret_cast<complex_dummy<double>*>(&cee); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+	auto *ptr = reinterpret_cast<complex_dummy<double>*>(&cee);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	ptr->real = 11;
 	BOOST_REQUIRE(real(cee)==11);
 }
@@ -113,7 +127,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_realcomplex) {
 	using complex = std::complex<double>;
 {
 	complex cee{1, 2};
-	auto *conjd_cee = reinterpret_cast<std::array<double, 2>*>(&cee); // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+	auto *conjd_cee = reinterpret_cast<std::array<double, 2>*>(&cee);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	(*conjd_cee)[0] = 11;
 	BOOST_REQUIRE( conjd_cee );
 	BOOST_REQUIRE(real(cee)==11);
@@ -143,7 +157,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_pair_to_complex) {
 	multi::array<complex, 2> const& Aconst = arr;
 	auto&& A_block = Aconst({0, 5}, {0, 5});
 
-	auto const& Apair_block = A_block.template reinterpret_array_cast<pair const>(); // const is important // cppcheck 1.90 needs `template` to avoid internal bug
+	auto const& Apair_block = A_block.template reinterpret_array_cast<pair const>();  // const is important // cppcheck 1.90 needs `template` to avoid internal bug
 	BOOST_REQUIRE( &Apair_block[1][2] == static_cast<void*>(&arr[1][2]) );
 
 	auto&& Adoubles_block = A_block.reinterpret_array_cast<double const>(2);

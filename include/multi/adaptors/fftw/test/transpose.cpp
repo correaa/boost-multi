@@ -34,15 +34,15 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 
 	 {
 		auto const in = [] {
-		//	multi::array<complex, 2> ret({10137, 9973});
-		//	multi::array<complex, 2> ret({1013, 997});
+		//  multi::array<complex, 2> ret({10137, 9973});
+		//  multi::array<complex, 2> ret({1013, 997});
 			multi::array<complex, 2> ret({101, 99});
 			std::generate(ret.data_elements(), ret.data_elements() + ret.num_elements(),
 				[eng = std::default_random_engine{std::random_device{}()}, uniform_01 = std::uniform_real_distribution<>{}]() mutable{
 					return complex{uniform_01(eng), uniform_01(eng)};
 				}
 			);
-		//	std::cout<<"memory size "<< ret.num_elements()*sizeof(complex)/1e6 <<" MB\n";
+		//  std::cout<<"memory size "<< ret.num_elements()*sizeof(complex)/1e6 <<" MB\n";
 			return ret;
 		}();
 

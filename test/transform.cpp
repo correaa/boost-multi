@@ -13,7 +13,7 @@ namespace test {
 		template<class T>
 		constexpr auto operator()(T const& value) const -> decltype(-value) {return -value;}
 	} neg;
-} // end namespace test
+}  // end namespace test
 
 namespace test {
 
@@ -63,7 +63,7 @@ class involuter {
 	using iterator_category = typename std::iterator_traits<It>::iterator_category;
 
 	constexpr explicit involuter(It it) : it_{std::move(it)} {}
-	constexpr involuter(Involution /*stateless*/, It it) : it_{std::move(it)} {}// f_{std::move(f)}{}
+	constexpr involuter(Involution /*stateless*/, It it) : it_{std::move(it)} {}  // f_{std::move(f)}{}
 	template<class Other>
 	explicit involuter(involuter<Involution, Other> const& other) : it_{other.it_} {}
 
