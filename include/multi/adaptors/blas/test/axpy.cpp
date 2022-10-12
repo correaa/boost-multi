@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_operator_minus) {
 	BOOST_REQUIRE( X[0] == 0. );
 }
 
-#if CUDA_FOUND
+#if 0
 #include<thrust/complex.h>
 BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex_thrust) {
 	using complex = thrust::complex<double>;
@@ -143,4 +143,3 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex_thrust) {
 	BOOST_REQUIRE( A[1][2] == 2.*B[2] + AC[1][2] );
 }
 #endif
-
