@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE(rvalue_assignments) {
 	*linear2() = *linear1();
 }
 
-#if 0 // self-move-assigment is a standard warning in clang (-Wmove)
+#if 0  // self-move-assigment is a standard warning in clang (-Wmove)
 BOOST_AUTO_TEST_CASE(self_assigment) {
 	multi::array<double, 1> A = {1., 2., 3.};
 	A = std::move(A);

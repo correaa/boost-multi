@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_lambda) {
 	BOOST_REQUIRE( conjd_arr[0] == std::conj(arr[0]) );
 	BOOST_REQUIRE( conjd_arr[1] == std::conj(arr[1]) );
 
-//	Ac[0] = 5. + 4.*I;  // this doesn't compile, good!
+//  Ac[0] = 5. + 4.*I;  // this doesn't compile, good!
 	BOOST_REQUIRE( conjd_arr[0] == 1. - 2.*I );
 }
 
@@ -50,11 +50,12 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_lambda_with_const_return)
 	multi::array<complex, 1> arr = { 1. + 2.*I,  3. +  4.*I};
 
 	// g++ -std=20 needs the transformation (lambda) to be noexcept
-	auto const& conjd_arr = arr.element_transformed([](auto const& cee) noexcept -> auto const {return std::conj(cee);});  // NOLINT(readability-const-return-type) to disable assignment
+	// NOLINTNEXTLINE(readability-const-return-type) a way to disable assignment
+	auto const& conjd_arr = arr.element_transformed([](auto const& cee) noexcept -> auto const {return std::conj(cee);});
 	BOOST_REQUIRE( conjd_arr[0] == std::conj(arr[0]) );
 	BOOST_REQUIRE( conjd_arr[1] == std::conj(arr[1]) );
 
-//	Ac[0] = 5. + 4.*I;  // this doesn't compile, good!
+//  Ac[0] = 5. + 4.*I;  // this doesn't compile, good!
 	BOOST_REQUIRE( conjd_arr[0] == 1. - 2.*I );
 }
 
@@ -117,8 +118,8 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_mutable_proxy) {
 BOOST_AUTO_TEST_CASE(transform_ptr_single_value) {
 	complex cee = 1. + 2.*I;
 
-	// g++ -std=20 needs the transformation (lambda) to be noexcept
-	constexpr auto conj_ro = [](auto const& zee) noexcept {return std::conj(zee);};  // NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
+	// NOLINTNEXTLINE(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
+	constexpr auto conj_ro = [](auto const& zee) noexcept {return std::conj(zee);};	 // g++ -std=20 needs the transformation (lambda) to be noexcept
 
 	multi::transform_ptr<complex, decltype(conj_ro), complex*> conjd_ceeP{&cee, conj_ro};
 	BOOST_REQUIRE( *conjd_ceeP == std::conj(1. + 2.*I) );
@@ -127,8 +128,8 @@ BOOST_AUTO_TEST_CASE(transform_ptr_single_value) {
 BOOST_AUTO_TEST_CASE(transform_ptr_1D_array) {
 	multi::array<complex, 1> arr = { 1. + 2.*I,  3. +  4.*I};
 
-	// g++ -std=20 needs the transformation (lambda) to be noexcept
-	constexpr auto conj_ro = [](auto const& zee) noexcept {return std::conj(zee);};  // NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
+	// NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
+	constexpr auto conj_ro = [](auto const& zee) noexcept {return std::conj(zee);};	 // g++ -std=20 needs the transformation (lambda) to be noexcept
 
 	auto const& conjd_arr = arr.element_transformed(conj_ro);
 	BOOST_REQUIRE( conjd_arr[0] == conj_ro(arr[0]) );
@@ -196,7 +197,7 @@ BOOST_AUTO_TEST_CASE(indirect_transformed) {
 }
 
 BOOST_AUTO_TEST_CASE(indirect_transformed_carray) {
-	double carr[5][3] = { // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) testing legacy types
+	double carr[5][3] = {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) testing legacy types
 		{ 0.0,  1.0,  2.0},
 		{10.0, 11.0, 12.0},
 		{20.0, 21.0, 22.0},
@@ -207,7 +208,8 @@ BOOST_AUTO_TEST_CASE(indirect_transformed_carray) {
 	using index_t = std::vector<double>::size_type;
 	multi::array<index_t, 1> const arr = {4, 3, 2, 1, 0};
 
-	auto&& indirect_v = arr.element_transformed([&carr](index_t idx) noexcept -> double(&)[3] {return carr[idx];});  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+	auto&& indirect_v = arr.element_transformed([&carr](index_t idx) noexcept -> double(&)[3] {return carr[idx];});
 
 	BOOST_REQUIRE( &indirect_v[1][2] ==  &carr[3][2] );
 	BOOST_REQUIRE(  indirect_v[1][2] ==  32.0 );

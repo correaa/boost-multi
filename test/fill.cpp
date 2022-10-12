@@ -9,7 +9,7 @@
 #include<algorithm>  // for transform
 #include<limits>
 #include<random>
-#include<type_traits> // enable_if_t
+#include<type_traits>  // enable_if_t
 
 // from Howard Hinnart hash
 static constexpr auto fnv1a(void const* key, std::size_t len, std::size_t hash) noexcept {  // NOLINT(bugprone-easily-swappable-parameters)
@@ -100,8 +100,8 @@ BOOST_AUTO_TEST_CASE(fill_member) {
 	BOOST_REQUIRE(   d2D.elements()[3]      == 18.                 );
 	BOOST_REQUIRE( &*d2D.elements().begin() == d2D.data_elements() );
 	BOOST_REQUIRE( &*d2D.elements().end()   == d2D.data_elements() + d2D.num_elements() );
-//	std::fill( d2D.elements().begin(), d2D.elements().end() , 99. );
-//	multi::adl_fill_n( d2D.elements().begin(), d2D.elements().size(), 99. );
+//  std::fill( d2D.elements().begin(), d2D.elements().end() , 99. );
+//  multi::adl_fill_n( d2D.elements().begin(), d2D.elements().size(), 99. );
 	d2D.elements().fill(99.);
 
 	BOOST_REQUIRE( d2D[1][1] == 99. );

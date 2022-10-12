@@ -246,12 +246,11 @@ BOOST_AUTO_TEST_CASE(elements_rvalues_assignment) {
 //  std::move(v[1]) = 99.;  // does not compile
 
 //  double a = 5.;
-//	std::move(a) = 9.;  // does not compile
+//  std::move(a) = 9.;  // does not compile
 //  BOOST_REQUIRE( a == 9. );
 
 	multi::array<double, 1> arr1 = {1., 2., 3.};
 	multi::array<double, 1> arr2 = {1., 2., 3.};
 	std::move(arr1) = arr2;  // this compiles TODO(correaa) should it?
 }
-
 #endif

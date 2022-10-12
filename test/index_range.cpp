@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE(multi_range) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_range_in_constexpr) {
-	BOOST_REQUIRE( multi::extension_t<int>{5} == 5 ); // this is not a constexpr in cuda 10
+	BOOST_REQUIRE( multi::extension_t<int>{5} == 5 );
 	BOOST_REQUIRE(( multi::extension_t<int>{5, 12}.contains(10) ));
 
 	multi::range<int> irng{5, 12};

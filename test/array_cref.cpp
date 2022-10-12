@@ -35,9 +35,8 @@ BOOST_AUTO_TEST_CASE(array_cref) {
 	BOOST_REQUIRE(  F2D[7][8] == 3. );
 	BOOST_REQUIRE( &A2D[7][8] == &F2D[7][8] );
 
-//#if defined(__cpp_deduction_guides) and not defined(__NVCC__)
+//  #if defined(__cpp_deduction_guides) and not defined(__NVCC__)
 //  multi::array_ref G2D(dc.data(), {10, 10});  // TODO(correaa)
 //  BOOST_REQUIRE( G2D == D2D );
-//#endif
+//  #endif
 }
-
