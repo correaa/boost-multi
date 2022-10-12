@@ -12,7 +12,7 @@
 template<class T>
 class n_random_complex {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 	std::size_t n_ = 0;
-    mutable std::mt19937 gen_{std::random_device{}()};
+    mutable std::mt19937 gen_{std::random_device{}()};  // NOLINT(whitespace/braces) cpplint 1.6 bug
 	mutable std::uniform_real_distribution<> dist_{-1., 1.};
 
  public:
@@ -23,7 +23,7 @@ class n_random_complex {  // NOLINT(cppcoreguidelines-special-member-functions,h
 		n_random_complex<T> const* ptr_;
 		std::size_t n_;
 
-	 public:
+	 public:  // NOLINT(whitespace/indent) cpplint 1.6 bug
 		iterator(n_random_complex<T> const* ptr, std::size_t n) : ptr_{ptr}, n_{n} {}
 
 		auto operator*() const {return std::complex<T>{ptr_->dist_(ptr_->gen_), ptr_->dist_(ptr_->gen_)};}
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(fftw_shift) {
 	class watch : std::chrono::steady_clock {
 		time_point start_ = now();
 
-	 public:
+	 public:  // NOLINT(whitespace/indent) cpplint 1.6 bug
 		auto elapsed_sec() const {return std::chrono::duration<double>(now() - start_).count();}
 	};
 

@@ -36,8 +36,8 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_fft_move) {
 	in2 = multi::fftw::fft(std::move(in));
 
 	BOOST_REQUIRE( power(in2)/num_elements(in2) - power(in_copy) < 1e-8 );
-//	BOOST_REQUIRE( in2.base() == in_base );
-//	BOOST_REQUIRE( in.is_empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
+//  BOOST_REQUIRE( in2.base() == in_base );
+//  BOOST_REQUIRE( in.is_empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
 	#endif
 }
 
@@ -105,7 +105,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_naive) {
 	in = in.transposed();  // this is UB
 
 	BOOST_REQUIRE( in.size() == 3 );
-//	BOOST_REQUIRE( in != in_copy.transposed() );  // prove it is incorrect
+//  BOOST_REQUIRE( in != in_copy.transposed() );  // prove it is incorrect
 	BOOST_REQUIRE( in_base == in.base() );  // prove no allocation
 }
 
