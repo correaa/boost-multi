@@ -463,37 +463,37 @@ BOOST_AUTO_TEST_CASE(move_array_elements) {  // NOLINT(readability-function-cogn
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_view_swap) {
-	multi::array<int, 2> A({4, 5}, 99);
-	multi::array<int, 2> B({4, 5}, 88);
+	multi::array<int, 2> arrA({4, 5}, 99);
+	multi::array<int, 2> arrB({4, 5}, 88);
 
-	A().swap(B());
+	arrA().swap(arrB());
 
-	BOOST_REQUIRE( A[0][0] == 88 );
-	BOOST_REQUIRE( B[0][0] == 99 );
+	BOOST_REQUIRE( arrA[0][0] == 88 );
+	BOOST_REQUIRE( arrB[0][0] == 99 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_view_swap_dimension_1) {
-	multi::array<int, 2> A({4, 5}, 99);
-	multi::array<int, 2> B({4, 5}, 88);
+	multi::array<int, 2> arrA({4, 5}, 99);
+	multi::array<int, 2> arrB({4, 5}, 88);
 
-	A[0].swap(B[0]);
+	arrA[0].swap(arrB[0]);
 
-	BOOST_REQUIRE( A[0][0] == 88 );
-	BOOST_REQUIRE( B[0][0] == 99 );
+	BOOST_REQUIRE( arrA[0][0] == 88 );
+	BOOST_REQUIRE( arrB[0][0] == 99 );
 
-	BOOST_REQUIRE( A[1][0] == 99 );
-	BOOST_REQUIRE( B[1][0] == 88 );
+	BOOST_REQUIRE( arrA[1][0] == 99 );
+	BOOST_REQUIRE( arrB[1][0] == 88 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_array_view_swap_dimension_1_free) {
-	multi::array<int, 2> A({4, 5}, 99);
-	multi::array<int, 2> B({4, 5}, 88);
+	multi::array<int, 2> arrA({4, 5}, 99);
+	multi::array<int, 2> arrB({4, 5}, 88);
 
-	swap(A[0], B[0]);
+	swap(arrA[0], arrB[0]);
 
-	BOOST_REQUIRE( A[0][0] == 88 );
-	BOOST_REQUIRE( B[0][0] == 99 );
+	BOOST_REQUIRE( arrA[0][0] == 88 );
+	BOOST_REQUIRE( arrB[0][0] == 99 );
 
-	BOOST_REQUIRE( A[1][0] == 99 );
-	BOOST_REQUIRE( B[1][0] == 88 );
+	BOOST_REQUIRE( arrA[1][0] == 99 );
+	BOOST_REQUIRE( arrB[1][0] == 88 );
 }

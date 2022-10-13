@@ -2237,8 +2237,8 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	}
 	friend constexpr void swap(basic_array&& self, basic_array&& other) {std::move(self).swap(std::move(other));}
 
-	template<class A, typename = std::enable_if_t<not std::is_base_of_v<basic_array, std::decay_t<A>>>> friend constexpr void swap(basic_array&& self, A&& other) {self.swap(other);}
-	template<class A, typename = std::enable_if_t<not std::is_base_of_v<basic_array, std::decay_t<A>>>> friend constexpr void swap(A&& other, basic_array&& self) {self.swap(other);}
+	template<class A, typename = std::enable_if_t<not std::is_base_of_v<basic_array, std::decay_t<A>>>> friend constexpr void swap(basic_array&& self, A&& other) {std::move(self).swap(std::forward<A>(other));}
+	template<class A, typename = std::enable_if_t<not std::is_base_of_v<basic_array, std::decay_t<A>>>> friend constexpr void swap(A&& other, basic_array&& self) {std::move(self).swap(std::forward<A>(other));}
 
  private:
 	template<class A1, class A2>
