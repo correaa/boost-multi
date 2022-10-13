@@ -811,6 +811,7 @@ struct array : static_array<T, D, Alloc> {
 
 #ifndef NOEXCEPT_ASSIGNMENT
 	auto operator=(array&& other) noexcept -> array& {
+		if(this == std::addressof(other)) {return *this;}
 		clear();
 		this->base_ = other.base_;
 		if constexpr(allocator_traits<typename array::allocator_type>::propagate_on_container_move_assignment::value) {
@@ -910,8 +911,8 @@ struct array : static_array<T, D, Alloc> {
 		);  // paren is important here ext_type(...) for allow narrowing casts ^^^
 	}
 
-	auto reextent(typename array::extensions_type const& extensions) && -> array& {
-		if(extensions == this->extensions()) {return *this;}
+	auto reextent(typename array::extensions_type const& extensions) && -> array&& {
+		if(extensions == this->extensions()) {return std::move(*this);}
 		this->destroy();
 		this->deallocate();
 		this->layout_mutable() = typename array::layout_t{extensions};
@@ -921,21 +922,14 @@ struct array : static_array<T, D, Alloc> {
 			),
 			this->data_elements()  // used as hint
 		);
-		if constexpr(not std::is_trivially_default_constructible<typename array::element>{}) {  // TODO(correaa) convert into constexpr if
+		if constexpr(not std::is_trivially_default_constructible<typename array::element>{}) {
 			adl_alloc_uninitialized_value_construct_n(this->alloc(), this->base_, this->num_elements());
 		}
-
-		return *this;
+		return std::move(*this);
 	}
 
 	auto reextent(typename array::extensions_type const& extensions)  & -> array& {
 		if(extensions == this->extensions()) {return *this;}
-#if 0
-		array tmp(x, this->get_allocator());  // TODO(correaa) opportunity missed to use hint allocation
-		auto const is = intersection(this->extensions(), x);
-		tmp.apply(is) = this->apply(is);
-		swap(tmp);
-#else
 		auto&& tmp = typename array::ref{
 			this->static_::array_alloc::allocate(
 				static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(
@@ -945,7 +939,7 @@ struct array : static_array<T, D, Alloc> {
 			),
 			extensions
 		};
-		if constexpr(not std::is_trivially_default_constructible<typename array::element>{}) {  // TODO(correaa) convert into constexpr if
+		if constexpr(not std::is_trivially_default_constructible<typename array::element>{}) {
 			adl_alloc_uninitialized_value_construct_n(this->alloc(), tmp.data_elements(), tmp.num_elements());
 		}
 		auto const is = intersection(this->extensions(), extensions);
@@ -954,12 +948,12 @@ struct array : static_array<T, D, Alloc> {
 		this->deallocate();
 		this->base_ = tmp.base();
 		this->layout_mutable() = tmp.layout();
-#endif
 		return *this;
 	}
 
-	auto reextent(typename array::extensions_type const& extensions, typename array::element const& elem) && -> array& {
-		if(extensions == this->extensions()) {return *this;}
+#if 0
+	auto reextent(typename array::extensions_type const& extensions, typename array::element const& elem) && -> array&& {
+		if(extensions == this->extensions()) {return std::move(*this);}
 		this->destroy();
 		this->deallocate();
 		this->layout_mutable() = typename array::layout_t{extensions};
@@ -971,8 +965,9 @@ struct array : static_array<T, D, Alloc> {
 		);
 		this->uninitialized_fill_n(this->base_, static_cast<typename allocator_traits<typename array::allocator_type>::size_type>(this->num_elements()), elem);
 
-		return *this;
+		return std::move(*this);
 	}
+#endif
 
 	auto reextent(typename array::extensions_type const& exs, typename array::element const& elem) & -> array& {
 		if(exs == this->extensions()) {

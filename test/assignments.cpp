@@ -74,10 +74,18 @@ BOOST_AUTO_TEST_CASE(range_assignment) {
 }
 
 BOOST_AUTO_TEST_CASE(rearranged_assignment) {
-	multi::array<double, 4> tmp({14, 14, 7, 4});
-	multi::array<double, 5> src({2, 14, 14, 7, 2}); src[0][1][2][3][1] = 99.;
+	multi::array<int, 4> tmp({14, 14, 7, 4});
+	multi::array<int, 5> src({2, 14, 14, 7, 2}); src[0][1][2][3][1] = 99.;
 
 	BOOST_REQUIRE( extensions(tmp.unrotated().partitioned(2).transposed().rotated()) == extensions(src) );
+}
+
+BOOST_AUTO_TEST_CASE(rearranged_assignment_resize) {
+	multi::array<double, 2> arrA({4, 5});
+	multi::array<double, 2> arrB({2, 3});
+
+	arrB = arrA;
+	BOOST_REQUIRE( arrB.size() == 4 );
 }
 
 BOOST_AUTO_TEST_CASE(rvalue_assignments) {

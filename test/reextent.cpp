@@ -71,7 +71,10 @@ BOOST_AUTO_TEST_CASE(array_reextent_moved) {
 	BOOST_REQUIRE( arr[1][2] == 6. );
 
 	auto* const A_base = arr.base();
-	arr = std::move(arr).reextent({2, 3}, 99.);  // "arr = ..." suppresses linter bugprone-use-after-move,hicpp-invalid-access-moved
+	arr = std::move(arr).reextent({2, 3});  // "arr = ..." suppresses linter bugprone-use-after-move,hicpp-invalid-access-moved
+
+	BOOST_TEST_REQUIRE( arr.size() == 2 );
+	BOOST_REQUIRE( arr.num_elements() == 2L*3L );
 	BOOST_REQUIRE( num_elements(arr)== 2L*3L );
 	BOOST_TEST( arr[1][2] ==  6. );  // after move the original elments might not be the same
 
@@ -189,6 +192,20 @@ BOOST_AUTO_TEST_CASE(array_reextent_2d) {
 	BOOST_REQUIRE( arr[1][2] = 9. );
 	BOOST_REQUIRE( arr[11][22] = 9. );
 }
+
+BOOST_AUTO_TEST_CASE(array_reextent_2d_with_move) {
+	multi::array<int, 2> arr = {
+		{1, 2, 3},
+		{4, 5, 6}
+	};
+	BOOST_REQUIRE( arr.size() == 2 );
+
+	arr = std::move(arr).reextent({3, 2});
+
+	BOOST_REQUIRE( arr.size() == 3 );
+	BOOST_REQUIRE( arr[1][2] = 10 );
+}
+
 
 BOOST_AUTO_TEST_CASE(array_reextent_2d_array) {
 	multi::array<double, 2> arr({10, 20}, 4.);

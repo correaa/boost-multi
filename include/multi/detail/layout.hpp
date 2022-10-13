@@ -12,7 +12,6 @@
 
 #include "multi/detail/operators.hpp"
 
-//#include <tuple>        // for apply
 #include <type_traits>  // for make_signed_t
 #include <utility>      // for swap
 
@@ -115,14 +114,9 @@ struct extensions_t {
 	using indices_type = multi::detail::tuple_prepend_t<multi::index, typename extensions_t<D-1>::indices_type>;
 
 	[[nodiscard]] /*[[gnu::pure]]*/ constexpr auto from_linear(nelems_type const& n) const -> indices_type {
-	//	auto const sub_extensions = extensions_t<D-1>{detail::tuple_tail(this->base())};
 		auto const sub_num_elements = extensions_t<D-1>{tail(this->base())}.num_elements();
 		assert( sub_num_elements != 0 );
-	//	return multi::detail::tuple{n/sub_num_elements, sub_extensions.from_linear(n%sub_num_elements)};
-		return multi::detail::tuple{
-			n/sub_num_elements,
-			extensions_t<D-1>{tail(this->base())}.from_linear(n%sub_num_elements)
-		};
+		return multi::detail::tuple{n/sub_num_elements, extensions_t<D-1>{tail(this->base())}.from_linear(n%sub_num_elements)};
 	}
 
 	friend constexpr auto operator%(nelems_type idx, extensions_t const& extensions) {return extensions.from_linear(idx);}

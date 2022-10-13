@@ -14,7 +14,7 @@ namespace boost::multi {
 
 #ifndef NDEBUG
 // NOLINTNEXTLINE(clang-diagnostic-#pragma-messages)
-#pragma message "By including this header, the behavior of initialization of std::complex<T> in multi::array's changes. std::complex<T>  elements will not be initialized."
+#pragma message "By including this header, the behavior of initialization of std::complex<T> in multi::array's changes. std::complex<T> elements will not be initialized."
 #endif
 
 template<class T> struct is_trivially_default_constructible<std::complex<T>> : std::is_trivially_default_constructible<T> {};

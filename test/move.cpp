@@ -461,3 +461,39 @@ BOOST_AUTO_TEST_CASE(move_array_elements) {  // NOLINT(readability-function-cogn
 		BOOST_REQUIRE( arr[1].empty()     );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
 	}
 }
+
+BOOST_AUTO_TEST_CASE(multi_array_view_swap) {
+	multi::array<int, 2> arrA({4, 5}, 99);
+	multi::array<int, 2> arrB({4, 5}, 88);
+
+	arrA().swap(arrB());
+
+	BOOST_REQUIRE( arrA[0][0] == 88 );
+	BOOST_REQUIRE( arrB[0][0] == 99 );
+}
+
+BOOST_AUTO_TEST_CASE(multi_array_view_swap_dimension_1) {
+	multi::array<int, 2> arrA({4, 5}, 99);
+	multi::array<int, 2> arrB({4, 5}, 88);
+
+	arrA[0].swap(arrB[0]);
+
+	BOOST_REQUIRE( arrA[0][0] == 88 );
+	BOOST_REQUIRE( arrB[0][0] == 99 );
+
+	BOOST_REQUIRE( arrA[1][0] == 99 );
+	BOOST_REQUIRE( arrB[1][0] == 88 );
+}
+
+BOOST_AUTO_TEST_CASE(multi_array_view_swap_dimension_1_free) {
+	multi::array<int, 2> arrA({4, 5}, 99);
+	multi::array<int, 2> arrB({4, 5}, 88);
+
+	swap(arrA[0], arrB[0]);
+
+	BOOST_REQUIRE( arrA[0][0] == 88 );
+	BOOST_REQUIRE( arrB[0][0] == 99 );
+
+	BOOST_REQUIRE( arrA[1][0] == 99 );
+	BOOST_REQUIRE( arrB[1][0] == 88 );
+}
