@@ -816,7 +816,7 @@ struct basic_array
 
 	friend constexpr auto decay(basic_array const& self) -> decay_type {return self.decay();}
 	       constexpr auto decay()           const&    -> decay_type {
-		decay_type ret{std::move(modify(*this))};
+		decay_type ret{*this};
 		return ret;
 	}
 
@@ -2224,12 +2224,17 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	/*[[gnu::pure]]*/ friend constexpr auto operator< (basic_array const& self, basic_array const& other) -> bool {return lexicographical_compare(self, other);}
 	/*[[gnu::pure]]*/ friend constexpr auto operator<=(basic_array const& self, basic_array const& other) -> bool {return lexicographical_compare(self, other) or self == other;}
 
-	template<class Array> constexpr void swap(Array&& other) && {
-		assert(this->extension() == other.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-		adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(other)));
-	}
-	template<class A> constexpr void swap(A&& other) & {return swap(std::forward<A>(other));}
+//  template<class Array> constexpr void swap(Array&& other) && {  // TODO(correaa) use .elements() to implement swap
+//  	assert(this->extension() == other.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+//  	adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(other)));
+//  }
+//  template<class A> constexpr void swap(A&& other) &  {return swap(std::forward<A>(other));}
+//  template<class A> constexpr void swap(A&& other) && {return swap(std::forward<A>(other));}
 
+	constexpr void swap(basic_array&& other) && {
+		assert(this->extension() == other.extension());
+		adl_swap_ranges(this->elements().begin(), this->elements().end(), other.elements().begin());
+	}
 	friend constexpr void swap(basic_array&& self, basic_array&& other) {std::move(self).swap(std::move(other));}
 
 	template<class A, typename = std::enable_if_t<not std::is_base_of_v<basic_array, std::decay_t<A>>>> friend constexpr void swap(basic_array&& self, A&& other) {self.swap(other);}

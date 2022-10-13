@@ -24,6 +24,10 @@ BOOST_AUTO_TEST_CASE(iterator_1d) {
 		multi::array<double, 1>::iterator barr = begin(arr);
 		BOOST_REQUIRE( cbarr == barr );
 
+		barr += 1;
+		barr -= 1;
+		BOOST_REQUIRE( cbarr == barr );
+
 		multi::array<double, 1>::const_iterator cbarr2 = begin(arr);
 		BOOST_REQUIRE( cbarr2 == cbarr );
 	}
@@ -127,6 +131,16 @@ BOOST_AUTO_TEST_CASE(iterator_semantics) {
 
 	it = begin(arr);
 	BOOST_REQUIRE( it == begin(arr) );
+
+	it += 1;
+	it -= 1;
+	BOOST_REQUIRE( it == begin(arr) );
+
+	auto const& arrc = arr();
+	BOOST_REQUIRE( &arrc[0][0][0] == &arr[0][0][0] );
+
+	auto const& arrc2 = arr();
+	BOOST_REQUIRE( &arrc == &arrc2 );
 
 	multi::array<double, 3>::iterator it2 = begin(arr);
 	BOOST_REQUIRE(it == it2);
