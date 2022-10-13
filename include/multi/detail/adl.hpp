@@ -195,7 +195,7 @@ auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size
 			for(; count > 0; ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 				_::construct(alloc, std::addressof(*current));
 			}
-		// LCOV_EXCL_START
+		// LCOV_EXCL_START  // TODO(correaa) add test
 		} catch(...) {
 			for(; current != first; ++first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 				_::destroy(alloc, std::addressof(*first));
