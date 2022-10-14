@@ -300,7 +300,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_power_plan) {
 	multi::array<complex, 2> out(extensions(in));
 	multi::fftw::plan const pln{in, out, fftw::forward, fftw::preserve_input};
 	pln();
-	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-8 );
+	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-7 );
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_power_plan_modern) {
