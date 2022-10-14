@@ -211,7 +211,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		array_alloc::uninitialized_fill_n(this->base(), static_cast<typename allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);
 	}
 
-	explicit static_array(typename static_array::extensions_type extensions, typename allocator_traits<Alloc>::const_void_pointer hint)
+	template<class ConstVoidPointer, std::enable_if_t<std::is_convertible<ConstVoidPointer, typename allocator_traits<Alloc>::const_void_pointer>::value, int> =0>
+	explicit static_array(typename static_array::extensions_type extensions, ConstVoidPointer hint)
 	: array_alloc{}
 	, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements()), hint), extensions} {}
 
