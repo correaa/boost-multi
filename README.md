@@ -655,7 +655,7 @@ This is a slight departure from the design of STL, which eagerly initializes ele
 For types that afford partially formed state, elements can be later specified via assigment or assigning algorithms (e.g. copy or transform destination).
 Otherwise, if initialization is necessary, it can be enforced by passing a second argument, after the extensions.
 ```
-multi::array<int, 2> A2({2, 3}, 0);  // or in general multi::array<T, 2>({2, 3}, T{});
+multi::array<int, 2> A2({2, 3}, 0);  // in general: multi::array<T, 2>({2, 3}, T{}); or simply multi::array<T, 2>({2, 3}, {})
 ```
 
 This is particularly positive for *numeric* types in which assigment can be handled by external low-level libraries; 
