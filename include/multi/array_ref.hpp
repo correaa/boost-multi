@@ -10,6 +10,7 @@
 #include "./config/ASSERT.hpp"
 #include "./config/DELETE.hpp"
 #include "./config/MARK.hpp"
+#include "./config/VERSION.hpp"
 
 #include "./detail/adl.hpp"
 #include "./detail/layout.hpp"
