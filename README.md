@@ -254,10 +254,10 @@ multi::array_ref<double, 2> B({2, 6}, dp);
 ...
 delete[] dp;
 ```
-Array references do not own memory and can not be resized or "reseated" to refer to a different location.
+Array references do not own memory and, just as language references, can not be rebinded (resized or "reseated") to refer to a different location.
 Since `array_ref` is an array reference, it can "dangle" if the the original memory is deallocated.
 
-Array objects own the elements it contains and can be resized;
+Array objects (`multi::array`), in constrast, own the elements it contains and can be resized;
 `array` is initialized by specifying the index extensions (and optionally a default value).
 
 ```cpp
@@ -637,6 +637,30 @@ int main() {
 //  fill_99( coll1_take3_const );  // doesn't compile because coll1_take3_const is const
 }
 ```
+
+## Partially formed elements
+
+The library can take advantage of types with [partially formed](https://marcmutz.wordpress.com/tag/partially-formed-state/) state:
+If they are trivial to construct (e.g. built-in types), `multi::array`s does not initialize individual elements;
+otherwise the default constructor for each element is used.
+
+For example, after construction the integer values of the 6 elements of this array are unspecified (partially formed).
+```
+multi::array<int, 2> A2({2, 3});
+```
+
+No behavior of the program should depend on these values. (Address sanitizer and memory checker can detect this.)
+This is a slight departure from the design of STL, which eagerly initializes elements.
+
+For types that afford partially formed state, elements can be later specified via assigment or assigning algorithms (e.g. copy or transform destination).
+Otherwise, if initialization is necessary, it can be enforced by passing a second argument, after the extensions.
+```
+multi::array<int, 2> A2({2, 3}, 0);  // or in general multi::array<T, 2>({2, 3}, T{});
+```
+
+This is particularly positive for *numeric* types in which assigment can be handled by external low-level libraries; 
+or when data seats in GPUs (initialization would require a separate kernel launch and subsequent synchronization).
+(Unfortunatelly, in this aspect, STL's `std::complex<double>` was designed as not trivially constructible, so it cannot take advantage of this feature directly out-of-the-box.)
 
 ## Type Requirements
 
