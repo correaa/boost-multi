@@ -310,3 +310,8 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string_ctad) {
 	}
 	#endif
 }
+
+BOOST_AUTO_TEST_CASE(partially_formed) {
+	multi::array<double, 2> arr1({10, 10}, double{});
+	multi::array<double, 2> arr2({10, 10},       {});
+}
