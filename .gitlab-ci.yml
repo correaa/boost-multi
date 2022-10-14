@@ -42,6 +42,17 @@ G++12STD20MEMCHK:
     - ctest -j 2 --output-on-failure --overwrite MemoryCheckCommandOptions="-q --tool=memcheck --leak-check=yes --num-callers=51 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all" -T memcheck
   needs: ["G++SANICHECKCOV"]
 
+NVCC:
+  stage: build
+  image: nvidia/cuda:11.8.0-devel-ubuntu22.04
+    - apt-get update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - mkdir build && cd build
+    - nvcc --version
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
+    - cmake . --build --parallel 2 || make VERBOSE=1
+    - ctest -j 2 --output-on-failure
+  needs: ["G++SANICHECKCOV"]
+
 g++:
   stage: build
   script:
