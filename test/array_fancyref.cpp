@@ -143,7 +143,7 @@ auto copy(It/*first*/, It/*last*/, multi::array_iterator<T, 2, fancy::ptr<T>> de
 
 ////////////////////////////////////////////////////////////////////////////////
 // user code
-////////////////////////////////////////////////////////////////////////////////
+//////////////////00//0////////////////////////////////////////////////////////////
 
 BOOST_AUTO_TEST_CASE(multi_fancy) {
 	namespace multi = boost::multi;
@@ -151,4 +151,7 @@ BOOST_AUTO_TEST_CASE(multi_fancy) {
 	multi::array<double, 2, fancy::allocator<double>> arr({5, 5});
 	BOOST_REQUIRE( arr.size() == 5 );
 	BOOST_REQUIRE( arr[1][1] == arr[2][2] );
+
+	multi::array<double, 2, fancy::allocator<double>> arr2({0, 0});
+	BOOST_REQUIRE( arr2.size() == 0 );
 }
