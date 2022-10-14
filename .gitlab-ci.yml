@@ -29,15 +29,15 @@ G++SANICHECKCOV:
         coverage_format: cobertura
         path: build/coverage.xml
 
-  coverage: /^\s*lines:\s*\d+.\d+\%/
-  artifacts:
-    name: ${CI_JOB_NAME}-${CI_COMMIT_REF_NAME}-${CI_COMMIT_SHA}
-    expire_in: 2 days
-    reports:
-      coverage_report:
-        coverage_format: cobertura
-        path: build/coverage.xml
-
+G++12STD20IWYUMEMCHK:
+  stage: build
+  image: debian:testing
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++-12 pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev iwyu valgrind
+    - CXX=g++-12 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="iwyu"
+    - make -j 2 || make VERBOSE=1
+    - ctest -j 2 --output-on-failure --overwrite MemoryCheckCommandOptions="-q --tool=memcheck --leak-check=yes --num-callers=51 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all" -T memcheck
+  needs: ["G++SANICHECKCOV"]
 
 g++:
   stage: build
