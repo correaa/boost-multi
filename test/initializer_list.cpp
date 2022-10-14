@@ -314,4 +314,9 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string_ctad) {
 BOOST_AUTO_TEST_CASE(partially_formed) {
 	multi::array<double, 2> arr1({10, 10}, double{});
 	multi::array<double, 2> arr2({10, 10},       {});
+	multi::array<double, 2> arr2({10, 10},      0.0);
+
+	BOOST_REQUIRE( arr1[0][0] == 0.0);
+	BOOST_REQUIRE( arr2[0][0] == 0.0);
+	BOOST_REQUIRE( arr3[0][0] == 0.0);
 }
