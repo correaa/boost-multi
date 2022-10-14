@@ -426,7 +426,7 @@ cuda-11.8:
   image: nvidia/cuda:11.8.0-devel-ubuntu22.04
 #debian:stable
   script:
-    - apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - apt-get update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - /usr/local/cuda-11.8/bin/nvcc --version
     - mkdir build && cd build
     - cmake .. -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/usr/local/cuda-11.8/bin/nvcc -DCMAKE_CXX_STANDARD=17 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_FLAGS="-gencode arch=compute_61,code=sm_61"
