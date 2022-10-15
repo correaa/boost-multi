@@ -30,6 +30,11 @@ G++SANICHECKCOV:
       coverage_report:
         coverage_format: cobertura
         path: build/coverage.xml
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
 
 G++12STD20MEMCHK:
   stage: build
@@ -41,10 +46,16 @@ G++12STD20MEMCHK:
     - make -j 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure --overwrite MemoryCheckCommandOptions="-q --tool=memcheck --leak-check=yes --num-callers=51 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all" -T memcheck
   needs: ["G++SANICHECKCOV"]
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
 
 NVCC:
   stage: build
   image: nvidia/cuda:11.8.0-devel-ubuntu22.04
+  script:
     - apt-get update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
     - nvcc --version
@@ -52,6 +63,11 @@ NVCC:
     - cmake . --build --parallel 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
   needs: ["G++SANICHECKCOV"]
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
 
 g++:
   stage: build
