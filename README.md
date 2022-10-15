@@ -254,10 +254,10 @@ multi::array_ref<double, 2> B({2, 6}, dp);
 ...
 delete[] dp;
 ```
-Array references do not own memory and can not be resized or "reseated" to refer to a different location.
+Array references do not own memory and, just as language references, can not be rebinded (resized or "reseated") to refer to a different location.
 Since `array_ref` is an array reference, it can "dangle" if the the original memory is deallocated.
 
-Array objects own the elements it contains and can be resized;
+Array objects (`multi::array`), in constrast, own the elements it contains and can be resized;
 `array` is initialized by specifying the index extensions (and optionally a default value).
 
 ```cpp
@@ -638,6 +638,30 @@ int main() {
 }
 ```
 
+## Partially formed elements
+
+The library can take advantage of types with [partially formed](https://marcmutz.wordpress.com/tag/partially-formed-state/) state:
+If they are trivial to construct (e.g. built-in types), `multi::array`s does not initialize individual elements;
+otherwise the default constructor for each element is used.
+
+For example, after construction the integer values of the 6 elements of this array are unspecified (partially formed).
+```
+multi::array<int, 2> A2({2, 3});
+```
+
+No behavior of the program should depend on these values. (Address sanitizer and memory checker can detect this.)
+This is a slight departure from the design of STL, which eagerly initializes elements.
+
+For types that afford partially formed state, elements can be later specified via assigment or assigning algorithms (e.g. copy or transform destination).
+Otherwise, if initialization is necessary, it can be enforced by passing a second argument, after the extensions.
+```
+multi::array<int, 2> A2({2, 3}, 0);  // in general: multi::array<T, 2>({2, 3}, T{}); or simply multi::array<T, 2>({2, 3}, {})
+```
+
+This is particularly positive for *numeric* types in which assigment can be handled by external low-level libraries; 
+or when data seats in GPUs (initialization would require a separate kernel launch and subsequent synchronization).
+(Unfortunatelly, in this aspect, STL's `std::complex<double>` was designed as not trivially constructible, so it cannot take advantage of this feature directly out-of-the-box.)
+
 ## Type Requirements
 
 The design tries to impose the minimum possible requirements over the types that parameterize the arrays.
@@ -675,14 +699,14 @@ The arrays support their allocators and fancy pointers (`boost::interprocess::of
 using namespace boost::interprocess;
 using manager = managed_mapped_file;
 template<class T> using mallocator = allocator<T, manager::segment_manager>;
-decltype(auto) get_allocator(manager& m){return m.get_segment_manager();}
+decltype(auto) get_allocator(manager& m) {return m.get_segment_manager();}
 
 template<class T, auto D> using marray = multi::array<T, D, mallocator<T>>;
 
-int main(){
+int main() {
 {
 	manager m{create_only, "mapped_file.bin", 1 << 25};
-	auto&& arr2d = *m.construct<marray<double, 2>>("arr2d")(std::tuple{1000, 1000}, 0.0, get_allocator(m));
+	auto&& arr2d = *m.construct<marray<double, 2>>("arr2d")(marray<double, 2>::extensions_type{1000, 1000}, 0.0, get_allocator(m));
 	arr2d[4][5] = 45.001;
 }
 // imagine execution restarts here, the file "mapped_file.bin" persists
@@ -1030,7 +1054,7 @@ int main() {
 which uses the default Thrust backend (CUDA, OpenMP or TBB).
 Universal memory (accessible from normal CPU code) can be used with `thrust::universal_allocator` instead.
 
-More specific allocators can be used to force certain Thrust backends, for example CUDA managed memory:
+More specific allocators can be used ensure CUDA backends, for example CUDA managed memory:
 
 ```cpp
 #include <thrust/system/cuda/memory.h>
@@ -1038,9 +1062,9 @@ More specific allocators can be used to force certain Thrust backends, for examp
 	multi::array<double, 2, thrust::cuda::universal_allocator<double>> A({10,10});
 ```
 
-Multi doesn't have a dependency on Thrust (or viseversa); 
+Multi doesn't have a dependency on Thrust (or viseversa);
 they just work well together, both in terms of semantics and efficiency.
-Certain "patches" (to correct Thrust behavior) can be applied to Thrust to gain extra efficiency and achieve near native speed by adding the `#include<multi/adaptors/thrust.hpp>`.
+Certain "patches" (to improve Thrust behavior) can be applied to Thrust to gain extra efficiency and achieve near native speed by adding the `#include<multi/adaptors/thrust.hpp>`.
 
 Multi can be used on existing memory in a non-invasive way via (non-owning) reference arrays:
 

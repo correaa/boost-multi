@@ -16,7 +16,7 @@ G++SANICHECKCOV:
     - mkdir build && cd build
     - CXX=g++-9 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--inline-suppr;--std=c++17;--check-config;--error-exitcode=1" -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1 -fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all --coverage -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="-lgcov --coverage"
     - make -j 2 || make VERBOSE=1
-    - ASAN_OPTIONS="new_delete_type_mismatch=0" ctest -j 2 --output-on-failure -T Test
+    - ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1" ctest -j 2 --output-on-failure -T Test
     - bash <(curl -s https://codecov.io/bash)
     - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
     - lcov --directory . --capture --output-file coverage.info
@@ -30,6 +30,11 @@ G++SANICHECKCOV:
       coverage_report:
         coverage_format: cobertura
         path: build/coverage.xml
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
 
 G++12STD20MEMCHK:
   stage: build
@@ -41,6 +46,63 @@ G++12STD20MEMCHK:
     - make -j 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure --overwrite MemoryCheckCommandOptions="-q --tool=memcheck --leak-check=yes --num-callers=51 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all" -T memcheck
   needs: ["G++SANICHECKCOV"]
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+
+NVCC:
+  stage: build
+  image: nvidia/cuda:11.8.0-devel-ubuntu22.04
+  script:
+    - apt-get update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - mkdir build && cd build
+    - nvcc --version
+    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
+    - cmake . --build --parallel 2 || make VERBOSE=1
+    - ctest -j 2 --output-on-failure
+  needs: ["G++SANICHECKCOV"]
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+
+NVCC-GPU:
+  stage: build
+  tags:
+    - intel_compiler
+  script:
+    - mkdir build && cd build
+    - /usr/local/cuda/bin/nvcc --version
+    - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_ARCHITECTURES=70 -DCMAKE_CUDA_FLAGS="-ccbin=g++-9" -DCMAKE_CXX_STANDARD=17
+    - make -j8 -output-sync=recurse
+    - ctest --output-on-failure --timeout 600
+    - ../build/include/multi/adaptors/thrust/test/speed.cu.x
+    - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
+    - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
+  needs: ["NVCC"]
+
+INQ-NVCC-OMPI-GPU:
+  stage: test
+  tags:
+    - intel_compiler
+  script:
+    - export PREFIX=`mktemp -d`
+    - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
+    - cd inq
+    - cd external_libs/multi
+    - git checkout $CI_COMMIT_BRANCH
+    - cd ../..
+    - mkdir build && cd build
+    - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --disable-debug --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70 `#--with-cuda-prefix=/usr/local/cuda`
+    - make -j16 -output-sync=recurse VERBOSE=0 || make VERBOSE=1
+    - make -j4  install
+    - ctest -j2 --output-on-failure --timeout 600
+    - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest --output-on-failure --timeout 600; cd ..
+    - rm -rf $PREFIX
+  needs: ["NVCC-GPU"]
 
 g++:
   stage: build
@@ -412,23 +474,25 @@ clang++-std20:
 #       - cmake --build . || make VERBOSE=1
 #       - ctest --output-on-failure
 
+#    - export DEBIAN_FRONTEND=noninteractive
+#    - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates gnupg software-properties-common
+#    - apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/debian11/x86_64/3bf863cc.pub
+#    - add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/debian11/x86_64/ /"
+#    - add-apt-repository contrib
+#    - apt-get update
+#    - apt-get -y install cuda
+
 cuda-11.8:
   stage: build
   allow_failure: false
-  image: debian:stable
+  image: nvidia/cuda:11.8.0-devel-ubuntu22.04
+#debian:stable
   script:
-    - export DEBIAN_FRONTEND=noninteractive
-    - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates gnupg software-properties-common
-    - apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/debian11/x86_64/3bf863cc.pub
-    - add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/debian11/x86_64/ /"
-    - add-apt-repository contrib
-    - apt-get update
-    - apt-get -y install cuda
-    - apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
+    - apt-get update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - /usr/local/cuda-11.8/bin/nvcc --version
     - mkdir build && cd build
     - cmake .. -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/usr/local/cuda-11.8/bin/nvcc -DCMAKE_CXX_STANDARD=17 -DCMAKE_CUDA_ARCHITECTURES=61 -DCMAKE_CUDA_FLAGS="-gencode arch=compute_61,code=sm_61"
-    - cmake --build . || make VERBOSE=1
+    - cmake --build --parallel 2 . || make VERBOSE=1
     - ctest --output-on-failure
   needs: ["g++"]
 
@@ -1024,22 +1088,3 @@ qmcpack-cuda-runner:
 #    - ctest --output-on-failure
 #  needs: ["g++"]
 
-inq-nvcc-ompi-runner:
-  stage: test
-  tags:
-    - intel_compiler
-  script:
-    - export PREFIX=`mktemp -d`
-    - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
-    - cd inq
-    - cd external_libs/multi
-    - git checkout $CI_COMMIT_BRANCH
-    - cd ../..
-    - mkdir build && cd build
-    - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --disable-debug --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70 `#--with-cuda-prefix=/usr/local/cuda`
-    - make -j16 -output-sync=recurse VERBOSE=0 || make VERBOSE=1
-    - make -j4  install
-    - ctest -j2 --output-on-failure --timeout 600
-    - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest --output-on-failure --timeout 600; cd ..
-    - rm -rf $PREFIX
-  needs: ["cuda-11.8"]

@@ -184,6 +184,7 @@ BOOST_AUTO_TEST_CASE(fftw_1D_const_forward) {
 	BOOST_REQUIRE( bwd[2] == -2. - 2.*I  );
 }
 
+
 BOOST_AUTO_TEST_CASE(fftw_1D_const_sign) {
 	multi::array<complex, 1> const in = {1. + 2.*I, 2. + 3. *I, 4. + 5.*I, 5. + 6.*I};
 
@@ -244,15 +245,16 @@ BOOST_AUTO_TEST_CASE(fftw_many2_from_2) {
 
 BOOST_AUTO_TEST_CASE(fftw_4D) {
 	multi::array<complex, 4> const in = [] {
-		multi::array<complex, 4> in({10, 10, 10, 10}); in[2][3][4][5] = 99.; return in;
+		multi::array<complex, 4> in({6, 6, 6, 6}); in[2][3][4][5] = 99.; return in;
 	}();
 	auto fwd = multi::fftw::dft({true, true, true, true}, in, fftw::forward);
 	BOOST_REQUIRE(in[2][3][4][5] == 99.);
 }
 
+
 BOOST_AUTO_TEST_CASE(fftw_4D_many) {
 	auto const in = [] {
-		multi::array<complex, 4> in({97, 95, 101, 10}, 0.);
+		multi::array<complex, 4> in({7, 8, 9, 10}, 0.);
 		in[2][3][4][5] = 99.; return in;
 	}();
 	auto fwd = multi::fftw::dft({true, true, true, false}, in, fftw::forward);
@@ -289,7 +291,7 @@ BOOST_AUTO_TEST_CASE(fftw_5D) {
 	auto const out_fwd = multi::fftw::dft(in, fftw::forward);
 
 	BOOST_REQUIRE(in[2][3][4][5][6] == 99.);
-	BOOST_REQUIRE( power(in) - power(out_fwd)/num_elements(out_fwd) < 1e-8 );
+	BOOST_TEST_REQUIRE( power(in) - power(out_fwd)/num_elements(out_fwd) < 1e-6 );
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_power_plan) {
@@ -298,7 +300,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_power_plan) {
 	multi::array<complex, 2> out(extensions(in));
 	multi::fftw::plan const pln{in, out, fftw::forward, fftw::preserve_input};
 	pln();
-	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-8 );
+	BOOST_REQUIRE( power(in) - power(out)/num_elements(out) < 1e-7 );
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_power_plan_modern) {
@@ -397,7 +399,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_transposition_square_inplace) {
 
 BOOST_AUTO_TEST_CASE(fftw_4D_inq_poisson) {
 	multi::array<complex, 4> const in = [] {
-		multi::array<complex, 4> in({50, 100, 137, 1});
+		multi::array<complex, 4> in({5, 10, 17, 1});
 		std::iota(data_elements(in), data_elements(in)+num_elements(in), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
 		return in;
 	}();
@@ -412,6 +414,7 @@ BOOST_AUTO_TEST_CASE(fftw_4D_inq_poisson) {
 	using boost::multi::detail::get;
 	BOOST_TEST( power(in) == power(out)/get<1>(sizes(out))/get<2>(sizes(out)) , boost::test_tools::tolerance(1e-10) );
 }
+
 
 BOOST_AUTO_TEST_CASE(fftw_1D_power) {
 	multi::array<complex, 1> in(16, 0.);
@@ -664,7 +667,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_part2) {
 
 BOOST_AUTO_TEST_CASE(fftw_4D_many_new_interface) {
 	auto const in = [] {
-		multi::array<complex, 4> in({97, 95, 101, 10}, 0.);
+		multi::array<complex, 4> in({17, 15, 10, 8}, 0.);
 		in[2][3][4][5] = 99.;
 		return in;
 	}();
