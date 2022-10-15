@@ -68,6 +68,7 @@ BOOST_AUTO_TEST_CASE(array_3d_of_array_2d)  {
 	BOOST_REQUIRE( AA[9][19][1][1][1] == 99. );
 }
 
+#if 0  // TODO(correaa) hint constructor is deprecated
 BOOST_AUTO_TEST_CASE(array_3d_with_hint_int) {
 	multi::array<double, 2> const arr({3, 4});
 	multi::array<int, 3> arr_hint({3, 4, 5}, arr.cbase());
@@ -97,3 +98,4 @@ BOOST_AUTO_TEST_CASE(array_3d_with_hint_size_t) {
 	multi::array<size_t, 3> arr4({3, 4, 5}, 99);
 	BOOST_REQUIRE( size(arr4) == 3 );
 }
+#endif
