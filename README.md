@@ -645,7 +645,7 @@ If they are trivial to construct (e.g. built-in types), `multi::array`s does not
 otherwise the default constructor for each element is used.
 
 For example, after construction the integer values of the 6 elements of this array are unspecified (partially formed).
-```
+```cpp
 multi::array<int, 2> A2({2, 3});
 ```
 
@@ -654,7 +654,7 @@ This is a slight departure from the design of STL, which eagerly initializes ele
 
 For types that afford partially formed state, elements can be later specified via assigment or assigning algorithms (e.g. copy or transform destination).
 Initialization can be enforced by passing a second argument, after the extensions.
-```
+```cpp
 multi::array<int, 2> A2({2, 3}, 0);  // generically multi::array<T, 2>({2, 3}, T{}); or multi::array<T, 2>({2, 3}, {})
 ```
 
