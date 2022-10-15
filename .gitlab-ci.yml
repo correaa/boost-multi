@@ -54,7 +54,7 @@ NEWG++12STD20MEMCHK:
 
 OLDCLANG++12TIDYSANI:
   stage: build
-  image: debian:stable-backports  # for clang-12
+  image: debian:stable  # for clang-12
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet cmake clang-12 make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
