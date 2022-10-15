@@ -7,6 +7,7 @@
 #include "multi/array.hpp"
 
 #include <memory_resource>  // for polymorphic memory resource, monotonic buffer
+#include <numeric>
 
 namespace multi = boost::multi;
 
@@ -64,4 +65,22 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		BOOST_TEST( A[0][0] == 666. );
 		BOOST_TEST( A[1][2] == 666. );
 	}
+}
+
+BOOST_AUTO_TEST_CASE(pmr_benchmark) {
+
+//  auto* resp = std::pmr::unsynchronized_pool_resource(std::pmr::get_default_resource());
+	auto* resp = std::pmr::get_default_resource();
+
+	auto count = 500;
+	auto start_time = std::chrono::high_resolution_clock::now();
+
+	int64_t acc = 0;
+	for(int64_t i = 0; i != count; ++i) {
+		multi::pmr::array<int64_t, 2> arr({1000 - i%10, 1000 + i%10}, resp);
+		std::fill_n(arr.data_elements(), arr.num_elements(), 1.);
+		acc += std::accumulate(arr.data_elements(), arr.data_elements() + arr.num_elements(), 0L);
+	}
+	auto time = std::chrono::high_resolution_clock::now() - start_time;
+	std::cout<< time.count() / count <<"          "<< acc <<std::endl;
 }
