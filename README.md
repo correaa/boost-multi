@@ -699,14 +699,14 @@ The arrays support their allocators and fancy pointers (`boost::interprocess::of
 using namespace boost::interprocess;
 using manager = managed_mapped_file;
 template<class T> using mallocator = allocator<T, manager::segment_manager>;
-decltype(auto) get_allocator(manager& m){return m.get_segment_manager();}
+decltype(auto) get_allocator(manager& m) {return m.get_segment_manager();}
 
 template<class T, auto D> using marray = multi::array<T, D, mallocator<T>>;
 
-int main(){
+int main() {
 {
 	manager m{create_only, "mapped_file.bin", 1 << 25};
-	auto&& arr2d = *m.construct<marray<double, 2>>("arr2d")(std::tuple{1000, 1000}, 0.0, get_allocator(m));
+	auto&& arr2d = *m.construct<marray<double, 2>>("arr2d")(marray<double, 2>::extensions_type{1000, 1000}, 0.0, get_allocator(m));
 	arr2d[4][5] = 45.001;
 }
 // imagine execution restarts here, the file "mapped_file.bin" persists
@@ -1054,7 +1054,7 @@ int main() {
 which uses the default Thrust backend (CUDA, OpenMP or TBB).
 Universal memory (accessible from normal CPU code) can be used with `thrust::universal_allocator` instead.
 
-More specific allocators can be used to force certain Thrust backends, for example CUDA managed memory:
+More specific allocators can be used ensure CUDA backends, for example CUDA managed memory:
 
 ```cpp
 #include <thrust/system/cuda/memory.h>
@@ -1062,9 +1062,9 @@ More specific allocators can be used to force certain Thrust backends, for examp
 	multi::array<double, 2, thrust::cuda::universal_allocator<double>> A({10,10});
 ```
 
-Multi doesn't have a dependency on Thrust (or viseversa); 
+Multi doesn't have a dependency on Thrust (or viseversa);
 they just work well together, both in terms of semantics and efficiency.
-Certain "patches" (to correct Thrust behavior) can be applied to Thrust to gain extra efficiency and achieve near native speed by adding the `#include<multi/adaptors/thrust.hpp>`.
+Certain "patches" (to improve Thrust behavior) can be applied to Thrust to gain extra efficiency and achieve near native speed by adding the `#include<multi/adaptors/thrust.hpp>`.
 
 Multi can be used on existing memory in a non-invasive way via (non-owning) reference arrays:
 
