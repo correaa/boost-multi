@@ -76,7 +76,7 @@ NEWCLANG++12STD20LINTIWYU:
     - CXX=clang++-14 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_CPPLINT="cpplint;--quiet" -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="iwyu"
     - cmake . --build --parallel 2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
-  needs: ["OLDCLANG++12TIDYSANI"]
+#  needs: ["OLDCLANG++12TIDYSANI"]
   retry:
     max: 2
     when:
