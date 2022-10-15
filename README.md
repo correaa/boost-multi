@@ -658,9 +658,10 @@ Otherwise, if initialization is necessary, it can be enforced by passing a secon
 multi::array<int, 2> A2({2, 3}, 0);  // in general: multi::array<T, 2>({2, 3}, T{}); or simply multi::array<T, 2>({2, 3}, {})
 ```
 
-This is particularly positive for *numeric* types in which assigment can be handled by external low-level libraries; 
-or when data seats in GPUs (initialization would require a separate kernel launch and subsequent synchronization).
-(Unfortunatelly, in this aspect, STL's `std::complex<double>` was designed as not trivially constructible, so it cannot take advantage of this feature directly out-of-the-box.)
+This is particularly advantageous for *numeric* types for which assigment can be handled by external low-level libraries;
+or also when data sits in GPUs, where initialization would require a separate kernel launch and an expensive synchronization subsequently.
+
+Unfortunatelly, regarding the numeric types, STL's `std::complex<double>` was designed as not trivially constructible. So for this kind of elements the library cannot take advantage of this feature directly, not out-of-the-box at least (this behavior can be hacked by overriding special type-traits.
 
 ## Type Requirements
 
