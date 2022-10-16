@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(pmr_benchmark) {
 //  auto* resp = std::pmr::unsynchronized_pool_resource(std::pmr::get_default_resource());
 	auto* resp = std::pmr::get_default_resource();
 
-	auto count = 500;
+	auto count = 50;
 	auto start_time = std::chrono::high_resolution_clock::now();
 
 	int64_t acc = 0;
