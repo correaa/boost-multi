@@ -70,9 +70,9 @@ OLDCLANG++12TIDYSANI:
 
 NEWCLANG++12STD20LINTIWYU:
   stage: build
-  image: debian:testing  # for clang-15
+  image: debian:testing
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet cmake clang-13 clang-14 make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev iwyu pkg-config cpplint
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet cmake clang make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev iwyu pkg-config cpplint
     - mkdir build && cd build
     - clang++ --version
     - CXX=clang++-14 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_CPPLINT="cpplint;--quiet" -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="iwyu"
