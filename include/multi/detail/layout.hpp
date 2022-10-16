@@ -132,7 +132,7 @@ struct extensions_t {
 	constexpr auto operator()(index idx, Indices... rest) const {return to_linear(idx, rest...);}
 
 	template<class... Indices>
-	constexpr auto next_canonical(index& idx, Indices&... rest) const -> bool {
+	constexpr auto next_canonical(index& idx, Indices&... rest) const -> bool {  // NOLINT(google-runtime-references) idx is mutated
 		if(extensions_t<D-1>{tail(this->base())}.next_canonical(rest...)) {++idx;}
 		if(idx == head(impl_).last()) {
 			idx = head(impl_).first();
@@ -141,7 +141,7 @@ struct extensions_t {
 		return false;
 	}
 	template<class... Indices>
-	constexpr auto prev_canonical(index& idx, Indices&... rest) const -> bool {
+	constexpr auto prev_canonical(index& idx, Indices&... rest) const -> bool {  // NOLINT(google-runtime-references) idx is mutated
 		if(extensions_t<D-1>{tail(this->base())}.prev_canonical(rest...)) {--idx;}
 		if(idx <  head(impl_).first()) {
 			idx = head(impl_).back();
