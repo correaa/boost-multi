@@ -213,7 +213,7 @@ BOOST_AUTO_TEST_CASE(elements_rvalues) {
 }
 
 template<class Array1D>
-void assign_elements_from_to(Array1D&& arr, std::deque<std::vector<double>>& dest) {
+void assign_elements_from_to(Array1D&& arr, std::deque<std::vector<double>>& dest) {  // NOLINT(google-runtime-references) dest is mutated
 	std::copy(std::forward<Array1D>(arr).begin(), std::forward<Array1D>(arr).end(), std::back_inserter(dest));
 }
 

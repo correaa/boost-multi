@@ -645,23 +645,24 @@ If they are trivial to construct (e.g. built-in types), `multi::array`s does not
 otherwise the default constructor for each element is used.
 
 For example, after construction the integer values of the 6 elements of this array are unspecified (partially formed).
-```
+```cpp
 multi::array<int, 2> A2({2, 3});
 ```
 
 No behavior of the program should depend on these values. (Address sanitizer and memory checker can detect this.)
-This is a slight departure from the design of STL, which eagerly initializes elements.
+This is a slight departure from the design of STL, which eagerly initializes elements in containers.
 
 For types that afford partially formed state, elements can be later specified via assigment or assigning algorithms (e.g. copy or transform destination).
-Otherwise, if initialization is necessary, it can be enforced by passing a second argument, after the extensions.
-```
-multi::array<int, 2> A2({2, 3}, 0);  // in general: multi::array<T, 2>({2, 3}, T{}); or simply multi::array<T, 2>({2, 3}, {})
+Initialization can be enforced by passing a second argument, after the extensions.
+```cpp
+multi::array<int, 2> A2({2, 3}, 0);  // generically multi::array<T, 2>({2, 3}, T{}); or multi::array<T, 2>({2, 3}, {})
 ```
 
-This is particularly advantageous for *numeric* types for which assigment can be handled by external low-level libraries;
-or also when data sits in GPUs, where initialization would require a separate kernel launch and an expensive synchronization subsequently.
+This is particularly advantageous for *numeric* types for which assigment can be handled by external low-level libraries
+(or when data sits in GPUs, where the initialization step would require an expensive kernel launch and subsequent synchronization).
 
-Unfortunatelly, regarding the numeric types, STL's `std::complex<double>` was designed as not trivially constructible. So for this kind of elements the library cannot take advantage of this feature directly, not out-of-the-box at least (this behavior can be hacked by overriding special type-traits.
+Unfortunatelly, regarding the numeric types, STL's `std::complex<double>` was designed as not trivially constructible.
+(Workarounds are possible.) 
 
 ## Type Requirements
 

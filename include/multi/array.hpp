@@ -211,10 +211,10 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 		array_alloc::uninitialized_fill_n(this->base(), static_cast<typename allocator_traits<allocator_type>::size_type>(this->num_elements()), elem);
 	}
 
-	template<class ConstVoidPointer, std::enable_if_t<std::is_convertible_v<ConstVoidPointer, typename allocator_traits<Alloc>::const_void_pointer>, int> =0>
-	explicit static_array(typename static_array::extensions_type extensions, ConstVoidPointer hint)
-	: array_alloc{}
-	, ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements()), hint), extensions} {}
+//  template<class ConstVoidPointer, std::enable_if_t<std::is_convertible_v<ConstVoidPointer, typename allocator_traits<Alloc>::const_void_pointer>, int> =0>
+//  explicit static_array(typename static_array::extensions_type extensions, ConstVoidPointer hint)
+//  : array_alloc{}
+//  , ref{array_alloc::allocate(static_cast<typename allocator_traits<allocator_type>::size_type>(typename static_array::layout_t{extensions}.num_elements()), hint), extensions} {}
 
 	template<class ValueType, typename = std::enable_if_t<std::is_same<ValueType, typename static_array::value_type>{}>>
 	explicit static_array(typename static_array::index_extension const& extension, ValueType const& value, allocator_type const& alloc)  // 3
