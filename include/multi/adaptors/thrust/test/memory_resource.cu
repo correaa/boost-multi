@@ -265,6 +265,23 @@ BOOST_AUTO_TEST_CASE(thrust_benchmark) {
 		std::chrono::duration<double> time = std::chrono::high_resolution_clock::now() - tick;
 		std::cout<< "static pool resource " << time.count() <<std::endl;
 	}
+	{
+		auto tick = std::chrono::high_resolution_clock::now();
+
+		auto res = thrust::mr::disjoint_unsynchronized_pool_resource(
+			thrust::mr::get_global_resource<thrust::universal_memory_resource>(),
+			thrust::mr::get_global_resource<thrust::mr::new_delete_resource>()
+		);
+
+		for(int64_t i = 0; i != count; ++i) {
+			multi::array<int, 2, thrust::mr::allocator<int, decltype(res)> > arr({1000 - i%10, 1000 + i%10}, &res);
+			DoNotOptimize(arr);
+		}
+
+		std::chrono::duration<double> time = std::chrono::high_resolution_clock::now() - tick;
+		std::cout<< "2 static pool resource " << time.count() <<std::endl;
+	}
+
 }
 
 auto& tls_pool(std::pmr::memory_resource* upstream) {
