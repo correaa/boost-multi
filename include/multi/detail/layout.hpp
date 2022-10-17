@@ -303,7 +303,7 @@ template<> struct extensions_t<1> {
 	constexpr auto operator()(index const& idx) const -> difference_type {return to_linear(idx);}
 
 	template<class... Indices>
-	constexpr auto next_canonical(index& idx) const -> bool {
+	constexpr auto next_canonical(index& idx) const -> bool {  // NOLINT(google-runtime-references) idx is mutated
 		++idx;
 		using boost::multi::detail::get;
 		if(idx == get<0>(impl_).last()) {
@@ -312,7 +312,7 @@ template<> struct extensions_t<1> {
 		}
 		return false;
 	}
-	constexpr auto prev_canonical(index& idx) const -> bool {
+	constexpr auto prev_canonical(index& idx) const -> bool {  // NOLINT(google-runtime-references) idx is mutated
 		--idx;
 		using boost::multi::detail::get;
 		if(idx == get<0>(impl_).first() - 1) {
