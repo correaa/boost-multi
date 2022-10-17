@@ -8,7 +8,9 @@
 #include "./thrust/cuda/managed.hpp"
 
 #include <thrust/device_allocator.h>
+
 #include <thrust/universal_allocator.h>
+#include <thrust/universal_ptr.h>
 
 #include <thrust/system/cuda/memory.h>  // ::thrust::cuda::allocator
 
@@ -143,6 +145,19 @@ namespace cuda {
 		template<class T, multi::dimensionality_type D> using array = multi::array<T, D, boost::multi::thrust::cuda::managed::allocator<T>>;
 	}  // end namespace managed
 }  // end namespace cuda
+
+namespace  mr {template<class T, multi::dimensionality_type D, class MR> using array = array<T, D, ::thrust::mr::allocator<T, MR>>;}
+namespace pmr {
+	template<class T, multi::dimensionality_type D, class Pointer> using array = mr::array<T, D, ::thrust::mr::memory_resource<Pointer>>;
+	template<class T, multi::dimensionality_type D> using universal_array = pmr::array<T, D, ::thrust::universal_ptr<void>>;
+}  // end namespace pmr
+
+namespace cuda {
+namespace pmr {
+	template<class T, multi::dimensionality_type D> using universal_array = ::boost::multi::thrust::pmr::array<T, D, ::thrust::cuda::universal_pointer<void>>;
+}  // end namespace pmr
+}  // end namespace cuda
+
 
 }  // end namespace thrust
 }  // end namespace boost::multi
