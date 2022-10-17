@@ -15,7 +15,6 @@
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(thrust_universal_ptr) {
-
 	multi::array<double, 2                                           > Host({1024, 1024});
 	std::iota(Host.data_elements(), Host.data_elements() + Host.num_elements(), 12.);
 
@@ -27,11 +26,9 @@ BOOST_AUTO_TEST_CASE(thrust_universal_ptr) {
 	Hos2({0, 10}, {0, 20}) = Univ({0, 10}, {0, 20});
 
 	BOOST_REQUIRE( Hos2[0][0] == 12. );
-
 }
 
 BOOST_AUTO_TEST_CASE(thrust_universal_ptr_initializer_list) {
-
 	multi::array<double, 1                                           > Host = {1., 2., 3.};
 	BOOST_REQUIRE( Host.size() == 3 );
 	{
