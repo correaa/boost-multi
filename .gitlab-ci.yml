@@ -102,6 +102,29 @@ NVCC:
       - runner_system_failure
       - stuck_or_timeout_failure
 
+CIRCLE:
+  allow_failure: false
+  image: debian:testing
+  stage: build
+  script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang cmake g++-11 gzip libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libelf1 libfftw3-dev make pkg-config tar wget
+    - mkdir -p build_latest && cd build_latest
+    - wget https://www.circle-lang.org/linux/build_latest.tgz --no-verbose
+    - tar -zxvf build_latest.tgz
+    - cd ..
+    - ls
+    - ./build_latest/circle --version
+    - mkdir build && cd build
+    - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1 -DCMAKE_CXX_FLAGS="-nostdinc -I/usr/include/c++/11 -I/usr/include/x86_64-linux-gnu/c++/11 -I/usr/lib/gcc/x86_64-linux-gnu/11/include" -DBoost_USE_STATIC_LIBS=OFF -DBOOST_LIBRARYDIR=/usr/lib/x86_64-linux-gnu/
+    - cmake . --build --parallel=2 || make VERBOSE=1
+    - ctest -j 2 --output-on-failure
+  needs: ["OLDCLANG++12TIDYSANI"]
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+
 NVCC-GPU:
   stage: build
   tags:
