@@ -85,20 +85,22 @@ NEWCLANG++12STD20LINTIWYU:
       - runner_system_failure
       - stuck_or_timeout_failure
 
+#    - curl --output webimage.sh --url https://registrationcenter-download.intel.com/akdlm/irc_nas/18487/l_BaseKit_p_2022.1.2.146_offline.sh --retry 5 --retry-delay 5
+#    - chmod +x webimage.sh
+#    - ./webimage.sh -x -f webimage_extracted --log extract.log
+#    - rm -rf webimage.sh
+#    - ls -1 webimage_extracted/
+#    - WEBIMAGE_NAME=$(ls -1 webimage_extracted/)
+#    - webimage_extracted/"$WEBIMAGE_NAME"/bootstrapper -s --action install --components=`#intel.oneapi.lin.mkl.devel:`intel.oneapi.lin.dpcpp-cpp-compiler:intel.oneapi.lin.dpl --eula=accept --log-dir=.
+#    - rm -rf webimage_extracted
+#    - . /opt/intel/oneapi/setvars.sh
+
+
 ICPX:
   stage: build
   image: intel/oneapi-hpckit:latest
   script:
     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl g++ libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
-    - curl --output webimage.sh --url https://registrationcenter-download.intel.com/akdlm/irc_nas/18487/l_BaseKit_p_2022.1.2.146_offline.sh --retry 5 --retry-delay 5
-    - chmod +x webimage.sh
-    - ./webimage.sh -x -f webimage_extracted --log extract.log
-    - rm -rf webimage.sh
-    - ls -1 webimage_extracted/
-    - WEBIMAGE_NAME=$(ls -1 webimage_extracted/)
-    - webimage_extracted/"$WEBIMAGE_NAME"/bootstrapper -s --action install --components=`#intel.oneapi.lin.mkl.devel:`intel.oneapi.lin.dpcpp-cpp-compiler:intel.oneapi.lin.dpl --eula=accept --log-dir=.
-    - rm -rf webimage_extracted
-    - . /opt/intel/oneapi/setvars.sh
     - ln --symbolic --force . ../multi
     - mkdir build && cd build
     - icpx --version
