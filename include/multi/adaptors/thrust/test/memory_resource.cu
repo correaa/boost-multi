@@ -2,18 +2,14 @@
 #include<boost/test/unit_test.hpp>
 
 #include <multi/array.hpp>
-
 #include <multi/adaptors/thrust.hpp>
 
-#include <thrust/system/cuda/memory.h>
+#include <thrust/system/cuda/memory.h>  // for cuda_pointer
 
-#include <thrust/mr/allocator.h>
-#include <thrust/mr/disjoint_tls_pool.h>
-#include <thrust/mr/disjoint_pool.h>
-#include <thrust/mr/new.h>
-#include <thrust/mr/pool.h>
-#include <thrust/device_vector.h>
-#include <thrust/device_ptr.h>
+#include <thrust/mr/device_memory_resource.h>
+#include <thrust/mr/disjoint_pool.h>   // for thrust::mr::disjoint_unsynchronized_pool_resource
+#include <thrust/mr/disjoint_tls_pool.h>  // for thrust::mr::tls_disjoint_pool
+#include <thrust/mr/pool.h>  // for thrust::mr::unsynchronized_pool_resource
 
 #include <boost/mpl/list.hpp>
 
@@ -191,6 +187,7 @@ BOOST_AUTO_TEST_CASE(thrust_universal_memory_resource_global_resource_f) {
 	multi::thrust::cuda::pmr::universal_array<int, 2> arr({10, 10}, &res);
 }
 
+#if 1
 template <class Tp>
 inline __attribute__((always_inline)) void DoNotOptimize(Tp const& value) {
   asm volatile("" : : "r,m"(value) : "memory");
@@ -323,3 +320,4 @@ BOOST_AUTO_TEST_CASE(thrust_benchmark_contd) {
 		std::cout<< "caching allocator " << time.count() <<std::endl;
 	}
 }
+#endif
