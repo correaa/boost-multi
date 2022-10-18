@@ -1054,7 +1054,7 @@ struct array_traits<T[N], void, void> {  // NOLINT(cppcoreguidelines-avoid-c-arr
 
 }  // end namespace boost::multi
 
-#if (defined(__cpp_lib_memory_resource) && (__cpp_lib_memory_resource >= 201603)) or defined(__INTEL_LLVM_COMPILER)  // workaround for icpx with gcc 9.3
+#if (defined(__cpp_lib_memory_resource) && (__cpp_lib_memory_resource >= 201603)) or defined(__INTEL_LLVM_COMPILER)  // workaround for icpx 2022.2.0 with gcc 9.3
 namespace boost::multi::pmr {
 
 template <class T, boost::multi::dimensionality_type D>
