@@ -1047,7 +1047,7 @@ namespace multi = boost::multi;
 int main() {
 	multi::array<double, 2, thrust::device_allocator<double>> A({10,10});
 	multi::array<double, 2, thrust::device_allocator<double>> B({10,10});
-	A[5][0] = 50.;
+	A[5][0] = 50.0;
 	thrust::copy(begin(rotated(A2)[0]), end(rotated(A2)[0]), begin(rotated(B2)[0]));
 	assert( B2[5][0] == 50. );
 }
@@ -1078,32 +1078,30 @@ Multi can be used on existing memory in a non-invasive way via (non-owning) refe
 
 ### Thrust memory resources
 
-GPU memory is relative expensive to allocate, therefore any application that allocates and deallocates arrays often will suffer performance issue.
-This is where special memory management is important, for example for avoiding real allocations when possible by caching and reusing memory blocks.
+GPU memory is relatively expensive to allocate, therefore any application that allocates and deallocates arrays often will suffer performance issues.
+This is where special memory management is critical for avoiding unnecessary allocations, for example, by caching and reusing memory blocks.
 
 Thrust implements both polymorphic and non-polymorphic memory resources via `thrust::mr::allocator<T, MemoryResource>`;
 Multi supports both.
 
 ```cpp
-
 auto pool = thrust::mr::disjoint_unsynchronized_pool_resource(
 	thrust::mr::get_global_resource<thrust::universal_memory_resource>(),
 	thrust::mr::get_global_resource<thrust::mr::new_delete_resource>()
 );
 
-// memory is handled by pool, not by the system allocator
+// memory is handled by the pool, not by the system allocator
 
 multi::array<int, 2, thrust::mr::allocator<int, decltype(pool)>> arr({1000 - i%10, 1000 + i%10}, &pool);  // or multi::mr::array<int, 2, decltype(pool)> for short
 ```
 
 The associated pointer type for the array data is deduced from the _upstream_ resource; in this case, `thrust::universal_ptr<int>`.
 
-As as quick recipe to improve performance in many cases, here it is a recipe for a `caching_allocator` which uses a global (one per thread) memory pool.
+As a quick recipe to improve performance in many cases, here is a "caching" allocator that uses a global (one per thread) memory pool.
 The requested memory resides in GPU (managed) memory (`thrust::cuda::universal_memory_resource`) while the cache _bookkeeping_ is held in CPU memory (`new_delete_resource`).
 
 ```cpp
-template<class T, class Base_ = thrust::mr::allocator<T, thrust::mr::memory_resource<thrust::cuda::universal_pointer<void>>>
->
+template<class T, class Base_ = thrust::mr::allocator<T, thrust::mr::memory_resource<thrust::cuda::universal_pointer<void>>>>
 struct caching_allocator : Base_ {
 	caching_allocator() : Base_{
 		&thrust::mr::tls_disjoint_pool(thrust::mr::get_global_resource<thrust::cuda::universal_memory_resource>(), thrust::mr::get_global_resource<thrust::mr::new_delete_resource>())
@@ -1123,7 +1121,7 @@ int main() {
 In the example, most of the memory requests are handled by reutilizing the memory pool avoiding expensive system allocations.
 More targeted usage patterns may require locally (non-globally) defined memory resources.
 
-## TotalView
+## TotalView debugger
 
 TotalView visual debugger (commercial) can display arrays in human-readable form (for simple types, like `double` or `std::complex`).
 To use it, simply `#include "multi/adaptors/totalview.hpp"` and link to the TotalView libraries, compile and run the code with the TotalView debugger.
