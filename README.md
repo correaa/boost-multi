@@ -811,9 +811,9 @@ This imposes certain limitations in the library such as ad-hoc slicing and subar
 
 Here it is a table with a comparison (also comparing with R. Garcia's Boost.MultiArray), also the libraries can be tried [here](https://godbolt.org/z/5Pbrs5fEd)
 
-|                             | Multi                                                           | mdspan                                                 | Boost.MultiArray (R. Garcia)  |
-|---                          | ---                                                             | ---                                                    | ---                           |
-| No external Deps            | **yes** (only Standard Library C++17)                           | **yes** (only Standard Library)                        | **yes** (only Boost)  |
+|                             | Multi                                                           | mdspan                                                 | Boost.MultiArray (R. Garcia) |
+|---                          | ---                                                             | ---                                                    | ---                          |
+| No external Deps            | **yes** (only Standard Library C++17)                           | **yes** (only Standard Library)                        | **yes** (only Boost)         |
 | Non-owning view of data     | **yes**, via `multi::array_ref<T, D>(ptr, {x1, x2, ..., xD})`   | **yes**, via `mdspan m{T*, extents{x1, x2, ..., xD}};` | **yes**, via `boost::multi_array_ref<T, D>(T*, boost::extents[x1][x2]...[xD]) |
 | Arbritary number of dim     | **yes**, via positive dimension (compile-time) parameter `D`    | **yes**                                                | **yes** |
 | Compile-time dim size       | no                                                              | **yes**, via template paramaters `mdspan{T*, extent<16, dynamic_extents>{32} }` | no  |
