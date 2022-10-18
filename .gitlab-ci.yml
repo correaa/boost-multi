@@ -102,10 +102,34 @@ ICPX:
     - . /opt/intel/oneapi/setvars.sh
     - ln --symbolic --force . ../multi
     - mkdir build && cd build
+    - icpx --version
     - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release
     - make --jobs=2 || make VERBOSE=1
     - ctest --parallel 2 --output-on-failure
   needs: ["OLDG++SANICHECKCOV"]
+
+ICPC:  # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.yml
+  image: debian:stable  # icpc 2022.1.2 is incompatible with gcc 12 lib
+  stage: build
+  script:
+    - apt-get update && apt-get install --no-install-recommends -y --quiet g++ ca-certificates cmake curl libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
+    - curl --output webimage.sh --url https://registrationcenter-download.intel.com/akdlm/IRC_NAS/18856/l_HPCKit_p_2022.3.0.8751_offline.sh --retry 5 --retry-delay 5
+    - chmod +x webimage.sh
+    - ./webimage.sh -x -f webimage_extracted --log extract.log
+    - rm -rf webimage.sh
+    - ls -1 webimage_extracted/
+    - WEBIMAGE_NAME=$(ls -1 webimage_extracted/)
+    - webimage_extracted/"$WEBIMAGE_NAME"/bootstrapper -s --action install --components=intel.oneapi.lin.dpcpp-cpp-compiler-pro:intel.oneapi.lin.mpi.devel --eula=accept --log-dir=.
+    - rm -rf webimage_extracted
+    - . /opt/intel/oneapi/setvars.sh
+    - ln --symbolic --force . ../multi
+    - mkdir build && cd build
+    - icpc --version
+    - CXX=icpc cmake ..
+    - make --jobs=2 || make VERBOSE=1
+    - ctest --parallel 2 --output-on-failure
+  needs: ["g++"]
+
 
 NVCC:
   stage: build
