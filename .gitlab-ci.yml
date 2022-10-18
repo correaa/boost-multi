@@ -85,10 +85,9 @@ NEWCLANG++12STD20LINTIWYU:
       - runner_system_failure
       - stuck_or_timeout_failure
 
-# TODO(correaa) try with image: intel/oneapi-hpckit:latest
-
 ICPX:
   stage: build
+  image: intel/oneapi-hpckit:latest
   script:
     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl g++ libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
     - curl --output webimage.sh --url https://registrationcenter-download.intel.com/akdlm/irc_nas/18487/l_BaseKit_p_2022.1.2.146_offline.sh --retry 5 --retry-delay 5
@@ -108,7 +107,7 @@ ICPX:
     - ctest --parallel 2 --output-on-failure
   needs: ["OLDG++SANICHECKCOV"]
 
-ICPC:  # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.yml
+ICPC:
   image: debian:stable  # icpc 2022.1.2 is incompatible with gcc 12 lib
   stage: build
   script:
@@ -128,8 +127,7 @@ ICPC:  # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.yml
     - CXX=icpc cmake ..
     - make --jobs=2 || make VERBOSE=1
     - ctest --parallel 2 --output-on-failure
-  needs: ["g++"]
-
+  needs: ["OLDG++SANICHECKCOV"]
 
 NVCC:
   stage: build
