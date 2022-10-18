@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_universal_speed, T, test_types) {
 		return rate;
 	});
 
-	{ //cctor
+	{  // cctor
 		auto tick = std::chrono::high_resolution_clock::now();
 
 		auto dst2 = src;
@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_universal_speed, T, test_types) {
 		std::cout<<"cctor      rate = "<< rate <<" GB/s (ratio = "<< ratio <<")\n";
 		BOOST_TEST(ratio >= threshold);
 	}
-	{ //assign
+	{  // assign
 		auto tick = std::chrono::high_resolution_clock::now();
 
 		dst = src;
@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_universal_speed, T, test_types) {
 		std::cout << "assign     rate = "<< rate <<" GB/s (ratio = "<< ratio <<")\n";
 		BOOST_TEST(ratio >= threshold);
 	}
-	{ //subarray assign
+	{  // subarray assign
 		auto tick = std::chrono::high_resolution_clock::now();
 
 		dst({0, n - 2}, {0, n - 2}) = src({2, n}, {2, n});
@@ -79,4 +79,3 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_universal_speed, T, test_types) {
 		BOOST_TEST(ratio >= threshold);
 	}
 }
-

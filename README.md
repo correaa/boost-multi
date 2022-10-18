@@ -792,9 +792,9 @@ int main() {
 	assert( buffer == std::string{"aaaabbbbbbXX"} );
 }
 ```
-
-The library supports classic allocators (`std::allocator` by default) and also allocators from other libraries (see Thurst section).
 (`multi::pmr::array<T, D>` is a synonym for `multi::array<T, D, std::pmr::polymorphic_allocator<T>>`.)
+
+The library supports classic allocators (`std::allocator` by default) and also allocators from other libraries (see [CUDA Thrust](#cuda-thrust) Thurst section).
 
 ### Comparison with `mdspan` (projected for C++23)
 
@@ -1075,6 +1075,53 @@ Multi can be used on existing memory in a non-invasive way via (non-owning) refe
 	using cuda_ptr = thrust::cuda::pointer<double>;
 	multi::array_ref<double, 2, gpu_ptr> Aref({n, n}, gpu_ptr{raw_pointer});
 ```
+
+### Thrust memory resources
+
+GPU memory is relative expensive to allocate, therefore any application that allocates and deallocates arrays often will suffer performance issue.
+This is where special memory management is important, for example for avoiding real allocations when possible by caching and reusing memory blocks.
+
+Thrust implements both polymorphic and non-polymorphic memory resources via `thrust::mr::allocator<T, MemoryResource>`;
+Multi supports both.
+
+```cpp
+
+auto pool = thrust::mr::disjoint_unsynchronized_pool_resource(
+	thrust::mr::get_global_resource<thrust::universal_memory_resource>(),
+	thrust::mr::get_global_resource<thrust::mr::new_delete_resource>()
+);
+
+// memory is handled by pool, not by the system allocator
+
+multi::array<int, 2, thrust::mr::allocator<int, decltype(pool)>> arr({1000 - i%10, 1000 + i%10}, &pool);  // or multi::mr::array<int, 2, decltype(pool)> for short
+```
+
+The associated pointer type for the array data is deduced from the _upstream_ resource; in this case, `thrust::universal_ptr<int>`.
+
+As as quick recipe to improve performance in many cases, here it is a recipe for a `caching_allocator` which uses a global (one per thread) memory pool.
+The requested memory resides in GPU (managed) memory (`thrust::cuda::universal_memory_resource`) while the cache _bookkeeping_ is held in CPU memory (`new_delete_resource`).
+
+```cpp
+template<class T, class Base_ = thrust::mr::allocator<T, thrust::mr::memory_resource<thrust::cuda::universal_pointer<void>>>
+>
+struct caching_allocator : Base_ {
+	caching_allocator() : Base_{
+		&thrust::mr::tls_disjoint_pool(thrust::mr::get_global_resource<thrust::cuda::universal_memory_resource>(), thrust::mr::get_global_resource<thrust::mr::new_delete_resource>())
+	} {}
+	caching_allocator(caching_allocator const&) : caching_allocator{} {}
+	template<class U> struct rebind {using other = caching_allocator<U>;};
+};
+...
+int main() {
+	...
+	using array2D = multi::array<double, 2, caching_allocator<double>>;
+
+	for(int i = 0; i != 10; ++i) { array2D A({100, 100}); ... use A ...}
+}
+```
+
+In the example, most of the memory requests are handled by reutilizing the memory pool avoiding expensive system allocations.
+More targeted usage patterns may require locally (non-globally) defined memory resources.
 
 ## TotalView
 
