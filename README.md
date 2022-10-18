@@ -776,7 +776,7 @@ The library works well with Ranges-v3 which is approximately a superset of STL r
 ### Polymorphic Memory Resources
 
 The library is compatible with C++17's polymorphic memory resources (PMR) which allows using preallocated buffers as described in this example. 
-This enables the use of stack memory, with many performance advantaneges.
+This enables the use of stack memory, with many performance advantages.
 For example, this code uses a buffer to allocate memory for two arrays, we will see how this buffer ends up containing the data of the arrays `"aaaabbbbbbXX"`.
 
 ```cpp
