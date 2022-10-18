@@ -1103,7 +1103,7 @@ As a quick recipe to improve performance in many cases, here is a "caching" allo
 The requested memory resides in GPU (managed) memory (`thrust::cuda::universal_memory_resource`) while the cache _bookkeeping_ is held in CPU memory (`new_delete_resource`).
 
 ```cpp
-#include <thrust/mr/disjoint_tls_pool.h>
+#include <thrust/mr/disjoint_tls_pool.h>  // for thrust::mr::tls_disjoint_pool
 #include <thrust/system/cuda/memory.h>  // for thrust::cuda::universal_pointer
 
 template<class T, class Base_ = thrust::mr::allocator<T, thrust::mr::memory_resource<thrust::cuda::universal_pointer<void>>>>
