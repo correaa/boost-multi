@@ -85,6 +85,8 @@ NEWCLANG++12STD20LINTIWYU:
       - runner_system_failure
       - stuck_or_timeout_failure
 
+# TODO(correaa) try with image: intel/oneapi-hpckit:latest
+
 ICPX:
   stage: build
   script:
