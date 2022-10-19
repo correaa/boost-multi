@@ -23,6 +23,7 @@ namespace boost::multi {
 template<class Allocator>
 struct array_allocator {
 	using allocator_type = Allocator;
+	array_allocator() = default;
 
  private:
 	MULTI_NO_UNIQUE_ADDRESS allocator_type alloc_;
@@ -35,7 +36,6 @@ struct array_allocator {
 	auto alloc()      & -> allocator_type      & {return alloc_;}
 	auto alloc() const& -> allocator_type const& {return alloc_;}
 
-	array_allocator() = default;
 	explicit array_allocator(allocator_type const& alloc) : alloc_{alloc} {}
 
 	auto allocate(size_type_ n) -> pointer_ {
@@ -66,13 +66,13 @@ struct array_allocator {
 template<class T, dimensionality_type D, class Alloc = std::allocator<T>>
 struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inheritance used for composition
 : protected array_allocator<Alloc>
-, public array_ref<T, D, typename allocator_traits<Alloc>::pointer>
+, public array_ref<T, D, typename allocator_traits<typename allocator_traits<Alloc>::template rebind_alloc<T>>::pointer>
 , boost::multi::random_iterable<static_array<T, D, Alloc>> {
  protected:
 	using array_alloc = array_allocator<Alloc>;
 
  public:
-	static_assert( std::is_same<typename allocator_traits<Alloc>::value_type, typename static_array::element>{},
+	static_assert( std::is_same<std::remove_const_t<typename allocator_traits<Alloc>::value_type>, typename static_array::element>::value,
 		"allocator value type must match array value type");
 
 	using array_alloc::get_allocator;
@@ -724,8 +724,8 @@ template<class T, dimensionality_type D, class Alloc>
 struct array : static_array<T, D, Alloc> {
 	using static_ = static_array<T, D, Alloc>;
 	static_assert(
-		   std::is_same<typename array::alloc_traits::value_type, T   >{}
-		or std::is_same<typename array::alloc_traits::value_type, void>{}, "!"
+		   std::is_same<typename array::alloc_traits::value_type, std::remove_const_t<T>>::value
+		or std::is_same<typename array::alloc_traits::value_type, void                  >::value, "!"
 	);
 
  public:
