@@ -145,8 +145,7 @@ NVHPC:
   stage: build
   image: speglich/cimatec-nvhpc:ogbon
   script:
-    - apt-get install ca-certificates
-    - apt-get update && apt-get install --no-install-recommends -y ca-certificates cmake make libboost-test-dev libboost-serialization-dev
+    - apt-get install --no-install-recommends -y ca-certificates cmake make libboost-test-dev libboost-serialization-dev
     - mkdir build && cd build
     - nvc++ --version
     - CXX=nvc++ cmake ..
