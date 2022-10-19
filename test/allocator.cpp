@@ -68,11 +68,15 @@ BOOST_AUTO_TEST_CASE(array_3d_of_array_2d)  {
 	BOOST_REQUIRE( AA[9][19][1][1][1] == 99. );
 }
 
-//  BOOST_AUTO_TEST_CASE(const_elements) {
+BOOST_AUTO_TEST_CASE(const_elements) {
+
+	auto p = new const double(2.0);
+	BOOST_REQUIRE( *p == 2.0 );
+	delete p;
 //  multi::array<double const, 2, std::allocator<double>> arr({10, 10}, 99.0);
 //
 //  BOOST_REQUIRE( arr[1][2] == 99.0 );
-//  }
+}
 
 
 #if 0  // TODO(correaa) hint constructor is deprecated
