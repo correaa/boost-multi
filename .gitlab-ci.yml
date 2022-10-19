@@ -141,7 +141,7 @@ ICPC:
 
 NVHPC:
   stage: build
-  image: amrodseregon/nvhpc-22.7:v1.0.0
+  image: speglich/cimatec-nvhpc:ogbon
   script:
     - apt-get update && cmake make libboost-test-dev libboost-serialization-dev
     - /opt/nvidia/hpc_sdk/Linux_x86_64/22.7/compilers/bin/nvc++ --version
