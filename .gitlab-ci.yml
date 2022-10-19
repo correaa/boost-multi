@@ -139,15 +139,17 @@ ICPC:
 #    - apt-get update -y
 #    - apt-get install --no-install-recommends -y nvhpc-22-7
 
+#    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/22.7/compilers/bin/nvc++ cmake ..
+
 NVHPC:
   stage: build
   image: speglich/cimatec-nvhpc:ogbon
   script:
-    - apt-get update && cmake make libboost-test-dev libboost-serialization-dev
-    - /opt/nvidia/hpc_sdk/Linux_x86_64/22.7/compilers/bin/nvc++ --version
+    - apt-get update && ca-certificates cmake make libboost-test-dev libboost-serialization-dev
     - mkdir build && cd build
-    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/22.7/compilers/bin/nvc++ cmake ..
-    - make VERBOSE=1
+    - nvc++ --version
+    - CXX=nvc++ cmake ..
+    - make --jobs=2 || make VERBOSE=1
     - ctest --output-on-failure
   needs: ["OLDG++SANICHECKCOV"]
   retry:
