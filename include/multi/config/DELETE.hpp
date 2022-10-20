@@ -1,4 +1,4 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2018-2021 Alfredo A. Correa
 
 #ifndef MULTI_CONFIG_DELETE_HPP_

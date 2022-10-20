@@ -1,8 +1,8 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2020-2022 Alfredo A. Correa
 
-#ifndef MULTI_MEMORY_POINTER_TRAITS_HPP
-#define MULTI_MEMORY_POINTER_TRAITS_HPP
+#ifndef MULTI_MEMORY_POINTER_TRAITS_HPP_
+#define MULTI_MEMORY_POINTER_TRAITS_HPP_
 
 #include <cstddef>      // for size_t
 #include <iterator>     // for iterator_traits
@@ -23,4 +23,4 @@ struct pointer_traits/*, typename Pointer::default_allocator_type>*/ : std::poin
 };
 
 } // end namespace boost::multi
-#endif
+#endif  // MULTI_MEMORY_POINTER_TRAITS_HPP_

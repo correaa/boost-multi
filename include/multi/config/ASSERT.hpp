@@ -1,8 +1,8 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2019-2022 Alfredo A. Correa
 
-#ifndef MULTI_CONFIG_ASSERT_HPP
-#define MULTI_CONFIG_ASSERT_HPP
+#ifndef MULTI_CONFIG_ASSERT_HPP_
+#define MULTI_CONFIG_ASSERT_HPP_
 
 #include<cassert>
 
@@ -13,4 +13,4 @@
 	#define MULTI_ACCESS_ASSERT(Expr) assert(Expr)
 #endif
 
-#endif
+#endif  // MULTI_CONFIG_ASSERT_HPP_

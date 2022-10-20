@@ -1,8 +1,8 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXX $0 -o $0x&&$0x&&rm $0x;exit
-#endif
-#ifndef MULTI_MEMORY_FALLBACK_HPP
-#define MULTI_MEMORY_FALLBACK_HPP
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2019-2022 Alfredo A. Correa
+
+#ifndef MULTI_MEMORY_FALLBACK_HPP_
+#define MULTI_MEMORY_FALLBACK_HPP_
 
 #if defined(__cpp_lib_memory_resource) and (__cpp_lib_memory_resource>=201603L)
 #include<memory_resource>
@@ -11,8 +11,10 @@ $CXX $0 -o $0x&&$0x&&rm $0x;exit
 #include "../memory/block.hpp"
 #include "../memory/allocator.hpp"
 
-#include<stdlib.h> // aligned_alloc, in c++17 this will be <cstdlib>
-#include <cstddef> // std::max_align_t
+
+#include <algorithm>  // for max
+#include <cstdlib>    // aligned_alloc, in c++17 this will be <cstdlib>
+#include <cstddef>    // std::max_align_t
 
 namespace boost {
 namespace multi {
@@ -43,9 +45,10 @@ template<class MemoryResource1, class MemoryResource2
 >
 class fallback : public MemoryResource1{
 	MemoryResource2* back_ = nullptr;
-	long fallbacks_ = 0;
-public:
-	long fallbacks() const{return fallbacks_;}
+	std::ssize_t fallbacks_ = 0;
+
+ public:
+	long fallbacks() const {return fallbacks_;}
 	fallback() = default;
 
 	fallback(MemoryResource1 const& mr, MemoryResource2* back) : MemoryResource1{mr}, back_{back} {}
@@ -63,15 +66,15 @@ public:
 
 
 	typename fallback::void_pointer 
-	allocate(size_type required_bytes, typename fallback::size_type align = alignof(std::max_align_t)) try{
+	allocate(size_type required_bytes, typename fallback::size_type align = alignof(std::max_align_t)) try {
 		return MemoryResource1::allocate(required_bytes, align);
-	}catch(...){
+	} catch(...) {
 		++fallbacks_;
 		return back_->allocate(required_bytes, align);
 	}
-	void deallocate(typename fallback::void_pointer p, typename fallback::size_type discarded_bytes) try{
+	void deallocate(typename fallback::void_pointer p, typename fallback::size_type discarded_bytes) try {
 		MemoryResource1::deallocate(p, discarded_bytes);
-	}catch(...){back_->deallocate(p, discarded_bytes);}
+	} catch(...) {back_->deallocate(p, discarded_bytes);}
 };
 
 template<class T, class MR1, class MR2
@@ -80,7 +83,7 @@ template<class T, class MR1, class MR2
 #else
 	= memory::resource<>
 #endif
-> 
+>
 using fallback_allocator = memory::allocator<T, fallback<MR1, MR2>>;//, alignof(T)>>;
 
 }  // end namespace memory
