@@ -19,31 +19,31 @@
 //	#endif
 //#endif
 
-//#if not defined(__INTEL_COMPILER)
-//#define BEGIN_NO_DEPRECATED \
-//\
-//_Pragma("GCC diagnostic push") \
-//_Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"") \
-//\
+#if not defined(__INTEL_COMPILER)
+#define BEGIN_NO_DEPRECATED \
+\
+_Pragma("GCC diagnostic push") \
+_Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"") \
+\
 
-//#else
-//#define BEGIN_NO_DEPRECATED \
-//_Pragma("warning push") \
-//_Pragma("warning disable 1786") \
+#else
+#define BEGIN_NO_DEPRECATED \
+_Pragma("warning push") \
+_Pragma("warning disable 1786") \
 
-//#endif
+#endif
 
-//#if not defined(__INTEL_COMPILER)
-//#define END_NO_DEPRECATED \
-//\
-//_Pragma("GCC diagnostic pop") \
-//\
+#if not defined(__INTEL_COMPILER)
+#define END_NO_DEPRECATED \
+\
+_Pragma("GCC diagnostic pop") \
+\
 
-//#else
-//#define END_NO_DEPRECATED \
-//\
-//_Pragma("warning pop") \
-//\
+#else
+#define END_NO_DEPRECATED \
+\
+_Pragma("warning pop") \
+\
 
 //#endif
 
