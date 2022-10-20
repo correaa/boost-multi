@@ -68,6 +68,18 @@ BOOST_AUTO_TEST_CASE(array_3d_of_array_2d)  {
 	BOOST_REQUIRE( AA[9][19][1][1][1] == 99. );
 }
 
+BOOST_AUTO_TEST_CASE(const_elements) {
+
+	auto p = std::make_unique<double const>(2.0);
+//  *p = 3.0;  // ok, can't assign
+	BOOST_REQUIRE( *p == 2.0 );
+
+//  multi::array<double const, 2, std::allocator<double>> arr({10, 10}, 99.0);
+//
+//  BOOST_REQUIRE( arr[1][2] == 99.0 );
+}
+
+
 #if 0  // TODO(correaa) hint constructor is deprecated
 BOOST_AUTO_TEST_CASE(array_3d_with_hint_int) {
 	multi::array<double, 2> const arr({3, 4});

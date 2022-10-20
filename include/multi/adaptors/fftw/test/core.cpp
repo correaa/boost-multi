@@ -291,7 +291,7 @@ BOOST_AUTO_TEST_CASE(fftw_5D) {
 	auto const out_fwd = multi::fftw::dft(in, fftw::forward);
 
 	BOOST_REQUIRE(in[2][3][4][5][6] == 99.);
-	BOOST_TEST_REQUIRE( power(in) - power(out_fwd)/num_elements(out_fwd) < 1e-6 );
+	BOOST_TEST_REQUIRE( power(in) - power(out_fwd)/num_elements(out_fwd) < 1e-5 );
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_power_plan) {

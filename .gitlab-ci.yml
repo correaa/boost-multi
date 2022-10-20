@@ -85,6 +85,72 @@ NEWCLANG++12STD20LINTIWYU:
       - runner_system_failure
       - stuck_or_timeout_failure
 
+# install intel compiler online
+#  image: debian:stable  # icpc 2022.1.2 is incompatible with gcc 12 lib
+#  script:
+#    - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl g++ libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
+#    - curl --output webimage.sh --url https://registrationcenter-download.intel.com/akdlm/irc_nas/18487/l_BaseKit_p_2022.1.2.146_offline.sh --retry 5 --retry-delay 5
+#    - chmod +x webimage.sh
+#    - ./webimage.sh -x -f webimage_extracted --log extract.log
+#    - rm -rf webimage.sh
+#    - ls -1 webimage_extracted/
+#    - WEBIMAGE_NAME=$(ls -1 webimage_extracted/)
+#    - webimage_extracted/"$WEBIMAGE_NAME"/bootstrapper -s --action install --components=`#intel.oneapi.lin.mkl.devel:`intel.oneapi.lin.dpcpp-cpp-compiler:intel.oneapi.lin.dpl --eula=accept --log-dir=.
+#    - rm -rf webimage_extracted
+#    - . /opt/intel/oneapi/setvars.sh
+
+ICPX:
+  stage: build
+  image: intel/oneapi-hpckit:latest
+  script:
+    - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates cmake curl g++ libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
+    - mkdir build && cd build
+    - icpx --version
+    - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release
+    - make --jobs=2 || make VERBOSE=1
+    - ctest --parallel 2 --output-on-failure
+  needs: ["OLDG++SANICHECKCOV"]
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+
+ICPC:
+  stage: build
+  image: intel/oneapi-hpckit:latest
+  script:
+    - apt-get update && apt-get install --no-install-recommends -y --quiet cmake g++ libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
+    - mkdir build && cd build
+    - icpc --version
+    - CXX=icpc cmake .. -DCMAKE_BUILD_TYPE=Release
+    - make --jobs=2 || make VERBOSE=1
+    - ctest --parallel 2 --output-on-failure
+  needs: ["OLDG++SANICHECKCOV"]
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+
+NVHPC-2022:
+  stage: build
+  script:
+    - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
+    - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
+    - apt-get update -y && apt-get install --no-install-recommends -y nvhpc-22-7 cmake make libboost-test-dev libboost-serialization-dev
+    - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ --version
+    - mkdir build && cd build
+    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ cmake ..
+    - make --jobs 2 || make VERBOSE=1
+    - ctest --output-on-failure
+  needs: ["OLDG++SANICHECKCOV"]
+  retry:
+    max: 2
+    when:
+      - runner_system_failure
+      - stuck_or_timeout_failure
+
 NVCC:
   stage: build
   image: nvidia/cuda:11.8.0-devel-ubuntu22.04
@@ -668,90 +734,76 @@ cuda-runner:
 #      - make VERBOSE=1
 #      - ctest --output-on-failure
 
-nvhpc-22.7:
-  stage: build
-  script:
-    - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
-    - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' |      tee /etc/apt/sources.list.d/nvhpc.list
-    - apt-get update -y
-    - apt-get install --no-install-recommends -y nvhpc-22-7 cmake make libboost-test-dev libboost-serialization-dev
-    - /opt/nvidia/hpc_sdk/Linux_x86_64/22.7/compilers/bin/nvc++ --version
-    - mkdir build && cd build
-    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/22.7/compilers/bin/nvc++ cmake ..
-    - make VERBOSE=1
-    - ctest --output-on-failure
-  needs: ["g++"]
+#circle:
+#  allow_failure: false
+#  image: debian:stable  # circle is incompatible with gcc 12 lib
+#  stage: build
+#  script:
+#    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev tar gzip wget libelf1
+#    - mkdir -p build_latest && cd build_latest
+#    - wget https://www.circle-lang.org/linux/build_latest.tgz --no-verbose
+#    - tar -zxvf build_latest.tgz
+#    - cd ..
+#    - ls
+#    - ./build_latest/circle --version
+#    - mkdir build && cd build
+#    - CXX=`pwd`/../build_latest/circle cmake .. -DBOOST_LIBRARYDIR=/usr/lib/x86_64-linux-gnu/ -DENABLE_CIRCLE=1
+#    - make VERBOSE=1
+#    - ctest --output-on-failure
+#  needs: ["clang++"]
 
-circle:
-  allow_failure: false
-  image: debian:stable  # circle is incompatible with gcc 12 lib
-  stage: build
-  script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates clang g++ pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev tar gzip wget libelf1
-    - mkdir -p build_latest && cd build_latest
-    - wget https://www.circle-lang.org/linux/build_latest.tgz --no-verbose
-    - tar -zxvf build_latest.tgz
-    - cd ..
-    - ls
-    - ./build_latest/circle --version
-    - mkdir build && cd build
-    - CXX=`pwd`/../build_latest/circle cmake .. -DBOOST_LIBRARYDIR=/usr/lib/x86_64-linux-gnu/ -DENABLE_CIRCLE=1
-    - make VERBOSE=1
-    - ctest --output-on-failure
-  needs: ["clang++"]
+#icpc:  # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.yml
+#  allow_failure: false
+#  image: debian:stable  # icpc 2022.1.2 is incompatible with gcc 12 lib
+#  stage: build
+#  script:
+#    - apt-get update && apt-get install --no-install-recommends -y --quiet g++ ca-certificates cmake curl libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
+#    - curl --output webimage.sh --url https://registrationcenter-download.intel.com/akdlm/IRC_NAS/18856/l_HPCKit_p_2022.3.0.8751_offline.sh --retry 5 --retry-delay 5
+#    - chmod +x webimage.sh
+#    - ./webimage.sh -x -f webimage_extracted --log extract.log
+#    - rm -rf webimage.sh
+#    - ls -1 webimage_extracted/
+#    - WEBIMAGE_NAME=$(ls -1 webimage_extracted/)
+#    - webimage_extracted/"$WEBIMAGE_NAME"/bootstrapper -s --action install --components=intel.oneapi.lin.dpcpp-cpp-compiler-pro:intel.oneapi.lin.mpi.devel --eula=accept --log-dir=.
+#    - rm -rf webimage_extracted
+#    - . /opt/intel/oneapi/setvars.sh
+#    - ln --symbolic --force . ../multi
+#    - export CC=icc; export CXX=icpc;
+#    - $CXX -v
+#    - mkdir build.icpc && cd build.icpc
+#    - cmake ..
+#    - make VERBOSE=1
+#    - ctest --output-on-failure
+#  needs: ["g++"]
 
-icpc:  # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.yml
-  allow_failure: false
-  image: debian:stable  # icpc 2022.1.2 is incompatible with gcc 12 lib
-  stage: build
-  script:
-    - apt-get update && apt-get install --no-install-recommends -y --quiet g++ ca-certificates cmake curl libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
-    - curl --output webimage.sh --url https://registrationcenter-download.intel.com/akdlm/IRC_NAS/18856/l_HPCKit_p_2022.3.0.8751_offline.sh --retry 5 --retry-delay 5
-    - chmod +x webimage.sh
-    - ./webimage.sh -x -f webimage_extracted --log extract.log
-    - rm -rf webimage.sh
-    - ls -1 webimage_extracted/
-    - WEBIMAGE_NAME=$(ls -1 webimage_extracted/)
-    - webimage_extracted/"$WEBIMAGE_NAME"/bootstrapper -s --action install --components=intel.oneapi.lin.dpcpp-cpp-compiler-pro:intel.oneapi.lin.mpi.devel --eula=accept --log-dir=.
-    - rm -rf webimage_extracted
-    - . /opt/intel/oneapi/setvars.sh
-    - ln --symbolic --force . ../multi
-    - export CC=icc; export CXX=icpc;
-    - $CXX -v
-    - mkdir build.icpc && cd build.icpc
-    - cmake ..
-    - make VERBOSE=1
-    - ctest --output-on-failure
-  needs: ["g++"]
+#icpx: # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.yml
+#  stage: build
+#  script:
+#    - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates curl
+#    - curl --output webimage.sh --url https://registrationcenter-download.intel.com/akdlm/irc_nas/18487/l_BaseKit_p_2022.1.2.146_offline.sh --retry 5 --retry-delay 5
+#    - chmod +x webimage.sh
+#    - ./webimage.sh -x -f webimage_extracted --log extract.log
+#    - rm -rf webimage.sh
+#    - ls -1 webimage_extracted/
+#    - WEBIMAGE_NAME=$(ls -1 webimage_extracted/)
+#    - webimage_extracted/"$WEBIMAGE_NAME"/bootstrapper -s --action install --components=`#intel.oneapi.lin.mkl.devel:`intel.oneapi.lin.dpcpp-cpp-compiler:intel.oneapi.lin.dpl --eula=accept --log-dir=.
+#    - rm -rf webimage_extracted
+#    - apt-get update && apt-get install --no-install-recommends -y --quiet g++ cmake libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
+#    - . /opt/intel/oneapi/setvars.sh
+#    - ln --symbolic --force . ../multi
+#    - export CC=icx; export CXX=icpx;
+#    - $CXX -v
+#    - mkdir build.icpx && cd build.icpx
+#    - cmake .. #cmake --build . -- --quiet --no-print-directory
+#    - make VERBOSE=1
+#    - export MKL_VERBOSE=1
+#    - ctest --output-on-failure
+#    - cd ..
+#  needs: ["clang++"]
 
-icpx: # https://github.com/oneapi-src/oneapi-ci/blob/master/.gitlab-ci.yml
-  stage: build
-  script:
-    - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates curl
-    - curl --output webimage.sh --url https://registrationcenter-download.intel.com/akdlm/irc_nas/18487/l_BaseKit_p_2022.1.2.146_offline.sh --retry 5 --retry-delay 5
-    - chmod +x webimage.sh
-    - ./webimage.sh -x -f webimage_extracted --log extract.log
-    - rm -rf webimage.sh
-    - ls -1 webimage_extracted/
-    - WEBIMAGE_NAME=$(ls -1 webimage_extracted/)
-    - webimage_extracted/"$WEBIMAGE_NAME"/bootstrapper -s --action install --components=`#intel.oneapi.lin.mkl.devel:`intel.oneapi.lin.dpcpp-cpp-compiler:intel.oneapi.lin.dpl --eula=accept --log-dir=.
-    - rm -rf webimage_extracted
-    - apt-get update && apt-get install --no-install-recommends -y --quiet g++ cmake libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
-    - . /opt/intel/oneapi/setvars.sh
-    - ln --symbolic --force . ../multi
-    - export CC=icx; export CXX=icpx;
-    - $CXX -v
-    - mkdir build.icpx && cd build.icpx
-    - cmake .. #cmake --build . -- --quiet --no-print-directory
-    - make VERBOSE=1
-    - export MKL_VERBOSE=1
-    - ctest --output-on-failure
-    - cd ..
-  needs: ["clang++"]
-
-variables:
-  msbuild: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe'
-  mscmake: 'C:\Program Files\CMake\bin\cmake.exe'
+#variables:
+#  msbuild: 'C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\MSBuild\Current\Bin\MSBuild.exe'
+#  mscmake: 'C:\Program Files\CMake\bin\cmake.exe'
 
 #build_windows:
 #  stage: build
