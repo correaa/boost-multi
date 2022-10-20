@@ -1,8 +1,8 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2018-2022 Alfredo A. Correa
 
-#ifndef MULTI_ARRAY_HPP
-#define MULTI_ARRAY_HPP
+#ifndef MULTI_ARRAY_HPP_
+#define MULTI_ARRAY_HPP_
 
 #include "./array_ref.hpp"
 #include "./config/NO_UNIQUE_ADDRESS.hpp"
@@ -1041,8 +1041,10 @@ template<typename T, dimensionality_type D, typename P> array(basic_array<T, D, 
 #endif  // ends defined(__cpp_deduction_guides)
 
 template <class T, std::size_t N>
-auto decay(const T(&arr)[N]) noexcept -> multi::array<typename std::remove_all_extents<T[N]>::type, std::rank_v<T[N]>> {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
-	return multi::array_cref<typename std::remove_all_extents<T[N]>::type, std::rank_v<T[N]>>(data_elements(arr), extensions(arr));  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+auto decay(const T(&arr)[N]) noexcept -> multi::array<typename std::remove_all_extents<T[N]>::type, std::rank_v<T[N]>> {
+	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : for backwards compatibility
+	return multi::array_cref<typename std::remove_all_extents<T[N]>::type, std::rank_v<T[N]>>(data_elements(arr), extensions(arr));
 }
 
 template<class T, std::size_t N>
@@ -1073,4 +1075,4 @@ struct version< boost::multi::array<T, D, A> > {
 
 }  // end namespace boost::serialization
 
-#endif
+#endif  // MULTI_ARRAY_HPP_
