@@ -11,6 +11,8 @@
 #include<iostream>
 #include<random>
 
+#include<fftw3.h>
+
 namespace {
 
 namespace multi = boost::multi;
@@ -374,7 +376,7 @@ BOOST_AUTO_TEST_CASE(fftw_3D_power_out_of_place_over_ref) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_3D_power_out_of_place_over_temporary) {
-	double powerin = NAN;
+	double powerin;
 	auto fun = [&]() {
 		multi::array<complex, 3> in({4, 4, 4});
 		std::iota(data_elements(in), data_elements(in)+num_elements(in), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
@@ -416,7 +418,7 @@ BOOST_AUTO_TEST_CASE(fftw_4D_inq_poisson) {
 }
 
 
-BOOST_AUTO_TEST_CASE(fftw_1D_power) {
+BOOST_AUTO_TEST_CASE(fftw_1D_power_c_interface) {
 	multi::array<complex, 1> in(16, 0.);
 	BOOST_REQUIRE( size(in) == 16 );
 
