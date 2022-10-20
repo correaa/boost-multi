@@ -7,17 +7,15 @@
 #define __has_cpp_attribute(name) 0
 #endif
 
-#define	DEPRECATED(MsG) [[deprecated(MsG)]]
-
-//#ifdef __NVCC__
-//	#define DEPRECATED(MsG) __attribute__((deprecated))
-//#else
-//	#if __has_cpp_attribute(deprecated)
-//		#define	DEPRECATED(MsG) [[deprecated(MsG)]]
-//	#else
-//		#define DEPRECATED(MsG)
-//	#endif
-//#endif
+#ifdef __NVCC__
+	#define DEPRECATED(MsG) __attribute__((deprecated))
+#else
+	#if __has_cpp_attribute(deprecated)
+		#define	DEPRECATED(MsG) [[deprecated(MsG)]]
+	#else
+		#define DEPRECATED(MsG)
+	#endif
+#endif
 
 #if not defined(__INTEL_COMPILER)
 #define BEGIN_NO_DEPRECATED \
@@ -45,7 +43,7 @@ _Pragma("GCC diagnostic pop") \
 _Pragma("warning pop") \
 \
 
-//#endif
+#endif
 
 #define BEGIN_CUDA_SLOW BEGIN_NO_DEPRECATED
 #define END_CUDA_SLOW   END_NO_DEPRECATED
