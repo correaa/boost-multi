@@ -26,9 +26,9 @@ class stack : protected monotonic<Ptr, Align> {
 	std::ssize_t hits_ = 0;
 
  public:
-	std::ssize_t hits() const{return hits_;}
-	void reset(){monotonic<Ptr, Align>::reset(); positions_.clear();}
-	typename stack::size_type max_needed() const{return max_needed_;}std
+	std::ssize_t hits() const {return hits_;}
+	void reset() {monotonic<Ptr, Align>::reset(); positions_.clear();}
+	typename stack::size_type max_needed() const {return max_needed_;}std
 
 	using monotonic<Ptr, Align>::monotonic;
 
@@ -36,7 +36,7 @@ class stack : protected monotonic<Ptr, Align> {
 	typename stack::void_pointer allocate(
 		typename stack::size_type required_bytes,
 		typename stack::size_type align = AA
-	){
+	) {
 		total_requested_ += required_bytes;
 		max_needed_ = std::max(max_needed_, total_requested_ - total_discarded_);
 		positions_.push(monotonic<Ptr, Align>::template allocate<AA>(required_bytes, align));
@@ -46,9 +46,9 @@ class stack : protected monotonic<Ptr, Align> {
 	void deallocate(
 		typename stack::void_pointer p,
 		typename stack::size_type discarded_bytes
-	){
+	) {
 		total_discarded_ += discarded_bytes;
-		monotonic<Ptr, Align>::deallocate(p, discarded_bytes);//positions_.top(), discarded_bytes);
+		monotonic<Ptr, Align>::deallocate(p, discarded_bytes);  // positions_.top(), discarded_bytes);
 		assert( p == positions_.top() && "stack violation" );
 		this->position_ -= discarded_bytes;
 		positions_.pop();

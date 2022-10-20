@@ -7,25 +7,25 @@
 #include "../memory/block.hpp"
 #include "../memory/allocator.hpp"
 
-#include<cstddef> // max_align_t
+#include<cstddef>     // for max_align_t
 #include<stdexcept>
 #include<string>
 
 namespace boost {
 namespace multi {
 
-// template<class T> auto raw_pointer_cast(T* p) -> T* {return p;}  // with the meaning of std::to_address
+//  template<class T> auto raw_pointer_cast(T* p) -> T* {return p;}  // with the meaning of std::to_address
 
 namespace memory {
 
 template<class T>
 T* align_up(T* ptr, std::size_t bytes = alignof(std::max_align_t)) {
-//	return
-//		reinterpret_cast<T*>(
-//			  (reinterpret_cast<std::uintptr_t>(ptr) + (bytes-1))
-//			& ~(bytes-1)
-//		)
-//	;
+//  return
+//  	reinterpret_cast<T*>(
+//  		  (reinterpret_cast<std::uintptr_t>(ptr) + (bytes-1))
+//  		& ~(bytes-1)
+//  	)
+//  ;
 	using uintptr_t = std::uint64_t;
 	static_assert( sizeof(uintptr_t) == sizeof(T*), "this function works in 64 bit systems" );
 	return reinterpret_cast<T*>( bytes * ((reinterpret_cast<uintptr_t&>(ptr) + (bytes - 1)) / bytes) );
@@ -36,17 +36,17 @@ constexpr
 Ptr align_up(Ptr ptr, std::size_t bytes = alignof(std::max_align_t)) {
 	using multi::to_address;
 	auto p_(to_address(ptr));
-////  using multi::raw_pointer_cast;
-////  auto p_{raw_pointer_cast(p)};
+//  using multi::raw_pointer_cast;
+//  auto p_{raw_pointer_cast(p)};
 
-	static_assert( sizeof(*p_)==1 , "!"); // crash
-//	auto q_ = reinterpret_cast<decltype(p_)>(
-//		(reinterpret_cast<std::uintptr_t>(p_) + (align-1))
-//		& ~(align-1)
-//	);
+	static_assert( sizeof(*p_)==1 , "!");  //  crash
+//  auto q_ = reinterpret_cast<decltype(p_)>(
+//  	(reinterpret_cast<std::uintptr_t>(p_) + (align-1))
+//  	& ~(align-1)
+//  );
 	auto q_ = align_up(p_, bytes);
 	return ptr + std::distance(p_, q_);
-//	return reinterpret_cast<Ptr&>( bytes * ((reinterpret_cast<std::uintptr_t&>(ptr) + (bytes - 1)) / bytes) );  // maybe using uint64_t and static_assert sizeof(void*) == uint64_t
+//  return reinterpret_cast<Ptr&>( bytes * ((reinterpret_cast<std::uintptr_t&>(ptr) + (bytes - 1)) / bytes) );  // maybe using uint64_t and static_assert sizeof(void*) == uint64_t
 }
 
 template<typename Ptr = byte*, std::size_t Align = alignof(std::max_align_t)>
@@ -83,7 +83,7 @@ class monotonic : protected block<Ptr> {
 	template<std::size_t AA = Align>
 	typename monotonic::void_pointer allocate(
 		typename monotonic::size_type required_bytes,
-		typename monotonic::size_type align = AA//alignof(std::max_align_t)
+		typename monotonic::size_type align = AA  // alignof(std::max_align_t)
 	) {
 		auto ret = align_up(this->position_, align);
 		auto new_position_ = ret + required_bytes;
@@ -107,7 +107,7 @@ class monotonic : protected block<Ptr> {
 		using size_type = typename monotonic::size_type;
 		size_type required;
 		size_type available;
-	//	constexpr auto to_string = [](auto a){return std::to_string(a);};
+	//  constexpr auto to_string = [](auto a){return std::to_string(a);};
 		std::string msg;
 		overflow(size_type required, size_type available)
 		: required{required}, available{available},
@@ -123,7 +123,7 @@ using monotonic_allocator = multi::memory::allocator<T, monotonic<char*>>;
 }  // end namespace multi
 }  // end namespace boost
 
-#if not __INCLUDE_LEVEL__ // _TEST_BOOST_MULTI_MEMORY_MONOTONIC
+#if not __INCLUDE_LEVEL__  // _TEST_BOOST_MULTI_MEMORY_MONOTONIC
 
 #include "../../multi/array.hpp"
 

@@ -1,46 +1,47 @@
-#ifndef MULTI_CONFIG_DEPRECATED_HPP_ // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+#ifndef MULTI_CONFIG_DEPRECATED_HPP_
 #define MULTI_CONFIG_DEPRECATED_HPP_
-// © Alfredo A. Correa 2019-2020
+// Copyright 2019-2022 Alfredo A. Correa
 
 #ifndef __has_cpp_attribute
 #define __has_cpp_attribute(name) 0
 #endif
 
-#ifdef __NVCC__
-	#define DEPRECATED(MsG) __attribute__((deprecated))
-#else
-	#if __has_cpp_attribute(deprecated)
-		#define	DEPRECATED(MsG) [[deprecated(MsG)]]
-	#else
-		#define DEPRECATED(MsG)
-	#endif
-#endif
+//#ifdef __NVCC__
+//	#define DEPRECATED(MsG) __attribute__((deprecated))
+//#else
+//	#if __has_cpp_attribute(deprecated)
+//		#define	DEPRECATED(MsG) [[deprecated(MsG)]]
+//	#else
+//		#define DEPRECATED(MsG)
+//	#endif
+//#endif
 
-#if not defined(__INTEL_COMPILER)
-#define BEGIN_NO_DEPRECATED \
-\
-_Pragma("GCC diagnostic push") \
-_Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"") \
-\
+//#if not defined(__INTEL_COMPILER)
+//#define BEGIN_NO_DEPRECATED \
+//\
+//_Pragma("GCC diagnostic push") \
+//_Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"") \
+//\
 
-#else
-#define BEGIN_NO_DEPRECATED \
-_Pragma("warning push") \
-_Pragma("warning disable 1786") \
+//#else
+//#define BEGIN_NO_DEPRECATED \
+//_Pragma("warning push") \
+//_Pragma("warning disable 1786") \
 
-#endif
+//#endif
 
-#if not defined(__INTEL_COMPILER)
-#define END_NO_DEPRECATED \
-\
-_Pragma("GCC diagnostic pop") \
-\
+//#if not defined(__INTEL_COMPILER)
+//#define END_NO_DEPRECATED \
+//\
+//_Pragma("GCC diagnostic pop") \
+//\
 
-#else
-#define END_NO_DEPRECATED \
-\
-_Pragma("warning pop") \
-\
+//#else
+//#define END_NO_DEPRECATED \
+//\
+//_Pragma("warning pop") \
+//\
 
 #endif
 
