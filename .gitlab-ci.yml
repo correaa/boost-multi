@@ -145,11 +145,9 @@ NVHPC:
   stage: build
   image: speglich/cimatec-nvhpc:ogbon
   script:
-    - apt-key del 7fa2af80  # from https://forums.developer.nvidia.com/t/gpg-error-http-developer-download-nvidia-com-compute-cuda-repos-ubuntu1804-x86-64/212904/3
-    - wget https://developer.download.nvidia.com/compute/cuda/repos/debian11/x86_64/cuda-keyring_1.0-1_all.deb
-    - dpkg -i cuda-keyring_1.0-1_all.deb  # - apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1604/x86_64/3bf863cc.pub
-    - rm -f /etc/apt/sources.list.d/cuda.list
-    - rm -f /etc/apt/sources.list.d/nvidia-ml.list
+    - apt-key del 7fa2af80
+    - apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
+    - apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu2004/x86_64/7fa2af80.pub
     - apt-get update && apt-get install --no-install-recommends -y ca-certificates cmake make libboost-test-dev libboost-serialization-dev
     - mkdir build && cd build
     - nvc++ --version
