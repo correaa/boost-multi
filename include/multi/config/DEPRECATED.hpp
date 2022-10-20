@@ -7,6 +7,8 @@
 #define __has_cpp_attribute(name) 0
 #endif
 
+#define	DEPRECATED(MsG) [[deprecated(MsG)]]
+
 //#ifdef __NVCC__
 //	#define DEPRECATED(MsG) __attribute__((deprecated))
 //#else
@@ -43,7 +45,7 @@
 //_Pragma("warning pop") \
 //\
 
-#endif
+//#endif
 
 #define BEGIN_CUDA_SLOW BEGIN_NO_DEPRECATED
 #define END_CUDA_SLOW   END_NO_DEPRECATED
