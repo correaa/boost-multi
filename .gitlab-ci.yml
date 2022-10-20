@@ -133,26 +133,16 @@ ICPC:
       - runner_system_failure
       - stuck_or_timeout_failure
 
-#  script:
-#    - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
-#    - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' |      tee /etc/apt/sources.list.d/nvhpc.list
-#    - apt-get update -y
-#    - apt-get install --no-install-recommends -y nvhpc-22-7
-
-#    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/22.7/compilers/bin/nvc++ cmake ..
-
-NVHPC:
+NVHPC-2022:
   stage: build
-  image: speglich/cimatec-nvhpc:ogbon
   script:
-    - apt-key del 7fa2af80
-    - apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
-    - apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu2004/x86_64/7fa2af80.pub
-    - apt-get update && apt-get install --no-install-recommends -y ca-certificates cmake make libboost-test-dev libboost-serialization-dev
+    - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
+    - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
+    - apt-get update -y && apt-get install --no-install-recommends -y nvhpc-22-7 cmake make libboost-test-dev libboost-serialization-dev
+    - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ --version
     - mkdir build && cd build
-    - nvc++ --version
-    - CXX=nvc++ cmake ..
-    - make --jobs=2 || make VERBOSE=1
+    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ cmake ..
+    - make --jobs 2 || make VERBOSE=1
     - ctest --output-on-failure
   needs: ["OLDG++SANICHECKCOV"]
   retry:
@@ -743,20 +733,6 @@ cuda-runner:
 #      - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/22.1/compilers/bin/nvc++ cmake ..
 #      - make VERBOSE=1
 #      - ctest --output-on-failure
-
-nvhpc-22.7:
-  stage: build
-  script:
-    - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
-    - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' |      tee /etc/apt/sources.list.d/nvhpc.list
-    - apt-get update -y
-    - apt-get install --no-install-recommends -y nvhpc-22-7 cmake make libboost-test-dev libboost-serialization-dev
-    - /opt/nvidia/hpc_sdk/Linux_x86_64/22.7/compilers/bin/nvc++ --version
-    - mkdir build && cd build
-    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/22.7/compilers/bin/nvc++ cmake ..
-    - make VERBOSE=1
-    - ctest --output-on-failure
-  needs: ["g++"]
 
 #circle:
 #  allow_failure: false
