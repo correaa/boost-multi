@@ -45,7 +45,7 @@ template<class MemoryResource1, class MemoryResource2
 >
 class fallback : public MemoryResource1{
 	MemoryResource2* back_ = nullptr;
-	std::ssize_t fallbacks_ = 0;
+	std::size_t fallbacks_ = 0;
 
  public:
 	long fallbacks() const {return fallbacks_;}
