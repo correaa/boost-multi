@@ -452,7 +452,7 @@ qmcpack-g++:
     - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
     - ctest -R ppconvert --output-on-failure
     - ctest -R afqmc     --output-on-failure
-  needs: ["g++"]
+  needs: ["OLDG++SANICHECKCOV"]
 
 #qmcpack-clang++:
 #  stage: test
