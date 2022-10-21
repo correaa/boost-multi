@@ -22,5 +22,5 @@ struct pointer_traits/*, typename Pointer::default_allocator_type>*/ : std::poin
 	using default_allocator_type = decltype(dat_aux(priority_me<2>{}, std::declval<Pointer>()));
 };
 
-} // end namespace boost::multi
+}  // end namespace boost::multi
 #endif  // MULTI_MEMORY_POINTER_TRAITS_HPP_
