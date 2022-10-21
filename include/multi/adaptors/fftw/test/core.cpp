@@ -376,7 +376,7 @@ BOOST_AUTO_TEST_CASE(fftw_3D_power_out_of_place_over_ref) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_3D_power_out_of_place_over_temporary) {
-	double powerin;
+	double powerin = std::numeric_limits<double>::quiet_NaN();
 	auto fun = [&]() {
 		multi::array<complex, 3> in({4, 4, 4});
 		std::iota(data_elements(in), data_elements(in)+num_elements(in), 1.2);  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): test code
