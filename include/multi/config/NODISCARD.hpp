@@ -1,8 +1,8 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2019-2022 Alfredo A. Correa
 
-#ifndef MULTI_CONFIG_NODISCARD_HPP
-#define MULTI_CONFIG_NODISCARD_HPP
+#ifndef MULTI_CONFIG_NODISCARD_HPP_
+#define MULTI_CONFIG_NODISCARD_HPP_
 
 #ifndef __has_cpp_attribute
 #define __has_cpp_attribute(name) 0
@@ -36,4 +36,4 @@
 	#endif
 #endif
 
-#endif
+#endif  // MULTI_CONFIG_NODISCARD_HPP_

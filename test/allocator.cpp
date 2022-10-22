@@ -69,7 +69,6 @@ BOOST_AUTO_TEST_CASE(array_3d_of_array_2d)  {
 }
 
 BOOST_AUTO_TEST_CASE(const_elements) {
-
 	auto p = std::make_unique<double const>(2.0);
 //  *p = 3.0;  // ok, can't assign
 	BOOST_REQUIRE( *p == 2.0 );

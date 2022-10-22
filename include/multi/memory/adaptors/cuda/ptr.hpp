@@ -238,7 +238,7 @@ template<
 	class InputIt, class Size, class... T, class ForwardIt = ptr<T...>,
 	typename InputV = typename std::pointer_traits<InputIt>::element_type,
 	typename ForwardV = typename std::pointer_traits<ForwardIt>::element_type,
-	std::enable_if_t<std::is_trivially_constructible<ForwardV, InputV>{}, int> =0
+	std::enable_if_t<std::is_trivially_constructible<ForwardV, InputV>::value, int> =0
 >
 ForwardIt uninitialized_copy_n(InputIt f, Size n, ptr<T...> d) {
 	memcpy(d, f, n*sizeof(ForwardV));

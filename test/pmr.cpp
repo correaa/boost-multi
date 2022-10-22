@@ -68,7 +68,6 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 }
 
 BOOST_AUTO_TEST_CASE(pmr_benchmark) {
-
 //  auto* resp = std::pmr::unsynchronized_pool_resource(std::pmr::get_default_resource());
 	auto* resp = std::pmr::get_default_resource();
 
