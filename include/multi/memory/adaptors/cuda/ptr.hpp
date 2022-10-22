@@ -1,19 +1,18 @@
-//#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
-//$CXXX $CXXFLAGS $0 -o $0.$X `pkg-config --cflags --libs cudart-11.0` -lboost_unit_test_framework&&$0.$X&&rm $0.$X;exit
-//#endif
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2018-2022 Alfredo A. Correa
 
-#ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_PTR_HPP
-#define BOOST_MULTI_MEMORY_ADAPTORS_CUDA_PTR_HPP
+#ifndef MULTI_MEMORY_ADAPTORS_CUDA_PTR_HPP_
+#define MULTI_MEMORY_ADAPTORS_CUDA_PTR_HPP_
 
 #include "../../adaptors/cuda/clib.hpp"
 #include "../../adaptors/cuda/error.hpp"
 #include "../../../array_ref.hpp"
-#include "../../../complex.hpp" // adl_conj
+#include "../../../complex.hpp"  // for adl_conj
 
 #include "../../../config/DEPRECATED.hpp"
 
-#include<cassert> // debug
-#include<utility> // exchange
+#include<cassert>  // for debug
+#include<utility>  // for exchange
 
 #include<thrust/system/cuda/pointer.h>
 
@@ -617,7 +616,7 @@ struct ref {
 #endif
 
 #if defined(__clang__)
-#if defined(__CUDA__) //&& !defined(__CUDA_ARCH__)
+#if defined(__CUDA__)  // && !defined(__CUDA_ARCH__)
 	operator T()&& __device__{return *(pimpl_.rp_);}
 	operator T()&& __host__  {static_assert( std::is_trivially_copyable<std::decay_t<T>>{}, "!" );
 		typename std::aligned_storage<sizeof(T), alignof(T)>::type ret;
@@ -653,7 +652,7 @@ struct ref {
 		return reinterpret_cast<T&>(buff);
 	}
 #endif
-#else // no clang
+#else  // no clang
 #if __CUDA_ARCH__
 	operator T()&& __device__{return *(pimpl_.rp_);}
 #else
@@ -675,7 +674,7 @@ struct ref {
 		return std::move(reinterpret_cast<T&>(buff));
 	}
 	operator T() const& __device__{return *(pimpl_.rp_);}
-#else //no clang
+#else  // no clang
 #if __CUDA_ARCH__
 	operator T() const& __device__{return *(pimpl_.rp_);}
 #else
@@ -838,7 +837,10 @@ struct ref {
 	}
 };
 
-}}}}
+}  // namespace cuda
+}  // namespace memory
+}  // namespace multi
+}  // namespace boost
 
 namespace thrust {
 template<class T, class P> P raw_pointer_cast(boost::multi::memory::cuda::ptr<T, P> const& p) __host__ __device__ {
@@ -846,27 +848,6 @@ template<class T, class P> P raw_pointer_cast(boost::multi::memory::cuda::ptr<T,
 }
 }
 #undef SLOW
-
-//namespace boost {
-//namespace multi {
-
-//template<
-//	class T1, class Q1,
-//	class Size,
-//	class T2, class P2//, class E2 = typename std::pointer_traits<P2>::element_type //, typename TP2 = decltype(ptr<E2>{std::declval<P2>()})
-//> struct adl_custom_copy<
-//	boost::multi::array_iterator<T1, 1L, Q1*>, boost::multi::array_iterator<T1, 1L, Q1*>,
-//	boost::multi::array_iterator<T2, 1L, P2 >
-//> {
-//	auto copy(
-//		boost::multi::array_iterator<T1, 1L, Q1*>   first , boost::multi::array_iterator<T1, 1L, Q1*> last,
-//		boost::multi::array_iterator<T2, 1L, P2 > d_first
-//	)-> boost::multi::array_iterator<T2, 1L, P2 > {
-//		return copy_n(first, last - first, d_first);
-//	}
-//}
-
-//}}
 
 #if not __INCLUDE_LEVEL__ // def _TEST_MULTI_MEMORY_ADAPTORS_CUDA_PTR
 
@@ -892,8 +873,8 @@ __device__ void f(cuda::ptr<double>){
 
 BOOST_AUTO_TEST_CASE(multi_memory_cuda_ptr){
 
-//	static_assert( not std::is_convertible<std::complex<double>*, multi::memory::cuda::ptr<std::complex<double>>>{}, "!" );
-//	static_assert( not std::is_convertible<multi::memory::cuda::ptr<std::complex<double>>, std::complex<double>*>{}, "!" );
+	static_assert( not std::is_convertible<std::complex<double>*, multi::memory::cuda::ptr<std::complex<double>>>::value );
+	static_assert( not std::is_convertible<multi::memory::cuda::ptr<std::complex<double>>, std::complex<double>*>::value );
 
 	multi::memory::cuda::ptr<std::complex<double>> xxx = nullptr;
 	std::complex<double>* ppp = raw_pointer_cast(xxx); (void)ppp;
@@ -902,14 +883,14 @@ BOOST_AUTO_TEST_CASE(multi_memory_cuda_ptr){
 		std::complex<double> const dd{*ppp2};
 		assert( dd == std::complex<double>{0} );
 	}
-	using T = double; 
+	using T = double;
 	static_assert( sizeof(cuda::ptr<T>) == sizeof(T*), "!");
 	std::size_t const n = 100;
 	{
 		using cuda::ptr;
 		auto p = static_cast<ptr<T>>(cuda::malloc(n*sizeof(T)));
-CUDA_SLOW( 
-		*p = 99.; 
+CUDA_SLOW(
+		*p = 99.;
 )
 		{
 			ptr<T const> pc = p;
@@ -919,13 +900,11 @@ CUDA_SLOW(
 		BOOST_REQUIRE( *p != 11. );
 		cuda::free(p);
 
-		cuda::ptr<T> P = nullptr; 
+		cuda::ptr<T> P = nullptr;
 		BOOST_REQUIRE( P == nullptr );
 		ptr<void> pv = p; (void)pv;
 	}
-//	what<typename cuda::ptr<T>::rebind<T const>>();
-//	what<typename std::pointer_traits<cuda::ptr<T>>::rebind<T const>>();
-	static_assert( std::is_same<typename std::pointer_traits<cuda::ptr<T>>::rebind<T const>, cuda::ptr<T const>>{} , "!");	
+	static_assert( std::is_same<typename std::pointer_traits<cuda::ptr<T>>::rebind<T const>, cuda::ptr<T const>>{} , "!");
 }
 
 BOOST_AUTO_TEST_CASE(ptr_conversion){
@@ -937,16 +916,15 @@ BOOST_AUTO_TEST_CASE(ptr_conversion){
 template<class T> struct Complex_{T real; T imag;};
 
 BOOST_AUTO_TEST_CASE(multi_memory_cuda_ptr_member_pointer){
-	
 	Complex_<double> c{10.,20.};
-//	double Complex_<double>::* 
+//  double Complex_<double>::* 
 	Complex_<double>* p = &c;
 	auto pm = &Complex_<double>::imag;
 	BOOST_REQUIRE( p->*pm == 20. );
 	BOOST_REQUIRE( *p.*pm == 20. );
 
-//	cuda::ptr<Complex_<double>> pcu;
-//	pcu->*pm;
+//  cuda::ptr<Complex_<double>> pcu;
+//  pcu->*pm;
 }
 
 

@@ -1,10 +1,8 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-$CXXX $CXXFLAGS $0 -o $0x -lcudart -lboost_unit_test_framework -lboost_timer&&$0x&&rm $0x;exit
-#endif
-// © Alfredo A. Correa 2019-2020
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2019-2022 Alfredo A. Correa
 
-#ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING_HPP
-#define BOOST_MULTI_MEMORY_ADAPTORS_CUDA_CSTRING_HPP
+#ifndef MULTI_MEMORY_ADAPTORS_CUDA_CSTRING_HPP_
+#define MULTI_MEMORY_ADAPTORS_CUDA_CSTRING_HPP_
 
 #include "../../adaptors/cuda/ptr.hpp"
 #include "../../adaptors/cuda/managed/ptr.hpp"
@@ -33,9 +31,6 @@ auto call_static(std::string const& name){
 		if( s != Cuda::error::success ) throw std::system_error{make_error_code(s), "cannot call cuda function "};
 	};
 }
-
-//template<class T, T CudaFunction>
-//auto call_static(){return call_static(std::string{});}
 
 #define CUDA(FunctionPostfix) ::boost::multi::memory::cuda::call_static<decltype(&cuda##FunctionPostfix), cuda##FunctionPostfix>(#FunctionPostfix)
 
@@ -72,46 +67,9 @@ auto memcpy2D(VoidPDst dst, std::size_t dpitch, VoidPCSrc src, std::size_t spitc
 ->decltype(cuda::call<cudaMemcpy2D>(static_cast<void*>(dst), dpitch, static_cast<void const*>(src), spitch, width, height, static_cast<cudaMemcpyKind>(memcpy_::type(dst, src)))){
 	return cuda::call<cudaMemcpy2D>(static_cast<void*>(dst), dpitch, static_cast<void const*>(src), spitch, width, height, static_cast<cudaMemcpyKind>(memcpy_::type(dst, src)));}
 
-}}}}
+}
+}
+}
+}
 
-//#if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
-
-//#define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUDA cstring"
-//#define BOOST_TEST_DYN_LINK
-//#include<boost/test/unit_test.hpp>
-
-//#include "../../adaptors/cuda/allocator.hpp"
-
-//#include<boost/timer/timer.hpp>
-
-//#include<numeric>
-
-//namespace multi = boost::multi;
-//namespace cuda = multi::memory::cuda;
-
-//BOOST_AUTO_TEST_CASE(multi_memory_cuda_cstring){
-
-//	std::size_t const n = 2e9/sizeof(double);
-//	cuda::ptr<double> p = cuda::allocator<double>{}.allocate(n);
-//	{
-//		boost::timer::auto_cpu_timer t;
-//		memset(p, 0, n*sizeof(double));
-//	}
-//	BOOST_REQUIRE( p[n/2]==0 );
-//	CUDA_SLOW ( 
-//		p[n/2] = 99.;
-//	)
-//	cuda::ptr<double> q = cuda::allocator<double>{}.allocate(n);
-//	{
-//		boost::timer::auto_cpu_timer t;
-//		memcpy(q, p, n*sizeof(double));
-//	}
-//	BOOST_REQUIRE( p[n/2] == 99. );
-//	BOOST_REQUIRE( q[n/2] == 99. );
-
-//	double a = 5.;
-//	BOOST_REQUIRE(a == 5.);
-
-//}
-//#endif
-#endif
+#endif  // MULTI_MEMORY_ADAPTORS_CUDA_CSTRING_HPP_

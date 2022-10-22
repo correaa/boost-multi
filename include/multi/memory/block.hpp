@@ -1,8 +1,8 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2018-2022 Alfredo A. Correa
+// Copyright 2019-2022 Alfredo A. Correa
 
-#ifndef BOOST_MULTI_MEMORY_BLOCK_HPP
-#define BOOST_MULTI_MEMORY_BLOCK_HPP
+#ifndef MULTI_MEMORY_BLOCK_HPP_
+#define MULTI_MEMORY_BLOCK_HPP_
 
 #include <cassert>   // for assert
 #include <cstddef>   // for nullptr_t, size_t
@@ -32,9 +32,9 @@ struct block;
 namespace detail {
 template<typename Ptr, typename Difference>
 struct basic_block {
-	using pointer = typename std::pointer_traits<Ptr>::pointer; // basic_block? block<Ptr>?
+	using pointer = typename std::pointer_traits<Ptr>::pointer;  // basic_block? block<Ptr>?
 	using element_type = typename std::pointer_traits<Ptr>::element_type;
-	using difference_type = Difference;//typename std::pointer_traits<Ptr>::difference_type;
+	using difference_type = Difference;  //typename std::pointer_traits<Ptr>::difference_type;
 	using size_type = difference_type;
 
  public:
@@ -81,10 +81,12 @@ template<class Ptr>
 block(Ptr p) -> block<Ptr, typename std::pointer_traits<Ptr>::difference_type>;
 #endif
 template<typename Ptr>
-constexpr size_t size(Ptr const& p){return block<Ptr>(p).size();}//size();}//static_cast<block<Ptr> const&>(p).size();}
+constexpr size_t size(Ptr const& p){return block<Ptr>(p).size();}  // size();}//static_cast<block<Ptr> const&>(p).size();}
 #endif
 
-}}}
+}  // namespace memory
+}  // namespace multi
+}  // namespace boost
 
 #if _TEST_BOOST_MULTI_MEMORY_BLOCK
 
@@ -122,7 +124,7 @@ int main() {
 #ifdef USE_BOOST_MULTI_MEMORY_MALLOC
 	{
 		char* p = new char[200];
-		memory::block<char*> bp = p; // non standard
+		memory::block<char*> bp = p;  // non standard
 		assert( bp.size() >= 200 );
 		using multi::memory::size;
 		assert( size(p) >= 200 );
@@ -145,7 +147,6 @@ int main() {
 	}
 	#endif
 #endif
-
 }
 #endif
-#endif
+#endif  // MULTI_MEMORY_BLOCK_HPP_

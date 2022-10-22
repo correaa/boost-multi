@@ -1,8 +1,8 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2019-2022 Alfredo A. Correa
 
-#ifndef BOOST_MULTI_MEMORY_MONOTONIC_HPP_
-#define BOOST_MULTI_MEMORY_MONOTONIC_HPP_
+#ifndef MULTI_MEMORY_MONOTONIC_HPP_
+#define MULTI_MEMORY_MONOTONIC_HPP_
 
 #include "../memory/block.hpp"
 #include "../memory/allocator.hpp"
@@ -112,7 +112,7 @@ class monotonic : protected block<Ptr> {
 		overflow(size_type required, size_type available)
 		: required{required}, available{available},
 			msg{"required "+std::to_string(required)+" while only "+std::to_string(available)+" bytes available"} {}
-		char const* what() const throw() override {return msg.c_str();}// + std::to_string(required)).c_str();}
+		char const* what() const throw() override {return msg.c_str();}  // + std::to_string(required)).c_str();}
 	};
 };
 
@@ -162,4 +162,4 @@ int main(){
 }
 }
 #endif
-#endif  // BOOST_MULTI_MEMORY_MONOTONIC_HPP_
+#endif  // MULTI_MEMORY_MONOTONIC_HPP_

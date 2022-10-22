@@ -1,7 +1,5 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXXX $CXXFLAGS $0 -o $0.$X `pkg-config --cflags --libs cudart-11.0`&&$0.$X&&rm $0.$X;exit
-#endif
-// © Alfredo A. Correa 2019-2020
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2019-2022 Alfredo A. Correa
 
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_PTR_HPP
 #define BOOST_MULTI_MEMORY_ADAPTORS_CUDA_MANAGED_PTR_HPP
@@ -174,7 +172,7 @@ struct ptr : cuda::ptr<T, RawPtr> {
 	using difference_type = typename std::pointer_traits<raw_pointer>::difference_type;
 	using value_type = T;
 	using pointer = ptr<T>;
-	using iterator_category = typename std::iterator_traits<raw_pointer>::iterator_category; //	using iterator_concept  = typename std::iterator_traits<impl_t>::iterator_concept;
+	using iterator_category = typename std::iterator_traits<raw_pointer>::iterator_category;  // using iterator_concept  = typename std::iterator_traits<impl_t>::iterator_concept;
 	constexpr explicit operator bool() const {return this->rp_;}
 //	bool operator not() const{return !rp_;}
 	constexpr 

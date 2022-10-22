@@ -1,9 +1,8 @@
-//#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-//$CXXX $CXXFLAGS $0 -o $0x -lcudart&&$0x&&rm $0x;exit
-//#endif
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2018-2022 Alfredo A. Correa
 
-#ifndef MULTI_MEMORY_ADAPTORS_CUDA_CACHED_ALLOCATOR_HPP
-#define MULTI_MEMORY_ADAPTORS_CUDA_CACHED_ALLOCATOR_HPP
+#ifndef MEMORY_ADAPTORS_CUDA_CACHED_ALLOCATOR_HPP_
+#define MEMORY_ADAPTORS_CUDA_CACHED_ALLOCATOR_HPP_
 
 #include "../../../adaptors/cuda/allocator.hpp"
 #include "../../../adaptors/cuda/cached/ptr.hpp"
@@ -13,9 +12,9 @@
 
 #include<cassert>
 #include<cstddef>
-#include<iostream>  // debug
+#include<iostream>  // for debug
 #include<limits>
-#include<new>  // bad_alloc
+#include<new>       // for bad_alloc
 #include<list>
 #include<unordered_map>
 
@@ -38,7 +37,6 @@ class allocator_cache {
 	size_t mem_used;
 
  public:
-
 	allocator_cache()
 	: mem_used(0) {}
 
@@ -177,7 +175,7 @@ class allocator : cuda::allocator<T> {
 	void construct(P p, Args&&... args) {
 		::new(p.rp_) T(std::forward<Args>(args)...);
 	}
-	
+
 	template<class P, class... Args>
 	void construct(P* p, Args&&... args) {
 		::new(p) T(std::forward<Args>(args)...);
@@ -208,22 +206,4 @@ class allocator : cuda::allocator<T> {
 }
 
 }  // end namespace boost::multi::memory::cuda
-
-//#if not __INCLUDE_LEVEL__
-
-//#include<memory>
-//#include<iostream>
-//#include "../../../../array.hpp"
-
-//namespace multi = boost::multi;
-//namespace cuda = multi::memory::cuda;
-
-//int main(){
-
-//	multi::array<double, 1, multi::memory::cuda::cached::allocator<double> > A(32);
-//	A[17] = 3.;
-//	assert( A[17] == 3. );
-
-//}
-//#endif
 #endif
