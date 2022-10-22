@@ -23,10 +23,10 @@ class stack : protected monotonic<Ptr, Align> {
 	typename stack::size_type total_requested_ = 0;
 	typename stack::size_type total_discarded_ = 0;
 	typename stack::size_type max_needed_ = 0;
-	std::ssize_t hits_ = 0;
+	std::size_t hits_ = 0;
 
  public:
-	std::ssize_t hits() const {return hits_;}
+	std::size_t hits() const {return hits_;}
 	void reset() {monotonic<Ptr, Align>::reset(); positions_.clear();}
 	typename stack::size_type max_needed() const {return max_needed_;}std
 
