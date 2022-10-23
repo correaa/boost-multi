@@ -49,7 +49,7 @@ namespace cached{
 template<typename T, typename Ptr = T*> struct ptr;
 
 template<typename RawPtr>
-struct ptr<void const, RawPtr> : cuda::ptr<void const, RawPtr> {
+[[deprecated]] struct ptr<void const, RawPtr> : cuda::ptr<void const, RawPtr> {
 	using T = void const;
 	using raw_pointer = RawPtr;
 //	raw_pointer rp_;
@@ -333,19 +333,19 @@ int main(){
 		double* ppp = p; *ppp = 3.14;
 		assert( *p == 3.14 );
 #pragma GCC diagnostic pop
-	//	cuda::cached::ptr<T> P = nullptr;
+	// cuda::cached::ptr<T> P = nullptr;
 	}
 	{
 		cuda::cached::ptr<double> p = nullptr;
 		cuda::cached::ptr<double const> pc = nullptr;
 		assert( p == pc );
 		pc = static_cast<cuda::cached::ptr<double const>>(p);
-	//	double* dp = cuda::cached::ptr<double>{nullptr};
+	// double* dp = cuda::cached::ptr<double>{nullptr};
 		auto f = [](double const*){};
 		f(p);
-	//	cuda::ptr<double> pp = p;
-//		std::reinterpret_pointer_cast<double*>(pp);
-	//	cuda::cached::ptr<double> ppp{pp};
+	// cuda::ptr<double> pp = p;
+	// std::reinterpret_pointer_cast<double*>(pp);
+	// cuda::cached::ptr<double> ppp{pp};
 	}
 	{
 		static_assert(std::is_convertible<cuda::cached::ptr<double>, double*>{});
