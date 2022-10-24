@@ -1,9 +1,8 @@
-//#ifdef COMPILATION_INSTRUCTIONS
-//(echo '#include "'$0'" '>$0.cpp)&&c++ -std=c++11 -Wall -Wextra -Wpedantic -Wfatal-errors -D_TEST_MULTI_MEMORY_ADAPTOR_CUDA_CACHED_MALLOC $0.cpp -lcudart -o $0x &&$0x&& rm $0x $0.cpp; exit
-//#endif
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2019-2022 Alfredo A. Correa
 
-#ifndef MULTI_MEMORY_ADAPTOR_CUDA_CACHED_CLIB_HPP
-#define MULTI_MEMORY_ADAPTOR_CUDA_CACHED_CLIB_HPP
+#ifndef MULTI_MEMORY_ADAPTOR_CUDA_CACHED_CLIB_HPP_
+#define MULTI_MEMORY_ADAPTOR_CUDA_CACHED_CLIB_HPP_
 
 #include<cuda_runtime.h> // cudaMallocCached
 
@@ -43,4 +42,4 @@ namespace Cuda {
 //	Cuda::Cached::free(p);
 //}
 //#endif
-#endif
+#endif  // MULTI_MEMORY_ADAPTOR_CUDA_CACHED_CLIB_HPP_

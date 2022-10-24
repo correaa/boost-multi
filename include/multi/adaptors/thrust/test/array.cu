@@ -14,7 +14,7 @@
 #include <thrust/uninitialized_copy.h>
 
 //#include "../../../memory/adaptors/cuda/allocator.hpp"
-#include "../../../memory/adaptors/cuda/cached/allocator.hpp"
+//#include "../../../memory/adaptors/cuda/cached/allocator.hpp"
 #include "../../../memory/adaptors/cuda/managed/allocator.hpp"
 
 #include<multi/adaptors/thrust/managed_allocator.hpp>

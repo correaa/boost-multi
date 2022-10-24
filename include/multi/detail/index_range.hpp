@@ -1,8 +1,8 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2018-2022 Alfredo A. Correa
 
-#ifndef MULTI_DETAIL_INDEX_RANGE_HPP
-#define MULTI_DETAIL_INDEX_RANGE_HPP
+#ifndef MULTI_DETAIL_INDEX_RANGE_HPP_
+#define MULTI_DETAIL_INDEX_RANGE_HPP_
 
 #include "multi/detail/serialization.hpp"
 #include "multi/detail/tuple_zip.hpp"
@@ -59,16 +59,16 @@ class range {
 	template<class Archive>  // , class ArT = multi::archive_traits<Ar>>
 	void serialize(Archive& arxiv, unsigned /*version*/) {
 		arxiv & multi::archive_traits<Archive>::make_nvp("first", first_);
-	//	arxiv &                  BOOST_SERIALIZATION_NVP(         first_);
-	//	arxiv &                        cereal:: make_nvp("first", first_);
-	//	arxiv &                               CEREAL_NVP(         first_);
-	//	arxiv &                                                   first_ ;
+	// arxiv &                  BOOST_SERIALIZATION_NVP(         first_);
+	// arxiv &                        cereal:: make_nvp("first", first_);
+	// arxiv &                               CEREAL_NVP(         first_);
+	// arxiv &                                                   first_ ;
 
 		arxiv & multi::archive_traits<Archive>::make_nvp("last" , last_ );
-	//	arxiv &                  BOOST_SERIALIZATION_NVP(         last_ );
-	//	arxiv &                        cereal:: make_nvp("last" , last_ );
-	//	arxiv &                               CEREAL_NVP(         last_ );
-	//	arxiv &                                                   last_  ;
+	// arxiv &                  BOOST_SERIALIZATION_NVP(         last_ );
+	// arxiv &                        cereal:: make_nvp("last" , last_ );
+	// arxiv &                               CEREAL_NVP(         last_ );
+	// arxiv &                                                   last_  ;
 	}
 
 	using value_type      = IndexType;
@@ -291,44 +291,6 @@ struct repeat<T, 0, TT> {
 	using type = TT<>;
 };
 
-//template<class T, std::size_t N>
-//constexpr auto array_size_impl(const std::array<T, N>&)
-//  -> std::integral_constant<std::size_t, N>;
-
-//template<class... T>
-//constexpr auto array_size_impl(const std::tuple<T...>&)
-//    -> std::integral_constant<std::size_t, std::tuple_size<std::tuple<T...>>{}>;
-
-//template<class Array>
-//using array_size = decltype(array_size_impl(std::declval<const Array&>()));
-
-//template<class Array>
-//constexpr auto static_size() -> std::decay_t<decltype(array_size<Array>::value)> {
-//	return array_size<Array>::value;
-//}
-//template<class Array>
-//constexpr auto static_size(Array const& /*unused*/) -> decltype(static_size<Array>()) {
-//	return static_size<Array>();
-//}
-
-//// TODO(correaa) consolidate with tuple_tail defined somewhere else
-//template<class Tuple>
-//constexpr auto head(Tuple&& t)
-//->decltype(std::get<0>(std::forward<Tuple>(t))) {
-//	return std::get<0>(std::forward<Tuple>(t)); }
-
-//template<typename Tuple, std::size_t... Ns>
-//constexpr auto tail_impl(std::index_sequence<Ns...> /*012*/, [[maybe_unused]] Tuple&& t) {  // [[maybe_unused]] needed by icpc "error #869: parameter "t" was never referenced"
-//	using boost::multi::detail::get;
-//	return boost::multi::detail::tuple{get<Ns + 1U>(std::forward<Tuple>(t))...};
-////  return make_tuple(std::get<Ns + 1U>(std::forward<Tuple>(t))...);
-//}
-
-//template<class Tuple>
-//constexpr auto tail(Tuple const& t) {
-//	return tail_impl(std::make_index_sequence<std::tuple_size_v<Tuple> - 1U>(), t);
-//}
-
 }  // end namespace detail
 
 template<dimensionality_type D> using index_extensions = typename detail::repeat<index_extension, D, tuple>::type;
@@ -341,4 +303,4 @@ constexpr auto contains(index_extensions<D> const& iex, Tuple const& tup) {
 }
 
 }  // end namespace boost::multi
-#endif
+#endif  //  MULTI_DETAIL_INDEX_RANGE_HPP_

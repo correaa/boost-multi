@@ -131,28 +131,28 @@ class allocator : cuda::allocator<T> {
 
 		cudaPointerAttributes attr; if(cudaPointerGetAttributes(&attr, raw_pointer_cast(hint))!=cudaSuccess) {throw std::runtime_error{"cannot use attributes for hint"};}
 		switch(attr.type) {
-			case cudaMemoryTypeUnregistered: {//std::cout<< n <<" cudaMemoryTypeUnregistered"<< attr.device <<" "<< attr.device <<" cpuid:"<< cudaCpuDeviceId <<std::endl;
+			case cudaMemoryTypeUnregistered: {  // std::cout<< n <<" cudaMemoryTypeUnregistered"<< attr.device <<" "<< attr.device <<" cpuid:"<< cudaCpuDeviceId <<std::endl;
 				auto code = cudaMemPrefetchAsync(raw_pointer_cast(ret), n*sizeof(T), cudaCpuDeviceId);
 				if(code != cudaSuccess) {
 					throw std::runtime_error{"1. cannot prefetch for reason "+std::to_string(code)+" device is "+std::to_string(cudaCpuDeviceId)};
 				}
 				return ret;
 			}
-			case cudaMemoryTypeHost        : {//std::cout<< n <<" cudaMemoryTypeHost "<< attr.device <<" "<< cudaCpuDeviceId <<std::endl;
+			case cudaMemoryTypeHost        : {  // std::cout<< n <<" cudaMemoryTypeHost "<< attr.device <<" "<< cudaCpuDeviceId <<std::endl;
 				auto code = cudaMemPrefetchAsync(raw_pointer_cast(ret), n*sizeof(T), cudaCpuDeviceId);
 				if(code != cudaSuccess) {
 					throw std::runtime_error{"2. cannot prefetch for reason "+std::to_string(code)+" device is "+std::to_string(cudaCpuDeviceId)};
 				}
 				return ret;
 			}
-			case cudaMemoryTypeDevice      : {//std::cout<< n <<" cudaMemoryTypeDevice "<< attributes.device <<" "<< attributes.device<<std::endl;
+			case cudaMemoryTypeDevice      : {  // std::cout<< n <<" cudaMemoryTypeDevice "<< attributes.device <<" "<< attributes.device<<std::endl;
 				auto code = cudaMemPrefetchAsync(raw_pointer_cast(ret), n*sizeof(T), attr.device);
 				if(code != cudaSuccess) {
 					throw std::runtime_error{"3. cannot prefetch for reason "+std::to_string(code)+" device is "+std::to_string(attr.device)};
 				}
 				return ret;
 			}
-			case  cudaMemoryTypeManaged    : {//std::cout<< n <<" cudaMemoryTypeCached "<< attr.device <<" "<< attr.device <<std::endl;
+			case  cudaMemoryTypeManaged    : {  // std::cout<< n <<" cudaMemoryTypeCached "<< attr.device <<" "<< attr.device <<std::endl;
 				auto code = cudaMemPrefetchAsync(raw_pointer_cast(ret), n*sizeof(T), attr.device);
 				if(code != cudaSuccess) {
 					throw std::runtime_error{"4. cannot prefetch for reason "+std::to_string(code)+" device is "+std::to_string(attr.device)};
