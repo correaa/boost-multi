@@ -22,7 +22,7 @@ template<class Self, class U> struct equality_comparable2;
 
 template<class Self>
 struct equality_comparable2<Self, Self> : selfable<Self> {
-//	friend constexpr auto operator==(equality_comparable2 const& self, equality_comparable2 const& other) {return     self.self() == other.self() ;}
+	// friend constexpr auto operator==(equality_comparable2 const& self, equality_comparable2 const& other) {return     self.self() == other.self() ;}
 	friend constexpr auto operator!=(equality_comparable2 const& self, equality_comparable2 const& other) {return not(self.self() == other.self());}
 };
 
@@ -35,9 +35,9 @@ struct totally_ordered2<Self, Self> : equality_comparable2<totally_ordered2<Self
 	using self_type = Self;
 	constexpr auto self() const -> self_type const& {return static_cast<self_type const&>(*this);}
 
-//	friend auto operator< (totally_ordered2 const& self, totally_ordered2 const& other) -> bool {return     self.self() < other.self() ;}
+	// friend auto operator< (totally_ordered2 const& self, totally_ordered2 const& other) -> bool {return     self.self() < other.self() ;}
 	friend auto operator==(totally_ordered2 const& self, totally_ordered2 const& other) -> bool {return not(self.self() < other.self()) and not(other.self() < self.self());}
-//	friend auto operator!=(totally_ordered2 const& self, totally_ordered2 const& other) {return    (s.self() < o.self()) or     (o.self() < s.self());}
+	// friend auto operator!=(totally_ordered2 const& self, totally_ordered2 const& other) {return    (s.self() < o.self()) or     (o.self() < s.self());}
 
 	friend auto operator<=(totally_ordered2 const& self, totally_ordered2 const& other) -> bool {return not(other.self() < self.self());}
 
@@ -62,15 +62,15 @@ struct copy_constructible {};
 
 template<class T>
 struct weakly_incrementable {
-//  friend T& operator++(weakly_incrementable& t){return ++static_cast<T&>(t);}
+	// friend T& operator++(weakly_incrementable& t){return ++static_cast<T&>(t);}
 };
 
 template<class T>
 struct weakly_decrementable {
-//  friend T& operator--(weakly_decrementable& t){return --static_cast<T&>(t);}
+	// friend T& operator--(weakly_decrementable& t){return --static_cast<T&>(t);}
 };
 
-template<class Self> struct incrementable : totally_ordered<Self> {//, self_mutable<Self> {
+template<class Self> struct incrementable : totally_ordered<Self> {  // , self_mutable<Self> {
 	friend constexpr auto operator++(incrementable& self, int) -> Self {Self tmp{self.self()}; ++self.self(); assert(self.self() > tmp); return tmp;}
 };
 
@@ -91,7 +91,7 @@ struct steppable : totally_ordered<Self> {
 };
 
 template<class Self, typename Difference>
-struct affine_with_unit : steppable<Self> {//affine_with_unit<Self, Difference> > {
+struct affine_with_unit : steppable<Self> {  // affine_with_unit<Self, Difference> > {
 	using self_type = Self;
 	constexpr auto cself() const -> self_type const& {return static_cast<self_type const&>(*this);}
 	constexpr auto  self() const -> self_type const& {return static_cast<self_type const&>(*this);}
@@ -147,11 +147,11 @@ struct random_accessable  // NOLINT(fuchsia-multiple-inheritance)
 	constexpr auto operator[](difference_type idx) const -> reference {return *(self() + idx);}
 };
 
-//template<class T, class Reference>
-//struct dereferenceable {
-//	using reference = Reference;
-//	friend constexpr auto operator*(dereferenceable const& t) -> reference {return *static_cast<T const&>(t);}
-//};
+// template<class T, class Reference>
+// struct dereferenceable {
+//   using reference = Reference;
+//   friend constexpr auto operator*(dereferenceable const& t) -> reference {return *static_cast<T const&>(t);}
+// };
 
 template<class T, class D>
 struct addable2 {
