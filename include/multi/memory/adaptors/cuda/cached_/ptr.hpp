@@ -1,7 +1,5 @@
-#ifdef COMPILATION// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-$CXXX $CXXFLAGS $0 -o $0.$X `pkg-config --cflags --libs cudart-11.0`&&$0.$X&&rm $0.$X;exit
-#endif
-// © Alfredo A. Correa 2019-2020
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2019-2022 Alfredo A. Correa
 
 #ifndef BOOST_MULTI_MEMORY_ADAPTORS_CUDA_CACHED_PTR_HPP
 #define BOOST_MULTI_MEMORY_ADAPTORS_CUDA_CACHED_PTR_HPP
@@ -49,7 +47,7 @@ namespace cached{
 template<typename T, typename Ptr = T*> struct ptr;
 
 template<typename RawPtr>
-[[deprecated]] struct ptr<void const, RawPtr> : cuda::ptr<void const, RawPtr> {
+struct [[deprecated]] ptr<void const, RawPtr> : cuda::ptr<void const, RawPtr> {
 	using T = void const;
 	using raw_pointer = RawPtr;
 //	raw_pointer rp_;
