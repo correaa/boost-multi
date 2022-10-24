@@ -7,10 +7,10 @@
 
 _© Alfredo A. Correa, 2018-2022_
 
-`Multi` provides multidimensional array access to contiguous or regularly contiguous memory in modern C++.
+The `Multi` C++ library provides multidimensional array access to contiguous or regularly contiguous memory.
 
 This library aims to offer manipulation of array data in arbritrary dimension with well behaved value semantics, offering total compatibility with the Standard (STL) Algorithms, special memory (e.g. GPU), and following modern C++ design principles.
-It requires at least C++17. (It is C++20 ready.)
+It requires at least C++17 (works with C++20 too.)
 
 Some features:
 
@@ -21,9 +21,9 @@ Some features:
 * Arbitrary pointer types (fancy pointers, memory spaces)
 * Simplified implementation (~4000 lines)
 
-(Do not confuse this library with Boost.MultiArray or Boost.MultiIndex. 
+(Do not confuse this library with Boost.MultiArray or Boost.MultiIndex.
 It shares the goals of [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html),
-although the code is completely independent and with important semantic differences.)
+although the code is completely independent and with important semantic and implementation differences.)
 
 ## Contents
 [[_TOC_]]
