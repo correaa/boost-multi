@@ -40,6 +40,7 @@ Checks: '*,
   -hicpp-no-array-decay,
   -hicpp-vararg,
   -llvmlibc-callee-namespace,
+  -llvm-header-guard,
   -llvmlibc-implementation-in-namespace,
   -llvmlibc-restrict-system-libc-headers,
   -modernize-use-nodiscard,
@@ -64,6 +65,7 @@ Checks: '*,
 #  -fuchsia-trailing-return,                              // to allow any '-> decltype(auto)'
 #  -hicpp-no-array-decay,                                 // all assert macros require this
 #  -hicpp-vararg,                                         // all expansions of BOOST_TEST_REQUIRE macros require this
+#  -llvm-header-guard,                                    // doesn't agree with Google style (cpplint)
 #  -llvmlibc-implementation-in-namespace,                 // nonsense warning
 #  -llvmlibc-callee-namespace,                            // nonsense warning
 #  -llvmlibc-restrict-system-libc-headers,                // nonsense warning
