@@ -7,15 +7,17 @@
 #define __has_cpp_attribute(name) 0
 #endif
 
-#ifdef __NVCC__
-	#define DEPRECATED(MsG) __attribute__((deprecated))
-#else
-	#if __has_cpp_attribute(deprecated)
-		#define	DEPRECATED(MsG) [[deprecated(MsG)]]
-	#else
-		#define DEPRECATED(MsG)
-	#endif
-#endif
+#define DEPRECATED(MsG) [[deprecated]]
+
+//  #ifdef __NVCC__
+//  	#define DEPRECATED(MsG) __attribute__((deprecated))
+//  #else
+//  	#if __has_cpp_attribute(deprecated)
+//  		#define	DEPRECATED(MsG) [[deprecated(MsG)]]
+//  	#else
+//  		#define DEPRECATED(MsG)
+//  	#endif
+//  #endif
 
 #if not defined(__INTEL_COMPILER)
 #define BEGIN_NO_DEPRECATED \
