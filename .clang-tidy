@@ -18,8 +18,8 @@ CheckOptions:
   - { key: readability-identifier-length.MinimumLoopCounterNameLength, value: 2          }
   - { key: readability-identifier-length.IgnoredLoopCounterNames     , value: "^[ijk_]$" }
 
-# - { key: readability-identifier-naming.VariableCase,          value: aNy_CasE   } for tests
-# - { key: readability-identifier-naming.PrivateMethodSuffix,   value:            }
+# - { key: readability-identifier-naming.GlobalConstantCase          , value: aNy_CasE   } for tests
+# - { key: readability-identifier-naming.PrivateMemberSufix          , value: _          }
 
 Checks: '*,
   -altera-id-dependent-backward-branch,
