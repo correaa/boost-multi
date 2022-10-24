@@ -840,7 +840,7 @@ Here it is a table with a comparison (also comparing with R. Garcia's Boost.Mult
 | STL algorithms or Ranges    | **yes**                                                         | no, limited via `std::cartesian_product`               | **yes**, some do not work |
 | Compatibility with Boost    | **yes**, serialization, interprocess  (see below)               | no                                                     | no |
 | Compatibility with Thrust   | **yes**, via flatten views (loop fusion), thrust-pointers/-refs | no                                                     | no |
-| Used in production          | [QMCPACK](https://qmcpack.org/), [INQ](https://gitlab.com/npneq/inq) | (?) , experience from Kokkos incarnation   | **yes** (?) |
+| Used in production          | [QMCPACK](https://qmcpack.org/), [INQ](https://gitlab.com/npneq/inq) | (?) , experience from Kokkos incarnation          | **yes** (?) |
 
 ## Serialization
 
