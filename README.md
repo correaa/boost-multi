@@ -776,7 +776,7 @@ The library works well with Ranges-v3 which is approximately a superset of STL r
 ### Polymorphic Memory Resources
 
 The library is compatible with C++17's polymorphic memory resources (PMR) which allows using preallocated buffers as described in this example. 
-This enables the use of stack memory, with many performance advantages.
+This enables the use of stack memory, with many performance advantaneges.
 For example, this code uses a buffer to allocate memory for two arrays, we will see how this buffer ends up containing the data of the arrays `"aaaabbbbbbXX"`.
 
 ```cpp
@@ -789,7 +789,7 @@ int main() {
 	multi::pmr::array<char, 2> A({2, 2}, 'a', &pool);
 	multi::pmr::array<char, 2> B({3, 2}, 'b', &pool);
 
-	// buffer may contain "aaaabbbbbbXX"
+	assert( buffer == std::string{"aaaabbbbbbXX"} );
 }
 ```
 (`multi::pmr::array<T, D>` is a synonym for `multi::array<T, D, std::pmr::polymorphic_allocator<T>>`.)
@@ -845,18 +845,17 @@ Here it is a table with a comparison (also comparing with R. Garcia's Boost.Mult
 ## Serialization
 
 The capability of serializing arrays is important to save/load data to/from disk and also to communicate values via streams or networks (including MPI).
-The C++ language does not give any facilities for serialization and unfortunately, the standard library doesn't either.
+The C++ language does not give any facilities for serialization and unfortunately the standard library doesn't either.
 
 However there are a few libraries that offer a certain common protocol for serialization,
 such as [Boost.Serialization](https://www.boost.org/doc/libs/1_76_0/libs/serialization/doc/index.html) and [Cereal](https://uscilab.github.io/cereal/).
 The Multi library is compatible with both of them, and yet it doesn't depend on any of them.
 The user can choose one or the other, or none if serialization is not needed.
-The generic protocol is such that variables are (de)serialized using the (`>>`)`<<` operator with the archive; operator `&` can be used to have a single code for both.
-Serialization can be binary (efficient) or text-based (human-readable).
+The generic protocol is such that variables are (de)serialized using the (`>>`)`<<` operator with the archive; operator `&` can be used to have single code for both.
+Serialization can be binary (efficient) or text-based (human readable).
 
-Here it is a small implementation of a save- and load-function for arrays to JSON format with Cereal.
-The example can be easily adapted to other formats or libraries (XML with Boost.Serialization is commented on the right).
-
+Here it is a small implementation of save and load functions for array to JSON format with Cereal.
+The example can be easily adapted to other formats or libries (XML with Boost.Serialization are commented on the right).
 
 ```cpp
 #include <multi/array.hpp>  // our library
@@ -893,11 +892,14 @@ int main() {
 ```
 
 These templated functions work for any dimension and element type (as long as the element type is serializable in itself; all basic types are serializable by default).
-However, note that it is the user's responsibility to ensure that data is serialized and deserialized into the same type.
-This is because the underlying serialization library only does minimal consistency checks for efficiency reasons and doesn't try to second-guess file formats or contained types.
+However note that it is responsibility of the user to make sure that data is serialized and deserialized into the same type and also assuming the same format.
+This is because the underlying serialization library only do minimal consistency checks for efficiency reasons and doesn't try to second guess file formats or contained types.
+Serialization is a relatively low level feature for which efficiency and economy of bytes is priority.
+Cryptic errors and crashes can occur if serialization libraries, file formats or C++ types are mixed between writes and reads.
+On top of serialization checks can be added by the user before and after loading a file.
 
-References to subarrays can also be serialized, in which cases size (extensions) information is not saved.
-The reason is that references to subarrays cannot be resized in their number of elements if there is a size mismatch during deserialization.
+References to subarrays can also be serialized, however, in such case size information is not saved.
+The reason is that references to subarrays cannot be resized in their number of elements if there is size mismatch during deserialization.
 
 The output JSON file of the previous example looks like this.
 (The XML would have a similar structure.)
@@ -929,7 +931,8 @@ The output JSON file of the previous example looks like this.
 }
 ```
 
-Here is a comparison of speeds when (de)serializing a 134 MB 4-dimensional array of random `double`s.
+Large datasets tend to be serialized slowly for archives with heavy formatting.
+Here it is a comparison of speeds when (de)serializing a 134 MB 4-dimensional array of with random `double`s.
 
 | Archive format (Library)     | file size     | speed (read - write)           | time (read - write)   |
 | ---------------------------- | ------------- | ------------------------------ |-----------------------|
@@ -944,19 +947,17 @@ Here is a comparison of speeds when (de)serializing a 134 MB 4-dimensional array
 | gzip-XML (Cereal)            | 191 MB        |    2.  MB/sec -    4.  MB/sec  | 61    sec  - 32   sec |
 | gzip-XML (Boost)             | 207 MB        |    8.  MB/sec -    8.  MB/sec  | 16.1  sec  - 15.9 sec |
 
-Large datasets tend to be serialized slowly for heavily formatted archives (e.g. XML, JSON).
-
 ## Range-v3
 
 The library works out of the box with Eric Niebler's Range-v3 library.
-The library helps remove explicit iterators (e.g. `begin`, `end`) from the code when possible.
+The library helps removing explicit iterators (e.g. `begin`, `end`) from the code when possible.
 
-Every Multi array object can be regarded as a range.
-Every subarray reference (and array values) is interpreted as range-views.
+Every Multi array object can be regarded as range.
+Every subarray references (and array values) are interpreted as range views.
 
 For example for a 2D array `d2D`, `d2D` itself is interpreted as a range of rows.
 Each row, in turn, is interpreted as a range of elements.
-In this way, `d2D.transposed()` is interpreted as a range of columns (of the original array), and each column as a range of elements (arranged vertically in the original array).
+In this way, `d2D.transposed()` is interpreted as a range of columns (of the original array), and each column a range of elements (arranged vertically in the original array).
 
 ```cpp
 #include <range/v3/all.hpp>
@@ -1047,7 +1048,7 @@ namespace multi = boost::multi;
 int main() {
 	multi::array<double, 2, thrust::device_allocator<double>> A({10,10});
 	multi::array<double, 2, thrust::device_allocator<double>> B({10,10});
-	A[5][0] = 50.0;
+	A[5][0] = 50.;
 	thrust::copy(begin(rotated(A2)[0]), end(rotated(A2)[0]), begin(rotated(B2)[0]));
 	assert( B2[5][0] == 50. );
 }
@@ -1078,40 +1079,36 @@ Multi can be used on existing memory in a non-invasive way via (non-owning) refe
 
 ### Thrust memory resources
 
-GPU memory is relatively expensive to allocate, therefore any application that allocates and deallocates arrays often will suffer performance issues.
-This is where special memory management is critical for avoiding unnecessary allocations, for example, by caching and reusing memory blocks.
+GPU memory is relative expensive to allocate, therefore any application that allocates and deallocates arrays often will suffer performance issue.
+This is where special memory management is important, for example for avoiding real allocations when possible by caching and reusing memory blocks.
 
 Thrust implements both polymorphic and non-polymorphic memory resources via `thrust::mr::allocator<T, MemoryResource>`;
 Multi supports both.
 
 ```cpp
-#include <thrust/mr/device_memory_resource.h>
-#include <thrust/mr/disjoint_pool.h>
-
 auto pool = thrust::mr::disjoint_unsynchronized_pool_resource(
 	thrust::mr::get_global_resource<thrust::universal_memory_resource>(),
 	thrust::mr::get_global_resource<thrust::mr::new_delete_resource>()
 );
 
-// memory is handled by the pool, not by the system allocator
+// memory is handled by pool, not by the system allocator
 multi::array<int, 2, thrust::mr::allocator<int, decltype(pool)>> arr({1000 - i%10, 1000 + i%10}, &pool);  // or multi::mr::array<int, 2, decltype(pool)> for short
 ```
 
 The associated pointer type for the array data is deduced from the _upstream_ resource; in this case, `thrust::universal_ptr<int>`.
 
-As a quick recipe to improve performance in many cases, here is a "caching" allocator that uses a global (one per thread) memory pool.
+As as quick recipe to improve performance in many cases, here it is a recipe for a `caching_allocator` which uses a global (one per thread) memory pool.
 The requested memory resides in GPU (managed) memory (`thrust::cuda::universal_memory_resource`) while the cache _bookkeeping_ is held in CPU memory (`new_delete_resource`).
 
 ```cpp
-#include <thrust/mr/disjoint_tls_pool.h>  // for thrust::mr::tls_disjoint_pool
-#include <thrust/system/cuda/memory.h>  // for thrust::cuda::universal_pointer
-
 template<class T, class Base_ = thrust::mr::allocator<T, thrust::mr::memory_resource<thrust::cuda::universal_pointer<void>>>>
 struct caching_allocator : Base_ {
-	caching_allocator() : Base_{
-		&thrust::mr::tls_disjoint_pool(thrust::mr::get_global_resource<thrust::cuda::universal_memory_resource>(), thrust::mr::get_global_resource<thrust::mr::new_delete_resource>())
-	} {}
-	caching_allocator(caching_allocator const&) : caching_allocator{} {}
+	caching_allocator() : 
+		Base_{&thrust::mr::tls_disjoint_pool(
+			thrust::mr::get_global_resource<thrust::cuda::universal_memory_resource>(),
+			thrust::mr::get_global_resource<thrust::mr::new_delete_resource>()
+		)} {}
+	caching_allocator(caching_allocator const&) : caching_allocator{} {}  // all caching allocator are equal
 	template<class U> struct rebind {using other = caching_allocator<U>;};
 };
 ...
@@ -1123,10 +1120,10 @@ int main() {
 }
 ```
 
-In the example, most memory requests are handled by reutilizing the memory pool avoiding expensive system allocations.
+In the example, most of the memory requests are handled by reutilizing the memory pool avoiding expensive system allocations.
 More targeted usage patterns may require locally (non-globally) defined memory resources.
 
-## TotalView debugger
+## TotalView
 
 TotalView visual debugger (commercial) can display arrays in human-readable form (for simple types, like `double` or `std::complex`).
 To use it, simply `#include "multi/adaptors/totalview.hpp"` and link to the TotalView libraries, compile and run the code with the TotalView debugger.
