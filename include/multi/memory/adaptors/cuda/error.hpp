@@ -1,10 +1,8 @@
-#ifdef COMPILATION_INSTRUCTIONS//-*-indent-tabs-mode: t; c-basic-offset: 4; tab-width: 4;-*-
-$CXXX $CXXFLAGS $0 -o $0x `pkg-config --cflags --libs cudart-11.1`&&$0x&&rm $0x;exit
-#endif
-// © Alfredo A. Correa 2019-2020
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2019-2022 Alfredo A. Correa
 
-#ifndef MULTI_MEMORY_ADAPTOR_CUDA_DETAIL_ERROR_HPP
-#define MULTI_MEMORY_ADAPTOR_CUDA_DETAIL_ERROR_HPP
+#ifndef MULTI_MEMORY_ADAPTOR_CUDA_DETAIL_ERROR_HPP_
+#define MULTI_MEMORY_ADAPTOR_CUDA_DETAIL_ERROR_HPP_
 
 #include<driver_types.h>     // cudaError_t
 #include<cuda_runtime_api.h> // cudaGetErrorString
@@ -52,7 +50,7 @@ inline std::string string(enum error e){return cudaGetErrorString(static_cast<cu
 
 struct error_category : std::error_category{
 	char const* name() const noexcept override{return "cuda wrapper";}
-	std::string message(int e) const override{return string(static_cast<error>(e));}
+	std::string message(int e) const override {return string(static_cast<error>(e));}
 	static error_category& instance(){
 		static error_category instance;
 		return instance;
@@ -95,5 +93,4 @@ int main(){
 
 }
 #endif
-#endif
-
+#endif  // MULTI_MEMORY_ADAPTOR_CUDA_DETAIL_ERROR_HPP_

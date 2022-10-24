@@ -1,15 +1,14 @@
-#ifdef COMPILATION_INSTRUCTIONS
-(echo '#include"'$0'"'>$0.cpp)&&nvcc -D_TEST_MULTI_MEMORY_ADAPTORS_CUDA_MALLOC $0.cpp -o $0x &&$0x&&rm $0x; exit
-#endif
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2019-2022 Alfredo A. Correa
 
-#ifndef MULTI_MEMORY_ADAPTORS_CUDA_MALLOC
-#define MULTI_MEMORY_ADAPTORS_CUDA_MALLOC
+#ifndef MULTI_MEMORY_ADAPTORS_CUDA_MALLOC_
+#define MULTI_MEMORY_ADAPTORS_CUDA_MALLOC_
 
 #include "../../adaptors/cuda/clib.hpp"
 #include "../../adaptors/cuda/ptr.hpp"
 
-namespace boost{namespace multi{
-namespace memory{
+namespace boost {namespace multi {
+namespace memory {
 
 namespace cuda{
 	using size_t = Cuda::size_t;
@@ -22,8 +21,9 @@ namespace cuda{
 	inline void free(ptr<void> p){Cuda::free(p);}
 }
 
-}
-}}
+}  // namespace memory
+}  // namespace multi
+}  // namespace	boost
 
 #ifdef _TEST_MULTI_MEMORY_ADAPTORS_CUDA_MALLOC
 
@@ -38,5 +38,5 @@ int main(){
 }
 
 #endif
-#endif
+#endif  // MULTI_MEMORY_ADAPTORS_CUDA_MALLOC_
 

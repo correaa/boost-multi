@@ -699,17 +699,6 @@ struct elements_range_t {
 		adl_copy_n(values.begin(), values.size(), begin());
 		return *this;
 	}
-
-#if 0
-	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL> const& o)  & -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
-	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL> const& o) && -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
-
-	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL>     && o)  & -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
-	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL>     && o) && -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
-
-	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL>      & o)  & -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
-	template<typename OP, class OL> auto operator= (elements_range_t<OP, OL>      & o) && -> elements_range_t& {assert(size() == o.size()); if(not is_empty()) {adl_copy(o.begin(), o.end(), begin());}; return *this;}
-#endif
 };
 
 template<class It>
@@ -1158,7 +1147,7 @@ struct basic_array
 	//  auto&& tmp3 = std::move(tmp2).paren_aux(args...);
 //		auto&& ret = std::move(tmp3).unrotated();
 	//  return std::move(tmp3).unrotated(); // std::move(ret);
-		return range(irng).rotated().paren_aux(args...).unrotated(); // std::move(ret);
+		return range(irng).rotated().paren_aux(args...).unrotated();  // std::move(ret);
 	}
 	template<class... As> constexpr auto paren_aux(index_range irng, As... args)     && {
 	//  auto&& tmp = std::move(*this).range(irng);
@@ -1178,20 +1167,20 @@ struct basic_array
 
  public:
 	// vvv DO NOT remove default parameter `= irange` : the default template parameters below help interpret the expression `{first, last}` syntax as index ranges
-	template<class A1 = irange>                                                                          constexpr auto operator()(A1 arg1)                                        const& -> decltype(auto) {return                  paren_aux(arg1);}
-	template<class A1 = irange, class A2 = irange>                                                       constexpr auto operator()(A1 arg1, A2 arg2)                               const& -> decltype(auto) {return                  paren_aux(arg1, arg2);}
-	template<class A1 = irange, class A2 = irange, class A3 = irange>                                    constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3)                      const& -> decltype(auto) {return                  paren_aux(arg1, arg2, arg3);}
-	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As>    constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args) const& -> decltype(auto) {return                  paren_aux(arg1, arg2, arg3, arg4, args...);}
+	template<class A1 = irange>                                                                          constexpr auto operator()(A1 arg1)                                        const& -> decltype(auto) {return                  paren_aux(arg1);}  //NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange, class A2 = irange>                                                       constexpr auto operator()(A1 arg1, A2 arg2)                               const& -> decltype(auto) {return                  paren_aux(arg1, arg2);}  //NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange, class A2 = irange, class A3 = irange>                                    constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3)                      const& -> decltype(auto) {return                  paren_aux(arg1, arg2, arg3);}  //NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As>    constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args) const& -> decltype(auto) {return                  paren_aux(arg1, arg2, arg3, arg4, args...);}  //NOLINT(whitespace/line_length) pattern line
 
-	template<class A1 = irange>                                                                          constexpr auto operator()(A1 arg1)                                             & -> decltype(auto) {return                  paren_aux(arg1);}
-	template<class A1 = irange, class A2 = irange>                                                       constexpr auto operator()(A1 arg1, A2 arg2)                                    & -> decltype(auto) {return                  paren_aux(arg1, arg2);}
-	template<class A1 = irange, class A2 = irange, class A3 = irange>                                    /*[[gnu::pure]]*/ constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3)                           & -> decltype(auto) {return                  paren_aux(arg1, arg2, arg3);}
-	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As>    constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args)      & -> decltype(auto) {return                  paren_aux(arg1, arg2, arg3, arg4, args...);}
+	template<class A1 = irange>                                                                          constexpr auto operator()(A1 arg1)                                             & -> decltype(auto) {return                  paren_aux(arg1);}  //NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange, class A2 = irange>                                                       constexpr auto operator()(A1 arg1, A2 arg2)                                    & -> decltype(auto) {return                  paren_aux(arg1, arg2);}  //NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange, class A2 = irange, class A3 = irange>                                    /*[[gnu::pure]]*/ constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3)         & -> decltype(auto) {return                  paren_aux(arg1, arg2, arg3);}  //NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As>    constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args)      & -> decltype(auto) {return                  paren_aux(arg1, arg2, arg3, arg4, args...);}  //NOLINT(whitespace/line_length) pattern line
 
-	template<class A1 = irange>                                                                          constexpr auto operator()(A1 arg1)                                            && -> decltype(auto) {return std::move(*this).paren_aux(arg1);}
-	template<class A1 = irange, class A2 = irange>                                                    HD constexpr auto operator()(A1 arg1, A2 arg2)                                   && -> decltype(auto) {return std::move(*this).paren_aux(arg1, arg2);}
-	template<class A1 = irange, class A2 = irange, class A3 = irange>                                    constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3)                          && -> decltype(auto) {return std::move(*this).paren_aux(arg1, arg2, arg3);}
-	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As>    constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args)     && -> decltype(auto) {return std::move(*this).paren_aux(arg1, arg2, arg3, arg4, args...);}
+	template<class A1 = irange>                                                                          constexpr auto operator()(A1 arg1)                                            && -> decltype(auto) {return std::move(*this).paren_aux(arg1);}  //NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange, class A2 = irange>                                                    HD constexpr auto operator()(A1 arg1, A2 arg2)                                   && -> decltype(auto) {return std::move(*this).paren_aux(arg1, arg2);}  //NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange, class A2 = irange, class A3 = irange>                                    constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3)                          && -> decltype(auto) {return std::move(*this).paren_aux(arg1, arg2, arg3);}  //NOLINT(whitespace/line_length) pattern line
+	template<class A1 = irange, class A2 = irange, class A3 = irange, class A4 = irange, class... As>    constexpr auto operator()(A1 arg1, A2 arg2, A3 arg3, A4 arg4, As... args)     && -> decltype(auto) {return std::move(*this).paren_aux(arg1, arg2, arg3, arg4, args...);}  //NOLINT(whitespace/line_length) pattern line
 
  private:
 	template<typename Tuple, std::size_t ... I> constexpr auto apply_impl(Tuple const& tuple, std::index_sequence<I...>/*012*/) const& -> decltype(auto) {return            this->operator()(std::get<I>(tuple)...);}
