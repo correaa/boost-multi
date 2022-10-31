@@ -120,3 +120,23 @@ BOOST_AUTO_TEST_CASE(span_like) {
 	aRef[0] = 99.0;
 	BOOST_REQUIRE( vec[2] == 99.0 );
 }
+
+BOOST_AUTO_TEST_CASE(multi_array_ptr_assignment) {
+	multi::array<double, 2> arr = {
+		{1.0, 2.0, 3.0},
+		{4.0, 5.0, 6.0},
+		{7.0, 8.0, 9.0},
+		{1.0, 2.0, 3.0}
+	};
+	auto rowP = &arr[2];
+	auto rowP2 = rowP;
+	BOOST_REQUIRE( rowP == rowP2 );
+
+	rowP2 = decltype(rowP2){nullptr};
+	BOOST_REQUIRE( not rowP2 );
+
+	auto rowP3 = std::exchange(rowP, nullptr);
+	BOOST_REQUIRE( rowP3 == &arr[2] );
+	BOOST_REQUIRE( rowP == nullptr );
+	BOOST_REQUIRE( not rowP );
+}
