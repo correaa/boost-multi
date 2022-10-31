@@ -42,7 +42,7 @@ NEWG++12STD20MEMCHK:
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++-12 pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev valgrind
     - mkdir build && cd build
-    - CXX=g++-12 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20
+    - CXX=g++-12 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS="-fanalyzer -Wno-analyzer-null-dereference -Wno-analyzer-possible-null-dereference -Wno-analyzer-malloc-leak -Wno-analyzer-use-of-uninitialized-value -Wno-analyzer-use-after-free"
     - make --jobs=2  || make VERBOSE=1
     - ctest -j 2 --output-on-failure --overwrite MemoryCheckCommandOptions="-q --tool=memcheck --leak-check=yes --num-callers=51 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all" -T memcheck
   needs: ["OLDG++SANICHECKCOV"]
@@ -76,7 +76,7 @@ NEWCLANG++12STD20LINT:
     - cpplint --recursive include/multi/array.hpp
     - mkdir build && cd build
     - clang++ --version
-    - CXX=clang++-14 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_CPPLINT="cpplint;--quiet" -DCMAKE_CXX_FLAGS="-fanalyzer -Wno-analyzer-null-dereference -Wno-analyzer-possible-null-dereference -Wno-analyzer-malloc-leak -Wno-analyzer-use-of-uninitialized-value -Wno-analyzer-use-after-free"
+    - CXX=clang++-14 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_CPPLINT="cpplint;--quiet"
     - make --jobs=2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
   needs: ["OLDCLANG++12TIDYSANI"]
