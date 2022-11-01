@@ -13,10 +13,10 @@ template<class T> auto fwd_array(T&& array) -> T&& {return std::forward<T>(array
 
 BOOST_AUTO_TEST_CASE(multi_array_ptr_equality) {
 	multi::array<double, 2> arr = {
-		{1., 2., 3.},
-		{4., 5., 6.},
-		{7., 8., 9.},
-		{1., 2., 3.}
+		{1.0, 2.0, 3.0},
+		{4.0, 5.0, 6.0},
+		{7.0, 8.0, 9.0},
+		{1.0, 2.0, 3.0}
 	};
 	BOOST_REQUIRE(  arr[2] ==  arr[2] );
 	BOOST_REQUIRE( &arr[2] == &arr[2] );
@@ -38,10 +38,10 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr_equality) {
 BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 	{
 		std::array<std::array<double, 5>, 4> arr {{
-			{{ 0.,  1.,  2.,  3.,  4.}},
-			{{ 5.,  6.,  7.,  8.,  9.}},
-			{{10., 11., 12., 13., 14.}},
-			{{15., 16., 17., 18., 19.}}
+			{{ 0.0,  1.0,  2.0,  3.0,  4.0}},
+			{{ 5.0,  6.0,  7.0,  8.0,  9.0}},
+			{{10.0, 11.0, 12.0, 13.0, 14.0}},
+			{{15.0, 16.0, 17.0, 18.0, 19.0}}
 		}};
 
 		multi::array_ptr<double, 2> arrP{&arr};
@@ -73,10 +73,10 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 	}
 	{
 		std::array<std::array<double, 5>, 4> arr = {{
-			std::array<double, 5>{{ 0.,  1.,  2.,  3.,  4.}},
-			std::array<double, 5>{{ 5.,  6.,  7.,  8.,  9.}},
-			std::array<double, 5>{{10., 11., 12., 13., 14.}},
-			std::array<double, 5>{{15., 16., 17., 18., 19.}}
+			std::array<double, 5>{{ 0.0,  1.0,  2.0,  3.0,  4.0}},
+			std::array<double, 5>{{ 5.0,  6.0,  7.0,  8.0,  9.0}},
+			std::array<double, 5>{{10.0, 11.0, 12.0, 13.0, 14.0}},
+			std::array<double, 5>{{15.0, 16.0, 17.0, 18.0, 19.0}}
 		}};
 
 		std::vector<multi::array_ptr<double, 1>> ptrs;
@@ -89,8 +89,8 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 		BOOST_REQUIRE(    ptrs[2]->operator[](4) == 19 );
 	}
 	{
-		std::vector<double> v1(100, 3.);
-		std::vector<double> const v2(100, 4.);
+		std::vector<double> v1(100, 3.0);
+		std::vector<double> const v2(100, 4.0);
 		multi::array_ptr<double, 2> v1P2D(v1.data(), {10, 10});
 		multi::array_cptr<double, 2> v2P2D(v2.data(), {10, 10});
 
@@ -102,13 +102,13 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 }
 
 BOOST_AUTO_TEST_CASE(span_like) {
-	std::vector<double> vec = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10.};
+	std::vector<double> vec = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0};
 
 	using my_span = multi::array_ref<double, 1>;
 
 	auto aP = & my_span{vec.data() + 2, {5}};  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 	BOOST_REQUIRE( aP->size() == 5 );
-	BOOST_REQUIRE( (*aP)[0] == 2. );
+	BOOST_REQUIRE( (*aP)[0] == 2.0 );
 
 	auto const& aCRef = *aP;
 	BOOST_REQUIRE(  aCRef.size() == 5 );
@@ -117,6 +117,26 @@ BOOST_AUTO_TEST_CASE(span_like) {
 	BOOST_REQUIRE(  aCRef[0] == 2.    );
 
 	auto&& aRef = *aP;
-	aRef[0] = 99.;
-	BOOST_REQUIRE( vec[2] == 99. );
+	aRef[0] = 99.0;
+	BOOST_REQUIRE( vec[2] == 99.0 );
+}
+
+BOOST_AUTO_TEST_CASE(multi_array_ptr_assignment) {
+	multi::array<double, 2> arr = {
+		{1.0, 2.0, 3.0},
+		{4.0, 5.0, 6.0},
+		{7.0, 8.0, 9.0},
+		{1.0, 2.0, 3.0}
+	};
+	auto rowP = &arr[2];
+	auto rowP2 = rowP;
+	BOOST_REQUIRE( rowP == rowP2 );
+
+	rowP2 = decltype(rowP2){nullptr};
+	BOOST_REQUIRE( not rowP2 );
+
+	auto rowP3 = std::exchange(rowP, nullptr);
+	BOOST_REQUIRE( rowP3 == &arr[2] );
+	BOOST_REQUIRE( rowP == nullptr );
+	BOOST_REQUIRE( not rowP );
 }

@@ -236,8 +236,8 @@ struct basic_array_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin
 	using reference = Ref;
 	using iterator_category = std::random_access_iterator_tag;
 
-	HD constexpr explicit basic_array_ptr(std::nullptr_t nil) : Ref{nil} {}
-	HD constexpr basic_array_ptr() : basic_array_ptr{nullptr} {}
+	HD constexpr basic_array_ptr(std::nullptr_t nil) : Ref{nil} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) terse syntax and functionality by default
+	HD constexpr basic_array_ptr() : basic_array_ptr{nullptr} {}  // TODO(correaa) consider uninitialized ptr
 
 	template<class, class> friend struct basic_array_ptr;
 
