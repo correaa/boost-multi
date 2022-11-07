@@ -61,11 +61,10 @@ BOOST_AUTO_TEST_CASE(fftw_shift) {
 
 	auto const repeat = 40;
 	[&, unnamed = watch{}] {
-		for(int i = 0; i != repeat; ++i) {
+		std::for_each(multi::extension_t{0, repeat}.begin(), multi::extension_t{0, repeat}.end(), [&fdft, &arr, &res](auto) {
 			fdft(arr.base(), res.base());
 			std::rotate(res.begin(), res.begin() + res.size()/2, res.end());
-		}
-
+		});
 	    BOOST_TEST_MESSAGE( "FFTW shift "<< unnamed.elapsed_sec()/repeat <<" sec" );  // prints  0.000882224 sec
 	}();
 }

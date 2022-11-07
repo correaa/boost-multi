@@ -59,14 +59,44 @@ BOOST_AUTO_TEST_CASE(array1d_of_arrays2d) {
 
 BOOST_AUTO_TEST_CASE(array_3d_of_array_2d)  {
 	multi::array<multi::array<double, 3>, 2> AA({10, 20}, multi::array<double, 3>{});
-	for(int i = 0; i != 10; ++i) {
-		for(int j = 0; j != 20; ++j) {
-			AA[i][j] = multi::array<double, 3>({i+j, i+j, i+j}, 99.);
-		}
-	}
+	std::transform(extension(AA).begin(), extension(AA).end(), AA.begin(), AA.begin(), [](auto idx, auto&& row) -> decltype(auto) {
+		std::transform(extension(row).begin(), extension(row).end(), row.begin(), [idx](auto jdx) {
+			return multi::array<double, 3>({idx + jdx, idx + jdx, idx + jdx}, 99.0);
+		});
+		return std::forward<decltype(row)>(row);
+	});
+
+
+//	std::for_each(extension(AA).begin(), extension(AA).end(), [&AA](auto idx) {
+//		std::transform(extension(~AA).begin(), extension(~AA).end(), AA[idx].begin(), [idx](auto jdx) {
+//			return multi::array<double, 3>({idx + jdx, idx + jdx, idx + jdx}, 99.0);}
+//		);
+//	});
+
 	BOOST_REQUIRE( size(AA[9][19]) == 9 + 19 );
 	BOOST_REQUIRE( AA[9][19][1][1][1] == 99. );
 }
+
+BOOST_AUTO_TEST_CASE(array_3d_of_array_2d_no_init)  {
+	multi::array<multi::array<double, 3>, 2> AA({10, 20});
+	std::transform(extension(AA).begin(), extension(AA).end(), AA.begin(), AA.begin(), [](auto idx, auto&& row) -> decltype(auto) {
+		std::transform(extension(row).begin(), extension(row).end(), row.begin(), [idx](auto jdx) {
+			return multi::array<double, 3>({idx + jdx, idx + jdx, idx + jdx}, 99.0);
+		});
+		return std::forward<decltype(row)>(row);
+	});
+
+
+//	std::for_each(extension(AA).begin(), extension(AA).end(), [&AA](auto idx) {
+//		std::transform(extension(~AA).begin(), extension(~AA).end(), AA[idx].begin(), [idx](auto jdx) {
+//			return multi::array<double, 3>({idx + jdx, idx + jdx, idx + jdx}, 99.0);}
+//		);
+//	});
+
+	BOOST_REQUIRE( size(AA[9][19]) == 9 + 19 );
+	BOOST_REQUIRE( AA[9][19][1][1][1] == 99. );
+}
+
 
 BOOST_AUTO_TEST_CASE(const_elements) {
 	auto ptr = std::make_unique<double const>(2.0);

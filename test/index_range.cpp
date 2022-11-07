@@ -56,10 +56,7 @@ BOOST_AUTO_TEST_CASE(multi_range_in_constexpr) {
 
 	assert( std::equal( irng.begin(), irng.end(), vec.begin(), vec.end() ) );
 
-	auto sum = 0;
-	for(auto elem : irng) {
-		sum += elem;
-	}
+	auto sum = std::accumulate(irng.begin(), irng.end(), 0);
 	BOOST_REQUIRE( sum == 5 + 6 + 7 + 8 + 9 + 10 + 11 );
 }
 

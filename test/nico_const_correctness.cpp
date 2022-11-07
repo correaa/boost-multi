@@ -12,7 +12,7 @@ template<class Array1D>
 void print(Array1D const& coll) {
 //  *coll.begin() = 99;  // doesn't compile "assignment of read-only location"
 
-	for(auto const& elem : coll) {std::cout<< elem <<", ";}
+	std::copy(coll.begin(), coll.end(), std::ostream_iterator<typename Array1D::value_type>{std::cout, ", "});
 	std::cout<<std::endl;
 }
 
@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(const_views) {
 
 template<class Array1D>
 void fill_99(Array1D&& coll) {
-	for(auto& elem : coll) {elem = 99;}
+	std::fill(coll.begin(), coll.end(), 99);
 }
 
 BOOST_AUTO_TEST_CASE(mutating_views) {
@@ -50,16 +50,14 @@ BOOST_AUTO_TEST_CASE(mutating_views) {
 	(void)coll2, (void)coll1_take3_const, (void)coll1_take3;
 }
 
-template<class Array1D>
-void print_2d(Array1D const& coll) {
+template<class Array2D>
+void print_2d(Array2D const& coll) {
 //  *(coll.begin()->begin()) = 99;  // doesn't compile "assignment of read-only location"
 
-	for(auto const& row : coll) {
-		for(auto const& elem : row) {
-			std::cout<< elem <<", ";
-		}
+	std::for_each(coll.begin(), coll.end(), [](auto const& row) {
+		std::copy(row.begin(), row.end(), std::ostream_iterator<typename Array2D::element_type>(std::cout, ", "));
 		std::cout<<std::endl;
-	}
+	});
 }
 
 BOOST_AUTO_TEST_CASE(const_views_2d) {
@@ -79,11 +77,13 @@ BOOST_AUTO_TEST_CASE(const_views_2d) {
 template<class Array1D>
 void fill_2d_99(Array1D&& coll) {
 //  for(auto const& row : coll) {  // does not work because it would make it const
-	for(auto&& row : coll) {
-		for(auto&& elem : row) {
-			elem = 99;
-		}
-	}
+	std::for_each(coll.begin(), coll.end(), [](auto&& row) {
+		std::fill(row.begin(), row.end(), 99);
+	});
+//  std::transform(coll.begin(), coll.end(), coll.begin(), [](auto&& row) {
+//  	std::fill(row.begin(), row.end(), 99);
+//  	return std::forward<decltype(row)>(row);
+//  });
 }
 
 BOOST_AUTO_TEST_CASE(mutating_views_2d) {

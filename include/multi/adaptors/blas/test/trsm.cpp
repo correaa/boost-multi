@@ -18,18 +18,30 @@ auto triangular(multi::blas::filling f, Matrix const& m) {  // NOLINT(readabilit
 	auto ret =+ m;
 	switch(f) {
 	case multi::blas::filling::upper:
-		for(multi::size_type i = 0; i != size( ret); ++i) {
-			for(multi::size_type j = 0; j != std::min(i, size(~ret)); ++j) {
-				ret[i][j] = 0.;
-			}
+		{
+			auto ext = extension(ret);
+			std::for_each(ext.begin(), ext.end(), [&ret](auto idx) {
+				std::fill_n(ret[idx].begin(), std::min(idx, size(~ret)), 0.0);
+			});
 		}
+//		for(multi::size_type i = 0; i != size( ret); ++i) {
+//			for(multi::size_type j = 0; j != std::min(i, size(~ret)); ++j) {
+//				ret[i][j] = 0.;
+//			}
+//		}
 		break;
 	case multi::blas::filling::lower:
-		for(multi::size_type j = 0; j != size(~ret); ++j) {
-			for(multi::size_type i = 0; i != std::min(j, size( ret)); ++i) {
-				ret[i][j] = 0.;
-			}
+		{
+			auto extt = extension(~ret);
+			std::for_each(extt.begin(), extt.end(), [&ret](auto jdx) {
+				std::fill_n( (~ret)[jdx].begin(), std::min(jdx, size( ret)), 0.0);
+			});
 		}
+//		for(multi::size_type j = 0; j != size(~ret); ++j) {
+//			for(multi::size_type i = 0; i != std::min(j, size( ret)); ++i) {
+//				ret[i][j] = 0.;
+//			}
+//		}
 		break;
 	}
 	return ret;
