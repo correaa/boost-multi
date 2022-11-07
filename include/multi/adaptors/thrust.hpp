@@ -101,7 +101,7 @@ struct allocator_traits<::thrust::mr::stateless_resource_allocator<TT, ::thrust:
 	}
 };
 
-}
+}  // end namespace ::boost::multi
 
 // this is important for algorithms to dispatch to the right thrust executor
 namespace thrust {
@@ -110,15 +110,15 @@ template<class It> struct iterator_system;
 
 template<class T, boost::multi::dimensionality_type D, class Pointer>
 struct iterator_system<boost::multi::array_iterator<T, D, Pointer>>{
-	using type = typename thrust::iterator_system<typename boost::multi::array_iterator<T, D, Pointer>::element_ptr>::type;
+	using type = typename ::thrust::iterator_system<typename boost::multi::array_iterator<T, D, Pointer>::element_ptr>::type;
 };
 
 template<typename Pointer, class LayoutType>
 struct iterator_system<boost::multi::elements_iterator_t<Pointer, LayoutType>> {
-	using type = typename thrust::iterator_system<typename boost::multi::elements_iterator_t<Pointer, LayoutType>::pointer>::type;
+	using type = typename ::thrust::iterator_system<typename boost::multi::elements_iterator_t<Pointer, LayoutType>::pointer>::type;
 };
 
-}
+}  // end namespace ::thrust
 
 namespace boost::multi {
 namespace thrust {
