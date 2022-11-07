@@ -117,22 +117,22 @@ ICPX:
       - runner_system_failure
       - stuck_or_timeout_failure
 
-ICPC:
-  stage: build
-  image: intel/oneapi-hpckit:latest
-  script:
-    - apt-get update && apt-get install --no-install-recommends -y --quiet cmake g++ libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
-    - mkdir build && cd build
-    - icpc --version
-    - CXX=icpc cmake .. -DCMAKE_BUILD_TYPE=Release
-    - make --jobs=2 || make VERBOSE=1
-    - ctest --parallel 2 --output-on-failure
-  needs: ["OLDG++SANICHECKCOV"]
-  retry:
-    max: 2
-    when:
-      - runner_system_failure
-      - stuck_or_timeout_failure
+#ICPC:
+#  stage: build
+#  image: intel/oneapi-hpckit:latest
+#  script:
+#    - apt-get update && apt-get install --no-install-recommends -y --quiet cmake g++ libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev liblapack-dev libfftw3-dev make pkg-config
+#    - mkdir build && cd build
+#    - icpc --version
+#    - CXX=icpc cmake .. -DCMAKE_BUILD_TYPE=Release
+#    - make --jobs=2 || make VERBOSE=1
+#    - ctest --parallel 2 --output-on-failure
+#  needs: ["OLDG++SANICHECKCOV"]
+#  retry:
+#    max: 2
+#    when:
+#      - runner_system_failure
+#      - stuck_or_timeout_failure
 
 NVHPC-2022:
   stage: build
