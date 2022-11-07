@@ -5,8 +5,8 @@ image: debian:testing
 
 variables:
   OMP_NUM_THREADS: 1
-
-# -t 999feb5b-a599-4d02-b9c5-46d977247f3a
+  GIT_SUBMODULE_STRATEGY: recursive
+  CODECOV_TOKEN: "999feb5b-a599-4d02-b9c5-46d977247f3a"
 
 OLDG++SANICHECKCOV:
   stage: build
