@@ -62,7 +62,8 @@ BOOST_AUTO_TEST_CASE(fftw_shift) {
 
 	[&, unnamed = watch{}] {
 		auto const repeat = 40;
-		std::for_each(multi::extension_t{0, repeat}.begin(), multi::extension_t{0, repeat}.end(), [&fdft, &arr, &res](auto) {
+		std::for_each(
+			multi::extension_t{0, repeat}.begin(), multi::extension_t{0, repeat}.end(), [&fdft, &arr, &res](auto /*idx*/) {
 			fdft(arr.base(), res.base());
 			std::rotate(res.begin(), res.begin() + res.size()/2, res.end());
 		});
