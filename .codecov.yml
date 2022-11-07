@@ -11,7 +11,7 @@ ignore:
 # Fixes report prefix paths from CI dynamic coverage action
 # from https://docs.codecov.io/docs/fixing-paths
 fixes:
-  - "/__w/::"
+  - "/builds/correaa::"
 
 #codecov:
 #  disable_default_path_fixes: true
