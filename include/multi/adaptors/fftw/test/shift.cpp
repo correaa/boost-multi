@@ -58,7 +58,6 @@ BOOST_AUTO_TEST_CASE(fftw_shift) {
 	multi::array<std::complex<double>, 1> const arr = n_random_complex<double>(19586);  BOOST_REQUIRE(arr.size() == 19586);
 	multi::array<std::complex<double>, 1>       res(arr.extensions());                  BOOST_REQUIRE(res.size() == 19586);
 
-
 	fftw::plan fdft{arr, res, multi::fftw::forward};
 
 	[&, unnamed = watch{}] {
