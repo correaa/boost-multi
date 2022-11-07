@@ -128,7 +128,8 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 			{
 				watch unnamed{"transposition with loop 2 %ws wall, CPU (%p%)\n"};
 				std::for_each(extension(out).begin(), extension(out).end(), [&out](auto idx) {
-					std::for_each(multi::extension_t{idx + 1, out.size()}.begin(), multi::extension_t{idx + 1, out.size()}.end(), [&out, idx](auto jdx) {
+					auto ext = multi::extension_t(idx + 1, out.size());
+					std::for_each(ext.begin(), ext.end(), [&out, idx](auto jdx) {
 						std::swap(out[idx][jdx], out[jdx][idx]);
 					});
 				});
