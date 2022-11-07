@@ -24,6 +24,7 @@ if(PKG_CONFIG_FOUND)
 		include_directories(${CMAKE_BINARY_DIR})
 
 		add_subdirectory(test)
+#		add_subdirectory(mpi)
 	else()
 		message(WARNING "Cannot find FFTW, FFTW-adaptor will not be tested. If you want this feature install FFTW, for example please run:\n    sudo apt install pkg-config libfftw3-dev")
 	endif()
