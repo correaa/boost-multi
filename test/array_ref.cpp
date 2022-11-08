@@ -187,20 +187,6 @@ BOOST_AUTO_TEST_CASE(array_ref_with_stencil) {
 	BOOST_REQUIRE( &stencil[-1][-1] == stencil.base() );
 
 	multi::array<double, 2> gy(extensions(mar), 0.);
-
-	 {
-		auto xs = extensions(mar);
-		for(auto i = std::get<0>(xs).start() + 1; i != std::get<0>(xs).finish()-1; ++i) {
-			for(auto jay = std::get<1>(xs).start() + 1; jay != std::get<1>(xs).finish() - 1; ++jay) {
-				auto xt = extensions(stencil);
-				for(auto kay : std::get<0>(xt)) {
-					for(auto ell : std::get<1>(xt)) {
-						gy[i][jay] += stencil[kay][ell]*mar[i + kay][jay + ell];
-					}
-				}
-			}
-		}
-	}
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_1D_from_vector) {

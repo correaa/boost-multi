@@ -24,7 +24,6 @@ CheckOptions:
 Checks: '*,
   -altera-id-dependent-backward-branch,
   -altera-struct-pack-align,
-  -altera-unroll-loops,
   -cert-err58-cpp,
   -clang-diagnostic-c++98-compat-unnamed-type-template-args,
   -cppcoreguidelines-avoid-magic-numbers,
