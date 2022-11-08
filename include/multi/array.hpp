@@ -752,7 +752,7 @@ struct array : static_array<T, D, Alloc> {
 		static_::serialize(arxiv, version);
 	}
 
-	using static_::static_;
+	using static_::static_;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) passing c-arrays to base
 	using typename static_::value_type;
 
 	// cppcheck-suppress noExplicitConstructor ; to allow assignment-like construction of nested arrays
