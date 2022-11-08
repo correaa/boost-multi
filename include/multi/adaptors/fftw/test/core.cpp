@@ -49,7 +49,9 @@ class watch : private std::chrono::high_resolution_clock{
 };
 
 template<class T> struct randomizer {
-	template<class M> void operator()(M&& array) const {for(auto&& elem : array) {operator()(elem);}}
+	template<class M> void operator()(M&& arr) const {
+		std::for_each(arr.begin(), arr.end(), [&self=*this](auto&& elem) {self.operator()(elem);}); 
+	}
 	void operator()(T& elem) const {  // NOLINT(runtime/references) passing by reference
 		static std::random_device dev; static std::mt19937 gen{dev()}; static std::normal_distribution<T> gauss;
 		elem = gauss(gen);
@@ -57,7 +59,9 @@ template<class T> struct randomizer {
 };
 
 template<class T> struct randomizer<std::complex<T>> {
-	template<class M> void operator()(M&& array) const {for(auto&& elem : array) {operator()(elem);}}
+	template<class M> void operator()(M&& arr) const {
+		std::for_each(arr.begin(), arr.end(), [&self=*this](auto&& elem) {self.operator()(elem);});
+	}
 	void operator()(std::complex<T>& zee) const {  // NOLINT(runtime/references) : passing by reference
 		static std::random_device dev; static std::mt19937 gen{dev()}; static std::normal_distribution<T> gauss;
 		zee = std::complex<T>(gauss(gen), gauss(gen));
@@ -215,9 +219,10 @@ BOOST_AUTO_TEST_CASE(fftw_many1_from_2) {
 	fftw::dft({false, true}, in, out, fftw::forward);
 
 	multi::array<complex, 2> out2({3, 10});
-	for(int i = 0; i!=size(in); ++i) {
-		fftw::dft_forward(in[i], out2[i]);
-	}
+	std::transform(in.begin(), in.end(), out2.begin(), out2.begin(), [](auto const& in_elem, auto&& out2_elem) {
+		fftw::dft_forward(in_elem, out2_elem);
+		return std::forward<decltype(out2_elem)>(out2_elem);
+	});
 
 	BOOST_REQUIRE(out2 == out);
 }
@@ -228,9 +233,10 @@ BOOST_AUTO_TEST_CASE(fftw_many2_from_3) {
 	fftw::dft_forward({false, true, true}, in, out);
 
 	multi::array<complex, 3> out2({3, 5, 6});
-	for(int i = 0; i!=size(in); ++i) {
-		fftw::dft_forward(in[i], out2[i]);
-	}
+	std::transform(in.begin(), in.end(), out2.begin(), out2.begin(), [](auto const& in_elem, auto&& out2_elem) {
+		fftw::dft_forward(in_elem, out2_elem);
+		return std::forward<decltype(out2_elem)>(out2_elem);
+	});
 
 	BOOST_REQUIRE(out2 == out);
 }
@@ -614,36 +620,24 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_part2) {
 		in2t() = multi::fftw::ref(in).transposed();
 
 		{
-			auto xs = std::get<0>(in.extensions());  // TODO(correaa) use structured bindings
-			auto ys = std::get<1>(in.extensions());
-			for(auto const ex : xs) {
-				for(auto const wye : ys) {
-					std::cout<< in[ex][wye] <<'\t';
-				}
+			std::for_each(in.begin(), in.end(), [](auto const& row) {
+				std::copy(row.begin(), row.end(), std::ostream_iterator<complex>(std::cout, "\t"));
 				std::cout<< std::endl;
-			}
+			});
 			std::cout<< std::endl;
 		}
 		{
-			auto xs = std::get<0>(in2t.extensions());
-			auto ys = std::get<1>(in2t.extensions());
-			for(auto const ex : xs) {
-				for(auto const why : ys) {
-					std::cout<< in2t[ex][why] <<'\t';
-				}
+			std::for_each(in2t.begin(), in2t.end(), [](auto const& row) {
+				std::copy(row.begin(), row.end(), std::ostream_iterator<complex>(std::cout, "\t"));
 				std::cout<< std::endl;
-			}
+			});
 			std::cout<< std::endl;
 		}
 		{
-			auto xs = std::get<0>(tt.extensions());
-			auto ys = std::get<1>(tt.extensions());
-			for(auto ex : xs) {
-				for(auto wye : ys) {
-					std::cout<< tt[ex][wye] <<'\t';
-				}
+			std::for_each(tt.begin(), tt.end(), [](auto const& row) {
+				std::copy(row.begin(), row.end(), std::ostream_iterator<complex>(std::cout, "\t"));
 				std::cout<< std::endl;
-			}
+			});
 			std::cout<< std::endl;
 		}
 

@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 		{
 			multi::array<complex, 2> out = in;
 			multi::array<complex, 2> aux(extensions(out));
-			 {
+			{
 				watch unnamed{"auxiliary copy           %ws wall, CPU (%p%)\n"};
 				aux = ~out;
 				out = std::move(aux);
@@ -111,26 +111,28 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 		}
 		{
 			multi::array<complex, 2> out = in;
-			 {
+			{
 				watch unnamed{"transposition with loop   %ws wall, CPU (%p%)\n"};
-				for(auto ii : extension(out)) {
-					for(auto j = 0; j != ii; ++j) {
-						std::swap(out[ii][j], out[j][ii]);
-					}
-				}
+				std::for_each(extension(out).begin(), extension(out).end(), [&out](auto idx) {
+					auto ext = multi::extension_t(0L, idx);
+					std::for_each(ext.begin(), ext.end(), [&out, idx](auto jdx) {
+						std::swap(out[idx][jdx], out[jdx][idx]);
+					});
+				});
 				BOOST_REQUIRE( out[35][79] == in[79][35] );
 			}
 			BOOST_REQUIRE( out == ~in );
 		}
-		 {
+		{
 			multi::array<complex, 2> out = in;
-			 {
+			{
 				watch unnamed{"transposition with loop 2 %ws wall, CPU (%p%)\n"};
-				for(auto i = 0; i != out.size(); ++i) {
-					for(auto j = i + 1; j != out.size(); ++j) {
-						std::swap(out[i][j], out[j][i]);
-					}
-				}
+				std::for_each(extension(out).begin(), extension(out).end(), [&out](auto idx) {
+					auto ext = multi::extension_t(idx + 1, out.size());
+					std::for_each(ext.begin(), ext.end(), [&out, idx](auto jdx) {
+						std::swap(out[idx][jdx], out[jdx][idx]);
+					});
+				});
 				BOOST_REQUIRE( out[35][79] == in[79][35] );
 			}
 			BOOST_REQUIRE( out == ~in );
