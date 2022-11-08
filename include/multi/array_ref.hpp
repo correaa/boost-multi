@@ -2378,9 +2378,12 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 		extensions(array)
 	) {}
 
-//  sing this ctor makes memcheck complain about memmory used after scope
-//  template<class TT, std::enable_if_t<std::is_same<T, TT>::value, int> =0>
-//  array_ref(std::initializer_list<TT> const& il) : array_ref(il.begin(), typename array_ref::extensions_type{static_cast<typename array_ref::size_type>(il.size())}) {}
+//  this ctor makes memcheck complain about memmory used after scope
+	template<class TT, std::enable_if_t<std::is_same<typename array_ref::value_type, TT>::value, int> =0>
+	array_ref(std::initializer_list<TT> const& il) : array_ref(il.begin(), typename array_ref::extensions_type{static_cast<typename array_ref::size_type>(il.size())}) {}
+
+	template<class TT, std::enable_if_t<std::is_same<typename array_ref::value_type, TT>::value, int> =0>
+	array_ref(std::initializer_list<TT>&& il) = delete;
 
 	using basic_array<T, D, ElementPtr>::operator=;
 
