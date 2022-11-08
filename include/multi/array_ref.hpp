@@ -2353,7 +2353,6 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	array_ref(array_ref&&) = delete;
 	#endif
 
-
 	template<class OtherPtr, class=std::enable_if_t<not std::is_same<OtherPtr, ElementPtr>{}>, decltype(multi::explicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
 	constexpr explicit array_ref(array_ref<T, D, OtherPtr>&& other)
 	: basic_array<T, D, ElementPtr>{other.layout(), ElementPtr{other.base()}} {}
@@ -2378,6 +2377,10 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 		multi::data_elements(array),
 		extensions(array)
 	) {}
+
+//  sing this ctor makes memcheck complain about memmory used after scope
+//  template<class TT, std::enable_if_t<std::is_same<T, TT>::value, int> =0>
+//  array_ref(std::initializer_list<TT> const& il) : array_ref(il.begin(), typename array_ref::extensions_type{static_cast<typename array_ref::size_type>(il.size())}) {}
 
 	using basic_array<T, D, ElementPtr>::operator=;
 
