@@ -10,7 +10,9 @@
 
 namespace multi = boost::multi;
 
-BOOST_AUTO_TEST_CASE(zero_dimensionality_part1) {
+#define AUTO_TEST_CASE(...) BOOST_AUTO_TEST_CASE(__VA_ARGS__)  // NOLINT(cert-err58-cpp)
+
+AUTO_TEST_CASE(zero_dimensionality_part1) {
 	{
 		std::vector<double> v1 = {1., 2., 3.};
 
