@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE(arthur_odwyer_array_transform_int_array) {
 }
 
 BOOST_AUTO_TEST_CASE(indirect_transformed) {
-	std::vector<double> vec = {0., 1.1, 2.2, 3.3, 4.4, 5.5};
+	std::vector<double> vec = {0.0, 1.1, 2.2, 3.3, 4.4, 5.5};
 
 	using index_t = std::vector<double>::size_type;
 
@@ -185,15 +185,17 @@ BOOST_AUTO_TEST_CASE(indirect_transformed) {
 	BOOST_REQUIRE(  indirect_v[1] ==  vec[3] );
 	BOOST_REQUIRE( &indirect_v[1] == &vec[3] );
 
-	indirect_v[1] = 99.;
-	BOOST_REQUIRE(  vec[3] ==  99. );
+	indirect_v[1] = 99.0;
+	BOOST_REQUIRE(  vec[3] ==  99.0 );
 
-	for(auto&& elem : indirect_v) {elem = 88.;}
-	BOOST_REQUIRE(  vec[3] ==  88. );
+//  for(auto&& elem : indirect_v) {elem = 88.;}
+//  std::fill(indirect_v.begin(), indirect_v.end(), 88.0);
+	indirect_v.fill(88.0);
+	BOOST_REQUIRE(  vec[3] ==  88.0 );
 
 	auto const& const_indirect_v = indirect_v;  (void)const_indirect_v;
 //  const_indirect_v[1] = 999.;  // does not compile, good!
-	BOOST_REQUIRE(  const_indirect_v[3] ==  88. );
+	BOOST_REQUIRE(const_indirect_v[3] ==  88.0);
 }
 
 BOOST_AUTO_TEST_CASE(indirect_transformed_carray) {
