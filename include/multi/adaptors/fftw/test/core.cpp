@@ -18,7 +18,7 @@ namespace {
 namespace multi = boost::multi;
 namespace fftw = multi::fftw;
 
-using complex = std::complex<double>; [[maybe_unused]] complex const I{0, 1};  // NOLINT(readability-identifier-length) imag unit
+using complex = std::complex<double>; [[maybe_unused]] constexpr complex I{0, 1};  // NOLINT(readability-identifier-length) imag unit
 
 template<class M> auto power(M const& elem) -> decltype(std::norm(elem)) {return std::norm(elem);}
 
