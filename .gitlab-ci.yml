@@ -58,7 +58,7 @@ OLDCLANG++12TIDYSANI:
   stage: build
   image: debian:testing
   script:
-    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet cmake clang-12 clang-tidy-12 make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet cmake clang-13 clang-tidy-13 make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config
     - mkdir build && cd build
     - clang++-12 --version
     - CXX=clang++ cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CLANG_TIDY="clang-tidy-12" -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1 -D_LIBCPP_DEBUG=1 -fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all"
@@ -70,7 +70,7 @@ OLDCLANG++12TIDYSANI:
       - runner_system_failure
       - stuck_or_timeout_failure
 
-NEWCLANG++12STD20LINT:
+NEWCLANG++14STD20LINT:
   stage: build
   image: debian:testing
   script:
