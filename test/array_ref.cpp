@@ -175,6 +175,7 @@ BOOST_AUTO_TEST_CASE(array_ref_with_stencil) {
 	}};
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test type
 	auto const& mar = *multi::array_ptr<double, 2>(&arr);
+	BOOST_REQUIRE( mar.size() == 4 );
 
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test type
 	multi::array<double, 2> ss = {
@@ -184,9 +185,20 @@ BOOST_AUTO_TEST_CASE(array_ref_with_stencil) {
 	};
 	auto const& stencil = ss.reindexed(-1, -1);
 
+	BOOST_REQUIRE( stencil.size() == 3 );
 	BOOST_REQUIRE( &stencil[-1][-1] == stencil.base() );
 
-	multi::array<double, 2> gy(extensions(mar), 0.);
+//		auto xs = extensions(mar);
+//		for(auto i = std::get<0>(xs).start() + 1; i != std::get<0>(xs).finish()-1; ++i) {
+//			for(auto jay = std::get<1>(xs).start() + 1; jay != std::get<1>(xs).finish() - 1; ++jay) {
+//				auto xt = extensions(stencil);
+//				for(auto kay : std::get<0>(xt)) {
+//					for(auto ell : std::get<1>(xt)) {
+//						gy[i][jay] += stencil[kay][ell]*mar[i + kay][jay + ell];
+//					}
+//				}
+//			}
+//		}
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_1D_from_vector) {
