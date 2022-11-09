@@ -4,8 +4,8 @@
 #ifndef MULTI_CONFIG_VERSION_HPP_
 #define MULTI_CONFIG_VERSION_HPP_
 
-#define MULTI_VERSION_MAJOR  0
-#define MULTI_VERSION_MINOR 80
-#define MULTI_VERSION_MICRO  1
+#define MULTI_VERSION_MAJOR  0  // NOLINT(cppcoreguidelines-macro-usage) indicate version
+#define MULTI_VERSION_MINOR 80  // NOLINT(cppcoreguidelines-macro-usage) indicate version
+#define MULTI_VERSION_MICRO  1  // NOLINT(cppcoreguidelines-macro-usage) indicate version
 
 #endif  // MULTI_CONFIG_VERSION_HPP_
