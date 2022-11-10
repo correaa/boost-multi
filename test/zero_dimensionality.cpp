@@ -78,4 +78,3 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality_part2) {
 		BOOST_REQUIRE(( *multi::array_ptr<double, 0>(&d3, {}) == M_PI ));
 	}
 }
-

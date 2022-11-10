@@ -124,13 +124,13 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_real_complex) {
 	using complex = std::complex<double>;
 	using std::abs;
 	multi::array<complex, 2> const M = {  // NOLINT(readability-identifier-length) BLAS naming
-		{ 9., 24., 30., 9.},
-		{ 4., 10., 12., 7.},
-		{14., 16., 36., 1.}
+		{ { 9.0, 0.0}, {24.0, 0.0}, {30.0, 0.0}, {9.0, 0.0} },
+		{ { 4.0, 0.0}, {10.0, 0.0}, {12.0, 0.0}, {7.0, 0.0} },
+		{ {14.0, 0.0}, {16.0, 0.0}, {36.0, 0.0}, {1.0, 0.0} },
 	};
 	multi::array<complex, 1> const X = {1.1, 2.1, 3.1, 4.1};  // NOLINT(readability-identifier-length) BLAS naming
 	{
-		multi::array<complex, 1> Y = {4., 5., 6.};  // NOLINT(readability-identifier-length) BLAS naming
+		multi::array<complex, 1> Y = {4.0, 5.0, 6.0};  // NOLINT(readability-identifier-length) BLAS naming
 		double const alpha = 1.1;
 		double const beta = 1.2;
 		blas::gemv(alpha, M, X, beta, Y);  // y = a*M*x + b*y
@@ -149,9 +149,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_complex) {
 
 	using std::abs;
 	multi::array<complex, 2> const a = {  // NOLINT(readability-identifier-length) BLAS naming
-		{2. + 3.*I, 2. + 1.*I, 1. + 2.*I},
-		{4. + 2.*I, 2. + 4.*I, 3. + 1.*I},
-		{7. + 1.*I, 1. + 5.*I, 0. + 3.*I}
+		{2.0 + 3.0*I, 2.0 + 1.0*I, 1.0 + 2.0*I},
+		{4.0 + 2.0*I, 2.0 + 4.0*I, 3.0 + 1.0*I},
+		{7.0 + 1.0*I, 1.0 + 5.0*I, 0.0 + 3.0*I}
 	};
 	multi::array<complex, 1> const x = {1.0 + 2.0*I, 2.0 + 1.0*I, 9.0 + 2.0*I};  // NOLINT(readability-identifier-length) BLAS naming
 	BOOST_REQUIRE(( +blas::gemv(1., a, x) == multi::array<complex, 1>{4.0 + 31.*I, 25.0 + 35.0*I, -4.0 + 53.0*I} ));
@@ -167,9 +167,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_temporary) {
 	using complex = std::complex<double>;
 
 	multi::array<complex, 2> const A = {  // NOLINT(readability-identifier-length) BLAS naming
-		{1., 0., 0.},
-		{0., 1., 0.},
-		{0., 0., 1.}
+		{1.0, 0.0, 0.0},
+		{0.0, 1.0, 0.0},
+		{0.0, 0.0, 1.0}
 	};
 
 	auto const B = [](auto array) {  // NOLINT(readability-identifier-length) BLAS naming
@@ -181,30 +181,30 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_temporary) {
 	using blas::operators::operator*;
 	using blas::operators::operator-;
 	using blas::operators::operator^;
-	BOOST_REQUIRE( (((A*B)[0] - B[0])^2) == 0. );
-	BOOST_REQUIRE( (((A*B)[1] - B[1])^2) == 0. );
-	BOOST_REQUIRE( (((A*B)[2] - B[2])^2) == 0. );
+	BOOST_REQUIRE( (((A*B)[0] - B[0])^2) == 0.0 );
+	BOOST_REQUIRE( (((A*B)[1] - B[1])^2) == 0.0 );
+	BOOST_REQUIRE( (((A*B)[2] - B[2])^2) == 0.0 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_gemv_context) {
 	multi::array<double, 2> const a = {  // NOLINT(readability-identifier-length) BLAS naming
-		{ 9., 24., 30., 9.},
-		{ 4., 10., 12., 7.},
-		{14., 16., 36., 1.}
+		{ 9.0, 24.0, 30.0, 9.0},
+		{ 4.0, 10.0, 12.0, 7.0},
+		{14.0, 16.0, 36.0, 1.0}
 	};
 	multi::array<double, 1> const x = {1.1, 2.1, 3.1, 4.1};  // NOLINT(readability-identifier-length) conventional name in BLAS
 
 	blas::context ctxt;
 	{
 		multi::array<double, 1>       y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) conventional name in BLAS
-		blas::gemv_n(ctxt, 1., begin(a), size(a), begin(x), 0.0, begin(y));
+		blas::gemv_n(ctxt, 1.0, begin(a), size(a), begin(x), 0.0, begin(y));
 		BOOST_REQUIRE_CLOSE( y[1] , 91.3 , 0.0001 );
 		BOOST_REQUIRE_CLOSE( y[2] , +blas::dot(a[2], x) , 0.0001 );
 	}
 	{
 		multi::array<double, 1>       y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) conventional name in BLAS
 		multi::array<double, 2> const aT = ~a;
-		blas::gemv_n(ctxt, 1., begin(~aT), size(~aT), begin(x), 0.0, begin(y));
+		blas::gemv_n(ctxt, 1.0, begin(~aT), size(~aT), begin(x), 0.0, begin(y));
 		BOOST_REQUIRE_CLOSE( y[1] , 91.3 , 0.00001 );
 		BOOST_REQUIRE_CLOSE( y[2] , +blas::dot(a[2], x) , 0.00001 );
 	}
@@ -216,20 +216,20 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_context) {
 	}
 	{
 		multi::array<double, 1>       y(multi::extensions_t<1>{multi::iextension{size(a)}});  // NOLINT(readability-identifier-length) conventional name in BLAS
-		y = blas::gemv(ctxt, 1., a, x);
+		y = blas::gemv(ctxt, 1.0, a, x);
 		BOOST_REQUIRE_CLOSE( y[1] , 91.3 , 0.00001 );
 	}
 	{
-		multi::array<double, 1> y = blas::gemv(ctxt, 1., a, x);  // NOLINT(readability-identifier-length) conventional name in BLAS
+		multi::array<double, 1> y = blas::gemv(ctxt, 1.0, a, x);  // NOLINT(readability-identifier-length) conventional name in BLAS
 		BOOST_REQUIRE_CLOSE( y[1] , 91.3 , 0.00001 );
 	}
 	{
-		multi::array<double, 1>       y(multi::extensions_t<1>{multi::iextension{size(a)}}, 0.);  // NOLINT(readability-identifier-length) conventional name in BLAS
-		y += blas::gemv(ctxt, 1., a, x);
+		multi::array<double, 1>       y(multi::extensions_t<1>{multi::iextension{size(a)}}, 0.0);  // NOLINT(readability-identifier-length) conventional name in BLAS
+		y += blas::gemv(ctxt, 1.0, a, x);
 		BOOST_REQUIRE_CLOSE( y[1] , 91.3, 0.00001 );
 	}
 	{
-		multi::array<double, 1> y = {4., 5., 6.};  // NOLINT(readability-identifier-length) conventional name in BLAS
+		multi::array<double, 1> y = {4.0, 5.0, 6.0};  // NOLINT(readability-identifier-length) conventional name in BLAS
 		y += blas::gemv(ctxt, 1.1, a, x);
 		BOOST_REQUIRE_CLOSE( y[1] , 105.43, 0.00001 );
 	}
