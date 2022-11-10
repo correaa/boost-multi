@@ -67,13 +67,13 @@ class axpy_range {
 	template<class Other>
 	friend auto operator+=(Other&& other, axpy_range const& self) -> Other&& {
 		assert(other.size() == self.count_); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : bug in clang-tidy https://reviews.llvm.org/D31130
-		blas::axpy_n(std::forward<Context>(self.ctxt_), +self.alpha_, self.x_begin_, self.count_, other.begin());
+		blas::axpy_n(std::forward<Context>(self.ctxt_), +static_cast<typename ItX::value_type>(self.alpha_), self.x_begin_, self.count_, other.begin());  // NOLINT(fuchsia-default-arguments-calls)
 		return std::forward<Other>(other);
 	}
 	template<class Other>
 	friend auto operator-=(Other&& other, axpy_range const& self) -> Other&& {
 		assert(other.size() == self.count_); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : bug in clang-tidy https://reviews.llvm.org/D31130
-		blas::axpy_n(std::forward<Context>(self.ctxt_), -self.alpha_, self.x_begin_, self.count_, other.begin());
+		blas::axpy_n(std::forward<Context>(self.ctxt_), -static_cast<typename ItX::value_type>(self.alpha_), self.x_begin_, self.count_, other.begin());  // NOLINT(fuchsia-default-arguments-calls)
 		return std::forward<Other>(other);
 	}
 	auto operator*=(Scale s) & -> axpy_range& {alpha_ *= s; return *this;}  // NOLINT(readability-identifier-length) conventional BLAS naming
@@ -94,8 +94,8 @@ auto axpy(Scalar a, X1D const& x)  // NOLINT(readability-identifier-length) conv
 
 namespace operators {
 
-template<class X1D, class Y1D> auto operator+=(X1D&& x, Y1D const& other) DECLRETURN(axpy(+1., other, std::forward<X1D>(x)))  // NOLINT(readability-identifier-length) conventional name in BLAS
-template<class X1D, class Y1D> auto operator-=(X1D&& x, Y1D const& other) DECLRETURN(axpy(-1., other, std::forward<X1D>(x)))  // NOLINT(readability-identifier-length) conventional name in BLAS
+template<class X1D, class Y1D> auto operator+=(X1D&& x, Y1D const& other) DECLRETURN(axpy(static_cast<typename Y1D::value_type>(+1.0), other, std::forward<X1D>(x)))  // NOLINT(fuchsia-default-arguments-calls,readability-identifier-length) conventional name in BLAS
+template<class X1D, class Y1D> auto operator-=(X1D&& x, Y1D const& other) DECLRETURN(axpy(static_cast<typename Y1D::value_type>(-1.0), other, std::forward<X1D>(x)))  // NOLINT(fuchsia-default-arguments-calls,readability-identifier-length) conventional name in BLAS
 
 template<class X1D, class Y1D> auto operator+(X1D const& x, Y1D const& y) -> std::decay_t<decltype(x.decay())> {auto X = x.decay(); X += y; return X;}  // NOLINT(readability-identifier-length) conventional name in BLAS
 template<class X1D, class Y1D> auto operator-(X1D const& x, Y1D const& y) -> std::decay_t<decltype(x.decay())> {auto X = x.decay(); X -= y; return X;}  // NOLINT(readability-identifier-length) conventional name in BLAS
