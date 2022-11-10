@@ -28,10 +28,9 @@ class watch : private std::chrono::high_resolution_clock {
 	watch(watch const&) = delete;
 	watch(watch&&) = delete;
 
-//  auto operator=(watch) = delete;
+	auto operator=(watch const&) = delete;
 	auto operator=(watch&&) = delete;
-//  auto operator=(watch const&) = delete;
-//  auto operator=(watch&&) -> watch& = default;
+
 	auto elapsed_sec() const {return std::chrono::duration<double>(now() - start).count();}
 	~watch() { std::cerr<< label <<": "<< elapsed_sec() <<" sec"<<std::endl; }
 };
