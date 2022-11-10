@@ -170,8 +170,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_identity) {
 	{
 		multi::array<complex, 2> arr2({2, 2}, 9999.0);  // NOLINT(readability-identifier-length) conventional one-letter operation BLASs
 		blas::herk(blas::filling::lower, 1.0, arr, 0.0, arr2);  // c†=c=aa†=(aa†)†, `c` in lower triangular
-		BOOST_REQUIRE( arr2[1][0]==complex(50.0, -49.0) );
-		BOOST_REQUIRE( arr2[0][1]==9999.0 );
+		BOOST_REQUIRE( arr2[1][0] == complex(50.0, -49.0) );
+		BOOST_REQUIRE( arr2[0][1] == 9999.0 );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.0);  // NOLINT(readability-identifier-length) conventional one-letter operation BLASs
@@ -186,7 +186,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_identity) {
 		multi::array<complex, 2> c({3, 3}, 9999.);  // NOLINT(readability-identifier-length) : conventional one-letter operation BLASs
 		herk(blas::filling::lower, 1., blas::T(arr), 0., blas::T(c));  // c†=c=aT(aT)† not supported
 		BOOST_REQUIRE( transposed(c)[1][0] == complex(52.0, -90.0) );
-		BOOST_REQUIRE( transposed(c)[0][1]==9999.0 );
+		BOOST_REQUIRE( transposed(c)[0][1] == 9999.0 );
 	}
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.0);  // NOLINT(readability-identifier-length) : conventional one-letter operation BLASs
