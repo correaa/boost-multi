@@ -128,14 +128,14 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_real_complex) {
 		{ { 4.0, 0.0}, {10.0, 0.0}, {12.0, 0.0}, {7.0, 0.0} },
 		{ {14.0, 0.0}, {16.0, 0.0}, {36.0, 0.0}, {1.0, 0.0} },
 	};
-	multi::array<complex, 1> const X = {1.1, 2.1, 3.1, 4.1};  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<complex, 1> const X = { {1.1, 0.0}, {2.1, 0.0}, {3.1, 0.0}, {4.1, 0.0} };  // NOLINT(readability-identifier-length) BLAS naming
 	{
 		multi::array<complex, 1> Y = {4.0, 5.0, 6.0};  // NOLINT(readability-identifier-length) BLAS naming
 		double const alpha = 1.1;
 		double const beta = 1.2;
 		blas::gemv(alpha, M, X, beta, Y);  // y = a*M*x + b*y
 
-		multi::array<complex, 1> const Y3 = {214.02, 106.43, 188.37};
+		multi::array<complex, 1> const Y3 = { {214.02, 0.0}, {106.43, 0.0}, {188.37, 0.0} };
 
 		using blas::operators::operator-;
 		double const n2{blas::nrm2(Y - Y3)};
@@ -167,9 +167,9 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_temporary) {
 	using complex = std::complex<double>;
 
 	multi::array<complex, 2> const A = {  // NOLINT(readability-identifier-length) BLAS naming
-		{1.0, 0.0, 0.0},
-		{0.0, 1.0, 0.0},
-		{0.0, 0.0, 1.0}
+		{ {1.0, 0.0}, {0.0, 0.0}, {0.0, 0.0} },
+		{ {0.0, 0.0}, {1.0, 0.0}, {0.0, 0.0} },
+		{ {0.0, 0.0}, {0.0, 0.0}, {1.0, 0.0} }
 	};
 
 	auto const B = [](auto array) {  // NOLINT(readability-identifier-length) BLAS naming
