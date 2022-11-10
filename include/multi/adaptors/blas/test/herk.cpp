@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-// Copyright 2019-2021 Alfredo A. Correa
+// Copyright 2019-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS herk"
 #include<boost/test/unit_test.hpp>
@@ -163,8 +163,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_identity) {
 	using complex = std::complex<double>; auto const I = complex{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
 	multi::array<complex, 2> const arr = {  // NOLINT(readability-identifier-length) : conventional one-letter operation BLASs
-		{ 1.0 + 3.0*I, 3.0 - 2.0*I, 4.0 + 1.0*I},
-		{ 9.0 + 1.0*I, 7.0 - 8.0*I, 1.0 - 3.0*I},
+		{1.0 + 3.0*I, 3.0 - 2.0*I, 4.0 + 1.0*I},
+		{9.0 + 1.0*I, 7.0 - 8.0*I, 1.0 - 3.0*I},
 	};
 
 	{
@@ -191,8 +191,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_identity) {
 	{
 		multi::array<complex, 2> c({3, 3}, 9999.0);  // NOLINT(readability-identifier-length) : conventional one-letter operation BLASs
 		blas::herk(blas::filling::lower, 1.0, blas::T(arr), 0.0, blas::H(blas::T(c)));  // c†=c=aT(aT)† not supported
-		BOOST_REQUIRE( blas::H(blas::T(c))[1][0]==complex(52.0, -90.0) );
-		BOOST_REQUIRE( blas::H(blas::T(c))[0][1]==9999.0 );
+		BOOST_REQUIRE( blas::H(blas::T(c))[1][0] == complex(52.0, -90.0) );
+		BOOST_REQUIRE( blas::H(blas::T(c))[0][1] == 9999.0 );
 	}
 	{
 		multi::array<complex, 2> c({2, 2}, 9999.0);  // NOLINT(readability-identifier-length) : conventional one-letter operation BLAS
