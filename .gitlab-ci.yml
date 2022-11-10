@@ -8,7 +8,7 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
   CODECOV_TOKEN: "999feb5b-a599-4d02-b9c5-46d977247f3a"
 
-OLDG++SANICHECKCOV:
+OLDGNUSANICHECKCOV:
   stage: build
   image: debian:stable-backports  # for g++-9
   script:
@@ -38,7 +38,7 @@ OLDG++SANICHECKCOV:
       - runner_system_failure
       - stuck_or_timeout_failure
 
-NEWG++12STD20MEMCHK:
+NEWGNUSTD20MEMCHK:
   stage: build
   image: debian:testing  # for g++-12
   script:
@@ -47,14 +47,14 @@ NEWG++12STD20MEMCHK:
     - CXX=g++-12 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS="-fanalyzer -Wno-analyzer-null-dereference -Wno-analyzer-possible-null-dereference -Wno-analyzer-malloc-leak -Wno-analyzer-use-of-uninitialized-value -Wno-analyzer-use-after-free"
     - make --jobs=2  || make VERBOSE=1
     - ctest -j 2 --output-on-failure --overwrite MemoryCheckCommandOptions="-q --tool=memcheck --leak-check=yes --num-callers=51 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all" -T memcheck
-  needs: ["OLDG++SANICHECKCOV"]
+  needs: ["OLDGNUSANICHECKCOV"]
   retry:
     max: 2
     when:
       - runner_system_failure
       - stuck_or_timeout_failure
 
-OLDCLANG++12TIDYSANI:
+OLDCLANGTIDYSANI:
   stage: build
   image: debian:testing
   script:
@@ -71,7 +71,7 @@ OLDCLANG++12TIDYSANI:
       - runner_system_failure
       - stuck_or_timeout_failure
 
-NEWCLANG++14STD20LINT:
+NEWCLANGSTD20LINT:
   stage: build
   image: debian:testing
   script:
@@ -82,7 +82,7 @@ NEWCLANG++14STD20LINT:
     - CXX=clang++-14 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_CPPLINT="cpplint;--quiet"
     - make --jobs=2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
-  needs: ["OLDCLANG++12TIDYSANI"]
+  needs: ["OLDCLANGTIDYSANI"]
   retry:
     max: 2
     when:
@@ -113,7 +113,7 @@ ICPX:
     - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release
     - make --jobs=2 || make VERBOSE=1
     - ctest --parallel 2 --output-on-failure
-  needs: ["OLDG++SANICHECKCOV"]
+  needs: ["OLDGNUSANICHECKCOV"]
   retry:
     max: 2
     when:
@@ -130,7 +130,7 @@ ICPX:
 #    - CXX=icpc cmake .. -DCMAKE_BUILD_TYPE=Release
 #    - make --jobs=2 || make VERBOSE=1
 #    - ctest --parallel 2 --output-on-failure
-#  needs: ["OLDG++SANICHECKCOV"]
+#  needs: ["OLDGNUSANICHECKCOV"]
 #  retry:
 #    max: 2
 #    when:
@@ -148,7 +148,7 @@ NVHPC-2022:
     - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ cmake ..
     - make --jobs 2 || make VERBOSE=1
     - ctest --output-on-failure
-  needs: ["OLDG++SANICHECKCOV"]
+  needs: ["OLDGNUSANICHECKCOV"]
   retry:
     max: 2
     when:
@@ -165,7 +165,7 @@ NVCC:
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
     - make --jobs=2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
-  needs: ["OLDG++SANICHECKCOV"]
+  needs: ["OLDGNUSANICHECKCOV"]
   retry:
     max: 2
     when:
@@ -188,7 +188,7 @@ CIRCLE:
     - CXX=`pwd`/../build_latest/circle cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CIRCLE=1 -DCMAKE_CXX_FLAGS="-nostdinc -I/usr/include/c++/11 -I/usr/include/x86_64-linux-gnu/c++/11 -I/usr/lib/gcc/x86_64-linux-gnu/11/include" -DBoost_USE_STATIC_LIBS=OFF -DBOOST_LIBRARYDIR=/usr/lib/x86_64-linux-gnu/
     - cmake . --build --parallel=2 || make VERBOSE=1
     - ctest -j 2 --output-on-failure
-  needs: ["OLDCLANG++12TIDYSANI"]
+  needs: ["OLDCLANGTIDYSANI"]
   retry:
     max: 2
     when:
@@ -245,7 +245,7 @@ QMCPACK-G++:
     - make ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
     - ctest -R ppconvert --output-on-failure
     - ctest -R afqmc     --output-on-failure
-  needs: ["OLDG++SANICHECKCOV"]
+  needs: ["OLDGNUSANICHECKCOV"]
   retry:
     max: 2
     when:
