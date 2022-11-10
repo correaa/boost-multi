@@ -667,13 +667,13 @@ struct elements_range_t {
 	constexpr auto end  ()      & ->       iterator {return end_aux()  ;}
 
 	constexpr auto front() const& -> const_reference {return *begin();}
-	constexpr auto back () const& -> const_reference {return *std::prev(end());}
+	constexpr auto back () const& -> const_reference {return *std::prev(end(), 1);}
 
 	constexpr auto front()     && ->       reference {return *begin();}
-	constexpr auto back ()     && ->       reference {return *std::prev(end());}
+	constexpr auto back ()     && ->       reference {return *std::prev(end(), 1);}
 
 	constexpr auto front()      & ->       reference {return *begin();}
-	constexpr auto back ()      & ->       reference {return *std::prev(end());}
+	constexpr auto back ()      & ->       reference {return *std::prev(end(), 1);}
 
 	auto operator=(elements_range_t const&) -> elements_range_t& = delete;
 	auto operator=(elements_range_t     &&) -> elements_range_t& = delete;
@@ -830,13 +830,13 @@ struct basic_array
 		return operator[](std::get<0>(tup)); }
 
 	constexpr auto front() const& -> const_reference {return *begin();}
-	constexpr auto back()  const& -> const_reference {return *std::prev(end());}
+	constexpr auto back()  const& -> const_reference {return *std::prev(end(), 1);}
 
 	constexpr auto front()     && ->       reference {return *begin();}
-	constexpr auto back()      && ->       reference {return *std::prev(end());}
+	constexpr auto back()      && ->       reference {return *std::prev(end(), 1);}
 
 	constexpr auto front()      & ->       reference {return *begin();}
-	constexpr auto back()       & ->       reference {return *std::prev(end());}
+	constexpr auto back()       & ->       reference {return *std::prev(end(), 1);}
 
 	using typename types::index;
 
@@ -1858,14 +1858,13 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	HD constexpr auto operator[](index idx)     && -> typename basic_array::      reference {return at_aux(idx);}  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
 
 	constexpr auto front() const& -> const_reference {return *begin();}
-	constexpr auto back()  const& -> const_reference {return *std::prev(end());}
+	constexpr auto back()  const& -> const_reference {return *std::prev(end(), 1);}
 
 	constexpr auto front()     && ->       reference {return *begin();}
-	constexpr auto back()      && ->       reference {return *std::prev(end());}
+	constexpr auto back()      && ->       reference {return *std::prev(end(), 1);}
 
 	constexpr auto front()      & ->       reference {return *begin();}
-	constexpr auto back()       & ->       reference {return *std::prev(end());}
-
+	constexpr auto back()       & ->       reference {return *std::prev(end(), 1);}
 
  private:
 	template<class Self, typename Tuple, std::size_t ... I, basic_array* = nullptr>
