@@ -126,7 +126,7 @@ template<class AA> class is_allocator {
 	static auto  aux(...     ) -> std::false_type;
 
  public:
-	static bool const value = decltype(aux(std::declval<AA>()))::value;
+	constexpr static bool const value = decltype(aux(std::declval<AA>()))::value;
 	constexpr explicit operator bool() const {return value;}
 };
 

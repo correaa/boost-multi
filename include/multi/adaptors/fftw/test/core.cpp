@@ -18,7 +18,7 @@ namespace {
 namespace multi = boost::multi;
 namespace fftw = multi::fftw;
 
-using complex = std::complex<double>; [[maybe_unused]] complex const I{0, 1};  // NOLINT(readability-identifier-length) imag unit
+using complex = std::complex<double>; [[maybe_unused]] constexpr complex I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 
 template<class M> auto power(M const& elem) -> decltype(std::norm(elem)) {return std::norm(elem);}
 
@@ -74,30 +74,30 @@ BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
 BOOST_AUTO_TEST_CASE(fftw_3D) {
 	using complex = std::complex<double>;  // TODO(correaa) make it work with thrust
 	multi::array<complex, 3> in({10, 10, 10});
-	in[2][3][4] = 99.;
+	in[2][3][4] = 99.0;
 	multi::fftw::dft_forward(in);
-	BOOST_REQUIRE(in[2][3][4] == 99.);
+	BOOST_REQUIRE(in[2][3][4] == 99.0);
 }
 
 BOOST_AUTO_TEST_CASE(fftw_1D_const) {
-	multi::array<complex, 1> const in = {1. + 2.*I, 2. + 3. *I, 4. + 5.*I, 5. + 6.*I};
+	multi::array<complex, 1> const in = {1.0 + 2.0*I, 2.0 + 3.0 *I, 4.0 + 5.0*I, 5.0 + 6.0*I};
 
 	auto fwd = multi::fftw::dft(in, fftw::forward);  // Fourier[in, FourierParameters -> {1, -1}]
 	BOOST_REQUIRE( size(fwd) == size(in) );
-	BOOST_REQUIRE( fwd[2] == -2. - 2.*I  );
-	BOOST_REQUIRE( in[1]  == +2. + 3.*I  );
+	BOOST_REQUIRE( fwd[2] == -2.0 - 2.0*I  );
+	BOOST_REQUIRE( in[1]  == +2.0 + 3.0*I  );
 
 	auto bwd = multi::fftw::dft(in, fftw::forward);  // InverseFourier[in, FourierParameters -> {-1, -1}]
-	BOOST_REQUIRE( bwd[2] == -2. - 2.*I  );
+	BOOST_REQUIRE( bwd[2] == -2.0 - 2.0*I  );
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_identity_2, *boost::unit_test::tolerance(0.0001)) {
 	multi::array<complex, 2> const in = {
-		{  1. + 2.*I,  9. - 1.*I, 2. +  4.*I},
-		{  3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
-		{  4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
-		{  3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
-		{ 31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+		{  1.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
+		{  3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
+		{  4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I},
+		{  3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 +  1.0*I},
+		{ 31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I}
 	};
 	multi::array<complex, 2> out(extensions(in));
 	multi::fftw::dft({false, false}, in, out, fftw::forward);  // out = in;
@@ -106,23 +106,25 @@ BOOST_AUTO_TEST_CASE(fftw_2D_identity_2, *boost::unit_test::tolerance(0.0001)) {
 
 BOOST_AUTO_TEST_CASE(fftw_2D_identity, *boost::unit_test::tolerance(0.0001)) {
 	multi::array<complex, 2> const in = {
-		{ 1. + 2.*I, 9. - 1.*I, 2. + 4.*I},
-		{ 3. + 3.*I, 7. - 4.*I, 1. + 9.*I},
-		{ 4. + 1.*I, 5. + 3.*I, 2. + 4.*I},
-		{ 3. - 1.*I, 8. + 7.*I, 2. + 1.*I},
-		{ 31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+		{  1.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
+		{  3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
+		{  4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I},
+		{  3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 +  1.0*I},
+		{ 31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I}
 	};
 	auto fwd = multi::fftw::dft({}, in, fftw::forward);
 	BOOST_REQUIRE( fwd == in );
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D, *boost::unit_test::tolerance(0.0001)) {
+	[[maybe_unused]] const complex I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+
 	multi::array<complex, 2> const in = {
-		{  1. + 2.*I,  9. - 1.*I, 2. +  4.*I},
-		{  3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
-		{  4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
-		{  3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
-		{ 31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+		{  1.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
+		{  3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
+		{  4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I},
+		{  3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 +  1.0*I},
+		{ 31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I}
 	};
 
 	namespace fftw = multi::fftw;
@@ -138,11 +140,11 @@ BOOST_AUTO_TEST_CASE(fftw_2D, *boost::unit_test::tolerance(0.0001)) {
 BOOST_AUTO_TEST_CASE(fftw_2D_rotated, *boost::unit_test::tolerance(0.0001)) {
 	using multi::array;
 	array<complex, 2> const in = {
-		{  1. + 2.*I,  9. - 1.*I, 2. +  4.*I},
-		{  3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
-		{  4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
-		{  3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
-		{ 31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+		{  1.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
+		{  3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
+		{  4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I},
+		{  3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 +  1.0*I},
+		{ 31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I}
 	};
 	using multi::fftw::dft_forward;
 	auto fwd = dft_forward(in);
@@ -155,11 +157,11 @@ BOOST_AUTO_TEST_CASE(fftw_2D_rotated, *boost::unit_test::tolerance(0.0001)) {
 
 BOOST_AUTO_TEST_CASE(fftw_2D_many, *boost::unit_test::tolerance(0.0001)) {
 	multi::array<complex, 2> const in = {
-		{  1. + 2.*I,  9. - 1.*I, 2. +  4.*I},
-		{  3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
-		{  4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
-		{  3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
-		{ 31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+		{  1.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
+		{  3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
+		{  4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I},
+		{  3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 +  1.0*I},
+		{ 31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I}
 	};
 	multi::array<complex, 2> out(extensions(in));
 
@@ -395,14 +397,14 @@ BOOST_AUTO_TEST_CASE(fftw_3D_power_out_of_place_over_temporary) {
 
 BOOST_AUTO_TEST_CASE(fftw_2D_transposition_square_inplace) {
 	multi::array<complex, 2> in = {
-		{11., 12.},
-		{21., 22.}
+		{11.0, 12.0},
+		{21.0, 22.0}
 	};
 	BOOST_REQUIRE( in[1][0] == 21. );
 
 	multi::fftw::copy(in, rotated(in));
-	BOOST_TEST( in[0][1].real() == 21. );
-	BOOST_TEST( in[0][1].imag() ==  0. );
+	BOOST_TEST( in[0][1].real() == 21.0 );
+	BOOST_TEST( in[0][1].imag() ==  0.0 );
 }
 
 BOOST_AUTO_TEST_CASE(fftw_4D_inq_poisson) {
@@ -425,11 +427,11 @@ BOOST_AUTO_TEST_CASE(fftw_4D_inq_poisson) {
 
 
 BOOST_AUTO_TEST_CASE(fftw_1D_power_c_interface) {
-	multi::array<complex, 1> in(16, 0.);
+	multi::array<complex, 1> in(16, 0.0);
 	BOOST_REQUIRE( size(in) == 16 );
 
-	std::iota(begin(in), end(in), 1.);
-	BOOST_TEST_REQUIRE( power(in) == 1496. );
+	std::iota(begin(in), end(in), 1.0);
+	BOOST_TEST_REQUIRE( power(in) == 1496.0 );
 
 	multi::array<complex, 1> out(extensions(in));
 
@@ -543,11 +545,11 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_part2) {
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref) {
 	multi::array<complex, 2> const in = {
-		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
-		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
-		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
-		{    3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
-		{   31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+		{  100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
+		{    3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
+		{    4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I},
+		{    3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 +  1.0*I},
+		{   31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I}
 	};
 
 	#if not defined(__circle_build__)
@@ -589,11 +591,11 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref) {
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_part2) {
 	multi::array<complex, 2> const in = {
-		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
-		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
-		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
-		{    3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
-		{   31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+		{  100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
+		{    3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
+		{    4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I},
+		{    3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 +  1.0*I},
+		{   31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I}
 	};
 	#if not defined(__circle_build__)
 	{
@@ -616,7 +618,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_part2) {
 		multi::array<complex, 2> tt({3, 5});
 		multi::fftw::dft({}, in, tt.transposed(), multi::fftw::forward);
 
-		multi::array<complex, 2> in2t({3, 5}, 99.);
+		multi::array<complex, 2> in2t({3, 5}, 99.0);
 		in2t() = multi::fftw::ref(in).transposed();
 
 		{
@@ -664,13 +666,13 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_part2) {
 BOOST_AUTO_TEST_CASE(fftw_4D_many_new_interface) {
 	auto const in = [] {
 		multi::array<complex, 4> in({17, 15, 10, 8}, 0.);
-		in[2][3][4][5] = 99.;
+		in[2][3][4][5] = 99.0;
 		return in;
 	}();
 	#if not defined(__circle_build__)
 	{
 		auto fwd = + multi::fftw::ref(in)(fftw::forward, fftw::forward, fftw::forward, fftw::none);
-		BOOST_REQUIRE( in[2][3][4][5] == 99. );
+		BOOST_REQUIRE( in[2][3][4][5] == 99.0 );
 
 		multi::array<complex, 4> out(extensions(in));
 		multi::fftw::many_dft(begin(unrotated(in)), end(unrotated(in)), begin(unrotated(out)), fftw::forward);
@@ -689,11 +691,11 @@ BOOST_AUTO_TEST_CASE(fftw_4D_many_new_interface) {
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_naive) {
 	multi::array<complex, 2> in = {
-		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
-		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
-		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
-		{    3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
-		{   31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+		{  100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
+		{    3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
+		{    4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I},
+		{    3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 +  1.0*I},
+		{   31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I}
 	};
 	multi::array<complex, 2> const in_transpose = in.transposed();
 	in = in.transposed();
@@ -702,9 +704,9 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_naive) {
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_naive_square) {
 	multi::array<complex, 2> in = {
-		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
-		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
-		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
+		{  100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
+		{    3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
+		{    4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I}
 	};
 	multi::array<complex, 2> const in_transpose = in.transposed();
 	in = in.transposed();
@@ -714,11 +716,11 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_naive_square) {
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed) {
 	#if not defined(__circle_build__)
 	multi::array<complex, 2> in = {
-		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
-		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
-		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
-		{    3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
-		{   31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+		{  100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
+		{    3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
+		{    4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I},
+		{    3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 +  1.0*I},
+		{   31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I}
 	};
 	multi::array<complex, 2> const in_transpose = in.transposed();
 	auto* in_base = in.base();
@@ -732,11 +734,11 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed) {
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nested) {
 	#if not defined(__circle_build__)
 	multi::array<complex, 2> in = {
-		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
-		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
-		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
-		{    3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
-		{   31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+		{  100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
+		{    3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
+		{    4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I},
+		{    3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 +  1.0*I},
+		{   31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I}
 	};
 	multi::array<complex, 2> const in_transpose = in.transposed();
 	auto* in_base = in.base();
@@ -749,9 +751,9 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nested) {
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_square) {
 	#if not defined(__circle_build__)
 	multi::array<complex, 2> in = {
-		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
-		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
-		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
+		{  100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
+		{    3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
+		{    4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I}
 	};
 	multi::array<complex, 2> const in_transpose = in.transposed();
 	auto* in_base = in.base();
@@ -764,9 +766,9 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_square) {
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_square_nested) {
 	#if not defined(__circle_build__)
 	multi::array<complex, 2> in = {
-		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
-		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
-		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
+		{  100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
+		{    3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
+		{    4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I}
 	};
 	multi::array<complex, 2> const in_transpose = in.transposed();
 	auto* in_base = in.base();
@@ -778,11 +780,11 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_square_nested) {
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod) {
 	multi::array<std::string, 2> in = {
-		{  "100. + 2.*I",  "9. - 1.*I", "2. +  4.*I"},
-		{    "3. + 3.*I",  "7. - 4.*I", "1. +  9.*I"},
-		{    "4. + 1.*I",  "5. + 3.*I", "2. +  4.*I"},
-		{    "3. - 1.*I",  "8. + 7.*I", "2. +  1.*I"},
-		{   "31. - 1.*I", "18. + 7.*I", "2. + 10.*I"}
+		{  "100.0 + 2.0*I",  "9.0 - 1.0*I", "2.0 +  4.0*I"},
+		{    "3.0 + 3.0*I",  "7.0 - 4.0*I", "1.0 +  9.0*I"},
+		{    "4.0 + 1.0*I",  "5.0 + 3.0*I", "2.0 +  4.0*I"},
+		{    "3.0 - 1.0*I",  "8.0 + 7.0*I", "2.0 +  1.0*I"},
+		{   "31.0 - 1.0*I", "18.0 + 7.0*I", "2.0 + 10.0*I"}
 	};
 	multi::array<std::string, 2> const in_transpose = in.transposed();
 	in = in.transposed();
@@ -792,9 +794,9 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod) {
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod_square) {
 	#if not defined(__circle_build__)  // circle 170 crashes https://github.com/seanbaxter/circle/issues/114
 	multi::array<std::string, 2> in = {
-		{  "100. + 2.*I",  "9. - 1.*I", "2. +  4.*I"},
-		{    "3. + 3.*I",  "7. - 4.*I", "1. +  9.*I"},
-		{    "4. + 1.*I",  "5. + 3.*I", "2. +  4.*I"}
+		{  "100.0 + 2.0*I",  "9.0 - 1.0*I", "2.0 +  4.0*I"},
+		{    "3.0 + 3.0*I",  "7.0 - 4.0*I", "1.0 +  9.0*I"},
+		{    "4.0 + 1.0*I",  "5.0 + 3.0*I", "2.0 +  4.0*I"}
 	};
 	multi::array<std::string, 2> const in_transpose = in.transposed();
 	in = in.transposed();

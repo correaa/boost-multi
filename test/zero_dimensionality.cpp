@@ -1,7 +1,7 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2019-2022 Alfredo A. Correa
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi zero dimensionality"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi zero dimensionality"  // NOLINT(cppcoreguidelines-macro-usage) title
 #include<boost/test/unit_test.hpp>
 
 #include "multi/array.hpp"
@@ -10,9 +10,11 @@
 
 namespace multi = boost::multi;
 
-BOOST_AUTO_TEST_CASE(zero_dimensionality_part1) {
+#define AUTO_TEST_CASE(...) BOOST_AUTO_TEST_CASE(__VA_ARGS__)  // NOLINT(cert-err58-cpp,cppcoreguidelines-macro-usage)
+
+AUTO_TEST_CASE(zero_dimensionality_part1) {
 	{
-		std::vector<double> v1 = {1., 2., 3.};
+		std::vector<double> v1 = {1.0, 2.0, 3.0};
 
 		multi::array_ref<double, 1> m1(v1.data(), multi::extensions_t<1>{multi::iextension{3}});
 		BOOST_REQUIRE( size(m1) == 3 );
@@ -31,21 +33,21 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality_part1) {
 		BOOST_REQUIRE( doub == 5.1 );
 	}
 	{
-		multi::static_array<double, 0> a0 = multi::static_array<double, 0>{45.};  // TODO(correaa) this might trigger a compiler crash with g++ 7.5 because of operator&() && overloads
+		multi::static_array<double, 0> a0 = multi::static_array<double, 0>{45.0};  // TODO(correaa) this might trigger a compiler crash with g++ 7.5 because of operator&() && overloads
 		BOOST_REQUIRE( num_elements(a0) == 1 );
-		BOOST_REQUIRE( a0 == 45. );
+		BOOST_REQUIRE( a0 == 45.0 );
 
-		a0 = multi::static_array<double, 0>{60.};
-		BOOST_REQUIRE( a0 == 60. );
+		a0 = multi::static_array<double, 0>{60.0};
+		BOOST_REQUIRE( a0 == 60.0 );
 	}
 	{
 		std::allocator<double> alloc;
-		multi::static_array<double, 0> a0(45., alloc);
+		multi::static_array<double, 0> a0(45.0, alloc);
 		BOOST_REQUIRE( num_elements(a0) == 1 );
-		BOOST_REQUIRE( a0 == 45. );
+		BOOST_REQUIRE( a0 == 45.0 );
 
-		a0 = multi::static_array<double, 0>{60.};
-		BOOST_REQUIRE( a0 == 60. );
+		a0 = multi::static_array<double, 0>{60.0};
+		BOOST_REQUIRE( a0 == 60.0 );
 	}
 }
 
@@ -55,7 +57,7 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality_part2) {
 		BOOST_REQUIRE( size(arr) == 1 );
 	}
 	{
-		double doub = 2.;
+		double doub = 2.0;
 		double dd{multi::array_ref<double, 0>(&doub, {})};
 
 		BOOST_REQUIRE( dd == doub );

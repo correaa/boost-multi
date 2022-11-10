@@ -1,7 +1,7 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2018-2022 Alfredo A. Correa
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi element access"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi element access"  // NOLINT(cppcoreguidelines-macro-usage) title
 #include<boost/test/unit_test.hpp>
 
 #include "multi/array.hpp"
@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(empty_intersection) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_element_access_with_tuple) {
-	multi::array<double, 2> arr({3, 3}, 44.);
+	multi::array<double, 2> arr({3, 3}, 44.0);
 	std::array<int, 2> point = {{1, 2}};
 
 	BOOST_REQUIRE(  arr[point[0]][point[1]] ==  arr(1, 2) );
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_extension_with_tuple) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_test_constness_reference) {
-	multi::array<double, 2> const carr({10, 10}, 99.);
+	multi::array<double, 2> const carr({10, 10}, 99.0);
 
 	BOOST_REQUIRE( size( carr(1, {0, 3}) ) == 3 );
 
@@ -93,8 +93,6 @@ BOOST_AUTO_TEST_CASE(multi_test_constness_reference) {
 //  m({0, 3}, 1)[1] = 77.;
 //  m({0, 3}, {0, 3})[1][1] = 66.;
 }
-
-#if 1
 
 BOOST_AUTO_TEST_CASE(multi_test_stencil) {
 	multi::array<std::string, 2> arr =
@@ -130,7 +128,7 @@ BOOST_AUTO_TEST_CASE(multi_test_stencil) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_test_elements_1D) {
-	multi::array<double, 1> arr = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9.};
+	multi::array<double, 1> arr = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
 	BOOST_REQUIRE( arr.size() == 10 );
 
 	BOOST_REQUIRE(  arr.elements().size() == 10 );
@@ -151,32 +149,32 @@ BOOST_AUTO_TEST_CASE(multi_test_elements_1D) {
 	BOOST_REQUIRE(  arr().elements().end()  >  arr().elements().begin() );
 	BOOST_REQUIRE(  arr().elements().end()  >= arr().elements().begin() );
 
-	arr.elements() = {9., 8., 7., 6., 5., 4., 3., 2., 1., 0.};
+	arr.elements() = {9.0, 8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0, 0.0};
 	BOOST_REQUIRE( arr[2] == 7. );
 	BOOST_REQUIRE( arr.elements()[2] == 7. );
 }
 
 BOOST_AUTO_TEST_CASE(multi_test_elements_1D_as_range) {
-	multi::array<double, 1> arr = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9.};
+	multi::array<double, 1> arr = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
 	BOOST_REQUIRE( arr.size() == 10 );
 
-	arr().elements() = {9., 8., 7., 6., 5., 4., 3., 2., 1., 0.};
+	arr().elements() = {9.0, 8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0, 1.0, 0.0};
 	BOOST_REQUIRE( arr[2] == 7. );
-	BOOST_REQUIRE( arr.elements()[2] == 7. );
+	BOOST_REQUIRE( arr.elements()[2] == 7.0 );
 }
 
 BOOST_AUTO_TEST_CASE(elements_from_init_list_2D) {
 	multi::array<double, 2> arr({3, 2});
-	arr().elements() = {1., 2., 3., 4., 5., 6.};
-	BOOST_REQUIRE(arr[1][0] == 3.);
+	arr().elements() = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+	BOOST_REQUIRE(arr[1][0] == 3.0);
 
-	arr.elements() = {10., 20., 30., 40., 50., 60.};
+	arr.elements() = {10.0, 20.0, 30.0, 40.0, 50.0, 60.0};
 	BOOST_REQUIRE(arr[1][0] == 30.);
 }
 
 BOOST_AUTO_TEST_CASE(front_back_2D) {
 	multi::array<double, 2> arr({3, 4});
-	std::iota(arr.data_elements(), arr.data_elements() + arr.num_elements(), 0.);
+	std::iota(arr.data_elements(), arr.data_elements() + arr.num_elements(), 0.0);
 
 	BOOST_REQUIRE(  arr.front()[2] ==  arr[0][2] );
 	BOOST_REQUIRE( &arr.front()[2] == &arr[0][2] );
@@ -187,7 +185,7 @@ BOOST_AUTO_TEST_CASE(front_back_2D) {
 
 BOOST_AUTO_TEST_CASE(front_back_1D) {
 	multi::array<double, 1> arr({30}, double{});
-	std::iota(arr.data_elements(), arr.data_elements() + arr.num_elements(), 0.);
+	std::iota(arr.data_elements(), arr.data_elements() + arr.num_elements(), 0.0);
 
 	BOOST_REQUIRE(  arr.front() ==  arr[ 0] );
 	BOOST_REQUIRE( &arr.front() == &arr[ 0] );
@@ -198,7 +196,7 @@ BOOST_AUTO_TEST_CASE(front_back_1D) {
 
 BOOST_AUTO_TEST_CASE(elements_rvalues) {
 	using movable_type = std::vector<double>;
-	movable_type movable_value(5., 99.);
+	movable_type movable_value(5., 99.0);
 
 	multi::array<movable_type, 1> arr = {movable_value, movable_value, movable_value};
 	BOOST_REQUIRE( arr.size() == 3 );
@@ -219,7 +217,7 @@ void assign_elements_from_to(Array1D&& arr, std::deque<std::vector<double>>& des
 
 BOOST_AUTO_TEST_CASE(elements_rvalues_nomove) {
 	using movable_type = std::vector<double>;
-	movable_type movable_value(5., 99.);
+	movable_type movable_value(5., 99.0);
 
 	multi::array<movable_type, 1> arr = {movable_value, movable_value, movable_value};
 	BOOST_REQUIRE( arr.size() == 3 );
@@ -240,17 +238,16 @@ BOOST_AUTO_TEST_CASE(elements_rvalues_nomove) {
 }
 
 BOOST_AUTO_TEST_CASE(elements_rvalues_assignment) {
-	std::vector<double> vec = {1., 2., 3.};
-	std::move(vec) = std::vector<double>{3., 4., 5.};
-	std::move(vec)[1] = 99.;  // it compiles  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
-//  std::move(v[1]) = 99.;  // does not compile
+	std::vector<double> vec = {1.0, 2.0, 3.0};
+	std::move(vec) = std::vector<double>{3.0, 4.0, 5.0};
+	std::move(vec)[1] = 99.0;  // it compiles  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
+//  std::move(v[1]) = 99.0;  // does not compile
 
 //  double a = 5.;
 //  std::move(a) = 9.;  // does not compile
 //  BOOST_REQUIRE( a == 9. );
 
-	multi::array<double, 1> arr1 = {1., 2., 3.};
-	multi::array<double, 1> arr2 = {1., 2., 3.};
+	multi::array<double, 1> arr1 = {1.0, 2.0, 3.0};
+	multi::array<double, 1> arr2 = {1.0, 2.0, 3.0};
 	std::move(arr1) = arr2;  // this compiles TODO(correaa) should it?
 }
-#endif

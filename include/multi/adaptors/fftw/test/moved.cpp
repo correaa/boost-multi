@@ -9,10 +9,10 @@
 
 namespace multi = boost::multi;
 
-using complex = std::complex<double>; [[maybe_unused]] complex const I{0, 1};  // NOLINT(readability-identifier-length) imag unit
+using complex = std::complex<double>; [[maybe_unused]] constexpr complex I{0, 1};  // NOLINT(readability-identifier-length) imag unit
 
 template<class M> auto power(M const& array) {
-	return std::transform_reduce(array.elements().begin(), array.elements().end(), 0., std::plus<>{}, [](auto zee) {return std::norm(zee);});
+	return std::transform_reduce(array.elements().begin(), array.elements().end(), 0.0, std::plus<>{}, [](auto zee) {return std::norm(zee);});
 }
 
 using fftw_fixture = multi::fftw::environment;
@@ -21,11 +21,11 @@ BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_fft_move) {
 	#if not defined(__circle_build__)
 	multi::array<complex, 2> in = {
-		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
-		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
-		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
-		{    3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
-		{   31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+		{  100.0 + 2.0*I,  9. - 1.0*I, 2.0 +  4.0*I},
+		{    3.0 + 3.0*I,  7. - 4.0*I, 1.0 +  9.0*I},
+		{    4.0 + 1.0*I,  5. + 3.0*I, 2.0 +  4.0*I},
+		{    3.0 - 1.0*I,  8. + 7.0*I, 2.0 +  1.0*I},
+		{   31.0 - 1.0*I, 18. + 7.0*I, 2.0 + 10.0*I}
 	};
 
 	auto const in_copy = in;
@@ -44,13 +44,13 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_fft_move) {
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_move) {
 	#if not defined(__circle_build__)
 	multi::array<complex, 2> in = {
-		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
-		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
-		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
-		{    3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
-		{   31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+		{  100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
+		{    3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
+		{    4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I},
+		{    3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 +  1.0*I},
+		{   31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I}
 	};
-	BOOST_REQUIRE( in[1][1] == 7. - 4.*I );
+	BOOST_REQUIRE( in[1][1] == 7.0 - 4.0*I );
 
 	auto const in_copy = in;
 	auto* const in_base = in.base();
@@ -66,13 +66,13 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_move) {
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed) {
 	#if not defined(__circle_build__)
 	multi::array<complex, 2> in = {
-		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
-		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
-		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
-		{    3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
-		{   31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+		{  100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
+		{    3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
+		{    4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I},
+		{    3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 +  1.0*I},
+		{   31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I}
 	};
-	BOOST_REQUIRE( in[1][1] == 7. - 4.*I );
+	BOOST_REQUIRE( in[1][1] == 7.0 - 4.0*I );
 
 	auto const in_copy = in;
 	auto* const in_base = in.base();
@@ -89,13 +89,13 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed) {
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_naive) {
 	multi::array<complex, 2> in = {
-		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
-		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
-		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
-		{    3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
-		{   31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+		{  100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
+		{    3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
+		{    4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I},
+		{    3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 +  1.0*I},
+		{   31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I}
 	};
-	BOOST_REQUIRE( in[1][1] == 7. - 4.*I );
+	BOOST_REQUIRE( in[1][1] == 7.0 - 4.0*I );
 
 	auto const in_copy = in;
 	auto* const in_base = in.base();
@@ -111,13 +111,13 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_naive) {
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_naive_copy) {
 	multi::array<complex, 2> in = {
-		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
-		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
-		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
-		{    3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
-		{   31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+		{  100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
+		{    3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
+		{    4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I},
+		{    3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 +  1.0*I},
+		{   31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I}
 	};
-	BOOST_REQUIRE( in[1][1] == 7. - 4.*I );
+	BOOST_REQUIRE( in[1][1] == 7.0 - 4.0*I );
 
 	auto const in_copy = in;
 	auto* const in_base = in.base();
@@ -134,11 +134,11 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_naive_copy) {
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_fft_copy) {
 	#if not defined(__circle_build__)
 	multi::array<complex, 2> in = {
-		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
-		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
-		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
-		{    3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
-		{   31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+		{  100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
+		{    3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
+		{    4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I},
+		{    3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 +  1.0*I},
+		{   31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I}
 	};
 
 	auto const in_copy = in;
@@ -155,11 +155,11 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_fft_copy) {
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_copyconstruct) {
 	#if not defined(__circle_build__)
 	multi::array<complex, 2> in = {
-		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
-		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
-		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
-		{    3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
-		{   31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+		{  100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
+		{    3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
+		{    4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I},
+		{    3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 +  1.0*I},
+		{   31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I}
 	};
 
 	auto const in_copy = in;
@@ -175,11 +175,11 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_copyconstruct) {
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_moveconstruct) {
 	multi::array<complex, 2> in = {
-		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
-		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
-		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
-		{    3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
-		{   31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+		{  100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
+		{    3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
+		{    4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I},
+		{    3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 +  1.0*I},
+		{   31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I}
 	};
 
 	auto const in_copy = in;
@@ -195,11 +195,11 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_moveconstruct) {
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_moveconstruct_implicit) {
 	#if not defined(__INTEL_COMPILER)  // TODO(correaa) problem with icpc 2022.3.0.8751
 	multi::array<complex, 2> in = {
-		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
-		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
-		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
-		{    3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
-		{   31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+		{  100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
+		{    3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
+		{    4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I},
+		{    3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 +  1.0*I},
+		{   31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I}
 	};
 
 	auto  const in_copy = in;
@@ -216,11 +216,11 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_moveconstruct_implicit) {
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_moveassign_from_temp) {
 	#if not defined(__INTEL_COMPILER)  // TODO(correaa) problem with icpc 2022.3.0.8751
 	multi::array<complex, 2> in = {
-		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
-		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
-		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
-		{    3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
-		{   31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+		{  100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
+		{    3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
+		{    4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I},
+		{    3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 +  1.0*I},
+		{   31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I}
 	};
 
 	auto  const in_copy = in;
@@ -238,11 +238,11 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_moveassign_from_temp) {
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_moveassign) {
 	#if not defined(__INTEL_COMPILER)  // TODO(correaa) problem with icpc 2022.3.0.8751
 	multi::array<complex, 2> in = {
-		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
-		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
-		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
-		{    3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
-		{   31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+		{  100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
+		{    3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
+		{    4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I},
+		{    3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 +  1.0*I},
+		{   31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I}
 	};
 
 	auto const in_copy = in;
@@ -260,11 +260,11 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_moveassign) {
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_fftwmove) {
 	#if not defined(__INTEL_COMPILER)  // TODO(correaa) problem with icpc 2022.3.0.8751
 	multi::array<complex, 2> in = {
-		{  100. + 2.*I,  9. - 1.*I, 2. +  4.*I},
-		{    3. + 3.*I,  7. - 4.*I, 1. +  9.*I},
-		{    4. + 1.*I,  5. + 3.*I, 2. +  4.*I},
-		{    3. - 1.*I,  8. + 7.*I, 2. +  1.*I},
-		{   31. - 1.*I, 18. + 7.*I, 2. + 10.*I}
+		{  100.0 + 2.0*I,  9.0 - 1.0*I, 2.0 +  4.0*I},
+		{    3.0 + 3.0*I,  7.0 - 4.0*I, 1.0 +  9.0*I},
+		{    4.0 + 1.0*I,  5.0 + 3.0*I, 2.0 +  4.0*I},
+		{    3.0 - 1.0*I,  8.0 + 7.0*I, 2.0 +  1.0*I},
+		{   31.0 - 1.0*I, 18.0 + 7.0*I, 2.0 + 10.0*I}
 	};
 
 	auto const in_copy = in;
@@ -278,4 +278,3 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_fftwmove) {
 	BOOST_REQUIRE( in.is_empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing
 	#endif
 }
-
