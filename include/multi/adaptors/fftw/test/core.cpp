@@ -779,12 +779,13 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_square_nested) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod) {
+	using namespace std::string_literals;
 	multi::array<std::string, 2> in = {
-		{  "100.0 + 2.0*I",  "9.0 - 1.0*I", "2.0 +  4.0*I"},
-		{    "3.0 + 3.0*I",  "7.0 - 4.0*I", "1.0 +  9.0*I"},
-		{    "4.0 + 1.0*I",  "5.0 + 3.0*I", "2.0 +  4.0*I"},
-		{    "3.0 - 1.0*I",  "8.0 + 7.0*I", "2.0 +  1.0*I"},
-		{   "31.0 - 1.0*I", "18.0 + 7.0*I", "2.0 + 10.0*I"}
+		{  "100.0 + 2.0*I"s,  "9.0 - 1.0*I"s, "2.0 +  4.0*I"s},
+		{    "3.0 + 3.0*I"s,  "7.0 - 4.0*I"s, "1.0 +  9.0*I"s},
+		{    "4.0 + 1.0*I"s,  "5.0 + 3.0*I"s, "2.0 +  4.0*I"s},
+		{    "3.0 - 1.0*I"s,  "8.0 + 7.0*I"s, "2.0 +  1.0*I"s},
+		{   "31.0 - 1.0*I"s, "18.0 + 7.0*I"s, "2.0 + 10.0*I"s},
 	};
 	multi::array<std::string, 2> const in_transpose = in.transposed();
 	in = in.transposed();
@@ -794,9 +795,9 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod) {
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod_square) {
 	#if not defined(__circle_build__)  // circle 170 crashes https://github.com/seanbaxter/circle/issues/114
 	multi::array<std::string, 2> in = {
-		{  "100.0 + 2.0*I",  "9.0 - 1.0*I", "2.0 +  4.0*I"},
-		{    "3.0 + 3.0*I",  "7.0 - 4.0*I", "1.0 +  9.0*I"},
-		{    "4.0 + 1.0*I",  "5.0 + 3.0*I", "2.0 +  4.0*I"}
+		{  "100.0 + 2.0*I",  "9.0 - 1.0*I", "2.0 +  4.0*I"},  // std::string NOLINT(fuchsia-default-arguments-calls)
+		{    "3.0 + 3.0*I",  "7.0 - 4.0*I", "1.0 +  9.0*I"},  // std::string NOLINT(fuchsia-default-arguments-calls)
+		{    "4.0 + 1.0*I",  "5.0 + 3.0*I", "2.0 +  4.0*I"},  // std::string NOLINT(fuchsia-default-arguments-calls)
 	};
 	multi::array<std::string, 2> const in_transpose = in.transposed();
 	in = in.transposed();

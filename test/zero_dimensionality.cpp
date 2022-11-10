@@ -14,7 +14,7 @@ namespace multi = boost::multi;
 
 AUTO_TEST_CASE(zero_dimensionality_part1) {
 	{
-		std::vector<double> v1 = {1.0, 2.0, 3.0};
+		std::vector<double> v1 = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
 
 		multi::array_ref<double, 1> m1(v1.data(), multi::extensions_t<1>{multi::iextension{3}});
 		BOOST_REQUIRE( size(m1) == 3 );

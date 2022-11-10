@@ -20,13 +20,13 @@ BOOST_AUTO_TEST_CASE(multi_range) {
 #endif
 {
 	auto drng = multi::range<std::ptrdiff_t>{5, 10};
-	std::vector<double> vec(drng.begin(), drng.end());
+	std::vector<double> vec(drng.begin(), drng.end());  // testing std::vector NOLINT(fuchsia-default-arguments-calls)
 	BOOST_REQUIRE( vec[1] == 6 );
 }
 {
 	auto drng = multi::range<std::ptrdiff_t>{5, 10};
 	auto fun = [](auto idx) {return idx + 1;};
-	std::vector<double> vec(
+	std::vector<double> vec(  // testing std::vector NOLINT(fuchsia-default-arguments-calls)
 		boost::make_transform_iterator(drng.begin(), fun),
 		boost::make_transform_iterator(drng.end()  , fun)
 	);
@@ -52,9 +52,9 @@ BOOST_AUTO_TEST_CASE(multi_range_in_constexpr) {
 	BOOST_REQUIRE(   irng.front()      ==  5 );
 	BOOST_REQUIRE(   irng.back ()      == 11 );
 
-	std::vector<int> vec = {5, 6, 7, 8, 9, 10, 11};
+	std::vector<int> vec = {5, 6, 7, 8, 9, 10, 11};  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
 
-	assert( std::equal( irng.begin(), irng.end(), vec.begin(), vec.end() ) );
+	assert( std::equal( irng.begin(), irng.end(), vec.begin(), vec.end() ) );  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
 
 	auto sum = std::accumulate(irng.begin(), irng.end(), 0);
 	BOOST_REQUIRE( sum == 5 + 6 + 7 + 8 + 9 + 10 + 11 );

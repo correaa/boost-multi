@@ -13,15 +13,17 @@ namespace multi = boost::multi;
 BOOST_AUTO_TEST_CASE(comparison_complex) {
 using complex = std::complex<double>;
 {
-	multi::array<double , 1> arr = {1., 2., 3.};
-	multi::array<complex, 1> arr2 = {1., 2., 3.};
+	multi::array<double , 1> arr  = { 1.0,        2.0,        3.0      };
+	multi::array<complex, 1> arr2 = {{1.0, 0.0}, {2.0, 0.0}, {3.0, 0.0}};
+
 	BOOST_REQUIRE( arr[1] == arr2[1] );
 	BOOST_REQUIRE( arr == arr2 ); BOOST_REQUIRE( not (arr != arr2) );
 	BOOST_REQUIRE( arr2 == arr ); BOOST_REQUIRE( not (arr2 != arr) );
 }
 {
-	multi::array<double , 2> const arr  = {{1., 2., 3.}, {4., 5., 6.}};
-	multi::array<complex, 2> const arr2 = {{1., 2., 3.}, {4., 5., 6.}};
+	multi::array<double , 2> const arr  = {{1.0, 2.0, 3.0}, {4.0, 5.0, 6.0}};
+	multi::array<complex, 2> const arr2 = {{{1.0, 0.0}, {2.0, 0.0}, {3.0, 0.0}}, {{4.0, 0.0}, {5.0, 0.0}, {6.0, 0.0}}};
+
 	BOOST_REQUIRE( arr[1][1] == arr2[1][1] );
 	BOOST_REQUIRE( arr == arr2 ); BOOST_REQUIRE( not (arr != arr2) );
 	BOOST_REQUIRE( arr2 == arr ); BOOST_REQUIRE( not (arr2 != arr) );
@@ -46,9 +48,9 @@ BOOST_AUTO_TEST_CASE(multi_comparisons_swap) {
 
 BOOST_AUTO_TEST_CASE(comparisons_equality) {
 	multi::array<double, 3> arr = {
-		{{ 1.2,  1.1}, { 2.4, 1.}},
-		{{11.2,  3.0}, {34.4, 4.}},
-		{{ 1.2,  1.1}, { 2.4, 1.}}
+		{{ 1.2,  1.1}, { 2.4, 1.0}},
+		{{11.2,  3.0}, {34.4, 4.0}},
+		{{ 1.2,  1.1}, { 2.4, 1.0}}
 	};
 
 	multi::array_ref <double, 3>  ref(arr.data_elements(), extensions(arr));

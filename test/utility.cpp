@@ -91,11 +91,11 @@ BOOST_AUTO_TEST_CASE(std_array_extensions_1d) {
 }
 
 BOOST_AUTO_TEST_CASE(test_utility_1d) {
-	std::array<double, 10> carr = {{0., 1., 2., 3., 4., 5., 6., 7., 8., 9.}};
+	std::array<double, 10> carr = {{0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0}};
 	multi::array_ref<double, 1> marr(carr.data(), {multi::iextension{10}});
-//  boost::multi_array_ref<double, 1> Marr(&carr[0], boost::extents[10]);
-	std::vector<double> varr(10); std::iota(begin(varr), end(varr), 0);
-	std::array<double, 10> aarr{}; std::iota(begin(aarr), end(aarr), 0);
+
+	std::vector<double> varr(10) ; std::iota(begin(varr), end(varr), 0.0);  // NOLINT(fuchsia-default-arguments-calls)
+	std::array<double, 10> aarr{}; std::iota(begin(aarr), end(aarr), 0.0);
 
 	BOOST_REQUIRE( size(marr) == 10 );
 

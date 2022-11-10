@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 
 		std::vector<multi::array_ptr<double, 1>> ptrs;
 		ptrs.emplace_back(&arr[0][0], 5);  // NOLINT(readability-container-data-pointer) test access
-		ptrs.emplace_back(&arr[2][0], 5);  // NOLINT(readability-container-data-pointer) test access
+		ptrs.emplace_back( arr[2].data(), 5);
 		ptrs.emplace_back(&arr[3][0], 5);  // NOLINT(readability-container-data-pointer) test access
 
 		BOOST_REQUIRE( &(*ptrs[2])[4] == &arr[3][4]   );
@@ -89,8 +89,8 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 		BOOST_REQUIRE(    ptrs[2]->operator[](4) == 19 );
 	}
 	{
-		std::vector<double> v1(100, 3.0);
-		std::vector<double> const v2(100, 4.0);
+		std::vector<double> v1(100, 3.0);  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
+		std::vector<double> const v2(100, 4.0);  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
 		multi::array_ptr<double, 2> v1P2D(v1.data(), {10, 10});
 		multi::array_cptr<double, 2> v2P2D(v2.data(), {10, 10});
 
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE(multi_array_ptr) {
 }
 
 BOOST_AUTO_TEST_CASE(span_like) {
-	std::vector<double> vec = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0};
+	std::vector<double> vec = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0};  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls)
 
 	using my_span = multi::array_ref<double, 1>;
 

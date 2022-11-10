@@ -17,11 +17,12 @@ class watch : private std::chrono::high_resolution_clock {
 	time_point start = now();
 
  public:
-	explicit watch(std::string label) : label{std::move(label)} {}
+	template<class String>
+	explicit watch(String&& label) : label{std::forward<String>(label)} {}  // std::string NOLINT(fuchsia-default-arguments-calls)
 	watch(watch const&) = delete;
-	watch(watch&&) = default;
+
 	auto operator=(watch const&) = delete;
-	auto operator=(watch&&) -> watch& = default;
+
 	auto elapsed_sec() const {return std::chrono::duration<double>(now() - start).count();}
 	~watch() {std::cerr<< label <<": "<< elapsed_sec() <<" sec"<<std::endl;}
 };

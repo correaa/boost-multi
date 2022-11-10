@@ -95,11 +95,11 @@ BOOST_AUTO_TEST_CASE(multi_test_constness_reference) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_test_stencil) {
-	multi::array<std::string, 2> arr =
-		{{"a", "b", "c", "d", "e"},
-		 {"f", "g", "h", "f", "g"},
-		 {"h", "i", "j", "k", "l"}}
-	;
+	multi::array<std::string, 2> arr = {
+		{"a", "b", "c", "d", "e"},  // std::string NOLINT(fuchsia-default-arguments-calls)
+		{"f", "g", "h", "f", "g"},  // std::string NOLINT(fuchsia-default-arguments-calls)
+		{"h", "i", "j", "k", "l"},  // std::string NOLINT(fuchsia-default-arguments-calls)
+	};
 
 	BOOST_REQUIRE(      size(arr) == 3                                            );
 	BOOST_REQUIRE(           arr.num_elements() == 3*5L                           );
@@ -196,7 +196,7 @@ BOOST_AUTO_TEST_CASE(front_back_1D) {
 
 BOOST_AUTO_TEST_CASE(elements_rvalues) {
 	using movable_type = std::vector<double>;
-	movable_type movable_value(5., 99.0);
+	movable_type movable_value(5., 99.0);  // NOLINT(fuchsia-default-arguments-calls)
 
 	multi::array<movable_type, 1> arr = {movable_value, movable_value, movable_value};
 	BOOST_REQUIRE( arr.size() == 3 );
@@ -217,7 +217,7 @@ void assign_elements_from_to(Array1D&& arr, std::deque<std::vector<double>>& des
 
 BOOST_AUTO_TEST_CASE(elements_rvalues_nomove) {
 	using movable_type = std::vector<double>;
-	movable_type movable_value(5., 99.0);
+	movable_type movable_value(5., 99.0);  // NOLINT(fuchsia-default-arguments-calls)
 
 	multi::array<movable_type, 1> arr = {movable_value, movable_value, movable_value};
 	BOOST_REQUIRE( arr.size() == 3 );
@@ -238,8 +238,8 @@ BOOST_AUTO_TEST_CASE(elements_rvalues_nomove) {
 }
 
 BOOST_AUTO_TEST_CASE(elements_rvalues_assignment) {
-	std::vector<double> vec = {1.0, 2.0, 3.0};
-	std::move(vec) = std::vector<double>{3.0, 4.0, 5.0};
+	std::vector<double> vec = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
+	std::move(vec) = std::vector<double>{3.0, 4.0, 5.0};  // NOLINT(fuchsia-default-arguments-calls)
 	std::move(vec)[1] = 99.0;  // it compiles  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
 //  std::move(v[1]) = 99.0;  // does not compile
 
