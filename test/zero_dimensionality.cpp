@@ -1,7 +1,7 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2019-2022 Alfredo A. Correa
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi zero dimensionality"  // NOLINT(cppcoreguidelines-macro-usage) title
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi zero dimensionality"
 #include<boost/test/unit_test.hpp>
 
 #include "multi/array.hpp"
@@ -10,11 +10,9 @@
 
 namespace multi = boost::multi;
 
-#define AUTO_TEST_CASE(...) BOOST_AUTO_TEST_CASE(__VA_ARGS__)  // NOLINT(cert-err58-cpp,cppcoreguidelines-macro-usage)
-
-AUTO_TEST_CASE(zero_dimensionality_part1) {
+BOOST_AUTO_TEST_CASE(zero_dimensionality_part1) {
 	{
-		std::vector<double> v1 = {1.0, 2.0, 3.0};
+		std::vector<double> v1 = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
 
 		multi::array_ref<double, 1> m1(v1.data(), multi::extensions_t<1>{multi::iextension{3}});
 		BOOST_REQUIRE( size(m1) == 3 );
@@ -80,4 +78,3 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality_part2) {
 		BOOST_REQUIRE(( *multi::array_ptr<double, 0>(&d3, {}) == M_PI ));
 	}
 }
-

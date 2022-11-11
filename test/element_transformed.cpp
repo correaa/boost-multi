@@ -27,15 +27,15 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_function_reference) {
 	BOOST_REQUIRE( conjd_arr[0] == 1. - 2.*I );
 
 	#if not defined(__circle_build__)  // TODO(correaa)
-	BOOST_TEST_REQUIRE( real(std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{0.})) == std::norm(arr[0]) + std::norm(arr[1]) );
-	BOOST_REQUIRE( imag(std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{0.})) == 0.                                    );
+	BOOST_TEST_REQUIRE( real(std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{0.0, 0.0})) == std::norm(arr[0]) + std::norm(arr[1]) );
+	BOOST_REQUIRE( imag(std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{0.0, 0.0})) == 0.                                    );
 
-	BOOST_TEST_REQUIRE( std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{0.}) == std::norm(arr[0]) + std::norm(arr[1]) );
+	BOOST_TEST_REQUIRE( std::inner_product(arr.begin(), arr.end(), conjd_arr.begin(), complex{0.0, 0.0}) == std::norm(arr[0]) + std::norm(arr[1]) );
 	#endif
 }
 
 BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_lambda) {
-	multi::array<complex, 1> arr = { 1. + 2.*I,  3. +  4.*I};
+	multi::array<complex, 1> arr = { 1.0 + 2.0*I,  3.0 +  4.0*I};
 
 	// g++ -std=20 needs the transformation (lambda) to be noexcept
 	auto const& conjd_arr = arr.element_transformed([](auto const& cee) noexcept {return std::conj(cee);});
@@ -43,11 +43,11 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_lambda) {
 	BOOST_REQUIRE( conjd_arr[1] == std::conj(arr[1]) );
 
 //  Ac[0] = 5. + 4.*I;  // this doesn't compile, good!
-	BOOST_REQUIRE( conjd_arr[0] == 1. - 2.*I );
+	BOOST_REQUIRE( conjd_arr[0] == 1.0 - 2.0*I );
 }
 
 BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_lambda_with_const_return) {
-	multi::array<complex, 1> arr = { 1. + 2.*I,  3. +  4.*I};
+	multi::array<complex, 1> arr = { 1.0 + 2.0*I,  3.0 +  4.0*I};
 
 	// g++ -std=20 needs the transformation (lambda) to be noexcept
 	// NOLINTNEXTLINE(readability-const-return-type) a way to disable assignment
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_lambda_with_const_return)
 	BOOST_REQUIRE( conjd_arr[1] == std::conj(arr[1]) );
 
 //  Ac[0] = 5. + 4.*I;  // this doesn't compile, good!
-	BOOST_REQUIRE( conjd_arr[0] == 1. - 2.*I );
+	BOOST_REQUIRE( conjd_arr[0] == 1.0 - 2.0*I );
 }
 
 template<typename ComplexRef> struct Conjd;
@@ -92,41 +92,41 @@ struct Conjd {  // NOLINT(readability-identifier-naming) for testing
 };
 
 BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_proxy) {
-	multi::array<complex, 1> const arr = { 1. + 2.*I,  3. +  4.*I};
+	multi::array<complex, 1> const arr = { 1.0 + 2.0*I,  3.0 +  4.0*I};
 
 	auto const& conj_arr = arr.element_transformed(Conj);
 	BOOST_REQUIRE( std::conj(arr[0]) == conj_arr[0] );
 	BOOST_REQUIRE( std::conj(arr[1]) == conj_arr[1] );
 
 //  Ac[0] = 5. + 4.*I;  // not allowed, compile error, Ac is const
-	BOOST_REQUIRE( conj_arr[0] == 1. - 2.*I );
+	BOOST_REQUIRE( conj_arr[0] == 1.0 - 2.0*I );
 }
 
 BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_mutable_proxy) {
-	multi::array<complex, 1> arr = { 1. + 2.*I,  3. +  4.*I};
+	multi::array<complex, 1> arr = { 1.0 + 2.0*I,  3.0 +  4.0*I};
 
 	auto&& conj_arr = arr.element_transformed(Conj);  // NOLINT(readability-const-return-type) to disable assignment
 
 	BOOST_REQUIRE( std::conj(arr[0]) == conj_arr[0] );
 	BOOST_REQUIRE( std::conj(arr[1]) == conj_arr[1] );
 
-	conj_arr[0] = 5. + 4.*I;
-	BOOST_REQUIRE( conj_arr[0] == 5. + 4.*I );
-	BOOST_REQUIRE(  arr[0] == 5. - 4.*I );
+	conj_arr[0] = 5.0 + 4.0*I;
+	BOOST_REQUIRE( conj_arr[0] == 5.0 + 4.0*I );
+	BOOST_REQUIRE(  arr[0] == 5.0 - 4.0*I );
 }
 
 BOOST_AUTO_TEST_CASE(transform_ptr_single_value) {
-	complex cee = 1. + 2.*I;
+	complex cee = 1.0 + 2.0*I;
 
 	// NOLINTNEXTLINE(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
 	constexpr auto conj_ro = [](auto const& zee) noexcept {return std::conj(zee);};	 // g++ -std=20 needs the transformation (lambda) to be noexcept
 
 	multi::transform_ptr<complex, decltype(conj_ro), complex*> conjd_ceeP{&cee, conj_ro};
-	BOOST_REQUIRE( *conjd_ceeP == std::conj(1. + 2.*I) );
+	BOOST_REQUIRE( *conjd_ceeP == std::conj(1.0 + 2.0*I) );
 }
 
 BOOST_AUTO_TEST_CASE(transform_ptr_1D_array) {
-	multi::array<complex, 1> arr = { 1. + 2.*I,  3. +  4.*I};
+	multi::array<complex, 1> arr = { 1.0 + 2.0*I,  3.0 +  4.0*I};
 
 	// NOLINT(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
 	constexpr auto conj_ro = [](auto const& zee) noexcept {return std::conj(zee);};	 // g++ -std=20 needs the transformation (lambda) to be noexcept
@@ -146,12 +146,12 @@ BOOST_AUTO_TEST_CASE(arthur_odwyer_array_transform_int) {
 
 	multi::array<S, 1> arr({2}, S{});
 	auto&& ref = arr.element_transformed(&S::a);
-	ref[0] = 99.;
+	ref[0] = 99.0;
 
-	BOOST_REQUIRE( arr[0].a == 99. );
+	BOOST_REQUIRE( arr[0].a == 99.0 );
 
 	auto const& cref = arr.element_transformed(&S::a);
-	BOOST_REQUIRE( cref[0] == 99. );
+	BOOST_REQUIRE( cref[0] == 99.0 );
 //  cr[0] = 99.;  // compile error "assignment of read-only location"
 }
 
@@ -163,18 +163,18 @@ BOOST_AUTO_TEST_CASE(arthur_odwyer_array_transform_int_array) {
 
 	multi::array<S, 1> vec({2}, S{});
 	auto&& ref = vec.element_transformed(&S::a);
-	ref[0][1] = 99.;
+	ref[0][1] = 99.0;
 
-	BOOST_REQUIRE( ref[0][1] == 99. );
-	BOOST_REQUIRE( vec[0].a[1] == 99. );
+	BOOST_REQUIRE( ref[0][1] == 99.0 );
+	BOOST_REQUIRE( vec[0].a[1] == 99.0 );
 
 	auto const& cref = vec.element_transformed(&S::a);
-	BOOST_REQUIRE( cref[0][1] == 99. );
+	BOOST_REQUIRE( cref[0][1] == 99.0 );
 //  cref[0][1] = 99.;  // compile error "assignment of read-only location"
 }
 
 BOOST_AUTO_TEST_CASE(indirect_transformed) {
-	std::vector<double> vec = {0.0, 1.1, 2.2, 3.3, 4.4, 5.5};
+	std::vector<double> vec = {0.0, 1.1, 2.2, 3.3, 4.4, 5.5};  // std::vector NOLINT(fuchsia-default-arguments-calls)
 
 	using index_t = std::vector<double>::size_type;
 

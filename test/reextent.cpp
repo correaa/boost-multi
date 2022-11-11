@@ -257,7 +257,7 @@ constexpr auto comp_equal(T left, U right) noexcept -> bool {
 #pragma GCC diagnostic pop
 
 BOOST_AUTO_TEST_CASE(array_vector_size) {
-	std::vector<double> vec(100);
+	std::vector<double> vec(100);  // std::vector NOLINT(fuchsia-default-arguments-calls)
 	{
 	//  multi::array<double, 1> a(                             vec.size() );  // warning: sign-conversion
 		multi::array<double, 1> arr(static_cast<multi::size_t>(vec.size()));

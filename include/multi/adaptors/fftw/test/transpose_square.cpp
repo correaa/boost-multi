@@ -21,25 +21,23 @@ using complex = std::complex<double>;
 class watch : private std::chrono::high_resolution_clock {
 	std::string label;
 	time_point start = now();
+
  public:
-	explicit watch(std::string label) : label{std::move(label)} {}
+	template<class String>
+	explicit watch(String&& label) : label{std::forward<String>(label)} {}  // NOLINT(fuchsia-default-arguments-calls)
 	watch(watch const&) = delete;
-	watch(watch&&) = default;
+	watch(watch&&) = delete;
+
 	auto operator=(watch const&) = delete;
-	auto operator=(watch&&) -> watch& = default;
+	auto operator=(watch&&) = delete;
+
 	auto elapsed_sec() const {return std::chrono::duration<double>(now() - start).count();}
-	~watch() {
-		std::cerr
-			<< label <<": "
-			<< elapsed_sec() <<" sec"
-			<<std::endl
-		;
-	}
+	~watch() { std::cerr<< label <<": "<< elapsed_sec() <<" sec"<<std::endl; }
 };
 
 BOOST_AUTO_TEST_CASE(fftw_transpose) {
 	multi::fftw::initialize_threads();
-	 {
+	{
 		auto const in = [] {
 		//  multi::array<complex, 2> ret({819, 819});
 			multi::array<complex, 2> ret({81, 81});
@@ -52,7 +50,7 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 			return ret;
 		}();
 	//  multi::fftw::plan::with_nthreads(1);
-		 {
+		{
 			multi::array<complex, 2> out = in;
 			auto* data = out.data_elements();
 			 {
@@ -139,4 +137,3 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 		}
 	}
 }
-

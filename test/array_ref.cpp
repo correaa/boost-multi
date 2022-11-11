@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed) {
-	std::array<std::string, 5> stdarr{ {"a", "b", "c", "d", "e"} };
+	std::array<std::string, 5> stdarr{ {"a", "b", "c", "d", "e"} };  // std::string NOLINT(fuchsia-default-arguments-calls)
 
 	multi::array_ref<std::string, 1> mar = *multi::array_ptr<std::string, 1>(&stdarr);
 
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed) {
 		BOOST_REQUIRE( &mar.stenciled({2, 4})[idx] == &mar[idx] );
 	}
 
-	multi::array<std::string, 1> arr({{2, 7}}, std::string{"xx"});
+	multi::array<std::string, 1> arr({{2, 7}}, std::string{"xx"});  // std::string NOLINT(fuchsia-default-arguments-calls)
 	BOOST_REQUIRE( size(arr) == 5 );
 	BOOST_REQUIRE( extension(arr) == multi::iextension(2, 7) );
 	arr[2] = "a";
@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed) {
 	arr[6] = "e";
 	BOOST_REQUIRE( std::equal(arr.begin(), arr.end(), mar.begin(), mar.end()) );
 
-	auto arrB = multi::array<std::string, 1>({"a", "b", "c", "d", "e"}).reindex(2);
+	auto arrB = multi::array<std::string, 1>({"a", "b", "c", "d", "e"}).reindex(2);   // std::string NOLINT(fuchsia-default-arguments-calls)
 	BOOST_REQUIRE( size(arrB) == 5 );
 	BOOST_REQUIRE( arrB[2] == "a" );
 	BOOST_REQUIRE( arrB[6] == "e" );
@@ -130,9 +130,9 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
 
 	{
 		multi::array<std::string, 2> arrB = {
-			{"a", "b", "c", "d", "e"},
-			{"f", "g", "h", "f", "g"},
-			{"h", "i", "j", "k", "l"}
+			{"a", "b", "c", "d", "e"},  // std::string NOLINT(fuchsia-default-arguments-calls)
+			{"f", "g", "h", "f", "g"},  // std::string NOLINT(fuchsia-default-arguments-calls)
+			{"h", "i", "j", "k", "l"}   // std::string NOLINT(fuchsia-default-arguments-calls)
 		};
 		arrB.reindex(2);
 		BOOST_REQUIRE( size(arrB) == 3 );
@@ -140,9 +140,9 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
 	}
 	{
 		multi::array<std::string, 2> arrB = {
-			{"a", "b", "c", "d", "e"},
-			{"f", "g", "h", "f", "g"},
-			{"h", "i", "j", "k", "l"}
+			{"a", "b", "c", "d", "e"},  // std::string NOLINT(fuchsia-default-arguments-calls)
+			{"f", "g", "h", "f", "g"},  // std::string NOLINT(fuchsia-default-arguments-calls)
+			{"h", "i", "j", "k", "l"}   // std::string NOLINT(fuchsia-default-arguments-calls)
 		};
 		arrB.reindex(2, 1);
 		BOOST_REQUIRE( size(arrB) == 3 );
@@ -150,9 +150,9 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
 	}
 	{
 		multi::array<std::string, 2> arrB = (multi::array<std::string, 2>
-			{{"a", "b", "c", "d", "e"},
-			 {"f", "g", "h", "f", "g"},
-			 {"h", "i", "j", "k", "l"}})  // .reindex(2, 1);
+			{{"a", "b", "c", "d", "e"},  // std::string NOLINT(fuchsia-default-arguments-calls)
+			 {"f", "g", "h", "f", "g"},  // std::string NOLINT(fuchsia-default-arguments-calls)
+			 {"h", "i", "j", "k", "l"}})  // .reindex(2, 1);  // std::string NOLINT(fuchsia-default-arguments-calls)
 		;
 		BOOST_REQUIRE( arrB.reindex(2).extension() == multi::iextension(2, 5) );
 		auto exts = arrB.reindexed(2).extensions();
@@ -202,20 +202,20 @@ BOOST_AUTO_TEST_CASE(array_ref_with_stencil) {
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_1D_from_vector) {
-	std::vector<double> vec = {1.0, 2.0, 3.0};
+	std::vector<double> vec = {1.0, 2.0, 3.0};  // std::vector NOLINT(fuchsia-default-arguments-calls)
 	multi::array_ref<double, 1> aref({{1, 3}}, vec.data());
 	BOOST_REQUIRE( aref.extension() == multi::iextension(1, 3) );
 	BOOST_REQUIRE( &aref[1] == vec.data() );
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector) {
-	std::vector<double> vec = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+	std::vector<double> vec = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};  // std::string NOLINT(fuchsia-default-arguments-calls)
 	multi::array_ref<double, 2> aref({2, 3}, vec.data());
 	BOOST_REQUIRE( &aref[1][0] == &vec[3] );
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset) {
-	std::vector<double> vec = {
+	std::vector<double> vec = {  // NOLINT(fuchsia-default-arguments-calls)
 		1.0, 2.0, 3.0,
 		4.0, 5.0, 6.0
 	};
@@ -239,7 +239,7 @@ BOOST_AUTO_TEST_CASE(array_2D_with_offset) {
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_1D) {
-	std::array<std::string, 5> arr = {{"a", "b", "c", "d", "e"}};
+	std::array<std::string, 5> arr = {{"a", "b", "c", "d", "e"}};  // std::string NOLINT(fuchsia-default-arguments-calls)
 
 	multi::array_ref<std::string, 1>&& mar = *multi::array_ptr<std::string, 1>{&arr};
 //  multi::Array<std::string(&)[1]> mar = *multi::Array<std::string(*)[1]>(&a);
@@ -298,10 +298,10 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray) {
 BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray_string) {
 	#if not defined(__circle_build__)  // circle 170 crashes https://github.com/seanbaxter/circle/issues/114
 	std::string const dc3D[4][2][3] = {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
-		{{"A0a", "A0b", "A0c"}, {"A1a", "A1b", "A1c"}},
-		{{"B0a", "B0b", "B0c"}, {"B1a", "B1b", "B1c"}},
-		{{"C0a", "C0b", "C0c"}, {"C1a", "C1b", "C1c"}},
-		{{"D0a", "D0b", "D0c"}, {"D1a", "D1b", "D1c"}},
+		{{"A0a", "A0b", "A0c"}, {"A1a", "A1b", "A1c"}},  // std::string NOLINT(fuchsia-default-arguments-calls)
+		{{"B0a", "B0b", "B0c"}, {"B1a", "B1b", "B1c"}},  // std::string NOLINT(fuchsia-default-arguments-calls)
+		{{"C0a", "C0b", "C0c"}, {"C1a", "C1b", "C1c"}},  // std::string NOLINT(fuchsia-default-arguments-calls)
+		{{"D0a", "D0b", "D0c"}, {"D1a", "D1b", "D1c"}},  // std::string NOLINT(fuchsia-default-arguments-calls)
 	};
 	multi::array_cref<std::string, 3> cref(&dc3D[0][0][0], {4, 2, 3});
 	BOOST_REQUIRE( num_elements(cref) == 24 and cref[2][1][1] == "C1b" );

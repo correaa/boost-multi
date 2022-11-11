@@ -91,8 +91,8 @@ BOOST_AUTO_TEST_CASE(rearranged_assignment_resize) {
 BOOST_AUTO_TEST_CASE(rvalue_assignments) {
 	using complex = std::complex<double>;
 
-	std::vector<double > const vec1(200, 99.);
-	std::vector<complex>       vec2(200);
+	std::vector<double > const vec1(200, 99.0);  // NOLINT(fuchsia-default-arguments-calls)
+	std::vector<complex>       vec2(200);  // NOLINT(fuchsia-default-arguments-calls)
 	auto linear1 = [&] {return multi::array_cptr<double, 1>(vec1.data(), 200);};
 	auto linear2 = [&] {return multi::array_ptr<complex, 1>(vec2.data(), 200);};
 	*linear2() = *linear1();
@@ -113,8 +113,8 @@ BOOST_AUTO_TEST_CASE(self_assigment) {
 
 BOOST_AUTO_TEST_CASE(assignments) {
 	{
-		std::vector<double> vec( static_cast<std::size_t>(5*7), 99.);
-		constexpr double val = 33.;
+		std::vector<double> vec( static_cast<std::size_t>(5*7), 99.0);  // NOLINT(fuchsia-default-arguments-calls)
+		constexpr double val = 33.0;
 		multi::array<double, 2> arr({5, 7}, val);
 		multi::array_ref<double, 2>(vec.data(), {5, 7}) = arr;
 		BOOST_REQUIRE( vec[9] == val );
@@ -122,29 +122,29 @@ BOOST_AUTO_TEST_CASE(assignments) {
 		BOOST_REQUIRE( not is_empty(arr) );
 	}
 	{
-		std::vector<double> vec(5*7L, 99.);
-		std::vector<double> wec(5*7L, 33.);
+		std::vector<double> vec(5*7L, 99.0);  // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<double> wec(5*7L, 33.0);  // NOLINT(fuchsia-default-arguments-calls)
 
 		multi::array_ptr<double, 2> Bp{wec.data(), {5, 7}};
 		make_ref(vec.data()) = *Bp;
 		make_ref(vec.data()) = Bp->sliced(0, 5);
 
-		BOOST_REQUIRE( vec[9] == 33. );
+		BOOST_REQUIRE( vec[9] == 33.0 );
 	}
 	{
-		std::vector<double> vec(5*7L, 99.);
-		std::vector<double> wec(5*7L, 33.);
+		std::vector<double> vec(5*7L, 99.0);  // NOLINT(fuchsia-default-arguments-calls)
+		std::vector<double> wec(5*7L, 33.0);  // NOLINT(fuchsia-default-arguments-calls)
 
 		make_ref(vec.data()) = make_ref(wec.data());
 
-		BOOST_REQUIRE( vec[9] == 33. );
+		BOOST_REQUIRE( vec[9] == 33.0 );
 	}
 }
 
 template<class T, class Allocator>
 auto eye(multi::extensions_t<2> exts, Allocator alloc) {
-	multi::array<T, 2, Allocator> ret(exts, 0., alloc);
-	ret.diagonal().fill(1.);
+	multi::array<T, 2, Allocator> ret(exts, 0.0, alloc);
+	ret.diagonal().fill(1.0);
 	return ret;
 }
 
@@ -154,8 +154,8 @@ auto eye(multi::extensions_t<2> exts) {return eye<T>(exts, std::allocator<T>{});
 BOOST_AUTO_TEST_CASE(assigment_temporary) {
 	multi::array<double, 2> Id = eye<double>( multi::extensions_t<2>({3, 3}) );
 	BOOST_REQUIRE( Id == eye<double>({3, 3}) );
-	BOOST_REQUIRE( Id[1][1] == 1 );
-	BOOST_REQUIRE( Id[1][0] == 0 );
+	BOOST_REQUIRE( Id[1][1] == 1.0 );
+	BOOST_REQUIRE( Id[1][0] == 0.0 );
 }
 
 #endif

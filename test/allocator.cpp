@@ -24,7 +24,7 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
 	BOOST_REQUIRE( va[1] [0][0] == 1 );
 	BOOST_REQUIRE( va[2] [0][0] == 2 );
 
-	std::vector<multi::array<double, 2>> wa = {
+	std::vector<multi::array<double, 2>> wa = {  // testing std::vector of multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 		multi::array<double, 2>({0, 0}, 0.),
 		multi::array<double, 2>({1, 1}, 1.),
 		multi::array<double, 2>({2, 2}, 2.),
@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
 	BOOST_REQUIRE( size(va) == size(wa) );
 	BOOST_REQUIRE( va == wa );
 
-	std::vector<multi::array<double, 2>> ua(3);
+	std::vector<multi::array<double, 2>> ua(3, std::allocator<multi::array<double, 2>>{});
 	auto iex = multi::iextension(static_cast<multi::size_type>(ua.size()));
 	std::transform(
 		begin(iex), end(iex),

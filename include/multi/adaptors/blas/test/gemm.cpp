@@ -52,56 +52,56 @@ BOOST_AUTO_TEST_CASE(adaptor_blas_double_100x1_1x1_H_copy) {
 
 BOOST_AUTO_TEST_CASE(adaptor_blas_complex_100x1_1x1) {
 	using complex = std::complex<double>;
-	multi::array<complex, 2> A({100, 1}, 1.);  // NOLINT(readability-identifier-length) BLAS naming
-	multi::array<complex, 2> B({  1, 1}, 1.);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<complex, 2> A({100, 1}, {1.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<complex, 2> B({  1, 1}, {1.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
 
-	multi::array<complex, 2> C({100, 1}, 0.);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<complex, 2> C({100, 1}, {0.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
 
-	blas::gemm(1., A, B, 0., C);  // c=ab, c⸆=b⸆a⸆
-	BOOST_REQUIRE(C[99][0] == 1.);
+	blas::gemm({1.0, 0.0}, A, B, {0.0, 0.0}, C);  // c=ab, c⸆=b⸆a⸆
+	BOOST_REQUIRE(C[99][0] == 1.0);
 }
 
 BOOST_AUTO_TEST_CASE(adaptor_blas_complex_100x1_1x1_T) {
 	using complex = std::complex<double>;
-	multi::array<complex, 2> A({100, 1}, 1.);  // NOLINT(readability-identifier-length) BLAS naming
-	multi::array<complex, 2> B({  1, 1}, 1.);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<complex, 2> A({100, 1}, {1.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<complex, 2> B({  1, 1}, {1.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
 
-	multi::array<complex, 2> C({100, 1}, 0.);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<complex, 2> C({100, 1}, {0.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
 
-	blas::gemm(1., A, blas::T(B), 0., C);  // c=ab, c⸆=b⸆a⸆
-	BOOST_REQUIRE(C[99][0] == 1.);
+	blas::gemm({1.0, 0.0}, A, blas::T(B), {0.0, 0.0}, C);  // c=ab, c⸆=b⸆a⸆
+	BOOST_REQUIRE( C[99][0] == 1.0 );
 }
 
 BOOST_AUTO_TEST_CASE(adaptor_blas_complex_100x1_1x1_H) {
 	using complex = std::complex<double>;  // complex const I{0, 1};
-	multi::array<complex, 2> A({100, 1}, 1.);  // NOLINT(readability-identifier-length) BLAS naming
-	multi::array<complex, 2> B({  1, 1}, 1.);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<complex, 2> A({100, 1}, {1.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<complex, 2> B({  1, 1}, {1.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
 
-	multi::array<complex, 2> C({100, 1}, 0.);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<complex, 2> C({100, 1}, {0.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
 
-	blas::gemm(1., A, blas::H(B), 0., C);  // c=ab, c⸆=b⸆a⸆
+	blas::gemm({1.0, 0.0}, A, blas::H(B), {0.0, 0.0}, C);  // c=ab, c⸆=b⸆a⸆
 	BOOST_REQUIRE(C[99][0] == 1.);
 }
 
 BOOST_AUTO_TEST_CASE(adaptor_blas_double_100x1_1x1) {
 	using complex = std::complex<double>;
-	multi::array<complex, 2> A({100, 1}, 1.);  // NOLINT(readability-identifier-length) BLAS naming
-	multi::array<complex, 2> B({  1, 1}, 1.);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<complex, 2> A({100, 1}, {1.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<complex, 2> B({  1, 1}, {1.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
 
-	multi::array<complex, 2> C({100, 1}, 0.);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<complex, 2> C({100, 1}, {0.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
 
-	blas::gemm(1., A, B, 0., C);  // c=ab, c⸆=b⸆a⸆
-	BOOST_REQUIRE(C[99][0] == 1.);
+	blas::gemm({1.0, 0.0}, A, B, {0.0, 0.0}, C);  // c=ab, c⸆=b⸆a⸆
+	BOOST_REQUIRE(C[99][0] == 1.0);
 }
 
 BOOST_AUTO_TEST_CASE(adaptor_blas_double_100x1_1x1_T) {
-	multi::array<double, 2> A({100, 1}, 1.);  // NOLINT(readability-identifier-length) BLAS naming
-	multi::array<double, 2> B({  1, 1}, 1.);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<double, 2> A({100, 1}, 1.0);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<double, 2> B({  1, 1}, 1.0);  // NOLINT(readability-identifier-length) BLAS naming
 
-	multi::array<double, 2> C({100, 1}, 0.);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<double, 2> C({100, 1}, 0.0);  // NOLINT(readability-identifier-length) BLAS naming
 
-	blas::gemm(1., A, blas::T(B), 0., C);  // c=ab, c⸆=b⸆a⸆
-	BOOST_REQUIRE(C[99][0] == 1.);
+	blas::gemm(1.0, A, blas::T(B), 0.0, C);  // c=ab, c⸆=b⸆a⸆
+	BOOST_REQUIRE(C[99][0] == 1.0);
 }
 
 BOOST_AUTO_TEST_CASE(adaptor_blas_double_100x1_1x1_H) {
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE(adaptor_blas_double_100x1_1x1_H) {
 
 	multi::array<double, 2> C({100, 1}, 0.0);  // NOLINT(readability-identifier-length) BLAS naming
 
-	blas::gemm(1., A, blas::H(B), 0., C);  // c=ab, c⸆=b⸆a⸆
+	blas::gemm(1.0, A, blas::H(B), 0.0, C);  // c=ab, c⸆=b⸆a⸆
 	BOOST_REQUIRE(C[99][0] == 1.0);
 }
 
@@ -126,224 +126,224 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemm_square_real) {
 		{11.0, 12.0,  4.0}
 	};
 	{
-		multi::array<double, 2> c({size(a), size(~b)}, 9999);  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::gemm(1., a, b, 0., c);
+		multi::array<double, 2> c({size(a), size(~b)}, 9999.0);  // NOLINT(readability-identifier-length) conventional BLAS naming
+		blas::gemm(1.0, a, b, 0.0, c);
 		BOOST_REQUIRE( c[2][1] == 86.0 );
 	}
 	{
-		multi::array<double, 2> c({size(a), size(~b)}, 9999);  // NOLINT(readability-identifier-length) conventional BLAS naming
+		multi::array<double, 2> c({size(a), size(~b)}, 9999.0);  // NOLINT(readability-identifier-length) conventional BLAS naming
 		BOOST_REQUIRE( size( a) == size( c) );
 		BOOST_REQUIRE( size(~b) == size(~c) );
-		blas::gemm_n(1., begin(a), size(a), begin(b), 0., begin(c));
+		blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));
 		BOOST_REQUIRE( c[2][1] == 86.0 );
 	}
 	{
-		multi::array<double, 2> c({size(a), size(~b)}, 9999);  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::gemm(1., a, blas::T(b), 0., c);
-		BOOST_REQUIRE( c[2][1] == 48. );
+		multi::array<double, 2> c({size(a), size(~b)}, 9999.0);  // NOLINT(readability-identifier-length) conventional BLAS naming
+		blas::gemm(1.0, a, blas::T(b), 0.0, c);
+		BOOST_REQUIRE( c[2][1] == 48.0 );
 	}
 	{
-		multi::array<double, 2> c({size(a), size(~b)}, 9999);  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::gemm_n(1., a.begin(), a.size(), blas::T(b).begin(), 0., c.begin());
-		BOOST_REQUIRE( c[2][1] == 48. );
+		multi::array<double, 2> c({size(a), size(~b)}, 9999.0);  // NOLINT(readability-identifier-length) conventional BLAS naming
+		blas::gemm_n(1., a.begin(), a.size(), blas::T(b).begin(), 0.0, c.begin());
+		BOOST_REQUIRE( c[2][1] == 48.0 );
 	}
 	{
-		multi::array<double, 2> c({size(a), size(~b)}, 9999);  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::gemm(1., blas::T(a), b, 0., c);
-		BOOST_REQUIRE( c[2][1] == 103. );
+		multi::array<double, 2> c({size(a), size(~b)}, 9999.0);  // NOLINT(readability-identifier-length) conventional BLAS naming
+		blas::gemm(1.0, blas::T(a), b, 0.0, c);
+		BOOST_REQUIRE( c[2][1] == 103.0 );
 	}
 	{
-		multi::array<double, 2> c({size(a), size(~b)}, 9999);  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::gemm_n(1., begin(blas::T(a)), size(blas::T(a)), begin(b), 0., begin(c));
-		BOOST_REQUIRE( c[2][1] == 103. );
+		multi::array<double, 2> c({size(a), size(~b)}, 9999.0);  // NOLINT(readability-identifier-length) conventional BLAS naming
+		blas::gemm_n(1.0, begin(blas::T(a)), size(blas::T(a)), begin(b), 0.0, begin(c));
+		BOOST_REQUIRE( c[2][1] == 103.0 );
 	}
 	{
-		multi::array<double, 2> c({size(a), size(~b)}, 9999);  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::gemm(1., blas::T(a), blas::T(b), 0., c);
-		BOOST_REQUIRE( c[2][1] == 50. );
+		multi::array<double, 2> c({size(a), size(~b)}, 9999.0);  // NOLINT(readability-identifier-length) conventional BLAS naming
+		blas::gemm(1.0, blas::T(a), blas::T(b), 0.0, c);
+		BOOST_REQUIRE( c[2][1] == 50.0 );
 	}
 	{
-		multi::array<double, 2> c({size(a), size(~b)}, 9999);  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::gemm_n(1., begin(blas::T(a)), size(blas::T(a)), begin(blas::T(b)), 0., begin(c));
-		BOOST_REQUIRE( c[2][1] == 50 );
+		multi::array<double, 2> c({size(a), size(~b)}, 9999.0);  // NOLINT(readability-identifier-length) conventional BLAS naming
+		blas::gemm_n(1.0, begin(blas::T(a)), size(blas::T(a)), begin(blas::T(b)), 0.0, begin(c));
+		BOOST_REQUIRE( c[2][1] == 50.0 );
 	}
 	{
-		multi::array<double, 2> c({size(a), size(~b)}, 9999);  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::gemm(1., a, blas::T(b), 0., c);
-		BOOST_REQUIRE( c[2][1] == 48 );
+		multi::array<double, 2> c({size(a), size(~b)}, 9999.0);  // NOLINT(readability-identifier-length) conventional BLAS naming
+		blas::gemm(1.0, a, blas::T(b), 0.0, c);
+		BOOST_REQUIRE( c[2][1] == 48.0 );
 	}
 	{
-		multi::array<double, 2> c({size(a), size(~b)}, 9999);  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::gemm_n(1., begin(a), size(a), begin(blas::T(b)), 0., begin(c));
-		BOOST_REQUIRE( c[2][1] == 48 );
+		multi::array<double, 2> c({size(a), size(~b)}, 9999.0);  // NOLINT(readability-identifier-length) conventional BLAS naming
+		blas::gemm_n(1.0, begin(a), size(a), begin(blas::T(b)), 0.0, begin(c));
+		BOOST_REQUIRE( c[2][1] == 48.0 );
 	}
 	{
-		multi::array<double, 2> c({size(a), size(~b)}, 9999);  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::gemm(1., blas::T(a), b, 0., c);
-		BOOST_REQUIRE( c[2][1] == 103 );
+		multi::array<double, 2> c({size(a), size(~b)}, 9999.0);  // NOLINT(readability-identifier-length) conventional BLAS naming
+		blas::gemm(1.0, blas::T(a), b, 0.0, c);
+		BOOST_REQUIRE( c[2][1] == 103.0 );
 	}
 	{
-		multi::array<double, 2> c({size(a), size(~b)}, 9999);  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::gemm_n(1., begin(blas::T(a)), size(blas::T(a)), begin(b), 0., begin(c));
-		BOOST_REQUIRE( c[2][1] == 103 );
+		multi::array<double, 2> c({size(a), size(~b)}, 9999.0);  // NOLINT(readability-identifier-length) conventional BLAS naming
+		blas::gemm_n(1.0, begin(blas::T(a)), size(blas::T(a)), begin(b), 0.0, begin(c));
+		BOOST_REQUIRE( c[2][1] == 103.0 );
 	}
 	{
-		multi::array<double, 2> c({size(a), size(rotated(b))}, 9999);  // NOLINT(readability-identifier-length) BLAS naming
-		blas::gemm(2., blas::H(a), blas::H(b), 0., c);
-		BOOST_REQUIRE( c[2][1] == 100 );
+		multi::array<double, 2> c({size(a), size(rotated(b))}, 9999.0);  // NOLINT(readability-identifier-length) BLAS naming
+		blas::gemm(2.0, blas::H(a), blas::H(b), 0.0, c);
+		BOOST_REQUIRE( c[2][1] == 100.0 );
 	}
 	{
-		multi::array<double, 2> c = blas::gemm(2., blas::H(a), blas::H(b));  // NOLINT(readability-identifier-length) BLAS naming
-		BOOST_REQUIRE( c[2][1] == 100 );
+		multi::array<double, 2> c = blas::gemm(2.0, blas::H(a), blas::H(b));  // NOLINT(readability-identifier-length) BLAS naming
+		BOOST_REQUIRE( c[2][1] == 100.0 );
 	}
 	{
-		multi::array<double, 2> const c = blas::gemm(2., blas::H(a), blas::H(b));  // NOLINT(readability-identifier-length) BLAS naming
-		BOOST_REQUIRE( c[2][1] == 100 );
+		multi::array<double, 2> const c = blas::gemm(2.0, blas::H(a), blas::H(b));  // NOLINT(readability-identifier-length) BLAS naming
+		BOOST_REQUIRE( c[2][1] == 100.0 );
 	}
 	{
-		multi::array<double, 2> c({size(a), size(rotated(b))}, 9999);  // NOLINT(readability-identifier-length) BLAS naming
-		c = blas::gemm(2., blas::H(a), blas::H(b));
-		BOOST_REQUIRE( c[2][1] == 100 );
+		multi::array<double, 2> c({size(a), size(rotated(b))}, 9999.0);  // NOLINT(readability-identifier-length) BLAS naming
+		c = blas::gemm(2.0, blas::H(a), blas::H(b));
+		BOOST_REQUIRE( c[2][1] == 100.0 );
 	}
 	{
 		multi::array<double, 2> c;  // NOLINT(readability-identifier-length) BLAS naming
-		c = blas::gemm(2., blas::H(a), blas::H(b));
-		BOOST_REQUIRE( c[2][1] == 100 );
+		c = blas::gemm(2.0, blas::H(a), blas::H(b));
+		BOOST_REQUIRE( c[2][1] == 100.0 );
 	}
 	{
-		multi::array<double, 2> c({size(a), size(rotated(b))}, 9999);  // NOLINT(readability-identifier-length) BLAS naming
-		blas::gemm_n(2., begin(blas::H(a)), size(blas::H(a)), begin(blas::H(b)), 0., begin(c));
-		BOOST_REQUIRE( c[2][1] == 100 );
+		multi::array<double, 2> c({size(a), size(rotated(b))}, 9999.0);  // NOLINT(readability-identifier-length) BLAS naming
+		blas::gemm_n(2.0, begin(blas::H(a)), size(blas::H(a)), begin(blas::H(b)), 0.0, begin(c));
+		BOOST_REQUIRE( c[2][1] == 100.0 );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_square) {
 	multi::array<double, 2> const a = {  // NOLINT(readability-identifier-length) BLAS naming
-		{  1,  3},
-		{  9,  7},
+		{ 1.0,  3.0},
+		{ 9.0,  7.0},
 	};
 	multi::array<double, 2> const b = {  // NOLINT(readability-identifier-length) BLAS naming
-		{ 11, 12},
-		{  7, 19},
+		{11.0, 12.0},
+		{ 7.0, 19.0},
 	};
 	{
 		multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::gemm(1., a, b, 0., c);        // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[1][0] == 148 );
+		blas::gemm(1.0, a, b, 0.0, c);        // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][0] == 148.0 );
 	}
 	{
 		multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
 		blas::context ctxt;
-		blas::gemm_n(ctxt, 1., begin(a), size(a), begin(b), 0., begin(c));
-		BOOST_REQUIRE( c[1][0] == 148 );
+		blas::gemm_n(ctxt, 1.0, begin(a), size(a), begin(b), 0.0, begin(c));
+		BOOST_REQUIRE( c[1][0] == 148.0 );
 	}
 	{
 		multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::gemm(1., ~a,  b, 0.,  c);     // c=a⸆b, c⸆=b⸆a
+		blas::gemm(1.0, ~a,  b, 0.0,  c);     // c=a⸆b, c⸆=b⸆a
+		BOOST_REQUIRE(( c[1][1] == 169.0 and c[1][0] == 82.0 ));
+	}
+	{
+		multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
+		blas::context ctxt;
+		blas::gemm_n(ctxt, 1.0, begin(~a), size(~a), begin(b), 0.0, begin( c));
 		BOOST_REQUIRE(( c[1][1] == 169 and c[1][0] == 82 ));
 	}
 	{
 		multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
 		blas::context ctxt;
-		blas::gemm_n(ctxt, 1., begin(~a), size(~a), begin(b), 0., begin( c));
-		BOOST_REQUIRE(( c[1][1] == 169 and c[1][0] == 82 ));
-	}
-	{
-		multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::context ctxt;
-		blas::gemm_n(ctxt, 1., begin(~a), size(~a), begin(b), 0., begin(~c));
+		blas::gemm_n(ctxt, 1.0, begin(~a), size(~a), begin(b), 0.0, begin(~c));
 		BOOST_REQUIRE( (~c)[1][1] == 169 );
 		BOOST_REQUIRE( (~c)[1][0] ==  82 );
 	}
 	{
 		multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::gemm(1.,  a, ~b, 0.,  c);     // c=ab⸆, c⸆=ba⸆
-		BOOST_REQUIRE( c[1][0] == 183 );
+		blas::gemm(1.0,  a, ~b, 0.0,  c);     // c=ab⸆, c⸆=ba⸆
+		BOOST_REQUIRE( c[1][0] == 183.0 );
 	}
 	{
 		multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
 		blas::context ctxt;
-		blas::gemm_n(ctxt, 1., begin(a), size(a), begin(~b), 0., begin(c));  // c=ab⸆, c⸆=ba⸆
-		BOOST_REQUIRE( c[1][0] == 183 );
+		blas::gemm_n(ctxt, 1.0, begin(a), size(a), begin(~b), 0.0, begin(c));  // c=ab⸆, c⸆=ba⸆
+		BOOST_REQUIRE( c[1][0] == 183.0 );
 	}
 	{
 		multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::gemm(1.,  a, ~b, 0.,  ~c);    // c=ab⸆, c⸆=ba⸆
-		BOOST_REQUIRE( (~c)[1][0] == 183 );
+		blas::gemm(1.0,  a, ~b, 0.0,  ~c);    // c=ab⸆, c⸆=ba⸆
+		BOOST_REQUIRE( (~c)[1][0] == 183.0 );
 	}
 	{
 		multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::gemm_n(1., begin(a), size(a), begin(~b), 0., begin(~c));  // c=ab⸆, c⸆=ba⸆
-		BOOST_REQUIRE( (~c)[1][0] == 183 );
+		blas::gemm_n(1.0, begin(a), size(a), begin(~b), 0.0, begin(~c));  // c=ab⸆, c⸆=ba⸆
+		BOOST_REQUIRE( (~c)[1][0] == 183.0 );
 	}
 	{
 		multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::gemm(1., ~a, ~b, 0.,  c);     // c=a⸆b⸆, c⸆=ba
-		BOOST_REQUIRE( c[1][0] == 117 );
+		blas::gemm(1.0, ~a, ~b, 0.0,  c);     // c=a⸆b⸆, c⸆=ba
+		BOOST_REQUIRE( c[1][0] == 117.0 );
 	}
 	{
 		multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::gemm_n(1., begin(~a), size(~a), begin(~b), 0., begin(c));  // c=a⸆b⸆, c⸆=ba
-		BOOST_REQUIRE( c[1][0] == 117 );
+		blas::gemm_n(1.0, begin(~a), size(~a), begin(~b), 0.0, begin(c));  // c=a⸆b⸆, c⸆=ba
+		BOOST_REQUIRE( c[1][0] == 117.0 );
 	}
 	{
 		multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::gemm(1., ~a, ~b, 0., ~c);     // c⸆=a⸆b⸆, c=ba
-		BOOST_REQUIRE( c[0][1] == 117 );
+		blas::gemm(1.0, ~a, ~b, 0.0, ~c);     // c⸆=a⸆b⸆, c=ba
+		BOOST_REQUIRE( c[0][1] == 117.0 );
 	}
 	{
 		multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::gemm_n(1., begin(~a), size(~a), begin(~b), 0., begin(~c));  // c⸆=a⸆b⸆, c=ba
-		BOOST_REQUIRE( c[0][1] == 117 );
+		blas::gemm_n(1.0, begin(~a), size(~a), begin(~b), 0.0, begin(~c));  // c⸆=a⸆b⸆, c=ba
+		BOOST_REQUIRE( c[0][1] == 117.0 );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare) {
 	multi::array<double, 2> const a = {  // NOLINT(readability-identifier-length) BLAS naming
-		{ 1, 3, 1},
-		{ 9, 7, 1},
+		{ 1.0, 3.0, 1.0},
+		{ 9.0, 7.0, 1.0},
 	};
 	multi::array<double, 2> const b = {  // NOLINT(readability-identifier-length) BLAS naming
-		{ 11, 12, 1},
-		{  7, 19, 1},
-		{  1,  1, 1}
+		{11.0, 12.0, 1.0},
+		{ 7.0, 19.0, 1.0},
+		{ 1.0,  1.0, 1.0}
 	};
 	{
 		multi::array<double, 2> c({2, 3});  // NOLINT(readability-identifier-length) BLAS naming
-		blas::gemm(1., a, b, 0., c);  // c=ab, c⸆=b⸆a⸆
+		blas::gemm(1.0, a, b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
 		BOOST_REQUIRE( c[1][2] == 17 );
 	}
 	{
 		multi::array<double, 2> c({2, 3});  // NOLINT(readability-identifier-length) BLAS naming
-		blas::gemm_n(1., begin(a), size(a), begin(b), 0., begin(c));  // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[1][2] == 17 );
+		blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][2] == 17.0 );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_automatic) {
 	namespace blas = multi::blas;
 	multi::array<double, 2> const a = {  // NOLINT(readability-identifier-length) conventional BLAS naming
-		{ 1., 3., 1.},
-		{ 9., 7., 1.},
+		{1.0, 3.0, 1.0},
+		{9.0, 7.0, 1.0},
 	};
 	multi::array<double, 2> const b = {  // NOLINT(readability-identifier-length) conventional BLAS naming
-		{ 11., 12., 4., 8.},
-		{  7., 19., 2., 7.},
-		{  5.,  3., 3., 1.}
+		{11.0, 12.0, 4.0, 8.0},
+		{ 7.0, 19.0, 2.0, 7.0},
+		{ 5.0,  3.0, 3.0, 1.0}
 	};
 	{
 		multi::array<double, 2> c({size(a), size(~b)});  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::gemm(1., a, b, 0., c);  // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[1][2] == 53 );
+		blas::gemm(1.0, a, b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][2] == 53.0 );
 	}
 	{
 		multi::array<double, 2> c({size(a), size(~b)});  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::gemm_n(1., begin(a), size(a), begin(b), 0., begin(c));  // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[1][2] == 53 );
+		blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][2] == 53.0 );
 	}
 	{
 		multi::array<double, 2> c({2, 4});  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::gemm(0.1, a, b, 0., c);       // c=ab, c⸆=b⸆a⸆
+		blas::gemm(0.1, a, b, 0.0, c);       // c=ab, c⸆=b⸆a⸆
 		BOOST_REQUIRE_CLOSE( c[1][2] , 5.3 , 0.00001 );
 	}
 	{
@@ -362,121 +362,121 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_automatic) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_gemm_nh) {
-	using complex = std::complex<double>; complex const I{0, 1};  // NOLINT(readability-identifier-length) imaginary unit
+	using complex = std::complex<double>; complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imaginary unit
 	multi::array<complex, 2> const a = {  // NOLINT(readability-identifier-length) BLAS naming
-		{1.-2.*I, 9.-1.*I},
-		{2.+3.*I, 1.-2.*I}
+		{1.0 - 2.0*I, 9.0 - 1.0*I},
+		{2.0 + 3.0*I, 1.0 - 2.0*I}
 	};
 	{
-		auto c =+ blas::gemm(1., a, blas::H(a));  // c=aa†, c†=aa†  // NOLINT(readability-identifier-length) BLAS naming
+		auto c =+ blas::gemm(1.0, a, blas::H(a));  // c=aa†, c†=aa†  // NOLINT(readability-identifier-length) BLAS naming
+		BOOST_REQUIRE( c[1][0] == 7.0 - 10.0*I );
+		BOOST_REQUIRE( c[0][1] == 7.0 + 10.0*I );
+	}
+	{
+		multi::array c = blas::gemm(1.0, a, blas::H(a));  // c=aa†, c†=aa†  // NOLINT(readability-identifier-length) BLAS naming
 		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
 		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
 	}
 	{
-		multi::array c = blas::gemm(1., a, blas::H(a));  // c=aa†, c†=aa†  // NOLINT(readability-identifier-length) BLAS naming
-		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
-		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
+		multi::array<complex, 2> c = blas::gemm(1.0, a, blas::H(a));  // c=aa†, c†=aa†  // NOLINT(readability-identifier-length) conventional BLAS naming
+		BOOST_REQUIRE( c[1][0] == 7.0 - 10.0*I );
+		BOOST_REQUIRE( c[0][1] == 7.0 + 10.0*I );
 	}
 	{
-		multi::array<complex, 2> c = blas::gemm(1., a, blas::H(a));  // c=aa†, c†=aa†  // NOLINT(readability-identifier-length) conventional BLAS naming
-		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
-		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
+		multi::array<complex, 2> c({2, 2}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+		c = blas::gemm(1.0, a, blas::H(a));          // c=aa†, c†=aa†
+		BOOST_REQUIRE( c[1][0] == 7.0 - 10.0*I );
+		BOOST_REQUIRE( c[0][1] == 7.0 + 10.0*I );
 	}
 	{
-		multi::array<complex, 2> c({2, 2}, 9999.);  // NOLINT(readability-identifier-length) conventional BLAS naming
-		c = blas::gemm(1., a, blas::H(a));          // c=aa†, c†=aa†
-		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
-		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
+		multi::array<complex, 2> c({2, 2}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+		c() = blas::gemm(1.0, a, blas::H(a));        // c=aa†, c†=aa†
+		BOOST_REQUIRE( c[1][0] == 7.0 - 10.*I );
+		BOOST_REQUIRE( c[0][1] == 7.0 + 10.*I );
 	}
 	{
-		multi::array<complex, 2> c({2, 2}, 9999.);  // NOLINT(readability-identifier-length) conventional BLAS naming
-		c() = blas::gemm(1., a, blas::H(a));        // c=aa†, c†=aa†
-		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
-		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
+		multi::array<complex, 2> c({2, 2}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+		blas::gemm({1.0, 0.0}, a, blas::H(a), {0.0, 0.0}, c);       // c=aa†, c†=aa†
+		BOOST_REQUIRE( c[1][0] == 7.0 - 10.0*I );
+		BOOST_REQUIRE( c[0][1] == 7.0 + 10.0*I );
 	}
 	{
-		multi::array<complex, 2> c({2, 2}, 9999.);  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::gemm(1., a, blas::H(a), 0., c);       // c=aa†, c†=aa†
-		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
-		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
-	}
-	 {
-		multi::array<complex, 2> c({2, 2}, 9999.);  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::gemm_n(1., begin(a), size(a), begin(blas::H(a)), 0., begin(c));  // c=aa†, c†=aa†
-		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
-		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
+		multi::array<complex, 2> c({2, 2}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) conventional BLAS naming
+		blas::gemm_n({1.0, 0.0}, begin(a), size(a), begin(blas::H(a)), {0.0, 0.0}, begin(c));  // c=aa†, c†=aa†
+		BOOST_REQUIRE( c[1][0] == 7. - 10.*I );
+		BOOST_REQUIRE( c[0][1] == 7. + 10.*I );
 	}
 }
 
 #if defined(CUDA_FOUND)
 #include<thrust/complex.h>
 BOOST_AUTO_TEST_CASE(multi_blas_gemm_nh_thrust) {
-	using complex = thrust::complex<double>; complex const I{0, 1};
+	using complex = thrust::complex<double>; complex const I{0.0, 1.0};
 	multi::array<complex, 2> const a = {
-		{1.-2.*I, 9.-1.*I},
-		{2.+3.*I, 1.-2.*I}
+		{1.0 - 2.0*I, 9.0 - 1.0*I},
+		{2.0 + 3.0*I, 1.0 - 2.0*I}
 	};
 	{
-		auto c =+ blas::gemm(1., a, blas::hermitized(a));  // c=aa†, c†=aa†
-		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
-		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
+		auto c =+ blas::gemm(1.0, a, blas::hermitized(a));  // c=aa†, c†=aa†
+		BOOST_REQUIRE( c[1][0] == 7.0 - 10.0*I );
+		BOOST_REQUIRE( c[0][1] == 7.0 + 10.0*I );
 	}
 	{
-		multi::array c = blas::gemm(1., a, blas::hermitized(a));  // c=aa†, c†=aa†
-		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
-		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
+		multi::array c = blas::gemm(1.0, a, blas::hermitized(a));  // c=aa†, c†=aa†
+		BOOST_REQUIRE( c[1][0] == 7.0 - 10.0*I );
+		BOOST_REQUIRE( c[0][1] == 7.0 + 10.0*I );
 	}
 	{
-		multi::array<complex, 2> c = blas::gemm(1., a, blas::hermitized(a));  // c=aa†, c†=aa†
-		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
-		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
-	}
-	{
-		multi::array<complex, 2> c({2, 2});
-		c = blas::gemm(1., a, blas::hermitized(a));  // c=aa†, c†=aa†
-		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
-		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
+		multi::array<complex, 2> c = blas::gemm(1.0, a, blas::hermitized(a));  // c=aa†, c†=aa†
+		BOOST_REQUIRE( c[1][0] == 7.0 - 10.0*I );
+		BOOST_REQUIRE( c[0][1] == 7.0 + 10.0*I );
 	}
 	{
 		multi::array<complex, 2> c({2, 2});
-		blas::gemm(1., a, blas::hermitized(a), 0., c);  // c=aa†, c†=aa†
-		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
-		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
+		c = blas::gemm(1.0, a, blas::hermitized(a));  // c=aa†, c†=aa†
+		BOOST_REQUIRE( c[1][0] == 7.0 - 10.0*I );
+		BOOST_REQUIRE( c[0][1] == 7.0 + 10.0*I );
 	}
-	 {
+	{
 		multi::array<complex, 2> c({2, 2});
-		blas::gemm_n(1., begin(a), size(a), begin(blas::H(a)), 0., begin(c));  // c=aa†, c†=aa†
-		BOOST_REQUIRE( c[1][0] == 7.-10.*I );
-		BOOST_REQUIRE( c[0][1] == 7.+10.*I );
+		blas::gemm(1., a, blas::hermitized(a), 0.0, c);  // c=aa†, c†=aa†
+		BOOST_REQUIRE( c[1][0] == 7.0 - 10.0*I );
+		BOOST_REQUIRE( c[0][1] == 7.0 + 10.0*I );
+	}
+	{
+		multi::array<complex, 2> c({2, 2});
+		blas::gemm_n(1.0, begin(a), size(a), begin(blas::H(a)), 0.0, begin(c));  // c=aa†, c†=aa†
+		BOOST_REQUIRE( c[1][0] == 7.0 - 10.0*I );
+		BOOST_REQUIRE( c[0][1] == 7.0 + 10.0*I );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_gemm_elongated) {
-	using complex = std::complex<double>; complex const I{0, 1};
+	using complex = std::complex<double>; complex const I{0.0, 1.0};
 	multi::array<complex, 2> const a = {
-		{1.-2.*I, 9.-1.*I}
+		{1.0 - 2.0*I, 9.0 - 1.0*I}
 	};
 	{
 		multi::array<complex, 2> c({1, 1});
-		blas::gemm(1., a, blas::H(a), 0., c);  // c=aa†, c†=aa†
-		BOOST_REQUIRE( c[0][0] == 87. + 0.*I );
+		blas::gemm(1.0, a, blas::H(a), 0.0, c);  // c=aa†, c†=aa†
+		BOOST_REQUIRE( c[0][0] == 87.0 + 0.0*I );
 	}
 	{
 		multi::array<complex, 2> c({1, 1});
-		blas::gemm_n(1., begin(a), size(a), begin(blas::H(a)), 0., begin(c));  // c=aa†, c†=aa†
-		BOOST_REQUIRE( c[0][0] == 87. + 0.*I );
+		blas::gemm_n(1.0, begin(a), size(a), begin(blas::H(a)), 0.0, begin(c));  // c=aa†, c†=aa†
+		BOOST_REQUIRE( c[0][0] == 87.0 + 0.0*I );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_3x1_3x1_bisbis) {
-	using complex = std::complex<double>; complex const I{0, 1};
+	using complex = std::complex<double>; complex const I{0.0, 1.0};
 	multi::array<complex, 2> const a = {
-		{1. + 2.*I},
-		{9. - 1.*I},
-		{1. + 1.*I}
+		{1.0 + 2.0*I},
+		{9.0 - 1.0*I},
+		{1.0 + 1.0*I}
 	};
 	multi::array<complex, 2> const b = {
-		{ 11. - 2.*I, 7. - 3.*I, 8. - 1.*I}
+		{ 11.0 - 2.0*I, 7.0 - 3.0*I, 8.0 - 1.0*I}
 	};
 	{
 		multi::array<complex, 2> c({1, 1});
@@ -484,13 +484,13 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_3x1_3x1_bisbis) {
 		BOOST_REQUIRE( size(blas::H(a)) == 1 );
 		BOOST_REQUIRE( size(blas::H(b)[0]) == 1 );
 
-		blas::gemm(1., blas::H(a), blas::H(b), 0., c);  // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[0][0] == 84.+7.*I );
+		blas::gemm(1.0, blas::H(a), blas::H(b), 0.0, c);  // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[0][0] == 84.0 + 7.0*I );
 	}
-	 {
+	{
 		multi::array<complex, 2> c({1, 1});
-		blas::gemm_n(1., begin(blas::H(a)), size(blas::H(a)), begin(blas::H(b)), 0., begin(c));  // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[0][0] == 84.+7.*I );
+		blas::gemm_n(1.0, begin(blas::H(a)), size(blas::H(a)), begin(blas::H(b)), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[0][0] == 84.0 + 7.0*I );
 	}
 }
 
@@ -506,154 +506,154 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_empty) {
 	BOOST_REQUIRE( b.is_empty() );
 	{
 		multi::array<double, 2> c;
-		blas::gemm(1., a, b, 0., c);  // c=ab, c⸆=b⸆a⸆
+		blas::gemm(1.0, a, b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
 	}
-	 {
+	{
 		multi::array<double, 2> c;
-		blas::gemm_n(1., begin(a), size(a), begin(b), 0., begin(c));  // c=ab, c⸆=b⸆a⸆
+		blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
 	}
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare2) {
 	multi::array<double, 2> const a = {
-		{ 1, 3},
-		{ 9, 7},
-		{ 1, 1}
+		{ 1.0, 3.0},
+		{ 9.0, 7.0},
+		{ 1.0, 1.0}
 	};
 	multi::array<double, 2> const b = {
-		{ 11, 12},
-		{  7, 19}
+		{ 11.0, 12.0},
+		{  7.0, 19.0}
 	};
 	{
 		multi::array<double, 2> c({size(a), size(~b)});
-		blas::gemm(1., a, b, 0., c);  // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[2][1] == 31 );
+		blas::gemm(1.0, a, b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[2][1] == 31.0 );
 	}
 	{
 		multi::array<double, 2> c({size(a), size(~b)});
-		blas::gemm_n(1., begin(a), size(a), begin(b), 0., begin(c));  // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[2][1] == 31 );
+		blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[2][1] == 31.0 );
 	}
 	{
 		multi::array<double, 2> c({size(~b), size(a)});
-		blas::gemm(1., a, b, 0., ~c);  // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[1][2] == 31 );
+		blas::gemm(1.0, a, b, 0.0, ~c);  // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][2] == 31.0 );
 	}
 	{
 		multi::array<double, 2> c({size(~b), size(a)});
-		blas::gemm_n(1., begin(a), size(a), begin(b), 0., begin(~c));  // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[1][2] == 31 );
+		blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(~c));  // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][2] == 31.0 );
 	}
 	{
 		auto ar = +~a;
 		multi::array<double, 2> c({3, 2});
-		blas::gemm(1., ~ar, b, 0., c);  // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[2][1] == 31 );
+		blas::gemm(1.0, ~ar, b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[2][1] == 31.0 );
 	}
 	{
 		auto ar = +~a;
 		multi::array<double, 2> c({3, 2});
-		blas::gemm_n(1., begin(~ar), size(~ar), begin(b), 0., begin(c));  // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[2][1] == 31 );
+		blas::gemm_n(1.0, begin(~ar), size(~ar), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[2][1] == 31.0 );
 	}
 	{
 		auto ar = +~a;
 		multi::array<double, 2> c({2, 3});
-		blas::gemm(1., ~ar, b, 0., ~c);  // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[1][2] == 31 );
+		blas::gemm(1.0, ~ar, b, 0.0, ~c);  // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][2] == 31.0 );
 	}
-	 {
+	{
 		auto ar = +~a;
 		multi::array<double, 2> c({2, 3});
-		blas::gemm_n(1., begin(~ar), size(~ar), begin(b), 0., begin(~c));  // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[1][2] == 31 );
+		blas::gemm_n(1.0, begin(~ar), size(~ar), begin(b), 0.0, begin(~c));  // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][2] == 31.0 );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_2x2_2x2) {
 	multi::array<double, 2> const a = {
-		{ 1, 3},
-		{ 9, 4},
+		{ 1.0, 3.0},
+		{ 9.0, 4.0},
 	};
 	multi::array<double, 2> const b = {
-		{ 11, 12},
-		{  7, 19},
+		{ 11.0, 12.0},
+		{  7.0, 19.0},
 	};
 	{
 		multi::array<double, 2> c({2, 2});
-		blas::gemm(1., ~a, b, 0.,  c);  // c=a⸆b, c⸆=b⸆a
-		BOOST_REQUIRE( c[1][0] == 61 );
+		blas::gemm(1.0, ~a, b, 0.0,  c);  // c=a⸆b, c⸆=b⸆a
+		BOOST_REQUIRE( c[1][0] == 61.0 );
 
-		blas::gemm(1., ~a, b, 0., ~c);  // c⸆=a⸆b, c=b⸆a
-		BOOST_REQUIRE( c[0][1] == 61 );
+		blas::gemm(1.0, ~a, b, 0.0, ~c);  // c⸆=a⸆b, c=b⸆a
+		BOOST_REQUIRE( c[0][1] == 61.0 );
 	}
-	 {
+	{
 		multi::array<double, 2> c({2, 2});
-		blas::gemm_n(1., begin(~a), size(~a), begin(b), 0., begin( c));  // c=a⸆b, c⸆=b⸆a
-		BOOST_REQUIRE( c[1][0] == 61 );
+		blas::gemm_n(1.0, begin(~a), size(~a), begin(b), 0.0, begin( c));  // c=a⸆b, c⸆=b⸆a
+		BOOST_REQUIRE( c[1][0] == 61.0 );
 
-		blas::gemm_n(1., begin(~a), size(~a), begin(b), 0., begin(~c));  // c⸆=a⸆b, c=b⸆a
-		BOOST_REQUIRE( c[0][1] == 61 );
+		blas::gemm_n(1.0, begin(~a), size(~a), begin(b), 0.0, begin(~c));  // c⸆=a⸆b, c=b⸆a
+		BOOST_REQUIRE( c[0][1] == 61.0 );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_2x3_3x2) {
 	multi::array<double, 2> const a = {
-		{ 1, 3},
-		{ 9, 4},
-		{ 1, 5}
+		{ 1.0, 3.0},
+		{ 9.0, 4.0},
+		{ 1.0, 5.0}
 	};
 	multi::array<double, 2> const b = {
-		{ 11, 12},
-		{  7, 19},
-		{  8, 1 }
+		{ 11.0, 12.0},
+		{  7.0, 19.0},
+		{  8.0,  1.0}
 	};
 	{
 		multi::array<double, 2> c({2, 2});
-		blas::gemm(1., ~a, b, 0.,  c);  // c=a⸆b, c⸆=b⸆a
-		BOOST_REQUIRE( c[1][0] == 101 );
+		blas::gemm(1.0, ~a, b, 0.0,  c);  // c=a⸆b, c⸆=b⸆a
+		BOOST_REQUIRE( c[1][0] == 101.0 );
 
 		blas::gemm(1., ~a, b, 0., ~c);  // c⸆=a⸆b, c=b⸆a
 		BOOST_REQUIRE( c[0][1] == 101 );
 	}
 	 {
 		multi::array<double, 2> c({2, 2});
-		blas::gemm_n(1., begin(~a), size(~a), begin(b), 0., begin( c));  // c=a⸆b, c⸆=b⸆a
-		BOOST_REQUIRE( c[1][0] == 101 );
+		blas::gemm_n(1.0, begin(~a), size(~a), begin(b), 0.0, begin( c));  // c=a⸆b, c⸆=b⸆a
+		BOOST_REQUIRE( c[1][0] == 101.0 );
 
-		blas::gemm_n(1., begin(~a), size(~a), begin(b), 0., begin(~c));  // c⸆=a⸆b, c=b⸆a
-		BOOST_REQUIRE( c[0][1] == 101 );
+		blas::gemm_n(1.0, begin(~a), size(~a), begin(b), 0.0, begin(~c));  // c⸆=a⸆b, c=b⸆a
+		BOOST_REQUIRE( c[0][1] == 101.0 );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_1x3_3x2) {
 	multi::array<double, 2> const a = {
-		{1, 9, 1}
+		{1.0, 9.0, 1.0}
 	};
 	BOOST_REQUIRE( stride(~a) == 1 );
 	BOOST_REQUIRE( stride( a) == 3 );
 	multi::array<double, 2> const b = {
-		{ 11, 12},
-		{  7, 19},
-		{  8, 1 }
+		{11.0, 12.0},
+		{ 7.0, 19.0},
+		{ 8.0,  1.0}
 	};
 	{
 		multi::array<double, 2> c({size(a), size(~b)});
-		blas::gemm(1., a, b, 0., c);  // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[0][1] == 184 );
+		blas::gemm(1.0, a, b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[0][1] == 184.0 );
 	}
-	 {
+	{
 		multi::array<double, 2> c({size(a), size(~b)});
-		blas::gemm_n(1., begin(a), size(a), begin(b), 0., begin(c));  // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[0][1] == 184 );
+		blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[0][1] == 184.0 );
 	}
 	{
 		auto ar = +~a;
 		multi::array<double, 2> c({size(~b), size(~ar)});
-		blas::gemm(1., ~ar, b, 0., ~c);  // c⸆=a⸆b, c=b⸆a
-		BOOST_REQUIRE( c[1][0] == 184 );
+		blas::gemm(1.0, ~ar, b, 0.0, ~c);  // c⸆=a⸆b, c=b⸆a
+		BOOST_REQUIRE( c[1][0] == 184.0 );
 	}
-	 {
+	{
 		auto ar = +~a;
 		BOOST_REQUIRE( size(~ar) == 1 );
 		BOOST_REQUIRE( begin(~ar).stride() == 1 );
@@ -666,244 +666,244 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_1x3_3x2) {
 		BOOST_REQUIRE( begin(c)->stride() == 1 );
 
 		BOOST_REQUIRE( begin(b) );
-		blas::gemm_n(1., begin(~ar), size(~ar), begin(b), 0., begin(~c));  // c⸆=a⸆b, c=b⸆a
-		BOOST_REQUIRE( c[1][0] == 184 );
+		blas::gemm_n(1.0, begin(~ar), size(~ar), begin(b), 0.0, begin(~c));  // c⸆=a⸆b, c=b⸆a
+		BOOST_REQUIRE( c[1][0] == 184.0 );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complexreal_1x3_3x2) {
 	using complex = std::complex<double>;
 	multi::array<complex, 2> const a = {
-		{1, 9, 1}
+		{1.0, 9.0, 1.0}
 	};
 	BOOST_REQUIRE( stride(~a) == 1 );
 	BOOST_REQUIRE( stride( a) == 3 );
 	multi::array<complex, 2> const b = {
-		{ 11, 12},
-		{  7, 19},
-		{  8, 1 }
+		{11.0, 12.0},
+		{ 7.0, 19.0},
+		{ 8.0,  1.0}
 	};
 	{
 		multi::array<complex, 2> c({size(a), size(~b)});
-		blas::gemm(1., a, b, 0., c);  // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[0][1] == 184. );
+		blas::gemm(1.0, a, b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[0][1] == 184.0 );
 	}
 	{
 		multi::array<complex, 2> c({size(a), size(~b)});
-		blas::gemm_n(1., begin(a), size(a), begin(b), 0., begin(c));  // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[0][1] == 184. );
+		blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));  // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[0][1] == 184.0 );
 	}
 	{
 		auto ar = +~a;
 		multi::array<complex, 2> c({size(~b), size(~ar)});
-		blas::gemm(1., ~ar, b, 0., ~c);  // c⸆=a⸆b, c=b⸆a
-		BOOST_REQUIRE( c[1][0] == 184. );
+		blas::gemm(1.0, ~ar, b, 0.0, ~c);  // c⸆=a⸆b, c=b⸆a
+		BOOST_REQUIRE( c[1][0] == 184.0 );
 	}
-	 {
+	{
 		auto ar = +~a;
 		multi::array<complex, 2> c({size(~b), size(~ar)});
-		blas::gemm_n(1., begin(~ar), size(~ar), begin(b), 0., begin(~c));  // c⸆=a⸆b, c=b⸆a
-		BOOST_REQUIRE( c[1][0] == 184. );
+		blas::gemm_n(1.0, begin(~ar), size(~ar), begin(b), 0.0, begin(~c));  // c⸆=a⸆b, c=b⸆a
+		BOOST_REQUIRE( c[1][0] == 184.0 );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_1x3_part_3x2) {
 	multi::array<double, 2> const a = {
-		{1, 9, 1},
-		{3, 3, 3}
+		{1.0, 9.0, 1.0},
+		{3.0, 3.0, 3.0}
 	};
 	BOOST_REQUIRE( stride(~a) == 1 );
 	BOOST_REQUIRE( stride( a) == 3 );
 	multi::array<double, 2> const b = {
-		{ 11, 12},
-		{  7, 19},
-		{  8, 1 }
+		{11.0, 12.0},
+		{ 7.0, 19.0},
+		{ 8.0,  1.0},
 	};
 	{
 		multi::array<double, 2> c({size(a({0, 1})), size(~b)});
-		blas::gemm(1., a({0, 1}), b, 0., c);  // c=a⸆b, c⸆=b⸆a
-		BOOST_REQUIRE( c[0][1] == 184 );
+		blas::gemm(1.0, a({0, 1}), b, 0.0, c);  // c=a⸆b, c⸆=b⸆a
+		BOOST_REQUIRE( c[0][1] == 184.0 );
 	}
 	{
 		multi::array<double, 2> c({size(a({0, 1})), size(~b)});
-		blas::gemm_n(1., begin(a({0, 1})), size(a({0, 1})), begin(b), 0., begin(c));  // c=a⸆b, c⸆=b⸆a
-		BOOST_REQUIRE( c[0][1] == 184 );
+		blas::gemm_n(1.0, begin(a({0, 1})), size(a({0, 1})), begin(b), 0.0, begin(c));  // c=a⸆b, c⸆=b⸆a
+		BOOST_REQUIRE( c[0][1] == 184.0 );
 	}
 	{
 		auto ar = +~a;
 		multi::array<double, 2> c({size(~b), size(~ar(extension(ar), {0, 1}))});
-		blas::gemm(1., ~(ar(extension(ar), {0, 1})), b, 0., ~c);  // c=a⸆b, c⸆=b⸆a
-		BOOST_REQUIRE( c[1][0] == 184 );
+		blas::gemm(1.0, ~(ar(extension(ar), {0, 1})), b, 0.0, ~c);  // c=a⸆b, c⸆=b⸆a
+		BOOST_REQUIRE( c[1][0] == 184.0 );
 	}
 	{
 		auto ar = +~a;
 		multi::array<double, 2> c({size(~b), size(~ar(extension(ar), {0, 1}))});
-		blas::gemm_n(1., begin(~(ar(extension(ar), {0, 1}))), size(~(ar(extension(ar), {0, 1}))), begin(b), 0., begin(~c));  // c=a⸆b, c⸆=b⸆a
-		BOOST_REQUIRE( c[1][0] == 184 );
+		blas::gemm_n(1.0, begin(~(ar(extension(ar), {0, 1}))), size(~(ar(extension(ar), {0, 1}))), begin(b), 0., begin(~c));  // c=a⸆b, c⸆=b⸆a
+		BOOST_REQUIRE( c[1][0] == 184.0 );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complexreal_1x3_part_3x2) {
 	using complex = std::complex<double>;
 	multi::array<complex, 2> const a = {
-		{1., 9., 1.},
-		{3., 3., 3.}
+		{1.0, 9.0, 1.0},
+		{3.0, 3.0, 3.0}
 	};
 	BOOST_REQUIRE( stride(~a) == 1 );
 	BOOST_REQUIRE( stride( a) == 3 );
 	multi::array<complex, 2> const b = {
-		{ 11., 12.},
-		{  7., 19.},
-		{  8.,  1.}
+		{ 11.0, 12.0},
+		{  7.0, 19.0},
+		{  8.0,  1.0}
 	};
 	{
 		multi::array<complex, 2> c({size(a({0, 1})), size(~b)});
-		blas::gemm(1., a({0, 1}), b, 0., c);
-		BOOST_REQUIRE( c[0][1] == 184. );
+		blas::gemm(1.0, a({0, 1}), b, 0.0, c);
+		BOOST_REQUIRE( c[0][1] == 184.0 );
 	}
 	{
 		multi::array<complex, 2> c({size(a({0, 1})), size(~b)});
-		blas::gemm_n(1., begin(a({0, 1})), size(a({0, 1})), begin(b), 0., begin(c));
-		BOOST_REQUIRE( c[0][1] == 184. );
+		blas::gemm_n(1.0, begin(a({0, 1})), size(a({0, 1})), begin(b), 0.0, begin(c));
+		BOOST_REQUIRE( c[0][1] == 184.0 );
 	}
 	{
 		auto ar = +~a;
 		multi::array<complex, 2> c({size(~b), size(~ar(extension(ar), {0, 1}))});
-		blas::gemm(1., ~(ar(extension(ar), {0, 1})), b, 0., ~c);
-		BOOST_REQUIRE( c[1][0] == 184. );
+		blas::gemm(1.0, ~(ar(extension(ar), {0, 1})), b, 0.0, ~c);
+		BOOST_REQUIRE( c[1][0] == 184.0 );
 	}
-	 {
+	{
 		auto ar = +~a;
 		multi::array<complex, 2> c({size(~b), size(~ar(extension(ar), {0, 1}))});
-		blas::gemm_n(1., begin(~(ar(extension(ar), {0, 1}))), size(~(ar(extension(ar), {0, 1}))), begin(b), 0., begin(~c));
-		BOOST_REQUIRE( c[1][0] == 184. );
+		blas::gemm_n(1.0, begin(~(ar(extension(ar), {0, 1}))), size(~(ar(extension(ar), {0, 1}))), begin(b), 0.0, begin(~c));
+		BOOST_REQUIRE( c[1][0] == 184.0 );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_2x3_3x1) {
 	multi::array<double, 2> const a = {
-		{1, 9, 1},
-		{3, 3, 3}
+		{1.0, 9.0, 1.0},
+		{3.0, 3.0, 3.0}
 	};
 	BOOST_REQUIRE( stride(~a) == 1 );
 	BOOST_REQUIRE( stride( a) == 3 );
 	multi::array<double, 2> const b = {
-		{ 11},
-		{  7},
-		{  8}
+		{ 11.0},
+		{  7.0},
+		{  8.0}
 	};
 	{
 		multi::array<double, 2> c({size(a), size(~b)});
-		blas::gemm(1., a, b, 0., c);  // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[0][0] == 82 );
-		BOOST_REQUIRE( c[1][0] == 78 );
+		blas::gemm(1.0, a, b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[0][0] == 82.0 );
+		BOOST_REQUIRE( c[1][0] == 78.0 );
 	}
 	{
 		multi::array<double, 2> c({size(a), size(~b)});
-		blas::gemm_n(1., begin(a), size(a), begin(b), 0., begin(c));  // c=a⸆b, c⸆=b⸆a
-		BOOST_REQUIRE( c[0][0] == 82 );
-		BOOST_REQUIRE( c[1][0] == 78 );
+		blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(c));  // c=a⸆b, c⸆=b⸆a
+		BOOST_REQUIRE( c[0][0] == 82.0 );
+		BOOST_REQUIRE( c[1][0] == 78.0 );
 	}
 	{
 		auto ar = +~a;
 		multi::array<double, 2> c({size(~b), size(~ar(extension(ar), {0, 1}))});
-		blas::gemm(1., ~(ar(extension(ar), {0, 1})), b, 0., ~c);  // c=a⸆b, c⸆=b⸆a
-		BOOST_REQUIRE( c[0][0] == 82 );
+		blas::gemm(1.0, ~(ar(extension(ar), {0, 1})), b, 0.0, ~c);  // c=a⸆b, c⸆=b⸆a
+		BOOST_REQUIRE( c[0][0] == 82.0 );
 	}
 	 {
 		auto ar = +~a;
 		multi::array<double, 2> c({size(~b), size(~ar(extension(ar), {0, 1}))});
 		blas::gemm_n(1., begin(~(ar(extension(ar), {0, 1}))), size(~(ar(extension(ar), {0, 1}))), begin(b), 0., begin(~c));  // c=a⸆b, c⸆=b⸆a
-		BOOST_REQUIRE( c[0][0] == 82 );
+		BOOST_REQUIRE( c[0][0] == 82.0 );
 	}
 }
 
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_2x3_3x1_bis) {
 	multi::array<double, 2> const a = {
-		{1, 9, 1},
-		{3, 4, 5}
+		{1.0, 9.0, 1.0},
+		{3.0, 4.0, 5.0}
 	};
 	multi::array<double, 2> const b = {
-		{ 11},
-		{  7},
-		{  8}
+		{ 11.0},
+		{  7.0},
+		{  8.0}
 	};
 
 	{
 		multi::array<double, 2> c({1, 2});
-		blas::gemm(1., a, b, 0., ~c);  // c⸆=ab, c=b⸆a⸆
-		BOOST_REQUIRE( (~c)[0][0] ==  82 );
-		BOOST_REQUIRE( (~c)[1][0] == 101 );
+		blas::gemm(1.0, a, b, 0.0, ~c);  // c⸆=ab, c=b⸆a⸆
+		BOOST_REQUIRE( (~c)[0][0] ==  82.0 );
+		BOOST_REQUIRE( (~c)[1][0] == 101.0 );
 	}
 	{
 		multi::array<double, 2> c({1, 2});
-		blas::gemm_n(1., begin(a), size(a), begin(b), 0., begin(~c));  // c⸆=ab, c=b⸆a⸆
-		BOOST_REQUIRE( (~c)[0][0] ==  82 );
-		BOOST_REQUIRE( (~c)[1][0] == 101 );
+		blas::gemm_n(1.0, begin(a), size(a), begin(b), 0.0, begin(~c));  // c⸆=ab, c=b⸆a⸆
+		BOOST_REQUIRE( (~c)[0][0] ==  82.0 );
+		BOOST_REQUIRE( (~c)[1][0] == 101.0 );
 	}
 	{
 		multi::array<double, 2> c({2, 1});
-		blas::gemm(1., a, b, 0., c);  // c⸆=ab, c=b⸆a⸆
-		BOOST_REQUIRE( (~c)[0][1] == 101 );
-		BOOST_REQUIRE(    c[1][0] == 101 );
+		blas::gemm(1.0, a, b, 0.0, c);  // c⸆=ab, c=b⸆a⸆
+		BOOST_REQUIRE( (~c)[0][1] == 101.0 );
+		BOOST_REQUIRE(    c[1][0] == 101.0 );
 	}
 	{
 		multi::array<double, 2> c({2, 1});
 		blas::gemm_n(1., begin(a), size(a), begin(b), 0., begin(c));  // c⸆=ab, c=b⸆a⸆
-		BOOST_REQUIRE( (~c)[0][1] == 101 );
-		BOOST_REQUIRE(    c[1][0] == 101 );
+		BOOST_REQUIRE( (~c)[0][1] == 101.0 );
+		BOOST_REQUIRE(    c[1][0] == 101.0 );
 	}
 	{
 		multi::array<double, 2> c({1, 2});
 		auto ar = +~a;
 		blas::gemm(1., ~ar, b, 0., ~c);  // c⸆=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[0][1] == 101 );
+		BOOST_REQUIRE( c[0][1] == 101.0 );
 	}
 	 {
 		multi::array<double, 2> c({1, 2});
 		auto ar = +~a;
 		blas::gemm_n(1., begin(~ar), size(~ar), begin(b), 0., begin(~c));  // c⸆=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[0][1] == 101 );
+		BOOST_REQUIRE( c[0][1] == 101.0 );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_1x3_3x1) {
 	multi::array<double, 2> const a = {
-		{1, 9, 1}
+		{1.0, 9.0, 1.0}
 	};
 	multi::array<double, 2> const b = {
-		{ 11},
-		{  7},
-		{  8}
+		{ 11.0},
+		{  7.0},
+		{  8.0}
 	};
 	{
 		multi::array<double, 2> c({1, 1});
 		blas::gemm(1., a, b, 0., c);  // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[0][0] == 82 );
+		BOOST_REQUIRE( c[0][0] == 82.0 );
 	}
 	{
 		multi::array<double, 2> c({1, 1});
 		blas::gemm_n(1., begin(a), size(a), begin(b), 0., begin(c));
-		BOOST_REQUIRE( c[0][0] == 82 );
+		BOOST_REQUIRE( c[0][0] == 82.0 );
 	}
 	{
 		multi::array<double, 2> c({1, 1});
 		auto ar = +~a;
-		blas::gemm(1., ~ar, b, 0., c);
-		BOOST_REQUIRE( c[0][0] == 82 );
+		blas::gemm(1.0, ~ar, b, 0.0, c);
+		BOOST_REQUIRE( c[0][0] == 82.0 );
 	}
 	{
 		multi::array<double, 2> c({1, 1});
 		auto ar =+ ~a;
-		blas::gemm_n(1., begin(~ar), size(~ar), begin(b), 0., begin(c));
-		BOOST_REQUIRE( c[0][0] == 82 );
+		blas::gemm_n(1.0, begin(~ar), size(~ar), begin(b), 0.0, begin(c));
+		BOOST_REQUIRE( c[0][0] == 82.0 );
 	}
 	{
 		multi::array<double, 2> c({1, 1});
 		auto br =+ ~b;
-		blas::gemm(1., a, ~br, 0., c);
-		BOOST_REQUIRE( c[0][0] == 82 );
+		blas::gemm(1.0, a, ~br, 0.0, c);
+		BOOST_REQUIRE( c[0][0] == 82.0 );
 	}
 	{
 		multi::array<double, 2> c({1, 1});
@@ -921,37 +921,37 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_1x3_3x1) {
 		BOOST_REQUIRE(begin(c).stride() == 1);
 		BOOST_REQUIRE(size(a) == 1);
 
-		blas::gemm_n(1., begin(a), size(a), begin(~br), 0., begin(c));
-		BOOST_REQUIRE( c[0][0] == 82 );
+		blas::gemm_n(1.0, begin(a), size(a), begin(~br), 0.0, begin(c));
+		BOOST_REQUIRE( c[0][0] == 82.0 );
 	}
 	{
 		multi::array<double, 2> c({1, 1});
 		auto br = +~b;
-		blas::gemm(1., a, blas::H(br), 0., c);
-		BOOST_REQUIRE( c[0][0] == 82 );
+		blas::gemm(1.0, a, blas::H(br), 0.0, c);
+		BOOST_REQUIRE( c[0][0] == 82.0 );
 	}
 	{
 		multi::array<double, 2> c({1, 1});
 		auto br = +~b;
-		blas::gemm_n(1., begin(a), size(a), begin(blas::H(br)), 0., begin(c));
-		BOOST_REQUIRE( c[0][0] == 82 );
+		blas::gemm_n(1.0, begin(a), size(a), begin(blas::H(br)), 0.0, begin(c));
+		BOOST_REQUIRE( c[0][0] == 82.0 );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_complex_square) {
-	using complex = std::complex<double>; constexpr complex I{0, 1};
+	using complex = std::complex<double>; constexpr complex I{0.0, 1.0};
 	multi::array<complex, 2> const a = {
-		{ 1.+3.*I, 3.+2.*I},
-		{ 9.+1.*I, 7.+1.*I},
+		{ 1.0 + 3.0*I, 3.0 + 2.0*I},
+		{ 9.0 + 1.0*I, 7.0 + 1.0*I},
 	};
 	multi::array<complex, 2> const b = {
-		{11.+2.*I, 12.+4.*I},
-		{ 7.+1.*I, 19.-9.*I},
+		{11.0 + 2.0*I, 12.0 + 4.0*I},
+		{ 7.0 + 1.0*I, 19.0 - 9.0*I},
 	};
 	{
 		multi::array<complex, 2> c({2, 2});
-		blas::gemm(1., a, b, 0., c);  // c=ab, c⸆=b⸆a⸆
-		BOOST_REQUIRE( c[1][0] == 145. + 43.*I );
+		blas::gemm(1.0, a, b, 0.0, c);  // c=ab, c⸆=b⸆a⸆
+		BOOST_REQUIRE( c[1][0] == 145.0 + 43.0*I );
 	}
 	{
 		multi::array<complex, 2> c({2, 2});
@@ -1798,7 +1798,7 @@ BOOST_AUTO_TEST_CASE(blas_gemm_inq_case) {  // https://gitlab.com/correaa/boost-
 		BOOST_REQUIRE(olap1[0][0] == olap2[0][0]);
 		BOOST_REQUIRE(olap3[0][0] == olap2[0][0]);
 	}
-	 {
+	{
 		multi::array<complex, 2> mat2 = mat({0, 3}, {0, 1});
 		auto olap3 =+ blas::gemm(1., blas::H(mat({0, 3}, {0, 1})), vec);
 		BOOST_REQUIRE( (+blas::gemm(1., blas::H(mat2), vec))[0][0] == (+blas::gemm(1., blas::H(mat({0, 3}, {0, 1})), vec))[0][0] );
@@ -1810,79 +1810,79 @@ BOOST_AUTO_TEST_CASE(blas_issue_109_part2) {
 	multi::array<double, 2> const A({ 3, 4}, 5.);  // NOLINT(readability-identifier-length) BLAS naming
 	multi::array<double, 2> const B({ 2, 3}, 7.);  // NOLINT(readability-identifier-length) BLAS naming
 
-	multi::array<double, 2> C({2, 4}, 999.);  // NOLINT(readability-identifier-length) BLAS naming
-	blas::gemm(1., ~A, ~B, 0., ~C);
+	multi::array<double, 2> C({2, 4}, 999.0);  // NOLINT(readability-identifier-length) BLAS naming
+	blas::gemm(1.0, ~A, ~B, 0.0, ~C);
 
-	BOOST_TEST_REQUIRE( C[0][0] == 105. );
-	BOOST_TEST_REQUIRE( C[0][1] == 105. );
-	BOOST_TEST_REQUIRE( C[1][0] == 105. );
+	BOOST_TEST_REQUIRE( C[0][0] == 105.0 );
+	BOOST_TEST_REQUIRE( C[0][1] == 105.0 );
+	BOOST_TEST_REQUIRE( C[1][0] == 105.0 );
 }
 
 BOOST_AUTO_TEST_CASE(blas_issue_109) {
-	multi::array<double, 2> const A({ 3, 4}, 5.);  // NOLINT(readability-identifier-length) BLAS naming
-	multi::array<double, 2> const B({ 2, 3}, 7.);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<double, 2> const A({ 3, 4}, 5.0);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<double, 2> const B({ 2, 3}, 7.0);  // NOLINT(readability-identifier-length) BLAS naming
 
-	multi::array<double, 2> C({4, 2}, 999.);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<double, 2> C({4, 2}, 999.0);  // NOLINT(readability-identifier-length) BLAS naming
 	blas::gemm(1., ~A, ~B, 0., C);
 
-	BOOST_TEST_REQUIRE( C[0][0] == 105. );
-	BOOST_TEST_REQUIRE( C[0][1] == 105. );
-	BOOST_TEST_REQUIRE( C[1][0] == 105. );
+	BOOST_TEST_REQUIRE( C[0][0] == 105.0 );
+	BOOST_TEST_REQUIRE( C[0][1] == 105.0 );
+	BOOST_TEST_REQUIRE( C[1][0] == 105.0 );
 }
 
 BOOST_AUTO_TEST_CASE(blas_issue_109_part2_complex) {
-	multi::array<std::complex<double>, 2> const A({ 3, 4}, 5.);  // NOLINT(readability-identifier-length) BLAS naming
-	multi::array<std::complex<double>, 2> const B({ 2, 3}, 7.);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<std::complex<double>, 2> const A({3, 4}, {5.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<std::complex<double>, 2> const B({2, 3}, {7.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
 
-	multi::array<std::complex<double>, 2> C({2, 4}, 999.);  // NOLINT(readability-identifier-length) BLAS naming
-	blas::gemm(1., ~A, ~B, 0., ~C);
+	multi::array<std::complex<double>, 2> C({2, 4}, {999.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
+	blas::gemm({1.0, 0.0}, ~A, ~B, {0.0, 0.0}, ~C);
 
-	BOOST_TEST_REQUIRE( C[0][0] == 105. );
-	BOOST_TEST_REQUIRE( C[0][1] == 105. );
-	BOOST_TEST_REQUIRE( C[1][0] == 105. );
+	BOOST_TEST_REQUIRE( C[0][0] == 105.0 );
+	BOOST_TEST_REQUIRE( C[0][1] == 105.0 );
+	BOOST_TEST_REQUIRE( C[1][0] == 105.0 );
 }
 
 BOOST_AUTO_TEST_CASE(blas_issue_109_complex) {
-	multi::array<std::complex<double>, 2> const A({ 3, 4}, 5.);  // NOLINT(readability-identifier-length) BLAS naming
-	multi::array<std::complex<double>, 2> const B({ 2, 3}, 7.);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<std::complex<double>, 2> const A({ 3, 4}, {5.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<std::complex<double>, 2> const B({ 2, 3}, {7.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
 
-	multi::array<std::complex<double>, 2> C({4, 2}, 999.);  // NOLINT(readability-identifier-length) BLAS naming
-	blas::gemm(1., ~A, ~B, 0., C);
+	multi::array<std::complex<double>, 2> C({4, 2}, {999.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
+	blas::gemm({1.0, 0.0}, ~A, ~B, {0.0, 0.0}, C);
 
-	BOOST_TEST_REQUIRE( C[0][0] == 105. );
-	BOOST_TEST_REQUIRE( C[0][1] == 105. );
-	BOOST_TEST_REQUIRE( C[1][0] == 105. );
+	BOOST_TEST_REQUIRE( C[0][0] == 105.0 );
+	BOOST_TEST_REQUIRE( C[0][1] == 105.0 );
+	BOOST_TEST_REQUIRE( C[1][0] == 105.0 );
 }
 
 BOOST_AUTO_TEST_CASE(blas_issue_109_complex_mx2) {
-	multi::array<std::complex<double>, 2> const A({ 3, 4}, 5.);  // NOLINT(readability-identifier-length) BLAS naming
-	multi::array<std::complex<double>, 2> const B({ 2, 3}, 7.);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<std::complex<double>, 2> const A({ 3, 4}, {5.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<std::complex<double>, 2> const B({ 2, 3}, {7.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
 
-	multi::array<std::complex<double>, 2> C({4, 2}, 999.);  // NOLINT(readability-identifier-length) BLAS naming
-	blas::gemm(1., ~A, ~B, 0., C);
+	multi::array<std::complex<double>, 2> C({4, 2}, {999.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
+	blas::gemm({1.0, 0.0}, ~A, ~B, {0.0, 0.0}, C);
 
-	BOOST_TEST_REQUIRE( C[0][0] == 105. );
-	BOOST_TEST_REQUIRE( C[1][0] == 105. );
+	BOOST_TEST_REQUIRE( C[0][0] == 105.0 );
+	BOOST_TEST_REQUIRE( C[1][0] == 105.0 );
 }
 
 BOOST_AUTO_TEST_CASE(blas_issue_109_complex_mx1) {
-	multi::array<std::complex<double>, 2> const A({ 3, 4}, 5.);  // NOLINT(readability-identifier-length) BLAS naming
-	multi::array<std::complex<double>, 2> const B({ 1, 3}, 7.);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<std::complex<double>, 2> const A({3, 4}, {5.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<std::complex<double>, 2> const B({1, 3}, {7.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
 
-	multi::array<std::complex<double>, 2> C({4, 1}, 999.);  // NOLINT(readability-identifier-length) BLAS naming
-	blas::gemm(1., ~A, ~B, 0., C);
+	multi::array<std::complex<double>, 2> C({4, 1}, {999.0, 0.0});  // NOLINT(readability-identifier-length) BLAS naming
+	blas::gemm(std::complex<double>{1.0, 0.0}, ~A, ~B, std::complex<double>{0.0, 0.0}, C);
 
-	BOOST_TEST_REQUIRE( C[0][0] == 105. );
-	BOOST_TEST_REQUIRE( C[1][0] == 105. );
+	BOOST_TEST_REQUIRE( C[0][0] == 105.0 );
+	BOOST_TEST_REQUIRE( C[1][0] == 105.0 );
 }
 
 BOOST_AUTO_TEST_CASE(blas_issue_109_double_mx1) {
-	multi::array<double, 2> const A({ 3, 4}, 5.);  // NOLINT(readability-identifier-length) BLAS naming
-	multi::array<double, 2> const B({ 1, 3}, 7.);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<double, 2> const A({3, 4}, 5.0);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<double, 2> const B({1, 3}, 7.0);  // NOLINT(readability-identifier-length) BLAS naming
 
-	multi::array<double, 2> C({4, 1}, 999.);  // NOLINT(readability-identifier-length) BLAS naming
-	blas::gemm(1., ~A, ~B, 0., C);
+	multi::array<double, 2> C({4, 1}, 999.0);  // NOLINT(readability-identifier-length) BLAS naming
+	blas::gemm(1.0, ~A, ~B, 0.0, C);
 
-	BOOST_TEST_REQUIRE( C[0][0] == 105. );
-	BOOST_TEST_REQUIRE( C[1][0] == 105. );
+	BOOST_TEST_REQUIRE( C[0][0] == 105.0 );
+	BOOST_TEST_REQUIRE( C[1][0] == 105.0 );
 }

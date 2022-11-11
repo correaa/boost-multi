@@ -23,19 +23,17 @@ class watch : private std::chrono::high_resolution_clock {
 	time_point start = now();
 
  public:
-	explicit watch(std::string label) : label{std::move(label)} {}
+	template<class String>
+	explicit watch(String&& label) : label{std::forward<String>(label)} {}  // NOLINT(fuchsia-default-arguments-calls)
+
 	watch(watch const&) = delete;
-	watch(watch&&) = default;
+	watch(watch&&) = delete;
+
 	auto operator=(watch const&) = delete;
-	auto operator=(watch&&) -> watch& = default;
+	auto operator=(watch&&) = delete;
+
 	auto elapsed_sec() const {return std::chrono::duration<double>(now() - start).count();}
-	~watch() {
-		std::cerr
-			<< label <<": "
-			<< elapsed_sec() <<" sec"
-			<<std::endl
-		;
-	}
+	~watch() { std::cerr<< label <<": "<< elapsed_sec() <<" sec"<<std::endl; }
 };
 
 BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001) ) {
@@ -51,7 +49,7 @@ BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001) ) {
 		return ret;
 	}();
 
-	std::vector<std::array<bool, 4>> which_cases = {
+	std::vector<std::array<bool, 4>> which_cases = {  // std::vector NOLINT(fuchsia-default-arguments-calls)
 		{false, true , true , true },
 		{false, true , true , false},
 		{true , false, false, false},
@@ -149,7 +147,7 @@ BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark, *boost::unit_test::enabled() ) {
 
 
 BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark_syntax) {
-	std::vector<std::array<bool, 4>> which_cases = {
+	std::vector<std::array<bool, 4>> which_cases = {  // std::vector NOLINT(fuchsia-default-arguments-calls)
 		{false, true , true , true },
 		{false, true , true , false},
 		{true , false, false, false},

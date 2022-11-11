@@ -96,15 +96,18 @@ struct alignas(32) employee {
 };
 
 BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
-	multi::array<employee, 1> d1D = { {"Al"  , 1430, 35}, {"Bob"  , 3212, 34} };
+	multi::array<employee, 1> d1D = {
+		{"Al" , 1430, 35},  // std::string NOLINT(fuchsia-default-arguments-calls)
+		{"Bob", 3212, 34}   // std::string NOLINT(fuchsia-default-arguments-calls)
+	};
 	auto&& d1D_names = d1D.member_cast<std::string>(&employee::name);
 	BOOST_REQUIRE( size(d1D_names) == size(d1D) );
 	BOOST_REQUIRE(  d1D_names[1] ==  d1D[1].name );
 	BOOST_REQUIRE( &d1D_names[1] == &d1D[1].name );
 
 	multi::array<employee, 2> d2D = {
-		{ {"Al"  , 1430, 35}, {"Bob"  , 3212, 34} },
-		{ {"Carl", 1589, 32}, {"David", 2300, 38} }
+		{ {"Al"  , 1430, 35}, {"Bob"  , 3212, 34} },  // std::string NOLINT(fuchsia-default-arguments-calls)
+		{ {"Carl", 1589, 32}, {"David", 2300, 38} }   // std::string NOLINT(fuchsia-default-arguments-calls)
 	};
 	BOOST_REQUIRE( d2D[0][0].name == "Al" );
 	BOOST_REQUIRE( d2D[0][0].salary == 1430 );

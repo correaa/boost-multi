@@ -16,8 +16,8 @@ BOOST_AUTO_TEST_CASE(array_cref) {
 	static_assert( std::is_same<std::pointer_traits<complex*>::element_type, complex>{}, "!");
 	static_assert( std::is_same<std::pointer_traits<complex*>::rebind<complex const>, complex const*>{}, "!");
 
-	std::vector<complex>        vec(100, 0.);
-	std::vector<complex> const cvec(100);
+	std::vector<complex>        vec(100, 0.);  // testing std::vector vs multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
+	std::vector<complex> const cvec(100);  // testing std::vector vs multi:array NOLINT(fuchsia-default-arguments-calls,-warnings-as-errors)
 
 	multi::array_ref<complex, 2> A2D(vec.data(), multi::extensions_t<2>{10, 10});
 	multi::array_ref<complex, 2, complex*> B2D(vec.data(), {10, 10});

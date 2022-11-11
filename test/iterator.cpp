@@ -69,10 +69,10 @@ BOOST_AUTO_TEST_CASE(iterator_2d) {
 		static_assert( std::is_same_v< citer::element_ptr, double const* >, "!");
 	}
 	{
-		std::vector<double> vec(10000);
+		std::vector<double> vec(10000);  // std::vector NOLINT(fuchsia-default-arguments-calls)
 		multi::array_ref<double, 2> arr(vec.data(), {100, 100});
 		BOOST_REQUIRE(size(arr) == 100);
-		begin(arr)[4][3] = 2.;
+		begin(arr)[4][3] = 2.0;
 	}
 }
 
@@ -181,9 +181,9 @@ BOOST_AUTO_TEST_CASE(iterator_semantics) {
 
 BOOST_AUTO_TEST_CASE(iterator_arrow_operator) {
 	multi::array<std::string, 2> arr = {
-		{"00", "01"},
-		{"10", "11"},
-		{"20", "21"}
+		{"00", "01"},  // std::string NOLINT(fuchsia-default-arguments-calls)
+		{"10", "11"},  // std::string NOLINT(fuchsia-default-arguments-calls)
+		{"20", "21"}   // std::string NOLINT(fuchsia-default-arguments-calls)
 	};
 
 	BOOST_REQUIRE( arr[1][0] == "10" );

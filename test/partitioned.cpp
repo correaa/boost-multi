@@ -45,12 +45,12 @@ BOOST_AUTO_TEST_CASE(array_partitioned_2d) {
 
 BOOST_AUTO_TEST_CASE(array_partitioned) {
 	multi::array<std::string, 2> A2 = {
-		{  "s0P0",  "s1P0"},
-		{  "s0P1",  "s1P1"},
-		{  "s0P2",  "s1P2"},
-		{  "s0P3",  "s1P3"},
-		{  "s0P4",  "s1P4"},
-		{  "s0P5",  "s1P5"},
+		{  "s0P0",  "s1P0"},  // std::string NOLINT(fuchsia-default-arguments-calls)
+		{  "s0P1",  "s1P1"},  // std::string NOLINT(fuchsia-default-arguments-calls)
+		{  "s0P2",  "s1P2"},  // std::string NOLINT(fuchsia-default-arguments-calls)
+		{  "s0P3",  "s1P3"},  // std::string NOLINT(fuchsia-default-arguments-calls)
+		{  "s0P4",  "s1P4"},  // std::string NOLINT(fuchsia-default-arguments-calls)
+		{  "s0P5",  "s1P5"},  // std::string NOLINT(fuchsia-default-arguments-calls)
 	};
 
 	BOOST_REQUIRE(  size(A2) == 6 );
