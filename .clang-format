@@ -10,7 +10,7 @@ AlignConsecutiveAssignments: Consecutive  # None
 #AlignConsecutiveDeclarations: None
 #AlignEscapedNewlines: Left
 #AlignOperands:   Align
-#AlignTrailingComments: true
+AlignTrailingComments: false
 #AllowAllArgumentsOnNextLine: true
 #AllowAllParametersOfDeclarationOnNextLine: true
 #AllowShortEnumsOnASingleLine: true
@@ -61,8 +61,8 @@ ColumnLimit:     0
 #CommentPragmas:  '^ IWYU pragma:'
 QualifierAlignment: Right  # Leave
 #CompactNamespaces: false
-#ConstructorInitializerIndentWidth: 4
-ContinuationIndentWidth: 4
+ConstructorInitializerIndentWidth: 0
+ContinuationIndentWidth: 99
 #Cpp11BracedListStyle: true
 #DeriveLineEnding: true
 #DerivePointerAlignment: true
