@@ -1,7 +1,7 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2018-2022 Alfredo A. Correa
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi utility"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi utility"  // test tile NOLINT(cppcoreguidelines-macro-usage)
 #include<boost/test/unit_test.hpp>
 
 #include "multi/array.hpp"
@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(std_array_extensions_3d) {
 BOOST_AUTO_TEST_CASE(std_array_extensions_2d) {
 	std::array<std::array<double, 4>, 3> arr = {};
 
-	static_assert( std::is_same<typename multi::array_traits<decltype(arr)>::element, double>{}, "!" );
+	static_assert( std::is_same<typename multi::array_traits<decltype(arr)>::element, double>{});
 
 	using multi::dimensionality;
 	BOOST_REQUIRE( dimensionality(arr) == 2 );
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE(std_array_extensions_2d) {
 BOOST_AUTO_TEST_CASE(std_array_extensions_1d) {
 	std::array<double, 4> arr = {};
 
-	static_assert( std::is_same<typename multi::array_traits<decltype(arr)>::element, double>{}, "!" );
+	static_assert( std::is_same<typename multi::array_traits<decltype(arr)>::element, double>{});
 
 	using multi::dimensionality;
 	BOOST_REQUIRE( dimensionality(arr) == 1 );
@@ -172,14 +172,14 @@ BOOST_AUTO_TEST_CASE(multi_utility_test) {
 	BOOST_REQUIRE( get<0>(sizes(arr)) == size(arr) );
 	using multi::get_allocator;
 
-	static_assert(std::is_same<decltype(get_allocator(arr)), std::allocator<double> >{}, "!");
+	static_assert(std::is_same<decltype(get_allocator(arr)), std::allocator<double> >{});
 
 	using std::addressof;
 
 	using multi::data_elements;
-	static_assert( std::is_same<decltype(data_elements(arr)), double*>{} , "!");
+	static_assert(std::is_same<decltype(data_elements(arr)), double*>{});
 //  BOOST_REQUIRE( data(A) == addressof(A[0]) );
-	BOOST_REQUIRE( data_elements(arr) == addressof(arr[0]) );
+	BOOST_REQUIRE(data_elements(arr) == addressof(arr[0]));
 }
 {
 	double arr[2][3] = {{1., 2., 3.}, {4., 5., 6.}};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : test legacy types

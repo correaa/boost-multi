@@ -1,8 +1,7 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2018-2022 Alfredo A. Correa
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi partitioned operation"
-#define BOOST_TEST_DYN_LINK
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi partitioned operation"  // test tile NOLINT(cppcoreguidelines-macro-usage)
 #include<boost/test/unit_test.hpp>
 
 #include "multi/array.hpp"
@@ -10,11 +9,11 @@
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(array_partitioned_1d) {
-	multi::array<double, 1>	A1 = {0, 1, 2, 3, 4, 5};
+	multi::array<double, 1>	A1 = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0};
 	auto&& A2_ref = A1.partitioned(2);
 
-	static_assert( std::decay<decltype(A2_ref)>::type::rank {} == decltype(A1)::rank {} + 1 , "!");
-	static_assert( std::decay_t<decltype(A2_ref)>::rank_v == decltype(A1)::rank_v +1        , "!");
+	static_assert( std::decay<decltype(A2_ref)>::type::rank {} == decltype(A1)::rank {} + 1 );
+	static_assert( std::decay_t<decltype(A2_ref)>::rank_v == decltype(A1)::rank_v + 1       );
 
 	BOOST_REQUIRE( size(A2_ref   ) == 2 );
 	BOOST_REQUIRE( size(A2_ref[0]) == 3 );
@@ -26,11 +25,11 @@ BOOST_AUTO_TEST_CASE(array_partitioned_1d) {
 
 BOOST_AUTO_TEST_CASE(array_partitioned_2d) {
 	multi::array<double, 2>	A2 = {
-		{  0,  1,  2,  3,  4,  5},
-		{  6,  7,  8,  9, 10, 11},
+		{  0.0,  1.0,  2.0,  3.0,  4.0,  5.0},
+		{  6.0,  7.0,  8.0,  9.0, 10.0, 11.0},
 
-		{ 12, 13, 14, 15, 16, 17},
-		{ 18, 19, 20, 21, 22, 23},
+		{ 12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
+		{ 18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
 	};
 	auto&& A3_ref = A2.partitioned(2);
 
@@ -64,7 +63,7 @@ BOOST_AUTO_TEST_CASE(array_partitioned) {
 	BOOST_REQUIRE( std::get<1>(sizes(A2)) == 2 );
 
 	BOOST_REQUIRE( size(A2.partitioned(3)) == 3 );
-	static_assert( decltype(A2.partitioned(3))::rank_v == 3 , "!");
+	static_assert( decltype(A2.partitioned(3))::rank_v == 3 );
 
 	BOOST_REQUIRE(( sizes(A2.partitioned(3)) == decltype(sizes(A2.partitioned(3))){3, 2, 2} ));
 
@@ -73,7 +72,7 @@ BOOST_AUTO_TEST_CASE(array_partitioned) {
 	BOOST_REQUIRE( std::get<2>(sizes(A2.partitioned(3))) == 2 );
 
 	BOOST_REQUIRE( size(A2.partitioned(1)) == 1 );
-	static_assert( decltype(A2.partitioned(1))::rank_v == 3 , "!");
+	static_assert( decltype(A2.partitioned(1))::rank_v == 3 );
 	BOOST_REQUIRE( &A2.partitioned(1).rotated()[3][1][0] == &A2[3][1] );
 }
 
@@ -154,22 +153,22 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 	wr.prop1 = 88;
 	BOOST_REQUIRE( wr.slater_array[2][1] == 5.21 );
 
-	wr.slater_array[2][1] = 9999.;
+	wr.slater_array[2][1] = 9999.0;
 }
 
 BOOST_AUTO_TEST_CASE(array_partitioned_add_to_last) {
 	multi::array<double, 3>	arr = {
 		{
-			{  0.,  1.,  2.,  3.,  4.,  5.},
-			{  6.,  7.,  8.,  9., 10., 11.},
-			{ 12., 13., 14., 15., 16., 17.},
-			{ 18., 19., 20., 21., 22., 23.},
+			{  0.0,  1.0,  2.0,  3.0,  4.0,  5.0},
+			{  6.0,  7.0,  8.0,  9.0, 10.0, 11.0},
+			{ 12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
+			{ 18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
 		},
 		{
-			{  0.,  1.,  2.,  3.,  4.,  5.},
-			{  6.,  7.,  8.,  9., 10., 11.},
-			{ 12., 13., 14., 15., 16., 17.},
-			{ 18., 19., 20., 21., 22., 23.},
+			{  0.0,  1.0,  2.0,  3.0,  4.0,  5.0},
+			{  6.0,  7.0,  8.0,  9.0, 10.0, 11.0},
+			{ 12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
+			{ 18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
 		}
 	};
 
@@ -189,13 +188,13 @@ BOOST_AUTO_TEST_CASE(array_partitioned_add_to_last) {
 }
 
 BOOST_AUTO_TEST_CASE(array_partitioned_vs_chunked_1D) {
-	multi::array<double, 1> arr = {0., 1., 2., 3., 4., 5., 6., 7., 8., 9., 10., 11.};
+	multi::array<double, 1> arr = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0};
 	BOOST_REQUIRE( size(arr.partitioned(3)) == 3 );
-	BOOST_REQUIRE( arr.partitioned(3)[1] == decltype(+arr.partitioned(3)[1])({4., 5., 6., 7.}) );
+	BOOST_REQUIRE( arr.partitioned(3)[1] == decltype(+arr.partitioned(3)[1])({4.0, 5.0, 6.0, 7.0}) );
 	BOOST_REQUIRE( &arr.partitioned(3)[1][2] == &arr[6] );
 
 	BOOST_REQUIRE( size(arr.chunked(3)) == 4 );
-	BOOST_REQUIRE( arr.chunked(3)[1] == decltype(+arr.chunked(3)[1])({3., 4., 5.}) );
+	BOOST_REQUIRE( arr.chunked(3)[1] == decltype(+arr.chunked(3)[1])({3.0, 4.0, 5.0}) );
 	BOOST_REQUIRE( &arr.chunked(3)[1][2] == &arr[5] );
 }
 
@@ -207,4 +206,3 @@ BOOST_AUTO_TEST_CASE(array_partitioned_vs_chunked_2D) {
 	BOOST_REQUIRE( size(arr.chunked(5)) == 20 );
 	BOOST_REQUIRE( &arr.chunked(5)[1][2] == &arr[7] );
 }
-
