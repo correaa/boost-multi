@@ -130,7 +130,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_gemv_real_complex) {
 	};
 	multi::array<complex, 1> const X = { {1.1, 0.0}, {2.1, 0.0}, {3.1, 0.0}, {4.1, 0.0} };  // NOLINT(readability-identifier-length) BLAS naming
 	{
-		multi::array<complex, 1> Y = {4.0, 5.0, 6.0};  // NOLINT(readability-identifier-length) BLAS naming
+		multi::array<complex, 1> Y = { {4.0, 0.0}, {5.0, 0.0}, {6.0, 0.0} };  // NOLINT(readability-identifier-length) BLAS naming
 		double const alpha = 1.1;
 		double const beta = 1.2;
 		blas::gemv(alpha, M, X, beta, Y);  // y = a*M*x + b*y
