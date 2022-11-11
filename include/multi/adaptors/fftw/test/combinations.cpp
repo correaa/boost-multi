@@ -15,6 +15,8 @@ namespace multi = boost::multi;
 
 namespace utf = boost::unit_test::framework;
 
+using namespace std::string_literals;
+
 using fftw_fixture = multi::fftw::environment;
 BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
 
@@ -66,39 +68,39 @@ BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001) ) {
 
 		multi::array<complex, 4> out = in;
 		{
-			watch unnamed{"cpu_oplac %ws wall, CPU (%p%)\n"};
+			watch unnamed{"cpu_oplac %ws wall, CPU (%p%)\n"s};
 			multi::fftw::dft_forward(which, in, out);
 		}
 		{
 			multi::fftw::plan pln{which, in, out, multi::fftw::forward};
-			watch unnamed{"cpu_oplac planned %ws wall, CPU (%p%)\n"};
+			watch unnamed{"cpu_oplac planned %ws wall, CPU (%p%)\n"s};
 			pln();
 		}
 		{
 			auto in_rw = in;
-			watch unnamed{"cpu_iplac %ws wall, CPU (%p%)\n"};
+			watch unnamed{"cpu_iplac %ws wall, CPU (%p%)\n"s};
 			multi::fftw::dft_forward(which, in_rw);
 		}
 		{
 			auto in_rw = in;
 			multi::fftw::plan pln{which, in_rw, in_rw, multi::fftw::forward};
-			watch unnamed{"cpu_iplac planned %ws wall, CPU (%p%)\n"};
+			watch unnamed{"cpu_iplac planned %ws wall, CPU (%p%)\n"s};
 			pln();
 		}
 		{
 			auto in_rw = in;
 			multi::fftw::plan pln{which, in_rw, in_rw, multi::fftw::forward};
-			watch unnamed{"cpu_iplac planned measured %ws wall, CPU (%p%)\n"};
+			watch unnamed{"cpu_iplac planned measured %ws wall, CPU (%p%)\n"s};
 			pln();
 		}
 		{
-			watch unnamed{"cpu_alloc %ws wall, CPU (%p%)\n"};
+			watch unnamed{"cpu_alloc %ws wall, CPU (%p%)\n"s};
 			auto out_cpy = multi::fftw::dft_forward(which, in);
 			BOOST_TEST(abs(out_cpy[5][4][3][1] - out[5][4][3][1]) == 0.);
 		}
 		{
 			auto in_rw = in;
-			watch unnamed{"cpu_move %ws wall, CPU (%p%)\n"};
+			watch unnamed{"cpu_move %ws wall, CPU (%p%)\n"s};
 			auto out_cpy = multi::fftw::dft_forward(which, std::move(in_rw));
 			BOOST_TEST(abs(out_cpy[5][4][3][1] - out[5][4][3][1]) == 0.);
 		}
@@ -115,30 +117,30 @@ BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark, *boost::unit_test::enabled() ) {
 
 	BOOST_REQUIRE(in[0][0][0][0] == 1.2);
 	std::array<bool, 4> which = {false, true, true, true};
-	[&, unnamed = watch{utf::current_test_case().full_name()+" inplace FTTT"}] {
+	[&, unnamed = watch{utf::current_test_case().full_name()+" inplace FTTT"s}] {
 		fftw::dft(which, in, fftw::forward);
 	}();
-	[&, unnamed = watch{utf::current_test_case().full_name()+" inplace FTTT"}] {
+	[&, unnamed = watch{utf::current_test_case().full_name()+" inplace FTTT"s}] {
 		fftw::dft(which, in, fftw::forward);
 	}();
 	auto in0000 = in[0][0][0][0];
 	BOOST_REQUIRE(in0000 != 1.2);
 
 	multi::array<complex, 4> out(exts);
-	[&, unnamed = watch{utf::current_test_case().full_name()+" outofplace FTTT"}] {
+	[&, unnamed = watch{utf::current_test_case().full_name()+" outofplace FTTT"s}] {
 		fftw::dft(which, in, out, fftw::forward);
 	}();
-	[&, unnamed = watch{utf::current_test_case().full_name()+" outofplace FTTT"}] {
+	[&, unnamed = watch{utf::current_test_case().full_name()+" outofplace FTTT"s}] {
 		fftw::dft(which, in, out, fftw::forward);
 	}();
-	[&, unnamed = watch{utf::current_test_case().full_name()+" outofplace FTTT"}] {
+	[&, unnamed = watch{utf::current_test_case().full_name()+" outofplace FTTT"s}] {
 		fftw::dft(which, in, out, fftw::forward);
 	}();
-	[&, unnamed = watch{utf::current_test_case().full_name()+" outofplace+alloc FTTT"}] {
+	[&, unnamed = watch{utf::current_test_case().full_name()+" outofplace+alloc FTTT"s}] {
 		multi::array<complex, 4> out2(exts);
 		fftw::dft(which, in, out2, fftw::forward);
 	}();
-	[&, unnamed = watch{utf::current_test_case().full_name()+" outofplace+alloc FTTT"}] {
+	[&, unnamed = watch{utf::current_test_case().full_name()+" outofplace+alloc FTTT"s}] {
 		multi::array<complex, 4> out2(exts);
 		fftw::dft(which, in, out2, fftw::forward);
 	}();

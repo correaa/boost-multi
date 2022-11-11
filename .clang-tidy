@@ -24,20 +24,13 @@ CheckOptions:
 Checks: '*,
   -altera-id-dependent-backward-branch,
   -altera-struct-pack-align,
-  -clang-diagnostic-c++98-compat-unnamed-type-template-args,
-  -cppcoreguidelines-avoid-magic-numbers,
-  -cppcoreguidelines-macro-usage,
   -cppcoreguidelines-pro-bounds-array-to-pointer-decay,
-  -cppcoreguidelines-pro-type-vararg,
-  -fuchsia-default-arguments-declarations,
+  -cppcoreguidelines-macro-usage,
+  -cppcoreguidelines-avoid-magic-numbers,
   -fuchsia-overloaded-operator,
-  -fuchsia-statically-constructed-objects,
   -fuchsia-trailing-return,
-  -hicpp-no-array-decay,
-  -llvmlibc-callee-namespace,
   -llvm-header-guard,
-  -llvmlibc-implementation-in-namespace,
-  -llvmlibc-restrict-system-libc-headers,
+  -llvmlibc-*,
   -modernize-use-nodiscard,
   -readability-magic-numbers
 '
@@ -49,17 +42,11 @@ Checks: '*,
 #  -cppcoreguidelines-avoid-magic-numbers,                // all tests use magic numbers
 #  -cppcoreguidelines-macro-usage,                        // definition of BOOST_TEST_MODULE macro requires this
 #  -cppcoreguidelines-pro-bounds-array-to-pointer-decay,  // assert macros need this
-#  -cppcoreguidelines-pro-type-vararg,                    // expansion of BOOST_REQUIRE macros require this
-#  -fuchsia-default-arguments-declarations                // BOOST_AUTO_TEST_CASE_TEMPLATE
-#  -fuchsia-overloaded-operator,                          // this library overloads operators (==, >, +, &)
-#  -fuchsia-statically-constructed-objects,               // expansion of BOOST_AUTO_TEST_CASE creates these
+#  -fuchsia-overloaded-operator,                          // this library overloads operators (==, <, +, &)
 #  -fuchsia-trailing-return,                              // to allow any '-> decltype(auto)'
 #  -hicpp-no-array-decay,                                 // all assert macros require this
-#  -hicpp-vararg,                                         // all expansions of BOOST_TEST_REQUIRE macros require this
 #  -llvm-header-guard,                                    // doesn't agree with Google style (cpplint)
-#  -llvmlibc-implementation-in-namespace,                 // nonsense warning
-#  -llvmlibc-callee-namespace,                            // nonsense warning
-#  -llvmlibc-restrict-system-libc-headers,                // nonsense warning
+#  -llvmlibc-*,                                           // nonsense warnings, for llvm developers
 #  -modernize-use-nodiscard,                              // this would add [[nodiscard]] to almost all functions, adding a lot of noise
 #  -readability-magic-numbers,                            // all tests use magic numbers
 

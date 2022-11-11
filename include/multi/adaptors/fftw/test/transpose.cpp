@@ -12,6 +12,8 @@
 
 namespace multi = boost::multi;
 
+using namespace std::string_literals;
+
 class watch : private std::chrono::high_resolution_clock {
 	std::string label;
 	time_point start = now();
@@ -52,7 +54,7 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 		{
 			multi::array<complex, 2> out = in;
 			 {
-				watch unnamed{"transposition with aux   %ws wall, CPU (%p%)\n"};
+				watch unnamed{"transposition with aux   %ws wall, CPU (%p%)\n"s};
 				multi::array<complex, 2> aux = ~out;
 				out = std::move(aux);
 				BOOST_REQUIRE( out[35][79] == in[79][35] );
@@ -62,7 +64,7 @@ BOOST_AUTO_TEST_CASE(fftw_transpose) {
 			multi::array<complex, 2> out = in;
 			auto* out_data = out.data_elements();
 			 {
-				watch unnamed{"fftw transpose fun thread  %ws wall, CPU (%p%)\n"};
+				watch unnamed{"fftw transpose fun thread  %ws wall, CPU (%p%)\n"s};
 				multi::fftw::transpose( out );
 				BOOST_REQUIRE( out.data_elements() == out_data );
 				BOOST_REQUIRE( out[35][79] == in[79][35] );

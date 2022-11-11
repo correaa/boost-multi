@@ -1,12 +1,12 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
 // Copyright 2019-2022 Alfredo A. Correa
 
-#define BOOST_TEST_MODULE "Unit Tests for Multi sort"
+#define BOOST_TEST_MODULE "Unit Tests for Multi sort"  // test title NOLINT(cppcoreguidelines-macro-usage)
 #include<boost/test/unit_test.hpp>
 
 #include "multi/array.hpp"
 
-#include<algorithm>  // stable_sort
+#include<algorithm>  // for std::stable_sort
 #include<vector>
 
 namespace multi = boost::multi;
