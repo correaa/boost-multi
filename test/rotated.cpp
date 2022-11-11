@@ -1,7 +1,7 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4-*-
 // Copyright 2021-2022 Alfredo A. Correa
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi rotate"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi rotate"  // test tile NOLINT(cppcoreguidelines-macro-usage)
 #include<boost/test/unit_test.hpp>
 
 #include "multi/array.hpp"
@@ -139,4 +139,3 @@ BOOST_AUTO_TEST_CASE(miguel) {
 	auto const& G3D = G2D.rotated().partitioned(7).sliced(0, 3).unrotated();
 	BOOST_REQUIRE( &G3D[0][0][0] == &G2D[0][0] );
 }
-
