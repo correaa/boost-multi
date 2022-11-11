@@ -192,7 +192,6 @@ BOOST_AUTO_TEST_CASE(fftw_1D_const_forward) {
 	BOOST_REQUIRE( bwd[2] == -2.0 - 2.0*I  );
 }
 
-
 BOOST_AUTO_TEST_CASE(fftw_1D_const_sign) {
 	multi::array<complex, 1> const in = {1.0 + 2.0*I, 2.0 + 3.0*I, 4.0 + 5.0*I, 5.0 + 6.0*I};
 
