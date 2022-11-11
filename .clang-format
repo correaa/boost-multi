@@ -3,7 +3,7 @@ Language:        Cpp
 # BasedOnStyle:  Google
 #AccessModifierOffset: -1
 AlignAfterOpenBracket: BlockIndent  # Align
-#AlignArrayOfStructures: None
+AlignArrayOfStructures: Right
 #AlignConsecutiveMacros: None
 AlignConsecutiveAssignments: Consecutive  # None
 #AlignConsecutiveBitFields: None
@@ -62,7 +62,7 @@ ColumnLimit:     0
 QualifierAlignment: Right  # Leave
 #CompactNamespaces: false
 #ConstructorInitializerIndentWidth: 4
-#ContinuationIndentWidth: 4
+ContinuationIndentWidth: 4
 #Cpp11BracedListStyle: true
 #DeriveLineEnding: true
 #DerivePointerAlignment: true
@@ -216,7 +216,9 @@ SpacesInLineCommentPrefix:
 #  - QT_REQUIRE_VERSION
 TabWidth:        99
 #UseCRLF:         false
-UseTab:         Always  # Never
+UseTab:         ForContinuationAndIndentation  # Never
+WhitespaceSensitiveMacros:
+  - BOOST_REQUIRE
 #WhitespaceSensitiveMacros:
 #  - STRINGIZE
 #  - PP_STRINGIZE

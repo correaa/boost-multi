@@ -1,8 +1,8 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2018-2022 Alfredo A. Correa
 
-#ifndef MULTI_DETAIL_INDEX_RANGE_HPP_
-#define MULTI_DETAIL_INDEX_RANGE_HPP_
+#ifndef MULTI_DETAIL_INDEX_RANGE_HPP
+#define MULTI_DETAIL_INDEX_RANGE_HPP
 
 #include "multi/detail/serialization.hpp"
 #include "multi/detail/tuple_zip.hpp"
@@ -303,4 +303,4 @@ constexpr auto contains(index_extensions<D> const& iex, Tuple const& tup) {
 }
 
 }  // end namespace boost::multi
-#endif  //  MULTI_DETAIL_INDEX_RANGE_HPP_
+#endif  // MULTI_DETAIL_INDEX_RANGE_HPP
