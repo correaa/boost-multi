@@ -1,24 +1,22 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2018-2022 Alfredo A. Correa
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi element access"  // NOLINT(cppcoreguidelines-macro-usage) title
-#include<boost/test/unit_test.hpp>
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi element access"  // test title NOLINT(cppcoreguidelines-macro-usage) title
+#include <boost/test/unit_test.hpp>
 
 #include "multi/array.hpp"
 
 #include <deque>
-#include <numeric>  // for iota
+#include <numeric>  // for std::iota
 
 namespace multi = boost::multi;
 
-template<class T> void what(T&&) = delete;
-
 namespace test_bee {
-	struct bee{};
+struct bee {};
 
-	template<class Array> auto paren(Array&& arr, bee const&/*unused*/) -> decltype(auto) {
-		return std::forward<Array>(arr)(0);
-	}
+template<class Array> auto paren(Array&& arr, bee const& /*unused*/) -> decltype(auto) {
+	return std::forward<Array>(arr)(0);
+}
 }  // end namespace test_bee
 
 BOOST_AUTO_TEST_CASE(overload_paren) {
@@ -66,7 +64,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_extension_with_tuple) {
 		BOOST_REQUIRE( size(arr) == 3 );
 	}
 	{
-		auto arr = std::apply([](auto const&... szs) {return multi::array<double, 2>({szs...}, 55.);}, std::make_tuple(3, 4));
+		auto arr = std::apply([](auto const&... szs) { return multi::array<double, 2>({szs...}, 55.); }, std::make_tuple(3, 4));
 		BOOST_REQUIRE( size(arr) == 3 );
 		BOOST_REQUIRE( std::get<0>(sizes(arr)) == 3 );
 		BOOST_REQUIRE( std::get<1>(sizes(arr)) == 4 );
@@ -79,26 +77,23 @@ BOOST_AUTO_TEST_CASE(multi_test_constness_reference) {
 	BOOST_REQUIRE( size( carr(1, {0, 3}) ) == 3 );
 
 	BOOST_REQUIRE( carr(1, {0, 3})[1] == 99. );
-	static_assert( decltype( carr({0, 3}, 1) )::rank_v == 1 , "!");
+	static_assert(decltype(carr({0, 3}, 1))::rank_v == 1);
 	BOOST_REQUIRE( size(carr.sliced(0, 3)) == 3 );
 
 	BOOST_REQUIRE( carr.range({0, 3}).rotated()[1].unrotated().size() == 3 );
 
 	BOOST_REQUIRE( carr({0, 3}, {0, 3})[1][1] == 99. );
 
-	static_assert(not std::is_assignable_v<decltype(carr(1, {0, 3})[1]), double>, "!");
-
-//  none of these lines should compile because m is read-only
-//  m(1, {0, 3})[1] = 88.;
-//  m({0, 3}, 1)[1] = 77.;
-//  m({0, 3}, {0, 3})[1][1] = 66.;
+	static_assert(not std::is_assignable_v<decltype(carr(1, {0, 3})[1]), double>);
 }
 
 BOOST_AUTO_TEST_CASE(multi_test_stencil) {
+	using namespace std::string_literals;
+
 	multi::array<std::string, 2> arr = {
-		{"a", "b", "c", "d", "e"},  // std::string NOLINT(fuchsia-default-arguments-calls)
-		{"f", "g", "h", "f", "g"},  // std::string NOLINT(fuchsia-default-arguments-calls)
-		{"h", "i", "j", "k", "l"},  // std::string NOLINT(fuchsia-default-arguments-calls)
+		{"a"s, "b"s, "c"s, "d"s, "e"s},
+		{"f"s, "g"s, "h"s, "f"s, "g"s},
+		{"h"s, "i"s, "j"s, "k"s, "l"s},
 	};
 
 	BOOST_REQUIRE(      size(arr) == 3                                            );
@@ -239,15 +234,13 @@ BOOST_AUTO_TEST_CASE(elements_rvalues_nomove) {
 
 BOOST_AUTO_TEST_CASE(elements_rvalues_assignment) {
 	std::vector<double> vec = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
-	std::move(vec) = std::vector<double>{3.0, 4.0, 5.0};  // NOLINT(fuchsia-default-arguments-calls)
-	std::move(vec)[1] = 99.0;  // it compiles  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
-//  std::move(v[1]) = 99.0;  // does not compile
 
-//  double a = 5.;
-//  std::move(a) = 9.;  // does not compile
-//  BOOST_REQUIRE( a == 9. );
+	std::move(vec) = std::vector<double>{3.0, 4.0, 5.0};  // NOLINT(fuchsia-default-arguments-calls)
+
+	std::move(vec)[1] = 99.0;  // it compiles  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
 
 	multi::array<double, 1> arr1 = {1.0, 2.0, 3.0};
 	multi::array<double, 1> arr2 = {1.0, 2.0, 3.0};
+
 	std::move(arr1) = arr2;  // this compiles TODO(correaa) should it?
 }

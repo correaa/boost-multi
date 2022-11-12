@@ -2,18 +2,19 @@
 // Copyright 2018-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi partitioned operation"  // test tile NOLINT(cppcoreguidelines-macro-usage)
-#include<boost/test/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include "multi/array.hpp"
 
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(array_partitioned_1d) {
-	multi::array<double, 1>	A1 = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0};
+	multi::array<double, 1> A1 = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0};
+
 	auto&& A2_ref = A1.partitioned(2);
 
-	static_assert( std::decay<decltype(A2_ref)>::type::rank {} == decltype(A1)::rank {} + 1 );
-	static_assert( std::decay_t<decltype(A2_ref)>::rank_v == decltype(A1)::rank_v + 1       );
+	static_assert(std::decay<decltype(A2_ref)>::type::rank{} == decltype(A1)::rank{} + 1);
+	static_assert(std::decay_t<decltype(A2_ref)>::rank_v == decltype(A1)::rank_v + 1);
 
 	BOOST_REQUIRE( size(A2_ref   ) == 2 );
 	BOOST_REQUIRE( size(A2_ref[0]) == 3 );
@@ -24,16 +25,16 @@ BOOST_AUTO_TEST_CASE(array_partitioned_1d) {
 }
 
 BOOST_AUTO_TEST_CASE(array_partitioned_2d) {
-	multi::array<double, 2>	A2 = {
-		{  0.0,  1.0,  2.0,  3.0,  4.0,  5.0},
-		{  6.0,  7.0,  8.0,  9.0, 10.0, 11.0},
+	multi::array<double, 2> A2 = {
+		{ 0.0,  1.0,  2.0,  3.0,  4.0,  5.0},
+		{ 6.0,  7.0,  8.0,  9.0, 10.0, 11.0},
 
-		{ 12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
-		{ 18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
+		{12.0, 13.0, 14.0, 15.0, 16.0, 17.0},
+		{18.0, 19.0, 20.0, 21.0, 22.0, 23.0},
 	};
 	auto&& A3_ref = A2.partitioned(2);
 
-	static_assert( std::decay_t<decltype(A3_ref)>::rank_v == decltype(A2)::rank_v + 1 , "!");
+	static_assert(std::decay_t<decltype(A3_ref)>::rank_v == decltype(A2)::rank_v + 1);
 
 	BOOST_REQUIRE( num_elements(A3_ref) == num_elements(A2) );
 	BOOST_REQUIRE( size(A3_ref)==2 );
@@ -43,13 +44,15 @@ BOOST_AUTO_TEST_CASE(array_partitioned_2d) {
 }
 
 BOOST_AUTO_TEST_CASE(array_partitioned) {
+	using namespace std::string_literals;
+
 	multi::array<std::string, 2> A2 = {
-		{  "s0P0",  "s1P0"},  // std::string NOLINT(fuchsia-default-arguments-calls)
-		{  "s0P1",  "s1P1"},  // std::string NOLINT(fuchsia-default-arguments-calls)
-		{  "s0P2",  "s1P2"},  // std::string NOLINT(fuchsia-default-arguments-calls)
-		{  "s0P3",  "s1P3"},  // std::string NOLINT(fuchsia-default-arguments-calls)
-		{  "s0P4",  "s1P4"},  // std::string NOLINT(fuchsia-default-arguments-calls)
-		{  "s0P5",  "s1P5"},  // std::string NOLINT(fuchsia-default-arguments-calls)
+		{"s0P0"s, "s1P0"s},
+		{"s0P1"s, "s1P1"s},
+		{"s0P2"s, "s1P2"s},
+		{"s0P3"s, "s1P3"s},
+		{"s0P4"s, "s1P4"s},
+		{"s0P5"s, "s1P5"s},
 	};
 
 	BOOST_REQUIRE(  size(A2) == 6 );
@@ -63,7 +66,7 @@ BOOST_AUTO_TEST_CASE(array_partitioned) {
 	BOOST_REQUIRE( std::get<1>(sizes(A2)) == 2 );
 
 	BOOST_REQUIRE( size(A2.partitioned(3)) == 3 );
-	static_assert( decltype(A2.partitioned(3))::rank_v == 3 );
+	static_assert(decltype(A2.partitioned(3))::rank_v == 3);
 
 	BOOST_REQUIRE(( sizes(A2.partitioned(3)) == decltype(sizes(A2.partitioned(3))){3, 2, 2} ));
 
@@ -72,42 +75,46 @@ BOOST_AUTO_TEST_CASE(array_partitioned) {
 	BOOST_REQUIRE( std::get<2>(sizes(A2.partitioned(3))) == 2 );
 
 	BOOST_REQUIRE( size(A2.partitioned(1)) == 1 );
-	static_assert( decltype(A2.partitioned(1))::rank_v == 3 );
+	static_assert(decltype(A2.partitioned(1))::rank_v == 3);
 	BOOST_REQUIRE( &A2.partitioned(1).rotated()[3][1][0] == &A2[3][1] );
 }
 
 template<class Ref> class propagate_const;
 
-template<class T> class propagate_const<T&>{
+template<class T> class propagate_const<T&> {
 	T& r_;
 
  public:
 	explicit propagate_const(T& other) : r_{other} {}
 	propagate_const(propagate_const const&) = delete;
-	propagate_const(propagate_const&&) = delete;
-	// NOLINTNEXTLINE(fuchsia-trailing-return,-warnings-as-errors): reference adaptor
-	auto operator=(propagate_const const&) -> propagate_const& = default;
-	// NOLINTNEXTLINE(fuchsia-trailing-return,-warnings-as-errors): reference adaptor
+	propagate_const(propagate_const&&)      = delete;
+
+	auto operator=(propagate_const const&) -> propagate_const&     = default;
 	auto operator=(propagate_const&&) noexcept -> propagate_const& = default;
-	// NOLINTNEXTLINE(fuchsia-trailing-return,-warnings-as-errors): reference adaptor
-	auto operator=(T const& other) -> propagate_const& {r_ = other; return *this;}
+
+	auto operator=(T const& other) -> propagate_const& {
+		r_ = other;
+		return *this;
+	}
+
 	~propagate_const() noexcept = default;
-	explicit operator T const&() const noexcept {return r_;}
-	explicit operator T      &()       noexcept {return r_;}
+
+	explicit operator T const&() const noexcept { return r_; }
+	explicit operator T&() noexcept { return r_; }
 };
 
-template<class T> class propagate_const<T const&>{
+template<class T> class propagate_const<T const&> {
 	T const& r_;
 
  public:
 	explicit propagate_const(T const& other) : r_{other} {}
-	// NOLINTNEXTLINE(fuchsia-trailing-return,-warnings-as-errors): reference adaptor
 	auto operator=(T const& other) -> propagate_const& = delete;
-	explicit operator T const&() const noexcept {return r_;}
+	explicit operator T const&() const noexcept { return r_; }
 };
 
 BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
-	multi::array<double, 2> arr = {  // arr[walker][encoded_property]  // 7 walkers
+	// arr[walker][encoded_property]  // 7 walkers
+	multi::array<double, 2> arr = {
 		{99., 99., 0.00, 0.01, 0.10, 0.11, 0.20, 0.21, 99.},
 		{99., 99., 1.00, 1.01, 1.10, 1.11, 1.20, 1.21, 99.},
 		{99., 99., 2.00, 2.01, 2.10, 2.11, 2.20, 2.21, 99.},
@@ -118,9 +125,10 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 	};
 
 	multi::iextension const encoded_3x2_range = {2, 8};
+
 	auto&& arrRPU = arr.rotated()(encoded_3x2_range).partitioned(3).unrotated();
 
-	static_assert( decltype(+arrRPU)::rank_v == 3 , "!");
+	static_assert(decltype(+arrRPU)::rank_v == 3);
 	BOOST_REQUIRE(( sizes(arrRPU) == decltype(sizes(arrRPU)){7, 3, 2} ));
 	BOOST_REQUIRE( arrRPU[4].num_elements() == 3*2L );
 
@@ -135,22 +143,26 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 		}
 	));
 
-	arrRPU[4][1][0] = 1111.;
-	BOOST_REQUIRE( arr[4][4] == 1111. );
+	arrRPU[4][1][0] = 1111.0;
+	BOOST_REQUIRE( arr[4][4] == 1111.0 );
 
-	class walker_ref{
+	class walker_ref {
 		using raw_source_reference = decltype(std::declval<multi::array<double, 2>&>()[0]);
-		using internal_array_type = decltype(std::declval<raw_source_reference>()({2, 8}).partitioned(3));
-	public:
-		propagate_const<double&> prop1;    // NOLINT(misc-non-private-member-variables-in-classes)
-		propagate_const<double&> prop2;    // NOLINT(misc-non-private-member-variables-in-classes)
+		using internal_array_type  = decltype(std::declval<raw_source_reference>()({2, 8}).partitioned(3));
+
+	 public:
+		propagate_const<double&> prop1;  // NOLINT(misc-non-private-member-variables-in-classes)
+		propagate_const<double&> prop2;  // NOLINT(misc-non-private-member-variables-in-classes)
 		internal_array_type slater_array;  // NOLINT(misc-non-private-member-variables-in-classes)
-		propagate_const<double&> prop3;    // NOLINT(misc-non-private-member-variables-in-classes)
-		explicit walker_ref(raw_source_reference&& row) : prop1{row[0]}, prop2{row[1]}, slater_array{row({2, 8}).partitioned(3)}, prop3{row[8]}{}
+		propagate_const<double&> prop3;  // NOLINT(misc-non-private-member-variables-in-classes)
+
+		explicit walker_ref(raw_source_reference&& row) : prop1{row[0]}, prop2{row[1]}, slater_array{row({2, 8}).partitioned(3)}, prop3{row[8]} {}
 	};
 
 	auto&& wr = walker_ref(arr[5]);
+
 	wr.prop1 = 88;
+
 	BOOST_REQUIRE( wr.slater_array[2][1] == 5.21 );
 
 	wr.slater_array[2][1] = 9999.0;
@@ -172,7 +184,7 @@ BOOST_AUTO_TEST_CASE(array_partitioned_add_to_last) {
 		}
 	};
 
-	auto strides = std::apply([](auto... strds) {return std::array<std::ptrdiff_t, sizeof...(strds)>{{strds...}};}, arr.strides());
+	auto strides = std::apply([](auto... strds) { return std::array<std::ptrdiff_t, sizeof...(strds)>{{strds...}}; }, arr.strides());
 
 	BOOST_REQUIRE( std::is_sorted(strides.rbegin(), strides.rend()) and arr.num_elements() == arr.nelems() );  // contiguous c-ordering
 
