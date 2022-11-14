@@ -7,9 +7,9 @@ AlignArrayOfStructures: Right
 #AlignConsecutiveMacros: None
 AlignConsecutiveAssignments: Consecutive  # None
 #AlignConsecutiveBitFields: None
-#AlignConsecutiveDeclarations: None
+AlignConsecutiveDeclarations: Consecutive
 #AlignEscapedNewlines: Left
-#AlignOperands:   Align
+AlignOperands:   AlignAfterOperator
 AlignTrailingComments: false
 #AllowAllArgumentsOnNextLine: true
 #AllowAllParametersOfDeclarationOnNextLine: true
@@ -208,7 +208,7 @@ SpacesInLineCommentPrefix:
 #SpacesInSquareBrackets: false
 #SpaceBeforeSquareBrackets: false
 #BitFieldColonSpacing: Both
-#Standard:        Auto
+Standard:         c++17
 #StatementAttributeLikeMacros:
 #  - Q_EMIT
 #StatementMacros:
@@ -219,6 +219,8 @@ TabWidth:        99
 UseTab:         ForContinuationAndIndentation  # Never
 WhitespaceSensitiveMacros:
   - BOOST_REQUIRE
+  - BOOST_TEST
+  - BOOST_TEST_REQUIRE
 #WhitespaceSensitiveMacros:
 #  - STRINGIZE
 #  - PP_STRINGIZE
