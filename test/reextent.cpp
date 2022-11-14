@@ -107,7 +107,7 @@ BOOST_AUTO_TEST_CASE(array_reextent_moved_trivial_change_extents) {
 	auto* const A_base = arr.base();
 	arr                = std::move(arr).reextent({4, 5});
 	BOOST_REQUIRE( num_elements(arr)== 4L*5L );
-	//  BOOST_REQUIRE( arr[1][2] !=  6.0 );  // after move the original elements might not be the same, but it is not 100% possible to check
+	// BOOST_REQUIRE( arr[1][2] !=  6.0 );  // after move the original elements might not be the same, but it is not 100% possible to check
 
 	BOOST_REQUIRE( A_base != arr.base() );
 }
@@ -225,13 +225,13 @@ constexpr auto comp_equal(T left, U right) noexcept -> bool {
 BOOST_AUTO_TEST_CASE(array_vector_size) {
 	std::vector<double> vec(100);  // std::vector NOLINT(fuchsia-default-arguments-calls)
 	{
-		//  multi::array<double, 1> a(                             vec.size() );  // warning: sign-conversion
+		// multi::array<double, 1> a(                             vec.size() );  // warning: sign-conversion
 		multi::array<double, 1> arr(static_cast<multi::size_t>(vec.size()));
 		BOOST_REQUIRE( comp_equal(arr.size(), vec.size()) );
 	}
 	{
 		multi::array<double, 1> arr(multi::iextensions<1>(static_cast<multi::size_t>(vec.size())));  // warning: sign-conversion
-		//  multi::array<double, 1> a(static_cast<multi::size_t>(v.size()));
+		// multi::array<double, 1> a(static_cast<multi::size_t>(v.size()));
 		BOOST_REQUIRE( comp_equal(arr.size(), vec.size()) );
 	}
 }
