@@ -64,6 +64,10 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 		if(other.head_ > head_) {return false;}
 		return tail() > other.tail();
 	}
+	// template<typename Difference>
+	// decltype(auto) operator+=(Difference d) {return tail() += d;}
+	// template<typename Difference>
+	// decltype(auto) operator-=(Difference d) {return tail() -= d;}
 };
 
 #if defined(__INTEL_COMPILER)  // this instance is necessary due to a bug in intel compiler icpc

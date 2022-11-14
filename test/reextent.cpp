@@ -2,7 +2,7 @@
 // Copyright 2018-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi reextent"  // test tile NOLINT(cppcoreguidelines-macro-usage)
-#include<boost/test/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include "multi/array.hpp"
 
@@ -48,17 +48,17 @@ BOOST_AUTO_TEST_CASE(array_reextent_noop_with_init) {
 	multi::array<double, 2> arr({2, 3});
 	BOOST_REQUIRE( num_elements(arr) == 6 );
 
-	arr[1][2] = 6.;
-	BOOST_REQUIRE( arr[1][2] == 6. );
+	arr[1][2] = 6.0;
+	BOOST_REQUIRE( arr[1][2] == 6.0 );
 
 	multi::array<double, 2> arr3({2, 3});
 	BOOST_REQUIRE(size(arr3) == 2);
 	BOOST_REQUIRE(size(arr3[0]) == 3);
 
 	auto* const A_base = arr.base();
-	arr.reextent({2, 3}, 99.);
+	arr.reextent({2, 3}, 99.0);
 	BOOST_REQUIRE( num_elements(arr)== 2L*3L );
-	BOOST_REQUIRE( arr[1][2] ==  6. );  // reextent preserves values when it can...
+	BOOST_REQUIRE( arr[1][2] ==  6.0 );  // reextent preserves values when it can...
 
 	BOOST_REQUIRE( A_base == arr.base() );
 }
@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE(array_reextent_moved) {
 	BOOST_REQUIRE( num_elements(arr) == 6 );
 
 	arr[1][2] = 6.;
-	BOOST_REQUIRE( arr[1][2] == 6. );
+	BOOST_REQUIRE( arr[1][2] == 6.0 );
 
 	auto* const A_base = arr.base();
 	arr = std::move(arr).reextent({2, 3});  // "arr = ..." suppresses linter bugprone-use-after-move,hicpp-invalid-access-moved
@@ -85,13 +85,13 @@ BOOST_AUTO_TEST_CASE(array_reextent_moved_trivial) {
 	multi::array<double, 2> arr({2, 3});
 	BOOST_REQUIRE( num_elements(arr) == 6 );
 
-	arr[1][2] = 6.;
-	BOOST_REQUIRE( arr[1][2] == 6. );
+	arr[1][2] = 6.0;
+	BOOST_REQUIRE( arr[1][2] == 6.0 );
 
 	auto* const A_base = arr.base();
 	arr = std::move(arr).reextent({2, 3});  // "arr = ..." suppresses linter bugprone-use-after-move,hicpp-invalid-access-moved
 	BOOST_REQUIRE( num_elements(arr)== 2L*3L );
-	BOOST_REQUIRE( arr[1][2] ==  6. );  // after move the original elments might not be the same
+	BOOST_REQUIRE( arr[1][2] ==  6.0 );  // after move the original elments might not be the same
 
 	BOOST_REQUIRE( A_base == arr.base() );
 }
@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE(array_reextent_moved_trivial_change_extents) {
 	multi::array<double, 2> arr({2, 3});
 	BOOST_REQUIRE( num_elements(arr) == 6 );
 
-	arr[1][2] = 6.;
+	arr[1][2] = 6.0;
 	BOOST_REQUIRE( arr[1][2] == 6. );
 
 	auto* const A_base = arr.base();
@@ -268,4 +268,20 @@ BOOST_AUTO_TEST_CASE(array_vector_size) {
 	//  multi::array<double, 1> a(static_cast<multi::size_t>(v.size()));
 		BOOST_REQUIRE( comp_equal(arr.size(), vec.size()) );
 	}
+}
+
+BOOST_AUTO_TEST_CASE(array_iota) {
+	multi::array<double, 1> Aarr(10);
+	multi::array<int, 1> Barr(Aarr.extension().begin(), Aarr.extension().end());
+	BOOST_REQUIRE( Barr[0] == 0 );
+	BOOST_REQUIRE( Barr[1] == 1 );
+	BOOST_REQUIRE( Barr[9] == 9 );
+
+	multi::array<int, 1> Carr(Aarr.extension());
+	BOOST_REQUIRE( Carr[0] == 0 );
+	BOOST_REQUIRE( Carr[1] == 1 );
+	BOOST_REQUIRE( Carr[9] == 9 );
+
+	multi::array<int, 1> Darr(Aarr.extensions());
+	BOOST_REQUIRE( Darr.extensions() == Aarr.extensions() );
 }
