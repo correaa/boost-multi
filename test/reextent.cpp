@@ -277,7 +277,7 @@ BOOST_AUTO_TEST_CASE(array_iota) {
 	BOOST_REQUIRE( Barr[1] == 1 );
 	BOOST_REQUIRE( Barr[9] == 9 );
 
-	multi::array<int, 1> C(A.extension());
+	multi::array<int, 1> Carr(Aarr.extension());
 	BOOST_REQUIRE( Carr[0] == 0 );
 	BOOST_REQUIRE( Carr[1] == 1 );
 	BOOST_REQUIRE( Carr[9] == 9 );
