@@ -155,17 +155,17 @@ BOOST_AUTO_TEST_CASE(tuple_decomposition) {
 }
 
 BOOST_AUTO_TEST_CASE(array_reextent_0D) {
-	multi::array<double, 0> arr({}, 4.);
+	multi::array<double, 0> arr({}, 4.0);
 	//  arr.reextent(arr.extensions());  // TODO(correaa) : fix unused for D = 0
 	BOOST_REQUIRE( *arr.data_elements() == 4.0 );
 }
 
 BOOST_AUTO_TEST_CASE(array_reextent_1d_with_initialization) {
-	multi::array<double, 1> arr(multi::extensions_t<1>{multi::iextension{10}}, 4.);
+	multi::array<double, 1> arr(multi::extensions_t<1>{multi::iextension{10}}, 4.0);
 	BOOST_REQUIRE( size(arr) == 10 );
 	BOOST_REQUIRE( arr[9] == 4.0 );
 
-	arr.reextent(multi::extensions_t<1>{multi::iextension{20}}, 8.);
+	arr.reextent(multi::extensions_t<1>{multi::iextension{20}}, 8.0);
 	BOOST_REQUIRE( size(arr) == 20 );
 	BOOST_REQUIRE( arr[9] == 4.0 );
 	BOOST_REQUIRE( arr[19] == 8.0 );
