@@ -137,7 +137,7 @@ BOOST_AUTO_TEST_CASE(array_reextent_1d) {
 	arr.reextent(multi::extensions_t<1>{multi::iextension{20}});
 	BOOST_REQUIRE( size(arr) == 20 );
 	BOOST_REQUIRE( arr[9] == 4.0 );
-	//  BOOST_REQUIRE( arr[19] == 0.0 );  // impossible to know since it is only sometimes 0.0
+	// BOOST_REQUIRE( arr[19] == 0.0 );  // impossible to know since it is only sometimes 0.0
 
 	arr.reextent(boost::multi::tuple<int>(22));
 	BOOST_REQUIRE( size(arr) == 22 );
