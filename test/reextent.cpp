@@ -113,7 +113,9 @@ BOOST_AUTO_TEST_CASE(array_reextent_moved_trivial_change_extents) {
 }
 
 BOOST_AUTO_TEST_CASE(array_move_clear) {
+	multi::array<int, 1>    iarr;
 	multi::array<double, 2> arr({2, 3});
+
 	arr = multi::array<double, 2>(extensions(arr), 123.0);
 	BOOST_REQUIRE( arr[1][2] == 123.0 );
 
@@ -123,6 +125,8 @@ BOOST_AUTO_TEST_CASE(array_move_clear) {
 
 	arr.reextent({5, 4}, 66.0);
 	BOOST_REQUIRE( arr[4][3] == 66.0 );
+
+	BOOST_REQUIRE(iarr.is_empty());
 }
 
 BOOST_AUTO_TEST_CASE(array_reextent_1d) {
