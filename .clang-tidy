@@ -13,12 +13,16 @@ CheckOptions:
   - { key: readability-identifier-naming.PrivateMemberSufix          , value: _          }
   - { key: readability-identifier-naming.StructCase                  , value: lower_case }
   - { key: readability-identifier-naming.TemplateParameterCase       , value: CamelCase  }
-  - { key: readability-identifier-length.MinimumVariableNameLength   , value: 2          }
-  - { key: readability-identifier-length.MinimumParameterNameLength  , value: 2          }
   - { key: readability-identifier-length.MinimumLoopCounterNameLength, value: 2          }
+  - { key: readability-identifier-length.MinimumParameterNameLength  , value: 2          }
+  - { key: readability-identifier-length.MinimumVariableNameLength   , value: 2          }
   - { key: readability-identifier-length.IgnoredLoopCounterNames     , value: "^[ijk_]$" }
+  - { key: readability-identifier-length.IgnoredVariableNames        , value: "^[ijk]$"  }
   - { key: readability-identifier-naming.GlobalConstantCase          , value: aNy_CasE   }
   - { key: readability-identifier-naming.PrivateMemberSufix          , value: _          }
+
+# for range-for loops, e.g. `for(auto i : is) ...`
+#  - { key: readability-identifier-length.IgnoredVariableNames        , value: "^[ijk]$"  }
 
 Checks: '*,
   -altera-struct-pack-align,
