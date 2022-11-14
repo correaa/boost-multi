@@ -269,3 +269,16 @@ BOOST_AUTO_TEST_CASE(array_vector_size) {
 		BOOST_REQUIRE( comp_equal(arr.size(), vec.size()) );
 	}
 }
+
+BOOST_AUTO_TEST_CASE(array_iota) {
+	multi::array<double, 1> A(10);
+	multi::array<int, 1> B(A.extension().begin(), A.extension().end());
+	BOOST_REQUIRE( B[0] == 0 );
+	BOOST_REQUIRE( B[1] == 1 );
+	BOOST_REQUIRE( B[9] == 9 );
+
+	multi::array<int, 1> C(A.extension());
+	BOOST_REQUIRE( C[0] == 0 );
+	BOOST_REQUIRE( C[1] == 1 );
+	BOOST_REQUIRE( C[9] == 9 );
+}
