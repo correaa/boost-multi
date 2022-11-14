@@ -281,4 +281,7 @@ BOOST_AUTO_TEST_CASE(array_iota) {
 	BOOST_REQUIRE( C[0] == 0 );
 	BOOST_REQUIRE( C[1] == 1 );
 	BOOST_REQUIRE( C[9] == 9 );
+
+	multi::array<int, 1> D(A.extensions());
+	BOOST_REQUIRE( D.extensions() == A.extensions() );
 }
