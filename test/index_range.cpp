@@ -25,7 +25,9 @@ BOOST_AUTO_TEST_CASE(multi_range) {
 	}
 	{
 		auto drng = multi::range<std::ptrdiff_t>{5, 10};
-		auto fun  = [](auto idx) { return idx + 1; };
+
+		auto fun = [](auto idx) { return idx + 1; };
+
 		std::vector<double> vec(  // testing std::vector NOLINT(fuchsia-default-arguments-calls)
 			boost::make_transform_iterator(drng.begin(), fun),
 			boost::make_transform_iterator(drng.end(), fun)
