@@ -799,7 +799,7 @@ BOOST_AUTO_TEST_CASE(extensionS_1D_iteration) {
 		BOOST_TEST_REQUIRE(std::get<0>(exts[1]) == 1);
 	}
 	{
-		multi::extensions_t<1> exts({multi::iextension{0, 10}});
+		multi::extensions_t<1> exts(multi::iextension{0, 10});
 		BOOST_TEST_REQUIRE(std::get<0>(exts[0]) == 0);
 		BOOST_TEST_REQUIRE(std::get<0>(exts[1]) == 1);
 	}
