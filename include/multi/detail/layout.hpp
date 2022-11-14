@@ -132,7 +132,7 @@ struct extensions_t {
 	constexpr auto operator()(index idx, Indices... rest) const {return to_linear(idx, rest...);}
 
 	constexpr auto operator[](index idx) const {
-		return multi::detail::tuple{std::get<0>(impl_), extensions_t<D-1>{multi::detail::tail(impl_)} };
+		return multi::detail::tuple{std::get<0>(impl_)[idx], extensions_t<D-1>{multi::detail::tail(impl_)} };
 	}
 
 	template<class... Indices>

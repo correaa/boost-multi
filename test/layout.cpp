@@ -792,18 +792,18 @@ BOOST_AUTO_TEST_CASE(extension_1D_iteration) {
 	BOOST_TEST_REQUIRE(ext[1] == 1);
 }
 
-// BOOST_AUTO_TEST_CASE(extensionS_1D_iteration) {
-// 	{
-// 		multi::extensions_t<1> exts({10});
-// 		BOOST_TEST_REQUIRE(std::get<0>(exts[0]) == 0);
-// 		BOOST_TEST_REQUIRE(std::get<0>(exts[1]) == 1);
-// 	}
-// 	{
-// 		multi::extensions_t<1> exts({multi::iextension{0, 10}});
-// 		BOOST_TEST_REQUIRE(std::get<0>(exts[0]) == 0);
-// 		BOOST_TEST_REQUIRE(std::get<0>(exts[1]) == 1);
-// 	}
-// }
+BOOST_AUTO_TEST_CASE(extensionS_1D_iteration) {
+	{
+		multi::extensions_t<1> exts(10);
+		BOOST_TEST_REQUIRE(std::get<0>(exts[0]) == 0);
+		BOOST_TEST_REQUIRE(std::get<0>(exts[1]) == 1);
+	}
+	{
+		multi::extensions_t<1> exts({multi::iextension{0, 10}});
+		BOOST_TEST_REQUIRE(std::get<0>(exts[0]) == 0);
+		BOOST_TEST_REQUIRE(std::get<0>(exts[1]) == 1);
+	}
+}
 
 // BOOST_AUTO_TEST_CASE(extensionS_2D_iteration) {
 // 	{
@@ -819,7 +819,7 @@ BOOST_AUTO_TEST_CASE(extension_1D_iteration) {
 // }
 
 BOOST_AUTO_TEST_CASE(layout_1D_iteration) {
-	multi::layout_t<1> lyt(multi::extensions_t<1>({10}));
+	multi::layout_t<1> lyt(multi::extensions_t<1>(10));
 	BOOST_REQUIRE( lyt[0] == 0 );
 	BOOST_REQUIRE( lyt[1] == 1 );
 	BOOST_REQUIRE( lyt[2] == 2 );
