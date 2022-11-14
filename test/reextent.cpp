@@ -238,7 +238,7 @@ BOOST_AUTO_TEST_CASE(array_vector_size) {
 
 BOOST_AUTO_TEST_CASE(array_iota) {
 	multi::array<double, 1> Aarr(10);
-	multi::array<int, 1> Barr(Aarr.extension().begin(), Aarr.extension().end());
+	multi::array<int, 1>    Barr(Aarr.extension().begin(), Aarr.extension().end());
 	BOOST_REQUIRE( Barr[0] == 0 );
 	BOOST_REQUIRE( Barr[1] == 1 );
 	BOOST_REQUIRE( Barr[9] == 9 );
