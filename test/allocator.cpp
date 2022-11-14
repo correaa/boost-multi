@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(std_vector_of_arrays) {
 }
 
 BOOST_AUTO_TEST_CASE(array1d_of_arrays2d) {
-	multi::array<multi::array<double, 2>, 1> arr(multi::extensions_t<1>{multi::iextension{10}}, multi::array<double, 2>{});
+	multi::array<multi::array<double, 2>, 1> arr(multi::extensions_t<1>(multi::iextension{10}), multi::array<double, 2>{});
 	BOOST_REQUIRE( size(arr) == 10 );
 
 	std::transform(
