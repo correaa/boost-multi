@@ -251,3 +251,23 @@ BOOST_AUTO_TEST_CASE(array_iota) {
 	multi::array<int, 1> Darr(Aarr.extensions());
 	BOOST_REQUIRE( Darr.extensions() == Aarr.extensions() );
 }
+
+BOOST_AUTO_TEST_CASE(extension_index_op) {
+	multi::array<double, 2> Aarr({11, 13});
+	auto Aext = Aarr.extensions();
+	BOOST_REQUIRE( std::get<0>(Aext[3][5]) == 3 );
+	BOOST_REQUIRE( std::get<1>(Aext[3][5]) == 5 );
+
+	for(int i = 0; i != 3; ++i) {
+		for(int j = 0; j != 5; ++j) {
+			auto [ip, jp] = Aext[i][j];
+			BOOST_REQUIRE(ip == i);
+			BOOST_REQUIRE(jp == j);
+		}
+	}
+
+//  for(auto it = Aarr.extensions().begin(); it != Aarr.extensions().end(); ++it) {
+//
+//	}
+
+}

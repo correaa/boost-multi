@@ -60,7 +60,7 @@ constexpr struct adv {
 	constexpr auto operator()(X& alpha, N omega) const{return std::advance(alpha, omega);}
 } advance_hof;
 
-template<typename IndexType = std::true_type, typename IndexTypeLast = IndexType>
+template<typename IndexType = std::true_type, typename IndexTypeLast = IndexType, class Plus = std::plus<>, class Minus = std::minus<> >
 class range {
 	IndexType     first_ = {};
 	IndexTypeLast last_  = first_;
@@ -96,7 +96,11 @@ class range {
 	constexpr explicit range(Range&& other)
 	: first_{std::forward<Range>(other).first()}, last_{std::forward<Range>(other).last()} {}
 
-	constexpr range(IndexType first, IndexTypeLast last) noexcept : first_{first}, last_{last} {}
+	constexpr range(IndexType first, IndexTypeLast last) noexcept
+	: first_{first}, last_{last} {}
+
+	constexpr range(IndexType first, IndexTypeLast last, Plus /*plus*/, Minus /*minus*/) noexcept
+	: first_{first}, last_{last} {}
 
 	class const_iterator : public boost::multi::iterator_facade<
 		const_iterator,
