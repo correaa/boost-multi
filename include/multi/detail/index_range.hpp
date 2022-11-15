@@ -50,7 +50,17 @@ class iterator_facade {
 	constexpr auto operator[](difference_type n) const {return *(self() + n);}
 };
 
-template<typename IndexType = std::true_type, typename IndexTypeLast = IndexType>
+constexpr struct dist{
+	template<class A, class B>
+	constexpr auto operator()(A alpha, B omega) const{return std::distance(alpha, omega);}
+} distance_hof;
+
+constexpr struct adv {
+	template<class X, class N>
+	constexpr auto operator()(X& alpha, N omega) const{return std::advance(alpha, omega);}
+} advance_hof;
+
+template<typename IndexType = std::true_type, typename IndexTypeLast = IndexType, class Plus = std::plus<>, class Minus = std::minus<> >
 class range {
 	IndexType     first_ = {};
 	IndexTypeLast last_  = first_;
@@ -86,8 +96,11 @@ class range {
 	constexpr explicit range(Range&& other)
 	: first_{std::forward<Range>(other).first()}, last_{std::forward<Range>(other).last()} {}
 
-	constexpr range(IndexType first, IndexTypeLast last) noexcept : first_{first}, last_{last} {}
-	[[deprecated]] constexpr explicit range(IndexType first) : range{first, first + 1} {}
+	constexpr range(IndexType first, IndexTypeLast last) noexcept
+	: first_{first}, last_{last} {}
+
+	constexpr range(IndexType first, IndexTypeLast last, Plus /*plus*/, Minus /*minus*/) noexcept
+	: first_{first}, last_{last} {}
 
 	class const_iterator : public boost::multi::iterator_facade<
 		const_iterator,

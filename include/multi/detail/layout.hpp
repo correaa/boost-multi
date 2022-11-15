@@ -131,9 +131,9 @@ struct extensions_t {
 	template<class... Indices>
 	constexpr auto operator()(index idx, Indices... rest) const {return to_linear(idx, rest...);}
 
-	constexpr auto operator[](index idx) const {
-		return multi::detail::tuple{std::get<0>(impl_)[idx], extensions_t<D-1>{multi::detail::tail(impl_)} };
-	}
+	constexpr auto operator[](index idx) const 
+	->decltype(std::declval<base_ const&>()[idx]) {
+		return impl_                       [idx]; }
 
 	template<class... Indices>
 	constexpr auto next_canonical(index& idx, Indices&... rest) const -> bool {  // NOLINT(google-runtime-references) idx is mutated

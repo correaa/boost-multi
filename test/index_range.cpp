@@ -37,9 +37,11 @@ BOOST_AUTO_TEST_CASE(multi_range) {
 }
 
 BOOST_AUTO_TEST_CASE(crazy_range) {
-	// auto trng = multi::range<multi::detail::tuple<int, int>>(
-	//  	multi::detail::tuple<int, int>{5, 3}, 
-	//  	multi::detail::tuple<int, int>{5, 9}, 
+	// auto trng = multi::range(
+	//   	multi::detail::tuple<int, int>{5, 3}, 
+	//   	multi::detail::tuple<int, int>{5, 9},
+	// 	[](auto t , int d) {return std::get<1>(t) + d;}
+	// 	[](auto t1, auto t2) {return std::get<1>(t1) - std::get<1>(t2);}
 	// );
 
 	// BOOST_REQUIRE( trng[0] == (std::tuple{5, 3}) );
