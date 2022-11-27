@@ -1,7 +1,7 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2018-2022 Alfredo A. Correa
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi constructors"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi constructors"  // NOLINT(cppcoreguidelines-macro-usage) title
 #include<boost/test/unit_test.hpp>
 
 #include "multi/array.hpp"
@@ -11,7 +11,7 @@ namespace fancy {
 template<class T> class ref;
 
 template<class T = void> class ptr {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
-	static double value;
+	static double const value;
 
  public:
 	using difference_type = std::ptrdiff_t;
@@ -51,8 +51,8 @@ template<class T = void> class ptr {  // NOLINT(cppcoreguidelines-special-member
 	friend auto get_allocator(ptr const& /*self*/){return std::allocator<value_type>{};}
 };
 
-template<> double ptr<double>::value = 42.;
-template<> double ptr<double const>::value = 42.;
+template<> double const ptr<double>::value = 42.;
+template<> double const ptr<double const>::value = 42.;
 
 template<class T> class ref {
 	friend class ptr<T>;

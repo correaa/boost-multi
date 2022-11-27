@@ -29,6 +29,7 @@ inline auto flip(filling side) -> filling {
 inline auto operator-(filling side) -> filling {return flip(side);}
 inline auto operator+(filling side) -> filling {return side;}
 
+#if 0
 template<class A2D, std::enable_if_t<is_conjugated<A2D>{}, int> =0>
 auto detect_triangular_aux(A2D const& array, std::false_type /*false*/) -> filling {
 	{
@@ -75,6 +76,7 @@ auto detect_triangular(A2D const& array) -> filling {
 	return detect_triangular_aux(A);//, is_conjugated<A2D>{});//std::integral_constant<bool, not is_hermitized<A2D>()>{});
 #endif
 }
+#endif
 
 }  // end namespace boost::multi::blas
 

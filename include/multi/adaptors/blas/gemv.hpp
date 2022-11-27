@@ -82,7 +82,7 @@ class gemv_iterator {
 	}
 	gemv_iterator(Scalar alpha, It2D m_it, It1D v_first, Context ctxt) 
 	: alpha_{alpha}, m_it_{std::move(m_it)}, v_first_{std::move(v_first)}, ctxt_{ctxt} {}
-	auto operator*() const -> value_type{return 0.;}
+	auto operator*() const { return value_type{0.0}; }  // could be std::complex NOLINT(fuchsia-default-arguments-calls)
 };
 
 template<class Scalar, class It2D, class It1D, class DecayType, class Context>

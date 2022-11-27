@@ -1,7 +1,7 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-// Copyright 2019-2021 Alfredo A. Correa
+// Copyright 2019-2022 Alfredo A. Correa
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi initializer_list"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi initializer_list"  // test tile NOLINT(cppcoreguidelines-macro-usage)
 #include<boost/test/unit_test.hpp>
 
 #include "multi/array.hpp"
@@ -12,7 +12,7 @@ namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_1d) {
 	{
-		std::vector<double> const vec = {1., 2., 3.};
+		std::vector<double> const vec = {1.0, 2.0, 3.0};  // NOLINT(fuchsia-default-arguments-calls)
 		BOOST_REQUIRE( vec[1] == 2. );
 	}
 	{
@@ -231,38 +231,38 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d) {
 
 BOOST_AUTO_TEST_CASE(multi_tests_static_array_initializer_list) {
 	multi::static_array<std::complex<double>, 2> SA = {
-		{1. , 2.},
-		{3. , 4.},
+		{{1.0, 0.0} , {2.0, 0.0}},
+		{{3.0, 0.0} , {4.0, 0.0}},
 	};
-	BOOST_REQUIRE( SA[1][1] == 4. );
+	BOOST_REQUIRE( SA[1][1] == 4.0 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d) {
 	multi::array<double, 3> const arr = {
 		{
-			{ 1.2, 0.},
-			{ 2.4, 1.}
+			{ 1.2, 0.0},
+			{ 2.4, 1.0}
 		},
 		{
-			{11.2,  3.},
-			{34.4,  4.}
+			{11.2,  3.0},
+			{34.4,  4.0}
 		},
 		{
-			{15.2, 99.},
-			{32.4,  2.}
+			{15.2, 99.0},
+			{32.4,  2.0}
 		}
 	};
-	BOOST_REQUIRE( arr[1][1][0] == 34.4 and arr[1][1][1] == 4.   );
+	BOOST_REQUIRE( arr[1][1][0] == 34.4 and arr[1][1][1] == 4.0   );
 }
 
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string) {
 	 {
 		using std::string;
 		multi::array<string, 3> B3 = {
-			{ {"000", "001", "002"},
-			  {"010", "011", "012"} },
-			{ {"100", "101", "102"},
-			  {"110", "111", "112"} }
+			{ {"000", "001", "002"},    // std::string NOLINT(fuchsia-default-arguments-calls)
+			  {"010", "011", "012"} },  // std::string NOLINT(fuchsia-default-arguments-calls)
+			{ {"100", "101", "102"},    // std::string NOLINT(fuchsia-default-arguments-calls)
+			  {"110", "111", "112"} }   // std::string NOLINT(fuchsia-default-arguments-calls)
 		};
 		BOOST_REQUIRE( num_elements(B3)==12 and B3[1][0][1] == "101" );
 	}
@@ -271,23 +271,23 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string) {
 BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string_ctad) {
 	#if defined(__cpp_deduction_guides) and not defined(__NVCC__) and not defined(__circle_build__)  // circle 170 crashes
 	{
-		multi::array arr({1., 2., 3.});
+		multi::array arr({1.0, 2.0, 3.0});
 		static_assert( std::is_same<decltype(arr)::element_type, double>{}, "!");
 		BOOST_REQUIRE( size(arr) == 3 and num_elements(arr) == 3 );
-		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 and num_elements(arr)==3 and arr[1]==2. );
-		static_assert( typename decltype(arr)::rank {}==1 );
+		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 and num_elements(arr)==3 and arr[1] == 2.0 );
+		static_assert( typename decltype(arr)::rank {} == 1 );
 	}
 	{
-		multi::array arr({1., 2.});
+		multi::array arr({1.0, 2.0});
 		static_assert( std::is_same<decltype(arr)::element_type, double>{}, "!");
 		BOOST_REQUIRE( size(arr) == 2 and num_elements(arr) == 2 );
-		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 and num_elements(arr)==2 and arr[1]==2. ); BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 );
+		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 and num_elements(arr) == 2 and arr[1] == 2.0 ); BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 1 );
 	}
 	{
 		multi::array arr({0, 2});  //  multi::array arr = {0, 2}; not working with CTAD
 		static_assert( std::is_same_v<decltype(arr)::element_type, int>, "!" );
 		BOOST_REQUIRE( size(arr) == 2 and num_elements(arr) == 2 );
-		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 and num_elements(arr)==2 and arr[1]==2. ); BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 );
+		BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 1 and num_elements(arr) == 2 and arr[1] == 2.0 ); BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 1 );
 	}
 	{
 		multi::array arr({9.});  // multi::array arr = {9.}; not working with CTAD

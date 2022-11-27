@@ -667,13 +667,13 @@ struct elements_range_t {
 	constexpr auto end  ()      & ->       iterator {return end_aux()  ;}
 
 	constexpr auto front() const& -> const_reference {return *begin();}
-	constexpr auto back () const& -> const_reference {return *std::prev(end());}
+	constexpr auto back () const& -> const_reference {return *std::prev(end(), 1);}
 
 	constexpr auto front()     && ->       reference {return *begin();}
-	constexpr auto back ()     && ->       reference {return *std::prev(end());}
+	constexpr auto back ()     && ->       reference {return *std::prev(end(), 1);}
 
 	constexpr auto front()      & ->       reference {return *begin();}
-	constexpr auto back ()      & ->       reference {return *std::prev(end());}
+	constexpr auto back ()      & ->       reference {return *std::prev(end(), 1);}
 
 	auto operator=(elements_range_t const&) -> elements_range_t& = delete;
 	auto operator=(elements_range_t     &&) -> elements_range_t& = delete;
@@ -830,13 +830,13 @@ struct basic_array
 		return operator[](std::get<0>(tup)); }
 
 	constexpr auto front() const& -> const_reference {return *begin();}
-	constexpr auto back()  const& -> const_reference {return *std::prev(end());}
+	constexpr auto back()  const& -> const_reference {return *std::prev(end(), 1);}
 
 	constexpr auto front()     && ->       reference {return *begin();}
-	constexpr auto back()      && ->       reference {return *std::prev(end());}
+	constexpr auto back()      && ->       reference {return *std::prev(end(), 1);}
 
 	constexpr auto front()      & ->       reference {return *begin();}
-	constexpr auto back()       & ->       reference {return *std::prev(end());}
+	constexpr auto back()       & ->       reference {return *std::prev(end(), 1);}
 
 	using typename types::index;
 
@@ -1858,14 +1858,13 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	HD constexpr auto operator[](index idx)     && -> typename basic_array::      reference {return at_aux(idx);}  // NOLINT(readability-const-return-type) fancy pointers can deref into const values to avoid assignment
 
 	constexpr auto front() const& -> const_reference {return *begin();}
-	constexpr auto back()  const& -> const_reference {return *std::prev(end());}
+	constexpr auto back()  const& -> const_reference {return *std::prev(end(), 1);}
 
 	constexpr auto front()     && ->       reference {return *begin();}
-	constexpr auto back()      && ->       reference {return *std::prev(end());}
+	constexpr auto back()      && ->       reference {return *std::prev(end(), 1);}
 
 	constexpr auto front()      & ->       reference {return *begin();}
-	constexpr auto back()       & ->       reference {return *std::prev(end());}
-
+	constexpr auto back()       & ->       reference {return *std::prev(end(), 1);}
 
  private:
 	template<class Self, typename Tuple, std::size_t ... I, basic_array* = nullptr>
@@ -2353,7 +2352,6 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	array_ref(array_ref&&) = delete;
 	#endif
 
-
 	template<class OtherPtr, class=std::enable_if_t<not std::is_same<OtherPtr, ElementPtr>{}>, decltype(multi::explicit_cast<ElementPtr>(std::declval<OtherPtr>()))* = nullptr>
 	constexpr explicit array_ref(array_ref<T, D, OtherPtr>&& other)
 	: basic_array<T, D, ElementPtr>{other.layout(), ElementPtr{other.base()}} {}
@@ -2378,6 +2376,13 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 		multi::data_elements(array),
 		extensions(array)
 	) {}
+
+//  this ctor makes memcheck complain about memmory used after scope
+	template<class TT, std::enable_if_t<std::is_same<typename array_ref::value_type, TT>::value, int> =0>
+	array_ref(std::initializer_list<TT> const& il) : array_ref(il.begin(), typename array_ref::extensions_type{static_cast<typename array_ref::size_type>(il.size())}) {}
+
+	template<class TT, std::enable_if_t<std::is_same<typename array_ref::value_type, TT>::value, int> =0>
+	array_ref(std::initializer_list<TT>&& il) = delete;
 
 	using basic_array<T, D, ElementPtr>::operator=;
 

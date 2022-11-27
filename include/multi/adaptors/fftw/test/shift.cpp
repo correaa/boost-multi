@@ -47,6 +47,7 @@ using fftw_fixture = fftw::environment;
 BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );
 
 BOOST_AUTO_TEST_CASE(fftw_shift) {
+#if not defined(__circle_build__)
 	class watch : std::chrono::steady_clock {
 		time_point start_ = now();
 
@@ -59,13 +60,14 @@ BOOST_AUTO_TEST_CASE(fftw_shift) {
 
 	fftw::plan fdft{arr, res, multi::fftw::forward};
 
-	auto const repeat = 40;
 	[&, unnamed = watch{}] {
-		for(int i = 0; i != repeat; ++i) {
+		auto const repeat = 40;
+		std::for_each(
+			multi::extension_t{0, repeat}.begin(), multi::extension_t{0, repeat}.end(), [&fdft, &arr, &res](auto /*idx*/) {
 			fdft(arr.base(), res.base());
 			std::rotate(res.begin(), res.begin() + res.size()/2, res.end());
-		}
-
+		});
 	    BOOST_TEST_MESSAGE( "FFTW shift "<< unnamed.elapsed_sec()/repeat <<" sec" );  // prints  0.000882224 sec
 	}();
+#endif
 }

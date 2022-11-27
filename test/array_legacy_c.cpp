@@ -1,7 +1,7 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2019-2022 Alfredo A. Correa
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi legacy adaptor example"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi legacy adaptor example"  // NOLINT(cppcoreguidelines-macro-usage) title
 #include<boost/test/unit_test.hpp>
 
 #include "multi/array.hpp"
@@ -33,10 +33,10 @@ void fftw_plan_dft(
 BOOST_AUTO_TEST_CASE(array_legacy_c) {
 	using complex = std::complex<double>;
 	multi::array<complex, 2> const in = {
-		{150., 16., 17., 18., 19.},
-		{  5.,  5.,  5.,  5.,  5.},
-		{100., 11., 12., 13., 14.},
-		{ 50.,  6.,  7.,  8.,  9.}
+		{{150.0, 0.0}, {16.0, 0.0}, {17.0, 0.0}, {18.0, 0.0}, {19.0, 0.0}},
+		{{  5.0, 0.0}, { 5.0, 0.0}, { 5.0, 0.0}, { 5.0, 0.0}, { 5.0, 0.0}},
+		{{100.0, 0.0}, {11.0, 0.0}, {12.0, 0.0}, {13.0, 0.0}, {14.0, 0.0}},
+		{{ 50.0, 0.0}, { 6.0, 0.0}, { 7.0, 0.0}, { 8.0, 0.0}, { 9.0, 0.0}}
 	};
 
 	multi::array<std::complex<double>, 2> out(extensions(in));

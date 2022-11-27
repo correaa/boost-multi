@@ -84,19 +84,23 @@ class dot_ptr {
 
 template<class ContextPtr, class X, class Y, class Ptr = dot_ptr<ContextPtr, typename X::const_iterator, typename X::size_type, typename Y::const_iterator>>
 struct dot_ref : private Ptr {
-	using decay_type = decltype(typename X::value_type{}*typename Y::value_type{});
+	using decay_type = decltype(std::declval<typename X::value_type>()*std::declval<typename Y::value_type>());
 	dot_ref(ContextPtr ctxt, X const& x, Y const& y) : Ptr{ctxt, begin(x), size(x), begin(y)} {  // NOLINT(readability-identifier-length) BLAS naming
 		assert(( size(x) == size(y) ));  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	}
+
 	constexpr auto operator&() const& -> Ptr const& {return *this;}  // NOLINT(google-runtime-operator) reference type
-	auto decay() const& -> decay_type {decay_type ret; copy_n(operator&(), 1, &ret); return ret;}
-	operator decay_type()       const& {return decay();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,hicpp-explicit-conversion) to allow terse syntax
+
+	auto decay() const -> decay_type {decay_type ret; copy_n(operator&(), 1, &ret); return ret;}  // NOLINT(fuchsia-default-arguments-calls)
+	operator decay_type()       const {return decay();}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions,hicpp-explicit-conversion) to allow terse syntax
 #if not defined(__CUDACC__) or not defined(__INTEL_COMPILER)
 	friend auto operator*(decay_type const& lhs, dot_ref const& self) {return lhs*self.decay();}
 #endif
 	auto operator+() const -> decay_type {return decay();}
+
 	auto operator==(dot_ref const& other) const -> bool {return decay() == other.decay();}
 	auto operator!=(dot_ref const& other) const -> bool {return decay() != other.decay();}
+
 	template<class Other>
 	auto operator==(Other const& other) const
 	->decltype(decay()==other) {

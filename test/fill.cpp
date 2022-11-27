@@ -1,7 +1,7 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2019-2022 Alfredo A. Correa
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi fill"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi fill"  // NOLINT(cppcoreguidelines-macro-usage) title
 #include<boost/test/unit_test.hpp>
 
 #include "../include/multi/array.hpp"
@@ -12,13 +12,16 @@
 #include<type_traits>  // enable_if_t
 
 // from Howard Hinnart hash
-static constexpr auto fnv1a(void const* key, std::size_t len, std::size_t hash) noexcept {  // NOLINT(bugprone-easily-swappable-parameters)
-	auto const *first = static_cast<unsigned char const*>(key);
-	unsigned char const* const last = first + len;  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic): low level
-	for(; first < last; ++first) {  // NOLINT(altera-id-dependent-backward-branch,cppcoreguidelines-pro-bounds-pointer-arithmetic): low level
-		hash = (hash ^ *first) * 1099511628211U;  // prime
-	}
-	return hash;
+static auto fnv1a(void const* key, std::ptrdiff_t len, std::size_t hash) noexcept {  // NOLINT(bugprone-easily-swappable-parameters)
+	auto const* first = static_cast<unsigned char const*>(key);
+	return std::accumulate(
+		first, std::next(first, len), hash,
+		[prime = 1099511628211U](auto acc, auto elem) {return (acc ^ elem) * prime;}
+	);
+//  for(; first != last; ++first) {  // NOLINT(altera-id-dependent-backward-branch,cppcoreguidelines-pro-bounds-pointer-arithmetic): low level
+//  	hash = (hash ^ *first) * 1099511628211U;  // prime
+//  }
+//	return hash;
 }
 
 // static constexpr auto fnv1a(void const* key, std::size_t len) noexcept {
@@ -32,7 +35,7 @@ class fnv1a_t {
 	using result_type = std::size_t;
 	static constexpr auto min() {return std::numeric_limits<result_type>::min();}
 	static constexpr auto max() {return std::numeric_limits<result_type>::max();}
-	void operator()(void const* key, std::size_t len) noexcept {h = fnv1a(key, len, h);}
+	void operator()(void const* key, std::ptrdiff_t len) noexcept {h = fnv1a(key, len, h);}
 	template<class T, std::enable_if_t<std::is_fundamental_v<T>, int> = 0>
 	auto operator()(T const& value) noexcept -> decltype(auto) {operator()(&value, sizeof(value)); return *this;}
 //  result_type operator()() && noexcept{return h;}
@@ -151,15 +154,13 @@ BOOST_AUTO_TEST_CASE(fill_1D) {
 	BOOST_REQUIRE( arr2[9] == arr );
 }
 
-#define FWD(a) std::forward<decltype(a)>(a)
-
 template<class BinaryOp, class Column, class Array, class Out>
 auto broadcast(BinaryOp op, Column const& col, Array const& in, Out&& out) -> Out&& {  // NOLINT(readability-identifier-length) clang-tidy 14 bug
 	std::transform(
 		begin(~in), end(~in), begin(~out), begin(~out),
 		[acol = (~col)[0], &op](auto const& Acol, auto&& Bcol) {
 			std::transform(begin(Acol), end(Acol), begin(acol), begin(Bcol), op);
-			return FWD(Bcol);
+			return std::forward<decltype(Bcol)>(Bcol);
 		}
 	);
 

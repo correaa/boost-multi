@@ -1,7 +1,7 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2019-2022 Alfredo A. Correa
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi pmr allocators"
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi pmr allocators"  // title NOLINT(cppcoreguidelines-macro-usage)
 #include<boost/test/unit_test.hpp>
 
 #include "multi/array.hpp"
@@ -74,12 +74,17 @@ BOOST_AUTO_TEST_CASE(pmr_benchmark) {
 	auto count = 50;
 	auto start_time = std::chrono::high_resolution_clock::now();
 
-	int64_t acc = 0;
-	for(int64_t i = 0; i != count; ++i) {
-		multi::pmr::array<int64_t, 2> arr({1000 - i%10, 1000 + i%10}, resp);
-		std::fill_n(arr.data_elements(), arr.num_elements(), 1.);
-		acc += std::accumulate(arr.data_elements(), arr.data_elements() + arr.num_elements(), 0L);
-	}
+	multi::extension_t exts{0, count};
+	auto acc = std::transform_reduce(
+		exts.begin(), exts.end(), int64_t{0},
+		std::plus<>{},
+		[&resp](auto idx) {
+			multi::pmr::array<int64_t, 2> arr({1000 - idx%10, 1000 + idx%10}, resp);
+			std::fill_n(arr.data_elements(), arr.num_elements(), 1);
+			return std::accumulate(arr.data_elements(), arr.data_elements() + arr.num_elements(), 0L);
+		}
+	);
+
 	auto time = std::chrono::high_resolution_clock::now() - start_time;
 	std::cout<< time.count() / count <<"          "<< acc <<std::endl;
 }

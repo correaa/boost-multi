@@ -131,6 +131,10 @@ struct extensions_t {
 	template<class... Indices>
 	constexpr auto operator()(index idx, Indices... rest) const {return to_linear(idx, rest...);}
 
+	constexpr auto operator[](index idx) const 
+	->decltype(std::declval<base_ const&>()[idx]) {
+		return impl_                       [idx]; }
+
 	template<class... Indices>
 	constexpr auto next_canonical(index& idx, Indices&... rest) const -> bool {  // NOLINT(google-runtime-references) idx is mutated
 		if(extensions_t<D-1>{tail(this->base())}.next_canonical(rest...)) {++idx;}
@@ -236,6 +240,8 @@ template<> struct extensions_t<0> {
 	static constexpr auto to_linear() /*const*/ -> difference_type {return 0;}
 	constexpr auto operator()() const {return to_linear();}
 
+	constexpr void operator[](index) const = delete;
+
 	static constexpr auto next_canonical() /*const*/ -> bool {return true;}
 	static constexpr auto prev_canonical() /*const*/ -> bool {return true;}
 
@@ -301,6 +307,9 @@ template<> struct extensions_t<1> {
 
 	static constexpr auto to_linear(index const& idx) -> difference_type  /*const*/ {return idx;}
 	constexpr auto operator()(index const& idx) const -> difference_type {return to_linear(idx);}
+	constexpr auto operator[](index idx) const {
+		return multi::detail::tuple<multi::index>{std::get<0>(impl_)[idx]};
+	}
 
 	template<class... Indices>
 	constexpr auto next_canonical(index& idx) const -> bool {  // NOLINT(google-runtime-references) idx is mutated

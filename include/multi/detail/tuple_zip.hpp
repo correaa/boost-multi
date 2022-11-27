@@ -30,6 +30,7 @@ template<> class tuple<> {  // NOLINT(cppcoreguidelines-special-member-functions
 
 template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLINT(cppcoreguidelines-special-member-functions,hicpp-special-member-functions)
 	T0 head_;
+	using head_type = T0;
 	using tail_type = tuple<Ts...>;
 //	tuple<Ts...> tail_;  // TODO(correaa) use [[no_unique_address]] in C++20
 
@@ -64,6 +65,30 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 		if(other.head_ > head_) {return false;}
 		return tail() > other.tail();
 	}
+
+ private:
+	 template<std::size_t I> struct priority : std::conditional_t<I==0, std::true_type, priority<I-1>> {};
+
+	template<class Index>
+	constexpr auto at_aux(priority<0> /*prio*/, Index idx) const
+	->decltype(ht_tuple(std::declval<head_type const&>(), std::declval<tail_type const&>()[idx])) {
+		return ht_tuple(head()                          , tail()[idx]                           );}
+
+	template<class Index>
+	constexpr auto at_aux(priority<1> /*prio*/, Index idx) const
+	->decltype(ht_tuple(std::declval<head_type const&>()[idx], std::declval<tail_type const&>())) {
+		return ht_tuple(head()                          [idx], tail()                          ); }
+
+ public:
+	template<class Index>
+	constexpr auto operator[](Index idx) const
+	->decltype(std::declval<tuple<T0, Ts...> const&>().at_aux(priority<1>{}, idx)){
+		return this->                                  at_aux(priority<1>{}, idx);}
+
+	// template<typename Difference>
+	// decltype(auto) operator+=(Difference d) {return tail() += d;}
+	// template<typename Difference>
+	// decltype(auto) operator-=(Difference d) {return tail() -= d;}
 };
 
 #if defined(__INTEL_COMPILER)  // this instance is necessary due to a bug in intel compiler icpc
@@ -104,6 +129,11 @@ template<class T0, class... Ts> constexpr auto mk_tuple(T0 head, Ts... tail) {
 	return tuple<T0, Ts...>(std::move(head), std::move(tail)...);
 }
 
+template<class T0, class... Ts> constexpr auto ht_tuple(T0 head, tuple<Ts...> tail) {
+	return tuple(std::move(head), std::move(tail));
+}
+
+
 template<class T0, class Tuple> struct tuple_prepend;
 
 template<class T0, class... Ts>
@@ -138,18 +168,6 @@ constexpr auto tail(tuple<T0, Ts...>     && t) -> decltype(std::move(t).tail()) 
 template<class T0, class... Ts>
 constexpr auto tail(tuple<T0, Ts...>      & t) -> decltype(t.tail()) {return t.tail();}  // NOLINT(readability-identifier-length) std naming
 
-#if defined __NVCC__
-    #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-        #pragma nv_diagnostic push
-        #pragma nv_diag_suppress = implicit_return_from_non_void_function
-    #else
-        #pragma    diagnostic push
-        #pragma    diag_suppress = implicit_return_from_non_void_function
-    #endif
-#elif defined __NVCOMPILER
-    #pragma    diagnostic push
-    #pragma    diag_suppress = implicit_return_from_non_void_function
-#endif
 template<std::size_t N, class T0, class... Ts>
 constexpr auto get(tuple<T0, Ts...> const& t) -> auto const& {  // NOLINT(readability-identifier-length) std naming
 	if constexpr(N == 0) {
@@ -176,15 +194,6 @@ constexpr auto get(tuple<T0, Ts...>&& t) -> auto&& {  // NOLINT(readability-iden
 		return get<N-1>(std::move(t.tail()));
 	}
 }
-#if defined __NVCC__
-    #ifdef __NVCC_DIAG_PRAGMA_SUPPORT__
-        #pragma nv_diagnostic pop
-    #else
-        #pragma    diagnostic pop
-    #endif
-#elif defined __NVCOMPILER
-    #pragma    diagnostic pop
-#endif
 
 }  // end namespace detail
 }  // end namespace boost::multi

@@ -5,6 +5,7 @@
 #define MULTI_DETAIL_MEMORY_HPP
 
 #include <memory>  // for std::allocator_traits
+#include <type_traits>  // for std::void_t
 
 namespace boost::multi {
 
@@ -113,22 +114,31 @@ auto alloc_uninitialized_copy(Alloc& alloc, InputIt first, InputIt last, MIt des
 // 	return first;
 // }
 
-template<class AA> class is_allocator {
-	template<
-		class A,
-		class P = typename A::pointer, class S = typename A::size_type,
-		typename = decltype(
-			std::declval<A const&>() == A{std::declval<A const&>()},
-			std::declval<A&>().deallocate(P{std::declval<A&>().allocate(std::declval<S>())}, std::declval<S>())
-		)
-	>
-	static auto  aux(A const&) -> std::true_type;
-	static auto  aux(...     ) -> std::false_type;
+template<class, class = void>
+struct is_allocator : std::false_type {};
 
- public:
-	static bool const value = decltype(aux(std::declval<AA>()))::value;
-	constexpr explicit operator bool() const {return value;}
-};
+template<class Alloc>
+struct is_allocator<Alloc, std::void_t<decltype(
+	std::declval<Alloc const&>() == Alloc{std::declval<Alloc const&>()},
+	std::declval<Alloc&>().deallocate(typename Alloc::pointer{std::declval<Alloc&>().allocate(std::declval<typename Alloc::size_type>())}, std::declval<typename Alloc::size_type>())
+)>> : std::true_type {};
+
+//template<class AA> class is_allocator {
+//	template<
+//		class A,
+//		class P = typename A::pointer, class S = typename A::size_type,
+//		typename = decltype(
+//			std::declval<A const&>() == A{std::declval<A const&>()},
+//			std::declval<A&>().deallocate(P{std::declval<A&>().allocate(std::declval<S>())}, std::declval<S>())
+//		)
+//	>
+//	static auto  aux(A const&) -> std::true_type;
+//	static auto  aux(...     ) -> std::false_type;
+
+// public:
+//	constexpr static bool const value = decltype(aux(std::declval<AA>()))::value;
+//	constexpr explicit operator bool() const {return value;}
+//};
 
 template<class Alloc> constexpr bool is_allocator_v = is_allocator<Alloc>::value;
 

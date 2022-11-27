@@ -3,14 +3,14 @@ Language:        Cpp
 # BasedOnStyle:  Google
 #AccessModifierOffset: -1
 AlignAfterOpenBracket: BlockIndent  # Align
-#AlignArrayOfStructures: None
+AlignArrayOfStructures: Right
 #AlignConsecutiveMacros: None
 AlignConsecutiveAssignments: Consecutive  # None
 #AlignConsecutiveBitFields: None
-#AlignConsecutiveDeclarations: None
+AlignConsecutiveDeclarations: Consecutive
 #AlignEscapedNewlines: Left
-#AlignOperands:   Align
-#AlignTrailingComments: true
+AlignOperands:   AlignAfterOperator
+AlignTrailingComments: false
 #AllowAllArgumentsOnNextLine: true
 #AllowAllParametersOfDeclarationOnNextLine: true
 #AllowShortEnumsOnASingleLine: true
@@ -61,8 +61,8 @@ ColumnLimit:     0
 #CommentPragmas:  '^ IWYU pragma:'
 QualifierAlignment: Right  # Leave
 #CompactNamespaces: false
-#ConstructorInitializerIndentWidth: 4
-#ContinuationIndentWidth: 4
+ConstructorInitializerIndentWidth: 0
+ContinuationIndentWidth: 99
 #Cpp11BracedListStyle: true
 #DeriveLineEnding: true
 #DerivePointerAlignment: true
@@ -208,7 +208,7 @@ SpacesInLineCommentPrefix:
 #SpacesInSquareBrackets: false
 #SpaceBeforeSquareBrackets: false
 #BitFieldColonSpacing: Both
-#Standard:        Auto
+Standard:         c++17
 #StatementAttributeLikeMacros:
 #  - Q_EMIT
 #StatementMacros:
@@ -216,7 +216,11 @@ SpacesInLineCommentPrefix:
 #  - QT_REQUIRE_VERSION
 TabWidth:        99
 #UseCRLF:         false
-UseTab:         Always  # Never
+UseTab:         ForContinuationAndIndentation  # Never
+WhitespaceSensitiveMacros:
+  - BOOST_REQUIRE
+  - BOOST_TEST
+  - BOOST_TEST_REQUIRE
 #WhitespaceSensitiveMacros:
 #  - STRINGIZE
 #  - PP_STRINGIZE
