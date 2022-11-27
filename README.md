@@ -79,7 +79,8 @@ Memory is requested by allocator of type `A`, supports stateful and polymorphic 
 * `multi::array_ref<T, D, P = T*>`: 
 Array interpretation of a random access range, usually a contiguous memory block. 
 It has reference semantics.
-`array<T, D, A>` is implicitly an `array_ref<T, D, A::pointer>`.
+`P` does not need to be a language-pointer, it can be anything that behaves like a pointer (derreference and random access arithmetics).
+`array<T, D, A>` is implicitly an `array_ref<T, D, A::pointer>`, the reverse conversion is only explicit.
 * Other derived "unspecified types" fulfill a `MultiArrayView` concept, for example by taking partial indices or rotations (transpositions).
 These reference types can be named life-time extensions `auto&&` or `auto const&`,
 and they can decay to value types (copied elements).
@@ -98,8 +99,8 @@ The following code declares an array by specifying the element type and the dime
 indiviudual elements can be initialized from a nested rectangular list.
 ```cpp
 multi::array<double, 2> A = {
-	{1., 2., 3.}
-	{4., 5., 6.}
+	{1.0, 2.0, 3.0}
+	{4.0, 5.0, 6.0}
 };
 
 assert( A.size() == 2 );
@@ -183,7 +184,7 @@ Next we print the elements in a way that corresponds to the logical arrangement:
 
 ```cpp
 	...
-	auto [ix, jx] = d2D_ref.extensions();
+	auto [is, js] = d2D_ref.extensions();
 	for(auto i : is) {
 		for(auto j : js) {
 			cout<< d2D_ref[i][j] <<' ';
@@ -202,6 +203,7 @@ This will output:
 > 50 6 7 8 9
 > ```
 
+The arrays provide an iterator based interface, that allows it to interface with and implement algorithms.
 It is sometimes said (by Sean Parent) that the whole of STL algorithms can be seen as intermediate pieces to implement `std::stable_sort`. 
 Pressumably if one can sort over a range, one can perform any other standard algorithm.
 
@@ -211,7 +213,7 @@ Pressumably if one can sort over a range, one can perform any other standard alg
 		...
 ```
 
-If we print this we will get
+If we print the result, we will get:
 
 > ```cpp
 > 30 1 2 3 4  
@@ -220,11 +222,10 @@ If we print this we will get
 > 150 16 17 18 19
 > ```
 
-
 The array has been changed to be in row-based lexicographical order.
 Since the sorted array is a reference to the original data, the original C-array has changed.
 
-(Note that `std::*sort` cannot be applied directly to a multidimensional C-array or to Boost.MultiArray types.
+(Note that `std::sort` cannot be applied directly to a multidimensional C-array or to Boost.MultiArray types, among other libraries.
 The arrays implemented by this library are, to the best of my knowledge, the only ones that support STL algorithms directly.)
 
 If we want to order the matrix in a per-column basis we need to "view" the matrix as range of columns.
@@ -245,7 +246,7 @@ Which will transform the (original) matrix into:
 > 16 17 18 19 150 
 > ```
 
-In other words, a matrix of dimension `D` can be viewed simultaneously as `D` different ranges of different "transpositions" (rotation/permutation of indices.)
+In other words, a matrix of dimension `D` can be viewed simultaneously as `D!` (D-factorial) different ranges of different "transpositions" (rotation/permutation of indices.)
 
 ## Initialization
 
