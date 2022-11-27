@@ -43,8 +43,8 @@ namespace boost::multi {
 
 template<std::size_t I> struct priority : std::conditional_t<I==0, std::true_type, priority<I-1>> {};
 
-#define DECLRETURN(ExpR) ->decltype(ExpR) {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
-#define JUSTRETURN(ExpR)                  {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
+#define DECLRETURN(ExpR) -> decltype(ExpR) {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
+#define JUSTRETURN(ExpR)                   {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
 
 constexpr class adl_copy_n_t {
 	template<class... As>          constexpr auto _(priority<0>/**/,          As&&... args) const DECLRETURN(std::                copy_n(                      std::forward<As>(args)...))
