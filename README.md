@@ -5,7 +5,7 @@
 
 (not an official Boost library)
 
-_© Alfredo A. Correa, 2018-2022_
+_© Alfredo A. Correa, 2018-2023_
 
 The `Multi` C++ library provides multidimensional array containers and access to contiguous or regularly contiguous memory.
 
@@ -1060,16 +1060,13 @@ int main() {
 	multi::array<double, 2, thrust::device_allocator<double>> B({10,10});
 	A[5][0] = 50.0;
 
-	thrust::copy(  // copy row 0
-        A.rotated()[0].begin(), A.rotated()[0].end(),
-        B.rotated()[0].begin()
-    );
+	thrust::copy(A.rotated()[0].begin(), A.rotated()[0].end(), B.rotated()[0].begin());	 // copy row 0
 	assert( B[5][0] == 50.0 );
 }
 ```
 [(live)](https://godbolt.org/z/e7bjKqh69)
 
-which uses the default Thrust backend (CUDA, OpenMP or TBB).
+which uses the default Thrust backend (e.g. CUDA when compiled with `nvcc` or OpenMP or TBB in other cases).
 Universal memory (accessible from normal CPU code) can be used with `thrust::universal_allocator` instead.
 
 More specific allocators can be used ensure CUDA backends, for example CUDA managed memory:
