@@ -67,7 +67,7 @@ Compiling and running the tests depends on Boost.Test
 The code is developed for several compilers with standard C++17 support, for reference:
 LLVM's `clang` (5.0+) (`libc++` and `libstdc++`), 
 GNU's `g++` (7.1+), 
-Nvidia's `nvcc` (11.3+) and `nvc++` (20.7-21.3+), 
+Nvidia's [`nvcc`](https://godbolt.org/z/Kdh5PeP5f) (11.0+) and `nvc++` (20.7-21.3+), 
 Intel's `icpc` (2021.2.0+) and `icpx` (2022.0.0+), 
 Baxter's [`circle`](https://www.circle-lang.org/) (build 168+), and Microsoft's [MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/) (+19.14 in [conformant mode](https://godbolt.org/z/vrfh1fxWK)).
 
@@ -75,7 +75,7 @@ Baxter's [`circle`](https://www.circle-lang.org/) (build 168+), and Microsoft's 
 
 * `multi::array<T, D, A = std::allocator<T>>`: 
 Array of integer positive dimension `D`, it has value semantics if element type `T` has value semantics. 
-Memory is requested by allocator of type `A`, supports stateful and polymorphic allocators.
+Memory is requested by an allocator of type `A`, supports stateful and polymorphic allocators.
 * `multi::array_ref<T, D, P = T*>`: 
 Array interpretation of a random access range, usually a contiguous memory block. 
 It has reference semantics.
