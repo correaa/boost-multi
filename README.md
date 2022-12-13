@@ -553,15 +553,15 @@ assert( d2D_slicedstrided.size(0) == 1 and d2D_slicedstrided.size(1) == 5 );
 
 For convenience, `A.sliced(a, b, c)` is the same as `A.sliced(a, b).strided(c)`.
 
-By combining `rotated`, `sliced` and `strided` one can take sub arrays at any dimension.
+By combining `rotated`, `sliced` and `strided` one can take sub arrays at any dimension index.
 For example in a two dimensional array one can take a subset of columns by defining.
 
 ```cpp
-auto&& subA = A.rotated().strided(1, 3).sliced(2).unrotated();
+auto&& subA = A.rotated().sliced(1, 3).strided(2).unrotated();
 ```
 
-Other notations are available, but when in doubt, the `rotated/strided/sliced/rotated` and combinations of them provides the most control over the subview operations.
-(At the moment the `strided` argument has to divide the total size of the slice (or matrix), otherwise the behavior is undefined.)
+Other notations are available, for example this is equivalent to `A(multi::all, {1, 3, /*every*/2})` or ~(~A)({1, 3, 2}).
+The `rotated/strided/sliced/rotated` and combinations of them provides the most control over the subview operations.
 
 Blocks (slices) in multidimensions can be obtained but pure index notation using parentheses `()` (`.operator()`):
 
@@ -583,6 +583,9 @@ multi::array<double, 2> block_value_1 =   A({1, 4}, {2, 4})        ;
 auto                    block_value_2 =   A({1, 4}, {2, 4}).decay();
 auto                    block_value_3 = + A({1, 4}, {2, 4})        ;
 ```
+
+Any parenthesis argument can be either a range (with or without stride) or an index. 
+Range argument can be substituted by `multi::all` to obtain the whole range.
 
 ## Const-correctness
 
