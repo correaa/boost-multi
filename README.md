@@ -1050,17 +1050,24 @@ The library works out-of-the-box in combination with the CUDA Thrust library.
 
 ```cpp
 #include <multi/array.hpp>
-#include <thrust/memory.h>
+
+#include <thrust/device_allocator.h>
 
 namespace multi = boost::multi;
+
 int main() {
 	multi::array<double, 2, thrust::device_allocator<double>> A({10,10});
 	multi::array<double, 2, thrust::device_allocator<double>> B({10,10});
-	A[5][0] = 50.;
-	thrust::copy(begin(rotated(A2)[0]), end(rotated(A2)[0]), begin(rotated(B2)[0]));
-	assert( B2[5][0] == 50. );
+	A[5][0] = 50.0;
+
+	thrust::copy(  // copy row 0
+        A.rotated()[0].begin(), A.rotated()[0].end(),
+        B.rotated()[0].begin()
+    );
+	assert( B[5][0] == 50.0 );
 }
 ```
+[(live)](https://godbolt.org/z/e7bjKqh69)
 
 which uses the default Thrust backend (CUDA, OpenMP or TBB).
 Universal memory (accessible from normal CPU code) can be used with `thrust::universal_allocator` instead.
