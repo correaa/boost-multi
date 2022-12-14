@@ -867,11 +867,15 @@ The example can be easily adapted to other formats or libries (XML with Boost.Se
 
 ```cpp
 #include <multi/array.hpp>  // our library
-#include<fstream>  // saving to files in example
+
+
 #include <cereal/archives/json.hpp>                // #include <boost/archive/xml_iarchive.hpp>
                                                    // #include <boost/archive/xml_oarchive.hpp>
 // for serialization of array elements (in this case strings)
 #include <cereal/types/string.hpp>                 // #include <boost/serialization/string.hpp>
+
+#include<fstream>  // saving to files in example
+
 using input_archive  = cereal::JSONInputArchive ;  // boost::archive::xml_iarchive;
 using output_archive = cereal::JSONOutputArchive;  // boost::archive::xml_oarchive;
 using cereal::make_nvp;                            // boost::serialization::make_nvp;
@@ -898,6 +902,7 @@ int main() {
 	assert(A == B);
 }
 ```
+[(live)](https://godbolt.org/z/35vT1fx89)
 
 These templated functions work for any dimension and element type (as long as the element type is serializable in itself; all basic types are serializable by default).
 However note that it is responsibility of the user to make sure that data is serialized and deserialized into the same type and also assuming the same format.
