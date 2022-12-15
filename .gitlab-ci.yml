@@ -173,7 +173,7 @@ NVCC-NORUN:
       - stuck_or_timeout_failure
 
 CIRCLE:
-  allow_failure: false
+  allow_failure: true
   image: debian:testing
   stage: build
   script:
