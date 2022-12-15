@@ -457,7 +457,7 @@ struct cursor_t {
 	template<class, dimensionality_type, class, class> friend struct basic_array;
 	template<class, dimensionality_type, class> friend struct cursor_t;
 
-	constexpr cursor_t(element_ptr base, strides_type const& strides) : strides_{strides}, base_{base} {}
+	HD constexpr cursor_t(element_ptr base, strides_type const& strides) : strides_{strides}, base_{base} {}
 
  public:
 	HD constexpr auto operator[](difference_type n) const -> decltype(auto) {
