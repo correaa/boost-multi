@@ -150,7 +150,7 @@ BOOST_AUTO_TEST_CASE(array_encoded_subarray) {
 		using raw_source_reference = decltype(std::declval<multi::array<double, 2>&>()[0]);
 		using internal_array_type  = decltype(std::declval<raw_source_reference>()({2, 8}).partitioned(3));
 
-	 public:
+	 public:  // NOLINT(whitespace/indent) bug in cpplint
 		propagate_const<double&> prop1;  // NOLINT(misc-non-private-member-variables-in-classes)
 		propagate_const<double&> prop2;  // NOLINT(misc-non-private-member-variables-in-classes)
 		internal_array_type slater_array;  // NOLINT(misc-non-private-member-variables-in-classes)

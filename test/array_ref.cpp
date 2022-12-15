@@ -40,9 +40,9 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
 	BOOST_REQUIRE( &mar(2, {1, 3})[1] == &arr[2][2] );
 }
 
-using namespace std::string_literals;
 
 BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed) {
+	using namespace std::string_literals;
 	std::array<std::string, 5> stdarr = {{"a"s, "b"s, "c"s, "d"s, "e"s}};
 
 	multi::array_ref<std::string, 1> mar = *multi::array_ptr<std::string, 1>(&stdarr);
