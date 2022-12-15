@@ -50,6 +50,7 @@ find_package(Boost REQUIRED COMPONENTS unit_test_framework timer)
 set(TEST_SRCS
     array.cu
     memory_resource.cu
+	set_identity_kernel.cu
     speed.cu
     speed_algo.cu
     universal.cu
@@ -69,13 +70,13 @@ foreach(TEST_FILE ${TEST_SRCS})
 	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS})
 	target_link_libraries(${TEST_EXE} PRIVATE ${Boost_LIBRARIES})
 	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
-    if("30;35;50;52;60;61;70;70+PTX;75;75+PTX" STREQUAL "${CUDA_ARCH_LIST}" OR "" STREQUAL "${CUDA_ARCH_LIST}" OR NOT ENABLE_GPU)
+    if("30;35;50;52;60;61;70;70+PTX;75;75+PTX" STREQUAL "${CUDA_ARCH_LIST}" OR "" STREQUAL "${CUDA_ARCH_LIST}" OR NOT ENABLE_CUDA)
 	    message(STATUS "gpu not detected ${CUDA_ARCH_LIST}")
     else()
 	    message(STATUS "gpu detected: ${CUDA_ARCH_LIST}")
 	    add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
     endif()
-    if(ENABLE_GPU)
+    if(ENABLE_CUDA)
 	    message(STATUS "gpu run forced")
 	    add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
     endif()
