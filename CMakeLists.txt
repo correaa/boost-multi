@@ -31,7 +31,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # 		$<$<AND:$<CXX_COMPILER_ID:GNU>,$<CUDA_COMPILER_ID:NVIDIA>>:
 # https://youtrack.jetbrains.com/issue/CPP-25608
 target_compile_features(${PROJECT_NAME} INTERFACE $<$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>:cxx_std_17>)
-target_compile_options (${PROJECT_NAME} INTERFACE       $<$<CUDA_COMPILER_ID:NVIDIA>: -std=c++17>)
+target_compile_options (${PROJECT_NAME} INTERFACE $<$<CUDA_COMPILER_ID:NVIDIA>:-std=c++17>)
 
 target_compile_options (
 	${PROJECT_NAME}
