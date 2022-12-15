@@ -462,7 +462,15 @@ struct cursor_t {
  public:
 	HD constexpr auto operator[](difference_type n) const -> decltype(auto) {
 		if constexpr(D != 1) {
-			return cursor_t<ElementPtr, D-1, std::decay_t<decltype(tail(strides_))>>{base_ + std::get<0>(strides_)*n, strides_.tail()};
+			return cursor_t<
+				ElementPtr,
+				D-1,
+				std::decay_t<decltype(strides_.tail())>
+			>{
+				base_
+				+ std::get<0>(strides_)*n,
+				strides_.tail()
+			};
 		} else {
 			return base_[std::get<0>(strides_)*n];
 		}
