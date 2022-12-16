@@ -693,12 +693,14 @@ assert(buffer[11]==9);  // the target memory is affected
 ```
 Since `array_ref` does not manage the memory associated with it, the reference can be simply dangle if the `buffer` memory is reallocated (e.g. by `resize` in this case).
 
-### Special Memory: Allocators and Fancy Pointers
+### Special Memory: Pointers and Views
 
 `array`'s manages its memory behind the scenes through allocators, which can be specified at construction.
 It can handle special memory, as long as the underlying types behave coherently, these include [fancy pointers](https://en.cppreference.com/w/cpp/named_req/Allocator#Fancy_pointers) (and fancy references).
 Associated fancy pointers and fancy reference (if any) are deduced from the allocator types.
 Another use of fancy pointer is to create by-element "projections".
+
+#### Allocators and Fancy Pointers
 
 Specific uses of fancy memory are file-mapped memory or interprocess shared memory.
 This example illustrates memory persistency by combining with Boost.Interprocess library. 
@@ -731,6 +733,8 @@ int main() {
 ```
 
 (See also, examples of interactions with the CUDA Thrust library to see more uses of special pointer types to handle special memory.)
+
+#### Transformed views
 
 Another kind of fancy-pointer is one that transforms the underlying values.
 These are useful to create "projections" or "views" of data elements.
@@ -766,6 +770,22 @@ int main() {
 	assert( Ah[1][0] == std::conj(A[0][1]) );
 }
 ```
+
+To simplify this bolier plate, the library provides the `.element_transformed(F)` method that will apply a transformation `F` to each element of the array.
+In this example the original arrays is transformed into a transposed array with duplicated elements.
+
+```cpp
+    multi::array<double, 2> A = {
+        {1.0, 2.0},
+        {3.0, 4.0},
+    };
+
+    auto const scale = [](auto x) { return x * 2.0; };
+
+    auto B = + A.rotated().element_transformed(scale);
+	assert( B[1][0] == A[0][1] * 2 );
+```
+([live](https://godbolt.org/z/b7E56Mjc8))
 
 # Interoperability with other software
 
