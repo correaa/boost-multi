@@ -139,6 +139,7 @@ ICPX:
 
 NVHPC-2022:
   stage: build
+  image: debian:stable
   script:
     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
     - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
