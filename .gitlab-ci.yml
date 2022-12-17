@@ -158,7 +158,7 @@ NVHPC-2022:
 
 NVCC-NORUN:
   stage: build
-  image: nvidia/cuda:11.8.0-devel-ubuntu22.04
+  image: nvidia/cuda:11.7.0-devel-ubuntu22.04
   script:
     - apt-get update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
