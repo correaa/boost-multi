@@ -157,8 +157,9 @@ NVHPC-2022:
       - stuck_or_timeout_failure
 
 NVCC-NORUN:
+  allow_failure: true
   stage: build
-  image: nvidia/cuda:11.7.0-devel-ubuntu22.04
+  image: nvidia/cuda:12.0.0-devel-ubuntu22.04
   script:
     - apt-get update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
