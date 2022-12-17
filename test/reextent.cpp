@@ -252,6 +252,7 @@ BOOST_AUTO_TEST_CASE(array_iota) {
 	BOOST_REQUIRE( Darr.extensions() == Aarr.extensions() );
 }
 
+#ifndef __INTEL_COMPILER
 BOOST_AUTO_TEST_CASE(extension_index_op) {
 	multi::array<double, 2> Aarr({11, 13});
 	auto Aext = Aarr.extensions();
@@ -271,3 +272,4 @@ BOOST_AUTO_TEST_CASE(extension_index_op) {
 //	}
 
 }
+#endif
