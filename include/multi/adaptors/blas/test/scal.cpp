@@ -2,56 +2,87 @@
 // Copyright 2019-2022 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS scal"
-#include<boost/test/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 
-#include "../../blas/scal.hpp"
+#include <multi/adaptors/blas/scal.hpp>
 
-#include "../../../array.hpp"
+#include <multi/array.hpp>
 
 namespace multi = boost::multi;
-namespace blas = multi::blas;
+namespace blas  = multi::blas;
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_n) {
 	multi::array<double, 2> arr = {
-		{1.,  2.,  3.,  4.},
-		{5.,  6.,  7.,  8.},
-		{9., 10., 11., 12.}
+		{1.0,  2.0,  3.0,  4.0},
+		{5.0,  6.0,  7.0,  8.0},
+		{9.0, 10.0, 11.0, 12.0},
 	};
-	BOOST_REQUIRE( (arr[0][2] == 3.) and (arr[2][2] == 11.) );
+	BOOST_REQUIRE( (arr[0][2] == 3.0) and (arr[2][2] == 11.0) );
 
-	blas::scal_n(2., arr[2].begin(), arr[2].size());
-	BOOST_REQUIRE( arr[0][2] == 3. and arr[2][2] == 11.*2. );
+	blas::scal_n(2.0, arr[2].begin(), arr[2].size());
+	BOOST_REQUIRE( arr[0][2] == 3. and arr[2][2] == 11.0*2.0 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_it) {
 	multi::array<double, 2> arr = {
-		{1.,  2.,  3.,  4.},
-		{5.,  6.,  7.,  8.},
-		{9., 10., 11., 12.}
+		{1.0,  2.0,  3.0,  4.0},
+		{5.0,  6.0,  7.0,  8.0},
+		{9.0, 10.0, 11.0, 12.0},
 	};
-	BOOST_REQUIRE( arr[0][2] == 3. );
-	BOOST_REQUIRE( arr[2][2] == 11.);
+	BOOST_REQUIRE( arr[0][2] ==  3.0 );
+	BOOST_REQUIRE( arr[2][2] == 11.0 );
 
-	blas::scal(2., arr[2].begin(), arr[2].end());
-	BOOST_REQUIRE( arr[0][2] == 3. );
-	BOOST_REQUIRE(arr[2][2] == 11.*2. );
+	blas::scal(2.0, arr[2].begin(), arr[2].end());
+	BOOST_REQUIRE( arr[0][2] == 3.0 );
+	BOOST_REQUIRE(arr[2][2] == 11.0*2.0 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_real) {
 	multi::array<double, 2> arr = {
-		{1.,  2.,  3.,  4.},
-		{5.,  6.,  7.,  8.},
-		{9., 10., 11., 12.}
+		{1.0,  2.0,  3.0,  4.0},
+		{5.0,  6.0,  7.0,  8.0},
+		{9.0, 10.0, 11.0, 12.0},
 	};
-	BOOST_REQUIRE( arr[0][2] ==  3. );
-	BOOST_REQUIRE( arr[2][2] == 11. );
+	BOOST_REQUIRE( arr[0][2] ==  3.0 );
+	BOOST_REQUIRE( arr[2][2] == 11.0 );
 
-	BOOST_REQUIRE(  blas::scal(1., arr[2]) ==  arr[2] );
-	BOOST_REQUIRE( &blas::scal(1., arr[2]) == &arr[2] );
-	BOOST_REQUIRE( +blas::scal(1., arr[2]) ==  arr[2] );
+	BOOST_REQUIRE(  blas::scal(1.0, arr[2]) ==  arr[2] );
+	BOOST_REQUIRE( &blas::scal(1.0, arr[2]) == &arr[2] );
+	BOOST_REQUIRE( +blas::scal(1.0, arr[2]) ==  arr[2] );
 
-	blas::scal(2., arr[2]);
-	BOOST_REQUIRE( arr[0][2] == 3. and arr[2][2] == 11.*2. );
+	blas::scal(2.0, arr[2]);
+	BOOST_REQUIRE( arr[0][2] == 3.0 and arr[2][2] == 11.0*2.0 );
 
-	BOOST_REQUIRE( &blas::scal(1., arr[2]) == &arr[2] );
+	BOOST_REQUIRE( &blas::scal(1.0, arr[2]) == &arr[2] );
+}
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_real_2D) {
+	multi::array<double, 2> arr = {
+		{1.0,  2.0,  3.0,  4.0},
+		{5.0,  6.0,  7.0,  8.0},
+		{9.0, 10.0, 11.0, 12.0},
+	};
+	BOOST_REQUIRE( arr[0][2] ==  3.0 );
+	BOOST_REQUIRE( arr[2][2] == 11.0 );
+
+	blas::scal(2.0, arr.elements());
+
+	BOOST_REQUIRE( arr[0][2] ==  6.0 );
+	BOOST_REQUIRE( arr[2][2] == 22.0 );
+}
+
+BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_complex_2D) {
+    using namespace std::complex_literals;  // for 0.0i
+	multi::array<std::complex<double>, 2> arr = {
+		{1.0 + 0.0i,  2.0 + 0.0i,  3.0 + 0.0i,  4.0 + 0.0i},
+		{5.0 + 0.0i,  6.0 + 0.0i,  7.0 + 0.0i,  8.0 + 0.0i},
+		{9.0 + 0.0i, 10.0 + 0.0i, 11.0 + 0.0i, 12.0 + 0.0i},
+	};
+	BOOST_REQUIRE( arr[0][2] ==  3.0 );
+	BOOST_REQUIRE( arr[2][2] == 11.0 );
+
+	blas::scal(2.0, arr.elements());
+
+	BOOST_REQUIRE( arr[0][2] ==  6.0 );
+	BOOST_REQUIRE( arr[2][2] == 22.0 );
 }
