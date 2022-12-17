@@ -1,10 +1,12 @@
-#ifndef MULTI_ADAPTORS_BLAS_SCAL_HPP  // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2019-2022 Alfredo A. Correa
+
+#ifndef MULTI_ADAPTORS_BLAS_SCAL_HPP
 #define MULTI_ADAPTORS_BLAS_SCAL_HPP
-// Copyright 2019-2021 Alfredo A. Correa
 
 #include "../blas/core.hpp"
 
-namespace boost::multi::blas{
+namespace boost::multi::blas {
 
 using core::scal;
 
@@ -38,6 +40,6 @@ class scal_range {
 
 template<class A> auto scal(A const& array) {return scal_range<A>{array};}
 
-} // end namespace boost::multi::blas
+}  // end namespace boost::multi::blas
 
 #endif
