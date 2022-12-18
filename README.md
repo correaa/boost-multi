@@ -368,13 +368,13 @@ Arrays can change their size preserving elements with `reextents`.
 
 ```cpp
 multi::array<double, 2> A {
-	 {1., 2., 3.},
-	 {4., 5., 6.}
+	 {1.0, 2.0, 3.0},
+	 {4.0, 5.0, 6.0}
 };
 
 A.reextents({4, 4});
 
-assert( A[0][0] = 1. );
+assert( A[0][0] = 1.0 );
 ```
 
 Subarrays, or views cannot change their size. `A[1].reextents({4})`.
@@ -1162,14 +1162,14 @@ More targeted usage patterns may require locally (non-globally) defined memory r
 
 ## CUDA C++
 
-CUDA is a dialect of C++ that allows writing pieces of code directly for GPU execution, known as "CUDA kernel".
+CUDA is a dialect of C++ that allows writing pieces of code directly for GPU execution, known as "CUDA kernels".
 Although code inside kernels has certain restrictions, most Multi expressions can be used. 
 (Most functions in Multi, except those involving memory allocations, are marked `__device__` to allow this.)
 
 Calling kernels involves a special syntax (`<<< ... >>>`), and they cannot take arguments by reference (or by values that are not entirely contained in the stack).
 Since arrays are usually passed by reference (e.g. `multi::array<double, 2>&` or `Array&&`), a different idiom needs to be used.
-(Large arrays are not passed by value to avoid copies, but also kernel arguments cannot allocate memory themselves.)
-Iterators (e.g. `.begin()/.end()`) and "cursors" (e.g. `.home()`) can be passed by value and represent a "proxy" to an array, including allowing the index syntax and other transformations.
+(Large arrays are not passed by value to avoid copies, but even if a copy would be fine, kernel arguments cannot allocate memory themselves.)
+Iterators (e.g. `.begin()/.end()`) and "cursors" (e.g. `.home()`) can be passed by value and represent a "proxy" to an array, including allowing the normal index syntax and other transformations.
 Cursors are a generalization of iterators for multiple dimensions. 
 They are cheaply copied (like iterators) and they allow indexing. 
 Also, they have no associated `.size()` or `.extensions()`, but this is generally fine for kernels.
