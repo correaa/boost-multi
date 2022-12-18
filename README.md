@@ -1160,6 +1160,58 @@ int main() {
 In the example, most of the memory requests are handled by reutilizing the memory pool avoiding expensive system allocations.
 More targeted usage patterns may require locally (non-globally) defined memory resources.
 
+## CUDA C++
+
+CUDA is a dialect of C++ that allows writing pieces of code directly for GPU execution, known as "CUDA kernel".
+Although code inside kernels has certain restrictions, most Multi expressions can be used. 
+(Most functions in Multi, except those involving memory allocations, are marked `__device__` to allow this.)
+
+Calling kernels involves a special syntax (`<<< ... >>>`), and they cannot take arguments by reference (or by values that are not entirely contained in the stack).
+Since arrays are usually passed by reference (e.g. `multi::array<double, 2>&` or `Array&&`), a different idiom needs to be used.
+(Large arrays are not passed by value to avoid copies, but also kernel arguments cannot allocate memory themselves.)
+Iterators (e.g. `.begin()/.end()`) and "cursors" (e.g. `.home()`) can be passed by value and represent a "proxy" to an array, including allowing the index syntax and other transformations.
+Cursors are a generalization of iterators for multiple dimensions. 
+They are cheaply copied (like iterators) and they allow indexing. 
+Also, they have no associated `.size()` or `.extensions()`, but this is generally fine for kernels.
+
+Here it is an example implementation for matrix multiplication:
+
+```
+#include <multi/array.hpp>  // from https://gitlab.com/correaa/boost-multi
+#include <thrust/system/cuda/memory.h>  // for thrust::cuda::allocator
+
+template<class ACursor, class BCursor, class CCursor>
+__global__ void Kernel(ACursor A, BCursor B, CCursor C, int N) {
+	int x = threadIdx.x + blockIdx.x * blockDim.x;
+	int y = threadIdx.y + blockIdx.y * blockDim.y;
+
+	typename CCursor::element_type value{0.0};
+	for (int k = 0; k != N; ++k) { value += A[y][k] * B[k][x]; }
+	C[y][x] = value;
+}
+
+namespace multi = boost::multi;
+
+int main() {
+	int N = 1024;
+
+	// declare 3 square arrays
+	multi::array<double, 2, thrust::cuda::allocator<double>> A({N, N}); A[0][0] = ...;
+	multi::array<double, 2, thrust::cuda::allocator<double>> B({N, N}); B[0][0] = ...;
+	multi::array<double, 2, thrust::cuda::allocator<double>> C({N, N});
+
+	// kernel invocation code
+	assert(N % 32 == 0);
+	dim3 dimBlock(32, 32);
+	dim3 dimGrid(N/32, N/32);
+	Kernel<<<dimGrid, dimBlock>>>(A.home(), B.home(), C.home(), N);
+	cudaDeviceSynchronize();
+
+    // now C = A x B
+}
+```
+[(live)](https://godbolt.org/z/eKbeosrWa)
+
 ## TotalView
 
 TotalView visual debugger (commercial) can display arrays in human-readable form (for simple types, like `double` or `std::complex`).
