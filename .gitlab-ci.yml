@@ -137,34 +137,44 @@ ICPX:
 #      - runner_system_failure
 #      - stuck_or_timeout_failure
 
-NVHPC-2022:
-  stage: build
-  script:
-    - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
-    - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
-    - apt-get update -y && apt-get install --no-install-recommends -y nvhpc-22-7 cmake make libboost-test-dev libboost-serialization-dev
-    - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ --version
-    - mkdir build && cd build
-    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ cmake ..
-    - make --jobs 2 || make VERBOSE=1
-    - ctest --output-on-failure
-  needs: ["OLDGNUSANICHECKCOV"]
-  retry:
-    max: 2
-    when:
-      - runner_system_failure
-      - stuck_or_timeout_failure
+# NVHPC-2022:
+#   allow_failure: true
+#   stage: build
+#   image: debian:stable
+#   script:
+#     - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates
+#     - echo 'deb [trusted=yes] https://developer.download.nvidia.com/hpc-sdk/ubuntu/amd64 /' | tee /etc/apt/sources.list.d/nvhpc.list
+#     - apt-get update -y && apt-get install --no-install-recommends -y nvhpc-22-7 cmake make libboost-test-dev libboost-serialization-dev
+#     - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ --version
+#     - mkdir build && cd build
+#     - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ cmake ..
+#     - make --jobs 2 || make VERBOSE=1
+#     - ctest --output-on-failure
+#   needs: ["OLDGNUSANICHECKCOV"]
+#   retry:
+#     max: 2
+#     when:
+#       - runner_system_failure
+#       - stuck_or_timeout_failure
 
 NVCC-NORUN:
+  allow_failure: true
   stage: build
-  image: nvidia/cuda:11.8.0-devel-ubuntu22.04
+  # image: nvidia/cuda:12.0.0-devel-ubuntu22.04
   script:
+    - export DEBIAN_FRONTEND=noninteractive
+    - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates gnupg software-properties-common
+    - apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/debian11/x86_64/3bf863cc.pub
+    - add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/debian11/x86_64/ /"
+    - add-apt-repository contrib
+    - apt-get update
+    - apt-get -y install cuda
     - apt-get update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
     - nvcc --version
     - cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
     - make --jobs=2 || make VERBOSE=1
-#    - ctest -j 2 --output-on-failure  # doesn't run
+    # - ctest -j 2 --output-on-failure  # doesn't run
   needs: ["OLDGNUSANICHECKCOV"]
   retry:
     max: 2

@@ -443,11 +443,15 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 template<typename ElementPtr, dimensionality_type D, class StridesType>
 struct cursor_t {
 	using difference_type = typename std::iterator_traits<ElementPtr>::difference_type;
-	using strides_type = StridesType;
-	using element_ptr = ElementPtr;
-	using element_ref = typename std::iterator_traits<element_ptr>::reference;
-	using pointer = element_ptr;
+	using strides_type    = StridesType;
+
+	using element_ptr  = ElementPtr;
+	using element_ref  = typename std::iterator_traits<element_ptr>::reference;
+	using element_type = typename std::iterator_traits<element_ptr>::value_type;
+
+	using pointer   = element_ptr;
 	using reference = element_ref;
+
 	using indices_type = typename extensions_t<D>::indices_type;
 
  private:
@@ -475,28 +479,28 @@ struct cursor_t {
 			return base_[std::get<0>(strides_)*n];
 		}
 	}
-	constexpr auto operator()(difference_type n) const -> decltype(auto) {
+	HD constexpr auto operator()(difference_type n) const -> decltype(auto) {
 		return operator[](n);
 	}
 	template<class... Ns>
-	constexpr auto operator()(difference_type n, Ns... rest) const -> decltype(auto) {
+	HD constexpr auto operator()(difference_type n, Ns... rest) const -> decltype(auto) {
 		return operator[](n)(rest...);
 	}
 
  private:
 	template<class Tuple, std::size_t... I>
-	constexpr auto apply_impl(Tuple const& tup, std::index_sequence<I...> /*012*/) const -> decltype(auto) {
+	HD constexpr auto apply_impl(Tuple const& tup, std::index_sequence<I...> /*012*/) const -> decltype(auto) {
 		return ((std::get<I>(tup)*std::get<I>(strides_)) + ...);
 	}
 
  public:
 	template<class Tuple = indices_type>
-	constexpr auto operator+=(Tuple const& tup) -> cursor_t& {
+	HD constexpr auto operator+=(Tuple const& tup) -> cursor_t& {
 		base_ += apply_impl(tup, std::make_index_sequence<std::tuple_size<Tuple>::value>{});
 		return *this;
 	}
-	constexpr auto operator* () const -> reference {return *base_;}
-	constexpr auto operator->() const -> pointer   {return  base_;}
+	HD constexpr auto operator* () const -> reference {return *base_;}
+	HD constexpr auto operator->() const -> pointer   {return  base_;}
 };
 
 template<typename Pointer, class LayoutType>
@@ -1696,7 +1700,7 @@ struct basic_array<T, 0, ElementPtr, Layout>
 	constexpr operator element_cref()                        const& {return *(this->base_);}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax
 
 	template<class Archive>
-	auto serialize(Archive& arxiv, const unsigned int /*version*/) {
+	auto serialize(Archive& arxiv, unsigned int const /*version*/) {
 		using AT = multi::archive_traits<Archive>;
 		auto& element_ = *(this->base_);
 		arxiv &     AT::make_nvp("element", element_);
@@ -2496,11 +2500,11 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 
  private:
 	template<class Ar>
-	auto serialize_structured(Ar& arxiv, const unsigned int version) {
+	auto serialize_structured(Ar& arxiv, unsigned int const version) {
 		basic_array<T, D, ElementPtr>::serialize(arxiv, version);
 	}
 	template<class Archive>
-	auto serialize_flat(Archive& arxiv, const unsigned int /*version*/) {
+	auto serialize_flat(Archive& arxiv, unsigned int const /*version*/) {
 		using AT = multi::archive_traits<Archive>;
 		arxiv & AT::make_nvp("elements", AT::make_array(this->data_elements(), static_cast<std::size_t>(this->num_elements())));
 	}
@@ -2513,7 +2517,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 
  public:
 	template<class Archive>
-	auto serialize(Archive& arxiv, const unsigned int version) {
+	auto serialize(Archive& arxiv, unsigned int const version) {
 		serialize_flat(arxiv, version);
 //  	serialize_structured(ar, version);
 //  	switch(version) {

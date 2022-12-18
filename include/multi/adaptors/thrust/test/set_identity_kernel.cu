@@ -66,7 +66,7 @@ int main() {
         REQUIRE( A[1][1] == 1.0 );
         REQUIRE( A[2][1] == 0.0 );
 
-        std::chrono::duration<double> time = std::chrono::high_resolution_clock::now() - start_time;
+        auto time = std::chrono::high_resolution_clock::now() - start_time;
         auto rate = size/time.count();
         std::cout<<"algorithm rate = "<< rate <<" GB/s (ratio = 1)\n";
     }
@@ -83,7 +83,7 @@ int main() {
         REQUIRE( A[1][1] == 1.0 );
         REQUIRE( A[2][1] == 0.0 );
 
-        std::chrono::duration<double> time = std::chrono::high_resolution_clock::now() - start_time;
+        auto time = std::chrono::high_resolution_clock::now() - start_time;
         auto rate = size/time.count();
         std::cout<<"kernel rate = "<< rate <<" GB/s (ratio = 1)\n";
     }
