@@ -7,6 +7,8 @@
 
 #include "./thrust/cuda/managed.hpp"
 
+#include "./thrust/reference.hpp"
+
 #include <thrust/device_allocator.h>
 
 #include <thrust/universal_allocator.h>
@@ -35,7 +37,7 @@ template<class... As> struct pointer_traits<thrust::pointer<As...>>
 };
 
 }  // end namespace std
-// end of nvcc trhust 11.5 workaround
+// end of nvcc thrust 11.5 workaround
 
 namespace boost::multi {
 
