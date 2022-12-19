@@ -859,7 +859,7 @@ Here it is a table with a comparison (also comparing with R. Garcia's Boost.Mult
 | PMR Alloctors               | **yes**, via `multi::pmr::array<T, D>`                          | no (no allocation or ownership)                        |   no    |
 | Fancy pointers / references | **yes**, via `multi::array<T, D, FancyAlloc>` or views          | no                                                     |   no    |
 | Strided Layout              | **yes**                                                         | **yes**                                                |  **yes** |
-| Fortran-ordering            |   no, only for views, e.g. resulted from transposed views       | **yes** (only views are supported)                     |  **yes**  |
+| Fortran-ordering            | **yes**, only for views, e.g. resulted from transposed views    | **yes** (only views are supported)                     |  **yes**  |
 | Zig-zag / Hilbert ordering  | no                                                              | **yes**, via arbitrary layouts (no inverse or flattening) | no |
 | Arbitrary layout            | no                                                              | **yes**, possibly inneficient, no efficient slicing    | no |
 | Flattening of elements      | **yes**, via `A.elements()` range (efficient representation)    | **yes**, but via indices roundtrip (inefficient)       | no, only for allocated arrays |
