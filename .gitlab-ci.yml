@@ -171,8 +171,8 @@ NVCC-NORUN:
     - apt-get -y install cuda
     - apt-get update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
-    - nvcc --version
-    - cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
+    - /usr/local/cuda/bin/nvcc --version
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
     - make --jobs=2 || make VERBOSE=1
     # - ctest -j 2 --output-on-failure  # doesn't run
   needs: ["OLDGNUSANICHECKCOV"]
