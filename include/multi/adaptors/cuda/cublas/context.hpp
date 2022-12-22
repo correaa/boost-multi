@@ -8,8 +8,8 @@
 #include "../../../adaptors/blas/traits.hpp"
 #include "../../../adaptors/blas/core.hpp"
 
-#include "../../../memory/adaptors/cuda/ptr.hpp"
-#include "../../../memory/adaptors/cuda/managed/ptr.hpp"
+//#include "../../../memory/adaptors/cuda/ptr.hpp"
+//#include "../../../memory/adaptors/cuda/managed/ptr.hpp"
 
 #include <thrust/system/cuda/memory.h>
 
@@ -121,7 +121,7 @@ class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})
 	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename std::pointer_traits<CCP>::element_type,
 		std::enable_if_t<
 			is_z<AA>{} and is_z<BB>{} and is_z<CC>{} and is_z<ALPHA>{} and is_z<BETA>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{})>{} and
-			std::is_convertible_v<AAP, memory::cuda::ptr<AA>> and std::is_convertible_v<BBP, memory::cuda::ptr<BB>> and std::is_convertible_v<CCP, memory::cuda::ptr<CC>>
+			std::is_convertible_v<AAP, thrust::cuda::pointer<AA>> and std::is_convertible_v<BBP, thrust::cuda::pointer<BB>> and std::is_convertible_v<CCP, thrust::cuda::pointer<CC>>
 		,int> =0
 	>
 	void gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc) {
@@ -131,7 +131,7 @@ class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})
 	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename std::pointer_traits<CCP>::element_type,
 		std::enable_if_t<
 			is_d<AA>{} and is_d<BB>{} and is_d<CC>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{})>{} and
-			std::is_convertible_v<AAP, memory::cuda::ptr<AA>> and std::is_convertible_v<BBP, memory::cuda::ptr<BB>> and std::is_convertible_v<CCP, memory::cuda::ptr<CC>>
+			std::is_convertible_v<AAP, thrust::cuda::pointer<AA>> and std::is_convertible_v<BBP, thrust::cuda::pointer<BB>> and std::is_convertible_v<CCP, thrust::cuda::pointer<CC>>
 		,int> =0
 	>
 	void gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc) {
@@ -163,7 +163,7 @@ class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})
 	template<class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BBP, class BB = typename pointer_traits<BBP>::element_type,
 		std::enable_if_t<
 			is_z<AA>{} and is_z<BB>{} and is_assignable<BB&, decltype(AA{}*BB{}/ALPHA{})>{} and is_assignable<BB&, decltype(ALPHA{}*BB{}/AA{})>{} and 
-			is_convertible_v<AAP, memory::cuda::ptr<AA>> and is_convertible_v<BBP, memory::cuda::ptr<BB>>
+			is_convertible_v<AAP, thrust::cuda::pointer<AA>> and is_convertible_v<BBP, thrust::cuda::pointer<BB>>
 		,int> =0
 	>
 	void trsm(char side, char ul, char transA, char diag, ssize_t m, ssize_t n, ALPHA alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb) {
@@ -176,7 +176,7 @@ class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})
 		class RRP, class RR = typename std::pointer_traits<RRP>::element_type,
 		std::enable_if_t<
 			is_d<XX>{} and is_d<YY>{} and is_d<RR>{} and is_assignable<RR&, decltype(XX{}*YY{})>{} and
-			is_convertible_v<XXP, memory::cuda::ptr<XX>> and is_convertible_v<YYP, memory::cuda::ptr<YY>> and is_convertible_v<RRP, RR*>
+			is_convertible_v<XXP, thrust::cuda::pointer<XX>> and is_convertible_v<YYP, thrust::cuda::pointer<YY>> and is_convertible_v<RRP, RR*>
 		, int> =0
 	>
 	void dot(int n, XXP xx, int incx, YYP yy, int incy, RRP rr) {
@@ -208,7 +208,7 @@ class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})
 		class RRP, class RR = typename std::pointer_traits<RRP>::element_type,
 		std::enable_if_t<
 			is_z<XX>{} and is_z<YY>{} and is_z<RR>{} and is_assignable<RR&, decltype(XX{}*YY{})>{} and
-			is_convertible_v<XXP, memory::cuda::ptr<XX>> and is_convertible_v<YYP, memory::cuda::ptr<YY>> and is_convertible_v<RRP, RR*>
+			is_convertible_v<XXP, ::thrust::cuda::pointer<XX>> and is_convertible_v<YYP, ::thrust::cuda::pointer<YY>> and is_convertible_v<RRP, RR*>
 		, int> =0
 	>
 	void dotc(int n, XXP xx, int incx, YYP yy, int incy, RRP rr) {
@@ -243,17 +243,17 @@ namespace boost::multi::blas {
 	template<> struct is_context<boost::multi::cuda::cublas::context > : std::true_type {};
 	template<> struct is_context<boost::multi::cuda::cublas::context&> : std::true_type {};
 
-	template<class Ptr, class T = typename std::pointer_traits<Ptr>::element_type, std::enable_if_t<std::is_convertible<Ptr, multi::memory::cuda::ptr<T>>{}, int> =0>
+	template<class Ptr, class T = typename std::pointer_traits<Ptr>::element_type, std::enable_if_t<std::is_convertible<Ptr, thrust::cuda::pointer<T>>{}, int> =0>
 	boost::multi::cuda::cublas::context* default_context_of(Ptr const&) {
 		namespace multi = boost::multi;
 		return &multi::cuda::cublas::context::get_instance();
 	}
 
-	template<class T>
-	boost::multi::cuda::cublas::context* default_context_of(boost::multi::memory::cuda::managed::ptr<T> const&) {
-		namespace multi = boost::multi;
-		return &multi::cuda::cublas::context::get_instance();
-	}
+//	template<class T>
+//	boost::multi::cuda::cublas::context* default_context_of(boost::multi::memory::cuda::managed::ptr<T> const&) {
+//		namespace multi = boost::multi;
+//		return &multi::cuda::cublas::context::get_instance();
+//	}
 
 	template<class T, class R>
 	boost::multi::cuda::cublas::context* default_context_of(::thrust::pointer<T, ::thrust::cuda_cub::tag, R> const&) {
