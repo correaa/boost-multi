@@ -477,8 +477,9 @@ std::false_type is_ref_aux(...);
 
 template<class TTT> struct is_ref : decltype(is_ref_aux(std::declval<TTT>())){};
 
+#if 0
 template<class T>
-struct ref {
+struct [[deprecated("use thrust::reference if possible")]] ref {
 	using value_type = T;
 	using reference = value_type&;
 	using pointer = ptr<T>;
@@ -852,6 +853,7 @@ struct ref {
 		return adl_real(self.operator T());
 	}
 };
+#endif
 
 }  // namespace cuda
 }  // namespace memory
