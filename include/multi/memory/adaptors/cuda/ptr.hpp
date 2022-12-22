@@ -42,8 +42,9 @@ namespace managed {
 template<typename T, typename RawPtr> struct ptr;
 }
 
+#if 0
 template<typename RawPtr>
-struct ptr<void const, RawPtr> {
+struct [[deprecated]] ptr<void const, RawPtr> {
 	using pointer      = ptr;
 	using element_type = void const;
 	// using difference_type = void;//typename std::pointer_traits<impl_t>::difference_type;
@@ -82,7 +83,7 @@ struct ptr<void const, RawPtr> {
 template<class T> class allocator;
 
 template<typename RawPtr>
-struct ptr<void, RawPtr> {
+struct [[deprecated]] ptr<void, RawPtr> {
 	operator ::thrust::cuda_cub::pointer<void>() const { return ::thrust::cuda_cub::pointer<void>{rp_}; }
 
  protected:
@@ -130,7 +131,7 @@ struct ptr<void, RawPtr> {
 };
 
 template<typename T, typename RawPtr>
-struct ptr {
+struct [[deprecated]] ptr {
 	operator ::thrust::cuda_cub::pointer<T>() const { return ::thrust::cuda_cub::pointer<T>{rp_}; }
 
 	using raw_pointer            = RawPtr;
@@ -234,6 +235,7 @@ struct ptr {
 	friend allocator<std::decay_t<T>> get_allocator(ptr const&) { return {}; }
 	friend allocator<std::decay_t<T>> default_allocator_of(ptr const&) { return {}; }
 };
+#endif
 
 template<class T>
 DEPRECATED("experimental function, it might be removed soon https://gitlab.com/correaa/boost-multi/-/issues/91")
