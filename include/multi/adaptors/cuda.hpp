@@ -12,6 +12,7 @@ $CXX $0 -o $0x -lcudart -lboost_unit_test_framework -lboost_timer -ldl&&$0x&&rm 
 
 #include "../array.hpp"
 
+#if 0
 namespace boost{
 namespace multi{
 namespace cuda{
@@ -66,6 +67,7 @@ auto copy(const double* first, const double* last, boost::multi::array_iterator<
 }*/
 
 }}
+#endif
 
 #if defined(__INCLUDE_LEVEL__) and not __INCLUDE_LEVEL__
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUDA adaptor"
