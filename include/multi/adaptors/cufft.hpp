@@ -421,10 +421,10 @@ auto dft_forward(Array arr, A const& a)
 ->decltype(cufft::dft(arr, a, cufft::forward)){
 	return cufft::dft(arr, a, cufft::forward);}
 
-template<typename Array, dimensionality_type D> NODISCARD("when passing a const argument")
-auto dft_forward(Array arr, multi::cuda::array<std::complex<double>, D>&& a) 
-->decltype(cufft::dft(arr, a, cufft::forward), multi::cuda::array<std::complex<double>, D>{}){//assert(0);
-	return cufft::dft(arr, a, cufft::forward), std::move(a);}
+// template<typename Array, dimensionality_type D> NODISCARD("when passing a const argument")
+// auto dft_forward(Array arr, multi::cuda::array<std::complex<double>, D>&& a) 
+// ->decltype(cufft::dft(arr, a, cufft::forward), multi::cuda::array<std::complex<double>, D>{}){//assert(0);
+// 	return cufft::dft(arr, a, cufft::forward), std::move(a);}
 
 template<typename A> NODISCARD("when passing a const argument")
 auto dft_forward(A const& a)
