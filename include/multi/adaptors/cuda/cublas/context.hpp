@@ -2,16 +2,13 @@
 // Copyright 2020-2022 Alfredo A. Correa
 #pragma once
 
-#include "../../../config/MARK.hpp"
-#include "../../../adaptors/cuda/cublas/call.hpp"
+#include <multi/config/MARK.hpp>
+#include <multi/adaptors/cuda/cublas/call.hpp>
 
-#include "../../../adaptors/blas/traits.hpp"
-#include "../../../adaptors/blas/core.hpp"
+#include <multi/adaptors/blas/traits.hpp>
+#include <multi/adaptors/blas/core.hpp>
 
-//#include "../../../memory/adaptors/cuda/ptr.hpp"
-//#include "../../../memory/adaptors/cuda/managed/ptr.hpp"
-
-#include <thrust/system/cuda/memory.h>
+#include <thrust/system/cuda/memory.h>  // for thrust::cuda::pointer
 
 #include<mutex>
 
@@ -139,27 +136,6 @@ class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})
 		sync_call<cublasDgemm>(cublas::operation{transA}, cublas::operation{transB}, m, n, k, (double const*)alpha, (double const*)raw_pointer_cast(aa), lda, (double const*)raw_pointer_cast(bb), ldb, (double const*)beta, (double*)raw_pointer_cast(cc), ldc);
 	}
 
-	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename std::pointer_traits<CCP>::element_type,
-		std::enable_if_t<
-			is_z<AA>{} and is_z<BB>{} and is_z<CC>{} and is_z<ALPHA>{} and is_z<BETA>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{})>{} and
-			std::is_convertible_v<AAP, ::thrust::cuda::universal_pointer<AA>> and std::is_convertible_v<BBP, ::thrust::cuda::universal_pointer<BB>> and std::is_convertible_v<CCP, ::thrust::cuda::universal_pointer<CC>>
-		,int> =0
-	>
-	void gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc) {
-		MULTI_MARK_SCOPE("cublasZgemm");
-		sync_call<cublasZgemm>(cublas::operation{transA}, cublas::operation{transB}, m, n, k, (cuDoubleComplex const*)alpha, (cuDoubleComplex const*)raw_pointer_cast(aa), lda, (cuDoubleComplex const*)raw_pointer_cast(bb), ldb, (cuDoubleComplex const*)beta, (cuDoubleComplex*)raw_pointer_cast(cc), ldc);
-	}
-	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename std::pointer_traits<CCP>::element_type,
-		std::enable_if_t<
-			is_d<AA>{} and is_d<BB>{} and is_d<CC>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{})>{} and
-			std::is_convertible_v<AAP, ::thrust::cuda::universal_pointer<AA>> and std::is_convertible_v<BBP, ::thrust::cuda::universal_pointer<BB>> and std::is_convertible_v<CCP, ::thrust::cuda::universal_pointer<CC>>
-		,int> =0
-	>
-	void gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc) {
-		MULTI_MARK_SCOPE("cublasDgemm");
-		sync_call<cublasDgemm>(cublas::operation{transA}, cublas::operation{transB}, m, n, k, (double const*)alpha, (double const*)raw_pointer_cast(aa), lda, (double const*)raw_pointer_cast(bb), ldb, (double const*)beta, (double*)raw_pointer_cast(cc), ldc);
-	}
-
 	template<class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BBP, class BB = typename pointer_traits<BBP>::element_type,
 		std::enable_if_t<
 			is_z<AA>{} and is_z<BB>{} and is_assignable<BB&, decltype(AA{}*BB{}/ALPHA{})>{} and is_assignable<BB&, decltype(ALPHA{}*BB{}/AA{})>{} and 
@@ -191,40 +167,8 @@ class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})
 		class YYP, class YY = typename std::pointer_traits<YYP>::element_type,
 		class RRP, class RR = typename std::pointer_traits<RRP>::element_type,
 		std::enable_if_t<
-			is_d<XX>{} and is_d<YY>{} and is_d<RR>{} and is_assignable<RR&, decltype(XX{}*YY{})>{} and
-			is_convertible_v<XXP, ::thrust::cuda::universal_pointer<XX>> and is_convertible_v<YYP, ::thrust::cuda::universal_pointer<YY>> and is_convertible_v<RRP, RR*>
-		, int> =0
-	>
-	void dot(int n, XXP xx, int incx, YYP yy, int incy, RRP rr) {
-		cublasPointerMode_t mode;
-		auto s = cublasGetPointerMode(get(), &mode); assert( s == CUBLAS_STATUS_SUCCESS );
-		assert( mode == CUBLAS_POINTER_MODE_HOST );
-		sync_call<cublasDdot>(n, raw_pointer_cast(xx), incx, raw_pointer_cast(yy), incy, rr);
-	}
-
-	template<
-		class XXP, class XX = typename std::pointer_traits<XXP>::element_type,
-		class YYP, class YY = typename std::pointer_traits<YYP>::element_type,
-		class RRP, class RR = typename std::pointer_traits<RRP>::element_type,
-		std::enable_if_t<
 			is_z<XX>{} and is_z<YY>{} and is_z<RR>{} and is_assignable<RR&, decltype(XX{}*YY{})>{} and
 			is_convertible_v<XXP, ::thrust::cuda::pointer<XX>> and is_convertible_v<YYP, ::thrust::cuda::pointer<YY>> and is_convertible_v<RRP, RR*>
-		, int> =0
-	>
-	void dotc(int n, XXP xx, int incx, YYP yy, int incy, RRP rr) {
-		cublasPointerMode_t mode;
-		auto s = cublasGetPointerMode(get(), &mode); assert( s == CUBLAS_STATUS_SUCCESS );
-		assert( mode == CUBLAS_POINTER_MODE_HOST );
-		sync_call<cublasZdotc>(n, (cuDoubleComplex const*)raw_pointer_cast(xx), incx, (cuDoubleComplex const*)raw_pointer_cast(yy), incy, (cuDoubleComplex*)rr);
-	}
-
-	template<
-		class XXP, class XX = typename std::pointer_traits<XXP>::element_type,
-		class YYP, class YY = typename std::pointer_traits<YYP>::element_type,
-		class RRP, class RR = typename std::pointer_traits<RRP>::element_type,
-		std::enable_if_t<
-			is_z<XX>{} and is_z<YY>{} and is_z<RR>{} and std::is_assignable_v<RR&, decltype(XX{}*YY{})> and
-			is_convertible_v<XXP, ::thrust::cuda::universal_pointer<XX>> and is_convertible_v<YYP, ::thrust::cuda::universal_pointer<YY>> and is_convertible_v<RRP, RR*>
 		, int> =0
 	>
 	void dotc(int n, XXP xx, int incx, YYP yy, int incy, RRP rr) {
