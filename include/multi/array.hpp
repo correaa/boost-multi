@@ -763,7 +763,7 @@ struct array : static_array<T, D, Alloc> {
 	array(array const&) = default;
 
 	auto reshape(typename array::extensions_type extensions) & -> array& {
-		typename array::layout_t new_layout{extensions};  // TODO(correaa) implement move-reextent in terms of reshape
+		typename array::layout_t const new_layout{extensions};  // TODO(correaa) implement move-reextent in terms of reshape
 		assert( new_layout.num_elements() == this->num_elements() );
 		this->layout_mutable() = new_layout;
 		return *this;

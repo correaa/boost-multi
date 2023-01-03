@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2020-2022 Alfredo A. Correa
+// Copyright 2020-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW adaptor"
 #include<boost/test/unit_test.hpp>
@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001) ) {
 		return ret;
 	}();
 
-	std::vector<std::array<bool, 4>> which_cases = {  // std::vector NOLINT(fuchsia-default-arguments-calls)
+	std::vector<std::array<bool, 4>> const which_cases = {  // std::vector NOLINT(fuchsia-default-arguments-calls)
 		{false, true , true , true },
 		{false, true , true , false},
 		{true , false, false, false},
@@ -68,39 +68,39 @@ BOOST_AUTO_TEST_CASE(fft_combinations, *boost::unit_test::tolerance(0.00001) ) {
 
 		multi::array<complex, 4> out = in;
 		{
-			watch unnamed{"cpu_oplac %ws wall, CPU (%p%)\n"s};
+			watch const unnamed{"cpu_oplac %ws wall, CPU (%p%)\n"s};
 			multi::fftw::dft_forward(which, in, out);
 		}
 		{
-			multi::fftw::plan pln{which, in, out, multi::fftw::forward};
-			watch unnamed{"cpu_oplac planned %ws wall, CPU (%p%)\n"s};
+			multi::fftw::plan const pln{which, in, out, multi::fftw::forward};
+			watch const unnamed{"cpu_oplac planned %ws wall, CPU (%p%)\n"s};
 			pln();
 		}
 		{
 			auto in_rw = in;
-			watch unnamed{"cpu_iplac %ws wall, CPU (%p%)\n"s};
+			watch const unnamed{"cpu_iplac %ws wall, CPU (%p%)\n"s};
 			multi::fftw::dft_forward(which, in_rw);
 		}
 		{
 			auto in_rw = in;
-			multi::fftw::plan pln{which, in_rw, in_rw, multi::fftw::forward};
-			watch unnamed{"cpu_iplac planned %ws wall, CPU (%p%)\n"s};
+			multi::fftw::plan const pln{which, in_rw, in_rw, multi::fftw::forward};
+			watch const unnamed{"cpu_iplac planned %ws wall, CPU (%p%)\n"s};
 			pln();
 		}
 		{
 			auto in_rw = in;
-			multi::fftw::plan pln{which, in_rw, in_rw, multi::fftw::forward};
-			watch unnamed{"cpu_iplac planned measured %ws wall, CPU (%p%)\n"s};
+			multi::fftw::plan const pln{which, in_rw, in_rw, multi::fftw::forward};
+			watch const unnamed{"cpu_iplac planned measured %ws wall, CPU (%p%)\n"s};
 			pln();
 		}
 		{
-			watch unnamed{"cpu_alloc %ws wall, CPU (%p%)\n"s};
+			watch const unnamed{"cpu_alloc %ws wall, CPU (%p%)\n"s};
 			auto out_cpy = multi::fftw::dft_forward(which, in);
 			BOOST_TEST(abs(out_cpy[5][4][3][1] - out[5][4][3][1]) == 0.);
 		}
 		{
 			auto in_rw = in;
-			watch unnamed{"cpu_move %ws wall, CPU (%p%)\n"s};
+			watch const unnamed{"cpu_move %ws wall, CPU (%p%)\n"s};
 			auto out_cpy = multi::fftw::dft_forward(which, std::move(in_rw));
 			BOOST_TEST(abs(out_cpy[5][4][3][1] - out[5][4][3][1]) == 0.);
 		}
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark, *boost::unit_test::enabled() ) {
 
 
 BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark_syntax) {
-	std::vector<std::array<bool, 4>> which_cases = {  // std::vector NOLINT(fuchsia-default-arguments-calls)
+	std::vector<std::array<bool, 4>> const which_cases = {  // std::vector NOLINT(fuchsia-default-arguments-calls)
 		{false, true , true , true },
 		{false, true , true , false},
 		{true , false, false, false},
@@ -199,7 +199,7 @@ BOOST_AUTO_TEST_CASE(fftw_4D_power_benchmark_syntax) {
 	}
 	{
 		auto const tick = clock::now();
-		multi::array<complex, 4> out = multi::fftw::move(io)(fftw::none, fftw::forward, fftw::forward, fftw::forward);
+		multi::array<complex, 4> const out = multi::fftw::move(io)(fftw::none, fftw::forward, fftw::forward, fftw::forward);
 		BOOST_REQUIRE( io.is_empty() );
 		auto time = std::chrono::duration<double>(clock::now() - tick);
 		std::cout<<"move construct (in-place fft) : "<< time.count() <<std::endl;

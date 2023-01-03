@@ -1,8 +1,9 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2018-2022 Alfredo A. Correa
+// Copyright 2018-2023 Alfredo A. Correa
 
 #ifndef MULTI_UTILITY_HPP
 #define MULTI_UTILITY_HPP
+#pragma once
 
 #include "detail/layout.hpp"
 
@@ -202,7 +203,7 @@ auto common(T1 const& val1, T2 const& val2) -> Ret {
 template<class T>
        auto has_num_elements_aux(T const& /*array*/)->decltype(std::declval<T const&>().num_elements() + 1, std::true_type {});
 inline auto has_num_elements_aux(...               )->decltype(                                             std::false_type{});
-template<class T> struct has_num_elements : decltype(has_num_elements_aux(std::declval<T>())) {};
+template<class T> struct has_num_elements : decltype(has_num_elements_aux(std::declval<T>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
 template<class A, typename = std::enable_if_t<has_num_elements<A>{}> >
 constexpr auto num_elements(A const& arr)
@@ -213,19 +214,19 @@ constexpr auto num_elements(A const& arr)
 template<class T>
        auto has_size_aux(T const& cont) -> decltype(cont.size(), std::true_type {});
 inline auto has_size_aux(...          ) -> decltype(             std::false_type{});
-template<class T> struct has_size : decltype(has_size_aux(std::declval<T>())) {};
+template<class T> struct has_size : decltype(has_size_aux(std::declval<T>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
 template<class T>
        auto has_data_elements_aux(T&& array)->decltype(array.data_elements() + 1, std::true_type {});  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) why +1?
 inline auto has_data_elements_aux(...      )->decltype(                           std::false_type{});
-template<class T> struct has_data_elements : decltype(has_data_elements_aux(std::declval<T>())) {};
+template<class T> struct has_data_elements : decltype(has_data_elements_aux(std::declval<T>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
 namespace detail {
 template<class T>
        auto has_data_aux(T&& cont) -> decltype(cont.data() + 1, std::true_type {});  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) why +1?
 inline auto has_data_aux(...     ) -> decltype(                 std::false_type{});
 }  // end namespace detail
-template<class T> struct has_data : decltype(detail::has_data_aux(std::declval<T>())) {};
+template<class T> struct has_data : decltype(detail::has_data_aux(std::declval<T>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
 template<class Array, std::enable_if_t<has_data<std::decay_t<Array>>::value && !has_data_elements<std::decay_t<Array>>::value, int> =0>
 auto data_elements(Array& arr) {return arr.data();}
@@ -280,7 +281,7 @@ constexpr auto data_elements(T(&array)[N]) noexcept {return data_elements(array[
 template<class T>
        auto has_dimensionality_aux(T const& /*array*/)->decltype(T::rank_v, std::true_type {});
 inline auto has_dimensionality_aux(...               )->decltype(           std::false_type{});
-template<class T> struct has_dimensionality : decltype(has_dimensionality_aux(std::declval<T>())) {};
+template<class T> struct has_dimensionality : decltype(has_dimensionality_aux(std::declval<T>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
 template<class Container, std::enable_if_t<has_dimensionality<Container>{}, int> =0>
 constexpr auto dimensionality(Container const& /*container*/)
@@ -290,7 +291,7 @@ constexpr auto dimensionality(Container const& /*container*/)
 template<class T>
        auto has_dimensionaliy_member_aux(T const& /*array*/) -> decltype(static_cast<void>(static_cast<boost::multi::dimensionality_type>(T::rank_v)), std::true_type {});
 inline auto has_dimensionaliy_member_aux(...               ) -> decltype(                                                                              std::false_type{});
-template<class T> struct has_dimensionality_member : decltype(has_dimensionaliy_member_aux(std::declval<T>())){};
+template<class T> struct has_dimensionality_member : decltype(has_dimensionaliy_member_aux(std::declval<T>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
 template<class T, typename = std::enable_if_t<not has_dimensionality_member<T>{}>>
 constexpr auto dimensionality(T const&/*, void* = nullptr*/) {return 0;}
@@ -335,7 +336,7 @@ constexpr auto corigin(const T(&array)[N]) noexcept {return corigin(array[0]);} 
 template<class T, typename = decltype(std::declval<T>().extension())>
        auto has_extension_aux(T const&) -> std::true_type;
 inline auto has_extension_aux(...     ) -> std::false_type;
-template<class T> struct has_extension : decltype(has_extension_aux(std::declval<T>())){};
+template<class T> struct has_extension : decltype(has_extension_aux(std::declval<T>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
 template<class Container, class=std::enable_if_t<!has_extension<Container>::value>>
 auto extension(Container const& cont)  // TODO(correaa) consider "extent"
@@ -346,13 +347,13 @@ template<class T, typename = decltype(std::declval<T>().shape())>
        auto has_shape_aux(T const&) -> std::true_type;
 inline auto has_shape_aux(...     ) -> std::false_type;
 
-template<class T> struct has_shape : decltype(has_shape_aux(std::declval<T>())) {};
+template<class T> struct has_shape : decltype(has_shape_aux(std::declval<T>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) trick
 
 template<class T, typename = decltype(std::declval<T const&>().extensions())>
        auto has_extensions_aux(T const&) -> std::true_type;
 inline auto has_extensions_aux(...     ) -> std::false_type;
 
-template<class T> struct has_extensions : decltype(has_extensions_aux(std::declval<T>())) {};
+template<class T> struct has_extensions : decltype(has_extensions_aux(std::declval<T>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) trick
 
 template<class T, std::enable_if_t<has_extensions<T>::value, int> =0>
 [[nodiscard]] auto extensions(T const& array) -> std::decay_\
@@ -413,7 +414,7 @@ template<class T, typename = decltype(std::declval<T const&>().layout())>
 inline auto has_layout_member_aux(...     ) -> std::false_type;
 
 template<class T>
-struct has_layout_member : decltype(has_layout_member_aux(std::declval<T const&>())){};
+struct has_layout_member : decltype(has_layout_member_aux(std::declval<T const&>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
 template<class T, typename = std::enable_if_t<has_layout_member<T const&>{}> >
 auto layout(T const& array)

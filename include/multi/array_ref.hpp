@@ -1,8 +1,9 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2018-2022 Alfredo A. Correa
+// Copyright 2018-2023 Alfredo A. Correa
 
 #ifndef MULTI_ARRAY_REF_HPP_
 #define MULTI_ARRAY_REF_HPP_
+#pragma once
 
 #include "./memory/pointer_traits.hpp"
 #include "./utility.hpp"  // TODO(correaa) change to multi/utility.hpp (same below)
@@ -32,6 +33,7 @@
 #include<memory>      // for pointer_traits
 #include<utility>     // for forward
 
+// NOLINTBEGIN(cert-dcl58-cpp) consider defining multi::pointer_traits
 namespace std {
 
 template<class T>
@@ -45,6 +47,7 @@ struct pointer_traits<std::move_iterator<T*>> : std::pointer_traits<T*> {
 };
 
 }  // end namespace std
+// NOLINTEND(cert-dcl58-cpp)
 
 namespace boost::multi {
 
@@ -56,9 +59,9 @@ struct basic_array;
 namespace boost::multi {
 
 template<class Array>
-constexpr auto home(Array&& array)
-->decltype(std::forward<A>(array).home()) {
-	return std::forward<A>(array).home(); }
+constexpr auto home(Array&& arr)
+->decltype(std::forward<A>(arr).home()) {
+	return std::forward<A>(arr).home(); }
 
 template<class T> auto modify(T const& value) -> T& {return const_cast<T&>(value);}  // NOLINT(cppcoreguidelines-pro-type-const-cast) : TODO(correaa) see what is this used for
 
@@ -284,10 +287,7 @@ struct basic_array_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin
 	using Ref::layout;
 
 	constexpr auto operator==(basic_array_ptr const& other) const -> bool {
-		auto b1 = this->base_;
-		auto b2 = other.base_;
-		bool eq = (b1 == b2);
-		return eq and this->layout() == other.layout();
+		return (this->base_ == other.base_) and (this->layout() == other.layout());
 	}
 
 	template<class Array>
@@ -884,7 +884,7 @@ struct basic_array
  private:
 	constexpr auto take_aux(difference_type n) const {
 		assert( n <= this->size() );
-		typename types::layout_t new_layout{
+		typename types::layout_t const new_layout{
 			this->layout().sub(),
 			this->layout().stride(),
 			this->layout().offset(),
@@ -901,7 +901,7 @@ struct basic_array
  private:
 	constexpr auto drop_aux(difference_type n) const {
 		assert( n <= this->size() );
-		typename types::layout_t new_layout{
+		typename types::layout_t const new_layout{
 			this->layout().sub(),
 			this->layout().stride(),
 			this->layout().offset(),
@@ -976,7 +976,7 @@ struct basic_array
 
  private:
 	constexpr auto strided_aux(difference_type diff) const -> basic_array {
-		typename types::layout_t new_layout{this->layout().sub(), this->layout().stride()*diff, this->layout().offset(), this->layout().nelems()};
+		typename types::layout_t const new_layout{this->layout().sub(), this->layout().stride()*diff, this->layout().offset(), this->layout().nelems()};
 		return {new_layout, types::base_};
 	}
 
@@ -1104,7 +1104,7 @@ struct basic_array
 	HD constexpr auto rotated() const& -> basic_const_array {
 		typename types::layout_t new_layout = this->layout();
 		new_layout.rotate();
-		typename basic_const_array::element_ptr new_base_{types::base_};
+		typename basic_const_array::element_ptr const new_base_{types::base_};
 		return basic_const_array{new_layout, new_base_};
 	}
 
@@ -1909,7 +1909,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
  private:
 	constexpr auto take_aux(difference_type count) const {
 		assert( count <= this->size() );  // calculating size is expensive that is why
-		typename types::layout_t new_layout{
+		typename types::layout_t const new_layout{
 			this->layout().sub(),
 			this->layout().stride(),
 			this->layout().offset(),
@@ -1926,7 +1926,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
  private:
 	constexpr auto drop_aux(difference_type count) const -> basic_array {
 		assert( count <= this->size() );
-		typename types::layout_t new_layout{
+		typename types::layout_t const new_layout{
 			this->layout().sub(),
 			this->layout().stride(),
 			this->layout().offset(),
@@ -1986,7 +1986,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
  private:
 	constexpr auto strided_aux(difference_type diff) const -> basic_array {
-		typename types::layout_t new_layout = {this->layout().sub(), this->layout().stride()*diff, this->layout().offset(), this->layout().nelems()};
+		typename types::layout_t const new_layout = {this->layout().sub(), this->layout().stride()*diff, this->layout().offset(), this->layout().nelems()};
 		return {new_layout, types::base_};
 	}
 
@@ -2663,7 +2663,7 @@ template<class T, dimensionality_type D, class... Ts>
 constexpr auto is_basic_array_aux(basic_array<T, D, Ts...> const&) -> std::true_type;
 constexpr auto is_basic_array_aux(...                            ) -> std::false_type;
 
-template<class A> struct is_basic_array: decltype(is_basic_array_aux(std::declval<A>())){};
+template<class A> struct is_basic_array: decltype(is_basic_array_aux(std::declval<A>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
 
 template<class In, class T, dimensionality_type N, class TP, class = std::enable_if_t<(N > 1)>, class = decltype((void)adl_begin(*In{}), adl_end(*In{}))>
 constexpr auto uninitialized_copy

@@ -1,8 +1,9 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2021-2022 Alfredo A. Correa
+// Copyright 2021-2023 Alfredo A. Correa
 
 #ifndef MULTI_DETAIL_TUPLE_ZIP_HPP
 #define MULTI_DETAIL_TUPLE_ZIP_HPP
+#pragma once
 
 #include<cassert>
 #include<utility>
@@ -67,7 +68,7 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	}
 
  private:
-	 template<std::size_t I> struct priority : std::conditional_t<I==0, std::true_type, priority<I-1>> {};
+	template<std::size_t N> struct priority : std::conditional_t<N == 0, std::true_type, priority<N-1>> {};
 
 	template<class Index>
 	constexpr auto at_aux(priority<0> /*prio*/, Index idx) const
@@ -198,7 +199,8 @@ constexpr auto get(tuple<T0, Ts...>&& t) -> auto&& {  // NOLINT(readability-iden
 }  // end namespace detail
 }  // end namespace boost::multi
 
-namespace std {  // NOLINT(cert-dcl58-cpp) define stuff in STD
+// NOLINTBEGIN(cert-dcl58-cpp) define stuff in STD
+namespace std {
 
 template<class... Ts>
 struct tuple_size<boost::multi::detail::tuple<Ts...>> {
@@ -262,6 +264,7 @@ constexpr auto apply(F&& f, boost::multi::detail::tuple<Ts...>&& t) -> decltype(
 }
 
 }  // end namespace std
+// NOLINTEND(cert-dcl58-cpp) define stuff in STD
 
 namespace boost::multi {  // NOLINT(modernize-concat-nested-namespaces) keep c++14 compat
 namespace detail {
