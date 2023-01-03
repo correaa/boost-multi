@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(std_array_extensions_3d) {
 	using multi::num_elements;
 	BOOST_REQUIRE( num_elements(arr) == 60 );
 
-	multi::array<double, 3> marr({3, 4, 5});
+	multi::array<double, 3> const marr({3, 4, 5});
 	using multi::layout;
 	BOOST_REQUIRE( layout(arr) == layout(marr) );
 
@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(std_array_extensions_2d) {
 	using multi::num_elements;
 	BOOST_REQUIRE( num_elements(arr) == 12 );
 
-	multi::array<double, 2> marr({3, 4});
+	multi::array<double, 2> const marr({3, 4});
 	using multi::layout;
 	BOOST_REQUIRE( layout(arr) == layout(marr) );
 

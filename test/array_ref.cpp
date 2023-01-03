@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
 		BOOST_REQUIRE( arrB.reindex(2).extension() == multi::iextension(2, 5) );
 		auto exts = arrB.reindexed(2).extensions();
 
-		multi::array<std::string, 2> arrC(exts);
+		multi::array<std::string, 2> const arrC(exts);
 		BOOST_REQUIRE( size(arrC) == 3 );
 		BOOST_REQUIRE( size(arrC) == size(arrB) );
 
@@ -225,7 +225,7 @@ BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset) {
 }
 
 BOOST_AUTO_TEST_CASE(array_2D_with_offset) {
-	multi::array<double, 2> arr({multi::iextension(1, 3), multi::iextension(2, 5)}, 1.2);
+	multi::array<double, 2> const arr({multi::iextension(1, 3), multi::iextension(2, 5)}, 1.2);
 
 	BOOST_REQUIRE( arr.extension().start()  == 1 );
 	BOOST_REQUIRE( arr.extension().finish() == 3 );
@@ -271,7 +271,7 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_carray) {
 
 	ref[1][1] = 2.0;
 
-	double darr2[4][5] = {{1.0, 2.0}, {2.0, 3.0}};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
+	double const darr2[4][5] = {{1.0, 2.0}, {2.0, 3.0}};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
 
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
 	auto const& dd = static_cast<double const(&)[4][5]>(darr2);

@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2022 Alfredo A. Correa
+// Copyright 2022-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi element transformed"  // NOLINT(cppcoreguidelines-macro-usage) title
 #include<boost/test/unit_test.hpp>
@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE(transform_ptr_single_value) {
 	// NOLINTNEXTLINE(readability-const-return-type,clang-diagnostic-ignored-qualifiers) to prevent assignment
 	constexpr auto conj_ro = [](auto const& zee) noexcept {return std::conj(zee);};	 // g++ -std=20 needs the transformation (lambda) to be noexcept
 
-	multi::transform_ptr<complex, decltype(conj_ro), complex*> conjd_ceeP{&cee, conj_ro};
+	multi::transform_ptr<complex, decltype(conj_ro), complex*> const conjd_ceeP{&cee, conj_ro};
 	BOOST_REQUIRE( *conjd_ceeP == std::conj(1.0 + 2.0*I) );
 }
 

@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-// Copyright 2019-2022 Alfredo A. Correa
+// Copyright 2019-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi initializer_list"  // test tile NOLINT(cppcoreguidelines-macro-usage)
 #include<boost/test/unit_test.hpp>
@@ -156,11 +156,11 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d) {
 		BOOST_REQUIRE( size(arr) == 3 and size(arr[0]) == 3 );
 		BOOST_REQUIRE( arr[1][1] == 34.4 );
 		arr = {
-			{ 00.,  01., 02.},
-			{ 10.,  11., 12.},
-			{ 20.,  21., 22.}
+			{  0.0,   1.0, 02.0},
+			{ 10.0,  11.0, 12.0},
+			{ 20.0,  21.0, 22.0}
 		};
-		BOOST_REQUIRE( arr[1][2] == 12. );
+		BOOST_REQUIRE( arr[1][2] == 12.0 );
 	}
 	{
 		multi::array<double, 1> vec;
@@ -212,18 +212,18 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_2d) {
 	}
 	{
 		std::array<std::array<double, 2>, 3> nested = {{
-			{{1., 2.}},
-			{{2., 4.}},
-			{{3., 6.}}
+			{{1.0, 2.0}},
+			{{2.0, 4.0}},
+			{{3.0, 6.0}}
 		}};
 		multi::array<double, 2> arr(begin(nested), end(nested));
-		BOOST_REQUIRE( num_elements(arr) == 6 and arr[2][1] == 6. );
+		BOOST_REQUIRE( num_elements(arr) == 6 and arr[2][1] == 6.0 );
 	}
 	{
 		using complex = std::complex<double>; complex const I{0., 1.};  // NOLINT(readability-identifier-length) imaginary unit
 		multi::array<complex, 2> arr = {
-			{2. + 1.*I, 1. + 3.*I, 1. + 7.*I},
-			{3. + 4.*I, 4. + 2.*I, 0. + 0.*I}
+			{2.0 + 1.0*I, 1.0 + 3.0*I, 1.0 + 7.0*I},
+			{3.0 + 4.0*I, 4.0 + 2.0*I, 0.0 + 0.0*I}
 		};
 		BOOST_REQUIRE( arr[1][1] == 4. + 2.*I );
 	}
@@ -290,7 +290,7 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string_ctad) {
 		BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 1 and num_elements(arr) == 2 and arr[1] == 2.0 ); BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 1 );
 	}
 	{
-		multi::array arr({9.});  // multi::array arr = {9.}; not working with CTAD
+		multi::array arr({9.0});  // multi::array arr = {9.0}; not working with CTAD
 		static_assert( std::is_same<decltype(arr)::element_type, double>{}, "!" );
 		BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 and num_elements(arr)==1 and arr[0]==9. ); BOOST_REQUIRE( multi::rank<decltype(arr)>{}==1 );
 	}
@@ -299,12 +299,12 @@ BOOST_AUTO_TEST_CASE(multi_tests_initializer_list_3d_string_ctad) {
 		static_assert( std::is_same<decltype(arr)::element_type, int>{}, "!" );
 		BOOST_REQUIRE( size(arr) == 1 and num_elements(arr) == 1 );
 		BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 1 );
-		BOOST_REQUIRE( num_elements(arr) == 1 and arr[0] == 9. );
+		BOOST_REQUIRE( num_elements(arr) == 1 and arr[0] == 9.0 );
 	}
 	{
-		multi::array arr({
-			{1., 2., 3.},
-			{4., 5., 6.}
+		multi::array const arr({
+			{1.0, 2.0, 3.0},
+			{4.0, 5.0, 6.0}
 		});
 		BOOST_REQUIRE( multi::rank<decltype(arr)>{} == 2 and num_elements(arr) == 6 );
 	}

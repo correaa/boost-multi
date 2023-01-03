@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2022 Alfredo A. Correa
+// Copyright 2019-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi pmr allocators"  // title NOLINT(cppcoreguidelines-macro-usage)
 #include<boost/test/unit_test.hpp>
@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_CASE(pmr_partially_formed) {
 		std::pmr::monotonic_buffer_resource mbr{std::data(buffer), std::size(buffer)};
 		static_assert( std::size(buffer) > 6*sizeof(double) );
 
-		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> A({2, 3}, &mbr);  // NOLINT(readability-identifier-length)
+		multi::array<double, 2, std::pmr::polymorphic_allocator<double>> const A({2, 3}, &mbr);  // NOLINT(readability-identifier-length)
 		BOOST_TEST( buffer[ 0] == '0' );  // buffer is intact when initializing without value
 		BOOST_TEST( buffer[13] == '3' );
 
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(pmr_benchmark) {
 	auto count = 50;
 	auto start_time = std::chrono::high_resolution_clock::now();
 
-	multi::extension_t exts{0, count};
+	multi::extension_t const exts{0, count};
 	auto acc = std::transform_reduce(
 		exts.begin(), exts.end(), int64_t{0},
 		std::plus<>{},

@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2022 Alfredo A. Correa
+// Copyright 2019-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi transformed array"
 #include<boost/test/unit_test.hpp>
@@ -176,13 +176,13 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 	}
 
 	{
-		multi::array<double, 1> arr = { +0.0, +1.0, +2.0, +3.0, +4.0};
+		multi::array<double, 1> const arr = { +0.0, +1.0, +2.0, +3.0, +4.0};
 		multi::array<double, 1> neg = { -0.0, -1.0, -2.0, -3.0, -4.0};
 		auto&& negd_arr = arr.static_array_cast<double, test::negater<double*>>();
 		BOOST_REQUIRE( negd_arr[2] == neg[2] );
 	}
 	{
-		multi::array<double, 2> arr = {
+		multi::array<double, 2> const arr = {
 			{ +0.0,  +1.0,  +2.0,  +3.0,  +4.0},
 			{ +5.0,  +6.0,  +7.0,  +8.0,  +9.0},
 			{+10.0, +11.0, +12.0, +13.0, +14.0},
@@ -228,7 +228,7 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 			auto&& d2DrealT = rotated(d2D).reinterpret_array_cast<double>();
 			BOOST_REQUIRE( d2DrealT[2][1] == 7. );
 
-			multi::array<double, 2> d2Dreal_copy = d2D.template reinterpret_array_cast<double>();
+			multi::array<double, 2> const d2Dreal_copy = d2D.template reinterpret_array_cast<double>();
 			BOOST_REQUIRE( d2Dreal_copy == d2Dreal );
 		}
 		{

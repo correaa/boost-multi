@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2018-2022 Alfredo A. Correa
+// Copyright 2018-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi iterators"  // title NOLINT(cppcoreguidelines-macro-usage)
 #include<boost/test/unit_test.hpp>
@@ -15,12 +15,12 @@ template<class Array> auto take(Array&& array) -> decltype(array[0]) {return arr
 
 BOOST_AUTO_TEST_CASE(iterator_1d) {
 	{
-		multi::array<double, 1> arr(multi::extensions_t<1>{multi::iextension{100}}, 99.);
+		multi::array<double, 1> arr(multi::extensions_t<1>{multi::iextension{100}}, 99.0);
 		BOOST_REQUIRE( size(arr) == 100 );
 		BOOST_REQUIRE( begin(arr) < end(arr) );
 		BOOST_REQUIRE( end(arr) - begin(arr) == size(arr) );
 
-		multi::array<double, 1>::const_iterator cbarr = cbegin(arr);
+		multi::array<double, 1>::const_iterator const cbarr = cbegin(arr);
 		multi::array<double, 1>::iterator barr = begin(arr);
 		BOOST_REQUIRE( cbarr == barr );
 
@@ -28,16 +28,16 @@ BOOST_AUTO_TEST_CASE(iterator_1d) {
 		barr -= 1;
 		BOOST_REQUIRE( cbarr == barr );
 
-		multi::array<double, 1>::const_iterator cbarr2 = begin(arr);
+		multi::array<double, 1>::const_iterator const cbarr2 = begin(arr);
 		BOOST_REQUIRE( cbarr2 == cbarr );
 	}
 	{
-		multi::array<double, 1> arr(multi::extensions_t<1>{multi::iextension{100}}, 99.);
+		multi::array<double, 1> arr(multi::extensions_t<1>{multi::iextension{100}}, 99.0);
 		BOOST_REQUIRE( size(arr) == 100 );
 		BOOST_REQUIRE( begin(arr) < end(arr) );
 
 		auto arr2 = arr.begin();
-		multi::array<double, 1>::const_iterator cbb = arr2;
+		multi::array<double, 1>::const_iterator const cbb = arr2;
 		BOOST_REQUIRE( cbb == arr2 );
 		BOOST_REQUIRE( arr2 == cbb );
 	}
@@ -45,7 +45,7 @@ BOOST_AUTO_TEST_CASE(iterator_1d) {
 
 BOOST_AUTO_TEST_CASE(iterator_2d) {
 	{
-		multi::array<double, 2> arr({120, 140}, 99.);
+		multi::array<double, 2> const arr({120, 140}, 99.0);
 		BOOST_REQUIRE(      arr.size() == 120 );
 	#if not defined(__circle_build__)  // circle 170 crashes
 		BOOST_REQUIRE( size(arr)       == 120 );
@@ -79,17 +79,17 @@ BOOST_AUTO_TEST_CASE(iterator_2d) {
 BOOST_AUTO_TEST_CASE(iterator_interface ) {
 	multi::array<double, 3> arr = {
 		{
-			{ 1.2,  1.1}, { 2.4, 1.}
+			{ 1.2,  1.1}, { 2.4, 1.0}
 		},
 		{
-			{11.2,  3.0}, {34.4, 4.}
+			{11.2,  3.0}, {34.4, 4.0}
 		},
 		{
-			{ 1.2,  1.1}, { 2.4, 1.}
+			{ 1.2,  1.1}, { 2.4, 1.0}
 		}
 	};
 
-	BOOST_REQUIRE( size(arr)==3 and size(arr[0])==2 and size(arr[0][0])==2);
+	BOOST_REQUIRE( size(arr)==3 and size(arr[0]) == 2 and size(arr[0][0]) == 2 );
 	BOOST_REQUIRE( arr[0][0][1] == 1.1 );
 
 	BOOST_REQUIRE( begin(arr) < end(arr) );
@@ -120,9 +120,9 @@ BOOST_AUTO_TEST_CASE(iterator_interface ) {
 
 BOOST_AUTO_TEST_CASE(iterator_semantics) {
 	multi::array<double, 3> arr = {
-		{{ 1.2,  1.1}, { 2.4, 1.}},
-		{{11.2,  3.0}, {34.4, 4.}},
-		{{ 1.2,  1.1}, { 2.4, 1.}}
+		{{ 1.2,  1.1}, { 2.4, 1.0}},
+		{{11.2,  3.0}, {34.4, 4.0}},
+		{{ 1.2,  1.1}, { 2.4, 1.0}}
 	};
 
 	multi::array<double, 3>::iterator it;
@@ -142,14 +142,14 @@ BOOST_AUTO_TEST_CASE(iterator_semantics) {
 	auto const& arrc2 = arr();
 	BOOST_REQUIRE( &arrc == &arrc2 );
 
-	multi::array<double, 3>::iterator it2 = begin(arr);
+	multi::array<double, 3>::iterator const it2 = begin(arr);
 	BOOST_REQUIRE(it == it2);
 
 	it = end(arr);
 	BOOST_REQUIRE(it != it2);
 	BOOST_REQUIRE(it > it2);
 
-	multi::array<double, 3>::iterator it3{it};
+	multi::array<double, 3>::iterator const it3{it};
 	BOOST_REQUIRE( it3 == it );
 
 	multi::array<double, 3>::const_iterator cit;
@@ -210,23 +210,23 @@ BOOST_AUTO_TEST_CASE(index_range_iteration) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_reverse_iterator_1D) {
-	multi::array<double, 1> arr(100, 66.);
+	multi::array<double, 1> arr(100, 66.0);
 	BOOST_REQUIRE( &arr[99] == &*std::make_reverse_iterator(arr.end()) );
 
 	auto rbegin = std::make_reverse_iterator(arr.end());
 	rbegin += 100;
-	multi::array<double, 1>::iterator begin{rbegin.base()};
+	multi::array<double, 1>::iterator const begin{rbegin.base()};
 	BOOST_REQUIRE( begin  == arr.begin() );
 }
 
 BOOST_AUTO_TEST_CASE(multi_reverse_iterator_2D) {
 	multi::array<double, 2> arr = {
-		{  1.,   2.},
-		{ 10.,  20.},
-		{100., 200.}
+		{  1.0,   2.0},
+		{ 10.0,  20.0},
+		{100.0, 200.0}
 	};
-	BOOST_REQUIRE( (*arr.begin())[1] == 2. );
+	BOOST_REQUIRE( (*arr.begin())[1] == 2.0 );
 	auto rbegin = std::make_reverse_iterator(arr.end());
 
-	BOOST_TEST( (*rbegin)[1] == 200. );
+	BOOST_TEST( (*rbegin)[1] == 200.0 );
 }

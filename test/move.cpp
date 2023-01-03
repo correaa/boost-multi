@@ -326,11 +326,11 @@ BOOST_AUTO_TEST_CASE(move_array_elements) {  // NOLINT(readability-function-cogn
 	{
 		auto arr = multi::array<std::vector<double>, 1>({ 5}, std::vector<double>(7));  // std::vector NOLINT(fuchsia-default-arguments-calls)
 
-		std::vector<double> v0 = std::move(arr[0]);
+		std::vector<double> const v0 = std::move(arr[0]);
 		BOOST_REQUIRE( v0.size() == 7 );
 		BOOST_REQUIRE( arr[0].empty() );
 
-		std::vector<double> v1 = std::move(arr)[1];
+		std::vector<double> const v1 = std::move(arr)[1];
 		BOOST_REQUIRE( v1.size() == 7 );
 		BOOST_REQUIRE( arr[1].empty() );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved,clang-analyzer-cplusplus.Move) for test
 

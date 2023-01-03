@@ -32,7 +32,7 @@ BOOST_AUTO_TEST_CASE(multi_constructors_inqnvcc_bug) {
 
 BOOST_AUTO_TEST_CASE(multi_constructors_1d) {
 	{
-		multi::array<double, 1> arr(multi::extensions_t<1>{multi::iextension{10}});
+		multi::array<double, 1> const arr(multi::extensions_t<1>{multi::iextension{10}});
 		BOOST_REQUIRE( size(arr)==10 );
 	}
 	{
@@ -97,8 +97,14 @@ BOOST_AUTO_TEST_CASE(multi_constructors) {
 //}{ multi::array<std::size_t, 1> arr({{10}})   ; assert( size(arr)==1 and arr[0]==10 );  // clang warns about double bracked
 //}{ multi::array<int        , 1> arr({{10}})   ; assert( size(arr)==1 and arr[0]==10 );  // clang warns about double bracked
 //}{ multi::array<double     , 1> arr({{10}})   ; assert( size(arr)==1 and arr[0]==10 );  // clang warns about double bracked
-}{ multi::array<std::size_t, 1> arr({0, 10})  ; BOOST_REQUIRE( size(arr)==2 );
-}{ multi::array<int        , 1> arr({0, 10})  ; BOOST_REQUIRE( size(arr)==2 );
-} { multi::array<double    , 1> arr({0, 10})  ; BOOST_REQUIRE( size(arr)==2 );
+}
+{
+	multi::array<std::size_t, 1> const arr({0, 10})  ; BOOST_REQUIRE( size(arr)==2 );
+}
+{
+	multi::array<int        , 1> const arr({0, 10})  ; BOOST_REQUIRE( size(arr)==2 );
+}
+{
+	multi::array<double     , 1> const arr({0, 10})  ; BOOST_REQUIRE( size(arr)==2 );
 }
 }

@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2021-2022 Alfredo A. Correa
+// Copyright 2021-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi index range"  // NOLINT(cppcoreguidelines-macro-usage) title
 #include <boost/test/unit_test.hpp>
@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE(multi_range_in_constexpr) {
 	BOOST_REQUIRE( multi::extension_t<int>{5} == 5 );
 	BOOST_REQUIRE(( multi::extension_t<int>{5, 12}.contains(10) ));
 
-	multi::range<int> irng{5, 12};
+	multi::range<int> const irng{5, 12};
 
 	BOOST_REQUIRE( irng.contains(6) );
 	BOOST_REQUIRE( not irng.contains(12) );
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(multi_range_in_constexpr) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_range2) {
-	multi::index_extension iex(10);
+	multi::index_extension const iex(10);
 
 	BOOST_REQUIRE( *begin(iex) == 0 );
 	BOOST_REQUIRE( size(iex) == 10 );
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE(multi_range2) {
 	BOOST_REQUIRE( std::accumulate( begin(iex), end(iex), 0) == 0 + 1 + 2 + 3 + 4 + 5 + 6 + 7 + 8 + 9 );
 
 	{
-		multi::iextensions<3> ies({
+		multi::iextensions<3> const ies({
 			{0, 3},
 			{0, 4},
 			{0, 5},

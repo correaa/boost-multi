@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2018-2022 Alfredo A. Correa
+// Copyright 2018-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi element access"  // test title NOLINT(cppcoreguidelines-macro-usage) title
 #include <boost/test/unit_test.hpp>
@@ -21,7 +21,7 @@ template<class Array> auto paren(Array&& arr, bee const& /*unused*/) -> decltype
 
 BOOST_AUTO_TEST_CASE(overload_paren) {
 	multi::array<double, 1> arr({10});
-	test_bee::bee zero;
+	test_bee::bee const zero;
 	BOOST_REQUIRE( &arr(0) == &arr(zero) );
 }
 
@@ -54,17 +54,17 @@ BOOST_AUTO_TEST_CASE(multi_tests_element_access_with_tuple) {
 
 BOOST_AUTO_TEST_CASE(multi_tests_extension_with_tuple) {
 	{
-		multi::array<double, 2>::extensions_type ext = {3, 4};
-		multi::array<double, 2> arr(ext, 44.);
+		multi::array<double, 2>::extensions_type const ext = {3, 4};
+		multi::array<double, 2> const arr(ext, 44.0);
 		BOOST_REQUIRE( size(arr) == 3 );
 	}
 	{
 		auto const [en, em] = std::make_tuple(3, 4);
-		multi::array<double, 2> arr({en, em}, 44.);
+		multi::array<double, 2> const arr({en, em}, 44.0);
 		BOOST_REQUIRE( size(arr) == 3 );
 	}
 	{
-		auto arr = std::apply([](auto const&... szs) { return multi::array<double, 2>({szs...}, 55.); }, std::make_tuple(3, 4));
+		auto arr = std::apply([](auto const&... szs) { return multi::array<double, 2>({szs...}, 55.0); }, std::make_tuple(3, 4));
 		BOOST_REQUIRE( size(arr) == 3 );
 		BOOST_REQUIRE( std::get<0>(sizes(arr)) == 3 );
 		BOOST_REQUIRE( std::get<1>(sizes(arr)) == 4 );
@@ -191,12 +191,12 @@ BOOST_AUTO_TEST_CASE(front_back_1D) {
 
 BOOST_AUTO_TEST_CASE(elements_rvalues) {
 	using movable_type = std::vector<double>;
-	movable_type movable_value(5., 99.0);  // NOLINT(fuchsia-default-arguments-calls)
+	movable_type const movable_value(5., 99.0);  // NOLINT(fuchsia-default-arguments-calls)
 
 	multi::array<movable_type, 1> arr = {movable_value, movable_value, movable_value};
 	BOOST_REQUIRE( arr.size() == 3 );
 
-	movable_type front = std::move(arr)[0];
+	movable_type const front = std::move(arr)[0];
 
 	BOOST_REQUIRE( front == movable_value );
 	BOOST_REQUIRE( arr[0].empty()           );  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
@@ -212,7 +212,7 @@ void assign_elements_from_to(Array1D&& arr, std::deque<std::vector<double>>& des
 
 BOOST_AUTO_TEST_CASE(elements_rvalues_nomove) {
 	using movable_type = std::vector<double>;
-	movable_type movable_value(5., 99.0);  // NOLINT(fuchsia-default-arguments-calls)
+	movable_type const movable_value(5., 99.0);  // NOLINT(fuchsia-default-arguments-calls)
 
 	multi::array<movable_type, 1> arr = {movable_value, movable_value, movable_value};
 	BOOST_REQUIRE( arr.size() == 3 );
@@ -239,8 +239,8 @@ BOOST_AUTO_TEST_CASE(elements_rvalues_assignment) {
 
 	std::move(vec)[1] = 99.0;  // it compiles  // NOLINT(bugprone-use-after-move,hicpp-invalid-access-moved) for testing purposes
 
-	multi::array<double, 1> arr1 = {1.0, 2.0, 3.0};
-	multi::array<double, 1> arr2 = {1.0, 2.0, 3.0};
+	multi::array<double, 1>       arr1 = {1.0, 2.0, 3.0};
+	multi::array<double, 1> const arr2 = {1.0, 2.0, 3.0};
 
 	std::move(arr1) = arr2;  // this compiles TODO(correaa) should it?
 }

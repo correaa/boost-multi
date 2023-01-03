@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality_part1) {
 		BOOST_REQUIRE( a0 == 60.0 );
 	}
 	{
-		std::allocator<double> alloc;
+		std::allocator<double> const alloc;
 		multi::static_array<double, 0> a0(45.0, alloc);
 		BOOST_REQUIRE( num_elements(a0) == 1 );
 		BOOST_REQUIRE( a0 == 45.0 );
@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality_part1) {
 
 BOOST_AUTO_TEST_CASE(zero_dimensionality_part2) {
 	{
-		multi::array<std::complex<double>, 2> arr({1, 2}, std::allocator<std::complex<double>>{});
+		multi::array<std::complex<double>, 2> const arr({1, 2}, std::allocator<std::complex<double>>{});
 		BOOST_REQUIRE( size(arr) == 1 );
 	}
 	{
@@ -64,14 +64,14 @@ BOOST_AUTO_TEST_CASE(zero_dimensionality_part2) {
 		BOOST_REQUIRE( ap1->base() == &doub );
 		BOOST_REQUIRE( (*ap1).base() == &doub );
 
-		multi::array_ptr<double, 0> ap0(&doub, {});
+		multi::array_ptr<double, 0> const ap0(&doub, {});
 
 		BOOST_REQUIRE(( ap0 == multi::array_ptr<double, 0>(&doub, {}) ));
 		BOOST_REQUIRE(( ap0 != multi::array_ptr<double, 0>(&dd, {}) ));
 		BOOST_REQUIRE( ap0->base() == &doub );
 		BOOST_REQUIRE( (*ap0).base() == &doub );
 
-		multi::array_ptr<double, 0> ap0dd{&dd};
+		multi::array_ptr<double, 0> const ap0dd{&dd};
 		BOOST_REQUIRE( ap0dd != ap0 );
 		BOOST_REQUIRE( *ap0 == *ap0dd );
 		double d3 = M_PI;

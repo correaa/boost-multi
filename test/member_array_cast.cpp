@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2018-2022 Alfredo A. Correa
+// Copyright 2018-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi member cast"  // test title NOLINT(cppcoreguidelines-macro-usage)
 #include <boost/test/unit_test.hpp>
@@ -70,7 +70,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 
 	BOOST_REQUIRE(SoA(1, 1).mass == 99.0);
 
-	particle p11 = SoA(1, 1);
+	particle const p11 = SoA(1, 1);
 	BOOST_REQUIRE(p11.mass == 99.0);
 
 	auto autop11 = +SoA(1, 1);
