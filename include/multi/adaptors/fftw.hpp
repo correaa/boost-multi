@@ -1,8 +1,9 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2018-2022 Alfredo A. Correa
+// Copyright 2018-2023 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_FFTW_HPP
 #define MULTI_ADAPTORS_FFTW_HPP
+#pragma once
 
 #include "../adaptors/../array.hpp"
 
@@ -657,7 +658,7 @@ auto copy(multi::basic_array<T, D, multi::move_ptr<T, P>>&& array) -> R {
 template<class Array>
 auto transpose(Array& array)
 ->decltype(fftw::copy(transposed(array), array.reshape(extensions(layout(array).transpose())))) {
-	multi::array_ref<typename Array::element, Array::rank_v, typename Array::element_ptr> ref(array.base(), extensions(array));
+	multi::array_ref<typename Array::element, Array::rank_v, typename Array::element_ptr> const ref(array.base(), extensions(array));
 	return fftw::copy(ref.transposed(), array.reshape(layout(array).transpose().extensions()));
 }
 

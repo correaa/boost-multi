@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE(array_cref) {
 
 	BOOST_REQUIRE( &A2D[3][4] == &B2D[3][4] );
 
-	multi::array_ref <complex, 2, complex const*> D2D(cvec.data(), {10, 10});
+	multi::array_ref <complex, 2, complex const*> const D2D(cvec.data(), {10, 10});
 	multi::array_cref<complex, 2>                 F2D( vec.data(), {10, 10});
 
 	BOOST_REQUIRE( D2D.layout() == F2D.layout() );
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(arrays_1D_from_const_carray) {
 }
 
 BOOST_AUTO_TEST_CASE(arrays_1D_from_explict_init_list) {
-	std::initializer_list<double> il = {1.0, 2.0, 3.0};
+	std::initializer_list<double> const il = {1.0, 2.0, 3.0};
 	multi::array     <double, 1> an_array_value          (il);  // ok, it is a copy
 	multi::array_cref<double, 1> an_array_const_reference(il);  // ok, it is read only
 //  multi::array_ref <double, 1> an_array_reference      ({1., 2., 3.});  // not allowed, the init list elems are const

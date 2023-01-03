@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2018-2022 Alfredo A. Correa
+// Copyright 2018-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi reinterpret array"  // test tile NOLINT(cppcoreguidelines-macro-usage)
 #include<boost/test/unit_test.hpp>
@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_complex_to_real_extra_dimensio
 
 	#if not defined(__circle_build__)  // TODO(correaa)
 	{
-		complex arr0 = arr[0];
+		complex const arr0 = arr[0];
 		BOOST_TEST_REQUIRE( arr0.real() == 1. );
 		BOOST_TEST_REQUIRE( arr0.imag() == 2. );
 	}

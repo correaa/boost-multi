@@ -364,7 +364,8 @@ constexpr auto array_size_impl(const boost::multi::extensions_t<D>&)
 
 }  // end namespace boost::multi
 
-namespace std {  // NOLINT(cert-dcl58-cpp) : to implement structured bindings
+// NOLINTBEGIN(cert-dcl58-cpp) to implement structured bindings
+namespace std {
 
     template<boost::multi::dimensionality_type D>
     struct tuple_size<boost::multi::extensions_t<D>> : std::integral_constant<std::size_t, static_cast<std::size_t>(D)> {};
@@ -381,6 +382,7 @@ namespace std {  // NOLINT(cert-dcl58-cpp) : to implement structured bindings
 	}
 
 }  // end namespace std
+// NOLINTEND(cert-dcl58-cpp) define stuff in STD
 
 namespace boost::multi {
 

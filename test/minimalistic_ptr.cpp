@@ -85,8 +85,8 @@ BOOST_AUTO_TEST_CASE(test_minimalistic_ptr) {
 
 	static_assert( std::is_convertible<double*, double const*>{}, "!");
 
-	minimalistic::ptr<double> pd{nullptr};
-	minimalistic::ptr<const double> pcd = pd;
+	minimalistic::ptr<double> const pd{nullptr};
+	minimalistic::ptr<const double> const pcd = pd;
 	BOOST_REQUIRE( pcd == pd );
 
 	{

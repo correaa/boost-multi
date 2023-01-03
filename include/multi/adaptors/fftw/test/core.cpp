@@ -353,7 +353,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_power_dft_out_default) {
 
 BOOST_AUTO_TEST_CASE(fftw_3D_power) {
 	multi::array<complex, 3> in({4, 4, 4}); std::iota(in.data_elements(), in.data_elements() + in.num_elements(), 1.2);
-	multi::array<complex, 3> out = fftw::dft(in, fftw::forward);
+	multi::array<complex, 3> const out = fftw::dft(in, fftw::forward);
 	BOOST_REQUIRE( std::abs(power(in) - power(out)/num_elements(out)) < 1e-10 );
 }
 
@@ -562,7 +562,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref) {
 		BOOST_REQUIRE( fwd == in );
 	}
 	{
-		multi::array<complex, 2> fwd = multi::fftw::ref(in);
+		multi::array<complex, 2> const fwd = multi::fftw::ref(in);
 		BOOST_REQUIRE( fwd == in );
 	}
 	{

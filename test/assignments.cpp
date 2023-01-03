@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2022 Alfredo A. Correa
+// Copyright 2019-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi assignments"  // NOLINT(cppcoreguidelines-macro-usage) title
 #include <boost/test/unit_test.hpp>
@@ -15,8 +15,8 @@ inline static constexpr auto make_ref(double* ptr) -> multi::array_ref<double, 2
 }
 
 BOOST_AUTO_TEST_CASE(equality_1D) {
-	multi::array<double, 1> arr  = {1., 2., 3.};
-	multi::array<double, 1> arr2 = {1., 2., 3.};
+	multi::array<double, 1> arr  = {1.0, 2.0, 3.0};
+	multi::array<double, 1> arr2 = {1.0, 2.0, 3.0};
 	BOOST_REQUIRE(      arr == arr2   );
 	BOOST_REQUIRE( not (arr != arr2) );
 
@@ -26,12 +26,12 @@ BOOST_AUTO_TEST_CASE(equality_1D) {
 
 BOOST_AUTO_TEST_CASE(equality_2D) {
 	multi::array<double, 2> arr = {
-		{1., 2., 3.},
-		{4., 5., 6.},
+		{1.0, 2.0, 3.0},
+		{4.0, 5.0, 6.0},
 	};
 	multi::array<double, 2> arr2 = {
-		{1., 2., 3.},
-		{4., 5., 6.},
+		{1.0, 2.0, 3.0},
+		{4.0, 5.0, 6.0},
 	};
 	BOOST_REQUIRE( arr == arr2 );
 	BOOST_REQUIRE( not (arr != arr2) );
@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE(multi_copy_move) {
 
 	BOOST_REQUIRE( arr3.data_elements() == arr_data );
 
-	multi::array<double, 2> arr4(std::move(arr2));
+	multi::array<double, 2> const arr4(std::move(arr2));
 	BOOST_REQUIRE( size(arr4) == 3 );
 }
 
@@ -83,8 +83,8 @@ BOOST_AUTO_TEST_CASE(rearranged_assignment) {
 }
 
 BOOST_AUTO_TEST_CASE(rearranged_assignment_resize) {
-	multi::array<double, 2> arrA({4, 5});
-	multi::array<double, 2> arrB({2, 3});
+	multi::array<double, 2> const arrA({4, 5});
+	multi::array<double, 2>       arrB({2, 3});
 
 	arrB = arrA;
 	BOOST_REQUIRE( arrB.size() == 4 );
@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE(assignments) {
 	{
 		std::vector<double> vec(static_cast<std::size_t>(5 * 7), 99.0);  // NOLINT(fuchsia-default-arguments-calls)
 		constexpr double val = 33.0;
-		multi::array<double, 2> arr({5, 7}, val);
+		multi::array<double, 2> const arr({5, 7}, val);
 		multi::array_ref<double, 2>(vec.data(), {5, 7}) = arr;
 		BOOST_REQUIRE( vec[9] == val );
 		BOOST_REQUIRE( not vec.empty() );

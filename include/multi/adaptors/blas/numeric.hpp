@@ -1,8 +1,9 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2022 Alfredo A. Correa
+// Copyright 2019-2023 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_BLAS_NUMERIC_HPP
 #define MULTI_ADAPTORS_BLAS_NUMERIC_HPP
+#pragma once
 
 #include "../../array_ref.hpp"
 #include "../../complex.hpp"
@@ -205,7 +206,7 @@ struct conjugate {
 
 template<class Ref> using conjugated = involuted<Ref, conjugate>;
 
-template<class It> using conjugater = involuter<It, conjugate>;//, conjugated<typename std::iterator_traits<It>::reference> >;
+template<class It> using conjugater = involuter<It, conjugate>;
 
 template<class It> auto make_conjugater(It it){return conjugater<It>{it};}
 template<class It> auto make_conjugater(conjugater<It> it) -> It {return underlying(it);}
@@ -214,13 +215,13 @@ template<class T> auto imag(involuted<T, conjugate> const& inv) {return inv.deca
 template<class T> auto real(involuted<T, conjugate> const& inv) {return inv.decay().real();}
 
 template<class T> auto has_imag_fun_aux(T const& value) -> decltype(imag(value), std::true_type {});
-                  auto has_imag_fun_aux(...           ) -> decltype(             std::false_type{});
-template<class T> struct has_imag_fun : decltype(has_imag_fun_aux(std::declval<T>())){};
+           inline auto has_imag_fun_aux(...           ) -> decltype(             std::false_type{});
+template<class T> struct has_imag_fun : decltype(has_imag_fun_aux(std::declval<T>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
 
 
 template<class T> auto has_imag_mem_aux(T const& value) -> decltype(value.imag(), std::true_type {});
-                  auto has_imag_mem_aux(...           ) -> decltype(         std::false_type{});
-template<class T> struct has_imag_mem : decltype(has_imag_mem_aux(std::declval<T>())){};
+           inline auto has_imag_mem_aux(...           ) -> decltype(              std::false_type{});
+template<class T> struct has_imag_mem : decltype(has_imag_mem_aux(std::declval<T>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
 
 template<class T> struct has_imag : std::integral_constant<bool, (has_imag_fun<T>{} or has_imag_mem<T>{})>{};
 
@@ -237,10 +238,10 @@ struct is_complex_array : has_imag<std::decay_t<decltype(*base(std::declval<A>()
 template<class V> struct is_complex : has_imag<V> {};
 
 template<class It> 
-auto is_conjugated_aux(conjugater<It> /*self*/) -> std::true_type ;
-auto is_conjugated_aux(...                    ) -> std::false_type;
+       auto is_conjugated_aux(conjugater<It> /*self*/) -> std::true_type ;
+inline auto is_conjugated_aux(...                    ) -> std::false_type;
 
-template<class A = void> struct is_conjugated : decltype(is_conjugated_aux(base(std::declval<A>()))) {
+template<class A = void> struct is_conjugated : decltype(is_conjugated_aux(base(std::declval<A>()))) {  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
 	template<class AA> constexpr auto operator()(AA&& /*unused*/) {return is_conjugated_aux(base(std::declval<A>()));}
 };
 

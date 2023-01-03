@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2022 Alfredo A. Correa
+// Copyright 2019-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi one-based"  // title NOLINT(cppcoreguidelines-macro-usage)
 #include<boost/test/unit_test.hpp>
@@ -9,7 +9,7 @@
 namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(one_based_1D) {
-	multi::array<double, 1> Ac({{0, 10}}, 0.);
+	multi::array<double, 1> const Ac({{0, 10}}, 0.0);
 	BOOST_REQUIRE( Ac.size() == 10 );
 
 //  multi::array<double, 1> Af({{1, 1 + 10}}, 0.);
@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(one_based_1D) {
 }
 
 BOOST_AUTO_TEST_CASE(one_based_2D) {
-	multi::array<double, 2> Ac({{0, 10}, {0, 20}}, 0.);
+	multi::array<double, 2> const Ac({{0, 10}, {0, 20}}, 0.0);
 	BOOST_REQUIRE( Ac.size() == 10 );
 
 //  multi::array<double, 2> Af({{1, 1 + 10}, {1, 1 + 20}}, 0.);
@@ -85,12 +85,12 @@ BOOST_AUTO_TEST_CASE(one_based_2D) {
 
 BOOST_AUTO_TEST_CASE(one_base_2D_ref) {
 	std::array<std::array<double, 5>, 3> arr = {{
-		{{ 1.,  2.,  3.,  4.,  5.}},
-		{{ 6.,  7.,  8.,  9., 10.}},
-		{{11., 12., 13., 14., 15.}}
+		{{ 1.0,  2.0,  3.0,  4.0,  5.0}},
+		{{ 6.0,  7.0,  8.0,  9.0, 10.0}},
+		{{11.0, 12.0, 13.0, 14.0, 15.0}},
 	}};
 
-	BOOST_REQUIRE( arr[0][0] == 1. );
+	BOOST_REQUIRE( arr[0][0] == 1.0 );
 
 //  multi::array_ref<double, 2> const& Ar = *multi::array_ptr<double, 2>(&arr[0][0], {3, 5});
 //  BOOST_REQUIRE( &Ar[1][3] == &arr[1][3] );

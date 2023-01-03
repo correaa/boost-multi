@@ -263,7 +263,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_hydrogen_inq_case_complex) {
 		blas::trsm(blas::side::left, blas::filling::lower, {1.0, 0.0}, A, B);
 		BOOST_REQUIRE( B[0][1] == B_cpy[0][1]/A[0][0] );
 	}
-	multi::array<complex, 2> B1 = {
+	multi::array<complex, 2> const B1 = {
 		{ {1.0, 0.0} },
 		{ {2.0, 0.0} },
 		{ {3.0, 0.0} },

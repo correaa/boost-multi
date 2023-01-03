@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex_context) {
 BOOST_AUTO_TEST_CASE(multi_blas_axpy_operator_minus) {
 	using complex = std::complex<double>;
 	multi::array<complex, 1> x = { {10.0, 0.0}, {11.0, 0.0}, {12.0, 0.0}, {13.0, 0.0} };  // NOLINT(readability-identifier-length) BLAS naming
-	multi::array<complex, 1> y = x;  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<complex, 1> const y = x;  // NOLINT(readability-identifier-length) BLAS naming
 
 	using blas::operators::operator-;
 
@@ -119,12 +119,12 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_operator_minus) {
 		{ {1.0, 0.0}, {2.0, 0.0} },
 		{ {3.0, 0.0}, {4.0, 0.0} },
 	};
-	multi::array<complex, 1> arr2 = { {1.0, 0.0}, {2.0, 0.0} };
+	multi::array<complex, 1> const arr2 = { {1.0, 0.0}, {2.0, 0.0} };
 	BOOST_REQUIRE( (arr[0] - arr2)[0] == 0.0 );
 	BOOST_REQUIRE( (arr[0] - arr2)[1] == 0.0 );
 
 	multi::array<complex, 1> X = { {10.0, 0.0}, {11.0, 0.0}, {12.0, 0.0}, {13.0, 0.0} };  // NOLINT(readability-identifier-length) BLAS naming
-	multi::array<complex, 1> Y = { {10.0, 0.0}, {11.0, 0.0}, {12.0, 0.0}, {13.0, 0.0} };  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<complex, 1> const Y = { {10.0, 0.0}, {11.0, 0.0}, {12.0, 0.0}, {13.0, 0.0} };  // NOLINT(readability-identifier-length) BLAS naming
 
 	using blas::operators::operator-=;
 	X -= Y;

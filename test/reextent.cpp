@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2018-2022 Alfredo A. Correa
+// Copyright 2018-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi reextent"  // test title NOLINT(cppcoreguidelines-macro-usage)
 #include <boost/test/unit_test.hpp>
@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE(array_reextent_moved_trivial_change_extents) {
 }
 
 BOOST_AUTO_TEST_CASE(array_move_clear) {
-	multi::array<int, 1>    iarr;
+	multi::array<int, 1>    const iarr;
 	multi::array<double, 2> arr({2, 3});
 
 	arr = multi::array<double, 2>(extensions(arr), 123.0);
@@ -148,14 +148,14 @@ BOOST_AUTO_TEST_CASE(array_reextent_1d) {
 }
 
 BOOST_AUTO_TEST_CASE(tuple_decomposition) {
-	boost::multi::tuple<int, int> tup{1, 2};
+	boost::multi::tuple<int, int> const tup{1, 2};
 	auto [t0, t1] = tup;
 	BOOST_REQUIRE( t0 == 1 );
 	BOOST_REQUIRE( t1 == 2 );
 }
 
 BOOST_AUTO_TEST_CASE(array_reextent_0D) {
-	multi::array<double, 0> arr({}, 4.0);
+	multi::array<double, 0> const arr({}, 4.0);
 	//  arr.reextent(arr.extensions());  // TODO(correaa) : fix unused for D = 0
 	BOOST_REQUIRE( *arr.data_elements() == 4.0 );
 }
@@ -223,21 +223,21 @@ constexpr auto comp_equal(T left, U right) noexcept -> bool {
 }
 
 BOOST_AUTO_TEST_CASE(array_vector_size) {
-	std::vector<double> vec(100);  // std::vector NOLINT(fuchsia-default-arguments-calls)
+	std::vector<double> const vec(100);  // std::vector NOLINT(fuchsia-default-arguments-calls)
 	{
 		// multi::array<double, 1> a(                             vec.size() );  // warning: sign-conversion
-		multi::array<double, 1> arr(static_cast<multi::size_t>(vec.size()));
+		multi::array<double, 1> const arr(static_cast<multi::size_t>(vec.size()));
 		BOOST_REQUIRE( comp_equal(arr.size(), vec.size()) );
 	}
 	{
-		multi::array<double, 1> arr(multi::iextensions<1>(static_cast<multi::size_t>(vec.size())));  // warning: sign-conversion
+		multi::array<double, 1> const arr(multi::iextensions<1>(static_cast<multi::size_t>(vec.size())));  // warning: sign-conversion
 		// multi::array<double, 1> a(static_cast<multi::size_t>(v.size()));
 		BOOST_REQUIRE( comp_equal(arr.size(), vec.size()) );
 	}
 }
 
 BOOST_AUTO_TEST_CASE(array_iota) {
-	multi::array<double, 1> Aarr(10);
+	multi::array<double, 1> const Aarr(10);
 	multi::array<int, 1>    Barr(Aarr.extension().begin(), Aarr.extension().end());
 	BOOST_REQUIRE( Barr[0] == 0 );
 	BOOST_REQUIRE( Barr[1] == 1 );
@@ -248,13 +248,13 @@ BOOST_AUTO_TEST_CASE(array_iota) {
 	BOOST_REQUIRE( Carr[1] == 1 );
 	BOOST_REQUIRE( Carr[9] == 9 );
 
-	multi::array<int, 1> Darr(Aarr.extensions());
+	multi::array<int, 1> const Darr(Aarr.extensions());
 	BOOST_REQUIRE( Darr.extensions() == Aarr.extensions() );
 }
 
 #ifndef __INTEL_COMPILER
 BOOST_AUTO_TEST_CASE(extension_index_op) {
-	multi::array<double, 2> Aarr({11, 13});
+	multi::array<double, 2> const Aarr({11, 13});
 	auto Aext = Aarr.extensions();
 	BOOST_REQUIRE( std::get<0>(Aext[3][5]) == 3 );
 	BOOST_REQUIRE( std::get<1>(Aext[3][5]) == 5 );

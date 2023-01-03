@@ -152,6 +152,6 @@ BOOST_AUTO_TEST_CASE(multi_fancy) {
 	BOOST_REQUIRE( arr.size() == 5 );
 	BOOST_REQUIRE( arr[1][1] == arr[2][2] );
 
-	multi::array<double, 2, fancy::allocator<double>> arr2({0, 0});
+	multi::array<double, 2, fancy::allocator<double>> const arr2({0, 0});
 	BOOST_REQUIRE( arr2.size() == 0 );
 }

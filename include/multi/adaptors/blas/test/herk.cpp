@@ -1,5 +1,5 @@
-// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;-*-
-// Copyright 2019-2022 Alfredo A. Correa
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2019-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS herk"
 #include<boost/test/unit_test.hpp>
@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(inq_case) {
 	//  BOOST_REQUIRE( c[2][1] == (+blas::gemm(1., a, blas::T(a)))[2][1] );
 	}
 	{
-		multi::array<double, 2> c = blas::herk(1.0, a);  // NOLINT(readability-identifier-length) conventional name in BLAS
+		multi::array<double, 2> const c = blas::herk(1.0, a);  // NOLINT(readability-identifier-length) conventional name in BLAS
 		BOOST_REQUIRE( c == +blas::gemm(1., a, blas::T(a)) );
 		BOOST_REQUIRE( blas::herk(a) == +blas::gemm(1., a, blas::T(a)) );
 		BOOST_REQUIRE( blas::herk(2.0, a) == +blas::gemm(2.0, a, blas::T(a)) );
@@ -188,7 +188,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_herk_complex_identity) {
 		BOOST_REQUIRE( arr2[0][1] == 9999.0 );
 	}
 	{
-		multi::array<complex, 2> c({2, 2}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) conventional one-letter operation BLASs
+		multi::array<complex, 2> const c({2, 2}, {9999.0, 0.0});  // NOLINT(readability-identifier-length) conventional one-letter operation BLASs
 		static_assert(blas::is_conjugated<decltype(blas::H(c))>{} );
 
 		blas::herk(blas::filling::lower, 1.0, arr, 0.0, blas::H(c));  // c†=c=aa†=(aa†)†, `c` in upper triangular

@@ -18,7 +18,7 @@ namespace blas = multi::blas;
 BOOST_AUTO_TEST_CASE(blas_dot_context) {
 	multi::array<float, 1> const x = {1.0F, 2.0F, 3.0F};  // NOLINT(readability-identifier-length) BLAS naming
 	multi::array<float, 1> const y = {1.0F, 2.0F, 3.0F};  // NOLINT(readability-identifier-length) BLAS naming
-	blas::context ctxt;
+	blas::context const ctxt;
 	{
 		auto  res = +blas::dot(&ctxt, x, y);  // NOLINT(readability-identifier-length) BLAS naming
 		BOOST_REQUIRE( res == std::inner_product(begin(x), end(x), begin(y), 0.F) );
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_strided) {
 	blas::dot_n(begin(CA[1]), size(CA[1]), begin(CA[2]), &res);
 	BOOST_REQUIRE( res == std::inner_product(begin(CA[1]), begin(CA[2]), end(CA[1]), 0.0) );
 
-	double res2 = blas::dot(CA[1], CA[2]);
+	double const res2 = blas::dot(CA[1], CA[2]);
 	BOOST_REQUIRE( res == res2 );
 }
 
@@ -102,13 +102,13 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_strided_context) {
 	blas::dot_n(&ctxt, begin(CA[1]), size(CA[1]), begin(CA[2]), &res);
 	BOOST_REQUIRE( res == std::inner_product(begin(CA[1]), begin(CA[2]), end(CA[1]), 0.0) );
 
-	double res2 = blas::dot(CA[1], CA[2]);
+	double const res2 = blas::dot(CA[1], CA[2]);
 	BOOST_REQUIRE( res == res2 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_dot_1d_real) {
-	multi::array<float, 1> x = {1.0F, 2.0F, 3.0F};  // NOLINT(readability-identifier-length) BLAS naming
-	multi::array<float, 1> y = {1.0F, 2.0F, 3.0F};  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<float, 1> const x = {1.0F, 2.0F, 3.0F};  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<float, 1> const y = {1.0F, 2.0F, 3.0F};  // NOLINT(readability-identifier-length) BLAS naming
 
 	using blas::dot;
 	BOOST_REQUIRE( 14.0 == dot(x, y) );
@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_real) {
 		{9.0, 10.0, 11.0, 12.0}
 	};
 	{
-		double res = blas::dot(cA[1], cA[2]);
+		double const res = blas::dot(cA[1], cA[2]);
 		BOOST_REQUIRE( res == std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.0) );
 	}
 	{
@@ -136,7 +136,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_real) {
 		BOOST_REQUIRE( res == res2 );
 	}
 	 {
-		double res = blas::dot(cA[1], cA[2]);
+		double const res = blas::dot(cA[1], cA[2]);
 		BOOST_REQUIRE( res == std::inner_product(begin(cA[1]), begin(cA[2]), end(cA[1]), 0.0) );
 		BOOST_REQUIRE( blas::dot(cA[1], cA[2]) == blas::dot(cA[2], cA[1]) );
 	}
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_dot_impl_real) {
 
 BOOST_AUTO_TEST_CASE(inq_case) {
 	multi::array<double, 1> x(multi::extensions_t<1>{multi::iextension{10}}, +1.0);  // NOLINT(readability-identifier-length) BLAS naming
-	multi::array<double, 1> y(multi::extensions_t<1>{multi::iextension{10}}, -1.0);  // NOLINT(readability-identifier-length) BLAS naming
+	multi::array<double, 1> const y(multi::extensions_t<1>{multi::iextension{10}}, -1.0);  // NOLINT(readability-identifier-length) BLAS naming
 
 	using blas::dot;
 	using blas::hermitized;
@@ -164,7 +164,7 @@ BOOST_AUTO_TEST_CASE(inq_case) {
 	static_assert( not std::is_same<decltype(d_arr), double>{} );
 
 	using blas::C;
-	double d_doub = dot(C(x), y);
+	double const d_doub = dot(C(x), y);
 
 	BOOST_REQUIRE( d_doub == d_arr );
 }

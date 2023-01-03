@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2022 Alfredo A. Correa
+// Copyright 2019-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi array reference"  // test title NOLINT(cppcoreguidelines-macro-usage)
 #include<boost/test/unit_test.hpp>
@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
 
 
 BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed) {
-	using namespace std::string_literals;
+	using namespace std::string_literals;  // NOLINT(build/namespaces) for literal "string"s
 	std::array<std::string, 5> stdarr = {{"a"s, "b"s, "c"s, "d"s, "e"s}};
 
 	multi::array_ref<std::string, 1> mar = *multi::array_ptr<std::string, 1>(&stdarr);
@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
 		BOOST_REQUIRE( arrB[2][1] == "a" );
 	}
 	{
-		using namespace std::string_literals;
+		using namespace std::string_literals;  // NOLINT(build/namespaces) for literal "string"s
 		multi::array<std::string, 2> arrB = (multi::array<std::string, 2>{
 			{"a"s, "b"s, "c"s, "d"s, "e"s},
 			{"f"s, "g"s, "h"s, "f"s, "g"s},
@@ -162,7 +162,7 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
 		BOOST_REQUIRE( arrB.reindex(2).extension() == multi::iextension(2, 5) );
 		auto exts = arrB.reindexed(2).extensions();
 
-		multi::array<std::string, 2> arrC(exts);
+		multi::array<std::string, 2> const arrC(exts);
 		BOOST_REQUIRE( size(arrC) == 3 );
 		BOOST_REQUIRE( size(arrC) == size(arrB) );
 
@@ -225,7 +225,7 @@ BOOST_AUTO_TEST_CASE(array_ref_2D_from_vector_with_offset) {
 }
 
 BOOST_AUTO_TEST_CASE(array_2D_with_offset) {
-	multi::array<double, 2> arr({multi::iextension(1, 3), multi::iextension(2, 5)}, 1.2);
+	multi::array<double, 2> const arr({multi::iextension(1, 3), multi::iextension(2, 5)}, 1.2);
 
 	BOOST_REQUIRE( arr.extension().start()  == 1 );
 	BOOST_REQUIRE( arr.extension().finish() == 3 );
@@ -271,10 +271,11 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_carray) {
 
 	ref[1][1] = 2.0;
 
-	double darr2[4][5] = {{1.0, 2.0}, {2.0, 3.0}};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
+	double darr2[4][5] = {{1.0, 0.0}, {2.0, 3.0}};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
+	darr2[1][0] = 2.0;
 
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
-	auto const& dd = static_cast<double const(&)[4][5]>(darr2);
+	auto const& dd = std::as_const(darr2);
 
 	BOOST_REQUIRE( &(dd[1][2]) == &(darr2[1][2]) );
 	BOOST_REQUIRE(( & ref[1].static_array_cast<double, double const*>()[1] == &ref[1][1] ));
@@ -373,10 +374,10 @@ BOOST_AUTO_TEST_CASE(array_ref_move_assigment_2D) {
 	}
 	{
 		multi::array<double, 2> arr({5, 4});
-		std::iota(arr.elements().begin(), arr.elements().end(), 0.);
+		std::iota(arr.elements().begin(), arr.elements().end(), 0.0);
 
 		multi::array<double, 2> arr2({5, 4});
-		std::iota(arr2.elements().begin(), arr2.elements().end(), 10.);
+		std::iota(arr2.elements().begin(), arr2.elements().end(), 10.0);
 
 		auto&& ref  = multi::array_ref<double, 2>({5, 4}, arr.data_elements());
 		auto&& ref2 = multi::array_ref<double, 2>({5, 4}, arr2.data_elements());
