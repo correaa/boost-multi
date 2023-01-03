@@ -271,10 +271,11 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_carray) {
 
 	ref[1][1] = 2.0;
 
-	double const darr2[4][5] = {{1.0, 2.0}, {2.0, 3.0}};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
+	double darr2[4][5] = {{1.0, 0.0}, {2.0, 3.0}};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
+	darr2[1][0] = 2.0;
 
 	// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
-	auto const& dd = static_cast<double const(&)[4][5]>(darr2);
+	auto const& dd = std::as_const(darr2);
 
 	BOOST_REQUIRE( &(dd[1][2]) == &(darr2[1][2]) );
 	BOOST_REQUIRE(( & ref[1].static_array_cast<double, double const*>()[1] == &ref[1][1] ));
