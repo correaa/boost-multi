@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2022 Alfredo A. Correa
+// Copyright 2019-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi array reference"  // test title NOLINT(cppcoreguidelines-macro-usage)
 #include<boost/test/unit_test.hpp>
@@ -42,7 +42,7 @@ BOOST_AUTO_TEST_CASE(array_ref_from_carray) {
 
 
 BOOST_AUTO_TEST_CASE(array_ref_1D_reindexed) {
-	using namespace std::string_literals;
+	using namespace std::string_literals;  // NOLINT(build/namespaces) for literal "string"s
 	std::array<std::string, 5> stdarr = {{"a"s, "b"s, "c"s, "d"s, "e"s}};
 
 	multi::array_ref<std::string, 1> mar = *multi::array_ptr<std::string, 1>(&stdarr);
@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE(array_ref_reindexed) {
 		BOOST_REQUIRE( arrB[2][1] == "a" );
 	}
 	{
-		using namespace std::string_literals;
+		using namespace std::string_literals;  // NOLINT(build/namespaces) for literal "string"s
 		multi::array<std::string, 2> arrB = (multi::array<std::string, 2>{
 			{"a"s, "b"s, "c"s, "d"s, "e"s},
 			{"f"s, "g"s, "h"s, "f"s, "g"s},
@@ -374,10 +374,10 @@ BOOST_AUTO_TEST_CASE(array_ref_move_assigment_2D) {
 	}
 	{
 		multi::array<double, 2> arr({5, 4});
-		std::iota(arr.elements().begin(), arr.elements().end(), 0.);
+		std::iota(arr.elements().begin(), arr.elements().end(), 0.0);
 
 		multi::array<double, 2> arr2({5, 4});
-		std::iota(arr2.elements().begin(), arr2.elements().end(), 10.);
+		std::iota(arr2.elements().begin(), arr2.elements().end(), 10.0);
 
 		auto&& ref  = multi::array_ref<double, 2>({5, 4}, arr.data_elements());
 		auto&& ref2 = multi::array_ref<double, 2>({5, 4}, arr2.data_elements());
