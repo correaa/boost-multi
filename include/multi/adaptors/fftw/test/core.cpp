@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2020-2022 Alfredo A. Correa
+// Copyright 2020-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW core"
 #include<boost/test/unit_test.hpp>
@@ -50,7 +50,7 @@ class watch : private std::chrono::high_resolution_clock{
 
 template<class T> struct randomizer {
 	template<class M> void operator()(M&& arr) const {
-		std::for_each(arr.begin(), arr.end(), [&self=*this](auto&& elem) {self.operator()(elem);}); 
+		std::for_each(arr.begin(), arr.end(), [&self=*this](auto&& elem) {self.operator()(elem);});
 	}
 	void operator()(T& elem) const {  // NOLINT(runtime/references) passing by reference
 		static std::random_device dev; static std::mt19937 gen{dev()}; static std::normal_distribution<T> gauss;
@@ -777,7 +777,7 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_square_nested) {
 }
 
 BOOST_AUTO_TEST_CASE(fftw_2D_const_range_ref_transposed_nonpod) {
-	using namespace std::string_literals;
+	using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 	multi::array<std::string, 2> in = {
 		{  "100.0 + 2.0*I"s,  "9.0 - 1.0*I"s, "2.0 +  4.0*I"s},
 		{    "3.0 + 3.0*I"s,  "7.0 - 4.0*I"s, "1.0 +  9.0*I"s},

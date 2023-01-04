@@ -266,10 +266,5 @@ BOOST_AUTO_TEST_CASE(extension_index_op) {
 			BOOST_REQUIRE(jp == j);
 		}
 	}
-
-//  for(auto it = Aarr.extensions().begin(); it != Aarr.extensions().end(); ++it) {
-//
-//	}
-
 }
 #endif

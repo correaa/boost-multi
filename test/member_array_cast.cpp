@@ -21,7 +21,7 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 		multi::array<double, 2> masses_;
 		multi::array<v3d, 2> positions_;
 
-	 public:
+	 public:  // NOLINT(whitespace/indent) nested class
 		// NOLINTNEXTLINE(runtime/explicit)
 		particles_soa(multi::array<particle, 2> const& AoS)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : particle_soa can represent a particles' AoS
 		: masses_{AoS.member_cast<double>(&particle::mass)}, positions_{AoS.member_cast<v3d>(&particle::position)} {}
@@ -35,11 +35,11 @@ BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos) {
 
 			reference(double& mss, v3d& pos) : mass{mss}, position{pos} {}  // NOLINT(google-runtime-references)
 
-		 private:
+		 private:  // NOLINT(whitespace/indent) nested class
 			friend class particles_soa;
 			reference(reference const&) = default;
 
-		 public:
+		 public:  // NOLINT(whitespace/indent) nested class
 			auto operator=(reference const& other) -> reference& {  // NOLINT(cert-oop54-cpp)
 				std::tie(mass, position) = std::tie(other.mass, other.position);
 				return *this;
@@ -93,7 +93,7 @@ struct alignas(32) employee {
 };
 
 BOOST_AUTO_TEST_CASE(member_array_cast_soa_aos_employee) {
-	using namespace std::string_literals;
+	using namespace std::string_literals;  // NOLINT(build/namespaces) ""s
 	multi::array<employee, 1> d1D = {
 	    { "Al"s, 1430, 35},
 	    {"Bob"s, 3212, 34},

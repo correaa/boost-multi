@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2020-2022 Alfredo A. Correa
+// Copyright 2020-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi FFTW transpose"
 #include<boost/test/unit_test.hpp>
@@ -12,7 +12,7 @@
 
 namespace multi = boost::multi;
 
-using namespace std::string_literals;
+using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
 class watch : private std::chrono::high_resolution_clock {
 	std::string label;

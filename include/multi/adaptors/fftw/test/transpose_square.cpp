@@ -13,7 +13,7 @@
 
 namespace multi = boost::multi;
 
-using namespace std::string_literals;
+using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
 using fftw_fixture = multi::fftw::environment;
 BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );

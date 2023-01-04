@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE(multi_test_constness_reference) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_test_stencil) {
-	using namespace std::string_literals;
+	using namespace std::string_literals;  // NOLINT(build/namespaces) ""s
 
 	multi::array<std::string, 2> arr = {
 		{"a"s, "b"s, "c"s, "d"s, "e"s},

@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2022 Alfredo A. Correa
+// Copyright 2019-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS trsm"
 #include<boost/test/unit_test.hpp>
@@ -24,11 +24,6 @@ auto triangular(multi::blas::filling f, Matrix const& m) {  // NOLINT(readabilit
 				std::fill_n(ret[idx].begin(), std::min(idx, size(~ret)), 0.0);
 			});
 		}
-//		for(multi::size_type i = 0; i != size( ret); ++i) {
-//			for(multi::size_type j = 0; j != std::min(i, size(~ret)); ++j) {
-//				ret[i][j] = 0.;
-//			}
-//		}
 		break;
 	case multi::blas::filling::lower:
 		{
@@ -37,11 +32,6 @@ auto triangular(multi::blas::filling f, Matrix const& m) {  // NOLINT(readabilit
 				std::fill_n( (~ret)[jdx].begin(), std::min(jdx, size( ret)), 0.0);
 			});
 		}
-//		for(multi::size_type j = 0; j != size(~ret); ++j) {
-//			for(multi::size_type i = 0; i != std::min(j, size( ret)); ++i) {
-//				ret[i][j] = 0.;
-//			}
-//		}
 		break;
 	}
 	return ret;
