@@ -287,3 +287,4 @@ BOOST_AUTO_TEST_CASE(fftw_2D_const_range_transposed_fftwmove) {
 #endif
 #endif
 }
+

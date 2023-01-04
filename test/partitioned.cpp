@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2018-2022 Alfredo A. Correa
+// Copyright 2018-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi partitioned operation"  // test tile NOLINT(cppcoreguidelines-macro-usage)
 #include <boost/test/unit_test.hpp>
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE(array_partitioned_2d) {
 }
 
 BOOST_AUTO_TEST_CASE(array_partitioned) {
-	using namespace std::string_literals;
+	using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
 	multi::array<std::string, 2> A2 = {
 		{"s0P0"s, "s1P0"s},

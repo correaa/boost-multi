@@ -15,7 +15,7 @@ namespace multi = boost::multi;
 
 namespace utf = boost::unit_test::framework;
 
-using namespace std::string_literals;
+using namespace std::string_literals;  // NOLINT(build/namespaces) for ""s
 
 using fftw_fixture = multi::fftw::environment;
 BOOST_TEST_GLOBAL_FIXTURE( fftw_fixture );

@@ -18,10 +18,6 @@ static auto fnv1a(void const* key, std::ptrdiff_t len, std::size_t hash) noexcep
 		first, std::next(first, len), hash,
 		[prime = 1099511628211U](auto acc, auto elem) {return (acc ^ elem) * prime;}
 	);
-//  for(; first != last; ++first) {  // NOLINT(altera-id-dependent-backward-branch,cppcoreguidelines-pro-bounds-pointer-arithmetic): low level
-//  	hash = (hash ^ *first) * 1099511628211U;  // prime
-//  }
-//	return hash;
 }
 
 // static constexpr auto fnv1a(void const* key, std::size_t len) noexcept {

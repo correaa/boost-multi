@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2022 Alfredo A. Correa
+// Copyright 2019-2023 Alfredo A. Correa
 
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi BLAS scal"
 #include <boost/test/unit_test.hpp>
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_real_2D) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_test_scal_complex_2D) {
-    using namespace std::complex_literals;  // for 0.0i
+	using namespace std::complex_literals;  // NOLINT(build/namespaces) for 0.0i
 	multi::array<std::complex<double>, 2> arr = {
 		{1.0 + 0.0i,  2.0 + 0.0i,  3.0 + 0.0i,  4.0 + 0.0i},
 		{5.0 + 0.0i,  6.0 + 0.0i,  7.0 + 0.0i,  8.0 + 0.0i},
