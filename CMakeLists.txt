@@ -76,10 +76,10 @@ install(FILES
 install(DIRECTORY "include/" TYPE INCLUDE)
 
 if(MULTI_BUILD_TESTS)
-	find_package(Boost COMPONENTS unit_test_framework REQUIRED)
+	find_package(Boost COMPONENTS unit_test_framework)
 
 	if(NOT Boost_FOUND)
-		message (WARNING "Cannot find Boost, library will not be tested. If you want this feature install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev")
+		message (WARNING "Cannot find Boost, Multi library will not be tested. If you want this feature install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev")
 	else()
 		enable_testing()
 		add_subdirectory(test)
