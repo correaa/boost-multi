@@ -11,6 +11,12 @@ if(EXISTS "CMakeLists.txt")
 	message(FATAL_ERROR "You probably don't want to run CMake in a directory with CMakeLists.txt")
 endif()
 
+if (NOT DEFINED CMAKE_CXX_STANDARD)
+	set(CMAKE_CXX_STANDARD 17)
+endif()
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 #project(
 #	boost-multi-test
 #	VERSION 0.1
