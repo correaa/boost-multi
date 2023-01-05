@@ -5,20 +5,20 @@
 #define MULTI_ARRAY_REF_HPP_
 #pragma once
 
-#include "./memory/pointer_traits.hpp"
-#include "./utility.hpp"  // TODO(correaa) change to multi/utility.hpp (same below)
+#include <multi/memory/pointer_traits.hpp>
+#include <multi/utility.hpp>
 
-#include "./config/ASSERT.hpp"
-#include "./config/DELETE.hpp"
-#include "./config/MARK.hpp"
-#include "./config/VERSION.hpp"
+#include <multi/config/ASSERT.hpp>
+#include <multi/config/DELETE.hpp>
+#include <multi/config/MARK.hpp>
+#include <multi/config/VERSION.hpp>
 
-#include "./detail/adl.hpp"
-#include "./detail/layout.hpp"
-#include "./detail/memory.hpp"         // for pointer_traits
-#include "./detail/operators.hpp"      // for random_iterable
-#include "./detail/serialization.hpp"
-#include "./detail/types.hpp"          // for dimensionality_type
+#include <multi/detail/adl.hpp>
+#include <multi/detail/layout.hpp>
+#include <multi/detail/memory.hpp>         // for pointer_traits
+#include <multi/detail/operators.hpp>      // for random_iterable
+#include <multi/detail/serialization.hpp>
+#include <multi/detail/types.hpp>          // for dimensionality_type
 
 #if defined(__NVCC__)
 #define HD __host__ __device__

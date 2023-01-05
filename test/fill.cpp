@@ -4,7 +4,7 @@
 #define BOOST_TEST_MODULE "C++ Unit Tests for Multi fill"  // NOLINT(cppcoreguidelines-macro-usage) title
 #include<boost/test/unit_test.hpp>
 
-#include "../include/multi/array.hpp"
+#include <multi/array.hpp>
 
 #include<algorithm>  // for transform
 #include<limits>

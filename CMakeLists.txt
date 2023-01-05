@@ -52,6 +52,7 @@ install(
 	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
+message("current install prefix directory: ${CMAKE_INSTALL_PREFIX}")
 
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
