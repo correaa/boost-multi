@@ -22,7 +22,7 @@ Some features:
 * Simplified implementation (~4000 lines)
 
 (Do not confuse this library with Boost.MultiIndex or Boost.MultiArray.
-It shares the goals of [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html),
+`Multi` shares the goals of [Boost.MultiArray](https://www.boost.org/doc/libs/1_69_0/libs/multi_array/doc/index.html),
 although the code is completely independent and with important semantic and implementation differences.)
 
 ## Contents
@@ -31,18 +31,13 @@ although the code is completely independent and with important semantic and impl
 ## Using the library, installation and tests
 
 `Multi` doesn't require instalation, single file `#include<multi/array.hpp>` is enough to use the full core library.
-`Multi`'s _only_ dependecy is the standard C++ library.
+`Multi` has no dependecies (except for the standard C++ library).
 You can try the library [online](https://godbolt.org/z/dvacqK8jE) before using it locally.
 
 It is important to compile programs that use the library with some level of optimization, specially if element-access is intensively used.
 For example, when testing speed, please make sure that you are compiling in release mode (`-DNDEBUG`) and with optimizations (`-O3`).
 
-Testing the library requires CMake, a build system (e.g. make), and the Boost.Test library. 
-
-```bash
-sudo apt install cmake libboost-test-dev make
-```
-
+_Testing_ the library requires CMake, a build system (e.g. make), and the Boost.Test library, for example via `sudo apt install cmake libboost-test-dev make`.
 A CMake build system is provided to automatically run basic tests. (Test do depend on the Boost.Test library.)
 
 ```bash
@@ -54,12 +49,33 @@ cmake --build .
 ctest
 ```
 
+Although installation is not necessary, the library can still be installed system-wide by executing 
+
+```bash
+sudo cmake --install .
+```
+
+The header (and cmake) files will typically end up in `/usr/local/include/multi` and `/usr/local/share/multi`.
+
+Other CMake projects (targets) can depend on Multi by adding `add_subdirectory(my_multi_path)` or by `find_package`:
+
+```cmake
+find_package(multi)  # see https://gitlab.com/correaa/boost-multi#using-the-library-installation-and-tests
+...
+target_link_library(my_target PUBLIC multi)
+```
+
+Alternatively to `find_package` the library can be fetched on demand by the CMake project:
+```
+FetchContent_Declare(multi GIT_REPOSITORY https://gitlab.com/correaa/boost-multi.git)
+FetchContent_MakeAvailable(multi)
+...
+target_link_library(my_target PUBLIC multi)
+```
+
 ### Dependecies and compiler requirements
 
 The core of the library doesn't have dependencies (other than the standard library).
-
-Compiling and running the tests depends on Boost.Test
-(which can be installed with `sudo apt install libboost-test-dev` in Debian-like systems.)
 
 "Adaptor" sublibraries (included in `multi/adaptors/`) have specific dependencies, Boost.Serialization, fftw, blas, lapack, thurst, CUDA
 (which can be installed with `sudo apt install libboost-serialization-dev libfftw3-dev libblas64-dev liblapack64-dev libthrust-dev libcudart11.0` or indiviudually.)
