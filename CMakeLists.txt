@@ -46,82 +46,83 @@ if (NOT CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
   add_library(correaa::multi ALIAS multi)
 endif()
 
-# Installation help
-configure_package_config_file(
-  "${PROJECT_SOURCE_DIR}/cmake/multi-config.cmake.in"
-  "${PROJECT_BINARY_DIR}/multi-config.cmake"
-  INSTALL_DESTINATION "share/cmake/multi")
-
-write_basic_package_version_file(
-	"${PROJECT_BINARY_DIR}/multi-config-version.cmake"
-	COMPATIBILITY SameMajorVersion
-	ARCH_INDEPENDENT)
-
-message("current install prefix directory: ${CMAKE_INSTALL_PREFIX}")
-
-install(TARGETS multi
-	EXPORT multi-targets
-	INCLUDES DESTINATION "${CMAKE_INSTALL_DATADIR}")
-
-install(EXPORT ${PROJECT_NAME}-targets
-	DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/${PROJECT_NAME}"
-	NAMESPACE multi::
-	FILE "${PROJECT_NAME}-targets.cmake")
-
-install(FILES
-	"${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
-	"${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
-	DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/${PROJECT_NAME}")
-
-install(DIRECTORY "include/" TYPE INCLUDE)
-
-if(MULTI_BUILD_TESTS)
-	find_package(Boost COMPONENTS unit_test_framework)
-
-	if(NOT Boost_FOUND)
-		message (WARNING "Cannot find Boost, Multi library will not be tested. If you want this feature install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev")
-	else()
-		enable_testing()
-		add_subdirectory(test)
-
-		add_subdirectory(include/multi/adaptors/blas  )
-		add_subdirectory(include/multi/adaptors/fftw  )
-		add_subdirectory(include/multi/adaptors/cuda  )
-		add_subdirectory(include/multi/adaptors/thrust)
-	endif()
-endif()
-
-if (MULTI_BUILD_PACKAGE)
-	list(APPEND source-generators TBZ2 TGZ TXZ ZIP)
-
-	if (CMAKE_HOST_WIN32)
-	list(APPEND binary-generators "WIX")
-	endif()
-
-	if (MULTI_BUILD_PACKAGE_DEB)
-	list(APPEND binary-generators "DEB")
-	endif()
-
-	if (MULTI_BUILD_RPM)
-	list(APPEND binary-generators "RPM")
-	endif()
-
-	set(CPACK_SOURCE_GENERATOR ${source-generators})
-	set(CPACK_GENERATOR ${binary-generators})
-
-	set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}")
-	set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CPACK_PACKAGE_FILE_NAME}")
-
-	set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Alfredo Correa")
-
-	list(APPEND CPACK_SOURCE_IGNORE_FILES /.git/ /.build*/ /build/ .gitignore .DS_Store)
-
-	include(CPack)
-endif()
-
 # https://youtrack.jetbrains.com/issue/CPP-25608
 target_compile_features(${PROJECT_NAME} INTERFACE $<$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>:cxx_std_17>)
 target_compile_options (${PROJECT_NAME} INTERFACE $<$<CUDA_COMPILER_ID:NVIDIA>:-std=c++17>)
+
+if(CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)  # this make CM FetchContent friendly https://www.foonathan.net/2022/06/cmake-fetchcontent/
+
+	# Installation help
+	configure_package_config_file(
+	"${PROJECT_SOURCE_DIR}/cmake/multi-config.cmake.in"
+	"${PROJECT_BINARY_DIR}/multi-config.cmake"
+	INSTALL_DESTINATION "share/cmake/multi")
+
+	write_basic_package_version_file(
+		"${PROJECT_BINARY_DIR}/multi-config-version.cmake"
+		COMPATIBILITY SameMajorVersion
+		ARCH_INDEPENDENT)
+
+	message("current install prefix directory: ${CMAKE_INSTALL_PREFIX}")
+
+	install(TARGETS multi
+		EXPORT multi-targets
+		INCLUDES DESTINATION "${CMAKE_INSTALL_DATADIR}")
+
+	install(EXPORT ${PROJECT_NAME}-targets
+		DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/${PROJECT_NAME}"
+		NAMESPACE multi::
+		FILE "${PROJECT_NAME}-targets.cmake")
+
+	install(FILES
+		"${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config-version.cmake"
+		"${PROJECT_BINARY_DIR}/${PROJECT_NAME}-config.cmake"
+		DESTINATION "${CMAKE_INSTALL_DATADIR}/cmake/${PROJECT_NAME}")
+
+	install(DIRECTORY "include/" TYPE INCLUDE)
+
+	if(MULTI_BUILD_TESTS)
+		find_package(Boost COMPONENTS unit_test_framework)
+		if(NOT Boost_FOUND)
+			message (WARNING "Cannot find Boost, Multi library will not be tested. If you want this feature install Boost.Test, for example please run:\n    sudo apt install libboost-test-dev")
+		else()
+			enable_testing()
+			add_subdirectory(test)
+
+			add_subdirectory(include/multi/adaptors/blas  )
+			add_subdirectory(include/multi/adaptors/fftw  )
+			add_subdirectory(include/multi/adaptors/cuda  )
+			add_subdirectory(include/multi/adaptors/thrust)
+		endif()
+	endif()
+
+	if (MULTI_BUILD_PACKAGE)
+		list(APPEND source-generators TBZ2 TGZ TXZ ZIP)
+
+		if (CMAKE_HOST_WIN32)
+		list(APPEND binary-generators "WIX")
+		endif()
+
+		if (MULTI_BUILD_PACKAGE_DEB)
+		list(APPEND binary-generators "DEB")
+		endif()
+
+		if (MULTI_BUILD_RPM)
+		list(APPEND binary-generators "RPM")
+		endif()
+
+		set(CPACK_SOURCE_GENERATOR ${source-generators})
+		set(CPACK_GENERATOR ${binary-generators})
+
+		set(CPACK_PACKAGE_FILE_NAME "${PROJECT_NAME}-${PROJECT_VERSION}")
+		set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CPACK_PACKAGE_FILE_NAME}")
+
+		set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Alfredo A. Correa")
+
+		list(APPEND CPACK_SOURCE_IGNORE_FILES /.git/ /.build*/ /build/ .gitignore .DS_Store)
+
+		include(CPack)
+	endif()
 
 # target_compile_options (
 # 	${PROJECT_NAME}
@@ -167,3 +168,5 @@ find_program(MEMORYCHECK_COMMAND valgrind)
 set(VALGRIND_COMMAND_OPTIONS    "-q --tool=memcheck --leak-check=yes --num-callers=51 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all")
 set(MEMORYCHECK_COMMAND_OPTIONS "-q --tool=memcheck --leak-check=yes --num-callers=52 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all")  # must go before `include(CTest)`
 set(MEMORYCHECK_SUPPRESSIONS_FILE "${PROJECT_SOURCE_DIR}/.valgrind-suppressions")  # must go before `include(CTest)`
+
+# endif()
