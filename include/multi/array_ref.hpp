@@ -239,6 +239,7 @@ struct basic_array_ptr  // NOLINT(fuchsia-multiple-inheritance) : to allow mixin
 	using reference = Ref;
 	using iterator_category = std::random_access_iterator_tag;
 
+	// cppcheck-suppress noExplicitConstructor
 	HD constexpr basic_array_ptr(std::nullptr_t nil) : Ref{nil} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) terse syntax and functionality by default
 	HD constexpr basic_array_ptr() : basic_array_ptr{nullptr} {}  // TODO(correaa) consider uninitialized ptr
 
@@ -2391,6 +2392,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 
 //  this ctor makes memcheck complain about memmory used after scope
 	template<class TT, std::enable_if_t<std::is_same<typename array_ref::value_type, TT>::value, int> =0>
+	// cppcheck-suppress noExplicitConstructor
 	array_ref(std::initializer_list<TT> const& il) : array_ref(il.begin(), typename array_ref::extensions_type{static_cast<typename array_ref::size_type>(il.size())}) {}
 
 	template<class TT, std::enable_if_t<std::is_same<typename array_ref::value_type, TT>::value, int> =0>
