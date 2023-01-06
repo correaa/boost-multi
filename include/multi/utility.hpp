@@ -85,6 +85,7 @@ struct transform_ptr {
 	constexpr transform_ptr(pointer ptr, UF fun) : p_{ptr}, f_(std::move(fun)) {}
 
 	template<class Other>
+	// cppcheck-suppress noExplicitConstructor
 	constexpr transform_ptr(Other const& other) : p_{other.p_}, f_{other.f_} {}  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) TODO(correaa) use conditional explicit idiom here
 
 	constexpr auto functor() const -> UF {return f_;}
