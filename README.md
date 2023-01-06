@@ -30,34 +30,34 @@ although the code is completely independent and with important semantic and impl
 
 ## Using the library, installation and tests
 
-`Multi` doesn't require instalation, single file `#include<multi/array.hpp>` is enough to use the full core library.
-`Multi` has no dependecies (except for the standard C++ library).
-You can try the library [online](https://godbolt.org/z/dvacqK8jE) before using it locally.
-
-It is important to compile programs that use the library with some level of optimization, specially if element-access is intensively used.
-For example, when testing speed, please make sure that you are compiling in release mode (`-DNDEBUG`) and with optimizations (`-O3`).
-
-_Testing_ the library requires CMake, a build system (e.g. make), and the Boost.Test library, for example via `sudo apt install cmake libboost-test-dev make`.
-A CMake build system is provided to automatically run basic tests. (Test do depend on the Boost.Test library.)
+`Multi` doesn't require instalation, a single header `#include<multi/array.hpp>` is enough to use the full core library.
+`Multi` has no dependecies (except for the standard C++ library) and can be used immediately after downloading it.
 
 ```bash
 git clone https://gitlab.com/correaa/boost-multi.git
+```
+
+You can try the library [online](https://godbolt.org/z/dvacqK8jE) before using it locally.
+
+Although installation is not necessary, the library can still be installed system-wide with CMake.
+The header (and cmake) files will typically end up in `/usr/local/include/multi` and `/usr/local/share/multi`.
+
+```bash
 cd multi
 mkdir -p build && cd build
 cmake ..
+sudo cmake --install .
+```
+
+_Testing_ the library requires Boost.Test library, installed for example via `sudo apt install cmake libboost-test-dev make`.
+A CMake build system is provided to automatically run basic tests.
+
+```bash
 cmake --build .
 ctest
 ```
 
-Although installation is not necessary, the library can still be installed system-wide by executing 
-
-```bash
-sudo cmake --install .
-```
-
-The header (and cmake) files will typically end up in `/usr/local/include/multi` and `/usr/local/share/multi`.
-
-Other CMake projects (targets) can depend on Multi by adding `add_subdirectory(my_multi_path)` or by `find_package`:
+Other CMake projects (targets) can depend on Multi by adding a simple `add_subdirectory(my_multi_path)` or by `find_package`:
 
 ```cmake
 find_package(multi)  # see https://gitlab.com/correaa/boost-multi#using-the-library-installation-and-tests
@@ -73,19 +73,16 @@ FetchContent_MakeAvailable(multi)
 target_link_library(my_target PUBLIC multi)
 ```
 
-### Dependecies and compiler requirements
-
-The core of the library doesn't have dependencies (other than the standard library).
-
-"Adaptor" sublibraries (included in `multi/adaptors/`) have specific dependencies, Boost.Serialization, fftw, blas, lapack, thurst, CUDA
-(which can be installed with `sudo apt install libboost-serialization-dev libfftw3-dev libblas64-dev liblapack64-dev libthrust-dev libcudart11.0` or indiviudually.)
-
-The code is developed for several compilers with standard C++17 support, for reference:
+The code requires compilers with standard C++17 support, for reference any of:
 LLVM's `clang` (5.0+) (`libc++` and `libstdc++`), 
 GNU's `g++` (7.1+), 
 Nvidia's [`nvcc`](https://godbolt.org/z/Kdh5PeP5f) (11.0+) and `nvc++` (20.7-21.3+), 
 Intel's `icpc` (2021.2.0+) and `icpx` (2022.0.0+), 
 Baxter's [`circle`](https://www.circle-lang.org/) (build 168+), and Microsoft's [MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/) (+19.14 in [conformant mode](https://godbolt.org/z/vrfh1fxWK)).
+
+"Adaptor" sublibraries (included in `multi/adaptors/`) have specific dependencies, Boost.Serialization, fftw, blas, lapack, thurst, CUDA
+(which can be installed with `sudo apt install libboost-serialization-dev libfftw3-dev libblas64-dev liblapack64-dev libthrust-dev libcudart11.0` or indiviudually.)
+Which are optional to use.
 
 ## Types
 
