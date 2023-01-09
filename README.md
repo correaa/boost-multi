@@ -390,16 +390,17 @@ A.reextents({4, 4});
 assert( A[0][0] = 1.0 );
 ```
 
-Arrays can be emptied (no elements) with `.clear()` (equivalent to `.reextents({0, ...})`).
+Arrays can be emptied (zero-size) and memory is freed with `.clear()` (equivalent to `.reextents({0, ...})`).
 
-The main purpose of `reextents` is element preservation;
-if element preservation is not desired, a simple assignment (move) from a new array expresses the intention better as it is more efficient.
+The main purpose of `reextents` is element preservation.
+Allocations are not amortized; except for trivial cases, all calls to reextend allocates and deallocates memory.
+If element preservation is not desired, a simple assignment (move) from a new array expresses the intention better as it is more efficient since it doesn't copy preexisiting elements.
 
 ```cpp
 A = multi::array<double, 2>({4, 4});  // like A.reextents({4, 4}) but elements are not preserved.
 ```
 
-An alternative syntax, `.reextents({...}, value)` sets _new_ elements to a certain value.
+An alternative syntax, `.reextents({...}, value)` sets _new_ (not preexisting) elements to a certain value.
 
 Subarrays, or views cannot change their size or be emptied (`A[1].reextents({4})` or `A[1].clear()` will not compile).
 For the same reason, subarrays cannot be assigned from an array or another subarray of a different size.
