@@ -279,32 +279,32 @@ Array objects (`multi::array`), in constrast, own the elements it contains and c
 `array` is initialized by specifying the index extensions (and optionally a default value).
 
 ```cpp
-multi::array<double, 1> A1({3}      , 11.);  // {11., 11., 11.}
+multi::array<double, 1> A1({3}      , 11.0);  // {11., 11., 11.}
 
-multi::array<double, 2> A2({2, 3}   , 22.);  // { {22., 22., 22.}, {22., 22., 22.} }
+multi::array<double, 2> A2({2, 3}   , 22.0);  // { {22., 22., 22.}, {22., 22., 22.} }
 
-multi::array<double, 3> A3({3, 2, 2}, 33.);  // { { { 33., ...}, { ... }, ... } }
+multi::array<double, 3> A3({3, 2, 2}, 33.0);  // { { { 33., ...}, { ... }, ... } }
 ```
 ... or alternatively from a rectangular list.
 
 ```cpp
-multi::array<double, 1> A1 = {1., 2., 3.};
+multi::array<double, 1> A1 = {1.0, 2.0, 3.0};
 assert( num_elements(A1)==3 );
 
 multi::array<double, 2> A2 {
-	 { 1., 2., 3.},
-	 { 4., 5., 6.}
+	 { 1.0, 2.0, 3.0},
+	 { 4.0, 5.0, 6.0}
 };
 
 assert( num_elements(A2) == 2*3);
 
 multi::array<double, 3> const A3 = {
-    {{ 1.2,  0.}, { 2.4, 1.}},
-    {{11.2,  3.}, {34.4, 4.}},
-    {{15.2, 99.}, {32.4, 2.}}
+    {{ 1.2,  0.0}, { 2.4, 1.0}},
+    {{11.2,  3.0}, {34.4, 4.0}},
+    {{15.2, 99.0}, {32.4, 2.0}}
 };
 
-assert( num_elements(A3) == 3*2*2 );
+assert( num_elements(A3) == 3 * 2 * 2 );
 ```
 
 In all cases constness (`const` declaration) is honored in the expected way.
@@ -375,9 +375,9 @@ multi::array<std::vector<double>, 2> B({10, 10});
 B[1] = A[2].moved();  // 10 *elements* of the third row of A is moved into the second row of B.
 ```
 
-## Changing extents (sizes)
+## Change sizes (extents)
 
-Arrays can change their size preserving elements with `reextents`.
+Arrays can change their size while preserving elements with `reextents`.
 
 ```cpp
 multi::array<double, 2> A {
@@ -390,13 +390,19 @@ A.reextents({4, 4});
 assert( A[0][0] = 1.0 );
 ```
 
-Subarrays, or views cannot change their size. `A[1].reextents({4})`.
-The main utility of `reextents` is element preservation.
-If element preservation is not desired, simple (move) assignment from a new array expresses the intention better as it is more efficient.
+Arrays can be emptied (no elements) with `.clear()` (equivalent to `.reextents({0, ...})`).
+
+The main purpose of `reextents` is element preservation;
+if element preservation is not desired, a simple assignment (move) from a new array expresses the intention better as it is more efficient.
 
 ```cpp
-A = multi::array<double, 2>({4, 4});
+A = multi::array<double, 2>({4, 4});  // like A.reextents({4, 4}) but elements are not preserved.
 ```
+
+An alternative syntax, `.reextents({...}, value)` sets _new_ elements to a certain value.
+
+Subarrays, or views cannot change their size or be emptied (`A[1].reextents({4})` or `A[1].clear()` will not compile).
+For the same reason, subarrays cannot be assigned from an array or another subarray of a different size.
 
 ## Iteration
 
