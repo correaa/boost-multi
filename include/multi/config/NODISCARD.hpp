@@ -13,7 +13,7 @@
 	#define NODISCARD(MsG)
 #elif (__has_cpp_attribute(nodiscard) and (__cplusplus>=201703L))
 	#if (__has_cpp_attribute(nodiscard)>=201907) and (__cplusplus>201703L)
-		#define NODISCARD(MsG) [[nodiscard(MsG)]]
+		#define NODISCARD(MsG) [[nodiscard]]  // [[nodiscard(MsG)]] in c++20 empty message is not allowed with paren
 	#else
 		#define NODISCARD(MsG) [[nodiscard]]  // NOLINT(cppcoreguidelines-macro-usage) TODO(correaa) check if this is needed in C++17
 	#endif
