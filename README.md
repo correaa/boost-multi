@@ -45,7 +45,7 @@ The header (and cmake) files will typically end up in `/usr/local/include/multi`
 ```bash
 cd multi
 mkdir -p build && cd build
-cmake ..
+cmake ..  # --install-prefix=$HOME
 sudo cmake --install .
 ```
 
@@ -66,7 +66,7 @@ target_link_library(my_target PUBLIC multi)
 ```
 
 Alternatively to `find_package` the library can be fetched on demand by the CMake project:
-```
+```cmake
 FetchContent_Declare(multi GIT_REPOSITORY https://gitlab.com/correaa/boost-multi.git)
 FetchContent_MakeAvailable(multi)
 ...
@@ -136,7 +136,7 @@ assert( &B[0][1] != &A[0][1]           );
 
 Individual elements can be accessed by the multidimensional indices, either with square bracket (one index at a time) or with parenthesis.
 
-```
+```cpp
 assert(  A(1, 2)  ==  A[1][2] );
 ```
 
@@ -209,7 +209,7 @@ Next we print the elements in a way that corresponds to the logical arrangement:
 
 This will output:
 
-> ```cpp
+> ```
 > 150 16 17 18 19  
 > 30 1 2 3 4  
 > 100 11 12 13 14  
@@ -228,7 +228,7 @@ Pressumably if one can sort over a range, one can perform any other standard alg
 
 If we print the result, we will get:
 
-> ```cpp
+> ```
 > 30 1 2 3 4  
 > 50 6 7 8 9  
 > 100 11 12 13 14  
@@ -252,7 +252,7 @@ This is done in the bidimensional case, by accessing the matrix as a range of co
 
 Which will transform the (original) matrix into:
 
-> ```cpp
+> ```
 > 1 2 3 4 30  
 > 6 7 8 9 50  
 > 11 12 13 14 100  
