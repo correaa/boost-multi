@@ -2169,6 +2169,20 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 		return *this;
 	}
 
+	template<
+		class Range,
+		class = std::enable_if_t<not std::is_base_of_v<basic_array, Range>>,
+		class = decltype(adl_copy_n(adl_begin(std::declval<Range const&>()), std::declval<typename basic_array::size_type>(), std::declval<typename basic_array::iterator>()))
+	>
+	constexpr auto operator=(Range const& rng) &  // TODO(correaa) check that you LHS is not read-only?
+	-> basic_array& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
+		assert(this->size() == rng.size());
+		adl_copy(adl_begin(rng), adl_end(rng), begin());
+		return *this;
+	}
+	template<class Range, class = std::enable_if_t<not std::is_base_of_v<basic_array, Range>>>
+	constexpr auto operator=(Range const& rng) && -> basic_array& {operator=(rng); return *this;}
+
 	template<class It> constexpr auto assign(It first) &&
 	->decltype(adl_copy_n(first, this->size(), std::declval<iterator>()), void()) {
 		return adl_copy_n(first, this->size(), std::move(*this).begin()), void(); }
@@ -2544,6 +2558,13 @@ using array_mref = array_ref<
 	std::decay_t<T>, D,
 	std::move_iterator<Ptr>
 >;
+
+template<class TT, std::size_t N>
+constexpr auto ref(
+	TT(&arr)[N]  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) interact with legacy
+) {
+	return array_ref<typename std::remove_all_extents<TT[N]>::type, std::rank_v<TT[N]>>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) interact with legacy
+}
 
 template<class T, dimensionality_type D, typename Ptr = T*>
 struct array_ptr
