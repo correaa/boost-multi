@@ -1,7 +1,7 @@
 # -*-indent-tabs-mode:nil;c-basic-offset:2;tab-width:4;-*-
-# Copyright 2020-2022 Alfredo A. Correa
+# Copyright 2020-2023 Alfredo A. Correa
 
-image: debian:testing
+image: corraadock/gnudev:v2
 
 variables:
   OMP_NUM_THREADS: 1
