@@ -49,7 +49,7 @@ cmake ..  # --install-prefix=$HOME
 sudo cmake --install .
 ```
 
-_Testing_ the library requires Boost.Test library, installed for example via `sudo apt install cmake libboost-test-dev make`.
+_Testing_ the library requires Boost.Test library, installed for example via `sudo apt install cmake libboost-test-dev make` or `sudo dnf install boost-devel cmake gcc-c++`.
 A CMake build system is provided to automatically run basic tests.
 
 ```bash
@@ -81,7 +81,7 @@ Intel's `icpc` (2021.2.0+) and `icpx` (2022.0.0+),
 Baxter's [`circle`](https://www.circle-lang.org/) (build 168+), and Microsoft's [MSVC](https://visualstudio.microsoft.com/vs/features/cplusplus/) (+19.14 in [conformant mode](https://godbolt.org/z/vrfh1fxWK)).
 
 "Adaptor" sublibraries (included in `multi/adaptors/`) have specific dependencies, Boost.Serialization, fftw, blas, lapack, thurst, CUDA
-(which can be installed with `sudo apt install libboost-serialization-dev libfftw3-dev libblas64-dev liblapack64-dev libthrust-dev libcudart11.0` or indiviudually.)
+(which can be installed with `sudo apt install libboost-serialization-dev libfftw3-dev libblas64-dev liblapack64-dev libthrust-dev libcudart11.0` or `sudo dnf install blas-devel fftw-devel`.)
 Which are optional to use.
 
 ## Types
