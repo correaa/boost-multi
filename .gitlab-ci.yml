@@ -157,18 +157,20 @@ ICPX:
 #       - runner_system_failure
 #       - stuck_or_timeout_failure
 
+    # - export DEBIAN_FRONTEND=noninteractive
+    # - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates gnupg software-properties-common
+    # - apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/debian11/x86_64/3bf863cc.pub
+    # - add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/debian11/x86_64/ /"
+    # - add-apt-repository contrib
+    # - apt-get update
+    # - apt-get -y install cuda
+
 NVCC-NORUN:
   allow_failure: true
   stage: build
+  image: nvcr.io/nvidia/nvhpc:22.11-devel-cuda_multi-ubuntu20.04
   # image: nvidia/cuda:12.0.0-devel-ubuntu22.04
   script:
-    - export DEBIAN_FRONTEND=noninteractive
-    - apt-get update && apt-get install --no-install-recommends -y --quiet ca-certificates gnupg software-properties-common
-    - apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/debian11/x86_64/3bf863cc.pub
-    - add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/debian11/x86_64/ /"
-    - add-apt-repository contrib
-    - apt-get update
-    - apt-get -y install cuda
     - apt-get update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
     - /usr/local/cuda/bin/nvcc --version
