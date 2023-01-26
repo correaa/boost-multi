@@ -146,6 +146,7 @@ NVHPC-2022:
   stage: build
   image: nvcr.io/nvidia/nvhpc:22.11-devel-cuda_multi-ubuntu20.04
   script:
+    - apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-serialization-dev
     - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ --version
     - mkdir build && cd build
     - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ cmake ..
