@@ -4,7 +4,6 @@
 image: corraadock/gnudev:v2
 
 variables:
-  OMP_NUM_THREADS: 1
   GIT_SUBMODULE_STRATEGY: recursive
   CODECOV_TOKEN: "999feb5b-a599-4d02-b9c5-46d977247f3a"
 
@@ -15,7 +14,7 @@ OLDGNUSANICHECKCOV:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet ca-certificates cmake cppcheck curl gcovr g++-9 make lcov libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev pkg-config wget
     - mkdir build && cd build
     - CXX=g++-9 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CPPCHECK="cppcheck;--enable=all;--suppress=missingIncludeSystem;--inline-suppr;--std=c++17;--check-config;--error-exitcode=1" -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1 -fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all --coverage -fno-inline -fno-inline-small-functions -fno-default-inline" -DCMAKE_EXE_LINKER_FLAGS="-lgcov --coverage"
-    - make --jobs=2 || make VERBOSE=1
+    - cmake --build . --parallel=2 || cmake --build . --verbose
     - ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1" ctest -j 2 --output-on-failure -T Test
     - gcovr --xml-pretty --exclude-unreachable-branches --print-summary -o coverage.xml --root ${CI_PROJECT_DIR}
     - lcov --directory . --capture --output-file coverage.info
@@ -45,8 +44,10 @@ NEWGNUSTD20MEMCHK:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y --quiet g++-12 pkg-config cmake make libboost-test-dev libboost-timer-dev libboost-serialization-dev libblas-dev libfftw3-dev valgrind
     - mkdir build && cd build
     - CXX=g++-12 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_FLAGS="-fanalyzer -Wno-analyzer-null-dereference -Wno-analyzer-possible-null-dereference -Wno-analyzer-malloc-leak -Wno-analyzer-use-of-uninitialized-value -Wno-analyzer-use-after-free"
-    - make --jobs=2  || make VERBOSE=1
-    - ctest -j 2 --output-on-failure --overwrite MemoryCheckCommandOptions="-q --tool=memcheck --leak-check=yes --num-callers=51 --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all" -T memcheck
+    - cmake --build . --parallel=2 || cmake --build . --verbose
+    - ulimit -n
+    - ulimit -n 1024  # neededed by valgrind in docker running in Fedora https://stackoverflow.com/questions/75292406/memchk-valgrind-reporting-inconsistent-results-in-different-docker-hosts?noredirect=1#comment132859702_75292406
+    - ctest -j 1 --output-on-failure --overwrite MemoryCheckCommandOptions="-q --tool=memcheck --leak-check=yes --trace-children=yes --leak-check=full --track-origins=yes --gen-suppressions=all" -T memcheck
   needs: ["OLDGNUSANICHECKCOV"]
   retry:
     max: 2
@@ -63,7 +64,7 @@ OLDCLANGTIDYSANI:
     - clang++-13 --version
     - clang-tidy-14 --version
     - CXX=clang++-13 cmake .. -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_CLANG_TIDY="clang-tidy-14" -DCMAKE_CXX_FLAGS="-D_GLIBCXX_DEBUG=1 -D_LIBCPP_DEBUG=1 -fsanitize=address,undefined,pointer-compare,pointer-subtract,float-divide-by-zero -fno-sanitize-recover=all"
-    - make --jobs=2 || make VERBOSE=1
+    - cmake --build . --parallel=2 || cmake --build . --verbose
     - ASAN_OPTIONS="new_delete_type_mismatch=0:check_initialization_order=true:strict_init_order=true:detect_stack_use_after_return=true:detect_odr_violation=1" ctest -j 2 --output-on-failure
   retry:
     max: 2
@@ -80,7 +81,7 @@ NEWCLANGSTD20LINT:
     - mkdir build && cd build
     - clang++ --version
     - CXX=clang++-14 cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_STANDARD=20 -DCMAKE_CXX_CPPLINT="cpplint;--quiet"
-    - make --jobs=2 || make VERBOSE=1
+    - cmake --build . --parallel=2 || cmake --build . --verbose
     - ctest -j 2 --output-on-failure
   needs: ["OLDCLANGTIDYSANI"]
   retry:
@@ -111,7 +112,7 @@ ICPX:
     - mkdir build && cd build
     - icpx --version
     - CXX=icpx cmake .. -DCMAKE_BUILD_TYPE=Release
-    - make --jobs=2 || make VERBOSE=1
+    - cmake --build . --parallel=2 || cmake --build . --verbose
     - ctest --parallel 2 --output-on-failure
   needs: ["OLDGNUSANICHECKCOV"]
   retry:
@@ -150,7 +151,7 @@ NVHPC-2022:
     - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ --version
     - mkdir build && cd build
     - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ cmake ..
-    - make --jobs 2 || make VERBOSE=1
+    - cmake --build . --parallel=2 || cmake --build . --verbose
     - ctest --output-on-failure
   needs: ["OLDGNUSANICHECKCOV"]
   retry:
@@ -178,7 +179,7 @@ NVCC-NORUN:
     - ls /usr/local/cuda-11/bin
     - /usr/local/cuda-11/bin/nvcc --version
     - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
-    - make --jobs=2 || make VERBOSE=1
+    - cmake --build . --parallel=2 || cmake --build . --verbose
     # - ctest -j 2 --output-on-failure  # doesn't run
   needs: ["OLDGNUSANICHECKCOV"]
   retry:
@@ -218,7 +219,7 @@ NVCC-GPU:
     - mkdir build && cd build
     - /usr/local/cuda/bin/nvcc --version
     - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_ARCHITECTURES=70 -DCMAKE_CUDA_FLAGS="-ccbin=g++-9" -DCMAKE_CXX_STANDARD=17
-    - make -j8 -output-sync=recurse
+    - make -j8 -output-sync=recurse || make VERBOSE=1
     - ctest --output-on-failure --timeout 600
     - ../build/include/multi/adaptors/thrust/test/speed.cu.x
     - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
