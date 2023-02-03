@@ -312,7 +312,10 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray_string) {
 	BOOST_REQUIRE( A2.layout()[2][1] == &A2[2][1] - A2.base() );
 	BOOST_REQUIRE( A2.rotated().layout()[1][2] == &A2.rotated()[1][2] - A2.rotated().base() );
 	#endif
+}
 
+BOOST_AUTO_TEST_CASE(array_ref_sizes_assingment) {
+	multi::array_cref<int, 3> const cref(nullptr, {4, 2, 3});
 	{
 		auto [sizes1, sizes2, sizes3] = cref.sizes();
 		BOOST_REQUIRE( sizes1 == 4 );
@@ -328,7 +331,7 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray_string) {
 		BOOST_REQUIRE( sizes3 == 3 );
 	}
 	{
-		multi::size_t sizes1, sizes2, sizes3;
+		multi::size_t sizes1, sizes2, sizes3;  // NOLINT(readability-isolate-declaration,cppcoreguidelines-init-variables) test a bad idiom
 		multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
 
 		BOOST_REQUIRE( sizes1 == 4 );
@@ -352,7 +355,7 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray_string) {
 	// 	BOOST_REQUIRE( sizes3 == 3 );
 	// }
 	{
-		long sizes1, sizes2, sizes3;
+		long sizes1, sizes2, sizes3;  // NOLINT(google-runtime-int,readability-isolate-declaration,cppcoreguidelines-init-variables) test bad idiom
 		multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
 
 		BOOST_REQUIRE( sizes1 == 4 );
@@ -368,7 +371,15 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray_string) {
 	// 	BOOST_REQUIRE( sizes3 == 3 );
 	// }
 	{
-		long long sizes1, sizes2, sizes3;
+		long long sizes1, sizes2, sizes3;  // NOLINT(google-runtime-int,readability-isolate-declaration,cppcoreguidelines-init-variables) test bad idiom
+		multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
+
+		BOOST_REQUIRE( sizes1 == 4 );
+		BOOST_REQUIRE( sizes2 == 2 );
+		BOOST_REQUIRE( sizes3 == 3 );
+	}
+	{
+		int64_t sizes1, sizes2, sizes3;  // NOLINT(readability-isolate-declaration,cppcoreguidelines-init-variables) test bad idiom
 		multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
 
 		BOOST_REQUIRE( sizes1 == 4 );
