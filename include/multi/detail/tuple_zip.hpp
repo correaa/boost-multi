@@ -36,13 +36,13 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 //	tuple<Ts...> tail_;  // TODO(correaa) use [[no_unique_address]] in C++20
 
  public:
-	constexpr auto head() const& -> T0 const& {return           head_ ;}
-	constexpr decltype(auto) head()     && {return std::move(head_);}
-	constexpr auto head()      & -> T0      & {return           head_ ;}
+	constexpr auto head() const& -> T0 const&      { return           head_ ; }
+	constexpr auto head()     && -> decltype(auto) { return std::move(head_); }
+	constexpr auto head()      & -> T0      &      { return           head_ ; }
 
-	constexpr auto tail() const& -> tail_type const& {return static_cast<tail_type const&>(*this);}
-	constexpr auto tail()     && -> tail_type     && {return static_cast<tail_type     &&>(*this);}
-	constexpr auto tail()      & -> tail_type      & {return static_cast<tail_type      &>(*this);}
+	constexpr auto tail() const& -> tail_type const& { return static_cast<tail_type const&>(*this); }
+	constexpr auto tail()     && -> decltype(auto)   { return static_cast<tail_type     &&>(*this); }
+	constexpr auto tail()      & -> tail_type      & { return static_cast<tail_type      &>(*this); }
 
 	constexpr tuple() = default;
 	constexpr tuple(tuple const&) = default;
