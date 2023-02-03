@@ -155,7 +155,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					# -Wlarger-than=<byte-size>  # (disallow large objects types? in executable)
 					-Wliteral-suffix
 					-Wlogical-not-parentheses -Wlogical-op
-					#-Wlong-long
+					#-Wlong-long (C++98 warning)
 					-Wlto-type-mismatch -Wmain -Wmaybe-uninitialized
 					-Wmemset-elt-size -Wmemset-transposed-args
 					-Wmisleading-indentation
@@ -592,7 +592,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wliteral-conversion -Wliteral-range
 					# -Wlocal-type-template-args
 					-Wlogical-not-parentheses -Wlogical-op-parentheses
-					#-Wlong-long
+					#-Wlong-long (C++98 warning)
 					-Wloop-analysis
 					-Wmacro-redefined
 					-Wmain -Wmain-return-type
