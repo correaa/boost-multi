@@ -63,7 +63,7 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	constexpr auto operator=(tuple const&) -> tuple& = default;
 
 	template<class... TTs>
-	constexpr auto operator=(tuple<TTs...> const& other)
+	constexpr auto operator=(tuple<TTs...> const& other)  // NOLINT(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator) signature used for SFINAE
 	->decltype(std::declval<head_type&>() = other.head(), std::declval<tail_type&>() = other.tail(), std::declval<tuple&>()) {
 		head_ = other.head(), tail() = other.tail();
 		return *this;
