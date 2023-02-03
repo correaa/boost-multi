@@ -37,7 +37,7 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 
  public:
 	constexpr auto head() const& -> T0 const& {return           head_ ;}
-	constexpr auto head()     && -> T0     && {return std::move(head_);}
+	constexpr decltype(auto) head()     && {return std::move(head_);}
 	constexpr auto head()      & -> T0      & {return           head_ ;}
 
 	constexpr auto tail() const& -> tail_type const& {return static_cast<tail_type const&>(*this);}
@@ -47,11 +47,27 @@ template<class T0, class... Ts> class tuple<T0, Ts...> : tuple<Ts...> {  // NOLI
 	constexpr tuple() = default;
 	constexpr tuple(tuple const&) = default;
 
+	// template<class... TTs, class = std::enable_if<
+	// 	std::is_constructible_v<head_type, decltype(std::declval<tuple const&>().head())> and
+	// 	std::is_constructible_v<tail_type, decltype(std::declval<tuple const&>().tail())>
+	// >>
+	// constexpr tuple(tuple<TTs...> const& other) : head_{other.head()}, tuple<Ts...>{other.tail()} {}
+
+	// template<class TT0, class... TTs, class = std::enable_if_t<std::is_constructu,int*> =0>
+	// constexpr tuple(tuple<TT0, TTs...> const& other)
+
 	// cppcheck-suppress noExplicitConstructor ; allow bracket init in function argument // NOLINTNEXTLINE(runtime/explicit)
-	constexpr          tuple(T0 head, tuple<Ts...> tail) : tail_type{std::move(tail)   }, head_{std::move(head)} {}
-	constexpr explicit tuple(T0 head, Ts...        tail) : tail_type{std::move(tail)...}, head_{std::move(head)} {}
+	constexpr          tuple(T0 head, tuple<Ts...> tail) : tail_type{std::move(tail)  }, head_{std::move(head)} {}
+	constexpr explicit tuple(T0 head, Ts...        tail) : tail_type{          tail...}, head_{          head } {}
 
 	constexpr auto operator=(tuple const&) -> tuple& = default;
+
+	template<class... TTs>
+	constexpr auto operator=(tuple<TTs...> const& other)
+	->decltype(std::declval<head_type&>() = other.head(), std::declval<tail_type&>() = other.tail(), std::declval<tuple&>()) {
+		head_ = other.head(), tail() = other.tail();
+		return *this;
+	}
 
 	constexpr auto operator==(tuple const& other) const -> bool {return head_ == other.head_ and tail() == other.tail();}
 	constexpr auto operator!=(tuple const& other) const -> bool {return head_ != other.head_ or  tail() != other.tail();}
@@ -130,10 +146,13 @@ template<class T0, class... Ts> constexpr auto mk_tuple(T0 head, Ts... tail) {
 	return tuple<T0, Ts...>(std::move(head), std::move(tail)...);
 }
 
+template<class T0, class... Ts> constexpr auto tie(T0& head, Ts&... tail) {
+	return tuple<T0&, Ts&...>(head, tail...);
+}
+
 template<class T0, class... Ts> constexpr auto ht_tuple(T0 head, tuple<Ts...> tail) {
 	return tuple(std::move(head), std::move(tail));
 }
-
 
 template<class T0, class Tuple> struct tuple_prepend;
 
@@ -330,5 +349,8 @@ constexpr auto tuple_zip(T1&& tup1, T2&& tup2, T3&& tup3, T4&& tup4) {
 }
 
 }  // end namespace detail
+
+using detail::tie;
+
 }  // end namespace boost::multi
 #endif
