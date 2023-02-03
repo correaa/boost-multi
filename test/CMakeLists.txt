@@ -155,7 +155,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 					# -Wlarger-than=<byte-size>  # (disallow large objects types? in executable)
 					-Wliteral-suffix
 					-Wlogical-not-parentheses -Wlogical-op
-					-Wlong-long -Wlto-type-mismatch -Wmain -Wmaybe-uninitialized
+					#-Wlong-long
+					-Wlto-type-mismatch -Wmain -Wmaybe-uninitialized
 					-Wmemset-elt-size -Wmemset-transposed-args
 					-Wmisleading-indentation
 					# -Wmismatched-dealloc -Wmismatched-new-delete (gcc 11, not in gcc 10)
@@ -199,7 +200,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wshift-count-negative -Wshift-count-overflow -Wshift-negative-value -Wshift-overflow  #=1 -Wshift-overflow=<0,2>
 					-Wsign-compare -Wsign-conversion -Wsign-promo
 					-Wsized-deallocation
-					-Wsizeof-array-argument 
+					-Wsizeof-array-argument
 					# -Wsizeof-array-div (gcc 11, not in gcc 10)
 					# -Wsizeof-pointer-div (gcc 8, not in gcc 7) 
 					-Wsizeof-pointer-memaccess
@@ -591,7 +592,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wliteral-conversion -Wliteral-range
 					# -Wlocal-type-template-args
 					-Wlogical-not-parentheses -Wlogical-op-parentheses
-					-Wlong-long
+					#-Wlong-long
 					-Wloop-analysis
 					-Wmacro-redefined
 					-Wmain -Wmain-return-type
