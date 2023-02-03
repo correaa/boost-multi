@@ -260,14 +260,14 @@ BOOST_AUTO_TEST_CASE(array_ref_1D) {
 
 BOOST_AUTO_TEST_CASE(array_ref_original_tests_carray) {
 	double darr[4][5] = {{1.0, 2.0}, {2.0, 3.0}};  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) test legacy type
-	multi::array_ref<double, 2               >  ref(&darr[0][0], {4, 5});
-	multi::array_ref<double, 2, double const*> cref(&darr[0][0], {4, 5});
-	multi::array_ref<double const, 2> crefc(&darr[0][0], {4, 5});
-	multi::array_cref<double, 2> ref2(&darr[0][0], {4, 5});
+	multi::array_ref <double      , 2               >  ref (&darr[0][0], {4, 5});
+	multi::array_ref <double      , 2, double const*> cref (&darr[0][0], {4, 5});
+	multi::array_ref <double const, 2               > crefc(&darr[0][0], {4, 5});
+	multi::array_cref<double      , 2               >  ref2(&darr[0][0], {4, 5});
 
-	BOOST_REQUIRE( &ref[1][2] == &cref[1][2] );
+	BOOST_REQUIRE( &ref[1][2] == &cref [1][2] );
 	BOOST_REQUIRE( &ref[1][2] == &crefc[1][2] );
-	BOOST_REQUIRE( &ref[1][2] == &ref2[1][2] );
+	BOOST_REQUIRE( &ref[1][2] == & ref2[1][2] );
 
 	ref[1][1] = 2.0;
 
@@ -312,6 +312,77 @@ BOOST_AUTO_TEST_CASE(array_ref_original_tests_const_carray_string) {
 	BOOST_REQUIRE( A2.layout()[2][1] == &A2[2][1] - A2.base() );
 	BOOST_REQUIRE( A2.rotated().layout()[1][2] == &A2.rotated()[1][2] - A2.rotated().base() );
 	#endif
+
+	{
+		auto [sizes1, sizes2, sizes3] = cref.sizes();
+		BOOST_REQUIRE( sizes1 == 4 );
+		BOOST_REQUIRE( sizes2 == 2 );
+		BOOST_REQUIRE( sizes3 == 3 );
+	}
+	{
+		auto sizes1 = std::get<0>(cref.sizes());
+		auto sizes2 = std::get<1>(cref.sizes());
+		auto sizes3 = std::get<2>(cref.sizes());
+		BOOST_REQUIRE( sizes1 == 4 );
+		BOOST_REQUIRE( sizes2 == 2 );
+		BOOST_REQUIRE( sizes3 == 3 );
+	}
+	{
+		multi::size_t sizes1, sizes2, sizes3;
+		multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
+
+		BOOST_REQUIRE( sizes1 == 4 );
+		BOOST_REQUIRE( sizes2 == 2 );
+		BOOST_REQUIRE( sizes3 == 3 );
+	}
+	// {
+	// 	int sizes1, sizes2, sizes3;
+	// 	multi::tie(sizes1, sizes2, sizes3) = cref.sizes(); // may give warning
+
+	// 	BOOST_REQUIRE( sizes1 == 4 );
+	// 	BOOST_REQUIRE( sizes2 == 2 );
+	// 	BOOST_REQUIRE( sizes3 == 3 );
+	// }
+	// {
+	// 	unsigned int sizes1, sizes2, sizes3;
+	// 	multi::tie(sizes1, sizes2, sizes3) = cref.sizes(); // may give warning
+
+	// 	BOOST_REQUIRE( sizes1 == 4 );
+	// 	BOOST_REQUIRE( sizes2 == 2 );
+	// 	BOOST_REQUIRE( sizes3 == 3 );
+	// }
+	{
+		long sizes1, sizes2, sizes3;
+		multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
+
+		BOOST_REQUIRE( sizes1 == 4 );
+		BOOST_REQUIRE( sizes2 == 2 );
+		BOOST_REQUIRE( sizes3 == 3 );
+	}
+	// {
+	// 	unsigned long sizes1, sizes2, sizes3;
+	// 	multi::tie(sizes1, sizes2, sizes3) = cref.sizes();  // may give warning
+
+	// 	BOOST_REQUIRE( sizes1 == 4 );
+	// 	BOOST_REQUIRE( sizes2 == 2 );
+	// 	BOOST_REQUIRE( sizes3 == 3 );
+	// }
+	{
+		long long sizes1, sizes2, sizes3;
+		multi::tie(sizes1, sizes2, sizes3) = cref.sizes();
+
+		BOOST_REQUIRE( sizes1 == 4 );
+		BOOST_REQUIRE( sizes2 == 2 );
+		BOOST_REQUIRE( sizes3 == 3 );
+	}
+	// {
+	// 	unsigned long long sizes1, sizes2, sizes3;
+	// 	multi::tie(sizes1, sizes2, sizes3) = cref.sizes();  // may give warning
+
+	// 	BOOST_REQUIRE( sizes1 == 4 );
+	// 	BOOST_REQUIRE( sizes2 == 2 );
+	// 	BOOST_REQUIRE( sizes3 == 3 );
+	// }
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_rebuild_2D) {
