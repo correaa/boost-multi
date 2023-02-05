@@ -12,7 +12,7 @@
 namespace multi = boost::multi;
 using complex = thrust::complex<double>;
 
-typedef boost::mpl::list<double, complex> test_types;
+using test_types = boost::mpl::list<double, complex>;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(thrust_universal_speed, T, test_types) {
 
