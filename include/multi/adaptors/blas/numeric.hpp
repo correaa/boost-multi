@@ -5,6 +5,7 @@
 #define MULTI_ADAPTORS_BLAS_NUMERIC_HPP
 #pragma once
 
+#include "../../adaptors/complex.hpp"
 #include "../../array_ref.hpp"
 #include "../../complex.hpp"
 
@@ -12,13 +13,15 @@
 
 #include "numeric/is_complex.hpp"
 
+#include <multi/adaptors/complex.hpp>
+
 namespace boost {
 namespace multi::blas {
 
 template<class T> struct complex_dummy {T real; T imag;};
 
 template<
-	class A, typename Complex = typename std::decay_t<A>::element, typename T=typename Complex::value_type,
+	class A, typename Complex = typename std::decay_t<A>::element, typename T=typename multi::complex_traits<Complex>::real_type,
 	class=std::enable_if_t<blas::numeric::is_complex_of<Complex, T>::value>
 >
 auto real(A&& array)
@@ -26,7 +29,7 @@ auto real(A&& array)
 	return std::forward<A>(array).template reinterpret_array_cast<complex_dummy<T>>().template member_cast<T>(&complex_dummy<T>::real);}
 
 template<
-	class A, class Complex = typename std::decay_t<A>::element_type, typename T=typename Complex::value_type,
+	class A, class Complex = typename std::decay_t<A>::element_type, typename T=typename multi::complex_traits<Complex>::real_type,
 	class=std::enable_if_t<blas::numeric::is_complex_of<Complex, T>::value>
 >
 auto imag(A&& array)
@@ -115,9 +118,12 @@ public:
 	constexpr auto conj() const& {return adl_conj(operator decay_type());}
 
 	template<class T = void*>
-	friend constexpr auto imag(involuted const& self)
-	->decltype(adl_imag(std::declval<decay_type>())) {
-		return adl_imag(self.operator decay_type()); }
+	friend constexpr auto imag(involuted const& self) {
+	//->decltype(imag(std::declval<decay_type>())) {
+	 	return imag(self.operator decay_type()); }
+
+	// ->decltype(adl_imag(std::declval<decay_type>())) {
+	// 	return adl_imag(self.operator decay_type()); }
 };
 
 #if defined(__cpp_deduction_guides)
@@ -200,7 +206,8 @@ struct conjugate {
 	template<class Complex>
 	auto operator()(Complex&& zee) const -> decltype(auto) {
 	//  using std::conj;  /*for doubles?*/
-		return multi::adl_conj(std::forward<Complex>(zee));  // this is needed by icc
+		return conj(std::forward<Complex>(zee));
+	//	return multi::adl_conj(std::forward<Complex>(zee));  // this is needed by icc
 	}
 };
 

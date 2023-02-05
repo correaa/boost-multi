@@ -14,38 +14,38 @@ using float_types = boost::mpl::list<float, double>;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(complex_ctors, T, float_types) {
 	{
-		multi::complex<T> a = T{1.0} + multi::imaginary<T>{T{2.0}};
-		BOOST_REQUIRE( real(a) == T{1.0});
-		BOOST_REQUIRE( imag(a) == T{2.0});
+		multi::complex<T> const zeta = T{1.0} + multi::imaginary<T>{T{2.0}};
+		BOOST_REQUIRE( real(zeta) == T{1.0});
+		BOOST_REQUIRE( imag(zeta) == T{2.0});
 	}
-	{
-		multi::complex<T> a = T{1.0} + T{2.0} * multi::imaginary<T>::i;
-		BOOST_REQUIRE( real(a) == T{1.0});
-		BOOST_REQUIRE( imag(a) == T{2.0});
-	}
+	// {
+	// 	multi::complex<T> zeta = T{1.0} + T{2.0} * multi::imaginary<T>::i;
+	// 	BOOST_REQUIRE( real(zeta) == T{1.0});
+	// 	BOOST_REQUIRE( imag(zeta) == T{2.0});
+	// }
 	// 	{
-	//		multi::complex<T> a = T{1.0} + multi::imaginary{T{2.0}};
-	// 		BOOST_REQUIRE( real(a) == T{1.0});
-	// 		BOOST_REQUIRE( imag(a) == T{2.0});
+	//		multi::complex<T> zeta = T{1.0} + multi::imaginary{T{2.0}};
+	// 		BOOST_REQUIRE( real(zeta) == T{1.0});
+	// 		BOOST_REQUIRE( imag(zeta) == T{2.0});
 	// 	}
 }
 
 BOOST_AUTO_TEST_CASE(double_complex_literals) {
-	using namespace multi::literals;
-	multi::complex<double> a = 1.0 + 2.0_i;
-	//	multi::complex<double> a = 1.0 + 2.0i;  // literal i is not standard
+	using multi::literals::operator""_I;
+	multi::complex<double> const zeta = 1.0 + 2.0_I;
+	//	multi::complex<double> zeta = 1.0 + 2.0i;  // literal i is not standard
 
-	BOOST_REQUIRE( real(a) == 1.0 );
-	BOOST_REQUIRE( imag(a) == 2.0 );
+	BOOST_REQUIRE( real(zeta) == 1.0 );
+	BOOST_REQUIRE( imag(zeta) == 2.0 );
 }
 
 BOOST_AUTO_TEST_CASE(float_complex_literals) {
-	using namespace multi::literals;
-	//  multi::complex<float> a = 1.0f + 2.0  _i;  // may induced an undesired or forbidden conversion
-	//  multi::complex<float> a = 1.0f + 2.0 f_i;  // literal f_i is not standard
-	//	multi::complex<float> a = 1.0f + 2.0_f_i;
-	multi::complex<float> a = 1.0f + 2.0_if;
+	using multi::literals::operator""_IF;
+	//  multi::complex<float> const zeta = 1.0f + 2.0  _i;  // may induced an undesired or forbidden conversion
+	//  multi::complex<float> const zeta = 1.0f + 2.0 f_i;  // literal f_i is not standard
+	//	multi::complex<float> const zeta = 1.0f + 2.0_f_i;
+	multi::complex<float> const zeta = 1.0F + 2.0_IF;
 
-	BOOST_REQUIRE( real(a) == 1.0f );
-	BOOST_REQUIRE( imag(a) == 2.0f );
+	BOOST_REQUIRE( real(zeta) == 1.0F );
+	BOOST_REQUIRE( imag(zeta) == 2.0F );
 }
