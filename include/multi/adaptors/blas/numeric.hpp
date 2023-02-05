@@ -21,7 +21,7 @@ namespace multi::blas {
 template<class T> struct complex_dummy {T real; T imag;};
 
 template<
-	class A, typename Complex = typename std::decay_t<A>::element, typename T=typename multi::complex_traits<Complex>::real_type,
+	class A, typename Complex = typename std::decay_t<A>::element, typename T=typename Complex::value_type,
 	class=std::enable_if_t<blas::numeric::is_complex_of<Complex, T>::value>
 >
 auto real(A&& array)
@@ -29,7 +29,7 @@ auto real(A&& array)
 	return std::forward<A>(array).template reinterpret_array_cast<complex_dummy<T>>().template member_cast<T>(&complex_dummy<T>::real);}
 
 template<
-	class A, class Complex = typename std::decay_t<A>::element_type, typename T=typename multi::complex_traits<Complex>::real_type,
+	class A, class Complex = typename std::decay_t<A>::element_type, typename T=typename Complex::value_type,
 	class=std::enable_if_t<blas::numeric::is_complex_of<Complex, T>::value>
 >
 auto imag(A&& array)
