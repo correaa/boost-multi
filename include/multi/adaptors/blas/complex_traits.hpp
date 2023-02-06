@@ -5,6 +5,11 @@
 #define MULTI_ADAPTORS_BLAS_COMPLEX_TRAITS_HPP
 #pragma once
 
+#include<complex>  // for std::complex
+#ifdef __NVCC__
+#include<thrust/complex.h>
+#endif
+
 namespace boost::multi::blas {
 
 template<class Complex>
@@ -15,9 +20,18 @@ struct complex_traits {
 
 template<class T>
 struct complex_traits<std::complex<T>> {
-	using real_type = typename std::complex<T>::value_type;
+	using real_type = typename ::std::complex<T>::value_type;
+	constexpr static auto imaginary_unit() { return ::std::complex<T>{0, 1}; }
+};
+
+#ifdef __NVCC__
+template<class T>
+struct complex_traits<::thrust::complex<T>> {
+	using real_type = typename ::thrust::complex<T>::value_type;
 	constexpr static auto imaginary_unit() { return std::complex<T>{0, 1}; }
 };
+#endif
+
 
 }  // end namespace boost::multi::blas
 
