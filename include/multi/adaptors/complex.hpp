@@ -136,6 +136,16 @@ struct [[nodiscard]] complex {
 	friend constexpr auto norm(complex self) {
 		return self._real*self._real + self._imag*self._imag;  // TODO(correaa) revise this, use more exact formula
 	}
+	friend constexpr auto abs(complex self) {
+	//  return hypot(z.real(), z.imag());
+		using std::sqrt;
+		return sqrt(self._real*self._real + self._real*self._real);  // bad! according to NR
+		// using std::abs;
+		// return self._real > self._imag?
+		// 		 abs(self._real)*sqrt(real_type{1} + (self._imag/self._real)*(self._imag/self._real))
+		// 		:abs(self._imag)*sqrt(real_type{1} + (self._real/self._imag)*(self._real/self._imag))
+		// ;
+	}
 
 	[[nodiscard]] constexpr auto real() const -> T { return _real; }
 	[[nodiscard]] constexpr auto imag() const -> T { return _imag; }

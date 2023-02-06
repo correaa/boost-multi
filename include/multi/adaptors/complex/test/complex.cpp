@@ -86,3 +86,10 @@ BOOST_AUTO_TEST_CASE(float_complex_aggregate) {
 	// BOOST_REQUIRE( real(zeta) == 1.0F );
 	// BOOST_REQUIRE( imag(zeta) == 2.0F );
 }
+
+BOOST_AUTO_TEST_CASE(double_complex_abs) {
+	using multi::literals::operator""_I;
+	multi::complex<double> const zeta = 1.0 + 2.0_I;
+
+	BOOST_REQUIRE( abs(zeta) <= std::max(real(zeta), imag(zeta)) );
+}
