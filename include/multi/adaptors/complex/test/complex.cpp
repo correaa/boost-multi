@@ -30,7 +30,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(complex_ctors, T, float_types) {
 	// 		BOOST_REQUIRE( zeta.imag() == T{2.0});
 	// 	}
 }
-#endif
 
 BOOST_AUTO_TEST_CASE(double_complex_literals) {
 	using multi::literals::operator""_I;
@@ -40,6 +39,7 @@ BOOST_AUTO_TEST_CASE(double_complex_literals) {
 	BOOST_REQUIRE( zeta.real() == 1.0 );
 	BOOST_REQUIRE( zeta.imag() == 2.0 );
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(imaginary_equal) {
 	using multi::literals::operator""_I;
