@@ -101,6 +101,9 @@ struct [[nodiscard]] complex {
 	friend constexpr auto operator+(complex z1, complex z2) {return complex{z1._real + z2._real, z1._imag + z2._imag};}
 	friend constexpr auto operator-(complex z1, complex z2) {return complex{z1._real - z2._real, z1._imag - z2._imag};}
 
+	constexpr auto operator+=(complex other) -> complex& {_real += other._real; _imag += other._imag; return *this;}
+	constexpr auto operator-=(complex other) -> complex& {_real -= other._real; _imag -= other._imag; return *this;}
+
 	friend constexpr auto operator*(complex z1, complex z2) {
 		return complex{z1._real * z2._real - z1._imag * z2._imag, z1._real * z2._imag + z1._imag * z2._real};
 	}

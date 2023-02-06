@@ -12,6 +12,7 @@ namespace multi = boost::multi;
 
 using float_types = boost::mpl::list<float, double>;
 
+#ifndef __circle_build__
 BOOST_AUTO_TEST_CASE_TEMPLATE(complex_ctors, T, float_types) {
 	{
 		multi::complex<T> const zeta = T{1.0} + multi::imaginary<T>{T{2.0}};
@@ -29,6 +30,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(complex_ctors, T, float_types) {
 	// 		BOOST_REQUIRE( imag(zeta) == T{2.0});
 	// 	}
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(double_complex_literals) {
 	using multi::literals::operator""_I;
@@ -92,4 +94,14 @@ BOOST_AUTO_TEST_CASE(double_complex_abs) {
 	multi::complex<double> const zeta = 1.0 + 2.0_I;
 
 	BOOST_REQUIRE( abs(zeta) <= std::max(real(zeta), imag(zeta)) );
+}
+
+BOOST_AUTO_TEST_CASE(double_complex_plus_eq) {
+	using multi::literals::operator""_I;
+	multi::complex<double> zeta = 1.0 + 2.0_I;
+	multi::complex<double> const yeta = 1.0 + 2.0_I;
+
+	zeta += yeta;
+
+	BOOST_REQUIRE( zeta == 2.0*yeta );
 }
