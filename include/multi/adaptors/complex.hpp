@@ -20,6 +20,8 @@ template<class T>
 struct [[nodiscard]] imaginary {
 	T _value;  // NOLINT(misc-non-private-member-variables-in-classes) I want the class to be an aggregate
 
+	using value_type = T;
+
 	//	constexpr explicit imaginary(T value) : value_{value} {}
 	template<class U>
 	friend constexpr auto operator+(U real, imaginary<U> imag) -> complex<U>;
@@ -31,6 +33,9 @@ struct [[nodiscard]] imaginary {
 	[[nodiscard]] constexpr auto operator/(imaginary other) const { return _value / other._value; }
 	[[nodiscard]] constexpr auto operator+(imaginary other) const { return imaginary{_value + other._value}; }
 	[[nodiscard]] constexpr auto operator-(imaginary other) const { return imaginary{_value + other._value}; }
+
+	[[nodiscard]] constexpr auto operator==(imaginary const& other) const { return _value == other._value; };
+	[[nodiscard]] constexpr auto operator!=(imaginary const& other) const { return _value != other._value; };
 };
 
 template<>
@@ -69,6 +74,8 @@ template<class T>
 struct [[nodiscard]] complex {
 	using real_type = T;
 
+//  using value_type /*[[deprecated("reason")]]*/ = T;
+
 	real_type _real;  // NOLINT(misc-non-private-member-variables-in-classes) complex should be an aggregate class
 	real_type _imag;  // NOLINT(misc-non-private-member-variables-in-classes) complex should be an aggregate class
 
@@ -85,30 +92,57 @@ struct [[nodiscard]] complex {
 	auto operator==(complex const& other) const {return _real == other._real and _imag == other._imag;}
 	auto operator!=(complex const& other) const {return _real != other._real or  _imag != other._imag;}
 
+//	auto operator=(complex const&) -> complex& = default;
+	auto operator=(real_type re) -> complex& {(*this) = complex{re, real_type{0.0}}; return *this;}
+
+	friend constexpr auto operator-(complex self) {return complex{-self._real, -self._imag};}
+	friend constexpr auto operator+(complex self) {return complex{+self._real, +self._imag};}
+
+	friend constexpr auto operator+(complex z1, complex z2) {return complex{z1._real + z2._real, z1._imag + z2._imag};}
+	friend constexpr auto operator-(complex z1, complex z2) {return complex{z1._real - z2._real, z1._imag - z2._imag};}
+
+	friend constexpr auto operator*(complex z1, complex z2) {
+		return complex{z1._real * z2._real - z1._imag * z2._imag, z1._real * z2._imag + z1._imag * z2._real};
+	}
+	friend constexpr auto operator/(complex z1, complex z2) {
+		auto const nrm = norm(z2);
+		return complex{
+			(z1._real * z2._real + z1._imag * z2._imag)/nrm,
+			(z1._imag * z2._real - z1._real * z2._imag)/nrm
+		};
+
+		// typedef typename detail::promoted_numerical_type<T0, T1>::type T;
+
+		// // Find `abs` by ADL.
+		// using std::abs;
+
+		// T s = abs(y.real()) + abs(y.imag());
+
+		// T oos = T(1.0) / s;
+
+		// T ars = x.real() * oos;
+		// T ais = x.imag() * oos;
+		// T brs = y.real() * oos;
+		// T bis = y.imag() * oos;
+
+		// s = (brs * brs) + (bis * bis);
+
+		// oos = T(1.0) / s;
+
+		// complex<T> quot( ((ars * brs) + (ais * bis)) * oos
+		// 				, ((ais * brs) - (ars * bis)) * oos);
+		// return quot;
+	}
+	friend constexpr auto norm(complex self) {
+		return self._real*self._real + self._imag*self._imag;  // TODO(correaa) revise this, use more exact formula
+	}
+
 	[[nodiscard]] constexpr auto real() const -> T { return _real; }
 	[[nodiscard]] constexpr auto imag() const -> T { return _imag; }
 };
 
 template<class U>
 constexpr auto operator+(U real, imaginary<U> imag) -> complex<U> { return {real, imag._value}; }
-
-template<
-	class Complex,
-	class RealType = typename Complex::real_type,
-	class IU = decltype(Complex{0, 1})
->
-struct complex_traits {
-	using real_type = typename Complex::real_type;
-	constexpr static auto imaginary_unit() { return Complex{0, 1}; }
-};
-
-template<class T>
-struct complex_traits<
-	std::complex<T>, void, void
-> {
-	using real_type = typename std::complex<T>::value_type;
-	constexpr static auto imaginary_unit() { return std::complex<T>{0, 1}; }
-};
 
 }  // end namespace boost::multi
 #endif

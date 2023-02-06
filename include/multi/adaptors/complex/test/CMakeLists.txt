@@ -86,6 +86,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 			STREQUAL
 			"nvcc"
 		   )
+		AND (NOT DEFINED ENABLE_CIRCLE)
 	)
 		target_compile_options(
 			${TEST_EXE}

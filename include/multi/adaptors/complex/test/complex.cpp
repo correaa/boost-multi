@@ -39,6 +39,21 @@ BOOST_AUTO_TEST_CASE(double_complex_literals) {
 	BOOST_REQUIRE( imag(zeta) == 2.0 );
 }
 
+BOOST_AUTO_TEST_CASE(imaginary_equal) {
+	using multi::literals::operator""_I;
+	multi::imaginary<double> const zeta = 2.0_I;
+
+	BOOST_REQUIRE( zeta == multi::imaginary<double>{2.0} );
+}
+
+BOOST_AUTO_TEST_CASE(imaginary_assign) {
+	using multi::literals::operator""_I;
+	multi::imaginary<double> zeta;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
+	zeta = 2.0_I;
+
+	BOOST_REQUIRE( zeta == multi::imaginary<double>{2.0} );
+}
+
 BOOST_AUTO_TEST_CASE(float_complex_literals) {
 	using multi::literals::operator""_IF;
 	//  multi::complex<float> const zeta = 1.0f + 2.0  _i;  // may induced an undesired or forbidden conversion
@@ -48,4 +63,26 @@ BOOST_AUTO_TEST_CASE(float_complex_literals) {
 
 	BOOST_REQUIRE( real(zeta) == 1.0F );
 	BOOST_REQUIRE( imag(zeta) == 2.0F );
+}
+
+BOOST_AUTO_TEST_CASE(float_complex_assignment) {
+	using multi::literals::operator""_IF;
+	multi::complex<float> zeta;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
+
+	zeta = 1.0F + 2.0_IF;
+	BOOST_REQUIRE( real(zeta) == 1.0F );
+	BOOST_REQUIRE( imag(zeta) == 2.0F );
+
+	zeta = 1.0F;
+	BOOST_REQUIRE( real(zeta) == 1.0F );
+	BOOST_REQUIRE( imag(zeta) == 0.0F );
+}
+
+BOOST_AUTO_TEST_CASE(float_complex_aggregate) {
+	static_assert( std::is_aggregate_v<multi::complex<float>> );
+
+	// auto const c = multi::complex<float>{._real = 1.0, ._imag = 2.0};
+
+	// BOOST_REQUIRE( real(zeta) == 1.0F );
+	// BOOST_REQUIRE( imag(zeta) == 2.0F );
 }

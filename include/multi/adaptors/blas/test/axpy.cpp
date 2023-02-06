@@ -15,7 +15,7 @@
 namespace multi = boost::multi;
 namespace blas  = multi::blas;
 
-using complex = std::complex<double>;
+using complex = multi::complex<double>;
 
 BOOST_AUTO_TEST_CASE(multi_blas_axpy_real) {
 	multi::array<double, 2> arr = {
@@ -89,7 +89,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex_as_operator_minus_equal) {
 	};
 	auto const                     AC = arr;
 	multi::array<complex, 1> const x  = arr[2];  // NOLINT(readability-identifier-length) BLAS naming
-	arr[1] -= blas::axpy(2.0, x);  // zaxpy (2. is promoted to 2+I*0 internally and automatically)
+	arr[1] -= blas::axpy(complex{2.0, 0.0}, x);  // zaxpy (2. is promoted to 2+I*0 internally and automatically)
 	BOOST_REQUIRE( arr[1][2] == -2.0*x[2] + AC[1][2] );
 }
 
@@ -117,8 +117,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_operator_minus) {
 
 	using blas::operators::operator-;
 
-	BOOST_REQUIRE( (x - y)[0] == 0.0 );
-	BOOST_REQUIRE( (y - x)[0] == 0.0 );
+	BOOST_REQUIRE( (x - y)[0] == complex{} );
+	BOOST_REQUIRE( (y - x)[0] == complex{} );
 
 	using blas::operators::operator+;
 
@@ -133,8 +133,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_operator_minus) {
 		{1.0, 0.0},
 		{2.0, 0.0},
 	};
-	BOOST_REQUIRE( (arr[0] - arr2)[0] == 0.0 );
-	BOOST_REQUIRE( (arr[0] - arr2)[1] == 0.0 );
+	BOOST_REQUIRE( (arr[0] - arr2)[0] == complex{} );
+	BOOST_REQUIRE( (arr[0] - arr2)[1] == complex{} );
 
 	multi::array<complex, 1> X = {  /* NOLINT(readability-identifier-length) BLAS naming */
 		{10.0, 0.0},
@@ -151,5 +151,5 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_operator_minus) {
 
 	using blas::operators::operator-=;
 	X -= Y;
-	BOOST_REQUIRE( X[0] == 0.0 );
+	BOOST_REQUIRE( X[0] == complex{} );
 }
