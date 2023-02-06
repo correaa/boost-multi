@@ -103,5 +103,7 @@ BOOST_AUTO_TEST_CASE(double_complex_plus_eq) {
 
 	zeta += yeta;
 
-	BOOST_REQUIRE( zeta == 2.0*yeta );
+	BOOST_REQUIRE( zeta == 2.0 * yeta );
+	BOOST_REQUIRE( zeta == yeta / 0.5 );
+
 }

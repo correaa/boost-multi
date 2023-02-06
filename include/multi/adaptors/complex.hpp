@@ -81,7 +81,10 @@ struct [[nodiscard]] complex {
 
 	template<class U>
 	friend constexpr auto operator+(U real, imaginary<U> imag) -> complex<U>;
-	friend constexpr auto operator*(T scale, complex self) { return complex{scale * self._real, scale * self._imag}; }
+
+	friend constexpr auto operator*(real_type scale, complex self) { return complex{scale * self._real, scale * self._imag}; }
+	friend constexpr auto operator/(complex self, real_type scale) { return complex{self._real / scale, self._imag / scale}; }
+
 	friend constexpr auto operator+(T real, complex self) { return complex{real + self._real, self._imag}; }
 	friend constexpr auto operator-(T real, complex self) { return complex{real - self._real, self._imag}; }
 
