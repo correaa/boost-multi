@@ -8,6 +8,7 @@
 #include "../../array_ref.hpp"
 
 #include "../../adaptors/blas/core.hpp"
+#include "../../adaptors/complex.hpp"
 
 #include "../../config/NODISCARD.hpp"
 
@@ -25,7 +26,7 @@ auto axpy_n(Context&& ctxt, typename It1::value_type alpha, It1 first, Size n, O
 ->decltype(std::forward<Context>(ctxt).axpy(n, &alpha, first.base(), first.stride(), d_first.base(), d_first.stride()), d_first + n) {
 	return std::forward<Context>(ctxt).axpy(n, &alpha, base(first) , stride(first) , base(d_first) , stride(d_first)) , d_first + n; }
 
-template<class X1D, class Y1D, typename = decltype( std::declval<Y1D&&>()[0] = 0. )>
+template<class X1D, class Y1D, typename = decltype( std::declval<Y1D&&>()[0] = 0.0 )>
 auto axpy(typename X1D::element alpha, X1D const& x, Y1D&& y)  // NOLINT(readability-identifier-length) conventional BLAS names
 ->decltype(/*axpy_n(alpha, x.begin(), x.size(), y.begin()),*/ axpy_n(alpha, x.begin(), size(x), y.begin()), std::forward<Y1D>(y)) {
 	assert(size(x)==size(y)); // intel doesn't like ADL in deduced/sfinaed return types // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : bug in clang-tidy https://reviews.llvm.org/D31130
@@ -95,8 +96,13 @@ auto axpy(Scalar a, X1D const& x)  // NOLINT(readability-identifier-length) conv
 
 namespace operators {
 
-template<class X1D, class Y1D> auto operator+=(X1D&& x, Y1D const& other) DECLRETURN(axpy(static_cast<typename Y1D::value_type>(+1.0), other, std::forward<X1D>(x)))  // NOLINT(fuchsia-default-arguments-calls,readability-identifier-length) conventional name in BLAS
-template<class X1D, class Y1D> auto operator-=(X1D&& x, Y1D const& other) DECLRETURN(axpy(static_cast<typename Y1D::value_type>(-1.0), other, std::forward<X1D>(x)))  // NOLINT(fuchsia-default-arguments-calls,readability-identifier-length) conventional name in BLAS
+template<class T> struct algebraic_traits {static auto one() {return T{1.0};}};
+
+template<class T> struct algebraic_traits<std  ::complex<T>> {static auto one() {return std  ::complex<T>{T{1}, T{0}};}};
+template<class T> struct algebraic_traits<multi::complex<T>> {static auto one() {return multi::complex<T>{T{1}, T{0}};}};
+
+template<class X1D, class Y1D> auto operator+=(X1D&& x, Y1D const& other) JUSTRETURN(axpy(+algebraic_traits<typename Y1D::value_type>::one(), other, std::forward<X1D>(x)))  // NOLINT(fuchsia-default-arguments-calls,readability-identifier-length) conventional name in BLAS
+template<class X1D, class Y1D> auto operator-=(X1D&& x, Y1D const& other) JUSTRETURN(axpy(-algebraic_traits<typename Y1D::value_type>::one(), other, std::forward<X1D>(x)))  // NOLINT(fuchsia-default-arguments-calls,readability-identifier-length) conventional name in BLAS
 
 template<class X1D, class Y1D> auto operator+(X1D const& x, Y1D const& y) -> std::decay_t<decltype(x.decay())> {auto X = x.decay(); X += y; return X;}  // NOLINT(readability-identifier-length) conventional name in BLAS
 template<class X1D, class Y1D> auto operator-(X1D const& x, Y1D const& y) -> std::decay_t<decltype(x.decay())> {auto X = x.decay(); X -= y; return X;}  // NOLINT(readability-identifier-length) conventional name in BLAS
