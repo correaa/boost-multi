@@ -64,9 +64,12 @@ else()
 	link_libraries("-lblas") # cmake cannot detect BLAS with pgi/nvc++ but it ships with its own version
 endif()
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "PGI")
+message("CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "PGI" OR CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
 	add_definitions(-DFORTRAN_COMPLEX_FUNCTIONS_RETURN_VOID)
-	add_definitions(-DRETURN_BY_STACK)  # TODO(correaa) check 
+	add_definitions(-DRETURN_BY_STACK)  # TODO(correaa) check
+	message("BLAS (e.g. dot) returns by stack")
 endif()
 
 include_directories(${CMAKE_BINARY_DIR})
