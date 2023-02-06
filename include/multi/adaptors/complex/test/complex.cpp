@@ -16,18 +16,18 @@ using float_types = boost::mpl::list<float, double>;
 BOOST_AUTO_TEST_CASE_TEMPLATE(complex_ctors, T, float_types) {
 	{
 		multi::complex<T> const zeta = T{1.0} + multi::imaginary<T>{T{2.0}};
-		BOOST_REQUIRE( real(zeta) == T{1.0});
-		BOOST_REQUIRE( imag(zeta) == T{2.0});
+		BOOST_REQUIRE( zeta.real() == T{1.0});
+		BOOST_REQUIRE( zeta.imag() == T{2.0});
 	}
 	// {
 	// 	multi::complex<T> zeta = T{1.0} + T{2.0} * multi::imaginary<T>::i;
-	// 	BOOST_REQUIRE( real(zeta) == T{1.0});
-	// 	BOOST_REQUIRE( imag(zeta) == T{2.0});
+	// 	BOOST_REQUIRE( zeta.real() == T{1.0});
+	// 	BOOST_REQUIRE( zeta.imag() == T{2.0});
 	// }
 	// 	{
 	//		multi::complex<T> zeta = T{1.0} + multi::imaginary{T{2.0}};
-	// 		BOOST_REQUIRE( real(zeta) == T{1.0});
-	// 		BOOST_REQUIRE( imag(zeta) == T{2.0});
+	// 		BOOST_REQUIRE( zeta.real() == T{1.0});
+	// 		BOOST_REQUIRE( zeta.imag() == T{2.0});
 	// 	}
 }
 #endif
@@ -37,8 +37,8 @@ BOOST_AUTO_TEST_CASE(double_complex_literals) {
 	multi::complex<double> const zeta = 1.0 + 2.0_I;
 	//	multi::complex<double> zeta = 1.0 + 2.0i;  // literal i is not standard
 
-	BOOST_REQUIRE( real(zeta) == 1.0 );
-	BOOST_REQUIRE( imag(zeta) == 2.0 );
+	BOOST_REQUIRE( zeta.real() == 1.0 );
+	BOOST_REQUIRE( zeta.imag() == 2.0 );
 }
 
 BOOST_AUTO_TEST_CASE(imaginary_equal) {
@@ -63,8 +63,8 @@ BOOST_AUTO_TEST_CASE(float_complex_literals) {
 	//	multi::complex<float> const zeta = 1.0f + 2.0_f_i;
 	multi::complex<float> const zeta = 1.0F + 2.0_IF;
 
-	BOOST_REQUIRE( real(zeta) == 1.0F );
-	BOOST_REQUIRE( imag(zeta) == 2.0F );
+	BOOST_REQUIRE( zeta.real() == 1.0F );
+	BOOST_REQUIRE( zeta.imag() == 2.0F );
 }
 
 BOOST_AUTO_TEST_CASE(float_complex_assignment) {
@@ -72,12 +72,12 @@ BOOST_AUTO_TEST_CASE(float_complex_assignment) {
 	multi::complex<float> zeta;  // NOLINT(cppcoreguidelines-pro-type-member-init,hicpp-member-init)
 
 	zeta = 1.0F + 2.0_IF;
-	BOOST_REQUIRE( real(zeta) == 1.0F );
-	BOOST_REQUIRE( imag(zeta) == 2.0F );
+	BOOST_REQUIRE( zeta.real() == 1.0F );
+	BOOST_REQUIRE( zeta.imag() == 2.0F );
 
 	zeta = 1.0F;
-	BOOST_REQUIRE( real(zeta) == 1.0F );
-	BOOST_REQUIRE( imag(zeta) == 0.0F );
+	BOOST_REQUIRE( zeta.real() == 1.0F );
+	BOOST_REQUIRE( zeta.imag() == 0.0F );
 }
 
 BOOST_AUTO_TEST_CASE(float_complex_aggregate) {
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE(double_complex_abs) {
 	using multi::literals::operator""_I;
 	multi::complex<double> const zeta = 1.0 + 2.0_I;
 
-	BOOST_REQUIRE( abs(zeta) <= std::max(real(zeta), imag(zeta)) );
+	BOOST_REQUIRE( abs(zeta) <= std::max(zeta.real(), zeta.imag()) );
 }
 
 BOOST_AUTO_TEST_CASE(double_complex_plus_eq) {

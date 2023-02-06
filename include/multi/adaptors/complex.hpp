@@ -88,9 +88,10 @@ struct [[nodiscard]] complex {
 	friend constexpr auto operator+(T real, complex self) { return complex{real + self._real, self._imag}; }
 	friend constexpr auto operator-(T real, complex self) { return complex{real - self._real, self._imag}; }
 
-	[[nodiscard]] friend constexpr auto real(complex self) -> T { return self._real; }
-	[[nodiscard]] friend constexpr auto imag(complex self) -> T { return self._imag; }
-	friend constexpr auto               conj(complex self) { return complex{self._real, -self._imag}; }
+	[[nodiscard]] constexpr auto real() const -> real_type { return _real; }
+	[[nodiscard]] constexpr auto imag() const -> real_type { return _imag; }
+
+	friend constexpr auto conj(complex self) { return complex{self._real, -self._imag}; }
 
 	auto operator==(complex const& other) const {return _real == other._real and _imag == other._imag;}
 	auto operator!=(complex const& other) const {return _real != other._real or  _imag != other._imag;}
@@ -152,9 +153,6 @@ struct [[nodiscard]] complex {
 		// 		:abs(self._imag)*sqrt(real_type{1} + (self._real/self._imag)*(self._real/self._imag))
 		// ;
 	}
-
-	[[nodiscard]] constexpr auto real() const -> T { return _real; }
-	[[nodiscard]] constexpr auto imag() const -> T { return _imag; }
 };
 
 template<class U>
