@@ -133,6 +133,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 					$<$<CXX_COMPILER_ID:MSVC>:
 					/W4>
 		)
+	else()
+		target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_TEST_DYN_LINK=1")
+		target_compile_options    (${TEST_EXE} PRIVATE -Werror -Wall)
 	endif()
 	add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
 endforeach()
