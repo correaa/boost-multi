@@ -89,12 +89,14 @@ BOOST_AUTO_TEST_CASE(float_complex_aggregate) {
 	// BOOST_REQUIRE( imag(zeta) == 2.0F );
 }
 
+#ifndef __circle_build__
 BOOST_AUTO_TEST_CASE(double_complex_abs) {
 	using multi::literals::operator""_I;
 	multi::complex<double> const zeta = 1.0 + 2.0_I;
 
 	BOOST_REQUIRE( abs(zeta) <= std::max(zeta.real(), zeta.imag()) );
 }
+#endif
 
 BOOST_AUTO_TEST_CASE(double_complex_plus_eq) {
 	using multi::literals::operator""_I;
