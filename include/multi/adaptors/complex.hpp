@@ -93,11 +93,11 @@ struct [[nodiscard]] complex {
 
 	friend constexpr auto conj(complex self) { return complex{self._real, -self._imag}; }
 
-	auto operator==(complex const& other) const {return _real == other._real and _imag == other._imag;}
-	auto operator!=(complex const& other) const {return _real != other._real or  _imag != other._imag;}
+	constexpr auto operator==(complex const& other) const {return _real == other._real and _imag == other._imag;}
+	constexpr auto operator!=(complex const& other) const {return _real != other._real or  _imag != other._imag;}
 
 //	auto operator=(complex const&) -> complex& = default;
-	auto operator=(real_type re) -> complex& {(*this) = complex{re, real_type{0.0}}; return *this;}
+	constexpr auto operator=(real_type re) -> complex& {(*this) = complex{re, real_type{0.0}}; return *this;}
 
 	friend constexpr auto operator-(complex self) {return complex{-self._real, -self._imag};}
 	friend constexpr auto operator+(complex self) {return complex{+self._real, +self._imag};}
