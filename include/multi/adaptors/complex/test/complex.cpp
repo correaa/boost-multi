@@ -96,7 +96,6 @@ BOOST_AUTO_TEST_CASE(double_complex_abs) {
 
 	BOOST_REQUIRE( abs(zeta) <= std::max(zeta.real(), zeta.imag()) );
 }
-#endif
 
 BOOST_AUTO_TEST_CASE(double_complex_plus_eq) {
 	using multi::literals::operator""_I;
@@ -109,3 +108,4 @@ BOOST_AUTO_TEST_CASE(double_complex_plus_eq) {
 	BOOST_REQUIRE( zeta == yeta / 0.5 );
 
 }
+#endif
