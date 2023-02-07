@@ -232,7 +232,7 @@ INQ-NVCC-OMPI-GPU:
     - intel_compiler
   script:
     - export PREFIX=`mktemp -d`
-    - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
+    - git clone --depth=1 --recurse-submodules https://gitlab.com/npneq/inq.git
     - cd inq
     - cd external_libs/multi
     - git checkout $CI_COMMIT_BRANCH
@@ -251,7 +251,7 @@ QMCPACK-G++:
   stage: test
   script:
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy libxml2-dev
-    - git clone https://github.com/QMCPACK/qmcpack.git
+    - git clone --depth=1 https://github.com/QMCPACK/qmcpack.git
     - cd qmcpack
     - git config --global user.email "alfredo.correa@gmail.com" && git config --global user.name "Alfredo Correa"
     - git rm -r external_codes/boost_multi/multi && git commit -m "remove multi subtree"
@@ -273,7 +273,7 @@ QMCPACK-CUDA:
   tags:
     - intel_compiler
   script:
-    - git clone https://github.com/QMCPACK/qmcpack.git
+    - git clone --depth=1 https://github.com/QMCPACK/qmcpack.git
     - cd qmcpack
     - git config --global user.email "alfredo.correa@gmail.com" && git config --global user.name "Alfredo Correa"
     - git rm -r external_codes/boost_multi/multi && git commit -m "remove multi subtree"
