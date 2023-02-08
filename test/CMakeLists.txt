@@ -122,7 +122,9 @@ foreach(TEST_FILE ${TEST_SRCS})
 					# -Wbidi-chars -Wbidi-chars=any (gcc 12, not in 11)
 					-Wbuiltin-declaration-mismatch -Wbuiltin-macro-redefined
 					#-Wc++-compat
-					-Wc++0x-compat -Wc++11-compat -Wc++14-compat -Wc++17-compat -Wc++17-extensions -Wc++1z-compat
+					-Wc++0x-compat -Wc++11-compat -Wc++14-compat -Wc++17-compat
+					# -Wc++17-extensions (gcc 12, not in 9)
+					-Wc++1z-compat
 					# -Wc++20-compat -Wc++20-extensions -Wc++23-extensions -Wc++2a-compat (gcc 11, not in gcc 9)
 					# -Wcannot-profile (gcc 9, not in gcc 8)
 					-Wcast-align=strict -Wcast-function-type
