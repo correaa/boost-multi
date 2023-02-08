@@ -27,6 +27,11 @@ if((NOT
 	"PGI"
    )
    AND (NOT
+	   CMAKE_CXX_COMPILER_ID
+		STREQUAL
+   		"NVHPC"
+	)
+   AND (NOT
 		DART_COMPILER_NAME
 		STREQUAL
 		"nvcc"
@@ -60,6 +65,11 @@ endif()
 if(CMAKE_CXX_COMPILER_ID STREQUAL "PGI")
 	add_definitions(-DRETURN_BY_STACK)
 endif()
+
+if(CMAKE_CXX_COMPILER_ID STREQUAL "NVHPC")
+	add_definitions(-DRETURN_BY_STACK)
+endif()
+
 
 if(ENABLE_CUDA OR DEFINED CXXCUDA)
 	enable_language(CUDA)

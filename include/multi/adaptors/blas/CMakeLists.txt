@@ -18,6 +18,11 @@ if((NOT
 	"PGI"
    )
    AND (NOT
+   CMAKE_CXX_COMPILER_ID
+   STREQUAL
+   "NVHPC"
+   )
+   AND (NOT
 		DART_COMPILER_NAME
 		STREQUAL
 		"nvcc"
