@@ -232,7 +232,7 @@ INQ-NVCC-OMPI-GPU:
     - intel_compiler
   script:
     - export PREFIX=`mktemp -d`
-    - git clone --depth=1 --recurse-submodules https://gitlab.com/npneq/inq.git
+    - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
     - cd inq
     - cd external_libs/multi
     - git checkout $CI_COMMIT_BRANCH
