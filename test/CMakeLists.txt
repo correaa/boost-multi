@@ -88,7 +88,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 					-Wall
 					-Wextra  # (activates -Wunknown-pragmas)
 					-Wpedantic
-					-WNSObject-attribute  # (gcc 12, not in 11)
+					# -WNSObject-attribute  # (gcc 12, not in 11)
 					# -Wabi=13 -Wabi-tag (maybe important when linking with very old libraries)
 					# -Wabsolute-value  # C/ObjC only (gcc 12, not in 11)
 					-Waddress
