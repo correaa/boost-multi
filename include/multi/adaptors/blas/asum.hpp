@@ -18,14 +18,14 @@ auto asum_n(It first, Size n)
 using std::distance;
 
 template<class It>
-auto asum(It f, It last)
-->decltype(asum_n(f, distance(f, last))) {assert(stride(f) == stride(last));
-	return asum_n(f, distance(f, last)); }
+auto asum(It first, It last)
+->decltype(asum_n(first, distance(first, last))) {assert(stride(first) == stride(last));
+	return asum_n(first, distance(first, last)); }
 
 using std::begin; using std::end;
 
 template<class X1D>
-auto asum(X1D const& x)
+auto asum(X1D const& x)  // NOLINT(readability-identifier-length) x conventional blas name
 ->decltype(asum(begin(x), end(x))) {assert( not offset(x) );
 	return asum(begin(x), end(x)); }
 
