@@ -350,7 +350,7 @@ struct array_iterator  // NOLINT(fuchsia-multiple-inheritance)
 	using iterator_category = std::random_access_iterator_tag;
 
 	constexpr static dimensionality_type rank_v = D;
-	using rank = std::integral_constant<dimensionality_type, D>;
+	using rank = std::integral_constant<dimensionality_type, D>;  // TODO(correaa) make rank a function for compat with mdspan?
 
 	using ptr_type = basic_array_ptr<basic_array<element, D-1, element_ptr>, layout_t<D-1>>;
 	using stride_type = index;
