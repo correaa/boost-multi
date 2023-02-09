@@ -223,13 +223,13 @@ template<class It> auto make_conjugater(conjugater<It> it) -> It {return underly
 template<class T> auto imag(involuted<T, conjugate> const& inv) {return inv.decay().imag();}
 template<class T> auto real(involuted<T, conjugate> const& inv) {return inv.decay().real();}
 
-template<class T> auto has_imag_fun_aux(T const& value) -> decltype(imag(value), std::true_type {});
+template<class T> auto has_imag_fun_aux(T const& value) -> decltype((void)imag(value), std::true_type {});
            inline auto has_imag_fun_aux(...           ) -> decltype(             std::false_type{});
 template<class T> struct has_imag_fun : decltype(has_imag_fun_aux(std::declval<T>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
 
 
-template<class T> auto has_imag_mem_aux(T const& value) -> decltype(value.imag(), std::true_type {});
-           inline auto has_imag_mem_aux(...           ) -> decltype(              std::false_type{});
+template<class T> auto has_imag_mem_aux(T const& value) -> decltype((void)value.imag(), std::true_type {});
+           inline auto has_imag_mem_aux(...           ) -> decltype(                   std::false_type{});
 template<class T> struct has_imag_mem : decltype(has_imag_mem_aux(std::declval<T>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
 
 template<class T> struct has_imag : std::integral_constant<bool, (has_imag_fun<T>{} or has_imag_mem<T>{})>{};
