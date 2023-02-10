@@ -173,6 +173,7 @@ NVCC-NORUN:
   stage: build
   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
   script:
+    - nvidia-smi
     - apt-get update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
     - ls /usr/local
@@ -180,7 +181,7 @@ NVCC-NORUN:
     - /usr/local/cuda-11/bin/nvcc --version
     - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
     - cmake --build . --parallel 2 || cmake --build . --verbose
-    # - ctest -j 2 --output-on-failure  # doesn't run
+    - ctest -j 2 --output-on-failure  # doesn't run
   needs: ["OLDGNUSANICHECKCOV"]
   retry:
     max: 2
