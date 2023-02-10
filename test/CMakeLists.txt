@@ -55,6 +55,18 @@ file(
 	*.cpp
 )
 
+# add_executable(multi_test ${TEST_SRCS})
+# set_property(TARGET multi_test PROPERTY UNITY_BUILD ON)
+# set_property(TARGET multi_test PROPERTY EXCLUDE_FROM_ALL)
+
+# target_include_directories(multi_test        PRIVATE ${PROJECT_SOURCE_DIR}/include)
+# target_include_directories(multi_test SYSTEM PRIVATE ${Boost_INCLUDE_DIRS}        )
+# target_link_libraries     (multi_test        PRIVATE Boost::unit_test_framework   )
+
+# target_compile_definitions(multi_test PUBLIC BOOST_TEST_MODULE="C++ Unit Tests for Multi GLOBAL TEST")
+
+# add_test(NAME multi_test COMMAND ./multi_test)
+
 foreach(TEST_FILE ${TEST_SRCS})
 	set(TEST_EXE "${TEST_FILE}.x")
 	add_executable(${TEST_EXE} ${TEST_FILE})
@@ -72,6 +84,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 	target_include_directories(${TEST_EXE}        PRIVATE ${PROJECT_SOURCE_DIR}/include)
 	target_include_directories(${TEST_EXE} SYSTEM PRIVATE ${Boost_INCLUDE_DIRS}        )
 	target_link_libraries     (${TEST_EXE}        PRIVATE Boost::unit_test_framework   )
+	target_compile_definitions(${TEST_EXE} PUBLIC BOOST_TEST_MODULE="C++ Unit Tests for Multi ${TEST_EXE}")
 
 	target_compile_definitions(${TEST_EXE} PRIVATE "$<$<CUDA_COMPILER_ID:NVIDIA>:BOOST_PP_VARIADICS>")
 

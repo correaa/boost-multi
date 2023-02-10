@@ -1,12 +1,12 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2019-2023 Alfredo A. Correa
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi assignments"  // NOLINT(cppcoreguidelines-macro-usage) title
+// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi assignments"  // NOLINT(cppcoreguidelines-macro-usage) title
 #include <boost/test/unit_test.hpp>
 
 #include <complex>
 
-#include "multi/array.hpp"
+#include <multi/array.hpp>
 
 namespace multi = boost::multi;
 
@@ -75,8 +75,8 @@ BOOST_AUTO_TEST_CASE(range_assignment) {
 }
 
 BOOST_AUTO_TEST_CASE(rearranged_assignment) {
-	multi::array<int, 4> tmp({14, 14, 7, 4});
-	multi::array<int, 5> src({2, 14, 14, 7, 2});
+	multi::array<int, 4> tmp({14, 14,  7, 4});
+	multi::array<int, 5> src({ 2, 14, 14, 7, 2});
 	src[0][1][2][3][1] = 99.0;
 
 	BOOST_REQUIRE( extensions(tmp.unrotated().partitioned(2).transposed().rotated()) == extensions(src) );
