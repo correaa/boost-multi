@@ -172,6 +172,9 @@ NVCC-NORUN:
   allow_failure: true
   stage: build
   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
+  tags:
+    - gpu
+    - docker
   script:
     - nvidia-smi
     - apt-get update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
