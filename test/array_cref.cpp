@@ -1,7 +1,7 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2019-2023 Alfredo A. Correa
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi References"  // NOLINT(cppcoreguidelines-macro-usage) title
+// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi References"  // NOLINT(cppcoreguidelines-macro-usage) title
 #include<boost/test/unit_test.hpp>
 
 #include <multi/array.hpp>
@@ -10,9 +10,10 @@
 #include<vector>
 
 namespace multi = boost::multi;
-using complex = std::complex<double>;
 
 BOOST_AUTO_TEST_CASE(array_cref) {
+	using complex = std::complex<double>;
+
 	static_assert( std::is_same<std::pointer_traits<complex*>::element_type, complex>{}, "!");
 	static_assert( std::is_same<std::pointer_traits<complex*>::rebind<complex const>, complex const*>{}, "!");
 

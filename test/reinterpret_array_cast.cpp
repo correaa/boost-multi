@@ -1,10 +1,10 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2018-2023 Alfredo A. Correa
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi reinterpret array"  // test tile NOLINT(cppcoreguidelines-macro-usage)
+// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi reinterpret array"  // test tile NOLINT(cppcoreguidelines-macro-usage)
 #include<boost/test/unit_test.hpp>
 
-#include "multi/array.hpp"
+#include <multi/array.hpp>
 
 #include<complex>
 #include<numeric>
@@ -16,8 +16,8 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_struct_to_dimension) {
 		double x, y, z;
 	};
 	multi::array<vec3, 1> arr(multi::extensions_t<1>{multi::iextension{100}});
-	arr[8] = {1., 2., 3.};
-	BOOST_REQUIRE( arr[8].y == 2. );
+	arr[8] = {1.0, 2.0, 3.0};
+	BOOST_REQUIRE( arr[8].y == 2.0 );
 
 	BOOST_REQUIRE( arr.reinterpret_array_cast<double>(3)[8][1] == arr[8].y );
 
@@ -40,20 +40,20 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_complex_to_real_extra_dimensio
 	#if not defined(__circle_build__)  // TODO(correaa)
 	{
 		complex const arr0 = arr[0];
-		BOOST_TEST_REQUIRE( arr0.real() == 1. );
-		BOOST_TEST_REQUIRE( arr0.imag() == 2. );
+		BOOST_TEST_REQUIRE( arr0.real() == 1.0 );
+		BOOST_TEST_REQUIRE( arr0.imag() == 2.0 );
 	}
 
-	BOOST_TEST_REQUIRE( arr[0].real() == 1. );
-	BOOST_TEST_REQUIRE( arr[0].imag() == 2. );
+	BOOST_TEST_REQUIRE( arr[0].real() == 1.0 );
+	BOOST_TEST_REQUIRE( arr[0].imag() == 2.0 );
 
-	BOOST_TEST_REQUIRE( std::real(arr[0]) == 1. );
-	BOOST_TEST_REQUIRE( std::imag(arr[0]) == 2. );
+	BOOST_TEST_REQUIRE( std::real(arr[0]) == 1.0 );
+	BOOST_TEST_REQUIRE( std::imag(arr[0]) == 2.0 );
 
-	BOOST_TEST_REQUIRE( real(arr[0]) == 1. );
-	BOOST_TEST_REQUIRE( imag(arr[0]) == 2. );
+	BOOST_TEST_REQUIRE( real(arr[0]) == 1.0 );
+	BOOST_TEST_REQUIRE( imag(arr[0]) == 2.0 );
 
-	BOOST_REQUIRE(( arr[0] == complex{1., 2.} ));
+	BOOST_REQUIRE(( arr[0] == complex{1.0, 2.0} ));
 
 	multi::array<double, 1> arr2 = arr.reinterpret_array_cast<double>();
 	BOOST_REQUIRE( dimensionality(arr2) == dimensionality(arr) );
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_tuple_as_extra_dimension) {
 		BOOST_REQUIRE( &arr.reinterpret_array_cast<double>(3)[5][7][2] == &std::get<2>(arr[5][7]) );
 	}
 	{
-		multi::array<vector3, 2> const arr({4, 5}, vector3{{1., 2., 3.}} );
+		multi::array<vector3, 2> const arr({4, 5}, vector3{{1.0, 2.0, 3.0}} );
 
 		BOOST_REQUIRE( dimensionality(arr.reinterpret_array_cast<double>(3)) == 3 );
 		BOOST_REQUIRE( arr.reinterpret_array_cast<double>(3).num_elements() == arr.num_elements()*3 );
@@ -115,11 +115,11 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast) {
 }
 {
 	multi::array<std::complex<double>, 1> arr(multi::extensions_t<1>{multi::iextension{10}});
-	std::iota( begin(arr), end(arr), 1.);
-	BOOST_REQUIRE( arr[8] == 9. );
+	std::iota( begin(arr), end(arr), 1.0);
+	BOOST_REQUIRE( arr[8] == 9.0 );
 	auto&& arr2 = arr.reinterpret_array_cast<complex_dummy<double>>();
-	arr2[8].real = 1000.;
-	BOOST_REQUIRE( arr[8] == 1000. );
+	arr2[8].real = 1000.0;
+	BOOST_REQUIRE( arr[8] == 1000.0 );
 }
 }
 
@@ -143,16 +143,16 @@ BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_realcomplex) {
 {
 	multi::array<complex, 1> arr(multi::extensions_t<1>{multi::iextension{10}});
 	auto&& arr2 = arr.reinterpret_array_cast<double>(2);
-	arr2[8][0] = 1000.;
-	arr2[8][1] = 2000.;
-	BOOST_REQUIRE( arr[8] == std::complex<double>(1000., 2000.) );
+	arr2[8][0] = 1000.0;
+	arr2[8][1] = 2000.0;
+	BOOST_REQUIRE(( arr[8] == std::complex<double>{1000.0, 2000.0} ));
 }
 }
 
 BOOST_AUTO_TEST_CASE(multi_reinterpret_array_cast_pair_to_complex) {
 	using complex = std::complex<double>;
 	using pair    = std::pair<double, double>;
-	multi::array<complex, 2> arr({10, 10}, complex{3., 4.});
+	multi::array<complex, 2> arr({10, 10}, complex{3.0, 4.0});
 
 	multi::array<complex, 2> const& Aconst = arr;
 	auto&& A_block = Aconst({0, 5}, {0, 5});

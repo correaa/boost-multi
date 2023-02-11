@@ -1,10 +1,10 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2019-2023 Alfredo A. Correa
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi transformed array"
+// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi transformed array"
 #include<boost/test/unit_test.hpp>
 
-#include "multi/array.hpp"
+#include <multi/array.hpp>
 
 #include<complex>
 
@@ -152,22 +152,22 @@ BOOST_AUTO_TEST_CASE(transformed_array) {
 		complex cee{1., 2.};
 
 		auto&& zee = test::conjd<complex&>{cee};
-		BOOST_REQUIRE(( zee == complex{1., -2.} ));
+		BOOST_REQUIRE(( zee == complex{1.0, -2.0} ));
 
-		BOOST_REQUIRE( real(zee)  ==  1. );
-		BOOST_REQUIRE( imag(zee)  == -2. );
-		BOOST_REQUIRE( zee.real() ==  1. );
-		BOOST_REQUIRE( zee.imag() == -2. );
+		BOOST_REQUIRE( real(zee)  ==  1.0 );
+		BOOST_REQUIRE( imag(zee)  == -2.0 );
+		BOOST_REQUIRE( zee.real() ==  1.0 );
+		BOOST_REQUIRE( zee.imag() == -2.0 );
 	}
 	{
 		double doub = 5;
 
 		auto&& negd_a = test::involuted<test::neg_t, double&>(test::neg, doub);
-		BOOST_REQUIRE( negd_a == -5. );
+		BOOST_REQUIRE( negd_a == -5.0 );
 
-		negd_a = 10.;
-		BOOST_REQUIRE( negd_a == 10. );
-		BOOST_REQUIRE( doub = -10. );
+		negd_a = 10.0;
+		BOOST_REQUIRE( negd_a == 10.0 );
+		BOOST_REQUIRE( doub = -10.0 );
 	}
 	{
 		multi::array<double, 1> arr = { 0,  1,  2,  3,  4};

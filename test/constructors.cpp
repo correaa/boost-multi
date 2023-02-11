@@ -1,31 +1,32 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
 // Copyright 2019-2022 Alfredo A. Correa
 
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi constructors"  // NOLINT(cppcoreguidelines-macro-usage) title
+// #define BOOST_TEST_MODULE "C++ Unit Tests for Multi constructors"  // NOLINT(cppcoreguidelines-macro-usage) title
 #include<boost/test/unit_test.hpp>
 
-#include "multi/array.hpp"
+#include <multi/array.hpp>
 
 #include<complex>
 
 namespace multi = boost::multi;
 
-using complex = std::complex<double>;
-
 struct multiplies_bind1st{
+	using complex = std::complex<double>;
 	explicit multiplies_bind1st(multi::array<complex, 2>&& marr) : m_(std::move(marr)) {}  // this produces a bug in nvcc11.0
  private:
 	multi::array<complex, 2> m_;
 };
 
 BOOST_AUTO_TEST_CASE(multi_construct_1d) {
-	multi::static_array<double, 1> arr(multi::extensions_t<1>{multi::iextension{10}}, 1.);
+	multi::static_array<double, 1> arr(multi::extensions_t<1>{multi::iextension{10}}, 1.0);
 //  multi::static_array<double, 1> arr(multi::array<double, 1>::extensions_type{10}, 1.);
 	BOOST_REQUIRE( size(arr) == 10 );
-	BOOST_REQUIRE( arr[1] == 1. );
+	BOOST_REQUIRE( arr[1] == 1.0 );
 }
 
 BOOST_AUTO_TEST_CASE(multi_constructors_inqnvcc_bug) {
+	using complex = std::complex<double>;
+
 	multi::array<complex, 2> marr({10, 10});
 	multiplies_bind1st(std::move(marr));
 }

@@ -193,12 +193,6 @@ namespace boost::multi::blas {
 		return &multi::cuda::cublas::context::get_instance();
 	}
 
-//	template<class T>
-//	boost::multi::cuda::cublas::context* default_context_of(boost::multi::memory::cuda::managed::ptr<T> const&) {
-//		namespace multi = boost::multi;
-//		return &multi::cuda::cublas::context::get_instance();
-//	}
-
 	template<class T, class R>
 	boost::multi::cuda::cublas::context* default_context_of(::thrust::pointer<T, ::thrust::cuda_cub::tag, R> const&) {
 		namespace multi = boost::multi;

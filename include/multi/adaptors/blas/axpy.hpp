@@ -5,12 +5,10 @@
 #define MULTI_ADAPTORS_BLAS_AXPY_HPP
 #pragma once
 
-#include "../../array_ref.hpp"
+#include <multi/array_ref.hpp>
 
-#include "../../adaptors/blas/core.hpp"
-#include "../../adaptors/complex.hpp"
-
-#include "../../config/NODISCARD.hpp"
+#include <multi/adaptors/blas/core.hpp>
+#include <multi/adaptors/complex.hpp>
 
 namespace boost::multi::blas {
 

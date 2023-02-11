@@ -118,6 +118,7 @@ set(TEST_SRCS
 	gemv.cpp
 	gemm.cpp
 	numeric.cpp
+	nrm2.cpp
 	scal.cpp
 	traits.cpp
 	trsm.cpp

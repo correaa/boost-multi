@@ -168,19 +168,24 @@ NVHPC-2022:
     # - apt-get update
     # - apt-get -y install cuda
 
-NVCC-NORUN:
+NVCC:
   allow_failure: true
   stage: build
   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
+  tags:
+    - nvidia-docker
   script:
     - apt-get update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
     - ls /usr/local
     - ls /usr/local/cuda-11/bin
     - /usr/local/cuda-11/bin/nvcc --version
-    - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
+    - CUDACXX=/usr/local/cuda-11/bin/nvcc cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
     - cmake --build . --parallel 2 || cmake --build . --verbose
-    # - ctest -j 2 --output-on-failure  # doesn't run
+    - ctest -j 2 --output-on-failure  # doesn't run
+    - ../build/include/multi/adaptors/thrust/test/speed.cu.x
+    - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
+    - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
   needs: ["OLDGNUSANICHECKCOV"]
   retry:
     max: 2
@@ -189,7 +194,7 @@ NVCC-NORUN:
       - stuck_or_timeout_failure
 
 CIRCLE:
-  allow_failure: true
+  allow_failure: false
   image: debian:testing
   stage: build
   script:
@@ -211,26 +216,48 @@ CIRCLE:
       - runner_system_failure
       - stuck_or_timeout_failure
 
-NVCC-GPU:
-  stage: build
-  tags:
-    - intel_compiler
-  script:
-    - mkdir build && cd build
-    - /usr/local/cuda/bin/nvcc --version
-    - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_ARCHITECTURES=70 -DCMAKE_CUDA_FLAGS="-ccbin=g++-9" -DCMAKE_CXX_STANDARD=17
-    - make -j8 -output-sync=recurse || make VERBOSE=1
-    - ctest --output-on-failure --timeout 600
-    - ../build/include/multi/adaptors/thrust/test/speed.cu.x
-    - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
-    - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
-  needs: ["NVCC-NORUN"]
+# NVCC-GPU:
+#   stage: build
+#   tags:
+#     - intel_compiler
+#   script:
+#     - mkdir build && cd build
+#     - /usr/local/cuda/bin/nvcc --version
+#     - cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_ARCHITECTURES=70 -DCMAKE_CUDA_FLAGS="-ccbin=g++-9" -DCMAKE_CXX_STANDARD=17
+#     - make -j8 -output-sync=recurse || make VERBOSE=1
+#     - ctest --output-on-failure --timeout 600
+#     - ../build/include/multi/adaptors/thrust/test/speed.cu.x
+#     - ../build/include/multi/adaptors/thrust/test/speed_algo.cu.x
+#     - ../build/include/multi/adaptors/fftw/test/combinations.cpp.x
+#   needs: ["NVCC-NORUN"]
+
+# INQ-NVCC-OMPI-GPU:
+#   stage: test
+#   tags:
+#     - intel_compiler
+#   script:
+#     - export PREFIX=`mktemp -d`
+#     - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
+#     - cd inq
+#     - cd external_libs/multi
+#     - git checkout $CI_COMMIT_BRANCH
+#     - cd ../..
+#     - mkdir build && cd build
+#     - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --disable-debug --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70 `#--with-cuda-prefix=/usr/local/cuda`
+#     - make -j16 -output-sync=recurse VERBOSE=0 || make VERBOSE=1
+#     - make -j4  install
+#     - ctest -j2 --output-on-failure --timeout 600
+#     - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest --output-on-failure --timeout 600; cd ..
+#     - rm -rf $PREFIX
+#   needs: ["NVCC"]
 
 INQ-NVCC-OMPI-GPU:
   stage: test
+  image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
   tags:
-    - intel_compiler
+    - nvidia-docker
   script:
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git gfortran libopenmpi-dev libblas-dev libboost-serialization-dev libboost-filesystem-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config
     - export PREFIX=`mktemp -d`
     - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
     - cd inq
@@ -238,13 +265,15 @@ INQ-NVCC-OMPI-GPU:
     - git checkout $CI_COMMIT_BRANCH
     - cd ../..
     - mkdir build && cd build
-    - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --disable-debug --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70 `#--with-cuda-prefix=/usr/local/cuda`
-    - make -j16 -output-sync=recurse VERBOSE=0 || make VERBOSE=1
-    - make -j4  install
-    - ctest -j2 --output-on-failure --timeout 600
-    - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -np 4" ctest --output-on-failure --timeout 600; cd ..
-    - rm -rf $PREFIX
-  needs: ["NVCC-GPU"]
+    - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --disable-debug --pass-thru -DCMAKE_CUDA_ARCHITECTURES=61 `#--with-cuda-prefix=/usr/local/cuda`
+    - make -j 4 -output-sync=recurse VERBOSE=0 || make VERBOSE=1
+    - make -j 4  install
+    - export OMPI_ALLOW_RUN_AS_ROOT=1
+    - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+    - export OMPI_MCA_btl_vader_single_copy_mechanism=none
+    - export OMPI_MCA_rmaps_base_oversubscribe=1
+    - ctest -j 2 --output-on-failure --timeout 600 # - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 600
+  needs: ["NVCC"]
 
 QMCPACK-G++:
   image: debian:testing
@@ -268,20 +297,40 @@ QMCPACK-G++:
       - runner_system_failure
       - stuck_or_timeout_failure
 
+# QMCPACK-CUDA:
+#   stage: test
+#   tags:
+#     - intel_compiler
+#   script:
+#     - git clone https://github.com/QMCPACK/qmcpack.git
+#     - cd qmcpack
+#     - git config --global user.email "alfredo.correa@gmail.com" && git config --global user.name "Alfredo Correa"
+#     - git rm -r external_codes/boost_multi/multi && git commit -m "remove multi subtree"
+#     - git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL $CI_COMMIT_BRANCH # e.g. https://gitlab.com/correaa/boost-multi.git
+#     - cd build
+#     - CUDACXX=/usr/local/cuda/bin/nvcc cmake -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DQMC_CXX_STANDARD=17 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_HOST_COMPILER=g++-9 -DCMAKE_CXX_FLAGS="-Wno-deprecated -Wno-deprecated-declarations" ..
+#     - make -j16 ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
+#     - ctest -R ppconvert --output-on-failure
+#     - ctest -R afqmc     --output-on-failure
+#   needs: ["QMCPACK-G++","NVCC-GPU"]
+
+
 QMCPACK-CUDA:
   stage: test
+  image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
   tags:
-    - intel_compiler
+    - nvidia-docker
   script:
-    - git clone --depth=1 https://github.com/QMCPACK/qmcpack.git
+    - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git libopenmpi-dev cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy libxml2-dev
+    - git clone --depth 1 https://github.com/QMCPACK/qmcpack.git
     - cd qmcpack
     - git config --global user.email "alfredo.correa@gmail.com" && git config --global user.name "Alfredo Correa"
     - git rm -r external_codes/boost_multi/multi && git commit -m "remove multi subtree"
     - git subtree add --squash -P external_codes/boost_multi/multi $CI_REPOSITORY_URL $CI_COMMIT_BRANCH # e.g. https://gitlab.com/correaa/boost-multi.git
     - cd build
-    - CUDACXX=/usr/local/cuda/bin/nvcc cmake -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DQMC_CXX_STANDARD=17 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_HOST_COMPILER=g++-9 -DCMAKE_CXX_FLAGS="-Wno-deprecated -Wno-deprecated-declarations" ..
-    - make -j16 ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
-    - ctest -R ppconvert --output-on-failure
-    - ctest -R afqmc     --output-on-failure
-  needs: ["QMCPACK-G++","NVCC-GPU"]
+    - CUDACXX=/usr/local/cuda/bin/nvcc cmake .. -DCMAKE_C_COMPILER=mpicc -DCMAKE_CXX_COMPILER=mpicxx -DBUILD_AFQMC=1 -DQMC_CXX_STANDARD=17 -DENABLE_CUDA=1 -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DCMAKE_CUDA_HOST_COMPILER=g++ -DCMAKE_CXX_FLAGS="-Wno-deprecated -Wno-deprecated-declarations" -DCMAKE_CUDA_ARCHITECTURES=70
+    - make -j 4 ppconvert afqmc test_afqmc_matrix test_afqmc_numerics test_afqmc_slaterdeterminantoperations test_afqmc_walkers test_afqmc_hamiltonians test_afqmc_hamiltonian_operations test_afqmc_phmsd test_afqmc_wfn_factory test_afqmc_prop_factory test_afqmc_estimators qmc-afqmc-performance
+    - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R ppconvert --output-on-failure
+    - OMPI_ALLOW_RUN_AS_ROOT=1 OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1 ctest -R afqmc     --output-on-failure
+  needs: ["QMCPACK-G++","NVCC"]
 
