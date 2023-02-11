@@ -252,6 +252,7 @@ CIRCLE:
 #   needs: ["NVCC"]
 
 INQ-NVCC-OMPI-GPU:
+  allow_failure: false
   stage: test
   image: nvcr.io/nvidia/cuda:11.8.0-devel-ubuntu22.04
   tags:
@@ -272,7 +273,10 @@ INQ-NVCC-OMPI-GPU:
     - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
     - export OMPI_MCA_btl_vader_single_copy_mechanism=none
     - export OMPI_MCA_rmaps_base_oversubscribe=1
-    - ctest -j 2 --output-on-failure --timeout 600 # - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 600
+    - ulimit -n       # reports current value
+    - ulimit -n 1024  # workaround neededed by valgrind in docker running in Fedora 37
+    - ctest -j 2 --output-on-failure --timeout 600
+    - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 600
   needs: ["NVCC"]
 
 QMCPACK-G++:
@@ -313,7 +317,6 @@ QMCPACK-G++:
 #     - ctest -R ppconvert --output-on-failure
 #     - ctest -R afqmc     --output-on-failure
 #   needs: ["QMCPACK-G++","NVCC-GPU"]
-
 
 QMCPACK-CUDA:
   stage: test
