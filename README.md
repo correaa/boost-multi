@@ -474,7 +474,7 @@ decltype(A)::value_type row =   *begin(A);  // there is a real copy of the row
 Subarrays (e.g. rows in a 2D array) are reference-like objects; as such also have an concrete address-like value that identifies it uniquely (in constrast to language pointers).
 This can be useful to "mark" subviews; these marker can be copied, and stored in arrays, and behave like pointers.
 
-```
+```cpp
 auto A = multi::array<double, 2>({4, 4});
 
 auto row2_ptr = &A[2];  // A[2] is row of A (not an element)
@@ -483,7 +483,7 @@ assert( row2_ptr == &*(A.begin() + 2) );
 
 Comparing these markers/pointer with different provenance, i.e. originating from different arrays, is in general undefined.
 
-Note: `A[2]` (or `*(A.begin() + 2)`) above is technically a "language"-temporary object, and therefore is doesn't have a "language"-address (taking `std::addressof` gives a compilation error). 
+Note: `A[2]` above is technically a "language"-temporary object, and therefore is doesn't have a "language"-address (taking `std::addressof` gives a compilation error). 
 However in the abstraction of the library it is a reference to an existing part of the original array, this "library"-reference has a "library"-address that can be
 
 ## Indexing
