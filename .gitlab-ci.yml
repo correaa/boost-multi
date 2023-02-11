@@ -265,13 +265,13 @@ INQ-NVCC-OMPI-GPU:
     - git checkout $CI_COMMIT_BRANCH
     - cd ../..
     - mkdir build && cd build
-    - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --disable-debug --pass-thru -DCMAKE_CUDA_ARCHITECTURES=70 `#--with-cuda-prefix=/usr/local/cuda`
+    - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --disable-debug --pass-thru -DCMAKE_CUDA_ARCHITECTURES=61 `#--with-cuda-prefix=/usr/local/cuda`
     - make -j 4 -output-sync=recurse VERBOSE=0 || make VERBOSE=1
     - make -j 4  install
     - export OMPI_ALLOW_RUN_AS_ROOT=1
     - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
     - ctest -j 2 --output-on-failure --timeout 600
-    - cd src; INQ_EXEC_ENV="mpirun --oversubscribe -n 2" ctest --output-on-failure --timeout 600; cd ..
+    - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 600
     - rm -rf $PREFIX
   needs: ["NVCC"]
 
