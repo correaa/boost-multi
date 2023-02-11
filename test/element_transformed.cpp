@@ -57,11 +57,11 @@ BOOST_AUTO_TEST_CASE(element_transformed_1D_conj_using_lambda_with_const_return)
 
 	// g++ -std=20 needs the transformation (lambda) to be noexcept
 	// NOLINTNEXTLINE(readability-const-return-type) a way to disable assignment
-	auto const& conjd_arr = arr.element_transformed([](auto const& cee) noexcept -> auto const {return std::conj(cee);});
+	auto&& conjd_arr = arr.element_transformed([](auto const& cee) noexcept -> auto const {return std::conj(cee);});  // const is important here, to allow this idiom it needs -Wno-nonportable-cfstrings (or commented) and -Wignored-qualifiers in clang
 	BOOST_REQUIRE( conjd_arr[0] == std::conj(arr[0]) );
 	BOOST_REQUIRE( conjd_arr[1] == std::conj(arr[1]) );
 
-//  Ac[0] = 5. + 4.*I;  // this doesn't compile, good!
+	// conjd_arr[0] = 5.0 + 4.0*I;  // this doesn't compile, good! otherwise it would be misleading (see above)
 	BOOST_REQUIRE( conjd_arr[0] == 1.0 - 2.0*I );
 }
 
