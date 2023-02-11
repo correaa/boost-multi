@@ -182,10 +182,10 @@ using std::cout;
 
 int main() {
 	double d_data[20] = {
-		150., 16., 17., 18., 19.,
-		 30.,  1.,  2.,  3.,  4.,
-		100., 11., 12., 13., 14.,
-		 50.,  6.,  7.,  8.,  9.
+		150.0, 16.0, 17.0, 18.0, 19.0,
+		 30.0,  1.0,  2.0,  3.0,  4.0,
+		100.0, 11.0, 12.0, 13.0, 14.0,
+		 50.0,  6.0,  7.0,  8.0,  9.0
 	};  // block of 20 elements ...
 	multi::array_ref<double, 2> d2D_ref{&d_data[0], {4, 5}};  // interpreted as a 4 by 5 array
 	...
@@ -484,7 +484,8 @@ assert( row2_ptr == &*(A.begin() + 2) );
 Comparing these markers/pointer with different provenance, i.e. originating from different arrays, is in general undefined.
 
 Note: `A[2]` above is technically a "language"-temporary object, and therefore is doesn't have a "language"-address (taking `std::addressof` gives a compilation error). 
-However in the abstraction of the library it is a reference to an existing part of the original array, this "library"-reference has a "library"-address that can be
+However in the abstraction of the library it is a reference to an existing part of the original array, this "library"-reference has a "library"-address that can be obtained `&`. 
+This is an illustration that, in the library, `&` is in general of a different type than `std::addressof` for subarrays, the latter may not even be defined or compile.
 
 ## Indexing
 
