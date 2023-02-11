@@ -266,15 +266,13 @@ INQ-NVCC-OMPI-GPU:
     - git checkout $CI_COMMIT_BRANCH
     - cd ../..
     - mkdir build && cd build
-    - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --disable-debug --pass-thru -DCMAKE_CUDA_ARCHITECTURES=61 `#--with-cuda-prefix=/usr/local/cuda`
+    - CUDACXX=/usr/local/cuda/bin/nvcc ../configure --prefix=$PREFIX --enable-cuda --disable-debug --pass-thru -DCMAKE_CUDA_ARCHITECTURES=61 -DNCCL_ROOT="/disable" `#--with-cuda-prefix=/usr/local/cuda`
     - make -j 4 -output-sync=recurse VERBOSE=0 || make VERBOSE=1
     - make -j 4  install
     - export OMPI_ALLOW_RUN_AS_ROOT=1
     - export OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
     - export OMPI_MCA_btl_vader_single_copy_mechanism=none
     - export OMPI_MCA_rmaps_base_oversubscribe=1
-    - ulimit -n       # reports current value
-    - ulimit -n 1024  # workaround neededed by valgrind in docker running in Fedora 37
     - ctest -j 2 --output-on-failure --timeout 600
     - INQ_EXEC_ENV="mpirun --oversubscribe -n 4" ctest --output-on-failure --timeout 600
   needs: ["NVCC"]
