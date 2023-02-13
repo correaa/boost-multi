@@ -564,15 +564,15 @@ struct layout_t
 	constexpr auto operator()(index idx)                  const {return at_aux(idx);}
 	constexpr auto operator()()                           const {return *this;}
 
-	       constexpr auto sub()             &       -> sub_type      & {return      sub_ ;}
-	       constexpr auto sub()        const&       -> sub_type const& {return      sub_ ;}
-	friend constexpr auto sub(layout_t const& self) -> sub_type const& {return self.sub();}
+	       HD constexpr auto sub()             &       -> sub_type      & {return      sub_ ;}
+	       HD constexpr auto sub()        const&       -> sub_type const& {return      sub_ ;}
+	friend HD constexpr auto sub(layout_t const& self) -> sub_type const& {return self.sub();}
 
-	       constexpr auto nelems()             &       -> nelems_type      & {return      nelems_ ;}
-	       constexpr auto nelems()        const&       -> nelems_type const& {return      nelems_ ;}
-	friend constexpr auto nelems(layout_t const& self) -> nelems_type const& {return self.nelems();}
+	       HD constexpr auto nelems()             &       -> nelems_type      & {return      nelems_ ;}
+	       HD constexpr auto nelems()        const&       -> nelems_type const& {return      nelems_ ;}
+	friend HD constexpr auto nelems(layout_t const& self) -> nelems_type const& {return self.nelems();}
 
-	constexpr auto nelems(dimensionality_type dim) const {return (dim != 0)?sub_.nelems(dim - 1):nelems_;}
+	constexpr HD auto nelems(dimensionality_type dim) const {return (dim != 0)?sub_.nelems(dim - 1):nelems_;}
 
 	friend HD constexpr auto operator==(layout_t const& self, layout_t const& other) -> bool {
 		return 
@@ -580,7 +580,7 @@ struct layout_t
 			== std::tie(other.sub_, other.stride_, other.offset_, other.nelems_)
 		;
 	}
-	constexpr auto operator< (layout_t const& other) const -> bool {
+	constexpr HD auto operator< (layout_t const& other) const -> bool {
 		return
 			   std::tie(      sub_,       stride_,       offset_,       nelems_)
 			<  std::tie(other.sub_, other.stride_, other.offset_, other.nelems_)
@@ -608,19 +608,19 @@ struct layout_t
 		return nelems_ == 0?0:nelems_/stride_;
 	}
 
-	constexpr auto stride()       -> stride_type      & {return stride_;}
-	constexpr auto stride() const -> stride_type const& {return stride_;}
+	constexpr HD auto stride()       -> stride_type      & {return stride_;}
+	constexpr HD auto stride() const -> stride_type const& {return stride_;}
 
-	friend constexpr auto stride(layout_t const& self) -> index {return self.stride();}
+	friend HD constexpr auto stride(layout_t const& self) -> index {return self.stride();}
 
-	       constexpr auto strides()        const        -> strides_type {return strides_type{stride(), sub_.strides()};}
-	friend constexpr auto strides(layout_t const& self) -> strides_type {return self.strides();}
+	       HD constexpr auto strides()        const        -> strides_type {return strides_type{stride(), sub_.strides()};}
+	friend HD constexpr auto strides(layout_t const& self) -> strides_type {return self.strides();}
 
-	constexpr auto offset(dimensionality_type dim) const -> index {return (dim != 0)?sub_.offset(dim - 1):offset_;}
-	       constexpr auto offset() const -> index {return offset_;}
-	friend constexpr auto offset(layout_t const& self) -> index {return self.offset();}
-	constexpr auto offsets() const {return boost::multi::detail::tuple{offset(), sub_.offsets()};}
-	constexpr auto nelemss() const {return boost::multi::detail::tuple{nelems(), sub_.nelemss()};}
+	constexpr HD auto offset(dimensionality_type dim) const -> index {return (dim != 0)?sub_.offset(dim - 1):offset_;}
+	       HD constexpr auto offset() const -> index {return offset_;}
+	friend HD constexpr auto offset(layout_t const& self) -> index {return self.offset();}
+	constexpr HD auto offsets() const {return boost::multi::detail::tuple{offset(), sub_.offsets()};}
+	constexpr HD auto nelemss() const {return boost::multi::detail::tuple{nelems(), sub_.nelemss()};}
 
 	constexpr auto base_size() const {using std::max; return max(nelems_, sub_.base_size());}
 
@@ -630,10 +630,10 @@ struct layout_t
 	       constexpr auto shape()        const&       -> decltype(auto) {return      sizes();}
 	friend constexpr auto shape(layout_t const& self) -> decltype(auto) {return self.shape();}
 
-	constexpr auto sizes() const noexcept {return tuple{size(), sub_.sizes()};}
+	constexpr HD auto sizes() const noexcept {return tuple{size(), sub_.sizes()};}
 
 	friend        constexpr auto extension(layout_t const& self) {return self.extension();}
-	[[nodiscard]] /*[[gnu::pure]]*/ constexpr auto extension()        const     -> extension_type {
+	[[nodiscard]] constexpr auto extension()        const     -> extension_type {
 		if(nelems_ == 0) {return index_extension{};}
 		assert(stride_ != 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		assert(offset_ % stride_ == 0);

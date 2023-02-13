@@ -712,7 +712,7 @@ struct elements_range_t {
 };
 
 template<class It>
-[[gnu::pure]] constexpr auto ref(It begin, It end)
+HD constexpr auto ref(It begin, It end)
 ->multi::basic_array<typename It::element, It::rank_v, typename It::element_ptr> {
 	return multi::basic_array<typename It::element, It::rank_v, typename It::element_ptr>{begin, end};
 }
@@ -1037,7 +1037,7 @@ struct basic_array
 	using partitioned_const_type = basic_array<T, D+1, element_const_ptr>;
 
  private:
-	/*[[gnu::pure]]*/ constexpr auto partitioned_aux(size_type n) const -> partitioned_type {
+	HD constexpr auto partitioned_aux(size_type n) const -> partitioned_type {
 		assert(n != 0);  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		// vvv TODO(correaa) should be size() here?
 		// NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) normal in a constexpr function
@@ -1048,24 +1048,24 @@ struct basic_array
 	}
 
  public:
-	       constexpr auto partitioned(size_type n) const& -> partitioned_const_type {return partitioned_aux(n);}
-	       constexpr auto partitioned(size_type n)      & -> partitioned_type       {return partitioned_aux(n);}
-	/*[[gnu::pure]]*/ constexpr auto partitioned(size_type n)     && -> partitioned_type       {return partitioned_aux(n);}
+	HD constexpr auto partitioned(size_type n) const& -> partitioned_const_type {return partitioned_aux(n);}
+	HD constexpr auto partitioned(size_type n)      & -> partitioned_type       {return partitioned_aux(n);}
+	HD constexpr auto partitioned(size_type n)     && -> partitioned_type       {return partitioned_aux(n);}
 
-	friend constexpr auto partitioned(basic_array const& self, size_type n) -> partitioned_const_type {return           self .partitioned(n);}
-	friend constexpr auto partitioned(basic_array      & self, size_type n) -> partitioned_type       {return           self .partitioned(n);}
-	friend constexpr auto partitioned(basic_array     && self, size_type n) -> partitioned_type       {return std::move(self).partitioned(n);}
+	friend HD constexpr auto partitioned(basic_array const& self, size_type n) -> partitioned_const_type {return           self .partitioned(n);}
+	friend HD constexpr auto partitioned(basic_array      & self, size_type n) -> partitioned_type       {return           self .partitioned(n);}
+	friend HD constexpr auto partitioned(basic_array     && self, size_type n) -> partitioned_type       {return std::move(self).partitioned(n);}
 
  private:
-	constexpr auto chunked_aux(size_type count) const -> partitioned_type {
+	HD constexpr auto chunked_aux(size_type count) const -> partitioned_type {
 		assert( this->size() % count == 0 );
 		return partitioned_aux(this->size()/count);
 	}
 
  public:  // in Mathematica this is called Partition https://reference.wolfram.com/language/ref/Partition.html in RangesV3 it is called chunk
-	constexpr auto chunked(size_type count) const& -> partitioned_const_type {return chunked_aux(count);}
-	constexpr auto chunked(size_type count)      & -> partitioned_type       {return chunked_aux(count);}
-	constexpr auto chunked(size_type count)     && -> partitioned_type       {return chunked_aux(count);}
+	HD constexpr auto chunked(size_type count) const& -> partitioned_const_type {return chunked_aux(count);}
+	HD constexpr auto chunked(size_type count)      & -> partitioned_type       {return chunked_aux(count);}
+	HD constexpr auto chunked(size_type count)     && -> partitioned_type       {return chunked_aux(count);}
 
  private:
 	constexpr auto reversed_aux() const -> basic_array {
@@ -1082,15 +1082,37 @@ struct basic_array
 	friend constexpr auto reversed(basic_array      & self) -> basic_array       {return           self .reversed();}
 	friend constexpr auto reversed(basic_array     && self) -> basic_array       {return std::move(self).reversed();}
 
-	constexpr auto transposed() const& -> basic_array {
-		return {this->layout().transpose(), types::base_};
+ private:
+	HD constexpr auto transposed_aux() const -> basic_array {
+		auto new_layout = this->layout();
+		new_layout.transpose();
+		return {new_layout, types::base_};
 	}
-	friend /*constexpr*/ auto transposed(basic_array const& self) -> basic_array {return self.transposed();}
-	friend
+
+ public:
+	HD constexpr auto transposed() const& -> basic_const_array {return transposed_aux();}
+	HD constexpr auto transposed()      & -> basic_array       {return transposed_aux();}
+	HD constexpr auto transposed()     && -> basic_array       {return transposed_aux();}
+
+	friend HD /*constexpr*/ auto transposed(basic_array const& self) -> basic_const_array {return self.transposed();}
+	friend HD /*constexpr*/ auto transposed(basic_array      & self) -> basic_array       {return self.transposed();}
+	friend HD /*constexpr*/ auto transposed(basic_array     && self) -> basic_array       {return self.transposed();}
+
+	friend HD
 #if not((defined(__INTEL_COMPILER)) or defined(__NVCC__))
 	constexpr
 #endif
-	auto operator~ (basic_array const& self) -> basic_array {return self.transposed();}
+	auto operator~ (basic_array const& self) -> basic_const_array {return self.transposed();}
+	friend HD
+#if not((defined(__INTEL_COMPILER)) or defined(__NVCC__))
+	constexpr
+#endif
+	auto operator~ (basic_array& self) -> basic_array {return self.transposed();}
+	friend HD
+#if not((defined(__INTEL_COMPILER)) or defined(__NVCC__))
+	constexpr
+#endif
+	auto operator~ (basic_array&& self) -> basic_array {return self.transposed();}
 
 	HD constexpr auto rotated()      &  -> basic_array {
 		typename types::layout_t new_layout = this->layout();
@@ -1212,7 +1234,7 @@ struct basic_array
 		assert(begin.stride()  == end.stride() );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		assert(begin->layout() == end->layout());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 	}
-	friend constexpr auto ref<iterator>(iterator begin, iterator end) -> multi::basic_array<typename iterator::element, iterator::rank_v, typename iterator::element_ptr>;
+	friend HD constexpr auto ref<iterator>(iterator begin, iterator end) -> multi::basic_array<typename iterator::element, iterator::rank_v, typename iterator::element_ptr>;
 
  public:
 	using ptr = basic_array_ptr<basic_array, Layout>;
@@ -2057,7 +2079,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	using partitioned_const_type = basic_array<T, 2, element_const_ptr>;
 
  private:
-	constexpr auto partitioned_aux(size_type size) const -> partitioned_type {
+	HD constexpr auto partitioned_aux(size_type size) const -> partitioned_type {
 		assert( size != 0 );  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		assert( (this->layout().nelems() % size) == 0 );  // TODO(correaa) remove assert? truncate left over? (like mathematica) // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		multi::layout_t<2> new_layout{this->layout(), this->layout().nelems()/size, 0, this->layout().nelems()};
@@ -2066,20 +2088,20 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	}
 
  public:
-	constexpr auto partitioned(size_type size) const& -> partitioned_const_type {return partitioned_aux(size);}
-	constexpr auto partitioned(size_type size)      & -> partitioned_type       {return partitioned_aux(size);}
-	constexpr auto partitioned(size_type size)     && -> partitioned_type       {return partitioned_aux(size);}
+	HD constexpr auto partitioned(size_type size) const& -> partitioned_const_type {return partitioned_aux(size);}
+	HD constexpr auto partitioned(size_type size)      & -> partitioned_type       {return partitioned_aux(size);}
+	HD constexpr auto partitioned(size_type size)     && -> partitioned_type       {return partitioned_aux(size);}
 
  private:
-	constexpr auto chunked_aux(size_type size) const -> partitioned_type {
+	HD constexpr auto chunked_aux(size_type size) const -> partitioned_type {
 		assert( this->size() % size == 0 );
 		return partitioned_aux(this->size()/size);
 	}
 
  public:  // in Mathematica this is called Partition https://reference.wolfram.com/language/ref/Partition.html in RangesV3 it is called chunk
-	constexpr auto chunked(size_type size) const& -> partitioned_const_type {return chunked_aux(size);}
-	constexpr auto chunked(size_type size)      & -> partitioned_type       {return chunked_aux(size);}
-	constexpr auto chunked(size_type size)     && -> partitioned_type       {return chunked_aux(size);}
+	HD constexpr auto chunked(size_type size) const& -> partitioned_const_type {return chunked_aux(size);}
+	HD constexpr auto chunked(size_type size)      & -> partitioned_type       {return chunked_aux(size);}
+	HD constexpr auto chunked(size_type size)     && -> partitioned_type       {return chunked_aux(size);}
 
  private:
 	constexpr auto reversed_aux() const -> basic_array {
