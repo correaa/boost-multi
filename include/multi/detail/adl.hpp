@@ -194,7 +194,7 @@ auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size
 		using _ = std::allocator_traits<Alloc>;
 		ForwardIt current = first;
 		try {
-			return std::for_each_n(first, count, [&](auto& elem) { _::construct(alloc, std::addressof(elem)); ++current; });
+			return std::for_each_n(first, count, [&](T& elem) { _::construct(alloc, std::addressof(elem)); ++current; });
 		//	std::any_of(first, first + count, [](auto& element) {
 		//		_::construct(alloc, 
 		//	});
@@ -203,7 +203,7 @@ auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size
 		//	}
 		// LCOV_EXCL_START  // TODO(correaa) add test
 		} catch(...) {
-			std::for_each(first, current, [&](auto& elem) {_::destroy(alloc, std::addressof(elem));});
+			std::for_each(first, current, [&](T& elem) {_::destroy(alloc, std::addressof(elem));});
 		//	for(; current != first; ++first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 		//		_::destroy(alloc, std::addressof(*first));
 		//	}
