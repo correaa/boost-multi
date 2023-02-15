@@ -153,7 +153,7 @@ NVHPC-2022:
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-serialization-dev
     - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ --version
     - mkdir build && cd build
-    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ cmake .. -DENABLE_CUDA=1 -DCMAKE_CUDA_ARCHITECTURES=61
+    - CXX=/opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ cmake ..
     - cmake --build . --parallel 2 || cmake --build . --verbose
     - ctest --output-on-failure
   needs: ["OLDGNUSANICHECKCOV"]
