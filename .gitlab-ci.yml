@@ -146,7 +146,10 @@ NVHPC-2022:
   allow_failure: false
   stage: build
   image: nvcr.io/nvidia/nvhpc:22.11-devel-cuda_multi-ubuntu22.04
+  tags:
+    - nvidia-docker
   script:
+    - nvidia-smi
     - apt-get update && apt-get install --no-install-recommends -y cmake make libboost-test-dev libboost-serialization-dev
     - /opt/nvidia/hpc_sdk/Linux_x86_64/2022/compilers/bin/nvc++ --version
     - mkdir build && cd build
@@ -175,6 +178,7 @@ NVCC:
   tags:
     - nvidia-docker
   script:
+    - nvidia-smi
     - apt-get update && apt-get install --no-install-recommends -y cmake wget pkg-config make libboost-test-dev libboost-serialization-dev libboost-timer-dev libblas-dev libfftw3-dev
     - mkdir build && cd build
     - ls /usr/local
@@ -258,6 +262,7 @@ INQ-NVCC-OMPI-GPU:
   tags:
     - nvidia-docker
   script:
+    - nvidia-smi
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git gfortran libopenmpi-dev libblas-dev libboost-serialization-dev libboost-filesystem-dev libfftw3-dev libhdf5-dev liblapack-dev pkg-config
     - export PREFIX=`mktemp -d`
     - git clone --recurse-submodules https://gitlab.com/npneq/inq.git
@@ -323,6 +328,7 @@ QMCPACK-CUDA:
   tags:
     - nvidia-docker
   script:
+    - nvidia-smi
     - apt-get -qq update && apt-get -qq install --no-install-recommends -y ca-certificates cmake git libopenmpi-dev cmake g++ git gfortran libblas-dev libboost-serialization-dev libfftw3-dev libhdf5-dev liblapack-dev libopenmpi-dev make numdiff pkg-config python3 python3-h5py python3-numpy python3-mpi4py python3-scipy libxml2-dev
     - git clone --depth 1 https://github.com/QMCPACK/qmcpack.git
     - cd qmcpack
