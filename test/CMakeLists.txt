@@ -55,7 +55,7 @@ $<$<COMPILE_LANG_AND_ID:CUDA,NVIDIA>:
 --expt-relaxed-constexpr --extended-lambda --Werror=cross-execution-space-call -Xcudafe=--display_error_number -Xcudafe=--diag_error=incompatible_assignment_operands -Xcudafe=--diag_error=returning_ptr_to_local_variable -Xcudafe=--diag_error=subscript_out_of_range -Xcudafe=--diag_error=used_before_set -Xcudafe=--diag_error=undefined_preproc_id -Xcudafe=--diag_error=implicit_func_decl -Xcudafe=--diag_error=implicit_return_from_non_void_function -Xcudafe=--diag_error=missing_type_specifier
 >
 $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_COMPILER_ID:Clang>>>: -Werror -Wno-unknown-warning # (activates -Wunknown-pragmas)
--WNSObject-attribute  # (gcc 12, not in 11)
+# -WNSObject-attribute  # (gcc 12, not in 11)
 # -Wabi=13 -Wabi-tag # (maybe important when linking with very old libraries)
 -Waddress
 -Waddress-of-packed-member # (gcc 11, not in gcc 8)
@@ -65,15 +65,15 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 # -Walloc-size-larger-than=<bytes> # (gcc 12, not in 11)
 -Walloc-zero  # -Walloc-size-larger-than=<bytes>
 -Walloca  # -Walloca-larger-than=<number>
--Warith-conversion # (gcc 11, not in gcc 9)
+# -Warith-conversion # (gcc 11, not in gcc 9)
 -Warray-bounds # -Warray-bounds=<0,2>
--Warray-compare # (gcc 12, not in gcc 9)
--Warray-parameter #=<0,2> # (gcc 11, not in gcc 10)
+# -Warray-compare # (gcc 12, not in gcc 9)
+# -Warray-parameter #=<0,2> # (gcc 11, not in gcc 10)
 -Wattribute-alias #=<0,2> # (gcc 12, not in 11)
 -Wattribute-warning # (gcc 9, not in 8)
 -Wattributes
 -Wbool-compare -Wbool-operation
--Wbidi-chars -Wbidi-chars=any # (gcc 12, not in 11)
+# -Wbidi-chars -Wbidi-chars=any # (gcc 12, not in 11)
 -Wbuiltin-declaration-mismatch -Wbuiltin-macro-redefined
 #-Wc++-compat
 -Wc++0x-compat -Wc++11-compat -Wc++14-compat -Wc++17-compat
@@ -87,35 +87,35 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 -Wchar-subscripts
 -Wclass-conversion -Wclass-memaccess # (gcc 12, not in 11)
 -Wclobbered
--Wcomma-subscript # (gcc 12, not in 11)
+# -Wcomma-subscript # (gcc 12, not in 11)
 -Wcomment  # (same as -Wcomments)
 -Wconditionally-supported
 -Wconversion -Wconversion-null
 -Wcoverage-mismatch -Wcpp
--Wctad-maybe-unsupported  # TODO(correaa) add ctad explicitly as necessary
+# -Wctad-maybe-unsupported  # (gcc 12, not in 9)
 -Wctor-dtor-privacy
 -Wdangling-else
--Wdangling-pointer # (gcc 12, not in 11)
+# -Wdangling-pointer # (gcc 12, not in 11)
 -Wdate-time
 -Wdelete-incomplete -Wdelete-non-virtual-dtor
 -Wdeprecated
 -Wdeprecated-copy -Wdeprecated-copy-dtor # (gcc 11, not in gcc 8)
 -Wdeprecated-declarations
--Wdeprecated-enum-enum-conversion -Wdeprecated-enum-float-conversion # (gcc 11, not in gcc 10)
+# -Wdeprecated-enum-enum-conversion -Wdeprecated-enum-float-conversion # (gcc 11, not in gcc 10)
 -Wdisabled-optimization
 -Wdiv-by-zero -Wdouble-promotion
 -Wduplicated-branches -Wduplicated-cond
 # -Weffc++ # (doesn't allow some advanced techniques, such as CRTP)
 -Wempty-body -Wendif-labels
 -Wenum-compare
--Wenum-conversion # (gcc 11, not in gcc 10)
+# -Wenum-conversion # (gcc 11, not in gcc 10)
 -Wexpansion-to-defined
--Wexceptions  # (gcc 11, not in gcc 10)
+# -Wexceptions  # (gcc 11, not in gcc 10)
 -Wextra-semi
 -Wfloat-conversion # -Wfloat-equal # (disallows float equality)
 -Wformat=2
 -Wformat-contains-nul # (gcc 12, not in 11)
--Wformat-diag # (gcc 10, not in gcc 9)
+# -Wformat-diag # (gcc 10, not in gcc 9)
 -Wformat-extra-args -Wformat-nonliteral
 -Wformat-overflow=1
 -Wformat-security -Wformat-signedness -Wformat-truncation -Wformat-y2k -Wformat-zero-length
@@ -125,13 +125,14 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 -Wignored-attributes # -Wignored-qualifiers
 -Wno-ignored-qualifiers
 -Wimplicit-fallthrough #=3  # -Wimplicit-fallthrough=<0,5>
--Winaccessible-base # (gcc 12, not in 11)
--Winfinite-recursion  -Winherited-variadic-ctor -Winit-list-lifetime # (gcc 12, not in 11)
+# -Winaccessible-base # (gcc 12, not in 11)
+# -Winfinite-recursion # (gcc 12, not in 9)
+-Winherited-variadic-ctor -Winit-list-lifetime # (gcc 12, not in 11)
 -Winit-self
 -Wno-inline  # not all inline attempts can be successful
 -Wint-in-bool-context -Wint-to-pointer-cast
--Winterference-size # (gcc 12, not in 11)
--Winvalid-imported-macros # (gcc 11, not in gcc 10)
+# -Winterference-size # (gcc 12, not in 11)
+# -Winvalid-imported-macros # (gcc 11, not in gcc 10)
 -Winvalid-memory-model -Winvalid-offsetof -Winvalid-pch
 # -Wlarger-than=<byte-size>  # (disallow large objects types? in executable)
 -Wliteral-suffix
@@ -140,12 +141,12 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 -Wlto-type-mismatch -Wmain -Wmaybe-uninitialized
 -Wmemset-elt-size -Wmemset-transposed-args
 -Wmisleading-indentation
--Wmismatched-dealloc -Wmismatched-new-delete # (gcc 11, not in gcc 10)
--Wmismatched-tags # (gcc 11, not in gcc 9)
+# -Wmismatched-dealloc -Wmismatched-new-delete # (gcc 11, not in gcc 10)
+# -Wmismatched-tags # (gcc 11, not in gcc 9)
 -Wmissing-attributes
 -Wmissing-braces -Wmissing-declarations -Wmissing-field-initializers -Wmissing-format-attribute -Wmissing-include-dirs -Wmissing-noreturn
 -Wmissing-profile # (gcc 11, not in gcc 8)
--Wmissing-requires -Wmissing-template-keyword # (gcc 12, not in 11)
+# -Wmissing-requires -Wmissing-template-keyword # (gcc 12, not in 11)
 -Wmultichar
 -Wno-multiple-inheritance # (disallows composition by inheritance)
 -Wmultistatement-macros
@@ -158,7 +159,7 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 -Wnormalized  #=nfc -Wnormalized=[none|id|nfc|nfkc]
 -Wnull-dereference
 -Wodr -Wold-style-cast
--Wopenacc-parallelism # (gcc 12, not in 11)
+# -Wopenacc-parallelism # (gcc 12, not in 11)
 -Wopenmp-simd -Woverflow
 -Woverlength-strings -Woverloaded-virtual
 -Wpacked -Wpacked-bitfield-compat -Wpacked-not-aligned
@@ -171,10 +172,10 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 -Wpragmas
 -Wprio-ctor-dtor # (gcc 11, not in gcc 8)
 -Wpsabi
--Wrange-loop-construct # (gcc 11, not in gcc 10)
+# -Wrange-loop-construct # (gcc 11, not in gcc 10)
 -Wredundant-decls
 -Wredundant-move # (gcc 11, not in gcc 8)
--Wredundant-tags # (gcc 11, not in gcc 9)
+# -Wredundant-tags # (gcc 11, not in gcc 9)
 -Wregister
 -Wreorder # (gcc 12, not in 11)
 -Wreturn-local-addr -Wreturn-type
@@ -185,16 +186,16 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 -Wsign-compare -Wsign-conversion -Wsign-promo
 -Wsized-deallocation
 -Wsizeof-array-argument
--Wsizeof-array-div # (gcc 11, not in gcc 10)
+# -Wsizeof-array-div # (gcc 11, not in gcc 10)
 -Wsizeof-pointer-div
 -Wsizeof-pointer-memaccess
 -Wstack-protector  # -Wstack-usage=<byte-size>
 -Wstrict-aliasing  #=3  -Wstrict-aliasing=<0,3>
 -Wstrict-null-sentinel  #=1  -Wstrict-overflow=<0,5>
 -Wstrict-overflow  #=1  -Wstrict-overflow=<0,5>
--Wstring-compare # (gcc 11, not in gcc 9)
+# -Wstring-compare # (gcc 11, not in gcc 9)
 -Wstringop-overflow  #=2  -Wstringop-overflow=<0,4>
--Wstringop-overread # (gcc 11, not in gcc 10)
+# -Wstringop-overread # (gcc 11, not in gcc 10)
 -Wstringop-truncation
 -Wsubobject-linkage
 -Wsuggest-attribute=cold # (gcc 12, not in 11)
@@ -203,7 +204,7 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 -Wsuggest-final-methods -Wsuggest-final-types
 -Wsuggest-override # (gcc 12, not in gcc 11)
 -Wswitch -Wswitch-bool -Wswitch-default -Wswitch-enum
--Wswitch-outside-range # (gcc 11, not in gcc 9)
+# -Wswitch-outside-range # (gcc 11, not in gcc 9)
 -Wswitch-unreachable
 -Wsync-nand -Wsynth
 -Wno-system-headers # (expects system headers to be warning-compliant which they are not)
@@ -211,26 +212,26 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 -Wno-templates # (disallows templates, C-tool)
 -Wterminate # (gcc 12, not in 11)
 -Wtrampolines -Wtrigraphs
--Wtrivial-auto-var-init # (gcc 12, not in 11)
--Wtsan # (gcc 11, not in 10)
+# -Wtrivial-auto-var-init # (gcc 12, not in 11)
+# -Wtsan # (gcc 11, not in 10)
 -Wtype-limits -Wundef -Wuninitialized
 -Wno-unknown-pragmas  # (see above) -Wunknown-pragmas (other compilers need their own pragmas for their warnings)
 -Wunreachable-code -Wunsafe-loop-optimizations
 -Wunused -Wunused-but-set-parameter -Wunused-but-set-variable
 -Wunused-const-variable  #=2 TODO(correaa) add [[maybe_unused]] to niebloids
 -Wunused-function -Wunused-label -Wunused-local-typedefs -Wunused-macros -Wunused-parameter -Wunused-result -Wunused-value -Wunused-variable
--Wuse-after-free  # =<0,3> # (gcc 12, not in 11)
+# -Wuse-after-free  # =<0,3> # (gcc 12, not in 11)
 -Wuseless-cast
 -Wvarargs -Wvariadic-macros -Wvector-operation-performance
--Wvexing-parse # (gcc 11, not in gcc 10)
+# -Wvexing-parse # (gcc 11, not in gcc 10)
 -Wvirtual-inheritance -Wvirtual-move-assign
 -Wvla # -Wvla-larger-than=<number> # (gcc 12, not in 11)
--Wvla-parameter # (gcc 11, not in gcc 10)
--Wvolatile # (gcc 11, not in gcc 9)
+# -Wvla-parameter # (gcc 11, not in gcc 10)
+# -Wvolatile # (gcc 11, not in gcc 9)
 -Wvolatile-register-var
 -Wwrite-strings
 -Wzero-as-null-pointer-constant
--Wzero-length-bounds # (gcc 12, not in 11)
+# -Wzero-length-bounds # (gcc 12, not in 11)
 >
 $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID:Clang>>:-Werror -Wall -Wpedantic -Wextra
 -WCFString-literal
