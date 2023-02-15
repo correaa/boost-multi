@@ -65,17 +65,6 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 # -Walloc-size-larger-than=<bytes> # (gcc 12, not in 11)
 -Walloc-zero  # -Walloc-size-larger-than=<bytes>
 -Walloca  # -Walloca-larger-than=<number>
--Wanalyzer-double-fclose -Wanalyzer-double-free -Wanalyzer-exposure-through-output-file -Wanalyzer-file-leak -Wanalyzer-free-of-non-heap -Wanalyzer-malloc-leak # (gcc 11, not in gcc 9)
--Wanalyzer-mismatching-deallocation # (gcc 11, not in gcc 10)
--Wanalyzer-null-argument -Wanalyzer-possible-null-argument -Wanalyzer-null-dereference # (gcc 11, not in gcc 9)
--Wanalyzer-possible-null-dereference # (gcc 11, not in gcc 9)
--Wanalyzer-shift-count-negative -Wanalyzer-shift-count-overflow # (gcc 11, not in gcc 10)
--Wanalyzer-stale-setjmp-buffer
--Wanalyzer-tainted-allocation-size # (gcc 12, not in 11)
--Wanalyzer-tainted-array-index # (gcc 11, not in gcc 9)
--Wanalyzer-tainted-divisor -Wanalyzer-tainted-offset -Wanalyzer-tainted-size -Wanalyzer-too-complex -Wanalyzer-unsafe-call-within-signal-handler  # (gcc 12, not in 11)
--Wanalyzer-unsafe-call-within-signal-handler -Wanalyzer-use-after-free -Wanalyzer-use-of-pointer-in-stale-stack-frame -Wanalyzer-use-of-uninitialized-value
--Wanalyzer-write-to-const -Wanalyzer-write-to-string-literal # (gcc 11, not in gcc 10)
 -Warith-conversion # (gcc 11, not in gcc 9)
 -Warray-bounds # -Warray-bounds=<0,2>
 -Warray-compare # (gcc 12, not in gcc 9)
@@ -139,7 +128,7 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 -Winaccessible-base # (gcc 12, not in 11)
 -Winfinite-recursion  -Winherited-variadic-ctor -Winit-list-lifetime # (gcc 12, not in 11)
 -Winit-self
--Winline
+-Wno-inline  # not all inline attempts can be successful
 -Wint-in-bool-context -Wint-to-pointer-cast
 -Winterference-size # (gcc 12, not in 11)
 -Winvalid-imported-macros # (gcc 11, not in gcc 10)
@@ -217,7 +206,7 @@ $<$<AND:$<CXX_COMPILER_ID:GNU>,$<NOT:$<CUDA_COMPILER_ID:NVIDIA>>,$<NOT:$<CUDA_CO
 -Wswitch-outside-range # (gcc 11, not in gcc 9)
 -Wswitch-unreachable
 -Wsync-nand -Wsynth
-# -Wsystem-headers # (expects system headers to be warning-compliant which they are not)
+-Wno-system-headers # (expects system headers to be warning-compliant which they are not)
 -Wtautological-compare
 -Wno-templates # (disallows templates, C-tool)
 -Wterminate # (gcc 12, not in 11)
