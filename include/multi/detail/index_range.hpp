@@ -50,16 +50,6 @@ class iterator_facade {
 	constexpr auto operator[](difference_type n) const {return *(self() + n);}
 };
 
-constexpr struct dist{
-	template<class A, class B>
-	constexpr auto operator()(A alpha, B omega) const{return std::distance(alpha, omega);}
-} distance_hof;
-
-constexpr struct adv {
-	template<class X, class N>
-	constexpr auto operator()(X& alpha, N omega) const{return std::advance(alpha, omega);}
-} advance_hof;
-
 template<typename IndexType = std::true_type, typename IndexTypeLast = IndexType, class Plus = std::plus<>, class Minus = std::minus<> >
 class range {
 	IndexType     first_ = {};
@@ -185,6 +175,9 @@ class range {
 	[[nodiscard]] constexpr auto contains(value_type const& value) const {return value >= first_ and value < last_;}
 };
 
+template<typename IndexType, typename IndexTypeLast = IndexType>  // , class Plus = std::plus<>, class Minus = std::minus<> >
+range(IndexType, IndexTypeLast) -> range<IndexType, IndexTypeLast>; // #3
+
 template<class IndexType = std::true_type, typename IndexTypeLast = IndexType>
 constexpr auto make_range(IndexType first, IndexTypeLast last) -> range<IndexType, IndexTypeLast> {
 	return {first, last};
@@ -266,6 +259,12 @@ struct extension_t : public range<IndexType, IndexTypeLast> {
 		return extension_t{first, last};
 	}
 };
+
+template<class IndexType, class IndexTypeLast>
+extension_t(IndexType, IndexTypeLast) -> extension_t<IndexType, IndexTypeLast>;
+
+template<class IndexType>
+extension_t(IndexType) -> extension_t<IndexType>;
 
 template<class IndexType = std::ptrdiff_t, class IndexTypeLast = decltype(std::declval<IndexType>() + 1)>
 constexpr auto make_extension_t(IndexType first, IndexTypeLast last) -> extension_t<IndexType, IndexTypeLast> {

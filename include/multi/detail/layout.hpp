@@ -423,8 +423,8 @@ struct layout_t<0, SSize>
 	friend constexpr auto dimensionality(layout_t const& /*self*/) {return rank_v;}
 
  private:
-	sub_type    sub_    = {};  // TODO(correaa)  use  [[no_unique_address]]
-	stride_type stride_ = {};  // TODO(correaa)  use  [[no_unique_address]]
+	sub_type    sub_    = {};  // TODO(correaa)  use  [[no_unique_address]] in C++20
+	stride_type stride_ = {};  // TODO(correaa)  use  [[no_unique_address]] in C++20
 	offset_type offset_ =  0;
 	nelems_type nelems_ =  1;  // TODO(correaa) : or std::numeric_limits<nelems_type>::max(); ?
 
