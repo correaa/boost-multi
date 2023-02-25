@@ -2537,6 +2537,22 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	friend constexpr auto decay(array_ref const& self) -> decay_type const& {return self.decay();}
 
  private:
+	template<class TTN>
+	constexpr auto to_carray() const -> TTN& {
+		if(this->size() != std::extent<TTN>::value) {throw std::bad_cast{};}
+		assert( this->size() == std::extent<TTN>::value );
+		return *reinterpret_cast<std::remove_reference_t<TTN>*>(reinterpret_cast<void*>(array_ref::base_));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+	}
+
+ public:
+	template<class TTN, std::enable_if_t<std::is_array<TTN>::value, int> =0>
+	constexpr explicit operator TTN const&() const& {return to_carray<TTN>();}  // TODO(correaa) do all this for 1D case
+	template<class TTN, std::enable_if_t<std::is_array<TTN>::value, int> =0>
+	constexpr explicit operator TTN&() && {return to_carray<TTN>();}
+	template<class TTN, std::enable_if_t<std::is_array<TTN>::value, int> =0>
+	constexpr explicit operator TTN&() & {return to_carray<TTN>();}
+
+ private:
 	template<class Ar>
 	auto serialize_structured(Ar& arxiv, unsigned int const version) {
 		basic_array<T, D, ElementPtr>::serialize(arxiv, version);
