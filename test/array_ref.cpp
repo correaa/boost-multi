@@ -470,9 +470,9 @@ BOOST_AUTO_TEST_CASE(array_ref_move_assigment_2D) {
 	}
 }
 
-void fff(double(&A)[5][4]);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-void fff(double(&A)[5][4]) {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-	BOOST_REQUIRE(A[0][1] == 1.0);
+void fff(double(&carr)[5][4]);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+void fff(double(&carr)[5][4]) {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+	BOOST_REQUIRE(carr[0][1] == 1.0);
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_conversion_2D) {
@@ -480,14 +480,14 @@ BOOST_AUTO_TEST_CASE(array_ref_conversion_2D) {
 	std::iota(arr.elements().begin(), arr.elements().end(), 0.0);
 
 	{
-		auto& A = static_cast<double(&)[5][4]>(arr);
-		BOOST_REQUIRE( &A[3][2] == &arr[3][2] );
+		auto& carr = static_cast<double(&)[5][4]>(arr);
+		BOOST_REQUIRE( &carr[3][2] == &arr[3][2] );
 
 		fff(static_cast<double(&)[5][4]>(arr));  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	}
 	// {
-	// 	double(&A)[5][4] = arr;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-	// 	BOOST_REQUIRE( &A[3][2] == &arr[3][2] );
+	// 	double(&carr)[5][4] = arr;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+	// 	BOOST_REQUIRE( &carr[3][2] == &arr[3][2] );
 
 	// 	fff(static_cast<double(&)[5][4]>(arr));
 	// }
