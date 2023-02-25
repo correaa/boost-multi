@@ -4,7 +4,7 @@
 //#define BOOST_TEST_MODULE "C++ Unit Tests for Multi array reference"  // test title NOLINT(cppcoreguidelines-macro-usage)
 #include<boost/test/unit_test.hpp>
 
-#include "multi/array.hpp"
+#include <multi/array.hpp>
 
 #include<numeric>  // for std::iota
 
@@ -443,10 +443,10 @@ BOOST_AUTO_TEST_CASE(array_ref_move_assigment_2D) {
 	}
 	{
 		multi::array<double, 2> arr({5, 4});
-		std::iota(arr.elements().begin(), arr.elements().end(), 0.);
+		std::iota(arr.elements().begin(), arr.elements().end(), 0.0);
 
 		multi::array<double, 2> arr2({5, 4});
-		std::iota(arr2.elements().begin(), arr2.elements().end(), 10.);
+		std::iota(arr2.elements().begin(), arr2.elements().end(), 10.0);
 
 		multi::array_ref<double, 2>&& ref2{{5, 4}, arr2.data_elements()};
 
@@ -468,4 +468,27 @@ BOOST_AUTO_TEST_CASE(array_ref_move_assigment_2D) {
 
 		BOOST_REQUIRE( arr2 == arr );
 	}
+}
+
+void fff(double(&A)[5][4]);
+void fff(double(&A)[5][4]) {
+	BOOST_REQUIRE(A[0][1] == 1.0);
+}
+
+BOOST_AUTO_TEST_CASE(array_ref_conversion_2D) {
+	multi::array<double, 2> arr({5, 4});
+	std::iota(arr.elements().begin(), arr.elements().end(), 0.0);
+
+	{
+		auto& A = static_cast<double(&)[5][4]>(arr);
+		BOOST_REQUIRE( &A[3][2] == &arr[3][2] );
+
+		fff(static_cast<double(&)[5][4]>(arr));
+	}
+	// {
+	// 	double(&A)[5][4] = arr;
+	// 	BOOST_REQUIRE( &A[3][2] == &arr[3][2] );
+
+	// 	fff(static_cast<double(&)[5][4]>(arr));
+	// }
 }
