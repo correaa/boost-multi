@@ -2541,7 +2541,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	constexpr auto to_carray() const -> TTN& {
 		if(this->size() != std::extent<TTN>::value) {throw std::bad_cast{};}
 		assert( this->size() == std::extent<TTN>::value );
-		return *reinterpret_cast<std::remove_reference_t<TTN>*>(reinterpret_cast<void*>(array_ref::base_));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+		return reinterpret_cast<TTN&>(*array_ref::base_);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	}
 
  public:
