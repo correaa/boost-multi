@@ -701,7 +701,9 @@ $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CUDA_COMPILER_ID
 -Wundeclared-selector
 -Wundef
 # -Wundef-prefix (clang 11, not in clang 9)
--Wundefined-bool-conversion -Wundefined-func-template -Wundefined-inline -Wundefined-internal -Wundefined-internal-type -Wundefined-reinterpret-cast -Wundefined-var-template -Wunderaligned-exception-object
+-Wundefined-bool-conversion -Wundefined-func-template -Wundefined-inline -Wundefined-internal -Wundefined-internal-type
+-Wno-undefined-reinterpret-cast 
+-Wundefined-var-template -Wunderaligned-exception-object
 -Wunevaluated-expression
 -Wunguarded-availability -Wunguarded-availability-new
 -Wunicode -Wunicode-homoglyph -Wunicode-whitespace -Wunicode-zero-width
