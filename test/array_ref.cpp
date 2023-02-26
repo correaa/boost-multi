@@ -480,7 +480,7 @@ BOOST_AUTO_TEST_CASE(array_ref_conversion_2D) {
 	std::iota(arr.elements().begin(), arr.elements().end(), 0.0);
 
 	{
-		auto& carr = static_cast<double(&)[5][4]>(arr);
+		auto& carr = static_cast<double(&)[5][4]>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		BOOST_REQUIRE( &carr[3][2] == &arr[3][2] );
 
 		fff(static_cast<double(&)[5][4]>(arr));  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
