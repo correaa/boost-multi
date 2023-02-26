@@ -2537,20 +2537,28 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	friend constexpr auto decay(array_ref const& self) -> decay_type const& {return self.decay();}
 
  private:
+	template<class TTN, std::size_t DD = 0>
+	void check_sizes() const {
+		if(static_cast<size_type>(std::get<DD>(this->sizes())) != static_cast<size_type>(std::extent<TTN, static_cast<unsigned>(DD)>::value)) {
+			throw std::bad_cast{};
+		}
+		if constexpr(DD + 1 != D) {
+			check_sizes<TTN, DD + 1>();
+		}
+	}
 	template<class TTN>
 	constexpr auto to_carray() const -> TTN& {
-		if(this->size() != std::extent<TTN>::value) {throw std::bad_cast{};}
-		assert( this->size() == std::extent<TTN>::value );
+		check_sizes<TTN>();
 		return reinterpret_cast<TTN&>(*array_ref::base_);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 	}
 
  public:
-	template<class TTN, std::enable_if_t<std::is_array<TTN>::value, int> =0>
-	constexpr explicit operator TTN const&() const& {return to_carray<TTN>();}  // TODO(correaa) do all this for 1D case
-	template<class TTN, std::enable_if_t<std::is_array<TTN>::value, int> =0>
-	constexpr explicit operator TTN&() && {return to_carray<TTN>();}
-	template<class TTN, std::enable_if_t<std::is_array<TTN>::value, int> =0>
-	constexpr explicit operator TTN&() & {return to_carray<TTN>();}
+	template<class TTN, std::enable_if_t<std::is_array<TTN>::value, int> = 0>
+	constexpr explicit operator TTN const&() const& { return to_carray<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	template<class TTN, std::enable_if_t<std::is_array<TTN>::value, int> = 0>
+	constexpr explicit operator TTN&() && { return to_carray<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
+	template<class TTN, std::enable_if_t<std::is_array<TTN>::value, int> = 0>
+	constexpr explicit operator TTN&() & { return to_carray<TTN>(); }  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions)
 
  private:
 	template<class Ar>
