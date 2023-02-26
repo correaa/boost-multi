@@ -470,9 +470,39 @@ BOOST_AUTO_TEST_CASE(array_ref_move_assigment_2D) {
 	}
 }
 
-void fff(double(&carr)[5][4]);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-void fff(double(&carr)[5][4]) {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+void f1d5(double(&carr)[5]);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+void f1d5(double(&carr)[5]) {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+	BOOST_REQUIRE(carr[1] == 1.0);
+}
+
+void f2d54(double(&carr)[5][4]);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+void f2d54(double(&carr)[5][4]) {  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	BOOST_REQUIRE(carr[0][1] == 1.0);
+}
+
+BOOST_AUTO_TEST_CASE(array_ref_conversion_1D) {
+	multi::array<double, 1> arr(5);
+	BOOST_REQUIRE( arr.size() == 5 );
+	std::iota(arr.elements().begin(), arr.elements().end(), 0.0);
+
+	{
+		auto& carr = static_cast<double(&)[5]>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		BOOST_REQUIRE( &carr[3] == &arr[3] );
+
+		f1d5(static_cast<double(&)[5]>(arr));  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+	}
+	{
+		double(&carr)[5](arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		BOOST_REQUIRE( &carr[3] == &arr[3] );
+ 	//  vvv this will warn with -Wold-style-cast
+	//  f1d5((double(&)[5])(arr));  // NOLINT(google-readability-casting,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+	}
+	{ //  vvv this syntax needs cast operator to be non-explicit
+	//  double(&carr)[5] = arr;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+	//  BOOST_REQUIRE( &carr[3] == &arr[3] );
+
+	//  f1d5(arr);
+	}
 }
 
 BOOST_AUTO_TEST_CASE(array_ref_conversion_2D) {
@@ -483,12 +513,19 @@ BOOST_AUTO_TEST_CASE(array_ref_conversion_2D) {
 		auto& carr = static_cast<double(&)[5][4]>(arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 		BOOST_REQUIRE( &carr[3][2] == &arr[3][2] );
 
-		fff(static_cast<double(&)[5][4]>(arr));  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		f2d54(static_cast<double(&)[5][4]>(arr));  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
 	}
-	// {
-	// 	double(&carr)[5][4] = arr;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
-	// 	BOOST_REQUIRE( &carr[3][2] == &arr[3][2] );
+	{
+		double(&carr)[5][4](arr);  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+		BOOST_REQUIRE( &carr[3][2] == &arr[3][2] );
 
-	// 	fff(static_cast<double(&)[5][4]>(arr));
-	// }
+ 	//  vvv this will warn with -Wold-style-cast
+	//  f2d54((double(&)[5][4])(arr));  // NOLINT(google-readability-casting,cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+	}
+	{ //  vvv this syntax needs cast operator to be non-explicit
+	//  double(&carr)[5][4] = arr;  // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays)
+	//  BOOST_REQUIRE( &carr[3][2] == &arr[3][2] );
+
+	//  f2d54(arr);
+	}
 }
