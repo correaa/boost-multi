@@ -2537,9 +2537,9 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	friend constexpr auto decay(array_ref const& self) -> decay_type const& {return self.decay();}
 
  private:
-	template<class TTN, dimensionality_type DD = 0>
+	template<class TTN, std::size_t DD = 0>
 	void check_sizes() const {
-		if(std::get<DD>(this->sizes()) != std::extent<TTN, DD>::value) {
+		if(std::get<DD>(this->sizes()) != static_cast<size_type>(std::extent<TTN, DD>::value)) {
 			throw std::bad_cast{};
 		}
 		if constexpr(DD + 1 != D) {
