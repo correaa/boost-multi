@@ -44,33 +44,33 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_0x0) {
 	{
 		multi::array<double, 2> B;  // NOLINT(readability-identifier-length) BLAS naming
 		// B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
-		blas::trsm(blas::side::left, blas::filling::upper, blas::diagonal::general, 1., A, B);
+		blas::trsm(blas::side::left, blas::filling::upper, blas::diagonal::general, 1.0, A, B);
 	}
 }
 
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_1x1) {
 	namespace blas = multi::blas;
 	multi::array<double, 2> const A = {  // NOLINT(readability-identifier-length) BLAS naming
-		{10., },
+		{10.0, },
 	};
 	{
 		multi::array<double, 2> B = {  // NOLINT(readability-identifier-length) BLAS naming
-			{3., },
+			{3.0, },
 		};
 		auto const B_cpy = B;
-		blas::trsm(blas::side::left, blas::filling::upper, blas::diagonal::general, 1., A, B);
+		blas::trsm(blas::side::left, blas::filling::upper, blas::diagonal::general, 1.0, A, B);
 		// B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
-		BOOST_REQUIRE_CLOSE( B[0][0] , 3./10. , 0.00001 );
-		BOOST_REQUIRE_CLOSE( (+blas::gemm(1., A, B))[0][0] , B_cpy[0][0] , 0.00001 );
+		BOOST_REQUIRE_CLOSE( B[0][0] , 3.0/10.0 , 0.00001 );
+		BOOST_REQUIRE_CLOSE( (+blas::gemm(1.0, A, B))[0][0] , B_cpy[0][0] , 0.00001 );
 	}
 	{
 		multi::array<double, 2> B = {  // NOLINT(readability-identifier-length) BLAS naming
-			{3., },
+			{3.0, },
 		};
 		auto const B_cpy = B;
 		// B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
-		blas::trsm(blas::side::left, blas::filling::upper, blas::diagonal::general, 2., A, B);
-		BOOST_REQUIRE_CLOSE( B[0][0] , 2.*3./10. , 0.00001 );
+		blas::trsm(blas::side::left, blas::filling::upper, blas::diagonal::general, 2.0, A, B);
+		BOOST_REQUIRE_CLOSE( B[0][0] , 2.0*3.0/10.0 , 0.00001 );
 		BOOST_REQUIRE_CLOSE( (+blas::gemm(1., A, B))[0][0] , 2.*B_cpy[0][0] , 0.00001 );
 	}
 	 {
@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_1x1) {
 		};
 		auto const B_cpy = B;
 		// B=Solve(A.X=alpha*B, X) B=A⁻¹B, B⊤=B⊤.(A⊤)⁻¹, A upper triangular (implicit zeros below)
-		blas::trsm(blas::side::left, blas::filling::upper, blas::diagonal::general, 1., A, B);
+		blas::trsm(blas::side::left, blas::filling::upper, blas::diagonal::general, 1.0, A, B);
 		BOOST_REQUIRE_CLOSE( B[0][0] , 3./10. , 0.00001 );
 		BOOST_REQUIRE_CLOSE( B[0][1] , 4./10. , 0.00001 );
 		BOOST_REQUIRE_CLOSE( B[0][2] , 5./10. , 0.00001 );
