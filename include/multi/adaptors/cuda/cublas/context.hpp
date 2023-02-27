@@ -153,7 +153,7 @@ class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})
 		,int> =0
 	>
 	void trsm(char side, char ul, char transA, char diag, ssize_t m, ssize_t n, ALPHA alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb) {
-		sync_call<cublasDtrsm>(cublas::side{side}, cublas::filling{ul}, cublas::operation{transA}, cublas::diagonal{diag}, m, n, (double const*)&alpha, (cuDoubleComplex const*)raw_pointer_cast(aa), lda, (double*)raw_pointer_cast(bb), ldb);
+		sync_call<cublasDtrsm>(cublas::side{side}, cublas::filling{ul}, cublas::operation{transA}, cublas::diagonal{diag}, m, n, (double const*)&alpha, (double const*)raw_pointer_cast(aa), lda, (double*)raw_pointer_cast(bb), ldb);
 	}
 
 	template<
