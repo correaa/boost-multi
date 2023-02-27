@@ -363,23 +363,22 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	friend constexpr auto data_elements(static_array      & self) {return           self .data_elements();}
 	friend constexpr auto data_elements(static_array     && self) {return std::move(self).data_elements();}
 
-	       constexpr auto base()                 &       -> typename static_array::element_ptr       {return ref::base();}
-	       constexpr auto base()            const&       -> typename static_array::element_const_ptr {return typename static_array::element_const_ptr{ref::base()};}
-	friend
+	       constexpr auto base()                 &       -> typename static_array::element_ptr       { return ref::base(); }
+	       constexpr auto base()            const&       -> typename static_array::element_const_ptr { return typename static_array::element_const_ptr{ref::base()}; }
+
 	#if not defined(__NVCC__)
-	constexpr
+		#define MULTI_NONVCC_CONSTEXPR   constexpr
+	#else
+		#define MULTI_NONVCC_CONSTEXPR /*constexpr*/
 	#endif
-	auto base(static_array      & self) -> typename static_array::element_ptr       {return self.base();}
-	friend
-	#if not defined(__NVCC__)
-	constexpr
-	#endif
-	auto base(static_array const& self) -> typename static_array::element_const_ptr {return self.base();}
+
+	friend MULTI_NONVCC_CONSTEXPR auto base(static_array      & self) -> typename static_array::element_ptr       { return self.base(); }
+	friend MULTI_NONVCC_CONSTEXPR auto base(static_array const& self) -> typename static_array::element_const_ptr { return self.base(); }
 
 	       constexpr auto origin()                 &       -> typename static_array::element_ptr       {return ref::origin();}
 	       constexpr auto origin()            const&       -> typename static_array::element_const_ptr {return ref::origin();}
-	friend constexpr auto origin(static_array      & self) -> typename static_array::element_ptr       {return self.origin();}
-	friend constexpr auto origin(static_array const& self) -> typename static_array::element_const_ptr {return self.origin();}
+	friend MULTI_NONVCC_CONSTEXPR auto origin(static_array      & self) -> typename static_array::element_ptr       {return self.origin();}
+	friend MULTI_NONVCC_CONSTEXPR auto origin(static_array const& self) -> typename static_array::element_const_ptr {return self.origin();}
 
  private:
 	constexpr auto rotated_aux() const {
