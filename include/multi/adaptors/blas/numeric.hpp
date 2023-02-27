@@ -122,7 +122,7 @@ public:
 	template<class T = void*>
 	friend constexpr auto imag(involuted const& self) {
 	//->decltype(imag(std::declval<decay_type>())) {
-	 	return imag(self.operator decay_type()); }
+	 	return self.operator decay_type().imag(); }
 
 	// ->decltype(adl_imag(std::declval<decay_type>())) {
 	// 	return adl_imag(self.operator decay_type()); }

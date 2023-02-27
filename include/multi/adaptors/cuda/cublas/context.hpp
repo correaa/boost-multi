@@ -146,6 +146,16 @@ class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})
 		sync_call<cublasZtrsm>(cublas::side{side}, cublas::filling{ul}, cublas::operation{transA}, cublas::diagonal{diag}, m, n, (cuDoubleComplex const*)&alpha, (cuDoubleComplex const*)raw_pointer_cast(aa), lda, (cuDoubleComplex*)raw_pointer_cast(bb), ldb);
 	}
 
+	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type,
+		std::enable_if_t<
+			is_d<AA>{} and is_d<BB>{} and is_assignable<BB&, decltype(AA{}*BB{}/ALPHA{})>{} and is_assignable<BB&, decltype(ALPHA{}*BB{}/AA{})>{} and 
+			is_convertible_v<AAP, ::thrust::cuda::pointer<AA>> and is_convertible_v<BBP, ::thrust::cuda::pointer<BB>>
+		,int> =0
+	>
+	void trsm(char side, char ul, char transA, char diag, ssize_t m, ssize_t n, ALPHA alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb) {
+		sync_call<cublasDtrsm>(cublas::side{side}, cublas::filling{ul}, cublas::operation{transA}, cublas::diagonal{diag}, m, n, (double const*)&alpha, (cuDoubleComplex const*)raw_pointer_cast(aa), lda, (double*)raw_pointer_cast(bb), ldb);
+	}
+
 	template<
 		class XXP, class XX = typename std::pointer_traits<XXP>::element_type,
 		class YYP, class YY = typename std::pointer_traits<YYP>::element_type,
