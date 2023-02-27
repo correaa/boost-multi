@@ -1,5 +1,5 @@
 // -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
-// Copyright 2019-2022 Alfredo A. Correa
+// Copyright 2019-2023 Alfredo A. Correa
 
 #ifndef MULTI_ADAPTORS_BLAS_OPERATIONS_HPP
 #define MULTI_ADAPTORS_BLAS_OPERATIONS_HPP
@@ -38,11 +38,11 @@ namespace operators {
 [[maybe_unused]] constexpr static struct {
 
 	template<class A, std::enable_if_t<std::decay_t<A>::rank_v == 2, int> =0>
-	auto operator()(A&& array) const -> decltype(auto){return hermitized(std::forward<A>(array));}
+	[[nodiscard]] auto operator()(A&& array) const -> decltype(auto) { return hermitized(std::forward<A>(array)); }
 
 	template<class A, std::enable_if_t<std::decay_t<A>::rank_v == 1, int> =0>
 	[[deprecated("use blas::C instead of blas::H for conjugated vectors to avoid confusions")]]
-	auto operator()(A&& array) const -> decltype(auto){return blas::conj(std::forward<A>(array));}
+	[[nodiscard]] auto operator()(A&& array) const -> decltype(auto) { return blas::conj(std::forward<A>(array)); }
 
 } H;  // NOLINT(readability-identifier-length) conventional name in BLAS
 
