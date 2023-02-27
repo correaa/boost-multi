@@ -13,8 +13,6 @@
 
 namespace multi = boost::multi;
 
-template<class T1, class T2> void what(T1&&, T2&&) = delete;
-
 BOOST_AUTO_TEST_CASE(unit_trsm_multi_blas_trsm_complex_nonsquare_default_diagonal_hermitized_gemm_check_no_const) {
 	namespace blas = multi::blas;
 	using complex = thrust::complex<double>; complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit

@@ -7,7 +7,7 @@
 #include "../../../adaptors/blas/gemm.hpp"
 #include "../../../adaptors/blas/trsm.hpp"
 
-#include "../../../array.hpp"
+#include <multi/array.hpp>
 
 #include <config.hpp>
 
