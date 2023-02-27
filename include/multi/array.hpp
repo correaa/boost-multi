@@ -366,7 +366,11 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	       constexpr auto base()                 &       -> typename static_array::element_ptr       {return ref::base();}
 	       constexpr auto base()            const&       -> typename static_array::element_const_ptr {return typename static_array::element_const_ptr{ref::base()};}
 	friend constexpr auto base(static_array      & self) -> typename static_array::element_ptr       {return self.base();}
-	friend constexpr auto base(static_array const& self) -> typename static_array::element_const_ptr {return self.base();}
+	friend
+	#if not defined(__NVCC__)
+	constexpr
+	#endif
+	auto base(static_array const& self) -> typename static_array::element_const_ptr {return self.base();}
 
 	       constexpr auto origin()                 &       -> typename static_array::element_ptr       {return ref::origin();}
 	       constexpr auto origin()            const&       -> typename static_array::element_const_ptr {return ref::origin();}
