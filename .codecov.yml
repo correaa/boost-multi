@@ -1,17 +1,21 @@
-coverage:
-  status:
-    project:
-      default:
-        threshold: 0.5%
+codecov:
+    notify:
+        after_n_builds: 2
+
+#coverage:
+#  status:
+#    project:
+#      default:
+#        threshold: 0.5%
 
 # Ignore testing directory itself
 ignore:
-  - "test"
+  - "test/"
 
 # Fixes report prefix paths from CI dynamic coverage action
 # from https://docs.codecov.io/docs/fixing-paths
-fixes:
-  - "/builds/correaa::"
+#fixes:
+#  - "/builds/correaa::"
 
 #codecov:
 #  disable_default_path_fixes: true
