@@ -122,7 +122,7 @@ public:
 	template<class T = void*>
 	friend constexpr auto imag(involuted const& self) {
 	//->decltype(imag(std::declval<decay_type>())) {
-	 	return imag(self.operator decay_type()); }
+	 	return self.operator decay_type().imag(); }
 
 	// ->decltype(adl_imag(std::declval<decay_type>())) {
 	// 	return adl_imag(self.operator decay_type()); }
@@ -144,8 +144,8 @@ auto default_allocator_of(involuter<It, F> const& iv) {
 
 template<class It, class F, class Reference>
 class involuter {
-	It it_; // [[no_unique_address]] 
-	F f_;
+	It it_;
+	F f_;  // [[no_unique_address]]
 	template<class, class, class> friend class involuter;
 
  public:
@@ -206,11 +206,17 @@ template<class It>  using negater = involuter<It, std::negate<>>;
 
 struct conjugate {
 	template<class Complex>
-	auto operator()(Complex&& zee) const -> decltype(auto) {
+	constexpr auto operator()(Complex const& zee) const {
 	//  using std::conj;  /*for doubles?*/
-		return conj(std::forward<Complex>(zee));
+		return conj(zee);
 	//	return multi::adl_conj(std::forward<Complex>(zee));  // this is needed by icc
 	}
+	#ifdef __NVCC__
+	template<class Complex>
+	auto operator()(::thrust::tagged_reference<Complex, ::thrust::cuda_cub::tag> zee) const {
+		return conj(static_cast<Complex>(zee));
+	}
+	#endif
 };
 
 template<class Ref> using conjugated = involuted<Ref, conjugate>;
@@ -234,8 +240,8 @@ template<class T> struct has_imag_mem : decltype(has_imag_mem_aux(std::declval<T
 
 template<class T> struct has_imag : std::integral_constant<bool, (has_imag_fun<T>{} or has_imag_mem<T>{})>{};
 
-template<class A = void> 
-struct is_complex_array : has_imag<std::decay_t<decltype(*base(std::declval<A>()))>> {};
+template<class A = void>
+struct is_complex_array : has_imag<std::decay_t<typename std::pointer_traits<std::decay_t<decltype(std::declval<A>().base())>>::element_type>> {};
 //	template<class T> static auto _(T const& t) -> has_imag<T>;
 //	constexpr explicit operator bool()      &{return decltype(_(*base(std::declval<A>()))){};}
 //	constexpr explicit operator bool()     &&{return decltype(_(*base(std::declval<A>()))){};}
@@ -246,12 +252,12 @@ struct is_complex_array : has_imag<std::decay_t<decltype(*base(std::declval<A>()
 
 template<class V> struct is_complex : has_imag<V> {};
 
-template<class It> 
-       auto is_conjugated_aux(conjugater<It> /*self*/) -> std::true_type ;
-inline auto is_conjugated_aux(...                    ) -> std::false_type;
+template<class It>
+       auto is_conjugated_aux(conjugater<It> const& /*self*/) -> std::true_type ;
+inline auto is_conjugated_aux(...                           ) -> std::false_type;
 
-template<class A = void> struct is_conjugated : decltype(is_conjugated_aux(base(std::declval<A>()))) {  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
-	template<class AA> constexpr auto operator()(AA&& /*unused*/) {return is_conjugated_aux(base(std::declval<A>()));}
+template<class A = void> struct is_conjugated : decltype(is_conjugated_aux((std::declval<A>()).base())) {  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg)
+	template<class AA> constexpr auto operator()(AA&& /*unused*/) {return is_conjugated_aux((std::declval<A>()).base());}
 };
 
 template<class A, class D = std::decay_t<A>, typename Elem=typename D::element_type, typename Ptr=typename D::element_ptr,

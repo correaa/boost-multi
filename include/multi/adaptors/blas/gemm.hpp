@@ -296,10 +296,9 @@ auto gemm(Scalar s, A2D const& a, B2D const& b) {  // NOLINT(readability-identif
 namespace operators {
 	template<class A2D, class B2D>
 	auto operator*(A2D const& A, B2D const& B)  // NOLINT(readability-identifier-length) conventional BLAS names
-	->decltype(+blas::gemm(1., A, B)) {
-		return +blas::gemm(1., A, B); }
+	->decltype(+blas::gemm(1.0, A, B)) {
+		return +blas::gemm(1.0, A, B); }
 }  // end namespace operators
 
 }  // end namespace boost::multi::blas
-
 #endif

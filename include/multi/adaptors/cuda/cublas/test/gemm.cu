@@ -1,8 +1,9 @@
-#define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUBLAS herk"
-#define BOOST_TEST_DYN_LINK
+// -*-indent-tabs-mode:t;c-basic-offset:4;tab-width:4;autowrap:nil;-*-
+// Copyright 2020-2023 Alfredo A. Correa
+
+#define BOOST_TEST_MODULE "C++ Unit Tests for Multi CUBLAS gemm"
 #include<boost/test/unit_test.hpp>
 
-//#include "../../../../adaptors/cuda.hpp" // multi::cuda ns
 #include "../../../../adaptors/blas/gemm.hpp"
 #include "../../../../adaptors/cuda/cublas.hpp"
 
@@ -15,8 +16,8 @@ namespace multi = boost::multi;
 
 BOOST_AUTO_TEST_CASE(multi_cublas_gemm_double){
 	multi::array<double, 2> const a = {
-		{ 1., 3., 4.},
-		{ 9., 7., 1.}
+		{ 1.0, 3.0, 4.0},
+		{ 9.0, 7.0, 1.0},
 	};
 //	multi::thrust::cuda::array<double, 2> const a_gpu = a;
 }
@@ -24,8 +25,8 @@ BOOST_AUTO_TEST_CASE(multi_cublas_gemm_double){
 BOOST_AUTO_TEST_CASE(multi_cublas_gemm_complex){
 	using complex = std::complex<double>; complex const I{0, 1};
 	multi::array<complex, 2> const a = {
-		{ 1. + 3.*I, 3.- 2.*I, 4.+ 1.*I},
-		{ 9. + 1.*I, 7.- 8.*I, 1.- 3.*I}
+		{ 1.0 + 3.0*I, 3.0 - 2.0*I, 4.0 + 1.0*I},
+		{ 9.0 + 1.0*I, 7.0 - 8.0*I, 1.0 - 3.0*I},
 	};
 //	multi::thrust::cuda::array<complex, 2> const a_gpu = a;
 }

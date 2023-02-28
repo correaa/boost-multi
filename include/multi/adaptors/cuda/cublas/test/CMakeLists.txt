@@ -2,12 +2,6 @@ cmake_minimum_required(VERSION 3.11)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
-#project(
-#	boost-multi-adaptors-cuda-cublas-test
-#	VERSION 0.1
-#	LANGUAGES CXX CUDA
-#)
-
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
 
 find_package(BLAS REQUIRED)
@@ -39,9 +33,13 @@ include(CTest)
 
 include_directories(${CMAKE_BINARY_DIR})
 
+find_package(CUDA REQUIRED)
+
 # file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
-set(TEST_SRCS # herk.cu
+set(TEST_SRCS
 	gemm.cu
+	# herk.cu
+	trsm.cu
 )
 
 foreach(TEST_FILE ${TEST_SRCS})
@@ -63,6 +61,8 @@ foreach(TEST_FILE ${TEST_SRCS})
 	target_link_directories(${TEST_EXE} PRIVATE ${Boost_LIBRARY_DIRS})
 
 	target_link_libraries(${TEST_EXE} PRIVATE ${CUDA_LIBRARIES})
+	target_link_libraries(${TEST_EXE} PRIVATE -lcublas)
+
 	target_include_directories(${TEST_EXE} PRIVATE /opt/nvidia/hpc_sdk/Linux_x86_64/22.3/math_libs/include)
 
 	# if(NOT ENABLE_CUDA) target_compile_options  (${TEST_EXE} PRIVATE $<$<CXX_COMPILER_ID:GNU>: -Werror -Wall -Wextra -fno-common -Wpedantic -Wformat-truncation -fstack-usage>#-Wconversion
