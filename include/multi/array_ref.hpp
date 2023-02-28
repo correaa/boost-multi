@@ -33,6 +33,12 @@
 #include<memory>      // for pointer_traits
 #include<utility>     // for forward
 
+#if not defined(__NVCC__) /*and not defined(__NVCOMPILER) and not defined(__INTEL_COMPILER)*/
+	#define MULTI_NONV_CONSTEXPR   constexpr  // this generates a problem with intel compiler 19 and v2021 "a constexpr function cannot have a nonliteral return type"
+#else
+	#define MULTI_NONV_CONSTEXPR /*constexpr*/
+#endif
+
 // NOLINTBEGIN(cert-dcl58-cpp) consider defining multi::pointer_traits
 namespace std {
 
@@ -802,11 +808,7 @@ struct basic_array
 		return get_allocator(this->base());
 	}
 
-	friend
-	#if not defined(__NVCC__) and not defined(__NVCOMPILER) and not defined(__INTEL_COMPILER)
-	constexpr
-	#endif
-	auto get_allocator(basic_array const& self) -> default_allocator_type {return self.get_allocator();}
+	friend MULTI_NONV_CONSTEXPR auto get_allocator(basic_array const& self) -> default_allocator_type {return self.get_allocator();}
 
 	using decay_type = array<typename types::element_type, D, typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type>;
 
@@ -1098,20 +1100,11 @@ struct basic_array
 	friend HD /*constexpr*/ auto transposed(basic_array      & self) -> basic_array       {return self.transposed();}
 	friend HD /*constexpr*/ auto transposed(basic_array     && self) -> basic_array       {return self.transposed();}
 
-	friend HD
-#if not((defined(__INTEL_COMPILER)) or defined(__NVCC__))
-	constexpr
-#endif
+	friend HD MULTI_NONV_CONSTEXPR
 	auto operator~ (basic_array const& self) -> basic_const_array {return self.transposed();}
-	friend HD
-#if not((defined(__INTEL_COMPILER)) or defined(__NVCC__))
-	constexpr
-#endif
+	friend HD MULTI_NONV_CONSTEXPR
 	auto operator~ (basic_array& self) -> basic_array {return self.transposed();}
-	friend HD
-#if not((defined(__INTEL_COMPILER)) or defined(__NVCC__))
-	constexpr
-#endif
+	friend HD MULTI_NONV_CONSTEXPR
 	auto operator~ (basic_array&& self) -> basic_array {return self.transposed();}
 
 	HD constexpr auto rotated()      &  -> basic_array {
@@ -1646,10 +1639,7 @@ struct array_iterator<Element, 1, Ptr>  // NOLINT(fuchsia-multiple-inheritance)
 
 	constexpr auto base()              const& -> element_ptr {return data_;}
 
-	friend  // TODO(correaa) : defined FRIEND_CONSTEXPR or make "conditional" constexpr?
-	#if not defined(__INTEL_COMPILER) and not defined(__NVCOMPILER) and not defined(__NVCC__)
-	constexpr  // this generates a problem with intel compiler 19 and v2021 "a constexpr function cannot have a nonliteral return type"
-	#endif
+	friend MULTI_NONV_CONSTEXPR
 	auto base(array_iterator const& self) -> element_ptr {return self.base();}
 
 	       HD constexpr auto stride()              const        -> stride_type {return      stride_;}
@@ -1766,10 +1756,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	using default_allocator_type = typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type;
 
 	constexpr auto get_allocator() const -> default_allocator_type {return default_allocator_of(basic_array::base());}
-	friend
-	#if not defined(__NVCC__) and not defined(__NVCOMPILER) and not defined(__INTEL_COMPILER)
-	constexpr
-	#endif
+	friend MULTI_NONV_CONSTEXPR
 	auto get_allocator(basic_array const& self) -> default_allocator_type {return self.get_allocator();}
 
 	using decay_type = array<typename types::element, dimensionality_type{1}, typename multi::pointer_traits<typename basic_array::element_ptr>::default_allocator_type>;
