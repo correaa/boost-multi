@@ -13,30 +13,6 @@
 
 namespace multi = boost::multi;
 
-template<class Matrix>
-auto triangular(multi::blas::filling f, Matrix const& m) {  // NOLINT(readability-identifier-length) BLAS naming
-	auto ret =+ m;
-	switch(f) {
-	case multi::blas::filling::upper:
-		{
-			auto ext = extension(ret);
-			std::for_each(ext.begin(), ext.end(), [&ret](auto idx) {
-				std::fill_n(ret[idx].begin(), std::min(idx, size(~ret)), 0.0);
-			});
-		}
-		break;
-	case multi::blas::filling::lower:
-		{
-			auto extt = extension(~ret);
-			std::for_each(extt.begin(), extt.end(), [&ret](auto jdx) {
-				std::fill_n( (~ret)[jdx].begin(), std::min(jdx, size( ret)), 0.0);
-			});
-		}
-		break;
-	}
-	return ret;
-}
-
 BOOST_AUTO_TEST_CASE(multi_blas_trsm_double_0x0) {
 	namespace blas = multi::blas;
 	multi::array<double, 2> const A;  // NOLINT(readability-identifier-length) BLAS naming
@@ -354,18 +330,37 @@ BOOST_AUTO_TEST_CASE(multi_blas_trsm_complex_nonsquare_default_diagonal_hermitiz
 	namespace blas = multi::blas;
 	using complex = std::complex<double>; complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
 	multi::array<complex, 2> const A = {  // NOLINT(readability-identifier-length) BLAS naming
-		{ 1.0 + 4.0*I, 3.0 + 0.0*I,  4.0 - 10.*I},
-		{ 0.0 + 0.0*I, 7.0 - 3.0*I,  1.0 + 0.0*I},
-		{ 0.0 + 0.0*I, 0.0 + 0.0*I,  8.0 -  2.*I}
+		{ 1.0 + 4.0*I, 3.0 + 0.0*I,  4.0 - 10.0*I},
+		{ 0.0 + 0.0*I, 7.0 - 3.0*I,  1.0 +  0.0*I},
+		{ 0.0 + 0.0*I, 0.0 + 0.0*I,  8.0 -  2.0*I},
 	};
 	multi::array<complex, 2> B = {  // NOLINT(readability-identifier-length) BLAS naming
 		{1.0 + 1.0*I, 2.0 + 1.0*I, 3.0 + 1.0*I},
-		{5.0 + 3.0*I, 9.0 + 3.0*I, 1.0 - 1.0*I}
+		{5.0 + 3.0*I, 9.0 + 3.0*I, 1.0 - 1.0*I},
 	};
 
 	using multi::blas::trsm;
 	using multi::blas::filling;
 	using multi::blas::hermitized;
 	blas::trsm(blas::side::left, blas::filling::upper, {1.0, 0.0}, A, blas::H(B));  // B†←A⁻¹.B†, B←B.A⁻¹†, B←(A⁻¹.B†)†
+	BOOST_REQUIRE_CLOSE( imag(B[1][2]) , -0.147059 , 0.001);
+}
+
+BOOST_AUTO_TEST_CASE(UTA_blas_trsm_complex_nonsquare_default_diagonal_hermitized_gemm_check_no_const) {
+	namespace blas = multi::blas;
+	using complex = std::complex<double>; complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imag unit
+	multi::array<complex, 2> const A = {  // NOLINT(readability-identifier-length) BLAS naming
+		{ 1.0 + 4.0*I, 3.0 + 0.0*I,  4.0 - 10.0*I},
+		{ 0.0 + 0.0*I, 7.0 - 3.0*I,  1.0 +  0.0*I},
+		{ 0.0 + 0.0*I, 0.0 + 0.0*I,  8.0 -  2.0*I},
+	};
+	multi::array<complex, 2> B = {  // NOLINT(readability-identifier-length) BLAS naming
+		{1.0 + 1.0*I, 2.0 + 1.0*I, 3.0 + 1.0*I},
+		{5.0 + 3.0*I, 9.0 + 3.0*I, 1.0 - 1.0*I},
+	};
+
+	using multi::blas::trsm;
+
+	blas::trsm(blas::side::left, {1.0, 0.0}, blas::U(A), blas::H(B));  // B†←A⁻¹.B†, B←B.A⁻¹†, B←(A⁻¹.B†)†
 	BOOST_REQUIRE_CLOSE( imag(B[1][2]) , -0.147059 , 0.001);
 }
