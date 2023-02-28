@@ -145,10 +145,10 @@ auto trsm(blas::side a_side, blas::filling a_fill, typename A2D::element_type al
 	#pragma    diagnostic pop
 #endif
 
-template<class Context, class UTArr, class B2D>
-auto trsm(Context&& ctxt, blas::side a_side, typename UTArr::element_type alpha, UTArr const& a, B2D&& b)  // NOLINT(readability-identifier-length) BLAS naming
-->decltype(trsm(std::forward<Context>(ctxt), a_side, a.filling(), blas::diagonal::non_unit, alpha, a.underlying(), std::forward<B2D>(b))) {
-	return trsm(std::forward<Context>(ctxt), a_side, a.filling(), blas::diagonal::non_unit, alpha, a.underlying(), std::forward<B2D>(b)); }
+// template<class Context, class UTArr, class B2D>
+// auto trsm(Context&& ctxt, blas::side a_side, typename UTArr::element_type alpha, UTArr const& a, B2D&& b)  // NOLINT(readability-identifier-length) BLAS naming
+// ->decltype(trsm(std::forward<Context>(ctxt), a_side, a.filling(), blas::diagonal::non_unit, alpha, a.underlying(), std::forward<B2D>(b))) {
+// 	return trsm(std::forward<Context>(ctxt), a_side, a.filling(), blas::diagonal::non_unit, alpha, a.underlying(), std::forward<B2D>(b)); }
 
 template<class UTArr, class B2D>
 auto trsm(blas::side a_side, typename UTArr::underlying_type::element_type alpha, UTArr const& a, B2D&& b)  // NOLINT(readability-identifier-length) BLAS naming
