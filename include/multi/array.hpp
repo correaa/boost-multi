@@ -350,11 +350,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	using       iterator = multi::array_iterator<T, D, typename static_array::element_ptr      >;
 	using const_iterator = multi::array_iterator<T, D, typename static_array::element_const_ptr>;
 
-	friend
-	#if not defined(__NVCC__) and not defined(__INTEL_COMPILER)
-	constexpr
-	#endif
-	auto get_allocator(static_array const& self) -> allocator_type {return self.get_allocator();}
+	friend MULTI_NONV_CONSTEXPR	auto get_allocator(static_array const& self) -> allocator_type {return self.get_allocator();}
 
 	       HD constexpr auto data_elements()            const& ->                        element_const_ptr {return this->base_;}
 	       HD constexpr auto data_elements()                 & -> typename static_array::element_ptr       {return this->base_;}
@@ -366,19 +362,13 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	       constexpr auto base()                 &       -> typename static_array::element_ptr       { return ref::base(); }
 	       constexpr auto base()            const&       -> typename static_array::element_const_ptr { return typename static_array::element_const_ptr{ref::base()}; }
 
-	#if not defined(__NVCC__)
-		#define MULTI_NONVCC_CONSTEXPR   constexpr
-	#else
-		#define MULTI_NONVCC_CONSTEXPR /*constexpr*/
-	#endif
-
-	friend MULTI_NONVCC_CONSTEXPR auto base(static_array      & self) -> typename static_array::element_ptr       { return self.base(); }
-	friend MULTI_NONVCC_CONSTEXPR auto base(static_array const& self) -> typename static_array::element_const_ptr { return self.base(); }
+	friend MULTI_NONV_CONSTEXPR auto base(static_array      & self) -> typename static_array::element_ptr       { return self.base(); }
+	friend MULTI_NONV_CONSTEXPR auto base(static_array const& self) -> typename static_array::element_const_ptr { return self.base(); }
 
 	       constexpr auto origin()                 &       -> typename static_array::element_ptr       {return ref::origin();}
 	       constexpr auto origin()            const&       -> typename static_array::element_const_ptr {return ref::origin();}
-	friend MULTI_NONVCC_CONSTEXPR auto origin(static_array      & self) -> typename static_array::element_ptr       {return self.origin();}
-	friend MULTI_NONVCC_CONSTEXPR auto origin(static_array const& self) -> typename static_array::element_const_ptr {return self.origin();}
+	friend MULTI_NONV_CONSTEXPR auto origin(static_array      & self) -> typename static_array::element_ptr       {return self.origin();}
+	friend MULTI_NONV_CONSTEXPR auto origin(static_array const& self) -> typename static_array::element_const_ptr {return self.origin();}
 
  private:
 	constexpr auto rotated_aux() const {
@@ -609,11 +599,7 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	}
 	using element_const_ptr = typename std::pointer_traits<typename static_array::element_ptr>::template rebind<typename static_array::element const>;
 
-	friend
-	#if not defined(__NVCC__) and not defined(__INTEL_COMPILER)
-	constexpr
-	#endif
-	auto get_allocator(static_array const& self) -> allocator_type {return self.get_allocator();}
+	friend MULTI_NONV_CONSTEXPR auto get_allocator(static_array const& self) -> allocator_type {return self.get_allocator();}
 
 	       constexpr auto base()                 &       -> typename static_array::element_ptr       {return ref::base();}
 	       constexpr auto base()            const&       -> typename static_array::element_const_ptr {return ref::base();}
@@ -799,11 +785,7 @@ struct array : static_array<T, D, Alloc> {
 	array(array&& other, typename array::allocator_type const& alloc) noexcept : static_{std::move(other), alloc} {}
 	array(array&& other) noexcept : array{std::move(other), other.get_allocator()} {}
 
-	friend
-	#if not defined(__NVCC__) and not defined(__NVCOMPILER) and not defined(__INTEL_COMPILER)
-	constexpr
-	#endif
-	auto get_allocator(array const& self) -> typename array::allocator_type {return self.get_allocator();}
+	friend MULTI_NONV_CONSTEXPR auto get_allocator(array const& self) -> typename array::allocator_type {return self.get_allocator();}
 
 	void swap(array& other) noexcept {
 		using std::swap;
