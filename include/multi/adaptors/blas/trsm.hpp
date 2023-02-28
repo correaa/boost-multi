@@ -32,10 +32,10 @@ auto triangular_parted(Array const& arr) {
 }
 
 template<class Array>
-auto lower_parted(Array const& arr) {return triangular_parted<filling::lower>(arr);};
+auto lower_parted(Array const& arr) {return triangular_parted<filling::lower>(arr);}
 
 template<class Array>
-auto upper_parted(Array const& arr) {return triangular_parted<filling::upper>(arr);};
+auto upper_parted(Array const& arr) {return triangular_parted<filling::upper>(arr);}
 
 template<class Array> auto L(Array const& arr) { return lower_parted(arr); }  // NOLINT(readability-identifier-naming) BLAS naming
 template<class Array> auto U(Array const& arr) { return upper_parted(arr); }  // NOLINT(readability-identifier-naming) BLAS naming
