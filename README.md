@@ -471,8 +471,7 @@ decltype(A)::value_type row =   *begin(A);  // there is a real copy of the row
 
 ### "Pointer" to subarray
 
-Subarrays (e.g. rows in a 2D array) are reference-like objects; as such also have an concrete address-like value that identifies it uniquely (in constrast to language pointers).
-This can be useful to "mark" subviews; these marker can be copied, and stored in arrays, and behave like pointers.
+Subarrays (e.g., rows in a 2D array) are reference-like objects with a concrete address-like value that identifies them uniquely (in contrast to language pointers). These addresses, which behave like pointers, can be helpful to "mark" subviews; these markers can be copied and stored in arrays.
 
 ```cpp
 auto A = multi::array<double, 2>({4, 4});
@@ -481,11 +480,11 @@ auto row2_ptr = &A[2];  // A[2] is row of A (not an element)
 assert( row2_ptr == &*(A.begin() + 2) );
 ```
 
-Comparing these markers/pointer with different provenance, i.e. originating from different arrays, is in general undefined.
+The expression `A[2]` above is technically a C++ temporary object, and therefore it doesn't have a C++ address (taking `std::addressof` gives a compilation error). 
+However, in the library's abstraction, `A[2]` references an existing part of the original array, i.e. it is a "library reference", whose "library address" can be obtained operator `&`. 
+The case is an illustration that, in the library, operator `&` is, for subarrays, different than the `std::addressof` operator; the latter may not be defined and even not compile for some expressions.
 
-Note: `A[2]` above is technically a "language"-temporary object, and therefore is doesn't have a "language"-address (taking `std::addressof` gives a compilation error). 
-However in the abstraction of the library it is a reference to an existing part of the original array, this "library"-reference has a "library"-address that can be obtained `&`. 
-This is an illustration that, in the library, `&` is in general of a different type than `std::addressof` for subarrays, the latter may not even be defined or compile.
+Comparing these markers/pointers with different provenance, i.e., originating from different arrays, is generally undefined.
 
 ## Indexing
 
