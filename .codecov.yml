@@ -1,16 +1,34 @@
 codecov:
-    notify:
-        after_n_builds: 2
+  notify:
+    after_n_builds: 2
+    require_ci_to_pass: yes
 
 coverage:
- status:
-   project:
-     default:
-       threshold: 0.5%
+  status:
+    project:
+      default:
+        threshold: 0.5%
+    patch: yes
+    changes: no
+  precision: 2
+  round: down
+  range: "99..100"
 
 # Ignore testing directory itself
 ignore:
   - "test/"
+
+parsers:
+  gcov:
+    branch_detection:
+      conditional: yes
+      loop: yes
+      method: no
+      macro: no
+
+comment:
+  layout: "header, diff"
+
 
 # Fixes report prefix paths from CI dynamic coverage action
 # from https://docs.codecov.io/docs/fixing-paths
