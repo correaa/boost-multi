@@ -2,11 +2,11 @@ codecov:
     notify:
         after_n_builds: 2
 
-#coverage:
-#  status:
-#    project:
-#      default:
-#        threshold: 0.5%
+coverage:
+ status:
+   project:
+     default:
+       threshold: 0.5%
 
 # Ignore testing directory itself
 ignore:
