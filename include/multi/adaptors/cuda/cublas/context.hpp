@@ -79,9 +79,29 @@ using std::is_assignable;
 using std::is_assignable_v;
 using std::is_convertible_v;
 
+enum type{D, Z};
+
+template<type T> class cublas;
+
+template<>
+struct cublas<D> {
+	template<class... Args>
+	static auto gemv(Args... args)
+	->decltype(cublasDgemv(args...)) {
+		return cublasDgemv(args...); }
+};
+
+template<>
+struct cublas<Z> {
+	template<class... Args>
+	static auto gemv(Args... args)
+	->decltype(cublasZgemv(args...)) {
+		return cublasZgemv(args...); }
+};
+
 class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)> {
 	using pimpl_t = std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)>;
-	cudaStream_t stream() const {cudaStream_t streamId; cublas::call<cublasGetStream>(this->get(), &streamId); return streamId;}
+	cudaStream_t stream() const {cudaStream_t streamId; cuda::cublas::call<cublasGetStream>(this->get(), &streamId); return streamId;}
 	template<auto Function, class... Args>
 	void sync_call(Args... args) {
 		call<Function>(this->get(), args...);
@@ -96,7 +116,7 @@ class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})
 	};
 	context() : pimpl_t{[] {cublasHandle_t h; cublasCreate(&h); return h;}(), &cublasDestroy} {}
 	using ssize_t = int;
-	static int version() {int ret; cublas::call<cublasGetVersion>(nullptr, &ret); return ret;}
+	static int version() {int ret; cuda::cublas::call<cublasGetVersion>(nullptr, &ret); return ret;}
 	void synchronize() {
 		cudaError_t	e = cudaDeviceSynchronize();
 		//cudaError_t e = cudaStreamSynchronize(stream());
@@ -115,6 +135,29 @@ class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})
 		);
 	}
 
+	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class XXP, class XX = typename std::pointer_traits<XXP>::element_type, class BETA, class YYP, class YY = typename std::pointer_traits<YYP>::element_type
+		// , std::enable_if_t<
+		// 	is_z<AA>{} and is_z<XX>{} and is_z<YY>{} and is_z<ALPHA>{} and is_z<BETA>{} and is_assignable_v<YY&, decltype(ALPHA{}*AA{}*XX{})> and
+		// 	std::is_convertible_v<AAP, ::thrust::cuda::pointer<AA>> and std::is_convertible_v<XXP, ::thrust::cuda::pointer<XX>> and std::is_convertible_v<YYP, ::thrust::cuda::pointer<YY>>
+		// 	, int> = 0
+	>
+	void gemv(char transA, ssize_t m, ssize_t n, ALPHA const* alpha, AAP aa, ssize_t lda, XXP xx, ssize_t incx, BETA const* beta, YYP yy, ssize_t incy) {
+		sync_call<cublasZgemv>(operation{transA}, m, n, (cuDoubleComplex const*)alpha, (cuDoubleComplex const*)raw_pointer_cast(aa), lda, (cuDoubleComplex const*)raw_pointer_cast(xx), incx, (cuDoubleComplex const*)beta, (cuDoubleComplex*)raw_pointer_cast(yy), incy);
+	}
+
+//	(char, boost::multi::size_type, boost::multi::size_type, double, thrust::pointer<const thrust::complex<double>, thrust::cuda_cub::tag, thrust::tagged_reference<const thrust::complex<double>, thrust::cuda_cub::tag>, thrust::use_default>, core::size_t, thrust::pointer<const thrust::complex<double>, thrust::cuda_cub::tag, thrust::tagged_reference<const thrust::complex<double>, thrust::cuda_cub::tag>, thrust::use_default>, boost::multi::index, double, thrust::pointer<thrust::complex<double>, thrust::cuda_cub::tag, thrust::tagged_reference<thrust::complex<double>, thrust::cuda_cub::tag>, thrust::use_default>, boost::multi::index)
+
+	// template<class... Ts> void gemv(Ts...) = delete;
+
+	// template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, 
+	// cublasStatus_t cublasZgemv(cublasHandle_t handle, cublasOperation_t trans,
+    //                        int m, int n,
+    //                        const cuDoubleComplex *alpha,
+    //                        const cuDoubleComplex *A, int lda,
+    //                        const cuDoubleComplex *x, int incx,
+    //                        const cuDoubleComplex *beta,
+    //                        cuDoubleComplex *y, int incy)
+
 	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename std::pointer_traits<CCP>::element_type,
 		std::enable_if_t<
 			is_z<AA>{} and is_z<BB>{} and is_z<CC>{} and is_z<ALPHA>{} and is_z<BETA>{} and is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{})>{} and
@@ -123,7 +166,7 @@ class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})
 	>
 	void gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc) {
 		MULTI_MARK_SCOPE("cublasZgemm");
-		sync_call<cublasZgemm>(cublas::operation{transA}, cublas::operation{transB}, m, n, k, (cuDoubleComplex const*)alpha, (cuDoubleComplex const*)raw_pointer_cast(aa), lda, (cuDoubleComplex const*)raw_pointer_cast(bb), ldb, (cuDoubleComplex const*)beta, (cuDoubleComplex*)raw_pointer_cast(cc), ldc);
+		sync_call<cublasZgemm>(cuda::cublas::operation{transA}, cuda::cublas::operation{transB}, m, n, k, (cuDoubleComplex const*)alpha, (cuDoubleComplex const*)raw_pointer_cast(aa), lda, (cuDoubleComplex const*)raw_pointer_cast(bb), ldb, (cuDoubleComplex const*)beta, (cuDoubleComplex*)raw_pointer_cast(cc), ldc);
 	}
 	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename std::pointer_traits<CCP>::element_type,
 		std::enable_if_t<
@@ -133,7 +176,7 @@ class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})
 	>
 	void gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc) {
 		MULTI_MARK_SCOPE("cublasDgemm");
-		sync_call<cublasDgemm>(cublas::operation{transA}, cublas::operation{transB}, m, n, k, (double const*)alpha, (double const*)raw_pointer_cast(aa), lda, (double const*)raw_pointer_cast(bb), ldb, (double const*)beta, (double*)raw_pointer_cast(cc), ldc);
+		sync_call<cublasDgemm>(cuda::cublas::operation{transA}, cuda::cublas::operation{transB}, m, n, k, (double const*)alpha, (double const*)raw_pointer_cast(aa), lda, (double const*)raw_pointer_cast(bb), ldb, (double const*)beta, (double*)raw_pointer_cast(cc), ldc);
 	}
 
 	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type,
@@ -143,7 +186,7 @@ class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})
 		,int> =0
 	>
 	void trsm(char side, char ul, char transA, char diag, ssize_t m, ssize_t n, ALPHA alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb) {
-		sync_call<cublasZtrsm>(cublas::side{side}, cublas::filling{ul}, cublas::operation{transA}, cublas::diagonal{diag}, m, n, (cuDoubleComplex const*)&alpha, (cuDoubleComplex const*)raw_pointer_cast(aa), lda, (cuDoubleComplex*)raw_pointer_cast(bb), ldb);
+		sync_call<cublasZtrsm>(cuda::cublas::side{side}, cuda::cublas::filling{ul}, cuda::cublas::operation{transA}, cuda::cublas::diagonal{diag}, m, n, (cuDoubleComplex const*)&alpha, (cuDoubleComplex const*)raw_pointer_cast(aa), lda, (cuDoubleComplex*)raw_pointer_cast(bb), ldb);
 	}
 
 	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type,
@@ -153,7 +196,13 @@ class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})
 		,int> =0
 	>
 	void trsm(char side, char ul, char transA, char diag, ssize_t m, ssize_t n, ALPHA alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb) {
-		sync_call<cublasDtrsm>(cublas::side{side}, cublas::filling{ul}, cublas::operation{transA}, cublas::diagonal{diag}, m, n, (double const*)&alpha, (double const*)raw_pointer_cast(aa), lda, (double*)raw_pointer_cast(bb), ldb);
+		sync_call<cublasDtrsm>(
+			cuda::cublas::side{side},
+			cuda::cublas::filling{ul},
+			cuda::cublas::operation{transA},
+			cuda::cublas::diagonal{diag}, 
+			m, n, (double const*)&alpha, (double const*)raw_pointer_cast(aa), lda, (double*)raw_pointer_cast(bb), ldb
+		);
 	}
 
 	template<

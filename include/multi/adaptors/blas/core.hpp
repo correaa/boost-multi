@@ -371,11 +371,21 @@ namespace core {
 using std::enable_if_t;
 using std::is_assignable;
 
-template<class A, class M, class X, class B, class Y, enable_if_t<is_s<M>{} and is_s<X>{} and is_s<Y>{} and is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const& a, M* ma, size_t lda, X* x, size_t incx, B b, Y* y, size_t incy) {BLAS(sgemv)(trans, m, n, a, (s const*)ma, lda, (s const*)x, incx, b, (s*)y, incy);}  // NOLINT(google-readability-casting,readability-identifier-length)
-template<class A, class M, class X, class B, class Y, enable_if_t<is_d<M>{} and is_d<X>{} and is_d<Y>{} and is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const& a, M* ma, size_t lda, X* x, size_t incx, B b, Y* y, size_t incy) {BLAS(dgemv)(trans, m, n, a, (d const*)ma, lda, (d const*)x, incx, b, (d*)y, incy);}  // NOLINT(google-readability-casting,readability-identifier-length)
-template<class A, class M, class X, class B, class Y, enable_if_t<is_c<M>{} and is_c<X>{} and is_c<Y>{} and is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const& a, M* ma, size_t lda, X* x, size_t incx, B b, Y* y, size_t incy) {BLAS(cgemv)(trans, m, n, a, (c const*)ma, lda, (c const*)x, incx, b, (c*)y, incy);}  // NOLINT(google-readability-casting,readability-identifier-length)
-template<class A, class M, class X, class B, class Y, enable_if_t<is_z<M>{} and is_z<X>{} and is_z<Y>{} and is_assignable<Y&, decltype(std::declval<A const&>()*std::declval<M const&>()*std::declval<X const&>()+std::declval<B const&>()*std::declval<Y const&>())>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const& a, M* ma, size_t lda, X* x, size_t incx, B b, Y* y, size_t incy) {  // NOLINT(google-readability-casting,readability-identifier-length)
-	BLAS(zgemv)(trans, m, n, (z const&)a, (z const*)ma, lda, (z const*)x, incx, b, (z*)y, incy);  // NOLINT(fuchsia-default-arguments-calls,google-readability-casting,readability-identifier-length)
+#if 0
+template<class ALPHA, class AAP, class AA = typename pointer_traits<AAP>::element_type, class BBP, class BB = typename pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename pointer_traits<CCP>::element_type, \
+enable_if_t<                                                                                                                                                                                                                            \
+	is_##T<AA>{} and is_##T<BB>{} and is_##T<CC>{} and /*is_assignable<CC&, decltype(ALPHA{}*AA{}*BB{})>{} and */                                                                                                                           \
+	is_convertible_v<AAP, AA*> and is_convertible_v<BBP, BB*> and is_convertible_v<CCP, CC*>                                                                                                                                            \
+, int> =0>                                                                                                                                                                                                                              \
+v gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc) {  /*NOLINT(bugprone-easily-swappable-parameters)*/              \
+
+#endif
+
+template<class A, class M, class X, class B, class Y, enable_if_t<is_s<M>{} and is_s<X>{} and is_s<Y>{} and is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const* a, M* ma, size_t lda, X* x, size_t incx, B const* b, Y* y, size_t incy) {BLAS(sgemv)(trans, m, n, *a, (s const*)ma, lda, (s const*)x, incx, *b, (s*)y, incy);}  // NOLINT(google-readability-casting,readability-identifier-length)
+template<class A, class M, class X, class B, class Y, enable_if_t<is_d<M>{} and is_d<X>{} and is_d<Y>{} and is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const* a, M* ma, size_t lda, X* x, size_t incx, B const* b, Y* y, size_t incy) {BLAS(dgemv)(trans, m, n, *a, (d const*)ma, lda, (d const*)x, incx, *b, (d*)y, incy);}  // NOLINT(google-readability-casting,readability-identifier-length)
+template<class A, class M, class X, class B, class Y, enable_if_t<is_c<M>{} and is_c<X>{} and is_c<Y>{} and is_assignable<Y&, decltype(A{}*M{}*X{}+B{}*Y{})>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const* a, M* ma, size_t lda, X* x, size_t incx, B const* b, Y* y, size_t incy) {BLAS(cgemv)(trans, m, n, *a, (c const*)ma, lda, (c const*)x, incx, *b, (c*)y, incy);}  // NOLINT(google-readability-casting,readability-identifier-length)
+template<class A, class M, class X, class B, class Y, enable_if_t<is_z<M>{} and is_z<X>{} and is_z<Y>{} and is_assignable<Y&, decltype(std::declval<A const&>()*std::declval<M const&>()*std::declval<X const&>()+std::declval<B const&>()*std::declval<Y const&>())>{}, int> =0> void gemv(char trans, size_t m, size_t n, A const* a, M* ma, size_t lda, X* x, size_t incx, B const* b, Y* y, size_t incy) {  // NOLINT(google-readability-casting,readability-identifier-length)
+	BLAS(zgemv)(trans, m, n, *a, (z const*)ma, lda, (z const*)x, incx, *b, (z*)y, incy);  // NOLINT(fuchsia-default-arguments-calls,google-readability-casting,readability-identifier-length)
 }
 
 }  // end namespace core
@@ -537,9 +547,9 @@ struct context { // stateless (and thread safe)
 		return core::gemm(std::forward<As>(args)...); }
 
 	template<class... As>
-	static auto gemv(As... args)
-	->decltype(core::gemv(args...)) {
-		return core::gemv(args...); }
+	static auto gemv(As&&... args)
+//	->decltype(core::gemv(std::forward<As>(args)...)) {
+	{	return core::gemv(std::forward<As>(args)...); }
 
 	template<class... As>
 	static auto nrm2(As... args)
