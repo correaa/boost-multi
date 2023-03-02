@@ -861,7 +861,7 @@ int main() {
 
 The library supports classic allocators (`std::allocator` by default) and also allocators from other libraries (see [CUDA Thrust](#cuda-thrust) Thurst section).
 
-### Substitutability with `std::vector` and other dynamic array types
+### Substitutability with standard vector and other dynamic arrays
 
 The one-dimensional case `multi::array<T, 1>` is special and overlaps functionality with other dynamic array implementations, such as `std::vector`.
 Indeed, both types of containers are similar and usually substitutable, with no or minor modifications.
