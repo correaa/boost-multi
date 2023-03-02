@@ -861,20 +861,37 @@ int main() {
 
 The library supports classic allocators (`std::allocator` by default) and also allocators from other libraries (see [CUDA Thrust](#cuda-thrust) Thurst section).
 
-### Comparison with `mdspan` (projected for C++23)
+### Substitutability of `std::vector` and other dynamic array types
 
-C++23 will provide `mdspan`, a non-owning multidimensional array.
-This is a good point to compare the two libraries.
+The one-dimensional case `multi::array<T, 1>` is special and overlaps functionality with other dynamic array implementations, such as `std::vector`.
+Indeed, both types of containers are similar and usually substitutable, with no or minor modifications.
+For example, both can be constructed from a list of elements or from a size `C c(size);`.
+
+Both are assignable, have the same element access patterns and iterator interface, and implement all (lexical) comparisons.
+
+They differ conceptually in their modifiers, `multi::array<T, 1>` doesn't insert or push elements and resize works differently.
+The discrepancy is that the library doesn't implement *amortized* allocations, and therefore if these operations would be of a higher complexity cost than the `std::vector`.
+For this reason, `resize(new_size)` is replaced with `reextent({new_size})` in `multi::array`, which main function is for element preservation if necessary.
+
+With the appropriate specification of the memory allocator, `multi::array<T, 1, Alloc>` can refer to special memory not supported by `std::vector`.
+
+Finally, an array can be copied by `std::vector<T> v(A1D.begin(), A1D.end());` or `v.assign(A1D.begin(), A1D.end());` or biseversa.
+Without copying, a reference to the underlying memory can be created `auto&& R1D = multi::array_ref<double, 1>(v.data(), v.size());` or conversely `std::span<T>(A1D.data(), A1D.size());`. 
+(See examples [here](https://godbolt.org/z/n4TY998o4).)
+
+The C++23 standard is projected to provide `mdspan`, a non-owning _multidimensional_ array.
+Here is an appropriate point to compare the two libraries.
 Although the goals are similar, the two libraries differ in their generality and approach; in a few words:
 
-The Multi library concentrates in _well defined value- and reference-semantics of arbitrary memory types with regularly arranged elements_ (distributions described by strides and offsets) and _extreme compatibility with STL algorithms_ (via iterators) and other fundamental libraries.
+The Multi library concentrates on _well-defined value- and reference-semantics of arbitrary memory types with regularly arranged elements_ (distributions described by strides and offsets) and _extreme compatibility with STL algorithms_ (via iterators) and other fundamental libraries.
 
-`mdspan` concetrates in _arbitrary layouts_ for non-owining memory of a single type (described by raw pointers).
-Due to the priority of arbitrary layouts, the `mdspan` research team didn't find efficient ways to introduce iterators into the library and the compatibility with respect to the rest of the STL is therefore lacking.
-The ultimate reason is that arbitrary layouts do not compose well across subdimensions.
-This imposes certain limitations in the library such as ad-hoc slicing and subarray.
+`mdspan` concentrates on _arbitrary layouts_ for non-owning memory of a single type (CPU raw pointers).
+Due to the priority of arbitrary layouts, the `mdspan` research team didn't find efficient ways to introduce iterators into the library. 
+Its compatibility with the rest of the STL is therefore a bit lacking.
+The ultimate reason is that arbitrary layouts do not compose well across subdimensions, and, in turn, this imposes certain limitations in `mdspan`, such as ad-hoc slicing and subarray.
 
-Here it is a table with a comparison (also comparing with R. Garcia's Boost.MultiArray), also the libraries can be tried [here](https://godbolt.org/z/5Pbrs5fEd)
+Here is a table with a comparison (also comparing with R. Garcia's Boost.MultiArray). 
+Also, the libraries can be tried [here](https://godbolt.org/z/5Pbrs5fEd).
 
 |                             | Multi                                                           | mdspan                                                 | Boost.MultiArray (R. Garcia) |
 |---                          | ---                                                             | ---                                                    | ---                          |
