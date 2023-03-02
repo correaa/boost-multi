@@ -73,30 +73,54 @@ class diagonal {
 	operator cublasDiagType_t() const {return impl_;}
 };
 
-using blas::is_z;
+using blas::is_s;
 using blas::is_d;
+using blas::is_c;
+using blas::is_z;
+
 using std::is_assignable;
 using std::is_assignable_v;
 using std::is_convertible_v;
 
-enum type{D, Z};
+enum type {S, D, C, Z};
 
-template<type T> class cublas;
+template<class T>
+constexpr auto type_of(T const& = {}) -> cublas::type {
+	static_assert(is_s<T>{} or is_d<T>{} or is_c<T>{} or is_z<T>{});
+	     if(is_s<T>{}) {return S;}
+	else if(is_d<T>{}) {return D;}
+	else if(is_c<T>{}) {return C;}
+	else if(is_z<T>{}) {return Z;}
+}
 
-template<>
-struct cublas<D> {
-	template<class... Args>
-	static auto gemv(Args... args)
-	->decltype(cublasDgemv(args...)) {
-		return cublasDgemv(args...); }
-};
+template<class T>
+constexpr auto data_cast(T* p) {
+	     if constexpr(is_s<T>{}) {return reinterpret_cast<float          *>(p);}
+	else if constexpr(is_d<T>{}) {return reinterpret_cast<double         *>(p);}
+	else if constexpr(is_c<T>{}) {return reinterpret_cast<cuComplex      *>(p);}
+	else if constexpr(is_z<T>{}) {return reinterpret_cast<cuDoubleComplex*>(p);}
+}
 
-template<>
-struct cublas<Z> {
-	template<class... Args>
-	static auto gemv(Args... args)
-	->decltype(cublasZgemv(args...)) {
-		return cublasZgemv(args...); }
+template<class T>
+constexpr auto data_cast(T const* p) {
+	     if constexpr(is_s<T>{}) {return reinterpret_cast<float           const*>(p);}
+	else if constexpr(is_d<T>{}) {return reinterpret_cast<double          const*>(p);}
+	else if constexpr(is_c<T>{}) {return reinterpret_cast<cuComplex       const*>(p);}
+	else if constexpr(is_z<T>{}) {return reinterpret_cast<cuDoubleComplex const*>(p);}
+}
+
+template<cublas::type T> constexpr auto cublas_gemv = std::enable_if_t<T!=T>{};
+
+template<> constexpr auto cublas_gemv<S> = cublasSgemv;
+template<> constexpr auto cublas_gemv<D> = cublasDgemv;
+template<> constexpr auto cublas_gemv<C> = cublasCgemv;
+template<> constexpr auto cublas_gemv<Z> = cublasZgemv;
+
+#define DECLRETURN(ExpR) -> decltype(ExpR) {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
+#define JUSTRETURN(ExpR)                   {return ExpR;}  // NOLINT(cppcoreguidelines-macro-usage) saves a lot of typing
+
+template<cublas::type T> struct cublas {
+	static constexpr auto gemv = cublas_gemv<T>;
 };
 
 class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})>, decltype(&cublasDestroy)> {
@@ -135,28 +159,12 @@ class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})
 		);
 	}
 
-	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class XXP, class XX = typename std::pointer_traits<XXP>::element_type, class BETA, class YYP, class YY = typename std::pointer_traits<YYP>::element_type
-		// , std::enable_if_t<
-		// 	is_z<AA>{} and is_z<XX>{} and is_z<YY>{} and is_z<ALPHA>{} and is_z<BETA>{} and is_assignable_v<YY&, decltype(ALPHA{}*AA{}*XX{})> and
-		// 	std::is_convertible_v<AAP, ::thrust::cuda::pointer<AA>> and std::is_convertible_v<XXP, ::thrust::cuda::pointer<XX>> and std::is_convertible_v<YYP, ::thrust::cuda::pointer<YY>>
-		// 	, int> = 0
+	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class XXP, class XX = typename std::pointer_traits<XXP>::element_type, class BETA, class YYP, class YY = typename std::pointer_traits<YYP>::element_type,
+		typename = decltype(std::declval<YY&>() = ALPHA{}*(AA{}*XX{} + AA{}*XX{})),
+		std::enable_if_t<std::is_convertible_v<AAP, ::thrust::cuda::pointer<AA>> and std::is_convertible_v<XXP, ::thrust::cuda::pointer<XX>> and std::is_convertible_v<YYP, ::thrust::cuda::pointer<YY>>, int> = 0
 	>
-	void gemv(char transA, ssize_t m, ssize_t n, ALPHA const* alpha, AAP aa, ssize_t lda, XXP xx, ssize_t incx, BETA const* beta, YYP yy, ssize_t incy) {
-		sync_call<cublasZgemv>(operation{transA}, m, n, (cuDoubleComplex const*)alpha, (cuDoubleComplex const*)raw_pointer_cast(aa), lda, (cuDoubleComplex const*)raw_pointer_cast(xx), incx, (cuDoubleComplex const*)beta, (cuDoubleComplex*)raw_pointer_cast(yy), incy);
-	}
-
-//	(char, boost::multi::size_type, boost::multi::size_type, double, thrust::pointer<const thrust::complex<double>, thrust::cuda_cub::tag, thrust::tagged_reference<const thrust::complex<double>, thrust::cuda_cub::tag>, thrust::use_default>, core::size_t, thrust::pointer<const thrust::complex<double>, thrust::cuda_cub::tag, thrust::tagged_reference<const thrust::complex<double>, thrust::cuda_cub::tag>, thrust::use_default>, boost::multi::index, double, thrust::pointer<thrust::complex<double>, thrust::cuda_cub::tag, thrust::tagged_reference<thrust::complex<double>, thrust::cuda_cub::tag>, thrust::use_default>, boost::multi::index)
-
-	// template<class... Ts> void gemv(Ts...) = delete;
-
-	// template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, 
-	// cublasStatus_t cublasZgemv(cublasHandle_t handle, cublasOperation_t trans,
-    //                        int m, int n,
-    //                        const cuDoubleComplex *alpha,
-    //                        const cuDoubleComplex *A, int lda,
-    //                        const cuDoubleComplex *x, int incx,
-    //                        const cuDoubleComplex *beta,
-    //                        cuDoubleComplex *y, int incy)
+	auto gemv(char transA, ssize_t m, ssize_t n, ALPHA const* alpha, AAP aa, ssize_t lda, XXP xx, ssize_t incx, BETA const* beta, YYP yy, ssize_t incy)
+	DECLRETURN(sync_call<cublas<type_of<AA>()>::gemv>(operation{transA}, m, n, data_cast(alpha), data_cast(raw_pointer_cast(aa)), lda, data_cast(raw_pointer_cast(xx)), incx, data_cast(beta), data_cast(raw_pointer_cast(yy)), incy))
 
 	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename std::pointer_traits<CCP>::element_type,
 		std::enable_if_t<
