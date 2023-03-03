@@ -85,4 +85,12 @@ BOOST_AUTO_TEST_CASE(cublas_gemm_nh) {
 		BOOST_REQUIRE( c_copy[1][0] == 16.0 -  2.0*I );
 		BOOST_REQUIRE( c_copy[0][1] == 14.0 - 38.0*I );
 	}
+	{
+		multi::thrust::cuda::array<complex, 2> c({2, 2}, {0.0, 0.0});
+		c += blas::gemm(complex{1.0, 0.0}, a, a);  // c=aa†, c†=aa†
+
+		multi::array<complex, 2> const c_copy = c;
+		BOOST_REQUIRE( c_copy[1][0] == 16.0 -  2.0*I );
+		BOOST_REQUIRE( c_copy[0][1] == 14.0 - 38.0*I );
+	}
 }
