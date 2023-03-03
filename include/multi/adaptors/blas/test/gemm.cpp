@@ -13,6 +13,8 @@ namespace multi = boost::multi;
 namespace blas  = multi::blas;
 
 BOOST_AUTO_TEST_CASE(adaptor_blas_double_100x1_1x1_T_sub) {
+	namespace blas  = multi::blas;
+
 	multi::array<double, 2> A({100, 4}, 1.0);  // NOLINT(readability-identifier-length) BLAS naming
 	multi::array<double, 2> B({4, 4}, 1.0);  // NOLINT(readability-identifier-length) BLAS naming
 
@@ -237,8 +239,9 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_square) {
 	}
 	{
 		multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::context const     ctxt;
-		blas::gemm_n(ctxt, 1.0, begin(a), size(a), begin(b), 0.0, begin(c));
+
+		blas::context const ctxt;
+		blas::gemm_n(&ctxt, 1.0, begin(a), size(a), begin(b), 0.0, begin(c));
 		BOOST_REQUIRE( c[1][0] == 148.0 );
 	}
 	{
@@ -248,14 +251,16 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_square) {
 	}
 	{
 		multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::context const     ctxt;
-		blas::gemm_n(ctxt, 1.0, begin(~a), size(~a), begin(b), 0.0, begin(c));
+
+		blas::context const ctxt;
+		blas::gemm_n(&ctxt, 1.0, begin(~a), size(~a), begin(b), 0.0, begin(c));
 		BOOST_REQUIRE(( c[1][1] == 169 and c[1][0] == 82 ));
 	}
 	{
 		multi::array<double, 2> const c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::context const           ctxt;
-		blas::gemm_n(ctxt, 1.0, begin(~a), size(~a), begin(b), 0.0, begin(~c));
+
+		blas::context const ctxt;
+		blas::gemm_n(&ctxt, 1.0, begin(~a), size(~a), begin(b), 0.0, begin(~c));
 		BOOST_REQUIRE( (~c)[1][1] == 169 );
 		BOOST_REQUIRE( (~c)[1][0] ==  82 );
 	}
@@ -267,8 +272,9 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_square) {
 	{
 		// TODO(correaa) fix sfinae of const c
 		multi::array<double, 2> c({2, 2});  // NOLINT(readability-identifier-length) conventional BLAS naming
-		blas::context const     ctxt;
-		blas::gemm_n(ctxt, 1.0, begin(a), size(a), begin(~b), 0.0, begin(c));  // c=ab⸆, c⸆=ba⸆
+
+		blas::context const ctxt;
+		blas::gemm_n(&ctxt, 1.0, begin(a), size(a), begin(~b), 0.0, begin(c));  // c=ab⸆, c⸆=ba⸆
 		BOOST_REQUIRE( c[1][0] == 183.0 );
 	}
 	{
@@ -306,12 +312,12 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_square) {
 }
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare) {
-  	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
+    // NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<double, 2> const a = {
 		{1.0, 3.0, 1.0},
 		{9.0, 7.0, 1.0},
 	};
-  	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
+    // NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<double, 2> const b = {
 		{11.0, 12.0, 1.0},
 		{ 7.0, 19.0, 1.0},
@@ -331,7 +337,7 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare) {
 
 BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_automatic) {
 	namespace blas                  = multi::blas;
-  	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
+    // NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<double, 2> const a = {
 		{1.0, 3.0, 1.0},
 		{9.0, 7.0, 1.0},
@@ -374,9 +380,9 @@ BOOST_AUTO_TEST_CASE(multi_adaptors_blas_gemm_real_nonsquare_automatic) {
 
 BOOST_AUTO_TEST_CASE(multi_blas_gemm_nh) {
 	using complex = std::complex<double>;
-	complex const                  I{0.0, 1.0};  // NOLINT(readability-identifier-length) imaginary unit
+	complex const I{0.0, 1.0};  // NOLINT(readability-identifier-length) imaginary unit
 
-  	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
+	// NOLINTNEXTLINE(readability-identifier-length) BLAS naming
 	multi::array<complex, 2> const a = {
 		{1.0 - 2.0 * I, 9.0 - 1.0 * I},
 		{2.0 + 3.0 * I, 1.0 - 2.0 * I},
