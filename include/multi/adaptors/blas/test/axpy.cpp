@@ -101,7 +101,8 @@ BOOST_AUTO_TEST_CASE(multi_blas_axpy_complex_context) {
 	};
 	auto const                     arr_copy = arr;
 	multi::array<complex, 1> const arr2     = arr[2];
-	blas::axpy(blas::context{}, complex{2.0, 0.0}, arr2, arr[1]);  // zaxpy (2. is promoted to 2+I*0 internally and automatically)
+	blas::context ctxt{};
+	blas::axpy(&ctxt, complex{2.0, 0.0}, arr2, arr[1]);  // zaxpy (2. is promoted to 2+I*0 internally and automatically)
 	BOOST_REQUIRE( arr[1][2] == 2.0*arr2[2] + arr_copy[1][2] );
 }
 

@@ -26,7 +26,7 @@
 namespace boost { \
 namespace multi { \
 namespace adl { \
-	namespace custom {template<class...> struct FuN##_t;} 	__attribute__((unused))  \
+	namespace custom {template<class...> struct FuN##_t;}   __attribute__((unused))  \
 	static constexpr class FuN##_t { \
 		template<class... As> [[deprecated]] auto _(priority<0>,        As&&... args) const = delete; \
 		template<class... As>          auto _(priority<1>,        As&&... args) const DECLRETURN(std::FuN(std::forward<As>(args)...)) \
@@ -50,7 +50,7 @@ template<std::size_t N> struct priority : std::conditional_t<N == 0, std::true_t
 constexpr class adl_copy_n_t {
 	template<class... As>          constexpr auto _(priority<0>/**/,          As&&... args) const DECLRETURN(std::                copy_n(                      std::forward<As>(args)...))
 #if defined(__NVCC__)
-	template<class... As> 		   constexpr auto _(priority<1>/**/,          As&&... args) const DECLRETURN(::thrust::           copy_n(                      std::forward<As>(args)...))
+	template<class... As>          constexpr auto _(priority<1>/**/,          As&&... args) const DECLRETURN(::thrust::           copy_n(                      std::forward<As>(args)...))
 #endif
 	template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const DECLRETURN(                     copy_n(                      std::forward<As>(args)...))
 	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& arg, As&&... args) const DECLRETURN(std::decay_t<T>::    copy_n(std::forward<T>(arg), std::forward<As>(args)...))
@@ -106,13 +106,13 @@ constexpr class adl_copy_t {
 	template<class InputIt, class OutputIt,
 		class=std::enable_if_t<std::is_assignable_v<typename std::iterator_traits<OutputIt>::reference, typename std::iterator_traits<InputIt>::reference>>
 	>
-	                               constexpr auto _(priority<1>/**/, InputIt first, InputIt last, OutputIt d_first)	const DECLRETURN(std::copy(first, last, d_first))
+	                               constexpr auto _(priority<1>/**/, InputIt first, InputIt last, OutputIt d_first) const DECLRETURN(std::copy(first, last, d_first))
 #if defined(__NVCC__)
-	template<class... As> 		   constexpr auto _(priority<2>/**/,          As&&... args) const DECLRETURN(           thrust::copy(std::forward<As>(args)...))
+	template<class... As>          constexpr auto _(priority<2>/**/,          As&&... args) const DECLRETURN(           thrust::copy(std::forward<As>(args)...))
 #endif
 	template<         class... As> constexpr auto _(priority<3>/**/,          As&&... args) const DECLRETURN(                   copy(std::forward<As>(args)...))
 	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args) const DECLRETURN(  std::decay_t<T>::copy(std::forward<T>(arg), std::forward<As>(args)...))
-//	template<class... As         > constexpr auto _(priority<5>/**/,          As&&... args) const DECLRETURN(boost::multi::adl_custom_copy<std::decay_t<As>...>::copy(std::forward<As>(as)...))
+//  template<class... As         > constexpr auto _(priority<5>/**/,          As&&... args) const DECLRETURN(boost::multi::adl_custom_copy<std::decay_t<As>...>::copy(std::forward<As>(as)...))
 	template<class T, class... As> constexpr auto _(priority<6>/**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).copy(std::forward<As>(args)...))
 
  public:
@@ -195,23 +195,23 @@ auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size
 		ForwardIt current = first;
 		try {
 			return std::for_each_n(first, count, [&](T& elem) { _::construct(alloc, std::addressof(elem)); ++current; });
-		//	std::any_of(first, first + count, [](auto& element) {
-		//		_::construct(alloc, 
-		//	});
-		//	for(; count > 0; ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-		//		_::construct(alloc, std::addressof(*current));
-		//	}
+		//  std::any_of(first, first + count, [](auto& element) {
+		//      _::construct(alloc, 
+		//  });
+		//  for(; count > 0; ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+		//      _::construct(alloc, std::addressof(*current));
+		//  }
 		// LCOV_EXCL_START  // TODO(correaa) add test
 		} catch(...) {
 			std::for_each(first, current, [&](T& elem) {_::destroy(alloc, std::addressof(elem));});
-		//	for(; current != first; ++first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-		//		_::destroy(alloc, std::addressof(*first));
-		//	}
+		//  for(; current != first; ++first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+		//      _::destroy(alloc, std::addressof(*first));
+		//  }
 			throw;
 		}
 		// LCOV_EXCL_STOP
 	}
-//	return current;
+//  return current;
 }
 
 //template<class ForwardIt, class Size>
@@ -219,14 +219,14 @@ auto alloc_uninitialized_default_construct_n(Alloc& alloc, ForwardIt first, Size
 //    using T = typename std::iterator_traits<ForwardIt>::value_type;
 //    ForwardIt current = first;
 //    try {
-//		return std::for_each_n(first, count, [&](auto& elem) { ::new (static_cast<void*>(std::addressof(elem))) T; ++current; });
+//      return std::for_each_n(first, count, [&](auto& elem) { ::new (static_cast<void*>(std::addressof(elem))) T; ++current; });
 ////        for (; count > 0 ; (void) ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
 ////            ::new (static_cast<void*>(std::addressof(*current))) T;
 ////        }
 ////        return current;
 //    }  catch (...) {
-//	//	std::for_each(first, current, [&](auto& elem) {_::destroy(alloc, std::addressof(elem));});
-//		assert(0);  // TODO(correaa) check this function
+//  //  std::for_each(first, current, [&](auto& elem) {_::destroy(alloc, std::addressof(elem));});
+//      assert(0);  // TODO(correaa) check this function
 ////       std::destroy(first, current);
 //        throw;
 //    }
@@ -277,36 +277,36 @@ namespace xtd {
 //template<class InputIt, class Size, class ForwardIt, class Value = typename std::iterator_traits<ForwardIt>::value_type>
 //auto uninitialized_copy_n(InputIt first, Size count, ForwardIt d_first)
 //->std::decay_t<decltype(::new (static_cast<void*>(std::addressof(*d_first))) Value(*first), d_first)> {
-//	ForwardIt current = d_first;
-//	try {
-//		for (; count > 0; ++first, (void) ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-//			::new (static_cast<void*>(std::addressof(*current))) Value(*first);
-//		}
-//	} catch(...) {
-//		for(; d_first != current; ++d_first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-//			d_first->~Value();
-//		}
-//		throw;
-//	}
-//	return current;
+//  ForwardIt current = d_first;
+//  try {
+//      for (; count > 0; ++first, (void) ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+//          ::new (static_cast<void*>(std::addressof(*current))) Value(*first);
+//      }
+//  } catch(...) {
+//      for(; d_first != current; ++d_first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+//          d_first->~Value();
+//      }
+//      throw;
+//  }
+//  return current;
 //}
 
 //template<class InputIt, class Size, class ForwardIt, class Value = typename std::iterator_traits<ForwardIt>::value_type>
 //auto uninitialized_move_n(InputIt first, Size count, ForwardIt d_first)
 //->std::decay_t<decltype(::new (static_cast<void*>(std::addressof(*d_first))) Value(std::move(*first)), d_first)> {
-//	ForwardIt current = d_first;
-//	try {
-//		return std::for_each_n(first, count, [&](auto& elem) { ::new (static_cast<void*>(std::addressof(*current))) Value(std::move(*first));; ++current; });
-//		for (; count > 0; ++first, (void) ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-//			::new (static_cast<void*>(std::addressof(*current))) Value(std::move(*first));
-//		}
-//	} catch(...) {
-//		for(; d_first != current; ++d_first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
-//			d_first->~Value();
-//		}
-//		throw;
-//	}
-//	return current;
+//  ForwardIt current = d_first;
+//  try {
+//      return std::for_each_n(first, count, [&](auto& elem) { ::new (static_cast<void*>(std::addressof(*current))) Value(std::move(*first));; ++current; });
+//      for (; count > 0; ++first, (void) ++current, --count) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+//          ::new (static_cast<void*>(std::addressof(*current))) Value(std::move(*first));
+//      }
+//  } catch(...) {
+//      for(; d_first != current; ++d_first) {  // NOLINT(altera-unroll-loops) TODO(correaa) consider using an algorithm
+//          d_first->~Value();
+//      }
+//      throw;
+//  }
+//  return current;
 //}
 
 }  // end namespace xtd
@@ -314,7 +314,7 @@ namespace xtd {
 constexpr class adl_uninitialized_copy_n_t {
 	template<class... As>          constexpr auto _(priority<1>/**/,        As&&... args) const DECLRETURN(                  std::uninitialized_copy_n(std::forward<As>(args)...))
 #if defined(__NVCC__)
-	template<class... As> 		   constexpr auto _(priority<2>/**/,        As&&... args) const DECLRETURN(           thrust::copy_n(                    std::forward<As>(args)...))
+	template<class... As>          constexpr auto _(priority<2>/**/,        As&&... args) const DECLRETURN(           thrust::copy_n(                    std::forward<As>(args)...))
 #endif
 	template<class... As>          constexpr auto _(priority<3>/**/,        As&&... args) const DECLRETURN(                       uninitialized_copy_n(std::forward<As>(args)...))
 	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args) const DECLRETURN(std::decay_t<T>::    uninitialized_copy_n(std::forward<T>(arg), std::forward<As>(args)...))
@@ -463,7 +463,7 @@ constexpr class adl_lexicographical_compare_t {
 	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).lexicographical_compare(std::forward<As>(args)...))
 
  public:
-	template<class... As> /*[[gnu::pure]]*/ constexpr	auto operator()(As&&... args) const DECLRETURN(_(priority<4>{}, std::forward<As>(args)...))
+	template<class... As> /*[[gnu::pure]]*/ constexpr   auto operator()(As&&... args) const DECLRETURN(_(priority<4>{}, std::forward<As>(args)...))
 } adl_lexicographical_compare;
 
 constexpr class adl_uninitialized_value_construct_n_t {
@@ -525,6 +525,7 @@ public:
 	template<             class... As> constexpr auto _(priority<3>/**/,          As&&... args) const DECLRETURN(                     alloc_destroy_n              (std::forward<As>(args)...))
 	template<class T,     class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args) const DECLRETURN(std::decay_t<T>::    alloc_destroy_n(std::forward<T>(arg), std::forward<As>(args)...))
 	template<class T,     class... As> constexpr auto _(priority<5>/**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).alloc_destroy_n              (std::forward<As>(args)...))
+
  public:
 	template<class... As> constexpr auto operator()(As&&... args) const DECLRETURN(_(priority<5>{}, std::forward<As>(args)...))
 } adl_alloc_destroy_n;
@@ -536,6 +537,7 @@ constexpr class adl_alloc_uninitialized_copy_t {
 	template<class T,     class... As> constexpr auto _(priority<3>/**/, T&& arg, As&&... args) const DECLRETURN(                     alloc_uninitialized_copy(std::forward<T>(arg), std::forward<As>(args)...))
 	template<class T,     class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args) const DECLRETURN(    std::decay_t<T>::alloc_uninitialized_copy(std::forward<T>(arg), std::forward<As>(args)...))
 	template<class T,     class... As> constexpr auto _(priority<5>/**/, T&& arg, As&&... args) const DECLRETURN(std::forward<T>(arg).alloc_uninitialized_copy(std::forward<As>(args)...))
+
  public:
 	template<class... As> constexpr auto operator()(As&&... args) const DECLRETURN(_(priority<5>{}, std::forward<As>(args)...))
 } adl_alloc_uninitialized_copy;

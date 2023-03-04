@@ -279,8 +279,8 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	: static_array(std::begin(array), std::end(array)) {}
 
 	// template<class It> static auto distance(It a, It b) {
-	// 	using std::distance;
-	// 	return distance(a, b);
+	//  using std::distance;
+	//  return distance(a, b);
 	// }
 
 	constexpr auto begin() const& -> typename static_array::const_iterator {return ref:: begin();}
@@ -350,7 +350,7 @@ struct static_array  // NOLINT(fuchsia-multiple-inheritance) : multiple inherita
 	using       iterator = multi::array_iterator<T, D, typename static_array::element_ptr      >;
 	using const_iterator = multi::array_iterator<T, D, typename static_array::element_const_ptr>;
 
-	friend MULTI_NONV_CONSTEXPR	auto get_allocator(static_array const& self) -> allocator_type {return self.get_allocator();}
+	friend MULTI_NONV_CONSTEXPR auto get_allocator(static_array const& self) -> allocator_type {return self.get_allocator();}
 
 	       HD constexpr auto data_elements()            const& ->                        element_const_ptr {return this->base_;}
 	       HD constexpr auto data_elements()                 & -> typename static_array::element_ptr       {return this->base_;}
@@ -473,7 +473,7 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	auto uninitialized_move(It first) {
 		return adl_alloc_uninitialized_move_n(this->alloc(), first, this->num_elements(), this->data_elements());
 	}
-	void destroy() {array_alloc::destroy_n(this->data_elements(), this->num_elements());}
+	void destroy() {} // TODO(correaa) array_alloc::destroy_n(this->data_elements(), this->num_elements());}
 
  public:
 	using typename ref::value_type;
@@ -699,7 +699,7 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 };
 
 template<typename T, class Alloc>
-struct array<T, 0, Alloc> : static_array<T, 0, Alloc>{
+struct array<T, 0, Alloc> : static_array<T, 0, Alloc> {
 	using static_ = static_array<T, 0, Alloc>;
 	using static_::static_;
 
