@@ -2413,6 +2413,13 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 		extensions(array)
 	) {}
 
+	template<class TT = void, std::enable_if_t<sizeof(TT*) and D == 0, int> =0>
+	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax and because a reference to c-array can be represented as an array_ref
+	constexpr array_ref(  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax and because a reference to c-array can be represented as an array_ref
+		T& elem // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
+	)
+	: array_ref(&elem, {}) {}
+
 //  this ctor makes memcheck complain about memmory used after scope
 	template<class TT, std::enable_if_t<std::is_same<typename array_ref::value_type, TT>::value, int> =0>
 	// cppcheck-suppress noExplicitConstructor

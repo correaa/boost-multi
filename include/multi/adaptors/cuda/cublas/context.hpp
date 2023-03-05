@@ -175,8 +175,8 @@ class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})
 		std::enable_if_t<std::is_convertible_v<AAP, ::thrust::cuda::pointer<AA>> and std::is_convertible_v<XXP, ::thrust::cuda::pointer<XX>> and std::is_convertible_v<YYP, ::thrust::cuda::pointer<YY>>, int> = 0
 	>
 	auto gemv(char transA, ssize_t m, ssize_t n, ALPHA const* alpha, AAP aa, ssize_t lda, XXP xx, ssize_t incx, BETA const* beta, YYP yy, ssize_t incy) {
-		if(is_d<AA>{}) {sync_call<cublasDgemv>(operation{transA}, m, n, (double const         *)alpha, (double          const*)raw_pointer_cast(aa), lda, (double          const*)raw_pointer_cast(xx), incx, (double          const*)beta, (double         *)raw_pointer_cast(yy), incy);}
-		if(is_z<AA>{}) {sync_call<cublasZgemv>(operation{transA}, m, n, (cuDoubleComplex const*)alpha, (cuDoubleComplex const*)raw_pointer_cast(aa), lda, (cuDoubleComplex const*)raw_pointer_cast(xx), incx, (cuDoubleComplex const*)beta, (cuDoubleComplex*)raw_pointer_cast(yy), incy);}
+		if(is_d<AA>{}) {sync_call<cublasDgemv>(operation{transA}, m, n, (double const         *)alpha, (double          const*)::thrust::raw_pointer_cast(aa), lda, (double          const*)::thrust::raw_pointer_cast(xx), incx, (double          const*)beta, (double         *)::thrust::raw_pointer_cast(yy), incy);}
+		if(is_z<AA>{}) {sync_call<cublasZgemv>(operation{transA}, m, n, (cuDoubleComplex const*)alpha, (cuDoubleComplex const*)::thrust::raw_pointer_cast(aa), lda, (cuDoubleComplex const*)::thrust::raw_pointer_cast(xx), incx, (cuDoubleComplex const*)beta, (cuDoubleComplex*)::thrust::raw_pointer_cast(yy), incy);}
 	}
 
 	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type, class BETA, class CCP, class CC = typename std::pointer_traits<CCP>::element_type,
@@ -185,8 +185,8 @@ class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})
 	>
 	void gemm(char transA, char transB, ssize_t m, ssize_t n, ssize_t k, ALPHA const* alpha, AAP aa, ssize_t lda, BBP bb, ssize_t ldb, BETA const* beta, CCP cc, ssize_t ldc) {
 		MULTI_MARK_SCOPE("cublasXgemm");
-		if(is_d<AA>{}) {sync_call<cublasDgemm>(cuda::cublas::operation{transA}, cuda::cublas::operation{transB}, m, n, k, (double          const*)alpha, (double          const*)thrust::raw_pointer_cast(aa), lda, (double          const*)thrust::raw_pointer_cast(bb), ldb, (double          const*)beta, (double         *)thrust::raw_pointer_cast(cc), ldc);}
-		if(is_z<AA>{}) {sync_call<cublasZgemm>(cuda::cublas::operation{transA}, cuda::cublas::operation{transB}, m, n, k, (cuDoubleComplex const*)alpha, (cuDoubleComplex const*)thrust::raw_pointer_cast(aa), lda, (cuDoubleComplex const*)thrust::raw_pointer_cast(bb), ldb, (cuDoubleComplex const*)beta, (cuDoubleComplex*)thrust::raw_pointer_cast(cc), ldc);}
+		if(is_d<AA>{}) {sync_call<cublasDgemm>(cuda::cublas::operation{transA}, cuda::cublas::operation{transB}, m, n, k, (double          const*)alpha, (double          const*)::thrust::raw_pointer_cast(aa), lda, (double          const*)::thrust::raw_pointer_cast(bb), ldb, (double          const*)beta, (double         *)::thrust::raw_pointer_cast(cc), ldc);}
+		if(is_z<AA>{}) {sync_call<cublasZgemm>(cuda::cublas::operation{transA}, cuda::cublas::operation{transB}, m, n, k, (cuDoubleComplex const*)alpha, (cuDoubleComplex const*)::thrust::raw_pointer_cast(aa), lda, (cuDoubleComplex const*)::thrust::raw_pointer_cast(bb), ldb, (cuDoubleComplex const*)beta, (cuDoubleComplex*)::thrust::raw_pointer_cast(cc), ldc);}
 	}
 
 	template<class ALPHA, class AAP, class AA = typename std::pointer_traits<AAP>::element_type, class BBP, class BB = typename std::pointer_traits<BBP>::element_type,

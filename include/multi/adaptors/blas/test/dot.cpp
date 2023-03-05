@@ -36,12 +36,11 @@ BOOST_AUTO_TEST_CASE(blas_dot_no_context) {
 	BOOST_REQUIRE( res == std::inner_product(begin(x), end(x), begin(y), 0.F) );
 }
 
-
 BOOST_AUTO_TEST_CASE(blas_dot_no_context_out_param) {
 	multi::array<float, 1> const x = {1.0F, 2.0F, 3.0F};  // NOLINT(readability-identifier-length) BLAS naming
 	multi::array<float, 1> const y = {1.0F, 2.0F, 3.0F};  // NOLINT(readability-identifier-length) BLAS naming
 	float res = NAN;
-	blas::dot(x, y, res);
+	blas::dot(x, y, multi::array_ref<float, 0>(res));
 	BOOST_REQUIRE( res == std::inner_product(begin(x), end(x), begin(y), 0.0F) );
 }
 

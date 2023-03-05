@@ -39,10 +39,16 @@ auto dot_n(XIt x_first, Size count, YIt y_first, RPtr rp) {//->decltype(dot_n(bl
 	}
 }
 
-template<class Context, class X1D, class Y1D, class R>
+template<class Context, class X1D, class Y1D, class R, std::enable_if_t<not multi::has_num_elements<std::decay_t<R>>::value, int> =0>
 auto dot(Context ctxt, X1D const& x, Y1D const& y, R&& res) -> R&& {  // NOLINT(readability-identifier-length) res = \sum_i x_i y_i
 	assert( size(x) == size(y) ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	return blas::dot_n(ctxt, begin(x), size(x), begin(y), &res), std::forward<R>(res);
+}
+
+template<class Context, class X1D, class Y1D, class R, std::enable_if_t<    multi::has_num_elements<std::decay_t<R>>::value, int> =0>
+auto dot(Context ctxt, X1D const& x, Y1D const& y, R&& res) -> R&& {  // NOLINT(readability-identifier-length) res = \sum_i x_i y_i
+	assert( size(x) == size(y) ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+	return blas::dot_n(ctxt, begin(x), size(x), begin(y), res.base()), std::forward<R>(res);
 }
 
 template<class X1D, class Y1D, class R>
@@ -50,10 +56,10 @@ auto dot(X1D const& x, Y1D const& y, R&& res) -> R&& {  // NOLINT(readability-id
 	assert( size(x) == size(y) ); // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 	if constexpr(is_conjugated<X1D>{}) {
 		auto ctxtp = blas::default_context_of(underlying(x.base()));
-		return blas::dot(ctxtp, x, y, res);
+		return blas::dot(ctxtp, x, y, std::forward<R>(res));
 	} else {
 		auto ctxtp = blas::default_context_of(           x.base() );
-		return blas::dot(ctxtp, x, y, res);
+		return blas::dot(ctxtp, x, y, std::forward<R>(res));
 	}
 }
 

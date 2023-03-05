@@ -473,7 +473,7 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	auto uninitialized_move(It first) {
 		return adl_alloc_uninitialized_move_n(this->alloc(), first, this->num_elements(), this->data_elements());
 	}
-	void destroy() {} // TODO(correaa) array_alloc::destroy_n(this->data_elements(), this->num_elements());}
+	void destroy() {}  // TODO(correaa) array_alloc::destroy_n(this->data_elements(), this->num_elements());}
 
  public:
 	using typename ref::value_type;
@@ -500,6 +500,37 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 
 	static_array(typename static_array::element_type const& elem, allocator_type const& alloc)
 	: static_array(typename static_array::extensions_type{}, elem, alloc) {}
+
+	template<class Point, class = decltype(Point::dimensionality_type), std::enable_if_t<not std::is_same_v<Point, static_array>, int> =0>
+	static_array(Point const& other)  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) TODO(correaa) have implicit and explicit version
+	: array_alloc{}
+	, ref {
+		array_alloc::allocate(other.base()?other.num_elements():0),
+		other.extension()
+	} {
+		if(other.base()) {adl_alloc_uninitialized_copy(static_array::alloc(), other.base(), other.base() + 1, this->base());}  //ref::begin());
+	}
+
+	// template<class TT, class... Args>
+	// explicit static_array(array_ref<TT, 0, Args...> const& other)
+	// : array_alloc{}, ref{static_array::allocate(other.num_elements()), extensions(other)} {
+	//  uninitialized_copy_(other.data_elements());
+	// }
+
+	template<class TT, class... Args>
+	explicit static_array(multi::basic_array<TT, 0, Args...> const& other, allocator_type const& alloc)
+	: array_alloc{alloc}
+	, ref(static_array::allocate(other.num_elements()), extensions(other)) {
+		if(other.base()) {adl_alloc_uninitialized_copy(static_array::alloc(), other.base(), other.base() + 1, this->base());}  //ref::begin());
+		// using std::copy; copy(other.begin(), other.end(), this->begin());
+	}
+	template<class TT, class... Args>
+	explicit static_array(multi::basic_array<TT, 0, Args...> const& other)  // TODO(correaa) : call other constructor (above)
+	: array_alloc{}, ref(static_array::allocate(other.num_elements())
+	, extensions(other)) {
+		if(other.base()) {adl_alloc_uninitialized_copy(static_array::alloc(), other.base(), other.base() + 1, this->base());}  //ref::begin());
+		// using std::copy; copy(other.begin(), other.end(), this->begin());
+	}
 
 	auto uninitialized_fill(typename static_array::element const& elem) {
 		array_alloc::uninitialized_fill_n(
@@ -541,25 +572,6 @@ struct static_array<T, 0, Alloc>  // NOLINT(fuchsia-multiple-inheritance) : desi
 	}
 	explicit static_array(typename static_array::extensions_type const& extensions)  // 3
 	: static_array(extensions, allocator_type{}) {}
-
-	template<class TT, class... Args>
-	explicit static_array(multi::basic_array<TT, 0, Args...> const& other, allocator_type const& alloc)
-	: array_alloc{alloc}
-	, ref(static_array::allocate(other.num_elements()), extensions(other)) {
-		using std::copy; copy(other.begin(), other.end(), this->begin());
-	}
-	template<class TT, class... Args>
-	explicit static_array(multi::basic_array<TT, 0, Args...> const& other)  // TODO(correaa) : call other constructor (above)
-	: array_alloc{}, ref(static_array::allocate(other.num_elements())
-	, extensions(other)) {
-		using std::copy; copy(other.begin(), other.end(), this->begin());
-	}
-
-	template<class TT, class... Args>
-	explicit static_array(array_ref<TT, 0, Args...> const& other)
-	: array_alloc{}, ref{static_array::allocate(other.num_elements()), extensions(other)} {
-		uninitialized_copy_(other.data_elements());
-	}
 
 	static_array(static_array const& other, allocator_type const& alloc)   // 5b
 	: array_alloc{alloc}

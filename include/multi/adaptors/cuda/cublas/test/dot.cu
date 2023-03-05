@@ -41,11 +41,12 @@ BOOST_AUTO_TEST_CASE(cublas_dot_out_array0D_complex_C) {
 	multi::thrust::cuda::array<complex, 1> const x = {1.0 + 0.0*I, 2.0 + 0.0*I, 3.0 + 0.0*I};  // NOLINT(readability-identifier-length) BLAS naming
 	multi::thrust::cuda::array<complex, 1> const y = {1.0 + 0.0*I, 2.0 + 2.0*I, 3.0 + 0.0*I};  // NOLINT(readability-identifier-length) BLAS naming
 
-//  multi::thrust::cuda::array<complex, 0> res;
-
-	multi::thrust::cuda::array<complex, 0> res{complex{0.0, 0.0}};
+	multi::array<complex, 0> res{complex{0.0, 0.0}};
 	blas::dot(blas::C(x), y, res);
-//  BOOST_REQUIRE( res == std::inner_product(begin(x), end(x), begin(y), complex{0.0, 0.0}, std::plus<>{}, [](auto const& alpha, auto const& omega) {return conj(alpha)*omega;}) );
+
+	multi::array<complex, 0> res_copy{res};
+	std::cout << static_cast<complex>(res_copy) << std::endl;
+	BOOST_REQUIRE(( static_cast<complex>(res_copy) == complex{0.0, 0.0} ));
 }
 
 // BOOST_AUTO_TEST_CASE(blas_dot_functional_complex_C) {
