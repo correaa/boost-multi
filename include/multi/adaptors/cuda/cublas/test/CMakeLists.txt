@@ -37,9 +37,12 @@ find_package(CUDA REQUIRED)
 
 # file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 set(TEST_SRCS
+	axpy.cu
+	dot.cu
 	gemm.cu
 	gemv.cu
 	# herk.cu
+	scal.cu
 	trsm.cu
 )
 

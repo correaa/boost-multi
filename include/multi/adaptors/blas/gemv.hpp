@@ -57,11 +57,11 @@ auto gemv(Ctxt ctxt, A const& a, M const& m, V const& v, B const& b, W&& w) -> W
 	// return std::forward<W>(w);
 
 	// if constexpr(is_conjugated<M>{}) {
-	// 	auto ctxtp = blas::default_context_of(underlying(m.base()));
-	// 	return blas::gemv(ctxtp, a, m, v, b, w);
+	//  auto ctxtp = blas::default_context_of(underlying(m.base()));
+	//  return blas::gemv(ctxtp, a, m, v, b, w);
 	// } else {
-	// 	auto ctxtp = blas::default_context_of(m.base());
-	// 	return blas::gemv(ctxtp, a, m, v, b, w);
+	//  auto ctxtp = blas::default_context_of(m.base());
+	//  return blas::gemv(ctxtp, a, m, v, b, w);
 	// }
 }
 
@@ -84,7 +84,7 @@ auto gemv(A const& a, M const& m, V const& v, B const& b, W&& w) -> W&& {  // NO
 
 template<class Scalar, class It2D, class It1D, class Context>
 class gemv_iterator {
-	Scalar alpha_ = 1.;
+	Scalar alpha_ = 1.0;
 	It2D m_it_;
 	It1D v_first_;
 	Context ctxt_;

@@ -1164,8 +1164,8 @@ struct basic_array
 	//  return range(a).rotated().paren_aux(as...).unrotated();  // TODO(correaa) compact
 	//  auto&& tmp = range(irng);
 	//  auto&& tmp2 =
-	//  	std::move(tmp).
-	//  		rotated();
+	//      std::move(tmp).
+	//          rotated();
 	//  auto&& tmp3 = std::move(tmp2).paren_aux(args...);
 	//  auto&& ret = std::move(tmp3).unrotated();
 	//  return std::move(tmp3).unrotated(); // std::move(ret);
@@ -1320,16 +1320,16 @@ struct basic_array
 		assert(this->extension() == other.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		// MULTI_MARK_SCOPE( std::string{"multi::operator= (D="}+std::to_string(D)+") from "+typeid(TT).name()+" to "+typeid(T).name() );
 		this->elements() = other.elements();
-//  	if(this->is_empty()) {return *this;}
-//  	if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()) {
-//  		this->elements() = o.elements();
-////  			adl_copy_n(o.base(), o.num_elements(), this->base());
-//  	} else if(o.stride() < (~o).stride()) {
-//  		(~(*this)).elements() = o.elements();
-////  		adl_copy_n( (~o).begin(), (~o).size(), (~(*this)).begin() );
-//  	} else {
-//  		assign(o.begin());
-//  	}
+//      if(this->is_empty()) {return *this;}
+//      if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()) {
+//          this->elements() = o.elements();
+////            adl_copy_n(o.base(), o.num_elements(), this->base());
+//      } else if(o.stride() < (~o).stride()) {
+//          (~(*this)).elements() = o.elements();
+////        adl_copy_n( (~o).begin(), (~o).size(), (~(*this)).begin() );
+//      } else {
+//          assign(o.begin());
+//      }
 		return *this;
 	}
 
@@ -1339,13 +1339,13 @@ struct basic_array
 		assert(this->extension() == other.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
 		// MULTI_MARK_SCOPE("multi::operator= [D="+std::to_string(D)+"] from "+typeid(T).name()+" to "+typeid(T).name() );
 		elements() = other.elements();
-//  	if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()) {
-//  		adl_copy_n(o.base(), o.num_elements(), this->base());
-//  	} else if(o.stride() < (~o).stride()) {
-//  		adl_copy_n( (~o).begin(), (~o).size(), (~(*this)).begin() );
-//  	} else {
-//  		assign(o.begin());
-//  	}
+//      if(this->num_elements() == this->nelems() and o.num_elements() == this->nelems() and this->layout() == o.layout()) {
+//          adl_copy_n(o.base(), o.num_elements(), this->base());
+//      } else if(o.stride() < (~o).stride()) {
+//          adl_copy_n( (~o).begin(), (~o).size(), (~(*this)).begin() );
+//      } else {
+//          assign(o.begin());
+//      }
 		return *this;
 	}
 
@@ -1782,7 +1782,7 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 			[&](auto const idx) {operator[](idx) = std::forward<A>(other)[idx];}
 		);
 	//  for(auto const idx : intersection(types::extension(), extension(other))) {
-	//  	operator[](idx) = std::forward<A>(other)[idx];
+	//      operator[](idx) = std::forward<A>(other)[idx];
 	//  }
 	}
 
@@ -2180,8 +2180,8 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 
 	template<
 		class Range,
-		class = std::enable_if_t<not std::is_base_of_v<basic_array, Range>>,
-		class = decltype(adl_copy_n(adl_begin(std::declval<Range const&>()), std::declval<typename basic_array::size_type>(), std::declval<typename basic_array::iterator>()))
+		class = std::enable_if_t<not std::is_base_of_v<basic_array, Range>>  // ,
+	//  class = decltype(adl_copy_n(adl_begin(std::declval<Range const&>()), std::declval<typename basic_array::size_type>(), std::declval<typename basic_array::iterator>()))
 	>
 	constexpr auto operator=(Range const& rng) &  // TODO(correaa) check that you LHS is not read-only?
 	-> basic_array& {  // lints(cppcoreguidelines-c-copy-assignment-signature,misc-unconventional-assign-operator)
@@ -2209,8 +2209,8 @@ struct basic_array<T, 1, ElementPtr, Layout>  // NOLINT(fuchsia-multiple-inherit
 	/*[[gnu::pure]]*/ friend constexpr auto operator<=(basic_array const& self, basic_array const& other) -> bool {return lexicographical_compare(self, other) or self == other;}
 
 //  template<class Array> constexpr void swap(Array&& other) && {  // TODO(correaa) use .elements() to implement swap
-//  	assert(this->extension() == other.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
-//  	adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(other)));
+//      assert(this->extension() == other.extension());  // NOLINT(cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay) : normal in a constexpr function
+//      adl_swap_ranges(this->begin(), this->end(), adl_begin(std::forward<Array>(other)));
 //  }
 //  template<class A> constexpr void swap(A&& other) &  {return swap(std::forward<A>(other));}
 //  template<class A> constexpr void swap(A&& other) && {return swap(std::forward<A>(other));}
@@ -2413,6 +2413,13 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 		extensions(array)
 	) {}
 
+	template<class TT = void, std::enable_if_t<sizeof(TT*) and D == 0, int> =0>
+	// cppcheck-suppress noExplicitConstructor ; to allow terse syntax and because a reference to c-array can be represented as an array_ref
+	constexpr array_ref(  // NOLINT(google-explicit-constructor,hicpp-explicit-conversions) : to allow terse syntax and because a reference to c-array can be represented as an array_ref
+		T& elem // NOLINT(cppcoreguidelines-avoid-c-arrays,hicpp-avoid-c-arrays,modernize-avoid-c-arrays) : backwards compatibility
+	)
+	: array_ref(&elem, {}) {}
+
 //  this ctor makes memcheck complain about memmory used after scope
 	template<class TT, std::enable_if_t<std::is_same<typename array_ref::value_type, TT>::value, int> =0>
 	// cppcheck-suppress noExplicitConstructor
@@ -2559,7 +2566,7 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	}
 //  template<class Ar, class AT = multi::archive_traits<Ar>>
 //  auto serialize_binary_if(std::true_type, Ar& ar) {
-//  	ar & AT::make_nvp("binary_data", AT::make_binary_object(this->data_elements(), static_cast<std::size_t>(this->num_elements())*sizeof(typename array_ref::element)));
+//      ar & AT::make_nvp("binary_data", AT::make_binary_object(this->data_elements(), static_cast<std::size_t>(this->num_elements())*sizeof(typename array_ref::element)));
 //  }
 //  template<class Ar>
 //  auto serialize_binary_if(std::false_type, Ar& ar) {return serialize_flat(ar);}
@@ -2568,15 +2575,15 @@ struct array_ref  // TODO(correaa) : inheredit from multi::partially_ordered2<ar
 	template<class Archive>
 	auto serialize(Archive& arxiv, unsigned int const version) {
 		serialize_flat(arxiv, version);
-//  	serialize_structured(ar, version);
-//  	switch(version) {
-//  		case static_cast<unsigned int>( 0): return serialize_flat(arxiv);
-//  		case static_cast<unsigned int>(-1): return serialize_structured(arxiv, version);
-//  	//	case 2: return serialize_binary_if(std::is_trivially_copy_assignable<typename array_ref::element>{}, arxiv);
-//  		default:
-//  			if( this->num_elements() <= version ){serialize_structured(arxiv, version);}
-//  			else                                 {serialize_flat      (arxiv         );}
-//  	}
+//      serialize_structured(ar, version);
+//      switch(version) {
+//          case static_cast<unsigned int>( 0): return serialize_flat(arxiv);
+//          case static_cast<unsigned int>(-1): return serialize_structured(arxiv, version);
+//      //  case 2: return serialize_binary_if(std::is_trivially_copy_assignable<typename array_ref::element>{}, arxiv);
+//          default:
+//              if( this->num_elements() <= version ){serialize_structured(arxiv, version);}
+//              else                                 {serialize_flat      (arxiv         );}
+//      }
 	}
 };
 
@@ -2643,7 +2650,7 @@ constexpr auto addressof(TT(&array)[N]) {  // NOLINT(cppcoreguidelines-avoid-c-a
 }
 
 template<class T, dimensionality_type D, typename Ptr = T*>
-using array_cptr = array_ptr<T, D, 	typename std::pointer_traits<Ptr>::template rebind<T const>>;
+using array_cptr = array_ptr<T, D,  typename std::pointer_traits<Ptr>::template rebind<T const>>;
 
 template<dimensionality_type D, class P>
 constexpr auto make_array_ref(P data, multi::extensions_t<D> extensions) {

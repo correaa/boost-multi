@@ -12,8 +12,11 @@ using core::scal;
 
 template<class It, class Size>
 auto scal_n(typename It::element a, It first, Size count)  // NOLINT(readability-identifier-length) conventional BLAS naming
-->decltype(core::scal(count, &a, first.base(), first.stride()), void()) {
-	       core::scal(count, &a, first.base(), first.stride());         }
+//->decltype(core::scal(count, &a, first.base(), first.stride()), void()) {
+{
+	auto ctxt = blas::default_context_of(first.base());
+	ctxt->scal(count, &a, first.base(), first.stride());
+}
 
 template<class Scalar, class It1D>
 auto scal(Scalar const& a, It1D first, It1D last)  // NOLINT(readability-identifier-length) conventional BLAS naming

@@ -222,6 +222,11 @@ template<class T>
 inline auto has_data_elements_aux(...      )->decltype(                           std::false_type{});
 template<class T> struct has_data_elements : decltype(has_data_elements_aux(std::declval<T>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
 
+template<class T>
+       auto has_base_aux(T&& array)->decltype(array.base() + 1, std::true_type {});  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) why +1?
+inline auto has_base_aux(...      )->decltype(                  std::false_type{});
+template<class T> struct has_base : decltype(has_base_aux(std::declval<T>())) {};  // NOLINT(cppcoreguidelines-pro-type-vararg,hicpp-vararg,cppcoreguidelines-pro-bounds-array-to-pointer-decay,hicpp-no-array-decay)
+
 namespace detail {
 template<class T>
        auto has_data_aux(T&& cont) -> decltype(cont.data() + 1, std::true_type {});  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic) TODO(correaa) why +1?
