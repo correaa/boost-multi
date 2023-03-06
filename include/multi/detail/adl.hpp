@@ -264,9 +264,12 @@ constexpr auto alloc_destroy_n(Alloc& alloc, BidirIt first, Size count)
 constexpr class adl_uninitialized_copy_t {
 	template<class InIt, class FwdIt, class=decltype(std::addressof(*FwdIt{}))>  // sfinae friendy std::uninitialized_copy
 	[[nodiscard]]                  constexpr auto _(priority<1>/**/, InIt first, InIt last, FwdIt d_first) const DECLRETURN(       std::uninitialized_copy(first, last, d_first))
-	template<class... As>          constexpr auto _(priority<2>/**/,        As&&... args)       const DECLRETURN(                       uninitialized_copy(std::forward<As>(args)...))
-	template<class T, class... As> constexpr auto _(priority<3>/**/, T&& arg, As&&... args)       const DECLRETURN(  std::decay_t<T>::  uninitialized_copy(std::forward<T>(arg), std::forward<As>(args)...))
-	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args)       const DECLRETURN(std::forward<T>(arg).uninitialized_copy(std::forward<As>(args)...))
+// #if defined(__NVCC__)
+//  template<class... As>          constexpr auto _(priority<2>/**/,                        As&&... args) const DECLRETURN(           thrust::uninitialized_copy(                    std::forward<As>(args)...))
+// #endif
+	template<class... As>          constexpr auto _(priority<3>/**/,        As&&... args)       const DECLRETURN(                       uninitialized_copy(std::forward<As>(args)...))
+	template<class T, class... As> constexpr auto _(priority<4>/**/, T&& arg, As&&... args)       const DECLRETURN(  std::decay_t<T>::  uninitialized_copy(std::forward<T>(arg), std::forward<As>(args)...))
+	template<class T, class... As> constexpr auto _(priority<5>/**/, T&& arg, As&&... args)       const DECLRETURN(std::forward<T>(arg).uninitialized_copy(std::forward<As>(args)...))
 
  public:
 	template<class... As> constexpr auto operator()(As&&... args) const DECLRETURN(_(priority<5>{}, std::forward<As>(args)...))
