@@ -221,15 +221,15 @@ class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})
 		class RRP, class RR = typename std::pointer_traits<RRP>::element_type,
 		std::enable_if_t<
 			is_d<XX>{} and is_d<YY>{} and is_d<RR>{} and is_assignable<RR&, decltype(XX{}*YY{})>{} and
-			is_convertible_v<XXP, ::thrust::cuda::pointer<XX>> and is_convertible_v<YYP, ::thrust::cuda::pointer<YY>> and is_convertible_v<RRP, RR*>
+			is_convertible_v<XXP, ::thrust::cuda::pointer<XX>> and is_convertible_v<YYP, ::thrust::cuda::pointer<YY>>
+			and is_convertible_v<RRP, RR*>
 		, int> =0
 	>
 	void dot(int n, XXP xx, int incx, YYP yy, int incy, RRP rr) {
-		assert(0);
 		cublasPointerMode_t mode;
 		auto s = cublasGetPointerMode(get(), &mode); assert( s == CUBLAS_STATUS_SUCCESS );
 		assert( mode == CUBLAS_POINTER_MODE_HOST );
-		sync_call<cublasDdot>(n, raw_pointer_cast(xx), incx, raw_pointer_cast(yy), incy, rr);
+		sync_call<cublasDdot>(n, ::thrust::raw_pointer_cast(xx), incx, ::thrust::raw_pointer_cast(yy), incy, rr);
 	}
 
 	template<
