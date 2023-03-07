@@ -81,6 +81,23 @@ BOOST_AUTO_TEST_CASE(cublas_scal_complex_column) {
 	}
 }
 
+BOOST_AUTO_TEST_CASE(cublas_nrm2_complex_column) {
+	namespace blas = multi::blas;
+	complex const I{0.0, 1.0};
+
+	using T = complex;
+	using Alloc =  thrust::cuda::allocator<complex>;
+
+	multi::array<T, 1> const x = { 1.0 + I*8.0,  2.0 + I*6.0,  3.0 + I*5.0,  4.0 + I*3.0};
+
+	double res;
+	blas::nrm2(x, res);
+	{
+		auto res2 = std::sqrt(std::transform_reduce(x.begin(), x.end(), double{}, std::plus<>{}, [](T const& e) {return norm(e);}));
+		BOOST_REQUIRE( res == res2 );
+	}
+}
+
 BOOST_AUTO_TEST_CASE(cublas_dot_complex_column) {
 	namespace blas = multi::blas;
 	complex const I{0.0, 1.0};

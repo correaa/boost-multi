@@ -73,7 +73,7 @@ foreach(TEST_FILE ${TEST_SRCS})
 	# -Werror -diag-error:3846 > $<$<CXX_COMPILER_ID:MSVC>: /W4>) endif()
 	if(ENABLE_CUDA OR DEFINED CXXCUDA)
 		set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
-		target_compile_options(${TEST_EXE} PRIVATE -extended-lambda -std=c++20)
+		target_compile_options(${TEST_EXE} PRIVATE -extended-lambda)
 	endif()
 
 	add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
