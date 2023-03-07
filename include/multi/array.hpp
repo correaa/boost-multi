@@ -961,6 +961,9 @@ struct array : static_array<T, D, Alloc> {
 		return *this;
 	}
 
+	constexpr auto operator+() const& {return array{          *this };}
+	constexpr auto operator+() &&     {return array{std::move(*this)};}
+
 #if 0
 	auto reextent(typename array::extensions_type const& extensions, typename array::element const& elem) && -> array&& {
 		if(extensions == this->extensions()) {return std::move(*this);}

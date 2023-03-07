@@ -43,6 +43,13 @@ class scal_range {
 
 template<class A> auto scal(A const& array) {return scal_range<A>{array};}
 
+namespace operators {
+	template<class Scalar, class X>
+	auto operator*=(X&& x, Scalar const& alpha) -> X&& {  // NOLINT(readability-identifier-length) conventional BLAS naming
+		return blas::scal(alpha, std::forward<X>(x));
+	}
+}  // end namespace operators
+
 }  // end namespace boost::multi::blas
 
 #endif

@@ -254,6 +254,29 @@ class context : private std::unique_ptr<std::decay_t<decltype(*cublasHandle_t{})
 		}
 	//  cublasSetPointerMode(get(), CUBLAS_POINTER_MODE_HOST);
 	}
+
+	template<
+		class XXP, class XX = typename std::pointer_traits<XXP>::element_type,
+		class YYP, class YY = typename std::pointer_traits<YYP>::element_type,
+		class RRP, class RR = typename std::pointer_traits<RRP>::element_type,
+		std::enable_if_t<
+			is_z<XX>{} and is_z<YY>{} and is_z<RR>{} and is_assignable<RR&, decltype(XX{}*YY{})>{} and
+			is_convertible_v<XXP, ::thrust::cuda::pointer<XX>> and is_convertible_v<YYP, ::thrust::cuda::pointer<YY>>
+			and (is_convertible_v<RRP, ::thrust::cuda::pointer<RR>> or is_convertible_v<RRP, RR*>)
+		, int> =0
+	>
+	void dotu(int n, XXP xx, int incx, YYP yy, int incy, RRP rr) {
+		cublasPointerMode_t mode;
+		auto s = cublasGetPointerMode(get(), &mode); assert( s == CUBLAS_STATUS_SUCCESS );
+		assert( mode == CUBLAS_POINTER_MODE_HOST );
+	//  cublasSetPointerMode(get(), CUBLAS_POINTER_MODE_DEVICE);
+		if constexpr(is_convertible_v<RRP, ::thrust::cuda::pointer<RR>>) {
+			sync_call<cublasZdotu>(n, (cuDoubleComplex const*)::thrust::raw_pointer_cast(xx), incx, (cuDoubleComplex const*)::thrust::raw_pointer_cast(yy), incy, (cuDoubleComplex*)::thrust::raw_pointer_cast(rr) );
+		} else {
+			sync_call<cublasZdotu>(n, (cuDoubleComplex const*)::thrust::raw_pointer_cast(xx), incx, (cuDoubleComplex const*)::thrust::raw_pointer_cast(yy), incy, (cuDoubleComplex*)rr);
+		}
+	//  cublasSetPointerMode(get(), CUBLAS_POINTER_MODE_HOST);
+	}
 };
 
 }  // end namespace multi::cuda::cublas

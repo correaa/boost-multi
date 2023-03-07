@@ -37,6 +37,7 @@ find_package(CUDA REQUIRED)
 
 # file(GLOB TEST_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 set(TEST_SRCS
+	all.cu
 	axpy.cu
 	dot.cu
 	gemm.cu
@@ -49,10 +50,6 @@ set(TEST_SRCS
 foreach(TEST_FILE ${TEST_SRCS})
 	set(TEST_EXE "${TEST_FILE}.x")
 	add_executable(${TEST_EXE} ${TEST_FILE})
-	if(ENABLE_CUDA OR DEFINED CXXCUDA)
-		set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
-		target_compile_options(${TEST_EXE} PRIVATE -std=c++17)
-	endif()
 	# target_compile_features   (${TEST_EXE} PUBLIC cxx_std_17)
 	target_compile_definitions(${TEST_EXE} PRIVATE "BOOST_PP_VARIADICS")
 	target_compile_definitions(${TEST_EXE} PRIVATE ${Boost_DEFINITIONS})
@@ -74,5 +71,10 @@ foreach(TEST_FILE ${TEST_SRCS})
 	# -Werror -Wall -Wextra -fno-common -Wpedantic -Wmove> $<$<CXX_COMPILER_ID:Intel>: -Werror -Wall -Wextra -fno-common -wd161 -diag-disable=remark -Warray-bounds -Wchar-subscripts -Wcomment -Wenum-compare -Wformat -Wuninitialized
 	# -Wmaybe-uninitialized -Wmain -Wnarrowing -Wnonnull -Wparentheses -Wpointer-sign -Wreorder -Wno-return-type -Wsign-compare -Wsequence-point -Wtrigraphs -Wunused-function -Wunused-but-set-variable -Wunused-variable -Wwrite-strings
 	# -Werror -diag-error:3846 > $<$<CXX_COMPILER_ID:MSVC>: /W4>) endif()
+	if(ENABLE_CUDA OR DEFINED CXXCUDA)
+		set_source_files_properties(${TEST_FILE} PROPERTIES LANGUAGE CUDA)
+		target_compile_options(${TEST_EXE} PRIVATE -extended-lambda -std=c++20)
+	endif()
+
 	add_test(NAME ${TEST_EXE} COMMAND ./${TEST_EXE})
 endforeach()
