@@ -27,7 +27,7 @@ struct asum_ptr {
 	explicit operator bool() const {return xp_;}
 
 	template<class ItOut, class Size2>
-	friend auto copy_n(asum_ptr first, Size2 count, ItOut d_first)
+	friend auto copy_n(asum_ptr first, [[maybe_unused]] Size2 count, ItOut d_first)
 	->decltype(blas::asum_n(typename A1D::iterator{}, typename A1D::size_type{}, d_first)) {assert(count == 1);
 		return blas::asum_n(first.xp_->begin()      , first.xp_->size()        , d_first); }
 
@@ -50,13 +50,13 @@ auto asum(A1D const& x) {  // NOLINT(readability-identifier-length) BLAS naming
 
 namespace operators {
 	template<class A1D>
-	auto operator==(A1D const& self, void***** zero) -> bool {
+	auto operator==(A1D const& self, [[maybe_unused]] void***** zero) -> bool {
 		assert( zero == nullptr );
 		return blas::asum(self) < 1.0e-7;
 	}
 
 	template<class A1D>
-	auto operator!=(A1D const& self, void***** zero) -> bool {
+	auto operator!=(A1D const& self, [[maybe_unused]] void***** zero) -> bool {
 		assert( zero == nullptr );
 		return not(self == 0);
 	}
